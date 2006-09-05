@@ -1,0 +1,323 @@
+package cbit.vcell.xml;
+/*©
+ * (C) Copyright University of Connecticut Health Center 2001.
+ * All rights reserved.
+©*/
+/**
+ * This class contains all the XML tags.
+ */
+public class XMLTags {
+    //
+    //CELLML-TAGS and SBML-TAGS
+    public final static String CELLML_NAMESPACE_URI		 = "http://www.cellml.org/cellml/1.0#";
+    public final static String CELLML_NAMESPACE_PREFIX	 = "cellml";
+    public final static String CellmlRootNodeTag		 = "model";
+    public final static String SBML_L1_V1_NAMESPACE_URI  = "http://www.sbml.org/sbml/level1";
+    public final static String SBML_L2_V1_NAMESPACE_URI  = "http://www.sbml.org/sbml/level2";
+	public final static String SbmlRootNodeTag			 = "sbml";
+	public final static String SbmlAnnotationTag		 = "annotation";
+	public final static String VCellInfoTag				 = "VCellInfo";
+	
+	//END
+	
+    //TAGS RELATED TO MATHMODEL
+    public final static String MathModelTag = "MathModel";
+    public final static String FilamentRegionVariableTag = "FilamentRegionVariable";
+    public final static String MembraneRegionVariableTag = "MembraneRegionVariable";
+    public final static String VolumeRegionVariableTag = "VolumeRegionVariable";
+    public final static String MembraneRegionEquationTag = "MembraneRegionEquation";
+    public final static String VolumeRegionEquationTag = "VolumeRegionEquation";
+    public final static String UniformRateTag = "UniformRate";
+    public final static String MembraneRateTag = "MembraneRate";
+    public final static String VolumeRateTag = "VolumeRate";
+    //END-MATHMODEL
+
+    //TAGS RELATED TO VERSION
+    public final static String VersionTag				= "Version";
+    public final static String OwnerTag					= "Owner";
+    public final static String IdentifierAttrTag		= "Identifier";
+    public final static String AnnotationTag			= "Annotation";
+    public final static String PrivacyAttrTag			= "Public";
+    public final static String GroupAccessTag			= "GroupAccess";
+    public final static String BranchIdAttrTag			= "BranchId";
+    public final static String BranchPointRefTag		= "BranchPointRef";
+    public final static String PreviousBranchIdAttrTag	= "PreviousBranchId";
+    public final static String DateAttrTag				= "Date";
+    public final static String FlagAttrTag				= "Archived";
+    public final static String KeyValueAttrTag			= "KeyValue";
+    public final static String HashAttrTag				= "Hash";
+    public final static String UserTag					= "User";
+    public final static String HiddenTag				= "IsHidden";
+    public final static String FromVersionableTag		= "FromVersionable";
+    public final static String ParentSimRefTag			= "ParentSimRef";
+    //VERSION-TAGS END
+
+    //Tags related to simulation
+    //Begin-Simulation
+    public final static String SimulationTag = "Simulation";
+    public final static String SolverTaskDescriptionTag = "SolverTaskDescription";
+    public final static String TaskTypeTag = "TaskType";
+    public final static String KeepEveryTag = "KeepEvery";
+    public final static String KeepAtMostTag = "KeepAtMost";
+    public final static String TimeBoundTag = "TimeBound";
+    public final static String TimeStepTag = "TimeStep";
+    public final static String ErrorToleranceTag = "ErrorTolerance";
+    public final static String AbsolutErrorToleranceTag = "Absolut";
+    public final static String RelativeErrorToleranceTag = "Relative";
+    public final static String MathOverridesTag = "MathOverrides";
+    public final static String ConstantArraySpec = "ConstantArraySpec";
+    public final static String MeshSpecTag = "MeshSpecification";
+    public final static String SolverNameTag = "Solver";
+    public final static String OutputOptionsTag = "OutputOptions";
+    public final static String OutputTimesAttrTag = "OutputTimes";
+    public final static String OutputTimeStepAttrTag = "OutputTimeStep";
+	public final static String KeepEveryAttrTag = "KeepEvery";
+	public final static String KeepAtMostAttrTag = "KeepAtMost";
+    //End-Simulation
+
+    // Begin electrical properties
+    public final static String CurrentClampTag = "Current";
+    public final static String VoltageClampTag = "Voltage";
+    public final static String ElectrodeTag = "Electrode";
+    public final static String ClampTag = "Clamp";
+    public final static String ElectricalContextTag = "ElectricalContext";
+    public final static String SpecificCapacitanceTag = "SpecificCapacitance";
+    public final static String CalculateVoltageTag = "CalculateVoltage";
+    public final static String MemVoltNameTag = "MembraneVoltage";
+    public final static String InitialVoltageTag = "InitialVoltage";
+    //End-electrical
+    //BEGIN Species tags
+    public final static String DBSpeciesTag				= "SpeciesBinding";
+    public final static String CompoundTypeTag			= "Compound";
+    public final static String EnzymeTypeTag			= "Enzyme";
+    public final static String ProteinTypeTag			= "Protein";
+    public final static String FormalSpeciesInfoTag		= "SpeciesInfo";
+    public final static String DBFormalSpeciesTag		= "DBFormalSpecies";
+    public final static String FormulaTag				= "Formula";
+    public final static String CasIDTag					= "CasID";
+    public final static String EnzymeTag				= "Enzyme";
+    public final static String ECNumberTag				= "ECNumber";
+    public final static String OrganismTag				= "Organism";
+    public final static String AccessionTag				= "Accession";
+    public final static String KeywordsTag				= "Keywords";
+    public final static String DescriptionTag			= "Description";
+    public final static String FormalIDTag				= "FormalID";
+    public final static String SysNameTag				= "SysName";
+    //END-species-tags
+    //START Equations
+    public final static String SolutionExpressionTag	= "Solution";
+    public final static String SolutionTypeTag			= "SolutionType";
+    public final static String UnknownTypeTag			= "Unknown";
+    public final static String ConstructedTypeTag		= "Constructed";
+    public final static String ExactTypeTag				= "Exact";
+    //END-Equations
+    //
+    public final static String CompartmentBasedTypeTag	= "Compartmental";
+    public final static String ImageBasedTypeTag		= "Image";
+    public final static String AnalyticBasedTypeTag		= "Analytical";
+    public final static String CoordinateTag = "Coordinate";
+    public final static String PolyLineTypeTag = "PolyLine";
+    public final static String SplineTypeTag = "Spline";
+    public final static String ClosedAttrTag = "Closed";
+    public final static String TypeAttrTag = "Type";
+    public final static String CurveTag = "Curve";
+    public final static String FilamentTag = "Filament";
+    public final static String CharacteristicSizeTag = "CharacteristicSize";
+    public final static String BoundariesTypesTag = "BoundariesTypes";
+    public final static String VolumeVariableAttrTag = "VolumeVariable";
+    public final static String PixelClassTag = "PixelClass";
+
+    public final static String BioModelTag = "BioModel";
+
+    public final static String NameTag = "Name";
+
+    public final static String MathDescriptionTag = "MathDescription";
+    public final static String ConstantTag = "Constant";
+    public final static String ExpressionTag = "Expression";
+    public final static String NameAttrTag = "Name";
+    public final static String FunctionTag = "Function";
+    public final static String MembraneVariableTag = "MembraneVariable";
+    public final static String FilamentVariableTag = "FilamentVariable";
+    public final static String VolumeVariableTag = "VolumeVariable";
+    public final static String CompartmentSubDomainTag = "CompartmentSubDomain";
+    public final static String FilamentSubDomainTag = "FilamentSubDomain";
+    public final static String PriorityAttrTag = "Priority";
+    public final static String MembraneSubDomainTag = "MembraneSubDomain";
+    public final static String BoundaryTypeTag = "BoundaryType";
+    public final static String BoundaryAttrTag = "Boundary";
+    public final static String BoundaryAttrValueXm = "Xm";
+    public final static String BoundaryAttrValueXp = "Xp";
+    public final static String BoundaryAttrValueYm = "Ym";
+    public final static String BoundaryAttrValueYp = "Yp";
+    public final static String BoundaryAttrValueZm = "Zm";
+    public final static String BoundaryAttrValueZp = "Zp";
+    public final static String BoundaryTypeAttrTag = "Type";
+    public final static String BoundaryTypeAttrValueNeumann = "Neumann";
+    public final static String BoundaryTypeAttrValueDirichlet = "Dirichlet";
+    public final static String BoundaryExpressionTag = "BoundaryExpression";
+    public final static String BoundariesTag = "Boundaries";
+    public final static String PdeEquationTag = "PdeEquation";
+    public final static String OdeEquationTag = "OdeEquation";
+    public final static String DiffusionTag = "Diffusion";
+    public final static String InitialTag = "Initial";
+	//    public final static String ConstructedTag = "Constructed";
+	//    public final static String ExactTag = "Exact";
+    public final static String JumpConditionTag = "JumpCondition";
+    public final static String InFluxTag = "InFlux";
+    public final static String OutFluxTag = "OutFlux";
+    public final static String FastSystemTag = "FastSystem";
+    public final static String FastInvariantTag = "FastInvariant";
+    public final static String FastRateTag = "FastRate";
+    public final static String InsideCompartmentTag = "InsideCompartment";
+    public final static String OutsideCompartmentTag = "OutsideCompartment";
+    public final static String MeshTag = "Mesh";
+    public final static String SizeTag = "Size";
+    public final static String XAttrTag = "X";
+    public final static String YAttrTag = "Y";
+    public final static String ZAttrTag = "Z";
+    public final static String TaskDescriptionTag = "TaskDescription";
+    public final static String OutputTag = "OutputTag";
+    public final static String UnsteadyTag = "Unsteady";
+    // I erased the tag of Unsteadytag 
+    public final static String SteadyTag = "Steady";
+    //I erased the tag of Steadytag
+    public final static String TimeStepAttrTag = "TimeStep";
+    public final static String DefaultTimeAttrTag = "DefaultTime";
+    public final static String StartTimeAttrTag = "StartTime";
+    public final static String EndTimeAttrTag = "EndTime";
+    public final static String MaxTimeAttrTag = "MaxTime";
+    public final static String MinTimeAttrTag = "MinTime";
+    public final static String ToleranceAttrTag = "Tolerance";
+
+    public final static String OptimizationSpecificationTag =
+        "OptimizationSpecification";
+    public final static String OptimizationVariableTag = "OptimizationVariable";
+    public final static String LowerBoundTag = "LowerBound";
+    public final static String UpperBoundTag = "UpperBound";
+    public final static String InitialGuessTag = "InitialGuess";
+    public final static String ObjectiveFunctionTag = "ObjectiveFunction";
+    public final static String ConstraintTag = "Constraint";
+    public final static String ConstraintTypeAttrTag = "ConstraintType";
+
+    public final static String FluxStepTag = "FluxStep";
+    public final static String StructureAttrTag = "Structure";
+    public final static String FluxCarrierAttrTag = "FluxCarrier";
+    public final static String FluxCarrierValenceAttrTag = "FluxCarrierValence";
+    public final static String FluxOptionAttrTag = "FluxOption";
+	    public final static String FluxOptionMolecularOnly = "MolecularOnly";
+	    public final static String FluxOptionElectricalOnly = "ElectricalOnly";
+	    public final static String FluxOptionMolecularAndElectrical = "MolecularAndElectrical";
+    public final static String SimpleReactionTag = "SimpleReaction";
+    public final static String CatalystTag = "Modifier";
+    public final static String ReactantTag = "Reactant";
+    public final static String ProductTag = "Product";
+    public final static String SpeciesContextRefAttrTag = "LocalizedCompoundRef";
+    public final static String StoichiometryAttrTag = "Stoichiometry";
+    public final static String KineticsTag = "Kinetics";
+    public final static String KineticsTypeAttrTag = "KineticsType";
+    public final static String KineticsTypeGeneralKinetics = "GeneralKinetics";
+    public final static String KineticsTypeGeneralCurrentKinetics = "GeneralCurrentKinetics";
+    public final static String KineticsTypeMassAction = "MassAction";
+    public final static String KineticsTypeNernst = "NernstKinetics";
+    public final static String KineticsTypeGHK = "GHKKinetics";
+    public final static String KineticsTypeHMM_Irr = "HMMIrreversible";
+    public final static String KineticsTypeHMM_Rev = "HMMReversible";
+    public final static String PseudoSteadyAttrTag = "PseudoSteady";
+    public final static String ParameterTag = "Parameter";
+    public final static String ExpressionAttrTag = "ExpressionAttr";
+    public final static String RateTag = "Rate";
+    public final static String ReactionTag = "Reaction";
+    public final static String FeatureTag = "Feature";
+    public final static String MembraneTag = "Membrane";
+    public final static String SpeciesContextTag = "LocalizedCompound";
+	public final static String HasOverrideAttrTag = "OverrideName";
+    public final static String SpeciesRefAttrTag = "CompoundRef";
+    public final static String InsideFeatureTag = "InsideFeature";
+    public final static String OutsideFeatureTag = "OutsideFeature";
+    public final static String SpeciesTag = "Compound";
+	//    public final static String FormalNameAttrTag = "FormalName"; 4/21/03; specie name scheme changed
+	public final static String CommonNameAttrTag = "CommonName";
+    public final static String OwnerKeyAttrTag = "OwnerKey";
+    public final static String ModelTag = "Model";
+    public final static String DiagramTag = "Diagram";
+    public final static String SpeciesContextShapeTag = "LocalizedCompoundShape";
+    public final static String SimpleReactionShapeTag = "SimpleReactionShape";
+    public final static String FluxReactionShapeTag = "FluxReactionShape";
+    public final static String SimpleReactionRefAttrTag = "SimpleReactionRef";
+    public final static String FluxReactionRefAttrTag = "FluxReactionRef";
+    public final static String LocationXAttrTag = "LocationX";
+    public final static String LocationYAttrTag = "LocationY";
+
+    public final static String GeometryTag = "Geometry"; 
+    public final static String DimensionAttrTag = "Dimension";
+    public final static String ExtentTag = "Extent";
+    public final static String OriginTag = "Origin";
+    public final static String ImageTag = "Image";
+    public final static String SubVolumeTag = "SubVolume";
+    public final static String HandleAttrTag = "Handle";
+    public final static String AnalyticExpressionTag = "AnalyticExpression";
+    public final static String ImagePixelValueTag = "ImagePixelValue";
+    //public final static String CompartmentalAttrTag = "Compartmental";
+    public final static String ImageDataTag = "ImageData";
+    public final static String CompressedSizeTag = "CompressedSize";
+
+    public final static String SimulationSpecTag = "SimulationSpec";
+    public final static String GeometryContextTag = "GeometryContext";
+    public final static String ReactionContextTag = "ReactionContext";
+    public final static String FeatureMappingTag = "FeatureMapping";
+    public final static String FeatureAttrTag = "Feature";
+    public final static String SubVolumeAttrTag = "SubVolume";
+    public final static String ResolvedAttrTag = "Resolved";
+    public final static String MembraneMappingTag = "MembraneMapping";
+    public final static String MembraneAttrTag = "Membrane";
+    public final static String SurfaceToVolumeRatioTag = "SurfaceToVolumeRatio";
+    public final static String VolumeFractionTag = "VolumeFraction";
+    public final static String SpeciesContextSpecTag = "LocalizedCompoundSpec";
+    public final static String ForceConstantAttrTag = "ForceConstant";
+    public final static String EnableDiffusionAttrTag = "EnableDiffusion";
+    public final static String ForceIndependentAttrTag = "ForceIndependent";
+    public final static String ReactionSpecTag = "ReactionSpec";
+    public final static String ReactionStepRefAttrTag = "ReactionStepRef";
+    public final static String ReactionMappingAttrTag = "ReactionMapping";
+    public static final String UseSymbolicJacobianAttrTag = "UseSymbolicJacobian";
+    public static final String VCUnitDefinitionAttrTag = "Unit";
+
+    public static final String ParamRoleAttrTag = "Role";
+    public static final String ParamRoleUserDefinedTag = "user defined";
+	public static final String ParamRoleReactionRateTag = "reaction rate";
+	public static final String ParamRoleInwardCurrentTag = "inward current density";
+	public static final String ParamRoleForwardRateTag = "forward rate constant";
+	public static final String ParamRoleReverseRateTag = "reverse rate constant";
+	public static final String ParamRoleKmTag = "Km (1/2 max)";
+	public static final String ParamRoleMaxReactionRateTag = "max reaction rate";
+	public static final String ParamRoleKmForwardTag = "Km forward";
+	public static final String ParamRoleMaxForwardRateTag = "max forward rate";
+	public static final String ParamRoleKmReverseTag = "Km reverese";
+	public static final String ParamRoleMaxReverseRateTag = "max reverse rate";
+	public static final String ParamRolePermeabilityTag = "permeability";
+	public static final String ParamRoleConductivityTag = "conductivity";
+	public static final String DefaultReactionRateSymbol = "J";
+	public static final String VelocityTag = "Velocity";
+
+	//Surface Description elements
+	public static final String SurfaceDescriptionTag = "SurfaceDescription";
+	public static final String MembraneRegionTag = "MembraneRegion";
+	public static final String VolumeRegionTag = "VolumeRegion";
+	public static final String CutoffFrequencyAttrTag = "CutoffFrequency";
+	public static final String NumSamplesXAttrTag = "NumSamplesX";
+	public static final String NumSamplesYAttrTag = "NumSamplesY";
+	public static final String NumSamplesZAttrTag = "NumSamplesZ";
+	public static final String VolumeRegion_1AttrTag = "VolumeRegion1";
+	public static final String VolumeRegion_2AttrTag = "VolumeRegion2";
+	public static final String SizeAttrTag = "Size";
+	public static final String RegionIDAttrTag = "RegionID";
+
+	public static final String AnalysisTaskListTag = "AnalysisTaskList";
+
+/**
+ * XMLTags default constructor.
+ */
+public XMLTags() {
+	super();
+}
+}
