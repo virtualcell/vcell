@@ -11,7 +11,7 @@ public class OOModelingPanel extends javax.swing.JPanel {
 	private javax.swing.JPanel ivjEquationPanel = null;
 	private javax.swing.JTabbedPane ivjJTabbedPane1 = null;
 	private cbit.gui.graph.SimpleGraphModelPanel ivjpartitionGraphPanel = null;
-	private PhysicalModelGraphPanel ivjphysicalModelGraphPanel = null;
+	private OOModelGraphPanel ivjphysicalModelGraphPanel = null;
 	private cbit.gui.graph.SimpleGraphModelPanel ivjsccGraphModelPanel = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private org.vcell.physics.component.StronglyConnectedComponent[] fieldStronglyConnectedComponents = null;
@@ -403,10 +403,10 @@ public cbit.util.graph.Graph getPartitionGraphPanelGraph() {
  * @return ncbc.physics2.component.gui.PhysicalModelGraphPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private PhysicalModelGraphPanel getphysicalModelGraphPanel() {
+private OOModelGraphPanel getphysicalModelGraphPanel() {
 	if (ivjphysicalModelGraphPanel == null) {
 		try {
-			ivjphysicalModelGraphPanel = new org.vcell.physics.component.gui.PhysicalModelGraphPanel();
+			ivjphysicalModelGraphPanel = new org.vcell.physics.component.gui.OOModelGraphPanel();
 			ivjphysicalModelGraphPanel.setName("physicalModelGraphPanel");
 			// user code begin {1}
 			// user code end
@@ -424,7 +424,7 @@ private PhysicalModelGraphPanel getphysicalModelGraphPanel() {
  * Method generated to support the promotion of the physicalModelGraphPanelModel attribute.
  * @return ncbc.physics2.component.Model
  */
-public org.vcell.physics.component.Model getPhysicalModelGraphPanelModel() {
+public org.vcell.physics.component.OOModel getPhysicalModelGraphPanelModel() {
 	return getphysicalModelGraphPanel().getModel();
 }
 
@@ -643,7 +643,7 @@ public void setPartitionGraphPanelGraph(cbit.util.graph.Graph arg1) {
  * Method generated to support the promotion of the physicalModelGraphPanelModel attribute.
  * @param arg1 ncbc.physics2.component.Model
  */
-public void setPhysicalModelGraphPanelModel(org.vcell.physics.component.Model arg1) {
+public void setPhysicalModelGraphPanelModel(org.vcell.physics.component.OOModel arg1) {
 	getphysicalModelGraphPanel().setModel(arg1);
 }
 

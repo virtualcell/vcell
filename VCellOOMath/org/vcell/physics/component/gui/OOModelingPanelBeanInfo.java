@@ -534,7 +534,7 @@ public java.beans.PropertyDescriptor physicalModelGraphPanelModelPropertyDescrip
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					org.vcell.physics.component.Model.class
+					org.vcell.physics.component.OOModel.class
 				};
 				aSetMethod = getBeanClass().getMethod("setPhysicalModelGraphPanelModel", aSetMethodParameterTypes);
 			} catch (Throwable exception) {
