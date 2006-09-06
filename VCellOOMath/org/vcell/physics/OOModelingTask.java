@@ -95,7 +95,9 @@ public class OOModelingTask implements IAnalysisTask {
 		this.simContext = simContext;
 		this.name = name;
 		this.modelAnalysisResults = new ModelAnalysisResults();
-		modelAnalysisResults.oOModel = MappingUtilities.createFromSimulationContext(simContext);
+		OOModel ooModel = MappingUtilities.createFromSimulationContext(simContext);
+		this.modelAnalysisResults = MappingUtilities.analyzeMathSystem(ooModel);
+		
 	}
 
 }

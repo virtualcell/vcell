@@ -679,19 +679,4 @@ public void setVarEquationAssignments(org.vcell.physics.component.VarEquationAss
 	fieldVarEquationAssignments = varEquationAssignments;
 	firePropertyChange("varEquationAssignments", oldValue, varEquationAssignments);
 }
-
-
-/**
- * Sets the varEquationAssignments index property (ncbc.physics2.component.VarEquationAssignment[]) value.
- * @param index The index value into the property array.
- * @param varEquationAssignments The new value for the property.
- * @see #getVarEquationAssignments
- */
-public void setVarEquationAssignments(int index, org.vcell.physics.component.VarEquationAssignment varEquationAssignments) {
-	org.vcell.physics.component.VarEquationAssignment oldValue = fieldVarEquationAssignments[index];
-	fieldVarEquationAssignments[index] = varEquationAssignments;
-	if (oldValue != null && !oldValue.equals(varEquationAssignments)) {
-		firePropertyChange("varEquationAssignments", null, fieldVarEquationAssignments);
-	};
-}
 }

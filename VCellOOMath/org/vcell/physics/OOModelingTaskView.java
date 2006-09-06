@@ -5,8 +5,10 @@ import javax.swing.JPanel;
 import org.vcell.model.analysis.IAnalysisTask;
 import org.vcell.model.analysis.IAnalysisTaskView;
 import org.vcell.physics.component.ModelAnalysisResults;
+import org.vcell.physics.component.OOModel;
 import org.vcell.physics.component.gui.OOModelingPanel;
 import org.vcell.physics.component.gui.OOModelGraphPanel;
+import org.vcell.physics.math.MappingUtilities;
 
 public class OOModelingTaskView implements IAnalysisTaskView {
 
@@ -29,12 +31,13 @@ public class OOModelingTaskView implements IAnalysisTaskView {
 			ooModelingTask = (OOModelingTask)newAnalysisTask;
 			getPanel();
 			ModelAnalysisResults modelAnalysisResults = ooModelingTask.getModelAnalysisResults();
-			if (modelAnalysisResults!=null){
+			if (modelAnalysisResults!=null){ 
 				ooModelingPanel.setBipartiteMatchings(modelAnalysisResults.matching);
 				ooModelingPanel.setConnectivityGraphPanelGraph(modelAnalysisResults.connectivityGraph);
 				ooModelingPanel.setPartitionGraphPanelGraph(modelAnalysisResults.partitionGraph);
 				ooModelingPanel.setPhysicalModelGraphPanelModel(modelAnalysisResults.oOModel);
 				ooModelingPanel.setSccGraphModelPanelGraph(modelAnalysisResults.sccGraph);
+				ooModelingPanel.setStronglyConnectedComponents(modelAnalysisResults.sccArray);
 				ooModelingPanel.setVarEquationAssignments(modelAnalysisResults.varEqnAssignments);
 			}else{
 				ooModelingPanel.setBipartiteMatchings(null);
@@ -42,6 +45,7 @@ public class OOModelingTaskView implements IAnalysisTaskView {
 				ooModelingPanel.setPartitionGraphPanelGraph(null);
 				ooModelingPanel.setPhysicalModelGraphPanelModel(null);
 				ooModelingPanel.setSccGraphModelPanelGraph(null);
+				ooModelingPanel.setStronglyConnectedComponents(null);
 				ooModelingPanel.setVarEquationAssignments(null);
 			}
 		}else{
