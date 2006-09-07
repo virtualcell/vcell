@@ -184,8 +184,8 @@ public static OOModel getExample4() throws cbit.vcell.parser.ExpressionException
 	//
 	//
 	OOModel oOModel = new OOModel();
-	Reaction R1 = new Reaction("R1",new String[] { "r1","r2","p1" }, new int[] { -1, -1, 1 }, new Expression[] { }, false);
-	Reaction R2 = new Reaction("R2",new String[] { "r1","r2","p1" }, new int[] { -1, -1, 1 }, new Expression[] { }, true);
+	MassActionReaction R1 = new MassActionReaction("R1",new String[] { "r1","r2","p1" }, new int[] { -1, -1, 1 }, false);
+	MassActionReaction R2 = new MassActionReaction("R2",new String[] { "r1","r2","p1" }, new int[] { -1, -1, 1 }, true);
 	Species A = new Species("A");
 	Species B = new Species("B");
 	Species C = new Species("C");

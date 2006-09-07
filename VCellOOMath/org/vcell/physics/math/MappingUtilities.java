@@ -2,25 +2,13 @@ package org.vcell.physics.math;
 import java.beans.PropertyVetoException;
 
 import cbit.image.ImageException;
+import cbit.util.TokenMangler;
 import cbit.vcell.geometry.GeometryException;
-import cbit.vcell.geometry.SubVolume;
-import cbit.vcell.geometry.surface.VolumeGeometricRegion;
-import cbit.vcell.mapping.FeatureMapping;
-import cbit.vcell.mapping.MembraneMapping;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.StructureMapping;
-import cbit.vcell.model.Feature;
-import cbit.vcell.model.Membrane;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 
-import java.util.Vector;
-
 import org.vcell.physics.component.Connection;
 import org.vcell.physics.component.Connector;
-import org.vcell.physics.component.CurrentSource;
 import org.vcell.physics.component.ModelAnalysisResults;
 import org.vcell.physics.component.ModelComponent;
 import org.vcell.physics.component.ModelReader;
@@ -28,7 +16,6 @@ import org.vcell.physics.component.OOModel;
 import org.vcell.physics.component.StronglyConnectedComponent;
 import org.vcell.physics.component.Symbol;
 import org.vcell.physics.component.VarEquationAssignment;
-import org.vcell.physics.component.gui.OOModelingPanel;
 
 /**
  * Insert the type's description here.
@@ -71,10 +58,10 @@ public static void addChemicalDevices(cbit.vcell.mapping.SimulationContext simCo
 			// collect the reactionParticipant names and stoichiometries (need to pass to Reaction Devices).
 			//
 			cbit.vcell.model.ReactionParticipant reactionParticipants[] = rs.getReactionStep().getReactionParticipants();
-			String allNames[] = new String[reactionParticipants.length];
+			String allSpeciesNames[] = new String[reactionParticipants.length];
 			int allStoichs[] = new int[reactionParticipants.length];
 			for (int k = 0; k < reactionParticipants.length; k++){
-				allNames[k] = reactionParticipants[k].getName();
+				allSpeciesNames[k] = reactionParticipants[k].getName();
 				if (reactionParticipants[k] instanceof cbit.vcell.model.Reactant){
 					allStoichs[k] = -1*reactionParticipants[k].getStoichiometry();
 				}else if (reactionParticipants[k] instanceof cbit.vcell.model.Product){
@@ -88,14 +75,19 @@ public static void addChemicalDevices(cbit.vcell.mapping.SimulationContext simCo
 			for (int p = 0; p < parameters.length; p++){
 				equations[p] = new Expression(parameters[p].getName()+" - ("+parameters[p].getExpression().infix()+")");
 			}
-			org.vcell.physics.component.Reaction reaction = new org.vcell.physics.component.Reaction(rs.getReactionStep().getName(),allNames,allStoichs,equations,rs.isFast());
+			org.vcell.physics.component.Reaction reaction = new org.vcell.physics.component.Reaction(
+					TokenMangler.fixTokenStrict(rs.getReactionStep().getName()),
+					allSpeciesNames,
+					allStoichs,
+					rs.getReactionStep().getKinetics().getRateParameter().getName(),
+					equations);
 			oOModel.addModelComponent(reaction);
 			org.vcell.physics.component.ModelComponent modelComponents[] = oOModel.getModelComponents();
 			for (int l = 0; l < modelComponents.length; l++){
 				if (modelComponents[l] instanceof org.vcell.physics.component.Species){
 					org.vcell.physics.component.Species species = (org.vcell.physics.component.Species)modelComponents[l];
-					for (int k = 0; k < allNames.length; k++){
-						if (species.getName().equals(allNames[k])){
+					for (int k = 0; k < allSpeciesNames.length; k++){
+						if (species.getName().equals(allSpeciesNames[k])){
 							oOModel.joinConnection(reaction.getConnectors(k),species.getConnectors(0));
 						}
 					}
@@ -275,7 +267,6 @@ public static ModelAnalysisResults analyzeMathSystem(OOModel oOModel) throws Exp
 		for (int i = 0; i < nodes.length; i++){
 			if (nodes[i].getData() instanceof Symbol){
 				Symbol symbol = (Symbol)nodes[i].getData();
-				cbit.util.graph.Node symbolNode = nodes[i];
 				int matchingIndex = matching.getMatch(nodes[i].index);
 				cbit.util.graph.Node eqnNode = graph.getNodes()[matchingIndex];
 				Expression equation = (Expression)eqnNode.getData();
@@ -313,13 +304,11 @@ public static ModelAnalysisResults analyzeMathSystem(OOModel oOModel) throws Exp
 			partitionNodes[i].index = i;
 		}
 		for (int i = 0; i < partitionNodes.length; i++){
-			com.mhhe.clrs2e.Vertex vertex = weightedGraph.getVertex(i);
 			VarEquationAssignment varEqnAssignment = (VarEquationAssignment)partitionNodes[i].getData();
 			if (!varEqnAssignment.isStateVariable()){
 				//
 				// state variables are considered to be "known" at all times, so don't consider them dependencies
 				//
-				Symbol symbol = varEqnAssignment.getSymbol();
 				com.mhhe.clrs2e.AdjacencyListGraph.EdgeIterator edgeIterator = (com.mhhe.clrs2e.AdjacencyListGraph.EdgeIterator)weightedGraph.edgeIterator(i);
 				while (edgeIterator.hasNext()){
 					com.mhhe.clrs2e.Vertex otherVertex = (com.mhhe.clrs2e.Vertex)edgeIterator.next();
@@ -437,12 +426,10 @@ public static ModelAnalysisResults analyzeMathSystem(OOModel oOModel) throws Exp
 		// try to symbolically simplify
 		//
 		System.out.println("simplifying strongly connected components");
-		java.util.HashSet globallyKnownSymbols = new java.util.HashSet();
 		for (int i = 0; i < sortedSccNodes.length; i++){
 			StronglyConnectedComponent scc = (StronglyConnectedComponent)sortedSccNodes[i].getData();
 			System.out.println("component("+scc.getName()+") = "+scc.toString(varEqnAssignments));
 			
-			java.util.HashSet locallyKnownSymbols = new java.util.HashSet(globallyKnownSymbols);
 			//
 			// identify state variables (has time derivative) within this SCC
 			//
