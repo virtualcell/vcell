@@ -1,4 +1,6 @@
 package org.vcell.physics.component.gui;
+import javax.swing.JScrollPane;
+
 import org.vcell.physics.component.StronglyConnectedComponent;
 import org.vcell.physics.component.VarEquationAssignment;
 /**
@@ -8,7 +10,7 @@ import org.vcell.physics.component.VarEquationAssignment;
  */
 public class OOModelingPanel extends javax.swing.JPanel {
 	private cbit.gui.graph.SimpleGraphModelPanel ivjconnectivityGraphPanel = null;
-	private javax.swing.JPanel ivjEquationPanel = null;
+	private javax.swing.JScrollPane ivjEquationScrollPane = null;
 	private javax.swing.JTabbedPane ivjJTabbedPane1 = null;
 	private cbit.gui.graph.SimpleGraphModelPanel ivjpartitionGraphPanel = null;
 	private OOModelGraphPanel ivjphysicalModelGraphPanel = null;
@@ -301,13 +303,12 @@ public cbit.util.graph.Graph getConnectivityGraphPanelGraph() {
  * @return javax.swing.JPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getEquationPanel() {
-	if (ivjEquationPanel == null) {
+private javax.swing.JScrollPane getEquationScrollPane() {
+	if (ivjEquationScrollPane == null) {
 		try {
-			ivjEquationPanel = new javax.swing.JPanel();
-			ivjEquationPanel.setName("EquationPanel");
-			ivjEquationPanel.setLayout(new java.awt.BorderLayout());
-			getEquationPanel().add(getEquationTextArea(), "Center");
+			ivjEquationScrollPane = new javax.swing.JScrollPane();
+			ivjEquationScrollPane.setName("EquationPanel");
+			ivjEquationScrollPane.setViewportView(getEquationTextArea());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -316,7 +317,7 @@ private javax.swing.JPanel getEquationPanel() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjEquationPanel;
+	return ivjEquationScrollPane;
 }
 
 /**
@@ -354,7 +355,7 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
 			ivjJTabbedPane1.insertTab("bipartite graph", null, getconnectivityGraphPanel(), null, 1);
 			ivjJTabbedPane1.insertTab("partition graph", null, getpartitionGraphPanel(), null, 2);
 			ivjJTabbedPane1.insertTab("connected components", null, getsccGraphModelPanel(), null, 3);
-			ivjJTabbedPane1.insertTab("Equations", null, getEquationPanel(), null, 4);
+			ivjJTabbedPane1.insertTab("Equations", null, getEquationScrollPane(), null, 4);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

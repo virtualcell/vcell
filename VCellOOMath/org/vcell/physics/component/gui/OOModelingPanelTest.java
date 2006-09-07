@@ -1,5 +1,8 @@
 package org.vcell.physics.component.gui;
 
+import org.vcell.physics.component.ModelAnalysisResults;
+import org.vcell.physics.math.MappingUtilities;
+
 /**
  * Insert the type's description here.
  * Creation date: (7/8/2003 3:32:30 PM)
@@ -28,7 +31,13 @@ public static void main(java.lang.String[] args) {
 		
 		//PhysicalModel physicalModel = PhysicalModelTest.getExample();
 		org.vcell.physics.component.OOModel physicalModel = org.vcell.physics.component.OOModelTest.getExampleTriangle_h_a();
-		aOOModelingPanel.setPhysicalModelGraphPanelModel(physicalModel);
+		ModelAnalysisResults modelAnalysisResults = MappingUtilities.analyzeMathSystem(physicalModel);
+		aOOModelingPanel.setPhysicalModelGraphPanelModel(modelAnalysisResults.oOModel);
+		aOOModelingPanel.setPartitionGraphPanelGraph(modelAnalysisResults.partitionGraph);
+		aOOModelingPanel.setSccGraphModelPanelGraph(modelAnalysisResults.sccGraph);
+		aOOModelingPanel.setStronglyConnectedComponents(modelAnalysisResults.sccArray);
+		aOOModelingPanel.setVarEquationAssignments(modelAnalysisResults.varEqnAssignments);
+		aOOModelingPanel.setConnectivityGraphPanelGraph(modelAnalysisResults.connectivityGraph);
 		
 		frame.setVisible(true);
 	} catch (Throwable exception) {
