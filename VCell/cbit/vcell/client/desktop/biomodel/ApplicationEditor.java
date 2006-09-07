@@ -990,20 +990,25 @@ private void connPtoP8SetTarget() {
 
 
 private void showAnalysisTask(IAnalysisTask analysisTask){
-	IAnalysisTaskView analysisTaskView = analysisTask.getAnalysisTaskFactory().getView();
-	analysisTaskView.setAnalysisTask(analysisTask);
-	JPanel panel = analysisTaskView.getPanel();
+	JPanel newPanel = null;
+	if (analysisTask!=null){
+		IAnalysisTaskView analysisTaskView = analysisTask.getAnalysisTaskFactory().getView();
+		analysisTaskView.setAnalysisTask(analysisTask);
+		newPanel = analysisTaskView.getPanel();
+	}else{
+		newPanel = new JPanel();
+	}
 	Component previousCenterComponent = ((BorderLayout)getParameterEstimationPanel().getLayout()).getLayoutComponent(BorderLayout.CENTER);
-	if (previousCenterComponent!=panel){
+	if (previousCenterComponent!=newPanel){
 		if (previousCenterComponent!=null){
 			getParameterEstimationPanel().remove(previousCenterComponent);
 		}
 	}
-	getParameterEstimationPanel().add(panel,BorderLayout.CENTER);
-	getParameterEstimationPanel().invalidate();
-	getParameterEstimationPanel().repaint();
-//	DialogUtils.showComponentCloseDialog(this, panel, "analysis");
-//	getParameterEstimationPanel().add(panel, "Center");
+	if (newPanel!=null){
+		getParameterEstimationPanel().add(newPanel,BorderLayout.CENTER);
+		getParameterEstimationPanel().invalidate();
+		getParameterEstimationPanel().repaint();
+	}
 
 }
 
