@@ -1,5 +1,7 @@
 package cbit.vcell.simdata;
 
+import cbit.vcell.simdata.DataIdentifier;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -48,7 +50,7 @@ private VariableType(int varType) {
  */
 public static cbit.vcell.simdata.DataIdentifier[] collectSimilarDataTypes(String variableName,cbit.vcell.simdata.DataIdentifier[] dataIDs){
 	
-	cbit.vcell.simdata.VariableType vt = null;
+	cbit.vcell.math.VariableType vt = null;
 	for(int i=0;i<dataIDs.length;i+= 1){
 		if(dataIDs[i].getName().equals(variableName)){
 			vt = dataIDs[i].getVariableType();
@@ -74,19 +76,19 @@ public static cbit.vcell.simdata.DataIdentifier[] collectSimilarDataTypes(String
 	for(int i=0;i<dataIDs.length;i+= 1){
 		if( 
 			(
-				(vt.equals(cbit.vcell.simdata.VariableType.VOLUME) ||
-				vt.equals(cbit.vcell.simdata.VariableType.VOLUME_REGION))
+				(vt.equals(cbit.vcell.math.VariableType.VOLUME) ||
+				vt.equals(cbit.vcell.math.VariableType.VOLUME_REGION))
 				&&
-				(dataIDs[i].getVariableType().equals(cbit.vcell.simdata.VariableType.VOLUME) ||
-				dataIDs[i].getVariableType().equals(cbit.vcell.simdata.VariableType.VOLUME_REGION))
+				(dataIDs[i].getVariableType().equals(cbit.vcell.math.VariableType.VOLUME) ||
+				dataIDs[i].getVariableType().equals(cbit.vcell.math.VariableType.VOLUME_REGION))
 			)
 			||
 			(
-				(vt.equals(cbit.vcell.simdata.VariableType.MEMBRANE) ||
-				vt.equals(cbit.vcell.simdata.VariableType.MEMBRANE_REGION))
+				(vt.equals(cbit.vcell.math.VariableType.MEMBRANE) ||
+				vt.equals(cbit.vcell.math.VariableType.MEMBRANE_REGION))
 				&&
-				(dataIDs[i].getVariableType().equals(cbit.vcell.simdata.VariableType.MEMBRANE) ||
-				dataIDs[i].getVariableType().equals(cbit.vcell.simdata.VariableType.MEMBRANE_REGION))
+				(dataIDs[i].getVariableType().equals(cbit.vcell.math.VariableType.MEMBRANE) ||
+				dataIDs[i].getVariableType().equals(cbit.vcell.math.VariableType.MEMBRANE_REGION))
 			)
 			){
 				
