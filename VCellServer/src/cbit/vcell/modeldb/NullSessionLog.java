@@ -7,7 +7,7 @@ package cbit.vcell.modeldb;
 /**
  * This type was created in VisualAge.
  */
-public class NullSessionLog implements cbit.vcell.server.SessionLog {
+public class NullSessionLog implements cbit.util.SessionLog {
 /**
  * NullSessionLog constructor comment.
  */
