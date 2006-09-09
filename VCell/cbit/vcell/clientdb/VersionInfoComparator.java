@@ -4,7 +4,7 @@ package cbit.vcell.clientdb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.sql.*;
+import cbit.util.VersionInfo;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/01 3:55:18 PM)

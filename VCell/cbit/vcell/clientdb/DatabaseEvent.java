@@ -4,13 +4,13 @@ package cbit.vcell.clientdb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.sql.VersionInfo;
+import cbit.util.VersionInfo;
 /**
  * This is the event class to support the cbit.vcell.clientdb.DatabaseListener interface.
  */
 public class DatabaseEvent extends java.util.EventObject {
-	private cbit.sql.VersionInfo dbNewVersionInfo = null;
-	private cbit.sql.VersionInfo dbOldVersionInfo = null;
+	private VersionInfo dbNewVersionInfo = null;
+	private VersionInfo dbOldVersionInfo = null;
 	private int operationType = UNDEFINED;
 
 	public static final int UNDEFINED = -1;
@@ -25,7 +25,7 @@ public class DatabaseEvent extends java.util.EventObject {
  * DatabaseEvent constructor comment.
  * @param source java.lang.Object
  */
-public DatabaseEvent(java.lang.Object source, int argOperationType, cbit.sql.VersionInfo argOldVersionInfo, cbit.sql.VersionInfo argNewVersionInfo) {
+public DatabaseEvent(java.lang.Object source, int argOperationType, VersionInfo argOldVersionInfo, VersionInfo argNewVersionInfo) {
 	super(source);
 	this.dbOldVersionInfo = argOldVersionInfo;
 	this.dbNewVersionInfo = argNewVersionInfo;

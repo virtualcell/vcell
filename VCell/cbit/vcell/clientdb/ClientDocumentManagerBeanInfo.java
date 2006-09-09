@@ -1038,7 +1038,7 @@ public java.beans.MethodDescriptor isChanged_cbitvcelldocumentVCDocumentMethodDe
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.document.VCDocument.class
+				cbit.util.VCDocument.class
 			};
 			aMethod = getBeanClass().getMethod("isChanged", aParameterTypes);
 		} catch (Throwable exception) {
