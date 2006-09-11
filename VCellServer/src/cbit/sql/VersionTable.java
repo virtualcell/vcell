@@ -4,14 +4,18 @@ package cbit.sql;
  * All rights reserved.
 ©*/
 import java.sql.SQLException;
-import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.DataAccessException;
+
+import cbit.util.DataAccessException;
+import cbit.util.KeyValue;
+import cbit.util.ObjectNotFoundException;
+import cbit.util.SessionLog;
+import cbit.util.Version;
+import cbit.util.VersionFlag;
+import cbit.util.Versionable;
 import java.text.ParseException;
 import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
-import cbit.sql.Version;
 import cbit.vcell.modeldb.*;
-import cbit.vcell.server.ObjectNotFoundException;
 /**
  * This type was created in VisualAge.
  */
@@ -227,7 +231,7 @@ public static java.util.Vector getReferencingVersionableTypes(VersionableType vT
  * @param rset ResultSet
  * @param log SessionLog
  */
-public static Version getVersion(ResultSet rset, cbit.vcell.server.GroupAccess groupAccess,SessionLog log) throws SQLException ,DataAccessException{
+public static Version getVersion(ResultSet rset, cbit.util.GroupAccess groupAccess,SessionLog log) throws SQLException ,DataAccessException{
 	KeyValue vBranchPointRef = null;
 	java.math.BigDecimal vBranchID = null;
 	java.util.Date vDate = null;
@@ -287,7 +291,7 @@ public static Version getVersion(ResultSet rset, cbit.vcell.server.GroupAccess g
 	String name = rset.getString(VersionTable.name_ColumnName);
 	String ownerName = rset.getString(cbit.vcell.modeldb.UserTable.table.userid.toString());
 	KeyValue ownerID = new KeyValue(rset.getBigDecimal(VersionTable.ownerRef_ColumnName));
-	cbit.vcell.server.User owner = new cbit.vcell.server.User(ownerName, ownerID);
+	cbit.util.User owner = new cbit.util.User(ownerName, ownerID);
 	//cbit.vcell.server.AccessInfo privacy = new cbit.vcell.server.AccessInfo(rset.getInt(VersionTable.privacy_ColumnName));
 	//
 	if (bFoundParentSimRefColumn){

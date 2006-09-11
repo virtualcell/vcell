@@ -6,6 +6,8 @@ package cbit.sql;
 ©*/
 import cbit.gui.*;
 import java.awt.*;
+
+import cbit.util.SessionLog;
 import cbit.vcell.server.*;
 import java.sql.*;
 import java.io.*;
@@ -192,7 +194,7 @@ public static void main(java.lang.String[] args) {
         SessionLog log = new StdoutSessionLog("CompareDatabaseSchema");
         ConnectionFactory conFactory = null;
         KeyFactory keyFactory = null;
-        new cbit.vcell.server.PropertyLoader();
+        new cbit.gui.PropertyLoader();
 
         //
         // get appropriate database factory objects

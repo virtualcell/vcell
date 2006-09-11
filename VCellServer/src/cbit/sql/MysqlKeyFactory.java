@@ -5,6 +5,8 @@ package cbit.sql;
  * All rights reserved.
 ©*/
 import java.sql.*;
+
+import cbit.util.KeyValue;
 /**
  * This type was created in VisualAge.
  */

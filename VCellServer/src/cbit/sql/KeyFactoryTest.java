@@ -55,7 +55,7 @@ public static void main(String args[]) {
 			System.exit(1);
 		}
 
-		new cbit.vcell.server.PropertyLoader();
+		new cbit.gui.PropertyLoader();
 		
 		KeyFactory keyFactory = null;
 		if (args[0].equalsIgnoreCase("ORACLE")){

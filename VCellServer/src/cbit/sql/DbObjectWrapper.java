@@ -5,6 +5,7 @@ package cbit.sql;
  * All rights reserved.
 ©*/
 import cbit.util.*;
+
 import java.io.*;
 /**
  * This type was created in VisualAge.

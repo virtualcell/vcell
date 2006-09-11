@@ -5,6 +5,8 @@ package cbit.sql;
  * All rights reserved.
 ©*/
 import java.util.*;
+
+import cbit.util.KeyValue;
 /**
  * Used for internal references within (or between) Versionable objects
  * Versionable objects themselves are not stored here
