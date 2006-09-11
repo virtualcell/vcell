@@ -1,10 +1,13 @@
 package cbit.vcell.solver;
+
+import cbit.util.VCDataIdentifier;
+
 /**
  * Temporary, to help SimulationData to deal with multiple simulation job datasets.
  * Should be removed after making SimulationData smarter in file handling for compatibility with old stuff.
  * @deprecated
  */
-public class VCSimulationDataIdentifierOldStyle implements java.io.Serializable, cbit.vcell.server.VCDataIdentifier {
+public class VCSimulationDataIdentifierOldStyle implements java.io.Serializable, VCDataIdentifier {
 	private VCSimulationIdentifier vcSimID = null;
 
 /**

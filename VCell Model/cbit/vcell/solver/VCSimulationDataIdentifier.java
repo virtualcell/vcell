@@ -1,10 +1,13 @@
 package cbit.vcell.solver;
+
+import cbit.util.VCDataIdentifier;
+
 /**
  * Insert the type's description here.
  * Creation date: (8/24/2004 10:55:36 AM)
  * @author: Jim Schaff
  */
-public class VCSimulationDataIdentifier implements java.io.Serializable, cbit.vcell.server.VCDataIdentifier {
+public class VCSimulationDataIdentifier implements java.io.Serializable, VCDataIdentifier {
 	private VCSimulationIdentifier vcSimID = null;
 	private int jobIndex = -1;
 
