@@ -3,17 +3,20 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.util.DataAccessException;
+import cbit.util.KeyValue;
+import cbit.util.SessionLog;
+import cbit.util.User;
+import cbit.util.Version;
+import cbit.util.VersionInfo;
 import cbit.vcell.biomodel.*;
 import java.beans.*;
 import cbit.vcell.solver.*;
 import java.math.BigDecimal;
 import cbit.sql.*;
-import cbit.vcell.server.User;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.sql.Connection;
-import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.mathmodel.MathModelChildSummary;
@@ -47,7 +50,7 @@ private MathModelTable() {
  * @param rset java.sql.ResultSet
  * @param log cbit.vcell.server.SessionLog
  */
-public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,cbit.vcell.server.DataAccessException {
+public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,cbit.util.DataAccessException {
 
 	String serialDbChildSummary =
 		DbDriver.varchar2_CLOB_get(rset,MathModelTable.table.childSummarySmall,MathModelTable.table.childSummaryLarge);

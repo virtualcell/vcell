@@ -3,7 +3,7 @@
 
 package cbit.vcell.modeldb;
 
-import cbit.vcell.solver.SimulationStatus;
+import cbit.vcell.server.SimulationStatus;
 
 public final class LocalUserMetaDbServer_Stub
     extends java.rmi.server.RemoteStub
@@ -69,51 +69,51 @@ public final class LocalUserMetaDbServer_Stub
     
     static {
 	try {
-	    $method_curate_0 = cbit.vcell.server.UserMetaDbServer.class.getMethod("curate", new java.lang.Class[] {cbit.vcell.server.CurateSpec.class});
-	    $method_deleteBioModel_1 = cbit.vcell.server.UserMetaDbServer.class.getMethod("deleteBioModel", new java.lang.Class[] {cbit.sql.KeyValue.class});
-	    $method_deleteGeometry_2 = cbit.vcell.server.UserMetaDbServer.class.getMethod("deleteGeometry", new java.lang.Class[] {cbit.sql.KeyValue.class});
-	    $method_deleteMathModel_3 = cbit.vcell.server.UserMetaDbServer.class.getMethod("deleteMathModel", new java.lang.Class[] {cbit.sql.KeyValue.class});
-	    $method_deleteResultSetExport_4 = cbit.vcell.server.UserMetaDbServer.class.getMethod("deleteResultSetExport", new java.lang.Class[] {cbit.sql.KeyValue.class});
-	    $method_deleteVCImage_5 = cbit.vcell.server.UserMetaDbServer.class.getMethod("deleteVCImage", new java.lang.Class[] {cbit.sql.KeyValue.class});
+	    $method_curate_0 = cbit.vcell.server.UserMetaDbServer.class.getMethod("curate", new java.lang.Class[] {cbit.util.CurateSpec.class});
+	    $method_deleteBioModel_1 = cbit.vcell.server.UserMetaDbServer.class.getMethod("deleteBioModel", new java.lang.Class[] {cbit.util.KeyValue.class});
+	    $method_deleteGeometry_2 = cbit.vcell.server.UserMetaDbServer.class.getMethod("deleteGeometry", new java.lang.Class[] {cbit.util.KeyValue.class});
+	    $method_deleteMathModel_3 = cbit.vcell.server.UserMetaDbServer.class.getMethod("deleteMathModel", new java.lang.Class[] {cbit.util.KeyValue.class});
+	    $method_deleteResultSetExport_4 = cbit.vcell.server.UserMetaDbServer.class.getMethod("deleteResultSetExport", new java.lang.Class[] {cbit.util.KeyValue.class});
+	    $method_deleteVCImage_5 = cbit.vcell.server.UserMetaDbServer.class.getMethod("deleteVCImage", new java.lang.Class[] {cbit.util.KeyValue.class});
 	    $method_doTestSuiteOP_6 = cbit.vcell.server.UserMetaDbServer.class.getMethod("doTestSuiteOP", new java.lang.Class[] {cbit.vcell.numericstest.TestSuiteOP.class});
 	    $method_findReferences_7 = cbit.vcell.server.UserMetaDbServer.class.getMethod("findReferences", new java.lang.Class[] {cbit.vcell.modeldb.ReferenceQuerySpec.class});
-	    $method_getAllReferences_8 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getAllReferences", new java.lang.Class[] {cbit.sql.VersionableType.class, cbit.sql.KeyValue.class});
-	    $method_getBioModelInfo_9 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getBioModelInfo", new java.lang.Class[] {cbit.sql.KeyValue.class});
+	    $method_getAllReferences_8 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getAllReferences", new java.lang.Class[] {cbit.sql.VersionableType.class, cbit.util.KeyValue.class});
+	    $method_getBioModelInfo_9 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getBioModelInfo", new java.lang.Class[] {cbit.util.KeyValue.class});
 	    $method_getBioModelInfos_10 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getBioModelInfos", new java.lang.Class[] {boolean.class});
-	    $method_getBioModelMetaData_11 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getBioModelMetaData", new java.lang.Class[] {cbit.sql.KeyValue.class});
+	    $method_getBioModelMetaData_11 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getBioModelMetaData", new java.lang.Class[] {cbit.util.KeyValue.class});
 	    $method_getBioModelMetaDatas_12 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getBioModelMetaDatas", new java.lang.Class[] {boolean.class});
-	    $method_getBioModelXML_13 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getBioModelXML", new java.lang.Class[] {cbit.sql.KeyValue.class});
+	    $method_getBioModelXML_13 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getBioModelXML", new java.lang.Class[] {cbit.util.KeyValue.class});
 	    $method_getBoundSpecies_14 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getBoundSpecies", new java.lang.Class[] {cbit.vcell.dictionary.DBFormalSpecies.class});
 	    $method_getDatabaseSpecies_15 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getDatabaseSpecies", new java.lang.Class[] {java.lang.String.class, boolean.class, cbit.vcell.dictionary.FormalSpeciesType.class, int.class, int.class, boolean.class});
 	    $method_getDictionaryReactions_16 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getDictionaryReactions", new java.lang.Class[] {cbit.vcell.modeldb.ReactionQuerySpec.class});
-	    $method_getExportLog_17 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getExportLog", new java.lang.Class[] {cbit.sql.KeyValue.class});
+	    $method_getExportLog_17 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getExportLog", new java.lang.Class[] {cbit.util.KeyValue.class});
 	    $method_getExportLogs_18 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getExportLogs", new java.lang.Class[] {boolean.class});
-	    $method_getGeometryInfo_19 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getGeometryInfo", new java.lang.Class[] {cbit.sql.KeyValue.class});
+	    $method_getGeometryInfo_19 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getGeometryInfo", new java.lang.Class[] {cbit.util.KeyValue.class});
 	    $method_getGeometryInfos_20 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getGeometryInfos", new java.lang.Class[] {boolean.class});
-	    $method_getGeometryXML_21 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getGeometryXML", new java.lang.Class[] {cbit.sql.KeyValue.class});
-	    $method_getMathModelInfo_22 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getMathModelInfo", new java.lang.Class[] {cbit.sql.KeyValue.class});
+	    $method_getGeometryXML_21 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getGeometryXML", new java.lang.Class[] {cbit.util.KeyValue.class});
+	    $method_getMathModelInfo_22 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getMathModelInfo", new java.lang.Class[] {cbit.util.KeyValue.class});
 	    $method_getMathModelInfos_23 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getMathModelInfos", new java.lang.Class[] {boolean.class});
-	    $method_getMathModelMetaData_24 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getMathModelMetaData", new java.lang.Class[] {cbit.sql.KeyValue.class});
+	    $method_getMathModelMetaData_24 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getMathModelMetaData", new java.lang.Class[] {cbit.util.KeyValue.class});
 	    $method_getMathModelMetaDatas_25 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getMathModelMetaDatas", new java.lang.Class[] {boolean.class});
-	    $method_getMathModelXML_26 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getMathModelXML", new java.lang.Class[] {cbit.sql.KeyValue.class});
+	    $method_getMathModelXML_26 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getMathModelXML", new java.lang.Class[] {cbit.util.KeyValue.class});
 	    $method_getPreferences_27 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getPreferences", new java.lang.Class[] {});
-	    $method_getReactionStep_28 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getReactionStep", new java.lang.Class[] {cbit.sql.KeyValue.class});
-	    $method_getReactionStepInfos_29 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getReactionStepInfos", new java.lang.Class[] {cbit.sql.KeyValue[].class});
+	    $method_getReactionStep_28 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getReactionStep", new java.lang.Class[] {cbit.util.KeyValue.class});
+	    $method_getReactionStepInfos_29 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getReactionStepInfos", new java.lang.Class[] {cbit.util.KeyValue[].class});
 	    $method_getResultSetInfos_30 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getResultSetInfos", new java.lang.Class[] {boolean.class});
-	    $method_getSimulationStatus_31 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getSimulationStatus", new java.lang.Class[] {cbit.sql.KeyValue.class});
-	    $method_getSimulationStatus_32 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getSimulationStatus", new java.lang.Class[] {cbit.sql.KeyValue[].class});
-	    $method_getSimulationXML_33 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getSimulationXML", new java.lang.Class[] {cbit.sql.KeyValue.class});
+	    $method_getSimulationStatus_31 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getSimulationStatus", new java.lang.Class[] {cbit.util.KeyValue.class});
+	    $method_getSimulationStatus_32 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getSimulationStatus", new java.lang.Class[] {cbit.util.KeyValue[].class});
+	    $method_getSimulationXML_33 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getSimulationXML", new java.lang.Class[] {cbit.util.KeyValue.class});
 	    $method_getTestSuite_34 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getTestSuite", new java.lang.Class[] {java.math.BigDecimal.class});
 	    $method_getTestSuiteInfos_35 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getTestSuiteInfos", new java.lang.Class[] {});
 	    $method_getUserReactionDescriptions_36 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getUserReactionDescriptions", new java.lang.Class[] {cbit.vcell.modeldb.ReactionQuerySpec.class});
-	    $method_getVCImageInfo_37 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getVCImageInfo", new java.lang.Class[] {cbit.sql.KeyValue.class});
+	    $method_getVCImageInfo_37 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getVCImageInfo", new java.lang.Class[] {cbit.util.KeyValue.class});
 	    $method_getVCImageInfos_38 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getVCImageInfos", new java.lang.Class[] {boolean.class});
-	    $method_getVCImageXML_39 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getVCImageXML", new java.lang.Class[] {cbit.sql.KeyValue.class});
+	    $method_getVCImageXML_39 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getVCImageXML", new java.lang.Class[] {cbit.util.KeyValue.class});
 	    $method_getVCInfoContainer_40 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getVCInfoContainer", new java.lang.Class[] {});
-	    $method_groupAddUser_41 = cbit.vcell.server.UserMetaDbServer.class.getMethod("groupAddUser", new java.lang.Class[] {cbit.sql.VersionableType.class, cbit.sql.KeyValue.class, java.lang.String.class, boolean.class});
-	    $method_groupRemoveUser_42 = cbit.vcell.server.UserMetaDbServer.class.getMethod("groupRemoveUser", new java.lang.Class[] {cbit.sql.VersionableType.class, cbit.sql.KeyValue.class, java.lang.String.class, boolean.class});
-	    $method_groupSetPrivate_43 = cbit.vcell.server.UserMetaDbServer.class.getMethod("groupSetPrivate", new java.lang.Class[] {cbit.sql.VersionableType.class, cbit.sql.KeyValue.class});
-	    $method_groupSetPublic_44 = cbit.vcell.server.UserMetaDbServer.class.getMethod("groupSetPublic", new java.lang.Class[] {cbit.sql.VersionableType.class, cbit.sql.KeyValue.class});
+	    $method_groupAddUser_41 = cbit.vcell.server.UserMetaDbServer.class.getMethod("groupAddUser", new java.lang.Class[] {cbit.sql.VersionableType.class, cbit.util.KeyValue.class, java.lang.String.class, boolean.class});
+	    $method_groupRemoveUser_42 = cbit.vcell.server.UserMetaDbServer.class.getMethod("groupRemoveUser", new java.lang.Class[] {cbit.sql.VersionableType.class, cbit.util.KeyValue.class, java.lang.String.class, boolean.class});
+	    $method_groupSetPrivate_43 = cbit.vcell.server.UserMetaDbServer.class.getMethod("groupSetPrivate", new java.lang.Class[] {cbit.sql.VersionableType.class, cbit.util.KeyValue.class});
+	    $method_groupSetPublic_44 = cbit.vcell.server.UserMetaDbServer.class.getMethod("groupSetPublic", new java.lang.Class[] {cbit.sql.VersionableType.class, cbit.util.KeyValue.class});
 	    $method_replacePreferences_45 = cbit.vcell.server.UserMetaDbServer.class.getMethod("replacePreferences", new java.lang.Class[] {cbit.util.Preference[].class});
 	    $method_saveBioModel_46 = cbit.vcell.server.UserMetaDbServer.class.getMethod("saveBioModel", new java.lang.Class[] {cbit.util.BigString.class, java.lang.String[].class});
 	    $method_saveBioModelAs_47 = cbit.vcell.server.UserMetaDbServer.class.getMethod("saveBioModelAs", new java.lang.Class[] {cbit.util.BigString.class, java.lang.String.class, java.lang.String[].class});
@@ -138,17 +138,17 @@ public final class LocalUserMetaDbServer_Stub
     // methods from remote interfaces
     
     // implementation of curate(CurateSpec)
-    public cbit.vcell.document.VCDocumentInfo curate(cbit.vcell.server.CurateSpec $param_CurateSpec_1)
-	throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException
+    public cbit.util.VCDocumentInfo curate(cbit.util.CurateSpec $param_CurateSpec_1)
+	throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_curate_0, new java.lang.Object[] {$param_CurateSpec_1}, 6692271117528481967L);
-	    return ((cbit.vcell.document.VCDocumentInfo) $result);
+	    return ((cbit.util.VCDocumentInfo) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -156,8 +156,8 @@ public final class LocalUserMetaDbServer_Stub
     }
     
     // implementation of deleteBioModel(KeyValue)
-    public void deleteBioModel(cbit.sql.KeyValue $param_KeyValue_1)
-	throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException
+    public void deleteBioModel(cbit.util.KeyValue $param_KeyValue_1)
+	throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException
     {
 	try {
 	    ref.invoke(this, $method_deleteBioModel_1, new java.lang.Object[] {$param_KeyValue_1}, 4752566526846956183L);
@@ -165,7 +165,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -173,8 +173,8 @@ public final class LocalUserMetaDbServer_Stub
     }
     
     // implementation of deleteGeometry(KeyValue)
-    public void deleteGeometry(cbit.sql.KeyValue $param_KeyValue_1)
-	throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException
+    public void deleteGeometry(cbit.util.KeyValue $param_KeyValue_1)
+	throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException
     {
 	try {
 	    ref.invoke(this, $method_deleteGeometry_2, new java.lang.Object[] {$param_KeyValue_1}, -1296387377932418304L);
@@ -182,7 +182,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -190,8 +190,8 @@ public final class LocalUserMetaDbServer_Stub
     }
     
     // implementation of deleteMathModel(KeyValue)
-    public void deleteMathModel(cbit.sql.KeyValue $param_KeyValue_1)
-	throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException
+    public void deleteMathModel(cbit.util.KeyValue $param_KeyValue_1)
+	throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException
     {
 	try {
 	    ref.invoke(this, $method_deleteMathModel_3, new java.lang.Object[] {$param_KeyValue_1}, -5487356601845008448L);
@@ -199,7 +199,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -207,8 +207,8 @@ public final class LocalUserMetaDbServer_Stub
     }
     
     // implementation of deleteResultSetExport(KeyValue)
-    public void deleteResultSetExport(cbit.sql.KeyValue $param_KeyValue_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+    public void deleteResultSetExport(cbit.util.KeyValue $param_KeyValue_1)
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    ref.invoke(this, $method_deleteResultSetExport_4, new java.lang.Object[] {$param_KeyValue_1}, 5646853699467709579L);
@@ -216,7 +216,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -224,8 +224,8 @@ public final class LocalUserMetaDbServer_Stub
     }
     
     // implementation of deleteVCImage(KeyValue)
-    public void deleteVCImage(cbit.sql.KeyValue $param_KeyValue_1)
-	throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException
+    public void deleteVCImage(cbit.util.KeyValue $param_KeyValue_1)
+	throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException
     {
 	try {
 	    ref.invoke(this, $method_deleteVCImage_5, new java.lang.Object[] {$param_KeyValue_1}, -3102100047506654178L);
@@ -233,7 +233,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -242,7 +242,7 @@ public final class LocalUserMetaDbServer_Stub
     
     // implementation of doTestSuiteOP(TestSuiteOP)
     public cbit.vcell.numericstest.TestSuiteOPResults doTestSuiteOP(cbit.vcell.numericstest.TestSuiteOP $param_TestSuiteOP_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_doTestSuiteOP_6, new java.lang.Object[] {$param_TestSuiteOP_1}, -7304708718656738898L);
@@ -251,7 +251,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -260,7 +260,7 @@ public final class LocalUserMetaDbServer_Stub
     
     // implementation of findReferences(ReferenceQuerySpec)
     public cbit.vcell.modeldb.ReferenceQueryResult findReferences(cbit.vcell.modeldb.ReferenceQuerySpec $param_ReferenceQuerySpec_1)
-	throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException
+	throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_findReferences_7, new java.lang.Object[] {$param_ReferenceQuerySpec_1}, -5989973960170332111L);
@@ -269,7 +269,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -277,8 +277,8 @@ public final class LocalUserMetaDbServer_Stub
     }
     
     // implementation of getAllReferences(VersionableType, KeyValue)
-    public cbit.vcell.modeldb.VersionableFamily getAllReferences(cbit.sql.VersionableType $param_VersionableType_1, cbit.sql.KeyValue $param_KeyValue_2)
-	throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException
+    public cbit.vcell.modeldb.VersionableFamily getAllReferences(cbit.sql.VersionableType $param_VersionableType_1, cbit.util.KeyValue $param_KeyValue_2)
+	throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getAllReferences_8, new java.lang.Object[] {$param_VersionableType_1, $param_KeyValue_2}, 5223684507727730597L);
@@ -287,7 +287,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -295,8 +295,8 @@ public final class LocalUserMetaDbServer_Stub
     }
     
     // implementation of getBioModelInfo(KeyValue)
-    public cbit.vcell.biomodel.BioModelInfo getBioModelInfo(cbit.sql.KeyValue $param_KeyValue_1)
-	throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException
+    public cbit.vcell.biomodel.BioModelInfo getBioModelInfo(cbit.util.KeyValue $param_KeyValue_1)
+	throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getBioModelInfo_9, new java.lang.Object[] {$param_KeyValue_1}, -5753591781724539648L);
@@ -305,7 +305,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -314,7 +314,7 @@ public final class LocalUserMetaDbServer_Stub
     
     // implementation of getBioModelInfos(boolean)
     public cbit.vcell.biomodel.BioModelInfo[] getBioModelInfos(boolean $param_boolean_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getBioModelInfos_10, new java.lang.Object[] {new java.lang.Boolean($param_boolean_1)}, -8438673620305678606L);
@@ -323,7 +323,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -331,8 +331,8 @@ public final class LocalUserMetaDbServer_Stub
     }
     
     // implementation of getBioModelMetaData(KeyValue)
-    public cbit.vcell.biomodel.BioModelMetaData getBioModelMetaData(cbit.sql.KeyValue $param_KeyValue_1)
-	throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException
+    public cbit.vcell.biomodel.BioModelMetaData getBioModelMetaData(cbit.util.KeyValue $param_KeyValue_1)
+	throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getBioModelMetaData_11, new java.lang.Object[] {$param_KeyValue_1}, -2557809169020412557L);
@@ -341,7 +341,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -350,7 +350,7 @@ public final class LocalUserMetaDbServer_Stub
     
     // implementation of getBioModelMetaDatas(boolean)
     public cbit.vcell.biomodel.BioModelMetaData[] getBioModelMetaDatas(boolean $param_boolean_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getBioModelMetaDatas_12, new java.lang.Object[] {new java.lang.Boolean($param_boolean_1)}, -8163630507786413486L);
@@ -359,7 +359,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -367,8 +367,8 @@ public final class LocalUserMetaDbServer_Stub
     }
     
     // implementation of getBioModelXML(KeyValue)
-    public cbit.util.BigString getBioModelXML(cbit.sql.KeyValue $param_KeyValue_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+    public cbit.util.BigString getBioModelXML(cbit.util.KeyValue $param_KeyValue_1)
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getBioModelXML_13, new java.lang.Object[] {$param_KeyValue_1}, 7131382092151693920L);
@@ -377,7 +377,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -386,7 +386,7 @@ public final class LocalUserMetaDbServer_Stub
     
     // implementation of getBoundSpecies(DBFormalSpecies)
     public cbit.vcell.dictionary.DBSpecies getBoundSpecies(cbit.vcell.dictionary.DBFormalSpecies $param_DBFormalSpecies_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getBoundSpecies_14, new java.lang.Object[] {$param_DBFormalSpecies_1}, -780758262158408885L);
@@ -395,7 +395,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -404,7 +404,7 @@ public final class LocalUserMetaDbServer_Stub
     
     // implementation of getDatabaseSpecies(String, boolean, FormalSpeciesType, int, int, boolean)
     public cbit.vcell.dictionary.DBFormalSpecies[] getDatabaseSpecies(java.lang.String $param_String_1, boolean $param_boolean_2, cbit.vcell.dictionary.FormalSpeciesType $param_FormalSpeciesType_3, int $param_int_4, int $param_int_5, boolean $param_boolean_6)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getDatabaseSpecies_15, new java.lang.Object[] {$param_String_1, new java.lang.Boolean($param_boolean_2), $param_FormalSpeciesType_3, new java.lang.Integer($param_int_4), new java.lang.Integer($param_int_5), new java.lang.Boolean($param_boolean_6)}, 120647195162941881L);
@@ -413,7 +413,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -422,7 +422,7 @@ public final class LocalUserMetaDbServer_Stub
     
     // implementation of getDictionaryReactions(ReactionQuerySpec)
     public cbit.vcell.dictionary.ReactionDescription[] getDictionaryReactions(cbit.vcell.modeldb.ReactionQuerySpec $param_ReactionQuerySpec_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getDictionaryReactions_16, new java.lang.Object[] {$param_ReactionQuerySpec_1}, 1154076727986429988L);
@@ -431,7 +431,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -439,8 +439,8 @@ public final class LocalUserMetaDbServer_Stub
     }
     
     // implementation of getExportLog(KeyValue)
-    public cbit.vcell.export.server.ExportLog getExportLog(cbit.sql.KeyValue $param_KeyValue_1)
-	throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException
+    public cbit.vcell.export.server.ExportLog getExportLog(cbit.util.KeyValue $param_KeyValue_1)
+	throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getExportLog_17, new java.lang.Object[] {$param_KeyValue_1}, -501999640001832687L);
@@ -449,7 +449,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -458,7 +458,7 @@ public final class LocalUserMetaDbServer_Stub
     
     // implementation of getExportLogs(boolean)
     public cbit.vcell.export.server.ExportLog[] getExportLogs(boolean $param_boolean_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getExportLogs_18, new java.lang.Object[] {new java.lang.Boolean($param_boolean_1)}, 6640855147598878398L);
@@ -467,7 +467,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -475,8 +475,8 @@ public final class LocalUserMetaDbServer_Stub
     }
     
     // implementation of getGeometryInfo(KeyValue)
-    public cbit.vcell.geometry.GeometryInfo getGeometryInfo(cbit.sql.KeyValue $param_KeyValue_1)
-	throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException
+    public cbit.vcell.geometry.GeometryInfo getGeometryInfo(cbit.util.KeyValue $param_KeyValue_1)
+	throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getGeometryInfo_19, new java.lang.Object[] {$param_KeyValue_1}, -3294160993928902008L);
@@ -485,7 +485,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -494,7 +494,7 @@ public final class LocalUserMetaDbServer_Stub
     
     // implementation of getGeometryInfos(boolean)
     public cbit.vcell.geometry.GeometryInfo[] getGeometryInfos(boolean $param_boolean_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getGeometryInfos_20, new java.lang.Object[] {new java.lang.Boolean($param_boolean_1)}, -7622155423715720846L);
@@ -503,7 +503,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -511,8 +511,8 @@ public final class LocalUserMetaDbServer_Stub
     }
     
     // implementation of getGeometryXML(KeyValue)
-    public cbit.util.BigString getGeometryXML(cbit.sql.KeyValue $param_KeyValue_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+    public cbit.util.BigString getGeometryXML(cbit.util.KeyValue $param_KeyValue_1)
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getGeometryXML_21, new java.lang.Object[] {$param_KeyValue_1}, 8612745123917015821L);
@@ -521,7 +521,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -529,8 +529,8 @@ public final class LocalUserMetaDbServer_Stub
     }
     
     // implementation of getMathModelInfo(KeyValue)
-    public cbit.vcell.mathmodel.MathModelInfo getMathModelInfo(cbit.sql.KeyValue $param_KeyValue_1)
-	throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException
+    public cbit.vcell.mathmodel.MathModelInfo getMathModelInfo(cbit.util.KeyValue $param_KeyValue_1)
+	throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getMathModelInfo_22, new java.lang.Object[] {$param_KeyValue_1}, -5784692826735593487L);
@@ -539,7 +539,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -548,7 +548,7 @@ public final class LocalUserMetaDbServer_Stub
     
     // implementation of getMathModelInfos(boolean)
     public cbit.vcell.mathmodel.MathModelInfo[] getMathModelInfos(boolean $param_boolean_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getMathModelInfos_23, new java.lang.Object[] {new java.lang.Boolean($param_boolean_1)}, 6675761140708419830L);
@@ -557,7 +557,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -565,8 +565,8 @@ public final class LocalUserMetaDbServer_Stub
     }
     
     // implementation of getMathModelMetaData(KeyValue)
-    public cbit.vcell.mathmodel.MathModelMetaData getMathModelMetaData(cbit.sql.KeyValue $param_KeyValue_1)
-	throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException
+    public cbit.vcell.mathmodel.MathModelMetaData getMathModelMetaData(cbit.util.KeyValue $param_KeyValue_1)
+	throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getMathModelMetaData_24, new java.lang.Object[] {$param_KeyValue_1}, -5851232902274473287L);
@@ -575,7 +575,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -584,7 +584,7 @@ public final class LocalUserMetaDbServer_Stub
     
     // implementation of getMathModelMetaDatas(boolean)
     public cbit.vcell.mathmodel.MathModelMetaData[] getMathModelMetaDatas(boolean $param_boolean_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getMathModelMetaDatas_25, new java.lang.Object[] {new java.lang.Boolean($param_boolean_1)}, 8647914114576583197L);
@@ -593,7 +593,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -601,8 +601,8 @@ public final class LocalUserMetaDbServer_Stub
     }
     
     // implementation of getMathModelXML(KeyValue)
-    public cbit.util.BigString getMathModelXML(cbit.sql.KeyValue $param_KeyValue_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+    public cbit.util.BigString getMathModelXML(cbit.util.KeyValue $param_KeyValue_1)
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getMathModelXML_26, new java.lang.Object[] {$param_KeyValue_1}, 577010706945187722L);
@@ -611,7 +611,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -620,7 +620,7 @@ public final class LocalUserMetaDbServer_Stub
     
     // implementation of getPreferences()
     public cbit.util.Preference[] getPreferences()
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getPreferences_27, null, -6541207106478980050L);
@@ -629,7 +629,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -637,8 +637,8 @@ public final class LocalUserMetaDbServer_Stub
     }
     
     // implementation of getReactionStep(KeyValue)
-    public cbit.vcell.model.ReactionStep getReactionStep(cbit.sql.KeyValue $param_KeyValue_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+    public cbit.vcell.model.ReactionStep getReactionStep(cbit.util.KeyValue $param_KeyValue_1)
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getReactionStep_28, new java.lang.Object[] {$param_KeyValue_1}, 8261435328908057310L);
@@ -647,7 +647,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -655,8 +655,8 @@ public final class LocalUserMetaDbServer_Stub
     }
     
     // implementation of getReactionStepInfos(KeyValue[])
-    public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(cbit.sql.KeyValue[] $param_arrayOf_KeyValue_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+    public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(cbit.util.KeyValue[] $param_arrayOf_KeyValue_1)
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getReactionStepInfos_29, new java.lang.Object[] {$param_arrayOf_KeyValue_1}, 3240400307283435695L);
@@ -665,7 +665,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -674,7 +674,7 @@ public final class LocalUserMetaDbServer_Stub
     
     // implementation of getResultSetInfos(boolean)
     public cbit.vcell.solver.SolverResultSetInfo[] getResultSetInfos(boolean $param_boolean_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getResultSetInfos_30, new java.lang.Object[] {new java.lang.Boolean($param_boolean_1)}, 9084030373467636590L);
@@ -683,7 +683,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -691,8 +691,8 @@ public final class LocalUserMetaDbServer_Stub
     }
     
     // implementation of getSimulationStatus(KeyValue)
-    public SimulationStatus getSimulationStatus(cbit.sql.KeyValue $param_KeyValue_1)
-	throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException
+    public SimulationStatus getSimulationStatus(cbit.util.KeyValue $param_KeyValue_1)
+	throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getSimulationStatus_31, new java.lang.Object[] {$param_KeyValue_1}, 5499940537724822751L);
@@ -701,7 +701,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -709,8 +709,8 @@ public final class LocalUserMetaDbServer_Stub
     }
     
     // implementation of getSimulationStatus(KeyValue[])
-    public SimulationStatus[] getSimulationStatus(cbit.sql.KeyValue[] $param_arrayOf_KeyValue_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+    public SimulationStatus[] getSimulationStatus(cbit.util.KeyValue[] $param_arrayOf_KeyValue_1)
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getSimulationStatus_32, new java.lang.Object[] {$param_arrayOf_KeyValue_1}, -2253169208243213843L);
@@ -719,7 +719,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -727,8 +727,8 @@ public final class LocalUserMetaDbServer_Stub
     }
     
     // implementation of getSimulationXML(KeyValue)
-    public cbit.util.BigString getSimulationXML(cbit.sql.KeyValue $param_KeyValue_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+    public cbit.util.BigString getSimulationXML(cbit.util.KeyValue $param_KeyValue_1)
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getSimulationXML_33, new java.lang.Object[] {$param_KeyValue_1}, -319051670750474817L);
@@ -737,7 +737,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -746,7 +746,7 @@ public final class LocalUserMetaDbServer_Stub
     
     // implementation of getTestSuite(BigDecimal)
     public cbit.vcell.numericstest.TestSuiteNew getTestSuite(java.math.BigDecimal $param_BigDecimal_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getTestSuite_34, new java.lang.Object[] {$param_BigDecimal_1}, -8301203168646862273L);
@@ -755,7 +755,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -764,7 +764,7 @@ public final class LocalUserMetaDbServer_Stub
     
     // implementation of getTestSuiteInfos()
     public cbit.vcell.numericstest.TestSuiteInfoNew[] getTestSuiteInfos()
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getTestSuiteInfos_35, null, 4371449100749536182L);
@@ -773,7 +773,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -782,7 +782,7 @@ public final class LocalUserMetaDbServer_Stub
     
     // implementation of getUserReactionDescriptions(ReactionQuerySpec)
     public cbit.vcell.dictionary.ReactionDescription[] getUserReactionDescriptions(cbit.vcell.modeldb.ReactionQuerySpec $param_ReactionQuerySpec_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getUserReactionDescriptions_36, new java.lang.Object[] {$param_ReactionQuerySpec_1}, 4433271806530926574L);
@@ -791,7 +791,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -799,8 +799,8 @@ public final class LocalUserMetaDbServer_Stub
     }
     
     // implementation of getVCImageInfo(KeyValue)
-    public cbit.image.VCImageInfo getVCImageInfo(cbit.sql.KeyValue $param_KeyValue_1)
-	throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException
+    public cbit.image.VCImageInfo getVCImageInfo(cbit.util.KeyValue $param_KeyValue_1)
+	throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getVCImageInfo_37, new java.lang.Object[] {$param_KeyValue_1}, 429358869946012961L);
@@ -809,7 +809,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -818,7 +818,7 @@ public final class LocalUserMetaDbServer_Stub
     
     // implementation of getVCImageInfos(boolean)
     public cbit.image.VCImageInfo[] getVCImageInfos(boolean $param_boolean_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getVCImageInfos_38, new java.lang.Object[] {new java.lang.Boolean($param_boolean_1)}, -282996775901347725L);
@@ -827,7 +827,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -835,8 +835,8 @@ public final class LocalUserMetaDbServer_Stub
     }
     
     // implementation of getVCImageXML(KeyValue)
-    public cbit.util.BigString getVCImageXML(cbit.sql.KeyValue $param_KeyValue_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+    public cbit.util.BigString getVCImageXML(cbit.util.KeyValue $param_KeyValue_1)
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getVCImageXML_39, new java.lang.Object[] {$param_KeyValue_1}, 8997189900327350293L);
@@ -845,7 +845,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -854,7 +854,7 @@ public final class LocalUserMetaDbServer_Stub
     
     // implementation of getVCInfoContainer()
     public cbit.vcell.modeldb.VCInfoContainer getVCInfoContainer()
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getVCInfoContainer_40, null, 2466045898420439138L);
@@ -863,7 +863,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -871,17 +871,17 @@ public final class LocalUserMetaDbServer_Stub
     }
     
     // implementation of groupAddUser(VersionableType, KeyValue, String, boolean)
-    public cbit.sql.VersionInfo groupAddUser(cbit.sql.VersionableType $param_VersionableType_1, cbit.sql.KeyValue $param_KeyValue_2, java.lang.String $param_String_3, boolean $param_boolean_4)
-	throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException
+    public cbit.util.VersionInfo groupAddUser(cbit.sql.VersionableType $param_VersionableType_1, cbit.util.KeyValue $param_KeyValue_2, java.lang.String $param_String_3, boolean $param_boolean_4)
+	throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_groupAddUser_41, new java.lang.Object[] {$param_VersionableType_1, $param_KeyValue_2, $param_String_3, new java.lang.Boolean($param_boolean_4)}, -4004967575716378016L);
-	    return ((cbit.sql.VersionInfo) $result);
+	    return ((cbit.util.VersionInfo) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -889,17 +889,17 @@ public final class LocalUserMetaDbServer_Stub
     }
     
     // implementation of groupRemoveUser(VersionableType, KeyValue, String, boolean)
-    public cbit.sql.VersionInfo groupRemoveUser(cbit.sql.VersionableType $param_VersionableType_1, cbit.sql.KeyValue $param_KeyValue_2, java.lang.String $param_String_3, boolean $param_boolean_4)
-	throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException
+    public cbit.util.VersionInfo groupRemoveUser(cbit.sql.VersionableType $param_VersionableType_1, cbit.util.KeyValue $param_KeyValue_2, java.lang.String $param_String_3, boolean $param_boolean_4)
+	throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_groupRemoveUser_42, new java.lang.Object[] {$param_VersionableType_1, $param_KeyValue_2, $param_String_3, new java.lang.Boolean($param_boolean_4)}, 7944111749641308393L);
-	    return ((cbit.sql.VersionInfo) $result);
+	    return ((cbit.util.VersionInfo) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -907,17 +907,17 @@ public final class LocalUserMetaDbServer_Stub
     }
     
     // implementation of groupSetPrivate(VersionableType, KeyValue)
-    public cbit.sql.VersionInfo groupSetPrivate(cbit.sql.VersionableType $param_VersionableType_1, cbit.sql.KeyValue $param_KeyValue_2)
-	throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException
+    public cbit.util.VersionInfo groupSetPrivate(cbit.sql.VersionableType $param_VersionableType_1, cbit.util.KeyValue $param_KeyValue_2)
+	throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_groupSetPrivate_43, new java.lang.Object[] {$param_VersionableType_1, $param_KeyValue_2}, 4899924252293081971L);
-	    return ((cbit.sql.VersionInfo) $result);
+	    return ((cbit.util.VersionInfo) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -925,17 +925,17 @@ public final class LocalUserMetaDbServer_Stub
     }
     
     // implementation of groupSetPublic(VersionableType, KeyValue)
-    public cbit.sql.VersionInfo groupSetPublic(cbit.sql.VersionableType $param_VersionableType_1, cbit.sql.KeyValue $param_KeyValue_2)
-	throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException
+    public cbit.util.VersionInfo groupSetPublic(cbit.sql.VersionableType $param_VersionableType_1, cbit.util.KeyValue $param_KeyValue_2)
+	throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_groupSetPublic_44, new java.lang.Object[] {$param_VersionableType_1, $param_KeyValue_2}, -4153244719300058538L);
-	    return ((cbit.sql.VersionInfo) $result);
+	    return ((cbit.util.VersionInfo) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -944,7 +944,7 @@ public final class LocalUserMetaDbServer_Stub
     
     // implementation of replacePreferences(Preference[])
     public void replacePreferences(cbit.util.Preference[] $param_arrayOf_Preference_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    ref.invoke(this, $method_replacePreferences_45, new java.lang.Object[] {$param_arrayOf_Preference_1}, -712094957174727132L);
@@ -952,7 +952,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -961,7 +961,7 @@ public final class LocalUserMetaDbServer_Stub
     
     // implementation of saveBioModel(BigString, String[])
     public cbit.util.BigString saveBioModel(cbit.util.BigString $param_BigString_1, java.lang.String[] $param_arrayOf_String_2)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_saveBioModel_46, new java.lang.Object[] {$param_BigString_1, $param_arrayOf_String_2}, 5716013640427931773L);
@@ -970,7 +970,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -979,7 +979,7 @@ public final class LocalUserMetaDbServer_Stub
     
     // implementation of saveBioModelAs(BigString, String, String[])
     public cbit.util.BigString saveBioModelAs(cbit.util.BigString $param_BigString_1, java.lang.String $param_String_2, java.lang.String[] $param_arrayOf_String_3)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_saveBioModelAs_47, new java.lang.Object[] {$param_BigString_1, $param_String_2, $param_arrayOf_String_3}, 1035622501952239775L);
@@ -988,7 +988,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -997,7 +997,7 @@ public final class LocalUserMetaDbServer_Stub
     
     // implementation of saveGeometry(BigString)
     public cbit.util.BigString saveGeometry(cbit.util.BigString $param_BigString_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_saveGeometry_48, new java.lang.Object[] {$param_BigString_1}, 3441409023487652915L);
@@ -1006,7 +1006,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -1015,7 +1015,7 @@ public final class LocalUserMetaDbServer_Stub
     
     // implementation of saveGeometryAs(BigString, String)
     public cbit.util.BigString saveGeometryAs(cbit.util.BigString $param_BigString_1, java.lang.String $param_String_2)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_saveGeometryAs_49, new java.lang.Object[] {$param_BigString_1, $param_String_2}, -5585087969129296385L);
@@ -1024,7 +1024,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -1033,7 +1033,7 @@ public final class LocalUserMetaDbServer_Stub
     
     // implementation of saveMathModel(BigString, String[])
     public cbit.util.BigString saveMathModel(cbit.util.BigString $param_BigString_1, java.lang.String[] $param_arrayOf_String_2)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_saveMathModel_50, new java.lang.Object[] {$param_BigString_1, $param_arrayOf_String_2}, -983585886622126487L);
@@ -1042,7 +1042,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -1051,7 +1051,7 @@ public final class LocalUserMetaDbServer_Stub
     
     // implementation of saveMathModelAs(BigString, String, String[])
     public cbit.util.BigString saveMathModelAs(cbit.util.BigString $param_BigString_1, java.lang.String $param_String_2, java.lang.String[] $param_arrayOf_String_3)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_saveMathModelAs_51, new java.lang.Object[] {$param_BigString_1, $param_String_2, $param_arrayOf_String_3}, 2806468570598177084L);
@@ -1060,7 +1060,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -1069,7 +1069,7 @@ public final class LocalUserMetaDbServer_Stub
     
     // implementation of saveSimulation(BigString, boolean)
     public cbit.util.BigString saveSimulation(cbit.util.BigString $param_BigString_1, boolean $param_boolean_2)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_saveSimulation_52, new java.lang.Object[] {$param_BigString_1, new java.lang.Boolean($param_boolean_2)}, -7540443045190295328L);
@@ -1078,7 +1078,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -1087,7 +1087,7 @@ public final class LocalUserMetaDbServer_Stub
     
     // implementation of saveVCImage(BigString)
     public cbit.util.BigString saveVCImage(cbit.util.BigString $param_BigString_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_saveVCImage_53, new java.lang.Object[] {$param_BigString_1}, 1618908144301833985L);
@@ -1096,7 +1096,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -1105,7 +1105,7 @@ public final class LocalUserMetaDbServer_Stub
     
     // implementation of saveVCImageAs(BigString, String)
     public cbit.util.BigString saveVCImageAs(cbit.util.BigString $param_BigString_1, java.lang.String $param_String_2)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_saveVCImageAs_54, new java.lang.Object[] {$param_BigString_1, $param_String_2}, -3385051646702992126L);
@@ -1114,7 +1114,7 @@ public final class LocalUserMetaDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);

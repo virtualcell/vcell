@@ -3,6 +3,14 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.util.DataAccessException;
+import cbit.util.KeyValue;
+import cbit.util.ObjectNotFoundException;
+import cbit.util.SessionLog;
+import cbit.util.User;
+import cbit.util.Version;
+import cbit.util.VersionFlag;
+import cbit.util.Versionable;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.biomodel.*;
 import java.beans.*;
@@ -12,10 +20,6 @@ import java.util.*;
 import cbit.sql.*;
 import cbit.vcell.model.*;
 import cbit.vcell.mapping.*;
-import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.ObjectNotFoundException;
-import cbit.vcell.server.DataAccessException;
-import cbit.vcell.server.User;
 /**
  * This type was created in VisualAge.
  */
@@ -225,7 +229,7 @@ private MathModelMetaData getMathModelMetaData(Connection con,User user, KeyValu
 		if (rset.next()) {
 			mathModelMetaData = mathModelTable.getMathModelMetaData(rset,con,log,simKeys);
 		} else {
-			throw new cbit.vcell.server.ObjectNotFoundException("MathModel id=" + mathModelKey + " not found for user '" + user + "'");
+			throw new cbit.util.ObjectNotFoundException("MathModel id=" + mathModelKey + " not found for user '" + user + "'");
 		}
 	} finally {
 		stmt.close(); // Release resources include resultset

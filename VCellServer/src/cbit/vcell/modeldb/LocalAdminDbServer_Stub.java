@@ -24,18 +24,18 @@ public final class LocalAdminDbServer_Stub
     
     static {
 	try {
-	    $method_getSimulationJobStatus_0 = cbit.vcell.server.AdminDatabaseServer.class.getMethod("getSimulationJobStatus", new java.lang.Class[] {cbit.sql.KeyValue.class, int.class});
+	    $method_getSimulationJobStatus_0 = cbit.vcell.server.AdminDatabaseServer.class.getMethod("getSimulationJobStatus", new java.lang.Class[] {cbit.util.KeyValue.class, int.class});
 	    $method_getSimulationJobStatus_1 = cbit.vcell.server.AdminDatabaseServer.class.getMethod("getSimulationJobStatus", new java.lang.Class[] {java.lang.String.class});
-	    $method_getSimulationJobStatus_2 = cbit.vcell.server.AdminDatabaseServer.class.getMethod("getSimulationJobStatus", new java.lang.Class[] {boolean.class, cbit.vcell.server.User.class});
+	    $method_getSimulationJobStatus_2 = cbit.vcell.server.AdminDatabaseServer.class.getMethod("getSimulationJobStatus", new java.lang.Class[] {boolean.class, cbit.util.User.class});
 	    $method_getUser_3 = cbit.vcell.server.AdminDatabaseServer.class.getMethod("getUser", new java.lang.Class[] {java.lang.String.class});
 	    $method_getUser_4 = cbit.vcell.server.AdminDatabaseServer.class.getMethod("getUser", new java.lang.Class[] {java.lang.String.class, java.lang.String.class});
-	    $method_getUserFromSimulationKey_5 = cbit.vcell.server.AdminDatabaseServer.class.getMethod("getUserFromSimulationKey", new java.lang.Class[] {cbit.sql.KeyValue.class});
-	    $method_getUserInfo_6 = cbit.vcell.server.AdminDatabaseServer.class.getMethod("getUserInfo", new java.lang.Class[] {cbit.sql.KeyValue.class});
+	    $method_getUserFromSimulationKey_5 = cbit.vcell.server.AdminDatabaseServer.class.getMethod("getUserFromSimulationKey", new java.lang.Class[] {cbit.util.KeyValue.class});
+	    $method_getUserInfo_6 = cbit.vcell.server.AdminDatabaseServer.class.getMethod("getUserInfo", new java.lang.Class[] {cbit.util.KeyValue.class});
 	    $method_getUserInfos_7 = cbit.vcell.server.AdminDatabaseServer.class.getMethod("getUserInfos", new java.lang.Class[] {});
 	    $method_insertSimulationJobStatus_8 = cbit.vcell.server.AdminDatabaseServer.class.getMethod("insertSimulationJobStatus", new java.lang.Class[] {cbit.vcell.messaging.db.SimulationJobStatus.class});
-	    $method_insertUserInfo_9 = cbit.vcell.server.AdminDatabaseServer.class.getMethod("insertUserInfo", new java.lang.Class[] {cbit.sql.UserInfo.class});
+	    $method_insertUserInfo_9 = cbit.vcell.server.AdminDatabaseServer.class.getMethod("insertUserInfo", new java.lang.Class[] {cbit.util.UserInfo.class});
 	    $method_updateSimulationJobStatus_10 = cbit.vcell.server.AdminDatabaseServer.class.getMethod("updateSimulationJobStatus", new java.lang.Class[] {cbit.vcell.messaging.db.SimulationJobStatus.class, cbit.vcell.messaging.db.SimulationJobStatus.class});
-	    $method_updateUserInfo_11 = cbit.vcell.server.AdminDatabaseServer.class.getMethod("updateUserInfo", new java.lang.Class[] {cbit.sql.UserInfo.class});
+	    $method_updateUserInfo_11 = cbit.vcell.server.AdminDatabaseServer.class.getMethod("updateUserInfo", new java.lang.Class[] {cbit.util.UserInfo.class});
 	} catch (java.lang.NoSuchMethodException e) {
 	    throw new java.lang.NoSuchMethodError(
 		"stub class initialization failed");
@@ -50,8 +50,8 @@ public final class LocalAdminDbServer_Stub
     // methods from remote interfaces
     
     // implementation of getSimulationJobStatus(KeyValue, int)
-    public cbit.vcell.messaging.db.SimulationJobStatus getSimulationJobStatus(cbit.sql.KeyValue $param_KeyValue_1, int $param_int_2)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+    public cbit.vcell.messaging.db.SimulationJobStatus getSimulationJobStatus(cbit.util.KeyValue $param_KeyValue_1, int $param_int_2)
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getSimulationJobStatus_0, new java.lang.Object[] {$param_KeyValue_1, new java.lang.Integer($param_int_2)}, 3258198114365414872L);
@@ -60,7 +60,7 @@ public final class LocalAdminDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -69,7 +69,7 @@ public final class LocalAdminDbServer_Stub
     
     // implementation of getSimulationJobStatus(String)
     public java.util.List getSimulationJobStatus(java.lang.String $param_String_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getSimulationJobStatus_1, new java.lang.Object[] {$param_String_1}, -3992308848836386568L);
@@ -78,7 +78,7 @@ public final class LocalAdminDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -86,8 +86,8 @@ public final class LocalAdminDbServer_Stub
     }
     
     // implementation of getSimulationJobStatus(boolean, User)
-    public cbit.vcell.messaging.db.SimulationJobStatus[] getSimulationJobStatus(boolean $param_boolean_1, cbit.vcell.server.User $param_User_2)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+    public cbit.vcell.messaging.db.SimulationJobStatus[] getSimulationJobStatus(boolean $param_boolean_1, cbit.util.User $param_User_2)
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getSimulationJobStatus_2, new java.lang.Object[] {new java.lang.Boolean($param_boolean_1), $param_User_2}, 1316770442574823816L);
@@ -96,7 +96,7 @@ public final class LocalAdminDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -104,17 +104,17 @@ public final class LocalAdminDbServer_Stub
     }
     
     // implementation of getUser(String)
-    public cbit.vcell.server.User getUser(java.lang.String $param_String_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+    public cbit.util.User getUser(java.lang.String $param_String_1)
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getUser_3, new java.lang.Object[] {$param_String_1}, -5876487373133529709L);
-	    return ((cbit.vcell.server.User) $result);
+	    return ((cbit.util.User) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -122,17 +122,17 @@ public final class LocalAdminDbServer_Stub
     }
     
     // implementation of getUser(String, String)
-    public cbit.vcell.server.User getUser(java.lang.String $param_String_1, java.lang.String $param_String_2)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+    public cbit.util.User getUser(java.lang.String $param_String_1, java.lang.String $param_String_2)
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getUser_4, new java.lang.Object[] {$param_String_1, $param_String_2}, -6257811118775427044L);
-	    return ((cbit.vcell.server.User) $result);
+	    return ((cbit.util.User) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -140,17 +140,17 @@ public final class LocalAdminDbServer_Stub
     }
     
     // implementation of getUserFromSimulationKey(KeyValue)
-    public cbit.vcell.server.User getUserFromSimulationKey(cbit.sql.KeyValue $param_KeyValue_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+    public cbit.util.User getUserFromSimulationKey(cbit.util.KeyValue $param_KeyValue_1)
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getUserFromSimulationKey_5, new java.lang.Object[] {$param_KeyValue_1}, -9117084100856111954L);
-	    return ((cbit.vcell.server.User) $result);
+	    return ((cbit.util.User) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -158,17 +158,17 @@ public final class LocalAdminDbServer_Stub
     }
     
     // implementation of getUserInfo(KeyValue)
-    public cbit.sql.UserInfo getUserInfo(cbit.sql.KeyValue $param_KeyValue_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+    public cbit.util.UserInfo getUserInfo(cbit.util.KeyValue $param_KeyValue_1)
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getUserInfo_6, new java.lang.Object[] {$param_KeyValue_1}, 5888400704317291773L);
-	    return ((cbit.sql.UserInfo) $result);
+	    return ((cbit.util.UserInfo) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -176,17 +176,17 @@ public final class LocalAdminDbServer_Stub
     }
     
     // implementation of getUserInfos()
-    public cbit.sql.UserInfo[] getUserInfos()
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+    public cbit.util.UserInfo[] getUserInfos()
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getUserInfos_7, null, 4275675527704489443L);
-	    return ((cbit.sql.UserInfo[]) $result);
+	    return ((cbit.util.UserInfo[]) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -195,7 +195,7 @@ public final class LocalAdminDbServer_Stub
     
     // implementation of insertSimulationJobStatus(SimulationJobStatus)
     public cbit.vcell.messaging.db.SimulationJobStatus insertSimulationJobStatus(cbit.vcell.messaging.db.SimulationJobStatus $param_SimulationJobStatus_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_insertSimulationJobStatus_8, new java.lang.Object[] {$param_SimulationJobStatus_1}, 6612250165645515978L);
@@ -204,7 +204,7 @@ public final class LocalAdminDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -212,17 +212,17 @@ public final class LocalAdminDbServer_Stub
     }
     
     // implementation of insertUserInfo(UserInfo)
-    public cbit.sql.UserInfo insertUserInfo(cbit.sql.UserInfo $param_UserInfo_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+    public cbit.util.UserInfo insertUserInfo(cbit.util.UserInfo $param_UserInfo_1)
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_insertUserInfo_9, new java.lang.Object[] {$param_UserInfo_1}, 9077131507998373534L);
-	    return ((cbit.sql.UserInfo) $result);
+	    return ((cbit.util.UserInfo) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -231,7 +231,7 @@ public final class LocalAdminDbServer_Stub
     
     // implementation of updateSimulationJobStatus(SimulationJobStatus, SimulationJobStatus)
     public cbit.vcell.messaging.db.SimulationJobStatus updateSimulationJobStatus(cbit.vcell.messaging.db.SimulationJobStatus $param_SimulationJobStatus_1, cbit.vcell.messaging.db.SimulationJobStatus $param_SimulationJobStatus_2)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_updateSimulationJobStatus_10, new java.lang.Object[] {$param_SimulationJobStatus_1, $param_SimulationJobStatus_2}, 5376187929673614080L);
@@ -240,7 +240,7 @@ public final class LocalAdminDbServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -248,17 +248,17 @@ public final class LocalAdminDbServer_Stub
     }
     
     // implementation of updateUserInfo(UserInfo)
-    public cbit.sql.UserInfo updateUserInfo(cbit.sql.UserInfo $param_UserInfo_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+    public cbit.util.UserInfo updateUserInfo(cbit.util.UserInfo $param_UserInfo_1)
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_updateUserInfo_11, new java.lang.Object[] {$param_UserInfo_1}, 1504983660871353769L);
-	    return ((cbit.sql.UserInfo) $result);
+	    return ((cbit.util.UserInfo) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);

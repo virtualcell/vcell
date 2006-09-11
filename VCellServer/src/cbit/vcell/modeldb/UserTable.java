@@ -6,6 +6,8 @@ package cbit.vcell.modeldb;
 ©*/
 import java.sql.*;
 import cbit.sql.*;
+import cbit.util.KeyValue;
+import cbit.util.UserInfo;
 /**
  * This type was created in VisualAge.
  */

@@ -3,6 +3,11 @@ package cbit.vcell.modeldb;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import java.util.Vector;
 import cbit.util.BigString;
+import cbit.util.DataAccessException;
+import cbit.util.KeyValue;
+import cbit.util.ObjectNotFoundException;
+import cbit.util.User;
+import cbit.util.VersionInfo;
 import cbit.image.VCImage;
 import cbit.vcell.geometry.Geometry;
 import java.io.*;
@@ -13,14 +18,11 @@ import cbit.vcell.export.server.ExportLog;
 ©*/
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.biomodel.BioModelMetaData;
-import cbit.vcell.solver.SimulationStatus;
+import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.SolverResultSetInfo;
 import java.rmi.*;
 import java.sql.*;
 import cbit.sql.*;
-import cbit.vcell.server.User;
-import cbit.vcell.server.DataAccessException;
-import cbit.vcell.server.ObjectNotFoundException;
 import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.FormalSpeciesType;
@@ -32,13 +34,13 @@ public class DatabaseServerImpl {
 	private ResultSetDBTopLevel rsetDbTop = null;
 	private DictionaryDBTopLevel dictionaryTop = null;
 	private AdminDBTopLevel adminDbTop = null;
-	private cbit.vcell.server.SessionLog log = null;
+	private cbit.util.SessionLog log = null;
 	private ServerDocumentManager serverDocumentManager = new ServerDocumentManager(this);
 
 /**
  * This method was created in VisualAge.
  */
-public DatabaseServerImpl(ConnectionFactory conFactory, KeyFactory keyFactory, DBCacheTable dbCacheTable, cbit.vcell.server.SessionLog sessionLog) 
+public DatabaseServerImpl(ConnectionFactory conFactory, KeyFactory keyFactory, DBCacheTable dbCacheTable, cbit.util.SessionLog sessionLog) 
 						throws DataAccessException {
 	super();
 	this.log = sessionLog;
@@ -86,7 +88,7 @@ public DatabaseServerImpl(ConnectionFactory conFactory, KeyFactory keyFactory, D
  * Insert the method's description here.
  * Creation date: (11/6/2005 10:04:45 AM)
  */
-public cbit.vcell.document.VCDocumentInfo curate(User user,cbit.vcell.server.CurateSpec curateSpec) throws DataAccessException{
+public cbit.util.VCDocumentInfo curate(User user,cbit.util.CurateSpec curateSpec) throws DataAccessException{
 	
 	try {
 		log.print("DatabaseServerImpl.curate(user="+user+" curateSpec="+curateSpec+")");
@@ -110,7 +112,7 @@ public cbit.vcell.document.VCDocumentInfo curate(User user,cbit.vcell.server.Cur
 /**
  * delete method comment.
  */
-void delete(User user, cbit.sql.VersionableType vType, cbit.sql.KeyValue key) throws DataAccessException, ObjectNotFoundException {
+void delete(User user, cbit.sql.VersionableType vType, cbit.util.KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("DatabaseServerImpl.delete(vType="+vType.getTypeName()+", Key="+key+")");
 		dbTop.deleteVersionable(user, vType, key, true);
@@ -130,7 +132,7 @@ void delete(User user, cbit.sql.VersionableType vType, cbit.sql.KeyValue key) th
 /**
  * delete method comment.
  */
-public void deleteBioModel(User user, cbit.sql.KeyValue key) throws DataAccessException, ObjectNotFoundException {
+public void deleteBioModel(User user, cbit.util.KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	delete(user,VersionableType.BioModelMetaData, key);
 }
 
@@ -138,7 +140,7 @@ public void deleteBioModel(User user, cbit.sql.KeyValue key) throws DataAccessEx
 /**
  * delete method comment.
  */
-public void deleteGeometry(User user, cbit.sql.KeyValue key) throws DataAccessException, ObjectNotFoundException {
+public void deleteGeometry(User user, cbit.util.KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	delete(user,VersionableType.Geometry, key);
 }
 
@@ -146,7 +148,7 @@ public void deleteGeometry(User user, cbit.sql.KeyValue key) throws DataAccessEx
 /**
  * delete method comment.
  */
-public void deleteMathModel(User user, cbit.sql.KeyValue key) throws DataAccessException, ObjectNotFoundException {
+public void deleteMathModel(User user, cbit.util.KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	delete(user,VersionableType.MathModelMetaData, key);
 }
 
@@ -154,7 +156,7 @@ public void deleteMathModel(User user, cbit.sql.KeyValue key) throws DataAccessE
 /**
  * delete method comment.
  */
-public void deleteResultSetExport(User user, cbit.sql.KeyValue eleKey) throws DataAccessException{
+public void deleteResultSetExport(User user, cbit.util.KeyValue eleKey) throws DataAccessException{
 	try {
 		log.print("DatabaseServerImpl.deleteResultSetExport(Key="+eleKey+")");
 		rsetDbTop.deleteResultSetExport(user, eleKey, true);
@@ -168,7 +170,7 @@ public void deleteResultSetExport(User user, cbit.sql.KeyValue eleKey) throws Da
 /**
  * delete method comment.
  */
-public void deleteVCImage(User user, cbit.sql.KeyValue key) throws DataAccessException, ObjectNotFoundException {
+public void deleteVCImage(User user, cbit.util.KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	delete(user,VersionableType.VCImage, key);
 }
 
@@ -177,7 +179,7 @@ public void deleteVCImage(User user, cbit.sql.KeyValue key) throws DataAccessExc
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 public cbit.vcell.numericstest.TestSuiteOPResults doTestSuiteOP(User user, cbit.vcell.numericstest.TestSuiteOP tsop)
@@ -224,7 +226,7 @@ public ReferenceQueryResult findReferences(User user, ReferenceQuerySpec rqs) th
 /**
  * getVersionable method comment.
  */
-public cbit.vcell.modeldb.VersionableFamily getAllReferences(User user, cbit.sql.VersionableType vType, cbit.sql.KeyValue key) throws DataAccessException, ObjectNotFoundException {
+public cbit.vcell.modeldb.VersionableFamily getAllReferences(User user, cbit.sql.VersionableType vType, cbit.util.KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("DatabaseServerImpl.getAllReferences(vType="+vType.getTypeName()+", Key="+key+")");
 		log.alert("DatabaseServerImpl.getAllReferences() can return 'version' objects that aren't viewable to user !!!!!!!!!!!!!!!! ");
@@ -246,10 +248,10 @@ public cbit.vcell.modeldb.VersionableFamily getAllReferences(User user, cbit.sql
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.biomodel.BioModelInfo getBioModelInfo(User user, cbit.sql.KeyValue key) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
+public cbit.vcell.biomodel.BioModelInfo getBioModelInfo(User user, cbit.util.KeyValue key) throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException {
 	return ((cbit.vcell.biomodel.BioModelInfo[])getVersionInfos(user, key, VersionableType.BioModelMetaData, true, true))[0];
 }
 
@@ -258,10 +260,10 @@ public cbit.vcell.biomodel.BioModelInfo getBioModelInfo(User user, cbit.sql.KeyV
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.biomodel.BioModelInfo[] getBioModelInfos(User user, boolean bAll) throws cbit.vcell.server.DataAccessException {
+public cbit.vcell.biomodel.BioModelInfo[] getBioModelInfos(User user, boolean bAll) throws cbit.util.DataAccessException {
 	return (cbit.vcell.biomodel.BioModelInfo[])getVersionInfos(user, null, VersionableType.BioModelMetaData, bAll, true);
 }
 
@@ -269,7 +271,7 @@ public cbit.vcell.biomodel.BioModelInfo[] getBioModelInfos(User user, boolean bA
 /**
  * getVersionable method comment.
  */
-public BioModelMetaData getBioModelMetaData(User user, cbit.sql.KeyValue key) throws DataAccessException, ObjectNotFoundException {
+public BioModelMetaData getBioModelMetaData(User user, cbit.util.KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("DatabaseServerImpl.getBioModelMetaData(key="+key+")");
 		BioModelMetaData bioModelMetaData = dbTop.getBioModelMetaData(user,key);
@@ -312,7 +314,7 @@ public BioModelMetaData[] getBioModelMetaDatas(User user, boolean bAll) throws D
 /**
  * getVersionable method comment.
  */
-public BigString getBioModelXML(User user, cbit.sql.KeyValue key) throws DataAccessException, ObjectNotFoundException {
+public BigString getBioModelXML(User user, cbit.util.KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("DatabaseServerImpl.getBioModelXML(user="+user+", Key="+key+")");
 		return new BigString(serverDocumentManager.getBioModelXML(user, key));
@@ -373,7 +375,7 @@ DBTopLevel getDBTopLevel() {
 /**
  * getDictionaryReactions method comment.
  */
-public cbit.vcell.dictionary.ReactionDescription[] getDictionaryReactions(User user, ReactionQuerySpec reactionQuerySpec) throws cbit.vcell.server.DataAccessException{
+public cbit.vcell.dictionary.ReactionDescription[] getDictionaryReactions(User user, ReactionQuerySpec reactionQuerySpec) throws cbit.util.DataAccessException{
 		
 	try {
 		log.print("DatabaseServerImpl.getDictionaryReactions");
@@ -422,10 +424,10 @@ public ExportLog[] getExportLogs(User user, boolean bAll) throws DataAccessExcep
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.geometry.GeometryInfo getGeometryInfo(User user, cbit.sql.KeyValue key) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
+public cbit.vcell.geometry.GeometryInfo getGeometryInfo(User user, cbit.util.KeyValue key) throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException {
 	return ((cbit.vcell.geometry.GeometryInfo[])getVersionInfos(user, key, VersionableType.Geometry, false, true))[0];
 }
 
@@ -434,10 +436,10 @@ public cbit.vcell.geometry.GeometryInfo getGeometryInfo(User user, cbit.sql.KeyV
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.geometry.GeometryInfo[] getGeometryInfos(User user, boolean bAll) throws cbit.vcell.server.DataAccessException {
+public cbit.vcell.geometry.GeometryInfo[] getGeometryInfos(User user, boolean bAll) throws cbit.util.DataAccessException {
 	return (cbit.vcell.geometry.GeometryInfo[])getVersionInfos(user, null, VersionableType.Geometry, bAll, true);
 }
 
@@ -445,7 +447,7 @@ public cbit.vcell.geometry.GeometryInfo[] getGeometryInfos(User user, boolean bA
 /**
  * getVersionable method comment.
  */
-public BigString getGeometryXML(User user, cbit.sql.KeyValue key) throws DataAccessException, ObjectNotFoundException {
+public BigString getGeometryXML(User user, cbit.util.KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("DatabaseServerImpl.getGeometryXML(user="+user+", Key="+key+")");
 		boolean bCheckPermission = true;
@@ -465,10 +467,10 @@ public BigString getGeometryXML(User user, cbit.sql.KeyValue key) throws DataAcc
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.mathmodel.MathModelInfo getMathModelInfo(User user, cbit.sql.KeyValue key) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
+public cbit.vcell.mathmodel.MathModelInfo getMathModelInfo(User user, cbit.util.KeyValue key) throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException {
 	return ((cbit.vcell.mathmodel.MathModelInfo[])getVersionInfos(user, key, VersionableType.MathModelMetaData, false, true))[0];
 }
 
@@ -477,10 +479,10 @@ public cbit.vcell.mathmodel.MathModelInfo getMathModelInfo(User user, cbit.sql.K
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.mathmodel.MathModelInfo[] getMathModelInfos(User user, boolean bAll) throws cbit.vcell.server.DataAccessException {
+public cbit.vcell.mathmodel.MathModelInfo[] getMathModelInfos(User user, boolean bAll) throws cbit.util.DataAccessException {
 	return (cbit.vcell.mathmodel.MathModelInfo[])getVersionInfos(user, null, VersionableType.MathModelMetaData, bAll, true);
 }
 
@@ -488,7 +490,7 @@ public cbit.vcell.mathmodel.MathModelInfo[] getMathModelInfos(User user, boolean
 /**
  * getVersionable method comment.
  */
-public MathModelMetaData getMathModelMetaData(User user, cbit.sql.KeyValue key) throws DataAccessException, ObjectNotFoundException {
+public MathModelMetaData getMathModelMetaData(User user, cbit.util.KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("DatabaseServerImpl.getMathModelMetaData(key="+key+")");
 		MathModelMetaData mathModelMetaData = dbTop.getMathModelMetaData(user,key);
@@ -531,7 +533,7 @@ public MathModelMetaData[] getMathModelMetaDatas(User user, boolean bAll) throws
 /**
  * getVersionable method comment.
  */
-public BigString getMathModelXML(User user, cbit.sql.KeyValue key) throws DataAccessException, ObjectNotFoundException {
+public BigString getMathModelXML(User user, cbit.util.KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("DatabaseServerImpl.getMathModelXML(user="+user+", Key="+key+")");
 		return new BigString(serverDocumentManager.getMathModelXML(user, key));
@@ -562,7 +564,7 @@ public cbit.util.Preference[] getPreferences(User user) throws DataAccessExcepti
 /**
  * getReactionStepFromRXid method comment.
  */
-public cbit.vcell.model.ReactionStep getReactionStep(User user, cbit.sql.KeyValue reactionStepKey) throws cbit.vcell.server.DataAccessException {
+public cbit.vcell.model.ReactionStep getReactionStep(User user, cbit.util.KeyValue reactionStepKey) throws cbit.util.DataAccessException {
 	try {
 		log.print("DatabaseServerImpl.getReactionStep");
 		return dbTop.getReactionStep(user,reactionStepKey,true);
@@ -579,7 +581,7 @@ public cbit.vcell.model.ReactionStep getReactionStep(User user, cbit.sql.KeyValu
 /**
  * getUserReactions method comment.
  */
-public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(User user, KeyValue reactionStepKeys[]) throws cbit.vcell.server.DataAccessException {
+public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(User user, KeyValue reactionStepKeys[]) throws cbit.util.DataAccessException {
 	try {
 		log.print("DatabaseServerImpl.getReactionStepInfos()");
 		return dictionaryTop.getReactionStepInfos(user, true,reactionStepKeys);
@@ -680,7 +682,7 @@ public SimulationStatus getSimulationStatus(KeyValue simulationKey) throws DataA
 /**
  * getVersionable method comment.
  */
-public BigString getSimulationXML(User user, cbit.sql.KeyValue key) throws DataAccessException, ObjectNotFoundException {
+public BigString getSimulationXML(User user, cbit.util.KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("DatabaseServerImpl.getSimulationXML(user="+user+", Key="+key+")");
 		boolean bCheckPermission = false;
@@ -700,7 +702,7 @@ public BigString getSimulationXML(User user, cbit.sql.KeyValue key) throws DataA
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 public cbit.vcell.numericstest.TestSuiteNew getTestSuite(User user, java.math.BigDecimal getThisTS)
@@ -723,7 +725,7 @@ public cbit.vcell.numericstest.TestSuiteNew getTestSuite(User user, java.math.Bi
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 public cbit.vcell.numericstest.TestSuiteInfoNew[] getTestSuiteInfos(User user) throws DataAccessException {
@@ -745,7 +747,7 @@ public cbit.vcell.numericstest.TestSuiteInfoNew[] getTestSuiteInfos(User user) t
 /**
  * getUserReactions method comment.
  */
-public cbit.vcell.dictionary.ReactionDescription[] getUserReactionDescriptions(User user, ReactionQuerySpec reactionQuerySpec) throws cbit.vcell.server.DataAccessException {
+public cbit.vcell.dictionary.ReactionDescription[] getUserReactionDescriptions(User user, ReactionQuerySpec reactionQuerySpec) throws cbit.util.DataAccessException {
 	try {
 		log.print("DatabaseServerImpl.getUserReactions");
 		return dictionaryTop.getUserReactionDescriptions(user, true,reactionQuerySpec);
@@ -763,10 +765,10 @@ public cbit.vcell.dictionary.ReactionDescription[] getUserReactionDescriptions(U
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.image.VCImageInfo getVCImageInfo(User user, cbit.sql.KeyValue key) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
+public cbit.image.VCImageInfo getVCImageInfo(User user, cbit.util.KeyValue key) throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException {
 	return ((cbit.image.VCImageInfo[])getVersionInfos(user, key, VersionableType.VCImage, false, true))[0];
 }
 
@@ -775,10 +777,10 @@ public cbit.image.VCImageInfo getVCImageInfo(User user, cbit.sql.KeyValue key) t
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.image.VCImageInfo[] getVCImageInfos(User user, boolean bAll) throws cbit.vcell.server.DataAccessException {
+public cbit.image.VCImageInfo[] getVCImageInfos(User user, boolean bAll) throws cbit.util.DataAccessException {
 	return (cbit.image.VCImageInfo[])getVersionInfos(user, null, VersionableType.VCImage, bAll, true);
 }
 
@@ -786,7 +788,7 @@ public cbit.image.VCImageInfo[] getVCImageInfos(User user, boolean bAll) throws 
 /**
  * getVersionable method comment.
  */
-public BigString getVCImageXML(User user, cbit.sql.KeyValue key) throws DataAccessException, ObjectNotFoundException {
+public BigString getVCImageXML(User user, cbit.util.KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("DatabaseServerImpl.getVCImageXML(user="+user+", Key="+key+")");
 		boolean bCheckPermission = true;
@@ -825,10 +827,10 @@ public VCInfoContainer getVCInfoContainer(User user) throws DataAccessException 
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-private VersionInfo[] getVersionInfos(User user, KeyValue key, VersionableType vType, boolean bAll, boolean bCheckPermission) throws cbit.vcell.server.DataAccessException {
+private VersionInfo[] getVersionInfos(User user, KeyValue key, VersionableType vType, boolean bAll, boolean bCheckPermission) throws cbit.util.DataAccessException {
 	try {
 		log.print("DatabaseServerImpl.getVersionInfos(User="+user+",vType="+vType+",bAll="+bAll+")");
 		Vector vector = dbTop.getVersionableInfos(user, key, vType, bAll, bCheckPermission, true);
@@ -869,10 +871,10 @@ private VersionInfo[] getVersionInfos(User user, KeyValue key, VersionableType v
  * This method was created in VisualAge.
  * @return void
  * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.sql.VersionInfo groupAddUser(User user, cbit.sql.VersionableType vType, cbit.sql.KeyValue key,String addUserToGroup, boolean isHidden) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
+public cbit.util.VersionInfo groupAddUser(User user, cbit.sql.VersionableType vType, cbit.util.KeyValue key,String addUserToGroup, boolean isHidden) throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException {
 	try {
 		log.print("DatabaseServerImpl.groupAddUser(vType="+vType.getTypeName()+", Key="+key+", userToAdd="+addUserToGroup+", isHidden="+isHidden+")");
 		dbTop.groupAddUser(user,vType,key,true,addUserToGroup,isHidden);
@@ -895,11 +897,11 @@ public cbit.sql.VersionInfo groupAddUser(User user, cbit.sql.VersionableType vTy
  * This method was created in VisualAge.
  * @return void
  * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.sql.VersionInfo groupRemoveUser(User user, cbit.sql.VersionableType vType, cbit.sql.KeyValue key,String userRemoveFromGroup,boolean isHiddenFromOwner) 
-			throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
+public cbit.util.VersionInfo groupRemoveUser(User user, cbit.sql.VersionableType vType, cbit.util.KeyValue key,String userRemoveFromGroup,boolean isHiddenFromOwner) 
+			throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException {
 	try {
 		log.print("DatabaseServerImpl.groupRemoveUser(vType="+vType.getTypeName()+", Key="+key+", userRemoveFromGroup="+userRemoveFromGroup+")");
 		dbTop.groupRemoveUser(user,vType,key,true,userRemoveFromGroup,isHiddenFromOwner);
@@ -922,10 +924,10 @@ public cbit.sql.VersionInfo groupRemoveUser(User user, cbit.sql.VersionableType 
  * This method was created in VisualAge.
  * @return void
  * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.sql.VersionInfo groupSetPrivate(User user, cbit.sql.VersionableType vType, cbit.sql.KeyValue key) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
+public cbit.util.VersionInfo groupSetPrivate(User user, cbit.sql.VersionableType vType, cbit.util.KeyValue key) throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException {
 	try {
 		log.print("DatabaseServerImpl.groupSetPrivate(vType="+vType.getTypeName()+", Key="+key+")");
 		dbTop.groupSetPrivate(user,vType,key,true);
@@ -948,10 +950,10 @@ public cbit.sql.VersionInfo groupSetPrivate(User user, cbit.sql.VersionableType 
  * This method was created in VisualAge.
  * @return void
  * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.sql.VersionInfo groupSetPublic(User user, cbit.sql.VersionableType vType, cbit.sql.KeyValue key) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
+public cbit.util.VersionInfo groupSetPublic(User user, cbit.sql.VersionableType vType, cbit.util.KeyValue key) throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException {
 	try {
 		log.print("DatabaseServerImpl.groupSetPublic(vType="+vType.getTypeName()+", Key="+key+")");
 		dbTop.groupSetPublic(user,vType,key,true);
@@ -1029,10 +1031,10 @@ public void replacePreferences(User user, cbit.util.Preference[] preferences) th
  * @return Versionable
  * @param versionable Versionable
  * @param bVersion boolean
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public BigString saveBioModel(User user, BigString bioModelXML, String independentSims[]) throws cbit.vcell.server.DataAccessException {
+public BigString saveBioModel(User user, BigString bioModelXML, String independentSims[]) throws cbit.util.DataAccessException {
 	log.print("DatabaseServerImpl.saveBioModel()");
 	try {
 		return new BigString(getServerDocumentManager().saveBioModel(user, bioModelXML.toString(), null, independentSims));
@@ -1057,10 +1059,10 @@ public BigString saveBioModel(User user, BigString bioModelXML, String independe
  * @return Versionable
  * @param versionable Versionable
  * @param bVersion boolean
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public BigString saveBioModelAs(User user, BigString bioModelXML, java.lang.String newName, String independentSims[]) throws cbit.vcell.server.DataAccessException {
+public BigString saveBioModelAs(User user, BigString bioModelXML, java.lang.String newName, String independentSims[]) throws cbit.util.DataAccessException {
 	log.print("DatabaseServerImpl.saveBioModelAs("+newName+")");
 	try {
 		return new BigString(getServerDocumentManager().saveBioModel(user, bioModelXML.toString(), newName, independentSims));
@@ -1085,10 +1087,10 @@ public BigString saveBioModelAs(User user, BigString bioModelXML, java.lang.Stri
  * @return Versionable
  * @param versionable Versionable
  * @param bVersion boolean
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public BigString saveGeometry(User user, BigString geometryXML) throws cbit.vcell.server.DataAccessException {
+public BigString saveGeometry(User user, BigString geometryXML) throws cbit.util.DataAccessException {
 	log.print("DatabaseServerImpl.saveGeometry()");
 	try {
 		return new BigString(getServerDocumentManager().saveGeometry(user, geometryXML.toString(), null));
@@ -1107,10 +1109,10 @@ public BigString saveGeometry(User user, BigString geometryXML) throws cbit.vcel
  * @return Versionable
  * @param versionable Versionable
  * @param bVersion boolean
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public BigString saveGeometryAs(User user, BigString geometryXML, java.lang.String newName) throws cbit.vcell.server.DataAccessException {
+public BigString saveGeometryAs(User user, BigString geometryXML, java.lang.String newName) throws cbit.util.DataAccessException {
 	log.print("DatabaseServerImpl.saveGeometryAs("+newName+")");
 	try {
 		return new BigString(getServerDocumentManager().saveGeometry(user, geometryXML.toString(), newName));
@@ -1129,10 +1131,10 @@ public BigString saveGeometryAs(User user, BigString geometryXML, java.lang.Stri
  * @return Versionable
  * @param versionable Versionable
  * @param bVersion boolean
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public BigString saveMathModel(User user, BigString mathModelXML, String independentSims[]) throws cbit.vcell.server.DataAccessException {
+public BigString saveMathModel(User user, BigString mathModelXML, String independentSims[]) throws cbit.util.DataAccessException {
 	log.print("DatabaseServerImpl.saveMathModel()");
 	try {
 		return new BigString(getServerDocumentManager().saveMathModel(user, mathModelXML.toString(), null, independentSims));
@@ -1154,10 +1156,10 @@ public BigString saveMathModel(User user, BigString mathModelXML, String indepen
  * @return Versionable
  * @param versionable Versionable
  * @param bVersion boolean
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public BigString saveMathModelAs(User user, BigString mathModelXML, java.lang.String newName, String independentSims[]) throws cbit.vcell.server.DataAccessException {
+public BigString saveMathModelAs(User user, BigString mathModelXML, java.lang.String newName, String independentSims[]) throws cbit.util.DataAccessException {
 	log.print("DatabaseServerImpl.saveMathModelAs(" + newName + ")");
 	try {
 		return new BigString(getServerDocumentManager().saveMathModel(user, mathModelXML.toString(), newName, independentSims));
@@ -1179,10 +1181,10 @@ public BigString saveMathModelAs(User user, BigString mathModelXML, java.lang.St
  * @return Versionable
  * @param versionable Versionable
  * @param bVersion boolean
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public BigString saveSimulation(User user, BigString simulationXML, boolean bForceIndependent) throws cbit.vcell.server.DataAccessException {
+public BigString saveSimulation(User user, BigString simulationXML, boolean bForceIndependent) throws cbit.util.DataAccessException {
 	log.print("DatabaseServerImpl.saveSimulation()");
 	try {
 		return new BigString(getServerDocumentManager().saveSimulation(user, simulationXML.toString(), bForceIndependent));
@@ -1204,10 +1206,10 @@ public BigString saveSimulation(User user, BigString simulationXML, boolean bFor
  * @return Versionable
  * @param versionable Versionable
  * @param bVersion boolean
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public BigString saveVCImage(User user, BigString vcImageXML) throws cbit.vcell.server.DataAccessException {
+public BigString saveVCImage(User user, BigString vcImageXML) throws cbit.util.DataAccessException {
 	log.print("DatabaseServerImpl.saveVCImage()");
 	try {
 		return new BigString(getServerDocumentManager().saveVCImage(user, vcImageXML.toString(), null));
@@ -1226,10 +1228,10 @@ public BigString saveVCImage(User user, BigString vcImageXML) throws cbit.vcell.
  * @return Versionable
  * @param versionable Versionable
  * @param bVersion boolean
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public BigString saveVCImageAs(User user, BigString vcImageXML, java.lang.String newName) throws cbit.vcell.server.DataAccessException {
+public BigString saveVCImageAs(User user, BigString vcImageXML, java.lang.String newName) throws cbit.util.DataAccessException {
 	log.print("DatabaseServerImpl.saveVCImageAs(" + newName + ")");
 	try {
 		return new BigString(getServerDocumentManager().saveVCImage(user, vcImageXML.toString(), newName));

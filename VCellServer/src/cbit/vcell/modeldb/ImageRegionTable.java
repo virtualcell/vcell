@@ -7,7 +7,9 @@ package cbit.vcell.modeldb;
 import cbit.sql.*;
 import cbit.image.*;
 import java.sql.*;
-import cbit.vcell.server.SessionLog;
+
+import cbit.util.KeyValue;
+import cbit.util.SessionLog;
 /**
  * This type was created in VisualAge.
  */

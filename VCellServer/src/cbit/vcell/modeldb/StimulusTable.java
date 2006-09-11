@@ -1,4 +1,6 @@
 package cbit.vcell.modeldb;
+import cbit.util.DataAccessException;
+import cbit.util.KeyValue;
 import cbit.vcell.parser.Expression;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -6,7 +8,6 @@ import cbit.vcell.parser.Expression;
 ©*/
 import cbit.sql.*;
 import cbit.vcell.mapping.*;
-import cbit.vcell.server.DataAccessException;
 /**
  * This type was created in VisualAge.
  */

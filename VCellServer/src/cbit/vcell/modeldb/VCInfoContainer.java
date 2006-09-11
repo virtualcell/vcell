@@ -1,19 +1,20 @@
 package cbit.vcell.modeldb;
 import java.util.zip.DeflaterOutputStream;
 import java.io.ByteArrayOutputStream;
-import cbit.vcell.server.User;
 import cbit.vcell.solver.SolverResultSetInfo;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.biomodel.BioModelInfo;
 import cbit.image.VCImageInfo;
-import cbit.sql.VersionInfo;
 import cbit.sql.VersionableType;
 import cbit.vcell.export.server.ExportLog;
 import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
 import java.io.IOException;
 import cbit.util.BigString;
+import cbit.util.User;
+import cbit.util.VersionInfo;
+
 import java.io.ByteArrayInputStream;
 import java.util.zip.InflaterInputStream;
 
@@ -91,7 +92,7 @@ public cbit.vcell.mathmodel.MathModelInfo[] getMathModelInfos() {
  * Creation date: (9/24/2003 12:50:51 PM)
  * @return cbit.vcell.server.User
  */
-public cbit.vcell.server.User getUser() {
+public cbit.util.User getUser() {
 	if (user == null) {
 		inflate();
 	}

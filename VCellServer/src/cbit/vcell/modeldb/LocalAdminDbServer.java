@@ -4,12 +4,15 @@ package cbit.vcell.modeldb;
  * All rights reserved.
 ©*/
 import java.rmi.*;
+
+import cbit.gui.PropertyLoader;
 import cbit.sql.*;
-import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.DataAccessException;
-import cbit.vcell.server.User;
+import cbit.util.DataAccessException;
+import cbit.util.KeyValue;
+import cbit.util.SessionLog;
+import cbit.util.User;
+import cbit.util.UserInfo;
 import cbit.vcell.messaging.db.SimulationJobStatus;
-import cbit.vcell.server.PropertyLoader;
 
 /**
  * This type was created in VisualAge.
@@ -76,7 +79,7 @@ public java.util.List getSimulationJobStatus(java.lang.String conditions) throws
  * @param userOnly cbit.vcell.server.User
  * @exception java.rmi.RemoteException The exception description.
  */
-public SimulationJobStatus[] getSimulationJobStatus(boolean bActiveOnly, cbit.vcell.server.User userOnly) throws DataAccessException {
+public SimulationJobStatus[] getSimulationJobStatus(boolean bActiveOnly, cbit.util.User userOnly) throws DataAccessException {
 	try {
 		return adminDbTop.getSimulationJobStatus(bActiveOnly,userOnly,true);
 	}catch (Throwable e){
@@ -118,7 +121,7 @@ public User getUser(String userid, String password) throws DataAccessException {
  * @param userid java.lang.String
  * @param password java.lang.String
  */
-public cbit.vcell.server.User getUserFromSimulationKey(cbit.sql.KeyValue simKey) throws DataAccessException {
+public cbit.util.User getUserFromSimulationKey(cbit.util.KeyValue simKey) throws DataAccessException {
 	try {
 		return adminDbTop.getUserFromSimulationKey(simKey,true);
 	} catch (Throwable e){
@@ -176,7 +179,7 @@ public SimulationJobStatus insertSimulationJobStatus(SimulationJobStatus simulat
  * @return cbit.sql.UserInfo
  * @param newUserInfo cbit.sql.UserInfo
  */
-public cbit.sql.UserInfo insertUserInfo(UserInfo newUserInfo) throws DataAccessException {
+public cbit.util.UserInfo insertUserInfo(UserInfo newUserInfo) throws DataAccessException {
 	try {
 		KeyValue key = adminDbTop.insertUserInfo(newUserInfo,true);
 		return adminDbTop.getUserInfo(key,true);

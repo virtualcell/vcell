@@ -6,13 +6,14 @@ package cbit.vcell.modeldb;
 ©*/
 import java.sql.*;
 import cbit.sql.*;
+import cbit.util.DataAccessException;
+import cbit.util.KeyValue;
+import cbit.util.ObjectNotFoundException;
+import cbit.util.SessionLog;
+import cbit.util.User;
+import cbit.util.UserInfo;
 import cbit.vcell.model.*;
 import cbit.vcell.mapping.*;
-import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.ObjectNotFoundException;
-import cbit.vcell.server.DataAccessException;
-import cbit.vcell.server.User;
-import cbit.sql.UserInfo;
 /**
  * This type was created in VisualAge.
  */
@@ -114,7 +115,7 @@ public UserInfo getUserInfo(Connection con, KeyValue key) throws SQLException, D
 		stmt.close(); // Release resources include resultset
 	}
 	if (userInfo == null) {
-		throw new cbit.vcell.server.ObjectNotFoundException("UserInfo with id = '" + key + "' not found");
+		throw new cbit.util.ObjectNotFoundException("UserInfo with id = '" + key + "' not found");
 	}
 	return userInfo;
 }

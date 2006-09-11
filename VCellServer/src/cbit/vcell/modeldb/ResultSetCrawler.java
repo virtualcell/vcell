@@ -3,21 +3,21 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.util.DataAccessException;
+import cbit.util.KeyValue;
+import cbit.util.SessionLog;
+import cbit.util.User;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.server.AdminDatabaseServer;
-import cbit.sql.KeyValue;
+import cbit.gui.PropertyLoader;
 import cbit.sql.DBCacheTable;
-import cbit.vcell.server.SessionLog;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.vcell.solver.SolverResultSetInfo;
-import cbit.vcell.server.DataAccessException;
 import java.util.Vector;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.Simulation;
 import java.io.File;
-import cbit.vcell.server.User;
 import java.util.LinkedList;
 import java.beans.PropertyVetoException;
 import cbit.vcell.server.PermissionException;
@@ -31,7 +31,7 @@ import java.sql.SQLException;
 public class ResultSetCrawler {
 	private AdminDatabaseServer adminDbServer = null;
 	private cbit.sql.ConnectionFactory conFactory = null;
-	private cbit.vcell.server.SessionLog log = null;
+	private cbit.util.SessionLog log = null;
 	private cbit.sql.DBCacheTable dbCacheTable = null;
 	private cbit.vcell.modeldb.ResultSetDBTopLevel resultSetDbTopLevel = null;
 	private File dataRootDir = null;
@@ -227,7 +227,7 @@ public void scanAllUsers() throws SQLException, DataAccessException, java.rmi.Re
 	File userDirs[] = dataRootDir.listFiles();
 	log.print("Total user directories: " + userDirs.length);
 
-	cbit.sql.UserInfo userInfos[] = adminDbServer.getUserInfos();	
+	cbit.util.UserInfo userInfos[] = adminDbServer.getUserInfos();	
 	DBTopLevel dbTopLevel = new DBTopLevel(conFactory,log,dbCacheTable);
 
 	File userDir = null;

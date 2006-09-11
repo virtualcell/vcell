@@ -7,12 +7,12 @@ package cbit.vcell.modeldb;
 public class ReferenceQuerySpec implements java.io.Serializable{
 
 	private cbit.sql.VersionableType versionableType;
-	private cbit.sql.KeyValue keyValue;
+	private cbit.util.KeyValue keyValue;
 
 /**
  * ReferenceQuesrySpec constructor comment.
  */
-public ReferenceQuerySpec(cbit.sql.VersionableType vType,cbit.sql.KeyValue key) {
+public ReferenceQuerySpec(cbit.sql.VersionableType vType,cbit.util.KeyValue key) {
 	
 	versionableType = vType;
 	keyValue = key;
@@ -24,7 +24,7 @@ public ReferenceQuerySpec(cbit.sql.VersionableType vType,cbit.sql.KeyValue key) 
  * Creation date: (11/6/2005 10:31:20 AM)
  * @return cbit.sql.KeyValue
  */
-public cbit.sql.KeyValue getKeyValue() {
+public cbit.util.KeyValue getKeyValue() {
 	return keyValue;
 }
 

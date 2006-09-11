@@ -5,10 +5,12 @@ package cbit.vcell.modeldb;
  * All rights reserved.
 ©*/
 import java.sql.*;
-import cbit.vcell.server.SessionLog;
+
+import cbit.util.DataAccessException;
+import cbit.util.KeyValue;
+import cbit.util.SessionLog;
 import cbit.vcell.geometry.*;
 import cbit.vcell.parser.*;
-import cbit.vcell.server.DataAccessException;
 import cbit.sql.*;
 /**
  * This type was created in VisualAge.

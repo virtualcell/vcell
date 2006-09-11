@@ -11,7 +11,6 @@ import cbit.vcell.xml.XmlHelper;
  * All rights reserved.
 ©*/
 import cbit.vcell.mathmodel.*;
-import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.*;
 import cbit.vcell.geometry.*;
 import cbit.vcell.server.*;
@@ -514,7 +513,7 @@ public String getMathModelXML(User user, KeyValue mathModelKey) throws DataAcces
  * Insert the method's description here.
  * Creation date: (2/5/01 4:58:40 PM)
  */
-boolean isChanged(User user, cbit.image.VCImage vcImage) throws cbit.vcell.server.DataAccessException {
+boolean isChanged(User user, cbit.image.VCImage vcImage) throws cbit.util.DataAccessException {
 	//
 	// identify versionable as it was last loaded from the database
 	//
@@ -589,7 +588,7 @@ boolean isChanged(User user, Geometry geometry) throws DataAccessException {
  * Insert the method's description here.
  * Creation date: (10/28/00 12:08:30 AM)
  */
-private boolean isChanged0(User user, cbit.sql.Versionable versionable, Versionable savedVersionable) throws DataAccessException {
+private boolean isChanged0(User user, cbit.util.Versionable versionable, Versionable savedVersionable) throws DataAccessException {
 	/*
 	//
 	// identify versionable as it was last loaded from the database

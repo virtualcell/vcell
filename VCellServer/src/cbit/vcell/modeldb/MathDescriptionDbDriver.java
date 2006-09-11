@@ -4,6 +4,13 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.util.DataAccessException;
+import cbit.util.KeyValue;
+import cbit.util.ObjectNotFoundException;
+import cbit.util.SessionLog;
+import cbit.util.User;
+import cbit.util.Version;
+import cbit.util.Versionable;
 import cbit.vcell.math.*;
 import cbit.vcell.server.*;
 import cbit.sql.*;
@@ -107,7 +114,7 @@ private MathDescription getMathDescriptionSQL(Connection con,User user, KeyValue
 			}
 			
 		} else {
-			throw new cbit.vcell.server.ObjectNotFoundException("MathDescription id=" + mathDescKey + " not found for user '" + user + "'");
+			throw new cbit.util.ObjectNotFoundException("MathDescription id=" + mathDescKey + " not found for user '" + user + "'");
 		}
 	} finally {
 		stmt.close(); // Release resources include resultset

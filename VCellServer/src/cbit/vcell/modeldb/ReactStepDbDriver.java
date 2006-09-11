@@ -1,4 +1,10 @@
 package cbit.vcell.modeldb;
+import cbit.util.DataAccessException;
+import cbit.util.KeyValue;
+import cbit.util.ObjectNotFoundException;
+import cbit.util.SessionLog;
+import cbit.util.User;
+import cbit.util.Versionable;
 import cbit.vcell.dictionary.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -11,10 +17,6 @@ import cbit.sql.*;
 import java.sql.Statement;
 import cbit.vcell.model.*;
 import cbit.vcell.mapping.*;
-import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.ObjectNotFoundException;
-import cbit.vcell.server.DataAccessException;
-import cbit.vcell.server.User;
 import cbit.vcell.server.DependencyException;
 import cbit.vcell.server.PermissionException;
 /**
@@ -344,7 +346,7 @@ public cbit.vcell.model.Species getSpecies(Connection con, KeyValue speciesID) t
 		if (rset.next()) {
 			species = getSpecies(rset,con);
 		} else {
-			throw new cbit.vcell.server.ObjectNotFoundException("Species id=" + speciesID + " not found");
+			throw new cbit.util.ObjectNotFoundException("Species id=" + speciesID + " not found");
 		}
 	} finally {
 		stmt.close(); // Release resources include resultset

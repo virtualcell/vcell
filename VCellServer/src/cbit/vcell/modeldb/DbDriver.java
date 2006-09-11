@@ -6,6 +6,20 @@ package cbit.vcell.modeldb;
 import java.math.BigDecimal;
 import java.sql.*;
 import cbit.sql.*;
+import cbit.util.CurateSpec;
+import cbit.util.DataAccessException;
+import cbit.util.GroupAccess;
+import cbit.util.GroupAccessAll;
+import cbit.util.GroupAccessNone;
+import cbit.util.GroupAccessSome;
+import cbit.util.KeyValue;
+import cbit.util.ObjectNotFoundException;
+import cbit.util.SessionLog;
+import cbit.util.User;
+import cbit.util.Version;
+import cbit.util.VersionFlag;
+import cbit.util.VersionInfo;
+import cbit.util.Versionable;
 import cbit.vcell.server.*;
 import java.util.Vector;
 import java.util.Hashtable;
@@ -41,7 +55,7 @@ public DbDriver(DBCacheTable dbc,SessionLog sessionLog) {
  * Insert the method's description here.
  * Creation date: (5/23/2006 10:44:52 AM)
  */
-public static cbit.vcell.document.VCDocumentInfo curate(CurateSpec curateSpec,Connection con,User user,DBCacheTable currentCache) throws DataAccessException,SQLException{
+public static cbit.util.VCDocumentInfo curate(CurateSpec curateSpec,Connection con,User user,DBCacheTable currentCache) throws DataAccessException,SQLException{
 
 	VersionableType vType = null;
 	if(curateSpec.getVCDocumentInfo() instanceof cbit.vcell.biomodel.BioModelInfo){
@@ -96,7 +110,7 @@ public static cbit.vcell.document.VCDocumentInfo curate(CurateSpec curateSpec,Co
 	}
 
 	
-	cbit.vcell.document.VCDocumentInfo dbVCDocumentInfo = (cbit.vcell.document.VCDocumentInfo)getVersionableInfos(con,null,user,vType,false,vKey,false).elementAt(0);
+	cbit.util.VCDocumentInfo dbVCDocumentInfo = (cbit.util.VCDocumentInfo)getVersionableInfos(con,null,user,vType,false,vKey,false).elementAt(0);
 	return dbVCDocumentInfo;
 }
 

@@ -8,11 +8,15 @@ import java.util.*;
 import java.beans.*;
 import cbit.sql.*;
 import java.sql.Statement;
+
+import cbit.util.DataAccessException;
+import cbit.util.KeyValue;
+import cbit.util.ObjectNotFoundException;
+import cbit.util.SessionLog;
+import cbit.util.User;
+import cbit.util.Version;
+import cbit.util.Versionable;
 import cbit.vcell.geometry.*;
-import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.ObjectNotFoundException;
-import cbit.vcell.server.DataAccessException;
-import cbit.vcell.server.User;
 import cbit.vcell.server.DependencyException;
 import cbit.vcell.server.PermissionException;
 import cbit.image.*;
@@ -155,7 +159,7 @@ private KeyValue getExtentRefKeyFromGeometry(Connection con, KeyValue geomKey) t
 		if (rset.next()) {
 			return new KeyValue(rset.getBigDecimal(geomTable.extentRef.toString()));
 		}else{
-			throw new cbit.vcell.server.ObjectNotFoundException("getSizeKeyFromGeometry for Image id="+geomKey+" not found");
+			throw new cbit.util.ObjectNotFoundException("getSizeKeyFromGeometry for Image id="+geomKey+" not found");
 		}
  	}finally {
 		stmt.close(); // Release resources include resultset
@@ -189,7 +193,7 @@ private KeyValue getExtentRefKeyFromImage(Connection con, KeyValue imageKey) thr
 		if (rset.next()) {
 			return new KeyValue(rset.getBigDecimal(imageTable.extentRef.toString()));
 		}else{
-			throw new cbit.vcell.server.ObjectNotFoundException("getSizeKeyFromImage for Image id="+imageKey+" not found");
+			throw new cbit.util.ObjectNotFoundException("getSizeKeyFromImage for Image id="+imageKey+" not found");
 		}
  	}finally {
 		stmt.close(); // Release resources include resultset
@@ -260,7 +264,7 @@ private cbit.vcell.geometry.Geometry getGeometry(Connection con, User user, KeyV
 		if (rset.next()) {
 			geom = getGeometry(con, user,rset);
 		}else{
-			throw new cbit.vcell.server.ObjectNotFoundException("Geometry id="+geomKey+" not found for user '"+user+"'");
+			throw new cbit.util.ObjectNotFoundException("Geometry id="+geomKey+" not found for user '"+user+"'");
 		}
   	}finally{
 		stmt.close(); // Release resources include resultset
@@ -366,7 +370,7 @@ private KeyValue getImageRefKeyFromGeometry(Connection con, KeyValue geomKey) th
 			}
 			return new KeyValue(iR);
 		}else{
-			throw new cbit.vcell.server.ObjectNotFoundException("getSizeKeyFromGeometry for Image id="+geomKey+" not found");
+			throw new cbit.util.ObjectNotFoundException("getSizeKeyFromGeometry for Image id="+geomKey+" not found");
 		}
  	}finally {
 		stmt.close(); // Release resources include resultset
@@ -706,7 +710,7 @@ private cbit.image.VCImage getVCImage(Connection con, User user, KeyValue imageK
 			vcImage = imageTable.getImage(rset,con,log,imageDataTable);
 			getImageRegionsForVCImage(con, vcImage);
 		}else{
-			throw new cbit.vcell.server.ObjectNotFoundException("Image id="+imageKey+" not found for user '"+user+"'");
+			throw new cbit.util.ObjectNotFoundException("Image id="+imageKey+" not found for user '"+user+"'");
 		}
  	}finally {
 		stmt.close(); // Release resources include resultset

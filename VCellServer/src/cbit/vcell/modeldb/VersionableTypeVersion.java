@@ -5,7 +5,7 @@ package cbit.vcell.modeldb;
  * All rights reserved.
 ©*/
 import cbit.sql.VersionableType;
-import cbit.sql.Version;
+import cbit.util.Version;
 
 /**
  * This type was created in VisualAge.

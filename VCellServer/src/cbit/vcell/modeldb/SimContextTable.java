@@ -3,13 +3,15 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.util.KeyValue;
+import cbit.util.SessionLog;
+import cbit.util.User;
+import cbit.util.Version;
 import cbit.vcell.math.*;
 import java.math.BigDecimal;
 import cbit.sql.*;
 import java.sql.*;
-import cbit.vcell.server.User;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.server.SessionLog;
 /**
  * This type was created in VisualAge.
  */
@@ -41,7 +43,7 @@ private SimContextTable() {
  * @param rset java.sql.ResultSet
  * @param log cbit.vcell.server.SessionLog
  */
-public cbit.sql.VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,cbit.vcell.server.DataAccessException {
+public cbit.util.VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,cbit.util.DataAccessException {
 
 	KeyValue mathRef = null;
 	java.math.BigDecimal mathRefValue = rset.getBigDecimal(SimContextTable.table.mathRef.toString());
@@ -91,7 +93,7 @@ public String getInfoSQL(User user,String extraConditions,String special) {
  */
 public SimulationContext getSimContext(	Connection con,User user,ResultSet rset,SessionLog log,
 										GeomDbDriver geomDB,ModelDbDriver modelDB,MathDescriptionDbDriver mathDB) 
-							throws SQLException,cbit.vcell.server.DataAccessException, java.beans.PropertyVetoException {
+							throws SQLException,cbit.util.DataAccessException, java.beans.PropertyVetoException {
 			
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
 	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);

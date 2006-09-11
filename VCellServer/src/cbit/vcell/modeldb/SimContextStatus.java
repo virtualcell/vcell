@@ -5,7 +5,7 @@ package cbit.vcell.modeldb;
  * @author: Jim Schaff
  */
 public class SimContextStatus implements java.io.Serializable {
-	private cbit.sql.KeyValue simContextKey = null;
+	private cbit.util.KeyValue simContextKey = null;
 	private boolean hasData;
 	private Boolean equiv = null;
 	private String status = null;
@@ -19,7 +19,7 @@ public class SimContextStatus implements java.io.Serializable {
 /**
  * SimContextStatus constructor comment.
  */
-public SimContextStatus(cbit.sql.KeyValue argSimContextKey,boolean argHasData,Boolean argEquiv,String argStatus,Boolean argCuratorEquiv,String argComments) {
+public SimContextStatus(cbit.util.KeyValue argSimContextKey,boolean argHasData,Boolean argEquiv,String argStatus,Boolean argCuratorEquiv,String argComments) {
 	this.simContextKey = argSimContextKey;
 	this.hasData = argHasData;
 	this.equiv = argEquiv;
@@ -125,7 +125,7 @@ public int getErrorLevel() {
  * Creation date: (11/6/2002 1:49:15 PM)
  * @return cbit.sql.KeyValue
  */
-public cbit.sql.KeyValue getSimContextKey() {
+public cbit.util.KeyValue getSimContextKey() {
 	return simContextKey;
 }
 

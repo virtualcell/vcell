@@ -4,7 +4,8 @@ package cbit.vcell.modeldb;
  * All rights reserved.
 ©*/
 import java.util.Vector;
-import cbit.vcell.server.User;
+
+import cbit.util.User;
 import cbit.sql.Table;
 import cbit.sql.Field;
 import cbit.sql.VersionTable;
@@ -47,38 +48,38 @@ public static String enforceOwnershipDelete(User user, VersionTable vTable, Stri
  * @param conditions java.lang.String[]
  * @param special java.lang.String
  */
-public static String enforceOwnershipInsert(User user, VersionTable vTable, Object[] valueData, cbit.sql.Version version) 
-									throws cbit.vcell.server.DataAccessException {
+public static String enforceOwnershipInsert(User user, VersionTable vTable, Object[] valueData, cbit.util.Version version) 
+									throws cbit.util.DataAccessException {
 	//
 	if (!version.getOwner().compareEqual(user)) {
-		throw new cbit.vcell.server.DataAccessException("enforceOwnershipInsert User " + user + " Not Equal to Version owner " + version.getOwner());
+		throw new cbit.util.DataAccessException("enforceOwnershipInsert User " + user + " Not Equal to Version owner " + version.getOwner());
 	}
 	StringBuffer sb = new StringBuffer();
 	sb.append("INSERT INTO " + vTable.getTableName() + " ");
 	sb.append(vTable.getSQLColumnList());
 	sb.append(" VALUES ");
 	if (vTable instanceof GeometryTable) {
-		sb.append(((GeometryTable) vTable).getSQLValueList(	(cbit.sql.KeyValue) valueData[0], 
+		sb.append(((GeometryTable) vTable).getSQLValueList(	(cbit.util.KeyValue) valueData[0], 
 															(cbit.vcell.geometry.Geometry) valueData[1], 
-															(cbit.sql.KeyValue) valueData[2], 
+															(cbit.util.KeyValue) valueData[2], 
 															version));
 	}else if (vTable instanceof ImageTable) {
 		sb.append(((ImageTable) vTable).getSQLValueList(	(cbit.image.VCImage) valueData[0], 
-															(cbit.sql.KeyValue) valueData[1], 
+															(cbit.util.KeyValue) valueData[1], 
 															version));
 	}else if (vTable instanceof SimContextTable) {
 		sb.append(((SimContextTable) vTable).getSQLValueList(	(cbit.vcell.mapping.SimulationContext) valueData[0], 
-																(cbit.sql.KeyValue) valueData[1],
-																(cbit.sql.KeyValue) valueData[2],
-																(cbit.sql.KeyValue) valueData[3],
+																(cbit.util.KeyValue) valueData[1],
+																(cbit.util.KeyValue) valueData[2],
+																(cbit.util.KeyValue) valueData[3],
 																version));
 	}else if (vTable instanceof MathDescTable) {
 		sb.append(((MathDescTable) vTable).getSQLValueList(	(cbit.vcell.math.MathDescription) valueData[0], 
-															(cbit.sql.KeyValue) valueData[1], 
+															(cbit.util.KeyValue) valueData[1], 
 															version));
 	}else if (vTable instanceof SimulationTable) {
 		sb.append(((SimulationTable) vTable).getSQLValueList(	(cbit.vcell.solver.Simulation) valueData[0], 
-															(cbit.sql.KeyValue) valueData[1], 
+															(cbit.util.KeyValue) valueData[1], 
 															version));
 	}else if (vTable instanceof BioModelTable) {
 		sb.append(((BioModelTable) vTable).getSQLValueList(	(cbit.vcell.biomodel.BioModelMetaData) valueData[0],
@@ -120,7 +121,7 @@ public static String enforceOwnershipSelect(User user, Field[] fields, Table[] t
  */ 
 public static String enforceOwnershipSelect(User user, Field[] fields, Table[] tables, String conditions, String special, boolean bCheckPermission) {
 
-	boolean isAdministrator = user.getName().equals(cbit.vcell.server.PropertyLoader.ADMINISTRATOR_ACCOUNT) && user.getID().equals(new cbit.sql.KeyValue("2"));
+	boolean isAdministrator = user.getName().equals(cbit.gui.PropertyLoader.ADMINISTRATOR_ACCOUNT) && user.getID().equals(new cbit.util.KeyValue("2"));
 	if (bAllowAdministrativeAccess && isAdministrator){
 		bCheckPermission = false;
 	}
@@ -285,7 +286,7 @@ static String getVTableDirectSelectClause(VersionTable vTable,User user) {
 							//
 							// the object is public
 							//
-							vTable.privacy.getQualifiedColName() + " = " + cbit.vcell.server.GroupAccess.GROUPACCESS_ALL +
+							vTable.privacy.getQualifiedColName() + " = " + cbit.util.GroupAccess.GROUPACCESS_ALL +
 							" OR " +
 							//
 							// this user is in the access control list for this object

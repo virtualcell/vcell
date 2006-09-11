@@ -7,16 +7,20 @@ package cbit.vcell.modeldb;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.beans.*;
+
+import cbit.util.DataAccessException;
+import cbit.util.KeyValue;
+import cbit.util.SessionLog;
+import cbit.util.User;
+import cbit.util.Version;
+import cbit.util.VersionInfo;
 import cbit.vcell.solver.*;
 import java.math.BigDecimal;
 import cbit.sql.*;
-import cbit.vcell.server.User;
 import cbit.vcell.math.MathDescription;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.sql.Connection;
-import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.geometry.Geometry;
 /**
  * This type was created in VisualAge.
@@ -51,7 +55,7 @@ private SimulationTable() {
  * @param rset java.sql.ResultSet
  * @param log cbit.vcell.server.SessionLog
  */
-public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,cbit.vcell.server.DataAccessException {
+public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,cbit.util.DataAccessException {
 	
 	KeyValue mathRef = new KeyValue(rset.getBigDecimal(SimulationTable.table.mathRef.toString()));
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
@@ -90,7 +94,7 @@ public String getInfoSQL(User user,String extraConditions,String special) {
  * @param rset java.sql.ResultSet
  * @param log cbit.vcell.server.SessionLog
  */
-public SolverResultSetInfo getResultSetInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,cbit.vcell.server.DataAccessException {
+public SolverResultSetInfo getResultSetInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,cbit.util.DataAccessException {
 	
 	KeyValue mathRef = new KeyValue(rset.getBigDecimal(SimulationTable.table.mathRef.toString()));
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);

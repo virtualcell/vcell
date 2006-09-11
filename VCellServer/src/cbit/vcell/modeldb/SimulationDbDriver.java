@@ -5,6 +5,15 @@ package cbit.vcell.modeldb;
 ©*/
 import java.util.*;
 import java.beans.*;
+
+import cbit.util.DataAccessException;
+import cbit.util.KeyValue;
+import cbit.util.ObjectNotFoundException;
+import cbit.util.SessionLog;
+import cbit.util.User;
+import cbit.util.Version;
+import cbit.util.VersionInfo;
+import cbit.util.Versionable;
 import cbit.vcell.solver.*;
 import cbit.vcell.math.*;
 import cbit.vcell.server.*;
@@ -384,7 +393,7 @@ private Simulation getSimulationSQL(Connection con,User user, KeyValue simKey)
 				throw new DataAccessException(e.getMessage());
 			}			
 		} else {
-			throw new cbit.vcell.server.ObjectNotFoundException("Simulation id=" + simKey + " not found for user '" + user + "'");
+			throw new cbit.util.ObjectNotFoundException("Simulation id=" + simKey + " not found for user '" + user + "'");
 		}
 	} finally {
 		stmt.close(); // Release resources include resultset

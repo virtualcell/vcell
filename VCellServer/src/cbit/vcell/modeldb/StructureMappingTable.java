@@ -5,8 +5,9 @@ package cbit.vcell.modeldb;
  * All rights reserved.
 ©*/
 import cbit.sql.*;
+import cbit.util.DataAccessException;
+import cbit.util.KeyValue;
 import cbit.vcell.mapping.*;
-import cbit.vcell.server.DataAccessException;
 /**
  * This type was created in VisualAge.
  */

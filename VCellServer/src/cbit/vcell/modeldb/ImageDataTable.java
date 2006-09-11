@@ -6,6 +6,9 @@ package cbit.vcell.modeldb;
 ©*/
 import cbit.sql.*;
 import cbit.image.*;
+import cbit.util.DataAccessException;
+import cbit.util.KeyValue;
+import cbit.util.SessionLog;
 import cbit.vcell.server.*;
 import java.sql.*;
 

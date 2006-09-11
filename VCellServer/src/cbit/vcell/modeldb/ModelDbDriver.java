@@ -8,12 +8,16 @@ import java.sql.*;
 import java.util.*;
 import cbit.sql.*;
 import java.sql.Statement;
+
+import cbit.util.DataAccessException;
+import cbit.util.KeyValue;
+import cbit.util.ObjectNotFoundException;
+import cbit.util.SessionLog;
+import cbit.util.User;
+import cbit.util.Version;
+import cbit.util.Versionable;
 import cbit.vcell.model.*;
 import cbit.vcell.mapping.*;
-import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.ObjectNotFoundException;
-import cbit.vcell.server.DataAccessException;
-import cbit.vcell.server.User;
 /**
  * This type was created in VisualAge.
  */
@@ -166,7 +170,7 @@ private cbit.vcell.model.Model getModel(Connection con,User user, KeyValue model
 		if (rset.next()) {
 			model = getModel(rset,con,user);
 		} else {
-			throw new cbit.vcell.server.ObjectNotFoundException("Model id=" + modelKey + " not found for user '" + user + "'");
+			throw new cbit.util.ObjectNotFoundException("Model id=" + modelKey + " not found for user '" + user + "'");
 		}
 	} finally {
 		stmt.close(); // Release resources include resultset
@@ -317,7 +321,7 @@ public SpeciesContext getSpeciesContext(Connection con, KeyValue speciesContextI
 		if (rset.next()) {
 			speciesContext = getSpeciesContext(con,rset);
 		} else {
-			throw new cbit.vcell.server.ObjectNotFoundException("SpeciesContext id=" + speciesContextID + " not found");
+			throw new cbit.util.ObjectNotFoundException("SpeciesContext id=" + speciesContextID + " not found");
 		}
 	} finally {
 		stmt.close(); // Release resources include resultset

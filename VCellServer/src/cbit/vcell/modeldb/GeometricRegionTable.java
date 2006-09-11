@@ -1,5 +1,8 @@
 package cbit.vcell.modeldb;
 
+import cbit.util.DataAccessException;
+import cbit.util.KeyValue;
+import cbit.util.SessionLog;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
@@ -9,8 +12,6 @@ import cbit.vcell.geometry.surface.VolumeGeometricRegion;
  * All rights reserved.
 ©*/
 import java.sql.*;
-import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.DataAccessException;
 import cbit.sql.*;
 /**
  * This type was created in VisualAge.

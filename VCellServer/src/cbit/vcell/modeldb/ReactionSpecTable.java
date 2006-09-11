@@ -5,6 +5,7 @@ package cbit.vcell.modeldb;
  * All rights reserved.
 ©*/
 import cbit.sql.*;
+import cbit.util.KeyValue;
 import cbit.vcell.mapping.*;
 /**
  * This type was created in VisualAge.

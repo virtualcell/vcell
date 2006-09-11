@@ -4,6 +4,9 @@ package cbit.vcell.modeldb;
  * All rights reserved.
 ©*/
 import cbit.sql.*;
+import cbit.util.DataAccessException;
+import cbit.util.KeyValue;
+import cbit.util.SessionLog;
 import cbit.vcell.model.*;
 import cbit.vcell.server.*;
 /**
