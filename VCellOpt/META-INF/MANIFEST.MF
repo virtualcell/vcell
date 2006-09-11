@@ -8,7 +8,8 @@ Require-Bundle: org.vcell.common,
  org.vcell.model,
  org.vcell.util,
  org.vcell.ui,
- org.eclipse.osgi
+ org.eclipse.osgi,
+ org.vcell.server
 Bundle-Activator: org.vcell.optimization.Optimization
 Import-Package: org.osgi.framework;version="1.3.0"
 Export-Package: cbit.vcell.modelopt,
