@@ -2,6 +2,8 @@ package cbit.vcell.simdata;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.ObjectInputStream;
+
+import cbit.vcell.math.VariableType;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.

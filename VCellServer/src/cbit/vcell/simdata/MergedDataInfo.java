@@ -1,19 +1,20 @@
 package cbit.vcell.simdata;
 
-import cbit.vcell.server.User;
+import cbit.util.User;
+import cbit.util.VCDataIdentifier;
 /**
  * Insert the type's description here.
  * Creation date: (10/7/2003 4:21:41 PM)
  * @author: Anuradha Lakshminarayana
  */
-public class MergedDataInfo implements cbit.vcell.server.VCDataIdentifier, java.io.Serializable, cbit.util.Matchable {
+public class MergedDataInfo implements VCDataIdentifier, java.io.Serializable, cbit.util.Matchable {
 	private java.lang.String datasetName = null;
 	private User datasetUser = null;
-	private cbit.vcell.server.VCDataIdentifier[] dataIDs = null;
+	private VCDataIdentifier[] dataIDs = null;
 /**
  * CompositeDataInfo constructor comment.
  */
-public MergedDataInfo(User argOwner, cbit.vcell.server.VCDataIdentifier[] argdataIDs) {
+public MergedDataInfo(User argOwner, VCDataIdentifier[] argdataIDs) {
 	super();
 	String compDataName = argOwner.getName();
 	for (int i = 0; i < argdataIDs.length; i++) {
@@ -65,7 +66,7 @@ public boolean equals(Object object) {
  * Creation date: (10/21/2003 12:47:21 PM)
  * @return cbit.vcell.server.VCDataIdentifier[]
  */
-public cbit.vcell.server.VCDataIdentifier[] getDataIDs() {
+public VCDataIdentifier[] getDataIDs() {
 	return dataIDs;
 }
 /**
@@ -81,7 +82,7 @@ public java.lang.String getDatasetName() {
  * Creation date: (10/22/2003 11:22:01 AM)
  * @return cbit.vcell.server.User
  */
-public cbit.vcell.server.User getDatasetUser() {
+public cbit.util.User getDatasetUser() {
 	return datasetUser;
 }
 /**

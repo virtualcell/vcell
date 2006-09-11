@@ -1,5 +1,5 @@
 package cbit.vcell.simdata;
-import cbit.vcell.server.User;
+import cbit.util.VCDataIdentifier;
 /**
  * Insert the type's description here.
  * Creation date: (9/19/2003 3:28:52 PM)
@@ -28,9 +28,9 @@ public void addFunction(cbit.vcell.math.AnnotatedFunction function) throws cbit.
  * @return long
  * @param dataType int
  * @param timepoint double
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  */
-public long getDataBlockTimeStamp(int dataType, double timepoint) throws cbit.vcell.server.DataAccessException {
+public long getDataBlockTimeStamp(int dataType, double timepoint) throws cbit.util.DataAccessException {
 	return 0;
 }
 
@@ -39,7 +39,7 @@ public long getDataBlockTimeStamp(int dataType, double timepoint) throws cbit.vc
  * This method was created in VisualAge.
  * @return double[]
  */
-public double[] getDataTimes() throws cbit.vcell.server.DataAccessException {
+public double[] getDataTimes() throws cbit.util.DataAccessException {
 	return null;
 }
 
@@ -78,7 +78,7 @@ public cbit.vcell.math.AnnotatedFunction[] getFunctions() {
  * This method was created in VisualAge.
  * @return boolean
  */
-public boolean getIsODEData() throws cbit.vcell.server.DataAccessException {
+public boolean getIsODEData() throws cbit.util.DataAccessException {
 	return false;
 }
 
@@ -98,7 +98,7 @@ public java.io.File getLogFile() throws java.io.FileNotFoundException {
  * This method was created in VisualAge.
  * @return cbit.vcell.solvers.CartesianMesh
  */
-public cbit.vcell.solvers.CartesianMesh getMesh() throws cbit.vcell.server.DataAccessException, cbit.vcell.math.MathException {
+public cbit.vcell.solver.CartesianMesh getMesh() throws cbit.util.DataAccessException, cbit.vcell.math.MathException {
 	return null;
 }
 
@@ -108,7 +108,7 @@ public cbit.vcell.solvers.CartesianMesh getMesh() throws cbit.vcell.server.DataA
  * Creation date: (9/19/2003 3:28:52 PM)
  * @return cbit.vcell.simdata.ODEDataBlock
  */
-public ODEDataBlock getODEDataBlock() throws cbit.vcell.server.DataAccessException {
+public ODEDataBlock getODEDataBlock() throws cbit.util.DataAccessException {
 	return null;
 }
 
@@ -118,7 +118,7 @@ public ODEDataBlock getODEDataBlock() throws cbit.vcell.server.DataAccessExcepti
  * @return cbit.vcell.simdata.ParticleDataBlock
  * @param double time
  */
-public ParticleDataBlock getParticleDataBlock(double time) throws cbit.vcell.server.DataAccessException, java.io.IOException {
+public ParticleDataBlock getParticleDataBlock(double time) throws cbit.util.DataAccessException, java.io.IOException {
 	return null;
 }
 
@@ -127,7 +127,7 @@ public ParticleDataBlock getParticleDataBlock(double time) throws cbit.vcell.ser
  * This method was created in VisualAge.
  * @return boolean
  */
-public boolean getParticleDataExists() throws cbit.vcell.server.DataAccessException {
+public boolean getParticleDataExists() throws cbit.util.DataAccessException {
 	return false;
 }
 
@@ -136,7 +136,7 @@ public boolean getParticleDataExists() throws cbit.vcell.server.DataAccessExcept
  * This method was created in VisualAge.
  * @return cbit.vcell.simdata.SimResultsInfo
  */
-public cbit.vcell.server.VCDataIdentifier getResultsInfoObject() {
+public VCDataIdentifier getResultsInfoObject() {
 	return null;
 }
 
@@ -147,7 +147,7 @@ public cbit.vcell.server.VCDataIdentifier getResultsInfoObject() {
  * @param user cbit.vcell.server.User
  * @param simID java.lang.String
  */
-public SimDataBlock getSimDataBlock(String varName, double time) throws cbit.vcell.server.DataAccessException, java.io.IOException {
+public SimDataBlock getSimDataBlock(String varName, double time) throws cbit.util.DataAccessException, java.io.IOException {
 	return null;
 }
 
@@ -165,7 +165,7 @@ public long getSizeInBytes() {
  * This method was created in VisualAge.
  * @return java.lang.String[]
  */
-public cbit.vcell.simdata.DataIdentifier[] getVarAndFunctionDataIdentifiers() throws cbit.vcell.server.DataAccessException, java.io.IOException {
+public cbit.vcell.math.DataIdentifier[] getVarAndFunctionDataIdentifiers() throws cbit.util.DataAccessException, java.io.IOException {
 	return null;
 }
 
@@ -174,7 +174,7 @@ public cbit.vcell.simdata.DataIdentifier[] getVarAndFunctionDataIdentifiers() th
  * This method was created in VisualAge.
  * @return cbit.vcell.solvers.CartesianMesh
  */
-int[] getVolumeSize() throws cbit.vcell.server.DataAccessException, java.io.IOException {
+int[] getVolumeSize() throws cbit.util.DataAccessException, java.io.IOException {
 	return null;
 }
 
@@ -184,5 +184,5 @@ int[] getVolumeSize() throws cbit.vcell.server.DataAccessException, java.io.IOEx
  * Creation date: (9/19/2003 3:28:52 PM)
  * @param function cbit.vcell.math.Function
  */
-public void removeFunction(cbit.vcell.math.AnnotatedFunction function) throws cbit.vcell.server.DataAccessException {}
+public void removeFunction(cbit.vcell.math.AnnotatedFunction function) throws cbit.util.DataAccessException {}
 }

@@ -3,6 +3,7 @@ package cbit.vcell.simdata;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.vcell.math.VariableType;
 import cbit.vcell.parser.*;
 /**
  * Insert the type's description here.

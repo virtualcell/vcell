@@ -3,8 +3,10 @@ package cbit.vcell.simdata;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.vcell.solver.CartesianMesh;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.math.*;
+
 import java.io.*;
 import java.util.*;
 import cbit.vcell.server.*;
@@ -39,7 +41,7 @@ public abstract void addFunction(AnnotatedFunction function) throws ExpressionEx
  * @return long
  * @param dataType int
  * @param timepoint double
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  */
 public abstract long getDataBlockTimeStamp(int dataType, double timepoint) throws DataAccessException;
 

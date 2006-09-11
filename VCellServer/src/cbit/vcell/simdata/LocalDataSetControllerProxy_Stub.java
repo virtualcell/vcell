@@ -28,22 +28,22 @@ public final class LocalDataSetControllerProxy_Stub
     
     static {
 	try {
-	    $method_addFunction_0 = cbit.vcell.server.DataSetController.class.getMethod("addFunction", new java.lang.Class[] {cbit.vcell.server.VCDataIdentifier.class, cbit.vcell.math.AnnotatedFunction.class});
-	    $method_addFunctions_1 = cbit.vcell.server.DataSetController.class.getMethod("addFunctions", new java.lang.Class[] {cbit.vcell.server.VCDataIdentifier.class, cbit.vcell.math.AnnotatedFunction[].class});
-	    $method_getDataIdentifiers_2 = cbit.vcell.server.DataSetController.class.getMethod("getDataIdentifiers", new java.lang.Class[] {cbit.vcell.server.VCDataIdentifier.class});
-	    $method_getDataSetTimes_3 = cbit.vcell.server.DataSetController.class.getMethod("getDataSetTimes", new java.lang.Class[] {cbit.vcell.server.VCDataIdentifier.class});
-	    $method_getFunctions_4 = cbit.vcell.server.DataSetController.class.getMethod("getFunctions", new java.lang.Class[] {cbit.vcell.server.VCDataIdentifier.class});
-	    $method_getIsODEData_5 = cbit.vcell.server.DataSetController.class.getMethod("getIsODEData", new java.lang.Class[] {cbit.vcell.server.VCDataIdentifier.class});
-	    $method_getLineScan_6 = cbit.vcell.server.DataSetController.class.getMethod("getLineScan", new java.lang.Class[] {cbit.vcell.server.VCDataIdentifier.class, java.lang.String.class, double.class, cbit.vcell.math.CoordinateIndex.class, cbit.vcell.math.CoordinateIndex.class});
-	    $method_getLineScan_7 = cbit.vcell.server.DataSetController.class.getMethod("getLineScan", new java.lang.Class[] {cbit.vcell.server.VCDataIdentifier.class, java.lang.String.class, double.class, SpatialSelection.class});
-	    $method_getMesh_8 = cbit.vcell.server.DataSetController.class.getMethod("getMesh", new java.lang.Class[] {cbit.vcell.server.VCDataIdentifier.class});
-	    $method_getODEData_9 = cbit.vcell.server.DataSetController.class.getMethod("getODEData", new java.lang.Class[] {cbit.vcell.server.VCDataIdentifier.class});
-	    $method_getParticleDataBlock_10 = cbit.vcell.server.DataSetController.class.getMethod("getParticleDataBlock", new java.lang.Class[] {cbit.vcell.server.VCDataIdentifier.class, double.class});
-	    $method_getParticleDataExists_11 = cbit.vcell.server.DataSetController.class.getMethod("getParticleDataExists", new java.lang.Class[] {cbit.vcell.server.VCDataIdentifier.class});
-	    $method_getSimDataBlock_12 = cbit.vcell.server.DataSetController.class.getMethod("getSimDataBlock", new java.lang.Class[] {cbit.vcell.server.VCDataIdentifier.class, java.lang.String.class, double.class});
-	    $method_getTimeSeriesValues_13 = cbit.vcell.server.DataSetController.class.getMethod("getTimeSeriesValues", new java.lang.Class[] {cbit.vcell.server.VCDataIdentifier.class, cbit.util.TimeSeriesJobSpec.class});
+	    $method_addFunction_0 = cbit.vcell.server.DataSetController.class.getMethod("addFunction", new java.lang.Class[] {cbit.util.VCDataIdentifier.class, cbit.vcell.math.AnnotatedFunction.class});
+	    $method_addFunctions_1 = cbit.vcell.server.DataSetController.class.getMethod("addFunctions", new java.lang.Class[] {cbit.util.VCDataIdentifier.class, cbit.vcell.math.AnnotatedFunction[].class});
+	    $method_getDataIdentifiers_2 = cbit.vcell.server.DataSetController.class.getMethod("getDataIdentifiers", new java.lang.Class[] {cbit.util.VCDataIdentifier.class});
+	    $method_getDataSetTimes_3 = cbit.vcell.server.DataSetController.class.getMethod("getDataSetTimes", new java.lang.Class[] {cbit.util.VCDataIdentifier.class});
+	    $method_getFunctions_4 = cbit.vcell.server.DataSetController.class.getMethod("getFunctions", new java.lang.Class[] {cbit.util.VCDataIdentifier.class});
+	    $method_getIsODEData_5 = cbit.vcell.server.DataSetController.class.getMethod("getIsODEData", new java.lang.Class[] {cbit.util.VCDataIdentifier.class});
+	    $method_getLineScan_6 = cbit.vcell.server.DataSetController.class.getMethod("getLineScan", new java.lang.Class[] {cbit.util.VCDataIdentifier.class, java.lang.String.class, double.class, cbit.vcell.math.CoordinateIndex.class, cbit.vcell.math.CoordinateIndex.class});
+	    $method_getLineScan_7 = cbit.vcell.server.DataSetController.class.getMethod("getLineScan", new java.lang.Class[] {cbit.util.VCDataIdentifier.class, java.lang.String.class, double.class, SpatialSelection.class});
+	    $method_getMesh_8 = cbit.vcell.server.DataSetController.class.getMethod("getMesh", new java.lang.Class[] {cbit.util.VCDataIdentifier.class});
+	    $method_getODEData_9 = cbit.vcell.server.DataSetController.class.getMethod("getODEData", new java.lang.Class[] {cbit.util.VCDataIdentifier.class});
+	    $method_getParticleDataBlock_10 = cbit.vcell.server.DataSetController.class.getMethod("getParticleDataBlock", new java.lang.Class[] {cbit.util.VCDataIdentifier.class, double.class});
+	    $method_getParticleDataExists_11 = cbit.vcell.server.DataSetController.class.getMethod("getParticleDataExists", new java.lang.Class[] {cbit.util.VCDataIdentifier.class});
+	    $method_getSimDataBlock_12 = cbit.vcell.server.DataSetController.class.getMethod("getSimDataBlock", new java.lang.Class[] {cbit.util.VCDataIdentifier.class, java.lang.String.class, double.class});
+	    $method_getTimeSeriesValues_13 = cbit.vcell.server.DataSetController.class.getMethod("getTimeSeriesValues", new java.lang.Class[] {cbit.util.VCDataIdentifier.class, cbit.util.TimeSeriesJobSpec.class});
 	    $method_makeRemoteFile_14 = cbit.vcell.server.DataSetController.class.getMethod("makeRemoteFile", new java.lang.Class[] {cbit.vcell.export.server.ExportSpecs.class});
-	    $method_removeFunction_15 = cbit.vcell.server.DataSetController.class.getMethod("removeFunction", new java.lang.Class[] {cbit.vcell.server.VCDataIdentifier.class, cbit.vcell.math.AnnotatedFunction.class});
+	    $method_removeFunction_15 = cbit.vcell.server.DataSetController.class.getMethod("removeFunction", new java.lang.Class[] {cbit.util.VCDataIdentifier.class, cbit.vcell.math.AnnotatedFunction.class});
 	} catch (java.lang.NoSuchMethodException e) {
 	    throw new java.lang.NoSuchMethodError(
 		"stub class initialization failed");
@@ -58,8 +58,8 @@ public final class LocalDataSetControllerProxy_Stub
     // methods from remote interfaces
     
     // implementation of addFunction(VCDataIdentifier, AnnotatedFunction)
-    public void addFunction(cbit.vcell.server.VCDataIdentifier $param_VCDataIdentifier_1, cbit.vcell.math.AnnotatedFunction $param_AnnotatedFunction_2)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+    public void addFunction(cbit.util.VCDataIdentifier $param_VCDataIdentifier_1, cbit.vcell.math.AnnotatedFunction $param_AnnotatedFunction_2)
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    ref.invoke(this, $method_addFunction_0, new java.lang.Object[] {$param_VCDataIdentifier_1, $param_AnnotatedFunction_2}, 1772512561365875085L);
@@ -67,7 +67,7 @@ public final class LocalDataSetControllerProxy_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -75,8 +75,8 @@ public final class LocalDataSetControllerProxy_Stub
     }
     
     // implementation of addFunctions(VCDataIdentifier, AnnotatedFunction[])
-    public void addFunctions(cbit.vcell.server.VCDataIdentifier $param_VCDataIdentifier_1, cbit.vcell.math.AnnotatedFunction[] $param_arrayOf_AnnotatedFunction_2)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+    public void addFunctions(cbit.util.VCDataIdentifier $param_VCDataIdentifier_1, cbit.vcell.math.AnnotatedFunction[] $param_arrayOf_AnnotatedFunction_2)
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    ref.invoke(this, $method_addFunctions_1, new java.lang.Object[] {$param_VCDataIdentifier_1, $param_arrayOf_AnnotatedFunction_2}, 3763422229753356946L);
@@ -84,7 +84,7 @@ public final class LocalDataSetControllerProxy_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -92,17 +92,17 @@ public final class LocalDataSetControllerProxy_Stub
     }
     
     // implementation of getDataIdentifiers(VCDataIdentifier)
-    public cbit.vcell.simdata.DataIdentifier[] getDataIdentifiers(cbit.vcell.server.VCDataIdentifier $param_VCDataIdentifier_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+    public cbit.vcell.math.DataIdentifier[] getDataIdentifiers(cbit.util.VCDataIdentifier $param_VCDataIdentifier_1)
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getDataIdentifiers_2, new java.lang.Object[] {$param_VCDataIdentifier_1}, -2921860114544834587L);
-	    return ((cbit.vcell.simdata.DataIdentifier[]) $result);
+	    return ((cbit.vcell.math.DataIdentifier[]) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -110,8 +110,8 @@ public final class LocalDataSetControllerProxy_Stub
     }
     
     // implementation of getDataSetTimes(VCDataIdentifier)
-    public double[] getDataSetTimes(cbit.vcell.server.VCDataIdentifier $param_VCDataIdentifier_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+    public double[] getDataSetTimes(cbit.util.VCDataIdentifier $param_VCDataIdentifier_1)
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getDataSetTimes_3, new java.lang.Object[] {$param_VCDataIdentifier_1}, -3795558972337568161L);
@@ -120,7 +120,7 @@ public final class LocalDataSetControllerProxy_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -128,8 +128,8 @@ public final class LocalDataSetControllerProxy_Stub
     }
     
     // implementation of getFunctions(VCDataIdentifier)
-    public cbit.vcell.math.AnnotatedFunction[] getFunctions(cbit.vcell.server.VCDataIdentifier $param_VCDataIdentifier_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+    public cbit.vcell.math.AnnotatedFunction[] getFunctions(cbit.util.VCDataIdentifier $param_VCDataIdentifier_1)
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getFunctions_4, new java.lang.Object[] {$param_VCDataIdentifier_1}, -7534649386023357351L);
@@ -138,7 +138,7 @@ public final class LocalDataSetControllerProxy_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -146,8 +146,8 @@ public final class LocalDataSetControllerProxy_Stub
     }
     
     // implementation of getIsODEData(VCDataIdentifier)
-    public boolean getIsODEData(cbit.vcell.server.VCDataIdentifier $param_VCDataIdentifier_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+    public boolean getIsODEData(cbit.util.VCDataIdentifier $param_VCDataIdentifier_1)
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getIsODEData_5, new java.lang.Object[] {$param_VCDataIdentifier_1}, 8702520843889222828L);
@@ -156,7 +156,7 @@ public final class LocalDataSetControllerProxy_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -164,8 +164,8 @@ public final class LocalDataSetControllerProxy_Stub
     }
     
     // implementation of getLineScan(VCDataIdentifier, String, double, CoordinateIndex, CoordinateIndex)
-    public cbit.plot.PlotData getLineScan(cbit.vcell.server.VCDataIdentifier $param_VCDataIdentifier_1, java.lang.String $param_String_2, double $param_double_3, cbit.vcell.math.CoordinateIndex $param_CoordinateIndex_4, cbit.vcell.math.CoordinateIndex $param_CoordinateIndex_5)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+    public cbit.plot.PlotData getLineScan(cbit.util.VCDataIdentifier $param_VCDataIdentifier_1, java.lang.String $param_String_2, double $param_double_3, cbit.vcell.math.CoordinateIndex $param_CoordinateIndex_4, cbit.vcell.math.CoordinateIndex $param_CoordinateIndex_5)
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getLineScan_6, new java.lang.Object[] {$param_VCDataIdentifier_1, $param_String_2, new java.lang.Double($param_double_3), $param_CoordinateIndex_4, $param_CoordinateIndex_5}, 3716346607616230250L);
@@ -174,7 +174,7 @@ public final class LocalDataSetControllerProxy_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -182,8 +182,8 @@ public final class LocalDataSetControllerProxy_Stub
     }
     
     // implementation of getLineScan(VCDataIdentifier, String, double, SpatialSelection)
-    public cbit.plot.PlotData getLineScan(cbit.vcell.server.VCDataIdentifier $param_VCDataIdentifier_1, java.lang.String $param_String_2, double $param_double_3, SpatialSelection $param_SpatialSelection_4)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+    public cbit.plot.PlotData getLineScan(cbit.util.VCDataIdentifier $param_VCDataIdentifier_1, java.lang.String $param_String_2, double $param_double_3, SpatialSelection $param_SpatialSelection_4)
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getLineScan_7, new java.lang.Object[] {$param_VCDataIdentifier_1, $param_String_2, new java.lang.Double($param_double_3), $param_SpatialSelection_4}, 4693657663284950004L);
@@ -192,7 +192,7 @@ public final class LocalDataSetControllerProxy_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -200,17 +200,17 @@ public final class LocalDataSetControllerProxy_Stub
     }
     
     // implementation of getMesh(VCDataIdentifier)
-    public cbit.vcell.solvers.CartesianMesh getMesh(cbit.vcell.server.VCDataIdentifier $param_VCDataIdentifier_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+    public cbit.vcell.solver.CartesianMesh getMesh(cbit.util.VCDataIdentifier $param_VCDataIdentifier_1)
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getMesh_8, new java.lang.Object[] {$param_VCDataIdentifier_1}, 528701435120739779L);
-	    return ((cbit.vcell.solvers.CartesianMesh) $result);
+	    return ((cbit.vcell.solver.CartesianMesh) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -218,8 +218,8 @@ public final class LocalDataSetControllerProxy_Stub
     }
     
     // implementation of getODEData(VCDataIdentifier)
-    public cbit.vcell.solver.ode.ODESimData getODEData(cbit.vcell.server.VCDataIdentifier $param_VCDataIdentifier_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+    public cbit.vcell.solver.ode.ODESimData getODEData(cbit.util.VCDataIdentifier $param_VCDataIdentifier_1)
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getODEData_9, new java.lang.Object[] {$param_VCDataIdentifier_1}, 8459143810630880411L);
@@ -228,7 +228,7 @@ public final class LocalDataSetControllerProxy_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -236,8 +236,8 @@ public final class LocalDataSetControllerProxy_Stub
     }
     
     // implementation of getParticleDataBlock(VCDataIdentifier, double)
-    public cbit.vcell.simdata.ParticleDataBlock getParticleDataBlock(cbit.vcell.server.VCDataIdentifier $param_VCDataIdentifier_1, double $param_double_2)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+    public cbit.vcell.simdata.ParticleDataBlock getParticleDataBlock(cbit.util.VCDataIdentifier $param_VCDataIdentifier_1, double $param_double_2)
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getParticleDataBlock_10, new java.lang.Object[] {$param_VCDataIdentifier_1, new java.lang.Double($param_double_2)}, 13989751828209397L);
@@ -246,7 +246,7 @@ public final class LocalDataSetControllerProxy_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -254,8 +254,8 @@ public final class LocalDataSetControllerProxy_Stub
     }
     
     // implementation of getParticleDataExists(VCDataIdentifier)
-    public boolean getParticleDataExists(cbit.vcell.server.VCDataIdentifier $param_VCDataIdentifier_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+    public boolean getParticleDataExists(cbit.util.VCDataIdentifier $param_VCDataIdentifier_1)
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getParticleDataExists_11, new java.lang.Object[] {$param_VCDataIdentifier_1}, 507491329244883025L);
@@ -264,7 +264,7 @@ public final class LocalDataSetControllerProxy_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -272,8 +272,8 @@ public final class LocalDataSetControllerProxy_Stub
     }
     
     // implementation of getSimDataBlock(VCDataIdentifier, String, double)
-    public cbit.vcell.simdata.SimDataBlock getSimDataBlock(cbit.vcell.server.VCDataIdentifier $param_VCDataIdentifier_1, java.lang.String $param_String_2, double $param_double_3)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+    public cbit.vcell.simdata.SimDataBlock getSimDataBlock(cbit.util.VCDataIdentifier $param_VCDataIdentifier_1, java.lang.String $param_String_2, double $param_double_3)
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getSimDataBlock_12, new java.lang.Object[] {$param_VCDataIdentifier_1, $param_String_2, new java.lang.Double($param_double_3)}, 1576570454165661977L);
@@ -282,7 +282,7 @@ public final class LocalDataSetControllerProxy_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -290,8 +290,8 @@ public final class LocalDataSetControllerProxy_Stub
     }
     
     // implementation of getTimeSeriesValues(VCDataIdentifier, TimeSeriesJobSpec)
-    public cbit.util.TimeSeriesJobResults getTimeSeriesValues(cbit.vcell.server.VCDataIdentifier $param_VCDataIdentifier_1, cbit.util.TimeSeriesJobSpec $param_TimeSeriesJobSpec_2)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+    public cbit.util.TimeSeriesJobResults getTimeSeriesValues(cbit.util.VCDataIdentifier $param_VCDataIdentifier_1, cbit.util.TimeSeriesJobSpec $param_TimeSeriesJobSpec_2)
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getTimeSeriesValues_13, new java.lang.Object[] {$param_VCDataIdentifier_1, $param_TimeSeriesJobSpec_2}, 5894587440704882934L);
@@ -300,7 +300,7 @@ public final class LocalDataSetControllerProxy_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -309,7 +309,7 @@ public final class LocalDataSetControllerProxy_Stub
     
     // implementation of makeRemoteFile(ExportSpecs)
     public cbit.rmi.event.ExportEvent makeRemoteFile(cbit.vcell.export.server.ExportSpecs $param_ExportSpecs_1)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_makeRemoteFile_14, new java.lang.Object[] {$param_ExportSpecs_1}, -2093121804079289022L);
@@ -318,7 +318,7 @@ public final class LocalDataSetControllerProxy_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -326,8 +326,8 @@ public final class LocalDataSetControllerProxy_Stub
     }
     
     // implementation of removeFunction(VCDataIdentifier, AnnotatedFunction)
-    public void removeFunction(cbit.vcell.server.VCDataIdentifier $param_VCDataIdentifier_1, cbit.vcell.math.AnnotatedFunction $param_AnnotatedFunction_2)
-	throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException
+    public void removeFunction(cbit.util.VCDataIdentifier $param_VCDataIdentifier_1, cbit.vcell.math.AnnotatedFunction $param_AnnotatedFunction_2)
+	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    ref.invoke(this, $method_removeFunction_15, new java.lang.Object[] {$param_VCDataIdentifier_1, $param_AnnotatedFunction_2}, 4880148552189873128L);
@@ -335,7 +335,7 @@ public final class LocalDataSetControllerProxy_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.server.DataAccessException e) {
+	} catch (cbit.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);

@@ -1,4 +1,5 @@
 package cbit.vcell.simdata;
+import cbit.vcell.solver.CartesianMesh;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solver.VCSimulationIdentifier;
@@ -8,12 +9,14 @@ import cbit.vcell.solver.VCSimulationIdentifier;
 ©*/
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.math.*;
+
 import java.io.*;
 import java.util.*;
 import cbit.vcell.server.*;
 import cbit.vcell.solvers.*;
 import cbit.vcell.parser.*;
 import cbit.util.*;
+
 import java.util.zip.*;
 /**
  * This type was created in VisualAge.
@@ -352,7 +355,7 @@ private double[] calcSpaceStats(double[] rawVals,int varIndex,DataSetControllerI
  * @return long
  * @param dataType int
  * @param timepoint double
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  */
 public synchronized long getDataBlockTimeStamp(int dataType, double timepoint) throws DataAccessException {
 	switch (dataType) {

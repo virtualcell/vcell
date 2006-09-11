@@ -1,5 +1,6 @@
 package cbit.vcell.simdata;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
+import cbit.vcell.solver.CartesianMesh;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
@@ -10,6 +11,7 @@ import cbit.vcell.solver.test.MathTestingUtilities;
 ©*/
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.math.*;
+
 import java.io.*;
 import java.util.*;
 import cbit.vcell.server.*;
@@ -230,7 +232,7 @@ private boolean checkTimeArrays(double[] timeArray) {
  * @return long
  * @param dataType int
  * @param timepoint double
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  */
 public long getDataBlockTimeStamp(int dataType, double timepoint) throws DataAccessException {
 	long latestTimeStamp = Long.MIN_VALUE;

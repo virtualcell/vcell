@@ -11,12 +11,12 @@ public class SimulationDataTest {
  * @param args java.lang.String[]
  */
 public static void main(String[] args) {
-	final cbit.vcell.server.User user = new cbit.vcell.server.User("fgao15",new cbit.sql.KeyValue("4123431"));	
+	final cbit.util.User user = new cbit.util.User("fgao15",new cbit.util.KeyValue("4123431"));	
 	cbit.vcell.server.VCDataIdentifier vcData1 = new cbit.vcell.server.VCDataIdentifier() {
 		public String getID() {
 			return "SimID_8483780";
 		}
-		public cbit.vcell.server.User getOwner() {
+		public cbit.util.User getOwner() {
 			return user;
 		}
 	};
@@ -37,14 +37,14 @@ public static void main(String[] args) {
 				} catch (java.io.IOException e) {
 					System.out.println(runs + "---Timepoint@" + a[i]  + "--- ******IOException*******:");
 					e.printStackTrace();
-				} catch (cbit.vcell.server.DataAccessException e) {
+				} catch (cbit.util.DataAccessException e) {
 					System.out.println(runs + "---Timepoint@" + a[i]  + "--- ******DataAccessException*******:");
 					e.printStackTrace();
 				}
 			}
 		} catch (java.io.IOException e) {
 			e.printStackTrace(System.out);
-		} catch (cbit.vcell.server.DataAccessException e) {
+		} catch (cbit.util.DataAccessException e) {
 			e.printStackTrace(System.out);
 		} 
 		runs ++;

@@ -4,7 +4,8 @@ package cbit.vcell.simdata;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.server.User;
+import cbit.util.User;
+import cbit.util.VCDataIdentifier;
 /**
  * This type was created in VisualAge.
  */
@@ -33,7 +34,7 @@ protected DataInfo(User user, String simID, String varName, double simTime, long
  * @return boolean
  * @param simResultsInfo cbit.vcell.simdata.SimResultsInfo
  */
-public boolean belongsTo(cbit.vcell.server.VCDataIdentifier vcDataID){
+public boolean belongsTo(VCDataIdentifier vcDataID){
 	return (getSimID().equals(vcDataID.getID()) && 
 			getUser().equals(vcDataID.getOwner()));
 }

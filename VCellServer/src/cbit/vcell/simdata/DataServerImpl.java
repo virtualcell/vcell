@@ -8,18 +8,20 @@ import java.util.*;
 import java.rmi.*;
 import java.rmi.server.*;
 import java.io.*;
-import cbit.vcell.solvers.CartesianMesh;
+
+import cbit.util.DataAccessException;
+import cbit.util.User;
 import cbit.vcell.export.server.ExportServiceImpl;
-import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.User;
-import cbit.vcell.server.VCDataIdentifier;
+import cbit.util.SessionLog;
+import cbit.util.VCDataIdentifier;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.CoordinateIndex;
+import cbit.vcell.math.DataIdentifier;
 import cbit.vcell.server.PermissionException;
-import cbit.vcell.server.DataAccessException;
 import cbit.plot.PlotData;
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.MessageEvent;
+import cbit.vcell.solver.CartesianMesh;
 import cbit.vcell.solver.SimulationInfo;
 
 /**
@@ -47,7 +49,7 @@ public DataServerImpl (SessionLog log, DataSetControllerImpl dsControllerImpl, E
  * Insert the method's description here.
  * Creation date: (10/11/00 1:11:04 PM)
  * @param function cbit.vcell.math.Function
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 public void addFunction(User user, VCDataIdentifier vcdID, AnnotatedFunction function) throws DataAccessException {
@@ -66,7 +68,7 @@ public void addFunction(User user, VCDataIdentifier vcdID, AnnotatedFunction fun
  * Insert the method's description here.
  * Creation date: (10/11/00 1:11:04 PM)
  * @param function cbit.vcell.math.Function[]
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 public void addFunctions(User user, VCDataIdentifier vcdID, AnnotatedFunction[] functions) throws DataAccessException {
@@ -152,7 +154,7 @@ public double[] getDataSetTimes(User user, VCDataIdentifier vcdID) throws DataAc
  * Insert the method's description here.
  * Creation date: (10/11/00 1:11:04 PM)
  * @param function cbit.vcell.math.Function
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 public AnnotatedFunction[] getFunctions(User user, VCDataIdentifier vcdID) throws DataAccessException {
@@ -244,7 +246,7 @@ public CartesianMesh getMesh(User user, VCDataIdentifier vcdID) throws DataAcces
  * Insert the method's description here.
  * Creation date: (1/14/00 11:20:51 AM)
  * @return cbit.vcell.export.data.ODESimData
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 public cbit.vcell.solver.ode.ODESimData getODEData(User user, VCDataIdentifier vcdID) throws DataAccessException {
@@ -328,9 +330,9 @@ public cbit.util.TimeSeriesJobResults getTimeSeriesValues(User user, VCDataIdent
  * Insert the method's description here.
  * Creation date: (3/30/2001 11:11:52 AM)
  * @param exportSpecs cbit.vcell.export.server.ExportSpecs
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  */
-public ExportEvent makeRemoteFile(User user, cbit.vcell.export.server.ExportSpecs exportSpecs) throws cbit.vcell.server.DataAccessException {
+public ExportEvent makeRemoteFile(User user, cbit.vcell.export.server.ExportSpecs exportSpecs) throws cbit.util.DataAccessException {
 	log.print("DataServerImpl.makeRemoteFile(" + exportSpecs.getVCDataIdentifier() + ")");
 	try {
 		ExportEvent exportEvent = exportServiceImpl.makeRemoteFile(user, this, exportSpecs);
@@ -346,7 +348,7 @@ public ExportEvent makeRemoteFile(User user, cbit.vcell.export.server.ExportSpec
  * Insert the method's description here.
  * Creation date: (10/11/00 1:11:04 PM)
  * @param function cbit.vcell.math.Function
- * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 public void removeFunction(User user, VCDataIdentifier vcdID, AnnotatedFunction function) throws DataAccessException {

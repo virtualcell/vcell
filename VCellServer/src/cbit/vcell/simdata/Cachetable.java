@@ -6,6 +6,11 @@ package cbit.vcell.simdata;
 ©*/
 import java.util.Hashtable;
 import java.util.Enumeration;
+
+import cbit.gui.PropertyLoader;
+import cbit.util.CacheException;
+import cbit.util.CacheStatus;
+import cbit.util.VCDataIdentifier;
 import cbit.vcell.server.*;
 /**
  * This type was created in VisualAge.

@@ -5,8 +5,9 @@ package cbit.vcell.simdata;
 ©*/
 import cbit.vcell.geometry.SampledCurve;
 import cbit.vcell.geometry.Coordinate;
-import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.solver.CartesianMesh;
 import cbit.vcell.geometry.CurveSelectionInfo;
+import cbit.vcell.math.VariableType;
 /**
  * Insert the type's description here.
  * Creation date: (2/26/2001 3:48:34 PM)
@@ -173,7 +174,7 @@ public abstract double getLengthInMicrons();
  * Creation date: (4/2/2001 1:54:58 PM)
  * @return cbit.vcell.solvers.CartesianMesh
  */
-public cbit.vcell.solvers.CartesianMesh getMesh() {
+public cbit.vcell.solver.CartesianMesh getMesh() {
 	return mesh;
 }
 

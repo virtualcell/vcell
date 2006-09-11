@@ -6,6 +6,7 @@ package cbit.vcell.simdata;
 ©*/
 import java.util.Vector;
 import cbit.vcell.geometry.Coordinate;
+import cbit.vcell.math.VariableType;
 /**
  * Insert the type's description here.
  * Creation date: (7/18/2001 2:39:54 PM)
@@ -24,17 +25,17 @@ public class SpatialSelectionMembrane extends SpatialSelection {
  */
 public SpatialSelectionMembrane(
     cbit.vcell.geometry.CurveSelectionInfo argCurveSelectionInfo,
-    cbit.vcell.simdata.VariableType argVarType,
-    cbit.vcell.solvers.CartesianMesh argMesh,
+    cbit.vcell.math.VariableType argVarType,
+    cbit.vcell.solver.CartesianMesh argMesh,
     int[] sampledDataIndexes,
     cbit.vcell.geometry.SampledCurve argSelectionSource) {
     super(argCurveSelectionInfo, argVarType, argMesh);
 
     selectionSource = argSelectionSource;
-    if (argVarType.equals(cbit.vcell.simdata.VariableType.MEMBRANE)) {
+    if (argVarType.equals(cbit.vcell.math.VariableType.MEMBRANE)) {
         fieldSampledDataIndexes = sampledDataIndexes;
     } else
-        if (argVarType.equals(cbit.vcell.simdata.VariableType.MEMBRANE_REGION)) {
+        if (argVarType.equals(cbit.vcell.math.VariableType.MEMBRANE_REGION)) {
             fieldSampledDataIndexes = new int[sampledDataIndexes.length];
             for (int i = 0; i < sampledDataIndexes.length; i++) {
                 fieldSampledDataIndexes[i] =

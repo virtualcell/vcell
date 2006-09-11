@@ -16,7 +16,7 @@ public class PDEDataInfo extends DataInfo {
  * @param simTime double
  * @param dataBlockTimeStamp long
  */
-public PDEDataInfo(cbit.vcell.server.User user, String simID, String varName, double simTime, long dataBlockTimeStamp) {
+public PDEDataInfo(cbit.util.User user, String simID, String varName, double simTime, long dataBlockTimeStamp) {
 	super(user, simID, varName, simTime, dataBlockTimeStamp, "Pde");
 }
 }
