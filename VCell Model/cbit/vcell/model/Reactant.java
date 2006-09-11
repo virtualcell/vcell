@@ -1,0 +1,78 @@
+package cbit.vcell.model;
+/*©
+ * (C) Copyright University of Connecticut Health Center 2001.
+ * All rights reserved.
+©*/
+import cbit.util.KeyValue;
+import cbit.util.Matchable;
+
+public class Reactant extends ReactionParticipant
+{
+/**
+ * This method was created in VisualAge.
+ * @param reactionStep cbit.vcell.model.ReactionStep
+ */
+Reactant(KeyValue key, ReactionStep reactionStep) {
+	super(key,reactionStep);
+}
+
+
+public Reactant(KeyValue key, SimpleReaction parent,SpeciesContext speciesContext,int stoichiometry){
+	super(key, parent,speciesContext,stoichiometry);
+}   
+
+
+/**
+ * This method was created in VisualAge.
+ * @return boolean
+ * @param obj java.lang.Object
+ */
+public boolean compareEqual(Matchable obj) {
+	if (obj instanceof Reactant){
+		Reactant r = (Reactant)obj;
+		return compareEqual0(r);
+	}else{
+		return false;
+	}
+}
+
+
+/**
+ * This method was created by a SmartGuide.
+ * @param tokens java.util.StringTokenizer
+ * @exception java.lang.Exception The exception description.
+ */
+public void fromTokens(cbit.vcell.math.CommentStringTokenizer tokens, Model model) throws Exception {
+
+	String scName = tokens.nextToken();				// read speciesContext name
+	String speciesName = tokens.nextToken();		// read species name
+	String structureName = tokens.nextToken();		// read structure name
+	String stoichStr = tokens.nextToken();			// read Stoichiometry
+	SpeciesContext sc = model.getSpeciesContext(scName);
+	if (sc==null){
+		throw new Exception("speciesContext "+scName+" not found");
+	}
+	setSpeciesContext(sc);
+	setStoichiometry((new Integer(stoichStr)).intValue());
+}
+
+
+/**
+ * This method was created in VisualAge.
+ * @return java.lang.String
+ */
+public String toString() {
+	String scName = (getSpeciesContext()!=null)?(getSpeciesContext().getName()):"null";
+	return "Reactant(id="+getKey()+", speciesContext="+scName+"')";
+}
+
+
+/**
+ * This method was created by a SmartGuide.
+ * @param ps java.io.PrintStream
+ * @exception java.lang.Exception The exception description.
+ */
+public void writeTokens(java.io.PrintWriter pw) {
+	pw.println("\t\t"+VCMODL.Reactant+" "+getSpeciesContext().getName()+" "+getStoichiometry());
+}
+}
