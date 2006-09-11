@@ -13,4 +13,6 @@ Require-Bundle: org.vcell.common,
  org.vcell.render,
  org.vcell.bionetgen
 Export-Package: cbit.vcell.client.server,
- cbit.vcell.desktop.controls
+ cbit.vcell.clientdb,
+ cbit.vcell.desktop.controls,
+ org.vcell.manager

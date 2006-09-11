@@ -11,7 +11,8 @@ import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SpatialSelection;
 import cbit.vcell.solvers.CartesianMesh;
 import java.beans.*;
-import cbit.image.SourceDataInfo;
+
+import cbit.image.gui.SourceDataInfo;
 import cbit.util.*;
 /**
  * Insert the type's description here.
@@ -306,7 +307,7 @@ protected abstract SimDataBlock getSimDataBlock(String varName, double time) thr
  * @return The sourceDataInfo property value.
  * @see #setSourceDataInfo
  */
-public cbit.image.SourceDataInfo getSourceDataInfo() {
+public cbit.image.gui.SourceDataInfo getSourceDataInfo() {
 	return fieldSourceDataInfo;
 }
 
@@ -605,8 +606,8 @@ protected void setParticleDataBlock(ParticleDataBlock particleDataBlock) {
  * @param sourceDataInfo The new value for the property.
  * @see #getSourceDataInfo
  */
-protected void setSourceDataInfo(cbit.image.SourceDataInfo sourceDataInfo) {
-	cbit.image.SourceDataInfo oldValue = fieldSourceDataInfo;
+protected void setSourceDataInfo(cbit.image.gui.SourceDataInfo sourceDataInfo) {
+	cbit.image.gui.SourceDataInfo oldValue = fieldSourceDataInfo;
 	fieldSourceDataInfo = sourceDataInfo;
 	firePropertyChange("sourceDataInfo", oldValue, sourceDataInfo);
 }
