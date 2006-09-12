@@ -5,7 +5,8 @@ package cbit.vcell.solvers;
  * All rights reserved.
 ©*/
 import java.io.*;
-import cbit.vcell.server.*;
+
+import cbit.util.SessionLog;
 import cbit.vcell.solver.*;
 /**
  * Insert the type's description here.
