@@ -25,6 +25,8 @@ public abstract class ReactionStep implements Cacheable, Serializable, ScopedSym
 	public final static int PHYSICS_MOLECULAR_ONLY = 0;
 	public final static int PHYSICS_MOLECULAR_AND_ELECTRICAL = 1;
 	public final static int PHYSICS_ELECTRICAL_ONLY = 2;
+	public static final String DATABASE_REACTTYPE_FLUX = "flux";
+	public static final String DATABASE_REACTTYPE_SIMPLE = "simple";
 
 	private int fieldPhysicsOptions = PHYSICS_MOLECULAR_ONLY;
 

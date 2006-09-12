@@ -1,8 +1,6 @@
 package org.vcell.model;
 
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.Vector;
 
 import org.osgi.framework.BundleActivator;
@@ -13,7 +11,6 @@ import org.osgi.framework.ServiceListener;
 import org.osgi.framework.ServiceEvent;
 import org.vcell.model.analysis.IAnalysisTaskFactory;
 
-import cbit.vcell.client.server.UserPreferences;
 
 
 /**
@@ -41,7 +38,6 @@ public class Activator implements BundleActivator, ServiceListener
     // The service reference being used.
 //    private ServiceReference m_ref = null;
     
-    private UserPreferences userPreferences = null;
     // The service object being used.
 //    private IAnalysisTaskFactory m_analysisTaskFactory = null;
     
@@ -56,15 +52,7 @@ public class Activator implements BundleActivator, ServiceListener
     	return plugin;
     }
     
-    public UserPreferences getUserPreferences(){
-    	return userPreferences;
-    }
-    
-    public void setUserPreferences(UserPreferences argUserPreferences){
-    	this.userPreferences = argUserPreferences;
-    }
-    
-    public IAnalysisTaskFactory[] getAnalysisTaskFactories(String analysisTaskType) {
+     public IAnalysisTaskFactory[] getAnalysisTaskFactories(String analysisTaskType) {
 		ServiceReference[] analysisServiceRefs;
 		try {
 			analysisServiceRefs = m_context.getServiceReferences(IAnalysisTaskFactory.class.getName(), "(AnalysisTaskType="+analysisTaskType+")");

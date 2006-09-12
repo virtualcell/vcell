@@ -1,5 +1,4 @@
 package cbit.vcell.solver;
-import cbit.vcell.server.*;
 public class SimulationJob implements java.io.Serializable {
 	private Simulation workingSim = null;
 	private int jobIndex = -1;				// expect non-negative value.

@@ -1,5 +1,4 @@
 package cbit.vcell.xml;
-import cbit.vcell.solver.Simulation;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
@@ -204,8 +203,8 @@ public org.jdom.Element getXML(cbit.util.Version version, String nameParam, Stri
 			annotationElem.setText(this.mangle(version.getAnnot()));
 			versionElement.addContent(annotationElem);
 		}
-		if (version instanceof cbit.sql.SimulationVersion){
-			cbit.sql.SimulationVersion simVersion = (cbit.sql.SimulationVersion)version;
+		if (version instanceof SimulationVersion){
+			SimulationVersion simVersion = (SimulationVersion)version;
 			if (simVersion.getParentSimulationReference()!=null){
 				org.jdom.Element parentSimRefElem = new org.jdom.Element(XMLTags.ParentSimRefTag);
 				parentSimRefElem.setAttribute(XMLTags.KeyValueAttrTag, simVersion.getParentSimulationReference().toString());

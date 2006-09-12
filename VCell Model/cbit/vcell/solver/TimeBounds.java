@@ -5,7 +5,6 @@ package cbit.vcell.solver;
  * All rights reserved.
 ©*/
 import cbit.util.DataAccessException;
-import cbit.vcell.server.*;
 import cbit.vcell.math.*;
 /**
  * Insert the type's description here.

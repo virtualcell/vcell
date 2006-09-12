@@ -4,7 +4,6 @@ import java.beans.*;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.sql.DbDictionary;
 import cbit.util.KeyValue;
 import cbit.util.Matchable;
 import cbit.util.Compare;

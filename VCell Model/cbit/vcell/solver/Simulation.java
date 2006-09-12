@@ -15,11 +15,11 @@ import java.beans.PropertyVetoException;
 import cbit.util.DataAccessException;
 import cbit.util.ISize;
 import cbit.util.KeyValue;
+import cbit.util.SimulationVersion;
 import cbit.util.Version;
 import cbit.util.Versionable;
 import cbit.vcell.math.*;
 import cbit.vcell.solver.SimulationInfo;
-import cbit.sql.*;
 /**
  * Specifies the problem to be solved by a solver.
  * It is subclassed for each type of problem/solver.
@@ -42,7 +42,7 @@ public class Simulation implements Versionable, cbit.util.Matchable, cbit.vcell.
 	/**
 	 * Database version of the Simulation.
 	 */
-	private cbit.sql.SimulationVersion fieldSimulationVersion = null;
+	private SimulationVersion fieldSimulationVersion = null;
 	/**
 	 * Mathematical description of the physiological model.
 	 */
@@ -759,7 +759,7 @@ public java.lang.String getSimulationID() {
  * Creation date: (10/30/00 11:48:21 AM)
  * @return cbit.vcell.solver.SimulationInfo
  */
-public cbit.vcell.solver.SimulationInfo getSimulationInfo() {
+public SimulationInfo getSimulationInfo() {
 	if (getVersion() != null) {
 		return new SimulationInfo(
 			getMathDescription().getKey(),
@@ -775,7 +775,7 @@ public cbit.vcell.solver.SimulationInfo getSimulationInfo() {
  * Creation date: (10/24/00 1:34:10 PM)
  * @return cbit.sql.Version
  */
-public cbit.sql.SimulationVersion getSimulationVersion() {
+public SimulationVersion getSimulationVersion() {
 	return fieldSimulationVersion;
 }
 
@@ -1229,7 +1229,7 @@ public void setSolverTaskDescription(SolverTaskDescription solverTaskDescription
  * Creation date: (11/14/00 3:49:12 PM)
  * @param version cbit.sql.Version
  */
-private void setVersion(cbit.sql.SimulationVersion simulationVersion) throws PropertyVetoException {
+private void setVersion(SimulationVersion simulationVersion) throws PropertyVetoException {
 	this.fieldSimulationVersion = simulationVersion;
 	if (simulationVersion != null){
 		setName(simulationVersion.getName());

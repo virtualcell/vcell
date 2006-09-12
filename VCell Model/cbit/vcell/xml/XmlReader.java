@@ -8,15 +8,12 @@ import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.mapping.*;
 import cbit.image.*;
-import org.jdom.input.SAXBuilder;
 import cbit.vcell.model.*;
 import cbit.vcell.math.*;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.geometry.*;
 import java.util.*;
-import cbit.vcell.server.*;
-import cbit.sql.*;
 import org.jdom.Element;
 import org.vcell.model.Activator;
 import org.vcell.model.analysis.IAnalysisTask;
@@ -1048,11 +1045,11 @@ public cbit.vcell.model.FluxReaction getFluxReaction( Element param, Model model
 	if (fluxOptionString!=null&&fluxOptionString.length()>0){
 		try {
 			if (fluxOptionString.equals(XMLTags.FluxOptionElectricalOnly)){
-				fluxreaction.setPhysicsOptions(fluxreaction.PHYSICS_ELECTRICAL_ONLY);
+				fluxreaction.setPhysicsOptions(ReactionStep.PHYSICS_ELECTRICAL_ONLY);
 			}else if (fluxOptionString.equals(XMLTags.FluxOptionMolecularAndElectrical)){
-				fluxreaction.setPhysicsOptions(fluxreaction.PHYSICS_MOLECULAR_AND_ELECTRICAL);
+				fluxreaction.setPhysicsOptions(ReactionStep.PHYSICS_MOLECULAR_AND_ELECTRICAL);
 			}else if (fluxOptionString.equals(XMLTags.FluxOptionMolecularOnly)){
-				fluxreaction.setPhysicsOptions(fluxreaction.PHYSICS_MOLECULAR_ONLY);
+				fluxreaction.setPhysicsOptions(ReactionStep.PHYSICS_MOLECULAR_ONLY);
 			} 
 		}catch (java.beans.PropertyVetoException e){
 			e.printStackTrace(System.out);
