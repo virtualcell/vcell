@@ -4,15 +4,8 @@ package cbit.vcell.geometry;
  * All rights reserved.
 ©*/
 import java.beans.*;
-import java.util.*;
-import java.io.*;
-import java.rmi.RemoteException;
-import cbit.vcell.parser.ExpressionException;
-import cbit.image.ImageException;
 import cbit.image.VCImage;
-import cbit.image.VCImageUncompressed;
 import cbit.vcell.math.VCML;
-import cbit.vcell.modeldb.GeomDbDriver;
 import cbit.util.*;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 /**
