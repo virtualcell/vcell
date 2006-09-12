@@ -3,7 +3,9 @@ import cbit.vcell.server.*;
 import cbit.vcell.solver.*;
 import java.io.*;
 import cbit.vcell.messaging.server.SimulationTask;
+import cbit.gui.PropertyLoader;
 import cbit.util.ExecutableException;
+import cbit.util.SessionLog;
 
 /**
  * Insert the type's description here.
@@ -23,9 +25,9 @@ public class LsfSolver extends AbstractCompiledSolver {
  * @param sessionLog cbit.vcell.server.SessionLog
  * @exception cbit.vcell.solver.SolverException The exception description.
  */
-public LsfSolver(SimulationTask simTask, java.io.File directory, cbit.vcell.server.SessionLog sessionLog) throws cbit.vcell.solver.SolverException {
+public LsfSolver(SimulationTask simTask, java.io.File directory, SessionLog sessionLog) throws cbit.vcell.solver.SolverException {
 	super(simTask.getSimulationJob(), directory, sessionLog);
-	realSolver = (AbstractCompiledSolver)cbit.vcell.solver.SolverFactory.createSolver(sessionLog, directory, simTask.getSimulationJob());
+	realSolver = (AbstractCompiledSolver)cbit.vcell.solvers.SolverFactory.createSolver(sessionLog, directory, simTask.getSimulationJob());
 	realSolver.addSolverListener(new SolverListener() {
 		public final void solverAborted(SolverEvent event) {		
 			fireSolverAborted(event.getMessage());
