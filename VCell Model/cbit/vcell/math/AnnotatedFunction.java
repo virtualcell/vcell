@@ -1,5 +1,6 @@
 package cbit.vcell.math;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.math.Function;
 /**
  * Insert the type's description here.

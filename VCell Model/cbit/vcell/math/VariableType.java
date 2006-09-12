@@ -175,30 +175,6 @@ public static final VariableType getVariableTypeFromInteger(int varType) {
 }
 /**
  * Insert the method's description here.
- * Creation date: (10/3/00 2:48:55 PM)
- * @return cbit.vcell.simdata.PDEVariableType
- * @param mesh cbit.vcell.solvers.CartesianMesh
- * @param dataLength int
- */
-public static final VariableType getVariableTypeFromLength(cbit.vcell.solvers.CartesianMesh mesh, int dataLength) {
-	VariableType result = null;
-	if (mesh.getDataLength(VOLUME) == dataLength) {
-		result = VOLUME;
-	} else if (mesh.getDataLength(MEMBRANE) == dataLength) {
-		result = MEMBRANE;
-	} else if (mesh.getDataLength(CONTOUR) == dataLength) {
-		result = CONTOUR;
-	} else if (mesh.getDataLength(VOLUME_REGION) == dataLength) {
-		result = VOLUME_REGION;
-	} else if (mesh.getDataLength(MEMBRANE_REGION) == dataLength) {
-		result = MEMBRANE_REGION;
-	} else if (mesh.getDataLength(CONTOUR_REGION) == dataLength) {
-		result = CONTOUR_REGION;
-	}
-	return result;
-}
-/**
- * Insert the method's description here.
  * Creation date: (10/5/00 11:01:55 AM)
  * @return int
  */
