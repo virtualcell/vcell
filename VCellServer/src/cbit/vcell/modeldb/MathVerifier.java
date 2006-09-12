@@ -93,7 +93,7 @@ public void scan(User users[], boolean bUpdateDatabase, KeyValue bioModelKey, in
 	for (int i=0;i<users.length;i++){
 		User user = users[i];
 		BioModelInfo bioModelInfos[] = dbServerImpl.getBioModelInfos(user,false);
-		SessionLog userLog = new cbit.vcell.server.StdoutSessionLog(user.toString());
+		SessionLog userLog = new cbit.util.StdoutSessionLog(user.toString());
 		userLog.print("Testing user '"+user+"'");
 
 		//
@@ -358,7 +358,7 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 	
 
 	User user = new User("Administrator", new cbit.util.KeyValue("2"));
-	SessionLog userLog = new cbit.vcell.server.StdoutSessionLog(user.toString());
+	SessionLog userLog = new cbit.util.StdoutSessionLog(user.toString());
 	for (int i=0;i<bioModelKeys.length;i++){
 		BioModelInfo bioModelInfo = dbServerImpl.getBioModelInfo(user,bioModelKeys[i]);
 		userLog.print("Testing bioModel with key '"+bioModelKeys[i]+"'");
@@ -608,7 +608,7 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
     final java.util.Date totalVolumeCorrectionFixDate = calendar.getTime();
 
     User user = new User("Administrator", new cbit.util.KeyValue("2"));
-    SessionLog userLog = new cbit.vcell.server.StdoutSessionLog(user.toString());
+    SessionLog userLog = new cbit.util.StdoutSessionLog(user.toString());
     for (int i = 0; i < simContextKeys.length; i++) {
         userLog.print("Testing SimContext with key '" + simContextKeys[i] + "'");
         // get biomodel refs

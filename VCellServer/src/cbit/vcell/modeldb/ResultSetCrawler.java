@@ -135,7 +135,7 @@ public static void main(String[] args) {
 		
 		PropertyLoader.loadProperties();
 
-		SessionLog log = new cbit.vcell.server.StdoutSessionLog("ResultSetCrawler");		
+		SessionLog log = new cbit.util.StdoutSessionLog("ResultSetCrawler");		
 		conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
 		cbit.sql.KeyFactory keyFactory = new cbit.sql.OracleKeyFactory();
 		

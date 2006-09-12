@@ -13,12 +13,14 @@ import java.util.Vector;
 
 import java.sql.*;
 import cbit.sql.*;
-import cbit.vcell.dictionary.CompoundTable;
-import cbit.vcell.dictionary.EnzymeTable;
-import cbit.vcell.dictionary.CompoundAliasTable;
-import cbit.vcell.dictionary.EnzymeAliasTable;
-import cbit.vcell.dictionary.ProteinTable;
-import cbit.vcell.dictionary.ProteinAliasTable;
+import cbit.vcell.dictionary.database.CompoundAliasTable;
+import cbit.vcell.dictionary.database.CompoundTable;
+import cbit.vcell.dictionary.database.DBSpeciesTable;
+import cbit.vcell.dictionary.database.EnzymeAliasTable;
+import cbit.vcell.dictionary.database.EnzymeReactionTable;
+import cbit.vcell.dictionary.database.EnzymeTable;
+import cbit.vcell.dictionary.database.ProteinAliasTable;
+import cbit.vcell.dictionary.database.ProteinTable;
 
 
 /**
@@ -32,7 +34,7 @@ public class DictionaryDbDriver {
     public static final EnzymeAliasTable enzymeAliasTable = EnzymeAliasTable.table;
     public static final ProteinAliasTable proteinAliasTable = ProteinAliasTable.table;
     public static final ProteinTable proteinTable = ProteinTable.table;
-	public static final cbit.vcell.dictionary.DBSpeciesTable dbSpeciesTable = cbit.vcell.dictionary.DBSpeciesTable.table;
+	public static final cbit.vcell.dictionary.database.DBSpeciesTable dbSpeciesTable = cbit.vcell.dictionary.database.DBSpeciesTable.table;
 	
     private SessionLog log = null;
     private DBCacheTable dbc = null;
