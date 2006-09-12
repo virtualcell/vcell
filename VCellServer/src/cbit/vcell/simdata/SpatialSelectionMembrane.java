@@ -4,9 +4,8 @@ package cbit.vcell.simdata;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.util.Vector;
 import cbit.vcell.geometry.Coordinate;
-import cbit.vcell.math.VariableType;
+import cbit.vcell.solvers.CartesianMesh;
 /**
  * Insert the type's description here.
  * Creation date: (7/18/2001 2:39:54 PM)
@@ -26,7 +25,7 @@ public class SpatialSelectionMembrane extends SpatialSelection {
 public SpatialSelectionMembrane(
     cbit.vcell.geometry.CurveSelectionInfo argCurveSelectionInfo,
     cbit.vcell.math.VariableType argVarType,
-    cbit.vcell.solver.CartesianMesh argMesh,
+    CartesianMesh argMesh,
     int[] sampledDataIndexes,
     cbit.vcell.geometry.SampledCurve argSelectionSource) {
     super(argCurveSelectionInfo, argVarType, argMesh);

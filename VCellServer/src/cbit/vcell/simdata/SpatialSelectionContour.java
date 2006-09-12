@@ -1,6 +1,6 @@
 package cbit.vcell.simdata;
 
-import cbit.vcell.math.VariableType;
+import cbit.vcell.solvers.CartesianMesh;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -21,7 +21,7 @@ public class SpatialSelectionContour extends SpatialSelection {
  * @param sampledDataIndexes int[]
  * @param selectionKind int
  */
-public SpatialSelectionContour(cbit.vcell.geometry.CurveSelectionInfo argCurveSelectionInfo, cbit.vcell.math.VariableType argVarType, cbit.vcell.solver.CartesianMesh argMesh, int[] sampledDataIndexes) {
+public SpatialSelectionContour(cbit.vcell.geometry.CurveSelectionInfo argCurveSelectionInfo, cbit.vcell.math.VariableType argVarType, CartesianMesh argMesh, int[] sampledDataIndexes) {
 	super(argCurveSelectionInfo, argVarType, argMesh);
 	if (argVarType.equals(cbit.vcell.math.VariableType.CONTOUR)){
 		fieldSampledDataIndexes = sampledDataIndexes;

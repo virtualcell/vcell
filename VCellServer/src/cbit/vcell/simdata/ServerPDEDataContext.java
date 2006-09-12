@@ -6,8 +6,7 @@ package cbit.vcell.simdata;
 ©*/
 import cbit.util.DataAccessException;
 import cbit.util.User;
-import cbit.vcell.desktop.controls.PDEDataContext;
-import cbit.vcell.server.*;
+import cbit.util.VCDataIdentifier;
 /**
  * Insert the type's description here.
  * Creation date: (10/3/00 3:21:23 PM)

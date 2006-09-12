@@ -9,6 +9,7 @@ import cbit.vcell.geometry.*;
 import java.util.Vector;
 import cbit.vcell.math.CoordinateIndex;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.solvers.CartesianMesh;
 
 /**
  * Insert the type's description here.
@@ -29,7 +30,7 @@ public class SpatialSelectionVolume extends SpatialSelection {
  * @param sampledDataIndexes int[]
  * @param selectionKind int
  */
-public SpatialSelectionVolume(cbit.vcell.geometry.CurveSelectionInfo argCurveSelectionInfo, cbit.vcell.math.VariableType argVarType, cbit.vcell.solver.CartesianMesh argMesh) {
+public SpatialSelectionVolume(cbit.vcell.geometry.CurveSelectionInfo argCurveSelectionInfo, cbit.vcell.math.VariableType argVarType, CartesianMesh argMesh) {
 	super(argCurveSelectionInfo, argVarType, argMesh);
 }
 /**

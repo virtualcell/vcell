@@ -1,5 +1,6 @@
 package cbit.vcell.simdata;
 import cbit.util.VCDataIdentifier;
+import cbit.vcell.solvers.CartesianMesh;
 /**
  * Insert the type's description here.
  * Creation date: (9/19/2003 3:28:52 PM)
@@ -98,7 +99,7 @@ public java.io.File getLogFile() throws java.io.FileNotFoundException {
  * This method was created in VisualAge.
  * @return cbit.vcell.solvers.CartesianMesh
  */
-public cbit.vcell.solver.CartesianMesh getMesh() throws cbit.util.DataAccessException, cbit.vcell.math.MathException {
+public CartesianMesh getMesh() throws cbit.util.DataAccessException, cbit.vcell.math.MathException {
 	return null;
 }
 

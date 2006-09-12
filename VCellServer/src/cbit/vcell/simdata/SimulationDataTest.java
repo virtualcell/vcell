@@ -1,4 +1,7 @@
 package cbit.vcell.simdata;
+
+import cbit.util.VCDataIdentifier;
+
 /**
  * Insert the type's description here.
  * Creation date: (6/23/2004 1:39:55 PM)
@@ -12,7 +15,7 @@ public class SimulationDataTest {
  */
 public static void main(String[] args) {
 	final cbit.util.User user = new cbit.util.User("fgao15",new cbit.util.KeyValue("4123431"));	
-	cbit.vcell.server.VCDataIdentifier vcData1 = new cbit.vcell.server.VCDataIdentifier() {
+	VCDataIdentifier vcData1 = new VCDataIdentifier() {
 		public String getID() {
 			return "SimID_8483780";
 		}

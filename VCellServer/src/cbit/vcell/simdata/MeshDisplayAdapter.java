@@ -4,8 +4,10 @@ package cbit.vcell.simdata;
  * All rights reserved.
 ©*/
 import cbit.render.Quadrilateral;
+import cbit.render.Surface;
 import cbit.render.SurfaceCollection;
 import cbit.util.NullSessionLog;
+import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.ContourElement;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.solvers.MembraneElement;
@@ -20,7 +22,7 @@ import cbit.vcell.math.VariableType;
 public class MeshDisplayAdapter {
 	public static final int ORDER_PREPEND = 0x01;
 	public static final int ORDER_P0 = 0x02;
-	private cbit.vcell.solver.CartesianMesh mesh = null;
+	private CartesianMesh mesh = null;
 
 	private class ParamHolder{
 		int validMembraneSegmentCount;
@@ -54,7 +56,7 @@ public class MeshDisplayAdapter {
 /**
  * This method was created by a SmartGuide.
  */
-public MeshDisplayAdapter (cbit.vcell.solver.CartesianMesh argCartesianMesh) {
+public MeshDisplayAdapter (CartesianMesh argCartesianMesh) {
 	this.mesh = argCartesianMesh;
 }
 
@@ -215,7 +217,7 @@ private int determineOrder(MembraneElement from, MembraneElement to, int normalA
  * Creation date: (8/30/00 6:16:35 PM)
  * @return cbit.vcell.geometry.SampledCurve
  */
-private ParamHolder doCheck(MembraneElement currentMembraneElement,int normalAxis,int slice,MembraneElement firstInCurve,cbit.vcell.solver.CartesianMesh mesh,boolean[] bMembraneElementChecked) {
+private ParamHolder doCheck(MembraneElement currentMembraneElement,int normalAxis,int slice,MembraneElement firstInCurve,CartesianMesh mesh,boolean[] bMembraneElementChecked) {
 
 	ParamHolder paramHolder = new ParamHolder();
 	bMembraneElementChecked[currentMembraneElement.getMembraneIndex()] = true;
@@ -453,7 +455,7 @@ public double[] getDataValuesForMembraneIndexes(int[] membraneIndexes, double[] 
  * Creation date: (7/10/01 3:52:45 PM)
  * @return cbit.vcell.solvers.CartesianMesh
  */
-public cbit.vcell.solver.CartesianMesh getMesh() {
+public CartesianMesh getMesh() {
 	return mesh;
 }
 

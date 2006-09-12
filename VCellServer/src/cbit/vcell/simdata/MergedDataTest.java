@@ -2,11 +2,11 @@ package cbit.vcell.simdata;
 
 import cbit.gui.PropertyLoader;
 import cbit.util.SessionLog;
+import cbit.util.StdoutSessionLog;
 import cbit.util.User;
 import cbit.util.VCDataIdentifier;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solver.ode.ODESolverResultSetTest;
-import cbit.vcell.server.StdoutSessionLog;
 import java.io.File;
 /**
  * Insert the type's description here.

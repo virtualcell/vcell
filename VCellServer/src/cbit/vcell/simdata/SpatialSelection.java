@@ -3,9 +3,8 @@ package cbit.vcell.simdata;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.geometry.SampledCurve;
 import cbit.vcell.geometry.Coordinate;
-import cbit.vcell.solver.CartesianMesh;
+import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.geometry.CurveSelectionInfo;
 import cbit.vcell.math.VariableType;
 /**
@@ -174,7 +173,7 @@ public abstract double getLengthInMicrons();
  * Creation date: (4/2/2001 1:54:58 PM)
  * @return cbit.vcell.solvers.CartesianMesh
  */
-public cbit.vcell.solver.CartesianMesh getMesh() {
+public CartesianMesh getMesh() {
 	return mesh;
 }
 

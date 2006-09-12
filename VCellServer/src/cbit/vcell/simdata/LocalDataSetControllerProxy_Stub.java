@@ -3,6 +3,8 @@
 
 package cbit.vcell.simdata;
 
+import cbit.vcell.solvers.CartesianMesh;
+
 public final class LocalDataSetControllerProxy_Stub
     extends java.rmi.server.RemoteStub
     implements cbit.vcell.server.DataSetController, java.rmi.Remote
@@ -200,12 +202,12 @@ public final class LocalDataSetControllerProxy_Stub
     }
     
     // implementation of getMesh(VCDataIdentifier)
-    public cbit.vcell.solver.CartesianMesh getMesh(cbit.util.VCDataIdentifier $param_VCDataIdentifier_1)
+    public CartesianMesh getMesh(cbit.util.VCDataIdentifier $param_VCDataIdentifier_1)
 	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getMesh_8, new java.lang.Object[] {$param_VCDataIdentifier_1}, 528701435120739779L);
-	    return ((cbit.vcell.solver.CartesianMesh) $result);
+	    return ((CartesianMesh) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {

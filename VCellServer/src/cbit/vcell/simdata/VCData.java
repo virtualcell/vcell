@@ -3,17 +3,11 @@ package cbit.vcell.simdata;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.solver.CartesianMesh;
-import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.math.*;
 
 import java.io.*;
-import java.util.*;
-import cbit.vcell.server.*;
 import cbit.vcell.solvers.*;
-import cbit.vcell.geometry.*;
 import cbit.vcell.parser.*;
-import cbit.rmi.event.*;
 import cbit.util.*;
 /**
  * This type was created in VisualAge.

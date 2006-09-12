@@ -1,10 +1,10 @@
 package cbit.vcell.simdata;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
-import cbit.vcell.solver.CartesianMesh;
+import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
-import cbit.vcell.solver.test.MathTestingUtilities;
+import cbit.vcell.solver.test.DataResampler;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -705,11 +705,11 @@ public SimDataBlock getSimDataBlock(String varName, double time) throws DataAcce
 		if (mesh.getSizeX() != refMesh.getSizeX() || mesh.getSizeY() != refMesh.getSizeY() || mesh.getSizeZ() != refMesh.getSizeZ()) {
 			if (varDatasetID.getVariableType().equals(VariableType.VOLUME)){
 				if (dimension == 1 && refDimension == 1) {
-					spaceResampledData = MathTestingUtilities.resample1DSpatial(timeResampledData, mesh, refMesh);
+					spaceResampledData = DataResampler.resample1DSpatial(timeResampledData, mesh, refMesh);
 				} else if (dimension == 2 && refDimension == 2) {
-					spaceResampledData = MathTestingUtilities.resample2DSpatial(timeResampledData, mesh, refMesh);
+					spaceResampledData = DataResampler.resample2DSpatial(timeResampledData, mesh, refMesh);
 				} else if (dimension == 3 && refDimension == 3) {
-					spaceResampledData = MathTestingUtilities.resample3DSpatial(timeResampledData, mesh, refMesh);
+					spaceResampledData = DataResampler.resample3DSpatial(timeResampledData, mesh, refMesh);
 				} else {
 					throw new RuntimeException("Comparison of 2 simulations with different geometry dimensions are not handled at this time!");
 				}

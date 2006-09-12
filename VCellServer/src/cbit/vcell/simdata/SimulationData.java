@@ -1,5 +1,5 @@
 package cbit.vcell.simdata;
-import cbit.vcell.solver.CartesianMesh;
+import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solver.VCSimulationIdentifier;
@@ -901,7 +901,7 @@ public synchronized SimDataBlock getSimDataBlock(String varName, double time) th
 		e.printStackTrace(System.out);
 		System.out.println("invalid varTypeInt = "+varTypeInt+" for variable "+varName+" at time "+time);
 		try {
-			variableType = VariableType.getVariableTypeFromLength(getMesh(),data.length);
+			variableType = CartesianMesh.getVariableTypeFromLength(getMesh(),data.length);
 		} catch (MathException ex) {
 			ex.printStackTrace(System.out);
 			throw new DataAccessException(ex.getMessage());
@@ -1184,7 +1184,7 @@ public synchronized DataIdentifier[] getVarAndFunctionDataIdentifiers() throws I
 				try {
 					varType = VariableType.getVariableTypeFromInteger(varTypeInts[i]);
 				}catch (Throwable e){
-					varType = VariableType.getVariableTypeFromLength(mesh,dataSet.getDataLength(varNames[i]));
+					varType = CartesianMesh.getVariableTypeFromLength(mesh,dataSet.getDataLength(varNames[i]));
 				}
 				dataSetIdentifierList.addElement(new DataSetIdentifier(varNames[i],varType));
 			}
