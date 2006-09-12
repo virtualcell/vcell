@@ -3,6 +3,7 @@ package cbit.vcell.solvers;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.util.SessionLog;
 import cbit.vcell.server.LocalVCellConnection;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.solver.ode.ODESolver;
@@ -29,7 +30,7 @@ public class SolverControllerImpl {
 	private SolverListener solverListener = null;
 	
 	private SimulationJob simulationJob = null;
-	private cbit.vcell.server.SessionLog sessionLog = null;
+	private SessionLog sessionLog = null;
 	private Solver solver = null;
 	private File directory = null;
 	private Date startDate = null;
@@ -42,7 +43,7 @@ public class SolverControllerImpl {
  * @param directory java.lang.String
  * @param simIdentifier java.lang.String
  */
-public SolverControllerImpl (LocalVCellConnection argVCellConnection, cbit.vcell.server.SessionLog sessionLog, SimulationJob argSimulationJob, java.io.File directory) throws cbit.vcell.solver.SolverException {
+public SolverControllerImpl (LocalVCellConnection argVCellConnection, SessionLog sessionLog, SimulationJob argSimulationJob, java.io.File directory) throws cbit.vcell.solver.SolverException {
 	this.simulationJob = argSimulationJob;
 	this.directory = directory;
 	this.sessionLog = sessionLog;
@@ -50,7 +51,7 @@ public SolverControllerImpl (LocalVCellConnection argVCellConnection, cbit.vcell
 	//
 	// instantiate an appropriate solver
 	//
-	this.solver = cbit.vcell.solver.SolverFactory.createSolver(sessionLog,directory,argSimulationJob);
+	this.solver = cbit.vcell.solvers.SolverFactory.createSolver(sessionLog,directory,argSimulationJob);
 }
 
 
