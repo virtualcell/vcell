@@ -1653,7 +1653,7 @@ public boolean isChanged(cbit.image.VCImage vcImage, String vcImageXML) throws c
 		if (vcImageXML==null){
 			vcImageXML = XmlHelper.imageToXML(vcImage);
 		}
-		if (!cbit.vcell.xml.VCMLComparator.compareEquals(savedImageXML,vcImageXML)){
+		if (!cbit.vcell.vcml.test.VCMLComparator.compareEquals(savedImageXML,vcImageXML)){
 			return true;
 		}
 	}catch (cbit.vcell.xml.XmlParseException e){
@@ -1725,7 +1725,7 @@ public boolean isChanged(BioModel bioModel, String bioModelXML) throws DataAcces
 			if (bioModelXML==null){
 				bioModelXML = XmlHelper.bioModelToXML(bioModel);
 			}
-			if (cbit.vcell.xml.VCMLComparator.compareEquals(savedBioModelXML,bioModelXML)){
+			if (cbit.vcell.vcml.test.VCMLComparator.compareEquals(savedBioModelXML,bioModelXML)){
 				return false;
 			}else{
 				return true;
@@ -1798,7 +1798,7 @@ public boolean isChanged(Geometry geometry, String geometryXML) throws DataAcces
 		if (geometryXML==null){
 			geometryXML = XmlHelper.geometryToXML(geometry);
 		}
-		if (!cbit.vcell.xml.VCMLComparator.compareEquals(savedGeometryXML,geometryXML)){
+		if (!cbit.vcell.vcml.test.VCMLComparator.compareEquals(savedGeometryXML,geometryXML)){
 			return true;
 		}
 	}catch (cbit.vcell.xml.XmlParseException e){
@@ -1865,7 +1865,7 @@ public boolean isChanged(MathModel mathModel, String mathModelXML) throws DataAc
 			if (mathModelXML==null){
 				mathModelXML = XmlHelper.mathModelToXML(mathModel);
 			}
-			if (cbit.vcell.xml.VCMLComparator.compareEquals(savedMathModelXML,mathModelXML)){
+			if (cbit.vcell.vcml.test.VCMLComparator.compareEquals(savedMathModelXML,mathModelXML)){
 				return false;
 			}else{
 				return true;
@@ -1901,7 +1901,7 @@ public boolean isChanged(Simulation sim) throws DataAccessException{
 	}
 
 	try{
-		return !cbit.vcell.xml.VCMLComparator.compareEquals(cbit.vcell.xml.XmlHelper.simToXML(sim),loadedSimXML);
+		return !cbit.vcell.vcml.test.VCMLComparator.compareEquals(cbit.vcell.xml.XmlHelper.simToXML(sim),loadedSimXML);
 	}catch (cbit.vcell.xml.XmlParseException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(e.getMessage());
