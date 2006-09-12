@@ -1,11 +1,9 @@
 package cbit.vcell.solvers;
 
-import cbit.vcell.server.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.server.SessionLog;
 import java.io.*;
 /**
  * This type was created in VisualAge.
