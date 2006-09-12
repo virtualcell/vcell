@@ -1,11 +1,11 @@
 package cbit.vcell.client.data;
 import java.awt.event.KeyEvent;
 
-import cbit.image.gui.DisplayAdapterService;
 import cbit.image.gui.ImagePaneScroller;
 import cbit.image.gui.ImagePaneView;
 import cbit.image.gui.ImagePlaneManager;
 import cbit.image.gui.ZoomEvent;
+import cbit.image.render.DisplayAdapterService;
 import cbit.util.Range;
 import javax.swing.ImageIcon;
 /**
@@ -55,7 +55,7 @@ public class KymographPanel extends javax.swing.JPanel implements cbit.vcell.geo
 	private cbit.plot.Plot2D currentLineScanPlot2D = null;
 	private cbit.plot.Plot2D currentTimeSeriesPlot2D = null;
 	private String NONE_MESSAGE = "Mouse Click, Arrow Keys Change Graph.  Mouse Menu for Options";
-	private cbit.vcell.desktop.controls.DataManager dataManager = null;
+	private cbit.vcell.simdata.DataManager dataManager = null;
 	private int[] dataManagerIndices = null;
 	private double[] dataManagerAccumDistances = null;
 	private boolean bLocalScaling = false;
@@ -1113,7 +1113,7 @@ private javax.swing.JMenuItem getCopyTimeDataJMenuItem() {
  * @return cbit.image.DisplayAdapterService
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.image.gui.DisplayAdapterService getDisplayAdapterService1() {
+private cbit.image.render.DisplayAdapterService getDisplayAdapterService1() {
 	if (ivjDisplayAdapterService1 == null) {
 		try {
 			ivjDisplayAdapterService1 = new DisplayAdapterService();
@@ -1818,7 +1818,7 @@ private void initConnections() throws java.lang.Exception {
  * @param distances double[]
  */
 public void initDataManager(
-	cbit.vcell.desktop.controls.DataManager argDataManager,
+	cbit.vcell.simdata.DataManager argDataManager,
 	String variableName,double initTime,int step,double endTime,int[] indices,
 	double[] accumDistances,
 	boolean waitOnInitialLoad,
@@ -1838,8 +1838,8 @@ public void initDataManager(
 	currentSelectionImg = new java.awt.Point(0,0);
 	currentSelectionUnit = new java.awt.geom.Point2D.Double(0,0);;
 
-	cbit.vcell.simdata.DataIdentifier[] sortedDataIDs =
-		cbit.vcell.simdata.VariableType.collectSimilarDataTypes(variableName,dataManager.getDataIdentifiers());
+	cbit.vcell.math.DataIdentifier[] sortedDataIDs =
+		cbit.vcell.math.VariableType.collectSimilarDataTypes(variableName,dataManager.getDataIdentifiers());
 	//Add to combobox
 	getVarNamesJComboBox().setEnabled(true);
 	getVarNamesJComboBox().removeAllItems();
@@ -2071,9 +2071,9 @@ private void initStandAloneTimeSeries_private(double[][] timeSeriesOrig,double[]
 		minmaxRange = allDataMMMH.getRange();
 	}
 	
-	cbit.image.SourceDataInfo sdi =
-		new cbit.image.SourceDataInfo(
-			cbit.image.SourceDataInfo.RAW_VALUE_TYPE,
+	cbit.image.render.SourceDataInfo sdi =
+		new cbit.image.render.SourceDataInfo(
+			cbit.image.render.SourceDataInfo.RAW_VALUE_TYPE,
 			rawValues,
 			minmaxRange,
 			0,
@@ -2228,7 +2228,7 @@ private void scaleImageModeFromMenu(java.awt.event.ActionEvent actionEvent) {
 				return;
 			}
 			scaleImageMode = SCALE_IMAGE_USERDEFINED;
-		}catch(cbit.vcell.client.task.UserCancelException e){
+		}catch(cbit.util.UserCancelException e){
 			//getimagePaneView1().getImagePaneModel().updateViewPortImage();
 			getimagePaneView1().repaint();
 			return;

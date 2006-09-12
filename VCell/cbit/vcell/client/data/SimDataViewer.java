@@ -1,13 +1,13 @@
 package cbit.vcell.client.data;
 import cbit.util.DataAccessException;
-import cbit.vcell.simdata.ClientPDEDataContext;
-import cbit.vcell.simdata.NewClientPDEDataContext;
+import cbit.util.VCDataIdentifier;
 import cbit.vcell.math.Constant;
 import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.server.ODEDataManager;
-import cbit.vcell.server.VCDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.client.server.VCDataManager;
+import cbit.vcell.desktop.controls.ClientPDEDataContext;
+import cbit.vcell.desktop.controls.NewClientPDEDataContext;
 import cbit.vcell.export.gui.ExportMonitorPanel;
 
 import javax.swing.*;

@@ -6,7 +6,7 @@ import cbit.vcell.simdata.MergedDataInfo;
  * Creation date: (11/30/2005 5:26:31 PM)
  * @author: Anuradha Lakshminarayana
  */
-import cbit.vcell.server.VCDataIdentifier;
+import cbit.util.VCDataIdentifier;
 import cbit.vcell.client.server.VCDataManager;
 
 public class MergedDynamicDataManager implements DynamicDataManager {

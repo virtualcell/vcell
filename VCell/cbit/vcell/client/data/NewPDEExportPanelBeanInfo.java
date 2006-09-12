@@ -224,7 +224,7 @@ public java.beans.PropertyDescriptor displayAdapterServicePropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.image.gui.DisplayAdapterService.class
+					cbit.image.render.DisplayAdapterService.class
 				};
 				aSetMethod = getBeanClass().getMethod("setDisplayAdapterService", aSetMethodParameterTypes);
 			} catch (Throwable exception) {
@@ -937,7 +937,7 @@ public java.beans.MethodDescriptor setDisplayAdapterService_cbitimageDisplayAdap
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.image.gui.DisplayAdapterService.class
+				cbit.image.render.DisplayAdapterService.class
 			};
 			aMethod = getBeanClass().getMethod("setDisplayAdapterService", aParameterTypes);
 		} catch (Throwable exception) {

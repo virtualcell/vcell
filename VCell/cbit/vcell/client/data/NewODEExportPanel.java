@@ -5,7 +5,6 @@ import cbit.vcell.util.ColumnDescription;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.server.*;
 import cbit.vcell.export.gui.ExportSettings;
 import cbit.vcell.export.server.*;
 import javax.swing.*;
@@ -954,7 +953,7 @@ private double[] getTimes() {
  * @return The vcDataIdentifier property value.
  * @see #setVcDataIdentifier
  */
-public cbit.vcell.server.VCDataIdentifier getVcDataIdentifier() {
+public VCDataIdentifier getVcDataIdentifier() {
 	return fieldVcDataIdentifier;
 }
 
@@ -1237,7 +1236,7 @@ private void setTimes(double[] newTimes) {
  * @param vcDataIdentifier The new value for the property.
  * @see #getVcDataIdentifier
  */
-public void setVcDataIdentifier(cbit.vcell.server.VCDataIdentifier vcDataIdentifier) {
+public void setVcDataIdentifier(VCDataIdentifier vcDataIdentifier) {
 	VCDataIdentifier oldValue = fieldVcDataIdentifier;
 	fieldVcDataIdentifier = vcDataIdentifier;
 	firePropertyChange("vcDataIdentifier", oldValue, vcDataIdentifier);

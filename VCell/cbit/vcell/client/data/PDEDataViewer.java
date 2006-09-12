@@ -1,14 +1,18 @@
 package cbit.vcell.client.data;
 import cbit.render.*;
+import cbit.vcell.math.DataIdentifier;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.*;
 import swingthreads.*;
 import javax.swing.*;
 import cbit.plot.*;
 import cbit.vcell.server.*;
 import cbit.vcell.simdata.gui.*;
+
 import java.awt.*;
 import java.util.*;
 import cbit.vcell.client.*;
+import cbit.vcell.desktop.controls.ClientPDEDataContext;
 import cbit.vcell.export.gui.ExportMonitorPanel;
 import cbit.util.*;
 import cbit.vcell.geometry.Coordinate;
@@ -2756,7 +2760,7 @@ private void updateDataValueSurfaceViewer() {
 	}
 	//SurfaceColors and DataValues
 	SurfaceCollection surfaceCollection = getDataValueSurfaceViewer().getSurfaceCollectionDataInfo().getSurfaceCollection();
-	cbit.image.gui.DisplayAdapterService das = getPDEDataContextPanel1().getdisplayAdapterService1();
+	cbit.image.render.DisplayAdapterService das = getPDEDataContextPanel1().getdisplayAdapterService1();
 	final int[][] surfaceColors = new int[surfaceCollection.getSurfaceCount()][];
 	final double[][] surfaceDataValues = new double[surfaceCollection.getSurfaceCount()][];
 	for(int i=0;i<surfaceCollection.getSurfaceCount();i+= 1){
@@ -2795,7 +2799,7 @@ private void updateDataValueSurfaceViewer() {
 				return meshRegionSurfaces.getMembraneIndexForPolygon(surfaceIndex,polygonIndex);
 			}
 			public java.awt.Color getROIHighlightColor(){
-				return new java.awt.Color(getPDEDataContextPanel1().getdisplayAdapterService1().getSpecialColors()[cbit.image.gui.DisplayAdapterService.FOREGROUND_HIGHLIGHT_COLOR_OFFSET]);
+				return new java.awt.Color(getPDEDataContextPanel1().getdisplayAdapterService1().getSpecialColors()[cbit.image.render.DisplayAdapterService.FOREGROUND_HIGHLIGHT_COLOR_OFFSET]);
 			}
 			public void showComponentInFrame(Component comp,String title){
 				PDEDataViewer.this.showComponentInFrame(comp,title);

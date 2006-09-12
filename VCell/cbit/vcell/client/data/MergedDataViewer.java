@@ -3,7 +3,7 @@ import cbit.util.DataAccessException;
 import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.client.server.MergedDataManager;
 import cbit.vcell.solver.ode.ODESolverResultSet;
-import cbit.vcell.server.VCDataIdentifier;
+import cbit.util.VCDataIdentifier;
 import cbit.vcell.client.server.VCDataManager;
 /**
  * Insert the type's description here.
