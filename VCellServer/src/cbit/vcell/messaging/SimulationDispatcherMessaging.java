@@ -3,7 +3,6 @@ import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.SessionLog;
 import cbit.util.User;
-import cbit.util.VCellServerID;
 import cbit.vcell.solver.VCSimulationIdentifier;
 
 
@@ -16,6 +15,7 @@ import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
+import cbit.vcell.messaging.db.VCellServerID;
 import cbit.gui.PropertyLoader;
 import cbit.sql.KeyFactory;
 import cbit.sql.ConnectionFactory;
@@ -238,7 +238,7 @@ public void run() {
 			
 			if (allActiveJobs != null && allActiveJobs.length > 0) {				
 				SimulationJobStatusInfo firstQualifiedJob = BatchScheduler.schedule(allActiveJobs, cbit.vcell.lsf.LsfUtils.getPartitionMaximumJobs(), 
-					JmsUtils.getMaxOdeJobsPerUser(), JmsUtils.getMaxPdeJobsPerUser(), cbit.util.VCellServerID.getSystemServerID(), log);
+					JmsUtils.getMaxOdeJobsPerUser(), JmsUtils.getMaxPdeJobsPerUser(), VCellServerID.getSystemServerID(), log);
 				if (firstQualifiedJob != null) {
 					foundOne = true;					
 					jobStatus = firstQualifiedJob.getSimJobStatus();					

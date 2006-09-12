@@ -1,8 +1,8 @@
 package cbit.vcell.messaging;
 import cbit.util.SessionLog;
 import cbit.util.User;
-import cbit.util.VCellServerID;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
+import cbit.vcell.messaging.db.VCellServerID;
 
 /**
  * Insert the type's description here.

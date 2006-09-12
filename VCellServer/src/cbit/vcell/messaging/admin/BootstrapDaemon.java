@@ -2,6 +2,8 @@ package cbit.vcell.messaging.admin;
 import java.io.*;
 import java.util.*;
 import javax.jms.*;
+
+import cbit.gui.PropertyLoader;
 import cbit.vcell.messaging.*;
 import cbit.vcell.server.*;
 import org.jdom.*;
@@ -58,7 +60,7 @@ public static void main(String[] args) {
 	System.setSecurityManager(new SecurityManager());
 
 	try {
-		cbit.vcell.server.PropertyLoader.loadProperties();
+		PropertyLoader.loadProperties();
 		new BootstrapDaemon(args[0]).start();		
 	} catch (Throwable exc) {
 		exc.printStackTrace(System.out);
@@ -314,13 +316,13 @@ protected void readConfiguration() throws FileNotFoundException, IOException, JD
 	}
 
 	if (vcServerInfo.getLogfile() == null || vcServerInfo.getLogfile().trim().length() == 0 || vcServerInfo.getLogfile().equals("-")) {
-		log = new cbit.vcell.server.StdoutSessionLog(vcServerInfo.getServerName());
+		log = new cbit.util.StdoutSessionLog(vcServerInfo.getServerName());
 	} else {
 		ManageUtils.archiveByDateAndTime(vcServerInfo.getLogfile(), vcServerInfo.getArchiveDir());
 		PrintStream ps = new java.io.PrintStream(new java.io.FileOutputStream(vcServerInfo.getLogfile(), true), true);
 		System.setOut(ps);
 		System.setErr(ps);
-		log = new cbit.vcell.server.StdoutSessionLog(vcServerInfo.getServerName());
+		log = new cbit.util.StdoutSessionLog(vcServerInfo.getServerName());
 	}
 
 	// service

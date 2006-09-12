@@ -1,5 +1,7 @@
 package cbit.vcell.messaging.admin;
 import javax.jms.*;
+
+import cbit.util.SessionLog;
 import cbit.vcell.messaging.*;
 
 import java.util.*;
@@ -13,7 +15,7 @@ import org.jdom.output.XMLOutputter;
  * @author: Fei Gao
  */
 public abstract class MessagingDaemon implements ControlTopicListener {
-	protected cbit.vcell.server.SessionLog log = null;
+	protected SessionLog log = null;
 	protected VCellTopicConnection topicConn = null;
 	protected VCellQueueConnection queueConn = null;
 	protected List replyList = Collections.synchronizedList(new ArrayList());

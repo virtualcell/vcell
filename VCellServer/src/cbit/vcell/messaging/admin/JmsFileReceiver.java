@@ -1,8 +1,10 @@
 package cbit.vcell.messaging.admin;
 
-import java.util.*;
 import java.io.*;
 import java.util.Enumeration;
+
+import cbit.gui.PropertyLoader;
+import cbit.util.SessionLog;
 import cbit.vcell.messaging.*;
 import progress.message.jclient.channel.*;
 
@@ -13,7 +15,7 @@ import progress.message.jclient.channel.*;
  */
 public class JmsFileReceiver implements QueueListener {
     private VCellQueueSession session = null;    
-    private cbit.vcell.server.SessionLog log = null;
+    private SessionLog log = null;
    
     private String saveDirName = null;
     private File currentFile = null;
@@ -86,7 +88,7 @@ public void onChannelStatus(progress.message.jclient.Channel channel,Exception e
 /**
  * JmsFileReceiver constructor comment.
  */
-public JmsFileReceiver(VCellQueueConnection queueConn0, cbit.vcell.server.SessionLog log0) {
+public JmsFileReceiver(VCellQueueConnection queueConn0, SessionLog log0) {
 	super();
 	queueConn = queueConn0;
 	log = log0;
@@ -140,11 +142,11 @@ public boolean isDone() {
 public static void main(String[] args) {
 	try {
 		// Start the JMS client for the file transfer.
-		cbit.vcell.server.PropertyLoader.loadProperties();
+		PropertyLoader.loadProperties();
 		JmsConnectionFactory jmsConnFactory = new JmsConnectionFactoryImpl();
 		VCellQueueConnection queueConn = jmsConnFactory.createQueueConnection();
 
-		cbit.vcell.server.SessionLog log = new cbit.vcell.server.StdoutSessionLog("test");
+		SessionLog log = new cbit.util.StdoutSessionLog("test");
 		JmsFileReceiver receiver = new JmsFileReceiver(queueConn, log);		
 		receiver.toReceive();
 		queueConn.startConnection();

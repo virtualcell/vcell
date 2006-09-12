@@ -1,13 +1,15 @@
 package cbit.vcell.messaging.admin;
 import java.text.SimpleDateFormat;
 import cbit.vcell.server.ServerInfo;
-import cbit.sql.KeyValue;
+import cbit.gui.PropertyLoader;
+import cbit.util.KeyValue;
 import cbit.vcell.server.VCellServer;
 import cbit.vcell.messaging.server.RpcDbServerProxy;
 import cbit.util.BigString;
 import cbit.util.KeyValue;
+import cbit.util.SessionLog;
 import cbit.util.User;
-import cbit.vcell.server.User;
+import cbit.util.User;
 import java.io.IOException;
 import java.awt.event.ItemEvent;
 import java.awt.event.ActionEvent;
@@ -27,7 +29,7 @@ import javax.swing.border.EtchedBorder;
 public class ServerManageConsole extends JFrame implements ControlTopicListener {
 	private cbit.vcell.server.VCellBootstrap vcellBootstrap = null;
 	private VCellServer vcellServer = null;
-	private cbit.vcell.server.SessionLog log = null;
+	private SessionLog log = null;
 	private JmsFileReceiver fileChannelReceiver = null;
 	private int msgCounter = -1;
 	private int bootstrapCounter = -1;
@@ -1349,7 +1351,7 @@ private javax.swing.JPanel getBroadcastPanel() {
  */
 public Date getConnectionTimeFromRMIbootstrapLogfile(User user) throws Exception {
 	java.io.File file = new java.io.File("\\\\ms3\\vcell\\" 
-		+ cbit.vcell.server.PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.vcellServerIDProperty) 
+		+ PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerIDProperty) 
 		+ "\\RMIbootstrap.log");
 	if (!file.exists()) {
 		throw new java.io.FileNotFoundException("RMI bootstrap log file doesn't exist: " + file.getAbsolutePath());
@@ -2697,7 +2699,7 @@ private javax.swing.JSplitPane getJSplitPane1() {
  */
 public String getLocalVCellBootstrapUrl() {
 	String rmiHost = "ms3";
-	int rmiPort = cbit.vcell.server.PropertyLoader.getIntProperty(cbit.vcell.server.PropertyLoader.rmiPortRegistry, 1099);
+	int rmiPort = PropertyLoader.getIntProperty(PropertyLoader.rmiPortRegistry, 1099);
 	return "//" + rmiHost + ":" + rmiPort + "/VCellBootstrapServer";
 }
 
@@ -4770,8 +4772,8 @@ private void pingAll() {
  //*/
 public void prepare() {	
 	try {
-		log = new cbit.vcell.server.StdoutSessionLog("Console");
-		cbit.vcell.server.PropertyLoader.loadProperties();
+		log = new cbit.util.StdoutSessionLog("Console");
+		PropertyLoader.loadProperties();
 		setTitle("Virtual Cell Management Console -- " + VCellServerID.getSystemServerID());
 		reconnect();
 	} catch (JMSException ex) {
