@@ -1,5 +1,5 @@
 package cbit.vcell.solver.ode;
-import cbit.vcell.server.DataAccessException;
+import cbit.util.DataAccessException;
 import cbit.vcell.parser.*;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.util.ColumnDescription;

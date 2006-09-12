@@ -1,5 +1,5 @@
 package cbit.vcell.solver.ode;
-import cbit.vcell.solver.SimulationJob;
+import cbit.gui.PropertyLoader;
 import java.io.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -13,7 +13,7 @@ import java.io.*;
 public class IDASolverTest {
 public static void main(java.lang.String[] args) {
 	try {
-		new cbit.vcell.server.PropertyLoader();
+		new PropertyLoader();
 		IDASolverTest test = new IDASolverTest();
 		//test.testStandalone("les");
 		//test.testStandalone("ion");

@@ -15,8 +15,8 @@ import cbit.vcell.math.Function;
 import java.util.*;
 import java.io.*;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.PropertyLoader;
+import cbit.util.SessionLog;
+import cbit.gui.PropertyLoader;
 import cbit.vcell.solver.*;
 /**
  * Insert the type's description here.
@@ -32,7 +32,7 @@ public abstract class IDASolver extends cbit.vcell.solvers.AbstractCompiledSolve
  * @param sessionLog cbit.vcell.server.SessionLog
  * @param simulation cbit.vcell.solver.Simulation
  */
-public IDASolver(cbit.vcell.solver.SimulationJob simulationJob, File directory, cbit.vcell.server.SessionLog sessionLog) throws SolverException {
+public IDASolver(cbit.vcell.solver.SimulationJob simulationJob, File directory, SessionLog sessionLog) throws SolverException {
 	super(simulationJob, directory, sessionLog);
 	if (getSimulation().getIsSpatial()) {
 		throw new SolverException("Cannot use IDASolver on spatial simulation");

@@ -4,9 +4,7 @@ package cbit.vcell.solver.ode;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.server.*;
 import cbit.vcell.math.*;
-import java.util.*;
 /**
  *  This will have a list of Variables (NB: ReservedVariable.TIME is a ReservedVariable,
  *  and a ReservedVariable is a Variable...also, StateVariables are NOT Variables, but

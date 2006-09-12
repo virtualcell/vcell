@@ -4,8 +4,8 @@ import java.io.*;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.util.SessionLog;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.server.SessionLog;
 import cbit.vcell.solver.*;
 /**
  * Some of this class' stuff could/should go into an AbstractSolver

@@ -1,7 +1,7 @@
 package cbit.vcell.solver.ode;
 
-import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.PropertyLoader;
+import cbit.gui.PropertyLoader;
+import cbit.util.SessionLog;
 import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.SolverException;
 /**
@@ -17,7 +17,7 @@ public class IDASolverStandalone extends IDASolver {
  * @param sessionLog cbit.vcell.server.SessionLog
  * @exception cbit.vcell.solver.SolverException The exception description.
  */
-public IDASolverStandalone(cbit.vcell.solver.SimulationJob simulationJob, java.io.File directory, cbit.vcell.server.SessionLog sessionLog) throws cbit.vcell.solver.SolverException {
+public IDASolverStandalone(cbit.vcell.solver.SimulationJob simulationJob, java.io.File directory, SessionLog sessionLog) throws cbit.vcell.solver.SolverException {
 	super(simulationJob, directory, sessionLog);
 }
 /**

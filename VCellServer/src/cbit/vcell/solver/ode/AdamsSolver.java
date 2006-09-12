@@ -1,5 +1,6 @@
 package cbit.vcell.solver.ode;
 
+import cbit.util.SessionLog;
 import cbit.vcell.server.*;
 import java.io.*;
 import cbit.vcell.solver.*;

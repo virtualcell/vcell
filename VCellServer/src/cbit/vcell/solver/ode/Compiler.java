@@ -3,15 +3,15 @@ package cbit.vcell.solver.ode;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.server.PropertyLoader;
-import java.io.*;
+import cbit.gui.PropertyLoader;
+import cbit.util.SessionLog;
 /**
  * Insert the type's description here.
  * Creation date: (3/23/2001 1:23:14 PM)
  * @author: John Wagner
  */
 public class Compiler {
-	private cbit.vcell.server.SessionLog fieldSessionLog = null;
+	private SessionLog fieldSessionLog = null;
 	private java.lang.String fieldIncludes = new String();
 	private java.lang.String fieldDefines = new String();
 	private java.lang.String fieldOptions = new String();
@@ -20,7 +20,7 @@ public class Compiler {
 /**
  * Compiler constructor comment.
  */
-public Compiler(cbit.vcell.server.SessionLog sessionLog) {
+public Compiler(SessionLog sessionLog) {
 	super();
 	fieldSessionLog = sessionLog;
 }
@@ -107,7 +107,7 @@ public java.lang.String getOptions() {
  * Gets the sessionLog property (cbit.vcell.server.SessionLog) value.
  * @return The sessionLog property value.
  */
-public cbit.vcell.server.SessionLog getSessionLog() {
+public SessionLog getSessionLog() {
 	return fieldSessionLog;
 }
 
