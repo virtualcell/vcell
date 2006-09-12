@@ -22,7 +22,6 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.geometry.GeometryInfo;
 import java.rmi.RemoteException;
-import cbit.vcell.document.*;
 /**
  * Insert the type's description here.
  * Creation date: (10/28/00 12:05:57 AM)
