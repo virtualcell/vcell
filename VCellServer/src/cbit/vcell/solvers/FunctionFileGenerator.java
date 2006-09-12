@@ -1,10 +1,11 @@
 package cbit.vcell.solvers;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.simdata.VariableType;
 import java.util.StringTokenizer;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.VariableType;
+
 import java.io.File;
 import java.io.OutputStream;
 import java.io.PrintWriter;

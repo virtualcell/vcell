@@ -1,18 +1,6 @@
 package cbit.vcell.solvers;
 import cbit.vcell.math.AnnotatedFunction;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.math.MemVariable;
-import cbit.vcell.math.MembraneRegionVariable;
-import cbit.vcell.math.VolVariable;
-import cbit.vcell.math.VolumeRegionVariable;
-import cbit.vcell.simdata.VariableType;
-import cbit.vcell.math.Constant;
-import java.util.Vector;
-import cbit.vcell.math.Variable;
-import cbit.vcell.math.Function;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.math.MathDescriptionTest;
-import java.io.File;
 
 /**
  * Insert the type's description here.

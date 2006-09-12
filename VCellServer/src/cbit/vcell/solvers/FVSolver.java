@@ -1,25 +1,24 @@
 package cbit.vcell.solvers;
+import cbit.gui.PropertyLoader;
+import cbit.util.SessionLog;
 import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.FilamentVariable;
 import cbit.vcell.math.FilamentRegionVariable;
 import cbit.vcell.math.MemVariable;
+import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.math.MembraneRegionVariable;
-import cbit.vcell.math.Constant;
 import cbit.vcell.math.Variable;
-import cbit.vcell.simdata.VariableType;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.math.Function;
-import cbit.vcell.server.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
 import cbit.vcell.solver.*;
-import cbit.vcell.server.PropertyLoader;
 import java.io.*;
 import java.util.*;
 /**
@@ -502,7 +501,7 @@ protected void initialize() throws SolverException {
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,"PDESolver starting"));
 	
 	try{
-		bCORBA = Boolean.getBoolean(cbit.vcell.server.PropertyLoader.corbaEnabled);
+		bCORBA = Boolean.getBoolean(PropertyLoader.corbaEnabled);
 	}catch (Throwable t){}
 
 	if (bCORBA) {
