@@ -11,7 +11,7 @@ Require-Bundle: org.vcell.common,
  org.vcell.server,
  org.vcell.util,
  org.vcell.render,
- org.vcell.bionetgen
+ org.eclipse.osgi
 Export-Package: cbit.vcell.client.server,
  cbit.vcell.clientdb,
  cbit.vcell.desktop.controls,
