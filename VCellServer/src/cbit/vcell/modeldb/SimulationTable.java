@@ -11,6 +11,7 @@ import java.beans.*;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.SessionLog;
+import cbit.util.SimulationVersion;
 import cbit.util.User;
 import cbit.util.Version;
 import cbit.util.VersionInfo;

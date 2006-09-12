@@ -18,7 +18,6 @@ import cbit.vcell.math.BoundaryConditionType;
 import java.sql.*;
 import java.sql.Statement;
 
-import org.osgi.framework.InvalidSyntaxException;
 import org.vcell.model.Activator;
 import org.vcell.model.analysis.IAnalysisTask;
 import org.vcell.model.analysis.IAnalysisTaskFactory;

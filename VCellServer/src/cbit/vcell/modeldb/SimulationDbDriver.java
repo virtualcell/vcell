@@ -10,6 +10,7 @@ import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.ObjectNotFoundException;
 import cbit.util.SessionLog;
+import cbit.util.SimulationVersion;
 import cbit.util.User;
 import cbit.util.Version;
 import cbit.util.VersionInfo;

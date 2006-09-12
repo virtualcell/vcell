@@ -11,6 +11,7 @@ import cbit.util.SessionLog;
 import cbit.vcell.model.*;
 import cbit.vcell.server.*;
 import cbit.vcell.dictionary.*;
+import cbit.vcell.dictionary.database.DBSpeciesTable;
 /**
  * This type was created in VisualAge.
  */
