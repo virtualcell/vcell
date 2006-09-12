@@ -1,16 +1,19 @@
 package cbit.vcell.client;
-import cbit.vcell.desktop.controls.DataManager;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.rmi.event.ExportEvent;
 import javax.swing.SwingUtilities;
 
 import cbit.vcell.simdata.Cachetable;
+import cbit.vcell.simdata.DataManager;
 import cbit.vcell.simdata.MergedData;
-import cbit.vcell.server.PropertyLoader;
+import cbit.gui.PropertyLoader;
 import javax.swing.JFrame;
-import cbit.vcell.server.StdoutSessionLog;
-import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.User;
+
+import cbit.vcell.server.SimulationStatus;
+import cbit.util.SessionLog;
+import cbit.util.StdoutSessionLog;
+import cbit.util.User;
+import cbit.util.UserCancelException;
 import cbit.vcell.simdata.MergedDataInfo;
 import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
@@ -26,14 +29,13 @@ import javax.swing.JDialog;
 import java.awt.Component;
 import javax.swing.JComponent;
 import cbit.vcell.client.server.SimStatusEvent;
-import cbit.vcell.server.VCDataIdentifier;
-import cbit.vcell.solver.SimulationStatus;
+import cbit.util.VCDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.test.SimulationComparisonSummary;
 import cbit.vcell.solver.test.VariableComparisonSummary;
 import org.jdom.JDOMException;
-import cbit.sql.KeyValue;
+import cbit.util.KeyValue;
 import java.util.Enumeration;
 import cbit.vcell.solver.SimulationInfo;
 import java.util.Vector;
@@ -49,7 +51,6 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.clientdb.ClientDocumentManager;
 import javax.swing.JOptionPane;
-import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.numericstest.*;
 import cbit.util.AsynchProgressPopup;
@@ -455,8 +456,8 @@ public void compare(TestCriteriaNew testCriteria){
 		Vector functionList = new Vector();
 		cbit.vcell.math.AnnotatedFunction data1Functions[] = data1Manager.getFunctions();
 		cbit.vcell.math.AnnotatedFunction existingFunctions[] = mergedDataManager.getFunctions();
-		cbit.vcell.simdata.DataIdentifier data1Identifiers[] = data1Manager.getDataIdentifiers();
-		cbit.vcell.simdata.DataIdentifier data2Identifiers[] = data2Manager.getDataIdentifiers();
+		cbit.vcell.math.DataIdentifier data1Identifiers[] = data1Manager.getDataIdentifiers();
+		cbit.vcell.math.DataIdentifier data2Identifiers[] = data2Manager.getDataIdentifiers();
 		for (int i = 0; i < data1Identifiers.length; i++){
 			//
 			// make sure dataIdentifier is not already a function
@@ -489,7 +490,7 @@ public void compare(TestCriteriaNew testCriteria){
 			String data1Name = "Data1."+data1Identifiers[i].getName();
 			String data2Name = "Data2."+data1Identifiers[i].getName();
 			String functionName = "DIFF_"+data1Identifiers[i].getName();
-			cbit.vcell.simdata.VariableType varType = data1Identifiers[i].getVariableType();
+			cbit.vcell.math.VariableType varType = data1Identifiers[i].getVariableType();
 			cbit.vcell.parser.Expression exp = new cbit.vcell.parser.Expression(data1Name+"-"+data2Name);
 			cbit.vcell.math.AnnotatedFunction newFunction = new cbit.vcell.math.AnnotatedFunction(functionName,exp,"",varType,true);
 			
@@ -1376,7 +1377,7 @@ public boolean isRecyclable() {
  */
 public void loadModel(TestCaseNew testCase) throws DataAccessException{
 	
-	cbit.vcell.document.VCDocumentInfo vcDocInfo = null;
+	cbit.util.VCDocumentInfo vcDocInfo = null;
 	if (testCase instanceof TestCaseNewMathModel) {
 		TestCaseNewMathModel mathTestCase = (TestCaseNewMathModel)testCase;
 		vcDocInfo = getRequestManager().getDocumentManager().getMathModelInfo(mathTestCase.getMathModelInfo().getVersion().getVersionKey());

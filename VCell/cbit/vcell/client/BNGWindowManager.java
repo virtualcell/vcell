@@ -1,17 +1,18 @@
 package cbit.vcell.client;
+import cbit.util.UserCancelException;
 import cbit.vcell.client.server.UserMessage;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.DisplayBNGOutput;
 import cbit.vcell.client.task.RunBioNetGen;
 import java.util.Hashtable;
-import cbit.vcell.client.task.AsynchClientTask;
 import java.io.PrintWriter;
 import java.io.File;
 import cbit.gui.VCFileChooser;
 import cbit.vcell.server.bionetgen.BNGInput;
 import cbit.vcell.server.bionetgen.BNGService;
 import cbit.vcell.client.bionetgen.BNGOutputPanel;
-import cbit.vcell.client.task.UserCancelException;
+import cbit.vcell.desktop.controls.AsynchClientTask;
+
 import javax.swing.JFileChooser;
 
 
@@ -75,7 +76,7 @@ public String getManagerID() {
  * Comment
  */
 public void importSbml(String bngSbmlStr) {
-	cbit.vcell.document.VCDocument vcDoc = null;
+	cbit.util.VCDocument vcDoc = null;
 	try {
 		// import the xml string from bng output into a biomodel using XMLHelper
 		vcDoc = cbit.vcell.xml.XmlHelper.importXML(bngSbmlStr, cbit.vcell.xml.XmlDialect.SBML_L2V1, new TranslationLogger(this));
@@ -88,7 +89,7 @@ public void importSbml(String bngSbmlStr) {
 	if (vcDoc != null && vcDoc instanceof cbit.vcell.biomodel.BioModel) {
 		// Create a vcDocInfo for the imported document, and get the RequestManager to open it.
 		try {
-			cbit.vcell.document.VCDocumentInfo vcDocInfo = getRequestManager().getDocumentManager().getBioModelInfo(vcDoc.getVersion().getVersionKey());
+			cbit.util.VCDocumentInfo vcDocInfo = getRequestManager().getDocumentManager().getBioModelInfo(vcDoc.getVersion().getVersionKey());
 			if (vcDocInfo != null) {
 				getRequestManager().openDocument(vcDocInfo, this, true);
 			}

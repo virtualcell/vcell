@@ -1,17 +1,20 @@
 package cbit.vcell.client;
 import cbit.util.DataAccessException;
+import cbit.util.VCDataIdentifier;
+import cbit.util.VCDocument;
+import cbit.util.VCDocumentInfo;
 import cbit.vcell.biomodel.BioModelInfo;
 import cbit.xml.merge.TMLPanel;
 import cbit.vcell.export.server.*;
 import cbit.vcell.mapping.SimulationContext;
 
-import cbit.vcell.document.*;
 import cbit.vcell.client.server.*;
 import cbit.vcell.client.data.DynamicDataManager;
 import cbit.vcell.clientdb.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.desktop.controls.*;
 import cbit.vcell.server.*;
+import cbit.vcell.simdata.DataManager;
 import cbit.vcell.mathmodel.MathModelInfo;
 /**
  * Insert the type's description here.
