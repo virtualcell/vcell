@@ -5,6 +5,10 @@ import cbit.util.ObjectNotFoundException;
 import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.util.UserInfo;
+import cbit.vcell.messaging.db.SimulationJobDbDriver;
+import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.messaging.db.SimulationJobStatusInfo;
+import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.messaging.db.VCellServerID;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -15,10 +19,6 @@ import java.sql.SQLException;
 import cbit.sql.*;
 import cbit.vcell.server.*;
 import java.util.Vector;
-import cbit.vcell.messaging.db.SimulationJobStatus;
-import cbit.vcell.messaging.db.SimulationJobStatusInfo;
-import cbit.vcell.messaging.db.UpdateSynchronizationException;
-import cbit.vcell.messaging.db.SimulationJobDbDriver;
 
 /**
  * This type was created in VisualAge.

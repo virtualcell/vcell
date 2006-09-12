@@ -1,6 +1,7 @@
 package cbit.vcell.modeldb;
 
 import cbit.vcell.messaging.db.SimulationJobStatus;
+
 import java.util.Vector;
 import cbit.util.BigString;
 import cbit.util.DataAccessException;
