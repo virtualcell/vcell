@@ -8,6 +8,7 @@ import cbit.gui.*;
 import java.awt.*;
 
 import cbit.util.SessionLog;
+import cbit.util.StdoutSessionLog;
 import cbit.vcell.server.*;
 import java.sql.*;
 import java.io.*;
@@ -244,16 +245,16 @@ public static Table[] getVCellTables() {
 		cbit.vcell.modeldb.AvailableTable.table,
 		cbit.vcell.modeldb.UserStatTable.table,
 		cbit.vcell.modeldb.UserLogTable.table,
-		cbit.vcell.dictionary.ProteinTable.table,
-		cbit.vcell.dictionary.ProteinAliasTable.table,
-		cbit.vcell.dictionary.CompoundTable.table,
-		cbit.vcell.dictionary.CompoundAliasTable.table,
-		cbit.vcell.dictionary.EnzymeTable.table,
-		cbit.vcell.dictionary.EnzymeAliasTable.table,
-		cbit.vcell.dictionary.EnzymeReactionTable.table,
+		cbit.vcell.dictionary.database.ProteinTable.table,
+		cbit.vcell.dictionary.database.ProteinAliasTable.table,
+		cbit.vcell.dictionary.database.CompoundTable.table,
+		cbit.vcell.dictionary.database.CompoundAliasTable.table,
+		cbit.vcell.dictionary.database.EnzymeTable.table,
+		cbit.vcell.dictionary.database.EnzymeAliasTable.table,
+		cbit.vcell.dictionary.database.EnzymeReactionTable.table,
 		cbit.vcell.modeldb.SimContextStatTable.table,
 		cbit.vcell.modeldb.SimContextStat2Table.table,
-		cbit.vcell.dictionary.DBSpeciesTable.table,
+		cbit.vcell.dictionary.database.DBSpeciesTable.table,
 		cbit.vcell.modeldb.ResultSetExportsTable.table,
 		cbit.vcell.messaging.db.SimulationJobTable.table,
 		cbit.vcell.modeldb.BioModelXMLTable.table,

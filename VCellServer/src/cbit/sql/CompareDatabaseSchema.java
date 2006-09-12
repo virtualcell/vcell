@@ -8,6 +8,7 @@ import cbit.gui.*;
 import java.awt.*;
 
 import cbit.util.SessionLog;
+import cbit.util.StdoutSessionLog;
 import cbit.vcell.server.*;
 import java.sql.*;
 import java.io.*;

@@ -7,6 +7,7 @@ package cbit.sql;
 import java.util.*;
 
 import cbit.util.KeyValue;
+import cbit.util.ObjectReferenceWrapper;
 /**
  * Used for internal references within (or between) Versionable objects
  * Versionable objects themselves are not stored here
