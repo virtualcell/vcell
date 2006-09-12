@@ -3,10 +3,10 @@ package org.vcell.ui;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
+import cbit.util.VCDocument;
 import cbit.vcell.client.VCellClient;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.test.VCellClientTest;
-import cbit.vcell.document.VCDocument;
 
 public class Activator implements BundleActivator {
 
