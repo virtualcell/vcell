@@ -2,7 +2,6 @@ package cbit.vcell.modeldb;
 import cbit.sql.*;
 import cbit.util.DataAccessException;
 import cbit.util.SessionLog;
-import cbit.util.VCellServerID;
 import cbit.vcell.server.*;
 import cbit.vcell.messaging.db.*;
 /**
