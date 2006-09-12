@@ -3,7 +3,6 @@ package cbit.vcell.mathmodel;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.sql.*;
 import cbit.util.KeyValue;
 import cbit.util.Version;
 import cbit.util.Versionable;
