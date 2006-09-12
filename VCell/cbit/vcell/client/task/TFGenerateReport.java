@@ -4,10 +4,12 @@ package cbit.vcell.client.task;
 //import cbit.vcell.clientdb.DocumentManager;
 //import cbit.vcell.numericstest.AddTestSuiteOP;
 import cbit.vcell.client.TestingFrameworkWindowManager;
+import cbit.vcell.desktop.controls.AsynchClientTask;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 //import cbit.vcell.client.RequestManager;
 import cbit.util.AsynchProgressPopup;
 import cbit.util.DataAccessException;
+import cbit.util.UserCancelException;
 import cbit.vcell.numericstest.TestCaseNew;
 import cbit.vcell.numericstest.TestCriteriaNew;
 /**

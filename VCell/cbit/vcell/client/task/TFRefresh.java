@@ -1,75 +1,80 @@
 package cbit.vcell.client.task;
 
-//import cbit.vcell.numericstest.TestSuiteInfoNew;
-//import cbit.vcell.clientdb.DocumentManager;
-//import cbit.vcell.numericstest.AddTestSuiteOP;
 import cbit.vcell.client.TestingFrameworkWindowManager;
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.desktop.controls.AsynchClientTask;
-import cbit.vcell.numericstest.TestSuiteInfoNew;
-//import cbit.vcell.client.RequestManager;
 import cbit.util.AsynchProgressPopup;
-import cbit.util.DataAccessException;
 import cbit.util.UserCancelException;
 /**
  * Insert the type's description here.
- * Creation date: (11/17/2004 2:08:09 PM)
+ * Creation date: (11/17/2004 2:20:58 PM)
  * @author: Frank Morgan
  */
-public class TFUpdateRunningStatus extends AsynchClientTask {
+public class TFRefresh extends AsynchClientTask {
 
+	public static final String TF_ERRORS = "TF_ERRORS";
+	public static final String TF_REPORT = "TF_REPORT";
+	
 	private TestingFrameworkWindowManager tfwm;
 /**
  * Insert the method's description here.
- * Creation date: (11/17/2004 3:06:56 PM)
+ * Creation date: (11/17/2004 3:17:09 PM)
  */
-public TFUpdateRunningStatus(TestingFrameworkWindowManager argtfwm) {
-	
+public TFRefresh(TestingFrameworkWindowManager argtfwm) {
+
 	tfwm = argtfwm;
-}
+	
+	}
 /**
  * Insert the method's description here.
- * Creation date: (11/17/2004 2:08:09 PM)
+ * Creation date: (11/17/2004 2:20:58 PM)
  * @return java.lang.String
  */
 public String getTaskName() {
-	return "Updating Sim Status";
+	return "Testing Framework Refresh";
 }
 /**
  * Insert the method's description here.
- * Creation date: (11/17/2004 2:08:09 PM)
+ * Creation date: (11/17/2004 2:20:58 PM)
  * @return int
  */
 public int getTaskType() {
-	return TASKTYPE_NONSWING_BLOCKING;
+	return TASKTYPE_SWING_NONBLOCKING;
 }
 /**
  * Insert the method's description here.
- * Creation date: (11/17/2004 2:08:09 PM)
+ * Creation date: (11/17/2004 2:20:58 PM)
  * @param hashTable java.util.Hashtable
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
 public void run(java.util.Hashtable hashTable){
-
-	AsynchProgressPopup pp = (AsynchProgressPopup)hashTable.get(ClientTaskDispatcher.PROGRESS_POPUP);
-	String errors = tfwm.updateSimRunningStatus(pp);
+	
+	tfwm.getTestingFrameworkWindowPanel().refreshTree();
+	
+	String errors = (String)hashTable.get(TF_ERRORS);
 	if(errors != null){
-		hashTable.put(TFRefresh.TF_ERRORS,errors);
+		PopupGenerator.showErrorDialog(errors);
 	}
+	String report = (String)hashTable.get(TF_REPORT);
+	if(report != null){
+		PopupGenerator.showReportDialog(tfwm,report);
+	}
+	
 }
 /**
  * Insert the method's description here.
- * Creation date: (11/17/2004 2:08:09 PM)
+ * Creation date: (11/17/2004 2:20:58 PM)
  * @return boolean
  */
 public boolean skipIfAbort() {
-	return true;
+	return false;
 }
 /**
  * Insert the method's description here.
- * Creation date: (11/17/2004 2:08:09 PM)
+ * Creation date: (11/17/2004 2:20:58 PM)
  * @return boolean
  */
 public boolean skipIfCancel(UserCancelException exc) {
-	return true;
+	return false;
 }
 }
