@@ -4,8 +4,10 @@ package cbit.vcell.solvers;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.gui.PropertyLoader;
+import cbit.util.SessionLog;
+import cbit.util.StdoutSessionLog;
 import cbit.vcell.solver.*;
-import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.geometry.*;
 import java.io.*;
 import cbit.vcell.math.*;
@@ -22,8 +24,8 @@ public static void main(String args[]) {
 		new PropertyLoader();
 		MathDescription mathDescription = null;
 		File directoryFile = new File(PropertyLoader.getRequiredProperty(PropertyLoader.tempDirProperty));
-		cbit.vcell.server.SessionLog sessionLog = new cbit.vcell.server.StdoutSessionLog("unknown");
-		new cbit.vcell.server.PropertyLoader();
+		SessionLog sessionLog = new StdoutSessionLog("unknown");
+		new PropertyLoader();
 		//
 		// get current directory
 		//
@@ -69,7 +71,7 @@ public static void main(String args[]) {
 			}
 		};
 		System.out.println(mathDescription.getVCML_database());
-		new cbit.vcell.server.PropertyLoader();
+		new PropertyLoader();
 		FVSolver solver = new FVSolver(new SimulationJob(simulation, 0), directoryFile, sessionLog);
 		solver.startSolver();
 
