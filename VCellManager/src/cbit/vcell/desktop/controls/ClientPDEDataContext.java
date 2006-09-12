@@ -1,6 +1,8 @@
 package cbit.vcell.desktop.controls;
 import cbit.util.DataAccessException;
 import cbit.util.VCDataIdentifier;
+import cbit.vcell.simdata.DataManager;
+import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.ParticleDataBlock;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SpatialSelection;
@@ -221,7 +223,7 @@ public void removeFunction(cbit.vcell.math.AnnotatedFunction function) throws cb
  * Creation date: (10/19/2005 12:21:50 PM)
  * @param newDataManager cbit.vcell.desktop.controls.DataManager
  */
-public void setDataManager(cbit.vcell.desktop.controls.DataManager newDataManager) {
+public void setDataManager(cbit.vcell.simdata.DataManager newDataManager) {
 	VCDataIdentifier oldid = dataManager.getVCDataIdentifier();
 	VCDataIdentifier newid = newDataManager.getVCDataIdentifier();
 	if (oldid instanceof VCSimulationDataIdentifier &&

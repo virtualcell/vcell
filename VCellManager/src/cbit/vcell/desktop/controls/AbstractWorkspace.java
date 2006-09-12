@@ -4,10 +4,6 @@ package cbit.vcell.desktop.controls;
  * All rights reserved.
 ©*/
 import java.beans.*;
-import javax.swing.JOptionPane;
-import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.desktop.controls.*;
-import cbit.vcell.model.VCellNames;
 /**
  * Insert the type's description here.
  * Creation date: (5/17/2001 5:31:08 PM)

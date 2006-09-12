@@ -5,6 +5,7 @@ import cbit.gui.DialogUtils;
 import cbit.gui.PropertyLoader;
 import cbit.util.DataAccessException;
 import cbit.util.SessionLog;
+import cbit.util.StdoutSessionLog;
 import cbit.util.User;
 import cbit.vcell.export.server.*;
 import cbit.vcell.clientdb.*;

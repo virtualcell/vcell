@@ -111,7 +111,7 @@ protected static cbit.vcell.server.VCellConnectionFactory VCellConnectionFactory
 	if (args[0].startsWith("-")) {
 		String userid = args[1];
 		String password = args[2];
-		SessionLog log = new cbit.vcell.server.StdoutSessionLog(userid);
+		SessionLog log = new cbit.util.StdoutSessionLog(userid);
 		if (args[0].equalsIgnoreCase("-jms")) {
 			vcConnFactory = new cbit.vcell.server.LocalVCellConnectionFactory(userid, password, log, false);
 		} else if (args[0].equalsIgnoreCase("-local")) {

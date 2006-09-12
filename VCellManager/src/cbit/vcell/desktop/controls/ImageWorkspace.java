@@ -4,19 +4,8 @@ package cbit.vcell.desktop.controls;
  * All rights reserved.
 ©*/
 import cbit.image.VCImage;
-import cbit.image.VCImageInfo;
 import cbit.util.DataAccessException;
-import cbit.util.KeyValue;
-import cbit.util.Origin;
-import cbit.util.Extent;
-import cbit.util.Version;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.math.MathException;
-import cbit.util.ObjectNotFoundException;
-import java.awt.Point;
-import javax.swing.JOptionPane;
 import java.beans.PropertyVetoException;
-import cbit.vcell.model.VCellNames;
 /**
  * Insert the type's description here.
  * Creation date: (1/16/01 10:50:11 AM)

@@ -1,6 +1,7 @@
 package cbit.vcell.client.server;
 import cbit.util.VCDataIdentifier;
 import cbit.vcell.desktop.controls.*;
+import cbit.vcell.simdata.DataManager;
 /**
  * Insert the type's description here.
  * Creation date: (6/11/2004 5:35:12 AM)
@@ -196,7 +197,7 @@ public boolean getParticleDataExists() throws cbit.util.DataAccessException {
  * Creation date: (6/13/2004 3:04:49 PM)
  * @return cbit.vcell.simdata.PDEDataContext
  */
-public cbit.vcell.desktop.controls.PDEDataContext getPDEDataContext() {
+public cbit.vcell.simdata.PDEDataContext getPDEDataContext() {
 	if (newClientPDEDataContext == null) {
 		newClientPDEDataContext = new NewClientPDEDataContext(this);
 	}

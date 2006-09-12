@@ -15,4 +15,6 @@ Require-Bundle: org.vcell.common,
 Export-Package: cbit.vcell.client.server,
  cbit.vcell.clientdb,
  cbit.vcell.desktop.controls,
+ cbit.vcell.publish,
+ cbit.vcell.vcml.test,
  org.vcell.manager

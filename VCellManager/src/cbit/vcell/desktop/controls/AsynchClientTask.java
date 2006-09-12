@@ -1,6 +1,8 @@
 package cbit.vcell.desktop.controls;
 import java.util.*;
 
+import cbit.util.UserCancelException;
+
 /**
  * Insert the type's description here.
  * Creation date: (5/31/2004 6:09:07 PM)

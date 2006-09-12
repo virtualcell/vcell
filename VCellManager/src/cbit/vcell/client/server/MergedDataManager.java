@@ -9,7 +9,7 @@ import cbit.vcell.simdata.MergedDataInfo;
  */
 
 
-public class MergedDataManager implements cbit.vcell.desktop.controls.DataManager {
+public class MergedDataManager implements cbit.vcell.simdata.DataManager {
 	private VCDataManager vcDataManager = null;
 	private VCDataIdentifier vcDataIdentifier = null;
 	private NewClientPDEDataContext newClientPDEDataContext = null;
@@ -212,7 +212,7 @@ public boolean getParticleDataExists() throws cbit.util.DataAccessException {
  * Creation date: (11/30/2005 5:37:29 PM)
  * @return cbit.vcell.simdata.PDEDataContext
  */
-public cbit.vcell.desktop.controls.PDEDataContext getPDEDataContext() {
+public cbit.vcell.simdata.PDEDataContext getPDEDataContext() {
 	boolean isODEData = true;
 	try {
 		isODEData = getIsODEData();
