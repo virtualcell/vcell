@@ -4,7 +4,6 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.BioNameScope;
-import cbit.vcell.parser.ScopedSymbolTable;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -14,14 +13,10 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.model.Model;
 import cbit.vcell.math.VCML;
 import cbit.vcell.model.VCMODL;
-import cbit.vcell.server.VCellConnection;
 import cbit.util.*;
 import cbit.vcell.math.MathDescription;
-import cbit.sql.VersionableType;
-import cbit.vcell.server.UserMetaDbServer;
 import java.util.*;
 
-import org.vcell.model.analysis.IAnalysisTask;
 import org.vcell.model.analysis.IAnalysisTask;
 
 import cbit.vcell.parser.NameScope;

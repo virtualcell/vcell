@@ -4,9 +4,8 @@ package cbit.vcell.mapping;
  * All rights reserved.
 ©*/
 import cbit.util.KeyValue;
-import cbit.util.User;
 import cbit.util.Version;
-import cbit.sql.VersionInfo;
+import cbit.util.VersionInfo;
 /**
  * This type was created in VisualAge.
  */
