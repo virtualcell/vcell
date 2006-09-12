@@ -9,7 +9,7 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 package cbit.vcell.modelopt.gui;
-import cbit.vcell.desktop.controls.UserCancelException;
+import cbit.util.UserCancelException;
 import cbit.vcell.opt.ReferenceData;
 import java.io.File;
 /**
@@ -20,7 +20,6 @@ import java.io.File;
 public class ReferenceDataPanel extends javax.swing.JPanel {
 	private cbit.vcell.opt.ReferenceData fieldReferenceData = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private cbit.vcell.client.server.UserPreferences fieldUserPreferences = null;
 	private javax.swing.JButton ivjImportButton = null;
 	private javax.swing.JButton ivjSubsampleButton = null;
 	private boolean ivjConnPtoP1Aligning = false;
@@ -519,15 +518,6 @@ private javax.swing.JButton getSubsampleButton() {
 	return ivjSubsampleButton;
 }
 
-/**
- * Gets the userPreferences property (cbit.vcell.client.server.UserPreferences) value.
- * @return The userPreferences property value.
- * @see #setUserPreferences
- */
-public cbit.vcell.client.server.UserPreferences getUserPreferences() {
-	return fieldUserPreferences;
-}
-
 
 /**
  * Called whenever the part throws an exception.
@@ -554,12 +544,12 @@ private cbit.vcell.opt.ReferenceData importDataFromFile() throws UserCancelExcep
 	// remove all selector
 	fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
 	String defaultPath = null;
-	if (getUserPreferences()!=null){
-	    defaultPath = getUserPreferences().getGenPref(cbit.vcell.client.server.UserPreferences.GENERAL_LAST_PATH_USED);
-	    if (defaultPath!=null){
-		    fileChooser.setCurrentDirectory(new File(defaultPath));
-	    }
-	}
+//	if (getUserPreferences()!=null){
+//	    defaultPath = getUserPreferences().getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
+//	    if (defaultPath!=null){
+//		    fileChooser.setCurrentDirectory(new File(defaultPath));
+//	    }
+//	}
 
 	fileChooser.setDialogTitle("Import Data File");
 	if (fileChooser.showOpenDialog(this) != javax.swing.JFileChooser.APPROVE_OPTION) {
@@ -572,12 +562,13 @@ private cbit.vcell.opt.ReferenceData importDataFromFile() throws UserCancelExcep
 			// no file selected (no name given)
 			throw UserCancelException.CANCEL_FILE_SELECTION;
 		} else {
-			if (getUserPreferences()!=null){
-				String newPath = selectedFile.getParent();
-				if (!newPath.equals(defaultPath)) {
-					getUserPreferences().setGenPref(cbit.vcell.client.server.UserPreferences.GENERAL_LAST_PATH_USED, newPath);
-				}
-			}
+//			if (getUserPreferences()!=null){
+//				String newPath = selectedFile.getParent();
+//				if (!newPath.equals(defaultPath)) {
+//					System.out.println("cbit.vcell.modelopt.gui.ReferenceDataPanel.importDataFromFile(), save preferences of path = \""+newPath+"\"");
+//					//getUserPreferences().setGenPref(cbit.vcell.client.server.UserPreferences.GENERAL_LAST_PATH_USED, newPath);
+//				}
+//			}
 			cbit.vcell.export.CSV csv = new cbit.vcell.export.CSV();
 			cbit.vcell.util.RowColumnResultSet rowColumnResultSet = csv.importFrom(new java.io.FileReader(selectedFile));
 			double[] weights = new double[rowColumnResultSet.getDataColumnCount()];
@@ -701,17 +692,6 @@ private void setreferenceData1(cbit.vcell.opt.ReferenceData newValue) {
 	};
 	// user code begin {3}
 	// user code end
-}
-
-/**
- * Sets the userPreferences property (cbit.vcell.client.server.UserPreferences) value.
- * @param userPreferences The new value for the property.
- * @see #getUserPreferences
- */
-public void setUserPreferences(cbit.vcell.client.server.UserPreferences userPreferences) {
-	cbit.vcell.client.server.UserPreferences oldValue = fieldUserPreferences;
-	fieldUserPreferences = userPreferences;
-	firePropertyChange("userPreferences", oldValue, userPreferences);
 }
 
 

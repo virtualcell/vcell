@@ -1,6 +1,7 @@
 package cbit.vcell.opt.solvers;
 import cbit.util.GroupAccessNone;
 import cbit.util.KeyValue;
+import cbit.util.SimulationVersion;
 import cbit.util.User;
 import cbit.util.VersionFlag;
 import cbit.vcell.parser.Expression;

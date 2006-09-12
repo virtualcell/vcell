@@ -67,7 +67,7 @@ private double calculateWeightedError(double[] x) {
 		//
 		// Create new simulation and apply current parameter values in x[] as math overrides
 		//
-		cbit.sql.SimulationVersion simVersion = new cbit.sql.SimulationVersion(
+		cbit.util.SimulationVersion simVersion = new cbit.util.SimulationVersion(
 			new KeyValue("12345"),
 			"name",
 			new User("user",new KeyValue("123")),
