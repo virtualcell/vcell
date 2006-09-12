@@ -9,7 +9,6 @@ import cbit.util.Versionable;
 import cbit.vcell.solver.SolverResultSetInfo;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.solver.SimulationInfo;
-import cbit.sql.*;
 import java.util.*;
 /**
  * Insert the type's description here.
