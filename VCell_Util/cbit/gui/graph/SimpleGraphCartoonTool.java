@@ -14,6 +14,8 @@ import cbit.gui.graph.Shape;
 import cbit.gui.graph.EdgeShape;
 import java.awt.event.*;
 import java.awt.*;
+import java.util.Enumeration;
+
 import cbit.gui.*;
 import javax.swing.*;
 import javax.swing.event.InternalFrameEvent;
@@ -29,6 +31,7 @@ public class SimpleGraphCartoonTool extends CartoonTool {
 	public static final String CYCLEIZER = "Cycleizer";
 	public static final String FORCEDIRECT = "ForceDirect";
 	public static final String LEVELLER = "Leveller";
+	public static final String TRANSPOSE = "Transpose";
 	public static final String RANDOMIZER = "Randomizer";
 	public static final String RELAXER = "Relaxer";
 	public static final String STABILIZER = "Stabilizer";
@@ -73,6 +76,23 @@ public GraphModel getGraphModel() {
 	return graphModel;
 }
 
+public void transposeLayout(){
+	//
+	// calculate offset and scaling so that resulting graph fits on canvas
+	//
+	Enumeration<Shape> enumShapes = getGraphModel().getShapes();
+	while (enumShapes.hasMoreElements()){
+		Shape shape = enumShapes.nextElement();
+		if (shape instanceof ElipseShape){
+			Point location = shape.getLocation();
+			int oldX = location.x;
+			int oldY = location.y;
+			location.y = oldX;
+			location.x = oldY;
+		}
+	}
+	getGraphPane().repaint();
+}
 
 /**
  * This method was created in VisualAge.

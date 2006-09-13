@@ -34,6 +34,7 @@ public class SimpleGraphModelPanel extends JPanel implements java.awt.event.Acti
 	private JButton ivjZoomInButton = null;
 	private JButton ivjZoomOutButton = null;
 	private JButton ivjGlgLayoutJButton = null;
+	private JButton ivjTransposeLayoutButton = null;
 	private javax.swing.JDesktopPane fieldDesktopPane = new JDesktopPane();
 	private SimpleGraphModel ivjSimpleGraphModel = null;
 	private SimpleGraphCartoonTool ivjSimpleGraphModelTool1 = null;
@@ -73,12 +74,17 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 		connEtoM1(e);
 	if (e.getSource() == getGlgLayoutJButton()) 
 		connEtoM9(e);
+	if (e.getSource() == getTransposeLayoutJButton()) 
+		invokeTransposeLayout();
 	if (e.getSource() == getLevellerLayoutButton()) 
 		connEtoM13(e);
 	if (e.getSource() == getAnnealLayoutButton()) 
 		connEtoM2(e);
 	// user code begin {2}
 	// user code end
+}
+private void invokeTransposeLayout(){
+	getSimpleGraphModelTool1().transposeLayout();
 }
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
@@ -544,6 +550,32 @@ private java.lang.String getForceDirect() {
  * @return javax.swing.JButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
+private javax.swing.JButton getTransposeLayoutJButton() {
+	if (ivjTransposeLayoutButton == null) {
+		try {
+			ivjTransposeLayoutButton = new javax.swing.JButton();
+			ivjTransposeLayoutButton.setName("TransposeLayoutButton");
+			ivjTransposeLayoutButton.setText("G'");
+			ivjTransposeLayoutButton.setMaximumSize(new java.awt.Dimension(28, 28));
+			ivjTransposeLayoutButton.setPreferredSize(new java.awt.Dimension(28, 28));
+			ivjTransposeLayoutButton.setFont(new java.awt.Font("Arial", 1, 10));
+			ivjTransposeLayoutButton.setMinimumSize(new java.awt.Dimension(28, 28));
+			ivjTransposeLayoutButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjTransposeLayoutButton;
+}
+/**
+ * Return the GlgLayoutJButton property value.
+ * @return javax.swing.JButton
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JButton getGlgLayoutJButton() {
 	if (ivjGlgLayoutJButton == null) {
 		try {
@@ -704,6 +736,7 @@ private javax.swing.JToolBar getJToolBar1() {
 			getJToolBar1().add(getLevellerLayoutButton(), getLevellerLayoutButton().getName());
 			getJToolBar1().add(getRelaxerLayoutButton(), getRelaxerLayoutButton().getName());
 			getJToolBar1().add(getGlgLayoutJButton(), getGlgLayoutJButton().getName());
+			getJToolBar1().add(getTransposeLayoutJButton(), getTransposeLayoutJButton().getName());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -981,6 +1014,7 @@ private void initConnections() throws java.lang.Exception {
 	getCircleLayoutButton().addActionListener(this);
 	getRandomLayoutButton().addActionListener(this);
 	getGlgLayoutJButton().addActionListener(this);
+	getTransposeLayoutJButton().addActionListener(this);
 	getLevellerLayoutButton().addActionListener(this);
 	getAnnealLayoutButton().addActionListener(this);
 	this.addPropertyChangeListener(this);
