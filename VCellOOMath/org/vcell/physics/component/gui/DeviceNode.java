@@ -22,10 +22,11 @@ public DeviceNode(org.vcell.physics.component.ModelComponent argComponent, Graph
 	this.device = argComponent;
 	//if (argDevice.getLocation().getResolved()){
 		if (argComponent instanceof org.vcell.physics.component.TwoPortElectricalComponent || argComponent instanceof org.vcell.physics.component.OnePortElectricalDevice){
-			defaultBG = java.awt.Color.green;
-		}else if (argComponent instanceof org.vcell.physics.component.Species ||
-				  argComponent instanceof org.vcell.physics.component.Reaction){
 			defaultBG = java.awt.Color.pink;
+		}else if (argComponent instanceof org.vcell.physics.component.Species){
+			defaultBG = java.awt.Color.green;
+		}else if (argComponent instanceof org.vcell.physics.component.Reaction){
+			defaultBG = java.awt.Color.yellow;
 		}else{
 			defaultBG = java.awt.Color.white;
 		}

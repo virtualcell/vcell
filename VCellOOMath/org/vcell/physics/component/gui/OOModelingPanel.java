@@ -1,20 +1,21 @@
 package org.vcell.physics.component.gui;
-import javax.swing.JScrollPane;
 
 import org.vcell.physics.component.StronglyConnectedComponent;
 import org.vcell.physics.component.VarEquationAssignment;
+
+import cbit.gui.graph.SimpleGraphModelPanel;
 /**
  * Insert the type's description here.
  * Creation date: (1/30/2006 2:53:25 PM)
  * @author: Jim Schaff
  */
 public class OOModelingPanel extends javax.swing.JPanel {
-	private cbit.gui.graph.SimpleGraphModelPanel ivjconnectivityGraphPanel = null;
+	private SimpleGraphModelPanel ivjconnectivityGraphPanel = null;
 	private javax.swing.JScrollPane ivjEquationScrollPane = null;
 	private javax.swing.JTabbedPane ivjJTabbedPane1 = null;
-	private cbit.gui.graph.SimpleGraphModelPanel ivjpartitionGraphPanel = null;
+	private SimpleGraphModelPanel ivjpartitionGraphPanel = null;
 	private OOModelGraphPanel ivjphysicalModelGraphPanel = null;
-	private cbit.gui.graph.SimpleGraphModelPanel ivjsccGraphModelPanel = null;
+	private SimpleGraphModelPanel ivjsccGraphModelPanel = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private org.vcell.physics.component.StronglyConnectedComponent[] fieldStronglyConnectedComponents = null;
 	private org.vcell.physics.component.VarEquationAssignment[] fieldVarEquationAssignments = null;
@@ -272,12 +273,13 @@ public org.vcell.physics.math.BipartiteMatchings.Matching getBipartiteMatchings(
  * @return cbit.gui.graph.SimpleGraphModelPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.graph.SimpleGraphModelPanel getconnectivityGraphPanel() {
+private SimpleGraphModelPanel getconnectivityGraphPanel() {
 	if (ivjconnectivityGraphPanel == null) {
 		try {
-			ivjconnectivityGraphPanel = new cbit.gui.graph.SimpleGraphModelPanel();
+			ivjconnectivityGraphPanel = new SimpleGraphModelPanel();
 			ivjconnectivityGraphPanel.setName("connectivityGraphPanel");
 			// user code begin {1}
+			ivjconnectivityGraphPanel.getSimpleGraphModel().setGraphShapeFactory(new ConnectivityGraphShapeFactory());
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
 			// user code begin {2}
@@ -373,12 +375,13 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
  * @return cbit.gui.graph.SimpleGraphModelPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.graph.SimpleGraphModelPanel getpartitionGraphPanel() {
+private SimpleGraphModelPanel getpartitionGraphPanel() {
 	if (ivjpartitionGraphPanel == null) {
 		try {
-			ivjpartitionGraphPanel = new cbit.gui.graph.SimpleGraphModelPanel();
+			ivjpartitionGraphPanel = new SimpleGraphModelPanel();
 			ivjpartitionGraphPanel.setName("partitionGraphPanel");
 			// user code begin {1}
+			ivjpartitionGraphPanel.getSimpleGraphModel().setGraphShapeFactory(new PartitionGraphShapeFactory());
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
 			// user code begin {2}
@@ -435,12 +438,13 @@ public org.vcell.physics.component.OOModel getPhysicalModelGraphPanelModel() {
  * @return cbit.gui.graph.SimpleGraphModelPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.graph.SimpleGraphModelPanel getsccGraphModelPanel() {
+private SimpleGraphModelPanel getsccGraphModelPanel() {
 	if (ivjsccGraphModelPanel == null) {
 		try {
-			ivjsccGraphModelPanel = new cbit.gui.graph.SimpleGraphModelPanel();
+			ivjsccGraphModelPanel = new SimpleGraphModelPanel();
 			ivjsccGraphModelPanel.setName("sccGraphModelPanel");
 			// user code begin {1}
+			ivjsccGraphModelPanel.getSimpleGraphModel().setGraphShapeFactory(new SCCGraphShapeFactory());
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
 			// user code begin {2}

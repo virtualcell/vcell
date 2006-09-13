@@ -1,0 +1,23 @@
+package org.vcell.physics.component.gui;
+
+import cbit.gui.graph.GraphEdgeShape;
+import cbit.gui.graph.GraphModel;
+import cbit.gui.graph.NodeShape;
+import cbit.gui.graph.SimpleGraphModel.GraphShapeFactory;
+import cbit.util.graph.Edge;
+import cbit.util.graph.Graph;
+import cbit.util.graph.Node;
+
+public class PartitionGraphShapeFactory implements GraphShapeFactory {
+	public GraphEdgeShape getEdgeShape(Edge edge, NodeShape beginShape,	NodeShape endShape, GraphModel graphModel, Graph graph) {
+		return new GraphEdgeShape(edge,beginShape,endShape,graphModel,true);
+	}
+
+	public NodeShape getNodeShape(Node node, GraphModel graphModel, Graph graph) {
+		return new PartitionNodeShape(node,graphModel,2);
+	}
+
+	public String getTitle(){
+		return "Partition Graph";
+	}
+}
