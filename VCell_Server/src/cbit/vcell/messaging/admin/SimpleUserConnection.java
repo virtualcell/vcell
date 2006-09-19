@@ -1,8 +1,8 @@
 package cbit.vcell.messaging.admin;
 import java.util.Date;
 
+import cbit.util.ComparableObject;
 import cbit.util.User;
-import cbit.vcell.messaging.ComparableObject;
 /**
  * Insert the type's description here.
  * Creation date: (4/5/2006 9:39:11 AM)

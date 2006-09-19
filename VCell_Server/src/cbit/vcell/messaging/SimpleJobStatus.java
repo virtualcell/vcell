@@ -1,4 +1,5 @@
 package cbit.vcell.messaging;
+import cbit.util.ComparableObject;
 import cbit.util.KeyValue;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import java.math.BigDecimal;

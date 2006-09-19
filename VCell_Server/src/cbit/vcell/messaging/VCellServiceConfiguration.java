@@ -1,5 +1,7 @@
 package cbit.vcell.messaging;
 
+import cbit.util.ComparableObject;
+
 /**
  * Insert the type's description here.
  * Creation date: (9/11/2003 3:20:06 PM)
