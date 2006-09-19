@@ -1,7 +1,6 @@
 package cbit.vcell.messaging.admin.sorttable;
 import java.util.*;
 
-import cbit.vcell.messaging.admin.ColumnComparator;
 
 /**
  * Insert the type's description here.
