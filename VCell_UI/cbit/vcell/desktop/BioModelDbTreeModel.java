@@ -14,10 +14,10 @@ import cbit.vcell.biomodel.BioModelInfo;
  * Creation date: (2/14/01 3:33:23 PM)
  * @author: Jim Schaff
  */
-public class BioModelDbTreeModel extends javax.swing.tree.DefaultTreeModel implements cbit.vcell.clientdb.DatabaseListener {
+public class BioModelDbTreeModel extends javax.swing.tree.DefaultTreeModel implements cbit.vcell.client.database.DatabaseListener {
 	private boolean fieldLatestOnly = false;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.vcell.clientdb.DocumentManager fieldDocumentManager = null;
+	private cbit.vcell.client.database.DocumentManager fieldDocumentManager = null;
 /**
  * BioModelDbTreeModel constructor comment.
  * @param root javax.swing.tree.TreeNode
@@ -139,7 +139,7 @@ private BioModelNode createVersionSubTree(BioModelInfo bmInfo) throws DataAccess
  * 
  * @param event cbit.vcell.clientdb.DatabaseEvent
  */
-public void databaseDelete(cbit.vcell.clientdb.DatabaseEvent databaseEvent) {
+public void databaseDelete(cbit.vcell.client.database.DatabaseEvent databaseEvent) {
 	if (databaseEvent.getOldVersionInfo() instanceof BioModelInfo){
 		BioModelInfo removedBioModelInfo = (BioModelInfo)databaseEvent.getOldVersionInfo();
 		BioModelNode removedNode = ((BioModelNode)getRoot()).findNodeByUserObject(removedBioModelInfo);
@@ -153,7 +153,7 @@ public void databaseDelete(cbit.vcell.clientdb.DatabaseEvent databaseEvent) {
  * 
  * @param event cbit.vcell.clientdb.DatabaseEvent
  */
-public void databaseInsert(cbit.vcell.clientdb.DatabaseEvent databaseEvent) {
+public void databaseInsert(cbit.vcell.client.database.DatabaseEvent databaseEvent) {
 	if (databaseEvent.getNewVersionInfo() instanceof BioModelInfo){
 		try {
 			BioModelInfo insertedBioModelInfo = (BioModelInfo)databaseEvent.getNewVersionInfo();
@@ -210,7 +210,7 @@ public void databaseInsert(cbit.vcell.clientdb.DatabaseEvent databaseEvent) {
  * 
  * @param event cbit.vcell.clientdb.DatabaseEvent
  */
-public void databaseRefresh(cbit.vcell.clientdb.DatabaseEvent event) {
+public void databaseRefresh(cbit.vcell.client.database.DatabaseEvent event) {
 
 	//Our parent will tell us what to do
 }
@@ -218,7 +218,7 @@ public void databaseRefresh(cbit.vcell.clientdb.DatabaseEvent event) {
  * 
  * @param event cbit.vcell.clientdb.DatabaseEvent
  */
-public void databaseUpdate(cbit.vcell.clientdb.DatabaseEvent databaseEvent) {
+public void databaseUpdate(cbit.vcell.client.database.DatabaseEvent databaseEvent) {
 	//
 	// the ClientDocumentManager usually throws an UPDATE when changing public/private status
 	//
@@ -259,7 +259,7 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
  * @return The documentManager property value.
  * @see #setDocumentManager
  */
-public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
+public cbit.vcell.client.database.DocumentManager getDocumentManager() {
 	return fieldDocumentManager;
 }
 /**
@@ -344,8 +344,8 @@ public synchronized void removePropertyChangeListener(java.lang.String propertyN
  * @param documentManager The new value for the property.
  * @see #getDocumentManager
  */
-public void setDocumentManager(cbit.vcell.clientdb.DocumentManager documentManager) {
-	cbit.vcell.clientdb.DocumentManager oldValue = fieldDocumentManager;
+public void setDocumentManager(cbit.vcell.client.database.DocumentManager documentManager) {
+	cbit.vcell.client.database.DocumentManager oldValue = fieldDocumentManager;
 	fieldDocumentManager = documentManager;
 
 	if (oldValue != null){

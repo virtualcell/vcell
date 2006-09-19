@@ -3,6 +3,7 @@ import cbit.vcell.solver.*;
 import cbit.vcell.client.server.*;
 import java.util.*;
 import cbit.vcell.client.*;
+import cbit.vcell.client.database.DocumentManager;
 import cbit.vcell.client.desktop.*;
 import cbit.vcell.clientdb.*;
 import cbit.vcell.geometry.*;

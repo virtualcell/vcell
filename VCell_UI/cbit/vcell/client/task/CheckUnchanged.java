@@ -4,6 +4,8 @@ import cbit.util.UserCancelException;
 import cbit.vcell.server.*;
 import cbit.vcell.clientdb.*;
 import javax.swing.*;
+
+import cbit.vcell.client.database.DocumentManager;
 import cbit.vcell.client.desktop.*;
 import cbit.vcell.client.*;
 import java.beans.*;

@@ -37,7 +37,7 @@ public class TestingFrameworkWindowPanel extends javax.swing.JPanel {
 	//
 	//
 	private cbit.vcell.client.TestingFrameworkWindowManager fieldTestingFrameworkWindowManager = null;
-	private cbit.vcell.clientdb.DocumentManager fieldDocumentManager = null;
+	private cbit.vcell.client.database.DocumentManager fieldDocumentManager = null;
 	private cbit.vcell.client.desktop.testingframework.TestingFrameworkPanel ivjtestingFrameworkPanel = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	private boolean ivjConnPtoP2Aligning = false;
@@ -195,7 +195,7 @@ private void connPtoP2SetTarget() {
  * @return The documentManager property value.
  * @see #setDocumentManager
  */
-public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
+public cbit.vcell.client.database.DocumentManager getDocumentManager() {
 	return fieldDocumentManager;
 }
 
@@ -363,8 +363,8 @@ public void refreshTree() {
  * @param documentManager The new value for the property.
  * @see #getDocumentManager
  */
-public void setDocumentManager(cbit.vcell.clientdb.DocumentManager documentManager) {
-	cbit.vcell.clientdb.DocumentManager oldValue = fieldDocumentManager;
+public void setDocumentManager(cbit.vcell.client.database.DocumentManager documentManager) {
+	cbit.vcell.client.database.DocumentManager oldValue = fieldDocumentManager;
 	fieldDocumentManager = documentManager;
 	firePropertyChange("documentManager", oldValue, documentManager);
 }

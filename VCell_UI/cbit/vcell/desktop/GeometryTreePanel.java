@@ -23,9 +23,9 @@ import java.awt.event.*;
  */
 public class GeometryTreePanel extends JPanel {
 	private JTree ivjJTree1 = null;
-	private cbit.vcell.clientdb.DocumentManager fieldDocumentManager = null;
+	private cbit.vcell.client.database.DocumentManager fieldDocumentManager = null;
 	private boolean ivjConnPtoP2Aligning = false;
-	private cbit.vcell.clientdb.DocumentManager ivjDocumentManager = null;
+	private cbit.vcell.client.database.DocumentManager ivjDocumentManager = null;
 	private JScrollPane ivjJScrollPane1 = null;
 	private VersionInfo fieldSelectedVersionInfo = null;
 	private boolean ivjConnPtoP4Aligning = false;
@@ -56,7 +56,7 @@ public class GeometryTreePanel extends JPanel {
 	private JPanel ivjJPanel3 = null;
 	private JMenuItem ivjJMenuItemGeomRefs = null;
 
-class IvjEventHandler implements cbit.vcell.clientdb.DatabaseListener, java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener, javax.swing.event.TreeModelListener, javax.swing.event.TreeSelectionListener {
+class IvjEventHandler implements cbit.vcell.client.database.DatabaseListener, java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener, javax.swing.event.TreeModelListener, javax.swing.event.TreeSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == GeometryTreePanel.this.getJMenuItemOpen()) 
 				connEtoC4(e);
@@ -69,16 +69,16 @@ class IvjEventHandler implements cbit.vcell.clientdb.DatabaseListener, java.awt.
 			if (e.getSource() == GeometryTreePanel.this.getJMenuItemGeomRefs()) 
 				connEtoC15(e);
 		};
-		public void databaseDelete(cbit.vcell.clientdb.DatabaseEvent event) {
+		public void databaseDelete(cbit.vcell.client.database.DatabaseEvent event) {
 			if (event.getSource() == GeometryTreePanel.this.getDocumentManager()) 
 				connEtoC13(event);
 		};
-		public void databaseInsert(cbit.vcell.clientdb.DatabaseEvent event) {};
-		public void databaseRefresh(cbit.vcell.clientdb.DatabaseEvent event) {
+		public void databaseInsert(cbit.vcell.client.database.DatabaseEvent event) {};
+		public void databaseRefresh(cbit.vcell.client.database.DatabaseEvent event) {
 			if (event.getSource() == GeometryTreePanel.this.getDocumentManager()) 
 				connEtoC7(event);
 		};
-		public void databaseUpdate(cbit.vcell.clientdb.DatabaseEvent event) {
+		public void databaseUpdate(cbit.vcell.client.database.DatabaseEvent event) {
 			if (event.getSource() == GeometryTreePanel.this.getDocumentManager()) 
 				connEtoC9(event);
 			if (event.getSource() == GeometryTreePanel.this.getDocumentManager()) 
@@ -239,7 +239,7 @@ private void connEtoC11() {
  * @param value cbit.vcell.clientdb.DocumentManager
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC12(cbit.vcell.clientdb.DocumentManager value) {
+private void connEtoC12(cbit.vcell.client.database.DocumentManager value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -259,7 +259,7 @@ private void connEtoC12(cbit.vcell.clientdb.DocumentManager value) {
  * @param arg1 cbit.vcell.clientdb.DatabaseEvent
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC13(cbit.vcell.clientdb.DatabaseEvent arg1) {
+private void connEtoC13(cbit.vcell.client.database.DatabaseEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -417,7 +417,7 @@ private void connEtoC6(java.awt.event.ActionEvent arg1) {
  * @param arg1 cbit.vcell.clientdb.DatabaseEvent
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC7(cbit.vcell.clientdb.DatabaseEvent arg1) {
+private void connEtoC7(cbit.vcell.client.database.DatabaseEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -457,7 +457,7 @@ private void connEtoC8(java.awt.event.ActionEvent arg1) {
  * @param arg1 cbit.vcell.clientdb.DatabaseEvent
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC9(cbit.vcell.clientdb.DatabaseEvent arg1) {
+private void connEtoC9(cbit.vcell.client.database.DatabaseEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -477,7 +477,7 @@ private void connEtoC9(cbit.vcell.clientdb.DatabaseEvent arg1) {
  * @param value cbit.vcell.clientdb.DocumentManager
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1(cbit.vcell.clientdb.DocumentManager value) {
+private void connEtoM1(cbit.vcell.client.database.DocumentManager value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -499,7 +499,7 @@ private void connEtoM1(cbit.vcell.clientdb.DocumentManager value) {
  * @param arg1 cbit.vcell.clientdb.DatabaseEvent
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM10(cbit.vcell.clientdb.DatabaseEvent arg1) {
+private void connEtoM10(cbit.vcell.client.database.DatabaseEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -558,7 +558,7 @@ private void connEtoM2() {
  * @param value cbit.vcell.clientdb.DocumentManager
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM3(cbit.vcell.clientdb.DocumentManager value) {
+private void connEtoM3(cbit.vcell.client.database.DocumentManager value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -630,7 +630,7 @@ public java.awt.Cursor connEtoM7_Value() {
  * @param value cbit.vcell.clientdb.DocumentManager
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM8(cbit.vcell.clientdb.DocumentManager value) {
+private void connEtoM8(cbit.vcell.client.database.DocumentManager value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -805,7 +805,7 @@ public GeometryCellRenderer createCellRenderer() {
 /**
  * Comment
  */
-private void documentManager_DatabaseDelete(cbit.vcell.clientdb.DatabaseEvent event) {
+private void documentManager_DatabaseDelete(cbit.vcell.client.database.DatabaseEvent event) {
 	if (event.getOldVersionInfo() instanceof GeometryInfo && getSelectedVersionInfo() instanceof GeometryInfo) {
 		GeometryInfo selectedGeoInfo = (GeometryInfo)getSelectedVersionInfo();
 		GeometryInfo eventGeoInfo = (GeometryInfo)event.getOldVersionInfo();
@@ -820,7 +820,7 @@ private void documentManager_DatabaseDelete(cbit.vcell.clientdb.DatabaseEvent ev
 /**
  * Comment
  */
-private void documentManager_DatabaseUpdate(cbit.vcell.clientdb.DatabaseEvent event) {
+private void documentManager_DatabaseUpdate(cbit.vcell.client.database.DatabaseEvent event) {
 	if (event.getNewVersionInfo() instanceof GeometryInfo && getSelectedVersionInfo() instanceof GeometryInfo) {
 		GeometryInfo selectedGeoInfo = (GeometryInfo)getSelectedVersionInfo();
 		GeometryInfo eventGeoInfo = (GeometryInfo)event.getNewVersionInfo();
@@ -875,7 +875,7 @@ protected void fireActionPerformed(java.awt.event.ActionEvent e) {
  * @return The documentManager property value.
  * @see #setDocumentManager
  */
-public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
+public cbit.vcell.client.database.DocumentManager getDocumentManager() {
 	// user code begin {1}
 	// user code end
 	return ivjDocumentManager;
@@ -1658,10 +1658,10 @@ private void selectSavedGeometry(Geometry geometry) {
  * @param documentManager The new value for the property.
  * @see #getDocumentManager
  */
-public void setDocumentManager(cbit.vcell.clientdb.DocumentManager newValue) {
+public void setDocumentManager(cbit.vcell.client.database.DocumentManager newValue) {
 	if (ivjDocumentManager != newValue) {
 		try {
-			cbit.vcell.clientdb.DocumentManager oldValue = getDocumentManager();
+			cbit.vcell.client.database.DocumentManager oldValue = getDocumentManager();
 			/* Stop listening for events from the current object */
 			if (ivjDocumentManager != null) {
 				ivjDocumentManager.removeDatabaseListener(ivjEventHandler);

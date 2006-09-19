@@ -33,7 +33,7 @@ public static void main(java.lang.String[] args) {
 		System.arraycopy(args,0,args2,0,args.length-1);
 		cbit.vcell.model.Model model = cbit.vcell.model.ModelTest.getExample_Bound();
 		cbit.vcell.client.server.ClientServerManager managerManager = mainInit(args2,"CreateSpeciesDialogTest",new javax.swing.JFrame());
-		cbit.vcell.clientdb.DocumentManager docManager = managerManager.getDocumentManager();
+		cbit.vcell.client.database.DocumentManager docManager = managerManager.getDocumentManager();
 		if(mode.equalsIgnoreCase("edit")){
 			aEditSpeciesDialog.initEditSpecies(model.getSpeciesContexts(model.getStructures(0))[0],docManager);
 		}else if(mode.equalsIgnoreCase("add")){

@@ -21,7 +21,7 @@ public class CartoonEditorPanelFixed extends javax.swing.JPanel {
 	private javax.swing.ButtonModel ivjselection1 = null;
 	private cbit.gui.graph.GraphPane ivjGraphPane1 = null;
 	private cbit.vcell.biomodel.BioModel fieldBioModel = null;
-	private cbit.vcell.clientdb.DocumentManager fieldDocumentManager = null;
+	private cbit.vcell.client.database.DocumentManager fieldDocumentManager = null;
 	private cbit.vcell.biomodel.BioModel ivjbioModel1 = null;
 	private boolean ivjConnPtoP3Aligning = false;
 
@@ -322,7 +322,7 @@ private cbit.gui.ButtonGroupCivilized getButtonGroupCivilized1() {
  * @return The documentManager property value.
  * @see #setDocumentManager
  */
-public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
+public cbit.vcell.client.database.DocumentManager getDocumentManager() {
 	return fieldDocumentManager;
 }
 
@@ -672,8 +672,8 @@ private void setbioModel1(cbit.vcell.biomodel.BioModel newValue) {
  * @param documentManager The new value for the property.
  * @see #getDocumentManager
  */
-public void setDocumentManager(cbit.vcell.clientdb.DocumentManager documentManager) {
-	cbit.vcell.clientdb.DocumentManager oldValue = fieldDocumentManager;
+public void setDocumentManager(cbit.vcell.client.database.DocumentManager documentManager) {
+	cbit.vcell.client.database.DocumentManager oldValue = fieldDocumentManager;
 	fieldDocumentManager = documentManager;
 	firePropertyChange("documentManager", oldValue, documentManager);
 }

@@ -13,7 +13,7 @@ public class SpeciesQueryDialog extends javax.swing.JDialog {
 	private javax.swing.JButton ivjOKJButton = null;
 	private SpeciesQueryPanel ivjSpeciesQueryPanel1 = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private cbit.vcell.clientdb.DocumentManager fieldDocumentManager = null;
+	private cbit.vcell.client.database.DocumentManager fieldDocumentManager = null;
 	private long fieldSearchableTypes = 0;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
@@ -214,7 +214,7 @@ public cbit.vcell.dictionary.database.DictionaryQueryResults getDictionaryQueryR
  * @return The documentManager property value.
  * @see #setDocumentManager
  */
-public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
+public cbit.vcell.client.database.DocumentManager getDocumentManager() {
 	return fieldDocumentManager;
 }
 /**
@@ -392,8 +392,8 @@ private void setDictionaryQueryResults(cbit.vcell.dictionary.database.Dictionary
  * @param documentManager The new value for the property.
  * @see #getDocumentManager
  */
-public void setDocumentManager(cbit.vcell.clientdb.DocumentManager documentManager) {
-	cbit.vcell.clientdb.DocumentManager oldValue = fieldDocumentManager;
+public void setDocumentManager(cbit.vcell.client.database.DocumentManager documentManager) {
+	cbit.vcell.client.database.DocumentManager oldValue = fieldDocumentManager;
 	fieldDocumentManager = documentManager;
 	firePropertyChange("documentManager", oldValue, documentManager);
 }

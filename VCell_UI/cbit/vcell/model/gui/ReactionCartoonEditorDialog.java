@@ -84,7 +84,7 @@ private void handleException(java.lang.Throwable exception) {
  * @param model cbit.vcell.model.Model
  * @param structure cbit.vcell.model.Structure
  */
-public void init(Model model, Structure structure,cbit.vcell.clientdb.DocumentManager documentManager) {
+public void init(Model model, Structure structure,cbit.vcell.client.database.DocumentManager documentManager) {
 	getReactionCartoonEditorPanel().setModel(model);
 	getReactionCartoonEditorPanel().setStructure(structure);
 	getReactionCartoonEditorPanel().setDocumentManager(documentManager);

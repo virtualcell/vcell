@@ -8,7 +8,7 @@ import java.util.Vector;
  * All rights reserved.
 ©*/
 import cbit.vcell.mathmodel.*;
-import cbit.vcell.clientdb.DatabaseEvent;
+import cbit.vcell.client.database.DatabaseEvent;
 import cbit.vcell.solver.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.server.*;
@@ -32,9 +32,9 @@ import javax.swing.*;
  */
 public class MathModelDbTreePanel extends JPanel {
 	private JTree ivjJTree1 = null;
-	private cbit.vcell.clientdb.DocumentManager fieldDocumentManager = null;
+	private cbit.vcell.client.database.DocumentManager fieldDocumentManager = null;
 	private boolean ivjConnPtoP2Aligning = false;
-	private cbit.vcell.clientdb.DocumentManager ivjDocumentManager = null;
+	private cbit.vcell.client.database.DocumentManager ivjDocumentManager = null;
 	private boolean ivjConnPtoP3Aligning = false;
 	private JScrollPane ivjJScrollPane1 = null;
 	private boolean ivjConnPtoP4Aligning = false;
@@ -71,7 +71,7 @@ public class MathModelDbTreePanel extends JPanel {
 	private JMenuItem ivjJMenuItemArchive = null;
 	private JMenuItem ivjJMenuItemPublish = null;
 
-class IvjEventHandler implements cbit.vcell.clientdb.DatabaseListener, java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener, javax.swing.event.TreeModelListener, javax.swing.event.TreeSelectionListener {
+class IvjEventHandler implements cbit.vcell.client.database.DatabaseListener, java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener, javax.swing.event.TreeModelListener, javax.swing.event.TreeSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == MathModelDbTreePanel.this.getJMenuItemDelete()) 
 				connEtoC7(e);
@@ -94,16 +94,16 @@ class IvjEventHandler implements cbit.vcell.clientdb.DatabaseListener, java.awt.
 			if (e.getSource() == MathModelDbTreePanel.this.getJMenuItemPublish()) 
 				connEtoC23(e);
 		};
-		public void databaseDelete(cbit.vcell.clientdb.DatabaseEvent event) {
+		public void databaseDelete(cbit.vcell.client.database.DatabaseEvent event) {
 			if (event.getSource() == MathModelDbTreePanel.this.getDocumentManager()) 
 				connEtoC14(event);
 		};
-		public void databaseInsert(cbit.vcell.clientdb.DatabaseEvent event) {};
-		public void databaseRefresh(cbit.vcell.clientdb.DatabaseEvent event) {
+		public void databaseInsert(cbit.vcell.client.database.DatabaseEvent event) {};
+		public void databaseRefresh(cbit.vcell.client.database.DatabaseEvent event) {
 			if (event.getSource() == MathModelDbTreePanel.this.getDocumentManager()) 
 				connEtoC13(event);
 		};
-		public void databaseUpdate(cbit.vcell.clientdb.DatabaseEvent event) {
+		public void databaseUpdate(cbit.vcell.client.database.DatabaseEvent event) {
 			if (event.getSource() == MathModelDbTreePanel.this.getDocumentManager()) 
 				connEtoC3(event);
 		};
@@ -336,7 +336,7 @@ private void connEtoC12() {
  * @param arg1 cbit.vcell.clientdb.DatabaseEvent
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC13(cbit.vcell.clientdb.DatabaseEvent arg1) {
+private void connEtoC13(cbit.vcell.client.database.DatabaseEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -356,7 +356,7 @@ private void connEtoC13(cbit.vcell.clientdb.DatabaseEvent arg1) {
  * @param arg1 cbit.vcell.clientdb.DatabaseEvent
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC14(cbit.vcell.clientdb.DatabaseEvent arg1) {
+private void connEtoC14(cbit.vcell.client.database.DatabaseEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -472,7 +472,7 @@ private void connEtoC19(VersionInfo value) {
  * @param value cbit.vcell.clientdb.DocumentManager
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC2(cbit.vcell.clientdb.DocumentManager value) {
+private void connEtoC2(cbit.vcell.client.database.DocumentManager value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -572,7 +572,7 @@ private void connEtoC23(java.awt.event.ActionEvent arg1) {
  * @param arg1 cbit.vcell.clientdb.DatabaseEvent
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC3(cbit.vcell.clientdb.DatabaseEvent arg1) {
+private void connEtoC3(cbit.vcell.client.database.DatabaseEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -768,7 +768,7 @@ private void connEtoM5(java.beans.PropertyChangeEvent arg1) {
  * @param value cbit.vcell.clientdb.DocumentManager
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM7(cbit.vcell.clientdb.DocumentManager value) {
+private void connEtoM7(cbit.vcell.client.database.DocumentManager value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -981,7 +981,7 @@ private void connPtoP5SetTarget() {
 /**
  * Comment
  */
-private void documentManager_DatabaseDelete(cbit.vcell.clientdb.DatabaseEvent event) {
+private void documentManager_DatabaseDelete(cbit.vcell.client.database.DatabaseEvent event) {
 	if (event.getOldVersionInfo() instanceof MathModelInfo && getSelectedVersionInfo() instanceof MathModelInfo) {
 		MathModelInfo selectedMMInfo = (MathModelInfo)getSelectedVersionInfo();
 		MathModelInfo eventMMInfo = (MathModelInfo)event.getOldVersionInfo();
@@ -996,7 +996,7 @@ private void documentManager_DatabaseDelete(cbit.vcell.clientdb.DatabaseEvent ev
 /**
  * Comment
  */
-private void documentManager_DatabaseUpdate(cbit.vcell.clientdb.DatabaseEvent event) {
+private void documentManager_DatabaseUpdate(cbit.vcell.client.database.DatabaseEvent event) {
 	if (event.getNewVersionInfo() instanceof MathModelInfo && getSelectedVersionInfo() instanceof MathModelInfo) {
 		MathModelInfo selectedMMInfo = (MathModelInfo)getSelectedVersionInfo();
 		MathModelInfo eventMMInfo = (MathModelInfo)event.getNewVersionInfo();
@@ -1102,7 +1102,7 @@ private BioModelInfo[] getBioModelVersionDates(BioModelInfo thisBioModelInfo) th
  * @return The documentManager property value.
  * @see #setDocumentManager
  */
-public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
+public cbit.vcell.client.database.DocumentManager getDocumentManager() {
 	// user code begin {1}
 	// user code end
 	return ivjDocumentManager;
@@ -2128,10 +2128,10 @@ public void setDividerPosition(double position) {
  * @param documentManager The new value for the property.
  * @see #getDocumentManager
  */
-public void setDocumentManager(cbit.vcell.clientdb.DocumentManager newValue) {
+public void setDocumentManager(cbit.vcell.client.database.DocumentManager newValue) {
 	if (ivjDocumentManager != newValue) {
 		try {
-			cbit.vcell.clientdb.DocumentManager oldValue = getDocumentManager();
+			cbit.vcell.client.database.DocumentManager oldValue = getDocumentManager();
 			/* Stop listening for events from the current object */
 			if (ivjDocumentManager != null) {
 				ivjDocumentManager.removeDatabaseListener(ivjEventHandler);

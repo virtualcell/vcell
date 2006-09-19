@@ -8,15 +8,13 @@ import cbit.vcell.graph.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.model.*;
 import cbit.vcell.model.gui.*;
-import cbit.vcell.model.gui.EditSpeciesDialog;
-import cbit.vcell.model.gui.FluxReaction_Dialog;
-import cbit.vcell.model.gui.SimpleReactionPanelDialog;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.InternalFrameEvent;
-import cbit.vcell.clientdb.DocumentManager;
+
+import cbit.vcell.client.database.DocumentManager;
 
 public abstract class BioCartoonTool extends cbit.gui.graph.CartoonTool {
 	private DocumentManager documentManager = null;
@@ -35,7 +33,7 @@ public BioCartoonTool() {
  * Creation date: (5/13/2003 8:26:55 PM)
  * @return cbit.vcell.clientdb.DocumentManager
  */
-public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
+public cbit.vcell.client.database.DocumentManager getDocumentManager() {
 	return documentManager;
 }
 
@@ -251,7 +249,7 @@ protected static final SpeciesContext pasteSpecies(Species species,Model model, 
  * Creation date: (5/13/2003 8:26:55 PM)
  * @return cbit.vcell.clientdb.DocumentManager
  */
-public void setDocumentManager(cbit.vcell.clientdb.DocumentManager argDocumentManager) {
+public void setDocumentManager(cbit.vcell.client.database.DocumentManager argDocumentManager) {
 	this.documentManager = argDocumentManager;
 }
 

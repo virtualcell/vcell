@@ -2,6 +2,7 @@ package cbit.vcell.client.task;
 import cbit.sql.*;
 import cbit.util.*;
 import cbit.vcell.client.*;
+import cbit.vcell.client.database.DocumentManager;
 import cbit.vcell.client.desktop.*;
 import cbit.vcell.clientdb.*;
 import cbit.vcell.geometry.*;

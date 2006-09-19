@@ -18,7 +18,7 @@ import javax.swing.tree.TreePath;
  * @author: Anuradha Lakshminarayana
  */
 public class TestingFrameworkPanel extends javax.swing.JPanel {
-	private cbit.vcell.clientdb.DocumentManager fieldDocumentManager = null;
+	private cbit.vcell.client.database.DocumentManager fieldDocumentManager = null;
 	private cbit.vcell.client.TestingFrameworkWindowManager fieldTestingFrameworkWindowManager = null;
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
 	private javax.swing.JTree ivjJTree1 = null;
@@ -43,7 +43,7 @@ public class TestingFrameworkPanel extends javax.swing.JPanel {
 	protected transient java.awt.event.ActionListener aActionListener = null;
 	private boolean ivjConnPtoP2Aligning = false;
 	private boolean ivjConnPtoP3Aligning = false;
-	private cbit.vcell.clientdb.DocumentManager ivjdocumentManager1 = null;
+	private cbit.vcell.client.database.DocumentManager ivjdocumentManager1 = null;
 	private cbit.vcell.client.TestingFrameworkWindowManager ivjtestingFrameworkWindowManager1 = null;
 	private boolean ivjConnPtoP5Aligning = false;
 	private javax.swing.tree.TreeSelectionModel ivjselectionModel = null;
@@ -485,7 +485,7 @@ private void connEtoC9(java.awt.event.ActionEvent arg1) {
  * @param value cbit.vcell.clientdb.DocumentManager
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1(cbit.vcell.clientdb.DocumentManager value) {
+private void connEtoM1(cbit.vcell.client.database.DocumentManager value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -753,7 +753,7 @@ private javax.swing.JMenuItem getCompareMenuItem() {
  * @return The documentManager property value.
  * @see #setDocumentManager
  */
-public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
+public cbit.vcell.client.database.DocumentManager getDocumentManager() {
 	return fieldDocumentManager;
 }
 /**
@@ -761,7 +761,7 @@ public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
  * @return cbit.vcell.clientdb.DocumentManager
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.clientdb.DocumentManager getdocumentManager1() {
+private cbit.vcell.client.database.DocumentManager getdocumentManager1() {
 	// user code begin {1}
 	// user code end
 	return ivjdocumentManager1;
@@ -1429,8 +1429,8 @@ public void removeActionListener(java.awt.event.ActionListener newListener) {
  * @param documentManager The new value for the property.
  * @see #getDocumentManager
  */
-public void setDocumentManager(cbit.vcell.clientdb.DocumentManager documentManager) {
-	cbit.vcell.clientdb.DocumentManager oldValue = fieldDocumentManager;
+public void setDocumentManager(cbit.vcell.client.database.DocumentManager documentManager) {
+	cbit.vcell.client.database.DocumentManager oldValue = fieldDocumentManager;
 	fieldDocumentManager = documentManager;
 	firePropertyChange("documentManager", oldValue, documentManager);
 }
@@ -1439,10 +1439,10 @@ public void setDocumentManager(cbit.vcell.clientdb.DocumentManager documentManag
  * @param newValue cbit.vcell.clientdb.DocumentManager
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setdocumentManager1(cbit.vcell.clientdb.DocumentManager newValue) {
+private void setdocumentManager1(cbit.vcell.client.database.DocumentManager newValue) {
 	if (ivjdocumentManager1 != newValue) {
 		try {
-			cbit.vcell.clientdb.DocumentManager oldValue = getdocumentManager1();
+			cbit.vcell.client.database.DocumentManager oldValue = getdocumentManager1();
 			ivjdocumentManager1 = newValue;
 			connPtoP2SetSource();
 			connEtoM1(ivjdocumentManager1);

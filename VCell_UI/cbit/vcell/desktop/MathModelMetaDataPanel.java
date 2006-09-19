@@ -19,7 +19,7 @@ public class MathModelMetaDataPanel extends JPanel {
 	private cbit.gui.JTreeFancy ivjJTree1 = null;
 	private MathModelMetaDataCellRenderer ivjmathModelMetaDataCellRenderer = null;
 	private MathModelMetaDataTreeModel ivjmathModelMetaDataTreeModel = null;
-	private cbit.vcell.clientdb.DocumentManager fieldDocumentManager = null;
+	private cbit.vcell.client.database.DocumentManager fieldDocumentManager = null;
 	private boolean fieldPopupMenuDisabled = false;
 	private cbit.vcell.mathmodel.MathModelInfo fieldMathModelInfo = null;
 	private boolean ivjConnPtoP1Aligning = false;
@@ -247,7 +247,7 @@ public void expandAllRows() {
  * @return The documentManager property value.
  * @see #setDocumentManager
  */
-public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
+public cbit.vcell.client.database.DocumentManager getDocumentManager() {
 	return fieldDocumentManager;
 }
 /**
@@ -449,8 +449,8 @@ private void mathModelMetaDataPanel_Initialize() {
  * @param documentManager The new value for the property.
  * @see #getDocumentManager
  */
-public void setDocumentManager(cbit.vcell.clientdb.DocumentManager documentManager) {
-	cbit.vcell.clientdb.DocumentManager oldValue = fieldDocumentManager;
+public void setDocumentManager(cbit.vcell.client.database.DocumentManager documentManager) {
+	cbit.vcell.client.database.DocumentManager oldValue = fieldDocumentManager;
 	fieldDocumentManager = documentManager;
 	firePropertyChange("documentManager", oldValue, documentManager);
 }

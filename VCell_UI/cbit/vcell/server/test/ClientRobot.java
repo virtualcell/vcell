@@ -5,8 +5,7 @@ package cbit.vcell.server.test;
 ©*/
 import cbit.vcell.model.*;
 import cbit.vcell.biomodel.*;
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.client.database.DocumentManager;
 import cbit.util.*;
 /**
  * Insert the type's description here.

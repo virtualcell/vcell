@@ -19,9 +19,9 @@ public class GeometryMetaDataPanel extends JPanel {
 	private cbit.vcell.geometry.GeometryInfo ivjgeometryInfo1 = null;
 	private GeometryMetaDataCellRenderer ivjgeometryMetaDataCellRenderer = null;
 	private GeometryMetaDataTreeModel ivjgeometryMetaDataTreeModel = null;
-	private cbit.vcell.clientdb.DocumentManager fieldDocumentManager = null;
+	private cbit.vcell.client.database.DocumentManager fieldDocumentManager = null;
 	private boolean ivjConnPtoP4Aligning = false;
-	private cbit.vcell.clientdb.DocumentManager ivjdocumentManager1 = null;
+	private cbit.vcell.client.database.DocumentManager ivjdocumentManager1 = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private boolean fieldPopupMenuDisabled = false;
 
@@ -152,7 +152,7 @@ private void connEtoM1(cbit.vcell.geometry.GeometryInfo value) {
  * @param value cbit.vcell.clientdb.DocumentManager
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM2(cbit.vcell.clientdb.DocumentManager value) {
+private void connEtoM2(cbit.vcell.client.database.DocumentManager value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -334,7 +334,7 @@ public void expandAllRows() {
  * @return The documentManager property value.
  * @see #setDocumentManager
  */
-public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
+public cbit.vcell.client.database.DocumentManager getDocumentManager() {
 	return fieldDocumentManager;
 }
 
@@ -344,7 +344,7 @@ public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
  * @return cbit.vcell.clientdb.DocumentManager
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.clientdb.DocumentManager getdocumentManager1() {
+private cbit.vcell.client.database.DocumentManager getdocumentManager1() {
 	// user code begin {1}
 	// user code end
 	return ivjdocumentManager1;
@@ -562,8 +562,8 @@ public static void main(java.lang.String[] args) {
  * @param documentManager The new value for the property.
  * @see #getDocumentManager
  */
-public void setDocumentManager(cbit.vcell.clientdb.DocumentManager documentManager) {
-	cbit.vcell.clientdb.DocumentManager oldValue = fieldDocumentManager;
+public void setDocumentManager(cbit.vcell.client.database.DocumentManager documentManager) {
+	cbit.vcell.client.database.DocumentManager oldValue = fieldDocumentManager;
 	fieldDocumentManager = documentManager;
 	firePropertyChange("documentManager", oldValue, documentManager);
 }
@@ -574,10 +574,10 @@ public void setDocumentManager(cbit.vcell.clientdb.DocumentManager documentManag
  * @param newValue cbit.vcell.clientdb.DocumentManager
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setdocumentManager1(cbit.vcell.clientdb.DocumentManager newValue) {
+private void setdocumentManager1(cbit.vcell.client.database.DocumentManager newValue) {
 	if (ivjdocumentManager1 != newValue) {
 		try {
-			cbit.vcell.clientdb.DocumentManager oldValue = getdocumentManager1();
+			cbit.vcell.client.database.DocumentManager oldValue = getdocumentManager1();
 			ivjdocumentManager1 = newValue;
 			connPtoP4SetSource();
 			connEtoM2(ivjdocumentManager1);

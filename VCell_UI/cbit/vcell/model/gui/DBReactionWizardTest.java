@@ -41,7 +41,7 @@ public static void main(java.lang.String[] args) {
 		String[] args2 = new String[args.length-1];
 		System.arraycopy(args,0,args2,0,args.length-1);
 		cbit.vcell.client.server.ClientServerManager managerManager = mainInit(args2,"CreateSpeciesDialogTest",new javax.swing.JFrame());
-		cbit.vcell.clientdb.DocumentManager docManager = managerManager.getDocumentManager();
+		cbit.vcell.client.database.DocumentManager docManager = managerManager.getDocumentManager();
         aDBReactionWizardPanel.setDocumentManager(docManager);
         //
 		cbit.vcell.model.Model model = cbit.vcell.model.ModelTest.getExample_Bound();

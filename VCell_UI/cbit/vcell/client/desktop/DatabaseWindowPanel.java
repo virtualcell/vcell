@@ -16,7 +16,7 @@ public class DatabaseWindowPanel extends JPanel {
 	private cbit.vcell.desktop.GeometryTreePanel ivjGeometryTreePanel1 = null;
 	private JTabbedPane ivjJTabbedPane1 = null;
 	private cbit.vcell.desktop.MathModelDbTreePanel ivjMathModelDbTreePanel1 = null;
-	private cbit.vcell.clientdb.DocumentManager fieldDocumentManager = null;
+	private cbit.vcell.client.database.DocumentManager fieldDocumentManager = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	private boolean ivjConnPtoP2Aligning = false;
 	private boolean ivjConnPtoP3Aligning = false;
@@ -443,7 +443,7 @@ public cbit.vcell.client.DatabaseWindowManager getDatabaseWindowManager() {
  * @return The documentManager property value.
  * @see #setDocumentManager
  */
-public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
+public cbit.vcell.client.database.DocumentManager getDocumentManager() {
 	return fieldDocumentManager;
 }
 
@@ -622,8 +622,8 @@ public void setDatabaseWindowManager(cbit.vcell.client.DatabaseWindowManager dat
  * @param documentManager The new value for the property.
  * @see #getDocumentManager
  */
-public void setDocumentManager(cbit.vcell.clientdb.DocumentManager documentManager) {
-	cbit.vcell.clientdb.DocumentManager oldValue = fieldDocumentManager;
+public void setDocumentManager(cbit.vcell.client.database.DocumentManager documentManager) {
+	cbit.vcell.client.database.DocumentManager oldValue = fieldDocumentManager;
 	fieldDocumentManager = documentManager;
 	firePropertyChange("documentManager", oldValue, documentManager);
 }

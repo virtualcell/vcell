@@ -314,7 +314,7 @@ public class SpeciesQueryPanel extends javax.swing.JPanel {
 	private javax.swing.ListSelectionModel ivjselectionModel3 = null;
 	private cbit.vcell.dictionary.database.DictionaryQueryResults fieldDictionaryQueryResults = null;
 	private javax.swing.JLabel ivjSearchResultInfoJLabel = null;
-	private cbit.vcell.clientdb.DocumentManager fieldDocumentManager = null;
+	private cbit.vcell.client.database.DocumentManager fieldDocumentManager = null;
 	private long fieldSearchableTypes = SEARCHABLE_ALL;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener, javax.swing.event.DocumentListener, javax.swing.event.ListSelectionListener {
@@ -1121,7 +1121,7 @@ private javax.swing.text.Document getdocument1() {
  * @return The documentManager property value.
  * @see #setDocumentManager
  */
-public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
+public cbit.vcell.client.database.DocumentManager getDocumentManager() {
 	return fieldDocumentManager;
 }
 
@@ -1897,8 +1897,8 @@ private void setdocument1(javax.swing.text.Document newValue) {
  * @param documentManager The new value for the property.
  * @see #getDocumentManager
  */
-public void setDocumentManager(cbit.vcell.clientdb.DocumentManager documentManager) {
-	cbit.vcell.clientdb.DocumentManager oldValue = fieldDocumentManager;
+public void setDocumentManager(cbit.vcell.client.database.DocumentManager documentManager) {
+	cbit.vcell.client.database.DocumentManager oldValue = fieldDocumentManager;
 	fieldDocumentManager = documentManager;
 	firePropertyChange("documentManager", oldValue, documentManager);
 }

@@ -119,7 +119,7 @@ public java.beans.PropertyDescriptor documentManagerPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.clientdb.DocumentManager.class
+					cbit.vcell.client.database.DocumentManager.class
 				};
 				aSetMethod = getBeanClass().getMethod("setDocumentManager", aSetMethodParameterTypes);
 			} catch (Throwable exception) {

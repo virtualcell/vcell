@@ -39,7 +39,7 @@ public class EditSpeciesDialog extends cbit.gui.JInternalFrameEnhanced {
 	private javax.swing.JLabel ivjLinkValueJLabel = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	private cbit.vcell.model.SpeciesContext ivjspeciesContext1 = null;
-	private cbit.vcell.clientdb.DocumentManager fieldDocumentManager = null;
+	private cbit.vcell.client.database.DocumentManager fieldDocumentManager = null;
 	private javax.swing.JCheckBox ivjJCheckBoxHasOverride = null;
 	private javax.swing.JTextField ivjContextNameValueTextField = null;
 	private boolean ivjConnPtoP2Aligning = false;
@@ -922,7 +922,7 @@ private javax.swing.text.Document getdocument2() {
  * @return The documentManager property value.
  * @see #setDocumentManager
  */
-public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
+public cbit.vcell.client.database.DocumentManager getDocumentManager() {
 	return fieldDocumentManager;
 }
 
@@ -1283,7 +1283,7 @@ private void handleException(java.lang.Throwable exception) {
 public void initAddSpecies(
 				cbit.vcell.model.Model argModel,
 				cbit.vcell.model.Structure argStructure,
-				cbit.vcell.clientdb.DocumentManager argDocumentManager) {
+				cbit.vcell.client.database.DocumentManager argDocumentManager) {
 	//
 	//
 	//
@@ -1332,7 +1332,7 @@ private void initConnections() throws java.lang.Exception {
  * @param argSpeciesContext cbit.vcell.model.SpeciesContext
  * @param argDocumentManager cbit.vcell.clientdb.DocumentManager
  */
-public void initEditSpecies(cbit.vcell.model.SpeciesContext argSpeciesContext, cbit.vcell.clientdb.DocumentManager argDocumentManager) {
+public void initEditSpecies(cbit.vcell.model.SpeciesContext argSpeciesContext, cbit.vcell.client.database.DocumentManager argDocumentManager) {
 	
 	//
 	if(argSpeciesContext != null){
@@ -1573,8 +1573,8 @@ private void setdocument2(javax.swing.text.Document newValue) {
  * @param documentManager The new value for the property.
  * @see #getDocumentManager
  */
-public void setDocumentManager(cbit.vcell.clientdb.DocumentManager documentManager) {
-	cbit.vcell.clientdb.DocumentManager oldValue = fieldDocumentManager;
+public void setDocumentManager(cbit.vcell.client.database.DocumentManager documentManager) {
+	cbit.vcell.client.database.DocumentManager oldValue = fieldDocumentManager;
 	fieldDocumentManager = documentManager;
 	firePropertyChange("documentManager", oldValue, documentManager);
 }

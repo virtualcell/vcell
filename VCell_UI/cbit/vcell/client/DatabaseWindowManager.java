@@ -6,6 +6,7 @@ import java.io.*;
 import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.client.database.DocumentManager;
 import cbit.vcell.client.desktop.*;
 import cbit.vcell.geometry.gui.ImageAttributePanel;
 import cbit.vcell.geometry.*;

@@ -4,6 +4,7 @@ import cbit.util.UserCancelException;
 import cbit.util.VCDocument;
 import cbit.vcell.geometry.surface.*;
 import cbit.vcell.client.*;
+import cbit.vcell.client.database.DocumentManager;
 import cbit.vcell.client.desktop.*;
 import cbit.vcell.clientdb.*;
 import cbit.vcell.geometry.*;

@@ -29,7 +29,7 @@ public class CheckBeforeDelete extends AsynchClientTask {
  * @return cbit.vcell.solver.SolverResultSetInfo[]
  * @param bioModel cbit.vcell.biomodel.BioModel
  */
-private Simulation[] checkLostResults(BioModel oldBioModel, BioModel newlySavedBioModel, cbit.vcell.clientdb.DocumentManager documentManager, Simulation submittedSimulations[]) throws Exception {
+private Simulation[] checkLostResults(BioModel oldBioModel, BioModel newlySavedBioModel, cbit.vcell.client.database.DocumentManager documentManager, Simulation submittedSimulations[]) throws Exception {
 	//
 	// before deleting old version, prompt user if old simulation results will not be availlable in new edition
 	//
@@ -122,7 +122,7 @@ private Simulation[] checkLostResults(BioModel oldBioModel, BioModel newlySavedB
  * @return cbit.vcell.solver.SolverResultSetInfo[]
  * @param mathmodel cbit.vcell.mathmodel.Mathmodel
  */
-private Simulation[] checkLostResults(MathModel oldMathmodel, MathModel newlySavedMathmodel, cbit.vcell.clientdb.DocumentManager documentManager, Simulation submittedSimulations[]) throws Exception {
+private Simulation[] checkLostResults(MathModel oldMathmodel, MathModel newlySavedMathmodel, cbit.vcell.client.database.DocumentManager documentManager, Simulation submittedSimulations[]) throws Exception {
 	//
 	// before deleting old version, prompt user if old simulation results will not be availlable in new edition
 	//
@@ -251,7 +251,7 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
 	}
 
 	
-	cbit.vcell.clientdb.DocumentManager documentManager = (cbit.vcell.clientdb.DocumentManager)hashTable.get("documentManager");
+	cbit.vcell.client.database.DocumentManager documentManager = (cbit.vcell.client.database.DocumentManager)hashTable.get("documentManager");
 	Simulation simulations[] = (Simulation[])hashTable.get("simulations");
 	VCDocument savedDocument = (VCDocument)hashTable.get("savedDocument");
 	// just to make sure, verify that we actually did save a new edition

@@ -10,6 +10,7 @@ import cbit.vcell.mapping.SimulationContext;
 
 import cbit.vcell.client.server.*;
 import cbit.vcell.client.data.DynamicDataManager;
+import cbit.vcell.client.database.DocumentManager;
 import cbit.vcell.clientdb.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.desktop.controls.*;

@@ -5,7 +5,6 @@ import java.util.*;
  * All rights reserved.
 ©*/
 import cbit.util.DataAccessException;
-import cbit.vcell.util.*;
 import cbit.plot.*;
 import cbit.vcell.solver.ode.*;
 import cbit.vcell.solver.*;

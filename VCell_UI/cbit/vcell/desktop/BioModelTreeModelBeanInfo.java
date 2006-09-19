@@ -165,7 +165,7 @@ public java.beans.MethodDescriptor databaseDelete_cbitvcellclientdbDatabaseEvent
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.clientdb.DatabaseEvent.class
+				cbit.vcell.client.database.DatabaseEvent.class
 			};
 			aMethod = getBeanClass().getMethod("databaseDelete", aParameterTypes);
 		} catch (java.lang.Throwable exception) {
@@ -209,7 +209,7 @@ public java.beans.MethodDescriptor databaseInsert_cbitvcellclientdbDatabaseEvent
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.clientdb.DatabaseEvent.class
+				cbit.vcell.client.database.DatabaseEvent.class
 			};
 			aMethod = getBeanClass().getMethod("databaseInsert", aParameterTypes);
 		} catch (java.lang.Throwable exception) {
@@ -253,7 +253,7 @@ public java.beans.MethodDescriptor databaseUpdate_cbitvcellclientdbDatabaseEvent
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.clientdb.DatabaseEvent.class
+				cbit.vcell.client.database.DatabaseEvent.class
 			};
 			aMethod = getBeanClass().getMethod("databaseUpdate", aParameterTypes);
 		} catch (java.lang.Throwable exception) {

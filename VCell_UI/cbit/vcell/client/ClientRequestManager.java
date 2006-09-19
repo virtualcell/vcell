@@ -1030,7 +1030,7 @@ public DataManager getDataManager(VCDataIdentifier vcDataId, boolean isSpatial) 
  * Creation date: (5/21/2004 9:57:39 AM)
  * @return cbit.vcell.clientdb.DocumentManager
  */
-public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
+public cbit.vcell.client.database.DocumentManager getDocumentManager() {
 	// this should not be exposed here, but needs many changes outside project in order to live without it...
 	// will eliminate when finishing up new client
 	return getVcellClient().getClientServerManager().getDocumentManager();

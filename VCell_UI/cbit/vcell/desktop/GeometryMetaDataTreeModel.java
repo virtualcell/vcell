@@ -13,7 +13,7 @@ import cbit.vcell.geometry.*;
  */
 public class GeometryMetaDataTreeModel extends javax.swing.tree.DefaultTreeModel {
 	private cbit.vcell.geometry.GeometryInfo fieldGeometryInfo = null;
-	private cbit.vcell.clientdb.DocumentManager fieldDocumentManager = null;
+	private cbit.vcell.client.database.DocumentManager fieldDocumentManager = null;
 
 /**
  * BioModelDbTreeModel constructor comment.
@@ -55,7 +55,7 @@ private BioModelNode createVersionSubTree(GeometryInfo geoInfo) throws DataAcces
  * @return The documentManager property value.
  * @see #setDocumentManager
  */
-public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
+public cbit.vcell.client.database.DocumentManager getDocumentManager() {
 	return fieldDocumentManager;
 }
 
@@ -92,7 +92,7 @@ private void refreshTree() {
  * @param documentManager The new value for the property.
  * @see #getDocumentManager
  */
-public void setDocumentManager(cbit.vcell.clientdb.DocumentManager documentManager) {
+public void setDocumentManager(cbit.vcell.client.database.DocumentManager documentManager) {
 	fieldDocumentManager = documentManager;
 	refreshTree();
 }

@@ -4,7 +4,7 @@ package cbit.vcell.graph;
  * All rights reserved.
 ©*/
 import cbit.vcell.biomodel.BioModelInfo;
-import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.client.database.DocumentManager;
 /**
  * This type was created in VisualAge.
  */

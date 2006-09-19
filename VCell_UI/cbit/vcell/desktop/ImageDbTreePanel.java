@@ -17,11 +17,11 @@ import javax.swing.*;
  * Creation date: (11/28/00 11:34:01 AM)
  * @author: Jim Schaff
  */
-public class ImageDbTreePanel extends JPanel implements cbit.vcell.clientdb.DatabaseListener, ActionListener, MouseListener, java.beans.PropertyChangeListener, javax.swing.event.TreeModelListener, javax.swing.event.TreeSelectionListener {
+public class ImageDbTreePanel extends JPanel implements cbit.vcell.client.database.DatabaseListener, ActionListener, MouseListener, java.beans.PropertyChangeListener, javax.swing.event.TreeModelListener, javax.swing.event.TreeSelectionListener {
 	private JTree ivjJTree1 = null;
-	private cbit.vcell.clientdb.DocumentManager fieldDocumentManager = null;
+	private cbit.vcell.client.database.DocumentManager fieldDocumentManager = null;
 	private boolean ivjConnPtoP2Aligning = false;
-	private cbit.vcell.clientdb.DocumentManager ivjDocumentManager = null;
+	private cbit.vcell.client.database.DocumentManager ivjDocumentManager = null;
 	private JScrollPane ivjJScrollPane1 = null;
 	private boolean ivjConnPtoP4Aligning = false;
 	private TreeSelectionModel ivjselectionModel1 = null;
@@ -139,7 +139,7 @@ private void connEtoC2(java.awt.event.ActionEvent arg1) {
  * @param arg1 cbit.vcell.clientdb.DatabaseEvent
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC3(cbit.vcell.clientdb.DatabaseEvent arg1) {
+private void connEtoC3(cbit.vcell.client.database.DatabaseEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -211,7 +211,7 @@ private void connEtoC7(javax.swing.event.TreeModelEvent arg1) {
  * @param value cbit.vcell.clientdb.DocumentManager
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC8(cbit.vcell.clientdb.DocumentManager value) {
+private void connEtoC8(cbit.vcell.client.database.DocumentManager value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -280,7 +280,7 @@ private void connEtoM2() {
  * @param value cbit.vcell.clientdb.DocumentManager
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM3(cbit.vcell.clientdb.DocumentManager value) {
+private void connEtoM3(cbit.vcell.client.database.DocumentManager value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -333,7 +333,7 @@ private void connEtoM6(VersionInfo value) {
  * @param value cbit.vcell.clientdb.DocumentManager
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM7(cbit.vcell.clientdb.DocumentManager value) {
+private void connEtoM7(cbit.vcell.client.database.DocumentManager value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -491,7 +491,7 @@ private javax.swing.Icon createImageIcon() {
  * @param event cbit.vcell.clientdb.DatabaseEvent
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-public void databaseDelete(cbit.vcell.clientdb.DatabaseEvent event) {
+public void databaseDelete(cbit.vcell.client.database.DatabaseEvent event) {
 	// user code begin {1}
 	// user code end
 	// user code begin {2}
@@ -502,7 +502,7 @@ public void databaseDelete(cbit.vcell.clientdb.DatabaseEvent event) {
  * @param event cbit.vcell.clientdb.DatabaseEvent
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-public void databaseInsert(cbit.vcell.clientdb.DatabaseEvent event) {
+public void databaseInsert(cbit.vcell.client.database.DatabaseEvent event) {
 	// user code begin {1}
 	// user code end
 	// user code begin {2}
@@ -513,7 +513,7 @@ public void databaseInsert(cbit.vcell.clientdb.DatabaseEvent event) {
  * @param event cbit.vcell.clientdb.DatabaseEvent
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-public void databaseRefresh(cbit.vcell.clientdb.DatabaseEvent event) {
+public void databaseRefresh(cbit.vcell.client.database.DatabaseEvent event) {
 	// user code begin {1}
 	// user code end
 	if (event.getSource() == getDocumentManager()) 
@@ -526,7 +526,7 @@ public void databaseRefresh(cbit.vcell.clientdb.DatabaseEvent event) {
  * @param event cbit.vcell.clientdb.DatabaseEvent
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-public void databaseUpdate(cbit.vcell.clientdb.DatabaseEvent event) {
+public void databaseUpdate(cbit.vcell.client.database.DatabaseEvent event) {
 	// user code begin {1}
 	// user code end
 	// user code begin {2}
@@ -569,7 +569,7 @@ protected void fireActionPerformed(ActionEvent e) {
  * @return The documentManager property value.
  * @see #setDocumentManager
  */
-public cbit.vcell.clientdb.DocumentManager getDocumentManager() {
+public cbit.vcell.client.database.DocumentManager getDocumentManager() {
 	// user code begin {1}
 	// user code end
 	return ivjDocumentManager;
@@ -1040,10 +1040,10 @@ public void removeActionListener(ActionListener newListener) {
  * @param documentManager The new value for the property.
  * @see #getDocumentManager
  */
-public void setDocumentManager(cbit.vcell.clientdb.DocumentManager newValue) {
+public void setDocumentManager(cbit.vcell.client.database.DocumentManager newValue) {
 	if (ivjDocumentManager != newValue) {
 		try {
-			cbit.vcell.clientdb.DocumentManager oldValue = getDocumentManager();
+			cbit.vcell.client.database.DocumentManager oldValue = getDocumentManager();
 			/* Stop listening for events from the current object */
 			if (ivjDocumentManager != null) {
 				ivjDocumentManager.removeDatabaseListener(this);

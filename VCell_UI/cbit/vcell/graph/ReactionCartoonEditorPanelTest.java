@@ -1,5 +1,5 @@
 package cbit.vcell.graph;
-import cbit.vcell.clientdb.DocumentManager;
+import cbit.vcell.client.database.DocumentManager;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -25,7 +25,7 @@ public static void main(java.lang.String[] args) {
 		new cbit.gui.WindowCloser(frame,true);
 
 		cbit.vcell.client.server.ClientServerManager managerManager = mainInit(args,"ReactionCartoonEditorPanelTest",frame);
-		cbit.vcell.clientdb.ClientDocumentManager docManager = (cbit.vcell.clientdb.ClientDocumentManager)managerManager.getDocumentManager();
+		cbit.vcell.client.database.ClientDocumentManager docManager = (cbit.vcell.client.database.ClientDocumentManager)managerManager.getDocumentManager();
 
 		aReactionCartoonEditorPanel.setModel(model);
 		aReactionCartoonEditorPanel.setStructure(structure);

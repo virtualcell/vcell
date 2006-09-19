@@ -6,6 +6,8 @@ import cbit.vcell.clientdb.*;
 import java.io.*;
 import cbit.vcell.client.*;
 import java.util.*;
+
+import cbit.vcell.client.database.DocumentManager;
 import cbit.vcell.client.desktop.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.math.*;

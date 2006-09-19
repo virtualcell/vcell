@@ -6,7 +6,7 @@ import cbit.vcell.solver.test.VariableComparisonSummary;
 import java.util.Vector;
 import java.util.Enumeration;
 import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.clientdb.DatabaseListener;
+import cbit.vcell.client.database.DatabaseListener;
 import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.solver.SimulationInfo;
 import org.jdom.JDOMException;
@@ -27,7 +27,7 @@ public class TestingFrmwkTreeModel
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	public static final String FAILED_VARIABLE_MAE_MRE = "FV_MAE_MRE";
 	public static final String SIMULATIONS_NO_REPORT = "SIM_NR";
-	private cbit.vcell.clientdb.DocumentManager fieldDocumentManager = null;
+	private cbit.vcell.client.database.DocumentManager fieldDocumentManager = null;
 	//
 	private TestSuiteGroup testSuiteGroup;
 	//
@@ -332,7 +332,7 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
  * @return The documentManager property value.
  * @see #setDocumentManager
  */
-private cbit.vcell.clientdb.DocumentManager getDocumentManager() {
+private cbit.vcell.client.database.DocumentManager getDocumentManager() {
 	return fieldDocumentManager;
 }
 /**
@@ -397,8 +397,8 @@ public synchronized void removePropertyChangeListener(java.lang.String propertyN
  * @param documentManager The new value for the property.
  * @see #getDocumentManager
  */
-public void setDocumentManager(cbit.vcell.clientdb.DocumentManager documentManager) {
-	cbit.vcell.clientdb.DocumentManager oldValue = fieldDocumentManager;
+public void setDocumentManager(cbit.vcell.client.database.DocumentManager documentManager) {
+	cbit.vcell.client.database.DocumentManager oldValue = fieldDocumentManager;
 	fieldDocumentManager = documentManager;
 	firePropertyChange("documentManager", oldValue, documentManager);
 }

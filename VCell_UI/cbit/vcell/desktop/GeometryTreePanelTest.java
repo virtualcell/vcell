@@ -7,6 +7,7 @@ import java.util.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.biomodel.*;
+import cbit.vcell.client.database.DocumentManager;
 import cbit.vcell.clientdb.*;
 import cbit.vcell.server.*;
 /**
