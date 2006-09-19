@@ -17,8 +17,10 @@ Export-Package: cbit.function,
  cbit.vcell.export.quicktime,
  cbit.vcell.export.quicktime.atoms,
  cbit.vcell.matrix,
+ cbit.vcell.messaging.admin.sorttable,
  cbit.vcell.parser,
  cbit.vcell.units,
  com.mhhe.clrs2e,
- edu.maine.graphalgorithms
+ edu.maine.graphalgorithms,
+ org.vcell.util.threading
 Require-Bundle: org.vcell.common
