@@ -3,7 +3,6 @@ package cbit.vcell.solvers;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.util.*;
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
 import cbit.vcell.solver.*;

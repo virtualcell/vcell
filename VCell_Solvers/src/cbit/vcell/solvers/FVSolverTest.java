@@ -8,7 +8,6 @@ import cbit.gui.PropertyLoader;
 import cbit.util.SessionLog;
 import cbit.util.StdoutSessionLog;
 import cbit.vcell.solver.*;
-import cbit.vcell.geometry.*;
 import java.io.*;
 import cbit.vcell.math.*;
 /**

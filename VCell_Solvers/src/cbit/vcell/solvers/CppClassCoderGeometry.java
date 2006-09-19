@@ -3,8 +3,6 @@ package cbit.vcell.solvers;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.image.*;
-import cbit.util.*;
 import java.util.*;
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
@@ -44,12 +42,6 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	double oX = geo.getOrigin().getX();
 	double oY = geo.getOrigin().getY();
 	double oZ = geo.getOrigin().getZ();
-
-	MeshSpecification meshSpec =  simulation.getMeshSpecification();
-	ISize meshSamplingSize = meshSpec.getSamplingSize();
-	int meshX = meshSamplingSize.getX();
-	int meshY = meshSamplingSize.getY();
-	int meshZ = meshSamplingSize.getZ();
 
 	out.println(getClassName() + "::" + getClassName() + "()");
 	out.println(": " + getParentClassName() + "(" + dim + "," + sX + "," + sY + "," + sZ + "," + oX + "," + oY + "," + oZ + ")");

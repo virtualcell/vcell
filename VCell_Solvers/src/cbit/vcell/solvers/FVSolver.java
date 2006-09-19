@@ -355,7 +355,7 @@ public static AnnotatedFunction[] createAnnotatedFunctionsList(Simulation simula
  * @return cbit.vcell.solvers.ApplicationMessage
  * @param message java.lang.String
  */
-protected ApplicationMessage getApplicationMessage(String message) {
+public ApplicationMessage getApplicationMessage(String message) {
 	//
 	// "data:iteration:time"  .... sent every time data written for FVSolver
 	// "progress:xx.x%"        .... sent every 1% for FVSolver
@@ -473,7 +473,7 @@ public static VariableType getFunctionVariableType(Function function, String[] v
 /**
  * This method was created by a SmartGuide.
  */
-protected void initialize() throws SolverException {
+public void initialize() throws SolverException {
 	long tm = System.currentTimeMillis();
 	fireSolverStarting("processing geometry...");
 	try {	

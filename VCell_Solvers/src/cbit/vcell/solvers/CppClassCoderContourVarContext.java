@@ -3,7 +3,6 @@ package cbit.vcell.solvers;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.util.*;
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
 import cbit.vcell.solver.*;
@@ -92,8 +91,6 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 	out.println("    "+getClassName() + "(Contour *contour, Feature *feature, CString speciesName);");
 	out.println("    virtual boolean resolveReferences(Simulation *sim);");
 
-	BoundaryConditionType bc = null;
-//	int dimension = simulation.getMathDescription().getGeometry().getDimension();
 	try {
 		double value = getEquation().getInitialExpression().evaluateConstant();
 	}catch (Exception e){

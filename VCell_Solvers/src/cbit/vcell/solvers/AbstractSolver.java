@@ -9,7 +9,6 @@ import cbit.util.ConfigurationException;
 import cbit.util.SessionLog;
 import cbit.vcell.solver.*;
 import java.io.*;
-import cbit.vcell.simdata.*;
 import cbit.vcell.solver.ode.SensStateVariable;
 import cbit.vcell.solver.ode.ODEStateVariable;
 import cbit.vcell.parser.*;
@@ -19,7 +18,7 @@ import cbit.vcell.math.*;
  * Creation date: (6/26/2001 2:48:23 PM)
  * @author: Ion Moraru
  */
-public abstract class AbstractSolver implements Solver, SimDataConstants {
+public abstract class AbstractSolver implements Solver {
 	private javax.swing.event.EventListenerList listenerList = new javax.swing.event.EventListenerList();
 	private SessionLog fieldSessionLog = null;
 	private SolverStatus fieldSolverStatus = new SolverStatus(SolverStatus.SOLVER_READY);
