@@ -1,6 +1,7 @@
 package cbit.vcell.vcml.test;
 import cbit.gui.PropertyLoader;
 import cbit.util.DataAccessException;
+import cbit.vcell.client.database.ClientDocumentManager;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.server.ClientTester;
 import cbit.vcell.biomodel.BioModel;
@@ -10,7 +11,6 @@ import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.clientdb.ClientDocumentManager;
 import cbit.vcell.xml.XmlReader;
 import cbit.vcell.vcml.Translator;
 

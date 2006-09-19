@@ -10,13 +10,13 @@ import cbit.util.StdoutSessionLog;
 import cbit.util.UserInfo;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelInfo;
-import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.modeldb.DatabasePolicySQL;
 import cbit.vcell.modeldb.DbDriver;
 import cbit.vcell.modeldb.LocalAdminDbServer;
 import cbit.vcell.vcml.Translator;
+import cbit.vcell.client.database.DocumentManager;
 import cbit.vcell.client.server.ClientTester;
 
 import java.io.File;
