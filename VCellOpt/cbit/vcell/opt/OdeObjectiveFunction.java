@@ -1,7 +1,6 @@
 package cbit.vcell.opt;
 import cbit.util.DataAccessException;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.util.RowColumnResultSet;
 /**
  * Insert the type's description here.
  * Creation date: (8/3/2005 12:09:38 PM)

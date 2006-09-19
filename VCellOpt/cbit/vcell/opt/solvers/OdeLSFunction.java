@@ -4,12 +4,10 @@ import cbit.util.KeyValue;
 import cbit.util.User;
 import cbit.util.VersionFlag;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
+import cbit.vcell.solver.ode.RowColumnResultSet;
 import cbit.vcell.parser.*;
 import cbit.vcell.opt.ReferenceData;
-import cbit.vcell.math.MathDescription;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.ode.IDASolverStandalone;
-import cbit.vcell.solver.SolverStatus;
 /**
  * Insert the type's description here.
  * Creation date: (9/5/2005 1:32:55 PM)
@@ -111,7 +109,7 @@ private double calculateWeightedError(double[] x) {
 			}
 		});
 		nativeIDASolver.setStopRequested(optSolverCallbacks.getStopRequested());
-		cbit.vcell.util.RowColumnResultSet rcResultSet = nativeIDASolver.solve(idaInputString, x);
+		RowColumnResultSet rcResultSet = nativeIDASolver.solve(idaInputString, x);
 
 		long t3 = System.currentTimeMillis();
 

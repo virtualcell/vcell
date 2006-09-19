@@ -10,7 +10,10 @@
  *******************************************************************************/
 package cbit.vcell.modelopt.gui;
 import cbit.util.UserCancelException;
+import cbit.vcell.export.CSV;
 import cbit.vcell.opt.ReferenceData;
+import cbit.vcell.solver.ode.RowColumnResultSet;
+
 import java.io.File;
 /**
  * Insert the type's description here.
@@ -569,8 +572,8 @@ private cbit.vcell.opt.ReferenceData importDataFromFile() throws UserCancelExcep
 //					//getUserPreferences().setGenPref(cbit.vcell.client.server.UserPreferences.GENERAL_LAST_PATH_USED, newPath);
 //				}
 //			}
-			cbit.vcell.export.CSV csv = new cbit.vcell.export.CSV();
-			cbit.vcell.util.RowColumnResultSet rowColumnResultSet = csv.importFrom(new java.io.FileReader(selectedFile));
+			CSV csv = new CSV();
+			RowColumnResultSet rowColumnResultSet = csv.importFrom(new java.io.FileReader(selectedFile));
 			double[] weights = new double[rowColumnResultSet.getDataColumnCount()];
 			java.util.Arrays.fill(weights, 1.0);
 			ReferenceData referenceData = new cbit.vcell.opt.SimpleReferenceData(rowColumnResultSet, weights);
@@ -711,7 +714,7 @@ private void showEditor() {
 	try {
 		int retVal = cbit.gui.DialogUtils.showComponentOKCancelDialog(this,geteditorPanel(),"time series data editor");
 		if (retVal == javax.swing.JOptionPane.OK_OPTION){
-			cbit.vcell.util.RowColumnResultSet rc = (new cbit.vcell.export.CSV()).importFrom(new java.io.StringReader(geteditorTextArea().getText()));
+			RowColumnResultSet rc = (new CSV()).importFrom(new java.io.StringReader(geteditorTextArea().getText()));
 			double weights[] = new double[rc.getDataColumnCount()];
 			java.util.Arrays.fill(weights,1.0);
 			cbit.vcell.opt.SimpleReferenceData simpleRefData = new cbit.vcell.opt.SimpleReferenceData(rc,weights);
@@ -749,7 +752,7 @@ private ReferenceData subsample() {
 		return refData;
 	}
 	
-	cbit.vcell.util.RowColumnResultSet rc = new cbit.vcell.util.RowColumnResultSet();
+	RowColumnResultSet rc = new RowColumnResultSet();
 	String[] columnNames = refData.getColumnNames();
 	for (int i = 0; i < columnNames.length; i++){
 		rc.addDataColumn(new cbit.vcell.solver.ode.ODESolverResultSetColumnDescription(columnNames[i]));

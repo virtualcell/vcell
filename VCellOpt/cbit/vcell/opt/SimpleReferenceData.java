@@ -1,5 +1,7 @@
 package cbit.vcell.opt;
 import cbit.util.DataAccessException;
+import cbit.vcell.solver.ode.ColumnDescription;
+import cbit.vcell.solver.ode.RowColumnResultSet;
 /**
  * Insert the type's description here.
  * Creation date: (8/3/2005 3:07:17 PM)
@@ -52,12 +54,12 @@ public SimpleReferenceData(ReferenceData argReferenceData) {
 /**
  * SimpleConstraintData constructor comment.
  */
-public SimpleReferenceData(cbit.vcell.util.RowColumnResultSet rowColumnResultSet, double[] argDataColumnWeights) {
+public SimpleReferenceData(RowColumnResultSet rowColumnResultSet, double[] argDataColumnWeights) {
 	super();
 	//
 	// make local copy of data
 	//
-	cbit.vcell.util.ColumnDescription[] columnDescriptions = rowColumnResultSet.getDataColumnDescriptions();
+	ColumnDescription[] columnDescriptions = rowColumnResultSet.getDataColumnDescriptions();
 	this.dataNames = new String[columnDescriptions.length];
 	this.columnWeights = (double[])argDataColumnWeights.clone();
 	if (dataNames.length != columnWeights.length) {
