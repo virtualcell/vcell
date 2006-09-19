@@ -20,6 +20,7 @@ import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.parser.ScopedExpression;
 import cbit.gui.JTableFixed;
+import cbit.gui.ScopedExpressionTableCellRenderer;
 import cbit.vcell.model.Parameter;
 import java.util.Vector;
 import cbit.vcell.mapping.SimulationContext;
@@ -91,8 +92,8 @@ private BioModelNode createMolecularMappingsSubTree() {
 			// Create table each for reactionStep kinetics and store in tableHash
 			//
 			JTableFixed aJTable = new JTableFixed();
-			aJTable.setDefaultRenderer(ScopedExpression.class, new cbit.vcell.geometry.gui.GeometrySubVolumeTableCellRenderer());
-			aJTable.setDefaultRenderer(String.class, new cbit.vcell.geometry.gui.GeometrySubVolumeTableCellRenderer());
+			aJTable.setDefaultRenderer(ScopedExpression.class, new ScopedExpressionTableCellRenderer());
+			aJTable.setDefaultRenderer(String.class, new ScopedExpressionTableCellRenderer());
 			SpeciesContextSpecParameterTableModel scsParamTableModel = new SpeciesContextSpecParameterTableModel();
 			scsParamTableModel.setSpeciesContextSpec(speciesContextSpecs[i]);
 			aJTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
@@ -125,8 +126,8 @@ private void createParamTable(Parameter[] params, StructureMapping structMapping
 	//
 	if (params != null && params.length > 0) {
 		JTableFixed aJTable = new JTableFixed();
-		aJTable.setDefaultRenderer(ScopedExpression.class, new cbit.vcell.geometry.gui.GeometrySubVolumeTableCellRenderer());
-		aJTable.setDefaultRenderer(String.class, new cbit.vcell.geometry.gui.GeometrySubVolumeTableCellRenderer());
+		aJTable.setDefaultRenderer(ScopedExpression.class, new ScopedExpressionTableCellRenderer());
+		aJTable.setDefaultRenderer(String.class, new ScopedExpressionTableCellRenderer());
 		
 		StructureMappingParameterTableModel smParamTableModel = new StructureMappingParameterTableModel();
 		smParamTableModel.setStructureMapping(structMapping);
@@ -154,8 +155,8 @@ private BioModelNode createPhysiologySubTree() {
 		// Create a table for these model params and store in Hashtable
 		//
 		JTableFixed aJTable = new JTableFixed();
-		aJTable.setDefaultRenderer(ScopedExpression.class,new cbit.vcell.geometry.gui.GeometrySubVolumeTableCellRenderer());
-		aJTable.setDefaultRenderer(String.class, new cbit.vcell.geometry.gui.GeometrySubVolumeTableCellRenderer());
+		aJTable.setDefaultRenderer(ScopedExpression.class,new ScopedExpressionTableCellRenderer());
+		aJTable.setDefaultRenderer(String.class, new ScopedExpressionTableCellRenderer());
 		aJTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
 		ModelParameterTableModel modelParamTableModel = new ModelParameterTableModel();
 		modelParamTableModel.setModel(model);
@@ -194,8 +195,8 @@ private BioModelNode createReactionParamSubTree(Structure structure) {
 				// Create table each for reactionStep kinetics and store in tableHash
 				//
 				JTableFixed aJTable = new JTableFixed();
-				aJTable.setDefaultRenderer(ScopedExpression.class, new cbit.vcell.geometry.gui.GeometrySubVolumeTableCellRenderer());
-				aJTable.setDefaultRenderer(String.class, new cbit.vcell.geometry.gui.GeometrySubVolumeTableCellRenderer());
+				aJTable.setDefaultRenderer(ScopedExpression.class, new ScopedExpressionTableCellRenderer());
+				aJTable.setDefaultRenderer(String.class, new ScopedExpressionTableCellRenderer());
 				cbit.vcell.model.gui.ParameterTableModel paramTableModel = new cbit.vcell.model.gui.ParameterTableModel();
 				paramTableModel.setKinetics(kinetics);
 				aJTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);

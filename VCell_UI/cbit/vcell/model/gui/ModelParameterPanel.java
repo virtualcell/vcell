@@ -1,4 +1,7 @@
 package cbit.vcell.model.gui;
+
+import cbit.gui.ScopedExpressionTableCellRenderer;
+
 /**
  * Insert the type's description here.
  * Creation date: (9/23/2003 12:23:30 PM)
@@ -64,7 +67,7 @@ private void connEtoM3() {
 	try {
 		// user code begin {1}
 		// user code end
-		getScrollPaneTable().setDefaultRenderer(String.class, new cbit.vcell.geometry.gui.GeometrySubVolumeTableCellRenderer());
+		getScrollPaneTable().setDefaultRenderer(String.class, new ScopedExpressionTableCellRenderer());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -83,7 +86,7 @@ private void connEtoM4() {
 	try {
 		// user code begin {1}
 		// user code end
-		getScrollPaneTable().setDefaultRenderer(cbit.vcell.parser.ScopedExpression.class, new cbit.vcell.geometry.gui.GeometrySubVolumeTableCellRenderer());
+		getScrollPaneTable().setDefaultRenderer(cbit.vcell.parser.ScopedExpression.class, new ScopedExpressionTableCellRenderer());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {

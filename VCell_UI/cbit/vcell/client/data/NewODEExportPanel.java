@@ -1,6 +1,5 @@
 package cbit.vcell.client.data;
 import cbit.util.VCDataIdentifier;
-import cbit.vcell.util.ColumnDescription;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.

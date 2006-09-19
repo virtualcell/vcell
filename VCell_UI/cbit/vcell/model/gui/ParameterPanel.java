@@ -3,6 +3,7 @@ package cbit.vcell.model.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.gui.ScopedExpressionTableCellRenderer;
 import cbit.vcell.model.*;
 import java.beans.*;
 /**
@@ -317,8 +318,8 @@ public static void main(java.lang.String[] args) {
  * Comment
  */
 public void parameterPanel_Initialize() {
-	getScrollPaneTable().setDefaultRenderer(String.class,new cbit.vcell.geometry.gui.GeometrySubVolumeTableCellRenderer());
-	getScrollPaneTable().setDefaultRenderer(cbit.vcell.parser.ScopedExpression.class,new cbit.vcell.geometry.gui.GeometrySubVolumeTableCellRenderer());
+	getScrollPaneTable().setDefaultRenderer(String.class,new ScopedExpressionTableCellRenderer());
+	getScrollPaneTable().setDefaultRenderer(cbit.vcell.parser.ScopedExpression.class,new ScopedExpressionTableCellRenderer());
 }
 
 

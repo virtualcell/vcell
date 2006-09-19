@@ -18,7 +18,7 @@ import cbit.vcell.model.Kinetics;
  * Creation date: (2/23/01 10:52:36 PM)
  * @author: 
  */
-public class ModelParameterTableModel extends cbit.vcell.messaging.admin.ManageTableModel implements java.beans.PropertyChangeListener {
+public class ModelParameterTableModel extends cbit.vcell.messaging.admin.sorttable.ManageTableModel implements java.beans.PropertyChangeListener {
 
 	private class ParameterColumnComparator implements Comparator {
 		protected int index;

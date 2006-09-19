@@ -9,7 +9,7 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 package cbit.xml.merge;
-import cbit.vcell.vcml.test.VCMLComparator;
+import cbit.vcell.vcml.compare.VCMLComparator;
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlParseException;
 import cbit.xml.merge.NodeInfo;

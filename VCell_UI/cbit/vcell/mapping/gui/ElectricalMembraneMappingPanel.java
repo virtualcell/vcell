@@ -7,6 +7,8 @@ package cbit.vcell.mapping.gui;
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
+
+import cbit.gui.ScopedExpressionTableCellRenderer;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Feature;
@@ -81,7 +83,7 @@ private void connEtoM10() {
 	try {
 		// user code begin {1}
 		// user code end
-		getScrollPaneTable1().setDefaultRenderer(cbit.vcell.parser.Expression.class, new cbit.vcell.geometry.gui.GeometrySubVolumeTableCellRenderer());
+		getScrollPaneTable1().setDefaultRenderer(cbit.vcell.parser.Expression.class, new ScopedExpressionTableCellRenderer());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
