@@ -3,6 +3,9 @@
 
 package cbit.vcell.solvers;
 
+import cbit.vcell.solvers.SimExecutionException;
+import cbit.vcell.solvers.SolverController;
+
 public final class LocalSolverController_Stub
     extends java.rmi.server.RemoteStub
     implements cbit.vcell.solvers.SolverController, java.rmi.Remote

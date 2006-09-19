@@ -5,6 +5,10 @@ import cbit.vcell.simdata.*;
 import java.io.*;
 import cbit.vcell.server.*;
 import cbit.vcell.solver.*;
+import cbit.vcell.solvers.SimExecutionException;
+import cbit.vcell.solvers.SolverController;
+import cbit.vcell.solvers.SolverControllerImpl;
+
 import java.util.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

@@ -1,6 +1,9 @@
 package cbit.vcell.solvers;
-import cbit.vcell.server.*;
 import cbit.vcell.solver.*;
+import cbit.vcell.solvers.AbstractCompiledSolver;
+import cbit.vcell.solvers.ApplicationMessage;
+import cbit.vcell.solvers.SolverFactory;
+
 import java.io.*;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.gui.PropertyLoader;
