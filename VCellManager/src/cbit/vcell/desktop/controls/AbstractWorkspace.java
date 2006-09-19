@@ -9,7 +9,7 @@ import java.beans.*;
  * Creation date: (5/17/2001 5:31:08 PM)
  * @author: Ion Moraru
  */
-public abstract class AbstractWorkspace implements PropertyChangeListener, VetoableChangeListener, cbit.vcell.clientdb.DatabaseListener {
+public abstract class AbstractWorkspace implements PropertyChangeListener, VetoableChangeListener, cbit.vcell.client.database.DatabaseListener {
 	public static final String SIMULATION_BASENAME = "Simulation ";
 	private transient PropertyChangeSupport propertyChange;
 	private transient VetoableChangeSupport vetoPropertyChange;
@@ -74,21 +74,21 @@ public synchronized void addWorkspaceListener(cbit.vcell.desktop.controls.Worksp
  * 
  * @param event cbit.vcell.clientdb.DatabaseEvent
  */
-public void databaseDelete(cbit.vcell.clientdb.DatabaseEvent event) {
+public void databaseDelete(cbit.vcell.client.database.DatabaseEvent event) {
 }
 
 /**
  * 
  * @param event cbit.vcell.clientdb.DatabaseEvent
  */
-public void databaseInsert(cbit.vcell.clientdb.DatabaseEvent event) {}
+public void databaseInsert(cbit.vcell.client.database.DatabaseEvent event) {}
 
 
 /**
  * 
  * @param event cbit.vcell.clientdb.DatabaseEvent
  */
-public void databaseRefresh(cbit.vcell.clientdb.DatabaseEvent event) {
+public void databaseRefresh(cbit.vcell.client.database.DatabaseEvent event) {
 	
 }
 
@@ -97,7 +97,7 @@ public void databaseRefresh(cbit.vcell.clientdb.DatabaseEvent event) {
  * 
  * @param event cbit.vcell.clientdb.DatabaseEvent
  */
-public void databaseUpdate(cbit.vcell.clientdb.DatabaseEvent event) {
+public void databaseUpdate(cbit.vcell.client.database.DatabaseEvent event) {
 	
 }
 
