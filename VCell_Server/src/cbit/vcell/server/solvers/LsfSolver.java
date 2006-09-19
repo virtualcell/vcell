@@ -1,6 +1,9 @@
-package cbit.vcell.solvers;
-import cbit.vcell.server.*;
+package cbit.vcell.server.solvers;
 import cbit.vcell.solver.*;
+import cbit.vcell.solvers.AbstractCompiledSolver;
+import cbit.vcell.solvers.ApplicationMessage;
+import cbit.vcell.solvers.SolverFactory;
+
 import java.io.*;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.gui.PropertyLoader;
@@ -113,7 +116,7 @@ public String getStdoutFileName() {
 /**
  *  This method takes the place of the old runUnsteady()...
  */
-protected void initialize() throws cbit.vcell.solver.SolverException {
+public void initialize() throws cbit.vcell.solver.SolverException {
 	realSolver.initialize();
 }
 

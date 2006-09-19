@@ -9,6 +9,8 @@ import cbit.util.User;
 ©*/
 import java.io.File;
 import java.rmi.*;
+
+import cbit.vcell.server.solvers.LocalSolverController;
 import cbit.vcell.solver.*;
 import cbit.vcell.solvers.*;
 import cbit.vcell.messaging.db.SimulationJobStatus;

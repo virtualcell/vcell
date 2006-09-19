@@ -994,7 +994,7 @@ private ODESolverResultSet resampleODEData(ODESimData refSimdata, ODESimData sim
 
 	double[][] resampledData = new double[refTimeArray.length][simData.getDataColumnCount()];
 	for (int i = 0; i < simData.getDataColumnCount(); i++){
-		cbit.vcell.util.ColumnDescription colDesc = simData.getDataColumnDescriptions()[i];
+		cbit.vcell.solver.ode.ColumnDescription colDesc = simData.getDataColumnDescriptions()[i];
 
 		// If it is the first column (time), set value in new SimData to the timeArray values in refSimData.
 		if (i == 0 && colDesc.getName().equals("t")) {

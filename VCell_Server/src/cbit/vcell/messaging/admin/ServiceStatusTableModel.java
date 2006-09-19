@@ -3,6 +3,7 @@ package cbit.vcell.messaging.admin;
 import java.util.*;
 
 import cbit.vcell.messaging.VCServiceInfo;
+import cbit.vcell.messaging.admin.sorttable.ManageTableModel;
 
 /**
  * Insert the type's description here.

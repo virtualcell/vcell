@@ -17,6 +17,7 @@ import java.util.*;
 import javax.jms.*;
 import javax.swing.*;
 import cbit.vcell.messaging.*;
+import cbit.vcell.messaging.admin.sorttable.ManageTableModel;
 import cbit.vcell.messaging.db.*;
 import cbit.vcell.messaging.server.RpcSimServerProxy;
 import javax.swing.border.EtchedBorder;

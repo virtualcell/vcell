@@ -1,17 +1,19 @@
-package cbit.vcell.solvers;
+package cbit.vcell.server.solvers;
 import cbit.util.DataAccessException;
 import cbit.util.SessionLog;
 import cbit.vcell.simdata.*;
 import java.io.*;
-import cbit.vcell.server.*;
 import cbit.vcell.solver.*;
+import cbit.vcell.solvers.SimExecutionException;
+import cbit.vcell.solvers.SolverController;
+import cbit.vcell.solvers.SolverControllerImpl;
+
 import java.util.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
 import cbit.vcell.server.LocalVCellConnection;
-import cbit.vcell.server.VCellConnection;
 import cbit.gui.PropertyLoader;
 import cbit.rmi.event.*;
 import javax.swing.event.*;
@@ -39,7 +41,7 @@ public LocalSolverController(LocalVCellConnection vcellConnection, SessionLog se
 	super(PropertyLoader.getIntProperty(PropertyLoader.rmiPortSolverController,0));
 	this.log = sessionLog;
 	this.vcConn = vcellConnection;
-	solverControllerImpl = new SolverControllerImpl(vcellConnection, sessionLog, simJob, localDirectory);
+	solverControllerImpl = new SolverControllerImpl(sessionLog, simJob, localDirectory);
 	solverControllerImpl.getSolver().addSolverListener(this);
 	if (!localDirectory.equals(serverDirectory)) {
 		SimulationData simData = null;
@@ -275,10 +277,7 @@ public void solverFinished(cbit.vcell.solver.SolverEvent event) {
 		if (dataMover != null) {
 			dataMover.stopRunning();
 		}
-		Simulation sim = getSimulation();
 		fireWorkerEvent(new WorkerEvent(this, getSimulationJob().getVCDataIdentifier().getVcSimID(), getSimulationJob().getVCDataIdentifier().getJobIndex(), WorkerEvent.JOB_COMPLETED, vcConn.getHost(), 0, new Double(event.getProgress()), new Double(event.getTimePoint())));
-		//fireJobProgressEvent(new JobProgressEvent(this,new MessageSource(this,getSimulationIdentifier()),sim.getSimulationInfo(),event.getProgress(),event.getTimePoint()));
-		//fireJobCompletedEvent(new JobCompletedEvent(this,new MessageSource(this,getSimulationIdentifier()),sim.getSimulationInfo(),false,event.getProgress(),event.getTimePoint()));
 	}catch (Throwable e){
 		log.exception(e);
 	}

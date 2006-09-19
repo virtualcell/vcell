@@ -13,6 +13,7 @@ import cbit.vcell.math.*;
 import java.io.*;
 import java.util.*;
 import cbit.vcell.server.*;
+import cbit.vcell.server.solvers.LocalSolverController;
 import cbit.vcell.solvers.*;
 import cbit.vcell.parser.*;
 import cbit.util.*;
