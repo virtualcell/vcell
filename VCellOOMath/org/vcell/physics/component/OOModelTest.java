@@ -388,25 +388,6 @@ public static OOModel getExampleTriangle_h_a() throws cbit.vcell.parser.Expressi
 	return oOModel;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (1/16/2006 11:34:20 PM)
- * @return ncbc.physics2.component.Model
- */
-public static OOModel getVCellAppExample() throws Exception {
-
-	String filename = "c:\\temp\\BioModel1.xml";
-	String vcmlString = cbit.util.xml.XmlUtil.getXMLString(filename);
-	cbit.vcell.biomodel.BioModel bioModel = cbit.vcell.xml.XmlHelper.XMLToBioModel(vcmlString);
-	cbit.vcell.mapping.SimulationContext simContext = bioModel.getSimulationContexts(0);
-	OOModel oOModel = new OOModel();
-	org.vcell.physics.math.MappingUtilities.addChemicalDevices(simContext,oOModel);
-
-	return oOModel;
-}
-
-
 /**
  * Starts the application.
  * @param args an array of command-line arguments
