@@ -671,7 +671,7 @@ private BioModel getBioModelFromDatabaseXML(String bioModelXML) throws DataAcces
 		cacheSimulations(bm.getSimulations());
 		bm.refreshDependencies();
 		return bm;
-	}catch(cbit.vcell.xml.XmlParseException e){
+	}catch(cbit.util.xml.XmlParseException e){
 		e.printStackTrace();
 		throw new DataAccessException(e.getClass().getName()+": "+e.getMessage());
 	}
@@ -835,7 +835,7 @@ public Geometry getGeometry(GeometryInfo geometryInfo) throws DataAccessExceptio
 	Geometry geometry = null;
 	try {
 		geometry = cbit.vcell.xml.XmlHelper.XMLToGeometry(getGeometryXML(geometryInfo.getVersion().getVersionKey()));
-	}catch (cbit.vcell.xml.XmlParseException e){
+	}catch (cbit.util.xml.XmlParseException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(e.getMessage());
 	}
@@ -875,7 +875,7 @@ private Geometry getGeometryFromDatabaseXML(String geometryXML) throws DataAcces
 		}
 
 		return geometry;
-	}catch(cbit.vcell.xml.XmlParseException e){
+	}catch(cbit.util.xml.XmlParseException e){
 		e.printStackTrace();
 		throw new DataAccessException(e.getClass().getName()+": "+e.getMessage());
 	}
@@ -980,7 +980,7 @@ public VCImage getImage(VCImageInfo vcImageInfo) throws DataAccessException {
 	VCImage vcImage = null;
 	try {
 		vcImage = cbit.vcell.xml.XmlHelper.XMLToImage(getImageXML(vcImageInfo.getVersion().getVersionKey()));
-	}catch (cbit.vcell.xml.XmlParseException e){
+	}catch (cbit.util.xml.XmlParseException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(e.getMessage());
 	}
@@ -1152,7 +1152,7 @@ private MathModel getMathModelFromDatabaseXML(String mathModelXML) throws DataAc
 		}
 
 		return mm;
-	}catch(cbit.vcell.xml.XmlParseException e){
+	}catch(cbit.util.xml.XmlParseException e){
 		e.printStackTrace();
 		throw new DataAccessException(e.getClass().getName()+": "+e.getMessage());
 	}
@@ -1344,7 +1344,7 @@ public Simulation getSimulation(SimulationInfo simulationInfo) throws DataAccess
 	Simulation simulation = null;
 	try {
 		simulation = cbit.vcell.xml.XmlHelper.XMLToSim(getSimulationXML(simulationInfo.getVersion().getVersionKey()));
-	}catch (cbit.vcell.xml.XmlParseException e){
+	}catch (cbit.util.xml.XmlParseException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(e.getMessage());
 	}
@@ -1366,7 +1366,7 @@ private Simulation getSimulationFromDatabaseXML(String simulationXML) throws Dat
 		cacheSimulations(new Simulation[] {sim});
 		sim.refreshDependencies();
 		return sim;
-	}catch(cbit.vcell.xml.XmlParseException e){
+	}catch(cbit.util.xml.XmlParseException e){
 		e.printStackTrace();
 		throw new DataAccessException(e.getClass().getName()+": "+e.getMessage());
 	}
@@ -1477,7 +1477,7 @@ public cbit.vcell.model.ReactionStepInfo[] getUserReactionStepInfos(cbit.util.Ke
 }
 
 
-public String getXML(BioModelInfo bmInfo) throws cbit.util.DataAccessException, cbit.vcell.xml.XmlParseException{
+public String getXML(BioModelInfo bmInfo) throws cbit.util.DataAccessException, cbit.util.xml.XmlParseException{
 	return getBioModelXML(bmInfo.getVersion().getVersionKey()); // faster ... this is how it's cached.
 }
 
@@ -1488,12 +1488,12 @@ public String getXML(BioModelInfo bmInfo) throws cbit.util.DataAccessException, 
  * @return java.lang.String
  * @param bioModel cbit.vcell.biomodel.BioModel
  */
-public java.lang.String getXML(cbit.vcell.biomodel.BioModelInfo bioModelInfoArg, XmlDialect toDialect) throws java.io.IOException, cbit.vcell.xml.XmlParseException, DataAccessException {
+public java.lang.String getXML(cbit.vcell.biomodel.BioModelInfo bioModelInfoArg, XmlDialect toDialect) throws java.io.IOException, cbit.util.xml.XmlParseException, DataAccessException {
 	return XmlHelper.exportXML(getBioModel(bioModelInfoArg), toDialect);
 }
 
 
-public String getXML(MathModelInfo mmInfo) throws cbit.util.DataAccessException, cbit.vcell.xml.XmlParseException{
+public String getXML(MathModelInfo mmInfo) throws cbit.util.DataAccessException, cbit.util.xml.XmlParseException{
 	
 	return getMathModelXML(mmInfo.getVersion().getVersionKey());
 	
@@ -1506,7 +1506,7 @@ public String getXML(MathModelInfo mmInfo) throws cbit.util.DataAccessException,
  * @return java.lang.String
  * @param bioModel cbit.vcell.biomodel.BioModel
  */
-public java.lang.String getXML(cbit.vcell.mathmodel.MathModelInfo mathModelInfoArg, XmlDialect toDialect) throws java.io.IOException, cbit.vcell.xml.XmlParseException, DataAccessException {
+public java.lang.String getXML(cbit.vcell.mathmodel.MathModelInfo mathModelInfoArg, XmlDialect toDialect) throws java.io.IOException, cbit.util.xml.XmlParseException, DataAccessException {
 	return XmlHelper.exportXML(getMathModel(mathModelInfoArg), toDialect);
 }
 
@@ -1653,7 +1653,7 @@ public boolean isChanged(cbit.image.VCImage vcImage, String vcImageXML) throws c
 		if (!VCMLComparator.compareEquals(savedImageXML,vcImageXML)){
 			return true;
 		}
-	}catch (cbit.vcell.xml.XmlParseException e){
+	}catch (cbit.util.xml.XmlParseException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(e.getMessage());
 	}
@@ -1727,7 +1727,7 @@ public boolean isChanged(BioModel bioModel, String bioModelXML) throws DataAcces
 			}else{
 				return true;
 			}
-		}catch (cbit.vcell.xml.XmlParseException e){
+		}catch (cbit.util.xml.XmlParseException e){
 			e.printStackTrace(System.out);
 			throw new DataAccessException(e.getMessage());
 		}
@@ -1798,7 +1798,7 @@ public boolean isChanged(Geometry geometry, String geometryXML) throws DataAcces
 		if (!VCMLComparator.compareEquals(savedGeometryXML,geometryXML)){
 			return true;
 		}
-	}catch (cbit.vcell.xml.XmlParseException e){
+	}catch (cbit.util.xml.XmlParseException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(e.getMessage());
 	}
@@ -1867,7 +1867,7 @@ public boolean isChanged(MathModel mathModel, String mathModelXML) throws DataAc
 			}else{
 				return true;
 			}
-		}catch (cbit.vcell.xml.XmlParseException e){
+		}catch (cbit.util.xml.XmlParseException e){
 			e.printStackTrace(System.out);
 			throw new DataAccessException(e.getMessage());
 		}
@@ -1899,7 +1899,7 @@ public boolean isChanged(Simulation sim) throws DataAccessException{
 
 	try{
 		return !VCMLComparator.compareEquals(cbit.vcell.xml.XmlHelper.simToXML(sim),loadedSimXML);
-	}catch (cbit.vcell.xml.XmlParseException e){
+	}catch (cbit.util.xml.XmlParseException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(e.getMessage());
 	}
@@ -2257,7 +2257,7 @@ public cbit.image.VCImage save(cbit.image.VCImage vcImage) throws cbit.util.Data
 		String vcImageXML = null;
 		try {
 			vcImageXML = cbit.vcell.xml.XmlHelper.imageToXML(vcImage);
-		}catch (cbit.vcell.xml.XmlParseException e){
+		}catch (cbit.util.xml.XmlParseException e){
 			e.printStackTrace(System.out);
 			throw new DataAccessException(e.getMessage());
 		}
@@ -2267,7 +2267,7 @@ public cbit.image.VCImage save(cbit.image.VCImage vcImage) throws cbit.util.Data
 		VCImage savedVCImage = null;
 		try {
 			savedVCImage = cbit.vcell.xml.XmlHelper.XMLToImage(savedVCImageXML);
-		}catch (cbit.vcell.xml.XmlParseException e){
+		}catch (cbit.util.xml.XmlParseException e){
 			e.printStackTrace(System.out);
 			throw new DataAccessException(e.getMessage());
 		}
@@ -2308,7 +2308,7 @@ public BioModel save(BioModel bioModel, String independentSims[]) throws DataAcc
 		String bioModelXML = null;
 		try {
 			bioModelXML = cbit.vcell.xml.XmlHelper.bioModelToXML(bioModel);
-		}catch (cbit.vcell.xml.XmlParseException e){
+		}catch (cbit.util.xml.XmlParseException e){
 			e.printStackTrace(System.out);
 			throw new DataAccessException(e.getMessage());
 		}
@@ -2344,7 +2344,7 @@ public Geometry save(Geometry geometry) throws DataAccessException {
 		String geometryXML = null;
 		try {
 			geometryXML = cbit.vcell.xml.XmlHelper.geometryToXML(geometry);
-		}catch (cbit.vcell.xml.XmlParseException e){
+		}catch (cbit.util.xml.XmlParseException e){
 			e.printStackTrace(System.out);
 			throw new DataAccessException(e.getMessage());
 		}
@@ -2383,7 +2383,7 @@ public MathModel save(MathModel mathModel, String independentSims[]) throws Data
 		String mathModelXML = null;
 		try {
 			mathModelXML = cbit.vcell.xml.XmlHelper.mathModelToXML(mathModel);
-		}catch (cbit.vcell.xml.XmlParseException e){
+		}catch (cbit.util.xml.XmlParseException e){
 			e.printStackTrace(System.out);
 			throw new DataAccessException(e.getMessage());
 		}
@@ -2422,7 +2422,7 @@ public Simulation save(Simulation simulation, boolean bForceIndependent) throws 
 		String simulationXML = null;
 		try {
 			simulationXML = cbit.vcell.xml.XmlHelper.simToXML(simulation);
-		}catch (cbit.vcell.xml.XmlParseException e){
+		}catch (cbit.util.xml.XmlParseException e){
 			e.printStackTrace(System.out);
 			throw new DataAccessException(e.getMessage());
 		}
@@ -2448,7 +2448,7 @@ public cbit.image.VCImage saveAsNew(cbit.image.VCImage vcImage, java.lang.String
 		String vcImageXML = null;
 		try {
 			vcImageXML = cbit.vcell.xml.XmlHelper.imageToXML(vcImage);
-		}catch (cbit.vcell.xml.XmlParseException e){
+		}catch (cbit.util.xml.XmlParseException e){
 			e.printStackTrace(System.out);
 			throw new DataAccessException(e.getMessage());
 		}
@@ -2458,7 +2458,7 @@ public cbit.image.VCImage saveAsNew(cbit.image.VCImage vcImage, java.lang.String
 		VCImage savedVCImage = null;
 		try {
 			savedVCImage = cbit.vcell.xml.XmlHelper.XMLToImage(savedVCImageXML);
-		}catch (cbit.vcell.xml.XmlParseException e){
+		}catch (cbit.util.xml.XmlParseException e){
 			e.printStackTrace(System.out);
 			throw new DataAccessException(e.getMessage());
 		}
@@ -2499,7 +2499,7 @@ public cbit.vcell.biomodel.BioModel saveAsNew(cbit.vcell.biomodel.BioModel bioMo
 		String bioModelXML = null;
 		try {
 			bioModelXML = cbit.vcell.xml.XmlHelper.bioModelToXML(bioModel);
-		}catch (cbit.vcell.xml.XmlParseException e){
+		}catch (cbit.util.xml.XmlParseException e){
 			e.printStackTrace(System.out);
 			throw new DataAccessException(e.getMessage());
 		}
@@ -2536,7 +2536,7 @@ public cbit.vcell.geometry.Geometry saveAsNew(cbit.vcell.geometry.Geometry geome
 		String geometryXML = null;
 		try {
 			geometryXML = cbit.vcell.xml.XmlHelper.geometryToXML(geometry);
-		}catch (cbit.vcell.xml.XmlParseException e){
+		}catch (cbit.util.xml.XmlParseException e){
 			e.printStackTrace(System.out);
 			throw new DataAccessException(e.getMessage());
 		}
@@ -2579,7 +2579,7 @@ public cbit.vcell.mathmodel.MathModel saveAsNew(cbit.vcell.mathmodel.MathModel m
 		String mathModelXML = null;
 		try {
 			mathModelXML = cbit.vcell.xml.XmlHelper.mathModelToXML(mathModel);
-		}catch (cbit.vcell.xml.XmlParseException e){
+		}catch (cbit.util.xml.XmlParseException e){
 			e.printStackTrace(System.out);
 			throw new DataAccessException(e.getMessage());
 		}

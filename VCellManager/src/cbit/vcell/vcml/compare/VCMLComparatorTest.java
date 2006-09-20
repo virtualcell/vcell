@@ -1,9 +1,9 @@
 package cbit.vcell.vcml.compare;
 
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.xml.XmlParseException;
 import cbit.vcell.xml.XmlReader;
 import cbit.vcell.xml.Xmlproducer;
+import cbit.util.xml.XmlParseException;
 import cbit.util.xml.XmlUtil;
 
 import org.jdom.Element;

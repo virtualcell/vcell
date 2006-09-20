@@ -339,7 +339,7 @@ public cbit.vcell.dictionary.ReactionDescription[] getUserReactionDescriptions(c
 public cbit.vcell.model.ReactionStepInfo[] getUserReactionStepInfos(KeyValue reactionStepKeys[]) throws DataAccessException;
 
 
-	public String getXML(BioModelInfo bmInfo) throws cbit.util.DataAccessException, java.rmi.RemoteException, cbit.vcell.xml.XmlParseException;
+	public String getXML(BioModelInfo bmInfo) throws cbit.util.DataAccessException, java.rmi.RemoteException, cbit.util.xml.XmlParseException;
 
 
 /**
@@ -348,10 +348,10 @@ public cbit.vcell.model.ReactionStepInfo[] getUserReactionStepInfos(KeyValue rea
  * @return java.lang.String
  * @param bioModel cbit.vcell.biomodel.BioModel
  */
-String getXML(cbit.vcell.biomodel.BioModelInfo bioModelInfoArg, XmlDialect toDialect) throws RemoteException, cbit.vcell.xml.XmlParseException, java.io.IOException, cbit.util.DataAccessException;
+String getXML(cbit.vcell.biomodel.BioModelInfo bioModelInfoArg, XmlDialect toDialect) throws RemoteException, cbit.util.xml.XmlParseException, java.io.IOException, cbit.util.DataAccessException;
 
 
-	public String getXML(MathModelInfo mmInfo) throws cbit.util.DataAccessException, java.rmi.RemoteException, cbit.vcell.xml.XmlParseException;
+	public String getXML(MathModelInfo mmInfo) throws cbit.util.DataAccessException, java.rmi.RemoteException, cbit.util.xml.XmlParseException;
 
 
 /**
@@ -360,7 +360,7 @@ String getXML(cbit.vcell.biomodel.BioModelInfo bioModelInfoArg, XmlDialect toDia
  * @return java.lang.String
  * @param bioModel cbit.vcell.biomodel.BioModel
  */
-String getXML(MathModelInfo mathModelInfoArg, XmlDialect toDialect) throws RemoteException, cbit.vcell.xml.XmlParseException, java.io.IOException,cbit.util.DataAccessException;
+String getXML(MathModelInfo mathModelInfoArg, XmlDialect toDialect) throws RemoteException, cbit.util.xml.XmlParseException, java.io.IOException,cbit.util.DataAccessException;
 
 
 /**
