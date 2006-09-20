@@ -10,7 +10,6 @@ import cbit.util.User;
 import cbit.vcell.export.server.*;
 import cbit.vcell.client.database.ClientDocumentManager;
 import cbit.vcell.client.database.DocumentManager;
-import cbit.vcell.clientdb.*;
 
 import cbit.vcell.server.*;
 import cbit.vcell.server.bionetgen.*;
