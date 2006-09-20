@@ -9,14 +9,14 @@ Require-Bundle: org.vcell.common,
  org.vcell.render,
  org.eclipse.osgi,
  org.vcell.xml.compare,
- org.vcell.expression
+ org.vcell.expression,
+ org.vcell.constraints
 Bundle-Activator: org.vcell.model.Activator
 Export-Package: cbit.image,
  cbit.vcell.biomodel,
  cbit.vcell.dictionary,
  cbit.vcell.document,
  cbit.vcell.exp,
- cbit.vcell.export.nrrd,
  cbit.vcell.geometry,
  cbit.vcell.geometry.surface,
  cbit.vcell.mapping,
