@@ -3,10 +3,11 @@ package cbit.vcell.math.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.gui.ExpressionCanvas;
 import cbit.vcell.desktop.*;
 import javax.swing.tree.*;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.gui.ExpressionCanvas;
+
 import java.util.*;
 import cbit.vcell.math.*;
 /**
@@ -293,7 +294,7 @@ private cbit.gui.ButtonGroupCivilized getButtonGroupCivilized1() {
 private ExpressionCanvas getExpressionCanvas1() {
 	if (ivjExpressionCanvas1 == null) {
 		try {
-			ivjExpressionCanvas1 = new cbit.gui.ExpressionCanvas();
+			ivjExpressionCanvas1 = new cbit.vcell.parser.gui.ExpressionCanvas();
 			ivjExpressionCanvas1.setName("ExpressionCanvas1");
 			// user code begin {1}
 			// user code end

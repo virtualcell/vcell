@@ -9,8 +9,8 @@ import java.awt.*;
 import java.util.*;
 import java.beans.*;
 
-import cbit.gui.ScopedExpressionTableCellRenderer;
 import cbit.vcell.geometry.*;
+import cbit.vcell.parser.gui.ScopedExpressionTableCellRenderer;
 /**
  * This type was created in VisualAge.
  */

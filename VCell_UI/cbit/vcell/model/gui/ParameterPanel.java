@@ -3,8 +3,9 @@ package cbit.vcell.model.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.gui.ScopedExpressionTableCellRenderer;
 import cbit.vcell.model.*;
+import cbit.vcell.parser.gui.ScopedExpressionTableCellRenderer;
+
 import java.beans.*;
 /**
  * This type was created in VisualAge.

@@ -1,6 +1,6 @@
 package cbit.vcell.model.gui;
 
-import cbit.gui.ScopedExpressionTableCellRenderer;
+import cbit.vcell.parser.gui.ScopedExpressionTableCellRenderer;
 
 /**
  * Insert the type's description here.
