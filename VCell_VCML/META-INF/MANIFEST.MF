@@ -18,6 +18,4 @@ Require-Bundle: org.vcell.model,
  org.vcell.common,
  org.vcell.xml.compare,
  org.vcell.constraints,
- org.vcell.xml.common,
- org.vcell.cellml,
- org.vcell.sbml
+ org.vcell.xml.common
