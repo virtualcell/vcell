@@ -10,7 +10,7 @@
  *******************************************************************************/
 package cbit.vcell.modelopt.gui;
 
-import cbit.gui.ScopedExpressionTableCellRenderer;
+import cbit.vcell.parser.gui.ScopedExpressionTableCellRenderer;
 
 /**
  * Insert the type's description here.
