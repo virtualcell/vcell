@@ -101,9 +101,6 @@ cbit.vcell.mapping.MathSymbolMapping computeOptimizationSpec() throws cbit.vcell
 	try {
 		origMathDesc = mathMapping.getMathDescription();
 		mathSymbolMapping = mathMapping.getMathSymbolMapping();
-	}catch (cbit.vcell.matrix.MatrixException e){
-		e.printStackTrace(System.out);
-		throw new cbit.vcell.mapping.MappingException(e.getMessage());
 	}catch (cbit.vcell.model.ModelException e){
 		e.printStackTrace(System.out);
 		throw new cbit.vcell.mapping.MappingException(e.getMessage());

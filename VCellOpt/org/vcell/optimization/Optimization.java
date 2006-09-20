@@ -4,11 +4,9 @@ import java.util.Properties;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.vcell.model.analysis.IAnalysisTask;
 import org.vcell.model.analysis.IAnalysisTaskFactory;
 
 import cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence;
-import cbit.vcell.xml.XMLTags;
 
 public class Optimization implements BundleActivator {
 
