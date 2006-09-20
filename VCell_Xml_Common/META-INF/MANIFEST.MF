@@ -7,3 +7,4 @@ Bundle-Activator: org.vcell.xml.common.Activator
 Bundle-Localization: plugin
 Import-Package: org.osgi.framework;version="1.3.0"
 Export-Package: cbit.util.xml
+Require-Bundle: org.vcell.common
