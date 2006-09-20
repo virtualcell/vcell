@@ -4,7 +4,7 @@ package cbit.vcell.export;
  * All rights reserved.
 ©*/
 import cbit.gui.PropertyLoader;
-import cbit.vcell.solver.*;
+
 import java.io.*;
 import java.util.zip.*;
 import java.net.*;
@@ -22,7 +22,6 @@ public class ExportServiceImpl implements ExportConstants, ExportService {
 
 	private Hashtable jobRequestIDs = new Hashtable();
 	private Hashtable completedExportRequests = new Hashtable();
-	private Random random = new Random();
 	
 	private ASCIIExporter asciiExporter = new ASCIIExporter(this);
 	private IMGExporter imgExporter = new IMGExporter(this);
@@ -67,7 +66,7 @@ protected ExportEvent fireExportCompleted(long jobID, VCDataIdentifier vcdID, St
 	if (object != null) {
 		user = (User)object;
 	}
-	ExportEvent event = new ExportEvent(this, jobID, user, ((VCSimulationDataIdentifier)vcdID).getVcSimID(), ExportEvent.EXPORT_COMPLETE, format, location, null);
+	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_COMPLETE, format, location, null);
 	fireExportEvent(event);
 	return event;
 }
@@ -104,7 +103,7 @@ protected void fireExportFailed(long jobID, VCDataIdentifier vcdID, String forma
 	if (object != null) {
 		user = (User)object;
 	}
-	ExportEvent event = new ExportEvent(this, jobID, user, ((VCSimulationDataIdentifier)vcdID).getVcSimID(), ExportEvent.EXPORT_FAILURE, format, message, null);
+	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_FAILURE, format, message, null);
 	fireExportEvent(event);
 }
 
@@ -122,7 +121,7 @@ protected void fireExportProgress(long jobID, VCDataIdentifier vcdID, String for
 	if (object != null) {
 		user = (User)object;
 	}
-	ExportEvent event = new ExportEvent(this, jobID, user, ((VCSimulationDataIdentifier)vcdID).getVcSimID(), ExportEvent.EXPORT_PROGRESS, format, null, new Double(progress));
+	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_PROGRESS, format, null, new Double(progress));
 	fireExportEvent(event);
 }
 
@@ -138,7 +137,7 @@ protected void fireExportStarted(long jobID, VCDataIdentifier vcdID, String form
 	if (object != null) {
 		user = (User)object;
 	}
-	ExportEvent event = new ExportEvent(this, jobID, user, ((VCSimulationDataIdentifier)vcdID).getVcSimID(), ExportEvent.EXPORT_START, format, null, null);
+	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_START, format, null, null);
 	fireExportEvent(event);
 }
 

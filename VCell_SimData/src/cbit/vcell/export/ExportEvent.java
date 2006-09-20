@@ -4,7 +4,7 @@ package cbit.vcell.export;
  * All rights reserved.
 ©*/
 import cbit.util.User;
-import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.util.VCDataIdentifier;
 import cbit.vcell.util.events.MessageData;
 import cbit.vcell.util.events.MessageEvent;
 import cbit.vcell.util.events.MessageSource;
@@ -18,12 +18,12 @@ public class ExportEvent extends MessageEvent {
 	private String location = null;
 	private User user = null;
 	private long jobID = 0L;
-	private VCSimulationIdentifier vcSimulationIdentifier = null;
+	private VCDataIdentifier vcDataIdentifier = null;
 
 /**
  * ExportEvent constructor comment.
  */
-public ExportEvent(Object source, long jobID, User user, VCSimulationIdentifier vcsID, int argEventType, String format, String location, Double argProgress) {
+public ExportEvent(Object source, long jobID, User user, VCDataIdentifier vcsID, int argEventType, String format, String location, Double argProgress) {
 	super(source, new MessageSource(source, vcsID.getID()), new MessageData(argProgress));
 	this.eventType = argEventType;
 	this.format = format;
@@ -31,7 +31,7 @@ public ExportEvent(Object source, long jobID, User user, VCSimulationIdentifier 
 	this.progress = argProgress;
 	this.jobID = jobID;
 	this.user = user;
-	this.vcSimulationIdentifier = vcsID;
+	this.vcDataIdentifier = vcsID;
 }
 
 
@@ -100,8 +100,8 @@ public User getUser() {
  * Creation date: (7/2/2001 8:59:46 PM)
  * @return cbit.vcell.solver.SimulationInfo
  */
-public VCSimulationIdentifier getVCSimulationIdentifier() {
-	return vcSimulationIdentifier;
+public VCDataIdentifier getVCDataIdentifier() {
+	return vcDataIdentifier;
 }
 
 
@@ -134,7 +134,7 @@ public String toString() {
 		+ "\", user="
 		+ getUser()
 		+ ", simID="
-		+ (getVCSimulationIdentifier() != null ?
-			getVCSimulationIdentifier().getID() : null);
+		+ (getVCDataIdentifier() != null ?
+			getVCDataIdentifier().getID() : null);
 }
 }

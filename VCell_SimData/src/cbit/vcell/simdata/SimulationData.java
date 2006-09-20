@@ -1,6 +1,4 @@
 package cbit.vcell.simdata;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -54,13 +52,14 @@ public SimulationData(VCDataIdentifier argVCDataID, File userDir) throws IOExcep
 		getLogFile();
 	} catch (FileNotFoundException exc) {
 		// maybe we are being asked for pre-parameter scans data files, try old style
-		if (info instanceof VCSimulationDataIdentifier) {
-			VCSimulationDataIdentifier vcSimDataID = (VCSimulationDataIdentifier)info;
-			if (vcSimDataID.getJobIndex() == 0) {
-				VCDataIdentifier vcDataID = VCSimulationDataIdentifierOldStyle.createVCSimulationDataIdentifierOldStyle(vcSimDataID);
-				info = vcDataID;
-			}
-		}
+//		if (info instanceof VCSimulationDataIdentifier) {
+//			VCSimulationDataIdentifier vcSimDataID = (VCSimulationDataIdentifier)info;
+//			if (vcSimDataID.getJobIndex() == 0) {
+//				VCDataIdentifier vcDataID = VCSimulationDataIdentifierOldStyle.createVCSimulationDataIdentifierOldStyle(vcSimDataID);
+//				info = vcDataID;
+//			}
+//		}
+		throw new RuntimeException("failed to find log file, maybe it is an old sytle simulation data identifier ... pre-scans");
 	}
 	getVarAndFunctionDataIdentifiers();
 }
