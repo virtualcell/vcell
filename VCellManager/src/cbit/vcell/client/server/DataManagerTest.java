@@ -12,14 +12,14 @@ import cbit.vcell.math.VariableType;
 public class DataManagerTest extends cbit.vcell.client.server.PDEDataManager {
 	private cbit.vcell.math.AnnotatedFunction functions[] = new cbit.vcell.math.AnnotatedFunction[0];
 	private double times[] = null;
-	private cbit.vcell.solvers.CartesianMesh mesh = null;
+	private cbit.vcell.mesh.CartesianMesh mesh = null;
 	private VCDataIdentifier dataID = null;
 /**
  * DataManagerTest constructor comment.
  * @param argVcdID cbit.vcell.server.VCDataIdentifier
  * @param argSimulationCollectionManager cbit.vcell.desktop.controls.ClientSimulationCollectionManager
  */
-public DataManagerTest(cbit.vcell.math.AnnotatedFunction argFunctions[], double argTimes[], cbit.vcell.solvers.CartesianMesh argMesh, VCDataIdentifier argVCDataIdentifier) {
+public DataManagerTest(cbit.vcell.math.AnnotatedFunction argFunctions[], double argTimes[], cbit.vcell.mesh.CartesianMesh argMesh, VCDataIdentifier argVCDataIdentifier) {
 	super(null,null);
 	this.functions = argFunctions;
 	this.times = argTimes;
@@ -138,7 +138,7 @@ public cbit.plot.PlotData getLineScan(String variable, double time, cbit.vcell.s
  *
  * @see CartesianMesh
  */
-public cbit.vcell.solvers.CartesianMesh getMesh() throws cbit.util.DataAccessException {
+public cbit.vcell.mesh.CartesianMesh getMesh() throws cbit.util.DataAccessException {
 	return mesh;
 }
 /**
@@ -149,7 +149,7 @@ public cbit.vcell.solvers.CartesianMesh getMesh() throws cbit.util.DataAccessExc
  *
  * @throws cbit.util.DataAccessException if SimulationInfo not found.
  */
-public cbit.vcell.solver.ode.ODESolverResultSet getODESolverResultSet() throws cbit.util.DataAccessException {
+public cbit.vcell.simdata.ODESolverResultSet getODESolverResultSet() throws cbit.util.DataAccessException {
 	return null;
 }
 /**
@@ -203,7 +203,7 @@ public static DataManagerTest getPDEExample1() {
 		String meshString = new String(data);
 
 		cbit.vcell.math.CommentStringTokenizer tokens = new cbit.vcell.math.CommentStringTokenizer(meshString);
-		cbit.vcell.solvers.CartesianMesh mesh = cbit.vcell.solvers.CartesianMesh.fromTokens(tokens, null);
+		cbit.vcell.mesh.CartesianMesh mesh = cbit.vcell.mesh.CartesianMesh.fromTokens(tokens, null);
 		VCDataIdentifier vcDataIdentifier = new VCDataIdentifier() {
 										public cbit.util.User getOwner() {
 											return new cbit.util.User("anu",new cbit.util.KeyValue("123"));
@@ -247,7 +247,7 @@ public static DataManagerTest getPDEExample2() {
 		String meshString = new String(data);
 
 		cbit.vcell.math.CommentStringTokenizer tokens = new cbit.vcell.math.CommentStringTokenizer(meshString);
-		cbit.vcell.solvers.CartesianMesh mesh = cbit.vcell.solvers.CartesianMesh.fromTokens(tokens, null);
+		cbit.vcell.mesh.CartesianMesh mesh = cbit.vcell.mesh.CartesianMesh.fromTokens(tokens, null);
 		VCDataIdentifier vcDataIdentifier = new VCDataIdentifier() {
 										public cbit.util.User getOwner() {
 											return new cbit.util.User("anu",new cbit.util.KeyValue("123"));
@@ -326,7 +326,7 @@ public cbit.vcell.simdata.SimDataBlock getSimDataBlock(String varName, double ti
  *
  * @throws cbit.util.DataAccessException if SimulationInfo not found.
  */
-public cbit.vcell.solver.SolverResultSetInfo getSolverResultSetInfo() throws cbit.util.DataAccessException {
+public cbit.vcell.server.solvers.SolverResultSetInfo getSolverResultSetInfo() throws cbit.util.DataAccessException {
 	throw new RuntimeException("not appropriate ...");
 }
 /**
@@ -357,9 +357,9 @@ public VCDataIdentifier getVCDataIdentifier() {
  * @param function function to be removed.
  *
  * @throws cbit.util.DataAccessException if SimulationInfo not found.
- * @throws cbit.vcell.server.PermissionException if not the owner of this dataset.
+ * @throws cbit.util.PermissionException if not the owner of this dataset.
  */
-public void removeFunction(cbit.vcell.math.AnnotatedFunction argFunction) throws cbit.util.DataAccessException, cbit.vcell.server.PermissionException {
+public void removeFunction(cbit.vcell.math.AnnotatedFunction argFunction) throws cbit.util.DataAccessException, cbit.util.PermissionException {
 	functions = (cbit.vcell.math.AnnotatedFunction[])cbit.util.BeanUtils.removeElement(functions,argFunction);
 }
 }

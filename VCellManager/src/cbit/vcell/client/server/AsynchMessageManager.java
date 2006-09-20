@@ -1,7 +1,14 @@
 package cbit.vcell.client.server;
 import cbit.util.DataAccessException;
+import cbit.vcell.export.ExportEvent;
+import cbit.vcell.export.ExportListener;
+import cbit.vcell.export.ExportSender;
 import cbit.vcell.server.*;
+import cbit.vcell.simdata.DataJobEvent;
+import cbit.vcell.simdata.DataJobListener;
+import cbit.vcell.simdata.DataJobSender;
 import cbit.rmi.event.*;
+
 import javax.swing.*;
 import javax.swing.event.*;
 /**
@@ -122,7 +129,7 @@ void connect(RemoteMessageHandler remoteMessageHandler) throws DataAccessExcepti
  * Creation date: (3/29/2006 3:05:48 PM)
  * @param event cbit.rmi.event.ExportEvent
  */
-public void dataJobMessage(cbit.rmi.event.DataJobEvent event) {
+public void dataJobMessage(cbit.vcell.simdata.DataJobEvent event) {
 	// refire for swing
 	fireDataJobEvent(event);
 
@@ -164,7 +171,7 @@ private void disconnect() {
  * Creation date: (6/9/2004 2:27:28 PM)
  * @param event cbit.rmi.event.ExportEvent
  */
-public void exportMessage(cbit.rmi.event.ExportEvent event) {
+public void exportMessage(cbit.vcell.export.ExportEvent event) {
 	// refire for swing
 	fireExportEvent(event);
 }

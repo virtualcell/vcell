@@ -5,6 +5,8 @@ import cbit.vcell.simdata.SpatialSelection;
 import cbit.plot.*;
 import cbit.vcell.solvers.*;
 import cbit.vcell.math.*;
+import cbit.vcell.mesh.CartesianMesh;
+
 import java.rmi.*;
 import cbit.vcell.server.*;
 /**
@@ -287,7 +289,7 @@ CartesianMesh getMesh(VCDataIdentifier vcdID) throws DataAccessException {
  *
  * @throws cbit.util.DataAccessException if SimulationInfo not found.
  */
-cbit.vcell.solver.ode.ODESimData getODEData(VCDataIdentifier vcdID) throws DataAccessException {
+cbit.vcell.simdata.ODESimData getODEData(VCDataIdentifier vcdID) throws DataAccessException {
 	try {
 		return getDataSetController().getODEData(vcdID);
 	}catch (RemoteException e){
@@ -425,7 +427,7 @@ private void handleRemoteException(RemoteException remoteException) {
  * @param function function to be removed.
  * 
  * @throws cbit.util.DataAccessException if SimulationInfo not found.
- * @throws cbit.vcell.server.PermissionException if not the owner of this dataset.
+ * @throws cbit.util.PermissionException if not the owner of this dataset.
  */
 void removeFunction(AnnotatedFunction function, VCDataIdentifier vcDataIdentifier) throws cbit.util.DataAccessException {
 		try {

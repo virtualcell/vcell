@@ -20,7 +20,7 @@ public NewClientPDEDataContext(DataManager dataManager) {
  *
  * @param exportSpec cbit.vcell.export.server.ExportSpecs
  */
-public void makeRemoteFile(cbit.vcell.export.server.ExportSpecs exportSpecs) throws cbit.util.DataAccessException {
+public void makeRemoteFile(cbit.vcell.export.ExportSpecs exportSpecs) throws cbit.util.DataAccessException {
 	throw new RuntimeException("should not use this method in NewClientPDEDataContext");
 }
 

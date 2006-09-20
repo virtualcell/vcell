@@ -178,7 +178,7 @@ private void initialize() {
  *
  * @param exportSpec cbit.vcell.export.server.ExportSpecs
  */
-public abstract void makeRemoteFile(cbit.vcell.export.server.ExportSpecs exportSpecs) throws cbit.util.DataAccessException;
+public abstract void makeRemoteFile(cbit.vcell.export.ExportSpecs exportSpecs) throws cbit.util.DataAccessException;
 
 
 /**
@@ -211,9 +211,9 @@ public abstract void refreshIdentifiers();
  * @param function function to be removed.
  *
  * @throws cbit.util.DataAccessException if SimulationInfo not found.
- * @throws cbit.vcell.server.PermissionException if not the owner of this dataset.
+ * @throws cbit.util.PermissionException if not the owner of this dataset.
  */
-public void removeFunction(cbit.vcell.math.AnnotatedFunction function) throws cbit.util.DataAccessException, cbit.vcell.server.PermissionException {
+public void removeFunction(cbit.vcell.math.AnnotatedFunction function) throws cbit.util.DataAccessException, cbit.util.PermissionException {
 	dataManager.removeFunction(function);
 }
 

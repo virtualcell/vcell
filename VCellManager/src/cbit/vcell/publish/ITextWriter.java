@@ -305,7 +305,7 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 	protected ByteArrayOutputStream generateGeometryImage(Geometry geom) throws Exception{
 
 		GeometrySpec geomSpec = geom.getGeometrySpec();
-		IndexColorModel icm = cbit.image.render.DisplayAdapterService.getHandleColorMap();
+		IndexColorModel icm = cbit.vcell.simdata.DisplayAdapterService.getHandleColorMap();
 		VCImage geomImage = geomSpec.getSampledImage();
 		byte [] pixels = geomImage.getPixels();			
 		int x = geomImage.getNumX(); 

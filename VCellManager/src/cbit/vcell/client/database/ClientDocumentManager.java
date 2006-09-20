@@ -1545,7 +1545,7 @@ public void initAllDatabaseInfos() throws DataAccessException {
 
 		cbit.rmi.event.PerformanceMonitorEvent pme = new cbit.rmi.event.PerformanceMonitorEvent(this,getUser(),
 			new cbit.rmi.event.PerformanceData("ClientDocumentManager.initAllDatabaseInfos()",
-			    cbit.rmi.event.MessageEvent.LOGON_STAT,
+			    cbit.vcell.util.events.MessageEvent.LOGON_STAT,
 			    new cbit.rmi.event.PerformanceDataEntry[] {
 				    new cbit.rmi.event.PerformanceDataEntry("remote call duration", Double.toString(((double)System.currentTimeMillis()-time1)/1000.0))
 				    }

@@ -148,7 +148,7 @@ public cbit.plot.PlotData getLineScan(String variable, double time, cbit.vcell.s
  * 
  * @see CartesianMesh
  */
-public cbit.vcell.solvers.CartesianMesh getMesh() throws cbit.util.DataAccessException {
+public cbit.vcell.mesh.CartesianMesh getMesh() throws cbit.util.DataAccessException {
 	return getVcDataManager().getMesh(getVcDataIdentifier());
 }
 
@@ -161,7 +161,7 @@ public cbit.vcell.solvers.CartesianMesh getMesh() throws cbit.util.DataAccessExc
  * 
  * @throws cbit.util.DataAccessException if SimulationInfo not found.
  */
-public cbit.vcell.solver.ode.ODESolverResultSet getODESolverResultSet() throws cbit.util.DataAccessException {
+public cbit.vcell.simdata.ODESolverResultSet getODESolverResultSet() throws cbit.util.DataAccessException {
 	return null;
 }
 
@@ -273,7 +273,7 @@ private VCDataManager getVcDataManager() {
  * @param function function to be removed.
  * 
  * @throws cbit.util.DataAccessException if SimulationInfo not found.
- * @throws cbit.vcell.server.PermissionException if not the owner of this dataset.
+ * @throws cbit.util.PermissionException if not the owner of this dataset.
  */
 public void removeFunction(cbit.vcell.math.AnnotatedFunction function) throws cbit.util.DataAccessException {
 	getVcDataManager().removeFunction(function, getVcDataIdentifier());

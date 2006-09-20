@@ -4,6 +4,8 @@ import java.rmi.*;
 
 import cbit.util.DataAccessException;
 import cbit.vcell.server.*;
+import cbit.vcell.export.ExportEvent;
+import cbit.vcell.export.ExportSpecs;
 import cbit.vcell.export.server.*;
 /**
  * Insert the type's description here.

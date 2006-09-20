@@ -1,6 +1,7 @@
 package cbit.vcell.client.server;
 
 import cbit.util.DataAccessException;
+import cbit.vcell.export.ExportSpecs;
 import cbit.vcell.export.server.*;
 import cbit.vcell.messaging.db.*;
 import cbit.vcell.server.*;

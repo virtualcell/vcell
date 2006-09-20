@@ -4,6 +4,7 @@ import cbit.vcell.client.*;
 import javax.swing.event.EventListenerList;
 import java.rmi.*;
 
+import cbit.vcell.export.ExportSpecs;
 import cbit.vcell.export.server.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.messaging.db.*;
