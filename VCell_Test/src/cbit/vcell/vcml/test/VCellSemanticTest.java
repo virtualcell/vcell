@@ -1,7 +1,8 @@
 package cbit.vcell.vcml.test;
 import cbit.vcell.biomodel.BioModel;
 import org.jdom.Element;
-import cbit.vcell.solver.ode.FunctionColumnDescription;
+
+import cbit.vcell.simdata.FunctionColumnDescription;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.math.Variable;
@@ -144,15 +145,15 @@ public static void main(java.lang.String[] args) {
 
 		final cbit.vcell.solvers.NativeIDASolver nativeIDASolver = new cbit.vcell.solvers.NativeIDASolver();
 		System.out.println(idaInputString);
-		cbit.vcell.solver.ode.RowColumnResultSet rcResultSet = nativeIDASolver.solve(idaInputString);
+		cbit.vcell.simdata.RowColumnResultSet rcResultSet = nativeIDASolver.solve(idaInputString);
 
 		//
 		// get simulation results - copy from RowColumnResultSet into OdeSolverResultSet
 		//
 		
-		cbit.vcell.solver.ode.ODESolverResultSet odeSolverResultSet = new cbit.vcell.solver.ode.ODESolverResultSet();
+		cbit.vcell.simdata.ODESolverResultSet odeSolverResultSet = new cbit.vcell.simdata.ODESolverResultSet();
 		for (int i = 0; i < rcResultSet.getDataColumnCount(); i++){
-			odeSolverResultSet.addDataColumn(new cbit.vcell.solver.ode.ODESolverResultSetColumnDescription(rcResultSet.getColumnDescriptions(i).getName()));
+			odeSolverResultSet.addDataColumn(new cbit.vcell.simdata.ODESolverResultSetColumnDescription(rcResultSet.getColumnDescriptions(i).getName()));
 		}
 		for (int i = 0; i < rcResultSet.getRowCount(); i++){
 			odeSolverResultSet.addRow(rcResultSet.getRow(i));
@@ -162,7 +163,7 @@ public static void main(java.lang.String[] args) {
 		//
 		cbit.vcell.math.Function functions[] = sim.getFunctions();
 		for (int i = 0; i < functions.length; i++){
-			if (cbit.vcell.solvers.AbstractSolver.isFunctionSaved(functions[i])){
+			if (cbit.vcell.simdata.FunctionFileGenerator.isFunctionSaved(functions[i])){
 				Expression exp1 = new Expression(functions[i].getExpression());
 				try {
 					exp1 = sim.substituteFunctions(exp1);

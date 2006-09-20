@@ -12,6 +12,10 @@ import cbit.vcell.solver.test.VariableComparisonSummary;
 ©*/
 import cbit.gui.PropertyLoader;
 import cbit.vcell.server.AdminDatabaseServer;
+import cbit.vcell.simdata.FunctionColumnDescription;
+import cbit.vcell.simdata.ODESolverResultSet;
+import cbit.vcell.simdata.ODESolverResultSetColumnDescription;
+import cbit.vcell.simdata.RowColumnResultSet;
 import cbit.sql.DBCacheTable;
 import cbit.util.SessionLog;
 import cbit.sql.ConnectionFactory;
@@ -23,6 +27,9 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.vcml.StructureSizeSolver;
 import cbit.vcell.solvers.NativeIDASolver;
+import cbit.vcell.solvers.SolverException;
+import cbit.vcell.solvers.SolverStatus;
+
 import java.io.StringWriter;
 import cbit.vcell.solver.ode.IDAFileWriter;
 import cbit.vcell.solver.*;
@@ -47,11 +54,7 @@ import cbit.vcell.math.MathException;
 import cbit.vcell.xml.XmlDialect;
 import cbit.vcell.solver.ode.ODESolver;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 import cbit.vcell.solver.test.SimulationComparisonSummary;
-import cbit.vcell.solver.ode.FunctionColumnDescription;
-import cbit.vcell.solver.ode.ODESolverResultSet;
-import cbit.vcell.solver.ode.RowColumnResultSet;
 import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.modeldb.DatabasePolicySQL;
 import cbit.vcell.modeldb.DbDriver;
@@ -591,7 +594,7 @@ private ODESolverResultSet solveSimulation(Simulation sim, boolean hasFastSystem
 		// add appropriate Function columns to result set
 		cbit.vcell.math.Function functions[] = sim.getFunctions();
 		for (int i = 0; i < functions.length; i++){
-			if (cbit.vcell.solvers.AbstractSolver.isFunctionSaved(functions[i])){
+			if (cbit.vcell.simdata.FunctionFileGenerator.isFunctionSaved(functions[i])){
 				Expression exp1 = new Expression(functions[i].getExpression());
 				try {
 					exp1 = sim.substituteFunctions(exp1);
