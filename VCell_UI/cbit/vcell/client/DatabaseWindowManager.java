@@ -1,5 +1,6 @@
 package cbit.vcell.client;
 import cbit.vcell.xml.*;
+import cbit.vcell.xml.merge.gui.TMLPanel;
 import cbit.xml.merge.gui.*;
 
 import java.util.*;

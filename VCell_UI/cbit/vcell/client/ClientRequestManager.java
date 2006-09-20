@@ -9,8 +9,9 @@ import cbit.vcell.numericstest.TestCaseNewMathModel;
 import cbit.vcell.numericstest.TestCaseNewBioModel;
 import cbit.vcell.numericstest.TestSuiteOP;
 import java.awt.event.*;
+
+import cbit.vcell.vcml.VCellXMLComparePolicy;
 import cbit.vcell.xml.XmlHelper;
-import cbit.vcell.xml.XmlParseException;
 import cbit.xml.merge.gui.*;
 import cbit.image.*;
 import cbit.vcell.export.ExportSpecs;
@@ -29,6 +30,8 @@ import cbit.vcell.math.*;
 import cbit.vcell.mapping.*;
 import java.beans.*;
 import cbit.util.*;
+import cbit.util.xml.VCLogger;
+import cbit.util.xml.XmlParseException;
 import swingthreads.*;
 import java.awt.*;
 import cbit.vcell.client.server.*;
@@ -45,6 +48,8 @@ import cbit.vcell.client.desktop.*;
 import java.util.*;
 import javax.swing.*;
 import cbit.vcell.xml.XMLTags;
+import cbit.vcell.xml.merge.XmlTreeDiff;
+import cbit.vcell.xml.merge.gui.TMLPanel;
 /**
  * Insert the type's description here.
  * Creation date: (5/21/2004 2:42:55 AM)
@@ -319,7 +324,7 @@ private TMLPanel compareDocuments(VCDocument doc1, VCDocument doc2, String compa
 		}
 	}
 	XmlTreeDiff diffTree = XmlTreeDiff.compareMerge(doc1XML, doc2XML, comparisonSetting, new VCellXMLComparePolicy(true));
-	TMLPanel aTMLPanel = new cbit.xml.merge.gui.TMLPanel();
+	TMLPanel aTMLPanel = new cbit.vcell.xml.merge.gui.TMLPanel();
 	aTMLPanel.setXmlTreeDiff(diffTree);
 	String date1 = doc1.getVersion() == null ? "not saved" : doc1.getVersion().getDate().toString();
 	String date2 = doc2.getVersion() == null ? "not saved" : doc2.getVersion().getDate().toString();
@@ -1479,7 +1484,8 @@ public void openDocument(VCDocumentInfo documentInfo, TopLevelWindowManager requ
 			throw new IllegalArgumentException("Invalid params: " + comparePanel + " " + requester);
 		}
 		try {
-			final VCDocument vcDoc = comparePanel.processComparisonResult();
+			String xmlString = comparePanel.getComparisonResultAsXml();
+			final VCDocument vcDoc = XmlHelper.XMLToDocument(new TranslationLogger(comparePanel),xmlString);
 			if (requester instanceof DatabaseWindowManager) {
 				final DatabaseWindowManager dataWinManager = (DatabaseWindowManager)requester;
 				final VCDocumentInfo vcDocInfo = getMatchingDocumentInfo(vcDoc);

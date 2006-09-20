@@ -1,5 +1,4 @@
 package cbit.vcell.client;
-import cbit.xml.merge.gui.TMLPanel;
 import swingthreads.*;
 import java.net.*;
 import cbit.vcell.clientdb.*;
@@ -29,6 +28,7 @@ import java.beans.*;
 import javax.swing.*;
 import cbit.vcell.client.server.*;
 import cbit.vcell.solver.*;
+import cbit.vcell.xml.merge.gui.TMLPanel;
 /**
  * Insert the type's description here.
  * Creation date: (5/5/2004 1:01:37 PM)
