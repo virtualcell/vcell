@@ -11,7 +11,8 @@ Require-Bundle: org.vcell.common,
  org.vcell.server,
  org.vcell.manager,
  org.vcell.solvers,
- org.vcell.simdata
+ org.vcell.simdata,
+ org.vcell.xml.compare
 Import-Package: org.osgi.framework;version="1.3.0"
 Export-Package: cbit.image.gui,
  cbit.vcell.client,
@@ -40,7 +41,6 @@ Export-Package: cbit.image.gui,
  cbit.vcell.solver.ode.gui,
  cbit.vcell.vcml.gui,
  cbit.vcell.webparser,
- cbit.xml.merge.gui,
  cbit.xml.viewer,
  org.vcell.ui
 Bundle-Activator: org.vcell.ui.Activator
