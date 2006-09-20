@@ -1,9 +1,9 @@
 package cbit.vcell.solver;
-import cbit.vcell.mapping.MappingException;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.io.IOException;
 import java.util.Vector;
 import cbit.vcell.parser.Expression;
 import java.util.Enumeration;
@@ -12,11 +12,10 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionBindingException;
 import java.beans.PropertyVetoException;
 
+import cbit.util.BeanUtils;
 import cbit.util.DataAccessException;
-import cbit.util.ISize;
 import cbit.util.KeyValue;
 import cbit.util.SimulationVersion;
-import cbit.util.Version;
 import cbit.util.Versionable;
 import cbit.vcell.math.*;
 import cbit.vcell.solver.SimulationInfo;
@@ -381,7 +380,7 @@ public static String createSimulationID(KeyValue simKey) {
  * @param sim cbit.vcell.solver.Simulation
  * @param jobIndex int
  */
-static Simulation createWorkingSim(Simulation sim, int jobIndex) {
+public static Simulation createWorkingSim(Simulation sim, int jobIndex) {
 	if (jobIndex < 0 || jobIndex >= sim.getScanCount()) {
 		throw new RuntimeException("Bad job index ["+jobIndex+"] for simulation "+ sim.toString());
 	}
@@ -391,12 +390,14 @@ static Simulation createWorkingSim(Simulation sim, int jobIndex) {
 	// should profile and choose according to best performance
 
 	try {
-		String xml = cbit.vcell.xml.XmlHelper.simToXML(sim);
-		workingSim = cbit.vcell.xml.XmlHelper.XMLToSim(xml);
-	} catch (cbit.util.xml.XmlParseException exc) {
-		throw new RuntimeException("Exception occurred while cloning working simulation\n"+exc);
+		workingSim = (Simulation)BeanUtils.cloneSerializable(sim);
+	} catch (ClassNotFoundException e) {
+		e.printStackTrace();
+		throw new RuntimeException(e.getMessage());
+	} catch (IOException e) {
+		e.printStackTrace();
+		throw new RuntimeException(e.getMessage());
 	}
-
 	/*
 	--- begin alternate implementation ---
 

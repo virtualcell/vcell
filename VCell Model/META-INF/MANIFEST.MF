@@ -10,7 +10,9 @@ Require-Bundle: org.vcell.common,
  org.eclipse.osgi,
  org.vcell.xml.compare,
  org.vcell.expression,
- org.vcell.constraints
+ org.vcell.constraints,
+ org.vcell.units,
+ org.vcell.matrix
 Bundle-Activator: org.vcell.model.Activator
 Export-Package: cbit.image,
  cbit.vcell.biomodel,
@@ -25,7 +27,5 @@ Export-Package: cbit.image,
  cbit.vcell.mathmodel,
  cbit.vcell.model,
  cbit.vcell.solver,
- cbit.vcell.vcml,
- cbit.vcell.xml,
  org.vcell.model,
  org.vcell.model.analysis
