@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Units Plug-in
+Bundle-SymbolicName: org.vcell.units
+Bundle-Version: 1.0.0
+Bundle-Activator: org.vcell.units.Activator
+Bundle-Localization: plugin
+Import-Package: org.osgi.framework;version="1.3.0"
