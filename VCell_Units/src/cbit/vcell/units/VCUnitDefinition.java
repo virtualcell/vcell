@@ -2,12 +2,10 @@ package cbit.vcell.units;
 import ucar.units.*;
 import ucar.units.TimeScaleUnit;
 import ucar.units.OffsetUnit;
-import cbit.util.Matchable;
 
 import ucar.units.DerivedUnitImpl;
 import ucar.units.ScaledUnit;
 import ucar.units.StandardUnitFormat;
-import ucar.units.SI;
 import ucar.units.Unit;
 import ucar.units.UnitException;
 import ucar.units.UnitName;
@@ -21,7 +19,7 @@ import java.util.ArrayList;
  * Creation date: (3/3/2004 6:20:39 PM)
  * @author: Rashad Badrawi
  */
-public class VCUnitDefinition implements Matchable, Serializable {
+public class VCUnitDefinition implements Serializable {
 
     public static final String TBD_SYMBOL = "tbd";
     private static final java.text.NumberFormat numberFormatForRounding =
@@ -300,6 +298,22 @@ private VCUnitDefinition(String argSymbol) {
 	}
 }
 
+public static boolean isEqual(VCUnitDefinition unit1, VCUnitDefinition unit2){
+	if (unit1==null || unit2==null){
+		return false;
+	}
+	if (!unit1.compareEqual(unit2)){
+		return false;
+	}
+	return true;	
+}
+
+public static boolean isEqualOrNull(VCUnitDefinition unit1, VCUnitDefinition unit2){
+	if (unit1==null && unit2==null){
+		return true;
+	}
+	return isEqual(unit1,unit2);	
+}
 
 	private VCUnitDefinition(Unit argUcarUnit) {
 		this.ucarUnit = argUcarUnit;
@@ -307,7 +321,7 @@ private VCUnitDefinition(String argSymbol) {
 	}
 
 
-	public boolean compareEqual(Matchable matchUnitDef) {
+	public boolean compareEqual(VCUnitDefinition matchUnitDef) {
 
 		if (this == matchUnitDef){
 			return true;
@@ -462,8 +476,9 @@ private static boolean equivalent(Unit ucarUnit1, Unit ucarUnit2) {
  * Creation date: (4/15/2004 1:39:26 PM)
  * @return cbit.vcell.units.VCUnitDefinition
  * @param vcUnitDefinition cbit.vcell.units.VCUnitDefinition
+ * @deprecated please don't use, we should hide the underlying implementation (CellML translator needs it now)
  */
-static VCUnitDefinition getInstance(Unit ucarUnit) {
+public static VCUnitDefinition getInstance(Unit ucarUnit) {
 	//
 	// look up in list of "standard" unit definitions
 	//
@@ -562,9 +577,9 @@ static VCUnitDefinition getInstance(Unit ucarUnit) {
 
 
 /**
- *
+ * @deprecated please don't use, CellML translator needs this, but it will be removed when possible
  */
-Unit getUcarUnit() {
+public Unit getUcarUnit() {
 	return ucarUnit;
 }
 
