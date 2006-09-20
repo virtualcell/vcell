@@ -10,7 +10,6 @@
  *******************************************************************************/
 package cbit.vcell.xml.merge.gui;
 import cbit.gui.DialogUtils;
-import cbit.util.VCDocument;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.xml.merge.ChangedNodeInfo;
 import cbit.vcell.xml.merge.DefaultXmlComparePolicy;

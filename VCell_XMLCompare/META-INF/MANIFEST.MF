@@ -10,4 +10,5 @@ Export-Package: cbit.vcell.xml.merge,
  cbit.vcell.xml.merge.gui,
  org.vcell.xml.compare
 Require-Bundle: org.vcell.common,
+ org.vcell.xml.common,
  org.vcell.util
