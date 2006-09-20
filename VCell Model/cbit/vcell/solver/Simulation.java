@@ -393,7 +393,7 @@ static Simulation createWorkingSim(Simulation sim, int jobIndex) {
 	try {
 		String xml = cbit.vcell.xml.XmlHelper.simToXML(sim);
 		workingSim = cbit.vcell.xml.XmlHelper.XMLToSim(xml);
-	} catch (cbit.vcell.xml.XmlParseException exc) {
+	} catch (cbit.util.xml.XmlParseException exc) {
 		throw new RuntimeException("Exception occurred while cloning working simulation\n"+exc);
 	}
 

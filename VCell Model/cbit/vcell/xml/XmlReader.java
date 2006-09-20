@@ -20,6 +20,7 @@ import org.vcell.model.analysis.IAnalysisTask;
 import org.vcell.model.analysis.IAnalysisTaskFactory;
 
 import cbit.util.*;
+import cbit.util.xml.XmlParseException;
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * This class implements the translation of XML data into Java Vcell objects..
@@ -192,7 +193,7 @@ System.out.println("sims-------- "+((double)(l6-l5))/1000);
  * Creation date: (5/4/2001 2:22:56 PM)
  * @return cbit.vcell.model.Product
  * @param param org.jdom.Element
- * @exception cbit.vcell.xml.XmlParseException The exception description.
+ * @exception cbit.util.xml.XmlParseException The exception description.
  */
 public Catalyst getCatalyst(Element param, ReactionStep reaction) throws XmlParseException {
     //retrieve the key if there is one
@@ -223,7 +224,7 @@ public Catalyst getCatalyst(Element param, ReactionStep reaction) throws XmlPars
  * Creation date: (5/17/2001 11:59:45 AM)
  * @return cbit.vcell.math.CompartmentSubDomain
  * @param param org.jdom.Element
- * @exception cbit.vcell.xml.XmlParseException The exception description.
+ * @exception cbit.util.xml.XmlParseException The exception description.
  */
 public CompartmentSubDomain getCompartmentSubDomain(Element param, MathDescription mathDesc) throws XmlParseException {
 	//get attributes
@@ -361,7 +362,7 @@ public CompartmentSubVolume getCompartmentSubVolume(Element param) throws XmlPar
  * Creation date: (5/16/2001 1:50:07 PM)
  * @return cbit.vcell.math.Constant
  * @param param org.jdom.Element
- * @exception cbit.vcell.xml.XmlParseException The exception description.
+ * @exception cbit.util.xml.XmlParseException The exception description.
  */
 public Constant getConstant(Element param) throws XmlParseException {
 	//retrieve values
@@ -732,7 +733,7 @@ public Extent getExtent(Element parsed) {
  * Creation date: (5/18/2001 2:38:56 PM)
  * @return cbit.vcell.math.FastSystemImplicit
  * @param param org.jdom.Element
- * @exception cbit.vcell.xml.XmlParseException The exception description.
+ * @exception cbit.util.xml.XmlParseException The exception description.
  */
 public FastSystemImplicit getFastSystemImplicit(
     Element param,
@@ -920,7 +921,7 @@ public FilamentRegionVariable getFilamentRegionVariable(Element param) {
  * Creation date: (5/18/2001 4:27:22 PM)
  * @return cbit.vcell.math.FilamentSubDomain
  * @param param org.jdom.Element
- * @exception cbit.vcell.xml.XmlParseException The exception description.
+ * @exception cbit.util.xml.XmlParseException The exception description.
  */
 public FilamentSubDomain getFilamentSubDomain(Element param, MathDescription mathDesc) throws XmlParseException {
 	//get name
@@ -1193,7 +1194,7 @@ public cbit.vcell.dictionary.FormalSpeciesInfo getFormalSpeciesInfo(Element spec
  * Creation date: (5/16/2001 3:45:21 PM)
  * @return cbit.vcell.math.Function
  * @param param org.jdom.Element
- * @exception cbit.vcell.xml.XmlParseException The exception description.
+ * @exception cbit.util.xml.XmlParseException The exception description.
  */
 public Function getFunction(Element param) throws XmlParseException {
 	//get attributes
@@ -1214,7 +1215,7 @@ public Function getFunction(Element param) throws XmlParseException {
  * Creation date: (4/26/2001 12:12:18 PM)
  * @return cbit.vcell.geometry.Geometry
  * @param param org.jdom.Element
- * @exception cbit.vcell.xml.XmlParseException The exception description.
+ * @exception cbit.util.xml.XmlParseException The exception description.
  */
 public Geometry getGeometry(Element param) throws XmlParseException {
 	//Get the Extent object
@@ -1524,7 +1525,7 @@ public InsideVariable getInsideVariable(Element param) {
  * Creation date: (5/18/2001 5:10:10 PM)
  * @return cbit.vcell.math.JumpCondition
  * @param param org.jdom.Element
- * @exception cbit.vcell.xml.XmlParseException The exception description.
+ * @exception cbit.util.xml.XmlParseException The exception description.
  */
 public JumpCondition getJumpCondition(Element param) throws XmlParseException {
 	//get VolVariable ref
@@ -1729,7 +1730,7 @@ public cbit.vcell.model.Kinetics getKinetics(Element param, ReactionStep reactio
  * Creation date: (4/26/2001 12:11:14 PM)
  * @return cbit.vcell.math.MathDescription
  * @param param org.jdom.Element
- * @exception cbit.vcell.xml.XmlParseException The exception description.
+ * @exception cbit.util.xml.XmlParseException The exception description.
  */
 public MathDescription getMathDescription(Element param) throws XmlParseException {
 	MathDescription mathdes = null;
@@ -2187,7 +2188,7 @@ public MembraneMapping getMembraneMapping(Element param, SimulationContext simul
  * Creation date: (5/17/2001 3:52:40 PM)
  * @return cbit.vcell.math.MembraneRegionEquation
  * @param param org.jdom.Element
- * @exception cbit.vcell.xml.XmlParseException The exception description.
+ * @exception cbit.util.xml.XmlParseException The exception description.
  */
 public MembraneRegionEquation getMembraneRegionEquation(Element param) throws XmlParseException {
 	//get attributes
@@ -2271,7 +2272,7 @@ public MembraneRegionVariable getMembraneRegionVariable(Element param) {
  * Creation date: (5/18/2001 4:23:30 PM)
  * @return cbit.vcell.math.MembraneSubDomain
  * @param param org.jdom.Element
- * @exception cbit.vcell.xml.XmlParseException The exception description.
+ * @exception cbit.util.xml.XmlParseException The exception description.
  */
 public MembraneSubDomain getMembraneSubDomain(Element param, MathDescription mathDesc) throws XmlParseException {
 	//get compartmentSubDomain references
@@ -2576,7 +2577,7 @@ public NodeReference getNodeReference(Element param) throws XmlParseException{
  * Creation date: (5/17/2001 3:52:40 PM)
  * @return cbit.vcell.math.OdeEquation
  * @param param org.jdom.Element
- * @exception cbit.vcell.xml.XmlParseException The exception description.
+ * @exception cbit.util.xml.XmlParseException The exception description.
  */
 public OdeEquation getOdeEquation(Element param) throws XmlParseException {
 	//get attributes
@@ -2699,7 +2700,7 @@ public OutsideVariable getOutsideVariable(Element param) {
  * Creation date: (4/26/2001 12:11:14 PM)
  * @return cbit.vcell.math.PdeEquation
  * @param param org.jdom.Element
- * @exception cbit.vcell.xml.XmlParseException The exception description.
+ * @exception cbit.util.xml.XmlParseException The exception description.
  */
 
 public PdeEquation getPdeEquation(Element param) throws XmlParseException {
@@ -2870,7 +2871,7 @@ public VCPixelClass getPixelClass(Element param) {
  * Creation date: (5/4/2001 2:22:56 PM)
  * @return cbit.vcell.model.Product
  * @param param org.jdom.Element
- * @exception cbit.vcell.xml.XmlParseException The exception description.
+ * @exception cbit.util.xml.XmlParseException The exception description.
  */
 public Product getProduct(Element param, SimpleReaction reaction) throws XmlParseException {
     //retrieve the key if there is one
@@ -2912,7 +2913,7 @@ public Product getProduct(Element param, SimpleReaction reaction) throws XmlPars
  * Creation date: (5/4/2001 2:22:56 PM)
  * @return cbit.vcell.model.Reactant
  * @param param org.jdom.Element
- * @exception cbit.vcell.xml.XmlParseException The exception description.
+ * @exception cbit.util.xml.XmlParseException The exception description.
  */
 public Reactant getReactant(Element param, SimpleReaction reaction) throws XmlParseException {
     //retrieve the key if there is one
@@ -3155,7 +3156,7 @@ public cbit.vcell.model.SimpleReaction getSimpleReaction(Element param) throws X
  * Creation date: (4/26/2001 12:14:30 PM)
  * @return cbit.vcell.solver.Simulation
  * @param param org.jdom.Element
- * @exception cbit.vcell.xml.XmlParseException The exception description.
+ * @exception cbit.util.xml.XmlParseException The exception description.
  */
 public cbit.vcell.solver.Simulation getSimulation(Element param, MathDescription mathDesc) throws XmlParseException {
 	//retrive metadata (if any)
@@ -4084,7 +4085,7 @@ public Version getVersion(Element xmlVersion) throws XmlParseException {
  * Creation date: (5/17/2001 3:52:40 PM)
  * @return cbit.vcell.math.VolumeRegionEquation
  * @param param org.jdom.Element
- * @exception cbit.vcell.xml.XmlParseException The exception description.
+ * @exception cbit.util.xml.XmlParseException The exception description.
  */
 public VolumeRegionEquation getVolumeRegionEquation(Element param) throws XmlParseException {
 	//get attributes

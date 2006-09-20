@@ -20,6 +20,7 @@ import cbit.vcell.geometry.*;
 import cbit.vcell.model.*;
 import java.util.Enumeration;
 import cbit.util.*;
+import cbit.util.xml.XmlParseException;
 
 /**
  * This class concentrates all the XML production code from Java objects.
@@ -350,7 +351,7 @@ public org.jdom.Element getXML(cbit.vcell.dictionary.DBSpecies dbSpecies) throws
  * Creation date: (6/3/2003 5:14:09 PM)
  * @return org.jdom.Element
  * @param speciesInfo cbit.vcell.dictionary.FormalSpeciesInfo
- * @exception cbit.vcell.xml.XmlParseException The exception description.
+ * @exception cbit.util.xml.XmlParseException The exception description.
  */
 public org.jdom.Element getXML(cbit.vcell.dictionary.FormalSpeciesInfo speciesInfo) throws XmlParseException {
 	//Create XML object

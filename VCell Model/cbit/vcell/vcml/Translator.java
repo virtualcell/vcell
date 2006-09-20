@@ -1,6 +1,6 @@
 package cbit.vcell.vcml;
-import cbit.vcell.xml.XmlParseException;
 import cbit.util.xml.VCLogger;
+import cbit.util.xml.XmlParseException;
 import cbit.util.xml.XmlUtil;
 
 import org.jdom.Document;

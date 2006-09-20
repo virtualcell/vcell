@@ -13,6 +13,7 @@ import cbit.util.Extent;
 import cbit.util.VCDocument;
 import cbit.util.graph.NodeInfo;
 import cbit.util.xml.VCLogger;
+import cbit.util.xml.XmlParseException;
 import cbit.util.xml.XmlUtil;
 
 import java.beans.PropertyVetoException;
