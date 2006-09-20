@@ -6,8 +6,7 @@ Bundle-Version: 1.0.0
 Bundle-Activator: org.vcell.server.Activator
 Bundle-Localization: plugin
 Import-Package: org.osgi.framework;version="1.3.0"
-Export-Package: cbit.image.render,
- cbit.rmi.event,
+Export-Package: cbit.rmi.event,
  cbit.sql,
  cbit.util.admin,
  cbit.vcell.anonymizer,
@@ -26,8 +25,8 @@ Export-Package: cbit.image.render,
  cbit.vcell.server,
  cbit.vcell.server.bionetgen,
  cbit.vcell.server.manage,
+ cbit.vcell.server.simdata,
  cbit.vcell.server.solvers,
- cbit.vcell.simdata,
  cbit.vcell.solver.test,
  cbit.vcell.transaction,
  org.vcell.server
