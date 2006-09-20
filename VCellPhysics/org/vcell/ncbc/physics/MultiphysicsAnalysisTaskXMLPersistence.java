@@ -14,8 +14,8 @@ import cbit.vcell.parser.ExpressionException;
 public class MultiphysicsAnalysisTaskXMLPersistence {
 	
 	public final static String MultiphysicsAnalysisTaskTag = "MultiphysicsAnalysisTask";
-	public final static String NameAttribute = cbit.vcell.xml.XMLTags.NameAttrTag;
-	public final static String AnnotationTag = cbit.vcell.xml.XMLTags.AnnotationTag;
+	public final static String NameAttribute = "name";
+	public final static String AnnotationTag = "annotation";
 
 /**
  * Insert the method's description here.
