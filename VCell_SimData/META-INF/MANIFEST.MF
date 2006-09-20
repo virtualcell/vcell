@@ -13,4 +13,5 @@ Export-Package: cbit.vcell.export,
 Require-Bundle: org.vcell.common,
  org.vcell.util,
  org.vcell.model,
- org.vcell.render
+ org.vcell.render,
+ org.vcell.expression
