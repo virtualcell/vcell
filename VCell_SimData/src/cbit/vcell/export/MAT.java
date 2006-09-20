@@ -1,5 +1,7 @@
 package cbit.vcell.export;
 
+import cbit.vcell.simdata.RowColumnResultSet;
+
 /**
  * Insert the type's description here.
  * Creation date: (6/28/2005 4:46:48 PM)
@@ -71,7 +73,7 @@ private void appendByte(int b, java.io.DataOutputStream stream) {
  * @param theFile java.io.OutputStream
  * @param data data_structures.UnstructuredData
  */
-public void exportTo(java.io.OutputStream theFile, cbit.vcell.solver.ode.RowColumnResultSet data) throws cbit.vcell.parser.ExpressionException {
+public void exportTo(java.io.OutputStream theFile, RowColumnResultSet data) throws cbit.vcell.parser.ExpressionException {
 	java.io.DataOutputStream dataOutputStream = new java.io.DataOutputStream(theFile);
 
 	insertHeader(dataOutputStream);
