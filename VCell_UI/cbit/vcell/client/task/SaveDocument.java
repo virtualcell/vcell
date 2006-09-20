@@ -10,6 +10,7 @@ import cbit.vcell.clientdb.*;
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.server.*;
+import cbit.vcell.util.events.MessageEvent;
 import cbit.vcell.mapping.*;
 import cbit.vcell.math.*;
 import cbit.vcell.biomodel.*;

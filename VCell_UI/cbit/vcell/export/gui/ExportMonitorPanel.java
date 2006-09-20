@@ -8,6 +8,7 @@ import java.util.*;
 import javax.swing.table.*;
 import javax.swing.*;
 import cbit.rmi.event.*;
+import cbit.vcell.export.ExportEvent;
 /**
  * Insert the type's description here.
  * Creation date: (4/4/2001 2:38:28 AM)

@@ -5,9 +5,9 @@ package cbit.image.gui;
  * All rights reserved.
 ©*/
 import cbit.vcell.math.CoordinateIndex;
+import cbit.vcell.simdata.SourceDataInfo;
 import cbit.vcell.geometry.Coordinate;
 import cbit.image.WorldCoordinateCalculator;
-import cbit.image.render.SourceDataInfo;
 import cbit.util.Extent;
 /**
  * Insert the type's description here.

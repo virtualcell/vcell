@@ -475,7 +475,7 @@ public java.beans.PropertyDescriptor odeSolverResultSetPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.solver.ode.ODESolverResultSet.class
+					cbit.vcell.simdata.ODESolverResultSet.class
 				};
 				aSetMethod = getBeanClass().getMethod("setOdeSolverResultSet", aSetMethodParameterTypes);
 			} catch (Throwable exception) {
@@ -564,7 +564,7 @@ public java.beans.MethodDescriptor setOdeSolverResultSet_cbitvcellsolverodeODESo
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.solver.ode.ODESolverResultSet.class
+				cbit.vcell.simdata.ODESolverResultSet.class
 			};
 			aMethod = getBeanClass().getMethod("setOdeSolverResultSet", aParameterTypes);
 		} catch (Throwable exception) {

@@ -88,7 +88,7 @@ public java.beans.PropertyDescriptor displayAdapterServicePropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.image.render.DisplayAdapterService.class
+					cbit.vcell.simdata.DisplayAdapterService.class
 				};
 				aSetMethod = getBeanClass().getMethod("setDisplayAdapterService", aSetMethodParameterTypes);
 			} catch (Throwable exception) {

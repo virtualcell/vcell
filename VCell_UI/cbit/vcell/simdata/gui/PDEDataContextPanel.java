@@ -1,8 +1,8 @@
 package cbit.vcell.simdata.gui;
 
 import cbit.vcell.math.VariableType;
+import cbit.vcell.mesh.CartesianMesh;
 import cbit.vcell.simdata.*;
-import cbit.vcell.solvers.CartesianMesh;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -10,7 +10,6 @@ import cbit.vcell.solvers.CartesianMesh;
 import cbit.image.gui.DisplayAdapterServicePanel;
 import cbit.image.gui.ImagePlaneManager;
 import cbit.image.gui.ImagePlaneManagerPanel;
-import cbit.image.render.DisplayAdapterService;
 import cbit.vcell.geometry.*;
 /**
  * Insert the type's description here.
@@ -83,7 +82,7 @@ public PDEDataContextPanel() {
  * Creation date: (10/26/00 4:49:39 PM)
  */
 private void colorMembraneCurvesPrivate(java.util.Hashtable curvesAndMembraneIndexes,MeshDisplayAdapter meshDisplayAdapter) {
-	cbit.image.render.DisplayAdapterService das = getdisplayAdapterService1();
+	cbit.vcell.simdata.DisplayAdapterService das = getdisplayAdapterService1();
 	if (curvesAndMembraneIndexes != null) {
 		java.util.Enumeration keysEnum = curvesAndMembraneIndexes.keys();
 		while (keysEnum.hasMoreElements()) {
@@ -148,7 +147,7 @@ private void connEtoC10(java.beans.PropertyChangeEvent arg1) {
  * @param value cbit.image.DisplayAdapterService
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC2(cbit.image.render.DisplayAdapterService value) {
+private void connEtoC2(cbit.vcell.simdata.DisplayAdapterService value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -781,7 +780,7 @@ public String getCurveValue(cbit.vcell.geometry.CurveSelectionInfo csi) {
  * @return cbit.image.DisplayAdapterService
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-public cbit.image.render.DisplayAdapterService getdisplayAdapterService1() {
+public cbit.vcell.simdata.DisplayAdapterService getdisplayAdapterService1() {
 	// user code begin {1}
 	// user code end
 	return ivjdisplayAdapterService1;
@@ -948,12 +947,12 @@ private void initConnections() throws java.lang.Exception {
 private void initDisplayAdapterService(DisplayAdapterService das) {
 	das.setValueDomain(null);
 	das.addColorModelForValues(
-		cbit.image.render.DisplayAdapterService.createGrayColorModel(), 
-		cbit.image.render.DisplayAdapterService.createGraySpecialColors(),
+		cbit.vcell.simdata.DisplayAdapterService.createGrayColorModel(), 
+		cbit.vcell.simdata.DisplayAdapterService.createGraySpecialColors(),
 		"Gray");
 	das.addColorModelForValues(
-		cbit.image.render.DisplayAdapterService.createBlueRedColorModel(),
-		cbit.image.render.DisplayAdapterService.createBlueRedSpecialColors(),
+		cbit.vcell.simdata.DisplayAdapterService.createBlueRedColorModel(),
+		cbit.vcell.simdata.DisplayAdapterService.createBlueRedSpecialColors(),
 		"BlueRed");
 	das.setActiveColorModelID("BlueRed");
 }
@@ -1165,10 +1164,10 @@ private void refreshColorCurves() {
  * @param newValue cbit.image.DisplayAdapterService
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-public void setdisplayAdapterService1(cbit.image.render.DisplayAdapterService newValue) {
+public void setdisplayAdapterService1(cbit.vcell.simdata.DisplayAdapterService newValue) {
 	if (ivjdisplayAdapterService1 != newValue) {
 		try {
-			cbit.image.render.DisplayAdapterService oldValue = getdisplayAdapterService1();
+			cbit.vcell.simdata.DisplayAdapterService oldValue = getdisplayAdapterService1();
 			ivjdisplayAdapterService1 = newValue;
 			connEtoC2(ivjdisplayAdapterService1);
 			firePropertyChange("displayAdapterService1", oldValue, newValue);

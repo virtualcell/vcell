@@ -8,6 +8,7 @@ import javax.swing.*;
 import javax.swing.table.*;
 import java.util.*;
 import cbit.rmi.event.*;
+import cbit.vcell.export.ExportEvent;
 import cbit.vcell.export.ExportStatus;
 /**
  * Insert the type's description here.
@@ -60,20 +61,20 @@ public int addExportEvent(String resultSetID, ExportEvent event) {
 	exportStatus.setFormat(event.getFormat());
 	exportStatus.setDestination(event.getLocation());
 	switch (event.getEventTypeID()) {
-		case cbit.rmi.event.ExportEvent.EXPORT_START: {
+		case cbit.vcell.export.ExportEvent.EXPORT_START: {
 			exportStatus.getProgressBar().setString("Starting export...");
 			break;
 		}
-		case cbit.rmi.event.ExportEvent.EXPORT_PROGRESS: {
+		case cbit.vcell.export.ExportEvent.EXPORT_PROGRESS: {
 			exportStatus.getProgressBar().setValue((int)(event.getProgress().doubleValue() * 100));
 			exportStatus.getProgressBar().setString(null);
 			break;
 		}
-		case cbit.rmi.event.ExportEvent.EXPORT_FAILURE: {
+		case cbit.vcell.export.ExportEvent.EXPORT_FAILURE: {
 			exportStatus.getProgressBar().setString("Export failed!");
 			break;
 		}
-		case cbit.rmi.event.ExportEvent.EXPORT_COMPLETE: {
+		case cbit.vcell.export.ExportEvent.EXPORT_COMPLETE: {
 			exportStatus.getProgressBar().setValue(100);
 			exportStatus.getProgressBar().setString(null);
 			exportStatus.setComplete(Boolean.TRUE);

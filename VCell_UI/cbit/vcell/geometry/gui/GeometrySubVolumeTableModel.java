@@ -22,7 +22,7 @@ public class GeometrySubVolumeTableModel extends javax.swing.table.AbstractTable
 	private String LABELS[] = { "Name", "Value" };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private cbit.vcell.geometry.Geometry fieldGeometry = null;
-	private int[] colormap = cbit.image.render.DisplayAdapterService.createContrastColorModel();
+	private int[] colormap = cbit.vcell.simdata.DisplayAdapterService.createContrastColorModel();
 
 /**
  * ReactionSpecsTableModel constructor comment.

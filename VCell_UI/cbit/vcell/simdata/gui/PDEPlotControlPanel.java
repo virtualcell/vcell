@@ -11,7 +11,7 @@ import java.awt.*;
 import cbit.util.*;
 import cbit.vcell.math.Function;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.solvers.FVSolver;
+import cbit.vcell.simdata.FunctionFileGenerator;
 
 import java.util.Vector;
 /**
@@ -64,9 +64,9 @@ public class PDEPlotControlPanel extends JPanel {
 	private boolean ivjConnPtoP4Aligning = false;
 	private BoundedRangeModel ivjmodel1 = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private cbit.image.render.DisplayAdapterService fieldDisplayAdapterService = new cbit.image.render.DisplayAdapterService();
+	private cbit.vcell.simdata.DisplayAdapterService fieldDisplayAdapterService = new cbit.vcell.simdata.DisplayAdapterService();
 	private boolean ivjConnPtoP3Aligning = false;
-	private cbit.image.render.DisplayAdapterService ivjdisplayAdapterService1 = null;
+	private cbit.vcell.simdata.DisplayAdapterService ivjdisplayAdapterService1 = null;
 	private JPanel ivjTimeSliderJPanel = null;
 	private JButton ivjAddFunctionButton = null;
 	private JButton ivjDeleteFunctionButton = null;
@@ -197,7 +197,7 @@ private void addFunction() {
 
 		try {
 			Function function = new Function(funcName, funcExp);
-			VariableType funcType = FVSolver.getFunctionVariableType(function, dataIdNames, dataIdVarTypes, !getpdeDataContext1().getIsODEData());
+			VariableType funcType = FunctionFileGenerator.getFunctionVariableType(function, dataIdNames, dataIdVarTypes, !getpdeDataContext1().getIsODEData());
 			AnnotatedFunction newFunction = new AnnotatedFunction(funcName, funcExp, "", funcType, true);
 			getpdeDataContext1().addFunction(newFunction);
 			getpdeDataContext1().refreshIdentifiers();
@@ -965,7 +965,7 @@ private javax.swing.JButton getDeleteFunctionButton() {
  * @return The displayAdapterService property value.
  * @see #setDisplayAdapterService
  */
-public cbit.image.render.DisplayAdapterService getDisplayAdapterService() {
+public cbit.vcell.simdata.DisplayAdapterService getDisplayAdapterService() {
 	return fieldDisplayAdapterService;
 }
 
@@ -975,7 +975,7 @@ public cbit.image.render.DisplayAdapterService getDisplayAdapterService() {
  * @return cbit.image.DisplayAdapterService
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.image.render.DisplayAdapterService getdisplayAdapterService1() {
+private cbit.vcell.simdata.DisplayAdapterService getdisplayAdapterService1() {
 	// user code begin {1}
 	// user code end
 	return ivjdisplayAdapterService1;
@@ -1732,8 +1732,8 @@ private void setCursorForWindow(Cursor cursor) {
  * @param displayAdapterService The new value for the property.
  * @see #getDisplayAdapterService
  */
-public void setDisplayAdapterService(cbit.image.render.DisplayAdapterService displayAdapterService) {
-	cbit.image.render.DisplayAdapterService oldValue = fieldDisplayAdapterService;
+public void setDisplayAdapterService(cbit.vcell.simdata.DisplayAdapterService displayAdapterService) {
+	cbit.vcell.simdata.DisplayAdapterService oldValue = fieldDisplayAdapterService;
 	fieldDisplayAdapterService = displayAdapterService;
 	firePropertyChange("displayAdapterService", oldValue, displayAdapterService);
 }
@@ -1744,10 +1744,10 @@ public void setDisplayAdapterService(cbit.image.render.DisplayAdapterService dis
  * @param newValue cbit.image.DisplayAdapterService
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setdisplayAdapterService1(cbit.image.render.DisplayAdapterService newValue) {
+private void setdisplayAdapterService1(cbit.vcell.simdata.DisplayAdapterService newValue) {
 	if (ivjdisplayAdapterService1 != newValue) {
 		try {
-			cbit.image.render.DisplayAdapterService oldValue = getdisplayAdapterService1();
+			cbit.vcell.simdata.DisplayAdapterService oldValue = getdisplayAdapterService1();
 			/* Stop listening for events from the current object */
 			if (ivjdisplayAdapterService1 != null) {
 				ivjdisplayAdapterService1.removePropertyChangeListener(ivjEventHandler);

@@ -7,8 +7,8 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.GeometryTest;
 import cbit.vcell.geometry.RegionImage;
+import cbit.vcell.simdata.SourceDataInfo;
 import cbit.image.ImageException;
-import cbit.image.render.SourceDataInfo;
 
 import java.util.Date;
 /**
@@ -213,9 +213,9 @@ public static cbit.image.gui.ImagePaneView getImagePaneView(cbit.image.VCImage i
 	int nY = image.getNumY();
 	int nZ = image.getNumZ();
 	cbit.util.Range range = new cbit.util.Range(0,image.getNumPixelClasses());
-	cbit.image.render.SourceDataInfo sdi = new cbit.image.render.SourceDataInfo(cbit.image.render.SourceDataInfo.INDEX_TYPE,image.getPixels(),new Extent(1,1,1),new Origin(0,0,0),range,0,nX,1,nY,nX,nZ,nX*nY);
+	cbit.vcell.simdata.SourceDataInfo sdi = new cbit.vcell.simdata.SourceDataInfo(cbit.vcell.simdata.SourceDataInfo.INDEX_TYPE,image.getPixels(),new Extent(1,1,1),new Origin(0,0,0),range,0,nX,1,nY,nX,nZ,nX*nY);
 	aImagePaneView.getImagePaneModel().setMode(cbit.image.gui.ImagePaneModel.NORMAL_MODE);
-	cbit.image.render.DisplayAdapterService das = new cbit.image.render.DisplayAdapterService();
+	cbit.vcell.simdata.DisplayAdapterService das = new cbit.vcell.simdata.DisplayAdapterService();
 	das.setActiveScaleRange(range);
 	das.addColorModelForIndexes(das.createContrastColorModel(),"Contrast");
 	das.setActiveColorModelID("Contrast");

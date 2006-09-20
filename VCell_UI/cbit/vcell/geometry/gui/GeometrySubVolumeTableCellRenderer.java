@@ -15,7 +15,7 @@ import javax.swing.JTable;
  * @author: Jim Schaff
  */
 public class GeometrySubVolumeTableCellRenderer extends javax.swing.table.DefaultTableCellRenderer {
-	private int[] colormap = cbit.image.render.DisplayAdapterService.createContrastColorModel();
+	private int[] colormap = cbit.vcell.simdata.DisplayAdapterService.createContrastColorModel();
 /**
  * GeometrySubVolumeTableCellRenderer constructor comment.
  */

@@ -1,11 +1,11 @@
 package cbit.vcell.client;
 import cbit.vcell.math.AnnotatedFunction;
-import cbit.rmi.event.ExportEvent;
 import javax.swing.SwingUtilities;
 
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataManager;
 import cbit.vcell.simdata.MergedData;
+import cbit.vcell.simdata.ODESolverResultSet;
 import cbit.gui.PropertyLoader;
 import javax.swing.JFrame;
 
@@ -32,7 +32,6 @@ import javax.swing.JComponent;
 import cbit.vcell.client.server.SimStatusEvent;
 import cbit.util.VCDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.test.SimulationComparisonSummary;
 import cbit.vcell.solver.test.VariableComparisonSummary;
 import org.jdom.JDOMException;
@@ -48,6 +47,7 @@ import cbit.util.DataAccessException;
 import cbit.vcell.client.desktop.testingframework.EditTestCriteriaPanel;
 import cbit.vcell.client.desktop.testingframework.AddTestSuitePanel;
 import cbit.vcell.client.desktop.testingframework.TestCaseAddPanel;
+import cbit.vcell.export.ExportEvent;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.test.MathTestingUtilities;
 import javax.swing.JOptionPane;
@@ -549,7 +549,7 @@ public void compare(TestCriteriaNew testCriteria){
  * Creation date: (3/29/2006 4:13:02 PM)
  * @param event cbit.rmi.event.ExportEvent
  */
-public void dataJobMessage(cbit.rmi.event.DataJobEvent event) {
+public void dataJobMessage(cbit.vcell.simdata.DataJobEvent event) {
 	
 	// just pass them along...
 	fireDataJobMessage(event);
@@ -1748,7 +1748,7 @@ public void simStatusChanged(SimStatusEvent simStatusEvent) {
  * Insert the method's description here.
  * Creation date: (11/18/2004 4:44:45 PM)
  */
-public void startExport(cbit.vcell.export.server.ExportSpecs exportSpecs) {
+public void startExport(cbit.vcell.export.ExportSpecs exportSpecs) {
 	getRequestManager().startExport(this, exportSpecs);
 }
 

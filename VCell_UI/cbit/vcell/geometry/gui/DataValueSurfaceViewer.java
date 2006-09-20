@@ -2358,7 +2358,7 @@ private void updatePickInfoDisplay() {
 				" ("+getSurfaceCollectionDataInfoProvider().getValueDescription(currentPick.surfaceIndex,currentPick.polygonIndex)+
 				"["+getSurfaceCollectionDataInfoProvider().getMembraneIndex(currentPick.surfaceIndex,currentPick.polygonIndex)+"]"+")"+
 				" val= "+ (float)getSurfaceCollectionDataInfoProvider().getValue(currentPick.surfaceIndex,currentPick.polygonIndex) +
-				" area="+ (area != cbit.vcell.solvers.MembraneElement.AREA_UNDEFINED?area+"":"No Calc")+
+				" area="+ (area != cbit.vcell.mesh.MembraneElement.AREA_UNDEFINED?area+"":"No Calc")+
 				" centroid=("+df.format(centroid.getX())+","+df.format(centroid.getY())+","+df.format(centroid.getZ())+")");
 			return;
 		}else{
@@ -2376,7 +2376,7 @@ private void updatePickInfoDisplay() {
 						if(bAOI[i][j]){
 							count+= 1;
 							double area = getSurfaceCollectionDataInfoProvider().getArea(i,j);
-							if(area == cbit.vcell.solvers.MembraneElement.AREA_UNDEFINED){
+							if(area == cbit.vcell.mesh.MembraneElement.AREA_UNDEFINED){
 								isAreaUndefined = true;
 							}else{
 								aoiArea+= area;

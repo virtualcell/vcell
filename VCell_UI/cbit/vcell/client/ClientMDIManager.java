@@ -103,8 +103,8 @@ public int closeWindow(java.lang.String windowID) {
 				getWindowsHash().remove(windowID);
 				if (manager instanceof DocumentWindowManager || manager instanceof TestingFrameworkWindowManager) {
 					getRequestManager().getAsynchMessageManager().removeSimStatusListener((SimStatusListener)manager);
-					getRequestManager().getAsynchMessageManager().removeExportListener((cbit.rmi.event.ExportListener)manager);
-					getRequestManager().getAsynchMessageManager().removeDataJobListener((cbit.rmi.event.DataJobListener)manager);
+					getRequestManager().getAsynchMessageManager().removeExportListener((cbit.vcell.export.ExportListener)manager);
+					getRequestManager().getAsynchMessageManager().removeDataJobListener((cbit.vcell.simdata.DataJobListener)manager);
 				}
 				window.removeWindowListener(windowListener);
 				window.dispose();

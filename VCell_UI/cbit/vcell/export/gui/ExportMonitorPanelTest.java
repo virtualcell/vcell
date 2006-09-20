@@ -1,5 +1,6 @@
 package cbit.vcell.export.gui;
 import cbit.util.KeyValue;
+import cbit.vcell.export.ExportEvent;
 import cbit.vcell.solver.VCSimulationIdentifier;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

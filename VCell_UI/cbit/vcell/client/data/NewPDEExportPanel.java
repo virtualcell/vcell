@@ -12,10 +12,14 @@ import cbit.plot.*;
 import java.awt.*;
 import java.util.*;
 import cbit.vcell.math.*;
+import cbit.vcell.export.ExportConstants;
+import cbit.vcell.export.ExportSpecs;
+import cbit.vcell.export.GeometrySpecs;
+import cbit.vcell.export.TimeSpecs;
+import cbit.vcell.export.VariableSpecs;
 import cbit.vcell.export.gui.ExportSettings;
 import cbit.vcell.export.server.*;
 import cbit.image.*;
-import cbit.image.render.DisplayAdapterService;
 import cbit.vcell.simdata.*;
 
 import javax.swing.*;
@@ -63,7 +67,7 @@ public class NewPDEExportPanel extends JPanel implements ExportConstants {
 	private JPanel ivjJPanelSelections = null;
 	private JPanel ivjJPanelSlice = null;
 	private PDEDataContext ivjpdeDataContext1 = null;
-	private cbit.image.render.DisplayAdapterService fieldDisplayAdapterService = null;
+	private cbit.vcell.simdata.DisplayAdapterService fieldDisplayAdapterService = null;
 	private JRadioButton ivjJRadioButtonFull = null;
 	private JLabel ivjJLabelFull = null;
 	private JLabel ivjJLabelCurrentSelection = null;
@@ -879,7 +883,7 @@ private cbit.gui.DefaultListModelCivilized getDefaultListModelCivilizedVariables
  * @return The displayAdapterService property value.
  * @see #setDisplayAdapterService
  */
-public cbit.image.render.DisplayAdapterService getDisplayAdapterService() {
+public cbit.vcell.simdata.DisplayAdapterService getDisplayAdapterService() {
 	return fieldDisplayAdapterService;
 }
 
@@ -1939,7 +1943,7 @@ public void setDataViewerManager(cbit.vcell.client.DataViewerManager dataViewerM
  * @param displayAdapterService The new value for the property.
  * @see #getDisplayAdapterService
  */
-public void setDisplayAdapterService(cbit.image.render.DisplayAdapterService displayAdapterService) {
+public void setDisplayAdapterService(cbit.vcell.simdata.DisplayAdapterService displayAdapterService) {
 	DisplayAdapterService oldValue = fieldDisplayAdapterService;
 	fieldDisplayAdapterService = displayAdapterService;
 	firePropertyChange("displayAdapterService", oldValue, displayAdapterService);

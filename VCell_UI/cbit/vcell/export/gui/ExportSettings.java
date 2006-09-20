@@ -6,6 +6,7 @@ import javax.swing.*;
 ©*/
 import java.awt.*;
 
+import cbit.vcell.export.ExportConstants;
 import cbit.vcell.export.server.*;
 import cbit.vcell.simdata.DisplayPreferences;
 import cbit.util.*;
@@ -21,7 +22,7 @@ public class ExportSettings implements ASCIISettingsPanelListener, ImageSettings
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private int fieldSelectedFormat = 0;
 	protected transient cbit.vcell.export.gui.ExportSettingsListener fieldExportSettingsListenerEventMulticaster = null;
-	private cbit.vcell.export.server.FormatSpecificSpecs fieldFormatSpecificSpecs = null;
+	private cbit.vcell.export.FormatSpecificSpecs fieldFormatSpecificSpecs = null;
 	private int fieldSimDataType = 0;
 	private JPanel ivjJDialogContentPane = null;
 	private JPanel ivjJDialogContentPane1 = null;
@@ -568,7 +569,7 @@ public DisplayPreferences[] getDisplayPreferences() {
  * @return The formatSpecificSpecs property value.
  * @see #setFormatSpecificSpecs
  */
-public cbit.vcell.export.server.FormatSpecificSpecs getFormatSpecificSpecs() {
+public cbit.vcell.export.FormatSpecificSpecs getFormatSpecificSpecs() {
 	return fieldFormatSpecificSpecs;
 }
 
@@ -1060,8 +1061,8 @@ public void setDisplayPreferences(DisplayPreferences[] displayPreferences) {
  * @param formatSpecificSpecs The new value for the property.
  * @see #getFormatSpecificSpecs
  */
-public void setFormatSpecificSpecs(cbit.vcell.export.server.FormatSpecificSpecs formatSpecificSpecs) {
-	cbit.vcell.export.server.FormatSpecificSpecs oldValue = fieldFormatSpecificSpecs;
+public void setFormatSpecificSpecs(cbit.vcell.export.FormatSpecificSpecs formatSpecificSpecs) {
+	cbit.vcell.export.FormatSpecificSpecs oldValue = fieldFormatSpecificSpecs;
 	fieldFormatSpecificSpecs = formatSpecificSpecs;
 	firePropertyChange("formatSpecificSpecs", oldValue, formatSpecificSpecs);
 }

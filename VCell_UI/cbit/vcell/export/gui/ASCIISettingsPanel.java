@@ -4,6 +4,8 @@ package cbit.vcell.export.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.vcell.export.ASCIISpecs;
+import cbit.vcell.export.ExportConstants;
 import cbit.vcell.export.server.*;
 import cbit.image.*;
 /**

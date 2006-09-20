@@ -4,7 +4,12 @@ import swingthreads.*;
 import java.net.*;
 import cbit.vcell.clientdb.*;
 import cbit.vcell.server.*;
+import cbit.vcell.simdata.DataJobEvent;
+
 import java.io.*;
+
+import cbit.vcell.export.ExportEvent;
+import cbit.vcell.export.ExportSpecs;
 import cbit.vcell.export.server.*;
 import cbit.rmi.event.*;
 import cbit.vcell.client.data.*;

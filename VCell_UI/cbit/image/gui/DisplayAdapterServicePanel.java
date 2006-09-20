@@ -1,8 +1,8 @@
 package cbit.image.gui;
 import javax.swing.*;
 
-import cbit.image.render.DisplayAdapterService;
 import cbit.util.Range;
+import cbit.vcell.simdata.DisplayAdapterService;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -753,7 +753,7 @@ private javax.swing.JLabel getColorMapJLabel() {
 public DisplayAdapterService getDisplayAdapterService() {
 	if (ivjDisplayAdapterService == null) {
 		try {
-			ivjDisplayAdapterService = new cbit.image.render.DisplayAdapterService();
+			ivjDisplayAdapterService = new cbit.vcell.simdata.DisplayAdapterService();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

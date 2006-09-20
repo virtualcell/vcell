@@ -5,6 +5,8 @@ package cbit.vcell.export.gui;
  * All rights reserved.
 ©*/
 import cbit.vcell.simdata.DisplayPreferences;
+import cbit.vcell.export.ExportConstants;
+import cbit.vcell.export.ImageSpecs;
 import cbit.vcell.export.server.*;
 /**
  * This type was created in VisualAge.

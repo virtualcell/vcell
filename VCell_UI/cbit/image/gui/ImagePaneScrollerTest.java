@@ -1,7 +1,7 @@
 package cbit.image.gui;
-import cbit.image.render.DisplayAdapterService;
-import cbit.image.render.SourceDataInfo;
 import cbit.util.Range;
+import cbit.vcell.simdata.DisplayAdapterService;
+import cbit.vcell.simdata.SourceDataInfo;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.

@@ -214,7 +214,7 @@ public java.beans.PropertyDescriptor formatSpecificSpecsPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.export.server.FormatSpecificSpecs.class
+					cbit.vcell.export.FormatSpecificSpecs.class
 				};
 				aSetMethod = getBeanClass().getMethod("setFormatSpecificSpecs", aSetMethodParameterTypes);
 			} catch (Throwable exception) {

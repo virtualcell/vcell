@@ -2,13 +2,13 @@ package cbit.vcell.client;
 import cbit.vcell.client.server.SimStatusListener;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.desktop.controls.DataListener;
-import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.export.ExportSpecs;
 /**
  * Insert the type's description here.
  * Creation date: (11/18/2004 11:25:04 AM)
  * @author: Anuradha Lakshminarayana
  */
-public interface DataViewerManager extends cbit.rmi.event.ExportListener, SimStatusListener ,cbit.rmi.event.DataJobListener{
+public interface DataViewerManager extends cbit.vcell.export.ExportListener, SimStatusListener ,cbit.vcell.simdata.DataJobListener{
 /**
  * Add a cbit.vcell.desktop.controls.DataListener.
  */

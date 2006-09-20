@@ -5,6 +5,7 @@ import cbit.vcell.mathmodel.*;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.vcell.server.solvers.SolverResultSetInfo;
 import cbit.vcell.solver.*;
 import cbit.vcell.biomodel.*;
 /**

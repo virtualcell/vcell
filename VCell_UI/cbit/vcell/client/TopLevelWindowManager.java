@@ -1,14 +1,14 @@
 package cbit.vcell.client;
 import cbit.vcell.desktop.controls.DataListener;
-import cbit.rmi.event.ExportListener;
 import cbit.vcell.desktop.controls.DataEvent;
+import cbit.vcell.export.ExportEvent;
+import cbit.vcell.export.ExportListener;
 
 import java.io.*;
 import java.net.*;
 import swingthreads.SwingWorker;
 import java.awt.*;
 import cbit.vcell.client.desktop.*;
-import cbit.rmi.event.ExportEvent;
 import cbit.util.AsynchProgressPopup;
 import cbit.util.FileFilters;
 
@@ -42,7 +42,7 @@ public TopLevelWindowManager(RequestManager requestManager) {
 /**
  * Add a cbit.vcell.desktop.controls.ExportListener.
  */
-public void addDataJobListener(cbit.rmi.event.DataJobListener newListener) {
+public void addDataJobListener(cbit.vcell.simdata.DataJobListener newListener) {
 	if (aDataJobListener == null) {
 		aDataJobListener = new java.util.Vector();
 	};
@@ -102,14 +102,14 @@ public void exportDocument() {
 /**
  * Method to support listener events.
  */
-protected void fireDataJobMessage(cbit.rmi.event.DataJobEvent event) {
+protected void fireDataJobMessage(cbit.vcell.simdata.DataJobEvent event) {
 	if (aDataJobListener == null) {
 		return;
 	};
 	int currentSize = aDataJobListener.size();
-	cbit.rmi.event.DataJobListener tempListener = null;
+	cbit.vcell.simdata.DataJobListener tempListener = null;
 	for (int index = 0; index < currentSize; index++){
-		tempListener = (cbit.rmi.event.DataJobListener)aDataJobListener.elementAt(index);
+		tempListener = (cbit.vcell.simdata.DataJobListener)aDataJobListener.elementAt(index);
 		if (tempListener != null) {
 			tempListener.dataJobMessage(event);
 		};
@@ -208,7 +208,7 @@ public abstract boolean isRecyclable();
 /**
  * Remove a cbit.vcell.desktop.controls.DataListener.
  */
-public void removeDataJobListener(cbit.rmi.event.DataJobListener djListener) {
+public void removeDataJobListener(cbit.vcell.simdata.DataJobListener djListener) {
 	if (aDataJobListener != null) {
 		aDataJobListener.removeElement(djListener);
 	};

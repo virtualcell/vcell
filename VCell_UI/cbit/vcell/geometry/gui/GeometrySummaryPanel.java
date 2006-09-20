@@ -9,9 +9,9 @@ import cbit.util.Version;
 
 import java.awt.image.MemoryImageSource;
 import cbit.vcell.geometry.*;
+import cbit.vcell.simdata.DisplayAdapterService;
 import cbit.image.*;
 import cbit.image.gui.ImagePlaneManagerPanel;
-import cbit.image.render.DisplayAdapterService;
 /**
  * Insert the type's description here.
  * Creation date: (4/9/01 8:06:53 AM)
@@ -1042,19 +1042,19 @@ private void initGeometry(cbit.vcell.geometry.Geometry arg1) {
 			cbit.image.VCImage vcImage = getGeometry().getGeometrySpec().getSampledImage();
 			byte[] pixels = vcImage.getPixels();
 			
-			cbit.image.render.DisplayAdapterService das = new cbit.image.render.DisplayAdapterService();
+			cbit.vcell.simdata.DisplayAdapterService das = new cbit.vcell.simdata.DisplayAdapterService();
 			das.setActiveScaleRange(new cbit.util.Range(0, 255));
 			das.setValueDomain(new cbit.util.Range(0, 255));
-			das.addColorModelForValues(cbit.image.render.DisplayAdapterService.createContrastColorModel(), cbit.image.render.DisplayAdapterService.createGraySpecialColors(), "Contrast");
+			das.addColorModelForValues(cbit.vcell.simdata.DisplayAdapterService.createContrastColorModel(), cbit.vcell.simdata.DisplayAdapterService.createGraySpecialColors(), "Contrast");
 			das.setActiveColorModelID("Contrast");
 			int[] rgb = new int[pixels.length];
 			for(int i=0;i<rgb.length;i+= 1){
 				rgb[i] = das.getColorFromIndex(pixels[i]);
 			}
 		
-			cbit.image.render.SourceDataInfo sdi =
-				new cbit.image.render.SourceDataInfo(
-					cbit.image.render.SourceDataInfo.INT_RGB_TYPE,
+			cbit.vcell.simdata.SourceDataInfo sdi =
+				new cbit.vcell.simdata.SourceDataInfo(
+					cbit.vcell.simdata.SourceDataInfo.INT_RGB_TYPE,
 					rgb,
 					getGeometry().getExtent(),
 					getGeometry().getOrigin(),

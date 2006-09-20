@@ -1,6 +1,6 @@
 package cbit.image.gui;
 
-import cbit.image.render.SourceDataInfo;
+import cbit.vcell.simdata.SourceDataInfo;
 
 
 /*©

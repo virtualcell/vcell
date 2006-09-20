@@ -1,12 +1,14 @@
 package cbit.vcell.client.data;
 import javax.swing.*;
 import cbit.rmi.event.*;
+import cbit.vcell.export.ExportListener;
+import cbit.vcell.simdata.DataJobEvent;
 /**
  * Insert the type's description here.
  * Creation date: (6/14/2004 9:48:35 PM)
  * @author: Ion Moraru
  */
-public abstract class DataViewer extends JPanel implements ExportListener,cbit.rmi.event.DataJobListener {
+public abstract class DataViewer extends JPanel implements ExportListener,cbit.vcell.simdata.DataJobListener {
 	private cbit.vcell.client.DataViewerManager fieldDataViewerManager = null;
 	private SimulationModelInfo fieldSimulationModelInfo = null;
 
@@ -28,7 +30,7 @@ public void dataJobMessage(DataJobEvent dje) {
  * Creation date: (6/15/2004 1:55:39 AM)
  * @param event cbit.rmi.event.ExportEvent
  */
-public void exportMessage(cbit.rmi.event.ExportEvent event) {
+public void exportMessage(cbit.vcell.export.ExportEvent event) {
 	getExportMonitorPanel().addExportEvent(event, event.getVCSimulationIdentifier().getID());
 }
 

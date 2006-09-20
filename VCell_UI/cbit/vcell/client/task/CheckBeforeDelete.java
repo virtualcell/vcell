@@ -8,6 +8,7 @@ import cbit.vcell.solver.*;
 import cbit.vcell.mathmodel.*;
 import cbit.util.*;
 import cbit.vcell.server.*;
+import cbit.vcell.server.solvers.SolverResultSetInfo;
 import cbit.vcell.geometry.*;
 import cbit.sql.*;
 import cbit.vcell.client.desktop.*;

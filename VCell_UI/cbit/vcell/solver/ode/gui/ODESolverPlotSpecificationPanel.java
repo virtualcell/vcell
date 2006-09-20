@@ -6,6 +6,10 @@ import java.util.*;
 ©*/
 import cbit.util.DataAccessException;
 import cbit.plot.*;
+import cbit.vcell.simdata.ColumnDescription;
+import cbit.vcell.simdata.FunctionColumnDescription;
+import cbit.vcell.simdata.ODESolverResultSet;
+import cbit.vcell.simdata.ODESolverResultSetColumnDescription;
 import cbit.vcell.solver.ode.*;
 import cbit.vcell.solver.*;
 import javax.swing.*;
@@ -33,7 +37,7 @@ public class ODESolverPlotSpecificationPanel extends JPanel {
 	private JScrollPane ivjJScrollPaneYAxis = null;
 	private JLabel ivjJLabelSensitivityParameter = null;
 	private JPanel ivjJPanelSensitivity = null;
-	private cbit.vcell.solver.ode.ODESolverResultSet fieldOdeSolverResultSet = null;
+	private cbit.vcell.simdata.ODESolverResultSet fieldOdeSolverResultSet = null;
 	private DefaultListModel ivjDefaultListModelY = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private int[] plottableColumnIndices = new int[0];
@@ -101,7 +105,7 @@ public ODESolverPlotSpecificationPanel() {
 /**
  * Comment
  */
-private void addFunction(cbit.vcell.solver.ode.ODESolverResultSet odeRS) throws cbit.vcell.parser.ExpressionException {
+private void addFunction(cbit.vcell.simdata.ODESolverResultSet odeRS) throws cbit.vcell.parser.ExpressionException {
 
 	//
 	// Assign a default name for the new function. Check if any other existing function has the same name.
@@ -211,7 +215,7 @@ private void connEtoC10(java.awt.event.ActionEvent arg1) {
  * @param value cbit.vcell.solver.ode.ODESolverResultSet
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC11(cbit.vcell.solver.ode.ODESolverResultSet value) {
+private void connEtoC11(cbit.vcell.simdata.ODESolverResultSet value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -251,7 +255,7 @@ private void connEtoC12(javax.swing.event.ChangeEvent arg1) {
  * @param value cbit.vcell.solver.ode.ODESolverResultSet
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC13(cbit.vcell.solver.ode.ODESolverResultSet value) {
+private void connEtoC13(cbit.vcell.simdata.ODESolverResultSet value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -411,7 +415,7 @@ private void connEtoC8(java.awt.event.ActionEvent arg1) {
  * @param value cbit.vcell.solver.ode.ODESolverResultSet
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC9(cbit.vcell.solver.ode.ODESolverResultSet value) {
+private void connEtoC9(cbit.vcell.simdata.ODESolverResultSet value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -1028,7 +1032,7 @@ private javax.swing.JLabel getMinLabel() {
  * @return The odeSolverResultSet property value.
  * @see #setOdeSolverResultSet
  */
-public cbit.vcell.solver.ode.ODESolverResultSet getOdeSolverResultSet() {
+public cbit.vcell.simdata.ODESolverResultSet getOdeSolverResultSet() {
 	return fieldOdeSolverResultSet;
 }
 
@@ -1038,7 +1042,7 @@ public cbit.vcell.solver.ode.ODESolverResultSet getOdeSolverResultSet() {
  * @return cbit.vcell.solver.ode.ODESolverResultSet
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.solver.ode.ODESolverResultSet getodeSolverResultSet1() {
+private cbit.vcell.simdata.ODESolverResultSet getodeSolverResultSet1() {
 	// user code begin {1}
 	// user code end
 	return ivjodeSolverResultSet1;
@@ -1885,7 +1889,7 @@ private void regeneratePlot2D() throws cbit.vcell.parser.ExpressionException {
  * @param odeSolverResultSet The new value for the property.
  * @see #getOdeSolverResultSet
  */
-public void setOdeSolverResultSet(cbit.vcell.solver.ode.ODESolverResultSet odeSolverResultSet) {
+public void setOdeSolverResultSet(cbit.vcell.simdata.ODESolverResultSet odeSolverResultSet) {
 	ODESolverResultSet oldValue = fieldOdeSolverResultSet;
 	fieldOdeSolverResultSet = odeSolverResultSet;
 	if (odeSolverResultSet==null){
@@ -1901,10 +1905,10 @@ public void setOdeSolverResultSet(cbit.vcell.solver.ode.ODESolverResultSet odeSo
  * @param newValue cbit.vcell.solver.ode.ODESolverResultSet
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setodeSolverResultSet1(cbit.vcell.solver.ode.ODESolverResultSet newValue) {
+private void setodeSolverResultSet1(cbit.vcell.simdata.ODESolverResultSet newValue) {
 	if (ivjodeSolverResultSet1 != newValue) {
 		try {
-			cbit.vcell.solver.ode.ODESolverResultSet oldValue = getodeSolverResultSet1();
+			cbit.vcell.simdata.ODESolverResultSet oldValue = getodeSolverResultSet1();
 			/* Stop listening for events from the current object */
 			if (ivjodeSolverResultSet1 != null) {
 				ivjodeSolverResultSet1.removePropertyChangeListener(ivjEventHandler);

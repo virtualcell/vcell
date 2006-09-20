@@ -6,8 +6,8 @@ package cbit.image.gui;
 import java.awt.*;
 import java.awt.image.*;
 
-import cbit.image.render.DisplayAdapterService;
-import cbit.image.render.SourceDataInfo;
+import cbit.vcell.simdata.DisplayAdapterService;
+import cbit.vcell.simdata.SourceDataInfo;
 
 /**
  * Insert the type's description here.

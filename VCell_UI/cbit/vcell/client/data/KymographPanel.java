@@ -5,8 +5,9 @@ import cbit.image.gui.ImagePaneScroller;
 import cbit.image.gui.ImagePaneView;
 import cbit.image.gui.ImagePlaneManager;
 import cbit.image.gui.ZoomEvent;
-import cbit.image.render.DisplayAdapterService;
 import cbit.util.Range;
+import cbit.vcell.simdata.DisplayAdapterService;
+
 import javax.swing.ImageIcon;
 /**
  * Insert the type's description here.
@@ -1113,7 +1114,7 @@ private javax.swing.JMenuItem getCopyTimeDataJMenuItem() {
  * @return cbit.image.DisplayAdapterService
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.image.render.DisplayAdapterService getDisplayAdapterService1() {
+private cbit.vcell.simdata.DisplayAdapterService getDisplayAdapterService1() {
 	if (ivjDisplayAdapterService1 == null) {
 		try {
 			ivjDisplayAdapterService1 = new DisplayAdapterService();
@@ -2071,9 +2072,9 @@ private void initStandAloneTimeSeries_private(double[][] timeSeriesOrig,double[]
 		minmaxRange = allDataMMMH.getRange();
 	}
 	
-	cbit.image.render.SourceDataInfo sdi =
-		new cbit.image.render.SourceDataInfo(
-			cbit.image.render.SourceDataInfo.RAW_VALUE_TYPE,
+	cbit.vcell.simdata.SourceDataInfo sdi =
+		new cbit.vcell.simdata.SourceDataInfo(
+			cbit.vcell.simdata.SourceDataInfo.RAW_VALUE_TYPE,
 			rawValues,
 			minmaxRange,
 			0,

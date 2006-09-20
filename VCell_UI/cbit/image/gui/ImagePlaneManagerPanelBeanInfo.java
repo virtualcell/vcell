@@ -1,6 +1,6 @@
 package cbit.image.gui;
 
-import cbit.image.render.SourceDataInfo;
+import cbit.vcell.simdata.SourceDataInfo;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -1132,7 +1132,7 @@ public java.beans.MethodDescriptor setSourceDataInfo_cbitimageSourceDataInfoMeth
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.image.render.SourceDataInfo.class
+				cbit.vcell.simdata.SourceDataInfo.class
 			};
 			aMethod = getBeanClass().getMethod("setSourceDataInfo", aParameterTypes);
 		} catch (Throwable exception) {
@@ -1187,7 +1187,7 @@ public java.beans.PropertyDescriptor sourceDataInfoPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.image.render.SourceDataInfo.class
+					cbit.vcell.simdata.SourceDataInfo.class
 				};
 				aSetMethod = getBeanClass().getMethod("setSourceDataInfo", aSetMethodParameterTypes);
 			} catch (Throwable exception) {

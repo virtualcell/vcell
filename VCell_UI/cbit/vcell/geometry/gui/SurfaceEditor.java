@@ -1,9 +1,9 @@
 package cbit.vcell.geometry.gui;
-import cbit.image.render.DisplayAdapterService;
 import cbit.render.*;
 import cbit.util.UserCancelException;
 import cbit.vcell.desktop.controls.AsynchClientTask;
 import cbit.vcell.desktop.controls.ClientTask;
+import cbit.vcell.simdata.DisplayAdapterService;
 /**
  * Insert the type's description here.
  * Creation date: (5/25/2004 4:45:55 PM)

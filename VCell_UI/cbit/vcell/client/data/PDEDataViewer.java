@@ -1011,7 +1011,7 @@ private cbit.vcell.geometry.gui.DataValueSurfaceViewer getDataValueSurfaceViewer
 		//SurfaceNames
 		final String[] surfaceNames = new String[meshRegionSurfaces.getSurfaceCollection().getSurfaceCount()];
 		for (int i = 0; i < meshRegionSurfaces.getSurfaceCollection().getSurfaceCount(); i++){
-			cbit.vcell.solvers.MembraneElement me = //Get the first element, any will do, all have same inside/outside volumeIndex
+			cbit.vcell.mesh.MembraneElement me = //Get the first element, any will do, all have same inside/outside volumeIndex
 				getPdeDataContext().getCartesianMesh().getMembraneElements()[meshRegionSurfaces.getMembraneIndexForPolygon(i,0)];
 			surfaceNames[i] =
 				getSimulationModelInfo().getMembraneName(
@@ -2760,7 +2760,7 @@ private void updateDataValueSurfaceViewer() {
 	}
 	//SurfaceColors and DataValues
 	SurfaceCollection surfaceCollection = getDataValueSurfaceViewer().getSurfaceCollectionDataInfo().getSurfaceCollection();
-	cbit.image.render.DisplayAdapterService das = getPDEDataContextPanel1().getdisplayAdapterService1();
+	cbit.vcell.simdata.DisplayAdapterService das = getPDEDataContextPanel1().getdisplayAdapterService1();
 	final int[][] surfaceColors = new int[surfaceCollection.getSurfaceCount()][];
 	final double[][] surfaceDataValues = new double[surfaceCollection.getSurfaceCount()][];
 	for(int i=0;i<surfaceCollection.getSurfaceCount();i+= 1){
@@ -2799,7 +2799,7 @@ private void updateDataValueSurfaceViewer() {
 				return meshRegionSurfaces.getMembraneIndexForPolygon(surfaceIndex,polygonIndex);
 			}
 			public java.awt.Color getROIHighlightColor(){
-				return new java.awt.Color(getPDEDataContextPanel1().getdisplayAdapterService1().getSpecialColors()[cbit.image.render.DisplayAdapterService.FOREGROUND_HIGHLIGHT_COLOR_OFFSET]);
+				return new java.awt.Color(getPDEDataContextPanel1().getdisplayAdapterService1().getSpecialColors()[cbit.vcell.simdata.DisplayAdapterService.FOREGROUND_HIGHLIGHT_COLOR_OFFSET]);
 			}
 			public void showComponentInFrame(Component comp,String title){
 				PDEDataViewer.this.showComponentInFrame(comp,title);

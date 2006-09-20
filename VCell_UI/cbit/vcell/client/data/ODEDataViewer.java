@@ -14,7 +14,7 @@ public class ODEDataViewer extends DataViewer {
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private cbit.vcell.solver.ode.gui.ODESolverPlotSpecificationPanel ivjODESolverPlotSpecificationPanel1 = null;
 	private cbit.plot.PlotPane ivjPlotPane1 = null;
-	private cbit.vcell.solver.ode.ODESolverResultSet fieldOdeSolverResultSet = null;
+	private cbit.vcell.simdata.ODESolverResultSet fieldOdeSolverResultSet = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	private javax.swing.JPanel ivjExportData = null;
 	private ExportMonitorPanel ivjExportMonitorPanel1 = null;
@@ -414,7 +414,7 @@ private cbit.vcell.solver.ode.gui.ODESolverPlotSpecificationPanel getODESolverPl
  * @return The odeSolverResultSet property value.
  * @see #setOdeSolverResultSet
  */
-public cbit.vcell.solver.ode.ODESolverResultSet getOdeSolverResultSet() {
+public cbit.vcell.simdata.ODESolverResultSet getOdeSolverResultSet() {
 	return fieldOdeSolverResultSet;
 }
 
@@ -568,8 +568,8 @@ public synchronized void removeActionListener(ActionListener l) {
  * @param odeSolverResultSet The new value for the property.
  * @see #getOdeSolverResultSet
  */
-public void setOdeSolverResultSet(cbit.vcell.solver.ode.ODESolverResultSet odeSolverResultSet) {
-	cbit.vcell.solver.ode.ODESolverResultSet oldValue = fieldOdeSolverResultSet;
+public void setOdeSolverResultSet(cbit.vcell.simdata.ODESolverResultSet odeSolverResultSet) {
+	cbit.vcell.simdata.ODESolverResultSet oldValue = fieldOdeSolverResultSet;
 	fieldOdeSolverResultSet = odeSolverResultSet;
 	firePropertyChange("odeSolverResultSet", oldValue, odeSolverResultSet);
 }

@@ -5,6 +5,7 @@ import cbit.util.VCDocument;
 import cbit.util.VCDocumentInfo;
 import cbit.vcell.biomodel.BioModelInfo;
 import cbit.xml.merge.TMLPanel;
+import cbit.vcell.export.ExportSpecs;
 import cbit.vcell.export.server.*;
 import cbit.vcell.mapping.SimulationContext;
 
