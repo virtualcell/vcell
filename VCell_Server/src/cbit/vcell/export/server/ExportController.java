@@ -2,6 +2,7 @@ package cbit.vcell.export.server;
 import java.rmi.*;
 
 import cbit.vcell.messaging.db.*;
+import cbit.vcell.export.ExportSpecs;
 import cbit.vcell.export.server.*;
 /**
  * Insert the type's description here.

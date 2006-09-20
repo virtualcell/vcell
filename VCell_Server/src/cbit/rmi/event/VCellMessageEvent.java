@@ -1,4 +1,9 @@
 package cbit.rmi.event;
+
+import cbit.vcell.util.events.MessageData;
+import cbit.vcell.util.events.MessageEvent;
+import cbit.vcell.util.events.MessageSource;
+
 /**
  * Insert the type's description here.
  * Creation date: (6/16/2006 3:55:11 PM)

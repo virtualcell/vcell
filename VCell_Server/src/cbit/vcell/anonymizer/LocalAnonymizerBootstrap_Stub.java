@@ -55,7 +55,7 @@ public final class LocalAnonymizerBootstrap_Stub
     
     // implementation of getVCellServer(User, String)
     public cbit.vcell.server.VCellServer getVCellServer(User $param_User_1, java.lang.String $param_String_2)
-	throws cbit.vcell.server.AuthenticationException, cbit.util.DataAccessException, cbit.vcell.server.PermissionException, java.rmi.RemoteException
+	throws cbit.vcell.server.AuthenticationException, cbit.util.DataAccessException, cbit.util.PermissionException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getVCellServer_1, new java.lang.Object[] {$param_User_1, $param_String_2}, 829192960962989424L);

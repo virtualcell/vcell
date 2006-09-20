@@ -1,6 +1,7 @@
 package cbit.vcell.anonymizer;
 import cbit.gui.PropertyLoader;
 import cbit.util.DataAccessException;
+import cbit.util.PermissionException;
 import cbit.util.StdoutSessionLog;
 import cbit.vcell.server.WatchdogMonitor;
 /*©
@@ -14,7 +15,6 @@ import cbit.vcell.server.AuthenticationException;
 import cbit.gui.PropertyLoader;
 import cbit.vcell.server.VCellServer;
 import cbit.util.User;
-import cbit.vcell.server.PermissionException;
 import cbit.vcell.server.AdminDatabaseServer;
 import java.io.*;
 import java.rmi.*;

@@ -2,7 +2,7 @@ package cbit.vcell.anonymizer;
 import cbit.gui.PropertyLoader;
 import cbit.util.DataAccessException;
 import cbit.util.SessionLog;
-import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.mesh.CartesianMesh;
 
 import java.lang.reflect.*;
 /**
@@ -133,8 +133,8 @@ public CartesianMesh getMesh(cbit.util.VCDataIdentifier vcdataID) throws cbit.ut
  * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.solver.ode.ODESimData getODEData(cbit.util.VCDataIdentifier vcdataID) throws cbit.util.DataAccessException, java.rmi.RemoteException {
-	return (cbit.vcell.solver.ode.ODESimData)remoteCall("getODEData", new Class[] {cbit.util.VCDataIdentifier.class}, new Object[] {vcdataID});
+public cbit.vcell.simdata.ODESimData getODEData(cbit.util.VCDataIdentifier vcdataID) throws cbit.util.DataAccessException, java.rmi.RemoteException {
+	return (cbit.vcell.simdata.ODESimData)remoteCall("getODEData", new Class[] {cbit.util.VCDataIdentifier.class}, new Object[] {vcdataID});
 }
 
 
@@ -196,8 +196,8 @@ public cbit.util.TimeSeriesJobResults getTimeSeriesValues(cbit.util.VCDataIdenti
  * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.rmi.event.ExportEvent makeRemoteFile(cbit.vcell.export.server.ExportSpecs exportSpecs) throws cbit.util.DataAccessException, java.rmi.RemoteException {
-	return (cbit.rmi.event.ExportEvent)remoteCall("makeRemoteFile", new Class[] {cbit.vcell.export.server.ExportSpecs.class}, new Object[] {exportSpecs});
+public cbit.vcell.export.ExportEvent makeRemoteFile(cbit.vcell.export.ExportSpecs exportSpecs) throws cbit.util.DataAccessException, java.rmi.RemoteException {
+	return (cbit.vcell.export.ExportEvent)remoteCall("makeRemoteFile", new Class[] {cbit.vcell.export.ExportSpecs.class}, new Object[] {exportSpecs});
 }
 
 

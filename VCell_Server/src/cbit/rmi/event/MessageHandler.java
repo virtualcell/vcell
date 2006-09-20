@@ -1,5 +1,8 @@
 package cbit.rmi.event;
 
+import cbit.vcell.util.events.MessageListener;
+import cbit.vcell.util.events.MessageSender;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.

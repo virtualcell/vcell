@@ -356,8 +356,8 @@ public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(KeyValue[] react
  * @return cbit.vcell.solver.SolverResultSetInfo
  * @param simKey KeyValue
  */
-public cbit.vcell.solver.SolverResultSetInfo[] getResultSetInfos(boolean bAll) throws cbit.util.DataAccessException, java.rmi.RemoteException {
-	return (cbit.vcell.solver.SolverResultSetInfo[])remoteCall("getResultSetInfos", new Class[]{boolean.class}, new Object[]{new Boolean(bAll)});
+public cbit.vcell.server.solvers.SolverResultSetInfo[] getResultSetInfos(boolean bAll) throws cbit.util.DataAccessException, java.rmi.RemoteException {
+	return (cbit.vcell.server.solvers.SolverResultSetInfo[])remoteCall("getResultSetInfos", new Class[]{boolean.class}, new Object[]{new Boolean(bAll)});
 }
 
 

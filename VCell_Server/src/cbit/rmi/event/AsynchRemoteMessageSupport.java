@@ -6,6 +6,9 @@ import java.util.*;
  * All rights reserved.
 ©*/
 import java.rmi.*;
+
+import cbit.vcell.util.events.MessageEvent;
+
 /**
  * Insert the type's description here.
  * Creation date: (11/13/2000 2:54:24 PM)

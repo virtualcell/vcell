@@ -15,6 +15,8 @@ import cbit.util.CacheStatus;
 import cbit.util.Cacheable;
 import cbit.util.Immutable;
 import cbit.util.KeyValue;
+import cbit.util.Ping;
+import cbit.util.Pingable;
 
 import java.io.Serializable;
 /**

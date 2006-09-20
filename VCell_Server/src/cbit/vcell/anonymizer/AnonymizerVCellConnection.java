@@ -1,4 +1,5 @@
 package cbit.vcell.anonymizer;
+import cbit.rmi.event.SimpleMessageService;
 import cbit.util.DataAccessException;
 import cbit.util.SessionLog;
 import cbit.util.User;
@@ -12,8 +13,8 @@ import cbit.vcell.server.VCellConnection;
 import cbit.vcell.server.SimulationController;
 import cbit.vcell.server.UserMetaDbServer;
 import cbit.gui.PropertyLoader;
-import cbit.rmi.event.SimpleMessageService;
 import cbit.vcell.server.DataSetController;
+
 import java.rmi.*;
 import java.rmi.server.*;
 /**

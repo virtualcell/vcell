@@ -2,6 +2,8 @@ package cbit.vcell.export.server;
 
 import java.util.*;
 import cbit.rmi.event.*;
+import cbit.vcell.export.ExportEvent;
+
 import java.net.*;
 /**
  * Insert the type's description here.
