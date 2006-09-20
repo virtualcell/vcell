@@ -1,12 +1,14 @@
-package cbit.vcell.vcml;
-import cbit.vcell.cellml.CELLMLTags;
+package cbit.vcell.cellml;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionMathMLPrinter;
 import cbit.vcell.parser.MathMLTags;
 import cbit.gui.PropertyLoader;
 import cbit.util.TokenMangler;
+import cbit.vcell.vcml.TransFilter;
+import cbit.vcell.vcml.Translator;
 import cbit.vcell.xml.XMLTags;
+import cbit.util.xml.JDOMTreeWalker;
 import cbit.util.xml.XmlUtil;
 
 import org.jdom.Element;
@@ -46,7 +48,7 @@ public class VCQuanCellTranslator extends Translator {
 	protected Namespace tAttNamespace;                     					 //placeholder in case needed in the future. 
 	protected Namespace mathns;
 
-	protected VCQuanCellTranslator() {
+	public VCQuanCellTranslator() {
 
 		sNamespace = Namespace.getNamespace(VCML_NS);
 		//tNamespace = Namespace.getNamespace(CELLML_NS_PREFIX, CELLML_NS);

@@ -1,18 +1,18 @@
-package cbit.vcell.vcml;
-import cbit.vcell.cellml.CELLMLTags;
+package cbit.vcell.cellml;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionMathMLPrinter;
 import cbit.vcell.parser.MathMLTags;
 import cbit.vcell.xml.NameManager;
 import cbit.gui.PropertyLoader;
-import cbit.util.xml.XmlParseException;
+import cbit.util.xml.JDOMTreeWalker;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.vcml.TransFilter;
+import cbit.vcell.vcml.Translator;
 import cbit.util.TokenMangler;
 import cbit.vcell.xml.XMLTags;
 
-import org.jdom.Comment;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.filter.ContentFilter;
@@ -64,7 +64,7 @@ public class VCQualCellTranslator extends Translator {
 	protected String preferedSimSpec;
 	protected ArrayList connections;
 
-	protected VCQualCellTranslator() {
+	public VCQualCellTranslator() {
 
 		sNamespace = Namespace.getNamespace(VCML_NS);
 		//tNamespace = Namespace.getNamespace(CELLML_NS_PREFIX, CELLML_NS);
@@ -196,7 +196,7 @@ public class VCQualCellTranslator extends Translator {
 			if (CELLMLTags.isCellBaseUnit(unitSymbol)) {
 				continue;
 			}
-			Element units = cbit.vcell.units.VCUnitTranslator.VCUnitToCellML(unitSymbol, tNamespace, tAttNamespace);
+			Element units = VCUnitTranslator.VCUnitToCellML(unitSymbol, tNamespace, tAttNamespace);
 			if (units != null) {                                          //to accomodate TBDs
 				unitList.add(unitSymbol);
 				model.addContent(units);

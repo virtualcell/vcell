@@ -1,5 +1,6 @@
 package cbit.vcell.vcml;
 import cbit.util.TokenMangler;
+import cbit.util.xml.JDOMTreeWalker;
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.parser.MathMLTags;
 import org.jdom.Attribute;
@@ -132,7 +133,7 @@ private void filterTree(Element e) {
 	}
 
 
-	 protected static boolean isFloat(String value) {
+	 public static boolean isFloat(String value) {
 
         boolean bool = true;
         StringBuffer temp = new StringBuffer(value.trim());
@@ -298,7 +299,7 @@ private void filterTree(Element e) {
 
 
 	//similar to the jdk1.4 String.replaceAll()
-	protected static String replaceString(String value, String oldName, String newName) {
+	public static String replaceString(String value, String oldName, String newName) {
 
 		StringBuffer buf; 
 		int index = 0; 

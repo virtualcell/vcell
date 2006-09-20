@@ -2,6 +2,10 @@ package cbit.vcell.vcml;
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlParseException;
 import cbit.util.xml.XmlUtil;
+import cbit.vcell.cellml.CellQualVCTranslator;
+import cbit.vcell.cellml.CellQuanVCTranslator;
+import cbit.vcell.cellml.VCQualCellTranslator;
+import cbit.vcell.cellml.VCQuanCellTranslator;
 
 import org.jdom.Document;
 import org.jdom.Element; 

@@ -1,4 +1,4 @@
-package cbit.vcell.vcml;
+package org.vcell.sbml;
 import cbit.vcell.model.FluxReaction;
 import org.jdom.*;
 import cbit.vcell.mapping.StructureMapping;
@@ -17,9 +17,9 @@ import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Feature;
 import cbit.vcell.biomodel.BioModel;
 import org.sbml.libsbml.SBMLDocument;
-import cbit.vcell.units.SBMLUnitTranslator;
 import org.sbml.libsbml.Unit;
 import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.vcml.Translator;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.xml.XMLTags;

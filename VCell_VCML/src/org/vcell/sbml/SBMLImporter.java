@@ -1,4 +1,4 @@
-package cbit.vcell.vcml;
+package org.vcell.sbml;
 /*
  * Created on Feb 10, 2006
  *
@@ -25,15 +25,16 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.matrix.RationalNumber;
 import cbit.vcell.model.*;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.LambdaFunction;
 import cbit.vcell.units.VCUnitDefinition;
-import cbit.vcell.units.SBMLUnitTranslator;
 import cbit.util.xml.VCLogger;
+import cbit.util.xml.XmlUtil;
+import cbit.vcell.vcml.StructureSizeSolver;
 import cbit.vcell.vcml.TranslationMessage;
+import cbit.vcell.vcml.Translator;
 import cbit.vcell.xml.XMLTags;
 
 public class SBMLImporter {
@@ -810,7 +811,7 @@ protected void addUnitDefinitions() {
 	for (int i = 0; i < sbmlModel.getNumUnitDefinitions(); i++) {
 		UnitDefinition ud = (org.sbml.libsbml.UnitDefinition)listofUnitDefns.get(i);
 		String unitName = getActualName(ud);
-		VCUnitDefinition vcUnitDef = cbit.vcell.units.SBMLUnitTranslator.getVCUnitDefinition(ud);
+		VCUnitDefinition vcUnitDef = org.vcell.sbml.SBMLUnitTranslator.getVCUnitDefinition(ud);
 		vcUnitsHash.put(unitName, vcUnitDef);
 	}
 }
@@ -972,7 +973,8 @@ private Expression getExpressionFromFormula(String formulaStr) throws Expression
 	mDoc.setMath(libsbml.parseFormula(formulaStr));
 	String mathMLStr = libsbml.writeMathMLToString(mDoc);
 	cbit.vcell.parser.ExpressionMathMLParser exprMathMLParser = new cbit.vcell.parser.ExpressionMathMLParser(lambdaFunctions);
-	Expression expr =  exprMathMLParser.fromMathML(mathMLStr);
+	Element mathMLElement = XmlUtil.stringToXML(mathMLStr, null);
+	Expression expr =  exprMathMLParser.fromMathML(mathMLElement);
 	return expr;
 }
 
@@ -1147,7 +1149,7 @@ private VCUnitDefinition getSBMLUnit(String unitSymbol, String builtInName) {
 		if (builtInName != null) {
 			SbmlUnit = (VCUnitDefinition)vcUnitsHash.get(builtInName);
 			if (SbmlUnit == null) {
-				SbmlUnit = cbit.vcell.units.SBMLUnitTranslator.getDefaultSBMLUnit(builtInName);
+				SbmlUnit = org.vcell.sbml.SBMLUnitTranslator.getDefaultSBMLUnit(builtInName);
 			}
 		} else if (builtInName == null) {
 			SbmlUnit = VCUnitDefinition.UNIT_TBD;
@@ -1159,7 +1161,7 @@ private VCUnitDefinition getSBMLUnit(String unitSymbol, String builtInName) {
 			//check if its a built-in unit that was explicitly specified
 			SbmlUnit = (VCUnitDefinition)vcUnitsHash.get(builtInName);
 			if (SbmlUnit == null) { 
-				SbmlUnit = cbit.vcell.units.SBMLUnitTranslator.getDefaultSBMLUnit(builtInName);
+				SbmlUnit = org.vcell.sbml.SBMLUnitTranslator.getDefaultSBMLUnit(builtInName);
 			}
 		} else {
 			SbmlUnit = (VCUnitDefinition)vcUnitsHash.get(unitSymbol);
