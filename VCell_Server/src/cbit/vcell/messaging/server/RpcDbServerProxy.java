@@ -8,10 +8,10 @@ import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.util.VCDocumentInfo;
 import cbit.util.VersionInfo;
-import cbit.vcell.solver.SolverResultSetInfo;
 import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.server.SimulationStatus;
+import cbit.vcell.server.solvers.SolverResultSetInfo;
 import cbit.vcell.messaging.JmsClientMessaging;
 import cbit.vcell.modeldb.*;
 import cbit.vcell.messaging.JmsUtils;
@@ -370,7 +370,7 @@ public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(KeyValue[] react
  * @return cbit.vcell.solver.SolverResultSetInfo
  * @param simKey KeyValue
  */
-public cbit.vcell.solver.SolverResultSetInfo[] getResultSetInfos(boolean bAll) throws DataAccessException {
+public cbit.vcell.server.solvers.SolverResultSetInfo[] getResultSetInfos(boolean bAll) throws DataAccessException {
 	return (SolverResultSetInfo[])rpc("getResultSetInfos",new Object[]{user, new Boolean(bAll)});
 }
 

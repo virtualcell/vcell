@@ -9,15 +9,17 @@ import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.util.VCDataIdentifier;
 import cbit.vcell.solver.*;
+import cbit.vcell.export.ExportEvent;
+import cbit.vcell.export.ExportSpecs;
 import cbit.vcell.export.server.*;
 import cbit.vcell.math.*;
+import cbit.vcell.mesh.CartesianMesh;
 import cbit.gui.PropertyLoader;
 import cbit.plot.*;
 import java.util.*;
 import java.rmi.*;
 import java.rmi.server.*;
 import java.io.*;
-import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.server.*;
 import cbit.vcell.simdata.*;
 
@@ -229,7 +231,7 @@ public CartesianMesh getMesh(VCDataIdentifier vcdID) throws DataAccessException 
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.solver.ode.ODESimData getODEData(VCDataIdentifier vcdID) throws DataAccessException {
+public cbit.vcell.simdata.ODESimData getODEData(VCDataIdentifier vcdID) throws DataAccessException {
 	sessionLog.print("LocalDataSetControllerMessaging.getODEData(vcdID=" + vcdID + ")");
 	try {
 		return dataServerProxy.getODEData(vcdID);

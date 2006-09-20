@@ -2,6 +2,7 @@ package cbit.vcell.modeldb;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.ObjectNotFoundException;
+import cbit.util.PermissionException;
 import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.util.Version;
@@ -507,7 +508,7 @@ private void deleteSimContextSQL(Connection con,User user, KeyValue simContextKe
 	try {
 		mathDescDB.deleteVersionable(con,user,VersionableType.MathDescription,mathKey);
 		log.print("SimulationContextDbDriver.delete("+simContextKey+") deletion of MathDescription("+mathKey+") succeeded");
-	}catch (cbit.vcell.server.PermissionException e){
+	}catch (cbit.util.PermissionException e){
 		log.alert("SimulationContextDbDriver.delete("+simContextKey+") deletion of MathDescription("+mathKey+") failed: "+e.getMessage());
 	}catch (cbit.vcell.server.DependencyException e){
 		log.alert("SimulationContextDbDriver.delete("+simContextKey+") deletion of MathDescription("+mathKey+") failed: "+e.getMessage());

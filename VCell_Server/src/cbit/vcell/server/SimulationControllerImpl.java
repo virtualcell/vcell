@@ -1,6 +1,7 @@
 package cbit.vcell.server;
 import cbit.util.ConfigurationException;
 import cbit.util.DataAccessException;
+import cbit.util.PermissionException;
 import cbit.util.SessionLog;
 import cbit.util.User;
 /*©

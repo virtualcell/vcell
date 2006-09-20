@@ -2,6 +2,7 @@ package cbit.vcell.modeldb;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.ObjectNotFoundException;
+import cbit.util.PermissionException;
 import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.util.Versionable;
@@ -18,7 +19,6 @@ import java.sql.Statement;
 import cbit.vcell.model.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.server.DependencyException;
-import cbit.vcell.server.PermissionException;
 /**
  * This type was created in VisualAge.
  */

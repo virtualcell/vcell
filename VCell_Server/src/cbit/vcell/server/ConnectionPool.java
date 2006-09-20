@@ -7,6 +7,8 @@ package cbit.vcell.server;
 import java.util.*;
 
 import cbit.gui.PropertyLoader;
+import cbit.util.Ping;
+import cbit.util.Pingable;
 import cbit.util.SessionLog;
 /**
  * This type was created in VisualAge.

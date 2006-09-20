@@ -1,13 +1,13 @@
 package cbit.vcell.server.solvers;
-import cbit.vcell.solver.*;
 import cbit.vcell.solvers.AbstractCompiledSolver;
 import cbit.vcell.solvers.ApplicationMessage;
-import cbit.vcell.solvers.SolverFactory;
+import cbit.vcell.solvers.SolverEvent;
+import cbit.vcell.solvers.SolverListener;
+import cbit.vcell.solvers.SolverStatus;
 
 import java.io.*;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.gui.PropertyLoader;
-import cbit.util.ExecutableException;
 import cbit.util.SessionLog;
 
 /**
@@ -26,9 +26,9 @@ public class LsfSolver extends AbstractCompiledSolver {
  * @param simulation cbit.vcell.solver.Simulation
  * @param directory java.io.File
  * @param sessionLog cbit.vcell.server.SessionLog
- * @exception cbit.vcell.solver.SolverException The exception description.
+ * @exception cbit.vcell.solvers.SolverException The exception description.
  */
-public LsfSolver(SimulationTask simTask, java.io.File directory, SessionLog sessionLog) throws cbit.vcell.solver.SolverException {
+public LsfSolver(SimulationTask simTask, java.io.File directory, SessionLog sessionLog) throws cbit.vcell.solvers.SolverException {
 	super(simTask.getSimulationJob(), directory, sessionLog);
 	realSolver = (AbstractCompiledSolver)cbit.vcell.solvers.SolverFactory.createSolver(sessionLog, directory, simTask.getSimulationJob());
 	realSolver.addSolverListener(new SolverListener() {
@@ -116,7 +116,7 @@ public String getStdoutFileName() {
 /**
  *  This method takes the place of the old runUnsteady()...
  */
-public void initialize() throws cbit.vcell.solver.SolverException {
+public void initialize() throws cbit.vcell.solvers.SolverException {
 	realSolver.initialize();
 }
 

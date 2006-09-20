@@ -10,15 +10,15 @@ import java.io.FileNotFoundException;
 import java.net.UnknownHostException;
 import cbit.vcell.xml.XmlParseException;
 import cbit.vcell.server.solvers.LsfSolver;
-import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.messaging.JmsUtils;
 import cbit.vcell.messaging.MessageConstants;
 import cbit.vcell.messaging.MessagePropertyNotFoundException;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.SolverException;
+import cbit.vcell.solvers.SolverException;
 import cbit.vcell.solvers.SolverFactory;
+import cbit.vcell.solvers.SolverStatus;
 import cbit.vcell.lsf.LsfConstants;
 import cbit.vcell.lsf.LsfUtils;
 
@@ -174,7 +174,7 @@ public boolean isRunning() {
 		return true;
 	}	
 		
-	cbit.vcell.solver.SolverStatus solverStatus = currentSolver.getSolverStatus();
+	cbit.vcell.solvers.SolverStatus solverStatus = currentSolver.getSolverStatus();
 	if (solverStatus != null){
 		if (solverStatus.getStatus() != SolverStatus.SOLVER_STARTING &&
 			solverStatus.getStatus() != SolverStatus.SOLVER_READY &&

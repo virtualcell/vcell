@@ -60,7 +60,7 @@ public final class LocalSolverController_Stub
     
     // implementation of getProgress()
     public double getProgress()
-	throws cbit.util.DataAccessException, cbit.vcell.solver.SolverNotRunningException, java.rmi.RemoteException
+	throws cbit.util.DataAccessException, cbit.vcell.solvers.SolverNotRunningException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getProgress_1, null, -8180129235656248200L);
@@ -71,7 +71,7 @@ public final class LocalSolverController_Stub
 	    throw e;
 	} catch (cbit.util.DataAccessException e) {
 	    throw e;
-	} catch (cbit.vcell.solver.SolverNotRunningException e) {
+	} catch (cbit.vcell.solvers.SolverNotRunningException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -97,12 +97,12 @@ public final class LocalSolverController_Stub
     }
     
     // implementation of getSolverStatus()
-    public cbit.vcell.solver.SolverStatus getSolverStatus()
+    public cbit.vcell.solvers.SolverStatus getSolverStatus()
 	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getSolverStatus_3, null, -3057449742020537727L);
-	    return ((cbit.vcell.solver.SolverStatus) $result);
+	    return ((cbit.vcell.solvers.SolverStatus) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {

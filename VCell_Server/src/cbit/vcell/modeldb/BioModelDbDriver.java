@@ -48,7 +48,7 @@ public BioModelDbDriver(DBCacheTable argdbc,SimulationDbDriver argSimDB, Simulat
  * only the owner can delete a Model
  */
 private void deleteBioModelMetaDataSQL(Connection con, User user, KeyValue bioModelKey) 
-				throws SQLException,cbit.vcell.server.DependencyException,cbit.vcell.server.PermissionException,DataAccessException,ObjectNotFoundException {
+				throws SQLException,cbit.vcell.server.DependencyException,cbit.util.PermissionException,DataAccessException,ObjectNotFoundException {
 
 	//
 	// get key values of simulations and simulationContexts belonging to this version of BioModel
@@ -120,7 +120,7 @@ private void deleteBioModelMetaDataSQL(Connection con, User user, KeyValue bioMo
  */
 public void deleteVersionable(Connection con, User user, VersionableType vType, KeyValue vKey) 
 				throws cbit.vcell.server.DependencyException, ObjectNotFoundException,
-						SQLException,DataAccessException,cbit.vcell.server.PermissionException {
+						SQLException,DataAccessException,cbit.util.PermissionException {
 
 	deleteVersionableInit(con, user, vType, vKey);
 	if (vType.equals(VersionableType.BioModelMetaData)){

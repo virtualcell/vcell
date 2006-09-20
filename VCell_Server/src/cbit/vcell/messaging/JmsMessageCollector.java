@@ -1,9 +1,16 @@
 package cbit.vcell.messaging;
 import cbit.util.SessionLog;
 import cbit.util.User;
+import cbit.vcell.simdata.DataJobEvent;
 import cbit.vcell.solver.*;
+import cbit.vcell.util.events.MessageData;
+import cbit.vcell.util.events.MessageEvent;
+import cbit.vcell.util.events.MessageListener;
+import cbit.vcell.util.events.MessageSender;
+
 import javax.swing.event.EventListenerList;
 
+import cbit.vcell.export.ExportEvent;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.rmi.event.*;
 
@@ -40,7 +47,7 @@ public JmsMessageCollector(VCellTopicConnection aTopicConn, User user0, SessionL
  * Creation date: (3/5/2004 9:28:52 AM)
  * @param listener cbit.rmi.event.MessageListener
  */
-public void addMessageListener(cbit.rmi.event.MessageListener listener) {
+public void addMessageListener(cbit.vcell.util.events.MessageListener listener) {
 	listenerList.add(MessageListener.class, listener);
 }
 
@@ -175,7 +182,7 @@ private void reconnect() throws javax.jms.JMSException {
  * Creation date: (3/5/2004 9:28:52 AM)
  * @param listener cbit.rmi.event.MessageListener
  */
-public void removeMessageListener(cbit.rmi.event.MessageListener listener) {}
+public void removeMessageListener(cbit.vcell.util.events.MessageListener listener) {}
 
 
 /**

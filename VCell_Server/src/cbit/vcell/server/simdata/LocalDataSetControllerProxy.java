@@ -8,14 +8,16 @@ import cbit.rmi.event.*;
 import cbit.util.DataAccessException;
 import cbit.util.SessionLog;
 import cbit.util.VCDataIdentifier;
+import cbit.vcell.export.ExportEvent;
+import cbit.vcell.export.ExportSpecs;
 import cbit.vcell.export.server.*;
 import cbit.vcell.math.*;
+import cbit.vcell.mesh.CartesianMesh;
 import cbit.gui.PropertyLoader;
 import cbit.plot.*;
 import java.rmi.*;
 import java.rmi.server.*;
 
-import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.server.*;
 import cbit.vcell.simdata.ParticleDataBlock;
 import cbit.vcell.simdata.SimDataBlock;

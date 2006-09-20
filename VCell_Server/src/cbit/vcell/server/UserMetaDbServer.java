@@ -282,7 +282,7 @@ public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(KeyValue reactio
  * @return cbit.vcell.solver.SolverResultSetInfo
  * @param simKey cbit.sql.KeyValue
  */
-cbit.vcell.solver.SolverResultSetInfo[] getResultSetInfos(boolean bAll) throws DataAccessException, RemoteException;
+cbit.vcell.server.solvers.SolverResultSetInfo[] getResultSetInfos(boolean bAll) throws DataAccessException, RemoteException;
 
 
 /**

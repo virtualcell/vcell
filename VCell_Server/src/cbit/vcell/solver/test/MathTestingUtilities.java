@@ -1,6 +1,10 @@
 package cbit.vcell.solver.test;
 import cbit.vcell.geometry.Coordinate;
+import cbit.vcell.simdata.ColumnDescription;
 import cbit.vcell.simdata.DataManager;
+import cbit.vcell.simdata.DataResampler;
+import cbit.vcell.simdata.FunctionColumnDescription;
+import cbit.vcell.simdata.ODESolverResultSet;
 import cbit.vcell.simdata.SimDataBlock;
 import java.util.Vector;
 import cbit.vcell.mapping.VariableHash;
@@ -10,11 +14,8 @@ import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.math.*;
+import cbit.vcell.mesh.CartesianMesh;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.ode.ColumnDescription;
-import cbit.vcell.solver.ode.FunctionColumnDescription;
-import cbit.vcell.solver.ode.ODESolverResultSet;
-import cbit.vcell.solvers.CartesianMesh;
 /**
  * Insert the type's description here.
  * Creation date: (1/16/2003 2:31:28 PM)
@@ -359,14 +360,14 @@ public static SimulationComparisonSummary comparePDEResultsWithExact(Simulation 
  * @param testResultSet cbit.vcell.solver.ode.ODESolverResultSet
  * @param referenceResultSet cbit.vcell.solver.ode.ODESolverResultSet
  */
-public static SimulationComparisonSummary compareResultSets(cbit.vcell.solver.ode.ODESolverResultSet testResultSet, cbit.vcell.solver.ode.ODESolverResultSet referenceResultSet, String varsToTest[]) throws Exception {
+public static SimulationComparisonSummary compareResultSets(cbit.vcell.simdata.ODESolverResultSet testResultSet, cbit.vcell.simdata.ODESolverResultSet referenceResultSet, String varsToTest[]) throws Exception {
 
 	if (varsToTest==null){
 		throw new IllegalArgumentException("varsToTest must not be null");
 	}
 	
 	SimulationComparisonSummary simComparisonSummary = new SimulationComparisonSummary();
-	double timeData[] = referenceResultSet.extractColumn(referenceResultSet.findColumn(cbit.vcell.solver.ode.ODESolverResultSet.TIME_COLUMN));
+	double timeData[] = referenceResultSet.extractColumn(referenceResultSet.findColumn(cbit.vcell.simdata.ODESolverResultSet.TIME_COLUMN));
 	
 	for (int i = 0; i < varsToTest.length; i++){
 		int refRSIndex = referenceResultSet.findColumn(varsToTest[i]);
@@ -1090,13 +1091,13 @@ public static MathDescription constructOdesForSensitivity(MathDescription mathDe
  * @return cbit.vcell.solver.ode.ODESolverResultSet
  * @param sim cbit.vcell.solver.Simulation
  */
-public static cbit.vcell.solver.ode.ODESolverResultSet getConstructedResultSet(MathDescription mathDesc, double time[]) throws Exception {
+public static cbit.vcell.simdata.ODESolverResultSet getConstructedResultSet(MathDescription mathDesc, double time[]) throws Exception {
 	if (mathDesc.getGeometry().getDimension()!=0){
 		throw new RuntimeException("can only handle non-spatial simulations.");
 	}
 	cbit.vcell.solver.Simulation sim = new cbit.vcell.solver.Simulation(mathDesc);
-	cbit.vcell.solver.ode.ODESolverResultSet resultSet = new cbit.vcell.solver.ode.ODESolverResultSet();
-	resultSet.addDataColumn(new cbit.vcell.solver.ode.ODESolverResultSetColumnDescription("t"));
+	cbit.vcell.simdata.ODESolverResultSet resultSet = new cbit.vcell.simdata.ODESolverResultSet();
+	resultSet.addDataColumn(new cbit.vcell.simdata.ODESolverResultSetColumnDescription("t"));
 	for (int i = 0; i < time.length; i++){
 		resultSet.addRow(new double[] { time[i] });
 	}
@@ -1132,13 +1133,13 @@ public static cbit.vcell.solver.ode.ODESolverResultSet getConstructedResultSet(M
  * @return cbit.vcell.solver.ode.ODESolverResultSet
  * @param sim cbit.vcell.solver.Simulation
  */
-public static cbit.vcell.solver.ode.ODESolverResultSet getExactResultSet(MathDescription mathDesc, double time[], Constant sensitivityParam) throws Exception {
+public static cbit.vcell.simdata.ODESolverResultSet getExactResultSet(MathDescription mathDesc, double time[], Constant sensitivityParam) throws Exception {
 	if (mathDesc.getGeometry().getDimension()!=0){
 		throw new RuntimeException("can only handle non-spatial simulations.");
 	}
 	cbit.vcell.solver.Simulation sim = new cbit.vcell.solver.Simulation(mathDesc);
-	cbit.vcell.solver.ode.ODESolverResultSet resultSet = new cbit.vcell.solver.ode.ODESolverResultSet();
-	resultSet.addDataColumn(new cbit.vcell.solver.ode.ODESolverResultSetColumnDescription("t"));
+	cbit.vcell.simdata.ODESolverResultSet resultSet = new cbit.vcell.simdata.ODESolverResultSet();
+	resultSet.addDataColumn(new cbit.vcell.simdata.ODESolverResultSetColumnDescription("t"));
 	for (int i = 0; i < time.length; i++){
 		resultSet.addRow(new double[] { time[i] });
 	}

@@ -1,7 +1,7 @@
 package cbit.vcell.server;
 import cbit.util.DataAccessException;
 import cbit.util.ObjectNotFoundException;
-import cbit.vcell.server.PermissionException;
+import cbit.util.PermissionException;
 import cbit.vcell.solver.*;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 

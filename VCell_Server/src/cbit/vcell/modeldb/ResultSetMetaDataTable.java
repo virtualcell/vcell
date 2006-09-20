@@ -12,6 +12,8 @@ import cbit.vcell.solver.*;
 import cbit.sql.*;
 import cbit.image.*;
 import cbit.vcell.server.*;
+import cbit.vcell.server.solvers.SolverResultSetInfo;
+
 import java.sql.*;
 
 /**

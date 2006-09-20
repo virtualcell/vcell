@@ -55,7 +55,7 @@ public final class LocalVCellServer_Stub
     
     // implementation of createSolverController(User, SimulationJob)
     public cbit.vcell.solvers.SolverController createSolverController(cbit.util.User $param_User_1, cbit.vcell.solver.SimulationJob $param_SimulationJob_2)
-	throws cbit.vcell.solver.SolverException, cbit.vcell.solvers.SimExecutionException, java.rmi.RemoteException
+	throws cbit.vcell.solvers.SolverException, cbit.vcell.solvers.SimExecutionException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_createSolverController_0, new java.lang.Object[] {$param_User_1, $param_SimulationJob_2}, 7441696505586765892L);
@@ -64,7 +64,7 @@ public final class LocalVCellServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.vcell.solver.SolverException e) {
+	} catch (cbit.vcell.solvers.SolverException e) {
 	    throw e;
 	} catch (cbit.vcell.solvers.SimExecutionException e) {
 	    throw e;

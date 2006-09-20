@@ -5,6 +5,7 @@ package cbit.vcell.server;
  * All rights reserved.
 ©*/
 import cbit.util.DataAccessException;
+import cbit.util.PermissionException;
 import cbit.util.SessionLog;
 import cbit.util.StdoutSessionLog;
 import cbit.util.User;

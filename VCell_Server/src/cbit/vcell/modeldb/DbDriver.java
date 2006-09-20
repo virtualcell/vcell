@@ -14,6 +14,7 @@ import cbit.util.GroupAccessNone;
 import cbit.util.GroupAccessSome;
 import cbit.util.KeyValue;
 import cbit.util.ObjectNotFoundException;
+import cbit.util.PermissionException;
 import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.util.Version;

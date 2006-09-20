@@ -7,6 +7,7 @@ import cbit.sql.DBCacheTable;
  * All rights reserved.
 ©*/
 import cbit.util.DataAccessException;
+import cbit.util.PermissionException;
 import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.vcell.simdata.*;

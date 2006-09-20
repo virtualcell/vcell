@@ -1,7 +1,8 @@
 package cbit.vcell.modeldb;
 import java.util.zip.DeflaterOutputStream;
 import java.io.ByteArrayOutputStream;
-import cbit.vcell.solver.SolverResultSetInfo;
+
+import cbit.vcell.server.solvers.SolverResultSetInfo;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.biomodel.BioModelInfo;

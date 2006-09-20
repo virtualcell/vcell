@@ -120,8 +120,8 @@ public cbit.plot.PlotData getLineScan(VCDataIdentifier vcdID, String variable, d
  * This method was created in VisualAge.
  * @return CartesianMesh
  */
-public cbit.vcell.solvers.CartesianMesh getMesh(VCDataIdentifier vcdID) throws DataAccessException {
-	return (cbit.vcell.solvers.CartesianMesh)rpc("getMesh",new Object[]{user, vcdID});
+public cbit.vcell.mesh.CartesianMesh getMesh(VCDataIdentifier vcdID) throws DataAccessException {
+	return (cbit.vcell.mesh.CartesianMesh)rpc("getMesh",new Object[]{user, vcdID});
 }
 
 
@@ -132,8 +132,8 @@ public cbit.vcell.solvers.CartesianMesh getMesh(VCDataIdentifier vcdID) throws D
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.solver.ode.ODESimData getODEData(VCDataIdentifier vcdID) throws DataAccessException {
-	return (cbit.vcell.solver.ode.ODESimData)rpc("getODEData",new Object[]{user, vcdID});
+public cbit.vcell.simdata.ODESimData getODEData(VCDataIdentifier vcdID) throws DataAccessException {
+	return (cbit.vcell.simdata.ODESimData)rpc("getODEData",new Object[]{user, vcdID});
 }
 
 
@@ -191,7 +191,7 @@ public cbit.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.rmi.event.ExportEvent makeRemoteFile(cbit.vcell.export.server.ExportSpecs exportSpecs) throws DataAccessException {
+public cbit.vcell.export.ExportEvent makeRemoteFile(cbit.vcell.export.ExportSpecs exportSpecs) throws DataAccessException {
 	try {
 		rpc(cbit.vcell.messaging.MessageConstants.SERVICETYPE_DATA_VALUE, "makeRemoteFile", new Object[]{user, exportSpecs}, false, new String[]{MessageConstants.SERVICE_DATA_ISEXPORTING}, new Object[]{new Boolean(true)});
 	} catch (DataAccessException ex) {

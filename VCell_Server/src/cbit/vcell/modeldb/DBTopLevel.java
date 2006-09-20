@@ -3,6 +3,7 @@ import cbit.util.CurateSpec;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.ObjectNotFoundException;
+import cbit.util.PermissionException;
 import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.util.Versionable;

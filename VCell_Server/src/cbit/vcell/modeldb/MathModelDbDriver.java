@@ -45,7 +45,7 @@ public MathModelDbDriver(DBCacheTable argdbc,SimulationDbDriver argSimDB, MathDe
  * only the owner can delete a Model
  */
 private void deleteMathModelMetaDataSQL(Connection con, User user, KeyValue mathModelKey) 
-				throws SQLException,cbit.vcell.server.DependencyException,DataAccessException,cbit.vcell.server.PermissionException,ObjectNotFoundException {
+				throws SQLException,cbit.vcell.server.DependencyException,DataAccessException,cbit.util.PermissionException,ObjectNotFoundException {
 
 
 	//
@@ -103,7 +103,7 @@ private void deleteMathModelMetaDataSQL(Connection con, User user, KeyValue math
  */
 public void deleteVersionable(Connection con, User user, VersionableType vType, KeyValue vKey) 
 				throws cbit.vcell.server.DependencyException, ObjectNotFoundException,
-						SQLException,DataAccessException,cbit.vcell.server.PermissionException {
+						SQLException,DataAccessException,cbit.util.PermissionException {
 
 	deleteVersionableInit(con, user, vType, vKey);
 	if (vType.equals(VersionableType.MathModelMetaData)){

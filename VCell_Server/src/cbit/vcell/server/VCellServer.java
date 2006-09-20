@@ -20,7 +20,7 @@ public interface VCellServer extends java.rmi.Remote {
  * Creation date: (6/28/01 6:03:04 PM)
  * @exception java.rmi.RemoteException The exception description.
  */
-SolverController createSolverController(User user, SimulationJob simulationJob) throws java.rmi.RemoteException, cbit.vcell.solvers.SimExecutionException, cbit.vcell.solver.SolverException;
+SolverController createSolverController(User user, SimulationJob simulationJob) throws java.rmi.RemoteException, cbit.vcell.solvers.SimExecutionException, cbit.vcell.solvers.SolverException;
 
 
 /**

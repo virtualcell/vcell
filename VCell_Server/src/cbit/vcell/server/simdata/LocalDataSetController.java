@@ -8,14 +8,16 @@ import cbit.util.VCDataIdentifier;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.vcell.export.ExportEvent;
+import cbit.vcell.export.ExportServiceImpl;
 import cbit.vcell.export.server.*;
 import cbit.vcell.math.*;
+import cbit.vcell.mesh.CartesianMesh;
 import cbit.gui.PropertyLoader;
 import cbit.plot.*;
 import java.rmi.*;
 import java.rmi.server.*;
 
-import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.server.*;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.DataSetControllerImpl;
@@ -202,7 +204,7 @@ public cbit.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID
  * @param exportSpecs cbit.vcell.export.server.ExportSpecs
  * @exception cbit.util.DataAccessException The exception description.
  */
-public ExportEvent makeRemoteFile(cbit.vcell.export.server.ExportSpecs exportSpecs) throws cbit.util.DataAccessException {
+public ExportEvent makeRemoteFile(cbit.vcell.export.ExportSpecs exportSpecs) throws cbit.util.DataAccessException {
 	return dataServerImpl.makeRemoteFile(user, exportSpecs);
 
 	/*

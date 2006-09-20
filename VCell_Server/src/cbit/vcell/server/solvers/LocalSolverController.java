@@ -7,6 +7,7 @@ import cbit.vcell.solver.*;
 import cbit.vcell.solvers.SimExecutionException;
 import cbit.vcell.solvers.SolverController;
 import cbit.vcell.solvers.SolverControllerImpl;
+import cbit.vcell.solvers.SolverException;
 
 import java.util.*;
 /*©
@@ -20,12 +21,11 @@ import javax.swing.event.*;
 /**
  * This type was created in VisualAge.
  */
-public class LocalSolverController extends java.rmi.server.UnicastRemoteObject implements SolverController, cbit.vcell.solver.SolverListener, WorkerEventSender {
+public class LocalSolverController extends java.rmi.server.UnicastRemoteObject implements SolverController, cbit.vcell.solvers.SolverListener, WorkerEventSender {
 	private SolverControllerImpl solverControllerImpl = null;
 	private EventListenerList listenerList = new EventListenerList();
 	private SessionLog log = null;
 	private LocalVCellConnection vcConn = null;
-	private SimulationData.DataMoverThread dataMover = null;
 
 	private HashSet resultSetSavedSet = new HashSet();
 	private long timeOfLastProgressMessage = 0;
@@ -54,9 +54,6 @@ public LocalSolverController(LocalVCellConnection vcellConnection, SessionLog se
 			log.exception(ex);
 			throw new SolverException(ex.getMessage());
 		}
-		dataMover = simData.getDataMover();
-		dataMover.setServerDirectory(serverDirectory);
-		dataMover.setLocalSolverController(this);
 	}
 }
 
@@ -182,7 +179,7 @@ public cbit.vcell.solver.SimulationJob getSimulationJob() throws cbit.util.DataA
  * @return java.lang.String
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.solver.SolverStatus getSolverStatus() throws cbit.util.DataAccessException {
+public cbit.vcell.solvers.SolverStatus getSolverStatus() throws cbit.util.DataAccessException {
 	try {
 		return solverControllerImpl.getSolver().getSolverStatus();
 	}catch (Throwable e){
@@ -254,12 +251,9 @@ private void setTimeOfLastProgressMessage(long newTimeOfLastProgressMessage) {
  * Invoked when the solver aborts a calculation (abnormal termination).
  * @param event indicates the solver and the event type
  */
-public void solverAborted(cbit.vcell.solver.SolverEvent event) {
+public void solverAborted(cbit.vcell.solvers.SolverEvent event) {
 	try {
 		log.print("LocalMathController Caught solverAborted("+event.getSource().toString()+",error='"+event.getMessage()+"')");
-		if (dataMover != null) {
-			dataMover.stopRunning();
-		}
 		fireWorkerEvent(new WorkerEvent(this, getSimulationJob().getVCDataIdentifier().getVcSimID(), getSimulationJob().getVCDataIdentifier().getJobIndex(), WorkerEvent.JOB_FAILURE, vcConn.getHost(), 0, event.getMessage()));
 	}catch (Throwable e){
 		log.exception(e);
@@ -271,12 +265,9 @@ public void solverAborted(cbit.vcell.solver.SolverEvent event) {
  * Invoked when the solver finishes a calculation (normal termination).
  * @param event indicates the solver and the event type
  */
-public void solverFinished(cbit.vcell.solver.SolverEvent event) {
+public void solverFinished(cbit.vcell.solvers.SolverEvent event) {
 	try {
 		log.print("LocalMathController Caught solverFinished("+event.getSource().toString()+")");
-		if (dataMover != null) {
-			dataMover.stopRunning();
-		}
 		fireWorkerEvent(new WorkerEvent(this, getSimulationJob().getVCDataIdentifier().getVcSimID(), getSimulationJob().getVCDataIdentifier().getJobIndex(), WorkerEvent.JOB_COMPLETED, vcConn.getHost(), 0, new Double(event.getProgress()), new Double(event.getTimePoint())));
 	}catch (Throwable e){
 		log.exception(e);
@@ -288,11 +279,8 @@ public void solverFinished(cbit.vcell.solver.SolverEvent event) {
  * Invoked when the solver stores values in the result set.
  * @param event indicates the solver and the event type
  */
-public void solverPrinted(cbit.vcell.solver.SolverEvent event) {
+public void solverPrinted(cbit.vcell.solvers.SolverEvent event) {
 	// only if local storage, otherwise defer to DataMover
-	if (dataMover == null) {
-		dataMoved(event.getTimePoint(), new Double(event.getProgress()));
-	}
 }
 
 
@@ -300,7 +288,7 @@ public void solverPrinted(cbit.vcell.solver.SolverEvent event) {
  * Invoked when the solver stores values in the result set.
  * @param event indicates the solver and the event type
  */
-public void solverProgress(cbit.vcell.solver.SolverEvent event) {
+public void solverProgress(cbit.vcell.solvers.SolverEvent event) {
 	try {
 		// don't log progress and data events
 		if (System.currentTimeMillis() - getTimeOfLastProgressMessage() > 1000 * getMessagingInterval()) {
@@ -317,7 +305,7 @@ public void solverProgress(cbit.vcell.solver.SolverEvent event) {
  * Invoked when the solver begins a calculation.
  * @param event indicates the solver and the event type
  */
-public void solverStarting(cbit.vcell.solver.SolverEvent event) {
+public void solverStarting(cbit.vcell.solvers.SolverEvent event) {
 	try {
 		log.print("LocalMathController Caught solverStarting("+event.getSource().toString()+")");
 		fireWorkerEvent(new WorkerEvent(this, getSimulationJob().getVCDataIdentifier().getVcSimID(), getSimulationJob().getVCDataIdentifier().getJobIndex(), WorkerEvent.JOB_STARTING, vcConn.getHost(), 0, event.getMessage()));
@@ -333,12 +321,9 @@ public void solverStarting(cbit.vcell.solver.SolverEvent event) {
  * of a user-initiated stop call.
  * @param event indicates the solver and the event type
  */
-public void solverStopped(cbit.vcell.solver.SolverEvent event) {
+public void solverStopped(cbit.vcell.solvers.SolverEvent event) {
 	try {
 		log.print("LocalMathController Caught solverStopped("+event.getSource().toString()+")");
-		if (dataMover != null) {
-			dataMover.stopRunning();
-		}
 		//fireJobCompletedEvent(new JobCompletedEvent(this,new MessageSource(this,getSimulationIdentifier()),getSimulation().getSimulationInfo(),true,event.getProgress(),event.getTimePoint()));
 	}catch (Throwable e){
 		log.exception(e);
@@ -352,14 +337,6 @@ public void solverStopped(cbit.vcell.solver.SolverEvent event) {
 public void startSimulationJob() throws SimExecutionException, cbit.util.DataAccessException {
 	try {
 		resultSetSavedSet.remove(getSimulationJob().getVCDataIdentifier());
-		if (dataMover != null) {
-			// we have remote master simData directory, start the mover thread
-			dataMover.reset();
-			Thread dm = new Thread(dataMover);
-			dm.setDaemon(true);
-			dm.setName("DataMover("+dataMover.getSimulationDataIdentifier()+")");
-			dm.start();
-		}
 		solverControllerImpl.startSimulationJob();
 	}catch (Throwable e){
 		log.exception(e);

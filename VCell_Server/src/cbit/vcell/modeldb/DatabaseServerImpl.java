@@ -20,7 +20,8 @@ import cbit.vcell.export.server.ExportLog;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.server.SimulationStatus;
-import cbit.vcell.solver.SolverResultSetInfo;
+import cbit.vcell.server.solvers.SolverResultSetInfo;
+
 import java.rmi.*;
 import java.sql.*;
 import cbit.sql.*;

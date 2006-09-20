@@ -7,11 +7,14 @@ package cbit.vcell.server;
 import cbit.util.DataAccessException;
 import cbit.util.VCDataIdentifier;
 import cbit.vcell.math.*;
+import cbit.vcell.mesh.CartesianMesh;
 import cbit.plot.*;
 import java.rmi.*;
 
 import cbit.vcell.solvers.*;
 import cbit.vcell.simdata.*;
+import cbit.vcell.export.ExportEvent;
+import cbit.vcell.export.ExportSpecs;
 import cbit.vcell.export.server.*;
 import cbit.rmi.event.*;
 /**
@@ -92,7 +95,7 @@ CartesianMesh getMesh(VCDataIdentifier vcdataID) throws RemoteException, DataAcc
  * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-cbit.vcell.solver.ode.ODESimData getODEData(VCDataIdentifier vcdataID) throws DataAccessException, RemoteException;
+cbit.vcell.simdata.ODESimData getODEData(VCDataIdentifier vcdataID) throws DataAccessException, RemoteException;
 /**
  * This method was created in VisualAge.
  * @return ParticleData

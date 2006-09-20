@@ -77,7 +77,7 @@ private void deleteModelSQL(Connection con, User user, KeyValue modelKey)
  */
 public void deleteVersionable(Connection con, User user, VersionableType vType, KeyValue vKey) 
 				throws cbit.vcell.server.DependencyException, ObjectNotFoundException,
-						SQLException,DataAccessException,cbit.vcell.server.PermissionException {
+						SQLException,DataAccessException,cbit.util.PermissionException {
 
 	deleteVersionableInit(con, user, vType, vKey);
 	if (vType.equals(VersionableType.Model)){

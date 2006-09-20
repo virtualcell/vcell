@@ -1,11 +1,11 @@
 package cbit.vcell.messaging.server;
 import cbit.util.DataAccessException;
 import cbit.util.ObjectNotFoundException;
+import cbit.util.PermissionException;
 import cbit.util.User;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.server.PermissionException;
 import cbit.vcell.solvers.SimExecutionException;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.JmsClientMessaging;

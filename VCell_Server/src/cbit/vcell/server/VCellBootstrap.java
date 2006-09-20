@@ -5,6 +5,7 @@ package cbit.vcell.server;
  * All rights reserved.
 ©*/
 import cbit.util.DataAccessException;
+import cbit.util.PermissionException;
 import cbit.util.User;
 import cbit.vcell.model.*;
 import java.rmi.*;

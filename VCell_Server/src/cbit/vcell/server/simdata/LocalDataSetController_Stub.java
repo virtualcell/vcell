@@ -3,10 +3,10 @@
 
 package cbit.vcell.server.simdata;
 
+import cbit.vcell.mesh.CartesianMesh;
 import cbit.vcell.simdata.ParticleDataBlock;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SpatialSelection;
-import cbit.vcell.solvers.CartesianMesh;
 
 public final class LocalDataSetController_Stub
     extends java.rmi.server.RemoteStub
@@ -47,7 +47,7 @@ public final class LocalDataSetController_Stub
 	    $method_getParticleDataExists_11 = cbit.vcell.server.DataSetController.class.getMethod("getParticleDataExists", new java.lang.Class[] {cbit.util.VCDataIdentifier.class});
 	    $method_getSimDataBlock_12 = cbit.vcell.server.DataSetController.class.getMethod("getSimDataBlock", new java.lang.Class[] {cbit.util.VCDataIdentifier.class, java.lang.String.class, double.class});
 	    $method_getTimeSeriesValues_13 = cbit.vcell.server.DataSetController.class.getMethod("getTimeSeriesValues", new java.lang.Class[] {cbit.util.VCDataIdentifier.class, cbit.util.TimeSeriesJobSpec.class});
-	    $method_makeRemoteFile_14 = cbit.vcell.server.DataSetController.class.getMethod("makeRemoteFile", new java.lang.Class[] {cbit.vcell.export.server.ExportSpecs.class});
+	    $method_makeRemoteFile_14 = cbit.vcell.server.DataSetController.class.getMethod("makeRemoteFile", new java.lang.Class[] {cbit.vcell.export.ExportSpecs.class});
 	    $method_removeFunction_15 = cbit.vcell.server.DataSetController.class.getMethod("removeFunction", new java.lang.Class[] {cbit.util.VCDataIdentifier.class, cbit.vcell.math.AnnotatedFunction.class});
 	} catch (java.lang.NoSuchMethodException e) {
 	    throw new java.lang.NoSuchMethodError(
@@ -313,12 +313,12 @@ public final class LocalDataSetController_Stub
     }
     
     // implementation of makeRemoteFile(ExportSpecs)
-    public cbit.rmi.event.ExportEvent makeRemoteFile(cbit.vcell.export.server.ExportSpecs $param_ExportSpecs_1)
+    public cbit.vcell.export.ExportEvent makeRemoteFile(cbit.vcell.export.ExportSpecs $param_ExportSpecs_1)
 	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_makeRemoteFile_14, new java.lang.Object[] {$param_ExportSpecs_1}, -2093121804079289022L);
-	    return ((cbit.rmi.event.ExportEvent) $result);
+	    return ((cbit.vcell.export.ExportEvent) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {

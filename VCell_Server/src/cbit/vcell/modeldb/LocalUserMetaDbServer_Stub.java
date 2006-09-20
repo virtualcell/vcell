@@ -673,12 +673,12 @@ public final class LocalUserMetaDbServer_Stub
     }
     
     // implementation of getResultSetInfos(boolean)
-    public cbit.vcell.solver.SolverResultSetInfo[] getResultSetInfos(boolean $param_boolean_1)
+    public cbit.vcell.server.solvers.SolverResultSetInfo[] getResultSetInfos(boolean $param_boolean_1)
 	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getResultSetInfos_30, new java.lang.Object[] {new java.lang.Boolean($param_boolean_1)}, 9084030373467636590L);
-	    return ((cbit.vcell.solver.SolverResultSetInfo[]) $result);
+	    return ((cbit.vcell.server.solvers.SolverResultSetInfo[]) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {

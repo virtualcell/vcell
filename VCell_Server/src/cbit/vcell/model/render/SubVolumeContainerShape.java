@@ -6,10 +6,11 @@ package cbit.vcell.model.render;
 import cbit.gui.graph.*;
 import java.beans.*;
 import cbit.image.*;
-import cbit.image.render.DisplayAdapterService;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.GeometryException;
+import cbit.vcell.simdata.DisplayAdapterService;
+
 import java.awt.image.ImageObserver;
 import java.awt.Point;
 import java.awt.image.MemoryImageSource;

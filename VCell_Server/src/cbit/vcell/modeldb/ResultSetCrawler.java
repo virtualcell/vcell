@@ -5,22 +5,22 @@ package cbit.vcell.modeldb;
 ©*/
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
+import cbit.util.PermissionException;
 import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.server.AdminDatabaseServer;
+import cbit.vcell.server.solvers.SolverResultSetInfo;
 import cbit.gui.PropertyLoader;
 import cbit.sql.DBCacheTable;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
-import cbit.vcell.solver.SolverResultSetInfo;
 import java.util.Vector;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.Simulation;
 import java.io.File;
 import java.util.LinkedList;
 import java.beans.PropertyVetoException;
-import cbit.vcell.server.PermissionException;
 import java.sql.SQLException;
 
 /**

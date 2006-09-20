@@ -6,9 +6,9 @@ import cbit.util.StdoutSessionLog;
 import java.io.FileNotFoundException;
 import java.net.UnknownHostException;
 import java.util.Date;
-import cbit.vcell.solver.SolverException;
 import cbit.vcell.xml.XmlParseException;
-import cbit.vcell.solver.SolverEvent;
+import cbit.vcell.solvers.SolverEvent;
+import cbit.vcell.solvers.SolverException;
 import cbit.vcell.messaging.WorkerMessaging;
 import cbit.vcell.messaging.MessageConstants;
 
@@ -25,7 +25,7 @@ public abstract class AbstractJmsWorker extends AbstractJmsServiceProvider imple
 
 	protected double maxMemoryMB = 100;
 	protected SimulationTask currentTask = null;
-	protected cbit.vcell.solver.Solver currentSolver = null;
+	protected cbit.vcell.solvers.Solver currentSolver = null;
 
 	protected boolean bStopped = true;
 	protected SessionLog log = null;

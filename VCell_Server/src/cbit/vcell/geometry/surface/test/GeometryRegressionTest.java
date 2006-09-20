@@ -1,11 +1,11 @@
 package cbit.vcell.geometry.surface.test;
+import cbit.vcell.mesh.CartesianMesh;
+import cbit.vcell.mesh.MembraneElement;
+import cbit.vcell.mesh.MeshRegionInfo;
 import cbit.vcell.solver.SimulationJob;
 import java.io.PrintWriter;
 import java.io.Writer;
-import cbit.vcell.solvers.MeshRegionInfo;
 import java.util.Vector;
-import cbit.vcell.solvers.MembraneElement;
-import cbit.vcell.solvers.CartesianMesh;
 import cbit.gui.PropertyLoader;
 import cbit.sql.ConnectionFactory;
 import java.io.File;
@@ -120,8 +120,8 @@ public void compareMesh(String startKey) {
 					pw.println(count + ", " + line + ", ?D, New mesh doesn't exist");
 					continue;
 				}
-				cbit.vcell.solvers.CartesianMesh mesh_old = loadMesh(meshfile_old);
-				cbit.vcell.solvers.CartesianMesh mesh_new = loadMesh(meshfile_new);
+				cbit.vcell.mesh.CartesianMesh mesh_old = loadMesh(meshfile_old);
+				cbit.vcell.mesh.CartesianMesh mesh_new = loadMesh(meshfile_new);
 				
 				if (CartesianMesh.compareMesh(mesh_old, mesh_new, pw)) {
 					numEqual ++;
@@ -153,8 +153,8 @@ public void compareMesh(String startKey) {
  * Creation date: (8/5/2005 7:10:26 AM)
  * @param meshfile java.io.File
  */
-public static cbit.vcell.solvers.CartesianMesh loadMesh(File meshFile) throws Exception {
-	cbit.vcell.solvers.CartesianMesh mesh = null;
+public static cbit.vcell.mesh.CartesianMesh loadMesh(File meshFile) throws Exception {
+	cbit.vcell.mesh.CartesianMesh mesh = null;
 	//
 	// read meshFile and parse into 'mesh' object
 	//
@@ -166,7 +166,7 @@ public static cbit.vcell.solvers.CartesianMesh loadMesh(File meshFile) throws Ex
 		int length = reader.read(buffer,0,buffer.length);
 		String logString = new String(buffer,0,length);
 		cbit.vcell.math.CommentStringTokenizer st = new cbit.vcell.math.CommentStringTokenizer(logString);
-		mesh = cbit.vcell.solvers.CartesianMesh.fromTokens(st, null);
+		mesh = cbit.vcell.mesh.CartesianMesh.fromTokens(st, null);
 	}finally{
 		if (reader != null){
 			reader.close();
@@ -278,15 +278,15 @@ public void runSimulations(boolean bNew, String startKey) {
 				cbit.vcell.solver.Simulation sim = cbit.vcell.xml.XmlHelper.XMLToSim(simxml.toString());
 				sim.getSolverTaskDescription().setTimeStep(new cbit.vcell.solver.TimeStep(0.001, 0.001, 0.001));
 				sim.getSolverTaskDescription().setTimeBounds(new cbit.vcell.solver.TimeBounds(0,0.001));
-				cbit.vcell.solver.Solver solver = solverFactory.createSolver(log, new File(dataDir), new SimulationJob(sim,0));		
+				cbit.vcell.solvers.Solver solver = solverFactory.createSolver(log, new File(dataDir), new SimulationJob(sim,0));		
 				solver.startSolver();
 				while (true) {
-					cbit.vcell.solver.SolverStatus solverStatus = solver.getSolverStatus();
+					cbit.vcell.solvers.SolverStatus solverStatus = solver.getSolverStatus();
 					
 					if (solverStatus != null){
-						if (solverStatus.getStatus() != cbit.vcell.solver.SolverStatus.SOLVER_STARTING &&
-							solverStatus.getStatus() != cbit.vcell.solver.SolverStatus.SOLVER_READY &&
-							solverStatus.getStatus() != cbit.vcell.solver.SolverStatus.SOLVER_RUNNING){
+						if (solverStatus.getStatus() != cbit.vcell.solvers.SolverStatus.SOLVER_STARTING &&
+							solverStatus.getStatus() != cbit.vcell.solvers.SolverStatus.SOLVER_READY &&
+							solverStatus.getStatus() != cbit.vcell.solvers.SolverStatus.SOLVER_RUNNING){
 							break;
 						}
 					}				

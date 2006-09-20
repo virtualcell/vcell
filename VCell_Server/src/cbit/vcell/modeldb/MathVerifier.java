@@ -4,6 +4,7 @@ import java.sql.Statement;
 import cbit.util.BigString;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
+import cbit.util.PermissionException;
 import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.util.UserInfo;
@@ -12,16 +13,15 @@ import cbit.vcell.math.MathDescription;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.server.PermissionException;
 import java.rmi.RemoteException;
 
 import cbit.gui.PropertyLoader;
 import java.sql.SQLException;
 import cbit.vcell.server.AdminDatabaseServer;
+import cbit.vcell.server.solvers.SolverResultSetInfo;
 import cbit.sql.DBCacheTable;
 import cbit.sql.ConnectionFactory;
 import java.beans.*;
-import cbit.vcell.solver.SolverResultSetInfo;
 import java.util.Vector;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.mapping.SimulationContext;

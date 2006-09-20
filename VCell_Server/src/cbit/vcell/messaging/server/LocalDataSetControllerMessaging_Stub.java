@@ -47,7 +47,7 @@ public final class LocalDataSetControllerMessaging_Stub
 	    $method_getParticleDataExists_11 = cbit.vcell.server.DataSetController.class.getMethod("getParticleDataExists", new java.lang.Class[] {VCDataIdentifier.class});
 	    $method_getSimDataBlock_12 = cbit.vcell.server.DataSetController.class.getMethod("getSimDataBlock", new java.lang.Class[] {VCDataIdentifier.class, java.lang.String.class, double.class});
 	    $method_getTimeSeriesValues_13 = cbit.vcell.server.DataSetController.class.getMethod("getTimeSeriesValues", new java.lang.Class[] {VCDataIdentifier.class, cbit.util.TimeSeriesJobSpec.class});
-	    $method_makeRemoteFile_14 = cbit.vcell.server.DataSetController.class.getMethod("makeRemoteFile", new java.lang.Class[] {cbit.vcell.export.server.ExportSpecs.class});
+	    $method_makeRemoteFile_14 = cbit.vcell.server.DataSetController.class.getMethod("makeRemoteFile", new java.lang.Class[] {cbit.vcell.export.ExportSpecs.class});
 	    $method_removeFunction_15 = cbit.vcell.server.DataSetController.class.getMethod("removeFunction", new java.lang.Class[] {VCDataIdentifier.class, cbit.vcell.math.AnnotatedFunction.class});
 	} catch (java.lang.NoSuchMethodException e) {
 	    throw new java.lang.NoSuchMethodError(
@@ -205,12 +205,12 @@ public final class LocalDataSetControllerMessaging_Stub
     }
     
     // implementation of getMesh(VCDataIdentifier)
-    public cbit.vcell.solvers.CartesianMesh getMesh(VCDataIdentifier $param_VCDataIdentifier_1)
+    public cbit.vcell.mesh.CartesianMesh getMesh(VCDataIdentifier $param_VCDataIdentifier_1)
 	throws DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getMesh_8, new java.lang.Object[] {$param_VCDataIdentifier_1}, 528701435120739779L);
-	    return ((cbit.vcell.solvers.CartesianMesh) $result);
+	    return ((cbit.vcell.mesh.CartesianMesh) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -223,12 +223,12 @@ public final class LocalDataSetControllerMessaging_Stub
     }
     
     // implementation of getODEData(VCDataIdentifier)
-    public cbit.vcell.solver.ode.ODESimData getODEData(VCDataIdentifier $param_VCDataIdentifier_1)
+    public cbit.vcell.simdata.ODESimData getODEData(VCDataIdentifier $param_VCDataIdentifier_1)
 	throws DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getODEData_9, new java.lang.Object[] {$param_VCDataIdentifier_1}, 8459143810630880411L);
-	    return ((cbit.vcell.solver.ode.ODESimData) $result);
+	    return ((cbit.vcell.simdata.ODESimData) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -313,12 +313,12 @@ public final class LocalDataSetControllerMessaging_Stub
     }
     
     // implementation of makeRemoteFile(ExportSpecs)
-    public cbit.rmi.event.ExportEvent makeRemoteFile(cbit.vcell.export.server.ExportSpecs $param_ExportSpecs_1)
+    public cbit.vcell.export.ExportEvent makeRemoteFile(cbit.vcell.export.ExportSpecs $param_ExportSpecs_1)
 	throws DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_makeRemoteFile_14, new java.lang.Object[] {$param_ExportSpecs_1}, -2093121804079289022L);
-	    return ((cbit.rmi.event.ExportEvent) $result);
+	    return ((cbit.vcell.export.ExportEvent) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
