@@ -20,6 +20,7 @@ Export-Package: cbit.function,
  cbit.vcell.messaging.admin.sorttable,
  cbit.vcell.parser,
  cbit.vcell.units,
+ cbit.vcell.util.events,
  com.mhhe.clrs2e,
  edu.maine.graphalgorithms,
  org.vcell.util.threading
