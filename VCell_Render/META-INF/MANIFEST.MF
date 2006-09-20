@@ -8,4 +8,5 @@ Export-Package: cbit.render,
  cbit.render.unused
 Require-Bundle: org.vcell.common,
  org.vcell.util,
- org.vcell.expression
+ org.vcell.expression,
+ org.vcell.units
