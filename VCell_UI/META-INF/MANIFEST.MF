@@ -13,7 +13,12 @@ Require-Bundle: org.vcell.common,
  org.vcell.solvers,
  org.vcell.simdata,
  org.vcell.xml.compare,
- org.vcell.expression
+ org.vcell.expression,
+ org.vcell.cellml,
+ org.vcell.vcml,
+ org.vcell.xml.common,
+ org.vcell.units,
+ org.vcell.matrix
 Import-Package: org.osgi.framework;version="1.3.0"
 Export-Package: cbit.image.gui,
  cbit.vcell.client,

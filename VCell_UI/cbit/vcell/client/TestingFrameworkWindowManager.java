@@ -31,7 +31,6 @@ import java.awt.Component;
 import javax.swing.JComponent;
 import cbit.vcell.client.server.SimStatusEvent;
 import cbit.util.VCDataIdentifier;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.test.SimulationComparisonSummary;
 import cbit.vcell.solver.test.VariableComparisonSummary;
 import org.jdom.JDOMException;
@@ -50,6 +49,8 @@ import cbit.vcell.client.desktop.testingframework.TestCaseAddPanel;
 import cbit.vcell.export.ExportEvent;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.test.MathTestingUtilities;
+import cbit.vcell.solvers.VCSimulationDataIdentifier;
+
 import javax.swing.JOptionPane;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.numericstest.*;

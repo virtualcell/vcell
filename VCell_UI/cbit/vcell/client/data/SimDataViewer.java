@@ -4,7 +4,6 @@ import cbit.util.VCDataIdentifier;
 import cbit.vcell.math.Constant;
 import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.server.ODEDataManager;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.client.server.VCDataManager;
 import cbit.vcell.desktop.controls.ClientPDEDataContext;
 import cbit.vcell.desktop.controls.NewClientPDEDataContext;
@@ -12,6 +11,7 @@ import cbit.vcell.export.gui.ExportMonitorPanel;
 
 import javax.swing.*;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solvers.VCSimulationDataIdentifier;
 /**
  * Insert the type's description here.
  * Creation date: (10/17/2005 11:22:58 PM)

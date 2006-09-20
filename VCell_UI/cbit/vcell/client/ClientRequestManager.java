@@ -811,7 +811,7 @@ protected void downloadExportedData(final cbit.vcell.export.ExportEvent evt) {
 				fileChooser.setMultiSelectionEnabled(false);
 				fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_ZIP);
 				fileChooser.setFileFilter(FileFilters.FILE_FILTER_ZIP);
-			    String name = evt.getVCSimulationIdentifier().getID();
+			    String name = evt.getVCDataIdentifier().getID();
 			    //if (evt.getVCDataIdentifier() instanceof cbit.vcell.solver.SimulationInfo){
 				    //cbit.vcell.solver.SimulationInfo simInfo = (cbit.vcell.solver.SimulationInfo)evt.getVCDataIdentifier();
 				    //name = simInfo.getName();

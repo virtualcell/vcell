@@ -3,7 +3,7 @@ import cbit.util.DataAccessException;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.client.server.VCDataManager;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.solvers.VCSimulationDataIdentifier;
 /**
  * Insert the type's description here.
  * Creation date: (10/16/2005 2:42:43 PM)

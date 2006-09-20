@@ -31,7 +31,7 @@ public void dataJobMessage(DataJobEvent dje) {
  * @param event cbit.rmi.event.ExportEvent
  */
 public void exportMessage(cbit.vcell.export.ExportEvent event) {
-	getExportMonitorPanel().addExportEvent(event, event.getVCSimulationIdentifier().getID());
+	getExportMonitorPanel().addExportEvent(event, event.getVCDataIdentifier().getID());
 }
 
 

@@ -615,7 +615,7 @@ public void simStatusChanged(SimStatusEvent simStatusEvent) {
 	simManager.updateStatusFromServer(simulation);
 	// is there new data?
 	if (simStatusEvent.isNewDataEvent()) {
-		fireNewData(new DataEvent(this, new cbit.vcell.solver.VCSimulationDataIdentifier(simulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), simStatusEvent.getJobIndex())));
+		fireNewData(new DataEvent(this, new cbit.vcell.solvers.VCSimulationDataIdentifier(simulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), simStatusEvent.getJobIndex())));
 	}
 }
 

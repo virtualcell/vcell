@@ -28,6 +28,7 @@ import java.beans.*;
 import javax.swing.*;
 import cbit.vcell.client.server.*;
 import cbit.vcell.solver.*;
+import cbit.vcell.solvers.VCSimulationDataIdentifier;
 import cbit.vcell.xml.merge.gui.TMLPanel;
 /**
  * Insert the type's description here.
@@ -229,7 +230,10 @@ public void dataJobMessage(DataJobEvent event){
  * @param exportEvent cbit.rmi.event.ExportEvent
  */
 public void exportMessage(ExportEvent exportEvent) {
-	if (haveSimulationWindow(exportEvent.getVCSimulationIdentifier()) == null) {// && exportEvent.getEventTypeID() != ExportEvent.EXPORT_COMPLETE) {
+	if (!(exportEvent.getVCDataIdentifier() instanceof VCSimulationDataIdentifier)){
+		return;
+	}
+	if (haveSimulationWindow((VCSimulationIdentifier)exportEvent.getVCDataIdentifier()) == null) {// && exportEvent.getEventTypeID() != ExportEvent.EXPORT_COMPLETE) {
 		return;
 	}
 	// just pass them along...
