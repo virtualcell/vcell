@@ -6,7 +6,7 @@ import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.ParticleDataBlock;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SpatialSelection;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.solvers.VCSimulationDataIdentifier;
 
 /**
  * Insert the type's description here.
