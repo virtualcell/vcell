@@ -49,7 +49,7 @@ private Simulation getSimulation(VCSimulationIdentifier vcSimulationIdentifier) 
 	Simulation simulation = null;
 	try {
 		simulation = cbit.vcell.xml.XmlHelper.XMLToSim(simulationXML);
-	}catch (cbit.vcell.xml.XmlParseException e){
+	}catch (cbit.util.xml.XmlParseException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException(e.getMessage());
 	}

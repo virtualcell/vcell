@@ -3,7 +3,7 @@ import javax.jms.*;
 
 import cbit.gui.PropertyLoader;
 import cbit.util.SessionLog;
-import cbit.vcell.xml.XmlParseException;
+import cbit.util.xml.XmlParseException;
 import cbit.vcell.messaging.server.Worker;
 import cbit.vcell.messaging.server.SimulationTask;
 

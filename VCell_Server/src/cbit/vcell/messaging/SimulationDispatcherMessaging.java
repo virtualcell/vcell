@@ -3,6 +3,7 @@ import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.SessionLog;
 import cbit.util.User;
+import cbit.util.xml.XmlParseException;
 import cbit.vcell.solver.VCSimulationIdentifier;
 
 
@@ -21,7 +22,6 @@ import cbit.gui.PropertyLoader;
 import cbit.sql.KeyFactory;
 import cbit.sql.ConnectionFactory;
 import java.sql.SQLException;
-import cbit.vcell.xml.XmlParseException;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.server.AdminDatabaseServerXA;
 import cbit.vcell.server.SimulationStatus;

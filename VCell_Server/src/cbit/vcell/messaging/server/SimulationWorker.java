@@ -3,12 +3,13 @@ import cbit.gui.PropertyLoader;
 import cbit.util.ConfigurationException;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
+import cbit.util.xml.XmlParseException;
+
 import java.io.File;
 import java.util.Date;
 import javax.jms.*;
 import java.io.FileNotFoundException;
 import java.net.UnknownHostException;
-import cbit.vcell.xml.XmlParseException;
 import cbit.vcell.server.solvers.LsfSolver;
 import cbit.vcell.messaging.JmsUtils;
 import cbit.vcell.messaging.MessageConstants;

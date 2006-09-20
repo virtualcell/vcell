@@ -363,7 +363,7 @@ public String getBioModelXML(User user, KeyValue bioModelKey) throws DataAccessE
 	} catch (java.sql.SQLException e) {
 		e.printStackTrace(System.out);
 		throw new DataAccessException(e.getMessage());
-	} catch (cbit.vcell.xml.XmlParseException e) {
+	} catch (cbit.util.xml.XmlParseException e) {
 		e.printStackTrace(System.out);
 		throw new DataAccessException (e.getMessage());
 	}
@@ -494,7 +494,7 @@ public String getMathModelXML(User user, KeyValue mathModelKey) throws DataAcces
 	} catch (java.sql.SQLException e) {
 		e.printStackTrace(System.out);
 		throw new DataAccessException(e.getMessage());
-	} catch (cbit.vcell.xml.XmlParseException e) {
+	} catch (cbit.util.xml.XmlParseException e) {
 		e.printStackTrace(System.out);
 		throw new DataAccessException(e.getMessage());
 	}
@@ -671,7 +671,7 @@ private VersionInfo removeUserFromGroup0(User user, VersionInfo versionInfo, Ver
  * Insert the method's description here.
  * Creation date: (10/28/00 12:08:30 AM)
  */
-public String saveBioModel(User user, String bioModelXML, String newName, String independentSims[]) throws DataAccessException, java.sql.SQLException, java.beans.PropertyVetoException, MappingException, cbit.vcell.xml.XmlParseException {
+public String saveBioModel(User user, String bioModelXML, String newName, String independentSims[]) throws DataAccessException, java.sql.SQLException, java.beans.PropertyVetoException, MappingException, cbit.util.xml.XmlParseException {
 
 long start = System.currentTimeMillis();
 	//
@@ -1338,7 +1338,7 @@ System.out.println("------------------------------> Time spent on roundtrip: " +
  * Insert the method's description here.
  * Creation date: (10/28/00 12:08:30 AM)
  */
-public String saveGeometry(User user,String geometryXML,String newName) throws DataAccessException, cbit.vcell.xml.XmlParseException, java.sql.SQLException {
+public String saveGeometry(User user,String geometryXML,String newName) throws DataAccessException, cbit.util.xml.XmlParseException, java.sql.SQLException {
 
 	Geometry geometry = XmlHelper.XMLToGeometry(geometryXML);
 	
@@ -1406,7 +1406,7 @@ public String saveGeometry(User user,String geometryXML,String newName) throws D
  * Insert the method's description here.
  * Creation date: (10/28/00 12:08:30 AM)
  */
-public String saveMathModel(User user, String mathModelXML, String newName, String independentSims[]) throws DataAccessException, java.sql.SQLException, java.beans.PropertyVetoException, cbit.vcell.xml.XmlParseException {
+public String saveMathModel(User user, String mathModelXML, String newName, String independentSims[]) throws DataAccessException, java.sql.SQLException, java.beans.PropertyVetoException, cbit.util.xml.XmlParseException {
 	//
 	// this invokes "update" on the database layer
 	//
@@ -1818,7 +1818,7 @@ public String saveMathModel(User user, String mathModelXML, String newName, Stri
  * Creation date: (10/28/00 12:08:30 AM)
  * @deprecated for testing purposes only.
  */
-public String saveSimulation(User user, String simulationXML, boolean bForceIndependent) throws DataAccessException, java.sql.SQLException, java.beans.PropertyVetoException, cbit.vcell.xml.XmlParseException {
+public String saveSimulation(User user, String simulationXML, boolean bForceIndependent) throws DataAccessException, java.sql.SQLException, java.beans.PropertyVetoException, cbit.util.xml.XmlParseException {
 	//
 	// this invokes "update" on the database layer
 	//
@@ -2112,7 +2112,7 @@ public String saveSimulation(User user, String simulationXML, boolean bForceInde
  * Insert the method's description here.
  * Creation date: (10/28/00 12:08:30 AM)
  */
-public String saveVCImage(User user,String imageXML,String newName) throws DataAccessException, cbit.vcell.xml.XmlParseException, java.sql.SQLException {
+public String saveVCImage(User user,String imageXML,String newName) throws DataAccessException, cbit.util.xml.XmlParseException, java.sql.SQLException {
 
 	VCImage image = XmlHelper.XMLToImage(imageXML);
 	

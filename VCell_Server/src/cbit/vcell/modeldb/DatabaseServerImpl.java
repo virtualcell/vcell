@@ -1046,7 +1046,7 @@ public BigString saveBioModel(User user, BigString bioModelXML, String independe
 	}catch (java.beans.PropertyVetoException e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
-	}catch (cbit.vcell.xml.XmlParseException e){
+	}catch (cbit.util.xml.XmlParseException e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
 	}catch (SQLException e){
@@ -1077,7 +1077,7 @@ public BigString saveBioModelAs(User user, BigString bioModelXML, java.lang.Stri
 	}catch (SQLException e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
-	}catch (cbit.vcell.xml.XmlParseException e){
+	}catch (cbit.util.xml.XmlParseException e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
 	}
@@ -1096,7 +1096,7 @@ public BigString saveGeometry(User user, BigString geometryXML) throws cbit.util
 	log.print("DatabaseServerImpl.saveGeometry()");
 	try {
 		return new BigString(getServerDocumentManager().saveGeometry(user, geometryXML.toString(), null));
-	}catch (cbit.vcell.xml.XmlParseException e){
+	}catch (cbit.util.xml.XmlParseException e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
 	}catch (SQLException e){
@@ -1118,7 +1118,7 @@ public BigString saveGeometryAs(User user, BigString geometryXML, java.lang.Stri
 	log.print("DatabaseServerImpl.saveGeometryAs("+newName+")");
 	try {
 		return new BigString(getServerDocumentManager().saveGeometry(user, geometryXML.toString(), newName));
-	}catch (cbit.vcell.xml.XmlParseException e){
+	}catch (cbit.util.xml.XmlParseException e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
 	}catch (SQLException e){
@@ -1146,7 +1146,7 @@ public BigString saveMathModel(User user, BigString mathModelXML, String indepen
 	}catch (SQLException e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
-	}catch (cbit.vcell.xml.XmlParseException e){
+	}catch (cbit.util.xml.XmlParseException e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
 	}
@@ -1171,7 +1171,7 @@ public BigString saveMathModelAs(User user, BigString mathModelXML, java.lang.St
 	}catch (SQLException e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
-	}catch (cbit.vcell.xml.XmlParseException e){
+	}catch (cbit.util.xml.XmlParseException e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
 	}
@@ -1196,7 +1196,7 @@ public BigString saveSimulation(User user, BigString simulationXML, boolean bFor
 	}catch (SQLException e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
-	}catch (cbit.vcell.xml.XmlParseException e){
+	}catch (cbit.util.xml.XmlParseException e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
 	}
@@ -1215,7 +1215,7 @@ public BigString saveVCImage(User user, BigString vcImageXML) throws cbit.util.D
 	log.print("DatabaseServerImpl.saveVCImage()");
 	try {
 		return new BigString(getServerDocumentManager().saveVCImage(user, vcImageXML.toString(), null));
-	}catch (cbit.vcell.xml.XmlParseException e){
+	}catch (cbit.util.xml.XmlParseException e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
 	}catch (SQLException e){
@@ -1237,7 +1237,7 @@ public BigString saveVCImageAs(User user, BigString vcImageXML, java.lang.String
 	log.print("DatabaseServerImpl.saveVCImageAs(" + newName + ")");
 	try {
 		return new BigString(getServerDocumentManager().saveVCImage(user, vcImageXML.toString(), newName));
-	}catch (cbit.vcell.xml.XmlParseException e){
+	}catch (cbit.util.xml.XmlParseException e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
 	}catch (SQLException e){

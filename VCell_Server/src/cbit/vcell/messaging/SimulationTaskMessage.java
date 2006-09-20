@@ -4,7 +4,8 @@ import org.jdom.Element;
 import org.jdom.output.XMLOutputter;
 
 import cbit.gui.PropertyLoader;
-import cbit.vcell.xml.XmlParseException;
+import cbit.util.xml.XmlParseException;
+
 import org.jdom.input.SAXBuilder;
 import org.jdom.Document;
 import org.jdom.JDOMException;
@@ -93,7 +94,7 @@ private void parse(Message message) throws XmlParseException, JMSException {
  * @return javax.jms.Message
  * @param session cbit.vcell.messaging.VCellSession
  */
-public void sendSimulationTask(VCellQueueSession session) throws javax.jms.JMSException, cbit.vcell.xml.XmlParseException {
+public void sendSimulationTask(VCellQueueSession session) throws javax.jms.JMSException, cbit.util.xml.XmlParseException {
 	session.sendMessage(JmsUtils.getQueueSimJob(), toMessage(session), DeliveryMode.PERSISTENT, 0);
 }
 
@@ -115,7 +116,7 @@ private String simulation2XML() throws XmlParseException {
  * @return javax.jms.Message
  * @param session cbit.vcell.messaging.VCellSession
  */
-public javax.jms.Message toLsfInfoMessage(VCellJmsSession session, String jobid, String stdout, String stderr) throws javax.jms.JMSException, cbit.vcell.xml.XmlParseException {
+public javax.jms.Message toLsfInfoMessage(VCellJmsSession session, String jobid, String stdout, String stderr) throws javax.jms.JMSException, cbit.util.xml.XmlParseException {
 	Message message = session.createTextMessage(simulation2XML());
 	
 	message.setStringProperty(MessageConstants.LSFJOBID_PROPERTY, jobid);  //
@@ -134,7 +135,7 @@ public javax.jms.Message toLsfInfoMessage(VCellJmsSession session, String jobid,
  * @return javax.jms.Message
  * @param session cbit.vcell.messaging.VCellSession
  */
-private javax.jms.Message toMessage(VCellQueueSession session) throws javax.jms.JMSException, cbit.vcell.xml.XmlParseException {
+private javax.jms.Message toMessage(VCellQueueSession session) throws javax.jms.JMSException, cbit.util.xml.XmlParseException {
 	javax.jms.Message message = session.createTextMessage(simulation2XML());		
 
 	message.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_SIMULATION_JOB_VALUE); // must have

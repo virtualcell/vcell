@@ -148,7 +148,7 @@ public cbit.vcell.solver.Simulation getSimulation(User user, KeyValue simKey) th
 	if (simstr != null){
 		try {
 			sim = cbit.vcell.xml.XmlHelper.XMLToSim(simstr.toString());
-		}catch (cbit.vcell.xml.XmlParseException e){
+		}catch (cbit.util.xml.XmlParseException e){
 			e.printStackTrace(System.out);
 			throw new DataAccessException(e.getMessage());
 		}

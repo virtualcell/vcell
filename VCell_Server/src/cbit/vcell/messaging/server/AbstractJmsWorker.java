@@ -3,10 +3,11 @@ import javax.jms.*;
 
 import cbit.util.SessionLog;
 import cbit.util.StdoutSessionLog;
+import cbit.util.xml.XmlParseException;
+
 import java.io.FileNotFoundException;
 import java.net.UnknownHostException;
 import java.util.Date;
-import cbit.vcell.xml.XmlParseException;
 import cbit.vcell.solvers.SolverEvent;
 import cbit.vcell.solvers.SolverException;
 import cbit.vcell.messaging.WorkerMessaging;
