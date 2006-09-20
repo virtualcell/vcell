@@ -2208,7 +2208,7 @@ public Node flatten() throws ExpressionException {
  * Creation date: (12/20/2002 2:20:27 PM)
  * @return int
  */
-int getFunction() {
+public int getFunction() {
 	return funcType;
 }
 

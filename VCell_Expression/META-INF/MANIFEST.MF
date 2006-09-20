@@ -10,4 +10,6 @@ Export-Package: cbit.vcell.parser,
  cbit.vcell.parser.gui,
  org.vcell.expression
 Require-Bundle: org.vcell.common,
- org.vcell.util
+ org.vcell.util,
+ org.vcell.units,
+ org.vcell.xml.common

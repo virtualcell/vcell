@@ -11,7 +11,7 @@ package cbit.vcell.parser;
    between nodes. */
 import net.sourceforge.interval.ia_math.*;
 
-interface Node {
+public interface Node {
 
   /** Bind method, identifiers bind themselves to ValueObjects */
   void bind(SymbolTable symbolTable) 

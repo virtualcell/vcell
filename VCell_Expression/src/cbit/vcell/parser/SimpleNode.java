@@ -14,11 +14,11 @@ public abstract class SimpleNode implements Node, java.io.Serializable {
   protected Object info;
   transient private RealInterval ival = null;
 
-  final static int LANGUAGE_DEFAULT = 0;
-  final static int LANGUAGE_C = 1;
-  final static int LANGUAGE_MATLAB = 2;
-  final static int LANGUAGE_JSCL = 3;
-  final static int LANGUAGE_ECLiPSe = 4;
+  public final static int LANGUAGE_DEFAULT = 0;
+  public final static int LANGUAGE_C = 1;
+  public final static int LANGUAGE_MATLAB = 2;
+  public final static int LANGUAGE_JSCL = 3;
+  public final static int LANGUAGE_ECLiPSe = 4;
 
   final static NameScope NAMESCOPE_DEFAULT = null;
 

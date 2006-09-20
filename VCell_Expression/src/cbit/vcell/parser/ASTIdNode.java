@@ -323,4 +323,7 @@ public void substituteBoundSymbols() throws ExpressionException {
 public String toString() {
 	return "IdNode (" + name + ")";
 }
+public String getName() {
+	return name;
+}
 }

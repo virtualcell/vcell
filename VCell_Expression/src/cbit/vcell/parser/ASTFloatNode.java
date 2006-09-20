@@ -42,6 +42,10 @@ ASTFloatNode (int id) {
 		  return value.toString();
 	  }
   }        
+  
+public double getValue() {
+	return value.doubleValue();
+}
 /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node

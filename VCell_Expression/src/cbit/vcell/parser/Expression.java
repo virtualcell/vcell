@@ -343,7 +343,7 @@ private String getNormalizedInfixString() {
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.SimpleNode
  */
-SimpleNode getRootNode() {
+public SimpleNode getRootNode() {
 	return rootNode;
 }
 /**
