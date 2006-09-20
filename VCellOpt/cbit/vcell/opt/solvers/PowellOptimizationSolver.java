@@ -79,7 +79,7 @@ public OptimizationResultSet solve(OptimizationSpec os, OptimizationSolverSpec o
 		System.out.println("final "+parameters[i].getName()+" = "+parameterValues[i]);
 	}
 
-	cbit.vcell.solver.ode.ODESolverResultSet odeSolverResultSet = null;
+	cbit.vcell.simdata.ODESolverResultSet odeSolverResultSet = null;
 	cbit.function.ScalarFunction scalarFunction = augmentedObjFunc.getUnconstrainedScalarFunction();
 	if (scalarFunction instanceof OdeLSFunction){
 		OdeLSFunction odeLSFunction = (OdeLSFunction)scalarFunction;

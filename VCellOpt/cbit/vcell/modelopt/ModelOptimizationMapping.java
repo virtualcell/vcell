@@ -4,7 +4,8 @@ import java.util.Vector;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.opt.OptimizationSpec;
-import cbit.vcell.solver.ode.RowColumnResultSet;
+import cbit.vcell.simdata.FunctionFileGenerator;
+import cbit.vcell.simdata.RowColumnResultSet;
 /**
  * Insert the type's description here.
  * Creation date: (8/22/2005 9:26:10 AM)
@@ -209,18 +210,18 @@ public ModelOptimizationSpec getModelOptimizationSpec() {
  * @return cbit.vcell.solver.ode.ODESolverResultSet
  * @param optResultSet cbit.vcell.opt.OptimizationResultSet
  */
-public static cbit.vcell.solver.ode.ODESolverResultSet getOdeSolverResultSet(OptimizationSpec optSpec, cbit.vcell.opt.OptimizationResultSet optResultSet) throws cbit.vcell.parser.ExpressionException {
+public static cbit.vcell.simdata.ODESolverResultSet getOdeSolverResultSet(OptimizationSpec optSpec, cbit.vcell.opt.OptimizationResultSet optResultSet) throws cbit.vcell.parser.ExpressionException {
 	if (optResultSet==null || optResultSet.getParameterNames()==null || optResultSet.getSolutionNames()==null){
 		return null;
 	}
 	String[] solutionNames = optResultSet.getSolutionNames();
 	if (solutionNames!=null && solutionNames.length>0){
-		cbit.vcell.solver.ode.ODESolverResultSet odeSolverResultSet = new cbit.vcell.solver.ode.ODESolverResultSet();
+		cbit.vcell.simdata.ODESolverResultSet odeSolverResultSet = new cbit.vcell.simdata.ODESolverResultSet();
 		//
 		// add data column descriptions
 		//
 		for (int i = 0; i < solutionNames.length; i++){
-			odeSolverResultSet.addDataColumn(new cbit.vcell.solver.ode.ODESolverResultSetColumnDescription(solutionNames[i]));
+			odeSolverResultSet.addDataColumn(new cbit.vcell.simdata.ODESolverResultSetColumnDescription(solutionNames[i]));
 		}
 		//
 		// add row data
@@ -252,13 +253,13 @@ public static cbit.vcell.solver.ode.ODESolverResultSet getOdeSolverResultSet(Opt
 		//
 		// add functions (evaluating them at optimal parameter)
 		//
-		cbit.vcell.math.AnnotatedFunction[] annotatedFunctions = cbit.vcell.solvers.FVSolver.createAnnotatedFunctionsList(simulation);
+		cbit.vcell.math.AnnotatedFunction[] annotatedFunctions = FunctionFileGenerator.createAnnotatedFunctionsList(simulation);
 		for (int i = 0; i < annotatedFunctions.length; i++){
 			cbit.vcell.parser.Expression funcExp = annotatedFunctions[i].getExpression();
 			for (int j = 0; j < optResultSet.getParameterNames().length; j ++) {
 				funcExp.substituteInPlace(new cbit.vcell.parser.Expression(optResultSet.getParameterNames()[j]), new cbit.vcell.parser.Expression(optResultSet.getParameterValues()[j]));
 			}
-			odeSolverResultSet.addFunctionColumn(new cbit.vcell.solver.ode.FunctionColumnDescription(annotatedFunctions[i].getExpression(),annotatedFunctions[i].getName(),null,annotatedFunctions[i].getName(),false));
+			odeSolverResultSet.addFunctionColumn(new cbit.vcell.simdata.FunctionColumnDescription(annotatedFunctions[i].getExpression(),annotatedFunctions[i].getName(),null,annotatedFunctions[i].getName(),false));
 		}
 
 		return odeSolverResultSet;
@@ -353,7 +354,7 @@ private cbit.vcell.opt.ReferenceData getRemappedReferenceData(cbit.vcell.mapping
 	for (int i = 0; i < modelObjectList.size(); i++){
 		cbit.vcell.parser.SymbolTableEntry modelObject = (cbit.vcell.parser.SymbolTableEntry)modelObjectList.elementAt(i);
 		String symbol = mathMapping.getMathSymbol(modelObject,structureMapping);
-		rowColResultSet.addDataColumn(new cbit.vcell.solver.ode.ODESolverResultSetColumnDescription(symbol));
+		rowColResultSet.addDataColumn(new cbit.vcell.simdata.ODESolverResultSetColumnDescription(symbol));
 	}
 
 	//

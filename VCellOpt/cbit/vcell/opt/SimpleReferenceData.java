@@ -1,7 +1,7 @@
 package cbit.vcell.opt;
 import cbit.util.DataAccessException;
-import cbit.vcell.solver.ode.ColumnDescription;
-import cbit.vcell.solver.ode.RowColumnResultSet;
+import cbit.vcell.simdata.ColumnDescription;
+import cbit.vcell.simdata.RowColumnResultSet;
 /**
  * Insert the type's description here.
  * Creation date: (8/3/2005 3:07:17 PM)

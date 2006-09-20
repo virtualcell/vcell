@@ -131,7 +131,7 @@ public ModelOptimizationSpec getModelOptimizationSpec() {
  * Creation date: (5/2/2006 11:10:40 PM)
  * @return cbit.vcell.solver.ode.ODESolverResultSet
  */
-public cbit.vcell.solver.ode.ODESolverResultSet getOdeSolverResultSet() throws ExpressionException {
+public cbit.vcell.simdata.ODESolverResultSet getOdeSolverResultSet() throws ExpressionException {
 	return ModelOptimizationMapping.getOdeSolverResultSet(getModelOptimizationMapping().getOptimizationSpec(),getOptimizationResultSet());
 }
 

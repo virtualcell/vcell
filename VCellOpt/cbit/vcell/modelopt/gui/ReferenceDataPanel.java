@@ -12,7 +12,7 @@ package cbit.vcell.modelopt.gui;
 import cbit.util.UserCancelException;
 import cbit.vcell.export.CSV;
 import cbit.vcell.opt.ReferenceData;
-import cbit.vcell.solver.ode.RowColumnResultSet;
+import cbit.vcell.simdata.RowColumnResultSet;
 
 import java.io.File;
 /**
@@ -755,7 +755,7 @@ private ReferenceData subsample() {
 	RowColumnResultSet rc = new RowColumnResultSet();
 	String[] columnNames = refData.getColumnNames();
 	for (int i = 0; i < columnNames.length; i++){
-		rc.addDataColumn(new cbit.vcell.solver.ode.ODESolverResultSetColumnDescription(columnNames[i]));
+		rc.addDataColumn(new cbit.vcell.simdata.ODESolverResultSetColumnDescription(columnNames[i]));
 	}
 	for (int i = 0; i < refData.getNumRows(); i++){
 		rc.addRow((double[])refData.getRowData(i).clone());

@@ -73,7 +73,7 @@ public OptimizationResultSet solve(OptimizationSpec os, OptimizationSolverSpec o
 			System.out.println("final "+parameters[i].getName()+": scaled = "+parameterValues[i]+", unscaled = "+(parameterValues[i]*scalings[i]));
 		}
 
-		cbit.vcell.solver.ode.ODESolverResultSet odeSolverResultSet = null;
+		cbit.vcell.simdata.ODESolverResultSet odeSolverResultSet = null;
 		cbit.function.ScalarFunction scalarFunction = augmentedObjFunc.getUnconstrainedScalarFunction();
 		if (scalarFunction instanceof cbit.vcell.opt.solvers.OdeLSFunction){
 			OdeLSFunction odeLSFunction = (OdeLSFunction)scalarFunction;
@@ -87,7 +87,7 @@ public OptimizationResultSet solve(OptimizationSpec os, OptimizationSolverSpec o
 		return new OptimizationResultSet(os.getParameterNames(),parameterValues,new Double(fret),optSolverCallbacks.getEvaluationCount(),odeSolverResultSet, optStatus);
 	}catch (OptimizationException e){
 		OptimizationStatus optStatus = new OptimizationStatus(OptimizationStatus.FAILED, e.getMessage());
-		cbit.vcell.solver.ode.ODESolverResultSet odeSolverResultSet = null;
+		cbit.vcell.simdata.ODESolverResultSet odeSolverResultSet = null;
 		Double objFunctionValue = null;
 		double parameterVector[] = null;
 		if (optSolverCallbacks.getBestEvaluation()!=null){

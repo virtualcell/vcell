@@ -3,8 +3,8 @@ import cbit.util.GroupAccessNone;
 import cbit.util.KeyValue;
 import cbit.util.User;
 import cbit.util.VersionFlag;
-import cbit.vcell.solver.ode.FunctionColumnDescription;
-import cbit.vcell.solver.ode.RowColumnResultSet;
+import cbit.vcell.simdata.FunctionColumnDescription;
+import cbit.vcell.simdata.RowColumnResultSet;
 import cbit.vcell.parser.*;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.solver.Simulation;
@@ -18,7 +18,7 @@ public class OdeLSFunction extends cbit.function.DefaultScalarFunction {
 //	private cbit.vcell.opt.Parameter[] parameters = null;
 	private String unscaledParameterNames[] = null;
 	private double parameterScalings[] = null;
-	private cbit.vcell.solver.ode.ODESolverResultSet odeSolverResultSet = null;
+	private cbit.vcell.simdata.ODESolverResultSet odeSolverResultSet = null;
 	private java.io.File directory = null;
 	private OptSolverCallbacks optSolverCallbacks = null;
 
@@ -116,9 +116,9 @@ private double calculateWeightedError(double[] x) {
 		//
 		// copy into OdeSolverResultSet
 		//
-		cbit.vcell.solver.ode.ODESolverResultSet tempOdeSolverResultSet = new cbit.vcell.solver.ode.ODESolverResultSet();
+		cbit.vcell.simdata.ODESolverResultSet tempOdeSolverResultSet = new cbit.vcell.simdata.ODESolverResultSet();
 		for (int i = 0; i < rcResultSet.getDataColumnCount(); i++){
-			tempOdeSolverResultSet.addDataColumn(new cbit.vcell.solver.ode.ODESolverResultSetColumnDescription(rcResultSet.getColumnDescriptions(i).getName()));
+			tempOdeSolverResultSet.addDataColumn(new cbit.vcell.simdata.ODESolverResultSetColumnDescription(rcResultSet.getColumnDescriptions(i).getName()));
 		}
 		for (int i = 0; i < rcResultSet.getRowCount(); i++){
 			tempOdeSolverResultSet.addRow(rcResultSet.getRow(i));
@@ -128,7 +128,7 @@ private double calculateWeightedError(double[] x) {
 		//
 		cbit.vcell.math.Function functions[] = simulation.getFunctions();
 		for (int i = 0; i < functions.length; i++){
-			if (cbit.vcell.solvers.AbstractSolver.isFunctionSaved(functions[i])){
+			if (cbit.vcell.simdata.FunctionFileGenerator.isFunctionSaved(functions[i])){
 				Expression exp1 = new Expression(functions[i].getExpression());
 				try {
 					exp1 = simulation.substituteFunctions(exp1);
@@ -161,7 +161,7 @@ private double calculateWeightedError(double[] x) {
 	} catch (java.beans.PropertyVetoException e){
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
-	} catch (cbit.vcell.solver.SolverException e){
+	} catch (cbit.vcell.solvers.SolverException e){
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
 	} catch (cbit.vcell.parser.ExpressionException e){
@@ -197,7 +197,7 @@ public int getNumArgs() {
  * Creation date: (9/6/2005 9:18:19 AM)
  * @return cbit.vcell.solver.ode.ODESolverResultSet
  */
-public cbit.vcell.solver.ode.ODESolverResultSet getOdeSolverResultSet() {
+public cbit.vcell.simdata.ODESolverResultSet getOdeSolverResultSet() {
 	return odeSolverResultSet;
 }
 }
