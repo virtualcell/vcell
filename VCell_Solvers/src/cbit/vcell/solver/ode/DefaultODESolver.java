@@ -10,7 +10,12 @@ import java.util.*;
 import cbit.vcell.math.*;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.simdata.FunctionColumnDescription;
+import cbit.vcell.simdata.FunctionFileGenerator;
+import cbit.vcell.simdata.ODESolverResultSet;
+import cbit.vcell.simdata.ODESolverResultSetColumnDescription;
 import cbit.vcell.solver.*;
+import cbit.vcell.solvers.SolverException;
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 8:56:23 PM)
@@ -150,7 +155,7 @@ private ODESolverResultSet createODESolverResultSet() throws ExpressionException
 
 	Variable variables[] = getSimulation().getVariables();
 	for (int i = 0; i < variables.length; i++){
-		if (variables[i] instanceof Function && isFunctionSaved((Function)variables[i])){
+		if (variables[i] instanceof Function && FunctionFileGenerator.isFunctionSaved((Function)variables[i])){
 			Function function = (Function)variables[i];
 			Expression exp1 = new Expression(function.getExpression());
 			try {
@@ -173,7 +178,7 @@ private ODESolverResultSet createODESolverResultSet() throws ExpressionException
 		}
 		StateVariable stateVars[] = (StateVariable[])cbit.util.BeanUtils.getArray(fieldStateVariables,StateVariable.class);
 		for (int i = 0; i < variables.length; i++){
-			if (variables[i] instanceof Function && isFunctionSaved((Function)variables[i])){
+			if (variables[i] instanceof Function && FunctionFileGenerator.isFunctionSaved((Function)variables[i])){
 				Function depSensFunction = (Function)variables[i];
 				Expression depSensFnExpr = new Expression(depSensFunction.getExpression());
 				try {

@@ -1,5 +1,10 @@
 package cbit.vcell.solver.ode;
 import cbit.vcell.math.*;
+import cbit.vcell.simdata.FunctionColumnDescription;
+import cbit.vcell.simdata.FunctionFileGenerator;
+import cbit.vcell.simdata.ODESimData;
+import cbit.vcell.simdata.ODESolverResultSet;
+import cbit.vcell.simdata.ODESolverResultSetColumnDescription;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solvers.*;
 /*©
@@ -141,7 +146,7 @@ public ODESolverResultSet getODESolverResultSet()  {
 	//
 	cbit.vcell.math.Function functions[] = getSimulation().getFunctions();
 	for (int i = 0; i < functions.length; i++){
-		if (isFunctionSaved(functions[i])){
+		if (FunctionFileGenerator.isFunctionSaved(functions[i])){
 			Expression exp1 = new Expression(functions[i].getExpression());
 			try {
 				exp1 = getSimulation().substituteFunctions(exp1);
@@ -175,7 +180,7 @@ public ODESolverResultSet getODESolverResultSet()  {
 			StateVariable stateVars[] = createStateVariables();
 						
 			for (int i = 0; i < variables.length; i++){
-				if (variables[i] instanceof Function && isFunctionSaved((Function)variables[i])){
+				if (variables[i] instanceof Function && FunctionFileGenerator.isFunctionSaved((Function)variables[i])){
 					Function depSensFunction = (Function)variables[i];
 					Expression depSensFnExpr = new Expression(depSensFunction.getExpression());
 					depSensFnExpr = getSimulation().substituteFunctions(depSensFnExpr);

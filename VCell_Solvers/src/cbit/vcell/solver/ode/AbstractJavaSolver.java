@@ -5,8 +5,12 @@ import java.io.*;
  * All rights reserved.
 ©*/
 import cbit.util.SessionLog;
+import cbit.vcell.simdata.ODESimData;
+import cbit.vcell.simdata.ODESolverResultSet;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.*;
+import cbit.vcell.solvers.SolverException;
+import cbit.vcell.solvers.SolverStatus;
 /**
  * Some of this class' stuff could/should go into an AbstractSolver
  * base class...just have to wait until we finalize Solver's interface.
@@ -40,7 +44,7 @@ public double calculateMachineEpsilon () {
 /**
  * Insert the method's description here.
  * Creation date: (4/24/01 9:40:35 AM)
- * @exception cbit.vcell.solver.SolverException The exception description.
+ * @exception cbit.vcell.solvers.SolverException The exception description.
  */
 protected final void checkForUserStop() throws UserStopException {
 	if (bUserStopRequest){
@@ -73,7 +77,7 @@ public int getSaveToFileInterval() {
 /**
  *  This method takes the place of the old runUnsteady()...
  */
-protected abstract void initialize() throws cbit.vcell.solver.SolverException;
+protected abstract void initialize() throws cbit.vcell.solvers.SolverException;
 
 
 /**

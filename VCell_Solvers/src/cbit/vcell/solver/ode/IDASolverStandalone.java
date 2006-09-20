@@ -2,8 +2,8 @@ package cbit.vcell.solver.ode;
 
 import cbit.gui.PropertyLoader;
 import cbit.util.SessionLog;
-import cbit.vcell.solver.SolverStatus;
-import cbit.vcell.solver.SolverException;
+import cbit.vcell.solvers.SolverException;
+import cbit.vcell.solvers.SolverStatus;
 /**
  * Insert the type's description here.
  * Creation date: (10/23/2004 8:07:49 AM)
@@ -15,15 +15,15 @@ public class IDASolverStandalone extends IDASolver {
  * @param simulation cbit.vcell.solver.Simulation
  * @param directory java.io.File
  * @param sessionLog cbit.vcell.server.SessionLog
- * @exception cbit.vcell.solver.SolverException The exception description.
+ * @exception cbit.vcell.solvers.SolverException The exception description.
  */
-public IDASolverStandalone(cbit.vcell.solver.SimulationJob simulationJob, java.io.File directory, SessionLog sessionLog) throws cbit.vcell.solver.SolverException {
+public IDASolverStandalone(cbit.vcell.solver.SimulationJob simulationJob, java.io.File directory, SessionLog sessionLog) throws cbit.vcell.solvers.SolverException {
 	super(simulationJob, directory, sessionLog);
 }
 /**
  *  This method takes the place of the old runUnsteady()...
  */
-public void initialize() throws cbit.vcell.solver.SolverException {
+public void initialize() throws cbit.vcell.solvers.SolverException {
 	SessionLog sessionLog = getSessionLog();
 	sessionLog.print("IDASolver.initialize()");
 	fireSolverStarting("IDASolver initializing...");

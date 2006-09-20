@@ -7,7 +7,6 @@ import cbit.vcell.solver.SimulationJob;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.solver.SolverStatus;
 /**
  * This type was created in VisualAge.
  */
@@ -43,9 +42,9 @@ public String getHost() throws java.rmi.RemoteException, cbit.util.DataAccessExc
  * This method was created in VisualAge.
  * @return cbit.vcell.solvers.ExecutableStatus
  */
-public double getProgress() throws RemoteException, cbit.vcell.solver.SolverNotRunningException, cbit.util.DataAccessException {
+public double getProgress() throws RemoteException, cbit.vcell.solvers.SolverNotRunningException, cbit.util.DataAccessException {
 	if (solverController==null){
-		throw new cbit.vcell.solver.SolverNotRunningException("solver not running");
+		throw new cbit.vcell.solvers.SolverNotRunningException("solver not running");
 	}
 	double progress = solverController.getProgress();
 	//

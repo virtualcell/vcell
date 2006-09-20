@@ -3,6 +3,7 @@ package cbit.vcell.solver.ode;
 import cbit.util.SessionLog;
 import java.io.*;
 import cbit.vcell.solver.*;
+import cbit.vcell.solvers.SolverException;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -29,7 +30,7 @@ public RungeKuttaFourSolver(SimulationJob simulationJob, File directory, Session
  *  t is the current time
  *  h is the time step
  */
-protected void step(double t, double h) throws cbit.vcell.solver.SolverException {
+protected void step(double t, double h) throws cbit.vcell.solvers.SolverException {
 	try {
 		double oldValues[] = getValueVector(0);
 		double newValues[] = getValueVector(1);
@@ -79,7 +80,7 @@ protected void step(double t, double h) throws cbit.vcell.solver.SolverException
 			newValues[I] = oldValues[I] + (k[0][I] + 2.0 * k[1][I] + 2.0 * k[2][I] + k[3][I]) / 6.0;
 		}
 	} catch (ExpressionException expressionException) {
-		throw new cbit.vcell.solver.SolverException(expressionException.getMessage());
+		throw new cbit.vcell.solvers.SolverException(expressionException.getMessage());
 	}
 }
 }

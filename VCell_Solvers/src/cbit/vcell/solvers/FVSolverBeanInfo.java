@@ -20,7 +20,7 @@ public java.beans.MethodDescriptor addSolverListener_cbitvcellsolverSolverListen
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.solver.SolverListener.class
+				cbit.vcell.solvers.SolverListener.class
 			};
 			aMethod = getBeanClass().getMethod("addSolverListener", aParameterTypes);
 		} catch (java.lang.Throwable exception) {
@@ -431,7 +431,7 @@ public java.beans.MethodDescriptor removeSolverListener_cbitvcellsolverSolverLis
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.solver.SolverListener.class
+				cbit.vcell.solvers.SolverListener.class
 			};
 			aMethod = getBeanClass().getMethod("removeSolverListener", aParameterTypes);
 		} catch (java.lang.Throwable exception) {
@@ -561,7 +561,7 @@ public java.beans.EventSetDescriptor solverEventSetDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class anAddMethodParameterTypes[] = {
-					cbit.vcell.solver.SolverListener.class
+					cbit.vcell.solvers.SolverListener.class
 				};
 				anAddMethod = getBeanClass().getMethod("addSolverListener", anAddMethodParameterTypes);
 			} catch (java.lang.Throwable exception) {
@@ -573,7 +573,7 @@ public java.beans.EventSetDescriptor solverEventSetDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aRemoveMethodParameterTypes[] = {
-					cbit.vcell.solver.SolverListener.class
+					cbit.vcell.solvers.SolverListener.class
 				};
 				aRemoveMethod = getBeanClass().getMethod("removeSolverListener", aRemoveMethodParameterTypes);
 			} catch (java.lang.Throwable exception) {
@@ -583,7 +583,7 @@ public java.beans.EventSetDescriptor solverEventSetDescriptor() {
 			};
 			aDescriptor = new java.beans.EventSetDescriptor(
 						"solver", 
-						cbit.vcell.solver.SolverListener.class, 
+						cbit.vcell.solvers.SolverListener.class, 
 						eventMethodDescriptors, anAddMethod, aRemoveMethod);
 		} catch (java.lang.Throwable exception) {
 			/* Using method descriptors failed, try using the methods names. */
@@ -597,7 +597,7 @@ public java.beans.EventSetDescriptor solverEventSetDescriptor() {
 				"solverPrinted"			};
 			aDescriptor = new java.beans.EventSetDescriptor(getBeanClass(), 
 						"solver", 
-						cbit.vcell.solver.SolverListener.class, 
+						cbit.vcell.solvers.SolverListener.class, 
 						eventMethodNames, 
 						"addSolverListener", 
 						"removeSolverListener");
@@ -625,13 +625,13 @@ public java.beans.MethodDescriptor solversolverAborted_cbitvcellsolverSolverEven
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.solver.SolverEvent.class
+				cbit.vcell.solvers.SolverEvent.class
 			};
-			aMethod = (cbit.vcell.solver.SolverListener.class).getMethod("solverAborted", aParameterTypes);
+			aMethod = (cbit.vcell.solvers.SolverListener.class).getMethod("solverAborted", aParameterTypes);
 		} catch (java.lang.Throwable exception) {
 			/* Since getMethod failed, call findMethod. */
 			handleException(exception);
-			aMethod = findMethod((cbit.vcell.solver.SolverListener.class), "solverAborted", 1);
+			aMethod = findMethod((cbit.vcell.solvers.SolverListener.class), "solverAborted", 1);
 		};
 		try {
 			/* Try creating the method descriptor with parameter descriptors. */
@@ -669,13 +669,13 @@ public java.beans.MethodDescriptor solversolverFinished_cbitvcellsolverSolverEve
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.solver.SolverEvent.class
+				cbit.vcell.solvers.SolverEvent.class
 			};
-			aMethod = (cbit.vcell.solver.SolverListener.class).getMethod("solverFinished", aParameterTypes);
+			aMethod = (cbit.vcell.solvers.SolverListener.class).getMethod("solverFinished", aParameterTypes);
 		} catch (java.lang.Throwable exception) {
 			/* Since getMethod failed, call findMethod. */
 			handleException(exception);
-			aMethod = findMethod((cbit.vcell.solver.SolverListener.class), "solverFinished", 1);
+			aMethod = findMethod((cbit.vcell.solvers.SolverListener.class), "solverFinished", 1);
 		};
 		try {
 			/* Try creating the method descriptor with parameter descriptors. */
@@ -713,13 +713,13 @@ public java.beans.MethodDescriptor solversolverPrinted_cbitvcellsolverSolverEven
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.solver.SolverEvent.class
+				cbit.vcell.solvers.SolverEvent.class
 			};
-			aMethod = (cbit.vcell.solver.SolverListener.class).getMethod("solverPrinted", aParameterTypes);
+			aMethod = (cbit.vcell.solvers.SolverListener.class).getMethod("solverPrinted", aParameterTypes);
 		} catch (java.lang.Throwable exception) {
 			/* Since getMethod failed, call findMethod. */
 			handleException(exception);
-			aMethod = findMethod((cbit.vcell.solver.SolverListener.class), "solverPrinted", 1);
+			aMethod = findMethod((cbit.vcell.solvers.SolverListener.class), "solverPrinted", 1);
 		};
 		try {
 			/* Try creating the method descriptor with parameter descriptors. */
@@ -757,13 +757,13 @@ public java.beans.MethodDescriptor solversolverStarted_cbitvcellsolverSolverEven
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.solver.SolverEvent.class
+				cbit.vcell.solvers.SolverEvent.class
 			};
-			aMethod = (cbit.vcell.solver.SolverListener.class).getMethod("solverStarted", aParameterTypes);
+			aMethod = (cbit.vcell.solvers.SolverListener.class).getMethod("solverStarted", aParameterTypes);
 		} catch (java.lang.Throwable exception) {
 			/* Since getMethod failed, call findMethod. */
 			handleException(exception);
-			aMethod = findMethod((cbit.vcell.solver.SolverListener.class), "solverStarted", 1);
+			aMethod = findMethod((cbit.vcell.solvers.SolverListener.class), "solverStarted", 1);
 		};
 		try {
 			/* Try creating the method descriptor with parameter descriptors. */
@@ -801,13 +801,13 @@ public java.beans.MethodDescriptor solversolverStepped_cbitvcellsolverSolverEven
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.solver.SolverEvent.class
+				cbit.vcell.solvers.SolverEvent.class
 			};
-			aMethod = (cbit.vcell.solver.SolverListener.class).getMethod("solverStepped", aParameterTypes);
+			aMethod = (cbit.vcell.solvers.SolverListener.class).getMethod("solverStepped", aParameterTypes);
 		} catch (java.lang.Throwable exception) {
 			/* Since getMethod failed, call findMethod. */
 			handleException(exception);
-			aMethod = findMethod((cbit.vcell.solver.SolverListener.class), "solverStepped", 1);
+			aMethod = findMethod((cbit.vcell.solvers.SolverListener.class), "solverStepped", 1);
 		};
 		try {
 			/* Try creating the method descriptor with parameter descriptors. */
@@ -845,13 +845,13 @@ public java.beans.MethodDescriptor solversolverStopped_cbitvcellsolverSolverEven
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.solver.SolverEvent.class
+				cbit.vcell.solvers.SolverEvent.class
 			};
-			aMethod = (cbit.vcell.solver.SolverListener.class).getMethod("solverStopped", aParameterTypes);
+			aMethod = (cbit.vcell.solvers.SolverListener.class).getMethod("solverStopped", aParameterTypes);
 		} catch (java.lang.Throwable exception) {
 			/* Since getMethod failed, call findMethod. */
 			handleException(exception);
-			aMethod = findMethod((cbit.vcell.solver.SolverListener.class), "solverStopped", 1);
+			aMethod = findMethod((cbit.vcell.solvers.SolverListener.class), "solverStopped", 1);
 		};
 		try {
 			/* Try creating the method descriptor with parameter descriptors. */

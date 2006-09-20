@@ -1,6 +1,6 @@
 package cbit.vcell.solvers;
 
-import cbit.vcell.solver.ode.RowColumnResultSet;
+import cbit.vcell.simdata.RowColumnResultSet;
 
 /**
  * Insert the type's description here.

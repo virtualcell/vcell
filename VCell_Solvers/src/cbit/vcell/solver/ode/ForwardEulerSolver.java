@@ -8,6 +8,7 @@ import java.io.*;
 ©*/
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.*;
+import cbit.vcell.solvers.SolverException;
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 8:57:32 PM)

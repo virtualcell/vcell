@@ -9,6 +9,7 @@ import java.io.*;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.math.MathException;
 import cbit.vcell.solver.*;
+import cbit.vcell.solvers.SolverException;
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 8:59:50 PM)
@@ -39,7 +40,7 @@ public double calculateErrorTerm(int i) {
 	int I = getVariableIndex(i);
 	return (e[0]*k[0][I] + e[1]*k[1][I] + e[2]*k[2][I] + e[3]*k[3][I] + e[4]*k[4][I] + e[5]*k[5][I]);
 }
-protected void integrate() throws cbit.vcell.solver.SolverException, UserStopException, IOException {
+protected void integrate() throws cbit.vcell.solvers.SolverException, UserStopException, IOException {
 	try {
 		// Get machine epsilon
 		final double DBL_EPSILON = 1.0E-12;

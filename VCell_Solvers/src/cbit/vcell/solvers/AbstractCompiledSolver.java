@@ -66,7 +66,7 @@ public double getProgress() {
 /**
  *  This method takes the place of the old runUnsteady()...
  */
-public abstract void initialize() throws cbit.vcell.solver.SolverException;
+public abstract void initialize() throws cbit.vcell.solvers.SolverException;
 /**
  * Insert the method's description here.
  * Creation date: (6/27/2001 2:33:03 PM)

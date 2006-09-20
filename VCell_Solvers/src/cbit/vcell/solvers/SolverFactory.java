@@ -2,9 +2,7 @@ package cbit.vcell.solvers;
 
 import cbit.util.SessionLog;
 import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.Solver;
 import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.ode.*;
 import java.io.*;
 /*©
@@ -21,7 +19,7 @@ public class SolverFactory {
 /**
  * createODESolver method comment.
  */
-public static cbit.vcell.solver.Solver createSolver(SessionLog sessionLog, File directory, SimulationJob simJob) throws SolverException {
+public static cbit.vcell.solvers.Solver createSolver(SessionLog sessionLog, File directory, SimulationJob simJob) throws SolverException {
 	SolverDescription solverDescription = simJob.getWorkingSim().getSolverTaskDescription().getSolverDescription();
 	if (solverDescription == null) {
 		throw new IllegalArgumentException("SolverDescription cannot be null");

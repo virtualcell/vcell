@@ -74,7 +74,7 @@ public static void main(String args[]) {
 		FVSolver solver = new FVSolver(new SimulationJob(simulation, 0), directoryFile, sessionLog);
 		solver.startSolver();
 
-		while (solver.getSolverStatus().getStatus() != cbit.vcell.solver.SolverStatus.SOLVER_STOPPED){
+		while (solver.getSolverStatus().getStatus() != SolverStatus.SOLVER_STOPPED){
 			try {
 				Thread.sleep(1000);
 			}catch(InterruptedException e){
