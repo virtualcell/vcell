@@ -6,9 +6,6 @@ package cbit.vcell.biomodel;
 import cbit.util.KeyValue;
 import cbit.util.Version;
 import cbit.util.Versionable;
-import cbit.vcell.solver.SolverResultSetInfo;
-import cbit.vcell.geometry.GeometryInfo;
-import cbit.vcell.solver.SimulationInfo;
 import java.util.*;
 /**
  * Insert the type's description here.
