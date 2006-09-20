@@ -1,27 +1,18 @@
 package cbit.vcell.client;
-import cbit.vcell.xml.*;
 import cbit.vcell.xml.merge.gui.TMLPanel;
-import cbit.xml.merge.gui.*;
-
 import java.util.*;
 import java.io.*;
 import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
-import cbit.vcell.parser.Expression;
 import cbit.vcell.client.database.DocumentManager;
 import cbit.vcell.client.desktop.*;
-import cbit.vcell.geometry.gui.ImageAttributePanel;
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.client.server.*;
-import cbit.vcell.server.*;
 import cbit.util.*;
 import cbit.sql.*;
-import cbit.vcell.clientdb.*;
 import java.awt.*;
 import cbit.vcell.biomodel.*;
-import cbit.vcell.client.*;
-import cbit.vcell.document.*;
 import javax.swing.*;
 import cbit.vcell.desktop.*;
 import swingthreads.*;
@@ -30,7 +21,6 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.CommentStringTokenizer;
 import cbit.vcell.math.MathDescription;
 import javax.swing.filechooser.FileFilter;
-import cbit.vcell.client.task.*;
 /**
  * Insert the type's description here.
  * Creation date: (5/14/2004 5:06:46 PM)
