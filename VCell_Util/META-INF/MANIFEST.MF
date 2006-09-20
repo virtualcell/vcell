@@ -4,8 +4,7 @@ Bundle-Name: org.vcell.util
 Bundle-SymbolicName: org.vcell.util
 Bundle-Version: 1.0.0
 Bundle-Localization: plugin
-Export-Package: cbit.function,
- cbit.gui,
+Export-Package: cbit.gui,
  cbit.gui.graph,
  cbit.matlab,
  cbit.plot,
