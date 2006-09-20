@@ -7,4 +7,5 @@ Bundle-Localization: plugin
 Export-Package: cbit.render,
  cbit.render.unused
 Require-Bundle: org.vcell.common,
- org.vcell.util
+ org.vcell.util,
+ org.vcell.expression
