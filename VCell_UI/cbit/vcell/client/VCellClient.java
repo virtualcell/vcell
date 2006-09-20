@@ -6,7 +6,6 @@ import cbit.vcell.desktop.*;
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.server.*;
-import cbit.vcell.clientdb.*;
 import swingthreads.*;
 import cbit.vcell.client.server.*;
 import cbit.vcell.document.*;

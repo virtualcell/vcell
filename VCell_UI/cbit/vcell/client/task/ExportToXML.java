@@ -2,7 +2,6 @@ package cbit.vcell.client.task;
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.xml.*;
-import cbit.vcell.clientdb.*;
 import java.io.*;
 import cbit.vcell.client.*;
 import java.util.*;

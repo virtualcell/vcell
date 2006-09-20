@@ -1,7 +1,6 @@
 package cbit.vcell.client;
 import swingthreads.*;
 import java.net.*;
-import cbit.vcell.clientdb.*;
 import cbit.vcell.server.*;
 import cbit.vcell.simdata.DataJobEvent;
 

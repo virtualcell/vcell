@@ -4,7 +4,6 @@ import cbit.util.*;
 import cbit.vcell.client.*;
 import cbit.vcell.client.database.DocumentManager;
 import cbit.vcell.client.desktop.*;
-import cbit.vcell.clientdb.*;
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.server.*;

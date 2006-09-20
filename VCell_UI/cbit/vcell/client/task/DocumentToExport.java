@@ -4,7 +4,6 @@ import cbit.util.VCDocument;
 import cbit.util.VCDocumentInfo;
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
-import cbit.vcell.clientdb.*;
 import cbit.vcell.client.*;
 import java.util.*;
 

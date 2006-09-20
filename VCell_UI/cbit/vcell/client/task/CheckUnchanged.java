@@ -2,7 +2,6 @@ package cbit.vcell.client.task;
 import cbit.util.DataAccessException;
 import cbit.util.UserCancelException;
 import cbit.vcell.server.*;
-import cbit.vcell.clientdb.*;
 import javax.swing.*;
 
 import cbit.vcell.client.database.DocumentManager;
