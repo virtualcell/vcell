@@ -14,7 +14,8 @@ Require-Bundle: org.vcell.common,
  org.vcell.render,
  org.eclipse.osgi,
  org.vcell.solvers,
- org.vcell.xml.compare
+ org.vcell.xml.compare,
+ org.vcell.expression
 Export-Package: cbit.vcell.client.database,
  cbit.vcell.client.server,
  cbit.vcell.desktop.controls,
