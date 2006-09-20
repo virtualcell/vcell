@@ -39,4 +39,5 @@ Require-Bundle: org.vcell.common,
  org.vcell.expression,
  org.vcell.units,
  org.vcell.vcml,
- org.vcell.xml.common
+ org.vcell.xml.common,
+ org.eclipse.osgi
