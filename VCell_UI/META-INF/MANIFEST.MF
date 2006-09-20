@@ -40,7 +40,7 @@ Export-Package: cbit.image.gui,
  cbit.vcell.solver.ode.gui,
  cbit.vcell.vcml.gui,
  cbit.vcell.webparser,
- cbit.xml.merge,
+ cbit.xml.merge.gui,
  cbit.xml.viewer,
  org.vcell.ui
 Bundle-Activator: org.vcell.ui.Activator

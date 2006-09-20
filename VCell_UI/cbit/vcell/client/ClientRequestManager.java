@@ -11,7 +11,7 @@ import cbit.vcell.numericstest.TestSuiteOP;
 import java.awt.event.*;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
-import cbit.xml.merge.*;
+import cbit.xml.merge.gui.*;
 import cbit.image.*;
 import cbit.vcell.export.ExportSpecs;
 import cbit.vcell.export.server.*;
@@ -318,8 +318,8 @@ private TMLPanel compareDocuments(VCDocument doc1, VCDocument doc2, String compa
 			break;			
 		}
 	}
-	XmlTreeDiff diffTree = XmlTreeDiff.compareMerge(doc1XML, doc2XML, comparisonSetting, true);
-	TMLPanel aTMLPanel = new cbit.xml.merge.TMLPanel();
+	XmlTreeDiff diffTree = XmlTreeDiff.compareMerge(doc1XML, doc2XML, comparisonSetting, new VCellXMLComparePolicy(true));
+	TMLPanel aTMLPanel = new cbit.xml.merge.gui.TMLPanel();
 	aTMLPanel.setXmlTreeDiff(diffTree);
 	String date1 = doc1.getVersion() == null ? "not saved" : doc1.getVersion().getDate().toString();
 	String date2 = doc2.getVersion() == null ? "not saved" : doc2.getVersion().getDate().toString();

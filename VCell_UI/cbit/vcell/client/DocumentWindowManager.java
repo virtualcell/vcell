@@ -1,5 +1,5 @@
 package cbit.vcell.client;
-import cbit.xml.merge.TMLPanel;
+import cbit.xml.merge.gui.TMLPanel;
 import swingthreads.*;
 import java.net.*;
 import cbit.vcell.clientdb.*;

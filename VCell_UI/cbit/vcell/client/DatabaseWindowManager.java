@@ -1,6 +1,7 @@
 package cbit.vcell.client;
 import cbit.vcell.xml.*;
-import cbit.xml.merge.*;
+import cbit.xml.merge.gui.*;
+
 import java.util.*;
 import java.io.*;
 import cbit.image.VCImage;

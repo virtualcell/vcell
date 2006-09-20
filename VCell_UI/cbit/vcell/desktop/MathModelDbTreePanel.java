@@ -1,6 +1,7 @@
 package cbit.vcell.desktop;
 import java.awt.Insets;
-import cbit.xml.merge.NodeInfo;
+
+import cbit.xml.merge.gui.NodeInfo;
 import cbit.vcell.desktop.controls.ClientTask;
 import java.util.Vector;
 /*©
