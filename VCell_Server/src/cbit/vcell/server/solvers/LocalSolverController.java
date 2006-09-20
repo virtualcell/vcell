@@ -5,9 +5,11 @@ import cbit.vcell.simdata.*;
 import java.io.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.solvers.SimExecutionException;
+import cbit.vcell.solvers.SimulationJob;
 import cbit.vcell.solvers.SolverController;
 import cbit.vcell.solvers.SolverControllerImpl;
 import cbit.vcell.solvers.SolverException;
+import cbit.vcell.solvers.VCSimulationDataIdentifier;
 
 import java.util.*;
 /*©
@@ -164,7 +166,7 @@ private cbit.vcell.solver.Simulation getSimulation() throws cbit.util.DataAccess
 /**
  * getMathDescriptionVCML method comment.
  */
-public cbit.vcell.solver.SimulationJob getSimulationJob() throws cbit.util.DataAccessException {
+public cbit.vcell.solvers.SimulationJob getSimulationJob() throws cbit.util.DataAccessException {
 	try {
 		return solverControllerImpl.getSimulationJob();
 	}catch (Throwable e){

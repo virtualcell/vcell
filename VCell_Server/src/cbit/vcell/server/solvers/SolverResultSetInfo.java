@@ -1,6 +1,6 @@
 package cbit.vcell.server.solvers;
 
-import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.solvers.VCSimulationDataIdentifier;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

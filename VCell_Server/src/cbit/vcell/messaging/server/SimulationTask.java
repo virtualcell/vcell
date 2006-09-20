@@ -2,9 +2,9 @@ package cbit.vcell.messaging.server;
 import cbit.util.KeyValue;
 import cbit.util.User;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.solvers.SimulationJob;
 
 /**
  * Insert the type's description here.
@@ -71,7 +71,7 @@ public SimulationInfo getSimulationInfo() {
  * Creation date: (10/10/2005 3:02:30 PM)
  * @return cbit.vcell.solver.SimulationJob
  */
-public cbit.vcell.solver.SimulationJob getSimulationJob() {
+public cbit.vcell.solvers.SimulationJob getSimulationJob() {
 	return simulationJob;
 }
 

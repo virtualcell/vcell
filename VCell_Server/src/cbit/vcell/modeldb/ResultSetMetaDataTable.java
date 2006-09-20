@@ -9,6 +9,7 @@ import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.SessionLog;
 import cbit.vcell.solver.*;
+import cbit.vcell.solvers.VCSimulationDataIdentifier;
 import cbit.sql.*;
 import cbit.image.*;
 import cbit.vcell.server.*;

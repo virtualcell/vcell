@@ -79,12 +79,12 @@ public final class LocalSolverController_Stub
     }
     
     // implementation of getSimulationJob()
-    public cbit.vcell.solver.SimulationJob getSimulationJob()
+    public cbit.vcell.solvers.SimulationJob getSimulationJob()
 	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getSimulationJob_2, null, -5054384535408496800L);
-	    return ((cbit.vcell.solver.SimulationJob) $result);
+	    return ((cbit.vcell.solvers.SimulationJob) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {

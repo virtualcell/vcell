@@ -14,7 +14,8 @@ import cbit.vcell.xml.XmlReader;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solvers.SimulationJob;
+
 import java.io.StringReader;
 import java.io.IOException;
 import java.beans.PropertyVetoException;

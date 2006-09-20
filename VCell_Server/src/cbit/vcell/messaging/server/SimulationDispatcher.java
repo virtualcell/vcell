@@ -1,7 +1,5 @@
 package cbit.vcell.messaging.server;
-import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.util.BigString;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
@@ -11,6 +9,9 @@ import cbit.rmi.event.WorkerEvent;
 import javax.jms.*;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solvers.SimulationJob;
+import cbit.vcell.solvers.VCSimulationDataIdentifier;
+
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;

@@ -17,6 +17,8 @@ import cbit.util.Version;
 import cbit.util.VersionInfo;
 import cbit.vcell.server.solvers.SolverResultSetInfo;
 import cbit.vcell.solver.*;
+import cbit.vcell.solvers.VCSimulationDataIdentifier;
+
 import java.math.BigDecimal;
 import cbit.sql.*;
 import cbit.vcell.math.MathDescription;

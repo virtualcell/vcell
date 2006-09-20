@@ -27,7 +27,7 @@ public final class LocalVCellServer_Stub
     
     static {
 	try {
-	    $method_createSolverController_0 = cbit.vcell.server.VCellServer.class.getMethod("createSolverController", new java.lang.Class[] {cbit.util.User.class, cbit.vcell.solver.SimulationJob.class});
+	    $method_createSolverController_0 = cbit.vcell.server.VCellServer.class.getMethod("createSolverController", new java.lang.Class[] {cbit.util.User.class, cbit.vcell.solvers.SimulationJob.class});
 	    $method_getAdminDatabaseServer_1 = cbit.vcell.server.VCellServer.class.getMethod("getAdminDatabaseServer", new java.lang.Class[] {});
 	    $method_getCacheStatus_2 = cbit.vcell.server.VCellServer.class.getMethod("getCacheStatus", new java.lang.Class[] {});
 	    $method_getConnectedUsers_3 = cbit.vcell.server.VCellServer.class.getMethod("getConnectedUsers", new java.lang.Class[] {});
@@ -54,7 +54,7 @@ public final class LocalVCellServer_Stub
     // methods from remote interfaces
     
     // implementation of createSolverController(User, SimulationJob)
-    public cbit.vcell.solvers.SolverController createSolverController(cbit.util.User $param_User_1, cbit.vcell.solver.SimulationJob $param_SimulationJob_2)
+    public cbit.vcell.solvers.SolverController createSolverController(cbit.util.User $param_User_1, cbit.vcell.solvers.SimulationJob $param_SimulationJob_2)
 	throws cbit.vcell.solvers.SolverException, cbit.vcell.solvers.SimExecutionException, java.rmi.RemoteException
     {
 	try {

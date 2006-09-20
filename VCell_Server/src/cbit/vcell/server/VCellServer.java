@@ -2,9 +2,9 @@ package cbit.vcell.server;
 import cbit.util.CacheStatus;
 import cbit.util.DataAccessException;
 import cbit.util.User;
+import cbit.vcell.solvers.SimulationJob;
 import cbit.vcell.solvers.SolverController;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.

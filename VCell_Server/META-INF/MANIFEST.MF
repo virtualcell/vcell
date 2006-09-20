@@ -36,4 +36,7 @@ Require-Bundle: org.vcell.common,
  org.vcell.render,
  org.vcell.solvers,
  org.vcell.simdata,
- org.vcell.expression
+ org.vcell.expression,
+ org.vcell.units,
+ org.vcell.vcml,
+ org.vcell.xml.common

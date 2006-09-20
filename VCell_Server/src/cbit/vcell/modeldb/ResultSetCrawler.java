@@ -8,7 +8,6 @@ import cbit.util.KeyValue;
 import cbit.util.PermissionException;
 import cbit.util.SessionLog;
 import cbit.util.User;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.server.solvers.SolverResultSetInfo;
 import cbit.gui.PropertyLoader;
@@ -18,6 +17,8 @@ import cbit.sql.KeyFactory;
 import java.util.Vector;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solvers.VCSimulationDataIdentifier;
+
 import java.io.File;
 import java.util.LinkedList;
 import java.beans.PropertyVetoException;
@@ -107,7 +108,7 @@ private File getLogFile(File userDir, VCSimulationDataIdentifier vcsdi) {
 	} else {
 		// maybe we are being asked for pre-parameter scans data files, try old style
 		if (vcsdi.getJobIndex() == 0) {
-			logFile = new File(userDir, cbit.vcell.solver.VCSimulationDataIdentifierOldStyle.createVCSimulationDataIdentifierOldStyle(vcsdi).getID() + ".log");
+			logFile = new File(userDir, cbit.vcell.solvers.VCSimulationDataIdentifierOldStyle.createVCSimulationDataIdentifierOldStyle(vcsdi).getID() + ".log");
 			if (logFile.exists()) {
 				return logFile;
 				

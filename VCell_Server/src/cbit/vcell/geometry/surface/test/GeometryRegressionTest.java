@@ -2,7 +2,8 @@ package cbit.vcell.geometry.surface.test;
 import cbit.vcell.mesh.CartesianMesh;
 import cbit.vcell.mesh.MembraneElement;
 import cbit.vcell.mesh.MeshRegionInfo;
-import cbit.vcell.solver.SimulationJob;
+import cbit.vcell.solvers.SimulationJob;
+
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.Vector;

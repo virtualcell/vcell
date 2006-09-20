@@ -150,7 +150,7 @@ public void cleanupConnections() {
  * Creation date: (6/28/01 6:04:11 PM)
  * @exception java.rmi.RemoteException The exception description.
  */
-public SolverController createSolverController(User user, cbit.vcell.solver.SimulationJob simulationJob) throws cbit.vcell.solvers.SimExecutionException, cbit.vcell.solvers.SolverException {
+public SolverController createSolverController(User user, cbit.vcell.solvers.SimulationJob simulationJob) throws cbit.vcell.solvers.SimExecutionException, cbit.vcell.solvers.SolverException {
 	try {
 		cbit.vcell.solvers.SolverProxy solverProxy = getSimulationControllerImpl().getSolverProxy(user,simulationJob,new StdoutSessionLog(user.getName()));
 		return solverProxy.getSolverController();
