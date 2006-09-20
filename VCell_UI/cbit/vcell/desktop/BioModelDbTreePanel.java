@@ -1,7 +1,6 @@
 package cbit.vcell.desktop;
 import java.awt.Insets;
 
-import cbit.xml.merge.gui.NodeInfo;
 import cbit.vcell.desktop.controls.ClientTask;
 import java.util.*;
 /*©
@@ -15,6 +14,7 @@ import cbit.util.VersionInfo;
 import cbit.vcell.solver.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.server.*;
+import cbit.vcell.xml.merge.NodeInfo;
 import cbit.util.DataAccessException;
 import cbit.util.GroupAccessAll;
 import cbit.util.Matchable;
