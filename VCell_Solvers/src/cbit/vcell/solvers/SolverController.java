@@ -30,7 +30,7 @@ public double getProgress() throws RemoteException, SolverNotRunningException, c
  * This method was created by a SmartGuide.
  * @return cbit.vcell.solver.Simulation
  */
-public cbit.vcell.solver.SimulationJob getSimulationJob() throws RemoteException, cbit.util.DataAccessException;
+public cbit.vcell.solvers.SimulationJob getSimulationJob() throws RemoteException, cbit.util.DataAccessException;
 
 
 /**

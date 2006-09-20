@@ -3,6 +3,7 @@ package cbit.vcell.solver.ode;
 import cbit.util.SessionLog;
 import java.io.*;
 import cbit.vcell.solver.*;
+import cbit.vcell.solvers.SimulationJob;
 import cbit.vcell.solvers.SolverException;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

@@ -2,7 +2,6 @@ package cbit.vcell.solvers;
 import java.rmi.*;
 
 import cbit.util.SessionLog;
-import cbit.vcell.solver.SimulationJob;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -57,7 +56,7 @@ public double getProgress() throws RemoteException, cbit.vcell.solvers.SolverNot
 /**
  * getMathDescriptionVCML method comment.
  */
-public cbit.vcell.solver.SimulationJob getSimulationJob() throws java.rmi.RemoteException {
+public cbit.vcell.solvers.SimulationJob getSimulationJob() throws java.rmi.RemoteException {
 	return simulationJob;
 }
 

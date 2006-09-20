@@ -17,7 +17,7 @@ public class IDASolverStandalone extends IDASolver {
  * @param sessionLog cbit.vcell.server.SessionLog
  * @exception cbit.vcell.solvers.SolverException The exception description.
  */
-public IDASolverStandalone(cbit.vcell.solver.SimulationJob simulationJob, java.io.File directory, SessionLog sessionLog) throws cbit.vcell.solvers.SolverException {
+public IDASolverStandalone(cbit.vcell.solvers.SimulationJob simulationJob, java.io.File directory, SessionLog sessionLog) throws cbit.vcell.solvers.SolverException {
 	super(simulationJob, directory, sessionLog);
 }
 /**

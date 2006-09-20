@@ -9,6 +9,7 @@ import java.io.*;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.math.MathException;
 import cbit.vcell.solver.*;
+import cbit.vcell.solvers.SimulationJob;
 import cbit.vcell.solvers.SolverException;
 /**
  * Insert the class' description here.

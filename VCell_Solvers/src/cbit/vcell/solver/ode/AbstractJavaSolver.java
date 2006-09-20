@@ -9,8 +9,10 @@ import cbit.vcell.simdata.ODESimData;
 import cbit.vcell.simdata.ODESolverResultSet;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solver.*;
+import cbit.vcell.solvers.SimulationJob;
 import cbit.vcell.solvers.SolverException;
 import cbit.vcell.solvers.SolverStatus;
+import cbit.vcell.solvers.VCSimulationDataIdentifier;
 /**
  * Some of this class' stuff could/should go into an AbstractSolver
  * base class...just have to wait until we finalize Solver's interface.

@@ -15,6 +15,7 @@ import cbit.vcell.simdata.FunctionFileGenerator;
 import cbit.vcell.simdata.ODESolverResultSet;
 import cbit.vcell.simdata.ODESolverResultSetColumnDescription;
 import cbit.vcell.solver.*;
+import cbit.vcell.solvers.SimulationJob;
 import cbit.vcell.solvers.SolverException;
 /**
  * Insert the class' description here.

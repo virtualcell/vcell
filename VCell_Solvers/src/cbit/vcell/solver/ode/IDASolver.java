@@ -31,7 +31,7 @@ public abstract class IDASolver extends cbit.vcell.solvers.AbstractCompiledSolve
  * @param sessionLog cbit.vcell.server.SessionLog
  * @param simulation cbit.vcell.solver.Simulation
  */
-public IDASolver(cbit.vcell.solver.SimulationJob simulationJob, File directory, SessionLog sessionLog) throws SolverException {
+public IDASolver(cbit.vcell.solvers.SimulationJob simulationJob, File directory, SessionLog sessionLog) throws SolverException {
 	super(simulationJob, directory, sessionLog);
 	if (getSimulation().getIsSpatial()) {
 		throw new SolverException("Cannot use IDASolver on spatial simulation");
