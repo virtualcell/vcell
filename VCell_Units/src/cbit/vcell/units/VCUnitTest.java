@@ -1,8 +1,4 @@
 package cbit.vcell.units;
-import cbit.vcell.matrix.RationalNumber;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.SimpleSymbolTable;
-import cbit.vcell.parser.VCUnitEvaluator;
 
 import junit.framework.TestCase;
 import junit.framework.TestFailure;
@@ -14,6 +10,8 @@ import ucar.units.Unit;
 
 import org.jdom.Element;
 import org.jdom.Namespace;
+
+import cbit.vcell.units.VCUnitDefinition;
 
 import java.io.PrintStream;
 import java.util.ArrayList;

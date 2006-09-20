@@ -1,10 +1,4 @@
 package cbit.vcell.units;
-import cbit.vcell.matrix.RationalNumber;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.SimpleSymbolTable;
-import cbit.vcell.parser.VCUnitEvaluator;
-import cbit.util.xml.CELLMLTags;
-import cbit.util.xml.XmlUtil;
 
 import junit.framework.TestCase;
 import junit.framework.TestFailure;

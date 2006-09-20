@@ -2,6 +2,7 @@ package cbit.vcell.units;
 import ucar.units.RationalNumber;
 import cbit.util.xml.CELLMLTags;
 import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.units.VCUnitException;
 
 import ucar.units.BaseUnit;
 import ucar.units.DerivedUnitImpl;
