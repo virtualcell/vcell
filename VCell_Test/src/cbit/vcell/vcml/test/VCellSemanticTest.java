@@ -1,18 +1,12 @@
 package cbit.vcell.vcml.test;
 import cbit.vcell.biomodel.BioModel;
-import org.jdom.Element;
 
 import cbit.vcell.simdata.FunctionColumnDescription;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.math.Variable;
-import java.io.File;
 import cbit.gui.PropertyLoader;
 import cbit.util.SimulationVersion;
-import cbit.util.StdoutSessionLog;
-import cbit.util.xml.XmlUtil;
 import cbit.vcell.xml.XmlDialect;
-import cbit.vcell.xml.XMLTags;
 
 /**
  * Driver class for the SBML test suite.

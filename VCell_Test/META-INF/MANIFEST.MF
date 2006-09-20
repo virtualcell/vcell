@@ -14,4 +14,7 @@ Require-Bundle: org.vcell.server,
  org.vcell.ncbc.physics,
  org.vcell.simdata,
  org.vcell.solvers,
- org.vcell.expression
+ org.vcell.expression,
+ org.vcell.xml.common,
+ org.vcell.vcml,
+ org.vcell.units

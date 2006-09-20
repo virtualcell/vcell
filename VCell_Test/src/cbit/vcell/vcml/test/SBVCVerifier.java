@@ -27,6 +27,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.vcml.StructureSizeSolver;
 import cbit.vcell.solvers.NativeIDASolver;
+import cbit.vcell.solvers.SimulationJob;
 import cbit.vcell.solvers.SolverException;
 import cbit.vcell.solvers.SolverStatus;
 

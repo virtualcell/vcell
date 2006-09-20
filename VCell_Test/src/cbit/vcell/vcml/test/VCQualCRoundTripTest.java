@@ -1,10 +1,11 @@
 package cbit.vcell.vcml.test;
 import org.jdom.filter.ElementFilter;
+
+import cbit.vcell.cellml.CELLMLTags;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.MathMLTags;
 import cbit.util.TokenMangler;
-import cbit.vcell.vcml.JDOMTreeWalker;
 import cbit.vcell.vcml.Translator;
 import cbit.vcell.xml.XMLTags;
 import junit.framework.TestCase;
@@ -16,7 +17,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import cbit.util.xml.CELLMLTags;
+import cbit.util.xml.JDOMTreeWalker;
 
 /**
  * Partial round trip testing for BioModel --> Qualitative CellML model --> BioModel.

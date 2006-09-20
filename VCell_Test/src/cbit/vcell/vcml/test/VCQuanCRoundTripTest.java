@@ -1,11 +1,12 @@
 package cbit.vcell.vcml.test;
+import cbit.vcell.cellml.CELLMLTags;
+import cbit.vcell.cellml.VCQualCellTranslator;
+import cbit.vcell.cellml.VCQuanCellTranslator;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.MathMLTags;
 import cbit.util.TokenMangler;
 import cbit.vcell.vcml.Translator;
-import cbit.vcell.vcml.VCQualCellTranslator;
-import cbit.vcell.vcml.VCQuanCellTranslator;
 import cbit.vcell.xml.XMLTags;
 import junit.framework.TestCase;
 import org.jdom.Document;
@@ -16,7 +17,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import cbit.util.xml.CELLMLTags;
 
 /**
    Partial round trip testing for MathModel --> Quantitative CellML model --> MathModel. 
