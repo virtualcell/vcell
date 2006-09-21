@@ -20,4 +20,5 @@ Require-Bundle: org.vcell.model,
  org.vcell.constraints,
  org.vcell.xml.common,
  org.vcell.geometry,
- org.vcell.image
+ org.vcell.image,
+ org.vcell.math

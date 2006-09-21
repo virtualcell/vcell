@@ -597,7 +597,7 @@ public ElectricalStimulus getElectricalStimulus(Element param, SimulationContext
 						varHash.addVariable(new Function(paramName, paramExp));
 					}
 				}
-			}catch (MappingException e){
+			}catch (MathException e){
 				e.printStackTrace(System.out);
 				throw new XmlParseException("error reordering parameters according to dependencies: "+e.getMessage());
 			}
@@ -631,7 +631,7 @@ public ElectricalStimulus getElectricalStimulus(Element param, SimulationContext
 		while (unresolvedSymbol!=null){
 			try {
 				varHash.addVariable(new Function(unresolvedSymbol,new Expression(0.0)));  // will turn into an UnresolvedParameter.
-			}catch (MappingException e){
+			}catch (MathException e){
 				e.printStackTrace(System.out);
 				throw new XmlParseException(e.getMessage());
 			}
@@ -1619,7 +1619,7 @@ public cbit.vcell.model.Kinetics getKinetics(Element param, ReactionStep reactio
 			for (int i = 0; i < rp.length; i++){
 				varHash.addVariable(new Constant(rp[i].getName(), new Expression(0.0)));			
 			}
-		} catch (MappingException e){
+		} catch (MathException e){
 			e.printStackTrace(System.out);
 			throw new XmlParseException("error reordering parameters according to dependencies: "+e.getMessage());
 		}
@@ -1641,7 +1641,7 @@ public cbit.vcell.model.Kinetics getKinetics(Element param, ReactionStep reactio
 						varHash.addVariable(new Function(paramName, paramExp));
 					}
 				}
-			}catch (MappingException e){
+			}catch (MathException e){
 				e.printStackTrace(System.out);
 				throw new XmlParseException("error reordering parameters according to dependencies: "+e.getMessage());
 			}
@@ -1675,7 +1675,7 @@ public cbit.vcell.model.Kinetics getKinetics(Element param, ReactionStep reactio
 		while (unresolvedSymbol!=null){
 			try {
 				varHash.addVariable(new Function(unresolvedSymbol,new Expression(0.0)));  // will turn into an UnresolvedParameter.
-			}catch (MappingException e){
+			}catch (MathException e){
 				e.printStackTrace(System.out);
 				throw new XmlParseException(e.getMessage());
 			}
@@ -1777,7 +1777,7 @@ public MathDescription getMathDescription(Element param) throws XmlParseExceptio
 		tempelement = (Element)iterator.next();
 		try {
 			varHash.addVariable( getConstant(tempelement));
-		} catch (MappingException e) {
+		} catch (MathException e) {
 			e.printStackTrace();
 			throw new XmlParseException(e.getMessage());
 		}
@@ -1789,7 +1789,7 @@ public MathDescription getMathDescription(Element param) throws XmlParseExceptio
 		tempelement = (Element)iterator.next();
 		try {
 			varHash.addVariable( getFilamentRegionVariable(tempelement) );
-		} catch (MappingException e) {
+		} catch (MathException e) {
 			e.printStackTrace();
 			throw new XmlParseException(e.getMessage());
 		}
@@ -1801,7 +1801,7 @@ public MathDescription getMathDescription(Element param) throws XmlParseExceptio
 		tempelement = (Element)iterator.next();
 		try {
 			varHash.addVariable( getFilamentVariable(tempelement) );
-		} catch (MappingException e) {
+		} catch (MathException e) {
 			e.printStackTrace();
 			throw new XmlParseException(e.getMessage());
 		}
@@ -1816,7 +1816,7 @@ public MathDescription getMathDescription(Element param) throws XmlParseExceptio
 		tempelement = (Element)iterator.next();
 		try {
 			varHash.addVariable( getMembraneRegionVariable(tempelement) );
-		} catch (MappingException e) {
+		} catch (MathException e) {
 			e.printStackTrace();
 			throw new XmlParseException(e.getMessage());
 		}
@@ -1829,7 +1829,7 @@ public MathDescription getMathDescription(Element param) throws XmlParseExceptio
 		tempelement = (Element)iterator.next();
 		try {
 			varHash.addVariable( getMemVariable(tempelement) );
-		} catch (MappingException e) {
+		} catch (MathException e) {
 			e.printStackTrace();
 			throw new XmlParseException(e.getMessage());
 		}
@@ -1844,7 +1844,7 @@ public MathDescription getMathDescription(Element param) throws XmlParseExceptio
 		tempelement = (Element)iterator.next();
 		try {
 			varHash.addVariable( getVolumeRegionVariable(tempelement) );
-		} catch (MappingException e) {
+		} catch (MathException e) {
 			e.printStackTrace();
 			throw new XmlParseException(e.getMessage());
 		}
@@ -1857,7 +1857,7 @@ public MathDescription getMathDescription(Element param) throws XmlParseExceptio
 		tempelement = (Element)iterator.next();
 		try {
 			varHash.addVariable( getVolVariable(tempelement) );
-		} catch (MappingException e) {
+		} catch (MathException e) {
 			e.printStackTrace();
 			throw new XmlParseException(e.getMessage());
 		}
@@ -1869,7 +1869,7 @@ public MathDescription getMathDescription(Element param) throws XmlParseExceptio
 		tempelement = (Element)iterator.next();
 		try {
 			varHash.addVariable(getFunction(tempelement));
-		}catch (MappingException e){
+		}catch (MathException e){
 			e.printStackTrace();
 			throw new XmlParseException(e.getMessage());
 		}
@@ -1880,9 +1880,6 @@ public MathDescription getMathDescription(Element param) throws XmlParseExceptio
 	//
 	try {
 		mathdes.setAllVariables(varHash.getReorderedVariables());
-	} catch (MappingException e) {
-		e.printStackTrace();
-		throw new XmlParseException("A MappingException was fired when adding the Function variables to the MathDescription " + name+" : "+e.getMessage());
 	} catch (MathException e) {
 		e.printStackTrace();
 		throw new XmlParseException("A MathException was fired when adding the Function variables to the MathDescription " + name+" : "+e.getMessage());
@@ -3922,7 +3919,7 @@ private VariableHash getVariablesHash() throws XmlParseException {
 		varHash.addVariable(new Constant(ReservedSymbol.TEMPERATURE.getName(), new Expression(0.0)));
 		varHash.addVariable(new Constant(ReservedSymbol.K_GHK.getName(), new Expression(0.0)));
 		varHash.addVariable(new Constant(ReservedSymbol.TIME.getName(), new Expression(0.0)));
-	} catch (MappingException e){
+	} catch (MathException e){
 		e.printStackTrace(System.out);
 		throw new XmlParseException("error reordering parameters according to dependencies: "+e.getMessage());
 	}
