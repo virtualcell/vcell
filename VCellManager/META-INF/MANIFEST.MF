@@ -6,17 +6,12 @@ Bundle-Version: 1.0.0
 Bundle-Activator: org.vcell.manager.Activator
 Bundle-Localization: plugin
 Import-Package: org.osgi.framework;version="1.3.0"
-Require-Bundle: org.vcell.common,
- org.vcell.simdata,
+Require-Bundle: org.vcell.simdata,
  org.vcell.model,
  org.vcell.server,
  org.vcell.util,
- org.vcell.render,
  org.eclipse.osgi,
  org.vcell.solvers,
- org.vcell.xml.compare,
- org.vcell.expression,
- org.vcell.units,
  org.vcell.xml.common,
  org.vcell.vcml,
  org.vcell.geometry,
@@ -26,5 +21,4 @@ Export-Package: cbit.vcell.client.database,
  cbit.vcell.client.server,
  cbit.vcell.desktop.controls,
  cbit.vcell.publish,
- cbit.vcell.vcml.compare,
  org.vcell.manager
