@@ -18,4 +18,5 @@ Require-Bundle: org.vcell.common,
  org.vcell.expression,
  org.vcell.units,
  org.vcell.geometry,
- org.vcell.image
+ org.vcell.image,
+ org.vcell.math
