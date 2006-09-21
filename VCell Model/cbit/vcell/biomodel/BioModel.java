@@ -7,7 +7,8 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.MathDescription;
 import java.beans.PropertyVetoException;
 import java.util.Vector;
-import cbit.vcell.solver.Simulation;
+
+import cbit.vcell.simulation.Simulation;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.util.BeanUtils;
 import cbit.util.ObjectNotFoundException;
@@ -446,7 +447,7 @@ public cbit.vcell.mapping.SimulationContext getSimulationContexts(int index) {
  * @return The simulations property value.
  * @see #setSimulations
  */
-public cbit.vcell.solver.Simulation[] getSimulations() {
+public cbit.vcell.simulation.Simulation[] getSimulations() {
 	return fieldSimulations;
 }
 
@@ -457,7 +458,7 @@ public cbit.vcell.solver.Simulation[] getSimulations() {
  * @param index The index value into the property array.
  * @see #setSimulations
  */
-public cbit.vcell.solver.Simulation getSimulations(int index) {
+public cbit.vcell.simulation.Simulation getSimulations(int index) {
 	return getSimulations()[index];
 }
 
@@ -758,8 +759,8 @@ public void setSimulationContexts(cbit.vcell.mapping.SimulationContext[] simulat
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getSimulations
  */
-public void setSimulations(cbit.vcell.solver.Simulation[] simulations) throws java.beans.PropertyVetoException {
-	cbit.vcell.solver.Simulation[] oldValue = fieldSimulations;
+public void setSimulations(cbit.vcell.simulation.Simulation[] simulations) throws java.beans.PropertyVetoException {
+	cbit.vcell.simulation.Simulation[] oldValue = fieldSimulations;
 	fireVetoableChange("simulations", oldValue, simulations);
 	for (int i = 0; oldValue!=null && i < oldValue.length; i++){
 		oldValue[i].removePropertyChangeListener(this);

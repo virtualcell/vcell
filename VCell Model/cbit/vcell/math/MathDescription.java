@@ -650,7 +650,7 @@ public static MathDescription createMathWithExpandedEquations(MathDescription or
 	//
 	// make a "identity" simulation (no overrides), this will help to substitute/flatten expressions.
 	//
-	cbit.vcell.solver.Simulation tempSimulation = new cbit.vcell.solver.Simulation(newMath);
+	cbit.vcell.simulation.Simulation tempSimulation = new cbit.vcell.simulation.Simulation(newMath);
 
 	//
 	// for any dependent variables in the "varNamesToKeep" list, create appropriate Variable/Equation
@@ -1197,7 +1197,7 @@ public static Function[] getFlattenedFunctions(MathDescription originalMathDescr
 	//
 	// make a "identity" simulation (no overrides), this will help to substitute/flatten expressions.
 	//
-	cbit.vcell.solver.Simulation tempSimulation = new cbit.vcell.solver.Simulation(newMath);
+	cbit.vcell.simulation.Simulation tempSimulation = new cbit.vcell.simulation.Simulation(newMath);
 	Function functions[] = new Function[functionNames.length];
 	for (int i = 0; i < functionNames.length; i++){
 		for (int j = 0; j < originalMathDescription.variableList.size(); j++){
@@ -2435,7 +2435,7 @@ private void makeCanonical() throws MathException, ExpressionException, MappingE
 	//
 	// make a "identity" simulation (no overrides), this will help to substitute/flatten expressions.
 	//
-	cbit.vcell.solver.Simulation tempSimulation = new cbit.vcell.solver.Simulation(newMath);
+	cbit.vcell.simulation.Simulation tempSimulation = new cbit.vcell.simulation.Simulation(newMath);
 	
 	//
 	// substitute all rates, initial conditions, boundary conditions, jump conditions
@@ -2871,7 +2871,7 @@ private void substituteInPlace(Function functionsToSubstitute[]) throws MathExce
 	for (int i = 0; i < functionsToSubstitute.length; i++){
 		variableList.insertElementAt(functionsToSubstitute[i],0);
 	}
-	cbit.vcell.solver.Simulation tempSimulation = new cbit.vcell.solver.Simulation(this);
+	cbit.vcell.simulation.Simulation tempSimulation = new cbit.vcell.simulation.Simulation(this);
 	MathDescription newMath = this;
 	boolean bRoundCoefficients = false;
 	//

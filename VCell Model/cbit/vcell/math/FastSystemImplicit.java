@@ -1,6 +1,6 @@
 package cbit.vcell.math;
 import cbit.util.CommentStringTokenizer;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.simulation.Simulation;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -70,7 +70,7 @@ private void checkLinearity() throws MathException, ExpressionException {
  * Creation date: (10/10/2002 11:15:31 AM)
  * @param sim cbit.vcell.solver.Simulation
  */
-void flatten(cbit.vcell.solver.Simulation sim, boolean bRoundCoefficients) throws ExpressionException, MathException {
+void flatten(cbit.vcell.simulation.Simulation sim, boolean bRoundCoefficients) throws ExpressionException, MathException {
 	//
 	// replace fastRates with flattended and substituted fastRates
 	//

@@ -25,6 +25,6 @@ Export-Package: cbit.vcell.biomodel,
  cbit.vcell.math,
  cbit.vcell.mathmodel,
  cbit.vcell.model,
- cbit.vcell.solver,
+ cbit.vcell.simulation,
  org.vcell.model,
  org.vcell.model.analysis

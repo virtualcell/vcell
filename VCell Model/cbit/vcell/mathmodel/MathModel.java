@@ -5,7 +5,8 @@ package cbit.vcell.mathmodel;
 ©*/
 import cbit.vcell.math.MathDescription;
 import java.beans.PropertyVetoException;
-import cbit.vcell.solver.Simulation;
+
+import cbit.vcell.simulation.Simulation;
 import cbit.util.BeanUtils;
 import cbit.util.Version;
 import cbit.vcell.model.VCellNames;
@@ -20,7 +21,7 @@ public class MathModel implements cbit.vcell.document.SimulationOwner, cbit.util
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private MathDescription fieldMathDescription = new MathDescription("unnamed");
-	private cbit.vcell.solver.Simulation[] fieldSimulations = new Simulation[0];
+	private cbit.vcell.simulation.Simulation[] fieldSimulations = new Simulation[0];
 	private java.lang.String fieldDescription = new String();
 
 /**
@@ -386,7 +387,7 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
  * @return The simulations property value.
  * @see #setSimulations
  */
-public cbit.vcell.solver.Simulation[] getSimulations() {
+public cbit.vcell.simulation.Simulation[] getSimulations() {
 	return fieldSimulations;
 }
 
@@ -397,7 +398,7 @@ public cbit.vcell.solver.Simulation[] getSimulations() {
  * @param index The index value into the property array.
  * @see #setSimulations
  */
-public cbit.vcell.solver.Simulation getSimulations(int index) {
+public cbit.vcell.simulation.Simulation getSimulations(int index) {
 	return getSimulations()[index];
 }
 
@@ -640,8 +641,8 @@ public void setName(java.lang.String name) throws java.beans.PropertyVetoExcepti
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getSimulations
  */
-public void setSimulations(cbit.vcell.solver.Simulation[] simulations) throws java.beans.PropertyVetoException {
-	cbit.vcell.solver.Simulation[] oldValue = fieldSimulations;
+public void setSimulations(cbit.vcell.simulation.Simulation[] simulations) throws java.beans.PropertyVetoException {
+	cbit.vcell.simulation.Simulation[] oldValue = fieldSimulations;
 	fireVetoableChange("simulations", oldValue, simulations);
 	fieldSimulations = simulations;
 	firePropertyChange("simulations", oldValue, simulations);

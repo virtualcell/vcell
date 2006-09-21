@@ -1,5 +1,5 @@
 package cbit.vcell.mapping;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.simulation.Simulation;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Feature;
@@ -356,7 +356,7 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getSimulations
  */
-public void addSimulation(cbit.vcell.solver.Simulation newSimulation) throws java.beans.PropertyVetoException {
+public void addSimulation(cbit.vcell.simulation.Simulation newSimulation) throws java.beans.PropertyVetoException {
 	if (newSimulation.getMathDescription() == null){
 		throw new IllegalArgumentException("cannot add simulation '"+newSimulation.getName()+"', has no MathDescription");
 	}
@@ -880,7 +880,7 @@ public SimulationContext.SimulationContextParameter getSimulationContextParamete
  * @return The simulations property value.
  * @see #setSimulations
  */
-public cbit.vcell.solver.Simulation[] getSimulations() {
+public cbit.vcell.simulation.Simulation[] getSimulations() {
 	return extractLocalSimulations(bioModel.getSimulations());
 }
 
@@ -891,7 +891,7 @@ public cbit.vcell.solver.Simulation[] getSimulations() {
  * @param index The index value into the property array.
  * @see #setSimulations
  */
-public cbit.vcell.solver.Simulation getSimulations(int index) {
+public cbit.vcell.simulation.Simulation getSimulations(int index) {
 	return getSimulations()[index];
 }
 
@@ -1205,7 +1205,7 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getSimulations
  */
-public void removeSimulation(cbit.vcell.solver.Simulation simulation) throws java.beans.PropertyVetoException {
+public void removeSimulation(cbit.vcell.simulation.Simulation simulation) throws java.beans.PropertyVetoException {
 	if (simulation.getMathDescription() != getMathDescription()){
 		throw new IllegalArgumentException("cannot remove simulation '"+simulation.getName()+"', has different MathDescription");
 	}

@@ -532,7 +532,7 @@ public java.beans.MethodDescriptor setSimulations_int_cbitvcellsolverSimulationM
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
 				int.class,
-				cbit.vcell.solver.Simulation.class
+				cbit.vcell.simulation.Simulation.class
 			};
 			aMethod = getBeanClass().getMethod("setSimulations", aParameterTypes);
 		} catch (Throwable exception) {
@@ -656,7 +656,7 @@ public java.beans.IndexedPropertyDescriptor simulationsPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.solver.Simulation[].class
+					cbit.vcell.simulation.Simulation[].class
 				};
 				aSetMethod = getBeanClass().getMethod("setSimulations", aSetMethodParameterTypes);
 			} catch (Throwable exception) {

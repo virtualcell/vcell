@@ -1,6 +1,6 @@
 package cbit.vcell.math;
 import cbit.util.CommentStringTokenizer;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.simulation.Simulation;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -115,7 +115,7 @@ public boolean compareEqual(cbit.util.Matchable object) {
  * Creation date: (10/10/2002 10:41:10 AM)
  * @param sim cbit.vcell.solver.Simulation
  */
-void flatten(cbit.vcell.solver.Simulation sim, boolean bRoundCoefficients) throws cbit.vcell.parser.ExpressionException, MathException {
+void flatten(cbit.vcell.simulation.Simulation sim, boolean bRoundCoefficients) throws cbit.vcell.parser.ExpressionException, MathException {
 	super.flatten0(sim,bRoundCoefficients);
 	
 	diffusionExp = getFlattenedExpression(sim,diffusionExp,bRoundCoefficients);
