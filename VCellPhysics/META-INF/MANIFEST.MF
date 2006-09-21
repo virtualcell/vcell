@@ -10,6 +10,8 @@ Require-Bundle: org.vcell.common,
  org.vcell.model,
  org.vcell.expression,
  org.vcell.units,
- org.vcell.matrix
+ org.vcell.matrix,
+ org.vcell.geometry,
+ org.vcell.image
 Import-Package: org.osgi.framework;version="1.3.0"
 Bundle-Activator: org.vcell.ncbc.physics.MultiphysicsAnalysisTaskActivator

@@ -27,9 +27,10 @@ public class MultiphysicsAnalysisTaskXMLPersistence {
  * @throws GeometryException 
  * @throws ImageException 
  * @throws ExpressionException 
+ * @throws GeometryException 
  */
 public static MultiphysicsAnalysisTask getMultiphysicsAnalysisTask(Element parameterEstimationTaskElement, cbit.vcell.mapping.SimulationContext simContext) 
-throws ExpressionException, ImageException, GeometryException, PropertyVetoException {
+throws ExpressionException, ImageException, PropertyVetoException, GeometryException {
 		
 	MultiphysicsAnalysisTask multiphysicsAnalysisTask = new MultiphysicsAnalysisTask(simContext,"unnamed");
 	String name = parameterEstimationTaskElement.getAttributeValue(NameAttribute);
