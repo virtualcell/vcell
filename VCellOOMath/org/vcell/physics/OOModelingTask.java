@@ -9,12 +9,9 @@ import org.vcell.model.analysis.IAnalysisTask;
 import org.vcell.model.analysis.IAnalysisTaskFactory;
 import org.vcell.physics.component.OOModel;
 import org.vcell.physics.component.ModelAnalysisResults;
-import org.vcell.physics.component.OOModelTest;
 import org.vcell.physics.math.MappingUtilities;
 
-import cbit.image.ImageException;
 import cbit.util.Matchable;
-import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.parser.ExpressionException;
 
@@ -90,7 +87,7 @@ public class OOModelingTask implements IAnalysisTask {
 		return simContext;
 	}
 
-	public OOModelingTask(SimulationContext simContext, String name) throws ExpressionException, ImageException, GeometryException, PropertyVetoException {
+	public OOModelingTask(SimulationContext simContext, String name) throws ExpressionException, PropertyVetoException {
 		super();
 		this.simContext = simContext;
 		this.name = name;

@@ -3,8 +3,6 @@ import java.beans.PropertyVetoException;
 
 import org.jdom.Element;
 
-import cbit.image.ImageException;
-import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.parser.ExpressionException;
 /**
  * Insert the type's description here.
@@ -29,7 +27,7 @@ public class OOModelingTaskXMLPersistence {
  * @throws ExpressionException 
  */
 public static OOModelingTask getMultiphysicsAnalysisTask(Element parameterEstimationTaskElement, cbit.vcell.mapping.SimulationContext simContext) 
-throws ExpressionException, ImageException, GeometryException, PropertyVetoException {
+throws ExpressionException, PropertyVetoException {
 		
 	OOModelingTask oOModelingTask = new OOModelingTask(simContext,"unnamed");
 	String name = parameterEstimationTaskElement.getAttributeValue(NameAttribute);

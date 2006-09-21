@@ -1,9 +1,7 @@
 package org.vcell.physics.math;
 import java.beans.PropertyVetoException;
 
-import cbit.image.ImageException;
 import cbit.util.TokenMangler;
-import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 
@@ -103,7 +101,7 @@ public static void addChemicalDevices(cbit.vcell.mapping.SimulationContext simCo
  * Creation date: (1/12/2004 1:35:34 AM)
  * @return ncbc_old.physics.component.PhysicalModel
  */
-public static OOModel createFromSimulationContext(cbit.vcell.mapping.SimulationContext simContext) throws ExpressionException, ImageException, GeometryException, PropertyVetoException {
+public static OOModel createFromSimulationContext(cbit.vcell.mapping.SimulationContext simContext) throws ExpressionException, PropertyVetoException {
 	OOModel physicalModel = new OOModel();
 
 	//
