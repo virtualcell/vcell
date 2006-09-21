@@ -118,13 +118,13 @@ public static void main(java.lang.String[] args) {
                 null,
                 null,
                 null);
-        cbit.vcell.solver.Simulation sim = new cbit.vcell.solver.Simulation(simVersion, mathDesc);
+        cbit.vcell.simulation.Simulation sim = new cbit.vcell.simulation.Simulation(simVersion, mathDesc);
         sim.setName(sbmlFile.getName());
-        sim.getSolverTaskDescription().setTimeBounds(new cbit.vcell.solver.TimeBounds(0, endTime));
-        cbit.vcell.solver.TimeStep timeStep = new cbit.vcell.solver.TimeStep();
-        sim.getSolverTaskDescription().setTimeStep(new cbit.vcell.solver.TimeStep(timeStep.getMinimumTimeStep(),timeStep.getDefaultTimeStep(),endTime/10000));
-        sim.getSolverTaskDescription().setOutputTimeSpec(new cbit.vcell.solver.UniformOutputTimeSpec((endTime-0)/numTimeSteps));
-        sim.getSolverTaskDescription().setErrorTolerance(new cbit.vcell.solver.ErrorTolerance(1e-10, 1e-12));
+        sim.getSolverTaskDescription().setTimeBounds(new cbit.vcell.simulation.TimeBounds(0, endTime));
+        cbit.vcell.simulation.TimeStep timeStep = new cbit.vcell.simulation.TimeStep();
+        sim.getSolverTaskDescription().setTimeStep(new cbit.vcell.simulation.TimeStep(timeStep.getMinimumTimeStep(),timeStep.getDefaultTimeStep(),endTime/10000));
+        sim.getSolverTaskDescription().setOutputTimeSpec(new cbit.vcell.simulation.UniformOutputTimeSpec((endTime-0)/numTimeSteps));
+        sim.getSolverTaskDescription().setErrorTolerance(new cbit.vcell.simulation.ErrorTolerance(1e-10, 1e-12));
 
         //        
 		// solve simulation - USING NativeIDASolver ....

@@ -16,13 +16,13 @@ import cbit.vcell.simdata.FunctionColumnDescription;
 import cbit.vcell.simdata.ODESolverResultSet;
 import cbit.vcell.simdata.ODESolverResultSetColumnDescription;
 import cbit.vcell.simdata.RowColumnResultSet;
+import cbit.vcell.simulation.*;
 import cbit.sql.DBCacheTable;
 import cbit.util.SessionLog;
 import cbit.sql.ConnectionFactory;
 import java.beans.*;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.biomodel.BioModelInfo;
-import cbit.vcell.solver.Simulation;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.vcml.StructureSizeSolver;
@@ -33,7 +33,6 @@ import cbit.vcell.solvers.SolverStatus;
 
 import java.io.StringWriter;
 import cbit.vcell.solver.ode.IDAFileWriter;
-import cbit.vcell.solver.*;
 import cbit.util.SimulationVersion;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.math.MathDescription;
@@ -283,7 +282,7 @@ public void scanBioModels(KeyValue[] bioModelKeys) throws MathException, Mapping
 			        SimulationVersion simVersion_1 = new SimulationVersion(new KeyValue("100"), "sim_1_1", simContexts[k].getVersion().getOwner(), new cbit.util.GroupAccessNone(), null, new java.math.BigDecimal(1.0), new java.util.Date(), VersionFlag.Archived, "", null);
 			        Simulation sim_11 = new Simulation(simVersion_1, mathDesc_1);
 			        sim_11.setName("sim_1_1");
-			        sim_11.getSolverTaskDescription().setTimeBounds(new cbit.vcell.solver.TimeBounds(0, endTime));
+			        sim_11.getSolverTaskDescription().setTimeBounds(new cbit.vcell.simulation.TimeBounds(0, endTime));
 			        TimeStep timeStep_1 = new TimeStep();
 			        sim_11.getSolverTaskDescription().setTimeStep(new TimeStep(timeStep_1.getMinimumTimeStep(),timeStep_1.getDefaultTimeStep(),endTime/10000));
 			        sim_11.getSolverTaskDescription().setOutputTimeSpec(new UniformOutputTimeSpec((endTime-0)/numTimeSteps));
@@ -306,7 +305,7 @@ public void scanBioModels(KeyValue[] bioModelKeys) throws MathException, Mapping
 			        SimulationVersion simVersion_2 = new SimulationVersion(new KeyValue("100"), "sim_1_2", bioModel_1.getVersion().getOwner(), new cbit.util.GroupAccessNone(), null, new java.math.BigDecimal(1.0), new java.util.Date(), VersionFlag.Archived, "", null);
 			        Simulation sim_12 = new Simulation(simVersion_2, mathDesc_2);
 			        sim_12.setName("sim_1_2");
-			        sim_12.getSolverTaskDescription().setTimeBounds(new cbit.vcell.solver.TimeBounds(0, endTime));
+			        sim_12.getSolverTaskDescription().setTimeBounds(new cbit.vcell.simulation.TimeBounds(0, endTime));
 			        TimeStep timeStep_2 = new TimeStep();
 			        sim_12.getSolverTaskDescription().setTimeStep(new TimeStep(timeStep_2.getMinimumTimeStep(),timeStep_2.getDefaultTimeStep(),endTime/10000));
 			        sim_12.getSolverTaskDescription().setOutputTimeSpec(new UniformOutputTimeSpec((endTime-0)/numTimeSteps));
@@ -441,7 +440,7 @@ public void scanBioModels(User[] users) throws MathException, MappingException, 
 				        SimulationVersion simVersion_1 = new SimulationVersion(new KeyValue("100"), "sim_1_1", null, null, null, null, null, null, null, null);
 				        Simulation sim_11 = new Simulation(simVersion_1, mathDesc_1);
 				        sim_11.setName("sim_1_1");
-				        sim_11.getSolverTaskDescription().setTimeBounds(new cbit.vcell.solver.TimeBounds(0, endTime));
+				        sim_11.getSolverTaskDescription().setTimeBounds(new cbit.vcell.simulation.TimeBounds(0, endTime));
 				        TimeStep timeStep_1 = new TimeStep();
 				        sim_11.getSolverTaskDescription().setTimeStep(new TimeStep(timeStep_1.getMinimumTimeStep(),timeStep_1.getDefaultTimeStep(),endTime/10000));
 				        sim_11.getSolverTaskDescription().setOutputTimeSpec(new UniformOutputTimeSpec((endTime-0)/numTimeSteps));
@@ -464,7 +463,7 @@ public void scanBioModels(User[] users) throws MathException, MappingException, 
 				        SimulationVersion simVersion_2 = new SimulationVersion(new KeyValue("100"), "sim_1_2", null, null, null, null, null, null, null, null);
 				        Simulation sim_12 = new Simulation(simVersion_2, mathDesc_2);
 				        sim_12.setName("sim_1_2");
-				        sim_12.getSolverTaskDescription().setTimeBounds(new cbit.vcell.solver.TimeBounds(0, endTime));
+				        sim_12.getSolverTaskDescription().setTimeBounds(new cbit.vcell.simulation.TimeBounds(0, endTime));
 				        TimeStep timeStep_2 = new TimeStep();
 				        sim_12.getSolverTaskDescription().setTimeStep(new TimeStep(timeStep_2.getMinimumTimeStep(),timeStep_2.getDefaultTimeStep(),endTime/10000));
 				        sim_12.getSolverTaskDescription().setOutputTimeSpec(new UniformOutputTimeSpec((endTime-0)/numTimeSteps));
