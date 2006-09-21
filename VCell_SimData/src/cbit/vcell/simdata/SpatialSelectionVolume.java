@@ -4,7 +4,7 @@ package cbit.vcell.simdata;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.render.Vect3d;
+import cbit.render.objects.Vect3d;
 import cbit.util.Coordinate;
 import cbit.util.CoordinateIndex;
 import cbit.vcell.geometry.*;

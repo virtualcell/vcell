@@ -3,9 +3,9 @@ package cbit.vcell.simdata;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.render.Quadrilateral;
 import cbit.render.Surface;
-import cbit.render.SurfaceCollection;
+import cbit.render.objects.Quadrilateral;
+import cbit.render.objects.SurfaceCollection;
 import cbit.util.Coordinate;
 import cbit.util.CoordinateIndex;
 import cbit.util.NullSessionLog;

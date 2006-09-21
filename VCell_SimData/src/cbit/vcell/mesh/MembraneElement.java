@@ -163,8 +163,8 @@ public int[] getMembraneNeighborIndexes() {
  * Creation date: (2/15/2006 1:54:50 PM)
  * @return cbit.vcell.render.Vect3d
  */
-public cbit.render.Vect3d getNormal() {
-	return (area == AREA_UNDEFINED?null:new cbit.render.Vect3d(normalX,normalY,normalZ));
+public cbit.render.objects.Vect3d getNormal() {
+	return (area == AREA_UNDEFINED?null:new cbit.render.objects.Vect3d(normalX,normalY,normalZ));
 }
 
 
