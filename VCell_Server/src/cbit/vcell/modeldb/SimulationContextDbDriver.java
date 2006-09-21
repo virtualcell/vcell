@@ -1,4 +1,5 @@
 package cbit.vcell.modeldb;
+import cbit.util.Coordinate;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.ObjectNotFoundException;
@@ -286,11 +287,11 @@ private void assignStimuliSQL(Connection con,KeyValue simContextKey, SimulationC
 				double posY = rset.getBigDecimal(stimulusTable.positionY.toString()).doubleValue();
 				double posZ = rset.getBigDecimal(stimulusTable.positionZ.toString()).doubleValue();
 
-				cbit.vcell.math.CommentStringTokenizer paramsCST = null;
+				cbit.util.CommentStringTokenizer paramsCST = null;
 				String paramsS = rset.getString(StimulusTable.table.params.toString());
 				if(!rset.wasNull()){
 					paramsCST =
-						new cbit.vcell.math.CommentStringTokenizer(
+						new cbit.util.CommentStringTokenizer(
 							cbit.util.TokenMangler.getSQLRestoredString(paramsS)
 						);
 				}
@@ -299,16 +300,16 @@ private void assignStimuliSQL(Connection con,KeyValue simContextKey, SimulationC
 					//
 					// an Electrode (ground)
 					//
-					Electrode groundElectrode = new Electrode((Feature)theStructure,new cbit.vcell.geometry.Coordinate(posX,posY,posZ));
+					Electrode groundElectrode = new Electrode((Feature)theStructure,new Coordinate(posX,posY,posZ));
 					simContext.setGroundElectrode(groundElectrode);
 				}else if (stimulusType == StimulusTable.CURRENT_CLAMP_STIMULUS){
-					Electrode electrode = new Electrode((Feature)theStructure,new cbit.vcell.geometry.Coordinate(posX,posY,posZ));
+					Electrode electrode = new Electrode((Feature)theStructure,new Coordinate(posX,posY,posZ));
 					CurrentClampStimulus stimulus = new CurrentClampStimulus(electrode,name,exp,simContext);
 					stimulus.parameterVCMLSet(paramsCST);
 					ElectricalStimulus newStimuli[] = (ElectricalStimulus[])cbit.util.BeanUtils.addElement(simContext.getElectricalStimuli(),stimulus);
 					simContext.setElectricalStimuli(newStimuli);
 				}else if (stimulusType == StimulusTable.VOLTAGE_CLAMP_STIMULUS){
-					Electrode electrode = new Electrode((Feature)theStructure,new cbit.vcell.geometry.Coordinate(posX,posY,posZ));
+					Electrode electrode = new Electrode((Feature)theStructure,new Coordinate(posX,posY,posZ));
 					VoltageClampStimulus stimulus = new VoltageClampStimulus(electrode,name,exp,simContext);
 					stimulus.parameterVCMLSet(paramsCST);
 					ElectricalStimulus newStimuli[] = (ElectricalStimulus[])cbit.util.BeanUtils.addElement(simContext.getElectricalStimuli(),stimulus);

@@ -270,7 +270,7 @@ public List getSimulationJobStatus(Connection con, String conditions) throws jav
 			try {
 				String taskDesc = rset.getString(SimulationTable.table.taskDescription.getUnqualifiedColName());
 				if (taskDesc != null) {
-					std = new cbit.vcell.solver.SolverTaskDescription(null, new cbit.vcell.math.CommentStringTokenizer(cbit.util.TokenMangler.getSQLRestoredString(taskDesc)));
+					std = new cbit.vcell.solver.SolverTaskDescription(null, new cbit.util.CommentStringTokenizer(cbit.util.TokenMangler.getSQLRestoredString(taskDesc)));
 				}
 				
 			} catch (DataAccessException ex) {

@@ -39,7 +39,7 @@ public final class LocalDataSetController_Stub
 	    $method_getDataSetTimes_3 = cbit.vcell.server.DataSetController.class.getMethod("getDataSetTimes", new java.lang.Class[] {cbit.util.VCDataIdentifier.class});
 	    $method_getFunctions_4 = cbit.vcell.server.DataSetController.class.getMethod("getFunctions", new java.lang.Class[] {cbit.util.VCDataIdentifier.class});
 	    $method_getIsODEData_5 = cbit.vcell.server.DataSetController.class.getMethod("getIsODEData", new java.lang.Class[] {cbit.util.VCDataIdentifier.class});
-	    $method_getLineScan_6 = cbit.vcell.server.DataSetController.class.getMethod("getLineScan", new java.lang.Class[] {cbit.util.VCDataIdentifier.class, java.lang.String.class, double.class, cbit.vcell.math.CoordinateIndex.class, cbit.vcell.math.CoordinateIndex.class});
+	    $method_getLineScan_6 = cbit.vcell.server.DataSetController.class.getMethod("getLineScan", new java.lang.Class[] {cbit.util.VCDataIdentifier.class, java.lang.String.class, double.class, cbit.util.CoordinateIndex.class, cbit.util.CoordinateIndex.class});
 	    $method_getLineScan_7 = cbit.vcell.server.DataSetController.class.getMethod("getLineScan", new java.lang.Class[] {cbit.util.VCDataIdentifier.class, java.lang.String.class, double.class, SpatialSelection.class});
 	    $method_getMesh_8 = cbit.vcell.server.DataSetController.class.getMethod("getMesh", new java.lang.Class[] {cbit.util.VCDataIdentifier.class});
 	    $method_getODEData_9 = cbit.vcell.server.DataSetController.class.getMethod("getODEData", new java.lang.Class[] {cbit.util.VCDataIdentifier.class});
@@ -169,7 +169,7 @@ public final class LocalDataSetController_Stub
     }
     
     // implementation of getLineScan(VCDataIdentifier, String, double, CoordinateIndex, CoordinateIndex)
-    public cbit.plot.PlotData getLineScan(cbit.util.VCDataIdentifier $param_VCDataIdentifier_1, java.lang.String $param_String_2, double $param_double_3, cbit.vcell.math.CoordinateIndex $param_CoordinateIndex_4, cbit.vcell.math.CoordinateIndex $param_CoordinateIndex_5)
+    public cbit.plot.PlotData getLineScan(cbit.util.VCDataIdentifier $param_VCDataIdentifier_1, java.lang.String $param_String_2, double $param_double_3, cbit.util.CoordinateIndex $param_CoordinateIndex_4, cbit.util.CoordinateIndex $param_CoordinateIndex_5)
 	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {

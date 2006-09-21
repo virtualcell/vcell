@@ -132,7 +132,7 @@ public MathDescription getMathDescription(ResultSet rset, Connection con,Session
 	//
 	//mathDescription.setGeometry(geom);
 	
-	cbit.vcell.math.CommentStringTokenizer tokens = new cbit.vcell.math.CommentStringTokenizer(mathDescriptionDataString);
+	cbit.util.CommentStringTokenizer tokens = new cbit.util.CommentStringTokenizer(mathDescriptionDataString);
 	try {
 		mathDescription.read_database(tokens);
 	} catch (cbit.vcell.math.MathException e) {
@@ -143,7 +143,7 @@ public MathDescription getMathDescription(ResultSet rset, Connection con,Session
 		log.print("MathException '"+e.getMessage()+"' while reading VCML for MathDescription, trying to reorder variables in VCML and reread VCML");
 		try {
 			String newVCML = MathDescription.getVCML_withReorderedVariables(version,mathDescriptionDataString);
-			tokens = new cbit.vcell.math.CommentStringTokenizer(newVCML);
+			tokens = new cbit.util.CommentStringTokenizer(newVCML);
 			mathDescription = new MathDescription(version);
 			mathDescription.read_database(tokens);
 		}catch (Exception e2){

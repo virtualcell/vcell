@@ -1,5 +1,6 @@
 package cbit.vcell.server.simdata;
 import cbit.rmi.event.*;
+import cbit.util.CoordinateIndex;
 import cbit.util.DataAccessException;
 import cbit.util.SessionLog;
 import cbit.util.User;

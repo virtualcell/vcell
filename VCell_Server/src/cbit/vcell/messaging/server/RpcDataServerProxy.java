@@ -98,7 +98,7 @@ public boolean getIsODEData(VCDataIdentifier vcdID) throws DataAccessException {
  * @param end cbit.vcell.math.CoordinateIndex
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.plot.PlotData getLineScan(VCDataIdentifier vcdID, String variable, double time, cbit.vcell.math.CoordinateIndex begin, cbit.vcell.math.CoordinateIndex end) throws DataAccessException {
+public cbit.plot.PlotData getLineScan(VCDataIdentifier vcdID, String variable, double time, cbit.util.CoordinateIndex begin, cbit.util.CoordinateIndex end) throws DataAccessException {
 	return (cbit.plot.PlotData)rpc("getLineScan",new Object[]{user, vcdID,variable,new Double(time),begin, end});
 }
 

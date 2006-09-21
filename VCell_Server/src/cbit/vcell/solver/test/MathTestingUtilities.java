@@ -1,5 +1,5 @@
 package cbit.vcell.solver.test;
-import cbit.vcell.geometry.Coordinate;
+import cbit.util.Coordinate;
 import cbit.vcell.simdata.ColumnDescription;
 import cbit.vcell.simdata.DataManager;
 import cbit.vcell.simdata.DataResampler;

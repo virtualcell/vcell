@@ -166,7 +166,7 @@ public static cbit.vcell.mesh.CartesianMesh loadMesh(File meshFile) throws Excep
 		char buffer[] = new char[buffSize];
 		int length = reader.read(buffer,0,buffer.length);
 		String logString = new String(buffer,0,length);
-		cbit.vcell.math.CommentStringTokenizer st = new cbit.vcell.math.CommentStringTokenizer(logString);
+		cbit.util.CommentStringTokenizer st = new cbit.util.CommentStringTokenizer(logString);
 		mesh = cbit.vcell.mesh.CartesianMesh.fromTokens(st, null);
 	}finally{
 		if (reader != null){

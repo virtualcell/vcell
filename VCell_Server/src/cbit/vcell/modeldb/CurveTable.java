@@ -4,13 +4,11 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.sql.*;
 
+import cbit.util.Coordinate;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
-import cbit.util.SessionLog;
 import cbit.vcell.geometry.*;
-import cbit.vcell.parser.*;
 import cbit.sql.*;
 /**
  * This type was created in VisualAge.
@@ -43,7 +41,7 @@ public CurveTable() {
 public static cbit.vcell.geometry.Curve decodeCurve(String encodedShape) throws Exception {
 	cbit.vcell.geometry.Curve rCurve = null;
 	try {
-		cbit.vcell.math.CommentStringTokenizer st = new cbit.vcell.math.CommentStringTokenizer(encodedShape);
+		cbit.util.CommentStringTokenizer st = new cbit.util.CommentStringTokenizer(encodedShape);
 		String curveType = st.nextToken();
 		Class classType = Class.forName(curveType);
 		Object oCurve = classType.newInstance();

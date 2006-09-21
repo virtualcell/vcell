@@ -118,7 +118,7 @@ public ReactionStep getReactionStep(Structure structure, KeyValue rsKey, java.sq
 		//buffer.append("\n}\n");
 		//kinetics_vcml = buffer.toString();
 	//}
-	cbit.vcell.math.CommentStringTokenizer tokens = new cbit.vcell.math.CommentStringTokenizer(kinetics_vcml);
+	cbit.util.CommentStringTokenizer tokens = new cbit.util.CommentStringTokenizer(kinetics_vcml);
 
 	
 	

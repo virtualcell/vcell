@@ -4,6 +4,7 @@ package cbit.vcell.server;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.util.CoordinateIndex;
 import cbit.util.DataAccessException;
 import cbit.util.User;
 import cbit.vcell.math.*;
