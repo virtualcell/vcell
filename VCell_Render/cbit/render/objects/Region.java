@@ -1,4 +1,4 @@
-package cbit.render;
+package cbit.render.objects;
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.

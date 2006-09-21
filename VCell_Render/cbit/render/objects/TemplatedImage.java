@@ -1,4 +1,4 @@
-package cbit.render;
+package cbit.render.objects;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
