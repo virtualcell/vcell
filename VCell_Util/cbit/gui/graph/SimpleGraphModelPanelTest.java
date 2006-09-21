@@ -28,7 +28,7 @@ public static void main(java.lang.String[] args) {
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		
-		cbit.util.graph.Graph constraintGraph = GraphTest.getExample();
+		cbit.util.graph.Graph constraintGraph = GraphTest.getDependencyExample();
 		aSimpleGraphModelPanel.setGraph(constraintGraph);
 		
 		frame.setVisible(true);

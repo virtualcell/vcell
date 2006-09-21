@@ -61,6 +61,145 @@ public static Graph getExample(){
 	return graph;
 }
 
+public static Graph getDependencyExample(){
+	Graph graph = new Graph();
+	Node constraints = new Node("constraints");
+	Node expression = new Node("expression");
+	Node manager = new Node("manager");
+	Node matrix = new Node("matrix");
+	Node model = new Node("model");
+	Node ncbcPhysics = new Node("ncbc.phys");
+	Node optimization = new Node("optimization");
+	Node physics = new Node("physics");
+	Node render = new Node("render");
+	Node server = new Node("server");
+	Node simdata = new Node("simdata");
+	Node solvers = new Node("solvers");
+	Node ui = new Node("ui");
+//	Node units = new Node("units");
+	//Node util = new Node("util");
+	Node vcml = new Node("vcml");
+//	Node xmlCommon = new Node("xml.common");
+//	Node xmlCompare = new Node("xml.compare");
+	Node nodes[] = {
+		constraints,
+		expression,
+		manager,
+		matrix,
+		model,
+		ncbcPhysics,
+		optimization,
+		physics,
+		render,
+		server,
+		simdata,
+		solvers,
+		ui,
+//		units,
+		//util,
+		vcml,
+//		xmlCommon,
+//		xmlCompare
+	};
+	Edge edges[] = {
+			new Edge(constraints,expression),
+//			new Edge(constraints,units),
+			//new Edge(constraints,util),
+//			new Edge(expression,units),
+			//new Edge(expression,util),
+//			new Edge(expression,xmlCommon),
+			new Edge(manager,expression),
+			new Edge(manager,model),
+			new Edge(manager,render),
+			new Edge(manager,server),
+			new Edge(manager,simdata),
+			new Edge(manager,solvers),
+//			new Edge(manager,units),
+			//new Edge(manager,util),
+			new Edge(manager,vcml),
+//			new Edge(manager,xmlCommon),
+//			new Edge(manager,xmlCompare),
+			new Edge(matrix,expression),
+//			new Edge(matrix,units),
+			//new Edge(matrix,util),
+			new Edge(model,constraints),
+			new Edge(model,expression),
+			new Edge(model,matrix),
+			new Edge(model,render),
+//			new Edge(model,units),
+			//new Edge(model,util),
+//			new Edge(model,xmlCompare),
+			new Edge(ncbcPhysics,expression),
+			new Edge(ncbcPhysics,matrix),
+			new Edge(ncbcPhysics,model),
+//			new Edge(ncbcPhysics,units),
+			//new Edge(ncbcPhysics,util),
+			new Edge(optimization,expression),
+			new Edge(optimization,model),
+			new Edge(optimization,simdata),
+			new Edge(optimization,solvers),
+			//new Edge(optimization,util),
+			new Edge(physics,expression),
+			new Edge(physics,matrix),
+			new Edge(physics,model),
+//			new Edge(physics,units),
+			//new Edge(physics,util),
+//			new Edge(physics,xmlCommon),
+			new Edge(render,expression),
+//			new Edge(render,units),
+			//new Edge(render,util),
+			new Edge(server,expression),
+			new Edge(server,model),
+			new Edge(server,render),
+			new Edge(server,simdata),
+			new Edge(server,solvers),
+//			new Edge(server,units),
+			//new Edge(server,util),
+			new Edge(server,vcml),
+//			new Edge(server,xmlCommon),
+			new Edge(simdata,expression),
+			new Edge(simdata,model),
+			new Edge(simdata,render),
+//			new Edge(simdata,units),
+			//new Edge(simdata,util),
+			new Edge(solvers,expression),
+			new Edge(solvers,model),
+			new Edge(solvers,render),
+			new Edge(solvers,simdata),
+//			new Edge(solvers,units),
+			//new Edge(solvers,util),
+			new Edge(ui,expression),
+			new Edge(ui,manager),
+			new Edge(ui,matrix),
+			new Edge(ui,model),
+			new Edge(ui,render),
+			new Edge(ui,server),
+			new Edge(ui,simdata),
+			new Edge(ui,solvers),
+//			new Edge(ui,units),
+			//new Edge(ui,util),
+			new Edge(ui,vcml),
+//			new Edge(ui,xmlCommon),
+//			new Edge(ui,xmlCompare),
+			new Edge(vcml,constraints),
+			new Edge(vcml,expression),
+			new Edge(vcml,model),
+//			new Edge(vcml,units),
+			//new Edge(vcml,util),
+//			new Edge(vcml,xmlCommon),
+//			new Edge(vcml,xmlCompare),
+			//new Edge(xmlCompare,util),
+//			new Edge(xmlCompare,xmlCommon),
+	};
+	for (int i = 0; i < nodes.length; i++){
+		graph.addNode(nodes[i]);
+	}
+	for (int i = 0; i < edges.length; i++){
+		graph.addEdge(edges[i]);
+	}
+	return graph;
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (4/12/2002 10:41:40 AM)
