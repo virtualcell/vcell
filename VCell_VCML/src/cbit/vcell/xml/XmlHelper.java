@@ -6,7 +6,7 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.simulation.Simulation;
 import cbit.vcell.vcml.Translator;
 import cbit.util.DataAccessException;
 import cbit.util.Extent;

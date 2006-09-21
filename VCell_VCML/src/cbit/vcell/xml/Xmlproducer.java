@@ -1061,7 +1061,7 @@ public org.jdom.Element getXML(cbit.vcell.mapping.SimulationContext param, cbit.
 	}
 	//Add Simulations to the simulationSpec
 	if (bioModel!=null){
-		cbit.vcell.solver.Simulation simulations[] = bioModel.getSimulations(param);
+		cbit.vcell.simulation.Simulation simulations[] = bioModel.getSimulations(param);
 		for (int i=0;simulations!=null && i<simulations.length;i++){
 			simulationcontext.addContent(getXML(simulations[i]));
 		}
@@ -2020,7 +2020,7 @@ public org.jdom.Element getXML(cbit.vcell.mathmodel.MathModel param) throws XmlP
 	//Add Mathdescription
 	mathmodel.addContent( getXML(param.getMathDescription()) );
 	//Add Simulations
-	cbit.vcell.solver.Simulation[] arraysim = param.getSimulations();
+	cbit.vcell.simulation.Simulation[] arraysim = param.getSimulations();
 	if (arraysim != null) {
 		for (int i=0 ; i< arraysim.length ; i++) {
 			mathmodel.addContent( getXML(arraysim[i]) );
@@ -2657,7 +2657,7 @@ public org.jdom.Element getXML(cbit.util.GroupAccess groupAccess) {
  * @return org.jdom.Element
  * @param param cbit.vcell.solver.ErrorTolerance
  */
-public org.jdom.Element getXML(cbit.vcell.solver.ErrorTolerance param) {
+public org.jdom.Element getXML(cbit.vcell.simulation.ErrorTolerance param) {
 	org.jdom.Element errortol = new org.jdom.Element(XMLTags.ErrorToleranceTag);
 
 	//Add Atributes
@@ -2674,7 +2674,7 @@ public org.jdom.Element getXML(cbit.vcell.solver.ErrorTolerance param) {
  * @return org.jdom.Element
  * @param param cbit.vcell.solver.MathOverrides
  */
-public org.jdom.Element getXML(cbit.vcell.solver.MathOverrides param) {
+public org.jdom.Element getXML(cbit.vcell.simulation.MathOverrides param) {
 	org.jdom.Element overrides = new org.jdom.Element(XMLTags.MathOverridesTag);
 
 	//Add Constant subelements
@@ -2685,7 +2685,7 @@ public org.jdom.Element getXML(cbit.vcell.solver.MathOverrides param) {
 		org.jdom.Element constant = new org.jdom.Element(XMLTags.ConstantTag);
 		constant.setAttribute( XMLTags.NameAttrTag, this.mangle(constantNames[i]) );
 		if (param.isScan(constantNames[i])) {
-			cbit.vcell.solver.ConstantArraySpec cas = param.getConstantArraySpec(constantNames[i]);
+			cbit.vcell.simulation.ConstantArraySpec cas = param.getConstantArraySpec(constantNames[i]);
 			constant.setAttribute(XMLTags.ConstantArraySpec, Integer.toString(cas.getType()));
 			constant.addContent(this.mangle(cas.toString()));
 		} else {
@@ -2705,7 +2705,7 @@ public org.jdom.Element getXML(cbit.vcell.solver.MathOverrides param) {
  * @return org.jdom.Element
  * @param param cbit.vcell.mesh.MeshSpecification
  */
-public org.jdom.Element getXML(cbit.vcell.solver.MeshSpecification param) {
+public org.jdom.Element getXML(cbit.vcell.simulation.MeshSpecification param) {
 	org.jdom.Element meshspec = new org.jdom.Element(XMLTags.MeshSpecTag);
 
 	org.jdom.Element size = new org.jdom.Element(XMLTags.SizeTag);
@@ -2727,19 +2727,19 @@ public org.jdom.Element getXML(cbit.vcell.solver.MeshSpecification param) {
  * @return org.jdom.Element
  * @param param cbit.vcell.solver.ErrorTolerance
  */
-public org.jdom.Element getXML(cbit.vcell.solver.OutputTimeSpec param) {
+public org.jdom.Element getXML(cbit.vcell.simulation.OutputTimeSpec param) {
 	org.jdom.Element outputOptions = new org.jdom.Element(XMLTags.OutputOptionsTag);
 
 	//Add Atributes
 	if (param.isDefault()){
-		cbit.vcell.solver.DefaultOutputTimeSpec dots = (cbit.vcell.solver.DefaultOutputTimeSpec)param;
+		cbit.vcell.simulation.DefaultOutputTimeSpec dots = (cbit.vcell.simulation.DefaultOutputTimeSpec)param;
 		outputOptions.setAttribute(cbit.vcell.xml.XMLTags.KeepEveryAttrTag, String.valueOf(dots.getKeepEvery()));
 		outputOptions.setAttribute(cbit.vcell.xml.XMLTags.KeepAtMostAttrTag, String.valueOf(dots.getKeepAtMost()));
 	}else if (param.isExplicit()){
-		cbit.vcell.solver.ExplicitOutputTimeSpec eots = (cbit.vcell.solver.ExplicitOutputTimeSpec)param;
+		cbit.vcell.simulation.ExplicitOutputTimeSpec eots = (cbit.vcell.simulation.ExplicitOutputTimeSpec)param;
 		outputOptions.setAttribute(cbit.vcell.xml.XMLTags.OutputTimesAttrTag, eots.toCommaSeperatedOneLineOfString());
 	}else if (param.isUniform()){
-		cbit.vcell.solver.UniformOutputTimeSpec uots = (cbit.vcell.solver.UniformOutputTimeSpec)param;
+		cbit.vcell.simulation.UniformOutputTimeSpec uots = (cbit.vcell.simulation.UniformOutputTimeSpec)param;
 		outputOptions.setAttribute(cbit.vcell.xml.XMLTags.OutputTimeStepAttrTag, String.valueOf(uots.getOutputTimeStep()));
 	}
 		
@@ -2753,7 +2753,7 @@ public org.jdom.Element getXML(cbit.vcell.solver.OutputTimeSpec param) {
  * @return org.jdom.Element
  * @param param cbit.vcell.solver.Simulation
  */
-public org.jdom.Element getXML(cbit.vcell.solver.Simulation param) {
+public org.jdom.Element getXML(cbit.vcell.simulation.Simulation param) {
 	org.jdom.Element simulation = new org.jdom.Element(XMLTags.SimulationTag);
 
 	//Add Atributes
@@ -2789,7 +2789,7 @@ public org.jdom.Element getXML(cbit.vcell.solver.Simulation param) {
  * @return org.jdom.Element
  * @param param cbit.vcell.solver.SolverTaskDescription
  */
-public org.jdom.Element getXML(cbit.vcell.solver.SolverTaskDescription param) {
+public org.jdom.Element getXML(cbit.vcell.simulation.SolverTaskDescription param) {
 	org.jdom.Element solvertask = new org.jdom.Element(XMLTags.SolverTaskDescriptionTag);
 
 	//Add Atributes
@@ -2828,7 +2828,7 @@ public org.jdom.Element getXML(cbit.vcell.solver.SolverTaskDescription param) {
  * @return org.jdom.Element
  * @param param cbit.vcell.solver.TimeBounds
  */
-public org.jdom.Element getXML(cbit.vcell.solver.TimeBounds param) {
+public org.jdom.Element getXML(cbit.vcell.simulation.TimeBounds param) {
 	org.jdom.Element timebounds = new org.jdom.Element(XMLTags.TimeBoundTag);
 
 	timebounds.setAttribute(XMLTags.StartTimeAttrTag, String.valueOf(param.getStartingTime()));
@@ -2844,7 +2844,7 @@ public org.jdom.Element getXML(cbit.vcell.solver.TimeBounds param) {
  * @return org.jdom.Element
  * @param param cbit.vcell.solver.TimeStep
  */
-public org.jdom.Element getXML(cbit.vcell.solver.TimeStep param) {
+public org.jdom.Element getXML(cbit.vcell.simulation.TimeStep param) {
 	org.jdom.Element timestep = new org.jdom.Element(XMLTags.TimeStepTag);
 
 	timestep.setAttribute(XMLTags.DefaultTimeAttrTag, String.valueOf(param.getDefaultTimeStep()));

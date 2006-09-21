@@ -1,6 +1,8 @@
 package cbit.vcell.xml;
 import org.jdom.DataConversionException;
-import cbit.vcell.solver.ConstantArraySpec;
+
+import cbit.vcell.simulation.ConstantArraySpec;
+
 import org.jdom.Attribute;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
@@ -706,13 +708,13 @@ public Electrode getElectrode(org.jdom.Element elem, SimulationContext currentSi
  * @return cbit.vcell.solver.ErrorTolerance
  * @param param org.jdom.Element
  */
-public cbit.vcell.solver.ErrorTolerance getErrorTolerance(Element param) {
+public cbit.vcell.simulation.ErrorTolerance getErrorTolerance(Element param) {
 	//getAttributes
 	double absolut = Double.parseDouble( param.getAttributeValue(XMLTags.AbsolutErrorToleranceTag) );
 	double relative = Double.parseDouble( param.getAttributeValue(XMLTags.RelativeErrorToleranceTag) );
 	
 	//*** create new ErrorTolerance object ****
-	cbit.vcell.solver.ErrorTolerance errorTol = new cbit.vcell.solver.ErrorTolerance(absolut, relative);
+	cbit.vcell.simulation.ErrorTolerance errorTol = new cbit.vcell.simulation.ErrorTolerance(absolut, relative);
 	
 	return errorTol;
 }
@@ -1984,7 +1986,7 @@ public cbit.vcell.mathmodel.MathModel getMathModel(Element param) throws XmlPars
 		
 	//Set simulations contexts (if any)
 	List childList = param.getChildren(XMLTags.SimulationTag);
-	cbit.vcell.solver.Simulation[] simList = new cbit.vcell.solver.Simulation[childList.size()];
+	cbit.vcell.simulation.Simulation[] simList = new cbit.vcell.simulation.Simulation[childList.size()];
 	
 	for (int i = 0; i < childList.size(); i++){
 		simList[i] = getSimulation((Element)childList.get(i), mathDesc);
@@ -2006,9 +2008,9 @@ public cbit.vcell.mathmodel.MathModel getMathModel(Element param) throws XmlPars
  * @return cbit.vcell.solver.MathOverrides
  * @param param org.jdom.Element
  */
-public cbit.vcell.solver.MathOverrides getMathOverrides(Element param, cbit.vcell.solver.Simulation simulation) throws XmlParseException{
+public cbit.vcell.simulation.MathOverrides getMathOverrides(Element param, cbit.vcell.simulation.Simulation simulation) throws XmlParseException{
 
-	cbit.vcell.solver.MathOverrides mathOverrides = null;
+	cbit.vcell.simulation.MathOverrides mathOverrides = null;
 	try {
 		//Get the constants
 		Object[] elements = param.getChildren().toArray();
@@ -2030,7 +2032,7 @@ public cbit.vcell.solver.MathOverrides getMathOverrides(Element param, cbit.vcel
 		Constant[] constants = (Constant[])BeanUtils.getArray(v2, Constant.class);
 		ConstantArraySpec[] specs = (ConstantArraySpec[])BeanUtils.getArray(v1, ConstantArraySpec.class);
 		//create new MathOverrides object
-		mathOverrides = new cbit.vcell.solver.MathOverrides(simulation, constants, specs);
+		mathOverrides = new cbit.vcell.simulation.MathOverrides(simulation, constants, specs);
 	} catch (ExpressionException e) {
 		e.printStackTrace();
 		throw new XmlParseException("A ExpressionException was fired when adding a Constant to the MathOverrides"+" : "+e.getMessage());
@@ -2416,9 +2418,9 @@ public MemVariable getMemVariable(Element param) {
  * @return cbit.vcell.mesh.MeshSpecification
  * @param param org.jdom.Element
  */
-public cbit.vcell.solver.MeshSpecification getMeshSpecification(Element param, Geometry geometry) throws XmlParseException {
+public cbit.vcell.simulation.MeshSpecification getMeshSpecification(Element param, Geometry geometry) throws XmlParseException {
 	//*** create new MeshSpecification ***
-	cbit.vcell.solver.MeshSpecification meshSpec = new cbit.vcell.solver.MeshSpecification(geometry);
+	cbit.vcell.simulation.MeshSpecification meshSpec = new cbit.vcell.simulation.MeshSpecification(geometry);
 	
 	//get ISize
 	Element size = param.getChild(XMLTags.SizeTag);
@@ -2657,19 +2659,19 @@ public Origin getOrigin(Element parsed){
  * @return cbit.vcell.solver.TimeStep
  * @param param org.jdom.Element
  */
-public cbit.vcell.solver.OutputTimeSpec getOutputTimeSpec(Element param) {
+public cbit.vcell.simulation.OutputTimeSpec getOutputTimeSpec(Element param) {
 	if (param != null) {
 		//get attributes
 		if (param.getAttributeValue(XMLTags.KeepEveryAttrTag) != null) {
 			int keepEvery = Integer.parseInt(param.getAttributeValue(XMLTags.KeepEveryAttrTag));
 			int keepAtMost = Integer.parseInt(param.getAttributeValue(XMLTags.KeepAtMostAttrTag));
-			return new cbit.vcell.solver.DefaultOutputTimeSpec(keepEvery, keepAtMost);		
+			return new cbit.vcell.simulation.DefaultOutputTimeSpec(keepEvery, keepAtMost);		
 		} else if (param.getAttributeValue(XMLTags.OutputTimeStepAttrTag) != null) {
 			double outputStep = Double.parseDouble(param.getAttributeValue(XMLTags.OutputTimeStepAttrTag));
-			return new cbit.vcell.solver.UniformOutputTimeSpec(outputStep);		
+			return new cbit.vcell.simulation.UniformOutputTimeSpec(outputStep);		
 		} else if (param.getAttributeValue(XMLTags.OutputTimesAttrTag) != null) {
 			String line = param.getAttributeValue(XMLTags.OutputTimesAttrTag);
-			return cbit.vcell.solver.ExplicitOutputTimeSpec.fromString(line);		
+			return cbit.vcell.simulation.ExplicitOutputTimeSpec.fromString(line);		
 		}
 	}
 	return null;
@@ -3158,17 +3160,17 @@ public cbit.vcell.model.SimpleReaction getSimpleReaction(Element param) throws X
  * @param param org.jdom.Element
  * @exception cbit.util.xml.XmlParseException The exception description.
  */
-public cbit.vcell.solver.Simulation getSimulation(Element param, MathDescription mathDesc) throws XmlParseException {
+public cbit.vcell.simulation.Simulation getSimulation(Element param, MathDescription mathDesc) throws XmlParseException {
 	//retrive metadata (if any)
 	SimulationVersion simulationVersion = getSimulationVersion(param.getChild(XMLTags.VersionTag));
 	
 	//create new simulation
-	cbit.vcell.solver.Simulation simulation = null;
+	cbit.vcell.simulation.Simulation simulation = null;
 		
 	if (simulationVersion!=null) {
-		simulation = new cbit.vcell.solver.Simulation(simulationVersion, mathDesc);
+		simulation = new cbit.vcell.simulation.Simulation(simulationVersion, mathDesc);
 	} else {
-		simulation = new cbit.vcell.solver.Simulation(mathDesc);
+		simulation = new cbit.vcell.simulation.Simulation(mathDesc);
 	}
 	
 	//set attributes
@@ -3527,9 +3529,9 @@ public SimulationVersion getSimulationVersion(Element xmlVersion) throws XmlPars
  * @param param org.jdom.Element
  * @param simulation cbit.vcell.solver.Simulation
  */
-public cbit.vcell.solver.SolverTaskDescription getSolverTaskDescription(Element param, cbit.vcell.solver.Simulation simulation) throws XmlParseException{
+public cbit.vcell.simulation.SolverTaskDescription getSolverTaskDescription(Element param, cbit.vcell.simulation.Simulation simulation) throws XmlParseException{
 	//*** create new SolverTaskDescription ***
-	cbit.vcell.solver.SolverTaskDescription solverTaskDesc = new cbit.vcell.solver.SolverTaskDescription(simulation);
+	cbit.vcell.simulation.SolverTaskDescription solverTaskDesc = new cbit.vcell.simulation.SolverTaskDescription(simulation);
 	
 	//Retrieve attributes
 	String taskType = param.getAttributeValue(XMLTags.TaskTypeTag);
@@ -3552,7 +3554,7 @@ public cbit.vcell.solver.SolverTaskDescription getSolverTaskDescription(Element 
 	//set Attributes
 	try {
 		//set solver
-		solverTaskDesc.setSolverDescription(cbit.vcell.solver.SolverDescription.fromName(solverName));
+		solverTaskDesc.setSolverDescription(cbit.vcell.simulation.SolverDescription.fromName(solverName));
 		
 		if ( taskType.equalsIgnoreCase(XMLTags.UnsteadyTag) ) {
 			solverTaskDesc.setTaskType(solverTaskDesc.TASK_UNSTEADY );
@@ -3576,9 +3578,9 @@ public cbit.vcell.solver.SolverTaskDescription getSolverTaskDescription(Element 
 		solverTaskDesc.setErrorTolerance( getErrorTolerance(param.getChild(XMLTags.ErrorToleranceTag)) );
 		//get OutputOptions
 		if (keepEvery != -1) {
-			solverTaskDesc.setOutputTimeSpec(new cbit.vcell.solver.DefaultOutputTimeSpec(keepEvery,keepAtMost));
+			solverTaskDesc.setOutputTimeSpec(new cbit.vcell.simulation.DefaultOutputTimeSpec(keepEvery,keepAtMost));
 		}
-		cbit.vcell.solver.OutputTimeSpec ots = getOutputTimeSpec(param.getChild(XMLTags.OutputOptionsTag));
+		cbit.vcell.simulation.OutputTimeSpec ots = getOutputTimeSpec(param.getChild(XMLTags.OutputOptionsTag));
 		if (ots != null) {
 			solverTaskDesc.setOutputTimeSpec(getOutputTimeSpec(param.getChild(XMLTags.OutputOptionsTag)));
 		}
@@ -3851,13 +3853,13 @@ public SubVolume getSubVolume(Element param) throws XmlParseException{
  * @return cbit.vcell.solver.TimeBounds
  * @param param org.jdom.Element
  */
-public cbit.vcell.solver.TimeBounds getTimeBounds(Element param) {
+public cbit.vcell.simulation.TimeBounds getTimeBounds(Element param) {
 	//get Attributes
 	double start = Double.parseDouble( param.getAttributeValue(XMLTags.StartTimeAttrTag) );
 	double end = Double.parseDouble( param.getAttributeValue(XMLTags.EndTimeAttrTag) );
 
 	//*** create new TimeBounds object ****
-	cbit.vcell.solver.TimeBounds timeBounds = new cbit.vcell.solver.TimeBounds(start, end);
+	cbit.vcell.simulation.TimeBounds timeBounds = new cbit.vcell.simulation.TimeBounds(start, end);
 	
 	return timeBounds;
 }
@@ -3869,14 +3871,14 @@ public cbit.vcell.solver.TimeBounds getTimeBounds(Element param) {
  * @return cbit.vcell.solver.TimeStep
  * @param param org.jdom.Element
  */
-public cbit.vcell.solver.TimeStep getTimeStep(Element param) {
+public cbit.vcell.simulation.TimeStep getTimeStep(Element param) {
 	//get attributes
 	double min = Double.parseDouble( param.getAttributeValue(XMLTags.MinTimeAttrTag) );
 	double def = Double.parseDouble( param.getAttributeValue(XMLTags.DefaultTimeAttrTag) );
 	double max = Double.parseDouble( param.getAttributeValue(XMLTags.MaxTimeAttrTag) );
 
 	//**** create new TimeStep object ****
-	cbit.vcell.solver.TimeStep timeStep = new cbit.vcell.solver.TimeStep(min, def, max);
+	cbit.vcell.simulation.TimeStep timeStep = new cbit.vcell.simulation.TimeStep(min, def, max);
 	
 	return timeStep;
 }
