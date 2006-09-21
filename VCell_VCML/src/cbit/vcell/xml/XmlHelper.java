@@ -5,27 +5,21 @@ import cbit.vcell.cellml.VCQualCellTranslator;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simulation.Simulation;
 import cbit.vcell.vcml.Translator;
-import cbit.util.DataAccessException;
 import cbit.util.Extent;
 import cbit.util.VCDocument;
-import cbit.util.graph.NodeInfo;
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlParseException;
 import cbit.util.xml.XmlUtil;
 
 import java.beans.PropertyVetoException;
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.util.Enumeration;
 
 import org.jdom.Document;
 import org.jdom.Element;
-import org.jdom.JDOMException;
 import org.jdom.Namespace;
 
 /**
@@ -62,18 +56,13 @@ public class XmlHelper {
 
 		String xmlString = null;
 		
-		try {
-			if (bioModel == null){
-				throw new IllegalArgumentException("Invalid input for BioModel: " + bioModel);
-			}
-			Xmlproducer xmlProducer = new Xmlproducer(printkeys);
-			Element element = xmlProducer.getXML(bioModel);
-			element = XmlUtil.setDefaultNamespace(element, Namespace.getNamespace(Translator.VCML_NS));		
-			xmlString = XmlUtil.xmlToString(element);
-		} catch (ExpressionException e) {
-			e.printStackTrace();
-			throw new XmlParseException("Unable to generate Biomodel XML: " + e.getMessage());
-		} 
+		if (bioModel == null){
+			throw new IllegalArgumentException("Invalid input for BioModel: " + bioModel);
+		}
+		Xmlproducer xmlProducer = new Xmlproducer(printkeys);
+		Element element = xmlProducer.getXML(bioModel);
+		element = XmlUtil.setDefaultNamespace(element, Namespace.getNamespace(Translator.VCML_NS));		
+		xmlString = XmlUtil.xmlToString(element);
 		
 		return xmlString;
 	}

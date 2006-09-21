@@ -242,7 +242,7 @@ public org.jdom.Element getXML(Extent param) throws XmlParseException{
  * @return org.jdom.Element
  * @param param cbit.vcell.biomodel.BioModel
  */
-public org.jdom.Element getXML(cbit.vcell.biomodel.BioModel param) throws XmlParseException, cbit.vcell.parser.ExpressionException {
+public org.jdom.Element getXML(cbit.vcell.biomodel.BioModel param) throws XmlParseException {
 	//Creation of BioModel Node
 	org.jdom.Element biomodelnode = new org.jdom.Element(XMLTags.BioModelTag);
 	String name = param.getName();
