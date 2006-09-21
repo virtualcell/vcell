@@ -178,7 +178,7 @@ public void saveSolutionAsNewSimulation() {
 			// add new simulation to the Application (other bookkeeping required?)
 			//
 			cbit.vcell.mapping.SimulationContext simContext = parameterEstimationTask.getModelOptimizationSpec().getSimulationContext();
-			cbit.vcell.solver.Simulation newSim = simContext.addNewSimulation();
+			cbit.vcell.simulation.Simulation newSim = simContext.addNewSimulation();
 			parameterEstimationTask.getModelOptimizationMapping().applySolutionToMathOverrides(newSim,parameterEstimationTask.getOptimizationResultSet());
 			cbit.gui.DialogUtils.showInfoDialog("created simulation \""+newSim.getName()+"\"");
 		}

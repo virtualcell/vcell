@@ -5,7 +5,7 @@ import cbit.util.SimulationVersion;
 import cbit.util.User;
 import cbit.util.VersionFlag;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.simulation.Simulation;
 import cbit.vcell.opt.*;
 
 /**
@@ -149,7 +149,7 @@ public cbit.vcell.opt.OptimizationResultSet solve(OptimizationSpec os, Optimizat
 		}
 
 		double refDataEndTime = refData.getColumnData(0)[refData.getNumRows()-1];
-		simulation.getSolverTaskDescription().setTimeBounds(new cbit.vcell.solver.TimeBounds(0.0, refDataEndTime));
+		simulation.getSolverTaskDescription().setTimeBounds(new cbit.vcell.simulation.TimeBounds(0.0, refDataEndTime));
 		//int timeIndex = refData.findColumn("t");		
 		//simulation.getSolverTaskDescription().setOutputTimeSpec(new cbit.vcell.solver.ExplicitOutputTimeSpec(refData.getColumnData(timeIndex)));
 

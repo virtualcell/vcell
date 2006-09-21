@@ -5,9 +5,9 @@ import cbit.util.User;
 import cbit.util.VersionFlag;
 import cbit.vcell.simdata.FunctionColumnDescription;
 import cbit.vcell.simdata.RowColumnResultSet;
+import cbit.vcell.simulation.Simulation;
 import cbit.vcell.parser.*;
 import cbit.vcell.opt.ReferenceData;
-import cbit.vcell.solver.Simulation;
 /**
  * Insert the type's description here.
  * Creation date: (9/5/2005 1:32:55 PM)
@@ -77,7 +77,7 @@ private double calculateWeightedError(double[] x) {
 			"",
 			null);
 		Simulation simulation = new Simulation(simVersion,odeObjectiveFunction.getMathDescription());
-		cbit.vcell.solver.MathOverrides mathOverrides = simulation.getMathOverrides();
+		cbit.vcell.simulation.MathOverrides mathOverrides = simulation.getMathOverrides();
 		for (int i = 0; i < unscaledParameterNames.length; i++){
 			double unscaledParameterValue = x[i] * parameterScalings[i];
 			mathOverrides.putConstant(new cbit.vcell.math.Constant(unscaledParameterNames[i],new cbit.vcell.parser.Expression(unscaledParameterValue)));
@@ -86,7 +86,7 @@ private double calculateWeightedError(double[] x) {
 		System.out.println();
 		ReferenceData refData = odeObjectiveFunction.getReferenceData();
 		double refDataEndTime = refData.getColumnData(0)[refData.getNumRows()-1];
-		simulation.getSolverTaskDescription().setTimeBounds(new cbit.vcell.solver.TimeBounds(0.0, refDataEndTime));
+		simulation.getSolverTaskDescription().setTimeBounds(new cbit.vcell.simulation.TimeBounds(0.0, refDataEndTime));
 
 
 		cbit.vcell.solver.ode.IDAFileWriter idaFileWriter = new cbit.vcell.solver.ode.IDAFileWriter(simulation);

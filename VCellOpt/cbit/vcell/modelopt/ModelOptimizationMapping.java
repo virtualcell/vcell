@@ -32,7 +32,7 @@ public ModelOptimizationMapping(ModelOptimizationSpec argModelOptimizationSpec) 
  * @return cbit.vcell.solver.ode.ODESolverResultSet
  * @param optResultSet cbit.vcell.opt.OptimizationResultSet
  */
-public void applySolutionToMathOverrides(cbit.vcell.solver.Simulation simulation, cbit.vcell.opt.OptimizationResultSet optResultSet) throws cbit.vcell.parser.ExpressionException {
+public void applySolutionToMathOverrides(cbit.vcell.simulation.Simulation simulation, cbit.vcell.opt.OptimizationResultSet optResultSet) throws cbit.vcell.parser.ExpressionException {
 	if (simulation==null){
 		throw new RuntimeException("simulation is null");
 	}
@@ -231,7 +231,7 @@ public static cbit.vcell.simdata.ODESolverResultSet getOdeSolverResultSet(Optimi
 		// make temporary simulation (with overrides for parameter values)
 		//
 		cbit.vcell.math.MathDescription mathDesc = ((cbit.vcell.opt.OdeObjectiveFunction)optSpec.getObjectiveFunction()).getMathDescription();
-		cbit.vcell.solver.Simulation simulation = new cbit.vcell.solver.Simulation(mathDesc);
+		cbit.vcell.simulation.Simulation simulation = new cbit.vcell.simulation.Simulation(mathDesc);
 		//
 		// set math overrides with initial guess
 		//
