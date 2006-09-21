@@ -12,6 +12,7 @@ Require-Bundle: org.vcell.common,
  org.vcell.units,
  org.vcell.matrix,
  org.vcell.geometry,
- org.vcell.image
+ org.vcell.image,
+ org.vcell.math
 Import-Package: org.osgi.framework;version="1.3.0"
 Bundle-Activator: org.vcell.ncbc.physics.MultiphysicsAnalysisTaskActivator
