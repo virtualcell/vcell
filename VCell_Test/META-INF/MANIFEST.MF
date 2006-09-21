@@ -16,4 +16,5 @@ Require-Bundle: org.vcell.server,
  org.vcell.expression,
  org.vcell.xml.common,
  org.vcell.vcml,
- org.vcell.math
+ org.vcell.math,
+ org.vcell.simulation
