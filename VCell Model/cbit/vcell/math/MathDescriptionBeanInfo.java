@@ -2186,7 +2186,7 @@ public java.beans.MethodDescriptor read_database_cbitvcellmathCommentStringToken
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.math.CommentStringTokenizer.class
+				cbit.util.CommentStringTokenizer.class
 			};
 			aMethod = getBeanClass().getMethod("read_database", aParameterTypes);
 		} catch (Throwable exception) {
@@ -2230,7 +2230,7 @@ public java.beans.MethodDescriptor readFromEditor_cbitvcellmathCommentStringToke
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.math.CommentStringTokenizer.class,
+				cbit.util.CommentStringTokenizer.class,
 				cbit.vcell.geometry.Geometry.class
 			};
 			aMethod = getBeanClass().getMethod("readFromEditor", aParameterTypes);

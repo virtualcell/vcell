@@ -1,13 +1,53 @@
-package cbit.vcell.solver;
+package cbit.vcell.model;
 
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
 /**
- * The bean information class for cbit.vcell.solver.SolverTaskDescription.
+ * The bean information class for cbit.vcell.model.ReactionStep.
  */
-public class SolverTaskDescriptionBeanInfo extends java.beans.SimpleBeanInfo {
+public class ReactionStepBeanInfo extends java.beans.SimpleBeanInfo {
+/**
+ * Gets the addCatalyst(cbit.vcell.model.SpeciesContext) method descriptor.
+ * @return java.beans.MethodDescriptor
+ */
+public java.beans.MethodDescriptor addCatalyst_cbitvcellmodelSpeciesContextMethodDescriptor() {
+	java.beans.MethodDescriptor aDescriptor = null;
+	try {
+		/* Create and return the addCatalyst(cbit.vcell.model.SpeciesContext) method descriptor. */
+		java.lang.reflect.Method aMethod = null;
+		try {
+			/* Attempt to find the method using getMethod with parameter types. */
+			java.lang.Class aParameterTypes[] = {
+				cbit.vcell.model.SpeciesContext.class
+			};
+			aMethod = getBeanClass().getMethod("addCatalyst", aParameterTypes);
+		} catch (Throwable exception) {
+			/* Since getMethod failed, call findMethod. */
+			handleException(exception);
+			aMethod = findMethod(getBeanClass(), "addCatalyst", 1);
+		};
+		try {
+			/* Try creating the method descriptor with parameter descriptors. */
+			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
+			aParameterDescriptor1.setName("arg1");
+			aParameterDescriptor1.setDisplayName("speciesContext");
+			java.beans.ParameterDescriptor aParameterDescriptors[] = {
+				aParameterDescriptor1
+			};
+			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
+		} catch (Throwable exception) {
+			/* Try creating the method descriptor without parameter descriptors. */
+			handleException(exception);
+			aDescriptor = new java.beans.MethodDescriptor(aMethod);
+		};
+		/* aDescriptor.setDisplayName("addCatalyst(cbit.vcell.model.SpeciesContext)"); */
+		/* aDescriptor.setShortDescription("addCatalyst(cbit.vcell.model.SpeciesContext)"); */
+		/* aDescriptor.setExpert(false); */
+		/* aDescriptor.setHidden(false); */
+		/* aDescriptor.setValue("preferred", new Boolean(false)); */
+	} catch (Throwable exception) {
+		handleException(exception);
+	};
+	return aDescriptor;
+}
 /**
  * Gets the addPropertyChangeListener(java.beans.PropertyChangeListener) method descriptor.
  * @return java.beans.MethodDescriptor
@@ -53,37 +93,32 @@ public java.beans.MethodDescriptor addPropertyChangeListener_javabeansPropertyCh
 	return aDescriptor;
 }
 /**
- * Gets the addPropertyChangeListener(java.lang.String, java.beans.PropertyChangeListener) method descriptor.
+ * Gets the addReactionParticipant(cbit.vcell.model.ReactionParticipant) method descriptor.
  * @return java.beans.MethodDescriptor
  */
-public java.beans.MethodDescriptor addPropertyChangeListener_javalangString_javabeansPropertyChangeListenerMethodDescriptor() {
+public java.beans.MethodDescriptor addReactionParticipant_cbitvcellmodelReactionParticipantMethodDescriptor() {
 	java.beans.MethodDescriptor aDescriptor = null;
 	try {
-		/* Create and return the addPropertyChangeListener(java.lang.String, java.beans.PropertyChangeListener) method descriptor. */
+		/* Create and return the addReactionParticipant(cbit.vcell.model.ReactionParticipant) method descriptor. */
 		java.lang.reflect.Method aMethod = null;
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				java.lang.String.class,
-				java.beans.PropertyChangeListener.class
+				cbit.vcell.model.ReactionParticipant.class
 			};
-			aMethod = getBeanClass().getMethod("addPropertyChangeListener", aParameterTypes);
+			aMethod = getBeanClass().getMethod("addReactionParticipant", aParameterTypes);
 		} catch (Throwable exception) {
 			/* Since getMethod failed, call findMethod. */
 			handleException(exception);
-			aMethod = findMethod(getBeanClass(), "addPropertyChangeListener", 2);
+			aMethod = findMethod(getBeanClass(), "addReactionParticipant", 1);
 		};
 		try {
 			/* Try creating the method descriptor with parameter descriptors. */
 			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
 			aParameterDescriptor1.setName("arg1");
-			aParameterDescriptor1.setDisplayName("propertyName");
-			java.beans.ParameterDescriptor aParameterDescriptor2 = new java.beans.ParameterDescriptor();
-			aParameterDescriptor2.setName("arg2");
-			aParameterDescriptor2.setDisplayName("listener");
+			aParameterDescriptor1.setDisplayName("reactionParticipant");
 			java.beans.ParameterDescriptor aParameterDescriptors[] = {
-				aParameterDescriptor1,
-				aParameterDescriptor2
+				aParameterDescriptor1
 			};
 			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
 		} catch (Throwable exception) {
@@ -91,8 +126,8 @@ public java.beans.MethodDescriptor addPropertyChangeListener_javalangString_java
 			handleException(exception);
 			aDescriptor = new java.beans.MethodDescriptor(aMethod);
 		};
-		/* aDescriptor.setDisplayName("addPropertyChangeListener(java.lang.String, java.beans.PropertyChangeListener)"); */
-		/* aDescriptor.setShortDescription("addPropertyChangeListener(java.lang.String, java.beans.PropertyChangeListener)"); */
+		/* aDescriptor.setDisplayName("addReactionParticipant(cbit.vcell.model.ReactionParticipant)"); */
+		/* aDescriptor.setShortDescription("addReactionParticipant(cbit.vcell.model.ReactionParticipant)"); */
 		/* aDescriptor.setExpert(false); */
 		/* aDescriptor.setHidden(false); */
 		/* aDescriptor.setValue("preferred", new Boolean(false)); */
@@ -146,146 +181,79 @@ public java.beans.MethodDescriptor addVetoableChangeListener_javabeansVetoableCh
 	return aDescriptor;
 }
 /**
- * Gets the addVetoableChangeListener(java.lang.String, java.beans.VetoableChangeListener) method descriptor.
- * @return java.beans.MethodDescriptor
- */
-public java.beans.MethodDescriptor addVetoableChangeListener_javalangString_javabeansVetoableChangeListenerMethodDescriptor() {
-	java.beans.MethodDescriptor aDescriptor = null;
-	try {
-		/* Create and return the addVetoableChangeListener(java.lang.String, java.beans.VetoableChangeListener) method descriptor. */
-		java.lang.reflect.Method aMethod = null;
-		try {
-			/* Attempt to find the method using getMethod with parameter types. */
-			java.lang.Class aParameterTypes[] = {
-				java.lang.String.class,
-				java.beans.VetoableChangeListener.class
-			};
-			aMethod = getBeanClass().getMethod("addVetoableChangeListener", aParameterTypes);
-		} catch (Throwable exception) {
-			/* Since getMethod failed, call findMethod. */
-			handleException(exception);
-			aMethod = findMethod(getBeanClass(), "addVetoableChangeListener", 2);
-		};
-		try {
-			/* Try creating the method descriptor with parameter descriptors. */
-			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
-			aParameterDescriptor1.setName("arg1");
-			aParameterDescriptor1.setDisplayName("propertyName");
-			java.beans.ParameterDescriptor aParameterDescriptor2 = new java.beans.ParameterDescriptor();
-			aParameterDescriptor2.setName("arg2");
-			aParameterDescriptor2.setDisplayName("listener");
-			java.beans.ParameterDescriptor aParameterDescriptors[] = {
-				aParameterDescriptor1,
-				aParameterDescriptor2
-			};
-			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
-		} catch (Throwable exception) {
-			/* Try creating the method descriptor without parameter descriptors. */
-			handleException(exception);
-			aDescriptor = new java.beans.MethodDescriptor(aMethod);
-		};
-		/* aDescriptor.setDisplayName("addVetoableChangeListener(java.lang.String, java.beans.VetoableChangeListener)"); */
-		/* aDescriptor.setShortDescription("addVetoableChangeListener(java.lang.String, java.beans.VetoableChangeListener)"); */
-		/* aDescriptor.setExpert(false); */
-		/* aDescriptor.setHidden(false); */
-		/* aDescriptor.setValue("preferred", new Boolean(false)); */
-	} catch (Throwable exception) {
-		handleException(exception);
-	};
-	return aDescriptor;
-}
-/**
- * Gets the compareEqual(cbit.util.Matchable) method descriptor.
- * @return java.beans.MethodDescriptor
- */
-public java.beans.MethodDescriptor compareEqual_cbitutilMatchableMethodDescriptor() {
-	java.beans.MethodDescriptor aDescriptor = null;
-	try {
-		/* Create and return the compareEqual(cbit.util.Matchable) method descriptor. */
-		java.lang.reflect.Method aMethod = null;
-		try {
-			/* Attempt to find the method using getMethod with parameter types. */
-			java.lang.Class aParameterTypes[] = {
-				cbit.util.Matchable.class
-			};
-			aMethod = getBeanClass().getMethod("compareEqual", aParameterTypes);
-		} catch (Throwable exception) {
-			/* Since getMethod failed, call findMethod. */
-			handleException(exception);
-			aMethod = findMethod(getBeanClass(), "compareEqual", 1);
-		};
-		try {
-			/* Try creating the method descriptor with parameter descriptors. */
-			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
-			aParameterDescriptor1.setName("arg1");
-			aParameterDescriptor1.setDisplayName("object");
-			java.beans.ParameterDescriptor aParameterDescriptors[] = {
-				aParameterDescriptor1
-			};
-			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
-		} catch (Throwable exception) {
-			/* Try creating the method descriptor without parameter descriptors. */
-			handleException(exception);
-			aDescriptor = new java.beans.MethodDescriptor(aMethod);
-		};
-		/* aDescriptor.setDisplayName("compareEqual(cbit.util.Matchable)"); */
-		/* aDescriptor.setShortDescription("compareEqual(cbit.util.Matchable)"); */
-		/* aDescriptor.setExpert(false); */
-		/* aDescriptor.setHidden(false); */
-		/* aDescriptor.setValue("preferred", new Boolean(false)); */
-	} catch (Throwable exception) {
-		handleException(exception);
-	};
-	return aDescriptor;
-}
-/**
- * Gets the errorTolerance property descriptor.
+ * Gets the chargeCarrierValence property descriptor.
  * @return java.beans.PropertyDescriptor
  */
-public java.beans.PropertyDescriptor errorTolerancePropertyDescriptor() {
+public java.beans.PropertyDescriptor chargeCarrierValencePropertyDescriptor() {
 	java.beans.PropertyDescriptor aDescriptor = null;
 	try {
 		try {
-			/* Using methods via getMethod is the faster way to create the errorTolerance property descriptor. */
+			/* Using methods via getMethod is the faster way to create the chargeCarrierValence property descriptor. */
 			java.lang.reflect.Method aGetMethod = null;
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aGetMethodParameterTypes[] = {};
-				aGetMethod = getBeanClass().getMethod("getErrorTolerance", aGetMethodParameterTypes);
+				aGetMethod = getBeanClass().getMethod("getChargeCarrierValence", aGetMethodParameterTypes);
 			} catch (Throwable exception) {
 				/* Since getMethod failed, call findMethod. */
 				handleException(exception);
-				aGetMethod = findMethod(getBeanClass(), "getErrorTolerance", 0);
+				aGetMethod = findMethod(getBeanClass(), "getChargeCarrierValence", 0);
 			};
 			java.lang.reflect.Method aSetMethod = null;
-			try {
-				/* Attempt to find the method using getMethod with parameter types. */
-				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.solver.ErrorTolerance.class
-				};
-				aSetMethod = getBeanClass().getMethod("setErrorTolerance", aSetMethodParameterTypes);
-			} catch (Throwable exception) {
-				/* Since getMethod failed, call findMethod. */
-				handleException(exception);
-				aSetMethod = findMethod(getBeanClass(), "setErrorTolerance", 1);
-			};
-			aDescriptor = new java.beans.PropertyDescriptor("errorTolerance"
+			aDescriptor = new java.beans.PropertyDescriptor("chargeCarrierValence"
 			, aGetMethod, aSetMethod);
 		} catch (Throwable exception) {
 			/* Since we failed using methods, try creating a default property descriptor. */
 			handleException(exception);
-			aDescriptor = new java.beans.PropertyDescriptor("errorTolerance"
+			aDescriptor = new java.beans.PropertyDescriptor("chargeCarrierValence"
 			, getBeanClass());
 		};
 		aDescriptor.setBound(true);
 		aDescriptor.setConstrained(true);
-		/* aDescriptor.setDisplayName("errorTolerance"); */
-		/* aDescriptor.setShortDescription("errorTolerance"); */
+		/* aDescriptor.setDisplayName("chargeCarrierValence"); */
+		/* aDescriptor.setShortDescription("chargeCarrierValence"); */
 		/* aDescriptor.setExpert(false); */
 		/* aDescriptor.setHidden(false); */
 		/* aDescriptor.setValue("preferred", new Boolean(false)); */
 		/* aDescriptor.setValue("ivjDesignTimeProperty", new Boolean(true)); */
 	} catch (Throwable exception) {
+		handleException(exception);
+	};
+	return aDescriptor;
+}
+/**
+ * Gets the compareEqual() method descriptor.
+ * @return java.beans.MethodDescriptor
+ */
+public java.beans.MethodDescriptor compareEqualMethodDescriptor() {
+	java.beans.MethodDescriptor aDescriptor = null;
+	try {
+		/* Create and return the compareEqual() method descriptor. */
+		java.lang.reflect.Method aMethod = null;
+		try {
+			/* Attempt to find the method using getMethod with parameter types. */
+			java.lang.Class aParameterTypes[] = {};
+			aMethod = getBeanClass().getMethod("compareEqual", aParameterTypes);
+		} catch (java.lang.Throwable exception) {
+			/* Since getMethod failed, call findMethod. */
+			handleException(exception);
+			aMethod = findMethod(getBeanClass(), "compareEqual", 0);
+		};
+		try {
+			/* Try creating the method descriptor with parameter descriptors. */
+			java.beans.ParameterDescriptor aParameterDescriptors[] = {};
+			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
+		} catch (java.lang.Throwable exception) {
+			/* Try creating the method descriptor without parameter descriptors. */
+			handleException(exception);
+			aDescriptor = new java.beans.MethodDescriptor(aMethod);
+		};
+		/* aDescriptor.setDisplayName("compareEqual()"); */
+		/* aDescriptor.setShortDescription("compareEqual()"); */
+		/* aDescriptor.setExpert(false); */
+		/* aDescriptor.setHidden(false); */
+		/* aDescriptor.setValue("preferred", new java.lang.Boolean(false)); */
+	} catch (java.lang.Throwable exception) {
 		handleException(exception);
 	};
 	return aDescriptor;
@@ -312,158 +280,6 @@ public static java.lang.reflect.Method findMethod(java.lang.Class aClass, java.l
 		return null;
 	}
 	return null;
-}
-/**
- * Gets the firePropertyChange(java.beans.PropertyChangeEvent) method descriptor.
- * @return java.beans.MethodDescriptor
- */
-public java.beans.MethodDescriptor firePropertyChange_javabeansPropertyChangeEventMethodDescriptor() {
-	java.beans.MethodDescriptor aDescriptor = null;
-	try {
-		/* Create and return the firePropertyChange(java.beans.PropertyChangeEvent) method descriptor. */
-		java.lang.reflect.Method aMethod = null;
-		try {
-			/* Attempt to find the method using getMethod with parameter types. */
-			java.lang.Class aParameterTypes[] = {
-				java.beans.PropertyChangeEvent.class
-			};
-			aMethod = getBeanClass().getMethod("firePropertyChange", aParameterTypes);
-		} catch (Throwable exception) {
-			/* Since getMethod failed, call findMethod. */
-			handleException(exception);
-			aMethod = findMethod(getBeanClass(), "firePropertyChange", 1);
-		};
-		try {
-			/* Try creating the method descriptor with parameter descriptors. */
-			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
-			aParameterDescriptor1.setName("arg1");
-			aParameterDescriptor1.setDisplayName("evt");
-			java.beans.ParameterDescriptor aParameterDescriptors[] = {
-				aParameterDescriptor1
-			};
-			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
-		} catch (Throwable exception) {
-			/* Try creating the method descriptor without parameter descriptors. */
-			handleException(exception);
-			aDescriptor = new java.beans.MethodDescriptor(aMethod);
-		};
-		/* aDescriptor.setDisplayName("firePropertyChange(java.beans.PropertyChangeEvent)"); */
-		/* aDescriptor.setShortDescription("firePropertyChange(java.beans.PropertyChangeEvent)"); */
-		/* aDescriptor.setExpert(false); */
-		/* aDescriptor.setHidden(false); */
-		/* aDescriptor.setValue("preferred", new Boolean(false)); */
-	} catch (Throwable exception) {
-		handleException(exception);
-	};
-	return aDescriptor;
-}
-/**
- * Gets the firePropertyChange(java.lang.String, boolean, boolean) method descriptor.
- * @return java.beans.MethodDescriptor
- */
-public java.beans.MethodDescriptor firePropertyChange_javalangString_boolean_booleanMethodDescriptor() {
-	java.beans.MethodDescriptor aDescriptor = null;
-	try {
-		/* Create and return the firePropertyChange(java.lang.String, boolean, boolean) method descriptor. */
-		java.lang.reflect.Method aMethod = null;
-		try {
-			/* Attempt to find the method using getMethod with parameter types. */
-			java.lang.Class aParameterTypes[] = {
-				java.lang.String.class,
-				boolean.class,
-				boolean.class
-			};
-			aMethod = getBeanClass().getMethod("firePropertyChange", aParameterTypes);
-		} catch (Throwable exception) {
-			/* Since getMethod failed, call findMethod. */
-			handleException(exception);
-			aMethod = findMethod(getBeanClass(), "firePropertyChange", 3);
-		};
-		try {
-			/* Try creating the method descriptor with parameter descriptors. */
-			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
-			aParameterDescriptor1.setName("arg1");
-			aParameterDescriptor1.setDisplayName("propertyName");
-			java.beans.ParameterDescriptor aParameterDescriptor2 = new java.beans.ParameterDescriptor();
-			aParameterDescriptor2.setName("arg2");
-			aParameterDescriptor2.setDisplayName("oldValue");
-			java.beans.ParameterDescriptor aParameterDescriptor3 = new java.beans.ParameterDescriptor();
-			aParameterDescriptor3.setName("arg3");
-			aParameterDescriptor3.setDisplayName("newValue");
-			java.beans.ParameterDescriptor aParameterDescriptors[] = {
-				aParameterDescriptor1,
-				aParameterDescriptor2,
-				aParameterDescriptor3
-			};
-			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
-		} catch (Throwable exception) {
-			/* Try creating the method descriptor without parameter descriptors. */
-			handleException(exception);
-			aDescriptor = new java.beans.MethodDescriptor(aMethod);
-		};
-		/* aDescriptor.setDisplayName("firePropertyChange(java.lang.String, boolean, boolean)"); */
-		/* aDescriptor.setShortDescription("firePropertyChange(java.lang.String, boolean, boolean)"); */
-		/* aDescriptor.setExpert(false); */
-		/* aDescriptor.setHidden(false); */
-		/* aDescriptor.setValue("preferred", new Boolean(false)); */
-	} catch (Throwable exception) {
-		handleException(exception);
-	};
-	return aDescriptor;
-}
-/**
- * Gets the firePropertyChange(java.lang.String, int, int) method descriptor.
- * @return java.beans.MethodDescriptor
- */
-public java.beans.MethodDescriptor firePropertyChange_javalangString_int_intMethodDescriptor() {
-	java.beans.MethodDescriptor aDescriptor = null;
-	try {
-		/* Create and return the firePropertyChange(java.lang.String, int, int) method descriptor. */
-		java.lang.reflect.Method aMethod = null;
-		try {
-			/* Attempt to find the method using getMethod with parameter types. */
-			java.lang.Class aParameterTypes[] = {
-				java.lang.String.class,
-				int.class,
-				int.class
-			};
-			aMethod = getBeanClass().getMethod("firePropertyChange", aParameterTypes);
-		} catch (Throwable exception) {
-			/* Since getMethod failed, call findMethod. */
-			handleException(exception);
-			aMethod = findMethod(getBeanClass(), "firePropertyChange", 3);
-		};
-		try {
-			/* Try creating the method descriptor with parameter descriptors. */
-			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
-			aParameterDescriptor1.setName("arg1");
-			aParameterDescriptor1.setDisplayName("propertyName");
-			java.beans.ParameterDescriptor aParameterDescriptor2 = new java.beans.ParameterDescriptor();
-			aParameterDescriptor2.setName("arg2");
-			aParameterDescriptor2.setDisplayName("oldValue");
-			java.beans.ParameterDescriptor aParameterDescriptor3 = new java.beans.ParameterDescriptor();
-			aParameterDescriptor3.setName("arg3");
-			aParameterDescriptor3.setDisplayName("newValue");
-			java.beans.ParameterDescriptor aParameterDescriptors[] = {
-				aParameterDescriptor1,
-				aParameterDescriptor2,
-				aParameterDescriptor3
-			};
-			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
-		} catch (Throwable exception) {
-			/* Try creating the method descriptor without parameter descriptors. */
-			handleException(exception);
-			aDescriptor = new java.beans.MethodDescriptor(aMethod);
-		};
-		/* aDescriptor.setDisplayName("firePropertyChange(java.lang.String, int, int)"); */
-		/* aDescriptor.setShortDescription("firePropertyChange(java.lang.String, int, int)"); */
-		/* aDescriptor.setExpert(false); */
-		/* aDescriptor.setHidden(false); */
-		/* aDescriptor.setValue("preferred", new Boolean(false)); */
-	} catch (Throwable exception) {
-		handleException(exception);
-	};
-	return aDescriptor;
 }
 /**
  * Gets the firePropertyChange(java.lang.String, java.lang.Object, java.lang.Object) method descriptor.
@@ -511,158 +327,6 @@ public java.beans.MethodDescriptor firePropertyChange_javalangString_javalangObj
 		};
 		/* aDescriptor.setDisplayName("firePropertyChange(java.lang.String, java.lang.Object, java.lang.Object)"); */
 		/* aDescriptor.setShortDescription("firePropertyChange(java.lang.String, java.lang.Object, java.lang.Object)"); */
-		/* aDescriptor.setExpert(false); */
-		/* aDescriptor.setHidden(false); */
-		/* aDescriptor.setValue("preferred", new Boolean(false)); */
-	} catch (Throwable exception) {
-		handleException(exception);
-	};
-	return aDescriptor;
-}
-/**
- * Gets the fireVetoableChange(java.beans.PropertyChangeEvent) method descriptor.
- * @return java.beans.MethodDescriptor
- */
-public java.beans.MethodDescriptor fireVetoableChange_javabeansPropertyChangeEventMethodDescriptor() {
-	java.beans.MethodDescriptor aDescriptor = null;
-	try {
-		/* Create and return the fireVetoableChange(java.beans.PropertyChangeEvent) method descriptor. */
-		java.lang.reflect.Method aMethod = null;
-		try {
-			/* Attempt to find the method using getMethod with parameter types. */
-			java.lang.Class aParameterTypes[] = {
-				java.beans.PropertyChangeEvent.class
-			};
-			aMethod = getBeanClass().getMethod("fireVetoableChange", aParameterTypes);
-		} catch (Throwable exception) {
-			/* Since getMethod failed, call findMethod. */
-			handleException(exception);
-			aMethod = findMethod(getBeanClass(), "fireVetoableChange", 1);
-		};
-		try {
-			/* Try creating the method descriptor with parameter descriptors. */
-			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
-			aParameterDescriptor1.setName("arg1");
-			aParameterDescriptor1.setDisplayName("evt");
-			java.beans.ParameterDescriptor aParameterDescriptors[] = {
-				aParameterDescriptor1
-			};
-			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
-		} catch (Throwable exception) {
-			/* Try creating the method descriptor without parameter descriptors. */
-			handleException(exception);
-			aDescriptor = new java.beans.MethodDescriptor(aMethod);
-		};
-		/* aDescriptor.setDisplayName("fireVetoableChange(java.beans.PropertyChangeEvent)"); */
-		/* aDescriptor.setShortDescription("fireVetoableChange(java.beans.PropertyChangeEvent)"); */
-		/* aDescriptor.setExpert(false); */
-		/* aDescriptor.setHidden(false); */
-		/* aDescriptor.setValue("preferred", new Boolean(false)); */
-	} catch (Throwable exception) {
-		handleException(exception);
-	};
-	return aDescriptor;
-}
-/**
- * Gets the fireVetoableChange(java.lang.String, boolean, boolean) method descriptor.
- * @return java.beans.MethodDescriptor
- */
-public java.beans.MethodDescriptor fireVetoableChange_javalangString_boolean_booleanMethodDescriptor() {
-	java.beans.MethodDescriptor aDescriptor = null;
-	try {
-		/* Create and return the fireVetoableChange(java.lang.String, boolean, boolean) method descriptor. */
-		java.lang.reflect.Method aMethod = null;
-		try {
-			/* Attempt to find the method using getMethod with parameter types. */
-			java.lang.Class aParameterTypes[] = {
-				java.lang.String.class,
-				boolean.class,
-				boolean.class
-			};
-			aMethod = getBeanClass().getMethod("fireVetoableChange", aParameterTypes);
-		} catch (Throwable exception) {
-			/* Since getMethod failed, call findMethod. */
-			handleException(exception);
-			aMethod = findMethod(getBeanClass(), "fireVetoableChange", 3);
-		};
-		try {
-			/* Try creating the method descriptor with parameter descriptors. */
-			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
-			aParameterDescriptor1.setName("arg1");
-			aParameterDescriptor1.setDisplayName("propertyName");
-			java.beans.ParameterDescriptor aParameterDescriptor2 = new java.beans.ParameterDescriptor();
-			aParameterDescriptor2.setName("arg2");
-			aParameterDescriptor2.setDisplayName("oldValue");
-			java.beans.ParameterDescriptor aParameterDescriptor3 = new java.beans.ParameterDescriptor();
-			aParameterDescriptor3.setName("arg3");
-			aParameterDescriptor3.setDisplayName("newValue");
-			java.beans.ParameterDescriptor aParameterDescriptors[] = {
-				aParameterDescriptor1,
-				aParameterDescriptor2,
-				aParameterDescriptor3
-			};
-			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
-		} catch (Throwable exception) {
-			/* Try creating the method descriptor without parameter descriptors. */
-			handleException(exception);
-			aDescriptor = new java.beans.MethodDescriptor(aMethod);
-		};
-		/* aDescriptor.setDisplayName("fireVetoableChange(java.lang.String, boolean, boolean)"); */
-		/* aDescriptor.setShortDescription("fireVetoableChange(java.lang.String, boolean, boolean)"); */
-		/* aDescriptor.setExpert(false); */
-		/* aDescriptor.setHidden(false); */
-		/* aDescriptor.setValue("preferred", new Boolean(false)); */
-	} catch (Throwable exception) {
-		handleException(exception);
-	};
-	return aDescriptor;
-}
-/**
- * Gets the fireVetoableChange(java.lang.String, int, int) method descriptor.
- * @return java.beans.MethodDescriptor
- */
-public java.beans.MethodDescriptor fireVetoableChange_javalangString_int_intMethodDescriptor() {
-	java.beans.MethodDescriptor aDescriptor = null;
-	try {
-		/* Create and return the fireVetoableChange(java.lang.String, int, int) method descriptor. */
-		java.lang.reflect.Method aMethod = null;
-		try {
-			/* Attempt to find the method using getMethod with parameter types. */
-			java.lang.Class aParameterTypes[] = {
-				java.lang.String.class,
-				int.class,
-				int.class
-			};
-			aMethod = getBeanClass().getMethod("fireVetoableChange", aParameterTypes);
-		} catch (Throwable exception) {
-			/* Since getMethod failed, call findMethod. */
-			handleException(exception);
-			aMethod = findMethod(getBeanClass(), "fireVetoableChange", 3);
-		};
-		try {
-			/* Try creating the method descriptor with parameter descriptors. */
-			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
-			aParameterDescriptor1.setName("arg1");
-			aParameterDescriptor1.setDisplayName("propertyName");
-			java.beans.ParameterDescriptor aParameterDescriptor2 = new java.beans.ParameterDescriptor();
-			aParameterDescriptor2.setName("arg2");
-			aParameterDescriptor2.setDisplayName("oldValue");
-			java.beans.ParameterDescriptor aParameterDescriptor3 = new java.beans.ParameterDescriptor();
-			aParameterDescriptor3.setName("arg3");
-			aParameterDescriptor3.setDisplayName("newValue");
-			java.beans.ParameterDescriptor aParameterDescriptors[] = {
-				aParameterDescriptor1,
-				aParameterDescriptor2,
-				aParameterDescriptor3
-			};
-			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
-		} catch (Throwable exception) {
-			/* Try creating the method descriptor without parameter descriptors. */
-			handleException(exception);
-			aDescriptor = new java.beans.MethodDescriptor(aMethod);
-		};
-		/* aDescriptor.setDisplayName("fireVetoableChange(java.lang.String, int, int)"); */
-		/* aDescriptor.setShortDescription("fireVetoableChange(java.lang.String, int, int)"); */
 		/* aDescriptor.setExpert(false); */
 		/* aDescriptor.setHidden(false); */
 		/* aDescriptor.setValue("preferred", new Boolean(false)); */
@@ -726,6 +390,55 @@ public java.beans.MethodDescriptor fireVetoableChange_javalangString_javalangObj
 	return aDescriptor;
 }
 /**
+ * Gets the fromTokens(cbit.vcell.math.CommentStringTokenizer, cbit.vcell.model.Model) method descriptor.
+ * @return java.beans.MethodDescriptor
+ */
+public java.beans.MethodDescriptor fromTokens_cbitvcellmathCommentStringTokenizer_cbitvcellmodelModelMethodDescriptor() {
+	java.beans.MethodDescriptor aDescriptor = null;
+	try {
+		/* Create and return the fromTokens(cbit.vcell.math.CommentStringTokenizer, cbit.vcell.model.Model) method descriptor. */
+		java.lang.reflect.Method aMethod = null;
+		try {
+			/* Attempt to find the method using getMethod with parameter types. */
+			java.lang.Class aParameterTypes[] = {
+				cbit.util.CommentStringTokenizer.class,
+				cbit.vcell.model.Model.class
+			};
+			aMethod = getBeanClass().getMethod("fromTokens", aParameterTypes);
+		} catch (Throwable exception) {
+			/* Since getMethod failed, call findMethod. */
+			handleException(exception);
+			aMethod = findMethod(getBeanClass(), "fromTokens", 2);
+		};
+		try {
+			/* Try creating the method descriptor with parameter descriptors. */
+			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
+			aParameterDescriptor1.setName("arg1");
+			aParameterDescriptor1.setDisplayName("tokens");
+			java.beans.ParameterDescriptor aParameterDescriptor2 = new java.beans.ParameterDescriptor();
+			aParameterDescriptor2.setName("arg2");
+			aParameterDescriptor2.setDisplayName("model");
+			java.beans.ParameterDescriptor aParameterDescriptors[] = {
+				aParameterDescriptor1,
+				aParameterDescriptor2
+			};
+			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
+		} catch (Throwable exception) {
+			/* Try creating the method descriptor without parameter descriptors. */
+			handleException(exception);
+			aDescriptor = new java.beans.MethodDescriptor(aMethod);
+		};
+		/* aDescriptor.setDisplayName("fromTokens(cbit.vcell.math.CommentStringTokenizer, cbit.vcell.model.Model)"); */
+		/* aDescriptor.setShortDescription("fromTokens(cbit.vcell.math.CommentStringTokenizer, cbit.vcell.model.Model)"); */
+		/* aDescriptor.setExpert(false); */
+		/* aDescriptor.setHidden(false); */
+		/* aDescriptor.setValue("preferred", new Boolean(false)); */
+	} catch (Throwable exception) {
+		handleException(exception);
+	};
+	return aDescriptor;
+}
+/**
  * Returns the BeanInfo of the superclass of this bean to inherit its features.
  * @return java.beans.BeanInfo[]
  */
@@ -755,20 +468,20 @@ public java.beans.BeanInfo[] getAdditionalBeanInfo() {
  * @return java.lang.Class
  */
 public static java.lang.Class getBeanClass() {
-	return cbit.vcell.solver.SolverTaskDescription.class;
+	return cbit.vcell.model.ReactionStep.class;
 }
 /**
  * Gets the bean class name.
  * @return java.lang.String
  */
 public static java.lang.String getBeanClassName() {
-	return "cbit.vcell.solver.SolverTaskDescription";
+	return "cbit.vcell.model.ReactionStep";
 }
 public java.beans.BeanDescriptor getBeanDescriptor() {
 	java.beans.BeanDescriptor aDescriptor = null;
 	try {
-		/* Create and return the SolverTaskDescriptionBeanInfo bean descriptor. */
-		aDescriptor = new java.beans.BeanDescriptor(cbit.vcell.solver.SolverTaskDescription.class);
+		/* Create and return the ReactionStepBeanInfo bean descriptor. */
+		aDescriptor = new java.beans.BeanDescriptor(cbit.vcell.model.ReactionStep.class);
 		/* aDescriptor.setExpert(false); */
 		/* aDescriptor.setHidden(false); */
 		/* aDescriptor.setValue("hidden-state", Boolean.FALSE); */
@@ -777,22 +490,22 @@ public java.beans.BeanDescriptor getBeanDescriptor() {
 	return aDescriptor;
 }
 /**
- * Gets the getErrorTolerance() method descriptor.
+ * Gets the getChargeCarrierValence() method descriptor.
  * @return java.beans.MethodDescriptor
  */
-public java.beans.MethodDescriptor getErrorToleranceMethodDescriptor() {
+public java.beans.MethodDescriptor getChargeCarrierValenceMethodDescriptor() {
 	java.beans.MethodDescriptor aDescriptor = null;
 	try {
-		/* Create and return the getErrorTolerance() method descriptor. */
+		/* Create and return the getChargeCarrierValence() method descriptor. */
 		java.lang.reflect.Method aMethod = null;
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {};
-			aMethod = getBeanClass().getMethod("getErrorTolerance", aParameterTypes);
+			aMethod = getBeanClass().getMethod("getChargeCarrierValence", aParameterTypes);
 		} catch (Throwable exception) {
 			/* Since getMethod failed, call findMethod. */
 			handleException(exception);
-			aMethod = findMethod(getBeanClass(), "getErrorTolerance", 0);
+			aMethod = findMethod(getBeanClass(), "getChargeCarrierValence", 0);
 		};
 		try {
 			/* Try creating the method descriptor with parameter descriptors. */
@@ -803,8 +516,89 @@ public java.beans.MethodDescriptor getErrorToleranceMethodDescriptor() {
 			handleException(exception);
 			aDescriptor = new java.beans.MethodDescriptor(aMethod);
 		};
-		/* aDescriptor.setDisplayName("getErrorTolerance()"); */
-		/* aDescriptor.setShortDescription("getErrorTolerance()"); */
+		/* aDescriptor.setDisplayName("getChargeCarrierValence()"); */
+		/* aDescriptor.setShortDescription("getChargeCarrierValence()"); */
+		/* aDescriptor.setExpert(false); */
+		/* aDescriptor.setHidden(false); */
+		/* aDescriptor.setValue("preferred", new Boolean(false)); */
+	} catch (Throwable exception) {
+		handleException(exception);
+	};
+	return aDescriptor;
+}
+/**
+ * Gets the getCurrentSourceName() method descriptor.
+ * @return java.beans.MethodDescriptor
+ */
+public java.beans.MethodDescriptor getCurrentSourceNameMethodDescriptor() {
+	java.beans.MethodDescriptor aDescriptor = null;
+	try {
+		/* Create and return the getCurrentSourceName() method descriptor. */
+		java.lang.reflect.Method aMethod = null;
+		try {
+			/* Attempt to find the method using getMethod with parameter types. */
+			java.lang.Class aParameterTypes[] = {};
+			aMethod = getBeanClass().getMethod("getCurrentSourceName", aParameterTypes);
+		} catch (Throwable exception) {
+			/* Since getMethod failed, call findMethod. */
+			handleException(exception);
+			aMethod = findMethod(getBeanClass(), "getCurrentSourceName", 0);
+		};
+		try {
+			/* Try creating the method descriptor with parameter descriptors. */
+			java.beans.ParameterDescriptor aParameterDescriptors[] = {};
+			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
+		} catch (Throwable exception) {
+			/* Try creating the method descriptor without parameter descriptors. */
+			handleException(exception);
+			aDescriptor = new java.beans.MethodDescriptor(aMethod);
+		};
+		/* aDescriptor.setDisplayName("getCurrentSourceName()"); */
+		/* aDescriptor.setShortDescription("getCurrentSourceName()"); */
+		/* aDescriptor.setExpert(false); */
+		/* aDescriptor.setHidden(false); */
+		/* aDescriptor.setValue("preferred", new Boolean(false)); */
+	} catch (Throwable exception) {
+		handleException(exception);
+	};
+	return aDescriptor;
+}
+/**
+ * Gets the getEntry(java.lang.String) method descriptor.
+ * @return java.beans.MethodDescriptor
+ */
+public java.beans.MethodDescriptor getEntry_javalangStringMethodDescriptor() {
+	java.beans.MethodDescriptor aDescriptor = null;
+	try {
+		/* Create and return the getEntry(java.lang.String) method descriptor. */
+		java.lang.reflect.Method aMethod = null;
+		try {
+			/* Attempt to find the method using getMethod with parameter types. */
+			java.lang.Class aParameterTypes[] = {
+				java.lang.String.class
+			};
+			aMethod = getBeanClass().getMethod("getEntry", aParameterTypes);
+		} catch (Throwable exception) {
+			/* Since getMethod failed, call findMethod. */
+			handleException(exception);
+			aMethod = findMethod(getBeanClass(), "getEntry", 1);
+		};
+		try {
+			/* Try creating the method descriptor with parameter descriptors. */
+			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
+			aParameterDescriptor1.setName("arg1");
+			aParameterDescriptor1.setDisplayName("identifier");
+			java.beans.ParameterDescriptor aParameterDescriptors[] = {
+				aParameterDescriptor1
+			};
+			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
+		} catch (Throwable exception) {
+			/* Try creating the method descriptor without parameter descriptors. */
+			handleException(exception);
+			aDescriptor = new java.beans.MethodDescriptor(aMethod);
+		};
+		/* aDescriptor.setDisplayName("getEntry(java.lang.String)"); */
+		/* aDescriptor.setShortDescription("getEntry(java.lang.String)"); */
 		/* aDescriptor.setExpert(false); */
 		/* aDescriptor.setHidden(false); */
 		/* aDescriptor.setValue("preferred", new Boolean(false)); */
@@ -830,47 +624,159 @@ public java.beans.EventSetDescriptor[] getEventSetDescriptors() {
 	return null;
 }
 /**
+ * Gets the getKey() method descriptor.
+ * @return java.beans.MethodDescriptor
+ */
+public java.beans.MethodDescriptor getKeyMethodDescriptor() {
+	java.beans.MethodDescriptor aDescriptor = null;
+	try {
+		/* Create and return the getKey() method descriptor. */
+		java.lang.reflect.Method aMethod = null;
+		try {
+			/* Attempt to find the method using getMethod with parameter types. */
+			java.lang.Class aParameterTypes[] = {};
+			aMethod = getBeanClass().getMethod("getKey", aParameterTypes);
+		} catch (Throwable exception) {
+			/* Since getMethod failed, call findMethod. */
+			handleException(exception);
+			aMethod = findMethod(getBeanClass(), "getKey", 0);
+		};
+		try {
+			/* Try creating the method descriptor with parameter descriptors. */
+			java.beans.ParameterDescriptor aParameterDescriptors[] = {};
+			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
+		} catch (Throwable exception) {
+			/* Try creating the method descriptor without parameter descriptors. */
+			handleException(exception);
+			aDescriptor = new java.beans.MethodDescriptor(aMethod);
+		};
+		/* aDescriptor.setDisplayName("getKey()"); */
+		/* aDescriptor.setShortDescription("getKey()"); */
+		/* aDescriptor.setExpert(false); */
+		/* aDescriptor.setHidden(false); */
+		/* aDescriptor.setValue("preferred", new Boolean(false)); */
+	} catch (Throwable exception) {
+		handleException(exception);
+	};
+	return aDescriptor;
+}
+/**
+ * Gets the getKineticRateName() method descriptor.
+ * @return java.beans.MethodDescriptor
+ */
+public java.beans.MethodDescriptor getKineticRateNameMethodDescriptor() {
+	java.beans.MethodDescriptor aDescriptor = null;
+	try {
+		/* Create and return the getKineticRateName() method descriptor. */
+		java.lang.reflect.Method aMethod = null;
+		try {
+			/* Attempt to find the method using getMethod with parameter types. */
+			java.lang.Class aParameterTypes[] = {};
+			aMethod = getBeanClass().getMethod("getKineticRateName", aParameterTypes);
+		} catch (Throwable exception) {
+			/* Since getMethod failed, call findMethod. */
+			handleException(exception);
+			aMethod = findMethod(getBeanClass(), "getKineticRateName", 0);
+		};
+		try {
+			/* Try creating the method descriptor with parameter descriptors. */
+			java.beans.ParameterDescriptor aParameterDescriptors[] = {};
+			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
+		} catch (Throwable exception) {
+			/* Try creating the method descriptor without parameter descriptors. */
+			handleException(exception);
+			aDescriptor = new java.beans.MethodDescriptor(aMethod);
+		};
+		/* aDescriptor.setDisplayName("getKineticRateName()"); */
+		/* aDescriptor.setShortDescription("getKineticRateName()"); */
+		/* aDescriptor.setExpert(false); */
+		/* aDescriptor.setHidden(false); */
+		/* aDescriptor.setValue("preferred", new Boolean(false)); */
+	} catch (Throwable exception) {
+		handleException(exception);
+	};
+	return aDescriptor;
+}
+/**
+ * Gets the getKinetics() method descriptor.
+ * @return java.beans.MethodDescriptor
+ */
+public java.beans.MethodDescriptor getKineticsMethodDescriptor() {
+	java.beans.MethodDescriptor aDescriptor = null;
+	try {
+		/* Create and return the getKinetics() method descriptor. */
+		java.lang.reflect.Method aMethod = null;
+		try {
+			/* Attempt to find the method using getMethod with parameter types. */
+			java.lang.Class aParameterTypes[] = {};
+			aMethod = getBeanClass().getMethod("getKinetics", aParameterTypes);
+		} catch (Throwable exception) {
+			/* Since getMethod failed, call findMethod. */
+			handleException(exception);
+			aMethod = findMethod(getBeanClass(), "getKinetics", 0);
+		};
+		try {
+			/* Try creating the method descriptor with parameter descriptors. */
+			java.beans.ParameterDescriptor aParameterDescriptors[] = {};
+			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
+		} catch (Throwable exception) {
+			/* Try creating the method descriptor without parameter descriptors. */
+			handleException(exception);
+			aDescriptor = new java.beans.MethodDescriptor(aMethod);
+		};
+		/* aDescriptor.setDisplayName("getKinetics()"); */
+		/* aDescriptor.setShortDescription("getKinetics()"); */
+		/* aDescriptor.setExpert(false); */
+		/* aDescriptor.setHidden(false); */
+		/* aDescriptor.setValue("preferred", new Boolean(false)); */
+	} catch (Throwable exception) {
+		handleException(exception);
+	};
+	return aDescriptor;
+}
+/**
  * Return the method descriptors for this bean.
  * @return java.beans.MethodDescriptor[]
  */
 public java.beans.MethodDescriptor[] getMethodDescriptors() {
 	try {
 		java.beans.MethodDescriptor aDescriptorList[] = {
-			addPropertyChangeListener_javabeansPropertyChangeListenerMethodDescriptor()
-			,addPropertyChangeListener_javalangString_javabeansPropertyChangeListenerMethodDescriptor()
+			addCatalyst_cbitvcellmodelSpeciesContextMethodDescriptor()
+			,addPropertyChangeListener_javabeansPropertyChangeListenerMethodDescriptor()
+			,addReactionParticipant_cbitvcellmodelReactionParticipantMethodDescriptor()
 			,addVetoableChangeListener_javabeansVetoableChangeListenerMethodDescriptor()
-			,addVetoableChangeListener_javalangString_javabeansVetoableChangeListenerMethodDescriptor()
-			,compareEqual_cbitutilMatchableMethodDescriptor()
-			,firePropertyChange_javabeansPropertyChangeEventMethodDescriptor()
-			,firePropertyChange_javalangString_boolean_booleanMethodDescriptor()
-			,firePropertyChange_javalangString_int_intMethodDescriptor()
 			,firePropertyChange_javalangString_javalangObject_javalangObjectMethodDescriptor()
-			,fireVetoableChange_javabeansPropertyChangeEventMethodDescriptor()
-			,fireVetoableChange_javalangString_boolean_booleanMethodDescriptor()
-			,fireVetoableChange_javalangString_int_intMethodDescriptor()
 			,fireVetoableChange_javalangString_javalangObject_javalangObjectMethodDescriptor()
-			,getErrorToleranceMethodDescriptor()
-			,getSensitivityParameterMethodDescriptor()
-			,getSimulationMethodDescriptor()
-			,getSteadyMethodDescriptor()
-			,getTaskTypeMethodDescriptor()
-			,getTimeBoundsMethodDescriptor()
-			,getTimeStepMethodDescriptor()
-			,getUnsteadyMethodDescriptor()
+			,fromTokens_cbitvcellmathCommentStringTokenizer_cbitvcellmodelModelMethodDescriptor()
+			,getChargeCarrierValenceMethodDescriptor()
+			,getEntry_javalangStringMethodDescriptor()
+			,getKeyMethodDescriptor()
+			,getKineticsMethodDescriptor()
+			,getNameMethodDescriptor()
+			,getRateExpression_cbitvcellmodelReactionParticipantMethodDescriptor()
+			,getReactionParticipant_cbitvcellmodelSpecies_cbitvcellmodelStructureMethodDescriptor()
+			,getReactionParticipant_cbitvcellmodelSpeciesContextMethodDescriptor()
+			,getReactionParticipantFromSymbol_javalangStringMethodDescriptor()
+			,getReactionParticipants_intMethodDescriptor()
+			,getReactionParticipantsMethodDescriptor()
+			,getStoichiometry_cbitvcellmodelSpecies_cbitvcellmodelStructureMethodDescriptor()
+			,getStoichiometry_cbitvcellmodelSpeciesContextMethodDescriptor()
+			,getStructureMethodDescriptor()
+			,getTermMethodDescriptor()
 			,getVCMLMethodDescriptor()
-			,hasListeners_javalangStringMethodDescriptor()
 			,propertyChange_javabeansPropertyChangeEventMethodDescriptor()
-			,readVCML_cbitvcellmathCommentStringTokenizerMethodDescriptor()
+			,rebindAllToModel_cbitvcellmodelModelMethodDescriptor()
+			,refreshDependenciesMethodDescriptor()
 			,removePropertyChangeListener_javabeansPropertyChangeListenerMethodDescriptor()
-			,removePropertyChangeListener_javalangString_javabeansPropertyChangeListenerMethodDescriptor()
+			,removeReactionParticipant_cbitvcellmodelReactionParticipantMethodDescriptor()
 			,removeVetoableChangeListener_javabeansVetoableChangeListenerMethodDescriptor()
-			,removeVetoableChangeListener_javalangString_javabeansVetoableChangeListenerMethodDescriptor()
-			,setErrorTolerance_cbitvcellsolverErrorToleranceMethodDescriptor()
-			,setSensitivityParameter_cbitvcellmathConstantMethodDescriptor()
-			,setTaskType_intMethodDescriptor()
-			,setTimeBounds_cbitvcellsolverTimeBoundsMethodDescriptor()
-			,setTimeStep_cbitvcellsolverTimeStepMethodDescriptor()
+			,setKinetics_cbitvcellmodelKineticsMethodDescriptor()
+			,setModel_cbitvcellmodelModelMethodDescriptor()
+			,setName_javalangStringMethodDescriptor()
+			,setReactionParticipants_int_cbitvcellmodelReactionParticipantMethodDescriptor()
+			,setStructure_cbitvcellmodelStructureMethodDescriptor()
 			,vetoableChange_javabeansPropertyChangeEventMethodDescriptor()
+			,writeTokens_javaioPrintWriterMethodDescriptor()
 		};
 		return aDescriptorList;
 	} catch (Throwable exception) {
@@ -879,23 +785,57 @@ public java.beans.MethodDescriptor[] getMethodDescriptors() {
 	return null;
 }
 /**
+ * Gets the getName() method descriptor.
+ * @return java.beans.MethodDescriptor
+ */
+public java.beans.MethodDescriptor getNameMethodDescriptor() {
+	java.beans.MethodDescriptor aDescriptor = null;
+	try {
+		/* Create and return the getName() method descriptor. */
+		java.lang.reflect.Method aMethod = null;
+		try {
+			/* Attempt to find the method using getMethod with parameter types. */
+			java.lang.Class aParameterTypes[] = {};
+			aMethod = getBeanClass().getMethod("getName", aParameterTypes);
+		} catch (Throwable exception) {
+			/* Since getMethod failed, call findMethod. */
+			handleException(exception);
+			aMethod = findMethod(getBeanClass(), "getName", 0);
+		};
+		try {
+			/* Try creating the method descriptor with parameter descriptors. */
+			java.beans.ParameterDescriptor aParameterDescriptors[] = {};
+			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
+		} catch (Throwable exception) {
+			/* Try creating the method descriptor without parameter descriptors. */
+			handleException(exception);
+			aDescriptor = new java.beans.MethodDescriptor(aMethod);
+		};
+		/* aDescriptor.setDisplayName("getName()"); */
+		/* aDescriptor.setShortDescription("getName()"); */
+		/* aDescriptor.setExpert(false); */
+		/* aDescriptor.setHidden(false); */
+		/* aDescriptor.setValue("preferred", new Boolean(false)); */
+	} catch (Throwable exception) {
+		handleException(exception);
+	};
+	return aDescriptor;
+}
+/**
  * Return the property descriptors for this bean.
  * @return java.beans.PropertyDescriptor[]
  */
 public java.beans.PropertyDescriptor[] getPropertyDescriptors() {
 	try {
 		java.beans.PropertyDescriptor aDescriptorList[] = {
-			errorTolerancePropertyDescriptor()
-			,outputTimeSpecPropertyDescriptor()
-			,sensitivityParameterPropertyDescriptor()
-			,simulationPropertyDescriptor()
-			,solverDescriptionPropertyDescriptor()
-			,steadyPropertyDescriptor()
-			,taskTypePropertyDescriptor()
-			,timeBoundsPropertyDescriptor()
-			,timeStepPropertyDescriptor()
-			,unsteadyPropertyDescriptor()
-			,useSymbolicJacobianPropertyDescriptor()
+			chargeCarrierValencePropertyDescriptor()
+			,keyPropertyDescriptor()
+			,kineticsPropertyDescriptor()
+			,modelPropertyDescriptor()
+			,namePropertyDescriptor()
+			,physicsOptionsPropertyDescriptor()
+			,structurePropertyDescriptor()
+			,termPropertyDescriptor()
 			,VCMLPropertyDescriptor()
 		};
 		return aDescriptorList;
@@ -905,34 +845,41 @@ public java.beans.PropertyDescriptor[] getPropertyDescriptors() {
 	return null;
 }
 /**
- * Gets the getSensitivityParameter() method descriptor.
+ * Gets the getRateExpression(cbit.vcell.model.ReactionParticipant) method descriptor.
  * @return java.beans.MethodDescriptor
  */
-public java.beans.MethodDescriptor getSensitivityParameterMethodDescriptor() {
+public java.beans.MethodDescriptor getRateExpression_cbitvcellmodelReactionParticipantMethodDescriptor() {
 	java.beans.MethodDescriptor aDescriptor = null;
 	try {
-		/* Create and return the getSensitivityParameter() method descriptor. */
+		/* Create and return the getRateExpression(cbit.vcell.model.ReactionParticipant) method descriptor. */
 		java.lang.reflect.Method aMethod = null;
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
-			java.lang.Class aParameterTypes[] = {};
-			aMethod = getBeanClass().getMethod("getSensitivityParameter", aParameterTypes);
+			java.lang.Class aParameterTypes[] = {
+				cbit.vcell.model.ReactionParticipant.class
+			};
+			aMethod = getBeanClass().getMethod("getRateExpression", aParameterTypes);
 		} catch (Throwable exception) {
 			/* Since getMethod failed, call findMethod. */
 			handleException(exception);
-			aMethod = findMethod(getBeanClass(), "getSensitivityParameter", 0);
+			aMethod = findMethod(getBeanClass(), "getRateExpression", 1);
 		};
 		try {
 			/* Try creating the method descriptor with parameter descriptors. */
-			java.beans.ParameterDescriptor aParameterDescriptors[] = {};
+			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
+			aParameterDescriptor1.setName("arg1");
+			aParameterDescriptor1.setDisplayName("reactionParticipant");
+			java.beans.ParameterDescriptor aParameterDescriptors[] = {
+				aParameterDescriptor1
+			};
 			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
 		} catch (Throwable exception) {
 			/* Try creating the method descriptor without parameter descriptors. */
 			handleException(exception);
 			aDescriptor = new java.beans.MethodDescriptor(aMethod);
 		};
-		/* aDescriptor.setDisplayName("getSensitivityParameter()"); */
-		/* aDescriptor.setShortDescription("getSensitivityParameter()"); */
+		/* aDescriptor.setDisplayName("getRateExpression(cbit.vcell.model.ReactionParticipant)"); */
+		/* aDescriptor.setShortDescription("getRateExpression(cbit.vcell.model.ReactionParticipant)"); */
 		/* aDescriptor.setExpert(false); */
 		/* aDescriptor.setHidden(false); */
 		/* aDescriptor.setValue("preferred", new Boolean(false)); */
@@ -942,34 +889,46 @@ public java.beans.MethodDescriptor getSensitivityParameterMethodDescriptor() {
 	return aDescriptor;
 }
 /**
- * Gets the getSimulation() method descriptor.
+ * Gets the getReactionParticipant(cbit.vcell.model.Species, cbit.vcell.model.Structure) method descriptor.
  * @return java.beans.MethodDescriptor
  */
-public java.beans.MethodDescriptor getSimulationMethodDescriptor() {
+public java.beans.MethodDescriptor getReactionParticipant_cbitvcellmodelSpecies_cbitvcellmodelStructureMethodDescriptor() {
 	java.beans.MethodDescriptor aDescriptor = null;
 	try {
-		/* Create and return the getSimulation() method descriptor. */
+		/* Create and return the getReactionParticipant(cbit.vcell.model.Species, cbit.vcell.model.Structure) method descriptor. */
 		java.lang.reflect.Method aMethod = null;
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
-			java.lang.Class aParameterTypes[] = {};
-			aMethod = getBeanClass().getMethod("getSimulation", aParameterTypes);
+			java.lang.Class aParameterTypes[] = {
+				cbit.vcell.model.Species.class,
+				cbit.vcell.model.Structure.class
+			};
+			aMethod = getBeanClass().getMethod("getReactionParticipant", aParameterTypes);
 		} catch (Throwable exception) {
 			/* Since getMethod failed, call findMethod. */
 			handleException(exception);
-			aMethod = findMethod(getBeanClass(), "getSimulation", 0);
+			aMethod = findMethod(getBeanClass(), "getReactionParticipant", 2);
 		};
 		try {
 			/* Try creating the method descriptor with parameter descriptors. */
-			java.beans.ParameterDescriptor aParameterDescriptors[] = {};
+			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
+			aParameterDescriptor1.setName("arg1");
+			aParameterDescriptor1.setDisplayName("species");
+			java.beans.ParameterDescriptor aParameterDescriptor2 = new java.beans.ParameterDescriptor();
+			aParameterDescriptor2.setName("arg2");
+			aParameterDescriptor2.setDisplayName("structure");
+			java.beans.ParameterDescriptor aParameterDescriptors[] = {
+				aParameterDescriptor1,
+				aParameterDescriptor2
+			};
 			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
 		} catch (Throwable exception) {
 			/* Try creating the method descriptor without parameter descriptors. */
 			handleException(exception);
 			aDescriptor = new java.beans.MethodDescriptor(aMethod);
 		};
-		/* aDescriptor.setDisplayName("getSimulation()"); */
-		/* aDescriptor.setShortDescription("getSimulation()"); */
+		/* aDescriptor.setDisplayName("getReactionParticipant(cbit.vcell.model.Species, cbit.vcell.model.Structure)"); */
+		/* aDescriptor.setShortDescription("getReactionParticipant(cbit.vcell.model.Species, cbit.vcell.model.Structure)"); */
 		/* aDescriptor.setExpert(false); */
 		/* aDescriptor.setHidden(false); */
 		/* aDescriptor.setValue("preferred", new Boolean(false)); */
@@ -979,34 +938,41 @@ public java.beans.MethodDescriptor getSimulationMethodDescriptor() {
 	return aDescriptor;
 }
 /**
- * Gets the getSteady() method descriptor.
+ * Gets the getReactionParticipant(cbit.vcell.model.SpeciesContext) method descriptor.
  * @return java.beans.MethodDescriptor
  */
-public java.beans.MethodDescriptor getSteadyMethodDescriptor() {
+public java.beans.MethodDescriptor getReactionParticipant_cbitvcellmodelSpeciesContextMethodDescriptor() {
 	java.beans.MethodDescriptor aDescriptor = null;
 	try {
-		/* Create and return the getSteady() method descriptor. */
+		/* Create and return the getReactionParticipant(cbit.vcell.model.SpeciesContext) method descriptor. */
 		java.lang.reflect.Method aMethod = null;
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
-			java.lang.Class aParameterTypes[] = {};
-			aMethod = getBeanClass().getMethod("getSteady", aParameterTypes);
+			java.lang.Class aParameterTypes[] = {
+				cbit.vcell.model.SpeciesContext.class
+			};
+			aMethod = getBeanClass().getMethod("getReactionParticipant", aParameterTypes);
 		} catch (Throwable exception) {
 			/* Since getMethod failed, call findMethod. */
 			handleException(exception);
-			aMethod = findMethod(getBeanClass(), "getSteady", 0);
+			aMethod = findMethod(getBeanClass(), "getReactionParticipant", 1);
 		};
 		try {
 			/* Try creating the method descriptor with parameter descriptors. */
-			java.beans.ParameterDescriptor aParameterDescriptors[] = {};
+			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
+			aParameterDescriptor1.setName("arg1");
+			aParameterDescriptor1.setDisplayName("speciesContext");
+			java.beans.ParameterDescriptor aParameterDescriptors[] = {
+				aParameterDescriptor1
+			};
 			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
 		} catch (Throwable exception) {
 			/* Try creating the method descriptor without parameter descriptors. */
 			handleException(exception);
 			aDescriptor = new java.beans.MethodDescriptor(aMethod);
 		};
-		/* aDescriptor.setDisplayName("getSteady()"); */
-		/* aDescriptor.setShortDescription("getSteady()"); */
+		/* aDescriptor.setDisplayName("getReactionParticipant(cbit.vcell.model.SpeciesContext)"); */
+		/* aDescriptor.setShortDescription("getReactionParticipant(cbit.vcell.model.SpeciesContext)"); */
 		/* aDescriptor.setExpert(false); */
 		/* aDescriptor.setHidden(false); */
 		/* aDescriptor.setValue("preferred", new Boolean(false)); */
@@ -1016,34 +982,41 @@ public java.beans.MethodDescriptor getSteadyMethodDescriptor() {
 	return aDescriptor;
 }
 /**
- * Gets the getTaskType() method descriptor.
+ * Gets the getReactionParticipantFromSymbol(java.lang.String) method descriptor.
  * @return java.beans.MethodDescriptor
  */
-public java.beans.MethodDescriptor getTaskTypeMethodDescriptor() {
+public java.beans.MethodDescriptor getReactionParticipantFromSymbol_javalangStringMethodDescriptor() {
 	java.beans.MethodDescriptor aDescriptor = null;
 	try {
-		/* Create and return the getTaskType() method descriptor. */
+		/* Create and return the getReactionParticipantFromSymbol(java.lang.String) method descriptor. */
 		java.lang.reflect.Method aMethod = null;
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
-			java.lang.Class aParameterTypes[] = {};
-			aMethod = getBeanClass().getMethod("getTaskType", aParameterTypes);
+			java.lang.Class aParameterTypes[] = {
+				java.lang.String.class
+			};
+			aMethod = getBeanClass().getMethod("getReactionParticipantFromSymbol", aParameterTypes);
 		} catch (Throwable exception) {
 			/* Since getMethod failed, call findMethod. */
 			handleException(exception);
-			aMethod = findMethod(getBeanClass(), "getTaskType", 0);
+			aMethod = findMethod(getBeanClass(), "getReactionParticipantFromSymbol", 1);
 		};
 		try {
 			/* Try creating the method descriptor with parameter descriptors. */
-			java.beans.ParameterDescriptor aParameterDescriptors[] = {};
+			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
+			aParameterDescriptor1.setName("arg1");
+			aParameterDescriptor1.setDisplayName("reactParticipantName");
+			java.beans.ParameterDescriptor aParameterDescriptors[] = {
+				aParameterDescriptor1
+			};
 			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
 		} catch (Throwable exception) {
 			/* Try creating the method descriptor without parameter descriptors. */
 			handleException(exception);
 			aDescriptor = new java.beans.MethodDescriptor(aMethod);
 		};
-		/* aDescriptor.setDisplayName("getTaskType()"); */
-		/* aDescriptor.setShortDescription("getTaskType()"); */
+		/* aDescriptor.setDisplayName("getReactionParticipantFromSymbol(java.lang.String)"); */
+		/* aDescriptor.setShortDescription("getReactionParticipantFromSymbol(java.lang.String)"); */
 		/* aDescriptor.setExpert(false); */
 		/* aDescriptor.setHidden(false); */
 		/* aDescriptor.setValue("preferred", new Boolean(false)); */
@@ -1053,34 +1026,41 @@ public java.beans.MethodDescriptor getTaskTypeMethodDescriptor() {
 	return aDescriptor;
 }
 /**
- * Gets the getTimeBounds() method descriptor.
+ * Gets the getReactionParticipants(int) method descriptor.
  * @return java.beans.MethodDescriptor
  */
-public java.beans.MethodDescriptor getTimeBoundsMethodDescriptor() {
+public java.beans.MethodDescriptor getReactionParticipants_intMethodDescriptor() {
 	java.beans.MethodDescriptor aDescriptor = null;
 	try {
-		/* Create and return the getTimeBounds() method descriptor. */
+		/* Create and return the getReactionParticipants(int) method descriptor. */
 		java.lang.reflect.Method aMethod = null;
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
-			java.lang.Class aParameterTypes[] = {};
-			aMethod = getBeanClass().getMethod("getTimeBounds", aParameterTypes);
+			java.lang.Class aParameterTypes[] = {
+				int.class
+			};
+			aMethod = getBeanClass().getMethod("getReactionParticipants", aParameterTypes);
 		} catch (Throwable exception) {
 			/* Since getMethod failed, call findMethod. */
 			handleException(exception);
-			aMethod = findMethod(getBeanClass(), "getTimeBounds", 0);
+			aMethod = findMethod(getBeanClass(), "getReactionParticipants", 1);
 		};
 		try {
 			/* Try creating the method descriptor with parameter descriptors. */
-			java.beans.ParameterDescriptor aParameterDescriptors[] = {};
+			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
+			aParameterDescriptor1.setName("arg1");
+			aParameterDescriptor1.setDisplayName("index");
+			java.beans.ParameterDescriptor aParameterDescriptors[] = {
+				aParameterDescriptor1
+			};
 			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
 		} catch (Throwable exception) {
 			/* Try creating the method descriptor without parameter descriptors. */
 			handleException(exception);
 			aDescriptor = new java.beans.MethodDescriptor(aMethod);
 		};
-		/* aDescriptor.setDisplayName("getTimeBounds()"); */
-		/* aDescriptor.setShortDescription("getTimeBounds()"); */
+		/* aDescriptor.setDisplayName("getReactionParticipants(int)"); */
+		/* aDescriptor.setShortDescription("getReactionParticipants(int)"); */
 		/* aDescriptor.setExpert(false); */
 		/* aDescriptor.setHidden(false); */
 		/* aDescriptor.setValue("preferred", new Boolean(false)); */
@@ -1090,22 +1070,22 @@ public java.beans.MethodDescriptor getTimeBoundsMethodDescriptor() {
 	return aDescriptor;
 }
 /**
- * Gets the getTimeStep() method descriptor.
+ * Gets the getReactionParticipants() method descriptor.
  * @return java.beans.MethodDescriptor
  */
-public java.beans.MethodDescriptor getTimeStepMethodDescriptor() {
+public java.beans.MethodDescriptor getReactionParticipantsMethodDescriptor() {
 	java.beans.MethodDescriptor aDescriptor = null;
 	try {
-		/* Create and return the getTimeStep() method descriptor. */
+		/* Create and return the getReactionParticipants() method descriptor. */
 		java.lang.reflect.Method aMethod = null;
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {};
-			aMethod = getBeanClass().getMethod("getTimeStep", aParameterTypes);
+			aMethod = getBeanClass().getMethod("getReactionParticipants", aParameterTypes);
 		} catch (Throwable exception) {
 			/* Since getMethod failed, call findMethod. */
 			handleException(exception);
-			aMethod = findMethod(getBeanClass(), "getTimeStep", 0);
+			aMethod = findMethod(getBeanClass(), "getReactionParticipants", 0);
 		};
 		try {
 			/* Try creating the method descriptor with parameter descriptors. */
@@ -1116,8 +1096,8 @@ public java.beans.MethodDescriptor getTimeStepMethodDescriptor() {
 			handleException(exception);
 			aDescriptor = new java.beans.MethodDescriptor(aMethod);
 		};
-		/* aDescriptor.setDisplayName("getTimeStep()"); */
-		/* aDescriptor.setShortDescription("getTimeStep()"); */
+		/* aDescriptor.setDisplayName("getReactionParticipants()"); */
+		/* aDescriptor.setShortDescription("getReactionParticipants()"); */
 		/* aDescriptor.setExpert(false); */
 		/* aDescriptor.setHidden(false); */
 		/* aDescriptor.setValue("preferred", new Boolean(false)); */
@@ -1127,22 +1107,115 @@ public java.beans.MethodDescriptor getTimeStepMethodDescriptor() {
 	return aDescriptor;
 }
 /**
- * Gets the getUnsteady() method descriptor.
+ * Gets the getStoichiometry(cbit.vcell.model.Species, cbit.vcell.model.Structure) method descriptor.
  * @return java.beans.MethodDescriptor
  */
-public java.beans.MethodDescriptor getUnsteadyMethodDescriptor() {
+public java.beans.MethodDescriptor getStoichiometry_cbitvcellmodelSpecies_cbitvcellmodelStructureMethodDescriptor() {
 	java.beans.MethodDescriptor aDescriptor = null;
 	try {
-		/* Create and return the getUnsteady() method descriptor. */
+		/* Create and return the getStoichiometry(cbit.vcell.model.Species, cbit.vcell.model.Structure) method descriptor. */
+		java.lang.reflect.Method aMethod = null;
+		try {
+			/* Attempt to find the method using getMethod with parameter types. */
+			java.lang.Class aParameterTypes[] = {
+				cbit.vcell.model.Species.class,
+				cbit.vcell.model.Structure.class
+			};
+			aMethod = getBeanClass().getMethod("getStoichiometry", aParameterTypes);
+		} catch (Throwable exception) {
+			/* Since getMethod failed, call findMethod. */
+			handleException(exception);
+			aMethod = findMethod(getBeanClass(), "getStoichiometry", 2);
+		};
+		try {
+			/* Try creating the method descriptor with parameter descriptors. */
+			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
+			aParameterDescriptor1.setName("arg1");
+			aParameterDescriptor1.setDisplayName("species");
+			java.beans.ParameterDescriptor aParameterDescriptor2 = new java.beans.ParameterDescriptor();
+			aParameterDescriptor2.setName("arg2");
+			aParameterDescriptor2.setDisplayName("structure");
+			java.beans.ParameterDescriptor aParameterDescriptors[] = {
+				aParameterDescriptor1,
+				aParameterDescriptor2
+			};
+			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
+		} catch (Throwable exception) {
+			/* Try creating the method descriptor without parameter descriptors. */
+			handleException(exception);
+			aDescriptor = new java.beans.MethodDescriptor(aMethod);
+		};
+		/* aDescriptor.setDisplayName("getStoichiometry(cbit.vcell.model.Species, cbit.vcell.model.Structure)"); */
+		/* aDescriptor.setShortDescription("getStoichiometry(cbit.vcell.model.Species, cbit.vcell.model.Structure)"); */
+		/* aDescriptor.setExpert(false); */
+		/* aDescriptor.setHidden(false); */
+		/* aDescriptor.setValue("preferred", new Boolean(false)); */
+	} catch (Throwable exception) {
+		handleException(exception);
+	};
+	return aDescriptor;
+}
+/**
+ * Gets the getStoichiometry(cbit.vcell.model.SpeciesContext) method descriptor.
+ * @return java.beans.MethodDescriptor
+ */
+public java.beans.MethodDescriptor getStoichiometry_cbitvcellmodelSpeciesContextMethodDescriptor() {
+	java.beans.MethodDescriptor aDescriptor = null;
+	try {
+		/* Create and return the getStoichiometry(cbit.vcell.model.SpeciesContext) method descriptor. */
+		java.lang.reflect.Method aMethod = null;
+		try {
+			/* Attempt to find the method using getMethod with parameter types. */
+			java.lang.Class aParameterTypes[] = {
+				cbit.vcell.model.SpeciesContext.class
+			};
+			aMethod = getBeanClass().getMethod("getStoichiometry", aParameterTypes);
+		} catch (Throwable exception) {
+			/* Since getMethod failed, call findMethod. */
+			handleException(exception);
+			aMethod = findMethod(getBeanClass(), "getStoichiometry", 1);
+		};
+		try {
+			/* Try creating the method descriptor with parameter descriptors. */
+			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
+			aParameterDescriptor1.setName("arg1");
+			aParameterDescriptor1.setDisplayName("speciesContext");
+			java.beans.ParameterDescriptor aParameterDescriptors[] = {
+				aParameterDescriptor1
+			};
+			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
+		} catch (Throwable exception) {
+			/* Try creating the method descriptor without parameter descriptors. */
+			handleException(exception);
+			aDescriptor = new java.beans.MethodDescriptor(aMethod);
+		};
+		/* aDescriptor.setDisplayName("getStoichiometry(cbit.vcell.model.SpeciesContext)"); */
+		/* aDescriptor.setShortDescription("getStoichiometry(cbit.vcell.model.SpeciesContext)"); */
+		/* aDescriptor.setExpert(false); */
+		/* aDescriptor.setHidden(false); */
+		/* aDescriptor.setValue("preferred", new Boolean(false)); */
+	} catch (Throwable exception) {
+		handleException(exception);
+	};
+	return aDescriptor;
+}
+/**
+ * Gets the getStructure() method descriptor.
+ * @return java.beans.MethodDescriptor
+ */
+public java.beans.MethodDescriptor getStructureMethodDescriptor() {
+	java.beans.MethodDescriptor aDescriptor = null;
+	try {
+		/* Create and return the getStructure() method descriptor. */
 		java.lang.reflect.Method aMethod = null;
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {};
-			aMethod = getBeanClass().getMethod("getUnsteady", aParameterTypes);
+			aMethod = getBeanClass().getMethod("getStructure", aParameterTypes);
 		} catch (Throwable exception) {
 			/* Since getMethod failed, call findMethod. */
 			handleException(exception);
-			aMethod = findMethod(getBeanClass(), "getUnsteady", 0);
+			aMethod = findMethod(getBeanClass(), "getStructure", 0);
 		};
 		try {
 			/* Try creating the method descriptor with parameter descriptors. */
@@ -1153,8 +1226,45 @@ public java.beans.MethodDescriptor getUnsteadyMethodDescriptor() {
 			handleException(exception);
 			aDescriptor = new java.beans.MethodDescriptor(aMethod);
 		};
-		/* aDescriptor.setDisplayName("getUnsteady()"); */
-		/* aDescriptor.setShortDescription("getUnsteady()"); */
+		/* aDescriptor.setDisplayName("getStructure()"); */
+		/* aDescriptor.setShortDescription("getStructure()"); */
+		/* aDescriptor.setExpert(false); */
+		/* aDescriptor.setHidden(false); */
+		/* aDescriptor.setValue("preferred", new Boolean(false)); */
+	} catch (Throwable exception) {
+		handleException(exception);
+	};
+	return aDescriptor;
+}
+/**
+ * Gets the getTerm() method descriptor.
+ * @return java.beans.MethodDescriptor
+ */
+public java.beans.MethodDescriptor getTermMethodDescriptor() {
+	java.beans.MethodDescriptor aDescriptor = null;
+	try {
+		/* Create and return the getTerm() method descriptor. */
+		java.lang.reflect.Method aMethod = null;
+		try {
+			/* Attempt to find the method using getMethod with parameter types. */
+			java.lang.Class aParameterTypes[] = {};
+			aMethod = getBeanClass().getMethod("getTerm", aParameterTypes);
+		} catch (Throwable exception) {
+			/* Since getMethod failed, call findMethod. */
+			handleException(exception);
+			aMethod = findMethod(getBeanClass(), "getTerm", 0);
+		};
+		try {
+			/* Try creating the method descriptor with parameter descriptors. */
+			java.beans.ParameterDescriptor aParameterDescriptors[] = {};
+			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
+		} catch (Throwable exception) {
+			/* Try creating the method descriptor without parameter descriptors. */
+			handleException(exception);
+			aDescriptor = new java.beans.MethodDescriptor(aMethod);
+		};
+		/* aDescriptor.setDisplayName("getTerm()"); */
+		/* aDescriptor.setShortDescription("getTerm()"); */
 		/* aDescriptor.setExpert(false); */
 		/* aDescriptor.setHidden(false); */
 		/* aDescriptor.setValue("preferred", new Boolean(false)); */
@@ -1211,92 +1321,236 @@ private void handleException(java.lang.Throwable exception) {
 	// exception.printStackTrace(System.out);
 }
 /**
- * Gets the hasListeners(java.lang.String) method descriptor.
- * @return java.beans.MethodDescriptor
+ * Gets the key property descriptor.
+ * @return java.beans.PropertyDescriptor
  */
-public java.beans.MethodDescriptor hasListeners_javalangStringMethodDescriptor() {
-	java.beans.MethodDescriptor aDescriptor = null;
+public java.beans.PropertyDescriptor keyPropertyDescriptor() {
+	java.beans.PropertyDescriptor aDescriptor = null;
 	try {
-		/* Create and return the hasListeners(java.lang.String) method descriptor. */
-		java.lang.reflect.Method aMethod = null;
 		try {
-			/* Attempt to find the method using getMethod with parameter types. */
-			java.lang.Class aParameterTypes[] = {
-				java.lang.String.class
+			/* Using methods via getMethod is the faster way to create the key property descriptor. */
+			java.lang.reflect.Method aGetMethod = null;
+			try {
+				/* Attempt to find the method using getMethod with parameter types. */
+				java.lang.Class aGetMethodParameterTypes[] = {};
+				aGetMethod = getBeanClass().getMethod("getKey", aGetMethodParameterTypes);
+			} catch (Throwable exception) {
+				/* Since getMethod failed, call findMethod. */
+				handleException(exception);
+				aGetMethod = findMethod(getBeanClass(), "getKey", 0);
 			};
-			aMethod = getBeanClass().getMethod("hasListeners", aParameterTypes);
+			java.lang.reflect.Method aSetMethod = null;
+			aDescriptor = new java.beans.PropertyDescriptor("key"
+			, aGetMethod, aSetMethod);
 		} catch (Throwable exception) {
-			/* Since getMethod failed, call findMethod. */
+			/* Since we failed using methods, try creating a default property descriptor. */
 			handleException(exception);
-			aMethod = findMethod(getBeanClass(), "hasListeners", 1);
+			aDescriptor = new java.beans.PropertyDescriptor("key"
+			, getBeanClass());
 		};
-		try {
-			/* Try creating the method descriptor with parameter descriptors. */
-			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
-			aParameterDescriptor1.setName("arg1");
-			aParameterDescriptor1.setDisplayName("propertyName");
-			java.beans.ParameterDescriptor aParameterDescriptors[] = {
-				aParameterDescriptor1
-			};
-			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
-		} catch (Throwable exception) {
-			/* Try creating the method descriptor without parameter descriptors. */
-			handleException(exception);
-			aDescriptor = new java.beans.MethodDescriptor(aMethod);
-		};
-		/* aDescriptor.setDisplayName("hasListeners(java.lang.String)"); */
-		/* aDescriptor.setShortDescription("hasListeners(java.lang.String)"); */
+		aDescriptor.setBound(true);
+		/* aDescriptor.setConstrained(false); */
+		/* aDescriptor.setDisplayName("key"); */
+		/* aDescriptor.setShortDescription("key"); */
 		/* aDescriptor.setExpert(false); */
 		/* aDescriptor.setHidden(false); */
 		/* aDescriptor.setValue("preferred", new Boolean(false)); */
+		/* aDescriptor.setValue("ivjDesignTimeProperty", new Boolean(true)); */
 	} catch (Throwable exception) {
 		handleException(exception);
 	};
 	return aDescriptor;
 }
 /**
- * Gets the outputTimeSpec property descriptor.
+ * Gets the kinetics property descriptor.
  * @return java.beans.PropertyDescriptor
  */
-public java.beans.PropertyDescriptor outputTimeSpecPropertyDescriptor() {
+public java.beans.PropertyDescriptor kineticsPropertyDescriptor() {
 	java.beans.PropertyDescriptor aDescriptor = null;
 	try {
 		try {
-			/* Using methods via getMethod is the faster way to create the outputTimeSpec property descriptor. */
+			/* Using methods via getMethod is the faster way to create the kinetics property descriptor. */
 			java.lang.reflect.Method aGetMethod = null;
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aGetMethodParameterTypes[] = {};
-				aGetMethod = getBeanClass().getMethod("getOutputTimeSpec", aGetMethodParameterTypes);
+				aGetMethod = getBeanClass().getMethod("getKinetics", aGetMethodParameterTypes);
 			} catch (Throwable exception) {
 				/* Since getMethod failed, call findMethod. */
 				handleException(exception);
-				aGetMethod = findMethod(getBeanClass(), "getOutputTimeSpec", 0);
+				aGetMethod = findMethod(getBeanClass(), "getKinetics", 0);
 			};
 			java.lang.reflect.Method aSetMethod = null;
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.solver.OutputTimeSpec.class
+					cbit.vcell.model.Kinetics.class
 				};
-				aSetMethod = getBeanClass().getMethod("setOutputTimeSpec", aSetMethodParameterTypes);
+				aSetMethod = getBeanClass().getMethod("setKinetics", aSetMethodParameterTypes);
 			} catch (Throwable exception) {
 				/* Since getMethod failed, call findMethod. */
 				handleException(exception);
-				aSetMethod = findMethod(getBeanClass(), "setOutputTimeSpec", 1);
+				aSetMethod = findMethod(getBeanClass(), "setKinetics", 1);
 			};
-			aDescriptor = new java.beans.PropertyDescriptor("outputTimeSpec"
+			aDescriptor = new java.beans.PropertyDescriptor("kinetics"
 			, aGetMethod, aSetMethod);
 		} catch (Throwable exception) {
 			/* Since we failed using methods, try creating a default property descriptor. */
 			handleException(exception);
-			aDescriptor = new java.beans.PropertyDescriptor("outputTimeSpec"
+			aDescriptor = new java.beans.PropertyDescriptor("kinetics"
+			, getBeanClass());
+		};
+		aDescriptor.setBound(true);
+		/* aDescriptor.setConstrained(false); */
+		/* aDescriptor.setDisplayName("kinetics"); */
+		/* aDescriptor.setShortDescription("kinetics"); */
+		/* aDescriptor.setExpert(false); */
+		/* aDescriptor.setHidden(false); */
+		/* aDescriptor.setValue("preferred", new Boolean(false)); */
+		/* aDescriptor.setValue("ivjDesignTimeProperty", new Boolean(true)); */
+	} catch (Throwable exception) {
+		handleException(exception);
+	};
+	return aDescriptor;
+}
+/**
+ * Gets the model property descriptor.
+ * @return java.beans.PropertyDescriptor
+ */
+public java.beans.PropertyDescriptor modelPropertyDescriptor() {
+	java.beans.PropertyDescriptor aDescriptor = null;
+	try {
+		try {
+			/* Using methods via getMethod is the faster way to create the model property descriptor. */
+			java.lang.reflect.Method aGetMethod = null;
+			java.lang.reflect.Method aSetMethod = null;
+			try {
+				/* Attempt to find the method using getMethod with parameter types. */
+				java.lang.Class aSetMethodParameterTypes[] = {
+					cbit.vcell.model.Model.class
+				};
+				aSetMethod = getBeanClass().getMethod("setModel", aSetMethodParameterTypes);
+			} catch (Throwable exception) {
+				/* Since getMethod failed, call findMethod. */
+				handleException(exception);
+				aSetMethod = findMethod(getBeanClass(), "setModel", 1);
+			};
+			aDescriptor = new java.beans.PropertyDescriptor("model"
+			, aGetMethod, aSetMethod);
+		} catch (Throwable exception) {
+			/* Since we failed using methods, try creating a default property descriptor. */
+			handleException(exception);
+			aDescriptor = new java.beans.PropertyDescriptor("model"
+			, getBeanClass());
+		};
+		aDescriptor.setBound(true);
+		/* aDescriptor.setConstrained(false); */
+		/* aDescriptor.setDisplayName("model"); */
+		/* aDescriptor.setShortDescription("model"); */
+		/* aDescriptor.setExpert(false); */
+		/* aDescriptor.setHidden(false); */
+		/* aDescriptor.setValue("preferred", new Boolean(false)); */
+		/* aDescriptor.setValue("ivjDesignTimeProperty", new Boolean(true)); */
+	} catch (Throwable exception) {
+		handleException(exception);
+	};
+	return aDescriptor;
+}
+/**
+ * Gets the name property descriptor.
+ * @return java.beans.PropertyDescriptor
+ */
+public java.beans.PropertyDescriptor namePropertyDescriptor() {
+	java.beans.PropertyDescriptor aDescriptor = null;
+	try {
+		try {
+			/* Using methods via getMethod is the faster way to create the name property descriptor. */
+			java.lang.reflect.Method aGetMethod = null;
+			try {
+				/* Attempt to find the method using getMethod with parameter types. */
+				java.lang.Class aGetMethodParameterTypes[] = {};
+				aGetMethod = getBeanClass().getMethod("getName", aGetMethodParameterTypes);
+			} catch (Throwable exception) {
+				/* Since getMethod failed, call findMethod. */
+				handleException(exception);
+				aGetMethod = findMethod(getBeanClass(), "getName", 0);
+			};
+			java.lang.reflect.Method aSetMethod = null;
+			try {
+				/* Attempt to find the method using getMethod with parameter types. */
+				java.lang.Class aSetMethodParameterTypes[] = {
+					java.lang.String.class
+				};
+				aSetMethod = getBeanClass().getMethod("setName", aSetMethodParameterTypes);
+			} catch (Throwable exception) {
+				/* Since getMethod failed, call findMethod. */
+				handleException(exception);
+				aSetMethod = findMethod(getBeanClass(), "setName", 1);
+			};
+			aDescriptor = new java.beans.PropertyDescriptor("name"
+			, aGetMethod, aSetMethod);
+		} catch (Throwable exception) {
+			/* Since we failed using methods, try creating a default property descriptor. */
+			handleException(exception);
+			aDescriptor = new java.beans.PropertyDescriptor("name"
 			, getBeanClass());
 		};
 		aDescriptor.setBound(true);
 		aDescriptor.setConstrained(true);
-		/* aDescriptor.setDisplayName("outputTimeSpec"); */
-		/* aDescriptor.setShortDescription("outputTimeSpec"); */
+		/* aDescriptor.setDisplayName("name"); */
+		/* aDescriptor.setShortDescription("name"); */
+		/* aDescriptor.setExpert(false); */
+		/* aDescriptor.setHidden(false); */
+		/* aDescriptor.setValue("preferred", new Boolean(false)); */
+		/* aDescriptor.setValue("ivjDesignTimeProperty", new Boolean(true)); */
+	} catch (Throwable exception) {
+		handleException(exception);
+	};
+	return aDescriptor;
+}
+/**
+ * Gets the physicsOptions property descriptor.
+ * @return java.beans.PropertyDescriptor
+ */
+public java.beans.PropertyDescriptor physicsOptionsPropertyDescriptor() {
+	java.beans.PropertyDescriptor aDescriptor = null;
+	try {
+		try {
+			/* Using methods via getMethod is the faster way to create the physicsOptions property descriptor. */
+			java.lang.reflect.Method aGetMethod = null;
+			try {
+				/* Attempt to find the method using getMethod with parameter types. */
+				java.lang.Class aGetMethodParameterTypes[] = {};
+				aGetMethod = getBeanClass().getMethod("getPhysicsOptions", aGetMethodParameterTypes);
+			} catch (Throwable exception) {
+				/* Since getMethod failed, call findMethod. */
+				handleException(exception);
+				aGetMethod = findMethod(getBeanClass(), "getPhysicsOptions", 0);
+			};
+			java.lang.reflect.Method aSetMethod = null;
+			try {
+				/* Attempt to find the method using getMethod with parameter types. */
+				java.lang.Class aSetMethodParameterTypes[] = {
+					int.class
+				};
+				aSetMethod = getBeanClass().getMethod("setPhysicsOptions", aSetMethodParameterTypes);
+			} catch (Throwable exception) {
+				/* Since getMethod failed, call findMethod. */
+				handleException(exception);
+				aSetMethod = findMethod(getBeanClass(), "setPhysicsOptions", 1);
+			};
+			aDescriptor = new java.beans.PropertyDescriptor("physicsOptions"
+			, aGetMethod, aSetMethod);
+		} catch (Throwable exception) {
+			/* Since we failed using methods, try creating a default property descriptor. */
+			handleException(exception);
+			aDescriptor = new java.beans.PropertyDescriptor("physicsOptions"
+			, getBeanClass());
+		};
+		aDescriptor.setBound(true);
+		aDescriptor.setConstrained(true);
+		/* aDescriptor.setDisplayName("physicsOptions"); */
+		/* aDescriptor.setShortDescription("physicsOptions"); */
 		/* aDescriptor.setExpert(false); */
 		/* aDescriptor.setHidden(false); */
 		aDescriptor.setValue("preferred", new Boolean(true));
@@ -1457,30 +1711,107 @@ public java.beans.MethodDescriptor propertyChangepropertyChange_javabeansPropert
 	return aDescriptor;
 }
 /**
- * Gets the readVCML(cbit.vcell.math.CommentStringTokenizer) method descriptor.
+ * Gets the reactionParticipants property descriptor.
+ * @return java.beans.IndexedPropertyDescriptor
+ */
+public java.beans.IndexedPropertyDescriptor reactionParticipantsPropertyDescriptor() {
+	java.beans.IndexedPropertyDescriptor aDescriptor = null;
+	try {
+		try {
+			/* Using methods via getMethod is the faster way to create the reactionParticipants property descriptor. */
+			java.lang.reflect.Method aGetMethod = null;
+			try {
+				/* Attempt to find the method using getMethod with parameter types. */
+				java.lang.Class aGetMethodParameterTypes[] = {};
+				aGetMethod = getBeanClass().getMethod("getReactionParticipants", aGetMethodParameterTypes);
+			} catch (Throwable exception) {
+				/* Since getMethod failed, call findMethod. */
+				handleException(exception);
+				aGetMethod = findMethod(getBeanClass(), "getReactionParticipants", 0);
+			};
+			java.lang.reflect.Method aSetMethod = null;
+			try {
+				/* Attempt to find the method using getMethod with parameter types. */
+				java.lang.Class aSetMethodParameterTypes[] = {
+					cbit.vcell.model.ReactionParticipant[].class
+				};
+				aSetMethod = getBeanClass().getMethod("setReactionParticipants", aSetMethodParameterTypes);
+			} catch (Throwable exception) {
+				/* Since getMethod failed, call findMethod. */
+				handleException(exception);
+				aSetMethod = findMethod(getBeanClass(), "setReactionParticipants", 1);
+			};
+			java.lang.reflect.Method aGetIndexedMethod = null;
+			try {
+				/* Attempt to find the method using getMethod with parameter types. */
+				java.lang.Class aGetIndexedMethodParameterTypes[] = {
+					int.class
+				};
+				aGetIndexedMethod = getBeanClass().getMethod("getReactionParticipants", aGetIndexedMethodParameterTypes);
+			} catch (Throwable exception) {
+				/* Since getMethod failed, call findMethod. */
+				handleException(exception);
+				aGetIndexedMethod = findMethod(getBeanClass(), "getReactionParticipants", 1);
+			};
+			java.lang.reflect.Method aSetIndexedMethod = null;
+			try {
+				/* Attempt to find the method using getMethod with parameter types. */
+				java.lang.Class aSetIndexedMethodParameterTypes[] = {
+					int.class,
+					cbit.vcell.model.ReactionParticipant.class
+				};
+				aSetIndexedMethod = getBeanClass().getMethod("setReactionParticipants", aSetIndexedMethodParameterTypes);
+			} catch (Throwable exception) {
+				/* Since getMethod failed, call findMethod. */
+				handleException(exception);
+				aSetIndexedMethod = findMethod(getBeanClass(), "setReactionParticipants", 2);
+			};
+			aDescriptor = new java.beans.IndexedPropertyDescriptor("reactionParticipants"
+			, aGetMethod, aSetMethod, aGetIndexedMethod, aSetIndexedMethod);
+		} catch (Throwable exception) {
+			/* Since we failed using methods, try creating a default property descriptor. */
+			handleException(exception);
+			aDescriptor = new java.beans.IndexedPropertyDescriptor("reactionParticipants"
+			, getBeanClass());
+		};
+		aDescriptor.setBound(true);
+		aDescriptor.setConstrained(true);
+		/* aDescriptor.setDisplayName("reactionParticipants"); */
+		/* aDescriptor.setShortDescription("reactionParticipants"); */
+		/* aDescriptor.setExpert(false); */
+		/* aDescriptor.setHidden(false); */
+		/* aDescriptor.setValue("preferred", new Boolean(false)); */
+		/* aDescriptor.setValue("ivjDesignTimeProperty", new Boolean(true)); */
+	} catch (Throwable exception) {
+		handleException(exception);
+	};
+	return aDescriptor;
+}
+/**
+ * Gets the rebindAllToModel(cbit.vcell.model.Model) method descriptor.
  * @return java.beans.MethodDescriptor
  */
-public java.beans.MethodDescriptor readVCML_cbitvcellmathCommentStringTokenizerMethodDescriptor() {
+public java.beans.MethodDescriptor rebindAllToModel_cbitvcellmodelModelMethodDescriptor() {
 	java.beans.MethodDescriptor aDescriptor = null;
 	try {
-		/* Create and return the readVCML(cbit.vcell.math.CommentStringTokenizer) method descriptor. */
+		/* Create and return the rebindAllToModel(cbit.vcell.model.Model) method descriptor. */
 		java.lang.reflect.Method aMethod = null;
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.util.CommentStringTokenizer.class
+				cbit.vcell.model.Model.class
 			};
-			aMethod = getBeanClass().getMethod("readVCML", aParameterTypes);
+			aMethod = getBeanClass().getMethod("rebindAllToModel", aParameterTypes);
 		} catch (Throwable exception) {
 			/* Since getMethod failed, call findMethod. */
 			handleException(exception);
-			aMethod = findMethod(getBeanClass(), "readVCML", 1);
+			aMethod = findMethod(getBeanClass(), "rebindAllToModel", 1);
 		};
 		try {
 			/* Try creating the method descriptor with parameter descriptors. */
 			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
 			aParameterDescriptor1.setName("arg1");
-			aParameterDescriptor1.setDisplayName("tokens");
+			aParameterDescriptor1.setDisplayName("model");
 			java.beans.ParameterDescriptor aParameterDescriptors[] = {
 				aParameterDescriptor1
 			};
@@ -1490,8 +1821,45 @@ public java.beans.MethodDescriptor readVCML_cbitvcellmathCommentStringTokenizerM
 			handleException(exception);
 			aDescriptor = new java.beans.MethodDescriptor(aMethod);
 		};
-		/* aDescriptor.setDisplayName("readVCML(cbit.vcell.math.CommentStringTokenizer)"); */
-		/* aDescriptor.setShortDescription("readVCML(cbit.vcell.math.CommentStringTokenizer)"); */
+		/* aDescriptor.setDisplayName("rebindAllToModel(cbit.vcell.model.Model)"); */
+		/* aDescriptor.setShortDescription("rebindAllToModel(cbit.vcell.model.Model)"); */
+		/* aDescriptor.setExpert(false); */
+		/* aDescriptor.setHidden(false); */
+		/* aDescriptor.setValue("preferred", new Boolean(false)); */
+	} catch (Throwable exception) {
+		handleException(exception);
+	};
+	return aDescriptor;
+}
+/**
+ * Gets the refreshDependencies() method descriptor.
+ * @return java.beans.MethodDescriptor
+ */
+public java.beans.MethodDescriptor refreshDependenciesMethodDescriptor() {
+	java.beans.MethodDescriptor aDescriptor = null;
+	try {
+		/* Create and return the refreshDependencies() method descriptor. */
+		java.lang.reflect.Method aMethod = null;
+		try {
+			/* Attempt to find the method using getMethod with parameter types. */
+			java.lang.Class aParameterTypes[] = {};
+			aMethod = getBeanClass().getMethod("refreshDependencies", aParameterTypes);
+		} catch (Throwable exception) {
+			/* Since getMethod failed, call findMethod. */
+			handleException(exception);
+			aMethod = findMethod(getBeanClass(), "refreshDependencies", 0);
+		};
+		try {
+			/* Try creating the method descriptor with parameter descriptors. */
+			java.beans.ParameterDescriptor aParameterDescriptors[] = {};
+			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
+		} catch (Throwable exception) {
+			/* Try creating the method descriptor without parameter descriptors. */
+			handleException(exception);
+			aDescriptor = new java.beans.MethodDescriptor(aMethod);
+		};
+		/* aDescriptor.setDisplayName("refreshDependencies()"); */
+		/* aDescriptor.setShortDescription("refreshDependencies()"); */
 		/* aDescriptor.setExpert(false); */
 		/* aDescriptor.setHidden(false); */
 		/* aDescriptor.setValue("preferred", new Boolean(false)); */
@@ -1545,37 +1913,32 @@ public java.beans.MethodDescriptor removePropertyChangeListener_javabeansPropert
 	return aDescriptor;
 }
 /**
- * Gets the removePropertyChangeListener(java.lang.String, java.beans.PropertyChangeListener) method descriptor.
+ * Gets the removeReactionParticipant(cbit.vcell.model.ReactionParticipant) method descriptor.
  * @return java.beans.MethodDescriptor
  */
-public java.beans.MethodDescriptor removePropertyChangeListener_javalangString_javabeansPropertyChangeListenerMethodDescriptor() {
+public java.beans.MethodDescriptor removeReactionParticipant_cbitvcellmodelReactionParticipantMethodDescriptor() {
 	java.beans.MethodDescriptor aDescriptor = null;
 	try {
-		/* Create and return the removePropertyChangeListener(java.lang.String, java.beans.PropertyChangeListener) method descriptor. */
+		/* Create and return the removeReactionParticipant(cbit.vcell.model.ReactionParticipant) method descriptor. */
 		java.lang.reflect.Method aMethod = null;
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				java.lang.String.class,
-				java.beans.PropertyChangeListener.class
+				cbit.vcell.model.ReactionParticipant.class
 			};
-			aMethod = getBeanClass().getMethod("removePropertyChangeListener", aParameterTypes);
+			aMethod = getBeanClass().getMethod("removeReactionParticipant", aParameterTypes);
 		} catch (Throwable exception) {
 			/* Since getMethod failed, call findMethod. */
 			handleException(exception);
-			aMethod = findMethod(getBeanClass(), "removePropertyChangeListener", 2);
+			aMethod = findMethod(getBeanClass(), "removeReactionParticipant", 1);
 		};
 		try {
 			/* Try creating the method descriptor with parameter descriptors. */
 			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
 			aParameterDescriptor1.setName("arg1");
-			aParameterDescriptor1.setDisplayName("propertyName");
-			java.beans.ParameterDescriptor aParameterDescriptor2 = new java.beans.ParameterDescriptor();
-			aParameterDescriptor2.setName("arg2");
-			aParameterDescriptor2.setDisplayName("listener");
+			aParameterDescriptor1.setDisplayName("reactionParticipant");
 			java.beans.ParameterDescriptor aParameterDescriptors[] = {
-				aParameterDescriptor1,
-				aParameterDescriptor2
+				aParameterDescriptor1
 			};
 			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
 		} catch (Throwable exception) {
@@ -1583,8 +1946,8 @@ public java.beans.MethodDescriptor removePropertyChangeListener_javalangString_j
 			handleException(exception);
 			aDescriptor = new java.beans.MethodDescriptor(aMethod);
 		};
-		/* aDescriptor.setDisplayName("removePropertyChangeListener(java.lang.String, java.beans.PropertyChangeListener)"); */
-		/* aDescriptor.setShortDescription("removePropertyChangeListener(java.lang.String, java.beans.PropertyChangeListener)"); */
+		/* aDescriptor.setDisplayName("removeReactionParticipant(cbit.vcell.model.ReactionParticipant)"); */
+		/* aDescriptor.setShortDescription("removeReactionParticipant(cbit.vcell.model.ReactionParticipant)"); */
 		/* aDescriptor.setExpert(false); */
 		/* aDescriptor.setHidden(false); */
 		/* aDescriptor.setValue("preferred", new Boolean(false)); */
@@ -1638,34 +2001,210 @@ public java.beans.MethodDescriptor removeVetoableChangeListener_javabeansVetoabl
 	return aDescriptor;
 }
 /**
- * Gets the removeVetoableChangeListener(java.lang.String, java.beans.VetoableChangeListener) method descriptor.
+ * Gets the setChargeCarrierValence(int) method descriptor.
  * @return java.beans.MethodDescriptor
  */
-public java.beans.MethodDescriptor removeVetoableChangeListener_javalangString_javabeansVetoableChangeListenerMethodDescriptor() {
+public java.beans.MethodDescriptor setChargeCarrierValence_intMethodDescriptor() {
 	java.beans.MethodDescriptor aDescriptor = null;
 	try {
-		/* Create and return the removeVetoableChangeListener(java.lang.String, java.beans.VetoableChangeListener) method descriptor. */
+		/* Create and return the setChargeCarrierValence(int) method descriptor. */
 		java.lang.reflect.Method aMethod = null;
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				java.lang.String.class,
-				java.beans.VetoableChangeListener.class
+				int.class
 			};
-			aMethod = getBeanClass().getMethod("removeVetoableChangeListener", aParameterTypes);
+			aMethod = getBeanClass().getMethod("setChargeCarrierValence", aParameterTypes);
 		} catch (Throwable exception) {
 			/* Since getMethod failed, call findMethod. */
 			handleException(exception);
-			aMethod = findMethod(getBeanClass(), "removeVetoableChangeListener", 2);
+			aMethod = findMethod(getBeanClass(), "setChargeCarrierValence", 1);
 		};
 		try {
 			/* Try creating the method descriptor with parameter descriptors. */
 			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
 			aParameterDescriptor1.setName("arg1");
-			aParameterDescriptor1.setDisplayName("propertyName");
+			aParameterDescriptor1.setDisplayName("chargeCarrierValence");
+			java.beans.ParameterDescriptor aParameterDescriptors[] = {
+				aParameterDescriptor1
+			};
+			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
+		} catch (Throwable exception) {
+			/* Try creating the method descriptor without parameter descriptors. */
+			handleException(exception);
+			aDescriptor = new java.beans.MethodDescriptor(aMethod);
+		};
+		/* aDescriptor.setDisplayName("setChargeCarrierValence(int)"); */
+		/* aDescriptor.setShortDescription("setChargeCarrierValence(int)"); */
+		/* aDescriptor.setExpert(false); */
+		/* aDescriptor.setHidden(false); */
+		/* aDescriptor.setValue("preferred", new Boolean(false)); */
+	} catch (Throwable exception) {
+		handleException(exception);
+	};
+	return aDescriptor;
+}
+/**
+ * Gets the setKinetics(cbit.vcell.model.Kinetics) method descriptor.
+ * @return java.beans.MethodDescriptor
+ */
+public java.beans.MethodDescriptor setKinetics_cbitvcellmodelKineticsMethodDescriptor() {
+	java.beans.MethodDescriptor aDescriptor = null;
+	try {
+		/* Create and return the setKinetics(cbit.vcell.model.Kinetics) method descriptor. */
+		java.lang.reflect.Method aMethod = null;
+		try {
+			/* Attempt to find the method using getMethod with parameter types. */
+			java.lang.Class aParameterTypes[] = {
+				cbit.vcell.model.Kinetics.class
+			};
+			aMethod = getBeanClass().getMethod("setKinetics", aParameterTypes);
+		} catch (Throwable exception) {
+			/* Since getMethod failed, call findMethod. */
+			handleException(exception);
+			aMethod = findMethod(getBeanClass(), "setKinetics", 1);
+		};
+		try {
+			/* Try creating the method descriptor with parameter descriptors. */
+			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
+			aParameterDescriptor1.setName("arg1");
+			aParameterDescriptor1.setDisplayName("kinetics");
+			java.beans.ParameterDescriptor aParameterDescriptors[] = {
+				aParameterDescriptor1
+			};
+			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
+		} catch (Throwable exception) {
+			/* Try creating the method descriptor without parameter descriptors. */
+			handleException(exception);
+			aDescriptor = new java.beans.MethodDescriptor(aMethod);
+		};
+		/* aDescriptor.setDisplayName("setKinetics(cbit.vcell.model.Kinetics)"); */
+		/* aDescriptor.setShortDescription("setKinetics(cbit.vcell.model.Kinetics)"); */
+		/* aDescriptor.setExpert(false); */
+		/* aDescriptor.setHidden(false); */
+		/* aDescriptor.setValue("preferred", new Boolean(false)); */
+	} catch (Throwable exception) {
+		handleException(exception);
+	};
+	return aDescriptor;
+}
+/**
+ * Gets the setModel(cbit.vcell.model.Model) method descriptor.
+ * @return java.beans.MethodDescriptor
+ */
+public java.beans.MethodDescriptor setModel_cbitvcellmodelModelMethodDescriptor() {
+	java.beans.MethodDescriptor aDescriptor = null;
+	try {
+		/* Create and return the setModel(cbit.vcell.model.Model) method descriptor. */
+		java.lang.reflect.Method aMethod = null;
+		try {
+			/* Attempt to find the method using getMethod with parameter types. */
+			java.lang.Class aParameterTypes[] = {
+				cbit.vcell.model.Model.class
+			};
+			aMethod = getBeanClass().getMethod("setModel", aParameterTypes);
+		} catch (Throwable exception) {
+			/* Since getMethod failed, call findMethod. */
+			handleException(exception);
+			aMethod = findMethod(getBeanClass(), "setModel", 1);
+		};
+		try {
+			/* Try creating the method descriptor with parameter descriptors. */
+			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
+			aParameterDescriptor1.setName("arg1");
+			aParameterDescriptor1.setDisplayName("model");
+			java.beans.ParameterDescriptor aParameterDescriptors[] = {
+				aParameterDescriptor1
+			};
+			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
+		} catch (Throwable exception) {
+			/* Try creating the method descriptor without parameter descriptors. */
+			handleException(exception);
+			aDescriptor = new java.beans.MethodDescriptor(aMethod);
+		};
+		/* aDescriptor.setDisplayName("setModel(cbit.vcell.model.Model)"); */
+		/* aDescriptor.setShortDescription("setModel(cbit.vcell.model.Model)"); */
+		/* aDescriptor.setExpert(false); */
+		/* aDescriptor.setHidden(false); */
+		/* aDescriptor.setValue("preferred", new Boolean(false)); */
+	} catch (Throwable exception) {
+		handleException(exception);
+	};
+	return aDescriptor;
+}
+/**
+ * Gets the setName(java.lang.String) method descriptor.
+ * @return java.beans.MethodDescriptor
+ */
+public java.beans.MethodDescriptor setName_javalangStringMethodDescriptor() {
+	java.beans.MethodDescriptor aDescriptor = null;
+	try {
+		/* Create and return the setName(java.lang.String) method descriptor. */
+		java.lang.reflect.Method aMethod = null;
+		try {
+			/* Attempt to find the method using getMethod with parameter types. */
+			java.lang.Class aParameterTypes[] = {
+				java.lang.String.class
+			};
+			aMethod = getBeanClass().getMethod("setName", aParameterTypes);
+		} catch (Throwable exception) {
+			/* Since getMethod failed, call findMethod. */
+			handleException(exception);
+			aMethod = findMethod(getBeanClass(), "setName", 1);
+		};
+		try {
+			/* Try creating the method descriptor with parameter descriptors. */
+			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
+			aParameterDescriptor1.setName("arg1");
+			aParameterDescriptor1.setDisplayName("name");
+			java.beans.ParameterDescriptor aParameterDescriptors[] = {
+				aParameterDescriptor1
+			};
+			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
+		} catch (Throwable exception) {
+			/* Try creating the method descriptor without parameter descriptors. */
+			handleException(exception);
+			aDescriptor = new java.beans.MethodDescriptor(aMethod);
+		};
+		/* aDescriptor.setDisplayName("setName(java.lang.String)"); */
+		/* aDescriptor.setShortDescription("setName(java.lang.String)"); */
+		/* aDescriptor.setExpert(false); */
+		/* aDescriptor.setHidden(false); */
+		/* aDescriptor.setValue("preferred", new Boolean(false)); */
+	} catch (Throwable exception) {
+		handleException(exception);
+	};
+	return aDescriptor;
+}
+/**
+ * Gets the setReactionParticipants(int, cbit.vcell.model.ReactionParticipant) method descriptor.
+ * @return java.beans.MethodDescriptor
+ */
+public java.beans.MethodDescriptor setReactionParticipants_int_cbitvcellmodelReactionParticipantMethodDescriptor() {
+	java.beans.MethodDescriptor aDescriptor = null;
+	try {
+		/* Create and return the setReactionParticipants(int, cbit.vcell.model.ReactionParticipant) method descriptor. */
+		java.lang.reflect.Method aMethod = null;
+		try {
+			/* Attempt to find the method using getMethod with parameter types. */
+			java.lang.Class aParameterTypes[] = {
+				int.class,
+				cbit.vcell.model.ReactionParticipant.class
+			};
+			aMethod = getBeanClass().getMethod("setReactionParticipants", aParameterTypes);
+		} catch (Throwable exception) {
+			/* Since getMethod failed, call findMethod. */
+			handleException(exception);
+			aMethod = findMethod(getBeanClass(), "setReactionParticipants", 2);
+		};
+		try {
+			/* Try creating the method descriptor with parameter descriptors. */
+			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
+			aParameterDescriptor1.setName("arg1");
+			aParameterDescriptor1.setDisplayName("index");
 			java.beans.ParameterDescriptor aParameterDescriptor2 = new java.beans.ParameterDescriptor();
 			aParameterDescriptor2.setName("arg2");
-			aParameterDescriptor2.setDisplayName("listener");
+			aParameterDescriptor2.setDisplayName("reactionParticipants");
 			java.beans.ParameterDescriptor aParameterDescriptors[] = {
 				aParameterDescriptor1,
 				aParameterDescriptor2
@@ -1676,8 +2215,8 @@ public java.beans.MethodDescriptor removeVetoableChangeListener_javalangString_j
 			handleException(exception);
 			aDescriptor = new java.beans.MethodDescriptor(aMethod);
 		};
-		/* aDescriptor.setDisplayName("removeVetoableChangeListener(java.lang.String, java.beans.VetoableChangeListener)"); */
-		/* aDescriptor.setShortDescription("removeVetoableChangeListener(java.lang.String, java.beans.VetoableChangeListener)"); */
+		/* aDescriptor.setDisplayName("setReactionParticipants(int, cbit.vcell.model.ReactionParticipant)"); */
+		/* aDescriptor.setShortDescription("setReactionParticipants(int, cbit.vcell.model.ReactionParticipant)"); */
 		/* aDescriptor.setExpert(false); */
 		/* aDescriptor.setHidden(false); */
 		/* aDescriptor.setValue("preferred", new Boolean(false)); */
@@ -1687,309 +2226,92 @@ public java.beans.MethodDescriptor removeVetoableChangeListener_javalangString_j
 	return aDescriptor;
 }
 /**
- * Gets the sensitivityParameter property descriptor.
+ * Gets the setStructure(cbit.vcell.model.Structure) method descriptor.
+ * @return java.beans.MethodDescriptor
+ */
+public java.beans.MethodDescriptor setStructure_cbitvcellmodelStructureMethodDescriptor() {
+	java.beans.MethodDescriptor aDescriptor = null;
+	try {
+		/* Create and return the setStructure(cbit.vcell.model.Structure) method descriptor. */
+		java.lang.reflect.Method aMethod = null;
+		try {
+			/* Attempt to find the method using getMethod with parameter types. */
+			java.lang.Class aParameterTypes[] = {
+				cbit.vcell.model.Structure.class
+			};
+			aMethod = getBeanClass().getMethod("setStructure", aParameterTypes);
+		} catch (Throwable exception) {
+			/* Since getMethod failed, call findMethod. */
+			handleException(exception);
+			aMethod = findMethod(getBeanClass(), "setStructure", 1);
+		};
+		try {
+			/* Try creating the method descriptor with parameter descriptors. */
+			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
+			aParameterDescriptor1.setName("arg1");
+			aParameterDescriptor1.setDisplayName("structure");
+			java.beans.ParameterDescriptor aParameterDescriptors[] = {
+				aParameterDescriptor1
+			};
+			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
+		} catch (Throwable exception) {
+			/* Try creating the method descriptor without parameter descriptors. */
+			handleException(exception);
+			aDescriptor = new java.beans.MethodDescriptor(aMethod);
+		};
+		/* aDescriptor.setDisplayName("setStructure(cbit.vcell.model.Structure)"); */
+		/* aDescriptor.setShortDescription("setStructure(cbit.vcell.model.Structure)"); */
+		/* aDescriptor.setExpert(false); */
+		/* aDescriptor.setHidden(false); */
+		/* aDescriptor.setValue("preferred", new Boolean(false)); */
+	} catch (Throwable exception) {
+		handleException(exception);
+	};
+	return aDescriptor;
+}
+/**
+ * Gets the structure property descriptor.
  * @return java.beans.PropertyDescriptor
  */
-public java.beans.PropertyDescriptor sensitivityParameterPropertyDescriptor() {
+public java.beans.PropertyDescriptor structurePropertyDescriptor() {
 	java.beans.PropertyDescriptor aDescriptor = null;
 	try {
 		try {
-			/* Using methods via getMethod is the faster way to create the sensitivityParameter property descriptor. */
+			/* Using methods via getMethod is the faster way to create the structure property descriptor. */
 			java.lang.reflect.Method aGetMethod = null;
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aGetMethodParameterTypes[] = {};
-				aGetMethod = getBeanClass().getMethod("getSensitivityParameter", aGetMethodParameterTypes);
+				aGetMethod = getBeanClass().getMethod("getStructure", aGetMethodParameterTypes);
 			} catch (Throwable exception) {
 				/* Since getMethod failed, call findMethod. */
 				handleException(exception);
-				aGetMethod = findMethod(getBeanClass(), "getSensitivityParameter", 0);
+				aGetMethod = findMethod(getBeanClass(), "getStructure", 0);
 			};
 			java.lang.reflect.Method aSetMethod = null;
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.math.Constant.class
+					cbit.vcell.model.Structure.class
 				};
-				aSetMethod = getBeanClass().getMethod("setSensitivityParameter", aSetMethodParameterTypes);
+				aSetMethod = getBeanClass().getMethod("setStructure", aSetMethodParameterTypes);
 			} catch (Throwable exception) {
 				/* Since getMethod failed, call findMethod. */
 				handleException(exception);
-				aSetMethod = findMethod(getBeanClass(), "setSensitivityParameter", 1);
+				aSetMethod = findMethod(getBeanClass(), "setStructure", 1);
 			};
-			aDescriptor = new java.beans.PropertyDescriptor("sensitivityParameter"
+			aDescriptor = new java.beans.PropertyDescriptor("structure"
 			, aGetMethod, aSetMethod);
 		} catch (Throwable exception) {
 			/* Since we failed using methods, try creating a default property descriptor. */
 			handleException(exception);
-			aDescriptor = new java.beans.PropertyDescriptor("sensitivityParameter"
-			, getBeanClass());
-		};
-		aDescriptor.setBound(true);
-		aDescriptor.setConstrained(true);
-		/* aDescriptor.setDisplayName("sensitivityParameter"); */
-		/* aDescriptor.setShortDescription("sensitivityParameter"); */
-		/* aDescriptor.setExpert(false); */
-		/* aDescriptor.setHidden(false); */
-		/* aDescriptor.setValue("preferred", new Boolean(false)); */
-		/* aDescriptor.setValue("ivjDesignTimeProperty", new Boolean(true)); */
-	} catch (Throwable exception) {
-		handleException(exception);
-	};
-	return aDescriptor;
-}
-/**
- * Gets the setErrorTolerance(cbit.vcell.solver.ErrorTolerance) method descriptor.
- * @return java.beans.MethodDescriptor
- */
-public java.beans.MethodDescriptor setErrorTolerance_cbitvcellsolverErrorToleranceMethodDescriptor() {
-	java.beans.MethodDescriptor aDescriptor = null;
-	try {
-		/* Create and return the setErrorTolerance(cbit.vcell.solver.ErrorTolerance) method descriptor. */
-		java.lang.reflect.Method aMethod = null;
-		try {
-			/* Attempt to find the method using getMethod with parameter types. */
-			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.solver.ErrorTolerance.class
-			};
-			aMethod = getBeanClass().getMethod("setErrorTolerance", aParameterTypes);
-		} catch (Throwable exception) {
-			/* Since getMethod failed, call findMethod. */
-			handleException(exception);
-			aMethod = findMethod(getBeanClass(), "setErrorTolerance", 1);
-		};
-		try {
-			/* Try creating the method descriptor with parameter descriptors. */
-			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
-			aParameterDescriptor1.setName("arg1");
-			aParameterDescriptor1.setDisplayName("errorTolerance");
-			java.beans.ParameterDescriptor aParameterDescriptors[] = {
-				aParameterDescriptor1
-			};
-			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
-		} catch (Throwable exception) {
-			/* Try creating the method descriptor without parameter descriptors. */
-			handleException(exception);
-			aDescriptor = new java.beans.MethodDescriptor(aMethod);
-		};
-		/* aDescriptor.setDisplayName("setErrorTolerance(cbit.vcell.solver.ErrorTolerance)"); */
-		/* aDescriptor.setShortDescription("setErrorTolerance(cbit.vcell.solver.ErrorTolerance)"); */
-		/* aDescriptor.setExpert(false); */
-		/* aDescriptor.setHidden(false); */
-		/* aDescriptor.setValue("preferred", new Boolean(false)); */
-	} catch (Throwable exception) {
-		handleException(exception);
-	};
-	return aDescriptor;
-}
-/**
- * Gets the setSensitivityParameter(cbit.vcell.math.Constant) method descriptor.
- * @return java.beans.MethodDescriptor
- */
-public java.beans.MethodDescriptor setSensitivityParameter_cbitvcellmathConstantMethodDescriptor() {
-	java.beans.MethodDescriptor aDescriptor = null;
-	try {
-		/* Create and return the setSensitivityParameter(cbit.vcell.math.Constant) method descriptor. */
-		java.lang.reflect.Method aMethod = null;
-		try {
-			/* Attempt to find the method using getMethod with parameter types. */
-			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.math.Constant.class
-			};
-			aMethod = getBeanClass().getMethod("setSensitivityParameter", aParameterTypes);
-		} catch (Throwable exception) {
-			/* Since getMethod failed, call findMethod. */
-			handleException(exception);
-			aMethod = findMethod(getBeanClass(), "setSensitivityParameter", 1);
-		};
-		try {
-			/* Try creating the method descriptor with parameter descriptors. */
-			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
-			aParameterDescriptor1.setName("arg1");
-			aParameterDescriptor1.setDisplayName("sensitivityParameter");
-			java.beans.ParameterDescriptor aParameterDescriptors[] = {
-				aParameterDescriptor1
-			};
-			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
-		} catch (Throwable exception) {
-			/* Try creating the method descriptor without parameter descriptors. */
-			handleException(exception);
-			aDescriptor = new java.beans.MethodDescriptor(aMethod);
-		};
-		/* aDescriptor.setDisplayName("setSensitivityParameter(cbit.vcell.math.Constant)"); */
-		/* aDescriptor.setShortDescription("setSensitivityParameter(cbit.vcell.math.Constant)"); */
-		/* aDescriptor.setExpert(false); */
-		/* aDescriptor.setHidden(false); */
-		/* aDescriptor.setValue("preferred", new Boolean(false)); */
-	} catch (Throwable exception) {
-		handleException(exception);
-	};
-	return aDescriptor;
-}
-/**
- * Gets the setTaskType(int) method descriptor.
- * @return java.beans.MethodDescriptor
- */
-public java.beans.MethodDescriptor setTaskType_intMethodDescriptor() {
-	java.beans.MethodDescriptor aDescriptor = null;
-	try {
-		/* Create and return the setTaskType(int) method descriptor. */
-		java.lang.reflect.Method aMethod = null;
-		try {
-			/* Attempt to find the method using getMethod with parameter types. */
-			java.lang.Class aParameterTypes[] = {
-				int.class
-			};
-			aMethod = getBeanClass().getMethod("setTaskType", aParameterTypes);
-		} catch (Throwable exception) {
-			/* Since getMethod failed, call findMethod. */
-			handleException(exception);
-			aMethod = findMethod(getBeanClass(), "setTaskType", 1);
-		};
-		try {
-			/* Try creating the method descriptor with parameter descriptors. */
-			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
-			aParameterDescriptor1.setName("arg1");
-			aParameterDescriptor1.setDisplayName("taskType");
-			java.beans.ParameterDescriptor aParameterDescriptors[] = {
-				aParameterDescriptor1
-			};
-			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
-		} catch (Throwable exception) {
-			/* Try creating the method descriptor without parameter descriptors. */
-			handleException(exception);
-			aDescriptor = new java.beans.MethodDescriptor(aMethod);
-		};
-		/* aDescriptor.setDisplayName("setTaskType(int)"); */
-		/* aDescriptor.setShortDescription("setTaskType(int)"); */
-		/* aDescriptor.setExpert(false); */
-		/* aDescriptor.setHidden(false); */
-		/* aDescriptor.setValue("preferred", new Boolean(false)); */
-	} catch (Throwable exception) {
-		handleException(exception);
-	};
-	return aDescriptor;
-}
-/**
- * Gets the setTimeBounds(cbit.vcell.solver.TimeBounds) method descriptor.
- * @return java.beans.MethodDescriptor
- */
-public java.beans.MethodDescriptor setTimeBounds_cbitvcellsolverTimeBoundsMethodDescriptor() {
-	java.beans.MethodDescriptor aDescriptor = null;
-	try {
-		/* Create and return the setTimeBounds(cbit.vcell.solver.TimeBounds) method descriptor. */
-		java.lang.reflect.Method aMethod = null;
-		try {
-			/* Attempt to find the method using getMethod with parameter types. */
-			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.solver.TimeBounds.class
-			};
-			aMethod = getBeanClass().getMethod("setTimeBounds", aParameterTypes);
-		} catch (Throwable exception) {
-			/* Since getMethod failed, call findMethod. */
-			handleException(exception);
-			aMethod = findMethod(getBeanClass(), "setTimeBounds", 1);
-		};
-		try {
-			/* Try creating the method descriptor with parameter descriptors. */
-			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
-			aParameterDescriptor1.setName("arg1");
-			aParameterDescriptor1.setDisplayName("timeBounds");
-			java.beans.ParameterDescriptor aParameterDescriptors[] = {
-				aParameterDescriptor1
-			};
-			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
-		} catch (Throwable exception) {
-			/* Try creating the method descriptor without parameter descriptors. */
-			handleException(exception);
-			aDescriptor = new java.beans.MethodDescriptor(aMethod);
-		};
-		/* aDescriptor.setDisplayName("setTimeBounds(cbit.vcell.solver.TimeBounds)"); */
-		/* aDescriptor.setShortDescription("setTimeBounds(cbit.vcell.solver.TimeBounds)"); */
-		/* aDescriptor.setExpert(false); */
-		/* aDescriptor.setHidden(false); */
-		/* aDescriptor.setValue("preferred", new Boolean(false)); */
-	} catch (Throwable exception) {
-		handleException(exception);
-	};
-	return aDescriptor;
-}
-/**
- * Gets the setTimeStep(cbit.vcell.solver.TimeStep) method descriptor.
- * @return java.beans.MethodDescriptor
- */
-public java.beans.MethodDescriptor setTimeStep_cbitvcellsolverTimeStepMethodDescriptor() {
-	java.beans.MethodDescriptor aDescriptor = null;
-	try {
-		/* Create and return the setTimeStep(cbit.vcell.solver.TimeStep) method descriptor. */
-		java.lang.reflect.Method aMethod = null;
-		try {
-			/* Attempt to find the method using getMethod with parameter types. */
-			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.solver.TimeStep.class
-			};
-			aMethod = getBeanClass().getMethod("setTimeStep", aParameterTypes);
-		} catch (Throwable exception) {
-			/* Since getMethod failed, call findMethod. */
-			handleException(exception);
-			aMethod = findMethod(getBeanClass(), "setTimeStep", 1);
-		};
-		try {
-			/* Try creating the method descriptor with parameter descriptors. */
-			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
-			aParameterDescriptor1.setName("arg1");
-			aParameterDescriptor1.setDisplayName("timeStep");
-			java.beans.ParameterDescriptor aParameterDescriptors[] = {
-				aParameterDescriptor1
-			};
-			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
-		} catch (Throwable exception) {
-			/* Try creating the method descriptor without parameter descriptors. */
-			handleException(exception);
-			aDescriptor = new java.beans.MethodDescriptor(aMethod);
-		};
-		/* aDescriptor.setDisplayName("setTimeStep(cbit.vcell.solver.TimeStep)"); */
-		/* aDescriptor.setShortDescription("setTimeStep(cbit.vcell.solver.TimeStep)"); */
-		/* aDescriptor.setExpert(false); */
-		/* aDescriptor.setHidden(false); */
-		/* aDescriptor.setValue("preferred", new Boolean(false)); */
-	} catch (Throwable exception) {
-		handleException(exception);
-	};
-	return aDescriptor;
-}
-/**
- * Gets the simulation property descriptor.
- * @return java.beans.PropertyDescriptor
- */
-public java.beans.PropertyDescriptor simulationPropertyDescriptor() {
-	java.beans.PropertyDescriptor aDescriptor = null;
-	try {
-		try {
-			/* Using methods via getMethod is the faster way to create the simulation property descriptor. */
-			java.lang.reflect.Method aGetMethod = null;
-			try {
-				/* Attempt to find the method using getMethod with parameter types. */
-				java.lang.Class aGetMethodParameterTypes[] = {};
-				aGetMethod = getBeanClass().getMethod("getSimulation", aGetMethodParameterTypes);
-			} catch (Throwable exception) {
-				/* Since getMethod failed, call findMethod. */
-				handleException(exception);
-				aGetMethod = findMethod(getBeanClass(), "getSimulation", 0);
-			};
-			java.lang.reflect.Method aSetMethod = null;
-			aDescriptor = new java.beans.PropertyDescriptor("simulation"
-			, aGetMethod, aSetMethod);
-		} catch (Throwable exception) {
-			/* Since we failed using methods, try creating a default property descriptor. */
-			handleException(exception);
-			aDescriptor = new java.beans.PropertyDescriptor("simulation"
+			aDescriptor = new java.beans.PropertyDescriptor("structure"
 			, getBeanClass());
 		};
 		aDescriptor.setBound(true);
 		/* aDescriptor.setConstrained(false); */
-		/* aDescriptor.setDisplayName("simulation"); */
-		/* aDescriptor.setShortDescription("simulation"); */
+		/* aDescriptor.setDisplayName("structure"); */
+		/* aDescriptor.setShortDescription("structure"); */
 		/* aDescriptor.setExpert(false); */
 		/* aDescriptor.setHidden(false); */
 		/* aDescriptor.setValue("preferred", new Boolean(false)); */
@@ -2000,338 +2322,37 @@ public java.beans.PropertyDescriptor simulationPropertyDescriptor() {
 	return aDescriptor;
 }
 /**
- * Gets the solverDescription property descriptor.
+ * Gets the term property descriptor.
  * @return java.beans.PropertyDescriptor
  */
-public java.beans.PropertyDescriptor solverDescriptionPropertyDescriptor() {
+public java.beans.PropertyDescriptor termPropertyDescriptor() {
 	java.beans.PropertyDescriptor aDescriptor = null;
 	try {
 		try {
-			/* Using methods via getMethod is the faster way to create the solverDescription property descriptor. */
+			/* Using methods via getMethod is the faster way to create the term property descriptor. */
 			java.lang.reflect.Method aGetMethod = null;
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aGetMethodParameterTypes[] = {};
-				aGetMethod = getBeanClass().getMethod("getSolverDescription", aGetMethodParameterTypes);
+				aGetMethod = getBeanClass().getMethod("getTerm", aGetMethodParameterTypes);
 			} catch (Throwable exception) {
 				/* Since getMethod failed, call findMethod. */
 				handleException(exception);
-				aGetMethod = findMethod(getBeanClass(), "getSolverDescription", 0);
+				aGetMethod = findMethod(getBeanClass(), "getTerm", 0);
 			};
 			java.lang.reflect.Method aSetMethod = null;
-			try {
-				/* Attempt to find the method using getMethod with parameter types. */
-				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.solver.SolverDescription.class
-				};
-				aSetMethod = getBeanClass().getMethod("setSolverDescription", aSetMethodParameterTypes);
-			} catch (Throwable exception) {
-				/* Since getMethod failed, call findMethod. */
-				handleException(exception);
-				aSetMethod = findMethod(getBeanClass(), "setSolverDescription", 1);
-			};
-			aDescriptor = new java.beans.PropertyDescriptor("solverDescription"
+			aDescriptor = new java.beans.PropertyDescriptor("term"
 			, aGetMethod, aSetMethod);
 		} catch (Throwable exception) {
 			/* Since we failed using methods, try creating a default property descriptor. */
 			handleException(exception);
-			aDescriptor = new java.beans.PropertyDescriptor("solverDescription"
-			, getBeanClass());
-		};
-		aDescriptor.setBound(true);
-		aDescriptor.setConstrained(true);
-		/* aDescriptor.setDisplayName("solverDescription"); */
-		/* aDescriptor.setShortDescription("solverDescription"); */
-		/* aDescriptor.setExpert(false); */
-		/* aDescriptor.setHidden(false); */
-		/* aDescriptor.setValue("preferred", new Boolean(false)); */
-		/* aDescriptor.setValue("ivjDesignTimeProperty", new Boolean(true)); */
-	} catch (Throwable exception) {
-		handleException(exception);
-	};
-	return aDescriptor;
-}
-/**
- * Gets the steady property descriptor.
- * @return java.beans.PropertyDescriptor
- */
-public java.beans.PropertyDescriptor steadyPropertyDescriptor() {
-	java.beans.PropertyDescriptor aDescriptor = null;
-	try {
-		try {
-			/* Using methods via getMethod is the faster way to create the steady property descriptor. */
-			java.lang.reflect.Method aGetMethod = null;
-			try {
-				/* Attempt to find the method using getMethod with parameter types. */
-				java.lang.Class aGetMethodParameterTypes[] = {};
-				aGetMethod = getBeanClass().getMethod("getSteady", aGetMethodParameterTypes);
-			} catch (Throwable exception) {
-				/* Since getMethod failed, call findMethod. */
-				handleException(exception);
-				aGetMethod = findMethod(getBeanClass(), "getSteady", 0);
-			};
-			java.lang.reflect.Method aSetMethod = null;
-			aDescriptor = new java.beans.PropertyDescriptor("steady"
-			, aGetMethod, aSetMethod);
-		} catch (Throwable exception) {
-			/* Since we failed using methods, try creating a default property descriptor. */
-			handleException(exception);
-			aDescriptor = new java.beans.PropertyDescriptor("steady"
+			aDescriptor = new java.beans.PropertyDescriptor("term"
 			, getBeanClass());
 		};
 		aDescriptor.setBound(true);
 		/* aDescriptor.setConstrained(false); */
-		/* aDescriptor.setDisplayName("steady"); */
-		/* aDescriptor.setShortDescription("steady"); */
-		/* aDescriptor.setExpert(false); */
-		/* aDescriptor.setHidden(false); */
-		/* aDescriptor.setValue("preferred", new Boolean(false)); */
-		/* aDescriptor.setValue("ivjDesignTimeProperty", new Boolean(true)); */
-	} catch (Throwable exception) {
-		handleException(exception);
-	};
-	return aDescriptor;
-}
-/**
- * Gets the taskType property descriptor.
- * @return java.beans.PropertyDescriptor
- */
-public java.beans.PropertyDescriptor taskTypePropertyDescriptor() {
-	java.beans.PropertyDescriptor aDescriptor = null;
-	try {
-		try {
-			/* Using methods via getMethod is the faster way to create the taskType property descriptor. */
-			java.lang.reflect.Method aGetMethod = null;
-			try {
-				/* Attempt to find the method using getMethod with parameter types. */
-				java.lang.Class aGetMethodParameterTypes[] = {};
-				aGetMethod = getBeanClass().getMethod("getTaskType", aGetMethodParameterTypes);
-			} catch (Throwable exception) {
-				/* Since getMethod failed, call findMethod. */
-				handleException(exception);
-				aGetMethod = findMethod(getBeanClass(), "getTaskType", 0);
-			};
-			java.lang.reflect.Method aSetMethod = null;
-			try {
-				/* Attempt to find the method using getMethod with parameter types. */
-				java.lang.Class aSetMethodParameterTypes[] = {
-					int.class
-				};
-				aSetMethod = getBeanClass().getMethod("setTaskType", aSetMethodParameterTypes);
-			} catch (Throwable exception) {
-				/* Since getMethod failed, call findMethod. */
-				handleException(exception);
-				aSetMethod = findMethod(getBeanClass(), "setTaskType", 1);
-			};
-			aDescriptor = new java.beans.PropertyDescriptor("taskType"
-			, aGetMethod, aSetMethod);
-		} catch (Throwable exception) {
-			/* Since we failed using methods, try creating a default property descriptor. */
-			handleException(exception);
-			aDescriptor = new java.beans.PropertyDescriptor("taskType"
-			, getBeanClass());
-		};
-		aDescriptor.setBound(true);
-		aDescriptor.setConstrained(true);
-		/* aDescriptor.setDisplayName("taskType"); */
-		/* aDescriptor.setShortDescription("taskType"); */
-		/* aDescriptor.setExpert(false); */
-		/* aDescriptor.setHidden(false); */
-		/* aDescriptor.setValue("preferred", new Boolean(false)); */
-		/* aDescriptor.setValue("ivjDesignTimeProperty", new Boolean(true)); */
-	} catch (Throwable exception) {
-		handleException(exception);
-	};
-	return aDescriptor;
-}
-/**
- * Gets the timeBounds property descriptor.
- * @return java.beans.PropertyDescriptor
- */
-public java.beans.PropertyDescriptor timeBoundsPropertyDescriptor() {
-	java.beans.PropertyDescriptor aDescriptor = null;
-	try {
-		try {
-			/* Using methods via getMethod is the faster way to create the timeBounds property descriptor. */
-			java.lang.reflect.Method aGetMethod = null;
-			try {
-				/* Attempt to find the method using getMethod with parameter types. */
-				java.lang.Class aGetMethodParameterTypes[] = {};
-				aGetMethod = getBeanClass().getMethod("getTimeBounds", aGetMethodParameterTypes);
-			} catch (Throwable exception) {
-				/* Since getMethod failed, call findMethod. */
-				handleException(exception);
-				aGetMethod = findMethod(getBeanClass(), "getTimeBounds", 0);
-			};
-			java.lang.reflect.Method aSetMethod = null;
-			try {
-				/* Attempt to find the method using getMethod with parameter types. */
-				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.solver.TimeBounds.class
-				};
-				aSetMethod = getBeanClass().getMethod("setTimeBounds", aSetMethodParameterTypes);
-			} catch (Throwable exception) {
-				/* Since getMethod failed, call findMethod. */
-				handleException(exception);
-				aSetMethod = findMethod(getBeanClass(), "setTimeBounds", 1);
-			};
-			aDescriptor = new java.beans.PropertyDescriptor("timeBounds"
-			, aGetMethod, aSetMethod);
-		} catch (Throwable exception) {
-			/* Since we failed using methods, try creating a default property descriptor. */
-			handleException(exception);
-			aDescriptor = new java.beans.PropertyDescriptor("timeBounds"
-			, getBeanClass());
-		};
-		aDescriptor.setBound(true);
-		aDescriptor.setConstrained(true);
-		/* aDescriptor.setDisplayName("timeBounds"); */
-		/* aDescriptor.setShortDescription("timeBounds"); */
-		/* aDescriptor.setExpert(false); */
-		/* aDescriptor.setHidden(false); */
-		/* aDescriptor.setValue("preferred", new Boolean(false)); */
-		/* aDescriptor.setValue("ivjDesignTimeProperty", new Boolean(true)); */
-	} catch (Throwable exception) {
-		handleException(exception);
-	};
-	return aDescriptor;
-}
-/**
- * Gets the timeStep property descriptor.
- * @return java.beans.PropertyDescriptor
- */
-public java.beans.PropertyDescriptor timeStepPropertyDescriptor() {
-	java.beans.PropertyDescriptor aDescriptor = null;
-	try {
-		try {
-			/* Using methods via getMethod is the faster way to create the timeStep property descriptor. */
-			java.lang.reflect.Method aGetMethod = null;
-			try {
-				/* Attempt to find the method using getMethod with parameter types. */
-				java.lang.Class aGetMethodParameterTypes[] = {};
-				aGetMethod = getBeanClass().getMethod("getTimeStep", aGetMethodParameterTypes);
-			} catch (Throwable exception) {
-				/* Since getMethod failed, call findMethod. */
-				handleException(exception);
-				aGetMethod = findMethod(getBeanClass(), "getTimeStep", 0);
-			};
-			java.lang.reflect.Method aSetMethod = null;
-			try {
-				/* Attempt to find the method using getMethod with parameter types. */
-				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.solver.TimeStep.class
-				};
-				aSetMethod = getBeanClass().getMethod("setTimeStep", aSetMethodParameterTypes);
-			} catch (Throwable exception) {
-				/* Since getMethod failed, call findMethod. */
-				handleException(exception);
-				aSetMethod = findMethod(getBeanClass(), "setTimeStep", 1);
-			};
-			aDescriptor = new java.beans.PropertyDescriptor("timeStep"
-			, aGetMethod, aSetMethod);
-		} catch (Throwable exception) {
-			/* Since we failed using methods, try creating a default property descriptor. */
-			handleException(exception);
-			aDescriptor = new java.beans.PropertyDescriptor("timeStep"
-			, getBeanClass());
-		};
-		aDescriptor.setBound(true);
-		aDescriptor.setConstrained(true);
-		/* aDescriptor.setDisplayName("timeStep"); */
-		/* aDescriptor.setShortDescription("timeStep"); */
-		/* aDescriptor.setExpert(false); */
-		/* aDescriptor.setHidden(false); */
-		/* aDescriptor.setValue("preferred", new Boolean(false)); */
-		/* aDescriptor.setValue("ivjDesignTimeProperty", new Boolean(true)); */
-	} catch (Throwable exception) {
-		handleException(exception);
-	};
-	return aDescriptor;
-}
-/**
- * Gets the unsteady property descriptor.
- * @return java.beans.PropertyDescriptor
- */
-public java.beans.PropertyDescriptor unsteadyPropertyDescriptor() {
-	java.beans.PropertyDescriptor aDescriptor = null;
-	try {
-		try {
-			/* Using methods via getMethod is the faster way to create the unsteady property descriptor. */
-			java.lang.reflect.Method aGetMethod = null;
-			try {
-				/* Attempt to find the method using getMethod with parameter types. */
-				java.lang.Class aGetMethodParameterTypes[] = {};
-				aGetMethod = getBeanClass().getMethod("getUnsteady", aGetMethodParameterTypes);
-			} catch (Throwable exception) {
-				/* Since getMethod failed, call findMethod. */
-				handleException(exception);
-				aGetMethod = findMethod(getBeanClass(), "getUnsteady", 0);
-			};
-			java.lang.reflect.Method aSetMethod = null;
-			aDescriptor = new java.beans.PropertyDescriptor("unsteady"
-			, aGetMethod, aSetMethod);
-		} catch (Throwable exception) {
-			/* Since we failed using methods, try creating a default property descriptor. */
-			handleException(exception);
-			aDescriptor = new java.beans.PropertyDescriptor("unsteady"
-			, getBeanClass());
-		};
-		aDescriptor.setBound(true);
-		/* aDescriptor.setConstrained(false); */
-		/* aDescriptor.setDisplayName("unsteady"); */
-		/* aDescriptor.setShortDescription("unsteady"); */
-		/* aDescriptor.setExpert(false); */
-		/* aDescriptor.setHidden(false); */
-		/* aDescriptor.setValue("preferred", new Boolean(false)); */
-		/* aDescriptor.setValue("ivjDesignTimeProperty", new Boolean(true)); */
-	} catch (Throwable exception) {
-		handleException(exception);
-	};
-	return aDescriptor;
-}
-/**
- * Gets the useSymbolicJacobian property descriptor.
- * @return java.beans.PropertyDescriptor
- */
-public java.beans.PropertyDescriptor useSymbolicJacobianPropertyDescriptor() {
-	java.beans.PropertyDescriptor aDescriptor = null;
-	try {
-		try {
-			/* Using methods via getMethod is the faster way to create the useSymbolicJacobian property descriptor. */
-			java.lang.reflect.Method aGetMethod = null;
-			try {
-				/* Attempt to find the method using getMethod with parameter types. */
-				java.lang.Class aGetMethodParameterTypes[] = {};
-				aGetMethod = getBeanClass().getMethod("getUseSymbolicJacobian", aGetMethodParameterTypes);
-			} catch (Throwable exception) {
-				/* Since getMethod failed, call findMethod. */
-				handleException(exception);
-				aGetMethod = findMethod(getBeanClass(), "getUseSymbolicJacobian", 0);
-			};
-			java.lang.reflect.Method aSetMethod = null;
-			try {
-				/* Attempt to find the method using getMethod with parameter types. */
-				java.lang.Class aSetMethodParameterTypes[] = {
-					boolean.class
-				};
-				aSetMethod = getBeanClass().getMethod("setUseSymbolicJacobian", aSetMethodParameterTypes);
-			} catch (Throwable exception) {
-				/* Since getMethod failed, call findMethod. */
-				handleException(exception);
-				aSetMethod = findMethod(getBeanClass(), "setUseSymbolicJacobian", 1);
-			};
-			aDescriptor = new java.beans.PropertyDescriptor("useSymbolicJacobian"
-			, aGetMethod, aSetMethod);
-		} catch (Throwable exception) {
-			/* Since we failed using methods, try creating a default property descriptor. */
-			handleException(exception);
-			aDescriptor = new java.beans.PropertyDescriptor("useSymbolicJacobian"
-			, getBeanClass());
-		};
-		aDescriptor.setBound(true);
-		/* aDescriptor.setConstrained(false); */
-		/* aDescriptor.setDisplayName("useSymbolicJacobian"); */
-		/* aDescriptor.setShortDescription("useSymbolicJacobian"); */
+		/* aDescriptor.setDisplayName("term"); */
+		/* aDescriptor.setShortDescription("term"); */
 		/* aDescriptor.setExpert(false); */
 		/* aDescriptor.setHidden(false); */
 		/* aDescriptor.setValue("preferred", new Boolean(false)); */
@@ -2406,7 +2427,7 @@ public java.beans.MethodDescriptor vetoableChange_javabeansPropertyChangeEventMe
 			/* Try creating the method descriptor with parameter descriptors. */
 			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
 			aParameterDescriptor1.setName("arg1");
-			aParameterDescriptor1.setDisplayName("evt");
+			aParameterDescriptor1.setDisplayName("e");
 			java.beans.ParameterDescriptor aParameterDescriptors[] = {
 				aParameterDescriptor1
 			};
@@ -2524,6 +2545,50 @@ public java.beans.MethodDescriptor vetoableChangevetoableChange_javabeansPropert
 		};
 		/* aDescriptor.setDisplayName("vetoableChange"); */
 		/* aDescriptor.setShortDescription("vetoableChange"); */
+		/* aDescriptor.setExpert(false); */
+		/* aDescriptor.setHidden(false); */
+		/* aDescriptor.setValue("preferred", new Boolean(false)); */
+	} catch (Throwable exception) {
+		handleException(exception);
+	};
+	return aDescriptor;
+}
+/**
+ * Gets the writeTokens(java.io.PrintWriter) method descriptor.
+ * @return java.beans.MethodDescriptor
+ */
+public java.beans.MethodDescriptor writeTokens_javaioPrintWriterMethodDescriptor() {
+	java.beans.MethodDescriptor aDescriptor = null;
+	try {
+		/* Create and return the writeTokens(java.io.PrintWriter) method descriptor. */
+		java.lang.reflect.Method aMethod = null;
+		try {
+			/* Attempt to find the method using getMethod with parameter types. */
+			java.lang.Class aParameterTypes[] = {
+				java.io.PrintWriter.class
+			};
+			aMethod = getBeanClass().getMethod("writeTokens", aParameterTypes);
+		} catch (Throwable exception) {
+			/* Since getMethod failed, call findMethod. */
+			handleException(exception);
+			aMethod = findMethod(getBeanClass(), "writeTokens", 1);
+		};
+		try {
+			/* Try creating the method descriptor with parameter descriptors. */
+			java.beans.ParameterDescriptor aParameterDescriptor1 = new java.beans.ParameterDescriptor();
+			aParameterDescriptor1.setName("arg1");
+			aParameterDescriptor1.setDisplayName("pw");
+			java.beans.ParameterDescriptor aParameterDescriptors[] = {
+				aParameterDescriptor1
+			};
+			aDescriptor = new java.beans.MethodDescriptor(aMethod, aParameterDescriptors);
+		} catch (Throwable exception) {
+			/* Try creating the method descriptor without parameter descriptors. */
+			handleException(exception);
+			aDescriptor = new java.beans.MethodDescriptor(aMethod);
+		};
+		/* aDescriptor.setDisplayName("writeTokens(java.io.PrintWriter)"); */
+		/* aDescriptor.setShortDescription("writeTokens(java.io.PrintWriter)"); */
 		/* aDescriptor.setExpert(false); */
 		/* aDescriptor.setHidden(false); */
 		/* aDescriptor.setValue("preferred", new Boolean(false)); */

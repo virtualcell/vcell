@@ -135,7 +135,7 @@ public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, 
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-public abstract void fromTokens(cbit.vcell.math.CommentStringTokenizer tokens, Model model) throws Exception;
+public abstract void fromTokens(cbit.util.CommentStringTokenizer tokens, Model model) throws Exception;
 
 
 /**

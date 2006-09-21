@@ -13,6 +13,7 @@ import cbit.vcell.parser.ExpressionBindingException;
 import java.beans.PropertyVetoException;
 
 import cbit.util.BeanUtils;
+import cbit.util.CommentStringTokenizer;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.SimulationVersion;

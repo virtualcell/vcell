@@ -1,7 +1,7 @@
 package cbit.vcell.solver;
+import cbit.util.CommentStringTokenizer;
 import cbit.util.DataAccessException;
-import cbit.vcell.math.Token;
-import cbit.vcell.math.CommentStringTokenizer;
+import cbit.util.Token;
 import cbit.vcell.math.VCML;
 /**
  * Insert the type's description here.

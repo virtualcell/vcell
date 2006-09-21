@@ -3,7 +3,6 @@ package cbit.vcell.mapping;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.math.CommentStringTokenizer;
 import cbit.vcell.parser.*;
 import cbit.vcell.model.*;
 import cbit.vcell.math.VCML;
@@ -529,40 +528,6 @@ public ReactionStep getReactionStep() {
 
 
 /**
- * This method was created by a SmartGuide.
- * @return java.lang.String
- */
-public String getVCML() {
-	StringBuffer buffer = new StringBuffer();
-	buffer.append("\t"+VCML.ReactionSpec+" "+getReactionStep().getName()+" {\n");
-	switch (getReactionMapping()){
-		case EXCLUDED:{
-			buffer.append("\t\t"+VCML.ReactionMapping+" "+VCML.ReactionMappingExcluded+"\n");
-			break;
-		}
-		case INCLUDED:{
-			buffer.append("\t\t"+VCML.ReactionMapping+" "+VCML.ReactionMappingIncluded+"\n");
-			break;
-		}
-		case FAST:{
-			buffer.append("\t\t"+VCML.ReactionMapping+" "+VCML.ReactionMappingFast+"\n");
-			break;
-		}
-		case MOLECULAR_ONLY:{
-			buffer.append("\t\t"+VCML.ReactionMapping+" "+VCML.ReactionMappingMolecularOnly+"\n");
-			break;
-		}
-		case CURRENT_ONLY:{
-			buffer.append("\t\t"+VCML.ReactionMapping+" "+VCML.ReactionMappingCurrentOnly+"\n");
-			break;
-		}
-	}
-	buffer.append("\t}\n");
-	return buffer.toString();		
-}
-
-
-/**
  * Accessor for the vetoPropertyChange field.
  */
 protected java.beans.VetoableChangeSupport getVetoPropertyChange() {
@@ -596,44 +561,6 @@ public boolean isExcluded() {
  */
 public boolean isFast() {
 	return fieldReactionMapping == FAST;
-}
-
-
-/**
- * This method was created by a SmartGuide.
- * @param tokens java.util.StringTokenizer
- * @exception java.lang.Exception The exception description.
- */
-public void read(CommentStringTokenizer tokens) throws ExpressionException, MappingException, DataAccessException {
-	
-	String token = null;
-	token = tokens.nextToken();
-	if (!token.equalsIgnoreCase(VCML.BeginBlock)){
-		throw new cbit.util.DataAccessException("unexpected token "+token+" expecting "+VCML.BeginBlock);
-	}			
-	while (tokens.hasMoreTokens()){
-		token = tokens.nextToken();
-		if (token.equalsIgnoreCase(VCML.EndBlock)){
-			break;
-		}		
-		if (token.equalsIgnoreCase(VCML.ReactionMapping)){
-			String mappingType = tokens.nextToken();
-			if (mappingType.equalsIgnoreCase(VCML.ReactionMappingExcluded)){
-				fieldReactionMapping = EXCLUDED;
-			}else if (mappingType.equalsIgnoreCase(VCML.ReactionMappingIncluded)){
-				fieldReactionMapping = INCLUDED;
-			}else if (mappingType.equalsIgnoreCase(VCML.ReactionMappingFast)){
-				fieldReactionMapping = FAST;
-			}else if (mappingType.equalsIgnoreCase(VCML.ReactionMappingMolecularOnly)){
-				fieldReactionMapping = MOLECULAR_ONLY;
-			}else if (mappingType.equalsIgnoreCase(VCML.ReactionMappingCurrentOnly)){
-				fieldReactionMapping = CURRENT_ONLY;
-			}else{
-				throw new DataAccessException("unexpected reaction mapping "+mappingType);
-			}
-		}
-		throw new cbit.util.DataAccessException("unexpected identifier "+token);
-	}
 }
 
 

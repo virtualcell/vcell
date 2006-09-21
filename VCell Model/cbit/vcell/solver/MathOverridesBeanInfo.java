@@ -729,7 +729,7 @@ public java.beans.MethodDescriptor readVCML_cbitvcellmathCommentStringTokenizerM
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.math.CommentStringTokenizer.class
+				cbit.util.CommentStringTokenizer.class
 			};
 			aMethod = getBeanClass().getMethod("readVCML", aParameterTypes);
 		} catch (java.lang.Throwable exception) {

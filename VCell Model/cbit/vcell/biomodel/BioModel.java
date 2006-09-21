@@ -492,46 +492,6 @@ public Simulation[] getSimulations(SimulationContext simulationContext) {
 
 
 /**
- * Gets the VCML property (java.lang.String) value.
- * @return The VCML property value.
- */
-public java.lang.String getVCML() throws Exception {
-	StringBuffer buffer = new StringBuffer();
-	String name = (fieldVersion!=null)?(fieldVersion.getName()):"unnamedBioModel";
-	buffer.append(cbit.vcell.model.VCMODL.BioModel+" "+name+" {\n");
-
-	//
-	// write Model
-	//
-//	buffer.append(cbit.vcell.model.VCMODL.ModelReference+" "+getGeometryContext().getModel().getName()+"\n");
-java.io.StringWriter stringWriter = new java.io.StringWriter();
-getModel().writeTokens(new java.io.PrintWriter(stringWriter));
-buffer.append(stringWriter.toString()+"\n");
-
-	//
-	// write SimulationContexts
-	//
-	if (fieldSimulationContexts!=null){
-		for (int i=0;i<this.fieldSimulationContexts.length;i++){
-			buffer.append(fieldSimulationContexts[i].getVCML()+"\n");
-		}
-	}
-
-	//
-	// write Simulations
-	//
-	if (fieldSimulations!=null){
-		for (int i=0;i<this.fieldSimulations.length;i++){
-			buffer.append(fieldSimulations[i].getVCML()+"\n");
-		}
-	}
-	
-	buffer.append("}\n");
-	return buffer.toString();		
-}
-
-
-/**
  * Gets the version property (cbit.sql.Version) value.
  * @return The version property value.
  */
@@ -550,14 +510,6 @@ protected java.beans.VetoableChangeSupport getVetoPropertyChange() {
 	return vetoPropertyChange;
 }
 
-
-/**
- * Gets the XML property (java.lang.String) value.
- * @return The XML property value.
- */
-public java.lang.String getXML() {
-	return null;
-}
 
 
 /**

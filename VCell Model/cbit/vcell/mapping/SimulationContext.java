@@ -907,43 +907,6 @@ public double getTemperatureKelvin() {
 
 
 /**
- * This method was created by a SmartGuide.
- * @return java.lang.String
- */
-public String getVCML() throws Exception {
-	StringBuffer buffer = new StringBuffer();
-	String name = (version!=null)?(version.getName()):"unnamedSimContext";
-	buffer.append(VCMODL.SimulationContext+" "+name+" {\n");
-
-	//
-	// write Model or ModelRef
-	//
-	buffer.append(cbit.vcell.model.VCMODL.ModelReference+" "+getGeometryContext().getModel().toString()+"\n");
-//java.io.StringWriter stringWriter = new java.io.StringWriter();
-//getGeometryContext().getModel().writeTokens(new java.io.PrintWriter(stringWriter));
-//buffer.append(stringWriter.toString()+"\n");
-
-	//
-	// write Geometry or GeometryRef
-	//
-//	buffer.append(VCML.GeometryReference+" "+getGeometryContext().getGeometry().getName()+"\n");
-buffer.append(VCML.Geometry+" "+getGeometryContext().getGeometry().getGeometrySpec().getVCML()+"\n");
-
-	//
-	// write GeometryContext (geometric mapping)
-	//
-	buffer.append(getGeometryContext().getVCML()+"\n");
-
-	//
-	// write ReactionContext (parameter/variable mapping)
-	//
-	buffer.append(getReactionContext().getVCML()+"\n");
-	buffer.append("}\n");
-	return buffer.toString();		
-}
-
-
-/**
  * This method was created in VisualAge.
  * @return cbit.sql.Version
  */

@@ -56,7 +56,7 @@ public boolean compareEqual(Matchable obj) {
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-public void fromTokens(cbit.vcell.math.CommentStringTokenizer tokens, Model model) throws Exception {
+public void fromTokens(cbit.util.CommentStringTokenizer tokens, Model model) throws Exception {
 	String token = null;
 //	tokens.nextToken();  // read "{"
 	while (tokens.hasMoreTokens()){

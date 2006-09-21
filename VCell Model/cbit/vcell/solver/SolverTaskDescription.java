@@ -5,7 +5,6 @@ package cbit.vcell.solver;
 ©*/
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
-import cbit.vcell.math.CommentStringTokenizer;
 import cbit.vcell.math.VCML;
 import java.util.*;
 import cbit.util.*;

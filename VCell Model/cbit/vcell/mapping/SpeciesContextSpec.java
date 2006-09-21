@@ -4,7 +4,6 @@ import cbit.util.*;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.math.CommentStringTokenizer;
 import cbit.vcell.math.VCML;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
@@ -12,6 +11,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ReservedSymbol;
+import cbit.util.CommentStringTokenizer;
 import cbit.util.Matchable;
 import cbit.util.Compare;
 import cbit.vcell.model.Membrane;
@@ -760,56 +760,6 @@ public boolean isDiffusing() {
  */
 public final boolean isEnableDiffusing() {
 	return bEnableDiffusing;
-}
-
-
-/**
- * This method was created by a SmartGuide.
- * @param tokens java.util.StringTokenizer
- * @exception java.lang.Exception The exception description.
- */
-public void read(CommentStringTokenizer tokens) throws ExpressionException, MappingException, cbit.util.DataAccessException, java.beans.PropertyVetoException {
-	resetDefaults();
-	
-	String token = null;
-	token = tokens.nextToken();
-	if (!token.equalsIgnoreCase(VCML.BeginBlock)){
-		throw new cbit.util.DataAccessException("unexpected token "+token+" expecting "+VCML.BeginBlock);
-	}			
-	while (tokens.hasMoreTokens()){
-		token = tokens.nextToken();
-		if (token.equalsIgnoreCase(VCML.EndBlock)){
-			break;
-		}		
-		if (token.equalsIgnoreCase(VCMODL.ForceConstant)){
-			setConstant(new Boolean(tokens.nextToken()).booleanValue());
-			continue;
-		}		
-		if (token.equalsIgnoreCase(VCMODL.EnableDiffusion)){
-			setEnableDiffusing(new Boolean(tokens.nextToken()).booleanValue());
-			continue;
-		}		
-		if (token.equalsIgnoreCase(VCMODL.InitialCondition)){
-			Expression exp = new Expression(tokens);
-			getInitialConditionParameter().setExpression(exp);
-			continue;
-		}		
-		if (token.equalsIgnoreCase(VCMODL.DiffusionRate)){
-			Expression exp = new Expression(tokens);
-			getDiffusionParameter().setExpression(exp);
-			continue;
-		}		
-		//
-		// read boundaryCondition Expressions
-		//	
-		if (token.equalsIgnoreCase(VCMODL.BoundaryCondition)){
-			BoundaryLocation bl = BoundaryLocation.fromString(tokens.nextToken());
-			Expression exp = new Expression(tokens);
-			getParameterFromRole(getRole(bl)).setExpression(exp);
-			continue;
-		}
-		throw new cbit.util.DataAccessException("unexpected identifier "+token);
-	}
 }
 
 

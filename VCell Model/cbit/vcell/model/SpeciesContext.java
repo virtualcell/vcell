@@ -125,7 +125,7 @@ public void fireVetoableChange(String propertyName, Object oldValue, Object newV
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-public void fromTokens(cbit.vcell.math.CommentStringTokenizer tokens) throws Exception {
+public void fromTokens(cbit.util.CommentStringTokenizer tokens) throws Exception {
 	String token = null;
 	tokens.nextToken();  // read "{"
 	while (tokens.hasMoreTokens()){
