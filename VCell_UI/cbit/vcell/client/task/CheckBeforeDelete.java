@@ -1,5 +1,4 @@
 package cbit.vcell.client.task;
-import cbit.vcell.messaging.db.SimulationJobStatus;
 
 import java.util.*;
 import javax.swing.*;
@@ -9,6 +8,7 @@ import cbit.util.*;
 import cbit.vcell.server.*;
 import cbit.vcell.server.solvers.SolverResultSetInfo;
 import cbit.vcell.simulation.*;
+import cbit.vcell.solvers.SimulationJobStatus;
 import cbit.vcell.geometry.*;
 import cbit.sql.*;
 import cbit.vcell.client.desktop.*;

@@ -28,7 +28,7 @@ public Component getTableCellRendererComponent(JTable table,Object value,boolean
 		SubVolume subVolume = (SubVolume)value;
 		JLabel label = (JLabel)super.getTableCellRendererComponent(table,"",isSelected,hasFocus,row,column);
 		java.awt.Color handleColor = new java.awt.Color(colormap[subVolume.getHandle()]);
-		label.setIcon(new cbit.image.ColorIcon(15,15,handleColor));
+		label.setIcon(new cbit.gui.ColorIcon(15,15,handleColor));
 		label.setText(subVolume.getName());
 		return label;
 	}else{

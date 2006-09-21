@@ -10,6 +10,7 @@ import cbit.util.Version;
 import java.awt.image.MemoryImageSource;
 import cbit.vcell.geometry.*;
 import cbit.vcell.simdata.DisplayAdapterService;
+import cbit.gui.ColorIcon;
 import cbit.image.*;
 import cbit.image.gui.ImagePlaneManagerPanel;
 /**

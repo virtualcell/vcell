@@ -1,5 +1,4 @@
 package cbit.vcell.client;
-import cbit.vcell.messaging.db.SimulationJobStatus;
 import swingthreads.*;
 import cbit.vcell.client.server.*;
 import cbit.vcell.server.*;
@@ -12,6 +11,7 @@ import javax.swing.*;
 import cbit.sql.*;
 import java.beans.*;
 import cbit.vcell.solver.ode.gui.*;
+import cbit.vcell.solvers.SimulationJobStatus;
 import cbit.vcell.client.desktop.simulation.*;
 
 import java.util.*;
