@@ -1,5 +1,7 @@
 package cbit.vcell.geometry.gui;
 import cbit.render.*;
+import cbit.render.objects.Vect3d;
+
 import java.awt.event.MouseEvent;
 import java.awt.event.KeyEvent;
 /**

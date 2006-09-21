@@ -1,5 +1,10 @@
 package cbit.vcell.geometry.gui;
 import cbit.render.*;
+import cbit.render.objects.Polygon;
+import cbit.render.objects.SurfaceCollection;
+import cbit.render.objects.Triangle;
+import cbit.render.objects.Vect3d;
+
 import java.awt.Rectangle;
 import cbit.util.Origin;
 import cbit.util.Extent;

@@ -7,11 +7,11 @@ import javax.media.opengl.GLJPanel;
 import cbit.gui.DialogUtils;
 import cbit.image.VCImage;
 import cbit.render.AxisModelObject;
-import cbit.render.BoundingBox;
-import cbit.render.ByteImage;
 import cbit.render.JOGLRenderer;
 import cbit.render.SurfaceCollectionModelObject;
 import cbit.render.VolumeMIP;
+import cbit.render.objects.BoundingBox;
+import cbit.render.objects.ByteImage;
 
 import javax.swing.JPanel;
 import java.awt.GridBagLayout;

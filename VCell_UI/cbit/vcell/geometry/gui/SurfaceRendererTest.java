@@ -1,5 +1,6 @@
 package cbit.vcell.geometry.gui;
 import cbit.render.*;
+import cbit.render.objects.SurfaceCollection;
 /**
  * Insert the type's description here.
  * Creation date: (7/20/2004 5:32:11 PM)

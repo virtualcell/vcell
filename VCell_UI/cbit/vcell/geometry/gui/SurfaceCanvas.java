@@ -1,5 +1,8 @@
 package cbit.vcell.geometry.gui;
 import cbit.render.*;
+import cbit.render.objects.SurfaceCollection;
+import cbit.render.objects.Vect3d;
+
 import java.awt.geom.AffineTransform;
 /**
  * Insert the type's description here.

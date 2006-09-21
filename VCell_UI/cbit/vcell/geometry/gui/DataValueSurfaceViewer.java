@@ -2,6 +2,9 @@ package cbit.vcell.geometry.gui;
 import cbit.render.SurfaceCanvas;
 import cbit.render.SurfaceViewerTool;
 import cbit.render.*;
+import cbit.render.objects.Quadrilateral;
+import cbit.render.objects.SurfaceCollection;
+import cbit.render.objects.Vect3d;
 import cbit.util.Coordinate;
 /**
  * Insert the type's description here.
