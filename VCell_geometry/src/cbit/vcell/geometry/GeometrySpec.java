@@ -348,7 +348,7 @@ public boolean compareEqual(Matchable object) {
  * This method was created in VisualAge.
  * @return cbit.image.VCImage
  */
-public VCImage createSampledImage(ISize sampleSize) throws GeometryException, ImageException, ExpressionException {
+public VCImage createSampledImage(ISize sampleSize) throws GeometryException, ImageException {
 
 	byte handles[] = new byte[sampleSize.getX()*sampleSize.getY()*sampleSize.getZ()];
 	for (int i=0;i<handles.length;i++){
@@ -429,7 +429,12 @@ public VCImage createSampledImage(ISize sampleSize) throws GeometryException, Im
 	//
 	Enumeration enumASV = getAnalyticSubVolumes();
 	while (enumASV.hasMoreElements()){
-		((AnalyticSubVolume)enumASV.nextElement()).rebind();
+		try {
+			((AnalyticSubVolume)enumASV.nextElement()).rebind();
+		} catch (ExpressionException e) {
+			e.printStackTrace();
+			throw new GeometryException("Expression exception: "+e.getMessage());
+		}
 	}
 
 	if (getNumAnalyticSubVolumes()>0){
@@ -442,7 +447,14 @@ public VCImage createSampledImage(ISize sampleSize) throws GeometryException, Im
 				for (int i=0;i<sampleSize.getX();i++){
 					double unit_x = (numX>1)?((double)i)/(numX-1):0.5;
 					double coordX = ox + extent.getX() * unit_x;
-					AnalyticSubVolume subVolume = getAnalyticSubVolume(coordX,coordY,coordZ);
+					AnalyticSubVolume subVolume;
+					try {
+						subVolume = getAnalyticSubVolume(coordX,coordY,coordZ);
+					} catch (ExpressionException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+						throw new GeometryException("Expression exception: "+e.getMessage());
+					}
 					if (subVolume!=null){
 						handles[displayIndex] = (byte)subVolume.getHandle();
 					}

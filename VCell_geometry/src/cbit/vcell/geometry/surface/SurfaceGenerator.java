@@ -6,8 +6,11 @@ import cbit.vcell.geometry.Geometry;
 import cbit.render.*;
 import cbit.render.objects.BoundingBox;
 import cbit.render.objects.BoundingIndex;
+import cbit.render.objects.Node;
+import cbit.render.objects.OrigSurface;
 import cbit.render.objects.Polygon;
 import cbit.render.objects.Quadrilateral;
+import cbit.render.objects.Surface;
 import cbit.render.objects.SurfaceCollection;
 /**
  * Insert the type's description here.

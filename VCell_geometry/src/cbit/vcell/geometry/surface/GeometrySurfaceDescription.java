@@ -590,7 +590,7 @@ public void setVolumeSampleSize(cbit.util.ISize volumeSampleSize) throws java.be
  * Insert the method's description here.
  * Creation date: (5/26/2004 10:19:59 AM)
  */
-public void updateAll() throws GeometryException, cbit.image.ImageException, cbit.vcell.parser.ExpressionException {
+public void updateAll() throws GeometryException, cbit.image.ImageException {
 	//
 	// updates if necessary: regionImage, surfaceCollection and resolvedLocations[]
 	//

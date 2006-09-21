@@ -1,5 +1,6 @@
 package cbit.vcell.geometry.surface;
 import cbit.render.*;
+import cbit.render.objects.Surface;
 import cbit.render.objects.SurfaceCollection;
 import cbit.render.objects.TaubinSmoothing;
 import cbit.render.objects.TaubinSmoothingSpecification;
@@ -255,7 +256,7 @@ static GeometricRegion[] getUpdatedGeometricRegions(GeometrySurfaceDescription g
  * @return cbit.vcell.geometry.RegionImage
  * @param geoSurfaceDescription cbit.vcell.geometry.surface.GeometrySurfaceDescription
  */
-static cbit.vcell.geometry.RegionImage getUpdatedRegionImage(GeometrySurfaceDescription geoSurfaceDescription) throws cbit.vcell.geometry.GeometryException, cbit.image.ImageException, cbit.vcell.parser.ExpressionException {
+static cbit.vcell.geometry.RegionImage getUpdatedRegionImage(GeometrySurfaceDescription geoSurfaceDescription) throws cbit.vcell.geometry.GeometryException, cbit.image.ImageException {
 	//
 	// make new RegionImage if necessary missing or wrong size
 	//
@@ -302,7 +303,7 @@ static SurfaceCollection getUpdatedSurfaceCollection(GeometrySurfaceDescription 
  * Insert the method's description here.
  * Creation date: (5/26/2004 10:19:59 AM)
  */
-public static void updateGeometricRegions(GeometrySurfaceDescription geoSurfaceDescription) throws cbit.vcell.geometry.GeometryException, cbit.image.ImageException, cbit.vcell.parser.ExpressionException, java.beans.PropertyVetoException {
+public static void updateGeometricRegions(GeometrySurfaceDescription geoSurfaceDescription) throws cbit.vcell.geometry.GeometryException, cbit.image.ImageException, java.beans.PropertyVetoException {
 	//
 	// updates if necessary: regionImage, surfaceCollection and resolvedLocations[]
 	//
