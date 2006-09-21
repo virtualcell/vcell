@@ -1,5 +1,9 @@
 package cbit.vcell.geometry.surface;
 import cbit.render.*;
+import cbit.render.objects.SurfaceCollection;
+import cbit.render.objects.TaubinSmoothing;
+import cbit.render.objects.TaubinSmoothingSpecification;
+import cbit.render.objects.TaubinSmoothingWrong;
 import cbit.util.StdoutSessionLog;
 /**
  * Insert the type's description here.

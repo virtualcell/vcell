@@ -4,6 +4,11 @@ import cbit.vcell.geometry.RegionImage;
 import cbit.image.VCImage;
 import cbit.vcell.geometry.Geometry;
 import cbit.render.*;
+import cbit.render.objects.BoundingBox;
+import cbit.render.objects.BoundingIndex;
+import cbit.render.objects.Polygon;
+import cbit.render.objects.Quadrilateral;
+import cbit.render.objects.SurfaceCollection;
 /**
  * Insert the type's description here.
  * Creation date: (6/27/2003 10:34:49 PM)

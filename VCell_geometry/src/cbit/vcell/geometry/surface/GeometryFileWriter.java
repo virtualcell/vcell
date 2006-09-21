@@ -6,6 +6,9 @@ import java.util.zip.DeflaterOutputStream;
 import java.io.ByteArrayOutputStream;
 import cbit.vcell.geometry.Geometry;
 import cbit.render.*;
+import cbit.render.objects.Quadrilateral;
+import cbit.render.objects.SurfaceCollection;
+import cbit.render.objects.Vect3d;
 /**
  * Insert the type's description here.
  * Creation date: (7/19/2004 10:52:10 AM)

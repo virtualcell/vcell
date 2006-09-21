@@ -1,5 +1,7 @@
 package cbit.vcell.geometry.surface;
 import cbit.render.*;
+import cbit.render.objects.Polygon;
+import cbit.render.objects.SurfaceCollection;
 
 /**
  * Insert the type's description here.

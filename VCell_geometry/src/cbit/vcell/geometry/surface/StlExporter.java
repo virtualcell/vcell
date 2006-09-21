@@ -1,5 +1,9 @@
 package cbit.vcell.geometry.surface;
 import cbit.render.*;
+import cbit.render.objects.Polygon;
+import cbit.render.objects.SurfaceCollection;
+import cbit.render.objects.Triangle;
+import cbit.render.objects.Vect3d;
 
 /**
  * Insert the type's description here.
