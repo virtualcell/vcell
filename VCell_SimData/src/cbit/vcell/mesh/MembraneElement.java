@@ -3,6 +3,7 @@ package cbit.vcell.mesh;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.util.Coordinate;
 import cbit.vcell.math.*;
 /**
  * This type was created in VisualAge.
@@ -122,8 +123,8 @@ public float getArea() {
  * Creation date: (2/15/2006 1:54:50 PM)
  * @return cbit.vcell.render.Vect3d
  */
-public cbit.vcell.geometry.Coordinate getCentroid() {
-	return (area == AREA_UNDEFINED?null:new cbit.vcell.geometry.Coordinate(centroidX,centroidY,centroidZ));
+public Coordinate getCentroid() {
+	return (area == AREA_UNDEFINED?null:new Coordinate(centroidX,centroidY,centroidZ));
 }
 
 

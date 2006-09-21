@@ -4,17 +4,16 @@ package cbit.vcell.export;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.util.Coordinate;
 import cbit.util.User;
 import cbit.util.VCDataIdentifier;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.mesh.CartesianMesh;
-import cbit.vcell.geometry.Coordinate;
 import java.util.*;
 import cbit.vcell.geometry.Curve;
 import java.awt.image.BufferedImage;
 
 import cbit.vcell.simdata.*;
-import cbit.vcell.simdata.DisplayAdapterService;
 
 import java.awt.*;
 /**
@@ -125,11 +124,11 @@ public int[] getPixelsRGB() {
 
 			cbit.util.Origin origin = mesh.getOrigin();
 			cbit.util.Extent extent = mesh.getExtent();
-			curveRenderer.setWorldOrigin(new cbit.vcell.geometry.Coordinate(origin.getX(),origin.getY(),origin.getZ()));
+			curveRenderer.setWorldOrigin(new Coordinate(origin.getX(),origin.getY(),origin.getZ()));
 			double pixelScaleX = extent.getX()/mesh.getSizeX();
 			double pixelScaleY = extent.getY()/mesh.getSizeY();
 			double pixelScaleZ = extent.getZ()/mesh.getSizeZ();
-			curveRenderer.setWorldDelta(new cbit.vcell.geometry.Coordinate(pixelScaleX,pixelScaleY,pixelScaleZ));
+			curveRenderer.setWorldDelta(new Coordinate(pixelScaleX,pixelScaleY,pixelScaleZ));
 			//int numMembraneElements = getServerPDEDataContext().getCartesianMesh().getDataLength(VariableType.MEMBRANE);
 			//double membraneValues[] = new double[numMembraneElements];
 			//membraneValues = null;
@@ -171,11 +170,11 @@ public int[] getPixelsRGB() {
 
 		cbit.util.Origin origin = mesh.getOrigin();
 		cbit.util.Extent extent = mesh.getExtent();
-		curveRenderer.setWorldOrigin(new cbit.vcell.geometry.Coordinate(origin.getX(),origin.getY(),origin.getZ()));
+		curveRenderer.setWorldOrigin(new Coordinate(origin.getX(),origin.getY(),origin.getZ()));
 		double pixelScaleX = extent.getX()/mesh.getSizeX();
 		double pixelScaleY = extent.getY()/mesh.getSizeY();
 		double pixelScaleZ = extent.getZ()/mesh.getSizeZ();
-		curveRenderer.setWorldDelta(new cbit.vcell.geometry.Coordinate(pixelScaleX,pixelScaleY,pixelScaleZ));
+		curveRenderer.setWorldDelta(new Coordinate(pixelScaleX,pixelScaleY,pixelScaleZ));
 		//int numMembraneElements = getServerPDEDataContext().getCartesianMesh().getDataLength(VariableType.MEMBRANE);
 		//Hashtable curveHash = meshDisplayAdapter.getCurvesFromMembranes(getNormalAxis(),getSlice(),membraneData);
 		Hashtable curvesAndMembraneIndexes = meshDisplayAdapter.getCurvesAndMembraneIndexes(getNormalAxis(),getSlice());

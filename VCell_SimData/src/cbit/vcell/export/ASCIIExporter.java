@@ -1,4 +1,6 @@
 package cbit.vcell.export;
+import cbit.util.Coordinate;
+import cbit.util.CoordinateIndex;
 import cbit.util.DataAccessException;
 import cbit.util.User;
 import cbit.util.VCDataIdentifier;

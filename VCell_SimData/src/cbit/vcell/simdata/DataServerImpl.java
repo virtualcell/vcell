@@ -5,6 +5,7 @@ package cbit.vcell.simdata;
 ©*/
 
 
+import cbit.util.CoordinateIndex;
 import cbit.util.DataAccessException;
 import cbit.util.PermissionException;
 import cbit.util.User;
@@ -14,7 +15,6 @@ import cbit.vcell.export.ExportSpecs;
 import cbit.util.SessionLog;
 import cbit.util.VCDataIdentifier;
 import cbit.vcell.math.AnnotatedFunction;
-import cbit.vcell.math.CoordinateIndex;
 import cbit.vcell.math.DataIdentifier;
 import cbit.vcell.mesh.CartesianMesh;
 import cbit.plot.PlotData;

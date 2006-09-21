@@ -1,5 +1,7 @@
 package cbit.vcell.simdata;
 
+import cbit.util.Coordinate;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -33,15 +35,15 @@ String getCurveValue(cbit.vcell.geometry.CurveSelectionInfo csi);
  * Insert the method's description here.
  * Creation date: (7/4/2003 6:04:41 PM)
  */
-cbit.vcell.geometry.CurveSelectionInfo getInitalCurveSelection(int tool,cbit.vcell.geometry.Coordinate wc);
+cbit.vcell.geometry.CurveSelectionInfo getInitalCurveSelection(int tool,Coordinate wc);
 /**
  * Insert the method's description here.
  * Creation date: (7/4/2003 6:08:33 PM)
  */
-boolean isAddControlPointOK(int tool,cbit.vcell.geometry.Coordinate wc,cbit.vcell.geometry.Curve addedToThisCurve);
+boolean isAddControlPointOK(int tool,Coordinate wc,cbit.vcell.geometry.Curve addedToThisCurve);
 /**
  * Insert the method's description here.
  * Creation date: (7/4/2003 6:09:38 PM)
  */
-boolean providesInitalCurve(int tool,cbit.vcell.geometry.Coordinate wc);
+boolean providesInitalCurve(int tool,Coordinate wc);
 }

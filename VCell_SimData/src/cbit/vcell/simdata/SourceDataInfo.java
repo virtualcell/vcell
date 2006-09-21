@@ -3,8 +3,8 @@ package cbit.vcell.simdata;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.geometry.Coordinate;
 import cbit.vcell.mesh.CartesianMesh;
+import cbit.util.Coordinate;
 import cbit.util.Extent;
 import cbit.util.Origin;
 import java.lang.reflect.Array;
@@ -153,14 +153,14 @@ public double getDataAsTypeRaw(int x, int y, int z) {
  * Insert the method's description here.
  * Creation date: (10/11/00 12:23:15 PM)
  */
-public cbit.vcell.math.CoordinateIndex getDataIndexFromUnitized(double unitizedX, double unitizedY, double unitizedZ) {
+public cbit.util.CoordinateIndex getDataIndexFromUnitized(double unitizedX, double unitizedY, double unitizedZ) {
 	if(unitizedX < 0 || unitizedX > 1 || unitizedY < 0 || unitizedY > 1 || unitizedZ < 0 || unitizedZ > 1){
 		return null;
 	}
 	int xCoordIndex = (getXSize()==1)?(0):((int) Math.round(unitizedX * (getXSize()-1)));
 	int yCoordIndex = (getYSize()==1)?(0):((int) Math.round(unitizedY * (getYSize()-1)));
 	int zCoordIndex = (getZSize()==1)?(0):((int) Math.round(unitizedZ * (getZSize()-1)));
-	return new cbit.vcell.math.CoordinateIndex(xCoordIndex,yCoordIndex,zCoordIndex);
+	return new cbit.util.CoordinateIndex(xCoordIndex,yCoordIndex,zCoordIndex);
 }
 
 
@@ -168,7 +168,7 @@ public cbit.vcell.math.CoordinateIndex getDataIndexFromUnitized(double unitizedX
  * Insert the method's description here.
  * Creation date: (10/11/00 12:23:15 PM)
  */
-public cbit.vcell.math.CoordinateIndex getDataIndexFromWorldCoordinate(Coordinate worldCoordinate) {
+public cbit.util.CoordinateIndex getDataIndexFromWorldCoordinate(Coordinate worldCoordinate) {
 	
 	double unitizedX = (worldCoordinate.getX()-origin.getX())/extent.getX();
 	double unitizedY = (worldCoordinate.getY()-origin.getY())/extent.getY();
@@ -272,7 +272,7 @@ public int getType() {
  * Insert the method's description here.
  * Creation date: (10/11/00 12:23:15 PM)
  */
-public Coordinate getWorldCoordinateFromIndex(cbit.vcell.math.CoordinateIndex ci) {
+public Coordinate getWorldCoordinateFromIndex(cbit.util.CoordinateIndex ci) {
 	double x = (getXSize()==1)?CartesianMesh.coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.X_AXIS):(((double)ci.x/(double)(getXSize()-1))*extent.getX() + origin.getX());
 	double y = (getYSize()==1)?CartesianMesh.coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.Y_AXIS):(((double)ci.y/(double)(getYSize()-1))*extent.getY() + origin.getY());
 	double z = (getZSize()==1)?CartesianMesh.coordComponentFromSinglePlanePolicy(origin,extent,Coordinate.Z_AXIS):(((double)ci.z/(double)(getZSize()-1))*extent.getZ() + origin.getZ());

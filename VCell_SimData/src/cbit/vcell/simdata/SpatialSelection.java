@@ -3,7 +3,7 @@ package cbit.vcell.simdata;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.geometry.Coordinate;
+import cbit.util.Coordinate;
 import cbit.vcell.geometry.CurveSelectionInfo;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.mesh.CartesianMesh;

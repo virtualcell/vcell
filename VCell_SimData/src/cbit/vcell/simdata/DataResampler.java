@@ -1,7 +1,7 @@
 package cbit.vcell.simdata;
 
-import cbit.vcell.geometry.Coordinate;
-import cbit.vcell.math.CoordinateIndex;
+import cbit.util.Coordinate;
+import cbit.util.CoordinateIndex;
 import cbit.vcell.mesh.CartesianMesh;
 
 public class DataResampler {

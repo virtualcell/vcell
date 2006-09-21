@@ -4,7 +4,7 @@ package cbit.vcell.mesh;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.geometry.Coordinate;
+import cbit.util.Coordinate;
 /**
  * This type was created in VisualAge.
  */

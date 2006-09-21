@@ -1,10 +1,10 @@
 package cbit.vcell.simdata;
+import cbit.util.CoordinateIndex;
 import cbit.util.DataAccessException;
 import cbit.util.PermissionException;
 import cbit.util.VCDataIdentifier;
 
 import cbit.plot.PlotData;
-import cbit.vcell.math.CoordinateIndex;
 import cbit.vcell.math.Function;
 import cbit.vcell.mesh.CartesianMesh;
 

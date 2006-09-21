@@ -4,6 +4,8 @@ package cbit.vcell.simdata;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.util.Coordinate;
+import cbit.util.CoordinateIndex;
 import cbit.util.DataAccessException;
 import cbit.util.SessionLog;
 import cbit.util.User;
