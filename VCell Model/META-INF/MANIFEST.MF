@@ -14,7 +14,8 @@ Require-Bundle: org.vcell.common,
  org.vcell.units,
  org.vcell.matrix,
  org.vcell.geometry,
- org.vcell.image
+ org.vcell.image,
+ org.vcell.math
 Bundle-Activator: org.vcell.model.Activator
 Export-Package: cbit.vcell.biomodel,
  cbit.vcell.dictionary,
@@ -22,7 +23,6 @@ Export-Package: cbit.vcell.biomodel,
  cbit.vcell.exp,
  cbit.vcell.mapping,
  cbit.vcell.mapping.potential,
- cbit.vcell.math,
  cbit.vcell.mathmodel,
  cbit.vcell.model,
  cbit.vcell.simulation,
