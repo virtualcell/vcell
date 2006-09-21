@@ -1,5 +1,6 @@
 package cbit.vcell.client.server;
 
+import cbit.util.Coordinate;
 import cbit.util.VCDataIdentifier;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.math.ReservedVariable;
@@ -110,7 +111,7 @@ public boolean getIsODEData() throws cbit.util.DataAccessException {
  *
  * @see PlotData
  */
-public cbit.plot.PlotData getLineScan(String variable, double time, cbit.vcell.math.CoordinateIndex begin, cbit.vcell.math.CoordinateIndex end) throws cbit.util.DataAccessException {
+public cbit.plot.PlotData getLineScan(String variable, double time, cbit.util.CoordinateIndex begin, cbit.util.CoordinateIndex end) throws cbit.util.DataAccessException {
 	throw new RuntimeException("not yet implemented");
 }
 /**
@@ -202,7 +203,7 @@ public static DataManagerTest getPDEExample1() {
 		fip.close();
 		String meshString = new String(data);
 
-		cbit.vcell.math.CommentStringTokenizer tokens = new cbit.vcell.math.CommentStringTokenizer(meshString);
+		cbit.util.CommentStringTokenizer tokens = new cbit.util.CommentStringTokenizer(meshString);
 		cbit.vcell.mesh.CartesianMesh mesh = cbit.vcell.mesh.CartesianMesh.fromTokens(tokens, null);
 		VCDataIdentifier vcDataIdentifier = new VCDataIdentifier() {
 										public cbit.util.User getOwner() {
@@ -246,7 +247,7 @@ public static DataManagerTest getPDEExample2() {
 		fip.close();
 		String meshString = new String(data);
 
-		cbit.vcell.math.CommentStringTokenizer tokens = new cbit.vcell.math.CommentStringTokenizer(meshString);
+		cbit.util.CommentStringTokenizer tokens = new cbit.util.CommentStringTokenizer(meshString);
 		cbit.vcell.mesh.CartesianMesh mesh = cbit.vcell.mesh.CartesianMesh.fromTokens(tokens, null);
 		VCDataIdentifier vcDataIdentifier = new VCDataIdentifier() {
 										public cbit.util.User getOwner() {
@@ -303,7 +304,7 @@ public cbit.vcell.simdata.SimDataBlock getSimDataBlock(String varName, double ti
 		values[cbit.vcell.math.ReservedVariable.TIME.getIndex()] = time;
 
 		for (int i = 0; i < data.length; i++){
-			cbit.vcell.geometry.Coordinate coord = mesh.getCoordinateFromVolumeIndex(i);
+			Coordinate coord = mesh.getCoordinateFromVolumeIndex(i);
 			values[ReservedVariable.X.getIndex()] = coord.getX();
 			values[ReservedVariable.Y.getIndex()] = coord.getY();
 			values[ReservedVariable.Z.getIndex()] = coord.getZ();

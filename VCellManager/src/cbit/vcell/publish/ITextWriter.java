@@ -2,7 +2,6 @@ package cbit.vcell.publish;
 import java.awt.*;
 
 import cbit.image.VCImage;
-import cbit.vcell.geometry.Coordinate;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.solver.Simulation;
@@ -19,6 +18,7 @@ import cbit.vcell.dictionary.ReactionCanvasDisplaySpec;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionPrintFormatter;
+import cbit.util.Coordinate;
 import cbit.util.Extent;
 import cbit.util.ISize;
 import cbit.util.Origin;

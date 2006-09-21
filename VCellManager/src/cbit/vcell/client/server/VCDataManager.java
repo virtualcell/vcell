@@ -1,4 +1,5 @@
 package cbit.vcell.client.server;
+import cbit.util.CoordinateIndex;
 import cbit.util.DataAccessException;
 import cbit.util.VCDataIdentifier;
 import cbit.vcell.simdata.SpatialSelection;

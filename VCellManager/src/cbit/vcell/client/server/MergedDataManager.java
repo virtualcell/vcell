@@ -131,7 +131,7 @@ public boolean getIsODEData() throws cbit.util.DataAccessException {
  * 
  * @see PlotData
  */
-public cbit.plot.PlotData getLineScan(String variable, double time, cbit.vcell.math.CoordinateIndex begin, cbit.vcell.math.CoordinateIndex end) throws cbit.util.DataAccessException {
+public cbit.plot.PlotData getLineScan(String variable, double time, cbit.util.CoordinateIndex begin, cbit.util.CoordinateIndex end) throws cbit.util.DataAccessException {
 	return getVcDataManager().getLineScan(getVcDataIdentifier(), variable, time, begin, end);
 }
 
