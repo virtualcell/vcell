@@ -19,4 +19,5 @@ Require-Bundle: org.vcell.common,
  org.vcell.geometry,
  org.vcell.image,
  org.vcell.math,
- org.vcell.spatial
+ org.vcell.spatial,
+ org.vcell.simulation
