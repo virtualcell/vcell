@@ -22,17 +22,30 @@ public class SimpleGraphModel extends GraphModel {
 	}
 	
 	public static class DefaultGraphShapeFactory implements GraphShapeFactory {
+		private boolean bDisplayDirected;
+		public DefaultGraphShapeFactory(){
+			this(false);
+		}
+		public DefaultGraphShapeFactory(boolean displayDirected){
+			this.bDisplayDirected = displayDirected;
+		}
 		public NodeShape getNodeShape(cbit.util.graph.Node node, GraphModel graphModel, Graph graph) {
 			NodeShape nodeShape = new NodeShape(node,graphModel,graph.getDegree(node));
 			nodeShape.setLabel(node.getName());
 			return nodeShape;
 		}
 		public GraphEdgeShape getEdgeShape(cbit.util.graph.Edge edge, NodeShape beginShape, NodeShape endShape, GraphModel graphModel, Graph graph){
-			GraphEdgeShape graphEdgeShape = new GraphEdgeShape(edge,beginShape,endShape,graphModel,false);
+			GraphEdgeShape graphEdgeShape = new GraphEdgeShape(edge,beginShape,endShape,graphModel,bDisplayDirected);
 			return graphEdgeShape;
 		}
 		public String getTitle(){
 			return "graph diagram";
+		}
+		public boolean isDisplayDirected() {
+			return bDisplayDirected;
+		}
+		public void setDisplayDirected(boolean displayDirected) {
+			bDisplayDirected = displayDirected;
 		}
 	}
 	

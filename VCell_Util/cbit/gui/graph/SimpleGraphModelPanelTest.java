@@ -29,6 +29,7 @@ public static void main(java.lang.String[] args) {
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		
 		cbit.util.graph.Graph constraintGraph = GraphTest.getDependencyExample();
+		((SimpleGraphModel.DefaultGraphShapeFactory)(aSimpleGraphModelPanel.getSimpleGraphModel().getGraphShapeFactory())).setDisplayDirected(true);
 		aSimpleGraphModelPanel.setGraph(constraintGraph);
 		
 		frame.setVisible(true);
