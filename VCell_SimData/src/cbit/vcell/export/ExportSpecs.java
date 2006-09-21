@@ -3,7 +3,8 @@ package cbit.vcell.export;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.solver.*;
+import cbit.vcell.simulation.*;
+
 import java.io.*;
 /**
  * This type was created in VisualAge.

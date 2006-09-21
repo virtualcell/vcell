@@ -1,6 +1,6 @@
 package cbit.vcell.simdata;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.simulation.Simulation;
 
 import java.util.StringTokenizer;
 import java.io.BufferedReader;

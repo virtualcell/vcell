@@ -1,6 +1,6 @@
 package cbit.vcell.simdata;
 import cbit.vcell.math.AnnotatedFunction;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.simulation.Simulation;
 
 /**
  * Insert the type's description here.
