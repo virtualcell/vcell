@@ -10,19 +10,10 @@ Require-Bundle: org.vcell.common,
  org.vcell.expression,
  org.vcell.constraints,
  org.vcell.units,
- org.vcell.matrix,
- org.vcell.geometry,
- org.vcell.image,
- org.vcell.math,
- org.vcell.simulation
+ org.vcell.matrix
 Bundle-Activator: org.vcell.model.Activator
-Export-Package: cbit.vcell.biomodel,
- cbit.vcell.dictionary,
+Export-Package: cbit.vcell.dictionary,
  cbit.vcell.document,
  cbit.vcell.exp,
- cbit.vcell.mapping,
- cbit.vcell.mapping.potential,
- cbit.vcell.mathmodel,
- cbit.vcell.model,
  org.vcell.model,
  org.vcell.model.analysis
