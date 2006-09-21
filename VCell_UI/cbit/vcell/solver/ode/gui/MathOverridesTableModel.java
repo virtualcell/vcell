@@ -9,10 +9,10 @@ import cbit.vcell.math.Constant;
  * Creation date: (10/22/2000 11:46:26 AM)
  * @author: 
  */
-public class MathOverridesTableModel extends javax.swing.table.AbstractTableModel implements cbit.vcell.solver.MathOverridesListener {
+public class MathOverridesTableModel extends javax.swing.table.AbstractTableModel implements cbit.vcell.simulation.MathOverridesListener {
 	private String[] fieldKeys = new String[0];
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.vcell.solver.MathOverrides fieldMathOverrides = null;
+	private cbit.vcell.simulation.MathOverrides fieldMathOverrides = null;
 	private boolean fieldModified = false;
 	private boolean fieldEditable = false;
 	public final static int COLUMN_PARAMETER = 0;
@@ -50,7 +50,7 @@ public synchronized void addPropertyChangeListener(java.lang.String propertyName
  * 
  * @param event cbit.vcell.solver.MathOverridesEvent
  */
-public void constantAdded(cbit.vcell.solver.MathOverridesEvent event) {
+public void constantAdded(cbit.vcell.simulation.MathOverridesEvent event) {
 	fireTableDataChanged();
 }
 
@@ -59,7 +59,7 @@ public void constantAdded(cbit.vcell.solver.MathOverridesEvent event) {
  * 
  * @param event cbit.vcell.solver.MathOverridesEvent
  */
-public void constantChanged(cbit.vcell.solver.MathOverridesEvent event) {
+public void constantChanged(cbit.vcell.simulation.MathOverridesEvent event) {
 	fireTableDataChanged();
 }
 
@@ -68,7 +68,7 @@ public void constantChanged(cbit.vcell.solver.MathOverridesEvent event) {
  * 
  * @param event cbit.vcell.solver.MathOverridesEvent
  */
-public void constantRemoved(cbit.vcell.solver.MathOverridesEvent event) {
+public void constantRemoved(cbit.vcell.simulation.MathOverridesEvent event) {
 	fireTableDataChanged();
 }
 
@@ -79,11 +79,11 @@ public void constantRemoved(cbit.vcell.solver.MathOverridesEvent event) {
  */
 private void editScanValues(String name, int r) throws cbit.vcell.parser.DivideByZeroException, cbit.vcell.parser.ExpressionException {
 	cbit.vcell.client.desktop.simulation.ParameterScanPanel panel = new cbit.vcell.client.desktop.simulation.ParameterScanPanel();
-	cbit.vcell.solver.ConstantArraySpec spec = null;
+	cbit.vcell.simulation.ConstantArraySpec spec = null;
 	if (getMathOverrides().isScan(name)) {
 		spec = getMathOverrides().getConstantArraySpec(name);
 	} else {
-		spec = cbit.vcell.solver.ConstantArraySpec.createIntervalSpec(name, 0, getMathOverrides().getDefaultExpression(name).evaluateConstant(), 2, false);
+		spec = cbit.vcell.simulation.ConstantArraySpec.createIntervalSpec(name, 0, getMathOverrides().getDefaultExpression(name).evaluateConstant(), 2, false);
 	}
 	panel.setConstantArraySpec(spec);
 	int confirm = cbit.gui.DialogUtils.showComponentOKCancelDialog(null, panel, "Scan values for parameter '" + fieldKeys[r]);
@@ -190,7 +190,7 @@ public boolean getEditable() {
  * @return The mathOverrides property value.
  * @see #setMathOverrides
  */
-public cbit.vcell.solver.MathOverrides getMathOverrides() {
+public cbit.vcell.simulation.MathOverrides getMathOverrides() {
 	return fieldMathOverrides;
 }
 
@@ -339,8 +339,8 @@ public void setEditable(boolean editable) {
  * @param mathOverrides The new value for the property.
  * @see #getMathOverrides
  */
-public void setMathOverrides(cbit.vcell.solver.MathOverrides mathOverrides) {
-	cbit.vcell.solver.MathOverrides oldValue = fieldMathOverrides;
+public void setMathOverrides(cbit.vcell.simulation.MathOverrides mathOverrides) {
+	cbit.vcell.simulation.MathOverrides oldValue = fieldMathOverrides;
 	if (oldValue!=null){
 		oldValue.removeMathOverridesListener(this);
 	}
@@ -384,7 +384,7 @@ public void setValueAt(Object object, int r, int c) {
 	try {
 		String name = (String) getValueAt(r,0);
 		if (c == COLUMN_ACTUAL) {
-			if (object instanceof cbit.vcell.solver.ConstantArraySpec) {
+			if (object instanceof cbit.vcell.simulation.ConstantArraySpec) {
 				editScanValues(name, r);
 			} else if (object instanceof String) {
 				cbit.vcell.parser.Expression expression = new cbit.vcell.parser.Expression((String) object);

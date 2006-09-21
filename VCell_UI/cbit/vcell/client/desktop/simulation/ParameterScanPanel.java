@@ -19,7 +19,7 @@ public class ParameterScanPanel extends JPanel {
 	private JTextField ivjJTextFieldMin = null;
 	private JTextField ivjJTextFieldNumber = null;
 	private JTextField ivjJTextFieldValues = null;
-	private cbit.vcell.solver.ConstantArraySpec fieldConstantArraySpec = cbit.vcell.solver.ConstantArraySpec.createIntervalSpec("", 0, 0, 0, false);
+	private cbit.vcell.simulation.ConstantArraySpec fieldConstantArraySpec = cbit.vcell.simulation.ConstantArraySpec.createIntervalSpec("", 0, 0, 0, false);
 
 class IvjEventHandler implements java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -48,11 +48,11 @@ public void applyValues() throws cbit.vcell.parser.ExpressionException{
 			values[i] = tokens.nextToken();
 			i++;
 		}
-		setConstantArraySpec(cbit.vcell.solver.ConstantArraySpec.createListSpec(getConstantArraySpec().getName(), values));
+		setConstantArraySpec(cbit.vcell.simulation.ConstantArraySpec.createListSpec(getConstantArraySpec().getName(), values));
 	} else if (getJRadioButtonRange().isSelected()) {
 		System.out.println(getJTextFieldMin().getText());
 		System.out.println(getJTextFieldMax().getText());
-		setConstantArraySpec(cbit.vcell.solver.ConstantArraySpec.createIntervalSpec(
+		setConstantArraySpec(cbit.vcell.simulation.ConstantArraySpec.createIntervalSpec(
 			getConstantArraySpec().getName(),
 			Double.parseDouble(getJTextFieldMin().getText()),
 			Double.parseDouble(getJTextFieldMax().getText()),
@@ -192,7 +192,7 @@ private cbit.gui.ButtonGroupCivilized getButtonGroupCivilized1() {
  * @return The constantArraySpec property value.
  * @see #setConstantArraySpec
  */
-public cbit.vcell.solver.ConstantArraySpec getConstantArraySpec() {
+public cbit.vcell.simulation.ConstantArraySpec getConstantArraySpec() {
 	return fieldConstantArraySpec;
 }
 
@@ -466,9 +466,9 @@ private void initConnections() throws java.lang.Exception {
 /**
  * Comment
  */
-private void initFields(cbit.vcell.solver.ConstantArraySpec spec) {
+private void initFields(cbit.vcell.simulation.ConstantArraySpec spec) {
 	switch (spec.getType()) {
-		case cbit.vcell.solver.ConstantArraySpec.TYPE_LIST: {
+		case cbit.vcell.simulation.ConstantArraySpec.TYPE_LIST: {
 			getJRadioButtonList().setSelected(true);
 			cbit.vcell.math.Constant[] cs = spec.getConstants();
 			String list = "";
@@ -479,7 +479,7 @@ private void initFields(cbit.vcell.solver.ConstantArraySpec spec) {
 			getJTextFieldValues().setText(list);
 			break;
 		}
-		case cbit.vcell.solver.ConstantArraySpec.TYPE_INTERVAL: {
+		case cbit.vcell.simulation.ConstantArraySpec.TYPE_INTERVAL: {
 			getJRadioButtonRange().setSelected(true);
 			getJTextFieldMin().setText(""+spec.getMinValue());
 			getJTextFieldMax().setText(""+spec.getMaxValue());
@@ -616,8 +616,8 @@ public static void main(java.lang.String[] args) {
  * @param constantArraySpec The new value for the property.
  * @see #getConstantArraySpec
  */
-public void setConstantArraySpec(cbit.vcell.solver.ConstantArraySpec constantArraySpec) {
-	cbit.vcell.solver.ConstantArraySpec oldValue = fieldConstantArraySpec;
+public void setConstantArraySpec(cbit.vcell.simulation.ConstantArraySpec constantArraySpec) {
+	cbit.vcell.simulation.ConstantArraySpec oldValue = fieldConstantArraySpec;
 	fieldConstantArraySpec = constantArraySpec;
 	firePropertyChange("constantArraySpec", oldValue, constantArraySpec);
 }

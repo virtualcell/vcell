@@ -1,5 +1,6 @@
 package cbit.vcell.client.desktop.biomodel;
-import cbit.vcell.solver.*;
+import cbit.vcell.simulation.*;
+
 import java.awt.*;
 import cbit.vcell.client.desktop.simulation.*;
 import cbit.vcell.client.*;

@@ -3,13 +3,13 @@ import java.awt.*;
 import java.beans.*;
 
 import cbit.vcell.client.data.*;
-import cbit.vcell.solver.*;
 import cbit.vcell.document.*;
 import cbit.vcell.server.*;
+import cbit.vcell.simulation.*;
 public class SimulationWindow {
 	private VCSimulationIdentifier vcSimulationIdentifier = null;
 	private javax.swing.JInternalFrame frame = null;
-	private cbit.vcell.solver.Simulation simulation = null;
+	private cbit.vcell.simulation.Simulation simulation = null;
 	private cbit.vcell.document.SimulationOwner simOwner = null;
 	private transient PropertyChangeListener pcl = new PropertyChangeListener() {
 		public void propertyChange(PropertyChangeEvent evt){
@@ -61,7 +61,7 @@ public cbit.vcell.document.SimulationOwner getSimOwner() {
  * Creation date: (7/16/2004 5:16:51 PM)
  * @return cbit.vcell.solver.Simulation
  */
-public cbit.vcell.solver.Simulation getSimulation() {
+public cbit.vcell.simulation.Simulation getSimulation() {
 	return simulation;
 }
 
@@ -101,7 +101,7 @@ private void initialize(DataViewer dataViewer) {
  * Creation date: (7/16/2004 5:16:51 PM)
  * @param newSimulation cbit.vcell.solver.Simulation
  */
-public void resetSimulation(cbit.vcell.solver.Simulation newSimulation) {
+public void resetSimulation(cbit.vcell.simulation.Simulation newSimulation) {
 	if (getSimulation() != null) {
 		getSimulation().removePropertyChangeListener(pcl);
 	}
@@ -137,7 +137,7 @@ private void setSimOwner(cbit.vcell.document.SimulationOwner newSimOwner) {
  * Creation date: (7/16/2004 5:16:51 PM)
  * @param newSimulation cbit.vcell.solver.Simulation
  */
-private void setSimulation(cbit.vcell.solver.Simulation newSimulation) {
+private void setSimulation(cbit.vcell.simulation.Simulation newSimulation) {
 	simulation = newSimulation;
 }
 

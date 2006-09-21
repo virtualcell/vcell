@@ -10,8 +10,8 @@ import cbit.vcell.simdata.ColumnDescription;
 import cbit.vcell.simdata.FunctionColumnDescription;
 import cbit.vcell.simdata.ODESolverResultSet;
 import cbit.vcell.simdata.ODESolverResultSetColumnDescription;
+import cbit.vcell.simulation.*;
 import cbit.vcell.solver.ode.*;
-import cbit.vcell.solver.*;
 import javax.swing.*;
 import cbit.vcell.parser.Expression;
 

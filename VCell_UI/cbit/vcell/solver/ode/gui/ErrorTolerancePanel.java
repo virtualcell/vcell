@@ -10,15 +10,15 @@ package cbit.vcell.solver.ode.gui;
  * @author: 
  */
 public class ErrorTolerancePanel extends javax.swing.JPanel implements java.awt.event.FocusListener, java.beans.PropertyChangeListener {
-	private cbit.vcell.solver.ErrorTolerance fieldErrorTolerance = null;
+	private cbit.vcell.simulation.ErrorTolerance fieldErrorTolerance = null;
 	private javax.swing.JLabel ivjAbsoluteErrorToleranceLabel = null;
 	private javax.swing.JTextField ivjAbsoluteErrorToleranceTextField = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	private javax.swing.JLabel ivjErrorTolerancesLabel = null;
 	private javax.swing.JLabel ivjRelativeErrorToleranceLabel = null;
 	private javax.swing.JTextField ivjRelativeErrorToleranceTextField = null;
-	private cbit.vcell.solver.ErrorTolerance ivjTornOffErrorTolerance = null;
-	private cbit.vcell.solver.ErrorTolerance ivjErrorToleranceFactory = null;
+	private cbit.vcell.simulation.ErrorTolerance ivjTornOffErrorTolerance = null;
+	private cbit.vcell.simulation.ErrorTolerance ivjErrorToleranceFactory = null;
 /**
  * ErrorTolerancePanel constructor comment.
  */
@@ -53,7 +53,7 @@ public ErrorTolerancePanel(boolean isDoubleBuffered) {
  * @param value cbit.vcell.solver.ErrorTolerance
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1(cbit.vcell.solver.ErrorTolerance value) {
+private void connEtoM1(cbit.vcell.simulation.ErrorTolerance value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -73,7 +73,7 @@ private void connEtoM1(cbit.vcell.solver.ErrorTolerance value) {
  * @param value cbit.vcell.solver.ErrorTolerance
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM2(cbit.vcell.solver.ErrorTolerance value) {
+private void connEtoM2(cbit.vcell.simulation.ErrorTolerance value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -94,11 +94,11 @@ private void connEtoM2(cbit.vcell.solver.ErrorTolerance value) {
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM3(java.awt.event.FocusEvent arg1) {
-	cbit.vcell.solver.ErrorTolerance localValue = null;
+	cbit.vcell.simulation.ErrorTolerance localValue = null;
 	try {
 		// user code begin {1}
 		// user code end
-		setTornOffErrorTolerance(localValue = new cbit.vcell.solver.ErrorTolerance(new Double(getAbsoluteErrorToleranceTextField().getText()).doubleValue(), new Double(getRelativeErrorToleranceTextField().getText()).doubleValue()));
+		setTornOffErrorTolerance(localValue = new cbit.vcell.simulation.ErrorTolerance(new Double(getAbsoluteErrorToleranceTextField().getText()).doubleValue(), new Double(getRelativeErrorToleranceTextField().getText()).doubleValue()));
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -114,11 +114,11 @@ private void connEtoM3(java.awt.event.FocusEvent arg1) {
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM4(java.awt.event.FocusEvent arg1) {
-	cbit.vcell.solver.ErrorTolerance localValue = null;
+	cbit.vcell.simulation.ErrorTolerance localValue = null;
 	try {
 		// user code begin {1}
 		// user code end
-		setTornOffErrorTolerance(localValue = new cbit.vcell.solver.ErrorTolerance(new Double(getAbsoluteErrorToleranceTextField().getText()).doubleValue(), new Double(getRelativeErrorToleranceTextField().getText()).doubleValue()));
+		setTornOffErrorTolerance(localValue = new cbit.vcell.simulation.ErrorTolerance(new Double(getAbsoluteErrorToleranceTextField().getText()).doubleValue(), new Double(getRelativeErrorToleranceTextField().getText()).doubleValue()));
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -248,7 +248,7 @@ private javax.swing.JTextField getAbsoluteErrorToleranceTextField() {
  * @return The errorTolerance property value.
  * @see #setErrorTolerance
  */
-public cbit.vcell.solver.ErrorTolerance getErrorTolerance() {
+public cbit.vcell.simulation.ErrorTolerance getErrorTolerance() {
 	return fieldErrorTolerance;
 }
 /**
@@ -256,7 +256,7 @@ public cbit.vcell.solver.ErrorTolerance getErrorTolerance() {
  * @return cbit.vcell.solver.ErrorTolerance
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.solver.ErrorTolerance getErrorToleranceFactory() {
+private cbit.vcell.simulation.ErrorTolerance getErrorToleranceFactory() {
 	// user code begin {1}
 	// user code end
 	return ivjErrorToleranceFactory;
@@ -329,7 +329,7 @@ private javax.swing.JTextField getRelativeErrorToleranceTextField() {
  * @return cbit.vcell.solver.ErrorTolerance
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.solver.ErrorTolerance getTornOffErrorTolerance() {
+private cbit.vcell.simulation.ErrorTolerance getTornOffErrorTolerance() {
 	// user code begin {1}
 	// user code end
 	return ivjTornOffErrorTolerance;
@@ -466,8 +466,8 @@ public void setEnabled(boolean b) {
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getErrorTolerance
  */
-public void setErrorTolerance(cbit.vcell.solver.ErrorTolerance errorTolerance) throws java.beans.PropertyVetoException {
-	cbit.vcell.solver.ErrorTolerance oldValue = fieldErrorTolerance;
+public void setErrorTolerance(cbit.vcell.simulation.ErrorTolerance errorTolerance) throws java.beans.PropertyVetoException {
+	cbit.vcell.simulation.ErrorTolerance oldValue = fieldErrorTolerance;
 	fireVetoableChange("errorTolerance", oldValue, errorTolerance);
 	fieldErrorTolerance = errorTolerance;
 	firePropertyChange("errorTolerance", oldValue, errorTolerance);
@@ -477,10 +477,10 @@ public void setErrorTolerance(cbit.vcell.solver.ErrorTolerance errorTolerance) t
  * @param newValue cbit.vcell.solver.ErrorTolerance
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setErrorToleranceFactory(cbit.vcell.solver.ErrorTolerance newValue) {
+private void setErrorToleranceFactory(cbit.vcell.simulation.ErrorTolerance newValue) {
 	if (ivjErrorToleranceFactory != newValue) {
 		try {
-			cbit.vcell.solver.ErrorTolerance oldValue = getErrorToleranceFactory();
+			cbit.vcell.simulation.ErrorTolerance oldValue = getErrorToleranceFactory();
 			ivjErrorToleranceFactory = newValue;
 			firePropertyChange("errorTolerance", oldValue, newValue);
 			// user code begin {1}
@@ -499,10 +499,10 @@ private void setErrorToleranceFactory(cbit.vcell.solver.ErrorTolerance newValue)
  * @param newValue cbit.vcell.solver.ErrorTolerance
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setTornOffErrorTolerance(cbit.vcell.solver.ErrorTolerance newValue) {
+private void setTornOffErrorTolerance(cbit.vcell.simulation.ErrorTolerance newValue) {
 	if (ivjTornOffErrorTolerance != newValue) {
 		try {
-			cbit.vcell.solver.ErrorTolerance oldValue = getTornOffErrorTolerance();
+			cbit.vcell.simulation.ErrorTolerance oldValue = getTornOffErrorTolerance();
 			ivjTornOffErrorTolerance = newValue;
 			connPtoP1SetSource();
 			connEtoM1(ivjTornOffErrorTolerance);

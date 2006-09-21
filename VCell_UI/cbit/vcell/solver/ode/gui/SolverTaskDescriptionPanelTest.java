@@ -36,13 +36,13 @@ public static void main(java.lang.String[] args) {
 		frame.setVisible(true);
 		
 		cbit.vcell.math.MathDescription mathDescription = cbit.vcell.math.MathDescriptionTest.getOdeExampleWagner();
-		cbit.vcell.solver.Simulation simulation = new cbit.vcell.solver.Simulation (mathDescription);
-		cbit.vcell.solver.SolverTaskDescription solverTaskDescription =
-			new cbit.vcell.solver.SolverTaskDescription(simulation);
+		cbit.vcell.simulation.Simulation simulation = new cbit.vcell.simulation.Simulation (mathDescription);
+		cbit.vcell.simulation.SolverTaskDescription solverTaskDescription =
+			new cbit.vcell.simulation.SolverTaskDescription(simulation);
 		//odeSolverTaskDescription.setIntegrator(2);
-		solverTaskDescription.setTimeBounds(new cbit.vcell.solver.TimeBounds(0.0, 1.0));
-		solverTaskDescription.setTimeStep(new cbit.vcell.solver.TimeStep(1.0E-8, 0.01, 1.0));
-		solverTaskDescription.setErrorTolerance(new cbit.vcell.solver.ErrorTolerance(1.0E-8, 10.E-8));
+		solverTaskDescription.setTimeBounds(new cbit.vcell.simulation.TimeBounds(0.0, 1.0));
+		solverTaskDescription.setTimeStep(new cbit.vcell.simulation.TimeStep(1.0E-8, 0.01, 1.0));
+		solverTaskDescription.setErrorTolerance(new cbit.vcell.simulation.ErrorTolerance(1.0E-8, 10.E-8));
 		aSolverTaskDescriptionPanel.setSolverTaskDescription(solverTaskDescription);
 		//
 		try {

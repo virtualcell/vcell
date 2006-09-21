@@ -5,7 +5,7 @@ package cbit.vcell.math.gui;
  * All rights reserved.
 ©*/
 import cbit.vcell.math.*;
-import cbit.vcell.solver.*;
+import cbit.vcell.simulation.*;
 /**
  * This type was created in VisualAge.
  */

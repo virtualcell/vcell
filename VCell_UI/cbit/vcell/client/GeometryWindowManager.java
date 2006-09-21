@@ -2,7 +2,7 @@ package cbit.vcell.client;
 import cbit.vcell.geometry.surface.*;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.geometry.AnalyticSubVolume;
-import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.simulation.VCSimulationIdentifier;
 import cbit.gui.JInternalFrameEnhanced;
 import java.awt.*;
 import javax.swing.*;

@@ -5,7 +5,8 @@ package cbit.vcell.solver.ode.gui;
 ©*/
 import java.beans.*;
 import cbit.vcell.math.*;
-import cbit.vcell.solver.*;
+import cbit.vcell.simulation.*;
+
 import javax.swing.*;
 /**
  * Insert the type's description here.
@@ -13,7 +14,7 @@ import javax.swing.*;
  * @author: Ion Moraru
  */
 public class SimulationSummaryPanel extends JPanel {
-	private cbit.vcell.solver.Simulation fieldSimulation = null;
+	private cbit.vcell.simulation.Simulation fieldSimulation = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private JLabel ivjJLabel1 = null;
 	private JLabel ivjJLabel11 = null;
@@ -931,7 +932,7 @@ private MathOverridesPanel getMathOverridesPanel1() {
  * @return The simulation property value.
  * @see #setSimulation
  */
-public cbit.vcell.solver.Simulation getSimulation() {
+public cbit.vcell.simulation.Simulation getSimulation() {
 	return fieldSimulation;
 }
 
@@ -1179,7 +1180,7 @@ public static void main(java.lang.String[] args) {
 /**
  * Comment
  */
-public void newSimulation(cbit.vcell.solver.Simulation simulation) {
+public void newSimulation(cbit.vcell.simulation.Simulation simulation) {
 	refreshDisplay();
 	if (simulation==null){
 		getJTextAreaDescription().setBackground(getBackground());
@@ -1246,8 +1247,8 @@ private void refreshDisplay() {
  * @param simulation The new value for the property.
  * @see #getSimulation
  */
-public void setSimulation(cbit.vcell.solver.Simulation simulation) {
-	cbit.vcell.solver.Simulation oldValue = fieldSimulation;
+public void setSimulation(cbit.vcell.simulation.Simulation simulation) {
+	cbit.vcell.simulation.Simulation oldValue = fieldSimulation;
 	fieldSimulation = simulation;
 	firePropertyChange("simulation", oldValue, simulation);
 }

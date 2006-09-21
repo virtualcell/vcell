@@ -54,7 +54,7 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
 	DocumentManager documentManager = (DocumentManager)hashTable.get("documentManager");
 	boolean bAsNew = hashTable.containsKey("newName");
 	String newName = bAsNew ? (String)hashTable.get("newName") : null;
-	cbit.vcell.solver.Simulation simulationsToRun[] = (cbit.vcell.solver.Simulation[])hashTable.get("simulations");
+	cbit.vcell.simulation.Simulation simulationsToRun[] = (cbit.vcell.simulation.Simulation[])hashTable.get("simulations");
 	String independentSims[] = null;
 	if (simulationsToRun!=null && simulationsToRun.length>0){
 		independentSims = new String[simulationsToRun.length];

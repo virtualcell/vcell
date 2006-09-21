@@ -20,7 +20,7 @@ public class MathOverridesPanel extends JPanel {
 	private cbit.gui.JTableFixed ivjJTableFixed = null;
 	private DefaultCellEditor ivjDefaultCellEditor1 = null;
 	private Component ivjComponent1 = null;
-	private cbit.vcell.solver.MathOverrides fieldMathOverrides = null;
+	private cbit.vcell.simulation.MathOverrides fieldMathOverrides = null;
 	private boolean ivjConnPtoP6Aligning = false;
 	private MathOverridesTableCellRenderer ivjMathOverridesTableCellRenderer1 = null;
 	private JMenuItem ivjJMenuItemCopy = null;
@@ -573,7 +573,7 @@ private cbit.gui.JTableFixed getJTableFixed() {
  * @return The mathOverrides property value.
  * @see #setMathOverrides
  */
-public cbit.vcell.solver.MathOverrides getMathOverrides() {
+public cbit.vcell.simulation.MathOverrides getMathOverrides() {
 	return fieldMathOverrides;
 }
 
@@ -811,7 +811,7 @@ private void makeBold() {
 /**
  * Comment
  */
-public void newSimulation(cbit.vcell.solver.Simulation simulation) {
+public void newSimulation(cbit.vcell.simulation.Simulation simulation) {
 	getMathOverridesTableModel().setMathOverrides(simulation == null ? null : simulation.getMathOverrides());
 }
 
@@ -885,8 +885,8 @@ public void setEditable(boolean editable) {
  * @param mathOverrides The new value for the property.
  * @see #getMathOverrides
  */
-public void setMathOverrides(cbit.vcell.solver.MathOverrides mathOverrides) {
-	cbit.vcell.solver.MathOverrides oldValue = fieldMathOverrides;
+public void setMathOverrides(cbit.vcell.simulation.MathOverrides mathOverrides) {
+	cbit.vcell.simulation.MathOverrides oldValue = fieldMathOverrides;
 	fieldMathOverrides = mathOverrides;
 	firePropertyChange("mathOverrides", oldValue, mathOverrides);
 }

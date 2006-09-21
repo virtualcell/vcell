@@ -7,7 +7,7 @@ package cbit.vcell.matlab;
 import cbit.vcell.parser.*;
 import java.util.*;
 import cbit.vcell.math.*;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.simulation.Simulation;
 /**
  * Insert the type's description here.
  * Creation date: (3/8/00 10:29:24 PM)

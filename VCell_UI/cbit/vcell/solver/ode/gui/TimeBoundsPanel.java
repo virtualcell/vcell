@@ -10,15 +10,15 @@ package cbit.vcell.solver.ode.gui;
  * @author: 
  */
 public class TimeBoundsPanel extends javax.swing.JPanel implements java.awt.event.FocusListener, java.beans.PropertyChangeListener {
-	private cbit.vcell.solver.TimeBounds fieldTimeBounds = null;
+	private cbit.vcell.simulation.TimeBounds fieldTimeBounds = null;
 	private boolean ivjConnPtoP1Aligning = false;
-	private cbit.vcell.solver.TimeBounds ivjTornOffTimeBounds = null;
+	private cbit.vcell.simulation.TimeBounds ivjTornOffTimeBounds = null;
 	private javax.swing.JLabel ivjEndingTimeLabel = null;
 	private javax.swing.JTextField ivjEndingTimeTextField = null;
 	private javax.swing.JLabel ivjStartingTimeLabel = null;
 	private javax.swing.JTextField ivjStartingTimeTextField = null;
 	private javax.swing.JLabel ivjTimeBoundsLabel = null;
-	private cbit.vcell.solver.TimeBounds ivjTimeBoundsFactory = null;
+	private cbit.vcell.simulation.TimeBounds ivjTimeBoundsFactory = null;
 /**
  * TimeBoundsPanel constructor comment.
  */
@@ -53,7 +53,7 @@ public TimeBoundsPanel(boolean isDoubleBuffered) {
  * @param value cbit.vcell.solver.TimeBounds
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1(cbit.vcell.solver.TimeBounds value) {
+private void connEtoM1(cbit.vcell.simulation.TimeBounds value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -73,7 +73,7 @@ private void connEtoM1(cbit.vcell.solver.TimeBounds value) {
  * @param value cbit.vcell.solver.TimeBounds
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM2(cbit.vcell.solver.TimeBounds value) {
+private void connEtoM2(cbit.vcell.simulation.TimeBounds value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -94,11 +94,11 @@ private void connEtoM2(cbit.vcell.solver.TimeBounds value) {
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM3(java.awt.event.FocusEvent arg1) {
-	cbit.vcell.solver.TimeBounds localValue = null;
+	cbit.vcell.simulation.TimeBounds localValue = null;
 	try {
 		// user code begin {1}
 		// user code end
-		setTornOffTimeBounds(localValue = new cbit.vcell.solver.TimeBounds(new Double(getStartingTimeTextField().getText()).doubleValue(), new Double(getEndingTimeTextField().getText()).doubleValue()));
+		setTornOffTimeBounds(localValue = new cbit.vcell.simulation.TimeBounds(new Double(getStartingTimeTextField().getText()).doubleValue(), new Double(getEndingTimeTextField().getText()).doubleValue()));
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -114,11 +114,11 @@ private void connEtoM3(java.awt.event.FocusEvent arg1) {
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM4(java.awt.event.FocusEvent arg1) {
-	cbit.vcell.solver.TimeBounds localValue = null;
+	cbit.vcell.simulation.TimeBounds localValue = null;
 	try {
 		// user code begin {1}
 		// user code end
-		setTornOffTimeBounds(localValue = new cbit.vcell.solver.TimeBounds(new Double(getStartingTimeTextField().getText()).doubleValue(), new Double(getEndingTimeTextField().getText()).doubleValue()));
+		setTornOffTimeBounds(localValue = new cbit.vcell.simulation.TimeBounds(new Double(getStartingTimeTextField().getText()).doubleValue(), new Double(getEndingTimeTextField().getText()).doubleValue()));
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -292,7 +292,7 @@ private javax.swing.JTextField getStartingTimeTextField() {
  * @return The timeBounds property value.
  * @see #setTimeBounds
  */
-public cbit.vcell.solver.TimeBounds getTimeBounds() {
+public cbit.vcell.simulation.TimeBounds getTimeBounds() {
 	return fieldTimeBounds;
 }
 /**
@@ -300,7 +300,7 @@ public cbit.vcell.solver.TimeBounds getTimeBounds() {
  * @return cbit.vcell.solver.TimeBounds
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.solver.TimeBounds getTimeBoundsFactory() {
+private cbit.vcell.simulation.TimeBounds getTimeBoundsFactory() {
 	// user code begin {1}
 	// user code end
 	return ivjTimeBoundsFactory;
@@ -332,7 +332,7 @@ private javax.swing.JLabel getTimeBoundsLabel() {
  * @return cbit.vcell.solver.TimeBounds
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.solver.TimeBounds getTornOffTimeBounds() {
+private cbit.vcell.simulation.TimeBounds getTornOffTimeBounds() {
 	// user code begin {1}
 	// user code end
 	return ivjTornOffTimeBounds;
@@ -469,8 +469,8 @@ public void setEnabled(boolean b) {
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getTimeBounds
  */
-public void setTimeBounds(cbit.vcell.solver.TimeBounds timeBounds) throws java.beans.PropertyVetoException {
-	cbit.vcell.solver.TimeBounds oldValue = fieldTimeBounds;
+public void setTimeBounds(cbit.vcell.simulation.TimeBounds timeBounds) throws java.beans.PropertyVetoException {
+	cbit.vcell.simulation.TimeBounds oldValue = fieldTimeBounds;
 	fireVetoableChange("timeBounds", oldValue, timeBounds);
 	fieldTimeBounds = timeBounds;
 	firePropertyChange("timeBounds", oldValue, timeBounds);
@@ -480,10 +480,10 @@ public void setTimeBounds(cbit.vcell.solver.TimeBounds timeBounds) throws java.b
  * @param newValue cbit.vcell.solver.TimeBounds
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setTimeBoundsFactory(cbit.vcell.solver.TimeBounds newValue) {
+private void setTimeBoundsFactory(cbit.vcell.simulation.TimeBounds newValue) {
 	if (ivjTimeBoundsFactory != newValue) {
 		try {
-			cbit.vcell.solver.TimeBounds oldValue = getTimeBoundsFactory();
+			cbit.vcell.simulation.TimeBounds oldValue = getTimeBoundsFactory();
 			ivjTimeBoundsFactory = newValue;
 			firePropertyChange("timeBounds", oldValue, newValue);
 			// user code begin {1}
@@ -502,10 +502,10 @@ private void setTimeBoundsFactory(cbit.vcell.solver.TimeBounds newValue) {
  * @param newValue cbit.vcell.solver.TimeBounds
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setTornOffTimeBounds(cbit.vcell.solver.TimeBounds newValue) {
+private void setTornOffTimeBounds(cbit.vcell.simulation.TimeBounds newValue) {
 	if (ivjTornOffTimeBounds != newValue) {
 		try {
-			cbit.vcell.solver.TimeBounds oldValue = getTornOffTimeBounds();
+			cbit.vcell.simulation.TimeBounds oldValue = getTornOffTimeBounds();
 			ivjTornOffTimeBounds = newValue;
 			connPtoP1SetSource();
 			connEtoM1(ivjTornOffTimeBounds);

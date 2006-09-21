@@ -332,7 +332,7 @@ public java.beans.MethodDescriptor setSolverTaskDescription_cbitvcellsolverSolve
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.solver.SolverTaskDescription.class
+				cbit.vcell.simulation.SolverTaskDescription.class
 			};
 			aMethod = getBeanClass().getMethod("setSolverTaskDescription", aParameterTypes);
 		} catch (Throwable exception) {
@@ -387,7 +387,7 @@ public java.beans.PropertyDescriptor solverTaskDescriptionPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.solver.SolverTaskDescription.class
+					cbit.vcell.simulation.SolverTaskDescription.class
 				};
 				aSetMethod = getBeanClass().getMethod("setSolverTaskDescription", aSetMethodParameterTypes);
 			} catch (Throwable exception) {

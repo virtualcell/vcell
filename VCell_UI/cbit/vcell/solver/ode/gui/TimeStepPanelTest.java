@@ -30,7 +30,7 @@ public static void main(java.lang.String[] args) {
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
-		cbit.vcell.solver.Simulation simulation = new cbit.vcell.solver.Simulation(
+		cbit.vcell.simulation.Simulation simulation = new cbit.vcell.simulation.Simulation(
 			cbit.vcell.math.MathDescriptionTest.getOdeExampleWagner());
 		aTimeStepPanel.setTimeStep(simulation.getSolverTaskDescription().getTimeStep());
 	} catch (Throwable exception) {

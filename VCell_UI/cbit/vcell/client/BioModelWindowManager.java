@@ -2,7 +2,8 @@ package cbit.vcell.client;
 import cbit.util.KeyValue;
 import cbit.util.VCDocument;
 import cbit.vcell.server.SimulationStatus;
-import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.simulation.Simulation;
+import cbit.vcell.simulation.VCSimulationIdentifier;
 import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.client.desktop.simulation.*;
@@ -16,7 +17,6 @@ import cbit.vcell.mapping.*;
 import cbit.vcell.client.desktop.biomodel.*;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.desktop.controls.*;
-import cbit.vcell.solver.Simulation;
 import cbit.vcell.client.server.SimStatusEvent;
 /**
  * Insert the type's description here.
@@ -184,7 +184,7 @@ private void checkValidSimulationDataViewerFrames(ApplicationComponents appCompo
 	Simulation[] sims = found.getSimulations();
 	Hashtable hash = new Hashtable();
 	for (int i = 0; i < sims.length; i++){
-		cbit.vcell.solver.SimulationInfo simInfo = sims[i].getSimulationInfo();
+		cbit.vcell.simulation.SimulationInfo simInfo = sims[i].getSimulationInfo();
 		if (simInfo != null) {
 			VCSimulationIdentifier vcSimulationIdentifier = simInfo.getAuthoritativeVCSimulationIdentifier();
 			hash.put(vcSimulationIdentifier, sims[i]);

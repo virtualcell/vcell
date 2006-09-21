@@ -10,7 +10,8 @@ import cbit.vcell.desktop.controls.NewClientPDEDataContext;
 import cbit.vcell.export.gui.ExportMonitorPanel;
 
 import javax.swing.*;
-import cbit.vcell.solver.Simulation;
+
+import cbit.vcell.simulation.Simulation;
 import cbit.vcell.solvers.VCSimulationDataIdentifier;
 /**
  * Insert the type's description here.
@@ -110,7 +111,7 @@ private javax.swing.JPanel getParamChoicesPanel() {
  * Creation date: (10/17/2005 11:36:17 PM)
  * @return cbit.vcell.solver.Simulation
  */
-private cbit.vcell.solver.Simulation getSimulation() {
+private cbit.vcell.simulation.Simulation getSimulation() {
 	return simulation;
 }
 
@@ -260,7 +261,7 @@ private void setParamChoicesPanel(javax.swing.JPanel newParamChoicesPanel) {
  * Creation date: (10/17/2005 11:36:17 PM)
  * @param newSimulation cbit.vcell.solver.Simulation
  */
-private void setSimulation(cbit.vcell.solver.Simulation newSimulation) {
+private void setSimulation(cbit.vcell.simulation.Simulation newSimulation) {
 	simulation = newSimulation;
 }
 

@@ -1,6 +1,7 @@
 package cbit.vcell.client.desktop.simulation;
 import java.beans.*;
-import cbit.vcell.solver.*;
+
+import cbit.vcell.simulation.*;
 import cbit.vcell.mapping.*;
 import javax.swing.table.*;
 /**

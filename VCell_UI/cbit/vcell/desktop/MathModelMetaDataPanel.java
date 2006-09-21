@@ -2,7 +2,8 @@ package cbit.vcell.desktop;
 
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mathmodel.MathModelInfo;
-import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.simulation.SimulationInfo;
+
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.*;
 /*©

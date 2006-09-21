@@ -1,7 +1,8 @@
 package cbit.vcell.client.desktop;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
-import cbit.vcell.solver.SimulationInfo;
+
+import cbit.vcell.simulation.SimulationInfo;
 import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestCaseNew;

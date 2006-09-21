@@ -6,7 +6,7 @@ import cbit.vcell.mathmodel.*;
  * All rights reserved.
 ©*/
 import cbit.vcell.server.solvers.SolverResultSetInfo;
-import cbit.vcell.solver.*;
+import cbit.vcell.simulation.*;
 import cbit.vcell.biomodel.*;
 /**
  * Insert the type's description here.

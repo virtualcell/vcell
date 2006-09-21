@@ -13,7 +13,7 @@ import java.awt.Font;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.*;
 import cbit.vcell.server.solvers.SolverResultSetInfo;
-import cbit.vcell.solver.*;
+import cbit.vcell.simulation.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.geometry.GeometryInfo;

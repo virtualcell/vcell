@@ -1059,7 +1059,7 @@ public java.beans.PropertyDescriptor mathOverridesPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.solver.MathOverrides.class
+					cbit.vcell.simulation.MathOverrides.class
 				};
 				aSetMethod = getBeanClass().getMethod("setMathOverrides", aSetMethodParameterTypes);
 			} catch (Throwable exception) {
@@ -1392,7 +1392,7 @@ public java.beans.MethodDescriptor setMathOverrides_cbitvcellsolverMathOverrides
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.solver.MathOverrides.class
+				cbit.vcell.simulation.MathOverrides.class
 			};
 			aMethod = getBeanClass().getMethod("setMathOverrides", aParameterTypes);
 		} catch (Throwable exception) {

@@ -1,5 +1,4 @@
 package cbit.vcell.client.task;
-import cbit.vcell.solver.*;
 import cbit.vcell.client.server.*;
 import java.util.*;
 import cbit.vcell.client.*;
@@ -8,6 +7,7 @@ import cbit.vcell.client.desktop.*;
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.server.*;
+import cbit.vcell.simulation.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.math.*;
 import cbit.vcell.biomodel.*;

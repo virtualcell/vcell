@@ -10,9 +10,10 @@ import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.Function;
 import cbit.vcell.server.VCellConnection;
+import cbit.vcell.simulation.*;
+
 import java.awt.event.*;
 import java.util.*;
-import cbit.vcell.solver.*;
 import cbit.vcell.solver.ode.*;
 /**
  * Insert the class' description here.
@@ -33,7 +34,7 @@ public class SolverTaskDescriptionPanel extends javax.swing.JPanel {
 	private int fieldODESolverIndex = 0;
 	private javax.swing.JLabel ivjStartTimeLabel = null;
 	private javax.swing.JTextField ivjStartTimeTextField = null;
-	private cbit.vcell.solver.SolverTaskDescription fieldSolverTaskDescription = null;
+	private cbit.vcell.simulation.SolverTaskDescription fieldSolverTaskDescription = null;
 	private javax.swing.JLabel ivjJLabel2 = null;
 	private javax.swing.JLabel ivjJLabel3 = null;
 	private javax.swing.JLabel ivjJLabelStartUnits = null;
@@ -145,7 +146,7 @@ private void connEtoC10(java.beans.PropertyChangeEvent arg1) {
  * @param value cbit.vcell.solver.SolverTaskDescription
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC11(cbit.vcell.solver.SolverTaskDescription value) {
+private void connEtoC11(cbit.vcell.simulation.SolverTaskDescription value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -285,7 +286,7 @@ private void connEtoC6(java.beans.PropertyChangeEvent arg1) {
  * @param value cbit.vcell.solver.SolverTaskDescription
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC7(cbit.vcell.solver.SolverTaskDescription value) {
+private void connEtoC7(cbit.vcell.simulation.SolverTaskDescription value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -347,7 +348,7 @@ private void connEtoC9(java.awt.event.FocusEvent arg1) {
  * @param value cbit.vcell.solver.TimeStep
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1(cbit.vcell.solver.TimeStep value) {
+private void connEtoM1(cbit.vcell.simulation.TimeStep value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -368,7 +369,7 @@ private void connEtoM1(cbit.vcell.solver.TimeStep value) {
  * @param value cbit.vcell.solver.SolverTaskDescription
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM10(cbit.vcell.solver.SolverTaskDescription value) {
+private void connEtoM10(cbit.vcell.simulation.SolverTaskDescription value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -410,7 +411,7 @@ private void connEtoM11(java.beans.PropertyChangeEvent arg1) {
  * @param value cbit.vcell.solver.SolverTaskDescription
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM12(cbit.vcell.solver.SolverTaskDescription value) {
+private void connEtoM12(cbit.vcell.simulation.SolverTaskDescription value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -493,11 +494,11 @@ private void connEtoM17(java.beans.PropertyChangeEvent arg1) {
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM2(java.awt.event.FocusEvent arg1) {
-	cbit.vcell.solver.TimeStep localValue = null;
+	cbit.vcell.simulation.TimeStep localValue = null;
 	try {
 		// user code begin {1}
 		// user code end
-		getTornOffSolverTaskDescription().setTimeStep(localValue = new cbit.vcell.solver.TimeStep(gettimeStep1().getMinimumTimeStep(), new Double(getTimeStepTextField().getText()).doubleValue(), gettimeStep1().getMaximumTimeStep()));
+		getTornOffSolverTaskDescription().setTimeStep(localValue = new cbit.vcell.simulation.TimeStep(gettimeStep1().getMinimumTimeStep(), new Double(getTimeStepTextField().getText()).doubleValue(), gettimeStep1().getMaximumTimeStep()));
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -514,7 +515,7 @@ private void connEtoM2(java.awt.event.FocusEvent arg1) {
  * @param value cbit.vcell.solver.TimeBounds
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM3(cbit.vcell.solver.TimeBounds value) {
+private void connEtoM3(cbit.vcell.simulation.TimeBounds value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -535,7 +536,7 @@ private void connEtoM3(cbit.vcell.solver.TimeBounds value) {
  * @param value cbit.vcell.solver.TimeBounds
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM5(cbit.vcell.solver.TimeBounds value) {
+private void connEtoM5(cbit.vcell.simulation.TimeBounds value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -557,11 +558,11 @@ private void connEtoM5(cbit.vcell.solver.TimeBounds value) {
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM6(java.awt.event.FocusEvent arg1) {
-	cbit.vcell.solver.TimeBounds localValue = null;
+	cbit.vcell.simulation.TimeBounds localValue = null;
 	try {
 		// user code begin {1}
 		// user code end
-		getTornOffSolverTaskDescription().setTimeBounds(localValue = new cbit.vcell.solver.TimeBounds(new Double(getStartTimeTextField().getText()).doubleValue(), new Double(getEndTimeTextField().getText()).doubleValue()));
+		getTornOffSolverTaskDescription().setTimeBounds(localValue = new cbit.vcell.simulation.TimeBounds(new Double(getStartTimeTextField().getText()).doubleValue(), new Double(getEndTimeTextField().getText()).doubleValue()));
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -579,11 +580,11 @@ private void connEtoM6(java.awt.event.FocusEvent arg1) {
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM7(java.awt.event.FocusEvent arg1) {
-	cbit.vcell.solver.TimeBounds localValue = null;
+	cbit.vcell.simulation.TimeBounds localValue = null;
 	try {
 		// user code begin {1}
 		// user code end
-		getTornOffSolverTaskDescription().setTimeBounds(localValue = new cbit.vcell.solver.TimeBounds(new Double(getStartTimeTextField().getText()).doubleValue(), new Double(getEndTimeTextField().getText()).doubleValue()));
+		getTornOffSolverTaskDescription().setTimeBounds(localValue = new cbit.vcell.simulation.TimeBounds(new Double(getStartTimeTextField().getText()).doubleValue(), new Double(getEndTimeTextField().getText()).doubleValue()));
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -974,7 +975,7 @@ private cbit.vcell.math.Constant getSelectedSensitivityParameter(String constant
  * @return The solverTaskDescription property value.
  * @see #setSolverTaskDescription
  */
-public cbit.vcell.solver.SolverTaskDescription getSolverTaskDescription() {
+public cbit.vcell.simulation.SolverTaskDescription getSolverTaskDescription() {
 	return fieldSolverTaskDescription;
 }
 
@@ -1032,7 +1033,7 @@ private javax.swing.JTextField getStartTimeTextField() {
  * @return cbit.vcell.solver.TimeBounds
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.solver.TimeBounds gettimeBounds1() {
+private cbit.vcell.simulation.TimeBounds gettimeBounds1() {
 	// user code begin {1}
 	// user code end
 	return ivjtimeBounds1;
@@ -1043,7 +1044,7 @@ private cbit.vcell.solver.TimeBounds gettimeBounds1() {
  * @return cbit.vcell.solver.TimeBounds
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.solver.TimeBounds getTimeBoundsFactory() {
+private cbit.vcell.simulation.TimeBounds getTimeBoundsFactory() {
 	// user code begin {1}
 	// user code end
 	return ivjTimeBoundsFactory;
@@ -1055,7 +1056,7 @@ private cbit.vcell.solver.TimeBounds getTimeBoundsFactory() {
  * @return cbit.vcell.solver.TimeStep
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.solver.TimeStep gettimeStep1() {
+private cbit.vcell.simulation.TimeStep gettimeStep1() {
 	// user code begin {1}
 	// user code end
 	return ivjtimeStep1;
@@ -1066,7 +1067,7 @@ private cbit.vcell.solver.TimeStep gettimeStep1() {
  * @return cbit.vcell.solver.TimeStep
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.solver.TimeStep getTimeStepFactory() {
+private cbit.vcell.simulation.TimeStep getTimeStepFactory() {
 	// user code begin {1}
 	// user code end
 	return ivjTimeStepFactory;
@@ -1126,7 +1127,7 @@ private javax.swing.JTextField getTimeStepTextField() {
  * @return cbit.vcell.solver.SolverTaskDescription
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.solver.SolverTaskDescription getTornOffSolverTaskDescription() {
+private cbit.vcell.simulation.SolverTaskDescription getTornOffSolverTaskDescription() {
 	// user code begin {1}
 	// user code end
 	return ivjTornOffSolverTaskDescription;
@@ -1364,7 +1365,7 @@ private void performSensitivityAnalysisCheckbox_ItemStateChanged(java.awt.event.
 /**
  * Comment
  */
-public void setKeepEvery(cbit.vcell.solver.SolverTaskDescription arg1) {
+public void setKeepEvery(cbit.vcell.simulation.SolverTaskDescription arg1) {
 	if (arg1 == null || !arg1.getOutputTimeSpec().isDefault()) {	
 		getJTextFieldKeepEvery().setText("");	
 		BeanUtils.enableComponents(getJPanelKeepEvery(), false);
@@ -1387,7 +1388,7 @@ private void setODESolverIndex (int odeSolverIndex) {
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getSolverTaskDescription
  */
-public void setSolverTaskDescription(cbit.vcell.solver.SolverTaskDescription solverTaskDescription) {
+public void setSolverTaskDescription(cbit.vcell.simulation.SolverTaskDescription solverTaskDescription) {
 	SolverTaskDescription oldValue = fieldSolverTaskDescription;
 	fieldSolverTaskDescription = solverTaskDescription;
 	firePropertyChange("solverTaskDescription", oldValue, solverTaskDescription);
@@ -1399,7 +1400,7 @@ public void setSolverTaskDescription(cbit.vcell.solver.SolverTaskDescription sol
  * @param newValue cbit.vcell.solver.TimeBounds
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void settimeBounds1(cbit.vcell.solver.TimeBounds newValue) {
+private void settimeBounds1(cbit.vcell.simulation.TimeBounds newValue) {
 	if (ivjtimeBounds1 != newValue) {
 		try {
 			ivjtimeBounds1 = newValue;
@@ -1422,7 +1423,7 @@ private void settimeBounds1(cbit.vcell.solver.TimeBounds newValue) {
  * @param newValue cbit.vcell.solver.TimeBounds
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setTimeBoundsFactory(cbit.vcell.solver.TimeBounds newValue) {
+private void setTimeBoundsFactory(cbit.vcell.simulation.TimeBounds newValue) {
 	if (ivjTimeBoundsFactory != newValue) {
 		try {
 			ivjTimeBoundsFactory = newValue;
@@ -1444,7 +1445,7 @@ private void setTimeBoundsFactory(cbit.vcell.solver.TimeBounds newValue) {
  * @param newValue cbit.vcell.solver.TimeStep
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void settimeStep1(cbit.vcell.solver.TimeStep newValue) {
+private void settimeStep1(cbit.vcell.simulation.TimeStep newValue) {
 	if (ivjtimeStep1 != newValue) {
 		try {
 			ivjtimeStep1 = newValue;
@@ -1466,7 +1467,7 @@ private void settimeStep1(cbit.vcell.solver.TimeStep newValue) {
  * @param newValue cbit.vcell.solver.TimeStep
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setTimeStepFactory(cbit.vcell.solver.TimeStep newValue) {
+private void setTimeStepFactory(cbit.vcell.simulation.TimeStep newValue) {
 	if (ivjTimeStepFactory != newValue) {
 		try {
 			ivjTimeStepFactory = newValue;
@@ -1488,10 +1489,10 @@ private void setTimeStepFactory(cbit.vcell.solver.TimeStep newValue) {
  * @param newValue cbit.vcell.solver.SolverTaskDescription
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setTornOffSolverTaskDescription(cbit.vcell.solver.SolverTaskDescription newValue) {
+private void setTornOffSolverTaskDescription(cbit.vcell.simulation.SolverTaskDescription newValue) {
 	if (ivjTornOffSolverTaskDescription != newValue) {
 		try {
-			cbit.vcell.solver.SolverTaskDescription oldValue = getTornOffSolverTaskDescription();
+			cbit.vcell.simulation.SolverTaskDescription oldValue = getTornOffSolverTaskDescription();
 			/* Stop listening for events from the current object */
 			if (ivjTornOffSolverTaskDescription != null) {
 				ivjTornOffSolverTaskDescription.removePropertyChangeListener(ivjEventHandler);

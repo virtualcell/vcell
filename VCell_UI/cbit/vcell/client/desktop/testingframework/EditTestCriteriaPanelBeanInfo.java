@@ -336,7 +336,7 @@ public java.beans.PropertyDescriptor referenceSimInfoPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.solver.SimulationInfo.class
+					cbit.vcell.simulation.SimulationInfo.class
 				};
 				aSetMethod = getBeanClass().getMethod("setReferenceSimInfo", aSetMethodParameterTypes);
 			} catch (Throwable exception) {

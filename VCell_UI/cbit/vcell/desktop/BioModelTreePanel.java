@@ -5,9 +5,9 @@ package cbit.vcell.desktop;
  * All rights reserved.
 ©*/
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.solver.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.server.*;
+import cbit.vcell.simulation.*;
 import cbit.util.Matchable;
 import cbit.util.Versionable;
 

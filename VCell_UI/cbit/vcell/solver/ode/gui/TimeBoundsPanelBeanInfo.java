@@ -288,7 +288,7 @@ public java.beans.MethodDescriptor setTimeBounds_cbitvcellsolverTimeBoundsMethod
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.solver.TimeBounds.class
+				cbit.vcell.simulation.TimeBounds.class
 			};
 			aMethod = getBeanClass().getMethod("setTimeBounds", aParameterTypes);
 		} catch (java.lang.Throwable exception) {
@@ -343,7 +343,7 @@ public java.beans.PropertyDescriptor timeBoundsPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.solver.TimeBounds.class
+					cbit.vcell.simulation.TimeBounds.class
 				};
 				aSetMethod = getBeanClass().getMethod("setTimeBounds", aSetMethodParameterTypes);
 			} catch (Throwable exception) {

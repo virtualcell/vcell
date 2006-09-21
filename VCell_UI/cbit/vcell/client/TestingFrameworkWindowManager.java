@@ -15,6 +15,10 @@ import cbit.util.StdoutSessionLog;
 import cbit.util.User;
 import cbit.util.UserCancelException;
 import cbit.vcell.simdata.MergedDataInfo;
+import cbit.vcell.simulation.Simulation;
+import cbit.vcell.simulation.SimulationInfo;
+import cbit.vcell.simulation.VCSimulationIdentifier;
+
 import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
 import cbit.vcell.client.desktop.simulation.SimulationCompareWindow;
@@ -36,7 +40,6 @@ import cbit.vcell.solver.test.VariableComparisonSummary;
 import org.jdom.JDOMException;
 import cbit.util.KeyValue;
 import java.util.Enumeration;
-import cbit.vcell.solver.SimulationInfo;
 import java.util.Vector;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.client.desktop.TestingFrameworkWindowPanel;
@@ -47,12 +50,10 @@ import cbit.vcell.client.desktop.testingframework.EditTestCriteriaPanel;
 import cbit.vcell.client.desktop.testingframework.AddTestSuitePanel;
 import cbit.vcell.client.desktop.testingframework.TestCaseAddPanel;
 import cbit.vcell.export.ExportEvent;
-import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.solvers.VCSimulationDataIdentifier;
 
 import javax.swing.JOptionPane;
-import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.numericstest.*;
 import cbit.util.AsynchProgressPopup;
 /**
@@ -1491,7 +1492,7 @@ public Object[] selectRefSimInfo(BioModelInfo bmInfo,String appName) throws Data
 			}
 		}
 		if(simContext != null){
-			cbit.vcell.solver.SimulationInfo simInfo = selectSimInfoPrivate(bioModel.getSimulations(simContext));
+			cbit.vcell.simulation.SimulationInfo simInfo = selectSimInfoPrivate(bioModel.getSimulations(simContext));
 			return new Object[] {simContext.getName(),simInfo};
 		}else{
 			PopupGenerator.showErrorDialog("No simcontext found for biomodel "+bmInfo+" app="+appName);
@@ -1881,7 +1882,7 @@ public String updateSimRunningStatus(AsynchProgressPopup pp){
 			for(int i=0;i<runningTCrits.size();i+= 1){
 				try{
 					TestCriteriaNew tcn = (TestCriteriaNew)runningTCrits.elementAt(i);
-					cbit.vcell.solver.SimulationInfo simInfo = tcn.getSimInfo();
+					cbit.vcell.simulation.SimulationInfo simInfo = tcn.getSimInfo();
 					pp.setProgress((int)(50+(i*50/runningTCrits.size())));
 					pp.setMessage("Update SimsRunning, Setting Status "+simInfo.getName());
 					//Check if there is some status different from "running"

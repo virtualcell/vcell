@@ -8,7 +8,7 @@ import cbit.vcell.geometry.Geometry;
 import java.util.Vector;
 import java.util.Enumeration;
 import cbit.vcell.biomodel.*;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.simulation.Simulation;
 import cbit.vcell.mapping.SimulationContext;
 import javax.swing.tree.DefaultTreeModel;
 /**

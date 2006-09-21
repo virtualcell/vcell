@@ -3,6 +3,7 @@ import cbit.vcell.messaging.db.SimulationJobStatus;
 import swingthreads.*;
 import cbit.vcell.client.server.*;
 import cbit.vcell.server.*;
+import cbit.vcell.simulation.*;
 
 import java.awt.*;
 import cbit.gui.*;
@@ -12,7 +13,6 @@ import cbit.sql.*;
 import java.beans.*;
 import cbit.vcell.solver.ode.gui.*;
 import cbit.vcell.client.desktop.simulation.*;
-import cbit.vcell.solver.*;
 
 import java.util.*;
 import cbit.util.*;
@@ -57,7 +57,7 @@ DocumentWindowManager getDocumentWindowManager() {
  * @return cbit.vcell.solver.ode.gui.SimulationStatus
  * @param simulation cbit.vcell.solver.Simulation
  */
-public cbit.vcell.server.SimulationStatus getSimulationStatus(cbit.vcell.solver.Simulation simulation) {
+public cbit.vcell.server.SimulationStatus getSimulationStatus(cbit.vcell.simulation.Simulation simulation) {
 	SimulationStatus cachedSimStatus = simHash.getSimulationStatus(simulation);
 	if (cachedSimStatus!=null){
 		if (simulation.getIsDirty()) {
@@ -141,7 +141,7 @@ public void runSimulations(Simulation[] simulations) {
  * Creation date: (6/7/2004 10:31:36 AM)
  * @param simulations cbit.vcell.solver.Simulation[]
  */
-public void showSimulationResults(cbit.vcell.solver.Simulation[] simulations) {
+public void showSimulationResults(cbit.vcell.simulation.Simulation[] simulations) {
 	if (simulations != null) {
 		Vector v = new Vector();
 		for (int i = 0; i < simulations.length; i++){

@@ -1,5 +1,5 @@
 package cbit.vcell.solver.ode.gui;
-import cbit.vcell.solver.*;
+import cbit.vcell.simulation.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -24,7 +24,7 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel imple
 	private ErrorTolerancePanel ivjErrorTolerancePanel = null;
 	private TimeBoundsPanel ivjTimeBoundsPanel = null;
 	private TimeStepPanel ivjTimeStepPanel = null;
-	private cbit.vcell.solver.SolverTaskDescription fieldSolverTaskDescription = null;
+	private cbit.vcell.simulation.SolverTaskDescription fieldSolverTaskDescription = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	private SolverTaskDescription ivjTornOffSolverTaskDescription = null;
 	private javax.swing.JLabel ivjKeepAtMostLabel = null;
@@ -104,7 +104,7 @@ private void buttonGroup_Initialize() {
 /**
  * Comment
  */
-public void checkTimeBounds(cbit.vcell.solver.TimeBounds arg1) {
+public void checkTimeBounds(cbit.vcell.simulation.TimeBounds arg1) {
 	OutputTimeSpec ots = getSolverTaskDescription().getOutputTimeSpec();
 	if (ots.isExplicit()) {
 		double[] times = ((ExplicitOutputTimeSpec)ots).getOutputTimes();
@@ -121,7 +121,7 @@ public void checkTimeBounds(cbit.vcell.solver.TimeBounds arg1) {
  * @param value cbit.vcell.solver.SolverTaskDescription
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC1(cbit.vcell.solver.SolverTaskDescription value) {
+private void connEtoC1(cbit.vcell.simulation.SolverTaskDescription value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -297,7 +297,7 @@ private void connEtoC17(java.awt.event.FocusEvent arg1) {
  * @param value cbit.vcell.solver.SolverTaskDescription
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC18(cbit.vcell.solver.SolverTaskDescription value) {
+private void connEtoC18(cbit.vcell.simulation.SolverTaskDescription value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -456,7 +456,7 @@ private void connEtoC5(java.beans.PropertyChangeEvent arg1) {
  * @param value cbit.vcell.solver.SolverTaskDescription
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC6(cbit.vcell.solver.SolverTaskDescription value) {
+private void connEtoC6(cbit.vcell.simulation.SolverTaskDescription value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -496,7 +496,7 @@ private void connEtoC7(java.beans.PropertyChangeEvent arg1) {
  * @param value cbit.vcell.solver.SolverTaskDescription
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC8(cbit.vcell.solver.SolverTaskDescription value) {
+private void connEtoC8(cbit.vcell.simulation.SolverTaskDescription value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -534,7 +534,7 @@ private void connEtoC9() {
  * @param value cbit.vcell.solver.SolverTaskDescription
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM13(cbit.vcell.solver.SolverTaskDescription value) {
+private void connEtoM13(cbit.vcell.simulation.SolverTaskDescription value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -1731,8 +1731,8 @@ private java.lang.Object getSolverComboBoxModel() {
 /**
  * Comment
  */
-public cbit.vcell.solver.SolverDescription getSolverDescriptionFromName(String argSolverName) {
-	return cbit.vcell.solver.SolverDescription.fromName(argSolverName);
+public cbit.vcell.simulation.SolverDescription getSolverDescriptionFromName(String argSolverName) {
+	return cbit.vcell.simulation.SolverDescription.fromName(argSolverName);
 }
 
 
@@ -1741,7 +1741,7 @@ public cbit.vcell.solver.SolverDescription getSolverDescriptionFromName(String a
  * @return The solverTaskDescription property value.
  * @see #setSolverTaskDescription
  */
-public cbit.vcell.solver.SolverTaskDescription getSolverTaskDescription() {
+public cbit.vcell.simulation.SolverTaskDescription getSolverTaskDescription() {
 	return fieldSolverTaskDescription;
 }
 
@@ -1820,7 +1820,7 @@ private javax.swing.JLabel getTimeStepUnitsLabel() {
  * @return cbit.vcell.solver.SolverTaskDescription
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.solver.SolverTaskDescription getTornOffSolverTaskDescription() {
+private cbit.vcell.simulation.SolverTaskDescription getTornOffSolverTaskDescription() {
 	// user code begin {1}
 	// user code end
 	return ivjTornOffSolverTaskDescription;
@@ -2174,7 +2174,7 @@ private void setNewOutputOption(java.awt.event.FocusEvent focusEvent) {
 /**
  * Comment
  */
-public void setOutputOptionFields(cbit.vcell.solver.OutputTimeSpec arg1) {
+public void setOutputOptionFields(cbit.vcell.simulation.OutputTimeSpec arg1) {
 
 	if (arg1.isDefault()) {
 		// if solver is not LSODA, if the output Time step radio button had been set, 
@@ -2237,8 +2237,8 @@ private void setSolverComboBoxModel(java.lang.Object newValue) {
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getSolverTaskDescription
  */
-public void setSolverTaskDescription(cbit.vcell.solver.SolverTaskDescription solverTaskDescription) throws java.beans.PropertyVetoException {
-	cbit.vcell.solver.SolverTaskDescription oldValue = fieldSolverTaskDescription;
+public void setSolverTaskDescription(cbit.vcell.simulation.SolverTaskDescription solverTaskDescription) throws java.beans.PropertyVetoException {
+	cbit.vcell.simulation.SolverTaskDescription oldValue = fieldSolverTaskDescription;
 	fireVetoableChange("solverTaskDescription", oldValue, solverTaskDescription);
 	fieldSolverTaskDescription = solverTaskDescription;
 	firePropertyChange("solverTaskDescription", oldValue, solverTaskDescription);
@@ -2250,10 +2250,10 @@ public void setSolverTaskDescription(cbit.vcell.solver.SolverTaskDescription sol
  * @param newValue cbit.vcell.solver.SolverTaskDescription
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setTornOffSolverTaskDescription(cbit.vcell.solver.SolverTaskDescription newValue) {
+private void setTornOffSolverTaskDescription(cbit.vcell.simulation.SolverTaskDescription newValue) {
 	if (ivjTornOffSolverTaskDescription != newValue) {
 		try {
-			cbit.vcell.solver.SolverTaskDescription oldValue = getTornOffSolverTaskDescription();
+			cbit.vcell.simulation.SolverTaskDescription oldValue = getTornOffSolverTaskDescription();
 			/* Stop listening for events from the current object */
 			if (ivjTornOffSolverTaskDescription != null) {
 				ivjTornOffSolverTaskDescription.removePropertyChangeListener(this);
@@ -2314,7 +2314,7 @@ public void tornOffSolverTaskDescription_TimeBounds() {
 /**
  * Comment
  */
-private void updateSolverNameDisplay(cbit.vcell.solver.SolverDescription argSolverDescription) {
+private void updateSolverNameDisplay(cbit.vcell.simulation.SolverDescription argSolverDescription) {
 	if (argSolverDescription == null){
 		getSolverComboBox().setEnabled(false);
 	}else{

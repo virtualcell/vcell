@@ -3,7 +3,7 @@ import javax.swing.table.TableCellEditor;
 import java.util.*;
 import cbit.vcell.client.desktop.*;
 import cbit.vcell.server.SimulationStatus;
-import cbit.vcell.solver.*;
+import cbit.vcell.simulation.*;
 
 import javax.swing.*;
 /**

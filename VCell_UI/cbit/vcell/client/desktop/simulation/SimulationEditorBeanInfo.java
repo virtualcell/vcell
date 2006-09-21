@@ -350,7 +350,7 @@ public java.beans.MethodDescriptor prepareToEdit_cbitvcellsolverSimulationMethod
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.solver.Simulation.class
+				cbit.vcell.simulation.Simulation.class
 			};
 			aMethod = getBeanClass().getMethod("prepareToEdit", aParameterTypes);
 		} catch (java.lang.Throwable exception) {

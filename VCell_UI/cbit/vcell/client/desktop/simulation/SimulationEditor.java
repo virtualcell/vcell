@@ -1,5 +1,6 @@
 package cbit.vcell.client.desktop.simulation;
-import cbit.vcell.solver.*;
+import cbit.vcell.simulation.*;
+
 import javax.swing.*;
 /**
  * Insert the type's description here.
@@ -12,7 +13,7 @@ public class SimulationEditor extends JPanel {
 	private cbit.vcell.math.gui.MeshSpecificationPanel ivjMeshSpecificationPanel1 = null;
 	private cbit.vcell.solver.ode.gui.SolverTaskDescriptionAdvancedPanel ivjSolverTaskDescriptionAdvancedPanel1 = null;
 	private cbit.vcell.solver.ode.gui.SolverTaskDescriptionPanel ivjSolverTaskDescriptionPanel1 = null;
-	private cbit.vcell.solver.Simulation fieldClonedSimulation = null;
+	private cbit.vcell.simulation.Simulation fieldClonedSimulation = null;
 
 public SimulationEditor() {
 	super();
@@ -42,7 +43,7 @@ private void connEtoC1() {
  * @return The clonedSimulation property value.
  * @see #setClonedSimulation
  */
-public cbit.vcell.solver.Simulation getClonedSimulation() {
+public cbit.vcell.simulation.Simulation getClonedSimulation() {
 	return fieldClonedSimulation;
 }
 
@@ -243,7 +244,7 @@ private void makeBoldTitle() {
 /**
  * Comment
  */
-public void prepareToEdit(cbit.vcell.solver.Simulation simulation) {
+public void prepareToEdit(cbit.vcell.simulation.Simulation simulation) {
 	try {
 		Simulation clonedSimulation = (Simulation)cbit.util.BeanUtils.cloneSerializable(simulation);
 		clonedSimulation.refreshDependencies();
@@ -280,8 +281,8 @@ public void prepareToEdit(cbit.vcell.solver.Simulation simulation) {
  * @param clonedSimulation The new value for the property.
  * @see #getClonedSimulation
  */
-private void setClonedSimulation(cbit.vcell.solver.Simulation clonedSimulation) {
-	cbit.vcell.solver.Simulation oldValue = fieldClonedSimulation;
+private void setClonedSimulation(cbit.vcell.simulation.Simulation clonedSimulation) {
+	cbit.vcell.simulation.Simulation oldValue = fieldClonedSimulation;
 	fieldClonedSimulation = clonedSimulation;
 	firePropertyChange("clonedSimulation", oldValue, clonedSimulation);
 }

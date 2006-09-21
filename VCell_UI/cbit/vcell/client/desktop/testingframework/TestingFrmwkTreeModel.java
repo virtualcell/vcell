@@ -2,17 +2,17 @@ package cbit.vcell.client.desktop.testingframework;
 
 import cbit.util.DataAccessException;
 import cbit.vcell.numericstest.*;
+import cbit.vcell.simulation.Simulation;
+import cbit.vcell.simulation.SimulationInfo;
 import cbit.vcell.solver.test.VariableComparisonSummary;
 import java.util.Vector;
 import java.util.Enumeration;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.client.database.DatabaseListener;
 import cbit.vcell.mathmodel.MathModelInfo;
-import cbit.vcell.solver.SimulationInfo;
 import org.jdom.JDOMException;
 import java.io.IOException;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.solver.Simulation;
 /**
  * Insert the type's description here.
  * Creation date: (7/23/2004 10:10:20 AM)

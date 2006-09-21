@@ -27,8 +27,8 @@ public static void main(java.lang.String[] args) {
 		});
 		cbit.vcell.math.MathDescription mathDescription = cbit.vcell.math.MathDescriptionTest.getExample();
 //		System.out.println(mathDescription.getXML());
-		cbit.vcell.solver.MathOverrides mathOverrides = new cbit.vcell.solver.MathOverrides(
-			new cbit.vcell.solver.Simulation(mathDescription));
+		cbit.vcell.simulation.MathOverrides mathOverrides = new cbit.vcell.simulation.MathOverrides(
+			new cbit.vcell.simulation.Simulation(mathDescription));
 		mathOverridesPanel.setMathOverrides(mathOverrides);
 		frame.setVisible(true);
 	} catch (Throwable exception) {

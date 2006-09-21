@@ -1,6 +1,6 @@
 package cbit.vcell.client.desktop.testingframework;
 
-import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.simulation.SimulationInfo;
 import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.numericstest.TestCriteriaNew;
 import cbit.vcell.client.PopupGenerator;
@@ -28,13 +28,13 @@ public class EditTestCriteriaPanel extends javax.swing.JPanel {
 	private java.lang.String fieldSolutionType = null;
 	private cbit.vcell.numericstest.TestCriteriaNew fieldExistingTestCriteria = null;
 	private cbit.vcell.numericstest.TestCriteriaNew fieldNewTestCriteria = null;
-	private cbit.vcell.solver.SimulationInfo fieldReferenceSimInfo = null;
+	private cbit.vcell.simulation.SimulationInfo fieldReferenceSimInfo = null;
 	private cbit.vcell.mathmodel.MathModelInfo fieldReferenceMathModelInfo = null;
 	private javax.swing.JButton ivjSelectRefBMAppJButton = null;
 	private javax.swing.JButton ivjSelectRefSimJButton = null;
 	private cbit.vcell.biomodel.BioModelInfo ivjbioModelInfo = null;
 	private javax.swing.JLabel ivjBioModelAppLabel = null;
-	private cbit.vcell.solver.SimulationInfo ivjbmAppSimInfo = null;
+	private cbit.vcell.simulation.SimulationInfo ivjbmAppSimInfo = null;
 	private javax.swing.JLabel ivjBmAppSimLabel = null;
 	private String ivjappName = null;
 
@@ -316,7 +316,7 @@ private cbit.vcell.biomodel.BioModelInfo getbioModelInfo() {
  * @return cbit.vcell.solver.SimulationInfo
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.solver.SimulationInfo getbmAppSimInfo() {
+private cbit.vcell.simulation.SimulationInfo getbmAppSimInfo() {
 	// user code begin {1}
 	// user code end
 	return ivjbmAppSimInfo;
@@ -482,7 +482,7 @@ public cbit.vcell.mathmodel.MathModelInfo getReferenceMathModelInfo() {
  * @return The referenceSimInfo property value.
  * @see #setReferenceSimInfo
  */
-public cbit.vcell.solver.SimulationInfo getReferenceSimInfo() {
+public cbit.vcell.simulation.SimulationInfo getReferenceSimInfo() {
 	return fieldReferenceSimInfo;
 }
 /**
@@ -968,10 +968,10 @@ private void setbioModelInfo(cbit.vcell.biomodel.BioModelInfo newValue) {
  * @param newValue cbit.vcell.solver.SimulationInfo
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setbmAppSimInfo(cbit.vcell.solver.SimulationInfo newValue) {
+private void setbmAppSimInfo(cbit.vcell.simulation.SimulationInfo newValue) {
 	if (ivjbmAppSimInfo != newValue) {
 		try {
-			cbit.vcell.solver.SimulationInfo oldValue = getbmAppSimInfo();
+			cbit.vcell.simulation.SimulationInfo oldValue = getbmAppSimInfo();
 			ivjbmAppSimInfo = newValue;
 			firePropertyChange("referenceSimInfo", oldValue, newValue);
 			// user code begin {1}
@@ -1020,8 +1020,8 @@ public void setReferenceMathModelInfo(cbit.vcell.mathmodel.MathModelInfo referen
  * @param referenceSimInfo The new value for the property.
  * @see #getReferenceSimInfo
  */
-public void setReferenceSimInfo(cbit.vcell.solver.SimulationInfo referenceSimInfo) {
-	cbit.vcell.solver.SimulationInfo oldValue = fieldReferenceSimInfo;
+public void setReferenceSimInfo(cbit.vcell.simulation.SimulationInfo referenceSimInfo) {
+	cbit.vcell.simulation.SimulationInfo oldValue = fieldReferenceSimInfo;
 	fieldReferenceSimInfo = referenceSimInfo;
 	firePropertyChange("referenceSimInfo", oldValue, referenceSimInfo);
 }

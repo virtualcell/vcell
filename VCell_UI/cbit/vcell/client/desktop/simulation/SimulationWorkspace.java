@@ -1,11 +1,11 @@
 package cbit.vcell.client.desktop.simulation;
 import cbit.vcell.server.SimulationStatus;
+import cbit.vcell.simulation.*;
 import cbit.vcell.solver.ode.gui.*;
 import java.util.*;
 import cbit.vcell.client.*;
 import javax.swing.*;
 import cbit.vcell.mapping.*;
-import cbit.vcell.solver.*;
 import cbit.vcell.document.*;
 
 import cbit.vcell.desktop.controls.*;
@@ -14,7 +14,7 @@ public class SimulationWorkspace implements java.beans.PropertyChangeListener {
 	private ClientSimManager clientSimManager = null;
 	private SimulationListPanel simulationListPanel = null;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.vcell.solver.Simulation[] fieldSimulations = null;
+	private cbit.vcell.simulation.Simulation[] fieldSimulations = null;
 	private JProgressBar[] statusBars = null;
 
 /**
@@ -417,7 +417,7 @@ public cbit.vcell.document.SimulationOwner getSimulationOwner() {
  * @return The simulations property value.
  * @see #setSimulations
  */
-public cbit.vcell.solver.Simulation[] getSimulations() {
+public cbit.vcell.simulation.Simulation[] getSimulations() {
 	return fieldSimulations;
 }
 
@@ -428,7 +428,7 @@ public cbit.vcell.solver.Simulation[] getSimulations() {
  * @param index The index value into the property array.
  * @see #setSimulations
  */
-public cbit.vcell.solver.Simulation getSimulations(int index) {
+public cbit.vcell.simulation.Simulation getSimulations(int index) {
 	return getSimulations()[index];
 }
 
@@ -569,8 +569,8 @@ public void setSimulationOwner(SimulationOwner newSimulationOwner) {
  * @param simulations The new value for the property.
  * @see #getSimulations
  */
-public void setSimulations(cbit.vcell.solver.Simulation[] simulations) {
-	cbit.vcell.solver.Simulation[] oldValue = fieldSimulations;
+public void setSimulations(cbit.vcell.simulation.Simulation[] simulations) {
+	cbit.vcell.simulation.Simulation[] oldValue = fieldSimulations;
 	fieldSimulations = simulations;
 	if (simulations == null) {
 		setStatusBars(null);

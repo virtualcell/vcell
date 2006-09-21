@@ -10,9 +10,9 @@
  *******************************************************************************/
 package cbit.vcell.numericstest.gui;
 
+import cbit.vcell.simulation.Simulation;
 import cbit.vcell.solver.test.*;
 import cbit.vcell.desktop.*;
-import cbit.vcell.solver.Simulation;
 import javax.swing.JLabel;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestCaseNew;

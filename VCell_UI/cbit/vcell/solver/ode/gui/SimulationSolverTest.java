@@ -56,8 +56,8 @@ public static void main(java.lang.String[] args) {
 		//
 		//
 		cbit.vcell.biomodel.BioModel bioModel = sessionManager.getDocumentManager().getBioModel(selectedBMInfo);
-		cbit.vcell.solver.Simulation selectedSimulation = null;
-		cbit.vcell.solver.Simulation simulations[] = bioModel.getSimulations();
+		cbit.vcell.simulation.Simulation selectedSimulation = null;
+		cbit.vcell.simulation.Simulation simulations[] = bioModel.getSimulations();
 		for (int i = 0; i < simulations.length; i++){
 			if (simulations[i].getName().equals(simulationName)){
 				selectedSimulation = simulations[i];
@@ -71,18 +71,18 @@ public static void main(java.lang.String[] args) {
 		//
 		// make a change
 		//
-		cbit.vcell.solver.TimeBounds oldTimeBounds = selectedSimulation.getSolverTaskDescription().getTimeBounds();
-		selectedSimulation.getSolverTaskDescription().setTimeBounds(new cbit.vcell.solver.TimeBounds(oldTimeBounds.getStartingTime(),oldTimeBounds.getEndingTime()+1.0));
+		cbit.vcell.simulation.TimeBounds oldTimeBounds = selectedSimulation.getSolverTaskDescription().getTimeBounds();
+		selectedSimulation.getSolverTaskDescription().setTimeBounds(new cbit.vcell.simulation.TimeBounds(oldTimeBounds.getStartingTime(),oldTimeBounds.getEndingTime()+1.0));
 		
 		//
 		// save simulation
 		//
-		cbit.vcell.solver.Simulation savedSimulation = sessionManager.getDocumentManager().save(selectedSimulation,false);
+		cbit.vcell.simulation.Simulation savedSimulation = sessionManager.getDocumentManager().save(selectedSimulation,false);
 
 		//
 		// run simulation
 		//
-		cbit.vcell.solver.VCSimulationIdentifier vcSimulationIdentifier = savedSimulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
+		cbit.vcell.simulation.VCSimulationIdentifier vcSimulationIdentifier = savedSimulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
 		sessionManager.getJobManager().startSimulation(vcSimulationIdentifier);
 		while (true){
 			SimulationStatus simStatus = sessionManager.getJobManager().getServerSimulationStatus(vcSimulationIdentifier);

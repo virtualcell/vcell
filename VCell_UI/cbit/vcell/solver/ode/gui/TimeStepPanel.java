@@ -10,7 +10,7 @@ package cbit.vcell.solver.ode.gui;
  * @author: 
  */
 public class TimeStepPanel extends javax.swing.JPanel implements java.awt.event.FocusListener, java.beans.PropertyChangeListener {
-	private cbit.vcell.solver.TimeStep fieldTimeStep = null;
+	private cbit.vcell.simulation.TimeStep fieldTimeStep = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	private javax.swing.JLabel ivjDefaultTimeStepLabel = null;
 	private javax.swing.JTextField ivjDefaultTimeStepTextField = null;
@@ -19,8 +19,8 @@ public class TimeStepPanel extends javax.swing.JPanel implements java.awt.event.
 	private javax.swing.JLabel ivjMinimumTimeStepLabel = null;
 	private javax.swing.JTextField ivjMinimumTimeStepTextField = null;
 	private javax.swing.JLabel ivjTimeStepLabel = null;
-	private cbit.vcell.solver.TimeStep ivjTornOffTimeStep = null;
-	private cbit.vcell.solver.TimeStep ivjTimeStepFactory = null;
+	private cbit.vcell.simulation.TimeStep ivjTornOffTimeStep = null;
+	private cbit.vcell.simulation.TimeStep ivjTimeStepFactory = null;
 /**
  * TimeStepPanel constructor comment.
  */
@@ -56,11 +56,11 @@ public TimeStepPanel(boolean isDoubleBuffered) {
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM1(java.awt.event.FocusEvent arg1) {
-	cbit.vcell.solver.TimeStep localValue = null;
+	cbit.vcell.simulation.TimeStep localValue = null;
 	try {
 		// user code begin {1}
 		// user code end
-		setTornOffTimeStep(localValue = new cbit.vcell.solver.TimeStep(new Double(getMinimumTimeStepTextField().getText()).doubleValue(), new Double(getDefaultTimeStepTextField().getText()).doubleValue(), new Double(getMaximumTimeStepTextField().getText()).doubleValue()));
+		setTornOffTimeStep(localValue = new cbit.vcell.simulation.TimeStep(new Double(getMinimumTimeStepTextField().getText()).doubleValue(), new Double(getDefaultTimeStepTextField().getText()).doubleValue(), new Double(getMaximumTimeStepTextField().getText()).doubleValue()));
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -76,11 +76,11 @@ private void connEtoM1(java.awt.event.FocusEvent arg1) {
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM2(java.awt.event.FocusEvent arg1) {
-	cbit.vcell.solver.TimeStep localValue = null;
+	cbit.vcell.simulation.TimeStep localValue = null;
 	try {
 		// user code begin {1}
 		// user code end
-		setTornOffTimeStep(localValue = new cbit.vcell.solver.TimeStep(new Double(getMinimumTimeStepTextField().getText()).doubleValue(), new Double(getDefaultTimeStepTextField().getText()).doubleValue(), new Double(getMaximumTimeStepTextField().getText()).doubleValue()));
+		setTornOffTimeStep(localValue = new cbit.vcell.simulation.TimeStep(new Double(getMinimumTimeStepTextField().getText()).doubleValue(), new Double(getDefaultTimeStepTextField().getText()).doubleValue(), new Double(getMaximumTimeStepTextField().getText()).doubleValue()));
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -96,11 +96,11 @@ private void connEtoM2(java.awt.event.FocusEvent arg1) {
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM3(java.awt.event.FocusEvent arg1) {
-	cbit.vcell.solver.TimeStep localValue = null;
+	cbit.vcell.simulation.TimeStep localValue = null;
 	try {
 		// user code begin {1}
 		// user code end
-		setTornOffTimeStep(localValue = new cbit.vcell.solver.TimeStep(new Double(getMinimumTimeStepTextField().getText()).doubleValue(), new Double(getDefaultTimeStepTextField().getText()).doubleValue(), new Double(getMaximumTimeStepTextField().getText()).doubleValue()));
+		setTornOffTimeStep(localValue = new cbit.vcell.simulation.TimeStep(new Double(getMinimumTimeStepTextField().getText()).doubleValue(), new Double(getDefaultTimeStepTextField().getText()).doubleValue(), new Double(getMaximumTimeStepTextField().getText()).doubleValue()));
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -115,7 +115,7 @@ private void connEtoM3(java.awt.event.FocusEvent arg1) {
  * @param value cbit.vcell.solver.TimeStep
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM4(cbit.vcell.solver.TimeStep value) {
+private void connEtoM4(cbit.vcell.simulation.TimeStep value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -135,7 +135,7 @@ private void connEtoM4(cbit.vcell.solver.TimeStep value) {
  * @param value cbit.vcell.solver.TimeStep
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM5(cbit.vcell.solver.TimeStep value) {
+private void connEtoM5(cbit.vcell.simulation.TimeStep value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -155,7 +155,7 @@ private void connEtoM5(cbit.vcell.solver.TimeStep value) {
  * @param value cbit.vcell.solver.TimeStep
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM6(cbit.vcell.solver.TimeStep value) {
+private void connEtoM6(cbit.vcell.simulation.TimeStep value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -392,7 +392,7 @@ private javax.swing.JTextField getMinimumTimeStepTextField() {
  * @return The timeStep property value.
  * @see #setTimeStep
  */
-public cbit.vcell.solver.TimeStep getTimeStep() {
+public cbit.vcell.simulation.TimeStep getTimeStep() {
 	return fieldTimeStep;
 }
 /**
@@ -400,7 +400,7 @@ public cbit.vcell.solver.TimeStep getTimeStep() {
  * @return cbit.vcell.solver.TimeStep
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.solver.TimeStep getTimeStepFactory() {
+private cbit.vcell.simulation.TimeStep getTimeStepFactory() {
 	// user code begin {1}
 	// user code end
 	return ivjTimeStepFactory;
@@ -432,7 +432,7 @@ private javax.swing.JLabel getTimeStepLabel() {
  * @return cbit.vcell.solver.TimeStep
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.solver.TimeStep getTornOffTimeStep() {
+private cbit.vcell.simulation.TimeStep getTornOffTimeStep() {
 	// user code begin {1}
 	// user code end
 	return ivjTornOffTimeStep;
@@ -584,8 +584,8 @@ public void setEnabled(boolean b) {
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getTimeStep
  */
-public void setTimeStep(cbit.vcell.solver.TimeStep timeStep) throws java.beans.PropertyVetoException {
-	cbit.vcell.solver.TimeStep oldValue = fieldTimeStep;
+public void setTimeStep(cbit.vcell.simulation.TimeStep timeStep) throws java.beans.PropertyVetoException {
+	cbit.vcell.simulation.TimeStep oldValue = fieldTimeStep;
 	fireVetoableChange("timeStep", oldValue, timeStep);
 	fieldTimeStep = timeStep;
 	firePropertyChange("timeStep", oldValue, timeStep);
@@ -595,10 +595,10 @@ public void setTimeStep(cbit.vcell.solver.TimeStep timeStep) throws java.beans.P
  * @param newValue cbit.vcell.solver.TimeStep
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setTimeStepFactory(cbit.vcell.solver.TimeStep newValue) {
+private void setTimeStepFactory(cbit.vcell.simulation.TimeStep newValue) {
 	if (ivjTimeStepFactory != newValue) {
 		try {
-			cbit.vcell.solver.TimeStep oldValue = getTimeStepFactory();
+			cbit.vcell.simulation.TimeStep oldValue = getTimeStepFactory();
 			ivjTimeStepFactory = newValue;
 			firePropertyChange("timeStep", oldValue, newValue);
 			// user code begin {1}
@@ -617,10 +617,10 @@ private void setTimeStepFactory(cbit.vcell.solver.TimeStep newValue) {
  * @param newValue cbit.vcell.solver.TimeStep
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setTornOffTimeStep(cbit.vcell.solver.TimeStep newValue) {
+private void setTornOffTimeStep(cbit.vcell.simulation.TimeStep newValue) {
 	if (ivjTornOffTimeStep != newValue) {
 		try {
-			cbit.vcell.solver.TimeStep oldValue = getTornOffTimeStep();
+			cbit.vcell.simulation.TimeStep oldValue = getTornOffTimeStep();
 			ivjTornOffTimeStep = newValue;
 			connPtoP1SetSource();
 			connEtoM4(ivjTornOffTimeStep);

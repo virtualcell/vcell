@@ -88,7 +88,7 @@ public java.beans.PropertyDescriptor errorTolerancePropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.solver.ErrorTolerance.class
+					cbit.vcell.simulation.ErrorTolerance.class
 				};
 				aSetMethod = getBeanClass().getMethod("setErrorTolerance", aSetMethodParameterTypes);
 			} catch (Throwable exception) {

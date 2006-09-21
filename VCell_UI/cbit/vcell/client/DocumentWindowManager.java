@@ -3,6 +3,7 @@ import swingthreads.*;
 import java.net.*;
 import cbit.vcell.server.*;
 import cbit.vcell.simdata.DataJobEvent;
+import cbit.vcell.simulation.*;
 
 import java.io.*;
 
@@ -26,7 +27,6 @@ import cbit.vcell.document.*;
 import java.beans.*;
 import javax.swing.*;
 import cbit.vcell.client.server.*;
-import cbit.vcell.solver.*;
 import cbit.vcell.solvers.VCSimulationDataIdentifier;
 import cbit.vcell.xml.merge.gui.TMLPanel;
 /**

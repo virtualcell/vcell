@@ -3,7 +3,7 @@ package cbit.vcell.matlab;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.solver.*;
+import cbit.vcell.simulation.*;
 import cbit.vcell.geometry.*;
 import java.util.*;
 import cbit.vcell.model.*;
@@ -33,7 +33,7 @@ public static void main(java.lang.String[] args) {
 		//mathDesc = aMathDbDialog.getMathDescription();
 
 		mathDesc = MathDescriptionTest.getOdeExampleWagner();
-		Simulation simulation = new cbit.vcell.solver.Simulation(mathDesc);
+		Simulation simulation = new cbit.vcell.simulation.Simulation(mathDesc);
 
 		// SimulationContext simContext = SimulationContextTest.getExample(2);
 		// TimeScaleAnalyzer timeScaleAnalyzer = new TimeScaleAnalyzer(simContext);

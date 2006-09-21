@@ -214,7 +214,7 @@ public java.beans.PropertyDescriptor simulationPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.solver.Simulation.class
+					cbit.vcell.simulation.Simulation.class
 				};
 				aSetMethod = getBeanClass().getMethod("setSimulation", aSetMethodParameterTypes);
 			} catch (java.lang.Throwable exception) {

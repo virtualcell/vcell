@@ -6,10 +6,10 @@ import cbit.vcell.mathmodel.*;
 ©*/
 import java.util.*;
 import cbit.vcell.mapping.*;
-import cbit.vcell.solver.*;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.client.database.DocumentManager;
 import cbit.vcell.server.*;
+import cbit.vcell.simulation.*;
 /**
  * Insert the type's description here.
  * Creation date: (11/28/00 1:14:05 PM)

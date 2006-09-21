@@ -85,7 +85,7 @@ public java.beans.PropertyDescriptor constantArraySpecPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.solver.ConstantArraySpec.class
+					cbit.vcell.simulation.ConstantArraySpec.class
 				};
 				aSetMethod = getBeanClass().getMethod("setConstantArraySpec", aSetMethodParameterTypes);
 			} catch (java.lang.Throwable exception) {

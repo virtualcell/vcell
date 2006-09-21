@@ -341,7 +341,7 @@ public java.beans.MethodDescriptor setTimeStep_cbitvcellsolverTimeStepMethodDesc
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.solver.TimeStep.class
+				cbit.vcell.simulation.TimeStep.class
 			};
 			aMethod = getBeanClass().getMethod("setTimeStep", aParameterTypes);
 		} catch (java.lang.Throwable exception) {
@@ -396,7 +396,7 @@ public java.beans.PropertyDescriptor timeStepPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.solver.TimeStep.class
+					cbit.vcell.simulation.TimeStep.class
 				};
 				aSetMethod = getBeanClass().getMethod("setTimeStep", aSetMethodParameterTypes);
 			} catch (java.lang.Throwable exception) {

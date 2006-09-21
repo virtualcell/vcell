@@ -11,9 +11,9 @@ import cbit.vcell.client.database.DatabaseEvent;
 
 import javax.swing.tree.*;
 import cbit.util.VersionInfo;
-import cbit.vcell.solver.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.server.*;
+import cbit.vcell.simulation.*;
 import cbit.vcell.xml.merge.NodeInfo;
 import cbit.util.DataAccessException;
 import cbit.util.GroupAccessAll;

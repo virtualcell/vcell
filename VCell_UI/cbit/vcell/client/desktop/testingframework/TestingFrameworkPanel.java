@@ -1,7 +1,7 @@
 package cbit.vcell.client.desktop.testingframework;
 
 import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.simulation.SimulationInfo;
 import cbit.vcell.mathmodel.MathModelInfo;
 import javax.swing.tree.TreeNode;
 import cbit.vcell.numericstest.TestSuiteInfoNew;

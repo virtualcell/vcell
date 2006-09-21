@@ -21,7 +21,7 @@ public class MeshSpecificationPanel extends javax.swing.JPanel {
 	private javax.swing.JTextField ivjZTextField = null;
 	private javax.swing.JLabel ivjGeometrySizeLabel = null;
 	private javax.swing.JLabel ivjMeshSizeLabel = null;
-	private cbit.vcell.solver.MeshSpecification fieldMeshSpecification = null;
+	private cbit.vcell.simulation.MeshSpecification fieldMeshSpecification = null;
 	private javax.swing.JLabel ivjJLabelTitle = null;
 
 class IvjEventHandler implements java.awt.event.FocusListener, java.beans.PropertyChangeListener {
@@ -295,7 +295,7 @@ private javax.swing.JLabel getMeshSizeLabel() {
  * @return The meshSpecification property value.
  * @see #setMeshSpecification
  */
-public cbit.vcell.solver.MeshSpecification getMeshSpecification() {
+public cbit.vcell.simulation.MeshSpecification getMeshSpecification() {
 	return fieldMeshSpecification;
 }
 
@@ -581,8 +581,8 @@ private void makeBoldTitle() {
  * @param meshSpecification The new value for the property.
  * @see #getMeshSpecification
  */
-public void setMeshSpecification(cbit.vcell.solver.MeshSpecification meshSpecification) {
-	cbit.vcell.solver.MeshSpecification oldValue = fieldMeshSpecification;
+public void setMeshSpecification(cbit.vcell.simulation.MeshSpecification meshSpecification) {
+	cbit.vcell.simulation.MeshSpecification oldValue = fieldMeshSpecification;
 	fieldMeshSpecification = meshSpecification;
 	firePropertyChange("meshSpecification", oldValue, meshSpecification);
 }

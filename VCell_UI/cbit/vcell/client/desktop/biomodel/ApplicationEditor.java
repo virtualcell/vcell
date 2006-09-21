@@ -1,7 +1,7 @@
 package cbit.vcell.client.desktop.biomodel;
 import cbit.gui.DialogUtils;
 import cbit.util.BeanUtils;
-import cbit.vcell.solver.*;
+import cbit.vcell.simulation.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.mapping.gui.AnalysisTaskComboBoxModel;
 

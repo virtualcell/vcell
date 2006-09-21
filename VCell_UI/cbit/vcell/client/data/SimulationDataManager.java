@@ -1,8 +1,8 @@
 package cbit.vcell.client.data;
 import cbit.util.DataAccessException;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.simulation.Simulation;
+import cbit.vcell.simulation.VCSimulationIdentifier;
 import cbit.vcell.client.server.VCDataManager;
-import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solvers.VCSimulationDataIdentifier;
 /**
  * Insert the type's description here.

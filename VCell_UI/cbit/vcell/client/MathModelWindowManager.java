@@ -2,7 +2,7 @@ package cbit.vcell.client;
 import cbit.util.KeyValue;
 import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.server.*;
-import cbit.vcell.solver.*;
+import cbit.vcell.simulation.*;
 import cbit.vcell.client.desktop.simulation.*;
 import java.awt.*;
 import javax.swing.*;
@@ -150,7 +150,7 @@ private void checkValidSimulationDataViewerFrames() {
 	Simulation[] sims = getMathModel().getSimulations();
 	Hashtable hash = new Hashtable();
 	for (int i = 0; i < sims.length; i++){
-		cbit.vcell.solver.SimulationInfo simInfo = sims[i].getSimulationInfo();
+		cbit.vcell.simulation.SimulationInfo simInfo = sims[i].getSimulationInfo();
 		if (simInfo != null) {
 			VCSimulationIdentifier vcSimulationIdentifier = simInfo.getAuthoritativeVCSimulationIdentifier();
 			hash.put(vcSimulationIdentifier, sims[i]);

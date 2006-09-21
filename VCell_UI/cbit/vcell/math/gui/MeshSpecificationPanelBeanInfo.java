@@ -202,7 +202,7 @@ public java.beans.PropertyDescriptor meshSpecificationPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.solver.MeshSpecification.class
+					cbit.vcell.simulation.MeshSpecification.class
 				};
 				aSetMethod = getBeanClass().getMethod("setMeshSpecification", aSetMethodParameterTypes);
 			} catch (Throwable exception) {
