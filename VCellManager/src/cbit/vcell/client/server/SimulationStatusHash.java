@@ -2,7 +2,7 @@ package cbit.vcell.client.server;
 import java.util.Enumeration;
 
 import cbit.vcell.server.SimulationStatus;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.simulation.Simulation;
 /**
  * Insert the type's description here.
  * Creation date: (4/20/2005 1:55:06 PM)
@@ -46,8 +46,8 @@ public void changeSimulationInstances(Simulation[] newSimulations) {
 					//
 					// if simulations have the same "authoritative simulation identifier" then use this status
 					//
-					cbit.vcell.solver.SimulationInfo oldSimInfo = sim.getSimulationInfo();
-					cbit.vcell.solver.SimulationInfo newSimInfo = newSimulations[i].getSimulationInfo();
+					cbit.vcell.simulation.SimulationInfo oldSimInfo = sim.getSimulationInfo();
+					cbit.vcell.simulation.SimulationInfo newSimInfo = newSimulations[i].getSimulationInfo();
 					if (oldSimInfo!=null && newSimInfo!=null && oldSimInfo.getAuthoritativeVCSimulationIdentifier().equals(newSimInfo.getAuthoritativeVCSimulationIdentifier())){
 						//
 						// same "job id" ... same status

@@ -17,7 +17,7 @@ import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
 import cbit.vcell.geometry.*;
 import cbit.vcell.server.SimulationStatus;
-import cbit.vcell.solver.*;
+import cbit.vcell.simulation.*;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.geometry.GeometryInfo;

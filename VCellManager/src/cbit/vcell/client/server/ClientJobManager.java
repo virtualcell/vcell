@@ -6,9 +6,9 @@ import java.rmi.*;
 
 import cbit.vcell.export.ExportSpecs;
 import cbit.vcell.export.server.*;
-import cbit.vcell.solver.*;
 import cbit.vcell.messaging.db.*;
 import cbit.vcell.server.*;
+import cbit.vcell.simulation.*;
 /**
  * Insert the type's description here.
  * Creation date: (6/1/2004 11:07:51 PM)

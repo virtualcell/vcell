@@ -4,7 +4,7 @@ package cbit.vcell.desktop.controls;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.simulation.SimulationInfo;
 /**
  * This is the event class to support the cbit.vcell.desktop.controls.SimulationListener interface.
  */

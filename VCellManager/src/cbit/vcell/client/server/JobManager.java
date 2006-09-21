@@ -5,7 +5,7 @@ import cbit.vcell.export.ExportSpecs;
 import cbit.vcell.export.server.*;
 import cbit.vcell.messaging.db.*;
 import cbit.vcell.server.*;
-import cbit.vcell.solver.*;
+import cbit.vcell.simulation.*;
 
 public interface JobManager extends cbit.rmi.event.SimulationJobStatusListener, cbit.vcell.client.server.SimStatusSender {
 

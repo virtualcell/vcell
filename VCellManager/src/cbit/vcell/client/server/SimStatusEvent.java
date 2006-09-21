@@ -1,5 +1,5 @@
 package cbit.vcell.client.server;
-import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.simulation.VCSimulationIdentifier;
 
 /**
  * Insert the type's description here.
@@ -102,7 +102,7 @@ private void setNewFailureEvent(boolean newNewFailureEvent) {
  * Creation date: (10/13/2005 4:31:25 PM)
  * @param newVcSimID cbit.vcell.solver.VCSimulationIdentifier
  */
-private void setVCSimulationIdentifier(cbit.vcell.solver.VCSimulationIdentifier newVcSimID) {
+private void setVCSimulationIdentifier(cbit.vcell.simulation.VCSimulationIdentifier newVcSimID) {
 	vcSimID = newVcSimID;
 }
 }
