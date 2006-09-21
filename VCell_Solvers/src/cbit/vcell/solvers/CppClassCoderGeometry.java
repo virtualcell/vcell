@@ -4,6 +4,8 @@ package cbit.vcell.solvers;
  * All rights reserved.
 ©*/
 import java.util.*;
+
+import cbit.util.Coordinate;
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
 import cbit.vcell.geometry.*;

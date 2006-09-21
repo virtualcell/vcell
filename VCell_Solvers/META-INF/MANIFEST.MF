@@ -15,4 +15,6 @@ Require-Bundle: org.vcell.model,
  org.vcell.render,
  org.vcell.simdata,
  org.vcell.expression,
- org.vcell.units
+ org.vcell.units,
+ org.vcell.geometry,
+ org.vcell.image
