@@ -1,4 +1,7 @@
 package cbit.image.gui;
+
+import cbit.util.Coordinate;
+
 /**
  * Insert the type's description here.
  * Creation date: (7/19/2003 5:40:19 PM)
@@ -193,7 +196,7 @@ protected void paintComponent(java.awt.Graphics g) {
 							g.drawLine(tempPrintpoint,(int)getPreferredSize().getHeight()-1-len+2,tempPrintpoint,(int)getPreferredSize().getHeight()-1-2);
 						}
 						lastPrintPoint = tempPrintpoint;
-						cbit.vcell.geometry.Coordinate coord = null;
+						Coordinate coord = null;
 						if(lastLowPoint == 0){
 							coord = getImagePlaneManager().getWorldCoordinateFromUnitized2D(0,0);
 						}else if(lastHighPoint == (end-1)){
@@ -203,7 +206,7 @@ protected void paintComponent(java.awt.Graphics g) {
 						}
 						double doubleVal = Double.NaN;
 						if(coord != null){
-							doubleVal = cbit.vcell.geometry.Coordinate.convertAxisFromStandardXYZToNormal(coord,cbit.vcell.geometry.Coordinate.X_AXIS,getImagePlaneManager().getNormalAxis());
+							doubleVal = Coordinate.convertAxisFromStandardXYZToNormal(coord,Coordinate.X_AXIS,getImagePlaneManager().getNormalAxis());
 						}
 						String val = "";
 						if(doubleVal != Double.NaN){
@@ -267,7 +270,7 @@ protected void paintComponent(java.awt.Graphics g) {
 							g.drawLine((int)getPreferredSize().getWidth()-1-len+2,tempPrintpoint,(int)getPreferredSize().getWidth()-1-2,tempPrintpoint);						
 						}
 						lastPrintPoint = tempPrintpoint;
-						cbit.vcell.geometry.Coordinate coord = null;
+						Coordinate coord = null;
 						if(lastLowPoint == 0){
 							coord = getImagePlaneManager().getWorldCoordinateFromUnitized2D(0,0);
 						}else if(lastHighPoint == (end-1)){
@@ -277,7 +280,7 @@ protected void paintComponent(java.awt.Graphics g) {
 						}
 						double doubleVal = Double.NaN;
 						if(coord != null){
-							doubleVal = cbit.vcell.geometry.Coordinate.convertAxisFromStandardXYZToNormal(coord,cbit.vcell.geometry.Coordinate.Y_AXIS,getImagePlaneManager().getNormalAxis());
+							doubleVal = Coordinate.convertAxisFromStandardXYZToNormal(coord,Coordinate.Y_AXIS,getImagePlaneManager().getNormalAxis());
 						}
 						String val = doubleVal+"";
 						if(doubleVal != Double.NaN){

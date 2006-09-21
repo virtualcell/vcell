@@ -1,6 +1,6 @@
 package cbit.vcell.mapping.gui;
+import cbit.util.Coordinate;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.geometry.Coordinate;
 import cbit.vcell.mapping.*;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Feature;

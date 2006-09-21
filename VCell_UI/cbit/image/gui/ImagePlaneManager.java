@@ -4,10 +4,9 @@ package cbit.image.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.math.CoordinateIndex;
 import cbit.vcell.simdata.SourceDataInfo;
-import cbit.vcell.geometry.Coordinate;
-import cbit.image.WorldCoordinateCalculator;
+import cbit.util.Coordinate;
+import cbit.util.CoordinateIndex;
 import cbit.util.Extent;
 /**
  * Insert the type's description here.
@@ -68,7 +67,7 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
 /**
  * Insert the method's description here.
  * Creation date: (10/11/00 12:27:01 PM)
- * @return cbit.vcell.geometry.Coordinate
+ * @return Coordinate
  */
 public CoordinateIndex getDataIndexFromUnitized2D(double x, double y) {
 	if(getSourceDataInfo() != null){
@@ -134,9 +133,9 @@ public SourceDataInfo getSourceDataInfo() {
 /**
  * Insert the method's description here.
  * Creation date: (10/11/00 12:27:01 PM)
- * @return cbit.vcell.geometry.Coordinate
+ * @return Coordinate
  */
-public cbit.vcell.geometry.Coordinate getWorldCoordinateFromUnitized2D(double x, double y) {
+public Coordinate getWorldCoordinateFromUnitized2D(double x, double y) {
 	if(getSourceDataInfo() != null){
 		//
 		// numSlices (sliceBoundary) should be >= 1
@@ -278,10 +277,10 @@ public int sliceBoundary() {
  * Insert the method's description here.
  * Creation date: (7/12/2004 1:52:04 PM)
  */
-public cbit.vcell.geometry.Coordinate snapWorldCoordinate(cbit.vcell.geometry.Coordinate targetC) {
+public Coordinate snapWorldCoordinate(Coordinate targetC) {
 	if(getSourceDataInfo() != null){
 		double distance = 0;
-		cbit.vcell.math.CoordinateIndex centerCI = getSourceDataInfo().getDataIndexFromWorldCoordinate(targetC);
+		cbit.util.CoordinateIndex centerCI = getSourceDataInfo().getDataIndexFromWorldCoordinate(targetC);
 		Coordinate centerCoord = getSourceDataInfo().getWorldCoordinateFromIndex(centerCI);
 		return centerCoord;
 	}
@@ -291,9 +290,9 @@ public cbit.vcell.geometry.Coordinate snapWorldCoordinate(cbit.vcell.geometry.Co
  * Insert the method's description here.
  * Creation date: (7/13/2004 4:27:15 PM)
  */
-public cbit.vcell.geometry.Coordinate snapWorldCoordinateFace(cbit.vcell.geometry.Coordinate targetC) {
+public Coordinate snapWorldCoordinateFace(Coordinate targetC) {
 	
-		cbit.vcell.math.CoordinateIndex centerCI = getSourceDataInfo().getDataIndexFromWorldCoordinate(targetC);
+		cbit.util.CoordinateIndex centerCI = getSourceDataInfo().getDataIndexFromWorldCoordinate(targetC);
 		Coordinate centerCoord = getSourceDataInfo().getWorldCoordinateFromIndex(centerCI);
 
 		double diffX = centerCoord.getX()-targetC.getX();
@@ -319,7 +318,7 @@ public cbit.vcell.geometry.Coordinate snapWorldCoordinateFace(cbit.vcell.geometr
 /**
  * Insert the method's description here.
  * Creation date: (7/25/2003 11:14:33 AM)
- * @return cbit.vcell.geometry.Coordinate
+ * @return Coordinate
  * @param x double
  * @param y double
  */

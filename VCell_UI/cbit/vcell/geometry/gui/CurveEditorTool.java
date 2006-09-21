@@ -6,6 +6,8 @@ package cbit.vcell.geometry.gui;
 ©*/
 import java.awt.event.*;
 import java.util.*;
+
+import cbit.util.Coordinate;
 import cbit.vcell.geometry.*;
 /**
  * This type was created in VisualAge.
@@ -32,7 +34,7 @@ public class CurveEditorTool implements KeyListener, MouseListener, MouseMotionL
 	//
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private CurveRenderer fieldCurveRenderer = null;
-	private cbit.image.WorldCoordinateCalculator fieldWorldCoordinateCalculator = null;
+	private cbit.image.gui.WorldCoordinateCalculator fieldWorldCoordinateCalculator = null;
 	private VCellDrawable fieldVcellDrawable = null;
 	private boolean fieldProperlyConfigured = false;
 	private java.awt.Component fieldKeyboardAndMouseEvents = null;
@@ -187,7 +189,7 @@ public VCellDrawable getVcellDrawable() {
  * @return The worldCoordinate property value.
  * @see #setWorldCoordinate
  */
-public cbit.image.WorldCoordinateCalculator getWorldCoordinateCalculator() {
+public cbit.image.gui.WorldCoordinateCalculator getWorldCoordinateCalculator() {
 	return fieldWorldCoordinateCalculator;
 }
 /**
@@ -664,8 +666,8 @@ public void setVcellDrawable(VCellDrawable vcellDrawable) {
  * @param worldCoordinate The new value for the property.
  * @see #getWorldCoordinate
  */
-public void setWorldCoordinateCalculator(cbit.image.WorldCoordinateCalculator worldCoordinateCalculator) {
-	cbit.image.WorldCoordinateCalculator oldValue = fieldWorldCoordinateCalculator;
+public void setWorldCoordinateCalculator(cbit.image.gui.WorldCoordinateCalculator worldCoordinateCalculator) {
+	cbit.image.gui.WorldCoordinateCalculator oldValue = fieldWorldCoordinateCalculator;
 	fieldWorldCoordinateCalculator = worldCoordinateCalculator;
 	firePropertyChange("worldCoordinateCalculator", oldValue, worldCoordinateCalculator);
 	checkConfiguration();

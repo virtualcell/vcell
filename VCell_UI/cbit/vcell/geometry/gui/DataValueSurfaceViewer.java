@@ -2,7 +2,7 @@ package cbit.vcell.geometry.gui;
 import cbit.render.SurfaceCanvas;
 import cbit.render.SurfaceViewerTool;
 import cbit.render.*;
-import cbit.vcell.geometry.Coordinate;
+import cbit.util.Coordinate;
 /**
  * Insert the type's description here.
  * Creation date: (9/20/2005 9:13:34 AM)

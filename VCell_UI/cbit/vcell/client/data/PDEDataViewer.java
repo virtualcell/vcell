@@ -15,7 +15,6 @@ import cbit.vcell.client.*;
 import cbit.vcell.desktop.controls.ClientPDEDataContext;
 import cbit.vcell.export.gui.ExportMonitorPanel;
 import cbit.util.*;
-import cbit.vcell.geometry.Coordinate;
 /**
  * Insert the type's description here.
  * Creation date: (6/11/2004 6:03:07 AM)
@@ -1969,9 +1968,9 @@ public static void main(java.lang.String[] args) {
  * Insert the method's description here.
  * Creation date: (10/8/2004 7:09:31 AM)
  * @return java.lang.String
- * @param coord cbit.vcell.geometry.Coordinate
+ * @param coord Coordinate
  */
-private String niceCoordinateString(cbit.vcell.geometry.Coordinate coord) {
+private String niceCoordinateString(Coordinate coord) {
 
 	//reduce fraction digits of the form XX.xxxxxxxxxxxxxxy
 	//to something more reasonable
@@ -2461,7 +2460,7 @@ private void showKymograph() {
 					int[] indices = null;
 					double[] accumDistances = null;
 					for (int i = 0; i < lineSSOnly.size(); i++){
-						cbit.vcell.geometry.Coordinate tp = null;
+						Coordinate tp = null;
 						if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION)){
 							SpatialSelectionVolume ssv = (SpatialSelectionVolume)lineSSOnly.get(i);
 							SpatialSelection.SSHelper ssh = ssv.getIndexSamples(0.0,1.0);
@@ -2675,7 +2674,7 @@ private void showTimePlot() {
 					indices = new int[singlePointSSOnly.size()];
 					plotNames = new String[singlePointSSOnly.size()];
 					for (int i = 0; i < singlePointSSOnly.size(); i++){
-						cbit.vcell.geometry.Coordinate tp = null;
+						Coordinate tp = null;
 						if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION)){
 							SpatialSelectionVolume ssv = (SpatialSelectionVolume)singlePointSSOnly.get(i);
 							indices[i] = ssv.getIndex(0);

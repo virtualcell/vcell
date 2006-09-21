@@ -875,7 +875,7 @@ private ImageContainerPanelTool getImageContainerPanelTool() {
  * Method generated to support the promotion of the imageContainerPanelToolBeginLine attribute.
  * @return cbit.vcell.math.CoordinateIndex
  */
-public cbit.vcell.math.CoordinateIndex getImageContainerPanelToolBeginLine() {
+public cbit.util.CoordinateIndex getImageContainerPanelToolBeginLine() {
 		return getImageContainerPanelTool().getBeginLine();
 }
 
@@ -884,7 +884,7 @@ public cbit.vcell.math.CoordinateIndex getImageContainerPanelToolBeginLine() {
  * Method generated to support the promotion of the imageContainerPanelToolClickedPoint attribute.
  * @return cbit.vcell.math.CoordinateIndex
  */
-public cbit.vcell.math.CoordinateIndex getImageContainerPanelToolClickedPoint() {
+public cbit.util.CoordinateIndex getImageContainerPanelToolClickedPoint() {
 		return getImageContainerPanelTool().getClickedPoint();
 }
 
@@ -893,7 +893,7 @@ public cbit.vcell.math.CoordinateIndex getImageContainerPanelToolClickedPoint() 
  * Method generated to support the promotion of the imageContainerPanelToolEndLine attribute.
  * @return cbit.vcell.math.CoordinateIndex
  */
-public cbit.vcell.math.CoordinateIndex getImageContainerPanelToolEndLine() {
+public cbit.util.CoordinateIndex getImageContainerPanelToolEndLine() {
 		return getImageContainerPanelTool().getEndLine();
 }
 

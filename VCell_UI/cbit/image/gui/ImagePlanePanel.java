@@ -4,8 +4,8 @@ package cbit.image.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import javax.swing.SwingConstants;
-import cbit.vcell.geometry.Coordinate;
+
+import cbit.util.Coordinate;
 /**
  * Insert the type's description here.
  * Creation date: (10/11/00 3:05:12 PM)

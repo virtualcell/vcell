@@ -1,5 +1,7 @@
 package cbit.vcell.geometry.gui;
 
+import cbit.util.Coordinate;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -21,10 +23,10 @@ public static void main(java.lang.String[] args) {
 		//
 		cbit.vcell.geometry.Geometry geom = cbit.vcell.geometry.GeometryTest.getExample(2);
 		//
-		cbit.vcell.geometry.Line line = new cbit.vcell.geometry.Line(new cbit.vcell.geometry.Coordinate(0,0,0),new cbit.vcell.geometry.Coordinate(1,1,1));
+		cbit.vcell.geometry.Line line = new cbit.vcell.geometry.Line(new Coordinate(0,0,0),new Coordinate(1,1,1));
 		line.setClosed(true);
 		geom.getGeometrySpec().getFilamentGroup().addCurve("filament1",line);
-		line = new cbit.vcell.geometry.Line(new cbit.vcell.geometry.Coordinate(0,0,0),new cbit.vcell.geometry.Coordinate(1,1,1));
+		line = new cbit.vcell.geometry.Line(new Coordinate(0,0,0),new Coordinate(1,1,1));
 		geom.getGeometrySpec().getFilamentGroup().addCurve("filament2",line);
 		//
 		geometryFilamentDialog.setGeometry(geom);

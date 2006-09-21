@@ -1,6 +1,8 @@
 package cbit.vcell.mapping.gui;
 
 import java.util.*;
+
+import cbit.util.Coordinate;
 import cbit.vcell.model.*;
 /**
  * Insert the type's description here.
@@ -22,7 +24,7 @@ public class ElectrodePanel extends javax.swing.JPanel {
 	private javax.swing.JTextField ivjTextFieldZ = null;
 	private cbit.vcell.mapping.Electrode fieldElectrode = null;
 	private boolean ivjConnPtoP1Aligning = false;
-	private cbit.vcell.geometry.Coordinate ivjCoordinateFactory = null;
+	private Coordinate ivjCoordinateFactory = null;
 	private cbit.vcell.mapping.Electrode ivjelectrode1 = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private cbit.vcell.geometry.Geometry fieldGeometry = null;
@@ -31,7 +33,7 @@ public class ElectrodePanel extends javax.swing.JPanel {
 	private cbit.vcell.model.Model fieldModel = null;
 	private boolean ivjConnPtoP3Aligning = false;
 	private Model ivjmodel1 = null;
-	private cbit.vcell.geometry.Coordinate ivjCoordinate = null;
+	private Coordinate ivjCoordinate = null;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -159,10 +161,10 @@ private void connEtoM1(java.beans.PropertyChangeEvent arg1) {
 }
 /**
  * connEtoM10:  (Coordinate.this --> TextFieldZ.text)
- * @param value cbit.vcell.geometry.Coordinate
+ * @param value Coordinate
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM10(cbit.vcell.geometry.Coordinate value) {
+private void connEtoM10(Coordinate value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -275,11 +277,11 @@ private void connEtoM5(cbit.vcell.mapping.Electrode value) {
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM6(java.awt.event.ActionEvent arg1) {
-	cbit.vcell.geometry.Coordinate localValue = null;
+	Coordinate localValue = null;
 	try {
 		// user code begin {1}
 		// user code end
-		getelectrode1().setPosition(localValue = new cbit.vcell.geometry.Coordinate(new Double(getTextFieldX().getText()).doubleValue(), new Double(getTextFieldY().getText()).doubleValue(), new Double(getTextFieldZ().getText()).doubleValue()));
+		getelectrode1().setPosition(localValue = new Coordinate(new Double(getTextFieldX().getText()).doubleValue(), new Double(getTextFieldY().getText()).doubleValue(), new Double(getTextFieldZ().getText()).doubleValue()));
 		
 		// user code begin {2}
 		System.out.println("Feature : "+ivjelectrode1.getFeature().toString());
@@ -315,10 +317,10 @@ private void connEtoM7(cbit.vcell.mapping.Electrode value) {
 }
 /**
  * connEtoM8:  (Coordinate.this --> TextFieldX.text)
- * @param value cbit.vcell.geometry.Coordinate
+ * @param value Coordinate
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM8(cbit.vcell.geometry.Coordinate value) {
+private void connEtoM8(Coordinate value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -333,10 +335,10 @@ private void connEtoM8(cbit.vcell.geometry.Coordinate value) {
 }
 /**
  * connEtoM9:  (Coordinate.this --> TextFieldY.text)
- * @param value cbit.vcell.geometry.Coordinate
+ * @param value Coordinate
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM9(cbit.vcell.geometry.Coordinate value) {
+private void connEtoM9(Coordinate value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -538,20 +540,20 @@ private void enableComponents() {
 }
 /**
  * Return the Coordinate property value.
- * @return cbit.vcell.geometry.Coordinate
+ * @return Coordinate
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.geometry.Coordinate getCoordinate() {
+private Coordinate getCoordinate() {
 	// user code begin {1}
 	// user code end
 	return ivjCoordinate;
 }
 /**
  * Return the CoordinateFactory property value.
- * @return cbit.vcell.geometry.Coordinate
+ * @return Coordinate
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.geometry.Coordinate getCoordinateFactory() {
+private Coordinate getCoordinateFactory() {
 	// user code begin {1}
 	// user code end
 	return ivjCoordinateFactory;
@@ -1067,10 +1069,10 @@ private void selectFeature(Model model) {
 }
 /**
  * Set the Coordinate to a new value.
- * @param newValue cbit.vcell.geometry.Coordinate
+ * @param newValue Coordinate
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setCoordinate(cbit.vcell.geometry.Coordinate newValue) {
+private void setCoordinate(Coordinate newValue) {
 	if (ivjCoordinate != newValue) {
 		try {
 			ivjCoordinate = newValue;
@@ -1090,10 +1092,10 @@ private void setCoordinate(cbit.vcell.geometry.Coordinate newValue) {
 }
 /**
  * Set the CoordinateFactory to a new value.
- * @param newValue cbit.vcell.geometry.Coordinate
+ * @param newValue Coordinate
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setCoordinateFactory(cbit.vcell.geometry.Coordinate newValue) {
+private void setCoordinateFactory(Coordinate newValue) {
 	if (ivjCoordinateFactory != newValue) {
 		try {
 			ivjCoordinateFactory = newValue;

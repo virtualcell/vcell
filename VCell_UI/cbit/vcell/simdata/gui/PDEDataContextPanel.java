@@ -1,5 +1,6 @@
 package cbit.vcell.simdata.gui;
 
+import cbit.util.Coordinate;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.mesh.CartesianMesh;
 import cbit.vcell.simdata.*;
@@ -830,7 +831,7 @@ private cbit.image.gui.ImagePlaneManagerPanel getImagePlaneManagerPanel() {
  * Insert the method's description here.
  * Creation date: (7/4/2003 6:10:48 PM)
  */
-public cbit.vcell.geometry.CurveSelectionInfo getInitalCurveSelection(int tool, cbit.vcell.geometry.Coordinate wc) {
+public cbit.vcell.geometry.CurveSelectionInfo getInitalCurveSelection(int tool, Coordinate wc) {
 	//
 	CurveSelectionInfo newCurveSelection = null;
 	if(	getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.MEMBRANE) ||
@@ -990,7 +991,7 @@ private void initMeshDisplayAdapter() {
  * Insert the method's description here.
  * Creation date: (7/4/2003 6:10:48 PM)
  */
-public boolean isAddControlPointOK(int tool, cbit.vcell.geometry.Coordinate wc,Curve addedToThisCurve) {
+public boolean isAddControlPointOK(int tool, Coordinate wc,Curve addedToThisCurve) {
 	//
 	cbit.vcell.geometry.CurveRenderer curveR = getImagePlaneManagerPanel().getCurveRenderer();
 	if(getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.VOLUME) ||
@@ -1138,7 +1139,7 @@ private ControlPointCurve projectCurveOntoSlice(ControlPointCurve curve) {
  * Insert the method's description here.
  * Creation date: (7/4/2003 6:10:48 PM)
  */
-public boolean providesInitalCurve(int tool, cbit.vcell.geometry.Coordinate wc) {
+public boolean providesInitalCurve(int tool, Coordinate wc) {
 	
 	if(getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.MEMBRANE) ||
 		getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.MEMBRANE_REGION)){
