@@ -9,12 +9,12 @@ import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simulation.Simulation;
 
 import java.util.Vector;
-import cbit.vcell.mapping.VariableHash;
 import cbit.vcell.numericstest.ConstructedSolutionTemplate;
 import java.util.Enumeration;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.mapping.MappingException;
 import cbit.vcell.math.*;
 import cbit.vcell.mesh.CartesianMesh;
 /**
@@ -506,7 +506,7 @@ public static MathDescription constructExactMath(MathDescription mathDesc, java.
 	//
 	// preload the VariableHash with existing Variables (and Constants,Functions,etc) and then sort all at once.
 	//
-	cbit.vcell.mapping.VariableHash varHash = new cbit.vcell.mapping.VariableHash();
+	cbit.vcell.math.VariableHash varHash = new cbit.vcell.math.VariableHash();
 	Enumeration enumVar = exactMath.getVariables();
 	while (enumVar.hasMoreElements()){
 		varHash.addVariable((Variable)enumVar.nextElement());
@@ -1225,10 +1225,12 @@ public static Expression[] getInsideOutsideFunctions(Expression analyticSubDomai
  * Creation date: (1/23/2003 10:30:23 PM)
  * @return cbit.vcell.parser.Expression
  * @param analyticSubDomainExp cbit.vcell.parser.Expression
+ * @throws MathException 
+ * @throws MappingException 
  */
-public static Function[] getOutwardNormal(Expression analyticSubVolume, String baseName) throws ExpressionException, cbit.vcell.mapping.MappingException {
+public static Function[] getOutwardNormal(Expression analyticSubVolume, String baseName) throws ExpressionException, MathException, MappingException {
 
-	cbit.vcell.mapping.VariableHash varHash = new cbit.vcell.mapping.VariableHash();
+	cbit.vcell.math.VariableHash varHash = new cbit.vcell.math.VariableHash();
 	
 	Expression insideOutsideFunctions[] = getInsideOutsideFunctions(analyticSubVolume);
 	StringBuffer normalBufferX = new StringBuffer("0.0");

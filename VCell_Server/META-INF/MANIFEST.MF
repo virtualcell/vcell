@@ -42,4 +42,5 @@ Require-Bundle: org.vcell.common,
  org.vcell.xml.common,
  org.eclipse.osgi,
  org.vcell.geometry,
- org.vcell.image
+ org.vcell.image,
+ org.vcell.math
