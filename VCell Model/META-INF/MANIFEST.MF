@@ -6,9 +6,7 @@ Bundle-Version: 1.0.0
 Bundle-Localization: plugin
 Require-Bundle: org.vcell.common,
  org.vcell.util,
- org.vcell.render,
  org.eclipse.osgi,
- org.vcell.xml.compare,
  org.vcell.expression,
  org.vcell.constraints,
  org.vcell.units,
