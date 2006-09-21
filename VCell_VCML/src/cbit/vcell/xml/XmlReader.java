@@ -692,7 +692,7 @@ public Electrode getElectrode(org.jdom.Element elem, SimulationContext currentSi
 	String featureName = this.unMangle(elem.getAttributeValue(XMLTags.FeatureAttrTag));
 	Feature feature = (Feature)currentSimulationContext.getModel().getStructure(featureName);
 	//retrieve position
-	cbit.vcell.geometry.Coordinate position = getCoordinate(elem.getChild(XMLTags.CoordinateTag));
+	cbit.util.Coordinate position = getCoordinate(elem.getChild(XMLTags.CoordinateTag));
 	
 	Electrode newElect = new Electrode(feature, position);
 	
