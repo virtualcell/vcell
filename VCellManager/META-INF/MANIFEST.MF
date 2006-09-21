@@ -20,7 +20,8 @@ Require-Bundle: org.vcell.common,
  org.vcell.xml.common,
  org.vcell.vcml,
  org.vcell.geometry,
- org.vcell.image
+ org.vcell.image,
+ org.vcell.math
 Export-Package: cbit.vcell.client.database,
  cbit.vcell.client.server,
  cbit.vcell.desktop.controls,
