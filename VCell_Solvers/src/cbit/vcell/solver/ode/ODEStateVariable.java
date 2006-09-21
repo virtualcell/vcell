@@ -23,7 +23,7 @@ public class ODEStateVariable extends StateVariable {
 public ODEStateVariable(OdeEquation ode, cbit.vcell.simulation.Simulation simulation) throws ExpressionException, MathException {
 	super(ode.getVariable());
 	this.variable = (VolVariable)ode.getVariable();
-	ode.bind(simulation);
+	ode.bind(simulation,simulation.getMathDescription());
 	optimizedRateExp = ode.getFlattenedRateExpression(simulation);
 	initialExp = ode.getInitialExpression();
 }

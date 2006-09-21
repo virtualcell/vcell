@@ -55,7 +55,7 @@ protected Variable[] getRequiredVariables() throws Exception {
 	//
 	// default implementation (need to override in VolumeVarContext)
 	//
-	Enumeration enum1 = equation.getRequiredVariables(simulation);
+	Enumeration enum1 = equation.getRequiredVariables(simulation.getMathDescription());
 
 	Vector uniqueVarList = new Vector();
 	while (enum1.hasMoreElements()) {

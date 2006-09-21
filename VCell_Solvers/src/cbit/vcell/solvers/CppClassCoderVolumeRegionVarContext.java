@@ -73,7 +73,7 @@ protected Variable[] getRequiredVariables() throws Exception {
 	if (getEquation() instanceof PdeEquation){
 		for (int i = 0;membraneSubDomainsOwned!=null && i < membraneSubDomainsOwned.length; i++){
 			JumpCondition jumpCondition = membraneSubDomainsOwned[i].getJumpCondition((VolVariable)getEquation().getVariable());
-			Enumeration enumJC = jumpCondition.getRequiredVariables(getSimulation());
+			Enumeration enumJC = jumpCondition.getRequiredVariables(getSimulation().getMathDescription());
 			requiredVariables = (Variable[])cbit.util.BeanUtils.addElements(requiredVariables,(Variable[])cbit.util.BeanUtils.getArray(enumJC,Variable.class));
 		}
 	}
