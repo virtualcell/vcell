@@ -8,7 +8,7 @@ import cbit.util.SessionLog;
 import cbit.vcell.simdata.ODESimData;
 import cbit.vcell.simdata.ODESolverResultSet;
 import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.solver.*;
+import cbit.vcell.simulation.*;
 import cbit.vcell.solvers.SimulationJob;
 import cbit.vcell.solvers.SolverException;
 import cbit.vcell.solvers.SolverStatus;

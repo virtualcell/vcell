@@ -7,7 +7,7 @@ package cbit.vcell.solvers;
 import java.io.*;
 
 import cbit.util.SessionLog;
-import cbit.vcell.solver.*;
+import cbit.vcell.simulation.*;
 /**
  * Insert the type's description here.
  * Creation date: (6/26/2001 3:18:18 PM)

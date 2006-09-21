@@ -20,7 +20,7 @@ public class SensStateVariable extends StateVariable {
 /**
  * TimeSeriesData constructor comment.
  */
-public SensStateVariable(SensVariable sensVariable, RateSensitivity rateSensitivity, Jacobian jacobian, Vector sensVarArray, cbit.vcell.solver.Simulation simulation) throws MathException, ExpressionException {
+public SensStateVariable(SensVariable sensVariable, RateSensitivity rateSensitivity, Jacobian jacobian, Vector sensVarArray, cbit.vcell.simulation.Simulation simulation) throws MathException, ExpressionException {
 	super(sensVariable);
 	init(rateSensitivity,jacobian,simulation,sensVarArray);
 }

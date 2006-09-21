@@ -6,6 +6,7 @@ import cbit.vcell.simdata.ODESimData;
 import cbit.vcell.simdata.ODESolverResultSet;
 import cbit.vcell.simdata.ODESolverResultSetColumnDescription;
 import cbit.vcell.simdata.SimDataConstants;
+import cbit.vcell.simulation.*;
 import cbit.vcell.solvers.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -16,7 +17,6 @@ import cbit.vcell.math.Function;
 import java.util.*;
 import java.io.*;
 import cbit.util.SessionLog;
-import cbit.vcell.solver.*;
 /**
  * Insert the type's description here.
  * Creation date: (3/9/2001 3:04:39 PM)

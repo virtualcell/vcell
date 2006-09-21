@@ -1,7 +1,7 @@
 package cbit.vcell.solvers;
 
 import cbit.util.SessionLog;
-import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.simulation.SolverDescription;
 import cbit.vcell.solver.ode.*;
 import java.io.*;
 /*©

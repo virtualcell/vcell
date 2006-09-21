@@ -7,7 +7,8 @@ package cbit.vcell.solvers;
 import cbit.gui.PropertyLoader;
 import cbit.util.SessionLog;
 import cbit.util.StdoutSessionLog;
-import cbit.vcell.solver.*;
+import cbit.vcell.simulation.*;
+
 import java.io.*;
 import cbit.vcell.math.*;
 /**
@@ -56,15 +57,15 @@ public static void main(String args[]) {
 		// read in vcml file and initialize MathDescription
 		//
 		mathDescription = MathDescriptionTest.getExample();
-		cbit.vcell.solver.Simulation simulation = new cbit.vcell.solver.Simulation(mathDescription) {
+		cbit.vcell.simulation.Simulation simulation = new cbit.vcell.simulation.Simulation(mathDescription) {
 			public String getSimulationIdentifier() {
 				return ("NewSIMULATION");
 			}
-			public void constantAdded(cbit.vcell.solver.MathOverridesEvent e){
+			public void constantAdded(cbit.vcell.simulation.MathOverridesEvent e){
 			}
-			public void constantRemoved(cbit.vcell.solver.MathOverridesEvent e){
+			public void constantRemoved(cbit.vcell.simulation.MathOverridesEvent e){
 			}
-			public void constantChanged(cbit.vcell.solver.MathOverridesEvent e){
+			public void constantChanged(cbit.vcell.simulation.MathOverridesEvent e){
 			}
 			public void clearVersion(){
 			}

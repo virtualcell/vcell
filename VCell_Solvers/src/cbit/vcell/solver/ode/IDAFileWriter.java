@@ -7,7 +7,7 @@ import cbit.vcell.parser.*;
 import java.util.*;
 import java.io.*;
 import cbit.vcell.math.*;
-import cbit.vcell.solver.*;
+import cbit.vcell.simulation.*;
 /**
  * Insert the type's description here.
  * Creation date: (3/8/00 10:29:24 PM)

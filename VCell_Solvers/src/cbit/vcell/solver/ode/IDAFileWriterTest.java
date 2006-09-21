@@ -17,7 +17,7 @@ public class IDAFileWriterTest {
 public static void main(java.lang.String[] args) {
 	try {
 		MathDescription mathDescription = MathDescriptionTest.getOdeExample();
-		cbit.vcell.solver.Simulation simulation = new cbit.vcell.solver.Simulation(mathDescription);
+		cbit.vcell.simulation.Simulation simulation = new cbit.vcell.simulation.Simulation(mathDescription);
 		
 		IDAFileWriter idaFileWriter = new IDAFileWriter(simulation);
 		idaFileWriter.initialize();

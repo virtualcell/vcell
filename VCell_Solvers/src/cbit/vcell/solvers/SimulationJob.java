@@ -1,6 +1,6 @@
 package cbit.vcell.solvers;
 
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.simulation.Simulation;
 
 public class SimulationJob implements java.io.Serializable {
 	private Simulation workingSim = null;

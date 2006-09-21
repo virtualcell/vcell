@@ -16,7 +16,8 @@ import cbit.vcell.math.AnnotatedFunction;
  * All rights reserved.
 ©*/
 import cbit.vcell.simdata.FunctionFileGenerator;
-import cbit.vcell.solver.*;
+import cbit.vcell.simulation.*;
+
 import java.io.*;
 import java.util.*;
 /**

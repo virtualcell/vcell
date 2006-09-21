@@ -15,15 +15,15 @@ public static void main(java.lang.String[] args) {
 		new PropertyLoader();
 		//
 		cbit.vcell.math.MathDescription mathDescription = cbit.vcell.math.MathDescriptionTest.getOdeExample();
-		cbit.vcell.solver.Simulation simulation = new cbit.vcell.solver.Simulation(mathDescription) {
+		cbit.vcell.simulation.Simulation simulation = new cbit.vcell.simulation.Simulation(mathDescription) {
 			public String getSimulationIdentifier() {
 				return ("NewSIMULATION");
 			}
-			public void constantAdded(cbit.vcell.solver.MathOverridesEvent e){
+			public void constantAdded(cbit.vcell.simulation.MathOverridesEvent e){
 			}
-			public void constantRemoved(cbit.vcell.solver.MathOverridesEvent e){
+			public void constantRemoved(cbit.vcell.simulation.MathOverridesEvent e){
 			}
-			public void constantChanged(cbit.vcell.solver.MathOverridesEvent e){
+			public void constantChanged(cbit.vcell.simulation.MathOverridesEvent e){
 			}
 			public void clearVersion(){
 			}

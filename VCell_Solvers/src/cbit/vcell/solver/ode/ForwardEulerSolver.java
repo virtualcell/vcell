@@ -7,7 +7,7 @@ import java.io.*;
  * All rights reserved.
 ©*/
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.*;
+import cbit.vcell.simulation.*;
 import cbit.vcell.solvers.SimulationJob;
 import cbit.vcell.solvers.SolverException;
 /**

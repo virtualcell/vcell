@@ -1,6 +1,6 @@
 package cbit.vcell.solvers;
 
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.simulation.Simulation;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

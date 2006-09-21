@@ -6,7 +6,8 @@ package cbit.vcell.solvers;
 import cbit.gui.PropertyLoader;
 import cbit.util.*;
 import java.util.*;
-import cbit.vcell.solver.*;
+
+import cbit.vcell.simulation.*;
 import cbit.vcell.math.*;
 
 /**

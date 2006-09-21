@@ -1,8 +1,8 @@
 package cbit.vcell.solvers;
 
 import cbit.util.VCDataIdentifier;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.simulation.Simulation;
+import cbit.vcell.simulation.VCSimulationIdentifier;
 
 /**
  * Temporary, to help SimulationData to deal with multiple simulation job datasets.

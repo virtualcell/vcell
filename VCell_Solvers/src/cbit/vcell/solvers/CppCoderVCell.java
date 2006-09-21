@@ -4,7 +4,8 @@ package cbit.vcell.solvers;
  * All rights reserved.
 ©*/
 import java.util.Enumeration;
-import cbit.vcell.solver.*;
+
+import cbit.vcell.simulation.*;
 import cbit.vcell.math.*;
 
 public class CppCoderVCell extends CppCoder

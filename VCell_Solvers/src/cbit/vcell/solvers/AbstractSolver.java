@@ -7,7 +7,8 @@ package cbit.vcell.solvers;
 ©*/
 import cbit.util.ConfigurationException;
 import cbit.util.SessionLog;
-import cbit.vcell.solver.*;
+import cbit.vcell.simulation.*;
+
 import java.io.*;
 import cbit.vcell.solver.ode.SensStateVariable;
 import cbit.vcell.solver.ode.ODEStateVariable;
@@ -283,7 +284,7 @@ protected final SessionLog getSessionLog() {
  * Creation date: (6/26/2001 3:42:59 PM)
  * @return cbit.vcell.solver.Simulation
  */
-public final cbit.vcell.solver.Simulation getSimulation() {
+public final cbit.vcell.simulation.Simulation getSimulation() {
 	return simulationJob.getWorkingSim();
 }
 

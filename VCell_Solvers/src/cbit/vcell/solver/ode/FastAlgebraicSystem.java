@@ -7,7 +7,7 @@ package cbit.vcell.solver.ode;
 import java.util.*;
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
-import cbit.vcell.solver.Simulation;
+import cbit.vcell.simulation.Simulation;
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 8:57:23 PM)

@@ -20,7 +20,7 @@ public class ODEStateVariable extends StateVariable {
 /**
  * TimeSeriesData constructor comment.
  */
-public ODEStateVariable(OdeEquation ode, cbit.vcell.solver.Simulation simulation) throws ExpressionException, MathException {
+public ODEStateVariable(OdeEquation ode, cbit.vcell.simulation.Simulation simulation) throws ExpressionException, MathException {
 	super(ode.getVariable());
 	this.variable = (VolVariable)ode.getVariable();
 	ode.bind(simulation);
