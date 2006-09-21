@@ -1,6 +1,8 @@
 package cbit.vcell.geometry.gui;
 import cbit.render.*;
+import cbit.render.objects.Node;
 import cbit.render.objects.Polygon;
+import cbit.render.objects.Surface;
 import cbit.render.objects.SurfaceCollection;
 import cbit.render.objects.Triangle;
 import cbit.render.objects.Vect3d;
