@@ -2,7 +2,7 @@ package cbit.vcell.messaging;
 import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.vcell.simdata.DataJobEvent;
-import cbit.vcell.solver.*;
+import cbit.vcell.simulation.*;
 import cbit.vcell.util.events.MessageData;
 import cbit.vcell.util.events.MessageEvent;
 import cbit.vcell.util.events.MessageListener;

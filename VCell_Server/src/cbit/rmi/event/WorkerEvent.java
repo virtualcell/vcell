@@ -1,5 +1,5 @@
 package cbit.rmi.event;
-import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.simulation.VCSimulationIdentifier;
 import cbit.vcell.util.events.MessageData;
 import cbit.vcell.util.events.MessageEvent;
 import cbit.vcell.util.events.MessageSource;
@@ -35,7 +35,7 @@ public WorkerEvent(Object source, VCSimulationIdentifier simId0, int jobIndex0, 
  * Creation date: (12/31/2003 12:53:34 PM)
  */
 public WorkerEvent(Object source, VCSimulationIdentifier simId0, int jobIndex0, int eventType0, String hostName0, int taskID0, Double progress0, Double timePoint0, String arg_eventMessage) {
-	super(source, new MessageSource(source, cbit.vcell.solver.Simulation.createSimulationID(simId0.getSimulationKey())), new MessageData(new Double[] {progress0, timePoint0}));	
+	super(source, new MessageSource(source, cbit.vcell.simulation.Simulation.createSimulationID(simId0.getSimulationKey())), new MessageData(new Double[] {progress0, timePoint0}));	
 	eventType = eventType0;
 	vcSimulationIdentifier = simId0;
 	jobIndex = jobIndex0;

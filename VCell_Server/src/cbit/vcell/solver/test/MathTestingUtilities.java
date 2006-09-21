@@ -6,6 +6,8 @@ import cbit.vcell.simdata.DataResampler;
 import cbit.vcell.simdata.FunctionColumnDescription;
 import cbit.vcell.simdata.ODESolverResultSet;
 import cbit.vcell.simdata.SimDataBlock;
+import cbit.vcell.simulation.Simulation;
+
 import java.util.Vector;
 import cbit.vcell.mapping.VariableHash;
 import cbit.vcell.numericstest.ConstructedSolutionTemplate;
@@ -15,7 +17,6 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.math.*;
 import cbit.vcell.mesh.CartesianMesh;
-import cbit.vcell.solver.Simulation;
 /**
  * Insert the type's description here.
  * Creation date: (1/16/2003 2:31:28 PM)
@@ -1095,7 +1096,7 @@ public static cbit.vcell.simdata.ODESolverResultSet getConstructedResultSet(Math
 	if (mathDesc.getGeometry().getDimension()!=0){
 		throw new RuntimeException("can only handle non-spatial simulations.");
 	}
-	cbit.vcell.solver.Simulation sim = new cbit.vcell.solver.Simulation(mathDesc);
+	cbit.vcell.simulation.Simulation sim = new cbit.vcell.simulation.Simulation(mathDesc);
 	cbit.vcell.simdata.ODESolverResultSet resultSet = new cbit.vcell.simdata.ODESolverResultSet();
 	resultSet.addDataColumn(new cbit.vcell.simdata.ODESolverResultSetColumnDescription("t"));
 	for (int i = 0; i < time.length; i++){
@@ -1137,7 +1138,7 @@ public static cbit.vcell.simdata.ODESolverResultSet getExactResultSet(MathDescri
 	if (mathDesc.getGeometry().getDimension()!=0){
 		throw new RuntimeException("can only handle non-spatial simulations.");
 	}
-	cbit.vcell.solver.Simulation sim = new cbit.vcell.solver.Simulation(mathDesc);
+	cbit.vcell.simulation.Simulation sim = new cbit.vcell.simulation.Simulation(mathDesc);
 	cbit.vcell.simdata.ODESolverResultSet resultSet = new cbit.vcell.simdata.ODESolverResultSet();
 	resultSet.addDataColumn(new cbit.vcell.simdata.ODESolverResultSetColumnDescription("t"));
 	for (int i = 0; i < time.length; i++){

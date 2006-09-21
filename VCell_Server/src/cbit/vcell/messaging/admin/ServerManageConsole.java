@@ -5191,7 +5191,7 @@ public void resubmitSimulation(String userid, KeyValue simKey) {
 			javax.swing.JOptionPane.showMessageDialog(getJFrame(), "Simulation [" + simKey + "] doesn't exit, might have been deleted.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
 			return;
 		}
-		cbit.vcell.solver.Simulation sim = cbit.vcell.xml.XmlHelper.XMLToSim(simxml.toString());
+		cbit.vcell.simulation.Simulation sim = cbit.vcell.xml.XmlHelper.XMLToSim(simxml.toString());
 		if (sim == null) {
 			javax.swing.JOptionPane.showMessageDialog(getJFrame(), "Simulation [" + simKey + "] doesn't exit, might have been deleted.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
 			return;
@@ -5641,7 +5641,7 @@ public void stopSimulation(String userid, KeyValue simKey) {
 			javax.swing.JOptionPane.showMessageDialog(getJFrame(), "Simulation [" + simKey + "] doesn't exit, might have been deleted.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
 			return;
 		}
-		cbit.vcell.solver.Simulation sim = cbit.vcell.xml.XmlHelper.XMLToSim(simxml.toString());
+		cbit.vcell.simulation.Simulation sim = cbit.vcell.xml.XmlHelper.XMLToSim(simxml.toString());
 		if (sim == null) {
 			javax.swing.JOptionPane.showMessageDialog(getJFrame(), "Simulation [" + simKey + "] doesn't exit, might have been deleted.", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
 			return;

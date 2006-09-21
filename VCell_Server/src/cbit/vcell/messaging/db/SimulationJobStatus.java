@@ -1,5 +1,6 @@
 package cbit.vcell.messaging.db;
-import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.simulation.VCSimulationIdentifier;
+
 import java.util.Date;
 import java.io.Serializable;
 

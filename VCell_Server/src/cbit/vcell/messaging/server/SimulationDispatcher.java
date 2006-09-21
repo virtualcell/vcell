@@ -1,5 +1,4 @@
 package cbit.vcell.messaging.server;
-import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.util.BigString;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
@@ -7,8 +6,6 @@ import cbit.util.ObjectNotFoundException;
 import cbit.util.User;
 import cbit.rmi.event.WorkerEvent;
 import javax.jms.*;
-import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.Simulation;
 import cbit.vcell.solvers.SimulationJob;
 import cbit.vcell.solvers.VCSimulationDataIdentifier;
 
@@ -30,6 +27,9 @@ import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.server.AdminDatabaseServerXA;
 import cbit.vcell.server.SimulationStatus;
+import cbit.vcell.simulation.Simulation;
+import cbit.vcell.simulation.SimulationInfo;
+import cbit.vcell.simulation.VCSimulationIdentifier;
 import cbit.vcell.messaging.VCellTopicSession;
 import cbit.vcell.messaging.WorkerEventMessage;
 import cbit.vcell.messaging.JmsUtils;
@@ -130,7 +130,7 @@ private RpcDbServerProxy getDbServerProxy(User user) throws JMSException {
  * @return cbit.vcell.solver.Simulation
  * @param simInfo cbit.vcell.solver.SimulationInfo
  */
-public cbit.vcell.solver.Simulation getSimulation(User user, KeyValue simKey) throws JMSException, DataAccessException {
+public cbit.vcell.simulation.Simulation getSimulation(User user, KeyValue simKey) throws JMSException, DataAccessException {
 	if (simulationMap == null) {
 		log.print("Initializaing DBCacheTable!");
 		simulationMap = new DBCacheTable(3600 * 1000);

@@ -1928,23 +1928,23 @@ public static cbit.vcell.numericstest.TestSuiteNew testSuiteGet(BigDecimal getTh
 				tcritH.put(tcaseRef,v);
 			}
 
-			cbit.vcell.solver.SimulationInfo simInfo = (cbit.vcell.solver.SimulationInfo)simulationInfoH.get(simRef);
+			cbit.vcell.simulation.SimulationInfo simInfo = (cbit.vcell.simulation.SimulationInfo)simulationInfoH.get(simRef);
 			if(simInfo == null){
 				Vector simVector = getVersionableInfos(con,sessionLog,user,VersionableType.Simulation,false,new KeyValue(simRef),false);
 				if (simVector != null && simVector.size() > 0) {
-					simInfo = (cbit.vcell.solver.SimulationInfo)simVector.firstElement();
+					simInfo = (cbit.vcell.simulation.SimulationInfo)simVector.firstElement();
 					simulationInfoH.put(simRef,simInfo);
 				}
 			}
 
-			cbit.vcell.solver.SimulationInfo regrSimInfo = null;
+			cbit.vcell.simulation.SimulationInfo regrSimInfo = null;
 			cbit.vcell.mathmodel.MathModelInfo regrMathModelInfo = null;
 			if(simRegrRef != null){
-				regrSimInfo = (cbit.vcell.solver.SimulationInfo)simulationInfoH.get(simRegrRef);
+				regrSimInfo = (cbit.vcell.simulation.SimulationInfo)simulationInfoH.get(simRegrRef);
 				if(regrSimInfo == null){
 					Vector regSimVector = getVersionableInfos(con,sessionLog,user,VersionableType.Simulation,false,new KeyValue(simRegrRef),false);
 					if (regSimVector != null && regSimVector.size() > 0) {
-						regrSimInfo = (cbit.vcell.solver.SimulationInfo)regSimVector.firstElement();
+						regrSimInfo = (cbit.vcell.simulation.SimulationInfo)regSimVector.firstElement();
 						simulationInfoH.put(simRegrRef,regrSimInfo);
 					}
 				}
@@ -2056,25 +2056,25 @@ public static cbit.vcell.numericstest.TestSuiteNew testSuiteGet(BigDecimal getTh
 				tcritH.put(tcaseRef,v);
 			}
 
-			cbit.vcell.solver.SimulationInfo simInfo = (cbit.vcell.solver.SimulationInfo)simulationInfoH.get(tcSimRef);
+			cbit.vcell.simulation.SimulationInfo simInfo = (cbit.vcell.simulation.SimulationInfo)simulationInfoH.get(tcSimRef);
 			if(simInfo == null){
 				Vector simVector = getVersionableInfos(con,sessionLog,user,VersionableType.Simulation,false,new KeyValue(tcSimRef),false);
 				if (simVector != null && simVector.size() == 1) {
-					simInfo = (cbit.vcell.solver.SimulationInfo)simVector.firstElement();
+					simInfo = (cbit.vcell.simulation.SimulationInfo)simVector.firstElement();
 					simulationInfoH.put(tcSimRef,simInfo);
 				}else{
 					throw new DataAccessException("Found more than 1 versionable for tcsimRef="+tcSimRef);
 				}
 			}
 
-			cbit.vcell.solver.SimulationInfo regrSimInfo = null;
+			cbit.vcell.simulation.SimulationInfo regrSimInfo = null;
 			cbit.vcell.biomodel.BioModelInfo regrBioModelInfo = null;
 			if(regrSimRef != null){
-				regrSimInfo = (cbit.vcell.solver.SimulationInfo)simulationInfoH.get(regrSimRef);
+				regrSimInfo = (cbit.vcell.simulation.SimulationInfo)simulationInfoH.get(regrSimRef);
 				if(regrSimInfo == null){
 					Vector regSimVector = getVersionableInfos(con,sessionLog,user,VersionableType.Simulation,false,new KeyValue(regrSimRef),false);
 					if (regSimVector != null && regSimVector.size() == 1) {
-						regrSimInfo = (cbit.vcell.solver.SimulationInfo)regSimVector.firstElement();
+						regrSimInfo = (cbit.vcell.simulation.SimulationInfo)regSimVector.firstElement();
 						simulationInfoH.put(regrSimRef,regrSimInfo);
 					}else{
 						throw new DataAccessException("Found more than 1 versionable for simregRef="+regrSimRef);

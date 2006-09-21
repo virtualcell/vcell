@@ -3,8 +3,9 @@ import cbit.util.KeyValue;
 import cbit.util.User;
 import cbit.vcell.messaging.server.SimulationDispatcher;
 import javax.jms.*;
-import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.Simulation;
+
+import cbit.vcell.simulation.Simulation;
+import cbit.vcell.simulation.SimulationInfo;
 import cbit.gui.PropertyLoader;
 import cbit.rmi.event.WorkerEvent;
 

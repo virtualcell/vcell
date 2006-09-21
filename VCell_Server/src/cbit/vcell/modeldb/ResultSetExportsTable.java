@@ -9,10 +9,11 @@ import java.text.*;
 import cbit.util.KeyValue;
 import cbit.util.SessionLog;
 import cbit.util.User;
-import cbit.vcell.solver.*;
 import cbit.sql.*;
 import cbit.image.*;
 import cbit.vcell.server.*;
+import cbit.vcell.simulation.*;
+
 import java.sql.*;
 import java.util.Vector;
 /**

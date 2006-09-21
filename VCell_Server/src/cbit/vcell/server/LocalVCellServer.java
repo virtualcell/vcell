@@ -570,7 +570,7 @@ public void shutdown() throws java.rmi.RemoteException {
 					cbit.vcell.solvers.SolverControllerInfo solverControllerInfos[] = simControllerImpl.getSolverControllerInfos();
 					for (int i = 0; i < solverControllerInfos.length; i++){
 						try {
-							cbit.vcell.solver.SimulationInfo simInfo = solverControllerInfos[i].getSimulationInfo();
+							cbit.vcell.simulation.SimulationInfo simInfo = solverControllerInfos[i].getSimulationInfo();
 							User jobOwner = simInfo.getVersion().getOwner();
 							cbit.vcell.solvers.SolverStatus solverStatus = simControllerImpl.getSolverStatus(jobOwner,simInfo, solverControllerInfos[i].jobIndex);
 							if (solverStatus.isRunning()){

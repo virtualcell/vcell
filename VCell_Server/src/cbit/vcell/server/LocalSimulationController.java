@@ -10,7 +10,8 @@ import cbit.util.User;
  * All rights reserved.
 ©*/
 import java.rmi.*;
-import cbit.vcell.solver.*;
+
+import cbit.vcell.simulation.*;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 /**
  * Insert the type's description here.

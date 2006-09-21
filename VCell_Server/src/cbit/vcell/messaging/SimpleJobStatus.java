@@ -1,12 +1,13 @@
 package cbit.vcell.messaging;
 import cbit.util.ComparableObject;
 import cbit.util.KeyValue;
-import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.simulation.SolverTaskDescription;
+import cbit.vcell.simulation.VCSimulationIdentifier;
+
 import java.math.BigDecimal;
 import java.util.Date;
 
 import cbit.vcell.messaging.db.SimulationJobStatus;
-import cbit.vcell.solver.SolverTaskDescription;
 
 /**
  * Insert the type's description here.

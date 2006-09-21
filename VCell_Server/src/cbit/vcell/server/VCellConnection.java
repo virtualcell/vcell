@@ -2,12 +2,11 @@ package cbit.vcell.server;
 
 import cbit.util.DataAccessException;
 import cbit.util.User;
-import cbit.vcell.solver.*;
+import cbit.vcell.simulation.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.solver.Simulation;
 import cbit.vcell.model.*;
 import cbit.vcell.geometry.*;
 import cbit.vcell.solvers.*;

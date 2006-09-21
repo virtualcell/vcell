@@ -8,12 +8,12 @@ import java.text.*;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.SessionLog;
-import cbit.vcell.solver.*;
 import cbit.vcell.solvers.VCSimulationDataIdentifier;
 import cbit.sql.*;
 import cbit.image.*;
 import cbit.vcell.server.*;
 import cbit.vcell.server.solvers.SolverResultSetInfo;
+import cbit.vcell.simulation.*;
 
 import java.sql.*;
 

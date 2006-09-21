@@ -4,15 +4,12 @@ import cbit.util.KeyValue;
 import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.util.xml.XmlParseException;
-import cbit.vcell.solver.VCSimulationIdentifier;
 
 
 
 import java.io.Serializable;
 import javax.jms.*;
 import cbit.vcell.transaction.*;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solvers.SimulationJob;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
@@ -25,6 +22,9 @@ import java.sql.SQLException;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.server.AdminDatabaseServerXA;
 import cbit.vcell.server.SimulationStatus;
+import cbit.vcell.simulation.Simulation;
+import cbit.vcell.simulation.SimulationInfo;
+import cbit.vcell.simulation.VCSimulationIdentifier;
 import cbit.vcell.messaging.server.SimulationDispatcher;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.messaging.server.RpcRequest;

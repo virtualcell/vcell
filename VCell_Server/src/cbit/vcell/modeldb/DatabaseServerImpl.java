@@ -688,7 +688,7 @@ public BigString getSimulationXML(User user, cbit.util.KeyValue key) throws Data
 	try {
 		log.print("DatabaseServerImpl.getSimulationXML(user="+user+", Key="+key+")");
 		boolean bCheckPermission = false;
-		cbit.vcell.solver.Simulation sim = dbTop.getSimulation(user,key);
+		cbit.vcell.simulation.Simulation sim = dbTop.getSimulation(user,key);
 		return new BigString(cbit.vcell.xml.XmlHelper.simToXML(sim));
 	} catch (ObjectNotFoundException e) {
 		log.exception(e);

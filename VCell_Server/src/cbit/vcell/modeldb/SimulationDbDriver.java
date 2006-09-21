@@ -16,15 +16,14 @@ import cbit.util.User;
 import cbit.util.Version;
 import cbit.util.VersionInfo;
 import cbit.util.Versionable;
-import cbit.vcell.solver.*;
 import cbit.vcell.math.*;
 import cbit.vcell.server.*;
 import cbit.vcell.server.solvers.SolverResultSetInfo;
+import cbit.vcell.simulation.*;
 import cbit.sql.*;
 import java.sql.*;
 import java.sql.Statement;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.solver.MeshSpecification;
 /**
  * This type was created in VisualAge.
  */

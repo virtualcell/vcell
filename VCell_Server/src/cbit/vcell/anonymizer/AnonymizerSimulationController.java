@@ -37,8 +37,8 @@ private void remoteCall(String methodName, Class[] argClasses, Object[] args) th
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void startSimulation(cbit.vcell.solver.VCSimulationIdentifier vcSimulationIdentifier) throws java.rmi.RemoteException {
-	remoteCall("startSimulation", new Class[] {cbit.vcell.solver.VCSimulationIdentifier.class}, new Object[] {vcSimulationIdentifier});
+public void startSimulation(cbit.vcell.simulation.VCSimulationIdentifier vcSimulationIdentifier) throws java.rmi.RemoteException {
+	remoteCall("startSimulation", new Class[] {cbit.vcell.simulation.VCSimulationIdentifier.class}, new Object[] {vcSimulationIdentifier});
 }
 
 
@@ -46,7 +46,7 @@ public void startSimulation(cbit.vcell.solver.VCSimulationIdentifier vcSimulatio
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void stopSimulation(cbit.vcell.solver.VCSimulationIdentifier vcSimulationIdentifier) throws java.rmi.RemoteException {
-	remoteCall("stopSimulation", new Class[] {cbit.vcell.solver.VCSimulationIdentifier.class}, new Object[] {vcSimulationIdentifier});
+public void stopSimulation(cbit.vcell.simulation.VCSimulationIdentifier vcSimulationIdentifier) throws java.rmi.RemoteException {
+	remoteCall("stopSimulation", new Class[] {cbit.vcell.simulation.VCSimulationIdentifier.class}, new Object[] {vcSimulationIdentifier});
 }
 }

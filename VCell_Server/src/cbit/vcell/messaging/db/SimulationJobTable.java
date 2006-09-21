@@ -1,7 +1,7 @@
 package cbit.vcell.messaging.db;
 
 import cbit.util.KeyValue;
-import cbit.vcell.solver.*;
+import cbit.vcell.simulation.*;
 import cbit.sql.*;
 import java.sql.*;
 import cbit.vcell.modeldb.*;

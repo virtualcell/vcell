@@ -16,7 +16,7 @@ import cbit.util.User;
 import cbit.util.Version;
 import cbit.util.VersionInfo;
 import cbit.vcell.server.solvers.SolverResultSetInfo;
-import cbit.vcell.solver.*;
+import cbit.vcell.simulation.*;
 import cbit.vcell.solvers.VCSimulationDataIdentifier;
 
 import java.math.BigDecimal;
@@ -66,7 +66,7 @@ public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws 
 	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
 	SimulationVersion simulationVersion = (SimulationVersion)version;
 	
-	return new cbit.vcell.solver.SimulationInfo(mathRef,simulationVersion);
+	return new cbit.vcell.simulation.SimulationInfo(mathRef,simulationVersion);
 }
 /**
  * This method was created in VisualAge.
@@ -104,7 +104,7 @@ public SolverResultSetInfo getResultSetInfo(ResultSet rset,Connection con,Sessio
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
 	SimulationVersion simulationVersion = (SimulationVersion)getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
 	
-	SimulationInfo simInfo = new cbit.vcell.solver.SimulationInfo(mathRef, simulationVersion);
+	SimulationInfo simInfo = new cbit.vcell.simulation.SimulationInfo(mathRef, simulationVersion);
 	VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simulationVersion.getVersionKey(),simulationVersion.getOwner());
 	VCSimulationDataIdentifier vcSimDataID = new VCSimulationDataIdentifier(vcSimID, rset.getInt(ResultSetMetaDataTable.table.jobIndex.toString()));
 	SolverResultSetInfo rsetInfo = new SolverResultSetInfo(vcSimDataID);
@@ -206,14 +206,14 @@ public Simulation getSimulation(ResultSet rset, SessionLog log, Connection con, 
 	}
 	MathDescription mathDesc = (MathDescription)mathDB.getVersionable(con,user,VersionableType.MathDescription,mathKey);
 	
-	Simulation simulation = new cbit.vcell.solver.Simulation(simulationVersion,mathDesc,mathOverrideTokens,solverTaskDescTokens);
+	Simulation simulation = new cbit.vcell.simulation.Simulation(simulationVersion,mathDesc,mathOverrideTokens,solverTaskDescTokens);
 	
 	//MeshSpec (Is This Correct?????)
 	if (mathDesc != null && mathDesc.getGeometry() != null && mathDesc.getGeometry().getDimension()>0){
 		int msX = rset.getInt(SimulationTable.table.meshSpecX.getUnqualifiedColName());
 		int msY = rset.getInt(SimulationTable.table.meshSpecY.getUnqualifiedColName());
 		int msZ = rset.getInt(SimulationTable.table.meshSpecZ.getUnqualifiedColName());
-		cbit.vcell.solver.MeshSpecification meshSpec = new cbit.vcell.solver.MeshSpecification(simulation.getMathDescription().getGeometry());
+		cbit.vcell.simulation.MeshSpecification meshSpec = new cbit.vcell.simulation.MeshSpecification(simulation.getMathDescription().getGeometry());
 		meshSpec.setSamplingSize(new cbit.util.ISize(msX,msY,msZ));
 		simulation.getMeshSpecification().copyFrom(meshSpec);
 	}
@@ -252,7 +252,7 @@ public String getSQLValueList(Simulation simulation,KeyValue mathKey,Version ver
 	if (simulation.getMathDescription() != null &&
 		simulation.getMathDescription().getGeometry() != null &&
 		simulation.getMathDescription().getGeometry().getDimension()>0){
-		cbit.vcell.solver.MeshSpecification	meshSpec = simulation.getMeshSpecification();
+		cbit.vcell.simulation.MeshSpecification	meshSpec = simulation.getMeshSpecification();
 		buffer.append(meshSpec.getSamplingSize().getX()+","+meshSpec.getSamplingSize().getY()+","+meshSpec.getSamplingSize().getZ());
 	}else{
 		buffer.append("null,null,null");

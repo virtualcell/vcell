@@ -78,7 +78,7 @@ public static String enforceOwnershipInsert(User user, VersionTable vTable, Obje
 															(cbit.util.KeyValue) valueData[1], 
 															version));
 	}else if (vTable instanceof SimulationTable) {
-		sb.append(((SimulationTable) vTable).getSQLValueList(	(cbit.vcell.solver.Simulation) valueData[0], 
+		sb.append(((SimulationTable) vTable).getSQLValueList(	(cbit.vcell.simulation.Simulation) valueData[0], 
 															(cbit.util.KeyValue) valueData[1], 
 															version));
 	}else if (vTable instanceof BioModelTable) {

@@ -1,9 +1,9 @@
 package cbit.vcell.messaging.server;
 import cbit.util.KeyValue;
 import cbit.util.User;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.simulation.Simulation;
+import cbit.vcell.simulation.SimulationInfo;
+import cbit.vcell.simulation.SolverDescription;
 import cbit.vcell.solvers.SimulationJob;
 
 /**
@@ -139,7 +139,7 @@ public boolean goodForLSF() {
 	SolverDescription solverDescription = getSimulationJob().getWorkingSim().getSolverTaskDescription().getSolverDescription();
 	//if (solverDescription.equals(cbit.vcell.solver.SolverDescription.LSODA) || solverDescription.equals(cbit.vcell.solver.SolverDescription.FiniteVolume)) {
 	// because normally all the IDA jobs are fast and IDASolver has to print data to file after the getSimulationJob().getWorkingSim(), we don't submit IDA jobs to LSF.
-	if (solverDescription.equals(cbit.vcell.solver.SolverDescription.FiniteVolume)) {
+	if (solverDescription.equals(cbit.vcell.simulation.SolverDescription.FiniteVolume)) {
 		return true;
 	}
 

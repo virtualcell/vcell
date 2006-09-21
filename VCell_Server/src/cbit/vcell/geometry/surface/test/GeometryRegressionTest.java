@@ -101,7 +101,7 @@ public void compareMesh(String startKey) {
 			} 
 			
 			try {				
-				cbit.vcell.solver.VCSimulationIdentifier simid = new cbit.vcell.solver.VCSimulationIdentifier(new cbit.util.KeyValue(line), adminUser);
+				cbit.vcell.simulation.VCSimulationIdentifier simid = new cbit.vcell.simulation.VCSimulationIdentifier(new cbit.util.KeyValue(line), adminUser);
 				File meshfile_old = new File(file_old, simid.getID() +".mesh");
 				File meshfile_new = new File(file_new, simid.getID() +".mesh");				
 
@@ -276,9 +276,9 @@ public void runSimulations(boolean bNew, String startKey) {
 			
 			try {
 				cbit.util.BigString simxml = dbServerImpl.getSimulationXML(adminUser, new cbit.util.KeyValue(line));
-				cbit.vcell.solver.Simulation sim = cbit.vcell.xml.XmlHelper.XMLToSim(simxml.toString());
-				sim.getSolverTaskDescription().setTimeStep(new cbit.vcell.solver.TimeStep(0.001, 0.001, 0.001));
-				sim.getSolverTaskDescription().setTimeBounds(new cbit.vcell.solver.TimeBounds(0,0.001));
+				cbit.vcell.simulation.Simulation sim = cbit.vcell.xml.XmlHelper.XMLToSim(simxml.toString());
+				sim.getSolverTaskDescription().setTimeStep(new cbit.vcell.simulation.TimeStep(0.001, 0.001, 0.001));
+				sim.getSolverTaskDescription().setTimeBounds(new cbit.vcell.simulation.TimeBounds(0,0.001));
 				cbit.vcell.solvers.Solver solver = solverFactory.createSolver(log, new File(dataDir), new SimulationJob(sim,0));		
 				solver.startSolver();
 				while (true) {

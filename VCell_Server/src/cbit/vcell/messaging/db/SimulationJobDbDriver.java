@@ -259,7 +259,7 @@ public List getSimulationJobStatus(Connection con, String conditions) throws jav
 	List resultList = new ArrayList();
 	Statement stmt = con.createStatement();	
 	SimulationJobStatus simJobStatus = null;
-	cbit.vcell.solver.SolverTaskDescription std = null;
+	cbit.vcell.simulation.SolverTaskDescription std = null;
 	String username = null;
 	try {
 		ResultSet rset = stmt.executeQuery(sql.toString());
@@ -270,7 +270,7 @@ public List getSimulationJobStatus(Connection con, String conditions) throws jav
 			try {
 				String taskDesc = rset.getString(SimulationTable.table.taskDescription.getUnqualifiedColName());
 				if (taskDesc != null) {
-					std = new cbit.vcell.solver.SolverTaskDescription(null, new cbit.util.CommentStringTokenizer(cbit.util.TokenMangler.getSQLRestoredString(taskDesc)));
+					std = new cbit.vcell.simulation.SolverTaskDescription(null, new cbit.util.CommentStringTokenizer(cbit.util.TokenMangler.getSQLRestoredString(taskDesc)));
 				}
 				
 			} catch (DataAccessException ex) {

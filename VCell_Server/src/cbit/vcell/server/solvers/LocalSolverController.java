@@ -2,8 +2,9 @@ package cbit.vcell.server.solvers;
 import cbit.util.DataAccessException;
 import cbit.util.SessionLog;
 import cbit.vcell.simdata.*;
+import cbit.vcell.simulation.*;
+
 import java.io.*;
-import cbit.vcell.solver.*;
 import cbit.vcell.solvers.SimExecutionException;
 import cbit.vcell.solvers.SimulationJob;
 import cbit.vcell.solvers.SolverController;
@@ -158,7 +159,7 @@ public SessionLog getSessionLog() {
 /**
  * getMathDescriptionVCML method comment.
  */
-private cbit.vcell.solver.Simulation getSimulation() throws cbit.util.DataAccessException {
+private cbit.vcell.simulation.Simulation getSimulation() throws cbit.util.DataAccessException {
 	return getSimulationJob().getWorkingSim();
 }
 

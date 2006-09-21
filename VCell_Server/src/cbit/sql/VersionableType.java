@@ -68,7 +68,7 @@ public static VersionableType fromVersionable(Versionable versionable) {
 		return VersionableType.Model;
 	}else if (versionable instanceof cbit.vcell.mapping.SimulationContext){
 		return VersionableType.SimulationContext;
-	}else if (versionable instanceof cbit.vcell.solver.Simulation){
+	}else if (versionable instanceof cbit.vcell.simulation.Simulation){
 		return VersionableType.Simulation;
 	}else if (versionable instanceof cbit.vcell.biomodel.BioModelMetaData){
 		return VersionableType.BioModelMetaData;

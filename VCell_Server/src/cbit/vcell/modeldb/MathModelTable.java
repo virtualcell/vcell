@@ -11,7 +11,9 @@ import cbit.util.Version;
 import cbit.util.VersionInfo;
 import cbit.vcell.biomodel.*;
 import java.beans.*;
-import cbit.vcell.solver.*;
+
+import cbit.vcell.simulation.*;
+
 import java.math.BigDecimal;
 import cbit.sql.*;
 import java.sql.SQLException;

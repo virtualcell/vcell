@@ -10,13 +10,13 @@ import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.server.solvers.SolverResultSetInfo;
+import cbit.vcell.simulation.Simulation;
+import cbit.vcell.simulation.SimulationInfo;
 import cbit.gui.PropertyLoader;
 import cbit.sql.DBCacheTable;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import java.util.Vector;
-import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.Simulation;
 import cbit.vcell.solvers.VCSimulationDataIdentifier;
 
 import java.io.File;

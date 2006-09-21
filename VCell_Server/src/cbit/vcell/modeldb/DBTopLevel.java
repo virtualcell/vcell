@@ -9,7 +9,6 @@ import cbit.util.User;
 import cbit.util.Versionable;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.Model;
-import cbit.vcell.solver.Simulation;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -18,6 +17,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import cbit.sql.*;
 import cbit.vcell.server.*;
+import cbit.vcell.simulation.Simulation;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.image.*;

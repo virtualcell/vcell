@@ -14,8 +14,8 @@ public final class LocalSimulationController_Stub
     
     static {
 	try {
-	    $method_startSimulation_0 = cbit.vcell.server.SimulationController.class.getMethod("startSimulation", new java.lang.Class[] {cbit.vcell.solver.VCSimulationIdentifier.class});
-	    $method_stopSimulation_1 = cbit.vcell.server.SimulationController.class.getMethod("stopSimulation", new java.lang.Class[] {cbit.vcell.solver.VCSimulationIdentifier.class});
+	    $method_startSimulation_0 = cbit.vcell.server.SimulationController.class.getMethod("startSimulation", new java.lang.Class[] {cbit.vcell.simulation.VCSimulationIdentifier.class});
+	    $method_stopSimulation_1 = cbit.vcell.server.SimulationController.class.getMethod("stopSimulation", new java.lang.Class[] {cbit.vcell.simulation.VCSimulationIdentifier.class});
 	} catch (java.lang.NoSuchMethodException e) {
 	    throw new java.lang.NoSuchMethodError(
 		"stub class initialization failed");
@@ -30,7 +30,7 @@ public final class LocalSimulationController_Stub
     // methods from remote interfaces
     
     // implementation of startSimulation(VCSimulationIdentifier)
-    public void startSimulation(cbit.vcell.solver.VCSimulationIdentifier $param_VCSimulationIdentifier_1)
+    public void startSimulation(cbit.vcell.simulation.VCSimulationIdentifier $param_VCSimulationIdentifier_1)
 	throws java.rmi.RemoteException
     {
 	try {
@@ -45,7 +45,7 @@ public final class LocalSimulationController_Stub
     }
     
     // implementation of stopSimulation(VCSimulationIdentifier)
-    public void stopSimulation(cbit.vcell.solver.VCSimulationIdentifier $param_VCSimulationIdentifier_1)
+    public void stopSimulation(cbit.vcell.simulation.VCSimulationIdentifier $param_VCSimulationIdentifier_1)
 	throws java.rmi.RemoteException
     {
 	try {
