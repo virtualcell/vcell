@@ -1,8 +1,10 @@
 package cbit.render.unused;
 
 import cbit.render.*;
+import cbit.render.objects.Node;
 import cbit.render.objects.Polygon;
 import cbit.render.objects.Quadrilateral;
+import cbit.render.objects.Surface;
 import cbit.render.objects.Triangle;
 
 /**

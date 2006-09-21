@@ -1,6 +1,7 @@
 package cbit.render;
 
 import cbit.render.objects.Polygon;
+import cbit.render.objects.Surface;
 
 /**
  * Insert the type's description here.

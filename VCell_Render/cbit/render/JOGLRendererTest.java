@@ -10,11 +10,11 @@ import cbit.render.objects.AnalyticField;
 import cbit.render.objects.BoundingBox;
 import cbit.render.objects.ByteImage;
 import cbit.render.objects.ByteImageTest;
+import cbit.render.objects.SpatialFunction;
 import cbit.render.objects.SurfaceCollection;
 import cbit.render.objects.SurfaceCollectionTest;
 import cbit.render.objects.Vect3d;
 import cbit.util.ISize;
-import cbit.vcell.parser.Expression;
 
 /**
  * JGears.java <BR>
@@ -51,21 +51,41 @@ public class JOGLRendererTest extends GLJPanel {
 		ModelObject modelObject = null;
 		//modelObject = surfaceModelObject;
 //		Expression redExp = new Expression(
-//				"0.5*exp(-25*((x-0.3)^2+(y-.3)^2+(z-.3)^2))+" +
-//    			"0.5*exp(-25*((x-0.7)^2+(y-0.7)^2+(z-0.7)^2))+" +
-//    			"0.5*exp(-25*((x-0.3)^2+(y-0.7)^2+(z-0.7)^2))+" +
-//    			"0.5*exp(-20*((x-0.5)^2+(y-0.5)^2+(z-0.5)^2))+" +
+//				"0.5*exp(-25*((x-0.3,2)+(y-.3,2)+(z-.3,2)))+" +
+//    			"0.5*exp(-25*((x-0.7,2)+(y-0.7,2)+(z-0.7,2)))+" +
+//    			"0.5*exp(-25*((x-0.3,2)+(y-0.7,2)+(z-0.7,2)))+" +
+//    			"0.5*exp(-20*((x-0.5,2)+(y-0.5,2)+(z-0.5,2)))+" +
 //    			"0.01");
-//		Expression greenExp = new Expression("0.5*exp(-10*((x-0.5)^2+(y-.5)^2))");
+//		Expression greenExp = new Expression("0.5*exp(-10*((x-0.5,2)+(y-.5,2)))");
 //		Expression blueExp = new Expression("exp(-5*(x^2+y^2+z^2))");
-		Expression redExp = new Expression(
-				"0.4*exp(-2*((x-3)^2+(y-3)^2+(z-3)^2))+" +
-				"0.4*exp(-2*((x-7)^2+(y-7)^2+(z-7)^2))+" +
-				"0.4*exp(-2*((x-3)^2+(y-7)^2+(z-7)^2))+" +
-				"0.4*exp(-2*((x-5)^2+(y-5)^2+(z-5)^2))+" +
-				"0.2");
-		Expression greenExp = new Expression("0.5*exp(-((x-5)^2+(y-5)^2))");
-		Expression blueExp = new Expression("exp(-5*(x^2+y^2+z^2))");
+		SpatialFunction redExp = new SpatialFunction(){
+			public double evaluate(Vect3d v){
+				double x = v.getX();
+				double y = v.getY();
+				double z = v.getZ();
+				return 0.4*Math.exp(-2*(Math.pow(x-3,2)+Math.pow(y-3,2)+Math.pow(z-3,2)))+
+						0.4*Math.exp(-2*(Math.pow(x-7,2)+Math.pow(y-7,2)+Math.pow(z-7,2)))+
+						0.4*Math.exp(-2*(Math.pow(x-3,2)+Math.pow(y-7,2)+Math.pow(z-7,2)))+
+						0.4*Math.exp(-2*(Math.pow(x-5,2)+Math.pow(y-5,2)+Math.pow(z-5,2)))+
+						0.2;
+			}
+		};
+		SpatialFunction greenExp = new SpatialFunction(){
+			public double evaluate(Vect3d v){
+				double x = v.getX();
+				double y = v.getY();
+				return 0.5*Math.exp(-((x-5)*(x-5)+(y-5)*(y-5)));
+			}
+		};
+		SpatialFunction blueExp = new SpatialFunction(){
+			public double evaluate(Vect3d v){
+				double x = v.getX();
+				double y = v.getY();
+				double z = v.getZ();
+				return Math.exp(-5*(x*x+y*y+z*z));
+			}
+		};
+		
 		ISize size = new ISize(32,32,64);
 		BoundingBox boundingBox = new BoundingBox(-1,3,-1,5,-1,7);
 		ByteImage redImage = ByteImageTest.createSampledImage(size,boundingBox,new AnalyticField(redExp));

@@ -1,7 +1,7 @@
 package cbit.render.unused;
 
-import cbit.render.Node;
-import cbit.render.OrigSurface;
+import cbit.render.objects.Node;
+import cbit.render.objects.OrigSurface;
 import cbit.render.objects.SurfaceCollection;
 
 public class SurfaceUtils {

@@ -6,8 +6,10 @@ import java.util.Vector;
 import javax.media.opengl.GL;
 
 import cbit.render.objects.BoundingBox;
+import cbit.render.objects.Node;
 import cbit.render.objects.Polygon;
 import cbit.render.objects.Quadrilateral;
+import cbit.render.objects.Surface;
 import cbit.render.objects.Vect3d;
 
 public class SurfaceModelObject extends ModelObject {
