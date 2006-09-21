@@ -1,6 +1,5 @@
 package cbit.vcell.modeldb;
 
-import cbit.vcell.messaging.db.SimulationJobStatus;
 
 import java.util.Vector;
 import cbit.util.BigString;
@@ -21,6 +20,7 @@ import cbit.vcell.mathmodel.*;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.server.solvers.SolverResultSetInfo;
+import cbit.vcell.solvers.SimulationJobStatus;
 
 import java.rmi.*;
 import java.sql.*;

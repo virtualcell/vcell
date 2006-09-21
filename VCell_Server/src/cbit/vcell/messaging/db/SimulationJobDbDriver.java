@@ -6,13 +6,14 @@ import cbit.util.KeyValue;
 import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.vcell.messaging.SimpleJobStatus;
-import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationJobTable;
 import cbit.vcell.modeldb.SimulationTable;
 import cbit.vcell.modeldb.DatabaseConstants;
 import java.util.ArrayList;
 import java.util.List;
 import cbit.vcell.modeldb.UserTable;
+import cbit.vcell.solvers.SimulationJobStatus;
+import cbit.vcell.solvers.VCellServerID;
 
 /**
  * Insert the type's description here.

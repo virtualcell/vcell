@@ -7,7 +7,7 @@ import cbit.vcell.simulation.Simulation;
 import cbit.vcell.simulation.SimulationInfo;
 import cbit.vcell.simulation.VCSimulationIdentifier;
 import cbit.vcell.solvers.SimExecutionException;
-import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.solvers.SimulationJobStatus;
 import cbit.vcell.messaging.JmsClientMessaging;
 import cbit.vcell.messaging.MessageConstants;
 import cbit.vcell.messaging.JmsUtils;

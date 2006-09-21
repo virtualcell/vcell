@@ -11,10 +11,10 @@ import java.io.Serializable;
 import javax.jms.*;
 import cbit.vcell.transaction.*;
 import cbit.vcell.solvers.SimulationJob;
-import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.solvers.SimulationJobStatus;
+import cbit.vcell.solvers.VCellServerID;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
-import cbit.vcell.messaging.db.VCellServerID;
 import cbit.gui.PropertyLoader;
 import cbit.sql.KeyFactory;
 import cbit.sql.ConnectionFactory;
@@ -67,7 +67,7 @@ public void run() {
 	VCellXAQueueSession obsoleteJobDispatcher = null;	
 	VCellXATopicSession obsoleteJobStatusPublisher = null;
 	boolean join = true;
-	cbit.vcell.messaging.db.SimulationJobStatus jobStatus = null;
+	cbit.vcell.solvers.SimulationJobStatus jobStatus = null;
 		
 	while (true) {
 		try {
@@ -761,7 +761,7 @@ private void stopSimulation(java.sql.Connection con, User user, VCSimulationIden
 		}
 		if (simulation != null) {
 			for (int i = 0; i < simulation.getScanCount(); i++){
-				cbit.vcell.messaging.db.SimulationJobStatus jobStatus = jobAdminXA.getSimulationJobStatus(con, vcSimID.getSimulationKey(), i);
+				cbit.vcell.solvers.SimulationJobStatus jobStatus = jobAdminXA.getSimulationJobStatus(con, vcSimID.getSimulationKey(), i);
 
 				if (jobStatus != null) {
 					if (!jobStatus.isDone()) {

@@ -1,8 +1,8 @@
 package cbit.vcell.server;
 import cbit.rmi.event.*;
 import cbit.vcell.messaging.MessageConstants;
-import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.simulation.VCSimulationIdentifier;
+import cbit.vcell.solvers.SimulationJobStatus;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

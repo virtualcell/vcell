@@ -10,7 +10,7 @@ import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.User;
 import cbit.util.UserInfo;
-import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.solvers.SimulationJobStatus;
 
 /**
  * This type was created in VisualAge.

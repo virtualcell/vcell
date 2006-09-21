@@ -4,6 +4,7 @@ import cbit.vcell.server.ServerInfo;
 import cbit.gui.PropertyLoader;
 import cbit.util.KeyValue;
 import cbit.vcell.server.VCellServer;
+import cbit.vcell.solvers.VCellServerID;
 import cbit.vcell.messaging.server.RpcDbServerProxy;
 import cbit.util.BigString;
 import cbit.util.KeyValue;

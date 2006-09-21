@@ -3,6 +3,7 @@ import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.vcell.simdata.DataJobEvent;
 import cbit.vcell.simulation.*;
+import cbit.vcell.solvers.SimulationJobStatus;
 import cbit.vcell.util.events.MessageData;
 import cbit.vcell.util.events.MessageEvent;
 import cbit.vcell.util.events.MessageListener;
@@ -11,7 +12,6 @@ import cbit.vcell.util.events.MessageSender;
 import javax.swing.event.EventListenerList;
 
 import cbit.vcell.export.ExportEvent;
-import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.rmi.event.*;
 
 /**

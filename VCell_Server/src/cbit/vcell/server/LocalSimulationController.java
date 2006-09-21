@@ -12,7 +12,7 @@ import cbit.util.User;
 import java.rmi.*;
 
 import cbit.vcell.simulation.*;
-import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.solvers.SimulationJobStatus;
 /**
  * Insert the type's description here.
  * Creation date: (6/28/01 12:55:29 PM)

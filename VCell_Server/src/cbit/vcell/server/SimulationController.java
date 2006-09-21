@@ -3,7 +3,7 @@ import cbit.util.DataAccessException;
 import cbit.util.ObjectNotFoundException;
 import cbit.util.PermissionException;
 import cbit.vcell.simulation.*;
-import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.solvers.SimulationJobStatus;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

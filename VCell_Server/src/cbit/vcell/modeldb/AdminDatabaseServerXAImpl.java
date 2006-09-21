@@ -3,6 +3,8 @@ import cbit.sql.*;
 import cbit.util.DataAccessException;
 import cbit.util.SessionLog;
 import cbit.vcell.server.*;
+import cbit.vcell.solvers.SimulationJobStatus;
+import cbit.vcell.solvers.VCellServerID;
 import cbit.vcell.messaging.db.*;
 /**
  * Insert the type's description here.

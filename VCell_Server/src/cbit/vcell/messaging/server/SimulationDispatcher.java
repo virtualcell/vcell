@@ -7,6 +7,7 @@ import cbit.util.User;
 import cbit.rmi.event.WorkerEvent;
 import javax.jms.*;
 import cbit.vcell.solvers.SimulationJob;
+import cbit.vcell.solvers.SimulationJobStatus;
 import cbit.vcell.solvers.VCSimulationDataIdentifier;
 
 import java.util.Map;
@@ -22,7 +23,6 @@ import cbit.sql.DBCacheTable;
 import cbit.vcell.messaging.JmsClientMessaging;
 import cbit.vcell.messaging.SimulationDispatcherMessaging;
 import cbit.vcell.messaging.MessageConstants;
-import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.server.AdminDatabaseServerXA;

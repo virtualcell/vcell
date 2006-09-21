@@ -1,5 +1,4 @@
 package cbit.vcell.messaging.server;
-import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.util.BigString;
 import cbit.util.CurateSpec;
 import cbit.util.DataAccessException;
@@ -22,6 +21,7 @@ import java.sql.*;
 import cbit.sql.*;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.server.solvers.SolverResultSetInfo;
+import cbit.vcell.solvers.SimulationJobStatus;
 import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.FormalSpeciesType;

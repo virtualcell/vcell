@@ -6,10 +6,8 @@ import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.util.UserInfo;
 import cbit.vcell.messaging.db.SimulationJobDbDriver;
-import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
-import cbit.vcell.messaging.db.VCellServerID;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -18,6 +16,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import cbit.sql.*;
 import cbit.vcell.server.*;
+import cbit.vcell.solvers.SimulationJobStatus;
+import cbit.vcell.solvers.VCellServerID;
+
 import java.util.Vector;
 
 /**

@@ -2,6 +2,10 @@ package cbit.vcell.messaging.db;
 
 import cbit.util.KeyValue;
 import cbit.vcell.simulation.*;
+import cbit.vcell.solvers.SimulationExecutionStatus;
+import cbit.vcell.solvers.SimulationJobStatus;
+import cbit.vcell.solvers.SimulationQueueEntryStatus;
+import cbit.vcell.solvers.VCellServerID;
 import cbit.sql.*;
 import java.sql.*;
 import cbit.vcell.modeldb.*;

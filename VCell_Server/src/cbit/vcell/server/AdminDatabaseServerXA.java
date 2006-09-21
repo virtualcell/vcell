@@ -3,6 +3,8 @@ import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.User;
 import cbit.vcell.messaging.db.*;
+import cbit.vcell.solvers.SimulationJobStatus;
+import cbit.vcell.solvers.VCellServerID;
 
 import java.sql.*;
 public interface AdminDatabaseServerXA {
