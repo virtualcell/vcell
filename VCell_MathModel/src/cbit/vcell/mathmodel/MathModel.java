@@ -4,6 +4,8 @@ package cbit.vcell.mathmodel;
  * All rights reserved.
 ©*/
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathFactory;
+
 import java.beans.PropertyVetoException;
 
 import cbit.vcell.simulation.Simulation;
@@ -46,7 +48,7 @@ public MathModel(Version version) {
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getSimulations
  */
-public Simulation addNewSimulation() throws java.beans.PropertyVetoException {
+public Simulation addNewSimulation(MathFactory unusedMathFactory) throws java.beans.PropertyVetoException {
 	MathDescription math = getMathDescription();
 	if (math==null){
 		throw new RuntimeException("Can't create Simulation, math not created");
