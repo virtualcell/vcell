@@ -11,6 +11,18 @@ import cbit.vcell.model.render.ReactionCartoon;
 import cbit.vcell.model.render.ReactionRenderer;
 import cbit.vcell.model.render.StructureCartoon;
 import cbit.vcell.model.render.StructureMappingCartoon;
+import cbit.vcell.modelapp.CurrentClampStimulus;
+import cbit.vcell.modelapp.ElectricalStimulus;
+import cbit.vcell.modelapp.Electrode;
+import cbit.vcell.modelapp.FeatureMapping;
+import cbit.vcell.modelapp.GeometryContext;
+import cbit.vcell.modelapp.MembraneMapping;
+import cbit.vcell.modelapp.ReactionContext;
+import cbit.vcell.modelapp.ReactionSpec;
+import cbit.vcell.modelapp.SimulationContext;
+import cbit.vcell.modelapp.SpeciesContextSpec;
+import cbit.vcell.modelapp.StructureMapping;
+import cbit.vcell.modelapp.VoltageClampStimulus;
 import cbit.vcell.mapping.*;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.dictionary.ReactionCanvasDisplaySpec;
@@ -62,6 +74,7 @@ import com.lowagie.text.Watermark;
 import com.sun.imageio.plugins.jpeg.JPEGImageWriter;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageOutputStream;
+
 
 /**
 This is the root class that handles publishing of models in the Virtual Cell. It supports the publishing of BioModels, MathModels, 
