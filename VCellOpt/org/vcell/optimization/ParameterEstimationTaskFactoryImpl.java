@@ -8,8 +8,8 @@ import org.vcell.modelapp.analysis.IAnalysisTaskFactory;
 import org.vcell.modelapp.analysis.IAnalysisTaskView;
 
 import cbit.vcell.mapping.MappingException;
-import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathException;
+import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.gui.OptTestPanel;
 import cbit.vcell.parser.ExpressionException;

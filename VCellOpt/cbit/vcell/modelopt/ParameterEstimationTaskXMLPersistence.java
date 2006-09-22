@@ -40,7 +40,7 @@ public class ParameterEstimationTaskXMLPersistence {
  * @param element org.jdom.Element
  * @param simContext cbit.vcell.mapping.SimulationContext
  */
-public static ParameterEstimationTask getParameterEstimationTask(Element parameterEstimationTaskElement, cbit.vcell.mapping.SimulationContext simContext) 
+public static ParameterEstimationTask getParameterEstimationTask(Element parameterEstimationTaskElement, cbit.vcell.modelapp.SimulationContext simContext) 
 throws cbit.vcell.parser.ExpressionException, cbit.vcell.mapping.MappingException, cbit.vcell.math.MathException, java.beans.PropertyVetoException {
 		
 	ParameterEstimationTask parameterEstimationTask = new ParameterEstimationTask(simContext);
@@ -183,7 +183,7 @@ throws cbit.vcell.parser.ExpressionException, cbit.vcell.mapping.MappingExceptio
  * @param simContext cbit.vcell.mapping.SimulationContext
  * @param symbol java.lang.String
  */
-private static cbit.vcell.parser.SymbolTableEntry getSymbolTableEntry(cbit.vcell.mapping.SimulationContext simContext, String parameterName) {
+private static cbit.vcell.parser.SymbolTableEntry getSymbolTableEntry(cbit.vcell.modelapp.SimulationContext simContext, String parameterName) {
 	cbit.vcell.parser.SymbolTableEntry ste = null;
 
 	try {

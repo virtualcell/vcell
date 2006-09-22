@@ -1,8 +1,10 @@
 package cbit.vcell.modelopt;
-import cbit.vcell.mapping.StructureMapping;
 import java.util.Vector;
+
+
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.modelapp.StructureMapping;
 import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.simdata.FunctionFileGenerator;
 import cbit.vcell.simdata.RowColumnResultSet;
@@ -94,7 +96,7 @@ cbit.vcell.mapping.MathSymbolMapping computeOptimizationSpec() throws cbit.vcell
 	//
 	// get original MathDescription (later to be substituted for local/global parameters).
 	//
-	cbit.vcell.mapping.SimulationContext simContext = modelOptimizationSpec.getSimulationContext();
+	cbit.vcell.modelapp.SimulationContext simContext = modelOptimizationSpec.getSimulationContext();
 	cbit.vcell.mapping.MathMapping mathMapping = new cbit.vcell.mapping.MathMapping(simContext);
 	MathDescription origMathDesc = null;
 	mathSymbolMapping = null;

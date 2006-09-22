@@ -28,7 +28,7 @@ public class ParameterEstimationTask extends AbstractAnalysisTask {
 /**
  * ParameterEstimationTask constructor comment.
  */
-public ParameterEstimationTask(cbit.vcell.mapping.SimulationContext simContext) throws ExpressionException {
+public ParameterEstimationTask(cbit.vcell.modelapp.SimulationContext simContext) throws ExpressionException {
 	super();
 	fieldModelOptimizationSpec = new ModelOptimizationSpec(simContext);
 	fieldModelOptimizationMapping = new ModelOptimizationMapping(fieldModelOptimizationSpec);

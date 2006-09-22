@@ -12,6 +12,7 @@ package cbit.vcell.modelopt.gui;
 import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.opt.solvers.OptSolverCallbacks;
 import cbit.vcell.opt.OptimizationResultSet;
+import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 /**
  * Insert the type's description here.
@@ -177,8 +178,8 @@ public void saveSolutionAsNewSimulation() {
 			//
 			// add new simulation to the Application (other bookkeeping required?)
 			//
-			cbit.vcell.mapping.SimulationContext simContext = parameterEstimationTask.getModelOptimizationSpec().getSimulationContext();
-			cbit.vcell.simulation.Simulation newSim = simContext.addNewSimulation();
+			cbit.vcell.modelapp.SimulationContext simContext = parameterEstimationTask.getModelOptimizationSpec().getSimulationContext();
+			cbit.vcell.simulation.Simulation newSim = simContext.addNewSimulation(new MathMapping(simContext));
 			parameterEstimationTask.getModelOptimizationMapping().applySolutionToMathOverrides(newSim,parameterEstimationTask.getOptimizationResultSet());
 			cbit.gui.DialogUtils.showInfoDialog("created simulation \""+newSim.getName()+"\"");
 		}

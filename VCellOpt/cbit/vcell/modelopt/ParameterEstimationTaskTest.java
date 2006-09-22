@@ -1,5 +1,5 @@
 package cbit.vcell.modelopt;
-import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.modelapp.SimulationContext;
 /**
  * Insert the type's description here.
  * Creation date: (5/2/2006 11:16:58 PM)
