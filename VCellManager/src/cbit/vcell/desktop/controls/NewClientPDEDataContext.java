@@ -1,5 +1,5 @@
 package cbit.vcell.desktop.controls;
-import cbit.vcell.simdata.*;
+import cbit.vcell.simdata.DataManager;
 /**
  * Insert the type's description here.
  * Creation date: (6/13/2004 3:36:26 PM)

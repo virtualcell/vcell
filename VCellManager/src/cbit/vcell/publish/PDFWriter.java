@@ -1,12 +1,10 @@
 package cbit.vcell.publish;
 import java.io.FileOutputStream;
 
-import com.lowagie.text.Document;
-import com.lowagie.text.DocumentException;
 import com.lowagie.text.DocWriter;
+import com.lowagie.text.DocumentException;
 import com.lowagie.text.Graphic;
 import com.lowagie.text.HeaderFooter;
-import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;

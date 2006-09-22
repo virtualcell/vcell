@@ -1,27 +1,26 @@
 package cbit.vcell.client.database;
+import java.rmi.RemoteException;
+
+import cbit.image.VCImage;
+import cbit.image.VCImageInfo;
 import cbit.util.CurateSpec;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.User;
 import cbit.util.VCDocument;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.dictionary.FormalSpeciesType;
-import cbit.vcell.xml.XmlDialect;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.mathmodel.*;
-import cbit.image.VCImage;
-import cbit.image.VCImageInfo;
-import cbit.vcell.geometry.*;
-import cbit.vcell.server.SimulationStatus;
-import cbit.vcell.simulation.*;
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.BioModelInfo;
+import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
-import java.rmi.RemoteException;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.mathmodel.MathModelInfo;
+import cbit.vcell.server.SimulationStatus;
+import cbit.vcell.simulation.Simulation;
+import cbit.vcell.simulation.VCSimulationIdentifier;
+import cbit.vcell.xml.XmlDialect;
 /**
  * Insert the type's description here.
  * Creation date: (10/28/00 12:05:57 AM)

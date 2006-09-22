@@ -1,16 +1,18 @@
 package cbit.vcell.publish;
 import java.awt.print.PageFormat;
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+
+import cbit.sql.ConnectionFactory;
+import cbit.sql.DBCacheTable;
+import cbit.sql.KeyFactory;
 import cbit.util.BigString;
 import cbit.util.DataAccessException;
 import cbit.util.SessionLog;
 import cbit.util.User;
+import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.modeldb.DatabaseServerImpl;
-import cbit.sql.DBCacheTable;
-import cbit.sql.KeyFactory;
-import cbit.sql.ConnectionFactory;
-import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.xml.XmlHelper;
 /**
  * Insert the type's description here.

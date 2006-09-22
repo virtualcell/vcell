@@ -3,9 +3,10 @@ package cbit.vcell.desktop.controls;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.beans.PropertyVetoException;
+
 import cbit.image.VCImage;
 import cbit.util.DataAccessException;
-import java.beans.PropertyVetoException;
 /**
  * Insert the type's description here.
  * Creation date: (1/16/01 10:50:11 AM)

@@ -1,6 +1,6 @@
 package cbit.vcell.publish;
-import java.awt.image.PixelGrabber;
 import java.awt.Image;
+import java.awt.image.PixelGrabber;
 import java.io.IOException;
 
 /**

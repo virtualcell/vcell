@@ -3,7 +3,11 @@ package cbit.vcell.desktop.controls;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.beans.*;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
+import java.beans.VetoableChangeSupport;
 /**
  * Insert the type's description here.
  * Creation date: (5/17/2001 5:31:08 PM)

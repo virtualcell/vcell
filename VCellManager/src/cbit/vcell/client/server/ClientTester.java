@@ -1,13 +1,10 @@
 package cbit.vcell.client.server;
 
-import cbit.gui.PropertyLoader;
-import cbit.sql.*;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
 import java.awt.Frame;
 
+import cbit.gui.PropertyLoader;
+import cbit.sql.ConnectionFactory;
+import cbit.sql.DBCacheTable;
 import cbit.util.NullSessionLog;
 import cbit.util.SessionLog;
 /**
