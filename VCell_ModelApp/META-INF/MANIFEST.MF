@@ -8,15 +8,17 @@ Bundle-Localization: plugin
 Import-Package: org.osgi.framework;version="1.3.0"
 Export-Package: cbit.vcell.mapping,
  cbit.vcell.mapping.potential,
- org.vcell.modelapp
+ org.vcell.modelapp,
+ org.vcell.modelapp.analysis
 Require-Bundle: org.vcell.common,
  org.vcell.constraints,
  org.vcell.expression,
  org.vcell.geometry,
- org.vcell.image,
  org.vcell.math,
- org.vcell.matrix,
- org.vcell.model,
  org.vcell.simulation,
  org.vcell.units,
- org.vcell.util
+ org.vcell.util,
+ org.vcell.physiology,
+ org.vcell.image,
+ org.vcell.matrix,
+ org.eclipse.osgi

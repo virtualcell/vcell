@@ -1,6 +1,6 @@
 package cbit.vcell.mapping;
 
-import org.vcell.model.analysis.IAnalysisTask;
+import org.vcell.modelapp.analysis.IAnalysisTask;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -146,7 +146,7 @@ public java.beans.IndexedPropertyDescriptor analysisTasksPropertyDescriptor() {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetIndexedMethodParameterTypes[] = {
 					int.class,
-					org.vcell.model.analysis.IAnalysisTask.class
+					org.vcell.modelapp.analysis.IAnalysisTask.class
 				};
 				aSetIndexedMethod = getBeanClass().getMethod("setAnalysisTasks", aSetIndexedMethodParameterTypes);
 			} catch (Throwable exception) {
@@ -1761,7 +1761,7 @@ public java.beans.MethodDescriptor setAnalysisTasks_int_cbitvcellmodeloptAnalysi
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
 				int.class,
-				org.vcell.model.analysis.IAnalysisTask.class
+				org.vcell.modelapp.analysis.IAnalysisTask.class
 			};
 			aMethod = getBeanClass().getMethod("setAnalysisTasks", aParameterTypes);
 		} catch (Throwable exception) {

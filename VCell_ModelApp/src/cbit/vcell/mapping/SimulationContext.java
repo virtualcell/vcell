@@ -11,21 +11,18 @@ import cbit.vcell.model.BioNameScope;
 import java.beans.*;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.model.Model;
-import cbit.vcell.math.VCML;
-import cbit.vcell.model.VCMODL;
 import cbit.util.*;
 import cbit.vcell.math.MathDescription;
 import java.util.*;
 
-import org.vcell.model.analysis.IAnalysisTask;
+import org.vcell.modelapp.analysis.IAnalysisTask;
 
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.model.Parameter;
-import cbit.vcell.biomodel.BioModel;
 /**
  * This type was created in VisualAge.
  */
-public class SimulationContext implements cbit.util.Versionable, Matchable, cbit.vcell.document.SimulationOwner, cbit.vcell.parser.ScopedSymbolTable, PropertyChangeListener, VetoableChangeListener, java.io.Serializable {
+public class SimulationContext implements cbit.util.Versionable, Matchable, cbit.vcell.simulation.SimulationOwner, cbit.vcell.parser.ScopedSymbolTable, PropertyChangeListener, VetoableChangeListener, java.io.Serializable {
 
 	public class SimulationContextNameScope extends BioNameScope {
 		private transient cbit.vcell.parser.NameScope nameScopes[] = null;
@@ -190,7 +187,7 @@ public class SimulationContext implements cbit.util.Versionable, Matchable, cbit
 	private cbit.vcell.mapping.ElectricalStimulus[] fieldElectricalStimuli = new ElectricalStimulus[0];
 	private Electrode fieldGroundElectrode = null;
 	private SimulationContextNameScope nameScope = new SimulationContextNameScope();
-	private transient BioModel bioModel = null;
+	private transient SimulationContextOwner simContextOwner = null;
 	private SimulationContext.SimulationContextParameter[] fieldSimulationContextParameters = new SimulationContextParameter[0];
 	private IAnalysisTask[] fieldAnalysisTasks = null;
 
@@ -204,7 +201,7 @@ public SimulationContext(SimulationContext simulationContext) throws PropertyVet
 	this.characteristicSize = simulationContext.getCharacteristicSize();
 	this.fieldName = "copied_from_"+simulationContext.getName();
 	this.fieldDescription = "(copied from "+simulationContext.getName()+") "+simulationContext.getDescription();
-	this.bioModel = simulationContext.getBioModel();
+	this.simContextOwner = simulationContext.getSimulationContextOwner();
 	//
 	// copy electrical stimuli and ground
 	//
@@ -277,11 +274,11 @@ public SimulationContext(Model model, Geometry geometry, MathDescription argMath
  * @param analysisTasks The new value for the property.
  * @see #getAnalysisTasks
  */
-public void addAnalysisTask(org.vcell.model.analysis.IAnalysisTask analysisTask) throws PropertyVetoException {
+public void addAnalysisTask(org.vcell.modelapp.analysis.IAnalysisTask analysisTask) throws PropertyVetoException {
 	if (fieldAnalysisTasks==null){
-		setAnalysisTasks(new org.vcell.model.analysis.IAnalysisTask[] { analysisTask });
+		setAnalysisTasks(new org.vcell.modelapp.analysis.IAnalysisTask[] { analysisTask });
 	}else{
-		IAnalysisTask[] newAnalysisTasks = (org.vcell.model.analysis.IAnalysisTask[])BeanUtils.addElement(fieldAnalysisTasks,analysisTask);
+		IAnalysisTask[] newAnalysisTasks = (org.vcell.modelapp.analysis.IAnalysisTask[])BeanUtils.addElement(fieldAnalysisTasks,analysisTask);
 		setAnalysisTasks(newAnalysisTasks);
 	}
 }
@@ -306,13 +303,13 @@ public Simulation addNewSimulation() throws java.beans.PropertyVetoException {
 			);
 		}
 	}
-	if (bioModel==null){
+	if (simContextOwner==null){
 		throw new RuntimeException("cannot add simulation, bioModel not set yet");
 	}
 	//
 	// get free name for new Simulation.
 	//
-	Simulation sims[] = bioModel.getSimulations();
+	Simulation sims[] = simContextOwner.getSimulations();
 	String newSimName = null;
 	for (int i = 0; newSimName==null && i < 100; i++){
 		String proposedName = "Simulation"+i;
@@ -331,12 +328,12 @@ public Simulation addNewSimulation() throws java.beans.PropertyVetoException {
 	}
 
 	//
-	// create new Simulation and add to BioModel.
+	// create new Simulation and add to SimulationContextOwner.
 	//
 	Simulation newSimulation = new Simulation(getMathDescription());
 	newSimulation.setName(newSimName);
 	
-	bioModel.addSimulation(newSimulation);
+	simContextOwner.addSimulation(newSimulation);
 
 	return newSimulation;
 }
@@ -363,10 +360,10 @@ public void addSimulation(cbit.vcell.simulation.Simulation newSimulation) throws
 	if (newSimulation.getMathDescription() != getMathDescription()){
 		throw new IllegalArgumentException("cannot add simulation '"+newSimulation.getName()+"', has different MathDescription");
 	}
-	if (bioModel==null){
+	if (simContextOwner==null){
 		throw new RuntimeException("cannot add simulation, bioModel not set yet");
 	}
-	bioModel.addSimulation(newSimulation);
+	simContextOwner.addSimulation(newSimulation);
 }
 
 
@@ -517,13 +514,13 @@ public Simulation copySimulation(Simulation simulation) throws java.beans.Proper
 	if (simulation.getMathDescription() != getMathDescription()){
 		throw new IllegalArgumentException("cannot copy simulation '"+simulation.getName()+"', has different MathDescription than Application");
 	}
-	if (bioModel==null){
+	if (simContextOwner==null){
 		throw new RuntimeException("cannot add simulation, bioModel not set yet");
 	}
 	//
 	// get free name for copied Simulation.
 	//
-	Simulation sims[] = bioModel.getSimulations();
+	Simulation sims[] = simContextOwner.getSimulations();
 	String newSimName = null;
 	for (int i = 0; newSimName==null && i < 100; i++){
 		String proposedName = "Copy of "+simulation.getName() + ((i>0)?(" "+i):(""));
@@ -542,12 +539,12 @@ public Simulation copySimulation(Simulation simulation) throws java.beans.Proper
 	}
 
 	//
-	// create new Simulation and add to BioModel.
+	// create new Simulation and add to SimulationContextOwner.
 	//
 	Simulation newSimulation = new Simulation(simulation);
 	newSimulation.setName(newSimName);
 	
-	bioModel.addSimulation(newSimulation);
+	simContextOwner.addSimulation(newSimulation);
 
 	return newSimulation;
 }
@@ -660,10 +657,10 @@ public IAnalysisTask getAnalysisTasks(int index) {
 /**
  * Insert the method's description here.
  * Creation date: (5/7/2004 11:54:10 AM)
- * @return BioModel
+ * @return SimulationContextOwner
  */
-public BioModel getBioModel() {
-	return bioModel;
+public SimulationContextOwner getSimulationContextOwner() {
+	return simContextOwner;
 }
 
 
@@ -881,7 +878,7 @@ public SimulationContext.SimulationContextParameter getSimulationContextParamete
  * @see #setSimulations
  */
 public cbit.vcell.simulation.Simulation[] getSimulations() {
-	return extractLocalSimulations(bioModel.getSimulations());
+	return extractLocalSimulations(simContextOwner.getSimulations());
 }
 
 
@@ -958,7 +955,7 @@ public void propertyChange(java.beans.PropertyChangeEvent event) {
 	if (event.getSource() == getGeometryContext() && event.getPropertyName().equals("model")){
 		firePropertyChange("model", event.getOldValue(), event.getNewValue());
 	}
-	if (event.getSource() == getBioModel() && event.getPropertyName().equals("simulations")){
+	if (event.getSource() == getSimulationContextOwner() && event.getPropertyName().equals("simulations")){
 		Simulation oldSimulations[] = extractLocalSimulations((Simulation[])event.getOldValue());
 		Simulation newSimulations[] = extractLocalSimulations((Simulation[])event.getNewValue());
 		firePropertyChange("simulations",oldSimulations,newSimulations);
@@ -1209,7 +1206,7 @@ public void removeSimulation(cbit.vcell.simulation.Simulation simulation) throws
 	if (simulation.getMathDescription() != getMathDescription()){
 		throw new IllegalArgumentException("cannot remove simulation '"+simulation.getName()+"', has different MathDescription");
 	}
-	bioModel.removeSimulation(simulation);
+	simContextOwner.removeSimulation(simulation);
 }
 
 
@@ -1258,14 +1255,14 @@ public void setAnalysisTasks(IAnalysisTask[] analysisTasks) throws java.beans.Pr
 /**
  * Insert the method's description here.
  * Creation date: (5/7/2004 11:54:10 AM)
- * @param newBioModel BioModel
+ * @param newBioModel SimulationContextOwner
  */
-public void setBioModel(BioModel newBioModel) {
-	if (this.bioModel!=null){
-		this.bioModel.removePropertyChangeListener(this);
-		this.bioModel.removeVetoableChangeListener(this);
+public void setSimulationContextOwner(SimulationContextOwner newBioModel) {
+	if (this.simContextOwner!=null){
+		this.simContextOwner.removePropertyChangeListener(this);
+		this.simContextOwner.removeVetoableChangeListener(this);
 	}
-	bioModel = newBioModel;
+	simContextOwner = newBioModel;
 	if (newBioModel!=null){
 		newBioModel.addPropertyChangeListener(this);
 		newBioModel.addVetoableChangeListener(this);
@@ -1481,7 +1478,7 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 			throw new PropertyVetoException("SimulationContext name '"+evt.getNewValue()+"' invalid",evt);
 		}
 	}
-	if (evt.getSource() == getBioModel() && evt.getPropertyName().equals("simulations")){
+	if (evt.getSource() == getSimulationContextOwner() && evt.getPropertyName().equals("simulations")){
 		Simulation oldSimulations[] = extractLocalSimulations((Simulation[])evt.getOldValue());
 		Simulation newSimulations[] = extractLocalSimulations((Simulation[])evt.getNewValue());
 		fireVetoableChange("simulations",oldSimulations,newSimulations);
