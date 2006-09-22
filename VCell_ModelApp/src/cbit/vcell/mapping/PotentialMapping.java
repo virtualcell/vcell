@@ -1,4 +1,12 @@
 package cbit.vcell.mapping;
+import org.vcell.modelapp.CurrentClampElectricalDevice;
+import org.vcell.modelapp.ElectricalDevice;
+import org.vcell.modelapp.FeatureMapping;
+import org.vcell.modelapp.MembraneElectricalDevice;
+import org.vcell.modelapp.MembraneMapping;
+import org.vcell.modelapp.SimulationContext;
+import org.vcell.modelapp.VoltageClampElectricalDevice;
+
 import cbit.vcell.matrix.RationalExp;
 import cbit.vcell.matrix.RationalExpMatrix;
 import cbit.vcell.matrix.MatrixException;
@@ -645,14 +653,14 @@ private static Graph getCircuitGraph(SimulationContext simContext, MathMapping m
 	//
 	// add edges for all current clamp electrodes (always have dependent voltages)
 	//
-	cbit.vcell.mapping.ElectricalStimulus stimuli[] = simContext.getElectricalStimuli();
-	cbit.vcell.mapping.Electrode groundElectrode = simContext.getGroundElectrode();
+	org.vcell.modelapp.ElectricalStimulus stimuli[] = simContext.getElectricalStimuli();
+	org.vcell.modelapp.Electrode groundElectrode = simContext.getGroundElectrode();
 	for (int i = 0; i < stimuli.length; i++){
-		cbit.vcell.mapping.ElectricalStimulus stimulus = stimuli[i];
+		org.vcell.modelapp.ElectricalStimulus stimulus = stimuli[i];
 		//
 		// get electrodes
 		//
-		cbit.vcell.mapping.Electrode probeElectrode = stimulus.getElectrode();
+		org.vcell.modelapp.Electrode probeElectrode = stimulus.getElectrode();
 		if (probeElectrode == null){
 			throw new RuntimeException("null electrode for electrical stimulus");
 		}
@@ -662,8 +670,8 @@ private static Graph getCircuitGraph(SimulationContext simContext, MathMapping m
 //if (!membraneMapping.getResolved()){
 		Node groundNode = graph.getNode(groundElectrode.getFeature().getName());
 		Node probeNode = graph.getNode(probeElectrode.getFeature().getName());
-		if (stimulus instanceof cbit.vcell.mapping.CurrentClampStimulus){
-			cbit.vcell.mapping.CurrentClampStimulus ccStimulus = (cbit.vcell.mapping.CurrentClampStimulus)stimulus;
+		if (stimulus instanceof org.vcell.modelapp.CurrentClampStimulus){
+			org.vcell.modelapp.CurrentClampStimulus ccStimulus = (org.vcell.modelapp.CurrentClampStimulus)stimulus;
 			ElectricalDevice device = new CurrentClampElectricalDevice(ccStimulus,mathMapping);
 			Edge edge = new Edge(probeNode,groundNode,device);
 			graph.addEdge(edge);
@@ -702,11 +710,11 @@ private static Graph getCircuitGraph(SimulationContext simContext, MathMapping m
 	// add edges for all voltage clamp electrodes (ALWAYS independent voltages)
 	//
 	for (int i = 0; i < stimuli.length; i++){
-		cbit.vcell.mapping.ElectricalStimulus stimulus = stimuli[i];
+		org.vcell.modelapp.ElectricalStimulus stimulus = stimuli[i];
 		//
 		// get electrodes
 		//
-		cbit.vcell.mapping.Electrode probeElectrode = stimulus.getElectrode();
+		org.vcell.modelapp.Electrode probeElectrode = stimulus.getElectrode();
 		if (probeElectrode == null){
 			throw new RuntimeException("null electrode for electrical stimulus");
 		}
@@ -716,8 +724,8 @@ private static Graph getCircuitGraph(SimulationContext simContext, MathMapping m
 //if (!membraneMapping.getResolved()){
 		Node groundNode = graph.getNode(groundElectrode.getFeature().getName());
 		Node probeNode = graph.getNode(probeElectrode.getFeature().getName());
-		if (stimulus instanceof cbit.vcell.mapping.VoltageClampStimulus){
-			cbit.vcell.mapping.VoltageClampStimulus vcStimulus = (cbit.vcell.mapping.VoltageClampStimulus)stimulus;
+		if (stimulus instanceof org.vcell.modelapp.VoltageClampStimulus){
+			org.vcell.modelapp.VoltageClampStimulus vcStimulus = (org.vcell.modelapp.VoltageClampStimulus)stimulus;
 			ElectricalDevice device = new VoltageClampElectricalDevice(vcStimulus,mathMapping);
 			Edge edge = new Edge(probeNode,groundNode,device);
 			graph.addEdge(edge);
@@ -885,7 +893,7 @@ private static Expression getTotalMembraneCurrent(SimulationContext simContext, 
 	// gather current terms
 	//
 	Expression currentExp = new Expression(0.0);
-	cbit.vcell.mapping.ReactionSpec reactionSpecs[] = simContext.getReactionContext().getReactionSpecs();
+	org.vcell.modelapp.ReactionSpec reactionSpecs[] = simContext.getReactionContext().getReactionSpecs();
 	for (int i = 0; i < reactionSpecs.length; i++){
 		//
 		// only include currents from this membrane from reactions that are not disabled ("excluded")

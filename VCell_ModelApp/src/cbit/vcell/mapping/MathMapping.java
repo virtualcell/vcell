@@ -11,6 +11,20 @@ import cbit.vcell.model.*;
 import cbit.vcell.geometry.*;
 import cbit.vcell.parser.*;
 import java.util.*;
+
+import org.vcell.modelapp.CurrentClampElectricalDevice;
+import org.vcell.modelapp.ElectricalDevice;
+import org.vcell.modelapp.ElectricalStimulus;
+import org.vcell.modelapp.FeatureMapping;
+import org.vcell.modelapp.MembraneElectricalDevice;
+import org.vcell.modelapp.MembraneMapping;
+import org.vcell.modelapp.ReactionSpec;
+import org.vcell.modelapp.SimulationContext;
+import org.vcell.modelapp.SpeciesContextMapping;
+import org.vcell.modelapp.SpeciesContextSpec;
+import org.vcell.modelapp.StructureMapping;
+import org.vcell.modelapp.VoltageClampElectricalDevice;
+
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * The MathMapping class performs the Biological to Mathematical transformation once upon calling getMathDescription().

@@ -1,8 +1,8 @@
 package org.vcell.modelapp.analysis;
 
 import org.jdom.Element;
+import org.vcell.modelapp.SimulationContext;
 
-import cbit.vcell.mapping.SimulationContext;
 
 public interface IAnalysisTaskFactory {
 	

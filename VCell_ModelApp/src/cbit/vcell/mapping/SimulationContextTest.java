@@ -1,5 +1,11 @@
 package cbit.vcell.mapping;
 
+import org.vcell.modelapp.GeometryContext;
+import org.vcell.modelapp.MembraneMapping;
+import org.vcell.modelapp.ReactionContext;
+import org.vcell.modelapp.SimulationContext;
+import org.vcell.modelapp.SpeciesContextSpec;
+
 import cbit.vcell.model.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -104,17 +110,17 @@ public static SimulationContext getExampleElectrical(int dimension) throws Excep
 	
 	// Add Electrical Stimulus and Gnd Electrode
 
-	cbit.vcell.mapping.Electrode gndelectrode = new cbit.vcell.mapping.Electrode((Feature)model.getStructure("extracellular"), new cbit.util.Coordinate(10.0, 10.0,10.0));
+	org.vcell.modelapp.Electrode gndelectrode = new org.vcell.modelapp.Electrode((Feature)model.getStructure("extracellular"), new cbit.util.Coordinate(10.0, 10.0,10.0));
 	simContext.setGroundElectrode(gndelectrode);
 	
-	cbit.vcell.mapping.Electrode newelectrode = new cbit.vcell.mapping.Electrode((Feature)model.getStructure("cytosol"), new cbit.util.Coordinate(0.0, 0.0,0.0));
+	org.vcell.modelapp.Electrode newelectrode = new org.vcell.modelapp.Electrode((Feature)model.getStructure("cytosol"), new cbit.util.Coordinate(0.0, 0.0,0.0));
 	Expression exp = new Expression("0.1*(t>0.01 && t<0.05)");
 	String stimulusName = "Electrode";
-	cbit.vcell.mapping.VoltageClampStimulus voltstimulus = new cbit.vcell.mapping.VoltageClampStimulus(newelectrode, stimulusName, exp, simContext);
-	cbit.vcell.mapping.CurrentClampStimulus currentstimulus = new cbit.vcell.mapping.CurrentClampStimulus(newelectrode, stimulusName, exp, simContext);
+	org.vcell.modelapp.VoltageClampStimulus voltstimulus = new org.vcell.modelapp.VoltageClampStimulus(newelectrode, stimulusName, exp, simContext);
+	org.vcell.modelapp.CurrentClampStimulus currentstimulus = new org.vcell.modelapp.CurrentClampStimulus(newelectrode, stimulusName, exp, simContext);
 
 	// simContext.setElectricalStimuli(new cbit.vcell.mapping.ElectricalStimulus[] {currentstimulus});
-	simContext.setElectricalStimuli(new cbit.vcell.mapping.ElectricalStimulus[] {voltstimulus});
+	simContext.setElectricalStimuli(new org.vcell.modelapp.ElectricalStimulus[] {voltstimulus});
 
 	
 	//

@@ -4,6 +4,15 @@ package cbit.vcell.mapping;
  * All rights reserved.
 ©*/
 import java.util.*;
+
+import org.vcell.modelapp.GeometryContext;
+import org.vcell.modelapp.MembraneMapping;
+import org.vcell.modelapp.ReactionSpec;
+import org.vcell.modelapp.SimulationContext;
+import org.vcell.modelapp.SpeciesContextMapping;
+import org.vcell.modelapp.SpeciesContextSpec;
+import org.vcell.modelapp.StructureMapping;
+
 import cbit.vcell.model.*;
 import cbit.vcell.geometry.*;
 import cbit.vcell.parser.*;
