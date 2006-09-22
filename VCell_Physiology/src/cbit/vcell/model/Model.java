@@ -8,7 +8,6 @@ import java.util.*;
 import java.beans.*;
 import cbit.util.*;
 import cbit.vcell.model.Feature;
-import cbit.vcell.parser.NameScope;
 
 public class Model implements cbit.util.Versionable, Matchable, PropertyChangeListener, VetoableChangeListener, java.io.Serializable, cbit.vcell.parser.ScopedSymbolTable {
 	private Version version = null;
@@ -54,7 +53,7 @@ public class Model implements cbit.util.Versionable, Matchable, PropertyChangeLi
 			return Model.this;
 		}
 		public boolean isPeer(cbit.vcell.parser.NameScope nameScope){
-			return ((nameScope instanceof cbit.vcell.mapping.MathMapping.MathMappingNameScope) && nameScope.isPeer(this));
+			return (/*(nameScope instanceof cbit.vcell.mapping.MathMapping.MathMappingNameScope) &&*/ nameScope.isPeer(this));
 		}
 
 	}

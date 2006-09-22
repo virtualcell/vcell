@@ -33,7 +33,7 @@ public class Experiment implements cbit.util.Matchable, java.io.Serializable, cb
 			return Experiment.this;
 		}
 		public boolean isPeer(cbit.vcell.parser.NameScope nameScope){
-			return ((nameScope instanceof cbit.vcell.mapping.MathMapping.MathMappingNameScope) && nameScope.isPeer(this));
+			return (/*(nameScope instanceof cbit.vcell.mapping.MathMapping.MathMappingNameScope) &&*/ nameScope.isPeer(this));
 		}
 
 	}

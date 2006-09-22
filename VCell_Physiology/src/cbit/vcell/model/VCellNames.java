@@ -14,10 +14,10 @@ public class VCellNames {
 
 	static {
 		hash = new Hashtable();
-		hash.put(cbit.vcell.biomodel.BioModel.class, "BioModel");
-		hash.put(cbit.vcell.mapping.SimulationContext.class, "Application");
-		hash.put(cbit.vcell.model.Model.class, "Physiology");
-		hash.put(cbit.vcell.simulation.Simulation.class, "Simulation");
+//		hash.put(cbit.vcell.biomodel.BioModel.class, "BioModel");
+//		hash.put(cbit.vcell.mapping.SimulationContext.class, "Application");
+//		hash.put(cbit.vcell.model.Model.class, "Physiology");
+//		hash.put(cbit.vcell.simulation.Simulation.class, "Simulation");
 	};
 
 /**
