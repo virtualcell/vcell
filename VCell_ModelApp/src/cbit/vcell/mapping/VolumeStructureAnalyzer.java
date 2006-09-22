@@ -6,9 +6,10 @@ package cbit.vcell.mapping;
 ©*/
 import cbit.vcell.geometry.*;
 import cbit.vcell.model.*;
+import cbit.vcell.modelapp.MembraneMapping;
+
 import java.util.*;
 
-import org.vcell.modelapp.MembraneMapping;
 /**
  * This type was created in VisualAge.
  */

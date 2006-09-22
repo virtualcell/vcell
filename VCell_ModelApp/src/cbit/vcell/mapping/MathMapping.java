@@ -8,22 +8,22 @@ import cbit.util.ISize;
 import cbit.vcell.math.*;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.*;
+import cbit.vcell.modelapp.CurrentClampElectricalDevice;
+import cbit.vcell.modelapp.ElectricalDevice;
+import cbit.vcell.modelapp.ElectricalStimulus;
+import cbit.vcell.modelapp.FeatureMapping;
+import cbit.vcell.modelapp.MembraneElectricalDevice;
+import cbit.vcell.modelapp.MembraneMapping;
+import cbit.vcell.modelapp.ReactionSpec;
+import cbit.vcell.modelapp.SimulationContext;
+import cbit.vcell.modelapp.SpeciesContextMapping;
+import cbit.vcell.modelapp.SpeciesContextSpec;
+import cbit.vcell.modelapp.StructureMapping;
+import cbit.vcell.modelapp.VoltageClampElectricalDevice;
 import cbit.vcell.geometry.*;
 import cbit.vcell.parser.*;
 import java.util.*;
 
-import org.vcell.modelapp.CurrentClampElectricalDevice;
-import org.vcell.modelapp.ElectricalDevice;
-import org.vcell.modelapp.ElectricalStimulus;
-import org.vcell.modelapp.FeatureMapping;
-import org.vcell.modelapp.MembraneElectricalDevice;
-import org.vcell.modelapp.MembraneMapping;
-import org.vcell.modelapp.ReactionSpec;
-import org.vcell.modelapp.SimulationContext;
-import org.vcell.modelapp.SpeciesContextMapping;
-import org.vcell.modelapp.SpeciesContextSpec;
-import org.vcell.modelapp.StructureMapping;
-import org.vcell.modelapp.VoltageClampElectricalDevice;
 
 import cbit.vcell.units.VCUnitDefinition;
 /**

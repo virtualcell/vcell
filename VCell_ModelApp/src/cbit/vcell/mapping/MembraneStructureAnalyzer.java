@@ -6,12 +6,13 @@ package cbit.vcell.mapping;
 ©*/
 import cbit.vcell.geometry.*;
 import cbit.vcell.model.*;
+import cbit.vcell.modelapp.FeatureMapping;
+import cbit.vcell.modelapp.GeometryContext;
+import cbit.vcell.modelapp.ReactionSpec;
+import cbit.vcell.modelapp.SpeciesContextSpec;
+
 import java.util.*;
 
-import org.vcell.modelapp.FeatureMapping;
-import org.vcell.modelapp.GeometryContext;
-import org.vcell.modelapp.ReactionSpec;
-import org.vcell.modelapp.SpeciesContextSpec;
 
 import cbit.vcell.parser.Expression;
 /**

@@ -1,9 +1,9 @@
 package cbit.vcell.mapping;
-import org.vcell.modelapp.SimulationContext;
 
 import net.sourceforge.interval.ia_math.RealInterval;
 import cbit.vcell.constraints.*;
 import cbit.vcell.model.*;
+import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.math.*;
 /**
