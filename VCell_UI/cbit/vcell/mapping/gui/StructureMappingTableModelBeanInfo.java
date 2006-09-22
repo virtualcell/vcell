@@ -529,7 +529,7 @@ public java.beans.PropertyDescriptor geometryContextPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.mapping.GeometryContext.class
+					cbit.vcell.modelapp.GeometryContext.class
 				};
 				aSetMethod = getBeanClass().getMethod("setGeometryContext", aSetMethodParameterTypes);
 			} catch (java.lang.Throwable exception) {
@@ -1102,7 +1102,7 @@ public java.beans.MethodDescriptor setGeometryContext_cbitvcellmappingGeometryCo
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.mapping.GeometryContext.class
+				cbit.vcell.modelapp.GeometryContext.class
 			};
 			aMethod = getBeanClass().getMethod("setGeometryContext", aParameterTypes);
 		} catch (java.lang.Throwable exception) {

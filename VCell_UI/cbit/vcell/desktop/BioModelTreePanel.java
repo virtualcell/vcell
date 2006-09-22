@@ -6,6 +6,7 @@ package cbit.vcell.desktop;
 ©*/
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.mapping.*;
+import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.server.*;
 import cbit.vcell.simulation.*;
 import cbit.util.Matchable;
@@ -16,6 +17,7 @@ import java.lang.reflect.*;
 import cbit.vcell.biomodel.*;
 import java.awt.event.*;
 import javax.swing.*;
+
 /**
  * Insert the type's description here.
  * Creation date: (11/28/00 11:34:01 AM)

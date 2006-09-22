@@ -6,10 +6,14 @@ package cbit.vcell.mapping.gui;
 import cbit.vcell.geometry.*;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.render.StructureMappingCartoon;
+import cbit.vcell.modelapp.GeometryContext;
+import cbit.vcell.modelapp.SimulationContext;
 
 import java.util.*;
 import javax.swing.*;
 import javax.swing.plaf.basic.*;
+
+
 import java.awt.*;
 import java.awt.event.*;
 import cbit.vcell.mapping.*;
@@ -68,7 +72,7 @@ private void connEtoM1() {
  * @param value cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM10(cbit.vcell.mapping.SimulationContext value) {
+private void connEtoM10(cbit.vcell.modelapp.SimulationContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -130,7 +134,7 @@ private void connEtoM12(java.beans.PropertyChangeEvent arg1) {
  * @param value cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM15(cbit.vcell.mapping.SimulationContext value) {
+private void connEtoM15(cbit.vcell.modelapp.SimulationContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -169,7 +173,7 @@ private void connEtoM2() {
  * @param value cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM3(cbit.vcell.mapping.SimulationContext value) {
+private void connEtoM3(cbit.vcell.modelapp.SimulationContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -447,7 +451,7 @@ private cbit.gui.ButtonGroupCivilized getButtonGroupCivilized() {
 /**
  * Comment
  */
-public cbit.vcell.mapping.GeometryContext getGeoContext(SimulationContext argSimulationContext) {
+public cbit.vcell.modelapp.GeometryContext getGeoContext(SimulationContext argSimulationContext) {
 	if (argSimulationContext!=null){
 		return argSimulationContext.getGeometryContext();
 	}else{
@@ -461,7 +465,7 @@ public cbit.vcell.mapping.GeometryContext getGeoContext(SimulationContext argSim
  * @return cbit.vcell.mapping.GeometryContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.mapping.GeometryContext getGeometryContext1() {
+private cbit.vcell.modelapp.GeometryContext getGeometryContext1() {
 	// user code begin {1}
 	// user code end
 	return ivjGeometryContext1;
@@ -636,7 +640,7 @@ public SimulationContext getSimulationContext() {
  * @return cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.mapping.SimulationContext getsimulationContext1() {
+private cbit.vcell.modelapp.SimulationContext getsimulationContext1() {
 	// user code begin {1}
 	// user code end
 	return ivjsimulationContext1;
@@ -850,7 +854,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  * @param newValue cbit.vcell.mapping.GeometryContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setGeometryContext1(cbit.vcell.mapping.GeometryContext newValue) {
+private void setGeometryContext1(cbit.vcell.modelapp.GeometryContext newValue) {
 	if (ivjGeometryContext1 != newValue) {
 		try {
 			/* Stop listening for events from the current object */
@@ -916,10 +920,10 @@ public void setSimulationContext(SimulationContext simulationContext) {
  * @param newValue cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setsimulationContext1(cbit.vcell.mapping.SimulationContext newValue) {
+private void setsimulationContext1(cbit.vcell.modelapp.SimulationContext newValue) {
 	if (ivjsimulationContext1 != newValue) {
 		try {
-			cbit.vcell.mapping.SimulationContext oldValue = getsimulationContext1();
+			cbit.vcell.modelapp.SimulationContext oldValue = getsimulationContext1();
 			/* Stop listening for events from the current object */
 			if (ivjsimulationContext1 != null) {
 				ivjsimulationContext1.removePropertyChangeListener(this);

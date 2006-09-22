@@ -75,7 +75,7 @@ public java.beans.PropertyDescriptor featureMappingPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.mapping.FeatureMapping.class
+					cbit.vcell.modelapp.FeatureMapping.class
 				};
 				aSetMethod = getBeanClass().getMethod("setFeatureMapping", aSetMethodParameterTypes);
 			} catch (Throwable exception) {
@@ -473,7 +473,7 @@ public java.beans.MethodDescriptor setFeatureMapping_cbitvcellmappingFeatureMapp
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.mapping.FeatureMapping.class
+				cbit.vcell.modelapp.FeatureMapping.class
 			};
 			aMethod = getBeanClass().getMethod("setFeatureMapping", aParameterTypes);
 		} catch (Throwable exception) {

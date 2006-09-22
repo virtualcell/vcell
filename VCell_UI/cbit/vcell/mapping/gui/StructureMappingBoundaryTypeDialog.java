@@ -4,8 +4,10 @@ package cbit.vcell.mapping.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+
 import cbit.vcell.geometry.*;
 import cbit.vcell.mapping.*;
+import cbit.vcell.modelapp.FeatureMapping;
 /**
  * Insert the type's description here.
  * Creation date: (5/24/00 3:28:01 PM)
@@ -41,7 +43,7 @@ public class StructureMappingBoundaryTypeDialog extends javax.swing.JDialog impl
 	private boolean ivjConnPtoP6Aligning = false;
 	private boolean ivjConnPtoP7Aligning = false;
 	private boolean ivjConnPtoP8Aligning = false;
-	private cbit.vcell.mapping.FeatureMapping fieldFeatureMapping = null;
+	private cbit.vcell.modelapp.FeatureMapping fieldFeatureMapping = null;
 	private cbit.vcell.geometry.Geometry fieldGeometry = null;
 	private FeatureMapping ivjfeatureMapping1 = null;
 	private Geometry ivjgeometry1 = null;
@@ -146,7 +148,7 @@ private void connEtoC3() {
  * @param value cbit.vcell.mapping.FeatureMapping
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC4(cbit.vcell.mapping.FeatureMapping value) {
+private void connEtoC4(cbit.vcell.modelapp.FeatureMapping value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -164,7 +166,7 @@ private void connEtoC4(cbit.vcell.mapping.FeatureMapping value) {
  * @param value cbit.vcell.mapping.FeatureMapping
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1(cbit.vcell.mapping.FeatureMapping value) {
+private void connEtoM1(cbit.vcell.modelapp.FeatureMapping value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -202,7 +204,7 @@ private void connEtoM10(java.awt.event.ActionEvent arg1) {
  * @param value cbit.vcell.mapping.FeatureMapping
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM2(cbit.vcell.mapping.FeatureMapping value) {
+private void connEtoM2(cbit.vcell.modelapp.FeatureMapping value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -997,7 +999,7 @@ private cbit.vcell.model.Feature getfeature1() {
  * @return The featureMapping property value.
  * @see #setFeatureMapping
  */
-public cbit.vcell.mapping.FeatureMapping getFeatureMapping() {
+public cbit.vcell.modelapp.FeatureMapping getFeatureMapping() {
 	return fieldFeatureMapping;
 }
 /**
@@ -1005,7 +1007,7 @@ public cbit.vcell.mapping.FeatureMapping getFeatureMapping() {
  * @return cbit.vcell.mapping.FeatureMapping
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.mapping.FeatureMapping getfeatureMapping1() {
+private cbit.vcell.modelapp.FeatureMapping getfeatureMapping1() {
 	// user code begin {1}
 	// user code end
 	return ivjfeatureMapping1;
@@ -1525,7 +1527,7 @@ private void setfeature1(cbit.vcell.model.Feature newValue) {
  * @param featureMapping The new value for the property.
  * @see #getFeatureMapping
  */
-public void setFeatureMapping(cbit.vcell.mapping.FeatureMapping featureMapping) {
+public void setFeatureMapping(cbit.vcell.modelapp.FeatureMapping featureMapping) {
 	FeatureMapping oldValue = fieldFeatureMapping;
 	fieldFeatureMapping = featureMapping;
 	firePropertyChange("featureMapping", oldValue, featureMapping);
@@ -1535,10 +1537,10 @@ public void setFeatureMapping(cbit.vcell.mapping.FeatureMapping featureMapping) 
  * @param newValue cbit.vcell.mapping.FeatureMapping
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setfeatureMapping1(cbit.vcell.mapping.FeatureMapping newValue) {
+private void setfeatureMapping1(cbit.vcell.modelapp.FeatureMapping newValue) {
 	if (ivjfeatureMapping1 != newValue) {
 		try {
-			cbit.vcell.mapping.FeatureMapping oldValue = getfeatureMapping1();
+			cbit.vcell.modelapp.FeatureMapping oldValue = getfeatureMapping1();
 			/* Stop listening for events from the current object */
 			if (ivjfeatureMapping1 != null) {
 				ivjfeatureMapping1.removePropertyChangeListener(this);

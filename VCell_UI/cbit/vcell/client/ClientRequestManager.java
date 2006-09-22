@@ -23,12 +23,15 @@ import cbit.vcell.simdata.DataManager;
 import cbit.vcell.simulation.*;
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
+import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.client.data.DynamicDataManager;
 import cbit.vcell.client.data.MergedDynamicDataManager;
 import cbit.vcell.client.data.SimulationDataManager;
 import java.util.*;
 import javax.swing.*;
+
+
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.merge.XmlTreeDiff;
 import cbit.vcell.xml.merge.gui.TMLPanel;

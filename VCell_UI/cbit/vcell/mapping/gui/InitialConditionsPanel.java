@@ -4,8 +4,10 @@ package cbit.vcell.mapping.gui;
  * All rights reserved.
 ©*/
 import cbit.vcell.model.*;
+import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.mapping.*; 
 import java.beans.PropertyChangeListener;
+
 /**
  * This type was created in VisualAge.
  */
@@ -13,7 +15,7 @@ public class InitialConditionsPanel extends javax.swing.JPanel {
 	private SpeciesContextSpecPanel ivjSpeciesContextSpecPanel = null;
 	private static final String ALL_SPECIES = "All Species";
 	private static final String ALL_STRUCTURES = "All Structures";
-	private cbit.vcell.mapping.SimulationContext fieldSimulationContext = null;
+	private cbit.vcell.modelapp.SimulationContext fieldSimulationContext = null;
 	private boolean ivjConnPtoP3Aligning = false;
 	private SimulationContext ivjsimulationContext1 = null;
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
@@ -131,7 +133,7 @@ private void connEtoM1() {
  * @param value cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM2(cbit.vcell.mapping.SimulationContext value) {
+private void connEtoM2(cbit.vcell.modelapp.SimulationContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -218,7 +220,7 @@ private void connEtoM5_ExceptionOccurred(java.lang.Throwable arg1) {
  * @param value cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM6(cbit.vcell.mapping.SimulationContext value) {
+private void connEtoM6(cbit.vcell.modelapp.SimulationContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -605,7 +607,7 @@ private javax.swing.JTable getScrollPaneTable() {
 /**
  * Comment
  */
-public cbit.vcell.mapping.SpeciesContextSpec getSelectedSpeciesContextSpec(int index) {
+public cbit.vcell.modelapp.SpeciesContextSpec getSelectedSpeciesContextSpec(int index) {
 	if (getSimulationContext()!=null && index >= 0){
 		return getSimulationContext().getReactionContext().getSpeciesContextSpecs(index);
 	}
@@ -630,7 +632,7 @@ private javax.swing.ListSelectionModel getselectionModel1() {
  * @return The simulationContext property value.
  * @see #setSimulationContext
  */
-public cbit.vcell.mapping.SimulationContext getSimulationContext() {
+public cbit.vcell.modelapp.SimulationContext getSimulationContext() {
 	return fieldSimulationContext;
 }
 
@@ -640,7 +642,7 @@ public cbit.vcell.mapping.SimulationContext getSimulationContext() {
  * @return cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.mapping.SimulationContext getsimulationContext1() {
+private cbit.vcell.modelapp.SimulationContext getsimulationContext1() {
 	// user code begin {1}
 	// user code end
 	return ivjsimulationContext1;
@@ -808,7 +810,7 @@ private void setselectionModel1(javax.swing.ListSelectionModel newValue) {
  * @param simulationContext The new value for the property.
  * @see #getSimulationContext
  */
-public void setSimulationContext(cbit.vcell.mapping.SimulationContext simulationContext) {
+public void setSimulationContext(cbit.vcell.modelapp.SimulationContext simulationContext) {
 	SimulationContext oldValue = fieldSimulationContext;
 	fieldSimulationContext = simulationContext;
 	firePropertyChange("simulationContext", oldValue, simulationContext);
@@ -820,10 +822,10 @@ public void setSimulationContext(cbit.vcell.mapping.SimulationContext simulation
  * @param newValue cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setsimulationContext1(cbit.vcell.mapping.SimulationContext newValue) {
+private void setsimulationContext1(cbit.vcell.modelapp.SimulationContext newValue) {
 	if (ivjsimulationContext1 != newValue) {
 		try {
-			cbit.vcell.mapping.SimulationContext oldValue = getsimulationContext1();
+			cbit.vcell.modelapp.SimulationContext oldValue = getsimulationContext1();
 			ivjsimulationContext1 = newValue;
 			connPtoP3SetSource();
 			connEtoM2(ivjsimulationContext1);

@@ -22,7 +22,7 @@ import javax.swing.JTree;
  * @author: Anuradha Lakshminarayana
  */
 public class SimContextNameScopePanel extends javax.swing.JPanel {
-	private cbit.vcell.mapping.SimulationContext fieldSimContext = null;
+	private cbit.vcell.modelapp.SimulationContext fieldSimContext = null;
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
 	private javax.swing.JTree ivjJTree1 = null;
 	private javax.swing.JPanel ivjSimContextNameScopeDisplayPanel = null;
@@ -268,7 +268,7 @@ private javax.swing.JTree getJTree1() {
  * @return The simContext property value.
  * @see #setSimContext
  */
-public cbit.vcell.mapping.SimulationContext getSimContext() {
+public cbit.vcell.modelapp.SimulationContext getSimContext() {
 	return fieldSimContext;
 }
 /**
@@ -415,8 +415,8 @@ public static void main(java.lang.String[] args) {
  * @param simContext The new value for the property.
  * @see #getSimContext
  */
-public void setSimContext(cbit.vcell.mapping.SimulationContext simContext) {
-	cbit.vcell.mapping.SimulationContext oldValue = fieldSimContext;
+public void setSimContext(cbit.vcell.modelapp.SimulationContext simContext) {
+	cbit.vcell.modelapp.SimulationContext oldValue = fieldSimContext;
 	fieldSimContext = simContext;
 	firePropertyChange("simContext", oldValue, simContext);
 }

@@ -1,14 +1,16 @@
 package cbit.vcell.mapping.gui;
-import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.model.*;
+import cbit.vcell.modelapp.SpeciesContextSpec;
+import cbit.vcell.modelapp.StructureMapping;
+
 import java.util.*;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.mapping.SpeciesContextSpec;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)
@@ -86,8 +88,8 @@ public class SpeciesContextSpecParameterTableModel extends cbit.vcell.messaging.
 	private final int COLUMN_UNIT = 3;
 	private String LABELS[] = { "description", "Parameter", "Expression", "Units" };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.vcell.mapping.SpeciesContextSpec fieldSpeciesContextSpec = null;
-	private cbit.vcell.mapping.SimulationContext fieldSimulationContext = null;
+	private cbit.vcell.modelapp.SpeciesContextSpec fieldSpeciesContextSpec = null;
+	private cbit.vcell.modelapp.SimulationContext fieldSimulationContext = null;
 
 /**
  * ReactionSpecsTableModel constructor comment.
@@ -242,7 +244,7 @@ public int getRowCount() {
  * @return The simulationContext property value.
  * @see #setSimulationContext
  */
-public cbit.vcell.mapping.SimulationContext getSimulationContext() {
+public cbit.vcell.modelapp.SimulationContext getSimulationContext() {
 	return fieldSimulationContext;
 }
 
@@ -252,7 +254,7 @@ public cbit.vcell.mapping.SimulationContext getSimulationContext() {
  * @return The speciesContextSpec property value.
  * @see #setSpeciesContextSpec
  */
-public cbit.vcell.mapping.SpeciesContextSpec getSpeciesContextSpec() {
+public cbit.vcell.modelapp.SpeciesContextSpec getSpeciesContextSpec() {
 	return fieldSpeciesContextSpec;
 }
 
@@ -381,7 +383,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	//
 	try {
 		if (evt.getSource() == this && evt.getPropertyName().equals("simulationContext")){
-			cbit.vcell.mapping.SimulationContext oldSimContext = (cbit.vcell.mapping.SimulationContext)evt.getOldValue();
+			cbit.vcell.modelapp.SimulationContext oldSimContext = (cbit.vcell.modelapp.SimulationContext)evt.getOldValue();
 			if (oldSimContext!=null){
 				oldSimContext.getGeometryContext().removePropertyChangeListener(this);
 				StructureMapping[] oldStructureMappings = oldSimContext.getGeometryContext().getStructureMappings();
@@ -389,7 +391,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 					oldStructureMappings[i].removePropertyChangeListener(this);
 				}
 			}
-			cbit.vcell.mapping.SimulationContext newSimContext = (cbit.vcell.mapping.SimulationContext)evt.getNewValue();
+			cbit.vcell.modelapp.SimulationContext newSimContext = (cbit.vcell.modelapp.SimulationContext)evt.getNewValue();
 			if (newSimContext!=null){
 				newSimContext.getGeometryContext().addPropertyChangeListener(this);
 				StructureMapping[] newStructureMappings = newSimContext.getGeometryContext().getStructureMappings();
@@ -432,7 +434,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		}
 		
 		if (evt.getSource() == this && evt.getPropertyName().equals("speciesContextSpec")) {
-			cbit.vcell.mapping.SpeciesContextSpec oldValue = (cbit.vcell.mapping.SpeciesContextSpec)evt.getOldValue();
+			cbit.vcell.modelapp.SpeciesContextSpec oldValue = (cbit.vcell.modelapp.SpeciesContextSpec)evt.getOldValue();
 			if (oldValue!=null){
 				oldValue.removePropertyChangeListener(this);
 				Parameter oldParameters[] = oldValue.getParameters();
@@ -440,7 +442,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 					oldParameters[i].removePropertyChangeListener(this);
 				}
 			}
-			cbit.vcell.mapping.SpeciesContextSpec newValue = (cbit.vcell.mapping.SpeciesContextSpec)evt.getNewValue();
+			cbit.vcell.modelapp.SpeciesContextSpec newValue = (cbit.vcell.modelapp.SpeciesContextSpec)evt.getNewValue();
 			if (newValue!=null){
 				newValue.addPropertyChangeListener(this);
 				Parameter newParameters[] = newValue.getParameters();
@@ -451,7 +453,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			setData(getUnsortedParameters());
 			fireTableDataChanged();
 		}
-		if (evt.getSource() instanceof cbit.vcell.mapping.SpeciesContextSpec){
+		if (evt.getSource() instanceof cbit.vcell.modelapp.SpeciesContextSpec){
 			// if parameters changed must update listeners
 			if (evt.getPropertyName().equals("parameters")) {
 				Parameter oldParameters[] = (Parameter[])evt.getOldValue();
@@ -498,8 +500,8 @@ public synchronized void removePropertyChangeListener(java.lang.String propertyN
  * @param simulationContext The new value for the property.
  * @see #getSimulationContext
  */
-public void setSimulationContext(cbit.vcell.mapping.SimulationContext simulationContext) {
-	cbit.vcell.mapping.SimulationContext oldValue = fieldSimulationContext;
+public void setSimulationContext(cbit.vcell.modelapp.SimulationContext simulationContext) {
+	cbit.vcell.modelapp.SimulationContext oldValue = fieldSimulationContext;
 	fieldSimulationContext = simulationContext;
 	firePropertyChange("simulationContext", oldValue, simulationContext);
 }
@@ -510,8 +512,8 @@ public void setSimulationContext(cbit.vcell.mapping.SimulationContext simulation
  * @param speciesContextSpec The new value for the property.
  * @see #getSpeciesContextSpec
  */
-public void setSpeciesContextSpec(cbit.vcell.mapping.SpeciesContextSpec speciesContextSpec) {
-	cbit.vcell.mapping.SpeciesContextSpec oldValue = fieldSpeciesContextSpec;
+public void setSpeciesContextSpec(cbit.vcell.modelapp.SpeciesContextSpec speciesContextSpec) {
+	cbit.vcell.modelapp.SpeciesContextSpec oldValue = fieldSpeciesContextSpec;
 	fieldSpeciesContextSpec = speciesContextSpec;
 	firePropertyChange("speciesContextSpec", oldValue, speciesContextSpec);
 }

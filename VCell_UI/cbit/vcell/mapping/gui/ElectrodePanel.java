@@ -22,10 +22,10 @@ public class ElectrodePanel extends javax.swing.JPanel {
 	private javax.swing.JTextField ivjTextFieldX = null;
 	private javax.swing.JTextField ivjTextFieldY = null;
 	private javax.swing.JTextField ivjTextFieldZ = null;
-	private cbit.vcell.mapping.Electrode fieldElectrode = null;
+	private cbit.vcell.modelapp.Electrode fieldElectrode = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	private Coordinate ivjCoordinateFactory = null;
-	private cbit.vcell.mapping.Electrode ivjelectrode1 = null;
+	private cbit.vcell.modelapp.Electrode ivjelectrode1 = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private cbit.vcell.geometry.Geometry fieldGeometry = null;
 	private boolean ivjConnPtoP2Aligning = false;
@@ -256,7 +256,7 @@ private void connEtoM4(cbit.vcell.model.Feature value) {
  * @param value cbit.vcell.mapping.Electrode
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM5(cbit.vcell.mapping.Electrode value) {
+private void connEtoM5(cbit.vcell.modelapp.Electrode value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -300,7 +300,7 @@ private void connEtoM6(java.awt.event.ActionEvent arg1) {
  * @param value cbit.vcell.mapping.Electrode
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM7(cbit.vcell.mapping.Electrode value) {
+private void connEtoM7(cbit.vcell.modelapp.Electrode value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -563,7 +563,7 @@ private Coordinate getCoordinateFactory() {
  * @return The electrode property value.
  * @see #setElectrode
  */
-public cbit.vcell.mapping.Electrode getElectrode() {
+public cbit.vcell.modelapp.Electrode getElectrode() {
 	return fieldElectrode;
 }
 /**
@@ -571,7 +571,7 @@ public cbit.vcell.mapping.Electrode getElectrode() {
  * @return cbit.vcell.mapping.Electrode
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.mapping.Electrode getelectrode1() {
+private cbit.vcell.modelapp.Electrode getelectrode1() {
 	// user code begin {1}
 	// user code end
 	return ivjelectrode1;
@@ -1115,8 +1115,8 @@ private void setCoordinateFactory(Coordinate newValue) {
  * @param electrode The new value for the property.
  * @see #getElectrode
  */
-public void setElectrode(cbit.vcell.mapping.Electrode electrode) {
-	cbit.vcell.mapping.Electrode oldValue = fieldElectrode;
+public void setElectrode(cbit.vcell.modelapp.Electrode electrode) {
+	cbit.vcell.modelapp.Electrode oldValue = fieldElectrode;
 	fieldElectrode = electrode;
 	firePropertyChange("electrode", oldValue, electrode);
 }
@@ -1125,10 +1125,10 @@ public void setElectrode(cbit.vcell.mapping.Electrode electrode) {
  * @param newValue cbit.vcell.mapping.Electrode
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setelectrode1(cbit.vcell.mapping.Electrode newValue) {
+private void setelectrode1(cbit.vcell.modelapp.Electrode newValue) {
 	if (ivjelectrode1 != newValue) {
 		try {
-			cbit.vcell.mapping.Electrode oldValue = getelectrode1();
+			cbit.vcell.modelapp.Electrode oldValue = getelectrode1();
 			/* Stop listening for events from the current object */
 			if (ivjelectrode1 != null) {
 				ivjelectrode1.removePropertyChangeListener(ivjEventHandler);

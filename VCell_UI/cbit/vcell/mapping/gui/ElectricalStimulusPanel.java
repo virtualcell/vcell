@@ -1,9 +1,16 @@
 package cbit.vcell.mapping.gui;
+
 import cbit.util.Coordinate;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.mapping.*;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Feature;
+import cbit.vcell.modelapp.CurrentClampStimulus;
+import cbit.vcell.modelapp.ElectricalStimulus;
+import cbit.vcell.modelapp.Electrode;
+import cbit.vcell.modelapp.GeometryContext;
+import cbit.vcell.modelapp.SimulationContext;
+import cbit.vcell.modelapp.VoltageClampStimulus;
 import cbit.vcell.client.server.UserMessage;
 /**
  * Insert the type's description here.
@@ -13,7 +20,7 @@ import cbit.vcell.client.server.UserMessage;
 public class ElectricalStimulusPanel extends javax.swing.JPanel {
 	private javax.swing.JScrollPane ivjparameterTable = null;
 	private cbit.vcell.messaging.admin.sorttable.JSortTable ivjScrollPaneTable = null;
-	private cbit.vcell.mapping.SimulationContext fieldSimulationContext = null;
+	private cbit.vcell.modelapp.SimulationContext fieldSimulationContext = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	private ElectricalStimulus ivjelectricalStimulus = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
@@ -117,7 +124,7 @@ public ElectricalStimulusPanel(boolean isDoubleBuffered) {
  * @param value cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC1(cbit.vcell.mapping.SimulationContext value) {
+private void connEtoC1(cbit.vcell.modelapp.SimulationContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -240,7 +247,7 @@ private void connEtoC6(java.awt.event.ItemEvent arg1) {
  * @param value cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC7(cbit.vcell.mapping.SimulationContext value) {
+private void connEtoC7(cbit.vcell.modelapp.SimulationContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -300,7 +307,7 @@ private void connEtoC9(java.awt.event.FocusEvent arg1) {
  * @param value cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1(cbit.vcell.mapping.SimulationContext value) {
+private void connEtoM1(cbit.vcell.modelapp.SimulationContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -321,7 +328,7 @@ private void connEtoM1(cbit.vcell.mapping.SimulationContext value) {
  * @param value cbit.vcell.mapping.GeometryContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM10(cbit.vcell.mapping.GeometryContext value) {
+private void connEtoM10(cbit.vcell.modelapp.GeometryContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -342,7 +349,7 @@ private void connEtoM10(cbit.vcell.mapping.GeometryContext value) {
  * @param value cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM11(cbit.vcell.mapping.SimulationContext value) {
+private void connEtoM11(cbit.vcell.modelapp.SimulationContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -383,7 +390,7 @@ private void connEtoM12(java.beans.PropertyChangeEvent arg1) {
  * @param value cbit.vcell.mapping.GeometryContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM13(cbit.vcell.mapping.GeometryContext value) {
+private void connEtoM13(cbit.vcell.modelapp.GeometryContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -480,7 +487,7 @@ private void connEtoM17() {
  * @param value cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM18(cbit.vcell.mapping.SimulationContext value) {
+private void connEtoM18(cbit.vcell.modelapp.SimulationContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -541,7 +548,7 @@ private void connEtoM2(java.beans.PropertyChangeEvent arg1) {
  * @param value cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM20(cbit.vcell.mapping.SimulationContext value) {
+private void connEtoM20(cbit.vcell.modelapp.SimulationContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -625,7 +632,7 @@ private void connEtoM23(javax.swing.DefaultCellEditor value) {
  * @param value cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM3(cbit.vcell.mapping.SimulationContext value) {
+private void connEtoM3(cbit.vcell.modelapp.SimulationContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -684,7 +691,7 @@ private void connEtoM5(java.beans.PropertyChangeEvent arg1) {
  * @param value cbit.vcell.mapping.ElectricalStimulus
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM6(cbit.vcell.mapping.ElectricalStimulus value) {
+private void connEtoM6(cbit.vcell.modelapp.ElectricalStimulus value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -725,7 +732,7 @@ private void connEtoM7() {
  * @param value cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM8(cbit.vcell.mapping.SimulationContext value) {
+private void connEtoM8(cbit.vcell.modelapp.SimulationContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -885,7 +892,7 @@ private javax.swing.DefaultCellEditor getDefaultCellEditor1() {
  * @return cbit.vcell.mapping.ElectricalStimulus
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.mapping.ElectricalStimulus getelectricalStimulus() {
+private cbit.vcell.modelapp.ElectricalStimulus getelectricalStimulus() {
 	// user code begin {1}
 	// user code end
 	return ivjelectricalStimulus;
@@ -895,11 +902,11 @@ private cbit.vcell.mapping.ElectricalStimulus getelectricalStimulus() {
 /**
  * Comment
  */
-public cbit.vcell.mapping.ElectricalStimulus getElectricalStimulus(cbit.vcell.mapping.SimulationContext simContext) {
+public cbit.vcell.modelapp.ElectricalStimulus getElectricalStimulus(cbit.vcell.modelapp.SimulationContext simContext) {
 	if (simContext==null){
 		return null;
 	}
-	cbit.vcell.mapping.ElectricalStimulus electricalStimuli[] = simContext.getElectricalStimuli();
+	cbit.vcell.modelapp.ElectricalStimulus electricalStimuli[] = simContext.getElectricalStimuli();
 	if (electricalStimuli!=null && electricalStimuli.length>0){
 		return electricalStimuli[0];
 	}
@@ -933,7 +940,7 @@ private ElectricalStimulusParameterTableModel getelectricalStimulusParameterTabl
  * @return cbit.vcell.mapping.GeometryContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.mapping.GeometryContext getgeometryContext() {
+private cbit.vcell.modelapp.GeometryContext getgeometryContext() {
 	// user code begin {1}
 	// user code end
 	return ivjgeometryContext;
@@ -1201,7 +1208,7 @@ private cbit.vcell.messaging.admin.sorttable.JSortTable getScrollPaneTable() {
  * @return The simulationContext property value.
  * @see #setSimulationContext
  */
-public cbit.vcell.mapping.SimulationContext getSimulationContext() {
+public cbit.vcell.modelapp.SimulationContext getSimulationContext() {
 	return fieldSimulationContext;
 }
 
@@ -1211,7 +1218,7 @@ public cbit.vcell.mapping.SimulationContext getSimulationContext() {
  * @return cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.mapping.SimulationContext getsimulationContext1() {
+private cbit.vcell.modelapp.SimulationContext getsimulationContext1() {
 	// user code begin {1}
 	// user code end
 	return ivjsimulationContext1;
@@ -1340,7 +1347,7 @@ public static void main(java.lang.String[] args) {
  */
 private void newStimulus(java.awt.event.ItemEvent itemEvent) {
 	try {
-		cbit.vcell.mapping.SimulationContext simContext = getSimulationContext();
+		cbit.vcell.modelapp.SimulationContext simContext = getSimulationContext();
 		if (simContext == null){
 			return;
 		}
@@ -1414,7 +1421,7 @@ private void newStimulus(java.awt.event.ItemEvent itemEvent) {
 				CurrentClampStimulus ccStimulus = new CurrentClampStimulus(probeElectrode,"ccElectrode",new Expression(0.0),simContext);
 		System.out.println(" Geo's dim = "+simContext.getGeometry().getDimension());
 				simContext.setElectricalStimuli(new ElectricalStimulus[] { ccStimulus });
-				simContext.setGroundElectrode(new cbit.vcell.mapping.Electrode(topFeature,new Coordinate(0,0,0)));
+				simContext.setGroundElectrode(new cbit.vcell.modelapp.Electrode(topFeature,new Coordinate(0,0,0)));
 			}
 		}
 		//
@@ -1434,7 +1441,7 @@ private void newStimulus(java.awt.event.ItemEvent itemEvent) {
 				VoltageClampStimulus vcStimulus = new VoltageClampStimulus(probeElectrode,"vcElectrode",new Expression(0.0), simContext);
 		System.out.println(" Geo's dim = "+simContext.getGeometry().getDimension());
 				simContext.setElectricalStimuli(new ElectricalStimulus[] { vcStimulus });
-				simContext.setGroundElectrode(new cbit.vcell.mapping.Electrode(topFeature,new Coordinate(0,0,0)));
+				simContext.setGroundElectrode(new cbit.vcell.modelapp.Electrode(topFeature,new Coordinate(0,0,0)));
 			}
 		}
 	}catch (java.beans.PropertyVetoException e){
@@ -1502,7 +1509,7 @@ private void setDefaultCellEditor1(javax.swing.DefaultCellEditor newValue) {
  * @param newValue cbit.vcell.mapping.ElectricalStimulus
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setelectricalStimulus(cbit.vcell.mapping.ElectricalStimulus newValue) {
+private void setelectricalStimulus(cbit.vcell.modelapp.ElectricalStimulus newValue) {
 	if (ivjelectricalStimulus != newValue) {
 		try {
 			/* Stop listening for events from the current object */
@@ -1534,7 +1541,7 @@ private void setelectricalStimulus(cbit.vcell.mapping.ElectricalStimulus newValu
  * @param newValue cbit.vcell.mapping.GeometryContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setgeometryContext(cbit.vcell.mapping.GeometryContext newValue) {
+private void setgeometryContext(cbit.vcell.modelapp.GeometryContext newValue) {
 	if (ivjgeometryContext != newValue) {
 		try {
 			/* Stop listening for events from the current object */
@@ -1579,12 +1586,12 @@ private void setPanelsVisible() {
 /**
  * Comment
  */
-public void setRadioButtons(cbit.vcell.mapping.SimulationContext arg1) {
+public void setRadioButtons(cbit.vcell.modelapp.SimulationContext arg1) {
 	if (arg1==null || arg1.getElectricalStimuli()==null || arg1.getElectricalStimuli().length==0){
 		getNoClampRadioButton().setSelected(true);
-	}else if (arg1.getElectricalStimuli()[0] instanceof cbit.vcell.mapping.CurrentClampStimulus){
+	}else if (arg1.getElectricalStimuli()[0] instanceof cbit.vcell.modelapp.CurrentClampStimulus){
 		getCurrentClampRadioButton().setSelected(true);
-	}else if (arg1.getElectricalStimuli()[0] instanceof cbit.vcell.mapping.VoltageClampStimulus){
+	}else if (arg1.getElectricalStimuli()[0] instanceof cbit.vcell.modelapp.VoltageClampStimulus){
 		getVoltageClampRadioButton().setSelected(true);
 	}
 }
@@ -1595,8 +1602,8 @@ public void setRadioButtons(cbit.vcell.mapping.SimulationContext arg1) {
  * @param simulationContext The new value for the property.
  * @see #getSimulationContext
  */
-public void setSimulationContext(cbit.vcell.mapping.SimulationContext simulationContext) {
-	cbit.vcell.mapping.SimulationContext oldValue = fieldSimulationContext;
+public void setSimulationContext(cbit.vcell.modelapp.SimulationContext simulationContext) {
+	cbit.vcell.modelapp.SimulationContext oldValue = fieldSimulationContext;
 	fieldSimulationContext = simulationContext;
 	firePropertyChange("simulationContext", oldValue, simulationContext);
 }
@@ -1607,10 +1614,10 @@ public void setSimulationContext(cbit.vcell.mapping.SimulationContext simulation
  * @param newValue cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setsimulationContext1(cbit.vcell.mapping.SimulationContext newValue) {
+private void setsimulationContext1(cbit.vcell.modelapp.SimulationContext newValue) {
 	if (ivjsimulationContext1 != newValue) {
 		try {
-			cbit.vcell.mapping.SimulationContext oldValue = getsimulationContext1();
+			cbit.vcell.modelapp.SimulationContext oldValue = getsimulationContext1();
 			/* Stop listening for events from the current object */
 			if (ivjsimulationContext1 != null) {
 				ivjsimulationContext1.removePropertyChangeListener(ivjEventHandler);

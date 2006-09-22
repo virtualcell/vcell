@@ -4,9 +4,10 @@ package cbit.vcell.mapping.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.FluxReaction;
-import cbit.vcell.mapping.ReactionSpec;
+import cbit.vcell.modelapp.ReactionSpec;
 import cbit.util.BeanUtils;
 /**
  * Insert the type's description here.
@@ -23,7 +24,7 @@ public class ReactionSpecsTableModel extends javax.swing.table.AbstractTableMode
 	
 	
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.vcell.mapping.SimulationContext fieldSimulationContext = null;
+	private cbit.vcell.modelapp.SimulationContext fieldSimulationContext = null;
 /**
  * ReactionSpecsTableModel constructor comment.
  */
@@ -121,7 +122,7 @@ public int getRowCount() {
  * @return The simulationContext property value.
  * @see #setSimulationContext
  */
-public cbit.vcell.mapping.SimulationContext getSimulationContext() {
+public cbit.vcell.modelapp.SimulationContext getSimulationContext() {
 	return fieldSimulationContext;
 }
 /**
@@ -195,7 +196,7 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	 *   and the property that has changed.
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
-	if (evt.getSource() instanceof cbit.vcell.mapping.ReactionContext
+	if (evt.getSource() instanceof cbit.vcell.modelapp.ReactionContext
 		&& evt.getPropertyName().equals("reactionSpecs")) {
 		fireTableDataChanged();
 	}
@@ -203,7 +204,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		&& evt.getPropertyName().equals("name")) {
 		fireTableRowsUpdated(0,getRowCount()-1);
 	}
-	if (evt.getSource() instanceof cbit.vcell.mapping.ReactionSpec) {
+	if (evt.getSource() instanceof cbit.vcell.modelapp.ReactionSpec) {
 		fireTableRowsUpdated(0,getRowCount()-1);
 	}
 }
@@ -224,8 +225,8 @@ public synchronized void removePropertyChangeListener(java.lang.String propertyN
  * @param simulationContext The new value for the property.
  * @see #getSimulationContext
  */
-public void setSimulationContext(cbit.vcell.mapping.SimulationContext simulationContext) {
-	cbit.vcell.mapping.SimulationContext oldValue = fieldSimulationContext;
+public void setSimulationContext(cbit.vcell.modelapp.SimulationContext simulationContext) {
+	cbit.vcell.modelapp.SimulationContext oldValue = fieldSimulationContext;
 	if (oldValue != null){
 		oldValue.removePropertyChangeListener(this);
 		updateListenersReactionContext(oldValue.getReactionContext(),true);
@@ -295,7 +296,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
  * Insert the method's description here.
  * Creation date: (9/12/2005 2:44:36 PM)
  */
-private void updateListenersReactionContext(cbit.vcell.mapping.ReactionContext reactionContext,boolean bRemove) {
+private void updateListenersReactionContext(cbit.vcell.modelapp.ReactionContext reactionContext,boolean bRemove) {
 
 	if(bRemove){
 		reactionContext.removePropertyChangeListener(this);

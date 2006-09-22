@@ -1,6 +1,7 @@
 package cbit.vcell.desktop;
 
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.modelapp.SimulationContext;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -9,8 +10,8 @@ import java.util.Vector;
 import java.util.Enumeration;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.simulation.Simulation;
-import cbit.vcell.mapping.SimulationContext;
 import javax.swing.tree.DefaultTreeModel;
+
 /**
  * Insert the type's description here.
  * Creation date: (2/14/01 3:33:23 PM)

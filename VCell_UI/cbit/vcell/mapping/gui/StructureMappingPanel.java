@@ -8,9 +8,12 @@ import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
 
+
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Feature;
+import cbit.vcell.modelapp.FeatureMapping;
+import cbit.vcell.modelapp.GeometryContext;
 import cbit.vcell.mapping.*;
 import cbit.vcell.parser.gui.ScopedExpressionTableCellRenderer;
 /**
@@ -20,7 +23,7 @@ public class StructureMappingPanel extends javax.swing.JPanel {
 	private cbit.vcell.geometry.Geometry ivjGeometry = null;
 	private FeatureMapping ivjFeatureMapping = null;
 	private GeometryContext ivjgeometryContext1 = null;
-	private cbit.vcell.mapping.GeometryContext fieldGeometryContext = null;
+	private cbit.vcell.modelapp.GeometryContext fieldGeometryContext = null;
 	private boolean ivjConnPtoP4Aligning = false;
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
 	private javax.swing.ListSelectionModel ivjselectionModel1 = null;
@@ -88,7 +91,7 @@ private void connEtoC1() {
  * @param value cbit.vcell.mapping.FeatureMapping
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC5(cbit.vcell.mapping.FeatureMapping value) {
+private void connEtoC5(cbit.vcell.modelapp.FeatureMapping value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -124,7 +127,7 @@ private void connEtoC6(java.awt.event.ActionEvent arg1) {
  * @param value cbit.vcell.mapping.GeometryContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC7(cbit.vcell.mapping.GeometryContext value) {
+private void connEtoC7(cbit.vcell.modelapp.GeometryContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -160,7 +163,7 @@ private void connEtoM1(javax.swing.event.ListSelectionEvent arg1) {
  * @param value cbit.vcell.mapping.GeometryContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM10(cbit.vcell.mapping.GeometryContext value) {
+private void connEtoM10(cbit.vcell.modelapp.GeometryContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -195,7 +198,7 @@ private void connEtoM11() {
  * @param value cbit.vcell.mapping.GeometryContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM2(cbit.vcell.mapping.GeometryContext value) {
+private void connEtoM2(cbit.vcell.modelapp.GeometryContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -235,7 +238,7 @@ private void connEtoM3(java.beans.PropertyChangeEvent arg1) {
  * @param value cbit.vcell.mapping.GeometryContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM4(cbit.vcell.mapping.GeometryContext value) {
+private void connEtoM4(cbit.vcell.modelapp.GeometryContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -271,7 +274,7 @@ private void connEtoM5(cbit.vcell.geometry.Geometry value) {
  * @param value cbit.vcell.mapping.FeatureMapping
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM6(cbit.vcell.mapping.FeatureMapping value) {
+private void connEtoM6(cbit.vcell.modelapp.FeatureMapping value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -481,7 +484,7 @@ private javax.swing.DefaultCellEditor getDefaultCellEditor1() {
  * @return java.lang.Object
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.mapping.FeatureMapping getFeatureMapping() {
+private cbit.vcell.modelapp.FeatureMapping getFeatureMapping() {
 	// user code begin {1}
 	// user code end
 	return ivjFeatureMapping;
@@ -501,7 +504,7 @@ private cbit.vcell.geometry.Geometry getGeometry() {
  * @return The geometryContext property value.
  * @see #setGeometryContext
  */
-public cbit.vcell.mapping.GeometryContext getGeometryContext() {
+public cbit.vcell.modelapp.GeometryContext getGeometryContext() {
 	return fieldGeometryContext;
 }
 /**
@@ -509,7 +512,7 @@ public cbit.vcell.mapping.GeometryContext getGeometryContext() {
  * @return cbit.vcell.mapping.GeometryContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.mapping.GeometryContext getgeometryContext1() {
+private cbit.vcell.modelapp.GeometryContext getgeometryContext1() {
 	// user code begin {1}
 	// user code end
 	return ivjgeometryContext1;
@@ -767,7 +770,7 @@ private void setDefaultCellEditor1(javax.swing.DefaultCellEditor newValue) {
  * @param newValue cbit.vcell.mapping.FeatureMapping
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setFeatureMapping(cbit.vcell.mapping.FeatureMapping newValue) {
+private void setFeatureMapping(cbit.vcell.modelapp.FeatureMapping newValue) {
 	if (ivjFeatureMapping != newValue) {
 		try {
 			ivjFeatureMapping = newValue;
@@ -810,7 +813,7 @@ private void setGeometry(cbit.vcell.geometry.Geometry newValue) {
  * @param geometryContext The new value for the property.
  * @see #getGeometryContext
  */
-public void setGeometryContext(cbit.vcell.mapping.GeometryContext geometryContext) {
+public void setGeometryContext(cbit.vcell.modelapp.GeometryContext geometryContext) {
 	GeometryContext oldValue = fieldGeometryContext;
 	fieldGeometryContext = geometryContext;
 	firePropertyChange("geometryContext", oldValue, geometryContext);
@@ -820,10 +823,10 @@ public void setGeometryContext(cbit.vcell.mapping.GeometryContext geometryContex
  * @param newValue cbit.vcell.mapping.GeometryContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setgeometryContext1(cbit.vcell.mapping.GeometryContext newValue) {
+private void setgeometryContext1(cbit.vcell.modelapp.GeometryContext newValue) {
 	if (ivjgeometryContext1 != newValue) {
 		try {
-			cbit.vcell.mapping.GeometryContext oldValue = getgeometryContext1();
+			cbit.vcell.modelapp.GeometryContext oldValue = getgeometryContext1();
 			/* Stop listening for events from the current object */
 			if (ivjgeometryContext1 != null) {
 				ivjgeometryContext1.removePropertyChangeListener(ivjEventHandler);

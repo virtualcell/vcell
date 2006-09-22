@@ -8,9 +8,12 @@ import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
 
+
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Feature;
+import cbit.vcell.modelapp.GeometryContext;
+import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.mapping.*;
 import cbit.vcell.parser.gui.ScopedExpressionTableCellRenderer;
 /**
@@ -29,7 +32,7 @@ public class ElectricalMembraneMappingPanel extends javax.swing.JPanel {
 	private SimulationContext ivjsimulationContext1 = null;
 	private javax.swing.JLabel ivjJLabel1 = null;
 	private javax.swing.JLabel ivjJLabel2 = null;
-	private cbit.vcell.mapping.SimulationContext fieldSimulationContext = null;
+	private cbit.vcell.modelapp.SimulationContext fieldSimulationContext = null;
 	private boolean ivjConnPtoP2Aligning = false;
 
 class IvjEventHandler implements java.awt.event.FocusListener, java.beans.PropertyChangeListener {
@@ -60,7 +63,7 @@ public ElectricalMembraneMappingPanel() {
  * @param value cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1(cbit.vcell.mapping.SimulationContext value) {
+private void connEtoM1(cbit.vcell.modelapp.SimulationContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -97,7 +100,7 @@ private void connEtoM10() {
  * @param value cbit.vcell.mapping.GeometryContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM2(cbit.vcell.mapping.GeometryContext value) {
+private void connEtoM2(cbit.vcell.modelapp.GeometryContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -137,7 +140,7 @@ private void connEtoM3(java.beans.PropertyChangeEvent arg1) {
  * @param value cbit.vcell.mapping.GeometryContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM4(cbit.vcell.mapping.GeometryContext value) {
+private void connEtoM4(cbit.vcell.modelapp.GeometryContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -173,7 +176,7 @@ private void connEtoM5() {
  * @param value cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM6(cbit.vcell.mapping.SimulationContext value) {
+private void connEtoM6(cbit.vcell.modelapp.SimulationContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -384,7 +387,7 @@ private cbit.vcell.geometry.Geometry getGeometry() {
  * @return cbit.vcell.mapping.GeometryContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.mapping.GeometryContext getgeometryContext1() {
+private cbit.vcell.modelapp.GeometryContext getgeometryContext1() {
 	// user code begin {1}
 	// user code end
 	return ivjgeometryContext1;
@@ -483,7 +486,7 @@ private cbit.gui.JTableFixed getScrollPaneTable1() {
  * @return The simulationContext property value.
  * @see #setSimulationContext
  */
-public cbit.vcell.mapping.SimulationContext getSimulationContext() {
+public cbit.vcell.modelapp.SimulationContext getSimulationContext() {
 	return fieldSimulationContext;
 }
 /**
@@ -491,7 +494,7 @@ public cbit.vcell.mapping.SimulationContext getSimulationContext() {
  * @return cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.mapping.SimulationContext getsimulationContext1() {
+private cbit.vcell.modelapp.SimulationContext getsimulationContext1() {
 	// user code begin {1}
 	// user code end
 	return ivjsimulationContext1;
@@ -665,7 +668,7 @@ private void setGeometry(cbit.vcell.geometry.Geometry newValue) {
  * @param newValue cbit.vcell.mapping.GeometryContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setgeometryContext1(cbit.vcell.mapping.GeometryContext newValue) {
+private void setgeometryContext1(cbit.vcell.modelapp.GeometryContext newValue) {
 	if (ivjgeometryContext1 != newValue) {
 		try {
 			/* Stop listening for events from the current object */
@@ -696,7 +699,7 @@ private void setgeometryContext1(cbit.vcell.mapping.GeometryContext newValue) {
  * @param simulationContext The new value for the property.
  * @see #getSimulationContext
  */
-public void setSimulationContext(cbit.vcell.mapping.SimulationContext simulationContext) {
+public void setSimulationContext(cbit.vcell.modelapp.SimulationContext simulationContext) {
 	SimulationContext oldValue = fieldSimulationContext;
 	fieldSimulationContext = simulationContext;
 	firePropertyChange("simulationContext", oldValue, simulationContext);
@@ -706,10 +709,10 @@ public void setSimulationContext(cbit.vcell.mapping.SimulationContext simulation
  * @param newValue cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setsimulationContext1(cbit.vcell.mapping.SimulationContext newValue) {
+private void setsimulationContext1(cbit.vcell.modelapp.SimulationContext newValue) {
 	if (ivjsimulationContext1 != newValue) {
 		try {
-			cbit.vcell.mapping.SimulationContext oldValue = getsimulationContext1();
+			cbit.vcell.modelapp.SimulationContext oldValue = getsimulationContext1();
 			ivjsimulationContext1 = newValue;
 			connPtoP2SetSource();
 			connEtoM1(ivjsimulationContext1);

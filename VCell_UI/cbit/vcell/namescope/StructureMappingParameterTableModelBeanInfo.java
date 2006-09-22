@@ -990,7 +990,7 @@ public java.beans.PropertyDescriptor structureMappingPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.mapping.StructureMapping.class
+					cbit.vcell.modelapp.StructureMapping.class
 				};
 				aSetMethod = getBeanClass().getMethod("setStructureMapping", aSetMethodParameterTypes);
 			} catch (Throwable exception) {

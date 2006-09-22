@@ -4,11 +4,12 @@ package cbit.vcell.mapping.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.mapping.SimulationContextTest;
 /**
  * Insert the type's description here.

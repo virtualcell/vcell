@@ -1,4 +1,5 @@
 package cbit.vcell.geometry.gui;
+
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
@@ -11,10 +12,10 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.geometry.*;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.FluxReaction;
-import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.parser.ExpressionException;
 import cbit.util.BeanUtils;
 import cbit.vcell.model.Kinetics;
+import cbit.vcell.modelapp.ReactionSpec;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)

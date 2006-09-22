@@ -4,7 +4,9 @@ package cbit.vcell.mapping.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+
 import cbit.vcell.mapping.*;
+import cbit.vcell.modelapp.SimulationContext;
 /**
  * This type was created in VisualAge.
  */

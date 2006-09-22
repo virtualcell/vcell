@@ -17,9 +17,11 @@ import javax.swing.*;
 import cbit.vcell.desktop.*;
 import swingthreads.*;
 import cbit.vcell.client.desktop.geometry.ImageBrowser;
-import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.modelapp.SimulationContext;
+
 import javax.swing.filechooser.FileFilter;
+
 /**
  * Insert the type's description here.
  * Creation date: (5/14/2004 5:06:46 PM)

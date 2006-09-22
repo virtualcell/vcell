@@ -7,6 +7,7 @@ import cbit.util.User;
 import cbit.util.VersionFlag;
 
 import cbit.vcell.mapping.*;
+import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.biomodel.*;
 /**
  * Insert the type's description here.
@@ -14,6 +15,7 @@ import cbit.vcell.biomodel.*;
  * @author: 
  */
 import javax.swing.*;
+
  
 public class BioModelCellRenderer extends VCellBasicCellRenderer {
 	private User sessionUser = null;

@@ -16,10 +16,10 @@ public class ReactionSpecsPanel extends javax.swing.JPanel {
 	private javax.swing.JTable ivjScrollPaneTable = null;
 	private javax.swing.table.TableColumn ivjTypeColumn = null;
 	private ReactionSpecsTableModel ivjReactionSpecsTableModel = null;
-	private cbit.vcell.mapping.SimulationContext fieldSimulationContext = null;
+	private cbit.vcell.modelapp.SimulationContext fieldSimulationContext = null;
 	private boolean ivjConnPtoP2Aligning = false;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private cbit.vcell.mapping.SimulationContext ivjsimulationContext1 = null;
+	private cbit.vcell.modelapp.SimulationContext ivjsimulationContext1 = null;
 
 class IvjEventHandler implements java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -69,7 +69,7 @@ public ReactionSpecsPanel(boolean isDoubleBuffered) {
  * @param value cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM4(cbit.vcell.mapping.SimulationContext value) {
+private void connEtoM4(cbit.vcell.modelapp.SimulationContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -306,7 +306,7 @@ private javax.swing.JTable getScrollPaneTable() {
  * @return The simulationContext property value.
  * @see #setSimulationContext
  */
-public cbit.vcell.mapping.SimulationContext getSimulationContext() {
+public cbit.vcell.modelapp.SimulationContext getSimulationContext() {
 	return fieldSimulationContext;
 }
 
@@ -316,7 +316,7 @@ public cbit.vcell.mapping.SimulationContext getSimulationContext() {
  * @return cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.mapping.SimulationContext getsimulationContext1() {
+private cbit.vcell.modelapp.SimulationContext getsimulationContext1() {
 	// user code begin {1}
 	// user code end
 	return ivjsimulationContext1;
@@ -432,8 +432,8 @@ public static void main(java.lang.String[] args) {
  * @param simulationContext The new value for the property.
  * @see #getSimulationContext
  */
-public void setSimulationContext(cbit.vcell.mapping.SimulationContext simulationContext) {
-	cbit.vcell.mapping.SimulationContext oldValue = fieldSimulationContext;
+public void setSimulationContext(cbit.vcell.modelapp.SimulationContext simulationContext) {
+	cbit.vcell.modelapp.SimulationContext oldValue = fieldSimulationContext;
 	fieldSimulationContext = simulationContext;
 	firePropertyChange("simulationContext", oldValue, simulationContext);
 }
@@ -444,10 +444,10 @@ public void setSimulationContext(cbit.vcell.mapping.SimulationContext simulation
  * @param newValue cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setsimulationContext1(cbit.vcell.mapping.SimulationContext newValue) {
+private void setsimulationContext1(cbit.vcell.modelapp.SimulationContext newValue) {
 	if (ivjsimulationContext1 != newValue) {
 		try {
-			cbit.vcell.mapping.SimulationContext oldValue = getsimulationContext1();
+			cbit.vcell.modelapp.SimulationContext oldValue = getsimulationContext1();
 			ivjsimulationContext1 = newValue;
 			connPtoP2SetSource();
 			connEtoM4(ivjsimulationContext1);

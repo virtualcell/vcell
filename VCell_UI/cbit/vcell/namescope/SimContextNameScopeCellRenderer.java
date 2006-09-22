@@ -12,21 +12,22 @@ package cbit.vcell.namescope;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.model.Parameter;
-import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.mapping.SimulationContext;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
-import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Structure;
 import cbit.gui.JTableFixed;
 import cbit.vcell.model.Model;
+import cbit.vcell.modelapp.MembraneMapping;
+import cbit.vcell.modelapp.SimulationContext;
+import cbit.vcell.modelapp.SpeciesContextSpec;
+import cbit.vcell.modelapp.StructureMapping;
 import cbit.vcell.desktop.BioModelNode;
 import javax.swing.JTree;
+
 /**
  * Insert the type's description here.
  * Creation date: (5/6/2004 3:33:12 PM)

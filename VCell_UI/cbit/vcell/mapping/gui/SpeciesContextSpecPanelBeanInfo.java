@@ -336,8 +336,8 @@ public java.beans.MethodDescriptor init_cbitvcellmappingSpeciesContextSpec_cbitv
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.mapping.SpeciesContextSpec.class,
-				cbit.vcell.mapping.GeometryContext.class
+				cbit.vcell.modelapp.SpeciesContextSpec.class,
+				cbit.vcell.modelapp.GeometryContext.class
 			};
 			aMethod = getBeanClass().getMethod("init", aParameterTypes);
 		} catch (Throwable exception) {
@@ -667,7 +667,7 @@ public java.beans.MethodDescriptor setSpeciesContextSpec_cbitvcellmappingSpecies
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.mapping.SpeciesContextSpec.class
+				cbit.vcell.modelapp.SpeciesContextSpec.class
 			};
 			aMethod = getBeanClass().getMethod("setSpeciesContextSpec", aParameterTypes);
 		} catch (Throwable exception) {
@@ -722,7 +722,7 @@ public java.beans.PropertyDescriptor simulationContextPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.mapping.SimulationContext.class
+					cbit.vcell.modelapp.SimulationContext.class
 				};
 				aSetMethod = getBeanClass().getMethod("setSimulationContext", aSetMethodParameterTypes);
 			} catch (Throwable exception) {
@@ -774,7 +774,7 @@ public java.beans.PropertyDescriptor speciesContextSpecPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.mapping.SpeciesContextSpec.class
+					cbit.vcell.modelapp.SpeciesContextSpec.class
 				};
 				aSetMethod = getBeanClass().getMethod("setSpeciesContextSpec", aSetMethodParameterTypes);
 			} catch (Throwable exception) {

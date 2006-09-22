@@ -2,7 +2,11 @@ package cbit.vcell.client.desktop.biomodel;
 import cbit.util.Versionable;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.mapping.*;
+import cbit.vcell.modelapp.SimulationContext;
+
 import javax.swing.*;
+
+
 import cbit.vcell.client.*;
 import cbit.vcell.client.server.*;
 /**

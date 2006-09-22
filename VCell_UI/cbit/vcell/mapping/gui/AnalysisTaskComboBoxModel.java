@@ -22,7 +22,7 @@ import org.vcell.modelapp.analysis.IAnalysisTask;
  */
 public class AnalysisTaskComboBoxModel extends AbstractListModel implements javax.swing.ComboBoxModel, java.beans.PropertyChangeListener {
 	IAnalysisTask selectedObject = null;
-	private cbit.vcell.mapping.SimulationContext fieldSimulationContext = null;
+	private cbit.vcell.modelapp.SimulationContext fieldSimulationContext = null;
 
 	/**
 	 * Constructs an empty DefaultComboBoxModel object.
@@ -77,7 +77,7 @@ public java.lang.Object getSelectedItem() {
  * @return The simulationContext property value.
  * @see #setSimulationContext
  */
-public cbit.vcell.mapping.SimulationContext getSimulationContext() {
+public cbit.vcell.modelapp.SimulationContext getSimulationContext() {
 	return fieldSimulationContext;
 }
 
@@ -160,7 +160,7 @@ public void setSelectedItem(Object anObject) {
  * @param simulationContext The new value for the property.
  * @see #getSimulationContext
  */
-public void setSimulationContext(cbit.vcell.mapping.SimulationContext simulationContext) {
+public void setSimulationContext(cbit.vcell.modelapp.SimulationContext simulationContext) {
 	if (fieldSimulationContext!=null){
 		fieldSimulationContext.removePropertyChangeListener(this);
 		if (fieldSimulationContext.getAnalysisTasks() != null) {

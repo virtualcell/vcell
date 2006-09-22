@@ -15,17 +15,19 @@ import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.gui.ModelParameterTableModel;
+import cbit.vcell.modelapp.MembraneMapping;
+import cbit.vcell.modelapp.SimulationContext;
+import cbit.vcell.modelapp.SpeciesContextSpec;
+import cbit.vcell.modelapp.StructureMapping;
 import cbit.vcell.model.Model;
-import cbit.vcell.mapping.MembraneMapping;
-import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.parser.ScopedExpression;
 import cbit.vcell.parser.gui.ScopedExpressionTableCellRenderer;
 import cbit.gui.JTableFixed;
 import cbit.vcell.model.Parameter;
 import java.util.Vector;
-import cbit.vcell.mapping.SimulationContext;
+
+
 import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.util.BeanUtils;
 /**
  * Insert the type's description here.
@@ -34,7 +36,7 @@ import cbit.util.BeanUtils;
  */
 public class SimContextNameScopeTreeModel extends javax.swing.tree.DefaultTreeModel {
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.vcell.mapping.SimulationContext fieldSimulationContext = null;
+	private cbit.vcell.modelapp.SimulationContext fieldSimulationContext = null;
 	private java.util.Hashtable fieldTableHash = null;
 	private Boolean bCalculateVolt = Boolean.FALSE;
 /**
@@ -328,7 +330,7 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
  * @return The simulationContext property value.
  * @see #setSimulationContext
  */
-public cbit.vcell.mapping.SimulationContext getSimulationContext() {
+public cbit.vcell.modelapp.SimulationContext getSimulationContext() {
 	return fieldSimulationContext;
 }
 /**
@@ -372,8 +374,8 @@ public synchronized void removePropertyChangeListener(java.lang.String propertyN
  * @param simulationContext The new value for the property.
  * @see #getSimulationContext
  */
-public void setSimulationContext(cbit.vcell.mapping.SimulationContext simulationContext) {
-	cbit.vcell.mapping.SimulationContext oldValue = fieldSimulationContext;
+public void setSimulationContext(cbit.vcell.modelapp.SimulationContext simulationContext) {
+	cbit.vcell.modelapp.SimulationContext oldValue = fieldSimulationContext;
 	fieldSimulationContext = simulationContext;
 	firePropertyChange("simulationContext", oldValue, simulationContext);
 }

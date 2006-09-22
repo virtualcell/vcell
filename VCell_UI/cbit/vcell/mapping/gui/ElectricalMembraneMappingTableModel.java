@@ -4,8 +4,12 @@ package cbit.vcell.mapping.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+
 import cbit.vcell.parser.*;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.modelapp.GeometryContext;
+import cbit.vcell.modelapp.MembraneMapping;
+import cbit.vcell.modelapp.StructureMapping;
 import cbit.vcell.mapping.*;
 import cbit.util.BeanUtils;
 /**
@@ -25,7 +29,7 @@ public class ElectricalMembraneMappingTableModel extends javax.swing.table.Abstr
 	public final static String LABEL_SPECIFIC_CAPACITANCE = "specific capacitance (pF/um2)";
 	private static String LABELS[] = { LABEL_MEMBRANE, LABEL_CALCULATE_POTENTIAL, LABEL_INITIAL_POTENTIAL, LABEL_SPECIFIC_CAPACITANCE };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.vcell.mapping.GeometryContext fieldGeometryContext = null;
+	private cbit.vcell.modelapp.GeometryContext fieldGeometryContext = null;
 /**
  * ReactionSpecsTableModel constructor comment.
  */
@@ -110,7 +114,7 @@ public String getColumnName(int column) {
  * @return The geometryContext property value.
  * @see #setGeometryContext
  */
-public cbit.vcell.mapping.GeometryContext getGeometryContext() {
+public cbit.vcell.modelapp.GeometryContext getGeometryContext() {
 	return fieldGeometryContext;
 }
 /**
@@ -240,7 +244,7 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	 *   and the property that has changed.
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
-	if (evt.getSource() instanceof cbit.vcell.mapping.ReactionContext
+	if (evt.getSource() instanceof cbit.vcell.modelapp.ReactionContext
 		&& evt.getPropertyName().equals("structureMappings")) {
 		fireTableDataChanged();
 	}
@@ -265,7 +269,7 @@ public synchronized void removePropertyChangeListener(java.lang.String propertyN
  * @param geometryContext The new value for the property.
  * @see #getGeometryContext
  */
-public void setGeometryContext(cbit.vcell.mapping.GeometryContext geometryContext) {
+public void setGeometryContext(cbit.vcell.modelapp.GeometryContext geometryContext) {
 	GeometryContext oldValue = fieldGeometryContext;
 	if (oldValue != null){
 		oldValue.removePropertyChangeListener(this);

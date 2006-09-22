@@ -928,7 +928,7 @@ public java.beans.PropertyDescriptor simulationContextPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.mapping.SimulationContext.class
+					cbit.vcell.modelapp.SimulationContext.class
 				};
 				aSetMethod = getBeanClass().getMethod("setSimulationContext", aSetMethodParameterTypes);
 			} catch (Throwable exception) {
@@ -980,7 +980,7 @@ public java.beans.PropertyDescriptor speciesContextSpecPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.mapping.SpeciesContextSpec.class
+					cbit.vcell.modelapp.SpeciesContextSpec.class
 				};
 				aSetMethod = getBeanClass().getMethod("setSpeciesContextSpec", aSetMethodParameterTypes);
 			} catch (Throwable exception) {

@@ -3,6 +3,8 @@ import cbit.gui.DialogUtils;
 import cbit.vcell.simulation.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.mapping.gui.AnalysisTaskComboBoxModel;
+import cbit.vcell.modelapp.GeometryContext;
+import cbit.vcell.modelapp.SimulationContext;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -188,7 +190,7 @@ private void connEtoC10(java.awt.event.ActionEvent arg1) {
  * @param value cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC11(cbit.vcell.mapping.SimulationContext value) {
+private void connEtoC11(cbit.vcell.modelapp.SimulationContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -386,7 +388,7 @@ private void connEtoM1(java.beans.PropertyChangeEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		setsimulationContext((cbit.vcell.mapping.SimulationContext)getsimulationWorkspace1().getSimulationOwner());
+		setsimulationContext((cbit.vcell.modelapp.SimulationContext)getsimulationWorkspace1().getSimulationOwner());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -421,7 +423,7 @@ private void connEtoM10() {
  * @param value cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM2(cbit.vcell.mapping.SimulationContext value) {
+private void connEtoM2(cbit.vcell.modelapp.SimulationContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -497,7 +499,7 @@ private void connEtoM5() {
  * @param value cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM6(cbit.vcell.mapping.SimulationContext value) {
+private void connEtoM6(cbit.vcell.modelapp.SimulationContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -563,7 +565,7 @@ private void connEtoM8(cbit.vcell.math.MathDescription value) {
  * @param value cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM9(cbit.vcell.mapping.SimulationContext value) {
+private void connEtoM9(cbit.vcell.modelapp.SimulationContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -718,7 +720,7 @@ private void connPtoP3SetTarget() {
 			// user code end
 			ivjConnPtoP3Aligning = true;
 			if ((getsimulationWorkspace1() != null)) {
-				getStaticCartoonPanel().setSimulationContext((cbit.vcell.mapping.SimulationContext)getsimulationWorkspace1().getSimulationOwner());
+				getStaticCartoonPanel().setSimulationContext((cbit.vcell.modelapp.SimulationContext)getsimulationWorkspace1().getSimulationOwner());
 			}
 			// user code begin {2}
 			// user code end
@@ -772,7 +774,7 @@ private void connPtoP4SetTarget() {
 			// user code end
 			ivjConnPtoP4Aligning = true;
 			if ((getsimulationWorkspace1() != null)) {
-				getInitialConditionsPanel().setSimulationContext((cbit.vcell.mapping.SimulationContext)getsimulationWorkspace1().getSimulationOwner());
+				getInitialConditionsPanel().setSimulationContext((cbit.vcell.modelapp.SimulationContext)getsimulationWorkspace1().getSimulationOwner());
 			}
 			// user code begin {2}
 			// user code end
@@ -826,7 +828,7 @@ private void connPtoP5SetTarget() {
 			// user code end
 			ivjConnPtoP5Aligning = true;
 			if ((getsimulationWorkspace1() != null)) {
-				getReactionSpecsPanel().setSimulationContext((cbit.vcell.mapping.SimulationContext)getsimulationWorkspace1().getSimulationOwner());
+				getReactionSpecsPanel().setSimulationContext((cbit.vcell.modelapp.SimulationContext)getsimulationWorkspace1().getSimulationOwner());
 			}
 			// user code begin {2}
 			// user code end
@@ -880,7 +882,7 @@ private void connPtoP6SetTarget() {
 			// user code end
 			ivjConnPtoP6Aligning = true;
 			if ((getsimulationWorkspace1() != null)) {
-				getElectricalMembraneMappingPanel().setSimulationContext((cbit.vcell.mapping.SimulationContext)getsimulationWorkspace1().getSimulationOwner());
+				getElectricalMembraneMappingPanel().setSimulationContext((cbit.vcell.modelapp.SimulationContext)getsimulationWorkspace1().getSimulationOwner());
 			}
 			// user code begin {2}
 			// user code end
@@ -1254,7 +1256,7 @@ private cbit.vcell.mapping.gui.ElectricalMembraneMappingPanel getElectricalMembr
  * @return cbit.vcell.mapping.GeometryContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.mapping.GeometryContext getgeometryContext() {
+private cbit.vcell.modelapp.GeometryContext getgeometryContext() {
 	// user code begin {1}
 	// user code end
 	return ivjgeometryContext;
@@ -1264,7 +1266,7 @@ private cbit.vcell.mapping.GeometryContext getgeometryContext() {
 /**
  * Comment
  */
-private cbit.vcell.mapping.GeometryContext getGeometryContext() {
+private cbit.vcell.modelapp.GeometryContext getGeometryContext() {
 	if (getsimulationContext()==null){
 		return null;
 	}else{
@@ -1571,7 +1573,7 @@ private javax.swing.JPanel getSimulationContainerPanel() {
  * @return cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.mapping.SimulationContext getsimulationContext() {
+private cbit.vcell.modelapp.SimulationContext getsimulationContext() {
 	// user code begin {1}
 	// user code end
 	return ivjsimulationContext;
@@ -1581,7 +1583,7 @@ private cbit.vcell.mapping.SimulationContext getsimulationContext() {
 /**
  * Comment
  */
-private cbit.vcell.mapping.SimulationContext getSimulationContext() {
+private cbit.vcell.modelapp.SimulationContext getSimulationContext() {
 	if (getSimulationWorkspace()==null || getSimulationWorkspace().getSimulationOwner()==null){
 		return null;
 	}else{
@@ -2132,7 +2134,7 @@ private void setcardLayout(java.awt.CardLayout newValue) {
  * @param newValue cbit.vcell.mapping.GeometryContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setgeometryContext(cbit.vcell.mapping.GeometryContext newValue) {
+private void setgeometryContext(cbit.vcell.modelapp.GeometryContext newValue) {
 	if (ivjgeometryContext != newValue) {
 		try {
 			ivjgeometryContext = newValue;
@@ -2199,7 +2201,7 @@ private void setmodel1(javax.swing.ComboBoxModel newValue) {
  * @param newValue cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setsimulationContext(cbit.vcell.mapping.SimulationContext newValue) {
+private void setsimulationContext(cbit.vcell.modelapp.SimulationContext newValue) {
 	if (ivjsimulationContext != newValue) {
 		try {
 			/* Stop listening for events from the current object */

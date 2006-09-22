@@ -7,10 +7,12 @@ import cbit.vcell.client.*;
 import javax.swing.*;
 
 
+
 import java.util.*;
 import cbit.util.*;
 import cbit.gui.*;
 import cbit.vcell.mapping.*;
+import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.client.desktop.geometry.SurfaceViewerPanel;
 import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
 /**

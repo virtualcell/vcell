@@ -3,7 +3,11 @@ import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simulation.*;
 import cbit.vcell.client.*;
 import javax.swing.*;
+
+
 import cbit.vcell.mapping.*;
+import cbit.vcell.math.MathFactory;
+import cbit.vcell.modelapp.SimulationContext;
 
 public class SimulationWorkspace implements java.beans.PropertyChangeListener {
 	private SimulationOwner simulationOwner = null;
@@ -496,7 +500,11 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * Comment
  */
 int newSimulation() throws java.beans.PropertyVetoException {
-	Simulation newSim = getSimulationOwner().addNewSimulation();
+	MathFactory mathFactory = null;
+	if (getSimulationOwner() instanceof SimulationContext){
+		mathFactory = new MathMapping((SimulationContext)getSimulationOwner());
+	}
+	Simulation newSim = getSimulationOwner().addNewSimulation(mathFactory);
 	for (int i = 0; i < getSimulationOwner().getSimulations().length; i++){
 		if (getSimulationOwner().getSimulations()[i].getName().equals(newSim.getName())) {
 			return i;

@@ -251,7 +251,7 @@ public java.beans.PropertyDescriptor electricalStimulusPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.mapping.ElectricalStimulus.class
+					cbit.vcell.modelapp.ElectricalStimulus.class
 				};
 				aSetMethod = getBeanClass().getMethod("setElectricalStimulus", aSetMethodParameterTypes);
 			} catch (Throwable exception) {

@@ -1,8 +1,8 @@
 package cbit.vcell.namescope;
 
+
 import cbit.vcell.model.Parameter;
 import cbit.vcell.units.VCUnitException;
-import cbit.vcell.mapping.StructureMapping;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -11,10 +11,11 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.geometry.*;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.FluxReaction;
-import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.parser.ExpressionException;
 import cbit.util.BeanUtils;
 import cbit.vcell.model.Kinetics;
+import cbit.vcell.modelapp.ReactionSpec;
+import cbit.vcell.modelapp.StructureMapping;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)
@@ -28,7 +29,7 @@ public class StructureMappingParameterTableModel extends javax.swing.table.Abstr
 	private final int COLUMN_UNITS = 3;
 	private String LABELS[] = { "Description", "Parameter", "Expression", "Units" };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.vcell.mapping.StructureMapping fieldStructureMapping = null;
+	private cbit.vcell.modelapp.StructureMapping fieldStructureMapping = null;
 	private boolean fieldBGeoMappingParams = true;
 /**
  * ReactionSpecsTableModel constructor comment.
@@ -168,7 +169,7 @@ public int getRowCount() {
  * @return The structureMapping property value.
  * @see #setStructureMapping
  */
-public cbit.vcell.mapping.StructureMapping getStructureMapping() {
+public cbit.vcell.modelapp.StructureMapping getStructureMapping() {
 	return fieldStructureMapping;
 }
 /**
@@ -266,8 +267,8 @@ public void setBGeoMappingParams(boolean bGeoMappingParams) {
  * @param structureMapping The new value for the property.
  * @see #getStructureMapping
  */
-public void setStructureMapping(cbit.vcell.mapping.StructureMapping structureMapping) {
-	cbit.vcell.mapping.StructureMapping oldValue = fieldStructureMapping;
+public void setStructureMapping(cbit.vcell.modelapp.StructureMapping structureMapping) {
+	cbit.vcell.modelapp.StructureMapping oldValue = fieldStructureMapping;
 	fieldStructureMapping = structureMapping;
 	firePropertyChange("structureMapping", oldValue, structureMapping);
 }

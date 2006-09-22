@@ -29,8 +29,8 @@ public java.lang.String getContextName() {
 	if(simulationOwner instanceof cbit.vcell.mathmodel.MathModel){
 		cbit.vcell.mathmodel.MathModel mathModel = (cbit.vcell.mathmodel.MathModel)simulationOwner;
 		results = mathModel.getName();
-	}else if(simulationOwner instanceof cbit.vcell.mapping.SimulationContext){
-		cbit.vcell.mapping.SimulationContext simContext = (cbit.vcell.mapping.SimulationContext)simulationOwner;
+	}else if(simulationOwner instanceof cbit.vcell.modelapp.SimulationContext){
+		cbit.vcell.modelapp.SimulationContext simContext = (cbit.vcell.modelapp.SimulationContext)simulationOwner;
 		results = simContext.getSimulationContextOwner().getName()+"::"+simContext.getName();
 	}
 	
@@ -55,8 +55,8 @@ public String getMembraneName(int subVolumeIdIn, int subVolumeIdOut) {
 				String outName = mathModel.getMathDescription().getGeometry().getGeometrySpec().getSubVolume(subVolumeIdOut).getName();
 				results = inName+"_"+outName+"_mem";
 		}
-	}else if(simulationOwner instanceof cbit.vcell.mapping.SimulationContext){
-		cbit.vcell.mapping.SimulationContext simContext = (cbit.vcell.mapping.SimulationContext)simulationOwner;
+	}else if(simulationOwner instanceof cbit.vcell.modelapp.SimulationContext){
+		cbit.vcell.modelapp.SimulationContext simContext = (cbit.vcell.modelapp.SimulationContext)simulationOwner;
 		cbit.vcell.geometry.SubVolume svIn = simContext.getGeometry().getGeometrySpec().getSubVolume(subVolumeIdIn);
 		cbit.vcell.geometry.SubVolume svOut = simContext.getGeometry().getGeometrySpec().getSubVolume(subVolumeIdOut);
 		if(svIn != null && svOut != null){
@@ -105,8 +105,8 @@ public String getVolumeName(int subVolumeID) {
 		if(mathModel.getMathDescription().getGeometry().getGeometrySpec().getSubVolume(subVolumeID) != null){
 			results = mathModel.getMathDescription().getGeometry().getGeometrySpec().getSubVolume(subVolumeID).getName();
 		}
-	}else if(simulationOwner instanceof cbit.vcell.mapping.SimulationContext){
-		cbit.vcell.mapping.SimulationContext simContext = (cbit.vcell.mapping.SimulationContext)simulationOwner;
+	}else if(simulationOwner instanceof cbit.vcell.modelapp.SimulationContext){
+		cbit.vcell.modelapp.SimulationContext simContext = (cbit.vcell.modelapp.SimulationContext)simulationOwner;
 		if(simContext.getGeometry().getGeometrySpec().getSubVolume(subVolumeID) != null){
 			results = simContext.getGeometry().getGeometrySpec().getSubVolume(subVolumeID).getName();
 		}

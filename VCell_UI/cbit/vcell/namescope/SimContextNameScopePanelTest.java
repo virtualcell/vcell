@@ -10,8 +10,9 @@
  *******************************************************************************/
 package cbit.vcell.namescope;
 
-import cbit.vcell.mapping.SimulationContext;
+
 import cbit.vcell.mapping.SimulationContextTest;
+import cbit.vcell.modelapp.SimulationContext;
 /**
  * Insert the type's description here.
  * Creation date: (5/6/2004 5:05:33 PM)

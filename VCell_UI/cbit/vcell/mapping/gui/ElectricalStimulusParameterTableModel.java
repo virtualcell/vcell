@@ -2,7 +2,12 @@ package cbit.vcell.mapping.gui;
 
 import cbit.vcell.model.*;
 import java.util.*;
+
+
 import cbit.vcell.model.Model;
+import cbit.vcell.modelapp.ElectricalStimulus;
+import cbit.vcell.modelapp.SpeciesContextSpec;
+import cbit.vcell.modelapp.ElectricalStimulus.ElectricalStimulusParameter;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -11,9 +16,6 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.geometry.*;
 import cbit.vcell.parser.ExpressionException;
 import cbit.util.BeanUtils;
-import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.mapping.ElectricalStimulus;
-import cbit.vcell.mapping.ElectricalStimulus.ElectricalStimulusParameter;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)
@@ -94,7 +96,7 @@ public class ElectricalStimulusParameterTableModel extends cbit.vcell.messaging.
 	private String LABELS[] = { "description", "Parameter", "Expression", "Units" };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private final int indexes[] = new int[0];
-	private cbit.vcell.mapping.ElectricalStimulus fieldElectricalStimulus = null;
+	private cbit.vcell.modelapp.ElectricalStimulus fieldElectricalStimulus = null;
 /**
  * ReactionSpecsTableModel constructor comment.
  */
@@ -186,7 +188,7 @@ public String getColumnName(int column) {
  * @return The electricalStimulus property value.
  * @see #setElectricalStimulus
  */
-public cbit.vcell.mapping.ElectricalStimulus getElectricalStimulus() {
+public cbit.vcell.modelapp.ElectricalStimulus getElectricalStimulus() {
 	return fieldElectricalStimulus;
 }
 /**
@@ -205,7 +207,7 @@ private cbit.vcell.model.Parameter getParameter(int row) {
 		throw new RuntimeException("ElectricalStimulusParameterTableModel.getParameter("+row+") out of range ["+0+","+(count-1)+"]");
 	}
 	if (row==0){
-		if (getElectricalStimulus() instanceof cbit.vcell.mapping.VoltageClampStimulus){
+		if (getElectricalStimulus() instanceof cbit.vcell.modelapp.VoltageClampStimulus){
 			return getElectricalStimulus().getElectricalStimulusParameterFromRole(ElectricalStimulus.ROLE_Voltage);
 		}else{
 			return getElectricalStimulus().getElectricalStimulusParameterFromRole(ElectricalStimulus.ROLE_Current);
@@ -333,7 +335,7 @@ public boolean isSortable(int col) {
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() == this && evt.getPropertyName().equals("electricalStimulus")) {
-		cbit.vcell.mapping.ElectricalStimulus oldValue = (cbit.vcell.mapping.ElectricalStimulus)evt.getOldValue();
+		cbit.vcell.modelapp.ElectricalStimulus oldValue = (cbit.vcell.modelapp.ElectricalStimulus)evt.getOldValue();
 		if (oldValue!=null){
 			oldValue.removePropertyChangeListener(this);
 			Parameter oldParameters[] = oldValue.getElectricalStimulusParameters();
@@ -341,7 +343,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				oldParameters[i].removePropertyChangeListener(this);
 			}
 		}
-		cbit.vcell.mapping.ElectricalStimulus newValue = (cbit.vcell.mapping.ElectricalStimulus)evt.getNewValue();
+		cbit.vcell.modelapp.ElectricalStimulus newValue = (cbit.vcell.modelapp.ElectricalStimulus)evt.getNewValue();
 		if (newValue!=null){
 			newValue.addPropertyChangeListener(this);
 			Parameter newParameters[] = newValue.getElectricalStimulusParameters();
@@ -352,7 +354,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		setData(getUnsortedParameters());
 		fireTableDataChanged();
 	}
-	if (evt.getSource() instanceof cbit.vcell.mapping.ElectricalStimulus && evt.getPropertyName().equals("electricalStimulusParameters")) {
+	if (evt.getSource() instanceof cbit.vcell.modelapp.ElectricalStimulus && evt.getPropertyName().equals("electricalStimulusParameters")) {
 		Parameter oldParameters[] = (Parameter[])evt.getOldValue();
 		for (int i = 0; i<oldParameters.length; i++){
 			oldParameters[i].removePropertyChangeListener(this);
@@ -364,7 +366,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		setData(getUnsortedParameters());
 		fireTableDataChanged();
 	}
-	if(evt.getSource() instanceof cbit.vcell.mapping.ElectricalStimulus.ElectricalStimulusParameter
+	if(evt.getSource() instanceof cbit.vcell.modelapp.ElectricalStimulus.ElectricalStimulusParameter
 		&& evt.getPropertyName().equals("expression")){
 		fireTableDataChanged();
 	}
@@ -386,8 +388,8 @@ public synchronized void removePropertyChangeListener(java.lang.String propertyN
  * @param electricalStimulus The new value for the property.
  * @see #getElectricalStimulus
  */
-public void setElectricalStimulus(cbit.vcell.mapping.ElectricalStimulus electricalStimulus) {
-	cbit.vcell.mapping.ElectricalStimulus oldValue = fieldElectricalStimulus;
+public void setElectricalStimulus(cbit.vcell.modelapp.ElectricalStimulus electricalStimulus) {
+	cbit.vcell.modelapp.ElectricalStimulus oldValue = fieldElectricalStimulus;
 	fieldElectricalStimulus = electricalStimulus;
 	firePropertyChange("electricalStimulus", oldValue, electricalStimulus);
 }

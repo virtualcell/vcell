@@ -9,9 +9,12 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.client.desktop.simulation.*;
 import java.awt.*;
 import javax.swing.*;
+
+
 import cbit.gui.*;
 import java.util.*;
 import cbit.vcell.mapping.*;
+import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.client.desktop.biomodel.*;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.desktop.controls.*;

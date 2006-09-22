@@ -15,6 +15,7 @@ import cbit.vcell.math.*;
 import cbit.vcell.server.solvers.SolverResultSetInfo;
 import cbit.vcell.simulation.*;
 import cbit.vcell.mapping.*;
+import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.geometry.GeometryInfo;
 /**
@@ -23,6 +24,7 @@ import cbit.vcell.geometry.GeometryInfo;
  * @author: 
  */
 import javax.swing.*;
+
  
 public class VCellBasicCellRenderer extends javax.swing.tree.DefaultTreeCellRenderer {
 	protected javax.swing.Icon fieldMathModelIcon = null;

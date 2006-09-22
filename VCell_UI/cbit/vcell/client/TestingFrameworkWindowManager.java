@@ -227,7 +227,7 @@ public String addTestCases(final TestSuiteInfoNew tsInfo, final TestCaseNew[] te
 
 							if (newBioModel==null){
 								pp.setMessage("Saving BM "+testCases[i].getVersion().getName());
-								cbit.vcell.mapping.SimulationContext[] simContexts = bioModel.getSimulationContexts();
+								cbit.vcell.modelapp.SimulationContext[] simContexts = bioModel.getSimulationContexts();
 								for (int j = 0; j < simContexts.length; j++){
 									simContexts[j].clearVersion();
 									cbit.vcell.geometry.surface.GeometrySurfaceDescription gsd =
@@ -278,7 +278,7 @@ public String addTestCases(final TestSuiteInfoNew tsInfo, final TestCaseNew[] te
 					if(newBioModel == null){
 						throw new Exception("BioModel not found");
 					}
-					cbit.vcell.mapping.SimulationContext simContext = null;
+					cbit.vcell.modelapp.SimulationContext simContext = null;
 					for (int j = 0; j < newBioModel.getSimulationContexts().length; j++){
 						if (newBioModel.getSimulationContexts(j).getName().equals(bioTestCase.getSimContextName())){
 							simContext = newBioModel.getSimulationContexts(j);
@@ -726,9 +726,9 @@ public String generateTestCaseReport(TestCaseNew testCase,TestCriteriaNew onlyTh
 				//bioTestCase.
 				BioModelInfo bmInfo = bioTestCase.getBioModelInfo();
 				BioModel bioModel = getRequestManager().getDocumentManager().getBioModel(bmInfo);
-				cbit.vcell.mapping.SimulationContext[] simContextArr = bioModel.getSimulationContexts();
+				cbit.vcell.modelapp.SimulationContext[] simContextArr = bioModel.getSimulationContexts();
 				if(simContextArr != null && simContextArr.length > 0){
-					cbit.vcell.mapping.SimulationContext simContext = null;
+					cbit.vcell.modelapp.SimulationContext simContext = null;
 					for(int i=0;i<simContextArr.length;i+= 1){
 						if(simContextArr[i].getVersion().getVersionKey().compareEqual(bioTestCase.getSimContextKey())){
 							simContext = simContextArr[i];
@@ -1258,7 +1258,7 @@ public TestSuiteInfoNew getNewTestSuiteInfoFromUser() throws UserCancelException
 public KeyValue getSimContextKey(BioModelInfo bmInfo, String appName) throws DataAccessException {
 	BioModel bioModel = getRequestManager().getDocumentManager().getBioModel(bmInfo);
 	if (bioModel!=null){
-		cbit.vcell.mapping.SimulationContext simContexts[] = bioModel.getSimulationContexts();
+		cbit.vcell.modelapp.SimulationContext simContexts[] = bioModel.getSimulationContexts();
 		for (int i = 0; i < simContexts.length; i++){
 			if (simContexts[i].getName().equals(appName)){
 				return simContexts[i].getVersion().getVersionKey();
@@ -1482,7 +1482,7 @@ public Object[] selectRefSimInfo(BioModelInfo bmInfo,String appName) throws Data
 	// code for obtaining siminfos from Biomodel and displaying it as a list
 	// and displaying the siminfo in the label
 
-	cbit.vcell.mapping.SimulationContext simContext = null;
+	cbit.vcell.modelapp.SimulationContext simContext = null;
 	//try {
 		BioModel bioModel = getRequestManager().getDocumentManager().getBioModel(bmInfo);
 		for(int i=0;i<bioModel.getSimulationContexts().length;i+= 1){

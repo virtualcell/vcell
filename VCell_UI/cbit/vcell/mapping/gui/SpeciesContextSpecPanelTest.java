@@ -1,5 +1,6 @@
 package cbit.vcell.mapping.gui;
 
+
 import cbit.vcell.parser.Expression;
 import cbit.vcell.geometry.Geometry;
 /*©
@@ -7,6 +8,7 @@ import cbit.vcell.geometry.Geometry;
  * All rights reserved.
 ©*/
 import cbit.vcell.model.*;
+import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.mapping.*;
 /**
  * This type was created in VisualAge.

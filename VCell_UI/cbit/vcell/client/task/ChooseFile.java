@@ -5,10 +5,14 @@ import cbit.util.*;
 import java.util.*;
 import java.io.*;
 import javax.swing.*;
+
+
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.client.*;
 import cbit.vcell.mapping.*;
+import cbit.vcell.modelapp.SimulationContext;
+import cbit.vcell.modelapp.StructureMapping;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.desktop.controls.*;
 /**

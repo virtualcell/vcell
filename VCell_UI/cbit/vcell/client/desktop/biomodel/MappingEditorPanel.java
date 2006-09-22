@@ -4,7 +4,10 @@ package cbit.vcell.client.desktop.biomodel;
  * All rights reserved.
 ©*/
 import cbit.vcell.mapping.*;
+import cbit.vcell.modelapp.SimulationContext;
+
 import java.awt.event.*;
+
 /**
  * This type was created in VisualAge.
  */
@@ -14,7 +17,7 @@ public class MappingEditorPanel extends javax.swing.JPanel implements java.beans
 	private javax.swing.JTabbedPane ivjJTabbedPane1 = null;
 	private cbit.vcell.mapping.gui.ReactionSpecsPanel ivjReactionSpecsPanel = null;
 	private cbit.vcell.mapping.gui.ElectricalMembraneMappingPanel ivjElectricalMembraneMappingPanel = null;
-	private cbit.vcell.mapping.SimulationContext fieldSimulationContext = null;
+	private cbit.vcell.modelapp.SimulationContext fieldSimulationContext = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	private boolean ivjConnPtoP2Aligning = false;
 	private boolean ivjConnPtoP3Aligning = false;
@@ -324,7 +327,7 @@ private cbit.vcell.mapping.gui.ReactionSpecsPanel getReactionSpecsPanel() {
  * @return The simulationContext property value.
  * @see #setSimulationContext
  */
-public cbit.vcell.mapping.SimulationContext getSimulationContext() {
+public cbit.vcell.modelapp.SimulationContext getSimulationContext() {
 	return fieldSimulationContext;
 }
 
@@ -471,7 +474,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  * @param simulationContext The new value for the property.
  * @see #getSimulationContext
  */
-public void setSimulationContext(cbit.vcell.mapping.SimulationContext simulationContext) {
+public void setSimulationContext(cbit.vcell.modelapp.SimulationContext simulationContext) {
 	SimulationContext oldValue = fieldSimulationContext;
 	fieldSimulationContext = simulationContext;
 	firePropertyChange("simulationContext", oldValue, simulationContext);

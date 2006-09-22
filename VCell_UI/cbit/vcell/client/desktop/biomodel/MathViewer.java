@@ -1,7 +1,10 @@
 package cbit.vcell.client.desktop.biomodel;
 import cbit.vcell.client.*;
 import cbit.vcell.mapping.*;
+import cbit.vcell.modelapp.SimulationContext;
+
 import javax.swing.*;
+
 /**
  * Insert the type's description here.
  * Creation date: (6/3/2004 10:10:46 PM)
@@ -10,7 +13,7 @@ import javax.swing.*;
 public class MathViewer extends JPanel {
 	private JButton ivjJButton1 = null;
 	private cbit.vcell.math.gui.MathViewerPanel ivjMathViewerPanel1 = null;
-	private cbit.vcell.mapping.SimulationContext fieldSimContext = null;
+	private cbit.vcell.modelapp.SimulationContext fieldSimContext = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	private boolean ivjConnPtoP2Aligning = false;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
@@ -61,7 +64,7 @@ private void connEtoC1(java.awt.event.ActionEvent arg1) {
  * @param value cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1(cbit.vcell.mapping.SimulationContext value) {
+private void connEtoM1(cbit.vcell.modelapp.SimulationContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -234,7 +237,7 @@ private cbit.vcell.math.gui.MathViewerPanel getMathViewerPanel1() {
  * @return The simContext property value.
  * @see #setSimContext
  */
-public cbit.vcell.mapping.SimulationContext getSimContext() {
+public cbit.vcell.modelapp.SimulationContext getSimContext() {
 	return fieldSimContext;
 }
 
@@ -244,7 +247,7 @@ public cbit.vcell.mapping.SimulationContext getSimContext() {
  * @return cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.mapping.SimulationContext getsimContext1() {
+private cbit.vcell.modelapp.SimulationContext getsimContext1() {
 	// user code begin {1}
 	// user code end
 	return ivjsimContext1;
@@ -342,8 +345,8 @@ public static void main(java.lang.String[] args) {
  * @param simContext The new value for the property.
  * @see #getSimContext
  */
-public void setSimContext(cbit.vcell.mapping.SimulationContext simContext) {
-	cbit.vcell.mapping.SimulationContext oldValue = fieldSimContext;
+public void setSimContext(cbit.vcell.modelapp.SimulationContext simContext) {
+	cbit.vcell.modelapp.SimulationContext oldValue = fieldSimContext;
 	fieldSimContext = simContext;
 	firePropertyChange("simContext", oldValue, simContext);
 }
@@ -354,10 +357,10 @@ public void setSimContext(cbit.vcell.mapping.SimulationContext simContext) {
  * @param newValue cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setsimContext1(cbit.vcell.mapping.SimulationContext newValue) {
+private void setsimContext1(cbit.vcell.modelapp.SimulationContext newValue) {
 	if (ivjsimContext1 != newValue) {
 		try {
-			cbit.vcell.mapping.SimulationContext oldValue = getsimContext1();
+			cbit.vcell.modelapp.SimulationContext oldValue = getsimContext1();
 			/* Stop listening for events from the current object */
 			if (ivjsimContext1 != null) {
 				ivjsimContext1.removePropertyChangeListener(ivjEventHandler);

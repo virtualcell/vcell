@@ -3,7 +3,11 @@ package cbit.vcell.mapping.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+
 import cbit.vcell.model.*;
+import cbit.vcell.modelapp.GeometryContext;
+import cbit.vcell.modelapp.SimulationContext;
+import cbit.vcell.modelapp.SpeciesContextSpec;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.*;
 /**
@@ -20,7 +24,7 @@ public class SpeciesContextSpecPanel extends javax.swing.JPanel implements java.
 	private java.awt.Component ivjComponent1 = null;
 	private javax.swing.DefaultCellEditor ivjDefaultCellEditor1 = null;
 	private long lastTimeRequestCellEditorFocus = 0l;
-	private cbit.vcell.mapping.SimulationContext fieldSimulationContext = null;
+	private cbit.vcell.modelapp.SimulationContext fieldSimulationContext = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	private SimulationContext ivjsimulationContext1 = null;
 
@@ -66,7 +70,7 @@ private void connEtoC8(java.awt.event.FocusEvent arg1) {
  * @param value cbit.vcell.mapping.SpeciesContextSpec
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC9(cbit.vcell.mapping.SpeciesContextSpec value) {
+private void connEtoC9(cbit.vcell.modelapp.SpeciesContextSpec value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -148,7 +152,7 @@ private void connEtoM3(javax.swing.DefaultCellEditor value) {
  * @param value cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM4(cbit.vcell.mapping.SimulationContext value) {
+private void connEtoM4(cbit.vcell.modelapp.SimulationContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -170,7 +174,7 @@ private void connEtoM4(cbit.vcell.mapping.SimulationContext value) {
  * @param value cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM5(cbit.vcell.mapping.SimulationContext value) {
+private void connEtoM5(cbit.vcell.modelapp.SimulationContext value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -190,7 +194,7 @@ private void connEtoM5(cbit.vcell.mapping.SimulationContext value) {
  * @param value cbit.vcell.mapping.SpeciesContextSpec
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM7(cbit.vcell.mapping.SpeciesContextSpec value) {
+private void connEtoM7(cbit.vcell.modelapp.SpeciesContextSpec value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -408,7 +412,7 @@ private java.lang.String getDiffusionString() {
  * @return cbit.vcell.mapping.GeometryContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.mapping.GeometryContext getgeometryContext1() {
+private cbit.vcell.modelapp.GeometryContext getgeometryContext1() {
 	// user code begin {1}
 	// user code end
 	return ivjgeometryContext1;
@@ -503,7 +507,7 @@ private cbit.vcell.messaging.admin.sorttable.JSortTable getScrollPaneTable() {
  * @return The simulationContext property value.
  * @see #setSimulationContext
  */
-public cbit.vcell.mapping.SimulationContext getSimulationContext() {
+public cbit.vcell.modelapp.SimulationContext getSimulationContext() {
 	return fieldSimulationContext;
 }
 
@@ -513,7 +517,7 @@ public cbit.vcell.mapping.SimulationContext getSimulationContext() {
  * @return cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.mapping.SimulationContext getsimulationContext1() {
+private cbit.vcell.modelapp.SimulationContext getsimulationContext1() {
 	// user code begin {1}
 	// user code end
 	return ivjsimulationContext1;
@@ -525,7 +529,7 @@ private cbit.vcell.mapping.SimulationContext getsimulationContext1() {
  * @return cbit.vcell.mapping.SpeciesContextSpec
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-public cbit.vcell.mapping.SpeciesContextSpec getSpeciesContextSpec() {
+public cbit.vcell.modelapp.SpeciesContextSpec getSpeciesContextSpec() {
 	// user code begin {1}
 	// user code end
 	return ivjSpeciesContextSpec;
@@ -714,7 +718,7 @@ private void setDefaultCellEditor1(javax.swing.DefaultCellEditor newValue) {
  * @param newValue cbit.vcell.mapping.GeometryContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setgeometryContext1(cbit.vcell.mapping.GeometryContext newValue) {
+private void setgeometryContext1(cbit.vcell.modelapp.GeometryContext newValue) {
 	if (ivjgeometryContext1 != newValue) {
 		try {
 			ivjgeometryContext1 = newValue;
@@ -735,7 +739,7 @@ private void setgeometryContext1(cbit.vcell.mapping.GeometryContext newValue) {
  * @param simulationContext The new value for the property.
  * @see #getSimulationContext
  */
-public void setSimulationContext(cbit.vcell.mapping.SimulationContext simulationContext) {
+public void setSimulationContext(cbit.vcell.modelapp.SimulationContext simulationContext) {
 	SimulationContext oldValue = fieldSimulationContext;
 	fieldSimulationContext = simulationContext;
 	firePropertyChange("simulationContext", oldValue, simulationContext);
@@ -747,10 +751,10 @@ public void setSimulationContext(cbit.vcell.mapping.SimulationContext simulation
  * @param newValue cbit.vcell.mapping.SimulationContext
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setsimulationContext1(cbit.vcell.mapping.SimulationContext newValue) {
+private void setsimulationContext1(cbit.vcell.modelapp.SimulationContext newValue) {
 	if (ivjsimulationContext1 != newValue) {
 		try {
-			cbit.vcell.mapping.SimulationContext oldValue = getsimulationContext1();
+			cbit.vcell.modelapp.SimulationContext oldValue = getsimulationContext1();
 			ivjsimulationContext1 = newValue;
 			connPtoP1SetSource();
 			connEtoM4(ivjsimulationContext1);
@@ -773,10 +777,10 @@ private void setsimulationContext1(cbit.vcell.mapping.SimulationContext newValue
  * @param newValue cbit.vcell.mapping.SpeciesContextSpec
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-public void setSpeciesContextSpec(cbit.vcell.mapping.SpeciesContextSpec newValue) {
+public void setSpeciesContextSpec(cbit.vcell.modelapp.SpeciesContextSpec newValue) {
 	if (ivjSpeciesContextSpec != newValue) {
 		try {
-			cbit.vcell.mapping.SpeciesContextSpec oldValue = getSpeciesContextSpec();
+			cbit.vcell.modelapp.SpeciesContextSpec oldValue = getSpeciesContextSpec();
 			ivjSpeciesContextSpec = newValue;
 			connEtoC9(ivjSpeciesContextSpec);
 			connEtoM7(ivjSpeciesContextSpec);

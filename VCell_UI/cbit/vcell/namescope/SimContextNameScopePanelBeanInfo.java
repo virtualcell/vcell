@@ -220,7 +220,7 @@ public java.beans.PropertyDescriptor simContextPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.mapping.SimulationContext.class
+					cbit.vcell.modelapp.SimulationContext.class
 				};
 				aSetMethod = getBeanClass().getMethod("setSimContext", aSetMethodParameterTypes);
 			} catch (java.lang.Throwable exception) {
