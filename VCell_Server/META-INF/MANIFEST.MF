@@ -31,7 +31,6 @@ Export-Package: cbit.sql,
  org.vcell.server
 Require-Bundle: org.vcell.common,
  org.vcell.util,
- org.vcell.model,
  org.vcell.solvers,
  org.vcell.simdata,
  org.vcell.expression,
@@ -43,4 +42,8 @@ Require-Bundle: org.vcell.common,
  org.vcell.image,
  org.vcell.math,
  org.vcell.events,
- org.vcell.simulation
+ org.vcell.simulation,
+ org.vcell.biomodel,
+ org.vcell.mathmodel,
+ org.vcell.physiology,
+ org.vcell.modelapp

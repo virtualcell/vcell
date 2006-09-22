@@ -20,9 +20,9 @@ import cbit.vcell.math.BoundaryConditionType;
 import java.sql.*;
 import java.sql.Statement;
 
-import org.vcell.model.Activator;
-import org.vcell.model.analysis.IAnalysisTask;
-import org.vcell.model.analysis.IAnalysisTaskFactory;
+import org.vcell.modelapp.Activator;
+import org.vcell.modelapp.analysis.IAnalysisTask;
+import org.vcell.modelapp.analysis.IAnalysisTaskFactory;
 
 import cbit.sql.*;
 import cbit.vcell.parser.*;
