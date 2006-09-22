@@ -14,7 +14,8 @@ Require-Bundle: org.vcell.common,
  org.vcell.math,
  org.vcell.simulation,
  org.vcell.modelapp,
- org.vcell.physiology
+ org.vcell.physiology,
+ org.vcell.mapping
 Bundle-Activator: org.vcell.optimization.Optimization
 Import-Package: org.osgi.framework;version="1.3.0"
 Export-Package: cbit.function,

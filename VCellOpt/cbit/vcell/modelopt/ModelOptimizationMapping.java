@@ -1,5 +1,6 @@
 package cbit.vcell.modelopt;
 import java.util.Vector;
+import cbit.vcell.mapping.MappingException;
 
 
 import cbit.vcell.opt.ReferenceData;
@@ -84,7 +85,7 @@ public void applySolutionToMathOverrides(cbit.vcell.simulation.Simulation simula
  * @return cbit.vcell.opt.OptimizationSpec
  * @param modelOptimizationSpec cbit.vcell.modelopt.ModelOptimizationSpec
  */
-cbit.vcell.mapping.MathSymbolMapping computeOptimizationSpec() throws cbit.vcell.math.MathException, cbit.vcell.mapping.MappingException {
+cbit.vcell.mapping.MathSymbolMapping computeOptimizationSpec() throws cbit.vcell.math.MathException, cbit.vcell.mapping.MappingException, MappingException {
 
 	if (getModelOptimizationSpec().getReferenceData()==null){
 		System.out.println("no referenced data defined");
@@ -105,7 +106,10 @@ cbit.vcell.mapping.MathSymbolMapping computeOptimizationSpec() throws cbit.vcell
 		mathSymbolMapping = mathMapping.getMathSymbolMapping();
 	}catch (cbit.vcell.model.ModelException e){
 		e.printStackTrace(System.out);
-		throw new cbit.vcell.mapping.MappingException(e.getMessage());
+		throw new MappingException(e.getMessage());
+	}catch (cbit.vcell.mapping.MappingException e){
+		e.printStackTrace(System.out);
+		throw new MappingException(e.getMessage());
 	}catch (cbit.vcell.parser.ExpressionException e){
 		e.printStackTrace(System.out);
 		throw new cbit.vcell.math.MathException(e.getMessage());

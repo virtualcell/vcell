@@ -13,7 +13,7 @@ public class ParameterEstimationTaskTest {
  */
 public static ParameterEstimationTask getExample() {
 	try {
-		SimulationContext simContext = cbit.vcell.mapping.SimulationContextTest.getExample(0);
+		SimulationContext simContext = cbit.vcell.modelapp.SimulationContextTest.getExample(0);
 		ParameterEstimationTask parameterEstimationTask = new ParameterEstimationTask(simContext);
 		ParameterMappingSpec[] parameterMappingSpecs = parameterEstimationTask.getModelOptimizationSpec().getParameterMappingSpecs();
 

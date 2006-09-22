@@ -14,7 +14,7 @@ public class ModelOptimizationSpecTest {
 public static ModelOptimizationSpec getExample() {
 
 	try {
-		SimulationContext simContext = cbit.vcell.mapping.SimulationContextTest.getExample(0);
+		SimulationContext simContext = cbit.vcell.modelapp.SimulationContextTest.getExample(0);
 		ModelOptimizationSpec modelOptSpec = new ModelOptimizationSpec(simContext);
 		ParameterMappingSpec[] parameterMappingSpecs = modelOptSpec.getParameterMappingSpecs();
 
