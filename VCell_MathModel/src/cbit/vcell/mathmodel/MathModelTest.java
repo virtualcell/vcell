@@ -5,11 +5,9 @@ package cbit.vcell.mathmodel;
  * All rights reserved.
 ©*/
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.geometry.*;
 import cbit.vcell.simulation.*;
 
 import java.util.Random;
-import cbit.vcell.mapping.*;
 /**
  * Insert the type's description here.
  * Creation date: (11/14/00 5:56:27 PM)
