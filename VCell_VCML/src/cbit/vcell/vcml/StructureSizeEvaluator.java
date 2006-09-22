@@ -1,5 +1,6 @@
 package cbit.vcell.vcml;
-import cbit.vcell.mapping.SimulationContext;
+
+import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.

@@ -1,7 +1,8 @@
 package cbit.vcell.vcml;
+
 import cbit.vcell.model.Feature;
-import cbit.vcell.mapping.MembraneMapping;
-import cbit.vcell.mapping.FeatureMapping;
+import cbit.vcell.modelapp.FeatureMapping;
+import cbit.vcell.modelapp.MembraneMapping;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.constraints.GeneralConstraint;
 import cbit.vcell.constraints.ConstraintContainerImpl;
@@ -30,8 +31,8 @@ public StructureSizeSolver() {
  * @param structName java.lang.String
  * @param structSize double
  */
-public void updateAbsoluteStructureSizes(cbit.vcell.mapping.SimulationContext simContext, cbit.vcell.model.Structure struct, double structSize, cbit.vcell.units.VCUnitDefinition structSizeUnit) {
-	cbit.vcell.mapping.StructureMapping[] structMappings = simContext.getGeometryContext().getStructureMappings();
+public void updateAbsoluteStructureSizes(cbit.vcell.modelapp.SimulationContext simContext, cbit.vcell.model.Structure struct, double structSize, cbit.vcell.units.VCUnitDefinition structSizeUnit) {
+	cbit.vcell.modelapp.StructureMapping[] structMappings = simContext.getGeometryContext().getStructureMappings();
 	try {
 		ConstraintContainerImpl ccImpl = new ConstraintContainerImpl();
 
@@ -46,11 +47,11 @@ public void updateAbsoluteStructureSizes(cbit.vcell.mapping.SimulationContext si
 				String svRatioName = TokenMangler.mangleToSName(membraneMapping.getMembrane().getInsideFeature().getName()+"_svRatio");
 				
 
-				cbit.vcell.mapping.StructureMapping.StructureMappingParameter volFractParameter = membraneMapping.getVolumeFractionParameter();
+				cbit.vcell.modelapp.StructureMapping.StructureMappingParameter volFractParameter = membraneMapping.getVolumeFractionParameter();
 				double volFractValue = volFractParameter.getExpression().evaluateConstant();
 				ccImpl.addSimpleBound(new SimpleBounds(volFractName,new RealInterval(volFractValue,volFractValue),AbstractConstraint.MODELING_ASSUMPTION,"from model"));
 
-				cbit.vcell.mapping.StructureMapping.StructureMappingParameter surfToVolParameter = membraneMapping.getSurfaceToVolumeParameter();
+				cbit.vcell.modelapp.StructureMapping.StructureMappingParameter surfToVolParameter = membraneMapping.getSurfaceToVolumeParameter();
 				double svRatioValue = surfToVolParameter.getExpression().evaluateConstant();
 				ccImpl.addSimpleBound(new SimpleBounds(svRatioName,new RealInterval(svRatioValue,svRatioValue),AbstractConstraint.MODELING_ASSUMPTION,"from model"));
 
@@ -177,13 +178,13 @@ public void updateAbsoluteStructureSizes(cbit.vcell.mapping.SimulationContext si
  * @param structName java.lang.String
  * @param structSize double
  */
-public void updateRelativeStructureSizes(cbit.vcell.mapping.SimulationContext simContext) {
+public void updateRelativeStructureSizes(cbit.vcell.modelapp.SimulationContext simContext) {
 
 	if (simContext.getGeometry().getDimension() > 0){
 		throw new RuntimeException("not yet supported for spatial applications");
 	}
 	
-	cbit.vcell.mapping.StructureMapping[] structureMappings = simContext.getGeometryContext().getStructureMappings();
+	cbit.vcell.modelapp.StructureMapping[] structureMappings = simContext.getGeometryContext().getStructureMappings();
 	try {
 		for (int i = 0; i < structureMappings.length; i++){
 			if (structureMappings[i] instanceof MembraneMapping){

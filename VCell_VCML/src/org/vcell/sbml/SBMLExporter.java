@@ -1,9 +1,7 @@
 package org.vcell.sbml;
 import cbit.vcell.model.FluxReaction;
 import org.jdom.*;
-import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.model.Structure;
-import cbit.vcell.mapping.SimulationContext;
 import org.sbml.libsbml.*;
 import java.util.Vector;
 import cbit.vcell.model.Parameter;
@@ -15,9 +13,12 @@ import org.sbml.libsbml.Compartment;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Feature;
+import cbit.vcell.modelapp.SimulationContext;
+import cbit.vcell.modelapp.StructureMapping;
 import cbit.vcell.biomodel.BioModel;
 import org.sbml.libsbml.SBMLDocument;
 import org.sbml.libsbml.Unit;
+
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.vcml.Translator;
 import cbit.vcell.parser.Expression;
@@ -178,7 +179,7 @@ protected void addParameters() {
  * addReactions comment.
  */
 protected void addReactions() {
-	cbit.vcell.mapping.ReactionSpec[] vcReactionSpecs = getMatchingSimContext().getReactionContext().getReactionSpecs();
+	cbit.vcell.modelapp.ReactionSpec[] vcReactionSpecs = getMatchingSimContext().getReactionContext().getReactionSpecs();
 
 	for (int i = 0; i < vcReactionSpecs.length; i++){
 		if (vcReactionSpecs[i].isExcluded()) {
@@ -373,13 +374,13 @@ protected void addSpecies() {
 
 		// Get (and set) the initial concentration value
 		// Get the simulationContext (application) that matches the 'vcPreferredSimContextName' field.
-		cbit.vcell.mapping.SimulationContext simContext = getMatchingSimContext();
+		cbit.vcell.modelapp.SimulationContext simContext = getMatchingSimContext();
 		if (simContext == null) {
 			throw new RuntimeException("No simcontext (application) specified; Cannot proceed.");
 		}
 		
 		// Get the speciesContextSpec in the simContext corresponding to the 'speciesContext'; and extract its initial concentration value.
-		cbit.vcell.mapping.SpeciesContextSpec vcSpeciesContextsSpec = simContext.getReactionContext().getSpeciesContextSpec(vcSpeciesContexts[i]);
+		cbit.vcell.modelapp.SpeciesContextSpec vcSpeciesContextsSpec = simContext.getReactionContext().getSpeciesContextSpec(vcSpeciesContexts[i]);
 		try {
 			sbmlSpecies.setInitialConcentration(vcSpeciesContextsSpec.getInitialConditionParameter().getConstantValue());
 		} catch (cbit.vcell.parser.ExpressionException e) {
@@ -544,14 +545,14 @@ private Element getAnnotationElement(ReactionStep reactionStep) throws cbit.util
 private boolean getBoundaryCondition(SpeciesContext speciesContext) {
 
 	// Get the simulationContext (application) that matches the 'vcPreferredSimContextName' field.
-	cbit.vcell.mapping.SimulationContext simContext = getMatchingSimContext();
+	cbit.vcell.modelapp.SimulationContext simContext = getMatchingSimContext();
 	if (simContext == null) {
 		return false;
 	}
 	
 	// Get the speciesContextSpec in the simContext corresponding to the 'speciesContext'; and extract its boundary condition value.
 	
-	cbit.vcell.mapping.SpeciesContextSpec[] vcSpeciesContextsSpecs = simContext.getReactionContext().getSpeciesContextSpecs();
+	cbit.vcell.modelapp.SpeciesContextSpec[] vcSpeciesContextsSpecs = simContext.getReactionContext().getSpeciesContextSpecs();
 	for (int i = 0; i < vcSpeciesContextsSpecs.length; i++){
 		if (speciesContext.compareEqual(vcSpeciesContextsSpecs[i].getSpeciesContext())) {
 			boolean bBoundaryCondition = vcSpeciesContextsSpecs[i].isConstant();

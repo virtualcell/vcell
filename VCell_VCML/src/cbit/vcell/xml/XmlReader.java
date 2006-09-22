@@ -11,6 +11,16 @@ import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.mapping.*;
 import cbit.image.*;
 import cbit.vcell.model.*;
+import cbit.vcell.modelapp.CurrentClampStimulus;
+import cbit.vcell.modelapp.ElectricalStimulus;
+import cbit.vcell.modelapp.Electrode;
+import cbit.vcell.modelapp.FeatureMapping;
+import cbit.vcell.modelapp.MembraneMapping;
+import cbit.vcell.modelapp.ReactionSpec;
+import cbit.vcell.modelapp.SimulationContext;
+import cbit.vcell.modelapp.SpeciesContextSpec;
+import cbit.vcell.modelapp.StructureMapping;
+import cbit.vcell.modelapp.VoltageClampStimulus;
 import cbit.vcell.math.*;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -164,7 +174,7 @@ System.out.println("model-------- "+((double)(l3-l2))/1000);
 	while (iterator.hasNext()) {
 long l4 = System.currentTimeMillis();
 		Element tempElement = (Element)iterator.next();
-		cbit.vcell.mapping.SimulationContext simContext = getSimulationContext(tempElement, biomodel);
+		cbit.vcell.modelapp.SimulationContext simContext = getSimulationContext(tempElement, biomodel);
 		try {
 			biomodel.addSimulationContext( simContext );
 		} catch (java.beans.PropertyVetoException e) {
@@ -3222,7 +3232,7 @@ public cbit.vcell.simulation.Simulation getSimulation(Element param, MathDescrip
  * @return cbit.vcell.mapping.SimulationContext
  * @param param org.jdom.Element
  */
-public cbit.vcell.mapping.SimulationContext getSimulationContext(Element param, cbit.vcell.biomodel.BioModel biomodel) throws XmlParseException{
+public cbit.vcell.modelapp.SimulationContext getSimulationContext(Element param, cbit.vcell.biomodel.BioModel biomodel) throws XmlParseException{
 	//get the name
 	String name = this.unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
 	//Retrieve Geometry

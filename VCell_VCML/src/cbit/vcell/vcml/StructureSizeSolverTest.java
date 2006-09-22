@@ -36,7 +36,7 @@ public static void main(java.lang.String[] args) {
 		Feature mito = (Feature)model.getStructure("mito");
 		Membrane mitoMem = (Membrane)model.getStructure("mitoMem");
 
-		cbit.vcell.mapping.SimulationContext simContext = new cbit.vcell.mapping.SimulationContext(model,new cbit.vcell.geometry.Geometry("geo",0));
+		cbit.vcell.modelapp.SimulationContext simContext = new cbit.vcell.modelapp.SimulationContext(model,new cbit.vcell.geometry.Geometry("geo",0));
 		simContext.getGeometryContext().getStructureMapping(ec).getSizeParameter().setExpression(new Expression(1.0));
 		simContext.getGeometryContext().getStructureMapping(cyt).getSizeParameter().setExpression(new Expression(2.0));
 		simContext.getGeometryContext().getStructureMapping(pm).getSizeParameter().setExpression(new Expression(3.0));
@@ -50,7 +50,7 @@ public static void main(java.lang.String[] args) {
 		StructureSizeSolver structSizeSolver = new StructureSizeSolver();
 		structSizeSolver.updateRelativeStructureSizes(simContext);
 
-		cbit.vcell.mapping.StructureMapping[] structureMappings = simContext.getGeometryContext().getStructureMappings();
+		cbit.vcell.modelapp.StructureMapping[] structureMappings = simContext.getGeometryContext().getStructureMappings();
 		for (int i = 0; i < structureMappings.length; i++){
 			System.out.println("\""+structureMappings[i].getStructure().getName()+"\" size = "+ 
 										structureMappings[i].getSizeParameter().getExpression().infix() + 
@@ -58,8 +58,8 @@ public static void main(java.lang.String[] args) {
 		}
 		System.out.println();
 		for (int i = 0; i < structureMappings.length; i++){
-			if (structureMappings[i] instanceof cbit.vcell.mapping.MembraneMapping){
-				cbit.vcell.mapping.MembraneMapping mm = (cbit.vcell.mapping.MembraneMapping)structureMappings[i];
+			if (structureMappings[i] instanceof cbit.vcell.modelapp.MembraneMapping){
+				cbit.vcell.modelapp.MembraneMapping mm = (cbit.vcell.modelapp.MembraneMapping)structureMappings[i];
 				System.out.println("\""+mm.getMembrane().getInsideFeature().getName() + 
 										"\" volFract="+mm.getVolumeFractionParameter().getExpression().evaluateConstant() + 
 										", svRatio="+mm.getSurfaceToVolumeParameter().getExpression().evaluateConstant());

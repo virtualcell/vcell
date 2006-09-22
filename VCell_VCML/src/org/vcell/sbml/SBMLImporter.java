@@ -23,9 +23,9 @@ import org.sbml.libsbml.*;
 import cbit.util.BeanUtils;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.model.*;
+import cbit.vcell.modelapp.SimulationContext;
+import cbit.vcell.modelapp.SpeciesContextSpec;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.LambdaFunction;
@@ -41,7 +41,7 @@ public class SBMLImporter {
 
 	private String sbmlString = null;
 	private org.sbml.libsbml.Model sbmlModel = null;
-	private cbit.vcell.mapping.SimulationContext simContext = null;
+	private cbit.vcell.modelapp.SimulationContext simContext = null;
 	private LambdaFunction[] lambdaFunctions = null;
 	private java.util.HashMap assignmentRulesHash = new java.util.HashMap();
 	private TreeMap vcUnitsHash = new TreeMap();
@@ -141,7 +141,7 @@ public class SBMLImporter {
 					// Convert it to VC units (um3 for 3d and um2 for 2d compartments) - multiply the size value by the conversion factor.
 
 					Expression adjustedSizeExpr = new Expression(size);
-					cbit.vcell.mapping.StructureMapping.StructureMappingParameter mappingParam = simContext.getGeometryContext().getStructureMapping(structures[i]).getSizeParameter();
+					cbit.vcell.modelapp.StructureMapping.StructureMappingParameter mappingParam = simContext.getGeometryContext().getStructureMapping(structures[i]).getSizeParameter();
 					VCUnitDefinition vcSizeUnit = mappingParam.getUnitDefinition();
 					int spatialDim = (int)compartment.getSpatialDimensions();
 					String spatialDimBuiltInName = getSpatialDimentionBuiltInName(spatialDim);
@@ -560,7 +560,7 @@ protected void addFunctionDefinitions() {
 				vcReactions[i].setKinetics(kinetics);
 				simContext.getModel().addReactionStep(vcReactions[i]);
 				if (sbmlRxn.isSetFast() && sbmlRxn.getFast()) {
-					simContext.getReactionContext().getReactionSpec(vcReactions[i]).setReactionMapping(cbit.vcell.mapping.ReactionSpec.FAST);
+					simContext.getReactionContext().getReactionSpec(vcReactions[i]).setReactionMapping(cbit.vcell.modelapp.ReactionSpec.FAST);
 				}
 			}
 		} catch (Exception e1) {
