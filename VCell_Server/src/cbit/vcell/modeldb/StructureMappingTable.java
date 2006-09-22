@@ -4,10 +4,14 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+
 import cbit.sql.*;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.vcell.mapping.*;
+import cbit.vcell.modelapp.FeatureMapping;
+import cbit.vcell.modelapp.MembraneMapping;
+import cbit.vcell.modelapp.StructureMapping;
 /**
  * This type was created in VisualAge.
  */

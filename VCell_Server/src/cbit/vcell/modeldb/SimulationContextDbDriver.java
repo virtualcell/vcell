@@ -30,6 +30,16 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.server.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.model.Model;
+import cbit.vcell.modelapp.CurrentClampStimulus;
+import cbit.vcell.modelapp.ElectricalStimulus;
+import cbit.vcell.modelapp.Electrode;
+import cbit.vcell.modelapp.FeatureMapping;
+import cbit.vcell.modelapp.MembraneMapping;
+import cbit.vcell.modelapp.ReactionSpec;
+import cbit.vcell.modelapp.SimulationContext;
+import cbit.vcell.modelapp.SpeciesContextSpec;
+import cbit.vcell.modelapp.StructureMapping;
+import cbit.vcell.modelapp.VoltageClampStimulus;
 /**
  * This type was created in VisualAge.
  */

@@ -1745,8 +1745,8 @@ public static void setKeyFactory(KeyFactory aKeyFactory) {
  */
 protected void setVersioned(Connection con, User user,Versionable versionable) throws ObjectNotFoundException,SQLException,DataAccessException {
 	String sql;
-	if (versionable instanceof cbit.vcell.mapping.SimulationContext){
-		cbit.vcell.mapping.SimulationContext sc = (cbit.vcell.mapping.SimulationContext)versionable;
+	if (versionable instanceof cbit.vcell.modelapp.SimulationContext){
+		cbit.vcell.modelapp.SimulationContext sc = (cbit.vcell.modelapp.SimulationContext)versionable;
 		setVersioned(con,user,sc.getGeometryContext().getGeometry());
 		setVersioned(con,user,sc.getGeometryContext().getModel());
 		if (sc.getMathDescription()!=null){

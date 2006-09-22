@@ -8,10 +8,12 @@ import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.util.Version;
 import cbit.vcell.math.*;
+import cbit.vcell.modelapp.SimulationContext;
+
 import java.math.BigDecimal;
 import cbit.sql.*;
 import java.sql.*;
-import cbit.vcell.mapping.SimulationContext;
+
 /**
  * This type was created in VisualAge.
  */
@@ -58,7 +60,7 @@ public cbit.util.VersionInfo getInfo(ResultSet rset,Connection con,SessionLog lo
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
 	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
 
-	return new cbit.vcell.mapping.SimulationContextInfo(mathRef,geomRef,modelRef,version);
+	return new cbit.vcell.modelapp.SimulationContextInfo(mathRef,geomRef,modelRef,version);
 }
 
 

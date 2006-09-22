@@ -4,9 +4,11 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+
 import cbit.sql.*;
 import cbit.util.KeyValue;
 import cbit.vcell.mapping.*;
+import cbit.vcell.modelapp.SpeciesContextSpec;
 /**
  * This type was created in VisualAge.
  */

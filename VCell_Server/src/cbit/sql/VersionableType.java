@@ -66,7 +66,7 @@ public static VersionableType fromVersionable(Versionable versionable) {
 		return VersionableType.VCImage;
 	}else if (versionable instanceof cbit.vcell.model.Model){
 		return VersionableType.Model;
-	}else if (versionable instanceof cbit.vcell.mapping.SimulationContext){
+	}else if (versionable instanceof cbit.vcell.modelapp.SimulationContext){
 		return VersionableType.SimulationContext;
 	}else if (versionable instanceof cbit.vcell.simulation.Simulation){
 		return VersionableType.Simulation;

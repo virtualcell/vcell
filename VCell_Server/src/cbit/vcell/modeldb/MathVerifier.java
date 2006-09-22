@@ -25,15 +25,17 @@ import cbit.sql.DBCacheTable;
 import cbit.sql.ConnectionFactory;
 import java.beans.*;
 import java.util.Vector;
-import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.sql.VersionableType;
 import cbit.util.BeanUtils;
 import java.io.File;
+
+
 import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.math.MathException;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.model.ModelException;
+import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.parser.ExpressionException;
 import cbit.sql.KeyFactory;
 import cbit.vcell.biomodel.BioModel;
@@ -167,8 +169,8 @@ public void scan(User users[], boolean bUpdateDatabase, KeyValue bioModelKey, in
 						// bug compatability mode off
 						//
 						cbit.vcell.mapping.MembraneStructureAnalyzer.bResolvedFluxCorrectionBug = false;
-						cbit.vcell.mapping.MembraneMapping.bFluxCorrectionBugMode = false;
-						cbit.vcell.mapping.FeatureMapping.bTotalVolumeCorrectionBug = false;
+						cbit.vcell.modelapp.MembraneMapping.bFluxCorrectionBugMode = false;
+						cbit.vcell.modelapp.FeatureMapping.bTotalVolumeCorrectionBug = false;
 						cbit.vcell.mapping.MembraneStructureAnalyzer.bNoFluxIfFixed = false;
 
 						//
@@ -417,8 +419,8 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 					// bug compatability mode off
 					//
 					cbit.vcell.mapping.MembraneStructureAnalyzer.bResolvedFluxCorrectionBug = false;
-					cbit.vcell.mapping.MembraneMapping.bFluxCorrectionBugMode = false;
-					cbit.vcell.mapping.FeatureMapping.bTotalVolumeCorrectionBug = false;
+					cbit.vcell.modelapp.MembraneMapping.bFluxCorrectionBugMode = false;
+					cbit.vcell.modelapp.FeatureMapping.bTotalVolumeCorrectionBug = false;
 					cbit.vcell.mapping.MembraneStructureAnalyzer.bNoFluxIfFixed = false;
 
 					//
@@ -699,8 +701,8 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
                     // bug compatability mode off
                     //
                     cbit.vcell.mapping.MembraneStructureAnalyzer.bResolvedFluxCorrectionBug = false;
-                    cbit.vcell.mapping.MembraneMapping.bFluxCorrectionBugMode = false;
-                    cbit.vcell.mapping.FeatureMapping.bTotalVolumeCorrectionBug = false;
+                    cbit.vcell.modelapp.MembraneMapping.bFluxCorrectionBugMode = false;
+                    cbit.vcell.modelapp.FeatureMapping.bTotalVolumeCorrectionBug = false;
                     cbit.vcell.mapping.MembraneStructureAnalyzer.bNoFluxIfFixed = false;
 
                     //

@@ -68,7 +68,7 @@ public static String enforceOwnershipInsert(User user, VersionTable vTable, Obje
 															(cbit.util.KeyValue) valueData[1], 
 															version));
 	}else if (vTable instanceof SimContextTable) {
-		sb.append(((SimContextTable) vTable).getSQLValueList(	(cbit.vcell.mapping.SimulationContext) valueData[0], 
+		sb.append(((SimContextTable) vTable).getSQLValueList(	(cbit.vcell.modelapp.SimulationContext) valueData[0], 
 																(cbit.util.KeyValue) valueData[1],
 																(cbit.util.KeyValue) valueData[2],
 																(cbit.util.KeyValue) valueData[3],

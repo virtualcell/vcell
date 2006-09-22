@@ -6,8 +6,10 @@ package cbit.vcell.model.render;
 import cbit.gui.graph.*;
 import cbit.gui.graph.Shape;
 import cbit.vcell.model.*;
-import cbit.vcell.mapping.GeometryContext;
+import cbit.vcell.modelapp.GeometryContext;
+
 import java.awt.*;
+
 /**
  * This type was created in VisualAge.
  */

@@ -1,4 +1,5 @@
 package cbit.vcell.modeldb;
+
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.vcell.parser.Expression;
@@ -8,6 +9,10 @@ import cbit.vcell.parser.Expression;
 ©*/
 import cbit.sql.*;
 import cbit.vcell.mapping.*;
+import cbit.vcell.modelapp.CurrentClampStimulus;
+import cbit.vcell.modelapp.ElectricalStimulus;
+import cbit.vcell.modelapp.Electrode;
+import cbit.vcell.modelapp.VoltageClampStimulus;
 /**
  * This type was created in VisualAge.
  */
