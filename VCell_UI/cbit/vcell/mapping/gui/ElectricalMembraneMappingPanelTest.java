@@ -5,6 +5,7 @@ package cbit.vcell.mapping.gui;
  * All rights reserved.
 ©*/
 import cbit.vcell.model.*;
+import cbit.vcell.modelapp.SimulationContextTest;
 import cbit.vcell.mapping.*;
 /**
  * This type was created in VisualAge.

@@ -10,7 +10,7 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.modelapp.SimulationContext;
-import cbit.vcell.mapping.SimulationContextTest;
+import cbit.vcell.modelapp.SimulationContextTest;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 11:15:28 PM)

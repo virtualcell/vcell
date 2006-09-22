@@ -28,7 +28,7 @@ public static void main(String[] args) {
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
 		
-		aElectricalStimulusPanel.setSimulationContext(cbit.vcell.mapping.SimulationContextTest.getExampleElectrical(1));	
+		aElectricalStimulusPanel.setSimulationContext(cbit.vcell.modelapp.SimulationContextTest.getExampleElectrical(1));	
 	} catch (Throwable exception) {
 		System.err.println("Exception occurred in main() of javax.swing.JPanel");
 		exception.printStackTrace(System.out);

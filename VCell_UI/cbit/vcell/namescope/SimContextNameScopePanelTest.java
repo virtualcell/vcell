@@ -11,7 +11,7 @@
 package cbit.vcell.namescope;
 
 
-import cbit.vcell.mapping.SimulationContextTest;
+import cbit.vcell.modelapp.SimulationContextTest;
 import cbit.vcell.modelapp.SimulationContext;
 /**
  * Insert the type's description here.
