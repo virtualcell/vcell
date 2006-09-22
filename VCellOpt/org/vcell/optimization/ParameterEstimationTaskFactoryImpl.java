@@ -3,9 +3,9 @@ package org.vcell.optimization;
 import java.beans.PropertyVetoException;
 
 import org.jdom.Element;
-import org.vcell.model.analysis.IAnalysisTask;
-import org.vcell.model.analysis.IAnalysisTaskFactory;
-import org.vcell.model.analysis.IAnalysisTaskView;
+import org.vcell.modelapp.analysis.IAnalysisTask;
+import org.vcell.modelapp.analysis.IAnalysisTaskFactory;
+import org.vcell.modelapp.analysis.IAnalysisTaskView;
 
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
