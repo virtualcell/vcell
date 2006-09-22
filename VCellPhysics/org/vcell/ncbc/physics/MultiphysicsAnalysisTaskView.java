@@ -2,8 +2,8 @@ package org.vcell.ncbc.physics;
 
 import javax.swing.JPanel;
 
-import org.vcell.model.analysis.IAnalysisTask;
-import org.vcell.model.analysis.IAnalysisTaskView;
+import org.vcell.modelapp.analysis.IAnalysisTask;
+import org.vcell.modelapp.analysis.IAnalysisTaskView;
 import org.vcell.ncbc.physics.component.gui.PhysicalModelGraphPanel;
 
 public class MultiphysicsAnalysisTaskView implements IAnalysisTaskView {

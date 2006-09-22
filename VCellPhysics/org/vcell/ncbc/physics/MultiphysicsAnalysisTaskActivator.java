@@ -4,7 +4,7 @@ import java.util.Properties;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.vcell.model.analysis.IAnalysisTaskFactory;
+import org.vcell.modelapp.analysis.IAnalysisTaskFactory;
 
 public class MultiphysicsAnalysisTaskActivator implements BundleActivator {
 

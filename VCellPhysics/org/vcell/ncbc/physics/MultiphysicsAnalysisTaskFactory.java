@@ -1,9 +1,9 @@
 package org.vcell.ncbc.physics;
 
 import org.jdom.Element;
-import org.vcell.model.analysis.IAnalysisTask;
-import org.vcell.model.analysis.IAnalysisTaskFactory;
-import org.vcell.model.analysis.IAnalysisTaskView;
+import org.vcell.modelapp.analysis.IAnalysisTask;
+import org.vcell.modelapp.analysis.IAnalysisTaskFactory;
+import org.vcell.modelapp.analysis.IAnalysisTaskView;
 import org.vcell.ncbc.physics.component.gui.PhysicalModelGraphPanel;
 
 import cbit.vcell.mapping.SimulationContext;
