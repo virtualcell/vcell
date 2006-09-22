@@ -1,5 +1,6 @@
 package cbit.vcell.modelapp;
-import cbit.vcell.parser.*;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 /**
  * Insert the type's description here.
  * Creation date: (4/8/2002 11:45:12 AM)

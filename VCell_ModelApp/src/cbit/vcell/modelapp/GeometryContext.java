@@ -4,22 +4,23 @@ package cbit.vcell.modelapp;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.util.*;
-import java.beans.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.io.Serializable;
+import java.util.Enumeration;
+import java.util.Vector;
 
-
-import cbit.vcell.model.VCMODL;
-import cbit.vcell.mapping.IllegalMappingException;
-import cbit.vcell.mapping.MappingException;
-import cbit.vcell.math.VCML;
-import cbit.vcell.model.Model;
+import cbit.util.BeanUtils;
+import cbit.util.Compare;
+import cbit.util.Matchable;
+import cbit.vcell.geometry.CompartmentSubVolume;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.geometry.*;
-import cbit.util.*;
 /**
  * GeometryContext handles the mapping of the Structures (Feature,Membrane) to the Geometry
  * (subVolumes).  This should be an observer for Geometry and for Model.
@@ -104,7 +105,7 @@ public synchronized void addVetoableChangeListener(java.lang.String propertyName
  * @param feature cbit.vcell.model.Feature
  * @param subVolume cbit.vcell.geometry.SubVolume
  */
-public void assignFeature(Feature feature, SubVolume subVolume) throws IllegalMappingException, PropertyVetoException {
+public void assignFeature(Feature feature, SubVolume subVolume) throws MappingException, PropertyVetoException {
 	
 	FeatureMapping featureMapping = (FeatureMapping)getStructureMapping(feature);
 	SubVolume currentlyMappedSubvolume = featureMapping.getSubVolume();
@@ -132,7 +133,7 @@ public void assignFeature(Feature feature, SubVolume subVolume) throws IllegalMa
 	while (parent!=null){
 		FeatureMapping parentFM = (FeatureMapping)getStructureMapping(parent);
 		if (parentFM.getSubVolume()!=null && parentFM.getSubVolume()!=subVolume && !parentFM.getResolved()){
-			throw new IllegalMappingException("parent structure ("+parentFM.getFeature().getName()+") is distributed within another subDomain");
+			throw new MappingException("parent structure ("+parentFM.getFeature().getName()+") is distributed within another subDomain");
 		}
 		parent = (parent.getMembrane()!=null)?parent.getMembrane().getOutsideFeature():null;
 	}
@@ -160,7 +161,7 @@ public void assignFeature(Feature feature, SubVolume subVolume) throws IllegalMa
 				while (childEnum.hasMoreElements()) {
 					FeatureMapping childFM = (FeatureMapping) childEnum.nextElement();
 					if (childFM.getResolved() && childFM.getSubVolume()!=null) {
-						throw new IllegalMappingException("child structure ("+childFM.getFeature().getName()+") is spatially mapped, cannot map '"+feature.getName()+"' as distributed");
+						throw new MappingException("child structure ("+childFM.getFeature().getName()+") is spatially mapped, cannot map '"+feature.getName()+"' as distributed");
 					}
 				}
 
@@ -708,7 +709,7 @@ public synchronized void removeVetoableChangeListener(java.lang.String propertyN
  * @param geometry The new value for the property.
  * @see #getGeometry
  */
-public void setGeometry(cbit.vcell.geometry.Geometry geometry) throws MappingException {
+public void setGeometry(cbit.vcell.geometry.Geometry geometry) {
 	
 	Geometry oldValue = fieldGeometry;
 	fieldGeometry = geometry;
@@ -717,7 +718,10 @@ public void setGeometry(cbit.vcell.geometry.Geometry geometry) throws MappingExc
 		refreshDependencies();
 	}catch (PropertyVetoException e){
 		e.printStackTrace(System.out);
-		throw new MappingException(e.getMessage());
+		throw new RuntimeException(e.getMessage());
+	} catch (MappingException e) {
+		e.printStackTrace();
+		throw new RuntimeException(e.getMessage());
 	}
 	firePropertyChange("geometry", oldValue, geometry);
 }

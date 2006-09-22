@@ -1,21 +1,18 @@
 package cbit.vcell.modelapp;
-import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.model.ModelException;
-import java.util.Vector;
 import java.beans.PropertyVetoException;
+import java.util.Vector;
 
-
-import cbit.vcell.parser.ScopedSymbolTable;
-import cbit.vcell.parser.AbstractNameScope;
-import cbit.vcell.model.BioNameScope;
-import cbit.vcell.parser.NameScope;
-import cbit.vcell.model.Parameter;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.units.VCUnitDefinition;
-import cbit.vcell.parser.ExpressionBindingException;
 import cbit.util.BeanUtils;
+import cbit.vcell.model.BioNameScope;
+import cbit.vcell.model.Parameter;
 import cbit.vcell.model.VCMODL;
+import cbit.vcell.parser.AbstractNameScope;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.NameScope;
+import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
  * Creation date: (4/8/2002 11:14:58 AM)

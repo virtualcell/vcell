@@ -1,27 +1,30 @@
 package cbit.vcell.modelapp;
-import cbit.vcell.simulation.Simulation;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.model.Structure;
-import cbit.vcell.model.Feature;
-import cbit.vcell.model.BioNameScope;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import java.beans.*;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.model.Model;
-import cbit.util.*;
-import cbit.vcell.mapping.MappingException;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.MathFactory;
-
-import java.util.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
+import java.beans.VetoableChangeSupport;
+import java.util.Vector;
 
 import org.vcell.modelapp.analysis.IAnalysisTask;
 
-import cbit.vcell.parser.NameScope;
+import cbit.util.BeanUtils;
+import cbit.util.Compare;
+import cbit.util.KeyValue;
+import cbit.util.Matchable;
+import cbit.util.TokenMangler;
+import cbit.util.Version;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathFactory;
+import cbit.vcell.model.BioNameScope;
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.Parameter;
+import cbit.vcell.model.Structure;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.NameScope;
+import cbit.vcell.simulation.Simulation;
 /**
  * This type was created in VisualAge.
  */
@@ -1336,7 +1339,7 @@ public void setElectricalStimuli(int index, ElectricalStimulus electricalStimuli
 /**
  * This method was created in VisualAge.
  */
-public void setGeometry(Geometry geometry) throws MappingException {
+public void setGeometry(Geometry geometry) {
 	Geometry oldGeometry = this.getGeometry();
 
 	if (geometry != oldGeometry){

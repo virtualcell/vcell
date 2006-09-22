@@ -4,9 +4,9 @@ package cbit.vcell.modelapp;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.model.*;
-import cbit.vcell.math.*;
-import cbit.vcell.parser.*;
+import cbit.vcell.math.Variable;
+import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.parser.Expression;
 /**
  * This type was created in VisualAge.
  */

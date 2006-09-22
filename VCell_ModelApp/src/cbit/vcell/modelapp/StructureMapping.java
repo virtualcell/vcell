@@ -1,18 +1,18 @@
 package cbit.vcell.modelapp;
-import cbit.vcell.parser.SymbolTableEntry;
+import java.util.Vector;
+
 import net.sourceforge.interval.ia_math.RealInterval;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import java.util.*;
+import cbit.util.Compare;
+import cbit.util.Matchable;
+import cbit.util.TokenMangler;
+import cbit.vcell.model.BioNameScope;
+import cbit.vcell.model.Parameter;
+import cbit.vcell.model.SimpleBoundsIssue;
+import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.model.*;
-import cbit.vcell.geometry.*;
-import cbit.util.*;
-import cbit.vcell.parser.NameScope;
-import cbit.vcell.parser.ScopedSymbolTable;
 import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.NameScope;
+import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 
 public abstract class StructureMapping implements Matchable, cbit.vcell.parser.ScopedSymbolTable, java.io.Serializable {

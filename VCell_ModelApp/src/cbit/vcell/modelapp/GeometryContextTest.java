@@ -4,12 +4,12 @@ package cbit.vcell.modelapp;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.util.*;
-
-
-import cbit.vcell.model.*;
-import cbit.vcell.geometry.*;
-import cbit.vcell.parser.*;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryTest;
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.ModelTest;
+import cbit.vcell.model.Structure;
 /**
  * This type was created in VisualAge.
  */

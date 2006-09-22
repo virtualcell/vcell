@@ -1,29 +1,21 @@
 package cbit.vcell.modelapp;
-import cbit.util.*;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.mapping.MappingException;
-import cbit.vcell.math.VCML;
+import java.beans.PropertyVetoException;
+import java.io.Serializable;
+
+import net.sourceforge.interval.ia_math.RealInterval;
+import cbit.util.Compare;
+import cbit.util.Matchable;
+import cbit.vcell.model.BioNameScope;
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.VCMODL;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.NameScope;
-import cbit.vcell.model.BioNameScope;
-import cbit.vcell.model.ReservedSymbol;
-import cbit.util.CommentStringTokenizer;
-import cbit.util.Matchable;
-import cbit.util.Compare;
-import cbit.vcell.model.Membrane;
-import cbit.vcell.model.Feature;
-import cbit.vcell.model.VCMODL;
-
-import java.io.*;
-import net.sourceforge.interval.ia_math.RealInterval;
 import cbit.vcell.units.VCUnitDefinition;
-import java.beans.PropertyVetoException;
-import cbit.vcell.parser.ExpressionBindingException;
 
 public class SpeciesContextSpec implements cbit.util.Matchable, cbit.vcell.parser.ScopedSymbolTable, Serializable {
 
