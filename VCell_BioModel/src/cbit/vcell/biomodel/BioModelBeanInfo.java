@@ -483,7 +483,7 @@ public java.beans.MethodDescriptor setSimulationContexts_int_cbitvcellmappingSim
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
 				int.class,
-				cbit.vcell.mapping.SimulationContext.class
+				cbit.vcell.modelapp.SimulationContext.class
 			};
 			aMethod = getBeanClass().getMethod("setSimulationContexts", aParameterTypes);
 		} catch (Throwable exception) {
@@ -591,7 +591,7 @@ public java.beans.IndexedPropertyDescriptor simulationContextsPropertyDescriptor
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.mapping.SimulationContext[].class
+					cbit.vcell.modelapp.SimulationContext[].class
 				};
 				aSetMethod = getBeanClass().getMethod("setSimulationContexts", aSetMethodParameterTypes);
 			} catch (Throwable exception) {

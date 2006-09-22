@@ -8,13 +8,14 @@ import cbit.vcell.math.MathDescription;
 import java.beans.PropertyVetoException;
 import java.util.Vector;
 
+
 import cbit.vcell.simulation.Simulation;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SimulationContextOwner;
 import cbit.util.BeanUtils;
 import cbit.util.ObjectNotFoundException;
 import cbit.util.Version;
 import cbit.vcell.model.VCellNames;
+import cbit.vcell.modelapp.SimulationContext;
+import cbit.vcell.modelapp.SimulationContextOwner;
 /**
  * Insert the type's description here.
  * Creation date: (10/17/00 3:12:16 PM)
@@ -26,7 +27,7 @@ public class BioModel implements cbit.util.VCDocument, SimulationContextOwner, c
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private cbit.vcell.model.Model fieldModel = new cbit.vcell.model.Model("unnamed");
-	private cbit.vcell.mapping.SimulationContext[] fieldSimulationContexts = new cbit.vcell.mapping.SimulationContext[0];
+	private cbit.vcell.modelapp.SimulationContext[] fieldSimulationContexts = new cbit.vcell.modelapp.SimulationContext[0];
 	private Simulation[] fieldSimulations = new Simulation[0];
 	private java.lang.String fieldDescription = new String();
 
@@ -175,7 +176,7 @@ public boolean compareEqual(cbit.util.Matchable obj) {
  * @return boolean
  * @param simulationContext cbit.vcell.mapping.SimulationContext
  */
-public boolean contains(cbit.vcell.mapping.SimulationContext simulationContext) {
+public boolean contains(cbit.vcell.modelapp.SimulationContext simulationContext) {
 	if (simulationContext == null){
 		throw new IllegalArgumentException("simulationContext was null");
 	}
@@ -427,7 +428,7 @@ public SimulationContext getSimulationContext(Simulation simulation) throws Obje
  * @return The simulationContexts property value.
  * @see #setSimulationContexts
  */
-public cbit.vcell.mapping.SimulationContext[] getSimulationContexts() {
+public cbit.vcell.modelapp.SimulationContext[] getSimulationContexts() {
 	return fieldSimulationContexts;
 }
 
@@ -438,7 +439,7 @@ public cbit.vcell.mapping.SimulationContext[] getSimulationContexts() {
  * @param index The index value into the property array.
  * @see #setSimulationContexts
  */
-public cbit.vcell.mapping.SimulationContext getSimulationContexts(int index) {
+public cbit.vcell.modelapp.SimulationContext getSimulationContexts(int index) {
 	return getSimulationContexts()[index];
 }
 
@@ -736,8 +737,8 @@ public void setName(java.lang.String name) throws java.beans.PropertyVetoExcepti
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getSimulationContexts
  */
-public void setSimulationContexts(cbit.vcell.mapping.SimulationContext[] simulationContexts) throws java.beans.PropertyVetoException {
-	cbit.vcell.mapping.SimulationContext[] oldValue = fieldSimulationContexts;
+public void setSimulationContexts(cbit.vcell.modelapp.SimulationContext[] simulationContexts) throws java.beans.PropertyVetoException {
+	cbit.vcell.modelapp.SimulationContext[] oldValue = fieldSimulationContexts;
 	fireVetoableChange("simulationContexts", oldValue, simulationContexts);
 	for (int i = 0; oldValue!=null && i < oldValue.length; i++){
 		oldValue[i].removePropertyChangeListener(this);

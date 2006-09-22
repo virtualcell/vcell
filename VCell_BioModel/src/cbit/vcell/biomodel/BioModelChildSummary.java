@@ -47,7 +47,7 @@ public static BioModelChildSummary fromDatabaseBioModel(BioModel savedBioModel) 
 
 	BioModelChildSummary bmcs = new BioModelChildSummary();
 
-	cbit.vcell.mapping.SimulationContext[] simContexts = savedBioModel.getSimulationContexts();
+	cbit.vcell.modelapp.SimulationContext[] simContexts = savedBioModel.getSimulationContexts();
 	
 	bmcs.scNames = new String[simContexts.length];
 	bmcs.scAnnots = new String[bmcs.scNames.length];
