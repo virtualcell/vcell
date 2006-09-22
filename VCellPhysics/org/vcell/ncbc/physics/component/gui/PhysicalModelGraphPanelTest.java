@@ -4,6 +4,7 @@ import org.vcell.ncbc.physics.component.PhysicalModel;
 import org.vcell.ncbc.physics.component.PhysicalModelTest;
 
 import cbit.vcell.modelapp.SimulationContext;
+import cbit.vcell.modelapp.SimulationContextTest;
 
 /**
  * Insert the type's description here.
@@ -32,7 +33,7 @@ public static void main(java.lang.String[] args) {
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		
 		//PhysicalModel physicalModel = PhysicalModelTest.getExample();
-		SimulationContext simContext = cbit.vcell.mapping.SimulationContextTest.getExampleElectrical(0);
+		SimulationContext simContext = SimulationContextTest.getExampleElectrical(0);
 		PhysicalModel physicalModel = org.vcell.ncbc.physics.engine.MappingUtilities.createFromSimulationContext(simContext);
 		aPhysicalModelGraphPanel.setPhysicalModel(physicalModel);
 		

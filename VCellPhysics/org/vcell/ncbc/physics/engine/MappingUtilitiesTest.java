@@ -16,6 +16,7 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.modelapp.FeatureMapping;
 import cbit.vcell.modelapp.MembraneMapping;
 import cbit.vcell.modelapp.SimulationContext;
+import cbit.vcell.modelapp.SimulationContextTest;
 import cbit.vcell.modelapp.StructureMapping;
 
 import java.util.Vector;
@@ -60,7 +61,7 @@ public static PhysicalModel getExample() {
 
 public static void main(String[] args) {
 	try {
-		SimulationContext simContext = cbit.vcell.mapping.SimulationContextTest.getExampleElectrical(3);
+		SimulationContext simContext = SimulationContextTest.getExampleElectrical(3);
 		org.vcell.ncbc.physics.component.PhysicalModel physicalModel = MappingUtilities.createFromSimulationContext(simContext);
 	} catch (Throwable e) {
 		e.printStackTrace(System.out);

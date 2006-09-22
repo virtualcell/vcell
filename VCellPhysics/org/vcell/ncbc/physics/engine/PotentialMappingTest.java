@@ -5,6 +5,7 @@ import org.vcell.ncbc.physics.engine.SimpleElectricalDevice;
 
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.modelapp.SimulationContextTest;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -299,7 +300,7 @@ public static void main(java.lang.String[] args) {
 		// test mapping from SimulationContext
 		//
 		System.out.println("\n\n---------------- creating electrical graph ------------------");
-		cbit.vcell.modelapp.SimulationContext simContext = cbit.vcell.mapping.SimulationContextTest.getExampleElectrical(0);
+		cbit.vcell.modelapp.SimulationContext simContext = SimulationContextTest.getExampleElectrical(0);
 		circuitGraph = ElectricalGraphGenerator.getCircuitGraph(simContext);
 		System.out.println("\n\n---------------- Generating Potential Mapping ------------------");
 		PotentialMapping pm = new PotentialMapping(circuitGraph);

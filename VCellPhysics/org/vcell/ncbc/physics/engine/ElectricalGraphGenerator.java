@@ -9,7 +9,6 @@ import cbit.vcell.matrix.RationalExp;
 import cbit.vcell.matrix.RationalExpMatrix;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.math.Function;
-import cbit.vcell.mapping.MappingException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;

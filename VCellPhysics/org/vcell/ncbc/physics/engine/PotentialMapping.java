@@ -7,7 +7,6 @@ import cbit.vcell.matrix.RationalExpMatrix;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.Variable;
-import cbit.vcell.mapping.MappingException;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.parser.Expression;
@@ -97,7 +96,7 @@ public class PotentialMapping {
 /**
  * PotentialMapping constructor comment.
  */
-PotentialMapping(Graph graph) throws cbit.vcell.math.MathException, MappingException, ExpressionException, MatrixException {
+PotentialMapping(Graph graph) throws cbit.vcell.math.MathException, ExpressionException, MappingException, MatrixException {
 	super();
 	determineLumpedEquations(graph);
 }
@@ -107,7 +106,7 @@ PotentialMapping(Graph graph) throws cbit.vcell.math.MathException, MappingExcep
  * @return cbit.vcell.mathmodel.MathModel
  * @param circuitGraph cbit.vcell.mapping.potential.Graph
  */
-private void determineLumpedEquations(Graph graph) throws ExpressionException, MatrixException, cbit.vcell.mapping.MappingException, cbit.vcell.math.MathException {
+private void determineLumpedEquations(Graph graph) throws ExpressionException, MatrixException, MappingException, cbit.vcell.math.MathException {
 	//
 	// traverses graph and calculates RHS expressions for all capacitive devices (dV/dt)
 	// 
