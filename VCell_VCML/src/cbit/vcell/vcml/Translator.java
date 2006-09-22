@@ -1,4 +1,14 @@
 package cbit.vcell.vcml;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
+
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.output.XMLOutputter;
+
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlParseException;
 import cbit.util.xml.XmlUtil;
@@ -6,16 +16,6 @@ import cbit.vcell.cellml.CellQualVCTranslator;
 import cbit.vcell.cellml.CellQuanVCTranslator;
 import cbit.vcell.cellml.VCQualCellTranslator;
 import cbit.vcell.cellml.VCQuanCellTranslator;
-
-import org.jdom.Document;
-import org.jdom.Element; 
-import org.jdom.output.XMLOutputter; 
-
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.Writer;
 
 public abstract class Translator {
 

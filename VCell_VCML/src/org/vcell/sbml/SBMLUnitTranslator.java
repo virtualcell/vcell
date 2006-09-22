@@ -1,7 +1,6 @@
 package org.vcell.sbml;
 
 import cbit.vcell.units.VCUnitDefinition;
-import cbit.vcell.units.VCUnitException;
 
 /**
  * Insert the type's description here.

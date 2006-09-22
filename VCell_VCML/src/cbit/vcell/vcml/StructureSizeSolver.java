@@ -1,15 +1,15 @@
 package cbit.vcell.vcml;
 
+import net.sourceforge.interval.ia_math.RealInterval;
+import cbit.util.TokenMangler;
+import cbit.vcell.constraints.AbstractConstraint;
+import cbit.vcell.constraints.ConstraintContainerImpl;
+import cbit.vcell.constraints.GeneralConstraint;
+import cbit.vcell.constraints.SimpleBounds;
 import cbit.vcell.model.Feature;
 import cbit.vcell.modelapp.FeatureMapping;
 import cbit.vcell.modelapp.MembraneMapping;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.constraints.GeneralConstraint;
-import cbit.vcell.constraints.ConstraintContainerImpl;
-import cbit.vcell.constraints.AbstractConstraint;
-import cbit.vcell.constraints.SimpleBounds;
-import cbit.util.TokenMangler;
-import net.sourceforge.interval.ia_math.RealInterval;
 /**
  * Insert the type's description here.
  * Creation date: (5/12/2006 3:03:22 PM)

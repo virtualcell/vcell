@@ -1,12 +1,11 @@
 package cbit.vcell.vcml;
 
-import cbit.gui.PropertyLoader;
-import cbit.vcell.vcml.Translator;
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.IOException; 
-import java.io.PrintWriter; 
-import org.jdom.Document;
+import java.io.IOException;
+import java.io.PrintWriter;
+
+import cbit.gui.PropertyLoader;
 /**
  A sample app. using the translation classes. Some of the methods for printing out a JDOM tree where
  adopted from a JDOM tutorial.

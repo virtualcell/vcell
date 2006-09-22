@@ -1,15 +1,17 @@
 package cbit.vcell.vcml.compare;
+import java.io.PrintStream;
+
+import org.jdom.Element;
+
+import cbit.util.Matchable;
+import cbit.util.xml.XmlParseException;
+import cbit.util.xml.XmlUtil;
+import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.vcml.VCellXMLComparePolicy;
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.Xmlproducer;
 import cbit.vcell.xml.merge.XmlComparator;
-import cbit.vcell.biomodel.BioModel;
-import cbit.util.Matchable;
-import cbit.util.xml.XmlParseException;
-import cbit.util.xml.XmlUtil;
-import org.jdom.Element;
-import java.io.PrintStream;
 
 
 /**

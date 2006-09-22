@@ -1,26 +1,26 @@
 package cbit.vcell.cellml;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.ExpressionMathMLPrinter;
-import cbit.vcell.parser.MathMLTags;
-import cbit.vcell.xml.NameManager;
-import cbit.gui.PropertyLoader;
-import cbit.util.xml.JDOMTreeWalker;
-import cbit.util.xml.XmlUtil;
-import cbit.vcell.units.VCUnitDefinition;
-import cbit.vcell.vcml.TransFilter;
-import cbit.vcell.vcml.Translator;
-import cbit.util.TokenMangler;
-import cbit.vcell.xml.XMLTags;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.filter.ContentFilter;
 import org.jdom.filter.ElementFilter;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Iterator;
+import cbit.gui.PropertyLoader;
+import cbit.util.TokenMangler;
+import cbit.util.xml.JDOMTreeWalker;
+import cbit.util.xml.XmlUtil;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.ExpressionMathMLPrinter;
+import cbit.vcell.parser.MathMLTags;
+import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.vcml.TransFilter;
+import cbit.vcell.vcml.Translator;
+import cbit.vcell.xml.NameManager;
+import cbit.vcell.xml.XMLTags;
 /**
  * Translator from VCML to Qualitative CellML.
  BioModel.Name = lost

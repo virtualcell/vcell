@@ -1,10 +1,8 @@
 package cbit.vcell.xml;
-import cbit.vcell.vcml.Translator;
-import cbit.vcell.xml.XMLTags;
-import cbit.util.ExtensionFilter;
-import cbit.util.xml.XmlParseException;
-
 import java.io.Serializable;
+
+import cbit.util.xml.XmlParseException;
+import cbit.vcell.vcml.Translator;
 
 /**
  * This class contains all the constant and data for general XML operations.

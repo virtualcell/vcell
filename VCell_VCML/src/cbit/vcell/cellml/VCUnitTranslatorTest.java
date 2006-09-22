@@ -1,11 +1,11 @@
 package cbit.vcell.cellml;
 
-import cbit.vcell.units.VCUnitDefinition;
+import java.util.ArrayList;
 
 import org.jdom.Element;
 import org.jdom.Namespace;
 
-import java.util.ArrayList;
+import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
  * Creation date: (9/8/2004 3:59:09 PM)

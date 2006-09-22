@@ -1,18 +1,4 @@
 package cbit.vcell.xml;
-import cbit.image.VCImage;
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.cellml.VCQualCellTranslator;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.simulation.Simulation;
-import cbit.vcell.vcml.Translator;
-import cbit.util.Extent;
-import cbit.util.VCDocument;
-import cbit.util.xml.VCLogger;
-import cbit.util.xml.XmlParseException;
-import cbit.util.xml.XmlUtil;
-
 import java.beans.PropertyVetoException;
 import java.io.BufferedReader;
 import java.io.StringReader;
@@ -21,6 +7,20 @@ import java.io.StringWriter;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
+
+import cbit.image.VCImage;
+import cbit.util.Extent;
+import cbit.util.VCDocument;
+import cbit.util.xml.VCLogger;
+import cbit.util.xml.XmlParseException;
+import cbit.util.xml.XmlUtil;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.cellml.VCQualCellTranslator;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.simulation.Simulation;
+import cbit.vcell.vcml.Translator;
 
 /**
 This class represents the 'API' of the XML framework for all VC classes, outside that framework. Most of the methods of

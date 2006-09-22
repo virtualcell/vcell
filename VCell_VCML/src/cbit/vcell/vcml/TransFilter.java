@@ -1,18 +1,18 @@
 package cbit.vcell.vcml;
-import cbit.util.TokenMangler;
-import cbit.util.xml.JDOMTreeWalker;
-import cbit.vcell.xml.XMLTags;
-import cbit.vcell.parser.MathMLTags;
-import org.jdom.Attribute;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.Namespace;
-import org.jdom.filter.ContentFilter;
-import org.jdom.filter.ElementFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Iterator;
+
+import org.jdom.Attribute;
+import org.jdom.Element;
+import org.jdom.Namespace;
+import org.jdom.filter.ElementFilter;
+
+import cbit.util.TokenMangler;
+import cbit.util.xml.JDOMTreeWalker;
+import cbit.vcell.parser.MathMLTags;
+import cbit.vcell.xml.XMLTags;
 /**
  * Utility translation class, mainly trims the source XML document to the required elements that are of interest in the
  translation.

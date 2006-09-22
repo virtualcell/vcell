@@ -1,23 +1,77 @@
 package cbit.vcell.xml;
+import java.util.ArrayList;
+import java.util.Enumeration;
+
+import org.jdom.Element;
+import org.vcell.modelapp.analysis.IAnalysisTask;
+
+import cbit.util.Coordinate;
+import cbit.util.Extent;
+import cbit.util.ISize;
+import cbit.util.SimulationVersion;
+import cbit.util.xml.XmlParseException;
+import cbit.vcell.geometry.AnalyticSubVolume;
+import cbit.vcell.geometry.CompartmentSubVolume;
+import cbit.vcell.geometry.ControlPointCurve;
+import cbit.vcell.geometry.Curve;
+import cbit.vcell.geometry.Filament;
+import cbit.vcell.geometry.ImageSubVolume;
+import cbit.vcell.geometry.Line;
+import cbit.vcell.geometry.SampledCurve;
+import cbit.vcell.geometry.Spline;
+import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException; 
-import cbit.vcell.units.VCUnitDefinition;
-import org.jdom.Element;
-import org.vcell.modelapp.analysis.IAnalysisTask;
-
-import java.util.ArrayList;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.math.*;
-import cbit.vcell.mapping.*;
-import cbit.vcell.geometry.*;
-import cbit.vcell.model.*;
+import cbit.vcell.math.CompartmentSubDomain;
+import cbit.vcell.math.Constant;
+import cbit.vcell.math.Equation;
+import cbit.vcell.math.FastInvariant;
+import cbit.vcell.math.FastRate;
+import cbit.vcell.math.FastSystem;
+import cbit.vcell.math.FastSystemImplicit;
+import cbit.vcell.math.FilamentRegionVariable;
+import cbit.vcell.math.FilamentSubDomain;
+import cbit.vcell.math.FilamentVariable;
+import cbit.vcell.math.Function;
+import cbit.vcell.math.InsideVariable;
+import cbit.vcell.math.JumpCondition;
+import cbit.vcell.math.MemVariable;
+import cbit.vcell.math.MembraneRegionEquation;
+import cbit.vcell.math.MembraneRegionVariable;
+import cbit.vcell.math.MembraneSubDomain;
+import cbit.vcell.math.OdeEquation;
+import cbit.vcell.math.OutsideVariable;
+import cbit.vcell.math.PdeEquation;
+import cbit.vcell.math.SubDomain;
+import cbit.vcell.math.Variable;
+import cbit.vcell.math.VolVariable;
+import cbit.vcell.math.VolumeRegionEquation;
+import cbit.vcell.math.VolumeRegionVariable;
+import cbit.vcell.model.Catalyst;
+import cbit.vcell.model.Diagram;
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.Flux;
+import cbit.vcell.model.FluxReaction;
+import cbit.vcell.model.GHKKinetics;
+import cbit.vcell.model.GeneralCurrentKinetics;
+import cbit.vcell.model.GeneralKinetics;
+import cbit.vcell.model.HMM_IRRKinetics;
+import cbit.vcell.model.HMM_REVKinetics;
+import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.MassActionKinetics;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.model.NernstKinetics;
+import cbit.vcell.model.NodeReference;
+import cbit.vcell.model.Product;
+import cbit.vcell.model.Reactant;
+import cbit.vcell.model.ReactionParticipant;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.SimpleReaction;
+import cbit.vcell.model.Species;
+import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
 import cbit.vcell.modelapp.CurrentClampStimulus;
 import cbit.vcell.modelapp.ElectricalStimulus;
 import cbit.vcell.modelapp.Electrode;
@@ -28,10 +82,9 @@ import cbit.vcell.modelapp.ReactionSpec;
 import cbit.vcell.modelapp.SpeciesContextSpec;
 import cbit.vcell.modelapp.StructureMapping;
 import cbit.vcell.modelapp.VoltageClampStimulus;
-
-import java.util.Enumeration;
-import cbit.util.*;
-import cbit.util.xml.XmlParseException;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.units.VCUnitDefinition;
 
 /**
  * This class concentrates all the XML production code from Java objects.

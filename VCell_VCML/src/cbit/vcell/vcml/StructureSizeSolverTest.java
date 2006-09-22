@@ -1,7 +1,7 @@
 package cbit.vcell.vcml;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Feature;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.parser.Expression;
 /**
  * Insert the type's description here.
  * Creation date: (5/16/2006 6:02:15 PM)

@@ -1,8 +1,6 @@
 package cbit.vcell.xml;
-import java.io.*;
-import java.util.*;
-import java.lang.*;
-import java.text.*;
+import java.util.Enumeration;
+import java.util.Hashtable;
 
 public class NameList {
   Hashtable nameList;

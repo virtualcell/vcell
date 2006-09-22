@@ -1,12 +1,11 @@
 package cbit.vcell.xml;
 import java.util.ArrayList;
-
-import cbit.util.xml.JDOMTreeWalker;
+import java.util.Date;
 
 import org.jdom.Element;
 import org.jdom.filter.ElementFilter;
 
-import java.util.Date;
+import cbit.util.xml.JDOMTreeWalker;
 
 /**
 A utility class for the VCRoundTripTest class. Its an XML handler (reader and writer) for the simple report format for the test

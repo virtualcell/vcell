@@ -1,4 +1,16 @@
 package cbit.vcell.cellml;
+import java.util.ArrayList;
+import java.util.Iterator;
+
+import org.jdom.Comment;
+import org.jdom.Element;
+import org.jdom.Namespace;
+import org.jdom.filter.ContentFilter;
+import org.jdom.filter.ElementFilter;
+
+import cbit.gui.PropertyLoader;
+import cbit.util.xml.JDOMTreeWalker;
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionMathMLParser;
@@ -7,19 +19,7 @@ import cbit.vcell.vcml.TransFilter;
 import cbit.vcell.vcml.Translator;
 import cbit.vcell.xml.NameList;
 import cbit.vcell.xml.NameManager;
-import cbit.gui.PropertyLoader;
-import cbit.util.xml.JDOMTreeWalker;
-import cbit.util.xml.XmlUtil;
 import cbit.vcell.xml.XMLTags;
-
-import org.jdom.Comment;
-import org.jdom.Element;
-import org.jdom.Namespace;
-import org.jdom.filter.ContentFilter;
-import org.jdom.filter.ElementFilter;
-
-import java.util.ArrayList;
-import java.util.Iterator;
 
 /**
  * Implementation of the translation from a CellML Quantitative model to a VCML math model. The actual mapping is (ignoring possible mangling):

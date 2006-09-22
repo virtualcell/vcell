@@ -1,22 +1,22 @@
 package cbit.vcell.cellml;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.ExpressionMathMLPrinter;
-import cbit.vcell.parser.MathMLTags;
-import cbit.gui.PropertyLoader;
-import cbit.util.TokenMangler;
-import cbit.vcell.vcml.TransFilter;
-import cbit.vcell.vcml.Translator;
-import cbit.vcell.xml.XMLTags;
-import cbit.util.xml.JDOMTreeWalker;
-import cbit.util.xml.XmlUtil;
+import java.io.IOException;
+import java.util.Iterator;
 
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.filter.ContentFilter;
 
-import java.io.IOException;
-import java.util.Iterator;
+import cbit.gui.PropertyLoader;
+import cbit.util.TokenMangler;
+import cbit.util.xml.JDOMTreeWalker;
+import cbit.util.xml.XmlUtil;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.ExpressionMathMLPrinter;
+import cbit.vcell.parser.MathMLTags;
+import cbit.vcell.vcml.TransFilter;
+import cbit.vcell.vcml.Translator;
+import cbit.vcell.xml.XMLTags;
 
 /**
  Translator from VCML math model to Quantitative CellML model. The mapping is as follows:

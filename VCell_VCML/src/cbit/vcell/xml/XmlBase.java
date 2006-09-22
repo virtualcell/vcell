@@ -1,5 +1,6 @@
 package cbit.vcell.xml;
-import cbit.vcell.parser.*;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.

@@ -6,7 +6,6 @@ import java.util.Iterator;
 
 import org.jdom.Document;
 import org.jdom.Element;
-import org.jdom.filter.ElementFilter;
 import org.jdom.input.SAXBuilder;
 /**
  * A container pattern class, wraps around a Hashtable, used by the XMLReader. The format of the keys is:

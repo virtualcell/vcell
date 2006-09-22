@@ -1,7 +1,8 @@
 package cbit.vcell.vcml;
 
-import org.jdom.Element;
 import java.util.Comparator;
+
+import org.jdom.Element;
 /**
  Utility class
  * Creation date: (7/25/2003 3:38:36 PM)

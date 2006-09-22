@@ -1,20 +1,16 @@
 package cbit.vcell.vcml.compare;
 
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.xml.XmlReader;
-import cbit.vcell.xml.Xmlproducer;
-import cbit.util.xml.XmlParseException;
-import cbit.util.xml.XmlUtil;
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.util.ArrayList;
 
 import org.jdom.Element;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.ArrayList;
+import cbit.util.xml.XmlParseException;
+import cbit.util.xml.XmlUtil;
+import cbit.vcell.xml.XmlReader;
+import cbit.vcell.xml.Xmlproducer;
 
 /**
  * Tester for VCMLComparator as well as for the XmlUtil parser comparison.

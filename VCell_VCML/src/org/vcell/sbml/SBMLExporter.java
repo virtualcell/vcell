@@ -1,31 +1,39 @@
 package org.vcell.sbml;
-import cbit.vcell.model.FluxReaction;
-import org.jdom.*;
-import cbit.vcell.model.Structure;
-import org.sbml.libsbml.*;
-import java.util.Vector;
-import cbit.vcell.model.Parameter;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.Kinetics;
 import java.util.ArrayList;
-import org.sbml.libsbml.UnitDefinition;
-import org.sbml.libsbml.Compartment;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Membrane;
-import cbit.vcell.model.Feature;
-import cbit.vcell.modelapp.SimulationContext;
-import cbit.vcell.modelapp.StructureMapping;
-import cbit.vcell.biomodel.BioModel;
-import org.sbml.libsbml.SBMLDocument;
-import org.sbml.libsbml.Unit;
+import java.util.Vector;
 
-import cbit.vcell.units.VCUnitDefinition;
-import cbit.vcell.vcml.Translator;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.xml.XMLTags;
+import org.jdom.Element;
+import org.jdom.Namespace;
+import org.sbml.libsbml.ASTNode;
+import org.sbml.libsbml.AssignmentRule;
+import org.sbml.libsbml.Compartment;
+import org.sbml.libsbml.MathMLDocument;
+import org.sbml.libsbml.ModifierSpeciesReference;
+import org.sbml.libsbml.ParameterRule;
+import org.sbml.libsbml.SBMLDocument;
+import org.sbml.libsbml.SpeciesReference;
+import org.sbml.libsbml.Unit;
+import org.sbml.libsbml.UnitDefinition;
+import org.sbml.libsbml.libsbml;
+
 import cbit.util.TokenMangler;
 import cbit.util.xml.XmlParseException;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.FluxReaction;
+import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Parameter;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Structure;
+import cbit.vcell.modelapp.SimulationContext;
+import cbit.vcell.modelapp.StructureMapping;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.vcml.Translator;
+import cbit.vcell.xml.XMLTags;
 
 /**
  * Insert the type's description here.
