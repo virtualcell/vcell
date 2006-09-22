@@ -102,7 +102,7 @@ public static void main(java.lang.String[] args) {
 		//
         // select only Application, generate math, and create a single Simulation.
 		//
-        cbit.vcell.mapping.SimulationContext simContext = bioModel_2.getSimulationContexts(0);
+        cbit.vcell.modelapp.SimulationContext simContext = bioModel_2.getSimulationContexts(0);
         cbit.vcell.mapping.MathMapping mathMapping = new cbit.vcell.mapping.MathMapping(simContext);
         cbit.vcell.math.MathDescription mathDesc = mathMapping.getMathDescription();
         simContext.setMathDescription(mathDesc);

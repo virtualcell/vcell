@@ -10,7 +10,7 @@ import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mapping.MathMapping;
-import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.xml.XmlReader;
 import cbit.vcell.vcml.Translator;
 

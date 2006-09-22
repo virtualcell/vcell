@@ -1,9 +1,10 @@
 package cbit.vcell.vcml.test;
-import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.model.Structure;
 import java.io.File;
 import java.util.StringTokenizer;
 import cbit.sql.*;
+import cbit.vcell.modelapp.SimulationContext;
+import cbit.vcell.modelapp.StructureMapping;
 import cbit.vcell.modeldb.LocalAdminDbServer;
 import cbit.vcell.solver.test.VariableComparisonSummary;
 /*©
@@ -21,7 +22,6 @@ import cbit.sql.DBCacheTable;
 import cbit.util.SessionLog;
 import cbit.sql.ConnectionFactory;
 import java.beans.*;
-import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
@@ -47,6 +47,8 @@ import cbit.util.UserInfo;
 import cbit.util.VersionFlag;
 import cbit.sql.KeyFactory;
 import java.sql.SQLException;
+
+
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.model.ModelException;
