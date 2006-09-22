@@ -22,4 +22,7 @@ Require-Bundle: org.vcell.server,
  org.vcell.mathmodel,
  org.vcell.modelapp,
  org.vcell.physiology,
- org.eclipse.osgi
+ org.eclipse.osgi,
+ org.vcell.mapping,
+ org.vcell.ui
+Export-Package: cbit.vcell.server.test
