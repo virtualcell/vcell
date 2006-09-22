@@ -2,8 +2,8 @@ package org.vcell.physics;
 
 import javax.swing.JPanel;
 
-import org.vcell.model.analysis.IAnalysisTask;
-import org.vcell.model.analysis.IAnalysisTaskView;
+import org.vcell.modelapp.analysis.IAnalysisTask;
+import org.vcell.modelapp.analysis.IAnalysisTaskView;
 import org.vcell.physics.component.ModelAnalysisResults;
 import org.vcell.physics.component.OOModel;
 import org.vcell.physics.component.gui.OOModelingPanel;
