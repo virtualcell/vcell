@@ -1,5 +1,7 @@
-package cbit.vcell.modelapp;
-import cbit.vcell.mapping.MathMapping;
+package cbit.vcell.mapping;
+import cbit.vcell.modelapp.ElectricalStimulus;
+import cbit.vcell.modelapp.VoltageClampStimulus;
+import cbit.vcell.modelapp.ElectricalStimulus.ElectricalStimulusParameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 /**

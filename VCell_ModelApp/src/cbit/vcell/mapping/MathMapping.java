@@ -8,20 +8,17 @@ import cbit.util.ISize;
 import cbit.vcell.math.*;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.*;
-import cbit.vcell.modelapp.CurrentClampElectricalDevice;
-import cbit.vcell.modelapp.ElectricalDevice;
 import cbit.vcell.modelapp.ElectricalStimulus;
 import cbit.vcell.modelapp.FeatureMapping;
-import cbit.vcell.modelapp.MembraneElectricalDevice;
 import cbit.vcell.modelapp.MembraneMapping;
 import cbit.vcell.modelapp.ReactionSpec;
 import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.modelapp.SpeciesContextMapping;
 import cbit.vcell.modelapp.SpeciesContextSpec;
 import cbit.vcell.modelapp.StructureMapping;
-import cbit.vcell.modelapp.VoltageClampElectricalDevice;
 import cbit.vcell.geometry.*;
 import cbit.vcell.parser.*;
+
 import java.util.*;
 
 
@@ -31,7 +28,7 @@ import cbit.vcell.units.VCUnitDefinition;
  * This is not a "live" transformation, so that an updated SimulationContext must be given to a new MathMapping object
  * to get an updated MathDescription.
  */
-public class MathMapping implements ScopedSymbolTable {
+public class MathMapping implements ScopedSymbolTable, MathFactory {
 	private SimulationContext simContext = null;
 	private MathDescription mathDesc = null;
 	private PotentialMapping potentialMapping = null;  // null if don't need it
@@ -545,9 +542,20 @@ public cbit.vcell.parser.SymbolTableEntry getLocalEntry(java.lang.String identif
  * This method was created in VisualAge.
  * @return cbit.vcell.math.MathDescription
  */
-public MathDescription getMathDescription() throws MappingException, MathException, ExpressionException, ModelException {
+public MathDescription getMathDescription() throws MathException {
 	if (mathDesc==null){
-		refresh();
+		try {
+			refresh();
+		} catch (MappingException e) {
+			e.printStackTrace();
+			throw new MathException(e.getMessage());
+		} catch (ExpressionException e) {
+			e.printStackTrace();
+			throw new MathException(e.getMessage());
+		} catch (ModelException e) {
+			e.printStackTrace();
+			throw new MathException(e.getMessage());
+		}
 	}
 	return mathDesc;
 }

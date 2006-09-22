@@ -13,9 +13,9 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.model.Model;
 import cbit.util.*;
 import cbit.vcell.mapping.MappingException;
-import cbit.vcell.mapping.MathMapping;
-import cbit.vcell.mapping.MathMapping.MathMappingNameScope;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathFactory;
+
 import java.util.*;
 
 import org.vcell.modelapp.analysis.IAnalysisTask;
@@ -66,7 +66,7 @@ public class SimulationContext implements cbit.util.Versionable, Matchable, cbit
 			return SimulationContext.this;
 		}
 		public boolean isPeer(cbit.vcell.parser.NameScope nameScope){
-			return ((nameScope instanceof cbit.vcell.mapping.MathMapping.MathMappingNameScope) && nameScope.isPeer(this));
+			return (/*(nameScope instanceof cbit.vcell.mapping.MathMapping.MathMappingNameScope) &&*/ nameScope.isPeer(this));
 		}
 	}
 
@@ -293,11 +293,11 @@ public void addAnalysisTask(org.vcell.modelapp.analysis.IAnalysisTask analysisTa
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getSimulations
  */
-public Simulation addNewSimulation() throws java.beans.PropertyVetoException {
+public Simulation addNewSimulation(MathFactory mathFactory) throws java.beans.PropertyVetoException {
 	if (getMathDescription()==null){
 //		throw new RuntimeException("Application "+getName()+" has no generated Math, cannot add simulation");
 		try {
-			setMathDescription((new MathMapping(this)).getMathDescription());
+			setMathDescription(mathFactory.getMathDescription());
 		} catch (Exception e) {
 			throw new RuntimeException(
 				"Application "+getName()+" has no generated Math\n"+

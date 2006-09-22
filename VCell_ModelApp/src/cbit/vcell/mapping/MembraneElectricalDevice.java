@@ -1,6 +1,6 @@
-package cbit.vcell.modelapp;
+package cbit.vcell.mapping;
 
-import cbit.vcell.mapping.MathMapping;
+import cbit.vcell.modelapp.MembraneMapping;
 
 
 /**

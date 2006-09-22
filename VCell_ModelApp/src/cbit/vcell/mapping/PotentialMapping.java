@@ -12,13 +12,9 @@ import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
-import cbit.vcell.modelapp.CurrentClampElectricalDevice;
-import cbit.vcell.modelapp.ElectricalDevice;
 import cbit.vcell.modelapp.FeatureMapping;
-import cbit.vcell.modelapp.MembraneElectricalDevice;
 import cbit.vcell.modelapp.MembraneMapping;
 import cbit.vcell.modelapp.SimulationContext;
-import cbit.vcell.modelapp.VoltageClampElectricalDevice;
 import cbit.util.graph.*;
 
 /**

@@ -1,5 +1,4 @@
-package cbit.vcell.modelapp;
-import cbit.vcell.mapping.MathMapping;
+package cbit.vcell.mapping;
 import cbit.vcell.math.Function;
 import cbit.vcell.parser.*;
 import cbit.vcell.math.VolVariable;
