@@ -1,7 +1,8 @@
 package org.vcell.physics.component.gui;
 
 import org.vcell.physics.component.ModelAnalysisResults;
-import org.vcell.physics.math.MappingUtilities;
+
+import cbit.vcell.modelapp.physics.MappingUtilities;
 
 /**
  * Insert the type's description here.
