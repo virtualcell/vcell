@@ -5,4 +5,12 @@ Bundle-SymbolicName: org.vcell.mathmodel
 Bundle-Version: 1.0.0
 Bundle-Activator: org.vcell.mathmodel.Activator
 Bundle-Localization: plugin
-Import-Package: org.osgi.framework;version="1.3.0"
+Export-Package: cbit.vcell.mathmodel
+Require-Bundle: org.vcell.modelapp,
+ org.vcell.physiology,
+ org.vcell.simulation,
+ org.vcell.util,
+ org.vcell.math,
+ org.vcell.geometry,
+ org.vcell.expression,
+ org.eclipse.osgi
