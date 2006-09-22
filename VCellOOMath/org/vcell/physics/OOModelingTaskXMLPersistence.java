@@ -26,7 +26,7 @@ public class OOModelingTaskXMLPersistence {
  * @throws ImageException 
  * @throws ExpressionException 
  */
-public static OOModelingTask getMultiphysicsAnalysisTask(Element parameterEstimationTaskElement, cbit.vcell.mapping.SimulationContext simContext) 
+public static OOModelingTask getMultiphysicsAnalysisTask(Element parameterEstimationTaskElement, cbit.vcell.modelapp.SimulationContext simContext) 
 throws ExpressionException, PropertyVetoException {
 		
 	OOModelingTask oOModelingTask = new OOModelingTask(simContext,"unnamed");

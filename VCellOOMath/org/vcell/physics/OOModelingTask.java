@@ -12,7 +12,7 @@ import org.vcell.physics.component.ModelAnalysisResults;
 import org.vcell.physics.math.MappingUtilities;
 
 import cbit.util.Matchable;
-import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.parser.ExpressionException;
 
 public class OOModelingTask implements IAnalysisTask {

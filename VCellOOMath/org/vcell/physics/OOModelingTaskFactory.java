@@ -6,7 +6,8 @@ import org.vcell.modelapp.analysis.IAnalysisTaskFactory;
 import org.vcell.modelapp.analysis.IAnalysisTaskView;
 import org.vcell.physics.component.gui.OOModelGraphPanel;
 
-import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.modelapp.SimulationContext;
+
 
 public class OOModelingTaskFactory implements IAnalysisTaskFactory {
 

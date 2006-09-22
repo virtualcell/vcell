@@ -26,7 +26,7 @@ public class MappingUtilities {
  * Creation date: (1/12/2004 1:35:34 AM)
  * @return ncbc_old.physics.component.PhysicalModel
  */
-public static void addChemicalDevices(cbit.vcell.mapping.SimulationContext simContext, org.vcell.physics.component.OOModel oOModel) throws cbit.vcell.parser.ExpressionException, java.beans.PropertyVetoException {
+public static void addChemicalDevices(cbit.vcell.modelapp.SimulationContext simContext, org.vcell.physics.component.OOModel oOModel) throws cbit.vcell.parser.ExpressionException, java.beans.PropertyVetoException {
 
 	cbit.vcell.model.Structure structures[] = simContext.getModel().getStructures();
 
@@ -37,21 +37,21 @@ public static void addChemicalDevices(cbit.vcell.mapping.SimulationContext simCo
 	//
 	// add Devices for molecular species to the physical model
 	//
-	cbit.vcell.mapping.SpeciesContextSpec speciesContextSpecs[] = simContext.getReactionContext().getSpeciesContextSpecs();
+	cbit.vcell.modelapp.SpeciesContextSpec speciesContextSpecs[] = simContext.getReactionContext().getSpeciesContextSpecs();
 	for (int i = 0; i < speciesContextSpecs.length; i++){
-		cbit.vcell.mapping.SpeciesContextSpec scs = speciesContextSpecs[i];
+		cbit.vcell.modelapp.SpeciesContextSpec scs = speciesContextSpecs[i];
 		org.vcell.physics.component.Species species = new org.vcell.physics.component.Species(scs.getSpeciesContext().getName());
 		oOModel.addModelComponent(species);
 	}
 	//
 	// add Devices for reactions to the physical model
 	//
-	cbit.vcell.mapping.ReactionSpec reactionSpecs[] = simContext.getReactionContext().getReactionSpecs();
+	cbit.vcell.modelapp.ReactionSpec reactionSpecs[] = simContext.getReactionContext().getReactionSpecs();
 	for (int i = 0; i < reactionSpecs.length; i++){
-		cbit.vcell.mapping.ReactionSpec rs = reactionSpecs[i];
-		if (rs.getReactionMapping() == cbit.vcell.mapping.ReactionSpec.INCLUDED ||
-			rs.getReactionMapping() == cbit.vcell.mapping.ReactionSpec.MOLECULAR_ONLY||
-			rs.getReactionMapping() == cbit.vcell.mapping.ReactionSpec.FAST){
+		cbit.vcell.modelapp.ReactionSpec rs = reactionSpecs[i];
+		if (rs.getReactionMapping() == cbit.vcell.modelapp.ReactionSpec.INCLUDED ||
+			rs.getReactionMapping() == cbit.vcell.modelapp.ReactionSpec.MOLECULAR_ONLY||
+			rs.getReactionMapping() == cbit.vcell.modelapp.ReactionSpec.FAST){
 			//
 			// collect the reactionParticipant names and stoichiometries (need to pass to Reaction Devices).
 			//
@@ -101,7 +101,7 @@ public static void addChemicalDevices(cbit.vcell.mapping.SimulationContext simCo
  * Creation date: (1/12/2004 1:35:34 AM)
  * @return ncbc_old.physics.component.PhysicalModel
  */
-public static OOModel createFromSimulationContext(cbit.vcell.mapping.SimulationContext simContext) throws ExpressionException, PropertyVetoException {
+public static OOModel createFromSimulationContext(cbit.vcell.modelapp.SimulationContext simContext) throws ExpressionException, PropertyVetoException {
 	OOModel physicalModel = new OOModel();
 
 	//
