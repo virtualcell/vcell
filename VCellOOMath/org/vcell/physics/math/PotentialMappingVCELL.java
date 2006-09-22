@@ -3,8 +3,12 @@ package org.vcell.physics.math;
 import cbit.vcell.matrix.RationalExp;
 import cbit.vcell.matrix.RationalExpMatrix;
 import cbit.vcell.matrix.MatrixException;
+import cbit.vcell.mapping.CurrentClampElectricalDevice;
+import cbit.vcell.mapping.ElectricalDevice;
 import cbit.vcell.mapping.MappingException;
+import cbit.vcell.mapping.MembraneElectricalDevice;
 import cbit.vcell.mapping.MembraneMapping;
+import cbit.vcell.mapping.VoltageClampElectricalDevice;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.mapping.SimulationContext;
@@ -12,10 +16,6 @@ import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.MathMapping;
-import cbit.vcell.mapping.potential.MembraneElectricalDevice;
-import cbit.vcell.mapping.potential.ElectricalDevice;
-import cbit.vcell.mapping.potential.CurrentClampElectricalDevice;
-import cbit.vcell.mapping.potential.VoltageClampElectricalDevice;
 import cbit.util.graph.*;
 
 /**
