@@ -2,8 +2,6 @@ package org.vcell.ncbc.physics.engine;
 
 import cbit.vcell.geometry.surface.*;
 import ucar.units.Unit;
-import cbit.vcell.mapping.MembraneMapping;
-import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.model.Model;
 import java.beans.PropertyVetoException;
 import cbit.vcell.model.Membrane;
@@ -15,10 +13,13 @@ import cbit.vcell.geometry.GeometryException;
 import cbit.image.ImageException;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.mapping.FeatureMapping;
 import cbit.image.VCImage;
-import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.ReactionStep;
+import cbit.vcell.modelapp.FeatureMapping;
+import cbit.vcell.modelapp.MembraneMapping;
+import cbit.vcell.modelapp.SimulationContext;
+import cbit.vcell.modelapp.StructureMapping;
+
 import java.util.Vector;
 
 import org.vcell.ncbc.physics.component.Connection;
@@ -49,7 +50,7 @@ public class MappingUtilities {
  * Creation date: (1/12/2004 1:35:34 AM)
  * @return ncbc_old.physics.component.PhysicalModel
  */
-public static void addChemicalDevices(cbit.vcell.mapping.SimulationContext simContext, PhysicalModel physicalModel) throws cbit.vcell.parser.ExpressionException, java.beans.PropertyVetoException {
+public static void addChemicalDevices(cbit.vcell.modelapp.SimulationContext simContext, PhysicalModel physicalModel) throws cbit.vcell.parser.ExpressionException, java.beans.PropertyVetoException {
 
 	Model model = simContext.getModel();
 	Structure structures[] = model.getStructures();
@@ -58,9 +59,9 @@ public static void addChemicalDevices(cbit.vcell.mapping.SimulationContext simCo
 	//
 	// add Devices for molecular species to the physical model
 	//
-	cbit.vcell.mapping.SpeciesContextSpec speciesContextSpecs[] = simContext.getReactionContext().getSpeciesContextSpecs();
+	cbit.vcell.modelapp.SpeciesContextSpec speciesContextSpecs[] = simContext.getReactionContext().getSpeciesContextSpecs();
 	for (int i = 0; i < speciesContextSpecs.length; i++){
-		cbit.vcell.mapping.SpeciesContextSpec scs = speciesContextSpecs[i];
+		cbit.vcell.modelapp.SpeciesContextSpec scs = speciesContextSpecs[i];
 		for (int j = 0; j < locations.length; j++){
 			String structName = scs.getSpeciesContext().getStructure().getName();
 			if (locations[j].getName().startsWith(structName+"_") || locations[j].getName().equals(structName)){
@@ -86,12 +87,12 @@ public static void addChemicalDevices(cbit.vcell.mapping.SimulationContext simCo
 	//
 	// add Devices for reactions to the physical model
 	//
-	cbit.vcell.mapping.ReactionSpec reactionSpecs[] = simContext.getReactionContext().getReactionSpecs();
+	cbit.vcell.modelapp.ReactionSpec reactionSpecs[] = simContext.getReactionContext().getReactionSpecs();
 	for (int i = 0; i < reactionSpecs.length; i++){
-		cbit.vcell.mapping.ReactionSpec rs = reactionSpecs[i];
-		if (rs.getReactionMapping() == cbit.vcell.mapping.ReactionSpec.INCLUDED ||
-			rs.getReactionMapping() == cbit.vcell.mapping.ReactionSpec.MOLECULAR_ONLY||
-			rs.getReactionMapping() == cbit.vcell.mapping.ReactionSpec.FAST){
+		cbit.vcell.modelapp.ReactionSpec rs = reactionSpecs[i];
+		if (rs.getReactionMapping() == cbit.vcell.modelapp.ReactionSpec.INCLUDED ||
+			rs.getReactionMapping() == cbit.vcell.modelapp.ReactionSpec.MOLECULAR_ONLY||
+			rs.getReactionMapping() == cbit.vcell.modelapp.ReactionSpec.FAST){
 			//
 			// collect the reactionParticipant names and stoichiometries (need to pass to Reaction Devices).
 			//
@@ -212,7 +213,7 @@ public static void addChemicalDevices(cbit.vcell.mapping.SimulationContext simCo
  * Creation date: (1/12/2004 1:35:34 AM)
  * @return ncbc_old.physics.component.PhysicalModel
  */
-public static void addElectricalDevices(cbit.vcell.mapping.SimulationContext simContext, PhysicalModel physicalModel) throws cbit.vcell.parser.ExpressionException, java.beans.PropertyVetoException {
+public static void addElectricalDevices(cbit.vcell.modelapp.SimulationContext simContext, PhysicalModel physicalModel) throws cbit.vcell.parser.ExpressionException, java.beans.PropertyVetoException {
 
 	Model model = simContext.getModel();
 	Structure structures[] = model.getStructures();
@@ -261,14 +262,14 @@ public static void addElectricalDevices(cbit.vcell.mapping.SimulationContext sim
 	//
 	// add Device for voltage/current clamp electrode(s)
 	//
-	cbit.vcell.mapping.ElectricalStimulus stimuli[] = simContext.getElectricalStimuli();
-	cbit.vcell.mapping.Electrode groundElectrode = simContext.getGroundElectrode();
+	cbit.vcell.modelapp.ElectricalStimulus stimuli[] = simContext.getElectricalStimuli();
+	cbit.vcell.modelapp.Electrode groundElectrode = simContext.getGroundElectrode();
 	for (int i = 0; i < stimuli.length; i++){
-		cbit.vcell.mapping.ElectricalStimulus stimulus = stimuli[i];
+		cbit.vcell.modelapp.ElectricalStimulus stimulus = stimuli[i];
 		//
 		// get electrodes
 		//
-		cbit.vcell.mapping.Electrode probeElectrode = stimulus.getElectrode();
+		cbit.vcell.modelapp.Electrode probeElectrode = stimulus.getElectrode();
 		if (probeElectrode == null){
 			throw new RuntimeException("null electrode for electrical stimulus");
 		}
@@ -350,14 +351,14 @@ public static void addElectricalDevices(cbit.vcell.mapping.SimulationContext sim
 				// create surface component for voltage/current clamp device
 				//
 				ElectricalDevice clampDevice = null;
-				if (stimulus instanceof cbit.vcell.mapping.CurrentClampStimulus){
+				if (stimulus instanceof cbit.vcell.modelapp.CurrentClampStimulus){
 					ucar.units.Unit unit = org.vcell.ncbc.physics.component.Units.PICOAMPERE;  // current clamp electrodes are always "total current"
-					cbit.vcell.mapping.CurrentClampStimulus ccStimulus = (cbit.vcell.mapping.CurrentClampStimulus)stimulus;
+					cbit.vcell.modelapp.CurrentClampStimulus ccStimulus = (cbit.vcell.modelapp.CurrentClampStimulus)stimulus;
 					clampDevice = new org.vcell.ncbc.physics.component.CurrentSource("currentClamp",surfaceLocation,unit,ccStimulus.getCurrentParameter().getExpression().infix());
 					
-				}else if (stimulus instanceof cbit.vcell.mapping.VoltageClampStimulus){
+				}else if (stimulus instanceof cbit.vcell.modelapp.VoltageClampStimulus){
 					ucar.units.Unit unit = org.vcell.ncbc.physics.component.Units.MILLIVOLT;
-					cbit.vcell.mapping.VoltageClampStimulus vcStimulus = (cbit.vcell.mapping.VoltageClampStimulus)stimulus;
+					cbit.vcell.modelapp.VoltageClampStimulus vcStimulus = (cbit.vcell.modelapp.VoltageClampStimulus)stimulus;
 					clampDevice = new org.vcell.ncbc.physics.component.VoltageSource("voltageClamp",surfaceLocation,unit,vcStimulus.getVoltageParameter().getExpression().infix());
 				}
 
@@ -606,7 +607,7 @@ public static void addLocations(SimulationContext simContext, PhysicalModel phys
  * Creation date: (1/12/2004 1:35:34 AM)
  * @return ncbc_old.physics.component.PhysicalModel
  */
-public static PhysicalModel createFromSimulationContext(cbit.vcell.mapping.SimulationContext simContext) throws ExpressionException, ImageException, GeometryException, PropertyVetoException {
+public static PhysicalModel createFromSimulationContext(cbit.vcell.modelapp.SimulationContext simContext) throws ExpressionException, ImageException, GeometryException, PropertyVetoException {
 	PhysicalModel physicalModel = new PhysicalModel();
 
 	//

@@ -6,7 +6,8 @@ import org.vcell.modelapp.analysis.IAnalysisTaskFactory;
 import org.vcell.modelapp.analysis.IAnalysisTaskView;
 import org.vcell.ncbc.physics.component.gui.PhysicalModelGraphPanel;
 
-import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.modelapp.SimulationContext;
+
 
 public class MultiphysicsAnalysisTaskFactory implements IAnalysisTaskFactory {
 

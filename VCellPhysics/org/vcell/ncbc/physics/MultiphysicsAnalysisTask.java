@@ -12,7 +12,7 @@ import org.vcell.ncbc.physics.component.PhysicalModel;
 import cbit.image.ImageException;
 import cbit.util.Matchable;
 import cbit.vcell.geometry.GeometryException;
-import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.parser.ExpressionException;
 
 public class MultiphysicsAnalysisTask implements IAnalysisTask {

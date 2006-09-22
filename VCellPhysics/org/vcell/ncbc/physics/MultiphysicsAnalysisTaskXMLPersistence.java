@@ -29,7 +29,7 @@ public class MultiphysicsAnalysisTaskXMLPersistence {
  * @throws ExpressionException 
  * @throws GeometryException 
  */
-public static MultiphysicsAnalysisTask getMultiphysicsAnalysisTask(Element parameterEstimationTaskElement, cbit.vcell.mapping.SimulationContext simContext) 
+public static MultiphysicsAnalysisTask getMultiphysicsAnalysisTask(Element parameterEstimationTaskElement, cbit.vcell.modelapp.SimulationContext simContext) 
 throws ExpressionException, ImageException, PropertyVetoException, GeometryException {
 		
 	MultiphysicsAnalysisTask multiphysicsAnalysisTask = new MultiphysicsAnalysisTask(simContext,"unnamed");
