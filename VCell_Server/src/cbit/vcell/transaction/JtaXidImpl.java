@@ -1,6 +1,7 @@
 package cbit.vcell.transaction;
 
 import java.io.Serializable;
+
 import javax.transaction.xa.Xid;
 
 /**

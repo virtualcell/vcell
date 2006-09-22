@@ -4,9 +4,10 @@ package cbit.sql;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.*;
+import java.io.IOException;
 
-import java.io.*;
+import cbit.util.BeanUtils;
+import cbit.util.Cacheable;
 /**
  * This type was created in VisualAge.
  */

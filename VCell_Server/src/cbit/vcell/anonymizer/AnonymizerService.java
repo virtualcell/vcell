@@ -1,7 +1,9 @@
 package cbit.vcell.anonymizer;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 import cbit.util.DataAccessException;
 import cbit.util.SessionLog;
-import java.lang.reflect.*;
 
 /**
  * Insert the type's description here.

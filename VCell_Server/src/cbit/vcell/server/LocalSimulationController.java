@@ -1,18 +1,13 @@
 package cbit.vcell.server;
+import java.rmi.RemoteException;
+
 import cbit.gui.PropertyLoader;
-import cbit.util.BigString;
 import cbit.util.DataAccessException;
 import cbit.util.ObjectNotFoundException;
 import cbit.util.SessionLog;
 import cbit.util.User;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import java.rmi.*;
-
-import cbit.vcell.simulation.*;
-import cbit.vcell.solvers.SimulationJobStatus;
+import cbit.vcell.simulation.Simulation;
+import cbit.vcell.simulation.VCSimulationIdentifier;
 /**
  * Insert the type's description here.
  * Creation date: (6/28/01 12:55:29 PM)

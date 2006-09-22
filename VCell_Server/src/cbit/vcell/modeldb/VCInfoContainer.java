@@ -1,23 +1,13 @@
 package cbit.vcell.modeldb;
-import java.util.zip.DeflaterOutputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
-import cbit.vcell.server.solvers.SolverResultSetInfo;
+import cbit.image.VCImageInfo;
+import cbit.util.User;
+import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mathmodel.MathModelInfo;
-import cbit.vcell.biomodel.BioModelInfo;
-import cbit.image.VCImageInfo;
-import cbit.sql.VersionableType;
-import cbit.vcell.export.server.ExportLog;
-import java.io.ObjectOutputStream;
-import java.io.ObjectInputStream;
-import java.io.IOException;
-import cbit.util.BigString;
-import cbit.util.User;
-import cbit.util.VersionInfo;
-
-import java.io.ByteArrayInputStream;
-import java.util.zip.InflaterInputStream;
 
 /**
  * Insert the type's description here.

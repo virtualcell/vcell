@@ -4,16 +4,15 @@ package cbit.sql;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.gui.*;
-import java.awt.*;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import javax.swing.JFrame;
 
 import cbit.util.SessionLog;
 import cbit.util.StdoutSessionLog;
-import cbit.vcell.server.*;
-import java.sql.*;
-import java.io.*;
-import oracle.jdbc.driver.*;
-import javax.swing.*;
 /**
  * This type was created in VisualAge.
  */

@@ -1,11 +1,19 @@
 package cbit.vcell.messaging;
-import javax.jms.*;
-import java.util.*;
-
-import cbit.util.SessionLog;
-
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.ObjectMessage;
 import javax.jms.Queue;
+import javax.jms.QueueBrowser;
+import javax.jms.QueueReceiver;
+import javax.jms.QueueSender;
+import javax.jms.TemporaryQueue;
 
 /**
  * Insert the type's description here.

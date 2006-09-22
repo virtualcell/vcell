@@ -1,4 +1,9 @@
 package cbit.vcell.modeldb;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Vector;
+
+import cbit.sql.ConnectionFactory;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.ObjectNotFoundException;
@@ -8,18 +13,9 @@ import cbit.util.UserInfo;
 import cbit.vcell.messaging.db.SimulationJobDbDriver;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import java.sql.Connection;
-import java.sql.SQLException;
-import cbit.sql.*;
-import cbit.vcell.server.*;
+import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solvers.SimulationJobStatus;
 import cbit.vcell.solvers.VCellServerID;
-
-import java.util.Vector;
 
 /**
  * This type was created in VisualAge.

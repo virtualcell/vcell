@@ -3,10 +3,11 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.rmi.*;
+import java.rmi.RemoteException;
 
 import cbit.gui.PropertyLoader;
-import cbit.sql.*;
+import cbit.sql.ConnectionFactory;
+import cbit.sql.KeyFactory;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.SessionLog;

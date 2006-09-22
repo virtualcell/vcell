@@ -1,15 +1,14 @@
 package cbit.vcell.modeldb;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import cbit.sql.Field;
+import cbit.sql.Table;
 import cbit.util.DataAccessException;
 import cbit.util.ISize;
 import cbit.util.KeyValue;
 import cbit.util.SessionLog;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import java.sql.*;
-import cbit.sql.*;
 /**
  * This type was created in VisualAge.
  */

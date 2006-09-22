@@ -1,6 +1,6 @@
 package cbit.vcell.server.manage;
 
-import cbit.vcell.server.*;
+import cbit.vcell.server.RMIVCellConnectionFactory;
 /**
  * Insert the type's description here.
  * Creation date: (10/23/2001 3:49:24 PM)

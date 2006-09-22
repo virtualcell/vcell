@@ -1,11 +1,8 @@
 package cbit.vcell.dictionary.database;
 
-import java.util.Vector;
-//import cbit.vcell.server.DataAccessException;
-import cbit.util.KeyValue;
-import cbit.util.SessionLog;
 import cbit.sql.Field;
 import cbit.sql.Table;
+import cbit.util.KeyValue;
 
 /**
  * Represents a table for storing Protein names and aliases in a db table

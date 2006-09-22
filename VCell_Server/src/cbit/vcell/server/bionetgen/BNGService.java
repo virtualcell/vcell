@@ -1,7 +1,8 @@
 package cbit.vcell.server.bionetgen;
 
 import java.rmi.RemoteException;
-import cbit.util.DataAccessException;;
+
+import cbit.util.DataAccessException;
 
 /**
  * Insert the type's description here.

@@ -4,7 +4,7 @@ package cbit.vcell.server;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.io.*;
+import java.io.Serializable;
 /**
  * This type was created in VisualAge.
  */

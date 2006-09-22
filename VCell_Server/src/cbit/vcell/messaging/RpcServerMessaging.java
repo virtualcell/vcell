@@ -1,12 +1,17 @@
 package cbit.vcell.messaging;
-import javax.jms.*;
 import java.io.Serializable;
+
+import javax.jms.DeliveryMode;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.ObjectMessage;
+import javax.jms.Queue;
 
 import cbit.gui.PropertyLoader;
 import cbit.util.SessionLog;
 import cbit.vcell.export.ExportEvent;
-import cbit.vcell.messaging.server.RpcServer;
 import cbit.vcell.messaging.server.RpcRequest;
+import cbit.vcell.messaging.server.RpcServer;
 
 /**
  * Insert the type's description here.

@@ -1,42 +1,35 @@
 package cbit.vcell.messaging.server;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+
+import javax.jms.JMSException;
+import javax.jms.Message;
+
+import cbit.rmi.event.WorkerEvent;
+import cbit.sql.ConnectionFactory;
+import cbit.sql.DBCacheTable;
+import cbit.sql.KeyFactory;
 import cbit.util.BigString;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
-import cbit.util.ObjectNotFoundException;
 import cbit.util.User;
-import cbit.rmi.event.WorkerEvent;
-import javax.jms.*;
+import cbit.vcell.messaging.JmsClientMessaging;
+import cbit.vcell.messaging.MessageConstants;
+import cbit.vcell.messaging.SimulationDispatcherMessaging;
+import cbit.vcell.messaging.StatusMessage;
+import cbit.vcell.messaging.VCellTopicSession;
+import cbit.vcell.messaging.WorkerEventMessage;
+import cbit.vcell.messaging.db.UpdateSynchronizationException;
+import cbit.vcell.modeldb.LocalAdminDbServer;
+import cbit.vcell.modeldb.ResultSetCrawler;
+import cbit.vcell.server.AdminDatabaseServerXA;
+import cbit.vcell.simulation.Simulation;
+import cbit.vcell.simulation.VCSimulationIdentifier;
 import cbit.vcell.solvers.SimulationJob;
 import cbit.vcell.solvers.SimulationJobStatus;
 import cbit.vcell.solvers.VCSimulationDataIdentifier;
-
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Collections;
-import java.util.Date;
-import javax.transaction.*;
-import cbit.vcell.modeldb.LocalAdminDbServer;
-import cbit.sql.ConnectionFactory;
-import cbit.sql.KeyFactory;
-import cbit.sql.VersionableType;
-import cbit.sql.DBCacheTable;
-import cbit.vcell.messaging.JmsClientMessaging;
-import cbit.vcell.messaging.SimulationDispatcherMessaging;
-import cbit.vcell.messaging.MessageConstants;
-import cbit.vcell.messaging.db.UpdateSynchronizationException;
-import cbit.vcell.server.AdminDatabaseServer;
-import cbit.vcell.server.AdminDatabaseServerXA;
-import cbit.vcell.server.SimulationStatus;
-import cbit.vcell.simulation.Simulation;
-import cbit.vcell.simulation.SimulationInfo;
-import cbit.vcell.simulation.VCSimulationIdentifier;
-import cbit.vcell.messaging.VCellTopicSession;
-import cbit.vcell.messaging.WorkerEventMessage;
-import cbit.vcell.messaging.JmsUtils;
-import cbit.vcell.messaging.StatusMessage;
-import java.util.HashSet;
-import cbit.vcell.modeldb.ResultSetCrawler;
-import cbit.vcell.messaging.JmsUtils;
 
 /**
  * Insert the type's description here.

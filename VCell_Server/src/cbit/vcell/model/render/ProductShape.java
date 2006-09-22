@@ -3,7 +3,7 @@ package cbit.vcell.model.render;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.gui.graph.*;
+import cbit.gui.graph.GraphModel;
 import cbit.vcell.model.Product;
 
 /**

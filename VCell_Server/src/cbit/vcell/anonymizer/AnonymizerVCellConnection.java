@@ -1,22 +1,18 @@
 package cbit.vcell.anonymizer;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
+
+import cbit.gui.PropertyLoader;
 import cbit.rmi.event.SimpleMessageService;
 import cbit.util.DataAccessException;
 import cbit.util.SessionLog;
 import cbit.util.User;
-import cbit.vcell.server.RMIVCellConnectionFactory;
-import cbit.vcell.server.URLFinder;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.server.VCellConnection;
-import cbit.vcell.server.SimulationController;
-import cbit.vcell.server.UserMetaDbServer;
-import cbit.gui.PropertyLoader;
 import cbit.vcell.server.DataSetController;
-
-import java.rmi.*;
-import java.rmi.server.*;
+import cbit.vcell.server.RMIVCellConnectionFactory;
+import cbit.vcell.server.SimulationController;
+import cbit.vcell.server.URLFinder;
+import cbit.vcell.server.UserMetaDbServer;
+import cbit.vcell.server.VCellConnection;
 /**
  * The user's connection to the Virtual Cell.  It is obtained from the VCellServer
  * after the user has been authenticated.

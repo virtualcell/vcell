@@ -1,7 +1,7 @@
 package cbit.vcell.solver.test;
 
+import cbit.vcell.parser.Expression;
 import cbit.vcell.simdata.ODESolverResultSet;
-import cbit.vcell.parser.*;
 /**
  * Insert the type's description here.
  * Creation date: (9/11/2003 11:42:15 AM)

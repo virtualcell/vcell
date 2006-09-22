@@ -1,8 +1,8 @@
 package cbit.vcell.messaging.server;
 
 import cbit.util.DataAccessException;
-import cbit.vcell.messaging.MessageConstants;
 import cbit.vcell.messaging.JmsUtils;
+import cbit.vcell.messaging.MessageConstants;
 
 /**
  * Insert the type's description here.

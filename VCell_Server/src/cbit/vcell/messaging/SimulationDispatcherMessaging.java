@@ -1,33 +1,31 @@
 package cbit.vcell.messaging;
+import java.sql.SQLException;
+
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.ObjectMessage;
+
+import cbit.sql.ConnectionFactory;
+import cbit.sql.KeyFactory;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.util.xml.XmlParseException;
-
-
-
-import java.io.Serializable;
-import javax.jms.*;
-import cbit.vcell.transaction.*;
+import cbit.vcell.messaging.db.SimulationJobStatusInfo;
+import cbit.vcell.messaging.db.UpdateSynchronizationException;
+import cbit.vcell.messaging.server.RpcRequest;
+import cbit.vcell.messaging.server.SimulationDispatcher;
+import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.server.AdminDatabaseServerXA;
+import cbit.vcell.simulation.Simulation;
+import cbit.vcell.simulation.VCSimulationIdentifier;
 import cbit.vcell.solvers.SimulationJob;
 import cbit.vcell.solvers.SimulationJobStatus;
 import cbit.vcell.solvers.VCellServerID;
-import cbit.vcell.messaging.db.SimulationJobStatusInfo;
-import cbit.vcell.messaging.db.UpdateSynchronizationException;
-import cbit.gui.PropertyLoader;
-import cbit.sql.KeyFactory;
-import cbit.sql.ConnectionFactory;
-import java.sql.SQLException;
-import cbit.vcell.server.AdminDatabaseServer;
-import cbit.vcell.server.AdminDatabaseServerXA;
-import cbit.vcell.server.SimulationStatus;
-import cbit.vcell.simulation.Simulation;
-import cbit.vcell.simulation.SimulationInfo;
-import cbit.vcell.simulation.VCSimulationIdentifier;
-import cbit.vcell.messaging.server.SimulationDispatcher;
-import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.messaging.server.RpcRequest;
+import cbit.vcell.transaction.JtaDbConnection;
+import cbit.vcell.transaction.JtaOracleConnection;
+import cbit.vcell.transaction.JtaTransactionManager;
 
 /**
  * Insert the type's description here.

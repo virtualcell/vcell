@@ -4,7 +4,7 @@ package cbit.util.admin;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.io.*;
+import java.io.File;
 
 import cbit.util.SessionLog;
 /**

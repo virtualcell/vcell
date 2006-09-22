@@ -4,10 +4,15 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.text.SimpleDateFormat;
-import java.text.ParseException;
-import java.beans.*;
+import java.beans.PropertyVetoException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
+import cbit.sql.Field;
+import cbit.sql.Table;
+import cbit.sql.VersionTable;
+import cbit.sql.VersionableType;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.SessionLog;
@@ -15,17 +20,13 @@ import cbit.util.SimulationVersion;
 import cbit.util.User;
 import cbit.util.Version;
 import cbit.util.VersionInfo;
-import cbit.vcell.server.solvers.SolverResultSetInfo;
-import cbit.vcell.simulation.*;
-import cbit.vcell.solvers.VCSimulationDataIdentifier;
-
-import java.math.BigDecimal;
-import cbit.sql.*;
 import cbit.vcell.math.MathDescription;
-import java.sql.SQLException;
-import java.sql.ResultSet;
-import java.sql.Connection;
-import cbit.vcell.geometry.Geometry;
+import cbit.vcell.server.solvers.SolverResultSetInfo;
+import cbit.vcell.simulation.Simulation;
+import cbit.vcell.simulation.SimulationInfo;
+import cbit.vcell.simulation.SolverTaskDescription;
+import cbit.vcell.simulation.VCSimulationIdentifier;
+import cbit.vcell.solvers.VCSimulationDataIdentifier;
 /**
  * This type was created in VisualAge.
  */

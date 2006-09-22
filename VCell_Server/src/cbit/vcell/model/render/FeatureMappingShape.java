@@ -4,8 +4,8 @@ package cbit.vcell.model.render;
  * All rights reserved.
 ©*/
 
-import cbit.gui.graph.*;
-import cbit.vcell.mapping.*;
+import cbit.gui.graph.EdgeShape;
+import cbit.gui.graph.GraphModel;
 import cbit.vcell.modelapp.FeatureMapping;
 /**
  * This type was created in VisualAge.

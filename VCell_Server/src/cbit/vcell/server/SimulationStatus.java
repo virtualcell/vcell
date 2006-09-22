@@ -1,5 +1,5 @@
 package cbit.vcell.server;
-import cbit.rmi.event.*;
+import cbit.rmi.event.SimulationJobStatusEvent;
 import cbit.vcell.messaging.MessageConstants;
 import cbit.vcell.simulation.VCSimulationIdentifier;
 import cbit.vcell.solvers.SimulationJobStatus;

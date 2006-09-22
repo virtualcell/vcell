@@ -1,5 +1,4 @@
 package cbit.vcell.messaging;
-import cbit.gui.PropertyLoader;
 
 /**
  * Insert the type's description here.

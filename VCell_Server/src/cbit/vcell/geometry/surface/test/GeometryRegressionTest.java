@@ -1,19 +1,13 @@
 package cbit.vcell.geometry.surface.test;
-import cbit.vcell.mesh.CartesianMesh;
-import cbit.vcell.mesh.MembraneElement;
-import cbit.vcell.mesh.MeshRegionInfo;
-import cbit.vcell.solvers.SimulationJob;
+import java.io.File;
 
-import java.io.PrintWriter;
-import java.io.Writer;
-import java.util.Vector;
 import cbit.gui.PropertyLoader;
 import cbit.sql.ConnectionFactory;
-import java.io.File;
-import cbit.util.Compare;
 import cbit.util.SessionLog;
 import cbit.util.StdoutSessionLog;
 import cbit.util.User;
+import cbit.vcell.mesh.CartesianMesh;
+import cbit.vcell.solvers.SimulationJob;
 
 /**
  * Insert the type's description here.

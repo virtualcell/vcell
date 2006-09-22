@@ -1,5 +1,4 @@
 package cbit.vcell.messaging;
-import cbit.vcell.messaging.*;
 
 /**
  * Insert the type's description here.

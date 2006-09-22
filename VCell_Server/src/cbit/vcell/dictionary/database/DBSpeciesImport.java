@@ -1,27 +1,24 @@
 package cbit.vcell.dictionary.database;
 
-import cbit.sql.*;
+import java.util.Vector;
+
+import cbit.sql.ConnectionFactory;
+import cbit.sql.DBCacheTable;
+import cbit.sql.Field;
+import cbit.sql.KeyFactory;
+import cbit.sql.MysqlConnectionFactory;
+import cbit.sql.MysqlKeyFactory;
+import cbit.sql.OracleKeyFactory;
+import cbit.sql.OraclePoolingConnectionFactory;
+import cbit.sql.Table;
 import cbit.util.KeyValue;
 import cbit.util.SessionLog;
 import cbit.util.StdoutSessionLog;
-import cbit.vcell.server.*;
 import cbit.vcell.dictionary.CompoundInfo;
 import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.dictionary.EnzymeInfo;
 import cbit.vcell.dictionary.FormalSpeciesType;
 import cbit.vcell.dictionary.ProteinInfo;
-import cbit.vcell.dictionary.database.CompoundAliasTable;
-import cbit.vcell.dictionary.database.CompoundTable;
-import cbit.vcell.dictionary.database.DBSpeciesTable;
-import cbit.vcell.dictionary.database.EnzymeAliasTable;
-import cbit.vcell.dictionary.database.EnzymeReactionTable;
-import cbit.vcell.dictionary.database.EnzymeTable;
-import cbit.vcell.dictionary.database.ProteinAliasTable;
-import cbit.vcell.dictionary.database.ProteinTable;
-import cbit.vcell.modeldb.DictionaryDBTopLevel;
-import java.util.Vector;
-import java.io.BufferedReader;
-import java.io.FileReader;
 /**
  * This Class reads in Kegg's flatfile databases for Enzymes and Compounds and inserts them into a database
  * Creation date: (6/24/2002 10:23:18 AM)

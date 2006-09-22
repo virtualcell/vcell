@@ -1,5 +1,5 @@
 package cbit.vcell.messaging.admin;
-import java.util.*;
+import java.util.Date;
 
 import cbit.vcell.messaging.SimpleJobStatus;
 import cbit.vcell.messaging.admin.sorttable.ManageTableModel;

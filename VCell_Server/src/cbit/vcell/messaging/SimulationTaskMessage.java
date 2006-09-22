@@ -1,26 +1,14 @@
 package cbit.vcell.messaging;
-import javax.jms.*;
-import org.jdom.Element;
-import org.jdom.output.XMLOutputter;
+import javax.jms.DeliveryMode;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.TextMessage;
 
-import cbit.gui.PropertyLoader;
 import cbit.util.xml.XmlParseException;
-
-import org.jdom.input.SAXBuilder;
-import org.jdom.Document;
-import org.jdom.JDOMException;
-import cbit.vcell.xml.Xmlproducer;
-import cbit.vcell.xml.XmlReader;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.math.MathDescription;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.simulation.Simulation;
 import cbit.vcell.solvers.SimulationJob;
-
-import java.io.StringReader;
-import java.io.IOException;
-import java.beans.PropertyVetoException;
 import cbit.vcell.xml.XmlHelper;
-import cbit.vcell.messaging.server.SimulationTask;
 
 /**
  * Insert the type's description here.

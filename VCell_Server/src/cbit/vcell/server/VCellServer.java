@@ -1,16 +1,11 @@
 package cbit.vcell.server;
+import java.rmi.RemoteException;
+
 import cbit.util.CacheStatus;
 import cbit.util.DataAccessException;
 import cbit.util.User;
 import cbit.vcell.solvers.SimulationJob;
 import cbit.vcell.solvers.SolverController;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import java.rmi.*;
-import cbit.vcell.server.ProcessStatus;
-import cbit.vcell.simulation.Simulation;
 /**
  * This type was created in VisualAge.
  */

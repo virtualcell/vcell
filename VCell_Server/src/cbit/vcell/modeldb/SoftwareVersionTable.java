@@ -1,5 +1,6 @@
 package cbit.vcell.modeldb;
-import cbit.sql.*;
+import cbit.sql.Field;
+import cbit.sql.Table;
 import cbit.util.KeyValue;
 /**
  * Insert the type's description here.

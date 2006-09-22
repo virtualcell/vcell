@@ -3,12 +3,24 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.sql.*;
-import java.util.*;
-import java.beans.*;
-import cbit.sql.*;
+import java.beans.PropertyVetoException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Vector;
 
+import cbit.image.BrowseImage;
+import cbit.image.ImageException;
+import cbit.image.VCImage;
+import cbit.image.VCPixelClass;
+import cbit.sql.DBCacheTable;
+import cbit.sql.Field;
+import cbit.sql.InsertHashtable;
+import cbit.sql.RecordChangedException;
+import cbit.sql.Table;
+import cbit.sql.VersionTable;
+import cbit.sql.VersionableType;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.ObjectNotFoundException;
@@ -17,14 +29,16 @@ import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.util.Version;
 import cbit.util.Versionable;
-import cbit.vcell.geometry.*;
-import cbit.vcell.server.DependencyException;
-import cbit.image.*;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
+import cbit.vcell.geometry.Curve;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometrySpec;
+import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.geometry.surface.GeometricRegion;
-import cbit.vcell.geometry.surface.VolumeGeometricRegion;
+import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
+import cbit.vcell.geometry.surface.VolumeGeometricRegion;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.server.DependencyException;
 //import cbit.util.VersionFlag;
 //import cbit.util.Version;
 /**

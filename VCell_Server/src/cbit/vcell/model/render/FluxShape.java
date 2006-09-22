@@ -3,8 +3,9 @@ package cbit.vcell.model.render;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.gui.graph.*;
-import cbit.vcell.model.*;
+import cbit.gui.graph.GraphModel;
+import cbit.vcell.model.Flux;
+import cbit.vcell.model.Membrane;
 /**
  * This type was created in VisualAge.
  */

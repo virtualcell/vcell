@@ -1,18 +1,24 @@
 package cbit.vcell.modeldb;
-import cbit.util.DataAccessException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Vector;
+
+import cbit.sql.DBCacheTable;
 import cbit.util.KeyValue;
-import cbit.util.ObjectNotFoundException;
 import cbit.util.SessionLog;
 import cbit.util.User;
-import cbit.vcell.dictionary.*;
-import java.util.Vector;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-
-import java.sql.*;
-import cbit.sql.*;
+import cbit.vcell.dictionary.CompoundInfo;
+import cbit.vcell.dictionary.DBFormalSpecies;
+import cbit.vcell.dictionary.DBSpecies;
+import cbit.vcell.dictionary.EnzymeInfo;
+import cbit.vcell.dictionary.FormalCompound;
+import cbit.vcell.dictionary.FormalEnzyme;
+import cbit.vcell.dictionary.FormalProtein;
+import cbit.vcell.dictionary.FormalSpeciesType;
+import cbit.vcell.dictionary.ProteinInfo;
+import cbit.vcell.dictionary.ReactionDescription;
 import cbit.vcell.dictionary.database.CompoundAliasTable;
 import cbit.vcell.dictionary.database.CompoundTable;
 import cbit.vcell.dictionary.database.DBSpeciesTable;

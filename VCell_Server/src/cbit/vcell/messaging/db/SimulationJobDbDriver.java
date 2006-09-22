@@ -1,16 +1,18 @@
 package cbit.vcell.messaging.db;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.vcell.messaging.SimpleJobStatus;
-import cbit.vcell.messaging.db.SimulationJobTable;
-import cbit.vcell.modeldb.SimulationTable;
 import cbit.vcell.modeldb.DatabaseConstants;
-import java.util.ArrayList;
-import java.util.List;
+import cbit.vcell.modeldb.SimulationTable;
 import cbit.vcell.modeldb.UserTable;
 import cbit.vcell.solvers.SimulationJobStatus;
 import cbit.vcell.solvers.VCellServerID;

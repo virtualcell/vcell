@@ -4,7 +4,9 @@ package cbit.vcell.model.render;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Point;
 
 import cbit.vcell.model.FluxReaction;
 /**

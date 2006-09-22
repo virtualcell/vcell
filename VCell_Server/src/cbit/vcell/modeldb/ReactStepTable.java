@@ -4,15 +4,24 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.sql.*;
+import cbit.sql.Field;
+import cbit.sql.Table;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.SessionLog;
 import cbit.util.User;
-import cbit.vcell.model.*;
-import cbit.vcell.server.*;
-import cbit.vcell.dictionary.*;
+import cbit.vcell.dictionary.DBFormalSpecies;
+import cbit.vcell.dictionary.DBNonFormalUnboundSpecies;
+import cbit.vcell.dictionary.ReactionDescription;
 import cbit.vcell.dictionary.database.DBSpeciesTable;
+import cbit.vcell.model.FluxReaction;
+import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.KineticsDescription;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.SimpleReaction;
+import cbit.vcell.model.Structure;
+import cbit.vcell.model.VCMODL;
 /**
  * This type was created in VisualAge.
  */

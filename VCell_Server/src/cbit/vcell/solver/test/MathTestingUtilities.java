@@ -1,5 +1,41 @@
 package cbit.vcell.solver.test;
+import java.util.Enumeration;
+import java.util.Vector;
+
 import cbit.util.Coordinate;
+import cbit.vcell.geometry.AnalyticSubVolume;
+import cbit.vcell.math.CompartmentSubDomain;
+import cbit.vcell.math.Constant;
+import cbit.vcell.math.DataIdentifier;
+import cbit.vcell.math.Equation;
+import cbit.vcell.math.FastInvariant;
+import cbit.vcell.math.FastRate;
+import cbit.vcell.math.FastSystem;
+import cbit.vcell.math.FilamentRegionVariable;
+import cbit.vcell.math.FilamentVariable;
+import cbit.vcell.math.Function;
+import cbit.vcell.math.InsideVariable;
+import cbit.vcell.math.JumpCondition;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.MathUtilities;
+import cbit.vcell.math.MemVariable;
+import cbit.vcell.math.MembraneRegionVariable;
+import cbit.vcell.math.MembraneSubDomain;
+import cbit.vcell.math.OdeEquation;
+import cbit.vcell.math.OutsideVariable;
+import cbit.vcell.math.PdeEquation;
+import cbit.vcell.math.SubDomain;
+import cbit.vcell.math.Variable;
+import cbit.vcell.math.VariableHash;
+import cbit.vcell.math.VariableType;
+import cbit.vcell.math.VolVariable;
+import cbit.vcell.math.VolumeRegionVariable;
+import cbit.vcell.mesh.CartesianMesh;
+import cbit.vcell.modelapp.MappingException;
+import cbit.vcell.numericstest.ConstructedSolutionTemplate;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.ColumnDescription;
 import cbit.vcell.simdata.DataManager;
 import cbit.vcell.simdata.DataResampler;
@@ -7,16 +43,6 @@ import cbit.vcell.simdata.FunctionColumnDescription;
 import cbit.vcell.simdata.ODESolverResultSet;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simulation.Simulation;
-
-import java.util.Vector;
-import cbit.vcell.numericstest.ConstructedSolutionTemplate;
-import java.util.Enumeration;
-import cbit.vcell.geometry.AnalyticSubVolume;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.mapping.MappingException;
-import cbit.vcell.math.*;
-import cbit.vcell.mesh.CartesianMesh;
 /**
  * Insert the type's description here.
  * Creation date: (1/16/2003 2:31:28 PM)
@@ -490,7 +516,7 @@ public static SimulationComparisonSummary compareUnEqualResultSets(ODESolverResu
  * @return cbit.vcell.math.MathDescription
  * @param mathDesc cbit.vcell.math.MathDescription
  */
-public static MathDescription constructExactMath(MathDescription mathDesc, java.util.Random random, ConstructedSolutionTemplate constructedSolutionTemplate) throws ExpressionException, MathException, cbit.vcell.mapping.MappingException {
+public static MathDescription constructExactMath(MathDescription mathDesc, java.util.Random random, ConstructedSolutionTemplate constructedSolutionTemplate) throws ExpressionException, MathException {
 	if (mathDesc.hasFastSystems()){
 		throw new RuntimeException("SolverTest.constructExactMath() suppport for fastSystems not yet implemented.");
 	}
@@ -825,7 +851,7 @@ public static MathDescription constructExactMath(MathDescription mathDesc, java.
 // New variables and ODEs are constructed according to the rule listed below and are added to the mathDescription.
 // The method returns the modified mathDescription.
 //
-public static MathDescription constructOdesForSensitivity(MathDescription mathDesc, Constant sensParam) throws ExpressionException, MathException, cbit.vcell.mapping.MappingException {
+public static MathDescription constructOdesForSensitivity(MathDescription mathDesc, Constant sensParam) throws ExpressionException, MathException {
 	//
 	// For each ODE :
 	//  	
@@ -1187,7 +1213,7 @@ public static cbit.vcell.simdata.ODESolverResultSet getExactResultSet(MathDescri
  * @return cbit.vcell.parser.Expression
  * @param analyticSubDomainExp cbit.vcell.parser.Expression
  */
-public static Expression[] getInsideOutsideFunctions(Expression analyticSubDomainExp) throws ExpressionException, cbit.vcell.mapping.MappingException {
+public static Expression[] getInsideOutsideFunctions(Expression analyticSubDomainExp) throws ExpressionException {
 	
 	java.util.Vector varList = new java.util.Vector();
 	Expression analyticExp = new Expression(analyticSubDomainExp);
@@ -1228,7 +1254,7 @@ public static Expression[] getInsideOutsideFunctions(Expression analyticSubDomai
  * @throws MathException 
  * @throws MappingException 
  */
-public static Function[] getOutwardNormal(Expression analyticSubVolume, String baseName) throws ExpressionException, MathException, MappingException {
+public static Function[] getOutwardNormal(Expression analyticSubVolume, String baseName) throws ExpressionException, MathException {
 
 	cbit.vcell.math.VariableHash varHash = new cbit.vcell.math.VariableHash();
 	
@@ -1274,7 +1300,7 @@ public static Function[] getOutwardNormal(Expression analyticSubVolume, String b
  * @return cbit.vcell.parser.Expression
  * @param analyticSubDomainExp cbit.vcell.parser.Expression
  */
-public static Function[] getOutwardNormalFromInsideOutsideFunction(Expression insideOutsideFunction, String baseName) throws ExpressionException, cbit.vcell.mapping.MappingException {
+public static Function[] getOutwardNormalFromInsideOutsideFunction(Expression insideOutsideFunction, String baseName) throws ExpressionException {
 	
 	java.util.Vector varList = new java.util.Vector();
 	Expression F = new Expression(insideOutsideFunction);

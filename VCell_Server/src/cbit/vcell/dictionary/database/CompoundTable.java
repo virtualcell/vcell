@@ -1,15 +1,15 @@
 package cbit.vcell.dictionary.database;
 
 import java.util.Vector;
-import cbit.util.DataAccessException;
+
+import cbit.sql.Field;
+import cbit.sql.Table;
 import cbit.util.KeyValue;
 import cbit.util.SessionLog;
 import cbit.vcell.dictionary.BoundCompound;
 import cbit.vcell.dictionary.CompoundInfo;
 import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.FormalCompound;
-import cbit.sql.Field;
-import cbit.sql.Table;
 
 /**
  * Represents a table for storing compound information in a database

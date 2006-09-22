@@ -1,4 +1,14 @@
 package cbit.vcell.modeldb;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Vector;
+
+import cbit.image.VCImage;
+import cbit.sql.ConnectionFactory;
+import cbit.sql.DBCacheTable;
+import cbit.sql.InsertHashtable;
+import cbit.sql.RecordChangedException;
+import cbit.sql.VersionableType;
 import cbit.util.CurateSpec;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
@@ -7,26 +17,14 @@ import cbit.util.PermissionException;
 import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.util.Versionable;
+import cbit.vcell.biomodel.BioModelMetaData;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.model.Model;
 import cbit.vcell.modelapp.SimulationContext;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import java.sql.Connection;
-import java.sql.SQLException;
-import cbit.sql.*;
-import cbit.vcell.server.*;
+import cbit.vcell.server.DependencyException;
 import cbit.vcell.simulation.Simulation;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.GeometryInfo;
-import cbit.image.*;
-import java.util.Vector;
-
-
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.biomodel.BioModelMetaData;
-import cbit.vcell.mathmodel.MathModelMetaData;
 /**
  * This type was created in VisualAge.
  */

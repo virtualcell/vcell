@@ -1,18 +1,21 @@
 package cbit.vcell.dictionary.database;
 
-import java.util.*;
-import java.sql.*;
-import cbit.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Vector;
+
+import cbit.sql.ConnectionFactory;
+import cbit.sql.KeyFactory;
+import cbit.sql.MysqlConnectionFactory;
+import cbit.sql.MysqlKeyFactory;
+import cbit.sql.OracleKeyFactory;
+import cbit.sql.OraclePoolingConnectionFactory;
 import cbit.util.SessionLog;
 import cbit.util.StdoutSessionLog;
-import cbit.vcell.dictionary.database.CompoundAliasTable;
-import cbit.vcell.dictionary.database.CompoundTable;
-import cbit.vcell.dictionary.database.DBSpeciesTable;
-import cbit.vcell.dictionary.database.EnzymeAliasTable;
-import cbit.vcell.dictionary.database.EnzymeTable;
-import cbit.vcell.dictionary.database.ProteinAliasTable;
-import cbit.vcell.dictionary.database.ProteinTable;
-import cbit.vcell.server.*;
 /**
  * Insert the type's description here.
  * Creation date: (2/7/2003 11:59:47 PM)

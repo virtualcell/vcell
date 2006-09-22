@@ -6,7 +6,8 @@ import cbit.util.VCDataIdentifier;
 import cbit.vcell.math.DataIdentifier;
 import cbit.vcell.messaging.JmsClientMessaging;
 import cbit.vcell.messaging.MessageConstants;
-import cbit.vcell.simdata.*;
+import cbit.vcell.simdata.ParticleDataBlock;
+import cbit.vcell.simdata.SimDataBlock;
 
 /**
  * Insert the type's description here.

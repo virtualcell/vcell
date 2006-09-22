@@ -3,7 +3,6 @@ package cbit.sql;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.server.*;
 /**
  * This type was created in VisualAge.
  */

@@ -1,9 +1,12 @@
 package cbit.vcell.messaging;
 
-import javax.jms.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
-import cbit.util.SessionLog;
+import javax.jms.ExceptionListener;
+import javax.jms.JMSException;
 
 /**
  * Insert the type's description here.

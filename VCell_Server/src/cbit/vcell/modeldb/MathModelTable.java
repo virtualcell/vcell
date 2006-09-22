@@ -3,25 +3,22 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import cbit.sql.Field;
+import cbit.sql.Table;
+import cbit.sql.VersionTable;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.util.Version;
 import cbit.util.VersionInfo;
-import cbit.vcell.biomodel.*;
-import java.beans.*;
-
-import cbit.vcell.simulation.*;
-
-import java.math.BigDecimal;
-import cbit.sql.*;
-import java.sql.SQLException;
-import java.sql.ResultSet;
-import java.sql.Connection;
-import cbit.vcell.mathmodel.MathModelMetaData;
-import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.mathmodel.MathModelChildSummary;
+import cbit.vcell.mathmodel.MathModelInfo;
+import cbit.vcell.mathmodel.MathModelMetaData;
 /**
  * This type was created in VisualAge.
  */

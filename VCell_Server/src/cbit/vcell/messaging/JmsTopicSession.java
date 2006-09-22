@@ -1,10 +1,16 @@
 package cbit.vcell.messaging;
-import javax.jms.*;
-import java.util.*;
-
-import cbit.util.SessionLog;
-
 import java.io.Serializable;
+
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.ObjectMessage;
+import javax.jms.TemporaryTopic;
+import javax.jms.Topic;
+import javax.jms.TopicPublisher;
+import javax.jms.TopicSubscriber;
 
 /**
  * Insert the type's description here.

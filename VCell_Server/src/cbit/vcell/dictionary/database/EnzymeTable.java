@@ -1,15 +1,15 @@
 package cbit.vcell.dictionary.database;
 
 import java.util.Vector;
-import cbit.util.DataAccessException;
+
+import cbit.sql.Field;
+import cbit.sql.Table;
 import cbit.util.KeyValue;
 import cbit.util.SessionLog;
 import cbit.vcell.dictionary.BoundEnzyme;
 import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.EnzymeInfo;
 import cbit.vcell.dictionary.FormalEnzyme;
-import cbit.sql.Field;
-import cbit.sql.Table;
 
 /**
  * Represents a table for storing Enzyme information in a database

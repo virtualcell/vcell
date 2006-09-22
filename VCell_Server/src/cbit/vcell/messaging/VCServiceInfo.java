@@ -1,10 +1,6 @@
 package cbit.vcell.messaging;
 
-import org.jdom.*;
-
-import cbit.vcell.messaging.ManageConstants;
-import cbit.vcell.messaging.VCAbstractServiceInfo;
-import cbit.vcell.messaging.VCellServiceConfiguration;
+import org.jdom.Element;
 
 /**
  * Insert the type's description here.

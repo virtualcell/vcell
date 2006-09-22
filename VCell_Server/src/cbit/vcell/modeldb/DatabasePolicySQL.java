@@ -3,12 +3,10 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.util.Vector;
-
-import cbit.util.User;
-import cbit.sql.Table;
 import cbit.sql.Field;
+import cbit.sql.Table;
 import cbit.sql.VersionTable;
+import cbit.util.User;
 /**
  * This type was created in VisualAge.
  */

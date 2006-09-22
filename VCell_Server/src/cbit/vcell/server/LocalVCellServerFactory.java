@@ -2,15 +2,10 @@ package cbit.vcell.server;
 
 import cbit.gui.PropertyLoader;
 import cbit.sql.DBCacheTable;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
 import cbit.util.DataAccessException;
 import cbit.util.PermissionException;
 import cbit.util.SessionLog;
 import cbit.util.User;
-import cbit.vcell.simdata.*;
 /**
  * This type was created in VisualAge.
  */

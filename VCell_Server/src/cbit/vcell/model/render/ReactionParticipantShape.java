@@ -3,12 +3,14 @@ package cbit.vcell.model.render;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.gui.graph.*;
-import cbit.vcell.model.ReactionParticipant;
-
 import java.awt.Stroke;
-import java.awt.geom.Point2D;
 import java.awt.geom.GeneralPath;
+import java.awt.geom.Point2D;
+
+import cbit.gui.graph.EdgeShape;
+import cbit.gui.graph.GraphModel;
+import cbit.gui.graph.Shape;
+import cbit.vcell.model.ReactionParticipant;
 /**
  * This type was created in VisualAge.
  */

@@ -1,7 +1,6 @@
 package cbit.vcell.messaging.server;
 import cbit.util.KeyValue;
 import cbit.util.User;
-import cbit.vcell.simulation.Simulation;
 import cbit.vcell.simulation.SimulationInfo;
 import cbit.vcell.simulation.SolverDescription;
 import cbit.vcell.solvers.SimulationJob;

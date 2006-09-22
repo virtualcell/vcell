@@ -1,11 +1,11 @@
 package cbit.vcell.messaging;
-import javax.jms.*;
+import javax.jms.JMSException;
+import javax.jms.Message;
 
 import cbit.gui.PropertyLoader;
 import cbit.util.SessionLog;
-import cbit.util.xml.XmlParseException;
-import cbit.vcell.messaging.server.Worker;
 import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.messaging.server.Worker;
 
 /**
  * Insert the type's description here.

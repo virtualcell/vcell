@@ -1,4 +1,20 @@
 package cbit.vcell.modeldb;
+import java.beans.PropertyVetoException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import org.vcell.modelapp.Activator;
+import org.vcell.modelapp.analysis.IAnalysisTask;
+import org.vcell.modelapp.analysis.IAnalysisTaskFactory;
+
+import cbit.sql.DBCacheTable;
+import cbit.sql.Field;
+import cbit.sql.InsertHashtable;
+import cbit.sql.RecordChangedException;
+import cbit.sql.Table;
+import cbit.sql.VersionableType;
 import cbit.util.Coordinate;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
@@ -9,27 +25,10 @@ import cbit.util.User;
 import cbit.util.Version;
 import cbit.util.VersionFlag;
 import cbit.util.Versionable;
-import cbit.vcell.model.Feature;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.model.Structure;
-import java.beans.*;
 import cbit.vcell.math.BoundaryConditionType;
-import java.sql.*;
-import java.sql.Statement;
-
-import org.vcell.modelapp.Activator;
-import org.vcell.modelapp.analysis.IAnalysisTask;
-import org.vcell.modelapp.analysis.IAnalysisTaskFactory;
-
-import cbit.sql.*;
-import cbit.vcell.parser.*;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.server.*;
-import cbit.vcell.mapping.*;
+import cbit.vcell.model.Feature;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.Structure;
 import cbit.vcell.modelapp.CurrentClampStimulus;
 import cbit.vcell.modelapp.ElectricalStimulus;
 import cbit.vcell.modelapp.Electrode;
@@ -40,6 +39,10 @@ import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.modelapp.SpeciesContextSpec;
 import cbit.vcell.modelapp.StructureMapping;
 import cbit.vcell.modelapp.VoltageClampStimulus;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.server.DependencyException;
 /**
  * This type was created in VisualAge.
  */
@@ -586,7 +589,7 @@ private KeyValue getDeletableMathKeyFromSimContext(Connection con,User user,KeyV
  * getModel method comment.
  */
 private SimulationContext getSimulationContextSQL(Connection con,User user, KeyValue simContextKey/*, ReactStepDbDriver reactStepDB*/) 
-						throws SQLException, DataAccessException, IllegalMappingException, PropertyVetoException {
+						throws SQLException, DataAccessException, PropertyVetoException {
 							
 	SimulationContext simContext = null;
 		
@@ -640,8 +643,6 @@ public Versionable getVersionable(Connection con, User user, VersionableType vTy
 			}else{
 				throw new IllegalArgumentException("vType " + vType + " not supported by " + this.getClass());
 			}
-		} catch (IllegalMappingException e) {
-			throw new DataAccessException(e.getMessage());
 		} catch (PropertyVetoException e) {
 			throw new DataAccessException(e.getMessage());
 		}

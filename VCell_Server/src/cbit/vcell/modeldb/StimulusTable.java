@@ -1,18 +1,15 @@
 package cbit.vcell.modeldb;
 
+import cbit.sql.Field;
+import cbit.sql.InsertHashtable;
+import cbit.sql.Table;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
-import cbit.vcell.parser.Expression;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.sql.*;
-import cbit.vcell.mapping.*;
 import cbit.vcell.modelapp.CurrentClampStimulus;
 import cbit.vcell.modelapp.ElectricalStimulus;
 import cbit.vcell.modelapp.Electrode;
 import cbit.vcell.modelapp.VoltageClampStimulus;
+import cbit.vcell.parser.Expression;
 /**
  * This type was created in VisualAge.
  */

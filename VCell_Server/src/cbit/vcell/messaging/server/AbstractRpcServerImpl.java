@@ -1,10 +1,12 @@
 package cbit.vcell.messaging.server;
 
+import java.lang.reflect.InvocationTargetException;
+
+import javax.jms.JMSException;
+
 import cbit.util.DataAccessException;
 import cbit.util.ObjectNotFoundException;
 import cbit.util.SessionLog;
-import javax.jms.JMSException;
-import java.lang.reflect.InvocationTargetException;
 
 /**
  * Insert the type's description here.

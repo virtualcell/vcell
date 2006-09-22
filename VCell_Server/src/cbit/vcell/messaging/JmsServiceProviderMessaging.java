@@ -1,5 +1,8 @@
 package cbit.vcell.messaging;
-import javax.jms.*;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.Topic;
+
 import cbit.vcell.messaging.server.ServiceProvider;
 
 /**

@@ -1,10 +1,11 @@
 package cbit.vcell.messaging.server;
+import java.rmi.RemoteException;
+
 import cbit.gui.PropertyLoader;
 import cbit.util.DataAccessException;
 import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.vcell.messaging.JmsClientMessaging;
-import java.rmi.RemoteException;
 
 /**
  * Insert the type's description here.

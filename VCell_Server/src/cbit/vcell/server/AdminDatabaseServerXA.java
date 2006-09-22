@@ -1,12 +1,12 @@
 package cbit.vcell.server;
+import java.sql.Connection;
+
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.User;
-import cbit.vcell.messaging.db.*;
+import cbit.vcell.messaging.db.SimulationJobStatusInfo;
 import cbit.vcell.solvers.SimulationJobStatus;
 import cbit.vcell.solvers.VCellServerID;
-
-import java.sql.*;
 public interface AdminDatabaseServerXA {
 /**
  * Insert the method's description here.

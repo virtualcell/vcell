@@ -3,18 +3,22 @@ package cbit.vcell.model.render;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.gui.graph.*;
-import java.beans.*;
-import cbit.image.*;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.GeometrySpec;
-import cbit.vcell.geometry.GeometryException;
-import cbit.vcell.simdata.DisplayAdapterService;
-
-import java.awt.image.ImageObserver;
-import java.awt.Point;
-import java.awt.image.MemoryImageSource;
 import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.image.ImageObserver;
+import java.awt.image.MemoryImageSource;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
+import cbit.gui.graph.ContainerShape;
+import cbit.gui.graph.GraphModel;
+import cbit.gui.graph.LayoutException;
+import cbit.gui.graph.Shape;
+import cbit.image.VCPixelClass;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryException;
+import cbit.vcell.geometry.GeometrySpec;
+import cbit.vcell.simdata.DisplayAdapterService;
 /**
  * This type was created in VisualAge.
  */

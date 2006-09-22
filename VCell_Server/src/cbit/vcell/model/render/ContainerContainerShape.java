@@ -3,11 +3,17 @@ package cbit.vcell.model.render;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.gui.graph.*;
-import cbit.gui.graph.Shape;
-import cbit.vcell.model.*;
+import java.awt.Dimension;
+import java.awt.Point;
 
-import java.awt.*;
+import cbit.gui.graph.ContainerShape;
+import cbit.gui.graph.GraphModel;
+import cbit.gui.graph.LayoutException;
+import cbit.gui.graph.Shape;
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.Structure;
 /**
  * This type was created in VisualAge.
  */

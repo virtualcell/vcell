@@ -3,9 +3,19 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.util.*;
-import java.beans.*;
+import java.beans.PropertyVetoException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Vector;
 
+import cbit.sql.DBCacheTable;
+import cbit.sql.Field;
+import cbit.sql.InsertHashtable;
+import cbit.sql.RecordChangedException;
+import cbit.sql.Table;
+import cbit.sql.VersionableType;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.ObjectNotFoundException;
@@ -16,14 +26,10 @@ import cbit.util.User;
 import cbit.util.Version;
 import cbit.util.VersionInfo;
 import cbit.util.Versionable;
-import cbit.vcell.math.*;
-import cbit.vcell.server.*;
+import cbit.vcell.server.DependencyException;
 import cbit.vcell.server.solvers.SolverResultSetInfo;
-import cbit.vcell.simulation.*;
-import cbit.sql.*;
-import java.sql.*;
-import java.sql.Statement;
-import cbit.vcell.geometry.Geometry;
+import cbit.vcell.simulation.Simulation;
+import cbit.vcell.simulation.SimulationInfo;
 /**
  * This type was created in VisualAge.
  */

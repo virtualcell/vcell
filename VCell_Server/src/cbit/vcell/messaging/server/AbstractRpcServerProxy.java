@@ -1,8 +1,9 @@
 package cbit.vcell.messaging.server;
+import javax.jms.JMSException;
+
 import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.vcell.messaging.JmsClientMessaging;
-import javax.jms.JMSException;
 
 /**
  * Insert the type's description here.

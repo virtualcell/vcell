@@ -4,8 +4,8 @@ package cbit.sql;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.sql.*;
 import java.sql.Connection;
+import java.sql.SQLException;
 /**
  * This type was created in VisualAge.
  */

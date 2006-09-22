@@ -1,13 +1,16 @@
 package cbit.vcell.messaging;
+import javax.jms.DeliveryMode;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.ObjectMessage;
+import javax.jms.TextMessage;
+
+import cbit.rmi.event.WorkerEvent;
 import cbit.util.KeyValue;
 import cbit.util.User;
 import cbit.vcell.messaging.server.SimulationDispatcher;
-import javax.jms.*;
-
 import cbit.vcell.simulation.Simulation;
 import cbit.vcell.simulation.SimulationInfo;
-import cbit.gui.PropertyLoader;
-import cbit.rmi.event.WorkerEvent;
 
 /**
  * Insert the type's description here.

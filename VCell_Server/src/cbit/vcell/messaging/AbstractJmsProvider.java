@@ -1,6 +1,10 @@
 package cbit.vcell.messaging;
 
-import javax.jms.*;
+import javax.jms.JMSException;
+import javax.jms.QueueConnectionFactory;
+import javax.jms.TopicConnectionFactory;
+import javax.jms.XAQueueConnectionFactory;
+import javax.jms.XATopicConnectionFactory;
 
 /**
  * Insert the type's description here.

@@ -1,18 +1,12 @@
 package cbit.vcell.modeldb;
 
+import cbit.sql.Field;
+import cbit.sql.Table;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.SessionLog;
-import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
-import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import java.sql.*;
-import cbit.sql.*;
 /**
  * This type was created in VisualAge.
  */

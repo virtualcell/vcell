@@ -3,17 +3,25 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.sql.*;
-import cbit.image.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import cbit.image.GIFImage;
+import cbit.image.GifParsingException;
+import cbit.image.ImageException;
+import cbit.image.VCImage;
+import cbit.image.VCImageCompressed;
+import cbit.image.VCImageInfo;
+import cbit.sql.Field;
+import cbit.sql.Table;
+import cbit.sql.VersionTable;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.util.Version;
 import cbit.util.VersionInfo;
-import cbit.vcell.server.*;
-import java.sql.*;
-import cbit.image.GifParsingException;
 /**
  * This type was created in VisualAge.
  */

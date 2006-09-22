@@ -4,8 +4,6 @@
 package cbit.vcell.server.simdata;
 
 import cbit.vcell.mesh.CartesianMesh;
-import cbit.vcell.simdata.ParticleDataBlock;
-import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SpatialSelection;
 
 public final class LocalDataSetControllerProxy_Stub

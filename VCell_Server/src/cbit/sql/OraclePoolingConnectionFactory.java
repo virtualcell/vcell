@@ -4,12 +4,11 @@ package cbit.sql;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.SessionLog;
-import cbit.vcell.server.*;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 import cbit.gui.PropertyLoader;
-import cbit.sql.ConnectionFactory;
+import cbit.util.SessionLog;
 /**
  * This type was created in VisualAge.y
  */

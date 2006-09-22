@@ -4,7 +4,7 @@ package cbit.vcell.server;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.rmi.*;
+import java.rmi.RemoteException;
 
 import cbit.util.User;
 /**

@@ -1,25 +1,34 @@
 package cbit.vcell.modeldb;
 
-import cbit.util.*;
-import cbit.vcell.xml.XmlHelper;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.mathmodel.*;
-import cbit.vcell.math.*;
-import cbit.vcell.geometry.*;
-import cbit.vcell.server.*;
-import cbit.vcell.simulation.*;
-import cbit.vcell.model.*;
-import cbit.vcell.modelapp.SimulationContext;
-import cbit.vcell.mapping.*;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Vector;
+
 import cbit.image.VCImage;
-import cbit.sql.*;
-import java.util.*;
-
-
-import cbit.vcell.biomodel.*;
+import cbit.sql.VersionableType;
+import cbit.util.BeanUtils;
+import cbit.util.DataAccessException;
+import cbit.util.KeyValue;
+import cbit.util.ObjectNotFoundException;
+import cbit.util.TokenMangler;
+import cbit.util.User;
+import cbit.util.Version;
+import cbit.util.VersionInfo;
+import cbit.util.Versionable;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.BioModelChildSummary;
+import cbit.vcell.biomodel.BioModelMetaData;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.mathmodel.MathModelChildSummary;
+import cbit.vcell.mathmodel.MathModelMetaData;
+import cbit.vcell.model.Model;
+import cbit.vcell.modelapp.SimulationContext;
+import cbit.vcell.server.SimulationStatus;
+import cbit.vcell.simulation.Simulation;
+import cbit.vcell.simulation.VCSimulationIdentifier;
+import cbit.vcell.xml.XmlHelper;
 /**
  * Insert the type's description here.
  * Creation date: (10/28/00 12:08:30 AM)
@@ -674,7 +683,7 @@ private VersionInfo removeUserFromGroup0(User user, VersionInfo versionInfo, Ver
  * Insert the method's description here.
  * Creation date: (10/28/00 12:08:30 AM)
  */
-public String saveBioModel(User user, String bioModelXML, String newName, String independentSims[]) throws DataAccessException, java.sql.SQLException, java.beans.PropertyVetoException, MappingException, cbit.util.xml.XmlParseException {
+public String saveBioModel(User user, String bioModelXML, String newName, String independentSims[]) throws DataAccessException, java.sql.SQLException, java.beans.PropertyVetoException, cbit.util.xml.XmlParseException {
 
 long start = System.currentTimeMillis();
 	//
@@ -1086,7 +1095,12 @@ roundtripTimer += l2 - l1;
 				//
 				// model had changed and was saved, load saved model into SimulationContext (and force a save)
 				//
-				memorySimContext.setModel((Model)memoryToDatabaseHash.get(scModel));
+				try {
+					memorySimContext.setModel((Model)memoryToDatabaseHash.get(scModel));
+				} catch (Exception e) {
+					e.printStackTrace();
+					throw new DataAccessException(e.getMessage());
+				}
 				bMustSaveSimContext = true;
 			}
 			if (memorySimContext.getKey()!=null && memorySimContext.getVersion().getName().equals(memorySimContext.getName())){

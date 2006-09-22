@@ -1,17 +1,17 @@
 package cbit.vcell.messaging.server;
-import javax.jms.*;
+import java.io.FileNotFoundException;
+import java.net.UnknownHostException;
+import java.util.Date;
+
+import javax.jms.JMSException;
 
 import cbit.util.SessionLog;
 import cbit.util.StdoutSessionLog;
 import cbit.util.xml.XmlParseException;
-
-import java.io.FileNotFoundException;
-import java.net.UnknownHostException;
-import java.util.Date;
+import cbit.vcell.messaging.MessageConstants;
+import cbit.vcell.messaging.WorkerMessaging;
 import cbit.vcell.solvers.SolverEvent;
 import cbit.vcell.solvers.SolverException;
-import cbit.vcell.messaging.WorkerMessaging;
-import cbit.vcell.messaging.MessageConstants;
 
 /**
  * Insert the type's description here.

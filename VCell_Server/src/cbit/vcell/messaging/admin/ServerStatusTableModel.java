@@ -1,6 +1,6 @@
 package cbit.vcell.messaging.admin;
 
-import java.util.*;
+import java.util.Date;
 
 import cbit.vcell.messaging.VCServerInfo;
 import cbit.vcell.messaging.admin.sorttable.ManageTableModel;

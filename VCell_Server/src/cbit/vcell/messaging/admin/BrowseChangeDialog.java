@@ -1,7 +1,17 @@
 package cbit.vcell.messaging.admin;
 
-import java.util.*;
-import javax.swing.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 
 import cbit.vcell.messaging.ManageConstants;
 import cbit.vcell.messaging.VCServiceInfo;

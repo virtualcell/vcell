@@ -1,14 +1,20 @@
 package cbit.vcell.messaging.db;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import cbit.sql.Field;
+import cbit.sql.Table;
+import cbit.sql.VersionTable;
 import cbit.util.KeyValue;
-import cbit.vcell.simulation.*;
+import cbit.vcell.modeldb.DatabaseConstants;
+import cbit.vcell.modeldb.SimulationTable;
+import cbit.vcell.modeldb.UserTable;
+import cbit.vcell.simulation.VCSimulationIdentifier;
 import cbit.vcell.solvers.SimulationExecutionStatus;
 import cbit.vcell.solvers.SimulationJobStatus;
 import cbit.vcell.solvers.SimulationQueueEntryStatus;
 import cbit.vcell.solvers.VCellServerID;
-import cbit.sql.*;
-import java.sql.*;
-import cbit.vcell.modeldb.*;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

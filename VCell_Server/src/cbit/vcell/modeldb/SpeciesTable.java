@@ -4,14 +4,14 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.sql.*;
+import cbit.sql.Field;
+import cbit.sql.Table;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.SessionLog;
-import cbit.vcell.model.*;
-import cbit.vcell.server.*;
-import cbit.vcell.dictionary.*;
+import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.dictionary.database.DBSpeciesTable;
+import cbit.vcell.model.Species;
 /**
  * This type was created in VisualAge.
  */

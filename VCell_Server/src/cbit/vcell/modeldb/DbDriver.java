@@ -4,8 +4,24 @@ package cbit.vcell.modeldb;
  * All rights reserved.
 ©*/
 import java.math.BigDecimal;
-import java.sql.*;
-import cbit.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Hashtable;
+import java.util.Vector;
+
+import cbit.sql.DBCacheTable;
+import cbit.sql.Field;
+import cbit.sql.InsertHashtable;
+import cbit.sql.KeyFactory;
+import cbit.sql.RecordChangedException;
+import cbit.sql.StarField;
+import cbit.sql.Table;
+import cbit.sql.VersionTable;
+import cbit.sql.VersionableType;
 import cbit.util.CurateSpec;
 import cbit.util.DataAccessException;
 import cbit.util.GroupAccess;
@@ -21,9 +37,7 @@ import cbit.util.Version;
 import cbit.util.VersionFlag;
 import cbit.util.VersionInfo;
 import cbit.util.Versionable;
-import cbit.vcell.server.*;
-import java.util.Vector;
-import java.util.Hashtable;
+import cbit.vcell.server.DependencyException;
 /**
  * This type was created in VisualAge.
  */

@@ -3,12 +3,17 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.sql.*;
+import cbit.sql.Field;
+import cbit.sql.InsertHashtable;
+import cbit.sql.Table;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.SessionLog;
-import cbit.vcell.model.*;
-import cbit.vcell.server.*;
+import cbit.vcell.model.Catalyst;
+import cbit.vcell.model.Flux;
+import cbit.vcell.model.Product;
+import cbit.vcell.model.Reactant;
+import cbit.vcell.model.ReactionParticipant;
 /**
  * This type was created in VisualAge.
  */

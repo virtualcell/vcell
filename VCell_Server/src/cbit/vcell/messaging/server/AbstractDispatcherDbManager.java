@@ -1,15 +1,15 @@
 package cbit.vcell.messaging.server;
+import java.util.Date;
+
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
+import cbit.vcell.messaging.MessageConstants;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.simulation.VCSimulationIdentifier;
 import cbit.vcell.solvers.SimulationExecutionStatus;
 import cbit.vcell.solvers.SimulationJobStatus;
 import cbit.vcell.solvers.SimulationQueueEntryStatus;
-
-import java.util.Date;
-import cbit.vcell.messaging.MessageConstants;
 
 /**
  * Insert the type's description here.

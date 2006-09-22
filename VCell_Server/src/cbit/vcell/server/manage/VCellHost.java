@@ -1,6 +1,6 @@
 package cbit.vcell.server.manage;
 
-import java.io.*;
+import java.io.File;
 /**
  * Insert the type's description here.
  * Creation date: (10/24/2001 6:46:47 PM)

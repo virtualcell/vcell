@@ -3,8 +3,6 @@ import cbit.gui.PropertyLoader;
 import cbit.util.DataAccessException;
 import cbit.util.SessionLog;
 import cbit.vcell.mesh.CartesianMesh;
-
-import java.lang.reflect.*;
 /**
  * Insert the type's description here.
  * Creation date: (5/12/2006 5:54:27 PM)

@@ -4,7 +4,6 @@ package cbit.util.admin;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.io.*;
 /**
  * Insert the type's description here.
  * Creation date: (8/27/01 12:06:50 PM)

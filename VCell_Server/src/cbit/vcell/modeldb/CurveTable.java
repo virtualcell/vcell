@@ -5,11 +5,12 @@ package cbit.vcell.modeldb;
  * All rights reserved.
 ©*/
 
+import cbit.sql.Field;
+import cbit.sql.Table;
 import cbit.util.Coordinate;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
-import cbit.vcell.geometry.*;
-import cbit.sql.*;
+import cbit.vcell.geometry.ControlPointCurve;
 /**
  * This type was created in VisualAge.
  */

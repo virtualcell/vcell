@@ -4,7 +4,7 @@ package cbit.sql;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.util.*;
+import java.util.Hashtable;
 
 import cbit.util.KeyValue;
 import cbit.util.ObjectReferenceWrapper;

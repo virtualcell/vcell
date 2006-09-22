@@ -3,7 +3,7 @@ import cbit.gui.PropertyLoader;
 import cbit.util.DataAccessException;
 import cbit.util.SessionLog;
 import cbit.util.User;
-import cbit.vcell.simulation.*;
+import cbit.vcell.simulation.VCSimulationIdentifier;
 
 /**
  * Insert the type's description here.

@@ -1,7 +1,8 @@
 package cbit.vcell.messaging;
-import cbit.gui.PropertyLoader;
+import javax.jms.JMSException;
+import javax.jms.Message;
 
-import javax.jms.*;
+import cbit.gui.PropertyLoader;
 
 /**
  * Insert the type's description here.

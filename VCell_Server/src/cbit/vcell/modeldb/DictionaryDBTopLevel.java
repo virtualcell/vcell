@@ -1,21 +1,22 @@
 package cbit.vcell.modeldb;
+import java.sql.Connection;
+import java.sql.SQLException;
+
+import cbit.sql.ConnectionFactory;
+import cbit.sql.DBCacheTable;
 import cbit.util.KeyValue;
 import cbit.util.SessionLog;
 import cbit.util.User;
-import cbit.vcell.dictionary.*;
-//import cbit.vcell.dictionary.Compound;
-//import cbit.vcell.dictionary.Enzyme;
-//import cbit.vcell.dictionary.Protein;
-//import cbit.vcell.dictionary.DBSpecies;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import java.sql.Connection;
-import java.sql.SQLException;
-import cbit.sql.*;
-import cbit.vcell.server.*;
-import java.util.Vector;
+import cbit.vcell.dictionary.CompoundInfo;
+import cbit.vcell.dictionary.DBFormalSpecies;
+import cbit.vcell.dictionary.DBSpecies;
+import cbit.vcell.dictionary.EnzymeInfo;
+import cbit.vcell.dictionary.FormalCompound;
+import cbit.vcell.dictionary.FormalEnzyme;
+import cbit.vcell.dictionary.FormalProtein;
+import cbit.vcell.dictionary.FormalSpeciesType;
+import cbit.vcell.dictionary.ProteinInfo;
+import cbit.vcell.dictionary.ReactionDescription;
 /**
  * This type was created in VisualAge.
  */

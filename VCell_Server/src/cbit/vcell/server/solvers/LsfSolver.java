@@ -1,14 +1,14 @@
 package cbit.vcell.server.solvers;
+import java.io.File;
+
+import cbit.gui.PropertyLoader;
+import cbit.util.SessionLog;
+import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solvers.AbstractCompiledSolver;
 import cbit.vcell.solvers.ApplicationMessage;
 import cbit.vcell.solvers.SolverEvent;
 import cbit.vcell.solvers.SolverListener;
 import cbit.vcell.solvers.SolverStatus;
-
-import java.io.*;
-import cbit.vcell.messaging.server.SimulationTask;
-import cbit.gui.PropertyLoader;
-import cbit.util.SessionLog;
 
 /**
  * Insert the type's description here.

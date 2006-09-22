@@ -1,11 +1,8 @@
 package cbit.vcell.messaging;
 
-import javax.jms.*;
-import java.util.*;
+import javax.jms.JMSException;
+import javax.jms.XATopicSession;
 import javax.transaction.TransactionManager;
-
-import cbit.util.SessionLog;
-
 import javax.transaction.xa.XAResource;
 
 /**

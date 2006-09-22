@@ -1,12 +1,13 @@
 package cbit.vcell.messaging;
 
 import java.io.IOException;
-import java.util.*;
-import org.jdom.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedList;
 
-import cbit.vcell.messaging.ManageConstants;
-import cbit.vcell.messaging.ManageUtils;
-import cbit.vcell.messaging.VCAbstractServiceInfo;
+import org.jdom.Document;
+import org.jdom.Element;
 
 /**
  * Insert the type's description here.

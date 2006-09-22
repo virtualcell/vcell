@@ -7,7 +7,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Enumeration;
 
-
 import cbit.gui.graph.GraphEvent;
 import cbit.gui.graph.GraphModel;
 import cbit.gui.graph.Shape;

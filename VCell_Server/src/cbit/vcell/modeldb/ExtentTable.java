@@ -4,7 +4,8 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.sql.*;
+import cbit.sql.Field;
+import cbit.sql.Table;
 import cbit.util.KeyValue;
 /**
  * This type was created in VisualAge.

@@ -1,7 +1,5 @@
 package cbit.vcell.messaging;
-import javax.jms.*;
-
-import cbit.util.SessionLog;
+import javax.jms.JMSException;
 
 /**
  * Insert the type's description here.

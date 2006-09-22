@@ -1,5 +1,8 @@
 package cbit.vcell.messaging;
-import javax.jms.*;
+import javax.jms.DeliveryMode;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.ObjectMessage;
 
 import cbit.util.SessionLog;
 import cbit.vcell.messaging.server.RpcRequest;

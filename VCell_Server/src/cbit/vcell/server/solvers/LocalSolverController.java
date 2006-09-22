@@ -1,26 +1,24 @@
 package cbit.vcell.server.solvers;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashSet;
+
+import javax.swing.event.EventListenerList;
+
+import cbit.gui.PropertyLoader;
+import cbit.rmi.event.WorkerEvent;
+import cbit.rmi.event.WorkerEventListener;
+import cbit.rmi.event.WorkerEventSender;
 import cbit.util.DataAccessException;
 import cbit.util.SessionLog;
-import cbit.vcell.simdata.*;
-import cbit.vcell.simulation.*;
-
-import java.io.*;
+import cbit.vcell.server.LocalVCellConnection;
+import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solvers.SimExecutionException;
 import cbit.vcell.solvers.SimulationJob;
 import cbit.vcell.solvers.SolverController;
 import cbit.vcell.solvers.SolverControllerImpl;
 import cbit.vcell.solvers.SolverException;
 import cbit.vcell.solvers.VCSimulationDataIdentifier;
-
-import java.util.*;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.server.LocalVCellConnection;
-import cbit.gui.PropertyLoader;
-import cbit.rmi.event.*;
-import javax.swing.event.*;
 /**
  * This type was created in VisualAge.
  */

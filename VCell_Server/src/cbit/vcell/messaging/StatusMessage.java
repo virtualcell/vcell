@@ -1,7 +1,8 @@
 package cbit.vcell.messaging;
-import javax.jms.*;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.ObjectMessage;
 
-import cbit.gui.PropertyLoader;
 import cbit.vcell.solvers.SimulationJobStatus;
 
 /**

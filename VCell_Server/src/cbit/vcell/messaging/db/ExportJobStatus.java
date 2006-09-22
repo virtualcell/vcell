@@ -1,6 +1,7 @@
 package cbit.vcell.messaging.db;
-import cbit.util.*;
-import java.io.*;
+import java.io.Serializable;
+
+import cbit.util.Matchable;
 /**
  * Insert the type's description here.
  * Creation date: (6/4/2004 3:34:42 PM)

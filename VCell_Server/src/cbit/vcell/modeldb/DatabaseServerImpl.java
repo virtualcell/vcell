@@ -1,33 +1,30 @@
 package cbit.vcell.modeldb;
 
 
+import java.sql.SQLException;
 import java.util.Vector;
+
+import cbit.image.VCImage;
+import cbit.sql.ConnectionFactory;
+import cbit.sql.DBCacheTable;
+import cbit.sql.KeyFactory;
+import cbit.sql.VersionableType;
 import cbit.util.BigString;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.ObjectNotFoundException;
 import cbit.util.User;
 import cbit.util.VersionInfo;
-import cbit.image.VCImage;
-import cbit.vcell.geometry.Geometry;
-import java.io.*;
-import cbit.vcell.export.server.ExportLog;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.mathmodel.*;
 import cbit.vcell.biomodel.BioModelMetaData;
+import cbit.vcell.dictionary.DBFormalSpecies;
+import cbit.vcell.dictionary.DBSpecies;
+import cbit.vcell.dictionary.FormalSpeciesType;
+import cbit.vcell.export.server.ExportLog;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.mathmodel.MathModelInfo;
+import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.server.solvers.SolverResultSetInfo;
-import cbit.vcell.solvers.SimulationJobStatus;
-
-import java.rmi.*;
-import java.sql.*;
-import cbit.sql.*;
-import cbit.vcell.dictionary.DBSpecies;
-import cbit.vcell.dictionary.DBFormalSpecies;
-import cbit.vcell.dictionary.FormalSpeciesType;
 /**
  * This type was created in VisualAge.
  */
@@ -1040,9 +1037,6 @@ public BigString saveBioModel(User user, BigString bioModelXML, String independe
 	log.print("DatabaseServerImpl.saveBioModel()");
 	try {
 		return new BigString(getServerDocumentManager().saveBioModel(user, bioModelXML.toString(), null, independentSims));
-	}catch (cbit.vcell.mapping.MappingException e){
-		log.exception(e);
-		throw new DataAccessException(e.getMessage());
 	}catch (java.beans.PropertyVetoException e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
@@ -1068,9 +1062,6 @@ public BigString saveBioModelAs(User user, BigString bioModelXML, java.lang.Stri
 	log.print("DatabaseServerImpl.saveBioModelAs("+newName+")");
 	try {
 		return new BigString(getServerDocumentManager().saveBioModel(user, bioModelXML.toString(), newName, independentSims));
-	}catch (cbit.vcell.mapping.MappingException e){
-		log.exception(e);
-		throw new DataAccessException(e.getMessage());
 	}catch (java.beans.PropertyVetoException e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());

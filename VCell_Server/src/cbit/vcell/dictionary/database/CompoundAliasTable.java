@@ -1,11 +1,8 @@
 package cbit.vcell.dictionary.database;
 
-import java.util.Vector;
-import cbit.util.DataAccessException;
-import cbit.util.KeyValue;
-import cbit.util.SessionLog;
 import cbit.sql.Field;
 import cbit.sql.Table;
+import cbit.util.KeyValue;
 
 /**
  * Represents a table for storing compound information in a database

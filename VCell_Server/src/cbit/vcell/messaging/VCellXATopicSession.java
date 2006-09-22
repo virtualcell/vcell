@@ -1,6 +1,6 @@
 package cbit.vcell.messaging;
 
-import javax.jms.*;
+import javax.jms.JMSException;
 import javax.transaction.TransactionManager;
 
 /**

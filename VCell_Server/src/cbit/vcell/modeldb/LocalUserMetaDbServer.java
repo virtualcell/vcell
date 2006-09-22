@@ -1,31 +1,23 @@
 package cbit.vcell.modeldb;
+import java.rmi.RemoteException;
+
+import cbit.gui.PropertyLoader;
+import cbit.sql.ConnectionFactory;
+import cbit.sql.DBCacheTable;
+import cbit.sql.KeyFactory;
 import cbit.util.BigString;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.ObjectNotFoundException;
 import cbit.util.User;
-
-import java.io.*;
-import cbit.vcell.export.server.ExportLog;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.mathmodel.MathModelMetaData;
-import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelMetaData;
+import cbit.vcell.dictionary.DBFormalSpecies;
+import cbit.vcell.dictionary.DBSpecies;
+import cbit.vcell.dictionary.FormalSpeciesType;
+import cbit.vcell.export.server.ExportLog;
+import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.server.solvers.SolverResultSetInfo;
-
-import java.rmi.*;
-import java.sql.*;
-
-import cbit.gui.PropertyLoader;
-import cbit.sql.*;
-import cbit.vcell.dictionary.DBSpecies;
-import cbit.vcell.dictionary.DBFormalSpecies;
-import cbit.vcell.dictionary.FormalSpeciesType;
 
 /**
  * This type was created in VisualAge.

@@ -1,5 +1,4 @@
 package cbit.vcell.messaging.admin;
-import java.util.*;
 /**
  * Insert the type's description here.
  * Creation date: (7/8/2004 2:17:40 PM)

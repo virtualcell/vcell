@@ -1,8 +1,14 @@
 package cbit.vcell.messaging.event;
+import cbit.rmi.event.MessageCollector;
+import cbit.rmi.event.MessageDispatcher;
+import cbit.rmi.event.MessageHandler;
+import cbit.rmi.event.SimpleMessageCollector;
+import cbit.rmi.event.SimpleMessageDispatcher;
+import cbit.rmi.event.SimpleMessageHandler;
 import cbit.util.SessionLog;
 import cbit.util.User;
-import cbit.vcell.messaging.*;
-import cbit.rmi.event.*;
+import cbit.vcell.messaging.JmsMessageCollector;
+import cbit.vcell.messaging.VCellTopicConnection;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

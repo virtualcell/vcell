@@ -1,5 +1,8 @@
 package cbit.vcell.messaging;
-import javax.jms.*;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageListener;
+import javax.jms.ObjectMessage;
 
 /**
  * Insert the type's description here.

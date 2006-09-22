@@ -1,6 +1,12 @@
 package cbit.vcell.anonymizer;
-import java.rmi.*;
-import java.rmi.activation.*;
+import java.rmi.MarshalledObject;
+import java.rmi.Naming;
+import java.rmi.RMISecurityManager;
+import java.rmi.activation.Activatable;
+import java.rmi.activation.ActivationDesc;
+import java.rmi.activation.ActivationGroup;
+import java.rmi.activation.ActivationGroupDesc;
+import java.rmi.activation.ActivationGroupID;
 import java.util.Properties;
 
 import cbit.gui.PropertyLoader;
