@@ -1,9 +1,4 @@
 package cbit.vcell.mapping;
-import cbit.vcell.mapping.potential.VoltageClampElectricalDevice;
-import cbit.vcell.mapping.potential.CurrentClampElectricalDevice;
-import cbit.vcell.mapping.potential.MembraneElectricalDevice;
-import cbit.vcell.mapping.potential.PotentialMapping;
-import cbit.vcell.mapping.potential.ElectricalDevice;
 import cbit.vcell.units.VCUnitException;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

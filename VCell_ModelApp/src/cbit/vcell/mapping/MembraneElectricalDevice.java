@@ -1,6 +1,5 @@
-package cbit.vcell.mapping.potential;
+package cbit.vcell.mapping;
 
-import cbit.vcell.mapping.MembraneMapping;
 
 /**
  * Insert the type's description here.

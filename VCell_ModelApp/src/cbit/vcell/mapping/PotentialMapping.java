@@ -1,21 +1,16 @@
-package cbit.vcell.mapping.potential;
+package cbit.vcell.mapping;
 import cbit.vcell.matrix.RationalExp;
 import cbit.vcell.matrix.RationalExpMatrix;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.Variable;
-import cbit.vcell.mapping.MappingException;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
-import cbit.vcell.mapping.FeatureMapping;
-import cbit.vcell.mapping.MathMapping;
 import cbit.util.graph.*;
 
 /**

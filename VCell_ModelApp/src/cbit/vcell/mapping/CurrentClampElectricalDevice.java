@@ -1,47 +1,40 @@
-package cbit.vcell.mapping.potential;
+package cbit.vcell.mapping;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.mapping.ElectricalStimulus;
+
 /**
  * Insert the type's description here.
- * Creation date: (4/7/2004 11:00:15 AM)
+ * Creation date: (4/7/2004 11:00:45 AM)
  * @author: Jim Schaff
  */
-public class VoltageClampElectricalDevice extends ElectricalDevice {
-	private cbit.vcell.mapping.VoltageClampStimulus voltageClampStimulus = null;
+public class CurrentClampElectricalDevice extends ElectricalDevice {
+	private CurrentClampStimulus currentClampStimulus = null;
 
 /**
  * Insert the method's description here.
- * Creation date: (4/7/2004 11:00:30 AM)
+ * Creation date: (4/7/2004 11:01:08 AM)
  */
-public VoltageClampElectricalDevice(cbit.vcell.mapping.VoltageClampStimulus argVoltageClampStimulus, cbit.vcell.mapping.MathMapping argMathMapping) throws ExpressionException {
-	super("device_"+argVoltageClampStimulus.getName(), argMathMapping);
-	this.voltageClampStimulus = argVoltageClampStimulus;
-	
-	ElectricalDevice.ElectricalDeviceParameter parameters[] = new ElectricalDevice.ElectricalDeviceParameter[3];
-	
+public CurrentClampElectricalDevice(CurrentClampStimulus argCurrentClamStimulus, cbit.vcell.mapping.MathMapping argMathMapping) throws cbit.vcell.parser.ExpressionException {
+	super("device_"+argCurrentClamStimulus.getName(), argMathMapping);
+	this.currentClampStimulus = argCurrentClamStimulus;
+
+	ElectricalDevice.ElectricalDeviceParameter parameters[] = new ElectricalDevice.ElectricalDeviceParameter[2];
+
 	parameters[0] = new ElectricalDeviceParameter(
 							DefaultNames[ROLE_TotalCurrentDensity],
 							new Expression(DefaultNames[ROLE_TransmembraneCurrentDensity]),
 							ROLE_TotalCurrentDensity,
 							cbit.vcell.units.VCUnitDefinition.UNIT_pA_per_um2);
-	
+
 	parameters[1] = new ElectricalDeviceParameter(
 							DefaultNames[ROLE_TransmembraneCurrentDensity],
-							null,
+							new Expression(argCurrentClamStimulus.getCurrentParameter().getExpression()),
 							ROLE_TransmembraneCurrentDensity,
 							cbit.vcell.units.VCUnitDefinition.UNIT_pA_per_um2);
 
-	ElectricalStimulus.ElectricalStimulusParameter voltageParm = voltageClampStimulus.getVoltageParameter();
-	parameters[2] = new ElectricalDeviceParameter(
-							voltageParm.getName(),
-							new Expression(voltageParm.getExpression()),
-							ROLE_Voltage,
-							voltageParm.getUnitDefinition());
 	//
 	// add any user-defined parameters
 	//
-	cbit.vcell.mapping.ElectricalStimulus.ElectricalStimulusParameter[] stimulusParameters = voltageClampStimulus.getElectricalStimulusParameters();
+	cbit.vcell.mapping.ElectricalStimulus.ElectricalStimulusParameter[] stimulusParameters = currentClampStimulus.getElectricalStimulusParameters();
 	for (int i = 0;stimulusParameters!=null && i <stimulusParameters.length; i++){
 		int role = stimulusParameters[i].getRole();
 		if (role==ElectricalStimulus.ROLE_UserDefined){
@@ -49,14 +42,13 @@ public VoltageClampElectricalDevice(cbit.vcell.mapping.VoltageClampStimulus argV
 			parameters = (ElectricalDeviceParameter[])cbit.util.BeanUtils.addElement(parameters,newParam);
 		}
 	}
-	
 	setParameters(parameters);
 }
 
 
 /**
  * Insert the method's description here.
- * Creation date: (4/7/2004 11:32:53 AM)
+ * Creation date: (4/7/2004 11:19:13 AM)
  * @return boolean
  */
 public boolean getCalculateVoltage() {
@@ -66,7 +58,17 @@ public boolean getCalculateVoltage() {
 
 /**
  * Insert the method's description here.
- * Creation date: (4/7/2004 11:32:53 AM)
+ * Creation date: (4/7/2004 11:39:09 AM)
+ * @return cbit.vcell.mapping.CurrentClampStimulus
+ */
+public cbit.vcell.mapping.CurrentClampStimulus getCurrentClampStimulus() {
+	return currentClampStimulus;
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (4/7/2004 11:31:25 AM)
  * @return boolean
  */
 public boolean getResolved() {
@@ -80,23 +82,13 @@ public boolean getResolved() {
  * @return java.lang.String
  */
 public java.lang.String getVName() {
-	return mathMapping.getNameScope().getSymbolName(getParameterFromRole(ROLE_Voltage));
+	return mathMapping.getNameScope().getSymbolName(currentClampStimulus.getVoltageParameter());
 }
 
 
 /**
  * Insert the method's description here.
- * Creation date: (4/7/2004 11:38:39 AM)
- * @return cbit.vcell.mapping.VoltageClampStimulus
- */
-public cbit.vcell.mapping.VoltageClampStimulus getVoltageClampStimulus() {
-	return voltageClampStimulus;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (4/7/2004 11:32:53 AM)
+ * Creation date: (4/7/2004 11:19:13 AM)
  * @return boolean
  */
 public boolean hasCapacitance() {
@@ -106,10 +98,10 @@ public boolean hasCapacitance() {
 
 /**
  * Insert the method's description here.
- * Creation date: (4/7/2004 11:32:53 AM)
+ * Creation date: (4/7/2004 11:19:13 AM)
  * @return boolean
  */
 public boolean isVoltageSource() {
-	return true;
+	return false;
 }
 }

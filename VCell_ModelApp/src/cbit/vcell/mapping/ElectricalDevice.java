@@ -1,4 +1,4 @@
-package cbit.vcell.mapping.potential;
+package cbit.vcell.mapping;
 import cbit.vcell.math.Function;
 import cbit.vcell.parser.*;
 import cbit.vcell.math.VolVariable;
