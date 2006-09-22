@@ -1,7 +1,7 @@
 package org.vcell.physics.math;
+import cbit.util.graph.Edge;
 import cbit.util.graph.Graph;
 import cbit.util.graph.Node;
-import cbit.util.graph.Edge;
 /**
  * Insert the type's description here.
  * Creation date: (1/4/2006 3:56:44 PM)

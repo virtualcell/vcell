@@ -1,9 +1,8 @@
 package org.vcell.physics.component.gui;
 import java.util.Enumeration;
-import cbit.gui.graph.GraphModel;
-import cbit.gui.graph.GraphEvent;
-import cbit.gui.graph.EdgeShape;
+
 import cbit.gui.graph.ContainerShape;
+import cbit.gui.graph.GraphEvent;
 import cbit.gui.graph.Shape;
 /**
  * Insert the type's description here.

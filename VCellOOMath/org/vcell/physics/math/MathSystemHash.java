@@ -1,12 +1,11 @@
 package org.vcell.physics.math;
 
-import cbit.vcell.parser.*;
 import java.util.Hashtable;
 import java.util.Vector;
+
+import cbit.util.graph.Edge;
 import cbit.util.graph.Graph;
 import cbit.util.graph.Node;
-import cbit.util.graph.Edge;
-import cbit.vcell.math.ReservedVariable;
 /**
  * Insert the type's description here.
  * Creation date: (2/24/2002 9:12:36 AM)

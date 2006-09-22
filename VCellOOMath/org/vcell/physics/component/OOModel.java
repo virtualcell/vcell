@@ -1,5 +1,4 @@
 package org.vcell.physics.component;
-import java.util.Vector;
 /**
  * Insert the type's description here.
  * Creation date: (11/26/2005 11:03:14 AM)

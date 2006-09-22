@@ -1,11 +1,7 @@
 package org.vcell.physics.component;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.SimpleSymbolTable;
 /**
  * Insert the type's description here.
  * Creation date: (1/22/2006 9:46:58 PM)

@@ -1,10 +1,6 @@
 package org.vcell.physics.math;
 import java.beans.PropertyVetoException;
 
-import cbit.util.TokenMangler;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-
 import org.vcell.physics.component.Connection;
 import org.vcell.physics.component.Connector;
 import org.vcell.physics.component.ModelAnalysisResults;
@@ -14,6 +10,10 @@ import org.vcell.physics.component.OOModel;
 import org.vcell.physics.component.StronglyConnectedComponent;
 import org.vcell.physics.component.Symbol;
 import org.vcell.physics.component.VarEquationAssignment;
+
+import cbit.util.TokenMangler;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 
 /**
  * Insert the type's description here.

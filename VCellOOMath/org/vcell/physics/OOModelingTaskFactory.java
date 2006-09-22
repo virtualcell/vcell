@@ -4,7 +4,6 @@ import org.jdom.Element;
 import org.vcell.modelapp.analysis.IAnalysisTask;
 import org.vcell.modelapp.analysis.IAnalysisTaskFactory;
 import org.vcell.modelapp.analysis.IAnalysisTaskView;
-import org.vcell.physics.component.gui.OOModelGraphPanel;
 
 import cbit.vcell.modelapp.SimulationContext;
 

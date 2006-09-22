@@ -1,15 +1,19 @@
 package org.vcell.physics.math;
-import com.mhhe.clrs2e.Vertex;
-import cbit.vcell.parser.*;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import org.vcell.physics.component.*;
+import org.vcell.physics.component.IndependentVariable;
+import org.vcell.physics.component.Symbol;
+import org.vcell.physics.component.Variable;
+import org.vcell.physics.component.VariableDerivative;
+import org.vcell.physics.component.VariableReference;
 
+import cbit.util.graph.Edge;
 import cbit.util.graph.Graph;
 import cbit.util.graph.Node;
-import cbit.util.graph.Edge;
-import cbit.vcell.math.ReservedVariable;
+import cbit.vcell.parser.Expression;
+
+import com.mhhe.clrs2e.Vertex;
 /**
  * Insert the type's description here.
  * Creation date: (2/24/2002 9:12:36 AM)

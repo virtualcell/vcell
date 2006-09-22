@@ -1,5 +1,5 @@
 package org.vcell.physics.component;
-import org.jdom.*;
+import org.jdom.Element;
 /**
  * Insert the type's description here.
  * Creation date: (2/17/2006 1:26:13 PM)

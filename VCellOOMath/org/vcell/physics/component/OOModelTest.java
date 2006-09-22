@@ -1,9 +1,5 @@
 package org.vcell.physics.component;
-import org.vcell.physics.component.gui.OOModelingPanel;
-
-import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 /**
  * Insert the type's description here.
  * Creation date: (1/16/2006 11:33:57 PM)
