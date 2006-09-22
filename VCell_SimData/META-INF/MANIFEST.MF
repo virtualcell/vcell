@@ -13,7 +13,6 @@ Export-Package: cbit.vcell.export,
  org.vcell.simdata
 Require-Bundle: org.vcell.common,
  org.vcell.util,
- org.vcell.model,
  org.vcell.expression,
  org.vcell.units,
  org.vcell.geometry,
