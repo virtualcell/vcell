@@ -1,14 +1,10 @@
 package cbit.vcell.client.desktop.simulation;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simulation.*;
-import cbit.vcell.solver.ode.gui.*;
-import java.util.*;
 import cbit.vcell.client.*;
 import javax.swing.*;
 import cbit.vcell.mapping.*;
-import cbit.vcell.document.*;
 
-import cbit.vcell.desktop.controls.*;
 public class SimulationWorkspace implements java.beans.PropertyChangeListener {
 	private SimulationOwner simulationOwner = null;
 	private ClientSimManager clientSimManager = null;
@@ -407,7 +403,7 @@ public int getSimulationIndex(Simulation sim) {
  * Creation date: (6/4/2004 2:15:23 AM)
  * @return cbit.vcell.document.SimulationOwner
  */
-public cbit.vcell.document.SimulationOwner getSimulationOwner() {
+public cbit.vcell.simulation.SimulationOwner getSimulationOwner() {
 	return simulationOwner;
 }
 

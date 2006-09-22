@@ -270,7 +270,7 @@ public java.beans.PropertyDescriptor simulationOwnerPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.document.SimulationOwner.class
+					cbit.vcell.simulation.SimulationOwner.class
 				};
 				aSetMethod = getBeanClass().getMethod("setSimulationOwner", aSetMethodParameterTypes);
 			} catch (Throwable exception) {

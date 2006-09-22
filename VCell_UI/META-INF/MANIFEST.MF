@@ -6,7 +6,6 @@ Bundle-Version: 1.0.0
 Bundle-Localization: plugin
 Require-Bundle: org.vcell.common,
  org.vcell.util,
- org.vcell.model,
  org.vcell.render,
  org.vcell.server,
  org.vcell.manager,
@@ -23,8 +22,12 @@ Require-Bundle: org.vcell.common,
  org.vcell.math,
  org.vcell.spatial,
  org.vcell.simulation,
- org.vcell.events
-Import-Package: org.osgi.framework;version="1.3.0"
+ org.vcell.events,
+ org.vcell.physiology,
+ org.vcell.biomodel,
+ org.vcell.mathmodel,
+ org.vcell.modelapp,
+ org.eclipse.osgi
 Export-Package: cbit.image.gui,
  cbit.vcell.client,
  cbit.vcell.client.bionetgen,

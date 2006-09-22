@@ -6,13 +6,13 @@ package cbit.vcell.client.data;
  */
 public class SimulationWorkspaceModelInfo implements SimulationModelInfo {
 
-	private cbit.vcell.document.SimulationOwner simulationOwner = null;
+	private cbit.vcell.simulation.SimulationOwner simulationOwner = null;
 	private String simulationName = null;
 
 /**
  * SimulationWorkspaceModelInfo constructor comment.
  */
-public SimulationWorkspaceModelInfo(cbit.vcell.document.SimulationOwner simOwner,String argSimulationName) {
+public SimulationWorkspaceModelInfo(cbit.vcell.simulation.SimulationOwner simOwner,String argSimulationName) {
 	super();
 	simulationOwner = simOwner;
 	simulationName = argSimulationName;
@@ -31,7 +31,7 @@ public java.lang.String getContextName() {
 		results = mathModel.getName();
 	}else if(simulationOwner instanceof cbit.vcell.mapping.SimulationContext){
 		cbit.vcell.mapping.SimulationContext simContext = (cbit.vcell.mapping.SimulationContext)simulationOwner;
-		results = simContext.getBioModel().getName()+"::"+simContext.getName();
+		results = simContext.getSimulationContextOwner().getName()+"::"+simContext.getName();
 	}
 	
 	return results;

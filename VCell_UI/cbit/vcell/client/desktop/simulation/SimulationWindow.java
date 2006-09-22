@@ -3,14 +3,12 @@ import java.awt.*;
 import java.beans.*;
 
 import cbit.vcell.client.data.*;
-import cbit.vcell.document.*;
-import cbit.vcell.server.*;
 import cbit.vcell.simulation.*;
 public class SimulationWindow {
 	private VCSimulationIdentifier vcSimulationIdentifier = null;
 	private javax.swing.JInternalFrame frame = null;
 	private cbit.vcell.simulation.Simulation simulation = null;
-	private cbit.vcell.document.SimulationOwner simOwner = null;
+	private cbit.vcell.simulation.SimulationOwner simOwner = null;
 	private transient PropertyChangeListener pcl = new PropertyChangeListener() {
 		public void propertyChange(PropertyChangeEvent evt){
 			if (evt.getSource() == getSimulation() && evt.getPropertyName().equals("name")){
@@ -51,7 +49,7 @@ public javax.swing.JInternalFrame getFrame() {
  * Creation date: (7/16/2004 5:16:51 PM)
  * @return cbit.vcell.document.SimulationOwner
  */
-public cbit.vcell.document.SimulationOwner getSimOwner() {
+public cbit.vcell.simulation.SimulationOwner getSimOwner() {
 	return simOwner;
 }
 
@@ -127,7 +125,7 @@ private void setFrame(javax.swing.JInternalFrame newFrame) {
  * Creation date: (7/16/2004 5:16:51 PM)
  * @param newSimOwner cbit.vcell.document.SimulationOwner
  */
-private void setSimOwner(cbit.vcell.document.SimulationOwner newSimOwner) {
+private void setSimOwner(cbit.vcell.simulation.SimulationOwner newSimOwner) {
 	simOwner = newSimOwner;
 }
 

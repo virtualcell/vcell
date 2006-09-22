@@ -1,7 +1,6 @@
 package cbit.vcell.client.desktop;
 import cbit.util.VCDocument;
 import cbit.util.VCDocumentInfo;
-import cbit.vcell.document.*;
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.biomodel.*;

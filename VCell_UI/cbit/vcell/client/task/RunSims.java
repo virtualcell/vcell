@@ -3,16 +3,10 @@ import cbit.vcell.client.server.*;
 import java.util.*;
 import cbit.vcell.client.*;
 import cbit.vcell.client.database.DocumentManager;
-import cbit.vcell.client.desktop.*;
-import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
-import cbit.vcell.server.*;
 import cbit.vcell.simulation.*;
-import cbit.vcell.mapping.*;
-import cbit.vcell.math.*;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.desktop.controls.*;
-import cbit.vcell.document.*;
 import cbit.util.*;
 /**
  * Insert the type's description here.

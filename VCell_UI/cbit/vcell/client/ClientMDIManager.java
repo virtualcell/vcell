@@ -1,5 +1,4 @@
 package cbit.vcell.client;
-import cbit.vcell.document.*;
 import cbit.vcell.geometry.*;
 import cbit.util.*;
 import cbit.vcell.client.server.*;

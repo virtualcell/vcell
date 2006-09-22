@@ -1,6 +1,6 @@
 package cbit.vcell.client.desktop.biomodel;
 
-import org.vcell.model.analysis.IAnalysisTask;
+import org.vcell.modelapp.analysis.IAnalysisTask;
 
 /**
  * Insert the type's description here.

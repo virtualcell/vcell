@@ -1,6 +1,5 @@
 package cbit.vcell.client.desktop.biomodel;
 import cbit.gui.DialogUtils;
-import cbit.util.BeanUtils;
 import cbit.vcell.simulation.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.mapping.gui.AnalysisTaskComboBoxModel;
@@ -9,13 +8,10 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
-import org.vcell.model.Activator;
-import org.vcell.model.analysis.IAnalysisTask;
-import org.vcell.model.analysis.IAnalysisTaskFactory;
-import org.vcell.model.analysis.IAnalysisTaskView;
-
-import cbit.vcell.client.server.UserPreferences;
-import cbit.vcell.document.*;
+import org.vcell.modelapp.Activator;
+import org.vcell.modelapp.analysis.IAnalysisTask;
+import org.vcell.modelapp.analysis.IAnalysisTaskFactory;
+import org.vcell.modelapp.analysis.IAnalysisTaskView;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 3:16:22 PM)

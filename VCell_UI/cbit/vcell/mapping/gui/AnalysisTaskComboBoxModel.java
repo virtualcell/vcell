@@ -13,7 +13,7 @@ import javax.swing.MutableComboBoxModel;
 import java.io.Serializable;
 import javax.swing.AbstractListModel;
 
-import org.vcell.model.analysis.IAnalysisTask;
+import org.vcell.modelapp.analysis.IAnalysisTask;
 
 /**
  * Insert the type's description here.
@@ -133,7 +133,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			 setSelectedItem(newSelected);
 		 }
 	 }
-	 if (evt.getSource() instanceof org.vcell.model.analysis.IAnalysisTask){
+	 if (evt.getSource() instanceof org.vcell.modelapp.analysis.IAnalysisTask){
 		 fireContentsChanged(this,0,getSize()-1);
 	 }
 }

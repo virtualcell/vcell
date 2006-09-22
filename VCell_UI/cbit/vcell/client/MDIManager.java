@@ -1,9 +1,7 @@
 package cbit.vcell.client;
 import javax.swing.*;
 
-import cbit.vcell.document.*;
 import cbit.vcell.client.server.*;
-import cbit.vcell.client.desktop.*;
 import java.util.*;
 public interface MDIManager {
 /**

@@ -8,15 +8,8 @@ import cbit.util.*;
 import cbit.vcell.server.*;
 import cbit.vcell.server.solvers.SolverResultSetInfo;
 import cbit.vcell.simulation.*;
-import cbit.vcell.solvers.SimulationJobStatus;
-import cbit.vcell.geometry.*;
-import cbit.sql.*;
-import cbit.vcell.client.desktop.*;
-import cbit.vcell.mapping.*;
-import cbit.vcell.math.*;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.desktop.controls.*;
-import cbit.vcell.document.*;
 import cbit.vcell.client.server.*;
 /**
  * Insert the type's description here.
