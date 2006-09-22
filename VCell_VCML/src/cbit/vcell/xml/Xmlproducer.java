@@ -7,7 +7,7 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException; 
 import cbit.vcell.units.VCUnitDefinition;
 import org.jdom.Element;
-import org.vcell.model.analysis.IAnalysisTask;
+import org.vcell.modelapp.analysis.IAnalysisTask;
 
 import java.util.ArrayList;
 /*©

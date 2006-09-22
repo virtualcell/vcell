@@ -17,9 +17,9 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.geometry.*;
 import java.util.*;
 import org.jdom.Element;
-import org.vcell.model.Activator;
-import org.vcell.model.analysis.IAnalysisTask;
-import org.vcell.model.analysis.IAnalysisTaskFactory;
+import org.vcell.modelapp.Activator;
+import org.vcell.modelapp.analysis.IAnalysisTask;
+import org.vcell.modelapp.analysis.IAnalysisTaskFactory;
 
 import cbit.util.*;
 import cbit.util.xml.XmlParseException;
