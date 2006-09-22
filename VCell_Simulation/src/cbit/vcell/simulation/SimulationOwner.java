@@ -1,6 +1,7 @@
 package cbit.vcell.simulation;
 import java.beans.*;
 
+import cbit.vcell.math.MathFactory;
 import cbit.vcell.simulation.*;
 /**
  * Insert the type's description here.
@@ -10,7 +11,7 @@ import cbit.vcell.simulation.*;
 public interface SimulationOwner {
 /**
  */
-Simulation addNewSimulation() throws PropertyVetoException;
+Simulation addNewSimulation(MathFactory mathFactory) throws PropertyVetoException;
 
 /**
  */
