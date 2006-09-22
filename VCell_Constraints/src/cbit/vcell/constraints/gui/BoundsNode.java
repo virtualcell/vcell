@@ -1,8 +1,4 @@
 package cbit.vcell.constraints.gui;
-import java.awt.Dimension;
-import java.awt.Point;
-import java.awt.Graphics2D;
-import cbit.gui.graph.GraphModel;
 /**
  * Insert the type's description here.
  * Creation date: (7/8/2003 11:58:47 AM)

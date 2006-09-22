@@ -1,13 +1,6 @@
 package cbit.vcell.constraints.gui;
 import cbit.vcell.constraints.ConstraintSolver;
 import cbit.vcell.constraints.SimpleBounds;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.util.BeanUtils;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)

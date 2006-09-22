@@ -3,7 +3,6 @@ package cbit.vcell.constraints.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.gui.graph.GraphModel;
 /**
  * This type was created in VisualAge.
  */

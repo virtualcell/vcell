@@ -10,7 +10,6 @@ package cbit.vcell.constraints;
  * @author: Jim Schaff
  */
 import net.sourceforge.interval.ia_math.RealInterval;
-import cbit.vcell.parser.SymbolTableEntry;
 
 public class SimpleBounds extends AbstractConstraint {
 	private RealInterval fieldBounds = null;

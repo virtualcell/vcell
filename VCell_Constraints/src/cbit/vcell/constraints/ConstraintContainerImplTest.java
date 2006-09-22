@@ -3,9 +3,11 @@ package cbit.vcell.constraints;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.parser.Expression;
 import net.sourceforge.interval.ia_math.RealInterval;
-import cbit.util.graph.*;
+import cbit.util.graph.Edge;
+import cbit.util.graph.Graph;
+import cbit.util.graph.Node;
+import cbit.vcell.parser.Expression;
 /**
  * Insert the type's description here.
  * Creation date: (6/26/01 8:25:12 AM)

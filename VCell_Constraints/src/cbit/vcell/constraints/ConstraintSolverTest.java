@@ -3,7 +3,6 @@ package cbit.vcell.constraints;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.parser.Expression;
 import net.sourceforge.interval.ia_math.RealInterval;
 /**
  * Insert the type's description here.

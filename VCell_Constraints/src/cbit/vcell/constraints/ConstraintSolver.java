@@ -3,14 +3,8 @@ package cbit.vcell.constraints;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.parser.Expression;
-import java.util.Enumeration;
-/**
- * Insert the type's description here.
- * Creation date: (6/25/01 4:40:26 PM)
- * @author: Jim Schaff
- */
 import net.sourceforge.interval.ia_math.RealInterval;
+import cbit.vcell.parser.Expression;
 
 public class ConstraintSolver implements cbit.vcell.parser.SymbolTable, java.beans.PropertyChangeListener {
 	private java.util.Vector expressionList = new java.util.Vector();

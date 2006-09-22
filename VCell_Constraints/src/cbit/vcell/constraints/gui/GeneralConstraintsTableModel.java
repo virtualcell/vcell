@@ -1,10 +1,6 @@
 package cbit.vcell.constraints.gui;
 import cbit.vcell.constraints.ConstraintContainerImpl;
 import cbit.vcell.constraints.GeneralConstraint;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 /**
