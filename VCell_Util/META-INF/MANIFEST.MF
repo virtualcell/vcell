@@ -7,6 +7,5 @@ Bundle-Localization: plugin
 Export-Package: cbit.gui,
  cbit.plot,
  cbit.util,
- cbit.vcell.messaging.admin.sorttable,
- cbit.vcell.util.events
+ cbit.vcell.messaging.admin.sorttable
 Require-Bundle: org.vcell.common
