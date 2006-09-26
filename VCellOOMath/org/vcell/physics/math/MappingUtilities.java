@@ -6,9 +6,7 @@ import org.vcell.physics.component.Connector;
 import org.vcell.physics.component.ModelComponent;
 import org.vcell.physics.component.ModelReader;
 import org.vcell.physics.component.OOModel;
-import org.vcell.physics.component.StronglyConnectedComponent;
 import org.vcell.physics.component.Symbol;
-import org.vcell.physics.component.VarEquationAssignment;
 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -27,6 +25,10 @@ public class MappingUtilities {
  * @param partitionGraph cbit.util.graph.Graph
  * @param symbolToTear ncbc.physics2.component.Symbol
  */
+
+public static MathDescription getMathDescription(Var)
+	
+	
 public static void breakSCC(StronglyConnectedComponent[] sccArray, cbit.util.graph.Graph partitionGraph, StronglyConnectedComponent sccToBreak) {
 	//
 	// get all of the VarEquationAssignments 

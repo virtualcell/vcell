@@ -4,8 +4,6 @@
 package org.vcell.physics.math;
 
 import org.vcell.physics.component.OOModel;
-import org.vcell.physics.component.StronglyConnectedComponent;
-import org.vcell.physics.component.VarEquationAssignment;
 
 import cbit.util.graph.Graph;
 import cbit.vcell.math.MathDescription;

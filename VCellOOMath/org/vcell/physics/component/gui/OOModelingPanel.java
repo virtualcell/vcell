@@ -1,7 +1,7 @@
 package org.vcell.physics.component.gui;
 
-import org.vcell.physics.component.StronglyConnectedComponent;
-import org.vcell.physics.component.VarEquationAssignment;
+import org.vcell.physics.math.StronglyConnectedComponent;
+import org.vcell.physics.math.VarEquationAssignment;
 
 import cbit.gui.graph.SimpleGraphModelPanel;
 /**
@@ -17,8 +17,8 @@ public class OOModelingPanel extends javax.swing.JPanel {
 	private OOModelGraphPanel ivjphysicalModelGraphPanel = null;
 	private SimpleGraphModelPanel ivjsccGraphModelPanel = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private org.vcell.physics.component.StronglyConnectedComponent[] fieldStronglyConnectedComponents = null;
-	private org.vcell.physics.component.VarEquationAssignment[] fieldVarEquationAssignments = null;
+	private org.vcell.physics.math.StronglyConnectedComponent[] fieldStronglyConnectedComponents = null;
+	private org.vcell.physics.math.VarEquationAssignment[] fieldVarEquationAssignments = null;
 	private javax.swing.JTextArea ivjEquationTextArea = null;
 	private org.vcell.physics.math.BipartiteMatchings.Matching fieldBipartiteMatchings = null;
 
@@ -470,7 +470,7 @@ public cbit.util.graph.Graph getSccGraphModelPanelGraph() {
  * @return The stronglyConnectedComponents property value.
  * @see #setStronglyConnectedComponents
  */
-public org.vcell.physics.component.StronglyConnectedComponent[] getStronglyConnectedComponents() {
+public org.vcell.physics.math.StronglyConnectedComponent[] getStronglyConnectedComponents() {
 	return fieldStronglyConnectedComponents;
 }
 
@@ -480,7 +480,7 @@ public org.vcell.physics.component.StronglyConnectedComponent[] getStronglyConne
  * @return The varEquationAssignments property value.
  * @see #setVarEquationAssignments
  */
-public org.vcell.physics.component.VarEquationAssignment[] getVarEquationAssignments() {
+public org.vcell.physics.math.VarEquationAssignment[] getVarEquationAssignments() {
 	return fieldVarEquationAssignments;
 }
 
@@ -491,7 +491,7 @@ public org.vcell.physics.component.VarEquationAssignment[] getVarEquationAssignm
  * @param index The index value into the property array.
  * @see #setVarEquationAssignments
  */
-public org.vcell.physics.component.VarEquationAssignment getVarEquationAssignments(int index) {
+public org.vcell.physics.math.VarEquationAssignment getVarEquationAssignments(int index) {
 	return getVarEquationAssignments()[index];
 }
 
@@ -667,8 +667,8 @@ public void setSccGraphModelPanelGraph(cbit.util.graph.Graph arg1) {
  * @param stronglyConnectedComponents The new value for the property.
  * @see #getStronglyConnectedComponents
  */
-public void setStronglyConnectedComponents(org.vcell.physics.component.StronglyConnectedComponent[] stronglyConnectedComponents) {
-	org.vcell.physics.component.StronglyConnectedComponent[] oldValue = fieldStronglyConnectedComponents;
+public void setStronglyConnectedComponents(org.vcell.physics.math.StronglyConnectedComponent[] stronglyConnectedComponents) {
+	org.vcell.physics.math.StronglyConnectedComponent[] oldValue = fieldStronglyConnectedComponents;
 	fieldStronglyConnectedComponents = stronglyConnectedComponents;
 	firePropertyChange("stronglyConnectedComponents", oldValue, stronglyConnectedComponents);
 }
@@ -679,8 +679,8 @@ public void setStronglyConnectedComponents(org.vcell.physics.component.StronglyC
  * @param varEquationAssignments The new value for the property.
  * @see #getVarEquationAssignments
  */
-public void setVarEquationAssignments(org.vcell.physics.component.VarEquationAssignment[] varEquationAssignments) {
-	org.vcell.physics.component.VarEquationAssignment[] oldValue = fieldVarEquationAssignments;
+public void setVarEquationAssignments(org.vcell.physics.math.VarEquationAssignment[] varEquationAssignments) {
+	org.vcell.physics.math.VarEquationAssignment[] oldValue = fieldVarEquationAssignments;
 	fieldVarEquationAssignments = varEquationAssignments;
 	firePropertyChange("varEquationAssignments", oldValue, varEquationAssignments);
 }

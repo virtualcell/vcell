@@ -678,7 +678,7 @@ public java.beans.MethodDescriptor setVarEquationAssignments_int_ncbcphysics2com
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
 				int.class,
-				org.vcell.physics.component.VarEquationAssignment.class
+				org.vcell.physics.math.VarEquationAssignment.class
 			};
 			aMethod = getBeanClass().getMethod("setVarEquationAssignments", aParameterTypes);
 		} catch (Throwable exception) {
@@ -739,7 +739,7 @@ public java.beans.PropertyDescriptor stronglyConnectedComponentsPropertyDescript
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					org.vcell.physics.component.StronglyConnectedComponent[].class
+					org.vcell.physics.math.StronglyConnectedComponent[].class
 				};
 				aSetMethod = getBeanClass().getMethod("setStronglyConnectedComponents", aSetMethodParameterTypes);
 			} catch (Throwable exception) {
@@ -793,7 +793,7 @@ public java.beans.IndexedPropertyDescriptor varEquationAssignmentsPropertyDescri
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					org.vcell.physics.component.VarEquationAssignment[].class
+					org.vcell.physics.math.VarEquationAssignment[].class
 				};
 				aSetMethod = getBeanClass().getMethod("setVarEquationAssignments", aSetMethodParameterTypes);
 			} catch (Throwable exception) {
@@ -818,7 +818,7 @@ public java.beans.IndexedPropertyDescriptor varEquationAssignmentsPropertyDescri
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetIndexedMethodParameterTypes[] = {
 					int.class,
-					org.vcell.physics.component.VarEquationAssignment.class
+					org.vcell.physics.math.VarEquationAssignment.class
 				};
 				aSetIndexedMethod = getBeanClass().getMethod("setVarEquationAssignments", aSetIndexedMethodParameterTypes);
 			} catch (Throwable exception) {
