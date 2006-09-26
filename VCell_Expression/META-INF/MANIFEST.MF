@@ -13,3 +13,4 @@ Require-Bundle: org.vcell.common,
  org.vcell.util,
  org.vcell.units,
  org.vcell.xml.common
+Eclipse-LazyStart: true
