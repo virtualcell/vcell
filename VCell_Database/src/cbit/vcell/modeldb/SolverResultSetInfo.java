@@ -1,6 +1,6 @@
 package cbit.vcell.modeldb;
 
-import cbit.vcell.solvers.VCSimulationDataIdentifier;
+import cbit.rmi.event.VCSimulationDataIdentifier;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

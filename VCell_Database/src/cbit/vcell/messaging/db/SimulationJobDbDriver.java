@@ -6,6 +6,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import cbit.rmi.event.SimulationJobStatus;
+import cbit.rmi.event.VCellServerID;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.SessionLog;
@@ -14,8 +16,6 @@ import cbit.vcell.solvers.SimpleJobStatus;
 import cbit.vcell.modeldb.DatabaseConstants;
 import cbit.vcell.modeldb.SimulationTable;
 import cbit.vcell.modeldb.UserTable;
-import cbit.vcell.solvers.SimulationJobStatus;
-import cbit.vcell.solvers.VCellServerID;
 
 /**
  * Insert the type's description here.

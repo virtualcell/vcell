@@ -32,9 +32,9 @@ public final class LocalAdminDbServer_Stub
 	    $method_getUserFromSimulationKey_5 = AdminDatabaseServer.class.getMethod("getUserFromSimulationKey", new java.lang.Class[] {cbit.util.KeyValue.class});
 	    $method_getUserInfo_6 = AdminDatabaseServer.class.getMethod("getUserInfo", new java.lang.Class[] {cbit.util.KeyValue.class});
 	    $method_getUserInfos_7 = AdminDatabaseServer.class.getMethod("getUserInfos", new java.lang.Class[] {});
-	    $method_insertSimulationJobStatus_8 = AdminDatabaseServer.class.getMethod("insertSimulationJobStatus", new java.lang.Class[] {cbit.vcell.solvers.SimulationJobStatus.class});
+	    $method_insertSimulationJobStatus_8 = AdminDatabaseServer.class.getMethod("insertSimulationJobStatus", new java.lang.Class[] {cbit.rmi.event.SimulationJobStatus.class});
 	    $method_insertUserInfo_9 = AdminDatabaseServer.class.getMethod("insertUserInfo", new java.lang.Class[] {cbit.util.UserInfo.class});
-	    $method_updateSimulationJobStatus_10 = AdminDatabaseServer.class.getMethod("updateSimulationJobStatus", new java.lang.Class[] {cbit.vcell.solvers.SimulationJobStatus.class, cbit.vcell.solvers.SimulationJobStatus.class});
+	    $method_updateSimulationJobStatus_10 = AdminDatabaseServer.class.getMethod("updateSimulationJobStatus", new java.lang.Class[] {cbit.rmi.event.SimulationJobStatus.class, cbit.rmi.event.SimulationJobStatus.class});
 	    $method_updateUserInfo_11 = AdminDatabaseServer.class.getMethod("updateUserInfo", new java.lang.Class[] {cbit.util.UserInfo.class});
 	} catch (java.lang.NoSuchMethodException e) {
 	    throw new java.lang.NoSuchMethodError(
@@ -50,12 +50,12 @@ public final class LocalAdminDbServer_Stub
     // methods from remote interfaces
     
     // implementation of getSimulationJobStatus(KeyValue, int)
-    public cbit.vcell.solvers.SimulationJobStatus getSimulationJobStatus(cbit.util.KeyValue $param_KeyValue_1, int $param_int_2)
+    public cbit.rmi.event.SimulationJobStatus getSimulationJobStatus(cbit.util.KeyValue $param_KeyValue_1, int $param_int_2)
 	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getSimulationJobStatus_0, new java.lang.Object[] {$param_KeyValue_1, new java.lang.Integer($param_int_2)}, 3258198114365414872L);
-	    return ((cbit.vcell.solvers.SimulationJobStatus) $result);
+	    return ((cbit.rmi.event.SimulationJobStatus) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -86,12 +86,12 @@ public final class LocalAdminDbServer_Stub
     }
     
     // implementation of getSimulationJobStatus(boolean, User)
-    public cbit.vcell.solvers.SimulationJobStatus[] getSimulationJobStatus(boolean $param_boolean_1, cbit.util.User $param_User_2)
+    public cbit.rmi.event.SimulationJobStatus[] getSimulationJobStatus(boolean $param_boolean_1, cbit.util.User $param_User_2)
 	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getSimulationJobStatus_2, new java.lang.Object[] {new java.lang.Boolean($param_boolean_1), $param_User_2}, 1316770442574823816L);
-	    return ((cbit.vcell.solvers.SimulationJobStatus[]) $result);
+	    return ((cbit.rmi.event.SimulationJobStatus[]) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -194,12 +194,12 @@ public final class LocalAdminDbServer_Stub
     }
     
     // implementation of insertSimulationJobStatus(SimulationJobStatus)
-    public cbit.vcell.solvers.SimulationJobStatus insertSimulationJobStatus(cbit.vcell.solvers.SimulationJobStatus $param_SimulationJobStatus_1)
+    public cbit.rmi.event.SimulationJobStatus insertSimulationJobStatus(cbit.rmi.event.SimulationJobStatus $param_SimulationJobStatus_1)
 	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_insertSimulationJobStatus_8, new java.lang.Object[] {$param_SimulationJobStatus_1}, 6612250165645515978L);
-	    return ((cbit.vcell.solvers.SimulationJobStatus) $result);
+	    return ((cbit.rmi.event.SimulationJobStatus) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -230,12 +230,12 @@ public final class LocalAdminDbServer_Stub
     }
     
     // implementation of updateSimulationJobStatus(SimulationJobStatus, SimulationJobStatus)
-    public cbit.vcell.solvers.SimulationJobStatus updateSimulationJobStatus(cbit.vcell.solvers.SimulationJobStatus $param_SimulationJobStatus_1, cbit.vcell.solvers.SimulationJobStatus $param_SimulationJobStatus_2)
+    public cbit.rmi.event.SimulationJobStatus updateSimulationJobStatus(cbit.rmi.event.SimulationJobStatus $param_SimulationJobStatus_1, cbit.rmi.event.SimulationJobStatus $param_SimulationJobStatus_2)
 	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_updateSimulationJobStatus_10, new java.lang.Object[] {$param_SimulationJobStatus_1, $param_SimulationJobStatus_2}, 5376187929673614080L);
-	    return ((cbit.vcell.solvers.SimulationJobStatus) $result);
+	    return ((cbit.rmi.event.SimulationJobStatus) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {

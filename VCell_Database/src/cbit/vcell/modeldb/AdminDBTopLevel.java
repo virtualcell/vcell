@@ -3,6 +3,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Vector;
 
+import cbit.rmi.event.SimulationJobStatus;
+import cbit.rmi.event.VCellServerID;
 import cbit.sql.ConnectionFactory;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
@@ -13,9 +15,7 @@ import cbit.util.UserInfo;
 import cbit.vcell.messaging.db.SimulationJobDbDriver;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
-import cbit.vcell.solvers.SimulationJobStatus;
 import cbit.vcell.solvers.SimulationStatus;
-import cbit.vcell.solvers.VCellServerID;
 
 /**
  * This type was created in VisualAge.

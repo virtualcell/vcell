@@ -1,11 +1,11 @@
 package cbit.vcell.modeldb;
+import cbit.rmi.event.SimulationJobStatus;
+import cbit.rmi.event.VCellServerID;
 import cbit.sql.KeyFactory;
 import cbit.util.DataAccessException;
 import cbit.util.SessionLog;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
 import cbit.vcell.modeldb.AdminDatabaseServerXA;
-import cbit.vcell.solvers.SimulationJobStatus;
-import cbit.vcell.solvers.VCellServerID;
 /**
  * Insert the type's description here.
  * Creation date: (10/5/2005 5:20:07 PM)

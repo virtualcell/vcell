@@ -26,4 +26,5 @@ Require-Bundle: org.vcell.common,
  org.vcell.simdata,
  org.vcell.mathmodel,
  org.vcell.biomodel,
- org.vcell.vcml
+ org.vcell.vcml,
+ org.vcell.events

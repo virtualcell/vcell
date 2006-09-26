@@ -6,6 +6,7 @@ package cbit.vcell.modeldb;
 import java.rmi.RemoteException;
 
 import cbit.gui.PropertyLoader;
+import cbit.rmi.event.SimulationJobStatus;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.util.DataAccessException;
@@ -13,7 +14,6 @@ import cbit.util.KeyValue;
 import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.util.UserInfo;
-import cbit.vcell.solvers.SimulationJobStatus;
 
 /**
  * This type was created in VisualAge.

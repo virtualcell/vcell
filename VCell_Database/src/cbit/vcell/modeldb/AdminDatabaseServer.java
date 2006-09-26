@@ -6,11 +6,11 @@ package cbit.vcell.modeldb;
 ©*/
 import java.rmi.RemoteException;
 
+import cbit.rmi.event.SimulationJobStatus;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.User;
 import cbit.util.UserInfo;
-import cbit.vcell.solvers.SimulationJobStatus;
 
 /**
  * This type was created in VisualAge.

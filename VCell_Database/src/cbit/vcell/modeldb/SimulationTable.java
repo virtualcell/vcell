@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import cbit.rmi.event.VCSimulationDataIdentifier;
 import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.sql.VersionTable;
@@ -25,7 +26,6 @@ import cbit.vcell.simulation.Simulation;
 import cbit.vcell.simulation.SimulationInfo;
 import cbit.vcell.simulation.SolverTaskDescription;
 import cbit.vcell.simulation.VCSimulationIdentifier;
-import cbit.vcell.solvers.VCSimulationDataIdentifier;
 /**
  * This type was created in VisualAge.
  */
