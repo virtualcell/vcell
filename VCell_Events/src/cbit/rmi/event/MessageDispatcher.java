@@ -1,8 +1,6 @@
 package cbit.rmi.event;
 
 import cbit.rmi.event.PerformanceMonitorSender;
-import cbit.vcell.export.ExportSender;
-import cbit.vcell.simdata.DataJobSender;
 import cbit.vcell.util.events.MessageListener;
 import cbit.vcell.util.events.MessageSender;
 

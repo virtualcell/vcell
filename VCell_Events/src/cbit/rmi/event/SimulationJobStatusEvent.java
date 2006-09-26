@@ -1,7 +1,6 @@
 package cbit.rmi.event;
 
 import cbit.vcell.simulation.VCSimulationIdentifier;
-import cbit.vcell.solvers.SimulationJobStatus;
 import cbit.vcell.util.events.MessageData;
 import cbit.vcell.util.events.MessageEvent;
 import cbit.vcell.util.events.MessageSource;

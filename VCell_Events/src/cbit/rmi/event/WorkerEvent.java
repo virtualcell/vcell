@@ -151,8 +151,8 @@ public String getUserName() {
  * Creation date: (12/31/2003 12:56:45 PM)
  * @return cbit.vcell.solver.SimulationInfo
  */
-public cbit.vcell.solvers.VCSimulationDataIdentifier getVCSimulationDataIdentifier() {
-	return new cbit.vcell.solvers.VCSimulationDataIdentifier(vcSimulationIdentifier, jobIndex);
+public VCSimulationDataIdentifier getVCSimulationDataIdentifier() {
+	return new VCSimulationDataIdentifier(vcSimulationIdentifier, jobIndex);
 }
 
 

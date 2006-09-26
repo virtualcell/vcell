@@ -5,9 +5,8 @@ Bundle-SymbolicName: org.vcell.events
 Bundle-Version: 1.0.0
 Bundle-Activator: org.vcell.events.Activator
 Bundle-Localization: plugin
-Export-Package: cbit.rmi.event
+Export-Package: cbit.rmi.event,
+ cbit.vcell.util.events
 Require-Bundle: org.vcell.util,
- org.vcell.solvers,
  org.vcell.simulation,
- org.vcell.simdata,
  org.eclipse.osgi
