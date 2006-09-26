@@ -4,6 +4,7 @@ import java.io.*;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.rmi.event.VCSimulationDataIdentifier;
 import cbit.util.SessionLog;
 import cbit.vcell.simdata.ODESimData;
 import cbit.vcell.simdata.ODESolverResultSet;
@@ -12,7 +13,6 @@ import cbit.vcell.simulation.*;
 import cbit.vcell.solvers.SimulationJob;
 import cbit.vcell.solvers.SolverException;
 import cbit.vcell.solvers.SolverStatus;
-import cbit.vcell.solvers.VCSimulationDataIdentifier;
 /**
  * Some of this class' stuff could/should go into an AbstractSolver
  * base class...just have to wait until we finalize Solver's interface.

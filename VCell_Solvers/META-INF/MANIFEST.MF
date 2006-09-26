@@ -20,4 +20,5 @@ Require-Bundle: org.vcell.util,
  org.vcell.math,
  org.vcell.simulation,
  org.vcell.spatial,
- org.vcell.units
+ org.vcell.units,
+ org.vcell.events

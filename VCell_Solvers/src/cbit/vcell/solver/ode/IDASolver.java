@@ -16,6 +16,8 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.math.Function;
 import java.util.*;
 import java.io.*;
+
+import cbit.rmi.event.VCSimulationDataIdentifier;
 import cbit.util.SessionLog;
 /**
  * Insert the type's description here.

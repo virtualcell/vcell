@@ -1,5 +1,6 @@
 package cbit.vcell.solvers;
 
+import cbit.rmi.event.VCSimulationDataIdentifier;
 import cbit.vcell.simulation.Simulation;
 
 public class SimulationJob implements java.io.Serializable {
@@ -23,16 +24,6 @@ public SimulationJob(Simulation masterSim, int jobIndex) {
 
 /**
  * Insert the method's description here.
- * Creation date: (10/14/2005 12:09:29 PM)
- * @return java.lang.String
- */
-public static String createSimulationJobID(String simulationID, int jobIndex) {
-	return simulationID+"_"+jobIndex+"_";
-}
-
-
-/**
- * Insert the method's description here.
  * Creation date: (10/7/2005 4:52:17 PM)
  * @return int
  */
@@ -47,7 +38,7 @@ public int getJobIndex() {
  * @return java.lang.String
  */
 public String getSimulationJobID() {
-	return createSimulationJobID(getWorkingSim().getSimulationID(),jobIndex);
+	return VCSimulationDataIdentifier.createSimulationJobID(getWorkingSim().getSimulationID(),jobIndex);
 }
 
 
