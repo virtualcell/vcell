@@ -17,4 +17,6 @@ Require-Bundle: org.vcell.expression,
  org.vcell.geometry,
  org.vcell.matrix,
  org.vcell.common,
- org.vcell.simulation
+ org.vcell.simulation,
+ org.vcell.graph,
+ org.vcell.cartoon
