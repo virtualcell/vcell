@@ -3,23 +3,26 @@ import java.rmi.RemoteException;
 
 import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
+import cbit.util.BioModelInfo;
 import cbit.util.CurateSpec;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
+import cbit.util.MathModelInfo;
+import cbit.util.ReferenceQueryResult;
+import cbit.util.ReferenceQuerySpec;
 import cbit.util.User;
 import cbit.util.VCDocument;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.dictionary.FormalSpeciesType;
+import cbit.vcell.dictionary.ReactionQuerySpec;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.mathmodel.MathModelInfo;
-import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simulation.Simulation;
 import cbit.vcell.simulation.VCSimulationIdentifier;
+import cbit.vcell.solvers.SimulationStatus;
 import cbit.vcell.xml.XmlDialect;
 /**
  * Insert the type's description here.
@@ -41,7 +44,7 @@ public void addDatabaseListener(cbit.vcell.client.database.DatabaseListener newL
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
  * @exception cbit.util.DataAccessException The exception description.
  */
-VCImageInfo addUserToGroup(VCImageInfo imageInfo,String user) throws cbit.util.DataAccessException, cbit.vcell.server.DependencyException;
+VCImageInfo addUserToGroup(VCImageInfo imageInfo,String user) throws cbit.util.DataAccessException, cbit.util.DependencyException;
 
 
 /**
@@ -50,7 +53,7 @@ VCImageInfo addUserToGroup(VCImageInfo imageInfo,String user) throws cbit.util.D
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
  * @exception cbit.util.DataAccessException The exception description.
  */
-BioModelInfo addUserToGroup(BioModelInfo bioModelInfo,String user) throws cbit.util.DataAccessException, cbit.vcell.server.DependencyException;
+BioModelInfo addUserToGroup(BioModelInfo bioModelInfo,String user) throws cbit.util.DataAccessException, cbit.util.DependencyException;
 
 
 /**
@@ -59,7 +62,7 @@ BioModelInfo addUserToGroup(BioModelInfo bioModelInfo,String user) throws cbit.u
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
  * @exception cbit.util.DataAccessException The exception description.
  */
-GeometryInfo addUserToGroup(GeometryInfo geometryInfo,String user) throws cbit.util.DataAccessException, cbit.vcell.server.DependencyException;
+GeometryInfo addUserToGroup(GeometryInfo geometryInfo,String user) throws cbit.util.DataAccessException, cbit.util.DependencyException;
 
 
 /**
@@ -68,7 +71,7 @@ GeometryInfo addUserToGroup(GeometryInfo geometryInfo,String user) throws cbit.u
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
  * @exception cbit.util.DataAccessException The exception description.
  */
-MathModelInfo addUserToGroup(MathModelInfo mathModelInfo,String user) throws cbit.util.DataAccessException, cbit.vcell.server.DependencyException;
+MathModelInfo addUserToGroup(MathModelInfo mathModelInfo,String user) throws cbit.util.DataAccessException, cbit.util.DependencyException;
 
 
 /**
@@ -130,7 +133,7 @@ public cbit.vcell.numericstest.TestSuiteOPResults doTestSuiteOP(cbit.vcell.numer
  * @param vType cbit.sql.VersionableType
  * @param key cbit.sql.KeyValue
  */
-cbit.vcell.modeldb.ReferenceQueryResult findReferences(cbit.vcell.modeldb.ReferenceQuerySpec sqs) throws DataAccessException;
+ReferenceQueryResult findReferences(ReferenceQuerySpec sqs) throws DataAccessException;
 
 	public void generatePDF(BioModel biomodel, java.io.FileOutputStream fos) throws Exception;
 
@@ -202,7 +205,7 @@ public DBFormalSpecies[] getDatabaseSpecies(String likeString, boolean isBound, 
  * Insert the method's description here.
  * Creation date: (4/30/2003 10:25:07 PM)
  */
-public cbit.vcell.dictionary.ReactionDescription[] getDictionaryReactions(cbit.vcell.modeldb.ReactionQuerySpec reactionQuerySpec) throws DataAccessException;
+public cbit.vcell.dictionary.ReactionDescription[] getDictionaryReactions(ReactionQuerySpec reactionQuerySpec) throws DataAccessException;
 
 
 /**
@@ -328,7 +331,7 @@ public User getUser();
  * Insert the method's description here.
  * Creation date: (4/30/2003 10:25:07 PM)
  */
-public cbit.vcell.dictionary.ReactionDescription[] getUserReactionDescriptions(cbit.vcell.modeldb.ReactionQuerySpec reactionQuerySpec) throws DataAccessException;
+public cbit.vcell.dictionary.ReactionDescription[] getUserReactionDescriptions(cbit.vcell.dictionary.ReactionQuerySpec reactionQuerySpec) throws DataAccessException;
 
 
 /**
@@ -347,7 +350,7 @@ public cbit.vcell.model.ReactionStepInfo[] getUserReactionStepInfos(KeyValue rea
  * @return java.lang.String
  * @param bioModel cbit.vcell.biomodel.BioModel
  */
-String getXML(cbit.vcell.biomodel.BioModelInfo bioModelInfoArg, XmlDialect toDialect) throws RemoteException, cbit.util.xml.XmlParseException, java.io.IOException, cbit.util.DataAccessException;
+String getXML(cbit.util.BioModelInfo bioModelInfoArg, XmlDialect toDialect) throws RemoteException, cbit.util.xml.XmlParseException, java.io.IOException, cbit.util.DataAccessException;
 
 
 	public String getXML(MathModelInfo mmInfo) throws cbit.util.DataAccessException, java.rmi.RemoteException, cbit.util.xml.XmlParseException;
@@ -420,7 +423,7 @@ public void removeDatabaseListener(cbit.vcell.client.database.DatabaseListener n
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
  * @exception cbit.util.DataAccessException The exception description.
  */
-VCImageInfo removeUserFromGroup(VCImageInfo imageInfo,String user) throws cbit.util.DataAccessException, cbit.vcell.server.DependencyException;
+VCImageInfo removeUserFromGroup(VCImageInfo imageInfo,String user) throws cbit.util.DataAccessException, cbit.util.DependencyException;
 
 
 /**
@@ -429,7 +432,7 @@ VCImageInfo removeUserFromGroup(VCImageInfo imageInfo,String user) throws cbit.u
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
  * @exception cbit.util.DataAccessException The exception description.
  */
-BioModelInfo removeUserFromGroup(BioModelInfo bioModelInfo,String user) throws cbit.util.DataAccessException, cbit.vcell.server.DependencyException;
+BioModelInfo removeUserFromGroup(BioModelInfo bioModelInfo,String user) throws cbit.util.DataAccessException, cbit.util.DependencyException;
 
 
 /**
@@ -438,7 +441,7 @@ BioModelInfo removeUserFromGroup(BioModelInfo bioModelInfo,String user) throws c
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
  * @exception cbit.util.DataAccessException The exception description.
  */
-GeometryInfo removeUserFromGroup(GeometryInfo geometryInfo,String user) throws cbit.util.DataAccessException, cbit.vcell.server.DependencyException;
+GeometryInfo removeUserFromGroup(GeometryInfo geometryInfo,String user) throws cbit.util.DataAccessException, cbit.util.DependencyException;
 
 
 /**
@@ -447,7 +450,7 @@ GeometryInfo removeUserFromGroup(GeometryInfo geometryInfo,String user) throws c
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
  * @exception cbit.util.DataAccessException The exception description.
  */
-MathModelInfo removeUserFromGroup(MathModelInfo mathModelInfo,String user) throws cbit.util.DataAccessException, cbit.vcell.server.DependencyException;
+MathModelInfo removeUserFromGroup(MathModelInfo mathModelInfo,String user) throws cbit.util.DataAccessException, cbit.util.DependencyException;
 
 
 /**

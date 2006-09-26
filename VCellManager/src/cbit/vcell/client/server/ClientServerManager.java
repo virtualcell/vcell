@@ -581,7 +581,7 @@ public User getUser() {
  * Creation date: (5/13/2004 1:54:04 PM)
  * @return UserMetaDbServer
  */
-public cbit.vcell.server.UserMetaDbServer getUserMetaDbServer() throws DataAccessException {
+public UserMetaDbServer getUserMetaDbServer() throws DataAccessException {
 	if (userMetaDbServer!=null){
 		return userMetaDbServer;
 	}else if (getVcellConnection()==null){

@@ -9,38 +9,40 @@ import java.util.Vector;
 
 import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
-import cbit.sql.VersionableType;
+import cbit.util.ReferenceQuerySpec;
+import cbit.util.VersionableType;
 import cbit.util.BeanUtils;
 import cbit.util.BigString;
+import cbit.util.BioModelChildSummary;
+import cbit.util.BioModelInfo;
 import cbit.util.Compare;
 import cbit.util.CurateSpec;
 import cbit.util.DataAccessException;
 import cbit.util.ISize;
 import cbit.util.KeyValue;
+import cbit.util.MathModelChildSummary;
+import cbit.util.MathModelInfo;
 import cbit.util.ObjectNotFoundException;
 import cbit.util.PermissionException;
 import cbit.util.Preference;
+import cbit.util.ReferenceQueryResult;
 import cbit.util.Version;
 import cbit.util.VersionInfo;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.BioModelChildSummary;
-import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.desktop.controls.SessionManager;
 import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.FormalSpeciesType;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.mathmodel.MathModelChildSummary;
-import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Structure;
-import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.simulation.Simulation;
 import cbit.vcell.simulation.SimulationInfo;
 import cbit.vcell.simulation.VCSimulationIdentifier;
+import cbit.vcell.solvers.SimulationStatus;
 import cbit.vcell.vcml.compare.VCMLComparator;
 import cbit.vcell.xml.XmlDialect;
 import cbit.vcell.xml.XmlHelper;
@@ -467,7 +469,7 @@ public cbit.vcell.numericstest.TestSuiteOPResults doTestSuiteOP(cbit.vcell.numer
  * @param vType cbit.sql.VersionableType
  * @param key cbit.sql.KeyValue
  */
-public cbit.vcell.modeldb.ReferenceQueryResult findReferences(cbit.vcell.modeldb.ReferenceQuerySpec rqs) throws cbit.util.DataAccessException {
+public ReferenceQueryResult findReferences(ReferenceQuerySpec rqs) throws cbit.util.DataAccessException {
 
 	try{
 		return getSessionManager().getUserMetaDbServer().findReferences(rqs);
@@ -820,7 +822,7 @@ public DBFormalSpecies[] getDatabaseSpecies(String likeString, boolean isBound, 
  * Insert the method's description here.
  * Creation date: (4/30/2003 10:26:17 PM)
  */
-public cbit.vcell.dictionary.ReactionDescription[] getDictionaryReactions(cbit.vcell.modeldb.ReactionQuerySpec reactionQuerySpec) throws DataAccessException {
+public cbit.vcell.dictionary.ReactionDescription[] getDictionaryReactions(cbit.vcell.dictionary.ReactionQuerySpec reactionQuerySpec) throws DataAccessException {
 	try {
 		return sessionManager.getUserMetaDbServer().getDictionaryReactions(reactionQuerySpec);
 	}catch (RemoteException e){
@@ -1475,7 +1477,7 @@ public cbit.util.User getUser() {
  * Insert the method's description here.
  * Creation date: (9/15/2003 3:33:10 PM)
  */
-public cbit.vcell.dictionary.ReactionDescription[] getUserReactionDescriptions(cbit.vcell.modeldb.ReactionQuerySpec reactionQuerySpec) throws cbit.util.DataAccessException {
+public cbit.vcell.dictionary.ReactionDescription[] getUserReactionDescriptions(cbit.vcell.dictionary.ReactionQuerySpec reactionQuerySpec) throws cbit.util.DataAccessException {
 	try {
 		return sessionManager.getUserMetaDbServer().getUserReactionDescriptions(reactionQuerySpec);
 	}catch (RemoteException e){
@@ -1510,7 +1512,7 @@ public String getXML(BioModelInfo bmInfo) throws cbit.util.DataAccessException, 
  * @return java.lang.String
  * @param bioModel cbit.vcell.biomodel.BioModel
  */
-public java.lang.String getXML(cbit.vcell.biomodel.BioModelInfo bioModelInfoArg, XmlDialect toDialect) throws java.io.IOException, cbit.util.xml.XmlParseException, DataAccessException {
+public java.lang.String getXML(cbit.util.BioModelInfo bioModelInfoArg, XmlDialect toDialect) throws java.io.IOException, cbit.util.xml.XmlParseException, DataAccessException {
 	return XmlHelper.exportXML(getBioModel(bioModelInfoArg), toDialect);
 }
 
@@ -1528,7 +1530,7 @@ public String getXML(MathModelInfo mmInfo) throws cbit.util.DataAccessException,
  * @return java.lang.String
  * @param bioModel cbit.vcell.biomodel.BioModel
  */
-public java.lang.String getXML(cbit.vcell.mathmodel.MathModelInfo mathModelInfoArg, XmlDialect toDialect) throws java.io.IOException, cbit.util.xml.XmlParseException, DataAccessException {
+public java.lang.String getXML(cbit.util.MathModelInfo mathModelInfoArg, XmlDialect toDialect) throws java.io.IOException, cbit.util.xml.XmlParseException, DataAccessException {
 	return XmlHelper.exportXML(getMathModel(mathModelInfoArg), toDialect);
 }
 
@@ -2345,7 +2347,7 @@ public BioModel save(BioModel bioModel, String independentSims[]) throws DataAcc
 			xmlHash.put(savedKey, savedBioModelXML);
 		}
 
-		BioModelInfo savedBioModelInfo = new BioModelInfo(savedBioModel.getVersion(),savedBioModel.getModel().getKey(),BioModelChildSummary.fromDatabaseBioModel(savedBioModel));
+		BioModelInfo savedBioModelInfo = new BioModelInfo(savedBioModel.getVersion(),savedBioModel.getModel().getKey(),savedBioModel.createBioModelChildSummary());
 		bioModelInfoHash.put(savedKey,savedBioModelInfo);
 		fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedBioModelInfo));
 
@@ -2420,7 +2422,7 @@ public MathModel save(MathModel mathModel, String independentSims[]) throws Data
 			xmlHash.put(savedKey, savedMathModelXML);
 		}
 
-		MathModelInfo savedMathModelInfo = new MathModelInfo(savedMathModel.getVersion(),savedMathModel.getMathDescription().getKey(),MathModelChildSummary.fromDatabaseMathModel(savedMathModel));
+		MathModelInfo savedMathModelInfo = new MathModelInfo(savedMathModel.getVersion(),savedMathModel.getMathDescription().getKey(),savedMathModel.createMathModelChildSummary());
 		mathModelInfoHash.put(savedKey,savedMathModelInfo);
 		
 		fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedMathModelInfo));
@@ -2536,7 +2538,7 @@ public cbit.vcell.biomodel.BioModel saveAsNew(cbit.vcell.biomodel.BioModel bioMo
 			xmlHash.put(savedKey, savedBioModelXML);
 		}
 
-		BioModelInfo savedBioModelInfo = new BioModelInfo(savedBioModel.getVersion(),savedBioModel.getModel().getKey(),BioModelChildSummary.fromDatabaseBioModel(savedBioModel));
+		BioModelInfo savedBioModelInfo = new BioModelInfo(savedBioModel.getVersion(),savedBioModel.getModel().getKey(),savedBioModel.createBioModelChildSummary());
 		bioModelInfoHash.put(savedKey,savedBioModelInfo);
 		
 		fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedBioModelInfo));
@@ -2616,7 +2618,7 @@ public cbit.vcell.mathmodel.MathModel saveAsNew(cbit.vcell.mathmodel.MathModel m
 			xmlHash.put(savedKey, savedMathModelXML);
 		}
 
-		MathModelInfo savedMathModelInfo = new MathModelInfo(savedMathModel.getVersion(),savedMathModel.getMathDescription().getKey(),MathModelChildSummary.fromDatabaseMathModel(savedMathModel));
+		MathModelInfo savedMathModelInfo = new MathModelInfo(savedMathModel.getVersion(),savedMathModel.getMathDescription().getKey(),savedMathModel.createMathModelChildSummary());
 		mathModelInfoHash.put(savedKey,savedMathModelInfo);
 		
 		fireDatabaseInsert(new DatabaseEvent(this, DatabaseEvent.INSERT, null, savedMathModelInfo));
@@ -2956,6 +2958,6 @@ private VersionInfo setGroupPublic0(VersionInfo versionInfo, VersionableType vTy
  * @exception cbit.util.DataAccessException The exception description.
  */
 public void updateServerSimulationStatusFromJobEvent(cbit.rmi.event.SimulationJobStatusEvent jobEvent) throws cbit.util.DataAccessException {
-	simulationStatusHash.put(jobEvent.getVCSimulationIdentifier().getSimulationKey(), SimulationStatus.updateFromJobEvent(getServerSimulationStatus(jobEvent.getVCSimulationIdentifier()), jobEvent));
+	simulationStatusHash.put(jobEvent.getVCSimulationIdentifier().getSimulationKey(), SimulationStatus.updateFromJobEvent(getServerSimulationStatus(jobEvent.getVCSimulationIdentifier()), jobEvent.getJobStatus(), jobEvent.getProgress()));
 }
 }

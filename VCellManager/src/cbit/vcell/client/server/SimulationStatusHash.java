@@ -1,8 +1,8 @@
 package cbit.vcell.client.server;
 import java.util.Enumeration;
 
-import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simulation.Simulation;
+import cbit.vcell.solvers.SimulationStatus;
 /**
  * Insert the type's description here.
  * Creation date: (4/20/2005 1:55:06 PM)
