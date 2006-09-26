@@ -6,3 +6,6 @@ Bundle-Version: 1.0.0
 Bundle-Activator: org.vcell.graph.Activator
 Bundle-Localization: plugin
 Import-Package: org.osgi.framework;version="1.3.0"
+Export-Package: cbit.util.graph,
+ com.mhhe.clrs2e,
+ edu.maine.graphalgorithms

@@ -209,7 +209,7 @@ public static void test() {
 	for (int i = 0; i < nodes.length; i++){
 		System.out.println(i+") color="+ta.color[i]+", root="+ta.root[i]);
 	}
-	cbit.gui.graph.SimpleGraphModelPanelTest.renderGraph(graph);
+	//cbit.gui.graph.SimpleGraphModelPanelTest.renderGraph(graph);
 	
 }
 }
