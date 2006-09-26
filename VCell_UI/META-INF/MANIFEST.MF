@@ -39,7 +39,8 @@ Require-Bundle: org.eclipse.osgi,
  org.vcell.ncbc.physics,
  org.vcell.optimization,
  org.vcell.physics,
- org.eclipse.core.runtime
+ org.eclipse.core.runtime,
+ org.vcell.cartoon
 Export-Package: cbit.image.gui,
  cbit.vcell.client,
  cbit.vcell.client.bionetgen,
