@@ -12,4 +12,5 @@ Require-Bundle: org.vcell.expression,
  org.vcell.util,
  org.vcell.matrix,
  org.vcell.image,
- org.vcell.units
+ org.vcell.units,
+ org.vcell.graph
