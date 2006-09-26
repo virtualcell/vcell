@@ -7,20 +7,24 @@ import cbit.util.CurateSpec;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.ObjectNotFoundException;
+import cbit.util.ReferenceQueryResult;
+import cbit.util.ReferenceQuerySpec;
 import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.util.VCDocumentInfo;
 import cbit.util.VersionInfo;
+import cbit.util.VersionableFamily;
+import cbit.util.VersionableType;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.dictionary.FormalSpeciesType;
-import cbit.vcell.export.server.ExportLog;
+import cbit.vcell.dictionary.ReactionQuerySpec;
+import cbit.vcell.export.ExportLog;
 import cbit.vcell.mathmodel.MathModelMetaData;
-import cbit.vcell.modeldb.ReactionQuerySpec;
+import cbit.vcell.modeldb.SolverResultSetInfo;
 import cbit.vcell.modeldb.VCInfoContainer;
-import cbit.vcell.server.SimulationStatus;
-import cbit.vcell.server.solvers.SolverResultSetInfo;
+import cbit.vcell.solvers.SimulationStatus;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -190,7 +194,7 @@ public cbit.vcell.numericstest.TestSuiteOPResults doTestSuiteOP(cbit.vcell.numer
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.modeldb.ReferenceQueryResult findReferences(cbit.vcell.modeldb.ReferenceQuerySpec rqs) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException {
+public ReferenceQueryResult findReferences(ReferenceQuerySpec rqs) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.findReferences(rqs="+rqs+")");
 		return dbServerProxy.findReferences(rqs);
@@ -207,7 +211,7 @@ public cbit.vcell.modeldb.ReferenceQueryResult findReferences(cbit.vcell.modeldb
 /**
  * getVersionable method comment.
  */
-public cbit.vcell.modeldb.VersionableFamily getAllReferences(cbit.sql.VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException {
+public VersionableFamily getAllReferences(VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getAllReferences(vType="+vType.getTypeName()+", Key="+key+")");
 		log.alert("LocalUserMetaDbServerMessaging.getAllReferences() can return 'version' objects that aren't viewable to user !!!!!!!!!!!!!!!! ");
@@ -229,7 +233,7 @@ public cbit.vcell.modeldb.VersionableFamily getAllReferences(cbit.sql.Versionabl
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.biomodel.BioModelInfo getBioModelInfo(KeyValue bioModelKey) throws DataAccessException, ObjectNotFoundException {
+public cbit.util.BioModelInfo getBioModelInfo(KeyValue bioModelKey) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getBioModelInfo(key="+bioModelKey+")");
 		return dbServerProxy.getBioModelInfo(bioModelKey);
@@ -250,7 +254,7 @@ public cbit.vcell.biomodel.BioModelInfo getBioModelInfo(KeyValue bioModelKey) th
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.biomodel.BioModelInfo[] getBioModelInfos(boolean bAll) throws DataAccessException {
+public cbit.util.BioModelInfo[] getBioModelInfos(boolean bAll) throws DataAccessException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getBioModelInfos(bAll="+bAll+")");
 		return dbServerProxy.getBioModelInfos(bAll);
@@ -480,7 +484,7 @@ public BigString getGeometryXML(KeyValue geometryKey) throws DataAccessException
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.mathmodel.MathModelInfo getMathModelInfo(KeyValue mathModelKey) throws DataAccessException, ObjectNotFoundException {
+public cbit.util.MathModelInfo getMathModelInfo(KeyValue mathModelKey) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getMathModelInfo(key="+mathModelKey+")");
 		return dbServerProxy.getMathModelInfo(mathModelKey);
@@ -501,7 +505,7 @@ public cbit.vcell.mathmodel.MathModelInfo getMathModelInfo(KeyValue mathModelKey
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.mathmodel.MathModelInfo[] getMathModelInfos(boolean bAll) throws DataAccessException {
+public cbit.util.MathModelInfo[] getMathModelInfos(boolean bAll) throws DataAccessException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getMathModelInfos(bAll="+bAll+")");
 		return dbServerProxy.getMathModelInfos(bAll);
@@ -859,7 +863,7 @@ public VCInfoContainer getVCInfoContainer() throws DataAccessException {
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.VersionInfo groupAddUser(cbit.sql.VersionableType vType, KeyValue key,String addUserToGroup, boolean isHidden) throws DataAccessException, ObjectNotFoundException {
+public cbit.util.VersionInfo groupAddUser(VersionableType vType, KeyValue key,String addUserToGroup, boolean isHidden) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.groupAddUser(vType="+vType.getTypeName()+", Key="+key+", userToAdd="+addUserToGroup+", isHidden="+isHidden+")");
 		VersionInfo newVersionInfo = dbServerProxy.groupAddUser(vType,key,addUserToGroup,isHidden);
@@ -881,7 +885,7 @@ public cbit.util.VersionInfo groupAddUser(cbit.sql.VersionableType vType, KeyVal
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.VersionInfo groupRemoveUser(cbit.sql.VersionableType vType, KeyValue key,String userRemoveFromGroup,boolean isHiddenFromOwner) throws DataAccessException, ObjectNotFoundException {
+public cbit.util.VersionInfo groupRemoveUser(VersionableType vType, KeyValue key,String userRemoveFromGroup,boolean isHiddenFromOwner) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.groupRemoveUser(vType="+vType.getTypeName()+", Key="+key+", userRemoveFromGroup="+userRemoveFromGroup+")");
 		VersionInfo newVersionInfo = dbServerProxy.groupRemoveUser(vType,key,userRemoveFromGroup,isHiddenFromOwner);
@@ -903,7 +907,7 @@ public cbit.util.VersionInfo groupRemoveUser(cbit.sql.VersionableType vType, Key
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.VersionInfo groupSetPrivate(cbit.sql.VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException {
+public cbit.util.VersionInfo groupSetPrivate(VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.groupSetPrivate(vType="+vType.getTypeName()+", Key="+key+")");
 		VersionInfo newVersionInfo = dbServerProxy.groupSetPrivate(vType,key);
@@ -925,7 +929,7 @@ public cbit.util.VersionInfo groupSetPrivate(cbit.sql.VersionableType vType, Key
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.VersionInfo groupSetPublic(cbit.sql.VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException {
+public cbit.util.VersionInfo groupSetPublic(VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.groupSetPublic(vType="+vType.getTypeName()+", Key="+key+")");
 		VersionInfo newVersionInfo = dbServerProxy.groupSetPublic(vType,key);

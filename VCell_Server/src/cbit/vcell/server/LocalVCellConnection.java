@@ -204,15 +204,6 @@ public cbit.rmi.event.RemoteMessageHandler getRemoteMessageHandler() throws java
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (2/14/01 9:45:10 AM)
- * @return cbit.vcell.modeldb.ResultSetCrawler
- */
-public cbit.vcell.modeldb.ResultSetCrawler getResultSetCrawler() {
-	return this.fieldLocalVCellServer.getResultSetCrawler();
-}
-
 
 /**
  * This method was created by a SmartGuide.
@@ -304,7 +295,7 @@ public User getUser() {
 public UserMetaDbServer getUserMetaDbServer() throws RemoteException, DataAccessException {
 	getSessionLog().print("LocalVCellConnection.getUserMetaDbServer(" + getUser() + ")");
 	if (userMetaDbServer == null) {
-		userMetaDbServer = new cbit.vcell.modeldb.LocalUserMetaDbServer(conFactory, keyFactory, dbCacheTable, getUser(), getSessionLog());
+		userMetaDbServer = new cbit.vcell.server.LocalUserMetaDbServer(conFactory, keyFactory, dbCacheTable, getUser(), getSessionLog());
 	}
 	return userMetaDbServer;
 }

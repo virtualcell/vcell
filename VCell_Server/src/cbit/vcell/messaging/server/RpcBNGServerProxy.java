@@ -40,7 +40,7 @@ public cbit.vcell.server.bionetgen.BNGOutput executeBNG(cbit.vcell.server.bionet
  */
 private Object rpc(String methodName, Object[] args) throws DataAccessException {
 	try {
-		return rpc(cbit.vcell.messaging.MessageConstants.SERVICETYPE_BIONETGEN_VALUE, methodName, args, true);
+		return rpc(cbit.util.MessageConstants.SERVICETYPE_BIONETGEN_VALUE, methodName, args, true);
 	} catch (DataAccessException ex) {
 		log.exception(ex);
 		throw ex;

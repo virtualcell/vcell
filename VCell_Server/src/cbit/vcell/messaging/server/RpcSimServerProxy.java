@@ -32,7 +32,7 @@ public RpcSimServerProxy(User argUser, JmsClientMessaging clientMessaging, cbit.
  */
 private Object rpc(String methodName, Object[] args) throws DataAccessException {
 	try {
-		return rpc(cbit.vcell.messaging.MessageConstants.SERVICETYPE_DISPATCH_VALUE, methodName, args, true);
+		return rpc(cbit.util.MessageConstants.SERVICETYPE_DISPATCH_VALUE, methodName, args, true);
 	} catch (DataAccessException ex) {
 		log.exception(ex);
 		throw ex;
@@ -53,7 +53,7 @@ private Object rpc(String methodName, Object[] args) throws DataAccessException 
  */
 private void rpcNoWait(String methodName, Object[] args) throws DataAccessException {
 	try {
-		rpc(cbit.vcell.messaging.MessageConstants.SERVICETYPE_DISPATCH_VALUE, methodName, args, false);
+		rpc(cbit.util.MessageConstants.SERVICETYPE_DISPATCH_VALUE, methodName, args, false);
 	} catch (DataAccessException ex) {
 		log.exception(ex);
 		throw ex;

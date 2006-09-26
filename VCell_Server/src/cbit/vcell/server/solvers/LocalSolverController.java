@@ -67,30 +67,6 @@ public void addWorkerEventListener(cbit.rmi.event.WorkerEventListener listener) 
 }
 
 
-public void dataMoved(double timepoint, Double progress) {
-	// called by data mover thread after successful move operations
-	try {
-		VCSimulationDataIdentifier vcSimDataID = getSimulationJob().getVCDataIdentifier();
-		if (!resultSetSavedSet.contains(vcSimDataID)){
-			try {
-				cbit.vcell.modeldb.ResultSetCrawler rsCrawler = vcConn.getResultSetCrawler();
-				rsCrawler.updateSimResults(vcConn.getUser(),vcSimDataID);
-				resultSetSavedSet.add(vcSimDataID);
-			} catch (Throwable exc) {
-				log.exception(exc);
-			}
-		}
-		// don't log progress and data events; data events at larger interval, since more expensive on client side
-		if (System.currentTimeMillis() - getTimeOfLastDataMessage() > 4000 * getMessagingInterval()) {
-			fireWorkerEvent(new WorkerEvent(this, vcSimDataID.getVcSimID(), vcSimDataID.getJobIndex(), WorkerEvent.JOB_DATA, vcConn.getHost(), 0, progress, new Double(timepoint)));
-			//fireJobDataEvent(new JobDataEvent(this,new MessageSource(this,getSimulationIdentifier()),getSimulation().getSimulationInfo(),timepoint));
-		}
-	}catch (Throwable e){
-		log.exception(e);
-	}
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (11/13/2000 2:44:30 PM)

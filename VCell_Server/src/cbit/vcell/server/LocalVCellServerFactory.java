@@ -6,6 +6,7 @@ import cbit.util.DataAccessException;
 import cbit.util.PermissionException;
 import cbit.util.SessionLog;
 import cbit.util.User;
+import cbit.vcell.modeldb.AdminDatabaseServer;
 /**
  * This type was created in VisualAge.
  */
@@ -33,8 +34,7 @@ public LocalVCellServerFactory(String userid, String password, String hostName, 
 				throw new PermissionException("userid "+userid+" does not have sufficient privilage");
 			}
 		}
-		cbit.vcell.modeldb.ResultSetCrawler rsCrawler = new cbit.vcell.modeldb.ResultSetCrawler(conFactory,adminDbServer,sessionLog,dbCacheTable);
-		vcServer = new LocalVCellServer(true, hostName, jmsConnFactory, adminDbServer, rsCrawler, false);
+		vcServer = new LocalVCellServer(true, hostName, jmsConnFactory, adminDbServer, false);
 	} catch (java.rmi.RemoteException e){
 	}
 }

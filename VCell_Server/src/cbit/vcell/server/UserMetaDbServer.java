@@ -1,22 +1,29 @@
 package cbit.vcell.server;
 import java.rmi.RemoteException;
 
-import cbit.sql.VersionableType;
 import cbit.util.BigString;
 import cbit.util.CurateSpec;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
+import cbit.util.MathModelInfo;
 import cbit.util.ObjectNotFoundException;
+import cbit.util.ReferenceQueryResult;
+import cbit.util.ReferenceQuerySpec;
+import cbit.util.VersionableFamily;
+import cbit.util.VersionableType;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.dictionary.FormalSpeciesType;
-import cbit.vcell.mathmodel.MathModelInfo;
+import cbit.vcell.dictionary.ReactionQuerySpec;
 import cbit.vcell.mathmodel.MathModelMetaData;
+import cbit.vcell.modeldb.SolverResultSetInfo;
+import cbit.vcell.modeldb.VCInfoContainer;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestSuiteNew;
 import cbit.vcell.numericstest.TestSuiteOP;
 import cbit.vcell.numericstest.TestSuiteOPResults;
+import cbit.vcell.solvers.SimulationStatus;
 
 /**
  * This type was created in VisualAge.
@@ -89,7 +96,7 @@ TestSuiteOPResults doTestSuiteOP(TestSuiteOP tsop) throws DataAccessException, j
  * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-cbit.vcell.modeldb.ReferenceQueryResult findReferences(cbit.vcell.modeldb.ReferenceQuerySpec rqs) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
+ReferenceQueryResult findReferences(ReferenceQuerySpec rqs) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 
 /**
@@ -98,7 +105,7 @@ cbit.vcell.modeldb.ReferenceQueryResult findReferences(cbit.vcell.modeldb.Refere
  * @param vType cbit.sql.VersionableType
  * @param key cbit.sql.KeyValue
  */
-cbit.vcell.modeldb.VersionableFamily getAllReferences(VersionableType vType, KeyValue key) throws RemoteException, DataAccessException, ObjectNotFoundException;
+VersionableFamily getAllReferences(VersionableType vType, KeyValue key) throws RemoteException, DataAccessException, ObjectNotFoundException;
 
 
 /**
@@ -108,7 +115,7 @@ cbit.vcell.modeldb.VersionableFamily getAllReferences(VersionableType vType, Key
  * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-cbit.vcell.biomodel.BioModelInfo getBioModelInfo(KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
+cbit.util.BioModelInfo getBioModelInfo(KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 
 /**
@@ -118,7 +125,7 @@ cbit.vcell.biomodel.BioModelInfo getBioModelInfo(KeyValue key) throws DataAccess
  * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-cbit.vcell.biomodel.BioModelInfo[] getBioModelInfos(boolean bAll) throws DataAccessException, java.rmi.RemoteException;
+cbit.util.BioModelInfo[] getBioModelInfos(boolean bAll) throws DataAccessException, java.rmi.RemoteException;
 
 
 /**
@@ -157,7 +164,7 @@ public DBSpecies getBoundSpecies(DBFormalSpecies dbfs) throws DataAccessExceptio
 public DBFormalSpecies[] getDatabaseSpecies(String likeString,boolean isBound,FormalSpeciesType speciesType,int restrictSearch,int rowLimit, boolean bUserOnly) throws DataAccessException, java.rmi.RemoteException;
 
 
-public cbit.vcell.dictionary.ReactionDescription[] getDictionaryReactions(cbit.vcell.modeldb.ReactionQuerySpec reactionQuerySpec) throws DataAccessException, java.rmi.RemoteException;
+public cbit.vcell.dictionary.ReactionDescription[] getDictionaryReactions(cbit.vcell.dictionary.ReactionQuerySpec reactionQuerySpec) throws DataAccessException, java.rmi.RemoteException;
 
 
 /**
@@ -166,7 +173,7 @@ public cbit.vcell.dictionary.ReactionDescription[] getDictionaryReactions(cbit.v
  * @return cbit.vcell.export.server.ExportLog
  * @param simKey cbit.sql.KeyValue
  */
-cbit.vcell.export.server.ExportLog getExportLog(KeyValue simulationKey) throws DataAccessException, ObjectNotFoundException, RemoteException;
+cbit.vcell.export.ExportLog getExportLog(KeyValue simulationKey) throws DataAccessException, ObjectNotFoundException, RemoteException;
 
 
 /**
@@ -175,7 +182,7 @@ cbit.vcell.export.server.ExportLog getExportLog(KeyValue simulationKey) throws D
  * @return cbit.vcell.export.server.ExportLog[]
  * @param simKey cbit.sql.KeyValue
  */
-cbit.vcell.export.server.ExportLog[] getExportLogs(boolean bAll) throws DataAccessException, RemoteException;
+cbit.vcell.export.ExportLog[] getExportLogs(boolean bAll) throws DataAccessException, RemoteException;
 
 
 /**
@@ -280,7 +287,7 @@ public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(KeyValue reactio
  * @return cbit.vcell.solver.SolverResultSetInfo
  * @param simKey cbit.sql.KeyValue
  */
-cbit.vcell.server.solvers.SolverResultSetInfo[] getResultSetInfos(boolean bAll) throws DataAccessException, RemoteException;
+cbit.vcell.modeldb.SolverResultSetInfo[] getResultSetInfos(boolean bAll) throws DataAccessException, RemoteException;
 
 
 /**
@@ -337,7 +344,7 @@ TestSuiteInfoNew[] getTestSuiteInfos() throws DataAccessException, java.rmi.Remo
  * @return cbit.vcell.dictionary.ReactionDescription[]
  * @param reactionQuerySpec cbit.vcell.modeldb.ReactionQuerySpec
  */
-cbit.vcell.dictionary.ReactionDescription[] getUserReactionDescriptions(cbit.vcell.modeldb.ReactionQuerySpec reactionQuerySpec) throws DataAccessException, RemoteException;
+cbit.vcell.dictionary.ReactionDescription[] getUserReactionDescriptions(cbit.vcell.dictionary.ReactionQuerySpec reactionQuerySpec) throws DataAccessException, RemoteException;
 
 
 /**

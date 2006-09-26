@@ -4,6 +4,7 @@ import java.rmi.RemoteException;
 import cbit.util.CacheStatus;
 import cbit.util.DataAccessException;
 import cbit.util.User;
+import cbit.vcell.modeldb.AdminDatabaseServer;
 import cbit.vcell.solvers.SimulationJob;
 import cbit.vcell.solvers.SolverController;
 /**

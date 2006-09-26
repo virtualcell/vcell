@@ -1,11 +1,11 @@
 package cbit.vcell.messaging.server;
 import cbit.util.DataAccessException;
+import cbit.util.MessageConstants;
 import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.util.VCDataIdentifier;
 import cbit.vcell.math.DataIdentifier;
 import cbit.vcell.messaging.JmsClientMessaging;
-import cbit.vcell.messaging.MessageConstants;
 import cbit.vcell.simdata.ParticleDataBlock;
 import cbit.vcell.simdata.SimDataBlock;
 
@@ -194,7 +194,7 @@ public cbit.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID
  */
 public cbit.vcell.export.ExportEvent makeRemoteFile(cbit.vcell.export.ExportSpecs exportSpecs) throws DataAccessException {
 	try {
-		rpc(cbit.vcell.messaging.MessageConstants.SERVICETYPE_DATA_VALUE, "makeRemoteFile", new Object[]{user, exportSpecs}, false, new String[]{MessageConstants.SERVICE_DATA_ISEXPORTING}, new Object[]{new Boolean(true)});
+		rpc(cbit.util.MessageConstants.SERVICETYPE_DATA_VALUE, "makeRemoteFile", new Object[]{user, exportSpecs}, false, new String[]{MessageConstants.SERVICE_DATA_ISEXPORTING}, new Object[]{new Boolean(true)});
 	} catch (DataAccessException ex) {
 		log.exception(ex);
 		throw ex;
@@ -231,7 +231,7 @@ public void removeFunction(VCDataIdentifier vcdataID, cbit.vcell.math.AnnotatedF
  */
 private Object rpc(String methodName, Object[] args) throws DataAccessException {
 	try {
-		return rpc(cbit.vcell.messaging.MessageConstants.SERVICETYPE_DATA_VALUE, methodName, args, true);
+		return rpc(cbit.util.MessageConstants.SERVICETYPE_DATA_VALUE, methodName, args, true);
 	} catch (DataAccessException ex) {
 		log.exception(ex);
 		throw ex;

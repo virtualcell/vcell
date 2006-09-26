@@ -370,7 +370,7 @@ public static String submitJob(String job, String queuename) throws cbit.util.Ex
 		completeCommand += " -q " + queuename;
 	}
 	completeCommand += " " + job;
-	cbit.util.Executable exe = new cbit.util.Executable(completeCommand, 20 * cbit.vcell.messaging.MessageConstants.SECOND);
+	cbit.util.Executable exe = new cbit.util.Executable(completeCommand, 20 * cbit.util.MessageConstants.SECOND);
 	exe.start();
 	String output = exe.getStdoutString();
 	if (output.indexOf ("submitted to") > 0) { // success submission

@@ -4,19 +4,24 @@ import cbit.util.CurateSpec;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.ObjectNotFoundException;
+import cbit.util.ReferenceQueryResult;
+import cbit.util.ReferenceQuerySpec;
 import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.util.VCDocumentInfo;
 import cbit.util.VersionInfo;
+import cbit.util.VersionableFamily;
+import cbit.util.VersionableType;
 import cbit.vcell.biomodel.BioModelMetaData;
+import cbit.vcell.dictionary.ReactionQuerySpec;
+import cbit.vcell.export.ExportLog;
 import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.messaging.JmsClientMessaging;
 import cbit.vcell.messaging.JmsUtils;
-import cbit.vcell.modeldb.ReactionQuerySpec;
+import cbit.vcell.modeldb.SolverResultSetInfo;
 import cbit.vcell.modeldb.VCInfoContainer;
-import cbit.vcell.modeldb.VersionableFamily;
-import cbit.vcell.server.SimulationStatus;
-import cbit.vcell.server.solvers.SolverResultSetInfo;
+import cbit.vcell.server.UserMetaDbServer;
+import cbit.vcell.solvers.SimulationStatus;
 
 /**
  * Insert the type's description here.
@@ -26,7 +31,7 @@ import cbit.vcell.server.solvers.SolverResultSetInfo;
  * stateless database service for any user (should be thread safe ... reentrant)
  *
  */
-public class RpcDbServerProxy extends AbstractRpcServerProxy implements cbit.vcell.server.UserMetaDbServer {
+public class RpcDbServerProxy extends AbstractRpcServerProxy implements UserMetaDbServer {
 /**
  * DataServerProxy constructor comment.
  */
@@ -120,18 +125,18 @@ public cbit.vcell.numericstest.TestSuiteOPResults doTestSuiteOP(cbit.vcell.numer
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.modeldb.ReferenceQueryResult findReferences(cbit.vcell.modeldb.ReferenceQuerySpec rqs) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException {
-	return (cbit.vcell.modeldb.ReferenceQueryResult)rpc("findReferences",new Object[]{user,rqs});
+public ReferenceQueryResult findReferences(ReferenceQuerySpec rqs) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException {
+	return (ReferenceQueryResult)rpc("findReferences",new Object[]{user,rqs});
 }
 
 
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.modeldb.VersionableFamily
- * @param vType cbit.sql.VersionableType
+ * @param vType VersionableType
  * @param key KeyValue
  */
-public cbit.vcell.modeldb.VersionableFamily getAllReferences(cbit.sql.VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException {
+public VersionableFamily getAllReferences(VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	return (VersionableFamily)rpc("getAllReferences",new Object[]{user, vType,key});
 }
 
@@ -143,8 +148,8 @@ public cbit.vcell.modeldb.VersionableFamily getAllReferences(cbit.sql.Versionabl
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.biomodel.BioModelInfo getBioModelInfo(KeyValue key) throws DataAccessException, ObjectNotFoundException {
-	return (cbit.vcell.biomodel.BioModelInfo)rpc("getBioModelInfo",new Object[]{user,key});
+public cbit.util.BioModelInfo getBioModelInfo(KeyValue key) throws DataAccessException, ObjectNotFoundException {
+	return (cbit.util.BioModelInfo)rpc("getBioModelInfo",new Object[]{user,key});
 }
 
 
@@ -155,8 +160,8 @@ public cbit.vcell.biomodel.BioModelInfo getBioModelInfo(KeyValue key) throws Dat
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.biomodel.BioModelInfo[] getBioModelInfos(boolean bAll) throws DataAccessException {
-	return (cbit.vcell.biomodel.BioModelInfo[])rpc("getBioModelInfos",new Object[]{user, new Boolean(bAll)});
+public cbit.util.BioModelInfo[] getBioModelInfos(boolean bAll) throws DataAccessException {
+	return (cbit.util.BioModelInfo[])rpc("getBioModelInfos",new Object[]{user, new Boolean(bAll)});
 }
 
 
@@ -223,22 +228,22 @@ public cbit.vcell.dictionary.ReactionDescription[] getDictionaryReactions(Reacti
 /**
  * Insert the method's description here.
  * Creation date: (12/5/2001 12:00:10 PM)
- * @return cbit.vcell.export.server.ExportLog
+ * @return ExportLog
  * @param simKey KeyValue
  */
-public cbit.vcell.export.server.ExportLog getExportLog(KeyValue simulationKey) throws DataAccessException, ObjectNotFoundException {
-	return (cbit.vcell.export.server.ExportLog)rpc("getExportLog",new Object[]{user, simulationKey});
+public ExportLog getExportLog(KeyValue simulationKey) throws DataAccessException, ObjectNotFoundException {
+	return (ExportLog)rpc("getExportLog",new Object[]{user, simulationKey});
 }
 
 
 /**
  * Insert the method's description here.
  * Creation date: (12/5/2001 12:00:10 PM)
- * @return cbit.vcell.export.server.ExportLog[]
+ * @return ExportLog[]
  * @param simKey KeyValue
  */
-public cbit.vcell.export.server.ExportLog[] getExportLogs(boolean bAll) throws DataAccessException {
-	return (cbit.vcell.export.server.ExportLog[])rpc("getExportLogs",new Object[]{user, new Boolean(bAll)});
+public ExportLog[] getExportLogs(boolean bAll) throws DataAccessException {
+	return (ExportLog[])rpc("getExportLogs",new Object[]{user, new Boolean(bAll)});
 }
 
 
@@ -285,8 +290,8 @@ public BigString getGeometryXML(KeyValue key) throws DataAccessException {
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.mathmodel.MathModelInfo getMathModelInfo(KeyValue key) throws DataAccessException, ObjectNotFoundException {
-	return (cbit.vcell.mathmodel.MathModelInfo)rpc("getMathModelInfo",new Object[]{user,key});
+public cbit.util.MathModelInfo getMathModelInfo(KeyValue key) throws DataAccessException, ObjectNotFoundException {
+	return (cbit.util.MathModelInfo)rpc("getMathModelInfo",new Object[]{user,key});
 }
 
 
@@ -297,8 +302,8 @@ public cbit.vcell.mathmodel.MathModelInfo getMathModelInfo(KeyValue key) throws 
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.mathmodel.MathModelInfo[] getMathModelInfos(boolean bAll) throws DataAccessException {
-	return (cbit.vcell.mathmodel.MathModelInfo[])rpc("getMathModelInfos",new Object[]{user, new Boolean(bAll)});
+public cbit.util.MathModelInfo[] getMathModelInfos(boolean bAll) throws DataAccessException {
+	return (cbit.util.MathModelInfo[])rpc("getMathModelInfos",new Object[]{user, new Boolean(bAll)});
 }
 
 
@@ -372,7 +377,7 @@ public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(KeyValue[] react
  * @return cbit.vcell.solver.SolverResultSetInfo
  * @param simKey KeyValue
  */
-public cbit.vcell.server.solvers.SolverResultSetInfo[] getResultSetInfos(boolean bAll) throws DataAccessException {
+public SolverResultSetInfo[] getResultSetInfos(boolean bAll) throws DataAccessException {
 	return (SolverResultSetInfo[])rpc("getResultSetInfos",new Object[]{user, new Boolean(bAll)});
 }
 
@@ -501,7 +506,7 @@ public VCInfoContainer getVCInfoContainer() throws DataAccessException {
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public VersionInfo groupAddUser(cbit.sql.VersionableType vType, KeyValue key, java.lang.String addUserToGroup, boolean isHidden) throws DataAccessException, ObjectNotFoundException {
+public VersionInfo groupAddUser(VersionableType vType, KeyValue key, java.lang.String addUserToGroup, boolean isHidden) throws DataAccessException, ObjectNotFoundException {
 	return (VersionInfo)rpc("groupAddUser",new Object[]{user, vType,key,addUserToGroup,new Boolean(isHidden)});
 }
 
@@ -513,7 +518,7 @@ public VersionInfo groupAddUser(cbit.sql.VersionableType vType, KeyValue key, ja
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public VersionInfo groupRemoveUser(cbit.sql.VersionableType vType, KeyValue key, java.lang.String userRemoveFromGroup, boolean isHiddenFromOwner) throws DataAccessException, ObjectNotFoundException {
+public VersionInfo groupRemoveUser(VersionableType vType, KeyValue key, java.lang.String userRemoveFromGroup, boolean isHiddenFromOwner) throws DataAccessException, ObjectNotFoundException {
 	return (VersionInfo)rpc("groupRemoveUser",new Object[]{user, vType,key,userRemoveFromGroup,new Boolean(isHiddenFromOwner)});
 }
 
@@ -525,7 +530,7 @@ public VersionInfo groupRemoveUser(cbit.sql.VersionableType vType, KeyValue key,
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public VersionInfo groupSetPrivate(cbit.sql.VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException {
+public VersionInfo groupSetPrivate(VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	return (VersionInfo)rpc("groupSetPrivate",new Object[]{user, vType,key});
 }
 
@@ -537,7 +542,7 @@ public VersionInfo groupSetPrivate(cbit.sql.VersionableType vType, KeyValue key)
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public VersionInfo groupSetPublic(cbit.sql.VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException {
+public VersionInfo groupSetPublic(VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	return (VersionInfo)rpc("groupSetPublic",new Object[]{user, vType,key});
 }
 
@@ -563,7 +568,7 @@ public void replacePreferences(cbit.util.Preference[] preferences) throws DataAc
  */
 private Object rpc(String methodName, Object[] args) throws ObjectNotFoundException, DataAccessException {
 	try {
-		return rpc(cbit.vcell.messaging.MessageConstants.SERVICETYPE_DB_VALUE, methodName, args, true);
+		return rpc(cbit.util.MessageConstants.SERVICETYPE_DB_VALUE, methodName, args, true);
 	} catch (ObjectNotFoundException ex) {
 		log.exception(ex);
 		throw ex;

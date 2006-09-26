@@ -6,6 +6,7 @@ import cbit.util.DataAccessException;
 import cbit.util.ObjectNotFoundException;
 import cbit.util.SessionLog;
 import cbit.util.User;
+import cbit.vcell.modeldb.AdminDatabaseServer;
 import cbit.vcell.simulation.Simulation;
 import cbit.vcell.simulation.VCSimulationIdentifier;
 /**

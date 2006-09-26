@@ -74,12 +74,12 @@ public final class LocalVCellServer_Stub
     }
     
     // implementation of getAdminDatabaseServer()
-    public cbit.vcell.server.AdminDatabaseServer getAdminDatabaseServer()
+    public cbit.vcell.modeldb.AdminDatabaseServer getAdminDatabaseServer()
 	throws java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getAdminDatabaseServer_1, null, 2401880152551856929L);
-	    return ((cbit.vcell.server.AdminDatabaseServer) $result);
+	    return ((cbit.vcell.modeldb.AdminDatabaseServer) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {

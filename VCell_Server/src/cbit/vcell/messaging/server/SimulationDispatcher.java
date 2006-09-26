@@ -14,17 +14,16 @@ import cbit.sql.KeyFactory;
 import cbit.util.BigString;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
+import cbit.util.MessageConstants;
 import cbit.util.User;
 import cbit.vcell.messaging.JmsClientMessaging;
-import cbit.vcell.messaging.MessageConstants;
 import cbit.vcell.messaging.SimulationDispatcherMessaging;
 import cbit.vcell.messaging.StatusMessage;
 import cbit.vcell.messaging.VCellTopicSession;
 import cbit.vcell.messaging.WorkerEventMessage;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
+import cbit.vcell.modeldb.AdminDatabaseServerXA;
 import cbit.vcell.modeldb.LocalAdminDbServer;
-import cbit.vcell.modeldb.ResultSetCrawler;
-import cbit.vcell.server.AdminDatabaseServerXA;
 import cbit.vcell.simulation.Simulation;
 import cbit.vcell.simulation.VCSimulationIdentifier;
 import cbit.vcell.solvers.SimulationJob;
@@ -51,7 +50,6 @@ public class SimulationDispatcher extends AbstractJmsServiceProvider {
 
 	private MessagingDispatcherDbManager dispatcherDbManager = new JmsDispatcherDbManager();
 	protected HashSet resultSetSavedSet = new HashSet();
-	protected ResultSetCrawler rsCrawler = null;	
 
 /**
  * Scheduler constructor comment.
@@ -67,26 +65,8 @@ public SimulationDispatcher(String serviceName) throws Exception {
 	conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
 	keyFactory = new cbit.sql.OracleKeyFactory();		
 	adminDbServer = new cbit.vcell.modeldb.LocalAdminDbServer(conFactory,keyFactory,log);
-	rsCrawler = new ResultSetCrawler(conFactory, adminDbServer, log, new DBCacheTable(1000*60*30));	
 
 	dispatcherMessaging = new SimulationDispatcherMessaging(this, conFactory, keyFactory, log);	
-}
-
-
-private void dataMoved(VCSimulationDataIdentifier vcSimDataID, User user, double timepoint) {
-	// called by data mover thread after successful move operations
-	try {		
-		if (!resultSetSavedSet.contains(vcSimDataID)){
-			try {
-				rsCrawler.updateSimResults(user,vcSimDataID);
-				resultSetSavedSet.add(vcSimDataID);
-			} catch (Throwable exc) {
-				log.exception(exc);
-			}
-		}
-	} catch (Throwable e){
-		log.exception(e);
-	}
 }
 
 
@@ -283,7 +263,6 @@ public void onWorkerEventMessage(AdminDatabaseServerXA adminDbXA, java.sql.Conne
 		
 	} else if (workerEvent.isNewDataEvent()) {
 		if (workerEvent.getTimePoint() != null) {
-			dataMoved(vcSimDataID, workerEvent.getUser(), workerEvent.getTimePoint().doubleValue());
 			newJobStatus = updateRunningStatus(oldJobStatus, adminDbXA, con, hostName, vcSimDataID.getVcSimID(), jobIndex, true, null);
 		}
 			

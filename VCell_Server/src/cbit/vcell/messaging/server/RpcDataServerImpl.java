@@ -5,9 +5,9 @@ package cbit.vcell.messaging.server;
 ©*/
 import java.io.FileNotFoundException;
 
+import cbit.util.MessageConstants;
 import cbit.util.SessionLog;
 import cbit.vcell.export.ExportServiceImpl;
-import cbit.vcell.messaging.MessageConstants;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.DataSetControllerImpl;

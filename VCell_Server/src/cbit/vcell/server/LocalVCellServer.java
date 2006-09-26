@@ -15,7 +15,7 @@ import cbit.util.StdoutSessionLog;
 import cbit.util.User;
 import cbit.vcell.export.ExportServiceImpl;
 import cbit.vcell.messaging.server.LocalVCellConnectionMessaging;
-import cbit.vcell.modeldb.ResultSetCrawler;
+import cbit.vcell.modeldb.AdminDatabaseServer;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.solvers.SolverController;
@@ -30,7 +30,6 @@ public class LocalVCellServer extends UnicastRemoteObject implements VCellServer
 	private AdminDatabaseServer adminDbServer = null;
 	private SessionLog sessionLog = null;
 	private ConnectionPool connectionPool = null;
-	private ResultSetCrawler resultSetCrawler = null;
 	private Cachetable dataCachetable = null;
 	private DataSetControllerImpl dscImpl = null;
 	private SimulationControllerImpl simControllerImpl = null;
@@ -47,12 +46,11 @@ public class LocalVCellServer extends UnicastRemoteObject implements VCellServer
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public LocalVCellServer(boolean bPrimaryServer, String argHostName, cbit.vcell.messaging.JmsConnectionFactory jmsConnFactory, AdminDatabaseServer dbServer, ResultSetCrawler argResultSetCrawler, boolean bRemoteMode) throws RemoteException, FileNotFoundException {
+public LocalVCellServer(boolean bPrimaryServer, String argHostName, cbit.vcell.messaging.JmsConnectionFactory jmsConnFactory, AdminDatabaseServer dbServer, boolean bRemoteMode) throws RemoteException, FileNotFoundException {
 	super(PropertyLoader.getIntProperty(PropertyLoader.rmiPortVCellServer,0));
 	this.hostName = argHostName;
 	this.fieldJmsConnFactory = jmsConnFactory;
 	this.bRemoteMode = bRemoteMode;
-	this.resultSetCrawler = argResultSetCrawler;
 	adminDbServer = dbServer;
 	this.bPrimaryServer = bPrimaryServer;
 	this.sessionLog = new StdoutSessionLog(PropertyLoader.ADMINISTRATOR_ACCOUNT);
@@ -81,8 +79,8 @@ public LocalVCellServer(boolean bPrimaryServer, String argHostName, cbit.vcell.m
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public LocalVCellServer(boolean bPrimaryServer, String argHostName, AdminDatabaseServer dbServer, ResultSetCrawler argResultSetCrawler, boolean bRemoteMode) throws RemoteException, FileNotFoundException {
-	this(bPrimaryServer, argHostName, null, dbServer, argResultSetCrawler, bRemoteMode);
+public LocalVCellServer(boolean bPrimaryServer, String argHostName, AdminDatabaseServer dbServer, boolean bRemoteMode) throws RemoteException, FileNotFoundException {
+	this(bPrimaryServer, argHostName, null, dbServer, bRemoteMode);
 }
 
 
@@ -339,15 +337,6 @@ public ProcessStatus getProcessStatus() {
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (2/14/01 9:46:18 AM)
- * @return cbit.vcell.modeldb.ResultSetCrawler
- */
-ResultSetCrawler getResultSetCrawler() {
-	return resultSetCrawler;
-}
 
 
 /**
