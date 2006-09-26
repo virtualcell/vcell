@@ -10,8 +10,8 @@ import java.beans.PropertyVetoException;
 
 import cbit.vcell.simulation.Simulation;
 import cbit.util.BeanUtils;
+import cbit.util.MathModelChildSummary;
 import cbit.util.Version;
-import cbit.vcell.model.VCellNames;
 /**
  * Insert the type's description here.
  * Creation date: (10/17/00 3:12:16 PM)
@@ -41,6 +41,26 @@ public MathModel(Version version) {
 	}
 }
 
+/**
+ * Insert the method's description here.
+ * Creation date: (8/23/2004 11:41:14 AM)
+ * @param savedMathModel cbit.vcell.mathmodel.MathModel
+ */
+public MathModelChildSummary createMathModelChildSummary() {
+
+	String geoName = getMathDescription().getGeometry().getName();
+	int geoDim = getMathDescription().getGeometry().getDimension();
+	
+	cbit.vcell.simulation.Simulation[] sims = getSimulations();
+	String[] simNames = new String[sims.length];
+	String[] simAnnots = new String[sims.length];
+	for(int i=0;i<sims.length;i+= 1){
+		simNames[i] = sims[i].getName();
+		simAnnots[i] = sims[i].getDescription();
+	}
+	
+	return new MathModelChildSummary(geoName, geoDim, simNames, simAnnots);
+}
 
 /**
  * Sets the simulations property (cbit.vcell.solver.Simulation[]) value.
@@ -412,7 +432,7 @@ public cbit.vcell.simulation.Simulation getSimulations(int index) {
 public java.lang.String getVCML() throws Exception {
 	StringBuffer buffer = new StringBuffer();
 	String name = (getName()!=null)?getName():"unnamedMathModel";
-	buffer.append(cbit.vcell.model.VCMODL.MathModel+" "+name+" {\n");
+	buffer.append("MathModel "+name+" {\n");
 
 	//
 	// write MathDescription
@@ -692,7 +712,7 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		for (int i=0;i<simulations.length-1;i++){
 			for (int j=i+1;j<simulations.length;j++){
 				if (simulations[i].getName().equals(simulations[j].getName())){
-					throw new PropertyVetoException(VCellNames.getName(simulations[i])+" with name "+simulations[i].getName()+" already exists",evt);
+					throw new PropertyVetoException("Simulation with name "+simulations[i].getName()+" already exists",evt);
 				}
 			}
 		}
@@ -704,7 +724,7 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		String simulationName = (String)evt.getNewValue();
 		for (int i=0;i<fieldSimulations.length;i++){
 			if (fieldSimulations[i].getName().equals(simulationName)){
-				throw new PropertyVetoException(VCellNames.getName(fieldSimulations[i])+" with name "+simulationName+" already exists",evt);
+				throw new PropertyVetoException("Simulation with name "+simulationName+" already exists",evt);
 			}
 		}
 	}

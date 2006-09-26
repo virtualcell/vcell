@@ -6,11 +6,9 @@ Bundle-Version: 1.0.0
 Bundle-Activator: org.vcell.mathmodel.Activator
 Bundle-Localization: plugin
 Export-Package: cbit.vcell.mathmodel
-Require-Bundle: org.vcell.modelapp,
- org.vcell.physiology,
- org.vcell.simulation,
+Require-Bundle: org.vcell.simulation,
  org.vcell.util,
  org.vcell.math,
- org.vcell.geometry,
+ org.eclipse.osgi,
  org.vcell.expression,
- org.eclipse.osgi
+ org.vcell.geometry
