@@ -11,7 +11,9 @@ Require-Bundle: org.vcell.common,
  org.vcell.xml.common,
  org.vcell.math,
  org.vcell.geometry,
- org.vcell.image
+ org.vcell.image,
+ org.vcell.graph,
+ org.vcell.cartoon
 Export-Package: org.vcell.physics.component,
  org.vcell.physics.component.gui,
  org.vcell.physics.math
