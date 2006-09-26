@@ -40,6 +40,7 @@ public static void main(java.lang.String[] args) {
 		aOOModelingPanel.setStronglyConnectedComponents(modelAnalysisResults.sccArray);
 		aOOModelingPanel.setVarEquationAssignments(modelAnalysisResults.varEqnAssignments);
 		aOOModelingPanel.setConnectivityGraphPanelGraph(modelAnalysisResults.connectivityGraph);
+		aOOModelingPanel.setMathDescription(modelAnalysisResults.mathDescription);
 		
 		frame.setVisible(true);
 	} catch (Throwable exception) {
