@@ -1,0 +1,136 @@
+package cbit.vcell.numericstest;
+import java.math.BigDecimal;
+/**
+ * Insert the type's description here.
+ * Creation date: (10/16/2004 1:43:54 PM)
+ * @author: Frank Morgan
+ */
+public class TestSuiteInfoNew implements cbit.util.Matchable, java.io.Serializable {
+
+	private BigDecimal tsKey;
+	private String tsID;
+	private String tsVCellBuild;
+	private String tsNumericsBuild;
+	private java.util.Date tsDate;
+
+/**
+ * TestSuiteInfoNew constructor comment.
+ * @param argType java.lang.String
+ * @param argAnnotation java.lang.String
+ */
+public TestSuiteInfoNew(BigDecimal argTSKey,String argTSID,String argTSVCellBuild,String argTSNumericsBuild,java.util.Date argTSDate) {
+
+	tsKey = argTSKey;
+	tsID = argTSID;
+	tsVCellBuild = argTSVCellBuild;
+	tsNumericsBuild = argTSNumericsBuild;
+	tsDate = argTSDate;
+}
+
+
+/**
+ * Checks for internal representation of objects, not keys from database
+ * @return boolean
+ * @param obj java.lang.Object
+ */
+public boolean compareEqual(cbit.util.Matchable obj) {
+	
+	if(obj == this){
+		return true;
+	}
+	if(!(obj instanceof TestSuiteInfoNew)){
+		return false;
+	}
+
+	TestSuiteInfoNew tsin = (TestSuiteInfoNew)obj;
+
+	if(!this.tsKey.equals(tsin.tsKey)){
+		return false;
+	}
+	if(!this.tsID.equals(tsin.tsID)){
+		return false;
+	}
+	if(!this.tsVCellBuild.equals(tsin.tsVCellBuild)){
+		return false;
+	}
+	if(!this.tsNumericsBuild.equals(tsin.tsNumericsBuild)){
+		return false;
+	}
+	if(!this.tsDate.equals(tsin.tsDate)){
+		return false;
+	}
+	return true;
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (10/16/2004 1:52:59 PM)
+ * @return java.lang.String
+ */
+public java.util.Date getTSDate() {
+	return tsDate;
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (10/16/2004 1:52:59 PM)
+ * @return java.lang.String
+ */
+public java.lang.String getTSID() {
+	return tsID;
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (10/16/2004 1:52:59 PM)
+ * @return cbit.sql.KeyValue
+ */
+public BigDecimal getTSKey() {
+	return tsKey;
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (10/16/2004 1:52:59 PM)
+ * @return java.lang.String
+ */
+public java.lang.String getTSNumericsBuild() {
+	return tsNumericsBuild;
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (10/16/2004 1:52:59 PM)
+ * @return java.lang.String
+ */
+public java.lang.String getTSVCellBuild() {
+	return tsVCellBuild;
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (10/17/2004 11:19:52 AM)
+ */
+public String toShortString() {
+	
+	return ":DBKey="+getTSKey()+" TSID="+getTSID()+" VCBuild="+getTSVCellBuild()+" NumerBuild="+getTSNumericsBuild();
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (10/17/2004 11:19:52 AM)
+ */
+public String toString() {
+	
+	return
+		getClass().getName() + "@" + Integer.toHexString(hashCode()) +
+		":DBKey="+getTSKey()+" TSID="+getTSID()+" VCBuild="+getTSVCellBuild()+" NumerBuild="+getTSNumericsBuild();
+}
+}
