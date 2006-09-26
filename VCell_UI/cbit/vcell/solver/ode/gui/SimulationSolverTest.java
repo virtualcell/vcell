@@ -10,7 +10,7 @@
  *******************************************************************************/
 package cbit.vcell.solver.ode.gui;
 
-import cbit.vcell.server.SimulationStatus;
+import cbit.vcell.solvers.SimulationStatus;
 
 /**
  * Insert the type's description here.
@@ -35,15 +35,15 @@ public static void main(java.lang.String[] args) {
 		String simulationName = args[4];
 		String clientTesterArgs[] = new String[] { location, username, password };
 		
-		cbit.vcell.client.server.ClientServerManager sessionManager = cbit.vcell.client.server.ClientTester.mainInit(clientTesterArgs,"SimulationSolverTest");
-		cbit.vcell.biomodel.BioModelInfo bmInfos[] = sessionManager.getDocumentManager().getBioModelInfos();
+		cbit.vcell.client.server.ClientServerManager sessionManager = cbit.vcell.client.test.ClientTester.mainInit(clientTesterArgs,"SimulationSolverTest");
+		cbit.util.BioModelInfo bmInfos[] = sessionManager.getDocumentManager().getBioModelInfos();
 
 		//
 		// select BioModel by name
 		//
-		cbit.vcell.biomodel.BioModelInfo selectedBMInfo = null;
+		cbit.util.BioModelInfo selectedBMInfo = null;
 		for (int i = 0; i < bmInfos.length; i++){
-			cbit.vcell.biomodel.BioModelInfo bmInfo = bmInfos[i];
+			cbit.util.BioModelInfo bmInfo = bmInfos[i];
 			if (bmInfo.getVersion().getName().equals(bioModelName)){
 				selectedBMInfo = bmInfo;
 				break;

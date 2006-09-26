@@ -16,7 +16,7 @@ import cbit.vcell.mapping.*;
  * Creation date: (3/8/00 11:10:26 PM)
  * @author: 
  */
-public class MatlabOdeFileCoderTest extends cbit.vcell.client.server.ClientTester {
+public class MatlabOdeFileCoderTest extends cbit.vcell.client.test.ClientTester {
 /**
  * Starts the application.
  * @param args an array of command-line arguments

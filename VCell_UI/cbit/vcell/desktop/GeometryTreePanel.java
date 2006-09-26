@@ -5,6 +5,7 @@ package cbit.vcell.desktop;
 ©*/
 import cbit.vcell.geometry.*;
 import cbit.vcell.server.*;
+import cbit.util.BioModelInfo;
 import cbit.util.DataAccessException;
 import cbit.util.Matchable;
 import cbit.util.User;
@@ -1436,7 +1437,7 @@ public boolean getPopupMenuDisabled() {
 /**
  * Comment
  */
-public cbit.vcell.biomodel.BioModelInfo getSelectedBioModelInfo(BioModelNode selectedBioModelNode) {
+public cbit.util.BioModelInfo getSelectedBioModelInfo(BioModelNode selectedBioModelNode) {
 	if (selectedBioModelNode.getUserObject() instanceof BioModelInfo){
 		return (BioModelInfo)selectedBioModelNode.getUserObject();
 	}

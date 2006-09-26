@@ -6,7 +6,7 @@ package cbit.vcell.model.gui;
 /**
  * This type was created in VisualAge.
  */
-public class EditSpeciesDialogTest extends cbit.vcell.client.server.ClientTester {
+public class EditSpeciesDialogTest extends cbit.vcell.client.test.ClientTester {
 /**
  * main entrypoint - starts the part when it is run as an application
  * @param args java.lang.String[]

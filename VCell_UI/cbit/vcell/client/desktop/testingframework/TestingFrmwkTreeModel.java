@@ -1,6 +1,7 @@
 package cbit.vcell.client.desktop.testingframework;
 
 import cbit.util.DataAccessException;
+import cbit.util.MathModelInfo;
 import cbit.vcell.numericstest.*;
 import cbit.vcell.simulation.Simulation;
 import cbit.vcell.simulation.SimulationInfo;
@@ -9,7 +10,6 @@ import java.util.Vector;
 import java.util.Enumeration;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.client.database.DatabaseListener;
-import cbit.vcell.mathmodel.MathModelInfo;
 import org.jdom.JDOMException;
 import java.io.IOException;
 import cbit.vcell.mathmodel.MathModel;

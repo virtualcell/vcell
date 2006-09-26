@@ -1,5 +1,4 @@
 package cbit.vcell.client.desktop.simulation;
-import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simulation.*;
 import cbit.vcell.client.*;
 import javax.swing.*;
@@ -8,6 +7,7 @@ import javax.swing.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.math.MathFactory;
 import cbit.vcell.modelapp.SimulationContext;
+import cbit.vcell.solvers.SimulationStatus;
 
 public class SimulationWorkspace implements java.beans.PropertyChangeListener {
 	private SimulationOwner simulationOwner = null;

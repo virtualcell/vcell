@@ -15,15 +15,15 @@ public class Activator implements BundleActivator {
 	}
 
 	public void start(BundleContext context) throws Exception {
-        System.out.println("Starting org.vcell.ui.Activator");
-		VCDocument initialDocument = null;
-		ClientServerInfo csInfo = ClientServerInfo.createLocalServerInfo("schaff", "me&jan");
-		try {
-			VCellClient.startClient(initialDocument, csInfo);
-		} catch (Throwable exception) {
-			System.err.println("Exception occurred in main() of VCellApplication");
-			exception.printStackTrace(System.out);
-		}
+		System.out.println("starting "+getClass().getName());
+//		VCDocument initialDocument = null;
+//		ClientServerInfo csInfo = ClientServerInfo.createLocalServerInfo("schaff", "me&jan");
+//		try {
+//			VCellClient.startClient(initialDocument, csInfo);
+//		} catch (Throwable exception) {
+//			System.err.println("Exception occurred in main() of VCellApplication");
+//			exception.printStackTrace(System.out);
+//		}
 	}
 
 	public void stop(BundleContext context) throws Exception {

@@ -1,10 +1,11 @@
 package cbit.vcell.client;
 
+import cbit.util.BioModelInfo;
 import cbit.util.DataAccessException;
+import cbit.util.MathModelInfo;
 import cbit.util.VCDataIdentifier;
 import cbit.util.VCDocument;
 import cbit.util.VCDocumentInfo;
-import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.export.ExportSpecs;
 import cbit.vcell.export.server.*;
 
@@ -16,8 +17,8 @@ import cbit.vcell.server.*;
 import cbit.vcell.simdata.DataManager;
 import cbit.vcell.simulation.*;
 import cbit.vcell.xml.merge.gui.TMLPanel;
-import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.modelapp.SimulationContext;
+import cbit.vcell.solvers.SimulationStatus;
 /**
  * Insert the type's description here.
  * Creation date: (5/21/2004 2:36:40 AM)

@@ -2,7 +2,7 @@ package cbit.vcell.client.desktop.simulation;
 import javax.swing.table.TableCellEditor;
 import java.util.*;
 import cbit.vcell.client.desktop.*;
-import cbit.vcell.server.SimulationStatus;
+import cbit.vcell.solvers.SimulationStatus;
 import cbit.vcell.simulation.*;
 
 import javax.swing.*;

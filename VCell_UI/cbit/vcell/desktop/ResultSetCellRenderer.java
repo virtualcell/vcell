@@ -1,11 +1,13 @@
 package cbit.vcell.desktop;
+import cbit.util.BioModelInfo;
+import cbit.util.MathModelInfo;
 import cbit.util.User;
 import cbit.vcell.mathmodel.*;
+import cbit.vcell.modeldb.SolverResultSetInfo;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.server.solvers.SolverResultSetInfo;
 import cbit.vcell.simulation.*;
 import cbit.vcell.biomodel.*;
 /**

@@ -13,9 +13,11 @@ import cbit.vcell.mapping.*;
 import cbit.vcell.server.*;
 import cbit.vcell.simulation.*;
 import cbit.vcell.xml.merge.NodeInfo;
+import cbit.util.BioModelInfo;
 import cbit.util.DataAccessException;
 import cbit.util.GroupAccessAll;
 import cbit.util.Matchable;
+import cbit.util.MathModelInfo;
 import cbit.util.User;
 import cbit.util.Version;
 import cbit.util.VersionFlag;
@@ -714,7 +716,7 @@ private void connEtoM1(VersionInfo value) {
 	try {
 		// user code begin {1}
 		// user code end
-		getMathModelMetaDataPanel().setMathModelInfo((cbit.vcell.mathmodel.MathModelInfo)getselectedVersionInfo1());
+		getMathModelMetaDataPanel().setMathModelInfo((cbit.util.MathModelInfo)getselectedVersionInfo1());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -1855,7 +1857,7 @@ public boolean getPopupMenuDisabled() {
 /**
  * Comment
  */
-public cbit.vcell.biomodel.BioModelInfo getSelectedBioModelInfo(BioModelNode selectedBioModelNode) {
+public cbit.util.BioModelInfo getSelectedBioModelInfo(BioModelNode selectedBioModelNode) {
 	if (selectedBioModelNode.getUserObject() instanceof BioModelInfo){
 		return (BioModelInfo)selectedBioModelNode.getUserObject();
 	}

@@ -1,6 +1,7 @@
 package cbit.vcell.client;
 import swingthreads.*;
 import cbit.vcell.client.server.*;
+import cbit.vcell.solvers.SimulationStatus;
 import cbit.vcell.server.*;
 import cbit.vcell.simulation.*;
 
@@ -51,7 +52,7 @@ DocumentWindowManager getDocumentWindowManager() {
  * @return cbit.vcell.solver.ode.gui.SimulationStatus
  * @param simulation cbit.vcell.solver.Simulation
  */
-public cbit.vcell.server.SimulationStatus getSimulationStatus(cbit.vcell.simulation.Simulation simulation) {
+public SimulationStatus getSimulationStatus(cbit.vcell.simulation.Simulation simulation) {
 	SimulationStatus cachedSimStatus = simHash.getSimulationStatus(simulation);
 	if (cachedSimStatus!=null){
 		if (simulation.getIsDirty()) {

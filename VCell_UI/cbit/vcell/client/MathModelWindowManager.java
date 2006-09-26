@@ -3,6 +3,7 @@ import cbit.util.KeyValue;
 import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.server.*;
 import cbit.vcell.simulation.*;
+import cbit.vcell.solvers.SimulationStatus;
 import cbit.vcell.client.desktop.simulation.*;
 import java.awt.*;
 import javax.swing.*;

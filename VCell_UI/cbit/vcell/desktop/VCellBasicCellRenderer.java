@@ -1,5 +1,7 @@
 package cbit.vcell.desktop;
+import cbit.util.BioModelInfo;
 import cbit.util.ISize;
+import cbit.util.MathModelInfo;
 import cbit.util.User;
 import cbit.util.Version;
 import cbit.image.VCImageInfo;
@@ -12,10 +14,10 @@ import cbit.vcell.mathmodel.*;
 import java.awt.Font;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.*;
-import cbit.vcell.server.solvers.SolverResultSetInfo;
 import cbit.vcell.simulation.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.modelapp.SimulationContext;
+import cbit.vcell.modeldb.SolverResultSetInfo;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.geometry.GeometryInfo;
 /**
@@ -527,7 +529,7 @@ protected void setComponentProperties(JLabel component, cbit.vcell.desktop.Annot
  * @return javax.swing.Icon
  * @param nodeUserObject java.lang.Object
  */
-protected void setComponentProperties(JLabel component, cbit.vcell.export.server.ExportLogEntry exportLogEntry) {
+protected void setComponentProperties(JLabel component, cbit.vcell.export.ExportLogEntry exportLogEntry) {
 
 	//component.setIcon(fieldResultsIcon);
 	

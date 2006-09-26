@@ -1,5 +1,7 @@
 package cbit.vcell.client.bionetgen;
 
+import cbit.vcell.client.test.ClientTester;
+
 /**
  * Insert the type's description here.
  * Creation date: (3/9/2006 11:32:10 AM)
@@ -27,7 +29,7 @@ public static void main(java.lang.String[] args) {
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
 
-		cbit.vcell.client.server.ClientServerManager csManager = cbit.vcell.client.server.ClientTester.mainInit(args, "BNGOutputPanelTest");
+		cbit.vcell.client.server.ClientServerManager csManager = ClientTester.mainInit(args, "BNGOutputPanelTest");
 		
 		aBNGOutputPanel.setBngService(csManager.getBNGSerivce());
 		

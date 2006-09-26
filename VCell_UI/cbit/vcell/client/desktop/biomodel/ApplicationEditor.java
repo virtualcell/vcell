@@ -1007,7 +1007,6 @@ private void showAnalysisTask(IAnalysisTask analysisTask){
 		getParameterEstimationPanel().invalidate();
 		getParameterEstimationPanel().repaint();
 	}
-
 }
 
 /**

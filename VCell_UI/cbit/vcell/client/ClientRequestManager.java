@@ -24,6 +24,7 @@ import cbit.vcell.simulation.*;
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.modelapp.SimulationContext;
+import cbit.vcell.solvers.SimulationStatus;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.client.data.DynamicDataManager;
 import cbit.vcell.client.data.MergedDynamicDataManager;

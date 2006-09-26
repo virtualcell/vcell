@@ -1,10 +1,10 @@
 package cbit.vcell.model.gui;
 import cbit.util.KeyValue;
 import cbit.util.UserCancelException;
-import cbit.vcell.modeldb.ReactionQuerySpec;
 import cbit.vcell.desktop.controls.AsynchClientTask;
 import cbit.vcell.dictionary.ReactionDescription;
 import cbit.vcell.dictionary.DBNonFormalUnboundSpecies;
+import cbit.vcell.dictionary.ReactionQuerySpec;
 import cbit.vcell.dictionary.SpeciesDescription;
 import cbit.vcell.model.*;
 import cbit.vcell.client.task.ClientTaskDispatcher;

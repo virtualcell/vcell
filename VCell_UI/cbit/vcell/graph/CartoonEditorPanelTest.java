@@ -3,12 +3,12 @@ package cbit.vcell.graph;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.biomodel.BioModelInfo;
+import cbit.util.BioModelInfo;
 import cbit.vcell.client.database.DocumentManager;
 /**
  * This type was created in VisualAge.
  */
-public class CartoonEditorPanelTest extends cbit.vcell.client.server.ClientTester {
+public class CartoonEditorPanelTest extends cbit.vcell.client.test.ClientTester {
 /**
  * main entrypoint - starts the part when it is run as an application
  * @param args java.lang.String[]

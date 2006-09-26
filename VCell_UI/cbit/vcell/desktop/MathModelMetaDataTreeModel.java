@@ -1,6 +1,8 @@
 package cbit.vcell.desktop;
 
 import cbit.util.DataAccessException;
+import cbit.util.MathModelChildSummary;
+import cbit.util.MathModelInfo;
 import cbit.vcell.mathmodel.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -13,7 +15,7 @@ import cbit.vcell.mathmodel.*;
  */
 public class MathModelMetaDataTreeModel extends javax.swing.tree.DefaultTreeModel {
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.vcell.mathmodel.MathModelInfo fieldMathModelInfo = null;
+	private cbit.util.MathModelInfo fieldMathModelInfo = null;
 /**
  * BioModelDbTreeModel constructor comment.
  * @param root javax.swing.tree.TreeNode
@@ -109,7 +111,7 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
  * @return The mathModelInfo property value.
  * @see #setMathModelInfo
  */
-public cbit.vcell.mathmodel.MathModelInfo getMathModelInfo() {
+public cbit.util.MathModelInfo getMathModelInfo() {
 	return fieldMathModelInfo;
 }
 /**
@@ -159,7 +161,7 @@ public synchronized void removePropertyChangeListener(java.lang.String propertyN
  * @param mathModelInfo The new value for the property.
  * @see #getMathModelInfo
  */
-public void setMathModelInfo(cbit.vcell.mathmodel.MathModelInfo mathModelInfo) {
+public void setMathModelInfo(cbit.util.MathModelInfo mathModelInfo) {
 	MathModelInfo oldValue = fieldMathModelInfo;
 	fieldMathModelInfo = mathModelInfo;
 	firePropertyChange("mathModelInfo", oldValue, mathModelInfo);

@@ -1,9 +1,9 @@
 package cbit.vcell.client;
 import cbit.util.KeyValue;
-import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simulation.Simulation;
 import cbit.vcell.simulation.SimulationOwner;
 import cbit.vcell.simulation.VCSimulationIdentifier;
+import cbit.vcell.solvers.SimulationStatus;
 import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.client.desktop.simulation.*;

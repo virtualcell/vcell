@@ -23,7 +23,7 @@ class IvjEventHandler implements java.beans.PropertyChangeListener {
 	private BioModelInfoCellRenderer ivjbioModelInfoCellRenderer = null;
 	private cbit.vcell.client.database.DocumentManager fieldDocumentManager = null;
 	private BioModelInfoTreeModel ivjbioModelInfoTreeModel = null;
-	private cbit.vcell.biomodel.BioModelInfo fieldBioModelInfo = null;
+	private cbit.util.BioModelInfo fieldBioModelInfo = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 /**
  * BioModelMetaDataPanel constructor comment.
@@ -181,7 +181,7 @@ public void expandAllRows() {
  * @return The bioModelInfo property value.
  * @see #setBioModelInfo
  */
-public cbit.vcell.biomodel.BioModelInfo getBioModelInfo() {
+public cbit.util.BioModelInfo getBioModelInfo() {
 	return fieldBioModelInfo;
 }
 /**
@@ -367,8 +367,8 @@ public void refresh() {
  * @param bioModelInfo The new value for the property.
  * @see #getBioModelInfo
  */
-public void setBioModelInfo(cbit.vcell.biomodel.BioModelInfo bioModelInfo) {
-	cbit.vcell.biomodel.BioModelInfo oldValue = fieldBioModelInfo;
+public void setBioModelInfo(cbit.util.BioModelInfo bioModelInfo) {
+	cbit.util.BioModelInfo oldValue = fieldBioModelInfo;
 	fieldBioModelInfo = bioModelInfo;
 	firePropertyChange("bioModelInfo", oldValue, bioModelInfo);
 }

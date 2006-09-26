@@ -786,11 +786,11 @@ public void findModelsUsingSelectedGeometry() {
 		return;
 	}
 
-	cbit.vcell.modeldb.ReferenceQuerySpec rqs = new cbit.vcell.modeldb.ReferenceQuerySpec(VersionableType.Geometry,selectedDocument.getVersion().getVersionKey());
+	ReferenceQuerySpec rqs = new ReferenceQuerySpec(VersionableType.Geometry,selectedDocument.getVersion().getVersionKey());
 	try{
-		cbit.vcell.modeldb.ReferenceQueryResult rqr = getRequestManager().getDocumentManager().findReferences(rqs);
+		ReferenceQueryResult rqr = getRequestManager().getDocumentManager().findReferences(rqs);
 		//cbit.vcell.modeldb.VersionableTypeVersion[] children = (rqr.getVersionableFamily().bChildren()?rqr.getVersionableFamily().getUniqueChildren():null);
-		cbit.vcell.modeldb.VersionableTypeVersion[] dependants = (rqr.getVersionableFamily().bDependants()?rqr.getVersionableFamily().getUniqueDependants():null);
+		VersionableTypeVersion[] dependants = (rqr.getVersionableFamily().bDependants()?rqr.getVersionableFamily().getUniqueDependants():null);
 		//System.out.println("\n");
 		//if(children != null){
 			//for(int i=0;i<children.length;i+= 1){
@@ -825,7 +825,7 @@ public void findModelsUsingSelectedGeometry() {
 				boolean isBioModel = dependants[i].getVType().equals(VersionableType.BioModelMetaData);
 				boolean isTop = isBioModel || dependants[i].getVType().equals(VersionableType.MathModelMetaData);
 				if(isTop){
-					cbit.vcell.modeldb.VersionableRelationship[] vrArr2 = rqr.getVersionableFamily().getDependantRelationships();
+					VersionableRelationship[] vrArr2 = rqr.getVersionableFamily().getDependantRelationships();
 					for(int j=0;j<vrArr2.length;j+= 1){
 						if( (vrArr2[j].from() == dependants[i]) &&
 							vrArr2[j].to().getVType().equals((isBioModel?VersionableType.SimulationContext:VersionableType.MathDescription))){
@@ -851,7 +851,7 @@ public void findModelsUsingSelectedGeometry() {
 			Object[] listObj = choices.keySet().toArray();
 			Object o = cbit.gui.DialogUtils.showListDialog(getComponent(),listObj,"Models Referencing Geometry (Select To Open) "+selectedDocument.getVersion().getName()+" "+selectedDocument.getVersion().getDate());
 			if(o != null){
-				cbit.vcell.modeldb.VersionableTypeVersion v = (cbit.vcell.modeldb.VersionableTypeVersion)choices.get(o);
+				VersionableTypeVersion v = (VersionableTypeVersion)choices.get(o);
 				//System.out.println(v);
 				if(v.getVType().equals(VersionableType.BioModelMetaData)){
 					BioModelInfo bmi = getRequestManager().getDocumentManager().getBioModelInfo(v.getVersion().getVersionKey());

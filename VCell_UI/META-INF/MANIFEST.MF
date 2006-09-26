@@ -1,21 +1,22 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: org.vcell.ui
-Bundle-SymbolicName: org.vcell.ui
+Bundle-SymbolicName: org.vcell.ui;singleton:=true
 Bundle-Version: 1.0.0
 Bundle-Localization: plugin
-Require-Bundle: org.vcell.common,
+Require-Bundle: org.eclipse.osgi,
+ org.vcell.common,
  org.vcell.util,
+ org.vcell.units,
+ org.vcell.expression,
  org.vcell.render,
  org.vcell.server,
  org.vcell.manager,
  org.vcell.solvers,
  org.vcell.simdata,
  org.vcell.xml.compare,
- org.vcell.expression,
  org.vcell.vcml,
  org.vcell.xml.common,
- org.vcell.units,
  org.vcell.matrix,
  org.vcell.geometry,
  org.vcell.image,
@@ -27,8 +28,18 @@ Require-Bundle: org.vcell.common,
  org.vcell.biomodel,
  org.vcell.mathmodel,
  org.vcell.modelapp,
- org.eclipse.osgi,
- org.vcell.mapping
+ org.vcell.mapping,
+ org.vcell.database,
+ org.vcell.clientTest,
+ org.vcell.constraints,
+ org.vcell.experiment,
+ org.vcell.modelapp.constraints,
+ org.vcell.modelapp.parest,
+ org.vcell.modelapp.physics,
+ org.vcell.ncbc.physics,
+ org.vcell.optimization,
+ org.vcell.physics,
+ org.eclipse.core.runtime
 Export-Package: cbit.image.gui,
  cbit.vcell.client,
  cbit.vcell.client.bionetgen,
@@ -58,3 +69,4 @@ Export-Package: cbit.image.gui,
  cbit.xml.viewer,
  org.vcell.ui
 Bundle-Activator: org.vcell.ui.Activator
+Eclipse-LazyStart: false
