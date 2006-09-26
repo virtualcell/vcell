@@ -7,7 +7,7 @@ package cbit.matlab;
  */
 public class MatlabFunctionResults {
 	private String stdout = null;
-	private java.util.Hashtable varHash = new java.util.Hashtable();
+	private java.util.Hashtable<String,double[][]> varHash = new java.util.Hashtable<String,double[][]>();
 /**
  * MatlabFunctionResults constructor comment.
  */
@@ -44,7 +44,7 @@ public String getStdout() {
  * @param varName java.lang.String
  */
 public double[][] getValue(String varName) {
-	return (double[][])varHash.get(varName);
+	return varHash.get(varName);
 }
 /**
  * Insert the method's description here.
@@ -52,7 +52,7 @@ public double[][] getValue(String varName) {
  * @return java.lang.String[]
  */
 public String[] getVariableNames() {
-	return (String[])cbit.util.BeanUtils.getArray(varHash.keys(),String.class);
+	return varHash.keySet().toArray(new String[0]);
 }
 /**
  * Insert the method's description here.
