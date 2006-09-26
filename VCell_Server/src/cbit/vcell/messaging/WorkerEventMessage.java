@@ -7,6 +7,7 @@ import javax.jms.TextMessage;
 
 import cbit.rmi.event.WorkerEvent;
 import cbit.util.KeyValue;
+import cbit.util.MessageConstants;
 import cbit.util.User;
 import cbit.vcell.messaging.server.SimulationDispatcher;
 import cbit.vcell.simulation.Simulation;

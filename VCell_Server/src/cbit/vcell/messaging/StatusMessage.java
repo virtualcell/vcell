@@ -3,6 +3,7 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.ObjectMessage;
 
+import cbit.util.MessageConstants;
 import cbit.vcell.solvers.SimulationJobStatus;
 
 /**

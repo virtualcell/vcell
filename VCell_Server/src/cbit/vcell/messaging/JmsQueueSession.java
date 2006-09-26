@@ -15,6 +15,8 @@ import javax.jms.QueueReceiver;
 import javax.jms.QueueSender;
 import javax.jms.TemporaryQueue;
 
+import cbit.util.MessageConstants;
+
 /**
  * Insert the type's description here.
  * Creation date: (10/8/2003 10:44:46 AM)

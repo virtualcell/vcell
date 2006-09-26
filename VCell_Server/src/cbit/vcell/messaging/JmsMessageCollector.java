@@ -3,6 +3,7 @@ import javax.swing.event.EventListenerList;
 
 import cbit.rmi.event.SimulationJobStatusEvent;
 import cbit.rmi.event.VCellMessageEvent;
+import cbit.util.MessageConstants;
 import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.vcell.export.ExportEvent;

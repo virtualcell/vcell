@@ -1,5 +1,7 @@
 package cbit.vcell.messaging;
 
+import cbit.util.MessageConstants;
+
 /**
  * Insert the type's description here.
  * Creation date: (8/8/2003 10:23:15 AM)

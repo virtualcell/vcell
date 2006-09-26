@@ -4,6 +4,7 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.TextMessage;
 
+import cbit.util.MessageConstants;
 import cbit.util.xml.XmlParseException;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.simulation.Simulation;
