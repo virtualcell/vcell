@@ -18,4 +18,5 @@ Require-Bundle: org.vcell.modelapp,
  org.vcell.mapping,
  org.vcell.optimization,
  org.vcell.simdata,
- org.eclipse.core.contenttype
+ org.eclipse.core.contenttype,
+ org.vcell.graph
