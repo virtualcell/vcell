@@ -11,9 +11,10 @@ Export-Package: cbit.vcell.mapping,
 Require-Bundle: org.vcell.expression,
  org.vcell.units,
  org.vcell.util,
- org.vcell.common,
  org.vcell.math,
  org.vcell.modelapp,
  org.vcell.physiology,
  org.vcell.geometry,
- org.vcell.matrix
+ org.vcell.matrix,
+ org.vcell.common,
+ org.vcell.simulation

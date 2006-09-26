@@ -27,7 +27,7 @@ public abstract class ElectricalDevice implements ScopedSymbolTable {
 	};
 	private ElectricalDevice.ElectricalDeviceParameter[] fieldParameters = null;
 	
-	public class ElectricalDeviceNameScope extends cbit.vcell.model.BioNameScope {
+	public class ElectricalDeviceNameScope extends cbit.vcell.parser.BioNameScope {
 		private final NameScope children[] = new NameScope[0]; // always empty
 		public ElectricalDeviceNameScope(){
 			super();
