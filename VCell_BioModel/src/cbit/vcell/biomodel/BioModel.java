@@ -11,6 +11,7 @@ import java.util.Vector;
 
 import cbit.vcell.simulation.Simulation;
 import cbit.util.BeanUtils;
+import cbit.util.BioModelChildSummary;
 import cbit.util.ObjectNotFoundException;
 import cbit.util.Version;
 import cbit.vcell.model.VCellNames;
@@ -44,6 +45,40 @@ public BioModel(Version version) {
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
 	}
+}
+
+/**
+ * Insert the method's description here.
+ * Creation date: (8/23/2004 11:41:14 AM)
+ * @param savedBioModel cbit.vcell.biomodel.BioModel
+ */
+public BioModelChildSummary createBioModelChildSummary() {
+
+
+	cbit.vcell.modelapp.SimulationContext[] simContexts = getSimulationContexts();
+	
+	String[] scNames = new String[simContexts.length];
+	String[] scAnnots = new String[scNames.length];
+	String[] geoNames = new String[scNames.length];
+	int[] geoDims = new int[scNames.length];
+	String[][] simNames = new String[scNames.length][];
+	String[][] simAnnots = new String[scNames.length][];
+	
+	for(int i=0;i<simContexts.length;i+= 1){
+		scNames[i] = simContexts[i].getName();
+		scAnnots[i]= simContexts[i].getDescription();
+		geoNames[i] = simContexts[i].getGeometry().getName();
+		geoDims[i] = simContexts[i].getGeometry().getDimension();
+		
+		cbit.vcell.simulation.Simulation[] sims = simContexts[i].getSimulations();
+		simNames[i] = new String[sims.length];
+		simAnnots[i] =  new String[sims.length];
+		for(int j=0;j< sims.length;j+= 1){
+			simNames[i][j] = sims[j].getName();
+			simAnnots[i][j] = sims[j].getDescription();
+		}
+	}
+	return new BioModelChildSummary(scNames,scAnnots,simNames,simAnnots,geoNames,geoDims);
 }
 
 
