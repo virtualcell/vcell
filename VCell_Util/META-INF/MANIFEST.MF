@@ -6,7 +6,6 @@ Bundle-Version: 1.0.0
 Bundle-Localization: plugin
 Export-Package: cbit.gui,
  cbit.gui.graph,
- cbit.matlab,
  cbit.plot,
  cbit.util,
  cbit.util.graph,
