@@ -1,12 +1,14 @@
 /**
  * 
  */
-package org.vcell.physics.component;
+package org.vcell.physics.math;
 
-import org.vcell.physics.math.BipartiteMatchings;
-import org.vcell.physics.math.MathSystem;
+import org.vcell.physics.component.OOModel;
+import org.vcell.physics.component.StronglyConnectedComponent;
+import org.vcell.physics.component.VarEquationAssignment;
 
 import cbit.util.graph.Graph;
+import cbit.vcell.math.MathDescription;
 
 public class ModelAnalysisResults {
 	public OOModel oOModel = null;
@@ -17,4 +19,5 @@ public class ModelAnalysisResults {
 	public BipartiteMatchings.Matching matching = null;
 	public StronglyConnectedComponent[] sccArray = null;
 	public VarEquationAssignment[] varEqnAssignments = null;
+	public MathDescription mathDescription = null;
 }
