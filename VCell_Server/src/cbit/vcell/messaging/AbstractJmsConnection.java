@@ -8,6 +8,8 @@ import java.util.List;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 
+import cbit.util.MessageConstants;
+
 /**
  * Insert the type's description here.
  * Creation date: (6/6/2003 11:16:18 AM)
