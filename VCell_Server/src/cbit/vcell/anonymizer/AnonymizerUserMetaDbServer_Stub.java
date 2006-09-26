@@ -3,6 +3,11 @@
 
 package cbit.vcell.anonymizer;
 
+import cbit.util.ReferenceQueryResult;
+import cbit.util.ReferenceQuerySpec;
+import cbit.util.VersionableFamily;
+import cbit.util.VersionableType;
+
 public final class AnonymizerUserMetaDbServer_Stub
     extends java.rmi.server.RemoteStub
     implements cbit.vcell.server.UserMetaDbServer, java.rmi.Remote
@@ -74,8 +79,8 @@ public final class AnonymizerUserMetaDbServer_Stub
 	    $method_deleteResultSetExport_4 = cbit.vcell.server.UserMetaDbServer.class.getMethod("deleteResultSetExport", new java.lang.Class[] {cbit.util.KeyValue.class});
 	    $method_deleteVCImage_5 = cbit.vcell.server.UserMetaDbServer.class.getMethod("deleteVCImage", new java.lang.Class[] {cbit.util.KeyValue.class});
 	    $method_doTestSuiteOP_6 = cbit.vcell.server.UserMetaDbServer.class.getMethod("doTestSuiteOP", new java.lang.Class[] {cbit.vcell.numericstest.TestSuiteOP.class});
-	    $method_findReferences_7 = cbit.vcell.server.UserMetaDbServer.class.getMethod("findReferences", new java.lang.Class[] {cbit.vcell.modeldb.ReferenceQuerySpec.class});
-	    $method_getAllReferences_8 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getAllReferences", new java.lang.Class[] {cbit.sql.VersionableType.class, cbit.util.KeyValue.class});
+	    $method_findReferences_7 = cbit.vcell.server.UserMetaDbServer.class.getMethod("findReferences", new java.lang.Class[] {ReferenceQuerySpec.class});
+	    $method_getAllReferences_8 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getAllReferences", new java.lang.Class[] {VersionableType.class, cbit.util.KeyValue.class});
 	    $method_getBioModelInfo_9 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getBioModelInfo", new java.lang.Class[] {cbit.util.KeyValue.class});
 	    $method_getBioModelInfos_10 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getBioModelInfos", new java.lang.Class[] {boolean.class});
 	    $method_getBioModelMetaData_11 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getBioModelMetaData", new java.lang.Class[] {cbit.util.KeyValue.class});
@@ -83,7 +88,7 @@ public final class AnonymizerUserMetaDbServer_Stub
 	    $method_getBioModelXML_13 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getBioModelXML", new java.lang.Class[] {cbit.util.KeyValue.class});
 	    $method_getBoundSpecies_14 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getBoundSpecies", new java.lang.Class[] {cbit.vcell.dictionary.DBFormalSpecies.class});
 	    $method_getDatabaseSpecies_15 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getDatabaseSpecies", new java.lang.Class[] {java.lang.String.class, boolean.class, cbit.vcell.dictionary.FormalSpeciesType.class, int.class, int.class, boolean.class});
-	    $method_getDictionaryReactions_16 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getDictionaryReactions", new java.lang.Class[] {cbit.vcell.modeldb.ReactionQuerySpec.class});
+	    $method_getDictionaryReactions_16 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getDictionaryReactions", new java.lang.Class[] {cbit.vcell.dictionary.ReactionQuerySpec.class});
 	    $method_getExportLog_17 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getExportLog", new java.lang.Class[] {cbit.util.KeyValue.class});
 	    $method_getExportLogs_18 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getExportLogs", new java.lang.Class[] {boolean.class});
 	    $method_getGeometryInfo_19 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getGeometryInfo", new java.lang.Class[] {cbit.util.KeyValue.class});
@@ -103,15 +108,15 @@ public final class AnonymizerUserMetaDbServer_Stub
 	    $method_getSimulationXML_33 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getSimulationXML", new java.lang.Class[] {cbit.util.KeyValue.class});
 	    $method_getTestSuite_34 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getTestSuite", new java.lang.Class[] {java.math.BigDecimal.class});
 	    $method_getTestSuiteInfos_35 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getTestSuiteInfos", new java.lang.Class[] {});
-	    $method_getUserReactionDescriptions_36 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getUserReactionDescriptions", new java.lang.Class[] {cbit.vcell.modeldb.ReactionQuerySpec.class});
+	    $method_getUserReactionDescriptions_36 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getUserReactionDescriptions", new java.lang.Class[] {cbit.vcell.dictionary.ReactionQuerySpec.class});
 	    $method_getVCImageInfo_37 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getVCImageInfo", new java.lang.Class[] {cbit.util.KeyValue.class});
 	    $method_getVCImageInfos_38 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getVCImageInfos", new java.lang.Class[] {boolean.class});
 	    $method_getVCImageXML_39 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getVCImageXML", new java.lang.Class[] {cbit.util.KeyValue.class});
 	    $method_getVCInfoContainer_40 = cbit.vcell.server.UserMetaDbServer.class.getMethod("getVCInfoContainer", new java.lang.Class[] {});
-	    $method_groupAddUser_41 = cbit.vcell.server.UserMetaDbServer.class.getMethod("groupAddUser", new java.lang.Class[] {cbit.sql.VersionableType.class, cbit.util.KeyValue.class, java.lang.String.class, boolean.class});
-	    $method_groupRemoveUser_42 = cbit.vcell.server.UserMetaDbServer.class.getMethod("groupRemoveUser", new java.lang.Class[] {cbit.sql.VersionableType.class, cbit.util.KeyValue.class, java.lang.String.class, boolean.class});
-	    $method_groupSetPrivate_43 = cbit.vcell.server.UserMetaDbServer.class.getMethod("groupSetPrivate", new java.lang.Class[] {cbit.sql.VersionableType.class, cbit.util.KeyValue.class});
-	    $method_groupSetPublic_44 = cbit.vcell.server.UserMetaDbServer.class.getMethod("groupSetPublic", new java.lang.Class[] {cbit.sql.VersionableType.class, cbit.util.KeyValue.class});
+	    $method_groupAddUser_41 = cbit.vcell.server.UserMetaDbServer.class.getMethod("groupAddUser", new java.lang.Class[] {VersionableType.class, cbit.util.KeyValue.class, java.lang.String.class, boolean.class});
+	    $method_groupRemoveUser_42 = cbit.vcell.server.UserMetaDbServer.class.getMethod("groupRemoveUser", new java.lang.Class[] {VersionableType.class, cbit.util.KeyValue.class, java.lang.String.class, boolean.class});
+	    $method_groupSetPrivate_43 = cbit.vcell.server.UserMetaDbServer.class.getMethod("groupSetPrivate", new java.lang.Class[] {VersionableType.class, cbit.util.KeyValue.class});
+	    $method_groupSetPublic_44 = cbit.vcell.server.UserMetaDbServer.class.getMethod("groupSetPublic", new java.lang.Class[] {VersionableType.class, cbit.util.KeyValue.class});
 	    $method_replacePreferences_45 = cbit.vcell.server.UserMetaDbServer.class.getMethod("replacePreferences", new java.lang.Class[] {cbit.util.Preference[].class});
 	    $method_saveBioModel_46 = cbit.vcell.server.UserMetaDbServer.class.getMethod("saveBioModel", new java.lang.Class[] {cbit.util.BigString.class, java.lang.String[].class});
 	    $method_saveBioModelAs_47 = cbit.vcell.server.UserMetaDbServer.class.getMethod("saveBioModelAs", new java.lang.Class[] {cbit.util.BigString.class, java.lang.String.class, java.lang.String[].class});
@@ -257,12 +262,12 @@ public final class AnonymizerUserMetaDbServer_Stub
     }
     
     // implementation of findReferences(ReferenceQuerySpec)
-    public cbit.vcell.modeldb.ReferenceQueryResult findReferences(cbit.vcell.modeldb.ReferenceQuerySpec $param_ReferenceQuerySpec_1)
+    public ReferenceQueryResult findReferences(ReferenceQuerySpec $param_ReferenceQuerySpec_1)
 	throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_findReferences_7, new java.lang.Object[] {$param_ReferenceQuerySpec_1}, -5989973960170332111L);
-	    return ((cbit.vcell.modeldb.ReferenceQueryResult) $result);
+	    return ((ReferenceQueryResult) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -275,12 +280,12 @@ public final class AnonymizerUserMetaDbServer_Stub
     }
     
     // implementation of getAllReferences(VersionableType, KeyValue)
-    public cbit.vcell.modeldb.VersionableFamily getAllReferences(cbit.sql.VersionableType $param_VersionableType_1, cbit.util.KeyValue $param_KeyValue_2)
+    public VersionableFamily getAllReferences(VersionableType $param_VersionableType_1, cbit.util.KeyValue $param_KeyValue_2)
 	throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getAllReferences_8, new java.lang.Object[] {$param_VersionableType_1, $param_KeyValue_2}, 5223684507727730597L);
-	    return ((cbit.vcell.modeldb.VersionableFamily) $result);
+	    return ((VersionableFamily) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -293,12 +298,12 @@ public final class AnonymizerUserMetaDbServer_Stub
     }
     
     // implementation of getBioModelInfo(KeyValue)
-    public cbit.vcell.biomodel.BioModelInfo getBioModelInfo(cbit.util.KeyValue $param_KeyValue_1)
+    public cbit.util.BioModelInfo getBioModelInfo(cbit.util.KeyValue $param_KeyValue_1)
 	throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getBioModelInfo_9, new java.lang.Object[] {$param_KeyValue_1}, -5753591781724539648L);
-	    return ((cbit.vcell.biomodel.BioModelInfo) $result);
+	    return ((cbit.util.BioModelInfo) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -311,12 +316,12 @@ public final class AnonymizerUserMetaDbServer_Stub
     }
     
     // implementation of getBioModelInfos(boolean)
-    public cbit.vcell.biomodel.BioModelInfo[] getBioModelInfos(boolean $param_boolean_1)
+    public cbit.util.BioModelInfo[] getBioModelInfos(boolean $param_boolean_1)
 	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getBioModelInfos_10, new java.lang.Object[] {new java.lang.Boolean($param_boolean_1)}, -8438673620305678606L);
-	    return ((cbit.vcell.biomodel.BioModelInfo[]) $result);
+	    return ((cbit.util.BioModelInfo[]) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -419,7 +424,7 @@ public final class AnonymizerUserMetaDbServer_Stub
     }
     
     // implementation of getDictionaryReactions(ReactionQuerySpec)
-    public cbit.vcell.dictionary.ReactionDescription[] getDictionaryReactions(cbit.vcell.modeldb.ReactionQuerySpec $param_ReactionQuerySpec_1)
+    public cbit.vcell.dictionary.ReactionDescription[] getDictionaryReactions(cbit.vcell.dictionary.ReactionQuerySpec $param_ReactionQuerySpec_1)
 	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
@@ -437,12 +442,12 @@ public final class AnonymizerUserMetaDbServer_Stub
     }
     
     // implementation of getExportLog(KeyValue)
-    public cbit.vcell.export.server.ExportLog getExportLog(cbit.util.KeyValue $param_KeyValue_1)
+    public cbit.vcell.export.ExportLog getExportLog(cbit.util.KeyValue $param_KeyValue_1)
 	throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getExportLog_17, new java.lang.Object[] {$param_KeyValue_1}, -501999640001832687L);
-	    return ((cbit.vcell.export.server.ExportLog) $result);
+	    return ((cbit.vcell.export.ExportLog) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -455,12 +460,12 @@ public final class AnonymizerUserMetaDbServer_Stub
     }
     
     // implementation of getExportLogs(boolean)
-    public cbit.vcell.export.server.ExportLog[] getExportLogs(boolean $param_boolean_1)
+    public cbit.vcell.export.ExportLog[] getExportLogs(boolean $param_boolean_1)
 	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getExportLogs_18, new java.lang.Object[] {new java.lang.Boolean($param_boolean_1)}, 6640855147598878398L);
-	    return ((cbit.vcell.export.server.ExportLog[]) $result);
+	    return ((cbit.vcell.export.ExportLog[]) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -527,12 +532,12 @@ public final class AnonymizerUserMetaDbServer_Stub
     }
     
     // implementation of getMathModelInfo(KeyValue)
-    public cbit.vcell.mathmodel.MathModelInfo getMathModelInfo(cbit.util.KeyValue $param_KeyValue_1)
+    public cbit.util.MathModelInfo getMathModelInfo(cbit.util.KeyValue $param_KeyValue_1)
 	throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getMathModelInfo_22, new java.lang.Object[] {$param_KeyValue_1}, -5784692826735593487L);
-	    return ((cbit.vcell.mathmodel.MathModelInfo) $result);
+	    return ((cbit.util.MathModelInfo) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -545,12 +550,12 @@ public final class AnonymizerUserMetaDbServer_Stub
     }
     
     // implementation of getMathModelInfos(boolean)
-    public cbit.vcell.mathmodel.MathModelInfo[] getMathModelInfos(boolean $param_boolean_1)
+    public cbit.util.MathModelInfo[] getMathModelInfos(boolean $param_boolean_1)
 	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getMathModelInfos_23, new java.lang.Object[] {new java.lang.Boolean($param_boolean_1)}, 6675761140708419830L);
-	    return ((cbit.vcell.mathmodel.MathModelInfo[]) $result);
+	    return ((cbit.util.MathModelInfo[]) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -671,12 +676,12 @@ public final class AnonymizerUserMetaDbServer_Stub
     }
     
     // implementation of getResultSetInfos(boolean)
-    public cbit.vcell.server.solvers.SolverResultSetInfo[] getResultSetInfos(boolean $param_boolean_1)
+    public cbit.vcell.modeldb.SolverResultSetInfo[] getResultSetInfos(boolean $param_boolean_1)
 	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getResultSetInfos_30, new java.lang.Object[] {new java.lang.Boolean($param_boolean_1)}, 9084030373467636590L);
-	    return ((cbit.vcell.server.solvers.SolverResultSetInfo[]) $result);
+	    return ((cbit.vcell.modeldb.SolverResultSetInfo[]) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -689,12 +694,12 @@ public final class AnonymizerUserMetaDbServer_Stub
     }
     
     // implementation of getSimulationStatus(KeyValue)
-    public cbit.vcell.server.SimulationStatus getSimulationStatus(cbit.util.KeyValue $param_KeyValue_1)
+    public cbit.vcell.solvers.SimulationStatus getSimulationStatus(cbit.util.KeyValue $param_KeyValue_1)
 	throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getSimulationStatus_31, new java.lang.Object[] {$param_KeyValue_1}, 5499940537724822751L);
-	    return ((cbit.vcell.server.SimulationStatus) $result);
+	    return ((cbit.vcell.solvers.SimulationStatus) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -707,12 +712,12 @@ public final class AnonymizerUserMetaDbServer_Stub
     }
     
     // implementation of getSimulationStatus(KeyValue[])
-    public cbit.vcell.server.SimulationStatus[] getSimulationStatus(cbit.util.KeyValue[] $param_arrayOf_KeyValue_1)
+    public cbit.vcell.solvers.SimulationStatus[] getSimulationStatus(cbit.util.KeyValue[] $param_arrayOf_KeyValue_1)
 	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getSimulationStatus_32, new java.lang.Object[] {$param_arrayOf_KeyValue_1}, -2253169208243213843L);
-	    return ((cbit.vcell.server.SimulationStatus[]) $result);
+	    return ((cbit.vcell.solvers.SimulationStatus[]) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -779,7 +784,7 @@ public final class AnonymizerUserMetaDbServer_Stub
     }
     
     // implementation of getUserReactionDescriptions(ReactionQuerySpec)
-    public cbit.vcell.dictionary.ReactionDescription[] getUserReactionDescriptions(cbit.vcell.modeldb.ReactionQuerySpec $param_ReactionQuerySpec_1)
+    public cbit.vcell.dictionary.ReactionDescription[] getUserReactionDescriptions(cbit.vcell.dictionary.ReactionQuerySpec $param_ReactionQuerySpec_1)
 	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
@@ -869,7 +874,7 @@ public final class AnonymizerUserMetaDbServer_Stub
     }
     
     // implementation of groupAddUser(VersionableType, KeyValue, String, boolean)
-    public cbit.util.VersionInfo groupAddUser(cbit.sql.VersionableType $param_VersionableType_1, cbit.util.KeyValue $param_KeyValue_2, java.lang.String $param_String_3, boolean $param_boolean_4)
+    public cbit.util.VersionInfo groupAddUser(VersionableType $param_VersionableType_1, cbit.util.KeyValue $param_KeyValue_2, java.lang.String $param_String_3, boolean $param_boolean_4)
 	throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException
     {
 	try {
@@ -887,7 +892,7 @@ public final class AnonymizerUserMetaDbServer_Stub
     }
     
     // implementation of groupRemoveUser(VersionableType, KeyValue, String, boolean)
-    public cbit.util.VersionInfo groupRemoveUser(cbit.sql.VersionableType $param_VersionableType_1, cbit.util.KeyValue $param_KeyValue_2, java.lang.String $param_String_3, boolean $param_boolean_4)
+    public cbit.util.VersionInfo groupRemoveUser(VersionableType $param_VersionableType_1, cbit.util.KeyValue $param_KeyValue_2, java.lang.String $param_String_3, boolean $param_boolean_4)
 	throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException
     {
 	try {
@@ -905,7 +910,7 @@ public final class AnonymizerUserMetaDbServer_Stub
     }
     
     // implementation of groupSetPrivate(VersionableType, KeyValue)
-    public cbit.util.VersionInfo groupSetPrivate(cbit.sql.VersionableType $param_VersionableType_1, cbit.util.KeyValue $param_KeyValue_2)
+    public cbit.util.VersionInfo groupSetPrivate(VersionableType $param_VersionableType_1, cbit.util.KeyValue $param_KeyValue_2)
 	throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException
     {
 	try {
@@ -923,7 +928,7 @@ public final class AnonymizerUserMetaDbServer_Stub
     }
     
     // implementation of groupSetPublic(VersionableType, KeyValue)
-    public cbit.util.VersionInfo groupSetPublic(cbit.sql.VersionableType $param_VersionableType_1, cbit.util.KeyValue $param_KeyValue_2)
+    public cbit.util.VersionInfo groupSetPublic(VersionableType $param_VersionableType_1, cbit.util.KeyValue $param_KeyValue_2)
 	throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException
     {
 	try {

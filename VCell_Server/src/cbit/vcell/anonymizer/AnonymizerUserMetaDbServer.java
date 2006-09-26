@@ -1,7 +1,11 @@
 package cbit.vcell.anonymizer;
 import cbit.gui.PropertyLoader;
 import cbit.util.KeyValue;
+import cbit.util.ReferenceQueryResult;
+import cbit.util.ReferenceQuerySpec;
 import cbit.util.SessionLog;
+import cbit.util.VersionableFamily;
+import cbit.util.VersionableType;
 /**
  * Insert the type's description here.
  * Creation date: (5/14/2006 10:57:49 PM)
@@ -101,20 +105,20 @@ public cbit.vcell.numericstest.TestSuiteOPResults doTestSuiteOP(cbit.vcell.numer
  * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.modeldb.ReferenceQueryResult findReferences(cbit.vcell.modeldb.ReferenceQuerySpec rqs) throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException {
-	return (cbit.vcell.modeldb.ReferenceQueryResult)remoteCall("findReferences", new Class[] {cbit.vcell.modeldb.ReferenceQuerySpec.class}, new Object[] {rqs});	
+public ReferenceQueryResult findReferences(ReferenceQuerySpec rqs) throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException {
+	return (ReferenceQueryResult)remoteCall("findReferences", new Class[] {ReferenceQuerySpec.class}, new Object[] {rqs});	
 }
 
 
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.modeldb.VersionableFamily
- * @param vType cbit.sql.VersionableType
+ * @param vType VersionableType
  * @param key KeyValue
  */
-public cbit.vcell.modeldb.VersionableFamily getAllReferences(cbit.sql.VersionableType vType, KeyValue key) throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException {
-	return (cbit.vcell.modeldb.VersionableFamily)remoteCall("getAllReferences", 
-		new Class[] {cbit.sql.VersionableType.class, KeyValue.class}, new Object[] {vType, key});	
+public VersionableFamily getAllReferences(VersionableType vType, KeyValue key) throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException {
+	return (VersionableFamily)remoteCall("getAllReferences", 
+		new Class[] {VersionableType.class, KeyValue.class}, new Object[] {vType, key});	
 }
 
 
@@ -125,8 +129,8 @@ public cbit.vcell.modeldb.VersionableFamily getAllReferences(cbit.sql.Versionabl
  * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.biomodel.BioModelInfo getBioModelInfo(KeyValue key) throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException {
-	return (cbit.vcell.biomodel.BioModelInfo)remoteCall("getBioModelInfo", new Class[] {KeyValue.class}, new Object[] {key});
+public cbit.util.BioModelInfo getBioModelInfo(KeyValue key) throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException {
+	return (cbit.util.BioModelInfo)remoteCall("getBioModelInfo", new Class[] {KeyValue.class}, new Object[] {key});
 }
 
 
@@ -137,8 +141,8 @@ public cbit.vcell.biomodel.BioModelInfo getBioModelInfo(KeyValue key) throws cbi
  * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.biomodel.BioModelInfo[] getBioModelInfos(boolean bAll) throws cbit.util.DataAccessException, java.rmi.RemoteException {
-	return (cbit.vcell.biomodel.BioModelInfo[])remoteCall("getBioModelInfos", new Class[] {boolean.class}, new Object[] {new Boolean(bAll)});
+public cbit.util.BioModelInfo[] getBioModelInfos(boolean bAll) throws cbit.util.DataAccessException, java.rmi.RemoteException {
+	return (cbit.util.BioModelInfo[])remoteCall("getBioModelInfos", new Class[] {boolean.class}, new Object[] {new Boolean(bAll)});
 }
 
 
@@ -199,8 +203,8 @@ public cbit.vcell.dictionary.DBFormalSpecies[] getDatabaseSpecies(String likeStr
 /**
  * getDictionaryReactions method comment.
  */
-public cbit.vcell.dictionary.ReactionDescription[] getDictionaryReactions(cbit.vcell.modeldb.ReactionQuerySpec reactionQuerySpec) throws cbit.util.DataAccessException, java.rmi.RemoteException {
-	return (cbit.vcell.dictionary.ReactionDescription[])remoteCall("getDictionaryReactions", new Class[] {cbit.vcell.modeldb.ReactionQuerySpec.class}, new Object[] {reactionQuerySpec});
+public cbit.vcell.dictionary.ReactionDescription[] getDictionaryReactions(cbit.vcell.dictionary.ReactionQuerySpec reactionQuerySpec) throws cbit.util.DataAccessException, java.rmi.RemoteException {
+	return (cbit.vcell.dictionary.ReactionDescription[])remoteCall("getDictionaryReactions", new Class[] {cbit.vcell.dictionary.ReactionQuerySpec.class}, new Object[] {reactionQuerySpec});
 }
 
 
@@ -210,8 +214,8 @@ public cbit.vcell.dictionary.ReactionDescription[] getDictionaryReactions(cbit.v
  * @return cbit.vcell.export.server.ExportLog
  * @param simKey KeyValue
  */
-public cbit.vcell.export.server.ExportLog getExportLog(KeyValue simulationKey) throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException {
-	return (cbit.vcell.export.server.ExportLog)remoteCall("getExportLog", new Class[] {KeyValue.class}, new Object[] {simulationKey});
+public cbit.vcell.export.ExportLog getExportLog(KeyValue simulationKey) throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException {
+	return (cbit.vcell.export.ExportLog)remoteCall("getExportLog", new Class[] {KeyValue.class}, new Object[] {simulationKey});
 }
 
 
@@ -221,8 +225,8 @@ public cbit.vcell.export.server.ExportLog getExportLog(KeyValue simulationKey) t
  * @return cbit.vcell.export.server.ExportLog[]
  * @param simKey KeyValue
  */
-public cbit.vcell.export.server.ExportLog[] getExportLogs(boolean bAll) throws cbit.util.DataAccessException, java.rmi.RemoteException {
-	return (cbit.vcell.export.server.ExportLog[])remoteCall("getExportLogs", new Class[] {boolean.class}, new Object[] {new Boolean(bAll)});
+public cbit.vcell.export.ExportLog[] getExportLogs(boolean bAll) throws cbit.util.DataAccessException, java.rmi.RemoteException {
+	return (cbit.vcell.export.ExportLog[])remoteCall("getExportLogs", new Class[] {boolean.class}, new Object[] {new Boolean(bAll)});
 }
 
 
@@ -269,8 +273,8 @@ public cbit.util.BigString getGeometryXML(KeyValue key) throws cbit.util.DataAcc
  * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.mathmodel.MathModelInfo getMathModelInfo(KeyValue key) throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException {
-	return (cbit.vcell.mathmodel.MathModelInfo)remoteCall("getMathModelInfo", new Class[] {KeyValue.class}, new Object[] {key});
+public cbit.util.MathModelInfo getMathModelInfo(KeyValue key) throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException {
+	return (cbit.util.MathModelInfo)remoteCall("getMathModelInfo", new Class[] {KeyValue.class}, new Object[] {key});
 }
 
 
@@ -281,8 +285,8 @@ public cbit.vcell.mathmodel.MathModelInfo getMathModelInfo(KeyValue key) throws 
  * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.mathmodel.MathModelInfo[] getMathModelInfos(boolean bAll) throws cbit.util.DataAccessException, java.rmi.RemoteException {
-	return (cbit.vcell.mathmodel.MathModelInfo[])remoteCall("getMathModelInfos", new Class[] {boolean.class}, new Object[] {new Boolean(bAll)});
+public cbit.util.MathModelInfo[] getMathModelInfos(boolean bAll) throws cbit.util.DataAccessException, java.rmi.RemoteException {
+	return (cbit.util.MathModelInfo[])remoteCall("getMathModelInfos", new Class[] {boolean.class}, new Object[] {new Boolean(bAll)});
 }
 
 
@@ -356,8 +360,8 @@ public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(KeyValue[] react
  * @return cbit.vcell.solver.SolverResultSetInfo
  * @param simKey KeyValue
  */
-public cbit.vcell.server.solvers.SolverResultSetInfo[] getResultSetInfos(boolean bAll) throws cbit.util.DataAccessException, java.rmi.RemoteException {
-	return (cbit.vcell.server.solvers.SolverResultSetInfo[])remoteCall("getResultSetInfos", new Class[]{boolean.class}, new Object[]{new Boolean(bAll)});
+public cbit.vcell.modeldb.SolverResultSetInfo[] getResultSetInfos(boolean bAll) throws cbit.util.DataAccessException, java.rmi.RemoteException {
+	return (cbit.vcell.modeldb.SolverResultSetInfo[])remoteCall("getResultSetInfos", new Class[]{boolean.class}, new Object[]{new Boolean(bAll)});
 }
 
 
@@ -367,8 +371,8 @@ public cbit.vcell.server.solvers.SolverResultSetInfo[] getResultSetInfos(boolean
  * @return cbit.vcell.solver.SolverResultSetInfo
  * @param simKey KeyValue
  */
-public cbit.vcell.server.SimulationStatus[] getSimulationStatus(KeyValue[] simulationKeys) throws cbit.util.DataAccessException, java.rmi.RemoteException {
-	return (cbit.vcell.server.SimulationStatus[])remoteCall("getSimulationStatus", new Class[]{KeyValue[].class}, new Object[]{simulationKeys});
+public cbit.vcell.solvers.SimulationStatus[] getSimulationStatus(KeyValue[] simulationKeys) throws cbit.util.DataAccessException, java.rmi.RemoteException {
+	return (cbit.vcell.solvers.SimulationStatus[])remoteCall("getSimulationStatus", new Class[]{KeyValue[].class}, new Object[]{simulationKeys});
 }
 
 
@@ -378,8 +382,8 @@ public cbit.vcell.server.SimulationStatus[] getSimulationStatus(KeyValue[] simul
  * @return cbit.vcell.solver.SolverResultSetInfo
  * @param simKey KeyValue
  */
-public cbit.vcell.server.SimulationStatus getSimulationStatus(KeyValue simulationKey) throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException {
-	return (cbit.vcell.server.SimulationStatus)remoteCall("getSimulationStatus", new Class[]{KeyValue.class}, new Object[]{simulationKey});
+public cbit.vcell.solvers.SimulationStatus getSimulationStatus(KeyValue simulationKey) throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException {
+	return (cbit.vcell.solvers.SimulationStatus)remoteCall("getSimulationStatus", new Class[]{KeyValue.class}, new Object[]{simulationKey});
 }
 
 
@@ -425,8 +429,8 @@ public cbit.vcell.numericstest.TestSuiteInfoNew[] getTestSuiteInfos() throws cbi
  * @return cbit.vcell.dictionary.ReactionDescription[]
  * @param reactionQuerySpec cbit.vcell.modeldb.ReactionQuerySpec
  */
-public cbit.vcell.dictionary.ReactionDescription[] getUserReactionDescriptions(cbit.vcell.modeldb.ReactionQuerySpec reactionQuerySpec) throws cbit.util.DataAccessException, java.rmi.RemoteException {
-	return (cbit.vcell.dictionary.ReactionDescription[])remoteCall("getUserReactionDescriptions", new Class[] {cbit.vcell.modeldb.ReactionQuerySpec.class}, new Object[] {reactionQuerySpec});
+public cbit.vcell.dictionary.ReactionDescription[] getUserReactionDescriptions(cbit.vcell.dictionary.ReactionQuerySpec reactionQuerySpec) throws cbit.util.DataAccessException, java.rmi.RemoteException {
+	return (cbit.vcell.dictionary.ReactionDescription[])remoteCall("getUserReactionDescriptions", new Class[] {cbit.vcell.dictionary.ReactionQuerySpec.class}, new Object[] {reactionQuerySpec});
 }
 
 
@@ -483,8 +487,8 @@ public cbit.vcell.modeldb.VCInfoContainer getVCInfoContainer() throws cbit.util.
  * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.VersionInfo groupAddUser(cbit.sql.VersionableType vType, KeyValue key, String addUserToGroup, boolean isHidden) throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException {
-	return (cbit.util.VersionInfo)remoteCall("groupAddUser", new Class[]{cbit.sql.VersionableType.class, KeyValue.class, String.class, boolean.class}, 
+public cbit.util.VersionInfo groupAddUser(VersionableType vType, KeyValue key, String addUserToGroup, boolean isHidden) throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException {
+	return (cbit.util.VersionInfo)remoteCall("groupAddUser", new Class[]{VersionableType.class, KeyValue.class, String.class, boolean.class}, 
 		new Object[]{vType, key, addUserToGroup, new Boolean(isHidden)});
 }
 
@@ -496,8 +500,8 @@ public cbit.util.VersionInfo groupAddUser(cbit.sql.VersionableType vType, KeyVal
  * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.VersionInfo groupRemoveUser(cbit.sql.VersionableType vType, KeyValue key, String userRemoveFromGroup, boolean isHiddenFromOwner) throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException {
-	return (cbit.util.VersionInfo)remoteCall("groupRemoveUser", new Class[]{cbit.sql.VersionableType.class, KeyValue.class, String.class, boolean.class}, 
+public cbit.util.VersionInfo groupRemoveUser(VersionableType vType, KeyValue key, String userRemoveFromGroup, boolean isHiddenFromOwner) throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException {
+	return (cbit.util.VersionInfo)remoteCall("groupRemoveUser", new Class[]{VersionableType.class, KeyValue.class, String.class, boolean.class}, 
 		new Object[]{vType, key, userRemoveFromGroup, new Boolean(isHiddenFromOwner)});
 }
 
@@ -509,8 +513,8 @@ public cbit.util.VersionInfo groupRemoveUser(cbit.sql.VersionableType vType, Key
  * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.VersionInfo groupSetPrivate(cbit.sql.VersionableType vType, KeyValue key) throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException {
-	return (cbit.util.VersionInfo)remoteCall("groupSetPrivate", new Class[]{cbit.sql.VersionableType.class, KeyValue.class}, 
+public cbit.util.VersionInfo groupSetPrivate(VersionableType vType, KeyValue key) throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException {
+	return (cbit.util.VersionInfo)remoteCall("groupSetPrivate", new Class[]{VersionableType.class, KeyValue.class}, 
 		new Object[]{vType, key});
 }
 
@@ -522,8 +526,8 @@ public cbit.util.VersionInfo groupSetPrivate(cbit.sql.VersionableType vType, Key
  * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.VersionInfo groupSetPublic(cbit.sql.VersionableType vType, KeyValue key) throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException {
-	return (cbit.util.VersionInfo)remoteCall("groupSetPublic", new Class[]{cbit.sql.VersionableType.class, KeyValue.class}, 
+public cbit.util.VersionInfo groupSetPublic(VersionableType vType, KeyValue key) throws cbit.util.DataAccessException, cbit.util.ObjectNotFoundException, java.rmi.RemoteException {
+	return (cbit.util.VersionInfo)remoteCall("groupSetPublic", new Class[]{VersionableType.class, KeyValue.class}, 
 		new Object[]{vType, key});
 }
 
