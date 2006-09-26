@@ -1,4 +1,5 @@
 package cbit.vcell.client.data;
+import cbit.rmi.event.VCSimulationDataIdentifier;
 import cbit.util.DataAccessException;
 import cbit.util.VCDataIdentifier;
 import cbit.vcell.math.Constant;
@@ -12,7 +13,6 @@ import cbit.vcell.export.gui.ExportMonitorPanel;
 import javax.swing.*;
 
 import cbit.vcell.simulation.Simulation;
-import cbit.vcell.solvers.VCSimulationDataIdentifier;
 /**
  * Insert the type's description here.
  * Creation date: (10/17/2005 11:22:58 PM)

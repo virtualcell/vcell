@@ -41,7 +41,7 @@ import cbit.vcell.xml.merge.gui.TMLPanel;
  * Creation date: (5/21/2004 2:42:55 AM)
  * @author: Ion Moraru
  */
-public class ClientRequestManager implements RequestManager, PropertyChangeListener, cbit.vcell.export.ExportListener, cbit.rmi.event.VCellMessageEventListener {
+public class ClientRequestManager implements RequestManager, PropertyChangeListener, cbit.rmi.event.ExportListener, cbit.rmi.event.VCellMessageEventListener {
 	private VCellClient vcellClient = null;
 	private boolean bOpening = false;
 	private boolean bExiting = false;
@@ -780,7 +780,7 @@ public void deleteDocument(final VCDocumentInfo documentInfo, final TopLevelWind
 /**
  * Comment
  */
-protected void downloadExportedData(final cbit.vcell.export.ExportEvent evt) {
+protected void downloadExportedData(final cbit.rmi.event.ExportEvent evt) {
 	java.net.URL location = null;
 	try {
 		location = new java.net.URL(evt.getLocation());
@@ -946,8 +946,8 @@ public void exportDocument(TopLevelWindowManager manager) {
  * Creation date: (1/18/2005 3:14:12 PM)
  * @param event cbit.rmi.event.ExportEvent
  */
-public void exportMessage(cbit.vcell.export.ExportEvent event) {
-	if (event.getEventTypeID() == cbit.vcell.export.ExportEvent.EXPORT_COMPLETE) {
+public void exportMessage(cbit.rmi.event.ExportEvent event) {
+	if (event.getEventTypeID() == cbit.rmi.event.ExportEvent.EXPORT_COMPLETE) {
 		// update document manager
 		//try {
 			//((ClientDocumentManager)getRequestManager().getDocumentManager()).reloadExportLog(exportEvent.getVCDataIdentifier());

@@ -1,8 +1,6 @@
 package cbit.vcell.client;
 import swingthreads.*;
-import cbit.vcell.simdata.DataJobEvent;
 import cbit.vcell.simulation.*;
-import cbit.vcell.export.ExportEvent;
 import cbit.vcell.export.ExportSpecs;
 import cbit.rmi.event.*;
 import cbit.gui.*;
@@ -12,7 +10,6 @@ import cbit.vcell.geometry.*;
 import java.awt.*;
 import javax.swing.*;
 import cbit.vcell.client.server.*;
-import cbit.vcell.solvers.VCSimulationDataIdentifier;
 import cbit.vcell.xml.merge.gui.TMLPanel;
 /**
  * Insert the type's description here.

@@ -20,7 +20,7 @@ public java.beans.MethodDescriptor exportMessage_cbitrmieventExportEventMethodDe
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.export.ExportEvent.class
+				cbit.rmi.event.ExportEvent.class
 			};
 			aMethod = getBeanClass().getMethod("exportMessage", aParameterTypes);
 		} catch (Throwable exception) {

@@ -8,7 +8,7 @@ import cbit.vcell.export.ExportSpecs;
  * Creation date: (11/18/2004 11:25:04 AM)
  * @author: Anuradha Lakshminarayana
  */
-public interface DataViewerManager extends cbit.vcell.export.ExportListener, SimStatusListener ,cbit.vcell.simdata.DataJobListener{
+public interface DataViewerManager extends cbit.rmi.event.ExportListener, SimStatusListener ,cbit.rmi.event.DataJobListener{
 /**
  * Add a cbit.vcell.desktop.controls.DataListener.
  */

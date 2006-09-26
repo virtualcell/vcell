@@ -28,6 +28,8 @@ import cbit.vcell.client.data.DynamicDataManager;
 import cbit.vcell.client.database.ClientDocumentManager;
 import cbit.vcell.client.database.DocumentManager;
 import cbit.vcell.biomodel.BioModel;
+import cbit.rmi.event.ExportEvent;
+import cbit.rmi.event.VCSimulationDataIdentifier;
 import cbit.sql.*;
 import java.math.*;
 import javax.swing.JDialog;
@@ -49,9 +51,7 @@ import cbit.util.DataAccessException;
 import cbit.vcell.client.desktop.testingframework.EditTestCriteriaPanel;
 import cbit.vcell.client.desktop.testingframework.AddTestSuitePanel;
 import cbit.vcell.client.desktop.testingframework.TestCaseAddPanel;
-import cbit.vcell.export.ExportEvent;
 import cbit.vcell.solver.test.MathTestingUtilities;
-import cbit.vcell.solvers.VCSimulationDataIdentifier;
 
 import javax.swing.JOptionPane;
 import cbit.vcell.numericstest.*;
@@ -551,7 +551,7 @@ public void compare(TestCriteriaNew testCriteria){
  * Creation date: (3/29/2006 4:13:02 PM)
  * @param event cbit.rmi.event.ExportEvent
  */
-public void dataJobMessage(cbit.vcell.simdata.DataJobEvent event) {
+public void dataJobMessage(cbit.rmi.event.DataJobEvent event) {
 	
 	// just pass them along...
 	fireDataJobMessage(event);
