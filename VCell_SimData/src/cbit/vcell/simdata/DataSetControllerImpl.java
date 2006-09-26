@@ -17,6 +17,9 @@ import cbit.vcell.mesh.CartesianMesh;
 import cbit.vcell.mesh.MembraneElement;
 import cbit.gui.PropertyLoader;
 import cbit.plot.*;
+import cbit.rmi.event.DataJobEvent;
+import cbit.rmi.event.DataJobListener;
+
 import java.util.*;
 import java.io.*;
 import cbit.vcell.util.events.MessageEvent;

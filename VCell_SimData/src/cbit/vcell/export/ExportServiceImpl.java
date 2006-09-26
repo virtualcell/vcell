@@ -9,6 +9,9 @@ import java.io.*;
 import java.util.zip.*;
 import java.net.*;
 import java.util.*;
+
+import cbit.rmi.event.ExportEvent;
+import cbit.rmi.event.ExportListener;
 import cbit.util.*;
 import cbit.vcell.simdata.*;
 import cbit.vcell.export.nrrd.*;
@@ -66,7 +69,7 @@ protected ExportEvent fireExportCompleted(long jobID, VCDataIdentifier vcdID, St
 	if (object != null) {
 		user = (User)object;
 	}
-	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_COMPLETE, format, location, null);
+	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, cbit.rmi.event.ExportEvent.EXPORT_COMPLETE, format, location, null);
 	fireExportEvent(event);
 	return event;
 }
@@ -103,7 +106,7 @@ protected void fireExportFailed(long jobID, VCDataIdentifier vcdID, String forma
 	if (object != null) {
 		user = (User)object;
 	}
-	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_FAILURE, format, message, null);
+	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, cbit.rmi.event.ExportEvent.EXPORT_FAILURE, format, message, null);
 	fireExportEvent(event);
 }
 
@@ -121,7 +124,7 @@ protected void fireExportProgress(long jobID, VCDataIdentifier vcdID, String for
 	if (object != null) {
 		user = (User)object;
 	}
-	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_PROGRESS, format, null, new Double(progress));
+	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, cbit.rmi.event.ExportEvent.EXPORT_PROGRESS, format, null, new Double(progress));
 	fireExportEvent(event);
 }
 
@@ -137,7 +140,7 @@ protected void fireExportStarted(long jobID, VCDataIdentifier vcdID, String form
 	if (object != null) {
 		user = (User)object;
 	}
-	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_START, format, null, null);
+	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, cbit.rmi.event.ExportEvent.EXPORT_START, format, null, null);
 	fireExportEvent(event);
 }
 

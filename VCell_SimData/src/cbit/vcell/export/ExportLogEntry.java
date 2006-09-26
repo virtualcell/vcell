@@ -4,6 +4,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.StringTokenizer;
 
+import cbit.rmi.event.ExportEvent;
+
 /**
  * Insert the type's description here.
  * Creation date: (10/19/2001 4:12:10 PM)
