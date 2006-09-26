@@ -12,12 +12,12 @@ import cbit.sql.Table;
 import cbit.sql.VersionTable;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
+import cbit.util.MathModelChildSummary;
+import cbit.util.MathModelInfo;
 import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.util.Version;
 import cbit.util.VersionInfo;
-import cbit.vcell.mathmodel.MathModelChildSummary;
-import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.mathmodel.MathModelMetaData;
 /**
  * This type was created in VisualAge.

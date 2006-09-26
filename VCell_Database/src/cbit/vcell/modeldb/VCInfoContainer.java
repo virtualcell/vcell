@@ -4,10 +4,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import cbit.image.VCImageInfo;
+import cbit.util.BioModelInfo;
+import cbit.util.MathModelInfo;
 import cbit.util.User;
-import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.geometry.GeometryInfo;
-import cbit.vcell.mathmodel.MathModelInfo;
 
 /**
  * Insert the type's description here.
@@ -44,7 +44,7 @@ public VCInfoContainer(User argUser, VCImageInfo[] newVcImageInfos, GeometryInfo
  * Creation date: (9/26/2003 12:43:24 PM)
  * @return cbit.vcell.biomodel.BioModelInfo[]
  */
-public cbit.vcell.biomodel.BioModelInfo[] getBioModelInfos() {
+public cbit.util.BioModelInfo[] getBioModelInfos() {
 	if (bioModelInfos == null) {
 		inflate();
 	}
@@ -70,7 +70,7 @@ public cbit.vcell.geometry.GeometryInfo[] getGeometryInfos() {
  * Creation date: (9/26/2003 12:43:24 PM)
  * @return cbit.vcell.mathmodel.MathModelInfo[]
  */
-public cbit.vcell.mathmodel.MathModelInfo[] getMathModelInfos() {
+public cbit.util.MathModelInfo[] getMathModelInfos() {
 	if (mathModelInfos == null) {
 		inflate();
 	}

@@ -17,7 +17,7 @@ import cbit.util.Immutable;
 import cbit.util.KeyValue;
 import cbit.util.Ping;
 import cbit.util.Pingable;
-import cbit.vcell.simdata.TimeWrapper;
+import cbit.util.TimeWrapper;
 /**
  * This type was created in VisualAge.
  */

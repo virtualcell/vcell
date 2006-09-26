@@ -15,7 +15,6 @@ import cbit.sql.Field;
 import cbit.sql.InsertHashtable;
 import cbit.sql.RecordChangedException;
 import cbit.sql.Table;
-import cbit.sql.VersionableType;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.ObjectNotFoundException;
@@ -26,8 +25,10 @@ import cbit.util.User;
 import cbit.util.Version;
 import cbit.util.VersionInfo;
 import cbit.util.Versionable;
-import cbit.vcell.server.DependencyException;
-import cbit.vcell.server.solvers.SolverResultSetInfo;
+import cbit.util.VersionableType;
+import cbit.util.DependencyException;
+import cbit.vcell.export.ExportLog;
+import cbit.vcell.modeldb.SolverResultSetInfo;
 import cbit.vcell.simulation.Simulation;
 import cbit.vcell.simulation.SimulationInfo;
 /**
@@ -199,9 +200,9 @@ private KeyValue getParentSimulation(Connection con,User user,KeyValue simKey) t
  * Insert the method's description here.
  * Creation date: (10/7/2003 5:07:43 PM)
  */
-cbit.vcell.export.server.ExportLog getResultSetExport(Connection con,User user,KeyValue simKey) throws SQLException, DataAccessException {
+ExportLog getResultSetExport(Connection con,User user,KeyValue simKey) throws SQLException, DataAccessException {
 
-	cbit.vcell.export.server.ExportLog[] exportLogs = null;
+	ExportLog[] exportLogs = null;
 	String sql = ResultSetExportsTable.table.getSQLInfo(user,simKey);
 	Statement stmt = con.createStatement();
 	try {
@@ -219,9 +220,9 @@ cbit.vcell.export.server.ExportLog getResultSetExport(Connection con,User user,K
  * Insert the method's description here.
  * Creation date: (10/7/2003 5:09:17 PM)
  */
-cbit.vcell.export.server.ExportLog[] getResultSetExports(Connection con,User user, boolean bAll) throws SQLException, DataAccessException {
+ExportLog[] getResultSetExports(Connection con,User user, boolean bAll) throws SQLException, DataAccessException {
 
-	cbit.vcell.export.server.ExportLog[] exportLogs = null;
+	ExportLog[] exportLogs = null;
 	String sql = ResultSetExportsTable.table.getSQLInfo(user,bAll);
 	Statement stmt = con.createStatement();
 	try {

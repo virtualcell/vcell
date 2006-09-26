@@ -151,7 +151,7 @@ public ReactionDescription[] getReactions(java.sql.ResultSet rset) throws java.s
  * Insert the method's description here.
  * Creation date: (4/18/2003 10:29:26 AM)
  */
-public String getSQLReactionQuery(cbit.vcell.modeldb.ReactionQuerySpec rqs) {
+public String getSQLReactionQuery(cbit.vcell.dictionary.ReactionQuerySpec rqs) {
 	
 	DBFormalSpecies reactantsCompoundRef = rqs.getReactantBoundSpecies();
 	DBFormalSpecies enzymeRef = rqs.getCatalystBoundSpecies();

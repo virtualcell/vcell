@@ -20,7 +20,6 @@ import cbit.sql.InsertHashtable;
 import cbit.sql.RecordChangedException;
 import cbit.sql.Table;
 import cbit.sql.VersionTable;
-import cbit.sql.VersionableType;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.ObjectNotFoundException;
@@ -29,6 +28,7 @@ import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.util.Version;
 import cbit.util.Versionable;
+import cbit.util.VersionableType;
 import cbit.vcell.geometry.Curve;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
@@ -38,7 +38,7 @@ import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.server.DependencyException;
+import cbit.util.DependencyException;
 //import cbit.util.VersionFlag;
 //import cbit.util.Version;
 /**
@@ -101,7 +101,7 @@ private void deleteGeometrySQL(Connection con, User user,KeyValue geomKey) throw
 /**
  * only the owner can delete a Model
  */
-private void deleteVCImageSQL(Connection con, User user, KeyValue imageKey) throws SQLException, DataAccessException,cbit.vcell.server.DependencyException {
+private void deleteVCImageSQL(Connection con, User user, KeyValue imageKey) throws SQLException, DataAccessException,cbit.util.DependencyException {
 	String sql;
 
 	//Check if any geometries use this image, if so Do Not delete image and return error

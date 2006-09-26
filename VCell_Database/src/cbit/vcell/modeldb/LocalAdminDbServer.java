@@ -18,7 +18,7 @@ import cbit.vcell.solvers.SimulationJobStatus;
 /**
  * This type was created in VisualAge.
  */
-public class LocalAdminDbServer extends java.rmi.server.UnicastRemoteObject implements cbit.vcell.server.AdminDatabaseServer {
+public class LocalAdminDbServer extends java.rmi.server.UnicastRemoteObject implements AdminDatabaseServer {
 	private SessionLog log = null;
 	private AdminDBTopLevel adminDbTop = null;
 

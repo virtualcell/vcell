@@ -11,11 +11,11 @@ import java.sql.SQLException;
 import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.sql.VersionTable;
-import cbit.sql.VersionableType;
 import cbit.util.KeyValue;
 import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.util.Version;
+import cbit.util.VersionableType;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.modelapp.SimulationContext;
 

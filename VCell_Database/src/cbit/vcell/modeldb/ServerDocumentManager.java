@@ -5,29 +5,29 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 import cbit.image.VCImage;
-import cbit.sql.VersionableType;
 import cbit.util.BeanUtils;
+import cbit.util.BioModelChildSummary;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
+import cbit.util.MathModelChildSummary;
 import cbit.util.ObjectNotFoundException;
 import cbit.util.TokenMangler;
 import cbit.util.User;
 import cbit.util.Version;
 import cbit.util.VersionInfo;
 import cbit.util.Versionable;
+import cbit.util.VersionableType;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.BioModelChildSummary;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.mathmodel.MathModelChildSummary;
 import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.model.Model;
 import cbit.vcell.modelapp.SimulationContext;
-import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simulation.Simulation;
 import cbit.vcell.simulation.VCSimulationIdentifier;
+import cbit.vcell.solvers.SimulationStatus;
 import cbit.vcell.xml.XmlHelper;
 /**
  * Insert the type's description here.
@@ -1338,7 +1338,7 @@ roundtripTimer += l2 - l1;
 		}
 		bioModelXML = cbit.vcell.xml.XmlHelper.bioModelToXML(updatedBioModel);
 		dbServer.insertVersionableChildSummary(user,VersionableType.BioModelMetaData,updatedBioModel.getVersion().getVersionKey(),
-												BioModelChildSummary.fromDatabaseBioModel(updatedBioModel).toDatabaseSerialization());
+												updatedBioModel.createBioModelChildSummary().toDatabaseSerialization());
 		dbServer.insertVersionableXML(user,VersionableType.BioModelMetaData,updatedBioModel.getVersion().getVersionKey(),bioModelXML);
 System.out.println("------------------------------> Total time: " + ((double)(System.currentTimeMillis() - start)) / 1000);
 System.out.println("------------------------------> Time spent on roundtrip: " + ((double)roundtripTimer) / 1000);
@@ -1821,7 +1821,7 @@ public String saveMathModel(User user, String mathModelXML, String newName, Stri
 		}
 		mathModelXML = cbit.vcell.xml.XmlHelper.mathModelToXML(updatedMathModel);
 		dbServer.insertVersionableChildSummary(user,VersionableType.MathModelMetaData,updatedMathModel.getVersion().getVersionKey(),
-												MathModelChildSummary.fromDatabaseMathModel(updatedMathModel).toDatabaseSerialization());
+												updatedMathModel.createMathModelChildSummary().toDatabaseSerialization());
 		dbServer.insertVersionableXML(user,VersionableType.MathModelMetaData,updatedMathModel.getVersion().getVersionKey(),mathModelXML);
 		return mathModelXML;
 	} else {

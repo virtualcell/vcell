@@ -13,7 +13,6 @@ import cbit.sql.Field;
 import cbit.sql.InsertHashtable;
 import cbit.sql.StarField;
 import cbit.sql.Table;
-import cbit.sql.VersionableType;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.ObjectNotFoundException;
@@ -21,6 +20,7 @@ import cbit.util.PermissionException;
 import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.util.Versionable;
+import cbit.util.VersionableType;
 import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Flux;
@@ -32,7 +32,7 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-import cbit.vcell.server.DependencyException;
+import cbit.util.DependencyException;
 /**
  * This type was created in VisualAge.
  */

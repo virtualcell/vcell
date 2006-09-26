@@ -13,7 +13,6 @@ import cbit.sql.VersionTable;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.SessionLog;
-import cbit.vcell.server.solvers.SolverResultSetInfo;
 import cbit.vcell.simulation.SimulationInfo;
 import cbit.vcell.solvers.VCSimulationDataIdentifier;
 

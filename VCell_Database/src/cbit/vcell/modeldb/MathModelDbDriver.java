@@ -15,16 +15,16 @@ import cbit.sql.Field;
 import cbit.sql.InsertHashtable;
 import cbit.sql.RecordChangedException;
 import cbit.sql.Table;
-import cbit.sql.VersionableType;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
+import cbit.util.MathModelChildSummary;
 import cbit.util.ObjectNotFoundException;
 import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.util.Version;
 import cbit.util.VersionFlag;
 import cbit.util.Versionable;
-import cbit.vcell.mathmodel.MathModelChildSummary;
+import cbit.util.VersionableType;
 import cbit.vcell.mathmodel.MathModelMetaData;
 /**
  * This type was created in VisualAge.
@@ -51,7 +51,7 @@ public MathModelDbDriver(DBCacheTable argdbc,SimulationDbDriver argSimDB, MathDe
  * only the owner can delete a Model
  */
 private void deleteMathModelMetaDataSQL(Connection con, User user, KeyValue mathModelKey) 
-				throws SQLException,cbit.vcell.server.DependencyException,DataAccessException,cbit.util.PermissionException,ObjectNotFoundException {
+				throws SQLException,cbit.util.DependencyException,DataAccessException,cbit.util.PermissionException,ObjectNotFoundException {
 
 
 	//
@@ -108,7 +108,7 @@ private void deleteMathModelMetaDataSQL(Connection con, User user, KeyValue math
  * @param versionKey cbit.sql.KeyValue
  */
 public void deleteVersionable(Connection con, User user, VersionableType vType, KeyValue vKey) 
-				throws cbit.vcell.server.DependencyException, ObjectNotFoundException,
+				throws cbit.util.DependencyException, ObjectNotFoundException,
 						SQLException,DataAccessException,cbit.util.PermissionException {
 
 	deleteVersionableInit(con, user, vType, vKey);

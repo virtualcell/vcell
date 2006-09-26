@@ -15,6 +15,7 @@ import cbit.util.SimulationVersion;
 import cbit.util.Version;
 import cbit.util.VersionFlag;
 import cbit.util.Versionable;
+import cbit.util.VersionableType;
 import cbit.vcell.modeldb.BioModelSimContextLinkTable;
 import cbit.vcell.modeldb.BioModelSimulationLinkTable;
 import cbit.vcell.modeldb.BioModelTable;
@@ -370,8 +371,34 @@ protected static String getVersionGroupSQLValue(Version version) {
  */
 public static VersionTable getVersionTable(Versionable v) throws IllegalArgumentException {
 
-	VersionableType vType = VersionableType.fromVersionable(v);
+	VersionableType vType = versionableTypeFromVersionable(v);
 	return getVersionTable(vType);
+}
+
+/**
+* This method was created in VisualAge.
+* @return cbit.sql.VersionableType
+* @param versionable cbit.sql.Versionable
+*/
+public static VersionableType versionableTypeFromVersionable(Versionable versionable) {
+	if (versionable instanceof cbit.vcell.geometry.Geometry){
+		return VersionableType.Geometry;
+	}else if (versionable instanceof cbit.vcell.math.MathDescription){
+		return VersionableType.MathDescription;
+	}else if (versionable instanceof cbit.image.VCImage){
+		return VersionableType.VCImage;
+	}else if (versionable instanceof cbit.vcell.model.Model){
+		return VersionableType.Model;
+	}else if (versionable instanceof cbit.vcell.modelapp.SimulationContext){
+		return VersionableType.SimulationContext;
+	}else if (versionable instanceof cbit.vcell.simulation.Simulation){
+		return VersionableType.Simulation;
+	}else if (versionable instanceof cbit.vcell.biomodel.BioModelMetaData){
+		return VersionableType.BioModelMetaData;
+	}else if (versionable instanceof cbit.vcell.mathmodel.MathModelMetaData){
+		return VersionableType.MathModelMetaData;
+	}
+	return null;
 }
 
 

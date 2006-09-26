@@ -17,6 +17,7 @@ import cbit.vcell.dictionary.FormalProtein;
 import cbit.vcell.dictionary.FormalSpeciesType;
 import cbit.vcell.dictionary.ProteinInfo;
 import cbit.vcell.dictionary.ReactionDescription;
+import cbit.vcell.dictionary.ReactionQuerySpec;
 /**
  * This type was created in VisualAge.
  */

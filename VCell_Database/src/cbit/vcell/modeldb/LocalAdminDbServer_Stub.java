@@ -5,7 +5,7 @@ package cbit.vcell.modeldb;
 
 public final class LocalAdminDbServer_Stub
     extends java.rmi.server.RemoteStub
-    implements cbit.vcell.server.AdminDatabaseServer, java.rmi.Remote
+    implements AdminDatabaseServer, java.rmi.Remote
 {
     private static final long serialVersionUID = 2;
     
@@ -24,18 +24,18 @@ public final class LocalAdminDbServer_Stub
     
     static {
 	try {
-	    $method_getSimulationJobStatus_0 = cbit.vcell.server.AdminDatabaseServer.class.getMethod("getSimulationJobStatus", new java.lang.Class[] {cbit.util.KeyValue.class, int.class});
-	    $method_getSimulationJobStatus_1 = cbit.vcell.server.AdminDatabaseServer.class.getMethod("getSimulationJobStatus", new java.lang.Class[] {java.lang.String.class});
-	    $method_getSimulationJobStatus_2 = cbit.vcell.server.AdminDatabaseServer.class.getMethod("getSimulationJobStatus", new java.lang.Class[] {boolean.class, cbit.util.User.class});
-	    $method_getUser_3 = cbit.vcell.server.AdminDatabaseServer.class.getMethod("getUser", new java.lang.Class[] {java.lang.String.class});
-	    $method_getUser_4 = cbit.vcell.server.AdminDatabaseServer.class.getMethod("getUser", new java.lang.Class[] {java.lang.String.class, java.lang.String.class});
-	    $method_getUserFromSimulationKey_5 = cbit.vcell.server.AdminDatabaseServer.class.getMethod("getUserFromSimulationKey", new java.lang.Class[] {cbit.util.KeyValue.class});
-	    $method_getUserInfo_6 = cbit.vcell.server.AdminDatabaseServer.class.getMethod("getUserInfo", new java.lang.Class[] {cbit.util.KeyValue.class});
-	    $method_getUserInfos_7 = cbit.vcell.server.AdminDatabaseServer.class.getMethod("getUserInfos", new java.lang.Class[] {});
-	    $method_insertSimulationJobStatus_8 = cbit.vcell.server.AdminDatabaseServer.class.getMethod("insertSimulationJobStatus", new java.lang.Class[] {cbit.vcell.solvers.SimulationJobStatus.class});
-	    $method_insertUserInfo_9 = cbit.vcell.server.AdminDatabaseServer.class.getMethod("insertUserInfo", new java.lang.Class[] {cbit.util.UserInfo.class});
-	    $method_updateSimulationJobStatus_10 = cbit.vcell.server.AdminDatabaseServer.class.getMethod("updateSimulationJobStatus", new java.lang.Class[] {cbit.vcell.solvers.SimulationJobStatus.class, cbit.vcell.solvers.SimulationJobStatus.class});
-	    $method_updateUserInfo_11 = cbit.vcell.server.AdminDatabaseServer.class.getMethod("updateUserInfo", new java.lang.Class[] {cbit.util.UserInfo.class});
+	    $method_getSimulationJobStatus_0 = AdminDatabaseServer.class.getMethod("getSimulationJobStatus", new java.lang.Class[] {cbit.util.KeyValue.class, int.class});
+	    $method_getSimulationJobStatus_1 = AdminDatabaseServer.class.getMethod("getSimulationJobStatus", new java.lang.Class[] {java.lang.String.class});
+	    $method_getSimulationJobStatus_2 = AdminDatabaseServer.class.getMethod("getSimulationJobStatus", new java.lang.Class[] {boolean.class, cbit.util.User.class});
+	    $method_getUser_3 = AdminDatabaseServer.class.getMethod("getUser", new java.lang.Class[] {java.lang.String.class});
+	    $method_getUser_4 = AdminDatabaseServer.class.getMethod("getUser", new java.lang.Class[] {java.lang.String.class, java.lang.String.class});
+	    $method_getUserFromSimulationKey_5 = AdminDatabaseServer.class.getMethod("getUserFromSimulationKey", new java.lang.Class[] {cbit.util.KeyValue.class});
+	    $method_getUserInfo_6 = AdminDatabaseServer.class.getMethod("getUserInfo", new java.lang.Class[] {cbit.util.KeyValue.class});
+	    $method_getUserInfos_7 = AdminDatabaseServer.class.getMethod("getUserInfos", new java.lang.Class[] {});
+	    $method_insertSimulationJobStatus_8 = AdminDatabaseServer.class.getMethod("insertSimulationJobStatus", new java.lang.Class[] {cbit.vcell.solvers.SimulationJobStatus.class});
+	    $method_insertUserInfo_9 = AdminDatabaseServer.class.getMethod("insertUserInfo", new java.lang.Class[] {cbit.util.UserInfo.class});
+	    $method_updateSimulationJobStatus_10 = AdminDatabaseServer.class.getMethod("updateSimulationJobStatus", new java.lang.Class[] {cbit.vcell.solvers.SimulationJobStatus.class, cbit.vcell.solvers.SimulationJobStatus.class});
+	    $method_updateUserInfo_11 = AdminDatabaseServer.class.getMethod("updateUserInfo", new java.lang.Class[] {cbit.util.UserInfo.class});
 	} catch (java.lang.NoSuchMethodException e) {
 	    throw new java.lang.NoSuchMethodError(
 		"stub class initialization failed");

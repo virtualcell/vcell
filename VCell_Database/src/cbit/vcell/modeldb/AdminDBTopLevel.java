@@ -13,8 +13,8 @@ import cbit.util.UserInfo;
 import cbit.vcell.messaging.db.SimulationJobDbDriver;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
-import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solvers.SimulationJobStatus;
+import cbit.vcell.solvers.SimulationStatus;
 import cbit.vcell.solvers.VCellServerID;
 
 /**

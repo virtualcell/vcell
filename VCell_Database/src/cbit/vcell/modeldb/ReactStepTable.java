@@ -13,6 +13,7 @@ import cbit.util.User;
 import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.DBNonFormalUnboundSpecies;
 import cbit.vcell.dictionary.ReactionDescription;
+import cbit.vcell.dictionary.ReactionQuerySpec;
 import cbit.vcell.dictionary.database.DBSpeciesTable;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;

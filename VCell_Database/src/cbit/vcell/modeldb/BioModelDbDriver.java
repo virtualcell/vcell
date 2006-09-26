@@ -15,7 +15,7 @@ import cbit.sql.Field;
 import cbit.sql.InsertHashtable;
 import cbit.sql.RecordChangedException;
 import cbit.sql.Table;
-import cbit.sql.VersionableType;
+import cbit.util.BioModelChildSummary;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.ObjectNotFoundException;
@@ -24,7 +24,7 @@ import cbit.util.User;
 import cbit.util.Version;
 import cbit.util.VersionFlag;
 import cbit.util.Versionable;
-import cbit.vcell.biomodel.BioModelChildSummary;
+import cbit.util.VersionableType;
 import cbit.vcell.biomodel.BioModelMetaData;
 /**
  * This type was created in VisualAge.
@@ -55,7 +55,7 @@ public BioModelDbDriver(DBCacheTable argdbc,SimulationDbDriver argSimDB, Simulat
  * only the owner can delete a Model
  */
 private void deleteBioModelMetaDataSQL(Connection con, User user, KeyValue bioModelKey) 
-				throws SQLException,cbit.vcell.server.DependencyException,cbit.util.PermissionException,DataAccessException,ObjectNotFoundException {
+				throws SQLException,cbit.util.DependencyException,cbit.util.PermissionException,DataAccessException,ObjectNotFoundException {
 
 	//
 	// get key values of simulations and simulationContexts belonging to this version of BioModel
@@ -126,7 +126,7 @@ private void deleteBioModelMetaDataSQL(Connection con, User user, KeyValue bioMo
  * @param versionKey cbit.sql.KeyValue
  */
 public void deleteVersionable(Connection con, User user, VersionableType vType, KeyValue vKey) 
-				throws cbit.vcell.server.DependencyException, ObjectNotFoundException,
+				throws cbit.util.DependencyException, ObjectNotFoundException,
 						SQLException,DataAccessException,cbit.util.PermissionException {
 
 	deleteVersionableInit(con, user, vType, vKey);

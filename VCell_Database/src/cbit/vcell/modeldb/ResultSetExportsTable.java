@@ -14,6 +14,8 @@ import cbit.sql.Table;
 import cbit.util.KeyValue;
 import cbit.util.SessionLog;
 import cbit.util.User;
+import cbit.vcell.export.ExportLog;
+import cbit.vcell.export.ExportLogEntry;
 /**
  * This type was created in VisualAge.
  */
@@ -52,11 +54,11 @@ private static String distinctSelectQuery(String argSql) {
  * Insert the method's description here.
  * Creation date: (10/8/2003 12:44:47 PM)
  */
-public static cbit.vcell.export.server.ExportLog[] getExportLogs(ResultSet rset,SessionLog log) throws SQLException{
+public static ExportLog[] getExportLogs(ResultSet rset,SessionLog log) throws SQLException{
 
 	//Assumes sorted by simRef
 	
-	cbit.vcell.export.server.ExportLog[] exportLogs = null;
+	ExportLog[] exportLogs = null;
 	
 	Vector currentLogEntriesV = new Vector();
 	java.math.BigDecimal oldSimRef = null;
@@ -79,10 +81,10 @@ public static cbit.vcell.export.server.ExportLog[] getExportLogs(ResultSet rset,
 						!oldSimRef.equals(simRef)
 					)
 			){
-				cbit.vcell.export.server.ExportLogEntry[] currentLogEntryArr =
-					new cbit.vcell.export.server.ExportLogEntry[currentLogEntriesV.size()];
+				ExportLogEntry[] currentLogEntryArr =
+					new ExportLogEntry[currentLogEntriesV.size()];
 				currentLogEntriesV.copyInto(currentLogEntryArr);
-				exportLogsV.add(new cbit.vcell.export.server.ExportLog(new KeyValue(oldSimRef),currentLogEntryArr));
+				exportLogsV.add(new ExportLog(new KeyValue(oldSimRef),currentLogEntryArr));
 				oldSimRef = simRef;
 				currentLogEntriesV = new Vector();
 			}
@@ -110,7 +112,7 @@ public static cbit.vcell.export.server.ExportLog[] getExportLogs(ResultSet rset,
 			if(exportFormat != null && exportLocationURL != null){
 				java.math.BigDecimal eleKey = rset.getBigDecimal(ResultSetExportsTable.table.id.toString());
 				currentLogEntriesV.add(
-					new cbit.vcell.export.server.ExportLogEntry(
+					new ExportLogEntry(
 						exportFormat,exportLocationURL,
 						new KeyValue(simRef),new KeyValue(eleKey)));
 			}
@@ -118,7 +120,7 @@ public static cbit.vcell.export.server.ExportLog[] getExportLogs(ResultSet rset,
 		}
 	}
 	if(exportLogsV.size() > 0){
-		exportLogs = new cbit.vcell.export.server.ExportLog[exportLogsV.size()];
+		exportLogs = new ExportLog[exportLogsV.size()];
 		exportLogsV.copyInto(exportLogs);
 	}
 

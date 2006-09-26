@@ -14,7 +14,7 @@ import cbit.util.ObjectNotFoundException;
 import cbit.util.PermissionException;
 import cbit.util.SessionLog;
 import cbit.util.User;
-import cbit.vcell.server.solvers.SolverResultSetInfo;
+import cbit.vcell.export.ExportLog;
 /**
  * This type was created in VisualAge.
  */
@@ -25,8 +25,9 @@ public class ResultSetDBTopLevel extends AbstractDBTopLevel{
 
 /**
  * DBTopLevel constructor comment.
+ * @deprecated ... should be package level
  */
-ResultSetDBTopLevel(ConnectionFactory aConFactory,SessionLog newLog, DBCacheTable dbCacheTable) throws SQLException{
+public ResultSetDBTopLevel(ConnectionFactory aConFactory,SessionLog newLog, DBCacheTable dbCacheTable) throws SQLException{
 	super(aConFactory,newLog);
 	GeomDbDriver geomDBDriver = new GeomDbDriver(dbCacheTable,newLog);
 	MathDescriptionDbDriver mathDBDriver = new MathDescriptionDbDriver(dbCacheTable,geomDBDriver,newLog);
@@ -72,7 +73,7 @@ void deleteResultSetExport(User user,KeyValue eleKey,boolean bEnableRetry) throw
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-void deleteResultSetInfoSQL(User user, KeyValue simKey, boolean bEnableRetry) throws SQLException, DataAccessException, PermissionException, ObjectNotFoundException {
+public void deleteResultSetInfoSQL(User user, KeyValue simKey, boolean bEnableRetry) throws SQLException, DataAccessException, PermissionException, ObjectNotFoundException {
 			
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
@@ -110,7 +111,7 @@ void deleteResultSetInfoSQL(User user, KeyValue simKey, boolean bEnableRetry) th
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-cbit.vcell.export.server.ExportLog getResultSetExport(User user, KeyValue simKey, boolean bEnableRetry) throws SQLException, DataAccessException {
+ExportLog getResultSetExport(User user, KeyValue simKey, boolean bEnableRetry) throws SQLException, DataAccessException {
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
@@ -140,7 +141,7 @@ cbit.vcell.export.server.ExportLog getResultSetExport(User user, KeyValue simKey
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-cbit.vcell.export.server.ExportLog[] getResultSetExports(User user, boolean bAll, boolean bEnableRetry) throws SQLException, DataAccessException {
+ExportLog[] getResultSetExports(User user, boolean bAll, boolean bEnableRetry) throws SQLException, DataAccessException {
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
@@ -170,7 +171,7 @@ cbit.vcell.export.server.ExportLog[] getResultSetExports(User user, boolean bAll
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-SolverResultSetInfo getResultSetInfo(User user, KeyValue simKey, int jobIndex, boolean bEnableRetry) throws SQLException, DataAccessException {
+public SolverResultSetInfo getResultSetInfo(User user, KeyValue simKey, int jobIndex, boolean bEnableRetry) throws SQLException, DataAccessException {
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
@@ -319,7 +320,7 @@ void insertResultSetInfo(User user, KeyValue simKey, SolverResultSetInfo rsetInf
  * @return cbit.sql.UserInfo
  * @param newUserInfo cbit.sql.UserInfo
  */
-void updateResultSetInfo(User user, KeyValue simKey, SolverResultSetInfo rsetInfo, boolean bEnableRetry) throws SQLException, DataAccessException, PermissionException {
+public void updateResultSetInfo(User user, KeyValue simKey, SolverResultSetInfo rsetInfo, boolean bEnableRetry) throws SQLException, DataAccessException, PermissionException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);

@@ -16,7 +16,6 @@ import cbit.sql.InsertHashtable;
 import cbit.sql.RecordChangedException;
 import cbit.sql.Table;
 import cbit.sql.VersionTable;
-import cbit.sql.VersionableType;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.ObjectNotFoundException;
@@ -24,6 +23,7 @@ import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.util.Version;
 import cbit.util.Versionable;
+import cbit.util.VersionableType;
 import cbit.vcell.model.Diagram;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Membrane;
@@ -56,7 +56,7 @@ public ModelDbDriver(DBCacheTable argdbc,ReactStepDbDriver argReactStepDB,Sessio
  * only the owner can delete a Model
  */
 private void deleteModelSQL(Connection con, User user, KeyValue modelKey) 
-				throws SQLException,cbit.vcell.server.DependencyException,ObjectNotFoundException {
+				throws SQLException,cbit.util.DependencyException,ObjectNotFoundException {
 
 	//
 	// first the reactions are deleted, then the model, the order is important because both the 
@@ -90,7 +90,7 @@ private void deleteModelSQL(Connection con, User user, KeyValue modelKey)
  * @param versionKey cbit.sql.KeyValue
  */
 public void deleteVersionable(Connection con, User user, VersionableType vType, KeyValue vKey) 
-				throws cbit.vcell.server.DependencyException, ObjectNotFoundException,
+				throws cbit.util.DependencyException, ObjectNotFoundException,
 						SQLException,DataAccessException,cbit.util.PermissionException {
 
 	deleteVersionableInit(con, user, vType, vKey);

@@ -14,9 +14,9 @@ import cbit.sql.Field;
 import cbit.sql.InsertHashtable;
 import cbit.sql.RecordChangedException;
 import cbit.sql.Table;
-import cbit.sql.VersionableType;
 import cbit.util.Coordinate;
 import cbit.util.DataAccessException;
+import cbit.util.DependencyException;
 import cbit.util.KeyValue;
 import cbit.util.ObjectNotFoundException;
 import cbit.util.PermissionException;
@@ -25,6 +25,7 @@ import cbit.util.User;
 import cbit.util.Version;
 import cbit.util.VersionFlag;
 import cbit.util.Versionable;
+import cbit.util.VersionableType;
 import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Model;
@@ -42,7 +43,6 @@ import cbit.vcell.modelapp.VoltageClampStimulus;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.server.DependencyException;
 /**
  * This type was created in VisualAge.
  */
@@ -524,7 +524,7 @@ private void deleteSimContextSQL(Connection con,User user, KeyValue simContextKe
 		log.print("SimulationContextDbDriver.delete("+simContextKey+") deletion of MathDescription("+mathKey+") succeeded");
 	}catch (cbit.util.PermissionException e){
 		log.alert("SimulationContextDbDriver.delete("+simContextKey+") deletion of MathDescription("+mathKey+") failed: "+e.getMessage());
-	}catch (cbit.vcell.server.DependencyException e){
+	}catch (cbit.util.DependencyException e){
 		log.alert("SimulationContextDbDriver.delete("+simContextKey+") deletion of MathDescription("+mathKey+") failed: "+e.getMessage());
 	}
 }

@@ -3,7 +3,7 @@ import cbit.sql.KeyFactory;
 import cbit.util.DataAccessException;
 import cbit.util.SessionLog;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
-import cbit.vcell.server.AdminDatabaseServerXA;
+import cbit.vcell.modeldb.AdminDatabaseServerXA;
 import cbit.vcell.solvers.SimulationJobStatus;
 import cbit.vcell.solvers.VCellServerID;
 /**
