@@ -2,12 +2,15 @@ package org.vcell.modelapp;
 
 import java.util.Vector;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtension;
+import org.eclipse.core.runtime.IExtensionPoint;
+import org.eclipse.core.runtime.Platform;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceListener;
-import org.osgi.framework.ServiceReference;
 import org.vcell.modelapp.analysis.IAnalysisTaskFactory;
 
 public class Activator implements BundleActivator, ServiceListener {
@@ -31,24 +34,43 @@ public class Activator implements BundleActivator, ServiceListener {
 	}
 
     public IAnalysisTaskFactory[] getAnalysisTaskFactories(String analysisTaskType) {
-		ServiceReference[] analysisServiceRefs;
-		try {
-			analysisServiceRefs = m_context.getServiceReferences(IAnalysisTaskFactory.class.getName(), "(AnalysisTaskType="+analysisTaskType+")");
-		} catch (InvalidSyntaxException e) {
-			e.printStackTrace();
-			throw new RuntimeException(e.getMessage());
-		}
-		if (analysisServiceRefs!=null && analysisServiceRefs.length > 0){
-			Vector<IAnalysisTaskFactory> analysisTaskFactories = new Vector<IAnalysisTaskFactory>();
-			for (int i = 0; i < analysisServiceRefs.length; i++) {
-				 IAnalysisTaskFactory analysisTaskFactory = (IAnalysisTaskFactory) m_context.getService(analysisServiceRefs[i]);
-				 analysisTaskFactories.add(analysisTaskFactory);
+//		ServiceReference[] analysisServiceRefs;
+//		try {
+//			analysisServiceRefs = m_context.getServiceReferences(IAnalysisTaskFactory.class.getName(), "(AnalysisTaskType="+analysisTaskType+")");
+//		} catch (InvalidSyntaxException e) {
+//			e.printStackTrace();
+//			throw new RuntimeException(e.getMessage());
+//		}
+//		if (analysisServiceRefs!=null && analysisServiceRefs.length > 0){
+//			Vector<IAnalysisTaskFactory> analysisTaskFactories = new Vector<IAnalysisTaskFactory>();
+//			for (int i = 0; i < analysisServiceRefs.length; i++) {
+//				 IAnalysisTaskFactory analysisTaskFactory = (IAnalysisTaskFactory) m_context.getService(analysisServiceRefs[i]);
+//				 analysisTaskFactories.add(analysisTaskFactory);
+//			}
+//			return analysisTaskFactories.toArray(new IAnalysisTaskFactory[analysisTaskFactories.size()]);
+//		}else{
+//			throw new RuntimeException("Plugin error: couldn't find analysis plugin for type '"+analysisTaskType+"'");
+//		}
+    	Vector<IAnalysisTaskFactory> analysisTaskFactories = new Vector<IAnalysisTaskFactory>();
+    	IExtensionPoint extensionPoint = Platform.getExtensionRegistry().getExtensionPoint("org.vcell.modelapp","AnalysisTask");
+    	IExtension[] extensions = extensionPoint.getExtensions();
+    	for (int i = 0; i < extensions.length; i++) {
+    		IConfigurationElement[] extensionElements = extensions[i].getConfigurationElements();
+			if (extensionElements!=null && extensionElements.length>0){
+				try {
+					Object object = extensionElements[0].createExecutableExtension("class");
+					analysisTaskFactories.add((IAnalysisTaskFactory)object);
+				} catch (CoreException e1) {
+					e1.printStackTrace();
+				}
 			}
-			return analysisTaskFactories.toArray(new IAnalysisTaskFactory[analysisTaskFactories.size()]);
+		}
+    	if (analysisTaskFactories.size()>0){
+    		return analysisTaskFactories.toArray(new IAnalysisTaskFactory[analysisTaskFactories.size()]);
 		}else{
 			throw new RuntimeException("Plugin error: couldn't find analysis plugin for type '"+analysisTaskType+"'");
 		}
-    }
+   }
     /**
      * Implements BundleActivator.start(). Adds itself
      * as a listener for service events, then queries for 
@@ -69,7 +91,7 @@ public class Activator implements BundleActivator, ServiceListener {
     **/
     public void start(BundleContext context) throws Exception
     {
-        System.out.println("Starting org.vcell.model.Activator");
+		System.out.println("starting "+getClass().getName());
         m_context = context;
 
         // Listen for events pertaining to analysisTask services.

@@ -17,11 +17,11 @@ import cbit.util.Version;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathFactory;
-import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Structure;
+import cbit.vcell.parser.BioNameScope;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.simulation.Simulation;
@@ -69,7 +69,7 @@ public class SimulationContext implements cbit.util.Versionable, Matchable, cbit
 			return SimulationContext.this;
 		}
 		public boolean isPeer(cbit.vcell.parser.NameScope nameScope){
-			return (/*(nameScope instanceof cbit.vcell.mapping.MathMapping.MathMappingNameScope) &&*/ nameScope.isPeer(this));
+			return (nameScope != null && /*(nameScope instanceof cbit.vcell.mapping.MathMapping.MathMappingNameScope)*/ nameScope.isPeer(this));
 		}
 	}
 

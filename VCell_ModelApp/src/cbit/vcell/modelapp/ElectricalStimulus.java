@@ -3,10 +3,10 @@ import java.beans.PropertyVetoException;
 import java.util.Vector;
 
 import cbit.util.BeanUtils;
-import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.VCMODL;
 import cbit.vcell.parser.AbstractNameScope;
+import cbit.vcell.parser.BioNameScope;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;

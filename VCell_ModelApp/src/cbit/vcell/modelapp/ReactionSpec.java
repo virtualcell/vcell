@@ -7,11 +7,11 @@ import java.beans.PropertyVetoException;
 import java.io.Serializable;
 
 import cbit.util.Matchable;
-import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.parser.BioNameScope;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.NameScope;
