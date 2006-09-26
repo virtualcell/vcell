@@ -7,12 +7,14 @@ import java.util.Vector;
 import org.jdom.Element;
 import org.vcell.modelapp.analysis.IAnalysisTask;
 import org.vcell.modelapp.analysis.IAnalysisTaskFactory;
-import org.vcell.physics.component.ModelAnalysisResults;
 import org.vcell.physics.component.OOModel;
+import org.vcell.physics.math.MappingUtilities;
+import org.vcell.physics.math.MathSystem;
+import org.vcell.physics.math.ModelAnalysisResults;
 
 import cbit.util.Matchable;
 import cbit.vcell.modelapp.SimulationContext;
-import cbit.vcell.modelapp.physics.MappingUtilities;
+import cbit.vcell.modelapp.physics.PhysicsMapping;
 import cbit.vcell.parser.ExpressionException;
 
 public class OOModelingTask implements IAnalysisTask {
@@ -92,8 +94,10 @@ public class OOModelingTask implements IAnalysisTask {
 		this.simContext = simContext;
 		this.name = name;
 		this.modelAnalysisResults = new ModelAnalysisResults();
-		OOModel ooModel = MappingUtilities.createFromSimulationContext(simContext);
-		this.modelAnalysisResults = MappingUtilities.analyzeMathSystem(ooModel);
+		OOModel ooModel = PhysicsMapping.createFromSimulationContext(simContext);
+		MathSystem mathSystem = MappingUtilities.getMathSystem(ooModel);
+		this.modelAnalysisResults = MappingUtilities.analyzeMathSystem(mathSystem);
+		this.modelAnalysisResults.oOModel = ooModel;
 		
 	}
 

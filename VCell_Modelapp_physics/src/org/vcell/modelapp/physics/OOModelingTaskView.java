@@ -4,8 +4,8 @@ import javax.swing.JPanel;
 
 import org.vcell.modelapp.analysis.IAnalysisTask;
 import org.vcell.modelapp.analysis.IAnalysisTaskView;
-import org.vcell.physics.component.ModelAnalysisResults;
 import org.vcell.physics.component.gui.OOModelingPanel;
+import org.vcell.physics.math.ModelAnalysisResults;
 
 public class OOModelingTaskView implements IAnalysisTaskView {
 

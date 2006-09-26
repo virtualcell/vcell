@@ -22,6 +22,32 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 
 public class PhysicsMapping {
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (1/12/2004 1:35:34 AM)
+	 * @return ncbc_old.physics.component.PhysicalModel
+	 */
+	public static OOModel createFromSimulationContext(cbit.vcell.modelapp.SimulationContext simContext) throws ExpressionException, PropertyVetoException {
+		OOModel physicalModel = new OOModel();
+
+		//
+		// add locations to physicalModel
+		// (names of locations always start with the structure name followed by an underscore ... e.g. "cytosol_0_1")
+		//
+		//addLocations(simContext,physicalModel);
+
+		//addElectricalDevices(simContext,physicalModel);
+
+		PhysicsMapping.addChemicalDevices(simContext,physicalModel);
+
+		//System.out.println("# locations is "+physicalModel.getLocations().length);
+		System.out.println("# components is "+physicalModel.getModelComponents().length);
+		System.out.println("# connections is "+physicalModel.getConnections().length);
+
+		return physicalModel;
+	}
+
+
 
 	/**
 	 * Insert the method's description here.
