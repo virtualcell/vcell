@@ -13,4 +13,5 @@ Require-Bundle: org.vcell.common,
  org.vcell.units,
  org.vcell.util,
  org.vcell.image,
- org.vcell.spatial
+ org.vcell.spatial,
+ org.vcell.graph
