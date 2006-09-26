@@ -4,6 +4,7 @@ package cbit.vcell.model;
  * All rights reserved.
 ©*/
 import cbit.vcell.parser.*;
+
 import java.io.*;
 import cbit.vcell.units.VCUnitDefinition;
 

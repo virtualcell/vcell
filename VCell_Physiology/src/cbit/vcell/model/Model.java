@@ -1,4 +1,5 @@
 package cbit.vcell.model;
+import cbit.vcell.parser.BioNameScope;
 import cbit.vcell.parser.ExpressionBindingException;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -53,7 +54,7 @@ public class Model implements cbit.util.Versionable, Matchable, PropertyChangeLi
 			return Model.this;
 		}
 		public boolean isPeer(cbit.vcell.parser.NameScope nameScope){
-			return (/*(nameScope instanceof cbit.vcell.mapping.MathMapping.MathMappingNameScope) &&*/ nameScope.isPeer(this));
+			return (nameScope != null && /*(nameScope instanceof cbit.vcell.mapping.MathMapping.MathMappingNameScope)*/ nameScope.isPeer(this));
 		}
 
 	}

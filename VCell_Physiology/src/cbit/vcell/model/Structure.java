@@ -12,6 +12,7 @@ import cbit.util.Cacheable;
 import cbit.util.Compare;
 import cbit.util.KeyValue;
 import cbit.util.Matchable;
+import cbit.vcell.parser.BioNameScope;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
 
