@@ -1,4 +1,5 @@
 package cbit.vcell.desktop.controls;
+import cbit.rmi.event.VCSimulationDataIdentifier;
 import cbit.util.DataAccessException;
 import cbit.util.VCDataIdentifier;
 import cbit.vcell.simdata.DataManager;
@@ -6,7 +7,6 @@ import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.ParticleDataBlock;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SpatialSelection;
-import cbit.vcell.solvers.VCSimulationDataIdentifier;
 
 /**
  * Insert the type's description here.

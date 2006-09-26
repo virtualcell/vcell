@@ -2,6 +2,12 @@ package cbit.vcell.client.server;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 
+import cbit.rmi.event.DataJobEvent;
+import cbit.rmi.event.DataJobListener;
+import cbit.rmi.event.DataJobSender;
+import cbit.rmi.event.ExportEvent;
+import cbit.rmi.event.ExportListener;
+import cbit.rmi.event.ExportSender;
 import cbit.rmi.event.PerformanceMonitorListener;
 import cbit.rmi.event.RemoteMessageHandler;
 import cbit.rmi.event.SimpleMessageService;
@@ -12,12 +18,6 @@ import cbit.rmi.event.VCellMessageEvent;
 import cbit.rmi.event.VCellMessageEventListener;
 import cbit.rmi.event.VCellMessageEventSender;
 import cbit.util.DataAccessException;
-import cbit.vcell.export.ExportEvent;
-import cbit.vcell.export.ExportListener;
-import cbit.vcell.export.ExportSender;
-import cbit.vcell.simdata.DataJobEvent;
-import cbit.vcell.simdata.DataJobListener;
-import cbit.vcell.simdata.DataJobSender;
 /**
  * Insert the type's description here.
  * Creation date: (6/9/2004 2:17:35 PM)
@@ -136,7 +136,7 @@ void connect(RemoteMessageHandler remoteMessageHandler) throws DataAccessExcepti
  * Creation date: (3/29/2006 3:05:48 PM)
  * @param event cbit.rmi.event.ExportEvent
  */
-public void dataJobMessage(cbit.vcell.simdata.DataJobEvent event) {
+public void dataJobMessage(cbit.rmi.event.DataJobEvent event) {
 	// refire for swing
 	fireDataJobEvent(event);
 
@@ -178,7 +178,7 @@ private void disconnect() {
  * Creation date: (6/9/2004 2:27:28 PM)
  * @param event cbit.rmi.event.ExportEvent
  */
-public void exportMessage(cbit.vcell.export.ExportEvent event) {
+public void exportMessage(cbit.rmi.event.ExportEvent event) {
 	// refire for swing
 	fireExportEvent(event);
 }
