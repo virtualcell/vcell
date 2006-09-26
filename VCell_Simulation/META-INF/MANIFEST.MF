@@ -10,4 +10,5 @@ Export-Package: cbit.vcell.simulation,
  org.vcell.simulation
 Require-Bundle: org.vcell.util,
  org.vcell.geometry,
- org.vcell.math
+ org.vcell.math,
+ org.vcell.expression
