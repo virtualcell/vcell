@@ -13,7 +13,7 @@ public class MultiphysicsAnalysisTaskActivator implements BundleActivator {
 	 * @see org.osgi.framework.BundleActivator#start(org.osgi.framework.BundleContext)
 	 */
 	public void start(BundleContext context) throws Exception {
-        System.out.println("Starting org.vcell.ncbc.physics.MultiphysicsAnalysisTaskActivator");
+		System.out.println("starting "+getClass().getName());
         Properties props = new Properties();
         props.put("AnalysisTaskType", MultiphysicsAnalysisTaskXMLPersistence.MultiphysicsAnalysisTaskTag);
         context.registerService(IAnalysisTaskFactory.class.getName(), new MultiphysicsAnalysisTaskFactory(), props);
