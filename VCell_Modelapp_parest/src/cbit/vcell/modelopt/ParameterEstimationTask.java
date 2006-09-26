@@ -4,7 +4,7 @@ import java.beans.PropertyVetoException;
 import org.jdom.Element;
 import org.vcell.modelapp.analysis.IAnalysisTask;
 import org.vcell.modelapp.analysis.IAnalysisTaskFactory;
-import org.vcell.optimization.ParameterEstimationTaskFactoryImpl;
+import org.vcell.modelapp.parest.ParameterEstimationTaskFactoryImpl;
 
 import cbit.vcell.opt.OptimizationSolverSpec;
 import cbit.vcell.mapping.MappingException;

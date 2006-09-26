@@ -8,8 +8,8 @@ import org.jdom.Element;
 public class ParameterEstimationTaskXMLPersistence {
 	
 	public final static String ParameterEstimationTaskTag = "ParameterEstimationTask";
-	public final static String NameAttribute = "name";
-	public final static String AnnotationTag = "annotation";
+	public final static String NameAttribute = "Name";
+	public final static String AnnotationTag = "Annotation";
 	public final static String ParameterMappingSpecListTag = "parameterMappingSpecList";
 	public final static String ParameterMappingSpecTag = "parameterMappingSpec";
 	public final static String ParameterReferenceAttribute = "parameterReferenceAttribute";
