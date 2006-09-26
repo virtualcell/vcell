@@ -1,13 +1,13 @@
 package cbit.vcell.messaging.server;
+import cbit.rmi.event.SimulationJobStatus;
+import cbit.rmi.event.SimulationQueueEntryStatus;
+import cbit.rmi.event.VCellServerID;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.MessageConstants;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.modeldb.AdminDatabaseServer;
 import cbit.vcell.simulation.VCSimulationIdentifier;
-import cbit.vcell.solvers.SimulationJobStatus;
-import cbit.vcell.solvers.SimulationQueueEntryStatus;
-import cbit.vcell.solvers.VCellServerID;
 
 /**
  * Insert the type's description here.

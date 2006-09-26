@@ -3,8 +3,8 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.ObjectMessage;
 
+import cbit.rmi.event.SimulationJobStatus;
 import cbit.util.MessageConstants;
-import cbit.vcell.solvers.SimulationJobStatus;
 
 /**
  * Insert the type's description here.
@@ -49,7 +49,7 @@ public StatusMessage(Message message) throws JMSException {
  * Creation date: (2/5/2004 2:17:03 PM)
  * @return cbit.vcell.messaging.db.SimulationJobStatus
  */
-public cbit.vcell.solvers.SimulationJobStatus getJobStatus() {
+public cbit.rmi.event.SimulationJobStatus getJobStatus() {
 	return jobStatus;
 }
 

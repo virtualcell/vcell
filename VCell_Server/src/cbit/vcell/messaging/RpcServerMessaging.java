@@ -8,9 +8,9 @@ import javax.jms.ObjectMessage;
 import javax.jms.Queue;
 
 import cbit.gui.PropertyLoader;
+import cbit.rmi.event.ExportEvent;
 import cbit.util.MessageConstants;
 import cbit.util.SessionLog;
-import cbit.vcell.export.ExportEvent;
 import cbit.vcell.messaging.server.RpcRequest;
 import cbit.vcell.messaging.server.RpcServer;
 
@@ -126,7 +126,7 @@ public void onQueueMessage(Message message) {
  * Creation date: (10/24/2001 11:08:09 PM)
  * @param simulation cbit.vcell.solver.Simulation
  */
-public void publishDataStatus(cbit.vcell.simdata.DataJobEvent event) throws JMSException  {
+public void publishDataStatus(cbit.rmi.event.DataJobEvent event) throws JMSException  {
 	try {
 		VCellTopicSession dataSession = topicConn.getAutoSession();
 		Message rpcMessage = dataSession.createObjectMessage(event);

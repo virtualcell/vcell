@@ -6,6 +6,7 @@ import java.util.HashSet;
 import javax.swing.event.EventListenerList;
 
 import cbit.gui.PropertyLoader;
+import cbit.rmi.event.VCSimulationDataIdentifier;
 import cbit.rmi.event.WorkerEvent;
 import cbit.rmi.event.WorkerEventListener;
 import cbit.rmi.event.WorkerEventSender;
@@ -18,7 +19,6 @@ import cbit.vcell.solvers.SimulationJob;
 import cbit.vcell.solvers.SolverController;
 import cbit.vcell.solvers.SolverControllerImpl;
 import cbit.vcell.solvers.SolverException;
-import cbit.vcell.solvers.VCSimulationDataIdentifier;
 /**
  * This type was created in VisualAge.
  */

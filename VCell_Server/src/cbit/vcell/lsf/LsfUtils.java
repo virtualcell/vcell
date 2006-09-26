@@ -2,9 +2,9 @@ package cbit.vcell.lsf;
 import java.util.StringTokenizer;
 
 import cbit.gui.PropertyLoader;
+import cbit.rmi.event.VCellServerID;
 import cbit.util.SessionLog;
 import cbit.util.StdoutSessionLog;
-import cbit.vcell.solvers.VCellServerID;
 
 /**
  * Insert the type's description here.
@@ -198,7 +198,7 @@ public static int getPartitionMaximumJobs() {
  * Creation date: (2/21/2006 9:01:20 AM)
  * @return cbit.vcell.messaging.db.VCellServerID[]
  */
-public static cbit.vcell.solvers.VCellServerID[] getPartitionShareServerIDs() {
+public static cbit.rmi.event.VCellServerID[] getPartitionShareServerIDs() {
 	try {
 		String lsfPartitionShareServerIDs = PropertyLoader.getRequiredProperty(PropertyLoader.lsfPartitionShareServerIDs);
 		StringTokenizer st = new StringTokenizer(lsfPartitionShareServerIDs, " ,");

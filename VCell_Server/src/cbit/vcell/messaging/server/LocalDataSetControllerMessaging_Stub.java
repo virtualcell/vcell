@@ -313,12 +313,12 @@ public final class LocalDataSetControllerMessaging_Stub
     }
     
     // implementation of makeRemoteFile(ExportSpecs)
-    public cbit.vcell.export.ExportEvent makeRemoteFile(cbit.vcell.export.ExportSpecs $param_ExportSpecs_1)
+    public cbit.rmi.event.ExportEvent makeRemoteFile(cbit.vcell.export.ExportSpecs $param_ExportSpecs_1)
 	throws DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_makeRemoteFile_14, new java.lang.Object[] {$param_ExportSpecs_1}, -2093121804079289022L);
-	    return ((cbit.vcell.export.ExportEvent) $result);
+	    return ((cbit.rmi.event.ExportEvent) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {

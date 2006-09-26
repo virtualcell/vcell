@@ -1,8 +1,8 @@
 package cbit.vcell.messaging;
+import cbit.rmi.event.VCellServerID;
 import cbit.util.SessionLog;
 import cbit.util.User;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
-import cbit.vcell.solvers.VCellServerID;
 
 /**
  * Insert the type's description here.
@@ -26,7 +26,7 @@ public static SimulationJobStatusInfo schedule(SimulationJobStatusInfo[] allActi
 	java.util.Hashtable userPdeRunningJobs = new java.util.Hashtable();
 	java.util.Hashtable userOdeRunningJobs = new java.util.Hashtable();
 
-	cbit.vcell.solvers.SimulationJobStatus jobStatus = null;
+	cbit.rmi.event.SimulationJobStatus jobStatus = null;
 	int runningPDEs = 0;
 	for (int i = 0; i < allActiveJobs.length; i++){
 		jobStatus = allActiveJobs[i].getSimJobStatus();

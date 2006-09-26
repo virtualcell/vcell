@@ -5,9 +5,12 @@ import java.rmi.RemoteException;
 import javax.swing.event.EventListenerList;
 
 import cbit.gui.PropertyLoader;
+import cbit.rmi.event.SimulationJobStatus;
 import cbit.rmi.event.SimulationJobStatusEvent;
 import cbit.rmi.event.SimulationJobStatusListener;
 import cbit.rmi.event.SimulationJobStatusSender;
+import cbit.rmi.event.VCSimulationDataIdentifier;
+import cbit.rmi.event.VCellServerID;
 import cbit.rmi.event.WorkerEventListener;
 import cbit.util.ConfigurationException;
 import cbit.util.DataAccessException;
@@ -24,13 +27,11 @@ import cbit.vcell.simulation.SimulationInfo;
 import cbit.vcell.simulation.VCSimulationIdentifier;
 import cbit.vcell.solvers.SimExecutionException;
 import cbit.vcell.solvers.SimulationJob;
-import cbit.vcell.solvers.SimulationJobStatus;
 import cbit.vcell.solvers.SolverController;
 import cbit.vcell.solvers.SolverControllerInfo;
 import cbit.vcell.solvers.SolverException;
 import cbit.vcell.solvers.SolverProxy;
 import cbit.vcell.solvers.SolverStatus;
-import cbit.vcell.solvers.VCellServerID;
 
 /**
  * Insert the type's description here.
@@ -286,7 +287,7 @@ SolverProxy getSolverProxy(User user, SimulationJob simulationJob, SessionLog us
  * @exception java.rmi.RemoteException The exception description.
  */
 public SolverStatus getSolverStatus(User user, SimulationInfo simulationInfo, int jobIndex) throws RemoteException, PermissionException, DataAccessException {
-	SolverProxy solverProxy = (SolverProxy)solverProxyHash.get(SimulationJob.createSimulationJobID(Simulation.createSimulationID(simulationInfo.getAuthoritativeVCSimulationIdentifier().getSimulationKey()),jobIndex));
+	SolverProxy solverProxy = (SolverProxy)solverProxyHash.get(VCSimulationDataIdentifier.createSimulationJobID(Simulation.createSimulationID(simulationInfo.getAuthoritativeVCSimulationIdentifier().getSimulationKey()),jobIndex));
 	if (solverProxy==null){
 		return new SolverStatus(SolverStatus.SOLVER_READY);
 	}
@@ -446,7 +447,7 @@ public void stopSimulation(User user, Simulation simulation) {
 				fireSimulationJobStatusEvent(event);
 			}
 				
-			SolverProxy solverProxy = (SolverProxy)solverProxyHash.get(SimulationJob.createSimulationJobID(Simulation.createSimulationID(vcSimID.getSimulationKey()), i));
+			SolverProxy solverProxy = (SolverProxy)solverProxyHash.get(VCSimulationDataIdentifier.createSimulationJobID(Simulation.createSimulationID(vcSimID.getSimulationKey()), i));
 			if (solverProxy != null){
 				solverProxy.stopSimulationJob();
 			}
@@ -476,7 +477,7 @@ public void stopSimulation(User user, VCSimulationIdentifier vcSimID, int jobInd
 			fireSimulationJobStatusEvent(event);
 		}
 			
-		SolverProxy solverProxy = (SolverProxy)solverProxyHash.get(SimulationJob.createSimulationJobID(Simulation.createSimulationID(vcSimID.getSimulationKey()), jobIndex));
+		SolverProxy solverProxy = (SolverProxy)solverProxyHash.get(VCSimulationDataIdentifier.createSimulationJobID(Simulation.createSimulationID(vcSimID.getSimulationKey()), jobIndex));
 		if (solverProxy != null){
 			solverProxy.stopSimulationJob();
 		}
@@ -493,7 +494,7 @@ public void stopSimulation(User user, VCSimulationIdentifier vcSimID, int jobInd
  * @param jobStatus cbit.vcell.messaging.db.SimulationJobStatus
  */
 private SimulationJobStatus updateCompletedJobStatus(SimulationJobStatus oldJobStatus, VCSimulationIdentifier vcSimulationIdentifier, int jobIndex) throws DataAccessException, RemoteException {
-	SolverProxy solverProxy = (SolverProxy)solverProxyHash.get(SimulationJob.createSimulationJobID(Simulation.createSimulationID(vcSimulationIdentifier.getSimulationKey()), jobIndex));
+	SolverProxy solverProxy = (SolverProxy)solverProxyHash.get(VCSimulationDataIdentifier.createSimulationJobID(Simulation.createSimulationID(vcSimulationIdentifier.getSimulationKey()), jobIndex));
 	if (solverProxy == null) {
 		return null;
 	}
@@ -512,7 +513,7 @@ private SimulationJobStatus updateCompletedJobStatus(SimulationJobStatus oldJobS
  * @param simKey cbit.sql.KeyValue
  */
 private SimulationJobStatus updateDispatchedJobStatus(SimulationJobStatus oldJobStatus, VCSimulationIdentifier vcSimulationIdentifier, int jobIndex) throws RemoteException, DataAccessException, UpdateSynchronizationException {
-	SolverProxy solverProxy = (SolverProxy)solverProxyHash.get(SimulationJob.createSimulationJobID(Simulation.createSimulationID(vcSimulationIdentifier.getSimulationKey()), jobIndex));
+	SolverProxy solverProxy = (SolverProxy)solverProxyHash.get(VCSimulationDataIdentifier.createSimulationJobID(Simulation.createSimulationID(vcSimulationIdentifier.getSimulationKey()), jobIndex));
 	if (solverProxy == null) {
 		return null;
 	}
@@ -532,7 +533,7 @@ private SimulationJobStatus updateDispatchedJobStatus(SimulationJobStatus oldJob
  * @param jobStatus cbit.vcell.messaging.db.SimulationJobStatus
  */
 private SimulationJobStatus updateFailedJobStatus(SimulationJobStatus oldJobStatus, VCSimulationIdentifier vcSimulationIdentifier, int jobIndex, String solverMsg) throws DataAccessException, RemoteException {
-	SolverProxy solverProxy = (SolverProxy)solverProxyHash.get(SimulationJob.createSimulationJobID(Simulation.createSimulationID(vcSimulationIdentifier.getSimulationKey()), jobIndex));
+	SolverProxy solverProxy = (SolverProxy)solverProxyHash.get(VCSimulationDataIdentifier.createSimulationJobID(Simulation.createSimulationID(vcSimulationIdentifier.getSimulationKey()), jobIndex));
 	if (solverProxy == null) {
 		return null;
 	}
@@ -552,7 +553,7 @@ private SimulationJobStatus updateFailedJobStatus(SimulationJobStatus oldJobStat
  * @param jobStatus cbit.vcell.messaging.db.SimulationJobStatus
  */
 private SimulationJobStatus updateRunningJobStatus(SimulationJobStatus oldJobStatus, VCSimulationIdentifier vcSimulationIdentifier, int jobIndex, boolean hasData, String solverMsg) throws DataAccessException, RemoteException {
-	SolverProxy solverProxy = (SolverProxy)solverProxyHash.get(SimulationJob.createSimulationJobID(Simulation.createSimulationID(vcSimulationIdentifier.getSimulationKey()), jobIndex));
+	SolverProxy solverProxy = (SolverProxy)solverProxyHash.get(VCSimulationDataIdentifier.createSimulationJobID(Simulation.createSimulationID(vcSimulationIdentifier.getSimulationKey()), jobIndex));
 	if (solverProxy == null) {
 		return null;
 	}
@@ -572,7 +573,7 @@ private SimulationJobStatus updateRunningJobStatus(SimulationJobStatus oldJobSta
  * @param jobStatus cbit.vcell.messaging.db.SimulationJobStatus
  */
 private SimulationJobStatus updateStoppedJobStatus(SimulationJobStatus oldJobStatus, VCSimulationIdentifier vcSimID, int jobIndex) throws DataAccessException, RemoteException {	
-	SolverProxy solverProxy = (SolverProxy)solverProxyHash.get(SimulationJob.createSimulationJobID(Simulation.createSimulationID(vcSimID.getSimulationKey()), jobIndex));
+	SolverProxy solverProxy = (SolverProxy)solverProxyHash.get(VCSimulationDataIdentifier.createSimulationJobID(Simulation.createSimulationID(vcSimID.getSimulationKey()), jobIndex));
 	if (solverProxy != null) {
 		synchronized (solverProxy) {
 			return dispatcherDbManager.updateEndStatus(oldJobStatus, adminDbServer, vcSimID, jobIndex, null, SimulationJobStatus.SCHEDULERSTATUS_STOPPED, null);			

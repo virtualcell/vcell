@@ -1,15 +1,15 @@
 package cbit.vcell.messaging.server;
 import java.util.Date;
 
+import cbit.rmi.event.SimulationExecutionStatus;
+import cbit.rmi.event.SimulationJobStatus;
+import cbit.rmi.event.SimulationQueueEntryStatus;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.MessageConstants;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.modeldb.AdminDatabaseServer;
 import cbit.vcell.simulation.VCSimulationIdentifier;
-import cbit.vcell.solvers.SimulationExecutionStatus;
-import cbit.vcell.solvers.SimulationJobStatus;
-import cbit.vcell.solvers.SimulationQueueEntryStatus;
 
 /**
  * Insert the type's description here.
@@ -170,7 +170,7 @@ public SimulationJobStatus getSimulationJobStatus(AdminDatabaseServer adminDb, K
  * Creation date: (5/28/2003 3:39:37 PM)
  * @param simKey cbit.sql.KeyValue
  */
-public cbit.vcell.solvers.SimulationJobStatus updateDispatchedStatus(cbit.vcell.solvers.SimulationJobStatus oldJobStatus, cbit.vcell.modeldb.AdminDatabaseServer adminDb, java.lang.String computeHost, cbit.vcell.simulation.VCSimulationIdentifier vcSimID, int jobIndex, java.lang.String startMsg) throws DataAccessException, cbit.vcell.messaging.db.UpdateSynchronizationException {
+public cbit.rmi.event.SimulationJobStatus updateDispatchedStatus(cbit.rmi.event.SimulationJobStatus oldJobStatus, cbit.vcell.modeldb.AdminDatabaseServer adminDb, java.lang.String computeHost, cbit.vcell.simulation.VCSimulationIdentifier vcSimID, int jobIndex, java.lang.String startMsg) throws DataAccessException, cbit.vcell.messaging.db.UpdateSynchronizationException {
 	try {
 
 		if (oldJobStatus != null && !oldJobStatus.isDone()) {

@@ -8,10 +8,10 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 import cbit.plot.PlotData;
+import cbit.rmi.event.ExportEvent;
 import cbit.util.CoordinateIndex;
 import cbit.util.DataAccessException;
 import cbit.util.VCDataIdentifier;
-import cbit.vcell.export.ExportEvent;
 import cbit.vcell.export.ExportSpecs;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.DataIdentifier;

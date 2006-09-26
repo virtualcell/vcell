@@ -7,6 +7,8 @@ import java.util.Map;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
+import cbit.rmi.event.SimulationJobStatus;
+import cbit.rmi.event.VCSimulationDataIdentifier;
 import cbit.rmi.event.WorkerEvent;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.DBCacheTable;
@@ -27,8 +29,6 @@ import cbit.vcell.modeldb.LocalAdminDbServer;
 import cbit.vcell.simulation.Simulation;
 import cbit.vcell.simulation.VCSimulationIdentifier;
 import cbit.vcell.solvers.SimulationJob;
-import cbit.vcell.solvers.SimulationJobStatus;
-import cbit.vcell.solvers.VCSimulationDataIdentifier;
 
 /**
  * Insert the type's description here.

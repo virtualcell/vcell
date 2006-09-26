@@ -5,6 +5,8 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.ObjectMessage;
 
+import cbit.rmi.event.SimulationJobStatus;
+import cbit.rmi.event.VCellServerID;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.util.DataAccessException;
@@ -22,8 +24,6 @@ import cbit.vcell.modeldb.AdminDatabaseServerXA;
 import cbit.vcell.simulation.Simulation;
 import cbit.vcell.simulation.VCSimulationIdentifier;
 import cbit.vcell.solvers.SimulationJob;
-import cbit.vcell.solvers.SimulationJobStatus;
-import cbit.vcell.solvers.VCellServerID;
 import cbit.vcell.transaction.JtaDbConnection;
 import cbit.vcell.transaction.JtaOracleConnection;
 import cbit.vcell.transaction.JtaTransactionManager;
@@ -66,7 +66,7 @@ public void run() {
 	VCellXAQueueSession obsoleteJobDispatcher = null;	
 	VCellXATopicSession obsoleteJobStatusPublisher = null;
 	boolean join = true;
-	cbit.vcell.solvers.SimulationJobStatus jobStatus = null;
+	cbit.rmi.event.SimulationJobStatus jobStatus = null;
 		
 	while (true) {
 		try {
@@ -760,7 +760,7 @@ private void stopSimulation(java.sql.Connection con, User user, VCSimulationIden
 		}
 		if (simulation != null) {
 			for (int i = 0; i < simulation.getScanCount(); i++){
-				cbit.vcell.solvers.SimulationJobStatus jobStatus = jobAdminXA.getSimulationJobStatus(con, vcSimID.getSimulationKey(), i);
+				cbit.rmi.event.SimulationJobStatus jobStatus = jobAdminXA.getSimulationJobStatus(con, vcSimID.getSimulationKey(), i);
 
 				if (jobStatus != null) {
 					if (!jobStatus.isDone()) {

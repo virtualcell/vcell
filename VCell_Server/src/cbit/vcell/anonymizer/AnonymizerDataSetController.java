@@ -194,8 +194,8 @@ public cbit.util.TimeSeriesJobResults getTimeSeriesValues(cbit.util.VCDataIdenti
  * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.export.ExportEvent makeRemoteFile(cbit.vcell.export.ExportSpecs exportSpecs) throws cbit.util.DataAccessException, java.rmi.RemoteException {
-	return (cbit.vcell.export.ExportEvent)remoteCall("makeRemoteFile", new Class[] {cbit.vcell.export.ExportSpecs.class}, new Object[] {exportSpecs});
+public cbit.rmi.event.ExportEvent makeRemoteFile(cbit.vcell.export.ExportSpecs exportSpecs) throws cbit.util.DataAccessException, java.rmi.RemoteException {
+	return (cbit.rmi.event.ExportEvent)remoteCall("makeRemoteFile", new Class[] {cbit.vcell.export.ExportSpecs.class}, new Object[] {exportSpecs});
 }
 
 

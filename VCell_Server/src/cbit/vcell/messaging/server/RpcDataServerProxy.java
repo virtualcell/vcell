@@ -192,7 +192,7 @@ public cbit.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.export.ExportEvent makeRemoteFile(cbit.vcell.export.ExportSpecs exportSpecs) throws DataAccessException {
+public cbit.rmi.event.ExportEvent makeRemoteFile(cbit.vcell.export.ExportSpecs exportSpecs) throws DataAccessException {
 	try {
 		rpc(cbit.util.MessageConstants.SERVICETYPE_DATA_VALUE, "makeRemoteFile", new Object[]{user, exportSpecs}, false, new String[]{MessageConstants.SERVICE_DATA_ISEXPORTING}, new Object[]{new Boolean(true)});
 	} catch (DataAccessException ex) {

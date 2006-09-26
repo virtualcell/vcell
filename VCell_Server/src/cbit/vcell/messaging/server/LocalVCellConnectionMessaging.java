@@ -9,12 +9,13 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
 import cbit.gui.PropertyLoader;
+import cbit.rmi.event.DataJobListener;
+import cbit.rmi.event.ExportEvent;
+import cbit.rmi.event.ExportListener;
 import cbit.rmi.event.SimpleMessageHandler;
 import cbit.util.DataAccessException;
 import cbit.util.SessionLog;
 import cbit.util.User;
-import cbit.vcell.export.ExportEvent;
-import cbit.vcell.export.ExportListener;
 import cbit.vcell.messaging.JmsClientMessaging;
 import cbit.vcell.messaging.JmsConnectionFactory;
 import cbit.vcell.messaging.VCellQueueConnection;
@@ -27,7 +28,6 @@ import cbit.vcell.server.SimulationController;
 import cbit.vcell.server.URLFinder;
 import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.server.VCellConnection;
-import cbit.vcell.simdata.DataJobListener;
 
 /**
  * The user's connection to the Virtual Cell.  It is obtained from the VCellServer
@@ -112,7 +112,7 @@ public void close() throws java.rmi.RemoteException {
  * Creation date: (3/29/2006 3:32:25 PM)
  * @param event cbit.rmi.event.ExportEvent
  */
-public void dataJobMessage(cbit.vcell.simdata.DataJobEvent event) {
+public void dataJobMessage(cbit.rmi.event.DataJobEvent event) {
 	// if it's from one of our jobs, pass it along so it will reach the client
 	if (getUser().equals(event.getUser())) {
 		messageService.getMessageCollector().dataJobMessage(event);
