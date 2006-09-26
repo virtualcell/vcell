@@ -1,13 +1,13 @@
 package cbit.vcell.vcml.test;
 import cbit.gui.PropertyLoader;
+import cbit.util.BioModelInfo;
 import cbit.util.DataAccessException;
+import cbit.util.MathModelInfo;
 import cbit.vcell.client.database.ClientDocumentManager;
 import cbit.vcell.client.server.ClientServerManager;
-import cbit.vcell.client.server.ClientTester;
+import cbit.vcell.client.test.ClientTester;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.modelapp.SimulationContext;

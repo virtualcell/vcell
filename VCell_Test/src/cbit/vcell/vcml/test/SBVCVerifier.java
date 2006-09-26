@@ -12,7 +12,6 @@ import cbit.vcell.solver.test.VariableComparisonSummary;
  * All rights reserved.
 ©*/
 import cbit.gui.PropertyLoader;
-import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.simdata.FunctionColumnDescription;
 import cbit.vcell.simdata.ODESolverResultSet;
 import cbit.vcell.simdata.ODESolverResultSetColumnDescription;
@@ -22,7 +21,6 @@ import cbit.sql.DBCacheTable;
 import cbit.util.SessionLog;
 import cbit.sql.ConnectionFactory;
 import java.beans.*;
-import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.vcml.StructureSizeSolver;
@@ -39,6 +37,7 @@ import cbit.vcell.math.MathDescription;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import cbit.util.BigString;
+import cbit.util.BioModelInfo;
 import cbit.util.DataAccessException;
 import cbit.util.KeyValue;
 import cbit.util.StdoutSessionLog;
@@ -58,6 +57,7 @@ import cbit.vcell.solver.ode.ODESolver;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.solver.test.SimulationComparisonSummary;
 import cbit.vcell.solver.test.MathTestingUtilities;
+import cbit.vcell.modeldb.AdminDatabaseServer;
 import cbit.vcell.modeldb.DatabasePolicySQL;
 import cbit.vcell.modeldb.DbDriver;
 

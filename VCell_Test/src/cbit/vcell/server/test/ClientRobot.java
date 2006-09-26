@@ -13,7 +13,7 @@ import cbit.util.*;
  * Creation date: (3/8/01 3:00:56 PM)
  * @author: Jim Schaff
  */
-public class ClientRobot extends cbit.vcell.client.server.ClientTester implements Runnable {
+public class ClientRobot extends cbit.vcell.client.test.ClientTester implements Runnable {
 	private String host = null;
 	private String userid = null;
 	private String password = null;
@@ -70,7 +70,7 @@ public String getName() {
 public void run() {
 	try {
 		String args[] = { host, userid, password };
-		setManagerManager(cbit.vcell.client.server.ClientTester.mainInit(args,"ClientRobot",null));
+		setManagerManager(cbit.vcell.client.test.ClientTester.mainInit(args,"ClientRobot",null));
 		for (int i=0;i<10;i++){
 			log.print("Robot "+getName()+ "starting loop : "+i);
 			BioModel bioModel = BioModelTest.getExampleWithImage();
