@@ -26,7 +26,8 @@ public static void main(java.lang.String[] args) {
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		
 		//PhysicalModel physicalModel = PhysicalModelTest.getExample();
-		org.vcell.physics.component.OOModel physicalModel = org.vcell.physics.component.OOModelTest.getExampleTriangle_h_a();
+		//org.vcell.physics.component.OOModel physicalModel = org.vcell.physics.component.OOModelTest.getExampleTriangle_h_a();
+		org.vcell.physics.component.OOModel physicalModel = org.vcell.physics.component.OOModelTest.getExample5();
 		aPhysicalModelGraphPanel.setModel(physicalModel);
 		
 		frame.setVisible(true);

@@ -15,7 +15,7 @@ public static void main(java.lang.String[] args) {
 	try {
 		//Model model = ModelReader.parse(null);
 		//Model model = getExampleTriangle_h_a();
-		OOModel oOModel = org.vcell.physics.component.OOModelTest.getExample3();
+		OOModel oOModel = org.vcell.physics.component.OOModelTest.getExample4();
 		MathSystem mathSystem = MappingUtilities.getMathSystem(oOModel);
 		ModelAnalysisResults modelAnalysisResults = MappingUtilities.analyzeMathSystem(mathSystem);
 		modelAnalysisResults.oOModel = oOModel;
@@ -30,6 +30,7 @@ public static void main(java.lang.String[] args) {
 		ooModelPanel.setPhysicalModelGraphPanelModel(oOModel);
 		ooModelPanel.setConnectivityGraphPanelGraph(modelAnalysisResults.connectivityGraph);
 		ooModelPanel.setBipartiteMatchings(modelAnalysisResults.matching);
+		ooModelPanel.setMathDescription(modelAnalysisResults.mathDescription);
 
 		ooModelPanel.setPreferredSize(new java.awt.Dimension(800,800));
 		ooModelPanel.setMinimumSize(new java.awt.Dimension(800,800));

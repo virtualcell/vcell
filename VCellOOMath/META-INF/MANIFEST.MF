@@ -9,8 +9,9 @@ Require-Bundle: org.vcell.common,
  org.vcell.expression,
  org.vcell.units,
  org.vcell.xml.common,
- org.vcell.math
-Bundle-Activator: org.vcell.modelapp.physics.OOModelingTaskActivator
+ org.vcell.math,
+ org.vcell.geometry,
+ org.vcell.image
 Export-Package: org.vcell.physics.component,
  org.vcell.physics.component.gui,
  org.vcell.physics.math

@@ -8,7 +8,10 @@ import org.vcell.physics.component.ModelReader;
 import org.vcell.physics.component.OOModel;
 import org.vcell.physics.component.Symbol;
 
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.SubDomain;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 
 /**
@@ -24,9 +27,54 @@ public class MappingUtilities {
  * @param sccArray ncbc.physics2.component.StronglyConnectedComponent[]
  * @param partitionGraph cbit.util.graph.Graph
  * @param symbolToTear ncbc.physics2.component.Symbol
+ * @throws MathException 
+ * @throws ExpressionBindingException 
  */
 
-public static MathDescription getMathDescription(Var)
+public static cbit.vcell.math.MathDescription getMathDescription(VarEquationAssignment[] varEqnAssign) throws PropertyVetoException, ExpressionBindingException, MathException {
+	cbit.vcell.math.MathDescription mathDesc = new cbit.vcell.math.MathDescription("generated");
+	mathDesc.setGeometry(new cbit.vcell.geometry.Geometry("newgeometry",0));
+	cbit.vcell.math.CompartmentSubDomain compartmentSubDomain = new cbit.vcell.math.CompartmentSubDomain("compartment",0);
+	mathDesc.addSubDomain(compartmentSubDomain);
+	//
+	// first add variables, then add equations
+	//
+	cbit.vcell.math.Variable[] varArray = new cbit.vcell.math.Variable[varEqnAssign.length];
+	for (int i = 0; i < varEqnAssign.length; i++) {
+		if (varEqnAssign[i].getSolution()==null){
+			throw new RuntimeException("system not completely solved, cannot generation math ... could generate DAE at some point");
+		}
+		if (varEqnAssign[i].isStateVariable()){
+			cbit.vcell.math.VolVariable volVariable = new cbit.vcell.math.VolVariable(varEqnAssign[i].getSymbol().getName());
+			varArray[i] = volVariable;
+		}else{
+			//
+			// if solution has no symbols, make this a constant
+			//
+			if (varEqnAssign[i].getSolution().getSymbols()==null || varEqnAssign[i].getSolution().getSymbols().length==0){
+				cbit.vcell.math.Constant constant = new cbit.vcell.math.Constant(varEqnAssign[i].getSymbol().getName(),new Expression(varEqnAssign[i].getSolution()));
+				varArray[i] = constant;
+			//
+			// if it has a symbol, then make it a function
+			//
+			}else{
+				cbit.vcell.math.Function function = new cbit.vcell.math.Function(varEqnAssign[i].getSymbol().getName(),new Expression(varEqnAssign[i].getSolution()));
+				varArray[i] = function;
+			}
+		}
+	}
+	mathDesc.setAllVariables(varArray);
+	//
+	// now add equations
+	//
+	for (int i = 0; i < varEqnAssign.length; i++) {
+		if (varEqnAssign[i].isStateVariable() && varEqnAssign[i].getSolution()!=null){
+			cbit.vcell.math.OdeEquation odeEquation = new cbit.vcell.math.OdeEquation(varArray[i],new Expression(0.0),new Expression(varEqnAssign[i].getSolution()));
+			compartmentSubDomain.addEquation(odeEquation);
+		}
+	}
+	return mathDesc;
+}
 	
 	
 public static void breakSCC(StronglyConnectedComponent[] sccArray, cbit.util.graph.Graph partitionGraph, StronglyConnectedComponent sccToBreak) {
@@ -481,6 +529,11 @@ public static ModelAnalysisResults analyzeMathSystem(MathSystem mathSystem) thro
 		modelAnalysisResults.sccGraph = sccGraph;
 		modelAnalysisResults.sccArray = sortedSCCs;
 		modelAnalysisResults.varEqnAssignments = varEqnAssignments;
+		try {
+			modelAnalysisResults.mathDescription = getMathDescription(varEqnAssignments);
+		} catch (Exception e) {
+			e.printStackTrace(System.out);
+		}
 	}else{
 		System.out.println("maximal matching not of full rank");
 	}

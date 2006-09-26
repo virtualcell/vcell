@@ -4,6 +4,8 @@ import org.vcell.physics.math.StronglyConnectedComponent;
 import org.vcell.physics.math.VarEquationAssignment;
 
 import cbit.gui.graph.SimpleGraphModelPanel;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathException;
 /**
  * Insert the type's description here.
  * Creation date: (1/30/2006 2:53:25 PM)
@@ -21,6 +23,7 @@ public class OOModelingPanel extends javax.swing.JPanel {
 	private org.vcell.physics.math.VarEquationAssignment[] fieldVarEquationAssignments = null;
 	private javax.swing.JTextArea ivjEquationTextArea = null;
 	private org.vcell.physics.math.BipartiteMatchings.Matching fieldBipartiteMatchings = null;
+	private cbit.vcell.math.MathDescription fieldMathDescription = null;
 
 class IvjEventHandler implements java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -36,6 +39,8 @@ class IvjEventHandler implements java.beans.PropertyChangeListener {
 				connEtoC5(evt);
 			if (evt.getSource() == OOModelingPanel.this && (evt.getPropertyName().equals("varEquationAssignments"))) 
 				connEtoC6(evt);
+			if (evt.getSource() == OOModelingPanel.this && (evt.getPropertyName().equals("mathDescription"))) 
+				connEtoC7(evt);
 		};
 	};
 
@@ -196,6 +201,26 @@ private void connEtoC6(java.beans.PropertyChangeEvent arg1) {
 
 
 /**
+ * connEtoC7:  (OOModelingPanel.mathDescription --> OOModelingPanel.displaySCC()V)
+ * @param arg1 java.beans.PropertyChangeEvent
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private void connEtoC7(java.beans.PropertyChangeEvent arg1) {
+	try {
+		// user code begin {1}
+		// user code end
+		this.displaySCC();
+		// user code begin {2}
+		// user code end
+	} catch (java.lang.Throwable ivjExc) {
+		// user code begin {3}
+		// user code end
+		handleException(ivjExc);
+	}
+}
+
+
+/**
  * connEtoC7:  (OOModelingPanel.initialize() --> OOModelingPanel.oOModelingPanel_Initialize()V)
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
@@ -254,6 +279,15 @@ private void displaySCC() {
 			}
 		}
 	}
+	if (getMathDescription()!=null){
+		buffer.append("\n\n\n");
+		try {
+			buffer.append(getMathDescription().getVCML_database());
+		} catch (MathException e) {
+			e.printStackTrace();
+			buffer.append(e.getMessage());
+		}
+	}
 	getEquationTextArea().setText(buffer.toString());
 }
 
@@ -265,6 +299,10 @@ private void displaySCC() {
  */
 public org.vcell.physics.math.BipartiteMatchings.Matching getBipartiteMatchings() {
 	return fieldBipartiteMatchings;
+}
+
+public cbit.vcell.math.MathDescription getMathDescription() {
+	return fieldMathDescription;
 }
 
 
@@ -623,6 +661,12 @@ public void setBipartiteMatchings(org.vcell.physics.math.BipartiteMatchings.Matc
 	org.vcell.physics.math.BipartiteMatchings.Matching oldValue = fieldBipartiteMatchings;
 	fieldBipartiteMatchings = bipartiteMatchings;
 	firePropertyChange("bipartiteMatchings", oldValue, bipartiteMatchings);
+}
+
+public void setMathDescription(cbit.vcell.math.MathDescription mathDesc) {
+	MathDescription oldValue = fieldMathDescription;
+	fieldMathDescription = mathDesc;
+	firePropertyChange("mathDescription", oldValue, mathDesc);
 }
 
 
