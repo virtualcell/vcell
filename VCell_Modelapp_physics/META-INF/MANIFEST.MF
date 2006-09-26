@@ -12,4 +12,5 @@ Require-Bundle: org.vcell.expression,
  org.vcell.util,
  org.vcell.common,
  org.vcell.physiology,
- org.vcell.xml.common
+ org.vcell.xml.common,
+ org.vcell.math

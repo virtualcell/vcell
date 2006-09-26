@@ -36,6 +36,7 @@ public class OOModelingTaskView implements IAnalysisTaskView {
 				ooModelingPanel.setSccGraphModelPanelGraph(modelAnalysisResults.sccGraph);
 				ooModelingPanel.setStronglyConnectedComponents(modelAnalysisResults.sccArray);
 				ooModelingPanel.setVarEquationAssignments(modelAnalysisResults.varEqnAssignments);
+				ooModelingPanel.setMathDescription(modelAnalysisResults.mathDescription);
 			}else{
 				ooModelingPanel.setBipartiteMatchings(null);
 				ooModelingPanel.setConnectivityGraphPanelGraph(null);
@@ -44,6 +45,7 @@ public class OOModelingTaskView implements IAnalysisTaskView {
 				ooModelingPanel.setSccGraphModelPanelGraph(null);
 				ooModelingPanel.setStronglyConnectedComponents(null);
 				ooModelingPanel.setVarEquationAssignments(null);
+				ooModelingPanel.setMathDescription(null);
 			}
 		}else{
 			throw new RuntimeException("unsupported analysis task type = "+newAnalysisTask.getClass().getName());
