@@ -23,4 +23,5 @@ Require-Bundle: org.vcell.common,
  org.vcell.solvers,
  org.vcell.vcml,
  org.vcell.math,
- org.vcell.xml.common
+ org.vcell.xml.common,
+ org.vcell.events

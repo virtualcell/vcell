@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import java.util.Vector;
 
 import cbit.gui.PropertyLoader;
+import cbit.rmi.event.VCSimulationDataIdentifier;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.DBCacheTable;
 import cbit.util.DataAccessException;
@@ -24,7 +25,6 @@ import cbit.vcell.modeldb.ResultSetDBTopLevel;
 import cbit.vcell.modeldb.SolverResultSetInfo;
 import cbit.vcell.simulation.Simulation;
 import cbit.vcell.simulation.SimulationInfo;
-import cbit.vcell.solvers.VCSimulationDataIdentifier;
 
 /**
  * Insert the type's description here.
@@ -110,7 +110,7 @@ private File getLogFile(File userDir, VCSimulationDataIdentifier vcsdi) {
 	} else {
 		// maybe we are being asked for pre-parameter scans data files, try old style
 		if (vcsdi.getJobIndex() == 0) {
-			logFile = new File(userDir, cbit.vcell.solvers.VCSimulationDataIdentifierOldStyle.createVCSimulationDataIdentifierOldStyle(vcsdi).getID() + ".log");
+			logFile = new File(userDir, cbit.rmi.event.VCSimulationDataIdentifierOldStyle.createVCSimulationDataIdentifierOldStyle(vcsdi).getID() + ".log");
 			if (logFile.exists()) {
 				return logFile;
 				

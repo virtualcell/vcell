@@ -32,6 +32,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 import cbit.gui.PropertyLoader;
+import cbit.rmi.event.VCellServerID;
 import cbit.util.BigString;
 import cbit.util.KeyValue;
 import cbit.util.MessageConstants;
@@ -69,7 +70,6 @@ import cbit.vcell.modeldb.AdminDatabaseServer;
 import cbit.vcell.server.ServerInfo;
 import cbit.vcell.server.VCellServer;
 import cbit.vcell.solvers.SimpleJobStatus;
-import cbit.vcell.solvers.VCellServerID;
 
 /**
  * Insert the type's description here.
