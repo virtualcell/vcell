@@ -40,4 +40,5 @@ Require-Bundle: org.vcell.common,
  org.vcell.physiology,
  org.vcell.expression,
  org.vcell.units,
- org.vcell.cartoon
+ org.vcell.cartoon,
+ org.vcell.plotting
