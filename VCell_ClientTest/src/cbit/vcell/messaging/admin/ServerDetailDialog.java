@@ -3,7 +3,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
-import cbit.vcell.client.test.ServerManageConsole;
 import cbit.vcell.messaging.ManageConstants;
 import cbit.vcell.messaging.VCServerInfo;
 import cbit.vcell.messaging.VCServiceInfo;

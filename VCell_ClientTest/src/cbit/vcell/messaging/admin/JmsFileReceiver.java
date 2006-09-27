@@ -7,7 +7,6 @@ import java.util.Enumeration;
 import progress.message.jclient.channel.RecoverableFileChannel;
 import cbit.gui.PropertyLoader;
 import cbit.util.SessionLog;
-import cbit.vcell.client.test.ServerManageConsole;
 import cbit.vcell.messaging.JmsConnectionFactory;
 import cbit.vcell.messaging.JmsConnectionFactoryImpl;
 import cbit.vcell.messaging.JmsUtils;

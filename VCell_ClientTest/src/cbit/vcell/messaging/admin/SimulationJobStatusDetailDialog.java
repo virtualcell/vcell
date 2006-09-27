@@ -1,7 +1,6 @@
 package cbit.vcell.messaging.admin;
 import javax.swing.BorderFactory;
 
-import cbit.vcell.client.test.ServerManageConsole;
 import cbit.vcell.solvers.SimpleJobStatus;
 
 /**
