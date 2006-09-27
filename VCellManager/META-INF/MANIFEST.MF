@@ -26,7 +26,8 @@ Require-Bundle: org.eclipse.osgi,
  org.vcell.modelapp,
  org.vcell.database,
  org.vcell.simulation,
- org.vcell.cartoon
+ org.vcell.cartoon,
+ org.vcell.plotting
 Export-Package: cbit.vcell.client.database,
  cbit.vcell.client.server,
  cbit.vcell.desktop.controls,
