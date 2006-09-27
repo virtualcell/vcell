@@ -6,3 +6,13 @@ Bundle-Version: 1.0.0
 Bundle-Activator: org.vcell.server.admin.Activator
 Bundle-Localization: plugin
 Import-Package: org.osgi.framework;version="1.3.0"
+Export-Package: cbit.vcell.messaging.admin
+Require-Bundle: org.vcell.util,
+ org.vcell.database,
+ org.vcell.server,
+ org.vcell.common,
+ org.vcell.simulation,
+ org.vcell.solvers,
+ org.vcell.events,
+ org.vcell.vcml,
+ org.vcell.xml.common
