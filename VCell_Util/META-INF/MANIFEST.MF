@@ -5,7 +5,6 @@ Bundle-SymbolicName: org.vcell.util
 Bundle-Version: 1.0.0
 Bundle-Localization: plugin
 Export-Package: cbit.gui,
- cbit.plot,
  cbit.util,
  cbit.vcell.messaging.admin.sorttable
 Require-Bundle: org.vcell.common
