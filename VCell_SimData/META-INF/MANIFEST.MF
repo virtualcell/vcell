@@ -21,4 +21,5 @@ Require-Bundle: org.vcell.common,
  org.vcell.spatial,
  org.vcell.simulation,
  org.vcell.quicktime,
- org.vcell.events
+ org.vcell.events,
+ org.vcell.plotting
