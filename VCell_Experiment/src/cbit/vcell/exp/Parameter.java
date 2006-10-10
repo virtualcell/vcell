@@ -6,9 +6,15 @@ package cbit.vcell.exp;
 	©*/
 	import java.util.*;
 	import java.io.*;
+
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.NameScope;
+import org.vcell.expression.SymbolTableEntry;
+
 	import cbit.vcell.parser.*;
 	import cbit.vcell.units.VCUnitDefinition;
-	import cbit.util.*;
+import cbit.util.*;
 
 	public abstract class Parameter implements SymbolTableEntry, Serializable, Matchable
 	{
@@ -130,7 +136,7 @@ package cbit.vcell.exp;
 	 * This method was created by a SmartGuide.
 	 * @return cbit.vcell.parser.Expression
 	 */
-	public abstract Expression getExpression();
+	public abstract IExpression getExpression();
 	   public abstract String getName();
 	/**
 	 * Insert the method's description here.

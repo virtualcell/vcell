@@ -1,13 +1,15 @@
 package cbit.vcell.exp;
 
-import cbit.vcell.parser.BioNameScope;
+import org.vcell.expression.IExpression;
+
+import cbit.vcell.model.BioNameScope;
 
 /**
  * Insert the type's description here.
  * Creation date: (12/31/2004 6:08:52 AM)
  * @author: Jim Schaff
  */
-public class Experiment implements cbit.util.Matchable, java.io.Serializable, cbit.vcell.parser.ScopedSymbolTable {
+public class Experiment implements cbit.util.Matchable, java.io.Serializable, org.vcell.expression.ScopedSymbolTable {
 // name, description
 	private java.lang.String fieldName = new String();
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
@@ -18,24 +20,24 @@ public class Experiment implements cbit.util.Matchable, java.io.Serializable, cb
 
 	
 	public class ExperimentNameScope extends BioNameScope {
-		private final cbit.vcell.parser.NameScope children[] = new cbit.vcell.parser.NameScope[0]; // always empty
+		private final org.vcell.expression.NameScope children[] = new org.vcell.expression.NameScope[0]; // always empty
 		public ExperimentNameScope(){
 			super();
 		}
-		public cbit.vcell.parser.NameScope[] getChildren() {
+		public org.vcell.expression.NameScope[] getChildren() {
 			return children;
 		}
 		public String getName() {
 			return cbit.util.TokenMangler.fixTokenStrict(Experiment.this.getName());
 		}
-		public cbit.vcell.parser.NameScope getParent() {
+		public org.vcell.expression.NameScope getParent() {
 			//System.out.println("ExperimentNameScope.getParent() returning null ... no parent");
 			return null;
 		}
-		public cbit.vcell.parser.ScopedSymbolTable getScopedSymbolTable() {
+		public org.vcell.expression.ScopedSymbolTable getScopedSymbolTable() {
 			return Experiment.this;
 		}
-		public boolean isPeer(cbit.vcell.parser.NameScope nameScope){
+		public boolean isPeer(org.vcell.expression.NameScope nameScope){
 			return (/*(nameScope instanceof cbit.vcell.mapping.MathMapping.MathMappingNameScope) &&*/ nameScope.isPeer(this));
 		}
 
@@ -88,11 +90,11 @@ public class Experiment implements cbit.util.Matchable, java.io.Serializable, cb
 	public class ExperimentParameter extends Parameter {
 		
 		private String fieldParameterName = null;
-		private cbit.vcell.parser.Expression fieldParameterExpression = null;
+		private org.vcell.expression.IExpression fieldParameterExpression = null;
 		private int fieldParameterRole = -1;
 		private cbit.vcell.units.VCUnitDefinition fieldUnitDefinition = null;
 		
-		protected ExperimentParameter(String argName, cbit.vcell.parser.Expression expression, int argRole, cbit.vcell.units.VCUnitDefinition argUnitDefinition) {
+		protected ExperimentParameter(String argName, org.vcell.expression.IExpression expression, int argRole, cbit.vcell.units.VCUnitDefinition argUnitDefinition) {
 			if (argName == null){
 				throw new IllegalArgumentException("parameter name is null");
 			}
@@ -138,12 +140,12 @@ public class Experiment implements cbit.util.Matchable, java.io.Serializable, cb
 			return true;
 		}
 
-		public double getConstantValue() throws cbit.vcell.parser.ExpressionException {
+		public double getConstantValue() throws org.vcell.expression.ExpressionException {
 			return this.fieldParameterExpression.evaluateConstant();
 		}      
 
 
-		public cbit.vcell.parser.Expression getExpression() {
+		public IExpression getExpression() {
 			return this.fieldParameterExpression;
 		}
 
@@ -158,7 +160,7 @@ public class Experiment implements cbit.util.Matchable, java.io.Serializable, cb
 		}   
 
 
-		public cbit.vcell.parser.NameScope getNameScope() {
+		public org.vcell.expression.NameScope getNameScope() {
 			return Experiment.this.nameScope;
 		}
 
@@ -176,8 +178,8 @@ public class Experiment implements cbit.util.Matchable, java.io.Serializable, cb
 			fieldUnitDefinition = unitDefinition;
 			super.firePropertyChange("unitDefinition", oldValue, unitDefinition);
 		}
-		public void setExpression(cbit.vcell.parser.Expression expression) throws java.beans.PropertyVetoException {
-			cbit.vcell.parser.Expression oldValue = fieldParameterExpression;
+		public void setExpression(org.vcell.expression.IExpression expression) throws java.beans.PropertyVetoException {
+			IExpression oldValue = fieldParameterExpression;
 			super.fireVetoableChange("expression", oldValue, expression);
 			fieldParameterExpression = expression;
 			super.firePropertyChange("expression", oldValue, expression);
@@ -341,7 +343,7 @@ public java.lang.String getDescription() {
 /**
  * getEntry method comment.
  */
-public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierString) throws cbit.vcell.parser.ExpressionBindingException {
+public org.vcell.expression.SymbolTableEntry getEntry(java.lang.String identifierString) throws org.vcell.expression.ExpressionBindingException {
 	return null;
 }
 
@@ -352,7 +354,7 @@ public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierSt
  * @return cbit.vcell.parser.SymbolTableEntry
  * @param identifier java.lang.String
  */
-public cbit.vcell.parser.SymbolTableEntry getLocalEntry(java.lang.String identifier) throws cbit.vcell.parser.ExpressionBindingException {
+public org.vcell.expression.SymbolTableEntry getLocalEntry(java.lang.String identifier) throws org.vcell.expression.ExpressionBindingException {
 	return null;
 }
 
@@ -372,7 +374,7 @@ public java.lang.String getName() {
  * Creation date: (12/31/2004 7:04:37 AM)
  * @return cbit.vcell.parser.NameScope
  */
-public cbit.vcell.parser.NameScope getNameScope() {
+public org.vcell.expression.NameScope getNameScope() {
 	return nameScope;
 }
 

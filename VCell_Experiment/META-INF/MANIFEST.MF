@@ -10,4 +10,5 @@ Export-Package: cbit.vcell.exp
 Require-Bundle: org.vcell.constraints,
  org.vcell.units,
  org.vcell.util,
- org.vcell.expression
+ org.vcell.expression,
+ org.vcell.physiology
