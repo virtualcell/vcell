@@ -6,13 +6,13 @@ package org.vcell.physics.math;
  * @author: Jim Schaff
  */
 public class VariableVertex extends com.mhhe.clrs2e.Vertex {
-	private cbit.vcell.parser.SymbolTableEntry symbol = null;
+	private org.vcell.expression.SymbolTableEntry symbol = null;
 /**
  * VariableVertex constructor comment.
  * @param index int
  * @param name java.lang.String
  */
-public VariableVertex(int index, cbit.vcell.parser.SymbolTableEntry argSymbolTableEntry) {
+public VariableVertex(int index, org.vcell.expression.SymbolTableEntry argSymbolTableEntry) {
 	super(index, argSymbolTableEntry.getName());
 	this.symbol = argSymbolTableEntry;
 }
@@ -21,7 +21,7 @@ public VariableVertex(int index, cbit.vcell.parser.SymbolTableEntry argSymbolTab
  * Creation date: (1/16/2006 8:35:36 PM)
  * @return cbit.vcell.parser.SymbolTableEntry
  */
-public cbit.vcell.parser.SymbolTableEntry getSymbol() {
+public org.vcell.expression.SymbolTableEntry getSymbol() {
 	return symbol;
 }
 /**
@@ -29,7 +29,7 @@ public cbit.vcell.parser.SymbolTableEntry getSymbol() {
  * Creation date: (1/16/2006 8:35:36 PM)
  * @param newSymbol cbit.vcell.parser.SymbolTableEntry
  */
-public void setSymbol(cbit.vcell.parser.SymbolTableEntry newSymbol) {
+public void setSymbol(org.vcell.expression.SymbolTableEntry newSymbol) {
 	symbol = newSymbol;
 	setName(newSymbol.getName());
 }

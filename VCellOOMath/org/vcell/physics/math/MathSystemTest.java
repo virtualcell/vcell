@@ -1,7 +1,8 @@
 package org.vcell.physics.math;
 
 
-import cbit.vcell.parser.Expression;
+import org.vcell.expression.ExpressionFactory;
+
 /**
  * Insert the type's description here.
  * Creation date: (11/9/2005 5:30:21 PM)
@@ -30,20 +31,20 @@ public static MathSystem getExample() {
 		//mathSystem.addEquation(new Expression("inductor.L - 1.0"));
 		//mathSystem.addEquation(new Expression("resistor.R - 1.0"));
 
-		mathSystem.addEquation(new Expression("VS.V + capacitor.V + inductor.V + resistor.V"));
-		mathSystem.addEquation(new Expression("VS.i - capacitor.i"));
-		mathSystem.addEquation(new Expression("capacitor.i - inductor.i"));
-		mathSystem.addEquation(new Expression("inductor.i - resistor.i"));
+		mathSystem.addEquation(ExpressionFactory.createExpression("VS.V + capacitor.V + inductor.V + resistor.V"));
+		mathSystem.addEquation(ExpressionFactory.createExpression("VS.i - capacitor.i"));
+		mathSystem.addEquation(ExpressionFactory.createExpression("capacitor.i - inductor.i"));
+		mathSystem.addEquation(ExpressionFactory.createExpression("inductor.i - resistor.i"));
 		//mathSystem.addEquation(new Expression("resistor.i - VS.i"));
-		mathSystem.addEquation(new Expression("sin(t)-VS.V"));
-		mathSystem.addEquation(new Expression("inductor.i.prime - inductor.V"));
-		mathSystem.addEquation(new Expression("capacitor.V.prime - capacitor.i"));
-		mathSystem.addEquation(new Expression("resistor.i - resistor.V"));
+		mathSystem.addEquation(ExpressionFactory.createExpression("sin(t)-VS.V"));
+		mathSystem.addEquation(ExpressionFactory.createExpression("inductor.i.prime - inductor.V"));
+		mathSystem.addEquation(ExpressionFactory.createExpression("capacitor.V.prime - capacitor.i"));
+		mathSystem.addEquation(ExpressionFactory.createExpression("resistor.i - resistor.V"));
 		//mathSystem.addEquation(new Expression("capacitor.C - 1.0"));
 		//mathSystem.addEquation(new Expression("inductor.L - 1.0"));
 		//mathSystem.addEquation(new Expression("resistor.R - 1.0"));
 
-	}catch (cbit.vcell.parser.ExpressionException e){
+	}catch (org.vcell.expression.ExpressionException e){
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
 	}	

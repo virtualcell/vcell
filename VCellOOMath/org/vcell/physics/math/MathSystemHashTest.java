@@ -1,9 +1,10 @@
 package org.vcell.physics.math;
 
 
+import org.vcell.expression.ExpressionFactory;
+
 import cbit.util.graph.Graph;
 import cbit.util.graph.Node;
-import cbit.vcell.parser.Expression;
 /**
  * Insert the type's description here.
  * Creation date: (11/1/2005 8:01:24 PM)
@@ -72,45 +73,45 @@ public static MathSystemHash fromMath(cbit.vcell.math.MathDescription mathDesc) 
 public static MathSystemHash getExample() {
 	try {
 		MathSystemHash hash = new MathSystemHash();
-		hash.addSymbol(new MathSystemHash.Variable("Kr",new Expression(1)));
-		hash.addSymbol(new MathSystemHash.Variable("_T_",new Expression(300)));
-		hash.addSymbol(new MathSystemHash.Variable("_F_nmol_",new Expression(9.648E-5)));
-		hash.addSymbol(new MathSystemHash.Variable("Kf",new Expression(1)));
-		hash.addSymbol(new MathSystemHash.Variable("_F_",new Expression(96480)));
-		hash.addSymbol(new MathSystemHash.Variable("species1_cyt_init",new Expression(2.0)));
-		hash.addSymbol(new MathSystemHash.Variable("_R_",new Expression(8314)));
-		hash.addSymbol(new MathSystemHash.Variable("species0_mito_init",new Expression(0.0)));
-		hash.addSymbol(new MathSystemHash.Variable("_N_pmol_",new Expression(6.02e11)));
-		hash.addSymbol(new MathSystemHash.Variable("SurfToVol_mitoMem",new Expression(1.0)));
-		hash.addSymbol(new MathSystemHash.Variable("k",new Expression(1.0)));
-		hash.addSymbol(new MathSystemHash.Variable("KMOLE",new Expression(0.0016611295681063123)));
-		hash.addSymbol(new MathSystemHash.Variable("VolFract_mito",new Expression(0.2)));
-		hash.addSymbol(new MathSystemHash.Variable("KMOLE",new Expression(0.0016611295681063123)));
-		hash.addSymbol(new MathSystemHash.Variable("_K_GHK_",new Expression(1.0e-9)));
-		hash.addSymbol(new MathSystemHash.Variable("species0_cyt_init",new Expression(10.0)));
-		hash.addSymbol(new MathSystemHash.Variable("K_millivolts_per_volt",new Expression(1000.0)));
+		hash.addSymbol(new MathSystemHash.Variable("Kr",ExpressionFactory.createExpression(1)));
+		hash.addSymbol(new MathSystemHash.Variable("_T_",ExpressionFactory.createExpression(300)));
+		hash.addSymbol(new MathSystemHash.Variable("_F_nmol_",ExpressionFactory.createExpression(9.648E-5)));
+		hash.addSymbol(new MathSystemHash.Variable("Kf",ExpressionFactory.createExpression(1)));
+		hash.addSymbol(new MathSystemHash.Variable("_F_",ExpressionFactory.createExpression(96480)));
+		hash.addSymbol(new MathSystemHash.Variable("species1_cyt_init",ExpressionFactory.createExpression(2.0)));
+		hash.addSymbol(new MathSystemHash.Variable("_R_",ExpressionFactory.createExpression(8314)));
+		hash.addSymbol(new MathSystemHash.Variable("species0_mito_init",ExpressionFactory.createExpression(0.0)));
+		hash.addSymbol(new MathSystemHash.Variable("_N_pmol_",ExpressionFactory.createExpression(6.02e11)));
+		hash.addSymbol(new MathSystemHash.Variable("SurfToVol_mitoMem",ExpressionFactory.createExpression(1.0)));
+		hash.addSymbol(new MathSystemHash.Variable("k",ExpressionFactory.createExpression(1.0)));
+		hash.addSymbol(new MathSystemHash.Variable("KMOLE",ExpressionFactory.createExpression(0.0016611295681063123)));
+		hash.addSymbol(new MathSystemHash.Variable("VolFract_mito",ExpressionFactory.createExpression(0.2)));
+		hash.addSymbol(new MathSystemHash.Variable("KMOLE",ExpressionFactory.createExpression(0.0016611295681063123)));
+		hash.addSymbol(new MathSystemHash.Variable("_K_GHK_",ExpressionFactory.createExpression(1.0e-9)));
+		hash.addSymbol(new MathSystemHash.Variable("species0_cyt_init",ExpressionFactory.createExpression(10.0)));
+		hash.addSymbol(new MathSystemHash.Variable("K_millivolts_per_volt",ExpressionFactory.createExpression(1000.0)));
 
 		MathSystemHash.Variable species1_cyt = null;
 		MathSystemHash.Variable species0_mito = null;
 		hash.addSymbol(species1_cyt = new MathSystemHash.Variable("species1_cyt",null));
 		hash.addSymbol(species0_mito = new MathSystemHash.Variable("species0_mito",null));
 
-		hash.addSymbol(new MathSystemHash.Variable("KFlux_mitoMem",new Expression("(SurfToVol_mitoMem * VolFract_mito / (1.0 - VolFract_mito))")));
-		hash.addSymbol(new MathSystemHash.Variable("K_species0_cyt_total",new Expression("((VolFract_mito * species0_mito_init) + ((1.0 - VolFract_mito) * species0_cyt_init) + ((1.0 - VolFract_mito) * species1_cyt_init))")));
-		hash.addSymbol(new MathSystemHash.Variable("species0_cyt",new Expression(" (( - (VolFract_mito * species0_mito) + K_species0_cyt_total - ((1.0 - VolFract_mito) * species1_cyt)) / (1.0 - VolFract_mito))")));
-		hash.addSymbol(new MathSystemHash.Variable("J_flux0",new Expression("(k * (species0_cyt - species0_mito))")));
-		hash.addSymbol(new MathSystemHash.Variable("J_reaction0",new Expression(" ((Kf * species0_cyt) - (Kr * species1_cyt))")));
-		hash.addSymbol(new MathSystemHash.Variable("Voltage_mitoMem",new Expression(0.0)));
-		hash.addSymbol(new MathSystemHash.Variable("KFlux_mitoMem_mito",new Expression("SurfToVol_mitoMem")));
+		hash.addSymbol(new MathSystemHash.Variable("KFlux_mitoMem",ExpressionFactory.createExpression("(SurfToVol_mitoMem * VolFract_mito / (1.0 - VolFract_mito))")));
+		hash.addSymbol(new MathSystemHash.Variable("K_species0_cyt_total",ExpressionFactory.createExpression("((VolFract_mito * species0_mito_init) + ((1.0 - VolFract_mito) * species0_cyt_init) + ((1.0 - VolFract_mito) * species1_cyt_init))")));
+		hash.addSymbol(new MathSystemHash.Variable("species0_cyt",ExpressionFactory.createExpression(" (( - (VolFract_mito * species0_mito) + K_species0_cyt_total - ((1.0 - VolFract_mito) * species1_cyt)) / (1.0 - VolFract_mito))")));
+		hash.addSymbol(new MathSystemHash.Variable("J_flux0",ExpressionFactory.createExpression("(k * (species0_cyt - species0_mito))")));
+		hash.addSymbol(new MathSystemHash.Variable("J_reaction0",ExpressionFactory.createExpression(" ((Kf * species0_cyt) - (Kr * species1_cyt))")));
+		hash.addSymbol(new MathSystemHash.Variable("Voltage_mitoMem",ExpressionFactory.createExpression(0.0)));
+		hash.addSymbol(new MathSystemHash.Variable("KFlux_mitoMem_mito",ExpressionFactory.createExpression("SurfToVol_mitoMem")));
 
-		hash.addSymbol(new MathSystemHash.VariableDerivative(species1_cyt,new Expression("J_reaction0")));
-		hash.addSymbol(new MathSystemHash.VariableInitial(species1_cyt,new Expression("species1_cyt_init")));
+		hash.addSymbol(new MathSystemHash.VariableDerivative(species1_cyt,ExpressionFactory.createExpression("J_reaction0")));
+		hash.addSymbol(new MathSystemHash.VariableInitial(species1_cyt,ExpressionFactory.createExpression("species1_cyt_init")));
 
-		hash.addSymbol(new MathSystemHash.VariableDerivative(species0_mito,new Expression("(KFlux_mitoMem_mito * J_flux0)")));
-		hash.addSymbol(new MathSystemHash.VariableInitial(species0_mito,new Expression("species0_mito_init")));
+		hash.addSymbol(new MathSystemHash.VariableDerivative(species0_mito,ExpressionFactory.createExpression("(KFlux_mitoMem_mito * J_flux0)")));
+		hash.addSymbol(new MathSystemHash.VariableInitial(species0_mito,ExpressionFactory.createExpression("species0_mito_init")));
 
 		return hash;
-	}catch (cbit.vcell.parser.ExpressionException e){
+	}catch (org.vcell.expression.ExpressionException e){
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
 	}

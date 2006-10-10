@@ -2,6 +2,7 @@ package org.vcell.physics.math;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.vcell.expression.IExpression;
 import org.vcell.physics.component.IndependentVariable;
 import org.vcell.physics.component.Symbol;
 import org.vcell.physics.component.Variable;
@@ -11,7 +12,6 @@ import org.vcell.physics.component.VariableReference;
 import cbit.util.graph.Edge;
 import cbit.util.graph.Graph;
 import cbit.util.graph.Node;
-import cbit.vcell.parser.Expression;
 
 import com.mhhe.clrs2e.Vertex;
 /**
@@ -70,7 +70,7 @@ public MathSystem(){
  * Insert the method's description here.
  * Creation date: (2/24/2002 9:18:38 AM)
  */
-public void addEquation(Expression exp) {
+public void addEquation(IExpression exp) {
 	if (exp==null){
 		throw new IllegalArgumentException("expression can't be null");
 	}
@@ -169,7 +169,7 @@ public Graph getDependencyGraph() {
 	//
 	// add the nodes for each "Equation"
 	//
-	Expression[] equations = getEquations();
+	IExpression[] equations = getEquations();
 	for (int i = 0; i < equations.length; i++){
 		Node equationNode = new Node(equations[i].infix(),equations[i]);
 		graph.addNode(equationNode);
@@ -208,10 +208,10 @@ public Graph getDependencyGraph() {
 /**
  * Insert the method's description here.
  * Creation date: (11/10/2005 10:34:22 AM)
- * @return cbit.vcell.parser.Expression[]
+ * @return cbit.vcell.parser.IExpression[]
  */
-public Expression[] getEquations() {
-	return (Expression[])cbit.util.BeanUtils.getArray(equationList,Expression.class);
+public IExpression[] getEquations() {
+	return (IExpression[])cbit.util.BeanUtils.getArray(equationList,IExpression.class);
 }
 
 
@@ -239,8 +239,8 @@ public com.mhhe.clrs2e.FlowNetwork getFlowNetwork() {
 		hash.put(nodes[i],newVertex);
 		if (nodes[i].getData() instanceof Symbol){
 			flowNetwork.addEdge(startVertex,newVertex,1,0);
-		}else if (nodes[i].getData() instanceof Expression){
-			Expression exp = (Expression)nodes[i].getData();
+		}else if (nodes[i].getData() instanceof IExpression){
+			IExpression exp = (IExpression)nodes[i].getData();
 			if (exp.infix().indexOf(VariableReference.DERIVATIVE_SUFFIX)>-1){
 				flowNetwork.addEdge(newVertex,endVertex,1,0);
 			}else{
@@ -259,7 +259,7 @@ public com.mhhe.clrs2e.FlowNetwork getFlowNetwork() {
 		// if equation has derivative of this variable in expression then capacity is increased to 2 (similar to Structural Index reduction techniques).
 		//
 		Symbol symbol = (Symbol)edges[i].getNode1().getData();
-		Expression exp = (Expression)edges[i].getNode2().getData();
+		IExpression exp = (IExpression)edges[i].getNode2().getData();
 		String expSymbols[] = exp.getSymbols();
 		for (int j = 0; j < expSymbols.length; j++){
 			if (expSymbols[j].equals(symbol.getName()+VariableDerivative.DERIVATIVE_SUFFIX)){
@@ -305,7 +305,7 @@ public void show() {
 	for (int i = 0; i < symbols.length; i++){
 		System.out.println(i+") "+symbols[i].toString());
 	}
-	Expression[] expressions = (Expression[])cbit.util.BeanUtils.getArray(equationList,Expression.class);
+	IExpression[] expressions = (IExpression[])cbit.util.BeanUtils.getArray(equationList,IExpression.class);
 	for (int i = 0; i < expressions.length; i++){
 		System.out.println(i+") "+expressions[i].infix()+" == 0.0");
 	}

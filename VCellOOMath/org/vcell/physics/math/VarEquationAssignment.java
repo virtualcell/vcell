@@ -1,6 +1,8 @@
 package org.vcell.physics.math;
 
+import org.vcell.expression.IExpression;
 import org.vcell.physics.component.Symbol;
+
 
 /**
  * Insert the type's description here.
@@ -10,13 +12,13 @@ import org.vcell.physics.component.Symbol;
 public class VarEquationAssignment {
 	private Symbol symbol = null;
 	private boolean stateVariable = false;
-	private cbit.vcell.parser.Expression equation = null;
-	private cbit.vcell.parser.Expression solution = null;
+	private IExpression equation = null;
+	private IExpression solution = null;
 
 /**
  * VarEquationAssignment constructor comment.
  */
-public VarEquationAssignment(Symbol argSymbol, cbit.vcell.parser.Expression argEquation) {
+public VarEquationAssignment(Symbol argSymbol, IExpression argEquation) {
 	super();
 	this.symbol = argSymbol;
 	this.equation = argEquation;
@@ -49,7 +51,7 @@ public boolean equals(Object o) {
  * Creation date: (1/30/2006 11:35:03 AM)
  * @return cbit.vcell.parser.Expression
  */
-public cbit.vcell.parser.Expression getEquation() {
+public IExpression getEquation() {
 	return equation;
 }
 
@@ -59,7 +61,7 @@ public cbit.vcell.parser.Expression getEquation() {
  * Creation date: (1/19/2006 2:40:07 PM)
  * @return cbit.vcell.parser.Expression
  */
-public cbit.vcell.parser.Expression getSolution() {
+public IExpression getSolution() {
 	return solution;
 }
 
@@ -99,7 +101,7 @@ public boolean isStateVariable() {
  * Creation date: (1/30/2006 11:35:03 AM)
  * @param newEquation cbit.vcell.parser.Expression
  */
-public void setEquation(cbit.vcell.parser.Expression newEquation) {
+public void setEquation(IExpression newEquation) {
 	equation = newEquation;
 }
 
@@ -109,7 +111,7 @@ public void setEquation(cbit.vcell.parser.Expression newEquation) {
  * Creation date: (1/19/2006 2:40:07 PM)
  * @param newSolution cbit.vcell.parser.Expression
  */
-public void setSolution(cbit.vcell.parser.Expression newSolution) {
+public void setSolution(IExpression newSolution) {
 	solution = newSolution;
 }
 

@@ -1,5 +1,6 @@
 package org.vcell.physics.component.gui;
 
+import org.vcell.expression.IExpression;
 import org.vcell.physics.component.Symbol;
 
 import cbit.gui.graph.GraphEdgeShape;
@@ -9,7 +10,6 @@ import cbit.gui.graph.SimpleGraphModel.GraphShapeFactory;
 import cbit.util.graph.Edge;
 import cbit.util.graph.Graph;
 import cbit.util.graph.Node;
-import cbit.vcell.parser.Expression;
 
 public class ConnectivityGraphShapeFactory implements GraphShapeFactory {
 	public GraphEdgeShape getEdgeShape(Edge edge, NodeShape beginShape,	NodeShape endShape, GraphModel graphModel, Graph graph) {
@@ -20,7 +20,7 @@ public class ConnectivityGraphShapeFactory implements GraphShapeFactory {
 		if (node.getData() instanceof Symbol){
 			return new VariableNodeShape(node,graphModel,2);
 		}
-		if (node.getData() instanceof Expression){
+		if (node.getData() instanceof IExpression){
 			return new ExpressionNodeShape(node,graphModel,4);
 		}
 		throw new RuntimeException("unexpected node data type "+node.getData());

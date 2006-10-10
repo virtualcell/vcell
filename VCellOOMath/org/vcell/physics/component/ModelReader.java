@@ -1,5 +1,8 @@
 package org.vcell.physics.component;
 import org.jdom.Element;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 /**
  * Insert the type's description here.
  * Creation date: (2/17/2006 1:26:13 PM)
@@ -11,7 +14,7 @@ public class ModelReader {
  * Creation date: (2/17/2006 1:28:25 PM)
  * @param xmlString java.lang.String
  */
-public static OOModel parse(String xmlString) throws cbit.vcell.parser.ExpressionException {
+public static OOModel parse(String xmlString) throws org.vcell.expression.ExpressionException {
 
 	xmlString =
 	 "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + "\n" + 
@@ -106,7 +109,7 @@ public static OOModel parse(String xmlString) throws cbit.vcell.parser.Expressio
 		for (int j = 0; j < equationList.size(); j++){
 			org.jdom.Element equationElement = (org.jdom.Element)equationList.get(j);
 			org.jdom.Attribute expressionAttr = (org.jdom.Attribute)equationElement.getAttribute("exp");
-			modelComponent.addEquation(new cbit.vcell.parser.Expression(expressionAttr.getValue()));
+			modelComponent.addEquation(ExpressionFactory.createExpression(expressionAttr.getValue()));
 		}
 		java.util.List connectorList = classElement.getChildren("connector");
 		for (int j = 0; j < connectorList.size(); j++){
@@ -177,7 +180,7 @@ public static org.jdom.Element print(OOModel oOModel) {
 				classElement.addContent(variableElement);
 			}
 		}
-		cbit.vcell.parser.Expression[] equations = modelComponents[i].getEquations();
+		IExpression[] equations = modelComponents[i].getEquations();
 		for (int j = 0; j < equations.length; j++){
 			Element equationElement = new Element("equation");
 			equationElement.setAttribute("exp",equations[j].infix());

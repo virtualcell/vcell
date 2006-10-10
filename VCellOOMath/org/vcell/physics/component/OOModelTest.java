@@ -1,5 +1,6 @@
 package org.vcell.physics.component;
-import cbit.vcell.parser.Expression;
+import org.vcell.expression.ExpressionFactory;
+
 /**
  * Insert the type's description here.
  * Creation date: (1/16/2006 11:33:57 PM)
@@ -163,7 +164,7 @@ public static OOModel getExample3() {
  * Creation date: (1/16/2006 11:34:20 PM)
  * @return ncbc.physics2.component.Model
  */
-public static OOModel getExample4() throws cbit.vcell.parser.ExpressionException {
+public static OOModel getExample4() throws org.vcell.expression.ExpressionException {
 
 	//
 	//
@@ -278,7 +279,7 @@ public static OOModel getExample5() {
  * Creation date: (1/16/2006 11:34:20 PM)
  * @return ncbc.physics2.component.Model
  */
-public static OOModel getExampleTriangle_a_b() throws cbit.vcell.parser.ExpressionException {
+public static OOModel getExampleTriangle_a_b() throws org.vcell.expression.ExpressionException {
 
 	//
 	//
@@ -305,8 +306,8 @@ public static OOModel getExampleTriangle_a_b() throws cbit.vcell.parser.Expressi
 	triangle.addSymbol(tri_b);
 	triangle.addSymbol(tri_h);
 	triangle.addSymbol(tri_area);
-	triangle.addEquation(new Expression("a*a+b*b-h*h"));
-	triangle.addEquation(new Expression("area - a*b/2"));
+	triangle.addEquation(ExpressionFactory.createExpression("a*a+b*b-h*h"));
+	triangle.addEquation(ExpressionFactory.createExpression("area - a*b/2"));
 	triangle.setConnectors(new Connector[] { 
 		new Connector(triangle,"pin_a",tri_a,null),
 		new Connector(triangle,"pin_b",tri_b,null),
@@ -334,7 +335,7 @@ public static OOModel getExampleTriangle_a_b() throws cbit.vcell.parser.Expressi
  * Creation date: (1/16/2006 11:34:20 PM)
  * @return ncbc.physics2.component.Model
  */
-public static OOModel getExampleTriangle_h_a() throws cbit.vcell.parser.ExpressionException {
+public static OOModel getExampleTriangle_h_a() throws org.vcell.expression.ExpressionException {
 
 	//
 	//
@@ -361,8 +362,8 @@ public static OOModel getExampleTriangle_h_a() throws cbit.vcell.parser.Expressi
 	triangle.addSymbol(tri_b);
 	triangle.addSymbol(tri_h);
 	triangle.addSymbol(tri_area);
-	triangle.addEquation(new Expression("a*a+b*b-h*h"));
-	triangle.addEquation(new Expression("area - a*b/2"));
+	triangle.addEquation(ExpressionFactory.createExpression("a*a+b*b-h*h"));
+	triangle.addEquation(ExpressionFactory.createExpression("area - a*b/2"));
 	triangle.setConnectors(new Connector[] { 
 		new Connector(triangle,"pin_a",tri_a,null),
 		new Connector(triangle,"pin_b",tri_b,null),
