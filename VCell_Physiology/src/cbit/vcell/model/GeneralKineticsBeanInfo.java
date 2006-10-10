@@ -230,7 +230,7 @@ public java.beans.PropertyDescriptor ratePropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.parser.Expression.class
+					org.vcell.expression.IExpression.class
 				};
 				aSetMethod = getBeanClass().getMethod("setRate", aSetMethodParameterTypes);
 			} catch (Throwable exception) {
@@ -260,18 +260,18 @@ public java.beans.PropertyDescriptor ratePropertyDescriptor() {
 	return aDescriptor;
 }
 /**
- * Gets the setRate(cbit.vcell.parser.Expression) method descriptor.
+ * Gets the setRate(cbit.vcell.parser.IExpression) method descriptor.
  * @return java.beans.MethodDescriptor
  */
 public java.beans.MethodDescriptor setRate_cbitvcellparserExpressionMethodDescriptor() {
 	java.beans.MethodDescriptor aDescriptor = null;
 	try {
-		/* Create and return the setRate(cbit.vcell.parser.Expression) method descriptor. */
+		/* Create and return the setRate(cbit.vcell.parser.IExpression) method descriptor. */
 		java.lang.reflect.Method aMethod = null;
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.parser.Expression.class
+				org.vcell.expression.IExpression.class
 			};
 			aMethod = getBeanClass().getMethod("setRate", aParameterTypes);
 		} catch (Throwable exception) {
@@ -293,8 +293,8 @@ public java.beans.MethodDescriptor setRate_cbitvcellparserExpressionMethodDescri
 			handleException(exception);
 			aDescriptor = new java.beans.MethodDescriptor(aMethod);
 		};
-		/* aDescriptor.setDisplayName("setRate(cbit.vcell.parser.Expression)"); */
-		/* aDescriptor.setShortDescription("setRate(cbit.vcell.parser.Expression)"); */
+		/* aDescriptor.setDisplayName("setRate(cbit.vcell.parser.IExpression)"); */
+		/* aDescriptor.setShortDescription("setRate(cbit.vcell.parser.IExpression)"); */
 		/* aDescriptor.setExpert(false); */
 		/* aDescriptor.setHidden(false); */
 		/* aDescriptor.setValue("preferred", new Boolean(false)); */

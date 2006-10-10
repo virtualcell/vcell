@@ -6,9 +6,19 @@ package cbit.vcell.model;
 ©*/
 import java.beans.*;
 import cbit.vcell.parser.*;
-import cbit.vcell.parser.Expression;
+
 import java.io.*;
 import java.util.*;
+
+import org.vcell.expression.AbstractNameScope;
+import org.vcell.expression.ExpressionBindingException;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.NameScope;
+import org.vcell.expression.ScopedSymbolTable;
+import org.vcell.expression.SymbolTableEntry;
+
 import cbit.util.*;
 /**
  * This class is the superclass of all classes representing 
@@ -51,7 +61,7 @@ public abstract class ReactionStep implements Cacheable, Serializable, ScopedSym
 		public ReactionNameScope(){
 			super();
 		}
-		public cbit.vcell.parser.NameScope[] getChildren() {
+		public org.vcell.expression.NameScope[] getChildren() {
 			//
 			// no children to return
 			//
@@ -60,14 +70,14 @@ public abstract class ReactionStep implements Cacheable, Serializable, ScopedSym
 		public String getName() {
 			return TokenMangler.fixTokenStrict(ReactionStep.this.getName());
 		}
-		public cbit.vcell.parser.NameScope getParent() {
+		public org.vcell.expression.NameScope getParent() {
 			if (ReactionStep.this.model != null){
 				return ReactionStep.this.model.getNameScope();
 			}else{
 				return null;
 			}
 		}
-		public cbit.vcell.parser.ScopedSymbolTable getScopedSymbolTable() {
+		public org.vcell.expression.ScopedSymbolTable getScopedSymbolTable() {
 			return ReactionStep.this;
 		}
 	}
@@ -222,7 +232,7 @@ public ChargeCarrierValence getChargeCarrierValence() {
 public SymbolTableEntry getEntry(String identifier) throws ExpressionBindingException
 {
 	
-	cbit.vcell.parser.SymbolTableEntry ste = getLocalEntry(identifier);
+	org.vcell.expression.SymbolTableEntry ste = getLocalEntry(identifier);
 	if (ste != null && !(ste instanceof Kinetics.UnresolvedParameter)){
 		return ste;
 	}
@@ -256,7 +266,7 @@ public Kinetics getKinetics() {
 }
 public SymbolTableEntry getLocalEntry(String identifier) throws ExpressionBindingException
 {
-	cbit.vcell.parser.SymbolTableEntry ste = ReservedSymbol.fromString(identifier);
+	org.vcell.expression.SymbolTableEntry ste = ReservedSymbol.fromString(identifier);
 	if (ste != null){
 		ReservedSymbol rs = (ReservedSymbol)ste;
 		if (rs.isX() || rs.isY() || rs.isZ()){
@@ -340,7 +350,7 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 	};
 	return propertyChange;
 }
-public Expression getRateExpression(ReactionParticipant reactionParticipant) throws Exception {
+public IExpression getRateExpression(ReactionParticipant reactionParticipant) throws Exception {
 	if (reactionParticipant instanceof Catalyst){
 		throw new Exception("Catalyst "+reactionParticipant+" doesn't have a rate for this reaction");
 		//return new Expression(0.0);
@@ -348,13 +358,13 @@ public Expression getRateExpression(ReactionParticipant reactionParticipant) thr
 	
 	double stoich = getStoichiometry(reactionParticipant.getSpecies(),reactionParticipant.getStructure());
 	if (stoich==0.0){
-		return new Expression(0.0);
+		return ExpressionFactory.createExpression(0.0);
 	}else if (stoich!=1){
-		Expression exp = Expression.mult(new Expression(stoich),new Expression(getKinetics().getRateParameter().getName()));
+		IExpression exp = ExpressionFactory.mult(ExpressionFactory.createExpression(stoich), ExpressionFactory.createExpression(getKinetics().getRateParameter().getName()));
 		exp.bindExpression(this);
 		return exp;
 	}else{
-		Expression exp = new Expression(getKinetics().getRateParameter().getName());
+		IExpression exp = ExpressionFactory.createExpression(getKinetics().getRateParameter().getName());
 		exp.bindExpression(this);
 		return exp;
 	}
@@ -463,7 +473,7 @@ public void propertyChange(PropertyChangeEvent evt) {
 			//
 			try {
 				if (getChargeCarrierValence().getConstantValue()==0){
-					getChargeCarrierValence().setExpression(new Expression(1.0));
+					getChargeCarrierValence().setExpression(ExpressionFactory.createExpression(1.0));
 				}
 			}catch (PropertyVetoException e){
 				e.printStackTrace(System.out);
@@ -601,7 +611,7 @@ public void setKinetics(Kinetics kinetics) {
 		}
 
 		if (kinetics.getKineticsDescription().needsValence() && getChargeCarrierValence().getExpression().isZero()){
-			getChargeCarrierValence().setExpression(new Expression(1.0));
+			getChargeCarrierValence().setExpression(ExpressionFactory.createExpression(1.0));
 		}
 	}catch (PropertyVetoException e){
 		e.printStackTrace(System.out);

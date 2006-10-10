@@ -6,6 +6,11 @@ import java.beans.PropertyVetoException;
  * All rights reserved.
 ©*/
 import java.util.*;
+
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import cbit.vcell.parser.*;
 import cbit.util.*;
 /**
@@ -16,13 +21,13 @@ public class GeneralCurrentKinetics extends Kinetics {
 /**
  * MassActionKinetics constructor comment.
  * @param name java.lang.String
- * @param exp cbit.vcell.parser.Expression
+ * @param exp cbit.vcell.parser.IExpression
  */
 public GeneralCurrentKinetics(ReactionStep reactionStep) throws ExpressionException {
 	super(KineticsDescription.GeneralCurrent.getName(),reactionStep);
 	try {
-		KineticsParameter currentParm = new KineticsParameter(getDefaultParameterName(ROLE_Current),new Expression(0.0),ROLE_Current,null);
-		KineticsParameter rateParm = new KineticsParameter(getDefaultParameterName(ROLE_Rate),new Expression(0.0),ROLE_Rate,null);
+		KineticsParameter currentParm = new KineticsParameter(getDefaultParameterName(ROLE_Current),ExpressionFactory.createExpression(0.0),ROLE_Current,null);
+		KineticsParameter rateParm = new KineticsParameter(getDefaultParameterName(ROLE_Rate),ExpressionFactory.createExpression(0.0),ROLE_Rate,null);
 
 		setKineticsParameters(new KineticsParameter[] { currentParm, rateParm });
 		updateGeneratedExpressions();
@@ -118,11 +123,11 @@ protected void updateGeneratedExpressions() throws ExpressionException, Property
 		ReservedSymbol F = ReservedSymbol.FARADAY_CONSTANT;
 		ReservedSymbol F_nmol = ReservedSymbol.FARADAY_CONSTANT_NMOLE;
 		ReservedSymbol N_PMOLE = ReservedSymbol.N_PMOLE;
-		Expression tempRateExpression = null;
+		IExpression tempRateExpression = null;
 		if (getReactionStep() instanceof SimpleReaction){
-			tempRateExpression = Expression.mult(new Expression("("+N_PMOLE.getName()+"/("+z+"*"+F.getName()+"))"), new Expression(currentParm.getName()));
+			tempRateExpression = ExpressionFactory.mult(ExpressionFactory.createExpression("("+N_PMOLE.getName()+"/("+z+"*"+F.getName()+"))"), ExpressionFactory.createExpression(currentParm.getName()));
 		}else{
-			tempRateExpression = new Expression(currentParm.getName()+"/("+z+"*"+F_nmol.getName()+")");
+			tempRateExpression = ExpressionFactory.createExpression(currentParm.getName()+"/("+z+"*"+F_nmol.getName()+")");
 		}
 		tempRateExpression.bindExpression(getReactionStep());
 		if (rateParm == null){
@@ -133,7 +138,7 @@ protected void updateGeneratedExpressions() throws ExpressionException, Property
 	}else{
 		if (rateParm != null && !rateParm.getExpression().isZero()){
 			//removeKineticsParameter(rateParm);
-			rateParm.setExpression(new Expression(0.0));
+			rateParm.setExpression(ExpressionFactory.createExpression(0.0));
 		}
 	}
 }

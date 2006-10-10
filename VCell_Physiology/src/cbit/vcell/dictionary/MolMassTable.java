@@ -1,7 +1,7 @@
 package cbit.vcell.dictionary;
 
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
 
 /**
  * Insert the type's description here.
@@ -19,8 +19,8 @@ public class MolMassTable {
 		"N","O","P","S","U","V","W","Y"
 	};
 
-	public static final cbit.vcell.parser.SimpleSymbolTable PeriodicTableOfElements =
-		new cbit.vcell.parser.SimpleSymbolTable(atoms);
+	public static final org.vcell.expression.SimpleSymbolTable PeriodicTableOfElements =
+		new org.vcell.expression.SimpleSymbolTable(atoms);
 	
 	public static final double[] mass = {
 		227.0278,107.8682,26.98,243.0614,74.9216,209.987,196.966,137.327,9.012,208.98,247.07,79.904,
@@ -53,7 +53,7 @@ public static String parseNumberString(String argS) {
  * @return double
  * @param formula java.lang.String
  */
-public static double calcMass(String argFormula) throws cbit.vcell.parser.ExpressionException{
+public static double calcMass(String argFormula) throws org.vcell.expression.ExpressionException{
 
 	if(argFormula == null ||argFormula.length() == 0){
 		throw new IllegalArgumentException("Formula cannot be empty");
@@ -124,7 +124,7 @@ public static double calcMass(String argFormula) throws cbit.vcell.parser.Expres
 		throw new RuntimeException("Error parsing formula "+formula);
 	}
 
-	cbit.vcell.parser.Expression exp = new cbit.vcell.parser.Expression(symbols.toString());
+	IExpression exp = ExpressionFactory.createExpression(symbols.toString());
 	exp.bindExpression(PeriodicTableOfElements);
 	return exp.evaluateVector(mass);
 }

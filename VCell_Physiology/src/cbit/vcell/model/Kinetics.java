@@ -5,9 +5,20 @@ package cbit.vcell.model;
 ©*/
 import java.beans.*;
 import cbit.vcell.parser.*;
-import cbit.vcell.parser.Expression;
+
 import java.util.*;
 import java.io.Serializable;
+
+import org.vcell.expression.AbstractNameScope;
+import org.vcell.expression.ExpressionBindingException;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.NameScope;
+import org.vcell.expression.SymbolTable;
+import org.vcell.expression.SymbolTableEntry;
+import org.vcell.expression.VCUnitEvaluator;
+
 import cbit.util.*;
 import net.sourceforge.interval.ia_math.RealInterval;
 /**
@@ -116,11 +127,11 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 	public class KineticsParameter extends Parameter {
 		
 		private String fieldParameterName = null;
-		private cbit.vcell.parser.Expression fieldParameterExpression = null;
+		private org.vcell.expression.IExpression fieldParameterExpression = null;
 		private int fieldParameterRole = ROLE_UserDefined;
 		private cbit.vcell.units.VCUnitDefinition fieldUnitDefinition = null;
 
-		protected KineticsParameter(String argName, Expression expression, int argRole, cbit.vcell.units.VCUnitDefinition unitDefinition) {
+		protected KineticsParameter(String argName, IExpression expression, int argRole, cbit.vcell.units.VCUnitDefinition unitDefinition) {
 			if (argName == null){
 				throw new IllegalArgumentException("parameter name is null");
 			}
@@ -197,7 +208,7 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 		}      
 
 
-		public Expression getExpression() {
+		public IExpression getExpression() {
 			return this.fieldParameterExpression;
 		}
 
@@ -239,8 +250,8 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 			super.firePropertyChange("unitDefinition", oldValue, unitDefinition);
 		}
 		
-		public void setExpression(cbit.vcell.parser.Expression expression) throws java.beans.PropertyVetoException {
-			Expression oldValue = fieldParameterExpression;
+		public void setExpression(org.vcell.expression.IExpression expression) throws java.beans.PropertyVetoException {
+			IExpression oldValue = fieldParameterExpression;
 			super.fireVetoableChange("expression", oldValue, expression);
 			fieldParameterExpression = expression;
 			super.firePropertyChange("expression", oldValue, expression);
@@ -284,7 +295,7 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 			throw new ExpressionException("no expression defined for UnresolvedParameter '"+fieldParameterName+"'");
 		}      
 
-		public Expression getExpression() {
+		public IExpression getExpression() {
 			return null;
 		}
 
@@ -440,7 +451,7 @@ public void addUnresolvedParameter(String parameterName) {
  * Creation date: (9/22/2003 9:51:49 AM)
  * @param parameterName java.lang.String
  */
-public KineticsParameter addUserDefinedKineticsParameter(String parameterName, Expression expression, cbit.vcell.units.VCUnitDefinition unit) throws PropertyVetoException {
+public KineticsParameter addUserDefinedKineticsParameter(String parameterName, IExpression expression, cbit.vcell.units.VCUnitDefinition unit) throws PropertyVetoException {
 	if (getParameter(parameterName)!=null){
 		throw new RuntimeException("parameter '"+parameterName+"' already exists");
 	}
@@ -463,7 +474,7 @@ public synchronized void addVetoableChangeListener(java.beans.VetoableChangeList
  * This method was created by a SmartGuide.
  * @param symbolTable cbit.vcell.parser.SymbolTable
  */
-public void bind(cbit.vcell.parser.SymbolTable symbolTable) throws cbit.vcell.parser.ExpressionBindingException {
+public void bind(org.vcell.expression.SymbolTable symbolTable) throws org.vcell.expression.ExpressionBindingException {
 	for (int i = 0; i < getKineticsParameters().length; i++){
 		getKineticsParameters()[i].getExpression().bindExpression(symbolTable);
 	}
@@ -514,7 +525,7 @@ private final void cleanupParameters() throws ModelException, ExpressionExceptio
 	}
 
 	for (int i = 0;fieldKineticsParameters!=null && i < fieldKineticsParameters.length; i++){
-		Expression exp = fieldKineticsParameters[i].getExpression();
+		IExpression exp = fieldKineticsParameters[i].getExpression();
 		if (exp!=null){
 			try {
 				exp.bindExpression(reactionStep);
@@ -638,7 +649,7 @@ public final void fromTokens(cbit.util.CommentStringTokenizer tokens) throws Exp
 			}
 			if (token.equalsIgnoreCase(VCMODL.Parameter)){
 				token = tokens.nextToken();
-				Expression exp = new Expression(tokens);
+				IExpression exp = ExpressionFactory.createExpression(tokens);
 				String symbols[] = exp.getSymbols();
 				for (int j = 0;symbols!=null && j < symbols.length; j++){
 					if (getReactionStep().getLocalEntry(symbols[j])==null){
@@ -704,12 +715,12 @@ public final void fromTokens(cbit.util.CommentStringTokenizer tokens) throws Exp
 						//     e.g. CurrentDensity a+b/c;
 						//
 						tokens.pushToken(token);
-						Expression exp = new Expression(tokens);
+						IExpression exp = ExpressionFactory.createExpression(tokens);
 						
 						String[] symbols = exp.getSymbols();
 						boolean bIsSingleId = false;
 						if (symbols != null && symbols.length==1){
-							if (exp.compareEqual(new Expression(symbols[0]))){
+							if (exp.compareEqual(ExpressionFactory.createExpression(symbols[0]))){
 								bIsSingleId = true;
 							}
 						}
@@ -769,7 +780,7 @@ public final void fromTokens(cbit.util.CommentStringTokenizer tokens) throws Exp
 								////
 								//// "special" parameter not yet instantiated
 								////
-								//Expression newExp = new Expression(0.0);
+								//IExpression newExp = new IExpression(0.0);
 								//if (parmFromName instanceof UnresolvedParameter){
 									//removeUnresolvedParameter((UnresolvedParameter)parmFromName);
 								//}else if (parmFromName instanceof KineticsParameter){
@@ -801,14 +812,14 @@ public final void fromTokens(cbit.util.CommentStringTokenizer tokens) throws Exp
 										// ... usually, parmFromName will later be discarded by cleanupParameters().
 										// 
 										String tempName = parmFromRole.getName();
-										Expression tempExp = parmFromRole.getExpression();
+										IExpression tempExp = parmFromRole.getExpression();
 										parmFromRole.setName(parmName);
-										parmFromRole.setExpression(new Expression(parmFromName.getExpression()));
+										parmFromRole.setExpression(ExpressionFactory.createExpression(parmFromName.getExpression()));
 										((Kinetics.KineticsParameter)parmFromName).setName(tempName);
-										((Kinetics.KineticsParameter)parmFromName).setExpression(new Expression(tempExp));
+										((Kinetics.KineticsParameter)parmFromName).setExpression(ExpressionFactory.createExpression(tempExp));
 										//removeKineticsParameter((KineticsParameter)parmFromName);
 									} else {
-										parmFromRole.setExpression(new Expression(parmFromName.getName()));
+										parmFromRole.setExpression(ExpressionFactory.createExpression(parmFromName.getName()));
 										if (!unitDef.isTBD()){
 											parmFromRole.setUnitDefinition(unitDef);
 										}
@@ -887,16 +898,16 @@ public void gatherIssues(Vector issueList) {
 	//
 	for (int i = 0; fieldKineticsParameters!=null && i < fieldKineticsParameters.length; i++){
 		if (fieldKineticsParameters[i].getExpression()==null){
-			issueList.add(new Issue(fieldKineticsParameters[i],"Expression","expression for parameter '"+fieldKineticsParameters[i].getName()+"' is missing",Issue.SEVERITY_INFO));
+			issueList.add(new Issue(fieldKineticsParameters[i],"IExpression","expression for parameter '"+fieldKineticsParameters[i].getName()+"' is missing",Issue.SEVERITY_INFO));
 		}else{
-			Expression exp = fieldKineticsParameters[i].getExpression();
+			IExpression exp = fieldKineticsParameters[i].getExpression();
 			String symbols[] = exp.getSymbols();
 			for (int j = 0; symbols!=null && j < symbols.length; j++){
 				SymbolTableEntry ste = exp.getSymbolBinding(symbols[j]);
 				if (ste instanceof SpeciesContext && reactionStep.getReactionParticipant((SpeciesContext)ste) == null){
-					issueList.add(new Issue(fieldKineticsParameters[i],"Expression","parameter '"+fieldKineticsParameters[i].getName()+"' references species context '"+ste.getName()+"', but it is not a reactant/product/catalyst of this reaction",Issue.SEVERITY_WARNING));
+					issueList.add(new Issue(fieldKineticsParameters[i],"IExpression","parameter '"+fieldKineticsParameters[i].getName()+"' references species context '"+ste.getName()+"', but it is not a reactant/product/catalyst of this reaction",Issue.SEVERITY_WARNING));
 				}else if (ste == null){
-					issueList.add(new Issue(fieldKineticsParameters[i],"Expression","parameter '"+fieldKineticsParameters[i].getName()+"' references undefined symbol '"+symbols[j]+"'",Issue.SEVERITY_ERROR));
+					issueList.add(new Issue(fieldKineticsParameters[i],"IExpression","parameter '"+fieldKineticsParameters[i].getName()+"' references undefined symbol '"+symbols[j]+"'",Issue.SEVERITY_ERROR));
 				}
 			}
 		}
@@ -1243,7 +1254,7 @@ private boolean isReferenced(Parameter parm, int level) throws ModelException, E
 	if (fieldKineticsParameters != null){
 		for (int i=0;i<fieldKineticsParameters.length;i++){
 			Parameter parentParm = fieldKineticsParameters[i];
-			Expression exp = parentParm.getExpression();
+			IExpression exp = parentParm.getExpression();
 			String[] symbols = exp.getSymbols();
 			if (symbols!=null){
 				for (int j=0;j<symbols.length;j++){
@@ -1500,8 +1511,8 @@ public void renameParameter(String oldName, String newName) throws ExpressionExc
 		// go through all parameters' expressions and replace references to 'oldName' with 'newName'
 		//
 		for (int i = 0; i < newParameters.length; i++){ 
-			Expression newExp = new Expression(getKineticsParameters()[i].getExpression());
-			newExp.substituteInPlace(new Expression(oldName),new Expression(newName));
+			IExpression newExp = ExpressionFactory.createExpression(getKineticsParameters()[i].getExpression());
+			newExp.substituteInPlace(ExpressionFactory.createExpression(oldName),ExpressionFactory.createExpression(newName));
 			//
 			// if expression changed, create a new KineticsParameter
 			//
@@ -1553,8 +1564,8 @@ public void renameParameter(String oldName, String newName) throws ExpressionExc
 private void renameParameterExpressions(java.lang.String oldName, java.lang.String newName) throws ExpressionException, PropertyVetoException {
 	KineticsParameter newParameters[] = (KineticsParameter[])fieldKineticsParameters.clone();
 	for (int i = 0; i < newParameters.length; i++){
-		Expression newExp = new Expression(newParameters[i].getExpression());
-		newExp.substituteInPlace(new Expression(oldName),new Expression(newName));
+		IExpression newExp = ExpressionFactory.createExpression(newParameters[i].getExpression());
+		newExp.substituteInPlace(ExpressionFactory.createExpression(oldName),ExpressionFactory.createExpression(newName));
 		newExp.bindExpression(reactionStep);
 		newParameters[i].setExpression(newExp);
 	}
@@ -1671,12 +1682,12 @@ void setName(String name) {
  * @param expressionString java.lang.String
  * @exception java.lang.Exception The exception description.
  */
-public void setParameterValue(KineticsParameter parm, Expression exp) throws ExpressionException, PropertyVetoException {
+public void setParameterValue(KineticsParameter parm, IExpression exp) throws ExpressionException, PropertyVetoException {
 	Parameter p = getKineticsParameter(parm.getName());
 	if (p != parm){
 		throw new RuntimeException("parameter "+parm.getName()+" not found");
 	}
-	Expression oldExpression = parm.getExpression();
+	IExpression oldExpression = parm.getExpression();
 	boolean bBound = false;
 	try {
 		KineticsParameter newKineticsParameters[] = (KineticsParameter[])fieldKineticsParameters.clone();
@@ -1688,7 +1699,7 @@ public void setParameterValue(KineticsParameter parm, Expression exp) throws Exp
 			}
 		}
 		for (int i = 0; i < symbolsToAdd.size(); i++){
-			newKineticsParameters = (KineticsParameter[])BeanUtils.addElement(newKineticsParameters,new KineticsParameter((String)symbolsToAdd.elementAt(i),new Expression(0.0),ROLE_UserDefined,cbit.vcell.units.VCUnitDefinition.UNIT_TBD));
+			newKineticsParameters = (KineticsParameter[])BeanUtils.addElement(newKineticsParameters,new KineticsParameter((String)symbolsToAdd.elementAt(i),ExpressionFactory.createExpression(0.0),ROLE_UserDefined,cbit.vcell.units.VCUnitDefinition.UNIT_TBD));
 		}
 		parm.setExpression(exp);
 		setKineticsParameters(newKineticsParameters);
@@ -1721,7 +1732,7 @@ public void setParameterValue(String parmName, String expressionString) throws E
 	if (parm == null){
 		throw new RuntimeException("parameter "+parmName+" not found");
 	}
-	Expression exp = new Expression(expressionString);
+	IExpression exp = ExpressionFactory.createExpression(expressionString);
 	setParameterValue(parm,exp);
 }
 
@@ -1750,9 +1761,9 @@ public String toString() {
 /**
  * Insert the method's description here.
  * Creation date: (10/19/2003 12:04:36 AM)
- * @exception cbit.vcell.parser.ExpressionException The exception description.
+ * @exception org.vcell.expression.ExpressionException The exception description.
  */
-protected abstract void updateGeneratedExpressions() throws cbit.vcell.parser.ExpressionException, PropertyVetoException;
+protected abstract void updateGeneratedExpressions() throws org.vcell.expression.ExpressionException, PropertyVetoException;
 
 
 /**

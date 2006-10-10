@@ -1,16 +1,18 @@
 package cbit.vcell.model;
-import cbit.vcell.parser.BioNameScope;
-import cbit.vcell.parser.ExpressionBindingException;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
 import java.util.*;
 import java.beans.*;
+
+import org.vcell.expression.ExpressionBindingException;
+import org.vcell.expression.IExpression;
+
 import cbit.util.*;
 import cbit.vcell.model.Feature;
 
-public class Model implements cbit.util.Versionable, Matchable, PropertyChangeListener, VetoableChangeListener, java.io.Serializable, cbit.vcell.parser.ScopedSymbolTable {
+public class Model implements cbit.util.Versionable, Matchable, PropertyChangeListener, VetoableChangeListener, java.io.Serializable, org.vcell.expression.ScopedSymbolTable {
 	private Version version = null;
 	protected transient PropertyChangeSupport propertyChange;
 	private java.lang.String fieldName = new String("NoName");
@@ -29,11 +31,11 @@ public class Model implements cbit.util.Versionable, Matchable, PropertyChangeLi
 		public ModelNameScope(){
 			super();
 		}
-		public cbit.vcell.parser.NameScope[] getChildren() {
+		public org.vcell.expression.NameScope[] getChildren() {
 			//
 			// return list of reactionNameScopes
 			//
-			cbit.vcell.parser.NameScope nameScopes[] = new cbit.vcell.parser.NameScope[Model.this.fieldReactionSteps.length+Model.this.fieldStructures.length];
+			org.vcell.expression.NameScope nameScopes[] = new org.vcell.expression.NameScope[Model.this.fieldReactionSteps.length+Model.this.fieldStructures.length];
 			int j=0;
 			for (int i = 0; i < Model.this.fieldReactionSteps.length; i++){
 				nameScopes[j++] = Model.this.fieldReactionSteps[i].getNameScope();
@@ -46,14 +48,14 @@ public class Model implements cbit.util.Versionable, Matchable, PropertyChangeLi
 		public String getName() {
 			return TokenMangler.fixTokenStrict(Model.this.getName());
 		}
-		public cbit.vcell.parser.NameScope getParent() {
+		public org.vcell.expression.NameScope getParent() {
 			//System.out.println("ModelNameScope.getParent() returning null ... no parent");
 			return null;
 		}
-		public cbit.vcell.parser.ScopedSymbolTable getScopedSymbolTable() {
+		public org.vcell.expression.ScopedSymbolTable getScopedSymbolTable() {
 			return Model.this;
 		}
-		public boolean isPeer(cbit.vcell.parser.NameScope nameScope){
+		public boolean isPeer(org.vcell.expression.NameScope nameScope){
 			return (nameScope != null && /*(nameScope instanceof cbit.vcell.mapping.MathMapping.MathMappingNameScope)*/ nameScope.isPeer(this));
 		}
 
@@ -67,11 +69,11 @@ public class Model implements cbit.util.Versionable, Matchable, PropertyChangeLi
 	public class ModelParameter extends Parameter {
 		
 		private String fieldParameterName = null;
-		private cbit.vcell.parser.Expression fieldParameterExpression = null;
+		private org.vcell.expression.IExpression fieldParameterExpression = null;
 		private int fieldParameterRole = -1;
 		private cbit.vcell.units.VCUnitDefinition fieldUnitDefinition = null;
 		
-		protected ModelParameter(String argName, cbit.vcell.parser.Expression expression, int argRole, cbit.vcell.units.VCUnitDefinition argUnitDefinition) {
+		protected ModelParameter(String argName, org.vcell.expression.IExpression expression, int argRole, cbit.vcell.units.VCUnitDefinition argUnitDefinition) {
 			if (argName == null){
 				throw new IllegalArgumentException("parameter name is null");
 			}
@@ -117,12 +119,12 @@ public class Model implements cbit.util.Versionable, Matchable, PropertyChangeLi
 			return true;
 		}
 
-		public double getConstantValue() throws cbit.vcell.parser.ExpressionException {
+		public double getConstantValue() throws org.vcell.expression.ExpressionException {
 			return this.fieldParameterExpression.evaluateConstant();
 		}      
 
 
-		public cbit.vcell.parser.Expression getExpression() {
+		public IExpression getExpression() {
 			return this.fieldParameterExpression;
 		}
 
@@ -137,7 +139,7 @@ public class Model implements cbit.util.Versionable, Matchable, PropertyChangeLi
 		}   
 
 
-		public cbit.vcell.parser.NameScope getNameScope() {
+		public org.vcell.expression.NameScope getNameScope() {
 			return Model.this.nameScope;
 		}
 
@@ -155,8 +157,8 @@ public class Model implements cbit.util.Versionable, Matchable, PropertyChangeLi
 			fieldUnitDefinition = unitDefinition;
 			super.firePropertyChange("unitDefinition", oldValue, unitDefinition);
 		}
-		public void setExpression(cbit.vcell.parser.Expression expression) throws java.beans.PropertyVetoException {
-			cbit.vcell.parser.Expression oldValue = fieldParameterExpression;
+		public void setExpression(org.vcell.expression.IExpression expression) throws java.beans.PropertyVetoException {
+			IExpression oldValue = fieldParameterExpression;
 			super.fireVetoableChange("expression", oldValue, expression);
 			fieldParameterExpression = expression;
 			super.firePropertyChange("expression", oldValue, expression);
@@ -586,7 +588,7 @@ public void gatherIssues(Vector issueList) {
 		for (int i = 0; i < fieldModelParameters.length; i++){
 			try {
 				cbit.vcell.units.VCUnitDefinition paramUnitDef = fieldModelParameters[i].getUnitDefinition();
-				cbit.vcell.units.VCUnitDefinition expUnitDef = cbit.vcell.parser.VCUnitEvaluator.getUnitDefinition(fieldModelParameters[i].getExpression());
+				cbit.vcell.units.VCUnitDefinition expUnitDef = org.vcell.expression.VCUnitEvaluator.getUnitDefinition(fieldModelParameters[i].getExpression());
 				if (paramUnitDef == null){
 					issueList.add(new Issue(fieldModelParameters[i], "Units","defined unit is null for parameter '"+fieldModelParameters[i].getName()+"'",Issue.SEVERITY_WARNING));
 				}else if (expUnitDef == null){
@@ -596,7 +598,7 @@ public void gatherIssues(Vector issueList) {
 				}
 			}catch (cbit.vcell.units.VCUnitException e){
 				issueList.add(new Issue(fieldModelParameters[i],"Units","units inconsistent for parameter '"+fieldModelParameters[i].getName()+"': "+e.getMessage(),Issue.SEVERITY_WARNING));
-			}catch (cbit.vcell.parser.ExpressionException e){
+			}catch (org.vcell.expression.ExpressionException e){
 				issueList.add(new Issue(fieldModelParameters[i],"Units","units inconsistent for parameter '"+fieldModelParameters[i].getName()+"': "+e.getMessage(),Issue.SEVERITY_WARNING));
 			}
 		}
@@ -685,9 +687,9 @@ public Diagram getDiagrams(int index) {
 /**
  * getEntry method comment.
  */
-public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierString) throws cbit.vcell.parser.ExpressionBindingException {
+public org.vcell.expression.SymbolTableEntry getEntry(java.lang.String identifierString) throws org.vcell.expression.ExpressionBindingException {
 	
-	cbit.vcell.parser.SymbolTableEntry ste = getLocalEntry(identifierString);
+	org.vcell.expression.SymbolTableEntry ste = getLocalEntry(identifierString);
 	if (ste != null){
 		return ste;
 	}
@@ -796,9 +798,9 @@ public Kinetics.KineticsParameter getKineticsParameter(String kineticsParameterN
  * @return cbit.vcell.parser.SymbolTableEntry
  * @param identifier java.lang.String
  */
-public cbit.vcell.parser.SymbolTableEntry getLocalEntry(java.lang.String identifier) throws ExpressionBindingException {
+public org.vcell.expression.SymbolTableEntry getLocalEntry(java.lang.String identifier) throws ExpressionBindingException {
 	
-	cbit.vcell.parser.SymbolTableEntry ste = ReservedSymbol.fromString(identifier);
+	org.vcell.expression.SymbolTableEntry ste = ReservedSymbol.fromString(identifier);
 	if (ste != null){
 		ReservedSymbol rs = (ReservedSymbol)ste;
 		if (rs.isX() || rs.isY() || rs.isZ()){
@@ -859,7 +861,7 @@ public java.lang.String getName() {
  * Creation date: (8/27/2003 10:03:05 PM)
  * @return cbit.vcell.parser.NameScope
  */
-public cbit.vcell.parser.NameScope getNameScope() {
+public org.vcell.expression.NameScope getNameScope() {
 	return nameScope;
 }
 

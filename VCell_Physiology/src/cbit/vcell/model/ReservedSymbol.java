@@ -6,6 +6,13 @@ package cbit.vcell.model;
 import cbit.vcell.parser.*;
 
 import java.io.*;
+
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.NameScope;
+import org.vcell.expression.SymbolTableEntry;
+
 import cbit.vcell.units.VCUnitDefinition;
 
 public class ReservedSymbol implements SymbolTableEntry, Serializable
@@ -34,17 +41,17 @@ public class ReservedSymbol implements SymbolTableEntry, Serializable
 		public ReservedSymbolNameScope(){
 			super();
 		}
-		public cbit.vcell.parser.NameScope[] getChildren() {
+		public org.vcell.expression.NameScope[] getChildren() {
 			return children;
 		}
 		public String getName() {
 			return "ReservedSymbols";
 		}
-		public cbit.vcell.parser.NameScope getParent() {
+		public org.vcell.expression.NameScope getParent() {
 			//System.out.println("ModelNameScope.getParent() returning null ... no parent");
 			return null;
 		}
-		public cbit.vcell.parser.ScopedSymbolTable getScopedSymbolTable() {
+		public org.vcell.expression.ScopedSymbolTable getScopedSymbolTable() {
 			return null;
 		}
 	}
@@ -132,9 +139,9 @@ public double getConstantValue() throws ExpressionException {
  * @return cbit.vcell.parser.Expression
  * @exception java.lang.Exception The exception description.
  */
-public Expression getExpression() {
+public IExpression getExpression() {
 	if (constantValue!=null){
-		return new Expression(constantValue.doubleValue());
+		return ExpressionFactory.createExpression(constantValue.doubleValue());
 	}else{
 		return null;
 	}

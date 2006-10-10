@@ -6,6 +6,9 @@ package cbit.vcell.model;
 ©*/
 import java.io.*;
 import java.util.*;
+
+import org.vcell.expression.ExpressionFactory;
+
 import cbit.vcell.parser.*;
 import cbit.util.*;
 
@@ -93,7 +96,7 @@ public void fromTokens(cbit.util.CommentStringTokenizer tokens, Model model) thr
 			continue;
 		}
 		if (token.equalsIgnoreCase(VCMODL.Valence)){
-			getChargeCarrierValence().setExpression(new Expression(Integer.parseInt(tokens.nextToken())));
+			getChargeCarrierValence().setExpression(ExpressionFactory.createExpression(Integer.parseInt(tokens.nextToken())));
 			continue;
 		}
 		if (token.equalsIgnoreCase(VCMODL.PhysicsOptions)){

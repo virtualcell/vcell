@@ -1,5 +1,7 @@
 package cbit.vcell.model;
 
+import org.vcell.expression.ExpressionException;
+
 import cbit.vcell.parser.*;
 /**
  * Insert the type's description here.

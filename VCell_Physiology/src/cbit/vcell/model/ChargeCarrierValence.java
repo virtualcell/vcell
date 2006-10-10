@@ -1,5 +1,10 @@
 package cbit.vcell.model;
 
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.NameScope;
+import org.vcell.expression.SymbolTableEntry;
+
 import cbit.vcell.parser.*;
 /**
  * Insert the type's description here.
@@ -8,8 +13,8 @@ import cbit.vcell.parser.*;
  */
 public class ChargeCarrierValence implements cbit.util.Matchable, SymbolTableEntry, java.io.Serializable {
 	private java.lang.String fieldName = null;
-	private cbit.vcell.parser.NameScope fieldNameScope = null;
-	private cbit.vcell.parser.Expression fieldExpression = null;
+	private org.vcell.expression.NameScope fieldNameScope = null;
+	private org.vcell.expression.IExpression fieldExpression = null;
 	
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
@@ -20,7 +25,7 @@ public ChargeCarrierValence(String name, NameScope nameScope) {
 	super();
 	fieldName = name;
 	fieldNameScope = nameScope;
-	fieldExpression = new Expression(0.0);
+	fieldExpression = ExpressionFactory.createExpression(0.0);
 }
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
@@ -65,7 +70,7 @@ private void fireVetoableChange(java.lang.String propertyName, java.lang.Object 
  * This method was created in VisualAge.
  * @return double
  */
-public double getConstantValue() throws cbit.vcell.parser.ExpressionException {
+public double getConstantValue() throws org.vcell.expression.ExpressionException {
 	return fieldExpression.evaluateConstant();
 }
 /**
@@ -73,7 +78,7 @@ public double getConstantValue() throws cbit.vcell.parser.ExpressionException {
  * @return boolean
  * @exception java.lang.Exception The exception description.
  */
-public cbit.vcell.parser.Expression getExpression() {
+public IExpression getExpression() {
 	return fieldExpression;
 }
 /**
@@ -96,7 +101,7 @@ public java.lang.String getName() {
  * Creation date: (7/31/2003 10:28:46 AM)
  * @return cbit.vcell.parser.NameScope
  */
-public cbit.vcell.parser.NameScope getNameScope() {
+public org.vcell.expression.NameScope getNameScope() {
 	return fieldNameScope;
 }
 /**
@@ -136,7 +141,7 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * @return boolean
  * @exception java.lang.Exception The exception description.
  */
-public boolean isConstant() throws cbit.vcell.parser.ExpressionException {
+public boolean isConstant() throws org.vcell.expression.ExpressionException {
 	return true;
 }
 /**
@@ -152,13 +157,13 @@ public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeL
 	getVetoPropertyChange().removeVetoableChangeListener(listener);
 }
 /**
- * Sets the expression property (cbit.vcell.parser.Expression) value.
+ * Sets the expression property (cbit.vcell.parser.IExpression) value.
  * @param expression The new value for the property.
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getExpression
  */
-public void setExpression(cbit.vcell.parser.Expression expression) throws java.beans.PropertyVetoException {
-	Expression oldValue = fieldExpression;
+public void setExpression(org.vcell.expression.IExpression expression) throws java.beans.PropertyVetoException {
+	IExpression oldValue = fieldExpression;
 	fireVetoableChange("expression", oldValue, expression);
 	fieldExpression = expression;
 	firePropertyChange("expression", oldValue, expression);

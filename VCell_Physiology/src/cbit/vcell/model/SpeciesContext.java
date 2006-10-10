@@ -5,8 +5,13 @@ package cbit.vcell.model;
 ©*/
 import java.beans.*;
 import java.util.*;
+
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.NameScope;
+import org.vcell.expression.SymbolTableEntry;
+
 import cbit.vcell.parser.*;
-import cbit.vcell.parser.Expression;
 import cbit.vcell.model.*;
 import cbit.util.Cacheable;
 import cbit.util.Compare;
@@ -152,7 +157,7 @@ public double getConstantValue() throws ExpressionException {
  * @return cbit.vcell.parser.Expression
  * @exception java.lang.Exception The exception description.
  */
-public Expression getExpression() {
+public IExpression getExpression() {
 	return null;
 }
 

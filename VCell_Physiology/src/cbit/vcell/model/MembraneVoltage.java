@@ -1,11 +1,13 @@
 package cbit.vcell.model;
-import cbit.vcell.parser.NameScope;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.NameScope;
+
 /**
  * Insert the type's description here.
  * Creation date: (2/20/2002 4:16:31 PM)
  * @author: Jim Schaff
  */
-public class MembraneVoltage implements cbit.vcell.parser.SymbolTableEntry, java.io.Serializable, cbit.util.Matchable {
+public class MembraneVoltage implements org.vcell.expression.SymbolTableEntry, java.io.Serializable, cbit.util.Matchable {
 	private java.lang.String fieldName = new String();
 	private Membrane fieldMembrane = null;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
@@ -91,8 +93,8 @@ public void fireVetoableChange(java.lang.String propertyName, java.lang.Object o
  * This method was created in VisualAge.
  * @return double
  */
-public double getConstantValue() throws cbit.vcell.parser.ExpressionException {
-	throw new cbit.vcell.parser.ExpressionException("MembraneVoltage.getConstantValue(): not supported");
+public double getConstantValue() throws org.vcell.expression.ExpressionException {
+	throw new org.vcell.expression.ExpressionException("MembraneVoltage.getConstantValue(): not supported");
 }
 
 
@@ -101,7 +103,7 @@ public double getConstantValue() throws cbit.vcell.parser.ExpressionException {
  * @return boolean
  * @exception java.lang.Exception The exception description.
  */
-public cbit.vcell.parser.Expression getExpression() throws cbit.vcell.parser.ExpressionException {
+public IExpression getExpression() throws org.vcell.expression.ExpressionException {
 	return null;
 }
 
@@ -130,7 +132,7 @@ public java.lang.String getName() {
  * Creation date: (7/31/2003 10:28:46 AM)
  * @return cbit.vcell.parser.NameScope
  */
-public cbit.vcell.parser.NameScope getNameScope() {
+public org.vcell.expression.NameScope getNameScope() {
 	return fieldMembrane.getNameScope();
 }
 
@@ -180,7 +182,7 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * @return boolean
  * @exception java.lang.Exception The exception description.
  */
-public boolean isConstant() throws cbit.vcell.parser.ExpressionException {
+public boolean isConstant() throws org.vcell.expression.ExpressionException {
 	return false;
 }
 

@@ -4,6 +4,10 @@ package cbit.vcell.model;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.expression.ExpressionBindingException;
+import org.vcell.expression.SymbolTable;
+import org.vcell.expression.SymbolTableEntry;
+
 import cbit.vcell.parser.*;
 /**
  * This type was created in VisualAge.

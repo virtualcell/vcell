@@ -148,7 +148,7 @@ public java.beans.MethodDescriptor bind_cbitvcellparserSymbolTableMethodDescript
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.parser.SymbolTable.class
+				org.vcell.expression.SymbolTable.class
 			};
 			aMethod = getBeanClass().getMethod("bind", aParameterTypes);
 		} catch (Throwable exception) {
@@ -281,7 +281,7 @@ public java.beans.IndexedPropertyDescriptor externalSymbolTableEntriesPropertyDe
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.parser.SymbolTableEntry[].class
+					org.vcell.expression.SymbolTableEntry[].class
 				};
 				aSetMethod = getBeanClass().getMethod("setExternalSymbolTableEntries", aSetMethodParameterTypes);
 			} catch (java.lang.Throwable exception) {
@@ -306,7 +306,7 @@ public java.beans.IndexedPropertyDescriptor externalSymbolTableEntriesPropertyDe
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetIndexedMethodParameterTypes[] = {
 					int.class,
-					cbit.vcell.parser.SymbolTableEntry.class
+					org.vcell.expression.SymbolTableEntry.class
 				};
 				aSetIndexedMethod = getBeanClass().getMethod("setExternalSymbolTableEntries", aSetIndexedMethodParameterTypes);
 			} catch (java.lang.Throwable exception) {
@@ -1425,19 +1425,19 @@ public java.beans.MethodDescriptor renameParameter_javalangString_javalangString
 	return aDescriptor;
 }
 /**
- * Gets the setParameterValue(cbit.vcell.model.Kinetics.KineticsParameter, cbit.vcell.parser.Expression) method descriptor.
+ * Gets the setParameterValue(cbit.vcell.model.Kinetics.KineticsParameter, cbit.vcell.parser.IExpression) method descriptor.
  * @return java.beans.MethodDescriptor
  */
 public java.beans.MethodDescriptor setParameterValue_cbitvcellmodelKineticsKineticsParameter_cbitvcellparserExpressionMethodDescriptor() {
 	java.beans.MethodDescriptor aDescriptor = null;
 	try {
-		/* Create and return the setParameterValue(cbit.vcell.model.Kinetics.KineticsParameter, cbit.vcell.parser.Expression) method descriptor. */
+		/* Create and return the setParameterValue(cbit.vcell.model.Kinetics.KineticsParameter, cbit.vcell.parser.IExpression) method descriptor. */
 		java.lang.reflect.Method aMethod = null;
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
 				cbit.vcell.model.Kinetics.KineticsParameter.class,
-				cbit.vcell.parser.Expression.class
+				org.vcell.expression.IExpression.class
 			};
 			aMethod = getBeanClass().getMethod("setParameterValue", aParameterTypes);
 		} catch (Throwable exception) {
@@ -1463,8 +1463,8 @@ public java.beans.MethodDescriptor setParameterValue_cbitvcellmodelKineticsKinet
 			handleException(exception);
 			aDescriptor = new java.beans.MethodDescriptor(aMethod);
 		};
-		/* aDescriptor.setDisplayName("setParameterValue(cbit.vcell.model.Kinetics.KineticsParameter, cbit.vcell.parser.Expression)"); */
-		/* aDescriptor.setShortDescription("setParameterValue(cbit.vcell.model.Kinetics.KineticsParameter, cbit.vcell.parser.Expression)"); */
+		/* aDescriptor.setDisplayName("setParameterValue(cbit.vcell.model.Kinetics.KineticsParameter, cbit.vcell.parser.IExpression)"); */
+		/* aDescriptor.setShortDescription("setParameterValue(cbit.vcell.model.Kinetics.KineticsParameter, cbit.vcell.parser.IExpression)"); */
 		/* aDescriptor.setExpert(false); */
 		/* aDescriptor.setHidden(false); */
 		/* aDescriptor.setValue("preferred", new Boolean(false)); */
@@ -1474,19 +1474,19 @@ public java.beans.MethodDescriptor setParameterValue_cbitvcellmodelKineticsKinet
 	return aDescriptor;
 }
 /**
- * Gets the setParameterValue(cbit.vcell.model.KineticsParameter, cbit.vcell.parser.Expression) method descriptor.
+ * Gets the setParameterValue(cbit.vcell.model.KineticsParameter, cbit.vcell.parser.IExpression) method descriptor.
  * @return java.beans.MethodDescriptor
  */
 public java.beans.MethodDescriptor setParameterValue_cbitvcellmodelKineticsParameter_cbitvcellparserExpressionMethodDescriptor() {
 	java.beans.MethodDescriptor aDescriptor = null;
 	try {
-		/* Create and return the setParameterValue(cbit.vcell.model.KineticsParameter, cbit.vcell.parser.Expression) method descriptor. */
+		/* Create and return the setParameterValue(cbit.vcell.model.KineticsParameter, cbit.vcell.parser.IExpression) method descriptor. */
 		java.lang.reflect.Method aMethod = null;
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
 				cbit.vcell.model.Kinetics.KineticsParameter.class,
-				cbit.vcell.parser.Expression.class
+				org.vcell.expression.IExpression.class
 			};
 			aMethod = getBeanClass().getMethod("setParameterValue", aParameterTypes);
 		} catch (Throwable exception) {
@@ -1512,8 +1512,8 @@ public java.beans.MethodDescriptor setParameterValue_cbitvcellmodelKineticsParam
 			handleException(exception);
 			aDescriptor = new java.beans.MethodDescriptor(aMethod);
 		};
-		/* aDescriptor.setDisplayName("setParameterValue(cbit.vcell.model.KineticsParameter, cbit.vcell.parser.Expression)"); */
-		/* aDescriptor.setShortDescription("setParameterValue(cbit.vcell.model.KineticsParameter, cbit.vcell.parser.Expression)"); */
+		/* aDescriptor.setDisplayName("setParameterValue(cbit.vcell.model.KineticsParameter, cbit.vcell.parser.IExpression)"); */
+		/* aDescriptor.setShortDescription("setParameterValue(cbit.vcell.model.KineticsParameter, cbit.vcell.parser.IExpression)"); */
 		/* aDescriptor.setExpert(false); */
 		/* aDescriptor.setHidden(false); */
 		/* aDescriptor.setValue("preferred", new Boolean(false)); */

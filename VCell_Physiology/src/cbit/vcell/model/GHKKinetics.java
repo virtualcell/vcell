@@ -1,11 +1,11 @@
 package cbit.vcell.model;
 
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.SymbolTable;
-import cbit.vcell.parser.ExpressionException;
 import cbit.util.*;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
+
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
 /**
  * Insert the type's description here.
  * Creation date: (2/18/2002 5:07:08 PM)
@@ -20,9 +20,9 @@ public class GHKKinetics extends Kinetics {
 public GHKKinetics(ReactionStep reactionStep) throws ExpressionException {
 	super(KineticsDescription.GHK.getName(),reactionStep);
 	try {
-		KineticsParameter currentParm = new KineticsParameter(getDefaultParameterName(ROLE_Current),new Expression(0.0),ROLE_Current,null);
-		KineticsParameter rateParm = new KineticsParameter(getDefaultParameterName(ROLE_Rate),new Expression(0.0),ROLE_Rate,null);
-		KineticsParameter permeabilityParm = new KineticsParameter(getDefaultParameterName(ROLE_Permeability),new Expression(0.0),ROLE_Permeability,null);
+		KineticsParameter currentParm = new KineticsParameter(getDefaultParameterName(ROLE_Current),ExpressionFactory.createExpression(0.0),ROLE_Current,null);
+		KineticsParameter rateParm = new KineticsParameter(getDefaultParameterName(ROLE_Rate),ExpressionFactory.createExpression(0.0),ROLE_Rate,null);
+		KineticsParameter permeabilityParm = new KineticsParameter(getDefaultParameterName(ROLE_Permeability),ExpressionFactory.createExpression(0.0),ROLE_Permeability,null);
 
 		setKineticsParameters(new KineticsParameter[] { currentParm, rateParm, permeabilityParm });
 		updateGeneratedExpressions();
@@ -136,9 +136,9 @@ protected void refreshUnits() {
 /**
  * Insert the method's description here.
  * Creation date: (10/19/2003 12:05:14 AM)
- * @exception cbit.vcell.parser.ExpressionException The exception description.
+ * @exception org.vcell.expression.ExpressionException The exception description.
  */
-protected void updateGeneratedExpressions() throws cbit.vcell.parser.ExpressionException, PropertyVetoException {
+protected void updateGeneratedExpressions() throws org.vcell.expression.ExpressionException, PropertyVetoException {
 	KineticsParameter currentParm = getKineticsParameterFromRole(ROLE_Current);
 	KineticsParameter rateParm = getKineticsParameterFromRole(ROLE_Rate);
 	if (currentParm==null && rateParm==null){
@@ -172,16 +172,16 @@ protected void updateGeneratedExpressions() throws cbit.vcell.parser.ExpressionE
 	
 	//"-A0*pow("+VALENCE_SYMBOL+",2)*"+VOLTAGE_SYMBOL+"*pow("+F+",2)/("+R+"*"+T+")*(R0-(P0*exp(-"+VALENCE_SYMBOL+"*"+F+"*"+VOLTAGE_SYMBOL+"/("+R+"*"+T+"))))/(1 - exp(-"+VALENCE_SYMBOL+"*"+F+"*"+VOLTAGE_SYMBOL+"/("+R+"*"+T+")))"
 	if (R0!=null && P0!=null && P!=null){
-		Expression newCurrExp = new Expression("-"+P.getName()+"*"+K_GHK.getName()+"*pow("+z+",2)*"+V.getName()+"*pow("+F.getName()+",2)/("+R.getName()+"*"+T.getName()+")*("+R0.getName()+"-("+P0.getName()+"*exp(-"+z+"*"+F.getName()+"*"+V.getName()+"/("+R.getName()+"*"+T.getName()+"))))/(1 - exp(-"+z+"*"+F.getName()+"*"+V.getName()+"/("+R.getName()+"*"+T.getName()+")))");
+		IExpression newCurrExp = ExpressionFactory.createExpression("-"+P.getName()+"*"+K_GHK.getName()+"*pow("+z+",2)*"+V.getName()+"*pow("+F.getName()+",2)/("+R.getName()+"*"+T.getName()+")*("+R0.getName()+"-("+P0.getName()+"*exp(-"+z+"*"+F.getName()+"*"+V.getName()+"/("+R.getName()+"*"+T.getName()+"))))/(1 - exp(-"+z+"*"+F.getName()+"*"+V.getName()+"/("+R.getName()+"*"+T.getName()+")))");
 		newCurrExp.bindExpression(getReactionStep());
 		currentParm.setExpression(newCurrExp);
 		if (getReactionStep().getPhysicsOptions() == ReactionStep.PHYSICS_MOLECULAR_AND_ELECTRICAL){
-			Expression tempRateExpression = null;
+			IExpression tempRateExpression = null;
 			if (getReactionStep() instanceof SimpleReaction){
 				ReservedSymbol N_PMOLE = ReservedSymbol.N_PMOLE;
-				tempRateExpression = Expression.mult(new Expression("("+N_PMOLE.getName()+"/("+z+"*"+F.getName()+"))"), new Expression(currentParm.getName()));
+				tempRateExpression = ExpressionFactory.mult(ExpressionFactory.createExpression("("+N_PMOLE.getName()+"/("+z+"*"+F.getName()+"))"), ExpressionFactory.createExpression(currentParm.getName()));
 			}else{
-				tempRateExpression = new Expression(currentParm.getName()+"/("+z+"*"+F_nmol.getName()+")");
+				tempRateExpression = ExpressionFactory.createExpression(currentParm.getName()+"/("+z+"*"+F_nmol.getName()+")");
 			}
 			tempRateExpression.bindExpression(getReactionStep());
 			if (rateParm == null){
@@ -192,7 +192,7 @@ protected void updateGeneratedExpressions() throws cbit.vcell.parser.ExpressionE
 		}else{
 			if (rateParm != null && !rateParm.getExpression().isZero()){
 				//removeKineticsParameter(rateParm);
-				rateParm.setExpression(new Expression(0.0));
+				rateParm.setExpression(ExpressionFactory.createExpression(0.0));
 			}
 		}
 	}

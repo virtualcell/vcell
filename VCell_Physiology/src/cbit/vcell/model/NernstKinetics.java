@@ -1,8 +1,10 @@
 package cbit.vcell.model;
 
-import cbit.vcell.parser.SymbolTable;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.SymbolTable;
+
 import cbit.util.*;
 /**
  * Insert the type's description here.
@@ -18,9 +20,9 @@ public class NernstKinetics extends Kinetics {
 public NernstKinetics(ReactionStep reactionStep) throws ExpressionException {
 	super(KineticsDescription.Nernst.getName(),reactionStep);
 	try {
-		KineticsParameter currentParm = new KineticsParameter(getDefaultParameterName(ROLE_Current),new Expression(0.0),ROLE_Current,null);
-		KineticsParameter rateParm = new KineticsParameter(getDefaultParameterName(ROLE_Rate),new Expression(0.0),ROLE_Rate,null);
-		KineticsParameter conductivityParm = new KineticsParameter(getDefaultParameterName(ROLE_Conductivity),new Expression(0.0),ROLE_Conductivity,null);
+		KineticsParameter currentParm = new KineticsParameter(getDefaultParameterName(ROLE_Current),ExpressionFactory.createExpression(0.0),ROLE_Current,null);
+		KineticsParameter rateParm = new KineticsParameter(getDefaultParameterName(ROLE_Rate),ExpressionFactory.createExpression(0.0),ROLE_Rate,null);
+		KineticsParameter conductivityParm = new KineticsParameter(getDefaultParameterName(ROLE_Conductivity),ExpressionFactory.createExpression(0.0),ROLE_Conductivity,null);
 
 		setKineticsParameters(new KineticsParameter[] { currentParm, rateParm, conductivityParm });
 		updateGeneratedExpressions();
@@ -135,9 +137,9 @@ protected void refreshUnits() {
 /**
  * Insert the method's description here.
  * Creation date: (10/19/2003 12:05:14 AM)
- * @exception cbit.vcell.parser.ExpressionException The exception description.
+ * @exception org.vcell.expression.ExpressionException The exception description.
  */
-protected void updateGeneratedExpressions() throws cbit.vcell.parser.ExpressionException, java.beans.PropertyVetoException {
+protected void updateGeneratedExpressions() throws org.vcell.expression.ExpressionException, java.beans.PropertyVetoException {
 	KineticsParameter rateParm = getKineticsParameterFromRole(ROLE_Rate);
 	KineticsParameter currentParm = getKineticsParameterFromRole(ROLE_Current);
 	KineticsParameter conductivity = getKineticsParameterFromRole(ROLE_Conductivity);
@@ -174,17 +176,17 @@ protected void updateGeneratedExpressions() throws cbit.vcell.parser.ExpressionE
 	
 
 	if (R0!=null && P0!=null){
-		// 	new Expression("A0*(("+R+"*"+T+"/("+VALENCE_SYMBOL+"*"+F+"))*log(P0/R0)-"+VOLTAGE_SYMBOL+")"),
-		Expression newCurrExp = new Expression(conductivity.getName()+"*(("+R.getName()+"*"+T.getName()+"/("+z+"*"+F.getName()+"))*log("+P0.getName()+"/"+R0.getName()+") - "+V.getName()+")");
+		// 	new IExpression("A0*(("+R+"*"+T+"/("+VALENCE_SYMBOL+"*"+F+"))*log(P0/R0)-"+VOLTAGE_SYMBOL+")"),
+		IExpression newCurrExp = ExpressionFactory.createExpression(conductivity.getName()+"*(("+R.getName()+"*"+T.getName()+"/("+z+"*"+F.getName()+"))*log("+P0.getName()+"/"+R0.getName()+") - "+V.getName()+")");
 		newCurrExp.bindExpression(getReactionStep());
 		currentParm.setExpression(newCurrExp);
 
 		if (getReactionStep().getPhysicsOptions() == ReactionStep.PHYSICS_MOLECULAR_AND_ELECTRICAL){
-			Expression tempRateExpression = null;
+			IExpression tempRateExpression = null;
 			if (getReactionStep() instanceof SimpleReaction){
-				tempRateExpression = Expression.mult(new Expression("("+N_PMOLE.getName()+"/("+z+"*"+F.getName()+"))"), new Expression(currentParm.getName()));
+				tempRateExpression = ExpressionFactory.mult(ExpressionFactory.createExpression("("+N_PMOLE.getName()+"/("+z+"*"+F.getName()+"))"), ExpressionFactory.createExpression(currentParm.getName()));
 			}else{
-				tempRateExpression = new Expression(currentParm.getName()+"/("+z+"*"+F_nmol.getName()+")");
+				tempRateExpression = ExpressionFactory.createExpression(currentParm.getName()+"/("+z+"*"+F_nmol.getName()+")");
 			}
 			tempRateExpression.bindExpression(getReactionStep());
 			if (rateParm == null){
@@ -195,7 +197,7 @@ protected void updateGeneratedExpressions() throws cbit.vcell.parser.ExpressionE
 		}else{
 			if (rateParm != null && !rateParm.getExpression().isZero()){
 				//removeKineticsParameter(rateParm);
-				rateParm.setExpression(new Expression(0.0));
+				rateParm.setExpression(ExpressionFactory.createExpression(0.0));
 			}
 		}
 	}

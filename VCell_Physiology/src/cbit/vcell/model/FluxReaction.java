@@ -4,10 +4,10 @@ package cbit.vcell.model;
  * All rights reserved.
 ©*/
 import java.beans.*;
-import java.io.*;
-import java.util.*;
-import cbit.vcell.parser.*;
-import cbit.vcell.parser.Expression;
+
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+
 import cbit.util.*;
 
 public class FluxReaction extends ReactionStep {
@@ -65,7 +65,7 @@ public void fromTokens(cbit.util.CommentStringTokenizer tokens, Model model) thr
 			break;
 		}			
 		if (token.equalsIgnoreCase(VCMODL.Valence)){
-			getChargeCarrierValence().setExpression(new Expression((double)Integer.parseInt(tokens.nextToken())));
+			getChargeCarrierValence().setExpression(ExpressionFactory.createExpression((double)Integer.parseInt(tokens.nextToken())));
 			continue;
 		}
 		if (token.equalsIgnoreCase(VCMODL.PhysicsOptions)){

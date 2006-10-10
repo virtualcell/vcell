@@ -91,7 +91,7 @@ public java.beans.PropertyDescriptor forwardRatePropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.parser.Expression.class
+					org.vcell.expression.IExpression.class
 				};
 				aSetMethod = getBeanClass().getMethod("setForwardRate", aSetMethodParameterTypes);
 			} catch (Throwable exception) {
@@ -370,7 +370,7 @@ public java.beans.PropertyDescriptor reverseRatePropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.parser.Expression.class
+					org.vcell.expression.IExpression.class
 				};
 				aSetMethod = getBeanClass().getMethod("setReverseRate", aSetMethodParameterTypes);
 			} catch (Throwable exception) {
@@ -400,18 +400,18 @@ public java.beans.PropertyDescriptor reverseRatePropertyDescriptor() {
 	return aDescriptor;
 }
 /**
- * Gets the setForwardRate(cbit.vcell.parser.Expression) method descriptor.
+ * Gets the setForwardRate(cbit.vcell.parser.IExpression) method descriptor.
  * @return java.beans.MethodDescriptor
  */
 public java.beans.MethodDescriptor setForwardRate_cbitvcellparserExpressionMethodDescriptor() {
 	java.beans.MethodDescriptor aDescriptor = null;
 	try {
-		/* Create and return the setForwardRate(cbit.vcell.parser.Expression) method descriptor. */
+		/* Create and return the setForwardRate(cbit.vcell.parser.IExpression) method descriptor. */
 		java.lang.reflect.Method aMethod = null;
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.parser.Expression.class
+				org.vcell.expression.IExpression.class
 			};
 			aMethod = getBeanClass().getMethod("setForwardRate", aParameterTypes);
 		} catch (Throwable exception) {
@@ -433,8 +433,8 @@ public java.beans.MethodDescriptor setForwardRate_cbitvcellparserExpressionMetho
 			handleException(exception);
 			aDescriptor = new java.beans.MethodDescriptor(aMethod);
 		};
-		/* aDescriptor.setDisplayName("setForwardRate(cbit.vcell.parser.Expression)"); */
-		/* aDescriptor.setShortDescription("setForwardRate(cbit.vcell.parser.Expression)"); */
+		/* aDescriptor.setDisplayName("setForwardRate(cbit.vcell.parser.IExpression)"); */
+		/* aDescriptor.setShortDescription("setForwardRate(cbit.vcell.parser.IExpression)"); */
 		/* aDescriptor.setExpert(false); */
 		/* aDescriptor.setHidden(false); */
 		/* aDescriptor.setValue("preferred", new Boolean(false)); */
@@ -488,18 +488,18 @@ public java.beans.MethodDescriptor setForwardRate_javalangStringMethodDescriptor
 	return aDescriptor;
 }
 /**
- * Gets the setReverseRate(cbit.vcell.parser.Expression) method descriptor.
+ * Gets the setReverseRate(cbit.vcell.parser.IExpression) method descriptor.
  * @return java.beans.MethodDescriptor
  */
 public java.beans.MethodDescriptor setReverseRate_cbitvcellparserExpressionMethodDescriptor() {
 	java.beans.MethodDescriptor aDescriptor = null;
 	try {
-		/* Create and return the setReverseRate(cbit.vcell.parser.Expression) method descriptor. */
+		/* Create and return the setReverseRate(cbit.vcell.parser.IExpression) method descriptor. */
 		java.lang.reflect.Method aMethod = null;
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.parser.Expression.class
+				org.vcell.expression.IExpression.class
 			};
 			aMethod = getBeanClass().getMethod("setReverseRate", aParameterTypes);
 		} catch (Throwable exception) {
@@ -521,8 +521,8 @@ public java.beans.MethodDescriptor setReverseRate_cbitvcellparserExpressionMetho
 			handleException(exception);
 			aDescriptor = new java.beans.MethodDescriptor(aMethod);
 		};
-		/* aDescriptor.setDisplayName("setReverseRate(cbit.vcell.parser.Expression)"); */
-		/* aDescriptor.setShortDescription("setReverseRate(cbit.vcell.parser.Expression)"); */
+		/* aDescriptor.setDisplayName("setReverseRate(cbit.vcell.parser.IExpression)"); */
+		/* aDescriptor.setShortDescription("setReverseRate(cbit.vcell.parser.IExpression)"); */
 		/* aDescriptor.setExpert(false); */
 		/* aDescriptor.setHidden(false); */
 		/* aDescriptor.setValue("preferred", new Boolean(false)); */
