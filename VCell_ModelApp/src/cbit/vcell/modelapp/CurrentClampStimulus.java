@@ -1,7 +1,8 @@
 package cbit.vcell.modelapp;
 
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
+import org.vcell.expression.ExpressionBindingException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
 /**
  * Insert the type's description here.
  * Creation date: (4/8/2002 1:39:52 PM)
@@ -16,13 +17,13 @@ public class CurrentClampStimulus extends ElectricalStimulus {
  * @param argCurrName java.lang.String
  * @param argAnnotation java.lang.String
  */
-public CurrentClampStimulus(Electrode argElectrode, String argName, Expression argCurrExpr, SimulationContext argSimulationContext) {
+public CurrentClampStimulus(Electrode argElectrode, String argName, IExpression argCurrExpr, SimulationContext argSimulationContext) {
 	super(argElectrode, argName, argSimulationContext);
 
 	try {
 		getCurrentParameter().setExpression(argCurrExpr);
 		getCurrentParameter().setDescription("applied current density");
-		getVoltageParameter().setExpression(new Expression(0.0));
+		getVoltageParameter().setExpression(ExpressionFactory.createExpression(0.0));
 		getVoltageParameter().setDescription("measured voltage");
 		argCurrExpr.bindExpression(this);
 	}catch (ExpressionBindingException e){

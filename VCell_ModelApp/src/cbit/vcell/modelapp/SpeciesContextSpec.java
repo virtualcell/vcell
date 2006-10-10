@@ -2,29 +2,31 @@ package cbit.vcell.modelapp;
 import java.beans.PropertyVetoException;
 import java.io.Serializable;
 
+import org.vcell.expression.ExpressionBindingException;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.NameScope;
+
 import net.sourceforge.interval.ia_math.RealInterval;
 import cbit.util.Compare;
 import cbit.util.Matchable;
+import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.VCMODL;
-import cbit.vcell.parser.BioNameScope;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.NameScope;
 import cbit.vcell.units.VCUnitDefinition;
 
-public class SpeciesContextSpec implements cbit.util.Matchable, cbit.vcell.parser.ScopedSymbolTable, Serializable {
+public class SpeciesContextSpec implements cbit.util.Matchable, org.vcell.expression.ScopedSymbolTable, Serializable {
 
 	public class SpeciesContextSpecNameScope extends BioNameScope {
 		private final NameScope children[] = new NameScope[0]; // always empty
 		public SpeciesContextSpecNameScope(){
 			super();
 		}
-		public cbit.vcell.parser.NameScope[] getChildren() {
+		public org.vcell.expression.NameScope[] getChildren() {
 			//
 			// no children to return
 			//
@@ -33,25 +35,25 @@ public class SpeciesContextSpec implements cbit.util.Matchable, cbit.vcell.parse
 		public String getName() {
 			return SpeciesContextSpec.this.getSpeciesContext().getName();
 		}
-		public cbit.vcell.parser.NameScope getParent() {
+		public org.vcell.expression.NameScope getParent() {
 			if (SpeciesContextSpec.this.simulationContext != null){
 				return SpeciesContextSpec.this.simulationContext.getNameScope();
 			}else{
 				return null;
 			}
 		}
-		public cbit.vcell.parser.ScopedSymbolTable getScopedSymbolTable() {
+		public org.vcell.expression.ScopedSymbolTable getScopedSymbolTable() {
 			return SpeciesContextSpec.this;
 		}
 	}
 
 	public class SpeciesContextSpecParameter extends cbit.vcell.model.Parameter {
-		private Expression fieldParameterExpression = null;
+		private IExpression fieldParameterExpression = null;
 		private String fieldParameterName = null;
  		private int fieldParameterRole = -1;
  		private cbit.vcell.units.VCUnitDefinition fieldUnitDefinition = null;
 
-		public SpeciesContextSpecParameter(String parmName, cbit.vcell.parser.Expression argExpression, int argRole, cbit.vcell.units.VCUnitDefinition argUnitDefinition, String argDescription) {
+		public SpeciesContextSpecParameter(String parmName, org.vcell.expression.IExpression argExpression, int argRole, cbit.vcell.units.VCUnitDefinition argUnitDefinition, String argDescription) {
 			super();
 			fieldParameterName = parmName;
 			fieldParameterExpression = argExpression;
@@ -99,18 +101,18 @@ public class SpeciesContextSpec implements cbit.util.Matchable, cbit.vcell.parse
 			return fieldUnitDefinition;
 		}
 		
-		public void setExpression(Expression expression) throws PropertyVetoException, ExpressionBindingException {
+		public void setExpression(IExpression expression) throws PropertyVetoException, ExpressionBindingException {
 			if (expression!=null){
-				expression = new Expression(expression);
+				expression = ExpressionFactory.createExpression(expression);
 				expression.bindExpression(SpeciesContextSpec.this);
 			}
-			Expression oldValue = fieldParameterExpression;
+			IExpression oldValue = fieldParameterExpression;
 			super.fireVetoableChange("expression", oldValue, expression);
 			fieldParameterExpression = expression;
 			super.firePropertyChange("expression", oldValue, expression);
 		}
 		
-		public double getConstantValue() throws cbit.vcell.parser.ExpressionException {
+		public double getConstantValue() throws org.vcell.expression.ExpressionException {
 			return fieldParameterExpression.evaluateConstant();
 		}
 		
@@ -132,7 +134,7 @@ public class SpeciesContextSpec implements cbit.util.Matchable, cbit.vcell.parse
 			return fieldParameterName;
 		}
 		
-		public Expression getExpression(){
+		public IExpression getExpression(){
 			return fieldParameterExpression;
 		}
 		
@@ -211,7 +213,7 @@ public SpeciesContextSpec(SpeciesContextSpec speciesContextSpec, SimulationConte
 	fieldParameters = new SpeciesContextSpecParameter[speciesContextSpec.fieldParameters.length];
 	for (int i = 0; i < speciesContextSpec.fieldParameters.length; i++){
 		SpeciesContextSpecParameter otherParm = speciesContextSpec.fieldParameters[i];
-		Expression otherParmExp = (otherParm.getExpression()==null)?(null):(new Expression(otherParm.getExpression()));
+		IExpression otherParmExp = (otherParm.getExpression()==null)?(null):(ExpressionFactory.createExpression(otherParm.getExpression()));
 		fieldParameters[i] = new SpeciesContextSpecParameter(otherParm.getName(),otherParmExp,otherParm.getRole(),otherParm.getUnitDefinition(),otherParm.getDescription());
 	}
 	this.simulationContext = argSimulationContext;
@@ -224,11 +226,11 @@ public SpeciesContextSpec(SpeciesContext speciesContext, SimulationContext argSi
 
 	VCUnitDefinition fluxUnits = speciesContext.getUnitDefinition().multiplyBy(VCUnitDefinition.UNIT_um).divideBy(VCUnitDefinition.UNIT_s);
 	fieldParameters = new SpeciesContextSpecParameter[8];
-	fieldParameters[0] = new SpeciesContextSpecParameter(RoleNames[ROLE_InitialConcentration],new Expression(0.0),
+	fieldParameters[0] = new SpeciesContextSpecParameter(RoleNames[ROLE_InitialConcentration],ExpressionFactory.createExpression(0.0),
 														ROLE_InitialConcentration,speciesContext.getUnitDefinition(),
 														RoleDescriptions[ROLE_InitialConcentration]);
 
-	fieldParameters[1] = new SpeciesContextSpecParameter(RoleNames[ROLE_DiffusionRate],new Expression(0.0),
+	fieldParameters[1] = new SpeciesContextSpecParameter(RoleNames[ROLE_DiffusionRate],ExpressionFactory.createExpression(0.0),
 														ROLE_DiffusionRate,VCUnitDefinition.UNIT_um2_per_s,
 														RoleDescriptions[ROLE_DiffusionRate]);
 
@@ -435,9 +437,9 @@ public SpeciesContextSpec.SpeciesContextSpecParameter getDiffusionParameter() {
 /**
  * getEntry method comment.
  */
-public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierString) throws cbit.vcell.parser.ExpressionBindingException {
+public org.vcell.expression.SymbolTableEntry getEntry(java.lang.String identifierString) throws org.vcell.expression.ExpressionBindingException {
 	
-	cbit.vcell.parser.SymbolTableEntry ste = getLocalEntry(identifierString);
+	org.vcell.expression.SymbolTableEntry ste = getLocalEntry(identifierString);
 	if (ste != null){
 		return ste;
 	}
@@ -463,8 +465,8 @@ public SpeciesContextSpec.SpeciesContextSpecParameter getInitialConditionParamet
  * @return cbit.vcell.parser.SymbolTableEntry
  * @param identifier java.lang.String
  */
-public cbit.vcell.parser.SymbolTableEntry getLocalEntry(java.lang.String identifier) throws cbit.vcell.parser.ExpressionBindingException {
-	cbit.vcell.parser.SymbolTableEntry ste = null;
+public org.vcell.expression.SymbolTableEntry getLocalEntry(java.lang.String identifier) throws org.vcell.expression.ExpressionBindingException {
+	org.vcell.expression.SymbolTableEntry ste = null;
 
 	ste = ReservedSymbol.fromString(identifier);
 	if (ste!=null){
@@ -485,7 +487,7 @@ public cbit.vcell.parser.SymbolTableEntry getLocalEntry(java.lang.String identif
  * Creation date: (12/8/2003 11:46:37 AM)
  * @return cbit.vcell.parser.NameScope
  */
-public cbit.vcell.parser.NameScope getNameScope() {
+public org.vcell.expression.NameScope getNameScope() {
 	return nameScope;
 }
 
@@ -674,11 +676,11 @@ public String getVCML() {
 	buffer.append("\t"+VCMODL.SpeciesContextSpec+" "+getSpeciesContext().getName()+" {\n");
 	buffer.append("\t\t"+VCMODL.ForceConstant+" "+isConstant()+"\n");
 	buffer.append("\t\t"+VCMODL.EnableDiffusion+" "+isDiffusing()+"\n");
-	Expression init = getInitialConditionParameter().getExpression();
+	IExpression init = getInitialConditionParameter().getExpression();
 	if (init!=null){
 		buffer.append("\t\t"+VCMODL.InitialCondition+" "+init.toString()+";\n");
 	}
-	Expression diffRate = getDiffusionParameter().getExpression();
+	IExpression diffRate = getDiffusionParameter().getExpression();
 	if (diffRate!=null){
 		buffer.append("\t\t"+VCMODL.DiffusionRate+" "+diffRate.toString()+";\n");
 	}
@@ -687,7 +689,7 @@ public String getVCML() {
 	//
 	for (int i=BoundaryLocation.FIRST;i<=BoundaryLocation.LAST;i++){
 		BoundaryLocation bl = BoundaryLocation.fromDirection(i);
-		Expression boundExp = getParameterFromRole(getRole(bl)).getExpression();
+		IExpression boundExp = getParameterFromRole(getRole(bl)).getExpression();
 		if (boundExp!=null){
 			buffer.append("\t\t"+VCMODL.BoundaryCondition+" "+bl.toString()+" "+boundExp.toString()+"\n");
 		}

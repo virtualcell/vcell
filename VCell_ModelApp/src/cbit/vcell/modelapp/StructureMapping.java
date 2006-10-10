@@ -1,21 +1,23 @@
 package cbit.vcell.modelapp;
 import java.util.Vector;
 
+import org.vcell.expression.ExpressionBindingException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.NameScope;
+import org.vcell.expression.SymbolTableEntry;
+
 import net.sourceforge.interval.ia_math.RealInterval;
 import cbit.util.Compare;
 import cbit.util.Matchable;
 import cbit.util.TokenMangler;
+import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.SimpleBoundsIssue;
 import cbit.vcell.model.Structure;
-import cbit.vcell.parser.BioNameScope;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.NameScope;
-import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 
-public abstract class StructureMapping implements Matchable, cbit.vcell.parser.ScopedSymbolTable, java.io.Serializable {
+public abstract class StructureMapping implements Matchable, org.vcell.expression.ScopedSymbolTable, java.io.Serializable {
 	static {
 		System.out.println("StructureMapping.StructureMappingParameter.setName() not protected for uniqueness, etc");
 	}
@@ -25,7 +27,7 @@ public abstract class StructureMapping implements Matchable, cbit.vcell.parser.S
 		public StructureMappingNameScope(){
 			super();
 		}
-		public cbit.vcell.parser.NameScope[] getChildren() {
+		public org.vcell.expression.NameScope[] getChildren() {
 			//
 			// no children to return
 			//
@@ -34,14 +36,14 @@ public abstract class StructureMapping implements Matchable, cbit.vcell.parser.S
 		public String getName() {
 			return TokenMangler.fixTokenStrict(StructureMapping.this.getStructure().getName());
 		}
-		public cbit.vcell.parser.NameScope getParent() {
+		public org.vcell.expression.NameScope getParent() {
 			if (StructureMapping.this.simulationContext != null){
 				return StructureMapping.this.simulationContext.getNameScope();
 			}else{
 				return null;
 			}
 		}
-		public cbit.vcell.parser.ScopedSymbolTable getScopedSymbolTable() {
+		public org.vcell.expression.ScopedSymbolTable getScopedSymbolTable() {
 			return StructureMapping.this;
 		}
 	}
@@ -50,11 +52,11 @@ public abstract class StructureMapping implements Matchable, cbit.vcell.parser.S
 
 		private int fieldParameterRole = -1;
 		private String fieldParameterName = null;
-		private Expression fieldParameterExpression = null;
+		private IExpression fieldParameterExpression = null;
 		private VCUnitDefinition fieldVCUnitDefinition = null;
 
 
-		public StructureMappingParameter(String parmName, cbit.vcell.parser.Expression argExpression, int argRole, VCUnitDefinition argVCUnitDefinition) {
+		public StructureMappingParameter(String parmName, org.vcell.expression.IExpression argExpression, int argRole, VCUnitDefinition argVCUnitDefinition) {
 			super();
 			fieldParameterName = parmName;
 			fieldParameterExpression = argExpression;
@@ -67,7 +69,7 @@ public abstract class StructureMapping implements Matchable, cbit.vcell.parser.S
 		}
 
 		public StructureMappingParameter(StructureMapping.StructureMappingParameter structureMappingParameter) {
-			this(structureMappingParameter.getName(),new Expression(structureMappingParameter.getExpression()),structureMappingParameter.getRole(),structureMappingParameter.getUnitDefinition());
+			this(structureMappingParameter.getName(),ExpressionFactory.createExpression(structureMappingParameter.getExpression()),structureMappingParameter.getRole(),structureMappingParameter.getUnitDefinition());
 		}
 
 		public boolean compareEqual(cbit.util.Matchable obj) {
@@ -108,22 +110,22 @@ public abstract class StructureMapping implements Matchable, cbit.vcell.parser.S
 			super.firePropertyChange("name", oldValue, name);
 		}
 
-		public void setExpression(cbit.vcell.parser.Expression expression) throws java.beans.PropertyVetoException, ExpressionBindingException {
+		public void setExpression(org.vcell.expression.IExpression expression) throws java.beans.PropertyVetoException, ExpressionBindingException {
 			if (expression!=null){
-				expression = new Expression(expression);
+				expression = ExpressionFactory.createExpression(expression);
 				expression.bindExpression(StructureMapping.this);
 			}
-			Expression oldValue = fieldParameterExpression;
+			IExpression oldValue = fieldParameterExpression;
 			super.fireVetoableChange("expression", oldValue, expression);
 			fieldParameterExpression = expression;
 			super.firePropertyChange("expression", oldValue, expression);
 		}
 
-		public double getConstantValue() throws cbit.vcell.parser.ExpressionException {
+		public double getConstantValue() throws org.vcell.expression.ExpressionException {
 			return fieldParameterExpression.evaluateConstant();
 		}
 
-		public cbit.vcell.parser.Expression getExpression() {
+		public IExpression getExpression() {
 			return fieldParameterExpression;
 		}
 
@@ -344,9 +346,9 @@ public void gatherIssues(Vector issueVector) {
 /**
  * getEntry method comment.
  */
-public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierString) throws cbit.vcell.parser.ExpressionBindingException {
+public org.vcell.expression.SymbolTableEntry getEntry(java.lang.String identifierString) throws org.vcell.expression.ExpressionBindingException {
 	
-	cbit.vcell.parser.SymbolTableEntry ste = getLocalEntry(identifierString);
+	org.vcell.expression.SymbolTableEntry ste = getLocalEntry(identifierString);
 	if (ste != null){
 		return ste;
 	}
@@ -361,7 +363,7 @@ public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierSt
  * @return cbit.vcell.parser.SymbolTableEntry
  * @param identifier java.lang.String
  */
-public cbit.vcell.parser.SymbolTableEntry getLocalEntry(java.lang.String identifier) throws cbit.vcell.parser.ExpressionBindingException {
+public org.vcell.expression.SymbolTableEntry getLocalEntry(java.lang.String identifier) throws org.vcell.expression.ExpressionBindingException {
 	
 	SymbolTableEntry ste;
 	
@@ -376,7 +378,7 @@ public cbit.vcell.parser.SymbolTableEntry getLocalEntry(java.lang.String identif
  * Creation date: (12/8/2003 12:47:06 PM)
  * @return cbit.vcell.parser.NameScope
  */
-public cbit.vcell.parser.NameScope getNameScope() {
+public org.vcell.expression.NameScope getNameScope() {
 	return nameScope;
 }
 
@@ -470,7 +472,7 @@ public Structure getStructure() {
  * This method was created in VisualAge.
  * @return cbit.vcell.parser.Expression
  */
-public abstract Expression getTotalVolumeCorrection(SimulationContext simulationContext) throws cbit.vcell.parser.ExpressionException;
+public abstract IExpression getTotalVolumeCorrection(SimulationContext simulationContext) throws org.vcell.expression.ExpressionException;
 
 
 /**
@@ -502,7 +504,7 @@ public void refreshDependencies(){
 			if (fieldParameters[i].getExpression()!=null){
 				fieldParameters[i].getExpression().bindExpression(this);
 			}
-		}catch (cbit.vcell.parser.ExpressionException e){
+		}catch (org.vcell.expression.ExpressionException e){
 			System.out.println("error binding expression '"+fieldParameters[i].getExpression().infix()+"', "+e.getMessage());
 		}
 	}

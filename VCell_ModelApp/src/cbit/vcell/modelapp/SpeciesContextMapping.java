@@ -4,9 +4,10 @@ package cbit.vcell.modelapp;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.expression.IExpression;
+
 import cbit.vcell.math.Variable;
 import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.parser.Expression;
 /**
  * This type was created in VisualAge.
  */
@@ -24,14 +25,14 @@ public class SpeciesContextMapping {
 	//
 	// output from structural analysis of slow reactions
 	//
-	private Expression dependencyExp = null;   // if absolute dependent
-	private Expression rateExp = null;
+	private IExpression dependencyExp = null;   // if absolute dependent
+	private IExpression rateExp = null;
 
 	//
 	// output from structural analysis of fast reactions
 	//
-	private Expression fastInvariant = null;   // if only dependent on the fast time scale
-	private Expression fastRate      = null;          
+	private IExpression fastInvariant = null;   // if only dependent on the fast time scale
+	private IExpression fastRate      = null;          
 /**
  * SpeciesContextMapping constructor comment.
  */
@@ -43,7 +44,7 @@ public SpeciesContextMapping(SpeciesContext speciesContext) {
  * Creation date: (3/24/2001 3:55:08 PM)
  * @return cbit.vcell.parser.Expression
  */
-public Expression getDependencyExpression() {
+public IExpression getDependencyExpression() {
 	return this.dependencyExp;
 }
 /**
@@ -51,7 +52,7 @@ public Expression getDependencyExpression() {
  * Creation date: (3/24/2001 3:59:19 PM)
  * @return cbit.vcell.parser.Expression
  */
-public Expression getFastInvariant() {
+public IExpression getFastInvariant() {
 	return this.fastInvariant;
 }
 /**
@@ -59,7 +60,7 @@ public Expression getFastInvariant() {
  * Creation date: (3/24/2001 3:50:50 PM)
  * @return cbit.vcell.parser.Expression
  */
-public Expression getFastRate() {
+public IExpression getFastRate() {
 	return this.fastRate;
 }
 /**
@@ -67,7 +68,7 @@ public Expression getFastRate() {
  * Creation date: (3/24/2001 3:57:40 PM)
  * @return cbit.vcell.parser.Expression
  */
-public Expression getRate() {
+public IExpression getRate() {
 	return this.rateExp;
 }
 /**
@@ -105,7 +106,7 @@ public boolean isFastParticipant() {
  * Creation date: (3/24/2001 4:16:14 PM)
  * @param argDepencencyExpression cbit.vcell.parser.Expression
  */
-public void setDependencyExpression(Expression argDepencencyExpression) {
+public void setDependencyExpression(IExpression argDepencencyExpression) {
 	this.dependencyExp = argDepencencyExpression;
 }
 /**
@@ -121,7 +122,7 @@ public void setDiffusing(boolean diffusing) {
  * Creation date: (3/24/2001 3:53:28 PM)
  * @param fastInvariantExpression cbit.vcell.parser.Expression
  */
-public void setFastInvariant(Expression fastInvariantExpression) {
+public void setFastInvariant(IExpression fastInvariantExpression) {
 	this.fastInvariant = fastInvariantExpression;
 }
 /**
@@ -137,7 +138,7 @@ public void setFastParticipant(boolean isFastParticipant) {
  * Creation date: (3/24/2001 3:50:13 PM)
  * @param fastRateExpression cbit.vcell.parser.Expression
  */
-public void setFastRate(Expression argFastRateExpression) {
+public void setFastRate(IExpression argFastRateExpression) {
 	this.fastRate = argFastRateExpression;
 }
 /**
@@ -145,7 +146,7 @@ public void setFastRate(Expression argFastRateExpression) {
  * Creation date: (3/24/2001 4:18:22 PM)
  * @param rate cbit.vcell.parser.Expression
  */
-public void setRate(Expression argRate) {
+public void setRate(IExpression argRate) {
 	this.rateExp = argRate;
 }
 /**

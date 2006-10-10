@@ -6,17 +6,19 @@ package cbit.vcell.modelapp;
 import java.beans.PropertyVetoException;
 import java.io.Serializable;
 
+import org.vcell.expression.ExpressionBindingException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.NameScope;
+import org.vcell.expression.ScopedSymbolTable;
+import org.vcell.expression.SymbolTableEntry;
+
 import cbit.util.Matchable;
+import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.ReservedSymbol;
-import cbit.vcell.parser.BioNameScope;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.NameScope;
-import cbit.vcell.parser.ScopedSymbolTable;
-import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 
 public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable, java.beans.VetoableChangeListener {
@@ -56,7 +58,7 @@ public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable,
 		public ReactionSpecNameScope(){
 			super();
 		}
-		public cbit.vcell.parser.NameScope[] getChildren() {
+		public org.vcell.expression.NameScope[] getChildren() {
 			//
 			// no children to return
 			//
@@ -65,25 +67,25 @@ public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable,
 		public String getName() {
 			return "mapping_"+ReactionSpec.this.getReactionStep().getName();
 		}
-		public cbit.vcell.parser.NameScope getParent() {
+		public org.vcell.expression.NameScope getParent() {
 			if (ReactionSpec.this.fieldSimulationContext != null){
 				return ReactionSpec.this.fieldSimulationContext.getNameScope();
 			}else{
 				return null;
 			}
 		}
-		public cbit.vcell.parser.ScopedSymbolTable getScopedSymbolTable() {
+		public org.vcell.expression.ScopedSymbolTable getScopedSymbolTable() {
 			return ReactionSpec.this;
 		}
 	}
 
 	public class ReactionSpecParameter extends cbit.vcell.model.Parameter {
-		private Expression fieldParameterExpression = null;
+		private IExpression fieldParameterExpression = null;
 		private String fieldParameterName = null;
  		private int fieldParameterRole = -1;
  		private cbit.vcell.units.VCUnitDefinition fieldUnitDefinition = null;
 
-		public ReactionSpecParameter(String parmName, cbit.vcell.parser.Expression argExpression, int argRole, cbit.vcell.units.VCUnitDefinition argUnitDefinition, String argDescription) {
+		public ReactionSpecParameter(String parmName, org.vcell.expression.IExpression argExpression, int argRole, cbit.vcell.units.VCUnitDefinition argUnitDefinition, String argDescription) {
 			super();
 			fieldParameterName = parmName;
 			fieldParameterExpression = argExpression;
@@ -131,18 +133,18 @@ public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable,
 			return fieldUnitDefinition;
 		}
 		
-		public void setExpression(Expression expression) throws PropertyVetoException, ExpressionBindingException {
+		public void setExpression(IExpression expression) throws PropertyVetoException, ExpressionBindingException {
 			if (expression!=null){
-				expression = new Expression(expression);
+				expression = ExpressionFactory.createExpression(expression);
 				expression.bindExpression(ReactionSpec.this);
 			}
-			Expression oldValue = fieldParameterExpression;
+			IExpression oldValue = fieldParameterExpression;
 			super.fireVetoableChange("expression", oldValue, expression);
 			fieldParameterExpression = expression;
 			super.firePropertyChange("expression", oldValue, expression);
 		}
 		
-		public double getConstantValue() throws cbit.vcell.parser.ExpressionException {
+		public double getConstantValue() throws org.vcell.expression.ExpressionException {
 			return fieldParameterExpression.evaluateConstant();
 		}
 		
@@ -164,7 +166,7 @@ public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable,
 			return fieldParameterName;
 		}
 		
-		public Expression getExpression(){
+		public IExpression getExpression(){
 			return fieldParameterExpression;
 		}
 		
@@ -322,12 +324,12 @@ public void gatherIssues(java.util.Vector issueList) {}
 /**
  * getEntry method comment.
  */
-public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierString) throws cbit.vcell.parser.ExpressionBindingException {
+public org.vcell.expression.SymbolTableEntry getEntry(java.lang.String identifierString) throws org.vcell.expression.ExpressionBindingException {
 
 	//
 	// look locally (in the ReactionSpec) to resolve identifier
 	//	
-	cbit.vcell.parser.SymbolTableEntry ste = getLocalEntry(identifierString);
+	org.vcell.expression.SymbolTableEntry ste = getLocalEntry(identifierString);
 	if (ste != null){
 		return ste;
 	}
@@ -356,8 +358,8 @@ public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierSt
  * @return cbit.vcell.parser.SymbolTableEntry
  * @param identifier java.lang.String
  */
-public cbit.vcell.parser.SymbolTableEntry getLocalEntry(java.lang.String identifier) throws cbit.vcell.parser.ExpressionBindingException {
-	cbit.vcell.parser.SymbolTableEntry ste = null;
+public org.vcell.expression.SymbolTableEntry getLocalEntry(java.lang.String identifier) throws org.vcell.expression.ExpressionBindingException {
+	org.vcell.expression.SymbolTableEntry ste = null;
 
 	ste = ReservedSymbol.fromString(identifier);
 	if (ste!=null){
@@ -386,14 +388,14 @@ public cbit.vcell.parser.SymbolTableEntry getLocalEntry(java.lang.String identif
  * Creation date: (12/8/2003 11:46:37 AM)
  * @return cbit.vcell.parser.NameScope
  */
-public cbit.vcell.parser.NameScope getNameScope() {
+public org.vcell.expression.NameScope getNameScope() {
 	return nameScope;
 }
 
 
 /**
  * This method was created in VisualAge.
- * @return cbit.vcell.parser.Expression
+ * @return cbit.vcell.parser.IExpression
  */
 public ReactionSpec.ReactionSpecParameter getNominalRateParameter() {
 	return getReactionSpecParameterFromRole(ROLE_NominalRate);		

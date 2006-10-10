@@ -6,6 +6,9 @@ import java.beans.VetoableChangeListener;
 import java.beans.VetoableChangeSupport;
 import java.util.Vector;
 
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.NameScope;
 import org.vcell.modelapp.analysis.IAnalysisTask;
 
 import cbit.util.BeanUtils;
@@ -17,25 +20,23 @@ import cbit.util.Version;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathFactory;
+import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.Structure;
-import cbit.vcell.parser.BioNameScope;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.NameScope;
 import cbit.vcell.simulation.Simulation;
 /**
  * This type was created in VisualAge.
  */
-public class SimulationContext implements cbit.util.Versionable, Matchable, cbit.vcell.simulation.SimulationOwner, cbit.vcell.parser.ScopedSymbolTable, PropertyChangeListener, VetoableChangeListener, java.io.Serializable {
+public class SimulationContext implements cbit.util.Versionable, Matchable, cbit.vcell.simulation.SimulationOwner, org.vcell.expression.ScopedSymbolTable, PropertyChangeListener, VetoableChangeListener, java.io.Serializable {
 
 	public class SimulationContextNameScope extends BioNameScope {
-		private transient cbit.vcell.parser.NameScope nameScopes[] = null;
+		private transient org.vcell.expression.NameScope nameScopes[] = null;
 		public SimulationContextNameScope(){
 			super();
 		}
-		public cbit.vcell.parser.NameScope[] getChildren() {
+		public org.vcell.expression.NameScope[] getChildren() {
 			//
 			// return list of structureMappings and speciesContextSpecs
 			//
@@ -61,14 +62,14 @@ public class SimulationContext implements cbit.util.Versionable, Matchable, cbit
 		public String getName() {
 			return TokenMangler.fixTokenStrict(SimulationContext.this.getName());
 		}
-		public cbit.vcell.parser.NameScope getParent() {
+		public org.vcell.expression.NameScope getParent() {
 			//System.out.println("SimulationContextNameScope.getParent() returning null ... no parent");
 			return null;
 		}
-		public cbit.vcell.parser.ScopedSymbolTable getScopedSymbolTable() {
+		public org.vcell.expression.ScopedSymbolTable getScopedSymbolTable() {
 			return SimulationContext.this;
 		}
-		public boolean isPeer(cbit.vcell.parser.NameScope nameScope){
+		public boolean isPeer(org.vcell.expression.NameScope nameScope){
 			return (nameScope != null && /*(nameScope instanceof cbit.vcell.mapping.MathMapping.MathMappingNameScope)*/ nameScope.isPeer(this));
 		}
 	}
@@ -76,11 +77,11 @@ public class SimulationContext implements cbit.util.Versionable, Matchable, cbit
 	public class SimulationContextParameter extends Parameter {
 		
 		private String fieldParameterName = null;
-		private cbit.vcell.parser.Expression fieldParameterExpression = null;
+		private org.vcell.expression.IExpression fieldParameterExpression = null;
 		private int fieldParameterRole = -1;
 		private cbit.vcell.units.VCUnitDefinition fieldUnitDefinition = null;
 		
-		protected SimulationContextParameter(String argName, cbit.vcell.parser.Expression expression, int argRole, cbit.vcell.units.VCUnitDefinition argUnitDefinition) {
+		protected SimulationContextParameter(String argName, org.vcell.expression.IExpression expression, int argRole, cbit.vcell.units.VCUnitDefinition argUnitDefinition) {
 			if (argName == null){
 				throw new IllegalArgumentException("parameter name is null");
 			}
@@ -126,12 +127,12 @@ public class SimulationContext implements cbit.util.Versionable, Matchable, cbit
 			return true;
 		}
 
-		public double getConstantValue() throws cbit.vcell.parser.ExpressionException {
+		public double getConstantValue() throws org.vcell.expression.ExpressionException {
 			return this.fieldParameterExpression.evaluateConstant();
 		}      
 
 
-		public cbit.vcell.parser.Expression getExpression() {
+		public IExpression getExpression() {
 			return this.fieldParameterExpression;
 		}
 
@@ -146,7 +147,7 @@ public class SimulationContext implements cbit.util.Versionable, Matchable, cbit
 		}   
 
 
-		public cbit.vcell.parser.NameScope getNameScope() {
+		public org.vcell.expression.NameScope getNameScope() {
 			return SimulationContext.this.nameScope;
 		}
 
@@ -164,8 +165,8 @@ public class SimulationContext implements cbit.util.Versionable, Matchable, cbit
 			fieldUnitDefinition = unitDefinition;
 			super.firePropertyChange("unitDefinition", oldValue, unitDefinition);
 		}
-		public void setExpression(cbit.vcell.parser.Expression expression) throws java.beans.PropertyVetoException {
-			cbit.vcell.parser.Expression oldValue = fieldParameterExpression;
+		public void setExpression(org.vcell.expression.IExpression expression) throws java.beans.PropertyVetoException {
+			IExpression oldValue = fieldParameterExpression;
 			super.fireVetoableChange("expression", oldValue, expression);
 			fieldParameterExpression = expression;
 			super.firePropertyChange("expression", oldValue, expression);
@@ -221,13 +222,13 @@ public SimulationContext(SimulationContext simulationContext) throws PropertyVet
 			fieldElectricalStimuli[i] = new CurrentClampStimulus(
 												new Electrode(otherStimulus.getElectrode()),
 												otherStimulus.getName(),
-												new Expression(otherStimulus.getCurrentParameter().getExpression()),this);
+												ExpressionFactory.createExpression(otherStimulus.getCurrentParameter().getExpression()),this);
 		}else if (fieldElectricalStimuli[i] instanceof VoltageClampStimulus){
 			VoltageClampStimulus otherStimulus = (VoltageClampStimulus)fieldElectricalStimuli[i];
 			fieldElectricalStimuli[i] = new VoltageClampStimulus(
 												new Electrode(otherStimulus.getElectrode()),
 												otherStimulus.getName(),
-												new Expression(otherStimulus.getVoltageParameter().getExpression()),this);
+												ExpressionFactory.createExpression(otherStimulus.getVoltageParameter().getExpression()),this);
 		}else{
 			throw new RuntimeException("");
 		}
@@ -484,7 +485,7 @@ public boolean contains(SimulationContextParameter scParameter) {
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getSimulations
  */
-public IAnalysisTask copyAnalysisTask(IAnalysisTask analysisTask) throws java.beans.PropertyVetoException, cbit.vcell.parser.ExpressionException, MappingException, cbit.vcell.math.MathException {
+public IAnalysisTask copyAnalysisTask(IAnalysisTask analysisTask) throws java.beans.PropertyVetoException, org.vcell.expression.ExpressionException, MappingException, cbit.vcell.math.MathException {
 
 	String newAnalysisTaskName = analysisTask.getName()+" Copy";
 
@@ -713,9 +714,9 @@ public ElectricalStimulus getElectricalStimuli(int index) {
 /**
  * getEntry method comment.
  */
-public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierString) throws cbit.vcell.parser.ExpressionBindingException {
+public org.vcell.expression.SymbolTableEntry getEntry(java.lang.String identifierString) throws org.vcell.expression.ExpressionBindingException {
 	
-	cbit.vcell.parser.SymbolTableEntry ste = getLocalEntry(identifierString);
+	org.vcell.expression.SymbolTableEntry ste = getLocalEntry(identifierString);
 	if (ste != null){
 		return ste;
 	}
@@ -765,8 +766,8 @@ public KeyValue getKey() {
  * @return cbit.vcell.parser.SymbolTableEntry
  * @param identifier java.lang.String
  */
-public cbit.vcell.parser.SymbolTableEntry getLocalEntry(java.lang.String identifier) throws cbit.vcell.parser.ExpressionBindingException {
-	cbit.vcell.parser.SymbolTableEntry ste = cbit.vcell.model.ReservedSymbol.fromString(identifier);
+public org.vcell.expression.SymbolTableEntry getLocalEntry(java.lang.String identifier) throws org.vcell.expression.ExpressionBindingException {
+	org.vcell.expression.SymbolTableEntry ste = cbit.vcell.model.ReservedSymbol.fromString(identifier);
 	if (ste!=null){
 		return ste;
 	}
@@ -816,7 +817,7 @@ public java.lang.String getName() {
  * Creation date: (12/8/2003 10:17:30 AM)
  * @return cbit.vcell.parser.NameScope
  */
-public cbit.vcell.parser.NameScope getNameScope() {
+public org.vcell.expression.NameScope getNameScope() {
 	return nameScope;
 }
 

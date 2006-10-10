@@ -2,41 +2,43 @@ package cbit.vcell.modelapp;
 import java.beans.PropertyVetoException;
 import java.util.Vector;
 
+import org.vcell.expression.AbstractNameScope;
+import org.vcell.expression.ExpressionBindingException;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.NameScope;
+import org.vcell.expression.SymbolTableEntry;
+
 import cbit.util.BeanUtils;
+import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.VCMODL;
-import cbit.vcell.parser.AbstractNameScope;
-import cbit.vcell.parser.BioNameScope;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.NameScope;
-import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
  * Creation date: (4/8/2002 11:14:58 AM)
  * @author: Anuradha Lakshminarayana
  */
-public abstract class ElectricalStimulus implements cbit.util.Matchable, cbit.vcell.parser.ScopedSymbolTable, java.io.Serializable, java.beans.PropertyChangeListener, java.beans.VetoableChangeListener {
+public abstract class ElectricalStimulus implements cbit.util.Matchable, org.vcell.expression.ScopedSymbolTable, java.io.Serializable, java.beans.PropertyChangeListener, java.beans.VetoableChangeListener {
 
 	private static final String GENERAL_PROTOCOL = "General_Protocol";
 	
 	public class ElectricalStimulusNameScope extends BioNameScope {
-		private cbit.vcell.parser.NameScope[] children = new cbit.vcell.parser.NameScope[0];
+		private org.vcell.expression.NameScope[] children = new org.vcell.expression.NameScope[0];
 		public ElectricalStimulusNameScope(){
 			super();
 		}
-		public cbit.vcell.parser.NameScope[] getChildren() {
+		public org.vcell.expression.NameScope[] getChildren() {
 			return children;
 		}
 		public String getName() {
 			return cbit.util.TokenMangler.fixTokenStrict(ElectricalStimulus.this.getName());
 		}
-		public cbit.vcell.parser.NameScope getParent() {
+		public org.vcell.expression.NameScope getParent() {
 			return ElectricalStimulus.this.simulationContext.getNameScope();
 		}
-		public cbit.vcell.parser.ScopedSymbolTable getScopedSymbolTable() {
+		public org.vcell.expression.ScopedSymbolTable getScopedSymbolTable() {
 			return ElectricalStimulus.this;
 		}
 	}
@@ -44,11 +46,11 @@ public abstract class ElectricalStimulus implements cbit.util.Matchable, cbit.vc
 	public class ElectricalStimulusParameter extends Parameter {
 		
 		private String fieldParameterName = null;
-		private Expression fieldExpression = null;
+		private IExpression fieldExpression = null;
 		private VCUnitDefinition fieldVCUnitDefinition = null;
 		private int fieldParameterRole = ROLE_UserDefined;
 
-		protected ElectricalStimulusParameter(String argName, Expression argExpression, int argRole, VCUnitDefinition argVCUnitDefinition) {
+		protected ElectricalStimulusParameter(String argName, IExpression argExpression, int argRole, VCUnitDefinition argVCUnitDefinition) {
 			if (argName == null){
 				throw new IllegalArgumentException("parameter name is null");
 			}
@@ -86,7 +88,7 @@ public abstract class ElectricalStimulus implements cbit.util.Matchable, cbit.vc
 			return this.fieldExpression.evaluateConstant();
 		}      
 
-		public Expression getExpression() {
+		public IExpression getExpression() {
 			return this.fieldExpression;
 		}
 
@@ -144,12 +146,12 @@ public abstract class ElectricalStimulus implements cbit.util.Matchable, cbit.vc
 			super.firePropertyChange("unitDefinition", oldValue, unitDefinition);
 		}
 
-		void setExpression(Expression argExpression) throws java.beans.PropertyVetoException, ExpressionBindingException {
+		void setExpression(IExpression argExpression) throws java.beans.PropertyVetoException, ExpressionBindingException {
 			//if (argExpression!=null){
-				//argExpression = new Expression(argExpression);
+				//argExpression = new IExpression(argExpression);
 				//argExpression.bindExpression(ElectricalStimulus.this);
 			//}
-			Expression oldValue = fieldExpression;
+			IExpression oldValue = fieldExpression;
 			super.fireVetoableChange("expression", oldValue, argExpression);
 			fieldExpression = argExpression;
 			super.firePropertyChange("expression", oldValue, argExpression);
@@ -194,7 +196,7 @@ public abstract class ElectricalStimulus implements cbit.util.Matchable, cbit.vc
 			throw new ExpressionException("no expression defined for UnresolvedParameter '"+fieldParameterName+"'");
 		}      
 
-		public Expression getExpression() {
+		public IExpression getExpression() {
 			return null;
 		}
 
@@ -333,7 +335,7 @@ public void addUnresolvedParameter(String parameterName) {
  * Creation date: (9/22/2003 9:51:49 AM)
  * @param parameterName java.lang.String
  */
-public ElectricalStimulusParameter addUserDefinedKineticsParameter(String parameterName, Expression expression, cbit.vcell.units.VCUnitDefinition unit) throws PropertyVetoException {
+public ElectricalStimulusParameter addUserDefinedKineticsParameter(String parameterName, IExpression expression, cbit.vcell.units.VCUnitDefinition unit) throws PropertyVetoException {
 	if (getParameter(parameterName)!=null){
 		throw new RuntimeException("parameter '"+parameterName+"' already exists");
 	}
@@ -388,7 +390,7 @@ private final void cleanupParameters() throws ExpressionException, PropertyVetoE
 	//}
 
 	for (int i = 0;fieldElectricalStimulusParameters!=null && i < fieldElectricalStimulusParameters.length; i++){
-		Expression exp = fieldElectricalStimulusParameters[i].getExpression();
+		IExpression exp = fieldElectricalStimulusParameters[i].getExpression();
 		if (exp!=null){
 			try {
 				exp.bindExpression(this);
@@ -502,7 +504,7 @@ public java.lang.String getAnnotation() {
 
 
 /**
- * Gets the currentExpression property (cbit.vcell.parser.Expression) value.
+ * Gets the currentExpression property (cbit.vcell.parser.IExpression) value.
  * @return The currentExpression property value.
  * @see #setCurrentExpression
  */
@@ -590,8 +592,8 @@ public Electrode getElectrode() {
 /**
  * getEntry method comment.
  */
-public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierString) throws cbit.vcell.parser.ExpressionBindingException {
-	cbit.vcell.parser.SymbolTableEntry ste = getLocalEntry(identifierString);
+public org.vcell.expression.SymbolTableEntry getEntry(java.lang.String identifierString) throws org.vcell.expression.ExpressionBindingException {
+	org.vcell.expression.SymbolTableEntry ste = getLocalEntry(identifierString);
 	if (ste != null){
 		if (ste instanceof ElectricalStimulusParameter){
 			ElectricalStimulusParameter esParm = (ElectricalStimulusParameter)ste;
@@ -611,8 +613,8 @@ public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierSt
  * @return cbit.vcell.parser.SymbolTableEntry
  * @param identifier java.lang.String
  */
-public cbit.vcell.parser.SymbolTableEntry getLocalEntry(java.lang.String identifier) throws cbit.vcell.parser.ExpressionBindingException {
-	cbit.vcell.parser.SymbolTableEntry ste = null;
+public org.vcell.expression.SymbolTableEntry getLocalEntry(java.lang.String identifier) throws org.vcell.expression.ExpressionBindingException {
+	org.vcell.expression.SymbolTableEntry ste = null;
 
 	ste = cbit.vcell.model.ReservedSymbol.fromString(identifier);
 	if (ste!=null){
@@ -643,7 +645,7 @@ public java.lang.String getName() {
  * Creation date: (4/6/2004 2:10:26 PM)
  * @return cbit.vcell.parser.NameScope
  */
-public cbit.vcell.parser.NameScope getNameScope() {
+public org.vcell.expression.NameScope getNameScope() {
 	return this.fieldNameScope;
 }
 
@@ -742,7 +744,7 @@ protected java.beans.VetoableChangeSupport getVetoPropertyChange() {
 
 
 /**
- * Gets the currentExpression property (cbit.vcell.parser.Expression) value.
+ * Gets the currentExpression property (cbit.vcell.parser.IExpression) value.
  * @return The currentExpression property value.
  * @see #setCurrentExpression
  */
@@ -795,12 +797,12 @@ private boolean isReferenced(Parameter parm, int level) throws ExpressionExcepti
 	if (fieldElectricalStimulusParameters != null){
 		for (int i=0;i<fieldElectricalStimulusParameters.length;i++){
 			Parameter parentParm = fieldElectricalStimulusParameters[i];
-			Expression exp = parentParm.getExpression();
+			IExpression exp = parentParm.getExpression();
 			if (parentParm.getExpression()!=null){
 				String[] symbols = exp.getSymbols();
 				if (symbols!=null){
 					for (int j=0;j<symbols.length;j++){
-						if (cbit.vcell.parser.AbstractNameScope.getStrippedIdentifier(symbols[j]).equals(parm.getName())){
+						if (org.vcell.expression.AbstractNameScope.getStrippedIdentifier(symbols[j]).equals(parm.getName())){
 							bReferenced = true;
 							if (isReferenced(parentParm,level+1)){
 								return true;
@@ -853,7 +855,7 @@ public final void parameterVCMLSet(cbit.util.CommentStringTokenizer tokens) thro
 				throw new RuntimeException(ElectricalStimulus.class.getName()+".parameterVCMLRead, unexpected token for roleName "+roleName);
 			}
 			String parameterName = tokens.nextToken();
-			Expression exp = new Expression(tokens);
+			IExpression exp = ExpressionFactory.createExpression(tokens);
 			
 			String unitsString = tokens.nextToken();
 			cbit.vcell.units.VCUnitDefinition unitDef = cbit.vcell.units.VCUnitDefinition.UNIT_TBD;
@@ -1048,7 +1050,7 @@ protected void removeUnresolvedParameter(UnresolvedParameter parameter) {
  * Creation date: (9/22/2003 9:51:49 AM)
  * @param parameterName java.lang.String
  */
-void removeUnresolvedParameters(cbit.vcell.parser.SymbolTable symbolTable) {
+void removeUnresolvedParameters(org.vcell.expression.SymbolTable symbolTable) {
 	ElectricalStimulus.UnresolvedParameter unresolvedParms[] = (ElectricalStimulus.UnresolvedParameter[])fieldUnresolvedParameters.clone();
 	for (int i = 0; i < unresolvedParms.length; i++){
 		try {
@@ -1122,8 +1124,8 @@ public void renameParameter(String oldName, String newName) throws ExpressionExc
 		// go through all parameters' expressions and replace references to 'oldName' with 'newName'
 		//
 		for (int i = 0; i < newParameters.length; i++){ 
-			Expression newExp = new Expression(getElectricalStimulusParameters()[i].getExpression());
-			newExp.substituteInPlace(new Expression(oldName),new Expression(newName));
+			IExpression newExp = ExpressionFactory.createExpression(getElectricalStimulusParameters()[i].getExpression());
+			newExp.substituteInPlace(ExpressionFactory.createExpression(oldName),ExpressionFactory.createExpression(newName));
 			//
 			// if expression changed, create a new ElectricalStimulusParameter
 			//
@@ -1191,7 +1193,7 @@ public void resolveUndefinedUnits() {
 			// try to resolve TBD units (will fail if units are inconsistent) ... but these errors are collected in Kinetics.getIssues().
 			//
 			if (bAnyTBDUnits){
-				cbit.vcell.units.VCUnitDefinition vcUnitDefinitions[] = cbit.vcell.parser.VCUnitEvaluator.suggestUnitDefinitions(fieldElectricalStimulusParameters);
+				cbit.vcell.units.VCUnitDefinition vcUnitDefinitions[] = org.vcell.expression.VCUnitEvaluator.suggestUnitDefinitions(fieldElectricalStimulusParameters);
 				for (int i = 0; i < fieldElectricalStimulusParameters.length; i++){
 					if (!fieldElectricalStimulusParameters[i].getUnitDefinition().compareEqual(vcUnitDefinitions[i])){
 						fieldElectricalStimulusParameters[i].setUnitDefinition(vcUnitDefinitions[i]);
@@ -1269,12 +1271,12 @@ public void setName(java.lang.String name) throws java.beans.PropertyVetoExcepti
  * @param expressionString java.lang.String
  * @exception java.lang.Exception The exception description.
  */
-public void setParameterValue(ElectricalStimulusParameter parm, Expression exp) throws ExpressionException, PropertyVetoException {
+public void setParameterValue(ElectricalStimulusParameter parm, IExpression exp) throws ExpressionException, PropertyVetoException {
 	Parameter p = getElectricalStimulusParameter(parm.getName());
 	if (p != parm){
 		throw new RuntimeException("parameter "+parm.getName()+" not found");
 	}
-	Expression oldExpression = parm.getExpression();
+	IExpression oldExpression = parm.getExpression();
 	boolean bBound = false;
 	try {
 		ElectricalStimulusParameter newElectricalStimulusParameters[] = (ElectricalStimulusParameter[])fieldElectricalStimulusParameters.clone();
@@ -1287,7 +1289,7 @@ public void setParameterValue(ElectricalStimulusParameter parm, Expression exp) 
 		}
 		for (int i = 0; i < symbolsToAdd.size(); i++){
 			newElectricalStimulusParameters = (ElectricalStimulusParameter[])BeanUtils.addElement(newElectricalStimulusParameters,
-				new ElectricalStimulusParameter((String)symbolsToAdd.elementAt(i),new Expression(0.0),ROLE_UserDefined,cbit.vcell.units.VCUnitDefinition.UNIT_TBD));
+				new ElectricalStimulusParameter((String)symbolsToAdd.elementAt(i),ExpressionFactory.createExpression(0.0),ROLE_UserDefined,cbit.vcell.units.VCUnitDefinition.UNIT_TBD));
 		}
 		parm.setExpression(exp);
 		setElectricalStimulusParameters(newElectricalStimulusParameters);

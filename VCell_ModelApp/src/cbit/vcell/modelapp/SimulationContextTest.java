@@ -1,12 +1,15 @@
 package cbit.vcell.modelapp;
 
 
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import cbit.vcell.model.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.parser.Expression;
+
 /**
  * This type was created in VisualAge.
  */
@@ -56,8 +59,8 @@ public static SimulationContext getExample(int dimension) throws Exception {
 	SpeciesContextSpec speciesContextSpecs[] = reactContext.getSpeciesContextSpecs();
 	for (int i=0;i<speciesContextSpecs.length;i++){
 		SpeciesContextSpec scs = speciesContextSpecs[i];
-		scs.getInitialConditionParameter().setExpression(Expression.add(scs.getInitialConditionParameter().getExpression(),new Expression(1.0)));
-		scs.getBoundaryXmParameter().setExpression(new Expression(5.5));
+		scs.getInitialConditionParameter().setExpression(ExpressionFactory.add(scs.getInitialConditionParameter().getExpression(), ExpressionFactory.createExpression(1.0)));
+		scs.getBoundaryXmParameter().setExpression(ExpressionFactory.createExpression(5.5));
 	}
 	return simContext;
 }
@@ -100,8 +103,8 @@ public static SimulationContext getExampleElectrical(int dimension) throws Excep
 		}
 	}
 	MembraneMapping membraneMapping = (MembraneMapping)geoContext.getStructureMapping(model.getStructure("PM"));
-	membraneMapping.getSpecificCapacitanceParameter().setExpression(new Expression(1.0));
-	membraneMapping.getInitialVoltageParameter().setExpression(new Expression(-70.0));
+	membraneMapping.getSpecificCapacitanceParameter().setExpression(ExpressionFactory.createExpression(1.0));
+	membraneMapping.getInitialVoltageParameter().setExpression(ExpressionFactory.createExpression(-70.0));
 	
 	// Add Electrical Stimulus and Gnd Electrode
 
@@ -109,7 +112,7 @@ public static SimulationContext getExampleElectrical(int dimension) throws Excep
 	simContext.setGroundElectrode(gndelectrode);
 	
 	cbit.vcell.modelapp.Electrode newelectrode = new cbit.vcell.modelapp.Electrode((Feature)model.getStructure("cytosol"), new cbit.util.Coordinate(0.0, 0.0,0.0));
-	Expression exp = new Expression("0.1*(t>0.01 && t<0.05)");
+	IExpression exp = ExpressionFactory.createExpression("0.1*(t>0.01 && t<0.05)");
 	String stimulusName = "Electrode";
 	cbit.vcell.modelapp.VoltageClampStimulus voltstimulus = new cbit.vcell.modelapp.VoltageClampStimulus(newelectrode, stimulusName, exp, simContext);
 	cbit.vcell.modelapp.CurrentClampStimulus currentstimulus = new cbit.vcell.modelapp.CurrentClampStimulus(newelectrode, stimulusName, exp, simContext);
@@ -126,8 +129,8 @@ public static SimulationContext getExampleElectrical(int dimension) throws Excep
 	SpeciesContextSpec speciesContextSpecs[] = reactContext.getSpeciesContextSpecs();
 	for (int i=0;i<speciesContextSpecs.length;i++){
 		SpeciesContextSpec scs = speciesContextSpecs[i];
-		scs.getInitialConditionParameter().setExpression(Expression.add(scs.getInitialConditionParameter().getExpression(),new Expression(1.0)));
-		scs.getBoundaryXmParameter().setExpression(new Expression(5.5));
+		scs.getInitialConditionParameter().setExpression(ExpressionFactory.add(scs.getInitialConditionParameter().getExpression(), ExpressionFactory.createExpression(1.0)));
+		scs.getBoundaryXmParameter().setExpression(ExpressionFactory.createExpression(5.5));
 	}
 	return simContext;
 }

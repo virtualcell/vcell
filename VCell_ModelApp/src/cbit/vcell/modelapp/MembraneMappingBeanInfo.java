@@ -931,7 +931,7 @@ public java.beans.PropertyDescriptor initialVoltagePropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.parser.Expression.class
+					org.vcell.expression.IExpression.class
 				};
 				aSetMethod = getBeanClass().getMethod("setInitialVoltage", aSetMethodParameterTypes);
 			} catch (Throwable exception) {
@@ -1295,7 +1295,7 @@ public java.beans.MethodDescriptor setSurfaceToVolumeExpression_javalangString_c
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
 				java.lang.String.class,
-				cbit.vcell.parser.SymbolTable.class
+				org.vcell.expression.SymbolTable.class
 			};
 			aMethod = getBeanClass().getMethod("setSurfaceToVolumeExpression", aParameterTypes);
 		} catch (Throwable exception) {
@@ -1344,7 +1344,7 @@ public java.beans.MethodDescriptor setVolumeFractionExpression_javalangString_cb
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
 				java.lang.String.class,
-				cbit.vcell.parser.SymbolTable.class
+				org.vcell.expression.SymbolTable.class
 			};
 			aMethod = getBeanClass().getMethod("setVolumeFractionExpression", aParameterTypes);
 		} catch (Throwable exception) {

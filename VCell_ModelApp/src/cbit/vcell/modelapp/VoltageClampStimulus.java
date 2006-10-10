@@ -1,6 +1,8 @@
 package cbit.vcell.modelapp;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
+import org.vcell.expression.ExpressionBindingException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 /**
  * Insert the type's description here.
  * Creation date: (4/8/2002 11:45:12 AM)
@@ -15,10 +17,10 @@ public class VoltageClampStimulus extends ElectricalStimulus {
  * @param argCurrName java.lang.String
  * @param argAnnotation java.lang.String
  */
-public VoltageClampStimulus(Electrode argElectrode, String argName, Expression argVoltExpr, SimulationContext argSimulationContext) {
+public VoltageClampStimulus(Electrode argElectrode, String argName, IExpression argVoltExpr, SimulationContext argSimulationContext) {
 	super(argElectrode, argName, argSimulationContext);
 	try {
-		getCurrentParameter().setExpression(new Expression(0.0));
+		getCurrentParameter().setExpression(ExpressionFactory.createExpression(0.0));
 		getCurrentParameter().setDescription("measured current density");
 		getVoltageParameter().setExpression(argVoltExpr);
 		getVoltageParameter().setDescription("applied voltage");
