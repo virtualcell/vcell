@@ -1,5 +1,8 @@
 package cbit.vcell.modelapp.constraints;
 
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import net.sourceforge.interval.ia_math.RealInterval;
 import cbit.vcell.constraints.AbstractConstraint;
 import cbit.vcell.constraints.ConstraintContainerImpl;
@@ -14,7 +17,6 @@ import cbit.vcell.math.Variable;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.modelapp.SimulationContext;
-import cbit.vcell.parser.Expression;
 /**
  * Insert the type's description here.
  * Creation date: (12/29/2004 1:34:26 PM)
@@ -57,27 +59,27 @@ public static ConstraintContainerImpl fromApplication(SimulationContext simConte
 			Kinetics kinetics = reactionSteps[i].getKinetics();
 			if (kinetics instanceof MassActionKinetics){
 				
-				Expression forwardRateConstraintExp = new Expression(((MassActionKinetics)kinetics).getForwardRateParameter().getExpression().infix()+">=0");
+				IExpression forwardRateConstraintExp = ExpressionFactory.createExpression(((MassActionKinetics)kinetics).getForwardRateParameter().getExpression().infix()+">=0");
 				forwardRateConstraintExp = getSteadyStateExpression(forwardRateConstraintExp);
-				if (!forwardRateConstraintExp.compareEqual(new Expression(1.0))){
+				if (!forwardRateConstraintExp.compareEqual(ExpressionFactory.createExpression(1.0))){
 					ccImpl.addGeneralConstraint(new GeneralConstraint(
 									forwardRateConstraintExp,
 									AbstractConstraint.MODELING_ASSUMPTION,
 									"non-negative forward rate"));
 				}
 				
-				Expression reverseRateConstraintExp = new Expression(((MassActionKinetics)kinetics).getReverseRateParameter().getExpression().infix()+">=0");
+				IExpression reverseRateConstraintExp = ExpressionFactory.createExpression(((MassActionKinetics)kinetics).getReverseRateParameter().getExpression().infix()+">=0");
 				reverseRateConstraintExp = getSteadyStateExpression(reverseRateConstraintExp);
-				if (!reverseRateConstraintExp.compareEqual(new Expression(1.0))){
+				if (!reverseRateConstraintExp.compareEqual(ExpressionFactory.createExpression(1.0))){
 					ccImpl.addGeneralConstraint(new GeneralConstraint(
 									reverseRateConstraintExp,
 									AbstractConstraint.MODELING_ASSUMPTION,
 									"non-negative reverse rate"));
 				}
 			}
-			Expression kineticRateConstraintExp = new Expression(kinetics.getRateParameter().getName()+"=="+kinetics.getRateParameter().getExpression().infix());
+			IExpression kineticRateConstraintExp = ExpressionFactory.createExpression(kinetics.getRateParameter().getName()+"=="+kinetics.getRateParameter().getExpression().infix());
 			kineticRateConstraintExp = getSteadyStateExpression(kineticRateConstraintExp);
-			if (!kineticRateConstraintExp.compareEqual(new Expression(1.0))){
+			if (!kineticRateConstraintExp.compareEqual(ExpressionFactory.createExpression(1.0))){
 				ccImpl.addGeneralConstraint(new GeneralConstraint(
 									kineticRateConstraintExp,
 									AbstractConstraint.MODELING_ASSUMPTION,
@@ -94,7 +96,7 @@ public static ConstraintContainerImpl fromApplication(SimulationContext simConte
 			Kinetics kinetics = reactionSteps[i].getKinetics();
 			Kinetics.KineticsParameter parameters[] = kinetics.getKineticsParameters();
 			for (int j = 0; j < parameters.length; j++){
-				Expression exp = parameters[j].getExpression();
+				IExpression exp = parameters[j].getExpression();
 				if (exp.getSymbols()==null || exp.getSymbols().length==0){
 					//
 					// apply parameter as simple bounds
@@ -103,13 +105,13 @@ public static ConstraintContainerImpl fromApplication(SimulationContext simConte
 						double constantValue = exp.evaluateConstant();
 						RealInterval interval = new RealInterval(constantValue);
 						ccImpl.addSimpleBound(new SimpleBounds(parameters[j].getName(),interval,AbstractConstraint.MODELING_ASSUMPTION,"model value"));
-					}catch (cbit.vcell.parser.ExpressionException e){
+					}catch (org.vcell.expression.ExpressionException e){
 						System.out.println("error evaluating parameter "+parameters[j].getName()+" in reaction step "+reactionSteps[i].getName());
 					}
 				}else{
-					Expression parameterDefinitionExp = new Expression(parameters[j].getName()+"=="+parameters[j].getExpression().infix());
+					IExpression parameterDefinitionExp = ExpressionFactory.createExpression(parameters[j].getName()+"=="+parameters[j].getExpression().infix());
 					parameterDefinitionExp = getSteadyStateExpression(parameterDefinitionExp);
-					if (!parameterDefinitionExp.compareEqual(new Expression(1.0))){
+					if (!parameterDefinitionExp.compareEqual(ExpressionFactory.createExpression(1.0))){
 						ccImpl.addGeneralConstraint(new GeneralConstraint(
 											parameterDefinitionExp,
 											AbstractConstraint.MODELING_ASSUMPTION,
@@ -159,7 +161,7 @@ public static ConstraintContainerImpl fromApplication(SimulationContext simConte
 		while (enumVars.hasMoreElements()){
 			Variable var = (Variable)enumVars.nextElement();
 			if (var.getName().startsWith("Kflux_") && var instanceof Function){
-				Expression kfluxExp = new Expression(((Function)var).getExpression());
+				IExpression kfluxExp = ExpressionFactory.createExpression(((Function)var).getExpression());
 				kfluxExp.bindExpression(mathDesc);
 				kfluxExp = MathUtilities.substituteFunctions(kfluxExp,mathDesc);
 				kfluxExp = kfluxExp.flatten();
@@ -168,7 +170,7 @@ public static ConstraintContainerImpl fromApplication(SimulationContext simConte
 		}
 		
 		return ccImpl;
-	}catch (cbit.vcell.parser.ExpressionException e){
+	}catch (org.vcell.expression.ExpressionException e){
 		e.printStackTrace(System.out);
 		return null;
 	}catch (java.beans.PropertyVetoException e){
@@ -184,9 +186,9 @@ public static ConstraintContainerImpl fromApplication(SimulationContext simConte
  * @return cbit.vcell.parser.Expression
  * @param exp cbit.vcell.parser.Expression
  */
-private static Expression getSteadyStateExpression(Expression argExp) throws cbit.vcell.parser.ExpressionException {
-	Expression exp = new Expression(argExp);
-	exp.substituteInPlace(new Expression("t"),new Expression(0.0));
+private static IExpression getSteadyStateExpression(IExpression argExp) throws org.vcell.expression.ExpressionException {
+	IExpression exp = ExpressionFactory.createExpression(argExp);
+	exp.substituteInPlace(ExpressionFactory.createExpression("t"),ExpressionFactory.createExpression(0.0));
 	exp.bindExpression(null);
 	exp = exp.flatten();
 	return exp;
@@ -231,27 +233,27 @@ public static ConstraintContainerImpl steadyStateFromApplication(SimulationConte
 			Kinetics kinetics = reactionSteps[i].getKinetics();
 			if (kinetics instanceof MassActionKinetics){
 				
-				Expression forwardRateConstraintExp = new Expression(((MassActionKinetics)kinetics).getForwardRateParameter().getExpression().infix()+">=0");
+				IExpression forwardRateConstraintExp = ExpressionFactory.createExpression(((MassActionKinetics)kinetics).getForwardRateParameter().getExpression().infix()+">=0");
 				forwardRateConstraintExp = getSteadyStateExpression(forwardRateConstraintExp);
-				if (!forwardRateConstraintExp.compareEqual(new Expression(1.0))){
+				if (!forwardRateConstraintExp.compareEqual(ExpressionFactory.createExpression(1.0))){
 					ccImpl.addGeneralConstraint(new GeneralConstraint(
 									forwardRateConstraintExp,
 									AbstractConstraint.MODELING_ASSUMPTION,
 									"non-negative forward rate"));
 				}
 				
-				Expression reverseRateConstraintExp = new Expression(((MassActionKinetics)kinetics).getReverseRateParameter().getExpression().infix()+">=0");
+				IExpression reverseRateConstraintExp = ExpressionFactory.createExpression(((MassActionKinetics)kinetics).getReverseRateParameter().getExpression().infix()+">=0");
 				reverseRateConstraintExp = getSteadyStateExpression(reverseRateConstraintExp);
-				if (!reverseRateConstraintExp.compareEqual(new Expression(1.0))){
+				if (!reverseRateConstraintExp.compareEqual(ExpressionFactory.createExpression(1.0))){
 					ccImpl.addGeneralConstraint(new GeneralConstraint(
 									reverseRateConstraintExp,
 									AbstractConstraint.MODELING_ASSUMPTION,
 									"non-negative reverse rate"));
 				}
 			}
-			Expression kineticRateConstraintExp = new Expression(kinetics.getRateParameter().getName()+"=="+kinetics.getRateParameter().getExpression().infix());
+			IExpression kineticRateConstraintExp = ExpressionFactory.createExpression(kinetics.getRateParameter().getName()+"=="+kinetics.getRateParameter().getExpression().infix());
 			kineticRateConstraintExp = getSteadyStateExpression(kineticRateConstraintExp);
-			if (!kineticRateConstraintExp.compareEqual(new Expression(1.0))){
+			if (!kineticRateConstraintExp.compareEqual(ExpressionFactory.createExpression(1.0))){
 				ccImpl.addGeneralConstraint(new GeneralConstraint(
 									kineticRateConstraintExp,
 									AbstractConstraint.MODELING_ASSUMPTION,
@@ -275,9 +277,9 @@ public static ConstraintContainerImpl steadyStateFromApplication(SimulationConte
 		java.util.Enumeration enumEquations = subDomain.getEquations();
 		while (enumEquations.hasMoreElements()){
 			Equation equation = (Equation)enumEquations.nextElement();
-			Expression rateConstraintExp = new Expression(equation.getRateExpression().infix()+"==0");
+			IExpression rateConstraintExp = ExpressionFactory.createExpression(equation.getRateExpression().infix()+"==0");
 			rateConstraintExp = getSteadyStateExpression(rateConstraintExp);
-			if (!rateConstraintExp.compareEqual(new Expression(1.0))){
+			if (!rateConstraintExp.compareEqual(ExpressionFactory.createExpression(1.0))){
 				// not a trivial constraint (always true)
 				ccImpl.addGeneralConstraint(new GeneralConstraint(
 									rateConstraintExp,
@@ -296,7 +298,7 @@ public static ConstraintContainerImpl steadyStateFromApplication(SimulationConte
 			Kinetics kinetics = reactionSteps[i].getKinetics();
 			Kinetics.KineticsParameter parameters[] = kinetics.getKineticsParameters();
 			for (int j = 0; j < parameters.length; j++){
-				Expression exp = parameters[j].getExpression();
+				IExpression exp = parameters[j].getExpression();
 				if (exp.getSymbols()==null || exp.getSymbols().length==0){
 					//
 					// apply parameter as simple bounds
@@ -307,11 +309,11 @@ public static ConstraintContainerImpl steadyStateFromApplication(SimulationConte
 						double highValue = Math.max(constantValue/tolerance, constantValue*tolerance);
 						RealInterval interval = new RealInterval(lowValue,highValue);
 						ccImpl.addSimpleBound(new SimpleBounds(parameters[j].getName(),interval,AbstractConstraint.MODELING_ASSUMPTION,"parameter close to model default"));
-					}catch (cbit.vcell.parser.ExpressionException e){
+					}catch (org.vcell.expression.ExpressionException e){
 						System.out.println("error evaluating parameter "+parameters[j].getName()+" in reaction step "+reactionSteps[i].getName());
 					}
 				}else{
-					Expression parameterDefinitionExp = new Expression(parameters[j].getName()+"=="+parameters[j].getExpression().infix());
+					IExpression parameterDefinitionExp = ExpressionFactory.createExpression(parameters[j].getName()+"=="+parameters[j].getExpression().infix());
 					ccImpl.addGeneralConstraint(new GeneralConstraint(
 										getSteadyStateExpression(parameterDefinitionExp),
 										AbstractConstraint.MODELING_ASSUMPTION,
@@ -352,7 +354,7 @@ public static ConstraintContainerImpl steadyStateFromApplication(SimulationConte
 		while (enumVars.hasMoreElements()){
 			Variable var = (Variable)enumVars.nextElement();
 			if (var.getName().startsWith("Kflux_") && var instanceof Function){
-				Expression kfluxExp = new Expression(((Function)var).getExpression());
+				IExpression kfluxExp = ExpressionFactory.createExpression(((Function)var).getExpression());
 				kfluxExp.bindExpression(mathDesc);
 				kfluxExp = MathUtilities.substituteFunctions(kfluxExp,mathDesc);
 				kfluxExp = kfluxExp.flatten();
@@ -361,7 +363,7 @@ public static ConstraintContainerImpl steadyStateFromApplication(SimulationConte
 		}
 		
 		return ccImpl;
-	}catch (cbit.vcell.parser.ExpressionException e){
+	}catch (org.vcell.expression.ExpressionException e){
 		e.printStackTrace(System.out);
 		return null;
 	}catch (java.beans.PropertyVetoException e){
