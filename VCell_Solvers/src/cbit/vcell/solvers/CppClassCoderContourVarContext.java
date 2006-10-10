@@ -3,6 +3,8 @@ package cbit.vcell.solvers;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.expression.ExpressionFactory;
+
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
 import cbit.vcell.simulation.*;
@@ -132,7 +134,7 @@ public void writeImplementation(java.io.PrintWriter out) throws Exception {
 	out.println("");
 	writeContourFunction(out,"getContourReactionRate", getEquation().getRateExpression());
 	out.println("");
-	writeContourFunction(out,"getContourDiffusionRate", new Expression(0.0));
+	writeContourFunction(out,"getContourDiffusionRate", ExpressionFactory.createExpression(0.0));
 	out.println("");
 	try {
 		double value = getEquation().getInitialExpression().evaluateConstant();

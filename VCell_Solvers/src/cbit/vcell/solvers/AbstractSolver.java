@@ -10,6 +10,10 @@ import cbit.util.SessionLog;
 import cbit.vcell.simulation.*;
 
 import java.io.*;
+
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import cbit.vcell.solver.ode.SensStateVariable;
 import cbit.vcell.solver.ode.ODEStateVariable;
 import cbit.vcell.parser.*;
@@ -187,7 +191,7 @@ public abstract double getCurrentTime();
  * @return double[]
  * @param identifier java.lang.String
  */
-public Expression getFunctionSensitivity(Expression funcExpr, Constant constant, cbit.vcell.solver.ode.StateVariable stateVariables[]) throws cbit.vcell.parser.ExpressionException {
+public IExpression getFunctionSensitivity(IExpression funcExpr, Constant constant, cbit.vcell.solver.ode.StateVariable stateVariables[]) throws org.vcell.expression.ExpressionException {
 	if (stateVariables==null || stateVariables.length == 0) {
 		return null;
 	}
@@ -202,7 +206,7 @@ public Expression getFunctionSensitivity(Expression funcExpr, Constant constant,
 	// collect the explicit term
 	//
 	
-	Expression sensFuncExp = funcExpr.differentiate(constant.getName());
+	IExpression sensFuncExp = funcExpr.differentiate(constant.getName());
 	sensFuncExp.bindExpression(getSimulation());
 	sensFuncExp = sensFuncExp.flatten();
 	
@@ -229,16 +233,16 @@ public Expression getFunctionSensitivity(Expression funcExpr, Constant constant,
 			//
 			// get coefficient of proportionality   (e.g.  A = total + b*B + c*C ... gives dA/dK = b*dB/dK + c*dC/dK)
 			//
-			Expression coeffExpression = funcExpr.differentiate(volVar.getName());
+			IExpression coeffExpression = funcExpr.differentiate(volVar.getName());
 			coeffExpression.bindExpression(getSimulation());
 			coeffExpression = cbit.vcell.math.MathUtilities.substituteFunctions(coeffExpression,getSimulation());
 			coeffExpression.bindExpression(getSimulation());
 			coeffExpression = coeffExpression.flatten();
-			sensFuncExp = Expression.add(sensFuncExp,Expression.mult(coeffExpression,new Expression(sensStateVariable.getVariable().getName())));
+			sensFuncExp = ExpressionFactory.add(sensFuncExp, ExpressionFactory.mult(coeffExpression, ExpressionFactory.createExpression(sensStateVariable.getVariable().getName())));
 		}
 	}
 
-	return new Expression(sensFuncExp);
+	return ExpressionFactory.createExpression(sensFuncExp);
 }
 
 

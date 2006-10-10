@@ -3,6 +3,8 @@ package cbit.vcell.solver.ode;
 import cbit.util.SessionLog;
 import java.io.*;
 
+import org.vcell.expression.ExpressionException;
+
 import cbit.vcell.simulation.*;
 import cbit.vcell.solvers.SimulationJob;
 import cbit.vcell.solvers.SolverException;
@@ -10,7 +12,6 @@ import cbit.vcell.solvers.SolverException;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.parser.ExpressionException;
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 8:59:55 PM)

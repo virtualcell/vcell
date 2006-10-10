@@ -1,6 +1,8 @@
 package cbit.vcell.solver.test;
 
-import cbit.vcell.parser.Expression;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import cbit.vcell.simdata.ODESolverResultSet;
 /**
  * Insert the type's description here.
@@ -53,10 +55,10 @@ public static void testOdeCompareResultSets(double epsilon) {
 			times[i] = ((double)i)/numTimes;
 		}
 		String names[] = { "v1", "v2", "v3" };
-		Expression exps1[] = { new Expression("cos(5*t)"), new Expression("sin(10*t)"), new Expression("cos(20*t)") };
+		IExpression exps1[] = { ExpressionFactory.createExpression("cos(5*t)"), ExpressionFactory.createExpression("sin(10*t)"), ExpressionFactory.createExpression("cos(20*t)") };
 		ODESolverResultSet r1 = cbit.vcell.simdata.ODESolverResultSetTest.getExample(times,names,exps1);
 
-		Expression exps2[] = { new Expression("cos(5*t)+"+epsilon), new Expression("sin(10*t)+"+epsilon), new Expression("cos(20*t)+"+epsilon) };
+		IExpression exps2[] = { ExpressionFactory.createExpression("cos(5*t)+"+epsilon), ExpressionFactory.createExpression("sin(10*t)+"+epsilon), ExpressionFactory.createExpression("cos(20*t)+"+epsilon) };
 		ODESolverResultSet r2 = cbit.vcell.simdata.ODESolverResultSetTest.getExample(times,names,exps2);
 		
 		System.out.println("comparing identical result sets using no interpolation");
@@ -91,10 +93,10 @@ public static void testOdeCompareResultSetsInterpolated(double epsilon) {
 			times2[i] = ((double)i)/numTimes2;
 		}		
 		String names[] = { "v1", "v2", "v3" };
-		Expression exps1[] = { new Expression("cos(5*t)"), new Expression("sin(10*t)"), new Expression("cos(20*t)") };
+		IExpression exps1[] = { ExpressionFactory.createExpression("cos(5*t)"), ExpressionFactory.createExpression("sin(10*t)"), ExpressionFactory.createExpression("cos(20*t)") };
 		ODESolverResultSet r1 = cbit.vcell.simdata.ODESolverResultSetTest.getExample(times1,names,exps1);
 
-		Expression exps2[] = { new Expression("cos(5*t)+"+epsilon), new Expression("sin(10*t)+"+epsilon), new Expression("cos(20*t)+"+epsilon) };
+		IExpression exps2[] = { ExpressionFactory.createExpression("cos(5*t)+"+epsilon), ExpressionFactory.createExpression("sin(10*t)+"+epsilon), ExpressionFactory.createExpression("cos(20*t)+"+epsilon) };
 		ODESolverResultSet r2 = cbit.vcell.simdata.ODESolverResultSetTest.getExample(times2,names,exps2);
 		
 		System.out.println("comparing different result sets using interpolation");

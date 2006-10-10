@@ -7,9 +7,13 @@ import java.io.*;
  * All rights reserved.
 ©*/
 import java.util.*;
+
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.SimpleSymbolTable;
+
 import cbit.vcell.math.*;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.FunctionColumnDescription;
 import cbit.vcell.simdata.FunctionFileGenerator;
 import cbit.vcell.simdata.ODESolverResultSet;
@@ -158,7 +162,7 @@ private ODESolverResultSet createODESolverResultSet() throws ExpressionException
 	for (int i = 0; i < variables.length; i++){
 		if (variables[i] instanceof Function && FunctionFileGenerator.isFunctionSaved((Function)variables[i])){
 			Function function = (Function)variables[i];
-			Expression exp1 = new Expression(function.getExpression());
+			IExpression exp1 = ExpressionFactory.createExpression(function.getExpression());
 			try {
 				exp1 = getSimulation().substituteFunctions(exp1);
 			} catch (MathException e) {
@@ -174,14 +178,14 @@ private ODESolverResultSet createODESolverResultSet() throws ExpressionException
 	//
 	if (getSensitivityParameter() != null) {
 		if (odeSolverResultSet.findColumn(getSensitivityParameter().getName()) == -1) {
-			FunctionColumnDescription fcd = new FunctionColumnDescription(new Expression(getSensitivityParameter().getConstantValue()), getSensitivityParameter().getName(), null, getSensitivityParameter().getName(), false);
+			FunctionColumnDescription fcd = new FunctionColumnDescription(ExpressionFactory.createExpression(getSensitivityParameter().getConstantValue()), getSensitivityParameter().getName(), null, getSensitivityParameter().getName(), false);
 			odeSolverResultSet.addFunctionColumn(fcd);
 		}
 		StateVariable stateVars[] = (StateVariable[])cbit.util.BeanUtils.getArray(fieldStateVariables,StateVariable.class);
 		for (int i = 0; i < variables.length; i++){
 			if (variables[i] instanceof Function && FunctionFileGenerator.isFunctionSaved((Function)variables[i])){
 				Function depSensFunction = (Function)variables[i];
-				Expression depSensFnExpr = new Expression(depSensFunction.getExpression());
+				IExpression depSensFnExpr = ExpressionFactory.createExpression(depSensFunction.getExpression());
 				try {
 					depSensFnExpr = getSimulation().substituteFunctions(depSensFnExpr);
 				} catch (MathException e) {

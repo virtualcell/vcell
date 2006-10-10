@@ -4,6 +4,10 @@ package cbit.vcell.solvers;
  * All rights reserved.
 ©*/
 import java.util.*;
+
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
 import cbit.vcell.simulation.*;
@@ -112,7 +116,7 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	out.println(": "+getParentClassName()+"(Afeature,AspeciesName)");
 	out.println("{");
 	try {
-		Expression ic = getEquation().getInitialExpression();
+		IExpression ic = getEquation().getInitialExpression();
 		ic.bindExpression(getSimulation());
 		double value = ic.evaluateConstant();
 		out.println("   initialValue = new double;");
@@ -122,7 +126,7 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	}	
 	if (getEquation() instanceof PdeEquation){
 		try {
-			Expression Dexp = ((PdeEquation)getEquation()).getDiffusionExpression();
+			IExpression Dexp = ((PdeEquation)getEquation()).getDiffusionExpression();
 			Dexp.bindExpression(getSimulation());
 			double value = Dexp.evaluateConstant();
 			out.println("   diffusionRate = new double;");
@@ -241,7 +245,7 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 		}	
 	}		
 	try {
-		Expression ic = getEquation().getInitialExpression();
+		IExpression ic = getEquation().getInitialExpression();
 		ic.bindExpression(getSimulation());
 		double value = ic.evaluateConstant();
 	}catch (Exception e){
@@ -249,7 +253,7 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 	}
 	if (getEquation() instanceof PdeEquation){
 		try {
-			Expression Dexp = ((PdeEquation)getEquation()).getDiffusionExpression();
+			IExpression Dexp = ((PdeEquation)getEquation()).getDiffusionExpression();
 			Dexp.bindExpression(getSimulation());
 			double value = Dexp.evaluateConstant();
 		}catch (Exception e){
@@ -332,15 +336,15 @@ protected void writeGetFlux(java.io.PrintWriter out, String functionName) throws
 			out.println("");
 			
 			JumpCondition jumpCondition = membraneSubDomainsOwned[0].getJumpCondition((VolVariable)getVariable());
-			Expression inFluxExp = jumpCondition.getInFluxExpression();
-			Expression outFluxExp = jumpCondition.getOutFluxExpression();
-			Expression inFluxExp_substituted = getSimulation().substituteFunctions(inFluxExp).flatten();
-			Expression outFluxExp_substituted = getSimulation().substituteFunctions(outFluxExp).flatten();
+			IExpression inFluxExp = jumpCondition.getInFluxExpression();
+			IExpression outFluxExp = jumpCondition.getOutFluxExpression();
+			IExpression inFluxExp_substituted = getSimulation().substituteFunctions(inFluxExp).flatten();
+			IExpression outFluxExp_substituted = getSimulation().substituteFunctions(outFluxExp).flatten();
 			//
 			// get totalExpression (composite expression to combine symbols)
 			// then write out dependencies
 			//
-			Expression totalExpression = Expression.add(inFluxExp_substituted,outFluxExp_substituted);
+			IExpression totalExpression = ExpressionFactory.add(inFluxExp_substituted, outFluxExp_substituted);
 			writeMembraneFunctionDeclarations(out,"element",totalExpression,bFlipInsideOutside,"   ");
 			if (bFlipInsideOutside){
 				out.println("   *inFlux = "+outFluxExp_substituted.infix_C()+";  // *****  flux convension reversed, uses 'outFlux' from MathDescription");
@@ -380,16 +384,16 @@ protected void writeGetFlux(java.io.PrintWriter out, String functionName) throws
 				out.println("");
 				
 				JumpCondition jumpCondition = membraneSubDomainsOwned[i].getJumpCondition((VolVariable)getVariable());
-				Expression inFluxExp = jumpCondition.getInFluxExpression();
-				Expression outFluxExp = jumpCondition.getOutFluxExpression();
-				Expression inFluxExp_substituted = getSimulation().substituteFunctions(inFluxExp).flatten();
-				Expression outFluxExp_substituted = getSimulation().substituteFunctions(outFluxExp).flatten();
+				IExpression inFluxExp = jumpCondition.getInFluxExpression();
+				IExpression outFluxExp = jumpCondition.getOutFluxExpression();
+				IExpression inFluxExp_substituted = getSimulation().substituteFunctions(inFluxExp).flatten();
+				IExpression outFluxExp_substituted = getSimulation().substituteFunctions(outFluxExp).flatten();
 				
 				//
 				// get totalExpression (composite expression to combine symbols)
 				// then write out dependencies
 				//
-				Expression totalExpression = Expression.add(inFluxExp_substituted,outFluxExp_substituted);
+				IExpression totalExpression = ExpressionFactory.add(inFluxExp_substituted, outFluxExp_substituted);
 				writeMembraneFunctionDeclarations(out,"element",totalExpression,bFlipInsideOutside,"         ");
 				if (bFlipInsideOutside){
 					out.println("         *inFlux = "+outFluxExp_substituted.infix_C()+";  // *****  flux convension reversed, uses 'outFlux' from MathDescription");

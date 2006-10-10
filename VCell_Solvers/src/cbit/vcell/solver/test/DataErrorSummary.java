@@ -1,11 +1,14 @@
 package cbit.vcell.solver.test;
+
+import org.vcell.expression.IExpression;
+
 /**
  * Insert the type's description here.
  * Creation date: (3/18/2004 4:23:40 PM)
  * @author: Jim Schaff
  */
 public class DataErrorSummary {
-	private cbit.vcell.parser.Expression exactExp = null;
+	private IExpression exactExp = null;
 	private double maxRef = Double.NEGATIVE_INFINITY;
 	private double minRef = Double.POSITIVE_INFINITY;
 	private double maxAbsError = 0.0;
@@ -23,7 +26,7 @@ public DataErrorSummary() {
 }
 
 
-		public DataErrorSummary(cbit.vcell.parser.Expression exp) {
+		public DataErrorSummary(IExpression exp) {
 			exactExp = exp;
 		}
 
@@ -55,7 +58,7 @@ public void addDataValues(double ref, double test, double time, int index) {
  * Creation date: (3/18/2004 4:31:11 PM)
  * @return cbit.vcell.parser.Expression
  */
-public cbit.vcell.parser.Expression getExactExp() {
+public IExpression getExactExp() {
 	return exactExp;
 }
 

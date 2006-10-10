@@ -4,6 +4,9 @@ package cbit.vcell.solver.ode;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.IExpression;
+
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
 /**
@@ -14,8 +17,8 @@ import cbit.vcell.parser.*;
 public class ODEStateVariable extends StateVariable {
 	VolVariable variable = null;
 //	OdeEquation ode = null;
-	Expression optimizedRateExp = null;
-	Expression initialExp = null;
+	IExpression optimizedRateExp = null;
+	IExpression initialExp = null;
 //	double data[] = null;
 /**
  * TimeSeriesData constructor comment.
@@ -47,14 +50,14 @@ public double evaluateRate(double values[]) throws ExpressionException {
  * This method was created in VisualAge.
  * @return cbit.vcell.math.Variable
  */
-public Expression getInitialRateExpression() throws ExpressionException {
+public IExpression getInitialRateExpression() throws ExpressionException {
 	return initialExp;
 }
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.math.Variable
  */
-public Expression getRateExpression() throws ExpressionException {
+public IExpression getRateExpression() throws ExpressionException {
 	return optimizedRateExp;
 }
 }

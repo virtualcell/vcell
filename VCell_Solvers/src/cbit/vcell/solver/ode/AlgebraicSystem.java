@@ -4,6 +4,8 @@ package cbit.vcell.solver.ode;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.expression.ExpressionException;
+
 import Jama.*;
 import cbit.vcell.parser.*;
 /**
@@ -131,5 +133,5 @@ protected abstract void updateDependentVars(double newValues[]) throws Expressio
 /**
  * This method was created in VisualAge.
  */
-protected abstract void updateMatrix(double oldValues[], double newValues[]) throws cbit.vcell.parser.ExpressionException;
+protected abstract void updateMatrix(double oldValues[], double newValues[]) throws org.vcell.expression.ExpressionException;
 }

@@ -5,6 +5,10 @@ package cbit.vcell.solvers;
  * All rights reserved.
 ©*/
 import java.util.*;
+
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
 import cbit.vcell.simulation.*;
@@ -123,7 +127,7 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
  * This method was created by a SmartGuide.
  * @param out java.io.PrintWriter
  */
-protected void writeFastFunctionDeclarations(java.io.PrintWriter out, Expression exp, String volumeIndexString) throws Exception {
+protected void writeFastFunctionDeclarations(java.io.PrintWriter out, IExpression exp, String volumeIndexString) throws Exception {
 
 	if (exp == null){
 		throw new Exception("null expression");
@@ -282,7 +286,7 @@ protected void writeUpdateDependentVars(java.io.PrintWriter out, String function
 	Enumeration enum_exp = getFastSystem().getDependencyExps();
 	Enumeration enum_var = getFastSystem().getDependentVariables();
 	while (enum_exp.hasMoreElements()){
-		Expression exp = (Expression)enum_exp.nextElement();
+		IExpression exp = (IExpression)enum_exp.nextElement();
 		Variable depVar = (Variable)enum_var.nextElement();
 		out.println("   var_"+depVar.getName()+"->setCurr(currIndex,"+exp.infix_C()+");");
 	}
@@ -302,11 +306,11 @@ protected void writeUpdateMatrix(java.io.PrintWriter out, String functionName) t
 	//
 	// collect all expressions into one and declare x,y,z,t if necessary
 	//
-	Expression expTemp = new Expression("0.0;");
+	IExpression expTemp = ExpressionFactory.createExpression("0.0;");
 	Enumeration enum_fre = getFastSystem().getFastRateExpressions();
 	while (enum_fre.hasMoreElements()){
-		Expression fre = (Expression)enum_fre.nextElement();
-		expTemp = Expression.add(expTemp,fre);
+		IExpression fre = (IExpression)enum_fre.nextElement();
+		expTemp = ExpressionFactory.add(expTemp, fre);
 	}
 	writeFastFunctionDeclarations(out,expTemp,"currIndex");	
 	
@@ -321,18 +325,18 @@ protected void writeUpdateMatrix(java.io.PrintWriter out, String functionName) t
 	int frCount=0;
 	enum_fre = getFastSystem().getFastRateExpressions();
 	while (enum_fre.hasMoreElements()){
-		Expression fre = (Expression)enum_fre.nextElement();
+		IExpression fre = (IExpression)enum_fre.nextElement();
 		varCount=0;
 		Enumeration enum_var = getFastSystem().getIndependentVariables();
 		while (enum_var.hasMoreElements()){
 			Variable var = (Variable)enum_var.nextElement();
-			Expression exp = simulation.substituteFunctions(fre).flatten();
-			Expression differential = exp.differentiate(var.getName());
+			IExpression exp = simulation.substituteFunctions(fre).flatten();
+			IExpression differential = exp.differentiate(var.getName());
 			differential.bindExpression(simulation);
 			out.println("   setMatrix("+frCount+", "+varCount+", "+differential.flatten().infix_C()+");");
 			varCount++;
 		}
-		Expression exp = Expression.negate(fre);
+		IExpression exp = ExpressionFactory.negate(fre);
 		exp = simulation.substituteFunctions(exp);
 		out.println("   setMatrix("+frCount+", "+varCount+", "+exp.flatten().infix_C()+");");
 		frCount++;

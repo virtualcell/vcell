@@ -12,10 +12,12 @@ import cbit.vcell.solvers.*;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.parser.Expression;
 import cbit.vcell.math.Function;
 import java.util.*;
 import java.io.*;
+
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
 
 import cbit.rmi.event.VCSimulationDataIdentifier;
 import cbit.util.SessionLog;
@@ -62,7 +64,7 @@ public void cleanup() {
 	This method was created in Visual Age
 */
 
-private StateVariable[] createStateVariables() throws cbit.vcell.math.MathException, cbit.vcell.parser.ExpressionException {
+private StateVariable[] createStateVariables() throws cbit.vcell.math.MathException, org.vcell.expression.ExpressionException {
 	Vector stateVariables = new Vector();
 	// get Ode's from MathDescription and create ODEStateVariables
 	Enumeration enum1 = ((SubDomain)getSimulation().getMathDescription().getSubDomains().nextElement()).getEquations();
@@ -149,13 +151,13 @@ public ODESolverResultSet getODESolverResultSet()  {
 	cbit.vcell.math.Function functions[] = getSimulation().getFunctions();
 	for (int i = 0; i < functions.length; i++){
 		if (FunctionFileGenerator.isFunctionSaved(functions[i])){
-			Expression exp1 = new Expression(functions[i].getExpression());
+			IExpression exp1 = ExpressionFactory.createExpression(functions[i].getExpression());
 			try {
 				exp1 = getSimulation().substituteFunctions(exp1);
 			} catch (cbit.vcell.math.MathException e) {
 				e.printStackTrace(System.out);
 				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
-			} catch (cbit.vcell.parser.ExpressionException e) {
+			} catch (org.vcell.expression.ExpressionException e) {
 				e.printStackTrace(System.out);
 				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
 			}
@@ -163,7 +165,7 @@ public ODESolverResultSet getODESolverResultSet()  {
 			try {
 				FunctionColumnDescription cd = new FunctionColumnDescription(exp1.flatten(),functions[i].getName(), null, functions[i].getName(), false);
 				odeSolverResultSet.addFunctionColumn(cd);
-			}catch (cbit.vcell.parser.ExpressionException e){
+			}catch (org.vcell.expression.ExpressionException e){
 				e.printStackTrace(System.out);
 			}
 		}
@@ -175,7 +177,7 @@ public ODESolverResultSet getODESolverResultSet()  {
 	if (getSensitivityParameter() != null) {
 		try {
 			if (odeSolverResultSet.findColumn(getSensitivityParameter().getName()) == -1) {
-				FunctionColumnDescription fcd = new FunctionColumnDescription(new Expression(getSensitivityParameter().getConstantValue()), getSensitivityParameter().getName(), null, getSensitivityParameter().getName(), false);
+				FunctionColumnDescription fcd = new FunctionColumnDescription(ExpressionFactory.createExpression(getSensitivityParameter().getConstantValue()), getSensitivityParameter().getName(), null, getSensitivityParameter().getName(), false);
 				odeSolverResultSet.addFunctionColumn(fcd);
 			}
 			Variable variables[] = getSimulation().getVariables();
@@ -184,7 +186,7 @@ public ODESolverResultSet getODESolverResultSet()  {
 			for (int i = 0; i < variables.length; i++){
 				if (variables[i] instanceof Function && FunctionFileGenerator.isFunctionSaved((Function)variables[i])){
 					Function depSensFunction = (Function)variables[i];
-					Expression depSensFnExpr = new Expression(depSensFunction.getExpression());
+					IExpression depSensFnExpr = ExpressionFactory.createExpression(depSensFunction.getExpression());
 					depSensFnExpr = getSimulation().substituteFunctions(depSensFnExpr);
 					
 					depSensFnExpr = getFunctionSensitivity(depSensFnExpr, getSensitivityParameter(), stateVars);
@@ -201,7 +203,7 @@ public ODESolverResultSet getODESolverResultSet()  {
 		} catch (MathException e) {
 			e.printStackTrace(System.out);
 			throw new RuntimeException("Error adding function to resultSet: "+e.getMessage());
-		} catch (cbit.vcell.parser.ExpressionException e) {
+		} catch (org.vcell.expression.ExpressionException e) {
 			e.printStackTrace(System.out);
 			throw new RuntimeException("Error adding function to resultSet: "+e.getMessage());
 		}

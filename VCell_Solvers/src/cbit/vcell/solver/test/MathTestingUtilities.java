@@ -2,6 +2,10 @@ package cbit.vcell.solver.test;
 import java.util.Enumeration;
 import java.util.Vector;
 
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import cbit.util.Coordinate;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.math.CompartmentSubDomain;
@@ -33,8 +37,6 @@ import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.mesh.CartesianMesh;
 import cbit.vcell.numericstest.ConstructedSolutionTemplate;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.ColumnDescription;
 import cbit.vcell.simdata.DataManager;
 import cbit.vcell.simdata.DataResampler;
@@ -54,7 +56,7 @@ public class MathTestingUtilities {
  * Insert the method's description here.
  * Creation date: (8/20/2003 12:58:10 PM)
  */
-public static SimulationComparisonSummary comparePDEResults(Simulation testSim, DataManager testDataManager, Simulation refSim, DataManager refDataManager, String varsToCompare[]) throws cbit.util.DataAccessException, cbit.vcell.parser.ExpressionException {
+public static SimulationComparisonSummary comparePDEResults(Simulation testSim, DataManager testDataManager, Simulation refSim, DataManager refDataManager, String varsToCompare[]) throws cbit.util.DataAccessException, org.vcell.expression.ExpressionException {
 
 	java.util.Hashtable tempVarHash = new java.util.Hashtable();
 	boolean bTimesEqual = true;
@@ -278,7 +280,7 @@ public static SimulationComparisonSummary comparePDEResults(Simulation testSim, 
  * Insert the method's description here.
  * Creation date: (8/20/2003 12:58:10 PM)
  */
-public static SimulationComparisonSummary comparePDEResultsWithExact(Simulation sim, DataManager dataManager) throws cbit.util.DataAccessException, cbit.vcell.parser.ExpressionException {
+public static SimulationComparisonSummary comparePDEResultsWithExact(Simulation sim, DataManager dataManager) throws cbit.util.DataAccessException, org.vcell.expression.ExpressionException {
 
 	java.util.Hashtable tempVarHash = new java.util.Hashtable();
 	
@@ -309,7 +311,7 @@ public static SimulationComparisonSummary comparePDEResultsWithExact(Simulation 
 	}
 	
 	double valueArray[] = new double[4];
-	cbit.vcell.parser.SimpleSymbolTable symbolTable = new cbit.vcell.parser.SimpleSymbolTable(new String[] {"t", "x", "y", "z"});
+	org.vcell.expression.SimpleSymbolTable symbolTable = new org.vcell.expression.SimpleSymbolTable(new String[] {"t", "x", "y", "z"});
 	int tIndex = symbolTable.getEntry("t").getIndex();
 	int xIndex = symbolTable.getEntry("x").getIndex();
 	int yIndex = symbolTable.getEntry("y").getIndex();
@@ -346,7 +348,7 @@ public static SimulationComparisonSummary comparePDEResultsWithExact(Simulation 
 					hashKey = vars[i].getName()+":"+subDomain.getName();
 					DataErrorSummary tempVar = (DataErrorSummary)tempVarHash.get(hashKey);
 					if (tempVar == null) {
-						Expression exp = new Expression(subDomain.getEquation(vars[i]).getExactSolution());
+						IExpression exp = ExpressionFactory.createExpression(subDomain.getEquation(vars[i]).getExactSolution());
 						exp.bindExpression(sim);
 						exp = MathUtilities.substituteFunctions(exp, sim);
 						exp = exp.flatten();
@@ -557,7 +559,7 @@ public static MathDescription constructExactMath(MathDescription mathDesc, java.
 			}
 			if (equation instanceof OdeEquation){
 				OdeEquation odeEquation = (OdeEquation)equation;
-				Expression substitutedRateExp = substituteWithExactSolution(odeEquation.getRateExpression(),(CompartmentSubDomain)subDomain,exactMath);
+				IExpression substitutedRateExp = substituteWithExactSolution(odeEquation.getRateExpression(),(CompartmentSubDomain)subDomain,exactMath);
 
 				cbit.vcell.numericstest.SolutionTemplate solutionTemplate = constructedSolutionTemplate.getSolutionTemplate(equation.getVariable().getName(),subDomain.getName());
 				
@@ -568,19 +570,19 @@ public static MathDescription constructExactMath(MathDescription mathDesc, java.
 				String origRateName = "_"+varName+"_"+subDomain.getName()+"_origRate";
 				String substitutedRateName = "_"+varName+"_"+subDomain.getName()+"_substitutedRate";
 				String exactTimeDerivativeName = "_"+varName+"_"+subDomain.getName()+"_exact_dt";
-				Expression exactExp = solutionTemplate.getTemplateExpression();
-				Expression errorExp = new Expression(exactName+" - "+varName);
-				Expression origRateExp = new Expression(odeEquation.getRateExpression());
-				Expression exactTimeDerivativeExp = exactExp.differentiate("t").flatten();
-				Expression newRate = new Expression(origRateName+" - "+substitutedRateName+" + "+exactTimeDerivativeName);
+				IExpression exactExp = solutionTemplate.getTemplateExpression();
+				IExpression errorExp = ExpressionFactory.createExpression(exactName+" - "+varName);
+				IExpression origRateExp = ExpressionFactory.createExpression(odeEquation.getRateExpression());
+				IExpression exactTimeDerivativeExp = exactExp.differentiate("t").flatten();
+				IExpression newRate = ExpressionFactory.createExpression(origRateName+" - "+substitutedRateName+" + "+exactTimeDerivativeName);
 
 
 				Constant constants[] = solutionTemplate.getConstants();
 				for (int i = 0; i < constants.length; i++){
 					varHash.addVariable(constants[i]);
 				}
-				Expression initExp = new Expression(exactExp);
-				initExp.substituteInPlace(new Expression("t"),new Expression(0.0));
+				IExpression initExp = ExpressionFactory.createExpression(exactExp);
+				initExp.substituteInPlace(ExpressionFactory.createExpression("t"),ExpressionFactory.createExpression(0.0));
 				varHash.addVariable(new Function(initName,initExp.flatten()));
 				varHash.addVariable(new Function(exactName,exactExp));
 				varHash.addVariable(new Function(errorName,errorExp));
@@ -590,13 +592,13 @@ public static MathDescription constructExactMath(MathDescription mathDesc, java.
 				
 				
 				odeEquation.setRateExpression(newRate);
-				odeEquation.setInitialExpression(new Expression(initName));
-				odeEquation.setExactSolution(new Expression(exactName));
+				odeEquation.setInitialExpression(ExpressionFactory.createExpression(initName));
+				odeEquation.setExactSolution(ExpressionFactory.createExpression(exactName));
 				
 			}else if (equation instanceof PdeEquation){
 				PdeEquation pdeEquation = (PdeEquation)equation;
-				Expression substitutedRateExp = substituteWithExactSolution(pdeEquation.getRateExpression(),(CompartmentSubDomain)subDomain,exactMath);
-				Expression origInitExp = pdeEquation.getInitialExpression();
+				IExpression substitutedRateExp = substituteWithExactSolution(pdeEquation.getRateExpression(),(CompartmentSubDomain)subDomain,exactMath);
+				IExpression origInitExp = pdeEquation.getInitialExpression();
 				
 				cbit.vcell.numericstest.SolutionTemplate solutionTemplate = constructedSolutionTemplate.getSolutionTemplate(equation.getVariable().getName(),subDomain.getName());
 				
@@ -615,21 +617,21 @@ public static MathDescription constructExactMath(MathDescription mathDesc, java.
 				String exactDy2Name = "_"+varName+"_"+subDomain.getName()+"_exact_dy2";
 				String exactDz2Name = "_"+varName+"_"+subDomain.getName()+"_exact_dz2";
 				String exactLaplacianName = "_"+varName+"_"+subDomain.getName()+"_exact_laplacian";
-				Expression exactExp = solutionTemplate.getTemplateExpression();
-				Expression errorExp = new Expression(exactName+" - "+varName);
-				Expression origRateExp = new Expression(pdeEquation.getRateExpression());
-				Expression initExp = new Expression(exactExp);
-				initExp.substituteInPlace(new Expression("t"),new Expression(0.0));
+				IExpression exactExp = solutionTemplate.getTemplateExpression();
+				IExpression errorExp = ExpressionFactory.createExpression(exactName+" - "+varName);
+				IExpression origRateExp = ExpressionFactory.createExpression(pdeEquation.getRateExpression());
+				IExpression initExp = ExpressionFactory.createExpression(exactExp);
+				initExp.substituteInPlace(ExpressionFactory.createExpression("t"),ExpressionFactory.createExpression(0.0));
 				initExp = initExp.flatten();
-				Expression exactTimeDerivativeExp = exactExp.differentiate("t").flatten();
-				Expression exactDxExp = exactExp.differentiate("x").flatten();
-				Expression exactDx2Exp = exactDxExp.differentiate("x").flatten();
-				Expression exactDyExp = exactExp.differentiate("y").flatten();
-				Expression exactDy2Exp = exactDxExp.differentiate("y").flatten();
-				Expression exactDzExp = exactExp.differentiate("z").flatten();
-				Expression exactDz2Exp = exactDxExp.differentiate("z").flatten();
-				Expression exactLaplacianExp = Expression.add(Expression.add(exactDx2Exp,exactDy2Exp),exactDz2Exp).flatten();
-				Expression newRate = new Expression(origRateName+
+				IExpression exactTimeDerivativeExp = exactExp.differentiate("t").flatten();
+				IExpression exactDxExp = exactExp.differentiate("x").flatten();
+				IExpression exactDx2Exp = exactDxExp.differentiate("x").flatten();
+				IExpression exactDyExp = exactExp.differentiate("y").flatten();
+				IExpression exactDy2Exp = exactDxExp.differentiate("y").flatten();
+				IExpression exactDzExp = exactExp.differentiate("z").flatten();
+				IExpression exactDz2Exp = exactDxExp.differentiate("z").flatten();
+				IExpression exactLaplacianExp = ExpressionFactory.add(ExpressionFactory.add(exactDx2Exp,exactDy2Exp), exactDz2Exp).flatten();
+				IExpression newRate = ExpressionFactory.createExpression(origRateName+
 													" - "+substitutedRateName+
 													" - (("+diffusionRateName+")*"+exactLaplacianName+")"+
 													" + "+exactTimeDerivativeName);
@@ -640,7 +642,7 @@ public static MathDescription constructExactMath(MathDescription mathDesc, java.
 				}
 
 				varHash.addVariable(new Function(initName,initExp));
-				varHash.addVariable(new Function(diffusionRateName,new Expression(pdeEquation.getDiffusionExpression())));
+				varHash.addVariable(new Function(diffusionRateName,ExpressionFactory.createExpression(pdeEquation.getDiffusionExpression())));
 				varHash.addVariable(new Function(exactName,exactExp));
 				varHash.addVariable(new Function(errorName,errorExp));
 				varHash.addVariable(new Function(exactTimeDerivativeName,exactTimeDerivativeExp));
@@ -656,123 +658,123 @@ public static MathDescription constructExactMath(MathDescription mathDesc, java.
 				
 				
 				pdeEquation.setRateExpression(newRate);
-				pdeEquation.setInitialExpression(new Expression(initName));
-				pdeEquation.setDiffusionExpression(new Expression(diffusionRateName));
-				pdeEquation.setExactSolution(new Expression(exactName));
+				pdeEquation.setInitialExpression(ExpressionFactory.createExpression(initName));
+				pdeEquation.setDiffusionExpression(ExpressionFactory.createExpression(diffusionRateName));
+				pdeEquation.setExactSolution(ExpressionFactory.createExpression(exactName));
 
 				CompartmentSubDomain compartmentSubDomain = (CompartmentSubDomain)subDomain;
 				if (compartmentSubDomain.getBoundaryConditionXm().isDIRICHLET()){
-					Expression origExp = pdeEquation.getBoundaryXm();
+					IExpression origExp = pdeEquation.getBoundaryXm();
 					if (origExp != null){
-						Expression substitutedExp = substituteWithExactSolution(origExp,compartmentSubDomain,exactMath);
-						pdeEquation.setBoundaryXm(new Expression(origExp+"-"+substitutedExp+"+"+exactExp));
+						IExpression substitutedExp = substituteWithExactSolution(origExp,compartmentSubDomain,exactMath);
+						pdeEquation.setBoundaryXm(ExpressionFactory.createExpression(origExp+"-"+substitutedExp+"+"+exactExp));
 					}else{
 						pdeEquation.setBoundaryXm(exactExp);
 					}
 				}else if (compartmentSubDomain.getBoundaryConditionXm().isNEUMANN()){
-					Expression origExp = pdeEquation.getBoundaryXm();
+					IExpression origExp = pdeEquation.getBoundaryXm();
 					if (origExp != null){
-						Expression substitutedExp = substituteWithExactSolution(origExp,compartmentSubDomain,exactMath);
-						pdeEquation.setBoundaryXm(new Expression(origExp+"-"+substitutedExp+"-"+diffusionRateName+"*"+exactDxName));
+						IExpression substitutedExp = substituteWithExactSolution(origExp,compartmentSubDomain,exactMath);
+						pdeEquation.setBoundaryXm(ExpressionFactory.createExpression(origExp+"-"+substitutedExp+"-"+diffusionRateName+"*"+exactDxName));
 					}else{
-						pdeEquation.setBoundaryXm(new Expression("-"+diffusionRateName+"*"+exactDxName));
+						pdeEquation.setBoundaryXm(ExpressionFactory.createExpression("-"+diffusionRateName+"*"+exactDxName));
 					}
 				}else{
 					throw new RuntimeException("unsupported boundary condition type "+compartmentSubDomain.getBoundaryConditionXm());
 				}
 				if (compartmentSubDomain.getBoundaryConditionXp().isDIRICHLET()){
-					Expression origExp = pdeEquation.getBoundaryXp();
+					IExpression origExp = pdeEquation.getBoundaryXp();
 					if (origExp != null){
-						Expression substitutedExp = substituteWithExactSolution(origExp,compartmentSubDomain,exactMath);
-						pdeEquation.setBoundaryXp(new Expression(origExp+"-"+substitutedExp+"+"+exactExp));
+						IExpression substitutedExp = substituteWithExactSolution(origExp,compartmentSubDomain,exactMath);
+						pdeEquation.setBoundaryXp(ExpressionFactory.createExpression(origExp+"-"+substitutedExp+"+"+exactExp));
 					}else{
 						pdeEquation.setBoundaryXp(exactExp);
 					}
 				}else if (compartmentSubDomain.getBoundaryConditionXp().isNEUMANN()){
-					Expression origExp = pdeEquation.getBoundaryXp();
+					IExpression origExp = pdeEquation.getBoundaryXp();
 					if (origExp != null){
-						Expression substitutedExp = substituteWithExactSolution(origExp,compartmentSubDomain,exactMath);
-						pdeEquation.setBoundaryXp(new Expression(origExp+"-"+substitutedExp+"+"+diffusionRateName+"*"+exactDxName));
+						IExpression substitutedExp = substituteWithExactSolution(origExp,compartmentSubDomain,exactMath);
+						pdeEquation.setBoundaryXp(ExpressionFactory.createExpression(origExp+"-"+substitutedExp+"+"+diffusionRateName+"*"+exactDxName));
 					}else{
-						pdeEquation.setBoundaryXp(new Expression(diffusionRateName+"*"+exactDxName));
+						pdeEquation.setBoundaryXp(ExpressionFactory.createExpression(diffusionRateName+"*"+exactDxName));
 					}
 				}else{
 					throw new RuntimeException("unsupported boundary condition type "+compartmentSubDomain.getBoundaryConditionXp());
 				}
 				
 				if (compartmentSubDomain.getBoundaryConditionYm().isDIRICHLET()){
-					Expression origExp = pdeEquation.getBoundaryYm();
+					IExpression origExp = pdeEquation.getBoundaryYm();
 					if (origExp != null){
-						Expression substitutedExp = substituteWithExactSolution(origExp,compartmentSubDomain,exactMath);
-						pdeEquation.setBoundaryYm(new Expression(origExp+"-"+substitutedExp+"+"+exactExp));
+						IExpression substitutedExp = substituteWithExactSolution(origExp,compartmentSubDomain,exactMath);
+						pdeEquation.setBoundaryYm(ExpressionFactory.createExpression(origExp+"-"+substitutedExp+"+"+exactExp));
 					}else{
 						pdeEquation.setBoundaryYm(exactExp);
 					}
 				}else if (compartmentSubDomain.getBoundaryConditionYm().isNEUMANN()){
-					Expression origExp = pdeEquation.getBoundaryYm();
+					IExpression origExp = pdeEquation.getBoundaryYm();
 					if (origExp != null){
-						Expression substitutedExp = substituteWithExactSolution(origExp,compartmentSubDomain,exactMath);
-						pdeEquation.setBoundaryYm(new Expression(origExp+"-"+substitutedExp+"-"+diffusionRateName+"*"+exactDyName));
+						IExpression substitutedExp = substituteWithExactSolution(origExp,compartmentSubDomain,exactMath);
+						pdeEquation.setBoundaryYm(ExpressionFactory.createExpression(origExp+"-"+substitutedExp+"-"+diffusionRateName+"*"+exactDyName));
 					}else{
-						pdeEquation.setBoundaryYm(new Expression("-"+diffusionRateName+"*"+exactDyName));
+						pdeEquation.setBoundaryYm(ExpressionFactory.createExpression("-"+diffusionRateName+"*"+exactDyName));
 					}
 				}else{
 					throw new RuntimeException("unsupported boundary condition type "+compartmentSubDomain.getBoundaryConditionYm());
 				}
 				if (compartmentSubDomain.getBoundaryConditionYp().isDIRICHLET()){
-					Expression origExp = pdeEquation.getBoundaryYp();
+					IExpression origExp = pdeEquation.getBoundaryYp();
 					if (origExp != null){
-						Expression substitutedExp = substituteWithExactSolution(origExp,compartmentSubDomain,exactMath);
-						pdeEquation.setBoundaryYp(new Expression(origExp+"-"+substitutedExp+"+"+exactExp));
+						IExpression substitutedExp = substituteWithExactSolution(origExp,compartmentSubDomain,exactMath);
+						pdeEquation.setBoundaryYp(ExpressionFactory.createExpression(origExp+"-"+substitutedExp+"+"+exactExp));
 					}else{
 						pdeEquation.setBoundaryYp(exactExp);
 					}
 				}else if (compartmentSubDomain.getBoundaryConditionYp().isNEUMANN()){
-					Expression origExp = pdeEquation.getBoundaryYp();
+					IExpression origExp = pdeEquation.getBoundaryYp();
 					if (origExp != null){
-						Expression substitutedExp = substituteWithExactSolution(origExp,compartmentSubDomain,exactMath);
-						pdeEquation.setBoundaryYp(new Expression(origExp+"-"+substitutedExp+"+"+diffusionRateName+"*"+exactDyName));
+						IExpression substitutedExp = substituteWithExactSolution(origExp,compartmentSubDomain,exactMath);
+						pdeEquation.setBoundaryYp(ExpressionFactory.createExpression(origExp+"-"+substitutedExp+"+"+diffusionRateName+"*"+exactDyName));
 					}else{
-						pdeEquation.setBoundaryYp(new Expression(diffusionRateName+"*"+exactDyName));
+						pdeEquation.setBoundaryYp(ExpressionFactory.createExpression(diffusionRateName+"*"+exactDyName));
 					}
 				}else{
 					throw new RuntimeException("unsupported boundary condition type "+compartmentSubDomain.getBoundaryConditionYp());
 				}
 				
 				if (compartmentSubDomain.getBoundaryConditionZm().isDIRICHLET()){
-					Expression origExp = pdeEquation.getBoundaryZm();
+					IExpression origExp = pdeEquation.getBoundaryZm();
 					if (origExp != null){
-						Expression substitutedExp = substituteWithExactSolution(origExp,compartmentSubDomain,exactMath);
-						pdeEquation.setBoundaryZm(new Expression(origExp+"-"+substitutedExp+"+"+exactExp));
+						IExpression substitutedExp = substituteWithExactSolution(origExp,compartmentSubDomain,exactMath);
+						pdeEquation.setBoundaryZm(ExpressionFactory.createExpression(origExp+"-"+substitutedExp+"+"+exactExp));
 					}else{
 						pdeEquation.setBoundaryZm(exactExp);
 					}
 				}else if (compartmentSubDomain.getBoundaryConditionZm().isNEUMANN()){
-					Expression origExp = pdeEquation.getBoundaryZm();
+					IExpression origExp = pdeEquation.getBoundaryZm();
 					if (origExp != null){
-						Expression substitutedExp = substituteWithExactSolution(origExp,compartmentSubDomain,exactMath);
-						pdeEquation.setBoundaryZm(new Expression(origExp+"-"+substitutedExp+"-"+diffusionRateName+"*"+exactDzName));
+						IExpression substitutedExp = substituteWithExactSolution(origExp,compartmentSubDomain,exactMath);
+						pdeEquation.setBoundaryZm(ExpressionFactory.createExpression(origExp+"-"+substitutedExp+"-"+diffusionRateName+"*"+exactDzName));
 					}else{
-						pdeEquation.setBoundaryZm(new Expression("-"+diffusionRateName+"*"+exactDzName));
+						pdeEquation.setBoundaryZm(ExpressionFactory.createExpression("-"+diffusionRateName+"*"+exactDzName));
 					}
 				}else{
 					throw new RuntimeException("unsupported boundary condition type "+compartmentSubDomain.getBoundaryConditionXm());
 				}
 				if (compartmentSubDomain.getBoundaryConditionZp().isDIRICHLET()){
-					Expression origExp = pdeEquation.getBoundaryZp();
+					IExpression origExp = pdeEquation.getBoundaryZp();
 					if (origExp != null){
-						Expression substitutedExp = substituteWithExactSolution(origExp,compartmentSubDomain,exactMath);
-						pdeEquation.setBoundaryZp(new Expression(origExp+"-"+substitutedExp+"+"+exactExp));
+						IExpression substitutedExp = substituteWithExactSolution(origExp,compartmentSubDomain,exactMath);
+						pdeEquation.setBoundaryZp(ExpressionFactory.createExpression(origExp+"-"+substitutedExp+"+"+exactExp));
 					}else{
 						pdeEquation.setBoundaryZp(exactExp);
 					}
 				}else if (compartmentSubDomain.getBoundaryConditionZp().isNEUMANN()){
-					Expression origExp = pdeEquation.getBoundaryZp();
+					IExpression origExp = pdeEquation.getBoundaryZp();
 					if (origExp != null){
-						Expression substitutedExp = substituteWithExactSolution(origExp,compartmentSubDomain,exactMath);
-						pdeEquation.setBoundaryZp(new Expression(origExp+"-"+substitutedExp+"+"+diffusionRateName+"*"+exactDzName));
+						IExpression substitutedExp = substituteWithExactSolution(origExp,compartmentSubDomain,exactMath);
+						pdeEquation.setBoundaryZp(ExpressionFactory.createExpression(origExp+"-"+substitutedExp+"+"+diffusionRateName+"*"+exactDzName));
 					}else{
-						pdeEquation.setBoundaryZp(new Expression(diffusionRateName+"*"+exactDzName));
+						pdeEquation.setBoundaryZp(ExpressionFactory.createExpression(diffusionRateName+"*"+exactDzName));
 					}
 				}else{
 					throw new RuntimeException("unsupported boundary condition type "+compartmentSubDomain.getBoundaryConditionZp());
@@ -786,10 +788,10 @@ public static MathDescription constructExactMath(MathDescription mathDesc, java.
 			Enumeration enumJumpConditions = membraneSubDomain.getJumpConditions();
 			while (enumJumpConditions.hasMoreElements()){
 				JumpCondition jumpCondition = (JumpCondition)enumJumpConditions.nextElement();
-				Expression origInfluxExp = jumpCondition.getInFluxExpression();
-				Expression origOutfluxExp = jumpCondition.getOutFluxExpression();
-				Expression substitutedInfluxExp = substituteWithExactSolution(origInfluxExp,membraneSubDomain,exactMath);
-				Expression substitutedOutfluxExp = substituteWithExactSolution(origOutfluxExp,membraneSubDomain,exactMath);
+				IExpression origInfluxExp = jumpCondition.getInFluxExpression();
+				IExpression origOutfluxExp = jumpCondition.getOutFluxExpression();
+				IExpression substitutedInfluxExp = substituteWithExactSolution(origInfluxExp,membraneSubDomain,exactMath);
+				IExpression substitutedOutfluxExp = substituteWithExactSolution(origOutfluxExp,membraneSubDomain,exactMath);
 				
 				String varName = jumpCondition.getVariable().getName();
 				String exactInsideName = varName+"_"+membraneSubDomain.getInsideCompartment().getName()+"_exact";
@@ -812,16 +814,16 @@ public static MathDescription constructExactMath(MathDescription mathDesc, java.
 				String outwardNormalZName = "_"+membraneSubDomain.getInsideCompartment().getName()+"_Nz";
 				String exactInfluxName = "_"+varName+"_"+membraneSubDomain.getName()+"_exactInflux";
 				String exactOutfluxName = "_"+varName+"_"+membraneSubDomain.getName()+"_exactOutflux";
-				Expression exactInfluxExp = new Expression(diffusionRateInsideName+" * ("+
+				IExpression exactInfluxExp = ExpressionFactory.createExpression(diffusionRateInsideName+" * ("+
 															outwardNormalXName+"*"+exactInsideDxName+" + "+
 															outwardNormalYName+"*"+exactInsideDyName+" + "+
 															outwardNormalZName+"*"+exactInsideDzName+")");
-				Expression exactOutfluxExp = new Expression("-"+diffusionRateOutsideName+" * ("+
+				IExpression exactOutfluxExp = ExpressionFactory.createExpression("-"+diffusionRateOutsideName+" * ("+
 															outwardNormalXName+"*"+exactOutsideDxName+" + "+
 															outwardNormalYName+"*"+exactOutsideDyName+" + "+
 															outwardNormalZName+"*"+exactOutsideDzName+")");
-				Expression newInfluxExp = new Expression(origInfluxName+" - "+substitutedInfluxName+" + "+exactInfluxName);
-				Expression newOutfluxExp = new Expression(origOutfluxName+" - "+substitutedOutfluxName+" + "+exactOutfluxName);
+				IExpression newInfluxExp = ExpressionFactory.createExpression(origInfluxName+" - "+substitutedInfluxName+" + "+exactInfluxName);
+				IExpression newOutfluxExp = ExpressionFactory.createExpression(origOutfluxName+" - "+substitutedOutfluxName+" + "+exactOutfluxName);
 				
 				varHash.addVariable(new Function(origInfluxName,origInfluxExp));
 				varHash.addVariable(new Function(origOutfluxName,origOutfluxExp));
@@ -900,9 +902,9 @@ public static MathDescription constructOdesForSensitivity(MathDescription mathDe
 	// Get 2 values of senstivity parameter (P + epsilon) & (P - epsilon)
 	//
 	
-	Constant epsilon = new Constant("epsilon", new Expression(sensParam.getConstantValue()*1e-3));
-	Constant sensParam1 = new Constant(sensParam.getName()+"_1", new Expression(sensParam.getConstantValue() + epsilon.getConstantValue()));
-	Constant sensParam2 = new Constant(sensParam.getName()+"_2", new Expression(sensParam.getConstantValue() - epsilon.getConstantValue()));
+	Constant epsilon = new Constant("epsilon", ExpressionFactory.createExpression(sensParam.getConstantValue()*1e-3));
+	Constant sensParam1 = new Constant(sensParam.getName()+"_1", ExpressionFactory.createExpression(sensParam.getConstantValue() + epsilon.getConstantValue()));
+	Constant sensParam2 = new Constant(sensParam.getName()+"_2", ExpressionFactory.createExpression(sensParam.getConstantValue() - epsilon.getConstantValue()));
 
 	//
 	// Iterate through each subdomain (only 1 in compartmental case), and each equation in the subdomain
@@ -928,7 +930,7 @@ public static MathDescription constructOdesForSensitivity(MathDescription mathDe
 				OdeEquation odeEquation = (OdeEquation)equation;
 
 				// Similar to substituteWithExactSolutions, to bind and substitute functions in the ODE
-				Expression substitutedRateExp = substituteFunctions(odeEquation.getRateExpression(), mathDesc);
+				IExpression substitutedRateExp = substituteFunctions(odeEquation.getRateExpression(), mathDesc);
 				String varName = odeEquation.getVariable().getName();
 				VolVariable var = new VolVariable(varName);
 				varsVector.addElement(var);
@@ -938,10 +940,10 @@ public static MathDescription constructOdesForSensitivity(MathDescription mathDe
 				// Substitute the new vars (var1 and param1) in the old initExpr and rateExpr and create a new ODE
 				//
 				String varName1 = new String("__"+varName+"_1");
-				Expression initExpr1 = odeEquation.getInitialExpression();
-				Expression rateExpr1 = new Expression(substitutedRateExp);
-				rateExpr1.substituteInPlace(new Expression(varName), new Expression(varName1));
-				rateExpr1.substituteInPlace(new Expression(sensParam.getName()), new Expression(sensParam1.getName()));
+				IExpression initExpr1 = odeEquation.getInitialExpression();
+				IExpression rateExpr1 = ExpressionFactory.createExpression(substitutedRateExp);
+				rateExpr1.substituteInPlace(ExpressionFactory.createExpression(varName), ExpressionFactory.createExpression(varName1));
+				rateExpr1.substituteInPlace(ExpressionFactory.createExpression(sensParam.getName()), ExpressionFactory.createExpression(sensParam1.getName()));
 				VolVariable var1 = new VolVariable(varName1);
 				var1s.addElement(var1);
 				OdeEquation odeEqun1 = new OdeEquation(var1, initExpr1, rateExpr1);
@@ -952,10 +954,10 @@ public static MathDescription constructOdesForSensitivity(MathDescription mathDe
 				// Substitute the new vars (var2 and param2) in the old initExpr and rateExpr and create a new ODE
 				//
 				String varName2 = new String("__"+varName+"_2");
-				Expression initExpr2 = odeEquation.getInitialExpression();
-				Expression rateExpr2 = new Expression(substitutedRateExp);
-				rateExpr2.substituteInPlace(new Expression(varName), new Expression(varName2));
-				rateExpr2.substituteInPlace(new Expression(sensParam.getName()), new Expression(sensParam2.getName()));
+				IExpression initExpr2 = odeEquation.getInitialExpression();
+				IExpression rateExpr2 = ExpressionFactory.createExpression(substitutedRateExp);
+				rateExpr2.substituteInPlace(ExpressionFactory.createExpression(varName), ExpressionFactory.createExpression(varName2));
+				rateExpr2.substituteInPlace(ExpressionFactory.createExpression(sensParam.getName()), ExpressionFactory.createExpression(sensParam2.getName()));
 				VolVariable var2 = new VolVariable(varName2);
 				var2s.addElement(var2);
 				OdeEquation odeEqun2 = new OdeEquation(var2, initExpr2, rateExpr2);
@@ -964,9 +966,9 @@ public static MathDescription constructOdesForSensitivity(MathDescription mathDe
 				// 
 				// Create a function for the sensitivity function expression (X1-X2)/(P1-P2), and save in varHash
 				//
-				Expression diffVar = Expression.add(new Expression(var1.getName()), Expression.negate(new Expression(var2.getName())));
-				Expression diffParam = Expression.add(new Expression(sensParam1.getName()), Expression.negate(new Expression(sensParam2.getName())));
-				Expression sensitivityExpr = Expression.mult(diffVar, Expression.invert(diffParam));
+				IExpression diffVar = ExpressionFactory.add(ExpressionFactory.createExpression(var1.getName()), ExpressionFactory.negate(ExpressionFactory.createExpression(var2.getName())));
+				IExpression diffParam = ExpressionFactory.add(ExpressionFactory.createExpression(sensParam1.getName()), ExpressionFactory.negate(ExpressionFactory.createExpression(sensParam2.getName())));
+				IExpression sensitivityExpr = ExpressionFactory.mult(diffVar, ExpressionFactory.invert(diffParam));
 				Function sens_Func = new Function("__sens"+varName+"_wrt_"+sensParam.getName(), sensitivityExpr);
 
 				varHash.addVariable(epsilon);
@@ -996,13 +998,13 @@ public static MathDescription constructOdesForSensitivity(MathDescription mathDe
 		Vector newEqunsVector = new Vector();
 		for (int i = 0; i < equnsVector.size(); i++) {
 			Equation equn = (Equation)equnsVector.elementAt(i);
-			Expression initEx = equn.getInitialExpression();
-			Expression rateEx = equn.getRateExpression();
+			IExpression initEx = equn.getInitialExpression();
+			IExpression rateEx = equn.getRateExpression();
 			for (int j = 0; j < vars.length ; j++){
 				if (equn.getVariable().getName().endsWith("_1")) {
-					rateEx.substituteInPlace(new Expression(vars[j].getName()),new Expression(var_1s[j].getName()));
+					rateEx.substituteInPlace(ExpressionFactory.createExpression(vars[j].getName()),ExpressionFactory.createExpression(var_1s[j].getName()));
 				} else if (equn.getVariable().getName().endsWith("_2")) {
-					rateEx.substituteInPlace(new Expression(vars[j].getName()),new Expression(var_2s[j].getName()));
+					rateEx.substituteInPlace(ExpressionFactory.createExpression(vars[j].getName()),ExpressionFactory.createExpression(var_2s[j].getName()));
 				}
 			}
 			OdeEquation odeEqun = new OdeEquation(equn.getVariable(), initEx, rateEx);
@@ -1039,22 +1041,22 @@ public static MathDescription constructOdesForSensitivity(MathDescription mathDe
 			//
 			while (fastInvarsEnum.hasMoreElements()) {
 				FastInvariant fastInvar = (FastInvariant)fastInvarsEnum.nextElement();
-				Expression fastInvarExpr = fastInvar.getFunction();
+				IExpression fastInvarExpr = fastInvar.getFunction();
 				fastInvarExpr = MathUtilities.substituteFunctions(fastInvarExpr, mathDesc);
 
-				Expression fastInvarExpr1 = new Expression(fastInvarExpr);
-				Expression fastInvarExpr2 = new Expression(fastInvarExpr);
+				IExpression fastInvarExpr1 = ExpressionFactory.createExpression(fastInvarExpr);
+				IExpression fastInvarExpr2 = ExpressionFactory.createExpression(fastInvarExpr);
 				
 				for (int i = 0; i < vars.length; i++){
-					fastInvarExpr1.substituteInPlace(new Expression(vars[i].getName()),new Expression(var_1s[i].getName()));
-					fastInvarExpr2.substituteInPlace(new Expression(vars[i].getName()),new Expression(var_2s[i].getName()));
+					fastInvarExpr1.substituteInPlace(ExpressionFactory.createExpression(vars[i].getName()),ExpressionFactory.createExpression(var_1s[i].getName()));
+					fastInvarExpr2.substituteInPlace(ExpressionFactory.createExpression(vars[i].getName()),ExpressionFactory.createExpression(var_2s[i].getName()));
 				}
 
-				fastInvarExpr1.substituteInPlace(new Expression(sensParam.getName()), new Expression(sensParam1.getName()));
+				fastInvarExpr1.substituteInPlace(ExpressionFactory.createExpression(sensParam.getName()), ExpressionFactory.createExpression(sensParam1.getName()));
 				FastInvariant fastInvar1 = new FastInvariant(fastInvarExpr1);
 				invarsVector.addElement(fastInvar1);
 					
-				fastInvarExpr2.substituteInPlace(new Expression(sensParam.getName()), new Expression(sensParam2.getName()));			
+				fastInvarExpr2.substituteInPlace(ExpressionFactory.createExpression(sensParam.getName()), ExpressionFactory.createExpression(sensParam2.getName()));			
 				FastInvariant fastInvar2 = new FastInvariant(fastInvarExpr2);
 				invarsVector.addElement(fastInvar2);
 			}
@@ -1071,22 +1073,22 @@ public static MathDescription constructOdesForSensitivity(MathDescription mathDe
 			//
 			while (fastRatesEnum.hasMoreElements()) {
 				FastRate fastRate = (FastRate)fastRatesEnum.nextElement();
-				Expression fastRateExpr = fastRate.getFunction();
+				IExpression fastRateExpr = fastRate.getFunction();
 				fastRateExpr = MathUtilities.substituteFunctions(fastRateExpr, mathDesc);
 
-				Expression fastRateExpr1 = new Expression(fastRateExpr);
-				Expression fastRateExpr2 = new Expression(fastRateExpr);
+				IExpression fastRateExpr1 = ExpressionFactory.createExpression(fastRateExpr);
+				IExpression fastRateExpr2 = ExpressionFactory.createExpression(fastRateExpr);
 				
 				for (int i = 0; i < vars.length; i++){
-					fastRateExpr1.substituteInPlace(new Expression(vars[i].getName()),new Expression(var_1s[i].getName()));
-					fastRateExpr2.substituteInPlace(new Expression(vars[i].getName()),new Expression(var_2s[i].getName()));
+					fastRateExpr1.substituteInPlace(ExpressionFactory.createExpression(vars[i].getName()),ExpressionFactory.createExpression(var_1s[i].getName()));
+					fastRateExpr2.substituteInPlace(ExpressionFactory.createExpression(vars[i].getName()),ExpressionFactory.createExpression(var_2s[i].getName()));
 				}
 
-				fastRateExpr1.substituteInPlace(new Expression(sensParam.getName()), new Expression(sensParam1.getName()));
+				fastRateExpr1.substituteInPlace(ExpressionFactory.createExpression(sensParam.getName()), ExpressionFactory.createExpression(sensParam1.getName()));
 				FastRate fastRate1 = new FastRate(fastRateExpr1);
 				ratesVector.addElement(fastRate1);
 				
-				fastRateExpr2.substituteInPlace(new Expression(sensParam.getName()), new Expression(sensParam2.getName()));			
+				fastRateExpr2.substituteInPlace(ExpressionFactory.createExpression(sensParam.getName()), ExpressionFactory.createExpression(sensParam2.getName()));			
 				FastRate fastRate2 = new FastRate(fastRateExpr2);
 				ratesVector.addElement(fastRate2);
 			}
@@ -1134,9 +1136,9 @@ public static cbit.vcell.simdata.ODESolverResultSet getConstructedResultSet(Math
 		java.util.Enumeration enumEquations = subDomain.getEquations();
 		while (enumEquations.hasMoreElements()) {
 			Equation equation = (Equation)enumEquations.nextElement();
-			cbit.vcell.parser.Expression constructedSolution = equation.getExactSolution();
+			IExpression constructedSolution = equation.getExactSolution();
 			if (constructedSolution!=null){
-				constructedSolution = new Expression(constructedSolution);
+				constructedSolution = ExpressionFactory.createExpression(constructedSolution);
 				constructedSolution.bindExpression(sim);
 				constructedSolution = sim.substituteFunctions(constructedSolution);
 				constructedSolution = constructedSolution.flatten();
@@ -1175,9 +1177,9 @@ public static cbit.vcell.simdata.ODESolverResultSet getExactResultSet(MathDescri
 		java.util.Enumeration enumEquations = subDomain.getEquations();
 		while (enumEquations.hasMoreElements()) {
 			Equation equation = (Equation)enumEquations.nextElement();
-			cbit.vcell.parser.Expression exactSolution = equation.getExactSolution();
+			IExpression exactSolution = equation.getExactSolution();
 			if (exactSolution!=null){
-				exactSolution = new Expression(exactSolution);
+				exactSolution = ExpressionFactory.createExpression(exactSolution);
 				exactSolution.bindExpression(sim);
 				exactSolution = sim.substituteFunctions(exactSolution);
 				exactSolution.bindExpression(sim);
@@ -1186,7 +1188,7 @@ public static cbit.vcell.simdata.ODESolverResultSet getExactResultSet(MathDescri
 
 				if (sensitivityParam != null) {
 					exactSolution = equation.getExactSolution();
-					Expression exactSensitivity = new Expression(exactSolution);
+					IExpression exactSensitivity = ExpressionFactory.createExpression(exactSolution);
 					exactSensitivity.bindExpression(sim);
 					exactSensitivity = sim.substituteFunctions(exactSensitivity);
 					exactSensitivity.bindExpression(sim);
@@ -1209,31 +1211,31 @@ public static cbit.vcell.simdata.ODESolverResultSet getExactResultSet(MathDescri
 /**
  * Insert the method's description here.
  * Creation date: (1/23/2003 10:30:23 PM)
- * @return cbit.vcell.parser.Expression
- * @param analyticSubDomainExp cbit.vcell.parser.Expression
+ * @return cbit.vcell.parser.IExpression
+ * @param analyticSubDomainExp cbit.vcell.parser.IExpression
  */
-public static Expression[] getInsideOutsideFunctions(Expression analyticSubDomainExp) throws ExpressionException {
+public static IExpression[] getInsideOutsideFunctions(IExpression analyticSubDomainExp) throws ExpressionException {
 	
 	java.util.Vector varList = new java.util.Vector();
-	Expression analyticExp = new Expression(analyticSubDomainExp);
+	IExpression analyticExp = ExpressionFactory.createExpression(analyticSubDomainExp);
 	analyticExp.bindExpression(null);
 	analyticExp = analyticExp.flatten();
 	java.util.Stack unparsedExpressionStack = new java.util.Stack();
 	java.util.Vector expList = new java.util.Vector();
 	unparsedExpressionStack.push(analyticExp);
 	while (unparsedExpressionStack.size()>0){
-		Expression exp = (Expression)unparsedExpressionStack.pop();
+		IExpression exp = (IExpression)unparsedExpressionStack.pop();
 		if (exp.isRelational()){
-			cbit.vcell.parser.ExpressionTerm expTerm = exp.extractTopLevelTerm();
+			org.vcell.expression.ExpressionTerm expTerm = exp.extractTopLevelTerm();
 			if (expTerm.getOperator().equals("<") || expTerm.getOperator().equals("<=")){
-				expList.add(new Expression(expTerm.getOperands()[0].infix()+"-"+expTerm.getOperands()[1].infix()));
+				expList.add(ExpressionFactory.createExpression(expTerm.getOperands()[0].infix()+"-"+expTerm.getOperands()[1].infix()));
 			}else if (expTerm.getOperator().equals(">") || expTerm.getOperator().equals(">=")){
-				expList.add(new Expression(expTerm.getOperands()[1].infix()+"-"+expTerm.getOperands()[0].infix()));
+				expList.add(ExpressionFactory.createExpression(expTerm.getOperands()[1].infix()+"-"+expTerm.getOperands()[0].infix()));
 			}else{
 				throw new ExpressionException("relational expression '"+exp+"' is not an inequality");
 			}
 		}else if (exp.isLogical()){
-			cbit.vcell.parser.ExpressionTerm expTerm = exp.extractTopLevelTerm();
+			org.vcell.expression.ExpressionTerm expTerm = exp.extractTopLevelTerm();
 			for (int i = 0; i < expTerm.getOperands().length; i++){
 				unparsedExpressionStack.push(expTerm.getOperands()[i]);
 			}
@@ -1241,23 +1243,23 @@ public static Expression[] getInsideOutsideFunctions(Expression analyticSubDomai
 			throw new ExpressionException("expression '"+exp+"' is neither relational nor logical, bad analytic geometry");
 		}
 	}
-	return (Expression[])cbit.util.BeanUtils.getArray(expList,Expression.class);
+	return (IExpression[])cbit.util.BeanUtils.getArray(expList,IExpression.class);
 }
 
 
 /**
  * Insert the method's description here.
  * Creation date: (1/23/2003 10:30:23 PM)
- * @return cbit.vcell.parser.Expression
- * @param analyticSubDomainExp cbit.vcell.parser.Expression
+ * @return cbit.vcell.parser.IExpression
+ * @param analyticSubDomainExp cbit.vcell.parser.IExpression
  * @throws MathException 
  * @throws MappingException 
  */
-public static Function[] getOutwardNormal(Expression analyticSubVolume, String baseName) throws ExpressionException, MathException {
+public static Function[] getOutwardNormal(IExpression analyticSubVolume, String baseName) throws ExpressionException, MathException {
 
 	cbit.vcell.math.VariableHash varHash = new cbit.vcell.math.VariableHash();
 	
-	Expression insideOutsideFunctions[] = getInsideOutsideFunctions(analyticSubVolume);
+	IExpression insideOutsideFunctions[] = getInsideOutsideFunctions(analyticSubVolume);
 	StringBuffer normalBufferX = new StringBuffer("0.0");
 	StringBuffer normalBufferY = new StringBuffer("0.0");
 	StringBuffer normalBufferZ = new StringBuffer("0.0");
@@ -1276,15 +1278,15 @@ public static Function[] getOutwardNormal(Expression analyticSubVolume, String b
 				closestBuffer.append(" && ("+baseName+i+"_distance < "+baseName+j+"_distance)");
 			}
 		}
-		Expression closest = new Expression(closestBuffer.toString());
+		IExpression closest = ExpressionFactory.createExpression(closestBuffer.toString());
 		varHash.addVariable(new Function(closestName,closest));
 		normalBufferX.append(" + ("+baseName+i+"_closest * "+baseName+i+"_Nx)");
 		normalBufferY.append(" + ("+baseName+i+"_closest * "+baseName+i+"_Ny)");
 		normalBufferZ.append(" + ("+baseName+i+"_closest * "+baseName+i+"_Nz)");
 	}
-	varHash.addVariable(new Function(baseName+"_Nx",new Expression(normalBufferX.toString())));
-	varHash.addVariable(new Function(baseName+"_Ny",new Expression(normalBufferY.toString())));
-	varHash.addVariable(new Function(baseName+"_Nz",new Expression(normalBufferZ.toString())));
+	varHash.addVariable(new Function(baseName+"_Nx",ExpressionFactory.createExpression(normalBufferX.toString())));
+	varHash.addVariable(new Function(baseName+"_Ny",ExpressionFactory.createExpression(normalBufferY.toString())));
+	varHash.addVariable(new Function(baseName+"_Nz",ExpressionFactory.createExpression(normalBufferZ.toString())));
 
 	
 	Variable vars[] = varHash.getReorderedVariables();
@@ -1296,13 +1298,13 @@ public static Function[] getOutwardNormal(Expression analyticSubVolume, String b
 /**
  * Insert the method's description here.
  * Creation date: (1/23/2003 10:30:23 PM)
- * @return cbit.vcell.parser.Expression
- * @param analyticSubDomainExp cbit.vcell.parser.Expression
+ * @return cbit.vcell.parser.IExpression
+ * @param analyticSubDomainExp cbit.vcell.parser.IExpression
  */
-public static Function[] getOutwardNormalFromInsideOutsideFunction(Expression insideOutsideFunction, String baseName) throws ExpressionException {
+public static Function[] getOutwardNormalFromInsideOutsideFunction(IExpression insideOutsideFunction, String baseName) throws ExpressionException {
 	
 	java.util.Vector varList = new java.util.Vector();
-	Expression F = new Expression(insideOutsideFunction);
+	IExpression F = ExpressionFactory.createExpression(insideOutsideFunction);
 	F.bindExpression(null);
 	F = F.flatten();
 	
@@ -1311,21 +1313,21 @@ public static Function[] getOutwardNormalFromInsideOutsideFunction(Expression in
 	}
 	String F_name = baseName+"_F";
 	String F_dx_name = baseName+"_F_dx";
-	Expression F_dx = F.differentiate("x").flatten();
+	IExpression F_dx = F.differentiate("x").flatten();
 	String F_dy_name = baseName+"_F_dy";
-	Expression F_dy = F.differentiate("y").flatten();
+	IExpression F_dy = F.differentiate("y").flatten();
 	String F_dz_name = baseName+"_F_dz";
-	Expression F_dz = F.differentiate("z").flatten();
+	IExpression F_dz = F.differentiate("z").flatten();
 	String normalLengthName = baseName+"_F_d_length";
-	Expression normalLength = new Expression("sqrt(pow("+F_dx_name+",2)+pow("+F_dy_name+",2)+pow("+F_dz_name+",2))");
+	IExpression normalLength = ExpressionFactory.createExpression("sqrt(pow("+F_dx_name+",2)+pow("+F_dy_name+",2)+pow("+F_dz_name+",2))");
 	String distanceToSurfaceName = baseName+"_distance";
-	Expression distanceToSurface = new Expression("abs("+F_name+")/"+normalLengthName);
+	IExpression distanceToSurface = ExpressionFactory.createExpression("abs("+F_name+")/"+normalLengthName);
 	String normalXName = baseName+"_Nx";
-	Expression normalX = new Expression(F_dx_name+"/"+normalLengthName);
+	IExpression normalX = ExpressionFactory.createExpression(F_dx_name+"/"+normalLengthName);
 	String normalYName = baseName+"_Ny";
-	Expression normalY = new Expression(F_dy_name+"/"+normalLengthName);
+	IExpression normalY = ExpressionFactory.createExpression(F_dy_name+"/"+normalLengthName);
 	String normalZName = baseName+"_Nz";
-	Expression normalZ = new Expression(F_dz_name+"/"+normalLengthName);
+	IExpression normalZ = ExpressionFactory.createExpression(F_dz_name+"/"+normalLengthName);
 
 	varList.add(new Function(F_name,F));
 	varList.add(new Function(F_dx_name,F_dx));
@@ -1344,8 +1346,8 @@ public static Function[] getOutwardNormalFromInsideOutsideFunction(Expression in
 /**
  * Insert the method's description here.
  * Creation date: (1/24/2003 10:18:14 AM)
- * @return cbit.vcell.parser.Expression
- * @param origExp cbit.vcell.parser.Expression
+ * @return cbit.vcell.parser.IExpression
+ * @param origExp cbit.vcell.parser.IExpression
  * @param subDomain cbit.vcell.math.SubDomain
  */
 private static Variable getSimVar(Simulation refSim, String testSimVarName) {
@@ -1365,12 +1367,12 @@ private static Variable getSimVar(Simulation refSim, String testSimVarName) {
 /**
  * Insert the method's description here.
  * Creation date: (1/24/2003 10:18:14 AM)
- * @return cbit.vcell.parser.Expression
- * @param origExp cbit.vcell.parser.Expression
+ * @return cbit.vcell.parser.IExpression
+ * @param origExp cbit.vcell.parser.IExpression
  * @param subDomain cbit.vcell.math.SubDomain
  */
-private static Expression substituteFunctions(Expression origExp, MathDescription exactMathDesc) throws ExpressionException {
-	Expression substitutedExp = new Expression(origExp);
+private static IExpression substituteFunctions(IExpression origExp, MathDescription exactMathDesc) throws ExpressionException {
+	IExpression substitutedExp = ExpressionFactory.createExpression(origExp);
 	substitutedExp.bindExpression(exactMathDesc);
 	substitutedExp = MathUtilities.substituteFunctions(substitutedExp,exactMathDesc);
 	substitutedExp.bindExpression(null);
@@ -1384,12 +1386,12 @@ private static Expression substituteFunctions(Expression origExp, MathDescriptio
 /**
  * Insert the method's description here.
  * Creation date: (1/24/2003 10:18:14 AM)
- * @return cbit.vcell.parser.Expression
- * @param origExp cbit.vcell.parser.Expression
+ * @return cbit.vcell.parser.IExpression
+ * @param origExp cbit.vcell.parser.IExpression
  * @param subDomain cbit.vcell.math.SubDomain
  */
-private static Expression substituteWithExactSolution(Expression origExp, CompartmentSubDomain subDomain, MathDescription exactMathDesc) throws ExpressionException {
-	Expression substitutedExp = new Expression(origExp);
+private static IExpression substituteWithExactSolution(IExpression origExp, CompartmentSubDomain subDomain, MathDescription exactMathDesc) throws ExpressionException {
+	IExpression substitutedExp = ExpressionFactory.createExpression(origExp);
 	substitutedExp.bindExpression(exactMathDesc);
 	substitutedExp = MathUtilities.substituteFunctions(substitutedExp,exactMathDesc);
 	substitutedExp.bindExpression(null);
@@ -1400,7 +1402,7 @@ private static Expression substituteWithExactSolution(Expression origExp, Compar
 		Variable var = (Variable)substitutedExp.getSymbolBinding(symbols[i]);
 		if (var instanceof VolVariable){
 			String exactVarName = var.getName()+"_"+subDomain.getName()+"_exact";
-			substitutedExp.substituteInPlace(new Expression(var.getName()),new Expression(exactVarName));
+			substitutedExp.substituteInPlace(ExpressionFactory.createExpression(var.getName()),ExpressionFactory.createExpression(exactVarName));
 		}else if (var instanceof VolumeRegionVariable 
 					|| var instanceof MemVariable || var instanceof MembraneRegionVariable
 					|| var instanceof FilamentVariable || var instanceof FilamentRegionVariable){
@@ -1415,12 +1417,12 @@ private static Expression substituteWithExactSolution(Expression origExp, Compar
 /**
  * Insert the method's description here.
  * Creation date: (1/24/2003 10:18:14 AM)
- * @return cbit.vcell.parser.Expression
- * @param origExp cbit.vcell.parser.Expression
+ * @return cbit.vcell.parser.IExpression
+ * @param origExp cbit.vcell.parser.IExpression
  * @param subDomain cbit.vcell.math.SubDomain
  */
-private static Expression substituteWithExactSolution(Expression origExp, MembraneSubDomain subDomain, MathDescription exactMathDesc) throws ExpressionException {
-	Expression substitutedExp = new Expression(origExp);
+private static IExpression substituteWithExactSolution(IExpression origExp, MembraneSubDomain subDomain, MathDescription exactMathDesc) throws ExpressionException {
+	IExpression substitutedExp = ExpressionFactory.createExpression(origExp);
 	substitutedExp.bindExpression(exactMathDesc);
 	substitutedExp = MathUtilities.substituteFunctions(substitutedExp,exactMathDesc);
 	substitutedExp.bindExpression(null);
@@ -1431,13 +1433,13 @@ private static Expression substituteWithExactSolution(Expression origExp, Membra
 		Variable var = (Variable)substitutedExp.getSymbolBinding(symbols[i]);
 		if (var instanceof MemVariable){
 			String exactVarName = var.getName()+"_"+subDomain.getName()+"_exact";
-			substitutedExp.substituteInPlace(new Expression(var.getName()),new Expression(exactVarName));
+			substitutedExp.substituteInPlace(ExpressionFactory.createExpression(var.getName()),ExpressionFactory.createExpression(exactVarName));
 		}else if (var instanceof InsideVariable){
 			String exactVarName = var.getName()+"_"+subDomain.getInsideCompartment().getName()+"_exact";
-			substitutedExp.substituteInPlace(new Expression(var.getName()),new Expression(exactVarName));
+			substitutedExp.substituteInPlace(ExpressionFactory.createExpression(var.getName()),ExpressionFactory.createExpression(exactVarName));
 		}else if (var instanceof OutsideVariable){
 			String exactVarName = var.getName()+"_"+subDomain.getOutsideCompartment().getName()+"_exact";
-			substitutedExp.substituteInPlace(new Expression(var.getName()),new Expression(exactVarName));
+			substitutedExp.substituteInPlace(ExpressionFactory.createExpression(var.getName()),ExpressionFactory.createExpression(exactVarName));
 		}else if (var instanceof VolumeRegionVariable 
 					|| var instanceof MemVariable || var instanceof MembraneRegionVariable
 					|| var instanceof FilamentVariable || var instanceof FilamentRegionVariable){

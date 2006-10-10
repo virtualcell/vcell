@@ -5,6 +5,11 @@ package cbit.vcell.solver.ode;
  * All rights reserved.
 ©*/
 import java.util.*;
+
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
 import cbit.vcell.simulation.Simulation;
@@ -17,11 +22,11 @@ public class FastAlgebraicSystem extends AlgebraicSystem {
 	private Simulation simulation = null;
 	private FastSystem fastSystem = null;
 	
-	private Expression matrixExps[] = null;
+	private IExpression matrixExps[] = null;
 	private Variable independentVars[] = null;
 	private Variable dependentVars[] = null;
 	private PseudoConstant pseudoConstants[] = null;
-	private Expression dependencyExps[] = null;
+	private IExpression dependencyExps[] = null;
 /**
  * AlgebraicSystemExample constructor comment.
  * @param dimension int
@@ -63,20 +68,20 @@ protected void initMatrixExpressions() throws MathException, ExpressionException
 	//
 	// initialize independentVariables and matrix expressions
 	//
-	matrixExps = new Expression[numIV*(numIV+1)];
+	matrixExps = new IExpression[numIV*(numIV+1)];
 	independentVars = new Variable[numIV];
 	Enumeration enum_fre = fastSystem.getFastRateExpressions();
 	while (enum_fre.hasMoreElements()){
-		Expression fastRateExpression = (Expression)enum_fre.nextElement();
+		IExpression fastRateExpression = (IExpression)enum_fre.nextElement();
 		int varCount=0;
 		Enumeration enum_var = fastSystem.getIndependentVariables();
 		while (enum_var.hasMoreElements()){
 			Variable var = (Variable)enum_var.nextElement();
 			independentVars[varCount] = var;
 //System.out.println("FastAlgebraicSystem.initMatrixExpressions(), rate["+frCount+"] = "+fastRateExpression.toString());
-			Expression exp = simulation.substituteFunctions(fastRateExpression);
+			IExpression exp = simulation.substituteFunctions(fastRateExpression);
 //System.out.println("FastAlgebraicSystem.initMatrixExpressions(), flattened = "+exp.toString());
-			Expression differential = exp.differentiate(var.getName());
+			IExpression differential = exp.differentiate(var.getName());
 			differential.bindExpression(simulation);
 			differential = differential.flatten();
 //System.out.println("FastAlgebraicSystem.initMatrixExpressions(), d/d["+var.getName()+"] = "+differential.toString());
@@ -84,7 +89,7 @@ protected void initMatrixExpressions() throws MathException, ExpressionException
 			varCount++;
 		}
 
-		Expression exp = Expression.negate(fastRateExpression);
+		IExpression exp = ExpressionFactory.negate(fastRateExpression);
 		exp = simulation.substituteFunctions(exp);
 		exp.bindExpression(simulation);
 		matrixExps[frCount + numIV*varCount] = exp.flatten();
@@ -105,7 +110,7 @@ System.out.println("\n\n");
 	// initialize pseudoConstants and dependency expressions
 	//
 	pseudoConstants = new PseudoConstant[numDV];
-	dependencyExps = new Expression[numDV];
+	dependencyExps = new IExpression[numDV];
 	dependentVars = new Variable[numDV];
 	int pcCount = 0;
 	Enumeration enum_pc = fastSystem.getPseudoConstants();
@@ -116,7 +121,7 @@ System.out.println("\n\n");
 		pseudoConstants[pcCount] = pc;
 		pc.getPseudoExpression().bindExpression(simulation);
 
-		Expression de = (Expression)enum_de.nextElement();
+		IExpression de = (IExpression)enum_de.nextElement();
 		dependencyExps[pcCount] = de;
 		de.bindExpression(simulation);
 
@@ -168,11 +173,11 @@ protected void updateMatrix(double oldValues[], double newValues[]) throws Expre
 	for (int frCount=0;frCount<numIV;frCount++){
 		int varCount;
 		for (varCount=0;varCount<numIV;varCount++){
-			Expression exp = matrixExps[frCount + numIV*varCount];
+			IExpression exp = matrixExps[frCount + numIV*varCount];
 			double value = exp.evaluateVector(oldValues);
 			setMatrixA(frCount,varCount,value);
 		}
-		Expression exp = matrixExps[frCount + numIV*numIV];
+		IExpression exp = matrixExps[frCount + numIV*numIV];
 		setVectorB(frCount,exp.evaluateVector(oldValues));
 	}
 

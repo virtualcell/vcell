@@ -4,8 +4,15 @@ package cbit.vcell.solver.ode;
  * All rights reserved.
 ©*/
 import cbit.vcell.parser.*;
+
 import java.util.*;
 import java.io.*;
+
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.VariableSymbolTable;
+
 import cbit.vcell.math.*;
 import cbit.vcell.simulation.*;
 /**
@@ -186,13 +193,13 @@ private void writeEquations(java.io.PrintWriter pw) throws MathException, Expres
 		
 	for (int i = 0; i < getStateVariableCount(); i++) {
 		StateVariable stateVar = (StateVariable)getStateVariable(i);
-		Expression rateExpr = new Expression(0.0);
+		IExpression rateExpr = ExpressionFactory.createExpression(0.0);
 		if (stateVar instanceof ODEStateVariable) {
 			rateExpr = ((ODEStateVariable)stateVar).getRateExpression();
 		} else if (stateVar instanceof SensStateVariable) {
 			rateExpr = ((SensStateVariable)stateVar).getRateExpression();
 		}
-		Expression initExpr = new Expression(0.0);
+		IExpression initExpr = ExpressionFactory.createExpression(0.0);
 		if (stateVar instanceof ODEStateVariable) {
 			initExpr = ((ODEStateVariable)stateVar).getInitialRateExpression();
 			initExpr.bindExpression(getSimulation());

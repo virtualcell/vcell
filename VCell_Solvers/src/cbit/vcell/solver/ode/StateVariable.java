@@ -4,6 +4,9 @@ package cbit.vcell.solver.ode;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.IExpression;
+
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
 /**
@@ -67,12 +70,12 @@ public int getDataCount() {
  * This method was created in VisualAge.
  * @return double[]
  */
-public abstract Expression getInitialRateExpression() throws ExpressionException;
+public abstract IExpression getInitialRateExpression() throws ExpressionException;
 /**
  * This method was created in VisualAge.
  * @return double[]
  */
-public abstract Expression getRateExpression() throws ExpressionException ;
+public abstract IExpression getRateExpression() throws ExpressionException ;
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.math.Variable

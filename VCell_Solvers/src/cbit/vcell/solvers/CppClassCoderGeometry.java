@@ -5,6 +5,9 @@ package cbit.vcell.solvers;
 ©*/
 import java.util.*;
 
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import cbit.util.Coordinate;
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
@@ -130,7 +133,7 @@ protected void writeGetFeatureHandle(java.io.PrintWriter out) throws Exception {
 		expString += analyticSubVolume.getExpression().infix_C();
 		first = false;
 	}	
-	Expression exp = new Expression(expString);
+	IExpression exp = ExpressionFactory.createExpression(expString);
 
 	Enumeration enum1 = simulation.getRequiredVariables(exp);
 

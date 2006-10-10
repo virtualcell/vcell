@@ -3,6 +3,9 @@ package cbit.vcell.solvers;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.IExpression;
+
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
 import cbit.vcell.simulation.*;
@@ -70,7 +73,7 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	out.println(": "+getParentClassName()+"(Afeature,AspeciesName)");
 	out.println("{");
 	try {
-		Expression ic = getEquation().getInitialExpression();
+		IExpression ic = getEquation().getInitialExpression();
 		ic.bindExpression(getSimulation());
 		double value = ic.evaluateConstant();
 		out.println("   initialValue = new double;");
@@ -116,7 +119,7 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 
 	BoundaryConditionType bc = null;
 	try {
-		Expression ic = getEquation().getInitialExpression();
+		IExpression ic = getEquation().getInitialExpression();
 		ic.bindExpression(getSimulation());
 		double value = ic.evaluateConstant();
 	}catch (Exception e){

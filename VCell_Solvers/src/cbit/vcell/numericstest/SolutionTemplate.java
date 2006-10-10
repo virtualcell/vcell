@@ -1,6 +1,8 @@
 package cbit.vcell.numericstest;
 
-import cbit.vcell.parser.Expression;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 /**
  * Insert the type's description here.
  * Creation date: (5/12/2003 10:58:02 AM)
@@ -10,12 +12,12 @@ public class SolutionTemplate {
 	private java.lang.String fieldVarName = null;
 	private java.lang.String fieldDomainName = null;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.vcell.parser.Expression fieldTemplateExpression = null;
+	private IExpression fieldTemplateExpression = null;
 	private cbit.vcell.math.Constant[] fieldConstants = null;
 /**
  * SolutionTemplate constructor comment.
  */
-public SolutionTemplate(String varName, String domainName, Expression templateExpression) {
+public SolutionTemplate(String varName, String domainName, IExpression templateExpression) {
 	super();
 	this.fieldVarName = varName;
 	this.fieldDomainName = domainName;
@@ -25,7 +27,7 @@ public SolutionTemplate(String varName, String domainName, Expression templateEx
 		String symbols[] = templateExpression.getSymbols();
 		fieldConstants = new cbit.vcell.math.Constant[symbols.length];
 		for (int i = 0; i < symbols.length; i++){
-			fieldConstants[i] = new cbit.vcell.math.Constant(symbols[i],new Expression(1.0));
+			fieldConstants[i] = new cbit.vcell.math.Constant(symbols[i],ExpressionFactory.createExpression(1.0));
 		}
 	} 
 }
@@ -95,7 +97,7 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
  * @return The templateExpression property value.
  * @see #setTemplateExpression
  */
-public cbit.vcell.parser.Expression getTemplateExpression() {
+public IExpression getTemplateExpression() {
 	return fieldTemplateExpression;
 }
 /**
@@ -139,8 +141,8 @@ private void setConstants(cbit.vcell.math.Constant[] constants) {
  * @param templateExpression The new value for the property.
  * @see #getTemplateExpression
  */
-public void setTemplateExpression(cbit.vcell.parser.Expression templateExpression) {
-	cbit.vcell.parser.Expression oldValue = fieldTemplateExpression;
+public void setTemplateExpression(IExpression templateExpression) {
+	IExpression oldValue = fieldTemplateExpression;
 	fieldTemplateExpression = templateExpression;
 	firePropertyChange("templateExpression", oldValue, templateExpression);
 }

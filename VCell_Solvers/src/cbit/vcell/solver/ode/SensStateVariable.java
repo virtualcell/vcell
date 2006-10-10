@@ -6,15 +6,21 @@ package cbit.vcell.solver.ode;
 ©*/
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
+
 import java.util.Vector;
+
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.SymbolTable;
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 9:00:20 PM)
  * @author: John Wagner
  */
 public class SensStateVariable extends StateVariable {
-	Expression optimizedRateSensExp = null;
-	Expression optimizedJacobianExps[] = null;
+	IExpression optimizedRateSensExp = null;
+	IExpression optimizedJacobianExps[] = null;
 	//SensVariable sensVars[] = null;
 	Vector sensVars = null;
 /**
@@ -118,8 +124,8 @@ public double evaluateRate(double values[]) throws ExpressionException {
  * @return double
  * @param values double[]
  */
-public Expression getInitialRateExpression() throws ExpressionException {
-	return new Expression(0.0);
+public IExpression getInitialRateExpression() throws ExpressionException {
+	return ExpressionFactory.createExpression(0.0);
 }
 /**
  * This method was created in VisualAge.
@@ -133,13 +139,13 @@ public Constant getParameter() {
  * @return double
  * @param values double[]
  */
-public Expression getRateExpression() throws ExpressionException {
+public IExpression getRateExpression() throws ExpressionException {
 	
 	//                         d Fi
 	// add rate sensitivity   ------
 	//                         d Pj
 	//
-	Expression exp = new Expression(optimizedRateSensExp);
+	IExpression exp = ExpressionFactory.createExpression(optimizedRateSensExp);
 	
 	//
 	//  add product of jacobian and sensVars for all k
@@ -154,8 +160,8 @@ public Expression getRateExpression() throws ExpressionException {
 	//
 	for (int i=0;i<sensVars.size();i++){
 		SensVariable sensVariable = (SensVariable) sensVars.elementAt(i);
-		Expression exp1 = Expression.mult(optimizedJacobianExps[i], new Expression(sensVariable.getSensName(sensVariable.getVolVariable(), sensVariable.getParameter())));
-		exp = Expression.add(exp, exp1);
+		IExpression exp1 = ExpressionFactory.mult(optimizedJacobianExps[i], ExpressionFactory.createExpression(sensVariable.getSensName(sensVariable.getVolVariable(), sensVariable.getParameter())));
+		exp = ExpressionFactory.add(exp, exp1);
 	}
     
 	return exp;
@@ -197,11 +203,11 @@ private void init(RateSensitivity rateSensitivity, Jacobian jacobian, SymbolTabl
 	//    ------   for all j
 	//     d Cj
 	//
-	optimizedJacobianExps = new Expression[jacobian.getNumRates()];
+	optimizedJacobianExps = new IExpression[jacobian.getNumRates()];
 	int currIndex = jacobian.getRateIndex(var);
 	
 	for (int i=0;i<optimizedJacobianExps.length;i++){
-		Expression exp = jacobian.getJexp(currIndex,i);
+		IExpression exp = jacobian.getJexp(currIndex,i);
 		exp.bindExpression(symbolTable);
 		optimizedJacobianExps[i] = exp.flatten();
 	}
@@ -214,7 +220,7 @@ private void init(RateSensitivity rateSensitivity, Jacobian jacobian, SymbolTabl
 	//    d Pj
 	//
 	//
-	Expression exp = rateSensitivity.getCPexp(var,parameter.getName());
+	IExpression exp = rateSensitivity.getCPexp(var,parameter.getName());
 	exp.bindExpression(symbolTable);
 	optimizedRateSensExp = exp.flatten();
 }

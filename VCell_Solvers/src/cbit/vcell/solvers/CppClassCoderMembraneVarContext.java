@@ -4,6 +4,10 @@ package cbit.vcell.solvers;
  * All rights reserved.
 ©*/
 import java.util.*;
+
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
 import cbit.vcell.simulation.*;
@@ -70,7 +74,7 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	out.println(": "+getParentClassName()+"(Afeature,AspeciesName)");
 	out.println("{");
 	try {
-		Expression ic = getEquation().getInitialExpression();
+		IExpression ic = getEquation().getInitialExpression();
 		ic.bindExpression(getSimulation());
 		double value = ic.evaluateConstant();
 		out.println("   initialValue = new double;");
@@ -194,7 +198,7 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 		}	
 	}		
 	try {
-		Expression ic = getEquation().getInitialExpression();
+		IExpression ic = getEquation().getInitialExpression();
 		ic.bindExpression(getSimulation());
 		double value = ic.evaluateConstant();
 	}catch (Exception e){
@@ -245,7 +249,7 @@ public void writeImplementation(java.io.PrintWriter out) throws Exception {
 		PdeEquation pde = (PdeEquation)getEquation();
 		writeMembraneFunction(out,"getMembraneDiffusionRate", pde.getDiffusionExpression(), bFlippedInsideOutside);
 	}else{
-		writeMembraneFunction(out,"getMembraneDiffusionRate", new Expression(0.0), bFlippedInsideOutside);
+		writeMembraneFunction(out,"getMembraneDiffusionRate", ExpressionFactory.createExpression(0.0), bFlippedInsideOutside);
 	}
 	out.println("");
 	MathDescription mathDesc = getSimulation().getMathDescription();

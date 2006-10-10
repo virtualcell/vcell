@@ -2,11 +2,12 @@ package cbit.vcell.solver.ode;
 
 import cbit.util.SessionLog;
 import java.io.*;
+
+import org.vcell.expression.ExpressionException;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.math.MathException;
 import cbit.vcell.simulation.*;
 import cbit.vcell.solvers.SimulationJob;

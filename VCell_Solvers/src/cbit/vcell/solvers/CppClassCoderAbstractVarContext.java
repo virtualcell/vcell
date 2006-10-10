@@ -4,6 +4,10 @@ package cbit.vcell.solvers;
  * All rights reserved.
 ©*/
 import java.util.*;
+
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.IExpression;
+
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
 import cbit.vcell.simulation.*;
@@ -134,7 +138,7 @@ protected final boolean isFlippedInsideOutside(MembraneSubDomain membraneSubDoma
  * This method was created by a SmartGuide.
  * @param out java.io.PrintWriter
  */
-protected void writeContourFunction(java.io.PrintWriter out, String functionName, Expression exp) throws Exception {
+protected void writeContourFunction(java.io.PrintWriter out, String functionName, IExpression exp) throws Exception {
 
 	if (exp == null){
 		return;
@@ -143,7 +147,7 @@ protected void writeContourFunction(java.io.PrintWriter out, String functionName
 	out.println("double "+getClassName()+"::"+functionName+"(ContourElement *contourElement)");
 	out.println("{");
 
-	Expression exp2 = simulation.substituteFunctions(exp).flatten();
+	IExpression exp2 = simulation.substituteFunctions(exp).flatten();
 	writeContourFunctionDeclarations(out,"contourElement",exp2);
 
 	out.println("   return "+exp2.infix_C()+";");
@@ -157,7 +161,7 @@ protected void writeContourFunction(java.io.PrintWriter out, String functionName
  * This method was created by a SmartGuide.
  * @param out java.io.PrintWriter
  */
-protected void writeContourFunctionDeclarations(java.io.PrintWriter out, String contourElementString, Expression exp) throws Exception {
+protected void writeContourFunctionDeclarations(java.io.PrintWriter out, String contourElementString, IExpression exp) throws Exception {
 
 	boolean wc_defined = false;
 	Enumeration enum1 = simulation.getRequiredVariables(exp);
@@ -218,7 +222,7 @@ protected void writeContourFunctionDeclarations(java.io.PrintWriter out, String 
  * This method was created by a SmartGuide.
  * @param out java.io.PrintWriter
  */
-protected final void writeMembraneFunction(java.io.PrintWriter out, String functionName, Expression exp, boolean bFlipInsideOutside) throws Exception {
+protected final void writeMembraneFunction(java.io.PrintWriter out, String functionName, IExpression exp, boolean bFlipInsideOutside) throws Exception {
 
 	if (exp == null){
 		return;
@@ -227,7 +231,7 @@ protected final void writeMembraneFunction(java.io.PrintWriter out, String funct
 	out.println("double "+getClassName()+"::"+functionName+"(MembraneElement *memElement)");
 	out.println("{");
 
-	Expression exp2 = simulation.substituteFunctions(exp).flatten();
+	IExpression exp2 = simulation.substituteFunctions(exp).flatten();
 	writeMembraneFunctionDeclarations(out,"memElement",exp2,bFlipInsideOutside,"   ");
 
 	out.println("   return "+exp2.infix_C()+";");
@@ -241,7 +245,7 @@ protected final void writeMembraneFunction(java.io.PrintWriter out, String funct
  * This method was created by a SmartGuide.
  * @param out java.io.PrintWriter
  */
-protected final void writeMembraneFunctionDeclarations(java.io.PrintWriter out, String membraneElementString, Expression exp, boolean bFlipInsideOutside, String pad) throws Exception {
+protected final void writeMembraneFunctionDeclarations(java.io.PrintWriter out, String membraneElementString, IExpression exp, boolean bFlipInsideOutside, String pad) throws Exception {
 
 	boolean wc_defined = false;
 	Enumeration enum1 = simulation.getRequiredVariables(exp);
@@ -305,7 +309,7 @@ protected final void writeMembraneFunctionDeclarations(java.io.PrintWriter out, 
  * This method was created by a SmartGuide.
  * @param out java.io.PrintWriter
  */
-protected final void writeMembraneRegionFunction(java.io.PrintWriter out, String functionName, Expression exp) throws Exception {
+protected final void writeMembraneRegionFunction(java.io.PrintWriter out, String functionName, IExpression exp) throws Exception {
 
 	if (exp == null){
 		return;
@@ -314,7 +318,7 @@ protected final void writeMembraneRegionFunction(java.io.PrintWriter out, String
 	out.println("double "+getClassName()+"::"+functionName+"(MembraneRegion *memRegion)");
 	out.println("{");
 
-	Expression exp2 = simulation.substituteFunctions(exp).flatten();
+	IExpression exp2 = simulation.substituteFunctions(exp).flatten();
 	writeMembraneRegionFunctionDeclarations(out,"memRegion",exp2);
 
 	out.println("   return "+exp2.infix_C()+";");
@@ -328,7 +332,7 @@ protected final void writeMembraneRegionFunction(java.io.PrintWriter out, String
  * This method was created by a SmartGuide.
  * @param out java.io.PrintWriter
  */
-protected final void writeMembraneRegionFunctionDeclarations(java.io.PrintWriter out, String membraneRegionString, Expression exp) throws Exception {
+protected final void writeMembraneRegionFunctionDeclarations(java.io.PrintWriter out, String membraneRegionString, IExpression exp) throws Exception {
 
 	boolean wc_defined = false;
 	MathDescription mathDesc = simulation.getMathDescription();
@@ -416,7 +420,7 @@ protected final void writeResolveReferences(java.io.PrintWriter out) throws Exce
  * This method was created by a SmartGuide.
  * @param out java.io.PrintWriter
  */
-protected final void writeVolumeFunction(java.io.PrintWriter out, String functionName, Expression exp) throws Exception {
+protected final void writeVolumeFunction(java.io.PrintWriter out, String functionName, IExpression exp) throws Exception {
 
 	if (exp == null){
 		return;
@@ -426,7 +430,7 @@ protected final void writeVolumeFunction(java.io.PrintWriter out, String functio
 	out.println("{");
 
 	exp.bindExpression(simulation);
-	Expression exp2 = simulation.substituteFunctions(exp).flatten();
+	IExpression exp2 = simulation.substituteFunctions(exp).flatten();
 	writeVolumeFunctionDeclarations(out,exp2,"volumeIndex");
 
 	out.println("   return "+exp2.infix_C()+";");
@@ -440,7 +444,7 @@ protected final void writeVolumeFunction(java.io.PrintWriter out, String functio
  * This method was created by a SmartGuide.
  * @param out java.io.PrintWriter
  */
-private final void writeVolumeFunctionDeclarations(java.io.PrintWriter out, Expression exp, String volumeIndexString) throws Exception {
+private final void writeVolumeFunctionDeclarations(java.io.PrintWriter out, IExpression exp, String volumeIndexString) throws Exception {
 
 	if (exp == null){
 		throw new Exception("null expression");
@@ -492,7 +496,7 @@ private final void writeVolumeFunctionDeclarations(java.io.PrintWriter out, Expr
  * This method was created by a SmartGuide.
  * @param out java.io.PrintWriter
  */
-protected final void writeVolumeRegionFunction(java.io.PrintWriter out, String functionName, Expression exp) throws Exception {
+protected final void writeVolumeRegionFunction(java.io.PrintWriter out, String functionName, IExpression exp) throws Exception {
 
 	if (exp == null){
 		return;
@@ -502,7 +506,7 @@ protected final void writeVolumeRegionFunction(java.io.PrintWriter out, String f
 	out.println("{");
 
 	exp.bindExpression(getSimulation());
-	Expression exp2 = getSimulation().substituteFunctions(exp).flatten();
+	IExpression exp2 = getSimulation().substituteFunctions(exp).flatten();
 	writeVolumeRegionFunctionDeclarations(out,exp2,"volumeRegion");
 
 	out.println("   return "+exp2.infix_C()+";");
@@ -516,7 +520,7 @@ protected final void writeVolumeRegionFunction(java.io.PrintWriter out, String f
  * This method was created by a SmartGuide.
  * @param out java.io.PrintWriter
  */
-protected final void writeVolumeRegionFunctionDeclarations(java.io.PrintWriter out, Expression exp, String volumeRegionString) throws Exception {
+protected final void writeVolumeRegionFunctionDeclarations(java.io.PrintWriter out, IExpression exp, String volumeRegionString) throws Exception {
 
 	if (exp == null){
 		throw new Exception("null expression");

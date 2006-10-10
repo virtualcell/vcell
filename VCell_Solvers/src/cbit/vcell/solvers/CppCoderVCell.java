@@ -104,7 +104,7 @@ protected String[] getHeaderConstants() {
 		Constant constant = (Constant)constantVector.elementAt(i);
 		try {
 			constantString[i] = "double "+constant.getName()+" = " +constant.getConstantValue()+";";
-		}catch (cbit.vcell.parser.ExpressionException e){
+		}catch (org.vcell.expression.ExpressionException e){
 			constantString[i] = "double "+constant.getName()+" = " +constant.getExpression().toString()+";";
 		}
 	}	
