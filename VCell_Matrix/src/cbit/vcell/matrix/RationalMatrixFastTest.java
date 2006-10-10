@@ -7,6 +7,8 @@ package cbit.vcell.matrix;
 import java.io.*;
 import java.util.*;
 
+import org.vcell.expression.RationalNumber;
+
 public class RationalMatrixFastTest
 {
 	private Random random = new Random();

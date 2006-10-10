@@ -1,5 +1,10 @@
 package cbit.vcell.matrix;
 
+import org.vcell.expression.IRationalExpression;
+import org.vcell.expression.IRationalExpression;
+import org.vcell.expression.RationalExpressionFactory;
+import org.vcell.expression.RationalNumber;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -8,11 +13,11 @@ public class RationalExpMatrix implements RationalMatrix, java.io.Serializable
 {
 	protected int rows;
 	protected int cols;
-	protected RationalExp[] data;
-public RationalExpMatrix(RationalExp[][] rowColData){
+	protected IRationalExpression[] data;
+public RationalExpMatrix(IRationalExpression[][] rowColData){
 	rows = rowColData.length;
 	cols = rowColData[0].length;
-	data = new RationalExp[rows*cols];
+	data = new IRationalExpression[rows*cols];
 
 	for (int i = 0; i < rows; i ++){
 		for (int j = 0; j< cols; j++){
@@ -21,12 +26,12 @@ public RationalExpMatrix(RationalExp[][] rowColData){
 	}	
 }
 public RationalExpMatrix(int r, int c){
-	data = new RationalExp[r * c];
+	data = new IRationalExpression[r * c];
 	rows = r;
 	cols = c;
 
 	for (int i = 0; i < rows * cols; i ++){
-		data[i] = new RationalExp(0);
+		data[i] = RationalExpressionFactory.createRationalExpression(0);
 	}	
 }
 /**
@@ -36,7 +41,7 @@ public RationalExpMatrix(int r, int c){
 public RationalExpMatrix (RationalExpMatrix mat) {
 	this.rows = mat.rows;
 	this.cols = mat.cols;
-	data = new RationalExp[rows * cols];
+	data = new IRationalExpression[rows * cols];
 	try {
 		for (int i = 0; i < rows; i ++){
 			for (int j = 0; j < cols; j ++){
@@ -112,10 +117,10 @@ public int gaussianElimination() throws MatrixException {
 		//
 		// find pivot row
 		//
-		RationalExp mag = new RationalExp(0);
+		IRationalExpression mag = RationalExpressionFactory.createRationalExpression(0);
 		int pivotRow = -1;
 		for (int j = currentRow; j < rows; j ++){
-			RationalExp mag2 = get(j, currentCol);
+			IRationalExpression mag2 = get(j, currentCol);
 			if (!mag2.isZero()){
 				mag = mag2;
 				pivotRow = j;
@@ -130,7 +135,7 @@ public int gaussianElimination() throws MatrixException {
 			// rotate b matrix
 			//
 			for (int k=currentCol;k<cols;k++){
-				RationalExp temp = get(currentRow,k);
+				IRationalExpression temp = get(currentRow,k);
 				for (int j = currentRow;j<rows-1;j++){
 					set_elem(j,k, get(j+1,k));
 				}
@@ -142,7 +147,7 @@ public int gaussianElimination() throws MatrixException {
 			// move pivot row into position
 			//
 //System.out.println("swapping row "+(pivotRow+1)+" for row "+(currentRow+1)+".....");			
-			RationalExp temp;
+			IRationalExpression temp;
 			for (int j = currentCol; j < cols; j ++){
 				temp = get(currentRow, j);
 				set_elem(currentRow, j, get(pivotRow, j));
@@ -165,10 +170,10 @@ public int gaussianElimination() throws MatrixException {
 		for (int k = 0; k < rows; k ++){
 			if (k == currentRow) continue;
 
-			RationalExp mag2 = get(k, currentCol);
+			IRationalExpression mag2 = get(k, currentCol);
 
 			for (int j = currentCol; j < cols; j ++){
-				RationalExp r = get(currentRow, j);
+				IRationalExpression r = get(currentRow, j);
 				if (!r.isZero()){
 					set_elem(k, j, get(k, j).sub(mag2.mult(r)));
 				}
@@ -196,10 +201,10 @@ public int gaussianElimination(RationalExpMatrix K) throws MatrixException {
 		//
 		// find pivot row
 		//
-		RationalExp mag = new RationalExp(0);
+		IRationalExpression mag = RationalExpressionFactory.createRationalExpression(0);
 		int pivotRow = -1;
 		for (int j = currentRow; j < rows; j ++){
-			RationalExp mag2 = get(j, currentCol);
+			IRationalExpression mag2 = get(j, currentCol);
 			if (!mag2.isZero()){
 				mag = mag2;
 				pivotRow = j;
@@ -215,7 +220,7 @@ public int gaussianElimination(RationalExpMatrix K) throws MatrixException {
 			// rotate b matrix
 			//
 			for (int k=currentCol;k<cols;k++){
-				RationalExp temp = get(currentRow,k);
+				IRationalExpression temp = get(currentRow,k);
 				for (int j = currentRow;j<rows-1;j++){
 					set_elem(j,k, get(j+1,k));
 				}
@@ -225,7 +230,7 @@ public int gaussianElimination(RationalExpMatrix K) throws MatrixException {
 			// rotate K matrix
 			//		
 			for (int k=0;k<K.cols;k++){
-				RationalExp temp = K.get(currentRow,k);
+				IRationalExpression temp = K.get(currentRow,k);
 				for (int j = currentRow;j<K.rows-1;j++){
 					K.set_elem(j,k, K.get(j+1,k));
 				}
@@ -237,7 +242,7 @@ public int gaussianElimination(RationalExpMatrix K) throws MatrixException {
 			// move pivot row into position
 			//
 //System.out.println("swapping row "+(pivotRow+1)+" for row "+(currentRow+1)+".....");			
-			RationalExp temp;
+			IRationalExpression temp;
 			for (int j = currentCol; j < cols; j ++){
 				temp = get(currentRow, j);
 				set_elem(currentRow, j, get(pivotRow, j));
@@ -268,16 +273,16 @@ public int gaussianElimination(RationalExpMatrix K) throws MatrixException {
 		for (int k = 0; k < K.rows; k ++){
 			if (k == currentRow) continue;
 
-			RationalExp mag2 = get(k, currentCol);
+			IRationalExpression mag2 = get(k, currentCol);
 
 			for (int j = currentCol; j < cols; j ++){
-				RationalExp r = get(currentRow, j);
+				IRationalExpression r = get(currentRow, j);
 				if (!r.isZero()){
 					set_elem(k, j, get(k, j).sub(mag2.mult(r)));
 				}
 			}	
 			for (int j = 0; j < K.cols; j ++){
-				RationalExp r = K.get(currentRow, j);
+				IRationalExpression r = K.get(currentRow, j);
 				if (!r.isZero()){
 					K.set_elem(k, j, K.get(k, j).sub(mag2.mult(r)));
 				}
@@ -287,7 +292,7 @@ public int gaussianElimination(RationalExpMatrix K) throws MatrixException {
 	}		
 	return rank;
 }
-public RationalExp get(int r, int c) {
+public IRationalExpression get(int r, int c) {
 	if (r < 0 || r >= rows){
 		throw new IllegalArgumentException("r out of range <"+r+">");
 	}
@@ -310,8 +315,8 @@ public RationalNumber get_elem(int r, int c) {
  * Creation date: (5/5/00 12:56:34 AM)
  * @return double[]
  */
-public RationalExp[][] getDataCopy() {
-	RationalExp D[][] = new RationalExp[rows][cols];
+public IRationalExpression[][] getDataCopy() {
+	IRationalExpression D[][] = new IRationalExpression[rows][cols];
 	for (int i=0;i<rows;i++){
 		for (int j=0;j<cols;j++){
 			D[i][j] = get(i,j);
@@ -344,9 +349,9 @@ public void identity() throws MatrixException {
 	for (int i = 0; i < rows; i ++){
 		for (int j = 0; j < cols; j ++){
 			if (i == j){
-				set_elem(i, j, new RationalExp(1));
+				set_elem(i, j, RationalExpressionFactory.createRationalExpression(1));
 			}else{
-				set_elem(i, j, new RationalExp(0));
+				set_elem(i, j, RationalExpressionFactory.createRationalExpression(0));
 			}
 		}
 	}			
@@ -375,9 +380,9 @@ public void matinv(RationalExpMatrix a) throws MatrixException {
 	for (int i = 0; i < n; i ++){
 		for (int j = 0; j < n; j ++){
 			if (i == j){
-				set_elem(i, j, new RationalExp(1));
+				set_elem(i, j, RationalExpressionFactory.createRationalExpression(1));
 			}else{
-				set_elem(i, j, new RationalExp(0));
+				set_elem(i, j, RationalExpressionFactory.createRationalExpression(0));
 			}
 		}
 	}			
@@ -386,10 +391,10 @@ public void matinv(RationalExpMatrix a) throws MatrixException {
 		//
 		// find pivot (any non-zero element is fine, with symbols, can't really tell magnitude anyway)
 		//
-		RationalExp mag = new RationalExp(0);
+		IRationalExpression mag = RationalExpressionFactory.createRationalExpression(0);
 		int pivot = -1;
 		for (int j = i; j < n; j ++){
-			RationalExp mag2 = b.get(j, i);
+			IRationalExpression mag2 = b.get(j, i);
 			if (!mag2.isZero()){
 				mag = mag2;
 				pivot = j;
@@ -405,7 +410,7 @@ public void matinv(RationalExpMatrix a) throws MatrixException {
 		// move pivot row into position
 		//
 		if (pivot != i){
-			RationalExp temp;
+			IRationalExpression temp;
 			for (int j = i; j < n; j ++){
 				temp = b.get(i, j);
 				b.set_elem(i, j, b.get(pivot, j));
@@ -434,7 +439,7 @@ public void matinv(RationalExpMatrix a) throws MatrixException {
 		for (int k = 0; k < n; k ++){
 			if (k == i) continue;
 
-			RationalExp mag2 = b.get(k, i);
+			IRationalExpression mag2 = b.get(k, i);
 
 			for (int j = i; j < n; j ++){
 				b.set_elem(k, j, b.get(k, j).sub(mag2.mult(b.get(i, j))));
@@ -452,7 +457,7 @@ public void matmul(RationalExpMatrix a, RationalExpMatrix b) throws MatrixExcept
 
 	for (int i = 0; i < rows; i ++){
 		for (int j = 0; j < cols; j ++){
-			RationalExp s = new RationalExp(0);
+			IRationalExpression s = RationalExpressionFactory.createRationalExpression(0);
 			for (int k = 0; k < a.cols; k ++){
 				s = s.add(a.get(i, k).mult(b.get(k, j)));
 			}	
@@ -467,7 +472,7 @@ public void set_elem(int r, int c, long x) {
 	if (c < 0 || c >= cols){
 		throw new IllegalArgumentException("c out of range <"+c+">");
 	}
-	data[c + r * cols] = new RationalExp(x);
+	data[c + r * cols] = RationalExpressionFactory.createRationalExpression(x);
 }
 public void set_elem(int r, int c, long num, long den) {
 	if (r < 0 || r >= rows){
@@ -476,9 +481,9 @@ public void set_elem(int r, int c, long num, long den) {
 	if (c < 0 || c >= cols){
 		throw new IllegalArgumentException("c out of range <"+c+">");
 	}
-	data[c + r * cols] = new RationalExp(num,den);
+	data[c + r * cols] = RationalExpressionFactory.createRationalExpression(num, den);
 }
-public void set_elem(int r, int c, RationalExp x) {
+public void set_elem(int r, int c, IRationalExpression x) {
 	if (r < 0 || r >= rows){
 		throw new IllegalArgumentException("r out of range <"+r+">");
 	}
@@ -490,14 +495,14 @@ public void set_elem(int r, int c, RationalExp x) {
 public void set_rand() throws MatrixException {
 	for (int i = 0; i < rows; i ++){
 		for (int j = 0; j < cols; j ++){
-			set_elem(i, j, new RationalExp((long)(1000*Math.random()),(long)(1000*Math.random())));
+			set_elem(i, j, RationalExpressionFactory.createRationalExpression((long)(1000*Math.random()), (long)(1000*Math.random())));
 		}
 	}		
 }
 public void set_rand_int() throws MatrixException {
 	for (int i = 0; i < rows; i ++){
 		for (int j = 0; j < cols; j ++){
-			set_elem(i, j, new RationalExp((long)(4*(Math.random()-0.5))));
+			set_elem(i, j, RationalExpressionFactory.createRationalExpression((long)(4*(Math.random()-0.5))));
 		}
 	}		
 }
@@ -546,7 +551,7 @@ public RationalNumber[] solveLinear() throws MatrixException {
  * @param A cbit.vcell.mapping.Matrix
  * @exception javlang.Exception The exception description.
  */
-public RationalExp[] solveLinearExpressions() throws MatrixException {
+public IRationalExpression[] solveLinearExpressions() throws MatrixException {
 	if (rows<1 || cols!=rows+1){
 		throw new MatrixException("bad argument, A is "+rows+" by "+cols);
 	}
@@ -558,7 +563,7 @@ public RationalExp[] solveLinearExpressions() throws MatrixException {
 		throw new MatrixException("singular matrix");
 	}
 
-	RationalExp x[] = new RationalExp[numVars];
+	IRationalExpression x[] = new IRationalExpression[numVars];
 	
 	for (int i=0;i<numVars;i++){
 		x[i] = get(i,numVars);
@@ -573,7 +578,7 @@ public RationalExp[] solveLinearExpressions() throws MatrixException {
 public void zero() {
 	for (int i = 0; i < rows; i ++){
 		for (int j = 0; j < cols; j ++){
-			set_elem(i, j, new RationalExp(0));
+			set_elem(i, j, RationalExpressionFactory.createRationalExpression(0));
 		}
 	}			
 }

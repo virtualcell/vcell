@@ -1,5 +1,7 @@
 package cbit.vcell.matrix;
 
+import org.vcell.expression.RationalNumber;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.

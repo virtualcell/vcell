@@ -1,5 +1,7 @@
 package cbit.vcell.matrix;
 
+import org.vcell.expression.RationalNumber;
+
 /**
  * Insert the type's description here.
  * Creation date: (5/13/2003 10:11:04 AM)
