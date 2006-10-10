@@ -1,5 +1,7 @@
 package cbit.vcell.simulation;
 
+import org.vcell.expression.ExpressionFactory;
+
 /**
  * Insert the type's description here.
  * Creation date: (12/3/2001 2:05:06 PM)
@@ -55,8 +57,8 @@ public static void testEquivalenceCapability(){
 		System.out.println("subDomain = '"+domain.toString()+"'");
 		cbit.vcell.math.Equation equation = (cbit.vcell.math.Equation)domain.getEquations().nextElement();
 		System.out.println("orig equation = '"+equation.toString()+"'");
-		sim2.getMathDescription().addVariable(new cbit.vcell.math.Constant("abc",new cbit.vcell.parser.Expression(0.0)));
-		equation.setRateExpression(cbit.vcell.parser.Expression.add(equation.getRateExpression(),new cbit.vcell.parser.Expression("abc")));
+		sim2.getMathDescription().addVariable(new cbit.vcell.math.Constant("abc",ExpressionFactory.createExpression(0.0)));
+		equation.setRateExpression(ExpressionFactory.add(equation.getRateExpression(), ExpressionFactory.createExpression("abc")));
 		System.out.println("new equation = '"+equation.toString()+"'");
 		long time_3 = System.currentTimeMillis();
 		int compareEqualCount=0;

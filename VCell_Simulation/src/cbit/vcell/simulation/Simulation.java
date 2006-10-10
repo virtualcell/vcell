@@ -5,12 +5,15 @@ package cbit.vcell.simulation;
 ©*/
 import java.io.IOException;
 import java.util.Vector;
-import cbit.vcell.parser.Expression;
 import java.util.Enumeration;
-import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.ExpressionBindingException;
+
 import java.beans.PropertyVetoException;
+
+import org.vcell.expression.ExpressionBindingException;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.SymbolTableEntry;
 
 import cbit.util.BeanUtils;
 import cbit.util.CommentStringTokenizer;
@@ -26,7 +29,7 @@ import cbit.vcell.simulation.SimulationInfo;
  * Creation date: (8/16/2000 11:08:33 PM)
  * @author: John Wagner
  */
-public class Simulation implements Versionable, cbit.util.Matchable, cbit.vcell.parser.SymbolTable, MathOverridesListener, java.beans.VetoableChangeListener, java.io.Serializable {
+public class Simulation implements Versionable, cbit.util.Matchable, org.vcell.expression.SymbolTable, MathOverridesListener, java.beans.VetoableChangeListener, java.io.Serializable {
 	// size quotas enforced per simulation
 	public static final int MAX_LIMIT_ODE_TIMEPOINTS = 100000;
 	public static final int MAX_LIMIT_PDE_TIMEPOINTS = 100000;
@@ -272,7 +275,7 @@ public void applyOverrides(MathDescription newMath) throws ExpressionException, 
 		if (newVarArray[i] instanceof Constant){
 			Constant origConstant = (Constant)newVarArray[i];
 			Constant simConstant = getLocalConstant(origConstant);
-			newVarArray[i] = new Constant(origConstant.getName(),new Expression(simConstant.getExpression()));
+			newVarArray[i] = new Constant(origConstant.getName(),ExpressionFactory.createExpression(simConstant.getExpression()));
 		}
 	}
 	newMath.setAllVariables(newVarArray);
@@ -504,7 +507,7 @@ public java.lang.String getDescription() {
 /**
  * getEntry method comment.
  */
-public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierString) throws cbit.vcell.parser.ExpressionBindingException {
+public org.vcell.expression.SymbolTableEntry getEntry(java.lang.String identifierString) throws org.vcell.expression.ExpressionBindingException {
 	//
 	// use MathDescription as the primary SymbolTable, just replace the Constants with the overrides.
 	//
@@ -627,7 +630,7 @@ private Constant getLocalConstant(Constant referenceConstant) throws ExpressionE
 			//
 			// make sure expression for localConstant is still up to date with MathOverrides table
 			//
-			Expression exp = getMathOverrides().getActualExpression(referenceConstant.getName(), index);
+			IExpression exp = getMathOverrides().getActualExpression(referenceConstant.getName(), index);
 			if (exp.compareEqual(localConstant.getExpression())){
 				//localConstant.bind(this); // update bindings to latest mathOverrides
 				return localConstant;
@@ -671,7 +674,7 @@ private Function getLocalFunction(Function referenceFunction) throws ExpressionE
 	//
 	// if local Function not found, create new one, bind it to the Simulation (which ensures MathOverrides), and add to list
 	//
-	Function newLocalFunction = new Function(referenceFunction.getName(),new Expression(referenceFunction.getExpression()));
+	Function newLocalFunction = new Function(referenceFunction.getName(),ExpressionFactory.createExpression(referenceFunction.getExpression()));
 	//newLocalFunction.bind(this);
 	localFunctions.add(newLocalFunction);
 	return newLocalFunction;
@@ -732,7 +735,7 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
  * @return java.util.Enumeration
  * @param exp cbit.vcell.parser.Expression
  */
-public Enumeration getRequiredVariables(Expression exp) throws MathException, ExpressionException {
+public Enumeration getRequiredVariables(IExpression exp) throws MathException, ExpressionException {
 	return MathUtilities.getRequiredVariables(exp,this);
 }
 
@@ -801,7 +804,7 @@ public SolverTaskDescription getSolverTaskDescription() {
 public Variable getVariable(String variableName) {
 	try {
 		return (Variable)getEntry(variableName);
-	}catch (cbit.vcell.parser.ExpressionBindingException e){
+	}catch (org.vcell.expression.ExpressionBindingException e){
 		e.printStackTrace(System.out);
 		return null;
 	}
@@ -963,7 +966,7 @@ public boolean hasTimeVaryingDiffusionOrAdvection(VolVariable volVariable) throw
 					spatialExpressionList.add(((PdeEquation)equation).getVelocityZ());
 				}
 				for (int i = 0; i < spatialExpressionList.size(); i++){
-					Expression spatialExp = (Expression)spatialExpressionList.elementAt(i);
+					IExpression spatialExp = (IExpression)spatialExpressionList.elementAt(i);
 					spatialExp = substituteFunctions(spatialExp);
 					String symbols[] = spatialExp.getSymbols();
 					if (symbols!=null){
@@ -1258,7 +1261,7 @@ private void setWarning(java.lang.String warning) {
  * @param exp cbit.vcell.parser.Expression
  * @exception java.lang.Exception The exception description.
  */
-public Expression substituteFunctions(Expression exp) throws MathException, ExpressionException {
+public IExpression substituteFunctions(IExpression exp) throws MathException, ExpressionException {
 	return MathUtilities.substituteFunctions(exp,this);
 }
 

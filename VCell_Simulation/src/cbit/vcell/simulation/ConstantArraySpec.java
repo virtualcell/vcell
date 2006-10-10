@@ -1,5 +1,6 @@
 package cbit.vcell.simulation;
-import cbit.vcell.parser.Expression;
+import org.vcell.expression.ExpressionFactory;
+
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.VCML;
 /**
@@ -41,7 +42,7 @@ public static ConstantArraySpec clone(ConstantArraySpec spec) {
 	clone.type = spec.type;
 	clone.constants = new Constant[spec.constants.length];
 	for (int i = 0; i < clone.constants.length; i++){
-		clone.constants[i] = new Constant(spec.constants[i].getName(), new Expression(spec.constants[i].getExpression()));
+		clone.constants[i] = new Constant(spec.constants[i].getName(), ExpressionFactory.createExpression(spec.constants[i].getExpression()));
 	}
 	return clone;
 }
@@ -126,11 +127,11 @@ public static ConstantArraySpec createIntervalSpec(String name, double minValue,
 	spec.constants = new Constant[numValues];
 	if (logInterval) {
 		for (int i = 0; i < numValues; i++){
-			spec.constants[i] = new Constant(name, new cbit.vcell.parser.Expression(minValue * Math.pow(maxValue/minValue, ((double)i)/(numValues - 1))));
+			spec.constants[i] = new Constant(name, ExpressionFactory.createExpression(minValue * Math.pow(maxValue/minValue, ((double)i)/(numValues - 1))));
 		}
 	} else {
 		for (int i = 0; i < numValues; i++){
-			spec.constants[i] = new Constant(name, new cbit.vcell.parser.Expression(minValue + (maxValue - minValue) * ((double)i)/(numValues - 1)));
+			spec.constants[i] = new Constant(name, ExpressionFactory.createExpression(minValue + (maxValue - minValue) * ((double)i)/(numValues - 1)));
 		}
 	}
 	return spec;
@@ -142,7 +143,7 @@ public static ConstantArraySpec createIntervalSpec(String name, double minValue,
  * Creation date: (9/23/2005 1:33:00 PM)
  * @return cbit.vcell.solver.ConstantArraySpec
  */
-public static ConstantArraySpec createListSpec(String name, String[] values) throws cbit.vcell.parser.ExpressionException {
+public static ConstantArraySpec createListSpec(String name, String[] values) throws org.vcell.expression.ExpressionException {
 	if (values.length < 2) throw new RuntimeException("List must contain at least two values");
 	ConstantArraySpec spec = new ConstantArraySpec();
 	spec.type = TYPE_LIST;
@@ -150,7 +151,7 @@ public static ConstantArraySpec createListSpec(String name, String[] values) thr
 	spec.constants = new Constant[values.length];
 	spec.numValues = values.length;
 	for (int i = 0; i < values.length; i++){
-		spec.constants[i] = new Constant(name, new cbit.vcell.parser.Expression(values[i]));
+		spec.constants[i] = new Constant(name, ExpressionFactory.createExpression(values[i]));
 	}
 	return spec;
 }

@@ -7,6 +7,10 @@ import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
 import cbit.vcell.math.VCML;
 import java.util.*;
+
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import cbit.util.*;
 /**
  * Insert the class' description here.
@@ -679,7 +683,7 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 					throw new DataAccessException("unexpected token " + token + " expecting " + VCML.Constant); 
 				}
 				String name = tokens.nextToken();
-				Expression exp = new Expression(tokens);
+				IExpression exp = ExpressionFactory.createExpression(tokens);
 				Constant constant = new Constant(name,exp);
 				setSensitivityParameter(constant);
 				token = tokens.nextToken();

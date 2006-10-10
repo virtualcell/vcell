@@ -6,13 +6,15 @@ package cbit.vcell.simulation;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+import org.vcell.expression.ExpressionBindingException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import cbit.util.CommentStringTokenizer;
 import cbit.util.DataAccessException;
-import cbit.vcell.parser.Expression;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.VCML;
-import cbit.vcell.parser.ExpressionBindingException;
 /**
  * Constant expressions that override those specified in the MathDescription
  * for a given Simulation.  These expressions are to be bound to the Simulation
@@ -30,13 +32,13 @@ public class MathOverrides implements cbit.util.Matchable, java.io.Serializable 
 	protected transient cbit.vcell.simulation.MathOverridesListener aMathOverridesListener = null;
 	
 	class Element implements java.io.Serializable, cbit.util.Matchable {
-		private Expression actualValue;
+		private IExpression actualValue;
 		private String name;
 		private ConstantArraySpec spec;
-		private Element(String argName, Expression act) {
+		private Element(String argName, IExpression act) {
 			// replace expressions with clones (so that they may be separately bound/resolved/evaluated).
 			this.name = argName;
-			Expression clonedExpression = new Expression(act);
+			IExpression clonedExpression = ExpressionFactory.createExpression(act);
 			actualValue = clonedExpression;
 		}
 		private Element(String argName, ConstantArraySpec argSpec) {
@@ -71,7 +73,7 @@ public MathOverrides(Simulation simulation) {
  * One of three ways to construct a MathOverrides.  This constructor
  * is used when creating a new MathOverrides from XML (we read in Constants to be overriden from XML).
  */
-public MathOverrides(Simulation simulation, Constant[] constants, ConstantArraySpec[] specs) throws cbit.vcell.parser.ExpressionException {
+public MathOverrides(Simulation simulation, Constant[] constants, ConstantArraySpec[] specs) throws org.vcell.expression.ExpressionException {
 	setSimulation(simulation);
 	for (int i = 0; i < constants.length; i++){
 		putConstant(constants[i], false);
@@ -130,7 +132,7 @@ public void addMathOverridesListener(cbit.vcell.simulation.MathOverridesListener
  * Creation date: (10/15/2005 6:25:28 PM)
  * @param mathDescription cbit.vcell.math.MathDescription
  */
-private void checkUnresolved(Expression exp, MathDescription mathDescription, String name) {
+private void checkUnresolved(IExpression exp, MathDescription mathDescription, String name) {
 	String symbols[] = exp.getSymbols();
 	boolean bExpressionBad = false;
 	for (int i=0;symbols!=null && i<symbols.length;i++){
@@ -219,7 +221,7 @@ protected void fireConstantRemoved(cbit.vcell.simulation.MathOverridesEvent even
  *          this hashtable.
  * @see     #put(Object, Object)
  */
-public Expression getActualExpression(String key, int index) {
+public IExpression getActualExpression(String key, int index) {
 	MathOverrides.Element element = getOverridesElement(key);
 	if (element==null){
 		// not overriden
@@ -276,11 +278,11 @@ public ConstantArraySpec getConstantArraySpec(String key) {
  * @return cbit.vcell.parser.Expression
  * @param key java.lang.String
  */
-public Expression getDefaultExpression(String key) {
+public IExpression getDefaultExpression(String key) {
 	cbit.vcell.math.Variable var = getSimulation().getMathDescription().getVariable(key);
 	if (var instanceof Constant){
 		Constant c = (Constant)var;
-		return new Expression(c.getExpression()); // always returning clones...
+		return ExpressionFactory.createExpression(c.getExpression()); // always returning clones...
 	}else{
 		return null;
 	}
@@ -380,7 +382,7 @@ public String getVCML() {
 	while (enum1.hasMoreElements()){
 		String name = (String)enum1.nextElement();
 		MathOverrides.Element element = (MathOverrides.Element)getOverridesHash().get(name);
-		Expression exp = element.actualValue;
+		IExpression exp = element.actualValue;
 		if (exp != null) {
 			// regular override
 			Constant constant = new Constant(name,exp);
@@ -460,7 +462,7 @@ public boolean isValid(MathDescription mathDescription) {
  * <code>value</code> . Neither the key nor the 
  * value can be <code>null</code>. <p>
  */
-public void putConstant(Constant value) throws cbit.vcell.parser.ExpressionException {
+public void putConstant(Constant value) throws org.vcell.expression.ExpressionException {
 	putConstant(value, true);
 }
 
@@ -470,7 +472,7 @@ public void putConstant(Constant value) throws cbit.vcell.parser.ExpressionExcep
  * <code>value</code> . Neither the key nor the 
  * value can be <code>null</code>. <p>
  */
-private void putConstant(Constant value, boolean bFireEvent) throws cbit.vcell.parser.ExpressionException {
+private void putConstant(Constant value, boolean bFireEvent) throws org.vcell.expression.ExpressionException {
 	//
 	// verify that new expression can be bound properly
 	//
@@ -478,8 +480,8 @@ private void putConstant(Constant value, boolean bFireEvent) throws cbit.vcell.p
 	// put new element in the hash if value different from default
 	// if same as default, remove element if we had it in hash, otherwise do nothing
 	String name = value.getName();
-	Expression act = value.getExpression();
-	Expression def = null;
+	IExpression act = value.getExpression();
+	IExpression def = null;
 	cbit.vcell.math.Variable var = getSimulation().getMathDescription().getVariable(name);
 	if (var != null && var instanceof Constant) {
 		def = ((Constant)var).getExpression();
@@ -506,7 +508,7 @@ private void putConstant(Constant value, boolean bFireEvent) throws cbit.vcell.p
  * <code>value</code> . Neither the key nor the 
  * value can be <code>null</code>. <p>
  */
-public void putConstantArraySpec(ConstantArraySpec spec) throws cbit.vcell.parser.ExpressionException {
+public void putConstantArraySpec(ConstantArraySpec spec) throws org.vcell.expression.ExpressionException {
 	putConstantArraySpec(spec, true);
 }
 
@@ -516,7 +518,7 @@ public void putConstantArraySpec(ConstantArraySpec spec) throws cbit.vcell.parse
  * <code>value</code> . Neither the key nor the 
  * value can be <code>null</code>. <p>
  */
-private void putConstantArraySpec(ConstantArraySpec spec, boolean bFireEvent) throws cbit.vcell.parser.ExpressionException {
+private void putConstantArraySpec(ConstantArraySpec spec, boolean bFireEvent) throws org.vcell.expression.ExpressionException {
 	//
 	// verify that expressions can be bound properly and make Expression array
 	//
@@ -566,8 +568,8 @@ private void readVCML(CommentStringTokenizer tokens)
 			}
 			if (token.equalsIgnoreCase(VCML.Constant)) {
 				String name = tokens.nextToken();
-				Expression act = new Expression(tokens);
-				Expression def = getDefaultExpression(name);
+				IExpression act = ExpressionFactory.createExpression(tokens);
+				IExpression def = getDefaultExpression(name);
 				//
 				// ignore override if not present in math or if it is the same
 				//
@@ -629,13 +631,13 @@ private void revertUnboundExpressions(MathDescription mathDescription) {
 		MathOverrides.Element element = (MathOverrides.Element)getOverridesHash().get(name);
 		if (element.actualValue != null) {
 			// regular override
-			Expression exp = element.actualValue;
+			IExpression exp = element.actualValue;
 			checkUnresolved(exp, mathDescription, name);
 		} else {
 			// scan override
 			ConstantArraySpec cas = element.spec;
 			for (int i = 0; i < cas.getConstants().length; i++){
-				Expression exp = cas.getConstants()[i].getExpression();
+				IExpression exp = cas.getConstants()[i].getExpression();
 				checkUnresolved(exp, mathDescription, name);
 			}
 		}
@@ -705,7 +707,7 @@ void updateFromMathDescription () {
  * Creation date: (9/22/2005 3:24:36 PM)
  */
 private void verifyExpression(Constant value, boolean checkScan) throws ExpressionBindingException {
-	Expression exp = value.getExpression();
+	IExpression exp = value.getExpression();
 	String symbols[] = exp.getSymbols();
 	for (int i = 0; symbols!=null && i < symbols.length; i++){
 		if (cbit.vcell.math.ReservedVariable.fromString(symbols[i])!=null){
