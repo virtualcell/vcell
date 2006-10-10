@@ -1,17 +1,12 @@
 package org.vcell.ncbc.physics.engine;
 
-import java.util.Vector;
-
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
 import org.vcell.ncbc.physics.engine.ElectricalDevice;
 import org.vcell.ncbc.physics.engine.SimpleElectricalDevice;
 
-import cbit.vcell.matrix.RationalExp;
-import cbit.vcell.matrix.RationalExpMatrix;
-import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.math.Function;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.modelapp.FeatureMapping;
@@ -153,7 +148,7 @@ public static Graph getCircuitGraph(SimulationContext simContext) throws Express
 				//
 				// getTotalMembraneCurrent() already converts to "outwardCurrent" so that same convension as voltage
 				//
-				Expression currentSource = getTotalMembraneCurrent(simContext,membrane);
+				IExpression currentSource = getTotalMembraneCurrent(simContext,membrane);
 				Function initialVoltageFunction = new Function(membraneMapping.getInitialVoltageParameter().getName(),membraneMapping.getInitialVoltageParameter().getExpression());
 				ElectricalDevice device = new SimpleElectricalDevice(cbit.util.TokenMangler.fixTokenStrict(membrane.getName()),
 																	cbit.util.TokenMangler.fixTokenStrict(membrane.getMembraneVoltage().getName()),
@@ -215,12 +210,12 @@ public static Graph getCircuitGraph(SimulationContext simContext) throws Express
  * @param simContext cbit.vcell.mapping.SimulationContext
  * @param membrane cbit.vcell.model.Membrane
  */
-private static Expression getMembraneSurfaceAreaExpression(SimulationContext simContext, Membrane membrane) throws ExpressionException {
+private static IExpression getMembraneSurfaceAreaExpression(SimulationContext simContext, Membrane membrane) throws ExpressionException {
 	MembraneMapping membraneMapping = (MembraneMapping)simContext.getGeometryContext().getStructureMapping(membrane);
 	FeatureMapping featureMapping = (FeatureMapping)simContext.getGeometryContext().getStructureMapping(membrane);
-	Expression totalVolFract = featureMapping.getResidualVolumeFraction(simContext);
-	Expression surfaceToVolume = membraneMapping.getSurfaceToVolumeParameter().getExpression();
-	Expression surfaceArea = Expression.mult(surfaceToVolume,totalVolFract);
+	IExpression totalVolFract = featureMapping.getResidualVolumeFraction(simContext);
+	IExpression surfaceToVolume = membraneMapping.getSurfaceToVolumeParameter().getExpression();
+	IExpression surfaceArea = ExpressionFactory.mult(surfaceToVolume, totalVolFract);
 
 	return surfaceArea;
 }
@@ -240,9 +235,9 @@ private static double getSurfaceArea(SimulationContext simContext, Membrane memb
  * @param simContext cbit.vcell.mapping.SimulationContext
  * @param membrane cbit.vcell.model.Membrane
  */
-private static Expression getTotalMembraneCapacitance(SimulationContext simContext, Membrane membrane) throws ExpressionException {
+private static IExpression getTotalMembraneCapacitance(SimulationContext simContext, Membrane membrane) throws ExpressionException {
 	MembraneMapping membraneMapping = (MembraneMapping)simContext.getGeometryContext().getStructureMapping(membrane);
-	return Expression.mult(membraneMapping.getSpecificCapacitanceParameter().getExpression(),new Expression(getSurfaceArea(simContext,membrane)));
+	return ExpressionFactory.mult(membraneMapping.getSpecificCapacitanceParameter().getExpression(), ExpressionFactory.createExpression(getSurfaceArea(simContext,membrane)));
 }
 /**
  * Insert the method's description here.
@@ -251,15 +246,15 @@ private static Expression getTotalMembraneCapacitance(SimulationContext simConte
  * @param simContext cbit.vcell.mapping.SimulationContext
  * @param membrane cbit.vcell.model.Membrane
  */
-private static Expression getTotalMembraneCurrent(SimulationContext simContext, Membrane membrane) throws ExpressionException {
+private static IExpression getTotalMembraneCurrent(SimulationContext simContext, Membrane membrane) throws ExpressionException {
 	MembraneMapping membraneMapping = (MembraneMapping)simContext.getGeometryContext().getStructureMapping(membrane);
 	if (!membraneMapping.getCalculateVoltage()){
-		return new Expression(0.0);
+		return ExpressionFactory.createExpression(0.0);
 	}
 	//
 	// gather current terms
 	//
-	Expression currentExp = new Expression(0.0);
+	IExpression currentExp = ExpressionFactory.createExpression(0.0);
 	cbit.vcell.modelapp.ReactionSpec reactionSpecs[] = simContext.getReactionContext().getReactionSpecs();
 	for (int i = 0; i < reactionSpecs.length; i++){
 		//
@@ -270,12 +265,12 @@ private static Expression getTotalMembraneCurrent(SimulationContext simContext, 
 		}
 		cbit.vcell.model.ReactionStep rs = reactionSpecs[i].getReactionStep();
 		if (rs.getStructure() == membrane){
-			Expression current = rs.getKinetics().getCurrentParameter().getExpression();
-			if (!current.compareEqual(new Expression(0.0))){
+			IExpression current = rs.getKinetics().getCurrentParameter().getExpression();
+			if (!current.compareEqual(ExpressionFactory.createExpression(0.0))){
 				//
 				// change sign convension from inward current to outward current (which is consistent with voltage convension)
 				//
-				currentExp = Expression.add(currentExp, Expression.negate(new Expression(rs.getKinetics().getCurrentParameter().getName())));
+				currentExp = ExpressionFactory.add(currentExp, ExpressionFactory.negate(ExpressionFactory.createExpression(rs.getKinetics().getCurrentParameter().getName())));
 			}
 		}
 	}

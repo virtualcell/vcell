@@ -1,5 +1,7 @@
 package org.vcell.ncbc.physics.engine;
 
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
 import org.vcell.ncbc.physics.engine.ElectricalDevice;
 import org.vcell.ncbc.physics.engine.SimpleElectricalDevice;
 
@@ -10,8 +12,6 @@ import cbit.vcell.modelapp.SimulationContextTest;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 
 
 import cbit.util.graph.Edge;
@@ -55,7 +55,7 @@ public static Graph getBetaCell() throws ExpressionException {
 	//
 	// set electrical circuit parameters
 	//
-	PM.setData(new SimpleElectricalDevice("PM","V_PM",new Function("V_PM_INIT",new Expression("1.0")),1.0,new Expression("V*1e-8"),false,true,false));
+	PM.setData(new SimpleElectricalDevice("PM","V_PM",new Function("V_PM_INIT",ExpressionFactory.createExpression("1.0")),1.0,ExpressionFactory.createExpression("V*1e-8"),false,true,false));
 
 	for (int i = 0; i < nodes.length; i++){
 		graph.addNode(nodes[i]);
@@ -97,8 +97,8 @@ public static Graph getBetaCellWithCurrentClamp() throws ExpressionException {
 	//
 	// set electrical circuit parameters
 	//
-	PM.setData(new SimpleElectricalDevice("PM","V_PM",new Function("V_PM_INIT",new Expression("1.0")),10.0,new Expression("V*1e-8"),false,true,false));
-	PROBE.setData(new SimpleElectricalDevice("PROBE","V_PROBE",null,0.0,new Expression("(t>1)&&(t<1.5)"),false,true,false));
+	PM.setData(new SimpleElectricalDevice("PM","V_PM",new Function("V_PM_INIT",ExpressionFactory.createExpression("1.0")),10.0,ExpressionFactory.createExpression("V*1e-8"),false,true,false));
+	PROBE.setData(new SimpleElectricalDevice("PROBE","V_PROBE",null,0.0,ExpressionFactory.createExpression("(t>1)&&(t<1.5)"),false,true,false));
 
 	for (int i = 0; i < nodes.length; i++){
 		graph.addNode(nodes[i]);
@@ -147,9 +147,9 @@ public static Graph getBetaCellWithERandVoltageClamp() throws ExpressionExceptio
 	//
 	// set electrical circuit parameters
 	//
-	PM.setData(new SimpleElectricalDevice("PM","V_PM",new Function("V_PM_INIT",new Expression("1.0")),10.0,new Expression("V*1e-8"),false,true,false));
-	ERMEM.setData(new SimpleElectricalDevice("ERMEM","V_ERMEM",new Function("V_ERMEM_INIT",new Expression("2.0")),10.0,new Expression("V*2e-10"),false,false,false));
-	PROBE.setData(new SimpleElectricalDevice("PROBE","V_PROBE",new Function("V_PROBE_INIT",new Expression("t*(t<0.01 && t>0.04)")),0.0,null,false,true,true));
+	PM.setData(new SimpleElectricalDevice("PM","V_PM",new Function("V_PM_INIT",ExpressionFactory.createExpression("1.0")),10.0,ExpressionFactory.createExpression("V*1e-8"),false,true,false));
+	ERMEM.setData(new SimpleElectricalDevice("ERMEM","V_ERMEM",new Function("V_ERMEM_INIT",ExpressionFactory.createExpression("2.0")),10.0,ExpressionFactory.createExpression("V*2e-10"),false,false,false));
+	PROBE.setData(new SimpleElectricalDevice("PROBE","V_PROBE",new Function("V_PROBE_INIT",ExpressionFactory.createExpression("t*(t<0.01 && t>0.04)")),0.0,null,false,true,true));
 
 	for (int i = 0; i < nodes.length; i++){
 		graph.addNode(nodes[i]);
@@ -201,11 +201,11 @@ public static Graph getEpithelialCell() throws ExpressionException {
 	//
 	// set electrical circuit parameters
 	//
-	PM1.setData(new SimpleElectricalDevice("PM1","V_PM1",new Function("V_PM1_INIT",new Expression("1.0")),1.0,new Expression("V*1e-8"),false,true,false));
-	PM2.setData(new SimpleElectricalDevice("PM2","V_PM2",new Function("V_PM2_INIT",new Expression("1.0")),1.0,new Expression("V*1e-8"),false,true,false));
-	PM3.setData(new SimpleElectricalDevice("PM3","V_PM3",new Function("V_PM3_INIT",new Expression("1.0")),1.0,new Expression("V*1e-8"),false,true,false));
-	PM4.setData(new SimpleElectricalDevice("PM4","V_PM4",new Function("V_PM4_INIT",new Expression("1.0")),1.0,new Expression("V*1e-8"),false,true,false));
-	PM5.setData(new SimpleElectricalDevice("PM5","V_PM5",new Function("V_PM5_INIT",new Expression("1.0")),1.0,new Expression("V*1e-8"),false,true,false));
+	PM1.setData(new SimpleElectricalDevice("PM1","V_PM1",new Function("V_PM1_INIT",ExpressionFactory.createExpression("1.0")),1.0,ExpressionFactory.createExpression("V*1e-8"),false,true,false));
+	PM2.setData(new SimpleElectricalDevice("PM2","V_PM2",new Function("V_PM2_INIT",ExpressionFactory.createExpression("1.0")),1.0,ExpressionFactory.createExpression("V*1e-8"),false,true,false));
+	PM3.setData(new SimpleElectricalDevice("PM3","V_PM3",new Function("V_PM3_INIT",ExpressionFactory.createExpression("1.0")),1.0,ExpressionFactory.createExpression("V*1e-8"),false,true,false));
+	PM4.setData(new SimpleElectricalDevice("PM4","V_PM4",new Function("V_PM4_INIT",ExpressionFactory.createExpression("1.0")),1.0,ExpressionFactory.createExpression("V*1e-8"),false,true,false));
+	PM5.setData(new SimpleElectricalDevice("PM5","V_PM5",new Function("V_PM5_INIT",ExpressionFactory.createExpression("1.0")),1.0,ExpressionFactory.createExpression("V*1e-8"),false,true,false));
 
 	for (int i = 0; i < nodes.length; i++){
 		graph.addNode(nodes[i]);
@@ -261,12 +261,12 @@ public static Graph getEpithelialCellWithTightJunction() throws ExpressionExcept
 	//
 	// set electrical circuit parameters
 	//
-	PM1.setData(new SimpleElectricalDevice("PM1","V_PM1",new Function("V_PM1_INIT",new Expression("1.0")),6,new Expression("V*1e-8"),false,true,false));
-	PM2.setData(new SimpleElectricalDevice("PM2","V_PM2",new Function("V_PM2_INIT",new Expression("1.0")),7,new Expression("V*1e-8"),false,true,false));
-	PM3.setData(new SimpleElectricalDevice("PM3","V_PM3",new Function("V_PM3_INIT",new Expression("1.0")),8,new Expression("V*1e-8"),false,true,false));
-	PM4.setData(new SimpleElectricalDevice("PM4","V_PM4",new Function("V_PM4_INIT",new Expression("1.0")),9,new Expression("V*1e-8"),false,true,false));
-	PM5.setData(new SimpleElectricalDevice("PM5","V_PM5",new Function("V_PM5_INIT",new Expression("1.0")),11,new Expression("V*1e-8"),false,true,false));
-	TIGHT.setData(new SimpleElectricalDevice("TIGHT","V_TIGHT",new Function("V_TIGHT_INIT",new Expression("1.0")),0.0,new Expression("1"),false,true,false));
+	PM1.setData(new SimpleElectricalDevice("PM1","V_PM1",new Function("V_PM1_INIT",ExpressionFactory.createExpression("1.0")),6,ExpressionFactory.createExpression("V*1e-8"),false,true,false));
+	PM2.setData(new SimpleElectricalDevice("PM2","V_PM2",new Function("V_PM2_INIT",ExpressionFactory.createExpression("1.0")),7,ExpressionFactory.createExpression("V*1e-8"),false,true,false));
+	PM3.setData(new SimpleElectricalDevice("PM3","V_PM3",new Function("V_PM3_INIT",ExpressionFactory.createExpression("1.0")),8,ExpressionFactory.createExpression("V*1e-8"),false,true,false));
+	PM4.setData(new SimpleElectricalDevice("PM4","V_PM4",new Function("V_PM4_INIT",ExpressionFactory.createExpression("1.0")),9,ExpressionFactory.createExpression("V*1e-8"),false,true,false));
+	PM5.setData(new SimpleElectricalDevice("PM5","V_PM5",new Function("V_PM5_INIT",ExpressionFactory.createExpression("1.0")),11,ExpressionFactory.createExpression("V*1e-8"),false,true,false));
+	TIGHT.setData(new SimpleElectricalDevice("TIGHT","V_TIGHT",new Function("V_TIGHT_INIT",ExpressionFactory.createExpression("1.0")),0.0,ExpressionFactory.createExpression("1"),false,true,false));
 
 	for (int i = 0; i < nodes.length; i++){
 		graph.addNode(nodes[i]);

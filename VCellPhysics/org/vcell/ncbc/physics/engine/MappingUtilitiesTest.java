@@ -6,7 +6,6 @@ import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Feature;
 import cbit.vcell.geometry.SubVolume;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.geometry.GeometryException;
 import cbit.image.ImageException;
 import cbit.vcell.geometry.RegionImage;
@@ -21,6 +20,7 @@ import cbit.vcell.modelapp.StructureMapping;
 
 import java.util.Vector;
 
+import org.vcell.expression.ExpressionException;
 import org.vcell.ncbc.physics.component.Connection;
 import org.vcell.ncbc.physics.component.CurrentSource;
 import org.vcell.ncbc.physics.component.ElectricalDevice;

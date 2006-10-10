@@ -1,17 +1,20 @@
 package org.vcell.ncbc.physics.engine;
 
+import org.vcell.expression.ExpressionBindingException;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.IRationalExpression;
+import org.vcell.expression.IRationalExpression;
+import org.vcell.expression.RationalExpressionFactory;
 import org.vcell.ncbc.physics.engine.ElectricalDevice;
 
-import cbit.vcell.matrix.RationalExp;
 import cbit.vcell.matrix.RationalExpMatrix;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.Variable;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.modelapp.FeatureMapping;
@@ -83,9 +86,9 @@ public class PotentialMapping {
 	//    fieldAppliedCurrent[0] = F_PM;
 	//    fieldAppliedCurrent[1] = -0.001*Capacitance * d[V_PROBE(t)]/dt - F_PM;
 	//
-	private Expression fieldCapacitiveCurrent[] = new Expression[0];
-	private Expression fieldTotalCurrent[] = new Expression[0];
-	private Expression fieldDependentVoltageExpression[] = new Expression[0];
+	private IExpression fieldCapacitiveCurrent[] = new IExpression[0];
+	private IExpression fieldTotalCurrent[] = new IExpression[0];
+	private IExpression fieldDependentVoltageExpression[] = new IExpression[0];
 	private Edge fieldEdges[] = new Edge[0];
 
 	public static boolean bSilent = false;
@@ -201,7 +204,7 @@ private void determineLumpedEquations(Graph graph) throws ExpressionException, M
 			}
 			buffer.append(((ElectricalDevice)cycleEdges[j].getData()).getVName());
 		}
-		Expression exp = new Expression(buffer.toString());
+		IExpression exp = ExpressionFactory.createExpression(buffer.toString());
 		if (!bSilent){ 
 			System.out.println(exp.flatten() + " = 0.0");
 		}
@@ -227,7 +230,7 @@ private void determineLumpedEquations(Graph graph) throws ExpressionException, M
 	//
 	//    solve for current-clamp voltages and redundant/constrained capacitive voltages as function of (1) and (2).
 	//
-	fieldDependentVoltageExpression = new Expression[fieldEdges.length];
+	fieldDependentVoltageExpression = new IExpression[fieldEdges.length];
 
 	//
 	// make sure assumptions hold regarding edge ordering, otherwise wrong dependent voltages will be selected
@@ -240,7 +243,7 @@ private void determineLumpedEquations(Graph graph) throws ExpressionException, M
 		//
 		int column = -1;
 		for (int j = i; j < voltageMatrix.getNumCols(); j++){
-			RationalExp elem = voltageMatrix.get(i,j);
+			IRationalExpression elem = voltageMatrix.get(i,j);
 			if (elem.isConstant() && elem.getConstant().doubleValue()==1.0){
 				column = j;
 				break;
@@ -261,7 +264,7 @@ private void determineLumpedEquations(Graph graph) throws ExpressionException, M
 					buffer.append(" + "+voltageMatrix.get(i,j).minus().infixString()+'*'+colDevice.getVName());
 				}	
 			}
-			fieldDependentVoltageExpression[column] = (new Expression(buffer.toString())).flatten();
+			fieldDependentVoltageExpression[column] = (ExpressionFactory.createExpression(buffer.toString())).flatten();
 		}
 	}
 	if (!bSilent){
@@ -325,7 +328,7 @@ private void determineLumpedEquations(Graph graph) throws ExpressionException, M
 			}
 			buffer.append(((ElectricalDevice)cycleEdges[j].getData()).getVName());
 		}
-		Expression exp = new Expression(buffer.toString());
+		IExpression exp = ExpressionFactory.createExpression(buffer.toString());
 		if (!bSilent){
 			System.out.println(exp.flatten() + " = 0.0");
 		}
@@ -368,7 +371,7 @@ private void determineLumpedEquations(Graph graph) throws ExpressionException, M
 				}
 				buffer.append(((ElectricalDevice)adjacentEdges[j].getData()).getIName());
 			}
-			Expression exp = new Expression(buffer.toString());
+			IExpression exp = ExpressionFactory.createExpression(buffer.toString());
 			if (!bSilent){
 				System.out.println(exp.flatten() + " = 0.0");
 			}
@@ -450,14 +453,14 @@ private void determineLumpedEquations(Graph graph) throws ExpressionException, M
 	for (int i = 0; i < capacitorGraphVoltageMatrix.getNumRows(); i++){
 		for (int j = 0; j < capacitorGraphVoltageMatrix.getNumCols(); j++){
 			ElectricalDevice device = (ElectricalDevice)fieldEdges[cIndex[j]].getData();
-			RationalExp coefficient = capacitorGraphVoltageMatrix.get(i,cIndex[j]);
+			IRationalExpression coefficient = capacitorGraphVoltageMatrix.get(i,cIndex[j]);
 			if (device.hasCapacitance()){			
 				//
 				// replace dVi/dt  with   1000/Ci * Ii  +  1000/Ci * Fi
 				//
 				String Cname = device.getCapName();
-				currentMatrix.set_elem(row,j,coefficient.mult(new RationalExp(1000)).div(new RationalExp(Cname)));  // entry for i's
-				currentMatrix.set_elem(row,j+graph.getNumEdges(),coefficient.minus().mult(new RationalExp(1000)).div(new RationalExp(Cname))); // entry for F's
+				currentMatrix.set_elem(row,j,coefficient.mult(RationalExpressionFactory.createRationalExpression(1000)).div(RationalExpressionFactory.createRationalExpression(Cname)));  // entry for i's
+				currentMatrix.set_elem(row,j+graph.getNumEdges(),coefficient.minus().mult(RationalExpressionFactory.createRationalExpression(1000)).div(RationalExpressionFactory.createRationalExpression(Cname))); // entry for F's
 			}else if (device.isVoltageSource()){
 				//
 				// directly insert "symbolic" dVi/dt into the new matrix
@@ -485,7 +488,7 @@ private void determineLumpedEquations(Graph graph) throws ExpressionException, M
 	if (!bSilent){
 		System.out.println("\n\n total currents for each device\n");
 	}
-	fieldTotalCurrent = new Expression[fieldEdges.length];
+	fieldTotalCurrent = new IExpression[fieldEdges.length];
 	for (int i = 0; i < fieldEdges.length; i++){
 		ElectricalDevice device = (ElectricalDevice)fieldEdges[cIndex[i]].getData();
 		StringBuffer buffer = new StringBuffer("0.0");
@@ -493,7 +496,7 @@ private void determineLumpedEquations(Graph graph) throws ExpressionException, M
 		// include Fi terms
 		//
 		for (int j = 0; j < graph.getNumEdges(); j++){
-			RationalExp coefficient = currentMatrix.get(i,j+graph.getNumEdges());
+			IRationalExpression coefficient = currentMatrix.get(i,j+graph.getNumEdges());
 			if (!coefficient.isZero()){
 				ElectricalDevice colDevice = (ElectricalDevice)fieldEdges[cIndex[j]].getData();
 				buffer.append(" + "+coefficient.minus()+"*"+colDevice.getSourceName());
@@ -503,14 +506,14 @@ private void determineLumpedEquations(Graph graph) throws ExpressionException, M
 		// include analytic dVi/dt terms from voltage sources
 		//
 		for (int j = 0; j < graph.getNumEdges(); j++){
-			RationalExp coefficient = currentMatrix.get(i,j+2*graph.getNumEdges());
+			IRationalExpression coefficient = currentMatrix.get(i,j+2*graph.getNumEdges());
 			if (!coefficient.isZero()){
 				ElectricalDevice colDevice = (ElectricalDevice)fieldEdges[cIndex[j]].getData();
-				Expression timeDeriv = colDevice.getInitialVoltageFunction().getExpression().differentiate("t");
+				IExpression timeDeriv = colDevice.getInitialVoltageFunction().getExpression().differentiate("t");
 				buffer.append(" + "+coefficient.minus()+"*"+timeDeriv.infix());
 			}	
 		}
-		fieldTotalCurrent[cIndex[i]] = (new Expression(buffer.toString())).flatten();
+		fieldTotalCurrent[cIndex[i]] = (ExpressionFactory.createExpression(buffer.toString())).flatten();
 	}
 	if (!bSilent){
 		for (int i = 0; i < fieldTotalCurrent.length; i++){
@@ -523,13 +526,13 @@ private void determineLumpedEquations(Graph graph) throws ExpressionException, M
 	if (!bSilent){
 		System.out.println("\n\n capacitive currents for each device\n");
 	}
-	fieldCapacitiveCurrent = new Expression[fieldEdges.length];
+	fieldCapacitiveCurrent = new IExpression[fieldEdges.length];
 	for (int i = 0; i < fieldEdges.length; i++){
 		ElectricalDevice device = (ElectricalDevice)fieldEdges[i].getData();
 		if (device.hasCapacitance()){
-			fieldCapacitiveCurrent[i] = Expression.add(fieldTotalCurrent[i],new Expression("-"+device.getSourceName()));
+			fieldCapacitiveCurrent[i] = ExpressionFactory.add(fieldTotalCurrent[i], ExpressionFactory.createExpression("-"+device.getSourceName()));
 		}else{
-			fieldCapacitiveCurrent[i] = new Expression(0.0);
+			fieldCapacitiveCurrent[i] = ExpressionFactory.createExpression(0.0);
 		}
 	}
 	if (!bSilent){
@@ -549,9 +552,9 @@ private void determineLumpedEquations(Graph graph) throws ExpressionException, M
 			// membrane ode
 			//
 			if (device.hasCapacitance() && fieldDependentVoltageExpression[i]==null){
-				Expression initExp = new Expression(0.0);
+				IExpression initExp = ExpressionFactory.createExpression(0.0);
 				System.out.println(device.getInitialVoltageFunction().getVCML());
-				System.out.println((new cbit.vcell.math.OdeEquation(new cbit.vcell.math.VolVariable(device.getVName()),new Expression(device.getInitialVoltageFunction().getName()),new Expression(fieldCapacitiveCurrent[i].flatten().toString()+"*"+cbit.vcell.model.ReservedSymbol.KMILLIVOLTS.getName()+"/"+device.getCapName()))).getVCML());
+				System.out.println((new cbit.vcell.math.OdeEquation(new cbit.vcell.math.VolVariable(device.getVName()),ExpressionFactory.createExpression(device.getInitialVoltageFunction().getName()),ExpressionFactory.createExpression(fieldCapacitiveCurrent[i].flatten().toString()+"*"+cbit.vcell.model.ReservedSymbol.KMILLIVOLTS.getName()+"/"+device.getCapName()))).getVCML());
 			}
 			//
 			// membrane forced potential
@@ -582,7 +585,7 @@ private void determineLumpedEquations(Graph graph) throws ExpressionException, M
  * Creation date: (3/2/2002 9:57:56 PM)
  * @return cbit.vcell.parser.Expression[]
  */
-public Expression getCapacitiveCurrent(ElectricalDevice device) {
+public IExpression getCapacitiveCurrent(ElectricalDevice device) {
 	for (int i = 0; i < fieldEdges.length; i++){
 		if (fieldEdges[i].getData() == device){
 			return fieldCapacitiveCurrent[i];
@@ -618,7 +621,7 @@ public ElectricalDevice getCapacitiveDevice(Membrane membrane) {
  * @return cbit.vcell.parser.Expression
  * @param device cbit.vcell.mapping.potential.ElectricalDevice
  */
-public Expression getDependentVoltageExpression(ElectricalDevice device) {
+public IExpression getDependentVoltageExpression(ElectricalDevice device) {
 	int index = getIndex(device);
 	return fieldDependentVoltageExpression[index];
 }
@@ -701,9 +704,9 @@ private int getIndex(ElectricalDevice device) {
  * @return cbit.vcell.parser.Expression
  * @param capacitiveDevice cbit.vcell.mapping.potential.ElectricalDevice
  */
-public Expression getOdeRHS(ElectricalDevice capacitiveDevice) throws ExpressionException {
+public IExpression getOdeRHS(ElectricalDevice capacitiveDevice) throws ExpressionException {
 	int index = getIndex(capacitiveDevice);
-	return new Expression("1000.0 / "+capacitiveDevice.getCapName()+" * ("+capacitiveDevice.getIName()+" - "+capacitiveDevice.getCurrentSourceExpression().infix()+")");
+	return ExpressionFactory.createExpression("1000.0 / "+capacitiveDevice.getCapName()+" * ("+capacitiveDevice.getIName()+" - "+capacitiveDevice.getCurrentSourceExpression().infix()+")");
 }
 /**
  * Insert the method's description here.
@@ -711,7 +714,7 @@ public Expression getOdeRHS(ElectricalDevice capacitiveDevice) throws Expression
  * @return cbit.vcell.parser.Expression
  * @param device cbit.vcell.mapping.potential.ElectricalDevice
  */
-public Expression getTotalCurrent(ElectricalDevice device) {
+public IExpression getTotalCurrent(ElectricalDevice device) {
 	int index = getIndex(device);
 	return fieldTotalCurrent[index];
 }

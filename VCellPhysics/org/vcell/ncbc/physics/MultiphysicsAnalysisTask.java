@@ -5,6 +5,7 @@ import java.beans.PropertyVetoException;
 import java.util.Vector;
 
 import org.jdom.Element;
+import org.vcell.expression.ExpressionException;
 import org.vcell.modelapp.analysis.IAnalysisTask;
 import org.vcell.modelapp.analysis.IAnalysisTaskFactory;
 import org.vcell.ncbc.physics.component.PhysicalModel;
@@ -13,7 +14,6 @@ import cbit.image.ImageException;
 import cbit.util.Matchable;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.modelapp.SimulationContext;
-import cbit.vcell.parser.ExpressionException;
 
 public class MultiphysicsAnalysisTask implements IAnalysisTask {
 	

@@ -8,7 +8,6 @@ import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Feature;
 import cbit.vcell.geometry.SubVolume;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.geometry.GeometryException;
 import cbit.image.ImageException;
 import cbit.vcell.geometry.RegionImage;
@@ -22,6 +21,7 @@ import cbit.vcell.modelapp.StructureMapping;
 
 import java.util.Vector;
 
+import org.vcell.expression.ExpressionException;
 import org.vcell.ncbc.physics.component.Connection;
 import org.vcell.ncbc.physics.component.CurrentSource;
 import org.vcell.ncbc.physics.component.ElectricalDevice;
@@ -50,7 +50,7 @@ public class MappingUtilities {
  * Creation date: (1/12/2004 1:35:34 AM)
  * @return ncbc_old.physics.component.PhysicalModel
  */
-public static void addChemicalDevices(cbit.vcell.modelapp.SimulationContext simContext, PhysicalModel physicalModel) throws cbit.vcell.parser.ExpressionException, java.beans.PropertyVetoException {
+public static void addChemicalDevices(cbit.vcell.modelapp.SimulationContext simContext, PhysicalModel physicalModel) throws org.vcell.expression.ExpressionException, java.beans.PropertyVetoException {
 
 	Model model = simContext.getModel();
 	Structure structures[] = model.getStructures();
@@ -213,7 +213,7 @@ public static void addChemicalDevices(cbit.vcell.modelapp.SimulationContext simC
  * Creation date: (1/12/2004 1:35:34 AM)
  * @return ncbc_old.physics.component.PhysicalModel
  */
-public static void addElectricalDevices(cbit.vcell.modelapp.SimulationContext simContext, PhysicalModel physicalModel) throws cbit.vcell.parser.ExpressionException, java.beans.PropertyVetoException {
+public static void addElectricalDevices(cbit.vcell.modelapp.SimulationContext simContext, PhysicalModel physicalModel) throws org.vcell.expression.ExpressionException, java.beans.PropertyVetoException {
 
 	Model model = simContext.getModel();
 	Structure structures[] = model.getStructures();
