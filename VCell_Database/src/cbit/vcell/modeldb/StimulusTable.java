@@ -1,5 +1,7 @@
 package cbit.vcell.modeldb;
 
+import org.vcell.expression.IExpression;
+
 import cbit.sql.Field;
 import cbit.sql.InsertHashtable;
 import cbit.sql.Table;
@@ -9,7 +11,6 @@ import cbit.vcell.modelapp.CurrentClampStimulus;
 import cbit.vcell.modelapp.ElectricalStimulus;
 import cbit.vcell.modelapp.Electrode;
 import cbit.vcell.modelapp.VoltageClampStimulus;
-import cbit.vcell.parser.Expression;
 /**
  * This type was created in VisualAge.
  */
@@ -64,7 +65,7 @@ public String getSQLValueList(InsertHashtable hash, KeyValue Key, KeyValue simCo
 		}
 	}
 
-	Expression exp = null;
+	IExpression exp = null;
 	int stimulusType = UNKNOWN_STIMULUS;
 	if (stimulus instanceof CurrentClampStimulus){
 		stimulusType = CURRENT_CLAMP_STIMULUS;

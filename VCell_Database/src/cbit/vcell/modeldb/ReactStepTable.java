@@ -4,6 +4,8 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.expression.ExpressionFactory;
+
 import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.util.DataAccessException;
@@ -109,7 +111,7 @@ public ReactionStep getReactionStep(Structure structure, KeyValue rsKey, java.sq
 		throw new DataAccessException("unexpected null for chargeValence");
 	}
 	try {
-		rs.getChargeCarrierValence().setExpression(new cbit.vcell.parser.Expression(valenceValue));
+		rs.getChargeCarrierValence().setExpression(ExpressionFactory.createExpression(valenceValue));
 	}catch (java.beans.PropertyVetoException e){
 		e.printStackTrace(System.out);
 	}
@@ -503,7 +505,7 @@ public String getSQLValueList(ReactionStep reactionStep, KeyValue modelKey, KeyV
 	}
 	try {
 		buffer.append(((int)reactionStep.getChargeCarrierValence().getExpression().evaluateConstant())+",");
-	}catch (cbit.vcell.parser.ExpressionException e){
+	}catch (org.vcell.expression.ExpressionException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException("failure extracting charge carrier valence from Reaction '"+reactionStep.getName()+"': "+e.getMessage());
 	}

@@ -10,6 +10,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Vector;
 
+import org.vcell.expression.ExpressionException;
+
 import cbit.image.BrowseImage;
 import cbit.image.ImageException;
 import cbit.image.VCImage;
@@ -37,7 +39,6 @@ import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
-import cbit.vcell.parser.ExpressionException;
 import cbit.util.DependencyException;
 //import cbit.util.VersionFlag;
 //import cbit.util.Version;

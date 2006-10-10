@@ -104,7 +104,7 @@ public String getSQLValueList(InsertHashtable hash, KeyValue Key, KeyValue simCo
 		buffer.append((mm.getCalculateVoltage() ? 1 : 0)+",");
 		try {
 			buffer.append(mm.getSpecificCapacitanceParameter().getExpression().evaluateConstant()+",");
-		}catch (cbit.vcell.parser.ExpressionException e){
+		}catch (org.vcell.expression.ExpressionException e){
 			e.printStackTrace(System.out);
 			throw new DataAccessException("specific capacitance for "+mm.getMembrane().getName()+" not constant: ("+e.getMessage()+")");
 		}

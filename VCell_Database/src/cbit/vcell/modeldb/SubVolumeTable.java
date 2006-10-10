@@ -7,6 +7,10 @@ package cbit.vcell.modeldb;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import cbit.sql.Field;
 import cbit.sql.InsertHashtable;
 import cbit.sql.Table;
@@ -18,8 +22,6 @@ import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.ImageSubVolume;
 import cbit.vcell.geometry.SubVolume;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 /**
  * This type was created in VisualAge.
  */
@@ -60,7 +62,7 @@ public SubVolume getAnalyticOrCompartmentSubVolume(KeyValue key, ResultSet rset,
 	if (rset.wasNull()){
 		return new CompartmentSubVolume(key,handleValue);
 	}else{
-		Expression exp = new Expression(expString);
+		IExpression exp = ExpressionFactory.createExpression(expString);
 		return new AnalyticSubVolume(key,svName,exp,handleValue);
 	}
 }

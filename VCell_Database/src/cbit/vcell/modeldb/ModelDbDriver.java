@@ -276,9 +276,9 @@ private Model getModel(ResultSet rset,Connection con,User user) throws SQLExcept
 			model.addReactionStep(reactSteps[i]);
 			try {
 				reactSteps[i].rebindAllToModel(model);
-			}catch (cbit.vcell.parser.ExpressionBindingException e){
+			}catch (org.vcell.expression.ExpressionBindingException e){
 				throw new DataAccessException("bindingException: "+e.getMessage());
-			}catch (cbit.vcell.parser.ExpressionException e){
+			}catch (org.vcell.expression.ExpressionException e){
 				throw new DataAccessException(e.getMessage());
 			}catch (PropertyVetoException e){
 				throw new DataAccessException("PropertyVetoException: "+e.getMessage());

@@ -5,6 +5,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.vcell.expression.ExpressionBindingException;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
 import org.vcell.modelapp.Activator;
 import org.vcell.modelapp.analysis.IAnalysisTask;
 import org.vcell.modelapp.analysis.IAnalysisTaskFactory;
@@ -40,9 +44,7 @@ import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.modelapp.SpeciesContextSpec;
 import cbit.vcell.modelapp.StructureMapping;
 import cbit.vcell.modelapp.VoltageClampStimulus;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.ExpressionException;
+
 /**
  * This type was created in VisualAge.
  */
@@ -207,35 +209,35 @@ private void assignSpeciesContextSpecsSQL(Connection con,KeyValue simContextKey,
 					try {
 						scs.setEnableDiffusing(bEnableDiffusing);
 						scs.setConstant(bForceConstant);
-						scs.getInitialConditionParameter().setExpression(new Expression(initCondString));
-						scs.getDiffusionParameter().setExpression(new Expression(diffRateString));
+						scs.getInitialConditionParameter().setExpression(ExpressionFactory.createExpression(initCondString));
+						scs.getDiffusionParameter().setExpression(ExpressionFactory.createExpression(diffRateString));
 						if (boundaryXmString!=null){
-							scs.getBoundaryXmParameter().setExpression(new Expression(boundaryXmString));
+							scs.getBoundaryXmParameter().setExpression(ExpressionFactory.createExpression(boundaryXmString));
 						}else{
 							scs.getBoundaryXmParameter().setExpression(null);
 						}
 						if (boundaryXpString!=null){
-							scs.getBoundaryXpParameter().setExpression(new Expression(boundaryXpString));
+							scs.getBoundaryXpParameter().setExpression(ExpressionFactory.createExpression(boundaryXpString));
 						}else{
 							scs.getBoundaryXpParameter().setExpression(null);
 						}
 						if (boundaryYmString!=null){
-							scs.getBoundaryYmParameter().setExpression(new Expression(boundaryYmString));
+							scs.getBoundaryYmParameter().setExpression(ExpressionFactory.createExpression(boundaryYmString));
 						}else{
 							scs.getBoundaryYmParameter().setExpression(null);
 						}
 						if (boundaryYpString!=null){
-							scs.getBoundaryYpParameter().setExpression(new Expression(boundaryYpString));
+							scs.getBoundaryYpParameter().setExpression(ExpressionFactory.createExpression(boundaryYpString));
 						}else{
 							scs.getBoundaryYpParameter().setExpression(null);
 						}
 						if (boundaryZmString!=null){
-							scs.getBoundaryZmParameter().setExpression(new Expression(boundaryZmString));
+							scs.getBoundaryZmParameter().setExpression(ExpressionFactory.createExpression(boundaryZmString));
 						}else{
 							scs.getBoundaryZmParameter().setExpression(null);
 						}
 						if (boundaryZpString!=null){
-							scs.getBoundaryZpParameter().setExpression(new Expression(boundaryZpString));
+							scs.getBoundaryZpParameter().setExpression(ExpressionFactory.createExpression(boundaryZpString));
 						}else{
 							scs.getBoundaryZpParameter().setExpression(null);
 						}
@@ -289,12 +291,12 @@ private void assignStimuliSQL(Connection con,KeyValue simContextKey, SimulationC
 					name = null;
 				}
 				int stimulusType = rset.getInt(stimulusTable.stimulusType.toString());
-				Expression exp = null;
+				IExpression exp = null;
 				String expString = rset.getString(stimulusTable.expression.toString());
 				if (rset.wasNull()){
 					exp = null;
 				}else{
-					exp = new Expression(expString);
+					exp = ExpressionFactory.createExpression(expString);
 				}
 				double posX = rset.getBigDecimal(stimulusTable.positionX.toString()).doubleValue();
 				double posY = rset.getBigDecimal(stimulusTable.positionY.toString()).doubleValue();
@@ -435,7 +437,7 @@ private void assignStructureMappingsSQL(Connection con,KeyValue simContextKey, S
 				String surfToVolString = rset.getString(structureMappingTable.surfToVolExp.toString());
 				if (!rset.wasNull()) {
 					try {
-						mm.getSurfaceToVolumeParameter().setExpression(new Expression(surfToVolString));
+						mm.getSurfaceToVolumeParameter().setExpression(ExpressionFactory.createExpression(surfToVolString));
 					} catch (ExpressionException e) {
 						e.printStackTrace(System.out);
 						throw new DataAccessException("parse error in surfaceToVol expression: " + e.getMessage());
@@ -447,7 +449,7 @@ private void assignStructureMappingsSQL(Connection con,KeyValue simContextKey, S
 				String volFractString = rset.getString(structureMappingTable.volFractExp.toString());
 				if (!rset.wasNull()) {
 					try {
-						mm.getVolumeFractionParameter().setExpression(new Expression(volFractString));
+						mm.getVolumeFractionParameter().setExpression(ExpressionFactory.createExpression(volFractString));
 					} catch (ExpressionException e) {
 						e.printStackTrace(System.out);
 						throw new DataAccessException("parse error in volFract expression: " + e.getMessage());
@@ -463,7 +465,7 @@ private void assignStructureMappingsSQL(Connection con,KeyValue simContextKey, S
 				java.math.BigDecimal specificCapacitance = rset.getBigDecimal(structureMappingTable.specificCap.toString());
 				if (!rset.wasNull()) {
 					try {
-						mm.getSpecificCapacitanceParameter().setExpression(new Expression(specificCapacitance.doubleValue()));
+						mm.getSpecificCapacitanceParameter().setExpression(ExpressionFactory.createExpression(specificCapacitance.doubleValue()));
 					}catch (ExpressionBindingException e){
 						e.printStackTrace(System.out);
 						throw new DataAccessException("error setting membrane specific capacitance: "+e.getMessage());
@@ -475,7 +477,7 @@ private void assignStructureMappingsSQL(Connection con,KeyValue simContextKey, S
 				String initialVoltageString = rset.getString(structureMappingTable.initialVoltage.toString());
 				if (!rset.wasNull()) {
 					try {
-						mm.getInitialVoltageParameter().setExpression(new Expression(initialVoltageString));
+						mm.getInitialVoltageParameter().setExpression(ExpressionFactory.createExpression(initialVoltageString));
 					}catch (ExpressionException e){
 						e.printStackTrace(System.out);
 						throw new DataAccessException("database parse error in initial membrane voltage: "+e.getMessage());
