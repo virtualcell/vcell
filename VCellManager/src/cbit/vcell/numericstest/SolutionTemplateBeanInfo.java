@@ -369,7 +369,7 @@ public java.beans.PropertyDescriptor templateExpressionPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.parser.Expression.class
+					org.vcell.expression.IExpression.class
 				};
 				aSetMethod = getBeanClass().getMethod("setTemplateExpression", aSetMethodParameterTypes);
 			} catch (Throwable exception) {

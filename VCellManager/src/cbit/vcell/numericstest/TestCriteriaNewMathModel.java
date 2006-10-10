@@ -1,7 +1,7 @@
 package cbit.vcell.numericstest;
 import cbit.vcell.solver.test.*;
-import cbit.vcell.mathmodel.MathModelInfo;
-import cbit.vcell.solver.SimulationInfo;
+import cbit.util.MathModelInfo;
+import cbit.vcell.simulation.SimulationInfo;
 /**
  * Insert the type's description here.
  * Creation date: (11/11/2004 1:32:38 PM)

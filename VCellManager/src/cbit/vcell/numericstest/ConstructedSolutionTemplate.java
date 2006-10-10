@@ -2,7 +2,10 @@ package cbit.vcell.numericstest;
 
 import cbit.vcell.math.*;
 import java.util.Enumeration;
-import cbit.vcell.parser.Expression;
+
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 /**
  * Insert the type's description here.
  * Creation date: (5/12/2003 10:53:40 AM)
@@ -66,17 +69,17 @@ private void initialize(cbit.vcell.math.MathDescription mathDesc) {
 			String tau2Name = baseName+"_tau2";
 			if (equation instanceof OdeEquation){
 				try {
-					Expression exp = new Expression(amplitudeName+" * (1.0 + exp(-t/"+tau1Name+")*sin(2*"+Math.PI+"/"+tau2Name+"*t))");
+					IExpression exp = ExpressionFactory.createExpression(amplitudeName+" * (1.0 + exp(-t/"+tau1Name+")*sin(2*"+Math.PI+"/"+tau2Name+"*t))");
 					solutionTemplateList.add(new SolutionTemplate(equation.getVariable().getName(),subDomain.getName(),exp));
-				}catch (cbit.vcell.parser.ExpressionException e){
+				}catch (org.vcell.expression.ExpressionException e){
 					e.printStackTrace(System.out);
 					throw new RuntimeException(e.getMessage());
 				}
 			}else if (equation instanceof PdeEquation){
 				try {
-					Expression exp = new Expression(amplitudeName+" * (1.0 + exp(-t/"+tau1Name+") + "+tau2Name+"*x)");
+					IExpression exp = ExpressionFactory.createExpression(amplitudeName+" * (1.0 + exp(-t/"+tau1Name+") + "+tau2Name+"*x)");
 					solutionTemplateList.add(new SolutionTemplate(equation.getVariable().getName(),subDomain.getName(),exp));
-				}catch (cbit.vcell.parser.ExpressionException e){
+				}catch (org.vcell.expression.ExpressionException e){
 					e.printStackTrace(System.out);
 					throw new RuntimeException(e.getMessage());
 				}

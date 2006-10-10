@@ -16,6 +16,9 @@ import java.util.Enumeration;
 import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageOutputStream;
 
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import cbit.image.VCImage;
 import cbit.util.Coordinate;
 import cbit.util.Extent;
@@ -69,8 +72,7 @@ import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.modelapp.SpeciesContextSpec;
 import cbit.vcell.modelapp.StructureMapping;
 import cbit.vcell.modelapp.VoltageClampStimulus;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionPrintFormatter;
+import cbit.vcell.parser.gui.ExpressionPrintFormatter;
 import cbit.vcell.simulation.DefaultOutputTimeSpec;
 import cbit.vcell.simulation.ErrorTolerance;
 import cbit.vcell.simulation.ExplicitOutputTimeSpec;
@@ -1003,13 +1005,13 @@ protected void writeHorizontalLine() throws DocumentException {
 			paramTable = getTable(4, 100, 1, 3, 3);
 			paramTable.addCell(createCell("Kinetics Parameters", getBold(DEF_HEADER_FONT_SIZE), 4, 1, Element.ALIGN_CENTER, true));
 			paramTable.addCell(createHeaderCell("Name", getBold(), 1));
-			paramTable.addCell(createHeaderCell("Expression", getBold(), 1));
+			paramTable.addCell(createHeaderCell("IExpression", getBold(), 1));
 			paramTable.addCell(createHeaderCell("Role", getBold(), 1));
 			paramTable.addCell(createHeaderCell("Unit", getBold(), 1));
 			paramTable.endHeaders();
 			for (int k = 0; k < kineticsParameters.length; k++) {
 				String name = kineticsParameters[k].getName();
-				Expression expression = kineticsParameters[k].getExpression();
+				IExpression expression = kineticsParameters[k].getExpression();
 				String role = rs.getKinetics().getDefaultParameterDesc(kineticsParameters[k].getRole());
 				VCUnitDefinition unit = kineticsParameters[k].getUnitDefinition();
 				paramTable.addCell(createCell(name, getFont()));
@@ -1035,7 +1037,7 @@ protected void writeHorizontalLine() throws DocumentException {
 		}
 		Section mathDescSection = container.addSection("Math Description: " + mathDesc.getName(), container.depth() + 1);
 		Section mathDescSubSection = null;
-		Expression expArray [] = null;
+		IExpression expArray [] = null;
 		Table imageTable = null;
 		BufferedImage dummy = new BufferedImage(500, 50, BufferedImage.TYPE_3BYTE_BGR);
 		int scale = 1;
@@ -1044,10 +1046,10 @@ protected void writeHorizontalLine() throws DocumentException {
 		Enumeration constantsList = mathDesc.getConstants();
 		while (constantsList.hasMoreElements()) {
 			Constant constant = ((Constant)constantsList.nextElement());
-			Expression exp = constant.getExpression();
+			IExpression exp = constant.getExpression();
 			try {
-				expArray = new Expression[] { Expression.assign(new Expression(constant.getName()), exp.flatten()) };
-			} catch(cbit.vcell.parser.ExpressionException ee) {
+				expArray = new IExpression[] { ExpressionFactory.assign(ExpressionFactory.createExpression(constant.getName()), exp.flatten()) };
+			} catch(org.vcell.expression.ExpressionException ee) {
 				System.err.println("Unable to process constant " + constant.getName() + " for publishing");
 				ee.printStackTrace();
 				continue;
@@ -1076,10 +1078,10 @@ protected void writeHorizontalLine() throws DocumentException {
 		Enumeration functionsList = mathDesc.getFunctions();
 		while (functionsList.hasMoreElements()) {
 			Function function = ((Function)functionsList.nextElement());
-			Expression exp = function.getExpression();
+			IExpression exp = function.getExpression();
 			try {
-				expArray = new Expression[] { Expression.assign(new Expression(function.getName()), exp.flatten()) };
-			} catch(cbit.vcell.parser.ExpressionException ee) {
+				expArray = new IExpression[] { ExpressionFactory.assign(ExpressionFactory.createExpression(function.getName()), exp.flatten()) };
+			} catch(org.vcell.expression.ExpressionException ee) {
 				System.err.println("Unable to process function " + function.getName() + " for publishing");
 				ee.printStackTrace();
 				continue;
@@ -1122,11 +1124,11 @@ protected void writeHorizontalLine() throws DocumentException {
 		Enumeration constantsList = mathDesc.getConstants();
 		while (constantsList.hasMoreElements()) {
 			Constant constant = ((Constant)constantsList.nextElement());
-			Expression exp = constant.getExpression();
+			IExpression exp = constant.getExpression();
 			if (expTable == null) {
 				expTable = getTable(2, 100, 1, 2, 2);
 				expTable.addCell(createHeaderCell("Constant Name", getBold(), 1));
-				expTable.addCell(createHeaderCell("Expression", getBold(), 1));
+				expTable.addCell(createHeaderCell("IExpression", getBold(), 1));
 				expTable.setWidths(widths);
 				expTable.endHeaders();
 			}
@@ -1146,11 +1148,11 @@ protected void writeHorizontalLine() throws DocumentException {
 		Enumeration functionsList = mathDesc.getFunctions();
 		while (functionsList.hasMoreElements()) {
 			Function function = ((Function)functionsList.nextElement());
-			Expression exp = function.getExpression();
+			IExpression exp = function.getExpression();
 			if (expTable == null) {
 				expTable = getTable(2, 100, 1, 2, 2);
 				expTable.addCell(createHeaderCell("Function Name", getBold(), 1));
-				expTable.addCell(createHeaderCell("Expression", getBold(), 1));
+				expTable.addCell(createHeaderCell("IExpression", getBold(), 1));
 				expTable.endHeaders();
 				expTable.setWidths(widths);
 			}
@@ -1259,7 +1261,7 @@ protected void writeHorizontalLine() throws DocumentException {
 			}
 			String structName = memMapping.getStructure().getName();
 			String initVoltage = "";
-			Expression tempExp = memMapping.getInitialVoltageParameter().getExpression();
+			IExpression tempExp = memMapping.getInitialVoltageParameter().getExpression();
 			VCUnitDefinition tempUnit = memMapping.getInitialVoltageParameter().getUnitDefinition();
 			if (tempExp != null) {
 				initVoltage = tempExp.infix();
@@ -1311,7 +1313,7 @@ protected void writeHorizontalLine() throws DocumentException {
 			String stimName = electricalStimuli[j].getName();
 			String currName = electricalStimuli[j].getCurrentParameter().getName();
 			String clampType = "", expStr = "";
-			Expression tempExp = null;
+			IExpression tempExp = null;
 			VCUnitDefinition tempUnit = null;
 			if (electricalStimuli[j] instanceof CurrentClampStimulus) {
 				CurrentClampStimulus stimulus = (CurrentClampStimulus) electricalStimuli[j];
@@ -1738,7 +1740,7 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 			String constants [] = mo.getOverridenConstantNames();
 			for (int i = 0; i < constants.length; i++) {
 				String actualStr = "", defStr = "";
-				Expression tempExp = mo.getDefaultExpression(constants[i]);
+				IExpression tempExp = mo.getDefaultExpression(constants[i]);
 				if (tempExp != null) {
 					defStr = tempExp.infix();
 				}
@@ -1985,7 +1987,7 @@ protected void writeSpecies(Species[] species) throws DocumentException {
 			if (mm != null) {
 				StructureMapping.StructureMappingParameter smp = mm.getSurfaceToVolumeParameter();
 				if (smp != null) {
-					Expression tempExp = smp.getExpression();
+					IExpression tempExp = smp.getExpression();
 					VCUnitDefinition tempUnit = smp.getUnitDefinition();
 					if (tempExp != null) {
 						surfVolStr = tempExp.infix();
@@ -1996,7 +1998,7 @@ protected void writeSpecies(Species[] species) throws DocumentException {
 				}
 				smp = mm.getVolumeFractionParameter();
 				if (smp != null) {
-					Expression tempExp = smp.getExpression();
+					IExpression tempExp = smp.getExpression();
 					VCUnitDefinition tempUnit = smp.getUnitDefinition();
 					if (tempExp != null) {
 						volFractStr = tempExp.infix();
@@ -2025,7 +2027,7 @@ protected void writeSpecies(Species[] species) throws DocumentException {
 	protected void writeSubDomainsEquationsAsImages(Section mathDescSection, MathDescription mathDesc) {
 
 		Enumeration subDomains = mathDesc.getSubDomains();
-		Expression expArray [];
+		IExpression expArray [];
 		Table volDomainsTable = null;
 		Table memDomainsTable = null;
 		Section volDomains = mathDescSection.addSection("Volume Domains", mathDescSection.depth() + 1);
@@ -2042,16 +2044,16 @@ protected void writeSpecies(Species[] species) throws DocumentException {
 				try {
 					Enumeration enum_equ = equ.getTotalExpressions();
 					while (enum_equ.hasMoreElements()){
-						Expression exp = new Expression((Expression)enum_equ.nextElement());	
+						IExpression exp = ExpressionFactory.createExpression((IExpression)enum_equ.nextElement());	
 						expList.add(exp.flatten());
 					}
-				} catch (cbit.vcell.parser.ExpressionException ee) {
+				} catch (org.vcell.expression.ExpressionException ee) {
 					System.err.println("Unable to process the equation for subdomain: " + subDomain.getName());
 					ee.printStackTrace();
 					continue;
 				}
 			}
-			expArray = (Expression [])expList.toArray(new Expression[expList.size()]);
+			expArray = (IExpression [])expList.toArray(new IExpression[expList.size()]);
 			Section tempSection = null;
 			if (subDomain instanceof cbit.vcell.math.CompartmentSubDomain) {
 				tempSection = volDomains.addSection(subDomain.getName(), volDomains.depth() + 1);

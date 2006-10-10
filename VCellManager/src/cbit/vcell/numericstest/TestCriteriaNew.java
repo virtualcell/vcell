@@ -1,6 +1,6 @@
 package cbit.vcell.numericstest;
-import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.mathmodel.MathModelInfo;
+import cbit.vcell.simulation.SimulationInfo;
+import cbit.util.MathModelInfo;
 import cbit.vcell.solver.test.VariableComparisonSummary;
 import java.math.BigDecimal;
 /**
@@ -82,7 +82,7 @@ public Double getMaxRelError() {
  * Creation date: (10/16/2004 2:33:35 PM)
  * @return cbit.vcell.solver.SimulationInfo
  */
-public cbit.vcell.solver.SimulationInfo getRegressionSimInfo() {
+public SimulationInfo getRegressionSimInfo() {
 	return regressionSimInfo;
 }
 
@@ -112,7 +112,7 @@ public String getReportStatusMessage() {
  * Creation date: (10/16/2004 2:33:35 PM)
  * @return cbit.vcell.solver.SimulationInfo
  */
-public cbit.vcell.solver.SimulationInfo getSimInfo() {
+public SimulationInfo getSimInfo() {
 	return simInfo;
 }
 
