@@ -1,6 +1,8 @@
 package cbit.vcell.xml;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -60,8 +62,8 @@ public static String mangle(String param) {
  * @return java.lang.String
  * @param param java.lang.String
  */
-public static String mangleExpression(Expression expression) {
-	Expression tempExp = new Expression(expression);
+public static String mangleExpression(IExpression expression) {
+	IExpression tempExp = ExpressionFactory.createExpression(expression);
 	try {
 		tempExp.bindExpression(null);
 		tempExp = tempExp.flatten();
@@ -109,15 +111,15 @@ public static String unMangle(String param) {
 }
 
 
-	public static Expression unMangleExpression(String expStr) {
+	public static IExpression unMangleExpression(String expStr) {
 
-		Expression tempExp = null;
+		IExpression tempExp = null;
 
 		//
 		// if parsing fails, that's a show-stopper.
 		//
 		try {
-			tempExp = new Expression(unMangle(expStr)); 
+			tempExp = ExpressionFactory.createExpression(unMangle(expStr)); 
 		}catch (ExpressionException e){
 			e.printStackTrace(System.out);
 			throw new RuntimeException(e.getMessage());

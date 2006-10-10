@@ -15,6 +15,9 @@ import org.sbml.libsbml.SpeciesReference;
 import org.sbml.libsbml.Unit;
 import org.sbml.libsbml.UnitDefinition;
 import org.sbml.libsbml.libsbml;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
 
 import cbit.util.TokenMangler;
 import cbit.util.xml.XmlParseException;
@@ -29,8 +32,6 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.modelapp.StructureMapping;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.vcml.Translator;
 import cbit.vcell.xml.XMLTags;
@@ -102,17 +103,17 @@ protected void addCompartments() {
 			// (we have set the units for compartment size as L above). Hence multiplying the size expression with the conversion factor
 			// between VC and SBML units for the compartment size. 
 			
-			Expression sizeExpr = null;
+			IExpression sizeExpr = null;
 			VCUnitDefinition vcSizeUnit = vcStructMapping.getSizeParameter().getUnitDefinition();
 			double factor = 1.0;
 			factor = vcSizeUnit.convertTo(factor, sbmlSizeUnit);
-			sizeExpr = Expression.mult(vcStructMapping.getSizeParameter().getExpression(), new Expression(factor));
+			sizeExpr = ExpressionFactory.mult(vcStructMapping.getSizeParameter().getExpression(), ExpressionFactory.createExpression(factor));
 			
 			sbmlCompartment.setSize(sizeExpr.evaluateConstant());
-		} catch (cbit.vcell.parser.ExpressionException e) {
+		} catch (org.vcell.expression.ExpressionException e) {
 			// If it is in the catch block, it means that the compartment size was probably not a double, but an assignment.
 			// Check if the expression for the compartment size is not null and add it as an assignment rule.
-			Expression sizeExpr = vcStructMapping.getSizeParameter().getExpression();
+			IExpression sizeExpr = vcStructMapping.getSizeParameter().getExpression();
 			if (sizeExpr != null) {
 				ASTNode ruleFormulaNode = getFormulaFromExpression(sizeExpr);
 				AssignmentRule assignRule = new AssignmentRule(vcStructures[i].getName(), ruleFormulaNode);
@@ -221,7 +222,7 @@ protected void addReactions() {
 			// (instead of directly using rate parameter's expression infix) to maintain integrity of formula :
 			// for example logical and inequalities are not handled gracefully by libSBMl if expression.infix is used.
 			Compartment sbmlCompartment = sbmlModel.getCompartment(vcReactionStep.getStructure().getName());
-			Expression correctedRateExpr = Expression.mult(vcRxnKinetics.getRateParameter().getExpression(), new Expression(sbmlCompartment.getId()));
+			IExpression correctedRateExpr = ExpressionFactory.mult(vcRxnKinetics.getRateParameter().getExpression(), ExpressionFactory.createExpression(sbmlCompartment.getId()));
 			sbmlKLaw = new org.sbml.libsbml.KineticLaw();
 
 			// If the reaction is not in a feature, but in a membrane, use/set subtanceUnits for the kinetic law.
@@ -230,7 +231,7 @@ protected void addReactions() {
 					sbmlKLaw.setSubstanceUnits(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_molecules.getSymbol()));
 				} else if (vcReactionStep instanceof cbit.vcell.model.FluxReaction) {
 					sbmlKLaw.setSubstanceUnits(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_umol_L_per_um3.getSymbol()));
-					// correctedRateExpr = Expression.mult(correctedRateExpr, new Expression(1e-15));
+					// correctedRateExpr = IExpression.mult(correctedRateExpr, new IExpression(1e-15));
 				} else {
 					throw new RuntimeException("Unknown reaction type - cannot handle at this time");
 				}
@@ -240,7 +241,7 @@ protected void addReactions() {
 			// In the first pass thro' the kinetic params, add the numeric params as local params to sbmlKLaw
 			// Store the non-numeric params in a local hash (oldName, newName)
 			String[] kinParamNames = new String[vcKineticsParams.length];
-			Expression[] kinParamExprs = new Expression[vcKineticsParams.length];
+			IExpression[] kinParamExprs = new IExpression[vcKineticsParams.length];
 			for (int j = 0; j < vcKineticsParams.length; j++){
 				if (vcKineticsParams[j].getRole() != Kinetics.ROLE_Rate) {
 					// if expression of kinetic param evaluates to a double, the parameter value is set
@@ -262,7 +263,7 @@ protected void addReactions() {
 						// Will be used later to add this param as global.
 						String newParamName = TokenMangler.mangleToSName(vcKineticsParams[j].getName() + "_" + vcReactionStep.getName());
 						kinParamNames[j] = newParamName;
-						kinParamExprs[j] = new Expression(vcKineticsParams[j].getExpression());
+						kinParamExprs[j] = ExpressionFactory.createExpression(vcKineticsParams[j].getExpression());
 					}
 				}
 			} // end for (j) - first pass
@@ -274,13 +275,13 @@ protected void addReactions() {
 					String oldName = vcKineticsParams[j].getName();
 					String newName = kinParamNames[j];
 					// change the name of this parameter in the rate expression 
-					correctedRateExpr.substituteInPlace(new Expression(oldName), new Expression(newName));
+					correctedRateExpr.substituteInPlace(ExpressionFactory.createExpression(oldName), ExpressionFactory.createExpression(newName));
 					// Change the occurence of this param in other param expressions
 					for (int k = 0; k < vcKineticsParams.length; k++){
 						if ((vcKineticsParams[k].getRole() != Kinetics.ROLE_Rate) && !(vcKineticsParams[k].getExpression().isNumeric())) {
 							if (k != j && vcKineticsParams[k].getExpression().hasSymbol(oldName)) {
 								// for all params except the current param represented by index j (whose name was changed)
-								kinParamExprs[k].substituteInPlace(new Expression(oldName), new Expression(newName));
+								kinParamExprs[k].substituteInPlace(ExpressionFactory.createExpression(oldName), ExpressionFactory.createExpression(newName));
 							}
 							if (k == j && vcKineticsParams[k].getExpression().hasSymbol(oldName)) {
 								throw new RuntimeException("A parameter cannot refer to itself in its expression");
@@ -314,7 +315,7 @@ protected void addReactions() {
 			// After making all necessary adjustments to the rate expression, now set the sbmlKLaw.
 			ASTNode exprFormulaNode = getFormulaFromExpression(correctedRateExpr);
 			sbmlKLaw.setMath(exprFormulaNode);
-		} catch (cbit.vcell.parser.ExpressionException e) {
+		} catch (org.vcell.expression.ExpressionException e) {
 			e.printStackTrace(System.out);
 			throw new RuntimeException("Error getting value of parameter : "+e.getMessage());
 		}
@@ -391,7 +392,7 @@ protected void addSpecies() {
 		cbit.vcell.modelapp.SpeciesContextSpec vcSpeciesContextsSpec = simContext.getReactionContext().getSpeciesContextSpec(vcSpeciesContexts[i]);
 		try {
 			sbmlSpecies.setInitialConcentration(vcSpeciesContextsSpec.getInitialConditionParameter().getConstantValue());
-		} catch (cbit.vcell.parser.ExpressionException e) {
+		} catch (org.vcell.expression.ExpressionException e) {
 			// If it is in the catch block, it means that the initial concentration of the species was not a double, but an assignment, probably.
 			// Check if the expression for the species is not null and add it as an assignment rule.
 			if (vcSpeciesContextsSpec.getInitialConditionParameter().getExpression() != null) {
@@ -502,7 +503,7 @@ private Element getAnnotationElement(ReactionStep reactionStep) throws cbit.util
 		rxnElement.setAttribute(XMLTags.FluxCarrierAttrTag, TokenMangler.mangleToSName(fluxRxn.getFluxCarrier().getCommonName()));
 
 		// Get the charge carrier valence (if its expression has constant value).
-		Expression tempExp = null;
+		IExpression tempExp = null;
 		int valence;
 		try {
 			tempExp = fluxRxn.getChargeCarrierValence().getExpression();
@@ -574,23 +575,23 @@ private boolean getBoundaryCondition(SpeciesContext speciesContext) {
 
 /**
  * 	getFormulaFromExpression : 
- *  Expression infix strings are not handled gracefully by libSBML, esp when ligical or inequality operators are used.
+ *  IExpression infix strings are not handled gracefully by libSBML, esp when ligical or inequality operators are used.
  *  This method 
  *		converts the expression into MathML using ExpressionMathMLPrinter;
  *		converts that into libSBMl-readable formula using libSBML utilties.
  *		returns the new formula string.
  *  
  */
-private ASTNode getFormulaFromExpression(Expression expression) { 
+private ASTNode getFormulaFromExpression(IExpression expression) { 
 	// Convert expression into MathML string
 	String expMathMLStr = null;
 
 	try {
-		expMathMLStr = cbit.vcell.parser.ExpressionMathMLPrinter.getMathML(expression);
+		expMathMLStr = expression.getMathML();
 	} catch (java.io.IOException e) {
 		e.printStackTrace(System.out);
 		throw new RuntimeException("Error converting expression to MathML string :" + e.getMessage());
-	} catch (cbit.vcell.parser.ExpressionException e1) {
+	} catch (org.vcell.expression.ExpressionException e1) {
 		e1.printStackTrace(System.out);
 		throw new RuntimeException("Error converting expression to MathML string :" + e1.getMessage());
 	}

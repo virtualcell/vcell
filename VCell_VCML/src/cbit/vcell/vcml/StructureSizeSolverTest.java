@@ -1,7 +1,8 @@
 package cbit.vcell.vcml;
+import org.vcell.expression.ExpressionFactory;
+
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
-import cbit.vcell.parser.Expression;
 /**
  * Insert the type's description here.
  * Creation date: (5/16/2006 6:02:15 PM)
@@ -37,15 +38,15 @@ public static void main(java.lang.String[] args) {
 		Membrane mitoMem = (Membrane)model.getStructure("mitoMem");
 
 		cbit.vcell.modelapp.SimulationContext simContext = new cbit.vcell.modelapp.SimulationContext(model,new cbit.vcell.geometry.Geometry("geo",0));
-		simContext.getGeometryContext().getStructureMapping(ec).getSizeParameter().setExpression(new Expression(1.0));
-		simContext.getGeometryContext().getStructureMapping(cyt).getSizeParameter().setExpression(new Expression(2.0));
-		simContext.getGeometryContext().getStructureMapping(pm).getSizeParameter().setExpression(new Expression(3.0));
-		simContext.getGeometryContext().getStructureMapping(nucleus).getSizeParameter().setExpression(new Expression(4.0));
-		simContext.getGeometryContext().getStructureMapping(nucMem).getSizeParameter().setExpression(new Expression(5.0));
-		simContext.getGeometryContext().getStructureMapping(er).getSizeParameter().setExpression(new Expression(6.0));
-		simContext.getGeometryContext().getStructureMapping(erMem).getSizeParameter().setExpression(new Expression(7.0));
-		simContext.getGeometryContext().getStructureMapping(mito).getSizeParameter().setExpression(new Expression(8.0));
-		simContext.getGeometryContext().getStructureMapping(mitoMem).getSizeParameter().setExpression(new Expression(9.0));
+		simContext.getGeometryContext().getStructureMapping(ec).getSizeParameter().setExpression(ExpressionFactory.createExpression(1.0));
+		simContext.getGeometryContext().getStructureMapping(cyt).getSizeParameter().setExpression(ExpressionFactory.createExpression(2.0));
+		simContext.getGeometryContext().getStructureMapping(pm).getSizeParameter().setExpression(ExpressionFactory.createExpression(3.0));
+		simContext.getGeometryContext().getStructureMapping(nucleus).getSizeParameter().setExpression(ExpressionFactory.createExpression(4.0));
+		simContext.getGeometryContext().getStructureMapping(nucMem).getSizeParameter().setExpression(ExpressionFactory.createExpression(5.0));
+		simContext.getGeometryContext().getStructureMapping(er).getSizeParameter().setExpression(ExpressionFactory.createExpression(6.0));
+		simContext.getGeometryContext().getStructureMapping(erMem).getSizeParameter().setExpression(ExpressionFactory.createExpression(7.0));
+		simContext.getGeometryContext().getStructureMapping(mito).getSizeParameter().setExpression(ExpressionFactory.createExpression(8.0));
+		simContext.getGeometryContext().getStructureMapping(mitoMem).getSizeParameter().setExpression(ExpressionFactory.createExpression(9.0));
 
 		StructureSizeSolver structSizeSolver = new StructureSizeSolver();
 		structSizeSolver.updateRelativeStructureSizes(simContext);

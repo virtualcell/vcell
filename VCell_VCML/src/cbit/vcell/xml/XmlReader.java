@@ -8,6 +8,9 @@ import java.util.Vector;
 import org.jdom.Attribute;
 import org.jdom.DataConversionException;
 import org.jdom.Element;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
 import org.vcell.modelapp.Activator;
 import org.vcell.modelapp.analysis.IAnalysisTask;
 import org.vcell.modelapp.analysis.IAnalysisTaskFactory;
@@ -104,8 +107,6 @@ import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.modelapp.SpeciesContextSpec;
 import cbit.vcell.modelapp.StructureMapping;
 import cbit.vcell.modelapp.VoltageClampStimulus;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simulation.ConstantArraySpec;
 import cbit.vcell.units.VCUnitDefinition;
 /**
@@ -138,10 +139,10 @@ public XmlReader(boolean readKeys) {
  * @param expString java.lang.String
  */
 private boolean expressionIsSingleIdentifier(String expString) throws ExpressionException {
-	Expression exp = new Expression(expString);
+	IExpression exp = ExpressionFactory.createExpression(expString);
 	String[] symbols = exp.getSymbols();
 	if (symbols != null && symbols.length==1){
-		if (exp.compareEqual(new Expression(symbols[0]))){
+		if (exp.compareEqual(ExpressionFactory.createExpression(symbols[0]))){
 			return true;
 		}
 	}
@@ -185,7 +186,7 @@ public AnalyticSubVolume getAnalyticSubVolume(Element param) throws XmlParseExce
 	if (temp == null) {
 		throw new XmlParseException("A Problem occured while retrieving the analytic expression of the AnalyticSubvolume "+ name);
 	}
-	Expression newexpression = this.unMangleExpression(temp);
+	IExpression newexpression = this.unMangleExpression(temp);
 	
 	//Create the AnalyticCompartment
 	AnalyticSubVolume newsubvolume = null;
@@ -453,7 +454,7 @@ public CompartmentSubVolume getCompartmentSubVolume(Element param) throws XmlPar
 public Constant getConstant(Element param) throws XmlParseException {
 	//retrieve values
 	String name = this.unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
-	Expression exp = unMangleExpression(param.getText());
+	IExpression exp = unMangleExpression(param.getText());
 	
 	//-- create new constant object ---
 	Constant newconstant = new Constant(name, exp);
@@ -647,10 +648,10 @@ public ElectricalStimulus getElectricalStimulus(Element param, SimulationContext
 	
 	if (param.getAttributeValue(XMLTags.TypeAttrTag).equalsIgnoreCase(XMLTags.VoltageClampTag)) {
 		//is a voltage clamp
-		clampStimulus = new VoltageClampStimulus(electrode, "voltClampElectrode", new Expression(0.0), currentSimulationContext);
+		clampStimulus = new VoltageClampStimulus(electrode, "voltClampElectrode", ExpressionFactory.createExpression(0.0), currentSimulationContext);
 	} else {
 		//is a current clamp
-		clampStimulus = new CurrentClampStimulus(electrode, "currClampElectrode", new Expression(0.0), currentSimulationContext);
+		clampStimulus = new CurrentClampStimulus(electrode, "currClampElectrode", ExpressionFactory.createExpression(0.0), currentSimulationContext);
 	}
 	
 	try {
@@ -671,7 +672,7 @@ public ElectricalStimulus getElectricalStimulus(Element param, SimulationContext
 			String paramName = this.unMangle(xmlParam.getAttributeValue(XMLTags.NameAttrTag));
 			String role = xmlParam.getAttributeValue(XMLTags.ParamRoleAttrTag);
 			String paramExpStr = xmlParam.getText();
-			Expression paramExp = unMangleExpression(paramExpStr);
+			IExpression paramExp = unMangleExpression(paramExpStr);
 			try {
 				if (varHash.getVariable(paramName) == null){
 					varHash.addVariable(new Function(paramName,paramExp));
@@ -714,7 +715,7 @@ public ElectricalStimulus getElectricalStimulus(Element param, SimulationContext
 		String unresolvedSymbol = varHash.getFirstUnresolvedSymbol();
 		while (unresolvedSymbol!=null){
 			try {
-				varHash.addVariable(new Function(unresolvedSymbol,new Expression(0.0)));  // will turn into an UnresolvedParameter.
+				varHash.addVariable(new Function(unresolvedSymbol,ExpressionFactory.createExpression(0.0)));  // will turn into an UnresolvedParameter.
 			}catch (MathException e){
 				e.printStackTrace(System.out);
 				throw new XmlParseException(e.getMessage());
@@ -836,7 +837,7 @@ public FastSystemImplicit getFastSystemImplicit(
         String temp = tempElement.getText();
 
         try {
-            Expression newExp = unMangleExpression(temp);
+            IExpression newExp = unMangleExpression(temp);
             fastInvariant = new FastInvariant(newExp);
             fastSystem.addFastInvariant(fastInvariant);
         } catch (MathException e) {
@@ -854,7 +855,7 @@ public FastSystemImplicit getFastSystemImplicit(
         String temp = tempElement.getText();
 
         try {
-            Expression newExp = unMangleExpression(temp);
+            IExpression newExp = unMangleExpression(temp);
             fastRate = new FastRate(newExp);
             fastSystem.addFastRate(fastRate);
         } catch (MathException e) {
@@ -1116,7 +1117,7 @@ public cbit.vcell.model.FluxReaction getFluxReaction( Element param, Model model
 		valenceString = this.unMangle(param.getAttributeValue(XMLTags.FluxCarrierValenceAttrTag));
 		if (valenceString!=null&&valenceString.length()>0){
 			try {
-				fluxreaction.getChargeCarrierValence().setExpression(new Expression(Integer.parseInt(unMangle(valenceString))));
+				fluxreaction.getChargeCarrierValence().setExpression(ExpressionFactory.createExpression(Integer.parseInt(unMangle(valenceString))));
 			}catch (java.beans.PropertyVetoException e){
 				e.printStackTrace(System.out);
 				throw new XmlParseException("A propertyVetoException was fired when setting the valence to the flux reaction " + name+" : "+e.getMessage());
@@ -1287,7 +1288,7 @@ public Function getFunction(Element param) throws XmlParseException {
 	String name = this.unMangle( param.getAttributeValue( XMLTags.NameAttrTag) );
 	String temp = param.getText();
 	
-	Expression exp = unMangleExpression(temp);
+	IExpression exp = unMangleExpression(temp);
 	
 	//-- create new Function --
 	Function function = new Function(name, exp);
@@ -1627,7 +1628,7 @@ public JumpCondition getJumpCondition(Element param) throws XmlParseException {
 
 	//process InFlux
 	temp = param.getChildText(XMLTags.InFluxTag);
-	Expression exp = unMangleExpression( temp );
+	IExpression exp = unMangleExpression( temp );
 	jumpCondition.setInFlux(exp);
 	
 
@@ -1693,7 +1694,7 @@ public cbit.vcell.model.Kinetics getKinetics(Element param, ReactionStep reactio
 		try {
 			if (reaction.getStructure() instanceof Membrane){
 				Membrane membrane = (Membrane)reaction.getStructure();
-				varHash.addVariable(new Constant(membrane.getMembraneVoltage().getName(),new Expression(0.0)));
+				varHash.addVariable(new Constant(membrane.getMembraneVoltage().getName(),ExpressionFactory.createExpression(0.0)));
 				reserved.add(membrane.getMembraneVoltage().getName());
 			}
 			//
@@ -1701,7 +1702,7 @@ public cbit.vcell.model.Kinetics getKinetics(Element param, ReactionStep reactio
 			//
 			ReactionParticipant rp [] = reaction.getReactionParticipants();
 			for (int i = 0; i < rp.length; i++){
-				varHash.addVariable(new Constant(rp[i].getName(), new Expression(0.0)));			
+				varHash.addVariable(new Constant(rp[i].getName(), ExpressionFactory.createExpression(0.0)));			
 			}
 		} catch (MathException e){
 			e.printStackTrace(System.out);
@@ -1715,7 +1716,7 @@ public cbit.vcell.model.Kinetics getKinetics(Element param, ReactionStep reactio
 			String paramName = this.unMangle(xmlParam.getAttributeValue(XMLTags.NameAttrTag));
 			String role = xmlParam.getAttributeValue(XMLTags.ParamRoleAttrTag);
 			String paramExpStr = xmlParam.getText();
-			Expression paramExp = unMangleExpression(paramExpStr);
+			IExpression paramExp = unMangleExpression(paramExpStr);
 			try {
 				if (varHash.getVariable(paramName) == null){
 					varHash.addVariable(new Function(paramName,paramExp));
@@ -1758,7 +1759,7 @@ public cbit.vcell.model.Kinetics getKinetics(Element param, ReactionStep reactio
 		String unresolvedSymbol = varHash.getFirstUnresolvedSymbol();
 		while (unresolvedSymbol!=null){
 			try {
-				varHash.addVariable(new Function(unresolvedSymbol,new Expression(0.0)));  // will turn into an UnresolvedParameter.
+				varHash.addVariable(new Function(unresolvedSymbol,ExpressionFactory.createExpression(0.0)));  // will turn into an UnresolvedParameter.
 			}catch (MathException e){
 				e.printStackTrace(System.out);
 				throw new XmlParseException(e.getMessage());
@@ -1967,7 +1968,7 @@ public MathDescription getMathDescription(Element param) throws XmlParseExceptio
 	} catch (MathException e) {
 		e.printStackTrace();
 		throw new XmlParseException("A MathException was fired when adding the Function variables to the MathDescription " + name+" : "+e.getMessage());
-	} catch (cbit.vcell.parser.ExpressionBindingException e) {
+	} catch (org.vcell.expression.ExpressionBindingException e) {
 		e.printStackTrace();
 		throw new XmlParseException("A ExpressionBindingException was fired when adding the Function variables to the MathDescription " + name+" : "+e.getMessage());
 	}
@@ -2212,7 +2213,7 @@ public MembraneMapping getMembraneMapping(Element param, SimulationContext simul
 	//Set SurfacetoVolumeRatio
 	String ratio = this.unMangle( param.getAttributeValue(XMLTags.SurfaceToVolumeRatioTag) );
 	try {
-		memmap.getSurfaceToVolumeParameter().setExpression(new Expression(ratio));
+		memmap.getSurfaceToVolumeParameter().setExpression(ExpressionFactory.createExpression(ratio));
 	} catch (ExpressionException e) {
 		e.printStackTrace();
 		throw new XmlParseException("An expressionException was fired when setting the SurfacetoVolumeRatio Expression " + ratio + " to a membraneMapping!"+" : "+e.getMessage());
@@ -2224,7 +2225,7 @@ public MembraneMapping getMembraneMapping(Element param, SimulationContext simul
 	//Set VolumeFraction
 	String fraction = this.unMangle( param.getAttributeValue(XMLTags.VolumeFractionTag) );
 	try {
-		memmap.getVolumeFractionParameter().setExpression(new Expression(fraction));
+		memmap.getVolumeFractionParameter().setExpression(ExpressionFactory.createExpression(fraction));
 	} catch (ExpressionException e) {
 		e.printStackTrace();
 		throw new XmlParseException("An expressionException was fired when setting the VolumeFraction Expression " + fraction + " to a membraneMapping!"+" : "+e.getMessage());
@@ -2236,7 +2237,7 @@ public MembraneMapping getMembraneMapping(Element param, SimulationContext simul
 	//set specific capacitance
 	double specificCap = Double.parseDouble(param.getAttributeValue(XMLTags.SpecificCapacitanceTag));
 	try {
-		memmap.getSpecificCapacitanceParameter().setExpression(new Expression(specificCap));		
+		memmap.getSpecificCapacitanceParameter().setExpression(ExpressionFactory.createExpression(specificCap));		
 	} catch (ExpressionException e) {
 		e.printStackTrace();
 		throw new XmlParseException(e.getMessage());
@@ -2252,7 +2253,7 @@ public MembraneMapping getMembraneMapping(Element param, SimulationContext simul
 	//set initial Voltage
 	String initialVoltString = param.getAttributeValue(XMLTags.InitialVoltageTag);
 	try {
-		Expression initialExpr = unMangleExpression(initialVoltString);
+		IExpression initialExpr = unMangleExpression(initialVoltString);
 		memmap.getInitialVoltageParameter().setExpression(initialExpr);
 	} catch (ExpressionException e) {
 		e.printStackTrace();
@@ -2288,7 +2289,7 @@ public MembraneRegionEquation getMembraneRegionEquation(Element param) throws Xm
 
 	//get Initial condition
 	temp = param.getChildText(XMLTags.InitialTag);
-	Expression exp;
+	IExpression exp;
 	exp = unMangleExpression( temp );
 	// ** Create the Equation **
 	MembraneRegionEquation memRegEq = new MembraneRegionEquation(varref,exp);
@@ -2692,7 +2693,7 @@ public OdeEquation getOdeEquation(Element param) throws XmlParseException {
 	
 	//get Initial condition
 	temp = param.getChildText(XMLTags.InitialTag);
-	Expression initialexp = null;
+	IExpression initialexp = null;
 	
 	if (temp!=null && temp.length()>0) {
 		initialexp = unMangleExpression(temp);
@@ -2700,7 +2701,7 @@ public OdeEquation getOdeEquation(Element param) throws XmlParseException {
 	
 	//Get Rate condition
 	temp = param.getChildText(XMLTags.RateTag);
-	Expression rateexp = null;
+	IExpression rateexp = null;
 	if (temp!=null && temp.length()>0) {
 		rateexp = unMangleExpression((temp));
 	}
@@ -2715,7 +2716,7 @@ public OdeEquation getOdeEquation(Element param) throws XmlParseException {
 		String solutionExp = param.getChildText(XMLTags.SolutionExpressionTag);
 		
 		if (solutionExp!=null && solutionExp.length()>0) {
-			Expression expression = unMangleExpression(solutionExp);			
+			IExpression expression = unMangleExpression(solutionExp);			
 			odeEquation.setExactSolution( expression );	
 		}
 	}
@@ -2810,21 +2811,21 @@ public PdeEquation getPdeEquation(Element param) throws XmlParseException {
     try {
         //Retrieve the initial expression
         temp = param.getChildText(XMLTags.InitialTag);
-        Expression initialExp = null;
+        IExpression initialExp = null;
         if (temp!=null && temp.length()>0) {
 	        initialExp = unMangleExpression(temp);        	
         }
 
         //Retrieve the Rate Expression
         temp = param.getChildText(XMLTags.RateTag);
-        Expression rateExp = null;
+        IExpression rateExp = null;
         if (temp!=null && temp.length()>0) {
         	rateExp = unMangleExpression(temp);
         }
 
         //Retrieve the diffusion rate expression
         temp = param.getChildText(XMLTags.DiffusionTag);
-        Expression difExp = null;
+        IExpression difExp = null;
         if (temp!=null && temp.length()>0) {
         	difExp = unMangleExpression(temp);
         }
@@ -2840,7 +2841,7 @@ public PdeEquation getPdeEquation(Element param) throws XmlParseException {
 			String solutionExp = param.getChildText(XMLTags.SolutionExpressionTag);
 			
 			if (solutionExp!=null && solutionExp.length()>0) {
-				Expression expression = unMangleExpression(solutionExp);			
+				IExpression expression = unMangleExpression(solutionExp);			
 				pdeEquation.setExactSolution( expression );	
 			}
 		}
@@ -2848,7 +2849,7 @@ public PdeEquation getPdeEquation(Element param) throws XmlParseException {
         //Retrieve Boudaries (if any)
         Element tempelement = param.getChild(XMLTags.BoundariesTag);
         if (tempelement != null) {
-            Expression newexp = null;
+            IExpression newexp = null;
             //Xm
             temp = tempelement.getAttributeValue(XMLTags.BoundaryAttrValueXm);
             if (temp != null) {
@@ -2893,21 +2894,21 @@ public PdeEquation getPdeEquation(Element param) throws XmlParseException {
 	        boolean dummyVel = true;
 	        tempStr = velocityE.getAttributeValue(XMLTags.XAttrTag);
 	        if (tempStr != null) {
-	       		pdeEquation.setVelocityX(new Expression(tempStr));                  //all velocity dimensions are optional.
+	       		pdeEquation.setVelocityX(ExpressionFactory.createExpression(tempStr));                  //all velocity dimensions are optional.
 				if (dummyVel) {
 					dummyVel = false;
 				}
 	       	}
 	        tempStr = velocityE.getAttributeValue(XMLTags.YAttrTag);
 	        if (tempStr != null) {
-				pdeEquation.setVelocityY(new Expression(tempStr));
+				pdeEquation.setVelocityY(ExpressionFactory.createExpression(tempStr));
 				if (dummyVel) {
 					dummyVel = false;
 				}
 	        }
 	        tempStr = velocityE.getAttributeValue(XMLTags.ZAttrTag);
 	        if (tempStr != null) {
-				pdeEquation.setVelocityZ(new Expression(tempStr));
+				pdeEquation.setVelocityZ(ExpressionFactory.createExpression(tempStr));
 				if (dummyVel) {
 					dummyVel = false;
 				}
@@ -3169,7 +3170,7 @@ public cbit.vcell.model.SimpleReaction getSimpleReaction(Element param) throws X
 		int carrierValue = Integer.parseInt(fluxValue);
 
 		try {
-			simplereaction.getChargeCarrierValence().setExpression(new Expression((double)carrierValue));
+			simplereaction.getChargeCarrierValence().setExpression(ExpressionFactory.createExpression((double)carrierValue));
 		} catch (java.beans.PropertyVetoException e) {
 			e.printStackTrace();
 			throw new XmlParseException("Veto error when setting tha ChargeVarrierValence "+ carrierValue + "to reaction "+name+" : "+e.getMessage());
@@ -3815,7 +3816,7 @@ public SpeciesContextSpec getSpeciesContextSpec(Element param) throws XmlParseEx
 	//Initial
 	temp = param.getChildText(XMLTags.InitialTag);
 	try {
-		Expression expression = unMangleExpression(temp);
+		IExpression expression = unMangleExpression(temp);
 		specspec.getInitialConditionParameter().setExpression(expression);
 	} catch (ExpressionException e) {
 		e.printStackTrace();
@@ -3829,7 +3830,7 @@ public SpeciesContextSpec getSpeciesContextSpec(Element param) throws XmlParseEx
 	if (xmlDiffusionElement != null) {
 		temp = xmlDiffusionElement.getText();
 		try {
-			Expression expression = unMangleExpression(temp);
+			IExpression expression = unMangleExpression(temp);
 			specspec.getDiffusionParameter().setExpression(expression);
 		} catch (ExpressionException e) {
 			e.printStackTrace();
@@ -3843,37 +3844,37 @@ public SpeciesContextSpec getSpeciesContextSpec(Element param) throws XmlParseEx
 	//Get Boundaries if any
 	Element tempElement = param.getChild(XMLTags.BoundariesTag);
 	if (tempElement != null) {
-		cbit.vcell.parser.SymbolTable simbolTable= new ReservedSymbolTable(true);
+		org.vcell.expression.SymbolTable simbolTable= new ReservedSymbolTable(true);
 		try {
 			//Xm
 			temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueXm);
 			if (temp != null) {
-				specspec.getBoundaryXmParameter().setExpression(new Expression(this.unMangle(temp)));
+				specspec.getBoundaryXmParameter().setExpression(ExpressionFactory.createExpression(this.unMangle(temp)));
 			}
 			//Xp
 			temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueXp);
 			if (temp != null) {
-				specspec.getBoundaryXpParameter().setExpression(new Expression(this.unMangle(temp)));
+				specspec.getBoundaryXpParameter().setExpression(ExpressionFactory.createExpression(this.unMangle(temp)));
 			}
 			//Ym
 			temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueYm);
 			if (temp != null) {
-				specspec.getBoundaryYmParameter().setExpression(new Expression(this.unMangle(temp)));
+				specspec.getBoundaryYmParameter().setExpression(ExpressionFactory.createExpression(this.unMangle(temp)));
 			}
 			//Yp
 			temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueYp);
 			if (temp != null) {
-				specspec.getBoundaryYpParameter().setExpression(new Expression(this.unMangle(temp)));
+				specspec.getBoundaryYpParameter().setExpression(ExpressionFactory.createExpression(this.unMangle(temp)));
 			}
 			//Zm
 			temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueZm);
 			if (temp != null) {
-				specspec.getBoundaryZmParameter().setExpression(new Expression(this.unMangle(temp)));
+				specspec.getBoundaryZmParameter().setExpression(ExpressionFactory.createExpression(this.unMangle(temp)));
 			}
 			//Zp
 			temp = tempElement.getAttributeValue(XMLTags.BoundaryAttrValueZp);
 			if (temp != null) {
-				specspec.getBoundaryZpParameter().setExpression(new Expression(this.unMangle(temp)));
+				specspec.getBoundaryZpParameter().setExpression(ExpressionFactory.createExpression(this.unMangle(temp)));
 			}
 		} catch (ExpressionException e) {
 			e.printStackTrace();
@@ -3994,15 +3995,15 @@ private VariableHash getVariablesHash() throws XmlParseException {
 	// add constants that may be used in kinetics.
 	//
 	try {
-		varHash.addVariable(new Constant(ReservedSymbol.FARADAY_CONSTANT.getName(), new Expression(0.0)));
-		varHash.addVariable(new Constant(ReservedSymbol.FARADAY_CONSTANT_NMOLE.getName(), new Expression(0.0)));
-		varHash.addVariable(new Constant(ReservedSymbol.GAS_CONSTANT.getName(), new Expression(0.0)));
-		varHash.addVariable(new Constant(ReservedSymbol.KMILLIVOLTS.getName(), new Expression(0.0)));
-		varHash.addVariable(new Constant(ReservedSymbol.KMOLE.getName(), new Expression(0.0)));
-		varHash.addVariable(new Constant(ReservedSymbol.N_PMOLE.getName(), new Expression(0.0)));
-		varHash.addVariable(new Constant(ReservedSymbol.TEMPERATURE.getName(), new Expression(0.0)));
-		varHash.addVariable(new Constant(ReservedSymbol.K_GHK.getName(), new Expression(0.0)));
-		varHash.addVariable(new Constant(ReservedSymbol.TIME.getName(), new Expression(0.0)));
+		varHash.addVariable(new Constant(ReservedSymbol.FARADAY_CONSTANT.getName(), ExpressionFactory.createExpression(0.0)));
+		varHash.addVariable(new Constant(ReservedSymbol.FARADAY_CONSTANT_NMOLE.getName(), ExpressionFactory.createExpression(0.0)));
+		varHash.addVariable(new Constant(ReservedSymbol.GAS_CONSTANT.getName(), ExpressionFactory.createExpression(0.0)));
+		varHash.addVariable(new Constant(ReservedSymbol.KMILLIVOLTS.getName(), ExpressionFactory.createExpression(0.0)));
+		varHash.addVariable(new Constant(ReservedSymbol.KMOLE.getName(), ExpressionFactory.createExpression(0.0)));
+		varHash.addVariable(new Constant(ReservedSymbol.N_PMOLE.getName(), ExpressionFactory.createExpression(0.0)));
+		varHash.addVariable(new Constant(ReservedSymbol.TEMPERATURE.getName(), ExpressionFactory.createExpression(0.0)));
+		varHash.addVariable(new Constant(ReservedSymbol.K_GHK.getName(), ExpressionFactory.createExpression(0.0)));
+		varHash.addVariable(new Constant(ReservedSymbol.TIME.getName(), ExpressionFactory.createExpression(0.0)));
 	} catch (MathException e){
 		e.printStackTrace(System.out);
 		throw new XmlParseException("error reordering parameters according to dependencies: "+e.getMessage());
@@ -4185,7 +4186,7 @@ public VolumeRegionEquation getVolumeRegionEquation(Element param) throws XmlPar
 
 	//get Initial condition
 	temp = param.getChildText(XMLTags.InitialTag);
-	Expression exp = unMangleExpression( temp );
+	IExpression exp = unMangleExpression( temp );
 	// ** Create the Equation **
 	VolumeRegionEquation volRegEq = new VolumeRegionEquation(varref,exp);
 

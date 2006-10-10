@@ -1,5 +1,8 @@
 package cbit.vcell.vcml;
 
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import net.sourceforge.interval.ia_math.RealInterval;
 import cbit.util.TokenMangler;
 import cbit.vcell.constraints.AbstractConstraint;
@@ -9,7 +12,6 @@ import cbit.vcell.constraints.SimpleBounds;
 import cbit.vcell.model.Feature;
 import cbit.vcell.modelapp.FeatureMapping;
 import cbit.vcell.modelapp.MembraneMapping;
-import cbit.vcell.parser.Expression;
 /**
  * Insert the type's description here.
  * Creation date: (5/12/2006 3:03:22 PM)
@@ -59,22 +61,22 @@ public void updateAbsoluteStructureSizes(cbit.vcell.modelapp.SimulationContext s
 				// "er_size * er_svRatio - erMem_size == 0"
 				//
 				String insideFeatureSizeName = TokenMangler.mangleToSName(membraneMapping.getMembrane().getInsideFeature().getName()+"_size");
-				ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression(insideFeatureSizeName+"*"+svRatioName+"-"+membraneSizeName+"==0"),AbstractConstraint.MODELING_ASSUMPTION,"svRatio definition"));
+				ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression(insideFeatureSizeName+"*"+svRatioName+"-"+membraneSizeName+"==0"),AbstractConstraint.MODELING_ASSUMPTION,"svRatio definition"));
 
 				//
 				// (cyt_size + er_size) * er_vfRatio - er_size == 0
 				//
 				Feature outsideFeature = membraneMapping.getMembrane().getOutsideFeature();
-				Expression sumOfVolumeExp = new Expression(TokenMangler.mangleToSName(outsideFeature.getName()+"_size"));
+				IExpression sumOfVolumeExp = ExpressionFactory.createExpression(TokenMangler.mangleToSName(outsideFeature.getName()+"_size"));
 				for (int j = 0; j < structMappings.length; j++){
 					if (structMappings[j] instanceof MembraneMapping && ((MembraneMapping)structMappings[j]).getMembrane().getOutsideFeature().equals(outsideFeature)){
 						Feature childFeatureOfParent = ((MembraneMapping)structMappings[j]).getMembrane().getInsideFeature();
-						sumOfVolumeExp = Expression.add(sumOfVolumeExp,new Expression(TokenMangler.mangleToSName(childFeatureOfParent.getName()+"_size")));
+						sumOfVolumeExp = ExpressionFactory.add(sumOfVolumeExp, ExpressionFactory.createExpression(TokenMangler.mangleToSName(childFeatureOfParent.getName()+"_size")));
 					}
 				}
-				Expression exp = Expression.mult(sumOfVolumeExp,new Expression(volFractName));
-				exp = Expression.add(exp, new Expression("-"+insideFeatureSizeName));
-				ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression(exp.infix()+"==0.0"),AbstractConstraint.MODELING_ASSUMPTION,"volFract definition"));
+				IExpression exp = ExpressionFactory.mult(sumOfVolumeExp, ExpressionFactory.createExpression(volFractName));
+				exp = ExpressionFactory.add(exp, ExpressionFactory.createExpression("-"+insideFeatureSizeName));
+				ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression(exp.infix()+"==0.0"),AbstractConstraint.MODELING_ASSUMPTION,"volFract definition"));
 				
 			}else if (structMappings[i] instanceof FeatureMapping){
 				FeatureMapping featureMapping = (FeatureMapping)structMappings[i];
@@ -140,7 +142,7 @@ public void updateAbsoluteStructureSizes(cbit.vcell.modelapp.SimulationContext s
 				for (int j = 0; j < structMappings.length; j++){
 					if (symbols[i].equals(TokenMangler.mangleToSName(structMappings[j].getStructure().getName()+"_size"))){
 						if (!Double.isInfinite(solution[i].lo()) && !Double.isInfinite(solution[i].hi())) {
-							structMappings[j].getSizeParameter().setExpression(new Expression((solution[i].lo()+solution[i].hi())/2));
+							structMappings[j].getSizeParameter().setExpression(ExpressionFactory.createExpression((solution[i].lo()+solution[i].hi())/2));
 						}
 					}
 				}
@@ -149,7 +151,7 @@ public void updateAbsoluteStructureSizes(cbit.vcell.modelapp.SimulationContext s
 			throw new RuntimeException("cannot solve for size");
 		}
 		
-	}catch (cbit.vcell.parser.ExpressionException e){
+	}catch (org.vcell.expression.ExpressionException e){
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
 	}catch (java.beans.PropertyVetoException e){
@@ -189,29 +191,29 @@ public void updateRelativeStructureSizes(cbit.vcell.modelapp.SimulationContext s
 		for (int i = 0; i < structureMappings.length; i++){
 			if (structureMappings[i] instanceof MembraneMapping){
 				MembraneMapping membraneMapping = (MembraneMapping)structureMappings[i];
-				Expression membraneSizeExp = membraneMapping.getSizeParameter().getExpression();
-				Expression insideFeatureSizeExp = simContext.getGeometryContext().getStructureMapping(membraneMapping.getMembrane().getInsideFeature()).getSizeParameter().getExpression();
+				IExpression membraneSizeExp = membraneMapping.getSizeParameter().getExpression();
+				IExpression insideFeatureSizeExp = simContext.getGeometryContext().getStructureMapping(membraneMapping.getMembrane().getInsideFeature()).getSizeParameter().getExpression();
 				// set surface/volume ratio
-				membraneMapping.getSurfaceToVolumeParameter().setExpression(new Expression(membraneSizeExp.evaluateConstant()/insideFeatureSizeExp.evaluateConstant()));
+				membraneMapping.getSurfaceToVolumeParameter().setExpression(ExpressionFactory.createExpression(membraneSizeExp.evaluateConstant()/insideFeatureSizeExp.evaluateConstant()));
 
 				//
 				// sum up entire volume of parent feature and all sibling features (including self)
 				// volume fraction will be size of enclosed volume divided by total size of surrounding volume.
 				//
-				Expression outsideFeatureSizeExp = simContext.getGeometryContext().getStructureMapping(membraneMapping.getMembrane().getOutsideFeature()).getSizeParameter().getExpression();
+				IExpression outsideFeatureSizeExp = simContext.getGeometryContext().getStructureMapping(membraneMapping.getMembrane().getOutsideFeature()).getSizeParameter().getExpression();
 				double sumOfParentAndSiblingVolumes = outsideFeatureSizeExp.evaluateConstant();
 
 				for (int j=0;j<structureMappings.length;j++){
 					if (structureMappings[j] instanceof MembraneMapping){
 						MembraneMapping mm = (MembraneMapping)structureMappings[j];
 						if (mm.getMembrane().getOutsideFeature() == membraneMapping.getMembrane().getOutsideFeature()){
-							Expression childVolumeExp = simContext.getGeometryContext().getStructureMapping(mm.getMembrane().getInsideFeature()).getSizeParameter().getExpression();
+							IExpression childVolumeExp = simContext.getGeometryContext().getStructureMapping(mm.getMembrane().getInsideFeature()).getSizeParameter().getExpression();
 							sumOfParentAndSiblingVolumes += childVolumeExp.evaluateConstant();
 						}
 					}
 				}
 				// set volume fraction
-				membraneMapping.getVolumeFractionParameter().setExpression(new Expression(insideFeatureSizeExp.evaluateConstant()/sumOfParentAndSiblingVolumes));
+				membraneMapping.getVolumeFractionParameter().setExpression(ExpressionFactory.createExpression(insideFeatureSizeExp.evaluateConstant()/sumOfParentAndSiblingVolumes));
 			}
 		}
 	}catch (NullPointerException e){
@@ -220,7 +222,7 @@ public void updateRelativeStructureSizes(cbit.vcell.modelapp.SimulationContext s
 	}catch (java.beans.PropertyVetoException e){
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
-	}catch (cbit.vcell.parser.ExpressionException e){
+	}catch (org.vcell.expression.ExpressionException e){
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
 	}

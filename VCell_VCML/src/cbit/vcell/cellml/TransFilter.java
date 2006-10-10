@@ -1,4 +1,4 @@
-package cbit.vcell.vcml;
+package cbit.vcell.cellml;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Hashtable;
@@ -11,7 +11,8 @@ import org.jdom.filter.ElementFilter;
 
 import cbit.util.TokenMangler;
 import cbit.util.xml.JDOMTreeWalker;
-import cbit.vcell.parser.MathMLTags;
+import cbit.util.xml.MathMLTags;
+import cbit.vcell.vcml.Translator;
 import cbit.vcell.xml.XMLTags;
 /**
  * Utility translation class, mainly trims the source XML document to the required elements that are of interest in the

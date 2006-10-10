@@ -9,17 +9,16 @@ import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.filter.ContentFilter;
 import org.jdom.filter.ElementFilter;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
 
 import cbit.gui.PropertyLoader;
 import cbit.util.TokenMangler;
 import cbit.util.xml.JDOMTreeWalker;
+import cbit.util.xml.MathMLTags;
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.ExpressionMathMLParser;
-import cbit.vcell.parser.MathMLTags;
 import cbit.vcell.units.VCUnitDefinition;
-import cbit.vcell.vcml.TransFilter;
 import cbit.vcell.vcml.Translator;
 import cbit.vcell.xml.NameList;
 import cbit.vcell.xml.NameManager;
@@ -248,7 +247,7 @@ BioModel.SimulationSpec.ReactionContext.LocalizedCompoundSpec.Diffusion.text = d
 		} else {
 			String initialVal = paramVar.getAttributeValue(CELLMLTags.initial_value, sAttNamespace);
 			//this is a temporary fix for the lack of handling VCML exp. initial values. Needed for roundtrip.
-			Expression exp;
+			IExpression exp;
 			if (initialVal != null) {
 				initialVal = flattenExp(initialVal);
 				param.setText(initialVal);
@@ -811,7 +810,7 @@ BioModel.SimulationSpec.ReactionContext.LocalizedCompoundSpec.Diffusion.text = d
 						String stoich = temp.getAttributeValue(XMLTags.StoichiometryAttrTag, tNamespace);
 						stoich = stoich + "*2";
 						temp.setAttribute(XMLTags.StoichiometryAttrTag, 
-							              String.valueOf((int)new Expression(stoich).evaluateConstant()), tNamespace);
+							              String.valueOf((int)ExpressionFactory.createExpression(stoich).evaluateConstant()), tNamespace);
 					}
 				}
 			} catch (ExpressionException e) {
@@ -828,7 +827,7 @@ BioModel.SimulationSpec.ReactionContext.LocalizedCompoundSpec.Diffusion.text = d
 		
 		try {
 			expStr = TokenMangler.getRestoredString(expStr.trim());
-			Expression exp = new Expression(expStr);
+			IExpression exp = ExpressionFactory.createExpression(expStr);
 			str = exp.flatten().infix();
 			if (!expStr.equals(str)) {
 				//System.out.println("Flattened expression: " + expStr + " --> " + str);
@@ -876,9 +875,9 @@ BioModel.SimulationSpec.ReactionContext.LocalizedCompoundSpec.Diffusion.text = d
 				double factor = VCunit.convertTo(1.0, cellUnit);
 				if (factor != 1.0) {
 					addSpeciesUnitFactor(temp, factor);
-					return Expression.mult(new Expression(initial), new Expression(factor)).infix();
+					return ExpressionFactory.mult(ExpressionFactory.createExpression(initial), ExpressionFactory.createExpression(factor)).infix();
 				} else {
-					return new Expression(initial).infix();
+					return ExpressionFactory.createExpression(initial).infix();
 				}
 			} else {
 				System.err.println("Inconsistent units: " + cellUnit.getSymbol() + " vs. " + VCunit.getSymbol());
@@ -970,7 +969,7 @@ BioModel.SimulationSpec.ReactionContext.LocalizedCompoundSpec.Diffusion.text = d
 		math = addMathMLUnits(mathParent, math, kinetics);
 		String expressionStr = null;
 		try {
-			expressionStr = (new ExpressionMathMLParser(null)).fromMathML(math).infix();
+			expressionStr = ExpressionFactory.fromMathML(math).infix();
 		} catch (ExpressionException e) {
 			e.printStackTrace(System.out);
 			throw new RuntimeException("Error getting expression string from mathML : "+e.getMessage());
@@ -983,7 +982,7 @@ BioModel.SimulationSpec.ReactionContext.LocalizedCompoundSpec.Diffusion.text = d
 	private String processMathExp(Element comp, String expStr) {
 
 		try {
-			Expression exp = new Expression(expStr);
+			IExpression exp = ExpressionFactory.createExpression(expStr);
 			String [] symbols = exp.getSymbols();
 			String mName;
 			JDOMTreeWalker walker;
@@ -1050,16 +1049,16 @@ BioModel.SimulationSpec.ReactionContext.LocalizedCompoundSpec.Diffusion.text = d
 		}
 		//add all the species scaling units, previously saved.
 		try {
-			Expression rateExp = new Expression(rateStr);
+			IExpression rateExp = ExpressionFactory.createExpression(rateStr);
 			String symbols [] = rateExp.getSymbols();
 			if (symbols != null) {
 				for (int j = 0; j < symbols.length; j++) {
 					if (spUnitParam.containsKey(symbols[j])) {
 						Element fParam = (Element)spUnitParam.get(symbols[j]);
 						kinetics.addContent(fParam);             //add as a param.
-						Expression symbolExp = new Expression(symbols[j]);
-						Expression newSymbolExp = Expression.invert(new Expression(fParam.getAttributeValue(XMLTags.NameAttrTag)));      //?
-						newSymbolExp = Expression.mult(symbolExp, newSymbolExp); 
+						IExpression symbolExp = ExpressionFactory.createExpression(symbols[j]);
+						IExpression newSymbolExp = ExpressionFactory.invert(ExpressionFactory.createExpression(fParam.getAttributeValue(XMLTags.NameAttrTag)));      //?
+						newSymbolExp = ExpressionFactory.mult(symbolExp, newSymbolExp); 
 						rateExp.substituteInPlace(newSymbolExp, symbolExp);     //add to the expression
 					}
 				}
@@ -1074,9 +1073,9 @@ BioModel.SimulationSpec.ReactionContext.LocalizedCompoundSpec.Diffusion.text = d
 					param.setAttribute(XMLTags.VCUnitDefinitionAttrTag, VCUnitDefinition.UNIT_DIMENSIONLESS.getSymbol());
 					param.setAttribute(XMLTags.ParamRoleAttrTag, XMLTags.ParamRoleUserDefinedTag);
 					param.setText(String.valueOf(factor));
-					return Expression.mult(new Expression(rateStr), new Expression(factor)).infix();
+					return ExpressionFactory.mult(ExpressionFactory.createExpression(rateStr), ExpressionFactory.createExpression(factor)).infix();
 				} else {
-					return new Expression(rateStr).infix();
+					return ExpressionFactory.createExpression(rateStr).infix();
 				}
 			} else {
 				System.err.println("Inconsistent units: " + cellUnit.getSymbol() + " vs. " + VCunit.getSymbol());

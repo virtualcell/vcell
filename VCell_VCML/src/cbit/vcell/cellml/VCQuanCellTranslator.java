@@ -5,16 +5,15 @@ import java.util.Iterator;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.filter.ContentFilter;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
 
 import cbit.gui.PropertyLoader;
 import cbit.util.TokenMangler;
 import cbit.util.xml.JDOMTreeWalker;
+import cbit.util.xml.MathMLTags;
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.ExpressionMathMLPrinter;
-import cbit.vcell.parser.MathMLTags;
-import cbit.vcell.vcml.TransFilter;
 import cbit.vcell.vcml.Translator;
 import cbit.vcell.xml.XMLTags;
 
@@ -108,8 +107,8 @@ public class VCQuanCellTranslator extends Translator {
 
 		try {
 			String expression = TokenMangler.getRestoredString(formStr);
-			Expression mathexpr = new Expression(expression);
-			String xmlStr = ExpressionMathMLPrinter.getMathML(mathexpr);
+			IExpression mathexpr = ExpressionFactory.createExpression(expression);
+			String xmlStr = mathexpr.getMathML();
 			Element root = XmlUtil.stringToXML(xmlStr, null);            //no validation for the mathml.
       		JDOMTreeWalker walker = new JDOMTreeWalker(root, new ContentFilter(ContentFilter.ELEMENT));
       		root.setNamespace(mathns);
@@ -117,7 +116,7 @@ public class VCQuanCellTranslator extends Translator {
 				((Element)walker.next()).setNamespace(mathns);
       		}
       		math.addContent((Element)root.detach());
-		} catch(cbit.vcell.parser.ParserException pe) {
+		} catch(org.vcell.expression.ParserException pe) {
 			System.err.println("Infix problem: " + formStr); 
 			pe.printStackTrace();
 		} catch (ExpressionException ee) {

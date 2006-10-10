@@ -3,6 +3,9 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 
 import org.jdom.Element;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
 import org.vcell.modelapp.analysis.IAnalysisTask;
 
 import cbit.util.Coordinate;
@@ -82,8 +85,6 @@ import cbit.vcell.modelapp.ReactionSpec;
 import cbit.vcell.modelapp.SpeciesContextSpec;
 import cbit.vcell.modelapp.StructureMapping;
 import cbit.vcell.modelapp.VoltageClampStimulus;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.units.VCUnitDefinition;
 
 /**
@@ -1158,21 +1159,21 @@ public org.jdom.Element getXML(SpeciesContextSpec param) {
 	speciecontext.setAttribute(XMLTags.EnableDiffusionAttrTag, String.valueOf(param.isEnableDiffusing()));
 
 	//Add initial
-	cbit.vcell.parser.Expression init = param.getInitialConditionParameter().getExpression();
+	IExpression init = param.getInitialConditionParameter().getExpression();
 	if (init!=null){
 		org.jdom.Element initial = new org.jdom.Element(XMLTags.InitialTag);
 		initial.addContent(this.mangleExpression(init));
 		speciecontext.addContent( initial );
 	}
 	//Add diffusion
-	cbit.vcell.parser.Expression diffRate = param.getDiffusionParameter().getExpression();
+	IExpression diffRate = param.getDiffusionParameter().getExpression();
 	if (diffRate!=null){
 		org.jdom.Element diffusion = new org.jdom.Element(XMLTags.DiffusionTag);
 		diffusion.addContent(this.mangleExpression(diffRate));
 		speciecontext.addContent(diffusion);
 	}
 	// write BoundaryConditions
-	cbit.vcell.parser.Expression exp;
+	IExpression exp;
 	org.jdom.Element boundaries = new org.jdom.Element(XMLTags.BoundariesTag);
 
 	//XM
@@ -1779,7 +1780,7 @@ public org.jdom.Element getXML(OdeEquation param) throws XmlParseException {
 			ode.setAttribute(XMLTags.SolutionTypeTag, XMLTags.UnknownTypeTag);
 			
 			if (param.getInitialExpression()==null) {
-				initial.setText( this.mangleExpression(new cbit.vcell.parser.Expression(0.0)) );
+				initial.setText( this.mangleExpression(ExpressionFactory.createExpression(0.0)) );
 				ode.addContent(initial);
 			}
 			
@@ -1849,7 +1850,7 @@ public org.jdom.Element getXML(PdeEquation param) throws XmlParseException {
 	if (param.getRateExpression() != null) {
 		rate.addContent(this.mangleExpression(param.getRateExpression()));
 	} else {
-		rate.addContent(this.mangleExpression(new cbit.vcell.parser.Expression(0.0)));
+		rate.addContent(this.mangleExpression(ExpressionFactory.createExpression(0.0)));
 	}
 	pde.addContent(rate);
 	//Diffusion
@@ -1857,7 +1858,7 @@ public org.jdom.Element getXML(PdeEquation param) throws XmlParseException {
 	if (param.getDiffusionExpression() != null) {
 		diffusion.addContent(this.mangleExpression(param.getDiffusionExpression()));
 	} else {
-		diffusion.addContent(this.mangleExpression(new cbit.vcell.parser.Expression(0.0)) );
+		diffusion.addContent(this.mangleExpression(ExpressionFactory.createExpression(0.0)) );
 	}
 	pde.addContent(diffusion);
 	//Initial
@@ -1873,7 +1874,7 @@ public org.jdom.Element getXML(PdeEquation param) throws XmlParseException {
 			pde.setAttribute(XMLTags.SolutionTypeTag, XMLTags.UnknownTypeTag);
 			
 			if (param.getInitialExpression()==null) {
-				initial.setText( this.mangleExpression(new cbit.vcell.parser.Expression(0.0)) );
+				initial.setText( this.mangleExpression(ExpressionFactory.createExpression(0.0)) );
 				pde.addContent(initial);
 			}
 			
@@ -1894,19 +1895,19 @@ public org.jdom.Element getXML(PdeEquation param) throws XmlParseException {
 
 	//add Velocity
 	Element velocity = null;
-	Expression velX = param.getVelocityX();
+	IExpression velX = param.getVelocityX();
 	if (velX != null) {
 		velocity = new Element(XMLTags.VelocityTag);
 		velocity.setAttribute(XMLTags.XAttrTag, velX.infix());
 	}
-	Expression velY = param.getVelocityY();
+	IExpression velY = param.getVelocityY();
 	if (velY != null) {
 		if (velocity == null) {
 			velocity = new Element(XMLTags.VelocityTag);
 		}
 		velocity.setAttribute(XMLTags.YAttrTag, velY.infix());
 	}
-	Expression velZ = param.getVelocityZ();
+	IExpression velZ = param.getVelocityZ();
 	if (velZ != null) {
 		if (velocity == null) {
 			velocity = new Element(XMLTags.VelocityTag);
@@ -2186,7 +2187,7 @@ public org.jdom.Element getXML(FluxReaction param) throws XmlParseException {
 	if (param.getFluxCarrier() != null) {
 		fluxreaction.setAttribute(XMLTags.FluxCarrierAttrTag, this.mangle(param.getFluxCarrier().getCommonName()));		
 	}
-	Expression tempExp = null;
+	IExpression tempExp = null;
 	int valence;
 	try {
 		tempExp = param.getChargeCarrierValence().getExpression();
@@ -2515,7 +2516,7 @@ public org.jdom.Element getXML(SimpleReaction param) throws XmlParseException {
 	String nameStr = (param.getName()!=null)?(this.mangle(param.getName())):"unnamed_SimpleReaction";
 	simplereaction.setAttribute(XMLTags.StructureAttrTag, this.mangle(param.getStructure().getName()));
 	simplereaction.setAttribute(XMLTags.NameAttrTag, nameStr);
-	Expression tempExp = null;
+	IExpression tempExp = null;
 	int valence;
 	try {
 		tempExp = param.getChargeCarrierValence().getExpression();

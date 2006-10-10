@@ -7,15 +7,14 @@ import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.filter.ContentFilter;
 import org.jdom.filter.ElementFilter;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
 
 import cbit.gui.PropertyLoader;
 import cbit.util.xml.JDOMTreeWalker;
+import cbit.util.xml.MathMLTags;
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.ExpressionMathMLParser;
-import cbit.vcell.parser.MathMLTags;
-import cbit.vcell.vcml.TransFilter;
 import cbit.vcell.vcml.Translator;
 import cbit.vcell.xml.NameList;
 import cbit.vcell.xml.NameManager;
@@ -124,9 +123,9 @@ public class CellQuanVCTranslator extends Translator {
 					Element rate = new Element(XMLTags.RateTag, tNamespace);
 					Element trimmedMath = new Element(CELLMLTags.MATH, mathns).addContent((Element)apply3.detach());
 					fixMathMLBug(trimmedMath);
-					Expression exp = null;
+					IExpression exp = null;
 					try {
-						exp = (new ExpressionMathMLParser(null)).fromMathML(trimmedMath);
+						exp = ExpressionFactory.fromMathML(trimmedMath);
 						exp = processMathExp(comp, exp);
 						exp = exp.flatten();
 						nl.mangleString(exp.infix());
@@ -171,9 +170,9 @@ public class CellQuanVCTranslator extends Translator {
 		if (sibling != null) { 
 			Element trimmedMath = new Element(CELLMLTags.MATH, mathns).addContent((Element)sibling.detach());
 			fixMathMLBug(trimmedMath); 
-			Expression exp = null;
+			IExpression exp = null;
 			try {
-				exp = (new ExpressionMathMLParser(null)).fromMathML(trimmedMath);
+				exp = ExpressionFactory.fromMathML(trimmedMath);
 			} catch (ExpressionException e) {
 				e.printStackTrace(System.out);
 				throw new RuntimeException(e.getMessage());
@@ -515,7 +514,7 @@ public class CellQuanVCTranslator extends Translator {
 
 
    	//post-process a mathematical expression string to handle the variable mapping
-	private Expression processMathExp(Element comp, Expression exp) {
+	private IExpression processMathExp(Element comp, IExpression exp) {
 
 		try {
 			String [] symbols = exp.getSymbols();
@@ -530,12 +529,12 @@ public class CellQuanVCTranslator extends Translator {
 				if (temp != null) {
 					mName = nm.getMangledName(comp.getAttributeValue(CELLMLTags.name, sAttNamespace), symbols[i]);
 					if (!mName.equals(symbols[i])) {
-						exp = exp.getSubstitutedExpression(new Expression(symbols[i]), new Expression(mName));
+						exp = ExpressionFactory.createSubstitutedExpression(exp, ExpressionFactory.createExpression(symbols[i]), ExpressionFactory.createExpression(mName));
 					}
 				}
 				//added for a temporary fix for time:
 				if (symbols[i].equals(CELLMLTags.timeVarCell)) {
-					exp = exp.getSubstitutedExpression(new Expression(symbols[i]), new Expression(CELLMLTags.timeVar));
+					exp = ExpressionFactory.createSubstitutedExpression(exp, ExpressionFactory.createExpression(symbols[i]), ExpressionFactory.createExpression(CELLMLTags.timeVar));
 				}
 			}
 		} catch (ExpressionException e) {

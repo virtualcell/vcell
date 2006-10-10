@@ -34,6 +34,11 @@ import org.sbml.libsbml.SBase;
 import org.sbml.libsbml.SpeciesReference;
 import org.sbml.libsbml.UnitDefinition;
 import org.sbml.libsbml.libsbml;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.ExpressionUtilities;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.LambdaFunction;
 
 import cbit.util.BeanUtils;
 import cbit.util.xml.VCLogger;
@@ -50,9 +55,6 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.modelapp.SpeciesContextSpec;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.LambdaFunction;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.vcml.StructureSizeSolver;
 import cbit.vcell.vcml.TranslationMessage;
@@ -151,7 +153,7 @@ public class SBMLImporter {
 				} else {
 					double size = compartment.getSize();
 					// Check if size is specified by a rule
-					Expression sizeExpr = getValueFromRule(compartmentName);
+					IExpression sizeExpr = getValueFromRule(compartmentName);
 					if (sizeExpr != null) {
 						// WE ARE NOT HANDLING COMPARTMENT SIZES WITH ASSIGNMENT RULES AT THIS TIME  ...
 						logger.sendMessage(VCLogger.HIGH_PRIORITY, TranslationMessage.COMPARTMENT_ERROR, "compartment "+compartmentName+" size has an assignment rule, cannot handle it at this time.");
@@ -162,7 +164,7 @@ public class SBMLImporter {
 					// Check to see if the default units are re-defined. If not, they are "litre" for vol and "sq.m" for area.
 					// Convert it to VC units (um3 for 3d and um2 for 2d compartments) - multiply the size value by the conversion factor.
 
-					Expression adjustedSizeExpr = new Expression(size);
+					IExpression adjustedSizeExpr = ExpressionFactory.createExpression(size);
 					cbit.vcell.modelapp.StructureMapping.StructureMappingParameter mappingParam = simContext.getGeometryContext().getStructureMapping(structures[i]).getSizeParameter();
 					VCUnitDefinition vcSizeUnit = mappingParam.getUnitDefinition();
 					int spatialDim = (int)compartment.getSpatialDimensions();
@@ -174,11 +176,11 @@ public class SBMLImporter {
 					double factor = 1.0;
 					factor  = sbmlSizeUnit.convertTo(factor, vcSizeUnit);
 					if (factor != 1.0) {
-						adjustedSizeExpr = Expression.mult(adjustedSizeExpr, new Expression(factor));
+						adjustedSizeExpr = ExpressionFactory.mult(adjustedSizeExpr, ExpressionFactory.createExpression(factor));
 					}
 						
 					// Now set the size  & units of the compartment.
-					mappingParam.setExpression(new Expression(adjustedSizeExpr));
+					mappingParam.setExpression(ExpressionFactory.createExpression(adjustedSizeExpr));
 				}
 			}
 
@@ -245,7 +247,7 @@ protected void addFunctionDefinitions() {
 				math = math.getChild(math.getNumChildren() - 1);
 				formula = libsbml.formulaToString(math);
 			}
-			Expression fnExpr = getExpressionFromFormula(formula);
+			IExpression fnExpr = getExpressionFromFormula(formula);
 			lambdaFunctions[i] = new LambdaFunction(functionName, fnExpr, functionArgs);
 		}
 	} catch (ExpressionException e) {
@@ -410,23 +412,23 @@ protected void addFunctionDefinitions() {
 				// Convert the formula from kineticLaw into MathML and then to an expression (infix) to be used in VCell kinetics
 				//
 				String sbmlRateFormula = kLaw.getFormula();
-				Expression kLawRateExpr = getExpressionFromFormula(sbmlRateFormula);
+				IExpression kLawRateExpr = getExpressionFromFormula(sbmlRateFormula);
 				String kLawRateExprStr = kLawRateExpr.infix(); 
 
-				Expression vcRateExpression = new Expression(kLawRateExprStr);
+				IExpression vcRateExpression = ExpressionFactory.createExpression(kLawRateExprStr);
 				// To remove the compartment scale factor
 				if (vcRateExpression.hasSymbol(SBMLCOMPARTMENTSIZE_PARAMETER)) {
-					Expression diffExpr = vcRateExpression.differentiate(SBMLCOMPARTMENTSIZE_PARAMETER).flatten();
+					IExpression diffExpr = vcRateExpression.differentiate(SBMLCOMPARTMENTSIZE_PARAMETER).flatten();
 					if (diffExpr.hasSymbol(SBMLCOMPARTMENTSIZE_PARAMETER)) {
 						logger.sendMessage(VCLogger.HIGH_PRIORITY, TranslationMessage.UNIT_ERROR, "Unable to interpret Kinetic rate for reaction : " + vcReactions[i].getName() + " Cannot interpret non-linear function of compartment size");
 					}
 
-					Expression expr1 = vcRateExpression.getSubstitutedExpression(new Expression(SBMLCOMPARTMENTSIZE_PARAMETER), new Expression(1.0)).flatten();
-					if (!expr1.compareEqual(diffExpr) && !(cbit.vcell.parser.ExpressionUtils.functionallyEquivalent(expr1, diffExpr))) {
+					IExpression expr1 = ExpressionFactory.createSubstitutedExpression(vcRateExpression, ExpressionFactory.createExpression(SBMLCOMPARTMENTSIZE_PARAMETER), ExpressionFactory.createExpression(1.0)).flatten();
+					if (!expr1.compareEqual(diffExpr) && !(ExpressionUtilities.functionallyEquivalent(expr1, diffExpr))) {
 						logger.sendMessage(VCLogger.HIGH_PRIORITY, TranslationMessage.UNIT_ERROR, "Unable to interpret Kinetic rate for reaction : " + vcReactions[i].getName() + " Cannot interpret non-linear function of compartment size");
 					}
 
-					Expression expr0 = vcRateExpression.getSubstitutedExpression(new Expression(SBMLCOMPARTMENTSIZE_PARAMETER), new Expression(0.0)).flatten();
+					IExpression expr0 = ExpressionFactory.createSubstitutedExpression(vcRateExpression, ExpressionFactory.createExpression(SBMLCOMPARTMENTSIZE_PARAMETER), ExpressionFactory.createExpression(0.0)).flatten();
 					if (!expr0.isZero()) {
 						logger.sendMessage(VCLogger.HIGH_PRIORITY, TranslationMessage.UNIT_ERROR, "Unable to interpret Kinetic rate for reaction : " + vcReactions[i].getName() + " Cannot interpret non-linear function of compartment size");
 					}
@@ -445,9 +447,9 @@ protected void addFunctionDefinitions() {
 					kinetics.setParameterValue(kinetics.getRateParameter(),vcRateExpression);
 				} else {
 					// If the compartment scale factor is not present, need to divide rate by compartment size for unit consistency between VCell and SBML
-					vcRateExpression = Expression.mult(vcRateExpression, Expression.invert(new Expression(SBMLCOMPARTMENTSIZE_PARAMETER)));
+					vcRateExpression = ExpressionFactory.mult(vcRateExpression, ExpressionFactory.invert(ExpressionFactory.createExpression(SBMLCOMPARTMENTSIZE_PARAMETER)));
 					kinetics.setParameterValue(kinetics.getRateParameter(),vcRateExpression);
-					kinetics.setParameterValue(kinetics.getKineticsParameter(SBMLCOMPARTMENTSIZE_PARAMETER),new Expression(compartmentSize));
+					kinetics.setParameterValue(kinetics.getKineticsParameter(SBMLCOMPARTMENTSIZE_PARAMETER),ExpressionFactory.createExpression(compartmentSize));
 					kinetics.getKineticsParameter(SBMLCOMPARTMENTSIZE_PARAMETER).setUnitDefinition(compartmentSizeUnit);
 				}
 				
@@ -462,10 +464,10 @@ protected void addFunctionDefinitions() {
 					if (rateScalefactor == 1.0 && rateFactorUnit.getSymbol().equals("1")) {
 						// Ignore the factor since rateFactor and its units are 1
 					} else {
-						Expression currentRateExpr = kinetics.getRateParameter().getExpression();
-						currentRateExpr = Expression.mult(vcRateExpression, new Expression(SBMLFACTOR_PARAMETER));
+						IExpression currentRateExpr = kinetics.getRateParameter().getExpression();
+						currentRateExpr = ExpressionFactory.mult(vcRateExpression, ExpressionFactory.createExpression(SBMLFACTOR_PARAMETER));
 						kinetics.setParameterValue(kinetics.getRateParameter(),currentRateExpr);
-						kinetics.setParameterValue(kinetics.getKineticsParameter(SBMLFACTOR_PARAMETER), new Expression(rateScalefactor));
+						kinetics.setParameterValue(kinetics.getKineticsParameter(SBMLFACTOR_PARAMETER), ExpressionFactory.createExpression(rateScalefactor));
 						kinetics.getKineticsParameter(SBMLFACTOR_PARAMETER).setUnitDefinition(rateFactorUnit);
 					}
 				} else {
@@ -534,11 +536,11 @@ protected void addFunctionDefinitions() {
 											// Substitute any occurance of speciesName in rate expression for kinetics with 'speciesName*concScaleFactor'
 											// * Get current rate expression from kinetics, substitute corresponding values, re-set kinetics expression *
 											String CONCFACTOR_PARAMETER = getActualName(species) + "_ConcFactor";
-											Expression currentRateExpr = kinetics.getRateParameter().getExpression();
-											currentRateExpr.substituteInPlace(new Expression(getActualName(species)), new Expression(getActualName(species)+"*"+CONCFACTOR_PARAMETER));
+											IExpression currentRateExpr = kinetics.getRateParameter().getExpression();
+											currentRateExpr.substituteInPlace(ExpressionFactory.createExpression(getActualName(species)), ExpressionFactory.createExpression(getActualName(species)+"*"+CONCFACTOR_PARAMETER));
 											kinetics.setParameterValue(kinetics.getRateParameter(),currentRateExpr);
 											// Add the concentration factor as a parameter
-											kinetics.setParameterValue(kinetics.getKineticsParameter(CONCFACTOR_PARAMETER), new Expression(concScaleFactor));
+											kinetics.setParameterValue(kinetics.getKineticsParameter(CONCFACTOR_PARAMETER), ExpressionFactory.createExpression(concScaleFactor));
 											kinetics.getKineticsParameter(CONCFACTOR_PARAMETER).setUnitDefinition(concScaleFactorUnit);
 										}
 									} else {
@@ -560,9 +562,9 @@ protected void addFunctionDefinitions() {
 					if (kinetics.getKineticsParameter(paramName) != null) {
 						double value = param.getValue();
 						// Check if param is defined by a rule. If so, that value overrides the value existing in the param element.
-						Expression valueExpr = getValueFromRule(paramName);
+						IExpression valueExpr = getValueFromRule(paramName);
 						if (valueExpr == null) {
-							valueExpr = new Expression(value);
+							valueExpr = ExpressionFactory.createExpression(value);
 						}
 						kinetics.setParameterValue(paramName, valueExpr.infix());
 						VCUnitDefinition paramUnit = getSBMLUnit(param.getUnits(),null);
@@ -617,7 +619,7 @@ protected void addRules() throws Exception {
 		} else {
 			// Get the assignment rule and store it in the hashMap.
 			AssignmentRule assignmentRule = (AssignmentRule)rule;
-			Expression assignmentRuleMathExpr = getExpressionFromFormula(assignmentRule.getFormula());
+			IExpression assignmentRuleMathExpr = getExpressionFromFormula(assignmentRule.getFormula());
 			assignmentRulesHash.put(assignmentRule.getVariable(), assignmentRuleMathExpr);
 		}
 	}
@@ -694,7 +696,7 @@ protected void addRules() throws Exception {
 				// We need to scale and convert the SBUnit to VCUnit
 				VCUnitDefinition substanceUnit = getSBMLUnit(substanceUnitStr, SBMLUnitTranslator.SUBSTANCE);
 
-				Expression initExpr = null;
+				IExpression initExpr = null;
 				if (sbmlSpecies.isSetInitialConcentration()) { 		// If initial Concentration is set
 					double initConcentration = sbmlSpecies.getInitialConcentration();
 					VCUnitDefinition spatialSizeUnit = getSBMLUnit(spatialSizeUnitStr, spatialDimBuiltinName);
@@ -710,9 +712,9 @@ protected void addRules() throws Exception {
 					}
 					initExpr = getValueFromRule(speciesName);
 					if (initExpr == null) {
-						initExpr = new Expression(initConcentration);
+						initExpr = ExpressionFactory.createExpression(initConcentration);
 					} else {
-						initExpr = Expression.mult(initExpr, new Expression(factor));
+						initExpr = ExpressionFactory.mult(initExpr, ExpressionFactory.createExpression(factor));
 					}
 				} else if (sbmlSpecies.isSetInitialAmount()) {		// If initial amount is set
 					double initAmount = sbmlSpecies.getInitialAmount();
@@ -743,15 +745,15 @@ protected void addRules() throws Exception {
 					}
 					initExpr = getValueFromRule(speciesName);
 					if (initExpr == null) {
-						initExpr = new Expression(initAmount);
+						initExpr = ExpressionFactory.createExpression(initAmount);
 					} else {
-						initExpr = Expression.mult(initExpr, new Expression(factor));
+						initExpr = ExpressionFactory.mult(initExpr, ExpressionFactory.createExpression(factor));
 					}
 				} else {
 					initExpr = getValueFromRule(speciesName);
 					if (initExpr == null) {
 						logger.sendMessage(VCLogger.MEDIUM_PRIORITY, TranslationMessage.UNIT_ERROR, "no initial condition for species "+speciesName+", assuming 0.0");
-						initExpr = new Expression(0.0);
+						initExpr = ExpressionFactory.createExpression(0.0);
 					}
 
 					// Units for initial conc or amt if it is specified by an assignment rule
@@ -789,15 +791,15 @@ protected void addRules() throws Exception {
 							logger.sendMessage(VCLogger.MEDIUM_PRIORITY, TranslationMessage.UNIT_ERROR, "compartment "+compartmentName+" has zero size, unable to determine initial concentration for species "+speciesName);
 						}
 					}
-					initExpr = Expression.mult(initExpr, new Expression(factor));
+					initExpr = ExpressionFactory.mult(initExpr, ExpressionFactory.createExpression(factor));
 				}
 
 				String[] symbols = initExpr.getSymbols();
 				if (symbols != null) {
 					for (int j = 0; j < symbols.length; j++){
-						 Expression temp = getValueFromRule(symbols[j]);
+						 IExpression temp = getValueFromRule(symbols[j]);
 						 if (temp != null) {
-							 initExpr.substituteInPlace(new Expression(symbols[j]), temp);
+							 initExpr.substituteInPlace(ExpressionFactory.createExpression(symbols[j]), temp);
 						 }
 					}
 					initExpr = initExpr.flatten();
@@ -990,13 +992,12 @@ private org.jdom.Element getEmbeddedElementInAnnotation(String annotationStr, St
  *	NOTE : ExpressionMathMLParser will handle only the <apply> elements of the MathML string,
  *	hence the ExpressionMathMLParser is given a substring of the MathML containing the <apply> elements. 
  */
-private Expression getExpressionFromFormula(String formulaStr) throws ExpressionException {
+private IExpression getExpressionFromFormula(String formulaStr) throws ExpressionException {
 	MathMLDocument mDoc = new MathMLDocument();
 	mDoc.setMath(libsbml.parseFormula(formulaStr));
 	String mathMLStr = libsbml.writeMathMLToString(mDoc);
-	cbit.vcell.parser.ExpressionMathMLParser exprMathMLParser = new cbit.vcell.parser.ExpressionMathMLParser(lambdaFunctions);
 	Element mathMLElement = XmlUtil.stringToXML(mathMLStr, null);
-	Expression expr =  exprMathMLParser.fromMathML(mathMLElement);
+	IExpression expr =  ExpressionFactory.fromMathML(mathMLElement,lambdaFunctions);
 	return expr;
 }
 
@@ -1232,11 +1233,11 @@ private String getSpatialDimentionBuiltInName(int dimension) {
  *	is 0.0, check if it is given by a rule or functionDefinition, and return the string (of the rule or
  *	functionDefinition expression).
  */
-private Expression getValueFromRule(String paramName)  {
-	Expression valueExpr = null;
+private IExpression getValueFromRule(String paramName)  {
+	IExpression valueExpr = null;
 	// Check if param name has an assignment rule associated with it
 	for (int i = 0; i < assignmentRulesHash.size(); i++) {
-		valueExpr = (Expression)assignmentRulesHash.get(paramName);
+		valueExpr = (IExpression)assignmentRulesHash.get(paramName);
 		if (valueExpr != null) {
 			return valueExpr;
 		}
