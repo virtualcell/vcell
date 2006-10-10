@@ -59,7 +59,7 @@ public OptimizationResultSet(String[] parameterNames, double parameterValues[], 
 					fieldSolutionValues[j][i] = columnValues[j];
 				}
 			}
-		}catch (cbit.vcell.parser.ExpressionException e){
+		}catch (org.vcell.expression.ExpressionException e){
 			e.printStackTrace(System.out);
 			throw new RuntimeException(e.getMessage());
 		}

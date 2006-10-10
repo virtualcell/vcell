@@ -1,10 +1,12 @@
 package cbit.vcell.opt.solvers;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import cbit.util.GroupAccessNone;
 import cbit.util.KeyValue;
 import cbit.util.SimulationVersion;
 import cbit.util.User;
 import cbit.util.VersionFlag;
-import cbit.vcell.parser.Expression;
 import cbit.vcell.simulation.Simulation;
 import cbit.vcell.opt.*;
 
@@ -33,7 +35,7 @@ public NativeOptSolver() {
  * @return double[]
  * @param optSpec cbit.vcell.opt.OptimizationSpec
  * @exception java.io.IOException The exception description.
- * @exception cbit.vcell.parser.ExpressionException The exception description.
+ * @exception org.vcell.expression.ExpressionException The exception description.
  * @exception cbit.vcell.opt.OptimizationException The exception description.
  */
 public native OptimizationResultSet nativeSolve_CFSQP(String[] paramNames, double[] LB, double[] UB, double[] initialGuess, double[] scaleFactors,
@@ -47,7 +49,7 @@ public native OptimizationResultSet nativeSolve_CFSQP(String[] paramNames, doubl
  * @return double[]
  * @param optSpec cbit.vcell.opt.OptimizationSpec
  * @exception java.io.IOException The exception description.
- * @exception cbit.vcell.parser.ExpressionException The exception description.
+ * @exception org.vcell.expression.ExpressionException The exception description.
  * @exception cbit.vcell.opt.OptimizationException The exception description.
  */
 public native OptimizationResultSet nativeSolve_MultiShooting(String[] paramNames, double[] LB, double[] UB, double[] initialGuess, double[] scaleFactors,
@@ -61,11 +63,11 @@ public native OptimizationResultSet nativeSolve_MultiShooting(String[] paramName
  * @return double[]
  * @param optSpec cbit.vcell.opt.OptimizationSpec
  * @exception java.io.IOException The exception description.
- * @exception cbit.vcell.parser.ExpressionException The exception description.
+ * @exception org.vcell.expression.ExpressionException The exception description.
  * @exception cbit.vcell.opt.OptimizationException The exception description.
  */
 public cbit.vcell.opt.OptimizationResultSet solve(OptimizationSpec os, OptimizationSolverSpec optSolverSpec, OptSolverCallbacks optSolverCallbacks) 
-	throws java.io.IOException, cbit.vcell.parser.ExpressionException, cbit.vcell.opt.OptimizationException {
+	throws java.io.IOException, org.vcell.expression.ExpressionException, cbit.vcell.opt.OptimizationException {
 	try {		
 		Constraint[] nonlinearInequality = os.getConstraints(ConstraintType.NonlinearInequality);
 		Constraint[] linearInequality = os.getConstraints(ConstraintType.LinearInequality);
@@ -133,7 +135,7 @@ public cbit.vcell.opt.OptimizationResultSet solve(OptimizationSpec os, Optimizat
 		for (int i = 1; i < refData.getNumColumns(); i ++) {
 			cbit.vcell.math.Variable var = odeObjectiveFunction.getMathDescription().getVariable(refData.getColumnNames()[i]);
 			if (var instanceof cbit.vcell.math.Function) {
-				Expression exp = new Expression(var.getExpression());
+				IExpression exp = ExpressionFactory.createExpression(var.getExpression());
 				exp.bindExpression(simulation);
 				exp = cbit.vcell.math.MathUtilities.substituteFunctions(exp, simulation);
 				refColumnMappingExpressions[i-1] = exp.flatten().infix();

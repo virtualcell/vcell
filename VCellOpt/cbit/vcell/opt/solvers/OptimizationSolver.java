@@ -19,8 +19,8 @@ public interface OptimizationSolver {
  * @return double[]
  * @param optSpec cbit.vcell.opt.OptimizationSpec
  * @exception java.io.IOException The exception description.
- * @exception cbit.vcell.parser.ExpressionException The exception description.
+ * @exception org.vcell.expression.ExpressionException The exception description.
  * @exception cbit.vcell.opt.OptimizationException The exception description.
  */
-public abstract OptimizationResultSet solve(OptimizationSpec os, OptimizationSolverSpec optSolverSpec, OptSolverCallbacks optSolverCallbacks) throws java.io.IOException, cbit.vcell.parser.ExpressionException, OptimizationException;
+public abstract OptimizationResultSet solve(OptimizationSpec os, OptimizationSolverSpec optSolverSpec, OptSolverCallbacks optSolverCallbacks) throws java.io.IOException, org.vcell.expression.ExpressionException, OptimizationException;
 }

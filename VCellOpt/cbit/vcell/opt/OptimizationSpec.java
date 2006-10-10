@@ -1,12 +1,15 @@
 package cbit.vcell.opt;
-import cbit.vcell.parser.SimpleSymbolTable;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.Expression;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
 import java.util.*;
+
+import org.vcell.expression.ExpressionBindingException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.SimpleSymbolTable;
+
 import cbit.util.*;
 /**
  * Insert the type's description here.
@@ -44,7 +47,7 @@ public OptimizationSpec(String vcml) {
  */
 public void addConstraint(Constraint constraint) throws ExpressionBindingException {
 	if (!constraintList.contains(constraint)){
-		cbit.vcell.parser.SimpleSymbolTable symbolTable = new cbit.vcell.parser.SimpleSymbolTable(getParameterNames());
+		org.vcell.expression.SimpleSymbolTable symbolTable = new org.vcell.expression.SimpleSymbolTable(getParameterNames());
 		constraint.getExpression().bindExpression(symbolTable);
 		constraintList.addElement(constraint);
 	}
@@ -321,7 +324,7 @@ public void read(CommentStringTokenizer tokens) {
 				continue;
 			}
 			if (token.equalsIgnoreCase(ConstraintType.LinearEquality.toString())){
-				Expression exp = new Expression(tokens);
+				IExpression exp = ExpressionFactory.createExpression(tokens);
 				SimpleSymbolTable symbolTable = new SimpleSymbolTable(getParameterNames());
 				exp.bindExpression(symbolTable);
 				Constraint constraint = new Constraint(ConstraintType.LinearEquality,exp);
@@ -329,7 +332,7 @@ public void read(CommentStringTokenizer tokens) {
 				continue;
 			}
 			if (token.equalsIgnoreCase(ConstraintType.LinearInequality.toString())){
-				Expression exp = new Expression(tokens);
+				IExpression exp = ExpressionFactory.createExpression(tokens);
 				SimpleSymbolTable symbolTable = new SimpleSymbolTable(getParameterNames());
 				exp.bindExpression(symbolTable);
 				Constraint constraint = new Constraint(ConstraintType.LinearInequality,exp);
@@ -337,7 +340,7 @@ public void read(CommentStringTokenizer tokens) {
 				continue;
 			}
 			if (token.equalsIgnoreCase(ConstraintType.NonlinearInequality.toString())){
-				Expression exp = new Expression(tokens);
+				IExpression exp = ExpressionFactory.createExpression(tokens);
 				SimpleSymbolTable symbolTable = new SimpleSymbolTable(getParameterNames());
 				exp.bindExpression(symbolTable);
 				Constraint constraint = new Constraint(ConstraintType.NonlinearInequality,exp);
@@ -345,7 +348,7 @@ public void read(CommentStringTokenizer tokens) {
 				continue;
 			}
 			if (token.equalsIgnoreCase(ConstraintType.NonlinearEquality.toString())){
-				Expression exp = new Expression(tokens);
+				IExpression exp = ExpressionFactory.createExpression(tokens);
 				SimpleSymbolTable symbolTable = new SimpleSymbolTable(getParameterNames());
 				exp.bindExpression(symbolTable);
 				Constraint constraint = new Constraint(ConstraintType.NonlinearEquality,exp);

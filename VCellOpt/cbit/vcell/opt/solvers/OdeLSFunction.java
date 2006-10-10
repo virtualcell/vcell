@@ -1,4 +1,7 @@
 package cbit.vcell.opt.solvers;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import cbit.util.GroupAccessNone;
 import cbit.util.KeyValue;
 import cbit.util.User;
@@ -80,7 +83,7 @@ private double calculateWeightedError(double[] x) {
 		cbit.vcell.simulation.MathOverrides mathOverrides = simulation.getMathOverrides();
 		for (int i = 0; i < unscaledParameterNames.length; i++){
 			double unscaledParameterValue = x[i] * parameterScalings[i];
-			mathOverrides.putConstant(new cbit.vcell.math.Constant(unscaledParameterNames[i],new cbit.vcell.parser.Expression(unscaledParameterValue)));
+			mathOverrides.putConstant(new cbit.vcell.math.Constant(unscaledParameterNames[i],ExpressionFactory.createExpression(unscaledParameterValue)));
 			System.out.print(unscaledParameterNames[i]+"="+x[i]+" ");
 		}
 		System.out.println();
@@ -129,25 +132,25 @@ private double calculateWeightedError(double[] x) {
 		cbit.vcell.math.Function functions[] = simulation.getFunctions();
 		for (int i = 0; i < functions.length; i++){
 			if (cbit.vcell.simdata.FunctionFileGenerator.isFunctionSaved(functions[i])){
-				Expression exp1 = new Expression(functions[i].getExpression());
+				IExpression exp1 = ExpressionFactory.createExpression(functions[i].getExpression());
 				try {
 					exp1 = simulation.substituteFunctions(exp1);
 				} catch (cbit.vcell.math.MathException e) {
 					e.printStackTrace(System.out);
 					throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
-				} catch (cbit.vcell.parser.ExpressionException e) {
+				} catch (org.vcell.expression.ExpressionException e) {
 					e.printStackTrace(System.out);
 					throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
 				}
 				
 				try {
 					for (int j = 0; j < unscaledParameterNames.length; j ++) {
-						exp1.substituteInPlace(new cbit.vcell.parser.Expression(unscaledParameterNames[j]), new cbit.vcell.parser.Expression(x[j]));
+						exp1.substituteInPlace(ExpressionFactory.createExpression(unscaledParameterNames[j]), ExpressionFactory.createExpression(x[j]));
 					}
 					
 					FunctionColumnDescription cd = new FunctionColumnDescription(exp1.flatten(),functions[i].getName(), null, functions[i].getName(), false);
 					tempOdeSolverResultSet.addFunctionColumn(cd);
-				}catch (cbit.vcell.parser.ExpressionException e){
+				}catch (org.vcell.expression.ExpressionException e){
 					e.printStackTrace(System.out);
 				}
 			}
@@ -164,7 +167,7 @@ private double calculateWeightedError(double[] x) {
 	} catch (cbit.vcell.solvers.SolverException e){
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
-	} catch (cbit.vcell.parser.ExpressionException e){
+	} catch (org.vcell.expression.ExpressionException e){
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
 	} catch (Exception e){

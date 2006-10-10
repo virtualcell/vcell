@@ -1,6 +1,8 @@
 package cbit.function;
 
-import cbit.vcell.parser.Expression;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 /**
  * Insert the type's description here.
  * Creation date: (4/2/2002 11:43:41 AM)
@@ -19,7 +21,7 @@ public DefaultScalarFunctionTest() {
 			//DefaultScalarFunction scalFunction = new MyScalarFunction();
 			
 			
-			Expression exp = new Expression("5*x0+6*x0*x1+7*x1+8");
+			IExpression exp = ExpressionFactory.createExpression("5*x0+6*x0*x1+7*x1+8");
 			String identifiers[] = new String[2];
 			identifiers[0] = "x0";
 			identifiers[1] = "x1";

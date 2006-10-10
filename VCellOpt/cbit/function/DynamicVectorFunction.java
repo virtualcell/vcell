@@ -1,31 +1,33 @@
 package cbit.function;
 
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 /**
  * Insert the type's description here.
  * Creation date: (4/3/2002 4:10:45 PM)
  * @author: Michael Duff
  */
 public class DynamicVectorFunction extends DefaultVectorFunction {
-	private Expression[] functionExps = null;
-	private Expression[][] jacobianExps = null;
+	private IExpression[] functionExps = null;
+	private IExpression[][] jacobianExps = null;
 	private String[] identifiers = null;
 /**
  * DynamicVectorFunction constructor comment.
  */
-public DynamicVectorFunction(Expression argFunctions[], String argIdentifiers[]) throws cbit.vcell.parser.ExpressionException {
+public DynamicVectorFunction(IExpression argFunctions[], String argIdentifiers[]) throws org.vcell.expression.ExpressionException {
 	identifiers = (String[])argIdentifiers.clone();
 	// copy array and copy elements
-	functionExps = (Expression[])argFunctions.clone();
+	functionExps = (IExpression[])argFunctions.clone();
 	for (int i = 0; i < functionExps.length; i++){
-		functionExps[i] = new Expression(functionExps[i]);
+		functionExps[i] = ExpressionFactory.createExpression(functionExps[i]);
 	}
 
 	//
 	// create temporary symbolTable to assign indices to identifiers
 	//
-	cbit.vcell.parser.SimpleSymbolTable symbolTable = new cbit.vcell.parser.SimpleSymbolTable(identifiers);
+	org.vcell.expression.SimpleSymbolTable symbolTable = new org.vcell.expression.SimpleSymbolTable(identifiers);
 
 	//
 	// bind expressions to temporary symbol table
@@ -51,7 +53,7 @@ public double[][] evaluateJacobian(double[] x) {
             }
         }
         return jj;
-    } catch (cbit.vcell.parser.ExpressionException e) {
+    } catch (org.vcell.expression.ExpressionException e) {
         throw new RuntimeException(e.getMessage());
     }
 }
@@ -65,7 +67,7 @@ public double[] f(double[] x) {
             y[i] = functionExps[i].evaluateVector(x);
         }
         return y;
-    } catch (cbit.vcell.parser.ExpressionException e) {
+    } catch (org.vcell.expression.ExpressionException e) {
         throw new RuntimeException(e.getMessage());
     }
 }
@@ -89,10 +91,10 @@ public int getSystemDimension() {
  * Insert the method's description here.
  * Creation date: (4/3/2002 5:37:12 PM)
  */
-private void initializeJacobian(cbit.vcell.parser.SymbolTable symbolTable) throws ExpressionException {
+private void initializeJacobian(org.vcell.expression.SymbolTable symbolTable) throws ExpressionException {
 	int n = getSystemDimension();
 	int m = getNumArgs();
-	jacobianExps = new Expression[n][m];
+	jacobianExps = new IExpression[n][m];
 	for (int i=0;i<n;i++){
 		for (int j=0;j<m;j++){
 			jacobianExps[i][j] = functionExps[i].differentiate(identifiers[j]);

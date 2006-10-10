@@ -1,6 +1,6 @@
 package cbit.function;
 
-import cbit.vcell.parser.ExpressionException;
+import org.vcell.expression.ExpressionException;
 /**
  * Insert the type's description here.
  * Creation date: (4/2/2002 1:26:52 PM)
@@ -12,7 +12,7 @@ public interface ScalarFunction {
  * Creation date: (4/3/2002 4:45:49 PM)
  * @return double[][]
  * @param x double[]
- * @exception cbit.vcell.parser.ExpressionException The exception description.
+ * @exception org.vcell.expression.ExpressionException The exception description.
  */
 double[] evaluateGradient(double[] x);
 	double f(double[] x);

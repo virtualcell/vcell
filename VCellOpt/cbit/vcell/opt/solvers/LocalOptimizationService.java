@@ -17,6 +17,8 @@ import cbit.vcell.math.*;
 import java.rmi.*;
 import cbit.vcell.parser.*;
 import java.io.*;
+
+import org.vcell.expression.ExpressionException;
 /**
  * Insert the type's description here.
  * Creation date: (3/16/00 3:07:48 PM)

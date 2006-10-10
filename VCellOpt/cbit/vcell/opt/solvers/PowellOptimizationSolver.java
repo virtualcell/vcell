@@ -28,10 +28,10 @@ public PowellOptimizationSolver() {
  * @return double[]
  * @param optSpec cbit.vcell.opt.OptimizationSpec
  * @exception java.io.IOException The exception description.
- * @exception cbit.vcell.parser.ExpressionException The exception description.
+ * @exception org.vcell.expression.ExpressionException The exception description.
  * @exception cbit.vcell.opt.OptimizationException The exception description.
  */
-public OptimizationResultSet solve(OptimizationSpec os, OptimizationSolverSpec optSolverSpec, OptSolverCallbacks optSolverCallbacks) throws java.io.IOException, cbit.vcell.parser.ExpressionException, OptimizationException {
+public OptimizationResultSet solve(OptimizationSpec os, OptimizationSolverSpec optSolverSpec, OptSolverCallbacks optSolverCallbacks) throws java.io.IOException, org.vcell.expression.ExpressionException, OptimizationException {
 
 	final double power = 2.0;
 	final double MU_START = 0.1;

@@ -1,27 +1,29 @@
 package cbit.function;
 
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 /**
  * Insert the type's description here.
  * Creation date: (4/3/2002 4:10:45 PM)
  * @author: Michael Duff
  */
 public class DynamicScalarFunction extends DefaultScalarFunction {
-	private Expression functionExp = null;
-	private Expression[] gradientExps = null;
+	private IExpression functionExp = null;
+	private IExpression[] gradientExps = null;
 	private String[] identifiers = null;
 /**
  * DynamicScalarFunction constructor comment.
  */
-public DynamicScalarFunction(Expression argFunction, String argIdentifiers[]) throws cbit.vcell.parser.ExpressionException {
+public DynamicScalarFunction(IExpression argFunction, String argIdentifiers[]) throws org.vcell.expression.ExpressionException {
 	identifiers = (String[])argIdentifiers.clone();
-	functionExp = new Expression(argFunction);
+	functionExp = ExpressionFactory.createExpression(argFunction);
 
 	//
 	// create temporary symbolTable to assign indices to identifiers
 	//
-	cbit.vcell.parser.SimpleSymbolTable symbolTable = new cbit.vcell.parser.SimpleSymbolTable(identifiers);
+	org.vcell.expression.SimpleSymbolTable symbolTable = new org.vcell.expression.SimpleSymbolTable(identifiers);
 
 	//
 	// bind expression to temporary symbol table
@@ -45,7 +47,7 @@ public double[] evaluateGradient(double[] x){
 			grad[i] = gradientExps[i].evaluateVector(x);
 		}
 		return grad;
-	}catch(cbit.vcell.parser.ExpressionException e){
+	}catch(org.vcell.expression.ExpressionException e){
 		throw new RuntimeException(e.getMessage());
 	}
 	
@@ -57,7 +59,7 @@ public double f(double[] x){
 	try {
 		return functionExp.evaluateVector(x);
 		
-	}catch(cbit.vcell.parser.ExpressionException e){
+	}catch(org.vcell.expression.ExpressionException e){
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
 	}		
@@ -85,9 +87,9 @@ public int getNumArgs() {
  * Insert the method's description here.
  * Creation date: (4/3/2002 5:37:12 PM)
  */
-private void initializeGradient(cbit.vcell.parser.SymbolTable symbolTable) throws ExpressionException {
+private void initializeGradient(org.vcell.expression.SymbolTable symbolTable) throws ExpressionException {
 	int n = getNumArgs();
-	gradientExps = new Expression[n];
+	gradientExps = new IExpression[n];
 	for (int i=0;i<n;i++){
 		
 		gradientExps[i] = functionExp.differentiate(identifiers[i]);

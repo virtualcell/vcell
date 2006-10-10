@@ -7,6 +7,10 @@ package cbit.vcell.opt;
 import cbit.util.CommentStringTokenizer;
 import cbit.vcell.math.*;
 import java.util.*;
+
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+
 import cbit.vcell.parser.*;
 /**
  * Insert the type's description here.
@@ -26,10 +30,10 @@ public static OptimizationSpec getCFSQP_Sample1() throws ExpressionException {
 	os.addParameter(new Parameter("x2",0, 1e10, 1.0, 0.7));
 	os.addParameter(new Parameter("x3",0, 1e10, 1.0, 0.2));
 
-	os.setObjectiveFunction(new ExplicitObjectiveFunction(new Expression("pow(x1 + 3*x2 + x3,2) + 4*pow(x1 - x2,2)")));
+	os.setObjectiveFunction(new ExplicitObjectiveFunction(ExpressionFactory.createExpression("pow(x1 + 3*x2 + x3,2) + 4*pow(x1 - x2,2)")));
 
-	os.addConstraint(new Constraint(ConstraintType.NonlinearInequality,new Expression("pow(x1,3) - 6*x2 - 4*x3 + 3")));
-	os.addConstraint(new Constraint(ConstraintType.LinearEquality,new Expression("1 - x1 - x2 - x3")));
+	os.addConstraint(new Constraint(ConstraintType.NonlinearInequality,ExpressionFactory.createExpression("pow(x1,3) - 6*x2 - 4*x3 + 3")));
+	os.addConstraint(new Constraint(ConstraintType.LinearEquality,ExpressionFactory.createExpression("1 - x1 - x2 - x3")));
 	
 	return os;
 }
@@ -42,8 +46,8 @@ public static OptimizationSpec getExample() throws ExpressionException {
 	OptimizationSpec os = new OptimizationSpec();
 	os.addParameter(new Parameter("calcium",0.4,0.6,1.0,0.5));
 	os.addParameter(new Parameter("ip3",0.01,100,1.0,1));
-	os.setObjectiveFunction(new ExplicitObjectiveFunction(new Expression("calcium+ip3")));
-	os.addConstraint(new Constraint(ConstraintType.LinearEquality,new Expression("calcium - ip3")));
+	os.setObjectiveFunction(new ExplicitObjectiveFunction(ExpressionFactory.createExpression("calcium+ip3")));
+	os.addConstraint(new Constraint(ConstraintType.LinearEquality,ExpressionFactory.createExpression("calcium - ip3")));
 	return os;
 }
 /**
@@ -59,9 +63,9 @@ public static OptimizationSpec getExampleBoris() throws ExpressionException, Mat
 	os.addParameter(new Parameter("x0",Double.NEGATIVE_INFINITY,Double.POSITIVE_INFINITY,1.0,2));
 	os.addParameter(new Parameter("x1",Double.NEGATIVE_INFINITY,Double.POSITIVE_INFINITY,1.0,.1));
 	os.addParameter(new Parameter("x2",Double.NEGATIVE_INFINITY,Double.POSITIVE_INFINITY,1.0,.1));
-	os.addConstraint(new Constraint(ConstraintType.NonlinearEquality,new Expression("(0.01 + 80/(200+100000)) * 0.5 * (150000-x2)/(0.5+x2) - x0")));
-	os.addConstraint(new Constraint(ConstraintType.NonlinearEquality,new Expression("4000 * 0.25 * (x1 - 0.7)/(x1 + 0.25)/(0.07 + 0.25) - x0")));
-	os.addConstraint(new Constraint(ConstraintType.NonlinearEquality,new Expression("(300 + 60*250*0.43/(x1 + 0.43)/(x2 + 0.43)) * (x2 - x1)/20 - x0")));
+	os.addConstraint(new Constraint(ConstraintType.NonlinearEquality,ExpressionFactory.createExpression("(0.01 + 80/(200+100000)) * 0.5 * (150000-x2)/(0.5+x2) - x0")));
+	os.addConstraint(new Constraint(ConstraintType.NonlinearEquality,ExpressionFactory.createExpression("4000 * 0.25 * (x1 - 0.7)/(x1 + 0.25)/(0.07 + 0.25) - x0")));
+	os.addConstraint(new Constraint(ConstraintType.NonlinearEquality,ExpressionFactory.createExpression("(300 + 60*250*0.43/(x1 + 0.43)/(x2 + 0.43)) * (x2 - x1)/20 - x0")));
 
 // answers from boris
 //
@@ -134,8 +138,8 @@ public static OptimizationSpec getOdeExample() throws ExpressionException, Excep
 		}
 	};
 	os.setObjectiveFunction(new OdeObjectiveFunction(mathDesc,constraintData));
-	os.addConstraint(new Constraint(ConstraintType.NonlinearInequality,new Expression("25 - x1*x2*x3*x4")));
-	os.addConstraint(new Constraint(ConstraintType.NonlinearEquality,new Expression("x1*x1 + x2*x2 + x3*x3 + x4*x4 - 40")));
+	os.addConstraint(new Constraint(ConstraintType.NonlinearInequality,ExpressionFactory.createExpression("25 - x1*x2*x3*x4")));
+	os.addConstraint(new Constraint(ConstraintType.NonlinearEquality,ExpressionFactory.createExpression("x1*x1 + x2*x2 + x3*x3 + x4*x4 - 40")));
 	
 	return os;
 }

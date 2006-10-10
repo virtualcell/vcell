@@ -1,19 +1,21 @@
 package cbit.vcell.opt;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 /**
  * Insert the type's description here.
  * Creation date: (8/2/2005 1:30:16 PM)
  * @author: Jim Schaff
  */
 public class ExplicitObjectiveFunction extends ObjectiveFunction {
-	private Expression exp = null;
+	private IExpression exp = null;
 
 /**
  * ExplicitObjectiveFunction constructor comment.
  * @param exp cbit.vcell.parser.Expression
  */
-public ExplicitObjectiveFunction(cbit.vcell.parser.Expression argExpression) {
+public ExplicitObjectiveFunction(IExpression argExpression) {
 	if (argExpression == null){
 		throw new IllegalArgumentException("expression cannot be null");
 	}
@@ -31,7 +33,7 @@ public ExplicitObjectiveFunction(cbit.vcell.parser.Expression argExpression) {
  * @param tokens java.io.StreamTokenizer
  */
 public static ExplicitObjectiveFunction fromVCML(cbit.util.CommentStringTokenizer tokens) throws ExpressionException {
-	Expression exp = new Expression(tokens);
+	IExpression exp = ExpressionFactory.createExpression(tokens);
 	return new ExplicitObjectiveFunction(exp);
 }
 
@@ -49,7 +51,7 @@ public void gatherIssues(java.util.Vector issueList) {}
  * Creation date: (3/3/00 2:29:23 PM)
  * @return cbit.vcell.parser.Expression
  */
-public Expression getExpression() {
+public IExpression getExpression() {
 	return exp;
 }
 
@@ -59,11 +61,11 @@ public Expression getExpression() {
  * Creation date: (3/3/00 2:29:23 PM)
  * @return cbit.vcell.parser.Expression
  */
-public Expression getScaledExpression(String[] symbols, String[] scaledSymbols, double[] scaleFactors) {
+public IExpression getScaledExpression(String[] symbols, String[] scaledSymbols, double[] scaleFactors) {
 	try {
-		Expression scaledExp = new Expression(exp);
+		IExpression scaledExp = ExpressionFactory.createExpression(exp);
 		for (int i = 0;i < symbols.length; i++){
-			scaledExp.substituteInPlace(new Expression(symbols[i]),new Expression(scaleFactors[i]+" * "+scaledSymbols[i]));
+			scaledExp.substituteInPlace(ExpressionFactory.createExpression(symbols[i]),ExpressionFactory.createExpression(scaleFactors[i]+" * "+scaledSymbols[i]));
 		}
 		return scaledExp;
 	}catch (ExpressionException e){

@@ -1,6 +1,8 @@
 package cbit.function;
 
-import cbit.vcell.parser.Expression;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 /**
  * Insert the type's description here.
  * Creation date: (4/2/2002 11:43:41 AM)
@@ -18,9 +20,9 @@ public DefaultVectorFunctionTest() {
 		try {
 			//DefaultVectorFunction vecFunction = new MyVectorFunction();
 			
-			Expression exps[] = new Expression[2];
-			exps[0] = new Expression("2*x0+3*x0*x1+4");
-			exps[1] = new Expression("5*x0+6*x0*x1+7*x1+8");
+			IExpression exps[] = new IExpression[2];
+			exps[0] = ExpressionFactory.createExpression("2*x0+3*x0*x1+4");
+			exps[1] = ExpressionFactory.createExpression("5*x0+6*x0*x1+7*x1+8");
 			String identifiers[] = new String[2];
 			identifiers[0] = "x0";
 			identifiers[1] = "x1";

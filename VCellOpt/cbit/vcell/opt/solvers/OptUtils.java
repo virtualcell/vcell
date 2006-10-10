@@ -1,9 +1,12 @@
 package cbit.vcell.opt.solvers;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.ODESolverResultSet;
 
 import java.util.Vector;
+
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import cbit.vcell.opt.Constraint;
 import cbit.vcell.opt.OdeObjectiveFunction;
 import cbit.vcell.opt.ExplicitObjectiveFunction;
@@ -375,7 +378,7 @@ public static double f1DStep(ScalarFunction f, double[] p, double[] xi, double x
  * @param power double
  * @param mu double
  */
-public static AugmentedObjectiveFunction getAugmentedObjectiveFunction(OptimizationSpec optSpec, double power, double mu, OptSolverCallbacks optSolverCallbacks) throws cbit.vcell.parser.ExpressionException {
+public static AugmentedObjectiveFunction getAugmentedObjectiveFunction(OptimizationSpec optSpec, double power, double mu, OptSolverCallbacks optSolverCallbacks) throws org.vcell.expression.ExpressionException {
 	
 	Parameter[] parameters = optSpec.getParameters();
 
@@ -426,18 +429,18 @@ public static AugmentedObjectiveFunction getAugmentedObjectiveFunction(Optimizat
 	//
 	for (int i = 0; i < parameters.length; i++){
 		if (!Double.isInfinite(parameters[i].getLowerBound())){
-			inequExpList.add(new Expression("("+parameters[i].getLowerBound()+" - "+parameters[i].getName()+")/"+scaleFactors[i]));
+			inequExpList.add(ExpressionFactory.createExpression("("+parameters[i].getLowerBound()+" - "+parameters[i].getName()+")/"+scaleFactors[i]));
 		}
 		if (!Double.isInfinite(parameters[i].getUpperBound())){
-			inequExpList.add(new Expression("("+parameters[i].getName()+" - "+parameters[i].getUpperBound()+")/"+scaleFactors[i]));
+			inequExpList.add(ExpressionFactory.createExpression("("+parameters[i].getName()+" - "+parameters[i].getUpperBound()+")/"+scaleFactors[i]));
 		}			
 	}
 	if (equExpList.size()>0){
-		Expression exps[] = (Expression[])cbit.util.BeanUtils.getArray(equExpList,Expression.class);
+		IExpression exps[] = (IExpression[])cbit.util.BeanUtils.getArray(equExpList,IExpression.class);
 		equalityConstraints = new DynamicVectorFunction(exps,origSymbols);
 	}
 	if (inequExpList.size()>0){
-		Expression exps[] = (Expression[])cbit.util.BeanUtils.getArray(inequExpList,Expression.class);
+		IExpression exps[] = (IExpression[])cbit.util.BeanUtils.getArray(inequExpList,IExpression.class);
 		inequalityConstraints = new DynamicVectorFunction(exps,origSymbols);
 	}
 	
