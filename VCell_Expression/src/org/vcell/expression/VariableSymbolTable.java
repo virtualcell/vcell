@@ -1,10 +1,11 @@
-package cbit.vcell.parser;
+package org.vcell.expression;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
 import java.util.*;
+
 /**
  * This type was created in VisualAge.
  */

@@ -24,16 +24,16 @@ public ScopedExpressionTableCellRenderer() {
 }
 public Component getTableCellRendererComponent(JTable table,Object value,boolean isSelected,boolean hasFocus,int row,int column) {
 
-	if (value instanceof cbit.vcell.parser.ScopedExpression){
+	if (value instanceof cbit.vcell.parser.gui.ScopedExpression){
 		JLabel fakeLabel = (JLabel)super.getTableCellRendererComponent(table,"",isSelected,hasFocus,row,column);
-		cbit.vcell.parser.ScopedExpression scopedExpression = (cbit.vcell.parser.ScopedExpression)value;
+		cbit.vcell.parser.gui.ScopedExpression scopedExpression = (cbit.vcell.parser.gui.ScopedExpression)value;
 		if (scopedExpression.getExpression()!=null){
 			expressionCanvas.setNameScope(scopedExpression.getNameScope());
 			expressionCanvas.setExpression(scopedExpression.getExpression());
 			expressionCanvas.setForeground(fakeLabel.getForeground());
 			expressionCanvas.setBackground(fakeLabel.getBackground());
 			try {
-				cbit.vcell.parser.ExpressionPrintFormatter expPrintFormatter = new cbit.vcell.parser.ExpressionPrintFormatter(((cbit.vcell.parser.ScopedExpression)value).getExpression(),expressionCanvas.getNameScope());
+				cbit.vcell.parser.gui.ExpressionPrintFormatter expPrintFormatter = new cbit.vcell.parser.gui.ExpressionPrintFormatter(((cbit.vcell.parser.gui.ScopedExpression)value).getExpression(),expressionCanvas.getNameScope());
 				Dimension dim = expPrintFormatter.getSize((Graphics2D)table.getGraphics());
 				int requestedRowHeight = (int)dim.getHeight()+table.getRowMargin()+10;
 				//
@@ -100,7 +100,7 @@ public Component getTableCellRendererComponent(JTable table,Object value,boolean
 					}
 				}
 				expressionCanvas.setMinimumSize(new Dimension((int)dim.getWidth()+10,(int)dim.getHeight()+10));
-			}catch (cbit.vcell.parser.ExpressionException e){
+			}catch (org.vcell.expression.ExpressionException e){
 				e.printStackTrace(System.out);
 			}
 			expressionCanvas.setForeground(fakeLabel.getForeground());

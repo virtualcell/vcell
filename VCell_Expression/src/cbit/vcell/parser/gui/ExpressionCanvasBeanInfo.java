@@ -1,5 +1,7 @@
 package cbit.vcell.parser.gui;
 
+import org.vcell.expression.IExpression;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -79,7 +81,7 @@ public java.beans.PropertyDescriptor expressionPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.parser.Expression.class
+					org.vcell.expression.IExpression.class
 				};
 				aSetMethod = getBeanClass().getMethod("setExpression", aSetMethodParameterTypes);
 			} catch (Throwable exception) {
@@ -131,7 +133,7 @@ public java.beans.IndexedPropertyDescriptor expressionsPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.parser.Expression[].class
+					IExpression[].class
 				};
 				aSetMethod = getBeanClass().getMethod("setExpressions", aSetMethodParameterTypes);
 			} catch (Throwable exception) {
@@ -350,18 +352,18 @@ private void handleException(java.lang.Throwable exception) {
 	// exception.printStackTrace(System.out);
 }
 /**
- * Gets the init(cbit.vcell.parser.Expression[]) method descriptor.
+ * Gets the init(cbit.vcell.parser.IExpression[]) method descriptor.
  * @return java.beans.MethodDescriptor
  */
 public java.beans.MethodDescriptor init_cbitvcellparserExpression__MethodDescriptor() {
 	java.beans.MethodDescriptor aDescriptor = null;
 	try {
-		/* Create and return the init(cbit.vcell.parser.Expression[]) method descriptor. */
+		/* Create and return the init(cbit.vcell.parser.IExpression[]) method descriptor. */
 		java.lang.reflect.Method aMethod = null;
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.parser.Expression[].class
+				IExpression[].class
 			};
 			aMethod = getBeanClass().getMethod("init", aParameterTypes);
 		} catch (Throwable exception) {
@@ -383,8 +385,8 @@ public java.beans.MethodDescriptor init_cbitvcellparserExpression__MethodDescrip
 			handleException(exception);
 			aDescriptor = new java.beans.MethodDescriptor(aMethod);
 		};
-		/* aDescriptor.setDisplayName("init(cbit.vcell.parser.Expression[])"); */
-		/* aDescriptor.setShortDescription("init(cbit.vcell.parser.Expression[])"); */
+		/* aDescriptor.setDisplayName("init(cbit.vcell.parser.IExpression[])"); */
+		/* aDescriptor.setShortDescription("init(cbit.vcell.parser.IExpression[])"); */
 		/* aDescriptor.setExpert(false); */
 		/* aDescriptor.setHidden(false); */
 		/* aDescriptor.setValue("preferred", new Boolean(false)); */
@@ -394,18 +396,18 @@ public java.beans.MethodDescriptor init_cbitvcellparserExpression__MethodDescrip
 	return aDescriptor;
 }
 /**
- * Gets the init(cbit.vcell.parser.Expression) method descriptor.
+ * Gets the init(cbit.vcell.parser.IExpression) method descriptor.
  * @return java.beans.MethodDescriptor
  */
 public java.beans.MethodDescriptor init_cbitvcellparserExpressionMethodDescriptor() {
 	java.beans.MethodDescriptor aDescriptor = null;
 	try {
-		/* Create and return the init(cbit.vcell.parser.Expression) method descriptor. */
+		/* Create and return the init(cbit.vcell.parser.IExpression) method descriptor. */
 		java.lang.reflect.Method aMethod = null;
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.parser.Expression.class
+				org.vcell.expression.IExpression.class
 			};
 			aMethod = getBeanClass().getMethod("init", aParameterTypes);
 		} catch (Throwable exception) {
@@ -427,8 +429,8 @@ public java.beans.MethodDescriptor init_cbitvcellparserExpressionMethodDescripto
 			handleException(exception);
 			aDescriptor = new java.beans.MethodDescriptor(aMethod);
 		};
-		/* aDescriptor.setDisplayName("init(cbit.vcell.parser.Expression)"); */
-		/* aDescriptor.setShortDescription("init(cbit.vcell.parser.Expression)"); */
+		/* aDescriptor.setDisplayName("init(cbit.vcell.parser.IExpression)"); */
+		/* aDescriptor.setShortDescription("init(cbit.vcell.parser.IExpression)"); */
 		/* aDescriptor.setExpert(false); */
 		/* aDescriptor.setHidden(false); */
 		/* aDescriptor.setValue("preferred", new Boolean(false)); */
@@ -460,7 +462,7 @@ public java.beans.PropertyDescriptor nameScopePropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.parser.NameScope.class
+					org.vcell.expression.NameScope.class
 				};
 				aSetMethod = getBeanClass().getMethod("setNameScope", aSetMethodParameterTypes);
 			} catch (Throwable exception) {
@@ -490,18 +492,18 @@ public java.beans.PropertyDescriptor nameScopePropertyDescriptor() {
 	return aDescriptor;
 }
 /**
- * Gets the setExpressions(cbit.vcell.parser.Expression[], java.lang.String[], java.lang.String[]) method descriptor.
+ * Gets the setExpressions(cbit.vcell.parser.IExpression[], java.lang.String[], java.lang.String[]) method descriptor.
  * @return java.beans.MethodDescriptor
  */
 public java.beans.MethodDescriptor setExpressions_cbitvcellparserExpression___javalangString___javalangString__MethodDescriptor() {
 	java.beans.MethodDescriptor aDescriptor = null;
 	try {
-		/* Create and return the setExpressions(cbit.vcell.parser.Expression[], java.lang.String[], java.lang.String[]) method descriptor. */
+		/* Create and return the setExpressions(cbit.vcell.parser.IExpression[], java.lang.String[], java.lang.String[]) method descriptor. */
 		java.lang.reflect.Method aMethod = null;
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.parser.Expression[].class,
+				IExpression[].class,
 				java.lang.String[].class,
 				java.lang.String[].class
 			};
@@ -533,8 +535,8 @@ public java.beans.MethodDescriptor setExpressions_cbitvcellparserExpression___ja
 			handleException(exception);
 			aDescriptor = new java.beans.MethodDescriptor(aMethod);
 		};
-		/* aDescriptor.setDisplayName("setExpressions(cbit.vcell.parser.Expression[], java.lang.String[], java.lang.String[])"); */
-		/* aDescriptor.setShortDescription("setExpressions(cbit.vcell.parser.Expression[], java.lang.String[], java.lang.String[])"); */
+		/* aDescriptor.setDisplayName("setExpressions(cbit.vcell.parser.IExpression[], java.lang.String[], java.lang.String[])"); */
+		/* aDescriptor.setShortDescription("setExpressions(cbit.vcell.parser.IExpression[], java.lang.String[], java.lang.String[])"); */
 		/* aDescriptor.setExpert(false); */
 		/* aDescriptor.setHidden(false); */
 		/* aDescriptor.setValue("preferred", new Boolean(false)); */
@@ -544,18 +546,18 @@ public java.beans.MethodDescriptor setExpressions_cbitvcellparserExpression___ja
 	return aDescriptor;
 }
 /**
- * Gets the setExpressions(cbit.vcell.parser.Expression[], java.lang.String[]) method descriptor.
+ * Gets the setExpressions(cbit.vcell.parser.IExpression[], java.lang.String[]) method descriptor.
  * @return java.beans.MethodDescriptor
  */
 public java.beans.MethodDescriptor setExpressions_cbitvcellparserExpression___javalangString__MethodDescriptor() {
 	java.beans.MethodDescriptor aDescriptor = null;
 	try {
-		/* Create and return the setExpressions(cbit.vcell.parser.Expression[], java.lang.String[]) method descriptor. */
+		/* Create and return the setExpressions(cbit.vcell.parser.IExpression[], java.lang.String[]) method descriptor. */
 		java.lang.reflect.Method aMethod = null;
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.parser.Expression[].class,
+				IExpression[].class,
 				java.lang.String[].class
 			};
 			aMethod = getBeanClass().getMethod("setExpressions", aParameterTypes);
@@ -582,8 +584,8 @@ public java.beans.MethodDescriptor setExpressions_cbitvcellparserExpression___ja
 			handleException(exception);
 			aDescriptor = new java.beans.MethodDescriptor(aMethod);
 		};
-		/* aDescriptor.setDisplayName("setExpressions(cbit.vcell.parser.Expression[], java.lang.String[])"); */
-		/* aDescriptor.setShortDescription("setExpressions(cbit.vcell.parser.Expression[], java.lang.String[])"); */
+		/* aDescriptor.setDisplayName("setExpressions(cbit.vcell.parser.IExpression[], java.lang.String[])"); */
+		/* aDescriptor.setShortDescription("setExpressions(cbit.vcell.parser.IExpression[], java.lang.String[])"); */
 		/* aDescriptor.setExpert(false); */
 		/* aDescriptor.setHidden(false); */
 		/* aDescriptor.setValue("preferred", new Boolean(false)); */
@@ -593,19 +595,19 @@ public java.beans.MethodDescriptor setExpressions_cbitvcellparserExpression___ja
 	return aDescriptor;
 }
 /**
- * Gets the setExpressions(int, cbit.vcell.parser.Expression) method descriptor.
+ * Gets the setExpressions(int, cbit.vcell.parser.IExpression) method descriptor.
  * @return java.beans.MethodDescriptor
  */
 public java.beans.MethodDescriptor setExpressions_int_cbitvcellparserExpressionMethodDescriptor() {
 	java.beans.MethodDescriptor aDescriptor = null;
 	try {
-		/* Create and return the setExpressions(int, cbit.vcell.parser.Expression) method descriptor. */
+		/* Create and return the setExpressions(int, cbit.vcell.parser.IExpression) method descriptor. */
 		java.lang.reflect.Method aMethod = null;
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
 				int.class,
-				cbit.vcell.parser.Expression.class
+				org.vcell.expression.IExpression.class
 			};
 			aMethod = getBeanClass().getMethod("setExpressions", aParameterTypes);
 		} catch (Throwable exception) {
@@ -631,8 +633,8 @@ public java.beans.MethodDescriptor setExpressions_int_cbitvcellparserExpressionM
 			handleException(exception);
 			aDescriptor = new java.beans.MethodDescriptor(aMethod);
 		};
-		/* aDescriptor.setDisplayName("setExpressions(int, cbit.vcell.parser.Expression)"); */
-		/* aDescriptor.setShortDescription("setExpressions(int, cbit.vcell.parser.Expression)"); */
+		/* aDescriptor.setDisplayName("setExpressions(int, cbit.vcell.parser.IExpression)"); */
+		/* aDescriptor.setShortDescription("setExpressions(int, cbit.vcell.parser.IExpression)"); */
 		/* aDescriptor.setExpert(false); */
 		/* aDescriptor.setHidden(false); */
 		/* aDescriptor.setValue("preferred", new Boolean(false)); */

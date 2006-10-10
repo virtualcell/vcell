@@ -4,6 +4,9 @@ package cbit.vcell.parser.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import cbit.vcell.parser.*;
 /**
  * This type was created in VisualAge.
@@ -29,14 +32,14 @@ public static void main(java.lang.String[] args) {
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
-		Expression expList[] = new Expression[2];
-		Expression exp = new Expression("((1/2) * (pow(hello/thereagain,2)*there - 5))/4/2;");
-		Expression labelExp = new Expression("d/dt;");
-		expList[0] = Expression.assign(labelExp,exp);
+		IExpression expList[] = new IExpression[2];
+		IExpression exp = ExpressionFactory.createExpression("((1/2) * (pow(hello/thereagain,2)*there - 5))/4/2;");
+		IExpression labelExp = ExpressionFactory.createExpression("d/dt;");
+		expList[0] = ExpressionFactory.assign(labelExp,exp);
 		System.out.println(expList[0]);
-		Expression exp2 = new Expression("8 * ((x > -5) && (x != 5) && (y >= -5) && (y < 5))");
-		Expression labelExp2 = new Expression("d/dt;");
-		expList[1] = Expression.assign(labelExp2,exp2);
+		IExpression exp2 = ExpressionFactory.createExpression("8 * ((x > -5) && (x != 5) && (y >= -5) && (y < 5))");
+		IExpression labelExp2 = ExpressionFactory.createExpression("d/dt;");
+		expList[1] = ExpressionFactory.assign(labelExp2,exp2);
 		System.out.println(expList[1]);
 		aExpressionCanvas.setExpressions(expList);
 	} catch (Throwable exception) {

@@ -1,9 +1,27 @@
-package cbit.vcell.parser;
+package org.vcell.expression;
 import ucar.units.RationalNumber;
+import cbit.vcell.parser.ASTAddNode;
+import cbit.vcell.parser.ASTAndNode;
+import cbit.vcell.parser.ASTExpression;
+import cbit.vcell.parser.ASTFloatNode;
+import cbit.vcell.parser.ASTFuncNode;
+import cbit.vcell.parser.ASTIdNode;
+import cbit.vcell.parser.ASTInvertTermNode;
+import cbit.vcell.parser.ASTLaplacianNode;
+import cbit.vcell.parser.ASTMinusTermNode;
+import cbit.vcell.parser.ASTMultNode;
+import cbit.vcell.parser.ASTNotNode;
+import cbit.vcell.parser.ASTOrNode;
+import cbit.vcell.parser.ASTPowerNode;
+import cbit.vcell.parser.ASTRelationalNode;
+import cbit.vcell.parser.DerivativeNode;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.SimpleNode;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
 
 import java.util.ArrayList;
+
 /**
  * This class may not exist in the future, and its functionality may be spread on one or more classes.
  
@@ -219,7 +237,7 @@ public class VCUnitEvaluator {
 				}
 		} else if (node instanceof ASTIdNode) {
 			if (!nodeUnit.isTBD()){
-				unitsHashMap.put(((ASTIdNode)node).symbolTableEntry,nodeUnit);
+				unitsHashMap.put(((ASTIdNode)node).getSymbolTableEntry(),nodeUnit);
 			}
 		} else {
 			throw new ExpressionException("node type "+node.getClass().toString()+" not supported yet");
@@ -266,14 +284,14 @@ public class VCUnitEvaluator {
 	}
 
 
-	public static VCUnitDefinition getUnitDefinition(Expression exp) throws ExpressionException, VCUnitException {
+	public static VCUnitDefinition getUnitDefinition(IExpression exp) throws ExpressionException, VCUnitException {
 		UnitsHashMap unitsHashMap = new UnitsHashMap();
 		String symbols[] = exp.getSymbols();
 		for (int i = 0;symbols!=null && i < symbols.length; i++){
 			SymbolTableEntry ste = exp.getSymbolBinding(symbols[i]);
 			unitsHashMap.put(ste,ste.getUnitDefinition());
 		}
-		return getUnitDefinition(exp.getRootNode(),unitsHashMap);
+		return getUnitDefinition(((Expression)exp).getRootNode(),unitsHashMap);
 	}
 
 
@@ -414,7 +432,7 @@ public class VCUnitEvaluator {
 				return VCUnitDefinition.UNIT_TBD;
 			}
 		} else if (node instanceof ASTIdNode) {
-			SymbolTableEntry ste = ((ASTIdNode)node).symbolTableEntry;
+			SymbolTableEntry ste = ((ASTIdNode)node).getSymbolTableEntry();
 			unit = unitsHashMap.get(ste);
 			if (unit == null) {
 				unit = ste.getUnitDefinition();
@@ -447,7 +465,7 @@ public static VCUnitDefinition[] suggestUnitDefinitions(SymbolTableEntry symbolT
 	while (unitsHashMap.getDirty()){
 		unitsHashMap.clearDirty();
 		for (int i = 0; i < symbolTableEntries.length; i++){
-			Expression exp = symbolTableEntries[i].getExpression();
+			Expression exp = (Expression)symbolTableEntries[i].getExpression();
 			if (exp != null){
 				VCUnitDefinition vcUnitDefinition = (VCUnitDefinition)unitsHashMap.get(symbolTableEntries[i]);
 				if (vcUnitDefinition==null){

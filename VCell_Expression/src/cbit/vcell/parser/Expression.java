@@ -7,9 +7,21 @@ import cbit.util.Matchable;
 ©*/
 import java.io.*;
 import java.util.*;
+
+import org.vcell.expression.DivideByZeroException;
+import org.vcell.expression.ExpressionBindingException;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.ExpressionTerm;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.NameScope;
+import org.vcell.expression.ParserException;
+import org.vcell.expression.SymbolTable;
+import org.vcell.expression.SymbolTableEntry;
+
 import net.sourceforge.interval.ia_math.*;
 
-public class Expression implements java.io.Serializable, cbit.util.Matchable {
+public class Expression implements java.io.Serializable, cbit.util.Matchable, IExpression {
 
 //   private String expString = null;
 	private SimpleNode rootNode = null;
@@ -76,6 +88,7 @@ public Expression ( String expString ) throws ExpressionException {
 	}
 	parseExpression(expString);
 }
+
 public Expression(StringTokenizer tokens) throws ExpressionException {
 	read(tokens);
 }      
@@ -147,7 +160,10 @@ public static Expression assign(Expression lvalueExp, Expression rvalueExp) thro
 	exp.rootNode = assignNode;
 	return exp;
 }
-   public void bindExpression(SymbolTable symbolTable) throws ExpressionBindingException
+   /* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#bindExpression(cbit.vcell.parser.SymbolTable)
+ */
+public void bindExpression(SymbolTable symbolTable) throws ExpressionBindingException
    {
 bindCount++;/////////////////
 	  rootNode.bind(symbolTable);
@@ -188,13 +204,10 @@ derivativeCount++;
 	exp.rootNode = derivNode;
 	return exp;
 }
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.model.Expression
- * @param variable String
- * @exception java.lang.Exception The exception description.
+/* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#differentiate(java.lang.String)
  */
-public Expression differentiate(String variable) throws ExpressionException {
+public IExpression differentiate(String variable) throws ExpressionException {
 diffCount++;
 	SimpleNode node = (SimpleNode)rootNode.differentiate(variable);
 	if (node == null){
@@ -215,24 +228,26 @@ public boolean equals(Object obj) {
 		return false;
 	}
 }
-/**
- * This method was created by a SmartGuide.
- * @return double
- * @exception java.lang.Exception The exception description.
+/* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#evaluateConstant()
  */
 public double evaluateConstant() throws ExpressionException, DivideByZeroException {
 	return rootNode.evaluateConstant();
 }
+/* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#evaluateInterval(net.sourceforge.interval.ia_math.RealInterval[])
+ */
 public RealInterval evaluateInterval(RealInterval intervals[]) throws ExpressionException, DivideByZeroException {
 	return rootNode.evaluateInterval(intervals);
 }         
+/* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#evaluateVector(double[])
+ */
 public double evaluateVector(double values[]) throws ExpressionException, DivideByZeroException {
 	return rootNode.evaluateVector(values);
 }         
-/**
- * Insert the method's description here.
- * Creation date: (1/23/2003 7:05:26 PM)
- * @return cbit.vcell.parser.Expression[]
+/* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#extractTopLevelTerm()
  */
 public ExpressionTerm extractTopLevelTerm() {
 	String operator = null;
@@ -270,57 +285,28 @@ public ExpressionTerm extractTopLevelTerm() {
 		throw new RuntimeException("node "+rootNode.getClass().getName()+" not yet implemented");
 	}
 	
-	Expression children[] = new Expression[rootNode.jjtGetNumChildren()];
+	IExpression children[] = new IExpression[rootNode.jjtGetNumChildren()];
 	for (int i = 0; i < rootNode.jjtGetNumChildren(); i++){
 		children[i] = new Expression((SimpleNode)rootNode.jjtGetChild(i).copyTree());
 	}
 	
 	return new ExpressionTerm(operator,children);
 }
-/**
- * This method was created by a SmartGuide.
+/* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#flatten()
  */
 public Expression flatten() throws ExpressionException {
 flattenCount++;////////////////////////
 	return new Expression((SimpleNode)rootNode.flatten());
 }
-/**
- * This method was created by a SmartGuide.
+/* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#getBinaryExpression()
  */
-public Expression getBinaryExpression() {
+public IExpression getBinaryExpression() {
 	return new Expression((SimpleNode)rootNode.copyTreeBinary());
 
 }
-   public static String getExpression(StreamTokenizer token) throws ExpressionException, IOException
-   {
-
-	  StringBuffer buffer = new StringBuffer(0);
-
-	  while (token.ttype != StreamTokenizer.TT_EOF &&
-			 token.ttype != ';'){
-
-		 if (token.ttype == StreamTokenizer.TT_WORD){
-			buffer.append(token.sval);
-		 }else if (token.ttype == StreamTokenizer.TT_NUMBER){
-			buffer.append(token.nval);
-		 }else{
-			buffer.append((char)(token.ttype));
-		 }
-
-		 token.nextToken();
-
-	  } // end while(token)
-
-	  if (token.ttype == ';'){
-		 buffer.append(";");
-		 return buffer.toString();
-	  }else{
-		 throw new ExpressionException("unexpected EOF while parsing Expression at line " + 
-							 String.valueOf(token.lineno()));
-	  }
-
-   }         
-/**
+   /**
  * Insert the method's description here.
  * Creation date: (9/15/2003 9:32:34 AM)
  * @return java.lang.String
@@ -329,7 +315,7 @@ private String getNormalizedInfixString() {
 
 	if (normalizedInfixString==null){
 		try {
-			Expression clonedExp = new Expression(this);
+			IExpression clonedExp = ExpressionFactory.createExpression(this);
 			clonedExp.bindExpression(null);
 			normalizedInfixString = clonedExp.flatten().infix();
 		}catch(ExpressionException e){
@@ -353,7 +339,7 @@ public SimpleNode getRootNode() {
  * @param newExp cbit.vcell.parser.Expression
  * @exception java.lang.Exception The exception description.
  */
-public Expression getSubstitutedExpression(Expression origExp, Expression newExp) throws ExpressionException {
+public IExpression getSubstitutedExpression(Expression origExp, Expression newExp) throws ExpressionException {
 substituteCount++;////////////////////////////////
 	SimpleNode origNode = origExp.rootNode;
 	if (origNode instanceof ASTExpression){
@@ -376,42 +362,32 @@ substituteCount++;////////////////////////////////
 		return new Expression(clonedRootNode);
 	}
 }
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.parser.SymbolTableEntry
- * @param symbolName java.lang.String
+/* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#getSymbolBinding(java.lang.String)
  */
 public SymbolTableEntry getSymbolBinding(String symbol) {
 	return rootNode.getBinding(symbol);
 }
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.model.String[]
- * @exception java.lang.Exception The exception description.
+/* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#getSymbols()
  */
 public String[] getSymbols() {
 	return rootNode.getSymbols(SimpleNode.LANGUAGE_DEFAULT,SimpleNode.NAMESCOPE_DEFAULT);
 }
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.model.String[]
- * @exception java.lang.Exception The exception description.
+/* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#getSymbols(int, cbit.vcell.parser.NameScope)
  */
 public String[] getSymbols(int language, NameScope nameScope) {
 	return rootNode.getSymbols(language, nameScope);
 }
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.model.String[]
- * @exception java.lang.Exception The exception description.
+/* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#getSymbols(cbit.vcell.parser.NameScope)
  */
 public String[] getSymbols(NameScope nameScope) {
 	return rootNode.getSymbols(SimpleNode.LANGUAGE_DEFAULT, nameScope);
 }
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.model.String[]
- * @exception java.lang.Exception The exception description.
+/* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#getSymbolsIterator()
  */
 public Iterator getSymbolsIterator() {
 	return Arrays.asList(rootNode.getSymbols(SimpleNode.LANGUAGE_DEFAULT,SimpleNode.NAMESCOPE_DEFAULT)).iterator();
@@ -424,10 +400,8 @@ public Iterator getSymbolsIterator() {
 public int hashCode() {
 	return getNormalizedInfixString().hashCode();
 }
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.model.String[]
- * @exception java.lang.Exception The exception description.
+/* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#hasSymbol(java.lang.String)
  */
 public boolean hasSymbol(String symbolName) {
 	String[] symbols = getSymbols();
@@ -438,11 +412,21 @@ public boolean hasSymbol(String symbolName) {
 	}
 	return false;
 }
-   public String infix()
+   /* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#infix()
+ */
+public String getMathML() throws ExpressionException, IOException{
+	return ExpressionMathMLPrinter.getMathML(this);
+}
+
+public String infix()
    {
 	  return infix(SimpleNode.NAMESCOPE_DEFAULT);
    }   
-   public String infix(NameScope nameScope)
+   /* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#infix(cbit.vcell.parser.NameScope)
+ */
+public String infix(NameScope nameScope)
    {
 	  if (rootNode==null){
 		 return null;
@@ -450,11 +434,17 @@ public boolean hasSymbol(String symbolName) {
 		 return rootNode.infixString(SimpleNode.LANGUAGE_DEFAULT,nameScope);
 	  }
    }   
-   public String infix_C()
+   /* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#infix_C()
+ */
+public String infix_C()
    {
 	  return infix_C(SimpleNode.NAMESCOPE_DEFAULT);
    }   
-   public String infix_C(NameScope nameScope)
+   /* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#infix_C(cbit.vcell.parser.NameScope)
+ */
+public String infix_C(NameScope nameScope)
    {
 	  if (rootNode==null){
 		 return null;
@@ -462,11 +452,17 @@ public boolean hasSymbol(String symbolName) {
 		 return rootNode.infixString(SimpleNode.LANGUAGE_C, nameScope);
 	  }
    }   
-   public String infix_ECLiPSe()
+   /* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#infix_ECLiPSe()
+ */
+public String infix_ECLiPSe()
    {
 	  return infix_ECLiPSe(SimpleNode.NAMESCOPE_DEFAULT);
    }   
-   public String infix_ECLiPSe(NameScope nameScope)
+   /* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#infix_ECLiPSe(cbit.vcell.parser.NameScope)
+ */
+public String infix_ECLiPSe(NameScope nameScope)
    {
 	  if (rootNode==null){
 		 return null;
@@ -474,11 +470,17 @@ public boolean hasSymbol(String symbolName) {
 		 return rootNode.infixString(SimpleNode.LANGUAGE_ECLiPSe,nameScope);
 	  }
    }   
-   public String infix_JSCL()
+   /* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#infix_JSCL()
+ */
+public String infix_JSCL()
    {
 	  return infix_JSCL(SimpleNode.NAMESCOPE_DEFAULT);
    }   
-   public String infix_JSCL(NameScope nameScope)
+   /* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#infix_JSCL(cbit.vcell.parser.NameScope)
+ */
+public String infix_JSCL(NameScope nameScope)
    {
 	  if (rootNode==null){
 		 return null;
@@ -486,11 +488,17 @@ public boolean hasSymbol(String symbolName) {
 		 return rootNode.infixString(SimpleNode.LANGUAGE_JSCL,nameScope);
 	  }
    }   
-   public String infix_Matlab()
+   /* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#infix_Matlab()
+ */
+public String infix_Matlab()
    {
 	  return infix_Matlab(SimpleNode.NAMESCOPE_DEFAULT);
    }   
-   public String infix_Matlab(NameScope nameScope)
+   /* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#infix_Matlab(cbit.vcell.parser.NameScope)
+ */
+public String infix_Matlab(NameScope nameScope)
    {
 	  if (rootNode==null){
 		 return null;
@@ -532,18 +540,14 @@ public static Expression invert(Expression expression) throws ExpressionExceptio
 	}	
 	return exp;
 }
-/**
- * Insert the method's description here.
- * Creation date: (1/23/2003 7:19:57 PM)
- * @return boolean
+/* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#isAtomic()
  */
 public boolean isAtomic() {
 	return rootNode.jjtGetNumChildren()==0;
 }
-/**
- * Insert the method's description here.
- * Creation date: (1/23/2003 7:19:57 PM)
- * @return boolean
+/* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#isLogical()
  */
 public boolean isLogical() {
 	if (rootNode instanceof ASTAndNode ||
@@ -555,18 +559,14 @@ public boolean isLogical() {
 		return false;
 	}
 }
-/**
- * Insert the method's description here.
- * Creation date: (8/22/2005 10:43:33 AM)
- * @return boolean
+/* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#isNumeric()
  */
 public boolean isNumeric() {
 	return (rootNode instanceof ASTFloatNode);
 }
-/**
- * Insert the method's description here.
- * Creation date: (1/23/2003 7:19:57 PM)
- * @return boolean
+/* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#isRelational()
  */
 public boolean isRelational() {
 	if (rootNode instanceof ASTRelationalNode){
@@ -575,13 +575,11 @@ public boolean isRelational() {
 		return false;
 	}
 }
-/**
- * Insert the method's description here.
- * Creation date: (5/7/2002 2:37:46 PM)
- * @return boolean
+/* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#isZero()
  */
 public boolean isZero() {
-	return compareEqual(new Expression(0.0));
+	return compareEqual(ExpressionFactory.createExpression(0.0));
 }
 /**
  * This method was created by a SmartGuide.
@@ -589,7 +587,7 @@ public boolean isZero() {
  * @param expression Expression
  * @exception java.lang.Exception The exception description.
  */
-public static Expression laplacian(Expression expression) throws ExpressionException {
+public static IExpression laplacian(Expression expression) throws ExpressionException {
 	Expression exp = new Expression();
 	ASTLaplacianNode laplacianNode = new ASTLaplacianNode();
 	//
@@ -640,6 +638,9 @@ public static Expression mult(Expression expression1, Expression expression2) th
 	exp.rootNode = multNode;
 	return exp;
 }
+/* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#narrow(net.sourceforge.interval.ia_math.RealInterval[])
+ */
 public boolean narrow(RealInterval intervals[]) throws ExpressionException {
 	return rootNode.narrow(intervals);
 }         
@@ -698,7 +699,7 @@ parseCount++;
  * @param expression2 cbit.vcell.model.Expression
  * @exception java.lang.Exception The exception description.
  */
-public static Expression power(Expression expression1, Expression expression2) throws ExpressionException {
+public static IExpression power(Expression expression1, Expression expression2) throws ExpressionException {
 	Expression exp = new Expression();
 	ASTFuncNode funcNode = new ASTFuncNode();
 	funcNode.setFunction(ASTFuncNode.POW);
@@ -726,44 +727,10 @@ public static Expression power(Expression expression1, Expression expression2) t
 	exp.rootNode = funcNode;
 	return exp;
 }
-/**
- * Insert the method's description here.
- * Creation date: (2/11/2002 1:34:06 PM)
- * @return cbit.vcell.parser.Expression
- * @param mathML java.lang.String
+/* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#printTree()
  */
-public static void printNode(org.w3c.dom.Node nodeArg, String pad){
-	if (nodeArg== null) {
-		throw new IllegalArgumentException("Invalid null NodeList");
-	}
-	org.w3c.dom.NodeList nodeList = nodeArg.getChildNodes();
-	//print node
-	if (nodeArg.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE){
-		if (nodeList.getLength()==0){
-			System.out.println(pad + "<"+nodeArg.getNodeName()+"/>");
-		}else{
-			System.out.println(pad + "<"+nodeArg.getNodeName()+">");
-		}
-	}else if (nodeArg.getNodeType() == org.w3c.dom.Node.TEXT_NODE){
-		System.out.println(pad + nodeArg.getNodeValue());
-	}else{
-		System.out.println(pad + nodeArg.getNodeName() + " "+ nodeArg.getNodeType() + " " + nodeArg.getNodeValue());
-	}
-	//get children
-	if (nodeList.getLength()==1){
-		printNode(nodeList.item(0), pad + "  ");
-	}else{			
-		for (int i = 0; i < nodeList.getLength(); i++){
-			if (i%2==1){
-				printNode(nodeList.item(i), pad +"  ");
-			}
-		}
-	}
-	if (nodeList.getLength()>0 && nodeArg.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE){
-		System.out.println(pad + "</"+nodeArg.getNodeName()+">");
-	}
-}
-   public void printTree()
+public void printTree()
    {
 	  if (rootNode!=null){
 		 rootNode.dump("");
@@ -815,9 +782,8 @@ public static void resetCounters() {
    substituteCount = 0;
    bindCount = 0;
 }
-/**
- * Insert the method's description here.
- * Creation date: (10/11/2002 8:48:29 AM)
+/* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#roundToFloat()
  */
 public void roundToFloat() {
   if (rootNode!=null){
@@ -836,14 +802,15 @@ System.out.println("derivative("+derivativeCount+")");
 System.out.println("substitute("+substituteCount+")");
 System.out.println("bind("+bindCount+")");
 }
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.parser.Expression
- * @param origExp cbit.vcell.parser.Expression
- * @param newExp cbit.vcell.parser.Expression
- * @exception java.lang.Exception The exception description.
+
+public void substituteInPlace(IExpression origExp, IExpression newExp) throws ExpressionException {
+	substituteInPlace((Expression)origExp, (Expression)newExp);
+}
+
+/* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#substituteInPlace(cbit.vcell.parser.Expression, cbit.vcell.parser.Expression)
  */
-public void substituteInPlace(Expression origExp, Expression newExp) throws ExpressionException {
+private void substituteInPlace(Expression origExp, Expression newExp) throws ExpressionException {
 substituteCount++;////////////////////////////////
 	SimpleNode origNode = origExp.rootNode;
 	if (origNode instanceof ASTExpression){

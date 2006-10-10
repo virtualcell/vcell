@@ -1,6 +1,10 @@
 package cbit.vcell.parser;
 
 import java.util.Vector;
+
+import org.vcell.expression.ExpressionBindingException;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.NameScope;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.

@@ -1,10 +1,10 @@
 package org.vcell.expression;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Iterator;
 
 import cbit.util.Matchable;
-import cbit.vcell.parser.ExpressionTerm;
 
 import net.sourceforge.interval.ia_math.RealInterval;
 
@@ -52,7 +52,8 @@ public interface IExpression extends Matchable, Serializable {
 	 * This method was created by a SmartGuide.
 	 */
 	public abstract IExpression getBinaryExpression();
-
+	
+	public abstract String getMathML() throws ExpressionException, IOException;
 	/**
 	 * This method was created by a SmartGuide.
 	 * @return cbit.vcell.parser.SymbolTableEntry

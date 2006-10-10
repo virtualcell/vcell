@@ -1,4 +1,6 @@
-package cbit.vcell.parser;
+package org.vcell.expression;
+
+
 /**
  * Insert the type's description here.
  * Creation date: (1/8/2003 10:11:18 AM)
@@ -25,12 +27,12 @@ package cbit.vcell.parser;
  *   NOTE: Expression's hold their symbolTable binding within it's internal state.  So consider
  *         side-effect when binding Expressions that are externally referenced.
  */
-public class SimpleSymbolTable implements cbit.vcell.parser.ScopedSymbolTable {
+public class SimpleSymbolTable implements org.vcell.expression.ScopedSymbolTable {
 	
 	private SimpleSymbolTableEntry steArray[] = null;
 	private NameScope nameScope = null;
 	
-	private class SimpleSymbolTableEntry implements cbit.vcell.parser.SymbolTableEntry {
+	private class SimpleSymbolTableEntry implements org.vcell.expression.SymbolTableEntry {
 		private String name = null;
 		private int index = -1;
 		private NameScope nameScope = null;
@@ -62,11 +64,11 @@ public class SimpleSymbolTable implements cbit.vcell.parser.ScopedSymbolTable {
 		public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
 			return vcUnitDefinition;
 		}
-		public Expression getExpression(){
+		public IExpression getExpression(){
 			return null;
 		}
-		public double getConstantValue() throws cbit.vcell.parser.ExpressionException {
-			throw new cbit.vcell.parser.ExpressionException("can't evaluate to constant");
+		public double getConstantValue() throws org.vcell.expression.ExpressionException {
+			throw new org.vcell.expression.ExpressionException("can't evaluate to constant");
 		}
 	};
 	
@@ -93,7 +95,7 @@ public SimpleSymbolTable(String symbols[], NameScope argNameScope, cbit.vcell.un
 }
 
 
-public cbit.vcell.parser.SymbolTableEntry getEntry(String identifier) throws ExpressionBindingException {
+public org.vcell.expression.SymbolTableEntry getEntry(String identifier) throws ExpressionBindingException {
 	//
 	// check if in the current scope with no scoping
 	//
@@ -108,7 +110,7 @@ public cbit.vcell.parser.SymbolTableEntry getEntry(String identifier) throws Exp
 }
 
 
-public cbit.vcell.parser.SymbolTableEntry getLocalEntry(String identifier) throws ExpressionBindingException {
+public org.vcell.expression.SymbolTableEntry getLocalEntry(String identifier) throws ExpressionBindingException {
 	//
 	// check if in the current scope with no scoping
 	//

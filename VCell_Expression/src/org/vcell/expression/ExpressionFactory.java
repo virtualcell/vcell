@@ -2,7 +2,10 @@ package org.vcell.expression;
 
 import java.util.StringTokenizer;
 
+import org.jdom.Element;
+
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionMathMLParser;
 
 public class ExpressionFactory {
 
@@ -56,6 +59,14 @@ public class ExpressionFactory {
 
 	public static IExpression laplacian(IExpression expression) throws ExpressionException {
 		return Expression.laplacian((Expression)expression);
+	}
+
+	public static IExpression fromMathML(Element mathElement, LambdaFunction[] lambdaFunctions) throws ExpressionException {
+		return (new ExpressionMathMLParser(lambdaFunctions)).fromMathML(mathElement);
+	}
+
+	public static IExpression fromMathML(Element mathElement) throws ExpressionException {
+		return (new ExpressionMathMLParser(null)).fromMathML(mathElement);
 	}
 
 }

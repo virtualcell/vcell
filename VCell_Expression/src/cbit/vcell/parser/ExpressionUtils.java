@@ -1,6 +1,11 @@
 package cbit.vcell.parser;
 
 import java.util.Random;
+
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.SimpleSymbolTable;
 /**
  * Insert the type's description here.
  * Creation date: (12/27/2002 1:37:29 PM)
@@ -202,7 +207,7 @@ private static SimpleNode createTerminalNode(java.util.Random random, boolean bI
  * @param exp1 cbit.vcell.parser.Expression
  * @param exp2 cbit.vcell.parser.Expression
  */
-public static boolean derivativeFunctionallyEquivalent(Expression exp, String diffSymbol, Expression diff, double relativeTolerance, double absoluteTolerance) {
+public static boolean derivativeFunctionallyEquivalent(IExpression exp, String diffSymbol, IExpression diff, double relativeTolerance, double absoluteTolerance) {
 	try {
 		String symbolsExp[] = exp.getSymbols();
 		String symbolsDiff[] = diff.getSymbols();
@@ -240,7 +245,7 @@ public static boolean derivativeFunctionallyEquivalent(Expression exp, String di
 			symbols = (String[])hashSet.toArray(new String[hashSet.size()]);
 		}
 
-		cbit.vcell.parser.SymbolTable symbolTable = new SimpleSymbolTable(symbols);
+		org.vcell.expression.SymbolTable symbolTable = new SimpleSymbolTable(symbols);
 		exp.bindExpression(symbolTable);
 		diff.bindExpression(symbolTable);
 		int diffSymbolIndex = exp.getSymbolBinding(diffSymbol).getIndex();
@@ -304,7 +309,7 @@ public static boolean derivativeFunctionallyEquivalent(Expression exp, String di
 			throw new RuntimeException("too many failed evaluations ("+numEvaluations+" of "+REQUIRED_NUM_EVALUATIONS+") ("+savedException.getMessage()+")");
 		}
 		return true;
-	}catch (cbit.vcell.parser.ExpressionException e){
+	}catch (org.vcell.expression.ExpressionException e){
 		e.printStackTrace(System.out);
 		return false;
 	}
@@ -316,7 +321,7 @@ public static boolean derivativeFunctionallyEquivalent(Expression exp, String di
  * @param exp1 cbit.vcell.parser.Expression
  * @param exp2 cbit.vcell.parser.Expression
  */
-public static boolean functionallyEquivalent(Expression exp1, Expression exp2) {
+public static boolean functionallyEquivalent(IExpression exp1, IExpression exp2) {
 	boolean verifySameSymbols = true;
 	return functionallyEquivalent(exp1,exp2,verifySameSymbols);
 }
@@ -327,7 +332,7 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2) {
  * @param exp1 cbit.vcell.parser.Expression
  * @param exp2 cbit.vcell.parser.Expression
  */
-public static boolean functionallyEquivalent(Expression exp1, Expression exp2, boolean bVerifySameSymbols) {
+public static boolean functionallyEquivalent(IExpression exp1, IExpression exp2, boolean bVerifySameSymbols) {
 	double defaultAbsoluteTolerance = 1e-12;
 	double defaultRelativeTolerance = 1e-10;
 	return functionallyEquivalent(exp1,exp2,bVerifySameSymbols,defaultRelativeTolerance,defaultAbsoluteTolerance);
@@ -339,7 +344,7 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2, b
  * @param exp1 cbit.vcell.parser.Expression
  * @param exp2 cbit.vcell.parser.Expression
  */
-public static boolean functionallyEquivalent(Expression exp1, Expression exp2, boolean verifySameSymbols, double relativeTolerance, double absoluteTolerance) {
+public static boolean functionallyEquivalent(IExpression exp1, IExpression exp2, boolean verifySameSymbols, double relativeTolerance, double absoluteTolerance) {
 	try {
 		String symbols1[] = exp1.getSymbols();
 		String symbols2[] = exp2.getSymbols();
@@ -432,7 +437,7 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2, b
 				symbols = (String[])hashSet.toArray(new String[hashSet.size()]);
 			}
 		}
-		cbit.vcell.parser.SymbolTable symbolTable = new SimpleSymbolTable(symbols);
+		org.vcell.expression.SymbolTable symbolTable = new SimpleSymbolTable(symbols);
 		exp1.bindExpression(symbolTable);
 		exp2.bindExpression(symbolTable);
 		double values[] = new double[symbols.length];
@@ -476,7 +481,7 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2, b
 			throw new RuntimeException("too many failed evaluations ("+numEvaluations+" of "+REQUIRED_NUM_EVALUATIONS+") ("+savedException.getMessage()+") of expressions '"+exp1+"' and '"+exp2+"'");
 		}
 		return true;
-	}catch (cbit.vcell.parser.ExpressionException e){
+	}catch (org.vcell.expression.ExpressionException e){
 		e.printStackTrace(System.out);
 		System.out.println("EXPRESSIONS DIFFERENT: "+e);
 		return false;
@@ -488,12 +493,12 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2, b
  * Creation date: (12/22/2002 5:02:53 PM)
  * @return cbit.vcell.parser.Expression
  */
-public static Expression generateExpression(java.util.Random random, int maxDepth, boolean bIsConstraint) throws ExpressionException {
+public static IExpression generateExpression(java.util.Random random, int maxDepth, boolean bIsConstraint) throws ExpressionException {
 	SimpleNode node = generateSubtree(0,maxDepth,random,bIsConstraint);
 	if (bIsConstraint){
 		node = (SimpleNode)node.copyTreeBinary();
 	}
-	return new Expression(node.infixString(node.LANGUAGE_DEFAULT,node.NAMESCOPE_DEFAULT));
+	return ExpressionFactory.createExpression(node.infixString(node.LANGUAGE_DEFAULT,node.NAMESCOPE_DEFAULT));
 }
 /**
  * Insert the method's description here.

@@ -3,6 +3,13 @@ package cbit.vcell.parser;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.expression.DivideByZeroException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.FunctionDomainException;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.ParserException;
+import org.vcell.expression.SimpleSymbolTable;
+
 import net.sourceforge.interval.ia_math.*;
 
 public class ExpressionTest {
@@ -21,12 +28,12 @@ public static void main(java.lang.String[] args) {
 		java.util.Random r = new java.util.Random();
 		String ids[] = {"id_0", "id_1", "id_2", "id_3", 
 				"id_4", "id_5", "id_6", "id_7", "id_8", "id_9"};
-		cbit.vcell.parser.SimpleSymbolTable symbolTable = new cbit.vcell.parser.SimpleSymbolTable(ids); 
+		org.vcell.expression.SimpleSymbolTable symbolTable = new org.vcell.expression.SimpleSymbolTable(ids); 
 
 		double v1[] = {0,1,2,3,4,5,6,7,8,9 };
 
 		for (int i = 0; i < num; i ++){
-			cbit.vcell.parser.Expression exp = cbit.vcell.parser.ExpressionUtils.generateExpression(r, 4, false);
+			IExpression exp = cbit.vcell.parser.ExpressionUtils.generateExpression(r, 4, false);
 			exp.bindExpression(symbolTable);
 
 			try {
@@ -94,20 +101,20 @@ String expString = "(((ALPHA * ((ip3r_coeff * ((4.0 * pow((RIC / ch_dens), 3.0))
 						" / pow((mobile_buff_K_value + C), 2.0)) + fixed_buffer_bindingRatio + 1.0));";
 //String expString = "(( - VmaxANT / (1.0 + (KeADP / ADP_OUTSIDE) + (ATP_OUTSIDE / KeATP * KeADP / ADP_OUTSIDE) + (KiATP / ATP_INSIDE))) + VmaxSYNTH);";
 
-		Expression origExp = new Expression("RIC;");
-		Expression newExp = new Expression("0.0;");
+		IExpression origExp = ExpressionFactory.createExpression("RIC;");
+		IExpression newExp = ExpressionFactory.createExpression("0.0;");
 		long before = 0;
 		long after = 0;
 		
 		before = System.currentTimeMillis();
-		Expression exp = new Expression(expString);
+		IExpression exp = ExpressionFactory.createExpression(expString);
 		after = System.currentTimeMillis(); 
 		long parseTime = after-before;
 System.out.println("time for parsing = "+parseTime+" ms");
 System.out.println(exp);
 		
 		before = System.currentTimeMillis();
-		Expression flat = exp.flatten();
+		IExpression flat = exp.flatten();
 		after = System.currentTimeMillis(); 
 		long flattenTime = after-before;
 System.out.println("time for simplifying = "+flattenTime+" ms");
@@ -130,7 +137,7 @@ System.out.println(flat);
 System.out.println("time for substitution in place = "+substituteInPlaceTime+" ms");
 		
 		before = System.currentTimeMillis();
-		flat.getSubstitutedExpression(origExp,newExp);
+		ExpressionFactory.createSubstitutedExpression(flat, origExp, newExp);
 		after = System.currentTimeMillis(); 
 		long substituteTime = after-before;
 System.out.println("time for new Substituted Expression = "+substituteTime+" ms");
@@ -145,7 +152,7 @@ System.out.println("time for simplification = "+flatten2Time+" ms");
 		
 //System.out.println("Differentiating:");
 		before = System.currentTimeMillis();
-		Expression exactD_C = flat.differentiate("C");
+		IExpression exactD_C = flat.differentiate("C");
 		after = System.currentTimeMillis(); 
 		long differentiateTime = after-before;
 System.out.println("time for differentiation = "+differentiateTime+" ms");
@@ -185,15 +192,15 @@ public static void testDifferentiate(int numTrials, int depth, long seed) {
 	java.util.Random random = new java.util.Random(seed);
 	for (int i = 0; i < numTrials; i++) {
 		try {
-			cbit.vcell.parser.Expression exp = cbit.vcell.parser.ExpressionUtils.generateExpression(random, depth, false);
-			cbit.vcell.parser.Expression flattened = null;
+			IExpression exp = cbit.vcell.parser.ExpressionUtils.generateExpression(random, depth, false);
+			IExpression flattened = null;
 			try {
 				//
 				// test against identifier that is not present in expression
 				//
 				numDerivatives++;
 				String dummySymbol = "abc123";
-				Expression diff = exp.differentiate(dummySymbol);
+				IExpression diff = exp.differentiate(dummySymbol);
 				try {
 					diff = diff.flatten();
 				}catch (DivideByZeroException e){
@@ -233,7 +240,7 @@ public static void testDifferentiate(int numTrials, int depth, long seed) {
 								System.out.println("D f()/D("+symbols[j]+") = "+diff);
 								System.out.println("[f("+symbols[j]+"+delta)-f("+symbols[j]+"-delta)]/(2*delta)  !=  D f(k)/D("+symbols[j]+")\n\n\n");
 							}
-						} catch (cbit.vcell.parser.DivideByZeroException e) {
+						} catch (org.vcell.expression.DivideByZeroException e) {
 							e.printStackTrace(System.out);
 						}
 					}
@@ -259,7 +266,7 @@ public static void testEvaluateInterval(int numTrials, int depth, long seed, boo
     java.util.Random random = new java.util.Random(seed);
     for (int i = 0; i < numTrials; i++) {
 		try {
-			cbit.vcell.parser.Expression exp = cbit.vcell.parser.ExpressionUtils.generateExpression(random, depth, bIsConstraint);
+			IExpression exp = cbit.vcell.parser.ExpressionUtils.generateExpression(random, depth, bIsConstraint);
 			//System.out.println("exp = '"+exp+"'");
 			//
 			// generate random intervals for arguments
@@ -349,7 +356,7 @@ public static void testEvaluateNarrowing(int numTrials, int depth, long seed) {
 		java.util.Random random = new java.util.Random(seed);
 
 		for (int i = 0; i < numTrials; i++){
-			Expression constraint = ExpressionUtils.generateExpression(random,depth,true);
+			IExpression constraint = ExpressionUtils.generateExpression(random,depth,true);
 			String symbols[] = constraint.getSymbols();
 			if (symbols==null || symbols.length<1){
 				continue;
@@ -477,9 +484,9 @@ public static void testEvaluateNarrowing(int numTrials, int depth, long seed) {
  */
 public static void testEvaluateNarrowingOld() {
 	try {
-		Expression exps[] = {
-			(new Expression("a*b==c;")).flatten(),
-			(new Expression("c<2*a;")).flatten(),
+		IExpression exps[] = {
+			(ExpressionFactory.createExpression("a*b==c;")).flatten(),
+			(ExpressionFactory.createExpression("c<2*a;")).flatten(),
 //			(new Expression("a>1;")).flatten(),
 //			(new Expression("a<3;")).flatten(),
 //			(new Expression("b>2;")).flatten(),
@@ -520,7 +527,7 @@ public static void testEvaluateNarrowingOld() {
  */
 public static void testEvaluateVector() {
 	try {
-		Expression exp = new Expression("a+b/c;");
+		IExpression exp = ExpressionFactory.createExpression("a+b/c;");
 
 		SimpleSymbolTable simpleSymbolTable = new SimpleSymbolTable(new String[] { "a", "b", "c" });
 
@@ -549,11 +556,11 @@ public static void testFlatten(int numTrials, int depth, long seed) {
 	java.util.Random random = new java.util.Random(seed);
 	for (int i = 0; i < numTrials; i++) {
 		try {
-			Expression exp = ExpressionUtils.generateExpression(random, depth, false);
+			IExpression exp = ExpressionUtils.generateExpression(random, depth, false);
 			try {
-				Expression flattened = exp.flatten();
+				IExpression flattened = exp.flatten();
 				boolean isSame = ExpressionUtils.functionallyEquivalent(exp, flattened, false);
-				Expression flattenedTwice = exp.flatten().flatten();
+				IExpression flattenedTwice = exp.flatten().flatten();
 				boolean isIdempotent = flattenedTwice.compareEqual(exp);
 				if (isSame && isIdempotent) {
 					numCorrect++;
@@ -572,7 +579,7 @@ public static void testFlatten(int numTrials, int depth, long seed) {
 						System.out.println("NOT IDEMPOTENT\n");
 					}
 				}	
-			} catch (cbit.vcell.parser.DivideByZeroException e) {
+			} catch (org.vcell.expression.DivideByZeroException e) {
 				System.out.println("FAILED: "+e.getMessage()+"\n");
 				//e.printStackTrace(System.out);
 				numFailed++;

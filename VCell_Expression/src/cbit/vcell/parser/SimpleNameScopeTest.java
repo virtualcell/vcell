@@ -1,5 +1,10 @@
 package cbit.vcell.parser;
 
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.ScopedSymbolTable;
+import org.vcell.expression.SimpleSymbolTable;
+
 /**
  * Insert the type's description here.
  * Creation date: (8/1/2003 10:49:36 AM)
@@ -25,7 +30,7 @@ public static void main(java.lang.String[] args) {
 public static void testMultiscope() {
 	try {
 		System.out.println("\n\n------------- Test multiple scopes (lower scope is parent)---------------\n\n");
-		Expression exp = new Expression("x0+x1+x2");
+		IExpression exp = ExpressionFactory.createExpression("x0+x1+x2");
 		String symbols[] = exp.getSymbols();
 		final int numScopes = symbols.length;
 		
@@ -57,7 +62,7 @@ public static void testMultiscope() {
 			System.out.println("\n\nexp = '"+exp+"', wrt "+scopes[j].getName()+" = '"+exp.infix(scopes[j])+"'");
 
 			System.out.println("\n--------binding with explicit scoping----------\n");
-			Expression exp2 = new Expression(exp.infix(scopes[j]));
+			IExpression exp2 = ExpressionFactory.createExpression(exp.infix(scopes[j]));
 			for (int i = 0; i < symbolTables.length; i++){
 				try {
 					exp2.bindExpression(symbolTables[j]);
@@ -90,7 +95,7 @@ public static void testMultiscope() {
 public static void testSingleScope() {
 	try {
 		System.out.println("\n\n------------- Test single scope ---------------\n\n");
-		Expression exp = new Expression("x");
+		IExpression exp = ExpressionFactory.createExpression("x");
 		String symbols[] = exp.getSymbols();
 		SimpleNameScope scopes[] = new SimpleNameScope[3];
 		scopes[0] = new SimpleNameScope("A");

@@ -1,4 +1,4 @@
-package cbit.vcell.parser;
+package cbit.vcell.parser.gui;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

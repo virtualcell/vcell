@@ -1,5 +1,9 @@
 package cbit.vcell.parser;
 
+import org.vcell.expression.AbstractNameScope;
+import org.vcell.expression.NameScope;
+import org.vcell.expression.ScopedSymbolTable;
+
 /**
  * Insert the type's description here.
  * Creation date: (7/31/2003 4:18:02 PM)
@@ -40,7 +44,7 @@ public void addChild(NameScope childNameScope) {
  * Creation date: (8/1/2003 11:04:49 AM)
  * @return cbit.vcell.parser.SymbolTable[]
  */
-public cbit.vcell.parser.NameScope[] getChildren() {
+public org.vcell.expression.NameScope[] getChildren() {
 	return children;
 }
 /**
@@ -88,7 +92,7 @@ public void removeChild(NameScope childNameScope) {
  * Creation date: (8/1/2003 11:04:49 AM)
  * @param newChildren cbit.vcell.parser.SymbolTable[]
  */
-public void setChildren(cbit.vcell.parser.NameScope[] newChildren) {
+public void setChildren(org.vcell.expression.NameScope[] newChildren) {
 	if (newChildren == null){
 		throw new IllegalArgumentException("AbstractNameScope.setChildren(): nameScope[] cannot be null");
 	}

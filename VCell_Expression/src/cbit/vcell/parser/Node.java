@@ -9,6 +9,12 @@ package cbit.vcell.parser;
 /* All AST nodes must implement this interface.  It provides basic
    machinery for constructing the parent and child relationships
    between nodes. */
+import org.vcell.expression.ExpressionBindingException;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.NameScope;
+import org.vcell.expression.SymbolTable;
+import org.vcell.expression.SymbolTableEntry;
+
 import net.sourceforge.interval.ia_math.*;
 
 public interface Node {
@@ -45,19 +51,19 @@ public boolean equals(Node node) throws ExpressionException;
  * @return double
  * @exception java.lang.Exception The exception description.
  */
-public double evaluateConstant() throws cbit.vcell.parser.ExpressionException;
+public double evaluateConstant() throws org.vcell.expression.ExpressionException;
 /**
  * This method was created in VisualAge.
  * @return double
  * @param values double[]
- * @exception cbit.vcell.parser.ExpressionException The exception description.
+ * @exception org.vcell.expression.ExpressionException The exception description.
  */
 RealInterval evaluateInterval(RealInterval intervals[]) throws ExpressionException;
 /**
  * This method was created in VisualAge.
  * @return double
  * @param values double[]
- * @exception cbit.vcell.parser.ExpressionException The exception description.
+ * @exception org.vcell.expression.ExpressionException The exception description.
  */
 double evaluateVector(double values[]) throws ExpressionException;
 /**

@@ -1,4 +1,5 @@
-package cbit.vcell.parser;
+package org.vcell.expression;
+
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -24,7 +25,7 @@ public double getConstantValue() throws ExpressionException;
  * @return boolean
  * @exception java.lang.Exception The exception description.
  */
-public Expression getExpression() throws ExpressionException;
+public IExpression getExpression() throws ExpressionException;
 /**
  * This method was created in VisualAge.
  * @return int

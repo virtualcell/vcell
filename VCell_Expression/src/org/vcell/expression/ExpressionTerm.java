@@ -1,4 +1,5 @@
-package cbit.vcell.parser;
+package org.vcell.expression;
+
 
 /**
  * Insert the type's description here.
@@ -7,11 +8,11 @@ package cbit.vcell.parser;
  */
 public class ExpressionTerm {
 	private java.lang.String fieldOperator = null;
-	private cbit.vcell.parser.Expression[] fieldOperands = null;
+	private IExpression[] fieldOperands = null;
 /**
  * ExpressionTerm constructor comment.
  */
-public ExpressionTerm(String operator, Expression operands[]) {
+public ExpressionTerm(String operator, IExpression operands[]) {
 	super();
 	this.fieldOperator = operator;
 	this.fieldOperands = operands;
@@ -21,7 +22,7 @@ public ExpressionTerm(String operator, Expression operands[]) {
  * @return The operands property value.
  * @see #setOperands
  */
-public cbit.vcell.parser.Expression[] getOperands() {
+public IExpression[] getOperands() {
 	return fieldOperands;
 }
 /**

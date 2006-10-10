@@ -5,6 +5,13 @@ package cbit.vcell.parser;
  * All rights reserved.
 ©*/
 /* JJT: 0.2.2 */
+import org.vcell.expression.ExpressionBindingException;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.NameScope;
+import org.vcell.expression.SymbolTable;
+import org.vcell.expression.SymbolTableEntry;
+
 import net.sourceforge.interval.ia_math.*;
 
 public class DerivativeNode extends SimpleNode {
@@ -15,7 +22,7 @@ DerivativeNode(String independentVariable) {
 	super(-1);
 	this.independentVar = independentVariable;
 	try {
-		displayExp = new Expression("d/d/"+independentVariable+";");
+		displayExp = (Expression)ExpressionFactory.createExpression("d/d/"+independentVariable+";");
 	}catch (Exception e){
 	}		
 }            
@@ -123,5 +130,8 @@ public String infixString(int lang, NameScope nameScope){
  */
 public boolean narrow(RealInterval intervals[]) {
 	throw new RuntimeException("DerivativeNode.narrow(), not yet supported");
+}
+public Expression getDisplayExp() {
+	return displayExp;
 }
 }

@@ -1,4 +1,5 @@
-package cbit.vcell.parser;
+package org.vcell.expression;
+
 
 /**
  * Insert the type's description here.
@@ -31,7 +32,7 @@ public String getAbsoluteScopePrefix() {
  * Creation date: (8/1/2003 11:04:49 AM)
  * @return cbit.vcell.parser.SymbolTable[]
  */
-public abstract cbit.vcell.parser.NameScope[] getChildren();
+public abstract org.vcell.expression.NameScope[] getChildren();
 /**
  * Insert the method's description here.
  * Creation date: (8/27/2003 11:57:04 AM)

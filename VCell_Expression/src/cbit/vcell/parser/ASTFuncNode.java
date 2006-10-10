@@ -4,6 +4,13 @@ package cbit.vcell.parser;
  * All rights reserved.
 ©*/
 /* JJT: 0.2.2 */
+import org.vcell.expression.ExpressionBindingException;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.FunctionDomainException;
+import org.vcell.expression.NameScope;
+
+import cbit.util.xml.MathMLTags;
+
 import net.sourceforge.interval.ia_math.*;
 
 public class ASTFuncNode extends SimpleNode {
@@ -2228,7 +2235,7 @@ String getMathMLName() {
  * Creation date: (2/8/2002 4:01:47 PM)
  * @return java.lang.String
  */
-String getName() {
+public String getName() {
 	return functionNamesVCML[funcType];
 }
 

@@ -1,4 +1,5 @@
-package cbit.vcell.parser;
+package org.vcell.expression;
+
 
 import cbit.vcell.parser.*;
 /**
@@ -8,12 +9,12 @@ import cbit.vcell.parser.*;
  */
 public class LambdaFunction {
 	private java.lang.String functionName;
-	private cbit.vcell.parser.Expression functionExpression;
+	private IExpression functionExpression;
 	private java.lang.String[] functionArgs;
 /**
  * LambdaFunction constructor comment.
  */
-public LambdaFunction(String argName, Expression argExpression, String[] argFunctionArgs) {
+public LambdaFunction(String argName, IExpression argExpression, String[] argFunctionArgs) {
 	super();
 	functionName = argName;
 	functionExpression = argExpression;
@@ -24,7 +25,7 @@ public LambdaFunction(String argName, Expression argExpression, String[] argFunc
  * Creation date: (2/7/2005 4:26:25 PM)
  * @return cbit.vcell.parser.Expression
  */
-public cbit.vcell.parser.Expression getExpression() {
+public IExpression getExpression() {
 	return functionExpression;
 }
 /**
@@ -49,8 +50,8 @@ public java.lang.String getName() {
  * @param e1 cbit.vcell.parser.Expression
  * @param e2 cbit.vcell.parser.Expression
  */
-public Expression substitute(Expression[] argExps) {
-	Expression substitutedFnExpression = new Expression(functionExpression);
+public IExpression substitute(IExpression[] argExps) {
+	IExpression substitutedFnExpression = ExpressionFactory.createExpression(functionExpression);
 
 	if (functionArgs.length != argExps.length) {
 		throw new RuntimeException("# of arguments to the lambda function and their expressions are not equal!");
@@ -58,7 +59,7 @@ public Expression substitute(Expression[] argExps) {
 
 	try {
 		for (int i = 0; i < argExps.length; i++){
-			Expression fnArgExpr = new Expression(functionArgs[i]);
+			IExpression fnArgExpr = ExpressionFactory.createExpression(functionArgs[i]);
 			substitutedFnExpression.substituteInPlace(fnArgExpr, argExps[i]);
 		}
 	} catch (ExpressionException e) {

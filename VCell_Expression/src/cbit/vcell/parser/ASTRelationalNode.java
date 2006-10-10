@@ -5,6 +5,14 @@ package cbit.vcell.parser;
  * All rights reserved.
 ©*/
 /* JJT: 0.2.2 */
+import org.vcell.expression.ExpressionBindingException;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.FunctionDomainException;
+import org.vcell.expression.NameScope;
+import org.vcell.expression.SymbolTable;
+
+import cbit.util.xml.MathMLTags;
+
 import net.sourceforge.interval.ia_math.*;
 
 public class ASTRelationalNode extends SimpleNode {
@@ -462,5 +470,8 @@ public void setOperationFromToken(String op) {
 		throw new IllegalArgumentException("unknown relational operator token = '"+op+"'");
 	}
 	this.opString = op;
+}
+public String getOpString() {
+	return opString;
 }
 }

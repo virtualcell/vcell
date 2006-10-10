@@ -5,6 +5,9 @@ package cbit.vcell.parser;
  * All rights reserved.
 ©*/
 /* JJT: 0.2.2 */
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.NameScope;
+
 import net.sourceforge.interval.ia_math.*;
 
 public class ASTLaplacianNode extends SimpleNode {

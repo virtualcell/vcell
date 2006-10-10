@@ -4,6 +4,12 @@ package cbit.vcell.parser;
  * All rights reserved.
 ©*/
 /* JJT: 0.2.2 */
+import org.vcell.expression.ExpressionBindingException;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.NameScope;
+import org.vcell.expression.SymbolTable;
+import org.vcell.expression.SymbolTableEntry;
+
 import net.sourceforge.interval.ia_math.*;
 
 
@@ -20,7 +26,7 @@ public abstract class SimpleNode implements Node, java.io.Serializable {
   public final static int LANGUAGE_JSCL = 3;
   public final static int LANGUAGE_ECLiPSe = 4;
 
-  final static NameScope NAMESCOPE_DEFAULT = null;
+  public final static NameScope NAMESCOPE_DEFAULT = null;
 
   public SimpleNode(int i) {
     id = i;

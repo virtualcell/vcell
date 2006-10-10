@@ -5,6 +5,14 @@ package cbit.vcell.parser;
  * All rights reserved.
 ©*/
 /* JJT: 0.2.2 */
+import org.vcell.expression.ConstraintSymbolTableEntry;
+import org.vcell.expression.ExpressionBindingException;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.NameScope;
+import org.vcell.expression.SymbolTable;
+import org.vcell.expression.SymbolTableEntry;
+
 import net.sourceforge.interval.ia_math.*;
 
 public class ASTIdNode extends SimpleNode {
@@ -106,7 +114,7 @@ public Node differentiate(String variable) throws ExpressionException {
 	//
 	// i != j   and   terminal node  (null expression)
 	//
-	Expression exp = symbolTableEntry.getExpression();
+	Expression exp = (Expression)symbolTableEntry.getExpression();
 	if (exp==null){
 		return new ASTFloatNode(0.0);
 	}
@@ -179,7 +187,7 @@ public RealInterval evaluateInterval(RealInterval intervals[]) throws Expression
 		throw new ExpressionBindingException("referencing unbound identifier " + id);
 	}
 
-	Expression exp = symbolTableEntry.getExpression();
+	IExpression exp = symbolTableEntry.getExpression();
 	if (exp!=null){
 		setInterval(exp.evaluateInterval(intervals),intervals);
 		return getInterval(intervals);
@@ -198,7 +206,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		throw new ExpressionBindingException("referencing unbound identifier " + id);
 	}
 
-	Expression exp = symbolTableEntry.getExpression();
+	IExpression exp = symbolTableEntry.getExpression();
 	if (exp!=null){
 		return exp.evaluateVector(values);
 	}else{
@@ -325,5 +333,8 @@ public String toString() {
 }
 public String getName() {
 	return name;
+}
+public SymbolTableEntry getSymbolTableEntry() {
+	return symbolTableEntry;
 }
 }

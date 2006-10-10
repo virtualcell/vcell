@@ -1,4 +1,10 @@
-package cbit.vcell.parser;
+package cbit.vcell.parser.gui;
+
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.NameScope;
+
 
 /**
  * Insert the type's description here.
@@ -6,7 +12,7 @@ package cbit.vcell.parser;
  * @author: Jim Schaff
  */
 public class ScopedExpression {
-	private Expression fieldExpression = null;
+	private IExpression fieldExpression = null;
 	private NameScope fieldNameScope = null;
 	private boolean fieldIsUserEditable = true;
 	
@@ -16,13 +22,13 @@ public class ScopedExpression {
 /**
  * ContextualExpression constructor comment.
  */
-public ScopedExpression(Expression argExpression, NameScope argNameScope) {
+public ScopedExpression(IExpression argExpression, NameScope argNameScope) {
 	this(argExpression,argNameScope,true);
 }
 /**
  * ContextualExpression constructor comment.
  */
-public ScopedExpression(Expression argExpression, NameScope argNameScope, boolean argIsUserEditable) {
+public ScopedExpression(IExpression argExpression, NameScope argNameScope, boolean argIsUserEditable) {
 	super();
 	this.fieldExpression = argExpression;
 	this.fieldNameScope = argNameScope;
@@ -34,7 +40,7 @@ public ScopedExpression(Expression argExpression, NameScope argNameScope, boolea
  * @param expressionString java.lang.String
  */
 public ScopedExpression(String expressionString) throws ExpressionException {
-	this.fieldExpression = new Expression(expressionString);
+	this.fieldExpression = ExpressionFactory.createExpression(expressionString);
 	this.fieldIsUserEditable = true;
 	this.fieldNameScope = null;
 }
@@ -43,7 +49,7 @@ public ScopedExpression(String expressionString) throws ExpressionException {
  * Creation date: (9/2/2003 3:27:41 PM)
  * @return cbit.vcell.parser.Expression
  */
-public Expression getExpression() {
+public IExpression getExpression() {
 	return fieldExpression;
 }
 /**
