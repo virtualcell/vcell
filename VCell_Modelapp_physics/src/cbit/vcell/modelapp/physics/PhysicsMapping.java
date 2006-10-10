@@ -2,6 +2,9 @@ package cbit.vcell.modelapp.physics;
 
 import java.beans.PropertyVetoException;
 
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
 import org.vcell.physics.component.ModelComponent;
 import org.vcell.physics.component.OOModel;
 import org.vcell.physics.component.Reaction;
@@ -18,8 +21,6 @@ import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.modelapp.ReactionSpec;
 import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.modelapp.SpeciesContextSpec;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 
 public class PhysicsMapping {
 	/**
@@ -54,7 +55,7 @@ public class PhysicsMapping {
 	 * Creation date: (1/12/2004 1:35:34 AM)
 	 * @return ncbc_old.physics.component.PhysicalModel
 	 */
-	public static void addChemicalDevices(cbit.vcell.modelapp.SimulationContext simContext, org.vcell.physics.component.OOModel oOModel) throws cbit.vcell.parser.ExpressionException, java.beans.PropertyVetoException {
+	public static void addChemicalDevices(cbit.vcell.modelapp.SimulationContext simContext, org.vcell.physics.component.OOModel oOModel) throws org.vcell.expression.ExpressionException, java.beans.PropertyVetoException {
 	
 		cbit.vcell.model.Structure structures[] = simContext.getModel().getStructures();
 	
@@ -97,9 +98,9 @@ public class PhysicsMapping {
 					}
 				}
 				cbit.vcell.model.Kinetics.KineticsParameter[] parameters = reactionSpecs[i].getReactionStep().getKinetics().getKineticsParameters();
-				Expression[] equations = new Expression[parameters.length];
+				IExpression[] equations = new IExpression[parameters.length];
 				for (int p = 0; p < parameters.length; p++){
-					equations[p] = new Expression(parameters[p].getName()+" - ("+parameters[p].getExpression().infix()+")");
+					equations[p] = ExpressionFactory.createExpression(parameters[p].getName()+" - ("+parameters[p].getExpression().infix()+")");
 				}
 				org.vcell.physics.component.Reaction reaction = new org.vcell.physics.component.Reaction(
 						TokenMangler.fixTokenStrict(rs.getReactionStep().getName()),

@@ -2,8 +2,8 @@ package org.vcell.modelapp.physics;
 import java.beans.PropertyVetoException;
 
 import org.jdom.Element;
+import org.vcell.expression.ExpressionException;
 
-import cbit.vcell.parser.ExpressionException;
 /**
  * Insert the type's description here.
  * Creation date: (5/5/2006 9:00:56 AM)
