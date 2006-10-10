@@ -1,4 +1,6 @@
 package cbit.vcell.geometry.gui;
+import org.vcell.expression.IExpression;
+
 import cbit.render.SurfaceCanvas;
 import cbit.render.SurfaceViewerTool;
 import cbit.render.*;
@@ -1914,7 +1916,7 @@ public void pickByAnalytic() {
 
 		cbit.vcell.client.data.DataSelectRetrieve.DSRState dsrState = dsr.getDSRState();
 		boolean pickOP = (dsrState.selectionType == cbit.vcell.client.data.DataSelectRetrieve.SELECT_TYPE_ADD?true:false);
-		cbit.vcell.parser.Expression xyzExp = dsrState.selectAreaAnalytic;
+		IExpression xyzExp = dsrState.selectAreaAnalytic;
 		
 		if(xyzExp != null){
 			for(int surf=0;surf <surfNames.length;surf+= 1){

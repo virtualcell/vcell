@@ -1,13 +1,9 @@
 package cbit.vcell.client;
-import cbit.vcell.geometry.surface.*;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.simulation.VCSimulationIdentifier;
 import cbit.gui.JInternalFrameEnhanced;
 import java.awt.*;
 import javax.swing.*;
 import cbit.vcell.geometry.Geometry;
-import java.util.Hashtable;
 import cbit.vcell.client.desktop.geometry.*;
 import cbit.vcell.client.server.SimStatusEvent;
 

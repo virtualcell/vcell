@@ -22,7 +22,7 @@ public class ExportToXML extends AsynchClientTask {
  * Insert the method's description here.
  * Creation date: (7/26/2004 12:29:53 PM)
  */
-private String exportMatlab(File exportFile, javax.swing.filechooser.FileFilter fileFilter, MathDescription mathDesc) throws cbit.vcell.parser.ExpressionException, MathException {
+private String exportMatlab(File exportFile, javax.swing.filechooser.FileFilter fileFilter, MathDescription mathDesc) throws org.vcell.expression.ExpressionException, MathException {
 	cbit.vcell.simulation.Simulation sim = new cbit.vcell.simulation.Simulation(mathDesc);
 	cbit.vcell.matlab.MatlabOdeFileCoder coder = new cbit.vcell.matlab.MatlabOdeFileCoder(sim);
 	java.io.StringWriter sw = new java.io.StringWriter();

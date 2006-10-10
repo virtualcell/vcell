@@ -1,5 +1,7 @@
 package cbit.vcell.model.gui;
 
+import org.vcell.expression.ExpressionFactory;
+
 import cbit.vcell.model.*;
 /**
  * Insert the type's description here.
@@ -33,7 +35,7 @@ public static void main(java.lang.String[] args) {
 		model.addSpeciesContext(calcium,pm.getInsideFeature());
 		model.addSpeciesContext(calcium,pm.getOutsideFeature());
 		FluxReaction fr = new FluxReaction(pm,calcium,model,"L-Type calcium channel");
-		fr.getChargeCarrierValence().setExpression(new cbit.vcell.parser.Expression(2));
+		fr.getChargeCarrierValence().setExpression(ExpressionFactory.createExpression(2));
 		GHKKinetics ghk = new GHKKinetics(fr);
 		//ghk.setPermeability(new Expression("hello*goodbye"));
 		//ghk.setPermeability(new Expression(10.0));

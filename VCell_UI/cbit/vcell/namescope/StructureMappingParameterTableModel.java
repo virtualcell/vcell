@@ -1,20 +1,15 @@
 package cbit.vcell.namescope;
 
 
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import cbit.vcell.model.Parameter;
-import cbit.vcell.units.VCUnitException;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.parser.Expression;
-import cbit.vcell.geometry.*;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.FluxReaction;
-import cbit.vcell.parser.ExpressionException;
-import cbit.util.BeanUtils;
-import cbit.vcell.model.Kinetics;
-import cbit.vcell.modelapp.ReactionSpec;
 import cbit.vcell.modelapp.StructureMapping;
 /**
  * Insert the type's description here.
@@ -97,7 +92,7 @@ public Class getColumnClass(int column) {
 			return String.class;
 		}
 		case COLUMN_VALUE:{
-			return cbit.vcell.parser.ScopedExpression.class;
+			return cbit.vcell.parser.gui.ScopedExpression.class;
 		}
 		case COLUMN_DESCRIPTION:{
 			return String.class;
@@ -192,7 +187,7 @@ public Object getValueAt(int row, int col) {
 			}
 		}
 		case COLUMN_VALUE:{
-			return new cbit.vcell.parser.ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
+			return new cbit.vcell.parser.gui.ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
 		}
 		case COLUMN_DESCRIPTION:{
 			return parameter.getDescription();
@@ -302,8 +297,8 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 			}
 			case COLUMN_VALUE:{
 				try {
-					if (aValue instanceof cbit.vcell.parser.ScopedExpression){
-						Expression exp = ((cbit.vcell.parser.ScopedExpression)aValue).getExpression();
+					if (aValue instanceof cbit.vcell.parser.gui.ScopedExpression){
+						IExpression exp = ((cbit.vcell.parser.gui.ScopedExpression)aValue).getExpression();
 						if (parameter instanceof StructureMapping.StructureMappingParameter){
 							StructureMapping.StructureMappingParameter smParm = (StructureMapping.StructureMappingParameter)parameter;
 							smParm.setExpression(exp);
@@ -312,7 +307,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 						String newExpressionString = (String)aValue;
 						if (parameter instanceof StructureMapping.StructureMappingParameter){
 							StructureMapping.StructureMappingParameter smParm = (StructureMapping.StructureMappingParameter)parameter;
-							smParm.setExpression(new Expression(newExpressionString));
+							smParm.setExpression(ExpressionFactory.createExpression(newExpressionString));
 						}
 					}
 					fireTableRowsUpdated(rowIndex,rowIndex);

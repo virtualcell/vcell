@@ -89,7 +89,7 @@ public Class getColumnClass(int columnIndex) {
 		 	// break;
 		 }
 		 case COLUMN_EXPRESSION : {
-			 return cbit.vcell.parser.ScopedExpression.class;
+			 return cbit.vcell.parser.gui.ScopedExpression.class;
 			 // break;
 		 }
 		 case COLUMN_UNITS : {

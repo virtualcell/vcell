@@ -9,6 +9,8 @@ import java.awt.*;
 import java.util.*;
 import java.beans.*;
 
+import org.vcell.expression.ExpressionFactory;
+
 import cbit.vcell.geometry.*;
 import cbit.vcell.parser.gui.ScopedExpressionTableCellRenderer;
 /**
@@ -380,7 +382,7 @@ private void connEtoM5(java.awt.event.ActionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		getGeometrySpec().addSubVolume(localArg1 = new cbit.vcell.geometry.AnalyticSubVolume(null, getGeometrySpec().getFreeSubVolumeName(), new cbit.vcell.parser.Expression(1.0), -1));
+		getGeometrySpec().addSubVolume(localArg1 = new cbit.vcell.geometry.AnalyticSubVolume(null, getGeometrySpec().getFreeSubVolumeName(), ExpressionFactory.createExpression(1.0), -1));
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -556,8 +558,8 @@ private void geometrySubVolumePanel_Initialize() {
 				public Object getEditorValue(Object obj){
 					if(obj instanceof SubVolume){
 						return ((SubVolume)obj).getName();
-					}else if(obj instanceof cbit.vcell.parser.ScopedExpression){
-						return ((cbit.vcell.parser.ScopedExpression)obj).getExpression().infix();
+					}else if(obj instanceof cbit.vcell.parser.gui.ScopedExpression){
+						return ((cbit.vcell.parser.gui.ScopedExpression)obj).getExpression().infix();
 					}else{
 						return obj;
 					}
@@ -1116,8 +1118,8 @@ private void setGeometrySpec(cbit.vcell.geometry.GeometrySpec newValue) {
  * Comment
  */
 public void setGeometrySubVolumeTableCellRenderer() {
-	getScrollPaneTable().setDefaultRenderer(cbit.vcell.parser.Expression.class,new ScopedExpressionTableCellRenderer());
-	getScrollPaneTable().setDefaultRenderer(cbit.vcell.parser.ScopedExpression.class,new ScopedExpressionTableCellRenderer());
+	getScrollPaneTable().setDefaultRenderer(org.vcell.expression.IExpression.class,new ScopedExpressionTableCellRenderer());
+	getScrollPaneTable().setDefaultRenderer(cbit.vcell.parser.gui.ScopedExpression.class,new ScopedExpressionTableCellRenderer());
 	getScrollPaneTable().setDefaultRenderer(java.awt.Color.class,new GeometrySubVolumeTableCellRenderer());
 }
 /**

@@ -20,7 +20,7 @@ import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.modelapp.SpeciesContextSpec;
 import cbit.vcell.modelapp.StructureMapping;
 import cbit.vcell.model.Model;
-import cbit.vcell.parser.ScopedExpression;
+import cbit.vcell.parser.gui.ScopedExpression;
 import cbit.vcell.parser.gui.ScopedExpressionTableCellRenderer;
 import cbit.gui.JTableFixed;
 import cbit.vcell.model.Parameter;

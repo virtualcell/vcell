@@ -4,6 +4,8 @@ package cbit.vcell.model.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.expression.ExpressionFactory;
+
 import cbit.vcell.model.*;
 /**
  * This type was created in VisualAge.
@@ -33,7 +35,7 @@ public static void main(java.lang.String[] args) {
 		newReaction.setKinetics(massAct);
 		
 		if (newReaction.getStructure() instanceof Membrane){
-			newReaction.getChargeCarrierValence().setExpression(new cbit.vcell.parser.Expression(4));
+			newReaction.getChargeCarrierValence().setExpression(ExpressionFactory.createExpression(4));
 		}
 
 		javax.swing.JFrame frame = new javax.swing.JFrame();

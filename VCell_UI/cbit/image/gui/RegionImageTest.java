@@ -169,7 +169,7 @@ public static cbit.image.VCImage getExample1() throws ImageException {
  * Creation date: (5/21/2002 1:21:44 PM)
  * @return cbit.image.VCImage
  */
-public static cbit.image.VCImage getGeometryExample1(ISize sampleSize) throws cbit.vcell.parser.ExpressionException, ImageException, GeometryException {
+public static cbit.image.VCImage getGeometryExample1(ISize sampleSize) throws org.vcell.expression.ExpressionException, ImageException, GeometryException {
 	Geometry geometry = GeometryTest.getImageExample2D();
 	return geometry.getGeometrySpec().createSampledImage(sampleSize);
 }

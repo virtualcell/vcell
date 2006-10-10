@@ -5,7 +5,12 @@ package cbit.vcell.matlab;
  * All rights reserved.
 ©*/
 import cbit.vcell.parser.*;
+
 import java.util.*;
+
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.IExpression;
+
 import cbit.vcell.math.*;
 import cbit.vcell.simulation.Simulation;
 /**
@@ -79,7 +84,7 @@ public void write_V5_OdeFile(java.io.PrintWriter pw,String odeFileName) throws M
 	pw.println("% Variables");
 	pw.println("% need this for time=0 (initial conditions) when y is empty");
 	for (int i = 0; i < volVars.length; i++){
-		Expression initialExp = subDomain.getEquation(volVars[i]).getInitialExpression();
+		IExpression initialExp = subDomain.getEquation(volVars[i]).getInitialExpression();
 		pw.println(cbit.util.TokenMangler.getEscapedTokenMatlab(volVars[i].getName())+" = "+initialExp.infix_Matlab()+";\t\t% initial condition for '"+volVars[i].getName()+"'");
 	}
 	pw.println("SIZEY = size(y);");
@@ -142,10 +147,10 @@ public void write_V5_OdeFile(java.io.PrintWriter pw,String odeFileName) throws M
 	pw.println("\t\tdfdy = [");
 	for (int i=0;i<volVars.length;i++){
 		for (int j=0;j<volVars.length;j++){
-			Expression rate = subDomain.getEquation(volVars[i]).getRateExpression();
+			IExpression rate = subDomain.getEquation(volVars[i]).getRateExpression();
 			rate.bindExpression(simulation);
 			rate = simulation.substituteFunctions(rate);
-			Expression differential = rate.differentiate(volVars[j].getName());
+			IExpression differential = rate.differentiate(volVars[j].getName());
 			differential.bindExpression(simulation);
 			differential = differential.flatten();
 			pw.println("\t\t\t"+differential.infix_Matlab()+","); //    % d "+volVars[i].getName())+"' / d "+volVars[j].getName()));
@@ -285,7 +290,7 @@ public void write_V6_MFile(java.io.PrintWriter pw, String functionName) throws M
 	pw.println("%");
 	pw.println("yinit = [");
 	for (int j=0;j<volVars.length;j++){
-		Expression initial = subDomain.getEquation(volVars[j]).getInitialExpression();
+		IExpression initial = subDomain.getEquation(volVars[j]).getInitialExpression();
 		double defaultInitialCondition = 0;
 		try {
 			initial.bindExpression(mathDesc);

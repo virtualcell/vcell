@@ -39,7 +39,7 @@ public ParameterScanPanel() {
  * Insert the method's description here.
  * Creation date: (9/23/2005 2:25:09 PM)
  */
-public void applyValues() throws cbit.vcell.parser.ExpressionException{
+public void applyValues() throws org.vcell.expression.ExpressionException{
 	if (getJRadioButtonList().isSelected()) {
 		java.util.StringTokenizer tokens = new java.util.StringTokenizer(getJTextFieldValues().getText(), ", ");
 		String[] values = new String[tokens.countTokens()];

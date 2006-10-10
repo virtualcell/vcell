@@ -9,6 +9,9 @@ import cbit.image.*;
 ©*/
 import java.awt.event.*;
 import java.awt.*;
+
+import org.vcell.expression.ExpressionException;
+
 import cbit.vcell.geometry.*;
 import cbit.image.gui.ImagePaneModel;
 import cbit.image.gui.ImagePlaneManagerPanel;

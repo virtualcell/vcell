@@ -5,7 +5,12 @@ package cbit.vcell.mapping.gui;
  * All rights reserved.
 ©*/
 
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import cbit.vcell.parser.*;
+import cbit.vcell.parser.gui.ScopedExpression;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.modelapp.GeometryContext;
 import cbit.vcell.modelapp.MembraneMapping;
@@ -309,11 +314,11 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 			break;
 		}
 		case COLUMN_INITIAL_POTENTIAL:{
-			Expression newExpression = null;
+			IExpression newExpression = null;
 			try {
 				if (aValue instanceof String){
 					String newExpressionString = (String)aValue;
-					newExpression = new Expression(newExpressionString);
+					newExpression = ExpressionFactory.createExpression(newExpressionString);
 				}else if (aValue instanceof ScopedExpression){
 					newExpression = ((ScopedExpression)aValue).getExpression();
 				}
@@ -329,11 +334,11 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 			break;
 		}
 		case COLUMN_SPECIFIC_CAPACITANCE:{
-			Expression newExpression = null;
+			IExpression newExpression = null;
 			try {
 				if (aValue instanceof String){
 					String newExpressionString = (String)aValue;
-					newExpression = new Expression(newExpressionString);
+					newExpression = ExpressionFactory.createExpression(newExpressionString);
 				}else if (aValue instanceof ScopedExpression){
 					newExpression = ((ScopedExpression)aValue).getExpression();
 				}

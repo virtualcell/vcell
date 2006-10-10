@@ -1,8 +1,6 @@
 package cbit.vcell.model.gui;
 
-import cbit.vcell.parser.Expression;
 import javax.swing.DefaultComboBoxModel;
-import java.util.*;
 import cbit.vcell.model.*;
 /**
  * Insert the type's description here.

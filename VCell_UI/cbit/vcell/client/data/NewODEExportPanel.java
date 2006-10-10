@@ -1320,7 +1320,7 @@ private synchronized void updateChoices(ODESolverResultSet odeSolverResultSet) {
 	// get and store times
 	try {
 		setTimes(odeSolverResultSet.extractColumn(odeSolverResultSet.findColumn(ODESolverResultSet.TIME_COLUMN)));
-	}catch (cbit.vcell.parser.ExpressionException e){
+	}catch (org.vcell.expression.ExpressionException e){
 		e.printStackTrace(System.out);
 	}
 

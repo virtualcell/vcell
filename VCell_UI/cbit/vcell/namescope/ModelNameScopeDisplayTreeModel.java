@@ -10,12 +10,8 @@
  *******************************************************************************/
 package cbit.vcell.namescope;
 
-import cbit.util.DataAccessException;
 import cbit.vcell.model.gui.ModelParameterTableModel;
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.parser.ScopedExpression;
-import cbit.vcell.parser.NameScope;
-import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.gui.ScopedExpression;
 import cbit.vcell.parser.gui.ScopedExpressionTableCellRenderer;
 import cbit.gui.JTableFixed;
 import cbit.vcell.model.ReactionStep;
@@ -23,7 +19,6 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Kinetics;
-import java.beans.PropertyChangeListener;
 /**
  * Insert the type's description here.
  * Creation date: (4/12/2004 2:55:19 PM)

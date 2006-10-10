@@ -1,12 +1,10 @@
 package cbit.vcell.model.gui;
-import cbit.vcell.parser.Expression;
 import javax.swing.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
 import cbit.vcell.model.*;
-import java.util.*;
 /**
  * Insert the type's description here.
  * Creation date: (7/20/00 5:01:27 PM)

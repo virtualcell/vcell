@@ -3,19 +3,15 @@ package cbit.vcell.mapping.gui;
 import cbit.vcell.model.*;
 import java.util.*;
 
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
 
-import cbit.vcell.model.Model;
 import cbit.vcell.modelapp.ElectricalStimulus;
-import cbit.vcell.modelapp.SpeciesContextSpec;
-import cbit.vcell.modelapp.ElectricalStimulus.ElectricalStimulusParameter;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.parser.Expression;
-import cbit.vcell.geometry.*;
-import cbit.vcell.parser.ExpressionException;
-import cbit.util.BeanUtils;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)
@@ -158,7 +154,7 @@ public Class getColumnClass(int column) {
 			return String.class;
 		}
 		case COLUMN_VALUE:{
-			return cbit.vcell.parser.ScopedExpression.class;
+			return cbit.vcell.parser.gui.ScopedExpression.class;
 		}
 		default:{
 			return Object.class;
@@ -286,7 +282,7 @@ public Object getValueAt(int row, int col) {
 				if (parameter.getExpression()==null){
 					return new String("");
 				}else{
-					return new cbit.vcell.parser.ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
+					return new cbit.vcell.parser.gui.ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
 				}
 			}
 		}
@@ -402,8 +398,8 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 		switch (columnIndex){
 			case COLUMN_VALUE:{
 				try {
-					if (aValue instanceof cbit.vcell.parser.ScopedExpression){
-						Expression exp = ((cbit.vcell.parser.ScopedExpression)aValue).getExpression();
+					if (aValue instanceof cbit.vcell.parser.gui.ScopedExpression){
+						IExpression exp = ((cbit.vcell.parser.gui.ScopedExpression)aValue).getExpression();
 						if (parameter instanceof ElectricalStimulus.ElectricalStimulusParameter){
 							ElectricalStimulus.ElectricalStimulusParameter scsParm = (ElectricalStimulus.ElectricalStimulusParameter)parameter;
 							getElectricalStimulus().setParameterValue(scsParm,exp);
@@ -413,7 +409,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 						String newExpressionString = (String)aValue;
 						if (parameter instanceof ElectricalStimulus.ElectricalStimulusParameter){
 							ElectricalStimulus.ElectricalStimulusParameter scsParm = (ElectricalStimulus.ElectricalStimulusParameter)parameter;
-							getElectricalStimulus().setParameterValue(scsParm,new Expression(newExpressionString));
+							getElectricalStimulus().setParameterValue(scsParm,ExpressionFactory.createExpression(newExpressionString));
 							//fireTableRowsUpdated(rowIndex,rowIndex);
 						}
 					}

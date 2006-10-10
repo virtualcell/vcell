@@ -4,8 +4,9 @@ package cbit.vcell.model.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.expression.ExpressionFactory;
+
 import cbit.vcell.model.*;
-import cbit.vcell.parser.Expression;
 /**
  * This type was created in VisualAge.
  */
@@ -48,7 +49,7 @@ public static void main(java.lang.String[] args) {
 		sr.addProduct(model.getSpeciesContext("ca2_cyt"),1);
 	
 		FluxReaction fr = new FluxReaction(pm,calcium,model,"L-Type calcium channel");
-		fr.getChargeCarrierValence().setExpression(new Expression(2));
+		fr.getChargeCarrierValence().setExpression(ExpressionFactory.createExpression(2));
 
 		//sr.setKinetics(new MassActionKinetics(sr));
 		//MassActionKinetics massAct = (MassActionKinetics)sr.getKinetics();

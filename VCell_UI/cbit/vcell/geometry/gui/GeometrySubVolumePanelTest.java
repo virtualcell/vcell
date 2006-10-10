@@ -1,5 +1,7 @@
 package cbit.vcell.geometry.gui;
 
+import org.vcell.expression.ExpressionFactory;
+
 import cbit.vcell.parser.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -29,7 +31,7 @@ public static void main(java.lang.String[] args) {
 		});
 		
 		Geometry geom = new Geometry("analytic1",2);// GeometryTest.getImageExample2D();
-		geom.getGeometrySpec().addSubVolume(new AnalyticSubVolume("sub1",new Expression(1.0)));
+		geom.getGeometrySpec().addSubVolume(new AnalyticSubVolume("sub1",ExpressionFactory.createExpression(1.0)));
 		aGeometrySubVolumePanel.setGeometry(geom);
 		
 		frame.setVisible(true);

@@ -1,8 +1,8 @@
 package cbit.vcell.mapping.gui;
 
+import org.vcell.expression.ExpressionFactory;
+
 import cbit.util.Coordinate;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.mapping.*;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Feature;
 import cbit.vcell.modelapp.CurrentClampStimulus;
@@ -1418,7 +1418,7 @@ private void newStimulus(java.awt.event.ItemEvent itemEvent) {
 		if (itemEvent.getSource()==getCurrentClampRadioButton()){
 			if (simContext.getElectricalStimuli().length==0 || !(simContext.getElectricalStimuli()[0] instanceof CurrentClampStimulus)){
 				Electrode probeElectrode = new Electrode(innerFeature,new Coordinate(0,0,0));
-				CurrentClampStimulus ccStimulus = new CurrentClampStimulus(probeElectrode,"ccElectrode",new Expression(0.0),simContext);
+				CurrentClampStimulus ccStimulus = new CurrentClampStimulus(probeElectrode,"ccElectrode",ExpressionFactory.createExpression(0.0),simContext);
 		System.out.println(" Geo's dim = "+simContext.getGeometry().getDimension());
 				simContext.setElectricalStimuli(new ElectricalStimulus[] { ccStimulus });
 				simContext.setGroundElectrode(new cbit.vcell.modelapp.Electrode(topFeature,new Coordinate(0,0,0)));
@@ -1438,7 +1438,7 @@ private void newStimulus(java.awt.event.ItemEvent itemEvent) {
 		if (itemEvent.getSource()==getVoltageClampRadioButton()){
 			if (simContext.getElectricalStimuli().length==0 || !(simContext.getElectricalStimuli()[0] instanceof VoltageClampStimulus)){
 				Electrode probeElectrode = new Electrode(innerFeature,new Coordinate(0,0,0));
-				VoltageClampStimulus vcStimulus = new VoltageClampStimulus(probeElectrode,"vcElectrode",new Expression(0.0), simContext);
+				VoltageClampStimulus vcStimulus = new VoltageClampStimulus(probeElectrode,"vcElectrode",ExpressionFactory.createExpression(0.0), simContext);
 		System.out.println(" Geo's dim = "+simContext.getGeometry().getDimension());
 				simContext.setElectricalStimuli(new ElectricalStimulus[] { vcStimulus });
 				simContext.setGroundElectrode(new cbit.vcell.modelapp.Electrode(topFeature,new Coordinate(0,0,0)));

@@ -11,15 +11,17 @@
 package cbit.vcell.namescope;
 
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.parser.ScopedExpression;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.NameScope;
+import cbit.vcell.parser.gui.ScopedExpression;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Model;
 import cbit.vcell.desktop.BioModelNode;
 import javax.swing.JTree;
+
+import org.vcell.expression.IExpression;
+import org.vcell.expression.NameScope;
+
 import cbit.gui.JTableFixed;
 /**
  * Insert the type's description here.
@@ -40,10 +42,10 @@ public ModelNameScopeDisplayCellRenderer() {
  * Creation date: (4/14/2004 4:07:12 PM)
  * @return javax.swing.JPanel
  */
-private String getExpressionString(Expression expression, NameScope nameScope) {
+private String getExpressionString(IExpression expression, NameScope nameScope) {
 	String str = null;
 	try {
-		ScopedExpression scopedExp = new cbit.vcell.parser.ScopedExpression(expression, nameScope);
+		ScopedExpression scopedExp = new cbit.vcell.parser.gui.ScopedExpression(expression, nameScope);
 		str = scopedExp.toString();
 	} catch (Exception e) {
 		e.printStackTrace(System.out);

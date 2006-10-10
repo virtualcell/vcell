@@ -4,6 +4,8 @@ package cbit.vcell.mapping.gui;
  * All rights reserved.
 ©*/
 
+import org.vcell.expression.IExpression;
+
 import cbit.vcell.model.*;
 import cbit.vcell.modelapp.GeometryContext;
 import cbit.vcell.modelapp.SimulationContext;
@@ -301,7 +303,7 @@ public void focusLost(java.awt.event.FocusEvent e) {
  */
 private java.lang.String getBoundaryXmString() {
 	Parameter parm = getSpeciesContextSpec().getParameterFromRole(SpeciesContextSpec.ROLE_BoundaryValueXm);
-	cbit.vcell.parser.Expression exp = getSpeciesContextSpec().getBoundaryXmParameter().getExpression();
+	IExpression exp = getSpeciesContextSpec().getBoundaryXmParameter().getExpression();
 	if (exp != null){
 		return exp.infix(getSpeciesContextSpec().getSpeciesContext().getNameScope());
 	}else{
@@ -314,7 +316,7 @@ private java.lang.String getBoundaryXmString() {
  * Comment
  */
 private java.lang.String getBoundaryXpString() {
-	cbit.vcell.parser.Expression exp = getSpeciesContextSpec().getBoundaryXpParameter().getExpression();
+	IExpression exp = getSpeciesContextSpec().getBoundaryXpParameter().getExpression();
 	if (exp != null){
 		return exp.infix(getSpeciesContextSpec().getSpeciesContext().getNameScope());
 	}else{
@@ -327,7 +329,7 @@ private java.lang.String getBoundaryXpString() {
  * Comment
  */
 private java.lang.String getBoundaryYmString() {
-	cbit.vcell.parser.Expression exp = getSpeciesContextSpec().getBoundaryYmParameter().getExpression();
+	IExpression exp = getSpeciesContextSpec().getBoundaryYmParameter().getExpression();
 	if (exp != null){
 		return exp.infix(getSpeciesContextSpec().getSpeciesContext().getNameScope());
 	}else{
@@ -340,7 +342,7 @@ private java.lang.String getBoundaryYmString() {
  * Comment
  */
 private java.lang.String getBoundaryYpString() {
-	cbit.vcell.parser.Expression exp = getSpeciesContextSpec().getBoundaryYpParameter().getExpression();
+	IExpression exp = getSpeciesContextSpec().getBoundaryYpParameter().getExpression();
 	if (exp != null){
 		return exp.infix(getSpeciesContextSpec().getSpeciesContext().getNameScope());
 	}else{
@@ -353,7 +355,7 @@ private java.lang.String getBoundaryYpString() {
  * Comment
  */
 private java.lang.String getBoundaryZmString() {
-	cbit.vcell.parser.Expression exp = getSpeciesContextSpec().getBoundaryZmParameter().getExpression();
+	IExpression exp = getSpeciesContextSpec().getBoundaryZmParameter().getExpression();
 	if (exp != null){
 		return exp.infix(getSpeciesContextSpec().getSpeciesContext().getNameScope());
 	}else{
@@ -366,7 +368,7 @@ private java.lang.String getBoundaryZmString() {
  * Comment
  */
 private java.lang.String getBoundaryZpString() {
-	cbit.vcell.parser.Expression exp = getSpeciesContextSpec().getBoundaryZpParameter().getExpression();
+	IExpression exp = getSpeciesContextSpec().getBoundaryZpParameter().getExpression();
 	if (exp != null){
 		return exp.infix(getSpeciesContextSpec().getSpeciesContext().getNameScope());
 	}else{
@@ -563,7 +565,7 @@ private SpeciesContextSpecParameterTableModel getSpeciesContextSpecParameterTabl
 private void handleException(Throwable exception) {
 
 	/* Uncomment the following lines to print uncaught exceptions to stdout */
-	if (exception instanceof cbit.vcell.parser.ExpressionException){
+	if (exception instanceof org.vcell.expression.ExpressionException){
 		javax.swing.JOptionPane.showMessageDialog(this, exception.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
 	}
 	System.out.println("--------- UNCAUGHT EXCEPTION --------- in SpeciesContextSpecPanel");

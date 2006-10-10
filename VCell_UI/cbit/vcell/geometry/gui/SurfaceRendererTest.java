@@ -1,4 +1,6 @@
 package cbit.vcell.geometry.gui;
+import org.vcell.expression.ExpressionFactory;
+
 import cbit.render.*;
 import cbit.render.objects.SurfaceCollection;
 /**
@@ -14,8 +16,8 @@ public class SurfaceRendererTest {
 public static void main(java.lang.String[] args) {
 	try {
 		cbit.vcell.geometry.Geometry geo = new cbit.vcell.geometry.Geometry("geo1",3);
-		geo.getGeometrySpec().addSubVolume(new cbit.vcell.geometry.AnalyticSubVolume("sv1",new cbit.vcell.parser.Expression("x<z")));
-		geo.getGeometrySpec().addSubVolume(new cbit.vcell.geometry.AnalyticSubVolume("sv2",new cbit.vcell.parser.Expression("1.0")));
+		geo.getGeometrySpec().addSubVolume(new cbit.vcell.geometry.AnalyticSubVolume("sv1",ExpressionFactory.createExpression("x<z")));
+		geo.getGeometrySpec().addSubVolume(new cbit.vcell.geometry.AnalyticSubVolume("sv2",ExpressionFactory.createExpression("1.0")));
 		geo.getGeometrySpec().setExtent(new cbit.util.Extent(10.0,10.0,10.0));
 		geo.getGeometrySpec().setOrigin(new cbit.util.Origin(0.0,0.0,0.0));
 		cbit.util.Origin origin = geo.getOrigin();

@@ -241,7 +241,7 @@ private void handleException(Throwable exception) {
 	/* Uncomment the following lines to print uncaught exceptions to stdout */
 	System.out.println("--------- UNCAUGHT EXCEPTION --------- in ParameterPanel ");
 	exception.printStackTrace(System.out);
-	if (exception instanceof cbit.vcell.parser.ExpressionBindingException){
+	if (exception instanceof org.vcell.expression.ExpressionBindingException){
 		javax.swing.JOptionPane.showMessageDialog(this, exception.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
 	}
 }
@@ -320,7 +320,7 @@ public static void main(java.lang.String[] args) {
  */
 public void parameterPanel_Initialize() {
 	getScrollPaneTable().setDefaultRenderer(String.class,new ScopedExpressionTableCellRenderer());
-	getScrollPaneTable().setDefaultRenderer(cbit.vcell.parser.ScopedExpression.class,new ScopedExpressionTableCellRenderer());
+	getScrollPaneTable().setDefaultRenderer(cbit.vcell.parser.gui.ScopedExpression.class,new ScopedExpressionTableCellRenderer());
 }
 
 

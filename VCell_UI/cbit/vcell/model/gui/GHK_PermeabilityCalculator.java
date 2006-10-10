@@ -261,7 +261,7 @@ private void updatePermeability() {
 			setPermeability(R*T/(z*z*F*F) * g * ((Co-Ci)/(Co*Ci*Math.log(Co/Ci))));
 		}
 		
-	}catch (cbit.vcell.parser.ExpressionException e){
+	}catch (org.vcell.expression.ExpressionException e){
 		e.printStackTrace(System.out);
 	}
 }

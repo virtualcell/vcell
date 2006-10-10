@@ -7,10 +7,13 @@ import cbit.vcell.math.VariableType;
  * All rights reserved.
 ©*/
 import javax.swing.*;
+
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import java.awt.*;
 import cbit.util.*;
 import cbit.vcell.math.Function;
-import cbit.vcell.parser.Expression;
 import cbit.vcell.simdata.FunctionFileGenerator;
 
 import java.util.Vector;
@@ -179,10 +182,10 @@ private void addFunction() {
 	int ok = JOptionPane.showOptionDialog(this, FnPanel, "Add Function" , 0, JOptionPane.PLAIN_MESSAGE, null, new String[] {"OK", "Cancel"}, null);
 	if (ok == javax.swing.JOptionPane.OK_OPTION) {
 		String funcName = getFunctionNameTextField().getText();
-		cbit.vcell.parser.Expression funcExp = null;
+		IExpression funcExp = null;
 		try {
-			funcExp = new Expression(getFunctionExpressionTextField().getText());
-		} catch (cbit.vcell.parser.ExpressionException e) {
+			funcExp = ExpressionFactory.createExpression(getFunctionExpressionTextField().getText());
+		} catch (org.vcell.expression.ExpressionException e) {
 			e.printStackTrace(System.out);
 		}
 

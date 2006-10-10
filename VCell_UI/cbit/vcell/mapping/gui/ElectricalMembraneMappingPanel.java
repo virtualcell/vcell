@@ -86,7 +86,7 @@ private void connEtoM10() {
 	try {
 		// user code begin {1}
 		// user code end
-		getScrollPaneTable1().setDefaultRenderer(cbit.vcell.parser.Expression.class, new ScopedExpressionTableCellRenderer());
+		getScrollPaneTable1().setDefaultRenderer(org.vcell.expression.IExpression.class, new ScopedExpressionTableCellRenderer());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {

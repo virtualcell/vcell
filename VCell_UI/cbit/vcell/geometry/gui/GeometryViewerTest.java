@@ -4,10 +4,9 @@ package cbit.vcell.geometry.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.parser.Expression;
-import cbit.util.*;
+import org.vcell.expression.ExpressionFactory;
+
 import cbit.vcell.geometry.*;
-import cbit.vcell.server.*;
 /**
  * This type was created in VisualAge.
  */
@@ -45,8 +44,8 @@ public static void main(java.lang.String[] args) {
 
 		boolean b3D = args[0].equalsIgnoreCase("true");
 		Geometry newGeometry = new Geometry("aaa", (b3D?3:2));
-		newGeometry.getGeometrySpec().addSubVolume(new AnalyticSubVolume("subVolume2",new Expression("pow(x,2)+pow(y,2)"+(b3D?"+pow(z,2)":"")+"<1")));			
-		newGeometry.getGeometrySpec().addSubVolume(new AnalyticSubVolume("subVolume1",new Expression(1.0)));
+		newGeometry.getGeometrySpec().addSubVolume(new AnalyticSubVolume("subVolume2",ExpressionFactory.createExpression("pow(x,2)+pow(y,2)"+(b3D?"+pow(z,2)":"")+"<1")));			
+		newGeometry.getGeometrySpec().addSubVolume(new AnalyticSubVolume("subVolume1",ExpressionFactory.createExpression(1.0)));
 		
 		aGeometryViewer.setGeometry(newGeometry);
 		

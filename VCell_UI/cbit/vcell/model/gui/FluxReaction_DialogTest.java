@@ -1,13 +1,12 @@
 package cbit.vcell.model.gui;
 
-import cbit.vcell.parser.Expression;
-import javax.swing.SwingUtilities;
+
+import org.vcell.expression.ExpressionFactory;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
 import cbit.vcell.model.*;
-import java.util.*;
 /**
  * This type was created in VisualAge.
  */
@@ -30,7 +29,7 @@ public static void main(java.lang.String[] args) {
 
 		//System.out.println("Flux carrier : "+fluxReaction.getFluxCarrier().toString());
 
-		fluxReaction.getChargeCarrierValence().setExpression(new Expression(1));
+		fluxReaction.getChargeCarrierValence().setExpression(ExpressionFactory.createExpression(1));
 		fluxReaction.setKinetics(new GHKKinetics(fluxReaction));
 		GHKKinetics ghk = (GHKKinetics)fluxReaction.getKinetics();
 		fluxReaction.setKinetics(ghk);

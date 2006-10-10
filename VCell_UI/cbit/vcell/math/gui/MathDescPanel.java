@@ -5,7 +5,10 @@ package cbit.vcell.math.gui;
 ©*/
 import cbit.vcell.desktop.*;
 import javax.swing.tree.*;
-import cbit.vcell.parser.Expression;
+
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import cbit.vcell.parser.gui.ExpressionCanvas;
 
 import java.util.*;
@@ -685,40 +688,40 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 /**
  * This method was created by a SmartGuide.
  */
-private void refreshEquations() throws cbit.vcell.parser.ExpressionException {
+private void refreshEquations() throws org.vcell.expression.ExpressionException {
 
 	TreePath selectionPath = getselectionModel1().getSelectionPath();
 	if (selectionPath!=null){
 		BioModelNode node = (BioModelNode)selectionPath.getLastPathComponent();
 		Object objectPath[] = node.getUserObjectPath();
 		Object lastPathObject = objectPath[objectPath.length-1];
-		Expression expArray[] = null;
+		IExpression expArray[] = null;
 		if (lastPathObject instanceof Function){
 			Function function = (Function)lastPathObject;
-			Expression exp = function.getExpression();
+			IExpression exp = function.getExpression();
 			if (getJRadioButtonValue().isSelected()){
 				exp.bindExpression(getMathDescription());
 			}else{
 				exp.bindExpression(null);
 			}
-			expArray = new Expression[] { Expression.assign(new Expression(function.getName()),
+			expArray = new IExpression[] { ExpressionFactory.assign(ExpressionFactory.createExpression(function.getName()),
 															exp.flatten()) };
 		}else if (lastPathObject instanceof Constant){
 			Constant constant = (Constant)lastPathObject;
-			Expression exp = constant.getExpression();
+			IExpression exp = constant.getExpression();
 			if (getJRadioButtonValue().isSelected()){
 				exp.bindExpression(getMathDescription());
 			}else{
 				exp.bindExpression(null);
 			}
-			expArray = new Expression[] { Expression.assign(new Expression(constant.getName()),
+			expArray = new IExpression[] { ExpressionFactory.assign(ExpressionFactory.createExpression(constant.getName()),
 															exp.flatten()) };
 		}else if (lastPathObject instanceof Equation){
 			Equation equ = (Equation)lastPathObject;
 			Enumeration enum_equ = equ.getTotalExpressions();
 			Vector expList = new Vector();
 			while (enum_equ.hasMoreElements()){
-				Expression exp = new Expression((Expression)enum_equ.nextElement());
+				IExpression exp = ExpressionFactory.createExpression((IExpression)enum_equ.nextElement());
 				if (getJRadioButtonValue().isSelected()){
 					exp.bindExpression(getMathDescription());
 				}else{
@@ -726,7 +729,7 @@ private void refreshEquations() throws cbit.vcell.parser.ExpressionException {
 				}	
 				expList.addElement(exp.flatten());
 			}
-			expArray = new Expression[expList.size()];
+			expArray = new IExpression[expList.size()];
 			expList.copyInto(expArray);
 		}
 		getExpressionCanvas1().setExpressions(expArray);

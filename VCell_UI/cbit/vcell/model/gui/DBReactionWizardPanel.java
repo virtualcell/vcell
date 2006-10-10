@@ -1,4 +1,6 @@
 package cbit.vcell.model.gui;
+import org.vcell.expression.ExpressionFactory;
+
 import cbit.util.KeyValue;
 import cbit.util.UserCancelException;
 import cbit.vcell.desktop.controls.AsynchClientTask;
@@ -1119,8 +1121,8 @@ private void done() {
 				}
 				//
 				Kinetics kinetics = new HMM_IRRKinetics(reaction);
-				cbit.vcell.parser.Expression kmExpression = new cbit.vcell.parser.Expression("1.0");
-				cbit.vcell.parser.Expression vmaxExpression = new cbit.vcell.parser.Expression("1.0");
+				org.vcell.expression.IExpression kmExpression = ExpressionFactory.createExpression("1.0");
+				org.vcell.expression.IExpression vmaxExpression = ExpressionFactory.createExpression("1.0");
 				kinetics.setParameterValue(((HMM_IRRKinetics)kinetics).getKmParameter(),kmExpression);
 				kinetics.setParameterValue(((HMM_IRRKinetics)kinetics).getVmaxParameter(),vmaxExpression);
 				//reaction = new SimpleReaction(getStructure(),uniqueName);

@@ -1,7 +1,8 @@
 package cbit.vcell.mapping.gui;
 
 
-import cbit.vcell.parser.Expression;
+import org.vcell.expression.ExpressionFactory;
+
 import cbit.vcell.geometry.Geometry;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -9,7 +10,6 @@ import cbit.vcell.geometry.Geometry;
 ©*/
 import cbit.vcell.model.*;
 import cbit.vcell.modelapp.SimulationContext;
-import cbit.vcell.mapping.*;
 /**
  * This type was created in VisualAge.
  */
@@ -38,7 +38,7 @@ public static void main(java.lang.String[] args) {
 		model.addSpeciesContext(model.getSpecies("species1"),model.getStructure("feature1"));
 		SpeciesContext sc = model.getSpeciesContext(model.getSpecies("species1"),model.getStructure("feature1"));
 		Geometry geometry = new Geometry("new",2);
-		geometry.getGeometrySpec().addSubVolume(new cbit.vcell.geometry.AnalyticSubVolume("subVolume0",new Expression(1.0)));
+		geometry.getGeometrySpec().addSubVolume(new cbit.vcell.geometry.AnalyticSubVolume("subVolume0",ExpressionFactory.createExpression(1.0)));
 		SimulationContext simContext = new SimulationContext(model,geometry);
 		simContext.getGeometryContext().assignFeature((Feature)model.getStructure("feature1"),geometry.getGeometrySpec().getSubVolume("subVolume0"));
 		aSpeciesContextSpecPanel.setSimulationContext(simContext);

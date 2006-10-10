@@ -1,4 +1,9 @@
 package cbit.vcell.client.data;
+
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
+
 /**
  * Insert the type's description here.
  * Creation date: (2/18/2006 2:30:55 PM)
@@ -13,7 +18,7 @@ public class DataSelectRetrieve extends javax.swing.JPanel implements java.awt.e
 		public final int selectionType;
 		public final int selectAreaRadius;
 		public final cbit.util.Range selectAreaRange;
-		public final cbit.vcell.parser.Expression selectAreaAnalytic;
+		public final IExpression selectAreaAnalytic;
 		public final String selectAreaRegionName;
 		public final boolean bRetrieveTimeData;
 		public final boolean bTimeStats;
@@ -42,7 +47,7 @@ public class DataSelectRetrieve extends javax.swing.JPanel implements java.awt.e
 				}
 			selectAreaRange = rangeTemp;
 
-			cbit.vcell.parser.Expression expTemp = null;
+			IExpression expTemp = null;
 			try{
 				expTemp = getAreaAnalyticExpression();
 				
@@ -703,16 +708,16 @@ protected void fireActionPerformed(java.awt.event.ActionEvent e) {
  * Insert the method's description here.
  * Creation date: (2/22/2006 6:20:43 PM)
  */
-public cbit.vcell.parser.Expression getAreaAnalyticExpression() throws cbit.vcell.parser.ExpressionException{
+public IExpression getAreaAnalyticExpression() throws org.vcell.expression.ExpressionException{
 	
-	cbit.vcell.parser.Expression expTemp = new cbit.vcell.parser.Expression(getJTextFieldAreaAnalytic().getText());
+	IExpression expTemp = ExpressionFactory.createExpression(getJTextFieldAreaAnalytic().getText());
 	String symbols[] =
 		new String[]{
 			cbit.vcell.math.ReservedVariable.X.getName(),
 			cbit.vcell.math.ReservedVariable.Y.getName(),
 			cbit.vcell.math.ReservedVariable.Z.getName()
 		};
-	expTemp.bindExpression(new cbit.vcell.parser.SimpleSymbolTable(symbols));
+	expTemp.bindExpression(new org.vcell.expression.SimpleSymbolTable(symbols));
 	
 	return expTemp;
 }

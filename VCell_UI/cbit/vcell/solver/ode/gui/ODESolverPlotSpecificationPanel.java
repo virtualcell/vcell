@@ -1,19 +1,17 @@
 package cbit.vcell.solver.ode.gui;
-import java.util.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.DataAccessException;
 import cbit.plot.*;
 import cbit.vcell.simdata.ColumnDescription;
 import cbit.vcell.simdata.FunctionColumnDescription;
 import cbit.vcell.simdata.ODESolverResultSet;
 import cbit.vcell.simdata.ODESolverResultSetColumnDescription;
-import cbit.vcell.simulation.*;
-import cbit.vcell.solver.ode.*;
 import javax.swing.*;
-import cbit.vcell.parser.Expression;
+
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
 
 /**
  * Insert the type's description here.  What we want to do with this
@@ -105,7 +103,7 @@ public ODESolverPlotSpecificationPanel() {
 /**
  * Comment
  */
-private void addFunction(cbit.vcell.simdata.ODESolverResultSet odeRS) throws cbit.vcell.parser.ExpressionException {
+private void addFunction(cbit.vcell.simdata.ODESolverResultSet odeRS) throws org.vcell.expression.ExpressionException {
 
 	//
 	// Assign a default name for the new function. Check if any other existing function has the same name.
@@ -149,12 +147,12 @@ private void addFunction(cbit.vcell.simdata.ODESolverResultSet odeRS) throws cbi
 	int ok = JOptionPane.showOptionDialog(this, FnPanel, "Add Function" , 0, JOptionPane.PLAIN_MESSAGE, null, new String[] {"OK", "Cancel"}, null);
 	if (ok == javax.swing.JOptionPane.OK_OPTION) {
 		String funcName = getFunctionNameTextField().getText();
-		cbit.vcell.parser.Expression funcExp = new Expression(getFunctionExpressionTextField().getText());
+		IExpression funcExp = ExpressionFactory.createExpression(getFunctionExpressionTextField().getText());
 		fcd = new FunctionColumnDescription(funcExp, funcName, null, funcName+" : "+funcExp.infix(), true);
 
 		try {
 			odeRS.checkFunctionValidity(fcd);
-		} catch (cbit.vcell.parser.ExpressionException e) {
+		} catch (org.vcell.expression.ExpressionException e) {
 			javax.swing.JOptionPane.showMessageDialog(this, e.getMessage()+". "+funcName+" not added.", "Error Adding Function ", javax.swing.JOptionPane.ERROR_MESSAGE);
 			// Commenting the Stack trace for exception .... annoying to have the exception thrown after dealing with pop-up error message!
 			// e.printStackTrace(System.out);
@@ -162,7 +160,7 @@ private void addFunction(cbit.vcell.simdata.ODESolverResultSet odeRS) throws cbi
 		}
 		try {
 			odeRS.addFunctionColumn(fcd);
-		} catch (cbit.vcell.parser.ExpressionException e) {
+		} catch (org.vcell.expression.ExpressionException e) {
 			javax.swing.JOptionPane.showMessageDialog(this, e.getMessage()+". "+funcName+" not added.", "Error Adding Function ", javax.swing.JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace(System.out);
 		}
@@ -560,7 +558,7 @@ private void deleteFunction(int ySelection) {
 			if ( yChoice.equals(funcColDesc.getDisplayName()) ) {
 				try {
 					odeRS.removeFunctionColumn(funcColDesc);
-				} catch (cbit.vcell.parser.ExpressionException e) {
+				} catch (org.vcell.expression.ExpressionException e) {
 					e.printStackTrace(System.out);
 					throw new RuntimeException("Cannot remove function column from result set."+e.getMessage());
 				}
@@ -571,7 +569,7 @@ private void deleteFunction(int ySelection) {
 	// updateResultSet
 	try {
 		updateResultSet(odeRS);
-	} catch (cbit.vcell.parser.ExpressionException e) {
+	} catch (org.vcell.expression.ExpressionException e) {
 		e.printStackTrace(System.out);
 		throw new RuntimeException("Cannot update result set."+e.getMessage());
 	}
@@ -580,7 +578,7 @@ private void deleteFunction(int ySelection) {
 /**
  * Method to enable the log sensitivity checkbox and slider depending on whether sensitivity analysis is enabled.
  */
-private void enableLogSensitivity() throws cbit.vcell.parser.ExpressionException {
+private void enableLogSensitivity() throws org.vcell.expression.ExpressionException {
 
 	boolean bEnabled = true;
 	
@@ -1118,7 +1116,7 @@ private int[] getSensitivityIndices(ODESolverResultSet odeSolverResultSet) {
  // column description starts with the substring "sens" or if the column for the parameter does not exist in the result
  // set, the method returns null.
  */
-private cbit.vcell.math.Constant getSensitivityParameter() throws cbit.vcell.parser.ExpressionException {
+private cbit.vcell.math.Constant getSensitivityParameter() throws org.vcell.expression.ExpressionException {
 	String sensParamName = "";
 	FunctionColumnDescription fcds[] = getOdeSolverResultSet().getFunctionColumnDescriptions();
 
@@ -1148,7 +1146,7 @@ private cbit.vcell.math.Constant getSensitivityParameter() throws cbit.vcell.par
 		return null;
 	}
 
-	cbit.vcell.math.Constant sensParam = new cbit.vcell.math.Constant(sensParamName, new Expression(sensParamValue));
+	cbit.vcell.math.Constant sensParam = new cbit.vcell.math.Constant(sensParamName, ExpressionFactory.createExpression(sensParamValue));
 	return sensParam;
 }
 
@@ -1228,7 +1226,7 @@ private javax.swing.JSlider getSensitivityParameterSlider() {
 /**
  * Comment
  */
-private double[] getSensValues(ColumnDescription colDesc) throws cbit.vcell.parser.ExpressionException {
+private double[] getSensValues(ColumnDescription colDesc) throws org.vcell.expression.ExpressionException {
 	if (getSensitivityParameter() != null) {
 		double sens[] = null;
 		String[] rsetColNames = getPlottableNames();
@@ -1521,7 +1519,7 @@ constraintsJPanelSensitivity.gridheight = 2;
 /**
  * Comment
  */
-private void initializeLogSensCheckBox() throws cbit.vcell.parser.ExpressionException{
+private void initializeLogSensCheckBox() throws org.vcell.expression.ExpressionException{
 	if (getSensitivityParameter() != null) {
 		getLogSensCheckbox().setSelected(true);
 	} else {
@@ -1748,7 +1746,7 @@ private void refreshVisiblePlots(Plot2D plot2D) {
 /**
  * Comment
  */
-private void regeneratePlot2D() throws cbit.vcell.parser.ExpressionException {
+private void regeneratePlot2D() throws org.vcell.expression.ExpressionException {
 	if (getOdeSolverResultSet() == null || getXAxisComboBox().getSelectedIndex() < 0) {
 		return;
 	} else {
@@ -2066,7 +2064,7 @@ private int[] sortIndices(ODESolverResultSet odeSolverResultSet, int[] indices) 
  * Creation date: (2/8/2001 4:56:15 PM)
  * @param cbit.vcell.solver.ode.ODESolverResultSet
  */
-private synchronized void updateChoices(ODESolverResultSet odeSolverResultSet) throws cbit.vcell.parser.ExpressionException {
+private synchronized void updateChoices(ODESolverResultSet odeSolverResultSet) throws org.vcell.expression.ExpressionException {
     int[] variableIndices = getVariableIndices(odeSolverResultSet);
     int[] sensitivityIndices = getSensitivityIndices(odeSolverResultSet);
     //  Hack this here, Later we can use an array utility...
@@ -2110,7 +2108,7 @@ private synchronized void updateChoices(ODESolverResultSet odeSolverResultSet) t
 /**
  * Comment
  */
-private void updateResultSet(ODESolverResultSet odeSolverResultSet) throws cbit.vcell.parser.ExpressionException {
+private void updateResultSet(ODESolverResultSet odeSolverResultSet) throws org.vcell.expression.ExpressionException {
 	String[] columnNames = new String[odeSolverResultSet.getColumnDescriptionsCount()];
 
 	for (int i = 0; i < columnNames.length; i++){

@@ -1,21 +1,12 @@
 package cbit.vcell.geometry.gui;
 
+
 import cbit.vcell.geometry.surface.GeometricRegion;
-import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
-import cbit.vcell.units.VCUnitException;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.parser.Expression;
-import cbit.vcell.geometry.*;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.FluxReaction;
-import cbit.vcell.parser.ExpressionException;
-import cbit.util.BeanUtils;
-import cbit.vcell.model.Kinetics;
-import cbit.vcell.modelapp.ReactionSpec;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)
@@ -53,7 +44,7 @@ public Class getColumnClass(int column) {
 			return String.class;
 		}
 		case COLUMN_INSIDE:{
-			return cbit.vcell.parser.ScopedExpression.class;
+			return cbit.vcell.parser.gui.ScopedExpression.class;
 		}
 		case COLUMN_OUTSIDE:{
 			return String.class;

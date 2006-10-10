@@ -4,12 +4,14 @@ package cbit.vcell.geometry.gui;
  * All rights reserved.
 ©*/
 
-import cbit.vcell.parser.Expression;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import cbit.vcell.geometry.*;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.modelapp.ReactionSpec;
-import cbit.vcell.parser.ExpressionException;
 import cbit.util.BeanUtils;
 /**
  * Insert the type's description here.
@@ -93,7 +95,7 @@ public Class getColumnClass(int column) {
 			return cbit.vcell.geometry.SubVolume.class;
 		}
 		case COLUMN_VALUE:{
-			return cbit.vcell.parser.ScopedExpression.class;
+			return cbit.vcell.parser.gui.ScopedExpression.class;
 		}
 		default:{
 			return Object.class;
@@ -174,7 +176,7 @@ public Object getValueAt(int row, int col) {
 		}
 		case COLUMN_VALUE:{
 			if (subVolume instanceof AnalyticSubVolume){
-				return new cbit.vcell.parser.ScopedExpression(((AnalyticSubVolume)subVolume).getExpression(),cbit.vcell.model.ReservedSymbol.TIME.getNameScope(),true);
+				return new cbit.vcell.parser.gui.ScopedExpression(((AnalyticSubVolume)subVolume).getExpression(),cbit.vcell.model.ReservedSymbol.TIME.getNameScope(),true);
 			}else{
 				return null;
 			}
@@ -290,12 +292,12 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 				try {
 					if (subVolume instanceof AnalyticSubVolume){
 						AnalyticSubVolume analyticSubVolume = (AnalyticSubVolume)subVolume;
-						if (aValue instanceof cbit.vcell.parser.ScopedExpression){
-							Expression exp = ((cbit.vcell.parser.ScopedExpression)aValue).getExpression();
+						if (aValue instanceof cbit.vcell.parser.gui.ScopedExpression){
+							IExpression exp = ((cbit.vcell.parser.gui.ScopedExpression)aValue).getExpression();
 							analyticSubVolume.setExpression(exp);
 						}else if (aValue instanceof String) {
 							String newExpressionString = (String)aValue;
-							analyticSubVolume.setExpression(new Expression(newExpressionString));
+							analyticSubVolume.setExpression(ExpressionFactory.createExpression(newExpressionString));
 						}
 						fireTableRowsUpdated(rowIndex,rowIndex);
 					}
@@ -323,11 +325,11 @@ public cbit.gui.TableCellValidator.EditValidation validate(java.lang.Object obj,
 	//Verify that object(obj) is an appropriate value for a specific class type  in a table cell(row,col)
 	//
 	try{
-		if(col == COLUMN_VALUE && getColumnClass(col).isAssignableFrom(cbit.vcell.parser.ScopedExpression.class)){
+		if(col == COLUMN_VALUE && getColumnClass(col).isAssignableFrom(cbit.vcell.parser.gui.ScopedExpression.class)){
 			//ScopedExpression column:
 			//Value needs to be a String Expression appropriate for AnalyticSubVolume
 			if(obj instanceof String){
-					new AnalyticSubVolume("test",new Expression((String)obj));//Try to have and error
+					new AnalyticSubVolume("test",ExpressionFactory.createExpression((String)obj));//Try to have and error
 					return cbit.gui.TableCellValidator.VALIDATE_OK;
 			}
 		}else if(col == COLUMN_NAME && getColumnClass(col).isAssignableFrom(SubVolume.class)){

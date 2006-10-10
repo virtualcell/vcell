@@ -32,6 +32,8 @@ import cbit.vcell.client.data.SimulationDataManager;
 import java.util.*;
 import javax.swing.*;
 
+import org.vcell.expression.ExpressionFactory;
+
 
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.merge.XmlTreeDiff;
@@ -627,7 +629,7 @@ private VCDocument createNewDocument(int docType, int option,AsynchProgressPopup
 				// analytic
 				try {
 					geometry = new Geometry("Geometry" + (getMdiManager().getNewlyCreatedDesktops() + 1), option);
-					geometry.getGeometrySpec().addSubVolume(new AnalyticSubVolume("subVolume1",new cbit.vcell.parser.Expression(1.0)));					
+					geometry.getGeometrySpec().addSubVolume(new AnalyticSubVolume("subVolume1",ExpressionFactory.createExpression(1.0)));					
 				} catch (Exception exc) {
 					System.out.println("This exception should not happen - brand new Geometry!");
 					exc.printStackTrace(System.out);

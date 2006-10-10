@@ -3,6 +3,9 @@ package cbit.vcell.solver.ode.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import cbit.vcell.math.Constant;
 /**
  * Insert the type's description here.
@@ -77,7 +80,7 @@ public void constantRemoved(cbit.vcell.simulation.MathOverridesEvent event) {
  * Insert the method's description here.
  * Creation date: (9/23/2005 5:06:23 PM)
  */
-private void editScanValues(String name, int r) throws cbit.vcell.parser.DivideByZeroException, cbit.vcell.parser.ExpressionException {
+private void editScanValues(String name, int r) throws org.vcell.expression.DivideByZeroException, org.vcell.expression.ExpressionException {
 	cbit.vcell.client.desktop.simulation.ParameterScanPanel panel = new cbit.vcell.client.desktop.simulation.ParameterScanPanel();
 	cbit.vcell.simulation.ConstantArraySpec spec = null;
 	if (getMathOverrides().isScan(name)) {
@@ -387,7 +390,7 @@ public void setValueAt(Object object, int r, int c) {
 			if (object instanceof cbit.vcell.simulation.ConstantArraySpec) {
 				editScanValues(name, r);
 			} else if (object instanceof String) {
-				cbit.vcell.parser.Expression expression = new cbit.vcell.parser.Expression((String) object);
+				IExpression expression = ExpressionFactory.createExpression((String) object);
 				Constant constant = new Constant(name, expression);
 				getMathOverrides().putConstant(constant);
 				fireTableCellUpdated(r, c);

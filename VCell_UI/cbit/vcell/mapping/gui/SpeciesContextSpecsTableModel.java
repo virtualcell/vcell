@@ -4,13 +4,10 @@ package cbit.vcell.mapping.gui;
  * All rights reserved.
 ©*/
 
-import cbit.vcell.parser.Expression;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.FluxReaction;
-import cbit.vcell.modelapp.ReactionSpec;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import cbit.vcell.modelapp.SpeciesContextSpec;
-import cbit.util.BeanUtils;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)
@@ -106,7 +103,7 @@ public Class getColumnClass(int column) {
 			return Boolean.class;
 		}
 		case COLUMN_INITIAL:{
-			return cbit.vcell.parser.ScopedExpression.class;
+			return cbit.vcell.parser.gui.ScopedExpression.class;
 		}
 		default:{
 			return Object.class;
@@ -192,7 +189,7 @@ public Object getValueAt(int row, int col) {
 			return new Boolean(scSpec.isConstant());
 		}
 		case COLUMN_INITIAL:{
-			return new cbit.vcell.parser.ScopedExpression(scSpec.getInitialConditionParameter().getExpression(),scSpec.getInitialConditionParameter().getNameScope());
+			return new cbit.vcell.parser.gui.ScopedExpression(scSpec.getInitialConditionParameter().getExpression(),scSpec.getInitialConditionParameter().getNameScope());
 		}
 		default:{
 			return null;
@@ -333,12 +330,12 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 		}
 		case COLUMN_INITIAL:{
 			try {
-				if (aValue instanceof cbit.vcell.parser.ScopedExpression){
-					Expression exp = ((cbit.vcell.parser.ScopedExpression)aValue).getExpression();
+				if (aValue instanceof cbit.vcell.parser.gui.ScopedExpression){
+					IExpression exp = ((cbit.vcell.parser.gui.ScopedExpression)aValue).getExpression();
 					scSpec.getInitialConditionParameter().setExpression(exp);
 				}else if (aValue instanceof String) {
 					String newExpressionString = (String)aValue;
-					scSpec.getInitialConditionParameter().setExpression(new Expression(newExpressionString));
+					scSpec.getInitialConditionParameter().setExpression(ExpressionFactory.createExpression(newExpressionString));
 				}
 				fireTableRowsUpdated(rowIndex,rowIndex);
 			}catch (java.beans.PropertyVetoException e){
@@ -347,7 +344,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 				// don't handle exception here, InitialConditionsPanel needs it.
 				//
 				throw new RuntimeException(e.getMessage());
-			}catch (cbit.vcell.parser.ExpressionException e){
+			}catch (org.vcell.expression.ExpressionException e){
 				e.printStackTrace(System.out);
 				//
 				// don't handle exception here, InitialConditionsPanel needs it.

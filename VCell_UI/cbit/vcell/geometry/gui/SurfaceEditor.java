@@ -1130,7 +1130,7 @@ private void setsurfaceCollection(SurfaceCollection newValue) {
 /**
  * Comment
  */
-public void updateSurface() throws java.beans.PropertyVetoException, cbit.image.ImageException, cbit.vcell.geometry.GeometryException, cbit.vcell.parser.ExpressionException {
+public void updateSurface() throws java.beans.PropertyVetoException, cbit.image.ImageException, cbit.vcell.geometry.GeometryException, org.vcell.expression.ExpressionException {
 	if (getGeometrySurfaceDescription()==null){
 		javax.swing.SwingUtilities.invokeLater(new Runnable (){
 			public void run(){

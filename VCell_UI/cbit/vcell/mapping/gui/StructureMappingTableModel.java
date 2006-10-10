@@ -5,7 +5,12 @@ package cbit.vcell.mapping.gui;
  * All rights reserved.
 ©*/
 
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import cbit.vcell.parser.*;
+import cbit.vcell.parser.gui.ScopedExpression;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.modelapp.FeatureMapping;
 import cbit.vcell.modelapp.GeometryContext;
@@ -93,10 +98,10 @@ public Class getColumnClass(int column) {
 			return Boolean.class;
 		}
 		case COLUMN_SURFVOL:{
-			return cbit.vcell.parser.ScopedExpression.class;
+			return cbit.vcell.parser.gui.ScopedExpression.class;
 		}
 		case COLUMN_VOLFRACT:{
-			return cbit.vcell.parser.ScopedExpression.class;
+			return cbit.vcell.parser.gui.ScopedExpression.class;
 		}
 		default:{
 			return Object.class;
@@ -327,12 +332,12 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 			if (featureMapping.getResolved() == false && featureMapping.getFeature()!=null && featureMapping.getFeature().getMembrane()!=null){
 				Membrane membrane = featureMapping.getFeature().getMembrane();
 				MembraneMapping membraneMapping = (MembraneMapping)getGeometryContext().getStructureMapping(membrane);
-				cbit.vcell.parser.SymbolTable symbolTable = new cbit.vcell.model.ReservedSymbolTable(false);
+				org.vcell.expression.SymbolTable symbolTable = new cbit.vcell.model.ReservedSymbolTable(false);
 				try {
-					Expression exp = null;
+					IExpression exp = null;
 					if (aValue instanceof String){
 						String newExpressionString = (String)aValue;
-						exp = new Expression(newExpressionString);
+						exp = ExpressionFactory.createExpression(newExpressionString);
 					}else if (aValue instanceof ScopedExpression){
 						exp = ((ScopedExpression)aValue).getExpression();
 					}
@@ -352,12 +357,12 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 			if (featureMapping.getResolved() == false && featureMapping.getFeature()!=null && featureMapping.getFeature().getMembrane()!=null){
 				Membrane membrane = featureMapping.getFeature().getMembrane();
 				MembraneMapping membraneMapping = (MembraneMapping)getGeometryContext().getStructureMapping(membrane);
-				cbit.vcell.parser.SymbolTable symbolTable = new cbit.vcell.model.ReservedSymbolTable(false);
+				org.vcell.expression.SymbolTable symbolTable = new cbit.vcell.model.ReservedSymbolTable(false);
 				try {
-					Expression exp = null;
+					IExpression exp = null;
 					if (aValue instanceof String){
 						String newExpressionString = (String)aValue;
-						exp = new Expression(newExpressionString);
+						exp = ExpressionFactory.createExpression(newExpressionString);
 					}else if (aValue instanceof ScopedExpression){
 						exp = ((ScopedExpression)aValue).getExpression();
 					}

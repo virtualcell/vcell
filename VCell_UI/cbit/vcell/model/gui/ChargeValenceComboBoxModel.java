@@ -1,5 +1,7 @@
 package cbit.vcell.model.gui;
 
+import org.vcell.expression.ExpressionFactory;
+
 /**
  * Insert the type's description here.
  * Creation date: (11/18/2002 3:33:14 PM)
@@ -43,7 +45,7 @@ public Object getSelectedItem() {
 				if (items[i] instanceof Integer && ((Integer)items[i]).intValue() == getKinetics().getReactionStep().getChargeCarrierValence().getExpression().evaluateConstant()){
 					return items[i];
 				}
-			}catch (cbit.vcell.parser.ExpressionException e){
+			}catch (org.vcell.expression.ExpressionException e){
 				e.printStackTrace(System.out);
 			}
 		}
@@ -87,7 +89,7 @@ public void setSelectedItem(Object selectedItem) {
 		if (rs != null){
 			if (selectedItem instanceof Integer){
 				try {
-					rs.getChargeCarrierValence().setExpression(new cbit.vcell.parser.Expression(((Integer)selectedItem).intValue()));
+					rs.getChargeCarrierValence().setExpression(ExpressionFactory.createExpression(((Integer)selectedItem).intValue()));
 				}catch (java.beans.PropertyVetoException e){
 					e.printStackTrace(System.out);
 				}

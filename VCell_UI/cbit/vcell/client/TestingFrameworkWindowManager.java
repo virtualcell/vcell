@@ -40,6 +40,9 @@ import cbit.util.VCDataIdentifier;
 import cbit.vcell.solver.test.SimulationComparisonSummary;
 import cbit.vcell.solver.test.VariableComparisonSummary;
 import org.jdom.JDOMException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import cbit.util.KeyValue;
 import java.util.Enumeration;
 import java.util.Vector;
@@ -493,7 +496,7 @@ public void compare(TestCriteriaNew testCriteria){
 			String data2Name = "Data2."+data1Identifiers[i].getName();
 			String functionName = "DIFF_"+data1Identifiers[i].getName();
 			cbit.vcell.math.VariableType varType = data1Identifiers[i].getVariableType();
-			cbit.vcell.parser.Expression exp = new cbit.vcell.parser.Expression(data1Name+"-"+data2Name);
+			IExpression exp = ExpressionFactory.createExpression(data1Name+"-"+data2Name);
 			cbit.vcell.math.AnnotatedFunction newFunction = new cbit.vcell.math.AnnotatedFunction(functionName,exp,"",varType,true);
 			
 			//

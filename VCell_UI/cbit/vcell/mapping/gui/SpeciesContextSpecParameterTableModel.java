@@ -5,12 +5,14 @@ import cbit.vcell.modelapp.StructureMapping;
 
 import java.util.*;
 
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)
@@ -166,7 +168,7 @@ public Class getColumnClass(int column) {
 			return String.class;
 		}
 		case COLUMN_VALUE:{
-			return cbit.vcell.parser.ScopedExpression.class;
+			return cbit.vcell.parser.gui.ScopedExpression.class;
 		}
 		default:{
 			return Object.class;
@@ -314,7 +316,7 @@ public Object getValueAt(int row, int col) {
 				if (parameter.getExpression()==null){
 					return new String("");
 				}else{
-					return new cbit.vcell.parser.ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
+					return new cbit.vcell.parser.gui.ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
 				}
 			}
 		}
@@ -546,8 +548,8 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 			}
 			case COLUMN_VALUE:{
 				try {
-					if (aValue instanceof cbit.vcell.parser.ScopedExpression){
-						Expression exp = ((cbit.vcell.parser.ScopedExpression)aValue).getExpression();
+					if (aValue instanceof cbit.vcell.parser.gui.ScopedExpression){
+						IExpression exp = ((cbit.vcell.parser.gui.ScopedExpression)aValue).getExpression();
 						if (parameter instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
 							SpeciesContextSpec.SpeciesContextSpecParameter scsParm = (SpeciesContextSpec.SpeciesContextSpecParameter)parameter;
 							scsParm.setExpression(exp);
@@ -557,7 +559,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 						String newExpressionString = (String)aValue;
 						if (parameter instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
 							SpeciesContextSpec.SpeciesContextSpecParameter scsParm = (SpeciesContextSpec.SpeciesContextSpecParameter)parameter;
-							scsParm.setExpression(new Expression(newExpressionString));
+							scsParm.setExpression(ExpressionFactory.createExpression(newExpressionString));
 							//fireTableRowsUpdated(rowIndex,rowIndex);
 						}
 					}

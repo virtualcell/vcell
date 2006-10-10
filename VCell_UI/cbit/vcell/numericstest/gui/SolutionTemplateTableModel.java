@@ -5,7 +5,9 @@ package cbit.vcell.numericstest.gui;
  * All rights reserved.
 ©*/
 
-import cbit.vcell.parser.Expression;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.FluxReaction;
@@ -23,7 +25,7 @@ public class SolutionTemplateTableModel extends javax.swing.table.AbstractTableM
 	public static final int COLUMN_VARIABLE = 0;
 	public static final int COLUMN_SUBDOMAIN = 1;
 	public static final int COLUMN_EXPRESSION = 2;
-	private String LABELS[] = { "Variable", "Subdomain", "Expression" };
+	private String LABELS[] = { "Variable", "Subdomain", "IExpression" };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private cbit.vcell.numericstest.ConstructedSolutionTemplate fieldConstructedSolutionTemplate = null;
 /**
@@ -83,7 +85,7 @@ public Class getColumnClass(int column) {
 			return String.class;
 		}
 		case COLUMN_EXPRESSION:{
-			return Expression.class;
+			return IExpression.class;
 		}
 		default:{
 			return Object.class;
@@ -247,15 +249,15 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	switch (columnIndex){
 		case COLUMN_EXPRESSION:{
 			try {
-				if (aValue instanceof Expression){
-					Expression exp = (Expression)aValue;
+				if (aValue instanceof IExpression){
+					IExpression exp = (IExpression)aValue;
 					solnTemplate.setTemplateExpression(exp);
 				}else if (aValue instanceof String) {
 					String newExpressionString = (String)aValue;
-					solnTemplate.setTemplateExpression(new Expression(newExpressionString));
+					solnTemplate.setTemplateExpression(ExpressionFactory.createExpression(newExpressionString));
 				}
 				fireTableRowsUpdated(rowIndex,rowIndex);
-			}catch (cbit.vcell.parser.ExpressionException e){
+			}catch (org.vcell.expression.ExpressionException e){
 				e.printStackTrace(System.out);
 				//
 				// don't handle exception here, InitialConditionsPanel needs it.
