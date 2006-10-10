@@ -5,6 +5,11 @@ package cbit.vcell.math;
 ©*/
 import java.util.*;
 
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.SymbolTable;
+
 import cbit.util.CommentStringTokenizer;
 import cbit.vcell.parser.*;
 /**
@@ -12,8 +17,8 @@ import cbit.vcell.parser.*;
  * 
  */
 public class JumpCondition extends Equation {
-	private Expression inFluxExp = new Expression(0.0);
-	private Expression outFluxExp = new Expression(0.0);
+	private IExpression inFluxExp = ExpressionFactory.createExpression(0.0);
+	private IExpression outFluxExp = ExpressionFactory.createExpression(0.0);
 
 /**
  * OdeEquation constructor comment.
@@ -56,7 +61,7 @@ public boolean compareEqual(cbit.util.Matchable object) {
  * Creation date: (10/10/2002 10:41:10 AM)
  * @param sim cbit.vcell.solver.Simulation
  */
-void flatten(SymbolTable symbolTable, boolean bRoundCoefficients) throws cbit.vcell.parser.ExpressionException, MathException {
+void flatten(SymbolTable symbolTable, boolean bRoundCoefficients) throws org.vcell.expression.ExpressionException, MathException {
 	super.flatten0(symbolTable,bRoundCoefficients);
 	
 	inFluxExp = getFlattenedExpression(symbolTable,inFluxExp,bRoundCoefficients);
@@ -82,18 +87,18 @@ protected Vector getExpressions(MathDescription mathDesc) {
 
 /**
  * This method was created by a SmartGuide.
- * @return cbit.vcell.parser.Expression
+ * @return cbit.vcell.parser.IExpression
  */
-public Expression getInFluxExpression() {
+public IExpression getInFluxExpression() {
 	return inFluxExp;
 }
 
 
 /**
  * This method was created by a SmartGuide.
- * @return cbit.vcell.parser.Expression
+ * @return cbit.vcell.parser.IExpression
  */
-public Expression getOutFluxExpression() {
+public IExpression getOutFluxExpression() {
 	return outFluxExp;
 }
 
@@ -104,15 +109,15 @@ public Expression getOutFluxExpression() {
  */
 public Enumeration getTotalExpressions() throws ExpressionException {
 	Vector vector = new Vector();
-	Expression lvalueExp = new Expression("InFlux_"+getVariable().getName());
-	Expression rvalueExp = new Expression(getInFluxExpression());
-	Expression totalExp = Expression.assign(lvalueExp,rvalueExp);
+	IExpression lvalueExp = ExpressionFactory.createExpression("InFlux_"+getVariable().getName());
+	IExpression rvalueExp = ExpressionFactory.createExpression(getInFluxExpression());
+	IExpression totalExp = ExpressionFactory.assign(lvalueExp,rvalueExp);
 	totalExp.bindExpression(null);
 	totalExp.flatten();
 	vector.addElement(totalExp);
-	lvalueExp = new Expression("OutFlux_"+getVariable().getName());
-	rvalueExp = new Expression(getOutFluxExpression());
-	totalExp = Expression.assign(lvalueExp,rvalueExp);
+	lvalueExp = ExpressionFactory.createExpression("OutFlux_"+getVariable().getName());
+	rvalueExp = ExpressionFactory.createExpression(getOutFluxExpression());
+	totalExp = ExpressionFactory.assign(lvalueExp,rvalueExp);
 	totalExp.bindExpression(null);
 	totalExp.flatten();
 	vector.addElement(totalExp);
@@ -160,11 +165,11 @@ public void read(CommentStringTokenizer tokens) throws MathFormatException, Expr
 			break;
 		}			
 		if (token.equalsIgnoreCase(VCML.InFlux)){
-			inFluxExp = new Expression(tokens);
+			inFluxExp = ExpressionFactory.createExpression(tokens);
 			continue;
 		}
 		if (token.equalsIgnoreCase(VCML.OutFlux)){
-			outFluxExp = new Expression(tokens);
+			outFluxExp = ExpressionFactory.createExpression(tokens);
 			continue;
 		}
 		throw new MathFormatException("unexpected identifier "+token);
@@ -175,18 +180,18 @@ public void read(CommentStringTokenizer tokens) throws MathFormatException, Expr
 
 /**
  * This method was created in VisualAge.
- * @param exp cbit.vcell.parser.Expression
+ * @param exp cbit.vcell.parser.IExpression
  */
-public void setInFlux(Expression exp) {
+public void setInFlux(IExpression exp) {
 	this.inFluxExp = exp;
 }
 
 
 /**
  * This method was created in VisualAge.
- * @param exp cbit.vcell.parser.Expression
+ * @param exp cbit.vcell.parser.IExpression
  */
-public void setOutFlux(Expression exp) {
+public void setOutFlux(IExpression exp) {
 	this.outFluxExp = exp;
 }
 }

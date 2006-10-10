@@ -3,17 +3,20 @@ import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import javax.swing.event.*;
+
+import org.vcell.expression.ExpressionBindingException;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.ExpressionUtilities;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.SymbolTable;
+import org.vcell.expression.SymbolTableEntry;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
 import java.util.*;
 import java.io.*;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.parser.SymbolTable;
-import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.SubVolume;
 import cbit.util.*;
@@ -341,8 +344,8 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 							reasonForDecision.append(EQUATION_REMOVED);
 							return false;
 						}
-						Expression oldExps[] = (Expression[])cbit.util.BeanUtils.getArray(oldEqu.getExpressions(oldMathDesc),Expression.class);
-						Expression newExps[] = (Expression[])cbit.util.BeanUtils.getArray(newEqu.getExpressions(newMathDesc),Expression.class);
+						IExpression oldExps[] = (IExpression[])cbit.util.BeanUtils.getArray(oldEqu.getExpressions(oldMathDesc),IExpression.class);
+						IExpression newExps[] = (IExpression[])cbit.util.BeanUtils.getArray(newEqu.getExpressions(newMathDesc),IExpression.class);
 						if (oldExps.length != newExps.length){
 							reasonForDecision.append(DIFFERENT_NUMBER_OF_EXPRESSIONS);
 							return false;
@@ -350,7 +353,7 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 						for (int k = 0; k < oldExps.length; k++){
 							if (!oldExps[k].compareEqual(newExps[k])){
 								bFoundDifference = true;
-								if (!cbit.vcell.parser.ExpressionUtils.functionallyEquivalent(oldExps[k],newExps[k])){
+								if (!ExpressionUtilities.functionallyEquivalent(oldExps[k], newExps[k])){
 									//
 									// difference couldn't be reconciled
 									//
@@ -404,8 +407,8 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 								reasonForDecision.append(EQUATION_REMOVED);
 								return false;
 							}
-							Expression oldExps[] = (Expression[])cbit.util.BeanUtils.getArray(oldJumpCondition.getExpressions(oldMathDesc),Expression.class);
-							Expression newExps[] = (Expression[])cbit.util.BeanUtils.getArray(newJumpCondition.getExpressions(newMathDesc),Expression.class);
+							IExpression oldExps[] = (IExpression[])cbit.util.BeanUtils.getArray(oldJumpCondition.getExpressions(oldMathDesc),IExpression.class);
+							IExpression newExps[] = (IExpression[])cbit.util.BeanUtils.getArray(newJumpCondition.getExpressions(newMathDesc),IExpression.class);
 							if (oldExps.length != newExps.length){
 								reasonForDecision.append(DIFFERENT_NUMBER_OF_EXPRESSIONS);
 								return false;
@@ -413,7 +416,7 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 							for (int k = 0; k < oldExps.length; k++){
 								if (!oldExps[k].compareEqual(newExps[k])){
 									bFoundDifference = true;
-									if (!cbit.vcell.parser.ExpressionUtils.functionallyEquivalent(oldExps[k],newExps[k])){
+									if (!ExpressionUtilities.functionallyEquivalent(oldExps[k], newExps[k])){
 										//
 										// difference couldn't be reconciled
 										//
@@ -467,8 +470,8 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 						reasonForDecision.append(EQUATION_REMOVED);
 						return false;
 					}
-					Expression oldExps[] = oldFastSystem.getExpressions();
-					Expression newExps[] = newFastSystem.getExpressions();
+					IExpression oldExps[] = oldFastSystem.getExpressions();
+					IExpression newExps[] = newFastSystem.getExpressions();
 					if (oldExps.length != newExps.length){
 						reasonForDecision.append(DIFFERENT_NUMBER_OF_EXPRESSIONS);
 						return false;
@@ -476,7 +479,7 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 					for (int k = 0; k < oldExps.length; k++){
 						if (!oldExps[k].compareEqual(newExps[k])){
 							bFoundDifference = true;
-							if (!cbit.vcell.parser.ExpressionUtils.functionallyEquivalent(oldExps[k],newExps[k])){
+							if (!ExpressionUtilities.functionallyEquivalent(oldExps[k], newExps[k])){
 								//
 								// difference couldn't be reconciled
 								//
@@ -660,9 +663,9 @@ public static MathDescription createMathWithExpandedEquations(MathDescription or
 			//
 			Vector indepVarList = new Vector();         // holds the "indepVar's"
 			Vector coefficientList = new Vector();      // holds the "K's"
-			Expression exp = function.getExpression();
+			IExpression exp = function.getExpression();
 			exp.bindExpression(null);
-			Expression K0 = new Expression(exp);
+			IExpression K0 = ExpressionFactory.createExpression(exp);
 			K0.bindExpression(null);
 			String symbols[] = exp.getSymbols();
 			for (int j = 0; j < symbols.length; j++){
@@ -671,7 +674,7 @@ public static MathDescription createMathWithExpandedEquations(MathDescription or
 					// store the independent variable (indepVar_i)
 					//
 					indepVarList.add(newMath.getVariable(symbols[j]));
-					Expression differential = exp.differentiate(symbols[j]);
+					IExpression differential = exp.differentiate(symbols[j]);
 					differential = differential.flatten();
 					//
 					// store the coefficient (K_i)
@@ -682,7 +685,7 @@ public static MathDescription createMathWithExpandedEquations(MathDescription or
 					// (e.g. for expression "K0 + K1*V1 + ... + Ki*Vi + ... + Kn*Vn", Vi set to 0.0 and flattened)
 					// after each term is removed, only K0 is left
 					//
-					K0.substituteInPlace(new Expression(symbols[j]),new Expression(0.0));
+					K0.substituteInPlace(ExpressionFactory.createExpression(symbols[j]),ExpressionFactory.createExpression(0.0));
 					K0 = K0.flatten();
 				}
 			}
@@ -721,17 +724,17 @@ public static MathDescription createMathWithExpandedEquations(MathDescription or
 						//    initial value = K0 + Sum(coefficient_i*Var_i.init)
 						//    rate value = Sum(coefficient_i*Var_i.rate)
 						//
-						Expression initExp = new Expression(K0);
-						Expression rateExp = new Expression(0.0);
+						IExpression initExp = ExpressionFactory.createExpression(K0);
+						IExpression rateExp = ExpressionFactory.createExpression(0.0);
 						for (int k = 0; k < indepVarList.size(); k++){
 							Variable indepVar = (Variable)indepVarList.elementAt(k);
 							Equation indepVarEqu = subDomain.getEquation(indepVar);
-							Expression coefficient = (Expression)coefficientList.elementAt(k);
-							initExp = Expression.add(initExp,Expression.mult(new Expression(coefficient),new Expression(indepVarEqu.getInitialExpression())));
-							rateExp = Expression.add(rateExp,Expression.mult(new Expression(coefficient),new Expression(indepVarEqu.getRateExpression())));
+							IExpression coefficient = (IExpression)coefficientList.elementAt(k);
+							initExp = ExpressionFactory.add(initExp, ExpressionFactory.mult(ExpressionFactory.createExpression(coefficient), ExpressionFactory.createExpression(indepVarEqu.getInitialExpression())));
+							rateExp = ExpressionFactory.add(rateExp, ExpressionFactory.mult(ExpressionFactory.createExpression(coefficient), ExpressionFactory.createExpression(indepVarEqu.getRateExpression())));
 						}
 						if (newMath.getVariable(function.getName()+"_init")!=null){
-							initExp = new Expression(function.getName()+"_init");
+							initExp = ExpressionFactory.createExpression(function.getName()+"_init");
 						}
 						OdeEquation odeEquation = new OdeEquation(volVariable, initExp.flatten(), rateExp.flatten());
 						subDomain.addEquation(odeEquation);
@@ -752,17 +755,17 @@ public static MathDescription createMathWithExpandedEquations(MathDescription or
 						//    initial value = K0 + Sum(coefficient_i*Var_i.init)
 						//    rate value = Sum(coefficient_i*Var_i.rate)
 						//
-						Expression initExp = new Expression(K0);
-						Expression rateExp = new Expression(0.0);
+						IExpression initExp = ExpressionFactory.createExpression(K0);
+						IExpression rateExp = ExpressionFactory.createExpression(0.0);
 						for (int k = 0; k < indepVarList.size(); k++){
 							Variable indepVar = (Variable)indepVarList.elementAt(k);
 							Equation indepVarEqu = subDomain.getEquation(indepVar);
-							Expression coefficient = (Expression)coefficientList.elementAt(k);
-							initExp = Expression.add(initExp,Expression.mult(new Expression(coefficient),new Expression(indepVarEqu.getInitialExpression())));
-							rateExp = Expression.add(rateExp,Expression.mult(new Expression(coefficient),new Expression(indepVarEqu.getRateExpression())));
+							IExpression coefficient = (IExpression)coefficientList.elementAt(k);
+							initExp = ExpressionFactory.add(initExp, ExpressionFactory.mult(ExpressionFactory.createExpression(coefficient), ExpressionFactory.createExpression(indepVarEqu.getInitialExpression())));
+							rateExp = ExpressionFactory.add(rateExp, ExpressionFactory.mult(ExpressionFactory.createExpression(coefficient), ExpressionFactory.createExpression(indepVarEqu.getRateExpression())));
 						}
 						if (newMath.getVariable(function.getName()+"_init")!=null){
-							initExp = new Expression(function.getName()+"_init");
+							initExp = ExpressionFactory.createExpression(function.getName()+"_init");
 						}
 						OdeEquation odeEquation = new OdeEquation(memVariable, initExp.flatten(), rateExp.flatten());
 						subDomain.addEquation(odeEquation);
@@ -947,7 +950,7 @@ public static MathDescription fromEditor(MathDescription oldMathDesc, String vcm
 			}
 			if (token.equalsIgnoreCase(VCML.Constant)){
 				token = tokens.nextToken();
-				Expression exp = new Expression(tokens);
+				IExpression exp = ExpressionFactory.createExpression(tokens);
 				exp.bindExpression(mathDesc);
 				Constant constant = new Constant(token,exp);
 				mathDesc.addVariable0(constant);
@@ -955,7 +958,7 @@ public static MathDescription fromEditor(MathDescription oldMathDesc, String vcm
 			}
 			if (token.equalsIgnoreCase(VCML.Function)){
 				token = tokens.nextToken();
-				Expression exp = new Expression(tokens);
+				IExpression exp = ExpressionFactory.createExpression(tokens);
 				exp.bindExpression(mathDesc);
 				Function function = new Function(token,exp);
 				mathDesc.addVariable0(function);
@@ -1196,7 +1199,7 @@ public static Function[] getFlattenedFunctions(MathDescription originalMathDescr
 			if (var.getName().equals(functionNames[i])){
 				if (var instanceof Function){
 					Function function = (Function)var;
-					Expression exp1 = new Expression(function.getExpression());
+					IExpression exp1 = ExpressionFactory.createExpression(function.getExpression());
 //					try {
 						exp1 = MathUtilities.substituteFunctions(exp1,newMath);
 						functions[i] = new Function(function.getName(),exp1.flatten());
@@ -1701,14 +1704,14 @@ public static String getVCML_withReorderedVariables(Version version, String oldV
 			}
 			if (token.equalsIgnoreCase(VCML.Constant)){
 				token = tokens.nextToken();
-				Expression exp = new Expression(tokens);
+				IExpression exp = ExpressionFactory.createExpression(tokens);
 				Constant constant = new Constant(token,exp);
 				varHash.addVariable(constant);
 				continue;
 			}
 			if (token.equalsIgnoreCase(VCML.Function)){
 				token = tokens.nextToken();
-				Expression exp = new Expression(tokens);
+				IExpression exp = ExpressionFactory.createExpression(tokens);
 				Function function = new Function(token,exp);
 				varHash.addVariable(function);
 				continue;
@@ -2598,7 +2601,7 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
 			}
 			if (token.equalsIgnoreCase(VCML.Constant)){
 				token = tokens.nextToken();
-				Expression exp = new Expression(tokens);
+				IExpression exp = ExpressionFactory.createExpression(tokens);
 				exp.bindExpression(this);
 				Constant constant = new Constant(token,exp);
 				addVariable0(constant);
@@ -2612,7 +2615,7 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
 			}
 			if (token.equalsIgnoreCase(VCML.Function)){
 				token = tokens.nextToken();
-				Expression exp = new Expression(tokens);
+				IExpression exp = ExpressionFactory.createExpression(tokens);
 				exp.bindExpression(this);
 				Function function = new Function(token,exp);
 				addVariable0(function);

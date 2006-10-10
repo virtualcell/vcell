@@ -4,6 +4,8 @@ package cbit.vcell.math;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.expression.ExpressionBindingException;
+
 import cbit.vcell.parser.*;
 public class ReservedVariable extends Variable
 {

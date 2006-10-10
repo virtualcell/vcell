@@ -1,5 +1,6 @@
 package cbit.vcell.math;
-import cbit.vcell.parser.Expression;
+import org.vcell.expression.IExpression;
+
 import cbit.vcell.math.VariableType;
 import cbit.vcell.math.Function;
 /**
@@ -12,12 +13,12 @@ public class AnnotatedFunction extends Function implements cbit.util.Matchable {
 	private VariableType fieldFunctionType = null;
 	private boolean bIsUserDefined = false;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.vcell.parser.Expression fieldSimplifiedExpression = null;
+	private org.vcell.expression.IExpression fieldSimplifiedExpression = null;
 
 /**
  * AnnotatedFunction constructor comment.
  */
-public AnnotatedFunction(String argFunctionName, Expression argFunctionExpression, String argErrString, VariableType argFunctionType, boolean userDefined) {
+public AnnotatedFunction(String argFunctionName, IExpression argFunctionExpression, String argErrString, VariableType argFunctionType, boolean userDefined) {
 	super(argFunctionName, argFunctionExpression);
 	fieldSimplifiedExpression = null;
 	fieldErrorString = argErrString;
@@ -51,7 +52,7 @@ public VariableType getFunctionType() {
  * @return The simplifiedExpression property value.
  * @see #setSimplifiedExpression
  */
-public cbit.vcell.parser.Expression getSimplifiedExpression() {
+public org.vcell.expression.IExpression getSimplifiedExpression() {
 	return fieldSimplifiedExpression;
 }
 
@@ -71,7 +72,7 @@ public boolean isUserDefined() {
  * @param simplifiedExpression The new value for the property.
  * @see #getSimplifiedExpression
  */
-public void setSimplifiedExpression(cbit.vcell.parser.Expression simplifiedExpression) {
+public void setSimplifiedExpression(org.vcell.expression.IExpression simplifiedExpression) {
 	fieldSimplifiedExpression = simplifiedExpression;
 }
 }

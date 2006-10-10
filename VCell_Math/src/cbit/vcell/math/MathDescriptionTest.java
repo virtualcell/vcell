@@ -6,7 +6,11 @@ package cbit.vcell.math;
 ©*/
 import java.util.*;
 import java.io.*;
-import cbit.vcell.parser.Expression;
+
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.ExpressionUtilities;
+import org.vcell.expression.IExpression;
+
 import cbit.vcell.geometry.*;
 /**
  * This type was created in VisualAge.
@@ -36,8 +40,8 @@ public static MathDescription getExample() throws Exception {
 	
 /*
 	CartesianDomain domain = new CartesianDomain(mathDesc, 2, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0);
-	domain.addCompartment(new Compartment(mathDesc,"er",new Expression("0;")));
-	domain.addCompartment(new Compartment(mathDesc,"cytosol",new Expression("1;")));
+	domain.addCompartment(new Compartment(mathDesc,"er",new IExpression("0;")));
+	domain.addCompartment(new Compartment(mathDesc,"cytosol",new IExpression("1;")));
 	mathDesc.setDomain(domain);
 	
 	mathDesc.setMesh(new Mesh(mathDesc,domain,sizeX,sizeY,sizeZ));
@@ -51,15 +55,15 @@ public static MathDescription getExample() throws Exception {
 	//
 	// Constants
 	//
-	Constant constant = new Constant("Dca",new Expression("40;"));
+	Constant constant = new Constant("Dca",ExpressionFactory.createExpression("40;"));
 	mathDesc.addVariable(constant);
-	constant = new Constant("Dbuf",new Expression("4;"));
+	constant = new Constant("Dbuf",ExpressionFactory.createExpression("4;"));
 	mathDesc.addVariable(constant);
-	constant = new Constant("k2",new Expression("4.498;"));
+	constant = new Constant("k2",ExpressionFactory.createExpression("4.498;"));
 	mathDesc.addVariable(constant);
-	constant = new Constant("k1",new Expression("49.23;"));
+	constant = new Constant("k1",ExpressionFactory.createExpression("49.23;"));
 	mathDesc.addVariable(constant);
-	constant = new Constant("bufferMAX",new Expression("20;"));
+	constant = new Constant("bufferMAX",ExpressionFactory.createExpression("20;"));
 	mathDesc.addVariable(constant);
 	
 	//
@@ -73,44 +77,44 @@ public static MathDescription getExample() throws Exception {
 	//
 	// Calcium PDE for Cytosol
 	//
-	Expression rateExpression = new Expression("-k1*calcium+pow(buffer/bufferMAX,3);");
-	Expression initialExpression = new Expression("4;");
-	Expression diffusionExpression = new Expression("Dca;");
+	IExpression rateExpression = ExpressionFactory.createExpression("-k1*calcium+pow(buffer/bufferMAX,3);");
+	IExpression initialExpression = ExpressionFactory.createExpression("4;");
+	IExpression diffusionExpression = ExpressionFactory.createExpression("Dca;");
 	Equation equ = new PdeEquation(calcium,initialExpression, rateExpression,diffusionExpression);
 	cytosolSubDomain.addEquation(equ);
 	
 	//
 	// Calcium PDE for ER
 	//
-	rateExpression = new Expression("-k2*calcium+buffer;");
-	initialExpression = new Expression("4;");
-	diffusionExpression = new Expression("Dca;");
+	rateExpression = ExpressionFactory.createExpression("-k2*calcium+buffer;");
+	initialExpression = ExpressionFactory.createExpression("4;");
+	diffusionExpression = ExpressionFactory.createExpression("Dca;");
 	equ = new PdeEquation(calcium,initialExpression, rateExpression,diffusionExpression);
 	erSubDomain.addEquation(equ);
 
 	//
 	// Buffer PDE for Cytosol
 	//
-	rateExpression = new Expression("k1*calcium-pow(buffer/bufferMAX,3);");
-	initialExpression = new Expression("40;");
-	diffusionExpression = new Expression("Dbuf;");
+	rateExpression = ExpressionFactory.createExpression("k1*calcium-pow(buffer/bufferMAX,3);");
+	initialExpression = ExpressionFactory.createExpression("40;");
+	diffusionExpression = ExpressionFactory.createExpression("Dbuf;");
 	equ = new PdeEquation(buffer,initialExpression, rateExpression,diffusionExpression);
 	cytosolSubDomain.addEquation(equ);
 
 	//
 	// Buffer PDE for ER
 	//
-	rateExpression = new Expression("k2*calcium-buffer;");
-	initialExpression = new Expression("40;");
-	diffusionExpression = new Expression("Dbuf;");
+	rateExpression = ExpressionFactory.createExpression("k2*calcium-buffer;");
+	initialExpression = ExpressionFactory.createExpression("40;");
+	diffusionExpression = ExpressionFactory.createExpression("Dbuf;");
 	equ = new PdeEquation(buffer,initialExpression, rateExpression,diffusionExpression);
 	erSubDomain.addEquation(equ);
 
 	//
 	//	Calcium jump condition for ER membrane
 	//
-	Expression inFlux = new Expression("1;");
-	Expression outFlux = new Expression("2;");
+	IExpression inFlux = ExpressionFactory.createExpression("1;");
+	IExpression outFlux = ExpressionFactory.createExpression("2;");
 	JumpCondition jc = new JumpCondition(calcium);
 	jc.setInFlux(inFlux);
 	jc.setOutFlux(outFlux);
@@ -119,8 +123,8 @@ public static MathDescription getExample() throws Exception {
 	//
 	//	Buffer jump condition for ER membrane
 	//
-	inFlux = new Expression("3;");
-	outFlux = new Expression("4;");
+	inFlux = ExpressionFactory.createExpression("3;");
+	outFlux = ExpressionFactory.createExpression("4;");
 	jc = new JumpCondition(buffer);
 	jc.setInFlux(inFlux);
 	jc.setOutFlux(outFlux);
@@ -145,7 +149,7 @@ public static MathDescription getFilamentExample() throws Exception {
 	mathDesc.addVariable(filamentVar);
 	FilamentSubDomain filamentSubDomain = new FilamentSubDomain("filament1",mathDesc.getCompartmentSubDomain("cytosol"));
 	mathDesc.addSubDomain(filamentSubDomain);
-	filamentSubDomain.addEquation(new OdeEquation(filamentVar,new Expression(1.0), new Expression("-granule")));
+	filamentSubDomain.addEquation(new OdeEquation(filamentVar,ExpressionFactory.createExpression(1.0), ExpressionFactory.createExpression("-granule")));
 	
 	return mathDesc;
 }
@@ -189,9 +193,9 @@ public static MathDescription getOdeExactExample() throws Exception {
 	//
 	// Constants
 	//
-	Constant A_init = new Constant("A_init",new Expression("1;"));
+	Constant A_init = new Constant("A_init",ExpressionFactory.createExpression("1;"));
 	mathDesc.addVariable(A_init);
-	Constant k = new Constant("k",new Expression("2;"));
+	Constant k = new Constant("k",ExpressionFactory.createExpression("2;"));
 	mathDesc.addVariable(k);
 	
 	//
@@ -203,18 +207,18 @@ public static MathDescription getOdeExactExample() throws Exception {
 	//
 	// Functions
 	//
-	Function A_exact = new Function("A_exact",new Expression("A_init*exp(-k*t)"));
+	Function A_exact = new Function("A_exact",ExpressionFactory.createExpression("A_init*exp(-k*t)"));
 	mathDesc.addVariable(A_exact);
-	Function A_error = new Function("A_error",new Expression("A-A_exact"));
+	Function A_error = new Function("A_error",ExpressionFactory.createExpression("A-A_exact"));
 	mathDesc.addVariable(A_error);
 	
 	//
 	// A ODE for Cytosol
 	//
-	Expression rateExpression = new Expression("-k*A;");
-	Expression initialExpression = new Expression("A_init;");
+	IExpression rateExpression = ExpressionFactory.createExpression("-k*A;");
+	IExpression initialExpression = ExpressionFactory.createExpression("A_init;");
 	Equation equ = new OdeEquation(A,initialExpression, rateExpression);
-	equ.setExactSolution(new Expression("A_exact"));
+	equ.setExactSolution(ExpressionFactory.createExpression("A_exact"));
 	cytosolSubDomain.addEquation(equ);
 
 	return mathDesc;
@@ -247,9 +251,9 @@ public static MathDescription getOdeExample() throws Exception {
 	//
 	// Constants
 	//
-	Constant constant = new Constant("k2",new Expression("10;"));
+	Constant constant = new Constant("k2",ExpressionFactory.createExpression("10;"));
 	mathDesc.addVariable(constant);
-	constant = new Constant("k1",new Expression("30;"));
+	constant = new Constant("k1",ExpressionFactory.createExpression("30;"));
 	mathDesc.addVariable(constant);
 	
 	//
@@ -263,16 +267,16 @@ public static MathDescription getOdeExample() throws Exception {
 	//
 	// Calcium ODE for Cytosol
 	//
-	Expression rateExpression = new Expression("-k1*calcium+k2*buffer;");
-	Expression initialExpression = new Expression("40;");
+	IExpression rateExpression = ExpressionFactory.createExpression("-k1*calcium+k2*buffer;");
+	IExpression initialExpression = ExpressionFactory.createExpression("40;");
 	Equation equ = new OdeEquation(calcium,initialExpression, rateExpression);
 	cytosolSubDomain.addEquation(equ);
 	
 	//
 	// Buffer ODE for Cytosol
 	//
-	rateExpression = new Expression("k1*calcium-k2*buffer;");
-	initialExpression = new Expression("40;");
+	rateExpression = ExpressionFactory.createExpression("k1*calcium-k2*buffer;");
+	initialExpression = ExpressionFactory.createExpression("40;");
 	equ = new OdeEquation(buffer,initialExpression, rateExpression);
 	cytosolSubDomain.addEquation(equ);
 
@@ -307,11 +311,11 @@ public static MathDescription getOdeExample2() throws Exception {
 	//
 	// Constants
 	//
-	Constant constant = new Constant("k2",new Expression("10;"));
+	Constant constant = new Constant("k2",ExpressionFactory.createExpression("10;"));
 	mathDesc.addVariable(constant);
-	constant = new Constant("k1",new Expression("30;"));
+	constant = new Constant("k1",ExpressionFactory.createExpression("30;"));
 	mathDesc.addVariable(constant);
-	constant = new Constant("bufferMAX",new Expression("80;"));
+	constant = new Constant("bufferMAX",ExpressionFactory.createExpression("80;"));
 	mathDesc.addVariable(constant);
 	
 	//
@@ -323,8 +327,8 @@ public static MathDescription getOdeExample2() throws Exception {
 	//
 	// Buffer ODE for Cytosol
 	//
-	Expression rateExpression = new Expression("k1*(bufferMAX-buffer)-k2*buffer;");
-	Expression initialExpression = new Expression("40;");
+	IExpression rateExpression = ExpressionFactory.createExpression("k1*(bufferMAX-buffer)-k2*buffer;");
+	IExpression initialExpression = ExpressionFactory.createExpression("40;");
 	OdeEquation equ = new OdeEquation(buffer,initialExpression, rateExpression);
 	cytosolSubDomain.addEquation(equ);
 
@@ -359,25 +363,25 @@ public static MathDescription getOdeExampleWagner() throws Exception {
 	//
 	// Constants
 	//
-	Constant constant = new Constant("LambdaBeta",new Expression("6;"));
+	Constant constant = new Constant("LambdaBeta",ExpressionFactory.createExpression("6;"));
 	mathDesc.addVariable(constant);
-	constant = new Constant("vL",new Expression("5e-4;"));
+	constant = new Constant("vL",ExpressionFactory.createExpression("5e-4;"));
 	mathDesc.addVariable(constant);
-	constant = new Constant("I",new Expression("0.12;"));
+	constant = new Constant("I",ExpressionFactory.createExpression("0.12;"));
 	mathDesc.addVariable(constant);
-	constant = new Constant("dI",new Expression("0.025;"));
+	constant = new Constant("dI",ExpressionFactory.createExpression("0.025;"));
 	mathDesc.addVariable(constant);
-	constant = new Constant("dact",new Expression("1.2;"));
+	constant = new Constant("dact",ExpressionFactory.createExpression("1.2;"));
 	mathDesc.addVariable(constant);
-	constant = new Constant("Cer",new Expression("10;"));
+	constant = new Constant("Cer",ExpressionFactory.createExpression("10;"));
 	mathDesc.addVariable(constant);
-	constant = new Constant("vP",new Expression("0.1;"));
+	constant = new Constant("vP",ExpressionFactory.createExpression("0.1;"));
 	mathDesc.addVariable(constant);
-	constant = new Constant("kP",new Expression("0.4;"));
+	constant = new Constant("kP",ExpressionFactory.createExpression("0.4;"));
 	mathDesc.addVariable(constant);
-	constant = new Constant("dinh",new Expression("1.5;"));
+	constant = new Constant("dinh",ExpressionFactory.createExpression("1.5;"));
 	mathDesc.addVariable(constant);
-	constant = new Constant("tau0",new Expression("4.0;"));
+	constant = new Constant("tau0",ExpressionFactory.createExpression("4.0;"));
 	mathDesc.addVariable(constant);
 	
 	//
@@ -391,18 +395,18 @@ public static MathDescription getOdeExampleWagner() throws Exception {
 	//
 	// C ODE for Cytosol
 	//
-	Expression rateExpression = new Expression("LambdaBeta*("+
+	IExpression rateExpression = ExpressionFactory.createExpression("LambdaBeta*("+
 														"(vL+pow(I*C*h/((I+dI)*(C+dact)),3))*(Cer-C)"+
 														"-vP*(C*C/(C*C+kP*kP)));");
-	Expression initialExpression = new Expression("3;");
+	IExpression initialExpression = ExpressionFactory.createExpression("3;");
 	OdeEquation equ = new OdeEquation(C,initialExpression, rateExpression);
 	cytosolSubDomain.addEquation(equ);
 
 	//
 	// h ODE for Cytosol
 	//
-	rateExpression = new Expression("(dinh-(C+dinh)*h)/tau0;");
-	initialExpression = new Expression("0.93;");
+	rateExpression = ExpressionFactory.createExpression("(dinh-(C+dinh)*h)/tau0;");
+	initialExpression = ExpressionFactory.createExpression("0.93;");
 	equ = new OdeEquation(h,initialExpression, rateExpression);
 	cytosolSubDomain.addEquation(equ);
 
@@ -535,8 +539,8 @@ public static boolean testIfSame(MathDescription oldMathDesc, MathDescription ne
 								reasonForDecision.append(EQUATION_REMOVED);
 								return false;
 							}
-							Expression oldExps[] = (Expression[])cbit.util.BeanUtils.getArray(oldEqu.getExpressions(strippedOldMath),Expression.class);
-							Expression newExps[] = (Expression[])cbit.util.BeanUtils.getArray(newEqu.getExpressions(strippedNewMath),Expression.class);
+							IExpression oldExps[] = (IExpression[])cbit.util.BeanUtils.getArray(oldEqu.getExpressions(strippedOldMath),IExpression.class);
+							IExpression newExps[] = (IExpression[])cbit.util.BeanUtils.getArray(newEqu.getExpressions(strippedNewMath),IExpression.class);
 							if (oldExps.length != newExps.length){
 								reasonForDecision.append(DIFFERENT_NUMBER_OF_EXPRESSIONS);
 								return false;
@@ -544,7 +548,7 @@ public static boolean testIfSame(MathDescription oldMathDesc, MathDescription ne
 							for (int k = 0; k < oldExps.length; k++){
 								if (!oldExps[k].compareEqual(newExps[k])){
 									bFoundDifference = true;
-									if (!cbit.vcell.parser.ExpressionUtils.functionallyEquivalent(oldExps[k],newExps[k])){
+									if (!ExpressionUtilities.functionallyEquivalent(oldExps[k], newExps[k])){
 										//
 										// difference couldn't be reconciled
 										//
@@ -598,8 +602,8 @@ public static boolean testIfSame(MathDescription oldMathDesc, MathDescription ne
 									reasonForDecision.append(EQUATION_REMOVED);
 									return false;
 								}
-								Expression oldExps[] = (Expression[])cbit.util.BeanUtils.getArray(oldJumpCondition.getExpressions(strippedOldMath),Expression.class);
-								Expression newExps[] = (Expression[])cbit.util.BeanUtils.getArray(newJumpCondition.getExpressions(strippedNewMath),Expression.class);
+								IExpression oldExps[] = (IExpression[])cbit.util.BeanUtils.getArray(oldJumpCondition.getExpressions(strippedOldMath),IExpression.class);
+								IExpression newExps[] = (IExpression[])cbit.util.BeanUtils.getArray(newJumpCondition.getExpressions(strippedNewMath),IExpression.class);
 								if (oldExps.length != newExps.length){
 									reasonForDecision.append(DIFFERENT_NUMBER_OF_EXPRESSIONS);
 									return false;
@@ -607,7 +611,7 @@ public static boolean testIfSame(MathDescription oldMathDesc, MathDescription ne
 								for (int k = 0; k < oldExps.length; k++){
 									if (!oldExps[k].compareEqual(newExps[k])){
 										bFoundDifference = true;
-										if (!cbit.vcell.parser.ExpressionUtils.functionallyEquivalent(oldExps[k],newExps[k])){
+										if (!ExpressionUtilities.functionallyEquivalent(oldExps[k], newExps[k])){
 											//
 											// difference couldn't be reconciled
 											//
@@ -661,8 +665,8 @@ public static boolean testIfSame(MathDescription oldMathDesc, MathDescription ne
 							reasonForDecision.append(EQUATION_REMOVED);
 							return false;
 						}
-						Expression oldExps[] = oldFastSystem.getExpressions();
-						Expression newExps[] = newFastSystem.getExpressions();
+						IExpression oldExps[] = oldFastSystem.getExpressions();
+						IExpression newExps[] = newFastSystem.getExpressions();
 						if (oldExps.length != newExps.length){
 							reasonForDecision.append(DIFFERENT_NUMBER_OF_EXPRESSIONS);
 							return false;
@@ -670,7 +674,7 @@ public static boolean testIfSame(MathDescription oldMathDesc, MathDescription ne
 						for (int k = 0; k < oldExps.length; k++){
 							if (!oldExps[k].compareEqual(newExps[k])){
 								bFoundDifference = true;
-								if (!cbit.vcell.parser.ExpressionUtils.functionallyEquivalent(oldExps[k],newExps[k])){
+								if (!ExpressionUtilities.functionallyEquivalent(oldExps[k], newExps[k])){
 									//
 									// difference couldn't be reconciled
 									//
@@ -715,7 +719,7 @@ public static boolean testIfSame(MathDescription oldMathDesc, MathDescription ne
 				}
 			}
 		}
-	}catch (cbit.vcell.parser.DivideByZeroException e){
+	}catch (org.vcell.expression.DivideByZeroException e){
 		System.out.println("-------DIVIDE BY ZERO EXCEPTION-------------------------");
 		reasonForDecision.append(FAILURE_FLATTENING_DIV_BY_ZERO);
 		return false;

@@ -33,7 +33,7 @@ public CompartmentSubDomain (String name, int argPriority) {
  * This method was created by a SmartGuide.
  * @param name java.lang.String
  */
-CompartmentSubDomain (String name, MathDescription mathDesc, CommentStringTokenizer tokens) throws cbit.vcell.parser.ExpressionException, MathException {
+CompartmentSubDomain (String name, MathDescription mathDesc, CommentStringTokenizer tokens) throws org.vcell.expression.ExpressionException, MathException {
 	super(name);
 	read(mathDesc,tokens);
 }
@@ -170,7 +170,7 @@ public String getVCML(int spatialDimension) {
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-private void read(MathDescription mathDesc, CommentStringTokenizer tokens) throws MathException, cbit.vcell.parser.ExpressionException {
+private void read(MathDescription mathDesc, CommentStringTokenizer tokens) throws MathException, org.vcell.expression.ExpressionException {
 	String token = null;
 	token = tokens.nextToken();
 	if (!token.equalsIgnoreCase(VCML.BeginBlock)){

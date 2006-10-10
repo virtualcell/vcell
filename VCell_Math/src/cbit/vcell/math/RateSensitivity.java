@@ -5,8 +5,13 @@ package cbit.vcell.math;
  * All rights reserved.
 ©*/
 import cbit.vcell.parser.*;
+
 import java.util.*;
 import javax.swing.event.*;
+
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
 /**
  * The RateSensitivity class represents the parameter sensitivities of the rates of the nonlinear system C'(t) = f(C,t).
  * For simplicity, only ODE's are considered within a single subDomain.
@@ -20,7 +25,7 @@ public class RateSensitivity implements ChangeListener {
 	// variables are only Volume Variables with ODE's
 	//
 	private Constant consts[] = null;
-	private Expression rates[] = null;
+	private IExpression rates[] = null;
 	private Variable vars[] = null;
 	private int numRates = 0;
 	private int numConstants = 0;
@@ -30,7 +35,7 @@ public class RateSensitivity implements ChangeListener {
 	//   ---- = CPexp[i+numConsts*j] 
 	//   d Pj
 	//
-	private Expression CPexp[] = null;
+	private IExpression CPexp[] = null;
 /**
  * This method was created by a SmartGuide.
  * @param mathDesc cbit.vcell.math.MathDescription
@@ -45,7 +50,7 @@ public RateSensitivity (MathDescription AmathDesc, SubDomain AsubDomain) {
  * @exception java.lang.Exception The exception description.
  */
 private void create() {
-	CPexp = new Expression[numConstants*numRates];
+	CPexp = new IExpression[numConstants*numRates];
 /*
 	for (int rateIndex=0;rateIndex<numRates;rateIndex++){
 		for (int constantIndex=0;constantIndex<numConstants;constantIndex++){
@@ -69,7 +74,7 @@ private void create() {
  * @param parameterIndex int
  * @exception java.lang.Exception The exception description.
  */
-private Expression getCPexp(int rateIndex, int parameterIndex) throws MathException, ExpressionException, ArrayIndexOutOfBoundsException {
+private IExpression getCPexp(int rateIndex, int parameterIndex) throws MathException, ExpressionException, ArrayIndexOutOfBoundsException {
 	refresh();
 	if ((rateIndex<0) || (rateIndex>=numRates)){
 		throw new ArrayIndexOutOfBoundsException("rateIndex out of range '"+rateIndex+"' from 0 to "+numRates);
@@ -77,7 +82,7 @@ private Expression getCPexp(int rateIndex, int parameterIndex) throws MathExcept
 	if ((parameterIndex<0) || (parameterIndex>=numConstants)){
 		throw new ArrayIndexOutOfBoundsException("parameterIndex out of range '"+parameterIndex+"'");
 	}	
-	Expression exp = CPexp[rateIndex+parameterIndex*numRates];
+	IExpression exp = CPexp[rateIndex+parameterIndex*numRates];
 	if (exp == null){
 		makeCP(rateIndex,parameterIndex);
 		return CPexp[rateIndex+parameterIndex*numRates];
@@ -92,7 +97,7 @@ private Expression getCPexp(int rateIndex, int parameterIndex) throws MathExcept
  * @param parameterIndex int
  * @exception java.lang.Exception The exception description.
  */
-public Expression getCPexp(VolVariable variable, String parameterName) throws MathException, ExpressionException, ArrayIndexOutOfBoundsException {
+public IExpression getCPexp(VolVariable variable, String parameterName) throws MathException, ExpressionException, ArrayIndexOutOfBoundsException {
 	return getCPexp(getRateIndex(variable),getParameterIndexFromConstant(parameterName));
 }
 /**
@@ -133,9 +138,9 @@ public Enumeration getTotalExpressionsFromConstant(String constantName) throws E
 	Vector vector = new Vector();
 	int constantIndex = getParameterIndexFromConstant(constantName);
 	for (int rateIndex=0;rateIndex<numRates;rateIndex++){
-		Expression CP = new Expression(getCPexp(rateIndex, constantIndex));
-		Expression lhs = Expression.derivative(constantName,new Expression(vars[rateIndex].getName()+"_rate;"));
-		Expression exp = Expression.assign(lhs,CP);
+		IExpression CP = ExpressionFactory.createExpression(getCPexp(rateIndex, constantIndex));
+		IExpression lhs = ExpressionFactory.derivative(constantName,ExpressionFactory.createExpression(vars[rateIndex].getName()+"_rate;"));
+		IExpression exp = ExpressionFactory.assign(lhs,CP);
 		vector.addElement(exp);
 	}	
 	return vector.elements();
@@ -154,10 +159,10 @@ private void makeCP(int rateIndex, int constantIndex) throws ExpressionException
 	if (constantIndex<0 || constantIndex>=numConstants){
 		throw new ArrayIndexOutOfBoundsException("constantIndex out of range '"+constantIndex+"'");
 	}	
-	Expression rateExp = rates[rateIndex];
+	IExpression rateExp = rates[rateIndex];
 	Constant constant = consts[constantIndex];
 	rateExp.bindExpression(mathDesc);
-	Expression diff = rateExp.differentiate(constant.getName());
+	IExpression diff = rateExp.differentiate(constant.getName());
 	diff.bindExpression(null);
 	diff = diff.flatten();
 	diff.bindExpression(mathDesc);
@@ -189,7 +194,7 @@ private void parseMathDesc() throws MathException {
 	}
 	numConstants = constantList.size();
 	numRates = equationList.size();
-	rates = new Expression[numRates];
+	rates = new IExpression[numRates];
 	vars = new Variable[numRates];
 	consts = new Constant[numConstants];
 	for (int i=0;i<numRates;i++){
@@ -225,13 +230,13 @@ public void show() throws MathException, ExpressionException {
 	refresh();
 	for (int rateIndex=0;rateIndex<numRates;rateIndex++){
 		for (int constantIndex=0;constantIndex<numConstants;constantIndex++){
-			Expression rateExp = rates[rateIndex];
+			IExpression rateExp = rates[rateIndex];
 			Constant constant = consts[constantIndex];
 			/* Expression sens = CPexp[rateIndex+constantIndex*numRates];
 			if (sens == null){
 				continue;
 			}*/	
-			Expression sens = getCPexp(rateIndex,constantIndex);
+			IExpression sens = getCPexp(rateIndex,constantIndex);
 			System.out.println("RateSensitivity of "+vars[rateIndex].getName()+"' wrt "+consts[constantIndex].getName()+" is "+sens);
 		}
 	}

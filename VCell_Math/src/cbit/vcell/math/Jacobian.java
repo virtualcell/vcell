@@ -5,8 +5,13 @@ package cbit.vcell.math;
  * All rights reserved.
 ©*/
 import cbit.vcell.parser.*;
+
 import java.util.*;
 import javax.swing.event.*;
+
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
 /**
  * The Jacobian class represents the jacobian of the nonlinear system C'(t) = f(C,t).
  * For simplicity, only ODE's are considered within a single subDomain.
@@ -20,7 +25,7 @@ public class Jacobian implements ChangeListener {
 	// variables are only Volume Variables with ODE's
 	//
 	private VolVariable vars[] = null;
-	private Expression rates[] = null;
+	private IExpression rates[] = null;
 	private int numVariables = 0;
 	
 	//
@@ -28,7 +33,7 @@ public class Jacobian implements ChangeListener {
 	//   ---- = Jexp[i+numVars*j] 
 	//   d Cj
 	//
-	private Expression Jexp[] = null;
+	private IExpression Jexp[] = null;
 /**
  * This method was created by a SmartGuide.
  * @param mathDesc cbit.vcell.math.MathDescription
@@ -43,14 +48,14 @@ public Jacobian (MathDescription AmathDesc, SubDomain AsubDomain) {
  * @exception java.lang.Exception The exception description.
  */
 private void create() throws ExpressionException {
-	Jexp = new Expression[numVariables*numVariables];
+	Jexp = new IExpression[numVariables*numVariables];
 	for (int rateIndex=0;rateIndex<numVariables;rateIndex++){
 		for (int varIndex=0;varIndex<numVariables;varIndex++){
-			Expression rateExp = rates[rateIndex];
+			IExpression rateExp = rates[rateIndex];
 			VolVariable var = vars[varIndex];
 			rateExp.bindExpression(mathDesc);
 			rateExp = MathUtilities.substituteFunctions(rateExp, mathDesc);
-			Expression diff = rateExp.differentiate(var.getName());
+			IExpression diff = rateExp.differentiate(var.getName());
 			diff.bindExpression(null);
 			diff = diff.flatten();
 			setJ(rateIndex,varIndex,diff);
@@ -65,7 +70,7 @@ private void create() throws ExpressionException {
  * @param varIndex int
  * @exception java.lang.Exception The exception description.
  */
-public Expression getJexp(int rateIndex, int varIndex) throws MathException, ExpressionException, ArrayIndexOutOfBoundsException {
+public IExpression getJexp(int rateIndex, int varIndex) throws MathException, ExpressionException, ArrayIndexOutOfBoundsException {
 	refresh();
 	if (rateIndex<0 || rateIndex>=numVariables){
 		throw new ArrayIndexOutOfBoundsException("rateIndex out of range '"+rateIndex+"'");
@@ -117,9 +122,9 @@ public Enumeration getTotalExpressions(Variable var) throws Exception {
 	for (int rateIndex=0;rateIndex<numVariables;rateIndex++){
 		for (int varIndex=0;varIndex<numVariables;varIndex++){
 			if (var == vars[varIndex] || var == vars[rateIndex]){
-				Expression J = new Expression(getJexp(rateIndex, varIndex));
-				Expression lhs = Expression.derivative(vars[varIndex].getName(),new Expression(vars[rateIndex].getName()+"_rate;"));
-				Expression exp = Expression.assign(lhs,J);
+				IExpression J = ExpressionFactory.createExpression(getJexp(rateIndex, varIndex));
+				IExpression lhs = ExpressionFactory.derivative(vars[varIndex].getName(),ExpressionFactory.createExpression(vars[rateIndex].getName()+"_rate;"));
+				IExpression exp = ExpressionFactory.assign(lhs,J);
 				vector.addElement(exp);
 			}	
 		}
@@ -153,7 +158,7 @@ private void parseMathDesc() throws MathException {
 		throw new MathException("there are "+equationList.size()+" equations and "+variableList.size()+" variables");
 	}
 	numVariables = variableList.size();
-	rates = new Expression[numVariables];
+	rates = new IExpression[numVariables];
 	vars = new VolVariable[numVariables];
 	for (int i=0;i<numVariables;i++){
 		OdeEquation odeEqu = (OdeEquation)equationList.elementAt(i);
@@ -186,7 +191,7 @@ public void refreshDependencies() {
  * @param exp cbit.vcell.parser.Expression
  * @exception java.lang.Exception The exception description.
  */
-private void setJ(int rateIndex, int varIndex, Expression exp) throws ArrayIndexOutOfBoundsException {
+private void setJ(int rateIndex, int varIndex, IExpression exp) throws ArrayIndexOutOfBoundsException {
 	if (rateIndex<0 || rateIndex>=numVariables){
 		throw new ArrayIndexOutOfBoundsException("rateIndex out of range '"+rateIndex+"'");
 	}	
@@ -202,9 +207,9 @@ public void show() throws MathException, ExpressionException {
 	refresh();
 	for (int rateIndex=0;rateIndex<numVariables;rateIndex++){
 		for (int varIndex=0;varIndex<numVariables;varIndex++){
-			Expression rateExp = rates[rateIndex];
+			IExpression rateExp = rates[rateIndex];
 			VolVariable var = vars[varIndex];
-			Expression J = getJexp(rateIndex,varIndex);
+			IExpression J = getJexp(rateIndex,varIndex);
 			System.out.println("Jacobian of "+vars[rateIndex].getName()+"' wrt "+vars[varIndex].getName()+" is "+J);
 		}
 	}

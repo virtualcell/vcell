@@ -6,6 +6,11 @@ package cbit.vcell.math;
 ©*/
 import java.util.*;
 import java.io.*;
+
+import org.vcell.expression.ExpressionBindingException;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.IExpression;
+
 import cbit.vcell.parser.*;
 import cbit.util.*;
 /**
@@ -142,7 +147,7 @@ public final Enumeration getDependentVariables() throws MathException, Expressio
  * Creation date: (10/17/2002 1:58:28 AM)
  * @return cbit.vcell.parser.Expression[]
  */
-final Expression[] getExpressions() {
+final IExpression[] getExpressions() {
 	Vector expList = new Vector();
 	for (int i = 0; i < fastInvariantList.size(); i++){
 		FastInvariant fi = (FastInvariant)fastInvariantList.elementAt(i);
@@ -152,7 +157,7 @@ final Expression[] getExpressions() {
 		FastRate fr = (FastRate)fastRateList.elementAt(i);
 		expList.add(fr.getFunction());
 	}
-	return (Expression[])BeanUtils.getArray(expList,Expression.class);
+	return (IExpression[])BeanUtils.getArray(expList,IExpression.class);
 }
 /**
  * This method was created in VisualAge.
@@ -182,7 +187,7 @@ public Enumeration getFastRates() {
  * Creation date: (10/10/2002 10:31:03 AM)
  * @param sim cbit.vcell.solver.Simulation
  */
-Expression getFlattenedExpression(MathDescription mathDesc, Expression exp, boolean bRoundCoefficients) throws ExpressionException, MathException {
+IExpression getFlattenedExpression(MathDescription mathDesc, IExpression exp, boolean bRoundCoefficients) throws ExpressionException, MathException {
 
 	if (exp == null){
 		return null;
@@ -277,11 +282,11 @@ public abstract void read(CommentStringTokenizer tokens) throws MathException, E
  */
 public void rebind() throws ExpressionBindingException {
 	for (int i = 0; i < fastInvariantList.size(); i++){
-		Expression fastInvariant = ((FastInvariant)fastInvariantList.elementAt(i)).getFunction();
+		IExpression fastInvariant = ((FastInvariant)fastInvariantList.elementAt(i)).getFunction();
 		fastInvariant.bindExpression(mathDesc);
 	}
 	for (int i = 0; i < fastRateList.size(); i++){
-		Expression fastRate = ((FastRate)fastRateList.elementAt(i)).getFunction();
+		IExpression fastRate = ((FastRate)fastRateList.elementAt(i)).getFunction();
 		fastRate.bindExpression(mathDesc);
 	}
 }

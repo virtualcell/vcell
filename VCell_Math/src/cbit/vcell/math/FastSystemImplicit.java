@@ -5,10 +5,16 @@ import cbit.util.CommentStringTokenizer;
  * All rights reserved.
 ©*/
 import java.util.*;
+
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.IRationalExpression;
+import org.vcell.expression.IRationalExpression;
+import org.vcell.expression.RationalExpressionFactory;
+
 import cbit.vcell.parser.*;
 import cbit.vcell.matrix.RationalExpMatrix;
-import cbit.vcell.matrix.RationalExp;
-import cbit.vcell.matrix.RationalExpUtils;
 /**
  * This type was created in VisualAge.
  */
@@ -51,7 +57,7 @@ private void checkLinearity() throws MathException, ExpressionException {
 		Enumeration enum_fi = getFastInvariants();
 		while (enum_fi.hasMoreElements()){
 			FastInvariant fi = (FastInvariant)enum_fi.nextElement();
-			Expression exp = fi.getFunction().differentiate(var.getName());
+			IExpression exp = fi.getFunction().differentiate(var.getName());
 			exp.bindExpression(mathDesc);
 			try {
 				exp.evaluateConstant();
@@ -73,7 +79,7 @@ void flatten(MathDescription mathDesc, boolean bRoundCoefficients) throws Expres
 	// replace fastRates with flattended and substituted fastRates
 	//
 	for (int i = 0; i < this.fastRateList.size(); i++){
-		Expression oldExp = ((FastRate)fastRateList.elementAt(i)).getFunction();
+		IExpression oldExp = ((FastRate)fastRateList.elementAt(i)).getFunction();
 		fastRateList.setElementAt(new FastRate(getFlattenedExpression(mathDesc,oldExp,bRoundCoefficients)),i);
 	}
 	
@@ -81,7 +87,7 @@ void flatten(MathDescription mathDesc, boolean bRoundCoefficients) throws Expres
 	// replace fastInvariants with flattended and substituted fastInvariants
 	//
 	for (int i = 0; i < this.fastInvariantList.size(); i++){
-		Expression oldExp = ((FastInvariant)fastInvariantList.elementAt(i)).getFunction();
+		IExpression oldExp = ((FastInvariant)fastInvariantList.elementAt(i)).getFunction();
 		fastInvariantList.setElementAt(new FastInvariant(getFlattenedExpression(mathDesc,oldExp,bRoundCoefficients)),i);
 	}
 
@@ -139,13 +145,13 @@ public void read(CommentStringTokenizer tokens) throws MathException, Expression
 			break;
 		}			
 		if (token.equalsIgnoreCase(VCML.FastRate)){
-			Expression rate = new Expression(tokens);
+			IExpression rate = ExpressionFactory.createExpression(tokens);
 			FastRate fr = new FastRate(rate);
 			addFastRate(fr);
 			continue;
 		}			
 		if (token.equalsIgnoreCase(VCML.FastInvariant)){
-			Expression invariant = new Expression(tokens);
+			IExpression invariant = ExpressionFactory.createExpression(tokens);
 			FastInvariant fi = new FastInvariant(invariant);
 			addFastInvariant(fi);
 			continue;
@@ -182,7 +188,7 @@ private void refreshFastVarList() throws MathException, ExpressionException {
 	//
 	for (int i = 0; i < fastRateList.size(); i++) {
 		FastRate fr = (FastRate) fastRateList.elementAt(i);
-		Expression exp = fr.getFunction();
+		IExpression exp = fr.getFunction();
 		Enumeration enum1 = MathUtilities.getRequiredVariables(exp,mathDesc);
 		while (enum1.hasMoreElements()) {
 			Variable var = (Variable) enum1.nextElement();
@@ -203,7 +209,7 @@ private void refreshFastVarList() throws MathException, ExpressionException {
 	Hashtable hashtable = new Hashtable();
 	for (int i = 0; i < fastInvariantList.size(); i++) {
 		FastInvariant fi = (FastInvariant) fastInvariantList.elementAt(i);
-		Expression exp = fi.getFunction();
+		IExpression exp = fi.getFunction();
 //System.out.println("FastSystemImplicit.refreshFastVarList(), ORIGINAL FAST INVARIANT: "+exp);
 		Enumeration enum1 = MathUtilities.getRequiredVariables(exp,mathDesc);
 		while (enum1.hasMoreElements()) {
@@ -289,11 +295,11 @@ private void refreshInvarianceMatrix() throws MathException, ExpressionException
 	cbit.vcell.matrix.RationalExpMatrix matrix = new cbit.vcell.matrix.RationalExpMatrix(rows,cols);
 
 	for (int i=0;i<rows;i++){
-		Expression function = ((FastInvariant)fastInvariantList.elementAt(i)).getFunction();
+		IExpression function = ((FastInvariant)fastInvariantList.elementAt(i)).getFunction();
 		for (int j=0;j<numVars;j++){
 			Variable var = (Variable)fastVarList.elementAt(j);
-			Expression exp = function.differentiate(var.getName()).flatten();
-			RationalExp coeffRationalExp = RationalExpUtils.getRationalExp(exp);
+			IExpression exp = function.differentiate(var.getName()).flatten();
+			IRationalExpression coeffRationalExp = RationalExpressionFactory.getRationalExp(exp);
 			matrix.set_elem(i,j,coeffRationalExp);
 		}
 		matrix.set_elem(i,numVars+i,-1);
@@ -333,7 +339,7 @@ System.out.println("");
 	//
 	for (int i=0;i<rows;i++){
 		for (int j=0;j<rows;j++){
-			RationalExp rexp = matrix.get(i,j).simplify();
+			IRationalExpression rexp = matrix.get(i,j).simplify();
 			matrix.set_elem(i,j,rexp);
 		}
 	}
@@ -345,7 +351,7 @@ System.out.println("");
 			for (int j=i+1;j<cols;j++){
 				if (matrix.get(i,j).isConstant() && matrix.get(i,j).getConstant().doubleValue()==1.0){
 					for (int ii=0;ii<rows;ii++){
-						RationalExp temp = matrix.get(ii,i);
+						IRationalExpression temp = matrix.get(ii,i);
 						matrix.set_elem(ii,i,matrix.get(ii,j));
 						matrix.set_elem(ii,j,temp);
 					}
@@ -385,7 +391,7 @@ matrix.show();
 	dependencyMatrix = new RationalExpMatrix(rows, new_cols);
 	for (int i=0;i<rows;i++){
 		for (int j=0;j<new_cols;j++){
-			cbit.vcell.matrix.RationalExp rexp = matrix.get(i,j+dependentVarList.size()).simplify().minus();
+			org.vcell.expression.IRationalExpression rexp = matrix.get(i,j+dependentVarList.size()).simplify().minus();
 			dependencyMatrix.set_elem(i,j,rexp);
 		}
 	}
@@ -427,15 +433,15 @@ private void refreshSubstitutedRateExps() throws MathException, ExpressionExcept
 	//
 	dependencyExpList.removeAllElements();
 	for (int row=0;row<dependentVarList.size();row++){
-		Expression exp = new Expression("0.0;");
+		IExpression exp = ExpressionFactory.createExpression("0.0;");
 		//
 		// get terms involving independent variables
 		//
 		for (int col=0;col<independentVarList.size();col++){
 			Variable indepVar = (Variable)independentVarList.elementAt(col);
-			cbit.vcell.matrix.RationalExp coefExp = dependencyMatrix.get(row,col);
+			IRationalExpression coefExp = dependencyMatrix.get(row,col);
 			if (!coefExp.isZero()){
-				exp = Expression.add(exp, new Expression(coefExp.infixString()+"*"+indepVar.getName()));
+				exp = ExpressionFactory.add(exp, ExpressionFactory.createExpression(coefExp.infixString()+"*"+indepVar.getName()));
 			}
 		}
 		//
@@ -443,9 +449,9 @@ private void refreshSubstitutedRateExps() throws MathException, ExpressionExcept
 		//
 		for (int col=independentVarList.size();col<dependencyMatrix.getNumCols();col++){
 			PseudoConstant pc = (PseudoConstant)pseudoConstantList.elementAt(col-independentVarList.size());
-			cbit.vcell.matrix.RationalExp coefExp = dependencyMatrix.get(row,col);
+			IRationalExpression coefExp = dependencyMatrix.get(row,col);
 			if (!coefExp.isZero()){
-				exp = Expression.add(exp, new Expression(coefExp.infixString()+"*"+pc.getName()));
+				exp = ExpressionFactory.add(exp, ExpressionFactory.createExpression(coefExp.infixString()+"*"+pc.getName()));
 			}
 		}
 		exp = exp.flatten();
@@ -459,12 +465,12 @@ private void refreshSubstitutedRateExps() throws MathException, ExpressionExcept
 	fastRateExpList.removeAllElements();
 	for (int i=0;i<fastRateList.size();i++){
 		FastRate fr = (FastRate)fastRateList.elementAt(i);
-		Expression exp = new Expression(MathUtilities.substituteFunctions(new Expression(fr.getFunction()),mathDesc));
+		IExpression exp = ExpressionFactory.createExpression(MathUtilities.substituteFunctions(ExpressionFactory.createExpression(fr.getFunction()),mathDesc));
 //System.out.println("FastSystem.refreshSubstitutedRateExps() fast rate before substitution = "+exp.toString());
 		for (int j=0;j<dependentVarList.size();j++){
 			Variable depVar = (Variable)dependentVarList.elementAt(j);
-			Expression subExp = new Expression((Expression)dependencyExpList.elementAt(j));
-			exp.substituteInPlace(new Expression(depVar.getName()),subExp);
+			IExpression subExp = ExpressionFactory.createExpression((IExpression)dependencyExpList.elementAt(j));
+			exp.substituteInPlace(ExpressionFactory.createExpression(depVar.getName()),subExp);
 		}
 		exp.bindExpression(null);
 		exp = exp.flatten();

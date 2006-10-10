@@ -1,6 +1,7 @@
 package cbit.vcell.math;
 
-import cbit.vcell.parser.Expression;
+import org.vcell.expression.ExpressionFactory;
+
 /**
  * Insert the type's description here.
  * Creation date: (4/12/2002 4:26:51 PM)
@@ -14,17 +15,17 @@ public class VariableHashTest {
 public static void main(java.lang.String[] args) {
 	try {
 		VariableHash hash = new VariableHash();
-		hash.addVariable(new Constant("D",new Expression("4")));
-		hash.addVariable(new Constant("E",new Expression("D")));
-		hash.addVariable(new Constant("B",new Expression("C")));
-		hash.addVariable(new Constant("F",new Expression("A+B+C+E")));
-		hash.addVariable(new Constant("C",new Expression("D+5")));
-		hash.addVariable(new Constant("A",new Expression("B+C")));
+		hash.addVariable(new Constant("D",ExpressionFactory.createExpression("4")));
+		hash.addVariable(new Constant("E",ExpressionFactory.createExpression("D")));
+		hash.addVariable(new Constant("B",ExpressionFactory.createExpression("C")));
+		hash.addVariable(new Constant("F",ExpressionFactory.createExpression("A+B+C+E")));
+		hash.addVariable(new Constant("C",ExpressionFactory.createExpression("D+5")));
+		hash.addVariable(new Constant("A",ExpressionFactory.createExpression("B+C")));
 		hash.addVariable(new VolVariable("V1"));
 		hash.addVariable(new VolVariable("V2"));
-		hash.addVariable(new Function("B1",new Expression("C1+V3")));
-		hash.addVariable(new Function("F1",new Expression("A+B+C+E/V1+V2-C1+B1")));
-		hash.addVariable(new Function("C1",new Expression("D+5+B1")));
+		hash.addVariable(new Function("B1",ExpressionFactory.createExpression("C1+V3")));
+		hash.addVariable(new Function("F1",ExpressionFactory.createExpression("A+B+C+E/V1+V2-C1+B1")));
+		hash.addVariable(new Function("C1",ExpressionFactory.createExpression("D+5+B1")));
 		hash.addVariable(new VolVariable("V3"));
 
 		//

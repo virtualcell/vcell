@@ -5,6 +5,11 @@ package cbit.vcell.math;
 ©*/
 import java.util.*;
 
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.SymbolTable;
+
 import cbit.util.CommentStringTokenizer;
 import cbit.vcell.parser.*;
 /**
@@ -12,8 +17,8 @@ import cbit.vcell.parser.*;
  * 
  */
 public class MembraneRegionEquation extends Equation {
-	private Expression membraneRateExpression = new Expression(0.0);
-	private Expression uniformRateExpression = new Expression(0.0);
+	private IExpression membraneRateExpression = ExpressionFactory.createExpression(0.0);
+	private IExpression uniformRateExpression = ExpressionFactory.createExpression(0.0);
 
 /**
  * OdeEquation constructor comment.
@@ -22,7 +27,7 @@ public class MembraneRegionEquation extends Equation {
  * @param initialExp cbit.vcell.parser.Expression
  * @param rateExp cbit.vcell.parser.Expression
  */
-public MembraneRegionEquation(MembraneRegionVariable var, Expression initialExp) {
+public MembraneRegionEquation(MembraneRegionVariable var, IExpression initialExp) {
 	super(var, initialExp, null);
 }
 
@@ -58,7 +63,7 @@ public boolean compareEqual(cbit.util.Matchable object) {
  * Creation date: (10/10/2002 10:41:10 AM)
  * @param sim cbit.vcell.solver.Simulation
  */
-void flatten(SymbolTable symbolTable, boolean bRoundCoefficients) throws cbit.vcell.parser.ExpressionException, MathException {
+void flatten(SymbolTable symbolTable, boolean bRoundCoefficients) throws org.vcell.expression.ExpressionException, MathException {
 	super.flatten0(symbolTable,bRoundCoefficients);
 	
 	membraneRateExpression = getFlattenedExpression(symbolTable,membraneRateExpression,bRoundCoefficients);
@@ -87,7 +92,7 @@ protected Vector getExpressions(MathDescription mathDesc){
  * Creation date: (7/9/01 2:05:09 PM)
  * @return cbit.vcell.parser.Expression
  */
-public cbit.vcell.parser.Expression getMembraneRateExpression() {
+public IExpression getMembraneRateExpression() {
 	return membraneRateExpression;
 }
 
@@ -98,20 +103,20 @@ public cbit.vcell.parser.Expression getMembraneRateExpression() {
  */
 public Enumeration getTotalExpressions() throws ExpressionException {
 	Vector vector = new Vector();
-	Expression lvalueExp = new Expression("UniformRate_"+getVariable().getName()+";");
-	Expression rvalueExp = new Expression(getUniformRateExpression());
-	Expression totalExp = Expression.assign(lvalueExp,rvalueExp);
+	IExpression lvalueExp = ExpressionFactory.createExpression("UniformRate_"+getVariable().getName()+";");
+	IExpression rvalueExp = ExpressionFactory.createExpression(getUniformRateExpression());
+	IExpression totalExp = ExpressionFactory.assign(lvalueExp,rvalueExp);
 	totalExp.bindExpression(null);
 	totalExp.flatten();
 	vector.addElement(totalExp);
-	lvalueExp = new Expression("MembraneRate_"+getVariable().getName()+";");
-	rvalueExp = new Expression(getMembraneRateExpression());
-	totalExp = Expression.assign(lvalueExp,rvalueExp);
+	lvalueExp = ExpressionFactory.createExpression("MembraneRate_"+getVariable().getName()+";");
+	rvalueExp = ExpressionFactory.createExpression(getMembraneRateExpression());
+	totalExp = ExpressionFactory.assign(lvalueExp,rvalueExp);
 	totalExp.bindExpression(null);
 	totalExp.flatten();
 	vector.addElement(totalExp);
 	vector.addElement(getTotalInitialExpression());
-	Expression solutionExp = getTotalSolutionExpression();
+	IExpression solutionExp = getTotalSolutionExpression();
 	if (solutionExp!=null){
 		vector.addElement(solutionExp);
 	}	
@@ -124,7 +129,7 @@ public Enumeration getTotalExpressions() throws ExpressionException {
  * Creation date: (7/9/01 2:05:09 PM)
  * @return cbit.vcell.parser.Expression
  */
-public cbit.vcell.parser.Expression getUniformRateExpression() {
+public IExpression getUniformRateExpression() {
 	return uniformRateExpression;
 }
 
@@ -184,21 +189,21 @@ public void read(CommentStringTokenizer tokens) throws MathFormatException, Expr
 			break;
 		}			
 		if (token.equalsIgnoreCase(VCML.Initial)){
-			initialExp = new Expression(tokens);
+			initialExp = ExpressionFactory.createExpression(tokens);
 			continue;
 		}
 		if (token.equalsIgnoreCase(VCML.UniformRate)){
-			Expression exp = new Expression(tokens);
+			IExpression exp = ExpressionFactory.createExpression(tokens);
 			setUniformRateExpression(exp);
 			continue;
 		}
 		if (token.equalsIgnoreCase(VCML.MembraneRate)){
-			Expression exp = new Expression(tokens);
+			IExpression exp = ExpressionFactory.createExpression(tokens);
 			setMembraneRateExpression(exp);
 			continue;
 		}
 		if (token.equalsIgnoreCase(VCML.Exact)){
-			exactExp = new Expression(tokens);
+			exactExp = ExpressionFactory.createExpression(tokens);
 			solutionType = EXACT_SOLUTION;
 			continue;
 		}
@@ -213,7 +218,7 @@ public void read(CommentStringTokenizer tokens) throws MathFormatException, Expr
  * Creation date: (7/9/01 2:05:09 PM)
  * @param newMembraneRateExpression cbit.vcell.parser.Expression
  */
-public void setMembraneRateExpression(cbit.vcell.parser.Expression newMembraneRateExpression) {
+public void setMembraneRateExpression(IExpression newMembraneRateExpression) {
 	membraneRateExpression = newMembraneRateExpression;
 }
 
@@ -223,7 +228,7 @@ public void setMembraneRateExpression(cbit.vcell.parser.Expression newMembraneRa
  * Creation date: (7/9/01 2:05:09 PM)
  * @param newMembraneRateExpression cbit.vcell.parser.Expression
  */
-public void setUniformRateExpression(cbit.vcell.parser.Expression newUniformRateExpression) {
+public void setUniformRateExpression(IExpression newUniformRateExpression) {
 	uniformRateExpression = newUniformRateExpression;
 }
 }

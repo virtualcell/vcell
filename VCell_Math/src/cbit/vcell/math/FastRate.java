@@ -3,6 +3,8 @@ package cbit.vcell.math;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.expression.IExpression;
+
 import cbit.vcell.parser.*;
 import cbit.util.Matchable;
 
@@ -25,7 +27,7 @@ public class FastRate extends BoundFunction{
  * @param mathDesc cbit.vcell.math.MathDescription
  * @param function cbit.vcell.parser.Expression
  */
-public FastRate(cbit.vcell.parser.Expression function) {
+public FastRate(IExpression function) {
 	super(function);
 }
 }

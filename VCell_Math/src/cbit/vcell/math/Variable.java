@@ -5,6 +5,14 @@ package cbit.vcell.math;
  * All rights reserved.
 ©*/
 import java.io.*;
+
+import org.vcell.expression.ExpressionBindingException;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.NameScope;
+import org.vcell.expression.SymbolTable;
+import org.vcell.expression.SymbolTableEntry;
+
 import cbit.vcell.parser.*;
 import cbit.util.*;
 /**
@@ -65,7 +73,7 @@ public double getConstantValue() throws ExpressionException {
  * @return cbit.vcell.parser.Expression
  * @exception java.lang.Exception The exception description.
  */
-public Expression getExpression() {
+public IExpression getExpression() {
 	return null;
 }
 /**
