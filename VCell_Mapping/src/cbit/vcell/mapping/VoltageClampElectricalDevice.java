@@ -1,9 +1,10 @@
 package cbit.vcell.mapping;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+
 import cbit.vcell.modelapp.ElectricalStimulus;
 import cbit.vcell.modelapp.VoltageClampStimulus;
 import cbit.vcell.modelapp.ElectricalStimulus.ElectricalStimulusParameter;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 /**
  * Insert the type's description here.
  * Creation date: (4/7/2004 11:00:15 AM)
@@ -24,7 +25,7 @@ public VoltageClampElectricalDevice(cbit.vcell.modelapp.VoltageClampStimulus arg
 	
 	parameters[0] = new ElectricalDeviceParameter(
 							DefaultNames[ROLE_TotalCurrentDensity],
-							new Expression(DefaultNames[ROLE_TransmembraneCurrentDensity]),
+							ExpressionFactory.createExpression(DefaultNames[ROLE_TransmembraneCurrentDensity]),
 							ROLE_TotalCurrentDensity,
 							cbit.vcell.units.VCUnitDefinition.UNIT_pA_per_um2);
 	
@@ -37,7 +38,7 @@ public VoltageClampElectricalDevice(cbit.vcell.modelapp.VoltageClampStimulus arg
 	ElectricalStimulus.ElectricalStimulusParameter voltageParm = voltageClampStimulus.getVoltageParameter();
 	parameters[2] = new ElectricalDeviceParameter(
 							voltageParm.getName(),
-							new Expression(voltageParm.getExpression()),
+							ExpressionFactory.createExpression(voltageParm.getExpression()),
 							ROLE_Voltage,
 							voltageParm.getUnitDefinition());
 	//
@@ -47,7 +48,7 @@ public VoltageClampElectricalDevice(cbit.vcell.modelapp.VoltageClampStimulus arg
 	for (int i = 0;stimulusParameters!=null && i <stimulusParameters.length; i++){
 		int role = stimulusParameters[i].getRole();
 		if (role==ElectricalStimulus.ROLE_UserDefined){
-			ElectricalDeviceParameter newParam = new ElectricalDeviceParameter(stimulusParameters[i].getName(),new Expression(stimulusParameters[i].getExpression()),ROLE_UserDefined,stimulusParameters[i].getUnitDefinition());
+			ElectricalDeviceParameter newParam = new ElectricalDeviceParameter(stimulusParameters[i].getName(),ExpressionFactory.createExpression(stimulusParameters[i].getExpression()),ROLE_UserDefined,stimulusParameters[i].getUnitDefinition());
 			parameters = (ElectricalDeviceParameter[])cbit.util.BeanUtils.addElement(parameters,newParam);
 		}
 	}

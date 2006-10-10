@@ -1,7 +1,11 @@
 package cbit.vcell.mapping;
 import cbit.vcell.parser.*;
+
 import java.util.Hashtable;
 import java.util.Vector;
+
+import org.vcell.expression.IExpression;
+
 import cbit.util.graph.Graph;
 import cbit.util.graph.Node;
 import cbit.util.graph.Edge;
@@ -25,11 +29,11 @@ public class MathSystemHash {
 		}
 	}
 
-	public static abstract class Symbol implements cbit.vcell.parser.SymbolTableEntry {
+	public static abstract class Symbol implements org.vcell.expression.SymbolTableEntry {
 		String name = null;
-		cbit.vcell.parser.Expression expression = null;
+		org.vcell.expression.IExpression expression = null;
 		
-		public Symbol(String argName, cbit.vcell.parser.Expression argExpression){
+		public Symbol(String argName, org.vcell.expression.IExpression argExpression){
 			this.name = argName;
 			this.expression = argExpression;
 		}
@@ -46,31 +50,31 @@ public class MathSystemHash {
 				try {
 					expression.evaluateConstant();
 					return true;
-				}catch (cbit.vcell.parser.ExpressionException e){
+				}catch (org.vcell.expression.ExpressionException e){
 					return false;
 				}
 			}
 		}
-		public cbit.vcell.parser.NameScope getNameScope() {
+		public org.vcell.expression.NameScope getNameScope() {
 			return null;
 		}
 		public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
 			return null;
 		}
-		public double getConstantValue() throws cbit.vcell.parser.ExpressionException {
+		public double getConstantValue() throws org.vcell.expression.ExpressionException {
 			if (expression == null){
 				throw new RuntimeException("no value");
 			}else{
 				return expression.evaluateConstant();
 			}
 		}
-		public cbit.vcell.parser.Expression getExpression() {
+		public IExpression getExpression() {
 			return expression;
 		}
 	};
 	
 	public static class Variable extends Symbol {
-		public Variable(String argName, cbit.vcell.parser.Expression exp){
+		public Variable(String argName, org.vcell.expression.IExpression exp){
 			super(argName,exp);
 		}
 	};
@@ -83,20 +87,20 @@ public class MathSystemHash {
 
 	public static abstract class VariableReference extends Symbol {
 		Variable variable = null;
-		protected VariableReference(Variable argVariable, String argName, cbit.vcell.parser.Expression exp){
+		protected VariableReference(Variable argVariable, String argName, org.vcell.expression.IExpression exp){
 			super(argName, exp);
 			variable = argVariable;
 		} 
 	}
 	
 	public static class VariableDerivative extends VariableReference {
-		public VariableDerivative(Variable argVariable, cbit.vcell.parser.Expression exp){
+		public VariableDerivative(Variable argVariable, org.vcell.expression.IExpression exp){
 			super(argVariable, argVariable.getName()+"___d_dt", exp);
 		} 
 	}
 	
 	public static class VariableInitial extends VariableReference {
-		public VariableInitial(Variable argVariable, cbit.vcell.parser.Expression exp){
+		public VariableInitial(Variable argVariable, org.vcell.expression.IExpression exp){
 			super(argVariable, argVariable.getName()+"___at_t0", exp);
 		} 
 	}

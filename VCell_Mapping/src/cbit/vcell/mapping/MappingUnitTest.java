@@ -1,8 +1,10 @@
 package cbit.vcell.mapping;
-import cbit.vcell.parser.SimpleSymbolTable;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.SimpleSymbolTable;
+import org.vcell.expression.VCUnitEvaluator;
+
 import cbit.vcell.units.VCUnitDefinition;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.VCUnitEvaluator;
 /**
  * Insert the type's description here.
  * Creation date: (11/5/2004 5:49:02 PM)
@@ -15,17 +17,16 @@ public class MappingUnitTest {
  */
 public static void main(java.lang.String[] args) {
 	try {
-		Expression exps[] = {
-			new Expression("currentDensity/_F_*_N_pmol_"),		// from current density to surface density rate
-			new Expression("surfaceRate*_F_/_N_pmol_"),			// from surface density rate to current density
-			new Expression("surfDens*volFract*svratio*KMOLE"),	// from surface density to concentration
-			new Expression("KMOLE/volFract*surfaceRate"),		// inside flux correction
-//			new Expression("fluxCorrection*KMOLE*surfaceRate"), //
-			new Expression("_F_*fluxRate"),	// from uM.um.s-1 to pA.um-2
-			new Expression("_F_nmol_*fluxRate"),	// from uM.um.s-1 to pA.um-2
-			new Expression(" - (_K_GHK_*V * pow(_F_,2.0) * (K_cyt - (K_extr * exp( - (_F_ * V / (_R_ * _T_))))) * Permeability / (_R_ * _T_) / (1.0 - exp( - (_F_ * V / (_R_ * _T_)))))"),
-			new Expression(" - (_K_GHK_*V * pow(_F_,2.0) * K_cyt * Permeability / (_R_ * _T_))"),
-			new Expression("_F_ * V / (_R_ * _T_)"),
+		IExpression exps[] = {
+			ExpressionFactory.createExpression("currentDensity/_F_*_N_pmol_"),		// from current density to surface density rate
+			ExpressionFactory.createExpression("surfaceRate*_F_/_N_pmol_"),			// from surface density rate to current density
+			ExpressionFactory.createExpression("surfDens*volFract*svratio*KMOLE"),	// from surface density to concentration
+			ExpressionFactory.createExpression("KMOLE/volFract*surfaceRate"),		// inside flux correction
+ExpressionFactory.createExpression("_F_*fluxRate"),	// from uM.um.s-1 to pA.um-2
+			ExpressionFactory.createExpression("_F_nmol_*fluxRate"),	// from uM.um.s-1 to pA.um-2
+			ExpressionFactory.createExpression(" - (_K_GHK_*V * pow(_F_,2.0) * (K_cyt - (K_extr * exp( - (_F_ * V / (_R_ * _T_))))) * Permeability / (_R_ * _T_) / (1.0 - exp( - (_F_ * V / (_R_ * _T_)))))"),
+			ExpressionFactory.createExpression(" - (_K_GHK_*V * pow(_F_,2.0) * K_cyt * Permeability / (_R_ * _T_))"),
+			ExpressionFactory.createExpression("_F_ * V / (_R_ * _T_)"),
 		};
 		String varSymbols[] = { "currentDensity",
 								cbit.vcell.model.ReservedSymbol.FARADAY_CONSTANT.getName(),

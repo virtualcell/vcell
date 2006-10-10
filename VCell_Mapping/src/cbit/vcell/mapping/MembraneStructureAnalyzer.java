@@ -13,8 +13,10 @@ import cbit.vcell.modelapp.SpeciesContextSpec;
 
 import java.util.*;
 
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
 
-import cbit.vcell.parser.Expression;
+
 /**
  * This type was created in VisualAge.
  */
@@ -136,22 +138,22 @@ private void refreshResolvedFluxes() throws Exception {
 				resolvedFluxList.addElement(rf);
 			}
 			FeatureMapping insideFeatureMapping = (FeatureMapping)geoContext.getStructureMapping(((Membrane)fr.getStructure()).getInsideFeature());
-			Expression insideFluxCorrection = (new Expression("1.0/("+insideFeatureMapping.getResidualVolumeFraction(mathMapping.getSimulationContext()).infix(mathMapping.getNameScope())+")"));
+			IExpression insideFluxCorrection = (ExpressionFactory.createExpression("1.0/("+insideFeatureMapping.getResidualVolumeFraction(mathMapping.getSimulationContext()).infix(mathMapping.getNameScope())+")"));
 			//
 			// introduce bug compatability mode for resolved flux correction
 			//
-			if (bResolvedFluxCorrectionBug && !insideFeatureMapping.getResidualVolumeFraction(mathMapping.getSimulationContext()).compareEqual(new Expression(1.0))){
+			if (bResolvedFluxCorrectionBug && !insideFeatureMapping.getResidualVolumeFraction(mathMapping.getSimulationContext()).compareEqual(ExpressionFactory.createExpression(1.0))){
 				bResolvedFluxCorrectionBugExercised = true;
 				System.out.println("MembraneStructureAnalyzer.refreshResolvedFluxes() ... 'ResolvedFluxCorrection' bug compatability mode");
-				insideFluxCorrection = new Expression(1.0);
+				insideFluxCorrection = ExpressionFactory.createExpression(1.0);
 			}
 			//
 			// add flux term to ResolvedFlux.inFlux
 			//
 			if (rf.inFlux.isZero()){
-				rf.inFlux = Expression.mult(new Expression(mathMapping.getNameScope().getSymbolName(fr.getKinetics().getRateParameter())),insideFluxCorrection).flatten();
+				rf.inFlux = ExpressionFactory.mult(ExpressionFactory.createExpression(mathMapping.getNameScope().getSymbolName(fr.getKinetics().getRateParameter())), insideFluxCorrection).flatten();
 			}else{
-				rf.inFlux = Expression.add(rf.inFlux,Expression.mult(new Expression(mathMapping.getNameScope().getSymbolName(fr.getKinetics().getRateParameter())),insideFluxCorrection).flatten());
+				rf.inFlux = ExpressionFactory.add(rf.inFlux, ExpressionFactory.mult(ExpressionFactory.createExpression(mathMapping.getNameScope().getSymbolName(fr.getKinetics().getRateParameter())), insideFluxCorrection).flatten());
 			}
 			rf.inFlux.bindExpression(mathMapping);
 		}
@@ -170,22 +172,22 @@ private void refreshResolvedFluxes() throws Exception {
 				resolvedFluxList.addElement(rf);
 			}
 			FeatureMapping outsideFeatureMapping = (FeatureMapping)geoContext.getStructureMapping(((Membrane)fr.getStructure()).getOutsideFeature());
-			Expression outsideFluxCorrection = (new Expression("1.0/("+outsideFeatureMapping.getResidualVolumeFraction(mathMapping.getSimulationContext()).infix(mathMapping.getNameScope())+")"));
+			IExpression outsideFluxCorrection = (ExpressionFactory.createExpression("1.0/("+outsideFeatureMapping.getResidualVolumeFraction(mathMapping.getSimulationContext()).infix(mathMapping.getNameScope())+")"));
 			//
 			// introduce bug compatability mode for resolved flux correction
 			//
-			if (bResolvedFluxCorrectionBug && !outsideFeatureMapping.getResidualVolumeFraction(mathMapping.getSimulationContext()).compareEqual(new Expression(1.0))){
+			if (bResolvedFluxCorrectionBug && !outsideFeatureMapping.getResidualVolumeFraction(mathMapping.getSimulationContext()).compareEqual(ExpressionFactory.createExpression(1.0))){
 				bResolvedFluxCorrectionBugExercised = true;
 				System.out.println("MembraneStructureAnalyzer.refreshResolvedFluxes() ... 'ResolvedFluxCorrection' bug compatability mode");
-				outsideFluxCorrection = new Expression(1.0);
+				outsideFluxCorrection = ExpressionFactory.createExpression(1.0);
 			}
 			//
 			// sub flux term to resolvedFlux.outFlux
 			//
 			if (rf.outFlux.isZero()){
-				rf.outFlux = Expression.mult(new Expression("-"+mathMapping.getNameScope().getSymbolName(fr.getKinetics().getRateParameter())),outsideFluxCorrection).flatten();
+				rf.outFlux = ExpressionFactory.mult(ExpressionFactory.createExpression("-"+mathMapping.getNameScope().getSymbolName(fr.getKinetics().getRateParameter())), outsideFluxCorrection).flatten();
 			}else{
-				rf.outFlux = Expression.add(rf.outFlux,Expression.mult(new Expression("-"+mathMapping.getNameScope().getSymbolName(fr.getKinetics().getRateParameter())),outsideFluxCorrection).flatten());
+				rf.outFlux = ExpressionFactory.add(rf.outFlux, ExpressionFactory.mult(ExpressionFactory.createExpression("-"+mathMapping.getNameScope().getSymbolName(fr.getKinetics().getRateParameter())), outsideFluxCorrection).flatten());
 			}
 			rf.outFlux.bindExpression(mathMapping);
 		}
@@ -242,19 +244,19 @@ private void refreshResolvedFluxes() throws Exception {
 								// for binding on inside, add to ResolvedFlux.inFlux
 								//
 								FeatureMapping insideFeatureMapping = (FeatureMapping)geoContext.getStructureMapping(getMembrane().getInsideFeature());
-								Expression insideFluxCorrection = (new Expression(mathMapping.getNameScope().getSymbolName(ReservedSymbol.KMOLE)+"/("+insideFeatureMapping.getResidualVolumeFraction(mathMapping.getSimulationContext()).infix(mathMapping.getNameScope())+")")).flatten();
+								IExpression insideFluxCorrection = (ExpressionFactory.createExpression(mathMapping.getNameScope().getSymbolName(ReservedSymbol.KMOLE)+"/("+insideFeatureMapping.getResidualVolumeFraction(mathMapping.getSimulationContext()).infix(mathMapping.getNameScope())+")")).flatten();
 								//
 								// introduce bug compatability mode for resolved flux correction
 								//
-								if (bResolvedFluxCorrectionBug && !insideFeatureMapping.getResidualVolumeFraction(mathMapping.getSimulationContext()).compareEqual(new Expression(1.0))){
+								if (bResolvedFluxCorrectionBug && !insideFeatureMapping.getResidualVolumeFraction(mathMapping.getSimulationContext()).compareEqual(ExpressionFactory.createExpression(1.0))){
 									bResolvedFluxCorrectionBugExercised = true;
 									System.out.println("MembraneStructureAnalyzer.refreshResolvedFluxes() ... 'ResolvedFluxCorrection' bug compatability mode");
-									insideFluxCorrection = new Expression(ReservedSymbol.KMOLE.getName());
+									insideFluxCorrection = ExpressionFactory.createExpression(ReservedSymbol.KMOLE.getName());
 								}
 								if (rf.inFlux.isZero()){
-									rf.inFlux = Expression.mult(insideFluxCorrection,new Expression(sr.getRateExpression(rp_Array[k]).infix(mathMapping.getNameScope())));
+									rf.inFlux = ExpressionFactory.mult(insideFluxCorrection, ExpressionFactory.createExpression(sr.getRateExpression(rp_Array[k]).infix(mathMapping.getNameScope())));
 								}else{
-									rf.inFlux = Expression.add(rf.inFlux,Expression.mult(insideFluxCorrection,new Expression(sr.getRateExpression(rp_Array[k]).infix(mathMapping.getNameScope()))));
+									rf.inFlux = ExpressionFactory.add(rf.inFlux, ExpressionFactory.mult(insideFluxCorrection, ExpressionFactory.createExpression(sr.getRateExpression(rp_Array[k]).infix(mathMapping.getNameScope()))));
 								}
 								rf.inFlux.bindExpression(mathMapping);
 							}else if (rp_Array[k].getStructure() == getMembrane().getOutsideFeature()){
@@ -262,19 +264,19 @@ private void refreshResolvedFluxes() throws Exception {
 								// for binding on outside, add to ResolvedFlux.outFlux
 								//
 								FeatureMapping outsideFeatureMapping = (FeatureMapping)geoContext.getStructureMapping(getMembrane().getOutsideFeature());
-								Expression outsideFluxCorrection = (new Expression(mathMapping.getNameScope().getSymbolName(ReservedSymbol.KMOLE)+"/("+outsideFeatureMapping.getResidualVolumeFraction(mathMapping.getSimulationContext()).infix(mathMapping.getNameScope())+")")).flatten();
+								IExpression outsideFluxCorrection = (ExpressionFactory.createExpression(mathMapping.getNameScope().getSymbolName(ReservedSymbol.KMOLE)+"/("+outsideFeatureMapping.getResidualVolumeFraction(mathMapping.getSimulationContext()).infix(mathMapping.getNameScope())+")")).flatten();
 								//
 								// introduce bug compatability mode for resolved flux correction
 								//
-								if (bResolvedFluxCorrectionBug && !outsideFeatureMapping.getResidualVolumeFraction(mathMapping.getSimulationContext()).compareEqual(new Expression(1.0))){
+								if (bResolvedFluxCorrectionBug && !outsideFeatureMapping.getResidualVolumeFraction(mathMapping.getSimulationContext()).compareEqual(ExpressionFactory.createExpression(1.0))){
 									bResolvedFluxCorrectionBugExercised = true;
 									System.out.println("MembraneStructureAnalyzer.refreshResolvedFluxes() ... 'ResolvedFluxCorrection' bug compatability mode");
-									outsideFluxCorrection = new Expression(ReservedSymbol.KMOLE.getName());
+									outsideFluxCorrection = ExpressionFactory.createExpression(ReservedSymbol.KMOLE.getName());
 								}
 								if (rf.outFlux.isZero()){
-									rf.outFlux = Expression.mult(outsideFluxCorrection,new Expression(sr.getRateExpression(rp_Array[k]).infix(mathMapping.getNameScope())));
+									rf.outFlux = ExpressionFactory.mult(outsideFluxCorrection, ExpressionFactory.createExpression(sr.getRateExpression(rp_Array[k]).infix(mathMapping.getNameScope())));
 								}else{
-									rf.outFlux = Expression.add(rf.outFlux,Expression.mult(outsideFluxCorrection,new Expression(sr.getRateExpression(rp_Array[k]).infix(mathMapping.getNameScope()))));
+									rf.outFlux = ExpressionFactory.add(rf.outFlux, ExpressionFactory.mult(outsideFluxCorrection, ExpressionFactory.createExpression(sr.getRateExpression(rp_Array[k]).infix(mathMapping.getNameScope()))));
 								}
 								rf.outFlux.bindExpression(mathMapping);
 							}else{

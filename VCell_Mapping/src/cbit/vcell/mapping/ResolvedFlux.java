@@ -4,15 +4,17 @@ package cbit.vcell.mapping;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import cbit.vcell.model.Species;
-import cbit.vcell.parser.Expression;
 /**
  * This type was created in VisualAge.
  */
 public class ResolvedFlux {
 	private Species species=null;
-	Expression inFlux = new Expression(0.0);
-	Expression outFlux = new Expression(0.0);
+	IExpression inFlux = ExpressionFactory.createExpression(0.0);
+	IExpression outFlux = ExpressionFactory.createExpression(0.0);
 /**
  * ResolvedFlux constructor comment.
  */

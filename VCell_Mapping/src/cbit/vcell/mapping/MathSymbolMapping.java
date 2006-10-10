@@ -23,8 +23,8 @@ MathSymbolMapping() {
  * @return cbit.vcell.parser.SymbolTableEntry
  * @param var cbit.vcell.math.Variable
  */
-public cbit.vcell.parser.SymbolTableEntry getBiologicalSymbol(cbit.vcell.math.Variable var) {
-	return (cbit.vcell.parser.SymbolTableEntry)mathToBiologicalHash.get(var);
+public org.vcell.expression.SymbolTableEntry getBiologicalSymbol(cbit.vcell.math.Variable var) {
+	return (org.vcell.expression.SymbolTableEntry)mathToBiologicalHash.get(var);
 
 }
 
@@ -35,7 +35,7 @@ public cbit.vcell.parser.SymbolTableEntry getBiologicalSymbol(cbit.vcell.math.Va
  * @return cbit.vcell.math.Variable
  * @param biologicalSymbol cbit.vcell.parser.SymbolTableEntry
  */
-public cbit.vcell.math.Variable getVariable(cbit.vcell.parser.SymbolTableEntry biologicalSymbol) {
+public cbit.vcell.math.Variable getVariable(org.vcell.expression.SymbolTableEntry biologicalSymbol) {
 	return (cbit.vcell.math.Variable)biologicalToMathHash.get(biologicalSymbol);
 }
 
@@ -46,7 +46,7 @@ public cbit.vcell.math.Variable getVariable(cbit.vcell.parser.SymbolTableEntry b
  * @param ste cbit.vcell.parser.SymbolTableEntry
  * @param var cbit.vcell.math.Variable
  */
-void put(cbit.vcell.parser.SymbolTableEntry biologicalSymbol, String varName) {
+void put(org.vcell.expression.SymbolTableEntry biologicalSymbol, String varName) {
 	if(varName.endsWith("_OUTSIDE") || varName.endsWith("_INSIDE")){
 		return;
 	}
@@ -76,12 +76,12 @@ void reconcileVarNames(cbit.vcell.math.MathDescription mathDesc) {
 	java.util.Set keyset = biologicalToMathSymbolNameHash.keySet();
 	java.util.Iterator keysetIter = keyset.iterator();
 	while (keysetIter.hasNext()){
-		cbit.vcell.parser.SymbolTableEntry biologicalSymbol = (cbit.vcell.parser.SymbolTableEntry)keysetIter.next();
+		org.vcell.expression.SymbolTableEntry biologicalSymbol = (org.vcell.expression.SymbolTableEntry)keysetIter.next();
 		String mathVarName = (String)biologicalToMathSymbolNameHash.get(biologicalSymbol);
 		cbit.vcell.math.Variable var = mathDesc.getVariable(mathVarName);
 		biologicalToMathHash.put(biologicalSymbol,var);
 		//System.out.println(var+" ---> "+biologicalSymbol);
-		cbit.vcell.parser.SymbolTableEntry previousBiologicalSymbol = (cbit.vcell.parser.SymbolTableEntry)mathToBiologicalHash.put(var,biologicalSymbol);
+		org.vcell.expression.SymbolTableEntry previousBiologicalSymbol = (org.vcell.expression.SymbolTableEntry)mathToBiologicalHash.put(var,biologicalSymbol);
 		if (previousBiologicalSymbol!=null && !biologicalSymbol.equals(previousBiologicalSymbol)){
 			throw new RuntimeException("mapping not unique, math symbol '"+var.getName()+" mapped to two biological symbols, '"+biologicalSymbol.getName()+"' and '"+previousBiologicalSymbol.getName()+"'");
 		}

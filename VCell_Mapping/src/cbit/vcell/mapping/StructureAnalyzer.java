@@ -5,6 +5,11 @@ package cbit.vcell.mapping;
 ©*/
 import java.util.*;
 
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.RationalNumber;
+import org.vcell.expression.SymbolTableEntry;
+
 
 import cbit.vcell.model.*;
 import cbit.vcell.modelapp.GeometryContext;
@@ -14,11 +19,7 @@ import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.modelapp.SpeciesContextMapping;
 import cbit.vcell.modelapp.SpeciesContextSpec;
 import cbit.vcell.modelapp.StructureMapping;
-import cbit.vcell.geometry.*;
-import cbit.vcell.parser.*;
-import cbit.vcell.math.*;
 import cbit.vcell.matrix.RationalMatrixFast;
-import cbit.vcell.matrix.RationalNumber;
 /**
  * class StructureAnalyzer
  * 
@@ -67,8 +68,8 @@ public abstract class StructureAnalyzer {
 	public static class Dependency {
 		SpeciesContextMapping speciesContextMapping = null;
 		String invariantSymbolName = null;
-		Expression conservedMoietyExpression = null;
-		Expression dependencyExpression = null;
+		IExpression conservedMoietyExpression = null;
+		IExpression dependencyExpression = null;
 	};
 
 /**
@@ -167,7 +168,7 @@ private void refreshFastMatrices() throws Exception {
 		//
 		// collect fast rate expression
 		//
-		Expression exp = new Expression(0.0);
+		IExpression exp = ExpressionFactory.createExpression(0.0);
 		for (int j=0;j<fastReactionSteps.length;j++){
 			double stoichiometry = fastReactionSteps[j].getStoichiometry(sc);
 			ReactionSpec reactionSpec = mathMapping.getSimulationContext().getReactionContext().getReactionSpec(fastReactionSteps[j]);
@@ -187,9 +188,9 @@ private void refreshFastMatrices() throws Exception {
 					Membrane membrane = (Membrane)structure;
 					MembraneMapping membraneMapping = (MembraneMapping)mathMapping.getSimulationContext().getGeometryContext().getStructureMapping(membrane);
 					Parameter fluxCorrectionParameter = mathMapping.getFluxCorrectionParameter(membraneMapping,(Feature)rp.getStructure());
-					exp = Expression.add(exp,new Expression(mathMapping.getNameScope().getSymbolName(fluxCorrectionParameter)+"* ("+fastReactionSteps[j].getRateExpression(rp).infix(mathMapping.getNameScope())+")"));
+					exp = ExpressionFactory.add(exp, ExpressionFactory.createExpression(mathMapping.getNameScope().getSymbolName(fluxCorrectionParameter)+"* ("+fastReactionSteps[j].getRateExpression(rp).infix(mathMapping.getNameScope())+")"));
 				}else{
-					exp = Expression.add(exp,new Expression(fastReactionSteps[j].getRateExpression(rp).infix(mathMapping.getNameScope())));
+					exp = ExpressionFactory.add(exp, ExpressionFactory.createExpression(fastReactionSteps[j].getRateExpression(rp).infix(mathMapping.getNameScope())));
 				}
 			}
 		}
@@ -306,9 +307,9 @@ private void refreshFastSystem() throws Exception {
 
 	for (int i = 0; i < dependencies.length; i++){
 		String constantName = dependencies[i].invariantSymbolName;
-		Expression constantExp = dependencies[i].conservedMoietyExpression;
+		IExpression constantExp = dependencies[i].conservedMoietyExpression;
 		SpeciesContextMapping firstSCM = dependencies[i].speciesContextMapping;
-		Expression exp = dependencies[i].dependencyExpression;
+		IExpression exp = dependencies[i].dependencyExpression;
 		
 		//
 		// store fastInvariant (e.g. (K_fast_total= xyz + wzy)
@@ -356,9 +357,9 @@ private void refreshTotalDependancies() throws Exception {
 
 	for (int i = 0; i < dependencies.length; i++){
 		String constantName = dependencies[i].invariantSymbolName;
-		Expression constantExp = dependencies[i].conservedMoietyExpression;
+		IExpression constantExp = dependencies[i].conservedMoietyExpression;
 		SpeciesContextMapping firstSCM = dependencies[i].speciesContextMapping;
-		Expression exp = dependencies[i].dependencyExpression;
+		IExpression exp = dependencies[i].dependencyExpression;
 		//
 		// store totalMass parameter (e.g. K_xyz_total = xyz_init + wzy_init) 
 		//
@@ -411,8 +412,8 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 		//
 		// find first variable
 		//
-		Expression exp = null;
-		Expression constantExp = null;
+		IExpression exp = null;
+		IExpression constantExp = null;
 		String     constantName = null;
 		SpeciesContextMapping firstSCM = null;
 		boolean bFirst = true;
@@ -431,7 +432,7 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 					//
 					SpeciesContext firstSC = firstSCM.getSpeciesContext();
 					constantName = "K_"+firstSC.getName()+"_total";
-					exp = new Expression(constantName);
+					exp = ExpressionFactory.createExpression(constantName);
 					//
 					// first term of K expression
 					//
@@ -443,8 +444,8 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 					}else{
 						scSTE = firstSCS.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
 					}
-					constantExp = Expression.mult(Expression.mult(new Expression(coeff.toString()),firstSM.getTotalVolumeCorrection(simContext_temp)),
-																new Expression(mathMapping_temp.getNameScope().getSymbolName(scSTE)));
+					constantExp = ExpressionFactory.mult(ExpressionFactory.mult(ExpressionFactory.createExpression(coeff.toString()),firstSM.getTotalVolumeCorrection(simContext_temp)), 
+							ExpressionFactory.createExpression(mathMapping_temp.getNameScope().getSymbolName(scSTE)));
 					bFirst = false;
 				}else{
 					//
@@ -454,7 +455,7 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 					SpeciesContext sc = scm.getSpeciesContext();
 					StructureMapping sm = simContext_temp.getGeometryContext().getStructureMapping(sc.getStructure());
 					SpeciesContextSpec scs = simContext_temp.getReactionContext().getSpeciesContextSpec(sc);
-					exp = Expression.add(exp,Expression.negate(Expression.mult(new Expression(coeff.toString()),Expression.mult(new Expression(sm.getTotalVolumeCorrection(simContext_temp)),new Expression(sc.getName())))));
+					exp = ExpressionFactory.add(exp,ExpressionFactory.negate(ExpressionFactory.mult(ExpressionFactory.createExpression(coeff.toString()),ExpressionFactory.mult(ExpressionFactory.createExpression(sm.getTotalVolumeCorrection(simContext_temp)),ExpressionFactory.createExpression(sc.getName())))));
 					//
 					// add term to K expression
 					//
@@ -464,10 +465,10 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 					}else{
 						scSTE = scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
 					}
-					constantExp = Expression.add(constantExp,
-												Expression.mult(new Expression(coeff.toString()),
-																Expression.mult(new Expression(sm.getTotalVolumeCorrection(simContext_temp)),
-																				new Expression(mathMapping_temp.getNameScope().getSymbolName(scSTE)))));
+					constantExp = ExpressionFactory.add(constantExp,
+												ExpressionFactory.mult(ExpressionFactory.createExpression(coeff.toString()),
+																ExpressionFactory.mult(ExpressionFactory.createExpression(sm.getTotalVolumeCorrection(simContext_temp)),
+																				ExpressionFactory.createExpression(mathMapping_temp.getNameScope().getSymbolName(scSTE)))));
 				}
 			}
 		}
@@ -480,7 +481,7 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 			// store dependency parameter (e.g. xyz = K_xyz_total - wzy)
 			//
 			StructureMapping sm = simContext_temp.getGeometryContext().getStructureMapping(firstSCM.getSpeciesContext().getStructure());
-			exp = Expression.mult(exp,Expression.invert(sm.getTotalVolumeCorrection(simContext_temp)));
+			exp = ExpressionFactory.mult(exp, ExpressionFactory.invert(sm.getTotalVolumeCorrection(simContext_temp)));
 			exp = exp.flatten();
 			//exp.bindExpression(mathMapping_temp);
 			//firstSCM.setDependencyExpression(exp);
@@ -523,7 +524,7 @@ private void refreshTotalMatrices() throws Exception {
 		//
 		// collect slow rate expression (fast handled by FastSystem)
 		//
-		Expression exp = new Expression(0.0);
+		IExpression exp = ExpressionFactory.createExpression(0.0);
 		for (int j=0;j<reactionSteps.length;j++){
 			double stoichiometry = reactionSteps[j].getStoichiometry(sc);
 			ReactionSpec reactionSpec = mathMapping.getSimulationContext().getReactionContext().getReactionSpec(reactionSteps[j]);
@@ -540,14 +541,14 @@ private void refreshTotalMatrices() throws Exception {
 						MembraneMapping membraneMapping = (MembraneMapping)mathMapping.getSimulationContext().getGeometryContext().getStructureMapping(membrane);
 						Parameter fluxCorrectionParameter = mathMapping.getFluxCorrectionParameter(membraneMapping,(Feature)sc.getStructure());
 						if (reactionSteps[j] instanceof FluxReaction){
-							exp = Expression.add(exp,new Expression(mathMapping.getNameScope().getSymbolName(fluxCorrectionParameter)+"*"+reactionSteps[j].getRateExpression(rp).infix(mathMapping.getNameScope())));
+							exp = ExpressionFactory.add(exp, ExpressionFactory.createExpression(mathMapping.getNameScope().getSymbolName(fluxCorrectionParameter)+"*"+reactionSteps[j].getRateExpression(rp).infix(mathMapping.getNameScope())));
 						}else if (reactionSteps[j] instanceof SimpleReaction){
-							exp = Expression.add(exp,new Expression(mathMapping.getNameScope().getSymbolName(fluxCorrectionParameter)+"*"+ReservedSymbol.KMOLE.getName()+"*"+reactionSteps[j].getRateExpression(rp).infix(mathMapping.getNameScope())));
+							exp = ExpressionFactory.add(exp, ExpressionFactory.createExpression(mathMapping.getNameScope().getSymbolName(fluxCorrectionParameter)+"*"+ReservedSymbol.KMOLE.getName()+"*"+reactionSteps[j].getRateExpression(rp).infix(mathMapping.getNameScope())));
 						}else{
 							throw new RuntimeException("Internal Error: expected ReactionStep "+reactionSteps[j]+" to be of type SimpleReaction or FluxReaction");
 						}
 					}else{
-						exp = Expression.add(exp,new Expression(reactionSteps[j].getRateExpression(rp).infix(mathMapping.getNameScope())));
+						exp = ExpressionFactory.add(exp, ExpressionFactory.createExpression(reactionSteps[j].getRateExpression(rp).infix(mathMapping.getNameScope())));
 					}
 				}
 			}
@@ -635,7 +636,7 @@ private void refreshTotalSpeciesContextMappings() throws java.beans.PropertyVeto
 		speciesContextMappings = new SpeciesContextMapping[scmList.size()];
 		scmList.copyInto(speciesContextMappings);
 		for (int i=0;i<speciesContextMappings.length;i++){
-			speciesContextMappings[i].setRate(new Expression(0.0));
+			speciesContextMappings[i].setRate(ExpressionFactory.createExpression(0.0));
 //System.out.println("speciesContextMappings["+i+"] = "+speciesContextMappings[i].getSpeciesContext().getName());
 		}
 	}else{
@@ -698,8 +699,8 @@ private void substituteIntoFastSystem() throws Exception {
 	//
 	for (int j=0;j<speciesContextMappings.length;j++){
 		if (speciesContextMappings[j].getDependencyExpression() != null){
-			Expression dependentVar = new Expression(mathMapping.getNameScope().getSymbolName(speciesContextMappings[j].getSpeciesContext()));
-			Expression dependentExp = new Expression(speciesContextMappings[j].getDependencyExpression());
+			IExpression dependentVar = ExpressionFactory.createExpression(mathMapping.getNameScope().getSymbolName(speciesContextMappings[j].getSpeciesContext()));
+			IExpression dependentExp = ExpressionFactory.createExpression(speciesContextMappings[j].getDependencyExpression());
 //System.out.println("trying to substitute '"+dependentExp.toString()+"' for variable '"+dependentVar.toString()+"'"); 
 			for (int i=0;i<fastSpeciesContextMappings.length;i++){
 				SpeciesContextMapping scm = fastSpeciesContextMappings[i];

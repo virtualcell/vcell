@@ -21,6 +21,15 @@ import cbit.vcell.parser.*;
 
 import java.util.*;
 
+import org.vcell.expression.ExpressionBindingException;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.NameScope;
+import org.vcell.expression.ScopedSymbolTable;
+import org.vcell.expression.SymbolTableEntry;
+import org.vcell.expression.VCUnitEvaluator;
+
 
 import cbit.vcell.units.VCUnitDefinition;
 /**
@@ -50,11 +59,11 @@ public class MathMapping implements ScopedSymbolTable, MathFactory {
 	private Vector speciesContextMappingList = new Vector();
 
 	public class MathMappingNameScope extends BioNameScope {
-		private cbit.vcell.parser.NameScope nameScopes[] = null;
+		private org.vcell.expression.NameScope nameScopes[] = null;
 		public MathMappingNameScope(){
 			super();
 		}
-		public cbit.vcell.parser.NameScope[] getChildren() {
+		public org.vcell.expression.NameScope[] getChildren() {
 			//
 			// return model namescope
 			//
@@ -80,14 +89,14 @@ public class MathMapping implements ScopedSymbolTable, MathFactory {
 		public String getName() {
 			return "MathMapping_for_"+cbit.util.TokenMangler.fixTokenStrict(simContext.getName());
 		}
-		public cbit.vcell.parser.NameScope getParent() {
+		public org.vcell.expression.NameScope getParent() {
 			//System.out.println("MathMappingNameScope.getParent() returning null ... no parent");
 			return null;
 		}
-		public cbit.vcell.parser.ScopedSymbolTable getScopedSymbolTable() {
+		public org.vcell.expression.ScopedSymbolTable getScopedSymbolTable() {
 			return MathMapping.this;
 		}
-		public boolean isPeer(cbit.vcell.parser.NameScope nameScope){
+		public boolean isPeer(org.vcell.expression.NameScope nameScope){
 			return (nameScope == MathMapping.this.simContext.getNameScope() || nameScope == MathMapping.this.simContext.getModel().getNameScope());
 		}
 	}
@@ -95,11 +104,11 @@ public class MathMapping implements ScopedSymbolTable, MathFactory {
 	public class MathMappingParameter extends Parameter {
 		
 		private String fieldParameterName = null;
-		private Expression fieldExpression = null;
+		private IExpression fieldExpression = null;
 		private VCUnitDefinition fieldVCUnitDefinition = null;
 		private int fieldRole = -1;
 
-		protected MathMappingParameter(String argName, Expression argExpression, int argRole, VCUnitDefinition argVCUnitDefinition) {
+		protected MathMappingParameter(String argName, IExpression argExpression, int argRole, VCUnitDefinition argVCUnitDefinition) {
 			if (argName == null){
 				throw new IllegalArgumentException("parameter name is null");
 			}
@@ -133,7 +142,7 @@ public class MathMapping implements ScopedSymbolTable, MathFactory {
 			throw new ExpressionException("no expression defined for MathMappingParameter '"+fieldParameterName+"'");
 		}      
 
-		public Expression getExpression() {
+		public IExpression getExpression() {
 			return this.fieldExpression;
 		}
 
@@ -169,8 +178,8 @@ public class MathMapping implements ScopedSymbolTable, MathFactory {
 			return MathMapping.this.getNameScope();
 		}
 
-		public void setExpression(Expression argExpression) throws java.beans.PropertyVetoException {
-			Expression oldValue = fieldExpression;
+		public void setExpression(IExpression argExpression) throws java.beans.PropertyVetoException {
+			IExpression oldValue = fieldExpression;
 			super.fireVetoableChange("expression", oldValue, argExpression);
 			fieldExpression = argExpression;
 			super.firePropertyChange("expression", oldValue, argExpression);
@@ -189,7 +198,7 @@ public class MathMapping implements ScopedSymbolTable, MathFactory {
 		private MembraneMapping fieldMembraneMapping = null;
 		private Feature fieldFeature = null;
 
-		protected KFluxParameter(String argName, Expression argExpression, VCUnitDefinition argVCUnitDefinition, MembraneMapping argMembraneMapping, Feature argFeature) {
+		protected KFluxParameter(String argName, IExpression argExpression, VCUnitDefinition argVCUnitDefinition, MembraneMapping argMembraneMapping, Feature argFeature) {
 			super(argName,argExpression,PARAMETER_ROLE_KFLUX,argVCUnitDefinition);
 			this.fieldMembraneMapping = argMembraneMapping;
 			this.fieldFeature = argFeature;
@@ -227,7 +236,7 @@ public MathMapping(SimulationContext simContext) {
  * @param expression cbit.vcell.parser.Expression
  * @param role int
  */
-MathMapping.MathMappingParameter addMathMappingParameter(String name, Expression expression, int role, VCUnitDefinition unitDefinition) throws java.beans.PropertyVetoException, ExpressionBindingException {
+MathMapping.MathMappingParameter addMathMappingParameter(String name, IExpression expression, int role, VCUnitDefinition unitDefinition) throws java.beans.PropertyVetoException, ExpressionBindingException {
 
 	MathMapping.MathMappingParameter newParameter = new MathMapping.MathMappingParameter(name,expression,role,unitDefinition);
 	MathMapping.MathMappingParameter previousParameter = getMathMappingParameter(name);
@@ -344,8 +353,8 @@ public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, 
 /**
  * getEntry method comment.
  */
-public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierString) throws cbit.vcell.parser.ExpressionBindingException {
-	cbit.vcell.parser.SymbolTableEntry ste = getLocalEntry(identifierString);
+public org.vcell.expression.SymbolTableEntry getEntry(java.lang.String identifierString) throws org.vcell.expression.ExpressionBindingException {
+	org.vcell.expression.SymbolTableEntry ste = getLocalEntry(identifierString);
 	if (ste != null){
 		return ste;
 	}
@@ -383,7 +392,7 @@ public MathMapping.KFluxParameter getFluxCorrectionParameter(MembraneMapping mem
  * @param origExp cbit.vcell.parser.Expression
  * @param structureMapping cbit.vcell.mapping.StructureMapping
  */
-private Expression getIdentifierSubstitutions(Expression origExp, VCUnitDefinition desiredExpUnitDef, StructureMapping structureMapping) throws ExpressionException, MappingException {
+private IExpression getIdentifierSubstitutions(IExpression origExp, VCUnitDefinition desiredExpUnitDef, StructureMapping structureMapping) throws ExpressionException, MappingException {
 	String symbols[] = origExp.getSymbols(null);
 	if (symbols == null){
 		return origExp;
@@ -414,7 +423,7 @@ private Expression getIdentifierSubstitutions(Expression origExp, VCUnitDefiniti
 		e.printStackTrace(System.out);
 		issueList.add(new cbit.util.Issue(origExp, "Units","expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),cbit.util.Issue.SEVERITY_WARNING));
 	}
-	Expression newExp = new Expression(origExp);
+	IExpression newExp = ExpressionFactory.createExpression(origExp);
 	for (int i=0;i<symbols.length;i++){
 		SymbolTableEntry ste = origExp.getSymbolBinding(symbols[i]);
 		
@@ -426,7 +435,7 @@ private Expression getIdentifierSubstitutions(Expression origExp, VCUnitDefiniti
 		if (ste != null){
 			String newName = getMathSymbol(ste,structureMapping);
 			if (!newName.equals(symbols[i])){
-				newExp.substituteInPlace(new Expression(symbols[i]),new Expression(newName));
+				newExp.substituteInPlace(ExpressionFactory.createExpression(symbols[i]),ExpressionFactory.createExpression(newName));
 			}
 		}
 	}
@@ -438,7 +447,7 @@ private Expression getIdentifierSubstitutions(Expression origExp, VCUnitDefiniti
  * This method was created in VisualAge.
  * @return cbit.vcell.math.Function
  */
-private static Expression getInsideFluxCorrectionExpression(SimulationContext simulationContext, MembraneMapping membraneMapping) throws ExpressionException {
+private static IExpression getInsideFluxCorrectionExpression(SimulationContext simulationContext, MembraneMapping membraneMapping) throws ExpressionException {
 	//
 	//
 	// use surfaceToVolumeRatio to get from membrane to total inside volume
@@ -446,9 +455,9 @@ private static Expression getInsideFluxCorrectionExpression(SimulationContext si
 	//
 	//
 	FeatureMapping insideFeatureMapping = (FeatureMapping) simulationContext.getGeometryContext().getStructureMapping(membraneMapping.getMembrane().getInsideFeature());
-	Expression insideResidualVolFraction = insideFeatureMapping.getResidualVolumeFraction(simulationContext);
-	Expression exp = new Expression(simulationContext.getNameScope().getSymbolName(membraneMapping.getSurfaceToVolumeParameter()));
-	exp = Expression.mult(exp,Expression.invert(insideResidualVolFraction));
+	IExpression insideResidualVolFraction = insideFeatureMapping.getResidualVolumeFraction(simulationContext);
+	IExpression exp = ExpressionFactory.createExpression(simulationContext.getNameScope().getSymbolName(membraneMapping.getSurfaceToVolumeParameter()));
+	exp = ExpressionFactory.mult(exp, ExpressionFactory.invert(insideResidualVolFraction));
 	exp = exp.flatten();
 	exp.bindExpression(simulationContext);
 	return exp;
@@ -471,7 +480,7 @@ public cbit.util.Issue[] getIssues() {
  * @return cbit.vcell.parser.SymbolTableEntry
  * @param identifier java.lang.String
  */
-public cbit.vcell.parser.SymbolTableEntry getLocalEntry(java.lang.String identifier) throws cbit.vcell.parser.ExpressionBindingException {
+public org.vcell.expression.SymbolTableEntry getLocalEntry(java.lang.String identifier) throws org.vcell.expression.ExpressionBindingException {
 
 	//
 	// the MathMapping "nameScope" is the union of the Model and SimContext namescopes (with the addition of any locally defined parameters)
@@ -810,7 +819,7 @@ private MembraneStructureAnalyzer getMembraneStructureAnalyzer(Membrane membrane
  * Creation date: (4/4/2004 1:01:22 AM)
  * @return cbit.vcell.parser.NameScope
  */
-public cbit.vcell.parser.NameScope getNameScope() {
+public org.vcell.expression.NameScope getNameScope() {
 	return nameScope;
 }
 
@@ -819,13 +828,13 @@ public cbit.vcell.parser.NameScope getNameScope() {
  * This method was created in VisualAge.
  * @return cbit.vcell.math.Function
  */
-private static Expression getOutsideFluxCorrectionExpression(SimulationContext simulationContext, MembraneMapping membraneMapping) throws ExpressionException {
+private static IExpression getOutsideFluxCorrectionExpression(SimulationContext simulationContext, MembraneMapping membraneMapping) throws ExpressionException {
 	//
 	// ?????? only works for 1 distributed organelle
 	//
 	FeatureMapping outsideFeatureMapping = (FeatureMapping) simulationContext.getGeometryContext().getStructureMapping(membraneMapping.getMembrane().getOutsideFeature());
-	Expression outsideVolFraction = outsideFeatureMapping.getResidualVolumeFraction(simulationContext);
-	Expression exp = new Expression(simulationContext.getNameScope().getSymbolName(membraneMapping.getSurfaceToVolumeParameter()) + "*" + 
+	IExpression outsideVolFraction = outsideFeatureMapping.getResidualVolumeFraction(simulationContext);
+	IExpression exp = ExpressionFactory.createExpression(simulationContext.getNameScope().getSymbolName(membraneMapping.getSurfaceToVolumeParameter()) + "*" + 
 									simulationContext.getNameScope().getSymbolName(membraneMapping.getVolumeFractionParameter()) + "/" + 
 									"(" + outsideVolFraction.infix() + ");");
 	return exp;
@@ -1023,7 +1032,7 @@ private boolean isDiffusionRequired(SpeciesContext speciesContext) {
  * @param name java.lang.String
  * @param exp cbit.vcell.parser.Expression
  */
-private Variable newFunctionOrConstant(String name, Expression exp) {
+private Variable newFunctionOrConstant(String name, IExpression exp) {
 	if (exp.isNumeric()){
 		return new Constant(name,exp);
 	}else{
@@ -1075,7 +1084,7 @@ private void refreshKFluxParameters() throws ExpressionException {
 			//
 			// add "inside" flux correction
 			//
-			Expression insideCorrectionExp = getInsideFluxCorrectionExpression(simContext,membraneMapping);
+			IExpression insideCorrectionExp = getInsideFluxCorrectionExpression(simContext,membraneMapping);
 			insideCorrectionExp.bindExpression(this);
 			Feature insideFeature = membraneMapping.getMembrane().getInsideFeature();
 			String insideName = "KFlux_"+membraneMapping.getNameScope().getName()+"_"+insideFeature.getNameScope().getName();
@@ -1085,7 +1094,7 @@ private void refreshKFluxParameters() throws ExpressionException {
 			//
 			// add "outside" flux correction
 			//
-			Expression outsideCorrectionExp = getOutsideFluxCorrectionExpression(simContext,membraneMapping);
+			IExpression outsideCorrectionExp = getOutsideFluxCorrectionExpression(simContext,membraneMapping);
 			outsideCorrectionExp.bindExpression(this);
 			Feature outsideFeature = membraneMapping.getMembrane().getOutsideFeature();
 			String outsideName = "KFlux_"+membraneMapping.getNameScope().getName()+"_"+outsideFeature.getNameScope().getName();
@@ -1118,7 +1127,7 @@ private void refreshMathDescription() throws MappingException, MathException, Ex
 			throw new MappingException("model structure '"+structures[i].getName()+"' not mapped to a geometry subVolume");
 		}
 		if (sm!=null && (sm instanceof MembraneMapping) && ((MembraneMapping)sm).getVolumeFractionParameter()!=null){
-			Expression volFractExp = ((MembraneMapping)sm).getVolumeFractionParameter().getExpression();
+			IExpression volFractExp = ((MembraneMapping)sm).getVolumeFractionParameter().getExpression();
 			try {
 				double volFract = volFractExp.evaluateConstant();
 				if (volFract>=1.0){
@@ -1210,7 +1219,7 @@ private void refreshMathDescription() throws MappingException, MathException, Ex
 	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.FARADAY_CONSTANT,null),getIdentifierSubstitutions(ReservedSymbol.FARADAY_CONSTANT.getExpression(),ReservedSymbol.FARADAY_CONSTANT.getUnitDefinition(),null)));
 	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.FARADAY_CONSTANT_NMOLE,null),getIdentifierSubstitutions(ReservedSymbol.FARADAY_CONSTANT_NMOLE.getExpression(),ReservedSymbol.FARADAY_CONSTANT_NMOLE.getUnitDefinition(),null)));
 	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.GAS_CONSTANT,null),getIdentifierSubstitutions(ReservedSymbol.GAS_CONSTANT.getExpression(),ReservedSymbol.GAS_CONSTANT.getUnitDefinition(),null)));
-	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.TEMPERATURE,null),getIdentifierSubstitutions(new Expression(simContext.getTemperatureKelvin()),cbit.vcell.units.VCUnitDefinition.UNIT_K,null)));
+	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.TEMPERATURE,null),getIdentifierSubstitutions(ExpressionFactory.createExpression(simContext.getTemperatureKelvin()),cbit.vcell.units.VCUnitDefinition.UNIT_K,null)));
 
 	//
 	// only calculate potential if at least one MembraneMapping has CalculateVoltage == true
@@ -1252,7 +1261,7 @@ private void refreshMathDescription() throws MappingException, MathException, Ex
 				ElectricalDevice.ElectricalDeviceParameter totalCurrentDensityParm = membraneElectricalDevice.getParameterFromRole(ElectricalDevice.ROLE_TotalCurrentDensity);
 
 				if (totalCurrentDensityParm!=null && /* totalCurrentDensityParm.getExpression()!=null && */ memMapping.getCalculateVoltage()){
-					Expression totalCurrentDensityExp = (totalCurrentDensityParm.getExpression()!=null)?(totalCurrentDensityParm.getExpression()):(new Expression(0.0));
+					IExpression totalCurrentDensityExp = (totalCurrentDensityParm.getExpression()!=null)?(totalCurrentDensityParm.getExpression()):(ExpressionFactory.createExpression(0.0));
 					varHash.addVariable(newFunctionOrConstant(getMathSymbol(totalCurrentDensityParm,membraneElectricalDevice.getMembraneMapping()),
 													getIdentifierSubstitutions(totalCurrentDensityExp,totalCurrentDensityParm.getUnitDefinition(),membraneElectricalDevice.getMembraneMapping())));
 				}
@@ -1442,7 +1451,7 @@ private void refreshMathDescription() throws MappingException, MathException, Ex
 				}
 				try {
 					double value = parameters[i].getExpression().evaluateConstant();
-					Constant constant = new Constant(getMathSymbol(parameters[i],null),new Expression(value));
+					Constant constant = new Constant(getMathSymbol(parameters[i],null),ExpressionFactory.createExpression(value));
 					varHash.addVariable(constant);
 				}catch (ExpressionException e){
 				}
@@ -1487,7 +1496,7 @@ private void refreshMathDescription() throws MappingException, MathException, Ex
 					parameters[i].getExpression().evaluateConstant();
 				}catch (ExpressionException e){
 					StructureMapping sm = simContext.getGeometryContext().getStructureMapping(rs.getStructure());
-					Expression exp = getIdentifierSubstitutions(parameters[i].getExpression(),parameters[i].getUnitDefinition(),sm);
+					IExpression exp = getIdentifierSubstitutions(parameters[i].getExpression(),parameters[i].getUnitDefinition(),sm);
 					Function function = new Function(getMathSymbol(parameters[i],null),exp);
 					varHash.addVariable(function);
 				}
@@ -1552,14 +1561,14 @@ private void refreshMathDescription() throws MappingException, MathException, Ex
 			Parameter parm = ((MembraneMapping)sm).getVolumeFractionParameter();
 			try {
 				double value = parm.getExpression().evaluateConstant();
-				varHash.addVariable(new Constant(getMathSymbol(parm,sm),new Expression(value)));
+				varHash.addVariable(new Constant(getMathSymbol(parm,sm),ExpressionFactory.createExpression(value)));
 			}catch (ExpressionException e){
 				varHash.addVariable(new Function(getMathSymbol(parm,sm),getIdentifierSubstitutions(parm.getExpression(),parm.getUnitDefinition(),sm)));
 			}	
 			parm = ((MembraneMapping)sm).getSurfaceToVolumeParameter();
 			try {
 				double value = parm.getExpression().evaluateConstant();
-				varHash.addVariable(new Constant(getMathSymbol(parm,sm),new Expression(value)));
+				varHash.addVariable(new Constant(getMathSymbol(parm,sm),ExpressionFactory.createExpression(value)));
 			}catch (ExpressionException e){
 				varHash.addVariable(new Function(getMathSymbol(parm,sm),getIdentifierSubstitutions(parm.getExpression(),parm.getUnitDefinition(),sm)));
 			}	
@@ -1589,10 +1598,10 @@ private void refreshMathDescription() throws MappingException, MathException, Ex
 		SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
 		if (scm.getVariable()==null && scm.getDependencyExpression()!=null){
 			StructureMapping sm = simContext.getGeometryContext().getStructureMapping(scm.getSpeciesContext().getStructure());
-			Expression exp = getIdentifierSubstitutions(scm.getDependencyExpression(),scm.getSpeciesContext().getUnitDefinition(),sm);
+			IExpression exp = getIdentifierSubstitutions(scm.getDependencyExpression(),scm.getSpeciesContext().getUnitDefinition(),sm);
 			try {
 				double value = exp.evaluateConstant();
-				varHash.addVariable(new Constant(getMathSymbol(scm.getSpeciesContext(),sm),new Expression(value)));
+				varHash.addVariable(new Constant(getMathSymbol(scm.getSpeciesContext(),sm),ExpressionFactory.createExpression(value)));
 			}catch (ExpressionException e){
 				varHash.addVariable(new Function(getMathSymbol(scm.getSpeciesContext(),sm),exp));
 			}
@@ -1686,9 +1695,9 @@ private void refreshMathDescription() throws MappingException, MathException, Ex
 						//
 						// species context belongs to this subDomain
 						//
-						Expression initial = new Expression(getMathSymbol(scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration),sm));
-						Expression rate = getIdentifierSubstitutions(scm.getRate(),scm.getSpeciesContext().getUnitDefinition().divideBy(VCUnitDefinition.UNIT_s),simContext.getGeometryContext().getStructureMapping(sc.getStructure()));
-						Expression diffusion = new Expression(getMathSymbol(scs.getDiffusionParameter(),sm));
+						IExpression initial = ExpressionFactory.createExpression(getMathSymbol(scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration),sm));
+						IExpression rate = getIdentifierSubstitutions(scm.getRate(),scm.getSpeciesContext().getUnitDefinition().divideBy(VCUnitDefinition.UNIT_s),simContext.getGeometryContext().getStructureMapping(sc.getStructure()));
+						IExpression diffusion = ExpressionFactory.createExpression(getMathSymbol(scs.getDiffusionParameter(),sm));
 						equation = new PdeEquation(variable,initial,rate,diffusion);
 						((PdeEquation)equation).setBoundaryXm((scs.getBoundaryXmParameter().getExpression()==null)?(null):getIdentifierSubstitutions(scs.getBoundaryXmParameter().getExpression(),scs.getBoundaryXmParameter().getUnitDefinition(),sm));
 						((PdeEquation)equation).setBoundaryXp((scs.getBoundaryXpParameter().getExpression()==null)?(null):getIdentifierSubstitutions(scs.getBoundaryXpParameter().getExpression(),scs.getBoundaryXpParameter().getUnitDefinition(),sm));
@@ -1698,9 +1707,9 @@ private void refreshMathDescription() throws MappingException, MathException, Ex
 						((PdeEquation)equation).setBoundaryZp((scs.getBoundaryZpParameter().getExpression()==null)?(null):getIdentifierSubstitutions(scs.getBoundaryZpParameter().getExpression(),scs.getBoundaryZpParameter().getUnitDefinition(),sm));
 						subDomain.replaceEquation(equation);
 					}else{
-						Expression initial = new Expression(0.0);
-						Expression rate = new Expression(0.0);
-						Expression diffusion = new Expression(getMathSymbol(scs.getDiffusionParameter(),sm));
+						IExpression initial = ExpressionFactory.createExpression(0.0);
+						IExpression rate = ExpressionFactory.createExpression(0.0);
+						IExpression diffusion = ExpressionFactory.createExpression(getMathSymbol(scs.getDiffusionParameter(),sm));
 						equation = new PdeEquation(variable,initial,rate,diffusion);
 						if (subDomain.getEquation(variable)==null){
 							subDomain.addEquation(equation);
@@ -1722,13 +1731,13 @@ private void refreshMathDescription() throws MappingException, MathException, Ex
 						//
 						// species context belongs to this subDomain
 						//
-						Expression initial = new Expression(getMathSymbol(scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration),null));
-						Expression rate = (scm.getRate()==null) ? new Expression(0.0) : getIdentifierSubstitutions(scm.getRate(),scm.getSpeciesContext().getUnitDefinition().divideBy(VCUnitDefinition.UNIT_s),simContext.getGeometryContext().getStructureMapping(sc.getStructure()));
+						IExpression initial = ExpressionFactory.createExpression(getMathSymbol(scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration),null));
+						IExpression rate = (scm.getRate()==null) ? ExpressionFactory.createExpression(0.0) : getIdentifierSubstitutions(scm.getRate(),scm.getSpeciesContext().getUnitDefinition().divideBy(VCUnitDefinition.UNIT_s),simContext.getGeometryContext().getStructureMapping(sc.getStructure()));
 						equation = new OdeEquation(variable,initial,rate);
 						subDomain.replaceEquation(equation);
 					}else{
-						Expression initial = new Expression(0.0);
-						Expression rate = new Expression(0.0);
+						IExpression initial = ExpressionFactory.createExpression(0.0);
+						IExpression rate = ExpressionFactory.createExpression(0.0);
 						equation = new OdeEquation(variable,initial,rate);
 						if (subDomain.getEquation(variable)==null){
 							subDomain.addEquation(equation);
@@ -1750,14 +1759,14 @@ private void refreshMathDescription() throws MappingException, MathException, Ex
 					//
 					// independant-fast variable, create a fastRate object
 					//
-					Expression rate = getIdentifierSubstitutions(scm.getFastRate(),scm.getSpeciesContext().getUnitDefinition().divideBy(VCUnitDefinition.UNIT_s),simContext.getGeometryContext().getStructureMapping(simContext.getGeometryContext().getResolvedFeature(subVolume)));
+					IExpression rate = getIdentifierSubstitutions(scm.getFastRate(),scm.getSpeciesContext().getUnitDefinition().divideBy(VCUnitDefinition.UNIT_s),simContext.getGeometryContext().getStructureMapping(simContext.getGeometryContext().getResolvedFeature(subVolume)));
 					FastRate fastRate = new FastRate(rate);
 					fastSystem.addFastRate(fastRate);
 				}else{
 					//
 					// dependant-fast variable, create a fastInvariant object
 					//
-					Expression rate = getIdentifierSubstitutions(scm.getFastInvariant(),subDomainUnit,simContext.getGeometryContext().getStructureMapping(simContext.getGeometryContext().getResolvedFeature(subVolume)));
+					IExpression rate = getIdentifierSubstitutions(scm.getFastInvariant(),subDomainUnit,simContext.getGeometryContext().getStructureMapping(simContext.getGeometryContext().getResolvedFeature(subVolume)));
 					FastInvariant fastInvariant = new FastInvariant(rate);
 					fastSystem.addFastInvariant(fastInvariant);
 				}
@@ -1777,7 +1786,7 @@ private void refreshMathDescription() throws MappingException, MathException, Ex
 					MembraneElectricalDevice capacitiveDevice = potentialMapping.getCapacitiveDevice(membrane);
 					if (capacitiveDevice.getDependentVoltageExpression()==null){
 						VolVariable vVar = (VolVariable)mathDesc.getVariable(capacitiveDevice.getVName());
-						Expression initExp = new Expression(getMathSymbol(capacitiveDevice.getMembraneMapping().getInitialVoltageParameter(),membraneMapping));
+						IExpression initExp = ExpressionFactory.createExpression(getMathSymbol(capacitiveDevice.getMembraneMapping().getInitialVoltageParameter(),membraneMapping));
 						subDomain.addEquation(new OdeEquation(vVar,initExp,getIdentifierSubstitutions(potentialMapping.getOdeRHS(capacitiveDevice,this),VCUnitDefinition.UNIT_mV_per_s,membraneMapping)));
 					}else{
 						//
@@ -1857,9 +1866,9 @@ private void refreshMathDescription() throws MappingException, MathException, Ex
 						//
 						// species context belongs to this subDomain
 						//
-						Expression initial = new Expression(getMathSymbol(scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration),mm));
-						Expression rate = getIdentifierSubstitutions(scm.getRate(),scm.getSpeciesContext().getUnitDefinition().divideBy(VCUnitDefinition.UNIT_s),simContext.getGeometryContext().getStructureMapping(sc.getStructure()));
-						Expression diffusion = new Expression(getMathSymbol(scs.getDiffusionParameter(),mm));
+						IExpression initial = ExpressionFactory.createExpression(getMathSymbol(scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration),mm));
+						IExpression rate = getIdentifierSubstitutions(scm.getRate(),scm.getSpeciesContext().getUnitDefinition().divideBy(VCUnitDefinition.UNIT_s),simContext.getGeometryContext().getStructureMapping(sc.getStructure()));
+						IExpression diffusion = ExpressionFactory.createExpression(getMathSymbol(scs.getDiffusionParameter(),mm));
 						equation = new PdeEquation(variable,initial,rate,diffusion);
 						((PdeEquation)equation).setBoundaryXm((scs.getBoundaryXmParameter().getExpression()==null)?(null):getIdentifierSubstitutions(scs.getBoundaryXmParameter().getExpression(),scs.getBoundaryXmParameter().getUnitDefinition(),mm));
 						((PdeEquation)equation).setBoundaryXp((scs.getBoundaryXpParameter().getExpression()==null)?(null):getIdentifierSubstitutions(scs.getBoundaryXpParameter().getExpression(),scs.getBoundaryXpParameter().getUnitDefinition(),mm));
@@ -1869,9 +1878,9 @@ private void refreshMathDescription() throws MappingException, MathException, Ex
 						((PdeEquation)equation).setBoundaryZp((scs.getBoundaryZpParameter().getExpression()==null)?(null):getIdentifierSubstitutions(scs.getBoundaryZpParameter().getExpression(),scs.getBoundaryZpParameter().getUnitDefinition(),mm));
 						memSubDomain.replaceEquation(equation);
 					}else{
-						Expression initial = new Expression(0.0);
-						Expression rate = new Expression(0.0);
-						Expression diffusion = new Expression(getMathSymbol(scs.getDiffusionParameter(),mm));
+						IExpression initial = ExpressionFactory.createExpression(0.0);
+						IExpression rate = ExpressionFactory.createExpression(0.0);
+						IExpression diffusion = ExpressionFactory.createExpression(getMathSymbol(scs.getDiffusionParameter(),mm));
 						equation = new PdeEquation(variable,initial,rate,diffusion);
 						if (memSubDomain.getEquation(variable)==null){
 							memSubDomain.addEquation(equation);
@@ -1886,13 +1895,13 @@ private void refreshMathDescription() throws MappingException, MathException, Ex
 						//
 						// species context belongs to this subDomain
 						//
-						Expression initial = new Expression(getMathSymbol(scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration),null));
-						Expression rate = getIdentifierSubstitutions(scm.getRate(),scm.getSpeciesContext().getUnitDefinition().divideBy(VCUnitDefinition.UNIT_s),simContext.getGeometryContext().getStructureMapping(sc.getStructure()));
+						IExpression initial = ExpressionFactory.createExpression(getMathSymbol(scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration),null));
+						IExpression rate = getIdentifierSubstitutions(scm.getRate(),scm.getSpeciesContext().getUnitDefinition().divideBy(VCUnitDefinition.UNIT_s),simContext.getGeometryContext().getStructureMapping(sc.getStructure()));
 						equation = new OdeEquation(variable,initial,rate);
 						memSubDomain.replaceEquation(equation);
 					}else{
-						Expression initial = new Expression(0.0);
-						Expression rate = new Expression(0.0);
+						IExpression initial = ExpressionFactory.createExpression(0.0);
+						IExpression rate = ExpressionFactory.createExpression(0.0);
 						equation = new OdeEquation(variable,initial,rate);
 						if (memSubDomain.getEquation(variable)==null){
 							memSubDomain.addEquation(equation);
@@ -1945,9 +1954,9 @@ private void refreshMathDescription() throws MappingException, MathException, Ex
 						jc = new JumpCondition((VolVariable)scm.getVariable());
 						memSubDomain.addJumpCondition(jc);
 					}
-					Expression inFlux = getIdentifierSubstitutions(resolvedFluxes[i].inFlux,VCUnitDefinition.UNIT_uM_um_per_s,simContext.getGeometryContext().getStructureMapping(membraneStructureAnalyzer.getMembrane()));
+					IExpression inFlux = getIdentifierSubstitutions(resolvedFluxes[i].inFlux,VCUnitDefinition.UNIT_uM_um_per_s,simContext.getGeometryContext().getStructureMapping(membraneStructureAnalyzer.getMembrane()));
 					jc.setInFlux(inFlux);
-					Expression outFlux = getIdentifierSubstitutions(resolvedFluxes[i].outFlux,VCUnitDefinition.UNIT_uM_um_per_s,simContext.getGeometryContext().getStructureMapping(membraneStructureAnalyzer.getMembrane()));
+					IExpression outFlux = getIdentifierSubstitutions(resolvedFluxes[i].outFlux,VCUnitDefinition.UNIT_uM_um_per_s,simContext.getGeometryContext().getStructureMapping(membraneStructureAnalyzer.getMembrane()));
 					jc.setOutFlux(outFlux);
 				}else{
 					throw new MappingException(scm.getSpeciesContext().getName()+" has spatially resolved flux at membrane "+membrane.getName()+", but doesn't diffuse in compartment "+scm.getSpeciesContext().getStructure().getName());
@@ -2004,7 +2013,7 @@ private void refreshMathDescription() throws MappingException, MathException, Ex
 			if (mathDesc.getVariable(capacitiveDevice.getVName()) instanceof MembraneRegionVariable){
 				MembraneRegionVariable vVar = (MembraneRegionVariable)mathDesc.getVariable(capacitiveDevice.getVName());
 				Parameter initialVoltageParm = capacitiveDevice.getMembraneMapping().getInitialVoltageParameter();
-				Expression initExp = getIdentifierSubstitutions(initialVoltageParm.getExpression(),initialVoltageParm.getUnitDefinition(),capacitiveDevice.getMembraneMapping());
+				IExpression initExp = getIdentifierSubstitutions(initialVoltageParm.getExpression(),initialVoltageParm.getUnitDefinition(),capacitiveDevice.getMembraneMapping());
 				MembraneRegionEquation vEquation = new MembraneRegionEquation(vVar,initExp);
 				vEquation.setMembraneRateExpression(getIdentifierSubstitutions(potentialMapping.getOdeRHS(capacitiveDevice,this),VCUnitDefinition.UNIT_mV_per_s,capacitiveDevice.getMembraneMapping()));
 				memSubDomain.addEquation(vEquation);
@@ -2044,7 +2053,7 @@ private void refreshSpeciesContextMappings() throws ExpressionException, Mapping
 
 		scm.setDiffusing(isDiffusionRequired(scs.getSpeciesContext()));
 		if (scs.isConstant()){
-			Expression initCond = scs.getInitialConditionParameter().getExpression();
+			IExpression initCond = scs.getInitialConditionParameter().getExpression();
 			scm.setDependencyExpression(initCond);
 			////
 			//// determine if a Function is necessary
