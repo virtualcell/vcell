@@ -41,7 +41,7 @@ public class ParameterEstimationTaskXMLPersistence {
  * @param simContext cbit.vcell.mapping.SimulationContext
  */
 public static ParameterEstimationTask getParameterEstimationTask(Element parameterEstimationTaskElement, cbit.vcell.modelapp.SimulationContext simContext) 
-throws cbit.vcell.parser.ExpressionException, cbit.vcell.mapping.MappingException, cbit.vcell.math.MathException, java.beans.PropertyVetoException {
+throws org.vcell.expression.ExpressionException, cbit.vcell.mapping.MappingException, cbit.vcell.math.MathException, java.beans.PropertyVetoException {
 		
 	ParameterEstimationTask parameterEstimationTask = new ParameterEstimationTask(simContext);
 	String name = parameterEstimationTaskElement.getAttributeValue(NameAttribute);
@@ -60,7 +60,7 @@ throws cbit.vcell.parser.ExpressionException, cbit.vcell.mapping.MappingExceptio
 	for (int i = 0; i < parameterMappingSpecElementList.size(); i++){
 		Element parameterMappingSpecElement = (Element)parameterMappingSpecElementList.get(i);
 		String parameterName = parameterMappingSpecElement.getAttributeValue(ParameterReferenceAttribute);
-		cbit.vcell.parser.SymbolTableEntry ste = getSymbolTableEntry(simContext,parameterName);
+		org.vcell.expression.SymbolTableEntry ste = getSymbolTableEntry(simContext,parameterName);
 	
 		if (ste instanceof cbit.vcell.model.Parameter){
 			cbit.vcell.model.Parameter parameter = (cbit.vcell.model.Parameter)ste;
@@ -151,7 +151,7 @@ throws cbit.vcell.parser.ExpressionException, cbit.vcell.mapping.MappingExceptio
 			String referenceDataModelSymbolName = referenceDataMappingSpecElement.getAttributeValue(ReferenceDataModelSymbolAttribute);
 
 			ReferenceDataMappingSpec referenceDataMappingSpec = parameterEstimationTask.getModelOptimizationSpec().getReferenceDataMappingSpec(referenceDataColumnName);
-			cbit.vcell.parser.SymbolTableEntry modelSymbolTableEntry = null;
+			org.vcell.expression.SymbolTableEntry modelSymbolTableEntry = null;
 			if (referenceDataModelSymbolName!=null){
 				modelSymbolTableEntry = getSymbolTableEntry(simContext,referenceDataModelSymbolName);
 				if (referenceDataMappingSpec!=null && modelSymbolTableEntry!=null){
@@ -183,8 +183,8 @@ throws cbit.vcell.parser.ExpressionException, cbit.vcell.mapping.MappingExceptio
  * @param simContext cbit.vcell.mapping.SimulationContext
  * @param symbol java.lang.String
  */
-private static cbit.vcell.parser.SymbolTableEntry getSymbolTableEntry(cbit.vcell.modelapp.SimulationContext simContext, String parameterName) {
-	cbit.vcell.parser.SymbolTableEntry ste = null;
+private static org.vcell.expression.SymbolTableEntry getSymbolTableEntry(cbit.vcell.modelapp.SimulationContext simContext, String parameterName) {
+	org.vcell.expression.SymbolTableEntry ste = null;
 
 	try {
 		if (parameterName.startsWith("ReservedSymbols.")){
@@ -196,13 +196,13 @@ private static cbit.vcell.parser.SymbolTableEntry getSymbolTableEntry(cbit.vcell
 	if (ste==null){
 		try {
 			ste = simContext.getModel().getEntry(parameterName);
-		}catch(cbit.vcell.parser.ExpressionBindingException e){
+		}catch(org.vcell.expression.ExpressionBindingException e){
 		}
 	}
 	if (ste==null){
 		try {
 			ste = simContext.getEntry(parameterName);
-		}catch (cbit.vcell.parser.ExpressionBindingException e){
+		}catch (org.vcell.expression.ExpressionBindingException e){
 		}
 	}
 	return ste;
@@ -295,7 +295,7 @@ public static Element getXML(ParameterEstimationTask parameterEstimationTask) {
 	if (referenceDataMappingSpecs!=null && referenceDataMappingSpecs.length>0){
 		Element referenceDataMappingSpecListElement = new Element(ReferenceDataMappingSpecListTag);
 		for (int i = 0; i < referenceDataMappingSpecs.length; i++){
-			cbit.vcell.parser.SymbolTableEntry modelSymbol = referenceDataMappingSpecs[i].getModelObject();
+			org.vcell.expression.SymbolTableEntry modelSymbol = referenceDataMappingSpecs[i].getModelObject();
 			Element referenceDataMappingSpecElement = new Element(ReferenceDataMappingSpecTag);
 			referenceDataMappingSpecElement.setAttribute(ReferenceDataColumnNameAttribute,referenceDataMappingSpecs[i].getReferenceDataColumnName());
 			if (modelSymbol!=null){

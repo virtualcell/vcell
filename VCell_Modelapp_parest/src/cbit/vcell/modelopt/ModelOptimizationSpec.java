@@ -1,6 +1,8 @@
 package cbit.vcell.modelopt;
 
-import cbit.vcell.parser.SymbolTableEntry;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.SymbolTableEntry;
+
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.modelapp.SimulationContext;
@@ -22,7 +24,7 @@ public class ModelOptimizationSpec implements java.io.Serializable, cbit.util.Ma
 /**
  * ModelOptimizationSpec constructor comment.
  */
-public ModelOptimizationSpec(SimulationContext argSimulationContext) throws cbit.vcell.parser.ExpressionException {
+public ModelOptimizationSpec(SimulationContext argSimulationContext) throws org.vcell.expression.ExpressionException {
 	super();
 	this.fieldSimulationContext = argSimulationContext;
 	initializeParameterMappingSpecs();
@@ -32,7 +34,7 @@ public ModelOptimizationSpec(SimulationContext argSimulationContext) throws cbit
 /**
  * ModelOptimizationSpec constructor comment.
  */
-public ModelOptimizationSpec(ModelOptimizationSpec modelOptimizationSpecToCopy) throws cbit.vcell.parser.ExpressionException {
+public ModelOptimizationSpec(ModelOptimizationSpec modelOptimizationSpecToCopy) throws org.vcell.expression.ExpressionException {
 	super();
 	this.fieldSimulationContext = modelOptimizationSpecToCopy.fieldSimulationContext;
 	fieldParameterMappingSpecs = new ParameterMappingSpec[modelOptimizationSpecToCopy.fieldParameterMappingSpecs.length];
@@ -80,7 +82,7 @@ public synchronized void addVetoableChangeListener(java.lang.String propertyName
  * Creation date: (11/29/2005 5:10:51 PM)
  * @return cbit.vcell.parser.SymbolTableEntry[]
  */
-public cbit.vcell.parser.SymbolTableEntry[] calculateTimeDependentModelObjects() {
+public org.vcell.expression.SymbolTableEntry[] calculateTimeDependentModelObjects() {
 
 	cbit.util.graph.Graph digraph = new cbit.util.graph.Graph();
 
@@ -110,7 +112,7 @@ public cbit.vcell.parser.SymbolTableEntry[] calculateTimeDependentModelObjects()
 	for (int i = 0; reactionSteps!=null && i < reactionSteps.length; i++){
 		Parameter[] parameters = reactionSteps[i].getKinetics().getKineticsParameters();
 		for (int j = 0; parameters!=null && j < parameters.length; j++){
-			cbit.vcell.parser.Expression exp = parameters[j].getExpression();
+			IExpression exp = parameters[j].getExpression();
 			if (exp!=null){
 				String symbols[] = exp.getSymbols();
 				if (symbols!=null && symbols.length>0){
@@ -127,7 +129,7 @@ public cbit.vcell.parser.SymbolTableEntry[] calculateTimeDependentModelObjects()
 					// add all dependencies to graph also (if not already there).
 					//
 					for (int k = 0; symbols!=null && k < symbols.length; k++){
-						cbit.vcell.parser.SymbolTableEntry ste = exp.getSymbolBinding(symbols[k]);
+						org.vcell.expression.SymbolTableEntry ste = exp.getSymbolBinding(symbols[k]);
 						if (ste==null){
 							throw new RuntimeException("Error, symbol '"+symbols[k]+"' not bound in parameter '"+parameters[j]+"'");
 						}
@@ -444,7 +446,7 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * Insert the method's description here.
  * Creation date: (8/22/2005 10:35:28 AM)
  */
-private void initializeParameterMappingSpecs() throws cbit.vcell.parser.ExpressionException {
+private void initializeParameterMappingSpecs() throws org.vcell.expression.ExpressionException {
 	cbit.vcell.model.Parameter modelParameters[] = getModelParameters();
 
 	ParameterMappingSpec[] parameterMappingSpecs = new ParameterMappingSpec[modelParameters.length];

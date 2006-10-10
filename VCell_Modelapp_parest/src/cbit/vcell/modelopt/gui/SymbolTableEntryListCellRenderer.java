@@ -31,8 +31,8 @@ public java.awt.Component getListCellRendererComponent(javax.swing.JList list, O
 	if (value instanceof javax.swing.Icon) {
 		setIcon((javax.swing.Icon) value);
 	} else {
-		if (value instanceof cbit.vcell.parser.SymbolTableEntry){
-			cbit.vcell.parser.SymbolTableEntry ste = (cbit.vcell.parser.SymbolTableEntry)value;
+		if (value instanceof org.vcell.expression.SymbolTableEntry){
+			org.vcell.expression.SymbolTableEntry ste = (org.vcell.expression.SymbolTableEntry)value;
 			if (ste instanceof cbit.vcell.model.ReservedSymbol){
 				setText(ste.getName());
 			}else if (ste instanceof cbit.vcell.model.SpeciesContext){

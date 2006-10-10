@@ -1,7 +1,8 @@
 package cbit.vcell.modelopt.gui;
+import org.vcell.expression.SymbolTableEntry;
+
 import cbit.vcell.modelopt.ReferenceDataMappingSpec;
 import cbit.vcell.modelopt.ModelOptimizationSpec;
-import cbit.vcell.parser.SymbolTableEntry;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.

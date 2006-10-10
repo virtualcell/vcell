@@ -8,7 +8,7 @@ public class ReferenceDataMappingSpec implements java.io.Serializable, cbit.util
 	private java.lang.String referenceDataColumnName = null;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.vcell.parser.SymbolTableEntry fieldModelObject = null;
+	private org.vcell.expression.SymbolTableEntry fieldModelObject = null;
 
 /**
  * ReferenceDataMappingSpec constructor comment.
@@ -185,7 +185,7 @@ public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, 
  * @return The modelObject property value.
  * @see #setModelObject
  */
-public cbit.vcell.parser.SymbolTableEntry getModelObject() {
+public org.vcell.expression.SymbolTableEntry getModelObject() {
 	return fieldModelObject;
 }
 
@@ -268,8 +268,8 @@ public synchronized void removeVetoableChangeListener(java.lang.String propertyN
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getModelObject
  */
-public void setModelObject(cbit.vcell.parser.SymbolTableEntry modelObject) throws java.beans.PropertyVetoException {
-	cbit.vcell.parser.SymbolTableEntry oldValue = fieldModelObject;
+public void setModelObject(org.vcell.expression.SymbolTableEntry modelObject) throws java.beans.PropertyVetoException {
+	org.vcell.expression.SymbolTableEntry oldValue = fieldModelObject;
 	fireVetoableChange("modelObject", oldValue, modelObject);
 	fieldModelObject = modelObject;
 	firePropertyChange("modelObject", oldValue, modelObject);

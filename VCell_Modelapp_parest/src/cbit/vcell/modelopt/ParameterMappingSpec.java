@@ -15,7 +15,7 @@ public class ParameterMappingSpec implements java.io.Serializable, cbit.util.Mat
 /**
  * ParameterMapping constructor comment.
  */
-public ParameterMappingSpec(cbit.vcell.model.Parameter argModelParameter) throws cbit.vcell.parser.ExpressionException {
+public ParameterMappingSpec(cbit.vcell.model.Parameter argModelParameter) throws org.vcell.expression.ExpressionException {
 	super();
 	this.modelParameter = argModelParameter;
 	this.current = argModelParameter.getExpression().evaluateConstant();
@@ -25,7 +25,7 @@ public ParameterMappingSpec(cbit.vcell.model.Parameter argModelParameter) throws
 /**
  * ParameterMapping constructor comment.
  */
-public ParameterMappingSpec(ParameterMappingSpec parameterMappingSpecToCopy) throws cbit.vcell.parser.ExpressionException {
+public ParameterMappingSpec(ParameterMappingSpec parameterMappingSpecToCopy) throws org.vcell.expression.ExpressionException {
 	super();
 	this.modelParameter = parameterMappingSpecToCopy.getModelParameter();
 	this.current = parameterMappingSpecToCopy.getCurrent();

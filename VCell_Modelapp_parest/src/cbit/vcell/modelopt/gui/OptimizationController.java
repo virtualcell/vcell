@@ -137,7 +137,7 @@ public void plot() {
 		multisourcePlotPane.select(nameArray);
 		
 		cbit.gui.DialogUtils.showComponentCloseDialog(optTestPanel,multisourcePlotPane,"Data Plotter");
-	}catch (cbit.vcell.parser.ExpressionException e){
+	}catch (org.vcell.expression.ExpressionException e){
 		e.printStackTrace(System.out);
 	}
 }

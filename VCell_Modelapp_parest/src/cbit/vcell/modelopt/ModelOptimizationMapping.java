@@ -1,5 +1,9 @@
 package cbit.vcell.modelopt;
 import java.util.Vector;
+
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import cbit.vcell.mapping.MappingException;
 
 
@@ -35,7 +39,7 @@ public ModelOptimizationMapping(ModelOptimizationSpec argModelOptimizationSpec) 
  * @return cbit.vcell.solver.ode.ODESolverResultSet
  * @param optResultSet cbit.vcell.opt.OptimizationResultSet
  */
-public void applySolutionToMathOverrides(cbit.vcell.simulation.Simulation simulation, cbit.vcell.opt.OptimizationResultSet optResultSet) throws cbit.vcell.parser.ExpressionException {
+public void applySolutionToMathOverrides(cbit.vcell.simulation.Simulation simulation, cbit.vcell.opt.OptimizationResultSet optResultSet) throws org.vcell.expression.ExpressionException {
 	if (simulation==null){
 		throw new RuntimeException("simulation is null");
 	}
@@ -58,7 +62,7 @@ public void applySolutionToMathOverrides(cbit.vcell.simulation.Simulation simula
 	for (int i = 0; i < parameterMappingSpecs.length; i++){
 		cbit.vcell.math.Variable var = mathSymbolMapping.getVariable(parameterMappingSpecs[i].getModelParameter());
 		if (var instanceof cbit.vcell.math.Constant){
-			simulation.getMathOverrides().putConstant(new cbit.vcell.math.Constant(var.getName(),new cbit.vcell.parser.Expression(parameterMappingSpecs[i].getCurrent())));
+			simulation.getMathOverrides().putConstant(new cbit.vcell.math.Constant(var.getName(),ExpressionFactory.createExpression(parameterMappingSpecs[i].getCurrent())));
 		}
 	}
 
@@ -72,7 +76,7 @@ public void applySolutionToMathOverrides(cbit.vcell.simulation.Simulation simula
 			// correct math overrides with parameter solution
 			//
 			for (int i = 0; i < optResultSet.getParameterNames().length; i++){
-				simulation.getMathOverrides().putConstant(new cbit.vcell.math.Constant(optResultSet.getParameterNames()[i],new cbit.vcell.parser.Expression(optResultSet.getParameterValues()[i])));
+				simulation.getMathOverrides().putConstant(new cbit.vcell.math.Constant(optResultSet.getParameterNames()[i],ExpressionFactory.createExpression(optResultSet.getParameterValues()[i])));
 			}
 		}
 	}
@@ -110,7 +114,7 @@ cbit.vcell.mapping.MathSymbolMapping computeOptimizationSpec() throws cbit.vcell
 	}catch (cbit.vcell.mapping.MappingException e){
 		e.printStackTrace(System.out);
 		throw new MappingException(e.getMessage());
-	}catch (cbit.vcell.parser.ExpressionException e){
+	}catch (org.vcell.expression.ExpressionException e){
 		e.printStackTrace(System.out);
 		throw new cbit.vcell.math.MathException(e.getMessage());
 	}
@@ -153,7 +157,7 @@ cbit.vcell.mapping.MathSymbolMapping computeOptimizationSpec() throws cbit.vcell
 					if (parameterMappingSpecs[i].isSelected()) {
 						allVars[j] = new cbit.vcell.math.ParameterVariable(origConstant.getName());
 					} else {
-						allVars[j] = new cbit.vcell.math.Constant(origConstant.getName(),new cbit.vcell.parser.Expression(optParameter.getInitialGuess()));
+						allVars[j] = new cbit.vcell.math.Constant(origConstant.getName(),ExpressionFactory.createExpression(optParameter.getInitialGuess()));
 					}
 				}
 			}
@@ -168,7 +172,7 @@ cbit.vcell.mapping.MathSymbolMapping computeOptimizationSpec() throws cbit.vcell
 	parameterMappings = (ParameterMapping[])cbit.util.BeanUtils.getArray(parameterMappingList,ParameterMapping.class);
 	try {
 		origMathDesc.setAllVariables(allVars);
-	}catch (cbit.vcell.parser.ExpressionBindingException e){
+	}catch (org.vcell.expression.ExpressionBindingException e){
 		e.printStackTrace(System.out);
 		throw new cbit.vcell.math.MathException(e.getMessage());
 	}
@@ -213,7 +217,7 @@ public ModelOptimizationSpec getModelOptimizationSpec() {
  * @return cbit.vcell.solver.ode.ODESolverResultSet
  * @param optResultSet cbit.vcell.opt.OptimizationResultSet
  */
-public static cbit.vcell.simdata.ODESolverResultSet getOdeSolverResultSet(OptimizationSpec optSpec, cbit.vcell.opt.OptimizationResultSet optResultSet) throws cbit.vcell.parser.ExpressionException {
+public static cbit.vcell.simdata.ODESolverResultSet getOdeSolverResultSet(OptimizationSpec optSpec, cbit.vcell.opt.OptimizationResultSet optResultSet) throws org.vcell.expression.ExpressionException {
 	if (optResultSet==null || optResultSet.getParameterNames()==null || optResultSet.getSolutionNames()==null){
 		return null;
 	}
@@ -243,14 +247,14 @@ public static cbit.vcell.simdata.ODESolverResultSet getOdeSolverResultSet(Optimi
 		//
 		for (int i = 0; i < optSpec.getParameters().length; i++){
 			cbit.vcell.opt.Parameter parameter = optSpec.getParameters()[i];
-			simulation.getMathOverrides().putConstant(new cbit.vcell.math.Constant(parameter.getName(),new cbit.vcell.parser.Expression(parameter.getInitialGuess())));
+			simulation.getMathOverrides().putConstant(new cbit.vcell.math.Constant(parameter.getName(),ExpressionFactory.createExpression(parameter.getInitialGuess())));
 		}
 		
 		//
 		// correct math overrides with parameter solution
 		//
 		for (int i = 0; i < optResultSet.getParameterNames().length; i++){
-			simulation.getMathOverrides().putConstant(new cbit.vcell.math.Constant(optResultSet.getParameterNames()[i],new cbit.vcell.parser.Expression(optResultSet.getParameterValues()[i])));
+			simulation.getMathOverrides().putConstant(new cbit.vcell.math.Constant(optResultSet.getParameterNames()[i],ExpressionFactory.createExpression(optResultSet.getParameterValues()[i])));
 		}
 
 		//
@@ -258,9 +262,9 @@ public static cbit.vcell.simdata.ODESolverResultSet getOdeSolverResultSet(Optimi
 		//
 		cbit.vcell.math.AnnotatedFunction[] annotatedFunctions = FunctionFileGenerator.createAnnotatedFunctionsList(simulation);
 		for (int i = 0; i < annotatedFunctions.length; i++){
-			cbit.vcell.parser.Expression funcExp = annotatedFunctions[i].getExpression();
+			IExpression funcExp = annotatedFunctions[i].getExpression();
 			for (int j = 0; j < optResultSet.getParameterNames().length; j ++) {
-				funcExp.substituteInPlace(new cbit.vcell.parser.Expression(optResultSet.getParameterNames()[j]), new cbit.vcell.parser.Expression(optResultSet.getParameterValues()[j]));
+				funcExp.substituteInPlace(ExpressionFactory.createExpression(optResultSet.getParameterNames()[j]), ExpressionFactory.createExpression(optResultSet.getParameterValues()[j]));
 			}
 			odeSolverResultSet.addFunctionColumn(new cbit.vcell.simdata.FunctionColumnDescription(annotatedFunctions[i].getExpression(),annotatedFunctions[i].getName(),null,annotatedFunctions[i].getName(),false));
 		}
@@ -317,7 +321,7 @@ private cbit.vcell.opt.ReferenceData getRemappedReferenceData(cbit.vcell.mapping
 	//
 	int mappedColumnCount=0;
 	for (int i = 0; i < refDataMappingSpecs.length; i++){
-		cbit.vcell.parser.SymbolTableEntry modelObject = refDataMappingSpecs[i].getModelObject();
+		org.vcell.expression.SymbolTableEntry modelObject = refDataMappingSpecs[i].getModelObject();
 		if (modelObject!=null){
 			int mappedColumnIndex = mappedColumnCount;
 			if (modelObject.equals(cbit.vcell.model.ReservedSymbol.TIME)){
@@ -355,7 +359,7 @@ private cbit.vcell.opt.ReferenceData getRemappedReferenceData(cbit.vcell.mapping
 	// create data columns (time and rest)
 	//
 	for (int i = 0; i < modelObjectList.size(); i++){
-		cbit.vcell.parser.SymbolTableEntry modelObject = (cbit.vcell.parser.SymbolTableEntry)modelObjectList.elementAt(i);
+		org.vcell.expression.SymbolTableEntry modelObject = (org.vcell.expression.SymbolTableEntry)modelObjectList.elementAt(i);
 		String symbol = mathMapping.getMathSymbol(modelObject,structureMapping);
 		rowColResultSet.addDataColumn(new cbit.vcell.simdata.ODESolverResultSetColumnDescription(symbol));
 	}

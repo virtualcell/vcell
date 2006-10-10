@@ -9,7 +9,8 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 package cbit.vcell.modelopt.gui;
-import cbit.vcell.parser.SymbolTableEntry;
+import org.vcell.expression.SymbolTableEntry;
+
 import cbit.vcell.opt.OptimizationSolverSpec;
 import cbit.vcell.opt.solvers.OptimizationService;
 /**
@@ -2125,7 +2126,7 @@ private void mapButton_ActionPerformed() {
 		return;
 	}
 	
-	cbit.vcell.parser.SymbolTableEntry symbolTableEntries[] = getParameterEstimationTask().getModelOptimizationSpec().calculateTimeDependentModelObjects();
+	org.vcell.expression.SymbolTableEntry symbolTableEntries[] = getParameterEstimationTask().getModelOptimizationSpec().calculateTimeDependentModelObjects();
 
 	java.util.Comparator steComparator = new java.util.Comparator() {
 		private Class[] classOrder = new Class[] { cbit.vcell.model.ReservedSymbol.class, cbit.vcell.model.SpeciesContext.class, cbit.vcell.model.Kinetics.KineticsParameter.class };

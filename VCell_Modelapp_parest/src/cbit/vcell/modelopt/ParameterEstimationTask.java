@@ -2,6 +2,7 @@ package cbit.vcell.modelopt;
 import java.beans.PropertyVetoException;
 
 import org.jdom.Element;
+import org.vcell.expression.ExpressionException;
 import org.vcell.modelapp.analysis.IAnalysisTask;
 import org.vcell.modelapp.analysis.IAnalysisTaskFactory;
 import org.vcell.modelapp.parest.ParameterEstimationTaskFactoryImpl;
@@ -9,7 +10,6 @@ import org.vcell.modelapp.parest.ParameterEstimationTaskFactoryImpl;
 import cbit.vcell.opt.OptimizationSolverSpec;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.math.MathException;
-import cbit.vcell.parser.ExpressionException;
 /**
  * Insert the type's description here.
  * Creation date: (5/2/2006 4:35:50 PM)

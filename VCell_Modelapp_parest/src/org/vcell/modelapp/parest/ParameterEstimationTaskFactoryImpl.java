@@ -3,6 +3,7 @@ package org.vcell.modelapp.parest;
 import java.beans.PropertyVetoException;
 
 import org.jdom.Element;
+import org.vcell.expression.ExpressionException;
 import org.vcell.modelapp.analysis.IAnalysisTask;
 import org.vcell.modelapp.analysis.IAnalysisTaskFactory;
 import org.vcell.modelapp.analysis.IAnalysisTaskView;
@@ -12,7 +13,6 @@ import cbit.vcell.math.MathException;
 import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.gui.OptTestPanel;
-import cbit.vcell.parser.ExpressionException;
 
 public class ParameterEstimationTaskFactoryImpl implements IAnalysisTaskFactory {
 

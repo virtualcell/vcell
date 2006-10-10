@@ -211,7 +211,7 @@ public java.beans.PropertyDescriptor modelObjectPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.parser.SymbolTableEntry.class
+					org.vcell.expression.SymbolTableEntry.class
 				};
 				aSetMethod = getBeanClass().getMethod("setModelObject", aSetMethodParameterTypes);
 			} catch (java.lang.Throwable exception) {

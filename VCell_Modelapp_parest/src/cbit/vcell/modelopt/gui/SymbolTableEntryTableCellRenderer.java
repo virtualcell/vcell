@@ -9,7 +9,7 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 package cbit.vcell.modelopt.gui;
-import cbit.vcell.parser.SymbolTableEntry;
+import org.vcell.expression.SymbolTableEntry;
 /**
  * Insert the type's description here.
  * Creation date: (11/30/2005 2:11:10 PM)

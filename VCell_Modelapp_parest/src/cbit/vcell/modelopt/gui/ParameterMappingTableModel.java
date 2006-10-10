@@ -1,11 +1,12 @@
 package cbit.vcell.modelopt.gui;
 import java.util.*;
+
+import org.vcell.expression.ExpressionException;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
 import cbit.vcell.messaging.admin.sorttable.ManageTableModel;
-import cbit.vcell.parser.ExpressionException;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)
