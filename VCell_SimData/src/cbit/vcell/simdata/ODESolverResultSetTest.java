@@ -1,4 +1,9 @@
 package cbit.vcell.simdata;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.SimpleSymbolTable;
+
 import cbit.vcell.parser.*;
 import cbit.vcell.math.ReservedVariable;
 /**
@@ -22,7 +27,7 @@ public ODESolverResultSetTest() {
  * @param varNames java.lang.String[]
  * @param expressions cbit.vcell.parser.Expression[]
  */
-public static ODESolverResultSet getExample(double times[], String[] varNames, cbit.vcell.parser.Expression[] expressions) throws ExpressionException {
+public static ODESolverResultSet getExample(double times[], String[] varNames, IExpression[] expressions) throws ExpressionException {
 	if (varNames.length!=expressions.length){
 		throw new IllegalArgumentException("must have one variable name per expression");
 	}
@@ -75,7 +80,7 @@ public static void main(String[] args) {
 			times[i] = ((double)i)/numTimes;
 		}
 		String names[] = { "v1", "v2", "v3" };
-		Expression exps[] = { new Expression("cos(5*t)"), new Expression("sin(10*t)"), new Expression("cos(20*t)") };
+		IExpression exps[] = { ExpressionFactory.createExpression("cos(5*t)"), ExpressionFactory.createExpression("sin(10*t)"), ExpressionFactory.createExpression("cos(20*t)") };
 		ODESolverResultSet r = getExample(times,names,exps);
 		plot(r);
 	} catch (Throwable e) {

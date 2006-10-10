@@ -36,7 +36,7 @@ public SimulationDescription(User user, DataServerImpl dataServerImpl, VCDataIde
 		cbit.vcell.simdata.ODESimData odeSimData = dataServerImpl.getODEData(user, vcdID);
 		try {
 			this.times = odeSimData.extractColumn(odeSimData.findColumn("t"));
-		}catch (cbit.vcell.parser.ExpressionException e){
+		}catch (org.vcell.expression.ExpressionException e){
 			e.printStackTrace(System.out);
 			throw new RuntimeException("error getting time: "+e.getMessage());
 		}

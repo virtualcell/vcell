@@ -1,6 +1,8 @@
 package cbit.vcell.simdata;
 
-import cbit.vcell.parser.Expression;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -15,11 +17,11 @@ public class FunctionColumnDescription implements ColumnDescription, java.io.Ser
 	private java.lang.String fieldFunctionName = new String();
 	private java.lang.String fieldParameterName = null;
 	private boolean fieldIsUserDefined = false;
-	private Expression fieldExpression = null;
+	private IExpression fieldExpression = null;
 /**
  * ODESolverResultSetColDescription constructor comment.
  */
-public FunctionColumnDescription(Expression exp, String functionName, String parameterName, String displayName, boolean isUserDefined) {
+public FunctionColumnDescription(IExpression exp, String functionName, String parameterName, String displayName, boolean isUserDefined) {
 	super();
 	// cbit.util.Assertion.assertNotNull(functionName);
 	// cbit.util.Assertion.assertNotNull(displayName);
@@ -28,7 +30,7 @@ public FunctionColumnDescription(Expression exp, String functionName, String par
 	fieldParameterName = parameterName;
 	fieldDisplayName = displayName;
 	fieldIsUserDefined = isUserDefined;
-	fieldExpression = new Expression(exp);
+	fieldExpression = ExpressionFactory.createExpression(exp);
 }
 /**
  * ODESolverResultSetColDescription constructor comment.
@@ -38,7 +40,7 @@ public FunctionColumnDescription(FunctionColumnDescription funcColumnDescription
 	fieldFunctionName = funcColumnDescription.fieldFunctionName;
 	fieldParameterName = funcColumnDescription.fieldParameterName;
 	fieldDisplayName = funcColumnDescription.fieldDisplayName;
-	fieldExpression = new Expression(funcColumnDescription.fieldExpression);
+	fieldExpression = ExpressionFactory.createExpression(funcColumnDescription.fieldExpression);
 }
 /**
  * Gets the displayName property (java.lang.String) value.
@@ -53,7 +55,7 @@ public java.lang.String getDisplayName() {
  * @return The variableName property value.
  * @see #setVariableName
  */
-public Expression getExpression() {
+public IExpression getExpression() {
 	return fieldExpression;
 }
 /**
@@ -107,7 +109,7 @@ public int hashCode() {
  */
 public static void main(java.lang.String[] args) {
 	try {
-		FunctionColumnDescription test = new FunctionColumnDescription (new Expression("abc/123"), "function", "parameter", "display", false);
+		FunctionColumnDescription test = new FunctionColumnDescription (ExpressionFactory.createExpression("abc/123"), "function", "parameter", "display", false);
 		System.out.println("Test Not : " +
 			">" + test.getFunctionName() + "<" +
 			">" + test.getParameterName() + "<" +
@@ -132,7 +134,7 @@ public static void main(java.lang.String[] args) {
  * Creation date: (1/16/2003 5:45:33 PM)
  * @param newFieldExpression cbit.vcell.parser.Expression
  */
-public void setExpression(cbit.vcell.parser.Expression newExpression) {
+public void setExpression(IExpression newExpression) {
 	fieldExpression = newExpression;
 }
 /**

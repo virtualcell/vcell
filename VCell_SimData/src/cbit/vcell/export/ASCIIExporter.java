@@ -412,7 +412,7 @@ private String getODEDataValues(long jobID, User user, DataServerImpl dataServer
 	double[] allTimes = null;
 	try {
 		allTimes = odeSimData.extractColumn(odeSimData.findColumn("t"));
-	}catch (cbit.vcell.parser.ExpressionException e){
+	}catch (org.vcell.expression.ExpressionException e){
 		e.printStackTrace(System.out);
 	}
 	double[][] variableValues = new double[variableNames.length][endIndex - beginIndex + 1];
@@ -422,7 +422,7 @@ private String getODEDataValues(long jobID, User user, DataServerImpl dataServer
 			exportServiceImpl.fireExportProgress(jobID, vcdID, "CSV", progress);
 			try {
 				variableValues[k][i - beginIndex] = odeSimData.extractColumn(odeSimData.findColumn(variableNames[k]))[i];
-			}catch (cbit.vcell.parser.ExpressionException e){
+			}catch (org.vcell.expression.ExpressionException e){
 				e.printStackTrace(System.out);
 				throw new DataAccessException("error evaluating function in dataset: "+e.getMessage());
 			}

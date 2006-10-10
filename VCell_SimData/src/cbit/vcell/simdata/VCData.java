@@ -7,6 +7,9 @@ import cbit.vcell.math.*;
 import cbit.vcell.mesh.CartesianMesh;
 
 import java.io.*;
+
+import org.vcell.expression.ExpressionException;
+
 import cbit.vcell.parser.*;
 import cbit.util.*;
 /**

@@ -1,5 +1,7 @@
 package cbit.vcell.simdata;
 
+import org.vcell.expression.ExpressionFactory;
+
 import cbit.vcell.parser.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -35,7 +37,7 @@ public static void main(String[] args) {
 			y[i] = 1e-5*Math.exp(-t[i]*10);
 			r.addRow(new double[] {t[i], x[i], y[i]});
 		}
-		r.addFunctionColumn(new FunctionColumnDescription(new Expression("1e-5*pow(sin(.3*t), 2)"),"newFunc", null, "newFunc", false));
+		r.addFunctionColumn(new FunctionColumnDescription(ExpressionFactory.createExpression("1e-5*pow(sin(.3*t), 2)"),"newFunc", null, "newFunc", false));
 		long startTime = System.currentTimeMillis();
 		r.trimRows(SAMPLING);
 		long endTime = System.currentTimeMillis();

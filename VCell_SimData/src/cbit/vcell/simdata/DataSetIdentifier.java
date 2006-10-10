@@ -3,6 +3,11 @@ package cbit.vcell.simdata;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.NameScope;
+import org.vcell.expression.SymbolTableEntry;
+
 import cbit.vcell.math.VariableType;
 import cbit.vcell.parser.*;
 /**
@@ -69,7 +74,7 @@ public double getConstantValue() throws ExpressionException {
  * @return boolean
  * @exception java.lang.Exception The exception description.
  */
-public Expression getExpression() throws ExpressionException {
+public IExpression getExpression() throws ExpressionException {
 	return null;
 }
 

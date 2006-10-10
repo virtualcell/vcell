@@ -65,7 +65,7 @@ public static void main(String[] args) {
 		e1.printStackTrace(System.out);
 	} catch (java.io.IOException e2) {
 		e2.printStackTrace(System.out);
-	} catch (cbit.vcell.parser.ExpressionException e3) {
+	} catch (org.vcell.expression.ExpressionException e3) {
 		e3.printStackTrace(System.out);
 	} 
 }

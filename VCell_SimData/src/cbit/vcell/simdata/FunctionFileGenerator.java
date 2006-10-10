@@ -1,5 +1,4 @@
 package cbit.vcell.simdata;
-import cbit.vcell.parser.Expression;
 import cbit.vcell.simulation.Simulation;
 
 import java.util.StringTokenizer;
@@ -13,7 +12,6 @@ import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.MemVariable;
 import cbit.vcell.math.MembraneRegionVariable;
 import cbit.vcell.math.OutsideVariable;
-import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VolVariable;
@@ -23,6 +21,10 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.util.Vector;
 import java.io.FileInputStream;
+
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import cbit.util.TokenMangler;
 /**
  * Insert the type's description here.
@@ -143,8 +145,8 @@ public static synchronized Vector readFunctionsFile(File functionsFile) throws j
 		StringTokenizer nextLine = new StringTokenizer(token1, semicolonDelimiters);
 		int i=0;
 		String functionName = null;
-		Expression functionExpr = null;
-		Expression functionSimplifiedExpr = null;
+		IExpression functionExpr = null;
+		IExpression functionSimplifiedExpr = null;
 		String errorString = null;
 		VariableType funcVarType = null;
 		boolean funcIsUserDefined = false;
@@ -161,8 +163,8 @@ public static synchronized Vector readFunctionsFile(File functionsFile) throws j
 				functionName = TokenMangler.fixTokenStrict(token2);
 			} else if (i == 1) {
 				try {
-					functionExpr = new Expression(token2);
-				} catch (cbit.vcell.parser.ExpressionException e) {
+					functionExpr = ExpressionFactory.createExpression(token2);
+				} catch (org.vcell.expression.ExpressionException e) {
 					throw new RuntimeException("Error in reading expression for function \""+functionName+"\"");
 				}
 			} else if (i == 2) {
@@ -189,8 +191,8 @@ public static synchronized Vector readFunctionsFile(File functionsFile) throws j
 				funcIsUserDefined = Boolean.valueOf(token2).booleanValue();
 			} else if (i == 5) {
 				try {
-					functionSimplifiedExpr = new Expression(token2);
-				} catch (cbit.vcell.parser.ExpressionException e) {
+					functionSimplifiedExpr = ExpressionFactory.createExpression(token2);
+				} catch (org.vcell.expression.ExpressionException e) {
 					System.out.println("Error in reading simplified expression for function \""+functionName+"\"");
 				}
 			}
@@ -241,7 +243,7 @@ public void writefunctionFile(PrintWriter out) {
  */
 public static VariableType getFunctionVariableType(Function function, String[] variableNames, VariableType[] variableTypes, boolean isSpatial) {
 	VariableType funcType = null;
-	Expression exp = function.getExpression();
+	IExpression exp = function.getExpression();
 	String symbols[] = exp.getSymbols();
 	if (symbols != null) {
 		for (int j = 0; j < symbols.length; j++){
@@ -369,14 +371,14 @@ public static AnnotatedFunction[] createAnnotatedFunctionsList(Simulation simula
 			String errString = "";
 			VariableType funcType = null;		
 			try {
-				Expression substitutedExp = simulation.substituteFunctions(functions[i].getExpression());
+				IExpression substitutedExp = simulation.substituteFunctions(functions[i].getExpression());
 				substitutedExp.bindExpression(simulation);
 				functions[i].setExpression(substitutedExp.flatten());
 			}catch (cbit.vcell.math.MathException e){
 				e.printStackTrace(System.out);
 				errString = errString+", "+e.getMessage();	
 				// throw new RuntimeException(e.getMessage());
-			}catch (cbit.vcell.parser.ExpressionException e){
+			}catch (org.vcell.expression.ExpressionException e){
 				e.printStackTrace(System.out);
 				errString = errString+", "+e.getMessage();				
 				// throw new RuntimeException(e.getMessage());

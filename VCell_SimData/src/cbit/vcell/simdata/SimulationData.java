@@ -12,6 +12,12 @@ import cbit.vcell.parser.*;
 import cbit.util.*;
 
 import java.util.zip.*;
+
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.SymbolTable;
+import org.vcell.expression.SymbolTableEntry;
 /**
  * This type was created in VisualAge.
  */
@@ -120,15 +126,15 @@ private synchronized void addFunctionToList(AnnotatedFunction function) throws E
 	}
 
 	// attempt to bind function and substitute
-	Expression simExp = function.getSimplifiedExpression();	
+	IExpression simExp = function.getSimplifiedExpression();	
 	if (simExp == null) {
-		Expression exp = new Expression(function.getExpression());
+		IExpression exp = ExpressionFactory.createExpression(function.getExpression());
 		exp.bindExpression(this);
 		String[] symbols = exp.getSymbols();
 		if (symbols != null) {
 			for (int i = 0; i < symbols.length; i ++){
-				Expression oldExp = new Expression(symbols[i]);
-				Expression newExp = null;
+				IExpression oldExp = ExpressionFactory.createExpression(symbols[i]);
+				IExpression newExp = null;
 				SymbolTableEntry ste = getEntry(symbols[i]);
 				if (ste != null) {
 					if (!(ste instanceof DataSetIdentifier)) {

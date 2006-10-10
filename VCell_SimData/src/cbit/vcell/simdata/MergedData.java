@@ -8,6 +8,13 @@ import cbit.vcell.mesh.CartesianMesh;
 
 import java.io.*;
 import java.util.*;
+
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.SymbolTable;
+import org.vcell.expression.SymbolTableEntry;
+
 import cbit.vcell.parser.*;
 import cbit.util.*;
 /**
@@ -141,15 +148,15 @@ private synchronized void addFunctionToList(AnnotatedFunction function) throws E
 	}
 
 	// attempt to bind function and substitute
-	Expression simExp = function.getSimplifiedExpression();	
+	IExpression simExp = function.getSimplifiedExpression();	
 	if (simExp == null) {
-		Expression exp = new Expression(function.getExpression());
+		IExpression exp = ExpressionFactory.createExpression(function.getExpression());
 		exp.bindExpression(this);
 		String[] symbols = exp.getSymbols();
 		if (symbols != null) {
 			for (int i = 0; i < symbols.length; i ++){
-				Expression oldExp = new Expression(symbols[i]);
-				Expression newExp = null;
+				IExpression oldExp = ExpressionFactory.createExpression(symbols[i]);
+				IExpression newExp = null;
 				SymbolTableEntry ste = getEntry(symbols[i]);
 				if (ste != null) {
 					if (!(ste instanceof DataSetIdentifier)) {
@@ -535,13 +542,13 @@ public ODEDataBlock getODEDataBlock() throws DataAccessException {
 			try {
 				String newColName = "Data"+(i+1)+"."+newODErset.getFunctionColumnDescriptions()[j].getName();
 				FunctionColumnDescription fcd = newODErset.getFunctionColumnDescriptions()[j];
-				Expression newExp = new Expression(fcd.getExpression());
+				IExpression newExp = ExpressionFactory.createExpression(fcd.getExpression());
 				String symbols[] = newExp.getSymbols();
 				if (symbols != null && (symbols.length > 0)) {
 					for (int jj = 0; jj < symbols.length; jj++) {
 						for (int kk = 0; kk < newVarNames.length; kk++) {
 							if (newVarNames[kk].indexOf(symbols[jj]) > 0) {
-								newExp.substituteInPlace(new Expression(symbols[jj]), new Expression(newVarNames[kk]));
+								newExp.substituteInPlace(ExpressionFactory.createExpression(symbols[jj]), ExpressionFactory.createExpression(newVarNames[kk]));
 								break;
 							}
 						}

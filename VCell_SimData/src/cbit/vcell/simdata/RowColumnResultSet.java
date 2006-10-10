@@ -6,6 +6,13 @@ package cbit.vcell.simdata;
 ©*/
 import cbit.vcell.math.*;
 import java.util.*;
+
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.SymbolTable;
+import org.vcell.expression.VariableSymbolTable;
+
 import cbit.vcell.parser.*;
 /**
  *  This will have a list of Variables (NB: ReservedVariable.TIME is a ReservedVariable,
@@ -68,7 +75,7 @@ public void addFunctionColumn(FunctionColumnDescription functionColumnDescriptio
 	// bind and substitute functions (resulting in expressions of only data columns).
 	//
 	functionColumnDescription.getExpression().bindExpression(resultSetSymbolTable);
-	Expression exp1 = MathUtilities.substituteFunctions(functionColumnDescription.getExpression(),resultSetSymbolTable);
+	IExpression exp1 = MathUtilities.substituteFunctions(functionColumnDescription.getExpression(),resultSetSymbolTable);
 	functionColumnDescription.setExpression(exp1.flatten());
 
 	//
@@ -132,13 +139,13 @@ private double calculateErrorFactor(int t, double a[], double b[], double c[], d
 public void checkFunctionValidity(FunctionColumnDescription fcd) throws ExpressionException {
 	double[] values = null;
 	if (getRowCount() > 0) {
-		Expression exp = ((FunctionColumnDescription)fcd).getExpression();
+		IExpression exp = ((FunctionColumnDescription)fcd).getExpression();
 		//
 		// must rebind expression due to transient nature of expression binding (see ASTIdNode.symbolTableEntry)
 		//
 		SymbolTable symbolTable = createResultSetSymbolTable(true);
 		exp.bindExpression(symbolTable);
-		Expression exp1 = MathUtilities.substituteFunctions(exp, symbolTable);
+		IExpression exp1 = MathUtilities.substituteFunctions(exp, symbolTable);
 		
 		values = new double[getRowCount()];
 		for (int r = 0; r < getRowCount(); r++) {
@@ -164,7 +171,7 @@ private VariableSymbolTable createResultSetSymbolTable(boolean bIncludeFunctions
 			resultSetSymbolTable.addVar(vVar);
 		}else if (bIncludeFunctions && colDesc instanceof FunctionColumnDescription){
 			FunctionColumnDescription funcColDesc = (FunctionColumnDescription)colDesc;
-			Function func = new Function(funcColDesc.getName(),new Expression(funcColDesc.getExpression()));
+			Function func = new Function(funcColDesc.getName(),ExpressionFactory.createExpression(funcColDesc.getExpression()));
 			func.setIndex(i);
 			resultSetSymbolTable.addVar(func);
 		}
@@ -181,7 +188,7 @@ public synchronized double[] extractColumn(int c) throws ExpressionException {
 	if (getRowCount() > 0) {
 		ColumnDescription colDescription = getColumnDescriptions(c);
 		if (colDescription instanceof FunctionColumnDescription){
-			Expression exp = ((FunctionColumnDescription)colDescription).getExpression();
+			IExpression exp = ((FunctionColumnDescription)colDescription).getExpression();
 			//
 			// must rebind expression due to transient nature of expression binding (see ASTIdNode.symbolTableEntry)
 			//
