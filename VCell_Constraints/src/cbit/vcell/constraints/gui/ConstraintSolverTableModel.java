@@ -161,7 +161,7 @@ public Object getValueAt(int row, int col) {
 	if (col<0 || col>=NUM_COLUMNS){
 		throw new RuntimeException("ConstraintsTableModel.getValueAt(), column = "+col+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
 	}
-	cbit.vcell.parser.SymbolTableEntry ste = getConstraintSolver().getSymbolTableEntries()[row];
+	org.vcell.expression.SymbolTableEntry ste = getConstraintSolver().getSymbolTableEntries()[row];
 	switch (col){
 		case COLUMN_NAME:{
 			return ste.getName();

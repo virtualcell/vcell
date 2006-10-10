@@ -1,7 +1,8 @@
 package cbit.vcell.constraints.gui;
+import org.vcell.expression.ExpressionFactory;
+
 import cbit.vcell.constraints.GeneralConstraint;
 import cbit.vcell.constraints.SimpleBounds;
-import cbit.vcell.parser.Expression;
 /**
  * Insert the type's description here.
  * Creation date: (5/14/2003 2:00:45 PM)
@@ -850,7 +851,7 @@ private void connPtoP7SetTarget() {
 /**
  * Comment
  */
-public SimpleBounds createNewBounds() throws cbit.vcell.parser.ExpressionException {
+public SimpleBounds createNewBounds() throws org.vcell.expression.ExpressionException {
 	String identifier = javax.swing.JOptionPane.showInputDialog(this,null,"enter identifier",javax.swing.JOptionPane.QUESTION_MESSAGE);
 	return new SimpleBounds(identifier,new net.sourceforge.interval.ia_math.RealInterval(),SimpleBounds.MODELING_ASSUMPTION,"no comment");
 }
@@ -859,8 +860,8 @@ public SimpleBounds createNewBounds() throws cbit.vcell.parser.ExpressionExcepti
 /**
  * Comment
  */
-public cbit.vcell.constraints.GeneralConstraint createNewGeneralConstraint() throws cbit.vcell.parser.ExpressionException {
-	return new GeneralConstraint(new Expression("1 < 2"),GeneralConstraint.MODELING_ASSUMPTION,"no comment");
+public cbit.vcell.constraints.GeneralConstraint createNewGeneralConstraint() throws org.vcell.expression.ExpressionException {
+	return new GeneralConstraint(ExpressionFactory.createExpression("1 < 2"),GeneralConstraint.MODELING_ASSUMPTION,"no comment");
 }
 
 

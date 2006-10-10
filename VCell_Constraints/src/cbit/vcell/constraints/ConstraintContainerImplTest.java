@@ -3,11 +3,12 @@ package cbit.vcell.constraints;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.expression.ExpressionFactory;
+
 import net.sourceforge.interval.ia_math.RealInterval;
 import cbit.util.graph.Edge;
 import cbit.util.graph.Graph;
 import cbit.util.graph.Node;
-import cbit.vcell.parser.Expression;
 /**
  * Insert the type's description here.
  * Creation date: (6/26/01 8:25:12 AM)
@@ -80,12 +81,12 @@ public static ConstraintContainerImpl getExample() {
 		ccImpl.addSimpleBound(new SimpleBounds("a",new RealInterval(5,2000),AbstractConstraint.OBSERVED_CONSTRAINT,"no comment"));
 		ccImpl.addSimpleBound(new SimpleBounds("b",new RealInterval(0,Double.POSITIVE_INFINITY),AbstractConstraint.PHYSICAL_LIMIT,"no comment"));
 		ccImpl.addSimpleBound(new SimpleBounds("c",new RealInterval(0,200),AbstractConstraint.OBSERVED_CONSTRAINT,"no comment"));
-		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("a+b<c"),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
-		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("a/b==25"),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
-		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("a+c==15"),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
-		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("a==K"),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
+		ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression("a+b<c"),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
+		ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression("a/b==25"),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
+		ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression("a+c==15"),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
+		ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression("a==K"),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
 		return ccImpl;
-	}catch (cbit.vcell.parser.ExpressionException e){
+	}catch (org.vcell.expression.ExpressionException e){
 		e.printStackTrace(System.out);
 		return null;
 	}catch (java.beans.PropertyVetoException e){
@@ -109,10 +110,10 @@ public static ConstraintContainerImpl getMichaelisMentenExample() {
 		//
 		// 3)
 		//
-		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("Ks==km1/k1"),AbstractConstraint.MODELING_ASSUMPTION,"definition"));
-		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("Vmax==kp*Etotal"),AbstractConstraint.MODELING_ASSUMPTION,"definition"));
-		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("Etotal==E+ES"),AbstractConstraint.MODELING_ASSUMPTION,"definition"));
-		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("Ks==E*S/ES"),AbstractConstraint.MODELING_ASSUMPTION,"definition"));
+		ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression("Ks==km1/k1"),AbstractConstraint.MODELING_ASSUMPTION,"definition"));
+		ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression("Vmax==kp*Etotal"),AbstractConstraint.MODELING_ASSUMPTION,"definition"));
+		ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression("Etotal==E+ES"),AbstractConstraint.MODELING_ASSUMPTION,"definition"));
+		ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression("Ks==E*S/ES"),AbstractConstraint.MODELING_ASSUMPTION,"definition"));
 
 		//
 		// 4)  physical limit on model parameters and concentrations
@@ -154,9 +155,9 @@ public static ConstraintContainerImpl getMichaelisMentenExample() {
 		ccImpl.addSimpleBound(new SimpleBounds("Re",new RealInterval(HYDROGEN_RADIUS,MAX_RADIUS),AbstractConstraint.PHYSICAL_LIMIT,"bigger than a proton"));
 		ccImpl.addSimpleBound(new SimpleBounds("Rs",new RealInterval(HYDROGEN_RADIUS,MAX_RADIUS),AbstractConstraint.PHYSICAL_LIMIT,"bigger than a proton"));
 //		ccImpl.addSimpleBound(new SimpleBounds("Rp",new RealInterval(HYDROGEN_RADIUS,MAX_RADIUS),AbstractConstraint.PHYSICAL_LIMIT,"bigger than a proton"));
-		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("Ds==K_Boltzmann*Temperature/FRICTIONs"),AbstractConstraint.PHYSICAL_LIMIT,"Einstein approximation???"));
+		ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression("Ds==K_Boltzmann*Temperature/FRICTIONs"),AbstractConstraint.PHYSICAL_LIMIT,"Einstein approximation???"));
 		ccImpl.addSimpleBound(new SimpleBounds("FRICTIONs",new RealInterval(0,Double.POSITIVE_INFINITY),AbstractConstraint.PHYSICAL_LIMIT,"non-negative viscous friction"));
-		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("FRICTIONs==6*PI*VISCOSITY*Rs"),AbstractConstraint.PHYSICAL_LIMIT,"Einstein approximation???"));
+		ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression("FRICTIONs==6*PI*VISCOSITY*Rs"),AbstractConstraint.PHYSICAL_LIMIT,"Einstein approximation???"));
 		
 		//
 		// 5) k1 < diffusion limited rate
@@ -179,19 +180,19 @@ public static ConstraintContainerImpl getMichaelisMentenExample() {
 		//  k1 < 7564.9551098*(Re+Rs)*(De+Ds)  [1/(uM s)]
 		//              
 		//
-		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("k1<4*PI*602*(Re+Rs)*(De+Ds)"),AbstractConstraint.PHYSICAL_LIMIT,"diffusion limited rate"));
+		ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression("k1<4*PI*602*(Re+Rs)*(De+Ds)"),AbstractConstraint.PHYSICAL_LIMIT,"diffusion limited rate"));
 		
 		//
 		// 6) Modeling Assumption
 		//
-		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("TAUes==1/(km1+k1*Etotal)"),AbstractConstraint.MODELING_ASSUMPTION,"time of enzyme + substrate ==> complex"));
-		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("TAUp==1/(kp)"),AbstractConstraint.MODELING_ASSUMPTION,"time of complex ==> product"));
-		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("TAUp>100*TAUes"),AbstractConstraint.MODELING_ASSUMPTION,"complex formation much faster than product"));
+		ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression("TAUes==1/(km1+k1*Etotal)"),AbstractConstraint.MODELING_ASSUMPTION,"time of enzyme + substrate ==> complex"));
+		ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression("TAUp==1/(kp)"),AbstractConstraint.MODELING_ASSUMPTION,"time of complex ==> product"));
+		ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression("TAUp>100*TAUes"),AbstractConstraint.MODELING_ASSUMPTION,"complex formation much faster than product"));
 		
 		//
 		// 7) Modeling Assumption
 		//
-		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("TAUes<TAUfast"),AbstractConstraint.MODELING_ASSUMPTION,"complex formation faster than other fast processes"));
+		ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression("TAUes<TAUfast"),AbstractConstraint.MODELING_ASSUMPTION,"complex formation faster than other fast processes"));
 
 
 		//
@@ -213,7 +214,7 @@ public static ConstraintContainerImpl getMichaelisMentenExample() {
 
 		
 		return ccImpl;
-	}catch (cbit.vcell.parser.ExpressionException e){
+	}catch (org.vcell.expression.ExpressionException e){
 		e.printStackTrace(System.out);
 		return null;
 	}catch (java.beans.PropertyVetoException e){
@@ -232,21 +233,21 @@ public static ConstraintContainerImpl getProteomicsExample() {
 	try {
 		ConstraintContainerImpl ccImpl = new ConstraintContainerImpl();
 
-		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("exp.ratio == exp.ic_final / exp.ic_init"),AbstractConstraint.MODELING_ASSUMPTION,"definition of relative change"));
+		ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression("exp.ratio == exp.ic_final / exp.ic_init"),AbstractConstraint.MODELING_ASSUMPTION,"definition of relative change"));
 		//ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("e.ratio2 == e.A2_ic / e.A0_ic"),AbstractConstraint.MODELING_ASSUMPTION,"definition of relative change"));
 		//ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("e.ratio3 == e.A3_ic / e.A0_ic"),AbstractConstraint.MODELING_ASSUMPTION,"definition of relative change"));
-		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("exp.ratio == sim.P_final / sim.P_init"),AbstractConstraint.MODELING_ASSUMPTION,"mapping exp to sim"));
+		ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression("exp.ratio == sim.P_final / sim.P_init"),AbstractConstraint.MODELING_ASSUMPTION,"mapping exp to sim"));
 		//ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("e.ratio2 == s.A2 / s.A0"),AbstractConstraint.MODELING_ASSUMPTION,"mapping exp to sim"));
 		//ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("e.ratio3 == s.A3 / s.A0"),AbstractConstraint.MODELING_ASSUMPTION,"mapping exp to sim"));
 
-		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("exp.P_init == exp.ic_init * exp.K_mpc"),AbstractConstraint.MODELING_ASSUMPTION,"molecules per cell"));
-		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("exp.P_final == exp.ic_final * exp.K_mpc"),AbstractConstraint.MODELING_ASSUMPTION,"molecules per cell"));
+		ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression("exp.P_init == exp.ic_init * exp.K_mpc"),AbstractConstraint.MODELING_ASSUMPTION,"molecules per cell"));
+		ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression("exp.P_final == exp.ic_final * exp.K_mpc"),AbstractConstraint.MODELING_ASSUMPTION,"molecules per cell"));
 		//ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("e.A2_mpc == e.A2_ic * K_ic_to_mpc"),AbstractConstraint.MODELING_ASSUMPTION,"molecules per cell"));
 		//ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("e.A3_mpc == e.A3_ic * K_ic_to_mpc"),AbstractConstraint.MODELING_ASSUMPTION,"molecules per cell"));
 				//ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("e.internalControl_ic = ionEfficiency * internalControl_mass == ee.A3_ic * K_ic_to_mpc"),AbstractConstraint.MODELING_ASSUMPTION,"mapping"));
 
-		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("exp.K_mpc == exp.ionEff / exp.nCells"),AbstractConstraint.MODELING_ASSUMPTION,"molecules / cell / ion"));
-		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("exp.nCells == exp.fractMass/exp.yield"),AbstractConstraint.MODELING_ASSUMPTION,"num cells in fraction"));
+		ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression("exp.K_mpc == exp.ionEff / exp.nCells"),AbstractConstraint.MODELING_ASSUMPTION,"molecules / cell / ion"));
+		ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression("exp.nCells == exp.fractMass/exp.yield"),AbstractConstraint.MODELING_ASSUMPTION,"num cells in fraction"));
 		
 				//ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("numCells == fractionMass/fractionYield"),AbstractConstraint.MODELING_ASSUMPTION,"mapping"));
 
@@ -266,7 +267,7 @@ public static ConstraintContainerImpl getProteomicsExample() {
 
 		
 		return ccImpl;
-	}catch (cbit.vcell.parser.ExpressionException e){
+	}catch (org.vcell.expression.ExpressionException e){
 		e.printStackTrace(System.out);
 		return null;
 	}catch (java.beans.PropertyVetoException e){
@@ -297,19 +298,19 @@ public static ConstraintContainerImpl getTaubinExample() {
 		ccImpl.addSimpleBound(new SimpleBounds("mu",new RealInterval(Double.NEGATIVE_INFINITY,-e),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
 		ccImpl.addSimpleBound(new SimpleBounds("N",new RealInterval(3.0,3.0),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
 		ccImpl.addSimpleBound(new SimpleBounds("NN",new RealInterval(1.0/3.0,1.0/3.0),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
-		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("Kpb<Ksb"),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
-		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("lambda<-mu"),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
-		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("lambda<1/Ksb"),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
-		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("1/lambda + 1/mu == kpb"),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
-		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("lambda == 1 / (Kpb - 1.0/mu)"),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
-		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("mu == 1 / (Kpb - 1.0/lambda)"),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
-		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("A == (pow(Dsb,NN) - 1)/Ksb"),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
-		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("lambda>(A+mu)/(mu*Ksb-1)"),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
-		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("mu>(A+lambda)/(lambda*Ksb-1)"),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
-		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("pow((1-Ksb)*(1-mu*Ksb),N)<Dsb"),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
-		ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression("pow(pow(lambda-mu,2)/(-4*lambda*mu),N)<1+Dpb"),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
+		ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression("Kpb<Ksb"),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
+		ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression("lambda<-mu"),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
+		ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression("lambda<1/Ksb"),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
+		ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression("1/lambda + 1/mu == kpb"),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
+		ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression("lambda == 1 / (Kpb - 1.0/mu)"),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
+		ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression("mu == 1 / (Kpb - 1.0/lambda)"),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
+		ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression("A == (pow(Dsb,NN) - 1)/Ksb"),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
+		ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression("lambda>(A+mu)/(mu*Ksb-1)"),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
+		ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression("mu>(A+lambda)/(lambda*Ksb-1)"),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
+		ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression("pow((1-Ksb)*(1-mu*Ksb),N)<Dsb"),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
+		ccImpl.addGeneralConstraint(new GeneralConstraint(ExpressionFactory.createExpression("pow(pow(lambda-mu,2)/(-4*lambda*mu),N)<1+Dpb"),AbstractConstraint.MODELING_ASSUMPTION,"no comment"));
 		return ccImpl;
-	}catch (cbit.vcell.parser.ExpressionException e){
+	}catch (org.vcell.expression.ExpressionException e){
 		e.printStackTrace(System.out);
 		return null;
 	}catch (java.beans.PropertyVetoException e){

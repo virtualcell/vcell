@@ -3,16 +3,18 @@ package cbit.vcell.constraints;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import net.sourceforge.interval.ia_math.RealInterval;
-import cbit.vcell.parser.Expression;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
 
-public class ConstraintSolver implements cbit.vcell.parser.SymbolTable, java.beans.PropertyChangeListener {
+import net.sourceforge.interval.ia_math.RealInterval;
+
+public class ConstraintSolver implements org.vcell.expression.SymbolTable, java.beans.PropertyChangeListener {
 	private java.util.Vector expressionList = new java.util.Vector();
 	private java.util.Vector symbolList = new java.util.Vector();
 	private ConstraintContainerImpl constraintContainerImpl = null;
 	
 
-	class Symbol implements cbit.vcell.parser.ConstraintSymbolTableEntry {
+	class Symbol implements org.vcell.expression.ConstraintSymbolTableEntry {
 		int index = -1;
 		String name = null;
 
@@ -23,10 +25,10 @@ public class ConstraintSolver implements cbit.vcell.parser.SymbolTable, java.bea
 		public boolean isConstant() { 
 			return false; 
 		}
-		public cbit.vcell.parser.NameScope getNameScope() {
+		public org.vcell.expression.NameScope getNameScope() {
 			return null;
 		}
-		public cbit.vcell.parser.Expression getExpression() { 
+		public IExpression getExpression() { 
 			throw new RuntimeException("not supported"); 
 		}
 		public String getName() { 
@@ -45,8 +47,8 @@ public class ConstraintSolver implements cbit.vcell.parser.SymbolTable, java.bea
 		public int getIndex() { 
 			return index; 
 		}
-		public double getConstantValue() throws cbit.vcell.parser.ExpressionException { 
-			throw new cbit.vcell.parser.ExpressionException("not supported"); 
+		public double getConstantValue() throws org.vcell.expression.ExpressionException { 
+			throw new org.vcell.expression.ExpressionException("not supported"); 
 		}
 		public String toString() {
 			return "ConstraintSolver.Symbol(\""+name+"\", index="+index+")";
@@ -59,7 +61,7 @@ public class ConstraintSolver implements cbit.vcell.parser.SymbolTable, java.bea
 /**
  * ConstraintContainer constructor comment.
  */
-public ConstraintSolver(ConstraintContainerImpl argConstraintContainerImpl) throws cbit.vcell.parser.ExpressionBindingException {
+public ConstraintSolver(ConstraintContainerImpl argConstraintContainerImpl) throws org.vcell.expression.ExpressionBindingException {
 	this.constraintContainerImpl = argConstraintContainerImpl;
 
 	argConstraintContainerImpl.removePropertyChangeListener(this);
@@ -141,12 +143,12 @@ public ConstraintContainerImpl getConstraintContainerImpl() {
 /**
  * getEntry method comment.
  */
-public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierString) throws cbit.vcell.parser.ExpressionBindingException {
+public org.vcell.expression.SymbolTableEntry getEntry(java.lang.String identifierString) throws org.vcell.expression.ExpressionBindingException {
 	
-	cbit.vcell.parser.SymbolTableEntry ste = null;
+	org.vcell.expression.SymbolTableEntry ste = null;
 	
 	for (int i = 0; i < symbolList.size(); i++){
-		ste = (cbit.vcell.parser.SymbolTableEntry)symbolList.elementAt(i);
+		ste = (org.vcell.expression.SymbolTableEntry)symbolList.elementAt(i);
 		if (ste.getName().equals(identifierString)){
 			return ste;
 		}
@@ -240,7 +242,7 @@ public java.lang.String getSymbols(int index) {
  * Creation date: (6/25/2001 9:57:35 PM)
  * @return cbit.vcell.parser.SymbolTableEntry
  */
-public cbit.vcell.parser.SymbolTableEntry[] getSymbolTableEntries() {
+public org.vcell.expression.SymbolTableEntry[] getSymbolTableEntries() {
 	return (ConstraintSolver.Symbol[])cbit.util.BeanUtils.getArray(symbolList,ConstraintSolver.Symbol.class);
 }
 
@@ -257,7 +259,7 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * Insert the method's description here.
  * Creation date: (6/25/2001 9:45:31 PM)
  */
-public boolean narrow() throws cbit.vcell.parser.ExpressionException {
+public boolean narrow() throws org.vcell.expression.ExpressionException {
 
 	RealInterval prevValues[] = new RealInterval[fieldIntervals.length];
 	for (int i = 0; i < prevValues.length; i++){
@@ -282,7 +284,7 @@ public boolean narrow() throws cbit.vcell.parser.ExpressionException {
 		//System.out.println("narrowing ("+(count++)+")");
 		
 		for (int i=0;i<expressionList.size();i++){
-			Expression exp = (Expression)expressionList.elementAt(i);
+			IExpression exp = (IExpression)expressionList.elementAt(i);
 			if (!exp.narrow(values)){
 				//
 				// set failed constraint to inconsistent
@@ -329,7 +331,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		try {
 			updateExpressions();
 			resetIntervals();
-		}catch (cbit.vcell.parser.ExpressionBindingException e){
+		}catch (org.vcell.expression.ExpressionBindingException e){
 			e.printStackTrace(System.out);
 		}
 	}
@@ -337,7 +339,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		try {
 			updateExpressions();
 			resetIntervals();
-		}catch (cbit.vcell.parser.ExpressionBindingException e){
+		}catch (org.vcell.expression.ExpressionBindingException e){
 			e.printStackTrace(System.out);
 		}
 	}
@@ -353,7 +355,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			}
 			updateExpressions();
 			resetIntervals();
-		}catch (cbit.vcell.parser.ExpressionBindingException e){
+		}catch (org.vcell.expression.ExpressionBindingException e){
 			e.printStackTrace(System.out);
 		}
 	}
@@ -369,7 +371,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			}
 			updateExpressions();
 			resetIntervals();
-		}catch (cbit.vcell.parser.ExpressionBindingException e){
+		}catch (org.vcell.expression.ExpressionBindingException e){
 			e.printStackTrace(System.out);
 		}
 	}
@@ -377,7 +379,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		try {
 			updateExpressions();
 			resetIntervals();
-		}catch (cbit.vcell.parser.ExpressionBindingException e){
+		}catch (org.vcell.expression.ExpressionBindingException e){
 			e.printStackTrace(System.out);
 		}
 	}
@@ -385,7 +387,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		try {
 			updateExpressions();
 			resetIntervals();
-		}catch (cbit.vcell.parser.ExpressionBindingException e){
+		}catch (org.vcell.expression.ExpressionBindingException e){
 			e.printStackTrace(System.out);
 		}
 	}
@@ -412,7 +414,7 @@ public synchronized void removePropertyChangeListener(java.lang.String propertyN
  * Insert the method's description here.
  * Creation date: (6/25/01 4:50:43 PM)
  */
-public void resetIntervals() throws cbit.vcell.parser.ExpressionBindingException {
+public void resetIntervals() throws org.vcell.expression.ExpressionBindingException {
 	//
 	// allocate RealInterval array (one for each bound symbol)
 	//
@@ -443,8 +445,8 @@ public void resetIntervals() throws cbit.vcell.parser.ExpressionBindingException
 	// resets expression intervals (used in narrowing)
 	//
 	for (int i = 0; i < expressionList.size(); i++){
-		((Expression)expressionList.elementAt(i)).bindExpression(null);
-		((Expression)expressionList.elementAt(i)).bindExpression(this);
+		((IExpression)expressionList.elementAt(i)).bindExpression(null);
+		((IExpression)expressionList.elementAt(i)).bindExpression(this);
 	}
 
 	//
@@ -487,7 +489,7 @@ private void setSymbols(java.lang.String[] symbols) {
  * Insert the method's description here.
  * Creation date: (5/15/2003 6:17:15 AM)
  */
-private void updateExpressions() throws cbit.vcell.parser.ExpressionBindingException {
+private void updateExpressions() throws org.vcell.expression.ExpressionBindingException {
 	
 	expressionList.clear();
 	symbolList.clear();
@@ -496,7 +498,7 @@ private void updateExpressions() throws cbit.vcell.parser.ExpressionBindingExcep
 	GeneralConstraint generalConstraints[] = constraintContainerImpl.getGeneralConstraints();
 	for (int i = 0; i < generalConstraints.length; i++){
 		if (constraintContainerImpl.getActive(generalConstraints[i])){
-			Expression exp = new Expression(generalConstraints[i].getExpression().getBinaryExpression());
+			IExpression exp = ExpressionFactory.createExpression(generalConstraints[i].getExpression().getBinaryExpression());
 			exp.bindExpression(this);
 			expressionList.add(exp);
 		}
@@ -514,7 +516,7 @@ private void updateExpressions() throws cbit.vcell.parser.ExpressionBindingExcep
 
 	String symbolNames[] = new String[symbolList.size()];
 	for (int i = 0; i < symbolNames.length; i++){
-		symbolNames[i] = ((cbit.vcell.parser.SymbolTableEntry)symbolList.elementAt(i)).getName();
+		symbolNames[i] = ((org.vcell.expression.SymbolTableEntry)symbolList.elementAt(i)).getName();
 	}
 	setSymbols(symbolNames);
 }

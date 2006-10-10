@@ -46,7 +46,7 @@ public static void main(String[] args) {
  */
 public static void showResults(ConstraintSolver constraintSolver) {
 	RealInterval intervals[] = constraintSolver.getIntervals();
-	cbit.vcell.parser.SymbolTableEntry stes[] = constraintSolver.getSymbolTableEntries();
+	org.vcell.expression.SymbolTableEntry stes[] = constraintSolver.getSymbolTableEntries();
 	System.out.println("Values:");
 	for (int i = 0; i < stes.length; i++){
 		System.out.println("    "+stes[i].getName()+" = "+intervals[stes[i].getIndex()].toString());
