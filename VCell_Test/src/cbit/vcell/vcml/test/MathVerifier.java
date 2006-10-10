@@ -29,6 +29,8 @@ import cbit.util.VersionableType;
 import cbit.util.BeanUtils;
 import java.io.File;
 
+import org.vcell.expression.ExpressionException;
+
 
 import cbit.vcell.math.MathException;
 import cbit.vcell.mapping.MappingException;
@@ -42,7 +44,6 @@ import cbit.vcell.modeldb.MathDescriptionDbDriver;
 import cbit.vcell.modeldb.SimContextStat2Table;
 import cbit.vcell.modeldb.SimStatTable;
 import cbit.vcell.modeldb.SolverResultSetInfo;
-import cbit.vcell.parser.ExpressionException;
 import cbit.sql.KeyFactory;
 import cbit.vcell.biomodel.BioModel;
 /**

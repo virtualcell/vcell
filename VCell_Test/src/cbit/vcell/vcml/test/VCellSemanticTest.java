@@ -1,8 +1,10 @@
 package cbit.vcell.vcml.test;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import cbit.vcell.biomodel.BioModel;
 
 import cbit.vcell.simdata.FunctionColumnDescription;
-import cbit.vcell.parser.Expression;
 import cbit.vcell.math.Variable;
 import cbit.gui.PropertyLoader;
 import cbit.util.SimulationVersion;
@@ -158,13 +160,13 @@ public static void main(java.lang.String[] args) {
 		cbit.vcell.math.Function functions[] = sim.getFunctions();
 		for (int i = 0; i < functions.length; i++){
 			if (cbit.vcell.simdata.FunctionFileGenerator.isFunctionSaved(functions[i])){
-				Expression exp1 = new Expression(functions[i].getExpression());
+				IExpression exp1 = ExpressionFactory.createExpression(functions[i].getExpression());
 				try {
 					exp1 = sim.substituteFunctions(exp1);
 				} catch (cbit.vcell.math.MathException e) {
 					e.printStackTrace(System.out);
 					throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
-				} catch (cbit.vcell.parser.ExpressionException e) {
+				} catch (org.vcell.expression.ExpressionException e) {
 					e.printStackTrace(System.out);
 					throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
 				}
@@ -172,7 +174,7 @@ public static void main(java.lang.String[] args) {
 				try {
 					FunctionColumnDescription cd = new FunctionColumnDescription(exp1.flatten(),functions[i].getName(), null, functions[i].getName(), false);
 					odeSolverResultSet.addFunctionColumn(cd);
-				}catch (cbit.vcell.parser.ExpressionException e){
+				}catch (org.vcell.expression.ExpressionException e){
 					e.printStackTrace(System.out);
 				}
 			}

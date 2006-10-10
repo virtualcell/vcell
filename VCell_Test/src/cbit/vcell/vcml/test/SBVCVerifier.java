@@ -47,14 +47,16 @@ import cbit.util.VersionFlag;
 import cbit.sql.KeyFactory;
 import java.sql.SQLException;
 
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 
 import cbit.vcell.mapping.MappingException;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.model.ModelException;
 import cbit.vcell.math.MathException;
 import cbit.vcell.xml.XmlDialect;
 import cbit.vcell.solver.ode.ODESolver;
-import cbit.vcell.parser.Expression;
 import cbit.vcell.solver.test.SimulationComparisonSummary;
 import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.modeldb.AdminDatabaseServer;
@@ -597,13 +599,13 @@ private ODESolverResultSet solveSimulation(Simulation sim, boolean hasFastSystem
 		cbit.vcell.math.Function functions[] = sim.getFunctions();
 		for (int i = 0; i < functions.length; i++){
 			if (cbit.vcell.simdata.FunctionFileGenerator.isFunctionSaved(functions[i])){
-				Expression exp1 = new Expression(functions[i].getExpression());
+				IExpression exp1 = ExpressionFactory.createExpression(functions[i].getExpression());
 				try {
 					exp1 = sim.substituteFunctions(exp1);
 				} catch (cbit.vcell.math.MathException e) {
 					e.printStackTrace(System.out);
 					throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
-				} catch (cbit.vcell.parser.ExpressionException e) {
+				} catch (org.vcell.expression.ExpressionException e) {
 					e.printStackTrace(System.out);
 					throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
 				}
@@ -611,7 +613,7 @@ private ODESolverResultSet solveSimulation(Simulation sim, boolean hasFastSystem
 				try {
 					FunctionColumnDescription cd = new FunctionColumnDescription(exp1.flatten(),functions[i].getName(), null, functions[i].getName(), false);
 					odeSolverResultSet.addFunctionColumn(cd);
-				}catch (cbit.vcell.parser.ExpressionException e){
+				}catch (org.vcell.expression.ExpressionException e){
 					e.printStackTrace(System.out);
 				}
 			}

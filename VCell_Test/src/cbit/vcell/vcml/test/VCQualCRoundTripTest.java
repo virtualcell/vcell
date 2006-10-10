@@ -2,9 +2,6 @@ package cbit.vcell.vcml.test;
 import org.jdom.filter.ElementFilter;
 
 import cbit.vcell.cellml.CELLMLTags;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.MathMLTags;
 import cbit.util.TokenMangler;
 import cbit.vcell.vcml.Translator;
 import cbit.vcell.xml.XMLTags;
@@ -12,9 +9,12 @@ import junit.framework.TestCase;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import cbit.util.xml.JDOMTreeWalker;
@@ -34,7 +34,7 @@ public class VCQualCRoundTripTest extends TestCase {
 
 	private void compareMathSymbols(Element e1, Element e2, String type) {
 
-		Expression exp1, exp2;
+		IExpression exp1, exp2;
 		String f1, f2;
 		if (!XMLTags.OdeEquationTag.equals(type)) {
 			//a hack because the string is coming back unrestored from jdom for VCML
@@ -45,13 +45,13 @@ public class VCQualCRoundTripTest extends TestCase {
 			f2 = TokenMangler.getRestoredString(e2.getChild(XMLTags.ParameterTag).getTextTrim());
 		}
 		try {
-			exp1 = new Expression(f1);
-			exp2 = new Expression(f2);
+			exp1 = ExpressionFactory.createExpression(f1);
+			exp2 = ExpressionFactory.createExpression(f2);
 		} catch (ExpressionException e) {
-			fail("Unable to compare formulas");
+			fail("Unable to compare formulas: "+e.getMessage());
 			return;
-		} catch (cbit.vcell.parser.TokenMgrError tme) {
-			fail("Unable to parse formulas: " + f1 + "\n" + f2);
+		} catch (Error tme) {
+			fail("Unexpected Error: "+tme.getMessage());
 			return;
 		}
 		assertTrue(exp1.equals(exp2));
