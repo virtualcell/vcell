@@ -1,4 +1,6 @@
 package cbit.vcell.geometry.surface;
+import org.vcell.expression.ExpressionFactory;
+
 import cbit.render.*;
 import cbit.render.objects.Surface;
 import cbit.render.objects.SurfaceCollection;
@@ -28,8 +30,8 @@ public static void testConvergence() {
 	try {
 		cbit.vcell.geometry.Geometry geometry = new cbit.vcell.geometry.Geometry("test1",2);
 		double r = 0.8;
-		geometry.getGeometrySpec().addSubVolume(new cbit.vcell.geometry.AnalyticSubVolume(null,"subVolume1",new cbit.vcell.parser.Expression("x^2+y^2<"+(r*r)),2));
-		geometry.getGeometrySpec().addSubVolume(new cbit.vcell.geometry.AnalyticSubVolume(null,"subVolume0",new cbit.vcell.parser.Expression(1.0),1));
+		geometry.getGeometrySpec().addSubVolume(new cbit.vcell.geometry.AnalyticSubVolume(null,"subVolume1",ExpressionFactory.createExpression("x^2+y^2<"+(r*r)),2));
+		geometry.getGeometrySpec().addSubVolume(new cbit.vcell.geometry.AnalyticSubVolume(null,"subVolume0",ExpressionFactory.createExpression(1.0),1));
 		geometry.getGeometrySpec().setExtent(new cbit.util.Extent(2,2,2));
 		geometry.getGeometrySpec().setOrigin(new cbit.util.Origin(-1,-1,-1));
 		GeometrySurfaceDescription geometrySurfaceDescription = geometry.getGeometrySurfaceDescription();

@@ -5,6 +5,13 @@ package cbit.vcell.geometry;
 ©*/
 import java.util.*;
 import java.io.*;
+
+import org.vcell.expression.ExpressionBindingException;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.SimpleSymbolTable;
+
 import cbit.vcell.parser.*;
 import cbit.util.KeyValue;
 import cbit.util.Matchable;
@@ -13,7 +20,7 @@ import cbit.util.Matchable;
  * 
  */
 public class AnalyticSubVolume extends SubVolume {
-	private Expression exp = null;
+	private IExpression exp = null;
 	private SimpleSymbolTable symbolTable = new SimpleSymbolTable(new String[] { "x", "y", "z" });
 
 	//
@@ -27,7 +34,7 @@ public class AnalyticSubVolume extends SubVolume {
 /**
  * MathDescription constructor comment.
  */
-public AnalyticSubVolume(KeyValue key, String subDomainName, Expression exp, int handle) throws ExpressionException {
+public AnalyticSubVolume(KeyValue key, String subDomainName, IExpression exp, int handle) throws ExpressionException {
 	super(key,subDomainName, handle);
 	setExpression(exp);
 }
@@ -38,14 +45,14 @@ public AnalyticSubVolume(KeyValue key, String subDomainName, Expression exp, int
  * @param subDomainName java.lang.String
  */
 public AnalyticSubVolume(String subDomainName) throws ExpressionException {
-	this(null,subDomainName,new Expression(1.0),-1);
+	this(null,subDomainName,ExpressionFactory.createExpression(1.0),-1);
 }
 
 
 /**
  * MathDescription constructor comment.
  */
-public AnalyticSubVolume(String subDomainName, Expression exp) throws ExpressionException {
+public AnalyticSubVolume(String subDomainName, IExpression exp) throws ExpressionException {
 	super(null,subDomainName, -1);
 	setExpression(exp);
 }
@@ -87,7 +94,7 @@ public boolean compareEqual(Matchable obj) {
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Expression
  */
-public Expression getExpression() {
+public IExpression getExpression() {
 	return exp;
 }
 
@@ -131,8 +138,8 @@ public void rebind() throws ExpressionException {
  * This method was created in VisualAge.
  * @param exp cbit.vcell.parser.Expression
  */
-public void setExpression(Expression exp) throws ExpressionBindingException {
-	Expression oldExp = this.exp;
+public void setExpression(IExpression exp) throws ExpressionBindingException {
+	IExpression oldExp = this.exp;
 	this.exp = exp;
 	bind();
 	firePropertyChange("expression",oldExp,exp);

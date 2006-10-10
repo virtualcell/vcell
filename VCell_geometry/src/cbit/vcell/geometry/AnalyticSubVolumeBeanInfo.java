@@ -31,7 +31,7 @@ public java.beans.PropertyDescriptor expressionPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.parser.Expression.class
+					org.vcell.expression.IExpression.class
 				};
 				aSetMethod = getBeanClass().getMethod("setExpression", aSetMethodParameterTypes);
 			} catch (Throwable exception) {
@@ -324,18 +324,18 @@ public java.beans.PropertyDescriptor namePropertyDescriptor() {
 	return aDescriptor;
 }
 /**
- * Gets the setExpression(cbit.vcell.parser.Expression) method descriptor.
+ * Gets the setExpression(cbit.vcell.parser.IExpression) method descriptor.
  * @return java.beans.MethodDescriptor
  */
 public java.beans.MethodDescriptor setExpression_cbitvcellparserExpressionMethodDescriptor() {
 	java.beans.MethodDescriptor aDescriptor = null;
 	try {
-		/* Create and return the setExpression(cbit.vcell.parser.Expression) method descriptor. */
+		/* Create and return the setExpression(cbit.vcell.parser.IExpression) method descriptor. */
 		java.lang.reflect.Method aMethod = null;
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.vcell.parser.Expression.class
+				org.vcell.expression.IExpression.class
 			};
 			aMethod = getBeanClass().getMethod("setExpression", aParameterTypes);
 		} catch (Throwable exception) {
@@ -357,8 +357,8 @@ public java.beans.MethodDescriptor setExpression_cbitvcellparserExpressionMethod
 			handleException(exception);
 			aDescriptor = new java.beans.MethodDescriptor(aMethod);
 		};
-		/* aDescriptor.setDisplayName("setExpression(cbit.vcell.parser.Expression)"); */
-		/* aDescriptor.setShortDescription("setExpression(cbit.vcell.parser.Expression)"); */
+		/* aDescriptor.setDisplayName("setExpression(cbit.vcell.parser.IExpression)"); */
+		/* aDescriptor.setShortDescription("setExpression(cbit.vcell.parser.IExpression)"); */
 		/* aDescriptor.setExpert(false); */
 		/* aDescriptor.setHidden(false); */
 		/* aDescriptor.setValue("preferred", new Boolean(false)); */

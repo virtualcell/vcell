@@ -122,7 +122,7 @@ public static int[][][] createSphere(int I, int J, int K) {
 }
 
 
-public SurfaceCollection generateSurface(Geometry geometry) throws cbit.vcell.geometry.GeometryException, cbit.image.ImageException, cbit.vcell.parser.ExpressionException {
+public SurfaceCollection generateSurface(Geometry geometry) throws cbit.vcell.geometry.GeometryException, cbit.image.ImageException, org.vcell.expression.ExpressionException {
 	
 	VCImage image = geometry.getGeometrySpec().getSampledImage();
 	RegionImage regionImage = new RegionImage(image);

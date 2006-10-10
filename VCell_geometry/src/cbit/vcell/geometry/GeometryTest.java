@@ -4,6 +4,8 @@ package cbit.vcell.geometry;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.expression.ExpressionFactory;
+
 import cbit.util.Version;
 /**
  * This type was created in VisualAge.
@@ -25,8 +27,8 @@ public static Geometry getExample(int dim) throws Exception {
 	geo.getGeometrySpec().setExtent(new cbit.util.Extent(12.0,2.0,2.0));
 //	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("feature1",new cbit.vcell.parser.Expression("1.0;")));
 //	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("feature1",new cbit.vcell.parser.Expression("(x+0.5)*(x+0.5)+y*y+(z+1)*(z+1)<0.5;")));
-	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("cytosol",new cbit.vcell.parser.Expression("(pow(x,2)+pow(y,2)+pow(z,2)<0.1)||(pow(x-1,2)+pow(y,2)+pow(z,2)<0.1)||(pow(x,2)+pow(y-1,2)+pow(z,2)<0.1)||(pow(x,2)+pow(y,2)+pow(z-1,2)<0.1);")));
-	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("extracellular",new cbit.vcell.parser.Expression(1.0)));
+	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("cytosol",ExpressionFactory.createExpression("(pow(x,2)+pow(y,2)+pow(z,2)<0.1)||(pow(x-1,2)+pow(y,2)+pow(z,2)<0.1)||(pow(x,2)+pow(y-1,2)+pow(z,2)<0.1)||(pow(x,2)+pow(y,2)+pow(z-1,2)<0.1);")));
+	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("extracellular",ExpressionFactory.createExpression(1.0)));
 	//geo.getGeometrySpec().getFilamentGroup().addCurve("Filament1",new Line(new Coordinate(0,0,0),new Coordinate(1,1,1)));
 
 	cbit.vcell.geometry.surface.GeometrySurfaceUtils.updateGeometricRegions(geo.getGeometrySurfaceDescription());
@@ -43,8 +45,8 @@ public static Geometry getExample_er_cytsol2D() throws Exception {
 	geo.getGeometrySpec().setExtent(new cbit.util.Extent(2.0,2.0,2.0));
 //	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("feature1",new cbit.vcell.parser.Expression("1.0;")));
 //	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("feature1",new cbit.vcell.parser.Expression("(x+0.5)*(x+0.5)+y*y+(z+1)*(z+1)<0.5;")));
-	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("er",new cbit.vcell.parser.Expression("pow(x+0.5,2)+pow(y,2)<0.5;")));
-	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("cytosol",new cbit.vcell.parser.Expression("1.0;")));
+	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("er",ExpressionFactory.createExpression("pow(x+0.5,2)+pow(y,2)<0.5;")));
+	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("cytosol",ExpressionFactory.createExpression("1.0;")));
 
 	cbit.vcell.geometry.surface.GeometrySurfaceUtils.updateGeometricRegions(geo.getGeometrySurfaceDescription());
 		
@@ -59,9 +61,9 @@ public static Geometry getExample_er_cytsol3D() throws Exception {
 	geo.getGeometrySpec().setOrigin(new cbit.util.Origin(-1,-1,-1));
 	geo.getGeometrySpec().setExtent(new cbit.util.Extent(2.0,2.0,2.0));
 //	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("feature1",new cbit.vcell.parser.Expression("1.0;")));
-	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("er",new cbit.vcell.parser.Expression("x^2+y^2+(z-0.5)^2<0.5;")));
+	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("er",ExpressionFactory.createExpression("x^2+y^2+(z-0.5)^2<0.5;")));
 	//geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("er",new cbit.vcell.parser.Expression("(pow(x,2)+pow(y,2)+pow(z,2)<0.1)||(pow(x-1,2)+pow(y,2)+pow(z,2)<0.1)||(pow(x,2)+pow(y-1,2)+pow(z,2)<0.1)||(pow(x,2)+pow(y,2)+pow(z-1,2)<0.1);")));
-	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("cytosol",new cbit.vcell.parser.Expression("1.0;")));
+	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("cytosol",ExpressionFactory.createExpression("1.0;")));
 
 	cbit.vcell.geometry.surface.GeometrySurfaceUtils.updateGeometricRegions(geo.getGeometrySurfaceDescription());
 	
@@ -134,7 +136,7 @@ public static Geometry getImageExample2D(cbit.util.User user) throws Exception {
 
 	Geometry geo = new Geometry("getImageExample("+user+")",vcImage);
 	geo.getGeometrySpec().setOrigin(new cbit.util.Origin(-1,-1,-1));
-	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("featureAnal1",new cbit.vcell.parser.Expression("pow(x+0.5,2)+pow(y,2)+pow(z+1,2)<0.5;")));
+	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("featureAnal1",ExpressionFactory.createExpression("pow(x+0.5,2)+pow(y,2)+pow(z+1,2)<0.5;")));
 //	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("feature1",new cbit.vcell.parser.Expression("1.0;")));
 //	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("feature1",new cbit.vcell.parser.Expression("(x+0.5)*(x+0.5)+y*y+(z+1)*(z+1)<0.5;")));
 	ImageSubVolume isv = geo.getGeometrySpec().getImageSubVolumeFromPixelValue(pixelValue1);

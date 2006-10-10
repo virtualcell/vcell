@@ -133,7 +133,7 @@ protected java.beans.VetoableChangeSupport getVetoPropertyChange() {
  * @param y double
  * @param z double
  */
-public abstract boolean isInside(double x,double y, double z, GeometrySpec geometrySpec) throws GeometryException, cbit.image.ImageException, cbit.vcell.parser.ExpressionException;
+public abstract boolean isInside(double x,double y, double z, GeometrySpec geometrySpec) throws GeometryException, cbit.image.ImageException, org.vcell.expression.ExpressionException;
 /**
  * The removePropertyChangeListener method was generated to support the propertyChange field.
  */

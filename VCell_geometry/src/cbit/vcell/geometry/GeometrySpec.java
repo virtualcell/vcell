@@ -6,7 +6,10 @@ package cbit.vcell.geometry;
 import java.beans.*;
 import java.util.*;
 import java.io.*;
-import cbit.vcell.parser.ExpressionException;
+
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.IExpression;
+
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
@@ -1007,8 +1010,8 @@ public void propertyChange(java.beans.PropertyChangeEvent event) {
 		}
 	}
 	if (event.getSource() instanceof AnalyticSubVolume && event.getPropertyName().equals("expression")) {
-		cbit.vcell.parser.Expression oldExpression = (cbit.vcell.parser.Expression)event.getOldValue();
-		cbit.vcell.parser.Expression newExpression = (cbit.vcell.parser.Expression)event.getNewValue();
+		IExpression oldExpression = (IExpression)event.getOldValue();
+		IExpression newExpression = (IExpression)event.getNewValue();
 		if (!Compare.isEqual(oldExpression,newExpression)) {
 			VCImage oldSampledImage = sampledImage;
 			//

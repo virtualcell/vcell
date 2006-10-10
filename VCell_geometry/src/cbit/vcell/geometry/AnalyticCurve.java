@@ -4,12 +4,13 @@ package cbit.vcell.geometry;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.expression.ExpressionBindingException;
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.SymbolTable;
+import org.vcell.expression.SymbolTableEntry;
+
 import cbit.util.Coordinate;
-import cbit.vcell.parser.SymbolTable;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.ExpressionException;
 /**
  * This type was created in VisualAge.
  *  JMW : we need to fix this class so that all exceptions/error
@@ -22,14 +23,14 @@ import cbit.vcell.parser.ExpressionException;
  *  a fundamental OO design principle.
  */
 public class AnalyticCurve extends Curve implements SymbolTable {
-	private Expression expX = null;
-	private Expression expY = null;
-	private Expression expZ = null;
+	private IExpression expX = null;
+	private IExpression expY = null;
+	private IExpression expZ = null;
 	private Coordinate offset = new Coordinate(0,0,0);	
 /**
  * AnalyticCurve constructor comment.
  */
-public AnalyticCurve(Expression x, Expression y, Expression z) throws ExpressionBindingException {
+public AnalyticCurve(IExpression x, IExpression y, IExpression z) throws ExpressionBindingException {
 	// cbit.util.Assertion.assert (x != null && y != null && z != null);
 	this.expX = x;
 	this.expY = y;

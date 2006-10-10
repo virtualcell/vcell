@@ -4,6 +4,11 @@ package cbit.vcell.geometry;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.expression.ExpressionException;
+import org.vcell.expression.IExpression;
+import org.vcell.expression.NameScope;
+import org.vcell.expression.SymbolTableEntry;
+
 import cbit.vcell.parser.*;
 
 public class ReservedParameterSymbol implements SymbolTableEntry
@@ -42,7 +47,7 @@ public double getConstantValue() throws ExpressionException {
  * @return cbit.vcell.parser.Expression
  * @exception java.lang.Exception The exception description.
  */
-public Expression getExpression() {
+public IExpression getExpression() {
 	return null;
 }
 /**

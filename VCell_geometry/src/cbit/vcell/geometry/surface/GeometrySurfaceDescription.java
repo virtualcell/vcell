@@ -1,4 +1,6 @@
 package cbit.vcell.geometry.surface;
+import org.vcell.expression.IExpression;
+
 import cbit.image.VCImage;
 import cbit.vcell.geometry.RegionImage;
 import cbit.render.*;
@@ -364,8 +366,8 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		}
 	}
 	if (evt.getSource() instanceof AnalyticSubVolume && evt.getPropertyName().equals("expression")) {
-		cbit.vcell.parser.Expression oldExpression = (cbit.vcell.parser.Expression)evt.getOldValue();
-		cbit.vcell.parser.Expression newExpression = (cbit.vcell.parser.Expression)evt.getNewValue();
+		IExpression oldExpression = (IExpression)evt.getOldValue();
+		IExpression newExpression = (IExpression)evt.getNewValue();
 		if (!Compare.isEqual(oldExpression,newExpression)) {
 			try {
 				fieldRegionImage = null; // nobody listens to this, updateAll() will propagate changes
