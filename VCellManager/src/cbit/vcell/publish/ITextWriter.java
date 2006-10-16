@@ -18,6 +18,7 @@ import javax.imageio.stream.ImageOutputStream;
 
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.expression.ui.ExpressionPrintFormatter;
 
 import cbit.image.VCImage;
 import cbit.util.Coordinate;
@@ -72,7 +73,6 @@ import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.modelapp.SpeciesContextSpec;
 import cbit.vcell.modelapp.StructureMapping;
 import cbit.vcell.modelapp.VoltageClampStimulus;
-import cbit.vcell.parser.gui.ExpressionPrintFormatter;
 import cbit.vcell.simulation.DefaultOutputTimeSpec;
 import cbit.vcell.simulation.ErrorTolerance;
 import cbit.vcell.simulation.ExplicitOutputTimeSpec;

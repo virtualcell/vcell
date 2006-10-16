@@ -3,7 +3,7 @@ package cbit.vcell.numericstest;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
 
-import cbit.vcell.parser.*;
+import edu.uchc.vcell.expression.internal.*;
 /**
  * Insert the type's description here.
  * Creation date: (5/12/2003 10:58:02 AM)
