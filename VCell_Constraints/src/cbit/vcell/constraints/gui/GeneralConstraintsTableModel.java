@@ -86,7 +86,7 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
 public Class getColumnClass(int column) {
 	switch (column){
 		case COLUMN_EXPRESSION:{
-			return cbit.vcell.parser.gui.ScopedExpression.class;
+			return org.vcell.expression.ui.ScopedExpression.class;
 		}
 		case COLUMN_TYPE:{
 			return String.class;
@@ -172,7 +172,7 @@ public Object getValueAt(int row, int col) {
 	GeneralConstraint constraint = getConstraintContainerImpl().getGeneralConstraints(row);
 	switch (col){
 		case COLUMN_EXPRESSION:{
-			return new cbit.vcell.parser.gui.ScopedExpression(constraint.getExpression(),null);
+			return new org.vcell.expression.ui.ScopedExpression(constraint.getExpression(),null);
 		}
 		case COLUMN_TYPE:{
 			return constraint.getTypeName();
@@ -291,8 +291,8 @@ System.out.println("GeneralConstraintsTableModel().setValueAt("+aValue+","+rowIn
 		switch (columnIndex){
 			case COLUMN_EXPRESSION:{
 				try {
-					if (aValue instanceof cbit.vcell.parser.gui.ScopedExpression){
-						IExpression exp = ((cbit.vcell.parser.gui.ScopedExpression)aValue).getExpression();
+					if (aValue instanceof org.vcell.expression.ui.ScopedExpression){
+						IExpression exp = ((org.vcell.expression.ui.ScopedExpression)aValue).getExpression();
 						generalConstraint.setExpression(exp);
 					}else if (aValue instanceof String) {
 						String newExpressionString = (String)aValue;
