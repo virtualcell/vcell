@@ -6,8 +6,8 @@ import org.vcell.expression.NameScope;
 import org.vcell.expression.SymbolTable;
 import org.vcell.expression.SymbolTableEntry;
 
-import cbit.vcell.parser.*;
 import cbit.vcell.math.Function;
+import edu.uchc.vcell.expression.internal.*;
 /**
  * Insert the type's description here.
  * Creation date: (2/12/2002 1:01:13 PM)
