@@ -3,7 +3,7 @@ package cbit.vcell.mapping.gui;
 import cbit.util.Coordinate;
 import cbit.vcell.model.*;
 import cbit.vcell.geometry.*;
-import cbit.vcell.parser.*;
+import edu.uchc.vcell.expression.internal.*;
 /**
  * Insert the type's description here.
  * Creation date: (4/10/2002 2:33:29 PM)

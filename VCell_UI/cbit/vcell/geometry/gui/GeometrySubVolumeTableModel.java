@@ -95,7 +95,7 @@ public Class getColumnClass(int column) {
 			return cbit.vcell.geometry.SubVolume.class;
 		}
 		case COLUMN_VALUE:{
-			return cbit.vcell.parser.gui.ScopedExpression.class;
+			return org.vcell.expression.ui.ScopedExpression.class;
 		}
 		default:{
 			return Object.class;
@@ -176,7 +176,7 @@ public Object getValueAt(int row, int col) {
 		}
 		case COLUMN_VALUE:{
 			if (subVolume instanceof AnalyticSubVolume){
-				return new cbit.vcell.parser.gui.ScopedExpression(((AnalyticSubVolume)subVolume).getExpression(),cbit.vcell.model.ReservedSymbol.TIME.getNameScope(),true);
+				return new org.vcell.expression.ui.ScopedExpression(((AnalyticSubVolume)subVolume).getExpression(),cbit.vcell.model.ReservedSymbol.TIME.getNameScope(),true);
 			}else{
 				return null;
 			}
@@ -292,8 +292,8 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 				try {
 					if (subVolume instanceof AnalyticSubVolume){
 						AnalyticSubVolume analyticSubVolume = (AnalyticSubVolume)subVolume;
-						if (aValue instanceof cbit.vcell.parser.gui.ScopedExpression){
-							IExpression exp = ((cbit.vcell.parser.gui.ScopedExpression)aValue).getExpression();
+						if (aValue instanceof org.vcell.expression.ui.ScopedExpression){
+							IExpression exp = ((org.vcell.expression.ui.ScopedExpression)aValue).getExpression();
 							analyticSubVolume.setExpression(exp);
 						}else if (aValue instanceof String) {
 							String newExpressionString = (String)aValue;
@@ -325,7 +325,7 @@ public cbit.gui.TableCellValidator.EditValidation validate(java.lang.Object obj,
 	//Verify that object(obj) is an appropriate value for a specific class type  in a table cell(row,col)
 	//
 	try{
-		if(col == COLUMN_VALUE && getColumnClass(col).isAssignableFrom(cbit.vcell.parser.gui.ScopedExpression.class)){
+		if(col == COLUMN_VALUE && getColumnClass(col).isAssignableFrom(org.vcell.expression.ui.ScopedExpression.class)){
 			//ScopedExpression column:
 			//Value needs to be a String Expression appropriate for AnalyticSubVolume
 			if(obj instanceof String){

@@ -103,7 +103,7 @@ public Class getColumnClass(int column) {
 			return Boolean.class;
 		}
 		case COLUMN_INITIAL:{
-			return cbit.vcell.parser.gui.ScopedExpression.class;
+			return org.vcell.expression.ui.ScopedExpression.class;
 		}
 		default:{
 			return Object.class;
@@ -189,7 +189,7 @@ public Object getValueAt(int row, int col) {
 			return new Boolean(scSpec.isConstant());
 		}
 		case COLUMN_INITIAL:{
-			return new cbit.vcell.parser.gui.ScopedExpression(scSpec.getInitialConditionParameter().getExpression(),scSpec.getInitialConditionParameter().getNameScope());
+			return new org.vcell.expression.ui.ScopedExpression(scSpec.getInitialConditionParameter().getExpression(),scSpec.getInitialConditionParameter().getNameScope());
 		}
 		default:{
 			return null;
@@ -330,8 +330,8 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 		}
 		case COLUMN_INITIAL:{
 			try {
-				if (aValue instanceof cbit.vcell.parser.gui.ScopedExpression){
-					IExpression exp = ((cbit.vcell.parser.gui.ScopedExpression)aValue).getExpression();
+				if (aValue instanceof org.vcell.expression.ui.ScopedExpression){
+					IExpression exp = ((org.vcell.expression.ui.ScopedExpression)aValue).getExpression();
 					scSpec.getInitialConditionParameter().setExpression(exp);
 				}else if (aValue instanceof String) {
 					String newExpressionString = (String)aValue;

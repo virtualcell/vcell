@@ -4,7 +4,6 @@ package cbit.vcell.matlab;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.parser.*;
 
 import java.util.*;
 
@@ -13,6 +12,7 @@ import org.vcell.expression.IExpression;
 
 import cbit.vcell.math.*;
 import cbit.vcell.simulation.Simulation;
+import edu.uchc.vcell.expression.internal.*;
 /**
  * Insert the type's description here.
  * Creation date: (3/8/00 10:29:24 PM)

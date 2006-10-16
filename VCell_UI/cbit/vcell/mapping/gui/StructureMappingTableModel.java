@@ -8,9 +8,8 @@ package cbit.vcell.mapping.gui;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.expression.ui.ScopedExpression;
 
-import cbit.vcell.parser.*;
-import cbit.vcell.parser.gui.ScopedExpression;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.modelapp.FeatureMapping;
 import cbit.vcell.modelapp.GeometryContext;
@@ -18,6 +17,7 @@ import cbit.vcell.modelapp.MembraneMapping;
 import cbit.vcell.modelapp.StructureMapping;
 import cbit.vcell.mapping.*;
 import cbit.util.BeanUtils;
+import edu.uchc.vcell.expression.internal.*;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)
@@ -98,10 +98,10 @@ public Class getColumnClass(int column) {
 			return Boolean.class;
 		}
 		case COLUMN_SURFVOL:{
-			return cbit.vcell.parser.gui.ScopedExpression.class;
+			return org.vcell.expression.ui.ScopedExpression.class;
 		}
 		case COLUMN_VOLFRACT:{
-			return cbit.vcell.parser.gui.ScopedExpression.class;
+			return org.vcell.expression.ui.ScopedExpression.class;
 		}
 		default:{
 			return Object.class;

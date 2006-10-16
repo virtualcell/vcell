@@ -8,15 +8,15 @@ package cbit.vcell.mapping.gui;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.expression.ui.ScopedExpression;
 
-import cbit.vcell.parser.*;
-import cbit.vcell.parser.gui.ScopedExpression;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.modelapp.GeometryContext;
 import cbit.vcell.modelapp.MembraneMapping;
 import cbit.vcell.modelapp.StructureMapping;
 import cbit.vcell.mapping.*;
 import cbit.util.BeanUtils;
+import edu.uchc.vcell.expression.internal.*;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)

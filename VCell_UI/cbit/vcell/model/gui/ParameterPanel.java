@@ -4,9 +4,10 @@ package cbit.vcell.model.gui;
  * All rights reserved.
 ©*/
 import cbit.vcell.model.*;
-import cbit.vcell.parser.gui.ScopedExpressionTableCellRenderer;
 
 import java.beans.*;
+
+import org.vcell.expression.ui.ScopedExpressionTableCellRenderer;
 /**
  * This type was created in VisualAge.
  */
@@ -320,7 +321,7 @@ public static void main(java.lang.String[] args) {
  */
 public void parameterPanel_Initialize() {
 	getScrollPaneTable().setDefaultRenderer(String.class,new ScopedExpressionTableCellRenderer());
-	getScrollPaneTable().setDefaultRenderer(cbit.vcell.parser.gui.ScopedExpression.class,new ScopedExpressionTableCellRenderer());
+	getScrollPaneTable().setDefaultRenderer(org.vcell.expression.ui.ScopedExpression.class,new ScopedExpressionTableCellRenderer());
 }
 
 

@@ -20,11 +20,12 @@ import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.modelapp.SpeciesContextSpec;
 import cbit.vcell.modelapp.StructureMapping;
 import cbit.vcell.model.Model;
-import cbit.vcell.parser.gui.ScopedExpression;
-import cbit.vcell.parser.gui.ScopedExpressionTableCellRenderer;
 import cbit.gui.JTableFixed;
 import cbit.vcell.model.Parameter;
 import java.util.Vector;
+
+import org.vcell.expression.ui.ScopedExpression;
+import org.vcell.expression.ui.ScopedExpressionTableCellRenderer;
 
 
 import cbit.vcell.desktop.BioModelNode;

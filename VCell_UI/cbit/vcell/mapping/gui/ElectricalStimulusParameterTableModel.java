@@ -154,7 +154,7 @@ public Class getColumnClass(int column) {
 			return String.class;
 		}
 		case COLUMN_VALUE:{
-			return cbit.vcell.parser.gui.ScopedExpression.class;
+			return org.vcell.expression.ui.ScopedExpression.class;
 		}
 		default:{
 			return Object.class;
@@ -282,7 +282,7 @@ public Object getValueAt(int row, int col) {
 				if (parameter.getExpression()==null){
 					return new String("");
 				}else{
-					return new cbit.vcell.parser.gui.ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
+					return new org.vcell.expression.ui.ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
 				}
 			}
 		}
@@ -398,8 +398,8 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 		switch (columnIndex){
 			case COLUMN_VALUE:{
 				try {
-					if (aValue instanceof cbit.vcell.parser.gui.ScopedExpression){
-						IExpression exp = ((cbit.vcell.parser.gui.ScopedExpression)aValue).getExpression();
+					if (aValue instanceof org.vcell.expression.ui.ScopedExpression){
+						IExpression exp = ((org.vcell.expression.ui.ScopedExpression)aValue).getExpression();
 						if (parameter instanceof ElectricalStimulus.ElectricalStimulusParameter){
 							ElectricalStimulus.ElectricalStimulusParameter scsParm = (ElectricalStimulus.ElectricalStimulusParameter)parameter;
 							getElectricalStimulus().setParameterValue(scsParm,exp);

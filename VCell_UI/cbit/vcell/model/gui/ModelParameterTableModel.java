@@ -172,7 +172,7 @@ public Class getColumnClass(int column) {
 			return String.class;
 		}
 		case COLUMN_VALUE:{
-			return cbit.vcell.parser.gui.ScopedExpression.class;
+			return org.vcell.expression.ui.ScopedExpression.class;
 		}
 		case COLUMN_DESCRIPTION:{
 			return String.class;
@@ -336,7 +336,7 @@ public Object getValueAt(int row, int col) {
 		}
 		case COLUMN_VALUE:{
 			//return new cbit.vcell.parser.ScopedExpression(parameter.getExpression(),getBioModel().getModel().getNameScope());
-			return new cbit.vcell.parser.gui.ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
+			return new org.vcell.expression.ui.ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
 		}
 		default:{
 			return null;
@@ -517,8 +517,8 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 			}
 			case COLUMN_VALUE:{
 				try {
-					if (aValue instanceof cbit.vcell.parser.gui.ScopedExpression){
-						IExpression exp = ((cbit.vcell.parser.gui.ScopedExpression)aValue).getExpression();
+					if (aValue instanceof org.vcell.expression.ui.ScopedExpression){
+						IExpression exp = ((org.vcell.expression.ui.ScopedExpression)aValue).getExpression();
 						if (parameter instanceof cbit.vcell.model.Kinetics.KineticsParameter){
 							cbit.vcell.model.Kinetics kinetics = ((ReactionStep) parameter.getNameScope().getScopedSymbolTable()).getKinetics();
 							kinetics.setParameterValue((cbit.vcell.model.Kinetics.KineticsParameter)parameter,exp);

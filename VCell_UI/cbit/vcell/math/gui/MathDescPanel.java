@@ -8,8 +8,8 @@ import javax.swing.tree.*;
 
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.expression.ui.ExpressionCanvas;
 
-import cbit.vcell.parser.gui.ExpressionCanvas;
 
 import java.util.*;
 import cbit.vcell.math.*;
@@ -297,7 +297,7 @@ private cbit.gui.ButtonGroupCivilized getButtonGroupCivilized1() {
 private ExpressionCanvas getExpressionCanvas1() {
 	if (ivjExpressionCanvas1 == null) {
 		try {
-			ivjExpressionCanvas1 = new cbit.vcell.parser.gui.ExpressionCanvas();
+			ivjExpressionCanvas1 = new org.vcell.expression.ui.ExpressionCanvas();
 			ivjExpressionCanvas1.setName("ExpressionCanvas1");
 			// user code begin {1}
 			// user code end

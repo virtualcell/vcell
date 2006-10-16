@@ -8,6 +8,8 @@ import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
 
+import org.vcell.expression.ui.ScopedExpressionTableCellRenderer;
+
 
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;
@@ -15,7 +17,6 @@ import cbit.vcell.model.Feature;
 import cbit.vcell.modelapp.GeometryContext;
 import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.mapping.*;
-import cbit.vcell.parser.gui.ScopedExpressionTableCellRenderer;
 /**
  * This type was created in VisualAge.
  */

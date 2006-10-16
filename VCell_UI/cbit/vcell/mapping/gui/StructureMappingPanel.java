@@ -8,6 +8,8 @@ import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
 
+import org.vcell.expression.ui.ScopedExpressionTableCellRenderer;
+
 
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;
@@ -15,7 +17,6 @@ import cbit.vcell.model.Feature;
 import cbit.vcell.modelapp.FeatureMapping;
 import cbit.vcell.modelapp.GeometryContext;
 import cbit.vcell.mapping.*;
-import cbit.vcell.parser.gui.ScopedExpressionTableCellRenderer;
 /**
  * This type was created in VisualAge.
  */
@@ -184,7 +185,7 @@ private void connEtoM11() {
 	try {
 		// user code begin {1}
 		// user code end
-		getScrollPaneTable1().setDefaultRenderer(cbit.vcell.parser.gui.ScopedExpression.class, new ScopedExpressionTableCellRenderer());
+		getScrollPaneTable1().setDefaultRenderer(org.vcell.expression.ui.ScopedExpression.class, new ScopedExpressionTableCellRenderer());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {

@@ -10,9 +10,9 @@ import java.util.*;
 import java.beans.*;
 
 import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.ui.ScopedExpressionTableCellRenderer;
 
 import cbit.vcell.geometry.*;
-import cbit.vcell.parser.gui.ScopedExpressionTableCellRenderer;
 /**
  * This type was created in VisualAge.
  */
@@ -558,8 +558,8 @@ private void geometrySubVolumePanel_Initialize() {
 				public Object getEditorValue(Object obj){
 					if(obj instanceof SubVolume){
 						return ((SubVolume)obj).getName();
-					}else if(obj instanceof cbit.vcell.parser.gui.ScopedExpression){
-						return ((cbit.vcell.parser.gui.ScopedExpression)obj).getExpression().infix();
+					}else if(obj instanceof org.vcell.expression.ui.ScopedExpression){
+						return ((org.vcell.expression.ui.ScopedExpression)obj).getExpression().infix();
 					}else{
 						return obj;
 					}
@@ -1119,7 +1119,7 @@ private void setGeometrySpec(cbit.vcell.geometry.GeometrySpec newValue) {
  */
 public void setGeometrySubVolumeTableCellRenderer() {
 	getScrollPaneTable().setDefaultRenderer(org.vcell.expression.IExpression.class,new ScopedExpressionTableCellRenderer());
-	getScrollPaneTable().setDefaultRenderer(cbit.vcell.parser.gui.ScopedExpression.class,new ScopedExpressionTableCellRenderer());
+	getScrollPaneTable().setDefaultRenderer(org.vcell.expression.ui.ScopedExpression.class,new ScopedExpressionTableCellRenderer());
 	getScrollPaneTable().setDefaultRenderer(java.awt.Color.class,new GeometrySubVolumeTableCellRenderer());
 }
 /**

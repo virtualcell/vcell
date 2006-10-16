@@ -83,7 +83,7 @@ public Class getColumnClass(int column) {
 			return String.class;
 		}
 		case COLUMN_VALUE:{
-			return cbit.vcell.parser.gui.ScopedExpression.class;
+			return org.vcell.expression.ui.ScopedExpression.class;
 		}
 		case COLUMN_DESCRIPTION:{
 			return String.class;
@@ -175,7 +175,7 @@ public Object getValueAt(int row, int col) {
 			}
 		}
 		case COLUMN_VALUE:{
-			return new cbit.vcell.parser.gui.ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
+			return new org.vcell.expression.ui.ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
 		}
 		case COLUMN_DESCRIPTION:{
 			return parameter.getDescription();
@@ -302,8 +302,8 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 			}
 			case COLUMN_VALUE:{
 				try {
-					if (aValue instanceof cbit.vcell.parser.gui.ScopedExpression){
-						IExpression exp = ((cbit.vcell.parser.gui.ScopedExpression)aValue).getExpression();
+					if (aValue instanceof org.vcell.expression.ui.ScopedExpression){
+						IExpression exp = ((org.vcell.expression.ui.ScopedExpression)aValue).getExpression();
 						getKinetics().setParameterValue(parameter,exp);
 					}else if (aValue instanceof String) {
 						String newExpressionString = (String)aValue;

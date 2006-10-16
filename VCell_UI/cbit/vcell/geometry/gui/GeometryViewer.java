@@ -1,5 +1,4 @@
 package cbit.vcell.geometry.gui;
-import cbit.vcell.parser.*;
 import cbit.vcell.simdata.DisplayAdapterService;
 import cbit.vcell.simdata.SourceDataInfo;
 import cbit.image.*;
@@ -15,6 +14,7 @@ import org.vcell.expression.ExpressionException;
 import cbit.vcell.geometry.*;
 import cbit.image.gui.ImagePaneModel;
 import cbit.image.gui.ImagePlaneManagerPanel;
+import edu.uchc.vcell.expression.internal.*;
 /**
  * This type was created in VisualAge.
  */

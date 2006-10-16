@@ -2,13 +2,13 @@ package cbit.vcell.geometry.gui;
 
 import org.vcell.expression.ExpressionFactory;
 
-import cbit.vcell.parser.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
 import cbit.vcell.geometry.*;
 import cbit.vcell.server.*;
+import edu.uchc.vcell.expression.internal.*;
 /**
  * This type was created in VisualAge.
  */

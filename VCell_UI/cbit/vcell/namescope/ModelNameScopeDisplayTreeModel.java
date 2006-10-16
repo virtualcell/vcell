@@ -10,9 +10,10 @@
  *******************************************************************************/
 package cbit.vcell.namescope;
 
+import org.vcell.expression.ui.ScopedExpression;
+import org.vcell.expression.ui.ScopedExpressionTableCellRenderer;
+
 import cbit.vcell.model.gui.ModelParameterTableModel;
-import cbit.vcell.parser.gui.ScopedExpression;
-import cbit.vcell.parser.gui.ScopedExpressionTableCellRenderer;
 import cbit.gui.JTableFixed;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Structure;
