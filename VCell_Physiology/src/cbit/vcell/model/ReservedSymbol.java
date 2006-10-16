@@ -3,7 +3,6 @@ package cbit.vcell.model;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.parser.*;
 
 import java.io.*;
 
@@ -14,6 +13,7 @@ import org.vcell.expression.NameScope;
 import org.vcell.expression.SymbolTableEntry;
 
 import cbit.vcell.units.VCUnitDefinition;
+import edu.uchc.vcell.expression.internal.*;
 
 public class ReservedSymbol implements SymbolTableEntry, Serializable
 {

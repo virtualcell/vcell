@@ -2,7 +2,7 @@ package cbit.vcell.model;
 
 import org.vcell.expression.ExpressionException;
 
-import cbit.vcell.parser.*;
+import edu.uchc.vcell.expression.internal.*;
 /**
  * Insert the type's description here.
  * Creation date: (6/18/2002 1:44:36 PM)

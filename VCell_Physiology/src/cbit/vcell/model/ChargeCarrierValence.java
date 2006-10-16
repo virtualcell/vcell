@@ -5,7 +5,7 @@ import org.vcell.expression.IExpression;
 import org.vcell.expression.NameScope;
 import org.vcell.expression.SymbolTableEntry;
 
-import cbit.vcell.parser.*;
+import edu.uchc.vcell.expression.internal.*;
 /**
  * Insert the type's description here.
  * Creation date: (2/20/2002 4:16:31 PM)

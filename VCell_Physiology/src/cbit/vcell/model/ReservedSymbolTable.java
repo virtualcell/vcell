@@ -8,7 +8,7 @@ import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.SymbolTable;
 import org.vcell.expression.SymbolTableEntry;
 
-import cbit.vcell.parser.*;
+import edu.uchc.vcell.expression.internal.*;
 /**
  * This type was created in VisualAge.
  */

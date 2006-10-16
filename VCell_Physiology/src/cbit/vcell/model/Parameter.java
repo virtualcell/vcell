@@ -12,9 +12,9 @@ import org.vcell.expression.IExpression;
 import org.vcell.expression.NameScope;
 import org.vcell.expression.SymbolTableEntry;
 
-import cbit.vcell.parser.*;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.util.*;
+import edu.uchc.vcell.expression.internal.*;
 
 public abstract class Parameter implements SymbolTableEntry, Serializable, Matchable
 {

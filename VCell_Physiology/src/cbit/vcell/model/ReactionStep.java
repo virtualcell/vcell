@@ -5,7 +5,6 @@ package cbit.vcell.model;
  * All rights reserved.
 ©*/
 import java.beans.*;
-import cbit.vcell.parser.*;
 
 import java.io.*;
 import java.util.*;
@@ -20,6 +19,7 @@ import org.vcell.expression.ScopedSymbolTable;
 import org.vcell.expression.SymbolTableEntry;
 
 import cbit.util.*;
+import edu.uchc.vcell.expression.internal.*;
 /**
  * This class is the superclass of all classes representing 
  * a step within a <code>Reaction</code>. This encapsulates capability for

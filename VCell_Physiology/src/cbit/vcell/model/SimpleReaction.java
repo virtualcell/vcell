@@ -9,8 +9,8 @@ import java.util.*;
 
 import org.vcell.expression.ExpressionFactory;
 
-import cbit.vcell.parser.*;
 import cbit.util.*;
+import edu.uchc.vcell.expression.internal.*;
 
 
 public class SimpleReaction extends ReactionStep
