@@ -4,8 +4,8 @@ import java.util.StringTokenizer;
 
 import org.jdom.Element;
 
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionMathMLParser;
+import edu.uchc.vcell.expression.internal.Expression;
+import edu.uchc.vcell.expression.internal.ExpressionMathMLParser;
 
 public class ExpressionFactory {
 

@@ -1,6 +1,6 @@
 package org.vcell.expression;
 
-import cbit.vcell.parser.ExpressionUtils;
+import edu.uchc.vcell.expression.internal.ExpressionUtils;
 
 public class ExpressionUtilities {
 

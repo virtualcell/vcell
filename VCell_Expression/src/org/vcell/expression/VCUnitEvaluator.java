@@ -1,26 +1,27 @@
 package org.vcell.expression;
 import ucar.units.RationalNumber;
-import cbit.vcell.parser.ASTAddNode;
-import cbit.vcell.parser.ASTAndNode;
-import cbit.vcell.parser.ASTExpression;
-import cbit.vcell.parser.ASTFloatNode;
-import cbit.vcell.parser.ASTFuncNode;
-import cbit.vcell.parser.ASTIdNode;
-import cbit.vcell.parser.ASTInvertTermNode;
-import cbit.vcell.parser.ASTLaplacianNode;
-import cbit.vcell.parser.ASTMinusTermNode;
-import cbit.vcell.parser.ASTMultNode;
-import cbit.vcell.parser.ASTNotNode;
-import cbit.vcell.parser.ASTOrNode;
-import cbit.vcell.parser.ASTPowerNode;
-import cbit.vcell.parser.ASTRelationalNode;
-import cbit.vcell.parser.DerivativeNode;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.SimpleNode;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
 
 import java.util.ArrayList;
+
+import edu.uchc.vcell.expression.internal.ASTAddNode;
+import edu.uchc.vcell.expression.internal.ASTAndNode;
+import edu.uchc.vcell.expression.internal.ASTExpression;
+import edu.uchc.vcell.expression.internal.ASTFloatNode;
+import edu.uchc.vcell.expression.internal.ASTFuncNode;
+import edu.uchc.vcell.expression.internal.ASTIdNode;
+import edu.uchc.vcell.expression.internal.ASTInvertTermNode;
+import edu.uchc.vcell.expression.internal.ASTLaplacianNode;
+import edu.uchc.vcell.expression.internal.ASTMinusTermNode;
+import edu.uchc.vcell.expression.internal.ASTMultNode;
+import edu.uchc.vcell.expression.internal.ASTNotNode;
+import edu.uchc.vcell.expression.internal.ASTOrNode;
+import edu.uchc.vcell.expression.internal.ASTPowerNode;
+import edu.uchc.vcell.expression.internal.ASTRelationalNode;
+import edu.uchc.vcell.expression.internal.DerivativeNode;
+import edu.uchc.vcell.expression.internal.Expression;
+import edu.uchc.vcell.expression.internal.SimpleNode;
 
 /**
  * This class may not exist in the future, and its functionality may be spread on one or more classes.

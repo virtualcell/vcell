@@ -1,7 +1,7 @@
 package org.vcell.expression;
 
-import cbit.vcell.parser.RationalExp;
-import cbit.vcell.parser.RationalExpUtils;
+import edu.uchc.vcell.expression.internal.RationalExp;
+import edu.uchc.vcell.expression.internal.RationalExpUtils;
 
 public class RationalExpressionFactory {
 

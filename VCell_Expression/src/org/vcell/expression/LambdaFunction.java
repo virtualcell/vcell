@@ -1,7 +1,7 @@
 package org.vcell.expression;
 
 
-import cbit.vcell.parser.*;
+import edu.uchc.vcell.expression.internal.*;
 /**
  * Insert the type's description here.
  * Creation date: (2/7/2005 4:13:57 PM)
