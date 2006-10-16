@@ -5,12 +5,14 @@ package edu.uchc.vcell.expression.internal;
  * All rights reserved.
 ©*/
 /* JJT: 0.2.2 */
+import net.sourceforge.interval.ia_math.IAMath;
+import net.sourceforge.interval.ia_math.IANarrow;
+import net.sourceforge.interval.ia_math.RealInterval;
+
 import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.NameScope;
 import org.vcell.expression.SymbolTable;
-
-import net.sourceforge.interval.ia_math.*;
 
 public class ASTAndNode extends SimpleNode {
 

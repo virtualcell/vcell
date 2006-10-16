@@ -4,9 +4,6 @@ package edu.uchc.vcell.expression.internal;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.awt.*;
-import java.util.*;
-
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.IExpression;
 

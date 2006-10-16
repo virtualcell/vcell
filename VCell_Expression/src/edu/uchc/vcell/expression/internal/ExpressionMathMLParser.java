@@ -4,10 +4,11 @@ package edu.uchc.vcell.expression.internal;
  * All rights reserved.
 ©*/
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.Vector;
+
 import org.jdom.Element;
 import org.vcell.expression.ExpressionException;
-import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.LambdaFunction;
 

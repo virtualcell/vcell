@@ -4,10 +4,11 @@ package org.vcell.expression.ui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.awt.Graphics2D;
-import javax.swing.JLabel;
-import java.awt.Dimension;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Graphics2D;
+
+import javax.swing.JLabel;
 import javax.swing.JTable;
 /**
  * Insert the type's description here.

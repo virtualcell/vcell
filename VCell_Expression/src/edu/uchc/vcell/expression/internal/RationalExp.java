@@ -1,7 +1,6 @@
 package edu.uchc.vcell.expression.internal;
 import java.util.Vector;
 
-import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.IRationalExpression;

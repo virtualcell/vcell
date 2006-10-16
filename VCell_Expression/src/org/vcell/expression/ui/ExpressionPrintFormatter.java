@@ -4,8 +4,12 @@ package org.vcell.expression.ui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.awt.*;
-import java.util.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.util.Vector;
 
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.IExpression;

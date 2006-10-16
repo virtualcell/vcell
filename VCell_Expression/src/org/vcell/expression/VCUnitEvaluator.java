@@ -1,10 +1,9 @@
 package org.vcell.expression;
+import java.util.ArrayList;
+
 import ucar.units.RationalNumber;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
-
-import java.util.ArrayList;
-
 import edu.uchc.vcell.expression.internal.ASTAddNode;
 import edu.uchc.vcell.expression.internal.ASTAndNode;
 import edu.uchc.vcell.expression.internal.ASTExpression;

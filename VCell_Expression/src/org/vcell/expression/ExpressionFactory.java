@@ -1,11 +1,13 @@
 package org.vcell.expression;
 
+import java.util.Random;
 import java.util.StringTokenizer;
 
 import org.jdom.Element;
 
 import edu.uchc.vcell.expression.internal.Expression;
 import edu.uchc.vcell.expression.internal.ExpressionMathMLParser;
+import edu.uchc.vcell.expression.internal.ExpressionUtils;
 
 public class ExpressionFactory {
 
@@ -43,6 +45,10 @@ public class ExpressionFactory {
 
 	public static IExpression createExpression(StringTokenizer tokens) throws ExpressionException {
 		return new Expression(tokens);
+	}
+
+	public static IExpression createRandomExpression(Random random, int maxDepth, boolean bIsConstraint) throws ExpressionException {
+		return ExpressionUtils.generateExpression(random, maxDepth, bIsConstraint);
 	}
 
 	public static IExpression createSubstitutedExpression(IExpression expression, IExpression origExp, IExpression newExp) throws ExpressionException {

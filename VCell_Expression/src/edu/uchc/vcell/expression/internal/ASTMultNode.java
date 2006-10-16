@@ -2,15 +2,14 @@ package edu.uchc.vcell.expression.internal;
 
 import java.util.Vector;
 
+import net.sourceforge.interval.ia_math.IAException;
+import net.sourceforge.interval.ia_math.IAMath;
+import net.sourceforge.interval.ia_math.IANarrow;
+import net.sourceforge.interval.ia_math.RealInterval;
+
 import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.NameScope;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-/* JJT: 0.2.2 */
-import net.sourceforge.interval.ia_math.*;
 
 public class ASTMultNode extends SimpleNode {
 

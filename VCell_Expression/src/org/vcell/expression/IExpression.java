@@ -4,9 +4,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Iterator;
 
-import cbit.util.Matchable;
-
 import net.sourceforge.interval.ia_math.RealInterval;
+import cbit.util.Matchable;
 
 public interface IExpression extends Matchable, Serializable {
 

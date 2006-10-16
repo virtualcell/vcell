@@ -4,14 +4,17 @@ package edu.uchc.vcell.expression.internal;
  * All rights reserved.
 ©*/
 /* JJT: 0.2.2 */
+import net.sourceforge.interval.ia_math.IAFunctionDomainException;
+import net.sourceforge.interval.ia_math.IAMath;
+import net.sourceforge.interval.ia_math.IANarrow;
+import net.sourceforge.interval.ia_math.RealInterval;
+
 import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.FunctionDomainException;
 import org.vcell.expression.NameScope;
 
 import cbit.util.xml.MathMLTags;
-
-import net.sourceforge.interval.ia_math.*;
 
 public class ASTFuncNode extends SimpleNode {
  	

@@ -1,12 +1,11 @@
 package edu.uchc.vcell.expression.internal;
 
-import cbit.util.Matchable;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.StringTokenizer;
+
+import net.sourceforge.interval.ia_math.RealInterval;
 
 import org.vcell.expression.DivideByZeroException;
 import org.vcell.expression.ExpressionBindingException;
@@ -19,7 +18,7 @@ import org.vcell.expression.ParserException;
 import org.vcell.expression.SymbolTable;
 import org.vcell.expression.SymbolTableEntry;
 
-import net.sourceforge.interval.ia_math.*;
+import cbit.util.Matchable;
 
 public class Expression implements java.io.Serializable, cbit.util.Matchable, IExpression {
 

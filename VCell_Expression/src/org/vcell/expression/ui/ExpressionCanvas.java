@@ -3,7 +3,13 @@ package org.vcell.expression.ui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics2D;
+
+import javax.swing.JScrollBar;
+import javax.swing.JViewport;
 
 import org.vcell.expression.IExpression;
 

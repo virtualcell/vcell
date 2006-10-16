@@ -9,13 +9,13 @@ package edu.uchc.vcell.expression.internal;
 /* All AST nodes must implement this interface.  It provides basic
    machinery for constructing the parent and child relationships
    between nodes. */
+import net.sourceforge.interval.ia_math.RealInterval;
+
 import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.NameScope;
 import org.vcell.expression.SymbolTable;
 import org.vcell.expression.SymbolTableEntry;
-
-import net.sourceforge.interval.ia_math.*;
 
 public interface Node {
 
