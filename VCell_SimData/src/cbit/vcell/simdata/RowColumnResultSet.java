@@ -13,7 +13,7 @@ import org.vcell.expression.IExpression;
 import org.vcell.expression.SymbolTable;
 import org.vcell.expression.VariableSymbolTable;
 
-import cbit.vcell.parser.*;
+import edu.uchc.vcell.expression.internal.*;
 /**
  *  This will have a list of Variables (NB: ReservedVariable.TIME is a ReservedVariable,
  *  and a ReservedVariable is a Variable...also, StateVariables are NOT Variables, but

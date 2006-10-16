@@ -4,8 +4,8 @@ import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.SimpleSymbolTable;
 
-import cbit.vcell.parser.*;
 import cbit.vcell.math.ReservedVariable;
+import edu.uchc.vcell.expression.internal.*;
 /**
  * Insert the type's description here.
  * Creation date: (9/11/2003 11:02:57 AM)

@@ -9,7 +9,7 @@ import org.vcell.expression.NameScope;
 import org.vcell.expression.SymbolTableEntry;
 
 import cbit.vcell.math.VariableType;
-import cbit.vcell.parser.*;
+import edu.uchc.vcell.expression.internal.*;
 /**
  * Insert the type's description here.
  * Creation date: (10/11/00 4:28:07 PM)

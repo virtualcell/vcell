@@ -8,7 +8,6 @@ import cbit.vcell.mesh.CartesianMesh;
 
 import java.io.*;
 import java.util.*;
-import cbit.vcell.parser.*;
 import cbit.util.*;
 
 import java.util.zip.*;
@@ -18,6 +17,8 @@ import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.SymbolTable;
 import org.vcell.expression.SymbolTableEntry;
+
+import edu.uchc.vcell.expression.internal.*;
 /**
  * This type was created in VisualAge.
  */

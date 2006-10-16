@@ -2,7 +2,7 @@ package cbit.vcell.simdata;
 
 import org.vcell.expression.ExpressionFactory;
 
-import cbit.vcell.parser.*;
+import edu.uchc.vcell.expression.internal.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.

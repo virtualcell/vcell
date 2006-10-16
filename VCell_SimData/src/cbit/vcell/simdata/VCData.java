@@ -10,8 +10,8 @@ import java.io.*;
 
 import org.vcell.expression.ExpressionException;
 
-import cbit.vcell.parser.*;
 import cbit.util.*;
+import edu.uchc.vcell.expression.internal.*;
 /**
  * This type was created in VisualAge.
  */
