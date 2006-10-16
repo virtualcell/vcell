@@ -6,7 +6,7 @@ package cbit.vcell.math;
 ©*/
 import org.vcell.expression.ExpressionBindingException;
 
-import cbit.vcell.parser.*;
+import edu.uchc.vcell.expression.internal.*;
 public class ReservedVariable extends Variable
 {
    public final static ReservedVariable TIME = new ReservedVariable("t",0);

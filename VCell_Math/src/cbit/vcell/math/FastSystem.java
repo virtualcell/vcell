@@ -11,8 +11,8 @@ import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.IExpression;
 
-import cbit.vcell.parser.*;
 import cbit.util.*;
+import edu.uchc.vcell.expression.internal.*;
 /**
  * This type was created in VisualAge.
  */

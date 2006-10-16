@@ -13,8 +13,8 @@ import org.vcell.expression.IRationalExpression;
 import org.vcell.expression.IRationalExpression;
 import org.vcell.expression.RationalExpressionFactory;
 
-import cbit.vcell.parser.*;
 import cbit.vcell.matrix.RationalExpMatrix;
+import edu.uchc.vcell.expression.internal.*;
 /**
  * This type was created in VisualAge.
  */

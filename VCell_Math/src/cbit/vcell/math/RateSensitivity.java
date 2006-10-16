@@ -4,7 +4,6 @@ package cbit.vcell.math;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.parser.*;
 
 import java.util.*;
 import javax.swing.event.*;
@@ -12,6 +11,8 @@ import javax.swing.event.*;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+
+import edu.uchc.vcell.expression.internal.*;
 /**
  * The RateSensitivity class represents the parameter sensitivities of the rates of the nonlinear system C'(t) = f(C,t).
  * For simplicity, only ODE's are considered within a single subDomain.
