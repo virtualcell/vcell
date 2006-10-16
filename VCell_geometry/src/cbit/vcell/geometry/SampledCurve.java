@@ -5,7 +5,7 @@ package cbit.vcell.geometry;
  * All rights reserved.
 ©*/
 import cbit.util.Coordinate;
-import cbit.vcell.parser.*;
+import edu.uchc.vcell.expression.internal.*;
 /**
  * This type was created in VisualAge.
  */

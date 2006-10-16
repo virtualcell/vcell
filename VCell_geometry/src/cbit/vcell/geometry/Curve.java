@@ -5,8 +5,9 @@ package cbit.vcell.geometry;
  * All rights reserved.
 ©*/
 import cbit.util.Coordinate;
-import cbit.vcell.parser.*;
 import java.io.Serializable;
+
+import edu.uchc.vcell.expression.internal.*;
 /**
  * This type was created in VisualAge.
  *  For now, addCurve () and removeCurve () are not defined

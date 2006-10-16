@@ -9,7 +9,7 @@ import org.vcell.expression.IExpression;
 import org.vcell.expression.NameScope;
 import org.vcell.expression.SymbolTableEntry;
 
-import cbit.vcell.parser.*;
+import edu.uchc.vcell.expression.internal.*;
 
 public class ReservedParameterSymbol implements SymbolTableEntry
 {

@@ -5,13 +5,13 @@ package cbit.vcell.geometry;
 ©*/
 import java.util.*;
 import java.awt.Point;
-import cbit.vcell.parser.*;
 import java.awt.Color;
 import cbit.vcell.geometry.*;
 
 import java.awt.geom.*;
 import java.util.Hashtable;
 import cbit.util.*;
+import edu.uchc.vcell.expression.internal.*;
 /**
  * This type was created in VisualAge.
  */
