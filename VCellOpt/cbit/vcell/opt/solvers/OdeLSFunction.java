@@ -9,8 +9,8 @@ import cbit.util.VersionFlag;
 import cbit.vcell.simdata.FunctionColumnDescription;
 import cbit.vcell.simdata.RowColumnResultSet;
 import cbit.vcell.simulation.Simulation;
-import cbit.vcell.parser.*;
 import cbit.vcell.opt.ReferenceData;
+import edu.uchc.vcell.expression.internal.*;
 /**
  * Insert the type's description here.
  * Creation date: (9/5/2005 1:32:55 PM)

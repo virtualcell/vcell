@@ -15,10 +15,11 @@ import cbit.vcell.opt.OptimizationSolverSpec;
 import java.util.*;
 import cbit.vcell.math.*;
 import java.rmi.*;
-import cbit.vcell.parser.*;
 import java.io.*;
 
 import org.vcell.expression.ExpressionException;
+
+import edu.uchc.vcell.expression.internal.*;
 /**
  * Insert the type's description here.
  * Creation date: (3/16/00 3:07:48 PM)
