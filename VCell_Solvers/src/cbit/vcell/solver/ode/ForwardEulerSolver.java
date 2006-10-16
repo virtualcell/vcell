@@ -1,14 +1,10 @@
 package cbit.vcell.solver.ode;
 
-import cbit.util.SessionLog;
-import java.io.*;
+import java.io.File;
 
 import org.vcell.expression.ExpressionException;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.simulation.*;
+
+import cbit.util.SessionLog;
 import cbit.vcell.solvers.SimulationJob;
 import cbit.vcell.solvers.SolverException;
 /**

@@ -1,15 +1,13 @@
 package cbit.vcell.solver.ode;
-import java.io.*;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
+import java.io.File;
+import java.io.IOException;
+
 import cbit.rmi.event.VCSimulationDataIdentifier;
 import cbit.util.SessionLog;
 import cbit.vcell.simdata.ODESimData;
 import cbit.vcell.simdata.ODESolverResultSet;
 import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.simulation.*;
+import cbit.vcell.simulation.DefaultOutputTimeSpec;
 import cbit.vcell.solvers.SimulationJob;
 import cbit.vcell.solvers.SolverException;
 import cbit.vcell.solvers.SolverStatus;

@@ -3,7 +3,8 @@ package cbit.vcell.solver.ode;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.math.*;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathDescriptionTest;
 /**
  * Insert the type's description here.
  * Creation date: (3/8/00 11:10:26 PM)

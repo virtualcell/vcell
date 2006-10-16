@@ -4,8 +4,11 @@ package cbit.vcell.solvers;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.util.Enumeration;
+import java.util.Vector;
 
 public abstract class CppCoder implements Coder
 {

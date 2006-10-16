@@ -4,7 +4,7 @@ package cbit.vcell.solvers;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.io.*;
+import java.io.OutputStream;
 
 
 public interface Coder

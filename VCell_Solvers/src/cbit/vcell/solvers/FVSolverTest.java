@@ -4,13 +4,13 @@ package cbit.vcell.solvers;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.io.File;
+
 import cbit.gui.PropertyLoader;
 import cbit.util.SessionLog;
 import cbit.util.StdoutSessionLog;
-import cbit.vcell.simulation.*;
-
-import java.io.*;
-import cbit.vcell.math.*;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathDescriptionTest;
 /**
  * This type was created in VisualAge.
  */

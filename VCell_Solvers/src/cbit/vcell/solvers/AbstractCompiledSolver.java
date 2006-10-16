@@ -4,10 +4,9 @@ package cbit.vcell.solvers;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.io.*;
+import java.io.File;
 
 import cbit.util.SessionLog;
-import cbit.vcell.simulation.*;
 /**
  * Insert the type's description here.
  * Creation date: (6/26/2001 3:18:18 PM)

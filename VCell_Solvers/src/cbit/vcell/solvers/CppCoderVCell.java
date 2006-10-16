@@ -5,8 +5,18 @@ package cbit.vcell.solvers;
 ©*/
 import java.util.Enumeration;
 
-import cbit.vcell.simulation.*;
-import cbit.vcell.math.*;
+import cbit.vcell.math.CompartmentSubDomain;
+import cbit.vcell.math.Constant;
+import cbit.vcell.math.Equation;
+import cbit.vcell.math.FastSystem;
+import cbit.vcell.math.FilamentRegionEquation;
+import cbit.vcell.math.FilamentSubDomain;
+import cbit.vcell.math.MembraneRegionEquation;
+import cbit.vcell.math.MembraneSubDomain;
+import cbit.vcell.math.SubDomain;
+import cbit.vcell.math.Variable;
+import cbit.vcell.math.VolumeRegionEquation;
+import cbit.vcell.simulation.Simulation;
 
 public class CppCoderVCell extends CppCoder
 {

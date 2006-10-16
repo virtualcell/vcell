@@ -1,5 +1,5 @@
 package cbit.vcell.solvers;
-import java.rmi.*;
+import java.rmi.RemoteException;
 
 import cbit.util.SessionLog;
 /*©

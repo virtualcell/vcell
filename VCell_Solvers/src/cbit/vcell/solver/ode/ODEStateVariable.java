@@ -7,8 +7,9 @@ package cbit.vcell.solver.ode;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.IExpression;
 
-import cbit.vcell.math.*;
-import cbit.vcell.parser.*;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.OdeEquation;
+import cbit.vcell.math.VolVariable;
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 8:59:44 PM)

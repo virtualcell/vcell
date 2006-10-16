@@ -1,9 +1,8 @@
 package cbit.vcell.solver.ode;
 
-import cbit.util.SessionLog;
-import java.io.*;
+import java.io.File;
 
-import cbit.vcell.simulation.*;
+import cbit.util.SessionLog;
 import cbit.vcell.solvers.SimulationJob;
 import cbit.vcell.solvers.SolverException;
 /*©
