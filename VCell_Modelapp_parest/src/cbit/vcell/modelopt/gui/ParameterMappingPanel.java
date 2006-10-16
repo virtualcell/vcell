@@ -10,7 +10,7 @@
  *******************************************************************************/
 package cbit.vcell.modelopt.gui;
 
-import cbit.vcell.parser.gui.ScopedExpressionTableCellRenderer;
+import org.vcell.expression.ui.ScopedExpressionTableCellRenderer;
 
 /**
  * Insert the type's description here.
@@ -133,7 +133,7 @@ private void connEtoM4() {
 	try {
 		// user code begin {1}
 		// user code end
-		getScrollPaneTable().setDefaultRenderer(cbit.vcell.parser.gui.ScopedExpression.class, new ScopedExpressionTableCellRenderer());
+		getScrollPaneTable().setDefaultRenderer(org.vcell.expression.ui.ScopedExpression.class, new ScopedExpressionTableCellRenderer());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
