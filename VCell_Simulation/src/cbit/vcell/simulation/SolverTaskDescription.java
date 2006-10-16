@@ -4,7 +4,6 @@ package cbit.vcell.simulation;
  * All rights reserved.
 ©*/
 import cbit.vcell.math.*;
-import cbit.vcell.parser.*;
 import cbit.vcell.math.VCML;
 import java.util.*;
 
@@ -12,6 +11,7 @@ import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
 
 import cbit.util.*;
+import edu.uchc.vcell.expression.internal.*;
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 8:59:15 PM)
