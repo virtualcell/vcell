@@ -17,7 +17,6 @@ import cbit.vcell.modelapp.SpeciesContextMapping;
 import cbit.vcell.modelapp.SpeciesContextSpec;
 import cbit.vcell.modelapp.StructureMapping;
 import cbit.vcell.geometry.*;
-import cbit.vcell.parser.*;
 
 import java.util.*;
 
@@ -32,6 +31,7 @@ import org.vcell.expression.VCUnitEvaluator;
 
 
 import cbit.vcell.units.VCUnitDefinition;
+import edu.uchc.vcell.expression.internal.*;
 /**
  * The MathMapping class performs the Biological to Mathematical transformation once upon calling getMathDescription().
  * This is not a "live" transformation, so that an updated SimulationContext must be given to a new MathMapping object
