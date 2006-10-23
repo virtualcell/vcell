@@ -11,4 +11,5 @@ Export-Package: cbit.vcell.simulation,
 Require-Bundle: org.vcell.util,
  org.vcell.geometry,
  org.vcell.math,
- org.vcell.expression
+ org.vcell.expression,
+ org.eclipse.osgi

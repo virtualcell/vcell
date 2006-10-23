@@ -1,9 +1,9 @@
 package cbit.vcell.simulation;
-import cbit.util.KeyValue;
-import cbit.util.SimulationVersion;
-import cbit.util.User;
-import cbit.util.Version;
-import cbit.util.VersionInfo;
+import cbit.util.document.KeyValue;
+import cbit.util.document.SimulationVersion;
+import cbit.util.document.User;
+import cbit.util.document.Version;
+import cbit.util.document.VersionInfo;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -105,7 +105,7 @@ public User getOwner() {
  * Creation date: (7/9/2004 1:43:29 PM)
  * @return cbit.sql.KeyValue
  */
-public cbit.util.KeyValue getParentSimulationReference() {
+public cbit.util.document.KeyValue getParentSimulationReference() {
 	return simulationVersion.getParentSimulationReference();
 }
 

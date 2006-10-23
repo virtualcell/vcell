@@ -18,9 +18,9 @@ import org.vcell.expression.SymbolTableEntry;
 import cbit.util.BeanUtils;
 import cbit.util.CommentStringTokenizer;
 import cbit.util.DataAccessException;
-import cbit.util.KeyValue;
-import cbit.util.SimulationVersion;
-import cbit.util.Versionable;
+import cbit.util.document.KeyValue;
+import cbit.util.document.SimulationVersion;
+import cbit.util.document.Versionable;
 import cbit.vcell.math.*;
 import cbit.vcell.simulation.SimulationInfo;
 /**
@@ -906,7 +906,7 @@ public String getVCML() throws MathException {
  * Creation date: (10/24/00 1:34:10 PM)
  * @return cbit.sql.Version
  */
-public cbit.util.Version getVersion() {
+public cbit.util.document.Version getVersion() {
 	return fieldSimulationVersion;
 }
 
