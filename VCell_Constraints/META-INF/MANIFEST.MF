@@ -6,11 +6,12 @@ Bundle-Version: 1.0.0
 Bundle-Activator: org.vcell.constraints.Activator
 Bundle-Localization: plugin
 Import-Package: org.osgi.framework;version="1.3.0"
-Require-Bundle: org.vcell.common,
- org.vcell.expression,
+Require-Bundle: org.vcell.expression,
  org.vcell.util,
  org.vcell.units,
  org.vcell.graph,
- org.vcell.cartoon
+ org.vcell.cartoon,
+ net.sourceforge.interval,
+ org.eclipse.osgi
 Export-Package: cbit.vcell.constraints,
  cbit.vcell.constraints.gui
