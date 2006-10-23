@@ -3,9 +3,9 @@ package cbit.vcell.modelapp;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.KeyValue;
-import cbit.util.Version;
-import cbit.util.VersionInfo;
+import cbit.util.document.KeyValue;
+import cbit.util.document.Version;
+import cbit.util.document.VersionInfo;
 /**
  * This type was created in VisualAge.
  */

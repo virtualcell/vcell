@@ -13,10 +13,10 @@ import org.vcell.modelapp.analysis.IAnalysisTask;
 
 import cbit.util.BeanUtils;
 import cbit.util.Compare;
-import cbit.util.KeyValue;
 import cbit.util.Matchable;
 import cbit.util.TokenMangler;
-import cbit.util.Version;
+import cbit.util.document.KeyValue;
+import cbit.util.document.Version;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathFactory;
@@ -29,7 +29,7 @@ import cbit.vcell.simulation.Simulation;
 /**
  * This type was created in VisualAge.
  */
-public class SimulationContext implements cbit.util.Versionable, Matchable, cbit.vcell.simulation.SimulationOwner, org.vcell.expression.ScopedSymbolTable, PropertyChangeListener, VetoableChangeListener, java.io.Serializable {
+public class SimulationContext implements cbit.util.document.Versionable, Matchable, cbit.vcell.simulation.SimulationOwner, org.vcell.expression.ScopedSymbolTable, PropertyChangeListener, VetoableChangeListener, java.io.Serializable {
 
 	public class SimulationContextNameScope extends BioNameScope {
 		private transient org.vcell.expression.NameScope nameScopes[] = null;
@@ -1453,7 +1453,7 @@ public void setTemperatureKelvin(double temperatureKelvin) throws java.beans.Pro
  * Creation date: (11/14/00 3:49:12 PM)
  * @param version cbit.sql.Version
  */
-private void setVersion(cbit.util.Version newVersion) throws PropertyVetoException {
+private void setVersion(cbit.util.document.Version newVersion) throws PropertyVetoException {
 	this.version = newVersion;
 	if (newVersion != null){
 		setName(newVersion.getName());

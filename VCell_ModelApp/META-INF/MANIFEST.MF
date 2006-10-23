@@ -10,7 +10,6 @@ Export-Package: cbit.vcell.modelapp,
  org.vcell.modelapp.analysis
 Require-Bundle: org.eclipse.osgi,
  org.eclipse.core.runtime,
- org.vcell.common,
  org.vcell.expression,
  org.vcell.geometry,
  org.vcell.math,
@@ -18,5 +17,7 @@ Require-Bundle: org.eclipse.osgi,
  org.vcell.units,
  org.vcell.util,
  org.vcell.physiology,
- org.vcell.image
+ org.vcell.image,
+ org.jdom,
+ net.sourceforge.interval
 Eclipse-LazyStart: true
