@@ -72,6 +72,9 @@ public void addNode(Node newNode) {
 	if (nodeList.contains(newNode)){
 		throw new RuntimeException("node "+newNode+" already exists in list");
 	}
+	if (newNode == null){
+		throw new RuntimeException("cannot add a null node to a graph");
+	}
 	nodeList.addElement(newNode);
 }
 
@@ -499,6 +502,24 @@ public void remove(Edge newEdge) {
 		throw new RuntimeException("edge "+newEdge+" not found");
 	}
 	edgeList.remove(newEdge);
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (2/10/2002 10:49:12 PM)
+ * @param newNode cbit.vcell.mapping.potential.Node
+ */
+public void remove(Node node) {
+	if (!nodeList.contains(node)){
+		throw new RuntimeException("node "+node+" not found");
+	}
+	Edge[] adjacentEdges = getAdjacentEdges(node);
+	if (adjacentEdges==null || adjacentEdges.length==0){
+		nodeList.remove(node);
+	}else{
+		throw new RuntimeException("cannot remove node "+node.getName()+", edges exist");
+	}
 }
 
 
