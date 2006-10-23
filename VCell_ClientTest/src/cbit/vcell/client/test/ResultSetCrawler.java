@@ -9,15 +9,15 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.Vector;
 
-import cbit.gui.PropertyLoader;
 import cbit.rmi.event.VCSimulationDataIdentifier;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.DBCacheTable;
 import cbit.util.DataAccessException;
-import cbit.util.KeyValue;
 import cbit.util.PermissionException;
+import cbit.util.PropertyLoader;
 import cbit.util.SessionLog;
-import cbit.util.User;
+import cbit.util.document.KeyValue;
+import cbit.util.document.User;
 import cbit.vcell.modeldb.AdminDatabaseServer;
 import cbit.vcell.modeldb.DBTopLevel;
 import cbit.vcell.modeldb.LocalAdminDbServer;
@@ -230,7 +230,7 @@ public void scanAllUsers() throws SQLException, DataAccessException, java.rmi.Re
 	File userDirs[] = dataRootDir.listFiles();
 	log.print("Total user directories: " + userDirs.length);
 
-	cbit.util.UserInfo userInfos[] = adminDbServer.getUserInfos();	
+	cbit.util.document.UserInfo userInfos[] = adminDbServer.getUserInfos();	
 	DBTopLevel dbTopLevel = new DBTopLevel(conFactory,log,dbCacheTable);
 
 	File userDir = null;
@@ -259,7 +259,7 @@ public void scanAllUsers() throws SQLException, DataAccessException, java.rmi.Re
 			}
 			
 			// find all the user simulations
-			Vector simInfoList = dbTopLevel.getVersionableInfos(user,null,cbit.util.VersionableType.Simulation,false,false, true);
+			Vector simInfoList = dbTopLevel.getVersionableInfos(user,null,cbit.util.document.VersionableType.Simulation,false,false, true);
 			scan(userDir, simInfoList, true);
 		} catch (Exception ex) {
 			log.exception(ex);
@@ -294,7 +294,7 @@ public void scanAUser(String username) throws SQLException, DataAccessException,
 		DBTopLevel dbTopLevel = new DBTopLevel(conFactory,log,dbCacheTable);
 		
 		// find all the user simulations
-		Vector simInfoList = dbTopLevel.getVersionableInfos(user,null,cbit.util.VersionableType.Simulation,false,false, true);
+		Vector simInfoList = dbTopLevel.getVersionableInfos(user,null,cbit.util.document.VersionableType.Simulation,false,false, true);
 		scan(userDir, simInfoList, true);
 	} catch (Exception ex) {
 		log.exception(ex);

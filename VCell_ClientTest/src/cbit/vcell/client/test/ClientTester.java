@@ -2,10 +2,10 @@ package cbit.vcell.client.test;
 
 import java.awt.Frame;
 
-import cbit.gui.PropertyLoader;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.DBCacheTable;
 import cbit.util.NullSessionLog;
+import cbit.util.PropertyLoader;
 import cbit.util.SessionLog;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.ClientServerManager;
@@ -141,12 +141,12 @@ protected static cbit.vcell.server.VCellServerFactory VCellServerFactoryInit(Str
 	}
 	cbit.vcell.server.VCellServerFactory vcServerFactory = null;
 	PropertyLoader.loadProperties();
-	cbit.util.User user = null;
+	cbit.util.document.User user = null;
 	if (!args[0].equalsIgnoreCase("-local")) {
 		String host = args[0];
 		String userid = args[1];
-		cbit.util.KeyValue userKey = new cbit.util.KeyValue(args[2]);
-		user = new cbit.util.User(userid, userKey);
+		cbit.util.document.KeyValue userKey = new cbit.util.document.KeyValue(args[2]);
+		user = new cbit.util.document.User(userid, userKey);
 		String password = args[3];
 		System.setSecurityManager(new java.rmi.RMISecurityManager());
 		vcServerFactory = new cbit.vcell.server.RMIVCellServerFactory(host, user, password);

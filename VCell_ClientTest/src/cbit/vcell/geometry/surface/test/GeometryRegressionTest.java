@@ -1,11 +1,11 @@
 package cbit.vcell.geometry.surface.test;
 import java.io.File;
 
-import cbit.gui.PropertyLoader;
 import cbit.sql.ConnectionFactory;
+import cbit.util.PropertyLoader;
 import cbit.util.SessionLog;
 import cbit.util.StdoutSessionLog;
-import cbit.util.User;
+import cbit.util.document.User;
 import cbit.vcell.mesh.CartesianMesh;
 import cbit.vcell.solvers.SimulationJob;
 
@@ -27,7 +27,7 @@ public class GeometryRegressionTest {
 	String old_dataDir = "d:\\vcell\\geometrytest\\old";
 	String old_faillistfile = "D:\\VCell\\geometrytest\\faillist_old.txt";
 
-	User adminUser = new User("Administrator", new cbit.util.KeyValue("1"));	
+	User adminUser = new User("Administrator", new cbit.util.document.KeyValue("1"));	
 
 /**
  * GeometryRegressionTest constructor comment.
@@ -95,7 +95,7 @@ public void compareMesh(String startKey) {
 			} 
 			
 			try {				
-				cbit.vcell.simulation.VCSimulationIdentifier simid = new cbit.vcell.simulation.VCSimulationIdentifier(new cbit.util.KeyValue(line), adminUser);
+				cbit.vcell.simulation.VCSimulationIdentifier simid = new cbit.vcell.simulation.VCSimulationIdentifier(new cbit.util.document.KeyValue(line), adminUser);
 				File meshfile_old = new File(file_old, simid.getID() +".mesh");
 				File meshfile_new = new File(file_new, simid.getID() +".mesh");				
 
@@ -269,7 +269,7 @@ public void runSimulations(boolean bNew, String startKey) {
 			System.out.println("--------------------------" + count + ": Running simulation " + line + "-----------------------------");
 			
 			try {
-				cbit.util.BigString simxml = dbServerImpl.getSimulationXML(adminUser, new cbit.util.KeyValue(line));
+				cbit.util.BigString simxml = dbServerImpl.getSimulationXML(adminUser, new cbit.util.document.KeyValue(line));
 				cbit.vcell.simulation.Simulation sim = cbit.vcell.xml.XmlHelper.XMLToSim(simxml.toString());
 				sim.getSolverTaskDescription().setTimeStep(new cbit.vcell.simulation.TimeStep(0.001, 0.001, 0.001));
 				sim.getSolverTaskDescription().setTimeBounds(new cbit.vcell.simulation.TimeBounds(0,0.001));
