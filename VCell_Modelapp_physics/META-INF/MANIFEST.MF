@@ -10,8 +10,9 @@ Require-Bundle: org.vcell.expression,
  org.vcell.modelapp,
  org.vcell.physics,
  org.vcell.util,
- org.vcell.common,
  org.vcell.physiology,
  org.vcell.xml.common,
  org.vcell.math,
- org.vcell.graph
+ org.vcell.graph,
+ org.jdom,
+ org.eclipse.osgi
