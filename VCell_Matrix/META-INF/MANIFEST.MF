@@ -8,5 +8,6 @@ Bundle-Localization: plugin
 Import-Package: org.osgi.framework;version="1.3.0"
 Export-Package: cbit.vcell.matrix
 Require-Bundle: org.vcell.expression,
- org.vcell.common,
- org.vcell.util
+ org.vcell.util,
+ jama,
+ org.eclipse.osgi
