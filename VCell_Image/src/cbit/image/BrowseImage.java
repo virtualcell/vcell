@@ -5,6 +5,8 @@ package cbit.image;
  * All rights reserved.
 ©*/
 import java.awt.image.*;
+
+import GIFUtils.GIFInputStream;
 import cbit.image.*;
 import java.io.*;
 import java.util.*;

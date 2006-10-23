@@ -6,12 +6,12 @@ package cbit.image;
 import java.io.Serializable;
 import java.util.*;
 import cbit.util.Compare;
-import cbit.util.KeyValue;
 import cbit.util.Matchable;
-import cbit.util.User;
-import cbit.util.Version;
+import cbit.util.document.KeyValue;
+import cbit.util.document.User;
+import cbit.util.document.Version;
 
-public abstract class VCImage implements Serializable, cbit.util.Versionable, java.beans.VetoableChangeListener {
+public abstract class VCImage implements Serializable, cbit.util.document.Versionable, java.beans.VetoableChangeListener {
 	//	private KeyValue key = null; //Deprecated
 	//	private User owner = null; //Deprecated
 	private int numX = 0;

@@ -4,10 +4,10 @@ package cbit.image;
  * All rights reserved.
 ©*/
 import cbit.util.Cacheable;
-import cbit.util.KeyValue;
 import cbit.util.Matchable;
 import cbit.util.Compare;
 import cbit.util.Immutable;
+import cbit.util.document.KeyValue;
 /**
  * This type was created in VisualAge.
  */

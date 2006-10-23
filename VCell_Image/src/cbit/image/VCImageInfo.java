@@ -4,12 +4,12 @@ package cbit.image;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.VersionInfo;
 import cbit.util.ISize;
 import cbit.util.Extent;
-import cbit.util.KeyValue;
-import cbit.util.User;
-import cbit.util.Version;
+import cbit.util.document.KeyValue;
+import cbit.util.document.User;
+import cbit.util.document.Version;
+import cbit.util.document.VersionInfo;
 /**
  * This type was created in VisualAge.
  */
