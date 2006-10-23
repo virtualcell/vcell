@@ -11,4 +11,5 @@ Require-Bundle: org.vcell.constraints,
  org.vcell.units,
  org.vcell.util,
  org.vcell.expression,
- org.vcell.physiology
+ org.vcell.physiology,
+ org.eclipse.osgi
