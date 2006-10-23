@@ -11,7 +11,6 @@ import cbit.vcell.solver.test.VariableComparisonSummary;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.gui.PropertyLoader;
 import cbit.vcell.simdata.FunctionColumnDescription;
 import cbit.vcell.simdata.ODESolverResultSet;
 import cbit.vcell.simdata.ODESolverResultSetColumnDescription;
@@ -31,19 +30,20 @@ import cbit.vcell.solvers.SolverStatus;
 
 import java.io.StringWriter;
 import cbit.vcell.solver.ode.IDAFileWriter;
-import cbit.util.SimulationVersion;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.math.MathDescription;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import cbit.util.BigString;
-import cbit.util.BioModelInfo;
 import cbit.util.DataAccessException;
-import cbit.util.KeyValue;
+import cbit.util.PropertyLoader;
 import cbit.util.StdoutSessionLog;
-import cbit.util.User;
-import cbit.util.UserInfo;
-import cbit.util.VersionFlag;
+import cbit.util.document.BioModelInfo;
+import cbit.util.document.KeyValue;
+import cbit.util.document.SimulationVersion;
+import cbit.util.document.User;
+import cbit.util.document.UserInfo;
+import cbit.util.document.VersionFlag;
 import cbit.sql.KeyFactory;
 import java.sql.SQLException;
 
@@ -203,7 +203,7 @@ private String printComparisonReport(SimulationComparisonSummary simCompSummary,
 public void scanBioModels(KeyValue[] bioModelKeys) throws MathException, MappingException, SQLException, DataAccessException, ModelException, ExpressionException {
 
 //	User user = new User("Administrator", new cbit.sql.KeyValue("2"));
-	User user = new User("anu", new cbit.util.KeyValue("2302355"));
+	User user = new User("anu", new cbit.util.document.KeyValue("2302355"));
 	SessionLog userLog = new cbit.util.StdoutSessionLog(user.toString());
 	for (int i=0;i<bioModelKeys.length;i++){
 		BioModelInfo bioModelInfo = dbServerImpl.getBioModelInfo(user,bioModelKeys[i]);
@@ -283,7 +283,7 @@ public void scanBioModels(KeyValue[] bioModelKeys) throws MathException, Mapping
 			        MathMapping mathMapping_1 = new MathMapping(simContexts[k]);
 			        MathDescription mathDesc_1 = mathMapping_1.getMathDescription();
 			        simContexts[k].setMathDescription(mathDesc_1);
-			        SimulationVersion simVersion_1 = new SimulationVersion(new KeyValue("100"), "sim_1_1", simContexts[k].getVersion().getOwner(), new cbit.util.GroupAccessNone(), null, new java.math.BigDecimal(1.0), new java.util.Date(), VersionFlag.Archived, "", null);
+			        SimulationVersion simVersion_1 = new SimulationVersion(new KeyValue("100"), "sim_1_1", simContexts[k].getVersion().getOwner(), new cbit.util.document.GroupAccessNone(), null, new java.math.BigDecimal(1.0), new java.util.Date(), VersionFlag.Archived, "", null);
 			        Simulation sim_11 = new Simulation(simVersion_1, mathDesc_1);
 			        sim_11.setName("sim_1_1");
 			        sim_11.getSolverTaskDescription().setTimeBounds(new cbit.vcell.simulation.TimeBounds(0, endTime));
@@ -306,7 +306,7 @@ public void scanBioModels(KeyValue[] bioModelKeys) throws MathException, Mapping
 			        MathMapping mathMapping_2 = new MathMapping(simContext_2);
 			        MathDescription mathDesc_2 = mathMapping_2.getMathDescription();
 			        simContext_2.setMathDescription(mathDesc_2);
-			        SimulationVersion simVersion_2 = new SimulationVersion(new KeyValue("100"), "sim_1_2", bioModel_1.getVersion().getOwner(), new cbit.util.GroupAccessNone(), null, new java.math.BigDecimal(1.0), new java.util.Date(), VersionFlag.Archived, "", null);
+			        SimulationVersion simVersion_2 = new SimulationVersion(new KeyValue("100"), "sim_1_2", bioModel_1.getVersion().getOwner(), new cbit.util.document.GroupAccessNone(), null, new java.math.BigDecimal(1.0), new java.util.Date(), VersionFlag.Archived, "", null);
 			        Simulation sim_12 = new Simulation(simVersion_2, mathDesc_2);
 			        sim_12.setName("sim_1_2");
 			        sim_12.getSolverTaskDescription().setTimeBounds(new cbit.vcell.simulation.TimeBounds(0, endTime));

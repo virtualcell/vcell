@@ -2,7 +2,7 @@ package cbit.vcell.vcml.test;
 
 import java.io.File;
 
-import cbit.gui.PropertyLoader;
+import cbit.util.PropertyLoader;
 
 /**
 Tests a bunch of SBML files.

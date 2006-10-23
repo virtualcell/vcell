@@ -2,13 +2,10 @@ package cbit.vcell.vcml.test;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import cbit.util.BigString;
-import cbit.util.BioModelInfo;
 import cbit.util.DataAccessException;
-import cbit.util.KeyValue;
 import cbit.util.PermissionException;
+import cbit.util.PropertyLoader;
 import cbit.util.SessionLog;
-import cbit.util.User;
-import cbit.util.UserInfo;
 import cbit.vcell.math.MathDescription;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -16,7 +13,6 @@ import cbit.vcell.math.MathDescription;
 ©*/
 import java.rmi.RemoteException;
 
-import cbit.gui.PropertyLoader;
 import java.sql.SQLException;
 import cbit.vcell.simulation.Simulation;
 import cbit.vcell.simulation.SimulationInfo;
@@ -25,8 +21,13 @@ import cbit.sql.ConnectionFactory;
 import java.beans.*;
 import java.util.Vector;
 import cbit.vcell.biomodel.BioModelMetaData;
-import cbit.util.VersionableType;
 import cbit.util.BeanUtils;
+import cbit.util.document.BioModelInfo;
+import cbit.util.document.KeyValue;
+import cbit.util.document.User;
+import cbit.util.document.UserInfo;
+import cbit.util.document.VersionableType;
+
 import java.io.File;
 
 import org.vcell.expression.ExpressionException;
@@ -366,7 +367,7 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 	final java.util.Date totalVolumeCorrectionFixDate = calendar.getTime();
 	
 
-	User user = new User("Administrator", new cbit.util.KeyValue("2"));
+	User user = new User("Administrator", new cbit.util.document.KeyValue("2"));
 	SessionLog userLog = new cbit.util.StdoutSessionLog(user.toString());
 	for (int i=0;i<bioModelKeys.length;i++){
 		BioModelInfo bioModelInfo = dbServerImpl.getBioModelInfo(user,bioModelKeys[i]);
@@ -616,7 +617,7 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
     calendar.set(2002, java.util.Calendar.JANUARY, 1);
     final java.util.Date totalVolumeCorrectionFixDate = calendar.getTime();
 
-    User user = new User("Administrator", new cbit.util.KeyValue("2"));
+    User user = new User("Administrator", new cbit.util.document.KeyValue("2"));
     SessionLog userLog = new cbit.util.StdoutSessionLog(user.toString());
     for (int i = 0; i < simContextKeys.length; i++) {
         userLog.print("Testing SimContext with key '" + simContextKeys[i] + "'");
@@ -643,7 +644,7 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
 			con.close();
         }
 
-        KeyValue[] bmKeys = (cbit.util.KeyValue[]) cbit.util.BeanUtils.getArray(keys, cbit.util.KeyValue.class);
+        KeyValue[] bmKeys = (cbit.util.document.KeyValue[]) cbit.util.BeanUtils.getArray(keys, cbit.util.document.KeyValue.class);
         try {
 			// use the first biomodel...
 	        BioModelInfo bioModelInfo = dbServerImpl.getBioModelInfo(user, bmKeys[0]);

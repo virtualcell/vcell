@@ -8,6 +8,7 @@ import cbit.vcell.vcml.test.BioModelTest;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.client.database.DocumentManager;
 import cbit.util.*;
+import cbit.util.document.BioModelInfo;
 /**
  * Insert the type's description here.
  * Creation date: (3/8/01 3:00:56 PM)

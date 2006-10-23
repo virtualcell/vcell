@@ -7,7 +7,6 @@ Bundle-Activator: org.vcell.test.Activator
 Bundle-Localization: plugin
 Require-Bundle: org.vcell.server,
  org.vcell.manager,
- org.vcell.common,
  org.vcell.util,
  org.vcell.simdata,
  org.vcell.solvers,
@@ -27,5 +26,8 @@ Require-Bundle: org.vcell.server,
  org.vcell.ui,
  org.vcell.database,
  org.vcell.clientTest,
- org.vcell.units
+ org.vcell.units,
+ org.junit,
+ org.jdom,
+ jama
 Export-Package: cbit.vcell.server.test

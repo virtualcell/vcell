@@ -6,8 +6,8 @@ import cbit.vcell.biomodel.BioModel;
 
 import cbit.vcell.simdata.FunctionColumnDescription;
 import cbit.vcell.math.Variable;
-import cbit.gui.PropertyLoader;
-import cbit.util.SimulationVersion;
+import cbit.util.PropertyLoader;
+import cbit.util.document.SimulationVersion;
 import cbit.vcell.xml.XmlDialect;
 
 /**
@@ -110,7 +110,7 @@ public static void main(java.lang.String[] args) {
         simContext.setMathDescription(mathDesc);
         SimulationVersion simVersion =
             new SimulationVersion(
-                new cbit.util.KeyValue("100"),
+                new cbit.util.document.KeyValue("100"),
                 sbmlFile.getName(),
                 null,
                 null,

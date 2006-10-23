@@ -1,5 +1,5 @@
 package cbit.vcell.vcml.test;
-import cbit.gui.PropertyLoader;
+import cbit.util.PropertyLoader;
 import cbit.vcell.vcml.Translator;
 import junit.framework.Test;
 import junit.framework.TestFailure;

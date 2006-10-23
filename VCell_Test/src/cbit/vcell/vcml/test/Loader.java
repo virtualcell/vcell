@@ -1,8 +1,8 @@
 package cbit.vcell.vcml.test;
-import cbit.gui.PropertyLoader;
-import cbit.util.BioModelInfo;
 import cbit.util.DataAccessException;
-import cbit.util.MathModelInfo;
+import cbit.util.PropertyLoader;
+import cbit.util.document.BioModelInfo;
+import cbit.util.document.MathModelInfo;
 import cbit.vcell.client.database.ClientDocumentManager;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.test.ClientTester;

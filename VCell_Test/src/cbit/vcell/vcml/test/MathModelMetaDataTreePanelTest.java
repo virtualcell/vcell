@@ -1,5 +1,5 @@
 package cbit.vcell.vcml.test;
-import cbit.util.MathModelInfo;
+import cbit.util.document.MathModelInfo;
 import cbit.vcell.mathmodel.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

@@ -1,5 +1,4 @@
 package cbit.vcell.vcml.test;
-import cbit.gui.PropertyLoader;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.DBCacheTable;
 import cbit.sql.KeyFactory;
@@ -20,11 +19,12 @@ import cbit.vcell.vcml.compare.VCMLComparator;
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlReader;
 import cbit.vcell.xml.Xmlproducer;
-import cbit.util.KeyValue;
+import cbit.util.PropertyLoader;
 import cbit.util.SessionLog;
 import cbit.util.StdoutSessionLog;
-import cbit.util.User;
-import cbit.util.UserInfo;
+import cbit.util.document.KeyValue;
+import cbit.util.document.User;
+import cbit.util.document.UserInfo;
 import cbit.util.xml.XmlUtil;
 
 import org.jdom.Document;
