@@ -5,7 +5,8 @@ Bundle-SymbolicName: com.sun.opengl
 Bundle-Version: 1.0.0
 Bundle-ClassPath: jogl.jar
 Bundle-Localization: plugin
-Export-Package: com.sun.gluegen.runtime,
+Export-Package: .,
+ com.sun.gluegen.runtime,
  com.sun.opengl.cg,
  com.sun.opengl.impl,
  com.sun.opengl.impl.error,
