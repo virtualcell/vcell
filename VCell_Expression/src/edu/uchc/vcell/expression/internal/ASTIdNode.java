@@ -10,6 +10,7 @@ import net.sourceforge.interval.ia_math.RealInterval;
 import org.vcell.expression.ConstraintSymbolTableEntry;
 import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionUtilities;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.NameScope;
 import org.vcell.expression.SymbolTable;
@@ -283,7 +284,7 @@ public String infixString(int lang, NameScope nameScope) {
 	}else if (lang == LANGUAGE_MATLAB){
 		return cbit.util.TokenMangler.getEscapedTokenMatlab(idName);
 	}else if (lang == LANGUAGE_JSCL) {
-		return cbit.util.TokenMangler.getEscapedTokenJSCL(idName);
+		return ExpressionUtilities.getEscapedTokenJSCL(idName);
 	}else if (lang == LANGUAGE_ECLiPSe) {
 		return cbit.util.TokenMangler.getEscapedTokenECLiPSe(idName);
 	}else{

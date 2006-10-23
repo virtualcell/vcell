@@ -5,6 +5,8 @@ import java.util.StringTokenizer;
 
 import org.jdom.Element;
 
+import cbit.util.xml.XmlUtil;
+
 import edu.uchc.vcell.expression.internal.Expression;
 import edu.uchc.vcell.expression.internal.ExpressionMathMLParser;
 import edu.uchc.vcell.expression.internal.ExpressionUtils;
@@ -73,6 +75,10 @@ public class ExpressionFactory {
 
 	public static IExpression fromMathML(Element mathElement) throws ExpressionException {
 		return (new ExpressionMathMLParser(null)).fromMathML(mathElement);
+	}
+	
+	public static IExpression fromMathML(String mathMLString) throws ExpressionException {
+		return (new ExpressionMathMLParser(null)).fromMathML(mathMLString);
 	}
 
 }

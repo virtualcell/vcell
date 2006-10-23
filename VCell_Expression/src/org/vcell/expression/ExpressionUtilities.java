@@ -2,8 +2,15 @@ package org.vcell.expression;
 
 import java.util.Random;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtension;
+import org.eclipse.core.runtime.IExtensionPoint;
+import org.eclipse.core.runtime.Platform;
+
 
 public class ExpressionUtilities {
+	private static ISymbolicProcessor defaultSymbolicProcessor = null;
 
 	/**
 	 * Insert the method's description here.
@@ -119,7 +126,95 @@ public class ExpressionUtilities {
 			return false;
 		}
 	}
+	
+	/**
+	 * This method was created in VisualAge.
+	 * @return java.lang.String
+	 */
+	public static String getRestoredStringJSCL(String inputString) {
 
+		if (inputString == null){
+			throw new IllegalArgumentException("input string is null");
+		}
+
+		String[] escapeSeq =    {"underscore","ddoott"};
+		char[]   escapedChar =  {     '_'    ,  '.'   };
+
+		boolean bChanged = true;
+		while (bChanged){
+			bChanged = false;
+			for (int i=0;i<escapeSeq.length;i++){
+				int replaceIndex = inputString.indexOf(escapeSeq[i]);
+				if (replaceIndex!=-1){
+					if (replaceIndex==0){
+						inputString = "'"+inputString.substring(escapeSeq[i].length(),inputString.length());
+					}else if (replaceIndex==inputString.length() - escapeSeq[i].length()){
+						inputString = inputString.substring(0,replaceIndex)+escapedChar[i];
+					}else{
+						inputString = inputString.substring(0,replaceIndex) + escapedChar[i] +
+										inputString.substring(replaceIndex+escapeSeq[i].length(),inputString.length());
+					}
+					bChanged = true;
+				}
+			}
+		}
+		return inputString;
+	}
+
+
+	
+	/**
+	 * This method was created in VisualAge.
+	 * @return java.lang.String
+	 */
+	public static String getEscapedTokenJSCL(String inputString) {
+		if (inputString == null){
+			throw new IllegalArgumentException("input string is null");
+		}
+		StringBuffer buffer = new StringBuffer(inputString.length()*2);
+
+		for (int i=0;i<inputString.length();i++){
+			char currChar = inputString.charAt(i);
+			switch (currChar){
+				case '_':
+						buffer.append("underscore");
+						break;
+				case '.':
+						buffer.append("ddoott");
+						break;
+				default:
+						buffer.append(currChar);
+						break;
+			}
+		}
+		return buffer.toString();
+	}
+
+
+
+	public static ISymbolicProcessor getDefaultSymbolicProcessor(){
+		if (defaultSymbolicProcessor == null){
+	    	IExtensionPoint extensionPoint = Platform.getExtensionRegistry().getExtensionPoint("org.vcell.expression","SymbolicProcessor");
+	    	IExtension[] extensions = extensionPoint.getExtensions();
+	    	for (int i = 0; i < extensions.length; i++) {
+	    		IConfigurationElement[] extensionElements = extensions[i].getConfigurationElements();
+				if (extensionElements!=null && extensionElements.length>0){
+					try {
+						Object object = extensionElements[0].createExecutableExtension("class");
+						defaultSymbolicProcessor = (ISymbolicProcessor)object;
+						break;
+					} catch (CoreException e1) {
+						e1.printStackTrace();
+					}
+				}
+			}
+		}
+		return defaultSymbolicProcessor;
+	}
+	
+	public static void setDefaultSymbolicProcessor(ISymbolicProcessor symbolicProcessor){
+		defaultSymbolicProcessor = symbolicProcessor;
+	}
 	/**
 	 * Insert the method's description here.
 	 * Creation date: (10/17/2002 12:42:18 AM)

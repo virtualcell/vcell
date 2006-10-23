@@ -70,12 +70,6 @@ public interface IRationalExpression {
 
 	/**
 	 * Insert the method's description here.
-	 * Creation date: (4/22/2006 2:09:08 PM)
-	 */
-	public abstract IRationalExpression simplify();
-
-	/**
-	 * Insert the method's description here.
 	 * Creation date: (3/27/2003 12:50:27 PM)
 	 * @return cbit.vcell.mapping.RationalNumber
 	 * @param num cbit.vcell.mapping.RationalNumber

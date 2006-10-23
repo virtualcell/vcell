@@ -538,49 +538,6 @@ private void refactor() {
 }
 
 
-/* (non-Javadoc)
- * @see org.vcell.expression.IRationalExpression#simplify()
- */
-public IRationalExpression simplify() {
-	try {
-		//
-		// use symbolic capabilities of JSCL Mediator library to further simplify
-		//
-		IExpression exp = ExpressionFactory.createExpression(infixString());
-		jscl.math.Expression jsclExpression = null;
-		String jsclExpressionString = exp.infix_JSCL();
-		try {
-			jsclExpression = jscl.math.Expression.valueOf(jsclExpressionString);
-		}catch (jscl.text.ParseException e){
-			e.printStackTrace(System.out);
-			System.out.println("JSCL couldn't parse \""+jsclExpressionString+"\"");
-			return null;
-		}
-		org.vcell.expression.IExpression solution = null;
-		jscl.math.Generic jsclSolution = jsclExpression.expand().simplify();
-		try {
-			solution = ExpressionFactory.createExpression(jsclSolution.toString());
-		}catch (Throwable e){
-			e.printStackTrace(System.out);
-		}
-		if (solution!=null){
-			String[] jsclSymbols = solution.getSymbols();
-			for (int i = 0;jsclSymbols!=null && i < jsclSymbols.length; i++){
-				String restoredSymbol = cbit.util.TokenMangler.getRestoredStringJSCL(jsclSymbols[i]);
-				if (!restoredSymbol.equals(jsclSymbols[i])){
-					solution.substituteInPlace(ExpressionFactory.createExpression(jsclSymbols[i]),ExpressionFactory.createExpression(restoredSymbol));
-				}
-			}
-			return RationalExpressionFactory.getRationalExp(solution);
-		}else{
-			return this;
-		}
-	}catch (org.vcell.expression.ExpressionException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
-	}
-}
-
 
 /* (non-Javadoc)
  * @see org.vcell.expression.IRationalExpression#sub(org.vcell.expression.RationalExp)
