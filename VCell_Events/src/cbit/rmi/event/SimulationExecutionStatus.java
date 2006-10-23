@@ -2,8 +2,8 @@ package cbit.rmi.event;
 
 import java.util.Date;
 
-import cbit.util.KeyValue;
 import cbit.util.Matchable;
+import cbit.util.document.KeyValue;
 
 /**
  * Insert the type's description here.

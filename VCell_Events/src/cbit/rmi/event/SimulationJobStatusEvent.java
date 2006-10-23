@@ -75,7 +75,7 @@ public Double getTimepoint() {
  * Creation date: (2/10/2004 1:30:21 PM)
  * @return cbit.vcell.server.User
  */
-public cbit.util.User getUser() {
+public cbit.util.document.User getUser() {
 	return null;
 }
 /**

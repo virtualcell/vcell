@@ -66,7 +66,7 @@ public java.lang.String getID() {
  * @return cbit.vcell.server.User
  * @deprecated
  */
-public cbit.util.User getOwner() {
+public cbit.util.document.User getOwner() {
 	return vcSimID.getOwner();
 }
 

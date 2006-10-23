@@ -1,8 +1,8 @@
 package cbit.rmi.event;
 import java.rmi.*;
 
-import cbit.gui.PropertyLoader;
 import cbit.rmi.event.PerformanceMonitorEvent;
+import cbit.util.PropertyLoader;
 import cbit.vcell.util.events.MessageEvent;
 import cbit.vcell.util.events.MessageListener;
 /*©

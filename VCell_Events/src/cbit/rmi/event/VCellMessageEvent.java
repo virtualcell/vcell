@@ -40,7 +40,7 @@ public int getEventTypeID() {
  * Creation date: (6/16/2006 3:55:11 PM)
  * @return cbit.vcell.server.User
  */
-public cbit.util.User getUser() {
+public cbit.util.document.User getUser() {
 	return null;
 }
 
