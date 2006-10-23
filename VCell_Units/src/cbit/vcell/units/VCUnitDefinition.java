@@ -1,7 +1,5 @@
 package cbit.vcell.units;
 import ucar.units.*;
-import ucar.units.TimeScaleUnit;
-import ucar.units.OffsetUnit;
 
 import ucar.units.DerivedUnitImpl;
 import ucar.units.ScaledUnit;
@@ -12,6 +10,7 @@ import ucar.units.UnitName;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+
 
 /**
  The wrapper around a ucar unit.
@@ -635,14 +634,14 @@ public boolean isTBD() {
 	}
 
 
-	public VCUnitDefinition raiseTo(RationalNumber exp) {
+	public VCUnitDefinition raiseTo(cbit.util.RationalNumber exp) {
 
 		if (isTBD()){
 			throw new VCUnitException("cannot raiseTo with TBD units");
 		}
 		Unit newUcarUnit;
 		try {
-			newUcarUnit =  getUcarUnit().raiseTo(exp);
+			newUcarUnit =  getUcarUnit().raiseTo(new ucar.units.RationalNumber(exp.getNum(),exp.getDen()));
 		} catch (UnitException e) {
 			e.printStackTrace();
 			throw new VCUnitException("Failed to change exponent for: " + ucarUnit.getSymbol() + " " + exp + ": " + e.getMessage());
