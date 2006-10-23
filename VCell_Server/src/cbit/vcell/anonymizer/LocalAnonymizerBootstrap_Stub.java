@@ -3,7 +3,7 @@
 
 package cbit.vcell.anonymizer;
 
-import cbit.util.User;
+import cbit.util.document.User;
 
 public final class LocalAnonymizerBootstrap_Stub
     extends java.rmi.server.RemoteStub

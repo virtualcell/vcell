@@ -5,12 +5,12 @@ import java.util.HashSet;
 
 import javax.swing.event.EventListenerList;
 
-import cbit.gui.PropertyLoader;
 import cbit.rmi.event.VCSimulationDataIdentifier;
 import cbit.rmi.event.WorkerEvent;
 import cbit.rmi.event.WorkerEventListener;
 import cbit.rmi.event.WorkerEventSender;
 import cbit.util.DataAccessException;
+import cbit.util.PropertyLoader;
 import cbit.util.SessionLog;
 import cbit.vcell.server.LocalVCellConnection;
 import cbit.vcell.simdata.SimulationData;

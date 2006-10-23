@@ -1,5 +1,5 @@
 package cbit.vcell.anonymizer;
-import cbit.gui.PropertyLoader;
+import cbit.util.PropertyLoader;
 import cbit.util.SessionLog;
 import cbit.vcell.server.bionetgen.BNGOutput;
 

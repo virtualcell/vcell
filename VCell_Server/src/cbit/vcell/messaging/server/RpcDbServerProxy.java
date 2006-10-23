@@ -1,17 +1,17 @@
 package cbit.vcell.messaging.server;
 import cbit.util.BigString;
-import cbit.util.CurateSpec;
 import cbit.util.DataAccessException;
-import cbit.util.KeyValue;
 import cbit.util.ObjectNotFoundException;
 import cbit.util.ReferenceQueryResult;
 import cbit.util.ReferenceQuerySpec;
 import cbit.util.SessionLog;
-import cbit.util.User;
-import cbit.util.VCDocumentInfo;
-import cbit.util.VersionInfo;
-import cbit.util.VersionableFamily;
-import cbit.util.VersionableType;
+import cbit.util.document.CurateSpec;
+import cbit.util.document.KeyValue;
+import cbit.util.document.User;
+import cbit.util.document.VCDocumentInfo;
+import cbit.util.document.VersionInfo;
+import cbit.util.document.VersionableFamily;
+import cbit.util.document.VersionableType;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.dictionary.ReactionQuerySpec;
 import cbit.vcell.export.ExportLog;
@@ -148,8 +148,8 @@ public VersionableFamily getAllReferences(VersionableType vType, KeyValue key) t
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.BioModelInfo getBioModelInfo(KeyValue key) throws DataAccessException, ObjectNotFoundException {
-	return (cbit.util.BioModelInfo)rpc("getBioModelInfo",new Object[]{user,key});
+public cbit.util.document.BioModelInfo getBioModelInfo(KeyValue key) throws DataAccessException, ObjectNotFoundException {
+	return (cbit.util.document.BioModelInfo)rpc("getBioModelInfo",new Object[]{user,key});
 }
 
 
@@ -160,8 +160,8 @@ public cbit.util.BioModelInfo getBioModelInfo(KeyValue key) throws DataAccessExc
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.BioModelInfo[] getBioModelInfos(boolean bAll) throws DataAccessException {
-	return (cbit.util.BioModelInfo[])rpc("getBioModelInfos",new Object[]{user, new Boolean(bAll)});
+public cbit.util.document.BioModelInfo[] getBioModelInfos(boolean bAll) throws DataAccessException {
+	return (cbit.util.document.BioModelInfo[])rpc("getBioModelInfos",new Object[]{user, new Boolean(bAll)});
 }
 
 
@@ -290,8 +290,8 @@ public BigString getGeometryXML(KeyValue key) throws DataAccessException {
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.MathModelInfo getMathModelInfo(KeyValue key) throws DataAccessException, ObjectNotFoundException {
-	return (cbit.util.MathModelInfo)rpc("getMathModelInfo",new Object[]{user,key});
+public cbit.util.document.MathModelInfo getMathModelInfo(KeyValue key) throws DataAccessException, ObjectNotFoundException {
+	return (cbit.util.document.MathModelInfo)rpc("getMathModelInfo",new Object[]{user,key});
 }
 
 
@@ -302,8 +302,8 @@ public cbit.util.MathModelInfo getMathModelInfo(KeyValue key) throws DataAccessE
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.MathModelInfo[] getMathModelInfos(boolean bAll) throws DataAccessException {
-	return (cbit.util.MathModelInfo[])rpc("getMathModelInfos",new Object[]{user, new Boolean(bAll)});
+public cbit.util.document.MathModelInfo[] getMathModelInfos(boolean bAll) throws DataAccessException {
+	return (cbit.util.document.MathModelInfo[])rpc("getMathModelInfos",new Object[]{user, new Boolean(bAll)});
 }
 
 

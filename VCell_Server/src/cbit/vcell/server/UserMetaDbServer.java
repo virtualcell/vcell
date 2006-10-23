@@ -2,15 +2,15 @@ package cbit.vcell.server;
 import java.rmi.RemoteException;
 
 import cbit.util.BigString;
-import cbit.util.CurateSpec;
 import cbit.util.DataAccessException;
-import cbit.util.KeyValue;
-import cbit.util.MathModelInfo;
 import cbit.util.ObjectNotFoundException;
 import cbit.util.ReferenceQueryResult;
 import cbit.util.ReferenceQuerySpec;
-import cbit.util.VersionableFamily;
-import cbit.util.VersionableType;
+import cbit.util.document.CurateSpec;
+import cbit.util.document.KeyValue;
+import cbit.util.document.MathModelInfo;
+import cbit.util.document.VersionableFamily;
+import cbit.util.document.VersionableType;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.DBSpecies;
@@ -33,7 +33,7 @@ public interface UserMetaDbServer extends java.rmi.Remote {
  * Insert the method's description here.
  * Creation date: (5/23/2006 9:42:56 AM)
  */
-cbit.util.VCDocumentInfo curate(CurateSpec curateSpec) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
+cbit.util.document.VCDocumentInfo curate(CurateSpec curateSpec) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 
 /**
@@ -67,7 +67,7 @@ void deleteMathModel(KeyValue mathModelKey) throws DataAccessException, ObjectNo
  * Insert the method's description here.
  * Creation date: (10/13/2003 5:37:35 PM)
  */
-public void deleteResultSetExport(cbit.util.KeyValue eleKey) throws DataAccessException,java.rmi.RemoteException;
+public void deleteResultSetExport(cbit.util.document.KeyValue eleKey) throws DataAccessException,java.rmi.RemoteException;
 
 
 /**
@@ -115,7 +115,7 @@ VersionableFamily getAllReferences(VersionableType vType, KeyValue key) throws R
  * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-cbit.util.BioModelInfo getBioModelInfo(KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
+cbit.util.document.BioModelInfo getBioModelInfo(KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 
 /**
@@ -125,7 +125,7 @@ cbit.util.BioModelInfo getBioModelInfo(KeyValue key) throws DataAccessException,
  * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-cbit.util.BioModelInfo[] getBioModelInfos(boolean bAll) throws DataAccessException, java.rmi.RemoteException;
+cbit.util.document.BioModelInfo[] getBioModelInfos(boolean bAll) throws DataAccessException, java.rmi.RemoteException;
 
 
 /**
@@ -392,7 +392,7 @@ cbit.vcell.modeldb.VCInfoContainer getVCInfoContainer() throws DataAccessExcepti
  * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-cbit.util.VersionInfo groupAddUser(VersionableType vType, KeyValue key,String addUserToGroup,boolean isHidden) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
+cbit.util.document.VersionInfo groupAddUser(VersionableType vType, KeyValue key,String addUserToGroup,boolean isHidden) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 
 /**
@@ -402,7 +402,7 @@ cbit.util.VersionInfo groupAddUser(VersionableType vType, KeyValue key,String ad
  * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-cbit.util.VersionInfo groupRemoveUser(VersionableType vType, KeyValue key,String userRemoveFromGroup,boolean isHiddenFromOwner) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
+cbit.util.document.VersionInfo groupRemoveUser(VersionableType vType, KeyValue key,String userRemoveFromGroup,boolean isHiddenFromOwner) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 
 /**
@@ -412,7 +412,7 @@ cbit.util.VersionInfo groupRemoveUser(VersionableType vType, KeyValue key,String
  * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-cbit.util.VersionInfo groupSetPrivate(VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
+cbit.util.document.VersionInfo groupSetPrivate(VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 
 /**
@@ -422,7 +422,7 @@ cbit.util.VersionInfo groupSetPrivate(VersionableType vType, KeyValue key) throw
  * @exception cbit.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-cbit.util.VersionInfo groupSetPublic(VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
+cbit.util.document.VersionInfo groupSetPublic(VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 
 /**

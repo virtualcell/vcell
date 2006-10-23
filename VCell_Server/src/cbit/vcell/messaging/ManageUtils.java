@@ -58,9 +58,9 @@ public static ServerPerformance getDaemonPerformance() {
 	try {
 		String PROGRAM = null;
 		try {
-			PROGRAM = System.getProperty(cbit.gui.PropertyLoader.serverStatisticsProperty);
+			PROGRAM = System.getProperty(cbit.util.PropertyLoader.serverStatisticsProperty);
 		} catch (Exception e){
-			throw new RuntimeException("required System property \""+cbit.gui.PropertyLoader.serverStatisticsProperty+"\" not defined");
+			throw new RuntimeException("required System property \""+cbit.util.PropertyLoader.serverStatisticsProperty+"\" not defined");
 		}
 
 		long memoryBytes = -1;
@@ -69,9 +69,9 @@ public static ServerPerformance getDaemonPerformance() {
 		long javaTotalMemoryBytes = Runtime.getRuntime().totalMemory();
 		long maxJavaMemoryBytes = -1;
 		try {
-			maxJavaMemoryBytes = Long.parseLong(cbit.gui.PropertyLoader.getRequiredProperty(cbit.gui.PropertyLoader.maxJavaMemoryBytesProperty));
+			maxJavaMemoryBytes = Long.parseLong(cbit.util.PropertyLoader.getRequiredProperty(cbit.util.PropertyLoader.maxJavaMemoryBytesProperty));
 		}catch (NumberFormatException e){
-			System.out.println("error reading property '"+cbit.gui.PropertyLoader.maxJavaMemoryBytesProperty+"', "+e.getMessage());
+			System.out.println("error reading property '"+cbit.util.PropertyLoader.maxJavaMemoryBytesProperty+"', "+e.getMessage());
 		}
 		try {
 			cbit.util.Executable executable = new cbit.util.Executable(PROGRAM);

@@ -21,8 +21,7 @@ Export-Package: cbit.util.admin,
  cbit.vcell.server.solvers,
  cbit.vcell.transaction,
  org.vcell.server
-Require-Bundle: org.vcell.common,
- org.vcell.util,
+Require-Bundle: org.vcell.util,
  org.vcell.solvers,
  org.vcell.simdata,
  org.vcell.vcml,
@@ -41,4 +40,6 @@ Require-Bundle: org.vcell.common,
  org.vcell.expression,
  org.vcell.units,
  org.vcell.cartoon,
- org.vcell.plotting
+ org.vcell.plotting,
+ org.jdom,
+ com.sonicsw.sonicmq

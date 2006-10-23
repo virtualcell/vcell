@@ -124,12 +124,12 @@ public final class LocalVCellConnection_Stub
     }
     
     // implementation of getUser()
-    public cbit.util.User getUser()
+    public cbit.util.document.User getUser()
 	throws java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getUser_5, null, 4478170210066282502L);
-	    return ((cbit.util.User) $result);
+	    return ((cbit.util.document.User) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {

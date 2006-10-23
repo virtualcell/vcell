@@ -3,16 +3,16 @@
 
 package cbit.vcell.messaging.server;
 
-import cbit.util.CurateSpec;
 import cbit.util.DataAccessException;
-import cbit.util.KeyValue;
 import cbit.util.ObjectNotFoundException;
 import cbit.util.ReferenceQueryResult;
 import cbit.util.ReferenceQuerySpec;
-import cbit.util.VCDocumentInfo;
-import cbit.util.VersionInfo;
-import cbit.util.VersionableFamily;
-import cbit.util.VersionableType;
+import cbit.util.document.CurateSpec;
+import cbit.util.document.KeyValue;
+import cbit.util.document.VCDocumentInfo;
+import cbit.util.document.VersionInfo;
+import cbit.util.document.VersionableFamily;
+import cbit.util.document.VersionableType;
 import cbit.vcell.solvers.SimulationStatus;
 
 public final class LocalUserMetaDbServerMessaging_Stub
@@ -305,12 +305,12 @@ public final class LocalUserMetaDbServerMessaging_Stub
     }
     
     // implementation of getBioModelInfo(KeyValue)
-    public cbit.util.BioModelInfo getBioModelInfo(KeyValue $param_KeyValue_1)
+    public cbit.util.document.BioModelInfo getBioModelInfo(KeyValue $param_KeyValue_1)
 	throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getBioModelInfo_9, new java.lang.Object[] {$param_KeyValue_1}, -5753591781724539648L);
-	    return ((cbit.util.BioModelInfo) $result);
+	    return ((cbit.util.document.BioModelInfo) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -323,12 +323,12 @@ public final class LocalUserMetaDbServerMessaging_Stub
     }
     
     // implementation of getBioModelInfos(boolean)
-    public cbit.util.BioModelInfo[] getBioModelInfos(boolean $param_boolean_1)
+    public cbit.util.document.BioModelInfo[] getBioModelInfos(boolean $param_boolean_1)
 	throws DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getBioModelInfos_10, new java.lang.Object[] {new java.lang.Boolean($param_boolean_1)}, -8438673620305678606L);
-	    return ((cbit.util.BioModelInfo[]) $result);
+	    return ((cbit.util.document.BioModelInfo[]) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -539,12 +539,12 @@ public final class LocalUserMetaDbServerMessaging_Stub
     }
     
     // implementation of getMathModelInfo(KeyValue)
-    public cbit.util.MathModelInfo getMathModelInfo(KeyValue $param_KeyValue_1)
+    public cbit.util.document.MathModelInfo getMathModelInfo(KeyValue $param_KeyValue_1)
 	throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getMathModelInfo_22, new java.lang.Object[] {$param_KeyValue_1}, -5784692826735593487L);
-	    return ((cbit.util.MathModelInfo) $result);
+	    return ((cbit.util.document.MathModelInfo) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -557,12 +557,12 @@ public final class LocalUserMetaDbServerMessaging_Stub
     }
     
     // implementation of getMathModelInfos(boolean)
-    public cbit.util.MathModelInfo[] getMathModelInfos(boolean $param_boolean_1)
+    public cbit.util.document.MathModelInfo[] getMathModelInfos(boolean $param_boolean_1)
 	throws DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getMathModelInfos_23, new java.lang.Object[] {new java.lang.Boolean($param_boolean_1)}, 6675761140708419830L);
-	    return ((cbit.util.MathModelInfo[]) $result);
+	    return ((cbit.util.document.MathModelInfo[]) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {

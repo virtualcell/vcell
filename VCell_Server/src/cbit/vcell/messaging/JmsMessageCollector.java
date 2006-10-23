@@ -8,7 +8,7 @@ import cbit.rmi.event.SimulationJobStatusEvent;
 import cbit.rmi.event.VCellMessageEvent;
 import cbit.util.MessageConstants;
 import cbit.util.SessionLog;
-import cbit.util.User;
+import cbit.util.document.User;
 import cbit.vcell.simulation.VCSimulationIdentifier;
 import cbit.vcell.util.events.MessageData;
 import cbit.vcell.util.events.MessageEvent;

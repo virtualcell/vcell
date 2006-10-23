@@ -7,12 +7,12 @@ import java.rmi.RMISecurityManager;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
-import cbit.gui.PropertyLoader;
 import cbit.util.DataAccessException;
 import cbit.util.PermissionException;
+import cbit.util.PropertyLoader;
 import cbit.util.SessionLog;
 import cbit.util.StdoutSessionLog;
-import cbit.util.User;
+import cbit.util.document.User;
 import cbit.vcell.server.AuthenticationException;
 import cbit.vcell.server.VCellBootstrap;
 import cbit.vcell.server.VCellConnection;

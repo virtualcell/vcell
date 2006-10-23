@@ -10,10 +10,10 @@ import cbit.rmi.event.VCellServerID;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.util.DataAccessException;
-import cbit.util.KeyValue;
 import cbit.util.MessageConstants;
 import cbit.util.SessionLog;
-import cbit.util.User;
+import cbit.util.document.KeyValue;
+import cbit.util.document.User;
 import cbit.util.xml.XmlParseException;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
@@ -683,7 +683,7 @@ private void startSimulation(java.sql.Connection con, User user, VCSimulationIde
 			return;
 		}
 		if (simulation != null) {
-			if (simulation.getScanCount() > Integer.parseInt(cbit.gui.PropertyLoader.getRequiredProperty(cbit.gui.PropertyLoader.maxJobsPerScan))) {
+			if (simulation.getScanCount() > Integer.parseInt(cbit.util.PropertyLoader.getRequiredProperty(cbit.util.PropertyLoader.maxJobsPerScan))) {
 				log.alert("Too many simulations (" + simulation.getScanCount() + ") for parameter scan." + vcSimID);
 				StatusMessage message = new StatusMessage(new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, -1, null, 
 					SimulationJobStatus.SCHEDULERSTATUS_FAILED, 0, "Too many simulations (" + simulation.getScanCount() + ") for parameter scan.", null, null), user.getName(), null, null);

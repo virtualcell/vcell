@@ -1,7 +1,7 @@
 package cbit.vcell.messaging.server;
 import cbit.util.DataAccessException;
 import cbit.util.SessionLog;
-import cbit.util.User;
+import cbit.util.document.User;
 /**
  * Insert the type's description here.
  * Creation date: (7/11/2006 11:16:33 AM)

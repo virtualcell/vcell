@@ -8,7 +8,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.UnexpectedException;
 
-import cbit.gui.PropertyLoader;
+import cbit.util.PropertyLoader;
 /**
  * This type was created in VisualAge.
  */

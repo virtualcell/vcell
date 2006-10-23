@@ -2,11 +2,11 @@ package cbit.vcell.anonymizer;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
-import cbit.gui.PropertyLoader;
 import cbit.rmi.event.SimpleMessageService;
 import cbit.util.DataAccessException;
+import cbit.util.PropertyLoader;
 import cbit.util.SessionLog;
-import cbit.util.User;
+import cbit.util.document.User;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.server.RMIVCellConnectionFactory;
 import cbit.vcell.server.SimulationController;

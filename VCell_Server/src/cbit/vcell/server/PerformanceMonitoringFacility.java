@@ -1,7 +1,7 @@
 package cbit.vcell.server;
 
 import cbit.util.SessionLog;
-import cbit.util.User;
+import cbit.util.document.User;
 
 /**
  * Insert the type's description here.

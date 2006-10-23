@@ -16,7 +16,7 @@ public final class LocalVCellBootstrap_Stub
     static {
 	try {
 	    $method_getVCellConnection_0 = cbit.vcell.server.VCellBootstrap.class.getMethod("getVCellConnection", new java.lang.Class[] {java.lang.String.class, java.lang.String.class});
-	    $method_getVCellServer_1 = cbit.vcell.server.VCellBootstrap.class.getMethod("getVCellServer", new java.lang.Class[] {cbit.util.User.class, java.lang.String.class});
+	    $method_getVCellServer_1 = cbit.vcell.server.VCellBootstrap.class.getMethod("getVCellServer", new java.lang.Class[] {cbit.util.document.User.class, java.lang.String.class});
 	    $method_getVCellSoftwareVersion_2 = cbit.vcell.server.VCellBootstrap.class.getMethod("getVCellSoftwareVersion", new java.lang.Class[] {});
 	} catch (java.lang.NoSuchMethodException e) {
 	    throw new java.lang.NoSuchMethodError(
@@ -52,7 +52,7 @@ public final class LocalVCellBootstrap_Stub
     }
     
     // implementation of getVCellServer(User, String)
-    public cbit.vcell.server.VCellServer getVCellServer(cbit.util.User $param_User_1, java.lang.String $param_String_2)
+    public cbit.vcell.server.VCellServer getVCellServer(cbit.util.document.User $param_User_1, java.lang.String $param_String_2)
 	throws cbit.vcell.server.AuthenticationException, cbit.util.DataAccessException, cbit.util.PermissionException, java.rmi.RemoteException
     {
 	try {

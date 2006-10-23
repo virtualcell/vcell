@@ -7,9 +7,9 @@ import javax.jms.Message;
 import javax.jms.ObjectMessage;
 import javax.jms.Queue;
 
-import cbit.gui.PropertyLoader;
 import cbit.rmi.event.ExportEvent;
 import cbit.util.MessageConstants;
+import cbit.util.PropertyLoader;
 import cbit.util.SessionLog;
 import cbit.vcell.messaging.server.RpcRequest;
 import cbit.vcell.messaging.server.RpcServer;

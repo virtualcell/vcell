@@ -1,7 +1,7 @@
 package cbit.vcell.server;
 
 import cbit.util.CacheStatus;
-import cbit.util.User;
+import cbit.util.document.User;
 /**
  * Insert the type's description here.
  * Creation date: (12/9/2002 12:44:13 AM)

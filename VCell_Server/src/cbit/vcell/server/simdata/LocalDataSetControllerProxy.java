@@ -3,11 +3,11 @@ package cbit.vcell.server.simdata;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
-import cbit.gui.PropertyLoader;
 import cbit.plot.PlotData;
 import cbit.rmi.event.ExportEvent;
 import cbit.util.CoordinateIndex;
 import cbit.util.DataAccessException;
+import cbit.util.PropertyLoader;
 import cbit.util.SessionLog;
 import cbit.util.VCDataIdentifier;
 import cbit.vcell.export.ExportSpecs;

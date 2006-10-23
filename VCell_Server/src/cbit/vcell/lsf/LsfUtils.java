@@ -1,8 +1,8 @@
 package cbit.vcell.lsf;
 import java.util.StringTokenizer;
 
-import cbit.gui.PropertyLoader;
 import cbit.rmi.event.VCellServerID;
+import cbit.util.PropertyLoader;
 import cbit.util.SessionLog;
 import cbit.util.StdoutSessionLog;
 

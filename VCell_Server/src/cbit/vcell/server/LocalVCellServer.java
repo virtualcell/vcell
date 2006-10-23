@@ -7,12 +7,12 @@ import java.util.Enumeration;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import cbit.gui.PropertyLoader;
 import cbit.util.CacheStatus;
 import cbit.util.DataAccessException;
+import cbit.util.PropertyLoader;
 import cbit.util.SessionLog;
 import cbit.util.StdoutSessionLog;
-import cbit.util.User;
+import cbit.util.document.User;
 import cbit.vcell.export.ExportServiceImpl;
 import cbit.vcell.messaging.server.LocalVCellConnectionMessaging;
 import cbit.vcell.modeldb.AdminDatabaseServer;

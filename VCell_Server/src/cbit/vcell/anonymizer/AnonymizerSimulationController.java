@@ -1,5 +1,5 @@
 package cbit.vcell.anonymizer;
-import cbit.gui.PropertyLoader;
+import cbit.util.PropertyLoader;
 import cbit.util.SessionLog;
 /**
  * Insert the type's description here.

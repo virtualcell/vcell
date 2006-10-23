@@ -1,6 +1,6 @@
 package cbit.vcell.messaging.server;
 import cbit.util.DataAccessException;
-import cbit.util.User;
+import cbit.util.document.User;
 import cbit.vcell.messaging.JmsClientMessaging;
 import cbit.vcell.messaging.JmsUtils;
 import cbit.vcell.simulation.VCSimulationIdentifier;

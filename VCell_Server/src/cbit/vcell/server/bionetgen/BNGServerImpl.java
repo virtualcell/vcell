@@ -8,10 +8,10 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.Random;
 
-import cbit.gui.PropertyLoader;
 import cbit.util.DataAccessException;
+import cbit.util.PropertyLoader;
 import cbit.util.SessionLog;
-import cbit.util.User;
+import cbit.util.document.User;
 
 /**
  * Insert the type's description here.

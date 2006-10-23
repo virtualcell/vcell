@@ -1,7 +1,7 @@
 package cbit.vcell.server.solvers;
 import java.io.File;
 
-import cbit.gui.PropertyLoader;
+import cbit.util.PropertyLoader;
 import cbit.util.SessionLog;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.solvers.AbstractCompiledSolver;

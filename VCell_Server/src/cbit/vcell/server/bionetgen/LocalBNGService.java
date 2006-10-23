@@ -1,9 +1,9 @@
 package cbit.vcell.server.bionetgen;
 
-import cbit.gui.PropertyLoader;
 import cbit.util.DataAccessException;
+import cbit.util.PropertyLoader;
 import cbit.util.SessionLog;
-import cbit.util.User;
+import cbit.util.document.User;
 
 /**
  * Insert the type's description here.

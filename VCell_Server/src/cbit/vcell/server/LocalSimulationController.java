@@ -1,11 +1,11 @@
 package cbit.vcell.server;
 import java.rmi.RemoteException;
 
-import cbit.gui.PropertyLoader;
 import cbit.util.DataAccessException;
 import cbit.util.ObjectNotFoundException;
+import cbit.util.PropertyLoader;
 import cbit.util.SessionLog;
-import cbit.util.User;
+import cbit.util.document.User;
 import cbit.vcell.modeldb.AdminDatabaseServer;
 import cbit.vcell.simulation.Simulation;
 import cbit.vcell.simulation.VCSimulationIdentifier;

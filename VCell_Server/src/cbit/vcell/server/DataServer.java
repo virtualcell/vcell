@@ -7,7 +7,7 @@ package cbit.vcell.server;
 import cbit.plot.PlotData;
 import cbit.util.CoordinateIndex;
 import cbit.util.DataAccessException;
-import cbit.util.User;
+import cbit.util.document.User;
 import cbit.vcell.export.ExportLog;
 import cbit.vcell.export.ExportSpecs;
 import cbit.vcell.math.DataIdentifier;

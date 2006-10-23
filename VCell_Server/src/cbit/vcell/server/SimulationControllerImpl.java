@@ -4,7 +4,6 @@ import java.rmi.RemoteException;
 
 import javax.swing.event.EventListenerList;
 
-import cbit.gui.PropertyLoader;
 import cbit.rmi.event.SimulationJobStatus;
 import cbit.rmi.event.SimulationJobStatusEvent;
 import cbit.rmi.event.SimulationJobStatusListener;
@@ -15,8 +14,9 @@ import cbit.rmi.event.WorkerEventListener;
 import cbit.util.ConfigurationException;
 import cbit.util.DataAccessException;
 import cbit.util.PermissionException;
+import cbit.util.PropertyLoader;
 import cbit.util.SessionLog;
-import cbit.util.User;
+import cbit.util.document.User;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.messaging.server.DispatcherDbManager;
 import cbit.vcell.messaging.server.LocalDispatcherDbManager;

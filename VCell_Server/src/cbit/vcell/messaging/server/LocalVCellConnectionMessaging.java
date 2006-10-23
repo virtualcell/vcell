@@ -8,14 +8,14 @@ import java.net.URL;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
-import cbit.gui.PropertyLoader;
 import cbit.rmi.event.DataJobListener;
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
 import cbit.rmi.event.SimpleMessageHandler;
 import cbit.util.DataAccessException;
+import cbit.util.PropertyLoader;
 import cbit.util.SessionLog;
-import cbit.util.User;
+import cbit.util.document.User;
 import cbit.vcell.messaging.JmsClientMessaging;
 import cbit.vcell.messaging.JmsConnectionFactory;
 import cbit.vcell.messaging.VCellQueueConnection;

@@ -4,7 +4,7 @@
 package cbit.vcell.messaging.server;
 
 import cbit.util.DataAccessException;
-import cbit.util.User;
+import cbit.util.document.User;
 import cbit.vcell.server.UserMetaDbServer;
 
 public final class LocalVCellConnectionMessaging_Stub

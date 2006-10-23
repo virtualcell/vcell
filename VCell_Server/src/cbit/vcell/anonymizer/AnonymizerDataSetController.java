@@ -1,6 +1,6 @@
 package cbit.vcell.anonymizer;
-import cbit.gui.PropertyLoader;
 import cbit.util.DataAccessException;
+import cbit.util.PropertyLoader;
 import cbit.util.SessionLog;
 import cbit.vcell.mesh.CartesianMesh;
 /**

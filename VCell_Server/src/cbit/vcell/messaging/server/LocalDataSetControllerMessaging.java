@@ -2,14 +2,14 @@ package cbit.vcell.messaging.server;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
-import cbit.gui.PropertyLoader;
 import cbit.plot.PlotData;
 import cbit.rmi.event.ExportEvent;
 import cbit.util.CoordinateIndex;
 import cbit.util.DataAccessException;
+import cbit.util.PropertyLoader;
 import cbit.util.SessionLog;
-import cbit.util.User;
 import cbit.util.VCDataIdentifier;
+import cbit.util.document.User;
 import cbit.vcell.export.ExportSpecs;
 import cbit.vcell.math.DataIdentifier;
 import cbit.vcell.mesh.CartesianMesh;

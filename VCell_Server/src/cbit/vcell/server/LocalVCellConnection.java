@@ -8,15 +8,15 @@ import java.net.URL;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
-import cbit.gui.PropertyLoader;
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
 import cbit.rmi.event.SimpleMessageService;
 import cbit.sql.DBCacheTable;
 import cbit.sql.KeyFactory;
 import cbit.util.DataAccessException;
+import cbit.util.PropertyLoader;
 import cbit.util.SessionLog;
-import cbit.util.User;
+import cbit.util.document.User;
 import cbit.vcell.server.simdata.LocalDataSetController;
 import cbit.vcell.server.simdata.LocalDataSetControllerProxy;
 /**

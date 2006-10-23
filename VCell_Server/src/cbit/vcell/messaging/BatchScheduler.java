@@ -1,7 +1,7 @@
 package cbit.vcell.messaging;
 import cbit.rmi.event.VCellServerID;
 import cbit.util.SessionLog;
-import cbit.util.User;
+import cbit.util.document.User;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
 
 /**

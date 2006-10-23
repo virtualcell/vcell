@@ -2,7 +2,7 @@ package cbit.vcell.messaging;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
-import cbit.gui.PropertyLoader;
+import cbit.util.PropertyLoader;
 
 /**
  * Insert the type's description here.
@@ -24,9 +24,9 @@ public static ServicePerformance getServicePerformance() {
 		long javaTotalMemoryBytes = Runtime.getRuntime().totalMemory();
 		long maxJavaMemoryBytes = -1;
 		try {
-			maxJavaMemoryBytes = Long.parseLong(cbit.gui.PropertyLoader.getRequiredProperty(cbit.gui.PropertyLoader.maxJavaMemoryBytesProperty));
+			maxJavaMemoryBytes = Long.parseLong(cbit.util.PropertyLoader.getRequiredProperty(cbit.util.PropertyLoader.maxJavaMemoryBytesProperty));
 		} catch (NumberFormatException e){
-			System.out.println("error reading property '"+cbit.gui.PropertyLoader.maxJavaMemoryBytesProperty+"', "+e.getMessage());
+			System.out.println("error reading property '"+cbit.util.PropertyLoader.maxJavaMemoryBytesProperty+"', "+e.getMessage());
 		}
 		return new ServicePerformance(javaFreeMemoryBytes,javaTotalMemoryBytes,maxJavaMemoryBytes);
 	} catch (Throwable e){
