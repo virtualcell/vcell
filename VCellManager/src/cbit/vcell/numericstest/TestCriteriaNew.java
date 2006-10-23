@@ -1,6 +1,6 @@
 package cbit.vcell.numericstest;
 import cbit.vcell.simulation.SimulationInfo;
-import cbit.util.MathModelInfo;
+import cbit.util.document.MathModelInfo;
 import cbit.vcell.solver.test.VariableComparisonSummary;
 import java.math.BigDecimal;
 /**

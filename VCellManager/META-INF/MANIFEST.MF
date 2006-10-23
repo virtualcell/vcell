@@ -7,7 +7,6 @@ Bundle-Activator: org.vcell.manager.Activator
 Bundle-Localization: plugin
 Import-Package: org.osgi.framework;version="1.3.0"
 Require-Bundle: org.eclipse.osgi,
- org.vcell.common,
  org.vcell.util,
  org.vcell.xml.common,
  org.vcell.units,
@@ -27,7 +26,8 @@ Require-Bundle: org.eclipse.osgi,
  org.vcell.database,
  org.vcell.simulation,
  org.vcell.cartoon,
- org.vcell.plotting
+ org.vcell.plotting,
+ com.lowagie.itext
 Export-Package: cbit.vcell.client.database,
  cbit.vcell.client.server,
  cbit.vcell.desktop.controls,

@@ -1,7 +1,8 @@
 package cbit.vcell.numericstest;
 
-import cbit.util.Version;
-import cbit.util.MathModelInfo;
+import cbit.util.document.MathModelInfo;
+import cbit.util.document.Version;
+
 import java.math.BigDecimal;
 /**
  * Insert the type's description here.

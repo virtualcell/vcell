@@ -1,6 +1,6 @@
 package cbit.vcell.numericstest;
 
-import cbit.util.KeyValue;
+import cbit.util.document.KeyValue;
 /**
  * Insert the type's description here.
  * Creation date: (11/10/2004 12:01:58 PM)
@@ -18,7 +18,7 @@ public class AddTestCasesOPMathModel extends AddTestCasesOP {
  * @param argAnnot java.lang.String
  * @param argAddTestCriteriaOPs cbit.vcell.numericstest.AddTestCriteriaOP[]
  */
-public AddTestCasesOPMathModel(cbit.util.KeyValue argMMKey, String argType, String argAnnot, cbit.vcell.numericstest.AddTestCriteriaOPMathModel[] argAddTestCriteriaOPs) {
+public AddTestCasesOPMathModel(cbit.util.document.KeyValue argMMKey, String argType, String argAnnot, cbit.vcell.numericstest.AddTestCriteriaOPMathModel[] argAddTestCriteriaOPs) {
 	this(null,argMMKey,argType,argAnnot,argAddTestCriteriaOPs);
 }
 /**
@@ -31,7 +31,7 @@ public AddTestCasesOPMathModel(cbit.util.KeyValue argMMKey, String argType, Stri
  */
 public AddTestCasesOPMathModel(
     java.math.BigDecimal argTSKey,
-    cbit.util.KeyValue argMMKey,
+    cbit.util.document.KeyValue argMMKey,
     String argType,
     String argAnnot,
     AddTestCriteriaOPMathModel[] argAddTestCriteriaOPsMathModel) {
@@ -69,7 +69,7 @@ public cbit.vcell.numericstest.AddTestCriteriaOPMathModel[] getAddTestCriteriaOP
  * Insert the method's description here.
  * Creation date: (11/10/2004 12:03:14 PM)
  */
-public cbit.util.KeyValue getMathModelKey() {
+public cbit.util.document.KeyValue getMathModelKey() {
 	return mathModelKey;
 }
 }

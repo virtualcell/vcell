@@ -2,11 +2,11 @@ package cbit.vcell.client.server;
 import java.lang.reflect.Constructor;
 
 import cbit.gui.DialogUtils;
-import cbit.gui.PropertyLoader;
 import cbit.util.DataAccessException;
+import cbit.util.PropertyLoader;
 import cbit.util.SessionLog;
 import cbit.util.StdoutSessionLog;
-import cbit.util.User;
+import cbit.util.document.User;
 import cbit.vcell.client.database.ClientDocumentManager;
 import cbit.vcell.client.database.DocumentManager;
 import cbit.vcell.desktop.controls.SessionManager;

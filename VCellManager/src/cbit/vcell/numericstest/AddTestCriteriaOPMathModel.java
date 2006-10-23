@@ -1,6 +1,6 @@
 package cbit.vcell.numericstest;
 
-import cbit.util.KeyValue;
+import cbit.util.document.KeyValue;
 
 import java.math.BigDecimal;
 /**
@@ -34,7 +34,7 @@ public AddTestCriteriaOPMathModel(BigDecimal argTCKey,KeyValue argMMSimKey,KeyVa
  * Creation date: (11/11/2004 5:04:01 PM)
  * @return cbit.sql.KeyValue
  */
-public cbit.util.KeyValue getMathModelSimKey() {
+public cbit.util.document.KeyValue getMathModelSimKey() {
 	return mathModelSimKey;
 }
 /**
@@ -42,7 +42,7 @@ public cbit.util.KeyValue getMathModelSimKey() {
  * Creation date: (11/11/2004 5:04:01 PM)
  * @return cbit.sql.KeyValue
  */
-public cbit.util.KeyValue getRegressionMathModelKey() {
+public cbit.util.document.KeyValue getRegressionMathModelKey() {
 	return regressionMathModelKey;
 }
 /**
@@ -50,7 +50,7 @@ public cbit.util.KeyValue getRegressionMathModelKey() {
  * Creation date: (11/11/2004 5:04:01 PM)
  * @return cbit.sql.KeyValue
  */
-public cbit.util.KeyValue getRegressionMathModelSimKey() {
+public cbit.util.document.KeyValue getRegressionMathModelSimKey() {
 	return regressionMathModelSimKey;
 }
 }

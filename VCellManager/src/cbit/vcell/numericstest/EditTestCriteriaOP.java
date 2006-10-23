@@ -1,7 +1,7 @@
 package cbit.vcell.numericstest;
 import java.math.BigDecimal;
 
-import cbit.util.KeyValue;
+import cbit.util.document.KeyValue;
 /**
  * Insert the type's description here.
  * Creation date: (10/19/2004 6:21:59 AM)

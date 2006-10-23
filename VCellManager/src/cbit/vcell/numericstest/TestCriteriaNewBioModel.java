@@ -1,6 +1,6 @@
 package cbit.vcell.numericstest;
 import cbit.vcell.solver.test.*;
-import cbit.util.BioModelInfo;
+import cbit.util.document.BioModelInfo;
 import cbit.vcell.simulation.SimulationInfo;
 /**
  * Insert the type's description here.

@@ -10,24 +10,24 @@ import java.util.Vector;
 import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
 import cbit.util.ReferenceQuerySpec;
-import cbit.util.VersionableType;
 import cbit.util.BeanUtils;
 import cbit.util.BigString;
-import cbit.util.BioModelChildSummary;
-import cbit.util.BioModelInfo;
 import cbit.util.Compare;
-import cbit.util.CurateSpec;
 import cbit.util.DataAccessException;
 import cbit.util.ISize;
-import cbit.util.KeyValue;
-import cbit.util.MathModelChildSummary;
-import cbit.util.MathModelInfo;
 import cbit.util.ObjectNotFoundException;
 import cbit.util.PermissionException;
 import cbit.util.Preference;
 import cbit.util.ReferenceQueryResult;
-import cbit.util.Version;
-import cbit.util.VersionInfo;
+import cbit.util.document.BioModelChildSummary;
+import cbit.util.document.BioModelInfo;
+import cbit.util.document.CurateSpec;
+import cbit.util.document.KeyValue;
+import cbit.util.document.MathModelChildSummary;
+import cbit.util.document.MathModelInfo;
+import cbit.util.document.Version;
+import cbit.util.document.VersionInfo;
+import cbit.util.document.VersionableType;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.desktop.controls.SessionManager;
 import cbit.vcell.dictionary.DBFormalSpecies;
@@ -282,7 +282,7 @@ private void cacheSimulations(Simulation[] sims) throws DataAccessException{
 public void curate(CurateSpec curateSpec) throws DataAccessException{
 	
 	try{
-		cbit.util.VCDocumentInfo newVCDocumentInfo = getSessionManager().getUserMetaDbServer().curate(curateSpec);
+		cbit.util.document.VCDocumentInfo newVCDocumentInfo = getSessionManager().getUserMetaDbServer().curate(curateSpec);
 		
 		xmlHash.remove(curateSpec.getVCDocumentInfo().getVersion().getVersionKey());
 		
@@ -1303,7 +1303,7 @@ public Preference[] getPreferences() throws cbit.util.DataAccessException{
  * Insert the method's description here.
  * Creation date: (8/25/2003 5:10:41 PM)
  */
-public cbit.vcell.model.ReactionStep getReactionStep(cbit.util.KeyValue reactionStepKey) throws cbit.util.DataAccessException {
+public cbit.vcell.model.ReactionStep getReactionStep(cbit.util.document.KeyValue reactionStepKey) throws cbit.util.DataAccessException {
 	try {
 		ReactionStep rStep = sessionManager.getUserMetaDbServer().getReactionStep(reactionStepKey);
 		if(rStep != null){
@@ -1468,7 +1468,7 @@ public cbit.vcell.numericstest.TestSuiteInfoNew[] getTestSuiteInfos() throws cbi
  * Insert the method's description here.
  * Creation date: (1/19/01 10:54:29 AM)
  */
-public cbit.util.User getUser() {
+public cbit.util.document.User getUser() {
 	return sessionManager.getUser();
 }
 
@@ -1491,7 +1491,7 @@ public cbit.vcell.dictionary.ReactionDescription[] getUserReactionDescriptions(c
  * Insert the method's description here.
  * Creation date: (9/15/2003 3:33:10 PM)
  */
-public cbit.vcell.model.ReactionStepInfo[] getUserReactionStepInfos(cbit.util.KeyValue[] reactionStepKeys) throws cbit.util.DataAccessException {
+public cbit.vcell.model.ReactionStepInfo[] getUserReactionStepInfos(cbit.util.document.KeyValue[] reactionStepKeys) throws cbit.util.DataAccessException {
 	try {
 		return sessionManager.getUserMetaDbServer().getReactionStepInfos(reactionStepKeys);
 	}catch (RemoteException e){
@@ -1512,7 +1512,7 @@ public String getXML(BioModelInfo bmInfo) throws cbit.util.DataAccessException, 
  * @return java.lang.String
  * @param bioModel cbit.vcell.biomodel.BioModel
  */
-public java.lang.String getXML(cbit.util.BioModelInfo bioModelInfoArg, XmlDialect toDialect) throws java.io.IOException, cbit.util.xml.XmlParseException, DataAccessException {
+public java.lang.String getXML(cbit.util.document.BioModelInfo bioModelInfoArg, XmlDialect toDialect) throws java.io.IOException, cbit.util.xml.XmlParseException, DataAccessException {
 	return XmlHelper.exportXML(getBioModel(bioModelInfoArg), toDialect);
 }
 
@@ -1530,7 +1530,7 @@ public String getXML(MathModelInfo mmInfo) throws cbit.util.DataAccessException,
  * @return java.lang.String
  * @param bioModel cbit.vcell.biomodel.BioModel
  */
-public java.lang.String getXML(cbit.util.MathModelInfo mathModelInfoArg, XmlDialect toDialect) throws java.io.IOException, cbit.util.xml.XmlParseException, DataAccessException {
+public java.lang.String getXML(cbit.util.document.MathModelInfo mathModelInfoArg, XmlDialect toDialect) throws java.io.IOException, cbit.util.xml.XmlParseException, DataAccessException {
 	return XmlHelper.exportXML(getMathModel(mathModelInfoArg), toDialect);
 }
 
@@ -1766,7 +1766,7 @@ public boolean isChanged(BioModel bioModel, String bioModelXML) throws DataAcces
  * @return boolean
  * @param vcDocument cbit.vcell.document.VCDocument
  */
-public boolean isChanged(cbit.util.VCDocument vcDocument) throws DataAccessException {
+public boolean isChanged(cbit.util.document.VCDocument vcDocument) throws DataAccessException {
 	if (vcDocument instanceof BioModel) {
 		return isChanged((BioModel)vcDocument,null);
 	} else if (vcDocument instanceof MathModel) {

@@ -1,6 +1,6 @@
 package cbit.vcell.numericstest;
 import cbit.vcell.solver.test.*;
-import cbit.util.MathModelInfo;
+import cbit.util.document.MathModelInfo;
 import cbit.vcell.simulation.SimulationInfo;
 /**
  * Insert the type's description here.

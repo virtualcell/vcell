@@ -3,15 +3,15 @@ import java.rmi.RemoteException;
 
 import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
-import cbit.util.BioModelInfo;
-import cbit.util.CurateSpec;
 import cbit.util.DataAccessException;
-import cbit.util.KeyValue;
-import cbit.util.MathModelInfo;
 import cbit.util.ReferenceQueryResult;
 import cbit.util.ReferenceQuerySpec;
-import cbit.util.User;
-import cbit.util.VCDocument;
+import cbit.util.document.BioModelInfo;
+import cbit.util.document.CurateSpec;
+import cbit.util.document.KeyValue;
+import cbit.util.document.MathModelInfo;
+import cbit.util.document.User;
+import cbit.util.document.VCDocument;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.DBSpecies;
@@ -350,7 +350,7 @@ public cbit.vcell.model.ReactionStepInfo[] getUserReactionStepInfos(KeyValue rea
  * @return java.lang.String
  * @param bioModel cbit.vcell.biomodel.BioModel
  */
-String getXML(cbit.util.BioModelInfo bioModelInfoArg, XmlDialect toDialect) throws RemoteException, cbit.util.xml.XmlParseException, java.io.IOException, cbit.util.DataAccessException;
+String getXML(cbit.util.document.BioModelInfo bioModelInfoArg, XmlDialect toDialect) throws RemoteException, cbit.util.xml.XmlParseException, java.io.IOException, cbit.util.DataAccessException;
 
 
 	public String getXML(MathModelInfo mmInfo) throws cbit.util.DataAccessException, java.rmi.RemoteException, cbit.util.xml.XmlParseException;

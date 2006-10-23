@@ -2,7 +2,7 @@ package cbit.vcell.numericstest;
 
 import java.math.BigDecimal;
 
-import cbit.util.KeyValue;
+import cbit.util.document.KeyValue;
 import cbit.vcell.solver.test.VariableComparisonSummary;
 /**
  * Insert the type's description here.

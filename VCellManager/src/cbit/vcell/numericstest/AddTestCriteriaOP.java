@@ -1,6 +1,6 @@
 package cbit.vcell.numericstest;
 
-import cbit.util.KeyValue;
+import cbit.util.document.KeyValue;
 
 import java.math.BigDecimal;
 /**
