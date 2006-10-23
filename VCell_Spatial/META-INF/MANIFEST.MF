@@ -10,4 +10,5 @@ Export-Package: cbit.render.objects,
  org.vcell.spatial
 Require-Bundle: org.vcell.util,
  org.vcell.units,
- org.vcell.graph
+ org.vcell.graph,
+ org.eclipse.osgi
