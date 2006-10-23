@@ -7,4 +7,4 @@ Bundle-Activator: org.vcell.matlab.Activator
 Bundle-Localization: plugin
 Import-Package: org.osgi.framework;version="1.3.0"
 Export-Package: cbit.matlab
-Require-Bundle: org.vcell.common
+Require-Bundle: jmatlink
