@@ -1,6 +1,5 @@
-package cbit.gui;
+package cbit.util;
 
-import cbit.util.ConfigurationException;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

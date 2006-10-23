@@ -1,4 +1,4 @@
-package cbit.util;
+package cbit.util.document;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -9,7 +9,7 @@ package cbit.util;
  * Creation date: (11/13/00 4:54:24 PM)
  * @author: Jim Schaff
  */
-public class BioModelInfo implements cbit.util.VCDocumentInfo {
+public class BioModelInfo implements cbit.util.document.VCDocumentInfo {
 	private Version version = null;
 	private KeyValue modelKey = null;
 	private BioModelChildSummary bioModelChildSummary = null;
@@ -49,14 +49,14 @@ public BioModelChildSummary getBioModelChildSummary() {
  * Creation date: (11/13/00 4:57:53 PM)
  * @return cbit.sql.KeyValue
  */
-public cbit.util.KeyValue getModelKey() {
+public cbit.util.document.KeyValue getModelKey() {
 	return modelKey;
 }
 /**
  * This method was created in VisualAge.
  * @return cbit.sql.Version
  */
-public cbit.util.Version getVersion() {
+public cbit.util.document.Version getVersion() {
 	return version;
 }
 /**

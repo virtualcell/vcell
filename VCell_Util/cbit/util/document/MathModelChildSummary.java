@@ -1,6 +1,8 @@
-package cbit.util;
+package cbit.util.document;
 
 import java.util.Vector;
+
+import cbit.util.TokenMangler;
 
 /**
  * Insert the type's description here.

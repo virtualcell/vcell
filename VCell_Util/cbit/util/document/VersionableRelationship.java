@@ -1,4 +1,4 @@
-package cbit.util;
+package cbit.util.document;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

@@ -1,5 +1,7 @@
 package cbit.util;
 
+import cbit.util.document.User;
+
 
 /**
  * Insert the type's description here.

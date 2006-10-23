@@ -1,4 +1,9 @@
-package cbit.util;
+package cbit.util.document;
+
+import cbit.util.Compare;
+import cbit.util.Immutable;
+import cbit.util.Matchable;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.

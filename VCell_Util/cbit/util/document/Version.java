@@ -1,4 +1,4 @@
-package cbit.util;
+package cbit.util.document;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -7,7 +7,9 @@ package cbit.util;
 import java.util.Date;
 import java.math.BigDecimal;
 
-import cbit.util.VersionFlag;
+import cbit.util.Compare;
+import cbit.util.Matchable;
+import cbit.util.document.VersionFlag;
 /**
  * This type was created in VisualAge.
  */

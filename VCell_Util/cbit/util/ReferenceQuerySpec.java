@@ -6,13 +6,13 @@ package cbit.util;
  */
 public class ReferenceQuerySpec implements java.io.Serializable{
 
-	private cbit.util.VersionableType versionableType;
-	private cbit.util.KeyValue keyValue;
+	private cbit.util.document.VersionableType versionableType;
+	private cbit.util.document.KeyValue keyValue;
 
 /**
  * ReferenceQuesrySpec constructor comment.
  */
-public ReferenceQuerySpec(cbit.util.VersionableType vType,cbit.util.KeyValue key) {
+public ReferenceQuerySpec(cbit.util.document.VersionableType vType,cbit.util.document.KeyValue key) {
 	
 	versionableType = vType;
 	keyValue = key;
@@ -24,7 +24,7 @@ public ReferenceQuerySpec(cbit.util.VersionableType vType,cbit.util.KeyValue key
  * Creation date: (11/6/2005 10:31:20 AM)
  * @return cbit.sql.KeyValue
  */
-public cbit.util.KeyValue getKeyValue() {
+public cbit.util.document.KeyValue getKeyValue() {
 	return keyValue;
 }
 
@@ -34,7 +34,7 @@ public cbit.util.KeyValue getKeyValue() {
  * Creation date: (11/6/2005 10:31:20 AM)
  * @return cbit.sql.VersionableType
  */
-public cbit.util.VersionableType getVersionableType() {
+public cbit.util.document.VersionableType getVersionableType() {
 	return versionableType;
 }
 }

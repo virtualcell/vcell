@@ -1,4 +1,7 @@
-package cbit.util;
+package cbit.util.document;
+
+import cbit.util.Cacheable;
+import cbit.util.Matchable;
 
 
 /*©

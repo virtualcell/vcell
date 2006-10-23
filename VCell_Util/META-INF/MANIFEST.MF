@@ -6,5 +6,6 @@ Bundle-Version: 1.0.0
 Bundle-Localization: plugin
 Export-Package: cbit.gui,
  cbit.util,
+ cbit.util.document,
  cbit.vcell.messaging.admin.sorttable
-Require-Bundle: org.vcell.common
+Require-Bundle: edu.stanford.ejalbert

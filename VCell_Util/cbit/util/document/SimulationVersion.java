@@ -1,4 +1,4 @@
-package cbit.util;
+package cbit.util.document;
 
 
 /**
@@ -21,7 +21,7 @@ public class SimulationVersion extends Version {
  * @param versionFlagNew cbit.sql.VersionFlag
  * @param versionAnnotNew java.lang.String
  */
-public SimulationVersion(KeyValue versionKeyNew, String versionNameNew, cbit.util.User versionOwnerNew, cbit.util.GroupAccess versionGroupAccessNew, KeyValue versionBranchPointRefNew, java.math.BigDecimal versionBranchIDNew, java.util.Date versionDateNew, VersionFlag versionFlagNew, String versionAnnotNew, KeyValue argParentSimulationReference) {
+public SimulationVersion(KeyValue versionKeyNew, String versionNameNew, cbit.util.document.User versionOwnerNew, cbit.util.document.GroupAccess versionGroupAccessNew, KeyValue versionBranchPointRefNew, java.math.BigDecimal versionBranchIDNew, java.util.Date versionDateNew, VersionFlag versionFlagNew, String versionAnnotNew, KeyValue argParentSimulationReference) {
 	super(versionKeyNew, versionNameNew, versionOwnerNew, versionGroupAccessNew, versionBranchPointRefNew, versionBranchIDNew, versionDateNew, versionFlagNew, versionAnnotNew);
 	this.parentSimulationReference = argParentSimulationReference;
 }

@@ -1,4 +1,4 @@
-package cbit.util;
+package cbit.util.document;
 /**
  * Insert the type's description here.
  * Creation date: (5/23/2006 9:32:49 AM)

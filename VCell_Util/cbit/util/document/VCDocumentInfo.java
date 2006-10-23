@@ -1,4 +1,4 @@
-package cbit.util;
+package cbit.util.document;
 import java.io.*;
 
 public interface VCDocumentInfo extends VersionInfo {

@@ -1,4 +1,4 @@
-package cbit.util;
+package cbit.util.document;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -9,7 +9,7 @@ package cbit.util;
  * Creation date: (11/13/00 4:54:24 PM)
  * @author: Jim Schaff
  */
-public class MathModelInfo implements cbit.util.VCDocumentInfo {
+public class MathModelInfo implements cbit.util.document.VCDocumentInfo {
 	private Version version = null;
 	private KeyValue mathKey = null;
 	private MathModelChildSummary mathModelChildSummary = null;
@@ -41,7 +41,7 @@ public boolean equals(Object object) {
  * Creation date: (11/13/00 4:57:53 PM)
  * @return cbit.sql.KeyValue
  */
-public cbit.util.KeyValue getMathKey() {
+public cbit.util.document.KeyValue getMathKey() {
 	return mathKey;
 }
 /**
@@ -56,7 +56,7 @@ public MathModelChildSummary getMathModelChildSummary() {
  * This method was created in VisualAge.
  * @return cbit.sql.Version
  */
-public cbit.util.Version getVersion() {
+public cbit.util.document.Version getVersion() {
 	return version;
 }
 /**

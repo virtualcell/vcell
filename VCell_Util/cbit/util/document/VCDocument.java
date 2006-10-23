@@ -1,4 +1,6 @@
-package cbit.util;
+package cbit.util.document;
+
+import cbit.util.Matchable;
 
 /**
  * Insert the type's description here.

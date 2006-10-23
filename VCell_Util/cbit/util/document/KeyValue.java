@@ -1,4 +1,6 @@
-package cbit.util;
+package cbit.util.document;
+
+import cbit.util.Matchable;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
