@@ -6,6 +6,6 @@ Bundle-Version: 1.0.0
 Bundle-Localization: plugin
 Export-Package: cbit.render,
  cbit.render.unused
-Require-Bundle: org.vcell.common,
- org.vcell.util,
- org.vcell.spatial
+Require-Bundle: org.vcell.util,
+ org.vcell.spatial,
+ com.sun.opengl
