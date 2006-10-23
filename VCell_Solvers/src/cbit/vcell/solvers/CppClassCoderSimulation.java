@@ -6,8 +6,8 @@ package cbit.vcell.solvers;
 import java.util.Enumeration;
 import java.util.Vector;
 
-import cbit.gui.PropertyLoader;
 import cbit.util.ISize;
+import cbit.util.PropertyLoader;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.FilamentVariable;
 import cbit.vcell.math.MemVariable;

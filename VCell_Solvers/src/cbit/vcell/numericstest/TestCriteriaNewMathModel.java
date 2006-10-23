@@ -1,5 +1,5 @@
 package cbit.vcell.numericstest;
-import cbit.util.MathModelInfo;
+import cbit.util.document.MathModelInfo;
 import cbit.vcell.simulation.SimulationInfo;
 import cbit.vcell.solver.test.VariableComparisonSummary;
 /**

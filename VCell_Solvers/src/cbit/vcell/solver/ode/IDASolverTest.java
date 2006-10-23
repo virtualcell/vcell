@@ -4,7 +4,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.PrintWriter;
 
-import cbit.gui.PropertyLoader;
+import cbit.util.PropertyLoader;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.

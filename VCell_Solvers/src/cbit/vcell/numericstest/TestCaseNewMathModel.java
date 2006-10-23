@@ -1,6 +1,6 @@
 package cbit.vcell.numericstest;
 
-import cbit.util.MathModelInfo;
+import cbit.util.document.MathModelInfo;
 /**
  * Insert the type's description here.
  * Creation date: (11/10/2004 9:55:10 AM)

@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
-import cbit.gui.PropertyLoader;
+import cbit.util.PropertyLoader;
 import cbit.util.SessionLog;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.simdata.FunctionFileGenerator;

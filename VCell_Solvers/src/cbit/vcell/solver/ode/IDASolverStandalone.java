@@ -1,6 +1,6 @@
 package cbit.vcell.solver.ode;
 
-import cbit.gui.PropertyLoader;
+import cbit.util.PropertyLoader;
 import cbit.util.SessionLog;
 import cbit.vcell.solvers.SolverException;
 import cbit.vcell.solvers.SolverStatus;

@@ -1,5 +1,5 @@
 package cbit.vcell.numericstest;
-import cbit.util.BioModelInfo;
+import cbit.util.document.BioModelInfo;
 import cbit.vcell.simulation.SimulationInfo;
 import cbit.vcell.solver.test.VariableComparisonSummary;
 /**

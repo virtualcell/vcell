@@ -8,7 +8,7 @@ package cbit.vcell.solver.ode;
  * Creation date: (8/6/2001 11:06:04 PM)
  * @author: Jim Schaff
  */
-import cbit.gui.PropertyLoader;
+import cbit.util.PropertyLoader;
 public class CompilerTest {
 public static void main(java.lang.String[] args) {
 	try {

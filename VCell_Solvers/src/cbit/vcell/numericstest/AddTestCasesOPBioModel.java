@@ -2,7 +2,7 @@ package cbit.vcell.numericstest;
 
 import java.math.BigDecimal;
 
-import cbit.util.KeyValue;
+import cbit.util.document.KeyValue;
 /**
  * Insert the type's description here.
  * Creation date: (11/10/2004 12:01:58 PM)
@@ -86,14 +86,14 @@ public cbit.vcell.numericstest.AddTestCriteriaOPBioModel[] getAddTestCriteriaOPs
  * Insert the method's description here.
  * Creation date: (11/10/2004 12:03:14 PM)
  */
-public cbit.util.KeyValue getBioModelKey() {
+public cbit.util.document.KeyValue getBioModelKey() {
 	return bioModelKey;
 }
 /**
  * Insert the method's description here.
  * Creation date: (11/10/2004 12:03:14 PM)
  */
-public cbit.util.KeyValue getSimContextKey() {
+public cbit.util.document.KeyValue getSimContextKey() {
 	return simContextKey;
 }
 }

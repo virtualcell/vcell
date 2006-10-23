@@ -12,7 +12,6 @@ Export-Package: cbit.vcell.numericstest,
  cbit.vcell.solvers,
  org.vcell.solvers
 Require-Bundle: org.vcell.util,
- org.vcell.common,
  org.vcell.simdata,
  org.vcell.expression,
  org.vcell.geometry,
@@ -21,4 +20,6 @@ Require-Bundle: org.vcell.util,
  org.vcell.simulation,
  org.vcell.spatial,
  org.vcell.units,
- org.vcell.events
+ org.vcell.events,
+ jama,
+ org.eclipse.osgi

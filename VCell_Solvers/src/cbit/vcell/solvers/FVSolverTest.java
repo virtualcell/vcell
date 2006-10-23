@@ -6,7 +6,7 @@ package cbit.vcell.solvers;
 ©*/
 import java.io.File;
 
-import cbit.gui.PropertyLoader;
+import cbit.util.PropertyLoader;
 import cbit.util.SessionLog;
 import cbit.util.StdoutSessionLog;
 import cbit.vcell.math.MathDescription;
