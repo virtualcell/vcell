@@ -10,8 +10,8 @@ import java.util.*;
 
 import cbit.util.Cacheable;
 import cbit.util.Compare;
-import cbit.util.KeyValue;
 import cbit.util.Matchable;
+import cbit.util.document.KeyValue;
 /**
  * This type was created in VisualAge.
  */

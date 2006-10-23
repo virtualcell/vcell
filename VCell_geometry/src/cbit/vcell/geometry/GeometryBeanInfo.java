@@ -499,7 +499,7 @@ public java.beans.MethodDescriptor forceNewVersionAnnotation_cbitsqlVersionMetho
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.util.Version.class
+				cbit.util.document.Version.class
 			};
 			aMethod = getBeanClass().getMethod("forceNewVersionAnnotation", aParameterTypes);
 		} catch (Throwable exception) {

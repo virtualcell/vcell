@@ -4,8 +4,8 @@ import cbit.render.objects.FilterSpecification;
 import cbit.render.objects.SurfaceCollection;
 import cbit.render.objects.TaubinSmoothing;
 import cbit.render.objects.TaubinSmoothingSpecification;
+import cbit.util.PropertyLoader;
 import cbit.util.StdoutSessionLog;
-import cbit.gui.PropertyLoader;
 import cbit.image.*;
 /**
  * Insert the type's description here.

@@ -6,7 +6,7 @@ package cbit.vcell.geometry;
 ©*/
 import org.vcell.expression.ExpressionFactory;
 
-import cbit.util.Version;
+import cbit.util.document.Version;
 /**
  * This type was created in VisualAge.
  */
@@ -116,7 +116,7 @@ public static Geometry getImageExample2D() {
  * This method was created in VisualAge.
  * @return cbit.vcell.geometry.Geometry
  */
-public static Geometry getImageExample2D(cbit.util.User user) throws Exception {
+public static Geometry getImageExample2D(cbit.util.document.User user) throws Exception {
 
 	byte pixelValue1 = (byte)50;
 	byte pixelValue2 = (byte)200;
