@@ -11,7 +11,7 @@ import org.vcell.modelapp.analysis.IAnalysisTask;
 import cbit.util.Coordinate;
 import cbit.util.Extent;
 import cbit.util.ISize;
-import cbit.util.SimulationVersion;
+import cbit.util.document.SimulationVersion;
 import cbit.util.xml.XmlParseException;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.CompartmentSubVolume;
@@ -207,7 +207,7 @@ public org.jdom.Element getXML(cbit.image.VCPixelClass param) {
  * @return org.jdom.Element
  * @param param cbit.sql.Version
  */
-public org.jdom.Element getXML(cbit.util.Version version, cbit.util.Versionable versionable) {
+public org.jdom.Element getXML(cbit.util.document.Version version, cbit.util.document.Versionable versionable) {
 	return getXML(version, versionable.getName(), versionable.getDescription());
 }
 
@@ -218,7 +218,7 @@ public org.jdom.Element getXML(cbit.util.Version version, cbit.util.Versionable 
  * @return org.jdom.Element
  * @param param cbit.sql.Version
  */
-public org.jdom.Element getXML(cbit.util.Version version, String nameParam, String descriptionParam) {
+public org.jdom.Element getXML(cbit.util.document.Version version, String nameParam, String descriptionParam) {
 	//** Dump the content to the 'Version' object **
 	org.jdom.Element versionElement = new org.jdom.Element(XMLTags.VersionTag);
 	
@@ -2666,24 +2666,24 @@ public org.jdom.Element getXML(Structure structure) throws XmlParseException {
  * @return org.jdom.Element
  * @param groupAccess cbit.vcell.server.GroupAccess
  */
-public org.jdom.Element getXML(cbit.util.GroupAccess groupAccess) {
+public org.jdom.Element getXML(cbit.util.document.GroupAccess groupAccess) {
 	org.jdom.Element groupElement = new org.jdom.Element(XMLTags.GroupAccessTag);
 	
-	if (groupAccess instanceof cbit.util.GroupAccessAll) {
+	if (groupAccess instanceof cbit.util.document.GroupAccessAll) {
 		//case: ALL
-		groupElement.setAttribute(XMLTags.TypeAttrTag, cbit.util.GroupAccess.GROUPACCESS_ALL.toString());		
-	} else if (groupAccess instanceof cbit.util.GroupAccessNone) {
+		groupElement.setAttribute(XMLTags.TypeAttrTag, cbit.util.document.GroupAccess.GROUPACCESS_ALL.toString());		
+	} else if (groupAccess instanceof cbit.util.document.GroupAccessNone) {
 		//case: NONE
-		groupElement.setAttribute(XMLTags.TypeAttrTag, cbit.util.GroupAccess.GROUPACCESS_NONE.toString());		
+		groupElement.setAttribute(XMLTags.TypeAttrTag, cbit.util.document.GroupAccess.GROUPACCESS_NONE.toString());		
 	} else {
 		//case: SOME
 		//*groupid
 		groupElement.setAttribute(XMLTags.TypeAttrTag, groupAccess.getGroupid().toString());
 		//*hash
-		groupElement.setAttribute(XMLTags.HashAttrTag, ((cbit.util.GroupAccessSome)groupAccess).getHash().toString());
+		groupElement.setAttribute(XMLTags.HashAttrTag, ((cbit.util.document.GroupAccessSome)groupAccess).getHash().toString());
 		//*users+hidden value
 		//get normal users
-		cbit.util.User[] users = ((cbit.util.GroupAccessSome)groupAccess).getNormalGroupMembers();
+		cbit.util.document.User[] users = ((cbit.util.document.GroupAccessSome)groupAccess).getNormalGroupMembers();
 		for (int i = 0; i < users.length; i++){
 			org.jdom.Element userElement = new org.jdom.Element(XMLTags.UserTag);
 			//add name
@@ -2697,7 +2697,7 @@ public org.jdom.Element getXML(cbit.util.GroupAccess groupAccess) {
 		}
 		
 		//get hidden users
-		users = ((cbit.util.GroupAccessSome)groupAccess).getHiddenGroupMembers();
+		users = ((cbit.util.document.GroupAccessSome)groupAccess).getHiddenGroupMembers();
 		
 		if (users != null) {
 			for (int i = 0; i < users.length; i++){

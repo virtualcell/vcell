@@ -11,7 +11,7 @@ import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
 
-import cbit.gui.PropertyLoader;
+import cbit.util.PropertyLoader;
 import cbit.util.xml.JDOMTreeWalker;
 import cbit.util.xml.MathMLTags;
 import cbit.util.xml.XmlUtil;

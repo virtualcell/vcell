@@ -10,7 +10,7 @@ import org.jdom.Namespace;
 
 import cbit.image.VCImage;
 import cbit.util.Extent;
-import cbit.util.VCDocument;
+import cbit.util.document.VCDocument;
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlParseException;
 import cbit.util.xml.XmlUtil;
