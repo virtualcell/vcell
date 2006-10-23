@@ -9,9 +9,10 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.desktop.testingframework.TestingFrameworkPanel;
 import cbit.vcell.numericstest.TestCriteriaNew;
 import java.awt.event.ActionEvent;
-import cbit.util.AsynchProgressPopup;
-import cbit.util.MathModelInfo;
+
+import cbit.gui.AsynchProgressPopup;
 import cbit.util.UserCancelException;
+import cbit.util.document.MathModelInfo;
 import cbit.vcell.client.server.UserMessage;
 import cbit.vcell.client.task.TFRefresh;
 import cbit.vcell.client.task.TFAddTestSuite;

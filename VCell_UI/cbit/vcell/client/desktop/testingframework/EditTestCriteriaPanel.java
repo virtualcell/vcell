@@ -1,7 +1,7 @@
 package cbit.vcell.client.desktop.testingframework;
 
-import cbit.util.BioModelInfo;
-import cbit.util.MathModelInfo;
+import cbit.util.document.BioModelInfo;
+import cbit.util.document.MathModelInfo;
 import cbit.vcell.simulation.SimulationInfo;
 import cbit.vcell.numericstest.TestCriteriaNew;
 import cbit.vcell.client.PopupGenerator;
@@ -29,10 +29,10 @@ public class EditTestCriteriaPanel extends javax.swing.JPanel {
 	private cbit.vcell.numericstest.TestCriteriaNew fieldExistingTestCriteria = null;
 	private cbit.vcell.numericstest.TestCriteriaNew fieldNewTestCriteria = null;
 	private cbit.vcell.simulation.SimulationInfo fieldReferenceSimInfo = null;
-	private cbit.util.MathModelInfo fieldReferenceMathModelInfo = null;
+	private cbit.util.document.MathModelInfo fieldReferenceMathModelInfo = null;
 	private javax.swing.JButton ivjSelectRefBMAppJButton = null;
 	private javax.swing.JButton ivjSelectRefSimJButton = null;
-	private cbit.util.BioModelInfo ivjbioModelInfo = null;
+	private cbit.util.document.BioModelInfo ivjbioModelInfo = null;
 	private javax.swing.JLabel ivjBioModelAppLabel = null;
 	private cbit.vcell.simulation.SimulationInfo ivjbmAppSimInfo = null;
 	private javax.swing.JLabel ivjBmAppSimLabel = null;
@@ -306,7 +306,7 @@ private javax.swing.JLabel getBioModelAppLabel() {
  * @return cbit.vcell.biomodel.BioModelInfo
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.util.BioModelInfo getbioModelInfo() {
+private cbit.util.document.BioModelInfo getbioModelInfo() {
 	// user code begin {1}
 	// user code end
 	return ivjbioModelInfo;
@@ -474,7 +474,7 @@ public cbit.vcell.numericstest.TestCriteriaNew getNewTestCriteria() {
  * @return The referenceMathModelInfo property value.
  * @see #setReferenceMathModelInfo
  */
-public cbit.util.MathModelInfo getReferenceMathModelInfo() {
+public cbit.util.document.MathModelInfo getReferenceMathModelInfo() {
 	return fieldReferenceMathModelInfo;
 }
 /**
@@ -852,7 +852,7 @@ public void resetTextFields() {
  * Comment
  */
 private void selectBMApp() {
-	cbit.util.BioModelInfo bmInfo = getTestingFrameworkWindowManager().selectBioModelInfo();
+	cbit.util.document.BioModelInfo bmInfo = getTestingFrameworkWindowManager().selectBioModelInfo();
 	if (bmInfo != null) {
 		//getRefMathModelLabel().setText(null);
 		//getRefSimLabel().setText(null);
@@ -948,7 +948,7 @@ private void setappName(java.lang.String newValue) {
  * @param newValue cbit.vcell.biomodel.BioModelInfo
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setbioModelInfo(cbit.util.BioModelInfo newValue) {
+private void setbioModelInfo(cbit.util.document.BioModelInfo newValue) {
 	if (ivjbioModelInfo != newValue) {
 		try {
 			ivjbioModelInfo = newValue;
@@ -1010,8 +1010,8 @@ public void setNewTestCriteria(cbit.vcell.numericstest.TestCriteriaNew newTestCr
  * @param referenceMathModelInfo The new value for the property.
  * @see #getReferenceMathModelInfo
  */
-public void setReferenceMathModelInfo(cbit.util.MathModelInfo referenceMathModelInfo) {
-	cbit.util.MathModelInfo oldValue = fieldReferenceMathModelInfo;
+public void setReferenceMathModelInfo(cbit.util.document.MathModelInfo referenceMathModelInfo) {
+	cbit.util.document.MathModelInfo oldValue = fieldReferenceMathModelInfo;
 	fieldReferenceMathModelInfo = referenceMathModelInfo;
 	firePropertyChange("referenceMathModelInfo", oldValue, referenceMathModelInfo);
 }

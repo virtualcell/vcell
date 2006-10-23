@@ -1,5 +1,6 @@
 package cbit.vcell.client;
-import swingthreads.*;
+import cbit.gui.AsynchProgressPopup;
+import cbit.gui.SwingWorker;
 import cbit.vcell.client.server.*;
 import cbit.vcell.solvers.SimulationStatus;
 import cbit.vcell.server.*;

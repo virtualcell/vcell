@@ -76,7 +76,7 @@ public String getManagerID() {
  * Comment
  */
 public void importSbml(String bngSbmlStr) {
-	cbit.util.VCDocument vcDoc = null;
+	cbit.util.document.VCDocument vcDoc = null;
 	try {
 		// import the xml string from bng output into a biomodel using XMLHelper
 		vcDoc = cbit.vcell.xml.XmlHelper.importXML(bngSbmlStr, cbit.vcell.xml.XmlDialect.SBML_L2V1, new TranslationLogger(this));
@@ -89,7 +89,7 @@ public void importSbml(String bngSbmlStr) {
 	if (vcDoc != null && vcDoc instanceof cbit.vcell.biomodel.BioModel) {
 		// Create a vcDocInfo for the imported document, and get the RequestManager to open it.
 		try {
-			cbit.util.VCDocumentInfo vcDocInfo = getRequestManager().getDocumentManager().getBioModelInfo(vcDoc.getVersion().getVersionKey());
+			cbit.util.document.VCDocumentInfo vcDocInfo = getRequestManager().getDocumentManager().getBioModelInfo(vcDoc.getVersion().getVersionKey());
 			if (vcDocInfo != null) {
 				getRequestManager().openDocument(vcDocInfo, this, true);
 			}

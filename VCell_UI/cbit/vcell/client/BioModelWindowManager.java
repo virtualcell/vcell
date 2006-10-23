@@ -1,5 +1,5 @@
 package cbit.vcell.client;
-import cbit.util.KeyValue;
+import cbit.util.document.KeyValue;
 import cbit.vcell.simulation.Simulation;
 import cbit.vcell.simulation.SimulationOwner;
 import cbit.vcell.simulation.VCSimulationIdentifier;
@@ -287,7 +287,7 @@ private javax.swing.JPanel getJPanel() {
  * Creation date: (5/14/2004 3:41:06 PM)
  * @return cbit.vcell.document.VCDocument
  */
-public cbit.util.VCDocument getVCDocument() {
+public cbit.util.document.VCDocument getVCDocument() {
 	return getBioModel();
 }
 
@@ -401,7 +401,7 @@ private void remove(ApplicationComponents appComponents, SimulationContext sc) {
  * Creation date: (5/28/2004 3:40:45 AM)
  * @param newDocument cbit.vcell.document.VCDocument
  */
-public void resetDocument(cbit.util.VCDocument newDocument) {
+public void resetDocument(cbit.util.document.VCDocument newDocument) {
 	setBioModel((BioModel)newDocument);
 	setDocumentID(getBioModel());
 	getBioModelEditor().setBioModel(getBioModel());

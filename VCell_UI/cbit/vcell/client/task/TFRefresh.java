@@ -3,7 +3,7 @@ package cbit.vcell.client.task;
 import cbit.vcell.client.TestingFrameworkWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.desktop.controls.AsynchClientTask;
-import cbit.util.AsynchProgressPopup;
+import cbit.gui.AsynchProgressPopup;
 import cbit.util.UserCancelException;
 /**
  * Insert the type's description here.

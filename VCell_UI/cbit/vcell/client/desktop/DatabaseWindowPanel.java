@@ -1,8 +1,8 @@
 package cbit.vcell.client.desktop;
-import cbit.util.BioModelInfo;
-import cbit.util.MathModelInfo;
-import cbit.util.VCDocument;
-import cbit.util.VCDocumentInfo;
+import cbit.util.document.BioModelInfo;
+import cbit.util.document.MathModelInfo;
+import cbit.util.document.VCDocument;
+import cbit.util.document.VCDocumentInfo;
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.biomodel.*;
@@ -23,7 +23,7 @@ public class DatabaseWindowPanel extends JPanel {
 	private boolean ivjConnPtoP3Aligning = false;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private cbit.vcell.client.DatabaseWindowManager fieldDatabaseWindowManager = null;
-	private cbit.util.VCDocumentInfo fieldSelectedDocumentInfo = null;
+	private cbit.util.document.VCDocumentInfo fieldSelectedDocumentInfo = null;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -644,7 +644,7 @@ public void setLatestOnly(boolean latestOnly) {
  * @param selectedDocumentInfo The new value for the property.
  * @see #getSelectedDocumentInfo
  */
-private void setSelectedDocumentInfo(cbit.util.VCDocumentInfo selectedDocumentInfo) {
+private void setSelectedDocumentInfo(cbit.util.document.VCDocumentInfo selectedDocumentInfo) {
 	VCDocumentInfo oldValue = fieldSelectedDocumentInfo;
 	fieldSelectedDocumentInfo = selectedDocumentInfo;
 	firePropertyChange("selectedDocumentInfo", oldValue, selectedDocumentInfo);

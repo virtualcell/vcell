@@ -1,10 +1,13 @@
 package cbit.vcell.client;
-import swingthreads.*;
+import cbit.gui.AsynchProgressPopup;
+import cbit.gui.SwingWorker;
 import cbit.vcell.simulation.*;
 import cbit.vcell.export.ExportSpecs;
 import cbit.rmi.event.*;
 import cbit.gui.*;
 import cbit.util.*;
+import cbit.util.document.User;
+import cbit.util.document.VCDocument;
 import cbit.vcell.geometry.*;
 
 import java.awt.*;

@@ -4,8 +4,8 @@ package cbit.vcell.desktop;
  * All rights reserved.
 ©*/
 import cbit.util.DataAccessException;
-import cbit.util.MathModelInfo;
-import cbit.util.User;
+import cbit.util.document.MathModelInfo;
+import cbit.util.document.User;
 import cbit.vcell.mathmodel.*;
 import java.util.Vector;
 /**

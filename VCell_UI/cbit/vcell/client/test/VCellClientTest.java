@@ -1,5 +1,5 @@
 package cbit.vcell.client.test;
-import cbit.gui.PropertyLoader;
+import cbit.util.PropertyLoader;
 import cbit.vcell.client.server.*;
 import cbit.vcell.client.*;
 import javax.swing.*;
@@ -24,7 +24,7 @@ public static void main(java.lang.String[] args) {
 	String host = System.getProperty(PropertyLoader.vcellServerHost);
 	String user = null;
 	String password = null;
-	cbit.util.VCDocument initialDocument = null;
+	cbit.util.document.VCDocument initialDocument = null;
 	if (args.length == 3) {
 		host = args[0];
 		user = args[1];

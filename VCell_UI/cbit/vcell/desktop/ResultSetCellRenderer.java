@@ -1,7 +1,7 @@
 package cbit.vcell.desktop;
-import cbit.util.BioModelInfo;
-import cbit.util.MathModelInfo;
-import cbit.util.User;
+import cbit.util.document.BioModelInfo;
+import cbit.util.document.MathModelInfo;
+import cbit.util.document.User;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.modeldb.SolverResultSetInfo;
 /*©

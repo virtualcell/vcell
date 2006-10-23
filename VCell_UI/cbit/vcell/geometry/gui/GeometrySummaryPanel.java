@@ -5,7 +5,7 @@ package cbit.vcell.geometry.gui;
 ©*/
 import cbit.util.Origin;
 import cbit.util.Extent;
-import cbit.util.Version;
+import cbit.util.document.Version;
 
 import java.awt.image.MemoryImageSource;
 import cbit.vcell.geometry.*;

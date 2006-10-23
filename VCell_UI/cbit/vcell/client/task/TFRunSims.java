@@ -7,7 +7,7 @@ import cbit.vcell.client.TestingFrameworkWindowManager;
 import cbit.vcell.desktop.controls.AsynchClientTask;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 //import cbit.vcell.client.RequestManager;
-import cbit.util.AsynchProgressPopup;
+import cbit.gui.AsynchProgressPopup;
 import cbit.util.DataAccessException;
 import cbit.util.UserCancelException;
 import cbit.vcell.numericstest.TestCaseNew;

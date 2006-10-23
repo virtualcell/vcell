@@ -4,9 +4,9 @@ package cbit.vcell.desktop;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.BioModelInfo;
 import cbit.util.DataAccessException;
-import cbit.util.User;
+import cbit.util.document.BioModelInfo;
+import cbit.util.document.User;
 
 import java.util.Vector;
 /**

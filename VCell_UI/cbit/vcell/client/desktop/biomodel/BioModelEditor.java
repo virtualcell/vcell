@@ -1,5 +1,5 @@
 package cbit.vcell.client.desktop.biomodel;
-import cbit.util.Versionable;
+import cbit.util.document.Versionable;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.modelapp.SimulationContext;

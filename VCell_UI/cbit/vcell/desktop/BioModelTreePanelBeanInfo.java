@@ -1,6 +1,6 @@
 package cbit.vcell.desktop;
 
-import cbit.util.VersionInfo;
+import cbit.util.document.VersionInfo;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

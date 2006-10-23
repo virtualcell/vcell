@@ -5,9 +5,9 @@ package cbit.vcell.desktop;
  * All rights reserved.
 ©*/
 import cbit.image.VCImageInfo;
-import cbit.util.User;
-import cbit.util.Version;
-import cbit.util.VersionInfo;
+import cbit.util.document.User;
+import cbit.util.document.Version;
+import cbit.util.document.VersionInfo;
 
 import javax.swing.tree.*;
 import java.awt.event.*;

@@ -6,14 +6,11 @@ import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataManager;
 import cbit.vcell.simdata.MergedData;
 import cbit.vcell.simdata.ODESolverResultSet;
-import cbit.gui.PropertyLoader;
 import javax.swing.JFrame;
 
-import cbit.util.BioModelInfo;
-import cbit.util.MathModelInfo;
+import cbit.util.PropertyLoader;
 import cbit.util.SessionLog;
 import cbit.util.StdoutSessionLog;
-import cbit.util.User;
 import cbit.util.UserCancelException;
 import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simulation.Simulation;
@@ -28,6 +25,7 @@ import cbit.vcell.client.data.DynamicDataManager;
 import cbit.vcell.client.database.ClientDocumentManager;
 import cbit.vcell.client.database.DocumentManager;
 import cbit.vcell.biomodel.BioModel;
+import cbit.gui.AsynchProgressPopup;
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.VCSimulationDataIdentifier;
 import cbit.sql.*;
@@ -43,7 +41,6 @@ import org.jdom.JDOMException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
 
-import cbit.util.KeyValue;
 import java.util.Enumeration;
 import java.util.Vector;
 import cbit.vcell.mathmodel.MathModel;
@@ -51,6 +48,10 @@ import cbit.vcell.solvers.SimulationStatus;
 import cbit.vcell.client.desktop.TestingFrameworkWindowPanel;
 import cbit.util.BeanUtils;
 import cbit.util.DataAccessException;
+import cbit.util.document.BioModelInfo;
+import cbit.util.document.KeyValue;
+import cbit.util.document.MathModelInfo;
+import cbit.util.document.User;
 import cbit.vcell.client.desktop.testingframework.EditTestCriteriaPanel;
 import cbit.vcell.client.desktop.testingframework.AddTestSuitePanel;
 import cbit.vcell.client.desktop.testingframework.TestCaseAddPanel;
@@ -58,7 +59,6 @@ import cbit.vcell.solver.test.MathTestingUtilities;
 
 import javax.swing.JOptionPane;
 import cbit.vcell.numericstest.*;
-import cbit.util.AsynchProgressPopup;
 /**
  * Insert the type's description here.
  * Creation date: (7/15/2004 11:44:12 AM)
@@ -706,7 +706,7 @@ public void exportMessage(ExportEvent exportEvent) {
  * Insert the method's description here.
  * Creation date: (8/18/2003 5:36:47 PM)
  */
-public String generateTestCaseReport(TestCaseNew testCase,TestCriteriaNew onlyThisTCrit,cbit.util.AsynchProgressPopup pp) {
+public String generateTestCaseReport(TestCaseNew testCase,TestCriteriaNew onlyThisTCrit,cbit.gui.AsynchProgressPopup pp) {
 
 	StringBuffer reportTCBuffer = new StringBuffer();
 	if (testCase == null) {
@@ -1382,7 +1382,7 @@ public boolean isRecyclable() {
  */
 public void loadModel(TestCaseNew testCase) throws DataAccessException{
 	
-	cbit.util.VCDocumentInfo vcDocInfo = null;
+	cbit.util.document.VCDocumentInfo vcDocInfo = null;
 	if (testCase instanceof TestCaseNewMathModel) {
 		TestCaseNewMathModel mathTestCase = (TestCaseNewMathModel)testCase;
 		vcDocInfo = getRequestManager().getDocumentManager().getMathModelInfo(mathTestCase.getMathModelInfo().getVersion().getVersionKey());

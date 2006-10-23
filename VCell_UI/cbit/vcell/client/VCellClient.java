@@ -1,7 +1,7 @@
 package cbit.vcell.client;
 import java.awt.event.*;
 
-import cbit.util.VCDocument;
+import cbit.util.document.VCDocument;
 import cbit.vcell.desktop.*;
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
@@ -102,7 +102,7 @@ RequestManager getRequestManager() {
  * Creation date: (5/10/2004 4:14:58 PM)
  * @return cbit.vcell.document.VCDocument
  */
-private cbit.util.VCDocument getStartupDoc() {
+private cbit.util.document.VCDocument getStartupDoc() {
 	return startupDoc;
 }
 
@@ -174,7 +174,7 @@ private void setRequestManager(RequestManager newRequestManager) {
  * Creation date: (5/10/2004 4:14:58 PM)
  * @param newStartupDoc cbit.vcell.document.VCDocument
  */
-private void setStartupDoc(cbit.util.VCDocument newStartupDoc) {
+private void setStartupDoc(cbit.util.document.VCDocument newStartupDoc) {
 	startupDoc = newStartupDoc;
 }
 

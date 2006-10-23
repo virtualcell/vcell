@@ -1,9 +1,9 @@
 package cbit.vcell.client.task;
-import cbit.util.BioModelInfo;
-import cbit.util.MathModelInfo;
 import cbit.util.UserCancelException;
-import cbit.util.VCDocument;
-import cbit.util.VCDocumentInfo;
+import cbit.util.document.BioModelInfo;
+import cbit.util.document.MathModelInfo;
+import cbit.util.document.VCDocument;
+import cbit.util.document.VCDocumentInfo;
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.client.*;

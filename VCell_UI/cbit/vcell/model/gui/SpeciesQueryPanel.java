@@ -9,8 +9,8 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 package cbit.vcell.model.gui;
-import cbit.util.User;
 import cbit.util.UserCancelException;
+import cbit.util.document.User;
 import cbit.vcell.desktop.controls.AsynchClientTask;
 import cbit.vcell.dictionary.*;
 import cbit.vcell.dictionary.database.DictionaryQueryResults;

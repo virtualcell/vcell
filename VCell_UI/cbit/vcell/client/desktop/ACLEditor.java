@@ -1,10 +1,10 @@
 package cbit.vcell.client.desktop;
 
-import cbit.util.GroupAccess;
-import cbit.util.GroupAccessAll;
-import cbit.util.GroupAccessNone;
-import cbit.util.GroupAccessSome;
-import cbit.util.User;
+import cbit.util.document.GroupAccess;
+import cbit.util.document.GroupAccessAll;
+import cbit.util.document.GroupAccessNone;
+import cbit.util.document.GroupAccessSome;
+import cbit.util.document.User;
 
 /**
  * Insert the type's description here.

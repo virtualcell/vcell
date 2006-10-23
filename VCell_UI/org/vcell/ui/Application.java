@@ -2,7 +2,7 @@ package org.vcell.ui;
 
 import org.eclipse.core.runtime.IPlatformRunnable;
 
-import cbit.util.VCDocument;
+import cbit.util.document.VCDocument;
 import cbit.vcell.client.VCellClient;
 import cbit.vcell.client.server.ClientServerInfo;
 

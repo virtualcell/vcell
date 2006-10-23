@@ -1,8 +1,8 @@
 package cbit.vcell.model.gui;
 import org.vcell.expression.ExpressionFactory;
 
-import cbit.util.KeyValue;
 import cbit.util.UserCancelException;
+import cbit.util.document.KeyValue;
 import cbit.vcell.desktop.controls.AsynchClientTask;
 import cbit.vcell.dictionary.ReactionDescription;
 import cbit.vcell.dictionary.DBNonFormalUnboundSpecies;

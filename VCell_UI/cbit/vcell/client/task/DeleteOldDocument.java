@@ -1,6 +1,9 @@
 package cbit.vcell.client.task;
 import cbit.sql.*;
 import cbit.util.*;
+import cbit.util.document.BioModelInfo;
+import cbit.util.document.MathModelInfo;
+import cbit.util.document.VCDocument;
 import cbit.vcell.client.*;
 import cbit.vcell.client.database.DocumentManager;
 import cbit.vcell.client.desktop.*;

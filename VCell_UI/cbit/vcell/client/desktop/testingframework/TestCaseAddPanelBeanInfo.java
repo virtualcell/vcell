@@ -529,7 +529,7 @@ public java.beans.MethodDescriptor setMathModelInfo_cbitvcellmathmodelMathModelI
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.util.MathModelInfo.class
+				cbit.util.document.MathModelInfo.class
 			};
 			aMethod = getBeanClass().getMethod("setMathModelInfo", aParameterTypes);
 		} catch (java.lang.Throwable exception) {

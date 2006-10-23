@@ -9,7 +9,6 @@ import java.net.*;
 import java.awt.*;
 import javax.swing.event.*;
 
-import cbit.gui.PropertyLoader;
 import cbit.util.*;
 /**
  * Insert the type's description here.

@@ -1,6 +1,8 @@
 package cbit.vcell.client.task;
 import cbit.vcell.client.server.*;
+import cbit.gui.FileFilters;
 import cbit.util.*;
+import cbit.util.document.VCDocument;
 
 import java.util.*;
 import java.io.*;

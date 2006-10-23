@@ -1,7 +1,7 @@
 package cbit.vcell.client.desktop.testingframework;
 
 import cbit.util.DataAccessException;
-import cbit.util.MathModelInfo;
+import cbit.util.document.MathModelInfo;
 import cbit.vcell.numericstest.*;
 import cbit.vcell.simulation.Simulation;
 import cbit.vcell.simulation.SimulationInfo;
@@ -40,8 +40,8 @@ public class TestingFrmwkTreeModel
 	};
 	//
 	class GetTestSuites implements Runnable{
-		cbit.util.AsynchProgressPopup pp = 
-			new cbit.util.AsynchProgressPopup(null,"Refresh Testing FrameWork Display","starting...",false,true);
+		cbit.gui.AsynchProgressPopup pp = 
+			new cbit.gui.AsynchProgressPopup(null,"Refresh Testing FrameWork Display","starting...",false,true);
 		public GetTestSuites(){
 		}
 		public void run(){

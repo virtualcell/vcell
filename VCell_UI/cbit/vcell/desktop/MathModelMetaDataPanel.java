@@ -1,6 +1,6 @@
 package cbit.vcell.desktop;
 
-import cbit.util.MathModelInfo;
+import cbit.util.document.MathModelInfo;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.simulation.SimulationInfo;
 
@@ -22,10 +22,10 @@ public class MathModelMetaDataPanel extends JPanel {
 	private MathModelMetaDataTreeModel ivjmathModelMetaDataTreeModel = null;
 	private cbit.vcell.client.database.DocumentManager fieldDocumentManager = null;
 	private boolean fieldPopupMenuDisabled = false;
-	private cbit.util.MathModelInfo fieldMathModelInfo = null;
+	private cbit.util.document.MathModelInfo fieldMathModelInfo = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private cbit.util.MathModelInfo ivjmathModelInfo1 = null;
+	private cbit.util.document.MathModelInfo ivjmathModelInfo1 = null;
 
 class IvjEventHandler implements java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -118,7 +118,7 @@ private void connEtoC8() {
  * @param value cbit.vcell.mathmodel.MathModelInfo
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1(cbit.util.MathModelInfo value) {
+private void connEtoM1(cbit.util.document.MathModelInfo value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -301,7 +301,7 @@ private cbit.gui.JTreeFancy getJTree1() {
  * @return The mathModelInfo property value.
  * @see #setMathModelInfo
  */
-public cbit.util.MathModelInfo getMathModelInfo() {
+public cbit.util.document.MathModelInfo getMathModelInfo() {
 	return fieldMathModelInfo;
 }
 /**
@@ -309,7 +309,7 @@ public cbit.util.MathModelInfo getMathModelInfo() {
  * @return cbit.vcell.mathmodel.MathModelInfo
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.util.MathModelInfo getmathModelInfo1() {
+private cbit.util.document.MathModelInfo getmathModelInfo1() {
 	// user code begin {1}
 	// user code end
 	return ivjmathModelInfo1;
@@ -460,8 +460,8 @@ public void setDocumentManager(cbit.vcell.client.database.DocumentManager docume
  * @param mathModelInfo The new value for the property.
  * @see #getMathModelInfo
  */
-public void setMathModelInfo(cbit.util.MathModelInfo mathModelInfo) {
-	cbit.util.MathModelInfo oldValue = fieldMathModelInfo;
+public void setMathModelInfo(cbit.util.document.MathModelInfo mathModelInfo) {
+	cbit.util.document.MathModelInfo oldValue = fieldMathModelInfo;
 	fieldMathModelInfo = mathModelInfo;
 	firePropertyChange("mathModelInfo", oldValue, mathModelInfo);
 }
@@ -470,10 +470,10 @@ public void setMathModelInfo(cbit.util.MathModelInfo mathModelInfo) {
  * @param newValue cbit.vcell.mathmodel.MathModelInfo
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setmathModelInfo1(cbit.util.MathModelInfo newValue) {
+private void setmathModelInfo1(cbit.util.document.MathModelInfo newValue) {
 	if (ivjmathModelInfo1 != newValue) {
 		try {
-			cbit.util.MathModelInfo oldValue = getmathModelInfo1();
+			cbit.util.document.MathModelInfo oldValue = getmathModelInfo1();
 			ivjmathModelInfo1 = newValue;
 			connPtoP1SetSource();
 			connEtoM1(ivjmathModelInfo1);

@@ -5,12 +5,12 @@ package cbit.vcell.desktop;
 ©*/
 import cbit.vcell.geometry.*;
 import cbit.vcell.server.*;
-import cbit.util.BioModelInfo;
 import cbit.util.DataAccessException;
 import cbit.util.Matchable;
-import cbit.util.User;
-import cbit.util.Version;
-import cbit.util.VersionInfo;
+import cbit.util.document.BioModelInfo;
+import cbit.util.document.User;
+import cbit.util.document.Version;
+import cbit.util.document.VersionInfo;
 
 import javax.swing.tree.*;
 import java.lang.reflect.*;
@@ -1437,7 +1437,7 @@ public boolean getPopupMenuDisabled() {
 /**
  * Comment
  */
-public cbit.util.BioModelInfo getSelectedBioModelInfo(BioModelNode selectedBioModelNode) {
+public cbit.util.document.BioModelInfo getSelectedBioModelInfo(BioModelNode selectedBioModelNode) {
 	if (selectedBioModelNode.getUserObject() instanceof BioModelInfo){
 		return (BioModelInfo)selectedBioModelNode.getUserObject();
 	}

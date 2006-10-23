@@ -3,7 +3,7 @@ package cbit.vcell.desktop;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.User;
+import cbit.util.document.User;
 /**
  * Insert the type's description here.
  * Creation date: (7/27/2000 6:30:41 PM)

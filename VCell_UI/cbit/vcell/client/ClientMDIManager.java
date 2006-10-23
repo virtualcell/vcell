@@ -1,6 +1,11 @@
 package cbit.vcell.client;
 import cbit.vcell.geometry.*;
+import cbit.gui.GlassPane;
 import cbit.util.*;
+import cbit.util.document.CurateSpec;
+import cbit.util.document.VCDocument;
+import cbit.util.document.Version;
+import cbit.util.document.VersionFlag;
 import cbit.vcell.client.server.*;
 
 import java.awt.*;

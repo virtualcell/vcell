@@ -8,6 +8,7 @@ import cbit.vcell.simulation.*;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.desktop.controls.*;
 import cbit.util.*;
+import cbit.util.document.VCDocument;
 /**
  * Insert the type's description here.
  * Creation date: (5/31/2004 6:03:16 PM)

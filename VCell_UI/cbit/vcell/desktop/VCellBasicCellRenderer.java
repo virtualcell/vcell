@@ -1,11 +1,11 @@
 package cbit.vcell.desktop;
-import cbit.util.BioModelInfo;
 import cbit.util.ISize;
-import cbit.util.MathModelInfo;
-import cbit.util.User;
-import cbit.util.Version;
 import cbit.image.VCImageInfo;
 import cbit.util.Extent;
+import cbit.util.document.BioModelInfo;
+import cbit.util.document.MathModelInfo;
+import cbit.util.document.User;
+import cbit.util.document.Version;
 import cbit.vcell.mathmodel.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

@@ -13,15 +13,15 @@ import cbit.vcell.mapping.*;
 import cbit.vcell.server.*;
 import cbit.vcell.simulation.*;
 import cbit.vcell.xml.merge.NodeInfo;
-import cbit.util.BioModelInfo;
 import cbit.util.DataAccessException;
-import cbit.util.GroupAccessAll;
 import cbit.util.Matchable;
-import cbit.util.MathModelInfo;
-import cbit.util.User;
-import cbit.util.Version;
-import cbit.util.VersionFlag;
-import cbit.util.VersionInfo;
+import cbit.util.document.BioModelInfo;
+import cbit.util.document.GroupAccessAll;
+import cbit.util.document.MathModelInfo;
+import cbit.util.document.User;
+import cbit.util.document.Version;
+import cbit.util.document.VersionFlag;
+import cbit.util.document.VersionInfo;
 
 import javax.swing.tree.*;
 import java.lang.reflect.*;
@@ -716,7 +716,7 @@ private void connEtoM1(VersionInfo value) {
 	try {
 		// user code begin {1}
 		// user code end
-		getMathModelMetaDataPanel().setMathModelInfo((cbit.util.MathModelInfo)getselectedVersionInfo1());
+		getMathModelMetaDataPanel().setMathModelInfo((cbit.util.document.MathModelInfo)getselectedVersionInfo1());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -1857,7 +1857,7 @@ public boolean getPopupMenuDisabled() {
 /**
  * Comment
  */
-public cbit.util.BioModelInfo getSelectedBioModelInfo(BioModelNode selectedBioModelNode) {
+public cbit.util.document.BioModelInfo getSelectedBioModelInfo(BioModelNode selectedBioModelNode) {
 	if (selectedBioModelNode.getUserObject() instanceof BioModelInfo){
 		return (BioModelInfo)selectedBioModelNode.getUserObject();
 	}

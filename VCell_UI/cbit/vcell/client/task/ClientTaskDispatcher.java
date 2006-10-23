@@ -3,7 +3,9 @@ import cbit.vcell.client.desktop.*;
 import java.awt.*;
 import java.util.*;
 import cbit.vcell.desktop.controls.*;
-import swingthreads.*;
+import cbit.gui.AsynchProgressPopup;
+import cbit.gui.ProgressDialogListener;
+import cbit.gui.SwingWorker;
 import cbit.util.*;
 
 import javax.swing.*;

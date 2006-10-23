@@ -1,5 +1,5 @@
 package cbit.vcell.client;
-import cbit.util.KeyValue;
+import cbit.util.document.KeyValue;
 import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.server.*;
 import cbit.vcell.simulation.*;
@@ -271,7 +271,7 @@ private MathModelEditor getMathModelEditor() {
  * Creation date: (5/17/2004 4:56:56 PM)
  * @return cbit.vcell.document.VCDocument
  */
-public cbit.util.VCDocument getVCDocument() {
+public cbit.util.document.VCDocument getVCDocument() {
 	return getMathModel();
 }
 
@@ -407,7 +407,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  * Creation date: (5/28/2004 3:40:45 AM)
  * @param newDocument cbit.vcell.document.VCDocument
  */
-public void resetDocument(cbit.util.VCDocument newDocument) {
+public void resetDocument(cbit.util.document.VCDocument newDocument) {
 	setMathModel((MathModel)newDocument);
 	setDocumentID(getMathModel());
 	setMathModel((MathModel)newDocument);

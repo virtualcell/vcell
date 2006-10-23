@@ -387,7 +387,7 @@ public java.beans.PropertyDescriptor selectedDocumentInfoPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.util.VCDocumentInfo.class
+					cbit.util.document.VCDocumentInfo.class
 				};
 				aSetMethod = getBeanClass().getMethod("setSelectedDocumentInfo", aSetMethodParameterTypes);
 			} catch (Throwable exception) {

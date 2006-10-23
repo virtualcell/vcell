@@ -10,7 +10,7 @@ import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.server.*;
 import cbit.vcell.simulation.*;
 import cbit.util.Matchable;
-import cbit.util.Versionable;
+import cbit.util.document.Versionable;
 
 import javax.swing.tree.*;
 import java.lang.reflect.*;

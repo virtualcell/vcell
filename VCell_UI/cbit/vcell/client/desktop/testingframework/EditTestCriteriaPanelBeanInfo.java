@@ -282,7 +282,7 @@ public java.beans.PropertyDescriptor referenceMathModelInfoPropertyDescriptor() 
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.util.MathModelInfo.class
+					cbit.util.document.MathModelInfo.class
 				};
 				aSetMethod = getBeanClass().getMethod("setReferenceMathModelInfo", aSetMethodParameterTypes);
 			} catch (Throwable exception) {

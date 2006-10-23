@@ -5,7 +5,8 @@ import cbit.image.VCImageInfo;
  * All rights reserved.
 ©*/
 import cbit.util.DataAccessException;
-import cbit.util.User;
+import cbit.util.document.User;
+
 import java.util.Vector;
 
 import cbit.vcell.client.database.DatabaseListener;

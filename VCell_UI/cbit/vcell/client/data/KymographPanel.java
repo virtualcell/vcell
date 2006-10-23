@@ -1865,8 +1865,8 @@ private void initDataManagerVariable(String variableName) {
 	final String finalVarName = variableName;
 	Thread fetchThread = new Thread(
 		new Runnable(){
-			cbit.util.AsynchProgressPopup pp =
-				new cbit.util.AsynchProgressPopup(null,"Time Series Data ("+finalVarName+")","Fetching Data...",false,false);
+			cbit.gui.AsynchProgressPopup pp =
+				new cbit.gui.AsynchProgressPopup(null,"Time Series Data ("+finalVarName+")","Fetching Data...",false,false);
 			public void run(){
 				pp.start();
 				try{

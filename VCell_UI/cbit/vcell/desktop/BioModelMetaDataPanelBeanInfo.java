@@ -83,7 +83,7 @@ public java.beans.PropertyDescriptor bioModelInfoPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.util.BioModelInfo.class
+					cbit.util.document.BioModelInfo.class
 				};
 				aSetMethod = getBeanClass().getMethod("setBioModelInfo", aSetMethodParameterTypes);
 			} catch (Throwable exception) {
