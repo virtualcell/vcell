@@ -1,21 +1,19 @@
 package org.vcell.physics.math;
 import java.beans.PropertyVetoException;
 
-import org.jdom.Element;
 import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.ExpressionUtilities;
 import org.vcell.expression.IExpression;
+import org.vcell.expression.ISymbolicProcessor;
 import org.vcell.physics.component.Connection;
 import org.vcell.physics.component.Connector;
 import org.vcell.physics.component.ModelComponent;
-import org.vcell.physics.component.ModelReader;
 import org.vcell.physics.component.OOModel;
 import org.vcell.physics.component.Symbol;
 
-import cbit.util.xml.XmlUtil;
 import cbit.vcell.math.MathException;
-import cbit.vcell.math.SubDomain;
 
 /**
  * Insert the type's description here.
@@ -207,7 +205,7 @@ public static ModelAnalysisResults analyzeMathSystem(MathSystem mathSystem) thro
 	if (coveredVertices == nodes.length){
 			
 		cbit.util.graph.Graph partitionGraph = new cbit.util.graph.Graph();
-		
+		ISymbolicProcessor symbolicProcessor = ExpressionUtilities.getDefaultSymbolicProcessor();
 		//
 		// build vertices make a directed graph with vertices (Var | equation)
 		//
@@ -234,7 +232,7 @@ public static ModelAnalysisResults analyzeMathSystem(MathSystem mathSystem) thro
 				if (varEqnAssignment.isStateVariable()){
 					symbolToSolveFor = symbol.getName()+Symbol.DERIVATIVE_SUFFIX;
 				}
-				IExpression solvedExp = solve(equation,symbolToSolveFor);
+				IExpression solvedExp = symbolicProcessor.solve(equation,symbolToSolveFor);
 				varEqnAssignment.setSolution(solvedExp); // may be null;
 					
 				cbit.util.graph.Node mergedNode = new cbit.util.graph.Node(varEqnAssignment.toString(),varEqnAssignment);
@@ -486,7 +484,7 @@ public static ModelAnalysisResults analyzeMathSystem(MathSystem mathSystem) thro
 							done = true;
 						}
 					}
-					IExpression explicitlySolvedSolution = solve(exp,symbolToSolveFor);
+					IExpression explicitlySolvedSolution = symbolicProcessor.solve(exp,symbolToSolveFor);
 					if (explicitlySolvedSolution!=null){
 						varEqnAssignments[bestTearingNodeIndex].setEquation(exp);
 						varEqnAssignments[bestTearingNodeIndex].setSolution(explicitlySolvedSolution);
@@ -546,52 +544,6 @@ public static ModelAnalysisResults analyzeMathSystem(MathSystem mathSystem) thro
 	modelAnalysisResults.matching = matching;
 	
 	return modelAnalysisResults;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (1/20/2006 10:19:09 AM)
- * @return cbit.vcell.parser.Expression
- * @param equation cbit.vcell.parser.Expression
- * @param variable java.lang.String
- */
-public static IExpression solve(IExpression equation, String variable) throws org.vcell.expression.ExpressionException {
-	jscl.math.Expression jsclExpression = null;
-	String jsclExpressionString = "solve("+equation.flatten().infix_JSCL()+","+ExpressionFactory.createExpression(variable).infix_JSCL()+")";
-	try {
-		jsclExpression = jscl.math.Expression.valueOf(jsclExpressionString);
-	}catch (jscl.text.ParseException e){
-		e.printStackTrace(System.out);
-		System.out.println("JSCL couldn't parse \""+jsclExpressionString+"\"");
-		return null;
-	}
-	IExpression solution = null;
-	jscl.math.Generic jsclSolution = jsclExpression.expand().simplify();
-	try {
-		solution = ExpressionFactory.createExpression(jsclSolution.toString());
-	}catch (Throwable e){
-		try {
-			e.printStackTrace(System.out);
-			String mathML = jsclSolution.toMathML(null);
-			Element mathMLRoot = XmlUtil.stringToXML(mathML,null);
-			solution = ExpressionFactory.fromMathML(mathMLRoot);
-		}catch (Throwable e2){
-			e2.printStackTrace(System.out);
-		}
-	}
-	if (solution!=null){
-		String[] jsclSymbols = solution.getSymbols();
-		for (int i = 0;jsclSymbols!=null && i < jsclSymbols.length; i++){
-			String restoredSymbol = cbit.util.TokenMangler.getRestoredStringJSCL(jsclSymbols[i]);
-			if (!restoredSymbol.equals(jsclSymbols[i])){
-				solution.substituteInPlace(ExpressionFactory.createExpression(jsclSymbols[i]),ExpressionFactory.createExpression(restoredSymbol));
-			}
-		}
-	}else{
-		
-	}
-	return solution;
 }
 
 

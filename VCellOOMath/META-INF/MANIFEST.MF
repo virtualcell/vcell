@@ -4,8 +4,7 @@ Bundle-Name: org.vcell.physics
 Bundle-SymbolicName: org.vcell.physics
 Bundle-Version: 1.0.0
 Bundle-Localization: plugin
-Require-Bundle: org.vcell.common,
- org.vcell.util,
+Require-Bundle: org.vcell.util,
  org.vcell.expression,
  org.vcell.units,
  org.vcell.xml.common,
@@ -13,7 +12,12 @@ Require-Bundle: org.vcell.common,
  org.vcell.geometry,
  org.vcell.image,
  org.vcell.graph,
- org.vcell.cartoon
+ org.vcell.cartoon,
+ org.jdom,
+ edu.rpi.graphdrawing,
+ com.genlogic.graphlayout,
+ com.mhhe.clrs2e,
+ edu.maine.graphalgorithms
 Export-Package: org.vcell.physics.component,
  org.vcell.physics.component.gui,
  org.vcell.physics.math
