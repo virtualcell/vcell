@@ -19,8 +19,8 @@ import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 
-import cbit.gui.PropertyLoader;
 import cbit.util.MessageConstants;
+import cbit.util.PropertyLoader;
 import cbit.vcell.messaging.JmsUtils;
 import cbit.vcell.messaging.ManageConstants;
 import cbit.vcell.messaging.ManageUtils;

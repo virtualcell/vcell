@@ -10,9 +10,11 @@ Export-Package: cbit.vcell.messaging.admin
 Require-Bundle: org.vcell.util,
  org.vcell.database,
  org.vcell.server,
- org.vcell.common,
  org.vcell.simulation,
  org.vcell.solvers,
  org.vcell.events,
  org.vcell.vcml,
- org.vcell.xml.common
+ org.vcell.xml.common,
+ org.jdom,
+ com.sonicsw.sonicmq,
+ org.eclipse.osgi

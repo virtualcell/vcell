@@ -31,13 +31,14 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
-import cbit.gui.PropertyLoader;
+import cbit.gui.SwingWorker;
 import cbit.rmi.event.VCellServerID;
 import cbit.util.BigString;
-import cbit.util.KeyValue;
 import cbit.util.MessageConstants;
+import cbit.util.PropertyLoader;
 import cbit.util.SessionLog;
-import cbit.util.User;
+import cbit.util.document.KeyValue;
+import cbit.util.document.User;
 import cbit.vcell.messaging.ControlMessageCollector;
 import cbit.vcell.messaging.ControlTopicListener;
 import cbit.vcell.messaging.JmsClientMessaging;
@@ -4594,7 +4595,7 @@ public void openLogButton_ActionPerformed(ActionEvent actionEvent) {
  */
 private void openLogDialog(Message request, String title) {
 	try {
-		class OpenLogWorker extends swingthreads.SwingWorker {
+		class OpenLogWorker extends SwingWorker {
 			Message reqMsg = null; 
 			String thisTitle = null;
 			

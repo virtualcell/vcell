@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.util.Enumeration;
 
 import progress.message.jclient.channel.RecoverableFileChannel;
-import cbit.gui.PropertyLoader;
+import cbit.util.PropertyLoader;
 import cbit.util.SessionLog;
 import cbit.vcell.messaging.JmsConnectionFactory;
 import cbit.vcell.messaging.JmsConnectionFactoryImpl;
