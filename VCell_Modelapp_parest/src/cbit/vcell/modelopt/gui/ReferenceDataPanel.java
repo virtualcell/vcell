@@ -541,9 +541,9 @@ private cbit.vcell.opt.ReferenceData importDataFromFile() throws UserCancelExcep
 	cbit.gui.VCFileChooser fileChooser = new cbit.gui.VCFileChooser();
 	fileChooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
 	fileChooser.setMultiSelectionEnabled(false);
-	fileChooser.addChoosableFileFilter(cbit.util.FileFilters.FILE_FILTER_CSV);
+	fileChooser.addChoosableFileFilter(cbit.gui.FileFilters.FILE_FILTER_CSV);
 	// Set the default file filter...
-	fileChooser.setFileFilter(cbit.util.FileFilters.FILE_FILTER_CSV);
+	fileChooser.setFileFilter(cbit.gui.FileFilters.FILE_FILTER_CSV);
 	// remove all selector
 	fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
 	String defaultPath = null;

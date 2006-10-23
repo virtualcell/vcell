@@ -9,7 +9,7 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 package cbit.vcell.modelopt.gui;
-import cbit.util.DefaultListSelectionModelFixed;
+import cbit.gui.DefaultListSelectionModelFixed;
 /**
  * Insert the type's description here.
  * Creation date: (8/31/2005 4:03:04 PM)
@@ -21,7 +21,7 @@ public class MultisourcePlotPane extends javax.swing.JPanel {
 	private MultisourcePlotListModel ivjmultisourcePlotListModel = null;
 	private cbit.plot.PlotPane ivjplotPane = null;
 	private cbit.vcell.modelopt.gui.DataSource[] fieldDataSources = null;
-	private cbit.util.DefaultListSelectionModelFixed ivjdefaultListSelectionModelFixed = null;
+	private cbit.gui.DefaultListSelectionModelFixed ivjdefaultListSelectionModelFixed = null;
 	private javax.swing.JScrollPane ivjReferenceDataListScrollPane = null;
 
 class IvjEventHandler implements java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
@@ -182,10 +182,10 @@ public DataSource getDataSources(int index) {
  * @return cbit.util.DefaultListSelectionModelFixed
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.util.DefaultListSelectionModelFixed getdefaultListSelectionModelFixed() {
+private cbit.gui.DefaultListSelectionModelFixed getdefaultListSelectionModelFixed() {
 	if (ivjdefaultListSelectionModelFixed == null) {
 		try {
-			ivjdefaultListSelectionModelFixed = new cbit.util.DefaultListSelectionModelFixed();
+			ivjdefaultListSelectionModelFixed = new cbit.gui.DefaultListSelectionModelFixed();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

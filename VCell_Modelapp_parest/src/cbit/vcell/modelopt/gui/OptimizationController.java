@@ -23,7 +23,7 @@ public class OptimizationController {
 	private OptTestPanel optTestPanel = null;
 	private ParameterEstimationTask parameterEstimationTask = null;
 
-	public class OptSolverUpdater extends cbit.util.AsynchGuiUpdater {
+	public class OptSolverUpdater extends cbit.gui.AsynchGuiUpdater {
 		private int progressRunner = 0;
 		private OptSolverCallbacks optSolverCallbacks = null;
 
