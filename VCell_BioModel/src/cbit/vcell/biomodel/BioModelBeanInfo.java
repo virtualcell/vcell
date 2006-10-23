@@ -762,7 +762,7 @@ public java.beans.PropertyDescriptor versionPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.util.Version.class
+					cbit.util.document.Version.class
 				};
 				aSetMethod = getBeanClass().getMethod("setVersion", aSetMethodParameterTypes);
 			} catch (Throwable exception) {

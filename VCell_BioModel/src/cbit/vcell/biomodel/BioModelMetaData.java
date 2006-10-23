@@ -3,9 +3,10 @@ package cbit.vcell.biomodel;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.KeyValue;
-import cbit.util.Version;
-import cbit.util.Versionable;
+import cbit.util.document.KeyValue;
+import cbit.util.document.Version;
+import cbit.util.document.Versionable;
+
 import java.util.*;
 /**
  * Insert the type's description here.

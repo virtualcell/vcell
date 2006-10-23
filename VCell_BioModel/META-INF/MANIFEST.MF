@@ -13,6 +13,6 @@ Require-Bundle: org.vcell.util,
  org.vcell.simulation,
  org.vcell.geometry,
  org.vcell.math,
- org.vcell.common,
  org.vcell.expression,
- org.vcell.image
+ org.vcell.image,
+ org.eclipse.osgi
