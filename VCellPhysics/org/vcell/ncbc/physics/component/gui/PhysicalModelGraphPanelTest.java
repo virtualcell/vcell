@@ -1,7 +1,6 @@
 package org.vcell.ncbc.physics.component.gui;
 
 import org.vcell.ncbc.physics.component.PhysicalModel;
-import org.vcell.ncbc.physics.component.PhysicalModelTest;
 
 import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.modelapp.SimulationContextTest;

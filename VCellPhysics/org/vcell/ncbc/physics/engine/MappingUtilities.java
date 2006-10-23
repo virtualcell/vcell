@@ -1,32 +1,12 @@
 package org.vcell.ncbc.physics.engine;
 
-import cbit.vcell.geometry.surface.*;
-import ucar.units.Unit;
-import cbit.vcell.model.Model;
 import java.beans.PropertyVetoException;
-import cbit.vcell.model.Membrane;
-import cbit.vcell.model.Structure;
-import cbit.vcell.model.Feature;
-import cbit.vcell.geometry.SubVolume;
-import cbit.vcell.geometry.GeometryException;
-import cbit.image.ImageException;
-import cbit.vcell.geometry.RegionImage;
-import cbit.vcell.geometry.Geometry;
-import cbit.image.VCImage;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.modelapp.FeatureMapping;
-import cbit.vcell.modelapp.MembraneMapping;
-import cbit.vcell.modelapp.SimulationContext;
-import cbit.vcell.modelapp.StructureMapping;
-
-import java.util.Vector;
 
 import org.vcell.expression.ExpressionException;
 import org.vcell.ncbc.physics.component.Connection;
 import org.vcell.ncbc.physics.component.CurrentSource;
 import org.vcell.ncbc.physics.component.ElectricalDevice;
 import org.vcell.ncbc.physics.component.Location;
-import org.vcell.ncbc.physics.component.LumpedCapacitor;
 import org.vcell.ncbc.physics.component.MembraneSpecies;
 import org.vcell.ncbc.physics.component.PhysicalModel;
 import org.vcell.ncbc.physics.component.ResolvedSurfaceLocation;
@@ -39,6 +19,21 @@ import org.vcell.ncbc.physics.component.VolumeElectricalMaterial;
 import org.vcell.ncbc.physics.component.VolumeLocation;
 import org.vcell.ncbc.physics.component.VolumeReaction;
 import org.vcell.ncbc.physics.component.VolumeSpecies;
+
+import cbit.image.ImageException;
+import cbit.vcell.geometry.GeometryException;
+import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.geometry.surface.VolumeGeometricRegion;
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.Structure;
+import cbit.vcell.modelapp.FeatureMapping;
+import cbit.vcell.modelapp.MembraneMapping;
+import cbit.vcell.modelapp.SimulationContext;
+import cbit.vcell.modelapp.StructureMapping;
+import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
  * Creation date: (1/12/2004 1:35:08 AM)
@@ -352,12 +347,12 @@ public static void addElectricalDevices(cbit.vcell.modelapp.SimulationContext si
 				//
 				ElectricalDevice clampDevice = null;
 				if (stimulus instanceof cbit.vcell.modelapp.CurrentClampStimulus){
-					ucar.units.Unit unit = org.vcell.ncbc.physics.component.Units.PICOAMPERE;  // current clamp electrodes are always "total current"
+					VCUnitDefinition unit = VCUnitDefinition.UNIT_pA;  // current clamp electrodes are always "total current"
 					cbit.vcell.modelapp.CurrentClampStimulus ccStimulus = (cbit.vcell.modelapp.CurrentClampStimulus)stimulus;
 					clampDevice = new org.vcell.ncbc.physics.component.CurrentSource("currentClamp",surfaceLocation,unit,ccStimulus.getCurrentParameter().getExpression().infix());
 					
 				}else if (stimulus instanceof cbit.vcell.modelapp.VoltageClampStimulus){
-					ucar.units.Unit unit = org.vcell.ncbc.physics.component.Units.MILLIVOLT;
+					VCUnitDefinition unit = VCUnitDefinition.UNIT_mV;
 					cbit.vcell.modelapp.VoltageClampStimulus vcStimulus = (cbit.vcell.modelapp.VoltageClampStimulus)stimulus;
 					clampDevice = new org.vcell.ncbc.physics.component.VoltageSource("voltageClamp",surfaceLocation,unit,vcStimulus.getVoltageParameter().getExpression().infix());
 				}
@@ -388,11 +383,11 @@ public static void addElectricalDevices(cbit.vcell.modelapp.SimulationContext si
 					if (locations[j] instanceof SurfaceLocation && locations[j].getName().startsWith(membrane.getName())){
 						SurfaceLocation surfaceLocation = (SurfaceLocation)locations[j];
 						String name = reactionSteps[i].getName(); // +"_"+surfaceLocation.getName();
-						Unit unit = null;
+						VCUnitDefinition unit = null;
 						if (surfaceLocation instanceof ResolvedSurfaceLocation){
-							unit = org.vcell.ncbc.physics.component.Units.PICOAMPERE_PER_MICRON_SQUARED;
+							unit = VCUnitDefinition.UNIT_pA_per_um2;
 						}else if (surfaceLocation instanceof UnresolvedSurfaceLocation){
-							unit = org.vcell.ncbc.physics.component.Units.PICOAMPERE;
+							unit = VCUnitDefinition.UNIT_pA;
 						}
 						String expression = reactionSteps[i].getKinetics().getCurrentParameter().getName();
 						CurrentSource newCurrentSource = new CurrentSource(name,surfaceLocation,unit,expression);

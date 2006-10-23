@@ -2,22 +2,13 @@ package org.vcell.ncbc.physics.engine;
 
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
-import org.vcell.ncbc.physics.engine.ElectricalDevice;
-import org.vcell.ncbc.physics.engine.SimpleElectricalDevice;
-
-import cbit.vcell.math.Function;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.modelapp.SimulationContextTest;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-
 
 import cbit.util.graph.Edge;
 import cbit.util.graph.Graph;
 import cbit.util.graph.Node;
-import cbit.util.graph.Path;
+import cbit.vcell.math.Function;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.modelapp.SimulationContextTest;
 
 
 /**

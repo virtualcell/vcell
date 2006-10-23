@@ -3,20 +3,17 @@ package org.vcell.ncbc.physics.engine;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
-import org.vcell.ncbc.physics.engine.ElectricalDevice;
-import org.vcell.ncbc.physics.engine.SimpleElectricalDevice;
 
+import cbit.util.graph.Edge;
+import cbit.util.graph.Graph;
+import cbit.util.graph.Node;
+import cbit.util.graph.Path;
 import cbit.vcell.math.Function;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.modelapp.FeatureMapping;
 import cbit.vcell.modelapp.MembraneMapping;
 import cbit.vcell.modelapp.SimulationContext;
-
-import cbit.util.graph.Edge;
-import cbit.util.graph.Graph;
-import cbit.util.graph.Node;
-import cbit.util.graph.Path;
 
 /**
  * Insert the type's description here.

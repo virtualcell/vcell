@@ -4,8 +4,7 @@ Bundle-Name: org.vcell.ncbc.physics
 Bundle-SymbolicName: org.vcell.ncbc.physics;singleton:=true
 Bundle-Version: 1.0.0
 Bundle-Localization: plugin
-Require-Bundle: org.vcell.common,
- org.eclipse.osgi,
+Require-Bundle: org.eclipse.osgi,
  org.vcell.util,
  org.vcell.expression,
  org.vcell.units,
@@ -16,6 +15,9 @@ Require-Bundle: org.vcell.common,
  org.vcell.modelapp,
  org.vcell.physiology,
  org.vcell.graph,
- org.vcell.cartoon
+ org.vcell.cartoon,
+ org.jdom,
+ edu.rpi.graphdrawing,
+ com.genlogic.graphlayout
 Import-Package: org.osgi.framework;version="1.3.0"
 Bundle-Activator: org.vcell.ncbc.physics.MultiphysicsAnalysisTaskActivator

@@ -1,30 +1,19 @@
 package org.vcell.ncbc.physics.engine;
 
-import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.IRationalExpression;
-import org.vcell.expression.IRationalExpression;
 import org.vcell.expression.RationalExpressionFactory;
-import org.vcell.ncbc.physics.engine.ElectricalDevice;
-
-import cbit.vcell.matrix.RationalExpMatrix;
-import cbit.vcell.matrix.MatrixException;
-import cbit.vcell.math.Function;
-import cbit.vcell.math.Variable;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.model.Membrane;
-import cbit.vcell.model.Model;
-import cbit.vcell.modelapp.FeatureMapping;
-import cbit.vcell.modelapp.MembraneMapping;
-import cbit.vcell.modelapp.SimulationContext;
 
 import cbit.util.graph.Edge;
 import cbit.util.graph.Graph;
-import cbit.util.graph.Path;
 import cbit.util.graph.Node;
+import cbit.util.graph.Path;
+import cbit.vcell.math.Function;
+import cbit.vcell.matrix.MatrixException;
+import cbit.vcell.matrix.RationalExpMatrix;
+import cbit.vcell.model.Membrane;
 
 /**
  * Insert the type's description here.

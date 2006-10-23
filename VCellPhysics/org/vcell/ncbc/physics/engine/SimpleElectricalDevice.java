@@ -4,8 +4,6 @@ import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
 
 import cbit.vcell.math.Function;
-import cbit.vcell.math.VolVariable;
-import edu.uchc.vcell.expression.internal.*;
 /**
  * Insert the type's description here.
  * Creation date: (2/12/2002 1:01:13 PM)
