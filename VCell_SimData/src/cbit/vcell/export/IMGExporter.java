@@ -4,6 +4,7 @@ import java.io.*;
 import java.rmi.*;
 import cbit.vcell.simdata.*;
 import cbit.util.*;
+import cbit.util.document.User;
 import cbit.vcell.geometry.*;
 /**
  * Insert the type's description here.

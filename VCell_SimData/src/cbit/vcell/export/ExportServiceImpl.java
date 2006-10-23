@@ -3,7 +3,6 @@ package cbit.vcell.export;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.gui.PropertyLoader;
 
 import java.io.*;
 import java.util.zip.*;
@@ -13,6 +12,7 @@ import java.util.*;
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
 import cbit.util.*;
+import cbit.util.document.User;
 import cbit.vcell.simdata.*;
 import cbit.vcell.export.nrrd.*;
 

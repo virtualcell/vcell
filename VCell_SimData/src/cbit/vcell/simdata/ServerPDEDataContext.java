@@ -6,8 +6,8 @@ package cbit.vcell.simdata;
 ©*/
 import cbit.util.DataAccessException;
 import cbit.util.PermissionException;
-import cbit.util.User;
 import cbit.util.VCDataIdentifier;
+import cbit.util.document.User;
 import cbit.vcell.export.ExportSpecs;
 /**
  * Insert the type's description here.

@@ -7,7 +7,8 @@ package cbit.vcell.simdata;
 import cbit.util.CommentStringTokenizer;
 import cbit.util.Coordinate;
 import cbit.util.DataAccessException;
-import cbit.util.User;
+import cbit.util.document.User;
+
 import java.util.*;
 import java.io.*;
 import cbit.vcell.geometry.*;

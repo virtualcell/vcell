@@ -7,11 +7,11 @@ package cbit.vcell.simdata;
 import java.util.Hashtable;
 import java.util.Enumeration;
 
-import cbit.gui.PropertyLoader;
 import cbit.util.CacheException;
 import cbit.util.CacheStatus;
 import cbit.util.Ping;
 import cbit.util.Pingable;
+import cbit.util.PropertyLoader;
 import cbit.util.TimeWrapper;
 import cbit.util.VCDataIdentifier;
 /**

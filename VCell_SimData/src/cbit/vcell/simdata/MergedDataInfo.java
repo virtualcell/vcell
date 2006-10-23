@@ -1,7 +1,7 @@
 package cbit.vcell.simdata;
 
-import cbit.util.User;
 import cbit.util.VCDataIdentifier;
+import cbit.util.document.User;
 /**
  * Insert the type's description here.
  * Creation date: (10/7/2003 4:21:41 PM)
@@ -82,7 +82,7 @@ public java.lang.String getDatasetName() {
  * Creation date: (10/22/2003 11:22:01 AM)
  * @return cbit.vcell.server.User
  */
-public cbit.util.User getDatasetUser() {
+public cbit.util.document.User getDatasetUser() {
 	return datasetUser;
 }
 /**

@@ -1,10 +1,11 @@
 package cbit.vcell.simdata;
 
-import cbit.gui.PropertyLoader;
+import cbit.util.PropertyLoader;
 import cbit.util.SessionLog;
 import cbit.util.StdoutSessionLog;
-import cbit.util.User;
 import cbit.util.VCDataIdentifier;
+import cbit.util.document.User;
+
 import java.io.File;
 /**
  * Insert the type's description here.
@@ -19,13 +20,13 @@ public class MergedDataTest {
  */
 public static void main(String[] args) {
 
-	final User user = new cbit.util.User("anu",new cbit.util.KeyValue("2302355"));
+	final User user = new cbit.util.document.User("anu",new cbit.util.document.KeyValue("2302355"));
 	File userFile = new File("\\\\fs2\\RAID\\vcell\\users");
 	VCDataIdentifier vcData1 = new VCDataIdentifier() {
 		public String getID() {
 			return "SimID_6389673";
 		}
-		public cbit.util.User getOwner() {
+		public cbit.util.document.User getOwner() {
 			return user;
 		}
 	};
@@ -33,7 +34,7 @@ public static void main(String[] args) {
 		public String getID() {
 			return "SimID_6383968";
 		}
-		public cbit.util.User getOwner() {
+		public cbit.util.document.User getOwner() {
 			return user;
 		}
 	};

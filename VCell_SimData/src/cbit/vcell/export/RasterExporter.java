@@ -4,8 +4,8 @@ import java.io.*;
 import java.rmi.*;
 
 import cbit.util.DataAccessException;
-import cbit.util.User;
 import cbit.util.VCDataIdentifier;
+import cbit.util.document.User;
 import cbit.vcell.mesh.CartesianMesh;
 import cbit.vcell.simdata.*;
 import cbit.vcell.export.nrrd.*;

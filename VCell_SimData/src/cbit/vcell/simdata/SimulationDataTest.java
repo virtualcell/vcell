@@ -14,12 +14,12 @@ public class SimulationDataTest {
  * @param args java.lang.String[]
  */
 public static void main(String[] args) {
-	final cbit.util.User user = new cbit.util.User("fgao15",new cbit.util.KeyValue("4123431"));	
+	final cbit.util.document.User user = new cbit.util.document.User("fgao15",new cbit.util.document.KeyValue("4123431"));	
 	VCDataIdentifier vcData1 = new VCDataIdentifier() {
 		public String getID() {
 			return "SimID_8483780";
 		}
-		public cbit.util.User getOwner() {
+		public cbit.util.document.User getOwner() {
 			return user;
 		}
 	};

@@ -5,8 +5,8 @@ package cbit.vcell.export;
  * All rights reserved.
 ©*/
 import cbit.util.Coordinate;
-import cbit.util.User;
 import cbit.util.VCDataIdentifier;
+import cbit.util.document.User;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.mesh.CartesianMesh;
 import java.util.*;

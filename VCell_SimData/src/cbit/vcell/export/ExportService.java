@@ -1,6 +1,6 @@
 package cbit.vcell.export;
 import cbit.rmi.event.ExportEvent;
-import cbit.util.User;
+import cbit.util.document.User;
 import cbit.vcell.simdata.DataServerImpl;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

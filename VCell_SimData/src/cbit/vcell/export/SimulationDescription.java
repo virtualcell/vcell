@@ -1,7 +1,7 @@
 package cbit.vcell.export;
 import cbit.util.DataAccessException;
-import cbit.util.User;
 import cbit.util.VCDataIdentifier;
+import cbit.util.document.User;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.

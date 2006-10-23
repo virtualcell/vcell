@@ -16,6 +16,7 @@ import org.vcell.expression.SymbolTable;
 import org.vcell.expression.SymbolTableEntry;
 
 import cbit.util.*;
+import cbit.util.document.User;
 import edu.uchc.vcell.expression.internal.*;
 /**
  * This type was created in VisualAge.

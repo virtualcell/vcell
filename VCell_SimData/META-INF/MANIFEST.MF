@@ -11,8 +11,7 @@ Export-Package: cbit.vcell.export,
  cbit.vcell.mesh,
  cbit.vcell.simdata,
  org.vcell.simdata
-Require-Bundle: org.vcell.common,
- org.vcell.util,
+Require-Bundle: org.vcell.util,
  org.vcell.expression,
  org.vcell.units,
  org.vcell.geometry,
@@ -22,4 +21,6 @@ Require-Bundle: org.vcell.common,
  org.vcell.simulation,
  org.vcell.quicktime,
  org.vcell.events,
- org.vcell.plotting
+ org.vcell.plotting,
+ GIFUtils,
+ org.eclipse.osgi
