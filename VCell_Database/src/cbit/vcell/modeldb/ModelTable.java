@@ -13,9 +13,9 @@ import cbit.sql.Table;
 import cbit.sql.VersionTable;
 import cbit.util.DataAccessException;
 import cbit.util.SessionLog;
-import cbit.util.User;
-import cbit.util.Version;
-import cbit.util.VersionInfo;
+import cbit.util.document.User;
+import cbit.util.document.Version;
+import cbit.util.document.VersionInfo;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ModelInfo;
 /**

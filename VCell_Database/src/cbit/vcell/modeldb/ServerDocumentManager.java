@@ -6,17 +6,17 @@ import java.util.Vector;
 
 import cbit.image.VCImage;
 import cbit.util.BeanUtils;
-import cbit.util.BioModelChildSummary;
 import cbit.util.DataAccessException;
-import cbit.util.KeyValue;
-import cbit.util.MathModelChildSummary;
 import cbit.util.ObjectNotFoundException;
 import cbit.util.TokenMangler;
-import cbit.util.User;
-import cbit.util.Version;
-import cbit.util.VersionInfo;
-import cbit.util.Versionable;
-import cbit.util.VersionableType;
+import cbit.util.document.BioModelChildSummary;
+import cbit.util.document.KeyValue;
+import cbit.util.document.MathModelChildSummary;
+import cbit.util.document.User;
+import cbit.util.document.Version;
+import cbit.util.document.VersionInfo;
+import cbit.util.document.Versionable;
+import cbit.util.document.VersionableType;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.geometry.Geometry;
@@ -592,7 +592,7 @@ boolean isChanged(User user, Geometry geometry) throws DataAccessException {
  * Insert the method's description here.
  * Creation date: (10/28/00 12:08:30 AM)
  */
-private boolean isChanged0(User user, cbit.util.Versionable versionable, Versionable savedVersionable) throws DataAccessException {
+private boolean isChanged0(User user, cbit.util.document.Versionable versionable, Versionable savedVersionable) throws DataAccessException {
 	/*
 	//
 	// identify versionable as it was last loaded from the database

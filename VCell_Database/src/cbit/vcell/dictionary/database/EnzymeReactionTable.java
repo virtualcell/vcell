@@ -4,7 +4,7 @@ import java.util.Vector;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
-import cbit.util.KeyValue;
+import cbit.util.document.KeyValue;
 import cbit.vcell.dictionary.CompoundInfo;
 import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.DBNonFormalUnboundSpecies;

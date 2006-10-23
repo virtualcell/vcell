@@ -4,8 +4,8 @@ import java.util.Vector;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
-import cbit.util.KeyValue;
 import cbit.util.SessionLog;
+import cbit.util.document.KeyValue;
 import cbit.vcell.dictionary.BoundCompound;
 import cbit.vcell.dictionary.CompoundInfo;
 import cbit.vcell.dictionary.DBFormalSpecies;
@@ -51,8 +51,8 @@ public DBFormalSpecies[] getCompounds(java.sql.ResultSet rset, SessionLog log,bo
 	String currentFormula = null;
 	String currentKeggID = null;
 	String currentPreferred = null;
-	cbit.util.KeyValue currentCompoundID = null;
-	cbit.util.KeyValue currentDBSpeciesID = null;
+	cbit.util.document.KeyValue currentCompoundID = null;
+	cbit.util.document.KeyValue currentDBSpeciesID = null;
 	
 	while(rset.next() || rset.isAfterLast()){
 			

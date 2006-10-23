@@ -10,8 +10,8 @@ import java.sql.SQLException;
 import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.sql.VersionTable;
-import cbit.util.KeyValue;
-import cbit.util.UserInfo;
+import cbit.util.document.KeyValue;
+import cbit.util.document.UserInfo;
 /**
  * This type was created in VisualAge.
  */

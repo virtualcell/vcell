@@ -7,7 +7,7 @@ package cbit.sql;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import cbit.gui.PropertyLoader;
+import cbit.util.PropertyLoader;
 import cbit.util.SessionLog;
 /**
  * This type was created in VisualAge.y

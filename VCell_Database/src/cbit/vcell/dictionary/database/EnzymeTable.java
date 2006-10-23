@@ -4,8 +4,8 @@ import java.util.Vector;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
-import cbit.util.KeyValue;
 import cbit.util.SessionLog;
+import cbit.util.document.KeyValue;
 import cbit.vcell.dictionary.BoundEnzyme;
 import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.EnzymeInfo;
@@ -54,8 +54,8 @@ public DBFormalSpecies[] getEnzymes(java.sql.ResultSet rset, SessionLog log,bool
 	String currentPreferred = null;
 	String currentCasID = null;
 	
-	cbit.util.KeyValue currentEnzymeID = null;
-	cbit.util.KeyValue currentDBSpeciesID = null;
+	cbit.util.document.KeyValue currentEnzymeID = null;
+	cbit.util.document.KeyValue currentDBSpeciesID = null;
 	
 	while(rset.next() || rset.isAfterLast()){
 			

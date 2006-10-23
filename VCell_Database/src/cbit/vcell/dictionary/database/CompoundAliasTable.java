@@ -2,7 +2,7 @@ package cbit.vcell.dictionary.database;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
-import cbit.util.KeyValue;
+import cbit.util.document.KeyValue;
 
 /**
  * Represents a table for storing compound information in a database

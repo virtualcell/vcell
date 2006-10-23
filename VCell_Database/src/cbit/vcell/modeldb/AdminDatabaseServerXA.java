@@ -4,8 +4,8 @@ import java.sql.Connection;
 import cbit.rmi.event.SimulationJobStatus;
 import cbit.rmi.event.VCellServerID;
 import cbit.util.DataAccessException;
-import cbit.util.KeyValue;
-import cbit.util.User;
+import cbit.util.document.KeyValue;
+import cbit.util.document.User;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
 public interface AdminDatabaseServerXA {
 /**

@@ -24,18 +24,18 @@ public final class LocalAdminDbServer_Stub
     
     static {
 	try {
-	    $method_getSimulationJobStatus_0 = AdminDatabaseServer.class.getMethod("getSimulationJobStatus", new java.lang.Class[] {cbit.util.KeyValue.class, int.class});
+	    $method_getSimulationJobStatus_0 = AdminDatabaseServer.class.getMethod("getSimulationJobStatus", new java.lang.Class[] {cbit.util.document.KeyValue.class, int.class});
 	    $method_getSimulationJobStatus_1 = AdminDatabaseServer.class.getMethod("getSimulationJobStatus", new java.lang.Class[] {java.lang.String.class});
-	    $method_getSimulationJobStatus_2 = AdminDatabaseServer.class.getMethod("getSimulationJobStatus", new java.lang.Class[] {boolean.class, cbit.util.User.class});
+	    $method_getSimulationJobStatus_2 = AdminDatabaseServer.class.getMethod("getSimulationJobStatus", new java.lang.Class[] {boolean.class, cbit.util.document.User.class});
 	    $method_getUser_3 = AdminDatabaseServer.class.getMethod("getUser", new java.lang.Class[] {java.lang.String.class});
 	    $method_getUser_4 = AdminDatabaseServer.class.getMethod("getUser", new java.lang.Class[] {java.lang.String.class, java.lang.String.class});
-	    $method_getUserFromSimulationKey_5 = AdminDatabaseServer.class.getMethod("getUserFromSimulationKey", new java.lang.Class[] {cbit.util.KeyValue.class});
-	    $method_getUserInfo_6 = AdminDatabaseServer.class.getMethod("getUserInfo", new java.lang.Class[] {cbit.util.KeyValue.class});
+	    $method_getUserFromSimulationKey_5 = AdminDatabaseServer.class.getMethod("getUserFromSimulationKey", new java.lang.Class[] {cbit.util.document.KeyValue.class});
+	    $method_getUserInfo_6 = AdminDatabaseServer.class.getMethod("getUserInfo", new java.lang.Class[] {cbit.util.document.KeyValue.class});
 	    $method_getUserInfos_7 = AdminDatabaseServer.class.getMethod("getUserInfos", new java.lang.Class[] {});
 	    $method_insertSimulationJobStatus_8 = AdminDatabaseServer.class.getMethod("insertSimulationJobStatus", new java.lang.Class[] {cbit.rmi.event.SimulationJobStatus.class});
-	    $method_insertUserInfo_9 = AdminDatabaseServer.class.getMethod("insertUserInfo", new java.lang.Class[] {cbit.util.UserInfo.class});
+	    $method_insertUserInfo_9 = AdminDatabaseServer.class.getMethod("insertUserInfo", new java.lang.Class[] {cbit.util.document.UserInfo.class});
 	    $method_updateSimulationJobStatus_10 = AdminDatabaseServer.class.getMethod("updateSimulationJobStatus", new java.lang.Class[] {cbit.rmi.event.SimulationJobStatus.class, cbit.rmi.event.SimulationJobStatus.class});
-	    $method_updateUserInfo_11 = AdminDatabaseServer.class.getMethod("updateUserInfo", new java.lang.Class[] {cbit.util.UserInfo.class});
+	    $method_updateUserInfo_11 = AdminDatabaseServer.class.getMethod("updateUserInfo", new java.lang.Class[] {cbit.util.document.UserInfo.class});
 	} catch (java.lang.NoSuchMethodException e) {
 	    throw new java.lang.NoSuchMethodError(
 		"stub class initialization failed");
@@ -50,7 +50,7 @@ public final class LocalAdminDbServer_Stub
     // methods from remote interfaces
     
     // implementation of getSimulationJobStatus(KeyValue, int)
-    public cbit.rmi.event.SimulationJobStatus getSimulationJobStatus(cbit.util.KeyValue $param_KeyValue_1, int $param_int_2)
+    public cbit.rmi.event.SimulationJobStatus getSimulationJobStatus(cbit.util.document.KeyValue $param_KeyValue_1, int $param_int_2)
 	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
@@ -86,7 +86,7 @@ public final class LocalAdminDbServer_Stub
     }
     
     // implementation of getSimulationJobStatus(boolean, User)
-    public cbit.rmi.event.SimulationJobStatus[] getSimulationJobStatus(boolean $param_boolean_1, cbit.util.User $param_User_2)
+    public cbit.rmi.event.SimulationJobStatus[] getSimulationJobStatus(boolean $param_boolean_1, cbit.util.document.User $param_User_2)
 	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
@@ -104,12 +104,12 @@ public final class LocalAdminDbServer_Stub
     }
     
     // implementation of getUser(String)
-    public cbit.util.User getUser(java.lang.String $param_String_1)
+    public cbit.util.document.User getUser(java.lang.String $param_String_1)
 	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getUser_3, new java.lang.Object[] {$param_String_1}, -5876487373133529709L);
-	    return ((cbit.util.User) $result);
+	    return ((cbit.util.document.User) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -122,12 +122,12 @@ public final class LocalAdminDbServer_Stub
     }
     
     // implementation of getUser(String, String)
-    public cbit.util.User getUser(java.lang.String $param_String_1, java.lang.String $param_String_2)
+    public cbit.util.document.User getUser(java.lang.String $param_String_1, java.lang.String $param_String_2)
 	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getUser_4, new java.lang.Object[] {$param_String_1, $param_String_2}, -6257811118775427044L);
-	    return ((cbit.util.User) $result);
+	    return ((cbit.util.document.User) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -140,12 +140,12 @@ public final class LocalAdminDbServer_Stub
     }
     
     // implementation of getUserFromSimulationKey(KeyValue)
-    public cbit.util.User getUserFromSimulationKey(cbit.util.KeyValue $param_KeyValue_1)
+    public cbit.util.document.User getUserFromSimulationKey(cbit.util.document.KeyValue $param_KeyValue_1)
 	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getUserFromSimulationKey_5, new java.lang.Object[] {$param_KeyValue_1}, -9117084100856111954L);
-	    return ((cbit.util.User) $result);
+	    return ((cbit.util.document.User) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -158,12 +158,12 @@ public final class LocalAdminDbServer_Stub
     }
     
     // implementation of getUserInfo(KeyValue)
-    public cbit.util.UserInfo getUserInfo(cbit.util.KeyValue $param_KeyValue_1)
+    public cbit.util.document.UserInfo getUserInfo(cbit.util.document.KeyValue $param_KeyValue_1)
 	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getUserInfo_6, new java.lang.Object[] {$param_KeyValue_1}, 5888400704317291773L);
-	    return ((cbit.util.UserInfo) $result);
+	    return ((cbit.util.document.UserInfo) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -176,12 +176,12 @@ public final class LocalAdminDbServer_Stub
     }
     
     // implementation of getUserInfos()
-    public cbit.util.UserInfo[] getUserInfos()
+    public cbit.util.document.UserInfo[] getUserInfos()
 	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getUserInfos_7, null, 4275675527704489443L);
-	    return ((cbit.util.UserInfo[]) $result);
+	    return ((cbit.util.document.UserInfo[]) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -212,12 +212,12 @@ public final class LocalAdminDbServer_Stub
     }
     
     // implementation of insertUserInfo(UserInfo)
-    public cbit.util.UserInfo insertUserInfo(cbit.util.UserInfo $param_UserInfo_1)
+    public cbit.util.document.UserInfo insertUserInfo(cbit.util.document.UserInfo $param_UserInfo_1)
 	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_insertUserInfo_9, new java.lang.Object[] {$param_UserInfo_1}, 9077131507998373534L);
-	    return ((cbit.util.UserInfo) $result);
+	    return ((cbit.util.document.UserInfo) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -248,12 +248,12 @@ public final class LocalAdminDbServer_Stub
     }
     
     // implementation of updateUserInfo(UserInfo)
-    public cbit.util.UserInfo updateUserInfo(cbit.util.UserInfo $param_UserInfo_1)
+    public cbit.util.document.UserInfo updateUserInfo(cbit.util.document.UserInfo $param_UserInfo_1)
 	throws cbit.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_updateUserInfo_11, new java.lang.Object[] {$param_UserInfo_1}, 1504983660871353769L);
-	    return ((cbit.util.UserInfo) $result);
+	    return ((cbit.util.document.UserInfo) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {

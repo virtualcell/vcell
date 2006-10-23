@@ -7,8 +7,8 @@ import cbit.sql.Field;
 import cbit.sql.InsertHashtable;
 import cbit.sql.Table;
 import cbit.util.DataAccessException;
-import cbit.util.KeyValue;
 import cbit.util.SessionLog;
+import cbit.util.document.KeyValue;
 import cbit.vcell.model.SpeciesContext;
 /**
  * This type was created in VisualAge.

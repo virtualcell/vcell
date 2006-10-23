@@ -5,7 +5,7 @@ package cbit.vcell.modeldb;
  * All rights reserved.
 ©*/
 import cbit.sql.Field;
-import cbit.util.VersionableType;
+import cbit.util.document.VersionableType;
 /**
  * This type was created in VisualAge.
  */

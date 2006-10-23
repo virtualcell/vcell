@@ -2,7 +2,7 @@ package cbit.vcell.dictionary.database;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
-import cbit.util.KeyValue;
+import cbit.util.document.KeyValue;
 
 /**
  * Represents a table for storing enzyme names and aliases in a db table

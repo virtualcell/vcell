@@ -9,13 +9,13 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
 import cbit.util.DataAccessException;
-import cbit.util.KeyValue;
 import cbit.util.SessionLog;
-import cbit.util.SimulationVersion;
-import cbit.util.Version;
-import cbit.util.VersionFlag;
-import cbit.util.Versionable;
-import cbit.util.VersionableType;
+import cbit.util.document.KeyValue;
+import cbit.util.document.SimulationVersion;
+import cbit.util.document.Version;
+import cbit.util.document.VersionFlag;
+import cbit.util.document.Versionable;
+import cbit.util.document.VersionableType;
 import cbit.vcell.modeldb.BioModelSimContextLinkTable;
 import cbit.vcell.modeldb.BioModelSimulationLinkTable;
 import cbit.vcell.modeldb.BioModelTable;
@@ -244,7 +244,7 @@ public static java.util.Vector getReferencingVersionableTypes(VersionableType vT
  * @param rset ResultSet
  * @param log SessionLog
  */
-public static Version getVersion(ResultSet rset, cbit.util.GroupAccess groupAccess,SessionLog log) throws SQLException ,DataAccessException{
+public static Version getVersion(ResultSet rset, cbit.util.document.GroupAccess groupAccess,SessionLog log) throws SQLException ,DataAccessException{
 	KeyValue vBranchPointRef = null;
 	java.math.BigDecimal vBranchID = null;
 	java.util.Date vDate = null;
@@ -304,7 +304,7 @@ public static Version getVersion(ResultSet rset, cbit.util.GroupAccess groupAcce
 	String name = rset.getString(VersionTable.name_ColumnName);
 	String ownerName = rset.getString(cbit.vcell.modeldb.UserTable.table.userid.toString());
 	KeyValue ownerID = new KeyValue(rset.getBigDecimal(VersionTable.ownerRef_ColumnName));
-	cbit.util.User owner = new cbit.util.User(ownerName, ownerID);
+	cbit.util.document.User owner = new cbit.util.document.User(ownerName, ownerID);
 	//cbit.vcell.server.AccessInfo privacy = new cbit.vcell.server.AccessInfo(rset.getInt(VersionTable.privacy_ColumnName));
 	//
 	if (bFoundParentSimRefColumn){

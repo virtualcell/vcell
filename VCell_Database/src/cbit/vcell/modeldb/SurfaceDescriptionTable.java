@@ -6,8 +6,8 @@ import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.util.DataAccessException;
 import cbit.util.ISize;
-import cbit.util.KeyValue;
 import cbit.util.SessionLog;
+import cbit.util.document.KeyValue;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 /**
  * This type was created in VisualAge.

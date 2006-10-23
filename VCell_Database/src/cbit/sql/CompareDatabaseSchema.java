@@ -194,7 +194,7 @@ public static void main(java.lang.String[] args) {
         SessionLog log = new StdoutSessionLog("CompareDatabaseSchema");
         ConnectionFactory conFactory = null;
         KeyFactory keyFactory = null;
-        new cbit.gui.PropertyLoader();
+        new cbit.util.PropertyLoader();
 
         //
         // get appropriate database factory objects

@@ -10,8 +10,8 @@ import java.sql.SQLException;
 import cbit.image.VCPixelClass;
 import cbit.sql.Field;
 import cbit.sql.Table;
-import cbit.util.KeyValue;
 import cbit.util.SessionLog;
+import cbit.util.document.KeyValue;
 /**
  * This type was created in VisualAge.
  */

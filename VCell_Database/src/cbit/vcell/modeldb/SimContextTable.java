@@ -11,11 +11,11 @@ import java.sql.SQLException;
 import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.sql.VersionTable;
-import cbit.util.KeyValue;
 import cbit.util.SessionLog;
-import cbit.util.User;
-import cbit.util.Version;
-import cbit.util.VersionableType;
+import cbit.util.document.KeyValue;
+import cbit.util.document.User;
+import cbit.util.document.Version;
+import cbit.util.document.VersionableType;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.modelapp.SimulationContext;
 
@@ -50,7 +50,7 @@ private SimContextTable() {
  * @param rset java.sql.ResultSet
  * @param log cbit.vcell.server.SessionLog
  */
-public cbit.util.VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,cbit.util.DataAccessException {
+public cbit.util.document.VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,cbit.util.DataAccessException {
 
 	KeyValue mathRef = null;
 	java.math.BigDecimal mathRefValue = rset.getBigDecimal(SimContextTable.table.mathRef.toString());

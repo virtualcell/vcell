@@ -15,16 +15,16 @@ import cbit.sql.Field;
 import cbit.sql.InsertHashtable;
 import cbit.sql.RecordChangedException;
 import cbit.sql.Table;
-import cbit.util.BioModelChildSummary;
 import cbit.util.DataAccessException;
-import cbit.util.KeyValue;
 import cbit.util.ObjectNotFoundException;
 import cbit.util.SessionLog;
-import cbit.util.User;
-import cbit.util.Version;
-import cbit.util.VersionFlag;
-import cbit.util.Versionable;
-import cbit.util.VersionableType;
+import cbit.util.document.BioModelChildSummary;
+import cbit.util.document.KeyValue;
+import cbit.util.document.User;
+import cbit.util.document.Version;
+import cbit.util.document.VersionFlag;
+import cbit.util.document.Versionable;
+import cbit.util.document.VersionableType;
 import cbit.vcell.biomodel.BioModelMetaData;
 /**
  * This type was created in VisualAge.

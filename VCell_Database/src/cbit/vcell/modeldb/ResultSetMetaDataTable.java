@@ -12,8 +12,8 @@ import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.sql.VersionTable;
 import cbit.util.DataAccessException;
-import cbit.util.KeyValue;
 import cbit.util.SessionLog;
+import cbit.util.document.KeyValue;
 import cbit.vcell.simulation.SimulationInfo;
 
 /**

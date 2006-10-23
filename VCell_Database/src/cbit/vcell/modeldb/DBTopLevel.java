@@ -8,19 +8,12 @@ import cbit.sql.ConnectionFactory;
 import cbit.sql.DBCacheTable;
 import cbit.sql.InsertHashtable;
 import cbit.sql.RecordChangedException;
-import cbit.util.CurateSpec;
 import cbit.util.DataAccessException;
-import cbit.util.KeyValue;
 import cbit.util.ObjectNotFoundException;
 import cbit.util.PermissionException;
 import cbit.util.ReferenceQueryResult;
 import cbit.util.ReferenceQuerySpec;
 import cbit.util.SessionLog;
-import cbit.util.User;
-import cbit.util.Versionable;
-import cbit.util.VersionableFamily;
-import cbit.util.VersionableType;
-import cbit.util.VersionableTypeVersion;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.MathDescription;
@@ -28,6 +21,13 @@ import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.model.Model;
 import cbit.vcell.modelapp.SimulationContext;
 import cbit.util.DependencyException;
+import cbit.util.document.CurateSpec;
+import cbit.util.document.KeyValue;
+import cbit.util.document.User;
+import cbit.util.document.Versionable;
+import cbit.util.document.VersionableFamily;
+import cbit.util.document.VersionableType;
+import cbit.util.document.VersionableTypeVersion;
 import cbit.vcell.simulation.Simulation;
 /**
  * This type was created in VisualAge.
@@ -72,7 +72,7 @@ public DBTopLevel(ConnectionFactory aConFactory, SessionLog newLog, DBCacheTable
  * @param user cbit.vcell.server.User
  * @param rqs cbit.vcell.modeldb.ReferenceQuerySpec
  */
-public cbit.util.VCDocumentInfo curate(User user,CurateSpec curateSpec) throws DataAccessException,java.sql.SQLException{
+public cbit.util.document.VCDocumentInfo curate(User user,CurateSpec curateSpec) throws DataAccessException,java.sql.SQLException{
 	return curate0(user,curateSpec,true);
 }
 
@@ -84,12 +84,12 @@ public cbit.util.VCDocumentInfo curate(User user,CurateSpec curateSpec) throws D
  * @param user cbit.vcell.server.User
  * @param rqs cbit.vcell.modeldb.ReferenceQuerySpec
  */
-private cbit.util.VCDocumentInfo curate0(User user,CurateSpec curateSpec,boolean bEnableRetry) throws DataAccessException,java.sql.SQLException{
+private cbit.util.document.VCDocumentInfo curate0(User user,CurateSpec curateSpec,boolean bEnableRetry) throws DataAccessException,java.sql.SQLException{
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		cbit.util.VCDocumentInfo newVCDocumentInfo = DbDriver.curate(curateSpec,con,user,dbCacheTable);
+		cbit.util.document.VCDocumentInfo newVCDocumentInfo = DbDriver.curate(curateSpec,con,user,dbCacheTable);
 		con.commit();
 		return newVCDocumentInfo;
 	} catch (Throwable e) {
@@ -576,7 +576,7 @@ public cbit.util.Preference[] getPreferences(User user,boolean bEnableRetry) thr
  * Insert the method's description here.
  * Creation date: (8/25/2003 5:16:48 PM)
  */
-cbit.vcell.model.ReactionStep getReactionStep(User user,cbit.util.KeyValue reactionStepKey,boolean bEnableRetry) throws DataAccessException, java.sql.SQLException {
+cbit.vcell.model.ReactionStep getReactionStep(User user,cbit.util.document.KeyValue reactionStepKey,boolean bEnableRetry) throws DataAccessException, java.sql.SQLException {
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
@@ -1031,7 +1031,7 @@ KeyValue insertVersionable(User user, VCImage vcImage, String name, boolean bVer
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-KeyValue insertVersionable(User user, BioModelMetaData bioModelMetaData,cbit.util.BioModelChildSummary bmcs, String name, boolean bVersion, boolean bEnableRetry) 
+KeyValue insertVersionable(User user, BioModelMetaData bioModelMetaData,cbit.util.document.BioModelChildSummary bmcs, String name, boolean bVersion, boolean bEnableRetry) 
 		throws DataAccessException, java.sql.SQLException, RecordChangedException {
 			
 	Object lock = new Object();
@@ -1191,7 +1191,7 @@ KeyValue insertVersionable(User user, MathDescription mathDescription, KeyValue 
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-KeyValue insertVersionable(User user, MathModelMetaData mathModelMetaData, cbit.util.MathModelChildSummary mmcs,String name, boolean bVersion, boolean bEnableRetry) 
+KeyValue insertVersionable(User user, MathModelMetaData mathModelMetaData, cbit.util.document.MathModelChildSummary mmcs,String name, boolean bVersion, boolean bEnableRetry) 
 		throws DataAccessException, java.sql.SQLException, RecordChangedException {
 			
 	Object lock = new Object();
@@ -1496,7 +1496,7 @@ KeyValue updateVersionable(User user, VCImage vcImage, boolean bVersion, boolean
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-KeyValue updateVersionable(User user, BioModelMetaData bioModelMetaData, cbit.util.BioModelChildSummary bmcs,boolean bVersion, boolean bEnableRetry) 
+KeyValue updateVersionable(User user, BioModelMetaData bioModelMetaData, cbit.util.document.BioModelChildSummary bmcs,boolean bVersion, boolean bEnableRetry) 
 		throws DataAccessException, java.sql.SQLException, RecordChangedException{
 			
 	Object lock = new Object();
@@ -1656,7 +1656,7 @@ KeyValue updateVersionable(User user, MathDescription mathDescription, KeyValue 
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-KeyValue updateVersionable(User user, MathModelMetaData mathModelMetaData, cbit.util.MathModelChildSummary mmcs,boolean bVersion, boolean bEnableRetry) 
+KeyValue updateVersionable(User user, MathModelMetaData mathModelMetaData, cbit.util.document.MathModelChildSummary mmcs,boolean bVersion, boolean bEnableRetry) 
 		throws DataAccessException, java.sql.SQLException, RecordChangedException{
 			
 	Object lock = new Object();

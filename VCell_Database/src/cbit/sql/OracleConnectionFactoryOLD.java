@@ -7,7 +7,7 @@ package cbit.sql;
 import java.sql.Connection;
 import java.sql.DriverManager;
 
-import cbit.gui.PropertyLoader;
+import cbit.util.PropertyLoader;
 /**
  * This type was created in VisualAge.
  */

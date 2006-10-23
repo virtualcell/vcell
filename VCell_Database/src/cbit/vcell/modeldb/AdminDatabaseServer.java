@@ -8,9 +8,9 @@ import java.rmi.RemoteException;
 
 import cbit.rmi.event.SimulationJobStatus;
 import cbit.util.DataAccessException;
-import cbit.util.KeyValue;
-import cbit.util.User;
-import cbit.util.UserInfo;
+import cbit.util.document.KeyValue;
+import cbit.util.document.User;
+import cbit.util.document.UserInfo;
 
 /**
  * This type was created in VisualAge.
@@ -84,7 +84,7 @@ SimulationJobStatus insertSimulationJobStatus(SimulationJobStatus simulationJobS
  * @param userid java.lang.String
  * @param password java.lang.String
  */
-cbit.util.UserInfo insertUserInfo(cbit.util.UserInfo newUserInfo) throws RemoteException, DataAccessException;
+cbit.util.document.UserInfo insertUserInfo(cbit.util.document.UserInfo newUserInfo) throws RemoteException, DataAccessException;
 /**
  * Insert the method's description here.
  * Creation date: (1/31/2003 2:30:21 PM)
@@ -99,5 +99,5 @@ SimulationJobStatus updateSimulationJobStatus(SimulationJobStatus oldSimulationJ
  * @param userid java.lang.String
  * @param password java.lang.String
  */
-cbit.util.UserInfo updateUserInfo(cbit.util.UserInfo newUserInfo) throws RemoteException, DataAccessException;
+cbit.util.document.UserInfo updateUserInfo(cbit.util.document.UserInfo newUserInfo) throws RemoteException, DataAccessException;
 }

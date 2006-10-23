@@ -9,7 +9,7 @@ import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.util.Coordinate;
 import cbit.util.DataAccessException;
-import cbit.util.KeyValue;
+import cbit.util.document.KeyValue;
 import cbit.vcell.geometry.ControlPointCurve;
 /**
  * This type was created in VisualAge.

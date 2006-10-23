@@ -6,9 +6,9 @@ import java.sql.Statement;
 import java.util.Vector;
 
 import cbit.sql.DBCacheTable;
-import cbit.util.KeyValue;
 import cbit.util.SessionLog;
-import cbit.util.User;
+import cbit.util.document.KeyValue;
+import cbit.util.document.User;
 import cbit.vcell.dictionary.CompoundInfo;
 import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.DBSpecies;
@@ -257,7 +257,7 @@ public FormalCompound getCompoundFromKeggID(Connection con, String keggID) throw
  * @param user cbit.vcell.server.User
  * @param bOnlyUser boolean
  */
-public DBFormalSpecies[] getDatabaseSpecies(Connection con, cbit.util.User user, String likeString,boolean isBound,FormalSpeciesType speciesType,int restrictSearch,int rowLimit,boolean bOnlyUser) throws SQLException{
+public DBFormalSpecies[] getDatabaseSpecies(Connection con, cbit.util.document.User user, String likeString,boolean isBound,FormalSpeciesType speciesType,int restrictSearch,int rowLimit,boolean bOnlyUser) throws SQLException{
 
 	
 	//isBound - 	if true find FormalSpecies(Dictionary) that have binding table entries, if false find any FormalSpecies(Dictionary)
@@ -724,7 +724,7 @@ public String[] getProteinKeyWords(Connection con, String likeString) throws SQL
  * Insert the method's description here.
  * Creation date: (4/18/2003 10:23:37 AM)
  */
-public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(Connection con,cbit.util.User user,KeyValue reactionStepKeys[]) throws SQLException{
+public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(Connection con,cbit.util.document.User user,KeyValue reactionStepKeys[]) throws SQLException{
 	String sql = ReactStepTable.table.getSQLReactionStepInfosQuery(reactionStepKeys,user);
 	java.util.Hashtable rxIdToDescrNames = new java.util.Hashtable();
 	Statement stmt = con.createStatement();
@@ -757,7 +757,7 @@ public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(Connection con,c
  * Insert the method's description here.
  * Creation date: (4/18/2003 10:23:37 AM)
  */
-public ReactionDescription[] getUserReactionDescriptions(Connection con,cbit.util.User user,ReactionQuerySpec reactionQuerySpec) throws SQLException{
+public ReactionDescription[] getUserReactionDescriptions(Connection con,cbit.util.document.User user,ReactionQuerySpec reactionQuerySpec) throws SQLException{
 
 	String sql = ReactStepTable.table.getSQLUserReactionListQuery(reactionQuerySpec,user);
 

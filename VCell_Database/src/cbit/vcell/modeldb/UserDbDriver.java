@@ -10,11 +10,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import cbit.util.DataAccessException;
-import cbit.util.KeyValue;
 import cbit.util.ObjectNotFoundException;
 import cbit.util.SessionLog;
-import cbit.util.User;
-import cbit.util.UserInfo;
+import cbit.util.document.KeyValue;
+import cbit.util.document.User;
+import cbit.util.document.UserInfo;
 /**
  * This type was created in VisualAge.
  */

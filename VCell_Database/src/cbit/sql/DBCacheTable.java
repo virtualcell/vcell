@@ -9,15 +9,15 @@ import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-import cbit.gui.PropertyLoader;
 import cbit.util.CacheException;
 import cbit.util.CacheStatus;
 import cbit.util.Cacheable;
 import cbit.util.Immutable;
-import cbit.util.KeyValue;
 import cbit.util.Ping;
 import cbit.util.Pingable;
+import cbit.util.PropertyLoader;
 import cbit.util.TimeWrapper;
+import cbit.util.document.KeyValue;
 /**
  * This type was created in VisualAge.
  */

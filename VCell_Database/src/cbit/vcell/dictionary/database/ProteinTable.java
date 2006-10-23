@@ -3,8 +3,8 @@ import java.util.Vector;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
-import cbit.util.KeyValue;
 import cbit.util.SessionLog;
+import cbit.util.document.KeyValue;
 import cbit.vcell.dictionary.BoundProtein;
 import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.FormalProtein;
@@ -60,8 +60,8 @@ public DBFormalSpecies[] getProteins(java.sql.ResultSet rset, SessionLog log,boo
 	String currentDescription = null;
 	double currentMolWeight = ProteinInfo.UNKNOWN_MW;
 	
-	cbit.util.KeyValue currentProteinID = null;
-	cbit.util.KeyValue currentDBSpeciesID = null;
+	cbit.util.document.KeyValue currentProteinID = null;
+	cbit.util.document.KeyValue currentDBSpeciesID = null;
 	
 	while(rset.next() || rset.isAfterLast()){
 			

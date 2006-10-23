@@ -12,13 +12,13 @@ import java.sql.SQLException;
 import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.sql.VersionTable;
-import cbit.util.BioModelChildSummary;
 import cbit.util.DataAccessException;
-import cbit.util.KeyValue;
 import cbit.util.SessionLog;
-import cbit.util.User;
-import cbit.util.Version;
-import cbit.util.VersionInfo;
+import cbit.util.document.BioModelChildSummary;
+import cbit.util.document.KeyValue;
+import cbit.util.document.User;
+import cbit.util.document.Version;
+import cbit.util.document.VersionInfo;
 import cbit.vcell.biomodel.BioModelMetaData;
 /**
  * This type was created in VisualAge.
@@ -124,7 +124,7 @@ public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws 
 	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
 
 		
-	return new cbit.util.BioModelInfo(version, modelRef, bioModelChildSummary);
+	return new cbit.util.document.BioModelInfo(version, modelRef, bioModelChildSummary);
 }
 /**
  * This method was created in VisualAge.

@@ -11,9 +11,9 @@ import java.util.Vector;
 import cbit.sql.Field;
 import cbit.sql.StarField;
 import cbit.sql.Table;
-import cbit.util.KeyValue;
 import cbit.util.SessionLog;
-import cbit.util.User;
+import cbit.util.document.KeyValue;
+import cbit.util.document.User;
 import cbit.vcell.export.ExportLog;
 import cbit.vcell.export.ExportLogEntry;
 /**

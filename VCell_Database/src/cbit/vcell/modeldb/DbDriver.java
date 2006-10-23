@@ -21,26 +21,26 @@ import cbit.sql.RecordChangedException;
 import cbit.sql.StarField;
 import cbit.sql.Table;
 import cbit.sql.VersionTable;
-import cbit.util.CurateSpec;
 import cbit.util.DataAccessException;
-import cbit.util.GroupAccess;
-import cbit.util.GroupAccessAll;
-import cbit.util.GroupAccessNone;
-import cbit.util.GroupAccessSome;
-import cbit.util.KeyValue;
 import cbit.util.ObjectNotFoundException;
 import cbit.util.PermissionException;
 import cbit.util.SessionLog;
-import cbit.util.User;
-import cbit.util.Version;
-import cbit.util.VersionFlag;
-import cbit.util.VersionInfo;
-import cbit.util.Versionable;
-import cbit.util.VersionableFamily;
-import cbit.util.VersionableRelationship;
-import cbit.util.VersionableType;
-import cbit.util.VersionableTypeVersion;
 import cbit.util.DependencyException;
+import cbit.util.document.CurateSpec;
+import cbit.util.document.GroupAccess;
+import cbit.util.document.GroupAccessAll;
+import cbit.util.document.GroupAccessNone;
+import cbit.util.document.GroupAccessSome;
+import cbit.util.document.KeyValue;
+import cbit.util.document.User;
+import cbit.util.document.Version;
+import cbit.util.document.VersionFlag;
+import cbit.util.document.VersionInfo;
+import cbit.util.document.Versionable;
+import cbit.util.document.VersionableFamily;
+import cbit.util.document.VersionableRelationship;
+import cbit.util.document.VersionableType;
+import cbit.util.document.VersionableTypeVersion;
 /**
  * This type was created in VisualAge.
  */
@@ -73,12 +73,12 @@ public DbDriver(DBCacheTable dbc,SessionLog sessionLog) {
  * Insert the method's description here.
  * Creation date: (5/23/2006 10:44:52 AM)
  */
-public static cbit.util.VCDocumentInfo curate(CurateSpec curateSpec,Connection con,User user,DBCacheTable currentCache) throws DataAccessException,SQLException{
+public static cbit.util.document.VCDocumentInfo curate(CurateSpec curateSpec,Connection con,User user,DBCacheTable currentCache) throws DataAccessException,SQLException{
 
 	VersionableType vType = null;
-	if(curateSpec.getVCDocumentInfo() instanceof cbit.util.BioModelInfo){
+	if(curateSpec.getVCDocumentInfo() instanceof cbit.util.document.BioModelInfo){
 		vType = VersionableType.BioModelMetaData;
-	}else if(curateSpec.getVCDocumentInfo() instanceof cbit.util.MathModelInfo){
+	}else if(curateSpec.getVCDocumentInfo() instanceof cbit.util.document.MathModelInfo){
 		vType = VersionableType.MathModelMetaData;
 	}else{
 		throw new DataAccessException("Expecting BioModelInfo or MathModelInfo but got type="+curateSpec.getVCDocumentInfo().getClass().getName());
@@ -128,7 +128,7 @@ public static cbit.util.VCDocumentInfo curate(CurateSpec curateSpec,Connection c
 	}
 
 	
-	cbit.util.VCDocumentInfo dbVCDocumentInfo = (cbit.util.VCDocumentInfo)getVersionableInfos(con,null,user,vType,false,vKey,false).elementAt(0);
+	cbit.util.document.VCDocumentInfo dbVCDocumentInfo = (cbit.util.document.VCDocumentInfo)getVersionableInfos(con,null,user,vType,false,vKey,false).elementAt(0);
 	return dbVCDocumentInfo;
 }
 
@@ -755,8 +755,8 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 	//
 	cbit.image.VCImageInfo[] vcImageInfos = null;
 	cbit.vcell.geometry.GeometryInfo[] geometryInfos = null;
-	cbit.util.MathModelInfo[] mathModelInfos = null;
-	cbit.util.BioModelInfo[] bioModelInfos = null;
+	cbit.util.document.MathModelInfo[] mathModelInfos = null;
+	cbit.util.document.BioModelInfo[] bioModelInfos = null;
 	
 	//
 	StringBuffer sql = null;
@@ -784,7 +784,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 			tempInfos = new Vector();
 			distinctV = new Vector();
 			while(rset.next()){
-				cbit.util.BioModelInfo versionInfo = (cbit.util.BioModelInfo)BioModelTable.table.getInfo(rset,con,mySessionLog);
+				cbit.util.document.BioModelInfo versionInfo = (cbit.util.document.BioModelInfo)BioModelTable.table.getInfo(rset,con,mySessionLog);
 				if(!distinctV.contains(versionInfo.getVersion().getVersionKey().toString())){
 					tempInfos.add(versionInfo);
 					distinctV.add(versionInfo.getVersion().getVersionKey().toString());
@@ -792,7 +792,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 			}
 			rset.close();
 			if(tempInfos.size() > 0){
-				bioModelInfos = new cbit.util.BioModelInfo[tempInfos.size()];
+				bioModelInfos = new cbit.util.document.BioModelInfo[tempInfos.size()];
 				tempInfos.copyInto(bioModelInfos);
 			}
 			System.out.println("BioModelInfo Time="+(((double)System.currentTimeMillis()-beginTime)/(double)1000));
@@ -813,7 +813,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 			tempInfos = new Vector();
 			distinctV = new Vector();
 			while(rset.next()){
-				cbit.util.MathModelInfo versionInfo = (cbit.util.MathModelInfo)MathModelTable.table.getInfo(rset,con,mySessionLog);
+				cbit.util.document.MathModelInfo versionInfo = (cbit.util.document.MathModelInfo)MathModelTable.table.getInfo(rset,con,mySessionLog);
 				if(!distinctV.contains(versionInfo.getVersion().getVersionKey().toString())){
 					tempInfos.add(versionInfo);
 					distinctV.add(versionInfo.getVersion().getVersionKey().toString());
@@ -821,7 +821,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 			}
 			rset.close();
 			if(tempInfos.size() > 0){
-				mathModelInfos = new cbit.util.MathModelInfo[tempInfos.size()];
+				mathModelInfos = new cbit.util.document.MathModelInfo[tempInfos.size()];
 				tempInfos.copyInto(mathModelInfos);
 			}
 			System.out.println("MathModelInfo Time="+(((double)System.currentTimeMillis()-beginTime)/(double)1000));
@@ -1955,7 +1955,7 @@ public static cbit.vcell.numericstest.TestSuiteNew testSuiteGet(BigDecimal getTh
 			}
 
 			cbit.vcell.simulation.SimulationInfo regrSimInfo = null;
-			cbit.util.MathModelInfo regrMathModelInfo = null;
+			cbit.util.document.MathModelInfo regrMathModelInfo = null;
 			if(simRegrRef != null){
 				regrSimInfo = (cbit.vcell.simulation.SimulationInfo)simulationInfoH.get(simRegrRef);
 				if(regrSimInfo == null){
@@ -1965,11 +1965,11 @@ public static cbit.vcell.numericstest.TestSuiteNew testSuiteGet(BigDecimal getTh
 						simulationInfoH.put(simRegrRef,regrSimInfo);
 					}
 				}
-				regrMathModelInfo = (cbit.util.MathModelInfo)mathModelInfoH.get(mathRegrRef);
+				regrMathModelInfo = (cbit.util.document.MathModelInfo)mathModelInfoH.get(mathRegrRef);
 				if(regrMathModelInfo == null){
 					Vector regMathVector = getVersionableInfos(con,sessionLog,user,VersionableType.MathModelMetaData,false,new KeyValue(mathRegrRef),false);
 					if (regMathVector != null && regMathVector.size() > 0) {
-						regrMathModelInfo = (cbit.util.MathModelInfo)regMathVector.firstElement();
+						regrMathModelInfo = (cbit.util.document.MathModelInfo)regMathVector.firstElement();
 						mathModelInfoH.put(mathRegrRef,regrMathModelInfo);
 					}
 				}
@@ -2085,7 +2085,7 @@ public static cbit.vcell.numericstest.TestSuiteNew testSuiteGet(BigDecimal getTh
 			}
 
 			cbit.vcell.simulation.SimulationInfo regrSimInfo = null;
-			cbit.util.BioModelInfo regrBioModelInfo = null;
+			cbit.util.document.BioModelInfo regrBioModelInfo = null;
 			if(regrSimRef != null){
 				regrSimInfo = (cbit.vcell.simulation.SimulationInfo)simulationInfoH.get(regrSimRef);
 				if(regrSimInfo == null){
@@ -2097,11 +2097,11 @@ public static cbit.vcell.numericstest.TestSuiteNew testSuiteGet(BigDecimal getTh
 						throw new DataAccessException("Found more than 1 versionable for simregRef="+regrSimRef);
 					}
 				}
-				regrBioModelInfo = (cbit.util.BioModelInfo)mathModelInfoH.get(regrBioModelRef);
+				regrBioModelInfo = (cbit.util.document.BioModelInfo)mathModelInfoH.get(regrBioModelRef);
 				if(regrBioModelInfo == null){
 					Vector regBioModelVector = getVersionableInfos(con,sessionLog,user,VersionableType.BioModelMetaData,false,new KeyValue(regrBioModelRef),false);
 					if (regBioModelVector != null && regBioModelVector.size() == 1) {
-						regrBioModelInfo = (cbit.util.BioModelInfo)regBioModelVector.firstElement();
+						regrBioModelInfo = (cbit.util.document.BioModelInfo)regBioModelVector.firstElement();
 						mathModelInfoH.put(regrBioModelRef,regrBioModelInfo);
 					}else{
 						throw new DataAccessException("Found more than 1 versionable for reegrbiomodelRef="+regrBioModelRef);
@@ -2221,23 +2221,23 @@ public static cbit.vcell.numericstest.TestSuiteNew testSuiteGet(BigDecimal getTh
 			}
 			java.util.Date tcDate = VersionTable.getDate(rset,TFTestCaseTable.table.creationDate.getUnqualifiedColName());
 
-			cbit.util.MathModelInfo mmInfo = null;
-			cbit.util.BioModelInfo bmInfo = null;
+			cbit.util.document.MathModelInfo mmInfo = null;
+			cbit.util.document.BioModelInfo bmInfo = null;
 			if(mmRef != null){
-				mmInfo = (cbit.util.MathModelInfo)mathModelInfoH.get(mmRef);		
+				mmInfo = (cbit.util.document.MathModelInfo)mathModelInfoH.get(mmRef);		
 				if(mmInfo == null){
 					Vector mathVector = getVersionableInfos(con,sessionLog,user,VersionableType.MathModelMetaData,false,new KeyValue(mmRef),false);
 					if (mathVector != null && mathVector.size() > 0) {
-						mmInfo = (cbit.util.MathModelInfo)mathVector.firstElement();
+						mmInfo = (cbit.util.document.MathModelInfo)mathVector.firstElement();
 						mathModelInfoH.put(mmRef,mmInfo);
 					}
 				}
 			}else if(bioModelRef != null){
-				bmInfo = (cbit.util.BioModelInfo)bioModelInfoH.get(bioModelRef);		
+				bmInfo = (cbit.util.document.BioModelInfo)bioModelInfoH.get(bioModelRef);		
 				if(bmInfo == null){
 					Vector bmAppVector = getVersionableInfos(con,sessionLog,user,VersionableType.BioModelMetaData,false,new KeyValue(bioModelRef),false);
 					if (bmAppVector != null && bmAppVector.size() > 0) {
-						bmInfo = (cbit.util.BioModelInfo)bmAppVector.firstElement();
+						bmInfo = (cbit.util.document.BioModelInfo)bmAppVector.firstElement();
 						bioModelInfoH.put(bioModelRef,bmInfo);
 					}
 				}

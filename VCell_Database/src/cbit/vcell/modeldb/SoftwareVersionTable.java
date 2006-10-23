@@ -1,7 +1,7 @@
 package cbit.vcell.modeldb;
 import cbit.sql.Field;
 import cbit.sql.Table;
-import cbit.util.KeyValue;
+import cbit.util.document.KeyValue;
 /**
  * Insert the type's description here.
  * Creation date: (5/4/2005 6:27:59 AM)
@@ -36,7 +36,7 @@ protected SoftwareVersionTable() {
 public String getSQLValueList(KeyValue newVersionKey) {
 
 	String softwareVersionS =
-		cbit.gui.PropertyLoader.getRequiredProperty(cbit.gui.PropertyLoader.vcellSoftwareVersion);
+		cbit.util.PropertyLoader.getRequiredProperty(cbit.util.PropertyLoader.vcellSoftwareVersion);
 
 	softwareVersionS = cbit.util.TokenMangler.getSQLEscapedString(softwareVersionS);
 	

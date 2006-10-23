@@ -4,9 +4,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import cbit.image.VCImageInfo;
-import cbit.util.BioModelInfo;
-import cbit.util.MathModelInfo;
-import cbit.util.User;
+import cbit.util.document.BioModelInfo;
+import cbit.util.document.MathModelInfo;
+import cbit.util.document.User;
 import cbit.vcell.geometry.GeometryInfo;
 
 /**
@@ -44,7 +44,7 @@ public VCInfoContainer(User argUser, VCImageInfo[] newVcImageInfos, GeometryInfo
  * Creation date: (9/26/2003 12:43:24 PM)
  * @return cbit.vcell.biomodel.BioModelInfo[]
  */
-public cbit.util.BioModelInfo[] getBioModelInfos() {
+public cbit.util.document.BioModelInfo[] getBioModelInfos() {
 	if (bioModelInfos == null) {
 		inflate();
 	}
@@ -70,7 +70,7 @@ public cbit.vcell.geometry.GeometryInfo[] getGeometryInfos() {
  * Creation date: (9/26/2003 12:43:24 PM)
  * @return cbit.vcell.mathmodel.MathModelInfo[]
  */
-public cbit.util.MathModelInfo[] getMathModelInfos() {
+public cbit.util.document.MathModelInfo[] getMathModelInfos() {
 	if (mathModelInfos == null) {
 		inflate();
 	}
@@ -83,7 +83,7 @@ public cbit.util.MathModelInfo[] getMathModelInfos() {
  * Creation date: (9/24/2003 12:50:51 PM)
  * @return cbit.vcell.server.User
  */
-public cbit.util.User getUser() {
+public cbit.util.document.User getUser() {
 	if (user == null) {
 		inflate();
 	}

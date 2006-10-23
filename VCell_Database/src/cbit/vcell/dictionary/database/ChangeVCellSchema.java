@@ -740,7 +740,7 @@ public static void main(String[] args) {
         SessionLog log = new StdoutSessionLog("ChangeVCellSchema");
         ConnectionFactory conFactory = null;
         KeyFactory keyFactory = null;
-        new cbit.gui.PropertyLoader();
+        new cbit.util.PropertyLoader();
         if (args[0].equalsIgnoreCase("ORACLE")) {
             conFactory =
                 new OraclePoolingConnectionFactory(

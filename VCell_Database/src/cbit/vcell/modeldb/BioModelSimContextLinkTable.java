@@ -9,7 +9,7 @@ import java.sql.SQLException;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
-import cbit.util.KeyValue;
+import cbit.util.document.KeyValue;
 /**
  * This type was created in VisualAge.
  */

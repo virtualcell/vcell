@@ -6,7 +6,7 @@ package cbit.vcell.modeldb;
 ©*/
 import cbit.sql.Field;
 import cbit.sql.Table;
-import cbit.util.KeyValue;
+import cbit.util.document.KeyValue;
 /**
  * This type was created in VisualAge.
  */
@@ -38,10 +38,10 @@ public static final String getCreateGroupPrivateSQL(KeyValue key) {
 	boolean isHiddenFromOwner = false;
 	String sql = "INSERT INTO "+GroupTable.table.getTableName()+
 			" VALUES ("+key.toString()+","+
-						cbit.util.GroupAccess.GROUPACCESS_NONE+","+	//groupID
+						cbit.util.document.GroupAccess.GROUPACCESS_NONE+","+	//groupID
 						UserTable.VOID_ID+","+								//userRef
 						(isHiddenFromOwner?"1":"0")+","+					//hiddenFromOwner
-						cbit.util.GroupAccess.GROUPACCESS_NONE+")";	//hash
+						cbit.util.document.GroupAccess.GROUPACCESS_NONE+")";	//hash
 	return sql;
 }
 /**
@@ -53,10 +53,10 @@ public static final String getCreateGroupPublicSQL(KeyValue key) {
 	boolean isHiddenFromOwner = false;
 	String sql = "INSERT INTO "+cbit.vcell.modeldb.GroupTable.table.getTableName()+
 			" VALUES ("+key.toString()+","+
-						cbit.util.GroupAccess.GROUPACCESS_ALL+","+	//groupID
+						cbit.util.document.GroupAccess.GROUPACCESS_ALL+","+	//groupID
 						UserTable.VOID_ID+","+								//userRef
 						(isHiddenFromOwner?"1":"0")+","+					//hiddenFromOwner
-						cbit.util.GroupAccess.GROUPACCESS_ALL+")";	//hash
+						cbit.util.document.GroupAccess.GROUPACCESS_ALL+")";	//hash
 	return sql;
 }
 }

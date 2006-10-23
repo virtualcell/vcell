@@ -6,7 +6,7 @@ import cbit.sql.Field;
 import cbit.sql.InsertHashtable;
 import cbit.sql.Table;
 import cbit.util.DataAccessException;
-import cbit.util.KeyValue;
+import cbit.util.document.KeyValue;
 import cbit.vcell.modelapp.CurrentClampStimulus;
 import cbit.vcell.modelapp.ElectricalStimulus;
 import cbit.vcell.modelapp.Electrode;
