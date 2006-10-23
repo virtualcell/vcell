@@ -2,11 +2,11 @@ package cbit.vcell.opt.solvers;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
 
-import cbit.util.GroupAccessNone;
-import cbit.util.KeyValue;
-import cbit.util.SimulationVersion;
-import cbit.util.User;
-import cbit.util.VersionFlag;
+import cbit.util.document.GroupAccessNone;
+import cbit.util.document.KeyValue;
+import cbit.util.document.SimulationVersion;
+import cbit.util.document.User;
+import cbit.util.document.VersionFlag;
 import cbit.vcell.simulation.Simulation;
 import cbit.vcell.opt.*;
 

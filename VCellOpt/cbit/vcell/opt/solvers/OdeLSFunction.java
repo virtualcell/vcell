@@ -2,10 +2,10 @@ package cbit.vcell.opt.solvers;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
 
-import cbit.util.GroupAccessNone;
-import cbit.util.KeyValue;
-import cbit.util.User;
-import cbit.util.VersionFlag;
+import cbit.util.document.GroupAccessNone;
+import cbit.util.document.KeyValue;
+import cbit.util.document.User;
+import cbit.util.document.VersionFlag;
 import cbit.vcell.simdata.FunctionColumnDescription;
 import cbit.vcell.simdata.RowColumnResultSet;
 import cbit.vcell.simulation.Simulation;
@@ -68,7 +68,7 @@ private double calculateWeightedError(double[] x) {
 		//
 		// Create new simulation and apply current parameter values in x[] as math overrides
 		//
-		cbit.util.SimulationVersion simVersion = new cbit.util.SimulationVersion(
+		cbit.util.document.SimulationVersion simVersion = new cbit.util.document.SimulationVersion(
 			new KeyValue("12345"),
 			"name",
 			new User("user",new KeyValue("123")),

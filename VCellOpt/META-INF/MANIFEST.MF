@@ -4,8 +4,7 @@ Bundle-Name: org.vcell.optimization
 Bundle-SymbolicName: org.vcell.optimization
 Bundle-Version: 1.0.0
 Bundle-Localization: plugin
-Require-Bundle: org.vcell.common,
- org.vcell.util,
+Require-Bundle: org.vcell.util,
  org.eclipse.osgi,
  org.vcell.solvers,
  org.vcell.simdata,
