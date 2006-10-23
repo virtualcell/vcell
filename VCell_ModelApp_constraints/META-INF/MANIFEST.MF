@@ -12,7 +12,8 @@ Require-Bundle: org.vcell.constraints,
  org.vcell.physiology,
  org.vcell.math,
  org.vcell.mapping,
- org.vcell.common,
  org.vcell.geometry,
  org.vcell.simulation,
- org.vcell.util
+ org.vcell.util,
+ net.sourceforge.interval,
+ org.eclipse.osgi
