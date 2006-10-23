@@ -13,4 +13,5 @@ Require-Bundle: org.vcell.expression,
  org.vcell.matrix,
  org.vcell.image,
  org.vcell.units,
- org.vcell.graph
+ org.vcell.graph,
+ org.eclipse.osgi

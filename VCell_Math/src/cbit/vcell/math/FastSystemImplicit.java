@@ -1,20 +1,18 @@
 package cbit.vcell.math;
-import cbit.util.CommentStringTokenizer;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import java.util.*;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Vector;
 
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.ExpressionUtilities;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.IRationalExpression;
-import org.vcell.expression.IRationalExpression;
+import org.vcell.expression.ISymbolicProcessor;
 import org.vcell.expression.RationalExpressionFactory;
 
+import cbit.util.CommentStringTokenizer;
 import cbit.vcell.matrix.RationalExpMatrix;
-import edu.uchc.vcell.expression.internal.*;
 /**
  * This type was created in VisualAge.
  */
@@ -337,9 +335,10 @@ System.out.println("");
 	//   |010iiccc| * [x1 x2 x4 x3 x5 c1 c2 c3]  = [0 0 0] 
 	//   |001iiccc| 
 	//
+	ISymbolicProcessor symbolicProcessor = ExpressionUtilities.getDefaultSymbolicProcessor(); 
 	for (int i=0;i<rows;i++){
 		for (int j=0;j<rows;j++){
-			IRationalExpression rexp = matrix.get(i,j).simplify();
+			IRationalExpression rexp = symbolicProcessor.simplify(matrix.get(i,j));
 			matrix.set_elem(i,j,rexp);
 		}
 	}
@@ -391,7 +390,7 @@ matrix.show();
 	dependencyMatrix = new RationalExpMatrix(rows, new_cols);
 	for (int i=0;i<rows;i++){
 		for (int j=0;j<new_cols;j++){
-			org.vcell.expression.IRationalExpression rexp = matrix.get(i,j+dependentVarList.size()).simplify().minus();
+			org.vcell.expression.IRationalExpression rexp = symbolicProcessor.simplify(matrix.get(i,j+dependentVarList.size())).minus();
 			dependencyMatrix.set_elem(i,j,rexp);
 		}
 	}
