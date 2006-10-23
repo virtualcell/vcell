@@ -13,12 +13,12 @@ import cbit.util.*;
 public class FluxReaction extends ReactionStep {
 	private Species fieldFluxCarrier = null;
 
-public FluxReaction(Membrane membrane, cbit.util.KeyValue argKey, String name) throws PropertyVetoException {
+public FluxReaction(Membrane membrane, cbit.util.document.KeyValue argKey, String name) throws PropertyVetoException {
     super(membrane, argKey, name);
 }
 
 
-public FluxReaction(Membrane membrane, Species fluxCarrier, Model model,cbit.util.KeyValue key,String name) throws Exception {
+public FluxReaction(Membrane membrane, Species fluxCarrier, Model model,cbit.util.document.KeyValue key,String name) throws Exception {
 	super(membrane,key,name);
 	setFluxCarrier(fluxCarrier,model);
 }   

@@ -11,7 +11,7 @@ public class ReactionDescription implements java.io.Serializable, cbit.util.Cach
 	//
 	//cbit.vcell.modeldb.ReactStepTable.id
 	//will be null for Dictionary reactions
-	private cbit.util.KeyValue vcellRXID = null;
+	private cbit.util.document.KeyValue vcellRXID = null;
 	//
 	private java.util.Vector reactionElements = new java.util.Vector();// SpeciesDescritpion
 	private java.util.Vector reSpeciesContextNames = null;// String (Original SpeciesContext Names from Database)
@@ -37,7 +37,7 @@ public ReactionDescription(String argReactionName){
 }
 
 
-public ReactionDescription(String argReactionName,String argReactionType,cbit.util.KeyValue argVCellRXID){
+public ReactionDescription(String argReactionName,String argReactionType,cbit.util.document.KeyValue argVCellRXID){
 	
 	if(argReactionName == null){
 		throw new IllegalArgumentException("ReactionName cannot be null");
@@ -338,7 +338,7 @@ public int getResolvedIndex(SpeciesContext resolveToSC) {
 		}
 
 
-public cbit.util.KeyValue getVCellRXID(){
+public cbit.util.document.KeyValue getVCellRXID(){
 	return vcellRXID;
 }
 

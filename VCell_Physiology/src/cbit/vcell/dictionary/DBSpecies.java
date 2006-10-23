@@ -8,13 +8,13 @@ import java.util.Vector;
  */
 public abstract class DBSpecies extends DBFormalSpecies implements cbit.util.Cacheable{
 
-	private cbit.util.KeyValue dbSpeciesKey = null;
+	private cbit.util.document.KeyValue dbSpeciesKey = null;
 	
 /**
  * Create a new Species object based on the given info
  * Creation date: (6/24/2002 12:10:41 PM)
  */
-public DBSpecies(cbit.util.KeyValue argDBSpeciesKey,cbit.util.KeyValue argFormalSpeciesKey, FormalSpeciesInfo argFormalSpeciesInfo) {
+public DBSpecies(cbit.util.document.KeyValue argDBSpeciesKey,cbit.util.document.KeyValue argFormalSpeciesKey, FormalSpeciesInfo argFormalSpeciesInfo) {
 
 	super(argFormalSpeciesKey,argFormalSpeciesInfo);
 	
@@ -29,7 +29,7 @@ public DBSpecies(cbit.util.KeyValue argDBSpeciesKey,cbit.util.KeyValue argFormal
  * Create a new Species object based on the given info
  * Creation date: (6/24/2002 12:10:41 PM)
  */
-public DBSpecies(cbit.util.KeyValue argDBSpeciesKey,DBFormalSpecies argDBFormalSpecies) {
+public DBSpecies(cbit.util.document.KeyValue argDBSpeciesKey,DBFormalSpecies argDBFormalSpecies) {
 
 	super(argDBFormalSpecies.getDBFormalSpeciesKey(),argDBFormalSpecies.getFormalSpeciesInfo());
 	
@@ -67,7 +67,7 @@ public boolean compareEqual(cbit.util.Matchable obj) {
  * Creation date: (2/18/2003 4:45:54 PM)
  * @return cbit.sql.KeyValue
  */
-public cbit.util.KeyValue getDBSpeciesKey() {
+public cbit.util.document.KeyValue getDBSpeciesKey() {
 	return dbSpeciesKey;
 }
 /**

@@ -14,8 +14,8 @@ import org.vcell.expression.SymbolTableEntry;
 import cbit.vcell.model.*;
 import cbit.util.Cacheable;
 import cbit.util.Compare;
-import cbit.util.KeyValue;
 import cbit.util.Matchable;
+import cbit.util.document.KeyValue;
 import edu.uchc.vcell.expression.internal.*;
 
 public class SpeciesContext implements Cacheable, Matchable, SymbolTableEntry, VetoableChangeListener, PropertyChangeListener {

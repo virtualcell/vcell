@@ -13,15 +13,15 @@ import org.vcell.expression.ScopedSymbolTable;
 
 import cbit.util.Cacheable;
 import cbit.util.Compare;
-import cbit.util.KeyValue;
 import cbit.util.Matchable;
+import cbit.util.document.KeyValue;
 
 public abstract class Structure implements java.io.Serializable, ScopedSymbolTable, Matchable, Cacheable, java.beans.VetoableChangeListener
 {
 	private String fieldName = new String();
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.util.KeyValue fieldKey = null;
+	private cbit.util.document.KeyValue fieldKey = null;
 	private StructureNameScope fieldNameScope = new Structure.StructureNameScope();
 	private transient Model fieldModel = null;
 
@@ -119,7 +119,7 @@ public org.vcell.expression.SymbolTableEntry getEntry(java.lang.String identifie
  * @return The key property value.
  * @see #setKey
  */
-public cbit.util.KeyValue getKey() {
+public cbit.util.document.KeyValue getKey() {
 	return fieldKey;
 }
 /**

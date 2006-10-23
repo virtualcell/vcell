@@ -14,7 +14,7 @@ public class FormalProtein extends DBFormalSpecies {
  * @param argKey cbit.sql.KeyValue
  * @param argDBFormalSpeciesInfo DBFormalSpeciesInfo
  */
-public FormalProtein(cbit.util.KeyValue argProteinInfoKey, ProteinInfo argProteinInfo) {
+public FormalProtein(cbit.util.document.KeyValue argProteinInfoKey, ProteinInfo argProteinInfo) {
 	
 	super(argProteinInfoKey,argProteinInfo);
 

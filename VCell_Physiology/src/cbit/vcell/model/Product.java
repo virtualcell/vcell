@@ -3,8 +3,8 @@ package cbit.vcell.model;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.KeyValue;
 import cbit.util.Matchable;
+import cbit.util.document.KeyValue;
 
 public class Product extends ReactionParticipant
 {

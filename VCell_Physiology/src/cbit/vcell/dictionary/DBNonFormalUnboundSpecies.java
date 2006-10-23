@@ -1,6 +1,6 @@
 package cbit.vcell.dictionary;
 
-import cbit.util.KeyValue;
+import cbit.util.document.KeyValue;
 /**
  * Insert the type's description here.
  * Creation date: (9/19/2003 12:34:40 PM)

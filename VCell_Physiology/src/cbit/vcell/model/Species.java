@@ -4,10 +4,10 @@ import java.beans.*;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.KeyValue;
 import cbit.util.Matchable;
 import cbit.util.Compare;
-import cbit.util.User;
+import cbit.util.document.KeyValue;
+import cbit.util.document.User;
 
 public class Species implements java.beans.VetoableChangeListener,cbit.util.Cacheable {
 

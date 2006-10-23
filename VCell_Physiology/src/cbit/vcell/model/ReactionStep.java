@@ -19,6 +19,7 @@ import org.vcell.expression.ScopedSymbolTable;
 import org.vcell.expression.SymbolTableEntry;
 
 import cbit.util.*;
+import cbit.util.document.KeyValue;
 import edu.uchc.vcell.expression.internal.*;
 /**
  * This class is the superclass of all classes representing 

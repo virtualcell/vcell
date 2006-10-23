@@ -5,8 +5,8 @@ package cbit.vcell.model;
 ©*/
 import java.util.*;
 
-import cbit.util.KeyValue;
 import cbit.util.Matchable;
+import cbit.util.document.KeyValue;
 
 public class Membrane extends Structure {
 	public Feature insideFeature = null;

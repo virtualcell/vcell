@@ -15,7 +15,7 @@ import edu.uchc.vcell.expression.internal.*;
 
 public class SimpleReaction extends ReactionStep
 {
-public SimpleReaction(Structure structure,cbit.util.KeyValue key,String name) throws java.beans.PropertyVetoException {
+public SimpleReaction(Structure structure,cbit.util.document.KeyValue key,String name) throws java.beans.PropertyVetoException {
 	super(structure,key,name);
 }   
 public SimpleReaction(Structure structure,String name) throws java.beans.PropertyVetoException {

@@ -4,7 +4,7 @@ package cbit.vcell.model;
  * All rights reserved.
 ©*/
 import cbit.util.Compare;
-import cbit.util.KeyValue;
+import cbit.util.document.KeyValue;
 
 public abstract class ReactionParticipant implements cbit.util.Cacheable, cbit.util.Matchable, java.beans.PropertyChangeListener, java.io.Serializable {
 	private KeyValue key = null;
