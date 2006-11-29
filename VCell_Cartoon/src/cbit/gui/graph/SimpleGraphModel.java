@@ -35,7 +35,7 @@ public class SimpleGraphModel extends GraphModel {
 			return nodeShape;
 		}
 		public GraphEdgeShape getEdgeShape(cbit.util.graph.Edge edge, NodeShape beginShape, NodeShape endShape, GraphModel graphModel, Graph graph){
-			GraphEdgeShape graphEdgeShape = new GraphEdgeShape(edge,beginShape,endShape,graphModel,bDisplayDirected);
+			GraphEdgeShape graphEdgeShape = new GraphEdgeShape(edge,beginShape,endShape,graphModel,bDisplayDirected,false);
 			return graphEdgeShape;
 		}
 		public String getTitle(){

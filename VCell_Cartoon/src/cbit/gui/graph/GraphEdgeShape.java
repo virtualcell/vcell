@@ -14,15 +14,17 @@ import cbit.gui.graph.GraphModel;
 public class GraphEdgeShape extends cbit.gui.graph.EdgeShape {
 	protected cbit.util.graph.Edge fieldEdge = null;
 	protected boolean bArrow = false;
+	protected boolean bLabel = false;
 /**
  * ReactionParticipantShape constructor comment.
  * @param label java.lang.String
  * @param graphModel cbit.vcell.graph.GraphModel
  */
-public GraphEdgeShape(cbit.util.graph.Edge edge, NodeShape node1Shape, NodeShape node2Shape, GraphModel graphModel, boolean displayArrow) {
+public GraphEdgeShape(cbit.util.graph.Edge edge, NodeShape node1Shape, NodeShape node2Shape, GraphModel graphModel, boolean displayArrow, boolean displayLabel) {
 	super(node1Shape, node2Shape, graphModel);
 	this.fieldEdge = edge;
 	this.bArrow = displayArrow;
+	this.bLabel = displayLabel;
 }
 /**
  * This method was created in VisualAge.
@@ -49,7 +51,11 @@ public NodeShape getNode2Shape() {
  * This method was created in VisualAge.
  */
 public void refreshLabel() {
-	setLabel("");
+	if (bLabel){
+		setLabel(fieldEdge.getData().toString());
+	}else{
+		setLabel("");
+	}
 }
 
 public void paint(java.awt.Graphics2D g2D, int parentOffsetX, int parentOffsetY){
