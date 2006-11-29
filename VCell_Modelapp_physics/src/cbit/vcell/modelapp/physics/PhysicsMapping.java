@@ -2,25 +2,19 @@ package cbit.vcell.modelapp.physics;
 
 import java.beans.PropertyVetoException;
 
+import jscl.plugin.Expression;
+import jscl.plugin.ParseException;
+import jscl.plugin.Variable;
+
 import org.vcell.expression.ExpressionException;
-import org.vcell.expression.ExpressionFactory;
-import org.vcell.expression.IExpression;
-import org.vcell.physics.component.ModelComponent;
+import org.vcell.expression.ExpressionUtilities;
+import org.vcell.physics.component.LumpedLocation;
 import org.vcell.physics.component.OOModel;
-import org.vcell.physics.component.Reaction;
-import org.vcell.physics.component.Species;
 
 import cbit.util.TokenMangler;
-import cbit.vcell.model.Catalyst;
-import cbit.vcell.model.Kinetics;
-import cbit.vcell.model.Product;
-import cbit.vcell.model.Reactant;
-import cbit.vcell.model.ReactionParticipant;
-import cbit.vcell.model.Structure;
-import cbit.vcell.model.Kinetics.KineticsParameter;
-import cbit.vcell.modelapp.ReactionSpec;
-import cbit.vcell.modelapp.SimulationContext;
-import cbit.vcell.modelapp.SpeciesContextSpec;
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.modelapp.StructureMapping;
 
 public class PhysicsMapping {
 	/**
@@ -55,21 +49,43 @@ public class PhysicsMapping {
 	 * Creation date: (1/12/2004 1:35:34 AM)
 	 * @return ncbc_old.physics.component.PhysicalModel
 	 */
-	public static void addChemicalDevices(cbit.vcell.modelapp.SimulationContext simContext, org.vcell.physics.component.OOModel oOModel) throws org.vcell.expression.ExpressionException, java.beans.PropertyVetoException {
+	public static void addChemicalDevices(cbit.vcell.modelapp.SimulationContext simContext, org.vcell.physics.component.OOModel oOModel) throws ExpressionException, java.beans.PropertyVetoException {
 	
 		cbit.vcell.model.Structure structures[] = simContext.getModel().getStructures();
 	
-		if (structures.length>1){
-			throw new RuntimeException("doesn't currently support multiple compartments");
+		if (simContext.getGeometryContext().getGeometry().getDimension()>0){
+			throw new RuntimeException("doesn't currently support spatial models");
 		}
 	
+		//
+		// add Devices for locations to the physical model
+		//
+		StructureMapping[] structureMappings = simContext.getGeometryContext().getStructureMappings();
+		for (int i = 0; i < structureMappings.length; i++){
+			int dim = 0;
+			if (structureMappings[i].getStructure() instanceof Feature){
+				dim = 3;
+			}else if (structureMappings[i].getStructure() instanceof Membrane){
+				dim = 2;
+			}else{
+				throw new RuntimeException("unexpected compartment type "+structureMappings[i].getStructure().getClass().getName());
+			}
+			LumpedLocation lumpedLocation = new LumpedLocation(structureMappings[i].getStructure().getName(),dim);
+			oOModel.addModelComponent(lumpedLocation);
+		}
 		//
 		// add Devices for molecular species to the physical model
 		//
 		cbit.vcell.modelapp.SpeciesContextSpec speciesContextSpecs[] = simContext.getReactionContext().getSpeciesContextSpecs();
 		for (int i = 0; i < speciesContextSpecs.length; i++){
 			cbit.vcell.modelapp.SpeciesContextSpec scs = speciesContextSpecs[i];
-			org.vcell.physics.component.Species species = new org.vcell.physics.component.Species(scs.getSpeciesContext().getName());
+			org.vcell.physics.component.Species species;
+			try {
+				species = new org.vcell.physics.component.Species(scs.getSpeciesContext().getName(), Expression.valueOf(scs.getInitialConditionParameter().getExpression().infix_JSCL()));
+			} catch (ParseException e) {
+				e.printStackTrace();
+				throw new RuntimeException(e.getMessage());
+			}
 			oOModel.addModelComponent(species);
 		}
 		//
@@ -98,16 +114,58 @@ public class PhysicsMapping {
 					}
 				}
 				cbit.vcell.model.Kinetics.KineticsParameter[] parameters = reactionSpecs[i].getReactionStep().getKinetics().getKineticsParameters();
-				IExpression[] equations = new IExpression[parameters.length];
+				Expression[] equations = new Expression[parameters.length];
+				//
+				// PASS 1: create all parameter expressions ignoring which should be "implicitFunctions".
+				//
 				for (int p = 0; p < parameters.length; p++){
-					equations[p] = ExpressionFactory.createExpression(parameters[p].getName()+" - ("+parameters[p].getExpression().infix()+")");
+					try {
+						equations[p] = Expression.valueOf(parameters[p].getName()+" - ("+parameters[p].getExpression().infix_JSCL()+")");
+					} catch (ParseException e) {
+						e.printStackTrace();
+						throw new RuntimeException("Exception while parsing expression: "+e.getMessage());
+					}
 				}
-				org.vcell.physics.component.Reaction reaction = new org.vcell.physics.component.Reaction(
-						TokenMangler.fixTokenStrict(rs.getReactionStep().getName()),
-						allSpeciesNames,
-						allStoichs,
-						rs.getReactionStep().getKinetics().getRateParameter().getName(),
-						equations);
+				//
+				// PASS 2: a) for all parameter expressions that are not constant, make them "implicitFunctions"
+				//         b) for all speciesContexts, make them "implicitFunctions"
+				// (FUTURE: could do proper dependency analysis to determine which should be "implicitFunctions").
+				//
+				for (int p = 0; p < parameters.length; p++){
+					if (!parameters[p].getExpression().isNumeric()){
+						for (int j = 0; j < equations.length; j++) {
+							try {
+								equations[j] = equations[j].substitute(Variable.valueOf(parameters[p].getName()), Expression.valueOf(parameters[p].getName()+"(t)"));
+							} catch (ParseException e) {
+								e.printStackTrace();
+								throw new RuntimeException("Exception while paring expression: "+e.getMessage());
+							}
+						}
+					}
+				}
+				for (int s = 0; s < allSpeciesNames.length; s++){
+					for (int j = 0; j < equations.length; j++) {
+						try {
+							equations[j] = equations[j].substitute(Variable.valueOf(allSpeciesNames[s]), Expression.valueOf(allSpeciesNames[s]+"(t)"));
+						} catch (ParseException e) {
+							e.printStackTrace();
+							throw new RuntimeException("Exception while paring expression: "+e.getMessage());
+						}
+					}
+				}
+
+				org.vcell.physics.component.Reaction reaction;
+				try {
+					reaction = new org.vcell.physics.component.Reaction(
+							TokenMangler.fixTokenStrict(rs.getReactionStep().getName()),
+							allSpeciesNames,
+							allStoichs,
+							rs.getReactionStep().getKinetics().getRateParameter().getName(),
+							equations);
+				} catch (ParseException e) {
+					e.printStackTrace();
+					throw new RuntimeException(e.getMessage());
+				}
 				oOModel.addModelComponent(reaction);
 				org.vcell.physics.component.ModelComponent modelComponents[] = oOModel.getModelComponents();
 				for (int l = 0; l < modelComponents.length; l++){

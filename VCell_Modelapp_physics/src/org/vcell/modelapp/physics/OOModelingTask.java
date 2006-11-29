@@ -4,6 +4,8 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.Vector;
 
+import jscl.plugin.ParseException;
+
 import org.jdom.Element;
 import org.vcell.expression.ExpressionException;
 import org.vcell.modelapp.analysis.IAnalysisTask;
@@ -95,9 +97,14 @@ public class OOModelingTask implements IAnalysisTask {
 		this.name = name;
 		this.modelAnalysisResults = new ModelAnalysisResults();
 		OOModel ooModel = PhysicsMapping.createFromSimulationContext(simContext);
-		MathSystem mathSystem = MappingUtilities.getMathSystem(ooModel);
-		this.modelAnalysisResults = MappingUtilities.analyzeMathSystem(mathSystem);
-		this.modelAnalysisResults.oOModel = ooModel;
+		try {
+			MathSystem mathSystem = MappingUtilities.getMathSystem(ooModel);
+			this.modelAnalysisResults = MappingUtilities.analyzeMathSystem(mathSystem);
+			this.modelAnalysisResults.oOModel = ooModel;
+		}catch (ParseException e){
+			e.printStackTrace(System.out);
+			throw new RuntimeException(e.getMessage());
+		}
 		
 	}
 
