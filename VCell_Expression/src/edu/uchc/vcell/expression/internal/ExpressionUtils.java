@@ -1,9 +1,13 @@
 package edu.uchc.vcell.expression.internal;
 
 
+import java.util.Hashtable;
+
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.ExpressionTerm;
 import org.vcell.expression.IExpression;
+import org.vcell.expression.ExpressionTerm.Operator;
 /**
  * Insert the type's description here.
  * Creation date: (12/27/2002 1:37:29 PM)
@@ -59,42 +63,42 @@ private static SimpleNode createNode(java.util.Random random, boolean bIsConstra
 		0.0,	// RELATIONAL
 	};
 		
-	final int[] functionIDs = {
-		ASTFuncNode.ABS,
-		ASTFuncNode.ACOS,
-		ASTFuncNode.ASIN,
-		ASTFuncNode.ATAN,
-		ASTFuncNode.ATAN2,
-		ASTFuncNode.COS,
-		ASTFuncNode.EXP,
-		ASTFuncNode.LOG,
-		ASTFuncNode.MAX,
-		ASTFuncNode.MIN,
-		ASTFuncNode.POW,
-		ASTFuncNode.SIN,
-		ASTFuncNode.SQRT,
-		ASTFuncNode.TAN,
-		ASTFuncNode.CEIL,
-		ASTFuncNode.FLOOR,
-		ASTFuncNode.CSC,
-		ASTFuncNode.COT,
-		ASTFuncNode.SEC,
-		ASTFuncNode.ACSC,
-		ASTFuncNode.ACOT,
-		ASTFuncNode.ASEC,
-		ASTFuncNode.SINH,
-		ASTFuncNode.COSH,
-		ASTFuncNode.TANH,
-		ASTFuncNode.CSCH,
-		ASTFuncNode.COTH,
-		ASTFuncNode.SECH,
-		ASTFuncNode.ASINH,
-		ASTFuncNode.ACOSH,
-		ASTFuncNode.ATANH,
-		ASTFuncNode.ACSCH,
-		ASTFuncNode.ACOTH,
-		ASTFuncNode.ASECH,
-		ASTFuncNode.FACTORIAL
+	final Operator[] functionIDs = {
+		Operator.ABS,
+		Operator.ACOS,
+		Operator.ASIN,
+		Operator.ATAN,
+		Operator.ATAN2,
+		Operator.COS,
+		Operator.EXP,
+		Operator.LOG,
+		Operator.MAX,
+		Operator.MIN,
+		Operator.POW,
+		Operator.SIN,
+		Operator.SQRT,
+		Operator.TAN,
+		Operator.CEIL,
+		Operator.FLOOR,
+		Operator.CSC,
+		Operator.COT,
+		Operator.SEC,
+		Operator.ACSC,
+		Operator.ACOT,
+		Operator.ASEC,
+		Operator.SINH,
+		Operator.COSH,
+		Operator.TANH,
+		Operator.CSCH,
+		Operator.COTH,
+		Operator.SECH,
+		Operator.ASINH,
+		Operator.ACOSH,
+		Operator.ATANH,
+		Operator.ACSCH,
+		Operator.ACOTH,
+		Operator.ASECH,
+		Operator.FACTORIAL
 	};
 	double nodeProbability[] = null;
 	if (bIsConstraint){
@@ -265,109 +269,106 @@ private static int getNumberOfChildren(SimpleNode node) {
 	}else if (node instanceof ASTFuncNode){
 		ASTFuncNode fn = (ASTFuncNode)node;
 		switch (fn.getFunction()){
-			case ASTFuncNode.ABS: {
+			case ABS: {
 				return 1;
 			}
-			case ASTFuncNode.ACOS: {
+			case ACOS: {
 				return 1;
 			}
-			case ASTFuncNode.ASIN: {
+			case ASIN: {
 				return 1;
 			}
-			case ASTFuncNode.ATAN: {
+			case ATAN: {
 				return 1;
 			}
-			case ASTFuncNode.ATAN2: {
+			case ATAN2: {
 				return 2;
 			}
-			case ASTFuncNode.COS: {
+			case COS: {
 				return 1;
 			}
-			case ASTFuncNode.EXP: {
+			case EXP: {
 				return 1;
 			}
-			case ASTFuncNode.LOG: {
+			case LOG: {
 				return 1;
 			}
-			case ASTFuncNode.MAX: {
+			case MAX: {
 				return 2;
 			}
-			case ASTFuncNode.MIN: {
+			case MIN: {
 				return 2;
 			}
-			case ASTFuncNode.POW: {
+			case POW: {
 				return 2;
 			}
-			case ASTFuncNode.SIN: {
+			case SIN: {
 				return 1;
 			}
-			case ASTFuncNode.SQRT: {
+			case SQRT: {
 				return 1;
 			}
-			case ASTFuncNode.TAN: {
+			case TAN: {
 				return 1;
 			}
-			case ASTFuncNode.CEIL: {
+			case CEIL: {
 				return 1;
 			}
-			case ASTFuncNode.FLOOR: {
+			case FLOOR: {
 				return 1;
 			} 			
-			case ASTFuncNode.CSC: {
+			case CSC: {
 				return 1;
 			}
-			case ASTFuncNode.COT: {
+			case COT: {
 				return 1;
 			}
-			case ASTFuncNode.SEC: {
+			case SEC: {
 				return 1;
 			}
-			case ASTFuncNode.ACSC: {
+			case ACSC: {
 				return 1;
 			}
-			case ASTFuncNode.ACOT: {
+			case ACOT: {
 				return 1;
 			}
-			case ASTFuncNode.ASEC: {
+			case ASEC: {
 				return 1;
 			}
-			case ASTFuncNode.SINH: {
+			case SINH: {
 				return 1;
 			}
-			case ASTFuncNode.COSH: {
+			case COSH: {
 				return 1;
 			}
-			case ASTFuncNode.TANH: {
+			case TANH: {
 				return 1;
 			}
-			case ASTFuncNode.CSCH: {
+			case CSCH: {
 				return 1;
 			}
-			case ASTFuncNode.COTH: {
+			case COTH: {
 				return 1;
 			}
-			case ASTFuncNode.SECH: {
+			case SECH: {
 				return 1;
 			}
-			case ASTFuncNode.ASINH: {
+			case ASINH: {
 				return 1;
 			}
-			case ASTFuncNode.ACOSH: {
+			case ACOSH: {
 				return 1;
 			}
-			case ASTFuncNode.ATANH: {
+			case ATANH: {
 				return 1;
 			}
-			case ASTFuncNode.ACSCH: {
+			case ACSCH: {
 				return 1;
 			}
-			case ASTFuncNode.ACOTH: {
+			case ACOTH: {
 				return 1;
 			}
-			case ASTFuncNode.ASECH: {
-				return 1;
-			}
-			case ASTFuncNode.FACTORIAL: {
+			case ASECH: {
 				return 1;
 			}			
 			default:{

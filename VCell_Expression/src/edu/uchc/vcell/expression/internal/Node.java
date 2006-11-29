@@ -11,6 +11,7 @@ package edu.uchc.vcell.expression.internal;
    between nodes. */
 import net.sourceforge.interval.ia_math.RealInterval;
 
+import org.vcell.expression.DerivativePolicy;
 import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.NameScope;
@@ -22,9 +23,7 @@ public interface Node {
   /** Bind method, identifiers bind themselves to ValueObjects */
   void bind(SymbolTable symbolTable) 
 						throws ExpressionBindingException;
-  /** cppCode method, prints expressions in syntax of 'language' */
-  String code() throws ExpressionException;          
-/**
+  /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
  */
@@ -38,7 +37,7 @@ public Node copyTreeBinary();
  * This method was created by a SmartGuide.
  * @exception java.lang.Exception The exception description.
  */
-Node differentiate(String independentVariable) throws ExpressionException;
+Node differentiate(String independentVariable, DerivativePolicy derivativePolicy) throws ExpressionException;
 /**
  * This method was created by a SmartGuide.
  * @return boolean

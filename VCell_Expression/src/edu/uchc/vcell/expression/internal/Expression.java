@@ -7,6 +7,7 @@ import java.util.StringTokenizer;
 
 import net.sourceforge.interval.ia_math.RealInterval;
 
+import org.vcell.expression.DerivativePolicy;
 import org.vcell.expression.DivideByZeroException;
 import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionException;
@@ -207,8 +208,14 @@ derivativeCount++;
  * @see cbit.vcell.parser.IExpression#differentiate(java.lang.String)
  */
 public IExpression differentiate(String variable) throws ExpressionException {
+	return differentiate(variable,null);
+}
+/* (non-Javadoc)
+ * @see cbit.vcell.parser.IExpression#differentiate(java.lang.String)
+ */
+public IExpression differentiate(String variable, DerivativePolicy derivativePolicy) throws ExpressionException {
 diffCount++;
-	SimpleNode node = (SimpleNode)rootNode.differentiate(variable);
+	SimpleNode node = (SimpleNode)rootNode.differentiate(variable, derivativePolicy);
 	if (node == null){
 		throw new ExpressionException("derivative wrt "+variable+" returned null");
 	}
@@ -249,37 +256,38 @@ public double evaluateVector(double values[]) throws ExpressionException, Divide
  * @see cbit.vcell.parser.IExpression#extractTopLevelTerm()
  */
 public ExpressionTerm extractTopLevelTerm() {
-	String operator = null;
+	String functionName = null;
+	ExpressionTerm.Operator operator = null;
 	if (rootNode instanceof ASTAddNode){
-		operator = "+";
+		operator = ExpressionTerm.Operator.ADD;
 	}else if (rootNode instanceof ASTAndNode){
-		operator = "&&";
+		operator = ExpressionTerm.Operator.AND;
 	}else if (rootNode instanceof ASTAssignNode){
-		operator = "=";
+		operator = ExpressionTerm.Operator.ASSIGN;
 	}else if (rootNode instanceof ASTExpression){
-		operator = "";
+		operator = ExpressionTerm.Operator.PARENTHESIS;
 	}else if (rootNode instanceof ASTFloatNode){
-		operator = "number";
+		operator = ExpressionTerm.Operator.FLOAT;
 	}else if (rootNode instanceof ASTFuncNode){
-		operator = ((ASTFuncNode)rootNode).getName()+"()";
+		operator = ((ASTFuncNode)rootNode).getFunction();
 	}else if (rootNode instanceof ASTIdNode){
-		operator = "identifier";
+		operator = ExpressionTerm.Operator.IDENTIFIER;
 	}else if (rootNode instanceof ASTInvertTermNode){
-		operator = "/";
+		operator = ExpressionTerm.Operator.INVERT;
 	}else if (rootNode instanceof ASTLaplacianNode){
-		operator = "laplacian";
+		operator = ExpressionTerm.Operator.LAPLACIAN;
 	}else if (rootNode instanceof ASTMinusTermNode){
-		operator = "-";
+		operator = ExpressionTerm.Operator.MINUS;
 	}else if (rootNode instanceof ASTMultNode){
-		operator = "*";
+		operator = ExpressionTerm.Operator.MULT;
 	}else if (rootNode instanceof ASTNotNode){
-		operator = "not";
+		operator = ExpressionTerm.Operator.NOT;
 	}else if (rootNode instanceof ASTOrNode){
-		operator = "or";
+		operator = ExpressionTerm.Operator.OR;
 	}else if (rootNode instanceof ASTPowerNode){
-		operator = "^";
+		operator = ExpressionTerm.Operator.POWEROP;
 	}else if (rootNode instanceof ASTRelationalNode){
-		operator = ((ASTRelationalNode)rootNode).getOperation();
+		operator = ((ASTRelationalNode)rootNode).getOperator();
 	}else{
 		throw new RuntimeException("node "+rootNode.getClass().getName()+" not yet implemented");
 	}
@@ -289,7 +297,7 @@ public ExpressionTerm extractTopLevelTerm() {
 		children[i] = new Expression((SimpleNode)rootNode.jjtGetChild(i).copyTree());
 	}
 	
-	return new ExpressionTerm(operator,children);
+	return new ExpressionTerm(operator,functionName,children);
 }
 /* (non-Javadoc)
  * @see cbit.vcell.parser.IExpression#flatten()
@@ -701,7 +709,7 @@ parseCount++;
 public static IExpression power(Expression expression1, Expression expression2) throws ExpressionException {
 	Expression exp = new Expression();
 	ASTFuncNode funcNode = new ASTFuncNode();
-	funcNode.setFunction(ASTFuncNode.POW);
+	funcNode.setFunction(ExpressionTerm.Operator.POW);
 
 	SimpleNode baseNode = (SimpleNode)expression1.rootNode.copyTree();
 	if (baseNode instanceof ASTExpression){

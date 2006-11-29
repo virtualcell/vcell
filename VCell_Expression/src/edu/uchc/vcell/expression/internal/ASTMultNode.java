@@ -7,6 +7,7 @@ import net.sourceforge.interval.ia_math.IAMath;
 import net.sourceforge.interval.ia_math.IANarrow;
 import net.sourceforge.interval.ia_math.RealInterval;
 
+import org.vcell.expression.DerivativePolicy;
 import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.NameScope;
@@ -20,29 +21,7 @@ ASTMultNode(int id) {
 	super(id);
 if (id != ExpressionParserTreeConstants.JJTMULTNODE){ System.out.println("ASTMultNode(), id = "+id); }
 }
-  public String code() throws ExpressionException
-  {
-	  StringBuffer buffer = new StringBuffer();
-	 
-	  buffer.append("(");
-
-	  for (int i=0;i<jjtGetNumChildren();i++){
-		  if (jjtGetChild(i) instanceof ASTInvertTermNode){
-			 buffer.append(" / ");
-//             buffer.append("(");
-			 buffer.append(jjtGetChild(i).code());
-//             buffer.append(")");
-		  }else{
-			 if (i>0) buffer.append(" * ");
-			 buffer.append(jjtGetChild(i).code());
-		  }
-	  }
-
-	  buffer.append(")");
-
-	  return buffer.toString();
-  }        
-/**
+  /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.
@@ -131,14 +110,14 @@ public Node copyTreeBinary() {
  * @param independentVariable java.lang.String
  * @exception java.lang.Exception The exception description.
  */
-public Node differentiate(String independentVariable) throws ExpressionException {
+public Node differentiate(String independentVariable, DerivativePolicy derivativePolicy) throws ExpressionException {
 	ASTAddNode addNode = new ASTAddNode();
 	int count = 0;
 	for (int i=0;i<jjtGetNumChildren();i++){
 		ASTMultNode termNode = new ASTMultNode();
 		for (int j=0;j<jjtGetNumChildren();j++){
 			if (j==i){
-				termNode.jjtAddChild(jjtGetChild(j).differentiate(independentVariable));
+				termNode.jjtAddChild(jjtGetChild(j).differentiate(independentVariable,derivativePolicy));
 			}else{
 				termNode.jjtAddChild(jjtGetChild(j).copyTree());
 			}		

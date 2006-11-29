@@ -7,6 +7,7 @@ package edu.uchc.vcell.expression.internal;
 /* JJT: 0.2.2 */
 import net.sourceforge.interval.ia_math.RealInterval;
 
+import org.vcell.expression.DerivativePolicy;
 import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.NameScope;
@@ -39,16 +40,7 @@ ASTFloatNode (int id) {
 	  super.bind(symbolTable);
 	  setInterval(new RealInterval(value.doubleValue(),value.doubleValue()),null);
   }    
-  public String code() 
-  {
-	  if (value==null){
-		  return "null";
-	  }else{
-		  return value.toString();
-	  }
-  }        
-  
-public double getValue() {
+  public double getValue() {
 	return value.doubleValue();
 }
 /**
@@ -74,7 +66,7 @@ public Node copyTreeBinary(){
  * @return double
  * @exception java.lang.Exception The exception description.
  */
-public Node differentiate(String variable) {
+public Node differentiate(String variable, DerivativePolicy derivativePolicy) {
 	return new ASTFloatNode(0.0);
 }
 /**

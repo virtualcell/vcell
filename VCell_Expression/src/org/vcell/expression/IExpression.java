@@ -23,6 +23,15 @@ public interface IExpression extends Matchable, Serializable {
 
 	/**
 	 * This method was created by a SmartGuide.
+	 * @return cbit.vcell.model.Expression
+	 * @param variable String
+	 * @exception java.lang.Exception The exception description.
+	 */
+	public abstract IExpression differentiate(String variable, DerivativePolicy derivativePolicy)
+			throws ExpressionException;
+
+	/**
+	 * This method was created by a SmartGuide.
 	 * @return double
 	 * @exception java.lang.Exception The exception description.
 	 */

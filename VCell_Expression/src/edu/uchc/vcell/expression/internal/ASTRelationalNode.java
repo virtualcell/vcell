@@ -10,26 +10,20 @@ import net.sourceforge.interval.ia_math.IAMath;
 import net.sourceforge.interval.ia_math.IANarrow;
 import net.sourceforge.interval.ia_math.RealInterval;
 
+import org.vcell.expression.DerivativePolicy;
 import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionTerm;
 import org.vcell.expression.FunctionDomainException;
 import org.vcell.expression.NameScope;
 import org.vcell.expression.SymbolTable;
+import org.vcell.expression.ExpressionTerm.Operator;
 
 import cbit.util.xml.MathMLTags;
 
 public class ASTRelationalNode extends SimpleNode {
 
-  public static final int GT = 1;
-  public static final int LT = 2;
-  public static final int LE = 3;
-  public static final int GE = 4;
-  public static final int EQ = 5;
-  public static final int NE = 6;
-  public static final int UNKNOWN = -1;
-
-  private int operation = 0;
-  String opString = "????";
+  private ExpressionTerm.Operator operator = null;
 
 public ASTRelationalNode() {
 	super(-1);
@@ -42,29 +36,14 @@ ASTRelationalNode(int id) {
 	  super.bind(symbolTable);
 	  setInterval(new RealInterval(0.0,1.0),null);  // either true or false
   }    
-  public String code() throws ExpressionException
-  {
-	  StringBuffer buffer = new StringBuffer();
-	 
-	  buffer.append("(");
-	  for (int i=0;i<jjtGetNumChildren();i++){
-		 if (i>0) buffer.append(" "+opString+" ");
-		 buffer.append(jjtGetChild(i).code());
-	  }
-
-	  buffer.append(")");
-
-	  return buffer.toString();
-  }            
-/**
+  /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.
  */
 public Node copyTree() {
 	ASTRelationalNode node = new ASTRelationalNode();
-	node.operation = this.operation;
-	node.opString = this.opString;
+	node.operator = this.operator;
 	for (int i=0;i<jjtGetNumChildren();i++){
 		node.jjtAddChild(jjtGetChild(i).copyTree());
 	}
@@ -77,8 +56,7 @@ public Node copyTree() {
  */
 public Node copyTreeBinary() {
 	ASTRelationalNode node = new ASTRelationalNode();
-	node.operation = this.operation;
-	node.opString = this.opString;
+	node.operator = this.operator;
 	for (int i=0;i<jjtGetNumChildren();i++){
 		node.jjtAddChild(jjtGetChild(i).copyTreeBinary());
 	}
@@ -90,7 +68,7 @@ public Node copyTreeBinary() {
  * @param independentVariable java.lang.String
  * @exception java.lang.Exception The exception description.
  */
-public Node differentiate(String independentVariable) throws ExpressionException {
+public Node differentiate(String independentVariable, DerivativePolicy derivativePolicy) throws ExpressionException {
 	return new ASTFloatNode(0.0);
 }
 /**
@@ -108,10 +86,10 @@ public boolean equals(Node node) throws ExpressionException {
 	}
 	
 	//
-	// check this node for same state (operation string and integer)
+	// check this node for same state (operator string and integer)
 	//	
 	ASTRelationalNode relNode = (ASTRelationalNode)node;
-	if (!relNode.opString.equals(opString) || relNode.operation!=operation){
+	if (relNode.operator != operator){
 		return false;
 	}	
 
@@ -124,7 +102,7 @@ public double evaluateConstant() throws ExpressionException {
 	double first = jjtGetChild(0).evaluateConstant();
 	double second = jjtGetChild(1).evaluateConstant();
 
-	switch (operation){
+	switch (operator){
 		case GT:{
 			if (first > second) return 1.0;
 			else return 0.0;
@@ -150,7 +128,7 @@ public double evaluateConstant() throws ExpressionException {
 			else return 0.0;
 		}
 	}
-	throw new ExpressionException("unsupported operation");
+	throw new ExpressionException("unsupported operator");
 }    
 public RealInterval evaluateInterval(RealInterval intervals[]) throws ExpressionException {
 	if (jjtGetNumChildren()!=2){
@@ -164,7 +142,7 @@ public RealInterval evaluateInterval(RealInterval intervals[]) throws Expression
 	RealInterval second = jjtGetChild(1).evaluateInterval(intervals);
 	RealInterval result = null;
 	try {
-		switch (operation){
+		switch (operator){
 			case GT:{
 				result = IAMath.vcell_gt(first,second);
 				break;
@@ -204,7 +182,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 	double first = jjtGetChild(0).evaluateVector(values);
 	double second = jjtGetChild(1).evaluateVector(values);
 
-	switch (operation){
+	switch (operator){
 		case GT:{
 			if (first > second) return 1.0;
 			else return 0.0;
@@ -230,7 +208,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 			else return 0.0;
 		}
 	}
-	throw new ExpressionException("unsupported operation");
+	throw new ExpressionException("unsupported operator");
 }    
 /**
  * This method was created by a SmartGuide.
@@ -244,7 +222,7 @@ public Node flatten() throws ExpressionException {
 	}catch (Exception e){}		
 
 	ASTRelationalNode relNode = new ASTRelationalNode(id);
-	relNode.setOperation(operation);
+	relNode.setOperator(operator);
 	java.util.Vector tempChildren = new java.util.Vector();
 
 	for (int i=0;i<jjtGetNumChildren();i++){
@@ -259,7 +237,7 @@ public Node flatten() throws ExpressionException {
  * @return java.lang.String
  */
 public String getMathMLElementTag() {
-	switch (operation){
+	switch (operator){
 		case GT: {
 			return MathMLTags.GREATER;
 		}
@@ -279,33 +257,34 @@ public String getMathMLElementTag() {
 			return MathMLTags.NOT_EQUAL;
 		}
 	}
-	throw new RuntimeException("unsupported operation in ASTRelationalNode ... NEVER SUPPOSED TO HAPPEN");
+	throw new RuntimeException("unsupported operator in ASTRelationalNode ... NEVER SUPPOSED TO HAPPEN");
 }
 /**
  * Insert the method's description here.
  * Creation date: (5/22/01 12:49:24 PM)
  * @return java.lang.String
  */
-public String getOperation() {
-	return opString;
+public ExpressionTerm.Operator getOperator() {
+	return operator;
 }
+
 /**
  * This method was created by a SmartGuide.
  * @param op java.lang.String
  */
-public static String getOperationFromMathML(String mathML) {
+public static Operator getOperatorFromMathML(String mathML) {
 	if (mathML.equals(MathMLTags.GREATER)){
-		return ">";
+		return Operator.GT;
 	}else if (mathML.equals(MathMLTags.LESS)){
-		return "<";
+		return Operator.LT;
 	}else if (mathML.equals(MathMLTags.GREATER_OR_EQUAL)){
-		return ">=";
+		return Operator.GE;
 	}else if (mathML.equals(MathMLTags.LESS_OR_EQUAL)){
-		return "<=";
+		return Operator.LE;
 	}else if (mathML.equals(MathMLTags.EQUAL)){
-		return "==";
+		return Operator.EQ;
 	}else if (mathML.equals(MathMLTags.NOT_EQUAL)){
-		return "!=";
+		return Operator.NE;
 	}else{
 		return null;
 	}
@@ -317,50 +296,70 @@ public static String getOperationFromMathML(String mathML) {
 	  buffer.append("(");
 
 	  for (int i=0;i<jjtGetNumChildren();i++){
-		if (i>0) {
-			String langSpecificOpString = opString;
-			if (lang == LANGUAGE_ECLiPSe){
-				switch (operation){
-					case GT:{
-						langSpecificOpString = "$>";
-						break;
-					}
-					case LT:{
-						langSpecificOpString = "$<";
-						break;
-					}
-					case GE:{
-						langSpecificOpString = "$>=";
-						break;
-					}
-					case LE:{
-						langSpecificOpString = "$=<";
-						break;
-					}
-					case EQ:{
-						langSpecificOpString = "$=";
-						break;
-					}
-					case NE:{
-						langSpecificOpString = "$\\=";
-						break;
-					}
-					default:{
-						throw new IllegalArgumentException("unknown relational operator id = "+operation);
-					}
-				}
-				buffer.append(" "+langSpecificOpString+" ");
-			}else{
-				buffer.append(" "+opString+" ");
+			if (i>0) {
+				buffer.append(getOpString(lang));
 			}
-		}
-		buffer.append(jjtGetChild(i).infixString(lang, nameScope));
+			buffer.append(jjtGetChild(i).infixString(lang, nameScope));
 	  }
 
 	  buffer.append(")");
 
 	  return buffer.toString();
+  }   
+  
+
+
+	public String getOpString(int lang) {
+	switch (operator){
+		case GT:{
+			if (lang == LANGUAGE_ECLiPSe){
+				return "$>";
+			}else{
+				return ">";
+			}
+		}
+		case LT:{
+			if (lang == LANGUAGE_ECLiPSe){
+				return "$<";
+			}else{
+				return "<";
+			}
+		}
+		case GE:{
+			if (lang == LANGUAGE_ECLiPSe){
+				return "$>=";
+			}else{
+				return ">=";
+			}
+		}
+		case LE:{
+			if (lang == LANGUAGE_ECLiPSe){
+				return "$=<";
+			}else{
+				return "<=";
+			}
+		}
+		case EQ:{
+			if (lang == LANGUAGE_ECLiPSe){
+				return "$=";
+			}else{
+				return "==";
+			}
+		}
+		case NE:{
+			if (lang == LANGUAGE_ECLiPSe){
+				return "$\\=";
+			}else{
+				return "!=";
+			}
+		}
+		default:{
+			throw new IllegalArgumentException("unknown relational operator id = "+operator);
+		}
+	}
+	  
   }      
+
 /**
  * Insert the method's description here.
  * Creation date: (6/20/01 11:04:41 AM)
@@ -373,7 +372,7 @@ public boolean narrow(RealInterval intervals[]) throws ExpressionBindingExceptio
 	Node first = jjtGetChild(0);
 	Node second = jjtGetChild(1);
 
-	switch (operation){
+	switch (operator){
 		case GT:{
 			return IANarrow.narrow_gt(getInterval(intervals),first.getInterval(intervals),second.getInterval(intervals))
 					&& first.narrow(intervals)
@@ -411,7 +410,7 @@ public boolean narrow(RealInterval intervals[]) throws ExpressionBindingExceptio
 					&& IANarrow.narrow_ne(getInterval(intervals),first.getInterval(intervals),second.getInterval(intervals));
 		}
 		default:{
-			throw new RuntimeException("unsupported operation");
+			throw new RuntimeException("unsupported operator");
 		}
 	}
 }
@@ -420,37 +419,11 @@ public boolean narrow(RealInterval intervals[]) throws ExpressionBindingExceptio
  * Creation date: (12/20/2002 12:41:02 PM)
  * @param op int
  */
-void setOperation(int op) {
-	this.operation = op;
-	switch (op){
-		case GT:{
-			opString = ">";
-			break;
-		}
-		case LT:{
-			opString = "<";
-			break;
-		}
-		case GE:{
-			opString = ">=";
-			break;
-		}
-		case LE:{
-			opString = "<=";
-			break;
-		}
-		case EQ:{
-			opString = "==";
-			break;
-		}
-		case NE:{
-			opString = "!=";
-			break;
-		}
-		default:{
-			throw new IllegalArgumentException("unknown relational operator id = "+op);
-		}
+void setOperator(ExpressionTerm.Operator op) {
+	if (op.opType!=ExpressionTerm.OperatorType.RELATIONAL){
+		throw new RuntimeException("ASTRelationalNode accepts only relational operator");
 	}
+	this.operator = op;
 }
 /**
  * This method was created by a SmartGuide.
@@ -458,23 +431,19 @@ void setOperation(int op) {
  */
 public void setOperationFromToken(String op) {
 	if (op.equals(">")){
-		operation = GT;
+		operator = ExpressionTerm.Operator.GT;
 	}else if (op.equals("<")){
-		operation = LT;
+		operator = ExpressionTerm.Operator.LT;
 	}else if (op.equals(">=")){
-		operation = GE;
+		operator = ExpressionTerm.Operator.GE;
 	}else if (op.equals("<=")){
-		operation = LE;
+		operator = ExpressionTerm.Operator.LE;
 	}else if (op.equals("==")){
-		operation = EQ;
+		operator = ExpressionTerm.Operator.EQ;
 	}else if (op.equals("!=")){
-		operation = NE;
+		operator = ExpressionTerm.Operator.NE;
 	}else{
 		throw new IllegalArgumentException("unknown relational operator token = '"+op+"'");
 	}
-	this.opString = op;
-}
-public String getOpString() {
-	return opString;
 }
 }

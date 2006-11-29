@@ -7,6 +7,7 @@ package edu.uchc.vcell.expression.internal;
 /* JJT: 0.2.2 */
 import net.sourceforge.interval.ia_math.RealInterval;
 
+import org.vcell.expression.DerivativePolicy;
 import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
@@ -40,19 +41,6 @@ public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
 		throw new ExpressionBindingException("error binding independent variable " + independentVar);
 	}
 }    
-public String code() throws ExpressionException {
-
-	StringBuffer buffer = new StringBuffer();
-	 
-	buffer.append(" Deriv<"+independentVar+">(");
-
-	buffer.append(jjtGetChild(0).code());
-	
-	buffer.append(" )");
-
-	return buffer.toString();
-
-}    
 /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
@@ -84,7 +72,7 @@ public Node copyTreeBinary() {
  * @return double
  * @exception java.lang.Exception The exception description.
  */
-public Node differentiate(String variable) throws ExpressionException {
+public Node differentiate(String variable, DerivativePolicy derivativePolicy) throws ExpressionException {
 	throw new ExpressionException("DerivativeNode.differentiate(), not implemented");
 }
 public double evaluateConstant() throws ExpressionException {

@@ -10,9 +10,11 @@ import net.sourceforge.interval.ia_math.IAMath;
 import net.sourceforge.interval.ia_math.IANarrow;
 import net.sourceforge.interval.ia_math.RealInterval;
 
+import org.vcell.expression.DerivativePolicy;
 import org.vcell.expression.DivideByZeroException;
 import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionTerm;
 import org.vcell.expression.FunctionDomainException;
 import org.vcell.expression.NameScope;
 
@@ -25,21 +27,7 @@ ASTPowerNode(int id) {
 	super(id);
 if (id != ExpressionParserTreeConstants.JJTPOWERNODE){ System.out.println("ASTAddNode(), id = "+id); }
 }
-  public String code() throws ExpressionException
-  {
-      if (jjtGetNumChildren()!=2){
-	      throw new ExpressionException("ASTPowerNode.code(): Power must have two arguments");
-      }
-	  StringBuffer buffer = new StringBuffer();
-	  buffer.append("pow(");
-	  buffer.append(jjtGetChild(0).code());
-	  buffer.append(",");
-	  buffer.append(jjtGetChild(1).code());
-	  buffer.append(")");
-
-	  return buffer.toString();
-  }        
-/**
+  /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.
@@ -69,7 +57,7 @@ public Node copyTreeBinary() {
  * @param independentVariable java.lang.String
  * @exception java.lang.Exception The exception description.
  */
-public Node differentiate(String independentVariable) throws ExpressionException {
+public Node differentiate(String independentVariable, DerivativePolicy derivativePolicy) throws ExpressionException {
 	// 
 	// case of D(u^v) = v u^(v-1) D(u)  +  u^v log(u) D(v)
 	//
@@ -87,18 +75,18 @@ public Node differentiate(String independentVariable) throws ExpressionException
 	powNode.jjtAddChild(addNode);
 	multNode1.jjtAddChild(jjtGetChild(1).copyTree());
 	multNode1.jjtAddChild(powNode);
-	multNode1.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));
+	multNode1.jjtAddChild(jjtGetChild(0).differentiate(independentVariable,derivativePolicy));
 	
 	// 
 	// form  pow(u,v) log(u) D(v)
 	//
 	ASTMultNode multNode2 = new ASTMultNode();
 	ASTFuncNode logNode = new ASTFuncNode();
-	logNode.setFunction(ASTFuncNode.LOG);
+	logNode.setFunction(ExpressionTerm.Operator.LOG);
 	logNode.jjtAddChild(jjtGetChild(0).copyTree());
 	multNode2.jjtAddChild(copyTree());
 	multNode2.jjtAddChild(logNode);
-	multNode2.jjtAddChild(jjtGetChild(1).differentiate(independentVariable));
+	multNode2.jjtAddChild(jjtGetChild(1).differentiate(independentVariable,derivativePolicy));
 	
 	ASTAddNode fullAddNode = new ASTAddNode();
 	fullAddNode.jjtAddChild(multNode1);
@@ -225,7 +213,7 @@ public Node flatten() throws ExpressionException {
 	//  v          v*w
 	// u    --->  u
 	//
-	if ((mantissaChild instanceof ASTFuncNode && ((ASTFuncNode)mantissaChild).getFunction() == ASTFuncNode.POW) || mantissaChild instanceof ASTPowerNode){
+	if ((mantissaChild instanceof ASTFuncNode && ((ASTFuncNode)mantissaChild).getFunction() == ExpressionTerm.Operator.POW) || mantissaChild instanceof ASTPowerNode){
 		ASTMultNode newMultNode = new ASTMultNode();
 		newMultNode.jjtAddChild(mantissaChild.jjtGetChild(1));
 		newMultNode.jjtAddChild(exponentChild);

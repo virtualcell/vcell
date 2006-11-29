@@ -9,6 +9,7 @@ import net.sourceforge.interval.ia_math.IAMath;
 import net.sourceforge.interval.ia_math.IANarrow;
 import net.sourceforge.interval.ia_math.RealInterval;
 
+import org.vcell.expression.DerivativePolicy;
 import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.NameScope;
@@ -20,17 +21,6 @@ public class ASTMinusTermNode extends SimpleNode {
 ASTMinusTermNode(int id) {
 	super(id);
 }
-public String code() throws ExpressionException {
-
-	StringBuffer buffer = new StringBuffer();
-	 
-	buffer.append(" - ");
-
-	buffer.append(jjtGetChild(0).code());
-
-	return buffer.toString();
-
-}    
 /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
@@ -60,9 +50,9 @@ public Node copyTreeBinary() {
  * @return double
  * @exception java.lang.Exception The exception description.
  */
-public Node differentiate(String variable) throws ExpressionException {
+public Node differentiate(String variable, DerivativePolicy derivativePolicy) throws ExpressionException {
 	ASTMinusTermNode node = new ASTMinusTermNode();
-	node.jjtAddChild(jjtGetChild(0).differentiate(variable));
+	node.jjtAddChild(jjtGetChild(0).differentiate(variable,derivativePolicy));
 	return node;
 }
 public double evaluateConstant() throws ExpressionException {

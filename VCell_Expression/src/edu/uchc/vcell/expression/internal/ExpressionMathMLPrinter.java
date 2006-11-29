@@ -5,6 +5,7 @@ package edu.uchc.vcell.expression.internal;
  * All rights reserved.
 ©*/
 import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionTerm;
 import org.vcell.expression.IExpression;
 
 import cbit.util.xml.MathMLTags;
@@ -129,7 +130,7 @@ private org.jdom.Element getMathML(Node node) throws ExpressionException {
 		//
 		// functions that do not have direct MathML mappings
 		//
-		}else if (funcNode.getFunction() == ASTFuncNode.SQRT){
+		}else if (funcNode.getFunction() == ExpressionTerm.Operator.SQRT){
 			org.jdom.Element applyNode = new org.jdom.Element(MathMLTags.APPLY);
 			applyNode.addContent(new org.jdom.Element(MathMLTags.ROOT));
 			applyNode.addContent(getMathML(node.jjtGetChild(0)));	
@@ -138,11 +139,11 @@ private org.jdom.Element getMathML(Node node) throws ExpressionException {
 			//rootNode.setAttribute(new org.jdom.Attribute(MathMLTags.CellML_units,MathMLTags.DIMENSIONLESS,org.jdom.Namespace.getNamespace(cbit.util.XMLTags.CELLML_NAMESPACE_PREFIX, cbit.util.XMLTags.CELLML_NAMESPACE_URI)));
 			applyNode.addContent(rootNode);
 			return applyNode;
-		}else if (funcNode.getFunction() == ASTFuncNode.ATAN2){
+		}else if (funcNode.getFunction() == ExpressionTerm.Operator.ATAN2){
 			throw new ExpressionException("cannot translate atan(a,b) into MathML");
-		}else if (funcNode.getFunction() == ASTFuncNode.MIN){
+		}else if (funcNode.getFunction() == ExpressionTerm.Operator.MIN){
 			throw new ExpressionException("cannot translate min(a,b) into MathML");
-		}else if (funcNode.getFunction() == ASTFuncNode.MAX){
+		}else if (funcNode.getFunction() == ExpressionTerm.Operator.MAX){
 			throw new ExpressionException("cannot translate max(a,b) into MathML");
 		}else{
 			throw new ExpressionException("cannot translate "+funcNode.getName()+" into MathML");

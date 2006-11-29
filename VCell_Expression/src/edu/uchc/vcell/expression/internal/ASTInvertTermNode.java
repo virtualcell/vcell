@@ -9,9 +9,11 @@ import net.sourceforge.interval.ia_math.IAMath;
 import net.sourceforge.interval.ia_math.IANarrow;
 import net.sourceforge.interval.ia_math.RealInterval;
 
+import org.vcell.expression.DerivativePolicy;
 import org.vcell.expression.DivideByZeroException;
 import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionTerm;
 import org.vcell.expression.NameScope;
 import org.vcell.expression.SymbolTableEntry;
 
@@ -52,15 +54,15 @@ public Node copyTreeBinary() {
  * @param independentVariable java.lang.String
  * @exception java.lang.Exception The exception description.
  */
-public Node differentiate(String independentVariable) throws ExpressionException {
+public Node differentiate(String independentVariable, DerivativePolicy derivativePolicy) throws ExpressionException {
 	ASTMultNode multNode = new ASTMultNode();
 	
 	ASTMinusTermNode minusNode = new ASTMinusTermNode();
-	minusNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));
+	minusNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable, derivativePolicy));
 	
 	ASTInvertTermNode invertNode = new ASTInvertTermNode(id);
 	ASTFuncNode powNode = new ASTFuncNode();
-	powNode.setFunction(ASTFuncNode.POW);
+	powNode.setFunction(ExpressionTerm.Operator.POW);
 	powNode.jjtAddChild(jjtGetChild(0).copyTree());
 	powNode.jjtAddChild(new ASTFloatNode(2.0));
 	invertNode.jjtAddChild(powNode);

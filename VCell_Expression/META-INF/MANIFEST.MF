@@ -9,9 +9,9 @@ Export-Package: org.vcell.expression,
  org.vcell.expression.ui
 Require-Bundle: org.vcell.util,
  org.vcell.units,
- org.vcell.xml.common,
  org.eclipse.core.runtime,
- org.jdom,
  net.sourceforge.interval,
- flanagan.math
+ flanagan.math,
+ org.jdom,
+ org.vcell.xml.common
 Eclipse-LazyStart: true

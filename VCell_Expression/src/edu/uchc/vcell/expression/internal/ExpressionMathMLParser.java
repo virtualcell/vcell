@@ -9,8 +9,10 @@ import java.util.Vector;
 
 import org.jdom.Element;
 import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionTerm;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.LambdaFunction;
+import org.vcell.expression.ExpressionTerm.Operator;
 
 import cbit.util.xml.MathMLTags;
 import cbit.util.xml.XmlUtil;
@@ -105,9 +107,9 @@ private SimpleNode getRootNode(Element nodeMathML) throws ExpressionException {
 			//
 			// EQUAL can be interpreted either as relational operator or as an Assignment operator
 			//
-			String opString = ASTRelationalNode.getOperationFromMathML(operation.getName());
+			ExpressionTerm.Operator operator = ASTRelationalNode.getOperatorFromMathML(operation.getName());
 			vcellOperationNode = new ASTRelationalNode();
-			((ASTRelationalNode)vcellOperationNode).setOperationFromToken(opString);
+			((ASTRelationalNode)vcellOperationNode).setOperator(operator);
 		} else if (operation.getName().equals(MathMLTags.AND)){
 			vcellOperationNode = new ASTAndNode();
 		} else if (operation.getName().equals(MathMLTags.OR)){
@@ -173,11 +175,11 @@ private SimpleNode getRootNode(Element nodeMathML) throws ExpressionException {
 			vcellOperationNode = new ASTMultNode();
 			if (children.size()==2){ 	// This is the case where base is 10. 
 				ASTFuncNode vcellOpNode1 = new ASTFuncNode();						// LN(A)
-				vcellOpNode1.setFunction(ASTFuncNode.LOG);
+				vcellOpNode1.setFunction(ExpressionTerm.Operator.LOG);
 				vcellOpNode1.jjtAddChild(getRootNode((Element)children.get(1)));
 				
 				ASTFuncNode vcellOpNode2 = new ASTFuncNode();						// LN(10)
-				vcellOpNode2.setFunction(ASTFuncNode.LOG);
+				vcellOpNode2.setFunction(ExpressionTerm.Operator.LOG);
 				ASTFloatNode floatNode = new ASTFloatNode(10.0);
 				vcellOpNode2.jjtAddChild(floatNode);
 				ASTInvertTermNode invVcellOpNode = new ASTInvertTermNode();			//  1 / LN(10)
@@ -187,11 +189,11 @@ private SimpleNode getRootNode(Element nodeMathML) throws ExpressionException {
 				vcellOperationNode.jjtAddChild(invVcellOpNode);
 			}else{						// This is the case where the base is other than 10 or e
 				ASTFuncNode vcellOpNode1 = new ASTFuncNode();						// LN(Arg)
-				vcellOpNode1.setFunction(ASTFuncNode.LOG);
+				vcellOpNode1.setFunction(ExpressionTerm.Operator.LOG);
 				vcellOpNode1.jjtAddChild(getRootNode((Element)children.get(2)));
 				
 				ASTFuncNode vcellOpNode2 = new ASTFuncNode();						// LN(Base)
-				vcellOpNode2.setFunction(ASTFuncNode.LOG);
+				vcellOpNode2.setFunction(ExpressionTerm.Operator.LOG);
 				Element logBaseMathMLNode = (Element)children.get(1);
 				vcellOpNode2.jjtAddChild(getRootNode((Element)logBaseMathMLNode.getChildren().get(0)));
 				ASTInvertTermNode invVcellOpNode = new ASTInvertTermNode();			//  1 / LN(Base)
@@ -212,9 +214,8 @@ private SimpleNode getRootNode(Element nodeMathML) throws ExpressionException {
 			//    ...baseExp...
 			//  </apply>
 			//
-			String powFunctionName = ASTFuncNode.getVCellFunctionName(MathMLTags.POWER);
 			vcellOperationNode = new ASTFuncNode();
-			((ASTFuncNode)vcellOperationNode).setName(powFunctionName);
+			((ASTFuncNode)vcellOperationNode).setFunction(ExpressionTerm.Operator.POW);
 			if (children.size()==2){
 				vcellOperationNode.jjtAddChild(getRootNode((Element)children.get(1)));
 				ASTFloatNode floatNode = new ASTFloatNode(0.5);
@@ -271,9 +272,9 @@ private SimpleNode getRootNode(Element nodeMathML) throws ExpressionException {
 			}
 			Expression finalExpr = (Expression)theLambdaFn.substitute(argExprs);
 			return finalExpr.getRootNode();
-		} else if (ASTFuncNode.getVCellFunctionName(operation.getName()) != null){
+		} else if (ASTFuncNode.getVCellFunction(operation.getName()) != null){
 			vcellOperationNode = new ASTFuncNode();
-			((ASTFuncNode)vcellOperationNode).setName(ASTFuncNode.getVCellFunctionName(operation.getName()));
+			((ASTFuncNode)vcellOperationNode).setFunction(ASTFuncNode.getVCellFunction(operation.getName()));
 		} else{
 			throw new ExpressionException("cannot translate "+operation.getName()+" from MathML");
 		}
@@ -352,7 +353,7 @@ private SimpleNode getRootNode(Element nodeMathML) throws ExpressionException {
 				// form "otherwise" conditional expression
 				//
 				ASTRelationalNode equalNode = new ASTRelationalNode();
-				equalNode.setOperationFromToken("==");
+				equalNode.setOperator(Operator.EQ);
 				ASTFloatNode falseNode = new ASTFloatNode(0.0);
 				equalNode.jjtAddChild(falseNode);
 				//

@@ -7,6 +7,7 @@ package edu.uchc.vcell.expression.internal;
 /* JJT: 0.2.2 */
 import net.sourceforge.interval.ia_math.RealInterval;
 
+import org.vcell.expression.DerivativePolicy;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.NameScope;
 
@@ -47,8 +48,8 @@ public Node copyTreeBinary() {
  * @return double
  * @exception java.lang.Exception The exception description.
  */
-public Node differentiate(String variable) throws ExpressionException {
-	return jjtGetChild(0).differentiate(variable);
+public Node differentiate(String variable, DerivativePolicy derivativePolicy) throws ExpressionException {
+	return jjtGetChild(0).differentiate(variable, derivativePolicy);
 }
 /**
  * This method was created by a SmartGuide.

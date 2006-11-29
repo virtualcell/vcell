@@ -8,6 +8,7 @@ package edu.uchc.vcell.expression.internal;
 import net.sourceforge.interval.ia_math.RealInterval;
 
 import org.vcell.expression.ConstraintSymbolTableEntry;
+import org.vcell.expression.DerivativePolicy;
 import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionUtilities;
@@ -52,11 +53,6 @@ public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
 		throw new ExpressionBindingException("error binding identifier " + id);
 	}
 }    
-public String code() throws ExpressionException {
-	if (symbolTableEntry==null) return null;
-
-	return symbolTableEntry.getName();
-}    
 /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
@@ -81,7 +77,7 @@ public Node copyTreeBinary() {
  * @param variable java.lang.String
  * @exception java.lang.Exception The exception description.
  */
-public Node differentiate(String variable) throws ExpressionException {
+public Node differentiate(String variable, DerivativePolicy derivativePolicy) throws ExpressionException {
 	//===============================================================================================
 	//
 	//                      |
@@ -105,6 +101,20 @@ public Node differentiate(String variable) throws ExpressionException {
 		return new ASTFloatNode(1.0);
 	}
 	
+	//            d A
+	// if it is  ----- then we consult the derivative policy
+	//            d B
+	//
+	// if the policy doesn't suggest a new identifier, then carry on with the default behavior
+	//
+	if (derivativePolicy!=null){
+		String newSymbol = derivativePolicy.newSymbolForDerivative(name, symbolTableEntry, variable);
+		if (newSymbol!=null){
+			ASTIdNode newIdNode = new ASTIdNode();
+			newIdNode.name = newSymbol;
+			return newIdNode;
+		}
+	}
 	//
 	// i != j   and   terminal node  (no symbolTableEntry)
 	//
@@ -124,7 +134,7 @@ public Node differentiate(String variable) throws ExpressionException {
 	// i != j   and non-terminal node, call differentiate on subexpression
 	//
 	SimpleNode rootNode = exp.getRootNode();
-	return rootNode.differentiate(variable);
+	return rootNode.differentiate(variable, derivativePolicy);
 
 //
 // generate DerivativeNode for term

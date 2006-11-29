@@ -14,6 +14,7 @@ import java.util.Vector;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.NameScope;
+import org.vcell.expression.ExpressionTerm.Operator;
 
 import edu.uchc.vcell.expression.internal.ASTAddNode;
 import edu.uchc.vcell.expression.internal.ASTAndNode;
@@ -179,11 +180,11 @@ private FormatSize getSize(SimpleNode node) throws ExpressionException {
 		int operatorWidth = 0;
 		if (node instanceof ASTRelationalNode){
 			ASTRelationalNode relNode = (ASTRelationalNode)node;
-			if (relNode.getOperation().length()==1){
+			if (relNode.getOperator()==Operator.LT || relNode.getOperator()==Operator.GT){
 				operatorWidth = sumStringWidth;
-			}else if (neqString.indexOf(relNode.getOpString())>-1){
+			}else if (relNode.getOperator()==Operator.NE){
 				operatorWidth = neqStringWidth;
-			}else if (relNode.getOperation().length()==2){
+			}else{
 				operatorWidth = relStringWidth;
 			}
 		}else if (node instanceof ASTAndNode){
@@ -540,14 +541,14 @@ private void paint(java.awt.Graphics2D g, SimpleNode node, int x, int y) throws 
 		String operatorString = null;
 		if (node instanceof ASTRelationalNode){
 			ASTRelationalNode relNode = (ASTRelationalNode)node;
-			operatorString = " "+relNode.getOpString()+" ";
-			if (neqString.indexOf(relNode.getOpString())>-1){
+			operatorString = " "+relNode.getOpString(SimpleNode.LANGUAGE_DEFAULT)+" ";
+			if (relNode.getOperator()==Operator.NE){
 				operatorWidth = neqStringWidth;
 				operatorString = neqString;
-			}else if (relNode.getOpString().length()==2){
-				operatorWidth = relStringWidth;
-			}else{
+			}else if (relNode.getOperator()==Operator.GT || relNode.getOperator()==Operator.LT){
 				operatorWidth = sumStringWidth;
+			}else{
+				operatorWidth = relStringWidth;
 			}
 		}else if (node instanceof ASTAndNode){
 			operatorString = " && ";

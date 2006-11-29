@@ -9,8 +9,10 @@ import net.sourceforge.interval.ia_math.IAMath;
 import net.sourceforge.interval.ia_math.IANarrow;
 import net.sourceforge.interval.ia_math.RealInterval;
 
+import org.vcell.expression.DerivativePolicy;
 import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionException;
+import org.vcell.expression.ExpressionTerm;
 import org.vcell.expression.FunctionDomainException;
 import org.vcell.expression.NameScope;
 
@@ -18,86 +20,126 @@ import cbit.util.xml.MathMLTags;
 
 public class ASTFuncNode extends SimpleNode {
  	
- 	private int funcType = -1;
-
-	public final static int EXP = 0;
-	public final static int SQRT = 1;
-	public final static int ABS = 2;
-	public final static int POW = 3;
-	public final static int LOG = 4;
-	public final static int SIN = 5;
-	public final static int COS = 6;
-	public final static int TAN = 7;
-	public final static int ASIN = 8;
-	public final static int ACOS = 9;
-	public final static int ATAN = 10;
-	public final static int ATAN2 = 11;
-	public final static int MAX = 12;
-	public final static int MIN = 13;
-	public final static int CEIL = 14;
-	public final static int FLOOR = 15;
-	public final static int CSC = 16;
-	public final static int	COT = 17;
-	public final static int	SEC = 18;
-	public final static int	ACSC = 19;
-	public final static int	ACOT = 20;
-	public final static int	ASEC = 21;
-	public final static int	SINH = 22;
-	public final static int	COSH = 23;
-	public final static int	TANH = 24;
-	public final static int	CSCH = 25;
-	public final static int	COTH = 26;
-	public final static int SECH = 27;
-	public final static int	ASINH = 28;
-	public final static int	ACOSH = 29;
-	public final static int ATANH = 30;
-	public final static int	ACSCH = 31;
-	public final static int	ACOTH = 32;
-	public final static int	ASECH = 33;
-	public final static int	FACTORIAL = 34;	
-	public final static int	LOG_10 		= 35;
-	public final static int	LOGBASE 	= 36;
+// 	private int funcType = -1;
+//
+//	public final static int EXP = 0;
+//	public final static int SQRT = 1;
+//	public final static int ABS = 2;
+//	public final static int POW = 3;
+//	public final static int LOG = 4;
+//	public final static int SIN = 5;
+//	public final static int COS = 6;
+//	public final static int TAN = 7;
+//	public final static int ASIN = 8;
+//	public final static int ACOS = 9;
+//	public final static int ATAN = 10;
+//	public final static int ATAN2 = 11;
+//	public final static int MAX = 12;
+//	public final static int MIN = 13;
+//	public final static int CEIL = 14;
+//	public final static int FLOOR = 15;
+//	public final static int CSC = 16;
+//	public final static int	COT = 17;
+//	public final static int	SEC = 18;
+//	public final static int	ACSC = 19;
+//	public final static int	ACOT = 20;
+//	public final static int	ASEC = 21;
+//	public final static int	SINH = 22;
+//	public final static int	COSH = 23;
+//	public final static int	TANH = 24;
+//	public final static int	CSCH = 25;
+//	public final static int	COTH = 26;
+//	public final static int SECH = 27;
+//	public final static int	ASINH = 28;
+//	public final static int	ACOSH = 29;
+//	public final static int ATANH = 30;
+//	public final static int	ACSCH = 31;
+//	public final static int	ACOTH = 32;
+//	public final static int	ASECH = 33;
+//	public final static int	FACTORIAL = 34;	
+//	public final static int	LOG_10 		= 35;
+//	public final static int	LOGBASE 	= 36;
 	
-
-	private final static String[] functionNamesVCML = {
-		"exp",		// 0
-		"sqrt",		// 1
-		"abs",		// 2
-		"pow",		// 3
-		"log",		// 4
-		"sin",		// 5
-		"cos",		// 6
-		"tan",		// 7
-		"asin",		// 8
-		"acos",		// 9
-		"atan",		// 10
-		"atan2",	// 11
-		"max",		// 12
-		"min",		// 13
-		"ceil",		// 14
-		"floor",	// 15
-		"csc",		// 16
-		"cot",		// 17
-		"sec",		// 18
-		"acsc",		// 19
-		"acot",		// 20
-		"asec",		// 21
-		"sinh",		// 22
-		"cosh",		// 23
-		"tanh",		// 24
-		"csch",		// 25
-		"coth",		// 26
-		"sech",		// 27
-		"asinh",	// 28
-		"acosh",	// 29
-		"atanh",	// 30
-		"acsch",	// 31
-		"acoth",	// 32
-		"asech",	// 33	
-		"factorial",// 34
-		"log10",	// 35
-		"logbase" 	// 36
+	private ExpressionTerm.Operator funcType = null;
+	
+	private final static ExpressionTerm.Operator[] functionOperators = {
+		ExpressionTerm.Operator.EXP,	// 0
+		ExpressionTerm.Operator.SQRT,	// 1
+		ExpressionTerm.Operator.ABS,	// 3
+		ExpressionTerm.Operator.POW,	// 4
+		ExpressionTerm.Operator.LOG,	// 5
+		ExpressionTerm.Operator.SIN,	// 6
+		ExpressionTerm.Operator.COS,	// 7
+		ExpressionTerm.Operator.TAN,	// 8
+		ExpressionTerm.Operator.ASIN,	// 9
+		ExpressionTerm.Operator.ACOS,	// 10
+		ExpressionTerm.Operator.ATAN,	// 11
+		ExpressionTerm.Operator.ATAN2,	// 12
+		ExpressionTerm.Operator.MAX,	// 13
+		ExpressionTerm.Operator.MIN,	// 14
+		ExpressionTerm.Operator.CEIL,	// 15
+		ExpressionTerm.Operator.FLOOR,	// 16
+		ExpressionTerm.Operator.CSC,	// 17
+		ExpressionTerm.Operator.COT,	// 18
+		ExpressionTerm.Operator.SEC,	// 19
+		ExpressionTerm.Operator.ACSC,	// 20
+		ExpressionTerm.Operator.ACOT,	// 21
+		ExpressionTerm.Operator.ASEC,	// 22
+		ExpressionTerm.Operator.SINH,	// 23
+		ExpressionTerm.Operator.COSH,	// 24
+		ExpressionTerm.Operator.TANH,	// 25
+		ExpressionTerm.Operator.CSCH,	// 26
+		ExpressionTerm.Operator.COTH,	// 27
+		ExpressionTerm.Operator.SECH,	// 28
+		ExpressionTerm.Operator.ASINH,	// 29
+		ExpressionTerm.Operator.ACOSH,	// 30
+		ExpressionTerm.Operator.ATANH,	// 31
+		ExpressionTerm.Operator.ACSCH,	// 32
+		ExpressionTerm.Operator.ACOTH,	// 33
+		ExpressionTerm.Operator.ASECH,	// 34
+		ExpressionTerm.Operator.FACTORIAL,	// 35
+		ExpressionTerm.Operator.LOG_10,	// 36
+		ExpressionTerm.Operator.LOGBASE,	// 37
 	};
+//	private final static String[] functionNamesVCML = {
+//		"exp",		// 0
+//		"sqrt",		// 1
+//		"abs",		// 2
+//		"pow",		// 3
+//		"log",		// 4
+//		"sin",		// 5
+//		"cos",		// 6
+//		"tan",		// 7
+//		"asin",		// 8
+//		"acos",		// 9
+//		"atan",		// 10
+//		"atan2",	// 11
+//		"max",		// 12
+//		"min",		// 13
+//		"ceil",		// 14
+//		"floor",	// 15
+//		"csc",		// 16
+//		"cot",		// 17
+//		"sec",		// 18
+//		"acsc",		// 19
+//		"acot",		// 20
+//		"asec",		// 21
+//		"sinh",		// 22
+//		"cosh",		// 23
+//		"tanh",		// 24
+//		"csch",		// 25
+//		"coth",		// 26
+//		"sech",		// 27
+//		"asinh",	// 28
+//		"acosh",	// 29
+//		"atanh",	// 30
+//		"acsch",	// 31
+//		"acoth",	// 32
+//		"asech",	// 33	
+//		"factorial",// 34
+//		"log10",	// 35
+//		"logbase" 	// 36
+//	};
 	
 	private final static String[] functionNamesMathML = {
 		MathMLTags.EXP,					// 0
@@ -150,24 +192,7 @@ if (id != ExpressionParserTreeConstants.JJTFUNCNODE){ System.out.println("ASTFun
 }
 
 
-  public String code() throws ExpressionException
-  {
-	  StringBuffer buffer = new StringBuffer();
-	 
-	  buffer.append(getName() + "(");
-
-	  for (int i=0;i<jjtGetNumChildren();i++){
-		 if (i>0) buffer.append(", ");
-		 buffer.append(jjtGetChild(i).code());
-	  }
-
-	  buffer.append(")");
-
-	  return buffer.toString();
-  }        
-
-
-/**
+  /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.
@@ -203,7 +228,7 @@ public Node copyTreeBinary() {
  * @param independentVariable java.lang.String
  * @exception java.lang.Exception The exception description.
  */
-public Node differentiate(String independentVariable) throws ExpressionException {
+public Node differentiate(String independentVariable, DerivativePolicy derivativePolicy) throws ExpressionException {
 	switch (funcType){
 	case EXP: {
 		// 
@@ -213,7 +238,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 
 		ASTMultNode multNode = new ASTMultNode();
 		multNode.jjtAddChild(copyTree());
-		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));
+		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable,derivativePolicy));
 		
 		return multNode;
 	}
@@ -230,7 +255,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		ASTInvertTermNode invertNode = new ASTInvertTermNode();
 		invertNode.jjtAddChild(copyTree());
 		multNode.jjtAddChild(new ASTFloatNode(0.5));
-		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));
+		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable,derivativePolicy));
 		multNode.jjtAddChild(invertNode);
 		
 		return multNode;
@@ -266,7 +291,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		//
 		ASTMultNode multNode2 = new ASTMultNode();
 		multNode2.jjtAddChild(addNode);
-		multNode2.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));
+		multNode2.jjtAddChild(jjtGetChild(0).differentiate(independentVariable,derivativePolicy));
 
 		return multNode2;
 	}
@@ -281,7 +306,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		//
 		ASTMultNode multNode1 = new ASTMultNode();
 		ASTFuncNode powNode = new ASTFuncNode();
-		powNode.funcType = POW;
+		powNode.funcType = ExpressionTerm.Operator.POW;
 		ASTAddNode addNode = new ASTAddNode();
 		addNode.jjtAddChild(jjtGetChild(1).copyTree());
 		addNode.jjtAddChild(new ASTFloatNode(-1.0));
@@ -289,18 +314,18 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		powNode.jjtAddChild(addNode);
 		multNode1.jjtAddChild(jjtGetChild(1).copyTree());
 		multNode1.jjtAddChild(powNode);
-		multNode1.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));
+		multNode1.jjtAddChild(jjtGetChild(0).differentiate(independentVariable,derivativePolicy));
 		
 		// 
 		// form  pow(u,v) log(u) D(v)
 		//
 		ASTMultNode multNode2 = new ASTMultNode();
 		ASTFuncNode logNode = new ASTFuncNode();
-		logNode.funcType = LOG;
+		logNode.funcType = ExpressionTerm.Operator.LOG;
 		logNode.jjtAddChild(jjtGetChild(0).copyTree());
 		multNode2.jjtAddChild(copyTree());
 		multNode2.jjtAddChild(logNode);
-		multNode2.jjtAddChild(jjtGetChild(1).differentiate(independentVariable));
+		multNode2.jjtAddChild(jjtGetChild(1).differentiate(independentVariable,derivativePolicy));
 		
 		ASTAddNode fullAddNode = new ASTAddNode();
 		fullAddNode.jjtAddChild(multNode1);
@@ -321,7 +346,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		ASTInvertTermNode invertNode = new ASTInvertTermNode();
 		invertNode.jjtAddChild(jjtGetChild(0).copyTree());	
 		
-		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));
+		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable,derivativePolicy));
 		multNode.jjtAddChild(invertNode);
 		
 		return multNode;
@@ -337,11 +362,11 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		// form   cos(a) 
 		//
 		ASTFuncNode cosNode = new ASTFuncNode();
-		cosNode.funcType = COS;
+		cosNode.funcType = ExpressionTerm.Operator.COS;
 		cosNode.jjtAddChild(jjtGetChild(0).copyTree());	
 		
 		multNode.jjtAddChild(cosNode);
-		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));
+		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable,derivativePolicy));
 		
 		return multNode;
 	}
@@ -356,11 +381,11 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		// form   sin(a) 
 		//
 		ASTFuncNode sinNode = new ASTFuncNode();
-		sinNode.funcType = SIN;
+		sinNode.funcType = ExpressionTerm.Operator.SIN;
 		sinNode.jjtAddChild(jjtGetChild(0).copyTree());	
 		
 		multNode.jjtAddChild(sinNode);
-		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));
+		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable,derivativePolicy));
 		
 		ASTMinusTermNode minusNode = new ASTMinusTermNode();
 		minusNode.jjtAddChild(multNode);
@@ -377,14 +402,14 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		// form   cos(a) 
 		//
 		ASTFuncNode cosNode = new ASTFuncNode();
-		cosNode.funcType = COS;
+		cosNode.funcType = ExpressionTerm.Operator.COS;
 		cosNode.jjtAddChild(jjtGetChild(0).copyTree());	
 		
 		//
 		// form   pow(cos(a),2) 
 		//
 		ASTFuncNode powNode = new ASTFuncNode();
-		powNode.funcType = POW;
+		powNode.funcType = ExpressionTerm.Operator.POW;
 		powNode.jjtAddChild(cosNode);
 		powNode.jjtAddChild(new ASTFloatNode(2.0));
 			
@@ -395,7 +420,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		ASTInvertTermNode invertNode = new ASTInvertTermNode();
 		
 		invertNode.jjtAddChild(powNode);
-		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));
+		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable,derivativePolicy));
 		multNode.jjtAddChild(invertNode);
 		
 		return multNode;
@@ -425,7 +450,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		ASTInvertTermNode invertNode = new ASTInvertTermNode();
 		invertNode.jjtAddChild(sqrtNode);
 		ASTMultNode multNode = new ASTMultNode();
-		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));
+		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable,derivativePolicy));
 		multNode.jjtAddChild(invertNode);
 		
 		return multNode;
@@ -456,7 +481,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		invertNode.jjtAddChild(sqrtNode);
 		ASTMultNode multNode = new ASTMultNode();
 		multNode.jjtAddChild(new ASTFloatNode(-1.0));
-		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));
+		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable,derivativePolicy));
 		multNode.jjtAddChild(invertNode);
 		
 		return multNode;
@@ -481,7 +506,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		ASTInvertTermNode invertNode = new ASTInvertTermNode();
 		invertNode.jjtAddChild(addNode);
 		ASTMultNode multNode = new ASTMultNode();
-		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));
+		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable,derivativePolicy));
 		multNode.jjtAddChild(invertNode);
 		
 		return multNode;
@@ -515,7 +540,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		ASTInvertTermNode invertNode = new ASTInvertTermNode();
 		invertNode.jjtAddChild(addNode);
 		ASTMultNode multNode = new ASTMultNode();
-		multNode.jjtAddChild(multUV.differentiate(independentVariable));
+		multNode.jjtAddChild(multUV.differentiate(independentVariable,derivativePolicy));
 		multNode.jjtAddChild(invertNode);
 		
 		return multNode;
@@ -535,7 +560,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		gtNode.jjtAddChild(jjtGetChild(1).copyTree());  // v
 		ASTMultNode multNode1 = new ASTMultNode();
 		multNode1.jjtAddChild(gtNode);
-		multNode1.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));  // D(u)
+		multNode1.jjtAddChild(jjtGetChild(0).differentiate(independentVariable,derivativePolicy));  // D(u)
 
 		//
 		// form (v>=u)*D(v)
@@ -546,7 +571,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		geNode.jjtAddChild(jjtGetChild(0).copyTree());  // u
 		ASTMultNode multNode2 = new ASTMultNode();
 		multNode2.jjtAddChild(geNode);
-		multNode2.jjtAddChild(jjtGetChild(1).differentiate(independentVariable));  // D(v)
+		multNode2.jjtAddChild(jjtGetChild(1).differentiate(independentVariable,derivativePolicy));  // D(v)
 		
 		ASTAddNode addNode = new ASTAddNode();
 		addNode.jjtAddChild(multNode1);
@@ -569,7 +594,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		gtNode.jjtAddChild(jjtGetChild(1).copyTree());  // v
 		ASTMultNode multNode1 = new ASTMultNode();
 		multNode1.jjtAddChild(gtNode);
-		multNode1.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));  // D(u)
+		multNode1.jjtAddChild(jjtGetChild(0).differentiate(independentVariable,derivativePolicy));  // D(u)
 
 		//
 		// form (v<=u)*D(v)
@@ -580,7 +605,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		geNode.jjtAddChild(jjtGetChild(0).copyTree());  // u
 		ASTMultNode multNode2 = new ASTMultNode();
 		multNode2.jjtAddChild(geNode);
-		multNode2.jjtAddChild(jjtGetChild(1).differentiate(independentVariable));  // D(v)
+		multNode2.jjtAddChild(jjtGetChild(1).differentiate(independentVariable,derivativePolicy));  // D(v)
 		
 		ASTAddNode addNode = new ASTAddNode();
 		addNode.jjtAddChild(multNode1);
@@ -613,17 +638,17 @@ public Node differentiate(String independentVariable) throws ExpressionException
 	
 		// form   csc(a) 
 		ASTFuncNode cscNode = new ASTFuncNode();
-		cscNode.funcType = CSC;
+		cscNode.funcType = ExpressionTerm.Operator.CSC;
 		cscNode.jjtAddChild(jjtGetChild(0).copyTree());
 		
 		// form   cot(a) 
 		ASTFuncNode cotNode = new ASTFuncNode();
-		cotNode.funcType = COT;
+		cotNode.funcType = ExpressionTerm.Operator.COT;
 		cotNode.jjtAddChild(jjtGetChild(0).copyTree());	
 			
 		multNode.jjtAddChild(cscNode);
 		multNode.jjtAddChild(cotNode);
-		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));
+		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable,derivativePolicy));
 
 		ASTMinusTermNode minusNode = new ASTMinusTermNode();
 		minusNode.jjtAddChild(multNode);
@@ -639,17 +664,17 @@ public Node differentiate(String independentVariable) throws ExpressionException
 	
 		// form   csc(a) 
 		ASTFuncNode cscNode = new ASTFuncNode();
-		cscNode.funcType = CSC;
+		cscNode.funcType = ExpressionTerm.Operator.CSC;
 		cscNode.jjtAddChild(jjtGetChild(0).copyTree());	
 		
 		// form   pow(csc(a),2) 
 		ASTFuncNode powNode = new ASTFuncNode();
-		powNode.funcType = POW;
+		powNode.funcType = ExpressionTerm.Operator.POW;
 		powNode.jjtAddChild(cscNode);
 		powNode.jjtAddChild(new ASTFloatNode(2.0));
 
 		multNode.jjtAddChild(powNode);
-		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));
+		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable,derivativePolicy));
 		
 		ASTMinusTermNode minusNode = new ASTMinusTermNode();
 		minusNode.jjtAddChild(multNode);
@@ -664,18 +689,18 @@ public Node differentiate(String independentVariable) throws ExpressionException
 
 		// form   sec(a) 
 		ASTFuncNode secNode = new ASTFuncNode();
-		secNode.funcType = SEC;
+		secNode.funcType = ExpressionTerm.Operator.SEC;
 		secNode.jjtAddChild(jjtGetChild(0).copyTree());	
 		
 		// form   tan(a) 
 		ASTFuncNode tanNode = new ASTFuncNode();
-		tanNode.funcType = TAN;
+		tanNode.funcType = ExpressionTerm.Operator.TAN;
 		tanNode.jjtAddChild(jjtGetChild(0).copyTree());	
 			
 		ASTMultNode multNode = new ASTMultNode();
 		multNode.jjtAddChild(secNode);
 		multNode.jjtAddChild(tanNode);
-		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));
+		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable,derivativePolicy));
 		
 		return multNode;
 	}
@@ -710,7 +735,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		// final ans
 		ASTMultNode multNode_2 = new ASTMultNode();
 		multNode_2.jjtAddChild(new ASTFloatNode(-1.0));
-		multNode_2.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));
+		multNode_2.jjtAddChild(jjtGetChild(0).differentiate(independentVariable,derivativePolicy));
 		multNode_2.jjtAddChild(invertNode);
 		
 		return multNode_2;
@@ -736,7 +761,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		
 		ASTMultNode multNode = new ASTMultNode();
 		multNode.jjtAddChild(new ASTFloatNode(-1.0));
-		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));
+		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable,derivativePolicy));
 		multNode.jjtAddChild(invertNode);
 		
 		return multNode;
@@ -771,7 +796,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 
 		// final ans
 		ASTMultNode multNode_2 = new ASTMultNode();
-		multNode_2.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));
+		multNode_2.jjtAddChild(jjtGetChild(0).differentiate(independentVariable,derivativePolicy));
 		multNode_2.jjtAddChild(invertNode);
 		
 		return multNode_2;
@@ -784,12 +809,12 @@ public Node differentiate(String independentVariable) throws ExpressionException
 
 		// form   cosh(a) 
 		ASTFuncNode coshNode = new ASTFuncNode();
-		coshNode.funcType = COSH;
+		coshNode.funcType = ExpressionTerm.Operator.COSH;
 		coshNode.jjtAddChild(jjtGetChild(0).copyTree());	
 		
 		ASTMultNode multNode = new ASTMultNode();
 		multNode.jjtAddChild(coshNode);
-		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));
+		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable,derivativePolicy));
 		
 		return multNode;
 	}
@@ -801,12 +826,12 @@ public Node differentiate(String independentVariable) throws ExpressionException
 	
 		// form   sinh(a) 
 		ASTFuncNode sinhNode = new ASTFuncNode();
-		sinhNode.funcType = SINH;
+		sinhNode.funcType = ExpressionTerm.Operator.SINH;
 		sinhNode.jjtAddChild(jjtGetChild(0).copyTree());	
 		
 		ASTMultNode multNode = new ASTMultNode();
 		multNode.jjtAddChild(sinhNode);
-		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));
+		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable,derivativePolicy));
 
 		return multNode;
 	}
@@ -818,18 +843,18 @@ public Node differentiate(String independentVariable) throws ExpressionException
 
 		// form   sech(a) 
 		ASTFuncNode sechNode = new ASTFuncNode();
-		sechNode.funcType = SECH;
+		sechNode.funcType = ExpressionTerm.Operator.SECH;
 		sechNode.jjtAddChild(jjtGetChild(0).copyTree());	
 		
 		// form   pow(sech(a),2) 
 		ASTFuncNode powNode = new ASTFuncNode();
-		powNode.funcType = POW;
+		powNode.funcType = ExpressionTerm.Operator.POW;
 		powNode.jjtAddChild(sechNode);
 		powNode.jjtAddChild(new ASTFloatNode(2.0));
 			
 		// form   D(u) * pow(sech(a),2) 
 		ASTMultNode multNode = new ASTMultNode();
-		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));
+		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable,derivativePolicy));
 		multNode.jjtAddChild(powNode);
 		
 		return multNode;
@@ -842,19 +867,19 @@ public Node differentiate(String independentVariable) throws ExpressionException
 	
 		// form   csch(a) 
 		ASTFuncNode cschNode = new ASTFuncNode();
-		cschNode.funcType = COSH;
+		cschNode.funcType = ExpressionTerm.Operator.COSH;
 		cschNode.jjtAddChild(jjtGetChild(0).copyTree());	
 
 		// form   coth(a) 
 		ASTFuncNode cothNode = new ASTFuncNode();
-		cothNode.funcType = COTH;
+		cothNode.funcType = ExpressionTerm.Operator.COTH;
 		cothNode.jjtAddChild(jjtGetChild(0).copyTree());	
 
 		ASTMultNode multNode = new ASTMultNode();
 		multNode.jjtAddChild(new ASTFloatNode(-1.0));
 		multNode.jjtAddChild(cschNode);
 		multNode.jjtAddChild(cothNode);
-		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));
+		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable,derivativePolicy));
 		
 		return multNode;
 	}
@@ -866,18 +891,18 @@ public Node differentiate(String independentVariable) throws ExpressionException
 	
 		// form   csch(a) 
 		ASTFuncNode cschNode = new ASTFuncNode();
-		cschNode.funcType = CSCH;
+		cschNode.funcType = ExpressionTerm.Operator.CSCH;
 		cschNode.jjtAddChild(jjtGetChild(0).copyTree());	
 		
 		// form   pow(csch(a),2) 
 		ASTFuncNode powNode = new ASTFuncNode();
-		powNode.funcType = POW;
+		powNode.funcType = ExpressionTerm.Operator.POW;
 		powNode.jjtAddChild(cschNode);
 		powNode.jjtAddChild(new ASTFloatNode(2.0));
 			
 		// form   - D(u) * pow(csch(a),2) 
 		ASTMultNode multNode = new ASTMultNode();
-		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));
+		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable,derivativePolicy));
 		multNode.jjtAddChild(powNode);
 		ASTMinusTermNode minusNode = new ASTMinusTermNode();
 		minusNode.jjtAddChild(multNode);
@@ -892,12 +917,12 @@ public Node differentiate(String independentVariable) throws ExpressionException
 
 		// form   sech(u) 
 		ASTFuncNode sechNode = new ASTFuncNode();
-		sechNode.funcType = SECH;
+		sechNode.funcType = ExpressionTerm.Operator.SECH;
 		sechNode.jjtAddChild(jjtGetChild(0).copyTree());	
 		
 		// form   tanh(u) 
 		ASTFuncNode tanhNode = new ASTFuncNode();
-		tanhNode.funcType = TANH;
+		tanhNode.funcType = ExpressionTerm.Operator.TANH;
 		tanhNode.jjtAddChild(jjtGetChild(0).copyTree());	
 			
 		// form   - D(u) * sech(u) * tanh(u)
@@ -905,7 +930,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		multNode.jjtAddChild(new ASTFloatNode(-1.0));
 		multNode.jjtAddChild(sechNode);
 		multNode.jjtAddChild(tanhNode);
-		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));
+		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable,derivativePolicy));
 		
 		return multNode;
 	}
@@ -932,7 +957,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		ASTInvertTermNode invertNode = new ASTInvertTermNode();
 		invertNode.jjtAddChild(sqrtNode);
 		ASTMultNode multNode = new ASTMultNode();
-		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));
+		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable,derivativePolicy));
 		multNode.jjtAddChild(invertNode);
 		
 		return multNode;
@@ -959,7 +984,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		invertNode.jjtAddChild(sqrtNode);
 		
 		ASTMultNode multNode = new ASTMultNode();
-		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));
+		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable,derivativePolicy));
 		multNode.jjtAddChild(invertNode);
 		
 		return multNode;
@@ -984,7 +1009,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		ASTInvertTermNode invertNode = new ASTInvertTermNode();
 		invertNode.jjtAddChild(addNode);
 		ASTMultNode multNode = new ASTMultNode();
-		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));
+		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable,derivativePolicy));
 		multNode.jjtAddChild(invertNode);
 		
 		return multNode;
@@ -1018,7 +1043,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		invertNode.jjtAddChild(multNode);
 
 		ASTMultNode multNode_1 = new ASTMultNode();
-		multNode_1.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));
+		multNode_1.jjtAddChild(jjtGetChild(0).differentiate(independentVariable,derivativePolicy));
 		multNode_1.jjtAddChild(invertNode);
 		
 		return multNode_1;
@@ -1043,7 +1068,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		ASTInvertTermNode invertNode = new ASTInvertTermNode();
 		invertNode.jjtAddChild(addNode);
 		ASTMultNode multNode = new ASTMultNode();
-		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));
+		multNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable,derivativePolicy));
 		multNode.jjtAddChild(invertNode);
 		
 		return multNode;
@@ -1076,7 +1101,7 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		invertNode.jjtAddChild(multNode);
 
 		ASTMultNode multNode_1 = new ASTMultNode();
-		multNode_1.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));
+		multNode_1.jjtAddChild(jjtGetChild(0).differentiate(independentVariable,derivativePolicy));
 		multNode_1.jjtAddChild(invertNode);
 		
 		return multNode_1;
@@ -1442,7 +1467,7 @@ public double evaluateConstant() throws ExpressionException {
 	}
 	}
 	if (Double.isInfinite(result) || Double.isNaN(result)){
-		System.out.println("ASTFuncNode.evaluateConstant("+getFunction()+") evaluated to "+result+", exp = "+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT));
+		System.out.println("ASTFuncNode.evaluateConstant("+funcType.functionName+") evaluated to "+result+", exp = "+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT));
 	}
 	return result;
 }      
@@ -1980,7 +2005,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 	}
 	}
 	if (Double.isNaN(result) || Double.isInfinite(result)){
-		System.out.println("ASTFuncNode.evaluateVector("+functionNamesVCML[funcType]+") evaluated to "+result);
+		System.out.println("ASTFuncNode.evaluateVector("+funcType.functionName+") evaluated to "+result);
 	}
 	return result;
 }      
@@ -2030,7 +2055,7 @@ public Node flatten() throws ExpressionException {
 		// u    --->  u
 		//
 		if (mantissaChild instanceof ASTFuncNode){
-			if (((ASTFuncNode)mantissaChild).funcType == POW){
+			if (((ASTFuncNode)mantissaChild).funcType == ExpressionTerm.Operator.POW){
 				ASTMultNode newMultNode = new ASTMultNode();
 				newMultNode.jjtAddChild(mantissaChild.jjtGetChild(1));
 				newMultNode.jjtAddChild(exponentChild);
@@ -2052,12 +2077,12 @@ public Node flatten() throws ExpressionException {
 		//
 		Node child = (Node)tempChildren.elementAt(0);
 		if (child instanceof ASTFuncNode){
-			if (((ASTFuncNode)child).funcType == POW){
+			if (((ASTFuncNode)child).funcType == ExpressionTerm.Operator.POW){
 				Node childPowMantissa = child.jjtGetChild(0);
 				Node childPowExponent = child.jjtGetChild(1);
 				if (childPowExponent instanceof ASTFloatNode && ((ASTFloatNode)childPowExponent).value.doubleValue() == 2.0){
 					ASTFuncNode newAbsNode = new ASTFuncNode();
-					newAbsNode.setFunction(ABS);
+					newAbsNode.setFunction(ExpressionTerm.Operator.ABS);
 					newAbsNode.jjtAddChild(childPowMantissa);
 					return newAbsNode.flatten();
 				}
@@ -2067,7 +2092,7 @@ public Node flatten() throws ExpressionException {
 			Node childPowExponent = child.jjtGetChild(1);
 			if (childPowExponent instanceof ASTFloatNode && ((ASTFloatNode)childPowExponent).value.doubleValue() == 2.0){
 				ASTFuncNode newAbsNode = new ASTFuncNode();
-				newAbsNode.setFunction(ABS);
+				newAbsNode.setFunction(ExpressionTerm.Operator.ABS);
 				newAbsNode.jjtAddChild(childPowMantissa);
 				return newAbsNode.flatten();
 			}
@@ -2212,24 +2237,21 @@ public Node flatten() throws ExpressionException {
 	return funcNode;	
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (12/20/2002 2:20:27 PM)
- * @return int
- */
-public int getFunction() {
-	return funcType;
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (2/8/2002 4:29:47 PM)
  * @return java.lang.String
  */
 String getMathMLName() {
-	return functionNamesMathML[funcType];
+	//
+	// find operator in it's array and return the corresponding MathML function name
+	//
+	for (int i = 0; i < functionOperators.length; i++){
+		if (functionOperators[i]==funcType){
+			return functionNamesMathML[i];
+		}
+	}
+	return null;
 }
 
 
@@ -2239,7 +2261,17 @@ String getMathMLName() {
  * @return java.lang.String
  */
 public String getName() {
-	return functionNamesVCML[funcType];
+	return funcType.functionName;
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (2/8/2002 4:01:47 PM)
+ * @return java.lang.String
+ */
+public ExpressionTerm.Operator getFunction() {
+	return funcType;
 }
 
 
@@ -2248,13 +2280,13 @@ public String getName() {
  * Creation date: (2/8/2002 4:29:47 PM)
  * @return java.lang.String
  */
-static String getVCellFunctionName(String mathMLFunctName) {
+static ExpressionTerm.Operator getVCellFunction(String mathMLFunctName) {
 	//
 	// find the MathML function name in it's array, and return the corresponding VCell function name
 	//
 	for (int i = 0; i < functionNamesMathML.length; i++){
 		if (mathMLFunctName.equals(functionNamesMathML[i])){
-			return functionNamesVCML[i];
+			return functionOperators[i];
 		} 
 	}
 	return null;
@@ -2532,8 +2564,11 @@ public boolean narrow(RealInterval intervals[]) throws ExpressionBindingExceptio
  * Creation date: (12/20/2002 2:18:13 PM)
  * @param function int
  */
-void setFunction(int function) {
-	funcType = function;
+void setFunction(ExpressionTerm.Operator functionOperator) {
+	if (functionOperator.opType!=ExpressionTerm.OperatorType.FUNCTION){
+		throw new IllegalArgumentException("operator "+functionOperator+" not a function");
+	}
+	funcType = functionOperator;
 }
 
 
@@ -2543,29 +2578,11 @@ void setFunction(int function) {
  * @param parserFunction int
  */
 void setFunctionFromParserToken(String parserToken) {
-	for (int i = 0; i < functionNamesVCML.length; i++){
-		String definedToken = functionNamesVCML[i];
-		if (definedToken.equals(parserToken)) {
-			funcType = i;
-			return;
+	for (int i=0; i<functionOperators.length;i++){
+		if (functionOperators[i].functionName.equals(parserToken)){
+			funcType = functionOperators[i];
 		}
 	}
-	throw new RuntimeException("unsupported function type '"+parserToken+"'");
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (2/8/2002 4:00:52 PM)
- * @param name java.lang.String
- */
-void setName(String name) {
-	for (int i = 0; i < functionNamesVCML.length; i++){
-		if (functionNamesVCML[i].equals(name)){
-			funcType = i;
-			return;
-		}
-	}
-	throw new RuntimeException("unknown function "+name);
+	throw new RuntimeException("unsupported function '"+parserToken+"'");
 }
 }

@@ -9,6 +9,7 @@ import net.sourceforge.interval.ia_math.IAMath;
 import net.sourceforge.interval.ia_math.IANarrow;
 import net.sourceforge.interval.ia_math.RealInterval;
 
+import org.vcell.expression.DerivativePolicy;
 import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.NameScope;
@@ -29,22 +30,7 @@ if (id != ExpressionParserTreeConstants.JJTANDNODE){ System.out.println("ASTAndN
 	  super.bind(symbolTable);
 	  setInterval(new RealInterval(0.0,1.0),null);  // either true or false
   }    
-  public String code() throws ExpressionException
-  {
-	  StringBuffer buffer = new StringBuffer();
-	 
-	  buffer.append("(");
-
-	  for (int i=0;i<jjtGetNumChildren();i++){
-		 if (i>0) buffer.append(" && ");
-		 buffer.append(jjtGetChild(i).code());
-	  }
-
-	  buffer.append(")");
-
-	  return buffer.toString();
-  }            
-/**
+  /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.
@@ -84,7 +70,7 @@ public Node copyTreeBinary() {
  * @param independentVariable java.lang.String
  * @exception java.lang.Exception The exception description.
  */
-public Node differentiate(String independentVariable) throws ExpressionException {
+public Node differentiate(String independentVariable, DerivativePolicy derivativePolicy) throws ExpressionException {
 	return new ASTFloatNode(0.0);
 }
 public double evaluateConstant() throws ExpressionException {

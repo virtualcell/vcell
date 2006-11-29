@@ -176,12 +176,12 @@ public class ExpressionUtilities {
 		for (int i=0;i<inputString.length();i++){
 			char currChar = inputString.charAt(i);
 			switch (currChar){
-				case '_':
-						buffer.append("underscore");
-						break;
-				case '.':
-						buffer.append("ddoott");
-						break;
+//				case '_':
+//						buffer.append("underscore");
+//						break;
+//				case '.':
+//						buffer.append("ddoott");
+//						break;
 				default:
 						buffer.append(currChar);
 						break;

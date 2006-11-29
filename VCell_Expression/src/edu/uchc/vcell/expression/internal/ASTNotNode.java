@@ -9,6 +9,7 @@ import net.sourceforge.interval.ia_math.IAMath;
 import net.sourceforge.interval.ia_math.IANarrow;
 import net.sourceforge.interval.ia_math.RealInterval;
 
+import org.vcell.expression.DerivativePolicy;
 import org.vcell.expression.DivideByZeroException;
 import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionException;
@@ -57,10 +58,10 @@ public Node copyTreeBinary() {
  * @param independentVariable java.lang.String
  * @exception java.lang.Exception The exception description.
  */
-public Node differentiate(String independentVariable) throws ExpressionException {
+public Node differentiate(String independentVariable, DerivativePolicy derivativePolicy) throws ExpressionException {
 	ASTNotNode notNode = new ASTNotNode();
 	
-	notNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable));
+	notNode.jjtAddChild(jjtGetChild(0).differentiate(independentVariable,derivativePolicy));
 	
 	return notNode;
 }
