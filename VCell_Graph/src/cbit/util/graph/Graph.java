@@ -33,6 +33,15 @@ public Graph() {
 /**
  * Graph constructor comment.
  */
+public Graph(Graph graph) {
+	super();
+	nodeList = new Vector<Node>(graph.nodeList);
+	edgeList = new Vector<Edge>(graph.edgeList);
+}
+
+/**
+ * Graph constructor comment.
+ */
 public Graph(com.mhhe.clrs2e.Graph algGraph) {
 	super();
 	int numVertices = algGraph.getCardV();
@@ -515,11 +524,10 @@ public void remove(Node node) {
 		throw new RuntimeException("node "+node+" not found");
 	}
 	Edge[] adjacentEdges = getAdjacentEdges(node);
-	if (adjacentEdges==null || adjacentEdges.length==0){
-		nodeList.remove(node);
-	}else{
-		throw new RuntimeException("cannot remove node "+node.getName()+", edges exist");
+	for (int i = 0; i < adjacentEdges.length; i++) {
+		remove(adjacentEdges[i]);
 	}
+	nodeList.remove(node);
 }
 
 
