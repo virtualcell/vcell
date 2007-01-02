@@ -1,24 +1,23 @@
 package edu.uchc.vcell.expression.internal;
 
 
-import java.util.Hashtable;
-
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
-import org.vcell.expression.ExpressionTerm;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.ExpressionTerm.Operator;
 /**
  * Insert the type's description here.
  * Creation date: (12/27/2002 1:37:29 PM)
- * @author: Jim Schaff
+ * @author schaff
+ * @version $Revision: 1.0 $
  */
 public class ExpressionUtils {
 /**
  * Insert the method's description here.
  * Creation date: (12/22/2002 3:41:17 PM)
+ * @param random java.util.Random
+ * @param bIsConstraint boolean
  * @return int
- * @param node cbit.vcell.parser.SimpleNode
  */
 private static SimpleNode createNode(java.util.Random random, boolean bIsConstraint) {
 	final int AddNode = 0;
@@ -186,6 +185,8 @@ private static SimpleNode createNode(java.util.Random random, boolean bIsConstra
 /**
  * Insert the method's description here.
  * Creation date: (12/22/2002 4:23:34 PM)
+ * @param random java.util.Random
+ * @param bIsConstraint boolean
  * @return cbit.vcell.parser.SimpleNode
  */
 private static SimpleNode createTerminalNode(java.util.Random random, boolean bIsConstraint) {
@@ -205,7 +206,11 @@ private static SimpleNode createTerminalNode(java.util.Random random, boolean bI
 /**
  * Insert the method's description here.
  * Creation date: (12/22/2002 5:02:53 PM)
+ * @param random java.util.Random
+ * @param maxDepth int
+ * @param bIsConstraint boolean
  * @return cbit.vcell.parser.Expression
+ * @throws ExpressionException
  */
 public static IExpression generateExpression(java.util.Random random, int maxDepth, boolean bIsConstraint) throws ExpressionException {
 	SimpleNode node = generateSubtree(0,maxDepth,random,bIsConstraint);
@@ -217,8 +222,11 @@ public static IExpression generateExpression(java.util.Random random, int maxDep
 /**
  * Insert the method's description here.
  * Creation date: (12/22/2002 3:16:19 PM)
+ * @param depth int
+ * @param maxDepth int
+ * @param random java.util.Random
+ * @param bIsConstraint boolean
  * @return cbit.vcell.parser.Expression
- * @param seed long
  */
 private static SimpleNode generateSubtree(int depth, int maxDepth, java.util.Random random, boolean bIsConstraint) {
 	SimpleNode newNode = null;
@@ -256,8 +264,8 @@ private static SimpleNode generateSubtree(int depth, int maxDepth, java.util.Ran
 /**
  * Insert the method's description here.
  * Creation date: (12/22/2002 3:41:17 PM)
- * @return int
  * @param node cbit.vcell.parser.SimpleNode
+ * @return int
  */
 private static int getNumberOfChildren(SimpleNode node) {
 	if (node instanceof ASTAddNode){

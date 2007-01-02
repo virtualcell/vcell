@@ -2,6 +2,8 @@
 
 package edu.uchc.vcell.expression.internal;
 
+/**
+ */
 class JJTExpressionParserState {
   private java.util.Stack nodes;
   private java.util.Stack marks;
@@ -20,6 +22,10 @@ class JJTExpressionParserState {
   /* Determines whether the current node was actually closed and
      pushed.  This should only be called in the final user action of a
      node scope.  */
+  /**
+   * Method nodeCreated.
+   * @return boolean
+   */
   boolean nodeCreated() {
     return node_created;
   }
@@ -35,11 +41,19 @@ class JJTExpressionParserState {
 
   /* Returns the root node of the AST.  It only makes sense to call
      this after a successful parse. */
+  /**
+   * Method rootNode.
+   * @return Node
+   */
   Node rootNode() {
     return (Node)nodes.elementAt(0);
   }
 
   /* Pushes a node on to the stack. */
+  /**
+   * Method pushNode.
+   * @param n Node
+   */
   void pushNode(Node n) {
     nodes.push(n);
     ++sp;
@@ -47,6 +61,10 @@ class JJTExpressionParserState {
 
   /* Returns the node on the top of the stack, and remove it from the
      stack.  */
+  /**
+   * Method popNode.
+   * @return Node
+   */
   Node popNode() {
     if (--sp < mk) {
       mk = ((Integer)marks.pop()).intValue();
@@ -55,17 +73,29 @@ class JJTExpressionParserState {
   }
 
   /* Returns the node currently on the top of the stack. */
+  /**
+   * Method peekNode.
+   * @return Node
+   */
   Node peekNode() {
     return (Node)nodes.peek();
   }
 
   /* Returns the number of children on the stack in the current node
      scope. */
+  /**
+   * Method nodeArity.
+   * @return int
+   */
   int nodeArity() {
     return sp - mk;
   }
 
 
+  /**
+   * Method clearNodeScope.
+   * @param n Node
+   */
   void clearNodeScope(Node n) {
     while (sp > mk) {
       popNode();
@@ -74,6 +104,10 @@ class JJTExpressionParserState {
   }
 
 
+  /**
+   * Method openNodeScope.
+   * @param n Node
+   */
   void openNodeScope(Node n) {
     marks.push(new Integer(mk));
     mk = sp;
@@ -85,6 +119,11 @@ class JJTExpressionParserState {
      children.  That number of nodes are popped from the stack and
      made the children of the definite node.  Then the definite node
      is pushed on to the stack. */
+  /**
+   * Method closeNodeScope.
+   * @param n Node
+   * @param num int
+   */
   void closeNodeScope(Node n, int num) {
     mk = ((Integer)marks.pop()).intValue();
     while (num-- > 0) {
@@ -103,6 +142,11 @@ class JJTExpressionParserState {
      made children of the the conditional node, which is then pushed
      on to the stack.  If the condition is false the node is not
      constructed and they are left on the stack. */
+  /**
+   * Method closeNodeScope.
+   * @param n Node
+   * @param condition boolean
+   */
   void closeNodeScope(Node n, boolean condition) {
     if (condition) {
       int a = nodeArity();

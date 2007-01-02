@@ -7,14 +7,19 @@ package edu.uchc.vcell.expression.internal;
 /* JJT: 0.2.2 */
 import net.sourceforge.interval.ia_math.RealInterval;
 
-import org.vcell.expression.DerivativePolicy;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.NameScope;
 
+/**
+ */
 public class ASTExpression extends SimpleNode {
   ASTExpression() {
     super(ExpressionParserTreeConstants.JJTEXPRESSION);
   }
+/**
+ * Constructor for ASTExpression.
+ * @param id int
+ */
 ASTExpression(int id) {
 	super(id);
 if (id != ExpressionParserTreeConstants.JJTEXPRESSION){ System.out.println("ASTExpressionNode(), i = "+id); }
@@ -23,6 +28,7 @@ if (id != ExpressionParserTreeConstants.JJTEXPRESSION){ System.out.println("ASTE
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#copyTree()
  */
 public Node copyTree() {
 	ASTExpression node = new ASTExpression();
@@ -35,6 +41,7 @@ public Node copyTree() {
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#copyTreeBinary()
  */
 public Node copyTreeBinary() {
 	ASTExpression node = new ASTExpression();
@@ -45,8 +52,12 @@ public Node copyTreeBinary() {
 }
 /**
  * This method was created by a SmartGuide.
+ * @param variable String
+ * @param derivativePolicy DerivativePolicy
  * @return double
+ * @throws ExpressionException
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#differentiate(String, DerivativePolicy)
  */
 public Node differentiate(String variable, DerivativePolicy derivativePolicy) throws ExpressionException {
 	return jjtGetChild(0).differentiate(variable, derivativePolicy);
@@ -54,15 +65,20 @@ public Node differentiate(String variable, DerivativePolicy derivativePolicy) th
 /**
  * This method was created by a SmartGuide.
  * @return double
+ * @throws ExpressionException
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#evaluateConstant()
  */
 public double evaluateConstant() throws ExpressionException {
 	return jjtGetChild(0).evaluateConstant();
 }
 /**
  * This method was created by a SmartGuide.
+ * @param intervals RealInterval[]
  * @return double
+ * @throws ExpressionException
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#evaluateInterval(RealInterval[])
  */
 public RealInterval evaluateInterval(RealInterval intervals[]) throws ExpressionException {
 	setInterval(jjtGetChild(0).evaluateInterval(intervals),intervals);
@@ -70,15 +86,21 @@ public RealInterval evaluateInterval(RealInterval intervals[]) throws Expression
 }
 /**
  * This method was created by a SmartGuide.
+ * @param values double[]
  * @return double
+ * @throws ExpressionException
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#evaluateVector(double[])
  */
 public double evaluateVector(double values[]) throws ExpressionException {
 	return jjtGetChild(0).evaluateVector(values);
 }
 /**
  * This method was created by a SmartGuide.
+ * @return Node
+ * @throws ExpressionException
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#flatten()
  */
 public Node flatten() throws ExpressionException {
 	try {
@@ -94,8 +116,10 @@ public Node flatten() throws ExpressionException {
 /**
  * Insert the method's description here.
  * Creation date: (5/2/2003 2:11:37 PM)
- * @return java.lang.String
  * @param language int
+ * @param nameScope NameScope
+ * @return java.lang.String
+ * @see edu.uchc.vcell.expression.internal.Node#infixString(int, NameScope)
  */
 public String infixString(int language, NameScope nameScope) {
 	StringBuffer buffer = new StringBuffer();
@@ -108,7 +132,9 @@ public String infixString(int language, NameScope nameScope) {
 /**
  * Insert the method's description here.
  * Creation date: (6/20/01 4:40:51 PM)
+ * @param intervals RealInterval[]
  * @return boolean
+ * @see edu.uchc.vcell.expression.internal.Node#narrow(RealInterval[])
  */
 public boolean narrow(RealInterval intervals[]) {
 	throw new RuntimeException("ASTExpression.narrow(), not yet supported");

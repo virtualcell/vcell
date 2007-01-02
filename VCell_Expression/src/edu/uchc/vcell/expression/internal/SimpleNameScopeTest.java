@@ -8,7 +8,8 @@ import org.vcell.expression.SimpleSymbolTable;
 /**
  * Insert the type's description here.
  * Creation date: (8/1/2003 10:49:36 AM)
- * @author: Jim Schaff
+ * @author schaff
+ * @version $Revision: 1.0 $
  */
 public class SimpleNameScopeTest {
 /**

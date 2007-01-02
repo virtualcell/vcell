@@ -10,7 +10,6 @@ import net.sourceforge.interval.ia_math.IAMath;
 import net.sourceforge.interval.ia_math.IANarrow;
 import net.sourceforge.interval.ia_math.RealInterval;
 
-import org.vcell.expression.DerivativePolicy;
 import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionTerm;
@@ -21,6 +20,8 @@ import org.vcell.expression.ExpressionTerm.Operator;
 
 import cbit.util.xml.MathMLTags;
 
+/**
+ */
 public class ASTRelationalNode extends SimpleNode {
 
   private ExpressionTerm.Operator operator = null;
@@ -28,9 +29,19 @@ public class ASTRelationalNode extends SimpleNode {
 public ASTRelationalNode() {
 	super(-1);
 }      
+/**
+ * Constructor for ASTRelationalNode.
+ * @param id int
+ */
 ASTRelationalNode(int id) {
 	super(id);
 }      
+  /**
+   * Method bind.
+   * @param symbolTable SymbolTable
+   * @throws ExpressionBindingException
+   * @see edu.uchc.vcell.expression.internal.Node#bind(SymbolTable)
+   */
   public void bind(SymbolTable symbolTable) throws ExpressionBindingException
   {
 	  super.bind(symbolTable);
@@ -40,7 +51,8 @@ ASTRelationalNode(int id) {
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.
- */
+ * @see edu.uchc.vcell.expression.internal.Node#copyTree()
+   */
 public Node copyTree() {
 	ASTRelationalNode node = new ASTRelationalNode();
 	node.operator = this.operator;
@@ -53,6 +65,7 @@ public Node copyTree() {
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#copyTreeBinary()
  */
 public Node copyTreeBinary() {
 	ASTRelationalNode node = new ASTRelationalNode();
@@ -64,18 +77,22 @@ public Node copyTreeBinary() {
 }
 /**
  * This method was created by a SmartGuide.
- * @return cbit.vcell.parser.Expression
  * @param independentVariable java.lang.String
+ * @param derivativePolicy DerivativePolicy
+ * @return cbit.vcell.parser.Expression
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#differentiate(String, DerivativePolicy)
  */
-public Node differentiate(String independentVariable, DerivativePolicy derivativePolicy) throws ExpressionException {
+public Node differentiate(String independentVariable, DerivativePolicy derivativePolicy) {
 	return new ASTFloatNode(0.0);
 }
 /**
  * This method was created by a SmartGuide.
- * @return boolean
  * @param node cbit.vcell.parser.Node
+ * @return boolean
+ * @throws ExpressionException
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#equals(Node)
  */
 public boolean equals(Node node) throws ExpressionException {
 	//
@@ -95,6 +112,12 @@ public boolean equals(Node node) throws ExpressionException {
 
 	return true;
 }
+/**
+ * Method evaluateConstant.
+ * @return double
+ * @throws ExpressionException
+ * @see edu.uchc.vcell.expression.internal.Node#evaluateConstant()
+ */
 public double evaluateConstant() throws ExpressionException {
 	if (jjtGetNumChildren()!=2){
 		throw new ExpressionException("Expected two children");
@@ -130,6 +153,13 @@ public double evaluateConstant() throws ExpressionException {
 	}
 	throw new ExpressionException("unsupported operator");
 }    
+/**
+ * Method evaluateInterval.
+ * @param intervals RealInterval[]
+ * @return RealInterval
+ * @throws ExpressionException
+ * @see edu.uchc.vcell.expression.internal.Node#evaluateInterval(RealInterval[])
+ */
 public RealInterval evaluateInterval(RealInterval intervals[]) throws ExpressionException {
 	if (jjtGetNumChildren()!=2){
 		throw new ExpressionException("Expected two children");
@@ -175,6 +205,13 @@ public RealInterval evaluateInterval(RealInterval intervals[]) throws Expression
 	setInterval(result,intervals);
 	return getInterval(intervals);
 }    
+/**
+ * Method evaluateVector.
+ * @param values double[]
+ * @return double
+ * @throws ExpressionException
+ * @see edu.uchc.vcell.expression.internal.Node#evaluateVector(double[])
+ */
 public double evaluateVector(double values[]) throws ExpressionException {
 	if (jjtGetNumChildren()!=2){
 		throw new ExpressionException("Expected two children");
@@ -212,7 +249,10 @@ public double evaluateVector(double values[]) throws ExpressionException {
 }    
 /**
  * This method was created by a SmartGuide.
+ * @return Node
+ * @throws ExpressionException
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#flatten()
  */
 public Node flatten() throws ExpressionException {
 
@@ -270,7 +310,8 @@ public ExpressionTerm.Operator getOperator() {
 
 /**
  * This method was created by a SmartGuide.
- * @param op java.lang.String
+ * @param mathML String
+ * @return Operator
  */
 public static Operator getOperatorFromMathML(String mathML) {
 	if (mathML.equals(MathMLTags.GREATER)){
@@ -289,11 +330,18 @@ public static Operator getOperatorFromMathML(String mathML) {
 		return null;
 	}
 }
+  /**
+   * Method infixString.
+   * @param lang int
+   * @param nameScope NameScope
+   * @return String
+   * @see edu.uchc.vcell.expression.internal.Node#infixString(int, NameScope)
+   */
   public String infixString(int lang, NameScope nameScope)
   {
 	  StringBuffer buffer = new StringBuffer();
 	 
-	  buffer.append("(");
+	  buffer.append('(');
 
 	  for (int i=0;i<jjtGetNumChildren();i++){
 			if (i>0) {
@@ -302,13 +350,18 @@ public static Operator getOperatorFromMathML(String mathML) {
 			buffer.append(jjtGetChild(i).infixString(lang, nameScope));
 	  }
 
-	  buffer.append(")");
+	  buffer.append(')');
 
 	  return buffer.toString();
   }   
   
 
 
+	/**
+	 * Method getOpString.
+	 * @param lang int
+	 * @return String
+	 */
 	public String getOpString(int lang) {
 	switch (operator){
 		case GT:{
@@ -363,7 +416,10 @@ public static Operator getOperatorFromMathML(String mathML) {
 /**
  * Insert the method's description here.
  * Creation date: (6/20/01 11:04:41 AM)
+ * @param intervals RealInterval[]
  * @return boolean
+ * @throws ExpressionBindingException
+ * @see edu.uchc.vcell.expression.internal.Node#narrow(RealInterval[])
  */
 public boolean narrow(RealInterval intervals[]) throws ExpressionBindingException{
 	if (jjtGetNumChildren()!=2){

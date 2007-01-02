@@ -1,7 +1,6 @@
 package org.vcell.expression;
 import java.util.ArrayList;
 
-import cbit.util.RationalNumber;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.VCUnitException;
 import edu.uchc.vcell.expression.internal.ASTAddNode;
@@ -183,7 +182,7 @@ public class VCUnitEvaluator {
 		} else if (node instanceof ASTFuncNode) {   
 			String functionName = ((ASTFuncNode)node).getName();
 			if (functionName.equalsIgnoreCase("sqrt")) {         //?              
-				assignAndVerify(nodeUnit.raiseTo(new RationalNumber(2)),(SimpleNode)node.jjtGetChild(0),unitsHashMap);
+				assignAndVerify(nodeUnit.raiseTo(2),(SimpleNode)node.jjtGetChild(0),unitsHashMap);
 			}else if (functionName.equalsIgnoreCase("exp")) {         //?              
 				assignAndVerify(VCUnitDefinition.UNIT_DIMENSIONLESS,(SimpleNode)node.jjtGetChild(0),unitsHashMap);
 			}else if (functionName.equalsIgnoreCase("pow")) {              							 // later....
@@ -195,7 +194,8 @@ public class VCUnitEvaluator {
 					double exponentValue = ((SimpleNode)node.jjtGetChild(1)).evaluateConstant();
 					if (!nodeUnit.isTBD()){
 						RationalNumber rn = RationalNumber.getApproximateFraction(exponentValue);
-						assignAndVerify(nodeUnit.raiseTo(rn.inverse()),(SimpleNode)node.jjtGetChild(0),unitsHashMap);  // exponent should always be dimensionless
+						RationalNumber rn_inverse = rn.inverse();
+						assignAndVerify(nodeUnit.raiseTo(rn_inverse.getNum(),rn_inverse.getDen()),(SimpleNode)node.jjtGetChild(0),unitsHashMap);  // exponent should always be dimensionless
 					}
 				}catch (ExpressionException e){
 					//
@@ -228,7 +228,7 @@ public class VCUnitEvaluator {
 				try {
 					double exponentValue = ((SimpleNode)node.jjtGetChild(1)).evaluateConstant();
 					RationalNumber rn = RationalNumber.getApproximateFraction(exponentValue);
-					assignAndVerify(nodeUnit.raiseTo(rn.inverse()),(SimpleNode)node.jjtGetChild(0),unitsHashMap);  // exponent should always be dimensionless
+					assignAndVerify(nodeUnit.raiseTo(rn.inverse().getNum(),rn.inverse().getDen()),(SimpleNode)node.jjtGetChild(0),unitsHashMap);  // exponent should always be dimensionless
 				}catch (ExpressionException e){
 					//
 					// a^b where b not constant, a must be non-dimensional
@@ -377,7 +377,7 @@ public class VCUnitEvaluator {
 				try {
 					double d = ((SimpleNode)node.jjtGetChild(1)).evaluateConstant();
 					RationalNumber rn = RationalNumber.getApproximateFraction(d);
-					return unit0.raiseTo(rn);
+					return unit0.raiseTo(rn.getNum(),rn.getDen());
 				}catch(ExpressionException e){
 					return VCUnitDefinition.UNIT_TBD;  // ????? don't know the unit now
 				}
@@ -395,7 +395,7 @@ public class VCUnitEvaluator {
 					return unit0;
 				}
 				RationalNumber rn = new RationalNumber(1,2);
-				return unit0.raiseTo(rn);
+				return unit0.raiseTo(rn.getNum(),rn.getDen());
 			} else if (functionName.equalsIgnoreCase("abs") || functionName.equalsIgnoreCase("min") ||
 					   functionName.equalsIgnoreCase("max")) {
 				return getUnitDefinition((SimpleNode)node.jjtGetChild(0),unitsHashMap);
@@ -426,7 +426,7 @@ public class VCUnitEvaluator {
 					return VCUnitDefinition.UNIT_TBD;
 				}else{
 					RationalNumber rn = RationalNumber.getApproximateFraction(exponentValue);
-					return unit0.raiseTo(rn);
+					return unit0.raiseTo(rn.getNum(),rn.getDen());
 				}
 			}else{
 				return VCUnitDefinition.UNIT_TBD;

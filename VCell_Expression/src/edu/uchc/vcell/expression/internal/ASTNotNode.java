@@ -9,20 +9,31 @@ import net.sourceforge.interval.ia_math.IAMath;
 import net.sourceforge.interval.ia_math.IANarrow;
 import net.sourceforge.interval.ia_math.RealInterval;
 
-import org.vcell.expression.DerivativePolicy;
 import org.vcell.expression.DivideByZeroException;
 import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.NameScope;
 import org.vcell.expression.SymbolTable;
 
+/**
+ */
 public class ASTNotNode extends SimpleNode {
   ASTNotNode() {
     super(ExpressionParserTreeConstants.JJTNOTNODE);
   }
+/**
+ * Constructor for ASTNotNode.
+ * @param id int
+ */
 ASTNotNode(int id) {
 	super(id);
 }
+  /**
+   * Method bind.
+   * @param symbolTable SymbolTable
+   * @throws ExpressionBindingException
+   * @see edu.uchc.vcell.expression.internal.Node#bind(SymbolTable)
+   */
   public void bind(SymbolTable symbolTable) throws ExpressionBindingException
   {
 	  super.bind(symbolTable);
@@ -32,6 +43,7 @@ ASTNotNode(int id) {
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#copyTree()
  */
 public Node copyTree() {
 	ASTNotNode node = new ASTNotNode();
@@ -44,6 +56,7 @@ public Node copyTree() {
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#copyTreeBinary()
  */
 public Node copyTreeBinary() {
 	ASTNotNode node = new ASTNotNode();
@@ -54,9 +67,12 @@ public Node copyTreeBinary() {
 }
 /**
  * This method was created by a SmartGuide.
- * @return cbit.vcell.parser.Expression
  * @param independentVariable java.lang.String
+ * @param derivativePolicy DerivativePolicy
+ * @return cbit.vcell.parser.Expression
+ * @throws ExpressionException
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#differentiate(String, DerivativePolicy)
  */
 public Node differentiate(String independentVariable, DerivativePolicy derivativePolicy) throws ExpressionException {
 	ASTNotNode notNode = new ASTNotNode();
@@ -65,7 +81,13 @@ public Node differentiate(String independentVariable, DerivativePolicy derivativ
 	
 	return notNode;
 }
-public double evaluateConstant() throws ExpressionException, DivideByZeroException {
+/**
+ * Method evaluateConstant.
+ * @return double
+ * @throws ExpressionException
+ * @see edu.uchc.vcell.expression.internal.Node#evaluateConstant()
+ */
+public double evaluateConstant() throws ExpressionException  {
 	double childValue = jjtGetChild(0).evaluateConstant();
 	if (childValue==0.0){
 		return 1.0;
@@ -73,11 +95,25 @@ public double evaluateConstant() throws ExpressionException, DivideByZeroExcepti
 		return 0.0;
 	}
 }    
-public RealInterval evaluateInterval(RealInterval intervals[]) throws ExpressionException, DivideByZeroException {
+/**
+ * Method evaluateInterval.
+ * @param intervals RealInterval[]
+ * @return RealInterval
+ * @throws ExpressionException
+ * @see edu.uchc.vcell.expression.internal.Node#evaluateInterval(RealInterval[])
+ */
+public RealInterval evaluateInterval(RealInterval intervals[]) throws ExpressionException  {
 	setInterval(IAMath.vcell_not(jjtGetChild(0).evaluateInterval(intervals)),intervals);
 	return getInterval(intervals);
 }    
-public double evaluateVector(double values[]) throws ExpressionException, DivideByZeroException {
+/**
+ * Method evaluateVector.
+ * @param values double[]
+ * @return double
+ * @throws ExpressionException
+ * @see edu.uchc.vcell.expression.internal.Node#evaluateVector(double[])
+ */
+public double evaluateVector(double values[]) throws ExpressionException  {
 
 	double childValue = jjtGetChild(0).evaluateVector(values);
 
@@ -89,7 +125,10 @@ public double evaluateVector(double values[]) throws ExpressionException, Divide
 }    
 /**
  * This method was created by a SmartGuide.
+ * @return Node
+ * @throws ExpressionException
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#flatten()
  */
 public Node flatten() throws ExpressionException {
 	try {
@@ -123,8 +162,10 @@ public Node flatten() throws ExpressionException {
 /**
  * Insert the method's description here.
  * Creation date: (5/2/2003 2:11:37 PM)
- * @return java.lang.String
  * @param language int
+ * @param nameScope NameScope
+ * @return java.lang.String
+ * @see edu.uchc.vcell.expression.internal.Node#infixString(int, NameScope)
  */
 public String infixString(int language, NameScope nameScope) {
 	StringBuffer buffer = new StringBuffer();
@@ -135,14 +176,17 @@ public String infixString(int language, NameScope nameScope) {
 		buffer.append("!(");
 	}
 	buffer.append(jjtGetChild(0).infixString(language,nameScope));
-	buffer.append(")");
+	buffer.append(')');
 
 	return buffer.toString();
 }
 /**
  * Insert the method's description here.
  * Creation date: (6/20/01 11:04:41 AM)
+ * @param intervals RealInterval[]
  * @return boolean
+ * @throws ExpressionBindingException
+ * @see edu.uchc.vcell.expression.internal.Node#narrow(RealInterval[])
  */
 public boolean narrow(RealInterval intervals[]) throws ExpressionBindingException {
 	return IANarrow.vcell_narrow_not(getInterval(intervals),jjtGetChild(0).getInterval(intervals)) 

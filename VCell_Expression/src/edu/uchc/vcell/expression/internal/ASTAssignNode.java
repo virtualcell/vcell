@@ -8,13 +8,14 @@ package edu.uchc.vcell.expression.internal;
 import net.sourceforge.interval.ia_math.IANarrow;
 import net.sourceforge.interval.ia_math.RealInterval;
 
-import org.vcell.expression.DerivativePolicy;
 import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.NameScope;
 import org.vcell.expression.SymbolTable;
 import org.vcell.expression.SymbolTableEntry;
 
+/**
+ */
 public class ASTAssignNode extends SimpleNode {
 
 	static {
@@ -28,6 +29,12 @@ public class ASTAssignNode extends SimpleNode {
 // ignore symbol info for LHS (assumed only for annotation purposes)
 //
 
+/**
+ * Method bind.
+ * @param symbolTable SymbolTable
+ * @throws ExpressionBindingException
+ * @see edu.uchc.vcell.expression.internal.Node#bind(SymbolTable)
+ */
 public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
     jjtGetChild(1).bind(symbolTable);
 }
@@ -35,6 +42,7 @@ public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#copyTree()
  */
 public Node copyTree() {
 	ASTAssignNode node = new ASTAssignNode();
@@ -47,6 +55,7 @@ public Node copyTree() {
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#copyTreeBinary()
  */
 public Node copyTreeBinary() {
 	ASTAssignNode node = new ASTAssignNode();
@@ -57,16 +66,32 @@ public Node copyTreeBinary() {
 }
 /**
  * This method was created by a SmartGuide.
- * @return cbit.vcell.parser.Expression
  * @param independentVariable java.lang.String
+ * @param derivativePolicy DerivativePolicy
+ * @return cbit.vcell.parser.Expression
+ * @throws ExpressionException
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#differentiate(String, DerivativePolicy)
  */
 public Node differentiate(String independentVariable, DerivativePolicy derivativePolicy) throws ExpressionException {
 	throw new ExpressionException("differentiation not supported");	 
 }
+/**
+ * Method evaluateConstant.
+ * @return double
+ * @throws ExpressionException
+ * @see edu.uchc.vcell.expression.internal.Node#evaluateConstant()
+ */
 public double evaluateConstant() throws ExpressionException {
 	throw new ExpressionException("AssignNode cannot be evaluated as a constant");
 }    
+/**
+ * Method evaluateInterval.
+ * @param intervals RealInterval[]
+ * @return RealInterval
+ * @throws ExpressionException
+ * @see edu.uchc.vcell.expression.internal.Node#evaluateInterval(RealInterval[])
+ */
 public RealInterval evaluateInterval(RealInterval intervals[]) throws ExpressionException {
 	if (jjtGetNumChildren()!=2){
 		throw new RuntimeException("Expected two children");
@@ -78,6 +103,13 @@ public RealInterval evaluateInterval(RealInterval intervals[]) throws Expression
 	setInterval(lhs.getInterval(intervals),intervals);
 	return getInterval(intervals);
 }    
+/**
+ * Method evaluateVector.
+ * @param values double[]
+ * @return double
+ * @throws ExpressionException
+ * @see edu.uchc.vcell.expression.internal.Node#evaluateVector(double[])
+ */
 public double evaluateVector(double values[]) throws ExpressionException {
 	throw new ExpressionException("ASTAssignNode.evaluateVector() undefined operation, assign lvalue???");
 /*
@@ -88,7 +120,10 @@ public double evaluateVector(double values[]) throws ExpressionException {
 }    
 /**
  * This method was created by a SmartGuide.
+ * @return Node
+ * @throws ExpressionException
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#flatten()
  */
 public Node flatten() throws ExpressionException {
 
@@ -103,8 +138,9 @@ public Node flatten() throws ExpressionException {
  *
  * ignore symbol info for LHS (assumed only for annotation purposes)
  *
- * @return cbit.vcell.parser.SymbolTableEntry
  * @param symbol java.lang.String
+ * @return cbit.vcell.parser.SymbolTableEntry
+ * @see edu.uchc.vcell.expression.internal.Node#getBinding(String)
  */
 public SymbolTableEntry getBinding(String symbol) {
 	return jjtGetChild(1).getBinding(symbol);
@@ -113,12 +149,22 @@ public SymbolTableEntry getBinding(String symbol) {
  *
  * ignore symbol info for LHS (assumed only for annotation purposes)
  *
+ * @param language int
+ * @param nameScope NameScope
  * @return java.lang.String[]
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#getSymbols(int, NameScope)
  */
 public String[] getSymbols(int language, NameScope nameScope) {
 	return jjtGetChild(1).getSymbols(language,nameScope);
 }
+/**
+ * Method infixString.
+ * @param lang int
+ * @param nameScope NameScope
+ * @return String
+ * @see edu.uchc.vcell.expression.internal.Node#infixString(int, NameScope)
+ */
 public String infixString(int lang, NameScope nameScope) {
 	StringBuffer buffer = new StringBuffer();
 	 
@@ -135,7 +181,10 @@ public String infixString(int lang, NameScope nameScope) {
 /**
  * Insert the method's description here.
  * Creation date: (6/20/01 11:04:41 AM)
+ * @param intervals RealInterval[]
  * @return boolean
+ * @throws ExpressionBindingException
+ * @see edu.uchc.vcell.expression.internal.Node#narrow(RealInterval[])
  */
 public boolean narrow(RealInterval intervals[]) throws ExpressionBindingException{
 	if (jjtGetNumChildren()!=2){
@@ -151,6 +200,8 @@ public boolean narrow(RealInterval intervals[]) throws ExpressionBindingExceptio
  *
  * ignore symbol info for LHS (assumed only for annotation purposes)
  *
+ * @throws ExpressionException
+ * @see edu.uchc.vcell.expression.internal.Node#substituteBoundSymbols()
  */
 public void substituteBoundSymbols() throws ExpressionException {
     jjtGetChild(1).substituteBoundSymbols();

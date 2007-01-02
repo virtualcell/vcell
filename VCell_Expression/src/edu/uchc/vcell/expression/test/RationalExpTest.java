@@ -1,7 +1,6 @@
 package edu.uchc.vcell.expression.test;
 
-import org.vcell.expression.IRationalExpression;
-import org.vcell.expression.RationalExpressionFactory;
+import org.vcell.expression.RationalExpression;
 
 
 /**
@@ -17,32 +16,32 @@ public class RationalExpTest {
 public static void main(java.lang.String[] args) {
 	// Insert code to start the application here.
 	try {
-		IRationalExpression r1 = RationalExpressionFactory.createRationalExpression(1);
+		RationalExpression r1 = new RationalExpression(1);
 		System.out.println("r1 = "+r1);
-		IRationalExpression r2 = RationalExpressionFactory.createRationalExpression("C1");
+		RationalExpression r2 = new RationalExpression("C1");
 		System.out.println("r2 = "+r2);
-		IRationalExpression r3 = r1.add(r2);
+		RationalExpression r3 = r1.add(r2);
 		System.out.println("r3 = r1+r2 = "+r3);
 		
-		IRationalExpression r4 = RationalExpressionFactory.createRationalExpression("C2");
+		RationalExpression r4 = new RationalExpression("C2");
 		System.out.println("r4 = "+r4);
-		IRationalExpression r5 = r3.sub(r4);
+		RationalExpression r5 = r3.sub(r4);
 		System.out.println("r5 = r3-r4 = "+r5);
 		
-		IRationalExpression r6 = RationalExpressionFactory.createRationalExpression("C3");
+		RationalExpression r6 = new RationalExpression("C3");
 		System.out.println("r6 = "+r6);
-		IRationalExpression r7 = r5.div(r6);
+		RationalExpression r7 = r5.div(r6);
 		System.out.println("r7 = r5/r6 = "+r7);
 		
-		IRationalExpression r8 = RationalExpressionFactory.createRationalExpression("C4");
+		RationalExpression r8 = new RationalExpression("C4");
 		System.out.println("r8 = "+r8);
-		IRationalExpression r9 = r7.mult(r8).mult(RationalExpressionFactory.createRationalExpression(2));
+		RationalExpression r9 = r7.mult(r8).mult(new RationalExpression(2));
 		System.out.println("r9 = 2*r7*r8 = "+r9);
 		
-		IRationalExpression r10 = (RationalExpressionFactory.createRationalExpression("C4")).mult(RationalExpressionFactory.createRationalExpression(2));
+		RationalExpression r10 = (new RationalExpression("C4")).mult(new RationalExpression(2));
 		
 		System.out.println("r10 = "+r10);
-		IRationalExpression r11 = r9.div(r10);
+		RationalExpression r11 = r9.div(r10);
 		System.out.println("r11 = r9/r10 = "+r11);
 	} catch (Throwable e) {
 		e.printStackTrace(System.out);

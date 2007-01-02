@@ -23,15 +23,6 @@ public interface IExpression extends Matchable, Serializable {
 
 	/**
 	 * This method was created by a SmartGuide.
-	 * @return cbit.vcell.model.Expression
-	 * @param variable String
-	 * @exception java.lang.Exception The exception description.
-	 */
-	public abstract IExpression differentiate(String variable, DerivativePolicy derivativePolicy)
-			throws ExpressionException;
-
-	/**
-	 * This method was created by a SmartGuide.
 	 * @return double
 	 * @exception java.lang.Exception The exception description.
 	 */
@@ -43,13 +34,6 @@ public interface IExpression extends Matchable, Serializable {
 
 	public abstract double evaluateVector(double values[])
 			throws ExpressionException, DivideByZeroException;
-
-	/**
-	 * Insert the method's description here.
-	 * Creation date: (1/23/2003 7:05:26 PM)
-	 * @return cbit.vcell.parser.Expression[]
-	 */
-	public abstract ExpressionTerm extractTopLevelTerm();
 
 	/**
 	 * This method was created by a SmartGuide.

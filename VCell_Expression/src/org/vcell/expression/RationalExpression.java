@@ -1,53 +1,87 @@
-package edu.uchc.vcell.expression.internal;
+package org.vcell.expression;
 import java.util.Vector;
 
-import org.vcell.expression.ExpressionFactory;
-import org.vcell.expression.IExpression;
-import org.vcell.expression.IRationalExpression;
-import org.vcell.expression.RationalExpressionFactory;
-import org.vcell.expression.RationalNumber;
 
 
 /**
  * Insert the type's description here.
  * Creation date: (3/27/2003 12:16:31 PM)
- * @author: Jim Schaff
+ * @author schaff
+ * @version $Revision: 1.0 $
  */
-public class RationalExp implements java.io.Serializable, IRationalExpression {
+public class RationalExpression implements java.io.Serializable {
 
 	private Vector<Term> numTermList = new Vector<Term>();
 	private Vector<Term> denTermList = new Vector<Term>();
 
+	/**
+	 */
 	private class Term implements java.io.Serializable {
 		private long coefficient = 1;
 		private Vector<String> symbolList = new Vector<String>();
 
+		/**
+		 * Constructor for Term.
+		 * @param coeff long
+		 */
 		public Term(long coeff){
 			coefficient = coeff;
 		}
+		/**
+		 * Constructor for Term.
+		 * @param coeff long
+		 * @param symbols String[]
+		 */
 		public Term(long coeff, String symbols[]){
 			coefficient = coeff;
 			for (int i=0;symbols!=null && i<symbols.length;i++){
 				symbolList.add(symbols[i]);
 			} 
 		}
+		/**
+		 * Constructor for Term.
+		 * @param symbol String
+		 */
 		public Term(String symbol){
 			coefficient = 1;
 			symbolList.add(symbol);
 		}
+		/**
+		 * Constructor for Term.
+		 * @param term Term
+		 */
 		public Term(Term term){
 			coefficient = term.coefficient;
 			symbolList = (Vector<String>)term.symbolList.clone();
 		}
+		/**
+		 * Method hasSymbol.
+		 * @param symbol String
+		 * @return boolean
+		 */
 		public boolean hasSymbol(String symbol){
 			return symbolList.contains(symbol);
 		}
+		/**
+		 * Method isConstant.
+		 * @return boolean
+		 */
 		public boolean isConstant(){
 			return symbolList.size()==0;
 		}
+		/**
+		 * Method removeSymbol.
+		 * @param symbol String
+		 * @return boolean
+		 */
 		public boolean removeSymbol(String symbol){
 			return symbolList.remove(symbol);
 		}
+		/**
+		 * Method isSummable.
+		 * @param term Term
+		 * @return boolean
+		 */
 		public boolean isSummable(Term term){
 			if (symbolList.size()!=term.symbolList.size()){
 				return false;
@@ -74,9 +108,17 @@ public class RationalExp implements java.io.Serializable, IRationalExpression {
 			}
 			return true;
 		}
+		/**
+		 * Method getCoefficient.
+		 * @return long
+		 */
 		public long getCoefficient(){
 			return coefficient;
 		}
+		/**
+		 * Method getSymbols.
+		 * @return String[]
+		 */
 		public String[] getSymbols(){
 			if (symbolList==null || symbolList.size()==0){
 				return new String[0];
@@ -88,6 +130,12 @@ public class RationalExp implements java.io.Serializable, IRationalExpression {
 				return symbols;
 			}
 		}
+		/**
+		 * Method mult.
+		 * @param term1 Term
+		 * @param term2 Term
+		 * @return Term
+		 */
 		public Term mult(Term term1, Term term2){
 			Term newTerm = new Term(1);
 			newTerm.coefficient = term1.coefficient * term2.coefficient;
@@ -99,6 +147,10 @@ public class RationalExp implements java.io.Serializable, IRationalExpression {
 			}
 			return newTerm;
 		}
+		/**
+		 * Method infixString.
+		 * @return String
+		 */
 		public String infixString(){
 			if (symbolList.size()==0){
 				return String.valueOf(coefficient);
@@ -106,7 +158,7 @@ public class RationalExp implements java.io.Serializable, IRationalExpression {
 				StringBuffer buffer = new StringBuffer();
 				for (int i=0;i<symbolList.size();i++){
 					if (i>0){
-						buffer.append("*");
+						buffer.append('*');
 					}
 					buffer.append(symbolList.elementAt(i));
 				}
@@ -119,6 +171,10 @@ public class RationalExp implements java.io.Serializable, IRationalExpression {
 				}
 			}
 		}
+		/**
+		 * Method toString.
+		 * @return String
+		 */
 		public String toString() {
 			return "Term@"+Integer.toHexString(hashCode())+" "+infixString();
 		}
@@ -127,8 +183,9 @@ public class RationalExp implements java.io.Serializable, IRationalExpression {
 /**
  * Insert the method's description here.
  * Creation date: (3/28/2003 5:43:11 PM)
+ * @param num long
  */
-public RationalExp(long num) {
+public RationalExpression(long num) {
 	numTermList.add(new Term(num));
 	denTermList.add(new Term(1));
 }
@@ -137,8 +194,10 @@ public RationalExp(long num) {
 /**
  * Insert the method's description here.
  * Creation date: (3/28/2003 5:43:11 PM)
+ * @param num long
+ * @param den long
  */
-public RationalExp(long num, long den) {
+public RationalExpression(long num, long den) {
 	numTermList.add(new Term(num));
 	denTermList.add(new Term(den));
 }
@@ -147,8 +206,9 @@ public RationalExp(long num, long den) {
 /**
  * Insert the method's description here.
  * Creation date: (3/28/2003 5:43:11 PM)
+ * @param symbol String
  */
-public RationalExp(String symbol) {
+public RationalExpression(String symbol) {
 	//if (!cbit.util.TokenMangler.fixTokenStrict(symbol,0).equals(symbol)){
 		//throw new IllegalArgumentException("symbol '"+symbol+"' invalid");
 	//}
@@ -160,10 +220,10 @@ public RationalExp(String symbol) {
 /**
  * Insert the method's description here.
  * Creation date: (3/30/2003 1:49:18 PM)
- * @param numList java.util.Vector
- * @param denList java.util.Vector
+ * @param argNumTermList Vector<Term>
+ * @param argDenTermList Vector<Term>
  */
-private RationalExp(Vector<Term> argNumTermList, Vector<Term> argDenTermList){
+private RationalExpression(Vector<Term> argNumTermList, Vector<Term> argDenTermList){
 	if (argNumTermList==null || argNumTermList.size()<1){
 		throw new IllegalArgumentException("must have at least 1 numerator term");
 	}
@@ -179,8 +239,14 @@ private RationalExp(Vector<Term> argNumTermList, Vector<Term> argDenTermList){
 /* (non-Javadoc)
  * @see org.vcell.expression.IRationalExpression#add(org.vcell.expression.RationalExp)
  */
-public RationalExp add(IRationalExpression rationalExpression) {
-	RationalExp rational = (RationalExp)rationalExpression;
+/**
+ * Method add.
+ * @param rationalExpression IRationalExpression
+ * @return RationalExp
+ * @see org.vcell.expression.IRationalExpression#add(IRationalExpression)
+ */
+public RationalExpression add(RationalExpression rationalExpression) {
+	RationalExpression rational = (RationalExpression)rationalExpression;
 	if (isZero()){
 		return rational;
 	}else{
@@ -193,7 +259,7 @@ public RationalExp add(IRationalExpression rationalExpression) {
 			Vector<Term> newNumTermList = addTerms(multiplyTerms(this.numTermList,rational.denTermList),multiplyTerms(this.denTermList,rational.numTermList));
 			Vector<Term> newDenTermList = multiplyTerms(this.denTermList,rational.denTermList);
 
-			RationalExp newRationalExp = new RationalExp(newNumTermList,newDenTermList);
+			RationalExpression newRationalExp = new RationalExpression(newNumTermList,newDenTermList);
 			
 			return newRationalExp;
 		}
@@ -204,9 +270,9 @@ public RationalExp add(IRationalExpression rationalExpression) {
 /**
  * Insert the method's description here.
  * Creation date: (3/29/2003 10:15:41 AM)
- * @return java.util.Vector
  * @param vector1 java.util.Vector
  * @param vector2 java.util.Vector
+ * @return java.util.Vector
  */
 private Vector<Term> addTerms(Vector<Term> vector1, Vector<Term> vector2) {
 	if (vector1 == null && vector2 == null){
@@ -266,17 +332,23 @@ private void collectTerms(Vector<Term> vector) {
 /* (non-Javadoc)
  * @see org.vcell.expression.IRationalExpression#div(org.vcell.expression.RationalExp)
  */
-public RationalExp div(IRationalExpression rationalExpression) {
-	RationalExp rational = (RationalExp)rationalExpression;
+/**
+ * Method div.
+ * @param rationalExpression IRationalExpression
+ * @return RationalExp
+ * @see org.vcell.expression.IRationalExpression#div(IRationalExpression)
+ */
+public RationalExpression div(RationalExpression rationalExpression) {
+	RationalExpression rational = (RationalExpression)rationalExpression;
 	if (rational.isZero()){
 		throw new RuntimeException("divide by zero");
 	}else if (isZero()){
-		return new RationalExp(0);
+		return new RationalExpression(0);
 	}else{
 		Vector<Term> newNumTermList = multiplyTerms(this.numTermList,rational.denTermList);
 		Vector<Term> newDenTermList = multiplyTerms(this.denTermList,rational.numTermList);
 
-		RationalExp newRationalExp = new RationalExp(newNumTermList,newDenTermList);
+		RationalExpression newRationalExp = new RationalExpression(newNumTermList,newDenTermList);
 		
 		return newRationalExp;
 	}
@@ -334,6 +406,7 @@ public String infixString() {
 /**
  * Insert the method's description here.
  * Creation date: (3/28/2003 5:48:52 PM)
+ * @param termList Vector<Term>
  * @return java.lang.String
  */
 private String infixString(Vector<Term> termList) {
@@ -352,8 +425,8 @@ private String infixString(Vector<Term> termList) {
 /* (non-Javadoc)
  * @see org.vcell.expression.IRationalExpression#inverse()
  */
-public RationalExp inverse() {
-	return new RationalExp(denTermList,numTermList);
+public RationalExpression inverse() {
+	return new RationalExpression(denTermList,numTermList);
 }
 
 
@@ -383,17 +456,16 @@ public boolean isZero() {
 /* (non-Javadoc)
  * @see org.vcell.expression.IRationalExpression#minus()
  */
-public RationalExp minus() {
-	return new RationalExp(minusTerms(numTermList),denTermList);
+public RationalExpression minus() {
+	return new RationalExpression(minusTerms(numTermList),denTermList);
 }
 
 
 /**
  * Insert the method's description here.
  * Creation date: (3/29/2003 10:15:41 AM)
+ * @param vector Vector<Term>
  * @return java.util.Vector
- * @param vector1 java.util.Vector
- * @param vector2 java.util.Vector
  */
 private Vector<Term> minusTerms(Vector<Term> vector) {
 	Vector<Term> newVector = new Vector<Term>();
@@ -406,6 +478,12 @@ private Vector<Term> minusTerms(Vector<Term> vector) {
 }
 
 
+/**
+ * Method mult.
+ * @param term1 Term
+ * @param term2 Term
+ * @return Term
+ */
 private Term mult(Term term1, Term term2){
 	Term newTerm = new Term(1);
 	newTerm.coefficient = term1.coefficient * term2.coefficient;
@@ -421,17 +499,23 @@ private Term mult(Term term1, Term term2){
 /* (non-Javadoc)
  * @see org.vcell.expression.IRationalExpression#mult(org.vcell.expression.RationalExp)
  */
-public RationalExp mult(IRationalExpression rationalExpression) {
-	RationalExp rational = (RationalExp)rationalExpression;
+/**
+ * Method mult.
+ * @param rationalExpression IRationalExpression
+ * @return RationalExp
+ * @see org.vcell.expression.IRationalExpression#mult(IRationalExpression)
+ */
+public RationalExpression mult(RationalExpression rationalExpression) {
+	RationalExpression rational = (RationalExpression)rationalExpression;
 	if (isZero()){
-		return new RationalExp(0);
+		return new RationalExpression(0);
 	}else if (rational.isZero()){
-		return new RationalExp(0);
+		return new RationalExpression(0);
 	}else{
 		Vector<Term> newNumTermList = multiplyTerms(this.numTermList,rational.numTermList);
 		Vector<Term> newDenTermList = multiplyTerms(this.denTermList,rational.denTermList);
 
-		RationalExp newRationalExp = new RationalExp(newNumTermList,newDenTermList);
+		RationalExpression newRationalExp = new RationalExpression(newNumTermList,newDenTermList);
 		
 		return newRationalExp;
 	}
@@ -441,9 +525,9 @@ public RationalExp mult(IRationalExpression rationalExpression) {
 /**
  * Insert the method's description here.
  * Creation date: (3/29/2003 10:15:41 AM)
- * @return java.util.Vector
  * @param vector1 java.util.Vector
  * @param vector2 java.util.Vector
+ * @return java.util.Vector
  */
 private Vector<Term> multiplyTerms(Vector<Term> vector1, Vector<Term> vector2) {
 	if (vector1 == null && vector2 == null){
@@ -542,11 +626,17 @@ private void refactor() {
 /* (non-Javadoc)
  * @see org.vcell.expression.IRationalExpression#sub(org.vcell.expression.RationalExp)
  */
-public RationalExp sub(IRationalExpression rationalExpression) {
-	RationalExp rational = (RationalExp)rationalExpression;
+/**
+ * Method sub.
+ * @param rationalExpression IRationalExpression
+ * @return RationalExp
+ * @see org.vcell.expression.IRationalExpression#sub(IRationalExpression)
+ */
+public RationalExpression sub(RationalExpression rationalExpression) {
+	RationalExpression rational = (RationalExpression)rationalExpression;
 	if (isZero()){
 		if (rational.isZero()){
-			return new RationalExp(0);
+			return new RationalExpression(0);
 		}else{
 			return rational.minus();
 		}
@@ -560,7 +650,7 @@ public RationalExp sub(IRationalExpression rationalExpression) {
 			Vector<Term> newNumTermList = addTerms(multiplyTerms(this.numTermList,rational.denTermList),minusTerms(multiplyTerms(this.denTermList,rational.numTermList)));
 			Vector<Term> newDenTermList = multiplyTerms(this.denTermList,rational.denTermList);
 
-			RationalExp newRationalExp = new RationalExp(newNumTermList,newDenTermList);
+			RationalExpression newRationalExp = new RationalExpression(newNumTermList,newDenTermList);
 			
 			return newRationalExp;
 		}

@@ -5,80 +5,91 @@ import java.util.StringTokenizer;
 
 import org.jdom.Element;
 
-import cbit.util.xml.XmlUtil;
-
-import edu.uchc.vcell.expression.internal.Expression;
-import edu.uchc.vcell.expression.internal.ExpressionMathMLParser;
-import edu.uchc.vcell.expression.internal.ExpressionUtils;
-
 public class ExpressionFactory {
+	private static IExpressionProvider expressionProvider = null;
+	
+	public static ExpressionTerm extractTopLevelTerm(IExpression expression) throws ExpressionException {
+		return expressionProvider.extractTopLevelTerm(expression);
+	}
+	
+	public static RationalExpression getRationalExpression(IExpression expression) throws ExpressionException {
+		return expressionProvider.getRationalExpression(expression);
+	}
 
 	public static IExpression add(IExpression expression1, IExpression expression2) throws ExpressionException {
-		return Expression.add((Expression)expression1, (Expression)expression2);
+		return expressionProvider.add(expression1, expression2);
 	}
 
 	public static IExpression invert(IExpression expression) throws ExpressionException {
-		return Expression.invert((Expression)expression);
+		return expressionProvider.invert(expression);
 	}
 
 	public static IExpression mult(IExpression expression1, IExpression expression2) throws ExpressionException {
-		return Expression.mult((Expression)expression1, (Expression)expression2);
+		return expressionProvider.mult(expression1, expression2);
 	}
 
 	public static IExpression negate(IExpression expression) throws ExpressionException {
-		return Expression.negate((Expression)expression);
+		return expressionProvider.negate(expression);
 	}
 
 	public static IExpression power(IExpression expression1, IExpression expression2) throws ExpressionException {
-		return Expression.power((Expression)expression1, (Expression)expression2);
+		return expressionProvider.power(expression1, expression2);
 	}
 
 	public static IExpression createExpression(double value) {
-		return new Expression(value);
+		return expressionProvider.createExpression(value);
 	}
 
 	public static IExpression createExpression(IExpression exp) {
-		return new Expression((Expression)exp);
+		return expressionProvider.createExpression(exp);
 	}
 
 	public static IExpression createExpression(String expString) throws ExpressionException {
-		return new Expression(expString);
+		return expressionProvider.createExpression(expString);
 	}
 
 	public static IExpression createExpression(StringTokenizer tokens) throws ExpressionException {
-		return new Expression(tokens);
+		return expressionProvider.createExpression(tokens);
 	}
 
 	public static IExpression createRandomExpression(Random random, int maxDepth, boolean bIsConstraint) throws ExpressionException {
-		return ExpressionUtils.generateExpression(random, maxDepth, bIsConstraint);
+		return expressionProvider.createRandomExpression(random, maxDepth, bIsConstraint);
 	}
 
 	public static IExpression createSubstitutedExpression(IExpression expression, IExpression origExp, IExpression newExp) throws ExpressionException {
-		return ((Expression)expression).getSubstitutedExpression((Expression)origExp, (Expression)newExp);
+		return expressionProvider.createSubstitutedExpression(expression, origExp, newExp);
 	}
 
 	public static IExpression assign(IExpression lvalueExp, IExpression rvalueExp) throws ExpressionException {
-		return Expression.assign((Expression)lvalueExp, (Expression)rvalueExp);
+		return expressionProvider.assign(lvalueExp, rvalueExp);
 	}
 
 	public static IExpression derivative(String variable, IExpression expression) throws ExpressionException {
-		return Expression.derivative(variable, (Expression)expression);
+		return expressionProvider.derivative(variable, expression);
 	}
 
 	public static IExpression laplacian(IExpression expression) throws ExpressionException {
-		return Expression.laplacian((Expression)expression);
+		return expressionProvider.laplacian(expression);
 	}
 
 	public static IExpression fromMathML(Element mathElement, LambdaFunction[] lambdaFunctions) throws ExpressionException {
-		return (new ExpressionMathMLParser(lambdaFunctions)).fromMathML(mathElement);
+		return expressionProvider.fromMathML(mathElement, lambdaFunctions);
 	}
 
 	public static IExpression fromMathML(Element mathElement) throws ExpressionException {
-		return (new ExpressionMathMLParser(null)).fromMathML(mathElement);
+		return expressionProvider.fromMathML(mathElement);
 	}
 	
 	public static IExpression fromMathML(String mathMLString) throws ExpressionException {
-		return (new ExpressionMathMLParser(null)).fromMathML(mathMLString);
+		return expressionProvider.fromMathML(mathMLString);
+	}
+
+	public static IExpressionProvider getExpressionProvider() {
+		return expressionProvider;
+	}
+
+	public static void setExpressionProvider(IExpressionProvider expressionProvider) {
+		ExpressionFactory.expressionProvider = expressionProvider;
 	}
 
 }

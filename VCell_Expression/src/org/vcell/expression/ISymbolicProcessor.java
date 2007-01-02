@@ -14,7 +14,7 @@ public interface ISymbolicProcessor {
 	 * @param expression
 	 * @return
 	 */
-	public abstract IRationalExpression simplify(IRationalExpression expression);
+	public abstract RationalExpression simplify(RationalExpression expression);
 	
 	/**
 	 * solve() attempts to solve the equation "expression == 0" with respect to "symbol".

@@ -8,7 +8,6 @@ package edu.uchc.vcell.expression.internal;
 import net.sourceforge.interval.ia_math.RealInterval;
 
 import org.vcell.expression.ConstraintSymbolTableEntry;
-import org.vcell.expression.DerivativePolicy;
 import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionUtilities;
@@ -17,6 +16,8 @@ import org.vcell.expression.NameScope;
 import org.vcell.expression.SymbolTable;
 import org.vcell.expression.SymbolTableEntry;
 
+/**
+ */
 public class ASTIdNode extends SimpleNode {
 
   String name = null;
@@ -25,6 +26,10 @@ public class ASTIdNode extends SimpleNode {
 ASTIdNode() {
 	super(ExpressionParserTreeConstants.JJTIDNODE);
   }    
+/**
+ * Constructor for ASTIdNode.
+ * @param id int
+ */
 ASTIdNode(int id) {
 	super(id);
 if (id != ExpressionParserTreeConstants.JJTIDNODE){ System.out.println("ASTIdNode(), id = "+id); }
@@ -32,13 +37,17 @@ if (id != ExpressionParserTreeConstants.JJTIDNODE){ System.out.println("ASTIdNod
   }    
 /**
  * This method was created by a SmartGuide.
+ * @param node ASTIdNode
  */
 ASTIdNode ( ASTIdNode node ) {
 	super(node.id);
 	this.name = node.name;
 	this.symbolTableEntry = node.symbolTableEntry;
 }
-  /** Bind method, identifiers bind themselves to ValueObjects */
+  /** Bind method, identifiers bind themselves to ValueObjects * @param symbolTable SymbolTable
+   * @throws ExpressionBindingException
+   * @see edu.uchc.vcell.expression.internal.Node#bind(SymbolTable)
+   */
 public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
 	
 	if (symbolTable == null){
@@ -57,6 +66,7 @@ public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#copyTree()
  */
 public Node copyTree() {
 	ASTIdNode node = new ASTIdNode(this);
@@ -66,6 +76,7 @@ public Node copyTree() {
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#copyTreeBinary()
  */
 public Node copyTreeBinary() {
 	ASTIdNode node = new ASTIdNode(this);
@@ -73,9 +84,12 @@ public Node copyTreeBinary() {
 }
 /**
  * This method was created by a SmartGuide.
- * @return cbit.vcell.parser.Node
  * @param variable java.lang.String
+ * @param derivativePolicy DerivativePolicy
+ * @return cbit.vcell.parser.Node
+ * @throws ExpressionException
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#differentiate(String, DerivativePolicy)
  */
 public Node differentiate(String variable, DerivativePolicy derivativePolicy) throws ExpressionException {
 	//===============================================================================================
@@ -125,7 +139,7 @@ public Node differentiate(String variable, DerivativePolicy derivativePolicy) th
 	//
 	// i != j   and   terminal node  (null expression)
 	//
-	Expression exp = (Expression)symbolTableEntry.getExpression();
+	IExpression exp = symbolTableEntry.getExpression();
 	if (exp==null){
 		return new ASTFloatNode(0.0);
 	}
@@ -133,8 +147,12 @@ public Node differentiate(String variable, DerivativePolicy derivativePolicy) th
 	//
 	// i != j   and non-terminal node, call differentiate on subexpression
 	//
-	SimpleNode rootNode = exp.getRootNode();
-	return rootNode.differentiate(variable, derivativePolicy);
+	if (exp instanceof Expression){
+		SimpleNode rootNode = ((Expression)exp).getRootNode();
+		return rootNode.differentiate(variable, derivativePolicy);
+	}else{
+		throw new RuntimeException("cannot apply chain rule over different classes of expressions");
+	}
 
 //
 // generate DerivativeNode for term
@@ -145,9 +163,11 @@ public Node differentiate(String variable, DerivativePolicy derivativePolicy) th
 }
 /**
  * This method was created by a SmartGuide.
- * @return boolean
  * @param node cbit.vcell.parser.Node
+ * @return boolean
+ * @throws ExpressionException
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#equals(Node)
  */
 public boolean equals(Node node) throws ExpressionException {
 	//
@@ -167,6 +187,12 @@ public boolean equals(Node node) throws ExpressionException {
 
 	return true;
 }
+/**
+ * Method evaluateConstant.
+ * @return double
+ * @throws ExpressionException
+ * @see edu.uchc.vcell.expression.internal.Node#evaluateConstant()
+ */
 public double evaluateConstant() throws ExpressionException {
 
 	if (symbolTableEntry == null){
@@ -191,6 +217,13 @@ public double evaluateConstant() throws ExpressionException {
 	return symbolTableEntry.getCurrValue();		
 */
 }        
+/**
+ * Method evaluateInterval.
+ * @param intervals RealInterval[]
+ * @return RealInterval
+ * @throws ExpressionException
+ * @see edu.uchc.vcell.expression.internal.Node#evaluateInterval(RealInterval[])
+ */
 public RealInterval evaluateInterval(RealInterval intervals[]) throws ExpressionException {
 
 	if (symbolTableEntry==null){
@@ -210,6 +243,13 @@ public RealInterval evaluateInterval(RealInterval intervals[]) throws Expression
 		return getInterval(intervals);
 	}
 }        
+/**
+ * Method evaluateVector.
+ * @param values double[]
+ * @return double
+ * @throws ExpressionException
+ * @see edu.uchc.vcell.expression.internal.Node#evaluateVector(double[])
+ */
 public double evaluateVector(double values[]) throws ExpressionException {
 
 	if (symbolTableEntry==null){
@@ -229,9 +269,11 @@ public double evaluateVector(double values[]) throws ExpressionException {
 }        
 /**
  * This method was created by a SmartGuide.
+ * @return Node
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#flatten()
  */
-public Node flatten() throws ExpressionException {
+public Node flatten() {
 	try {
 		double retval = evaluateConstant();
 		ASTFloatNode floatNode = new ASTFloatNode(retval);
@@ -242,8 +284,9 @@ public Node flatten() throws ExpressionException {
 }
 /**
  * This method was created by a SmartGuide.
- * @return cbit.vcell.parser.SymbolTableEntry
  * @param symbol java.lang.String
+ * @return cbit.vcell.parser.SymbolTableEntry
+ * @see edu.uchc.vcell.expression.internal.Node#getBinding(String)
  */
 public SymbolTableEntry getBinding(String symbol) {
 	if (name.equals(symbol)){
@@ -255,9 +298,11 @@ public SymbolTableEntry getBinding(String symbol) {
 /**
  * Insert the method's description here.
  * Creation date: (6/20/01 10:55:57 AM)
+ * @param intervals RealInterval[]
  * @return net.sourceforge.interval.ia_math.RealInterval
+ * @see edu.uchc.vcell.expression.internal.Node#getInterval(RealInterval[])
  */
-public RealInterval getInterval(RealInterval intervals[]) throws ExpressionBindingException {
+public RealInterval getInterval(RealInterval intervals[]) {
 	if (symbolTableEntry != null){
 		if (symbolTableEntry instanceof ConstraintSymbolTableEntry && ((ConstraintSymbolTableEntry)symbolTableEntry).dontNarrow()){
 			RealInterval ri = intervals[symbolTableEntry.getIndex()];
@@ -266,18 +311,28 @@ public RealInterval getInterval(RealInterval intervals[]) throws ExpressionBindi
 			return intervals[symbolTableEntry.getIndex()];
 		}
 	}else{
-		throw new ExpressionBindingException("referencing unbound identifier " + name);
+		throw new RuntimeException("referencing unbound identifier " + name);
 	}
 }
 /**
  * This method was created by a SmartGuide.
+ * @param language int
+ * @param nameScope NameScope
  * @return java.lang.String[]
+ * @see edu.uchc.vcell.expression.internal.Node#getSymbols(int, NameScope)
  */
 public String[] getSymbols(int language, NameScope nameScope) {
 	String array[] = new String[1];
 	array[0] = infixString(language,nameScope);
 	return array;
 }
+/**
+ * Method infixString.
+ * @param lang int
+ * @param nameScope NameScope
+ * @return String
+ * @see edu.uchc.vcell.expression.internal.Node#infixString(int, NameScope)
+ */
 public String infixString(int lang, NameScope nameScope) {
 	String idName;
 	if (nameScope == null){
@@ -304,7 +359,9 @@ public String infixString(int lang, NameScope nameScope) {
 /**
  * Insert the method's description here.
  * Creation date: (6/20/01 4:59:25 PM)
+ * @param intervals RealInterval[]
  * @return boolean
+ * @see edu.uchc.vcell.expression.internal.Node#narrow(RealInterval[])
  */
 public boolean narrow(RealInterval intervals[]) {
 	return true;
@@ -312,18 +369,25 @@ public boolean narrow(RealInterval intervals[]) {
 /**
  * Insert the method's description here.
  * Creation date: (6/20/01 10:55:57 AM)
- * @return net.sourceforge.interval.ia_math.RealInterval
+ * @param interval RealInterval
+ * @param intervals RealInterval[]
+ * @see edu.uchc.vcell.expression.internal.Node#setInterval(RealInterval, RealInterval[])
  */
-public void setInterval(RealInterval interval, RealInterval intervals[]) throws ExpressionBindingException {
+public void setInterval(RealInterval interval, RealInterval intervals[]) {
 	if (symbolTableEntry != null){
 		if (!(symbolTableEntry instanceof ConstraintSymbolTableEntry) || !((ConstraintSymbolTableEntry)symbolTableEntry).dontNarrow()){
 			intervals[symbolTableEntry.getIndex()] = interval;
 		}
 	}else{
-		throw new ExpressionBindingException("referencing unbound identifier " + name);		
+		throw new RuntimeException("referencing unbound identifier " + name);		
 	}
 }
-public void substituteBoundSymbols() throws ExpressionException {
+/**
+ * Method substituteBoundSymbols.
+ * @throws ExpressionBindingException
+ * @see edu.uchc.vcell.expression.internal.Node#substituteBoundSymbols()
+ */
+public void substituteBoundSymbols() throws ExpressionBindingException {
 	if (symbolTableEntry == null) {
 		throw new ExpressionBindingException("error substituting unbound identifier " + name);
 	}else{
@@ -342,9 +406,17 @@ public void substituteBoundSymbols() throws ExpressionException {
 public String toString() {
 	return "IdNode (" + name + ")";
 }
+/**
+ * Method getName.
+ * @return String
+ */
 public String getName() {
 	return name;
 }
+/**
+ * Method getSymbolTableEntry.
+ * @return SymbolTableEntry
+ */
 public SymbolTableEntry getSymbolTableEntry() {
 	return symbolTableEntry;
 }

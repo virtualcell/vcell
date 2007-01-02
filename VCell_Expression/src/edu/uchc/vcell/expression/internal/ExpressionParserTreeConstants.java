@@ -2,6 +2,8 @@
 
 package edu.uchc.vcell.expression.internal;
 
+/**
+ */
 public interface ExpressionParserTreeConstants
 {
   public int JJTEXPRESSION = 0;

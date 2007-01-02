@@ -10,7 +10,6 @@ import net.sourceforge.interval.ia_math.IAMath;
 import net.sourceforge.interval.ia_math.IANarrow;
 import net.sourceforge.interval.ia_math.RealInterval;
 
-import org.vcell.expression.DerivativePolicy;
 import org.vcell.expression.DivideByZeroException;
 import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionException;
@@ -18,11 +17,17 @@ import org.vcell.expression.ExpressionTerm;
 import org.vcell.expression.FunctionDomainException;
 import org.vcell.expression.NameScope;
 
+/**
+ */
 public class ASTPowerNode extends SimpleNode {
 
 ASTPowerNode() {
 	super(ExpressionParserTreeConstants.JJTPOWERNODE);
 }
+/**
+ * Constructor for ASTPowerNode.
+ * @param id int
+ */
 ASTPowerNode(int id) {
 	super(id);
 if (id != ExpressionParserTreeConstants.JJTPOWERNODE){ System.out.println("ASTAddNode(), id = "+id); }
@@ -31,7 +36,8 @@ if (id != ExpressionParserTreeConstants.JJTPOWERNODE){ System.out.println("ASTAd
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.
- */
+ * @see edu.uchc.vcell.expression.internal.Node#copyTree()
+   */
 public Node copyTree() {
 	ASTPowerNode node = new ASTPowerNode();
 	for (int i=0;i<jjtGetNumChildren();i++){
@@ -43,6 +49,7 @@ public Node copyTree() {
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#copyTreeBinary()
  */
 public Node copyTreeBinary() {
 	ASTPowerNode node = new ASTPowerNode();
@@ -53,9 +60,12 @@ public Node copyTreeBinary() {
 }
 /**
  * This method was created by a SmartGuide.
- * @return cbit.vcell.parser.Expression
  * @param independentVariable java.lang.String
+ * @param derivativePolicy DerivativePolicy
+ * @return cbit.vcell.parser.Expression
+ * @throws ExpressionException
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#differentiate(String, DerivativePolicy)
  */
 public Node differentiate(String independentVariable, DerivativePolicy derivativePolicy) throws ExpressionException {
 	// 
@@ -94,6 +104,12 @@ public Node differentiate(String independentVariable, DerivativePolicy derivativ
 	
 	return fullAddNode;
 }
+/**
+ * Method evaluateConstant.
+ * @return double
+ * @throws ExpressionException
+ * @see edu.uchc.vcell.expression.internal.Node#evaluateConstant()
+ */
 public double evaluateConstant() throws ExpressionException {
 	if (jjtGetNumChildren()!=2){
 		throw new ExpressionException("expecting two arguments for Power");
@@ -138,6 +154,13 @@ public double evaluateConstant() throws ExpressionException {
 		throw new RuntimeException("unexpected error, no exception and either baseValue or exponentValue is null");
 	}
 }    
+/**
+ * Method evaluateInterval.
+ * @param intervals RealInterval[]
+ * @return RealInterval
+ * @throws ExpressionException
+ * @see edu.uchc.vcell.expression.internal.Node#evaluateInterval(RealInterval[])
+ */
 public RealInterval evaluateInterval(RealInterval intervals[]) throws ExpressionException {
 	if (jjtGetNumChildren()!=2) throw new Error("pow() expects 2 arguments");
 	try {
@@ -148,6 +171,13 @@ public RealInterval evaluateInterval(RealInterval intervals[]) throws Expression
 	}
 	return getInterval(intervals);
 }    
+/**
+ * Method evaluateVector.
+ * @param values double[]
+ * @return double
+ * @throws ExpressionException
+ * @see edu.uchc.vcell.expression.internal.Node#evaluateVector(double[])
+ */
 public double evaluateVector(double values[]) throws ExpressionException {
 	if (jjtGetNumChildren()!=2){
 		throw new RuntimeException("ASTPowerNode@"+Integer.toHexString(hashCode())+" wrong number of arguments for '^' ("+jjtGetNumChildren()+"), expected 2");
@@ -171,7 +201,10 @@ public double evaluateVector(double values[]) throws ExpressionException {
 }    
 /**
  * This method was created by a SmartGuide.
+ * @return Node
+ * @throws ExpressionException
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#flatten()
  */
 public Node flatten() throws ExpressionException {
 	try {
@@ -233,6 +266,13 @@ public Node flatten() throws ExpressionException {
 	return powNode;
 		
 }
+/**
+ * Method infixString.
+ * @param lang int
+ * @param nameScope NameScope
+ * @return String
+ * @see edu.uchc.vcell.expression.internal.Node#infixString(int, NameScope)
+ */
 public String infixString(int lang, NameScope nameScope){
 
 	if (jjtGetNumChildren()!=2){
@@ -242,17 +282,17 @@ public String infixString(int lang, NameScope nameScope){
 	StringBuffer buffer = new StringBuffer();
 
 	if (lang == LANGUAGE_DEFAULT || lang == LANGUAGE_MATLAB || lang == LANGUAGE_ECLiPSe || lang == LANGUAGE_JSCL){
-		buffer.append("(");
+		buffer.append('(');
 		buffer.append(jjtGetChild(0).infixString(lang,nameScope));
 		buffer.append(" ^ ");
 		buffer.append(jjtGetChild(1).infixString(lang,nameScope));
-		buffer.append(")");
+		buffer.append(')');
 	}else if (lang == LANGUAGE_C){
 		buffer.append("pow(");
 		buffer.append(jjtGetChild(0).infixString(lang,nameScope));
-		buffer.append(",");
+		buffer.append(',');
 		buffer.append(jjtGetChild(1).infixString(lang,nameScope));
-		buffer.append(")");
+		buffer.append(')');
 	}
 
 	return buffer.toString();
@@ -260,7 +300,10 @@ public String infixString(int lang, NameScope nameScope){
 /**
  * Insert the method's description here.
  * Creation date: (6/20/01 11:04:41 AM)
+ * @param intervals RealInterval[]
  * @return boolean
+ * @throws ExpressionBindingException
+ * @see edu.uchc.vcell.expression.internal.Node#narrow(RealInterval[])
  */
 public boolean narrow(RealInterval intervals[]) throws ExpressionBindingException{
 	if (jjtGetNumChildren()!=2) throw new Error("power '^' expects 2 arguments");

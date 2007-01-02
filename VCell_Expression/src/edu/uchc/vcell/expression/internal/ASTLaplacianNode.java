@@ -7,10 +7,11 @@ package edu.uchc.vcell.expression.internal;
 /* JJT: 0.2.2 */
 import net.sourceforge.interval.ia_math.RealInterval;
 
-import org.vcell.expression.DerivativePolicy;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.NameScope;
 
+/**
+ */
 public class ASTLaplacianNode extends SimpleNode {
 ASTLaplacianNode() {
 	super(-1);
@@ -19,6 +20,7 @@ ASTLaplacianNode() {
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#copyTree()
  */
 public Node copyTree() {
 	ASTLaplacianNode node = new ASTLaplacianNode();
@@ -31,6 +33,7 @@ public Node copyTree() {
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#copyTreeBinary()
  */
 public Node copyTreeBinary() {
 	ASTLaplacianNode node = new ASTLaplacianNode();
@@ -41,24 +44,51 @@ public Node copyTreeBinary() {
 }
 /**
  * This method was created by a SmartGuide.
+ * @param variable String
+ * @param derivativePolicy DerivativePolicy
  * @return double
+ * @throws ExpressionException
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#differentiate(String, DerivativePolicy)
  */
 public Node differentiate(String variable, DerivativePolicy derivativePolicy) throws ExpressionException {
 	throw new ExpressionException("ASTLaplacianNode.differentiate(), not implemented");
 }
+/**
+ * Method evaluateConstant.
+ * @return double
+ * @throws ExpressionException
+ * @see edu.uchc.vcell.expression.internal.Node#evaluateConstant()
+ */
 public double evaluateConstant() throws ExpressionException {
 	throw new ExpressionException("LaplaicianNode cannot be evaluated as a constant");
 }    
+/**
+ * Method evaluateInterval.
+ * @param intervals RealInterval[]
+ * @return RealInterval
+ * @throws ExpressionException
+ * @see edu.uchc.vcell.expression.internal.Node#evaluateInterval(RealInterval[])
+ */
 public RealInterval evaluateInterval(RealInterval intervals[]) throws ExpressionException {
 	throw new ExpressionException("ASTLaplacianNode.evaluateInterval(), not implemented");
 }    
+/**
+ * Method evaluateVector.
+ * @param values double[]
+ * @return double
+ * @throws ExpressionException
+ * @see edu.uchc.vcell.expression.internal.Node#evaluateVector(double[])
+ */
 public double evaluateVector(double values[]) throws ExpressionException {
 	throw new ExpressionException("ASTLaplacianNode.evaluateVector(), not implemented");
 }    
 /**
  * This method was created by a SmartGuide.
+ * @return Node
+ * @throws ExpressionException
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#flatten()
  */
 public Node flatten() throws ExpressionException {
 	
@@ -75,6 +105,13 @@ public Node flatten() throws ExpressionException {
 	laplacianNode.jjtAddChild(jjtGetChild(0).flatten());	
 	return laplacianNode;
 }
+/**
+ * Method infixString.
+ * @param lang int
+ * @param nameScope NameScope
+ * @return String
+ * @see edu.uchc.vcell.expression.internal.Node#infixString(int, NameScope)
+ */
 public String infixString(int lang, NameScope nameScope){
 
 	StringBuffer buffer = new StringBuffer();
@@ -91,7 +128,9 @@ public String infixString(int lang, NameScope nameScope){
 /**
  * Insert the method's description here.
  * Creation date: (6/20/01 11:04:41 AM)
+ * @param intervals RealInterval[]
  * @return boolean
+ * @see edu.uchc.vcell.expression.internal.Node#narrow(RealInterval[])
  */
 public boolean narrow(RealInterval intervals[]) {
 	throw new RuntimeException("ASTLaplacianNode.narrow(), not yet supported");

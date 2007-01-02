@@ -7,7 +7,6 @@ import java.util.StringTokenizer;
 
 import net.sourceforge.interval.ia_math.RealInterval;
 
-import org.vcell.expression.DerivativePolicy;
 import org.vcell.expression.DivideByZeroException;
 import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionException;
@@ -21,6 +20,8 @@ import org.vcell.expression.SymbolTableEntry;
 
 import cbit.util.Matchable;
 
+/**
+ */
 public class Expression implements java.io.Serializable, cbit.util.Matchable, IExpression {
 
 //   private String expString = null;
@@ -36,7 +37,6 @@ public class Expression implements java.io.Serializable, cbit.util.Matchable, IE
    
 /**
  * This method was created in VisualAge.
- * @param value double
  */
 private Expression() {
 }
@@ -67,6 +67,7 @@ Expression ( SimpleNode rootNode ) {
 /**
  * This method was created by a SmartGuide.
  * @param expString java.lang.String
+ * @throws ExpressionException
  * @exception java.lang.Exception The exception description.
  */
 public Expression ( String expString ) throws ExpressionException {
@@ -89,17 +90,22 @@ public Expression ( String expString ) throws ExpressionException {
 	parseExpression(expString);
 }
 
+/**
+ * Constructor for Expression.
+ * @param tokens StringTokenizer
+ * @throws ExpressionException
+ */
 public Expression(StringTokenizer tokens) throws ExpressionException {
 	read(tokens);
 }      
 /**
  * This method was created by a SmartGuide.
- * @return cbit.vcell.model.Expression
  * @param expression1 cbit.vcell.model.Expression
  * @param expression2 cbit.vcell.model.Expression
+ * @return cbit.vcell.model.Expression
  * @exception java.lang.Exception The exception description.
  */
-public static Expression add(Expression expression1, Expression expression2) throws ExpressionException {
+public static Expression add(Expression expression1, Expression expression2) {
 	Expression exp = new Expression();
 	ASTAddNode addNode = new ASTAddNode();
 
@@ -128,12 +134,12 @@ public static Expression add(Expression expression1, Expression expression2) thr
 }
 /**
  * This method was created by a SmartGuide.
- * @return cbit.vcell.model.Expression
  * @param lvalueExp cbit.vcell.model.Expression
  * @param rvalueExp cbit.vcell.model.Expression
+ * @return cbit.vcell.model.Expression
  * @exception java.lang.Exception The exception description.
  */
-public static Expression assign(Expression lvalueExp, Expression rvalueExp) throws ExpressionException {
+public static Expression assign(Expression lvalueExp, Expression rvalueExp) {
 	Expression exp = new Expression();
 	ASTAssignNode assignNode = new ASTAssignNode();
 
@@ -170,8 +176,9 @@ bindCount++;/////////////////
    }                     
 /**
  * This method was created in VisualAge.
- * @return boolean
  * @param obj java.lang.Object
+ * @return boolean
+ * @see cbit.util.Matchable#compareEqual(Matchable)
  */
 public boolean compareEqual(Matchable obj) {
 	if (!(obj instanceof Expression)){
@@ -182,11 +189,12 @@ public boolean compareEqual(Matchable obj) {
 }
 /**
  * This method was created by a SmartGuide.
- * @return cbit.vcell.model.Expression
  * @param variable String
+ * @param expression Expression
+ * @return cbit.vcell.model.Expression
  * @exception java.lang.Exception The exception description.
  */
-public static Expression derivative(String variable, Expression expression) throws ExpressionException {
+public static Expression derivative(String variable, Expression expression) {
 derivativeCount++;
 //
 	Expression exp = new Expression();
@@ -213,6 +221,13 @@ public IExpression differentiate(String variable) throws ExpressionException {
 /* (non-Javadoc)
  * @see cbit.vcell.parser.IExpression#differentiate(java.lang.String)
  */
+/**
+ * Method differentiate.
+ * @param variable String
+ * @param derivativePolicy DerivativePolicy
+ * @return IExpression
+ * @throws ExpressionException
+ */
 public IExpression differentiate(String variable, DerivativePolicy derivativePolicy) throws ExpressionException {
 diffCount++;
 	SimpleNode node = (SimpleNode)rootNode.differentiate(variable, derivativePolicy);
@@ -224,8 +239,8 @@ diffCount++;
 /**
  * Insert the method's description here.
  * Creation date: (5/24/2001 10:20:50 PM)
- * @return boolean
  * @param obj java.lang.Object
+ * @return boolean
  */
 public boolean equals(Object obj) {
 	if (obj instanceof Expression){
@@ -237,19 +252,19 @@ public boolean equals(Object obj) {
 /* (non-Javadoc)
  * @see cbit.vcell.parser.IExpression#evaluateConstant()
  */
-public double evaluateConstant() throws ExpressionException, DivideByZeroException {
+public double evaluateConstant() throws ExpressionException  {
 	return rootNode.evaluateConstant();
 }
 /* (non-Javadoc)
  * @see cbit.vcell.parser.IExpression#evaluateInterval(net.sourceforge.interval.ia_math.RealInterval[])
  */
-public RealInterval evaluateInterval(RealInterval intervals[]) throws ExpressionException, DivideByZeroException {
+public RealInterval evaluateInterval(RealInterval intervals[]) throws ExpressionException  {
 	return rootNode.evaluateInterval(intervals);
 }         
 /* (non-Javadoc)
  * @see cbit.vcell.parser.IExpression#evaluateVector(double[])
  */
-public double evaluateVector(double values[]) throws ExpressionException, DivideByZeroException {
+public double evaluateVector(double values[]) throws ExpressionException  {
 	return rootNode.evaluateVector(values);
 }         
 /* (non-Javadoc)
@@ -341,9 +356,10 @@ public SimpleNode getRootNode() {
 }
 /**
  * This method was created by a SmartGuide.
- * @return cbit.vcell.parser.Expression
  * @param origExp cbit.vcell.parser.Expression
  * @param newExp cbit.vcell.parser.Expression
+ * @return cbit.vcell.parser.Expression
+ * @throws ExpressionException
  * @exception java.lang.Exception The exception description.
  */
 public IExpression getSubstitutedExpression(Expression origExp, Expression newExp) throws ExpressionException {
@@ -422,10 +438,22 @@ public boolean hasSymbol(String symbolName) {
    /* (non-Javadoc)
  * @see cbit.vcell.parser.IExpression#infix()
  */
-public String getMathML() throws ExpressionException, IOException{
+/**
+    * Method getMathML.
+    * @return String
+    * @throws ExpressionException
+    * @throws IOException
+    * @see org.vcell.expression.IExpression#getMathML()
+    */
+   public String getMathML() throws ExpressionException, IOException{
 	return ExpressionMathMLPrinter.getMathML(this);
 }
 
+/**
+ * Method infix.
+ * @return String
+ * @see org.vcell.expression.IExpression#infix()
+ */
 public String infix()
    {
 	  return infix(SimpleNode.NAMESCOPE_DEFAULT);
@@ -515,11 +543,11 @@ public String infix_Matlab(NameScope nameScope)
    }   
 /**
  * This method was created by a SmartGuide.
- * @return cbit.vcell.model.Expression
  * @param expression Expression
+ * @return cbit.vcell.model.Expression
  * @exception java.lang.Exception The exception description.
  */
-public static Expression invert(Expression expression) throws ExpressionException {
+public static Expression invert(Expression expression) {
 	Expression exp = new Expression();
 	ASTInvertTermNode invertNode = new ASTInvertTermNode();
 	//
@@ -590,11 +618,11 @@ public boolean isZero() {
 }
 /**
  * This method was created by a SmartGuide.
- * @return cbit.vcell.model.Expression
  * @param expression Expression
+ * @return cbit.vcell.model.Expression
  * @exception java.lang.Exception The exception description.
  */
-public static IExpression laplacian(Expression expression) throws ExpressionException {
+public static IExpression laplacian(Expression expression) {
 	Expression exp = new Expression();
 	ASTLaplacianNode laplacianNode = new ASTLaplacianNode();
 	//
@@ -613,12 +641,12 @@ public static IExpression laplacian(Expression expression) throws ExpressionExce
 }
 /**
  * This method was created by a SmartGuide.
- * @return cbit.vcell.model.Expression
  * @param expression1 cbit.vcell.model.Expression
  * @param expression2 cbit.vcell.model.Expression
+ * @return cbit.vcell.model.Expression
  * @exception java.lang.Exception The exception description.
  */
-public static Expression mult(Expression expression1, Expression expression2) throws ExpressionException {
+public static Expression mult(Expression expression1, Expression expression2) {
 	Expression exp = new Expression();
 	ASTMultNode multNode = new ASTMultNode();
 
@@ -648,16 +676,16 @@ public static Expression mult(Expression expression1, Expression expression2) th
 /* (non-Javadoc)
  * @see cbit.vcell.parser.IExpression#narrow(net.sourceforge.interval.ia_math.RealInterval[])
  */
-public boolean narrow(RealInterval intervals[]) throws ExpressionException {
+public boolean narrow(RealInterval intervals[]) throws ExpressionBindingException {
 	return rootNode.narrow(intervals);
 }         
 /**
  * This method was created by a SmartGuide.
- * @return cbit.vcell.model.Expression
  * @param expression Expression
+ * @return cbit.vcell.model.Expression
  * @exception java.lang.Exception The exception description.
  */
-public static Expression negate(Expression expression) throws ExpressionException {
+public static Expression negate(Expression expression) {
 	Expression exp = new Expression();
 	ASTMinusTermNode minusNode = new ASTMinusTermNode();
 	SimpleNode termNode = (SimpleNode)expression.rootNode.copyTree();
@@ -681,7 +709,12 @@ public static Expression negate(Expression expression) throws ExpressionExceptio
 	}	
 	return exp;
 }
-private void parseExpression(String exp) throws ExpressionException {
+/**
+ * Method parseExpression.
+ * @param exp String
+ * @throws ParserException
+ */
+private void parseExpression(String exp) throws ParserException {
 parseCount++;
 	try {
 		//System.out.println("expression: " + exp);
@@ -701,12 +734,12 @@ parseCount++;
 }
 /**
  * This method was created by a SmartGuide.
- * @return cbit.vcell.model.Expression
  * @param expression1 cbit.vcell.model.Expression
  * @param expression2 cbit.vcell.model.Expression
+ * @return cbit.vcell.model.Expression
  * @exception java.lang.Exception The exception description.
  */
-public static IExpression power(Expression expression1, Expression expression2) throws ExpressionException {
+public static IExpression power(Expression expression1, Expression expression2) {
 	Expression exp = new Expression();
 	ASTFuncNode funcNode = new ASTFuncNode();
 	funcNode.setFunction(ExpressionTerm.Operator.POW);
@@ -746,6 +779,7 @@ public void printTree()
 /**
  * This method was created by a SmartGuide.
  * @param tokens java.util.StringTokenizer
+ * @throws ExpressionException
  * @exception java.lang.Exception The exception description.
  */
 private void read(StringTokenizer tokens) throws ExpressionException {
@@ -810,6 +844,13 @@ System.out.println("substitute("+substituteCount+")");
 System.out.println("bind("+bindCount+")");
 }
 
+/**
+ * Method substituteInPlace.
+ * @param origExp IExpression
+ * @param newExp IExpression
+ * @throws ExpressionException
+ * @see org.vcell.expression.IExpression#substituteInPlace(IExpression, IExpression)
+ */
 public void substituteInPlace(IExpression origExp, IExpression newExp) throws ExpressionException {
 	substituteInPlace((Expression)origExp, (Expression)newExp);
 }
@@ -839,6 +880,10 @@ substituteCount++;////////////////////////////////
 	}
 	this.normalizedInfixString = null;
 }
+   /**
+    * Method toString.
+    * @return String
+    */
    public String toString()
    {
 	  return "Expression@"+Integer.toHexString(hashCode())+" '"+infix()+"'";

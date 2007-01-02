@@ -9,7 +9,6 @@ import net.sourceforge.interval.ia_math.IAMath;
 import net.sourceforge.interval.ia_math.IANarrow;
 import net.sourceforge.interval.ia_math.RealInterval;
 
-import org.vcell.expression.DerivativePolicy;
 import org.vcell.expression.DivideByZeroException;
 import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionException;
@@ -17,10 +16,16 @@ import org.vcell.expression.ExpressionTerm;
 import org.vcell.expression.NameScope;
 import org.vcell.expression.SymbolTableEntry;
 
+/**
+ */
 public class ASTInvertTermNode extends SimpleNode {
   ASTInvertTermNode() {
     super(ExpressionParserTreeConstants.JJTINVERTTERMNODE);
   }
+/**
+ * Constructor for ASTInvertTermNode.
+ * @param id int
+ */
 ASTInvertTermNode(int id) {
 	super(id);
 }
@@ -28,6 +33,7 @@ ASTInvertTermNode(int id) {
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#copyTree()
  */
 public Node copyTree() {
 	ASTInvertTermNode node = new ASTInvertTermNode();
@@ -40,6 +46,7 @@ public Node copyTree() {
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#copyTreeBinary()
  */
 public Node copyTreeBinary() {
 	ASTInvertTermNode node = new ASTInvertTermNode();
@@ -50,9 +57,12 @@ public Node copyTreeBinary() {
 }
 /**
  * This method was created by a SmartGuide.
- * @return cbit.vcell.parser.Expression
  * @param independentVariable java.lang.String
+ * @param derivativePolicy DerivativePolicy
+ * @return cbit.vcell.parser.Expression
+ * @throws ExpressionException
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#differentiate(String, DerivativePolicy)
  */
 public Node differentiate(String independentVariable, DerivativePolicy derivativePolicy) throws ExpressionException {
 	ASTMultNode multNode = new ASTMultNode();
@@ -72,6 +82,13 @@ public Node differentiate(String independentVariable, DerivativePolicy derivativ
 	
 	return multNode;
 }
+/**
+ * Method evaluateConstant.
+ * @return double
+ * @throws ExpressionException
+ * @throws DivideByZeroException
+ * @see edu.uchc.vcell.expression.internal.Node#evaluateConstant()
+ */
 public double evaluateConstant() throws ExpressionException, DivideByZeroException {
 	double childValue = jjtGetChild(0).evaluateConstant();
 	if (childValue==0.0){
@@ -81,6 +98,14 @@ public double evaluateConstant() throws ExpressionException, DivideByZeroExcepti
 		return (1.0 / childValue);
 	}
 }    
+/**
+ * Method evaluateInterval.
+ * @param intervals RealInterval[]
+ * @return RealInterval
+ * @throws ExpressionException
+ * @throws DivideByZeroException
+ * @see edu.uchc.vcell.expression.internal.Node#evaluateInterval(RealInterval[])
+ */
 public RealInterval evaluateInterval(RealInterval intervals[]) throws ExpressionException, DivideByZeroException {
 
 	RealInterval childInterval = jjtGetChild(0).evaluateInterval(intervals);
@@ -107,6 +132,14 @@ public RealInterval evaluateInterval(RealInterval intervals[]) throws Expression
 		return getInterval(intervals);
 	}
 }    
+/**
+ * Method evaluateVector.
+ * @param values double[]
+ * @return double
+ * @throws ExpressionException
+ * @throws DivideByZeroException
+ * @see edu.uchc.vcell.expression.internal.Node#evaluateVector(double[])
+ */
 public double evaluateVector(double values[]) throws ExpressionException, DivideByZeroException {
 
 	double childValue = jjtGetChild(0).evaluateVector(values);
@@ -145,7 +178,10 @@ public double evaluateVector(double values[]) throws ExpressionException, Divide
 }    
 /**
  * This method was created by a SmartGuide.
+ * @return Node
+ * @throws ExpressionException
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#flatten()
  */
 public Node flatten() throws ExpressionException {
 	try {
@@ -179,8 +215,10 @@ public Node flatten() throws ExpressionException {
 /**
  * Insert the method's description here.
  * Creation date: (5/2/2003 2:17:08 PM)
- * @return java.lang.String
  * @param language int
+ * @param nameScope NameScope
+ * @return java.lang.String
+ * @see edu.uchc.vcell.expression.internal.Node#infixString(int, NameScope)
  */
 public String infixString(int language, NameScope nameScope) {
 	// ASTMultNode handles division ... this node just passes it's child through
@@ -189,7 +227,10 @@ public String infixString(int language, NameScope nameScope) {
 /**
  * Insert the method's description here.
  * Creation date: (6/20/01 11:04:41 AM)
+ * @param intervals RealInterval[]
  * @return boolean
+ * @throws ExpressionBindingException
+ * @see edu.uchc.vcell.expression.internal.Node#narrow(RealInterval[])
  */
 public boolean narrow(RealInterval intervals[]) throws ExpressionBindingException{
 	if (jjtGetNumChildren()!=1){

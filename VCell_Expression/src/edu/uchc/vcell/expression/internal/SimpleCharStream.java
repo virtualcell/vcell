@@ -4,6 +4,8 @@ package edu.uchc.vcell.expression.internal;
 /**
  * An implementation of interface CharStream, where the stream is assumed to
  * contain only ASCII characters (without unicode processing).
+ * @author schaff
+ * @version $Revision: 1.0 $
  */
 
 public final class SimpleCharStream
@@ -28,6 +30,10 @@ public final class SimpleCharStream
   private int maxNextCharInd = 0;
   private int inBuf = 0;
 
+  /**
+   * Method ExpandBuff.
+   * @param wrapAround boolean
+   */
   private final void ExpandBuff(boolean wrapAround)
   {
      char[] newbuffer = new char[bufsize + 2048];
@@ -78,6 +84,10 @@ public final class SimpleCharStream
      tokenBegin = 0;
   }
 
+  /**
+   * Method FillBuff.
+   * @throws java.io.IOException
+   */
   private final void FillBuff() throws java.io.IOException
   {
      if (maxNextCharInd == available)
@@ -123,6 +133,11 @@ public final class SimpleCharStream
      }
   }
 
+  /**
+   * Method BeginToken.
+   * @return char
+   * @throws java.io.IOException
+   */
   public final char BeginToken() throws java.io.IOException
   {
      tokenBegin = -1;
@@ -132,6 +147,10 @@ public final class SimpleCharStream
      return c;
   }
 
+  /**
+   * Method UpdateLineColumn.
+   * @param c char
+   */
   private final void UpdateLineColumn(char c)
   {
      column++;
@@ -172,6 +191,11 @@ public final class SimpleCharStream
      bufcolumn[bufpos] = column;
   }
 
+  /**
+   * Method readChar.
+   * @return char
+   * @throws java.io.IOException
+   */
   public final char readChar() throws java.io.IOException
   {
      if (inBuf > 0)
@@ -194,7 +218,8 @@ public final class SimpleCharStream
   }
 
   /**
-   * @deprecated 
+   * @deprecated since <unknown>
+   * @return int
    * @see #getEndColumn
    */
 
@@ -203,7 +228,8 @@ public final class SimpleCharStream
   }
 
   /**
-   * @deprecated 
+   * @deprecated since <unknown>
+   * @return int
    * @see #getEndLine
    */
 
@@ -211,22 +237,42 @@ public final class SimpleCharStream
      return bufline[bufpos];
   }
 
+  /**
+   * Method getEndColumn.
+   * @return int
+   */
   public final int getEndColumn() {
      return bufcolumn[bufpos];
   }
 
+  /**
+   * Method getEndLine.
+   * @return int
+   */
   public final int getEndLine() {
      return bufline[bufpos];
   }
 
+  /**
+   * Method getBeginColumn.
+   * @return int
+   */
   public final int getBeginColumn() {
      return bufcolumn[tokenBegin];
   }
 
+  /**
+   * Method getBeginLine.
+   * @return int
+   */
   public final int getBeginLine() {
      return bufline[tokenBegin];
   }
 
+  /**
+   * Method backup.
+   * @param amount int
+   */
   public final void backup(int amount) {
 
     inBuf += amount;
@@ -234,6 +280,13 @@ public final class SimpleCharStream
        bufpos += bufsize;
   }
 
+  /**
+   * Constructor for SimpleCharStream.
+   * @param dstream java.io.Reader
+   * @param startline int
+   * @param startcolumn int
+   * @param buffersize int
+   */
   public SimpleCharStream(java.io.Reader dstream, int startline,
   int startcolumn, int buffersize)
   {
@@ -247,16 +300,33 @@ public final class SimpleCharStream
     bufcolumn = new int[buffersize];
   }
 
+  /**
+   * Constructor for SimpleCharStream.
+   * @param dstream java.io.Reader
+   * @param startline int
+   * @param startcolumn int
+   */
   public SimpleCharStream(java.io.Reader dstream, int startline,
                                                            int startcolumn)
   {
      this(dstream, startline, startcolumn, 4096);
   }
 
+  /**
+   * Constructor for SimpleCharStream.
+   * @param dstream java.io.Reader
+   */
   public SimpleCharStream(java.io.Reader dstream)
   {
      this(dstream, 1, 1, 4096);
   }
+  /**
+   * Method ReInit.
+   * @param dstream java.io.Reader
+   * @param startline int
+   * @param startcolumn int
+   * @param buffersize int
+   */
   public void ReInit(java.io.Reader dstream, int startline,
   int startcolumn, int buffersize)
   {
@@ -276,48 +346,96 @@ public final class SimpleCharStream
     bufpos = -1;
   }
 
+  /**
+   * Method ReInit.
+   * @param dstream java.io.Reader
+   * @param startline int
+   * @param startcolumn int
+   */
   public void ReInit(java.io.Reader dstream, int startline,
                                                            int startcolumn)
   {
      ReInit(dstream, startline, startcolumn, 4096);
   }
 
+  /**
+   * Method ReInit.
+   * @param dstream java.io.Reader
+   */
   public void ReInit(java.io.Reader dstream)
   {
      ReInit(dstream, 1, 1, 4096);
   }
+  /**
+   * Constructor for SimpleCharStream.
+   * @param dstream java.io.InputStream
+   * @param startline int
+   * @param startcolumn int
+   * @param buffersize int
+   */
   public SimpleCharStream(java.io.InputStream dstream, int startline,
   int startcolumn, int buffersize)
   {
      this(new java.io.InputStreamReader(dstream), startline, startcolumn, 4096);
   }
 
+  /**
+   * Constructor for SimpleCharStream.
+   * @param dstream java.io.InputStream
+   * @param startline int
+   * @param startcolumn int
+   */
   public SimpleCharStream(java.io.InputStream dstream, int startline,
                                                            int startcolumn)
   {
      this(dstream, startline, startcolumn, 4096);
   }
 
+  /**
+   * Constructor for SimpleCharStream.
+   * @param dstream java.io.InputStream
+   */
   public SimpleCharStream(java.io.InputStream dstream)
   {
      this(dstream, 1, 1, 4096);
   }
 
+  /**
+   * Method ReInit.
+   * @param dstream java.io.InputStream
+   * @param startline int
+   * @param startcolumn int
+   * @param buffersize int
+   */
   public void ReInit(java.io.InputStream dstream, int startline,
                           int startcolumn, int buffersize)
   {
      ReInit(new java.io.InputStreamReader(dstream), startline, startcolumn, 4096);
   }
 
+  /**
+   * Method ReInit.
+   * @param dstream java.io.InputStream
+   */
   public void ReInit(java.io.InputStream dstream)
   {
      ReInit(dstream, 1, 1, 4096);
   }
+  /**
+   * Method ReInit.
+   * @param dstream java.io.InputStream
+   * @param startline int
+   * @param startcolumn int
+   */
   public void ReInit(java.io.InputStream dstream, int startline,
                                                            int startcolumn)
   {
      ReInit(dstream, startline, startcolumn, 4096);
   }
+  /**
+   * Method GetImage.
+   * @return String
+   */
   public final String GetImage()
   {
      if (bufpos >= tokenBegin)
@@ -327,6 +445,11 @@ public final class SimpleCharStream
                               new String(buffer, 0, bufpos + 1);
   }
 
+  /**
+   * Method GetSuffix.
+   * @param len int
+   * @return char[]
+   */
   public final char[] GetSuffix(int len)
   {
      char[] ret = new char[len];
@@ -352,6 +475,8 @@ public final class SimpleCharStream
 
   /**
    * Method to adjust line and column numbers for the start of a token.<BR>
+   * @param newLine int
+   * @param newCol int
    */
   public void adjustBeginLineColumn(int newLine, int newCol)
   {

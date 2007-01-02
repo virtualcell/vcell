@@ -9,6 +9,8 @@ package edu.uchc.vcell.expression.internal;
  *
  * You can modify this class to customize your error reporting
  * mechanisms so long as you retain the public fields.
+ * @author schaff
+ * @version $Revision: 1.0 $
  */
 public class ParseException extends Exception {
 
@@ -23,6 +25,9 @@ public class ParseException extends Exception {
    * to force the "toString" method of parent class "Throwable" to
    * print the error message in the form:
    *     ParseException: <result of getMessage>
+   * @param currentTokenVal Token
+   * @param expectedTokenSequencesVal int[][]
+   * @param tokenImageVal String[]
    */
   public ParseException(Token currentTokenVal,
                         int[][] expectedTokenSequencesVal,
@@ -51,6 +56,10 @@ public class ParseException extends Exception {
     specialConstructor = false;
   }
 
+  /**
+   * Constructor for ParseException.
+   * @param message String
+   */
   public ParseException(String message) {
     super(message);
     specialConstructor = false;
@@ -93,6 +102,7 @@ public class ParseException extends Exception {
    * from the parser), then this method is called during the printing
    * of the final stack trace, and hence the correct error message
    * gets displayed.
+   * @return String
    */
   public String getMessage() {
     if (!specialConstructor) {
@@ -143,6 +153,8 @@ public class ParseException extends Exception {
    * Used to convert raw characters to their escaped version
    * when these raw version cannot be used as part of an ASCII
    * string literal.
+   * @param str String
+   * @return String
    */
   protected String add_escapes(String str) {
       StringBuffer retval = new StringBuffer();

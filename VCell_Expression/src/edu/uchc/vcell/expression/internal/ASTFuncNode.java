@@ -9,7 +9,6 @@ import net.sourceforge.interval.ia_math.IAMath;
 import net.sourceforge.interval.ia_math.IANarrow;
 import net.sourceforge.interval.ia_math.RealInterval;
 
-import org.vcell.expression.DerivativePolicy;
 import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionTerm;
@@ -18,6 +17,8 @@ import org.vcell.expression.NameScope;
 
 import cbit.util.xml.MathMLTags;
 
+/**
+ */
 public class ASTFuncNode extends SimpleNode {
  	
 // 	private int funcType = -1;
@@ -186,6 +187,10 @@ public class ASTFuncNode extends SimpleNode {
   }
 
 
+/**
+ * Constructor for ASTFuncNode.
+ * @param id int
+ */
 ASTFuncNode(int id) {
 	super(id);
 if (id != ExpressionParserTreeConstants.JJTFUNCNODE){ System.out.println("ASTFuncNode(), id = "+id); }
@@ -196,7 +201,8 @@ if (id != ExpressionParserTreeConstants.JJTFUNCNODE){ System.out.println("ASTFun
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.
- */
+ * @see edu.uchc.vcell.expression.internal.Node#copyTree()
+   */
 public Node copyTree() {
 	ASTFuncNode node = new ASTFuncNode();
 	node.funcType = funcType;
@@ -211,6 +217,7 @@ public Node copyTree() {
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#copyTreeBinary()
  */
 public Node copyTreeBinary() {
 	ASTFuncNode node = new ASTFuncNode();
@@ -224,9 +231,12 @@ public Node copyTreeBinary() {
 
 /**
  * This method was created by a SmartGuide.
- * @return cbit.vcell.parser.Expression
  * @param independentVariable java.lang.String
+ * @param derivativePolicy DerivativePolicy
+ * @return cbit.vcell.parser.Expression
+ * @throws ExpressionException
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#differentiate(String, DerivativePolicy)
  */
 public Node differentiate(String independentVariable, DerivativePolicy derivativePolicy) throws ExpressionException {
 	switch (funcType){
@@ -1124,9 +1134,11 @@ public Node differentiate(String independentVariable, DerivativePolicy derivativ
 
 /**
  * This method was created by a SmartGuide.
- * @return boolean
  * @param node cbit.vcell.parser.Node
+ * @return boolean
+ * @throws ExpressionException
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#equals(Node)
  */
 public boolean equals(Node node) throws ExpressionException {
 	//
@@ -1148,6 +1160,12 @@ public boolean equals(Node node) throws ExpressionException {
 }
 
 
+/**
+ * Method evaluateConstant.
+ * @return double
+ * @throws ExpressionException
+ * @see edu.uchc.vcell.expression.internal.Node#evaluateConstant()
+ */
 public double evaluateConstant() throws ExpressionException {
 
 	double result = 0.0;
@@ -1473,6 +1491,13 @@ public double evaluateConstant() throws ExpressionException {
 }      
 
 
+/**
+ * Method evaluateInterval.
+ * @param intervals RealInterval[]
+ * @return RealInterval
+ * @throws ExpressionException
+ * @see edu.uchc.vcell.expression.internal.Node#evaluateInterval(RealInterval[])
+ */
 public RealInterval evaluateInterval(RealInterval intervals[]) throws ExpressionException {
 
 	switch (funcType){
@@ -1750,6 +1775,13 @@ public RealInterval evaluateInterval(RealInterval intervals[]) throws Expression
 }      
 
 
+/**
+ * Method evaluateVector.
+ * @param values double[]
+ * @return double
+ * @throws ExpressionException
+ * @see edu.uchc.vcell.expression.internal.Node#evaluateVector(double[])
+ */
 public double evaluateVector(double values[]) throws ExpressionException {
 
 	double result;
@@ -2013,7 +2045,10 @@ public double evaluateVector(double values[]) throws ExpressionException {
 
 /**
  * This method was created by a SmartGuide.
+ * @return Node
+ * @throws ExpressionException
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#flatten()
  */
 public Node flatten() throws ExpressionException {
 	
@@ -2278,6 +2313,7 @@ public ExpressionTerm.Operator getFunction() {
 /**
  * Insert the method's description here.
  * Creation date: (2/8/2002 4:29:47 PM)
+ * @param mathMLFunctName String
  * @return java.lang.String
  */
 static ExpressionTerm.Operator getVCellFunction(String mathMLFunctName) {
@@ -2293,6 +2329,13 @@ static ExpressionTerm.Operator getVCellFunction(String mathMLFunctName) {
 }
 
 
+/**
+ * Method infixString.
+ * @param lang int
+ * @param nameScope NameScope
+ * @return String
+ * @see edu.uchc.vcell.expression.internal.Node#infixString(int, NameScope)
+ */
 public String infixString(int lang, NameScope nameScope) {
 	
 	StringBuffer buffer = new StringBuffer();
@@ -2303,17 +2346,17 @@ public String infixString(int lang, NameScope nameScope) {
 		//
 	 	case POW: {		      
 			if (lang == LANGUAGE_MATLAB || lang == LANGUAGE_ECLiPSe || lang == LANGUAGE_JSCL){
-				buffer.append("(");
+				buffer.append('(');
 				buffer.append(jjtGetChild(0).infixString(lang,nameScope));
 				buffer.append(" ^ ");
 				buffer.append(jjtGetChild(1).infixString(lang,nameScope));
-				buffer.append(")");
+				buffer.append(')');
 			}else if (lang == LANGUAGE_DEFAULT || lang == LANGUAGE_C){
 				buffer.append("pow(");
 				buffer.append(jjtGetChild(0).infixString(lang,nameScope));
-				buffer.append(",");
+				buffer.append(',');
 				buffer.append(jjtGetChild(1).infixString(lang,nameScope));
-				buffer.append(")");
+				buffer.append(')');
 			}
 			break;
 		}
@@ -2323,7 +2366,7 @@ public String infixString(int lang, NameScope nameScope) {
 				if (i>0) buffer.append(", ");
 				buffer.append(jjtGetChild(i).infixString(lang,nameScope));
 			}
-			buffer.append(")");
+			buffer.append(')');
 			break;
 	 	}
 	}
@@ -2335,10 +2378,13 @@ public String infixString(int lang, NameScope nameScope) {
 /**
  * Insert the method's description here.
  * Creation date: (6/20/01 11:04:41 AM)
+ * @param intervals RealInterval[]
  * @return boolean
  *
+ * @throws ExpressionBindingException
+ * @see edu.uchc.vcell.expression.internal.Node#narrow(RealInterval[])
  */
-public boolean narrow(RealInterval intervals[]) throws ExpressionBindingException{
+public boolean narrow(RealInterval intervals[]) throws ExpressionBindingException {
 	boolean retcode = true;
 	switch (funcType){
 	case EXP: {
@@ -2562,7 +2608,7 @@ public boolean narrow(RealInterval intervals[]) throws ExpressionBindingExceptio
 /**
  * Insert the method's description here.
  * Creation date: (12/20/2002 2:18:13 PM)
- * @param function int
+ * @param functionOperator ExpressionTerm.Operator
  */
 void setFunction(ExpressionTerm.Operator functionOperator) {
 	if (functionOperator.opType!=ExpressionTerm.OperatorType.FUNCTION){
@@ -2575,12 +2621,13 @@ void setFunction(ExpressionTerm.Operator functionOperator) {
 /**
  * Insert the method's description here.
  * Creation date: (12/20/2002 2:10:31 PM)
- * @param parserFunction int
+ * @param parserToken String
  */
 void setFunctionFromParserToken(String parserToken) {
 	for (int i=0; i<functionOperators.length;i++){
 		if (functionOperators[i].functionName.equals(parserToken)){
 			funcType = functionOperators[i];
+			return;
 		}
 	}
 	throw new RuntimeException("unsupported function '"+parserToken+"'");

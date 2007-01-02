@@ -13,6 +13,8 @@ import org.vcell.expression.SymbolTable;
 import org.vcell.expression.SymbolTableEntry;
 
 
+/**
+ */
 public abstract class SimpleNode implements Node, java.io.Serializable {
   protected Node parent;
   protected Node[] children;
@@ -20,19 +22,29 @@ public abstract class SimpleNode implements Node, java.io.Serializable {
   protected Object info;
   transient private RealInterval ival = null;
 
-  public final static int LANGUAGE_DEFAULT = 0;
-  public final static int LANGUAGE_C = 1;
-  public final static int LANGUAGE_MATLAB = 2;
-  public final static int LANGUAGE_JSCL = 3;
-  public final static int LANGUAGE_ECLiPSe = 4;
+  public static final int LANGUAGE_DEFAULT = 0;
+  public static final int LANGUAGE_C = 1;
+  public static final int LANGUAGE_MATLAB = 2;
+  public static final int LANGUAGE_JSCL = 3;
+  public static final int LANGUAGE_ECLiPSe = 4;
 
-  public final static NameScope NAMESCOPE_DEFAULT = null;
+  public static final NameScope NAMESCOPE_DEFAULT = null;
 
+  /**
+   * Constructor for SimpleNode.
+   * @param i int
+   */
   public SimpleNode(int i) {
     id = i;
   }
 
 
+  /**
+   * Method bind.
+   * @param symbolTable SymbolTable
+   * @throws ExpressionBindingException
+   * @see edu.uchc.vcell.expression.internal.Node#bind(SymbolTable)
+   */
   public void bind(SymbolTable symbolTable) throws ExpressionBindingException
   {
 	  ival = null;
@@ -42,6 +54,10 @@ public abstract class SimpleNode implements Node, java.io.Serializable {
   }    
 
 
+  /**
+   * Method dump.
+   * @param prefix String
+   */
   public void dump(String prefix) {
     System.out.println(toString(prefix));
     if (children != null) {
@@ -57,9 +73,11 @@ public abstract class SimpleNode implements Node, java.io.Serializable {
 
 /**
  * This method was created by a SmartGuide.
- * @return boolean
  * @param node cbit.vcell.parser.Node
+ * @return boolean
+ * @throws ExpressionException
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#equals(Node)
  */
 public boolean equals(Node node) throws ExpressionException {
 	//
@@ -93,8 +111,9 @@ public boolean equals(Node node) throws ExpressionException {
 
 /**
  * This method was created by a SmartGuide.
- * @return cbit.vcell.parser.SymbolTableEntry
  * @param symbol java.lang.String
+ * @return cbit.vcell.parser.SymbolTableEntry
+ * @see edu.uchc.vcell.expression.internal.Node#getBinding(String)
  */
 public SymbolTableEntry getBinding(String symbol) {
 	for (int i=0;i<jjtGetNumChildren();i++){
@@ -107,15 +126,21 @@ public SymbolTableEntry getBinding(String symbol) {
 }
 
 
+  /**
+   * Method getInfo.
+   * @return Object
+   */
   public Object getInfo() { return info; }
 
 
 /**
  * Insert the method's description here.
  * Creation date: (6/20/01 10:55:57 AM)
+ * @param intervals RealInterval[]
  * @return net.sourceforge.interval.ia_math.RealInterval
+ * @see edu.uchc.vcell.expression.internal.Node#getInterval(RealInterval[])
  */
-public RealInterval getInterval(RealInterval intervals[]) throws ExpressionBindingException{
+public RealInterval getInterval(RealInterval intervals[]) {
 	if (ival==null){
 		ival = RealInterval.fullInterval();
 	}
@@ -125,8 +150,11 @@ public RealInterval getInterval(RealInterval intervals[]) throws ExpressionBindi
 
 /**
  * This method was created by a SmartGuide.
+ * @param language int
+ * @param nameScope NameScope
  * @return java.lang.String[]
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#getSymbols(int, NameScope)
  */
 public String[] getSymbols(int language, NameScope nameScope) {
 	String[] stringArray = null;
@@ -137,14 +165,32 @@ public String[] getSymbols(int language, NameScope nameScope) {
 }
 
 
+/**
+ * Method infixString.
+ * @param lang int
+ * @param nameScope NameScope
+ * @return String
+ * @see edu.uchc.vcell.expression.internal.Node#infixString(int, NameScope)
+ */
 public abstract String infixString(int lang, NameScope nameScope);
 
 
+/**
+ * Method jjtAddChild.
+ * @param n Node
+ * @see edu.uchc.vcell.expression.internal.Node#jjtAddChild(Node)
+ */
 public void jjtAddChild(Node n) {
 	jjtAddChild(n,jjtGetNumChildren());
 }    
 
 
+  /**
+   * Method jjtAddChild.
+   * @param n Node
+   * @param i int
+   * @see edu.uchc.vcell.expression.internal.Node#jjtAddChild(Node, int)
+   */
   public void jjtAddChild(Node n, int i) {
     if (children == null) {
       children = new Node[i + 1];
@@ -158,30 +204,63 @@ public void jjtAddChild(Node n) {
   }
 
 
+  /**
+   * Method jjtClose.
+   * @see edu.uchc.vcell.expression.internal.Node#jjtClose()
+   */
   public void jjtClose() {
   }
 
 
+  /**
+   * Method jjtGetChild.
+   * @param i int
+   * @return Node
+   * @see edu.uchc.vcell.expression.internal.Node#jjtGetChild(int)
+   */
   public Node jjtGetChild(int i) {
     return children[i];
   }
 
 
+  /**
+   * Method jjtGetNumChildren.
+   * @return int
+   * @see edu.uchc.vcell.expression.internal.Node#jjtGetNumChildren()
+   */
   public int jjtGetNumChildren() {
     return (children == null) ? 0 : children.length;
   }
 
 
+  /**
+   * Method jjtGetParent.
+   * @return Node
+   * @see edu.uchc.vcell.expression.internal.Node#jjtGetParent()
+   */
   public Node jjtGetParent() { return parent; }
 
 
+  /**
+   * Method jjtOpen.
+   * @see edu.uchc.vcell.expression.internal.Node#jjtOpen()
+   */
   public void jjtOpen() {
   }
 
 
+  /**
+   * Method jjtSetParent.
+   * @param n Node
+   * @see edu.uchc.vcell.expression.internal.Node#jjtSetParent(Node)
+   */
   public void jjtSetParent(Node n) { parent = n; }
 
 
+/**
+ * Method roundToFloat.
+ * @see edu.uchc.vcell.expression.internal.Node#roundToFloat()
+ */
 public void roundToFloat() {
     for (int i = 0; i < jjtGetNumChildren(); i++) {
         jjtGetChild(i).roundToFloat();
@@ -192,24 +271,30 @@ public void roundToFloat() {
   /* These two methods provide a very simple mechanism for attaching
      arbitrary data to the node. */
 
+  /**
+   * Method setInfo.
+   * @param i Object
+   */
   public void setInfo(Object i) { info = i; }
 
 
 /**
  * Insert the method's description here.
  * Creation date: (6/20/01 10:55:57 AM)
- * @return net.sourceforge.interval.ia_math.RealInterval
+ * @param interval RealInterval
+ * @param intervals RealInterval[]
+ * @see edu.uchc.vcell.expression.internal.Node#setInterval(RealInterval, RealInterval[])
  */
-public void setInterval(RealInterval interval, RealInterval intervals[]) throws ExpressionBindingException{
+public void setInterval(RealInterval interval, RealInterval intervals[]) {
 	ival = interval;
 }
 
 
 /**
  * This method was created by a SmartGuide.
- * @return java.lang.String[]
  * @param array1 java.lang.String[]
  * @param array2 java.lang.String[]
+ * @return java.lang.String[]
  */
 private String[] stringArrayMerge(String[] array1, String[] array2) {
 	if (array1 == null && array2 == null){
@@ -246,10 +331,11 @@ private String[] stringArrayMerge(String[] array1, String[] array2) {
 
 /**
  * This method was created by a SmartGuide.
- * @return cbit.vcell.parser.Node
- * @param origExp cbit.vcell.parser.Node
- * @param newExp cbit.vcell.parser.Node
+ * @param origNode Node
+ * @param newNode Node
+ * @throws ExpressionException
  * @exception java.lang.Exception The exception description.
+ * @see edu.uchc.vcell.expression.internal.Node#substitute(Node, Node)
  */
 public void substitute(Node origNode, Node newNode) throws ExpressionException {
 
@@ -274,6 +360,11 @@ public void substitute(Node origNode, Node newNode) throws ExpressionException {
 }
 
 
+  /**
+   * Method substituteBoundSymbols.
+   * @throws ExpressionException
+   * @see edu.uchc.vcell.expression.internal.Node#substituteBoundSymbols()
+   */
   public void substituteBoundSymbols() throws ExpressionException
   {
 	  for (int i=0;i<jjtGetNumChildren();i++){
@@ -288,8 +379,17 @@ public void substitute(Node origNode, Node newNode) throws ExpressionException {
      toString(String), otherwise overriding toString() is probably all
      you need to do. */
 
+  /**
+   * Method toString.
+   * @return String
+   */
   public String toString() { return getClass()+"@"+hashCode()+" \"" + infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT) + "\""; }
 
 
+  /**
+   * Method toString.
+   * @param prefix String
+   * @return String
+   */
   public String toString(String prefix) { return prefix + toString(); }
 }
