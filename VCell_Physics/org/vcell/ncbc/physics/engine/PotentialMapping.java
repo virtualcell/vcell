@@ -3,8 +3,7 @@ package org.vcell.ncbc.physics.engine;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
-import org.vcell.expression.IRationalExpression;
-import org.vcell.expression.RationalExpressionFactory;
+import org.vcell.expression.RationalExpression;
 
 import cbit.util.graph.Edge;
 import cbit.util.graph.Graph;
@@ -232,7 +231,7 @@ private void determineLumpedEquations(Graph graph) throws ExpressionException, M
 		//
 		int column = -1;
 		for (int j = i; j < voltageMatrix.getNumCols(); j++){
-			IRationalExpression elem = voltageMatrix.get(i,j);
+			RationalExpression elem = voltageMatrix.get(i,j);
 			if (elem.isConstant() && elem.getConstant().doubleValue()==1.0){
 				column = j;
 				break;
@@ -442,14 +441,14 @@ private void determineLumpedEquations(Graph graph) throws ExpressionException, M
 	for (int i = 0; i < capacitorGraphVoltageMatrix.getNumRows(); i++){
 		for (int j = 0; j < capacitorGraphVoltageMatrix.getNumCols(); j++){
 			ElectricalDevice device = (ElectricalDevice)fieldEdges[cIndex[j]].getData();
-			IRationalExpression coefficient = capacitorGraphVoltageMatrix.get(i,cIndex[j]);
+			RationalExpression coefficient = capacitorGraphVoltageMatrix.get(i,cIndex[j]);
 			if (device.hasCapacitance()){			
 				//
 				// replace dVi/dt  with   1000/Ci * Ii  +  1000/Ci * Fi
 				//
 				String Cname = device.getCapName();
-				currentMatrix.set_elem(row,j,coefficient.mult(RationalExpressionFactory.createRationalExpression(1000)).div(RationalExpressionFactory.createRationalExpression(Cname)));  // entry for i's
-				currentMatrix.set_elem(row,j+graph.getNumEdges(),coefficient.minus().mult(RationalExpressionFactory.createRationalExpression(1000)).div(RationalExpressionFactory.createRationalExpression(Cname))); // entry for F's
+				currentMatrix.set_elem(row,j,coefficient.mult(new RationalExpression(1000)).div(new RationalExpression(Cname)));  // entry for i's
+				currentMatrix.set_elem(row,j+graph.getNumEdges(),coefficient.minus().mult(new RationalExpression(1000)).div(new RationalExpression(Cname))); // entry for F's
 			}else if (device.isVoltageSource()){
 				//
 				// directly insert "symbolic" dVi/dt into the new matrix
@@ -485,7 +484,7 @@ private void determineLumpedEquations(Graph graph) throws ExpressionException, M
 		// include Fi terms
 		//
 		for (int j = 0; j < graph.getNumEdges(); j++){
-			IRationalExpression coefficient = currentMatrix.get(i,j+graph.getNumEdges());
+			RationalExpression coefficient = currentMatrix.get(i,j+graph.getNumEdges());
 			if (!coefficient.isZero()){
 				ElectricalDevice colDevice = (ElectricalDevice)fieldEdges[cIndex[j]].getData();
 				buffer.append(" + "+coefficient.minus()+"*"+colDevice.getSourceName());
@@ -495,7 +494,7 @@ private void determineLumpedEquations(Graph graph) throws ExpressionException, M
 		// include analytic dVi/dt terms from voltage sources
 		//
 		for (int j = 0; j < graph.getNumEdges(); j++){
-			IRationalExpression coefficient = currentMatrix.get(i,j+2*graph.getNumEdges());
+			RationalExpression coefficient = currentMatrix.get(i,j+2*graph.getNumEdges());
 			if (!coefficient.isZero()){
 				ElectricalDevice colDevice = (ElectricalDevice)fieldEdges[cIndex[j]].getData();
 				IExpression timeDeriv = colDevice.getInitialVoltageFunction().getExpression().differentiate("t");
