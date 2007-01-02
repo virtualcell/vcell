@@ -6,7 +6,7 @@ package cbit.vcell.matrix;
 ©*/
 import java.util.*;
 
-import org.vcell.expression.RationalExpressionFactory;
+import org.vcell.expression.RationalExpression;
 import org.vcell.expression.RationalNumber;
 
 public class RationalMatrixHeavyTest
@@ -188,12 +188,12 @@ public void testELIMINATIONExp() throws Exception {
 	int C = 2; vars[C] = "C";
 	int r=0;
 	// A = B
-	a.set_elem(A,r,RationalExpressionFactory.createRationalExpression(-1));	a.set_elem(B,r,RationalExpressionFactory.createRationalExpression(1));  r++;
-	a.set_elem(A,r,RationalExpressionFactory.createRationalExpression(1));	a.set_elem(B,r,RationalExpressionFactory.createRationalExpression(-1));  r++;
+	a.set_elem(A,r,new RationalExpression(-1));	a.set_elem(B,r,new RationalExpression(1));  r++;
+	a.set_elem(A,r,new RationalExpression(1));	a.set_elem(B,r,new RationalExpression(-1));  r++;
 	// B -> C
-	a.set_elem(B,r,RationalExpressionFactory.createRationalExpression(1));	a.set_elem(C,r,RationalExpressionFactory.createRationalExpression(1));  r++;
+	a.set_elem(B,r,new RationalExpression(1));	a.set_elem(C,r,new RationalExpression(1));  r++;
 	// A -> C
-	a.set_elem(A,r,RationalExpressionFactory.createRationalExpression(-1));	a.set_elem(C,r,RationalExpressionFactory.createRationalExpression(1));  r++;
+	a.set_elem(A,r,new RationalExpression(-1));	a.set_elem(C,r,new RationalExpression(1));  r++;
 	// C -> *
 //	a.set_elem(C,r,-1);	  r++;
 

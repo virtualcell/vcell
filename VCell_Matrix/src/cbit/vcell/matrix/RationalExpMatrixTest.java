@@ -6,8 +6,7 @@ package cbit.vcell.matrix;
 ©*/
 import java.util.*;
 
-import org.vcell.expression.IRationalExpression;
-import org.vcell.expression.RationalExpressionFactory;
+import org.vcell.expression.RationalExpression;
 
 public class RationalExpMatrixTest
 {
@@ -83,7 +82,7 @@ private void printResults(RationalExpMatrix nullSpaceMatrix, String[] vars) thro
 		//
 		boolean bFirst = false;
 		for (int j=0;j<nullSpaceMatrix.getNumCols();j++){
-			IRationalExpression coeff = nullSpaceMatrix.get(i,j);
+			RationalExpression coeff = nullSpaceMatrix.get(i,j);
 			if (!bFirst && !coeff.isZero()){
 				System.out.print(vars[j]+" = K_"+vars[j]+" ");
 				bFirst = true;
@@ -117,7 +116,7 @@ private void runInverseTest(int n) {
 public void set_rand_int(RationalExpMatrix m) {
 	for (int i = 0; i < m.getNumRows(); i ++){
 		for (int j = 0; j < m.getNumCols(); j ++){
-			m.set_elem(i, j, RationalExpressionFactory.createRationalExpression((int)(4*(random.nextDouble()-0.5))));
+			m.set_elem(i, j, new RationalExpression((int)(4*(random.nextDouble()-0.5))));
 		}
 	}		
 }
@@ -129,12 +128,12 @@ public void test2by2_example() throws Exception {
 	int numVars = 2;
 	int numReactions = 2;
 	RationalExpMatrix a = new RationalExpMatrix(2, 3);
-	a.set_elem(0,0,RationalExpressionFactory.createRationalExpression("a"));		a.set_elem(0,1,RationalExpressionFactory.createRationalExpression("b"));		a.set_elem(0,2,RationalExpressionFactory.createRationalExpression("e"));
-	a.set_elem(1,0,RationalExpressionFactory.createRationalExpression("c"));		a.set_elem(1,1,RationalExpressionFactory.createRationalExpression("d"));		a.set_elem(1,2,RationalExpressionFactory.createRationalExpression("f"));
+	a.set_elem(0,0,new RationalExpression("a"));		a.set_elem(0,1,new RationalExpression("b"));		a.set_elem(0,2,new RationalExpression("e"));
+	a.set_elem(1,0,new RationalExpression("c"));		a.set_elem(1,1,new RationalExpression("d"));		a.set_elem(1,2,new RationalExpression("f"));
 
 	System.out.println("============= 2 X 2 Example ==================================");
 	a.show();
-	IRationalExpression solution[] = a.solveLinearExpressions();
+	RationalExpression solution[] = a.solveLinearExpressions();
 	for (int i = 0; i < a.getNumRows(); i++){
 		System.out.println("x"+(i+1)+" = "+solution[i].infixString());
 	}
@@ -149,13 +148,13 @@ public void test3by3_example() throws Exception {
 	int numVars = 3;
 	int numReactions = 3;
 	RationalExpMatrix a = new RationalExpMatrix(3, 4);
-	a.set_elem(0,0,RationalExpressionFactory.createRationalExpression("a"));		a.set_elem(0,1,RationalExpressionFactory.createRationalExpression("b"));		a.set_elem(0,2,RationalExpressionFactory.createRationalExpression("c"));		a.set_elem(0,3,RationalExpressionFactory.createRationalExpression(0));
-	a.set_elem(1,0,RationalExpressionFactory.createRationalExpression(0));		a.set_elem(1,1,RationalExpressionFactory.createRationalExpression("g"));		a.set_elem(1,2,RationalExpressionFactory.createRationalExpression("t"));		a.set_elem(1,3,RationalExpressionFactory.createRationalExpression("w"));
-	a.set_elem(2,0,RationalExpressionFactory.createRationalExpression(0));		a.set_elem(2,1,RationalExpressionFactory.createRationalExpression("g"));		a.set_elem(2,2,RationalExpressionFactory.createRationalExpression("2*t"));		a.set_elem(2,3,RationalExpressionFactory.createRationalExpression("3*w"));
+	a.set_elem(0,0,new RationalExpression("a"));		a.set_elem(0,1,new RationalExpression("b"));		a.set_elem(0,2,new RationalExpression("c"));		a.set_elem(0,3,new RationalExpression(0));
+	a.set_elem(1,0,new RationalExpression(0));		a.set_elem(1,1,new RationalExpression("g"));		a.set_elem(1,2,new RationalExpression("t"));		a.set_elem(1,3,new RationalExpression("w"));
+	a.set_elem(2,0,new RationalExpression(0));		a.set_elem(2,1,new RationalExpression("g"));		a.set_elem(2,2,new RationalExpression("2*t"));		a.set_elem(2,3,new RationalExpression("3*w"));
 
 	System.out.println("============= 3 X 3 Example ==================================");
 	a.show();
-	IRationalExpression solution[] = a.solveLinearExpressions();
+	RationalExpression solution[] = a.solveLinearExpressions();
 	for (int i = 0; i < a.getNumRows(); i++){
 		System.out.println("x"+(i+1)+" = "+solution[i].infixString());
 	}
@@ -170,14 +169,14 @@ public void test4by4_example() throws Exception {
 	int numVars = 4;
 	int numReactions = 4;
 	RationalExpMatrix a = new RationalExpMatrix(4, 5);
-	a.set_elem(0,0,RationalExpressionFactory.createRationalExpression(1));		a.set_elem(0,1,RationalExpressionFactory.createRationalExpression("b"));		a.set_elem(0,2,RationalExpressionFactory.createRationalExpression(0));		a.set_elem(0,3,RationalExpressionFactory.createRationalExpression("d"));		a.set_elem(0,4,RationalExpressionFactory.createRationalExpression("e"));
-	a.set_elem(1,0,RationalExpressionFactory.createRationalExpression("f"));		a.set_elem(1,1,RationalExpressionFactory.createRationalExpression(1));		a.set_elem(1,2,RationalExpressionFactory.createRationalExpression("h"));		a.set_elem(1,3,RationalExpressionFactory.createRationalExpression(0));		a.set_elem(1,4,RationalExpressionFactory.createRationalExpression("j"));
-	a.set_elem(2,0,RationalExpressionFactory.createRationalExpression("k"));		a.set_elem(2,1,RationalExpressionFactory.createRationalExpression(0));		a.set_elem(2,2,RationalExpressionFactory.createRationalExpression(1));		a.set_elem(2,3,RationalExpressionFactory.createRationalExpression("n"));		a.set_elem(2,4,RationalExpressionFactory.createRationalExpression("o"));
-	a.set_elem(3,0,RationalExpressionFactory.createRationalExpression(0));		a.set_elem(3,1,RationalExpressionFactory.createRationalExpression("q"));		a.set_elem(3,2,RationalExpressionFactory.createRationalExpression("r"));		a.set_elem(3,3,RationalExpressionFactory.createRationalExpression(1));		a.set_elem(3,4,RationalExpressionFactory.createRationalExpression(0));
+	a.set_elem(0,0,new RationalExpression(1));		a.set_elem(0,1,new RationalExpression("b"));		a.set_elem(0,2,new RationalExpression(0));		a.set_elem(0,3,new RationalExpression("d"));		a.set_elem(0,4,new RationalExpression("e"));
+	a.set_elem(1,0,new RationalExpression("f"));		a.set_elem(1,1,new RationalExpression(1));		a.set_elem(1,2,new RationalExpression("h"));		a.set_elem(1,3,new RationalExpression(0));		a.set_elem(1,4,new RationalExpression("j"));
+	a.set_elem(2,0,new RationalExpression("k"));		a.set_elem(2,1,new RationalExpression(0));		a.set_elem(2,2,new RationalExpression(1));		a.set_elem(2,3,new RationalExpression("n"));		a.set_elem(2,4,new RationalExpression("o"));
+	a.set_elem(3,0,new RationalExpression(0));		a.set_elem(3,1,new RationalExpression("q"));		a.set_elem(3,2,new RationalExpression("r"));		a.set_elem(3,3,new RationalExpression(1));		a.set_elem(3,4,new RationalExpression(0));
 
 	System.out.println("============= 4 X 4 Example ==================================");
 	a.show();
-	IRationalExpression solution[] = a.solveLinearExpressions();
+	RationalExpression solution[] = a.solveLinearExpressions();
 	for (int i = 0; i < a.getNumRows(); i++){
 		System.out.println("x"+(i+1)+" = "+solution[i].infixString());
 	}
@@ -198,14 +197,14 @@ public void testBORIS_example() throws Exception {
 	int C = 2; vars[C] = "C";
 	int r=0;
 	// A = B
-	a.set_elem(A,r,RationalExpressionFactory.createRationalExpression(-1));	a.set_elem(B,r,RationalExpressionFactory.createRationalExpression(1));  r++;
-	a.set_elem(A,r,RationalExpressionFactory.createRationalExpression(1));	a.set_elem(B,r,RationalExpressionFactory.createRationalExpression(-1));  r++;
+	a.set_elem(A,r,new RationalExpression(-1));	a.set_elem(B,r,new RationalExpression(1));  r++;
+	a.set_elem(A,r,new RationalExpression(1));	a.set_elem(B,r,new RationalExpression(-1));  r++;
 	// B -> C
-	a.set_elem(B,r,RationalExpressionFactory.createRationalExpression(-1));	a.set_elem(C,r,RationalExpressionFactory.createRationalExpression(1));  r++;
+	a.set_elem(B,r,new RationalExpression(-1));	a.set_elem(C,r,new RationalExpression(1));  r++;
 	// A -> C
-	a.set_elem(A,r,RationalExpressionFactory.createRationalExpression(-1));	a.set_elem(C,r,RationalExpressionFactory.createRationalExpression(1));  r++;
+	a.set_elem(A,r,new RationalExpression(-1));	a.set_elem(C,r,new RationalExpression(1));  r++;
 	// C -> *
-	a.set_elem(C,r,RationalExpressionFactory.createRationalExpression(-1));	  r++;
+	a.set_elem(C,r,new RationalExpression(-1));	  r++;
 
 	System.out.println("============= Test Boris Example ==================================");
 //	a.show();
@@ -229,12 +228,12 @@ public void testELIMINATION() throws Exception {
 	int C = 2; vars[C] = "C";
 	int r=0;
 	// A = B
-	a.set_elem(A,r,RationalExpressionFactory.createRationalExpression(-1));	a.set_elem(B,r,RationalExpressionFactory.createRationalExpression(1));  r++;
-	a.set_elem(A,r,RationalExpressionFactory.createRationalExpression(1));	a.set_elem(B,r,RationalExpressionFactory.createRationalExpression(-1));  r++;
+	a.set_elem(A,r,new RationalExpression(-1));	a.set_elem(B,r,new RationalExpression(1));  r++;
+	a.set_elem(A,r,new RationalExpression(1));	a.set_elem(B,r,new RationalExpression(-1));  r++;
 	// B -> C
-	a.set_elem(B,r,RationalExpressionFactory.createRationalExpression(1));	a.set_elem(C,r,RationalExpressionFactory.createRationalExpression(1));  r++;
+	a.set_elem(B,r,new RationalExpression(1));	a.set_elem(C,r,new RationalExpression(1));  r++;
 	// A -> C
-	a.set_elem(A,r,RationalExpressionFactory.createRationalExpression(-1));	a.set_elem(C,r,RationalExpressionFactory.createRationalExpression(1));  r++;
+	a.set_elem(A,r,new RationalExpression(-1));	a.set_elem(C,r,new RationalExpression(1));  r++;
 	// C -> *
 //	a.set_elem(C,r,-1);	  r++;
 
@@ -431,7 +430,7 @@ b.show();
 	}
 M.show();
 
-	IRationalExpression x[] = M.solveLinearExpressions();
+	RationalExpression x[] = M.solveLinearExpressions();
 		
 	for (int i=0;i<numVars;i++){
 		System.out.println("X["+i+"] = "+x[i]);
