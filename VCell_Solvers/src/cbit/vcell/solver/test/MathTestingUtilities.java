@@ -1226,7 +1226,7 @@ public static IExpression[] getInsideOutsideFunctions(IExpression analyticSubDom
 	while (unparsedExpressionStack.size()>0){
 		IExpression exp = (IExpression)unparsedExpressionStack.pop();
 		if (exp.isRelational()){
-			org.vcell.expression.ExpressionTerm expTerm = exp.extractTopLevelTerm();
+			org.vcell.expression.ExpressionTerm expTerm = ExpressionFactory.extractTopLevelTerm(exp);
 			if (expTerm.getOperator().equals("<") || expTerm.getOperator().equals("<=")){
 				expList.add(ExpressionFactory.createExpression(expTerm.getOperands()[0].infix()+"-"+expTerm.getOperands()[1].infix()));
 			}else if (expTerm.getOperator().equals(">") || expTerm.getOperator().equals(">=")){
@@ -1235,7 +1235,7 @@ public static IExpression[] getInsideOutsideFunctions(IExpression analyticSubDom
 				throw new ExpressionException("relational expression '"+exp+"' is not an inequality");
 			}
 		}else if (exp.isLogical()){
-			org.vcell.expression.ExpressionTerm expTerm = exp.extractTopLevelTerm();
+			org.vcell.expression.ExpressionTerm expTerm = ExpressionFactory.extractTopLevelTerm(exp);
 			for (int i = 0; i < expTerm.getOperands().length; i++){
 				unparsedExpressionStack.push(expTerm.getOperands()[i]);
 			}
