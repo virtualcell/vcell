@@ -634,14 +634,19 @@ public boolean isTBD() {
 	}
 
 
-	public VCUnitDefinition raiseTo(cbit.util.RationalNumber exp) {
+	public VCUnitDefinition raiseTo(int power) {
+		return raiseTo(power,1L);
+	}
+
+	public VCUnitDefinition raiseTo(long power_numerator, long power_denominator) {
 
 		if (isTBD()){
 			throw new VCUnitException("cannot raiseTo with TBD units");
 		}
 		Unit newUcarUnit;
+		ucar.units.RationalNumber exp = new ucar.units.RationalNumber(power_numerator,power_denominator);
 		try {
-			newUcarUnit =  getUcarUnit().raiseTo(new ucar.units.RationalNumber(exp.getNum(),exp.getDen()));
+			newUcarUnit =  getUcarUnit().raiseTo(exp);
 		} catch (UnitException e) {
 			e.printStackTrace();
 			throw new VCUnitException("Failed to change exponent for: " + ucarUnit.getSymbol() + " " + exp + ": " + e.getMessage());
