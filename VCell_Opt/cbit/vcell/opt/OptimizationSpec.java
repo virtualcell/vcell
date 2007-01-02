@@ -37,6 +37,7 @@ public OptimizationSpec() {
 public OptimizationSpec(String vcml) {
 	CommentStringTokenizer tokens = new CommentStringTokenizer(vcml);
 	read(tokens);
+	System.out.println(this.getVCML());
 }
 
 
