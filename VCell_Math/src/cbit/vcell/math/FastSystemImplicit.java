@@ -7,9 +7,8 @@ import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.ExpressionUtilities;
 import org.vcell.expression.IExpression;
-import org.vcell.expression.IRationalExpression;
+import org.vcell.expression.RationalExpression;
 import org.vcell.expression.ISymbolicProcessor;
-import org.vcell.expression.RationalExpressionFactory;
 
 import cbit.util.CommentStringTokenizer;
 import cbit.vcell.matrix.RationalExpMatrix;
@@ -297,7 +296,7 @@ private void refreshInvarianceMatrix() throws MathException, ExpressionException
 		for (int j=0;j<numVars;j++){
 			Variable var = (Variable)fastVarList.elementAt(j);
 			IExpression exp = function.differentiate(var.getName()).flatten();
-			IRationalExpression coeffRationalExp = RationalExpressionFactory.getRationalExp(exp);
+			RationalExpression coeffRationalExp = ExpressionFactory.getRationalExpression(exp);
 			matrix.set_elem(i,j,coeffRationalExp);
 		}
 		matrix.set_elem(i,numVars+i,-1);
@@ -338,7 +337,7 @@ System.out.println("");
 	ISymbolicProcessor symbolicProcessor = ExpressionUtilities.getDefaultSymbolicProcessor(); 
 	for (int i=0;i<rows;i++){
 		for (int j=0;j<rows;j++){
-			IRationalExpression rexp = symbolicProcessor.simplify(matrix.get(i,j));
+			RationalExpression rexp = symbolicProcessor.simplify(matrix.get(i,j));
 			matrix.set_elem(i,j,rexp);
 		}
 	}
@@ -350,7 +349,7 @@ System.out.println("");
 			for (int j=i+1;j<cols;j++){
 				if (matrix.get(i,j).isConstant() && matrix.get(i,j).getConstant().doubleValue()==1.0){
 					for (int ii=0;ii<rows;ii++){
-						IRationalExpression temp = matrix.get(ii,i);
+						RationalExpression temp = matrix.get(ii,i);
 						matrix.set_elem(ii,i,matrix.get(ii,j));
 						matrix.set_elem(ii,j,temp);
 					}
@@ -390,7 +389,7 @@ matrix.show();
 	dependencyMatrix = new RationalExpMatrix(rows, new_cols);
 	for (int i=0;i<rows;i++){
 		for (int j=0;j<new_cols;j++){
-			org.vcell.expression.IRationalExpression rexp = symbolicProcessor.simplify(matrix.get(i,j+dependentVarList.size())).minus();
+			org.vcell.expression.RationalExpression rexp = symbolicProcessor.simplify(matrix.get(i,j+dependentVarList.size())).minus();
 			dependencyMatrix.set_elem(i,j,rexp);
 		}
 	}
@@ -438,7 +437,7 @@ private void refreshSubstitutedRateExps() throws MathException, ExpressionExcept
 		//
 		for (int col=0;col<independentVarList.size();col++){
 			Variable indepVar = (Variable)independentVarList.elementAt(col);
-			IRationalExpression coefExp = dependencyMatrix.get(row,col);
+			RationalExpression coefExp = dependencyMatrix.get(row,col);
 			if (!coefExp.isZero()){
 				exp = ExpressionFactory.add(exp, ExpressionFactory.createExpression(coefExp.infixString()+"*"+indepVar.getName()));
 			}
@@ -448,7 +447,7 @@ private void refreshSubstitutedRateExps() throws MathException, ExpressionExcept
 		//
 		for (int col=independentVarList.size();col<dependencyMatrix.getNumCols();col++){
 			PseudoConstant pc = (PseudoConstant)pseudoConstantList.elementAt(col-independentVarList.size());
-			IRationalExpression coefExp = dependencyMatrix.get(row,col);
+			RationalExpression coefExp = dependencyMatrix.get(row,col);
 			if (!coefExp.isZero()){
 				exp = ExpressionFactory.add(exp, ExpressionFactory.createExpression(coefExp.infixString()+"*"+pc.getName()));
 			}
