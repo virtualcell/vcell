@@ -698,7 +698,7 @@ public java.beans.MethodDescriptor setSymbols_int_ncbcphysics2componentSymbolMet
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
 				int.class,
-				org.vcell.physics.component.Symbol.class
+				org.vcell.physics.component.PhysicalSymbol.class
 			};
 			aMethod = getBeanClass().getMethod("setSymbols", aParameterTypes);
 		} catch (Throwable exception) {
@@ -759,7 +759,7 @@ public java.beans.IndexedPropertyDescriptor symbolsPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					org.vcell.physics.component.Symbol[].class
+					org.vcell.physics.component.PhysicalSymbol[].class
 				};
 				aSetMethod = getBeanClass().getMethod("setSymbols", aSetMethodParameterTypes);
 			} catch (Throwable exception) {
@@ -784,7 +784,7 @@ public java.beans.IndexedPropertyDescriptor symbolsPropertyDescriptor() {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetIndexedMethodParameterTypes[] = {
 					int.class,
-					org.vcell.physics.component.Symbol.class
+					org.vcell.physics.component.PhysicalSymbol.class
 				};
 				aSetIndexedMethod = getBeanClass().getMethod("setSymbols", aSetIndexedMethodParameterTypes);
 			} catch (Throwable exception) {

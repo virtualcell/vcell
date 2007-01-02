@@ -1,7 +1,10 @@
 package org.vcell.physics.component;
+import jscl.plugin.Expression;
+import jscl.plugin.ParseException;
+
 import org.jdom.Element;
-import org.vcell.expression.ExpressionFactory;
-import org.vcell.expression.IExpression;
+
+import cbit.vcell.units.VCUnitDefinition;
 
 /**
  * Insert the type's description here.
@@ -14,7 +17,7 @@ public class ModelReader {
  * Creation date: (2/17/2006 1:28:25 PM)
  * @param xmlString java.lang.String
  */
-public static OOModel parse(String xmlString) throws org.vcell.expression.ExpressionException {
+public static OOModel parse(String xmlString) throws ParseException {
 
 	xmlString =
 	 "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + "\n" + 
@@ -22,10 +25,10 @@ public static OOModel parse(String xmlString) throws org.vcell.expression.Expres
 	 "<vcml>" + "\n" +
 	 "\t<physicalModel>" + "\n" +
 	 "\t\t<class name=\"triangle\">" + "\n" +
-	 "\t\t\t<variable name=\"a\"/>" + "\n" +
-	 "\t\t\t<variable name=\"b\"/>" + "\n" +
-	 "\t\t\t<variable name=\"h\"/>" + "\n" +
-	 "\t\t\t<variable name=\"area\"/>" + "\n" +
+	 "\t\t\t<variable name=\"a\" unit=\"m\"/>" + "\n" +
+	 "\t\t\t<variable name=\"b\" unit=\"m\"/>" + "\n" +
+	 "\t\t\t<variable name=\"h\" unit=\"m\"/>" + "\n" +
+	 "\t\t\t<variable name=\"area\" unit=\"m2\"/>" + "\n" +
 	 "\t\t\t<equation exp=\"a*a+b*b-h*h\"/>" + "\n" +
 	 "\t\t\t<equation exp=\"area - a*b/2\"/>" + "\n" +
 	 "\t\t\t<connector name=\"pin_a\" effort=\"a\"/>" + "\n" +
@@ -34,15 +37,15 @@ public static OOModel parse(String xmlString) throws org.vcell.expression.Expres
 	 "\t\t\t<connector name=\"pin_area\" effort=\"area\"/>" + "\n" +
 	 "\t\t</class>" + "\n" +
 	 "\t\t<class name=\"source_a\">" + "\n" +
-	 "\t\t\t<parameter name=\"value\"/>" + "\n" +
-	 "\t\t\t<variable name=\"a\"/>" + "\n" +
+	 "\t\t\t<parameter name=\"value\" unit=\"m\"/>" + "\n" +
+	 "\t\t\t<variable name=\"a\" unit=\"m\"/>" + "\n" +
 	 "\t\t\t<equation exp=\"value - 3\"/>" + "\n" +
 	 "\t\t\t<equation exp=\"a - value\"/>" + "\n" +
 	 "\t\t\t<connector name=\"pin\" effort=\"a\"/>" + "\n" +
 	 "\t\t</class>" + "\n" +
 	 "\t\t<class name=\"source_b\">" + "\n" +
-	 "\t\t\t<parameter name=\"value\"/>" + "\n" +
-	 "\t\t\t<variable name=\"b\"/>" + "\n" +
+	 "\t\t\t<parameter name=\"value\" unit=\"m\"/>" + "\n" +
+	 "\t\t\t<variable name=\"b\" unit=\"m\"/>" + "\n" +
 	 "\t\t\t<equation exp=\"value - 4\"/>" + "\n" +
 	 "\t\t\t<equation exp=\"b - value\"/>" + "\n" +
 	 "\t\t\t<connector name=\"pin\" effort=\"b\"/>" + "\n" +
@@ -96,20 +99,22 @@ public static OOModel parse(String xmlString) throws org.vcell.expression.Expres
 		for (int j = 0; j < variableList.size(); j++){
 			org.jdom.Element variableElement = (org.jdom.Element)variableList.get(j);
 			org.jdom.Attribute variableNameAttr = (org.jdom.Attribute)variableElement.getAttribute("name");
-			modelComponent.addSymbol(new Variable(variableNameAttr.getValue()));
+			org.jdom.Attribute unitSymbolAttr = (org.jdom.Attribute)variableElement.getAttribute("unit");
+			modelComponent.addSymbol(new Variable(variableNameAttr.getValue(),VCUnitDefinition.getInstance(unitSymbolAttr.getValue())));
 		}
 		java.util.List parameterList = classElement.getChildren("parameter");
 		for (int j = 0; j < parameterList.size(); j++){
 			org.jdom.Element parameterElement = (org.jdom.Element)parameterList.get(j);
 			org.jdom.Attribute parameterNameAttr = (org.jdom.Attribute)parameterElement.getAttribute("name");
+			org.jdom.Attribute unitSymbolAttr = (org.jdom.Attribute)parameterElement.getAttribute("unit");
 			//org.jdom.Attribute expressionAttr = (org.jdom.Attribute)parameterElement.getAttribute("exp");
-			modelComponent.addSymbol(new Parameter(parameterNameAttr.getValue()));
+			modelComponent.addSymbol(new Parameter(parameterNameAttr.getValue(),VCUnitDefinition.getInstance(unitSymbolAttr.getValue())));
 		}
 		java.util.List equationList = classElement.getChildren("equation");
 		for (int j = 0; j < equationList.size(); j++){
 			org.jdom.Element equationElement = (org.jdom.Element)equationList.get(j);
 			org.jdom.Attribute expressionAttr = (org.jdom.Attribute)equationElement.getAttribute("exp");
-			modelComponent.addEquation(ExpressionFactory.createExpression(expressionAttr.getValue()));
+			modelComponent.addEquation(Expression.valueOf(expressionAttr.getValue()));
 		}
 		java.util.List connectorList = classElement.getChildren("connector");
 		for (int j = 0; j < connectorList.size(); j++){
@@ -166,7 +171,7 @@ public static org.jdom.Element print(OOModel oOModel) {
 	for (int i = 0; i < modelComponents.length; i++){
 		Element classElement = new Element("class");
 		classElement.setAttribute("name",modelComponents[i].getName());
-		Symbol[] symbols = modelComponents[i].getSymbols();
+		PhysicalSymbol[] symbols = modelComponents[i].getSymbols();
 		for (int j = 0; j < symbols.length; j++){
 			if (symbols[j] instanceof Parameter){
 				Parameter parameter = (Parameter)symbols[j];
@@ -180,7 +185,7 @@ public static org.jdom.Element print(OOModel oOModel) {
 				classElement.addContent(variableElement);
 			}
 		}
-		IExpression[] equations = modelComponents[i].getEquations();
+		Expression[] equations = modelComponents[i].getEquations();
 		for (int j = 0; j < equations.length; j++){
 			Element equationElement = new Element("equation");
 			equationElement.setAttribute("exp",equations[j].infix());

@@ -1,19 +1,26 @@
 package org.vcell.physics.math;
 import java.beans.PropertyVetoException;
 
-import org.vcell.expression.ExpressionBindingException;
+import jscl.plugin.Expression;
+import jscl.plugin.ParseException;
+import jscl.plugin.Variable;
+
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.ExpressionUtilities;
 import org.vcell.expression.IExpression;
-import org.vcell.expression.ISymbolicProcessor;
 import org.vcell.physics.component.Connection;
 import org.vcell.physics.component.Connector;
+import org.vcell.physics.component.IndependentVariable;
 import org.vcell.physics.component.ModelComponent;
 import org.vcell.physics.component.OOModel;
-import org.vcell.physics.component.Symbol;
+import org.vcell.physics.component.PhysicalSymbol;
 
+import com.sun.java_cup.internal.reduce_action;
+
+import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathException;
+import cbit.vcell.units.VCUnitDefinition;
 
 /**
  * Insert the type's description here.
@@ -32,7 +39,7 @@ public class MappingUtilities {
  * @throws ExpressionBindingException 
  */
 
-public static cbit.vcell.math.MathDescription getMathDescription(VarEquationAssignment[] varEqnAssign) throws PropertyVetoException, ExpressionBindingException, MathException {
+public static cbit.vcell.math.MathDescription getMathDescription(VarEquationAssignment[] varEqnAssign) throws PropertyVetoException, ExpressionException, MathException, ParseException {
 	cbit.vcell.math.MathDescription mathDesc = new cbit.vcell.math.MathDescription("generated");
 	mathDesc.setGeometry(new cbit.vcell.geometry.Geometry("newgeometry",0));
 	cbit.vcell.math.CompartmentSubDomain compartmentSubDomain = new cbit.vcell.math.CompartmentSubDomain("compartment",0);
@@ -46,20 +53,21 @@ public static cbit.vcell.math.MathDescription getMathDescription(VarEquationAssi
 			throw new RuntimeException("system not completely solved, cannot generation math ... could generate DAE at some point");
 		}
 		if (varEqnAssign[i].isStateVariable()){
-			cbit.vcell.math.VolVariable volVariable = new cbit.vcell.math.VolVariable(varEqnAssign[i].getSymbol().getName());
+			cbit.vcell.math.VolVariable volVariable = new cbit.vcell.math.VolVariable(varEqnAssign[i].getSymbol().getJsclVariable().getName());
 			varArray[i] = volVariable;
 		}else{
 			//
 			// if solution has no symbols, make this a constant
 			//
-			if (varEqnAssign[i].getSolution().getSymbols()==null || varEqnAssign[i].getSolution().getSymbols().length==0){
-				cbit.vcell.math.Constant constant = new cbit.vcell.math.Constant(varEqnAssign[i].getSymbol().getName(),ExpressionFactory.createExpression(varEqnAssign[i].getSolution()));
+			Variable[] solutionVars = Expression.getVariables(varEqnAssign[i].getSolution());
+			if (solutionVars.length==0){
+				cbit.vcell.math.Constant constant = new cbit.vcell.math.Constant(Expression.valueOf(varEqnAssign[i].getSymbol().getJsclVariable().infix()).infixVCell(),ExpressionFactory.createExpression(varEqnAssign[i].getSolution().infixVCell()));
 				varArray[i] = constant;
 			//
 			// if it has a symbol, then make it a function
 			//
 			}else{
-				cbit.vcell.math.Function function = new cbit.vcell.math.Function(varEqnAssign[i].getSymbol().getName(),ExpressionFactory.createExpression(varEqnAssign[i].getSolution()));
+				cbit.vcell.math.Function function = new cbit.vcell.math.Function(Expression.valueOf(varEqnAssign[i].getSymbol().getJsclVariable().infix()).infixVCell(),ExpressionFactory.createExpression(varEqnAssign[i].getSolution().infixVCell()));
 				varArray[i] = function;
 			}
 		}
@@ -70,7 +78,12 @@ public static cbit.vcell.math.MathDescription getMathDescription(VarEquationAssi
 	//
 	for (int i = 0; i < varEqnAssign.length; i++) {
 		if (varEqnAssign[i].isStateVariable() && varEqnAssign[i].getSolution()!=null){
-			cbit.vcell.math.OdeEquation odeEquation = new cbit.vcell.math.OdeEquation(varArray[i],ExpressionFactory.createExpression(0.0),ExpressionFactory.createExpression(varEqnAssign[i].getSolution()));
+			IExpression initExp = ExpressionFactory.createExpression(0.0);
+			cbit.vcell.math.Variable init = mathDesc.getVariable(varEqnAssign[i].getSymbol().getJsclVariable().getName()+".init");
+			if (init!=null){
+				initExp = ExpressionFactory.createExpression(init.getName());
+			}
+			cbit.vcell.math.OdeEquation odeEquation = new cbit.vcell.math.OdeEquation(varArray[i],initExp,ExpressionFactory.createExpression(varEqnAssign[i].getSolution().infixVCell()));
 			compartmentSubDomain.addEquation(odeEquation);
 		}
 	}
@@ -101,8 +114,9 @@ public static void breakSCC(StronglyConnectedComponent[] sccArray, cbit.util.gra
  * @return ncbc.physics2.MathSystem2
  * @param oOModel ncbc.physics2.component.Model
  */
-public static org.vcell.physics.math.MathSystem getMathSystem(OOModel oOModel) throws org.vcell.expression.ExpressionException {
+public static org.vcell.physics.math.MathSystem getMathSystem(OOModel oOModel) throws ParseException {
 	org.vcell.physics.math.MathSystem mathSystem = new org.vcell.physics.math.MathSystem();
+	
 
 	//
 	// for each model component, add symbols and equations
@@ -113,21 +127,34 @@ public static org.vcell.physics.math.MathSystem getMathSystem(OOModel oOModel) t
 	//
 	// effort variables are made equal, flow variables sum to zero
 	//
+	mathSystem.addSymbol(new OOMathSymbol("t",new IndependentVariable("t",VCUnitDefinition.UNIT_s)));
 	ModelComponent[] modelComponents = oOModel.getModelComponents();
 	Connection[] connections = oOModel.getConnections();
 	for (int i = 0; i < modelComponents.length; i++){
-		Symbol[] symbols = modelComponents[i].getSymbols();
+		PhysicalSymbol[] symbols = modelComponents[i].getSymbols();
 		for (int j = 0; j < symbols.length; j++){
-			mathSystem.addSymbol(modelComponents[i].getName()+"."+symbols[j].getName());
-		}
-		IExpression[] equations = modelComponents[i].getEquations();
-		for (int j = 0; j < equations.length; j++){
-			String syms[] = equations[j].getSymbols();
-			IExpression exp = ExpressionFactory.createExpression(equations[j]);
-			for (int k = 0; k < syms.length; k++){
-				exp.substituteInPlace(ExpressionFactory.createExpression(syms[k]),ExpressionFactory.createExpression(modelComponents[i].getName()+"."+syms[k]));
+			if (!(symbols[j] instanceof IndependentVariable)){
+				mathSystem.addSymbol(new OOMathSymbol(ExpressionUtilities.getEscapedTokenJSCL(modelComponents[i].getName()+"."+symbols[j].getName()),symbols[j]));
 			}
-			mathSystem.addEquation(exp);
+		}
+		Expression[] equations = modelComponents[i].getEquations();
+		for (int j = 0; j < equations.length; j++){
+			Expression clonedExp = equations[j].clone();
+			Variable vars[] = Expression.getVariables(clonedExp);
+			for (int k = 0; k < vars.length; k++){
+				if (!vars[k].infix().equals("t")){
+					clonedExp = clonedExp.substitute(vars[k], Expression.valueOf(ExpressionUtilities.getEscapedTokenJSCL(modelComponents[i].getName()+"."+vars[k].infix())));
+					if (vars[k].getVarType()==Variable.VARTYPE_IMPLICITFUNCTION){
+						Expression derivative = Expression.valueOf("d("+vars[k].infix()+",t)").expand().simplify();
+						if (!derivative.infix().equals("0")){
+							Variable derivativeVar = Variable.valueOf(derivative.infix());
+							clonedExp = clonedExp.substitute(derivativeVar, Expression.valueOf("d("+modelComponents[i].getName()+"."+vars[k].infix()+",t)").expand().simplify());
+						}
+					}
+				}
+			}
+			mathSystem.addEquation(clonedExp);
+			System.out.println("adding equation for "+modelComponents[i].getName()+": "+clonedExp.toString());
 		}
 	}
 	for (int i = 0; i < connections.length; i++){
@@ -140,25 +167,25 @@ public static org.vcell.physics.math.MathSystem getMathSystem(OOModel oOModel) t
 		for (int j = 0; j < connectors.length; j++){
 			ModelComponent parent = connectors[j].getParent();
 			if (j==0){
-				effortBuffer.append(parent.getName()+"."+connectors[j].getEffortVariable().getName());
+				effortBuffer.append(ExpressionUtilities.getEscapedTokenJSCL(parent.getName()+"."+connectors[j].getEffortVariable().getName()));
 				if (connectors[j].getFlowVariable()!=null){
-					flowBuffer.append(parent.getName()+"."+connectors[j].getFlowVariable().getName());
+					flowBuffer.append(ExpressionUtilities.getEscapedTokenJSCL(parent.getName()+"."+connectors[j].getFlowVariable().getName()));
 				}
 			}else{
 				//
 				// need n-1 equations to indicate that all efforts are equal
 				//
-				mathSystem.addEquation(ExpressionFactory.createExpression(effortBuffer.toString()+"-"+parent.getName()+"."+connectors[j].getEffortVariable().getName()));
+				mathSystem.addEquation(Expression.valueOf(effortBuffer.toString()+"-"+ExpressionUtilities.getEscapedTokenJSCL(parent.getName()+"."+connectors[j].getEffortVariable().getName())));
 				//
 				// sum up mass flux
 				//
 				if (connectors[j].getFlowVariable()!=null){
-					flowBuffer.append("+"+parent.getName()+"."+connectors[j].getFlowVariable().getName());
+					flowBuffer.append("+"+ExpressionUtilities.getEscapedTokenJSCL(parent.getName()+"."+connectors[j].getFlowVariable().getName()));
 				}
 			}
 		}
 		if (flowBuffer.length()>0){
-			mathSystem.addEquation(ExpressionFactory.createExpression(flowBuffer.toString())); // one flow equation (conservation of mass)
+			mathSystem.addEquation(Expression.valueOf(flowBuffer.toString())); // one flow equation (conservation of mass)
 		}
 
 	}
@@ -171,70 +198,100 @@ public static org.vcell.physics.math.MathSystem getMathSystem(OOModel oOModel) t
  * @param args an array of command-line arguments
  * @throws ExpressionException 
  */
-public static ModelAnalysisResults analyzeMathSystem(MathSystem mathSystem) throws ExpressionException{
+public static ModelAnalysisResults analyzeMathSystem(MathSystem mathSystem) throws ParseException {
 
-	ModelAnalysisResults modelAnalysisResults = new ModelAnalysisResults();
+	//
+	// create a weighted bipartite dependency graph (between OOMathSymbols and Expressions)
+	// this graph has edges to one or more variable vertices for each "Expression" vertex
+	// and edges to one or more "Expression" vertices for each variable vertex.
+	// 
+	// we would like to find the "best" matching (each variable mapped to one unique Expression)
+	// which is a subset of the edges of the original graph.
+	// This matching gives is used to put the mathematical system into a form that we can solve.
+	//
+
+	//
+	// complete mapping, now lets perform DAE index reduction
+	//
+	IndexReduction.reduceDAEIndexPantelides(mathSystem);
 	
-	cbit.util.graph.Graph graph = mathSystem.getDependencyGraph();
+	cbit.util.graph.Graph graph = mathSystem.getDependencyGraph(100,false);
 
+	//
+	// put graph into "WeightedAdjacencyListGraph" with color[] array to encode bipartite nature of nodes
+	// symbols are color "0"
+	// equations are color "1"
+	//
 	int[] colors = new int[graph.getNumNodes()];
 	cbit.util.graph.Node[] nodes = graph.getNodes();
 	for (int i = 0; i < nodes.length; i++){
 		nodes[i].index = i;
-		if (nodes[i].getData() instanceof Symbol){
+		if (nodes[i].getData() instanceof OOMathSymbol){
 			colors[i] = 0;
 		}else{
 			colors[i] = 1;
 		}
 	}
-
 	com.mhhe.clrs2e.WeightedAdjacencyListGraph weightedGraph = new com.mhhe.clrs2e.WeightedAdjacencyListGraph(nodes.length,false);	
 	for (int i = 0; i < nodes.length; i++){
 		weightedGraph.addVertex(nodes[i].getName());
 	}
 	final cbit.util.graph.Edge[] edges = graph.getEdges();
 	for (int i = 0; i < edges.length; i++){
-		weightedGraph.addEdge(edges[i].getNode1().index,edges[i].getNode2().index,((Double)edges[i].getData()).doubleValue());
+		weightedGraph.addEdge(edges[i].getNode1().index,edges[i].getNode2().index,((Integer)edges[i].getData()).doubleValue());
 	}
 	
+	//
+	// find maximum weighted maximum cardinality matching ("matching").
+	//
 	final org.vcell.physics.math.BipartiteMatchings.Matching matching = org.vcell.physics.math.BipartiteMatchings.findMaximumWeightedMaximumCardinalityMatching(weightedGraph, colors);
-
-
 	int coveredVertices = matching.countCoveredVertices();
 
-	if (coveredVertices == nodes.length){
-			
+	
+	ModelAnalysisResults modelAnalysisResults = new ModelAnalysisResults();
+	modelAnalysisResults.mathSystem = mathSystem;
+	modelAnalysisResults.connectivityGraph = graph;
+	modelAnalysisResults.matching = matching;
+	
+	if (coveredVertices < nodes.length){
+		//
+		// either indeterminate or overdetermined
+		//
+		System.out.println("maximal matching not of full rank");
+		return modelAnalysisResults;
+		
+	}else{
+		
+		//
+		// probably well determined, compute a solvable system of equations.
+		//
 		cbit.util.graph.Graph partitionGraph = new cbit.util.graph.Graph();
-		ISymbolicProcessor symbolicProcessor = ExpressionUtilities.getDefaultSymbolicProcessor();
 		//
 		// build vertices make a directed graph with vertices (Var | equation)
 		//
 		for (int i = 0; i < nodes.length; i++){
-			if (nodes[i].getData() instanceof Symbol){
-				Symbol symbol = (Symbol)nodes[i].getData();
+			if (nodes[i].getData() instanceof OOMathSymbol){
+				OOMathSymbol mathSymbol = (OOMathSymbol)nodes[i].getData();
 				int matchingIndex = matching.getMatch(nodes[i].index);
 				cbit.util.graph.Node eqnNode = graph.getNodes()[matchingIndex];
-				IExpression equation = (IExpression)eqnNode.getData();
-				VarEquationAssignment varEqnAssignment = new VarEquationAssignment(symbol,equation);
-				String[] expSymbols = equation.getSymbols();
-				for (int j = 0; j < expSymbols.length; j++){
-					if (expSymbols[j].equals(symbol.getName()+Symbol.DERIVATIVE_SUFFIX)){
-						//
-						// matching a variable to an ODE with this variable, variable is a state variable
-						//
-						varEqnAssignment.setStateVariable(true);
-					}
+				Expression equation = (Expression)eqnNode.getData();
+				VarEquationAssignment varEqnAssignment = new VarEquationAssignment(mathSymbol,equation);
+				Expression termToSolveFor = Expression.valueOf(mathSymbol.getName());
+				int highestDifferentialDegree = equation.getHighestTimeDerivative(mathSymbol.getName());
+				if (highestDifferentialDegree > 0){
+					//
+					// matching a variable to an ODE with this variable, variable is a state variable
+					//
+					termToSolveFor = Expression.valueOf("d("+mathSymbol.getName()+",t,t,"+highestDifferentialDegree+")");
+					varEqnAssignment.setStateVariable(true);
 				}
 				//
-				// solve for this variable if possible.
+				// solve for this variable (or derivative of this variable) if possible.
 				//
-				String symbolToSolveFor = symbol.getName();
-				if (varEqnAssignment.isStateVariable()){
-					symbolToSolveFor = symbol.getName()+Symbol.DERIVATIVE_SUFFIX;
-				}
-				IExpression solvedExp = symbolicProcessor.solve(equation,symbolToSolveFor);
+				Expression solvedExp = equation.solve(termToSolveFor);
+				// (new Solve(equation,variableToSolveFor.expressionValue(),JSCLInteger.valueOf(0))).expand().expressionValue();
 				varEqnAssignment.setSolution(solvedExp); // may be null;
-					
+				
 				cbit.util.graph.Node mergedNode = new cbit.util.graph.Node(varEqnAssignment.toString(),varEqnAssignment);
 				partitionGraph.addNode(mergedNode);
 			}
@@ -283,7 +340,7 @@ public static ModelAnalysisResults analyzeMathSystem(MathSystem mathSystem) thro
 		cbit.util.graph.TarjansAlgorithm tarjanAlgorithm = new cbit.util.graph.TarjansAlgorithm(partitionGraph);
 		int[] roots = tarjanAlgorithm.getRoots(); // roots of strongly connected graph for each vertex.
 
-		java.util.Hashtable hash = new java.util.Hashtable();
+		java.util.Hashtable<Integer,StronglyConnectedComponent> hash = new java.util.Hashtable<Integer,StronglyConnectedComponent>();
 		for (int i = 0; i < roots.length; i++){
 			StronglyConnectedComponent scc = (StronglyConnectedComponent)hash.get(new Integer(roots[i]));
 			if (scc == null){
@@ -363,7 +420,7 @@ public static ModelAnalysisResults analyzeMathSystem(MathSystem mathSystem) thro
 			for (int j = 0; j < sortedPartitionNodes.length; j++){
 				if (scc.contains(sortedPartitionNodes[j].index)){
 					VarEquationAssignment varEqnAssignment = (VarEquationAssignment)sortedPartitionNodes[j].getData();
-					System.out.println("\t\t"+varEqnAssignment.getSymbol().getName()+" || "+varEqnAssignment.getEquation().infix());
+					System.out.println("\t\t"+varEqnAssignment.getSymbol().getName()+" || "+varEqnAssignment.getEquation().toString());
 				}
 			}
 		}
@@ -398,12 +455,12 @@ public static ModelAnalysisResults analyzeMathSystem(MathSystem mathSystem) thro
 					VarEquationAssignment varEqnAssignment = (VarEquationAssignment)sortedPartitionNodes[j].getData();
 					if (varEqnAssignment.getSolution()!=null){
 						if (varEqnAssignment.isStateVariable()){
-							System.out.println("\t\t\t"+varEqnAssignment.getSymbol().getName()+Symbol.DERIVATIVE_SUFFIX+" = "+varEqnAssignment.getSolution().infix());
+							System.out.println("\t\t\td("+varEqnAssignment.getSymbol().getName()+",t) = "+varEqnAssignment.getSolution().toString());
 						}else{
-							System.out.println("\t\t\t"+varEqnAssignment.getSymbol().getName()+" = "+varEqnAssignment.getSolution().infix());
+							System.out.println("\t\t\t"+varEqnAssignment.getSymbol().getName()+" = "+varEqnAssignment.getSolution().toString());
 						}
 					}else{
-						System.out.println("\t\t\tNOT SOLVED\t\t"+varEqnAssignment.getSymbol().getName()+" || "+varEqnAssignment.getEquation().infix());
+						System.out.println("\t\t\tNOT SOLVED\t\t"+varEqnAssignment.getSymbol().getName()+" || "+varEqnAssignment.getEquation().toString());
 					}	
 				}
 			}
@@ -418,13 +475,13 @@ public static ModelAnalysisResults analyzeMathSystem(MathSystem mathSystem) thro
 				//
 				// check that all elements have already been solved for the corresponding variable
 				//
-				java.util.HashSet sccSymbolHash = new java.util.HashSet();
+				java.util.HashSet<OOMathSymbol> sccSymbolHash = new java.util.HashSet<OOMathSymbol>();
 				int bestTearingNodeIndex = -1;
 				int degreeOfBestNode = -1;
 				boolean bAllSolved = true;
 				for (int j = 0; j < partitionNodes.length; j++){
 					if (sccArray[i].contains(j)){
-						sccSymbolHash.add(varEqnAssignments[j].getSymbol().getName());
+						sccSymbolHash.add(varEqnAssignments[j].getSymbol());
 						VarEquationAssignment varEqnAssignment = (VarEquationAssignment)partitionNodes[j].getData();
 						if (varEqnAssignment.getSolution()==null){
 							bAllSolved = false;
@@ -454,26 +511,26 @@ public static ModelAnalysisResults analyzeMathSystem(MathSystem mathSystem) thro
 					//
 					// collect dependent symbols (from outside of this SCC)
 					//
-					java.util.HashSet knownSymbolHash = new java.util.HashSet();
+					java.util.HashSet<Variable> knownSymbolHash = new java.util.HashSet<Variable>();
 					for (int j = 0; j < partitionEdges.length; j++){
 						if (sccArray[i].contains(partitionEdges[j].getNode2().index) && !sccArray[i].contains(partitionEdges[j].getNode1().index)){
-							knownSymbolHash.add( ((VarEquationAssignment)partitionEdges[j].getNode1().getData()).getSymbol() );
+							knownSymbolHash.add( ((VarEquationAssignment)partitionEdges[j].getNode1().getData()).getSymbol().getJsclVariable() );
 						}
 					}
-					String symbolToSolveFor = varEqnAssignments[bestTearingNodeIndex].getSymbol().getName();
-					IExpression exp = ExpressionFactory.createExpression(varEqnAssignments[bestTearingNodeIndex].getSolution().infix() + " - " + symbolToSolveFor);
+					OOMathSymbol symbolToSolveFor = varEqnAssignments[bestTearingNodeIndex].getSymbol();
+					Expression exp = varEqnAssignments[bestTearingNodeIndex].getSolution().subtract(Expression.valueOf(symbolToSolveFor.getJsclVariable().infix()));
 					boolean done = false;
 					while (!done){
-						String[] symbols = exp.getSymbols();
+						Variable[] variables = Expression.getVariables(exp);
 						boolean bSubstituted = false;
-						for (int j = 0; j < symbols.length; j++){
-							if (sccSymbolHash.contains(symbols[j]) && !symbols[j].equals(varEqnAssignments[bestTearingNodeIndex].getSymbol().getName())){
+						for (int j = 0; j < variables.length; j++){
+							if (sccSymbolHash.contains(variables[j]) && !variables[j].equals(varEqnAssignments[bestTearingNodeIndex].getSymbol().getJsclVariable())){
 								//
 								// this symbols is another symbol within the same SCC (but not the current one, try to substitute)
 								//
 								for (int k = 0; k < varEqnAssignments.length; k++){
-									if (varEqnAssignments[k].getSymbol().getName().equals(symbols[j])){
-										exp.substituteInPlace(ExpressionFactory.createExpression(symbols[j]),ExpressionFactory.createExpression(varEqnAssignments[k].getSolution()));
+									if (varEqnAssignments[k].getSymbol().getJsclVariable().equals(variables[j])){
+										exp = exp.substitute(variables[j],varEqnAssignments[k].getSolution());
 										bSubstituted = true;
 										break;
 									}
@@ -484,15 +541,16 @@ public static ModelAnalysisResults analyzeMathSystem(MathSystem mathSystem) thro
 							done = true;
 						}
 					}
-					IExpression explicitlySolvedSolution = symbolicProcessor.solve(exp,symbolToSolveFor);
+					Expression explicitlySolvedSolution = exp.solve(Expression.valueOf(symbolToSolveFor.getJsclVariable().infix()));
+					// getJsclVariable().expressionValue(),JSCLInteger.valueOf(0))).compute().simplify().expressionValue();
 					if (explicitlySolvedSolution!=null){
 						varEqnAssignments[bestTearingNodeIndex].setEquation(exp);
 						varEqnAssignments[bestTearingNodeIndex].setSolution(explicitlySolvedSolution);
-						partitionNodes[bestTearingNodeIndex].setName("TORN: "+symbolToSolveFor+" = "+explicitlySolvedSolution.infix());
+						partitionNodes[bestTearingNodeIndex].setName("TORN: "+symbolToSolveFor.getJsclVariable().infix()+" = "+explicitlySolvedSolution.toString());
 					}else{
-						varEqnAssignments[bestTearingNodeIndex].setEquation(exp.flatten());
+						varEqnAssignments[bestTearingNodeIndex].setEquation(exp.simplify());
 						varEqnAssignments[bestTearingNodeIndex].setSolution(null);
-						partitionNodes[bestTearingNodeIndex].setName("TORN: "+symbolToSolveFor+" | "+exp.flatten().infix());
+						partitionNodes[bestTearingNodeIndex].setName("TORN: "+symbolToSolveFor.getJsclVariable().infix()+" | "+exp.simplify().infix());
 					}
 					//
 					// if this worked, then recompute dependency edges within this SCC
@@ -508,10 +566,10 @@ public static ModelAnalysisResults analyzeMathSystem(MathSystem mathSystem) thro
 					//
 					// add edges to other edges in the SCC's "dependency list" as necessary
 					//
-					String[] symbols = exp.getSymbols();
-					for (int j = 0; j < symbols.length; j++){
+					Variable[] variables = Expression.getVariables(exp);
+					for (int j = 0; j < variables.length; j++){
 						for (int k = 0; k < varEqnAssignments.length; k++){
-							if (varEqnAssignments[k].getSymbol().getName().equals(symbols[j])){
+							if (varEqnAssignments[k].getSymbol().getJsclVariable().equals(variables[j])){
 								if (!sccArray[i].contains(k)){
 									cbit.util.graph.Edge dependencyEdge = partitionGraph.getEdge(k,bestTearingNodeIndex);
 									if (dependencyEdge==null){
@@ -535,15 +593,9 @@ public static ModelAnalysisResults analyzeMathSystem(MathSystem mathSystem) thro
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
 		}
-	}else{
-		System.out.println("maximal matching not of full rank");
-	}
-// */
-	modelAnalysisResults.mathSystem = mathSystem;
-	modelAnalysisResults.connectivityGraph = graph;
-	modelAnalysisResults.matching = matching;
-	
-	return modelAnalysisResults;
+		
+		return modelAnalysisResults;
+	}	
 }
 
 
@@ -555,7 +607,7 @@ public static ModelAnalysisResults analyzeMathSystem(MathSystem mathSystem) thro
  * @param partitionGraph cbit.util.graph.Graph
  * @param symbolToTear ncbc.physics2.component.Symbol
  */
-public static IExpression tear(StronglyConnectedComponent scc, cbit.util.graph.Graph partitionGraph, int indexToTear) {
+public static Expression tear(StronglyConnectedComponent scc, cbit.util.graph.Graph partitionGraph, int indexToTear) {
 	//
 	// get all of the VarEquationAssignments within this scc
 	//

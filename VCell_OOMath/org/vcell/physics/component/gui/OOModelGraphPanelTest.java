@@ -27,7 +27,7 @@ public static void main(java.lang.String[] args) {
 		
 		//PhysicalModel physicalModel = PhysicalModelTest.getExample();
 		//org.vcell.physics.component.OOModel physicalModel = org.vcell.physics.component.OOModelTest.getExampleTriangle_h_a();
-		org.vcell.physics.component.OOModel physicalModel = org.vcell.physics.component.OOModelTest.getExample5();
+		org.vcell.physics.component.OOModel physicalModel = org.vcell.physics.component.OOModelTest.getPlanarPendulumExample();
 		aPhysicalModelGraphPanel.setModel(physicalModel);
 		
 		frame.setVisible(true);

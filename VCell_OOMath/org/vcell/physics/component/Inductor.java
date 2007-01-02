@@ -1,6 +1,11 @@
 package org.vcell.physics.component;
 
+import jscl.plugin.Expression;
+import jscl.plugin.ParseException;
+
 import org.vcell.expression.ExpressionFactory;
+
+import cbit.vcell.units.VCUnitDefinition;
 
 /**
  * Insert the type's description here.
@@ -13,12 +18,12 @@ public class Inductor extends TwoPortElectricalComponent {
  */
 public Inductor(String argName, double inductance) {
 	super(argName);
-	Parameter L = new Parameter("L");
+	Parameter L = new Parameter("L", VCUnitDefinition.getInstance("GH"));
 	addSymbol(L);
 	try {
-		addEquation(ExpressionFactory.createExpression("L*Ip.prime - V"));
-		addEquation(ExpressionFactory.createExpression("L - "+inductance));
-	}catch (org.vcell.expression.ExpressionException e){
+		addEquation(Expression.valueOf("L*d(Ip,t) - V(t)"));
+		addEquation(Expression.valueOf("L - "+inductance));
+	}catch (ParseException e){
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
 	}

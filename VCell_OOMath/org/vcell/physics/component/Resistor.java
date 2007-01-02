@@ -1,5 +1,8 @@
 package org.vcell.physics.component;
-import org.vcell.expression.ExpressionFactory;
+import cbit.vcell.units.VCUnitDefinition;
+import jscl.plugin.Expression;
+import jscl.plugin.ParseException;
+
 
 /**
  * Insert the type's description here.
@@ -12,12 +15,12 @@ public class Resistor extends TwoPortElectricalComponent {
  */
 public Resistor(String argName, double resistance) {
 	super(argName);
-	Parameter R = new Parameter("R");
+	Parameter R = new Parameter("R",VCUnitDefinition.getInstance("gigaohm"));
 	addSymbol(R);
 	try {
-		addEquation(ExpressionFactory.createExpression("V - Ip*R"));
-		addEquation(ExpressionFactory.createExpression("R - "+resistance));
-	}catch (org.vcell.expression.ExpressionException e){
+		addEquation(Expression.valueOf("V(t) - Ip(t)*R"));
+		addEquation(Expression.valueOf("R - "+resistance));
+	}catch (ParseException e){
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
 	}

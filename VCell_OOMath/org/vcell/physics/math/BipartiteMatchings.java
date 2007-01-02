@@ -1,7 +1,9 @@
 package org.vcell.physics.math;
-import cbit.util.graph.Edge;
-import cbit.util.graph.Graph;
-import cbit.util.graph.Node;
+import java.util.Random;
+
+import com.mhhe.clrs2e.Vertex;
+import com.mhhe.clrs2e.WeightedAdjacencyListGraph;
+import com.mhhe.clrs2e.WeightedEdgeIterator;
 /**
  * Insert the type's description here.
  * Creation date: (1/4/2006 3:56:44 PM)
@@ -16,7 +18,8 @@ public class BipartiteMatchings {
 			matches = new int[argCardinality];
 			java.util.Arrays.fill(matches,-1);
 			weights = new double[argCardinality];
-			java.util.Arrays.fill(weights,Double.MIN_VALUE);
+			//java.util.Arrays.fill(weights,Double.NEGATIVE_INFINITY);
+			java.util.Arrays.fill(weights,0);
 		}
 		public void add(int u, int v, double argWeight) {
 			matches[u] = v;
@@ -38,7 +41,6 @@ public class BipartiteMatchings {
 		}
 		public String toString() {
 			StringBuffer buffer = new StringBuffer();
-			double sum = 0.0;
 			buffer.append(super.toString()+": matchings = ");
 			for (int i=0;i<matches.length;i++){
 				if (weights[i] != Double.MIN_VALUE){
@@ -55,7 +57,7 @@ public class BipartiteMatchings {
 		public int countCoveredVertices() {
 			int count = 0;
 			for (int i=0;i<matches.length;i++){
-				if (matches[i] > -1){
+				if (matches[i] > -1 && weights[i]>0){
 					count++;
 				}
 			}
@@ -64,11 +66,13 @@ public class BipartiteMatchings {
 		public double sumOfWeights() {
 			double sum = 0;
 			for (int i=0;i<matches.length;i++){
-				sum += weights[i];
+				if (matches[i]>i){
+					sum += weights[i];
+				}
 			}
 			return sum;
 		}
-		public void flipAugmentingPath(int[] path){
+		public void flipAugmentingPath(int[] path, WeightedAdjacencyListGraph agraph){
 			//
 			// check that it really is an augmenting path
 			//
@@ -98,6 +102,21 @@ public class BipartiteMatchings {
 				}
 				matches[path[i+1]] = path[i];
 			}
+			applyWeights(agraph);
+		}
+		private void applyWeights(WeightedAdjacencyListGraph agraph){
+			for (int i = 0; i < matches.length; i++) {
+				weights[i] = 0;
+				if (matches[i] != -1){
+					WeightedEdgeIterator iter = agraph.weightedEdgeIterator(i);
+					while (iter.hasNext()){
+						Vertex vertex = iter.nextVertex();
+						if (vertex.getIndex() == matches[i]){
+							weights[i] = iter.getWeight();
+						}
+					}
+				}
+			}
 		}
 	};
 
@@ -114,7 +133,7 @@ private BipartiteMatchings() {
  * Creation date: (1/5/2006 4:01:27 PM)
  * @return cbit.util.graph.BipartiteMatchings.Matching
  */
-public static int[] findBipartiteAugmentingPath(com.mhhe.clrs2e.AdjacencyListGraph graph, Matching M, int[] color) {
+private static int[] findBipartiteAugmentingPath(com.mhhe.clrs2e.WeightedAdjacencyListGraph graph, Matching M, int[] color) {
 	//
 	// color[] is 0 for "left" vertex set and 1 for "right" vertex set
 	// for perfect matching, number of 0s and 1s should be same
@@ -155,9 +174,9 @@ public static int[] findBipartiteAugmentingPath(com.mhhe.clrs2e.AdjacencyListGra
 				// Enqueue each undiscovered vertex adjacent to u (as long as it is part of an alternating path)
 				// if distance is odd, must not be part of matching, if even must be part of matching.
 				//
-				java.util.Iterator iter = graph.edgeIterator(u);
+				WeightedEdgeIterator iter = graph.weightedEdgeIterator(u);
 				while (iter.hasNext()) {
-					com.mhhe.clrs2e.Vertex v = (com.mhhe.clrs2e.Vertex)iter.next();
+					com.mhhe.clrs2e.Vertex v = iter.nextVertex();
 					com.mhhe.clrs2e.BFSInfo vInfo = bfsInfos[v.getIndex()];
 
 					if (vInfo.getColor() == java.awt.Color.white){
@@ -166,7 +185,12 @@ public static int[] findBipartiteAugmentingPath(com.mhhe.clrs2e.AdjacencyListGra
 							// starting from left set, only use edge if not already part of matching
 							//
 							vInfo.setColor(java.awt.Color.gray);
-							vInfo.setDistance(uDistance+1);
+vInfo.setDistance(uDistance+1); 
+//							double weight = iter.getWeight();
+//							if (weight != (int)weight){
+//								throw new RuntimeException("bipartite matching weight should be integer valued");
+//							}
+//							vInfo.setDistance(uDistance + (int)weight);
 							vInfo.setPredecessor(u);
 							q.enqueue(v);
 						}else if (color[u.getIndex()] == 1 && M.contains(u.getIndex(),v.getIndex())){
@@ -174,7 +198,12 @@ public static int[] findBipartiteAugmentingPath(com.mhhe.clrs2e.AdjacencyListGra
 							// starting from left set, only use edge if not already part of matching
 							//
 							vInfo.setColor(java.awt.Color.gray);
-							vInfo.setDistance(uDistance+1);
+vInfo.setDistance(uDistance+1);
+//							double weight = iter.getWeight();
+//							if (weight != (int)weight){
+//								throw new RuntimeException("bipartite matching weight should be integer valued");
+//							}
+//							vInfo.setDistance(uDistance + (int)weight);
 							vInfo.setPredecessor(u);
 							q.enqueue(v);
 						}
@@ -213,7 +242,7 @@ public static int[] findBipartiteAugmentingPath(com.mhhe.clrs2e.AdjacencyListGra
  * Creation date: (1/5/2006 4:01:27 PM)
  * @return cbit.util.graph.BipartiteMatchings.Matching
  */
-public static BipartiteMatchings.Matching findMaximumBipartiteMatchingHopcroftKarp(com.mhhe.clrs2e.AdjacencyListGraph agraph, int[] colors) {
+public static BipartiteMatchings.Matching findMaximumCardinalityMatchingHopcroftKarp(com.mhhe.clrs2e.WeightedAdjacencyListGraph agraph, int[] colors) {
 	//
 	// color[] is 0 for "left" vertex set and 1 for "right" vertex set
 	// for perfect matching, number of 0s and 1s should be same
@@ -226,10 +255,11 @@ public static BipartiteMatchings.Matching findMaximumBipartiteMatchingHopcroftKa
 	do {
 		augmentedPath = findBipartiteAugmentingPath(agraph,newMatching,colors);
 		if (augmentedPath.length>0){
-			newMatching.flipAugmentingPath(augmentedPath);
+			newMatching.flipAugmentingPath(augmentedPath,agraph);
 		}
 		//System.out.println(newMatching);
 	} while (augmentedPath.length>0);
+	newMatching.applyWeights(agraph);
 
 	return newMatching;
 }
@@ -240,12 +270,12 @@ public static BipartiteMatchings.Matching findMaximumBipartiteMatchingHopcroftKa
  * Creation date: (1/5/2006 4:01:27 PM)
  * @return cbit.util.graph.BipartiteMatchings.Matching
  */
-public static BipartiteMatchings.Matching findMaximumCardinalityMatchingUsingMaxFlow(Graph bipartiteGraph, int[] color) {
+public static BipartiteMatchings.Matching findMaximumMatchingUsingMaxFlow(WeightedAdjacencyListGraph agraph, int[] color, boolean bUseWeights) {
 	//
 	// color[] is 0 for "left" vertex set and 1 for "right" vertex set
 	// for perfect matching, number of 0s and 1s should be same
 	//
-	if (color==null || color.length!=bipartiteGraph.getNumNodes()){
+	if (color==null || color.length!=agraph.getCardV()){
 		throw new RuntimeException("node assignment missing or wrong");
 	}
 	int numZeros = 0;
@@ -257,7 +287,7 @@ public static BipartiteMatchings.Matching findMaximumCardinalityMatchingUsingMax
 			numOnes++;
 		}
 	}
-	if (numZeros+numOnes != bipartiteGraph.getNumNodes()){
+	if (numZeros+numOnes != agraph.getCardV()){
 		throw new RuntimeException("not all colors assigned to 0,1");
 	}
 	if (numZeros != numOnes){
@@ -265,49 +295,53 @@ public static BipartiteMatchings.Matching findMaximumCardinalityMatchingUsingMax
 	}
 
 	
-	com.mhhe.clrs2e.FlowNetwork flowNetwork = new com.mhhe.clrs2e.FlowNetwork(bipartiteGraph.getNumNodes()+2);
+	com.mhhe.clrs2e.FlowNetwork flowNetwork = new com.mhhe.clrs2e.FlowNetwork(agraph.getCardV()+2);
 	//
 	// add verticies in same order as original graph.
 	//
-	Node[] nodes = bipartiteGraph.getNodes();
-	for (int i = 0; i < nodes.length; i++){
-		flowNetwork.addVertex(nodes[i].getName());
+	for (int i = 0; i < agraph.getCardV(); i++){
+		flowNetwork.addVertex(agraph.getVertex(i).getName());
 	}
 	//
 	// add start and end verticies
 	//
 	com.mhhe.clrs2e.Vertex startVertex = flowNetwork.addVertex("startVertex");
-	int startIndex = nodes.length;
+	int startIndex = agraph.getCardV();
 	com.mhhe.clrs2e.Vertex endVertex = flowNetwork.addVertex("endVertex");
-	int endIndex = nodes.length+1;
+	int endIndex = agraph.getCardV()+1;
 
 	//
-	// add original edges according to original graph connectivity with unitary capacity from color-0 to color-1
+	// add original edges according to original graph connectivity with weighted capacity from color-0 to color-1
 	//
-	Edge[] edges = bipartiteGraph.getEdges();
-	for (int i = 0; i < edges.length; i++){
-		int index1 = bipartiteGraph.getIndex(edges[i].getNode1());
-		int index2 = bipartiteGraph.getIndex(edges[i].getNode2());
-		if (color[index1] == color[index2]){
-			throw new RuntimeException("bipartite graphs must connect only from one color to opposite color");
-		}
-		if (color[index1] == 0 && color[index2] == 1){
-			flowNetwork.addEdge(index1,index2,1,0);
-		}else if (color[index1] == 1 && color[index2] == 0){
-			flowNetwork.addEdge(index2,index1,1,0);
-		}else{
-			throw new RuntimeException("wrong colors, edge connecting vertices with same color");
+	for (int i = 0; i < agraph.getCardV(); i++){
+		WeightedEdgeIterator edgeIter = agraph.weightedEdgeIterator(i);
+		while (edgeIter.hasNext()){
+			Vertex vertex = edgeIter.nextVertex();
+			double weight = (bUseWeights)?(edgeIter.getWeight()):(1.0);
+			int index1 = i;
+			int index2 = vertex.getIndex();
+			if (index2<index1){
+				continue; // only count color0 to color1 otherwise, will double-count
+			}
+			if (color[index1] == color[index2]){
+				throw new RuntimeException("bipartite graphs must connect only from one color to opposite color");
+			}
+			if (color[index1] == 0 && color[index2] == 1){
+				flowNetwork.addEdge(index1,index2,weight,0);
+			}else{
+				throw new RuntimeException("wrong colors, vertices must be ordered by color, color0 then color1");
+			}
 		}
 	}
 
 	//
 	// add connections to start/end depending on color (0 connects to start and 1 connects to end).
 	//
-	for (int i = 0; i < nodes.length; i++){
+	for (int i = 0; i < agraph.getCardV(); i++){
 		if (color[i] == 0){
-			flowNetwork.addEdge(startIndex,i,1,0);
+			flowNetwork.addEdge(startIndex,i,10000,0);
 		}else{
-			flowNetwork.addEdge(i,endIndex,1,0);
+			flowNetwork.addEdge(i,endIndex,10000,0);
 		}
 	}
 
@@ -317,26 +351,29 @@ public static BipartiteMatchings.Matching findMaximumCardinalityMatchingUsingMax
 	
 	com.mhhe.clrs2e.EdmondsKarp edmondsKarp = new com.mhhe.clrs2e.EdmondsKarp();
 	edmondsKarp.computeMaxFlow(flowNetwork,startVertex,endVertex);
-	if (flowNetwork.getFlowValue(startVertex)*2 != bipartiteGraph.getNumNodes()){
-		throw new RuntimeException("couldn't find a perfect matching");
-	}
+//	if (bUseWeights && flowNetwork.getFlowValue(startVertex)*2 != agraph.getCardV()){
+//		System.out.println("couldn't find a perfect matching, numZeros="+numZeros+", numOnes="+numOnes+", number of matches = "+flowNetwork.getFlowValue(startVertex));
+//	}
 
 	
 	//
 	// perfect matching ... form Matching structure and return
 	//
-	Matching M = new Matching(flowNetwork.getCardV());
-	for (int i = 0; i < flowNetwork.getCardV()-2; i++){
+	Matching M = new Matching(agraph.getCardV());
+	double sum = 0;
+	for (int i = 0; i < agraph.getCardV(); i++){
 		if (color[i] == 0){
 			com.mhhe.clrs2e.FlowNetworkEdgeIterator flowNetworkEdgeIter = flowNetwork.flowNetworkEdgeIterator(i,false);
 			while(flowNetworkEdgeIter.hasNext()){
 				flowNetworkEdgeIter.next();
 				double netFlow = flowNetworkEdgeIter.getNetFlow();
-				if (netFlow==1.0){
+				if (netFlow>Double.MIN_VALUE){
 					com.mhhe.clrs2e.AdjacencyListGraph.Edge edge = (com.mhhe.clrs2e.AdjacencyListGraph.Edge)flowNetworkEdgeIter.getEdge();
 					int index1 = i;	
 					int index2 = edge.vertex.getIndex();
-					M.add(index1,index2,1.0);
+					double weight = netFlow;
+					M.add(index1,index2,weight);
+					sum += weight;
 				}
 			}
 		}
@@ -368,96 +405,144 @@ public static BipartiteMatchings.Matching findMaximumWeightedMaximumCardinalityM
 	}
 	int numOnes = agraph.getCardV()-numZeros;
 
-	double[][] weightMatrix = new double[numZeros][numOnes];
-	for (int i = 0; i < numZeros; i++){
-		com.mhhe.clrs2e.WeightedAdjacencyListGraph.EdgeIterator edgeIter = (com.mhhe.clrs2e.WeightedAdjacencyListGraph.EdgeIterator)agraph.edgeIterator(i);
-		while (edgeIter.hasNext()){
-			com.mhhe.clrs2e.Vertex v = (com.mhhe.clrs2e.Vertex)edgeIter.next();
-			weightMatrix[i][v.getIndex()-numZeros] = edgeIter.getWeight();
+	boolean bTransposedWeightMatrix = (numZeros > numOnes);
+	double[][] weightMatrix = null;
+	if (!bTransposedWeightMatrix){
+		weightMatrix = new double[numZeros][numOnes];
+		for (int i = 0; i < numZeros; i++){
+			com.mhhe.clrs2e.WeightedAdjacencyListGraph.EdgeIterator edgeIter = (com.mhhe.clrs2e.WeightedAdjacencyListGraph.EdgeIterator)agraph.edgeIterator(i);
+			while (edgeIter.hasNext()){
+				com.mhhe.clrs2e.Vertex v = (com.mhhe.clrs2e.Vertex)edgeIter.next();
+				weightMatrix[i][v.getIndex()-numZeros] = edgeIter.getWeight();
+			}
+		}
+	}else{
+		weightMatrix = new double[numOnes][numZeros];
+		for (int i = 0; i < numZeros; i++){
+			com.mhhe.clrs2e.WeightedAdjacencyListGraph.EdgeIterator edgeIter = (com.mhhe.clrs2e.WeightedAdjacencyListGraph.EdgeIterator)agraph.edgeIterator(i);
+			while (edgeIter.hasNext()){
+				com.mhhe.clrs2e.Vertex v = (com.mhhe.clrs2e.Vertex)edgeIter.next();
+				weightMatrix[v.getIndex()-numZeros][i] = edgeIter.getWeight();
+			}
 		}
 	}
 	Matching matching = new Matching(agraph.getCardV());
-	double sum = 0;
 	int[][] assignment = edu.maine.graphalgorithms.HungarianAlgorithm.hgAlgorithm(weightMatrix, "max");
 	for (int i=0; i<assignment.length; i++) {
 		int u = assignment[i][0];
 		int v = assignment[i][1];
-		matching.add(u,v+numZeros,weightMatrix[u][v]);
-		System.out.println("array("+(assignment[i][0])+","+((assignment[i][1]+numZeros))+") = "+weightMatrix[assignment[i][0]][assignment[i][1]]);
-		sum = sum + weightMatrix[u][v];
+		if (!bTransposedWeightMatrix){
+			matching.add(u,v+numZeros,weightMatrix[u][v]);
+		}else{
+			matching.add(v,u+numZeros,weightMatrix[u][v]);
+		}
+//		System.out.println("array("+(assignment[i][0])+","+((assignment[i][1]+numZeros))+") = "+weightMatrix[assignment[i][0]][assignment[i][1]]);
 	}
 		
-	System.out.println("The maximum matching has a sum of: "+sum);
 	return matching;
 }
 
+/**
+ * Insert the method's description here.
+ * Creation date: (1/5/2006 5:25:20 PM)
+ * @param args java.lang.String[]
+ */
+public static void main(String[] args) {
+	try {
+		Random random = new Random(0);
+		for (int i = 0; i < 100; i++) {
+			test(random,38,40,120,2);
+		}
+	} catch (Exception e) {
+		e.printStackTrace(System.out);
+	}
+}
+
+public static WeightedAdjacencyListGraph getRandomBipartiteGraph(Random random, int numVertexA, int numVertexB, int numEdges, int[] colors, int maxWeight){
+	if (numEdges>(numVertexA*numVertexB)){
+		throw new RuntimeException("cannot have more than numVertextA * numVertextB = "+(numVertexA*numVertexB)+" unique vertices, "+numEdges+" were specified");
+	}
+	WeightedAdjacencyListGraph agraph = new WeightedAdjacencyListGraph(numVertexA+numVertexB,false);
+	for (int i=0;i<numVertexA;i++){
+		agraph.addVertex("A"+i);
+		colors[i] = 0;
+	}
+	for (int i=0;i<numVertexB;i++){
+		agraph.addVertex("B"+i);
+		colors[numVertexA+i] = 1;
+	}
+	for (int i=0;i<numEdges;i++){
+		boolean bEdgeAlreadyUsed = true;
+		int u = -1;
+		int v = -1;
+		while (bEdgeAlreadyUsed){
+			bEdgeAlreadyUsed = false;
+			u = Math.abs(random.nextInt())%numVertexA;
+			v = numVertexA + Math.abs(random.nextInt())%numVertexB;
+			
+			WeightedEdgeIterator edgeIterator = agraph.weightedEdgeIterator(u);
+			while (edgeIterator.hasNext()){
+				Vertex vertex = edgeIterator.nextVertex();
+				if (vertex.getIndex()==v){
+					bEdgeAlreadyUsed = true;
+					break;
+				}
+			}
+		}
+		//
+		// found unused edge, add to graph
+		//
+		agraph.addEdge(u, v, 100+Math.abs(random.nextInt())%(maxWeight));
+	}
+	return agraph;
+}
 
 /**
  * Insert the method's description here.
  * Creation date: (1/5/2006 5:25:20 PM)
  * @param args java.lang.String[]
  */
-public static void main(String[] args) {}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (1/5/2006 5:25:20 PM)
- * @param args java.lang.String[]
- */
-public static void test() {
-	Graph graph = new Graph();
-	Node f1 = new Node("f1");
-	Node f2 = new Node("f2");
-	Node f3 = new Node("f3");
-	Node z1 = new Node("z1");
-	Node z2 = new Node("z2");
-	Node z3 = new Node("z3");
-	Node nodes[] = { f1, f2, f3, z1, z2, z3 };
-	Edge edges[] = {
-					new Edge(z1,f1,new Double(1.0)), 
-					new Edge(z1,f2,new Double(1.0)), 
-					//new Edge(z1,f3,new Double(1.0)), 
-					new Edge(z2,f1,new Double(5.0)), 
-					//new Edge(z2,f2,new Double(1.0)), 
-					new Edge(z2,f3,new Double(1.0)), 
-					new Edge(z3,f1,new Double(1.0)), 
-					//new Edge(z3,f2,new Double(1.0)),  
-					new Edge(z3,f3,new Double(1.0)),  
-	};
-	int colors[] = { 0, 0, 0, 1, 1, 1 };
-	for (int i = 0; i < nodes.length; i++){
-		nodes[i].index = i;
-		graph.addNode(nodes[i]);
-	}
-	for (int i = 0; i < edges.length; i++){
-		graph.addEdge(edges[i]);
-	}
-
+public static void test(Random random, int numA, int numB, int numEdges, int maxWeight) {
+	
+	int[] colors = new int[numA+numB];
+	com.mhhe.clrs2e.WeightedAdjacencyListGraph agraph = getRandomBipartiteGraph(random, numA, numB, numEdges, colors, maxWeight);
+	
 	//
-	// create a weighted Adjacency Graph
+	// get maximal matching (ignoring weights) using Hopcroft-Karp algorithm
 	//
-	com.mhhe.clrs2e.WeightedAdjacencyListGraph agraph = new com.mhhe.clrs2e.WeightedAdjacencyListGraph(nodes.length,false);
-	for (int i = 0; i < nodes.length; i++){
-		agraph.addVertex(nodes[i].getName());
-	}
-	for (int i = 0; i < edges.length; i++){
-		agraph.addEdge(edges[i].getNode1().index,edges[i].getNode2().index,((Double)edges[i].getData()).doubleValue());
-	}
+	Matching matching_HopcroftKarp = findMaximumCardinalityMatchingHopcroftKarp(agraph,colors);
+//	System.out.println(matching_HopcroftKarp);
 
-	//
-	// get any maximal cardinality matching (ignore weights) using Hopcroft-Karp algorithm
-	//
-	Matching newMatching = findMaximumBipartiteMatchingHopcroftKarp(agraph,colors);
-	System.out.println(newMatching);
+//	//
+//	// get maximal matching (ignoring weights) using Hopcroft-Karp algorithm
+//	//
+//	Matching newMatching = findMaximumMatchingUsingMaxFlow(agraph, colors, false);
+//	System.out.println("MaxFlow-MaxCardinality: The maximum matching has a sum of: "+newMatching.sumOfWeights()+",\tnumber matched = "+newMatching.countCoveredVertices()/2);
+////	System.out.println(newMatching);
+
+//	//
+//	// get maximal matching (ignoring weights) using Hopcroft-Karp algorithm
+//	//
+//	Matching matching_MaxFlow = findMaximumMatchingUsingMaxFlow(agraph, colors, true);
+//	System.out.println("MaxFlow-MaxWeight:      The maximum matching has a sum of: "+matching_MaxFlow.sumOfWeights()+",\tnumber matched = "+matching_MaxFlow.countCoveredVertices()/2);
+////	System.out.println(matching_MaxFlow);
 
 	//
 	// try maximum weight maximum cardinality bipartite matching (Hungarian algorithm)
 	//
 	// assume that vertices of the adjacency graph are in color order (0, 0, 0 ... 0, 1, 1, 1, ... 1)
 	//
-	newMatching = findMaximumWeightedMaximumCardinalityMatching(agraph,colors);
-	System.out.println(newMatching);
+	Matching matching_Hungarian = findMaximumWeightedMaximumCardinalityMatching(agraph,colors);
+//	System.out.println(matching_Hungarian);
+	
+	if (matching_HopcroftKarp.sumOfWeights()!=matching_Hungarian.sumOfWeights() || matching_HopcroftKarp.countCoveredVertices()!=matching_Hungarian.countCoveredVertices()){
+		System.out.println("");
+//		System.out.println(agraph);
+		System.out.println("HopcroftKarp:           The maximum matching has a sum of: "+matching_HopcroftKarp.sumOfWeights()+",\tnumber matched = "+matching_HopcroftKarp.countCoveredVertices()/2);
+//		System.out.println(matching_HopcroftKarp);
+		System.out.println("Hungarian algorithm:    The maximum matching has a sum of: "+matching_Hungarian.sumOfWeights()+",\tnumber matched = "+matching_Hungarian.countCoveredVertices()/2);
+//		System.out.println(matching_Hungarian);
+	}
 	
 }
 }

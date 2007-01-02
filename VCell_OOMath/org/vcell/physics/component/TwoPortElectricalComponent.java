@@ -1,5 +1,7 @@
 package org.vcell.physics.component;
-import org.vcell.expression.ExpressionFactory;
+import cbit.vcell.units.VCUnitDefinition;
+import jscl.plugin.Expression;
+import jscl.plugin.ParseException;
 
 /**
  * Insert the type's description here.
@@ -12,11 +14,11 @@ public class TwoPortElectricalComponent extends ModelComponent {
  */
 public TwoPortElectricalComponent(String argName) {
 	super(argName);
-	Variable Vp = new Variable("Vp");
-	Variable Vn = new Variable("Vn");
-	Variable Ip = new Variable("Ip");
-	Variable In = new Variable("In");
-	Variable V = new Variable("V");
+	Variable Vp = new Variable("Vp(t)",VCUnitDefinition.UNIT_mV);
+	Variable Vn = new Variable("Vn(t)",VCUnitDefinition.UNIT_mV);
+	Variable Ip = new Variable("Ip(t)",VCUnitDefinition.UNIT_pA);
+	Variable In = new Variable("In(t)",VCUnitDefinition.UNIT_pA);
+	Variable V = new Variable("V(t)",VCUnitDefinition.UNIT_mV);
 	addSymbol(Vp);
 	addSymbol(Vn);
 	addSymbol(Ip);
@@ -26,9 +28,9 @@ public TwoPortElectricalComponent(String argName) {
 	Connector conNeg = new Connector(this,"neg",Vn,In);
 	setConnectors(new Connector[] {conPos, conNeg});
 	try {
-		addEquation(ExpressionFactory.createExpression("(Vp-Vn) - V"));
-		addEquation(ExpressionFactory.createExpression("Ip + In"));
-	}catch (org.vcell.expression.ExpressionException e){
+		addEquation(Expression.valueOf("(Vp(t)-Vn(t)) - V(t)"));
+		addEquation(Expression.valueOf("Ip(t) + In(t)"));
+	}catch (ParseException e){
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
 	}

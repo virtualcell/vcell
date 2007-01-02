@@ -1,6 +1,6 @@
 package org.vcell.physics.math;
 
-import org.vcell.physics.component.Symbol;
+import org.vcell.physics.component.PhysicalSymbol;
 
 /**
  * Insert the type's description here.
@@ -66,7 +66,7 @@ public int size() {
  * Creation date: (1/19/2006 11:00:35 AM)
  * @return java.lang.String
  */
-public String toString(Symbol[] symbols) {
+public String toString(PhysicalSymbol[] symbols) {
 	StringBuffer buffer = new StringBuffer();
 	java.util.Iterator iter = hash.iterator();
 	while (iter.hasNext()){

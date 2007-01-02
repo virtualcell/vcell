@@ -209,7 +209,7 @@ public Symbol[] getSymbols(){
 public void show() {
 	Symbol symbols[] = getSymbols();
 	for (int i = 0; i < symbols.length; i++){
-		System.out.println(i+") "+symbols[i].toString());
+		System.out.println(i+") "+symbols[i].getName());
 	}
 }
 /**

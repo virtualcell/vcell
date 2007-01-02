@@ -17,7 +17,8 @@ Require-Bundle: org.vcell.util,
  edu.rpi.graphdrawing,
  com.genlogic.graphlayout,
  com.mhhe.clrs2e,
- edu.maine.graphalgorithms
+ edu.maine.graphalgorithms,
+ jscl
 Export-Package: org.vcell.physics.component,
  org.vcell.physics.component.gui,
  org.vcell.physics.math

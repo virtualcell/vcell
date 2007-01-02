@@ -1,5 +1,6 @@
 package org.vcell.physics.component;
-import org.vcell.expression.IExpression;
+import jscl.plugin.Expression;
+
 /**
  * Insert the type's description here.
  * Creation date: (11/17/2005 3:44:41 PM)
@@ -12,9 +13,11 @@ public class ModelComponent {
 	private java.lang.String name = null;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private org.vcell.physics.component.Connector[] fieldConnectors = new Connector[0];
-	private IExpression[] fieldEquations = new IExpression[0];
-	private org.vcell.physics.component.Symbol[] fieldSymbols = new Symbol[0];
+	private Expression[] fieldEquations = new Expression[0];
+	private org.vcell.physics.component.PhysicalSymbol[] fieldSymbols = new PhysicalSymbol[0];
+	private OOModel ooModel = null;
 
+	
 /**
  * Component constructor comment.
  */
@@ -39,8 +42,8 @@ public void addConnector(Connector connector) {
  * Creation date: (1/16/2006 10:51:09 PM)
  * @param symbol ncbc.physics2.component.Symbol
  */
-public void addEquation(IExpression exp) {
-	setEquations((IExpression[])cbit.util.BeanUtils.addElement(fieldEquations,exp));
+public void addEquation(Expression exp) {
+	setEquations((Expression[])cbit.util.BeanUtils.addElement(fieldEquations,exp));
 }
 
 
@@ -55,10 +58,10 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
 /**
  * Insert the method's description here.
  * Creation date: (1/16/2006 10:51:09 PM)
- * @param symbol ncbc.physics2.component.Symbol
+ * @param physicalSymbol ncbc.physics2.component.Symbol
  */
-public void addSymbol(Symbol symbol) {
-	setSymbols((Symbol[])cbit.util.BeanUtils.addElement(fieldSymbols,symbol));
+public void addSymbol(PhysicalSymbol physicalSymbol) {
+	setSymbols((PhysicalSymbol[])cbit.util.BeanUtils.addElement(fieldSymbols,physicalSymbol));
 }
 
 
@@ -112,7 +115,7 @@ public Connector getConnectors(int index) {
  * @return The equations property value.
  * @see #setEquations
  */
-public IExpression[] getEquations() {
+public Expression[] getEquations() {
 	return fieldEquations;
 }
 
@@ -123,7 +126,7 @@ public IExpression[] getEquations() {
  * @param index The index value into the property array.
  * @see #setEquations
  */
-public IExpression getEquations(int index) {
+public Expression getEquations(int index) {
 	return getEquations()[index];
 }
 
@@ -155,7 +158,7 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
  * @param index The index value into the property array.
  * @see #setSymbols
  */
-public Symbol getSymbol(String name) {
+public PhysicalSymbol getSymbol(String name) {
 	for (int i = 0; i < fieldSymbols.length; i++){
 		if (fieldSymbols[i].getName().equals(name)){
 			return fieldSymbols[i];
@@ -170,7 +173,7 @@ public Symbol getSymbol(String name) {
  * @return The symbols property value.
  * @see #setSymbols
  */
-public org.vcell.physics.component.Symbol[] getSymbols() {
+public org.vcell.physics.component.PhysicalSymbol[] getSymbols() {
 	return fieldSymbols;
 }
 
@@ -181,7 +184,7 @@ public org.vcell.physics.component.Symbol[] getSymbols() {
  * @param index The index value into the property array.
  * @see #setSymbols
  */
-public Symbol getSymbols(int index) {
+public PhysicalSymbol getSymbols(int index) {
 	return getSymbols()[index];
 }
 
@@ -219,8 +222,8 @@ public void setConnectors(org.vcell.physics.component.Connector[] connectors) {
  * @param equations The new value for the property.
  * @see #getEquations
  */
-public void setEquations(IExpression[] equations) {
-	IExpression[] oldValue = fieldEquations;
+public void setEquations(Expression[] equations) {
+	Expression[] oldValue = fieldEquations;
 	fieldEquations = equations;
 	firePropertyChange("equations", oldValue, equations);
 }
@@ -232,8 +235,8 @@ public void setEquations(IExpression[] equations) {
  * @param equations The new value for the property.
  * @see #getEquations
  */
-public void setEquations(int index, IExpression equations) {
-	IExpression oldValue = fieldEquations[index];
+public void setEquations(int index, Expression equations) {
+	Expression oldValue = fieldEquations[index];
 	fieldEquations[index] = equations;
 	if (oldValue != null && !oldValue.equals(equations)) {
 		firePropertyChange("equations", null, fieldEquations);
@@ -253,27 +256,28 @@ public void setName(java.lang.String newName) {
 
 /**
  * Sets the symbols property (ncbc.physics2.component.Symbol[]) value.
- * @param symbols The new value for the property.
+ * @param physicalSymbols The new value for the property.
  * @see #getSymbols
  */
-public void setSymbols(org.vcell.physics.component.Symbol[] symbols) {
-	org.vcell.physics.component.Symbol[] oldValue = fieldSymbols;
-	fieldSymbols = symbols;
-	firePropertyChange("symbols", oldValue, symbols);
+public void setSymbols(org.vcell.physics.component.PhysicalSymbol[] physicalSymbols) {
+	org.vcell.physics.component.PhysicalSymbol[] oldValue = fieldSymbols;
+	fieldSymbols = physicalSymbols;
+	firePropertyChange("symbols", oldValue, physicalSymbols);
 }
 
 
 /**
  * Sets the symbols index property (ncbc.physics2.component.Symbol[]) value.
  * @param index The index value into the property array.
- * @param symbols The new value for the property.
+ * @param physicalSymbols The new value for the property.
  * @see #getSymbols
  */
-public void setSymbols(int index, Symbol symbols) {
-	Symbol oldValue = fieldSymbols[index];
-	fieldSymbols[index] = symbols;
-	if (oldValue != null && !oldValue.equals(symbols)) {
+public void setSymbols(int index, PhysicalSymbol physicalSymbols) {
+	PhysicalSymbol oldValue = fieldSymbols[index];
+	fieldSymbols[index] = physicalSymbols;
+	if (oldValue != null && !oldValue.equals(physicalSymbols)) {
 		firePropertyChange("symbols", null, fieldSymbols);
 	};
 }
+
 }

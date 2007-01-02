@@ -1,6 +1,11 @@
 package org.vcell.physics.component;
-import org.vcell.expression.ExpressionFactory;
-import org.vcell.expression.IExpression;
+import org.vcell.expression.ExpressionUtilities;
+
+import cbit.vcell.units.VCUnitDefinition;
+
+import jscl.plugin.Expression;
+import jscl.plugin.ParseException;
+
 
 /**
  * Insert the type's description here.
@@ -12,63 +17,63 @@ public class MassActionReaction extends ModelComponent {
  * Reaction constructor comment.
  * @param argName java.lang.String
  */
-public MassActionReaction(String argName, String[] species, int[] stoich, boolean bFast) throws org.vcell.expression.ExpressionException {
+public MassActionReaction(String argName, String[] species, int[] stoich, boolean bFast) throws ParseException {
 	super(argName);
 	if (!bFast){
-		Variable rate = new Variable("rate");
+		Variable rate = new Variable("rate(t)",VCUnitDefinition.UNIT_uM_per_s);
 		addSymbol(rate);
-		Variable kon = new Variable("kon");
-		Variable koff = new Variable("koff");
+		Variable kon = new Variable("kon",VCUnitDefinition.UNIT_per_s);
+		Variable koff = new Variable("koff",VCUnitDefinition.UNIT_per_s);
 		addSymbol(kon);
 		addSymbol(koff);
-		IExpression forwardRate = ExpressionFactory.createExpression("kon");
-		IExpression reverseRate = ExpressionFactory.createExpression("-koff");
+		Expression forwardRate = Expression.valueOf("kon");
+		Expression reverseRate = Expression.valueOf("koff");
 
 		Connector[] connectors = new Connector[species.length];
 		for (int i = 0; i < species.length; i++){
-			Variable speciesEffort = new Variable(species[i]);
+			Variable speciesEffort = new Variable(ExpressionUtilities.getEscapedTokenJSCL(species[i]+"(t)"),VCUnitDefinition.UNIT_uM);
 			addSymbol(speciesEffort);
-			Variable speciesRate = new Variable(species[i]+"_rate");
+			Variable speciesRate = new Variable(ExpressionUtilities.getEscapedTokenJSCL(species[i]+"_rate(t)"),VCUnitDefinition.UNIT_uM_per_s);
 			addSymbol(speciesRate);
-			addEquation(ExpressionFactory.createExpression(species[i]+"_rate - "+stoich[i]+"*rate"));
-			connectors[i] = new Connector(this,"conn_"+species[i],speciesEffort,speciesRate);
+			addEquation(Expression.valueOf(ExpressionUtilities.getEscapedTokenJSCL(species[i]+"_rate(t)")).subtract(Expression.valueOf(stoich[i]+"*rate(t)")));
+			connectors[i] = new Connector(this,ExpressionUtilities.getEscapedTokenJSCL("conn_"+species[i]),speciesEffort,speciesRate);
 			if (stoich[i] > 0){
-				reverseRate = ExpressionFactory.mult(reverseRate, ExpressionFactory.createExpression("pow("+species[i]+","+stoich[i]+")"));
+				reverseRate = (Expression)reverseRate.multiply(Expression.valueOf(ExpressionUtilities.getEscapedTokenJSCL(species[i]+"(t)")).pow(stoich[i]));
 			}else if (stoich[i] < 0){
-				forwardRate = ExpressionFactory.mult(forwardRate, ExpressionFactory.createExpression("pow("+species[i]+","+(-stoich[i])+")"));
+				forwardRate = (Expression)forwardRate.multiply(Expression.valueOf(ExpressionUtilities.getEscapedTokenJSCL(species[i]+"(t)")).pow(-stoich[i]));
 			}
 		}
-		addEquation(ExpressionFactory.createExpression("rate - "+forwardRate.infix()+" + "+reverseRate.infix()).flatten());
-		addEquation(ExpressionFactory.createExpression("kon-1"));
-		addEquation(ExpressionFactory.createExpression("koff-1"));
+		addEquation(Expression.valueOf("rate(t)").subtract(forwardRate).add(reverseRate));
+		addEquation(Expression.valueOf("kon-1"));
+		addEquation(Expression.valueOf("koff-1"));
 		setConnectors(connectors);
 	}else{ // fast
-		Variable rate = new Variable("rate");
+		Variable rate = new Variable("rate(t)",VCUnitDefinition.UNIT_uM_per_s);
 		addSymbol(rate);
-		Variable kon = new Variable("kon");
-		Variable koff = new Variable("koff");
+		Variable kon = new Variable("kon",VCUnitDefinition.UNIT_per_s);
+		Variable koff = new Variable("koff",VCUnitDefinition.UNIT_per_s);
 		addSymbol(kon);
 		addSymbol(koff);
-		IExpression forwardRate = ExpressionFactory.createExpression("kon");
-		IExpression reverseRate = ExpressionFactory.createExpression("-koff");
+		Expression forwardRate = Expression.valueOf("kon");
+		Expression reverseRate = Expression.valueOf("koff");
 
 		Connector[] connectors = new Connector[species.length];
 		for (int i = 0; i < species.length; i++){
-			Variable speciesEffort = new Variable(species[i]);
+			Variable speciesEffort = new Variable(ExpressionUtilities.getEscapedTokenJSCL(species[i]+"(t)"),VCUnitDefinition.UNIT_uM);
 			addSymbol(speciesEffort);
-			Variable speciesRate = new Variable(species[i]+"_rate");
+			Variable speciesRate = new Variable(ExpressionUtilities.getEscapedTokenJSCL(species[i]+"_rate(t)"),VCUnitDefinition.UNIT_uM_per_s);
 			addSymbol(speciesRate);
-			addEquation(ExpressionFactory.createExpression(species[i]+"_rate - "+stoich[i]+"*rate"));
-			connectors[i] = new Connector(this,"conn_"+species[i],speciesEffort,speciesRate);
+			addEquation(Expression.valueOf(ExpressionUtilities.getEscapedTokenJSCL(species[i]+"_rate(t)")).subtract(Expression.valueOf(stoich[i]+"*rate(t)")));
+			connectors[i] = new Connector(this,ExpressionUtilities.getEscapedTokenJSCL("conn_"+species[i]),speciesEffort,speciesRate);
 			if (stoich[i] > 0){
-				reverseRate = ExpressionFactory.mult(reverseRate, ExpressionFactory.createExpression("pow("+species[i]+","+stoich[i]+")"));
+				reverseRate = (Expression)reverseRate.multiply(Expression.valueOf(ExpressionUtilities.getEscapedTokenJSCL(species[i]+"(t)")).pow(stoich[i]));
 			}else if (stoich[i] < 0){
-				forwardRate = ExpressionFactory.mult(forwardRate, ExpressionFactory.createExpression("pow("+species[i]+","+(-stoich[i])+")"));
+				forwardRate = (Expression)forwardRate.multiply(Expression.valueOf(ExpressionUtilities.getEscapedTokenJSCL(species[i]+"(t)")).pow(-stoich[i]));
 			}
 		}
-		addEquation(ExpressionFactory.createExpression("rate - "+forwardRate.infix()+" + "+reverseRate.infix()).flatten());
-		addEquation(ExpressionFactory.createExpression("kon-1"));
-		addEquation(ExpressionFactory.createExpression("koff-1"));
+		addEquation(Expression.valueOf("rate(t)").subtract(forwardRate).add(reverseRate));
+		addEquation(Expression.valueOf("kon-1"));
+		addEquation(Expression.valueOf("koff-1"));
 		//addEquation(new Expression("rate-0"));
 		setConnectors(connectors);
 	}

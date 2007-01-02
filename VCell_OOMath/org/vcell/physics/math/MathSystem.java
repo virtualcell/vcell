@@ -2,18 +2,16 @@ package org.vcell.physics.math;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import org.vcell.expression.IExpression;
-import org.vcell.physics.component.IndependentVariable;
-import org.vcell.physics.component.Symbol;
-import org.vcell.physics.component.Variable;
-import org.vcell.physics.component.VariableDerivative;
-import org.vcell.physics.component.VariableReference;
+import jscl.plugin.Expression;
+import jscl.plugin.ParseException;
+import jscl.plugin.Variable;
 
+import org.vcell.physics.component.IndependentVariable;
+import org.vcell.physics.component.Parameter;
 import cbit.util.graph.Edge;
 import cbit.util.graph.Graph;
 import cbit.util.graph.Node;
 
-import com.mhhe.clrs2e.Vertex;
 /**
  * Insert the type's description here.
  * Creation date: (2/24/2002 9:12:36 AM)
@@ -26,10 +24,6 @@ import com.mhhe.clrs2e.Vertex;
 //
 // equation convensions:
 //        all expressions are of the form f() = 0;
-//
-// Symbol Convensions:
-//        XXX.initial is the name of the initial conditions for variable XXX (e.g. XXX at time = 0)
-//        XXX.prime is the name of the full (not partial) time derivative of variable XXX (e.g. d(XXX)/dt)
 //
 // .... find out how computer algebra systems keep track of boundary conditions (e.g. like initial conditions ... ... by equation or by symbol?)
 //
@@ -51,11 +45,8 @@ import com.mhhe.clrs2e.Vertex;
 //
 // 
 public class MathSystem {
-	public final static String INITIAL_SUFFIX = ".initial";
-	public final static String DERIVATIVE_SUFFIX = ".prime"; 
-	
-	private Hashtable symbolHash = new Hashtable();
-	private Vector equationList = new Vector();
+	private Hashtable<String,OOMathSymbol> symbolHash = new Hashtable<String,OOMathSymbol>();
+	private Vector<Expression> equationList = new Vector<Expression>();
 
 
 /**
@@ -65,12 +56,17 @@ public class MathSystem {
 public MathSystem(){
 }
 
+public void removeEquation(Expression exp){
+	if (equationList.contains(exp)){
+		equationList.remove(exp);
+	}
+}
 
 /**
  * Insert the method's description here.
  * Creation date: (2/24/2002 9:18:38 AM)
  */
-public void addEquation(IExpression exp) {
+public void addEquation(Expression exp) {
 	if (exp==null){
 		throw new IllegalArgumentException("expression can't be null");
 	}
@@ -92,52 +88,22 @@ public void addEquation(IExpression exp) {
 		// add in an atomic way???? not right now.
 		//
 		equationList.add(exp);
-		String symbols[] = exp.getSymbols();
-		for (int i = 0; symbols!=null && i < symbols.length; i++){
-			addSymbol(symbols[i]);
+		Variable[] variables = Expression.getVariables(exp);
+		for (int i = 0; variables!=null && i < variables.length; i++){
+			if (symbolHash.get(variables[i].getUndifferentiated().infix())==null){
+				throw new RuntimeException("expression contains undefined symbol "+variables[i].infix());
+			}
 		}
 	}
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (2/24/2002 9:18:38 AM)
- */
-public void addSymbol(String symbolName) {
-	if (symbolName==null){
-		throw new IllegalArgumentException("symbol can't be null");
-	}
-	//if (symbol.getExpression() != null){
-		//String tokens[] = symbol.getExpression().getSymbols();
-		//for (int i = 0; tokens!=null && i < tokens.length; i++){
-			//if (tokens[i].indexOf(".")>=0){
-				//System.out.println("MathSystem warning: "+symbol.toString()+" symbol '"+tokens[i]+"' is scoped");
-			//}
-		//}
-	//}
-	Symbol existingSymbol = (Symbol)symbolHash.get(symbolName);
-	if (existingSymbol!=null){
-		//
-		// if symbol already exists, assume that it's consistent, return;
-		//
-		return;
+
+public void addSymbol(OOMathSymbol symbol){
+	if (symbolHash.get(symbol.getName())!=null){
+		throw new RuntimeException("symbol \""+symbol+"\"already defined");
 	}else{
-		if (symbolName.equals("t") || symbolName.equals("x") || symbolName.equals("y") || symbolName.equals("z")){
-			symbolHash.put(symbolName,new IndependentVariable(symbolName));
-		}else if (symbolName.endsWith(INITIAL_SUFFIX)){
-			String varName = cbit.util.TokenMangler.replaceSubString(symbolName,INITIAL_SUFFIX,"");
-			addSymbol(varName);
-			//Variable var = (Variable)getSymbol(varName);
-			//symbolHash.put(symbolName,new VariableInitial(var,symbolName));
-		}else if (symbolName.endsWith(DERIVATIVE_SUFFIX)){
-			String varName = cbit.util.TokenMangler.replaceSubString(symbolName,DERIVATIVE_SUFFIX,"");
-			addSymbol(varName);
-			Variable var = (Variable)getSymbol(varName);
-			symbolHash.put(symbolName,new VariableDerivative(var,symbolName));
-		}else{
-			symbolHash.put(symbolName,new Variable(symbolName));
-		}
+		symbolHash.put(symbol.getName(),symbol);
 	}
 }
 
@@ -148,7 +114,7 @@ public void addSymbol(String symbolName) {
  * @return cbit.vcell.math.Variable[]
  * @param variables cbit.vcell.math.Variable[]
  */
-public Graph getDependencyGraph() {
+public Graph getDependencyGraph(int baseWeight, boolean bIgnoreParameters) {
 
 	//
 	// make a bipartite graph of symbols pointing to equations
@@ -158,9 +124,10 @@ public Graph getDependencyGraph() {
 	// add the nodes for each "Symbol" (excluding "t" and derivatives, initial values)
 	//
 	Graph graph = new Graph();
-	Symbol symbols[] = getSymbols();
+	OOMathSymbol symbols[] = getSymbols();
 	for (int i = 0; i < symbols.length; i++){
-		if (!(symbols[i] instanceof IndependentVariable) && !(symbols[i] instanceof VariableReference)){
+		if (!(symbols[i].getPhysicalSymbol() instanceof IndependentVariable) && 
+			!(bIgnoreParameters && symbols[i].getPhysicalSymbol() instanceof Parameter)){
 			Node symbolNode = new Node(symbols[i].getName(),symbols[i]);
 			graph.addNode(symbolNode);
 		}
@@ -169,7 +136,7 @@ public Graph getDependencyGraph() {
 	//
 	// add the nodes for each "Equation"
 	//
-	IExpression[] equations = getEquations();
+	Expression[] equations = getEquations();
 	for (int i = 0; i < equations.length; i++){
 		Node equationNode = new Node(equations[i].infix(),equations[i]);
 		graph.addNode(equationNode);
@@ -177,26 +144,28 @@ public Graph getDependencyGraph() {
 		// add edge from each referenced symbol to this equation
 		// add in any missing edges for VariableReferences (e.g. Derivative references)
 		//
-		String[] refSymbols = equations[i].getSymbols();
-		for (int j = 0; refSymbols!=null && j < refSymbols.length; j++){
-			Node symbolNode = graph.getNode(refSymbols[j]);
-			double weight = 100;
+		Variable[] variables = Expression.getVariables(equations[i]);
+		for (int j = 0; variables!=null && j < variables.length; j++){
+			Node symbolNode = graph.getNode(variables[j].getUndifferentiated().infix());
 			if (symbolNode == null){
-				Symbol refSymbol = getSymbol(refSymbols[j]);
-				if (refSymbol instanceof IndependentVariable){
+				OOMathSymbol mathSymbol = symbolHash.get(variables[j].getUndifferentiated().infix());
+				if (mathSymbol.getPhysicalSymbol() instanceof IndependentVariable || (bIgnoreParameters && mathSymbol.getPhysicalSymbol() instanceof Parameter)){
 					continue;
-				}else if (refSymbol instanceof VariableReference){
-					symbolNode = graph.getNode(((VariableReference)refSymbol).getVariable().getName());
-					if (refSymbol instanceof VariableDerivative){
-						weight = 101;
-					}
 				}else{
-					throw new RuntimeException("equation "+equations[i].infix()+" references unknown symbol '"+refSymbols[j]+"'");
+					throw new RuntimeException("equation "+equations[i].infix()+" references unknown symbol '"+mathSymbol.getName()+"'");
 				}
-			}
-			Edge dependency = new Edge(symbolNode,equationNode,new Double(weight));
-			if (!graph.contains(dependency)){
-				graph.addEdge(dependency);
+			}else{
+				int weight = baseWeight;
+				try {
+					weight += equations[i].getHighestTimeDerivative(variables[j].getUndifferentiated().infix());
+				} catch (ParseException e) {
+					e.printStackTrace();
+					throw new RuntimeException(e.getMessage());
+				}
+				Edge dependency = new Edge(symbolNode,equationNode,new Integer(weight));
+				if (!graph.contains(dependency)){
+					graph.addEdge(dependency);
+				}
 			}
 		}
 	}
@@ -208,89 +177,22 @@ public Graph getDependencyGraph() {
 /**
  * Insert the method's description here.
  * Creation date: (11/10/2005 10:34:22 AM)
- * @return cbit.vcell.parser.IExpression[]
+ * @return jscl.plugin.Expression[]
  */
-public IExpression[] getEquations() {
-	return (IExpression[])cbit.util.BeanUtils.getArray(equationList,IExpression.class);
+public Expression[] getEquations() {
+	return equationList.toArray(new Expression[equationList.size()]);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (1/3/2006 11:35:55 AM)
- * @return com.mhhe.clrs2e.FlowNetwork
- */
-public com.mhhe.clrs2e.FlowNetwork getFlowNetwork() {
-	Graph dependencyGraph = getDependencyGraph();
-	//
-	// copy exiting edges and vertices, and add vertex from start or to end
-	//
-	com.mhhe.clrs2e.FlowNetwork flowNetwork = new com.mhhe.clrs2e.FlowNetwork(dependencyGraph.getNumNodes()+2);
-	Vertex startVertex = flowNetwork.addVertex("flowStart");
-	Vertex endVertex = flowNetwork.addVertex("flowEnd");
-	Hashtable hash = new Hashtable();
-	Node[] nodes = dependencyGraph.getNodes();
-	Edge[] edges = dependencyGraph.getEdges();
-	//
-	// add graph nodes and connect to start and end vertices.
-	//
-	for (int i = 0; i < nodes.length; i++){
-		Vertex newVertex = flowNetwork.addVertex(nodes[i].getName());
-		hash.put(nodes[i],newVertex);
-		if (nodes[i].getData() instanceof Symbol){
-			flowNetwork.addEdge(startVertex,newVertex,1,0);
-		}else if (nodes[i].getData() instanceof IExpression){
-			IExpression exp = (IExpression)nodes[i].getData();
-			if (exp.infix().indexOf(VariableReference.DERIVATIVE_SUFFIX)>-1){
-				flowNetwork.addEdge(newVertex,endVertex,1,0);
-			}else{
-				flowNetwork.addEdge(newVertex,endVertex,1,0);
-			}
-		}
-	}
-	//
-	// add existing edges from graph into flowNetwork
-	//
-	for (int i = 0; i < edges.length; i++){
-		Vertex vertex1 = (Vertex)hash.get(edges[i].getNode1());
-		Vertex vertex2 = (Vertex)hash.get(edges[i].getNode2());
-		double capacity = 1.0;
-		//
-		// if equation has derivative of this variable in expression then capacity is increased to 2 (similar to Structural Index reduction techniques).
-		//
-		Symbol symbol = (Symbol)edges[i].getNode1().getData();
-		IExpression exp = (IExpression)edges[i].getNode2().getData();
-		String expSymbols[] = exp.getSymbols();
-		for (int j = 0; j < expSymbols.length; j++){
-			if (expSymbols[j].equals(symbol.getName()+VariableDerivative.DERIVATIVE_SUFFIX)){
-				capacity = 1.0;
-			}
-		}
-		
-		flowNetwork.addEdge(vertex1,vertex2,capacity,0);
-	}
-	
-	return flowNetwork;
-}
 
 
 /**
  * Insert the method's description here.
  * Creation date: (2/24/2002 9:18:38 AM)
  */
-public Symbol getSymbol(String symbolName){
-	return (Symbol)symbolHash.get(symbolName);
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (2/24/2002 9:18:38 AM)
- */
-public Symbol[] getSymbols(){
-	Vector symbolList = new Vector();
+public OOMathSymbol[] getSymbols(){
+	Vector<OOMathSymbol> symbolList = new Vector<OOMathSymbol>();
 	symbolList.addAll(symbolHash.values());
-	Symbol symbols[] = new Symbol[symbolList.size()];
+	OOMathSymbol symbols[] = new OOMathSymbol[symbolList.size()];
 	symbolList.copyInto(symbols);
 	return symbols;
 }
@@ -301,11 +203,11 @@ public Symbol[] getSymbols(){
  * Creation date: (2/24/2002 9:18:38 AM)
  */
 public void show() {
-	Symbol symbols[] = getSymbols();
+	OOMathSymbol symbols[] = getSymbols();
 	for (int i = 0; i < symbols.length; i++){
-		System.out.println(i+") "+symbols[i].toString());
+		System.out.println(i+") "+symbols[i].getName());
 	}
-	IExpression[] expressions = (IExpression[])cbit.util.BeanUtils.getArray(equationList,IExpression.class);
+	Expression[] expressions = (Expression[])cbit.util.BeanUtils.getArray(equationList,Expression.class);
 	for (int i = 0; i < expressions.length; i++){
 		System.out.println(i+") "+expressions[i].infix()+" == 0.0");
 	}

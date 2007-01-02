@@ -1,5 +1,6 @@
 package org.vcell.physics.math;
 
+import org.vcell.expression.ExpressionUtilities;
 import org.vcell.physics.component.gui.OOModelingPanel;
 
 
@@ -28,9 +29,9 @@ public static void main(java.lang.String[] args) {
 		frame.show();
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
-		
+		ExpressionUtilities.setDefaultSymbolicProcessor(new jscl.plugin.JSCLSymbolicProcessorImpl());
 		//PhysicalModel physicalModel = PhysicalModelTest.getExample();
-		org.vcell.physics.component.OOModel physicalModel = org.vcell.physics.component.OOModelTest.getExampleTriangle_h_a();
+		org.vcell.physics.component.OOModel physicalModel = org.vcell.physics.component.OOModelTest.getCircuit_INDEX_REDUCTION(); //PlanarPendulumExample_Simple();
 		MathSystem mathSystem = MappingUtilities.getMathSystem(physicalModel);
 		ModelAnalysisResults modelAnalysisResults = MappingUtilities.analyzeMathSystem(mathSystem);
 		modelAnalysisResults.oOModel = physicalModel;

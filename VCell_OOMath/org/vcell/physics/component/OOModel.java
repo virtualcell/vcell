@@ -1,4 +1,6 @@
 package org.vcell.physics.component;
+
+
 /**
  * Insert the type's description here.
  * Creation date: (11/26/2005 11:03:14 AM)
@@ -8,6 +10,7 @@ public class OOModel {
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private org.vcell.physics.component.ModelComponent[] fieldModelComponents = new ModelComponent[0];
 	private org.vcell.physics.component.Connection[] fieldConnections = new Connection[0];
+	private String name = "unnamed";
 
 /**
  * Model constructor comment.
@@ -256,17 +259,13 @@ public void setModelComponents(org.vcell.physics.component.ModelComponent[] mode
 }
 
 
-/**
- * Sets the modelComponents index property (ncbc.physics2.component.ModelComponent[]) value.
- * @param index The index value into the property array.
- * @param modelComponents The new value for the property.
- * @see #getModelComponents
- */
-public void setModelComponents(int index, ModelComponent modelComponents) {
-	ModelComponent oldValue = fieldModelComponents[index];
-	fieldModelComponents[index] = modelComponents;
-	if (oldValue != null && !oldValue.equals(modelComponents)) {
-		firePropertyChange("modelComponents", null, fieldModelComponents);
-	};
+public String getName() {
+	return name;
 }
+
+
+public void setName(String name) {
+	this.name = name;
+}
+
 }

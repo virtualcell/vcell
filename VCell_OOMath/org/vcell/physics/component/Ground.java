@@ -1,5 +1,7 @@
 package org.vcell.physics.component;
-import org.vcell.expression.ExpressionFactory;
+import jscl.plugin.Expression;
+import jscl.plugin.ParseException;
+
 
 /**
  * Insert the type's description here.
@@ -14,8 +16,8 @@ public class Ground extends OnePortElectricalDevice {
 public Ground(String argName) {
 	super(argName);
 	try {
-		addEquation(ExpressionFactory.createExpression("V-0"));
-	}catch (org.vcell.expression.ExpressionException e){
+		addEquation(Expression.valueOf("V(t)-0"));
+	}catch (ParseException e){
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
 	}

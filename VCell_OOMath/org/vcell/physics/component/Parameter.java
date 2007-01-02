@@ -1,15 +1,18 @@
 package org.vcell.physics.component;
+
+import cbit.vcell.units.VCUnitDefinition;
+
 /**
  * Insert the type's description here.
  * Creation date: (1/16/2006 10:48:40 PM)
  * @author: Jim Schaff
  */
-public class Parameter extends Symbol {
+public class Parameter extends PhysicalSymbol {
 /**
  * Parameter constructor comment.
  * @param argName java.lang.String
  */
-public Parameter(String argName) {
-	super(argName);
+public Parameter(String argName, VCUnitDefinition vcUnit) {
+	super(argName,vcUnit);
 }
 }

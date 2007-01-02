@@ -269,7 +269,7 @@ private void displaySCC() {
 				VarEquationAssignment varEqnAssignment = (VarEquationAssignment)sortedPartitionNodes[j].getData();
 				if (varEqnAssignment.getSolution()!=null){
 					if (varEqnAssignment.isStateVariable()){
-						buffer.append(scc.getName()+":\t"+varEqnAssignment.getSymbol().getName()+org.vcell.physics.component.Symbol.DERIVATIVE_SUFFIX+" = "+varEqnAssignment.getSolution().infix()+"\n");
+						buffer.append(scc.getName()+":\td("+varEqnAssignment.getSymbol().getName()+",t) = "+varEqnAssignment.getSolution().infix()+"\n");
 					}else{
 						buffer.append(scc.getName()+":\t"+varEqnAssignment.getSymbol().getName()+" = "+varEqnAssignment.getSolution().infix()+"\n");
 					}

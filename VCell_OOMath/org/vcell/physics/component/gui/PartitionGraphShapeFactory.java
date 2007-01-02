@@ -10,7 +10,7 @@ import cbit.util.graph.Node;
 
 public class PartitionGraphShapeFactory implements GraphShapeFactory {
 	public GraphEdgeShape getEdgeShape(Edge edge, NodeShape beginShape,	NodeShape endShape, GraphModel graphModel, Graph graph) {
-		return new GraphEdgeShape(edge,beginShape,endShape,graphModel,true);
+		return new GraphEdgeShape(edge,beginShape,endShape,graphModel,true,false);
 	}
 
 	public NodeShape getNodeShape(Node node, GraphModel graphModel, Graph graph) {

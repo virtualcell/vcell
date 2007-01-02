@@ -1,5 +1,7 @@
 package org.vcell.physics.component;
 
+import cbit.vcell.units.VCUnitDefinition;
+
 /**
  * Insert the type's description here.
  * Creation date: (1/18/2006 12:56:55 PM)
@@ -12,8 +14,8 @@ public class OnePortElectricalDevice extends ModelComponent {
  */
 public OnePortElectricalDevice(String argName) {
 	super(argName);
-	Variable V = new Variable("V");
-	Variable I = new Variable("I");
+	Variable V = new Variable("V(t)",VCUnitDefinition.UNIT_mV);
+	Variable I = new Variable("I(t)",VCUnitDefinition.UNIT_pA);
 	addSymbol(V);
 	addSymbol(I);
 	Connector con = new Connector(this,"con",V,I);

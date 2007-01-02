@@ -1,7 +1,7 @@
 package org.vcell.physics.math;
 
-import org.vcell.expression.IExpression;
-import org.vcell.physics.component.Symbol;
+import jscl.plugin.Expression;
+
 
 
 /**
@@ -10,17 +10,17 @@ import org.vcell.physics.component.Symbol;
  * @author: Jim Schaff
  */
 public class VarEquationAssignment {
-	private Symbol symbol = null;
+	private OOMathSymbol mathSymbol = null;
 	private boolean stateVariable = false;
-	private IExpression equation = null;
-	private IExpression solution = null;
+	private Expression equation = null;
+	private Expression solution = null;
 
 /**
  * VarEquationAssignment constructor comment.
  */
-public VarEquationAssignment(Symbol argSymbol, IExpression argEquation) {
+public VarEquationAssignment(OOMathSymbol argSymbol, Expression argEquation) {
 	super();
-	this.symbol = argSymbol;
+	this.mathSymbol = argSymbol;
 	this.equation = argEquation;
 }
 
@@ -37,7 +37,7 @@ public boolean equals(Object o) {
 		if (!vea.equation.equals(equation)){
 			return false;
 		}
-		if (!vea.symbol.equals(symbol)){
+		if (!vea.mathSymbol.equals(mathSymbol)){
 			return false;
 		}
 		return true;
@@ -51,7 +51,7 @@ public boolean equals(Object o) {
  * Creation date: (1/30/2006 11:35:03 AM)
  * @return cbit.vcell.parser.Expression
  */
-public IExpression getEquation() {
+public Expression getEquation() {
 	return equation;
 }
 
@@ -61,7 +61,7 @@ public IExpression getEquation() {
  * Creation date: (1/19/2006 2:40:07 PM)
  * @return cbit.vcell.parser.Expression
  */
-public IExpression getSolution() {
+public Expression getSolution() {
 	return solution;
 }
 
@@ -71,8 +71,8 @@ public IExpression getSolution() {
  * Creation date: (1/17/2006 5:42:09 PM)
  * @return ncbc.physics2.component.Symbol
  */
-public Symbol getSymbol() {
-	return symbol;
+public OOMathSymbol getSymbol() {
+	return mathSymbol;
 }
 
 
@@ -82,7 +82,7 @@ public Symbol getSymbol() {
  * @return int
  */
 public int hashCode() {
-	return symbol.hashCode()+equation.hashCode();
+	return mathSymbol.hashCode()+equation.hashCode();
 }
 
 
@@ -101,7 +101,7 @@ public boolean isStateVariable() {
  * Creation date: (1/30/2006 11:35:03 AM)
  * @param newEquation cbit.vcell.parser.Expression
  */
-public void setEquation(IExpression newEquation) {
+public void setEquation(Expression newEquation) {
 	equation = newEquation;
 }
 
@@ -111,7 +111,7 @@ public void setEquation(IExpression newEquation) {
  * Creation date: (1/19/2006 2:40:07 PM)
  * @param newSolution cbit.vcell.parser.Expression
  */
-public void setSolution(IExpression newSolution) {
+public void setSolution(Expression newSolution) {
 	solution = newSolution;
 }
 
@@ -134,12 +134,12 @@ public void setStateVariable(boolean newStateVariable) {
 public String toString() {
 	if (solution!=null){
 		if (stateVariable){
-			return symbol.getName()+Symbol.DERIVATIVE_SUFFIX+" = "+solution.infix();
+			return "d("+mathSymbol.getName()+",t) = "+solution.toString();
 		}else{
-			return symbol.getName()+" = "+solution.infix();
+			return mathSymbol.getName()+" = "+solution.toString();
 		}
 	}else{
-		return symbol.getName()+"|"+equation.infix();
+		return mathSymbol.getName()+"|"+equation.toString();
 	}
 }
 }
