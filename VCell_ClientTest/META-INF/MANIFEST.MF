@@ -27,4 +27,5 @@ Require-Bundle: org.vcell.util,
  org.vcell.mathmodel,
  org.vcell.geometry,
  com.sonicsw.sonicmq,
- org.eclipse.osgi
+ org.eclipse.osgi,
+ org.vcell.image
