@@ -19,4 +19,5 @@ Require-Bundle: org.vcell.expression,
  org.vcell.simulation,
  org.vcell.graph,
  org.vcell.cartoon,
- org.eclipse.osgi
+ org.eclipse.osgi,
+ flanagan.math

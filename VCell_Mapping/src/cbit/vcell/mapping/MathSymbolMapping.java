@@ -1,13 +1,18 @@
 package cbit.vcell.mapping;
+
+import org.vcell.expression.SymbolTableEntry;
+
+import cbit.vcell.math.Variable;
+
 /**
  * Insert the type's description here.
  * Creation date: (5/3/2006 3:47:33 PM)
  * @author: Jim Schaff
  */
 public class MathSymbolMapping {
-	private java.util.HashMap biologicalToMathSymbolNameHash = new java.util.HashMap();
-	private java.util.HashMap biologicalToMathHash = new java.util.HashMap();
-	private java.util.HashMap mathToBiologicalHash = new java.util.HashMap();
+	private java.util.HashMap<SymbolTableEntry,String> biologicalToMathSymbolNameHash = new java.util.HashMap<SymbolTableEntry,String>();
+	private java.util.HashMap<SymbolTableEntry,Variable> biologicalToMathHash = new java.util.HashMap<SymbolTableEntry,Variable>();
+	private java.util.HashMap<Variable,SymbolTableEntry[]> mathToBiologicalHash = new java.util.HashMap<Variable,SymbolTableEntry[]>();
 
 /**
  * MathSymbolMapping constructor comment.
@@ -19,12 +24,30 @@ MathSymbolMapping() {
 
 /**
  * Insert the method's description here.
+ * Creation date: (5/17/2006 12:38:53 PM)
+ * @return java.lang.Object
+ */
+public cbit.vcell.math.Variable findVariableByName(String variableName) {
+	
+	java.util.Iterator iter = mathToBiologicalHash.keySet().iterator();
+	while (iter.hasNext()){
+		cbit.vcell.math.Variable variable = (cbit.vcell.math.Variable)iter.next();
+		if(variable.getName().equals(variableName)){
+			return variable;
+		}
+	}
+	return null;
+}
+
+
+/**
+ * Insert the method's description here.
  * Creation date: (5/3/2006 3:49:12 PM)
  * @return cbit.vcell.parser.SymbolTableEntry
  * @param var cbit.vcell.math.Variable
  */
-public org.vcell.expression.SymbolTableEntry getBiologicalSymbol(cbit.vcell.math.Variable var) {
-	return (org.vcell.expression.SymbolTableEntry)mathToBiologicalHash.get(var);
+public SymbolTableEntry[] getBiologicalSymbol(cbit.vcell.math.Variable var) {
+	return (SymbolTableEntry[])mathToBiologicalHash.get(var);
 
 }
 
@@ -35,7 +58,7 @@ public org.vcell.expression.SymbolTableEntry getBiologicalSymbol(cbit.vcell.math
  * @return cbit.vcell.math.Variable
  * @param biologicalSymbol cbit.vcell.parser.SymbolTableEntry
  */
-public cbit.vcell.math.Variable getVariable(org.vcell.expression.SymbolTableEntry biologicalSymbol) {
+public cbit.vcell.math.Variable getVariable(SymbolTableEntry biologicalSymbol) {
 	return (cbit.vcell.math.Variable)biologicalToMathHash.get(biologicalSymbol);
 }
 
@@ -46,7 +69,7 @@ public cbit.vcell.math.Variable getVariable(org.vcell.expression.SymbolTableEntr
  * @param ste cbit.vcell.parser.SymbolTableEntry
  * @param var cbit.vcell.math.Variable
  */
-void put(org.vcell.expression.SymbolTableEntry biologicalSymbol, String varName) {
+void put(SymbolTableEntry biologicalSymbol, String varName) {
 	if(varName.endsWith("_OUTSIDE") || varName.endsWith("_INSIDE")){
 		return;
 	}
@@ -76,14 +99,18 @@ void reconcileVarNames(cbit.vcell.math.MathDescription mathDesc) {
 	java.util.Set keyset = biologicalToMathSymbolNameHash.keySet();
 	java.util.Iterator keysetIter = keyset.iterator();
 	while (keysetIter.hasNext()){
-		org.vcell.expression.SymbolTableEntry biologicalSymbol = (org.vcell.expression.SymbolTableEntry)keysetIter.next();
+		SymbolTableEntry biologicalSymbol = (SymbolTableEntry)keysetIter.next();
 		String mathVarName = (String)biologicalToMathSymbolNameHash.get(biologicalSymbol);
 		cbit.vcell.math.Variable var = mathDesc.getVariable(mathVarName);
-		biologicalToMathHash.put(biologicalSymbol,var);
-		//System.out.println(var+" ---> "+biologicalSymbol);
-		org.vcell.expression.SymbolTableEntry previousBiologicalSymbol = (org.vcell.expression.SymbolTableEntry)mathToBiologicalHash.put(var,biologicalSymbol);
-		if (previousBiologicalSymbol!=null && !biologicalSymbol.equals(previousBiologicalSymbol)){
-			throw new RuntimeException("mapping not unique, math symbol '"+var.getName()+" mapped to two biological symbols, '"+biologicalSymbol.getName()+"' and '"+previousBiologicalSymbol.getName()+"'");
+		if(var != null){
+			biologicalToMathHash.put(biologicalSymbol,var);
+			SymbolTableEntry[] previousBiologicalSymbolArr =
+				(SymbolTableEntry[])mathToBiologicalHash.put(var,new SymbolTableEntry[] {biologicalSymbol});
+			if(previousBiologicalSymbolArr != null){
+				SymbolTableEntry[] steArr =
+					(SymbolTableEntry[])cbit.util.BeanUtils.addElement(previousBiologicalSymbolArr,biologicalSymbol);
+				mathToBiologicalHash.put(var,steArr);
+			}
 		}
 	}
 }

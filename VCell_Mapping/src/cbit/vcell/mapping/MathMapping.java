@@ -4,7 +4,6 @@ import cbit.vcell.units.VCUnitException;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.ISize;
 import cbit.vcell.math.*;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.*;
@@ -31,7 +30,6 @@ import org.vcell.expression.VCUnitEvaluator;
 
 
 import cbit.vcell.units.VCUnitDefinition;
-import edu.uchc.vcell.expression.internal.*;
 /**
  * The MathMapping class performs the Biological to Mathematical transformation once upon calling getMathDescription().
  * This is not a "live" transformation, so that an updated SimulationContext must be given to a new MathMapping object
@@ -39,9 +37,9 @@ import edu.uchc.vcell.expression.internal.*;
  */
 public class MathMapping implements ScopedSymbolTable, MathFactory {
 	private SimulationContext simContext = null;
-	private MathDescription mathDesc = null;
+	protected MathDescription mathDesc = null;
 	private PotentialMapping potentialMapping = null;  // null if don't need it
-	private Vector issueList = new Vector();
+	protected Vector issueList = new Vector();
 	private MathSymbolMapping mathSymbolMapping = new MathSymbolMapping();
 
 	private MathMapping.MathMappingParameter[] fieldMathMappingParameters = new MathMappingParameter[0];
@@ -392,7 +390,7 @@ public MathMapping.KFluxParameter getFluxCorrectionParameter(MembraneMapping mem
  * @param origExp cbit.vcell.parser.Expression
  * @param structureMapping cbit.vcell.mapping.StructureMapping
  */
-private IExpression getIdentifierSubstitutions(IExpression origExp, VCUnitDefinition desiredExpUnitDef, StructureMapping structureMapping) throws ExpressionException, MappingException {
+protected IExpression getIdentifierSubstitutions(IExpression origExp, VCUnitDefinition desiredExpUnitDef, StructureMapping structureMapping) throws ExpressionException, MappingException {
 	String symbols[] = origExp.getSymbols(null);
 	if (symbols == null){
 		return origExp;
@@ -799,7 +797,7 @@ public MathSymbolMapping getMathSymbolMapping()  throws MappingException, MathEx
  * @return cbit.vcell.mapping.MembraneStructureAnalyzer
  * @param membrane cbit.vcell.model.Membrane
  */
-private MembraneStructureAnalyzer getMembraneStructureAnalyzer(Membrane membrane) {
+protected MembraneStructureAnalyzer getMembraneStructureAnalyzer(Membrane membrane) {
 	Enumeration enum1 = getStructureAnalyzers();
 	while (enum1.hasMoreElements()){
 		StructureAnalyzer sa = (StructureAnalyzer)enum1.nextElement();
@@ -908,7 +906,7 @@ public SpeciesContextMapping getSpeciesContextMapping(SpeciesContext speciesCont
  * This method was created in VisualAge.
  * @return java.util.Enumeration
  */
-private Enumeration getSpeciesContextMappings() {
+protected Enumeration getSpeciesContextMappings() {
 	return speciesContextMappingList.elements();
 }
 
@@ -938,7 +936,7 @@ protected java.beans.VetoableChangeSupport getVetoPropertyChange() {
  * @return cbit.vcell.mapping.StructureAnalyzer
  * @param subVolume cbit.vcell.geometry.SubVolume
  */
-private VolumeStructureAnalyzer getVolumeStructureAnalyzer(SubVolume subVolume) {
+protected VolumeStructureAnalyzer getVolumeStructureAnalyzer(SubVolume subVolume) {
 	Enumeration enum1 = getStructureAnalyzers();
 	while (enum1.hasMoreElements()){
 		StructureAnalyzer sa = (StructureAnalyzer)enum1.nextElement();
@@ -1032,7 +1030,7 @@ private boolean isDiffusionRequired(SpeciesContext speciesContext) {
  * @param name java.lang.String
  * @param exp cbit.vcell.parser.Expression
  */
-private Variable newFunctionOrConstant(String name, IExpression exp) {
+protected Variable newFunctionOrConstant(String name, IExpression exp) {
 	if (exp.isNumeric()){
 		return new Constant(name,exp);
 	}else{
@@ -2079,7 +2077,7 @@ private void refreshSpeciesContextMappings() throws ExpressionException, Mapping
 				continue;
 			}
 			ReactionStep rs = reactionSpec.getReactionStep();
-			if (rs instanceof SimpleReaction && rs.getReactionParticipant(scs.getSpeciesContext())!=null){
+			if (rs instanceof SimpleReaction && rs.getReactionParticipants(scs.getSpeciesContext()).length > 0){
 				if (reactionSpec.isFast()){
 					scm.setFastParticipant(true);
 				}
