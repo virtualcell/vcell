@@ -13,6 +13,7 @@ import cbit.util.DataAccessException;
 import cbit.util.ObjectNotFoundException;
 import cbit.util.ReferenceQueryResult;
 import cbit.util.ReferenceQuerySpec;
+import cbit.util.document.FieldDataIdentifierSpec;
 import cbit.util.document.KeyValue;
 import cbit.util.document.MathModelInfo;
 import cbit.util.document.User;
@@ -347,6 +348,27 @@ public DBSpecies getBoundSpecies(User user, DBFormalSpecies dbfs) throws DataAcc
 	}
 }
 
+
+/**
+ * Insert the method's description here.
+ * Creation date: (9/18/2006 1:58:56 PM)
+ * @return cbit.vcell.simdata.FieldDataInfo
+ * @param fieldDataID cbit.vcell.simdata.FieldDataIdentifier
+ * @exception cbit.vcell.server.DataAccessException The exception description.
+ */
+public cbit.vcell.simdata.FieldDataIdentifier[] getFieldDataIdentifiers(User user, FieldDataIdentifierSpec[] FieldDataIDSpecs) throws DataAccessException {
+	try {
+		log.print("DatabaseServerImpl.getFieldDataIdentifiers()");
+		cbit.vcell.simdata.FieldDataIdentifier[] fieldDataIDs = dbTop.getFieldDataIdentifiers(user,FieldDataIDSpecs, true);
+		return fieldDataIDs;
+	} catch (SQLException e) {
+		log.exception(e);
+		throw new DataAccessException(e.getMessage());
+	} catch (Throwable e) {
+		log.exception(e);
+		throw new DataAccessException(e.getMessage());
+	}
+}
 
 /**
  * Insert the method's description here.

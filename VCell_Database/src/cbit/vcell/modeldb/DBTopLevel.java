@@ -22,6 +22,7 @@ import cbit.vcell.model.Model;
 import cbit.vcell.modelapp.SimulationContext;
 import cbit.util.DependencyException;
 import cbit.util.document.CurateSpec;
+import cbit.util.document.FieldDataIdentifierSpec;
 import cbit.util.document.KeyValue;
 import cbit.util.document.User;
 import cbit.util.document.Versionable;
@@ -388,6 +389,32 @@ private DbDriver getDbDriver(VersionableType vType) {
 	}
 }
 
+
+/**
+ * Insert the method's description here.
+ * Creation date: (9/25/2003 7:57:54 AM)
+ * @return cbit.vcell.modeldb.VCInfoContainer
+ * @param user cbit.vcell.server.User
+ */
+cbit.vcell.simdata.FieldDataIdentifier[] getFieldDataIdentifiers(User user, FieldDataIdentifierSpec[] fieldDataIDSpecs, boolean bEnableRetry) throws SQLException, DataAccessException {
+	
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		return DbDriver.getFieldDataIdentifiers(con, user,fieldDataIDSpecs);
+	} catch (Throwable e) {
+		log.exception(e);
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			return getFieldDataIdentifiers(user,fieldDataIDSpecs, false);
+		}else{
+			handle_DataAccessException_SQLException(e);
+			return null; // never gets here;
+		}
+	}finally{
+		conFactory.release(con,lock);
+	}
+}
 
 /**
  * This method was created in VisualAge.

@@ -231,7 +231,7 @@ SolverResultSetInfo[] getResultSetInfos(User user, KeyValue simKey, boolean bEna
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-SolverResultSetInfo[] getResultSetInfos(User user, boolean bAll, boolean bEnableRetry) throws SQLException, DataAccessException {
+public SolverResultSetInfo[] getResultSetInfos(User user, boolean bAll, boolean bEnableRetry) throws SQLException, DataAccessException {
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {

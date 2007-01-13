@@ -128,7 +128,7 @@ public SimulationContext getSimContext(	Connection con,User user,ResultSet rset,
 		mathDesc  = (MathDescription)mathDB.getVersionable(con,user, VersionableType.MathDescription,mathKey);
 	}
 	
-	SimulationContext simContext = new SimulationContext(model,geom,mathDesc,version);
+	SimulationContext simContext = new SimulationContext(model,geom,mathDesc,version, mathDesc.isStoch());
 	if (characteristicSize!=null){
 		simContext.setCharacteristicSize(characteristicSize);
 	}

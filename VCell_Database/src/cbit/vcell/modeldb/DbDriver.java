@@ -27,6 +27,7 @@ import cbit.util.PermissionException;
 import cbit.util.SessionLog;
 import cbit.util.DependencyException;
 import cbit.util.document.CurateSpec;
+import cbit.util.document.FieldDataIdentifierSpec;
 import cbit.util.document.GroupAccess;
 import cbit.util.document.GroupAccessAll;
 import cbit.util.document.GroupAccessNone;
@@ -743,6 +744,87 @@ private static User getUserFromUserid(Connection con, String userid) throws SQLE
 	return user;
 }
 
+
+/**
+ * Insert the method's description here.
+ * Creation date: (9/18/2006 1:20:15 PM)
+ * @return cbit.vcell.simdata.FieldDataInfo[]
+ * @param conn java.sql.Connection
+ * @param user cbit.vcell.server.User
+ * @param fieldNames java.lang.String[]
+ */
+public static cbit.vcell.simdata.FieldDataIdentifier[] getFieldDataIdentifiers(Connection con, User user, FieldDataIdentifierSpec[] fieldDataIDSpecs) throws SQLException, DataAccessException {
+	Statement stmt;
+	String sql;
+	ResultSet rset;
+	sql = 	"SELECT *" + " FROM " + FieldDataTable.table.getTableName() + 
+			" WHERE " + FieldDataTable.table.ownerRef + "=" + user.getID();
+
+	if (fieldDataIDSpecs != null && fieldDataIDSpecs.length > 0) {
+		sql += " AND " + FieldDataTable.table.fieldDataName + " IN (";
+		for (int i = 0; i < fieldDataIDSpecs.length; i ++) {
+			if (i != 0) {
+				sql += ",";
+			}
+			sql += "'" + fieldDataIDSpecs[i].getFieldName() + "'";
+		}
+		sql += ")";
+	}
+			
+	stmt = con.createStatement();
+	Vector v = new Vector();
+	v.setSize(fieldDataIDSpecs.length);
+	try {
+		rset = stmt.executeQuery(sql);
+		if (rset.next()) {
+			KeyValue key = new KeyValue(rset.getBigDecimal(FieldDataTable.table.id.getUnqualifiedColName()));
+			String fieldname = rset.getString(FieldDataTable.table.fieldDataName.getUnqualifiedColName());
+			String datapath = rset.getString(FieldDataTable.table.dataFileName.getUnqualifiedColName());
+			String varlist = rset.getString(FieldDataTable.table.variableNames.getUnqualifiedColName());
+			
+			// origin
+			String originstr = rset.getString(FieldDataTable.table.origin.getUnqualifiedColName());			
+			java.util.StringTokenizer st = new java.util.StringTokenizer(originstr, ",");
+			cbit.util.Origin origin = new cbit.util.Origin(Double.parseDouble(st.nextToken()), Double.parseDouble(st.nextToken()), Double.parseDouble(st.nextToken()));
+			// extent
+			String extentstr = rset.getString(FieldDataTable.table.extent.getUnqualifiedColName());
+			st = new java.util.StringTokenizer(extentstr, ",");
+			cbit.util.Extent extent = new cbit.util.Extent(Double.parseDouble(st.nextToken()), Double.parseDouble(st.nextToken()), Double.parseDouble(st.nextToken()));
+			// size
+			String sizestr = rset.getString(FieldDataTable.table.meshsize.getUnqualifiedColName());
+			st = new java.util.StringTokenizer(sizestr, ",");
+			cbit.util.ISize size = new cbit.util.ISize(Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()));
+			
+			st = new java.util.StringTokenizer(varlist, ",");
+			while (st.hasMoreTokens()) {
+				String varname = st.nextToken();
+				for (int j = 0; j < fieldDataIDSpecs.length; j ++) {
+					if (fieldname.equals(fieldDataIDSpecs[j].getFieldName()) && varname.equals(fieldDataIDSpecs[j].getVariableName())) {
+						cbit.vcell.simdata.FieldDataIdentifier dataId = new cbit.vcell.simdata.FieldDataIdentifier(key, fieldname, varname, datapath, origin, extent, size);
+						v.setElementAt(dataId, j);
+					}
+				}
+			}
+		}
+	} finally {
+		stmt.close();
+	}
+
+	if (fieldDataIDSpecs != null && fieldDataIDSpecs.length > 0 && v.size() != fieldDataIDSpecs.length) {
+		throw new DataAccessException("Not all field names found in database");
+	}
+
+	for (int i = 0; i < v.size(); i ++) {
+		if (v.get(i) == null) {
+			throw new DataAccessException("Field data not found in database " + fieldDataIDSpecs[i]);
+		}
+	}
+	
+	cbit.vcell.simdata.FieldDataIdentifier[] dataIds = new cbit.vcell.simdata.FieldDataIdentifier[v.size()];
+	v.copyInto(dataIds);
+	
+	return dataIds;
+}
 
 /**
  * Insert the method's description here.
