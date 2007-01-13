@@ -12,7 +12,6 @@ import org.vcell.expression.ExpressionException;
 import org.vcell.expression.IExpression;
 
 import cbit.util.*;
-import edu.uchc.vcell.expression.internal.*;
 /**
  * This type was created in VisualAge.
  */

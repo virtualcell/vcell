@@ -21,8 +21,10 @@ public class VCML {
 	public final static String MembraneVariable 		= "MembraneVariable";
 	public final static String FilamentVariable 		= "FilamentVariable";
 	public final static String VolumeRegionVariable 	= "VolumeRegionVariable";
+	public final static String StochVolVariable 		= "StochasticVolumeVariable"; //stoch
 	public final static String MembraneRegionVariable	= "MembraneRegionVariable";
 	public final static String FilamentRegionVariable	= "FilamentRegionVariable";
+	public final static String VarIniCondition 			= "VariableInitialCondition"; //stoch
 	public final static String MembraneElements 		= "MembraneElements";
 	public final static String ContourElements 			= "ContourElements";
 	public final static String Task				 		= "Task";
@@ -93,6 +95,10 @@ public class VCML {
 	public final static String DefaultTimeStep			= "DefaultTimeStep";
 	public final static String MinimumTimeStep			= "MinimumTimeStep";
 	public final static String MaximumTimeStep			= "MaximumTimeStep";
+
+	public final static String Action 					= "Effect"; //stoch
+	public final static String JumpProcess 				= "JumpProcess"; //stoch
+	public final static String ProbabilityRate 			= "ProbabilityRate"; //stoch
 
 	public final static String OutputOptions			= "OutputOptions";
 	public final static String KeepEvery				= "KeepEvery";

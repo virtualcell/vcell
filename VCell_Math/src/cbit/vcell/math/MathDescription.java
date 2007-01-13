@@ -20,6 +20,7 @@ import java.io.*;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.SubVolume;
 import cbit.util.*;
+import cbit.util.document.FieldDataIdentifierSpec;
 import cbit.util.document.KeyValue;
 import cbit.util.document.Version;
 /**
@@ -958,6 +959,14 @@ public static MathDescription fromEditor(MathDescription oldMathDesc, String vcm
 				mathDesc.addVariable0(constant);
 				continue;
 			}
+//			stochastic variable
+			if (token.equalsIgnoreCase(VCML.StochVolVariable))
+			{
+				token = tokens.nextToken();
+				StochVolVariable var = new StochVolVariable(token);
+				mathDesc.addVariable0(var);
+				continue;
+			}			
 			if (token.equalsIgnoreCase(VCML.Function)){
 				token = tokens.nextToken();
 				IExpression exp = ExpressionFactory.createExpression(tokens);
@@ -1145,6 +1154,52 @@ public SymbolTableEntry getEntry(String id) throws ExpressionBindingException {
 	return null;
 }
 
+/**
+ * Insert the method's description here.
+ * Creation date: (6/28/01 1:30:46 PM)
+ * @return cbit.vcell.solver.Simulation
+ * @param simulationInfo cbit.vcell.solver.SimulationInfo
+ */
+public FieldDataIdentifierSpec[] getFieldDataIdentifierSpecs() {
+	// make sure each field only added once
+	Vector<FieldDataIdentifierSpec> v = new java.util.Vector<FieldDataIdentifierSpec>();
+	Enumeration enum1 = getSubDomains();
+
+	// go through each subdomain
+	while (enum1.hasMoreElements()){
+		SubDomain subDomain = (SubDomain)enum1.nextElement();
+		Enumeration enum_equ = subDomain.getEquations();
+
+		// go through each equation
+		while (enum_equ.hasMoreElements()){
+			Equation equation = (Equation)enum_equ.nextElement();
+			Vector exs = equation.getExpressions(this);
+
+			// go through each expresson
+			for (int i = 0; i < exs.size(); i ++) {
+				IExpression exp = (IExpression)exs.get(i);
+				FieldDataIdentifierSpec[] fieldIDSpecs = exp.getFieldDataIdentifierSpecs();
+
+				// go through each field
+				for (int j = 0; j < fieldIDSpecs.length; j ++) {
+					if (!v.contains(fieldIDSpecs[j])) {
+						v.add(fieldIDSpecs[j]);
+					}
+				}
+			}
+		}
+		//
+		// add FastSystem coder
+		//
+		//FastSystem fastSystem = subDomain.getFastSystem();		
+	}
+	
+	FieldDataIdentifierSpec[] fdiss = new FieldDataIdentifierSpec[v.size()];
+	v.copyInto(fdiss);
+	return fdiss;
+}
+
+
 
 /**
  * Insert the method's description here.
@@ -1257,7 +1312,6 @@ public Enumeration getFunctions() {
 public Geometry getGeometry() {
 	return geometry;
 }
-
 
 /**
  * This method was created in VisualAge.
@@ -1590,6 +1644,20 @@ public String getVCML_database() throws MathException {
 			bSpaceNeeded = true;
 		}
 	}		
+	if (bSpaceNeeded){
+		buffer.append("\n");
+		bSpaceNeeded = false;
+	}
+	//Stochastic variables
+	enum1 = getVariables();
+	while (enum1.hasMoreElements()){
+		Variable var = (Variable)enum1.nextElement();
+		if (var instanceof StochVolVariable)
+		{
+			buffer.append(var.getVCML());
+			bSpaceNeeded = true;
+		}
+	}
 	if (bSpaceNeeded){
 		buffer.append("\n");
 		bSpaceNeeded = false;
@@ -1940,6 +2008,24 @@ public boolean isPDE(VolVariable volVariable) throws Exception {
 	return false;		
 }
 
+/**
+ * This Method is used to check whether the math model is stochastic or not.
+ * It evaluates all the variables to see if all of them are either StochVolVariables or Constants
+ * Creation date: (9/22/2006 3:12:14 PM)
+ * @return boolean
+ */
+public boolean isStoch() {
+	Enumeration enum1 = getVariables();
+	while (enum1.hasMoreElements())
+	{
+		Variable var = (Variable)enum1.nextElement();
+		if (! ((var instanceof StochVolVariable) || (var instanceof Constant))){
+			return false;
+		} 
+	}			
+	return true;
+}
+
 
 /**
  * This method was created in VisualAge.
@@ -1973,6 +2059,7 @@ public boolean isValid() {
 	int volRegionVarCount = 0;
 	int memRegionVarCount = 0;
 	int filRegionVarCount = 0;
+	int stochVarCount = 0;
 	for (int i=0;i<variableList.size();i++){
 		Variable var = (Variable)variableList.elementAt(i);
 		if (var instanceof VolVariable){
@@ -1987,6 +2074,8 @@ public boolean isValid() {
 			memRegionVarCount++;
 		}else if (var instanceof FilamentRegionVariable){
 			filRegionVarCount++;
+		}else if (var instanceof StochVolVariable){
+			stochVarCount++;
 		}
 	}
 	//
@@ -2034,53 +2123,63 @@ public boolean isValid() {
 			return false;
 		}
 		CompartmentSubDomain subDomain = (CompartmentSubDomain)subDomainList.elementAt(0);
-		//
-		// Check that all equations are ODEs 
-		//
-		int odeCount = 0;
-		Enumeration enum_equ = subDomain.getEquations();
-		while (enum_equ.hasMoreElements()){
-			Equation equ = (Equation)enum_equ.nextElement();
-			if (!(equ instanceof OdeEquation)){
-				setWarning("Compartmental Model, unexpected equation of type "+VCML.PdeEquation+", must include only "+VCML.OdeEquation+"'s");
+		//distinguish ODE model and stochastic model
+		if(subDomain.getVarIniConditions().size()>0)
+		{
+			//Stochastic model
+			
+		}
+		else
+		{
+			// ODE model
+			//
+			// Check that all equations are ODEs 
+			//
+			int odeCount = 0;
+			Enumeration enum_equ = subDomain.getEquations();
+			while (enum_equ.hasMoreElements()){
+				Equation equ = (Equation)enum_equ.nextElement();
+				if (!(equ instanceof OdeEquation)){
+					setWarning("Compartmental Model, unexpected equation of type "+VCML.PdeEquation+", must include only "+VCML.OdeEquation+"'s");
+					return false;
+				}else{
+					odeCount++;
+				}
+			}
+			if (odeCount==0){
+				setWarning("Compartmental Model, expecting at least one "+VCML.OdeEquation);
 				return false;
-			}else{
-				odeCount++;
+			}
+	
+			if (volVarCount!=odeCount){
+				setWarning("Compartmental Model, must declare an "+VCML.OdeEquation+" for each "+VCML.VolumeVariable);
+				return false;
+			}
+			if (memVarCount>0){
+				setWarning("Compartmental Model, must not declare any "+VCML.MembraneVariable+"'s");
+				return false;
+			}
+			if (filVarCount>0){
+				setWarning("Compartmental Model, must not declare any "+VCML.FilamentVariable+"'s");
+				return false;
+			}
+			if (volRegionVarCount>0){
+				setWarning("Compartmental Model, must not declare any "+VCML.VolumeRegionVariable+"'s");
+				return false;
+			}
+			if (memRegionVarCount>0){
+				setWarning("Compartmental Model, must not declare any "+VCML.MembraneRegionVariable+"'s");
+				return false;
+			}
+			if (filRegionVarCount>0){
+				setWarning("Compartmental Model, must not declare any "+VCML.FilamentRegionVariable+"'s");
+				return false;
 			}
 		}
-		if (odeCount==0){
-			setWarning("Compartmental Model, expecting at least one "+VCML.OdeEquation);
-			return false;
-		}
-
-		if (volVarCount!=odeCount){
-			setWarning("Compartmental Model, must declare an "+VCML.OdeEquation+" for each "+VCML.VolumeVariable);
-			return false;
-		}
-		if (memVarCount>0){
-			setWarning("Compartmental Model, must not declare any "+VCML.MembraneVariable+"'s");
-			return false;
-		}
-		if (filVarCount>0){
-			setWarning("Compartmental Model, must not declare any "+VCML.FilamentVariable+"'s");
-			return false;
-		}
-		if (volRegionVarCount>0){
-			setWarning("Compartmental Model, must not declare any "+VCML.VolumeRegionVariable+"'s");
-			return false;
-		}
-		if (memRegionVarCount>0){
-			setWarning("Compartmental Model, must not declare any "+VCML.MembraneRegionVariable+"'s");
-			return false;
-		}
-		if (filRegionVarCount>0){
-			setWarning("Compartmental Model, must not declare any "+VCML.FilamentRegionVariable+"'s");
-			return false;
-		}
 		return true;	
-	//
-	// spatial (PDE and ODE)
-	//
+		//
+		// spatial (PDE and ODE)
+		//
 	}else{
 		//
 		// Check that the number of CompartmentSubdomains equals the number of VolumeSubVolumes in the Geometry
@@ -2613,6 +2712,14 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
 				token = tokens.nextToken();
 				ParameterVariable pv = new ParameterVariable(token);
 				addVariable0(pv);
+				continue;
+			}
+			//stochastic variable
+			if (token.equalsIgnoreCase(VCML.StochVolVariable))
+			{
+				token = tokens.nextToken();
+				StochVolVariable var = new StochVolVariable(token);
+				addVariable0(var);
 				continue;
 			}
 			if (token.equalsIgnoreCase(VCML.Function)){

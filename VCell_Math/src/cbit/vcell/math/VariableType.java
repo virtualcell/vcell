@@ -149,6 +149,16 @@ public String getDefaultUnits() {
 public String getTypeName() {
 	return NAMES[type];
 }
+
+/**
+ * Insert the method's description here.
+ * Creation date: (9/21/2006 2:38:35 PM)
+ * @return int
+ */
+public int getType() {
+	return type;
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (10/3/00 2:48:55 PM)

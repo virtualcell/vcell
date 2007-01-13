@@ -18,12 +18,17 @@ public abstract class SubDomain implements Serializable, Matchable {
 	private String name = null;
 	private Vector equationList = new Vector();
 	private FastSystem fastSystem = null;
+	private Vector listOfJumpProcesses = null;
+	private Vector listOfVarIniConditions = null;
+
 /**
  * This method was created by a SmartGuide.
  * @param name java.lang.String
  */
 protected SubDomain (String name) {
 	this.name = name;
+	listOfJumpProcesses = new Vector();
+	listOfVarIniConditions = new Vector();
 }
 /**
  * This method was created by a SmartGuide.
@@ -35,6 +40,30 @@ public void addEquation(Equation equation) throws MathException {
 	}
 	equationList.addElement(equation);	
 }
+
+/**
+ * Append a new process to the jump process list if it is still not in the list.
+ * Creation date: (6/26/2006 5:28:25 PM)
+ */
+public void addJumpProcess(JumpProcess newJumpProcess) throws MathException
+{
+	if(getJumpProcess(newJumpProcess.getName())!=null)
+		throw new MathException("JumpProcess "+newJumpProcess.getName()+" already exists");
+	listOfJumpProcesses.add(newJumpProcess);
+}
+
+/**
+ * Append a new variable initial condition to the list if the variable is not in the list.
+ * Creation date: (6/27/2006 10:02:29 AM)
+ * @param newVarIniCondition cbit.vcell.math.VarIniCondition
+ */
+public void addVarIniCondition(VarIniCondition newVarIniCondition) throws MathException
+{
+	if(getVarIniCondition(newVarIniCondition.getVar().getName())!=null)
+		throw new MathException("Initial condition regarding variable: "+newVarIniCondition.getVar().getName()+" already exists");
+	listOfVarIniConditions.add(newVarIniCondition);
+}
+
 /**
  * This method was created in VisualAge.
  * @return boolean
@@ -70,6 +99,33 @@ protected boolean compareEqual0(Object object) {
 	if (!Compare.isEqualOrNull(fastSystem,subDomain.fastSystem)){
 		return false;
 	}
+	//
+	// compare jumpProcesses
+	//
+	if ((listOfJumpProcesses != null) && (subDomain.listOfJumpProcesses != null))
+	{
+		JumpProcess jumpProcesses1[] = (JumpProcess[]) listOfJumpProcesses.toArray(new JumpProcess[0]);
+		JumpProcess jumpProcesses2[] = (JumpProcess[]) subDomain.listOfJumpProcesses.toArray(new JumpProcess[0]);
+		
+		if (!Compare.isEqualOrNull(jumpProcesses1, jumpProcesses2)){ //call isEqualOrNull(Matchable[], Matchable[]) function
+			return false;
+		}
+	}
+	else return false;
+	//
+	// compare varIniConditions
+	//
+	if ((listOfVarIniConditions != null) && (subDomain.listOfVarIniConditions != null))
+	{
+		VarIniCondition varIniConditions1[] = (VarIniCondition[]) listOfVarIniConditions.toArray(new VarIniCondition[0]);
+		VarIniCondition varIniConditions2[] = (VarIniCondition[]) subDomain.listOfVarIniConditions.toArray(new VarIniCondition[0]);
+		if (!Compare.isEqualOrNull(varIniConditions1,varIniConditions2)){
+			return false;
+		}
+	
+	}
+	else return false;
+		
 	return true;
 }
 /**
@@ -101,6 +157,148 @@ public java.util.Enumeration getEquations() {
 public FastSystem getFastSystem() {
 	return fastSystem;
 }
+
+/**
+ * Get a jump process from the list by it's index.
+ * Creation date: (6/27/2006 10:23:01 AM)
+ * @return cbit.vcell.math.JumpProcess
+ * @param index int
+ */
+public JumpProcess getJumpProcess(int index)
+{
+	if(index<listOfJumpProcesses.size())
+		return (JumpProcess)listOfJumpProcesses.elementAt(index);
+	return null;
+}
+
+/**
+ * Get a jump process from process list by it's name.
+ * Creation date: (6/27/2006 10:36:11 AM)
+ * @return cbit.vcell.math.JumpProcess
+ * @param processName java.lang.String
+ */
+public JumpProcess getJumpProcess(String processName) {
+	for(int i=0; i<listOfJumpProcesses.size(); i++)
+	{
+		if(((JumpProcess)listOfJumpProcesses.elementAt(i)).getName().compareTo(processName)==0)
+			return 	(JumpProcess)listOfJumpProcesses.elementAt(i);
+	}
+	return null;
+}
+
+/**
+ * Return the reference of the jump process list.
+ * Creation date: (6/27/2006 3:05:52 PM)
+ * @return java.util.Vector
+ */
+public Vector getJumpProcesses() {
+	return listOfJumpProcesses;
+}
+
+/**
+ * Return the reference of the jump process list.
+ * Creation date: (6/27/2006 3:05:52 PM)
+ * @return java.util.Vector
+ */
+public Vector getListOfJumpProcesses() {
+	return listOfJumpProcesses;
+}
+
+/**
+ * Return the reference of the variable initial condition list.
+ * Creation date: (6/27/2006 3:07:26 PM)
+ * @return java.util.Vector
+ */
+public Vector getListOfVarIniConditions() {
+	return listOfVarIniConditions;
+}
+
+/**
+ * Get a variable initial condition from the list by it's index.
+ * Creation date: (6/27/2006 10:40:07 AM)
+ * @return cbit.vcell.math.VarIniCondition
+ * @param index int
+ */
+public VarIniCondition getVarIniCondition(int index) 
+{
+	if(index<listOfVarIniConditions.size())
+		return (VarIniCondition)listOfVarIniConditions.elementAt(index);
+	return null;
+}
+
+/**
+ * Get a variable initial condition from list by varaible's name.
+ * Creation date: (6/27/2006 10:42:24 AM)
+ * @return cbit.vcell.math.VarIniCondition
+ * @param varName java.lang.String
+ */
+public VarIniCondition getVarIniCondition(String varName) 
+{
+	for(int i=0; i<listOfVarIniConditions.size(); i++)
+	{
+		if(((VarIniCondition)listOfVarIniConditions.elementAt(i)).getVar().getName().compareTo(varName)==0)
+			return (VarIniCondition)listOfVarIniConditions.elementAt(i);
+	}
+	return null;
+}
+
+/**
+ * Return the reference of the variable initial condition list.
+ * Creation date: (6/27/2006 3:07:26 PM)
+ * @return java.util.Vector
+ */
+public Vector getVarIniConditions() {
+	return listOfVarIniConditions;
+}
+
+/**
+ * Remove a jump process from jump process list by it's index in the list.
+ * Creation date: (6/26/2006 5:39:50 PM)
+ */
+public void removeJumpProcess(int index)
+{
+	if(index<listOfJumpProcesses.size())
+		listOfJumpProcesses.remove(index);
+}
+/**
+ * Remove a jump process from jump process list by it's index in the list.
+ * Creation date: (6/26/2006 5:39:50 PM)
+ */
+public void removeJumpProcess(String procName)
+{
+	for(int i=0; i<listOfJumpProcesses.size(); i++)
+	{
+		if(((JumpProcess)listOfJumpProcesses.elementAt(i)).getName().compareTo(procName)==0)
+			listOfJumpProcesses.remove(i) ;
+	}
+}
+/**
+ * Remove a variable initial conditino from list by it's index.
+ * Creation date: (6/27/2006 10:04:45 AM)
+ * @param index int
+ */
+public void removeVarIniCondition(int index)
+{
+	if(index<listOfVarIniConditions.size())
+		listOfVarIniConditions.remove(index);
+}
+/**
+ * Remove a variable initial condition from list by it's name in the list.
+ * Creation date: (6/27/2006 10:06:44 AM)
+ * @param varName java.lang.String
+ */
+public void removeVarIniCondition(String varName)
+{
+	for (int i=0; i<listOfVarIniConditions.size(); i++)
+	{
+		if(((VarIniCondition)listOfVarIniConditions.elementAt(i)).getVar().getName().compareTo(varName)==0)
+			listOfVarIniConditions.remove(i);
+	}	
+}
+
+
+
+
 /**
  * This method was created by a SmartGuide.
  * @return java.lang.String
