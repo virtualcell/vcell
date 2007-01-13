@@ -2,11 +2,13 @@ package cbit.vcell.modelopt.gui;
 import java.util.*;
 
 import org.vcell.expression.ExpressionException;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
 import cbit.vcell.messaging.admin.sorttable.ManageTableModel;
+import cbit.vcell.modelopt.ParameterMappingSpec;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)
@@ -115,13 +117,12 @@ public class ParameterMappingTableModel extends ManageTableModel implements java
 	private final static int COLUMN_SCOPE = 1;
 	private final static int COLUMN_MODELVALUE = 2;
 	private final static int COLUMN_SELECTED = 3;
-	private final static int COLUMN_CURRENTVALUE = 4;
+	public final static int COLUMN_CURRENTVALUE = 4;
 	private final static int COLUMN_LOWVALUE = 5;
 	private final static int COLUMN_HIGHVALUE = 6;
-	private final static int COLUMN_SOLUTION = 7;
+	public final static int COLUMN_SOLUTION = 7;
 	private final static String LABELS[] = { "parameter", "context",  "model value", "optimize", "initial guess", "lower", "upper", "solution"  };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private final int indexes[] = new int[0];
 	private cbit.vcell.modelopt.ParameterEstimationTask fieldParameterEstimationTask = null;
 
 /**
@@ -314,7 +315,7 @@ private List getUnsortedParameters() {
 	
 	int count = getParameterEstimationTask().getModelOptimizationSpec().getParameterMappingSpecs().length;
 
-	java.util.ArrayList list = new java.util.ArrayList();
+	java.util.ArrayList<ParameterMappingSpec> list = new java.util.ArrayList<ParameterMappingSpec>();
 	for (int i = 0; i < count; i++){
 		list.add(getParameterMappingSpec(i));
 	}
@@ -529,6 +530,10 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		setData(getUnsortedParameters());
 		fireTableDataChanged();
 	}
+	
+	if (evt.getSource() instanceof cbit.vcell.modelopt.ParameterMappingSpec) {
+		fireTableDataChanged();
+	}
 }
 
 
@@ -623,7 +628,6 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					parameterMappingSpec.setCurrent(value);
 					fireTableRowsUpdated(rowIndex,rowIndex);
 				}else if (aValue instanceof String) {
-					String newDoubleString = (String)aValue;
 					parameterMappingSpec.setCurrent(Double.parseDouble((String)aValue));
 					fireTableRowsUpdated(rowIndex,rowIndex);
 				}

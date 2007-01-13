@@ -9,6 +9,8 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 package cbit.vcell.modelopt.gui;
+import cbit.plot.DataSource;
+import cbit.plot.MultisourcePlotPane;
 import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.opt.solvers.OptSolverCallbacks;
 import cbit.vcell.opt.OptimizationResultSet;
@@ -104,7 +106,7 @@ public void plot() {
 		
 		cbit.vcell.opt.ReferenceData referenceData = parameterEstimationTask.getModelOptimizationSpec().getReferenceData();
 		if (referenceData!=null) {
-			dataSourceList.add(new DataSource(referenceData,"refData"));
+			dataSourceList.add(new ReferenceDataSource(referenceData,"refData"));
 			String[] refColumnNames = referenceData.getColumnNames();
 			for (int i = 0; i < refColumnNames.length; i ++) {
 				if (refColumnNames[i].equals("t")) {
@@ -116,7 +118,7 @@ public void plot() {
 		
 		cbit.vcell.simdata.ODESolverResultSet odeSolverResultSet = parameterEstimationTask.getOdeSolverResultSet();
 		if (odeSolverResultSet!=null){
-			dataSourceList.add(new DataSource(odeSolverResultSet,"odeData"));
+			dataSourceList.add(new RowColumnDataSource(odeSolverResultSet,"odeData"));
 			cbit.vcell.modelopt.ReferenceDataMappingSpec[] mappingSpecs = parameterEstimationTask.getModelOptimizationSpec().getReferenceDataMappingSpecs();
 			if (mappingSpecs != null) {
 				for (int i = 0; i < mappingSpecs.length; i ++) {

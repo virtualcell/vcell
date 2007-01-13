@@ -13,6 +13,7 @@ import cbit.vcell.modelapp.StructureMapping;
 import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.simdata.FunctionFileGenerator;
 import cbit.vcell.simdata.RowColumnResultSet;
+import cbit.vcell.simulation.Simulation;
 /**
  * Insert the type's description here.
  * Creation date: (8/22/2005 9:26:10 AM)
@@ -260,7 +261,7 @@ public static cbit.vcell.simdata.ODESolverResultSet getOdeSolverResultSet(Optimi
 		//
 		// add functions (evaluating them at optimal parameter)
 		//
-		cbit.vcell.math.AnnotatedFunction[] annotatedFunctions = FunctionFileGenerator.createAnnotatedFunctionsList(simulation);
+		cbit.vcell.math.AnnotatedFunction[] annotatedFunctions = Simulation.createAnnotatedFunctionsList(simulation);
 		for (int i = 0; i < annotatedFunctions.length; i++){
 			IExpression funcExp = annotatedFunctions[i].getExpression();
 			for (int j = 0; j < optResultSet.getParameterNames().length; j ++) {

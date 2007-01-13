@@ -9,6 +9,8 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 package cbit.vcell.modelopt.gui;
+import cbit.plot.DataSource;
+import cbit.plot.MultisourcePlotPane;
 import cbit.util.UserCancelException;
 import cbit.vcell.export.CSV;
 import cbit.vcell.opt.ReferenceData;
@@ -190,9 +192,9 @@ private void connEtoM3(java.awt.event.ActionEvent arg1) {
 /**
  * Comment
  */
-public cbit.vcell.modelopt.gui.DataSource [] connEtoM4_Value() {
+public cbit.plot.DataSource [] connEtoM4_Value() {
 	DataSource[] dataSources = new DataSource[1];
-	dataSources[0] = new DataSource(getReferenceData(),"data");
+	dataSources[0] = new ReferenceDataSource(getReferenceData(),"data");
 	return dataSources;
 }
 
@@ -462,7 +464,7 @@ private MultisourcePlotPane getmultisourcePlotPane() {
 			ivjLocalBorder = new cbit.gui.TitledBorderBean();
 			ivjLocalBorder.setTitleJustification(javax.swing.border.TitledBorder.CENTER);
 			ivjLocalBorder.setTitle("Time Series Data");
-			ivjmultisourcePlotPane = new cbit.vcell.modelopt.gui.MultisourcePlotPane();
+			ivjmultisourcePlotPane = new cbit.plot.MultisourcePlotPane();
 			ivjmultisourcePlotPane.setName("multisourcePlotPane");
 			ivjmultisourcePlotPane.setBorder(ivjLocalBorder);
 			ivjmultisourcePlotPane.setListVisible(false);
@@ -795,7 +797,7 @@ private void updatePlot() {
 	}
 	
 	DataSource[] dataSources = new DataSource[1];
-	dataSources[0] = new DataSource(getReferenceData(),"refData");
+	dataSources[0] = new ReferenceDataSource(getReferenceData(),"refData");
 	getmultisourcePlotPane().setDataSources(dataSources);
 
 	getmultisourcePlotPane().selectAll();
