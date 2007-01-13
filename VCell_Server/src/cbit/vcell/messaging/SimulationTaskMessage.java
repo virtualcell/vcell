@@ -63,6 +63,7 @@ private void parse(Message message) throws XmlParseException, JMSException {
 	Simulation simulation = XmlHelper.XMLToSim(xmlString);
 	int taskID = -1;
 	int jobIndex = -1;
+	cbit.vcell.simdata.FieldDataIdentifier[] fieldDataIDs = null;
 	try {
 		taskID = ((Integer)JmsUtils.parseProperty(message, MessageConstants.TASKID_PROPERTY, int.class)).intValue();
 	} catch (MessagePropertyNotFoundException ex) {
@@ -72,9 +73,22 @@ private void parse(Message message) throws XmlParseException, JMSException {
 		jobIndex = ((Integer)JmsUtils.parseProperty(message, MessageConstants.JOBINDEX_PROPERTY, int.class)).intValue();
 	} catch (MessagePropertyNotFoundException ex) {
 		throw new JMSException("Required property " + MessageConstants.JOBINDEX_PROPERTY + " is missing");
+	}
+
+	// is ok if there is no field data
+	try {
+		String fdstrs = (String)JmsUtils.parseProperty(message, MessageConstants.FIELDDATAID_PROPERTY, String.class);
+		java.util.StringTokenizer st = new java.util.StringTokenizer(fdstrs, "\n");
+		fieldDataIDs = new cbit.vcell.simdata.FieldDataIdentifier[st.countTokens()];
+		int count = 0;
+		while (st.hasMoreTokens()) {
+			fieldDataIDs[count ++] = cbit.vcell.simdata.FieldDataIdentifier.fromCSVString(st.nextToken());
+		}
+	} catch (MessagePropertyNotFoundException ex) {
+		 System.out.println("Property " + MessageConstants.FIELDDATAID_PROPERTY + " is missing");
 	}	
 
-	simTask = new SimulationTask(new SimulationJob(simulation, jobIndex), taskID);
+	simTask = new SimulationTask(new SimulationJob(simulation, fieldDataIDs, jobIndex), taskID);
 }
 
 
@@ -137,6 +151,15 @@ private javax.jms.Message toMessage(VCellQueueSession session) throws javax.jms.
 
 	message.setStringProperty(MessageConstants.SOLVER_TYPE_PROPERTY, simTask.goodForLSF() ? MessageConstants.SOLVER_TYPE_LSF_PROPERTY : MessageConstants.SOLVER_TYPE_JAVA_PROPERTY); // for worker message filter
 	message.setDoubleProperty(MessageConstants.SIZE_MB_PROPERTY, simTask.getEstimatedSizeMB()); // for worker message filter
+
+	cbit.vcell.simdata.FieldDataIdentifier[] fieldDataIDs = simTask.getSimulationJob().getFieldDataIdentifiers();
+	if (fieldDataIDs != null && fieldDataIDs.length > 0) {
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < fieldDataIDs.length; i ++) {
+			sb.append(fieldDataIDs[i].toCSVString() + "\n");
+		}
+		message.setStringProperty(MessageConstants.FIELDDATAID_PROPERTY, sb.toString());
+	}
 
 	return message;
 }

@@ -16,6 +16,7 @@ import cbit.util.DataAccessException;
 import cbit.util.PermissionException;
 import cbit.util.PropertyLoader;
 import cbit.util.SessionLog;
+import cbit.util.document.FieldDataIdentifierSpec;
 import cbit.util.document.User;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.messaging.server.DispatcherDbManager;
@@ -370,9 +371,18 @@ public void onWorkerEvent(cbit.rmi.event.WorkerEvent workerEvent) {
 			newJobStatus = updateRunningJobStatus(oldJobStatus, vcSimulationIdentifier, jobIndex, false, null);
 			
 		} else if (workerEvent.isStartingEvent()) {
-			newJobStatus = updateRunningJobStatus(oldJobStatus, vcSimulationIdentifier, jobIndex, false, workerEvent.getEventMessage());			
+			String startMsg = workerEvent.getEventMessage();
+			if (oldJobStatus.isQueued() || oldJobStatus.isDispatched()) {
+				newJobStatus = updateRunningJobStatus(oldJobStatus, vcSimulationIdentifier, jobIndex, false, startMsg);
+			} else if (oldJobStatus.isRunning()) {
+				newJobStatus = new SimulationJobStatus(oldJobStatus.getServerID(), oldJobStatus.getVCSimulationIdentifier(), oldJobStatus.getJobIndex(), oldJobStatus.getSubmitDate(), 
+					oldJobStatus.getSchedulerStatus(), oldJobStatus.getTaskID(), startMsg, oldJobStatus.getSimulationQueueEntryStatus(), oldJobStatus.getSimulationExecutionStatus());
+			}				
 		}
-		if (newJobStatus != null && (!newJobStatus.compareEqual(oldJobStatus) || workerEvent.isProgressEvent() || workerEvent.isNewDataEvent())) {
+		if (workerEvent.isStartingEvent() && newJobStatus != null) {
+			SimulationJobStatusEvent newEvent = new SimulationJobStatusEvent(this, Simulation.createSimulationID(vcSimulationIdentifier.getSimulationKey()), newJobStatus, null, null);
+			fireSimulationJobStatusEvent(newEvent);
+		} else 	if (newJobStatus != null && (!newJobStatus.compareEqual(oldJobStatus) || workerEvent.isProgressEvent() || workerEvent.isNewDataEvent())) {
 			Double progress = workerEvent.getProgress();
 			Double timepoint = workerEvent.getTimePoint();
 			SimulationJobStatusEvent newEvent = new SimulationJobStatusEvent(this, Simulation.createSimulationID(vcSimulationIdentifier.getSimulationKey()), newJobStatus, progress, timepoint);
@@ -398,14 +408,21 @@ public void removeSimulationJobStatusListener(cbit.rmi.event.SimulationJobStatus
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void startSimulation(User user, Simulation simulation, SessionLog userSessionLog) throws RemoteException {
+public void startSimulation(User user, Simulation simulation, SessionLog userSessionLog) throws RemoteException, Exception {
 	LocalVCellConnection localVCellConnection = (LocalVCellConnection)getLocalVCellServer().getVCellConnection(user);
 	removeSimulationJobStatusListener(localVCellConnection.getMessageService().getMessageCollector());
 	addSimulationJobStatusListener(localVCellConnection.getMessageService().getMessageCollector());
 	localVCellConnection.getMessageService().getMessageDispatcher().removeWorkerEventListener(this);
 	localVCellConnection.getMessageService().getMessageDispatcher().addWorkerEventListener(this);
+	
+	FieldDataIdentifierSpec[] fieldDataIDSpecs = simulation.getFieldDataIdentifierSpecs();
+	cbit.vcell.simdata.FieldDataIdentifier[] fieldDataIDs = null;
+	if (fieldDataIDSpecs.length != 0) {
+		fieldDataIDs = getLocalVCellServer().getVCellConnection(user).getUserMetaDbServer().getFieldDataIdentifiers(fieldDataIDSpecs);
+	} 
+	
 	for (int i = 0; i < simulation.getScanCount(); i++){
-		SimulationJob simJob = new SimulationJob(simulation,i);
+		SimulationJob simJob = new SimulationJob(simulation,fieldDataIDs,i);
 		VCSimulationIdentifier vcSimID = simJob.getVCDataIdentifier().getVcSimID();
 		try {
 			SolverProxy solverProxy = getSolverProxy(user,simJob,userSessionLog);

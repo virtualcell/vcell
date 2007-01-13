@@ -46,9 +46,9 @@ public SimulationJobStatus updateDispatchedStatus(SimulationJobStatus oldJobStat
 				new SimulationQueueEntryStatus(null, MessageConstants.PRIORITY_DEFAULT, MessageConstants.QUEUE_ID_NULL), null);
 				
 			if (oldJobStatus == null) {
-				adminDb.insertSimulationJobStatus(newJobStatus);
+				newJobStatus = adminDb.insertSimulationJobStatus(newJobStatus);
 			} else {
-				adminDb.updateSimulationJobStatus(oldJobStatus, newJobStatus);
+				newJobStatus = adminDb.updateSimulationJobStatus(oldJobStatus, newJobStatus);
 			}
 
 			return newJobStatus;

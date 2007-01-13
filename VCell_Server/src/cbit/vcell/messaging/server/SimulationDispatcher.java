@@ -16,6 +16,7 @@ import cbit.sql.KeyFactory;
 import cbit.util.BigString;
 import cbit.util.DataAccessException;
 import cbit.util.MessageConstants;
+import cbit.util.document.FieldDataIdentifierSpec;
 import cbit.util.document.KeyValue;
 import cbit.util.document.User;
 import cbit.vcell.messaging.JmsClientMessaging;
@@ -26,6 +27,7 @@ import cbit.vcell.messaging.WorkerEventMessage;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.modeldb.AdminDatabaseServerXA;
 import cbit.vcell.modeldb.LocalAdminDbServer;
+import cbit.vcell.simdata.FieldDataIdentifier;
 import cbit.vcell.simulation.Simulation;
 import cbit.vcell.simulation.VCSimulationIdentifier;
 import cbit.vcell.solvers.SimulationJob;
@@ -36,7 +38,7 @@ import cbit.vcell.solvers.SimulationJob;
  * @author: Jim Schaff
  */
 public class SimulationDispatcher extends AbstractJmsServiceProvider {
-	private Map userDbServerMap = null;
+	private Map<User,RpcDbServerProxy> userDbServerMap = null;
 	private ConnectionFactory conFactory = null;
 	private KeyFactory keyFactory = null;
 	private cbit.util.SessionLog log = null;
@@ -46,7 +48,8 @@ public class SimulationDispatcher extends AbstractJmsServiceProvider {
 	private boolean bStop = false;		
 	private SimulationDispatcherMessaging dispatcherMessaging = null;
 	private cbit.sql.DBCacheTable simulationMap = null;
-	private Map simUserMap = Collections.synchronizedMap(new java.util.HashMap());
+	private Map<KeyValue,User> simUserMap = Collections.synchronizedMap(new java.util.HashMap<KeyValue,User>());
+	private Map<KeyValue,FieldDataIdentifier[]> simFieldDataIDMap = Collections.synchronizedMap(new java.util.HashMap<KeyValue,FieldDataIdentifier[]>());
 
 	private MessagingDispatcherDbManager dispatcherDbManager = new JmsDispatcherDbManager();
 	protected HashSet resultSetSavedSet = new HashSet();
@@ -81,7 +84,7 @@ private RpcDbServerProxy getDbServerProxy(User user) throws JMSException {
 	}
 
 	if (userDbServerMap == null) {
-		userDbServerMap = Collections.synchronizedMap(new HashMap());
+		userDbServerMap = Collections.synchronizedMap(new HashMap<User,RpcDbServerProxy>());
 	}
 		
 	synchronized (userDbServerMap) {
@@ -96,6 +99,39 @@ private RpcDbServerProxy getDbServerProxy(User user) throws JMSException {
 	}
 }
 
+
+/**
+ * Insert the method's description here.
+ * Creation date: (6/3/2003 2:56:43 PM)
+ * @return cbit.vcell.server.User
+ * @param simKey cbit.sql.KeyValue
+ */
+public FieldDataIdentifier[] getFieldDataIdentifiers(Simulation sim) throws DataAccessException, JMSException {
+	try {		
+		KeyValue simKey = sim.getKey();
+		log.print("Get FieldDataIdentifier for [" + simKey + "]");	
+		FieldDataIdentifier[] fieldDataIDs = (FieldDataIdentifier[])simFieldDataIDMap.get(simKey);
+
+		if (fieldDataIDs != null) {
+			return fieldDataIDs;
+		}
+
+		RpcDbServerProxy dbServerProxy = getDbServerProxy(sim.getVersion().getOwner());
+		FieldDataIdentifierSpec[] fdiss =  sim.getFieldDataIdentifierSpecs();
+		if (fdiss != null && fdiss.length != 0) {
+			fieldDataIDs = dbServerProxy.getFieldDataIdentifiers(fdiss);
+		}
+
+		if (fieldDataIDs != null){
+			simFieldDataIDMap.put(simKey, fieldDataIDs);		
+		}
+		
+		return fieldDataIDs;
+	} catch (Exception ex) {
+		ex.printStackTrace(System.out);
+		throw new DataAccessException(ex.getMessage());
+	}
+}
 
 /**
  * Insert the method's description here.
@@ -145,7 +181,7 @@ public SimulationTask getSimulationTask(SimulationJobStatus jobStatus) throws Da
 	VCSimulationIdentifier vcSimID = jobStatus.getVCSimulationIdentifier();
 	User user = getUser(vcSimID.getSimulationKey(), null);				
 	Simulation sim = getSimulation(user, vcSimID.getSimulationKey());
-	SimulationTask simTask = new SimulationTask(new SimulationJob(sim, jobStatus.getJobIndex()), jobStatus.getTaskID());
+	SimulationTask simTask = new SimulationTask(new SimulationJob(sim, getFieldDataIdentifiers(sim), jobStatus.getJobIndex()), jobStatus.getTaskID());
 
 	return simTask;
 }

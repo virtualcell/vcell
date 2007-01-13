@@ -7,6 +7,7 @@ import cbit.util.ObjectNotFoundException;
 import cbit.util.ReferenceQueryResult;
 import cbit.util.ReferenceQuerySpec;
 import cbit.util.document.CurateSpec;
+import cbit.util.document.FieldDataIdentifierSpec;
 import cbit.util.document.KeyValue;
 import cbit.util.document.MathModelInfo;
 import cbit.util.document.VersionableFamily;
@@ -15,14 +16,12 @@ import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.dictionary.FormalSpeciesType;
-import cbit.vcell.dictionary.ReactionQuerySpec;
 import cbit.vcell.mathmodel.MathModelMetaData;
-import cbit.vcell.modeldb.SolverResultSetInfo;
-import cbit.vcell.modeldb.VCInfoContainer;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestSuiteNew;
 import cbit.vcell.numericstest.TestSuiteOP;
 import cbit.vcell.numericstest.TestSuiteOPResults;
+import cbit.vcell.simdata.FieldDataIdentifier;
 import cbit.vcell.solvers.SimulationStatus;
 
 /**
@@ -184,6 +183,14 @@ cbit.vcell.export.ExportLog getExportLog(KeyValue simulationKey) throws DataAcce
  */
 cbit.vcell.export.ExportLog[] getExportLogs(boolean bAll) throws DataAccessException, RemoteException;
 
+/**
+ * This method was created in VisualAge.
+ * @return GeometryInfo
+ * @param key KeyValue
+ * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception java.rmi.RemoteException The exception description.
+ */
+FieldDataIdentifier[] getFieldDataIdentifiers(FieldDataIdentifierSpec[] fieldDataIDSpecs) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 /**
  * This method was created in VisualAge.

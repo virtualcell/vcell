@@ -9,6 +9,7 @@ import cbit.util.ReferenceQueryResult;
 import cbit.util.ReferenceQuerySpec;
 import cbit.util.SessionLog;
 import cbit.util.document.CurateSpec;
+import cbit.util.document.FieldDataIdentifierSpec;
 import cbit.util.document.KeyValue;
 import cbit.util.document.User;
 import cbit.util.document.VCDocumentInfo;
@@ -415,6 +416,25 @@ public ExportLog[] getExportLogs(boolean bAll) throws DataAccessException {
 
 }
 
+/**
+ * This method was created in VisualAge.
+ * @return GeometryInfo
+ * @param key KeyValue
+ * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception java.rmi.RemoteException The exception description.
+ */
+public cbit.vcell.simdata.FieldDataIdentifier[] getFieldDataIdentifiers(FieldDataIdentifierSpec[] fieldDataIDSpecs) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException {
+	try {
+		log.print("LocalUserMetaDbServerMessaging.getFieldDataIdentifiers()");
+		return dbServerProxy.getFieldDataIdentifiers(fieldDataIDSpecs);
+	} catch (DataAccessException e) {
+		log.exception(e);
+		throw e;
+	} catch (Throwable e) {
+		log.exception(e);
+		throw new DataAccessException(e.getMessage());
+	}
+}
 
 /**
  * This method was created in VisualAge.

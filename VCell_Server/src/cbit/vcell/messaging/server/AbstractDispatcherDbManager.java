@@ -4,6 +4,7 @@ import java.util.Date;
 import cbit.rmi.event.SimulationExecutionStatus;
 import cbit.rmi.event.SimulationJobStatus;
 import cbit.rmi.event.SimulationQueueEntryStatus;
+import cbit.rmi.event.VCellServerID;
 import cbit.util.DataAccessException;
 import cbit.util.MessageConstants;
 import cbit.util.document.KeyValue;
@@ -54,14 +55,14 @@ SimulationJobStatus getNewStatus_updateDispatchedStatus(SimulationJobStatus oldJ
 SimulationJobStatus getNewStatus_updateEndStatus(SimulationJobStatus oldJobStatus, VCSimulationIdentifier vcSimID, int jobIndex, String hostName, int status, String solverMsg) throws DataAccessException, UpdateSynchronizationException {
 
 	// new queue status
-	SimulationQueueEntryStatus oldQueueStatus = oldJobStatus.getSimulationQueueEntryStatus();
+	SimulationQueueEntryStatus oldQueueStatus = oldJobStatus == null ? null : oldJobStatus.getSimulationQueueEntryStatus();
 	SimulationQueueEntryStatus newQueueStatus = oldQueueStatus;
-	if (oldQueueStatus.getQueueID() != MessageConstants.QUEUE_ID_NULL) {		
+	if (oldQueueStatus != null && oldQueueStatus.getQueueID() != MessageConstants.QUEUE_ID_NULL) {		
 		newQueueStatus = new SimulationQueueEntryStatus(oldQueueStatus.getQueueDate(), oldQueueStatus.getQueuePriority(), MessageConstants.QUEUE_ID_NULL);
 	}
 
 	// new exe status
-	SimulationExecutionStatus oldExeStatus = oldJobStatus.getSimulationExecutionStatus();
+	SimulationExecutionStatus oldExeStatus = oldJobStatus == null ? null : oldJobStatus.getSimulationExecutionStatus();
 	SimulationExecutionStatus newExeStatus = null;
 	boolean hasData = false;
 	
@@ -80,7 +81,8 @@ SimulationJobStatus getNewStatus_updateEndStatus(SimulationJobStatus oldJobStatu
 	}
 
 	// new job status
-	SimulationJobStatus newJobStatus = new SimulationJobStatus(oldJobStatus.getServerID(), vcSimID, jobIndex, oldJobStatus.getSubmitDate(), status, oldJobStatus.getTaskID(), solverMsg,
+	SimulationJobStatus newJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, jobIndex, 
+			oldJobStatus == null ? null : oldJobStatus.getSubmitDate(), status, oldJobStatus == null ? 0 : oldJobStatus.getTaskID(), solverMsg,
 		newQueueStatus, newExeStatus);
 	
 	return newJobStatus;
@@ -177,7 +179,7 @@ public cbit.rmi.event.SimulationJobStatus updateDispatchedStatus(cbit.rmi.event.
 			
 			SimulationJobStatus newJobStatus = getNewStatus_updateDispatchedStatus(oldJobStatus, computeHost, vcSimID, jobIndex, startMsg);
 
-			adminDb.updateSimulationJobStatus(oldJobStatus, newJobStatus);
+			newJobStatus = adminDb.updateSimulationJobStatus(oldJobStatus, newJobStatus);
 
 			return newJobStatus;
 		}
@@ -201,7 +203,7 @@ public SimulationJobStatus updateEndStatus(SimulationJobStatus oldJobStatus, Adm
 
 			SimulationJobStatus newJobStatus = getNewStatus_updateEndStatus(oldJobStatus, vcSimID, jobIndex, hostName, status, solverMsg);
 			
-			adminDb.updateSimulationJobStatus(oldJobStatus, newJobStatus);
+			newJobStatus = adminDb.updateSimulationJobStatus(oldJobStatus, newJobStatus);
 
 			return newJobStatus;
 		}
@@ -249,7 +251,7 @@ public SimulationJobStatus updateRunningStatus(SimulationJobStatus oldJobStatus,
 				updateLatestUpdateDate(oldJobStatus, adminDb, vcSimID, jobIndex);
 				return oldJobStatus;
 			} else {
-				adminDb.updateSimulationJobStatus(oldJobStatus, newJobStatus);
+				newJobStatus = adminDb.updateSimulationJobStatus(oldJobStatus, newJobStatus);
 				return newJobStatus;
 			}
 		}

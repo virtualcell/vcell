@@ -300,6 +300,7 @@ public void refreshAll() {
 				SpeciesContextShape ss = (SpeciesContextShape) getShapeFromModelObject(structSpeciesContext[i]);
 				if (ss == null) {
 					ss = new SpeciesContextShape(structSpeciesContext[i], this);
+					ss.truncateLabelName(false);
 					structSpeciesContext[i].removePropertyChangeListener(this);
 					structSpeciesContext[i].addPropertyChangeListener(this);
 					structSpeciesContext[i].getSpecies().removePropertyChangeListener(this);
@@ -358,6 +359,7 @@ public void refreshAll() {
 					SpeciesContextShape speciesContextShape = (SpeciesContextShape) getShapeFromModelObject(speciesContext);
 					if (speciesContextShape == null) {
 						speciesContextShape = new SpeciesContextShape(speciesContext, this);
+						speciesContextShape.truncateLabelName(false);
 						reactionContainerShape.addChildShape(speciesContextShape);
 						addShape(speciesContextShape);
 						speciesContextShape.screenPos = reactionContainerShape.getRandomPosition();

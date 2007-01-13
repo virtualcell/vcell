@@ -10,6 +10,7 @@ import cbit.util.ObjectNotFoundException;
 import cbit.util.PropertyLoader;
 import cbit.util.ReferenceQueryResult;
 import cbit.util.ReferenceQuerySpec;
+import cbit.util.document.FieldDataIdentifierSpec;
 import cbit.util.document.KeyValue;
 import cbit.util.document.User;
 import cbit.vcell.biomodel.BioModelMetaData;
@@ -224,6 +225,17 @@ public ExportLog[] getExportLogs(boolean bAll) throws DataAccessException {
 	return dbServerImpl.getExportLogs(user, bAll);
 }
 
+
+/**
+ * This method was created in VisualAge.
+ * @return GeometryInfo
+ * @param key KeyValue
+ * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception java.rmi.RemoteException The exception description.
+ */
+public cbit.vcell.simdata.FieldDataIdentifier[] getFieldDataIdentifiers(FieldDataIdentifierSpec[] fieldDataIDSpecs) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException {
+	return dbServerImpl.getFieldDataIdentifiers(user,fieldDataIDSpecs);
+}
 
 /**
  * This method was created in VisualAge.

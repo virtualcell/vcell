@@ -74,16 +74,15 @@ private void calculateRealScaling() {
 			
 			if(srcScaleX < srcScaleY){
 				REAL_SAMPLE_X = SAMPLED_GEOM_SIZE_MAX;
-				REAL_SAMPLE_Y = (int)(srcScaleX*geom.getExtent().getY());
+				REAL_SAMPLE_Y = Math.max((int)(srcScaleX*geom.getExtent().getY()),1);
 			}
 			else{
 				REAL_SAMPLE_Y = SAMPLED_GEOM_SIZE_MAX;
-				REAL_SAMPLE_X = (int)(srcScaleY*geom.getExtent().getX());		
+				REAL_SAMPLE_X = Math.max((int)(srcScaleY*geom.getExtent().getX()),1);		
 			}
 		}
 	}
 }
-
 
 /**
  * getModelObject method comment.

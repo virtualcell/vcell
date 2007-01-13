@@ -6,6 +6,7 @@ import cbit.util.ReferenceQueryResult;
 import cbit.util.ReferenceQuerySpec;
 import cbit.util.SessionLog;
 import cbit.util.document.CurateSpec;
+import cbit.util.document.FieldDataIdentifierSpec;
 import cbit.util.document.KeyValue;
 import cbit.util.document.User;
 import cbit.util.document.VCDocumentInfo;
@@ -21,6 +22,7 @@ import cbit.vcell.messaging.JmsUtils;
 import cbit.vcell.modeldb.SolverResultSetInfo;
 import cbit.vcell.modeldb.VCInfoContainer;
 import cbit.vcell.server.UserMetaDbServer;
+import cbit.vcell.simdata.FieldDataIdentifier;
 import cbit.vcell.solvers.SimulationStatus;
 
 /**
@@ -246,6 +248,16 @@ public ExportLog[] getExportLogs(boolean bAll) throws DataAccessException {
 	return (ExportLog[])rpc("getExportLogs",new Object[]{user, new Boolean(bAll)});
 }
 
+/**
+ * This method was created in VisualAge.
+ * @return GeometryInfo
+ * @param key KeyValue
+ * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception java.rmi.RemoteException The exception description.
+ */
+public FieldDataIdentifier[] getFieldDataIdentifiers(FieldDataIdentifierSpec[] fieldDataIDSpecs) throws DataAccessException {
+	return (cbit.vcell.simdata.FieldDataIdentifier[])rpc("getFieldDataIdentifiers",new Object[]{user,fieldDataIDSpecs});
+}
 
 /**
  * This method was created in VisualAge.

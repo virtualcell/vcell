@@ -104,10 +104,10 @@ public BNGOutput executeBNG(User user, BNGInput bngRules) throws DataAccessExcep
  		+ PropertyLoader.getRequiredProperty(PropertyLoader.vcellBNGScript) + "\" \"" + bngInputFile.getAbsolutePath() + "\"";
 
  	BNGOutput bngOutput = null;
- 	
+ 	cbit.util.Executable executable = null;
 	try {
 		log.print("-------------Starting BNG ...-------------------------------");
-		cbit.util.Executable executable = new cbit.util.Executable(perlCommand);
+		executable = new cbit.util.Executable(perlCommand);
 		executable.start();
 
 		File[] files = tempDir.listFiles();
@@ -124,6 +124,9 @@ public BNGOutput executeBNG(User user, BNGInput bngRules) throws DataAccessExcep
 		bngOutput = new BNGOutput(executable.getStdoutString(), filenames, filecontents);
 	
 		log.print("--------------Finished BNG----------------------------");
+	} catch (cbit.util.ExecutableException e) {
+		log.exception(e);		
+		throw new DataAccessException(executable.getStderrString());
 	} catch (Exception e) {
 		log.exception(e);
 		throw new DataAccessException("Failed running BioNetGen: " + e.getMessage());
@@ -131,7 +134,6 @@ public BNGOutput executeBNG(User user, BNGInput bngRules) throws DataAccessExcep
 
 	return bngOutput;
 }
-
 
 /**
  * Insert the method's description here.

@@ -136,7 +136,8 @@ public void run() {
 							//update the database
 							jobAdminXA.updateSimulationJobStatus(obsoleteJobDbConnection.getConnection(), jobStatus, newJobStatus);
 							// send to simulation queue
-							SimulationTask newSimTask = new SimulationTask(new SimulationJob(simTask.getSimulationJob().getWorkingSim(), newJobStatus.getJobIndex()), newJobStatus.getTaskID());
+							Simulation sim = simTask.getSimulationJob().getWorkingSim();
+							SimulationTask newSimTask = new SimulationTask(new SimulationJob(sim, simDispatcher.getFieldDataIdentifiers(sim), newJobStatus.getJobIndex()), newJobStatus.getTaskID());
 							SimulationTaskMessage taskMsg = new SimulationTaskMessage(newSimTask);							
 							taskMsg.sendSimulationTask(obsoleteJobDispatcher);							
 							// tell client
@@ -242,7 +243,7 @@ public void run() {
 					foundOne = true;					
 					jobStatus = firstQualifiedJob.getSimJobStatus();					
 					Simulation sim = simDispatcher.getSimulation(firstQualifiedJob.getUser(), jobStatus.getVCSimulationIdentifier().getSimulationKey());							
-					simTask = new SimulationTask(new SimulationJob(sim, jobStatus.getJobIndex()), jobStatus.getTaskID());
+					simTask = new SimulationTask(new SimulationJob(sim, simDispatcher.getFieldDataIdentifiers(sim),jobStatus.getJobIndex()), jobStatus.getTaskID());
 					log.print("**DT: going to dispatch " + simTask);
 				}
 			}
@@ -474,6 +475,23 @@ public SimulationDispatcherMessaging(SimulationDispatcher simDispatcher0, Connec
 	
 }
 
+/**
+ * Insert the method's description here.
+ * Creation date: (10/24/2001 11:08:09 PM)
+ * @param simulation cbit.vcell.solver.Simulation
+ */
+private void do_failed(java.sql.Connection con, SimulationJobStatus oldJobStatus, String username, VCSimulationIdentifier vcSimID, int jobIndex, String failMsg) throws JMSException, DataAccessException, UpdateSynchronizationException {
+	
+	// if the job is in simJob queue, get it out
+	KeyValue simKey = vcSimID.getSimulationKey();
+	
+	// update database
+	SimulationJobStatus newJobStatus = simDispatcher.updateEndStatus(oldJobStatus, jobAdminXA, con, vcSimID, jobIndex, null, SimulationJobStatus.SCHEDULERSTATUS_FAILED, failMsg);
+	
+	// tell client
+	StatusMessage message = new StatusMessage(newJobStatus, username, null, null);
+	message.sendToClient(mainJobStatusPublisher);
+}
 
 /**
  * Insert the method's description here.
@@ -673,12 +691,13 @@ private void startSimulation(java.sql.Connection con, User user, VCSimulationIde
 	} else {
 		KeyValue simKey = vcSimID.getSimulationKey();
 		Simulation simulation = null;
+		cbit.vcell.simdata.FieldDataIdentifier[] fdis = null;
 		try {
 			simulation = simDispatcher.getSimulation(user, simKey);
 		} catch (DataAccessException ex) {
 			log.alert("Bad simulation " + vcSimID);
 			StatusMessage message = new StatusMessage(new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, -1, null, 
-				SimulationJobStatus.SCHEDULERSTATUS_FAILED, 0, ex.getMessage(), null, null), user.getName(), null, null);
+				SimulationJobStatus.SCHEDULERSTATUS_FAILED, 0, "Failed to dispatch simulation: "+ ex.getMessage(), null, null), user.getName(), null, null);
 			message.sendToClient(mainJobStatusPublisher);
 			return;
 		}
@@ -694,12 +713,18 @@ private void startSimulation(java.sql.Connection con, User user, VCSimulationIde
 				// right now, we submit a regular task for each scan job...
 				// should get smarter in the future for load balancing, quotas, priorities...
 				SimulationJobStatus oldJobStatus = jobAdminXA.getSimulationJobStatus(con, simKey, i);
+				try {
+					fdis = simDispatcher.getFieldDataIdentifiers(simulation);
+				} catch (DataAccessException ex) {
+					do_failed(con, oldJobStatus, user.getName(), vcSimID, i, ex.getMessage());
+					return;
+				}
 				// if already started by another thread
 				if (oldJobStatus != null && !oldJobStatus.isDone()) {
 					log.alert("Can't start, simulation[" + vcSimID + "] job [" + i + "] is running already");
 				} else {
 					int newTaskID = oldJobStatus == null ? 0 : (oldJobStatus.getTaskID() & MessageConstants.TASKID_USERCOUNTER_MASK) + MessageConstants.TASKID_USERINCREMENT;
-					SimulationTask simTask = new SimulationTask(new SimulationJob(simulation, i), newTaskID);
+					SimulationTask simTask = new SimulationTask(new SimulationJob(simulation, fdis, i), newTaskID);
 					int queueID = MessageConstants.QUEUE_ID_WAITING;
 					// put all the jobs to waiting first, let dispatch thread decide which to dispatch
 					do_start(con, oldJobStatus, simTask, queueID);

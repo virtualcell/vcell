@@ -33,7 +33,7 @@ public cbit.rmi.event.SimulationJobStatus updateDispatchedStatus(cbit.rmi.event.
 		
 		SimulationJobStatus newJobStatus = getNewStatus_updateDispatchedStatus(oldJobStatus, computeHost, vcSimID, jobIndex, startMsg);
 
-		adminDbXA.updateSimulationJobStatus(con, oldJobStatus, newJobStatus);
+		newJobStatus = adminDbXA.updateSimulationJobStatus(con, oldJobStatus, newJobStatus);
 
 		return newJobStatus;
 	}
@@ -48,12 +48,16 @@ public cbit.rmi.event.SimulationJobStatus updateDispatchedStatus(cbit.rmi.event.
  * @param simKey cbit.sql.KeyValue
  */
 public SimulationJobStatus updateEndStatus(SimulationJobStatus oldJobStatus, AdminDatabaseServerXA adminDbXA, java.sql.Connection con, VCSimulationIdentifier vcSimID, int jobIndex, String hostName, int status, String solverMsg) throws DataAccessException, UpdateSynchronizationException {
-	if (oldJobStatus != null && !oldJobStatus.isDone()) {		
+	if (oldJobStatus == null ||  oldJobStatus != null && !oldJobStatus.isDone()) {		
 
 		SimulationJobStatus newJobStatus = getNewStatus_updateEndStatus(oldJobStatus, vcSimID, jobIndex, hostName, status, solverMsg);
 		
-		adminDbXA.updateSimulationJobStatus(con, oldJobStatus, newJobStatus);
 
+		if (oldJobStatus == null) {
+			newJobStatus = adminDbXA.insertSimulationJobStatus(con, newJobStatus);
+		} else {
+			newJobStatus = adminDbXA.updateSimulationJobStatus(con, oldJobStatus, newJobStatus);
+		}
 		return newJobStatus;
 	}
 
@@ -95,9 +99,9 @@ public SimulationJobStatus updateQueueStatus(SimulationJobStatus oldJobStatus, A
 		
 		
 		if (oldJobStatus == null) {
-			adminDb.insertSimulationJobStatus(con, newJobStatus);
+			newJobStatus = adminDb.insertSimulationJobStatus(con, newJobStatus);
 		} else {
-			adminDb.updateSimulationJobStatus(con, oldJobStatus, newJobStatus);
+			newJobStatus = adminDb.updateSimulationJobStatus(con, oldJobStatus, newJobStatus);
 		}
 
 		return newJobStatus;
@@ -120,7 +124,7 @@ public cbit.rmi.event.SimulationJobStatus updateRunningStatus(cbit.rmi.event.Sim
 			updateLatestUpdateDate(oldJobStatus, adminDbXA, con, vcSimID, jobIndex);
 			return oldJobStatus;
 		} else {
-			adminDbXA.updateSimulationJobStatus(con, oldJobStatus, newJobStatus);
+			newJobStatus = adminDbXA.updateSimulationJobStatus(con, oldJobStatus, newJobStatus);
 			return newJobStatus;
 		}
 	}

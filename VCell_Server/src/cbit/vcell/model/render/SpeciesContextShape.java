@@ -30,6 +30,8 @@ public class SpeciesContextShape extends ElipseShape {
 	private String smallLabel = null;
 	protected Dimension smallLabelSize = new Dimension();
 	protected Point smallLabelPos = new Point(0,0);
+	
+	private boolean bTruncateLabelName = true;
 
 /**
  * SpeciesShape constructor comment.
@@ -221,7 +223,7 @@ public void refreshLabel() {
 	}
 
 	smallLabel = getLabel();
-	if(getLabel().length() > (2*SCS_LABEL_WIDTHPARM + SCS_LABEL_TRUCATED.length())){
+	if(bTruncateLabelName && getLabel().length() > (2*SCS_LABEL_WIDTHPARM + SCS_LABEL_TRUCATED.length())){
 		smallLabel =
 			getLabel().substring(0,SCS_LABEL_WIDTHPARM)+
 			SCS_LABEL_TRUCATED+
@@ -237,4 +239,15 @@ public void refreshLabel() {
 public void resize(Graphics2D g, Dimension newSize) {
 	return;
 }
+/**
+ * Insert the method's description here.
+ * Creation date: (8/28/2006 9:53:57 AM)
+ * @param bTruncate boolean
+ */
+public void truncateLabelName(boolean bTruncate) {
+
+	bTruncateLabelName = bTruncate;
+}
+
+
 }

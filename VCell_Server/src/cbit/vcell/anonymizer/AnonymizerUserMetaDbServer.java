@@ -1,8 +1,11 @@
 package cbit.vcell.anonymizer;
+import cbit.util.DataAccessException;
+import cbit.util.ObjectNotFoundException;
 import cbit.util.PropertyLoader;
 import cbit.util.ReferenceQueryResult;
 import cbit.util.ReferenceQuerySpec;
 import cbit.util.SessionLog;
+import cbit.util.document.FieldDataIdentifierSpec;
 import cbit.util.document.KeyValue;
 import cbit.util.document.VersionableFamily;
 import cbit.util.document.VersionableType;
@@ -229,6 +232,9 @@ public cbit.vcell.export.ExportLog[] getExportLogs(boolean bAll) throws cbit.uti
 	return (cbit.vcell.export.ExportLog[])remoteCall("getExportLogs", new Class[] {boolean.class}, new Object[] {new Boolean(bAll)});
 }
 
+public cbit.vcell.simdata.FieldDataIdentifier[] getFieldDataIdentifiers(FieldDataIdentifierSpec[] fieldDataIDSpecs) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException {
+	return (cbit.vcell.simdata.FieldDataIdentifier[])remoteCall("getFieldDataIdentifiers", new Class[] {FieldDataIdentifierSpec[].class}, new Object[] {fieldDataIDSpecs});
+}
 
 /**
  * This method was created in VisualAge.
