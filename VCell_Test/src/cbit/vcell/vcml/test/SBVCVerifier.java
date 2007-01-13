@@ -540,7 +540,7 @@ private ODESolverResultSet solveSimulation(Simulation sim, boolean hasFastSystem
         SessionLog sessionLog = new StdoutSessionLog("VCELL");
         ODESolver odeSolver = null;
         try {
-	        odeSolver = new cbit.vcell.solver.ode.ForwardEulerSolver(new SimulationJob(sim, 0), directory, sessionLog);
+	        odeSolver = new cbit.vcell.solver.ode.ForwardEulerSolver(new SimulationJob(sim, null, 0), directory, sessionLog);
         } catch (SolverException e) {
 	        e.printStackTrace(System.out);
 	        throw new RuntimeException("Error initializing RK-Fehlberg solver : " + e.getMessage());
@@ -598,7 +598,7 @@ private ODESolverResultSet solveSimulation(Simulation sim, boolean hasFastSystem
 		// add appropriate Function columns to result set
 		cbit.vcell.math.Function functions[] = sim.getFunctions();
 		for (int i = 0; i < functions.length; i++){
-			if (cbit.vcell.simdata.FunctionFileGenerator.isFunctionSaved(functions[i])){
+			if (cbit.vcell.simulation.Simulation.isFunctionSaved(functions[i])){
 				IExpression exp1 = ExpressionFactory.createExpression(functions[i].getExpression());
 				try {
 					exp1 = sim.substituteFunctions(exp1);

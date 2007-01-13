@@ -159,7 +159,7 @@ public static void main(java.lang.String[] args) {
 		//
 		cbit.vcell.math.Function functions[] = sim.getFunctions();
 		for (int i = 0; i < functions.length; i++){
-			if (cbit.vcell.simdata.FunctionFileGenerator.isFunctionSaved(functions[i])){
+			if (cbit.vcell.simulation.Simulation.isFunctionSaved(functions[i])){
 				IExpression exp1 = ExpressionFactory.createExpression(functions[i].getExpression());
 				try {
 					exp1 = sim.substituteFunctions(exp1);
