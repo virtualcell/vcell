@@ -522,6 +522,10 @@ public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException {
  * @return File
  */
 private synchronized File getODEDataFile() throws DataAccessException {
+	//check if stochastic result file exists or not, if so return the file. added 27th July 2006.
+	String sFileName = info.getID()+"_0_.stoch";
+	File stochFile = new File(userDirectory, sFileName);
+	if(stochFile.exists()) return stochFile;
 	refreshLogFile();
 	if (dataFilenames == null) throw new DataAccessException("ODE data filename not read from logfile");
 	File odeFile = new File(userDirectory, dataFilenames[0]);
@@ -1167,7 +1171,7 @@ private synchronized void readLog(File logFile) throws FileNotFoundException, Da
 	if (stringBuffer.length() != logFileLength){
 		System.out.println("<<<SYSOUT ALERT>>>SimResults.readLog(), read "+stringBuffer.length()+" of "+logFileLength+" bytes of log file");
 	}
-	if (stringBuffer.toString().startsWith(ODE_DATA_IDENTIFIER)) {
+	if ((stringBuffer.toString().startsWith(ODE_DATA_IDENTIFIER)) || (stringBuffer.toString().startsWith(STOCH_DATA_IDENTIFIER))) {
 		String newLineDelimiters = "\n\r";
 		StringTokenizer lineTokenizer = new StringTokenizer(stringBuffer.toString(),newLineDelimiters);
 		isODEData = true;

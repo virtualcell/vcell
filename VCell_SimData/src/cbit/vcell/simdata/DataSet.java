@@ -7,7 +7,7 @@ package cbit.vcell.simdata;
 import java.io.*;
 import java.util.*;
 
-class DataSet implements java.io.Serializable
+public class DataSet implements java.io.Serializable
 {
 
    private Vector dataBlockList;
@@ -18,6 +18,18 @@ DataSet() {
 	dataBlockList = new Vector();
 	fileHeader = new FileHeader();
 }
+
+/**
+ * This method was created by a SmartGuide.
+ * @return double[]
+ * @param varName java.lang.String
+ */
+public static double[] fetchSimData(String varName, File file) throws IOException {
+	DataSet dataSet = new DataSet();
+	dataSet.read(file, null);
+	return dataSet.getData(varName, null);
+}
+
 /**
  * This method was created by a SmartGuide.
  * @return double[]
@@ -66,7 +78,7 @@ double[] getData(String varName, File zipFile) throws IOException {
 		}		
 	}	
 	if (data == null){
-		throw new IOException("DataSet.getData(), data not found");
+		throw new IOException("DataSet.getData(), data not found for variable '" + varName + "'");
 	}	
 	return data;
 }
@@ -217,4 +229,34 @@ void read(File file, File zipFile) throws IOException, OutOfMemoryError {
 	}	
 
 }
+
+/**
+ * Insert the method's description here.
+ * Creation date: (9/21/2006 1:33:24 PM)
+ * @param file java.io.File
+ * @param varnames java.lang.String
+ * @param data double[]
+ */
+public static void write(File file, String varname, int varType, cbit.util.ISize size, double[] data) throws IOException {
+	RandomAccessFile raf = new RandomAccessFile(file, "rw");
+	FileHeader fileHeader = new FileHeader();
+	DataBlock dataBlock = null;
+	
+	fileHeader.sizeX = size.getX();
+	fileHeader.sizeY = size.getY();
+	fileHeader.sizeZ = size.getZ();
+	fileHeader.numBlocks = 1;
+	fileHeader.firstBlockOffset = FileHeader.headerSize;
+
+	fileHeader.write(raf);
+   
+	dataBlock = DataBlock.createDataBlock(varname, varType, data.length, fileHeader.firstBlockOffset + DataBlock.blockSize);
+	dataBlock.writeBlockHeader(raf);	   
+
+	for (int i = 0; i < data.length; i ++) {
+		raf.writeDouble(data[i]);
+	}
+	raf.close();		
+}
+
 }

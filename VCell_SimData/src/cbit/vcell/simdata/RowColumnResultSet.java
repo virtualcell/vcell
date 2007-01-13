@@ -13,7 +13,6 @@ import org.vcell.expression.IExpression;
 import org.vcell.expression.SymbolTable;
 import org.vcell.expression.VariableSymbolTable;
 
-import edu.uchc.vcell.expression.internal.*;
 /**
  *  This will have a list of Variables (NB: ReservedVariable.TIME is a ReservedVariable,
  *  and a ReservedVariable is a Variable...also, StateVariables are NOT Variables, but
@@ -278,8 +277,8 @@ public int getDataColumnCount() {
 /**
  * getVariableNames method comment.
  */
-public ODESolverResultSetColumnDescription[] getDataColumnDescriptions() {
-	return (ODESolverResultSetColumnDescription[])cbit.util.BeanUtils.getArray(fieldDataColumnDescriptions,ODESolverResultSetColumnDescription.class);
+public ColumnDescription[] getDataColumnDescriptions() {
+	return (ColumnDescription[])cbit.util.BeanUtils.getArray(fieldDataColumnDescriptions,ColumnDescription.class);
 }
 /**
  * Insert the method's description here.

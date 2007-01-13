@@ -534,9 +534,12 @@ public ODEDataBlock getODEDataBlock() throws DataAccessException {
 				newColName = "Data"+(i+1)+"."+newODErset.getDataColumnDescriptions()[j].getName();
 			}
 			newVarNames[j] = newColName;
-			ODESolverResultSetColumnDescription cd = newODErset.getDataColumnDescriptions()[j];
-			ODESolverResultSetColumnDescription newCD = new ODESolverResultSetColumnDescription(newColName, cd.getParameterName(), newColName);
-			combinedODESolverRSet.addDataColumn(newCD);
+			ColumnDescription cd = newODErset.getDataColumnDescriptions()[j];
+			if(cd instanceof ODESolverResultSetColumnDescription)
+			{
+				ODESolverResultSetColumnDescription newCD = new ODESolverResultSetColumnDescription(newColName, cd.getParameterName(), newColName);
+				combinedODESolverRSet.addDataColumn(newCD);
+			}
 		}
 		// Add function columns
 		for (int j = 0; j < newODErset.getFunctionColumnCount(); j++) {
@@ -982,8 +985,11 @@ private ODESolverResultSet resampleODEData(ODESimData refSimdata, ODESimData sim
 
 	ODESolverResultSet newODEresultSet = new ODESolverResultSet();
 	for (int i = 0; i < simData.getDataColumnCount(); i++) {
-		ODESolverResultSetColumnDescription colDesc = simData.getDataColumnDescriptions()[i];
-		newODEresultSet.addDataColumn(colDesc);
+		if(simData.getDataColumnDescriptions()[i] instanceof ODESolverResultSetColumnDescription)
+		{
+			ODESolverResultSetColumnDescription colDesc = ((ODESolverResultSetColumnDescription)simData.getDataColumnDescriptions()[i]);
+			newODEresultSet.addDataColumn(colDesc);
+		}
 	}
 	for (int i = 0; i < simData.getFunctionColumnCount(); i++) {
 		FunctionColumnDescription colDesc = simData.getFunctionColumnDescriptions()[i];

@@ -6,7 +6,6 @@ package cbit.vcell.mesh;
 import java.util.*;
 import java.io.*;
 import cbit.util.*;
-import cbit.vcell.geometry.*;
 import cbit.vcell.math.VCML;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFormatException;
@@ -81,6 +80,18 @@ public static final VariableType getVariableTypeFromLength(CartesianMesh mesh, i
 		result = VariableType.CONTOUR_REGION;
 	}
 	return result;
+}
+
+
+/**
+ * This method was created by a SmartGuide.
+ */
+public static CartesianMesh createSimpleCartesianMesh(Origin orig, Extent extent, ISize size) {
+	CartesianMesh mesh = new CartesianMesh();
+	mesh.setOrigin(orig);
+	mesh.setExtent(extent);
+	mesh.setSize(size.getX(), size.getY(), size.getZ());
+	return mesh;
 }
 
 /**

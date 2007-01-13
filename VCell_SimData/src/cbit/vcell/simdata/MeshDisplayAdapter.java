@@ -23,6 +23,39 @@ public class MeshDisplayAdapter {
 	public static final int ORDER_P0 = 0x02;
 	private CartesianMesh mesh = null;
 
+	private class ConstructCurveHelper{
+		MembraneElement firstInCurve;
+		SampledCurve curve;
+		MembraneElement currentMembraneElement;
+		MembraneElement connectedMembraneElement;
+		boolean bPrepend;
+		boolean[] bMembraneElementChecked;
+		int normalAxis;
+		int slice;
+		Vector resolvedMembraneIndexes;
+
+		ConstructCurveHelper(
+			MembraneElement firstInCurve,
+			SampledCurve curve, 
+			MembraneElement currentMembraneElement, 
+			MembraneElement connectedMembraneElement, 
+			boolean bPrepend, 
+			boolean[] bMembraneElementChecked, 
+			int normalAxis, 
+			int slice, 
+			Vector resolvedMembraneIndexes) {
+				this.firstInCurve = firstInCurve;
+				this.curve = curve;
+				this.currentMembraneElement = currentMembraneElement;
+				this.connectedMembraneElement = connectedMembraneElement;
+				this.bPrepend = bPrepend;
+				this.bMembraneElementChecked = bMembraneElementChecked;
+				this.normalAxis =normalAxis;
+				this.slice = slice;
+				this.resolvedMembraneIndexes = resolvedMembraneIndexes;
+		}
+
+	};
 	private class ParamHolder{
 		int validMembraneSegmentCount;
 		int visibleMembraneCount;
@@ -116,69 +149,59 @@ private void addSegmentToCurve(SampledCurve curve, MembraneElement from, Membran
  * Creation date: (8/30/00 6:16:35 PM)
  * @return cbit.vcell.geometry.SampledCurve
  */
-private void constructCurve(
-	MembraneElement firstInCurve,
-	SampledCurve curve, 
-	MembraneElement currentMembraneElement, 
-	MembraneElement connectedMembraneElement, 
-	boolean bPrepend, 
-	boolean[] bMembraneElementChecked, 
-	int normalAxis, 
-	int slice, 
-	Vector resolvedMembraneIndexes) {
-	//
-	if (bMembraneElementChecked[currentMembraneElement.getMembraneIndex()] == true) {
-		return;
+private ConstructCurveHelper[] constructCurve(ConstructCurveHelper cch){
+
+	if (cch.bMembraneElementChecked[cch.currentMembraneElement.getMembraneIndex()] == true) {
+		return null;
 	}
 	
-	ParamHolder paramHolder = doCheck(currentMembraneElement,normalAxis,slice,firstInCurve,mesh,bMembraneElementChecked);
+	ParamHolder paramHolder = doCheck(cch.currentMembraneElement,cch.normalAxis,cch.slice,cch.firstInCurve,mesh,cch.bMembraneElementChecked);
 
 	if (paramHolder.validMembraneSegmentCount == 0) {
 		if ((paramHolder.visibleMembraneCount == 2) && paramHolder.visibleNeighborConnectFirstInCurve) {
 			//
 			// Traversing membranes, Head caught up with tail
 			//
-			curve.setClosed(true);
+			cch.curve.setClosed(true);
 			//
 			// add last membrane index for this segment of a closed curve (note: don't add coordinates, they are already there)
 			//
-			resolvedMembraneIndexes.add(new Integer(currentMembraneElement.getMembraneIndex()));
+			cch.resolvedMembraneIndexes.add(new Integer(cch.currentMembraneElement.getMembraneIndex()));
 		} else {
 			//otherwise we must be at an edge
-			addSegmentToCurve(curve, connectedMembraneElement, currentMembraneElement, normalAxis, bPrepend,resolvedMembraneIndexes);
+			addSegmentToCurve(cch.curve, cch.connectedMembraneElement, cch.currentMembraneElement, cch.normalAxis, cch.bPrepend,cch.resolvedMembraneIndexes);
 		}
-		return;
+		return null;
 	}
 	//
-	addSegmentToCurve(curve, connectedMembraneElement, currentMembraneElement, normalAxis, bPrepend,resolvedMembraneIndexes);
+	addSegmentToCurve(cch.curve, cch.connectedMembraneElement, cch.currentMembraneElement, cch.normalAxis, cch.bPrepend,cch.resolvedMembraneIndexes);
 	//
 	if (paramHolder.validMembraneSegmentCount == 1) {
-		if(connectedMembraneElement == null){
+		if(cch.connectedMembraneElement == null){
 			//
 			// beginning a new "open" curve on the edge of the world
 			//
-			boolean bStartPrepend = ((ORDER_PREPEND & determineOrder(currentMembraneElement, paramHolder.membraneElementsValid[0], normalAxis)) != 0);
-			constructCurve(firstInCurve,curve, paramHolder.membraneElementsValid[0], currentMembraneElement, bStartPrepend, bMembraneElementChecked, normalAxis, slice,resolvedMembraneIndexes);
+			boolean bStartPrepend = ((ORDER_PREPEND & determineOrder(cch.currentMembraneElement, paramHolder.membraneElementsValid[0], cch.normalAxis)) != 0);
+			return new ConstructCurveHelper[] {new ConstructCurveHelper(cch.firstInCurve,cch.curve, paramHolder.membraneElementsValid[0], cch.currentMembraneElement, bStartPrepend, cch.bMembraneElementChecked, cch.normalAxis, cch.slice,cch.resolvedMembraneIndexes)};
 		}else{
 			//
 			// traversing normally (only one neighbor ahead ... neighbor behind already checked).
 			//
-			constructCurve(firstInCurve,curve, paramHolder.membraneElementsValid[0], currentMembraneElement, bPrepend, bMembraneElementChecked, normalAxis, slice,resolvedMembraneIndexes);
+			return new ConstructCurveHelper[] {new ConstructCurveHelper(cch.firstInCurve,cch.curve, paramHolder.membraneElementsValid[0], cch.currentMembraneElement, cch.bPrepend, cch.bMembraneElementChecked, cch.normalAxis, cch.slice,cch.resolvedMembraneIndexes)};
 		}
-		return;
 	}
 	if (paramHolder.validMembraneSegmentCount == 2) { 
 		//
 		// We are beginning a new curve in the middle of a curve
 		//
-		boolean bStartPrepend = ((ORDER_PREPEND & determineOrder(currentMembraneElement, paramHolder.membraneElementsValid[0], normalAxis)) != 0);
-		constructCurve(firstInCurve,curve, paramHolder.membraneElementsValid[0], currentMembraneElement, bStartPrepend, bMembraneElementChecked, normalAxis, slice,resolvedMembraneIndexes);
-		constructCurve(firstInCurve,curve, paramHolder.membraneElementsValid[1], currentMembraneElement, !bStartPrepend, bMembraneElementChecked, normalAxis, slice,resolvedMembraneIndexes);
-		return;
+		boolean bStartPrepend = ((ORDER_PREPEND & determineOrder(cch.currentMembraneElement, paramHolder.membraneElementsValid[0], cch.normalAxis)) != 0);
+		return new ConstructCurveHelper[] {
+			new ConstructCurveHelper(cch.firstInCurve,cch.curve, paramHolder.membraneElementsValid[0], cch.currentMembraneElement, bStartPrepend, cch.bMembraneElementChecked, cch.normalAxis, cch.slice,cch.resolvedMembraneIndexes),
+			new ConstructCurveHelper(cch.firstInCurve,cch.curve, paramHolder.membraneElementsValid[1], cch.currentMembraneElement, !bStartPrepend, cch.bMembraneElementChecked, cch.normalAxis, cch.slice,cch.resolvedMembraneIndexes)
+		};
 	}
 	throw new RuntimeException("Error: Unexpected number of Visible, Unchecked Membrane neighbors in slice");
 }
-
 
 /**
  * Insert the method's description here.
@@ -353,7 +376,28 @@ public Hashtable getCurvesAndMembraneIndexes(int normalAxis, int slice) {
 			if (bMembraneElementChecked[c] == false && isMembraneElementVisible(membraneElements[c], normalAxis, slice)) {
 				newCurve = new SampledCurve();
 				resolvedMembraneIndexes = new Vector();
-				constructCurve(membraneElements[c],newCurve, membraneElements[c], null, false, bMembraneElementChecked, normalAxis, slice,resolvedMembraneIndexes);
+				ConstructCurveHelper pendingCCH = null;
+				ConstructCurveHelper currentCCH =
+					new ConstructCurveHelper(membraneElements[c],newCurve, membraneElements[c], null, false, bMembraneElementChecked, normalAxis, slice,resolvedMembraneIndexes);
+				while(true){
+					ConstructCurveHelper[] currentCCHArr = constructCurve(currentCCH);
+					if(currentCCHArr == null){
+						if(pendingCCH == null){
+							break;
+						}else{
+							currentCCH = pendingCCH;
+							pendingCCH = null;
+						}
+					}else if(currentCCHArr.length == 1){
+						currentCCH = currentCCHArr[0];
+					}else if(currentCCHArr.length == 2){
+						if(pendingCCH != null){
+							throw new RuntimeException("MeshDisplayAdapter.getCurvesAndMembraneIndexes Error -- Only 1 Pending CurveConstructionHelper allowed.");
+						}
+						currentCCH = currentCCHArr[0];
+						pendingCCH = currentCCHArr[1];
+					}
+				}
 				break;
 			}
 		}

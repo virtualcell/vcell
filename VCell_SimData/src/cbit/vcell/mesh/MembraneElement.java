@@ -3,6 +3,7 @@ package cbit.vcell.mesh;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.render.objects.Vect3d;
 import cbit.util.Coordinate;
 import cbit.vcell.math.*;
 /**
@@ -123,8 +124,8 @@ public float getArea() {
  * Creation date: (2/15/2006 1:54:50 PM)
  * @return cbit.vcell.render.Vect3d
  */
-public Coordinate getCentroid() {
-	return (area == AREA_UNDEFINED?null:new Coordinate(centroidX,centroidY,centroidZ));
+public Vect3d getCentroid() {
+	return (area == AREA_UNDEFINED?null:new Vect3d(centroidX,centroidY,centroidZ));
 }
 
 

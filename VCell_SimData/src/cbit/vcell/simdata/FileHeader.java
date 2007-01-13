@@ -8,7 +8,7 @@ import java.io.*;
 
 class FileHeader implements java.io.Serializable
 {
-   final static int headerSize = 16 + 8 + 32 + 32;
+   final static int headerSize = 16 + 8 + 4 * 5;
    final static String MAGIC = "VCell Data Dump";
    final static String VERSION = "2.0.1";
    String versionString=null;

@@ -4,18 +4,16 @@ package cbit.vcell.export;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.io.*;
-import cbit.vcell.math.*;
 import cbit.vcell.simdata.SpatialSelection;
-import cbit.vcell.geometry.*;
+import java.io.*;
 import cbit.util.*;
 /**
  * This type was created in VisualAge.
  */
 public class GeometrySpecs implements Serializable {
-	private byte[][] serializedSelections = null;
+//	private byte[][] serializedSelections = null;
+	private SpatialSelection[] selections = null;
 	private int axis;
-	private String slicePlane;
 	private int sliceNumber;
 	private int modeID;
 /**
@@ -25,16 +23,17 @@ public class GeometrySpecs implements Serializable {
  * @param sliceNumber int
  * @param modeID int
  */
-public GeometrySpecs(SpatialSelection[] selections, int axis, int sliceNumber, int modeID) {
-	if (selections != null) {
-		try {
-			serializedSelections = new byte[selections.length][];
-			for (int i = 0; i < selections.length; i++){
-				serializedSelections[i] = BeanUtils.toSerialized(selections[i]);
-			}
-		} catch (IOException exc) {
-			exc.printStackTrace(System.out);
-		}
+public GeometrySpecs(SpatialSelection[] argSelections, int axis, int sliceNumber, int modeID) {
+	if (argSelections != null) {
+//		try {
+//			serializedSelections = new byte[argSelections.length][];
+//			for (int i = 0; i < argSelections.length; i++){
+//				serializedSelections[i] = BeanUtils.toSerialized(argSelections[i]);
+//			}
+//		} catch (IOException exc) {
+//			exc.printStackTrace(System.out);
+//		}
+		selections = argSelections;
 	}
 	this.axis = axis;
 	this.sliceNumber = sliceNumber;
@@ -55,7 +54,8 @@ public boolean equals(Object object) {
 			modeID == geometrySpecs.getModeID()
 		) {
 			SpatialSelection[] otherSelections = geometrySpecs.getSelections();
-			if (serializedSelections.length == otherSelections.length) {
+//			if (serializedSelections.length == otherSelections.length) {
+			if (selections.length == otherSelections.length) {
 				SpatialSelection[] selections = getSelections();
 				for (int i = 0; i < selections.length; i++){
 					if (! selections[i].compareEqual(otherSelections[i])) {
@@ -140,20 +140,21 @@ public int[] getPointIndexes() {
  * @return cbit.vcell.simdata.gui.SpatialSelection[]
  */
 public SpatialSelection[] getSelections() {
-	try {
-		if (serializedSelections != null) {
-			SpatialSelection[] spatialSelections = new SpatialSelection[serializedSelections.length];
-			for (int i = 0; i < serializedSelections.length; i++){
-				spatialSelections[i] = (SpatialSelection)BeanUtils.fromSerialized(serializedSelections[i]);
-			}
-			return spatialSelections;
-		} else {
-			return null;
-		}
-	} catch (Exception exc) {
-		exc.printStackTrace(System.out);
-		return null;
-	}
+//	try {
+//		if (serializedSelections != null) {
+//			SpatialSelection[] spatialSelections = new SpatialSelection[serializedSelections.length];
+//			for (int i = 0; i < serializedSelections.length; i++){
+//				spatialSelections[i] = (SpatialSelection)BeanUtils.fromSerialized(serializedSelections[i]);
+//			}
+//			return spatialSelections;
+//		} else {
+//			return null;
+//		}
+//	} catch (Exception exc) {
+//		exc.printStackTrace(System.out);
+//		return null;
+//	}
+	return selections;
 }
 /**
  * This method was created in VisualAge.
@@ -181,9 +182,10 @@ public String toString() {
 	buf.append("axis: " + axis + ", ");
 	buf.append("sliceNumber: " + sliceNumber + ", ");
 	buf.append("spatialSelections: ");
-	if (serializedSelections != null) {
+//	if (serializedSelections != null) {
+	if (selections != null) {
 		buf.append("{");
-		SpatialSelection[] selections = getSelections();
+//		SpatialSelection[] selections = getSelections();
 		for (int i = 0; i < selections.length; i++){
 			buf.append(selections);
 			if (i < selections.length - 1) buf.append(",");

@@ -8,14 +8,30 @@ import java.io.*;
 
 class DataBlock implements java.io.Serializable
 {
-	final static int blockSize = 128 + 32 + 32;
+	final static int blockSize = 124 + 3 * 4;
 	private String varName = null;
 	private int variableTypeInt = 0;
 	private int size = 0;
 	private int dataOffset = 0;
    DataBlock()
    {
-   }      
+   }     
+   
+/**
+ * Insert the method's description here.
+ * Creation date: (9/21/2006 2:27:07 PM)
+ * @return cbit.vcell.simdata.DataBlock
+ */
+public static DataBlock createDataBlock(String arg_varName, int arg_varType, int arg_size, int arg_dataOffset) {
+   	DataBlock db = new DataBlock();
+   	db.varName = arg_varName;
+   	db.variableTypeInt = arg_varType;
+   	db.size = arg_size;
+   	db.dataOffset = arg_dataOffset;
+   	
+   	return db;
+}
+
 /**
  * This method was created in VisualAge.
  * @return long

@@ -8,6 +8,7 @@ import cbit.util.VCDataIdentifier;
 ©*/
 import java.io.*;
 
+import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
 /**
@@ -21,29 +22,29 @@ public class ODESimData extends ODESolverResultSet implements Serializable {
 /**
  * SimpleODEData constructor comment.
  */
-public ODESimData(VCDataIdentifier vcdId, ODESolverResultSet odeSolverResultSet) {
-	int rowCount = odeSolverResultSet.getRowCount();
-	//
-	this.formatID = SimDataConstants.COMPACT_ODE_DATA_FORMAT_ID;
-	this.mathName = vcdId.getID();
-	ODESolverResultSetColumnDescription dataColumns[] = odeSolverResultSet.getDataColumnDescriptions();
-	for (int c = 0; c < dataColumns.length; c++) {
-		addDataColumn(new ODESolverResultSetColumnDescription(dataColumns[c]));
-	}
-	for (int r = 0; r < rowCount; r++) {
-		addRow(odeSolverResultSet.getRow(r));
-	}
-	FunctionColumnDescription functionColumns[] = odeSolverResultSet.getFunctionColumnDescriptions();
-	for (int c = 0; c < functionColumns.length; c++) {
-		try {
-			addFunctionColumn(new FunctionColumnDescription(functionColumns[c]));
-		}catch (org.vcell.expression.ExpressionException e){
-			e.printStackTrace(System.out);
-			throw new RuntimeException(e.getMessage());
+	public ODESimData(VCDataIdentifier vcdId, ODESolverResultSet odeSolverResultSet) {
+		int rowCount = odeSolverResultSet.getRowCount();
+		//
+		this.formatID = SimDataConstants.COMPACT_ODE_DATA_FORMAT_ID;
+		this.mathName = vcdId.getID();
+		ColumnDescription dataColumns[] = odeSolverResultSet.getDataColumnDescriptions();
+		for (int c = 0; c < dataColumns.length; c++) {
+			if(dataColumns[c] instanceof ODESolverResultSetColumnDescription)
+			    addDataColumn(new ODESolverResultSetColumnDescription((ODESolverResultSetColumnDescription)dataColumns[c]));
 		}
-	}
-}
-/**
+		for (int r = 0; r < rowCount; r++) {
+			addRow(odeSolverResultSet.getRow(r));
+		}
+		FunctionColumnDescription functionColumns[] = odeSolverResultSet.getFunctionColumnDescriptions();
+		for (int c = 0; c < functionColumns.length; c++) {
+			try {
+				addFunctionColumn(new FunctionColumnDescription(functionColumns[c]));
+			}catch (ExpressionException e){
+				e.printStackTrace(System.out);
+				throw new RuntimeException(e.getMessage());
+			}
+		}
+	}/**
  * SimpleODEData constructor comment.
  */
 public ODESimData(DataInputStream input) throws IOException {
@@ -70,11 +71,13 @@ public String getMathName() {
  */
 public long getSizeInBytes() {
 	long sizeInBytes = getFormatID().length() + getMathName().length();
-	ODESolverResultSetColumnDescription dataColumns[] = getDataColumnDescriptions();
+	ColumnDescription dataColumns[] = getDataColumnDescriptions();
 	for (int c = 0; c < dataColumns.length; c++) {
-		sizeInBytes += dataColumns[c].getVariableName().length();
-		sizeInBytes += dataColumns[c].getDisplayName().length();
-		sizeInBytes += (dataColumns[c].getParameterName()!=null)?(dataColumns[c].getParameterName().length()):((new String("null")).length());
+		if(dataColumns[c] instanceof ODESolverResultSetColumnDescription){
+			sizeInBytes += ((ODESolverResultSetColumnDescription)dataColumns[c]).getVariableName().length();
+			sizeInBytes += ((ODESolverResultSetColumnDescription)dataColumns[c]).getDisplayName().length();
+			sizeInBytes += (((ODESolverResultSetColumnDescription)dataColumns[c]).getParameterName()!=null)?(dataColumns[c].getParameterName().length()):((new String("null")).length());
+		}
 	}
 	sizeInBytes += 8*(getRowCount())*(getDataColumnCount());
 	FunctionColumnDescription functionColumns[] = getFunctionColumnDescriptions();
@@ -161,25 +164,28 @@ public void readIn(DataInputStream input) throws IOException {
 			}
 			addRow(values);
 		}
-		int functionCount = input.readInt();
-		for (int c = 0; c < functionCount; c++) {
-			String columnName = input.readUTF();
-			String columnDisplayName = input.readUTF();
-			String columnParameterName = input.readUTF();
-			if (columnParameterName.equals("null")){
-				columnParameterName = null;
+		try {
+			int functionCount = input.readInt();
+			for (int c = 0; c < functionCount; c++) {
+				String columnName = input.readUTF();
+				String columnDisplayName = input.readUTF();
+				String columnParameterName = input.readUTF();
+				if (columnParameterName.equals("null")){
+					columnParameterName = null;
+				}
+				String expressionString = input.readUTF();
+				try {
+					IExpression expression = ExpressionFactory.createExpression(expressionString);
+					addFunctionColumn(new FunctionColumnDescription(expression, columnName, columnParameterName, columnDisplayName, false));
+				}catch (org.vcell.expression.ExpressionBindingException e){
+					e.printStackTrace(System.out);
+					System.out.println("ODESimData.readIn(): unable to bind expression '"+expressionString+"'");
+				}catch (org.vcell.expression.ExpressionException e){
+					e.printStackTrace(System.out);
+					System.out.println("ODESimData.readIn(): unable to parse expression '"+expressionString+"'");
+				}
 			}
-			String expressionString = input.readUTF();
-			try {
-				IExpression expression = ExpressionFactory.createExpression(expressionString);
-				addFunctionColumn(new FunctionColumnDescription(expression, columnName, columnParameterName, columnDisplayName, false));
-			}catch (org.vcell.expression.ExpressionBindingException e){
-				e.printStackTrace(System.out);
-				System.out.println("ODESimData.readIn(): unable to bind expression '"+expressionString+"'");
-			}catch (org.vcell.expression.ExpressionException e){
-				e.printStackTrace(System.out);
-				System.out.println("ODESimData.readIn(): unable to parse expression '"+expressionString+"'");
-			}
+		}catch (EOFException e){
 		}
 	} else {
 		throw new IOException("DataInputStream is wrong format '"+formatID+"'");
@@ -288,14 +294,18 @@ public void writeOut(DataOutputStream output) throws IOException {
 	output.writeUTF(mathName);
 	output.writeInt(getRowCount());
 	output.writeInt(getDataColumnCount());
-	ODESolverResultSetColumnDescription dataColumns[] = getDataColumnDescriptions();
-	for (int c = 0; c < dataColumns.length; c++) {
-		output.writeUTF(dataColumns[c].getVariableName());
-		output.writeUTF(dataColumns[c].getDisplayName());
-		if (dataColumns[c].getParameterName()!=null){
-			output.writeUTF(dataColumns[c].getParameterName());
-		}else{
-			output.writeUTF("null");
+	ColumnDescription dataColumns[] = getDataColumnDescriptions();
+	for (int c = 0; c < dataColumns.length; c++) 
+	{
+		if(dataColumns[c] instanceof ODESolverResultSetColumnDescription)
+		{
+			output.writeUTF(((ODESolverResultSetColumnDescription)dataColumns[c]).getVariableName());
+			output.writeUTF(((ODESolverResultSetColumnDescription)dataColumns[c]).getDisplayName());
+			if (((ODESolverResultSetColumnDescription)dataColumns[c]).getParameterName()!=null){
+				output.writeUTF(((ODESolverResultSetColumnDescription)dataColumns[c]).getParameterName());
+			}else{
+				output.writeUTF("null");
+			}
 		}
 	}                          
 	for (int r = 0; r < getRowCount(); r++) {
