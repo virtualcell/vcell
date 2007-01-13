@@ -31,6 +31,10 @@ public class PropertyLoader {
 	public static final String idaLibraryProperty			= "vcell.ida.library";
 	public static final String idaIncludeProperty			= "vcell.ida.include";
 	public static final String idaExecutableProperty		= "vcell.ida.executable";
+	//Stoch properties
+	public static final String stochLibraryProperty			= "vcell.stoch.library";
+	public static final String stochIncludeProperty			= "vcell.stoch.include";
+	public static final String stochExecutableProperty		= "vcell.stoch.executable";	
 	//
 	public static final String corbaEnabled					= "vcell.corbaEnabled";
 	public static final String databaseCacheSizeProperty	= "vcell.databaseCacheSize";
@@ -140,6 +144,11 @@ public class PropertyLoader {
 		idaLibraryProperty,
 		idaIncludeProperty,
 		idaExecutableProperty,
+		
+		stochLibraryProperty,
+		stochIncludeProperty,
+		stochExecutableProperty,
+		
 		corbaEnabled,
 		databaseCacheSizeProperty,
 		simdataCacheSizeProperty,

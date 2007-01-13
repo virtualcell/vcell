@@ -35,6 +35,27 @@ public static String fixToken(String name) {
 	return newString.toString();
 }
 
+/**
+ * Insert the method's description here.
+ * Creation date: (9/20/2006 9:06:41 AM)
+ * @return java.lang.String
+ * @param inputString java.lang.String
+ */
+public static String getEscapedString_C(String inputString) {
+	// escape '\'
+	StringBuffer sb = new StringBuffer();
+	for (int i = 0;i < inputString.length(); i ++){
+		if (inputString.charAt(i) == '\\'){
+			sb.append(inputString.charAt(i));
+			sb.append(inputString.charAt(i));
+		} else{
+			sb.append(inputString.charAt(i));
+		}
+	}
+
+	return sb.toString();
+}
+
 
 /**
  * This method was created in VisualAge.

@@ -13,6 +13,7 @@ public interface MessageConstants {
 	public static final String SIMKEY_PROPERTY		= "SimKey";
 	public static final String JOBINDEX_PROPERTY		= "JobIndex";
 	public static final String TASKID_PROPERTY		= "TaskID";
+	public static final String FIELDDATAID_PROPERTY		= "FieldDataID";
 
 	// bitmapped counter so that allows 3 retries for each request (but preserves ordinal nature)
 	// bits 0-3: retry count

@@ -23,4 +23,5 @@ public interface FileFilters {
 	public static final FileFilter FILE_FILTER_CELLML	= new ExtensionFilter(".xml", 	"CELLML format (*.xml)");
 	public static final FileFilter FILE_FILTER_AVS		= new ExtensionFilter(".avs", 	"AVS Unstructured Cell Data (*.avs)");
 	public static final FileFilter FILE_FILTER_STL		= new ExtensionFilter(".stl", 	"Stereolithography (STL) file (*.stl)");
+	public static final FileFilter FILE_FILTER_BNGL		= new ExtensionFilter(".bngl", 	"BioNetGen (BNGL) file (*.bngl)");
 }
