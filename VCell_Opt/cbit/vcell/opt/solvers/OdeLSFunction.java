@@ -131,7 +131,7 @@ private double calculateWeightedError(double[] x) {
 		//
 		cbit.vcell.math.Function functions[] = simulation.getFunctions();
 		for (int i = 0; i < functions.length; i++){
-			if (cbit.vcell.simdata.FunctionFileGenerator.isFunctionSaved(functions[i])){
+			if (cbit.vcell.simulation.Simulation.isFunctionSaved(functions[i])){
 				IExpression exp1 = ExpressionFactory.createExpression(functions[i].getExpression());
 				try {
 					exp1 = simulation.substituteFunctions(exp1);

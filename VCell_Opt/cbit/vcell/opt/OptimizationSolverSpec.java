@@ -8,13 +8,14 @@ public class OptimizationSolverSpec implements cbit.util.Matchable, java.io.Seri
 	private String solverType = null;
 	private double objectiveFunctionChangeTolerance;
 
-	public final static String SOLVERTYPE_CONJUGATE_GRADIENT = "Conjugate Gradient";
+//	public final static String SOLVERTYPE_CONJUGATE_GRADIENT = "Conjugate Gradient";
 	public final static String SOLVERTYPE_POWELL = "Powell Method";
 	public final static String SOLVERTYPE_CFSQP = "CFSQP";
-	public final static String SOLVERTYPE_SIMULTANEOUS = "Simultaneous Method";
-	public final static String DEPRECATED_SOLVERTYPE_MULTIPLESHOOTING = "Multiple Shooting Method";
+//	public final static String SOLVERTYPE_SIMULTANEOUS = "Simultaneous Method";
+//	public final static String DEPRECATED_SOLVERTYPE_MULTIPLESHOOTING = "Multiple Shooting Method";
 
-	public final static String[] SOLVER_TYPES = { SOLVERTYPE_CFSQP, SOLVERTYPE_SIMULTANEOUS, SOLVERTYPE_CONJUGATE_GRADIENT, SOLVERTYPE_POWELL};
+//	public final static String[] SOLVER_TYPES = { SOLVERTYPE_CFSQP, SOLVERTYPE_SIMULTANEOUS, SOLVERTYPE_CONJUGATE_GRADIENT, SOLVERTYPE_POWELL};
+	public final static String[] SOLVER_TYPES = { SOLVERTYPE_CFSQP, SOLVERTYPE_POWELL};
 
 /**
  * OptimizationSolverSpec constructor comment.
@@ -31,11 +32,11 @@ public OptimizationSolverSpec(OptimizationSolverSpec optimizationSolverSpecToCop
  */
 public OptimizationSolverSpec(String argSolverName) {
 	this(argSolverName,1e-6);
-	if (solverType.equals(SOLVERTYPE_CONJUGATE_GRADIENT)){
-		objectiveFunctionChangeTolerance = 1.0e-6;
-	} else if (solverType.equals(SOLVERTYPE_POWELL)){
-		objectiveFunctionChangeTolerance = 1.0e-6;
-	}
+//	if (solverType.equals(SOLVERTYPE_CONJUGATE_GRADIENT)){
+//		objectiveFunctionChangeTolerance = 1.0e-6;
+//	} else if (solverType.equals(SOLVERTYPE_POWELL)){
+//		objectiveFunctionChangeTolerance = 1.0e-6;
+//	}
 }
 
 
@@ -50,16 +51,22 @@ public OptimizationSolverSpec(String argSolverName, double argObjectiveFunctionC
 			bFound = true;
 		}
 	}
-	if (argSolverName.equals(DEPRECATED_SOLVERTYPE_MULTIPLESHOOTING)) {
-		bFound = true;
-		this.solverType = SOLVERTYPE_SIMULTANEOUS;
+//	if (argSolverName.equals(DEPRECATED_SOLVERTYPE_MULTIPLESHOOTING)) {
+//		bFound = true;
+//		this.solverType = SOLVERTYPE_SIMULTANEOUS;
+//	} else {
+//		if (!bFound){
+//			throw new IllegalArgumentException("optimization solver '"+argSolverName+"' not found");
+//		}
+//		this.solverType = argSolverName;
+//	}
+	if (bFound){		
+		solverType = argSolverName;
 	} else {
-		if (!bFound){
-			throw new IllegalArgumentException("optimization solver '"+argSolverName+"' not found");
-		}
-		this.solverType = argSolverName;
+		solverType = SOLVERTYPE_CFSQP;		// default to CFSQP
 	}
 	this.objectiveFunctionChangeTolerance = argObjectiveFunctionChangeTolerance;
+
 }
 
 
