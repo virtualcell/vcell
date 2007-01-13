@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.StringTokenizer;
+import java.util.Vector;
 
 import net.sourceforge.interval.ia_math.RealInterval;
 
@@ -19,6 +20,7 @@ import org.vcell.expression.SymbolTable;
 import org.vcell.expression.SymbolTableEntry;
 
 import cbit.util.Matchable;
+import cbit.util.document.FieldDataIdentifierSpec;
 
 /**
  */
@@ -328,7 +330,22 @@ public IExpression getBinaryExpression() {
 	return new Expression((SimpleNode)rootNode.copyTreeBinary());
 
 }
-   /**
+
+/**
+ * Insert the method's description here.
+ * Creation date: (9/15/2006 1:35:48 PM)
+ * @return java.util.Vector
+ */
+public FieldDataIdentifierSpec[] getFieldDataIdentifierSpecs() {
+	Vector<FieldDataIdentifierSpec> v = new Vector<FieldDataIdentifierSpec>();
+	rootNode.getFieldDataIdentifierSpecs(v);
+	FieldDataIdentifierSpec[] funcs = new FieldDataIdentifierSpec[v.size()];
+	v.copyInto(funcs);
+	return funcs;
+}
+
+
+/**
  * Insert the method's description here.
  * Creation date: (9/15/2003 9:32:34 AM)
  * @return java.lang.String

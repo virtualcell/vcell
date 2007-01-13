@@ -6,6 +6,7 @@ import java.util.Iterator;
 
 import net.sourceforge.interval.ia_math.RealInterval;
 import cbit.util.Matchable;
+import cbit.util.document.FieldDataIdentifierSpec;
 
 public interface IExpression extends Matchable, Serializable {
 
@@ -44,6 +45,8 @@ public interface IExpression extends Matchable, Serializable {
 	 * This method was created by a SmartGuide.
 	 */
 	public abstract IExpression getBinaryExpression();
+	
+	public abstract FieldDataIdentifierSpec[] getFieldDataIdentifierSpecs();
 	
 	public abstract String getMathML() throws ExpressionException, IOException;
 	/**

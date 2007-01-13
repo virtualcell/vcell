@@ -14,7 +14,10 @@ import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionTerm;
 import org.vcell.expression.FunctionDomainException;
 import org.vcell.expression.NameScope;
+import org.vcell.expression.SymbolTable;
+import org.vcell.expression.ExpressionTerm.Operator;
 
+import cbit.util.document.FieldDataIdentifierSpec;
 import cbit.util.xml.MathMLTags;
 
 /**
@@ -60,47 +63,49 @@ public class ASTFuncNode extends SimpleNode {
 //	public final static int	FACTORIAL = 34;	
 //	public final static int	LOG_10 		= 35;
 //	public final static int	LOGBASE 	= 36;
+//	public final static int	FIELD 	= 37;
 	
 	private ExpressionTerm.Operator funcType = null;
 	
 	private final static ExpressionTerm.Operator[] functionOperators = {
 		ExpressionTerm.Operator.EXP,	// 0
 		ExpressionTerm.Operator.SQRT,	// 1
-		ExpressionTerm.Operator.ABS,	// 3
-		ExpressionTerm.Operator.POW,	// 4
-		ExpressionTerm.Operator.LOG,	// 5
-		ExpressionTerm.Operator.SIN,	// 6
-		ExpressionTerm.Operator.COS,	// 7
-		ExpressionTerm.Operator.TAN,	// 8
-		ExpressionTerm.Operator.ASIN,	// 9
-		ExpressionTerm.Operator.ACOS,	// 10
-		ExpressionTerm.Operator.ATAN,	// 11
-		ExpressionTerm.Operator.ATAN2,	// 12
-		ExpressionTerm.Operator.MAX,	// 13
-		ExpressionTerm.Operator.MIN,	// 14
-		ExpressionTerm.Operator.CEIL,	// 15
-		ExpressionTerm.Operator.FLOOR,	// 16
-		ExpressionTerm.Operator.CSC,	// 17
-		ExpressionTerm.Operator.COT,	// 18
-		ExpressionTerm.Operator.SEC,	// 19
-		ExpressionTerm.Operator.ACSC,	// 20
-		ExpressionTerm.Operator.ACOT,	// 21
-		ExpressionTerm.Operator.ASEC,	// 22
-		ExpressionTerm.Operator.SINH,	// 23
-		ExpressionTerm.Operator.COSH,	// 24
-		ExpressionTerm.Operator.TANH,	// 25
-		ExpressionTerm.Operator.CSCH,	// 26
-		ExpressionTerm.Operator.COTH,	// 27
-		ExpressionTerm.Operator.SECH,	// 28
-		ExpressionTerm.Operator.ASINH,	// 29
-		ExpressionTerm.Operator.ACOSH,	// 30
-		ExpressionTerm.Operator.ATANH,	// 31
-		ExpressionTerm.Operator.ACSCH,	// 32
-		ExpressionTerm.Operator.ACOTH,	// 33
-		ExpressionTerm.Operator.ASECH,	// 34
-		ExpressionTerm.Operator.FACTORIAL,	// 35
-		ExpressionTerm.Operator.LOG_10,	// 36
-		ExpressionTerm.Operator.LOGBASE,	// 37
+		ExpressionTerm.Operator.ABS,	// 2
+		ExpressionTerm.Operator.POW,	// 3
+		ExpressionTerm.Operator.LOG,	// 4
+		ExpressionTerm.Operator.SIN,	// 5
+		ExpressionTerm.Operator.COS,	// 6
+		ExpressionTerm.Operator.TAN,	// 7
+		ExpressionTerm.Operator.ASIN,	// 8
+		ExpressionTerm.Operator.ACOS,	// 9
+		ExpressionTerm.Operator.ATAN,	// 10
+		ExpressionTerm.Operator.ATAN2,	// 11
+		ExpressionTerm.Operator.MAX,	// 12
+		ExpressionTerm.Operator.MIN,	// 13
+		ExpressionTerm.Operator.CEIL,	// 14
+		ExpressionTerm.Operator.FLOOR,	// 15
+		ExpressionTerm.Operator.CSC,	// 16
+		ExpressionTerm.Operator.COT,	// 17
+		ExpressionTerm.Operator.SEC,	// 18
+		ExpressionTerm.Operator.ACSC,	// 19
+		ExpressionTerm.Operator.ACOT,	// 20
+		ExpressionTerm.Operator.ASEC,	// 21
+		ExpressionTerm.Operator.SINH,	// 22
+		ExpressionTerm.Operator.COSH,	// 23
+		ExpressionTerm.Operator.TANH,	// 24
+		ExpressionTerm.Operator.CSCH,	// 25
+		ExpressionTerm.Operator.COTH,	// 26
+		ExpressionTerm.Operator.SECH,	// 27
+		ExpressionTerm.Operator.ASINH,	// 28
+		ExpressionTerm.Operator.ACOSH,	// 29
+		ExpressionTerm.Operator.ATANH,	// 30
+		ExpressionTerm.Operator.ACSCH,	// 31
+		ExpressionTerm.Operator.ACOTH,	// 32
+		ExpressionTerm.Operator.ASECH,	// 33
+		ExpressionTerm.Operator.FACTORIAL,	// 34
+		ExpressionTerm.Operator.LOG_10,	// 35
+		ExpressionTerm.Operator.LOGBASE,	// 36
+		ExpressionTerm.Operator.FIELD,	// 37
 	};
 //	private final static String[] functionNamesVCML = {
 //		"exp",		// 0
@@ -140,6 +145,7 @@ public class ASTFuncNode extends SimpleNode {
 //		"factorial",// 34
 //		"log10",	// 35
 //		"logbase" 	// 36
+//		"field"		// 37
 //	};
 	
 	private final static String[] functionNamesMathML = {
@@ -179,7 +185,8 @@ public class ASTFuncNode extends SimpleNode {
 		MathMLTags.INV_HYP_SECANT,		// 33
 		MathMLTags.FACTORIAL,			// 34
 		MathMLTags.LOG_10,				// 35
-		MathMLTags.LOGBASE		 		// 36
+		MathMLTags.LOGBASE,		 		// 36
+		null,							// ??? unknown support by MathML
 	};
 	
   ASTFuncNode() {
@@ -196,6 +203,12 @@ ASTFuncNode(int id) {
 if (id != ExpressionParserTreeConstants.JJTFUNCNODE){ System.out.println("ASTFuncNode(), id = "+id); }
 }
 
+public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
+	if (getFunction() == ExpressionTerm.Operator.FIELD) {
+		return;
+	}
+	super.bind(symbolTable);
+}    
 
   /**
  * This method was created by a SmartGuide.
@@ -1479,7 +1492,9 @@ public double evaluateConstant() throws ExpressionException {
 		result = 1.0/Math.log(argument);
 		break;
 	}
-	
+	case FIELD: {
+		throw new FunctionDomainException("field(A, B) is undefined for all constants");
+	}
 	default: {
 		throw new Error("undefined function");
 	}
@@ -2032,6 +2047,9 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		result = flanagan.math.Fmath.factorial(argument);
 		break;
 	}
+	case FIELD: {
+		throw new FunctionDomainException("field(A, B) can't be evaluated in regular way");
+	}	
 	default: {
 		throw new Error("undefined function");
 	}
@@ -2059,7 +2077,7 @@ public Node flatten() throws ExpressionException {
 
 	ASTFuncNode funcNode = new ASTFuncNode();
 	funcNode.funcType = funcType;
-	java.util.Vector tempChildren = new java.util.Vector();
+	java.util.Vector<Node> tempChildren = new java.util.Vector<Node>();
 
 	for (int i=0;i<jjtGetNumChildren();i++){
 		tempChildren.addElement(jjtGetChild(i).flatten());
@@ -2262,6 +2280,10 @@ public Node flatten() throws ExpressionException {
 		if (tempChildren.size()!=1) throw new ExpressionException("factorial() expects 1 argument");
 		break;
 	}
+	case FIELD: {
+		if (tempChildren.size()!=2) throw new ExpressionException("field() expects 2 argument");
+		break;
+	}
 	default: {
 		throw new ExpressionException("undefined function");
 	}
@@ -2297,6 +2319,21 @@ String getMathMLName() {
  */
 public String getName() {
 	return funcType.functionName;
+}
+
+/**
+ * Insert the method's description here.
+ * Creation date: (9/15/2006 1:35:48 PM)
+ * @return java.util.Vector
+ */
+void getFieldDataIdentifierSpecs(java.util.Vector<FieldDataIdentifierSpec> v) {
+	if (getFunction() == Operator.FIELD) {
+		ASTIdNode fieldname = (ASTIdNode)jjtGetChild(0);
+		ASTIdNode variablename = (ASTIdNode)jjtGetChild(1);
+		v.add(new FieldDataIdentifierSpec(fieldname.name, variablename.name));
+	} else {
+		super.getFieldDataIdentifierSpecs(v);		 
+	}	
 }
 
 
@@ -2385,7 +2422,6 @@ public String infixString(int lang, NameScope nameScope) {
  * @see edu.uchc.vcell.expression.internal.Node#narrow(RealInterval[])
  */
 public boolean narrow(RealInterval intervals[]) throws ExpressionBindingException {
-	boolean retcode = true;
 	switch (funcType){
 	case EXP: {
 		if (jjtGetNumChildren()!=1) throw new Error("exp() expects 1 argument");

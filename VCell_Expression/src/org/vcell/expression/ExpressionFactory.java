@@ -6,8 +6,8 @@ import java.util.StringTokenizer;
 import org.jdom.Element;
 
 public class ExpressionFactory {
-	private static IExpressionProvider expressionProvider = null;
-	
+	private static IExpressionProvider expressionProvider = new edu.uchc.vcell.expression.internal.ExpressionFactory();
+		
 	public static ExpressionTerm extractTopLevelTerm(IExpression expression) throws ExpressionException {
 		return expressionProvider.extractTopLevelTerm(expression);
 	}

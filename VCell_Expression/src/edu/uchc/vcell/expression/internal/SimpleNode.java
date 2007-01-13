@@ -12,6 +12,8 @@ import org.vcell.expression.NameScope;
 import org.vcell.expression.SymbolTable;
 import org.vcell.expression.SymbolTableEntry;
 
+import cbit.util.document.FieldDataIdentifierSpec;
+
 
 /**
  */
@@ -36,6 +38,18 @@ public abstract class SimpleNode implements Node, java.io.Serializable {
    */
   public SimpleNode(int i) {
     id = i;
+  }
+
+  /**
+   * Insert the method's description here.
+   * Creation date: (9/15/2006 1:35:48 PM)
+   * @return java.util.Vector
+   */
+  void getFieldDataIdentifierSpecs(java.util.Vector<FieldDataIdentifierSpec> v) {	
+  	for (int i = 0;  i < jjtGetNumChildren(); i ++) {
+  		SimpleNode child = (SimpleNode)jjtGetChild(i);
+  		child.getFieldDataIdentifierSpecs(v);		 
+  	}	
   }
 
 

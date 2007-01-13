@@ -58,6 +58,7 @@ public class ExpressionTerm {
 		FACTORIAL(OperatorType.FUNCTION,"factorial"),
 		LOG_10(OperatorType.FUNCTION,"log10"),
 		LOGBASE(OperatorType.FUNCTION,"logbase"),
+		FIELD(OperatorType.FUNCTION,"logbase"),
 		
 		
 		AND(OperatorType.LOGICAL),
