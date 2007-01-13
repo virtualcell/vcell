@@ -3,11 +3,13 @@ package cbit.vcell.solvers;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.io.File;
 import java.util.Enumeration;
 import java.util.Vector;
 
 import cbit.util.ISize;
 import cbit.util.PropertyLoader;
+import cbit.util.TokenMangler;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.FilamentVariable;
 import cbit.vcell.math.MemVariable;
@@ -84,7 +86,7 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	  		//
 	  		// need to specify which SubDomains should be solved for
 	  		//
-	  		Vector listOfSubDomains = new Vector();
+	  		Vector<SubDomain> listOfSubDomains = new Vector<SubDomain>();
 	  		int totalNumCompartments = 0;
 	  		StringBuffer compartmentNames = new StringBuffer();
 	  		Enumeration subDomainEnum = simulation.getMathDescription().getSubDomains();
@@ -347,11 +349,12 @@ public void writeImplementation(java.io.PrintWriter out) throws Exception {
 protected void writeMain(java.io.PrintWriter out) throws Exception {
 
 	Simulation simulation = simulationJob.getWorkingSim();
+	cbit.vcell.simdata.FieldDataIdentifier[] fieldDataIDs = simulationJob.getFieldDataIdentifiers();
 	SolverTaskDescription taskDesc = simulation.getSolverTaskDescription();
 	if (taskDesc==null){
 		throw new Exception("task description not defined");
 	}	
-
+	
 	out.println("#ifndef VCELL_CORBA");
 	out.println("//-------------------------------------------");
 	out.println("//   BATCH (NON-CORBA) IMPLEMENTATION");
@@ -362,7 +365,38 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 	out.println("#endif");
 	out.println("");
 
-	out.println("void main(int argc, char *argv[])");
+	if (fieldDataIDs != null && fieldDataIDs.length > 0) {
+		out.println();
+		for (int i = 0; i < fieldDataIDs.length; i ++) {		
+			out.println("double* " + fieldDataIDs[i].getGlobalVariableName_C() + " = 0;");
+		}
+		out.println();
+		out.println("double* getFieldData(char*, char*, char*);");
+		out.println();
+	}
+
+	
+	out.println("int vcellExit(int returnCode, char* returnMsg) {");
+	out.println("\tif (!SimTool::bStopSimulation) {");
+	out.println("\t\tif (returnCode != 0) {");
+	out.println("\t\t\tSimulationMessaging::getInstVar()->setWorkerEvent(new WorkerEvent(JOB_FAILURE, returnMsg));");
+	out.println("\t\t}");
+	out.println("\t\tSimulationMessaging::getInstVar()->waitUntilFinished();");
+	out.println("\t}");
+
+	if (fieldDataIDs != null && fieldDataIDs.length > 0) {
+		out.println();
+		out.println("\tdelete SimulationMessaging::getInstVar();");	
+		for (int i = 0; i < fieldDataIDs.length; i ++) {
+			out.println("\tdelete[] " + fieldDataIDs[i].getGlobalVariableName_C() + ";");
+		}
+		out.println();
+	}
+
+	out.println("\treturn returnCode;");
+	out.println("}");
+	
+	out.println("int main(int argc, char *argv[])");
 	out.println("{");
 		
 	out.println("");
@@ -371,8 +405,9 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 	out.println("\tassert(ierr == MPI_SUCCESS);");
 	out.println("#endif");
 	out.println("");
-	out.println("");
 
+	out.println("\tint returnCode = 0;");
+	out.println("\tstring returnMsg;");
 	// Fei Changes Begin
 	out.println("\ttry {");
 	out.println("\t\tif (argc == 1) { // no messaging");
@@ -391,6 +426,17 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 	out.println("\t\t}");
 	out.println("\t\tSimulationMessaging::getInstVar()->start(); // start the thread");
 
+	if (fieldDataIDs != null && fieldDataIDs.length > 0) {
+		out.println();
+		for (int i = 0; i < fieldDataIDs.length; i ++) {
+			String fieldName = fieldDataIDs[i].getFieldName();
+			String varName = fieldDataIDs[i].getVariableName();
+			File fieldFile = new File(baseDataName + fieldDataIDs[i].getDefaultFieldDataFileNameForSimulation());
+			out.println("\t\t" + fieldDataIDs[i].getGlobalVariableName_C() + " = getFieldData(\"" + fieldName + "\",\"" + TokenMangler.getEscapedString_C(fieldFile.toString()) + "\", \"" + varName + "\");");
+		}
+		out.println();
+	}
+		
 	out.println("\t\tSimTool *pSimTool = getSimTool();");
 	if (taskDesc.getTaskType() == SolverTaskDescription.TASK_UNSTEADY){
 		out.println("\t\tpSimTool->start();");
@@ -398,39 +444,20 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 		out.println("\t\tpSimTool->startSteady("+taskDesc.getErrorTolerance().getAbsoluteErrorTolerance()+","+taskDesc.getTimeBounds().getEndingTime()+");");
 	}		
 
-	out.println("\t\t\t//cerr << \"Simulation Complete in Main() ... \" << endl;");
-	out.println("\t\tif (!SimTool::bStopSimulation) {");	
-	out.println("\t\t\tSimulationMessaging::getInstVar()->waitUntilFinished();");
-	out.println("\t\t}");
 	out.println("\t}catch (char *exStr){");
-	out.println("\t\t//cerr<< \"Exception while running ... \" << exStr << endl;");
-	out.println("\t\tchar msg1[80];");
-	out.println("\t\tstrcpy(msg1, \"Exception while running ... \");");
-	out.println("\t\tchar* msg = new char[strlen(msg1) + strlen(exStr) + 1];");
-	out.println("\t\tstrcpy(msg, msg1);");
-	out.println("\t\tstrcat(msg, exStr);");
-	out.println("\t\tif (!SimTool::bStopSimulation) {");
-	out.println("\t\t\tSimulationMessaging::getInstVar()->setWorkerEvent(new WorkerEvent(JOB_FAILURE, msg));");
-	out.println("\t\t\tSimulationMessaging::getInstVar()->waitUntilFinished();");
-	out.println("\t\t}");
-	out.println("\t\tdelete SimulationMessaging::getInstVar();");
-    out.println("\t\texit(-1);");
+	out.println("\t\treturnMsg = \"Exception while running ... \";");
+	out.println("\t\treturnMsg += exStr;");
+	out.println("\t\treturnCode = 1;");
    	out.println("\t}catch (...){");
-    out.println("\t\t//cerr << \"Unknown Exception while running ... \" << endl;");
-    out.println("\t\tif (!SimTool::bStopSimulation) {");   	
- 	out.println("\t\t\tSimulationMessaging::getInstVar()->setWorkerEvent(new WorkerEvent(JOB_FAILURE, \"Unknown Exception while running ... \"));");
-	out.println("\t\t\tSimulationMessaging::getInstVar()->waitUntilFinished();");
-	out.println("\t\t}");
-	out.println("\t\tdelete SimulationMessaging::getInstVar();");
-    out.println("\t\texit(-1);");
+	out.println("\t\treturnMsg = \"Unknown exception while running ... \";");
+	out.println("\t\treturnCode = 1;");
 	out.println("\t}");
 
 	out.println("#ifdef VCELL_MPI");
 	out.println("\tMPI_Finalize();");
 	out.println("#endif");
 
-	out.println("\tdelete SimulationMessaging::getInstVar();");
-	out.println("\texit(0);");
+	out.println("\treturn vcellExit(returnCode, (char*)returnMsg.c_str());");
 	out.println("}");
    	
 	//out.println("   try {");

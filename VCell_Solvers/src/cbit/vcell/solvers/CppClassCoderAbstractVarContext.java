@@ -9,6 +9,7 @@ import java.util.Vector;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.IExpression;
 
+import cbit.util.document.FieldDataIdentifierSpec;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Equation;
 import cbit.vcell.math.FilamentVariable;
@@ -227,9 +228,29 @@ protected void writeContourFunctionDeclarations(java.io.PrintWriter out, String 
 				out.println("   double z = wc.z;");
 			}		
 		}		
-	}	
+	}
+
+	writeFieldFunctionDeclarations(out, exp, contourElementString);
 }
 
+/**
+ * This method was created by a SmartGuide.
+ * @param out java.io.PrintWriter
+ */
+private final void writeFieldFunctionDeclarations(java.io.PrintWriter out, IExpression exp, String indexString) throws Exception {
+
+	if (exp == null){
+		throw new Exception("null expression");
+	}
+
+	FieldDataIdentifierSpec[] fieldDataIdSpecs = exp.getFieldDataIdentifierSpecs();
+
+	for (int i = 0; i < fieldDataIdSpecs.length; i ++) {
+		String localvarname = cbit.vcell.simdata.FieldDataIdentifier.getLocalVariableName_C(fieldDataIdSpecs[i]);
+		String globalvarname = cbit.vcell.simdata.FieldDataIdentifier.getGlobalVariableName_C(fieldDataIdSpecs[i]);
+		out.println("\tdouble " + localvarname + " = " + globalvarname + "[" + indexString + "];");	
+	}
+}
 
 /**
  * This method was created by a SmartGuide.
@@ -314,7 +335,9 @@ protected final void writeMembraneFunctionDeclarations(java.io.PrintWriter out, 
 				out.println(pad+"double z = wc.z;");
 			}		
 		}		
-	}	
+	}
+
+	writeFieldFunctionDeclarations(out, exp, membraneElementString);
 }
 
 
@@ -373,7 +396,8 @@ protected final void writeMembraneRegionFunctionDeclarations(java.io.PrintWriter
 				throw new ExpressionException("cannot use coordinate '"+var.getName()+"' of type "+var.getClass().getName()+" within a membraneRegion rate");
 			}		
 		}		
-	}	
+	}
+	writeFieldFunctionDeclarations(out, exp, membraneRegionString);
 }
 
 
@@ -501,7 +525,9 @@ private final void writeVolumeFunctionDeclarations(java.io.PrintWriter out, IExp
 				out.println("   double z = wc.z;");
 			}		
 		}		
-	}	
+	}
+
+	writeFieldFunctionDeclarations(out, exp, volumeIndexString);
 }
 
 
@@ -561,6 +587,8 @@ protected final void writeVolumeRegionFunctionDeclarations(java.io.PrintWriter o
 				throw new RuntimeException("unexpected spatial reserved variable "+rv.getName()+" in UniformRate Expression");
 			}
 		}		
-	}	
+	}
+
+	writeFieldFunctionDeclarations(out, exp, volumeRegionString);
 }
 }

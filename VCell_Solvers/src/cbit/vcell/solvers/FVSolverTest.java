@@ -72,7 +72,7 @@ public static void main(String args[]) {
 		};
 		System.out.println(mathDescription.getVCML_database());
 		new PropertyLoader();
-		FVSolver solver = new FVSolver(new SimulationJob(simulation, 0), directoryFile, sessionLog);
+		FVSolver solver = new FVSolver(new SimulationJob(simulation, null, 0), directoryFile, sessionLog);
 		solver.startSolver();
 
 		while (solver.getSolverStatus().getStatus() != SolverStatus.SOLVER_STOPPED){

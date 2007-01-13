@@ -21,12 +21,12 @@ import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.simdata.FunctionColumnDescription;
-import cbit.vcell.simdata.FunctionFileGenerator;
 import cbit.vcell.simdata.ODESimData;
 import cbit.vcell.simdata.ODESolverResultSet;
 import cbit.vcell.simdata.ODESolverResultSetColumnDescription;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simulation.DefaultOutputTimeSpec;
+import cbit.vcell.simulation.Simulation;
 import cbit.vcell.solvers.ApplicationMessage;
 import cbit.vcell.solvers.SolverException;
 /**
@@ -158,7 +158,7 @@ public ODESolverResultSet getODESolverResultSet()  {
 	//
 	cbit.vcell.math.Function functions[] = getSimulation().getFunctions();
 	for (int i = 0; i < functions.length; i++){
-		if (FunctionFileGenerator.isFunctionSaved(functions[i])){
+		if (Simulation.isFunctionSaved(functions[i])){
 			IExpression exp1 = ExpressionFactory.createExpression(functions[i].getExpression());
 			try {
 				exp1 = getSimulation().substituteFunctions(exp1);
@@ -192,7 +192,7 @@ public ODESolverResultSet getODESolverResultSet()  {
 			StateVariable stateVars[] = createStateVariables();
 						
 			for (int i = 0; i < variables.length; i++){
-				if (variables[i] instanceof Function && FunctionFileGenerator.isFunctionSaved((Function)variables[i])){
+				if (variables[i] instanceof Function && Simulation.isFunctionSaved((Function)variables[i])){
 					Function depSensFunction = (Function)variables[i];
 					IExpression depSensFnExpr = ExpressionFactory.createExpression(depSensFunction.getExpression());
 					depSensFnExpr = getSimulation().substituteFunctions(depSensFnExpr);

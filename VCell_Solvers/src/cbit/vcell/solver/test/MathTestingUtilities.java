@@ -7,6 +7,7 @@ import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
 
 import cbit.util.Coordinate;
+import cbit.util.CoordinateIndex;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
@@ -1449,4 +1450,231 @@ private static IExpression substituteWithExactSolution(IExpression origExp, Memb
 	substitutedExp.bindExpression(null);
 	return substitutedExp;
 }
+
+/**
+ * Insert the method's description here.
+ * Creation date: (10/27/2003 5:07:42 PM)
+ * @return double[]
+ * @param data double[]
+ * @param sourceMesh cbit.vcell.solvers.CartesianMesh
+ * @param targetMesh cbit.vcell.solvers.CartesianMesh
+ */
+public static double[] resample1DSpatialSimple(double[] sourceData, CartesianMesh sourceMesh, CartesianMesh refMesh) {
+	if (sourceData.length!=sourceMesh.getNumVolumeElements()){
+		throw new RuntimeException("must be volume data, data length doesn't match number of volume elements");
+	}
+	// for volume samples:
+	//
+	//  loop through volumeIndexes from refMesh
+	//      Coordinate refCoordinate = refMesh.getCoordinate(volumeIndex);
+	//          Coordinate fractionalIndex = sourceMesh.getFractionCoordinateIndex(Coordinate refCoordinate);
+	//              ....interpolate in z
+	//              start with integer portion of fractionIndex
+
+	double resampledData[] = new double[refMesh.getSizeX()];
+	for (int i = 0; i < resampledData.length; i++) {
+		Coordinate refCoordinate = refMesh.getCoordinateFromVolumeIndex(i);
+		Coordinate fractionalIndex = sourceMesh.getFractionalCoordinateIndex(refCoordinate);
+		int ceil_x;
+		int floor_x;
+
+		if (fractionalIndex.getX() < 0) {
+			floor_x = 0;			
+			ceil_x = 1;
+		} else if (fractionalIndex.getX() > sourceMesh.getSizeX()-1) {
+			floor_x = sourceMesh.getSizeX()-2;
+			ceil_x =  sourceMesh.getSizeX()-1;
+		} else {
+			ceil_x = (int)Math.ceil(fractionalIndex.getX());
+			floor_x = (int)Math.floor(fractionalIndex.getX());
+		}
+		
+		double fract_x = fractionalIndex.getX() - floor_x;
+		
+		CoordinateIndex coord_1 = new CoordinateIndex(floor_x, 0, 0);  // ***** SHOULD Y,Z BE 0 OR 1 ???? *****
+		CoordinateIndex coord_2 = new CoordinateIndex(ceil_x, 0, 0);
+		
+		int volIndx1 = sourceMesh.getVolumeIndex(coord_1);
+		int volIndx2 = sourceMesh.getVolumeIndex(coord_2);
+				
+		// Interpolate in X - final resampledSourceData value
+		resampledData[i] = sourceData[volIndx1] + fract_x*(sourceData[volIndx2] - sourceData[volIndx1]);
+	}
+	return resampledData;
+}
+
+/**
+ * Insert the method's description here.
+ * Creation date: (10/27/2003 5:07:42 PM)
+ * @return double[]
+ * @param data double[]
+ * @param sourceMesh cbit.vcell.solvers.CartesianMesh
+ * @param targetMesh cbit.vcell.solvers.CartesianMesh
+ */
+public static double[] resample2DSpatialSimple(double[] sourceData, CartesianMesh sourceMesh, CartesianMesh refMesh) {
+	if (sourceData.length!=sourceMesh.getNumVolumeElements()){
+		throw new RuntimeException("must be volume data, data length doesn't match number of volume elements");
+	}
+	// for volume samples:
+	//
+	//  loop through volumeIndexes from refMesh
+	//      Coordinate refCoordinate = refMesh.getCoordinate(volumeIndex);
+	//          Coordinate fractionalIndex = sourceMesh.getFractionCoordinateIndex(Coordinate refCoordinate);
+	//              ....interpolate in y
+	//              start with integer portion of fractionIndex
+
+	double resampledData[] = new double[refMesh.getSizeX()*refMesh.getSizeY()*refMesh.getSizeZ()];
+	for (int i = 0; i < resampledData.length; i++) {
+		Coordinate refCoordinate = refMesh.getCoordinateFromVolumeIndex(i);
+		Coordinate fractionalIndex = sourceMesh.getFractionalCoordinateIndex(refCoordinate);
+		int ceil_x;
+		int floor_x;
+		int ceil_y;
+		int floor_y;
+
+		if (fractionalIndex.getX() < 0) {
+			floor_x = 0;			
+			ceil_x = 1;
+		} else if (fractionalIndex.getX() > sourceMesh.getSizeX()-1) {
+			floor_x = sourceMesh.getSizeX()-2;
+			ceil_x =  sourceMesh.getSizeX()-1;
+		} else {
+			ceil_x = (int)Math.ceil(fractionalIndex.getX());
+			floor_x = (int)Math.floor(fractionalIndex.getX());
+		}
+		if (fractionalIndex.getY() < 0) {
+			floor_y = 0;			
+			ceil_y = 1;
+		} else if (fractionalIndex.getY() > sourceMesh.getSizeY()-1) {
+			floor_y = sourceMesh.getSizeY()-2;
+			ceil_y =  sourceMesh.getSizeY()-1;
+		} else {
+			ceil_y = (int)Math.ceil(fractionalIndex.getY());
+			floor_y = (int)Math.floor(fractionalIndex.getY());
+		}		
+		
+		double fract_x = fractionalIndex.getX() - floor_x;
+		double fract_y = fractionalIndex.getY() - floor_y;
+		
+		CoordinateIndex coord_1 = new CoordinateIndex(floor_x, floor_y, 0);  // ***** SHOULD THIS BE 0 OR 1 ???? *****
+		CoordinateIndex coord_2 = new CoordinateIndex(ceil_x, floor_y, 0);
+		CoordinateIndex coord_3 = new CoordinateIndex(floor_x, ceil_y, 0);
+		CoordinateIndex coord_4 = new CoordinateIndex(ceil_x, ceil_y, 0);
+		
+		int volIndx1 = sourceMesh.getVolumeIndex(coord_1);
+		int volIndx2 = sourceMesh.getVolumeIndex(coord_2);
+		int volIndx3 = sourceMesh.getVolumeIndex(coord_3);
+		int volIndx4 = sourceMesh.getVolumeIndex(coord_4);
+
+
+		// Interpolate in X (first order)
+		double val_a = sourceData[volIndx1] + fract_x*(sourceData[volIndx2] - sourceData[volIndx1]);
+		double val_b = sourceData[volIndx3] + fract_x*(sourceData[volIndx4] - sourceData[volIndx3]);
+
+		// Interpolate in Y - final resampledSourceData value
+		resampledData[i] = val_a + fract_y*(val_b - val_a);
+	}
+	return resampledData;
+}
+
+/**
+ * Insert the method's description here.
+ * Creation date: (10/27/2003 5:07:42 PM)
+ * @return double[]
+ * @param data double[]
+ * @param sourceMesh cbit.vcell.solvers.CartesianMesh
+ * @param targetMesh cbit.vcell.solvers.CartesianMesh
+ */
+public static double[] resample3DSpatialSimple(double[] sourceData, CartesianMesh sourceMesh, CartesianMesh refMesh) {
+	if (sourceData.length!=sourceMesh.getNumVolumeElements()){
+		throw new RuntimeException("must be volume data, data length doesn't match number of volume elements");
+	}
+	// for volume samples:
+	//
+	//  loop through volumeIndexes from refMesh
+	//      Coordinate refCoordinate = refMesh.getCoordinate(volumeIndex);
+	//          Coordinate fractionalIndex = sourceMesh.getFractionCoordinateIndex(Coordinate refCoordinate);
+	//              ....interpolate in z
+	//              start with integer portion of fractionIndex
+
+	double resampledData[] = new double[refMesh.getSizeX()*refMesh.getSizeY()*refMesh.getSizeZ()];
+	for (int i = 0; i < resampledData.length; i++) {
+		Coordinate refCoordinate = refMesh.getCoordinateFromVolumeIndex(i);
+		Coordinate fractionalIndex = sourceMesh.getFractionalCoordinateIndex(refCoordinate);
+		int ceil_x;
+		int floor_x;
+		int ceil_y;
+		int floor_y;
+		int ceil_z;
+		int floor_z;			
+
+		if (fractionalIndex.getX() < 0) {
+			floor_x = 0;			
+			ceil_x = 1;
+		} else if (fractionalIndex.getX() > sourceMesh.getSizeX()-1) {
+			floor_x = sourceMesh.getSizeX()-2;
+			ceil_x =  sourceMesh.getSizeX()-1;
+		} else {
+			ceil_x = (int)Math.ceil(fractionalIndex.getX());
+			floor_x = (int)Math.floor(fractionalIndex.getX());
+		}
+		if (fractionalIndex.getY() < 0) {
+			floor_y = 0;			
+			ceil_y = 1;
+		} else if (fractionalIndex.getY() > sourceMesh.getSizeY()-1) {
+			floor_y = sourceMesh.getSizeY()-2;
+			ceil_y =  sourceMesh.getSizeY()-1;
+		} else {
+			ceil_y = (int)Math.ceil(fractionalIndex.getY());
+			floor_y = (int)Math.floor(fractionalIndex.getY());
+		}
+		if (fractionalIndex.getZ() < 0) {
+			floor_z = 0;			
+			ceil_z = 1;
+		} else if (fractionalIndex.getZ() > sourceMesh.getSizeZ()-1) {
+			floor_z = sourceMesh.getSizeZ()-2;
+			ceil_z =  sourceMesh.getSizeZ()-1;
+		} else {
+			ceil_z = (int)Math.ceil(fractionalIndex.getZ());
+			floor_z = (int)Math.floor(fractionalIndex.getZ());
+		}			
+
+		double fract_x = fractionalIndex.getX() - floor_x;
+		double fract_y = fractionalIndex.getY() - floor_y;
+		double fract_z = fractionalIndex.getZ() - floor_z;
+
+		CoordinateIndex coord_1 = new CoordinateIndex(floor_x, floor_y, floor_z);
+		CoordinateIndex coord_2 = new CoordinateIndex(ceil_x, floor_y, floor_z);
+		CoordinateIndex coord_3 = new CoordinateIndex(floor_x, floor_y, ceil_z);
+		CoordinateIndex coord_4 = new CoordinateIndex(ceil_x, floor_y, ceil_z);	
+		CoordinateIndex coord_5 = new CoordinateIndex(floor_x, ceil_y, ceil_z);
+		CoordinateIndex coord_6 = new CoordinateIndex(ceil_x, ceil_y, ceil_z);
+		CoordinateIndex coord_7 = new CoordinateIndex(floor_x, ceil_y, floor_z);
+		CoordinateIndex coord_8 = new CoordinateIndex(ceil_x, ceil_y, floor_z);
+		
+		int volIndx1 = sourceMesh.getVolumeIndex(coord_1);
+		int volIndx2 = sourceMesh.getVolumeIndex(coord_2);
+		int volIndx3 = sourceMesh.getVolumeIndex(coord_3);
+		int volIndx4 = sourceMesh.getVolumeIndex(coord_4);
+		int volIndx5 = sourceMesh.getVolumeIndex(coord_5);		
+		int volIndx6 = sourceMesh.getVolumeIndex(coord_6);
+		int volIndx7 = sourceMesh.getVolumeIndex(coord_7);
+		int volIndx8 = sourceMesh.getVolumeIndex(coord_8);		
+		
+		double val_a = sourceData[volIndx1] + fract_x*(sourceData[volIndx2] - sourceData[volIndx1]);
+		double val_b = sourceData[volIndx3] + fract_x*(sourceData[volIndx4] - sourceData[volIndx3]);
+		double val_c = sourceData[volIndx5] + fract_x*(sourceData[volIndx6] - sourceData[volIndx5]);
+		double val_d = sourceData[volIndx7] + fract_x*(sourceData[volIndx8] - sourceData[volIndx7]);
+
+		// Interpolate in Y
+		double val_e = val_a + fract_y*(val_d - val_a);
+		double val_f = val_b + fract_y*(val_c - val_b);
+
+		// Interpolate in Z - final resampledSourceData value
+		resampledData[i] = val_e + fract_z*(val_f - val_e);
+	}
+	return resampledData;
+}
+
+
 }

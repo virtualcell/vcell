@@ -118,6 +118,18 @@ private SimulationJobStatus[] getJobStatuses() {
 	return jobStatuses;
 }
 
+/**
+ * Insert the method's description here.
+ * Creation date: (8/21/2006 10:00:40 AM)
+ * @return cbit.vcell.messaging.db.SimulationJobStatus
+ * @param index int
+ */
+public SimulationJobStatus getJobStatus(int index) {
+	if (index >= jobStatuses.length) {
+		return null;
+	}
+	return jobStatuses[index];
+}
 
 /**
  * Insert the method's description here.
@@ -140,6 +152,15 @@ public Double getProgress() {
 	return new Double(progress);
 }
 
+/**
+ * Insert the method's description here.
+ * Creation date: (8/21/2006 10:13:56 AM)
+ * @return java.lang.Double
+ * @param index int
+ */
+public Double getProgressAt(int index) {
+	return (Double)progressHash.get(Integer.toString(index));
+}
 
 /**
  * Insert the method's description here.

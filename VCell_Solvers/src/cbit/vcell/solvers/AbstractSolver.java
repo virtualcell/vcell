@@ -13,6 +13,7 @@ import org.vcell.expression.IExpression;
 import cbit.util.ConfigurationException;
 import cbit.util.SessionLog;
 import cbit.vcell.math.Constant;
+import cbit.vcell.simdata.FieldDataIdentifier;
 import cbit.vcell.solver.ode.ODEStateVariable;
 import cbit.vcell.solver.ode.SensStateVariable;
 /**
@@ -242,6 +243,14 @@ public IExpression getFunctionSensitivity(IExpression funcExpr, Constant constan
 	return ExpressionFactory.createExpression(sensFuncExp);
 }
 
+/**
+ * Insert the method's description here.
+ * Creation date: (9/20/2006 9:48:37 AM)
+ * @return cbit.vcell.field.FieldDataIdentifier[]
+ */
+public final FieldDataIdentifier[] getFieldDataIdentifiers() {
+	return simulationJob.getFieldDataIdentifiers();
+}
 
 /**
  * Insert the method's description here.

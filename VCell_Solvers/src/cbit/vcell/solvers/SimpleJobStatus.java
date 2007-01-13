@@ -53,7 +53,17 @@ public java.util.Date getEndDate() {
 	return jobStatus.getEndDate();
 }
 
-
+/**
+ * Insert the method's description here.
+ * Creation date: (3/29/2004 2:09:31 PM)
+ * @return java.lang.String
+ */
+public Integer getJobIndex() {
+	if (jobStatus == null || jobStatus.getServerID() == null) {
+		return null;
+	}	
+	return new Integer(jobStatus.getJobIndex());
+}
 /**
  * Insert the method's description here.
  * Creation date: (3/29/2004 2:09:31 PM)
@@ -182,7 +192,7 @@ public boolean isRunning() {
  * @return java.lang.String[]
  */
 public Object[] toObjects() {	
-	return new Object[] {userID,  new BigDecimal(getVCSimulationIdentifier().getSimulationKey().toString()), 
+	return new Object[] {userID,  new BigDecimal(getVCSimulationIdentifier().getSimulationKey().toString()), getJobIndex(), 
 		solverTaskDesc == null || solverTaskDesc.getSolverDescription() == null ? "" : solverTaskDesc.getSolverDescription().getName(), 		
 		SimulationJobStatus.getSchedulerStatusMessage(getStatus()), getComputeHost(), getServerID(), getTaskID(), getSubmitDate(), getStartDate(), getEndDate()};
 }
