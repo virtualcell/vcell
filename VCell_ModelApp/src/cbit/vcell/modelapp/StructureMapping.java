@@ -342,7 +342,14 @@ public void gatherIssues(Vector issueVector) {
 	}
 }
 
-
+/**
+ * Since we don't have the absolute volume in vcell, a defult (fixed) volume is set to 1e-15L (1e-18 cubic meter)
+ * Creation date: (9/15/2006 3:09:34 PM)
+ * @return double
+ */
+public static double getDefaultAbsoluteSize() {
+	return 1e-15;
+}
 /**
  * getEntry method comment.
  */

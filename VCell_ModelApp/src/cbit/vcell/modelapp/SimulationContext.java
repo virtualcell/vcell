@@ -197,6 +197,7 @@ public class SimulationContext implements cbit.util.document.Versionable, Matcha
 	private transient SimulationContextOwner simContextOwner = null;
 	private SimulationContext.SimulationContextParameter[] fieldSimulationContextParameters = new SimulationContextParameter[0];
 	private IAnalysisTask[] fieldAnalysisTasks = null;
+	private boolean isStoch;
 
 /**
  * SimulationContext constructor comment.
@@ -209,6 +210,7 @@ public SimulationContext(SimulationContext simulationContext) throws PropertyVet
 	this.fieldName = "copied_from_"+simulationContext.getName();
 	this.fieldDescription = "(copied from "+simulationContext.getName()+") "+simulationContext.getDescription();
 	this.simContextOwner = simulationContext.getSimulationContextOwner();
+	this.setIsStoch(simulationContext.isStoch());
 	//
 	// copy electrical stimuli and ground
 	//
@@ -240,10 +242,18 @@ public SimulationContext(SimulationContext simulationContext) throws PropertyVet
 /**
  * SimulationContext constructor comment.
  */
-public SimulationContext(cbit.vcell.model.Model model, cbit.vcell.geometry.Geometry geometry) throws PropertyVetoException {
+public SimulationContext(cbit.vcell.model.Model argModel, cbit.vcell.geometry.Geometry argGeometry) throws PropertyVetoException {
+	this(argModel,argGeometry,false);
+}
+
+/**
+ * SimulationContext constructor comment.
+ */
+public SimulationContext(cbit.vcell.model.Model model, cbit.vcell.geometry.Geometry geometry, boolean bIsStoch) throws PropertyVetoException {
 
 	addVetoableChangeListener(this);
 	
+	setIsStoch(bIsStoch);
 	setGeometryContext(new GeometryContext(model,geometry,this));
 	this.reactionContext = new ReactionContext(model,this);
 	this.version = null;
@@ -252,14 +262,18 @@ public SimulationContext(cbit.vcell.model.Model model, cbit.vcell.geometry.Geome
 	this.fieldName = "Application_with_"+geometry.getName();
 }
 
+public SimulationContext(Model argModel, Geometry argGeometry, MathDescription argMathDesc, Version argVersion) throws PropertyVetoException {
+	this(argModel,argGeometry,argMathDesc,argVersion,false);
+}
 
 /**
  * SimulationContext constructor comment.
  */
-public SimulationContext(Model model, Geometry geometry, MathDescription argMathDesc, Version argVersion) throws PropertyVetoException {
+public SimulationContext(Model model, Geometry geometry, MathDescription argMathDesc, Version argVersion, boolean argIsStoch) throws PropertyVetoException {
 
 	addVetoableChangeListener(this);
 	
+	setIsStoch(argIsStoch);
 	setGeometryContext(new GeometryContext(model,geometry,this));
 	this.reactionContext = new ReactionContext(model,this);
 	this.mathDesc = argMathDesc;
@@ -344,7 +358,6 @@ public Simulation addNewSimulation(MathFactory mathFactory) throws java.beans.Pr
 
 	return newSimulation;
 }
-
 
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
@@ -937,6 +950,14 @@ public synchronized boolean hasListeners(String propertyName) {
 	return getVetoPropertyChange().hasListeners(propertyName);
 }
 
+/**
+ * Insert the method's description here.
+ * Creation date: (9/22/2006 4:07:16 PM)
+ * @return boolean
+ */
+public boolean isStoch() {
+	return isStoch;
+}
 
 /**
  * Insert the method's description here.
@@ -1258,6 +1279,14 @@ public void setAnalysisTasks(IAnalysisTask[] analysisTasks) throws java.beans.Pr
 	firePropertyChange("analysisTasks", oldValue, analysisTasks);
 }
 
+/**
+ * Insert the method's description here.
+ * Creation date: (9/22/2006 4:07:16 PM)
+ * @param newIsStoch boolean
+ */
+private void setIsStoch(boolean newIsStoch) {
+	isStoch = newIsStoch;
+}
 
 /**
  * Insert the method's description here.
