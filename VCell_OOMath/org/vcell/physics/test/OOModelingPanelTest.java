@@ -1,7 +1,10 @@
-package org.vcell.physics.math;
+package org.vcell.physics.test;
 
 import org.vcell.expression.ExpressionUtilities;
 import org.vcell.physics.component.gui.OOModelingPanel;
+import org.vcell.physics.math.MappingUtilities;
+import org.vcell.physics.math.MathSystem;
+import org.vcell.physics.math.ModelAnalysisResults;
 
 
 /**

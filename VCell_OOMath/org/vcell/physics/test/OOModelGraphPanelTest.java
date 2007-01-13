@@ -1,4 +1,7 @@
-package org.vcell.physics.component.gui;
+package org.vcell.physics.test;
+
+import org.vcell.physics.component.gui.OOModelGraphPanel;
+
 /**
  * Insert the type's description here.
  * Creation date: (7/8/2003 3:32:30 PM)

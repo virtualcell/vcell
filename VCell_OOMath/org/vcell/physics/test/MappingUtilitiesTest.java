@@ -1,6 +1,9 @@
-package org.vcell.physics.math;
+package org.vcell.physics.test;
 import org.vcell.physics.component.OOModel;
 import org.vcell.physics.component.gui.OOModelingPanel;
+import org.vcell.physics.math.MappingUtilities;
+import org.vcell.physics.math.MathSystem;
+import org.vcell.physics.math.ModelAnalysisResults;
 /**
  * Insert the type's description here.
  * Creation date: (1/16/2006 11:33:57 PM)
