@@ -8,11 +8,12 @@ package cbit.vcell.simulation;
  * Insert the type's description here.
  * Creation date: (4/23/01 3:34:06 PM)
  * @author: Jim Schaff
+ * Stochastic description is added on 12th July 2006.
  */
 public class SolverDescription implements java.io.Serializable, cbit.util.Matchable {
 	private int type;
 	
-	private static final int NUM_SOLVERS = 7;
+	private static final int NUM_SOLVERS = 8;
 	private static final int TYPE_FORWARD_EULER = 0;
 	private static final int TYPE_RUNGE_KUTTA2 = 1;
 	private static final int TYPE_RUNGE_KUTTA4 = 2;
@@ -20,7 +21,7 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 	private static final int TYPE_ADAMS_MOULTON = 4;
 	private static final int TYPE_LSODA = 5;
 	private static final int TYPE_FINITE_VOLUME = 6;
-	
+	private static final int TYPE_STOCH_GIBSON = 7;		
 
 	private static final String[] DESCRIPTIONS = {
 		"Forward Euler (First Order, Fixed Time Step)",
@@ -29,7 +30,8 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		"Runge-Kutta-Fehlberg (Fifth Order, Variable Time Step)",
 		"Adams-Moulton (Fifth Order, Fixed Time Step)",
 		"LSODA (Variable Order, Variable Time Step)",
-		"Finite Volume, Regular Grid"
+		"Finite Volume, Regular Grid",
+		"Gibson (Next Reaction Stochastic Method)"
 	};
 	private static final boolean[] IS_ODE = {
 		true,   // TYPE_FORWARD_EULER
@@ -38,7 +40,18 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		true,	// TYPE_RUNGE_KUTTA_FEHLBERG
 		true,	// TYPE_ADAMS_MOULTON
 		true,	// TYPE_LSODA
-		false	// TYPE_FINITE_VOLUME
+		false,	// TYPE_FINITE_VOLUME
+		false	// TYPE_STOCH_GIBSON
+	};
+	private static final boolean[] IS_STOCH = {
+		false,  // TYPE_FORWARD_EULER
+		false,	// TYPE_RUNGE_KUTTA2
+		false,	// TYPE_RUNGE_KUTTA4
+		false,	// TYPE_RUNGE_KUTTA_FEHLBERG
+		false,	// TYPE_ADAMS_MOULTON
+		false,	// TYPE_LSODA
+		false,	// TYPE_FINITE_VOLUME
+		true	// TYPE_STOCH_GIBSON
 	};
 	private static final boolean[] IS_INTERPRETED = {
 		true,   // TYPE_FORWARD_EULER
@@ -47,7 +60,8 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		true,	// TYPE_RUNGE_KUTTA_FEHLBERG
 		true,	// TYPE_ADAMS_MOULTON
 		false,	// TYPE_LSODA
-		false	// TYPE_FINITE_VOLUME
+		false,	// TYPE_FINITE_VOLUME
+		false 	// TYPE_STOCH_GIBSON
 	};
 		
 			
@@ -58,6 +72,7 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 	public static final SolverDescription AdamsMoulton			= new SolverDescription(TYPE_ADAMS_MOULTON);
 	public static final SolverDescription LSODA					= new SolverDescription(TYPE_LSODA);
 	public static final SolverDescription FiniteVolume			= new SolverDescription(TYPE_FINITE_VOLUME);
+	public static final SolverDescription StochGibson			= new SolverDescription(TYPE_STOCH_GIBSON);
 /**
  * SolverDescription constructor comment.
  */
@@ -243,8 +258,18 @@ public boolean isODESolver() {
  * @return boolean
  */
 public boolean isPDESolver() {
-	return !IS_ODE[type];
+	return !(IS_ODE[type] || IS_STOCH[type]);
 }
+
+/**
+ * Check whether the solver is stochastic solver or not.
+ * Creation date: (7/18/2006 5:08:30 PM)
+ * @return boolean
+ */
+public boolean isSTOCHSolver() {
+	return IS_STOCH[type];
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (9/8/2005 11:23:54 AM)

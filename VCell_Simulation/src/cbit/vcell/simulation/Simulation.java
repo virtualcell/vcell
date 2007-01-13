@@ -4,6 +4,7 @@ package cbit.vcell.simulation;
  * All rights reserved.
 ©*/
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Vector;
 import java.util.Enumeration;
 
@@ -18,6 +19,7 @@ import org.vcell.expression.SymbolTableEntry;
 import cbit.util.BeanUtils;
 import cbit.util.CommentStringTokenizer;
 import cbit.util.DataAccessException;
+import cbit.util.document.FieldDataIdentifierSpec;
 import cbit.util.document.KeyValue;
 import cbit.util.document.SimulationVersion;
 import cbit.util.document.Versionable;
@@ -33,13 +35,17 @@ public class Simulation implements Versionable, cbit.util.Matchable, org.vcell.e
 	// size quotas enforced per simulation
 	public static final int MAX_LIMIT_ODE_TIMEPOINTS = 100000;
 	public static final int MAX_LIMIT_PDE_TIMEPOINTS = 100000;
+	public static final int MAX_LIMIT_STOCH_TIMEPOINTS = 100000; //stoch
 	public static final int MAX_LIMIT_0DE_MEGABYTES = 20;
 	public static final int MAX_LIMIT_PDE_MEGABYTES = 20000;
+	public static final int MAX_LIMIT_STOCH_MEGABYTES = 20; //stoch
 	public static final int WARNING_ODE_TIMEPOINTS = 5000;
 	public static final int WARNING_PDE_TIMEPOINTS = 1000;
+	public static final int WARNING_STOCH_TIMEPOINTS = 5000; //stoch
 	public static final int WARNING_0DE_MEGABYTES = 5;
 	public static final int WARNING_PDE_MEGABYTES = 200;
-
+	public static final int WARNING_STOCH_MEGABYTES = 5; //stoch
+	
 	public static final int WARNING_SCAN_JOBS = 20;
 	public static final int MAX_LIMIT_SCAN_JOBS = 40;
 	/**
@@ -71,8 +77,8 @@ public class Simulation implements Versionable, cbit.util.Matchable, org.vcell.e
 	//
 	// lists used for binding for use by solvers.
 	//
-	private transient java.util.Vector localFunctions = null;
-	private transient java.util.Vector localConstants = null;
+	private transient java.util.Vector<Function> localFunctions = null;
+	private transient java.util.Vector<Constant> localConstants = null;
 	private boolean fieldIsDirty = false;
 	private java.lang.String fieldWarning = null;
 	/**
@@ -541,7 +547,7 @@ public org.vcell.expression.SymbolTableEntry getEntry(java.lang.String identifie
  */
 public Function[] getFunctions() {
 	
-	java.util.Vector functList = new java.util.Vector();
+	java.util.Vector<Function> functList = new java.util.Vector<Function>();
 	
 	//
 	// get all variables from MathDescription, but replace MathOverrides
@@ -549,11 +555,41 @@ public Function[] getFunctions() {
 	Variable variables[] = getVariables();
 	for (int i = 0; i < variables.length; i++){
 		if (variables[i] instanceof Function){
-			functList.addElement(variables[i]);
+			functList.addElement((Function)variables[i]);
 		}
 	}
 
 	return (Function[])cbit.util.BeanUtils.getArray(functList,Function.class);
+}
+
+/**
+ * Insert the method's description here.
+ * Creation date: (5/25/01 11:34:08 AM)
+ * @return cbit.vcell.math.Variable[]
+ */
+public FieldDataIdentifierSpec[] getFieldDataIdentifierSpecs(){
+	
+	FieldDataIdentifierSpec[] mathDescFieldDataIdentifierSpecs = getMathDescription().getFieldDataIdentifierSpecs();
+	Vector<FieldDataIdentifierSpec> allFields = new Vector<FieldDataIdentifierSpec>();
+	allFields.addAll(Arrays.asList(mathDescFieldDataIdentifierSpecs));
+	//
+	// get all variables from MathDescription, but replace MathOverrides
+	//
+	String[] overriddenConstantNames = getMathOverrides().getOverridenConstantNames();
+	for (int i = 0; i < overriddenConstantNames.length; i++) {
+		ConstantArraySpec constantArraySpec = getMathOverrides().getConstantArraySpec(overriddenConstantNames[i]);
+		if (constantArraySpec.getNumValues()==1){
+			Constant constant = constantArraySpec.getConstants()[0];
+			FieldDataIdentifierSpec[] fieldDataIdentifierSpecs = constant.getExpression().getFieldDataIdentifierSpecs();
+			for (int j = 0; j < fieldDataIdentifierSpecs.length; j++) {
+				if (!allFields.contains(fieldDataIdentifierSpecs[j])){
+					allFields.add(fieldDataIdentifierSpecs[j]);
+				}
+			}
+		}
+	}
+
+	return allFields.toArray(new FieldDataIdentifierSpec[allFields.size()]);
 }
 
 
@@ -613,7 +649,6 @@ public KeyValue getKey() {
 	return (getVersion()!=null)?(getVersion().getVersionKey()):(null);
 }
 
-
 /**
  * Insert the method's description here.
  * Creation date: (6/6/2001 7:52:15 PM)
@@ -622,7 +657,7 @@ public KeyValue getKey() {
  */
 private Constant getLocalConstant(Constant referenceConstant) throws ExpressionException {
 	if (localConstants==null){
-		localConstants = new Vector();
+		localConstants = new Vector<Constant>();
 	}
 	for (int i = 0; i < localConstants.size(); i++){
 		Constant localConstant = (Constant)localConstants.elementAt(i);
@@ -662,7 +697,7 @@ private Constant getLocalConstant(Constant referenceConstant) throws ExpressionE
  */
 private Function getLocalFunction(Function referenceFunction) throws ExpressionException {
 	if (localFunctions==null){
-		localFunctions = new Vector();
+		localFunctions = new Vector<Function>();
 	}
 	for (int i = 0; i < localFunctions.size(); i++){
 		Function localFunction = (Function)localFunctions.elementAt(i);
@@ -818,7 +853,7 @@ public Variable getVariable(String variableName) {
  */
 public Variable[] getVariables() {
 	
-	java.util.Vector varList = new java.util.Vector();
+	java.util.Vector<Variable> varList = new java.util.Vector<Variable>();
 	
 	//
 	// get all variables from MathDescription, but replace MathOverrides
@@ -954,7 +989,7 @@ public boolean hasTimeVaryingDiffusionOrAdvection(VolVariable volVariable) throw
 			// get diffusion expressions, see if function of time or volume variables
 			//
 			if (equation instanceof PdeEquation){
-				Vector spatialExpressionList = new Vector();
+				Vector<IExpression> spatialExpressionList = new Vector<IExpression>();
 				spatialExpressionList.add(((PdeEquation)equation).getDiffusionExpression());
 				if (((PdeEquation)equation).getVelocityX()!=null){
 					spatialExpressionList.add(((PdeEquation)equation).getVelocityX());
@@ -1328,4 +1363,190 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		}
 	}
 }
+
+
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (6/6/2001 10:57:51 AM)
+	 * @return boolean
+	 * @param function cbit.vcell.math.Function
+	 */
+	public static boolean isFunctionSaved(cbit.vcell.math.Function function) {
+		String name = function.getName();
+		if (!name.startsWith("SurfToVol_") && 
+			!name.startsWith("VolFract_") && 
+			!name.startsWith("Kflux_") && 
+			!name.endsWith("_init") && 
+			!name.endsWith("_total")){
+			return true;
+		}else{
+			return false;
+		}
+	}
+	
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (2/2/2004 5:31:41 PM)
+	 * @return cbit.vcell.simdata.AnnotatedFunction[]
+	 * @param simulation cbit.vcell.solver.Simulation
+	 */
+	public static AnnotatedFunction[] createAnnotatedFunctionsList(Simulation simulation) {
+		Function[] functions = simulation.getFunctions();
+
+		// Get the list of (volVariables) in the simulation. Needed to determine 'type' of  functions
+		Variable[] allVariables = simulation.getVariables();
+		Vector varVector = new Vector();
+		for (int i = 0; i < allVariables.length; i++){
+			if ( (allVariables[i] instanceof VolVariable) || (allVariables[i] instanceof VolumeRegionVariable) || (allVariables[i] instanceof MemVariable) || 
+				 (allVariables[i] instanceof MembraneRegionVariable) || (allVariables[i] instanceof FilamentVariable) || (allVariables[i] instanceof FilamentRegionVariable) ||
+				 (allVariables[i] instanceof InsideVariable) || (allVariables[i] instanceof OutsideVariable) ) {
+					 
+				varVector.addElement(allVariables[i]);
+			}
+		}
+		Variable[] variables = (Variable[])cbit.util.BeanUtils.getArray(varVector, Variable.class);
+		String[] variableNames = new String[variables.length];
+		for (int i = 0; i < variableNames.length; i++){
+			variableNames[i] = variables[i].getName();
+		}
+
+		// Lookup table for variableType for each variable in 'variables' array.	
+		VariableType[] variableTypes = new VariableType[variables.length];
+		for (int i = 0; i < variables.length; i++){
+			if (variables[i] instanceof VolVariable) {
+				variableTypes[i] = VariableType.VOLUME;
+			} else if (variables[i] instanceof VolumeRegionVariable) {
+				variableTypes[i] = VariableType.VOLUME_REGION;
+			} else if (variables[i] instanceof MemVariable) {
+				variableTypes[i] = VariableType.MEMBRANE;
+			} else if (variables[i] instanceof MembraneRegionVariable) {
+				variableTypes[i] = VariableType.MEMBRANE_REGION;
+			} else if (variables[i] instanceof FilamentVariable) {
+				variableTypes[i] = VariableType.CONTOUR;
+			} else if (variables[i] instanceof FilamentRegionVariable) {
+				variableTypes[i] = VariableType.CONTOUR_REGION;
+			} else if (variables[i] instanceof InsideVariable) {
+				variableTypes[i] = VariableType.MEMBRANE;
+			} else if (variables[i] instanceof OutsideVariable) {
+				variableTypes[i] = VariableType.MEMBRANE;
+			} else {
+				variableTypes[i] = null;
+			}
+		}
+
+		//
+		// Bind and substitute functions to simulation before storing them in the '.functions' file
+		//
+		Vector annotatedFunctionVector = new Vector();
+		for (int i = 0; i < functions.length; i++){
+			if (Simulation.isFunctionSaved(functions[i])) {
+				String errString = "";
+				VariableType funcType = null;		
+				try {
+					IExpression substitutedExp = simulation.substituteFunctions(functions[i].getExpression());
+					substitutedExp.bindExpression(simulation);
+					functions[i].setExpression(substitutedExp.flatten());
+				}catch (cbit.vcell.math.MathException e){
+					e.printStackTrace(System.out);
+					errString = errString+", "+e.getMessage();	
+					// throw new RuntimeException(e.getMessage());
+				}catch (org.vcell.expression.ExpressionException e){
+					e.printStackTrace(System.out);
+					errString = errString+", "+e.getMessage();				
+					// throw new RuntimeException(e.getMessage());
+				}
+
+				//
+				// get function's data type from the types of it's identifiers
+				//
+				funcType = getFunctionVariableType(functions[i], variableNames, variableTypes, simulation.getIsSpatial());
+
+				AnnotatedFunction annotatedFunc = new AnnotatedFunction(functions[i].getName(), functions[i].getExpression(), errString, funcType, false);
+				annotatedFunctionVector.addElement(annotatedFunc);
+			}
+		}
+
+		AnnotatedFunction[] annotatedFunctionList = (AnnotatedFunction[])cbit.util.BeanUtils.getArray(annotatedFunctionVector, AnnotatedFunction.class);
+		return annotatedFunctionList;	
+	}
+	
+	
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (2/19/2004 11:17:15 AM)
+	 * @return cbit.vcell.simdata.VariableType
+	 * @param function cbit.vcell.math.Function
+	 * @param variableNames java.lang.String[]
+	 * @param variableTypes cbit.vcell.simdata.VariableType[]
+	 */
+	public static VariableType getFunctionVariableType(Function function, String[] variableNames, VariableType[] variableTypes, boolean isSpatial) {
+		VariableType funcType = null;
+		IExpression exp = function.getExpression();
+		String symbols[] = exp.getSymbols();
+		if (symbols != null) {
+			for (int j = 0; j < symbols.length; j++){
+				boolean bFound = false;
+				for (int k = 0; !bFound && k < variableNames.length; k++){
+					if (symbols[j].equals(variableNames[k])) {
+						bFound = true;
+						if (funcType == null){
+							funcType = variableTypes[k];
+						}else{
+							//
+							// example: if VOLUME_REGION and VOLUME data are used in same function,
+							// then function must be evaluated at each volume index (hence VOLUME wins).
+							//
+							if (variableTypes[k].isExpansionOf(funcType)){
+								funcType = variableTypes[k];
+							}
+						}
+					}
+					if (symbols[j].equals(variableNames[k]+"_INSIDE") || symbols[j].equals(variableNames[k]+"_OUTSIDE")){
+						bFound=true;
+						if (variableTypes[k].equals(VariableType.VOLUME)){
+							funcType = VariableType.MEMBRANE;
+						}else if (funcType == null && variableTypes[k].equals(VariableType.VOLUME_REGION)){
+							funcType = VariableType.MEMBRANE_REGION;
+						}
+					}
+				}
+			}
+		}
+		//
+		// if determined to be a volume region or membrane region function, 
+		// then if it is an explicit function of space, promote type to corresponding non-region type (e.g. volRegion --> volume)
+		//
+		boolean bExplicitFunctionOfSpace = false;
+		if (symbols != null) {
+			for (int i = 0; i < symbols.length; i++){
+				if (symbols[i].equals(cbit.vcell.math.ReservedVariable.X.toString()) ||
+					symbols[i].equals(cbit.vcell.math.ReservedVariable.Y.toString()) ||
+					symbols[i].equals(cbit.vcell.math.ReservedVariable.Z.toString())){
+					bExplicitFunctionOfSpace = true;
+				}
+			}
+		}
+
+			
+		if (funcType == null){
+			//
+			// set default VariableType's for functions that have no variables (best guess).
+			//
+			if (!isSpatial) {
+				funcType = VariableType.NONSPATIAL;
+			} else {
+				funcType = VariableType.VOLUME;
+			}
+		}else{
+			if (funcType.equals(VariableType.MEMBRANE_REGION) && bExplicitFunctionOfSpace){
+				funcType = VariableType.MEMBRANE;
+			}else if (funcType.equals(VariableType.VOLUME_REGION) && bExplicitFunctionOfSpace){
+				funcType = VariableType.VOLUME;
+			}else if (funcType.equals(VariableType.CONTOUR_REGION) && bExplicitFunctionOfSpace){
+				funcType = VariableType.CONTOUR;
+			}
+		}
+		return funcType;
+	}
+	
 }

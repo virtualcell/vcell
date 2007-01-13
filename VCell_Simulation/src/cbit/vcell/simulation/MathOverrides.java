@@ -243,6 +243,21 @@ public IExpression getActualExpression(String key, int index) {
 	}
 }
 
+/**
+ * Insert the method's description here.
+ * Creation date: (7/20/2006 4:35:43 PM)
+ * @return cbit.vcell.math.Constant
+ * @param constantName java.lang.String
+ */
+public Constant getConstant(String constantName) {
+	 cbit.vcell.math.Variable variable = getSimulation().getMathDescription().getVariable(constantName);
+	 if(variable instanceof Constant){
+		 return (Constant)variable;
+	 }
+
+	 return null;
+}
+
 
 public String[] getAllConstantNames() {
 	Enumeration en = getSimulation().getMathDescription().getConstants();
@@ -588,7 +603,7 @@ private void readVCML(CommentStringTokenizer tokens)
 					if (t.equals(";")) {
 						bDone = true;
 					} else if (t.endsWith(";") && (t.length() > 1)) {
-						description += t.substring(0,t.length()-2);
+						description += t.substring(0,t.length()-1);
 						bDone = true;
 					} else {
 						description += t + " ";
