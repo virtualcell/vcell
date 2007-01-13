@@ -71,6 +71,7 @@ public class SimulationJobStatusDetailDialog extends javax.swing.JDialog {
 	private java.awt.FlowLayout ivjJPanel15FlowLayout = null;
 	private javax.swing.JTextField ivjServerIDTextField = null;
 	private javax.swing.JTextField ivjTaskIDTextField = null;
+	private javax.swing.JTextField ivjJobIndexTextField = null;
 
 class IvjEventHandler implements java.awt.event.ActionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -305,6 +306,31 @@ private javax.swing.JTextField getEndDateTextField() {
 	}
 	return ivjEndDateTextField;
 }
+
+
+/**
+ * Return the JobIndexTextField property value.
+ * @return javax.swing.JTextField
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private javax.swing.JTextField getJobIndexTextField() {
+	if (ivjJobIndexTextField == null) {
+		try {
+			ivjJobIndexTextField = new javax.swing.JTextField();
+			ivjJobIndexTextField.setName("JobIndexTextField");
+			ivjJobIndexTextField.setEditable(false);
+			ivjJobIndexTextField.setColumns(4);
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjJobIndexTextField;
+}
+
 
 /**
  * Return the JDialogContentPane property value.
@@ -975,6 +1001,7 @@ private javax.swing.JPanel getJPanel5() {
 			ivjJPanel5.setLayout(getJPanel5FlowLayout());
 			getJPanel5().add(getJLabel2(), getJLabel2().getName());
 			getJPanel5().add(getSimIDTextField(), getSimIDTextField().getName());
+			getJPanel5().add(getJobIndexTextField(), getJobIndexTextField().getName());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1328,7 +1355,7 @@ private javax.swing.JTextField getSimIDTextField() {
 			ivjSimIDTextField = new javax.swing.JTextField();
 			ivjSimIDTextField.setName("SimIDTextField");
 			ivjSimIDTextField.setEditable(false);
-			ivjSimIDTextField.setColumns(18);
+			ivjSimIDTextField.setColumns(12);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1472,7 +1499,7 @@ private javax.swing.JTextField getTaskIDTextField() {
 			ivjTaskIDTextField = new javax.swing.JTextField();
 			ivjTaskIDTextField.setName("TaskIDTextField");
 			ivjTaskIDTextField.setEditable(false);
-			ivjTaskIDTextField.setColumns(18);
+			ivjTaskIDTextField.setColumns(20);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1630,6 +1657,7 @@ public void setStatus() {
 	setTitle("Simulation Status [" + jobStatus.getUserID() + "," + jobStatus.getVCSimulationIdentifier().getSimulationKey() + "]");
 	getUserTextField().setText(jobStatus.getUserID());
 	getSimIDTextField().setText(jobStatus.getVCSimulationIdentifier().getSimulationKey() + "");
+	getJobIndexTextField().setText(jobStatus.getJobIndex() + "");
 	getComputeHostTextField().setText(jobStatus.getComputeHost());
 	getSubmitDateTextField().setText(jobStatus.getSubmitDate() == null ? "" : dateTimeFormatter.format(jobStatus.getSubmitDate()));
 	getStartDateTextField().setText(jobStatus.getStartDate() == null ? "" : dateTimeFormatter.format(jobStatus.getStartDate()));

@@ -31,6 +31,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
+import cbit.gui.DateRenderer;
 import cbit.gui.SwingWorker;
 import cbit.rmi.event.VCellServerID;
 import cbit.util.BigString;
@@ -1315,7 +1316,7 @@ private javax.swing.JTextArea getBroadcastMessageTextArea() {
 			ivjBroadcastMessageTextArea.setName("BroadcastMessageTextArea");
 			ivjBroadcastMessageTextArea.setLineWrap(true);
 			ivjBroadcastMessageTextArea.setWrapStyleWord(true);
-			ivjBroadcastMessageTextArea.setText("The Virtual Cell is going to reboot in 5 minutes due to. Please save your work and logout. We are sorry for any inconvenience. If you have any questions, please contact the Virtual Cell at VCell_Support@uchc.edu.");
+			ivjBroadcastMessageTextArea.setText("");
 			ivjBroadcastMessageTextArea.setFont(new java.awt.Font("Arial", 1, 12));
 			ivjBroadcastMessageTextArea.setBounds(0, 0, 376, 68);
 			ivjBroadcastMessageTextArea.setMargin(new java.awt.Insets(5, 5, 5, 5));
@@ -1386,39 +1387,41 @@ private javax.swing.JPanel getBroadcastPanel() {
  * @return int
  */
 public Date getConnectionTimeFromRMIbootstrapLogfile(User user) throws Exception {
-	java.io.File file = new java.io.File("\\\\ms3\\vcell\\" 
-		+ PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerIDProperty) 
-		+ "\\RMIbootstrap.log");
-	if (!file.exists()) {
-		throw new java.io.FileNotFoundException("RMI bootstrap log file doesn't exist: " + file.getAbsolutePath());
-	}
-
-	String cmd = "grep \"LocalVCellBootstrap.getVCellConnection(" + user.getName() + ",\" " + file.getAbsolutePath();
-	cbit.util.Executable exe = new cbit.util.Executable(cmd);
-	exe.start();
-		
-	String output = exe.getStdoutString();
-	java.util.StringTokenizer st = new java.util.StringTokenizer(output, "\n");
-
-	String line = null;
-	while (st.hasMoreTokens()) {
-		line = st.nextToken();
-	}
+	return new Date();
 	
-	//  now line is the last line
-	st = new java.util.StringTokenizer(line, " ");
-	st.nextToken();
-	st.nextToken();
-	String time = st.nextToken();
-	for (int i = 0; i < 5; i ++) {
-		if (st.hasMoreTokens()) {
-			time += " " + st.nextToken();
-		}
-	}
-	SimpleDateFormat formatter = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy",java.util.Locale.US);
-
-	Date date =	formatter.parse(time);
-	return date;
+//	java.io.File file = new java.io.File("\\\\ms3\\vcell\\" 
+//		+ PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerIDProperty) 
+//		+ "\\RMIbootstrap.log");
+//	if (!file.exists()) {
+//		throw new java.io.FileNotFoundException("RMI bootstrap log file doesn't exist: " + file.getAbsolutePath());
+//	}
+//
+//	String cmd = "grep \"LocalVCellBootstrap.getVCellConnection(" + user.getName() + ",\" " + file.getAbsolutePath();
+//	cbit.util.Executable exe = new cbit.util.Executable(cmd);
+//	exe.start();
+//		
+//	String output = exe.getStdoutString();
+//	java.util.StringTokenizer st = new java.util.StringTokenizer(output, "\n");
+//
+//	String line = null;
+//	while (st.hasMoreTokens()) {
+//		line = st.nextToken();
+//	}
+//	
+//	//  now line is the last line
+//	st = new java.util.StringTokenizer(line, " ");
+//	st.nextToken();
+//	st.nextToken();
+//	String time = st.nextToken();
+//	for (int i = 0; i < 5; i ++) {
+//		if (st.hasMoreTokens()) {
+//			time += " " + st.nextToken();
+//		}
+//	}
+//	SimpleDateFormat formatter = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy",java.util.Locale.US);
+//
+//	Date date =	formatter.parse(time);
+//	return date;
 }
 
 
@@ -2714,7 +2717,7 @@ private javax.swing.JSplitPane getJSplitPane1() {
 			ivjJSplitPane1.setDividerSize(2);
 			ivjJSplitPane1.setLastDividerLocation(1);
 			ivjJSplitPane1.setComponentOrientation(java.awt.ComponentOrientation.UNKNOWN);
-			ivjJSplitPane1.setDividerLocation(200);
+			ivjJSplitPane1.setDividerLocation(220);
 			getJSplitPane1().add(getJScrollPane3(), "left");
 			getJSplitPane1().add(getJPanel7(), "right");
 			// user code begin {1}
@@ -4357,7 +4360,7 @@ private void initialize() {
 		setName("ServerManageConsole");
 		setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 		setTitle("Virtual Cell Management Console");
-		setSize(1072, 662);
+		setSize(1085, 662);
 		setContentPane(getJFrameContentPane());
 		initConnections();
 		connEtoC2();
@@ -5244,6 +5247,11 @@ public void resubmitSimulation(String userid, KeyValue simKey) {
  */
 public void sendMessageButton_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
 	try {
+		int n = javax.swing.JOptionPane.showConfirmDialog(this, "You are going to send message to " + getBroadcastMessageToTextField().getText() + ". Continue?", "Confirm", javax.swing.JOptionPane.YES_NO_OPTION);
+		if (n == javax.swing.JOptionPane.NO_OPTION) {
+			return;
+		}	
+		
 		Message msg = topicSession.createObjectMessage(new BigString(getBroadcastMessageTextArea().getText()));
 		String username = getBroadcastMessageToTextField().getText();
 
@@ -5278,9 +5286,6 @@ public void serverManageConsole_Initialize() {
 	statusChecks.add(getQueryFailedCheck());
 
 	getQueryResultTable().setDefaultRenderer(Date.class, new DateRenderer());
-	getQueryResultTable().getColumnModel().getColumn(2).setCellRenderer(new SolverTaskDescriptionRenderer());
-	getUserConnectionTable().getColumnModel().getColumn(1).setCellRenderer(new UserConnectionDateRenderer());
-	getUserConnectionTable().getColumnModel().getColumn(2).setCellRenderer(new UserConnectionTimeCellRenderer());
 	return;
 }
 

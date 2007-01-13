@@ -9,15 +9,15 @@ import cbit.vcell.messaging.admin.sorttable.ManageTableModel;
  */
 public class UserConnectionTableModel extends ManageTableModel {
 	private final static int columnIndex_UserID = 0;
-	private final static int columnIndex_ElapsedTime = 2;
-	private final static int columnIndex_ConnectedTime = 1;
+//	private final static int columnIndex_ElapsedTime = 2;
+//	private final static int columnIndex_ConnectedTime = 1;
 
 /**
  * UserConnectionTableModel constructor comment.
  */
 public UserConnectionTableModel() {
 	super();
-	columns = new String[]{"User ID", "Connected Time", "Elapsed Time"};
+	columns = new String[]{"User ID"};
 }
 
 
@@ -30,10 +30,6 @@ public UserConnectionTableModel() {
 public Class getColumnClass(int columnIndex) {
 	if (columnIndex == columnIndex_UserID) {
 		return String.class;
-	} else if (columnIndex == columnIndex_ConnectedTime) {		
-		return Date.class;
-	} else if (columnIndex == columnIndex_ElapsedTime) {
-		return Number.class;
 	}
 
 	return null;
