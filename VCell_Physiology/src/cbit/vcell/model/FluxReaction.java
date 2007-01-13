@@ -134,16 +134,18 @@ public Species getFluxCarrier() {
  * @param speciesContext cbit.vcell.model.SpeciesContext
  */
 public int getStoichiometry(Species species, Structure structure) {
-	ReactionParticipant rp = getReactionParticipant(species, structure);
-	if (rp==null){
+	ReactionParticipant[] rps = getReactionParticipants(species, structure);
+	if (rps==null || rps.length==0){
 		return 0;
 	}
-	if (rp instanceof Flux){
-		Membrane membrane = (Membrane)getStructure();
-		if (structure == membrane.getInsideFeature()){
-			return rp.getStoichiometry();
-		}else if (structure == membrane.getOutsideFeature()){
-			return -rp.getStoichiometry();
+	for (int i = 0; i < rps.length; i++) {
+		if (rps[i] instanceof Flux){
+			Membrane membrane = (Membrane)getStructure();
+			if (structure == membrane.getInsideFeature()){
+				return rps[i].getStoichiometry();
+			}else if (structure == membrane.getOutsideFeature()){
+				return -rps[i].getStoichiometry();
+			}
 		}
 	}
 	return 0;

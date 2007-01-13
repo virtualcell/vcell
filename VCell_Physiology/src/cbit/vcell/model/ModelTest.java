@@ -5,7 +5,6 @@ import cbit.vcell.dictionary.*;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.util.*;
 
 import org.vcell.expression.ExpressionFactory;
 
@@ -217,6 +216,207 @@ public static Model getExample() throws Exception {
 	
 	return model;
 }
+/**
+ * This method was created by a SmartGuide.
+ */
+public static Model getExampleForFluorescenceIndicatorProtocol() throws Exception {
+
+	double A_init = 10.0;
+	double B_init = 20.0;
+	double C_init = 30.0;
+	double D_init = 40.0;
+	double E_init = 35.0;
+	double I_init = 50.0;
+	double A_diff = 11.0;
+	double B_diff = 22.0;
+	double C_diff = 33.0;
+	double D_diff = 44.0;
+	double E_diff = 55.0;
+	double I_diff = 66.0;
+	
+	Model model = new Model("model1");
+
+	model.addSpecies(new Species("A","A"));
+	Species A = model.getSpecies("A");
+	model.addSpecies(new Species("B","B"));
+	Species B = model.getSpecies("B");
+	model.addSpecies(new Species("C","C"));
+	Species C = model.getSpecies("C");
+	model.addSpecies(new Species("D","D"));
+	Species D = model.getSpecies("D");
+	model.addSpecies(new Species("E","E"));
+	Species E = model.getSpecies("E");
+	model.addSpecies(new Species("I","I"));
+	Species I = model.getSpecies("I");
+	
+	model.addFeature("Cytosol",null,null);
+	Feature cytosol = (Feature)model.getStructure("Cytosol");
+	
+	model.addSpeciesContext(A,cytosol);
+	SpeciesContext A_cyt = model.getSpeciesContext(A,cytosol);
+	//A_cyt.setInitialValue(A_init);
+	//A_cyt.setDiffusionRate(A_diff);
+
+	model.addSpeciesContext(B,cytosol);
+	SpeciesContext B_cyt = model.getSpeciesContext(B,cytosol);
+	//B_cyt.setInitialValue(B_init);
+	//B_cyt.setDiffusionRate(B_diff);
+
+	model.addSpeciesContext(C,cytosol);
+	SpeciesContext C_cyt = model.getSpeciesContext(C,cytosol);
+	//C_cyt.setInitialValue(C_init);
+	//C_cyt.setDiffusionRate(C_diff);
+
+	model.addSpeciesContext(D,cytosol);
+	SpeciesContext D_cyt = model.getSpeciesContext(D,cytosol);
+	//D_cyt.setInitialValue(D_init);
+	//D_cyt.setDiffusionRate(D_diff);
+
+	model.addSpeciesContext(E,cytosol);
+	SpeciesContext E_cyt = model.getSpeciesContext(E,cytosol);
+	//E_cyt.setInitialValue(E_init);
+	//E_cyt.setDiffusionRate(E_diff);
+	
+	model.addSpeciesContext(I,cytosol);
+	SpeciesContext I_cyt = model.getSpeciesContext(I,cytosol);
+	//I_cyt.setInitialValue(I_init);
+	//I_cyt.setDiffusionRate(I_diff);
+
+	SimpleReaction sr;
+	
+	//
+	// CYTOSOL REACTIONS
+	//
+	double K1 = 1.0;
+	double K2 = 2.0;
+	double K3 = 3.0;
+	double K4 = 4.0;
+
+	sr = new SimpleReaction(cytosol,"SIMPLE_REACTION_ABC");
+	sr.addReactant(A_cyt,1);
+	sr.addReactant(B_cyt,1);
+	sr.addProduct(C_cyt,1);
+	MassActionKinetics massAct = new MassActionKinetics(sr);
+	massAct.setParameterValue(massAct.getForwardRateParameter(),ExpressionFactory.createExpression(K1));
+	massAct.setParameterValue(massAct.getReverseRateParameter(),ExpressionFactory.createExpression(K2));
+	massAct.renameParameter(massAct.getForwardRateParameter().getName(),"K1");
+	massAct.renameParameter(massAct.getReverseRateParameter().getName(),"K2");
+	sr.setKinetics(massAct);
+	model.addReactionStep(sr);
+
+	sr = new SimpleReaction(cytosol,"SIMPLE_REACION_CDE");
+	sr.addReactant(C_cyt,1);
+	sr.addReactant(D_cyt,1);
+	sr.addProduct(E_cyt,1);
+	massAct = new MassActionKinetics(sr);
+	massAct.setParameterValue(massAct.getForwardRateParameter(),ExpressionFactory.createExpression(K3));
+	massAct.setParameterValue(massAct.getReverseRateParameter(),ExpressionFactory.createExpression(K4));
+	massAct.renameParameter(massAct.getForwardRateParameter().getName(),"K3");
+	massAct.renameParameter(massAct.getReverseRateParameter().getName(),"K4");
+	sr.setKinetics(massAct);
+	model.addReactionStep(sr);
+
+	return model;
+}
+
+/**
+ * This method was created by a SmartGuide.
+ */
+public static Model getExampleForFluorescenceLabelProtocol() throws Exception {
+
+	double A_init = 10.0;
+	double B_init = 20.0;
+	double C_init = 30.0;
+	double D_init = 40.0;
+	double E_init = 35.0;
+	double A_diff = 11.0;
+	double B_diff = 22.0;
+	double C_diff = 33.0;
+	double D_diff = 44.0;
+	double E_diff = 44.0;
+	
+	Model model = new Model("model1");
+
+	model.addSpecies(new Species("A","A"));
+	Species A = model.getSpecies("A");
+	model.addSpecies(new Species("B","B"));
+	Species B = model.getSpecies("B");
+	model.addSpecies(new Species("C","C"));
+	Species C = model.getSpecies("C");
+	model.addSpecies(new Species("D","D"));
+	Species D = model.getSpecies("D");
+	model.addSpecies(new Species("E","E"));
+	Species E = model.getSpecies("E");
+	
+	model.addFeature("Cytosol",null,null);
+	Feature cytosol = (Feature)model.getStructure("Cytosol");
+	
+	
+	model.addSpeciesContext(A,cytosol);
+	SpeciesContext A_cyt = model.getSpeciesContext(A,cytosol);
+	//A_cyt.setInitialValue(A_init);
+	//A_cyt.setDiffusionRate(A_diff);
+
+	model.addSpeciesContext(B,cytosol);
+	SpeciesContext B_cyt = model.getSpeciesContext(B,cytosol);
+	//B_cyt.setInitialValue(B_init);
+	//B_cyt.setDiffusionRate(B_diff);
+
+	model.addSpeciesContext(C,cytosol);
+	SpeciesContext C_cyt = model.getSpeciesContext(C,cytosol);
+	//C_cyt.setInitialValue(C_init);
+	//C_cyt.setDiffusionRate(C_diff);
+
+	model.addSpeciesContext(D,cytosol);
+	SpeciesContext D_cyt = model.getSpeciesContext(D,cytosol);
+	//D_cyt.setInitialValue(D_init);
+	//D_cyt.setDiffusionRate(D_diff);
+
+	model.addSpeciesContext(E,cytosol);
+	SpeciesContext E_cyt = model.getSpeciesContext(E,cytosol);
+	//E_cyt.setInitialValue(E_init);
+	//E_cyt.setDiffusionRate(E_diff);
+	
+
+	SimpleReaction sr;
+	
+	//
+	// CYTOSOL REACTIONS
+	//
+	double K1 = 1.0;
+	double K2 = 2.0;
+	double K3 = 3.0;
+	double K4 = 4.0;
+
+	sr = new SimpleReaction(cytosol,"SIMPLE_REACTION_ABC");
+	sr.addReactant(A_cyt,1);
+	sr.addReactant(B_cyt,1);
+	sr.addProduct(C_cyt,1);
+	MassActionKinetics massAct = new MassActionKinetics(sr);
+	massAct.setParameterValue(massAct.getForwardRateParameter(),ExpressionFactory.createExpression(K1));
+	massAct.setParameterValue(massAct.getReverseRateParameter(),ExpressionFactory.createExpression(K2));
+	massAct.renameParameter(massAct.getForwardRateParameter().getName(),"K1");
+	massAct.renameParameter(massAct.getReverseRateParameter().getName(),"K2");
+	sr.setKinetics(massAct);
+	model.addReactionStep(sr);
+
+	sr = new SimpleReaction(cytosol,"SIMPLE_REACION_CDE");
+	sr.addReactant(C_cyt,1);
+	sr.addReactant(D_cyt,1);
+	sr.addProduct(E_cyt,1);
+	massAct = new MassActionKinetics(sr);
+	massAct.setParameterValue(massAct.getForwardRateParameter(),ExpressionFactory.createExpression(K3));
+	massAct.setParameterValue(massAct.getReverseRateParameter(),ExpressionFactory.createExpression(K4));
+	massAct.renameParameter(massAct.getForwardRateParameter().getName(),"K3");
+	massAct.renameParameter(massAct.getReverseRateParameter().getName(),"K4");
+	sr.setKinetics(massAct);
+	model.addReactionStep(sr);
+
+	return model;
+}
+
+
+
 /**
  * This method was created by a SmartGuide.
  */
@@ -1132,7 +1332,7 @@ public static Model getExampleWithCurrent() throws Exception {
 	GHKKinetics ghk = new GHKKinetics(fr);
 	fr.setKinetics(ghk);
 	fr.getChargeCarrierValence().setExpression(ExpressionFactory.createExpression(2));
-	//ghk.setPermeability(new Expression("(Vmax*B_cyt/(Kd_Bcyt+B_cyt))"));
+	//ghk.setPermeability(ExpressionFactory.createExpression("(Vmax*B_cyt/(Kd_Bcyt+B_cyt))"));
 	ghk.setParameterValue(ghk.getPermeabilityParameter(),ExpressionFactory.createExpression(8.314e-2));
 	//ghk.setParameterValue("Vmax",Double.toString(Vmax));
 	//ghk.setParameterValue("Kd_Bcyt",Double.toString(Kd_Bcyt));

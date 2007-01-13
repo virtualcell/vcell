@@ -20,7 +20,6 @@ import org.vcell.expression.SymbolTableEntry;
 
 import cbit.util.*;
 import cbit.util.document.KeyValue;
-import edu.uchc.vcell.expression.internal.*;
 /**
  * This class is the superclass of all classes representing 
  * a step within a <code>Reaction</code>. This encapsulates capability for
@@ -111,12 +110,15 @@ protected ReactionStep(Structure structure, String name) throws PropertyVetoExce
 }
 public void addCatalyst(SpeciesContext speciesContext) throws ModelException, PropertyVetoException {
 
-	ReactionParticipant rp = getReactionParticipant(speciesContext);
+	ReactionParticipant[] rps = getReactionParticipants(speciesContext);
 
-	if (rp==null){
+	// NOTE : Currently, we are not allowing the case where a reactionParticipant is a reactant and/or product AND a catalyst
+	// Hence, if the rps array is not null, throw an exception, since the speciesContext is already a reactionParticipant.
+	
+	if (rps.length == 0){
 		addReactionParticipant(new Catalyst(null,this, speciesContext));
 	}else{
-		throw new ModelException("reactionParticipant already defined");
+		throw new ModelException("reactionParticipant already defined as Reactant and/or Product in the reaction.");
 	}
 		
 }   
@@ -370,20 +372,24 @@ public IExpression getRateExpression(ReactionParticipant reactionParticipant) th
 		return exp;
 	}
 }               
-public ReactionParticipant getReactionParticipant(Species species, Structure structure){
+public ReactionParticipant[] getReactionParticipants(Species species, Structure structure){
 	ReactionParticipant rpArray[] = getReactionParticipants();
+	Vector rpVector = new Vector();
 
 	for (int i = 0; i < rpArray.length; i++) {
 		if (species.compareEqual(rpArray[i].getSpecies()) &&
 			structure.compareEqual(rpArray[i].getStructure())){
-			return rpArray[i];
+			rpVector.addElement(rpArray[i]);
 		}
 	}
-	return null;
+	
+	return (ReactionParticipant[])BeanUtils.getArray(rpVector, ReactionParticipant.class);
 }         
-public ReactionParticipant getReactionParticipant(SpeciesContext speciesContext){
-	return getReactionParticipant(speciesContext.getSpecies(), speciesContext.getStructure());
+
+public ReactionParticipant[] getReactionParticipants(SpeciesContext speciesContext){
+	return getReactionParticipants(speciesContext.getSpecies(), speciesContext.getStructure());
 }         
+
 public ReactionParticipant getReactionParticipantFromSymbol(String reactParticipantName) {
 
 	ReactionParticipant rp_Array[] = getReactionParticipants();
@@ -712,8 +718,8 @@ public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException {
 		if (e.getNewValue()==null || ((String)(e.getNewValue())).trim().length()==0){
 			throw new PropertyVetoException("reactionStep name is not specified (null)",e);
 		}
-		if (((String)(e.getNewValue())).trim().length()>30){
-			throw new PropertyVetoException("reactionStep name cannot be longer than 30 characters",e);
+		if (((String)(e.getNewValue())).trim().length()>64){
+			throw new PropertyVetoException("reactionStep name cannot be longer than 64 characters",e);
 		}
 	}
 	if (e.getSource()==this && e.getPropertyName().equals("chargeCarrierValence")){

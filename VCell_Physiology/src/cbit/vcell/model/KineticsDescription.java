@@ -20,8 +20,9 @@ public  class KineticsDescription implements java.io.Serializable {
 	public final static KineticsDescription GeneralCurrent = new KineticsDescription("GeneralCurrentKinetics", "GeneralCurrent", VCMODL.GeneralCurrentKinetics, true, false, GeneralCurrentKinetics.class);
 	public final static KineticsDescription GHK = new KineticsDescription("GHKKinetics", "Goldman-Hodgkin-Katz", VCMODL.GHKKinetics, true, true, GHKKinetics.class);
 	public final static KineticsDescription Nernst = new KineticsDescription("NernstKinetics", "Nernst", VCMODL.NernstKinetics, true, true, NernstKinetics.class);
+	public final static KineticsDescription GeneralTotal = new KineticsDescription("GeneralTotalKinetics", "GeneralTotal", VCMODL.GeneralTotalKinetics, false, false, GeneralTotalKinetics.class);
 
-	private static KineticsDescription fieldKineticsList[] = new KineticsDescription[] { MassAction, HMM_irreversible, HMM_reversible, General, GeneralCurrent, GHK, Nernst };
+	private static KineticsDescription fieldKineticsList[] = new KineticsDescription[] { MassAction, HMM_irreversible, HMM_reversible, General, GeneralCurrent, GHK, Nernst, GeneralTotal };
 	
 /**
  * KineticsDescription constructor comment.

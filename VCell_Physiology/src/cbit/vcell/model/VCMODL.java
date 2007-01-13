@@ -55,6 +55,7 @@ public class VCMODL {
 	public final static String NernstKinetics			       = "NernstKinetics";
 	public final static String HMM_IrreversibleKinetics 	   = "HenriMichaelasMentenKineticsIrr";
 	public final static String HMM_ReversibleKinetics		   = "HenriMichaelasMentenKineticsRev";
+	public final static String GeneralTotalKinetics   	       = "GeneralTotalKinetics";
 	public final static String CurrentDensity				   = "CurrentDensity";
 	public final static String Rate							   = "Rate";
 	public final static String Valence						   = "Valence";
@@ -75,6 +76,8 @@ public class VCMODL {
 	public final static String VmaxFwd						   = "VmaxFwd";
 	public final static String KmRev						   = "KmRev";
 	public final static String VmaxRev						   = "VmaxRev";
+	public final static String TotalRate					   = "TotalRate";
+	public final static String AssumedCompartmentSize		   = "AssumedCompartmentSize";
 	public final static String Feature						   = "Compartment";
 	public final static String Membrane						   = "Membrane";
 	public final static String Context						   = "Context";

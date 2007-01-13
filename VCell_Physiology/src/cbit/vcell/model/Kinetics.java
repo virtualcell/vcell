@@ -54,8 +54,10 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 	public static final int ROLE_VmaxRev		= 10;
 	public static final int ROLE_Permeability	= 11;
 	public static final int ROLE_Conductivity	= 12;
+	public static final int ROLE_AssumedCompartmentSize	= 13;
+	public static final int ROLE_TotalRate		= 14;
 
-	public static final int NUM_ROLES			= 13;
+	public static final int NUM_ROLES			= 15;
 
 	
 	private static final String RoleDescs[] = {
@@ -71,7 +73,9 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 		"Km reverese",
 		"max reverse rate",
 		"permeability",
-		"conductivity"
+		"conductivity",
+		"assumed compartment size",
+		"total rate",
 	};
 
 
@@ -88,7 +92,9 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 		VCMODL.KmRev,
 		VCMODL.VmaxRev,
 		VCMODL.Permeability,
-		VCMODL.Conductivity
+		VCMODL.Conductivity,
+		VCMODL.AssumedCompartmentSize,
+		VCMODL.TotalRate,
 	};
 
 	private static final String DefaultNames[] = {
@@ -104,7 +110,9 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 		"KmRev",
 		"VmaxRev",
 		"P",
-		"C"
+		"C",
+		"CompartmentSize",
+		"TR",
 	};
 
 	private static final RealInterval[] bounds = {
@@ -120,7 +128,9 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 		new RealInterval(0,Double.POSITIVE_INFINITY), // KmRev
 		new RealInterval(0,Double.POSITIVE_INFINITY), // VmaxRev
 		new RealInterval(0,Double.POSITIVE_INFINITY), // Permeability
-		new RealInterval(0,Double.POSITIVE_INFINITY)  // Conductivity
+		new RealInterval(0,Double.POSITIVE_INFINITY), // Conductivity
+		new RealInterval(0,Double.POSITIVE_INFINITY),  // Assumed Compartment Size
+		null	// total rate
 	};
 
 
@@ -904,7 +914,7 @@ public void gatherIssues(Vector issueList) {
 			String symbols[] = exp.getSymbols();
 			for (int j = 0; symbols!=null && j < symbols.length; j++){
 				SymbolTableEntry ste = exp.getSymbolBinding(symbols[j]);
-				if (ste instanceof SpeciesContext && reactionStep.getReactionParticipant((SpeciesContext)ste) == null){
+				if (ste instanceof SpeciesContext && reactionStep.getReactionParticipants((SpeciesContext)ste).length == 0){
 					issueList.add(new Issue(fieldKineticsParameters[i],"IExpression","parameter '"+fieldKineticsParameters[i].getName()+"' references species context '"+ste.getName()+"', but it is not a reactant/product/catalyst of this reaction",Issue.SEVERITY_WARNING));
 				}else if (ste == null){
 					issueList.add(new Issue(fieldKineticsParameters[i],"IExpression","parameter '"+fieldKineticsParameters[i].getName()+"' references undefined symbol '"+symbols[j]+"'",Issue.SEVERITY_ERROR));
@@ -1596,6 +1606,25 @@ private void renameParameterExpressions(java.lang.String oldName, java.lang.Stri
 	}
 }
 
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (11/29/2006 3:33:33 PM)
+ */
+public void resolveCurrentWithStructure(Structure structure) throws PropertyVetoException{
+	
+	
+	if(structure instanceof Feature && this.getKineticsParameterFromRole(Kinetics.ROLE_Current) != null){
+		this.removeKineticsParameter(this.getKineticsParameterFromRole(Kinetics.ROLE_Current));
+	}else if(structure instanceof Membrane && this.getKineticsParameterFromRole(Kinetics.ROLE_Current) == null){
+		String pname = this.getDefaultParameterName(Kinetics.ROLE_Current);
+		Kinetics.KineticsParameter currentParm = new Kinetics.KineticsParameter(pname,ExpressionFactory.createExpression(0.0),Kinetics.ROLE_Current,null);
+		addKineticsParameter(currentParm);
+	}
+	
+	
+}
 
 /**
  * Insert the method's description here.
