@@ -88,13 +88,12 @@ public BioModelChildSummary createBioModelChildSummary() {
  * @param simulationContext cbit.vcell.mapping.SimulationContext
  * @exception java.beans.PropertyVetoException The exception description.
  */
-public SimulationContext addNewSimulationContext(String newSimulationContextName) throws java.beans.PropertyVetoException {
-	SimulationContext simContext = new SimulationContext(getModel(),new Geometry("non-spatial",0));
+public SimulationContext addNewSimulationContext(String newSimulationContextName, boolean bStoch ) throws java.beans.PropertyVetoException {
+	SimulationContext simContext = new SimulationContext(getModel(),new Geometry("non-spatial",0), bStoch);
 	simContext.setName(newSimulationContextName);
 	addSimulationContext(simContext);
 	return simContext;
 }
-
 
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
