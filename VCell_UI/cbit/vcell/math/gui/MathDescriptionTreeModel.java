@@ -5,9 +5,10 @@ package cbit.vcell.math.gui;
  * All rights reserved.
 ©*/
 import cbit.vcell.math.*;
-import java.util.Vector;
 import java.util.Enumeration;
-import javax.swing.tree.DefaultTreeModel;
+
+import org.vcell.expression.IExpression;
+
 import cbit.vcell.desktop.BioModelNode;
 /**
  * Insert the type's description here.
@@ -89,32 +90,71 @@ private BioModelNode createBaseTree() {
 		if (subDomain instanceof cbit.vcell.math.CompartmentSubDomain){
 			CompartmentSubDomain volumeSubDomain = (CompartmentSubDomain)subDomain;
 			BioModelNode volumeSubDomainNode = new BioModelNode(volumeSubDomain,true);
-			//
-			// add equation children
-			//
-			Enumeration eqnEnum = volumeSubDomain.getEquations();
-			while (eqnEnum.hasMoreElements()){
-				Equation equation = (Equation)eqnEnum.nextElement();
-				BioModelNode equationNode = new BioModelNode(equation,false);
-				volumeSubDomainNode.add(equationNode);
+			if(getMathDescription().isStoch()) //stochastic subtree
+			{
+				//add stoch variable initial conditions
+				BioModelNode varIniConditionNode = new BioModelNode("variable_initial_conditions",true);
+				Enumeration iniConditions = volumeSubDomain.getVarIniConditions().elements();
+				while (iniConditions.hasMoreElements()){
+					VarIniCondition varIni = (VarIniCondition)iniConditions.nextElement();
+					BioModelNode varIniNode = new BioModelNode(varIni,false);
+					varIniConditionNode.add(varIniNode);
+				}
+				volumeSubDomainNode.add(varIniConditionNode);
+				//add jump processes
+				Enumeration jumpProcesses = volumeSubDomain.getJumpProcesses().elements();
+				while (jumpProcesses.hasMoreElements())
+				{
+					JumpProcess jp = (JumpProcess)jumpProcesses.nextElement();
+					BioModelNode jpNode = new BioModelNode(jp,true);
+					//add probability rate.
+					IExpression probRate = jp.getProbabilityRate();
+					BioModelNode prNode = new BioModelNode("probability_rate = "+probRate.infix(),false);
+					jpNode.add(prNode);
+					//add Actions
+					Enumeration actions = jp.getActions().elements();
+					while (actions.hasMoreElements())
+					{
+						Action action = (Action)actions.nextElement();
+						BioModelNode actionNode = new BioModelNode(action,false);
+						jpNode.add(actionNode);
+					}
+					volumeSubDomainNode.add(jpNode);	
+				}
+				
+
+
+				
 			}
-			//
-			// add fast system
-			//
-			FastSystem fastSystem = volumeSubDomain.getFastSystem();
-			if (fastSystem!=null){
-				BioModelNode fsNode = new BioModelNode(fastSystem,true);
-				Enumeration enumFI = fastSystem.getFastInvariants();
-				while (enumFI.hasMoreElements()){
-					FastInvariant fi = (FastInvariant)enumFI.nextElement();
-					fsNode.add(new BioModelNode(fi,false));
-				}	
-				Enumeration enumFR = fastSystem.getFastRates();
-				while (enumFR.hasMoreElements()){
-					FastRate fr = (FastRate)enumFR.nextElement();
-					fsNode.add(new BioModelNode(fr,false));
-				}	
-				volumeSubDomainNode.add(fsNode);
+			else //non-stochastic subtree 
+			{ 
+				//
+				// add equation children
+				//
+				Enumeration eqnEnum = volumeSubDomain.getEquations();
+				while (eqnEnum.hasMoreElements()){
+					Equation equation = (Equation)eqnEnum.nextElement();
+					BioModelNode equationNode = new BioModelNode(equation,false);
+					volumeSubDomainNode.add(equationNode);
+				}
+				//
+				// add fast system
+				//
+				FastSystem fastSystem = volumeSubDomain.getFastSystem();
+				if (fastSystem!=null){
+					BioModelNode fsNode = new BioModelNode(fastSystem,true);
+					Enumeration enumFI = fastSystem.getFastInvariants();
+					while (enumFI.hasMoreElements()){
+						FastInvariant fi = (FastInvariant)enumFI.nextElement();
+						fsNode.add(new BioModelNode(fi,false));
+					}	
+					Enumeration enumFR = fastSystem.getFastRates();
+					while (enumFR.hasMoreElements()){
+						FastRate fr = (FastRate)enumFR.nextElement();
+						fsNode.add(new BioModelNode(fr,false));
+					}	
+					volumeSubDomainNode.add(fsNode);
+				}
 			}
 			volumeRootNode.add(volumeSubDomainNode);
 		}
@@ -177,6 +217,7 @@ private BioModelNode createBaseTree() {
 
 	return rootNode;
 }
+
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */

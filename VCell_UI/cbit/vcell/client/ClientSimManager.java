@@ -1,13 +1,15 @@
 package cbit.vcell.client;
 import cbit.gui.AsynchProgressPopup;
+import cbit.gui.DialogUtils;
 import cbit.gui.SwingWorker;
 import cbit.vcell.client.server.*;
 import cbit.vcell.solvers.SimulationStatus;
-import cbit.vcell.server.*;
 import cbit.vcell.simulation.*;
 
 import cbit.vcell.client.data.*;
 import javax.swing.*;
+
+import java.awt.Dimension;
 import java.beans.*;
 import cbit.vcell.client.desktop.simulation.*;
 
@@ -131,15 +133,38 @@ public void runSimulations(Simulation[] simulations) {
 	getDocumentWindowManager().getRequestManager().runSimulations(this, simulations);
 }
 
+/**
+ * Insert the method's description here.
+ * Creation date: (6/7/2004 10:31:36 AM)
+ * @param simulations cbit.vcell.solver.Simulation[]
+ */
+public void showSimulationStatusDetails(Simulation[] simulations) {
+	if (simulations != null) {
+		//Vector v = new Vector();
+		//for (int i = 0; i < simulations.length; i++){
+			//if (simulations[i].getSimulationInfo() != null) {
+				//v.add(simulations[i]);
+			//}
+		//}
+		final Simulation[] simsToShow = simulations; //(Simulation[])cbit.util.BeanUtils.getArray(v, Simulation.class);
+		for (int i = 0; i < simsToShow.length; i ++) {
+			SimulationStatusDetailsPanel ssdp = new SimulationStatusDetailsPanel();
+			ssdp.setPreferredSize(new Dimension(800, 350));
+			ssdp.setSimulationStatusDetails(new SimulationStatusDetails(getSimWorkspace(), simsToShow[i]));
+			DialogUtils.showComponentCloseDialog(null, ssdp, "Simulation Status Details");			
+			ssdp.setSimulationStatusDetails(null);
+		}
+	}
+}
 
 /**
  * Insert the method's description here.
  * Creation date: (6/7/2004 10:31:36 AM)
  * @param simulations cbit.vcell.solver.Simulation[]
  */
-public void showSimulationResults(cbit.vcell.simulation.Simulation[] simulations) {
+public void showSimulationResults(Simulation[] simulations) {
 	if (simulations != null) {
-		Vector v = new Vector();
+		Vector<Simulation> v = new Vector<Simulation>();
 		for (int i = 0; i < simulations.length; i++){
 			if (simulations[i].getSimulationInfo() != null && getSimulationStatus(simulations[i]).getHasData()) {
 				v.add(simulations[i]);
@@ -148,8 +173,8 @@ public void showSimulationResults(cbit.vcell.simulation.Simulation[] simulations
 		final Simulation[] simsToShow = (Simulation[])BeanUtils.getArray(v, Simulation.class);
 		SwingWorker worker = new SwingWorker() {
 			AsynchProgressPopup pp = new AsynchProgressPopup(getDocumentWindowManager().getComponent(), "Show simulation data:", "Preparing to fetch...", false, false);
-			Hashtable failures = new Hashtable();
-			Hashtable viewers = new Hashtable();
+			Hashtable<Simulation,Exception> failures = new Hashtable<Simulation,Exception>();
+			Hashtable<VCSimulationIdentifier,SimulationWindow> viewers = new Hashtable<VCSimulationIdentifier,SimulationWindow>();
 			public Object construct() {
 				pp.start();
 				for (int i = 0; i < simsToShow.length; i++){
@@ -180,7 +205,7 @@ public void showSimulationResults(cbit.vcell.simulation.Simulation[] simulations
 							simWindow = new SimulationWindow(vcSimulationIdentifier, simsToShow[i], getSimWorkspace().getSimulationOwner(), viewer);
 							viewers.put(vcSimulationIdentifier, simWindow);
 						}
-					} catch (Throwable exc) {
+					} catch (Exception exc) {
 						exc.printStackTrace(System.out);
 						failures.put(simsToShow[i], exc);
 					}

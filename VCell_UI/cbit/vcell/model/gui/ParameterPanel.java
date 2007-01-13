@@ -7,6 +7,7 @@ import cbit.vcell.model.*;
 
 import java.beans.*;
 
+import org.vcell.expression.ui.ScopedExpression;
 import org.vcell.expression.ui.ScopedExpressionTableCellRenderer;
 /**
  * This type was created in VisualAge.
@@ -28,7 +29,13 @@ public ParameterPanel() {
 	initialize();
 }
 
-
+/**
+ * Insert the method's description here.
+ * Creation date: (8/9/2006 10:11:57 PM)
+ */
+public void cleanupOnClose() {
+	getParameterTableModel().setKinetics(null);
+}
 /**
  * connEtoC1:  (ParameterPanel.initialize() --> ParameterPanel.parameterPanel_Initialize()V)
  */
@@ -320,8 +327,16 @@ public static void main(java.lang.String[] args) {
  * Comment
  */
 public void parameterPanel_Initialize() {
-	getScrollPaneTable().setDefaultRenderer(String.class,new ScopedExpressionTableCellRenderer());
-	getScrollPaneTable().setDefaultRenderer(org.vcell.expression.ui.ScopedExpression.class,new ScopedExpressionTableCellRenderer());
+
+	getScrollPaneTable().setDefaultRenderer(ScopedExpression.class,new ScopedExpressionTableCellRenderer());
+	
+	getParameterTableModel().addTableModelListener(
+		new javax.swing.event.TableModelListener(){
+			public void tableChanged(javax.swing.event.TableModelEvent e){
+				ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(),null,null);
+			}
+		}
+	);
 }
 
 

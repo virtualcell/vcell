@@ -10,6 +10,7 @@ import java.util.*;
 import java.beans.*;
 
 import org.vcell.expression.ExpressionFactory;
+import org.vcell.expression.ui.ScopedExpression;
 import org.vcell.expression.ui.ScopedExpressionTableCellRenderer;
 
 import cbit.vcell.geometry.*;
@@ -152,6 +153,32 @@ private void connEtoC11(cbit.vcell.geometry.GeometrySpec value) {
 		handleException(ivjExc);
 	}
 }
+/**
+ * connEtoC12:  (Geometry.this --> GeometrySubVolumePanel.geometry_This(Lcbit.vcell.geometry.Geometry;)V)
+ * @param value cbit.vcell.geometry.Geometry
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private void connEtoC12(cbit.vcell.geometry.Geometry value) {
+	try {
+		// user code begin {1}
+		// user code end
+		this.geometry_This(getGeometry());
+		// user code begin {2}
+		// user code end
+	} catch (java.lang.Throwable ivjExc) {
+		// user code begin {3}
+		// user code end
+		handleException(ivjExc);
+	}
+}
+
+/**
+ * Comment
+ */
+private void geometry_This(cbit.vcell.geometry.Geometry arg1) {
+	ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(),null,null);
+}
+
 /**
  * connEtoC2:  (Geometry.subVolumes --> GeometrySubVolumePanel.refreshButtons()V)
  * @param arg1 java.beans.PropertyChangeEvent
@@ -537,7 +564,7 @@ private void connPtoP2SetTarget() {
 /**
  * Comment
  */
-public cbit.vcell.geometry.SubVolume findSubVolume() {
+private cbit.vcell.geometry.SubVolume findSubVolume() {
 	int selectedIndex = getselectionModel1().getMinSelectionIndex();
 	if (selectedIndex>=0 && getGeometry()!=null && selectedIndex<getGeometry().getGeometrySpec().getNumSubVolumes()){
 		return getGeometry().getGeometrySpec().getSubVolumes(selectedIndex);
@@ -549,6 +576,19 @@ public cbit.vcell.geometry.SubVolume findSubVolume() {
  * Comment
  */
 private void geometrySubVolumePanel_Initialize() {
+	
+	getScrollPaneTable().setDefaultRenderer(SubVolume.class,new GeometrySubVolumeTableCellRenderer());
+	getScrollPaneTable().setDefaultRenderer(ScopedExpression.class,new ScopedExpressionTableCellRenderer());
+	
+	getgeometrySubVolumeTableModel().addTableModelListener(
+		new javax.swing.event.TableModelListener(){
+			public void tableChanged(javax.swing.event.TableModelEvent e){
+				ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(),null,null);
+			}
+		}
+	);
+
+	
 	getScrollPaneTable().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
 	getScrollPaneTable().setDefaultEditor(
 		Object.class,
@@ -879,7 +919,6 @@ private javax.swing.table.TableColumn getTableColumnName() {
 			ivjTableColumnName = new javax.swing.table.TableColumn();
 			ivjTableColumnName.setIdentifier("name");
 			ivjTableColumnName.setWidth(150);
-			ivjTableColumnName.setCellRenderer(new cbit.vcell.geometry.gui.GeometrySubVolumeTableCellRenderer());
 			ivjTableColumnName.setHeaderValue("name");
 			ivjTableColumnName.setMaxWidth(150);
 			// user code begin {1}
@@ -904,7 +943,6 @@ private javax.swing.table.TableColumn getTableColumnValue() {
 			ivjTableColumnValue.setIdentifier("value");
 			ivjTableColumnValue.setWidth(400);
 			ivjTableColumnValue.setModelIndex(1);
-			ivjTableColumnValue.setCellRenderer(new ScopedExpressionTableCellRenderer());
 			ivjTableColumnValue.setHeaderValue("value");
 			// user code begin {1}
 			// user code end
@@ -925,13 +963,6 @@ private void handleException(Throwable exception) {
 	/* Uncomment the following lines to print uncaught exceptions to stdout */
 	System.out.println("--------- UNCAUGHT EXCEPTION --------- in GeometrySubVolumePanel");
 	exception.printStackTrace(System.out);
-}
-/**
- * This method was created in VisualAge.
- * @param geometry cbit.vcell.geometry.Geometry
- */
-public void init(Geometry geometry) {
-	setGeometry(geometry);
 }
 /**
  * Initializes connections
@@ -1072,6 +1103,7 @@ public void setGeometry(cbit.vcell.geometry.Geometry newValue) {
 			connEtoC8(ivjGeometry);
 			connEtoM2(ivjGeometry);
 			connEtoM8(ivjGeometry);
+			connEtoC12(ivjGeometry);
 			firePropertyChange("geometry", oldValue, newValue);
 			// user code begin {1}
 			// user code end
@@ -1113,14 +1145,6 @@ private void setGeometrySpec(cbit.vcell.geometry.GeometrySpec newValue) {
 	};
 	// user code begin {3}
 	// user code end
-}
-/**
- * Comment
- */
-public void setGeometrySubVolumeTableCellRenderer() {
-	getScrollPaneTable().setDefaultRenderer(org.vcell.expression.IExpression.class,new ScopedExpressionTableCellRenderer());
-	getScrollPaneTable().setDefaultRenderer(org.vcell.expression.ui.ScopedExpression.class,new ScopedExpressionTableCellRenderer());
-	getScrollPaneTable().setDefaultRenderer(java.awt.Color.class,new GeometrySubVolumeTableCellRenderer());
 }
 /**
  * Set the SelectedSubVolume to a new value.

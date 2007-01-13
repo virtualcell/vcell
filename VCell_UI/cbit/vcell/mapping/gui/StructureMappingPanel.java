@@ -8,6 +8,7 @@ import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
 
+import org.vcell.expression.ui.ScopedExpression;
 import org.vcell.expression.ui.ScopedExpressionTableCellRenderer;
 
 
@@ -45,7 +46,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 		public void focusGained(java.awt.event.FocusEvent e) {};
 		public void focusLost(java.awt.event.FocusEvent e) {
 			if (e.getSource() == StructureMappingPanel.this.getComponent1()) 
-				connEtoM9(e);
+				connEtoC2(e);
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == StructureMappingPanel.this && (evt.getPropertyName().equals("geometryContext"))) 
@@ -87,6 +88,26 @@ private void connEtoC1() {
 		handleException(ivjExc);
 	}
 }
+
+/**
+ * connEtoC2:  (Component1.focus.focusLost(java.awt.event.FocusEvent) --> StructureMappingPanel.component1_FocusLost(Ljava.awt.event.FocusEvent;)V)
+ * @param arg1 java.awt.event.FocusEvent
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private void connEtoC2(java.awt.event.FocusEvent arg1) {
+	try {
+		// user code begin {1}
+		// user code end
+		this.component1_FocusLost(arg1);
+		// user code begin {2}
+		// user code end
+	} catch (java.lang.Throwable ivjExc) {
+		// user code begin {3}
+		// user code end
+		handleException(ivjExc);
+	}
+}
+
 /**
  * connEtoC5:  (FeatureMapping.this --> StructureMappingPanel.refreshEnabled()V)
  * @param value cbit.vcell.mapping.FeatureMapping
@@ -169,23 +190,6 @@ private void connEtoM10(cbit.vcell.modelapp.GeometryContext value) {
 		// user code begin {1}
 		// user code end
 		getselectionModel1().clearSelection();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
- * connEtoM11:  (GeometryContextPanel.initialize() --> ScrollPaneTable1.setDefaultRenderer(Ljava.lang.Class;Ljavax.swing.table.TableCellRenderer;)V)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM11() {
-	try {
-		// user code begin {1}
-		// user code end
-		getScrollPaneTable1().setDefaultRenderer(org.vcell.expression.ui.ScopedExpression.class, new ScopedExpressionTableCellRenderer());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -325,27 +329,6 @@ private void connEtoM8(javax.swing.DefaultCellEditor value) {
 		// user code end
 		handleException(ivjExc);
 	}
-}
-/**
- * connEtoM9:  (Component1.focus.focusLost(java.awt.event.FocusEvent) --> DefaultCellEditor1.stopCellEditing()Z)
- * @return boolean
- * @param arg1 java.awt.event.FocusEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private boolean connEtoM9(java.awt.event.FocusEvent arg1) {
-	boolean connEtoM9Result = false;
-	try {
-		// user code begin {1}
-		// user code end
-		connEtoM9Result = getDefaultCellEditor1().stopCellEditing();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-	return connEtoM9Result;
 }
 /**
  * connPtoP1SetTarget:  (ScrollPaneTable.model <--> StructureMappingTableModel.this)
@@ -675,7 +658,6 @@ private void initialize() {
 		add(getSetButton(), constraintsSetButton);
 		initConnections();
 		connEtoC1();
-		connEtoM11();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -683,6 +665,16 @@ private void initialize() {
 	refreshEnabled();
 	// user code end
 }
+
+/**
+ * Comment
+ */
+private void component1_FocusLost(java.awt.event.FocusEvent focusEvent) {
+	if(getDefaultCellEditor1() != null){
+		getDefaultCellEditor1().stopCellEditing();
+	}
+}
+
 /**
  * main entrypoint - starts the part when it is run as an application
  * @param args java.lang.String[]
@@ -925,6 +917,24 @@ private void structureMappingPanel_Initialize() {
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
+
+	getScrollPaneTable1().setDefaultRenderer(ScopedExpression.class, new ScopedExpressionTableCellRenderer());
+	
+	getScrollPaneTable1().addPropertyChangeListener(//This listener is to ensure table is formated properly when first initialized
+		new java.beans.PropertyChangeListener(){
+			public void propertyChange(java.beans.PropertyChangeEvent evt){
+				ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable1(),null,null);
+			}
+		}
+	);
+	getStructureMappingTableModel1().addTableModelListener(//This listener formats formats table cells after an edit
+		new javax.swing.event.TableModelListener(){
+			public void tableChanged(javax.swing.event.TableModelEvent e){
+				ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable1(),null,null);
+			}
+		}
+	);
+
 }
 /**
  * 

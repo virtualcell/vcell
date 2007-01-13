@@ -170,7 +170,6 @@ private cbit.gui.JToolBarToggleButton getSurfaceViewerToggleButton() {
 			ivjSurfaceViewerToggleButton.setPreferredSize(new java.awt.Dimension(75, 25));
 			ivjSurfaceViewerToggleButton.setText("Surface Viewer");
 			ivjSurfaceViewerToggleButton.setMaximumSize(new java.awt.Dimension(100, 25));
-			ivjSurfaceViewerToggleButton.setBorder(null);
 			ivjSurfaceViewerToggleButton.setMinimumSize(new java.awt.Dimension(50, 25));
 			// user code begin {1}
 			// user code end
@@ -213,7 +212,7 @@ private void initialize() {
 		// user code end
 		setName("GeometryEditor");
 		setLayout(new java.awt.BorderLayout());
-		setSize(532, 54);
+		setSize(233, 38);
 		add(getGeometryToolBar(), "Center");
 		initConnections();
 		connEtoM1();

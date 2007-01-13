@@ -117,6 +117,14 @@ private void connPtoP1SetTarget() {
 	}
 }
 /**
+ * Insert the method's description here.
+ * Creation date: (8/9/2006 10:10:52 PM)
+ */
+public void cleanupOnClose() {
+	getParameterPanel().cleanupOnClose();
+}
+
+/**
  * Gets the kinetics property (cbit.vcell.model.Kinetics) value.
  * @return The kinetics property value.
  * @see #setKinetics

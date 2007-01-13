@@ -96,7 +96,7 @@ private BioModelNode createMolecularMappingsSubTree() {
 			//
 			JTableFixed aJTable = new JTableFixed();
 			aJTable.setDefaultRenderer(ScopedExpression.class, new ScopedExpressionTableCellRenderer());
-			aJTable.setDefaultRenderer(String.class, new ScopedExpressionTableCellRenderer());
+			//aJTable.setDefaultRenderer(String.class, new ScopedExpressionTableCellRenderer());
 			SpeciesContextSpecParameterTableModel scsParamTableModel = new SpeciesContextSpecParameterTableModel();
 			scsParamTableModel.setSpeciesContextSpec(speciesContextSpecs[i]);
 			aJTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
@@ -130,7 +130,7 @@ private void createParamTable(Parameter[] params, StructureMapping structMapping
 	if (params != null && params.length > 0) {
 		JTableFixed aJTable = new JTableFixed();
 		aJTable.setDefaultRenderer(ScopedExpression.class, new ScopedExpressionTableCellRenderer());
-		aJTable.setDefaultRenderer(String.class, new ScopedExpressionTableCellRenderer());
+		//aJTable.setDefaultRenderer(String.class, new ScopedExpressionTableCellRenderer());
 		
 		StructureMappingParameterTableModel smParamTableModel = new StructureMappingParameterTableModel();
 		smParamTableModel.setStructureMapping(structMapping);
@@ -159,7 +159,7 @@ private BioModelNode createPhysiologySubTree() {
 		//
 		JTableFixed aJTable = new JTableFixed();
 		aJTable.setDefaultRenderer(ScopedExpression.class,new ScopedExpressionTableCellRenderer());
-		aJTable.setDefaultRenderer(String.class, new ScopedExpressionTableCellRenderer());
+		//aJTable.setDefaultRenderer(String.class, new ScopedExpressionTableCellRenderer());
 		aJTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
 		ModelParameterTableModel modelParamTableModel = new ModelParameterTableModel();
 		modelParamTableModel.setModel(model);
@@ -199,7 +199,7 @@ private BioModelNode createReactionParamSubTree(Structure structure) {
 				//
 				JTableFixed aJTable = new JTableFixed();
 				aJTable.setDefaultRenderer(ScopedExpression.class, new ScopedExpressionTableCellRenderer());
-				aJTable.setDefaultRenderer(String.class, new ScopedExpressionTableCellRenderer());
+				//aJTable.setDefaultRenderer(String.class, new ScopedExpressionTableCellRenderer());
 				cbit.vcell.model.gui.ParameterTableModel paramTableModel = new cbit.vcell.model.gui.ParameterTableModel();
 				paramTableModel.setKinetics(kinetics);
 				aJTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);

@@ -218,6 +218,18 @@ private void connPtoP1SetTarget() {
 		handleException(ivjExc);
 	}
 }
+
+/**
+ * Insert the method's description here.
+ * Creation date: (10/4/2006 5:10:02 PM)
+ */
+public void disableDefaultTimeStep() 
+{
+	getDefaultTimeStepLabel().setEnabled(false);
+	getDefaultTimeStepTextField().setText("");
+	getDefaultTimeStepTextField().setEnabled(false);
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (10/23/2005 11:51:27 AM)
@@ -231,11 +243,14 @@ public void enableComponents(boolean variableTimeStep) {
 		getMaximumTimeStepTextField().setEnabled(true);
 	} else {
 		getMinimumTimeStepLabel().setEnabled(false);
+		getMinimumTimeStepTextField().setText("");
 		getMinimumTimeStepTextField().setEnabled(false);
 		getMaximumTimeStepLabel().setEnabled(false);
+		getMaximumTimeStepTextField().setText("");
 		getMaximumTimeStepTextField().setEnabled(false);
 	}
 }
+
 /**
  * Method to handle events for the FocusListener interface.
  * @param e java.awt.event.FocusEvent

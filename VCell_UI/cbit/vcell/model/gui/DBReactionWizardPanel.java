@@ -1154,6 +1154,13 @@ private void done() {
 						}
 					}
 				}
+				////
+				////Remove current if not in membrane -or- Add current if in membrane
+				////
+				//if(kinetics instanceof HMM_IRRKinetics){
+					//((HMM_IRRKinetics)kinetics).resolveCurrentWithStructure(getStructure());
+				//}
+				kinetics.resolveCurrentWithStructure(getStructure());
 			}
 			reaction.refreshDependencies();
 			//

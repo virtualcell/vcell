@@ -159,7 +159,7 @@ private File showBioModelXMLFileChooser(java.util.Hashtable hashTable) throws ja
 					}
 				}
 				if (applicableAppNameList.size() == 0) {
-					throw new Exception("No non-spatial applications, can only export to this format the math from a non-spatial application");
+					throw new Exception("No non-spatial applications in model " + bioModel.getName() + ", can only export the math from a non-spatial application to this format.");
 				}
 			} else {
 				// all apps

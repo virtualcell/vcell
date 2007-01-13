@@ -1,6 +1,6 @@
 package cbit.vcell.client;
-import cbit.vcell.geometry.*;
 import cbit.gui.GlassPane;
+import cbit.gui.SwingHacks;
 import cbit.util.*;
 import cbit.util.document.CurateSpec;
 import cbit.util.document.VCDocument;
@@ -9,8 +9,6 @@ import cbit.util.document.VersionFlag;
 import cbit.vcell.client.server.*;
 
 import java.awt.*;
-import cbit.vcell.mathmodel.*;
-import cbit.vcell.biomodel.*;
 import cbit.vcell.client.desktop.*;
 import javax.swing.*;
 import java.util.*;
@@ -112,6 +110,7 @@ public int closeWindow(java.lang.String windowID) {
 				}
 				window.removeWindowListener(windowListener);
 				window.dispose();
+				SwingHacks.cleanup();
 			}
 		}
 	}

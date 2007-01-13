@@ -12,7 +12,8 @@ public class SimpleReactionPanel extends javax.swing.JPanel {
 	private final static int KINETIC_GENERAL = 1;
 	private final static int KINETIC_HMM_IRR_KINETICS = 2;
 	private final static int KINETIC_HMM_REV_KINETICS = 3;
-	private final static String KINETIC_STRINGS[] = {"Mass Action","General", "Henri-Michaelis-Menten (Irreversible)", "Henri-Michaelis-Menten (Reversible)"};
+	private final static int KINETIC_GEN_TOTAL_KINETICS = 4;
+	private final static String KINETIC_STRINGS[] = {"Mass Action","General", "Henri-Michaelis-Menten (Irreversible)", "Henri-Michaelis-Menten (Reversible)", "General Total Kinetics"};
 	private final static String MU = "\u03BC";
 	private final static String MICROMOLAR = MU+"M";
 	private final static String SQUARED = "\u00B2";
@@ -405,6 +406,15 @@ private void connPtoP2SetTarget() {
 		handleException(ivjExc);
 	}
 }
+
+/**
+ * Insert the method's description here.
+ * Creation date: (8/9/2006 10:09:40 PM)
+ */
+public void cleanupOnClose() {
+	getKineticsTypeTemplatePanel().cleanupOnClose();
+}
+
 /**
  * Comment
  */
@@ -478,6 +488,8 @@ private String getKineticTypeName(Kinetics kinetics) {
 		return KINETIC_STRINGS[KINETIC_HMM_IRR_KINETICS];
 	}else if (kinetics instanceof HMM_REVKinetics){
 		return KINETIC_STRINGS[KINETIC_HMM_REV_KINETICS];
+	}else if (kinetics instanceof GeneralTotalKinetics){
+		return KINETIC_STRINGS[KINETIC_GEN_TOTAL_KINETICS];
 	}else{
 		return null;
 	}
@@ -977,6 +989,13 @@ private void updateKineticChoice(String newKineticChoice) {
 						return;
 					}
 					setKinetics(new HMM_REVKinetics(getTornOffSimpleReaction()));
+					break;
+				}
+				case KINETIC_GEN_TOTAL_KINETICS:{
+					if (getKinetics() instanceof GeneralTotalKinetics){
+						return;
+					}
+					setKinetics(new GeneralTotalKinetics(getTornOffSimpleReaction()));
 					break;
 				}
 				default: {

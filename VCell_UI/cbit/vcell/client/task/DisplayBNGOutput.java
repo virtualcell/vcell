@@ -38,10 +38,12 @@ public int getTaskType() {
 public void run(java.util.Hashtable hashTable) throws Exception {
 	cbit.vcell.client.bionetgen.BNGOutputPanel bngOutputPanel = (cbit.vcell.client.bionetgen.BNGOutputPanel)hashTable.get("bngOutputPanel");
 	cbit.vcell.server.bionetgen.BNGOutput bngOutput = (cbit.vcell.server.bionetgen.BNGOutput)hashTable.get("bngOutput");
-	bngOutputPanel.changeBNGPanelTab();
-	bngOutputPanel.setBngOutput(bngOutput);
+	if (bngOutput != null) {
+		bngOutputPanel.changeBNGPanelTab();
+		bngOutputPanel.setBngOutput(bngOutput);		
+	}
+	bngOutputPanel.refreshButton(false);
 }
-
 
 /**
  * Insert the method's description here.

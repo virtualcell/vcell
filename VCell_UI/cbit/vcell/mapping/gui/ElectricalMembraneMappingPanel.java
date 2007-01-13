@@ -8,6 +8,7 @@ import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
 
+import org.vcell.expression.ui.ScopedExpression;
 import org.vcell.expression.ui.ScopedExpressionTableCellRenderer;
 
 
@@ -40,7 +41,7 @@ class IvjEventHandler implements java.awt.event.FocusListener, java.beans.Proper
 		public void focusGained(java.awt.event.FocusEvent e) {};
 		public void focusLost(java.awt.event.FocusEvent e) {
 			if (e.getSource() == ElectricalMembraneMappingPanel.this.getComponent1()) 
-				connEtoM9(e);
+				connEtoC2(e);
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == ElectricalMembraneMappingPanel.this.getgeometryContext1() && (evt.getPropertyName().equals("geometry"))) 
@@ -59,6 +60,51 @@ public ElectricalMembraneMappingPanel() {
 	super();
 	initialize();
 }
+
+/**
+ * Comment
+ */
+private void component1_FocusLost(java.awt.event.FocusEvent focusEvent) {
+	if(getDefaultCellEditor1() != null){
+		getDefaultCellEditor1().stopCellEditing();
+	}
+}
+/**
+ * connEtoC1:  (ElectricalMembraneMappingPanel.initialize() --> ElectricalMembraneMappingPanel.electricalMembraneMappingPanel_Initialize()V)
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private void connEtoC1() {
+	try {
+		// user code begin {1}
+		// user code end
+		this.electricalMembraneMappingPanel_Initialize();
+		// user code begin {2}
+		// user code end
+	} catch (java.lang.Throwable ivjExc) {
+		// user code begin {3}
+		// user code end
+		handleException(ivjExc);
+	}
+}
+/**
+ * connEtoC2:  (Component1.focus.focusLost(java.awt.event.FocusEvent) --> ElectricalMembraneMappingPanel.component1_FocusLost(Ljava.awt.event.FocusEvent;)V)
+ * @param arg1 java.awt.event.FocusEvent
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private void connEtoC2(java.awt.event.FocusEvent arg1) {
+	try {
+		// user code begin {1}
+		// user code end
+		this.component1_FocusLost(arg1);
+		// user code begin {2}
+		// user code end
+	} catch (java.lang.Throwable ivjExc) {
+		// user code begin {3}
+		// user code end
+		handleException(ivjExc);
+	}
+}
+
 /**
  * connEtoM1:  (simulationContext1.this --> geometryContext1.this)
  * @param value cbit.vcell.mapping.SimulationContext
@@ -71,23 +117,6 @@ private void connEtoM1(cbit.vcell.modelapp.SimulationContext value) {
 		if ((getsimulationContext1() != null)) {
 			setgeometryContext1(getsimulationContext1().getGeometryContext());
 		}
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
- * connEtoM10:  (ElectricalMembraneMappingPanel.initialize() --> ScrollPaneTable1.setDefaultRenderer(Ljava.lang.Class;Ljavax.swing.table.TableCellRenderer;)V)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM10() {
-	try {
-		// user code begin {1}
-		// user code end
-		getScrollPaneTable1().setDefaultRenderer(org.vcell.expression.IExpression.class, new ScopedExpressionTableCellRenderer());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -229,27 +258,6 @@ private void connEtoM8(javax.swing.DefaultCellEditor value) {
 	}
 }
 /**
- * connEtoM9:  (Component1.focus.focusLost(java.awt.event.FocusEvent) --> DefaultCellEditor1.stopCellEditing()Z)
- * @return boolean
- * @param arg1 java.awt.event.FocusEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private boolean connEtoM9(java.awt.event.FocusEvent arg1) {
-	boolean connEtoM9Result = false;
-	try {
-		// user code begin {1}
-		// user code end
-		connEtoM9Result = getDefaultCellEditor1().stopCellEditing();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-	return connEtoM9Result;
-}
-/**
  * connPtoP1SetTarget:  (ScrollPaneTable.model <--> StructureMappingTableModel.this)
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
@@ -314,6 +322,29 @@ private void connPtoP2SetTarget() {
 		handleException(ivjExc);
 	}
 }
+
+/**
+ * Comment
+ */
+private void electricalMembraneMappingPanel_Initialize() {
+	
+	getScrollPaneTable1().setDefaultRenderer(ScopedExpression.class,new ScopedExpressionTableCellRenderer());
+
+	getElectricalMembraneMappingTableModel1().addTableModelListener(
+		new javax.swing.event.TableModelListener(){
+			public void tableChanged(javax.swing.event.TableModelEvent e){
+				//System.out.println((
+					//e.getType() == javax.swing.event.TableModelEvent.INSERT?"INSERT":"")+
+					//(e.getType() == javax.swing.event.TableModelEvent.UPDATE?"UPDATE":"")+
+					//(e.getType() == javax.swing.event.TableModelEvent.DELETE?"DELETE":""));
+				//if(e.getType() == javax.swing.event.TableModelEvent.UPDATE){
+					ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable1(),null,null);
+				//}
+			}
+		}
+	);
+}
+
 /**
  * Return the Component1 property value.
  * @return java.awt.Component
@@ -562,7 +593,7 @@ private void initialize() {
 		constraintsJLabel2.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJLabel2(), constraintsJLabel2);
 		initConnections();
-		connEtoM10();
+		connEtoC1();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -704,6 +735,8 @@ public void setSimulationContext(cbit.vcell.modelapp.SimulationContext simulatio
 	SimulationContext oldValue = fieldSimulationContext;
 	fieldSimulationContext = simulationContext;
 	firePropertyChange("simulationContext", oldValue, simulationContext);
+
+	ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable1(),null,null);
 }
 /**
  * Set the simulationContext1 to a new value.

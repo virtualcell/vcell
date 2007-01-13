@@ -2,6 +2,7 @@ package cbit.vcell.client.task;
 
 import cbit.util.UserCancelException;
 import cbit.vcell.desktop.controls.AsynchClientTask;
+import cbit.vcell.server.bionetgen.BNGUtils;
 
 /**
  * Insert the type's description here.
@@ -36,13 +37,17 @@ public int getTaskType() {
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
 public void run(java.util.Hashtable hashTable) throws Exception {
-	cbit.vcell.server.bionetgen.BNGInput bngInput = (cbit.vcell.server.bionetgen.BNGInput)hashTable.get("bngInput");
-	cbit.vcell.server.bionetgen.BNGService bngService = (cbit.vcell.server.bionetgen.BNGService)hashTable.get("bngService");
-	// execute BioNetGen
-	cbit.vcell.server.bionetgen.BNGOutput bngOutput = bngService.executeBNG(bngInput);
-	hashTable.put("bngOutput", bngOutput);
+	try {
+		cbit.vcell.server.bionetgen.BNGInput bngInput = (cbit.vcell.server.bionetgen.BNGInput)hashTable.get("bngInput");
+		cbit.vcell.server.bionetgen.BNGOutput bngOutput = BNGUtils.executeBNG(bngInput);
+		if (bngOutput != null) {
+			hashTable.put("bngOutput", bngOutput);
+		}
+	} finally {
+		cbit.vcell.client.bionetgen.BNGOutputPanel bngOutputPanel = (cbit.vcell.client.bionetgen.BNGOutputPanel)hashTable.get("bngOutputPanel");
+		bngOutputPanel.refreshButton(false);
+	}
 }
-
 
 /**
  * Insert the method's description here.

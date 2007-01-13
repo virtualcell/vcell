@@ -4,17 +4,10 @@ package cbit.vcell.solver.ode.gui;
  * All rights reserved.
 ©*/
 import cbit.util.*;
-import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.Constant;
-import cbit.vcell.math.Variable;
-import cbit.vcell.math.VolVariable;
-import cbit.vcell.math.Function;
-import cbit.vcell.server.VCellConnection;
 import cbit.vcell.simulation.*;
 
-import java.awt.event.*;
 import java.util.*;
-import cbit.vcell.solver.ode.*;
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 8:59:36 PM)
@@ -28,7 +21,6 @@ public class SolverTaskDescriptionPanel extends javax.swing.JPanel {
 	private javax.swing.JLabel ivjTimeStepLabel = null;
 	private javax.swing.JTextField ivjTimeStepTextField = null;
 	private java.awt.Panel ivjPanel2 = null;
-	private Thread savingThread = null;
 	private java.awt.Panel ivjPlotSpecificationPanel = null;
 	private javax.swing.JCheckBox ivjPerformSensitivityAnalysisCheckbox = null;
 	private int fieldODESolverIndex = 0;
@@ -593,6 +585,19 @@ private void connEtoM7(java.awt.event.FocusEvent arg1) {
 		handleException(ivjExc);
 	}
 	setTimeBoundsFactory(localValue);
+}
+
+/**
+ * Insert the method's description here.
+ * Creation date: (10/4/2006 5:19:25 PM)
+ */
+public void disableTimeStep() 
+{
+	getTimeStepLabel().setEnabled(false);
+	getTimeStepTextField().setText("");
+	getTimeStepTextField().setBackground(new java.awt.Color(235,235,235));
+	getTimeStepTextField().setEnabled(false);
+	getJLabel2().setEnabled(false);
 }
 
 

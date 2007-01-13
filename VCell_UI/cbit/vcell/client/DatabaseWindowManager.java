@@ -23,9 +23,7 @@ import cbit.util.document.VersionInfo;
 import cbit.util.document.VersionableRelationship;
 import cbit.util.document.VersionableType;
 import cbit.util.document.VersionableTypeVersion;
-import cbit.sql.*;
 import java.awt.*;
-import cbit.vcell.biomodel.*;
 import javax.swing.*;
 import cbit.vcell.desktop.*;
 import cbit.gui.AsynchProgressPopup;
@@ -42,7 +40,27 @@ import javax.swing.filechooser.FileFilter;
  * Creation date: (5/14/2004 5:06:46 PM)
  * @author: Ion Moraru
  */
-public class DatabaseWindowManager extends TopLevelWindowManager implements java.awt.event.ActionListener{
+public class DatabaseWindowManager extends TopLevelWindowManager{
+
+	class  DoubleClickListener implements java.awt.event.ActionListener {
+		private JDialog theJDialog = null;
+		private boolean bWasDoubleClicked = false;
+		
+		DoubleClickListener(JDialog dialog) {
+			theJDialog = dialog;
+		}
+		
+		public void actionPerformed(java.awt.event.ActionEvent e) {
+			if(e.getActionCommand().equals(BM_MM_GM_DOUBLE_CLICK_ACTION)){
+				bWasDoubleClicked = true;
+				theJDialog.dispose();				
+			}			
+		}
+
+		boolean wasDoubleClicked() {
+			return bWasDoubleClicked;
+		}
+	}	
 
 	private final int PIXEL_CLASS_WARNING_LIMIT = 10;
 	
@@ -63,15 +81,8 @@ public class DatabaseWindowManager extends TopLevelWindowManager implements java
 	private GeometryTreePanel geometryTreePanel = new GeometryTreePanel();
 	private MathModelDbTreePanel MathModelDbTreePanel = new MathModelDbTreePanel();
 
-	private JDialog theJDialog = null;
-	private Object doubleClickValue = null;
 	public static final String BM_MM_GM_DOUBLE_CLICK_ACTION = "bm_mm_gm_dca";
 
-	private JOptionPane openDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Open","Cancel"});
-	private JOptionPane accessPermissionDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"OK", "Cancel"});
-	private JOptionPane imageSelectDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"OK", "Cancel"});
-	private JOptionPane saveDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Save", "Cancel"});
-	private JOptionPane importDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Import", "Cancel"});
 
 	private DatabaseWindowPanel databaseWindowPanel = null;
 
@@ -88,14 +99,6 @@ public DatabaseWindowManager(DatabaseWindowPanel databaseWindowPanel, RequestMan
 	getMathModelDbTreePanel().setMetadataPanelPopupDisabled(true);
 	getGeometryTreePanel().setPopupMenuDisabled(true);
 	getGeometryTreePanel().setMetadataPanelPopupDisabled(true);
-
-	//Listen for double-clicks
-	getBioModelDbTreePanel().removeActionListener(this);
-	getBioModelDbTreePanel().addActionListener(this);
-	getMathModelDbTreePanel().removeActionListener(this);
-	getMathModelDbTreePanel().addActionListener(this);
-	getGeometryTreePanel().removeActionListener(this);
-	getGeometryTreePanel().addActionListener(this);
 
 }
 
@@ -228,31 +231,6 @@ System.out.println("Removed user="+originalGroupAccesNames[i]);
 
 
 	/**
-	 * Invoked when an action occurs.
-	 */
-public void actionPerformed(java.awt.event.ActionEvent e) {
-
-	if(e.getActionCommand().equals(BM_MM_GM_DOUBLE_CLICK_ACTION)){
-
-		if(!theJDialog.isShowing()){
-			throw new RuntimeException(DatabaseWindowManager.class.getName()+" Unexpected double-click from invisible dialog");
-		}
-		
-		if(e.getSource() == getBioModelDbTreePanel()){
-			doubleClickValue = getBioModelDbTreePanel().getSelectedVersionInfo();
-		}else if(e.getSource() == getMathModelDbTreePanel()){
-			doubleClickValue = getMathModelDbTreePanel().getSelectedVersionInfo();
-		}else if(e.getSource() == getGeometryTreePanel()){
-			doubleClickValue = getGeometryTreePanel().getSelectedVersionInfo();
-		}
-
-		//force dialog to return
-		theJDialog.dispose();
-	}
-}
-
-
-/**
  * Insert the method's description here.
  * Creation date: (5/23/2006 8:54:01 AM)
  */
@@ -901,16 +879,6 @@ public void findModelsUsingSelectedGeometry() {
 
 /**
  * Insert the method's description here.
- * Creation date: (6/8/2004 6:45:52 PM)
- * @return javax.swing.JOptionPane
- */
-private javax.swing.JOptionPane getAccessPermissionDialog() {
-	return accessPermissionDialog;
-}
-
-
-/**
- * Insert the method's description here.
  * Creation date: (5/14/2004 5:39:00 PM)
  * @return cbit.vcell.desktop.BioModelDbTreePanel
  */
@@ -1031,26 +999,6 @@ private ImageBrowser getImageBrowser() {
 
 /**
  * Insert the method's description here.
- * Creation date: (6/8/2004 6:45:52 PM)
- * @return javax.swing.JOptionPane
- */
-private javax.swing.JOptionPane getImageSelectDialog() {
-	return imageSelectDialog;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/14/2004 6:14:42 PM)
- * @return javax.swing.JOptionPane
- */
-private javax.swing.JOptionPane getImportDialog() {
-	return importDialog;
-}
-
-
-/**
- * Insert the method's description here.
  * Creation date: (5/24/2004 2:51:36 AM)
  * @return java.lang.String
  */
@@ -1072,32 +1020,11 @@ public cbit.vcell.desktop.MathModelDbTreePanel getMathModelDbTreePanel() {
 
 /**
  * Insert the method's description here.
- * Creation date: (5/14/2004 6:14:42 PM)
- * @return javax.swing.JOptionPane
- */
-private javax.swing.JOptionPane getOpenDialog() {
-	return openDialog;
-}
-
-
-/**
- * Insert the method's description here.
  * Creation date: (5/24/2004 3:01:47 PM)
  * @return cbit.vcell.document.VCDocumentInfo
  */
 public VCDocumentInfo getPanelSelection() {
 	return getDatabaseWindowPanel().getSelectedDocumentInfo();
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/28/2004 12:46:54 AM)
- * @return javax.swing.JOptionPane
- */
-private javax.swing.JOptionPane getSaveDialog() {
-	saveDialog.setWantsInput(true);
-	return saveDialog;
 }
 
 
@@ -1225,32 +1152,25 @@ public VCDocumentInfo selectDocument(int documentType, TopLevelWindowManager req
 	// Set doubleClickValue to null.
 	// if doubleClickValue is not null when dialog returns, use doubleClickValue value
 	// otherwise use dialog return value
-	doubleClickValue = null;
 	switch (documentType) {
 		case VCDocument.BIOMODEL_DOC: {
 			Object choice = showOpenDialog(getBioModelDbTreePanel(), requester);
-			if (doubleClickValue == null && choice != null && choice.equals("Open")) {
+			if (choice != null && choice.equals("Open")) {
 				return (BioModelInfo)getBioModelDbTreePanel().getSelectedVersionInfo();
-			}else if (doubleClickValue != null){
-				return (BioModelInfo)doubleClickValue;
 			}
 			throw UserCancelException.CANCEL_DB_SELECTION;
 		} 
 		case VCDocument.MATHMODEL_DOC: {
 			Object choice = showOpenDialog(getMathModelDbTreePanel(), requester);
-			if (doubleClickValue == null && choice != null && choice.equals("Open")) {
+			if (choice != null && choice.equals("Open")) {
 				return (MathModelInfo)getMathModelDbTreePanel().getSelectedVersionInfo();
-			}else if (doubleClickValue != null){
-				return (MathModelInfo)doubleClickValue;
 			}
 			throw UserCancelException.CANCEL_DB_SELECTION;
 		} 
 		case VCDocument.GEOMETRY_DOC: {
 			Object choice = showOpenDialog(getGeometryTreePanel(), requester);
-			if (doubleClickValue == null && choice != null && choice.equals("Open")) {
+			if (choice != null && choice.equals("Open")) {
 				return (GeometryInfo)getGeometryTreePanel().getSelectedVersionInfo();
-			}else if (doubleClickValue != null){
-				return (GeometryInfo)doubleClickValue;
 			}
 			throw UserCancelException.CANCEL_DB_SELECTION;
 		}
@@ -1273,7 +1193,6 @@ public VCDocumentInfo selectDocument(int documentType, TopLevelWindowManager req
 		}
 	}
 }
-
 
 /**
  * Insert the method's description here.
@@ -1444,18 +1363,17 @@ public void setLatestOnly(boolean latestOnly) {
  * Creation date: (5/14/2004 6:11:35 PM)
  */
 private Object showAccessPermissionDialog(JComponent aclEditor, Component requester) {
-
+	JOptionPane accessPermissionDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"OK", "Cancel"});
 	aclEditor.setPreferredSize(new java.awt.Dimension(300, 400));
-	getAccessPermissionDialog().setMessage("");
-	getAccessPermissionDialog().setMessage(aclEditor);
-	getAccessPermissionDialog().setValue(null);
-	JDialog d = getAccessPermissionDialog().createDialog(requester, "Changing Permissions:");
+	accessPermissionDialog.setMessage("");
+	accessPermissionDialog.setMessage(aclEditor);
+	accessPermissionDialog.setValue(null);
+	JDialog d = accessPermissionDialog.createDialog(requester, "Changing Permissions:");
 	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 	cbit.gui.ZEnforcer.showModalDialogOnTop(d,requester);
-	return getAccessPermissionDialog().getValue();
+	return accessPermissionDialog.getValue();
 	
 }
-
 
 /**
  * Insert the method's description here.
@@ -1504,7 +1422,7 @@ private File showFileChooserDialog(boolean isXMLNotImage) throws UserCancelExcep
 	}
 	
     int returnval = fileChooser.showOpenDialog(null);
-    if (returnval == fileChooser.APPROVE_OPTION) {
+    if (returnval == JFileChooser.APPROVE_OPTION) {
         File selectedFile = fileChooser.getSelectedFile();
         //reset the user preference for the default path, if needed.
         String newPath = selectedFile.getParent();
@@ -1543,36 +1461,55 @@ private Object showImagePropertiesDialog() {
  * Creation date: (5/14/2004 6:11:35 PM)
  */
 private Object showImageSelectorDialog(JComponent imageBrowser, Component requester) {
+	JOptionPane imageSelectDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"OK", "Cancel"});
 	imageBrowser.setPreferredSize(new java.awt.Dimension(200, 400));
-	getImageSelectDialog().setMessage("");
-	getImageSelectDialog().setMessage(imageBrowser);
-	JDialog d = getImageSelectDialog().createDialog(requester, "Select Image:");
+	imageSelectDialog.setMessage("");
+	imageSelectDialog.setMessage(imageBrowser);
+	JDialog d = imageSelectDialog.createDialog(requester, "Select Image:");
 	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 	cbit.gui.ZEnforcer.showModalDialogOnTop(d,requester);
-	return getImageSelectDialog().getValue();
+	return imageSelectDialog.getValue();
 }
-
 
 /**
  * Insert the method's description here.
  * Creation date: (5/14/2004 6:11:35 PM)
  */
 private Object showOpenDialog(JComponent tree, TopLevelWindowManager requester) {
+	JOptionPane openDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Open","Cancel"});
 	tree.setPreferredSize(new java.awt.Dimension(300, 600));
-	getOpenDialog().setMessage("");
-	getOpenDialog().setMessage(tree);
-	theJDialog = getOpenDialog().createDialog(requester.getComponent(), "Select document:");
+	openDialog.setMessage("");
+	openDialog.setMessage(tree);
+	final JDialog theJDialog = openDialog.createDialog(requester.getComponent(), "Select document:");
 	theJDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	cbit.gui.ZEnforcer.showModalDialogOnTop(theJDialog,requester.getComponent());
-	return getOpenDialog().getValue();
-}
+	
+	DoubleClickListener doubleClickListener = new DoubleClickListener(theJDialog);
+	
 
+	getBioModelDbTreePanel().addActionListener(doubleClickListener);
+	getMathModelDbTreePanel().addActionListener(doubleClickListener);
+	getGeometryTreePanel().addActionListener(doubleClickListener);
+
+	cbit.gui.ZEnforcer.showModalDialogOnTop(theJDialog,requester.getComponent());
+	
+	getBioModelDbTreePanel().removeActionListener(doubleClickListener);
+	getMathModelDbTreePanel().removeActionListener(doubleClickListener);
+	getGeometryTreePanel().removeActionListener(doubleClickListener);
+	
+	if (doubleClickListener.wasDoubleClicked()) {
+		return "Open";
+	}
+
+	return openDialog.getValue();
+}
 
 /**
  * Insert the method's description here.
  * Creation date: (5/14/2004 6:11:35 PM)
  */
 public String showSaveDialog(int documentType, Component requester) throws UserCancelException {
+	JOptionPane saveDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[] {"Save", "Cancel"});
+	saveDialog.setWantsInput(true);
 	JPanel panel = new JPanel(new BorderLayout());
 	JComponent tree = null;
 	switch (documentType) {
@@ -1595,13 +1532,13 @@ public String showSaveDialog(int documentType, Component requester) throws UserC
 	tree.setPreferredSize(new java.awt.Dimension(300, 600));
 	panel.add(tree, BorderLayout.CENTER);
 	panel.add(new JLabel("Please type a new name:"), BorderLayout.SOUTH);
-	getSaveDialog().setMessage("");
-	getSaveDialog().setMessage(panel);
-	JDialog d = getSaveDialog().createDialog(requester, "Save document:");
+	saveDialog.setMessage("");
+	saveDialog.setMessage(panel);
+	JDialog d = saveDialog.createDialog(requester, "Save document:");
 	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 	cbit.gui.ZEnforcer.showModalDialogOnTop(d,requester);
-	if ("Save".equals(getSaveDialog().getValue())) {
-		return getSaveDialog().getInputValue() == null ? null : getSaveDialog().getInputValue().toString();
+	if ("Save".equals(saveDialog.getValue())) {
+		return saveDialog.getInputValue() == null ? null : saveDialog.getInputValue().toString();
 	} else {
 		// user cancelled
 		throw UserCancelException.CANCEL_NEW_NAME;

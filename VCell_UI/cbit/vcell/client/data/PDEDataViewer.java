@@ -1,5 +1,4 @@
 package cbit.vcell.client.data;
-import cbit.render.*;
 import cbit.render.objects.Surface;
 import cbit.render.objects.SurfaceCollection;
 import cbit.render.objects.Vect3d;
@@ -11,7 +10,6 @@ import cbit.gui.GlassPane;
 import cbit.gui.SwingWorker;
 import javax.swing.*;
 import cbit.plot.*;
-import cbit.vcell.server.*;
 import cbit.vcell.simdata.gui.*;
 
 import java.awt.*;
@@ -2790,8 +2788,7 @@ private void updateDataValueSurfaceViewer() {
 				return surfaceColors;
 			}
 			public Vect3d getCentroid(int surfaceIndex,int polygonIndex){
-				Coordinate centroid = getPdeDataContext().getCartesianMesh().getMembraneElements()[meshRegionSurfaces.getMembraneIndexForPolygon(surfaceIndex,polygonIndex)].getCentroid();
-				return new Vect3d(centroid.getX(),centroid.getY(),centroid.getZ());
+				return getPdeDataContext().getCartesianMesh().getMembraneElements()[meshRegionSurfaces.getMembraneIndexForPolygon(surfaceIndex,polygonIndex)].getCentroid();
 			}
 			public float getArea(int surfaceIndex,int polygonIndex){
 				return getPdeDataContext().getCartesianMesh().getMembraneElements()[meshRegionSurfaces.getMembraneIndexForPolygon(surfaceIndex,polygonIndex)].getArea();

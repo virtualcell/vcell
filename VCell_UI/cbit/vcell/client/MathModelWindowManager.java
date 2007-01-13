@@ -180,7 +180,7 @@ private void cleanSimWindowsHash() {
 		Simulation[] sims = getMathModel().getSimulations();
 		boolean bFound = false;
 		for(int i=0;i<sims.length;i+= 1){
-			if(sims[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier().equals(vcsid)){
+			if(sims[i].getSimulationInfo() != null && sims[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier().equals(vcsid)){
 				bFound = true;
 				break;
 			}
@@ -195,7 +195,6 @@ private void cleanSimWindowsHash() {
 		}
 	}
 }
-
 
 /**
  * Insert the method's description here.

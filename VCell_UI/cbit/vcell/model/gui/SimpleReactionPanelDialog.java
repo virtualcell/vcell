@@ -105,6 +105,15 @@ private void connPtoP1SetTarget() {
 		handleException(ivjExc);
 	}
 }
+
+/**
+ * Insert the method's description here.
+ * Creation date: (8/9/2006 9:57:55 PM)
+ */
+public void cleanupOnClose() {
+	getSimpleReactionPanel().cleanupOnClose();
+}
+
 /**
  * Return the JDialogContentPane property value.
  * @return javax.swing.JPanel

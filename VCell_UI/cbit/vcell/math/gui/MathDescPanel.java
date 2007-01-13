@@ -695,7 +695,10 @@ private void refreshEquations() throws org.vcell.expression.ExpressionException 
 		BioModelNode node = (BioModelNode)selectionPath.getLastPathComponent();
 		Object objectPath[] = node.getUserObjectPath();
 		Object lastPathObject = objectPath[objectPath.length-1];
-		IExpression expArray[] = null;
+		IExpression expArray[] = null;// for non-stochastic
+		String expString[] = null; // for stochastic
+		getExpressionCanvas1().setStrings(null);
+		getExpressionCanvas1().setExpressions(null); 
 		if (lastPathObject instanceof Function){
 			Function function = (Function)lastPathObject;
 			IExpression exp = function.getExpression();
@@ -706,6 +709,7 @@ private void refreshEquations() throws org.vcell.expression.ExpressionException 
 			}
 			expArray = new IExpression[] { ExpressionFactory.assign(ExpressionFactory.createExpression(function.getName()),
 															exp.flatten()) };
+			getExpressionCanvas1().setExpressions(expArray);
 		}else if (lastPathObject instanceof Constant){
 			Constant constant = (Constant)lastPathObject;
 			IExpression exp = constant.getExpression();
@@ -716,6 +720,7 @@ private void refreshEquations() throws org.vcell.expression.ExpressionException 
 			}
 			expArray = new IExpression[] { ExpressionFactory.assign(ExpressionFactory.createExpression(constant.getName()),
 															exp.flatten()) };
+			getExpressionCanvas1().setExpressions(expArray);
 		}else if (lastPathObject instanceof Equation){
 			Equation equ = (Equation)lastPathObject;
 			Enumeration enum_equ = equ.getTotalExpressions();
@@ -731,8 +736,32 @@ private void refreshEquations() throws org.vcell.expression.ExpressionException 
 			}
 			expArray = new IExpression[expList.size()];
 			expList.copyInto(expArray);
+			getExpressionCanvas1().setExpressions(expArray);
 		}
-		getExpressionCanvas1().setExpressions(expArray);
+		else if (lastPathObject instanceof VarIniCondition) //added Sept 29, 2006
+		{
+			VarIniCondition varIni = (VarIniCondition)lastPathObject;
+			expString = new String[] {varIni.toString()};
+			getExpressionCanvas1().setStrings(expString);
+		}
+		else if (lastPathObject instanceof Action) //added Sept 29, 2006
+		{
+			Action action = (Action)lastPathObject;
+			expString = new String[] {action.toString()};
+			getExpressionCanvas1().setStrings(expString);
+		}
+		else if (lastPathObject instanceof String) //added Sept 29, 2006
+		{
+			// to check if the string is the probability string
+			int index1 = ((String)lastPathObject).indexOf("probability_rate");
+			int index2 = ((String)lastPathObject).indexOf("=");
+			if((index1 == 0) && ((index2+2)< ((String)lastPathObject).length())) //has probability eqution,but don't calculate prob string, since it is not a constant value.
+			{
+				expString = new String[] {(String)lastPathObject};
+				getExpressionCanvas1().setStrings(expString);
+			}
+		}
+			
 	}else{
 		getExpressionCanvas1().setExpressions(null);
 	}

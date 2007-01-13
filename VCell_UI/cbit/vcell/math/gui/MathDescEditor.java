@@ -1,5 +1,4 @@
 package cbit.vcell.math.gui;
-
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -14,12 +13,9 @@ import cbit.vcell.math.*;
 public class MathDescEditor extends JPanel implements java.awt.event.ActionListener, java.awt.event.KeyListener, java.beans.PropertyChangeListener, javax.swing.event.DocumentListener {
 	private JButton ivjCancelButton = null;
 	private MathDescription ivjMathDescription = null;
-	private JTextArea ivjTextArea1 = null;
 	private JButton ivjApplyButton = null;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private JScrollPane ivjJScrollPane1 = null;
 	private JButton ivjCreateConstrSolnButton = null;
-	private boolean ivjConnPtoP1Aligning = false;
 	private javax.swing.text.Document ivjdocument1 = null;
 	private cbit.vcell.numericstest.gui.SolutionTemplatePanel ivjsolutionTemplatePanel1 = null;
 	private boolean fieldConstructedSolnButtonVisibility = false;
@@ -29,6 +25,11 @@ public class MathDescEditor extends JPanel implements java.awt.event.ActionListe
 	private boolean fieldMakeCanonicalVisibility = false;
 	private JButton ivjFlattenButton = null;
 	private boolean fieldFlattenVisibility = false;
+	private boolean ivjConnPtoP2Aligning = false;
+	private boolean ivjConnPtoP1Aligning = false;
+	private cbit.gui.LineNumberedTextPanel ivjlineNumberedTextArea1 = null;
+	private JTextArea ivjtextArea1 = null;
+
 /**
  * Constructor
  */
@@ -37,6 +38,8 @@ public MathDescEditor() {
 	super();
 	initialize();
 }
+
+
 /**
  * Method to handle events for the ActionListener interface.
  * @param e java.awt.event.ActionEvent
@@ -45,27 +48,30 @@ public MathDescEditor() {
 public void actionPerformed(java.awt.event.ActionEvent e) {
 	// user code begin {1}
 	// user code end
-	if (e.getSource() == getCancelButton()) 
-		conn5(e);
 	if (e.getSource() == getApplyButton()) 
 		connEtoM1(e);
 	if (e.getSource() == getCreateConstrSolnButton()) 
 		connEtoC2(e);
 	if (e.getSource() == getSensitivitySolnButton()) 
 		connEtoC3(e);
+	if (e.getSource() == getCancelButton()) 
+		connEtoM24(e);
 	if (e.getSource() == getExpandFunctionButton()) 
-		connEtoM17(e);
+		connEtoM2(e);
 	if (e.getSource() == getFlattenButton()) 
-		connEtoM22(e);
+		connEtoM13(e);
 	// user code begin {2}
 	// user code end
 }
+
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  */
 public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().addPropertyChangeListener(listener);
 }
+
+
 /**
  * Comment
  */
@@ -74,13 +80,15 @@ private void apply_ExceptionOccurred(java.lang.Throwable e) throws javax.swing.t
 	if (e instanceof MathFormatException){
 		int lineNumber = ((MathFormatException)e).getLineNumber();
 		if (lineNumber>=0){
-			int lineStartOffset = getTextArea1().getLineStartOffset(Math.max(0,lineNumber-1));
-			int lineEndOffset = getTextArea1().getLineEndOffset(lineNumber);
-			getTextArea1().setCaretPosition(lineStartOffset);
-			getTextArea1().select(lineStartOffset,lineEndOffset);
+			int lineStartOffset = getlineNumberedTextArea1().getLineStartOffset(Math.max(0,lineNumber-1));
+			int lineEndOffset = getlineNumberedTextArea1().getLineEndOffset(lineNumber);
+			getlineNumberedTextArea1().setCaretPosition(lineStartOffset);
+			getlineNumberedTextArea1().select(lineStartOffset,lineEndOffset);
 		}
 	}
 }
+
+
 /**
  * Method to handle events for the DocumentListener interface.
  * @param e javax.swing.event.DocumentEvent
@@ -92,48 +100,8 @@ public void changedUpdate(javax.swing.event.DocumentEvent e) {
 	// user code begin {2}
 	// user code end
 }
-/**
- * conn0:  (MathDescription.this --> TextArea1.text)
- * @param value cbit.vcell.math.MathDescription
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void conn0(cbit.vcell.math.MathDescription value) {
-	try {
-		// user code begin {1}
-		// user code end
-		if ((getMathDescription() != null)) {
-			getTextArea1().setText(getMathDescription().getVCML_database());
-		}
-		connEtoM6();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
- * conn5:  (CancelButton.action.actionPerformed(java.awt.event.ActionEvent) --> TextArea1.text)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void conn5(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		if ((getMathDescription() != null)) {
-			getTextArea1().setText(getMathDescription().getVCML_database());
-		}
-		connEtoM7();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
+
+
 /**
  * connEtoC1:  ( (SaveButton,action.actionPerformed(java.awt.event.ActionEvent) --> MathDescription,read(Lcbit.vcell.math.CommentStringTokenizer;)V).exceptionOccurred --> MathDescEditor.save_ExceptionOccurred(Ljava.lang.Throwable;)V)
  * @param exception java.lang.Throwable
@@ -152,6 +120,7 @@ private void connEtoC1(java.lang.Throwable exception) {
 		handleException(ivjExc);
 	}
 }
+
 /**
  * connEtoC2:  (CreateConstrSolnButton.action.actionPerformed(java.awt.event.ActionEvent) --> MathDescEditor.createConstructedSolution(Ljava.awt.event.ActionEvent;)Ljava.lang.String;)
  * @return java.lang.String
@@ -164,7 +133,7 @@ private java.lang.String connEtoC2(java.awt.event.ActionEvent arg1) {
 		// user code begin {1}
 		// user code end
 		connEtoC2Result = this.createConstructedSolution(arg1);
-		connEtoM8(connEtoC2Result);
+		connEtoM17(connEtoC2Result);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -174,6 +143,7 @@ private java.lang.String connEtoC2(java.awt.event.ActionEvent arg1) {
 	}
 	return connEtoC2Result;
 }
+
 /**
  * connEtoC3:  (SensitivitySolnButton.action.actionPerformed(java.awt.event.ActionEvent) --> MathDescEditor.createSensitivitySolution(Ljava.awt.event.ActionEvent;)Ljava.lang.String;)
  * @return java.lang.String
@@ -186,7 +156,7 @@ private java.lang.String connEtoC3(java.awt.event.ActionEvent arg1) {
 		// user code begin {1}
 		// user code end
 		connEtoC3Result = this.createSensitivitySolution(arg1);
-		connEtoM13(connEtoC3Result);
+		connEtoM22(connEtoC3Result);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -196,6 +166,7 @@ private java.lang.String connEtoC3(java.awt.event.ActionEvent arg1) {
 	}
 	return connEtoC3Result;
 }
+
 /**
  * connEtoM1:  (ApplyButton.action.actionPerformed(java.awt.event.ActionEvent) --> tempMathDescription.this)
  * @param arg1 java.awt.event.ActionEvent
@@ -206,7 +177,7 @@ private void connEtoM1(java.awt.event.ActionEvent arg1) {
 		// user code begin {1}
 		// user code end
 		if ((getMathDescription() != null)) {
-			setMathDescription(cbit.vcell.math.MathDescription.fromEditor(getMathDescription(), getTextArea1().getText()));
+			setMathDescription(cbit.vcell.math.MathDescription.fromEditor(getMathDescription(), getlineNumberedTextArea1().getText()));
 		}
 		connEtoM5();
 		connEtoM4();
@@ -218,6 +189,7 @@ private void connEtoM1(java.awt.event.ActionEvent arg1) {
 		connEtoC1(ivjExc);
 	}
 }
+
 /**
  * connEtoM10:  (MathDescEditor.testFrameworkEnabled --> CreateConstrSolnButton.visible)
  * @param arg1 java.beans.PropertyChangeEvent
@@ -236,6 +208,7 @@ private void connEtoM10(java.beans.PropertyChangeEvent arg1) {
 		handleException(ivjExc);
 	}
 }
+
 /**
  * connEtoM11:  (MathDescEditor.initialize() --> CreateConstrSolnButton.visible)
  */
@@ -253,6 +226,7 @@ private void connEtoM11() {
 		handleException(ivjExc);
 	}
 }
+
 /**
  * connEtoM12:  (MathDescription.this --> CreateConstrSolnButton.enabled)
  * @param value cbit.vcell.math.MathDescription
@@ -271,16 +245,18 @@ private void connEtoM12(cbit.vcell.math.MathDescription value) {
 		handleException(ivjExc);
 	}
 }
+
+
 /**
- * connEtoM13:  ( (SensitivitySolnButton,action.actionPerformed(java.awt.event.ActionEvent) --> MathDescEditor,createSensitivitySolution(Ljava.awt.event.ActionEvent;)Ljava.lang.String;).normalResult --> TextArea1.text)
- * @param result java.lang.String
+ * connEtoM13:  (FlattenButton.action.actionPerformed(java.awt.event.ActionEvent) --> textArea1.text)
+ * @param arg1 java.awt.event.ActionEvent
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM13(java.lang.String result) {
+private void connEtoM13(java.awt.event.ActionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		getTextArea1().setText(result);
+		gettextArea1().setText(this.flattenMath());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -289,6 +265,8 @@ private void connEtoM13(java.lang.String result) {
 		handleException(ivjExc);
 	}
 }
+
+
 /**
  * connEtoM14:  (MathDescription.this --> SensitivitySolnButton.enabled)
  * @param value cbit.vcell.math.MathDescription
@@ -307,6 +285,8 @@ private void connEtoM14(cbit.vcell.math.MathDescription value) {
 		handleException(ivjExc);
 	}
 }
+
+
 /**
  * connEtoM15:  (MathDescEditor.approxSensSolnButtonVisibility --> SensitivitySolnButton.visible)
  * @param arg1 java.beans.PropertyChangeEvent
@@ -325,6 +305,8 @@ private void connEtoM15(java.beans.PropertyChangeEvent arg1) {
 		handleException(ivjExc);
 	}
 }
+
+
 /**
  * connEtoM16:  (MathDescEditor.initialize() --> SensitivitySolnButton.visible)
  */
@@ -342,16 +324,18 @@ private void connEtoM16() {
 		handleException(ivjExc);
 	}
 }
+
+
 /**
- * connEtoM17:  (ExpandFunctionButton.action.actionPerformed(java.awt.event.ActionEvent) --> TextArea1.text)
- * @param arg1 java.awt.event.ActionEvent
+ * connEtoM17:  ( (CreateConstrSolnButton,action.actionPerformed(java.awt.event.ActionEvent) --> MathDescEditor,createConstructedSolution(Ljava.awt.event.ActionEvent;)Ljava.lang.String;).normalResult --> textArea1.text)
+ * @param result java.lang.String
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM17(java.awt.event.ActionEvent arg1) {
+private void connEtoM17(java.lang.String result) {
 	try {
 		// user code begin {1}
 		// user code end
-		getTextArea1().setText(this.makeCanonical());
+		gettextArea1().setText(result);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -360,6 +344,8 @@ private void connEtoM17(java.awt.event.ActionEvent arg1) {
 		handleException(ivjExc);
 	}
 }
+
+
 /**
  * connEtoM18:  (MathDescEditor.makeCanonicalVisibility --> ExpandFunctionButton.visible)
  * @param arg1 java.beans.PropertyChangeEvent
@@ -378,6 +364,8 @@ private void connEtoM18(java.beans.PropertyChangeEvent arg1) {
 		handleException(ivjExc);
 	}
 }
+
+
 /**
  * connEtoM19:  (MathDescEditor.initialize() --> ExpandFunctionButton.visible)
  */
@@ -395,16 +383,18 @@ private void connEtoM19() {
 		handleException(ivjExc);
 	}
 }
+
+
 /**
- * connEtoM2:  (TextArea1.key.keyPressed(java.awt.event.KeyEvent) --> ApplyButton.enabled)
- * @param arg1 java.awt.event.KeyEvent
+ * connEtoM2:  (ExpandFunctionButton.action.actionPerformed(java.awt.event.ActionEvent) --> textArea1.text)
+ * @param arg1 java.awt.event.ActionEvent
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM2(java.awt.event.KeyEvent arg1) {
+private void connEtoM2(java.awt.event.ActionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		getApplyButton().setEnabled(true);
+		gettextArea1().setText(this.makeCanonical());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -413,6 +403,8 @@ private void connEtoM2(java.awt.event.KeyEvent arg1) {
 		handleException(ivjExc);
 	}
 }
+
+
 /**
  * connEtoM20:  (MathDescEditor.initialize() --> FlattenButton.enabled)
  */
@@ -430,6 +422,7 @@ private void connEtoM20() {
 		handleException(ivjExc);
 	}
 }
+
 /**
  * connEtoM21:  (MathDescEditor.flattenVisibility --> FlattenButton.enabled)
  * @param arg1 java.beans.PropertyChangeEvent
@@ -448,16 +441,41 @@ private void connEtoM21(java.beans.PropertyChangeEvent arg1) {
 		handleException(ivjExc);
 	}
 }
+
+
 /**
- * connEtoM22:  (FlattenButton.action.actionPerformed(java.awt.event.ActionEvent) --> TextArea1.text)
+ * connEtoM22:  ( (SensitivitySolnButton,action.actionPerformed(java.awt.event.ActionEvent) --> MathDescEditor,createSensitivitySolution(Ljava.awt.event.ActionEvent;)Ljava.lang.String;).normalResult --> textArea1.text)
+ * @param result java.lang.String
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private void connEtoM22(java.lang.String result) {
+	try {
+		// user code begin {1}
+		// user code end
+		gettextArea1().setText(result);
+		// user code begin {2}
+		// user code end
+	} catch (java.lang.Throwable ivjExc) {
+		// user code begin {3}
+		// user code end
+		handleException(ivjExc);
+	}
+}
+
+
+/**
+ * connEtoM24:  (CancelButton.action.actionPerformed(java.awt.event.ActionEvent) --> lineNumberedTextPanel1.text)
  * @param arg1 java.awt.event.ActionEvent
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM22(java.awt.event.ActionEvent arg1) {
+private void connEtoM24(java.awt.event.ActionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		getTextArea1().setText(this.flattenMath());
+		if ((getMathDescription() != null)) {
+			getlineNumberedTextArea1().setText(getMathDescription().getVCML_database());
+		}
+		connEtoM25();
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -466,16 +484,16 @@ private void connEtoM22(java.awt.event.ActionEvent arg1) {
 		handleException(ivjExc);
 	}
 }
+
 /**
- * connEtoM3:  (TextArea1.key.keyPressed(java.awt.event.KeyEvent) --> CancelButton.enabled)
- * @param arg1 java.awt.event.KeyEvent
+ * connEtoM25:  ( (CancelButton,action.actionPerformed(java.awt.event.ActionEvent) --> lineNumberedTextPanel1,text).normalResult --> lineNumberedTextPanel1.caretPosition)
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM3(java.awt.event.KeyEvent arg1) {
+private void connEtoM25() {
 	try {
 		// user code begin {1}
 		// user code end
-		getCancelButton().setEnabled(true);
+		getlineNumberedTextArea1().setCaretPosition(0);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -484,6 +502,29 @@ private void connEtoM3(java.awt.event.KeyEvent arg1) {
 		handleException(ivjExc);
 	}
 }
+
+/**
+ * connEtoM3:  (MathDescription.this --> lineNumberedTextPanel1.text)
+ * @param value cbit.vcell.math.MathDescription
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private void connEtoM3(cbit.vcell.math.MathDescription value) {
+	try {
+		// user code begin {1}
+		// user code end
+		if ((getMathDescription() != null)) {
+			getlineNumberedTextArea1().setText(getMathDescription().getVCML_database());
+		}
+		connEtoM7();
+		// user code begin {2}
+		// user code end
+	} catch (java.lang.Throwable ivjExc) {
+		// user code begin {3}
+		// user code end
+		handleException(ivjExc);
+	}
+}
+
 /**
  * connEtoM4:  ( (ApplyButton,action.actionPerformed(java.awt.event.ActionEvent) --> MathDescription,this).normalResult --> ApplyButton.enabled)
  */
@@ -501,6 +542,8 @@ private void connEtoM4() {
 		handleException(ivjExc);
 	}
 }
+
+
 /**
  * connEtoM5:  ( (ApplyButton,action.actionPerformed(java.awt.event.ActionEvent) --> MathDescription,this).normalResult --> CancelButton.enabled)
  */
@@ -518,15 +561,18 @@ private void connEtoM5() {
 		handleException(ivjExc);
 	}
 }
+
+
 /**
- * connEtoM6:  ( (MathDescription,this --> TextArea1,text).normalResult --> TextArea1.caretPosition)
+ * connEtoM6:  (textArea1.key.keyPressed(java.awt.event.KeyEvent) --> ApplyButton.enabled)
+ * @param arg1 java.awt.event.KeyEvent
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM6() {
+private void connEtoM6(java.awt.event.KeyEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		getTextArea1().setCaretPosition(0);
+		getApplyButton().setEnabled(true);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -535,6 +581,8 @@ private void connEtoM6() {
 		handleException(ivjExc);
 	}
 }
+
+
 /**
  * connEtoM7:  ( (CancelButton,action.actionPerformed(java.awt.event.ActionEvent) --> TextArea1,text).normalResult --> TextArea1.caretPosition)
  */
@@ -543,7 +591,7 @@ private void connEtoM7() {
 	try {
 		// user code begin {1}
 		// user code end
-		getTextArea1().setCaretPosition(0);
+		getlineNumberedTextArea1().setCaretPosition(0);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -552,16 +600,17 @@ private void connEtoM7() {
 		handleException(ivjExc);
 	}
 }
+
 /**
- * connEtoM8:  ( (CreateConstrSolnButton,action.actionPerformed(java.awt.event.ActionEvent) --> MathDescEditor,createConstructedSolution(Ljava.awt.event.ActionEvent;)Ljava.lang.String;).normalResult --> TextArea1.text)
- * @param result java.lang.String
+ * connEtoM8:  (textArea1.key.keyPressed(java.awt.event.KeyEvent) --> CancelButton.enabled)
+ * @param arg1 java.awt.event.KeyEvent
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM8(java.lang.String result) {
+private void connEtoM8(java.awt.event.KeyEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		getTextArea1().setText(result);
+		getCancelButton().setEnabled(true);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -570,6 +619,8 @@ private void connEtoM8(java.lang.String result) {
 		handleException(ivjExc);
 	}
 }
+
+
 /**
  * connEtoM9:  (document1.document.changedUpdate(javax.swing.event.DocumentEvent) --> ApplyButton.enabled)
  * @param evt javax.swing.event.DocumentEvent
@@ -588,33 +639,10 @@ private void connEtoM9(javax.swing.event.DocumentEvent evt) {
 		handleException(ivjExc);
 	}
 }
+
+
 /**
- * connPtoP1SetSource:  (TextArea1.document <--> document1.this)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP1SetSource() {
-	/* Set the source from the target */
-	try {
-		if (ivjConnPtoP1Aligning == false) {
-			// user code begin {1}
-			// user code end
-			ivjConnPtoP1Aligning = true;
-			if ((getdocument1() != null)) {
-				getTextArea1().setDocument(getdocument1());
-			}
-			// user code begin {2}
-			// user code end
-			ivjConnPtoP1Aligning = false;
-		}
-	} catch (java.lang.Throwable ivjExc) {
-		ivjConnPtoP1Aligning = false;
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
- * connPtoP1SetTarget:  (TextArea1.document <--> document1.this)
+ * connPtoP1SetTarget:  (lineNumberedTextArea1.textArea <--> textArea1.this)
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connPtoP1SetTarget() {
@@ -624,7 +652,7 @@ private void connPtoP1SetTarget() {
 			// user code begin {1}
 			// user code end
 			ivjConnPtoP1Aligning = true;
-			setdocument1(getTextArea1().getDocument());
+			settextArea1(getlineNumberedTextArea1().getTextArea());
 			// user code begin {2}
 			// user code end
 			ivjConnPtoP1Aligning = false;
@@ -636,6 +664,58 @@ private void connPtoP1SetTarget() {
 		handleException(ivjExc);
 	}
 }
+
+
+/**
+ * connPtoP2SetSource:  (lineNumberedTextPanel1.document <--> document1.this)
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private void connPtoP2SetSource() {
+	/* Set the source from the target */
+	try {
+		if (ivjConnPtoP2Aligning == false) {
+			// user code begin {1}
+			// user code end
+			ivjConnPtoP2Aligning = true;
+			if ((getdocument1() != null)) {
+				getlineNumberedTextArea1().setDocument(getdocument1());
+			}
+			// user code begin {2}
+			// user code end
+			ivjConnPtoP2Aligning = false;
+		}
+	} catch (java.lang.Throwable ivjExc) {
+		ivjConnPtoP2Aligning = false;
+		// user code begin {3}
+		// user code end
+		handleException(ivjExc);
+	}
+}
+
+/**
+ * connPtoP2SetTarget:  (lineNumberedTextPanel1.document <--> document1.this)
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private void connPtoP2SetTarget() {
+	/* Set the target from the source */
+	try {
+		if (ivjConnPtoP2Aligning == false) {
+			// user code begin {1}
+			// user code end
+			ivjConnPtoP2Aligning = true;
+			setdocument1(getlineNumberedTextArea1().getDocument());
+			// user code begin {2}
+			// user code end
+			ivjConnPtoP2Aligning = false;
+		}
+	} catch (java.lang.Throwable ivjExc) {
+		ivjConnPtoP2Aligning = false;
+		// user code begin {3}
+		// user code end
+		handleException(ivjExc);
+	}
+}
+
 /**
  * Comment
  */
@@ -657,6 +737,8 @@ private String createConstructedSolution(java.awt.event.ActionEvent actionEvent)
 	}
 	return text;
 }
+
+
 /**
  * Comment
  */
@@ -731,12 +813,16 @@ private String createSensitivitySolution(java.awt.event.ActionEvent actionEvent)
 	
 	return mathDescText;
 }
+
+
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
 public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
+
+
 /**
  * Comment
  */
@@ -747,6 +833,8 @@ public java.lang.String flattenMath() throws Exception {
 	MathDescription newMath = MathDescription.createCanonicalMathDescription(getMathDescription());
 	return newMath.getVCML_database();
 }
+
+
 /**
  * Return the ApplyButton property value.
  * @return javax.swing.JButton
@@ -769,6 +857,7 @@ private javax.swing.JButton getApplyButton() {
 	}
 	return ivjApplyButton;
 }
+
 /**
  * Gets the approxSensSolnButtonVisibility property (boolean) value.
  * @return The approxSensSolnButtonVisibility property value.
@@ -777,6 +866,8 @@ private javax.swing.JButton getApplyButton() {
 public boolean getApproxSensSolnButtonVisibility() {
 	return fieldApproxSensSolnButtonVisibility;
 }
+
+
 /**
  * Return the CancelButton property value.
  * @return javax.swing.JButton
@@ -799,6 +890,7 @@ private javax.swing.JButton getCancelButton() {
 	}
 	return ivjCancelButton;
 }
+
 /**
  * Gets the constructedSolnButtonVisibility property (boolean) value.
  * @return The constructedSolnButtonVisibility property value.
@@ -807,6 +899,8 @@ private javax.swing.JButton getCancelButton() {
 public boolean getConstructedSolnButtonVisibility() {
 	return fieldConstructedSolnButtonVisibility;
 }
+
+
 /**
  * Return the CreateConstrSolnButton property value.
  * @return javax.swing.JButton
@@ -828,6 +922,8 @@ private javax.swing.JButton getCreateConstrSolnButton() {
 	}
 	return ivjCreateConstrSolnButton;
 }
+
+
 /**
  * Return the document1 property value.
  * @return javax.swing.text.Document
@@ -838,6 +934,8 @@ private javax.swing.text.Document getdocument1() {
 	// user code end
 	return ivjdocument1;
 }
+
+
 /**
  * Return the ExpandFunctionButton property value.
  * @return javax.swing.JButton
@@ -859,6 +957,8 @@ private javax.swing.JButton getExpandFunctionButton() {
 	}
 	return ivjExpandFunctionButton;
 }
+
+
 /**
  * Return the FlattenButton property value.
  * @return javax.swing.JButton
@@ -880,6 +980,8 @@ private javax.swing.JButton getFlattenButton() {
 	}
 	return ivjFlattenButton;
 }
+
+
 /**
  * Gets the flattenVisibility property (boolean) value.
  * @return The flattenVisibility property value.
@@ -888,17 +990,18 @@ private javax.swing.JButton getFlattenButton() {
 public boolean getFlattenVisibility() {
 	return fieldFlattenVisibility;
 }
+
+
 /**
- * Return the JScrollPane1 property value.
- * @return javax.swing.JScrollPane
+ * Return the lineNumberedTextPanel1 property value.
+ * @return cbit.gui.LineNumberedTextPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JScrollPane getJScrollPane1() {
-	if (ivjJScrollPane1 == null) {
+private cbit.gui.LineNumberedTextPanel getlineNumberedTextArea1() {
+	if (ivjlineNumberedTextArea1 == null) {
 		try {
-			ivjJScrollPane1 = new javax.swing.JScrollPane();
-			ivjJScrollPane1.setName("JScrollPane1");
-			getJScrollPane1().setViewportView(getTextArea1());
+			ivjlineNumberedTextArea1 = new cbit.gui.LineNumberedTextPanel();
+			ivjlineNumberedTextArea1.setName("lineNumberedTextArea1");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -907,8 +1010,9 @@ private javax.swing.JScrollPane getJScrollPane1() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjJScrollPane1;
+	return ivjlineNumberedTextArea1;
 }
+
 /**
  * Gets the makeCanonicalVisibility property (boolean) value.
  * @return The makeCanonicalVisibility property value.
@@ -917,6 +1021,8 @@ private javax.swing.JScrollPane getJScrollPane1() {
 public boolean getMakeCanonicalVisibility() {
 	return fieldMakeCanonicalVisibility;
 }
+
+
 /**
  * Return the MathDescription property value.
  * @return cbit.vcell.math.MathDescription
@@ -927,6 +1033,7 @@ public cbit.vcell.math.MathDescription getMathDescription() {
 	// user code end
 	return ivjMathDescription;
 }
+
 /**
  * Accessor for the propertyChange field.
  */
@@ -936,6 +1043,8 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 	};
 	return propertyChange;
 }
+
+
 /**
  * Return the SensitivitySolnButton property value.
  * @return javax.swing.JButton
@@ -957,6 +1066,8 @@ private javax.swing.JButton getSensitivitySolnButton() {
 	}
 	return ivjSensitivitySolnButton;
 }
+
+
 /**
  * Return the solutionTemplatePanel1 property value.
  * @return cbit.vcell.numericstest.gui.SolutionTemplatePanel
@@ -967,7 +1078,7 @@ private cbit.vcell.numericstest.gui.SolutionTemplatePanel getsolutionTemplatePan
 		try {
 			ivjsolutionTemplatePanel1 = new cbit.vcell.numericstest.gui.SolutionTemplatePanel();
 			ivjsolutionTemplatePanel1.setName("solutionTemplatePanel1");
-			ivjsolutionTemplatePanel1.setLocation(36, 481);
+			ivjsolutionTemplatePanel1.setLocation(71, 607);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -978,28 +1089,19 @@ private cbit.vcell.numericstest.gui.SolutionTemplatePanel getsolutionTemplatePan
 	}
 	return ivjsolutionTemplatePanel1;
 }
+
 /**
- * Return the TextArea1 property value.
+ * Return the textArea1 property value.
  * @return javax.swing.JTextArea
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JTextArea getTextArea1() {
-	if (ivjTextArea1 == null) {
-		try {
-			ivjTextArea1 = new javax.swing.JTextArea();
-			ivjTextArea1.setName("TextArea1");
-			ivjTextArea1.setBackground(java.awt.Color.white);
-			ivjTextArea1.setBounds(0, 0, 352, 222);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjTextArea1;
+private javax.swing.JTextArea gettextArea1() {
+	// user code begin {1}
+	// user code end
+	return ivjtextArea1;
 }
+
+
 /**
  * Called whenever the part throws an exception.
  * @param exception java.lang.Throwable
@@ -1010,6 +1112,7 @@ private void handleException(Throwable exception) {
 	System.out.println("--------- UNCAUGHT EXCEPTION ---------");
 	exception.printStackTrace(System.out);
 }
+
 /**
  * Initializes connections
  */
@@ -1017,17 +1120,18 @@ private void handleException(Throwable exception) {
 private void initConnections() throws java.lang.Exception {
 	// user code begin {1}
 	// user code end
-	getCancelButton().addActionListener(this);
 	getApplyButton().addActionListener(this);
-	getTextArea1().addKeyListener(this);
 	getCreateConstrSolnButton().addActionListener(this);
-	getTextArea1().addPropertyChangeListener(this);
 	this.addPropertyChangeListener(this);
 	getSensitivitySolnButton().addActionListener(this);
+	getCancelButton().addActionListener(this);
+	getlineNumberedTextArea1().addPropertyChangeListener(this);
 	getExpandFunctionButton().addActionListener(this);
 	getFlattenButton().addActionListener(this);
+	connPtoP2SetTarget();
 	connPtoP1SetTarget();
 }
+
 /**
  * Initialize class
  */
@@ -1051,15 +1155,6 @@ private void initialize() {
 		constraintsCancelButton.insets = new java.awt.Insets(0, 9, 9, 0);
 		add(getCancelButton(), constraintsCancelButton);
 
-		java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
-		constraintsJScrollPane1.gridx = 0; constraintsJScrollPane1.gridy = 0;
-		constraintsJScrollPane1.gridwidth = 6;
-		constraintsJScrollPane1.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsJScrollPane1.weightx = 1.0;
-		constraintsJScrollPane1.weighty = 1.0;
-		constraintsJScrollPane1.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJScrollPane1(), constraintsJScrollPane1);
-
 		java.awt.GridBagConstraints constraintsCreateConstrSolnButton = new java.awt.GridBagConstraints();
 		constraintsCreateConstrSolnButton.gridx = 2; constraintsCreateConstrSolnButton.gridy = 1;
 		constraintsCreateConstrSolnButton.insets = new java.awt.Insets(0, 9, 9, 0);
@@ -1079,6 +1174,15 @@ private void initialize() {
 		constraintsFlattenButton.gridx = 5; constraintsFlattenButton.gridy = 1;
 		constraintsFlattenButton.insets = new java.awt.Insets(0, 9, 9, 9);
 		add(getFlattenButton(), constraintsFlattenButton);
+
+		java.awt.GridBagConstraints constraintslineNumberedTextArea1 = new java.awt.GridBagConstraints();
+		constraintslineNumberedTextArea1.gridx = 0; constraintslineNumberedTextArea1.gridy = 0;
+		constraintslineNumberedTextArea1.gridwidth = 6;
+		constraintslineNumberedTextArea1.fill = java.awt.GridBagConstraints.BOTH;
+		constraintslineNumberedTextArea1.weightx = 1.0;
+		constraintslineNumberedTextArea1.weighty = 1.0;
+		constraintslineNumberedTextArea1.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getlineNumberedTextArea1(), constraintslineNumberedTextArea1);
 		initConnections();
 		connEtoM11();
 		connEtoM16();
@@ -1090,6 +1194,7 @@ private void initialize() {
 	// user code begin {2}
 	// user code end
 }
+
 /**
  * Method to handle events for the DocumentListener interface.
  * @param e javax.swing.event.DocumentEvent
@@ -1101,6 +1206,8 @@ public void insertUpdate(javax.swing.event.DocumentEvent e) {
 	// user code begin {2}
 	// user code end
 }
+
+
 /**
  * Method to handle events for the KeyListener interface.
  * @param e java.awt.event.KeyEvent
@@ -1109,13 +1216,14 @@ public void insertUpdate(javax.swing.event.DocumentEvent e) {
 public void keyPressed(java.awt.event.KeyEvent e) {
 	// user code begin {1}
 	// user code end
-	if (e.getSource() == getTextArea1()) 
-		connEtoM2(e);
-	if (e.getSource() == getTextArea1()) 
-		connEtoM3(e);
+	if (e.getSource() == gettextArea1()) 
+		connEtoM6(e);
+	if (e.getSource() == gettextArea1()) 
+		connEtoM8(e);
 	// user code begin {2}
 	// user code end
 }
+
 /**
  * Method to handle events for the KeyListener interface.
  * @param e java.awt.event.KeyEvent
@@ -1127,6 +1235,8 @@ public void keyReleased(java.awt.event.KeyEvent e) {
 	// user code begin {2}
 	// user code end
 }
+
+
 /**
  * Method to handle events for the KeyListener interface.
  * @param e java.awt.event.KeyEvent
@@ -1138,6 +1248,8 @@ public void keyTyped(java.awt.event.KeyEvent e) {
 	// user code begin {2}
 	// user code end
 }
+
+
 /**
  * main entrypoint - starts the part when it is run as an application
  * @param args java.lang.String[]
@@ -1160,6 +1272,8 @@ public static void main(java.lang.String[] args) {
 		exception.printStackTrace(System.out);
 	}
 }
+
+
 /**
  * Comment
  */
@@ -1181,6 +1295,8 @@ public String makeCanonical() throws Exception {
 	newMath = newMath.createMathWithExpandedEquations(newMath,varsToKeep);
 	return newMath.getVCML_database();
 }
+
+
 /**
  * Method to handle events for the PropertyChangeListener interface.
  * @param evt java.beans.PropertyChangeEvent
@@ -1189,8 +1305,6 @@ public String makeCanonical() throws Exception {
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	// user code begin {1}
 	// user code end
-	if (evt.getSource() == getTextArea1() && (evt.getPropertyName().equals("document"))) 
-		connPtoP1SetTarget();
 	if (evt.getSource() == this && (evt.getPropertyName().equals("constructedSolnButtonVisibility"))) 
 		connEtoM10(evt);
 	if (evt.getSource() == this && (evt.getPropertyName().equals("approxSensSolnButtonVisibility"))) 
@@ -1199,15 +1313,22 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		connEtoM18(evt);
 	if (evt.getSource() == this && (evt.getPropertyName().equals("flattenVisibility"))) 
 		connEtoM21(evt);
+	if (evt.getSource() == getlineNumberedTextArea1() && (evt.getPropertyName().equals("document"))) 
+		connPtoP2SetTarget();
+	if (evt.getSource() == getlineNumberedTextArea1() && (evt.getPropertyName().equals("textArea"))) 
+		connPtoP1SetTarget();
 	// user code begin {2}
 	// user code end
 }
+
 /**
  * The removePropertyChangeListener method was generated to support the propertyChange field.
  */
 public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().removePropertyChangeListener(listener);
 }
+
+
 /**
  * Method to handle events for the DocumentListener interface.
  * @param e javax.swing.event.DocumentEvent
@@ -1219,6 +1340,8 @@ public void removeUpdate(javax.swing.event.DocumentEvent e) {
 	// user code begin {2}
 	// user code end
 }
+
+
 /**
  * Sets the approxSensSolnButtonVisibility property (boolean) value.
  * @param approxSensSolnButtonVisibility The new value for the property.
@@ -1229,6 +1352,8 @@ public void setApproxSensSolnButtonVisibility(boolean approxSensSolnButtonVisibi
 	fieldApproxSensSolnButtonVisibility = approxSensSolnButtonVisibility;
 	firePropertyChange("approxSensSolnButtonVisibility", new Boolean(oldValue), new Boolean(approxSensSolnButtonVisibility));
 }
+
+
 /**
  * Sets the constructedSolnButtonVisibility property (boolean) value.
  * @param constructedSolnButtonVisibility The new value for the property.
@@ -1239,6 +1364,8 @@ public void setConstructedSolnButtonVisibility(boolean constructedSolnButtonVisi
 	fieldConstructedSolnButtonVisibility = constructedSolnButtonVisibility;
 	firePropertyChange("constructedSolnButtonVisibility", new Boolean(oldValue), new Boolean(constructedSolnButtonVisibility));
 }
+
+
 /**
  * Set the document1 to a new value.
  * @param newValue javax.swing.text.Document
@@ -1257,7 +1384,7 @@ private void setdocument1(javax.swing.text.Document newValue) {
 			if (ivjdocument1 != null) {
 				ivjdocument1.addDocumentListener(this);
 			}
-			connPtoP1SetSource();
+			connPtoP2SetSource();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1269,6 +1396,7 @@ private void setdocument1(javax.swing.text.Document newValue) {
 	// user code begin {3}
 	// user code end
 }
+
 /**
  * Sets the flattenVisibility property (boolean) value.
  * @param flattenVisibility The new value for the property.
@@ -1279,6 +1407,8 @@ public void setFlattenVisibility(boolean flattenVisibility) {
 	fieldFlattenVisibility = flattenVisibility;
 	firePropertyChange("flattenVisibility", new Boolean(oldValue), new Boolean(flattenVisibility));
 }
+
+
 /**
  * Sets the makeCanonicalVisibility property (boolean) value.
  * @param makeCanonicalVisibility The new value for the property.
@@ -1289,6 +1419,8 @@ public void setMakeCanonicalVisibility(boolean makeCanonicalVisibility) {
 	fieldMakeCanonicalVisibility = makeCanonicalVisibility;
 	firePropertyChange("makeCanonicalVisibility", new Boolean(oldValue), new Boolean(makeCanonicalVisibility));
 }
+
+
 /**
  * Set the MathDescription to a new value.
  * @param newValue cbit.vcell.math.MathDescription
@@ -1299,9 +1431,9 @@ public void setMathDescription(cbit.vcell.math.MathDescription newValue) {
 		try {
 			cbit.vcell.math.MathDescription oldValue = getMathDescription();
 			ivjMathDescription = newValue;
-			conn0(ivjMathDescription);
 			connEtoM12(ivjMathDescription);
 			connEtoM14(ivjMathDescription);
+			connEtoM3(ivjMathDescription);
 			firePropertyChange("mathDescription", oldValue, newValue);
 			// user code begin {1}
 			// user code end
@@ -1314,56 +1446,34 @@ public void setMathDescription(cbit.vcell.math.MathDescription newValue) {
 	// user code begin {3}
 	// user code end
 }
+
 /**
- * 
+ * Set the textArea1 to a new value.
+ * @param newValue javax.swing.JTextArea
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private static void getBuilderData() {
-/*V1.1
-**start of data**
-	D0CB838494G88G88G750171B4GGGGGGGGGGGG8CGGGE2F5E9ECE4E5F2A0E4E1F4E16DBDFDDCD4D55A36E912E122E1D1E112D63205C5C9C52D99A695A596159535EC2F3B592E6D3A1B6F663EAF3B4BEE178195438FCACAD4D4CAADB0A2BE9515CA85938C15CDE4D1E713E1664A8C8CB3434C9D449671FD4EBD67B9F3E76E9D06580F5F7B47727BBD3FBB77B94F57F94EF34EF94E3967DE045C2D914B52F53902103ECCE0FF3B5385212ECB906ED9EC4CC4DC082DA5DBD07CFDG700EE0E9A084
-	91D016165C121DA3380A3360BE866E63DFE849DE8F3F5789FD4519E67861C7CFCA07A04C5A710B2A4175AC7EG752C106FF3ABD641F58DC0AC6048B553CE7497D764B1FC8A43A3246B84A1D926B9DC114FF075F05F86908A90E92774F1F0DDA9EB9E35371A516947C78ACB1FF46AD693B98A1988858E4ADB472E85429F5297BB08AE07ECA76169077B98GD2798C61CD21902EB5CDDD9DDF985BADD2C92FD134DACB3A8D12392443ED593B77A87C2A93DD46C3A60BE4F71AFB082C580AAC19D790CA61FE290CBBF6
-	16480F025F71GA99C9FAF92FC3533A53B89406C44BAFD7EF18D3339756F778B8BBB9EDD3956CF1DC6B8E9DDA21D1EBA059535E7EC107DDF3C0D78F9A114E539DA327381768334810CG58A437FB4507BB61FA20DD2A35F7F75BED879C0E03D61373285DA4DA61775E3DD042F05F08C63B53A48834EDFBAB0AB56C998CA85F486F4DC7FD92D9016D9C754D1DC24A0CEBF5ABB4FC129279F7DD180B7AA25A657189557D10DF5DC9AE6FB874567DD7C129DBF83DFC45B28D5D79AF142FD8486424AAF4D7CA242D9F11
-	E3A08FFE27B339947F340C6FD360E9CCB64BF8F29F8AE5299246C66B9A3425B1F30A10D3F61D269F429E8956695D5486496DEBCBC287119D6126BA0FF3DBD2E5FCFD2F87CFEDF9D20ED3F23F844A2C97DA32E9FCD56DA0FDF4515FDB32B37BA13EGAA811A819CGA37BB1467ABF7CEC08B156E4F0CA875D962BC9F48A1437EA5B7BF0957BA427214166128CB62358E2F0DA8C6DD651A5B01AAF36919F34FB71554A31EF849D07C51B68B4C8963B8D249B3AC5C9F43AA8CD6336F7880DD314CB1BAD5DA2A868F688
-	A837F95BBA38DA8DAE692443E410C48F85AD57EFA3ED52EBE88109A0GFED33F34FFC47CF58B54FFA6C0A277430B323C2FC527CD346E5D5BE837F7399D4D24A6C27EC5626779725831G68D37B51475FFECCF0EDD05EF791652C597E2EC2CE1D45C84CB7B8AFE09FCBB81B8357E0200F840887C8390871731BD60C1F3A5553056267A7EA46CF884432B0C063A6EF40379FBDAF4BA7B66E0732B6009183B8661FBE5B6A5BA7C1B731C59E2758B57E22F6FF9B5A9862D269A0F54BE03F17A9E80723037ABD31D0EEC3
-	28D79C40028174FD4376829A4B878DAE912377389382CFB4F9DA025A79D4C7B873AD310DCC18E4EE5AAA5079F22DCCC3E48A4247G6FB15D1F32785B8CD081C0A65DFDGC52C8FFE8E7089318100742BB20043G8DG3B8176101886788B4017GA781EA818E811C81789B099D00235C1FFF166DCC05BA96DCEA492E87F0G04814481AC8248995112DD8D50869084908D108CA0DC5612DD8850845087908110G3084A06F87909FGE6009000D80085GD91737E4178234820CG0884C882C885A898897A819CG
-	E1GF1G0BC6E2ECA5098E1D471F4AB6C35FAAFD7A1E22BD511F68FB647B1879759366F774A77A9D7D390F797DCB66F774A77A9D7DF91C79FD8D73BB6AC13F633DF11831799F7877830DBD7BB992FBA46E16E9141371C799FB6B85CF6CE15CE10CA29F09CF92FF585FB16EC8FCEE93BCF137C3706E6F98F7981F98F7A40E3FE432EB95FAB0BE717E737F87BE7D8F8C8D681C73658E92DBE22FE8136AC407E8B3418F97AB7BEA8709BD169F1D33F31EC6996F00FC2A9692989747FF33034428C1121C16F637A41E90
-	A549E26B70141F16F5395C6D8ECFAA063A8CBBC86C5B4FC3BE45694F6DA0390851EE3309726447D9D839D94E05C42B588DC6575A5DB60962ED9F1135E217F80165E24E0F168BA417323AC9DEC757DF518652E79CCECBB7CC29A4B5945AC611BC69D7FC7DC8A087F0E49DD989577AD118671C5F06F94E766FFEA8441DF56834F27630DB4769A2C751DCE466A8CF1EC3EDB2FE2CED3BC54E49985E15A1637EECA33C5EABC2BADE2C938ED957AA4A1C9687F194AB9B3D1358EB329B5DC4D81900BCDB8BC95E6B32DB5D
-	F2EEAAF6BB2C1001B699A065AB439CE559CEE2DF8A583D84A06B8A4CD1DE7B1814E3FE481213DA3B55CA1B884A4CD790BFEEEA4BE5FEA8007B4AAB289F577072D13CBC9A6E939465349D8A8D4AF6C8E6657923E1FE9F0D36BCDBC8F2C517586396A1F5A7496E573C4DDFAAFC57272C0535BFAD7FE9A1E9FF2BA2CF8E9FCD741EB4733D0151B4875543558A90BC1A5A37BF08503DEFC13AC500A779CD9A234F8922F4D4DEB4278B86FC84C0DC10163C8B1DC8A7DCC973A4EDF96B3A10AE97680A819A2F24F441D7AA
-	657D1A5305DFC973AD149743686A47903AF1D624AB98C3F3326AB19EF9A51C6ED4B75205B23A28B1349EB347D03A7DD7913A0FEDC817B8066ADDB80636DD66D54AFABC4169022F22F2EE390A56A7992E0B81A85D8A8777CB30070E7811506585A3DDF58F529587D33DF5419EBABD27EBF5A21DC3C107FA03B8DD1F0B7BAF1836EF9D539F8357A4CEF71304F48B03E93BA96952G28DF9EF2A3DD4ED848EB816A47D23F840DD57A6532DE24DBB016663EA8AF155155DDCD689E6EC73A2C2BE9F94155F43DD48957AD
-	DC5E159711AE0415C7DECD6B3B982E42B82CC752G0F2BF1542E62F1544E56F1CA7BEE3B04F4D6C6B752070E460BD3607E9BC773F592FFA837044B7BA89D69E2465138CBE472D218BC6A3F5FF13AA5004F8A811A90AA4F9C22346F819D5245055035817AAF590B2EA703775F902AD798CF65660CD7520DDD0FF45B47D3FDB50C4E6CC5E74CC33AFEC6976AC3C77D725986240B9ACF57AA6897A2576317D7B9DDBC118710B61E5623E6821597BAC10E2B0DC857B8012EF9D01EE902523E331BF8DCCD20652993285C
-	7CEB14F49579C8D7FA8D252B3F461B0E5663ADCE57F68DDDDF21DEA257D30F991B112ECFA1AF84A05ACB5E4096DE5FEB68BA8D6525DC231437F7AB5225DD63A9D74A23F4C2810F67D0DA2E6D3F47B8DDF1A8DD93225E3AD0CA4776EB0B48FCA46F57F69AFA8DFDA52E73105B6C5DFBC41EB6697E6C494AACC66F8845FD587A5DE49E0DA4328112C3B107F8E6B56E4306F6C58AA92F172D7037373C045911BB5113C388EF9CD8CE6769631F901D4DD0E61A0873223EC83997F44065329BAD72B6941B7B32F7AAF38C
-	0A4B5979B6DC4FD91CAE29811240BE1CA75F17F38832CF4550822D6B7EB65C0B6E1B08FB5A779F5DA1E86FE9FB7633B1C3417DCFE3857AA1643BDB053609B768327D78A11A55BFC96107620154E5F49FB12AED9533A76BDA684FGFD57927C6BEDA497A4E3A33551A56D56305186991253E2F4C922CB227B6FA73432A3D6770FCCD8771957E2BB3FA36FE3AE057BD55735E4EF8720347DE6242D819C4D3F124D44A649ECF14D3F0E509CF164AA6AA981AE9CA00E538B96199E92F16A3369DB76B35A44BB2788D906
-	D1BA2DBD7C6057BBF479E1EC4E8873782CF0C2FBC68DG356FF38B46ECF0987AA8778BF21573E59E7FA732374335C314DAEA0FB61EB599A4C33B41A59696B5125ED0E2B558BACACEC05EEF6B58C7ED142A514628E76F95DABB2F5634D16E6F4C36458A9BC7CE7C25AE8C005A782285FDD8FDFDCBB675193BC769B34775F4DFB36CFA74D9C5E7B9DC8DF2D2DAC2AFCD22731C5D59AD1A8AE51B8D672592F95DD3F2C0AEBEC4FE97E1FCC7F422DF22C0A60D311AAE0C3105004B3F81ED59D02DE5CB738DE84B542E61
-	5AC279DF6C42F821F63CEFC5BB4C20A36286EC374359ED248FBB6D5DF40DD058687BE84927976ED337DED1C09EEAC3AC37A19974675C08F55D5ACDECB5B8BB4AE89C741F42B8981198A3642D9B6BB78E6AEF246D6F38519387CBA737E7E4C534E7D01DBF68C61DF1C0134AF53E0EBA4B697DBBB66CAF142F49360A35E5E9B8744BF0745754EC32DE957B0C22DC3363C6235B892B999E73136B491E08416130DEB8FB48172AD0613BE63353FE1EACA276953530F1ED4ABAE59F2D39742DE63D03561AF59161343E89
-	611EFA470DEF4F18BF9E6B7DDBEEFF6EA44877A7E13DCF59499E8F2CF3CBG1A1C224B250EA7D89131E022BC25BDE4CFC93491EBCDAC56275931FF0D1C0431DE6AC01DB38137F4920EE7498E24AD3E89E98DBDC8EB82DC78CD685FAF7EC270B608F303759B516536CAD4467F76200C79DC46E5CE1431EAB24C3D13D15FFA975276CFC65A1BDDC89BC3F013519F9BA5B2079A8DCED1EA323BAC389E1565FCA1211C6D91A867F189656881979A01BA7F66C65AC4CE7BF3B752E65E8CB9444D587725B3DAFDDF3A99ED
-	BA5ABB5C3ECFFD981BC976586467C8E22D5D66121CEE23A41AF0FAE2D128A9E31F4660AC60F3375BFB31AF85012DF15C5EED673D7B4E22FE24CB851A52A9C87716BC7F635E824539AE62B8C57B40EF8FA87BC06C0AE04DBEE01E9626B3CF21319FB245538722205F47713EFF4FC5747F8220491B0AF6EC98582D302344E8064A0AA67ACC2DD01129B17754B1C22FBEF1ECC05DA79C839883CDD3B186FEBF00B68481AE0E5B50F6096C419A3DDA47F650ADC9F6DB0B45E5E937D8AD528526EB5CA5222B17202DA2EB
-	0B27AFF19F034C52DBD06EAE0160ADB608E40355729D4C36147EC6010F7FC09BF18B5AF7BC9D6DCB86DC4E2DA8673EF4EC97FA7FCA3A323E14F70B8EF96B01EF442D985F8D5DDA719D4BE50F527DE3713DF01FA73ECF08B652EBFB41DB7FF0FC7FCC07BECA84DBB3EFC3FB4FE4F847778D99D86F9A2011B85D31755EBE6BDD2F7659FD6B11B78A7896F25E4DF9E47D8D7306535EC76A24998EAC9E9A735471901C073667CF03BCE29A4AFDB3CFBB9EDAB7A0FDB05046CF43F8D8359171E9002B0C44B67D4E225526
-	56C854635A780F65AB53B6FA7B78679B51CFA3C0C7ECA44E8F5B3A497308EEC317D8EB3059ED9623412A15D08A38D67863E69CCF36575DA2D4AF6D721BCBAC09E44F17FF2898CFD67FFED99CG35A9E8935AE4861A089FE25D5F58345E57A6D59F4E4FD73719BE1F67C3A0AB67F614B7A7DF3B4D8AB7A3FDBD500E389D5BAC0563E3813764F6EC33574FEA35D9619D2827E30BBABE27EDC1D9B5C0A7F15A022DA46FB9874B9AC9748AC946E75C4A639AF8965E0136959570380C02380CC27C9B85C89F8C3878A8EC
-	5F74662D9EBDA40D54ECDD76EC3F52777CCCDA1467B9FE4EF475B3FDFA2EA4D1DEDFEF1FCE4F152C657894995F2840D3DB0F49F8F2AFC1591269F896A23E042C6F2DF736E48781C4G4482A483245E096B6A1BF612E7E8031EB5E930C9306CB6D8CFF8BD6440B39F1F905FC12E466EDBBFD12E33289F8E3591BF645EB574B38C547E22D2929F0540D787208710GC26FC25BFF72C9F1A05B716C8BB31A5AF30FECCF4C773007724549FC095F030F767122534AB3F7196F9C51E5786963E9CC762AE85FB3A41F1886
-	BB8756986DAF16C649EB7836E89AB3699CFF350C37AA70B416560BF8362F8F4AD22271AC41E566C06750765F6DED836DAF73AE12365258E3EA062174GCC116C59084321FCB652FCB79D8BC640B574EE4CE1AFF370756B5D3867F471AB651E534C35977D6E35ACE476E55E23D813D81BD750D8DBDFCE764C6A202C8D208FA094A096E0BEC06ABD98F3C5457B82451CBCF1B45B69ACD26B7B240F4552C10B2FBF73E6F87B2F58671E5AF91DFC4EF3BF146981A40090009800A40025B3504E6F0A3F8CE4A7BF5E9548
-	5694152D3E109B235576EBCFEC50EEFB1AB888380E091257CEC4D7E18C465B2D1D3EBA5BFCF4C8BE774C2FDD01EC8D5264EB8A48976543C7EDEF2AC65B63396D7956615930B3A0DF1AA65F2CE16ACB8C4817FB2FD68C2E2FA2B1D88CE575GEDG7DG91GB381965C0BB1B82F78607709C1FC462E8EC3E6EFD077706AF9EDC03E54FB3578DAEC3EFCB977F953E96BB3297836785C975F27655760DD729884E5EDGFDG21G31G7381D26FC33F96FC7AF9A03F32B12896F075F6FB1706CB192D29432C63F23BAF
-	DF094FFD5E7DDAFCD1AABEADA8D570D23EDD0E6159D92762733533CE534E1F287834C02F323323E7F8F63AD5FC3EF6BAB46DCCD371E9768B151D231D4333F3220A4F574EF0CDBB73DDC331B3C6E567B4955F506C3CD74567EBE702261D3552D06CDC2032F31E0AEFE8F67ED84567EB67D2CDBB5B5DC331F3D52C2F1D0BD5FCC333738FAABE5FB12DA0561B0F4E0FF71C411C2DBA966747685E610D63338272B9E23578FE53BFBCFDE90179E23546710CEAB20EC7C059CC0079GCBGF29FE849AE85E8FEG47F157
-	278167C7BEA98EE5FE0C3DB83C36FDCC45679B035687B4472C012144604887FCE370AD955F506CDCFDA9D08C06E95A793C0AEFE86D7FEAC03EE8CDFDB78B4353F7D7C03E84CDFDA7530767CF230A4F571F8BB475ED578DCFDF390A4FD7DF6A83DAE34808EE9CC3F29E44B1E411CA5650FC7CBF81796A9F54620B4898DE1D6FD471795639CDD35F4C75435377240A4FD7DF1F263E89F94373E7C4C03E90CDFD5FEE981EBEEBC03EC8CDFD6FEE9C1E3E0200FCF18FEA456C5D7C8CC2B20F5945AAD9C31CFBD5FCA53E
-	F2FE24B58FDD36074CC305D0D6872087688388870885C879914EC30FFFCA4E4A8FF51D96F8CDF175266155B3DC45679B3BE9BF5262EB4F9FDE5BBA8272654E5462AB59BCBCFDB581790AB5757DEC187A1684642B1B29953B85ED983B7A19983B53378C4F069F85648B552C33E56B70E2683C0A4FB70622B475FDD6B03C7AFD9E10AFDED35F6FD4FCC32BDF4687014602949FFD74DD499E799C5FD2A84BFA28A51B626E2FA238E2382FFB885B79595DE44CB0437D8800B000E80079G29GF933106EE7B29DB9F3CB
-	4EA31333DD64FCABB99BCA4ED5123309142EF9B7F9BFB415490BE6B2FCFD9446F48C66472102195745A56BDE4DE2995FB97225A734597F843D84483EBE5B7BAA717F8E4A7C926DF7D0DEAE51FE87E5C149BB948FB214EF7CE2792212415FD1D9D222750E8A0D813D5C57493310C47EDC252C543F6D55255A36FFD12AEDFBDD696036B7167A33FD336C4F9764E75ECE37CD32F40B32E83A37AC7611672CB0B3FD633651E90BC8F779BE7791F0AE1C3D17BC3F2D1C05F5FC3534DCD04FF9740C998AE9968D4E63674E
-	7105578907E8447EF45004FD270977092B08BA56CFC3953FB70B3E6F5F7EB3016D0F7DCBF550BA074967BE4938A44D4267219D07C8BBE96C711FB0BA6DD6ABB9E2AA603C92494FD9854D42B326936D24FD6360BE99E089776595FE775F329E06716BE175D8C15B798F7B48B343D2A8EF84B081748304BF0C6D7ED9D940671D077A86F95E79C1397F3ED1D82E5DB7CA4A499864323B1DC651B77E2B4A73F819A723EA10446EE310F0313EA573CB86E707286ABF07E4FEDA660F7FD8393FBEC65B75141C2B12792704
-	633E35E0DB4F643E3B3942FF5DA3AB346BFEE7057F3A5FDB91386E33AA7C577D510A40F5FF2AE2703A3F496B1974B0465E5D1AFB2A8BD94C2542F5D51C569CBB33D36D47591DA83FGF86818768B093C4B2AFA871098AD60F9138BDDAB994DA149FE340C77731355DA36D5B2FB6A612A77310D4ABBE14DE6721A48E1DA10C8713F7346B715E11CD78D9267D5FE623CEA10B82F9AC21CD78D9267D5C30873AAD217F60B4962E4EF6E51BABE5C6DDD47F2B637BC71BE292383669451A5BFB029B3C88646B3562670FF
-	ED9937635ADD7E7DB2E91736DF266E726F175BF785764B0CDD7E7D72602E40FE19334BDF9F20F57D4C2E0C35F29E3BF364B334645D91C79C1E3369F6A8E9ABB86DD287520E6434B775A8E92BB86DBAA75206F15AD9CEA5EDA5272DF0A1ED9427FD4525245D45E9CFCBC89B47E9B35DCA5A5D1C76029BE967F35AED3D4AB6AF67FDAE7A0CD61FDB447AD9DA1CFAAE2272FE2114F7341A63F7DCC4FC13E4EF7244566AEA7F3115DB2D9DDB9B2B7D4756875501E3EBE7357F58AA2B8E9CDBFB2B357B5C9B9715F55F43
-	7D9EBC00FE4F194D4F04DEFADBB95615221FD689DE78B244A78B5E7D39026103533D684B117E0CCE592E953CDDC7E9BE975EBE1B36E775ECFF6D3AB543CBCF8562372F7742D7A27ECDEFFC95621F4873426FC27C448D5E752BE478060DDE743B319E77E91E4FE8E47637792D4736CDDEFAEAF16C3FEA0F7FB81C30C7BB8E4376780F4349FB8247E1649E7FF1F8571E40F1983BE770B16E51CDDE3E2BC67C7579DE78BD0897B7FB37C19543EF582224AFAF45B658512655869273FD105FB6D83845DB4FAE060F586A
-	2507477E3982AFBC0F71628F3C5B321C6103AA49F7822C068BF637846B7F59248FCE2E4433D661F09F43ECCB19CD4FDC513C7E6E73C45EB927219B5CA8AFFC129EA13CCFD5A1EF8D5CB781B8GC2G229F417E7C27230477GF947041D7421781765F70DEA49B7292C340062F54788DE31E2A8E33E59C85E692FD53CA760B9F50C753E4DC0F2A96FD3561C0451FCF01C2C898E75B98CB653D7EE9B4B39BC7ADFBCC3E26FABFA261373329CF36FEAE5DC319C0D7A621489FD11B7077A3018DD9B6720AF6EB2AFE36D
-	D24A471D69031EAD304E71F716EF257C7E4A08B9744CDE86472F1371A18ABCBBD3EF47332D91D016990F7BBE1364395A8C77A3B8EE77E9DC4F0646E33E2F2B71BF8E2C2C519E875656E86F833CD7B378BE40661A417B2F5B02FE74FC73616DCE44F9F20B8479ACD9AC54A101572D4809F51B4FF19BE49F10776337BF4A5FE16472BCB905359A65D5BF0A3C4FD473FDB30E5B500372C281977BA8413D4C5FC10A6438EC7E1ED09A476D146DA3ED376AB1449DF1A12E0063FAA444D5F2DC089BF1F50F21AD0F4B4F5C
-	1B615E44F145FA345941F9277277C162B8DD387C2CAD896E97F0DC3A8DF997F35CBCF95DD473B82C339FC7DCF9A75235F2DCCD9B52C5F25C24B6240BF91C3F37D40967CEB393DA32EB92F09CAAEBA37B0CFCFF011C525F3B773053E2BAE868E814C7B53A0F10D9C578A5608B8638A5814F0776FD0467C323EE1BA2A43D267DCE7202660B3A1989345FADC8701C8F0DAA42F7CA3F5905FE4EFF22A53B7989793964AE6579F56247575269FEACAD3F472B1C44B779661027FC21D7B931770E954A7277F7AB4B17A978
-	E95D666E403A254D0D962C770E747BAD4F70A7E81D62583560296B537557B5AD27F53BE4423A25723ACDB7795ABEA7C3E95BFF19FCEDEBE03651B60EF7E09B17BE096B6A358E3287B7025FEF106F497B6B6C3939DDEB8F0B50FF1F3DAAFFC0F5BC2829A3631FA05FB32747B8489C5DEEB0F6F5B86DEE1B89468F393F154B7DBC8C6AF38BG1DC30E1D46B9A49EF049G29GF9F3E13C190B63526555786EC96BDC729D593EDA527AC9F3897FFEE79D3671DC6D9CC38951C0C3E09BEB6F78391E735F5446038E0C05
-	3CC46847323E876ABC7A96D5233E62C4353EF4BF7A5EE3E57B93FD759D6EC1FD0D09D85F7F364B75F53AC59A6791671567672B5F7E0166370964DC1759A431EB70DB5727D3199F7620CCFAFF40C9E41CB3D8DD1EBD9703CB0D8B12081ED2FEBF4D6DFD7F4A996F36697A4A632BDABD7AAACA43D74BFCFC9587B48450D773953E223A9E9C702E430CEEEF5DB38EFBF46759D077828D5DABFCF4AF851A2CF99E5D7973FCF5AF34F86BFA355E232B2193F5954ED36BDA69232B86E8EA943A1A943A286C65C7BC32E35A
-	D036DEC3F6F6G598E05ECF6CECF75CE4E50460D9FFFEFBE1A1B754973D27FBC5F77AFAE1371C173FC5F3FF83B8A6741D0A8CB1D076F723CFE040C937A27DA327BGC2GA28192G96BE05795A0C9A9217036EEDB75B9D0D1050D995A9982D5FDFF7FD5F7A513EB9FB854EC1B18F5EAE44DED167777D0B5427E87B65BDCD2F3109572713AB2DDFFFA329DFBD1419G02GA2GE2G921F467A7D31063D6FC39E539C10A40351ACFF6D03BF74310867BDE832E821F59BB9683BB3DAC0E36F478E5E071E569E6B882C
-	E6313794E83212E86C496F13A5797621631D44E77862CB990F774B496788F1AF6EB419D7798B0935F62B5DD9F25EEC11C4BAD7CB277159FCE1924E55D127FD7310073C7210D7CE7B4E6544A6CFF94E995FBCE436CED9FE700C6FDC0F7CB4861EBE239C1FF3EE306A305E2A71B9097A511A644931E83DFA1CD82F88A85BAA7BC29032844F9F75552F1A842E77272BB076726F18AA543DD8275B66C7EFB253D7780CC7EFFDF365CA6A73D38E6538CF6DF9FA8F5A53768C4E03A73F71345337BDCA9E9A433A93727C8E
-	74B14FE04C7E390EFC0B32455029FE428848A6275DA1BA258B94ABFF4D0D69177428FF7EB303794355ACF01B9BEC48336AD9ED9E7FF2DEBE6911739D7FCEC81D9FB91467CFAD9E1E577819117EE751DF85A455E26367C0156777E8456F1C2AFF7D335122FF298E5A4E3FBD62FF2D7C7BA35AEB65370EE82F1517FDBD78737C55DF7B7F66E46E574AEFCE5238DC52CA7AEF8C34CB9240D2002C67E0AD769C4668142FBF9464F1D5E3CCBDE46A20FBAF861B047AC7B57A2FEBF0E3606F0FCFEC1473E33BA4112F3AF4
-	08083F31113417E4F748C80A0BE8A4BEF2DABA4C92A5E5785B9AC93CD945F3B21A46602A9EFE567CB92D38DD7225960E0D4127BDB1F96134F23EF0002C114F8D3E8621FEAEA51FADE676BDFE1CFCB7CA335F03D70F4078FE3C3DD3B4CA4D068E2E37576B5D0AB05099B5A43DE764BCB38EE8D3G047930FEGA8862883E88530820CG888308860887C886D88C10861073FCCB767667B19ECA7FD2644FF6C03245B75D10B3D8C8D8B07B676FD15ADF8D729A1F9F5CFE2AEF4509B54AF82743A0ABDBF30244AEFF57
-	DC7E6497FD4B1A3515DE29338D74C981F4D23EE3DE6FBD8581CF781078AEF93D17988DBC71C3627B25577EF0B270AC9E12EFD2DB7D773537DA8377352CD372F751200FB4DFF0303D725527481E307D5CB917487B743B27F2B82E41051F1A21363F6375BCDCF821A5BB770541ED27FBGA1F22ED28834A41F203809B2EEBF60C80EC2F1E31DC8174EF9A7B811AE1D7B422E776F0BDEFDE0DFDC52EB0FBB23746AF1E70CDEFB5C8951AB479DB61E69491853817D2215535D40F127B8EE32AC13607EEAB1C9E60E3FD5
-	360B606BC5229071F748F61D17F12D8C972D401D42F394FA521ED0E5B37906AEFBAE2CA76B35F3962B151D2310E9ACB6E8DE6E0FB9320D9607C1E1F782471D62ED712BBD6A76D932C759BE2C3D75EA3A09FAB51DE8D353F55A54F457F62A69EE6CD453259B54F44B8DEA3A429EB55D27BDCABA3AA6B7485FE0E6E30E5CD4941F5F375A03472692687F831AF43888E2BC6A5742B2C9D8CE9FF1C842EA7999C8C12D7C819F17A4EC224FB28A949FBDAA402F42C842B6D6FAC07E48CAC90162210602AA07BE47A84087
-	99A0F685FBF461F28AEB3CD78E69372E3FBCE7DC05DBA7E4FDA5AC07EC55E1B6B4884B644FB3B48A596DF2FC0BCE20854172F7ACBE835E4FE45EFD0D024EC80C76600D84CFCBCFB88CC691C8D61A8C4EAED9C20FB0A02CB8A32CBC676CE81795C8026E4CD7E7C02DFCC70AD7B68AEFCBE612CF100D84C9D86F915DC4E692D6302F0F1C5B945E02BF077C8795DB4BAB56A04770025E0A3D992FCE4D5089198D42F25A279B04CC52B12102F23D9A048C6853322C15822E99604FC5CCD975EF402E7442E67AG7BB644
-	A5655AA9F514516F5E567E1768185B7C12E78DC3677F36A3A406C3G9F75924E61518D64BB797E720F935D862BD5B2D83B8E58CCA497B9F8C192BD7925F80448F7A18DAB24E5D6B9E76DD4707C9FD0CB8788523F342C74A0GGECEBGGD0CB818294G94G88G88G750171B4523F342C74A0GGECEBGG8CGGGGGGGGGGGGGGGGGE2F5E9ECE4E5F2A0E4E1F4E1D0CB8586GGGG81G81GBAGGGAEA1GGGG
-**end of data**/
+private void settextArea1(javax.swing.JTextArea newValue) {
+	if (ivjtextArea1 != newValue) {
+		try {
+			/* Stop listening for events from the current object */
+			if (ivjtextArea1 != null) {
+				ivjtextArea1.removeKeyListener(this);
+			}
+			ivjtextArea1 = newValue;
+
+			/* Listen for events from the new object */
+			if (ivjtextArea1 != null) {
+				ivjtextArea1.addKeyListener(this);
+			}
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	};
+	// user code begin {3}
+	// user code end
 }
 }

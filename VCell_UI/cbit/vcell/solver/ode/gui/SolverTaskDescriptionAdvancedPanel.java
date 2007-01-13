@@ -6,7 +6,6 @@ import cbit.vcell.simulation.*;
 ©*/
 import cbit.vcell.math.Constant;
 import java.util.Enumeration;
-import cbit.vcell.solver.ode.*;
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 8:59:25 PM)
@@ -882,9 +881,16 @@ private javax.swing.DefaultComboBoxModel createSolverComboBoxModel(SolverTaskDes
 	fieldSolverComboBoxModel.removeAllElements();
 	if(getSolverTaskDescription() != null) {
 		String[] solverDescriptionNames = new String[0];
-		if (getSolverTaskDescription().getSimulation().getIsSpatial()) {
+		if (getSolverTaskDescription().getSimulation().getIsSpatial()) 
+		{
 			solverDescriptionNames = SolverTypes.getPDESolverDescriptions();
-		} else {
+		}
+		else if (getSolverTaskDescription().getSimulation().getMathDescription().isStoch()) //amended Sept.27, 2006
+		{
+			solverDescriptionNames = SolverTypes.getStochSolverDescriptions();
+		} 
+		else 
+		{
 			solverDescriptionNames = SolverTypes.getODESolverDescriptions();
 		}
 		for (int i = 0; i < solverDescriptionNames.length; i++) {
@@ -897,7 +903,6 @@ private javax.swing.DefaultComboBoxModel createSolverComboBoxModel(SolverTaskDes
 	}
 	return (fieldSolverComboBoxModel);
 }
-
 
 /**
  * Comment
@@ -1773,7 +1778,7 @@ private TimeBoundsPanel getTimeBoundsPanel() {
  * @return cbit.vcell.solver.ode.gui.TimeStepPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private TimeStepPanel getTimeStepPanel() {
+public TimeStepPanel getTimeStepPanel() {
 	if (ivjTimeStepPanel == null) {
 		try {
 			ivjTimeStepPanel = new cbit.vcell.solver.ode.gui.TimeStepPanel();

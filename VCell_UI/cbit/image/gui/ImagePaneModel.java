@@ -601,13 +601,13 @@ public void setZoom(int zoom) {
  */
 private void updateRowFromColorIndex(int[] viewport, int viewPortImageXStart, int viewPortImageXEnd, int modFactor, int modFactorCompare, int currentSourceIndex, int currentViewportIndex) {
 	//
-	int[] colorMap = fieldDisplayAdapterService.getActiveColorModel();
+	//int[] colorMap = fieldDisplayAdapterService.getActiveColorModel();
 	if (getSourceData().getData() instanceof int[]) {
 		int[] source = (int[]) getSourceData().getData();
 		int sourceXIncrement = fieldSourceData.getXIncrement();
 		for (int x = viewPortImageXStart; x < viewPortImageXEnd; x += 1) {
 			//
-			viewport[currentViewportIndex] = colorMap[source[currentSourceIndex]];
+			viewport[currentViewportIndex] = fieldDisplayAdapterService.getColorFromIndex(source[currentSourceIndex]);//colorMap[source[currentSourceIndex]];
 			//
 			modFactor += 1;
 			if (modFactor == modFactorCompare) {
@@ -621,7 +621,7 @@ private void updateRowFromColorIndex(int[] viewport, int viewPortImageXStart, in
 		int sourceXIncrement = fieldSourceData.getXIncrement();
 		for (int x = viewPortImageXStart; x < viewPortImageXEnd; x += 1) {
 			//
-			viewport[currentViewportIndex] = colorMap[(int) (source[currentSourceIndex] & 0xFF)];
+			viewport[currentViewportIndex] = fieldDisplayAdapterService.getColorFromIndex((int) (source[currentSourceIndex] & 0x000000FF));//colorMap[(int) (source[currentSourceIndex] & 0xFF)];
 			//
 			modFactor += 1;
 			if (modFactor == modFactorCompare) {
@@ -632,7 +632,6 @@ private void updateRowFromColorIndex(int[] viewport, int viewPortImageXStart, in
 		}
 	}
 }
-
 
 /**
  * Insert the method's description here.

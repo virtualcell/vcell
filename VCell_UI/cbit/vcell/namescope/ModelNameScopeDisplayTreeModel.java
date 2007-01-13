@@ -58,7 +58,7 @@ private void addReactStepToHashtable(ReactionStep reactStep) {
 	Kinetics kinetics = reactStep.getKinetics();
 	JTableFixed aJTable = new JTableFixed();
 	aJTable.setDefaultRenderer(ScopedExpression.class, new ScopedExpressionTableCellRenderer());
-	aJTable.setDefaultRenderer(String.class, new ScopedExpressionTableCellRenderer());
+	//aJTable.setDefaultRenderer(String.class, new ScopedExpressionTableCellRenderer());
 	cbit.vcell.model.gui.ParameterTableModel paramTableModel = new cbit.vcell.model.gui.ParameterTableModel();
 	paramTableModel.setKinetics(reactStep.getKinetics());
 	aJTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
@@ -85,7 +85,7 @@ private BioModelNode createBaseTree(Model model) {
 		//
 		JTableFixed aJTable = new JTableFixed();
 		aJTable.setDefaultRenderer(ScopedExpression.class,new ScopedExpressionTableCellRenderer());
-		aJTable.setDefaultRenderer(String.class, new ScopedExpressionTableCellRenderer());
+		//aJTable.setDefaultRenderer(String.class, new ScopedExpressionTableCellRenderer());
 		aJTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
 		ModelParameterTableModel modelParamTableModel = new ModelParameterTableModel();
 		modelParamTableModel.setModel(model);

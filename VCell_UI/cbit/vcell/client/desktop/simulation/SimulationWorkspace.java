@@ -6,13 +6,13 @@ import javax.swing.*;
 
 import cbit.vcell.mapping.*;
 import cbit.vcell.math.MathFactory;
+import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.solvers.SimulationStatus;
 
 public class SimulationWorkspace implements java.beans.PropertyChangeListener {
 	private SimulationOwner simulationOwner = null;
 	private ClientSimManager clientSimManager = null;
-	private SimulationListPanel simulationListPanel = null;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private cbit.vcell.simulation.Simulation[] fieldSimulations = null;
 	private JProgressBar[] statusBars = null;
@@ -116,10 +116,10 @@ public String checkCompatibility(Simulation simulation) {
 private boolean checkSimulationParameters(Simulation simulation, JComponent parent) {
 	String errorMessage = null;
 	String warningMessage = null;
-	long maxTimepoints = simulation.getIsSpatial() ? Simulation.MAX_LIMIT_PDE_TIMEPOINTS : Simulation.MAX_LIMIT_ODE_TIMEPOINTS;
-	long maxSizeBytes = simulation.getIsSpatial() ? (Simulation.MAX_LIMIT_PDE_MEGABYTES*1000000L) : (Simulation.MAX_LIMIT_0DE_MEGABYTES*1000000L);
-	long warningTimepoints = simulation.getIsSpatial() ? Simulation.WARNING_PDE_TIMEPOINTS : Simulation.WARNING_ODE_TIMEPOINTS;
-	long warningSizeBytes = simulation.getIsSpatial() ? (Simulation.WARNING_PDE_MEGABYTES*1000000L) : (Simulation.WARNING_0DE_MEGABYTES*1000000L);
+	long maxTimepoints = simulation.getIsSpatial() ? Simulation.MAX_LIMIT_PDE_TIMEPOINTS : Math.max(Simulation.MAX_LIMIT_ODE_TIMEPOINTS, Simulation.MAX_LIMIT_STOCH_TIMEPOINTS);
+	long maxSizeBytes = simulation.getIsSpatial() ? (Simulation.MAX_LIMIT_PDE_MEGABYTES*1000000L) : Math.max(Simulation.MAX_LIMIT_0DE_MEGABYTES*1000000L, Simulation.MAX_LIMIT_STOCH_MEGABYTES*1000000L);
+	long warningTimepoints = simulation.getIsSpatial() ? Simulation.WARNING_PDE_TIMEPOINTS : Math.max(Simulation.WARNING_ODE_TIMEPOINTS, Simulation.WARNING_STOCH_TIMEPOINTS);
+	long warningSizeBytes = simulation.getIsSpatial() ? (Simulation.WARNING_PDE_MEGABYTES*1000000L) : Math.max(Simulation.WARNING_0DE_MEGABYTES*1000000L, Simulation.WARNING_STOCH_MEGABYTES);
 	long expectedNumTimePoints = getExpectedNumTimePoints(simulation);
 	long expectedSizeBytes = getExpectedSizeBytes(simulation);
 	//
@@ -150,7 +150,43 @@ private boolean checkSimulationParameters(Simulation simulation, JComponent pare
 						"maximum number of parameter sets is: " + Simulation.MAX_LIMIT_SCAN_JOBS + " \n" + 
 						"suggested limit for number of parameter sets is: " + Simulation.WARNING_SCAN_JOBS + " \n" + 
 						"Try choosing fewer parameters or reducing the size of scan for each parameter.";
-	} else {
+	}	
+	else if(getSimulationOwner() != null)
+	{ //to gurantee stochastic model uses stochastic methods and deterministic model uses ODE/PDE methods. 
+		if (getSimulationOwner() instanceof SimulationContext)
+		{
+			if(((SimulationContext)getSimulationOwner()).isStoch())
+			{
+				if(! (simulation.getSolverTaskDescription().getSolverDescription().isSTOCHSolver()))
+					errorMessage = "Stochastic simulation(s) must use stochastic solver(s).\n" +
+			               			simulation.getSolverTaskDescription().getSolverDescription().getName()+" is not a stochastic solver!";
+			}
+			else
+			{
+				if((simulation.getSolverTaskDescription().getSolverDescription().isSTOCHSolver()))
+					errorMessage = "ODE/PDE simulation(s) must use ODE/PDE solver(s).\n" +
+					               simulation.getSolverTaskDescription().getSolverDescription().getName()+" is not a ODE/PDE solver!";
+				
+			}
+		}
+		else if(getSimulationOwner() instanceof MathModel)
+		{
+			if(((MathModel)getSimulationOwner()).getMathDescription().isStoch())
+			{
+				if(! (simulation.getSolverTaskDescription().getSolverDescription().isSTOCHSolver()))
+					errorMessage = "Stochastic simulation(s) must use stochastic solver(s).\n" +
+			               			simulation.getSolverTaskDescription().getSolverDescription().getName()+" is not a stochastic solver!";	
+			}
+			else
+			{
+				if((simulation.getSolverTaskDescription().getSolverDescription().isSTOCHSolver()))
+					errorMessage = "ODE/PDE simulation(s) must use ODE/PDE solver(s).\n" +
+					               simulation.getSolverTaskDescription().getSolverDescription().getName()+" is not a ODE/PDE solver!";
+			}
+		}
+	} 
+	
+	else {
 		errorMessage = null;
 	}
 	if (errorMessage != null) {
@@ -194,7 +230,6 @@ private boolean checkSimulationParameters(Simulation simulation, JComponent pare
 		}
 	}
 }
-
 
 /**
  * Comment
@@ -269,7 +304,7 @@ void editSimulation(Simulation simulation) {
 		if (clonedSimulation.compareEqual(simulation)) {
 			return;
 		}
-		errors = applyChanges(clonedSimulation, simulation);
+		errors = applyChanges(clonedSimulation, simulation); //clonedSimulation is the new one.
 		if (!errors.equals("")) {
 			throw new Exception("Some or all of the changes could not be applied:" + errors);
 		}
@@ -502,7 +537,12 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
 int newSimulation() throws java.beans.PropertyVetoException {
 	MathFactory mathFactory = null;
 	if (getSimulationOwner() instanceof SimulationContext){
-		mathFactory = new MathMapping((SimulationContext)getSimulationOwner());
+		SimulationContext simContext = (SimulationContext)getSimulationOwner();
+		if (simContext.isStoch()){
+			mathFactory = new StochMathMapping(simContext);
+		}else{
+			mathFactory = new MathMapping(simContext);
+		}
 	}
 	Simulation newSim = getSimulationOwner().addNewSimulation(mathFactory);
 	for (int i = 0; i < getSimulationOwner().getSimulations().length; i++){
@@ -599,7 +639,9 @@ private void setStatusBars(javax.swing.JProgressBar[] newStatusBars) {
 	statusBars = newStatusBars;
 }
 
-
+void showSimulationStatusDetails(Simulation[] sims) {
+	getClientSimManager().showSimulationStatusDetails(sims);
+}
 /**
  * Comment
  */

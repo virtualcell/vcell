@@ -1,16 +1,18 @@
 package cbit.vcell.client.desktop.biomodel;
-import cbit.vcell.simulation.*;
+import cbit.vcell.solver.*;
+import cbit.vcell.server.*;
+import cbit.vcell.simulation.Simulation;
+import cbit.vcell.simulation.VCSimulationIdentifier;
 
 import java.awt.*;
 import cbit.vcell.client.desktop.simulation.*;
 import cbit.vcell.client.*;
 import javax.swing.*;
-
-
-
 import java.util.*;
 import cbit.util.*;
 import cbit.gui.*;
+import cbit.vcell.math.gui.*;
+import cbit.vcell.geometry.gui.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.client.desktop.geometry.SurfaceViewerPanel;
@@ -105,7 +107,7 @@ public void cleanSimWindowsHash() {
 		Simulation[] sims = getMathViewer().getSimContext().getSimulations();
 		boolean bFound = false;
 		for(int i=0;i<sims.length;i+= 1){
-			if(sims[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier().equals(vcsid)){
+			if(sims[i].getSimulationInfo() != null && sims[i].getSimulationInfo().getAuthoritativeVCSimulationIdentifier().equals(vcsid)){
 				bFound = true;
 				break;
 			}

@@ -712,7 +712,7 @@ private void showMoveDialog(FeatureShape featureShape) {
 						for(int j=0;j<reactionArr.length;j+= 1){
 							if((reactionArr[j].getStructure() == parentOfMoving ||
 								reactionArr[j].getStructure() == parentOfMoving.getMembrane()) &&
-								reactionArr[j].getReactionParticipant(neededSCArr[i]) != null)
+								reactionArr[j].getReactionParticipants(neededSCArr[i]).length > 0)
 							{
 								bFound = true;
 								break;
@@ -765,7 +765,7 @@ public void showParametersDialog() {
 	if(getGraphModel() == null || getDocumentManager() == null || getJDesktopPane() == null){
 		return;
 	}
-	ModelParameterPanel modelParameterPanel = new ModelParameterPanel();
+	final ModelParameterPanel modelParameterPanel = new ModelParameterPanel();
 	final cbit.vcell.model.Model model = (((StructureCartoon)getGraphModel()).getModel());
 	modelParameterPanel.setModel(model);
 
@@ -813,6 +813,15 @@ public void showParametersDialog() {
 	contentsPane.add(tabbedPane, "Center");
 	internalFrame.setContentPane(contentsPane);
 
+	//cleanup listeners after window closed for GC
+	internalFrame.addInternalFrameListener(
+		new javax.swing.event.InternalFrameAdapter(){
+			public void internalFrameClosed(InternalFrameEvent e) {
+				modelParameterPanel.cleanupOnClose();
+			}
+		}
+	);
+	
 	getJDesktopPane().add(internalFrame);
 	cbit.util.BeanUtils.centerOnComponent(internalFrame,getJDesktopPane());
 	internalFrame.show();

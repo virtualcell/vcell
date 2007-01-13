@@ -4,9 +4,9 @@ package cbit.vcell.geometry.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.gui.ColorIcon;
 import cbit.vcell.geometry.*;
 import javax.swing.JLabel;
-import java.awt.Dimension;
 import java.awt.Component;
 import javax.swing.JTable;
 /**
@@ -28,23 +28,14 @@ public Component getTableCellRendererComponent(JTable table,Object value,boolean
 		SubVolume subVolume = (SubVolume)value;
 		JLabel label = (JLabel)super.getTableCellRendererComponent(table,"",isSelected,hasFocus,row,column);
 		java.awt.Color handleColor = new java.awt.Color(colormap[subVolume.getHandle()]);
-		label.setIcon(new cbit.gui.ColorIcon(15,15,handleColor));
+		label.setIcon(new ColorIcon(15,15,handleColor));
 		label.setText(subVolume.getName());
 		return label;
 	}else{
-		Component component = super.getTableCellRendererComponent(table,value,isSelected,hasFocus,row,column);
-		if (table.getAutoResizeMode() == JTable.AUTO_RESIZE_OFF){
-			Dimension dim = component.getPreferredSize();
-			int requestedColumnWidth = (int)dim.getWidth()+10;
-			javax.swing.table.TableColumn tableColumn = table.getColumnModel().getColumn(column);
-			if (requestedColumnWidth>tableColumn.getPreferredWidth()){
-				tableColumn.setPreferredWidth(requestedColumnWidth);
-				table.invalidate();
-			}
-		}
-		return component;
+		return super.getTableCellRendererComponent(table,value,isSelected,hasFocus,row,column);
 	}
 }
+
 protected void setValue(Object value) {
 	if (value instanceof SubVolume){
 		setText(((SubVolume)value).getName());

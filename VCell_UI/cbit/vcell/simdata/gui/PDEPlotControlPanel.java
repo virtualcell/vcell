@@ -15,6 +15,7 @@ import java.awt.*;
 import cbit.util.*;
 import cbit.vcell.math.Function;
 import cbit.vcell.simdata.FunctionFileGenerator;
+import cbit.vcell.simulation.Simulation;
 
 import java.util.Vector;
 /**
@@ -200,7 +201,7 @@ private void addFunction() {
 
 		try {
 			Function function = new Function(funcName, funcExp);
-			VariableType funcType = FunctionFileGenerator.getFunctionVariableType(function, dataIdNames, dataIdVarTypes, !getpdeDataContext1().getIsODEData());
+			VariableType funcType = Simulation.getFunctionVariableType(function, dataIdNames, dataIdVarTypes, !getpdeDataContext1().getIsODEData());
 			AnnotatedFunction newFunction = new AnnotatedFunction(funcName, funcExp, "", funcType, true);
 			getpdeDataContext1().addFunction(newFunction);
 			getpdeDataContext1().refreshIdentifiers();
