@@ -7,6 +7,7 @@ import java.io.StringWriter;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
+import org.vcell.expression.ExpressionException;
 
 import cbit.image.VCImage;
 import cbit.util.Extent;
@@ -60,7 +61,13 @@ public class XmlHelper {
 			throw new IllegalArgumentException("Invalid input for BioModel: " + bioModel);
 		}
 		Xmlproducer xmlProducer = new Xmlproducer(printkeys);
-		Element element = xmlProducer.getXML(bioModel);
+		Element element;
+		try {
+			element = xmlProducer.getXML(bioModel);
+		} catch (ExpressionException e) {
+			e.printStackTrace();
+			throw new RuntimeException(e.getMessage());
+		}
 		element = XmlUtil.setDefaultNamespace(element, Namespace.getNamespace(Translator.VCML_NS));		
 		xmlString = XmlUtil.xmlToString(element);
 		

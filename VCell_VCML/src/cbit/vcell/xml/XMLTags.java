@@ -32,6 +32,15 @@ public class XMLTags {
     public final static String VolumeRateTag = "VolumeRate";
     //END-MATHMODEL
 
+    public final static String StochVolVariableTag = "StochasticVolumeVariable"; //stoch
+    public final static String VarIniConditionTag = "VariableInitialCondition"; //stoch
+    public final static String ActionTag = "Effect"; //stoch
+    public final static String JumpProcessTag = "JumpProcess"; //stoch
+    public final static String ProbabilityRateTag = "ProbabilityRate"; //stoch
+    public final static String VarNameAttrTag = "VarName"; //stoch
+    public final static String OperationAttrTag = "Operation"; //stoch
+    public final static String StochAttrTag = "Stochastic"; //stoch , used with simulationspec Tag as an attribute
+
     //TAGS RELATED TO VERSION
     public final static String VersionTag				= "Version";
     public final static String OwnerTag					= "Owner";
@@ -222,6 +231,7 @@ public class XMLTags {
     public final static String KineticsTypeGHK = "GHKKinetics";
     public final static String KineticsTypeHMM_Irr = "HMMIrreversible";
     public final static String KineticsTypeHMM_Rev = "HMMReversible";
+    public final static String KineticsTypeGeneralTotal = "GeneralTotalKinetics";
     public final static String PseudoSteadyAttrTag = "PseudoSteady";
     public final static String ParameterTag = "Parameter";
     public final static String ExpressionAttrTag = "ExpressionAttr";
@@ -296,6 +306,8 @@ public class XMLTags {
 	public static final String ParamRoleMaxReverseRateTag = "max reverse rate";
 	public static final String ParamRolePermeabilityTag = "permeability";
 	public static final String ParamRoleConductivityTag = "conductivity";
+	public static final String ParamRoleAssumedCompartmentSizeTag = "assumedCompartmentSize";
+	public static final String ParamRoleTotalRateTag = "totalRate";
 	public static final String DefaultReactionRateSymbol = "J";
 	public static final String VelocityTag = "Velocity";
 

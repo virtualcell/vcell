@@ -1,40 +1,34 @@
 package org.vcell.sbml;
-import java.util.ArrayList;
+import cbit.vcell.model.FluxReaction;
+import org.jdom.*;
+import cbit.vcell.model.Structure;
+import org.sbml.libsbml.*;
 import java.util.Vector;
-
-import org.jdom.Element;
-import org.jdom.Namespace;
-import org.sbml.libsbml.ASTNode;
-import org.sbml.libsbml.AssignmentRule;
-import org.sbml.libsbml.Compartment;
-import org.sbml.libsbml.MathMLDocument;
-import org.sbml.libsbml.ModifierSpeciesReference;
-import org.sbml.libsbml.ParameterRule;
-import org.sbml.libsbml.SBMLDocument;
-import org.sbml.libsbml.SpeciesReference;
-import org.sbml.libsbml.Unit;
+import cbit.vcell.model.Parameter;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.Kinetics;
+import java.util.ArrayList;
 import org.sbml.libsbml.UnitDefinition;
-import org.sbml.libsbml.libsbml;
+import org.sbml.libsbml.Compartment;
+import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.model.Feature;
+import cbit.vcell.modelapp.ReactionSpec;
+import cbit.vcell.modelapp.SimulationContext;
+import cbit.vcell.modelapp.SpeciesContextSpec;
+import cbit.vcell.modelapp.StructureMapping;
+import cbit.vcell.biomodel.BioModel;
+import org.sbml.libsbml.SBMLDocument;
+import org.sbml.libsbml.Unit;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import cbit.vcell.vcml.Translator;
 
+import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.xml.XMLTags;
 import cbit.util.TokenMangler;
 import cbit.util.xml.XmlParseException;
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.model.Feature;
-import cbit.vcell.model.FluxReaction;
-import cbit.vcell.model.Kinetics;
-import cbit.vcell.model.Membrane;
-import cbit.vcell.model.Parameter;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Structure;
-import cbit.vcell.modelapp.SimulationContext;
-import cbit.vcell.modelapp.StructureMapping;
-import cbit.vcell.units.VCUnitDefinition;
-import cbit.vcell.vcml.Translator;
-import cbit.vcell.xml.XMLTags;
 
 /**
  * Insert the type's description here.
@@ -47,6 +41,23 @@ public class SBMLExporter {
 	private cbit.vcell.biomodel.BioModel vcBioModel = null;
 	private String vcPreferredSimContextName = null;
 	private java.util.Hashtable globalParamNamesHash = new java.util.Hashtable();
+	private SBMLExporter.SBMLExportErrorReport fieldErrorReport = null;
+
+	public class SBMLExportErrorReport {
+		StringBuffer reportBuffer = null;
+
+		protected SBMLExportErrorReport(StringBuffer argBuffer) {
+			reportBuffer = argBuffer;
+		}
+
+		public void printWarningAndErrorReport() {
+			if (reportBuffer == null) {
+				System.out.println("VCell Model was exported to SBML without any errors! Resulting SBML model is VALID");
+			} else {
+				System.out.println(reportBuffer.toString());
+			}
+		}
+	}
 
 	static
 	{
@@ -71,16 +82,16 @@ protected void addCompartments() {
 	cbit.vcell.model.Structure[] vcStructures = vcBioModel.getModel().getStructures();
 	
 	for (int i = 0; i < vcStructures.length; i++){
-		org.sbml.libsbml.Compartment sbmlCompartment = new org.sbml.libsbml.Compartment(vcStructures[i].getName());
+		org.sbml.libsbml.Compartment sbmlCompartment = new org.sbml.libsbml.Compartment(TokenMangler.mangleToSName(vcStructures[i].getName()));
+		sbmlCompartment.setName(vcStructures[i].getName());
 		VCUnitDefinition sbmlSizeUnit = null;
 		if (vcStructures[i] instanceof Feature) {
 			Feature vcFeature = (Feature)vcStructures[i];
 			sbmlCompartment.setSpatialDimensions(3);
 			sbmlCompartment.setConstant(true);
 			String outside = null;
-			if (vcFeature.getParentStructure() == null) {
-			} else {
-				outside = vcFeature.getParentStructure().getName();
+			if (vcFeature.getParentStructure() != null) {
+				outside = TokenMangler.mangleToSName(vcFeature.getParentStructure().getName());
 			}
 			if (outside != null) {
 				if (outside.length() > 0) {
@@ -92,7 +103,7 @@ protected void addCompartments() {
 		} else if (vcStructures[i] instanceof Membrane) {
 			Membrane vcMembrane = (Membrane)vcStructures[i];
 			sbmlCompartment.setSpatialDimensions(2);
-			sbmlCompartment.setOutside(vcMembrane.getOutsideFeature().getName());
+			sbmlCompartment.setOutside(TokenMangler.mangleToSName(vcMembrane.getOutsideFeature().getName()));
 			sbmlSizeUnit = VCUnitDefinition.UNIT_um2;
 			sbmlCompartment.setUnits(cbit.util.TokenMangler.mangleToSName(sbmlSizeUnit.getSymbol()));
 		}
@@ -110,13 +121,15 @@ protected void addCompartments() {
 			sizeExpr = ExpressionFactory.mult(vcStructMapping.getSizeParameter().getExpression(), ExpressionFactory.createExpression(factor));
 			
 			sbmlCompartment.setSize(sizeExpr.evaluateConstant());
-		} catch (org.vcell.expression.ExpressionException e) {
+		} catch (ExpressionException e) {
 			// If it is in the catch block, it means that the compartment size was probably not a double, but an assignment.
 			// Check if the expression for the compartment size is not null and add it as an assignment rule.
 			IExpression sizeExpr = vcStructMapping.getSizeParameter().getExpression();
 			if (sizeExpr != null) {
 				ASTNode ruleFormulaNode = getFormulaFromExpression(sizeExpr);
 				AssignmentRule assignRule = new AssignmentRule(vcStructures[i].getName(), ruleFormulaNode);
+				// If compartmentSize is specified by an assignment rule, the 'constant' field should be set to 'false' (default - true).
+				sbmlCompartment.setConstant(false);
 				sbmlModel.addRule(assignRule);
 			}
 		}
@@ -188,7 +201,7 @@ protected void addParameters() {
  * addReactions comment.
  */
 protected void addReactions() {
-	cbit.vcell.modelapp.ReactionSpec[] vcReactionSpecs = getMatchingSimContext().getReactionContext().getReactionSpecs();
+	ReactionSpec[] vcReactionSpecs = getMatchingSimContext().getReactionContext().getReactionSpecs();
 
 	for (int i = 0; i < vcReactionSpecs.length; i++){
 		if (vcReactionSpecs[i].isExcluded()) {
@@ -197,7 +210,10 @@ protected void addReactions() {
 
 		ReactionStep vcReactionStep = vcReactionSpecs[i].getReactionStep();
 		//Create sbml reaction
-		org.sbml.libsbml.Reaction sbmlReaction = new org.sbml.libsbml.Reaction(vcReactionStep.getName());
+		String rxnName = vcReactionStep.getName();
+		org.sbml.libsbml.Reaction sbmlReaction = new org.sbml.libsbml.Reaction(cbit.util.TokenMangler.mangleToSName(vcReactionStep.getName()));
+		sbmlReaction.setName(rxnName);
+			
 
 		// If the reactionStep is a flux reaction, add the details to the annotation (structure, carrier valence, flux carrier, fluxOption, etc.)
 		// If reactionStep is a simple reaction, add annotation to indicate the structure of reaction.
@@ -205,7 +221,7 @@ protected void addReactions() {
 		Element annotationElement = null;
 		try {
 			annotationElement = getAnnotationElement(vcReactionStep);
-		} catch (cbit.util.xml.XmlParseException e) {
+		} catch (XmlParseException e) {
 			e.printStackTrace(System.out);
 			throw new RuntimeException("Could not get JDOM element for annotation : " + e.getMessage());
 		}
@@ -221,7 +237,7 @@ protected void addReactions() {
 			// Convert expression from kinetics rate parameter into MathML and use libSBMl utilities to convert it to formula
 			// (instead of directly using rate parameter's expression infix) to maintain integrity of formula :
 			// for example logical and inequalities are not handled gracefully by libSBMl if expression.infix is used.
-			Compartment sbmlCompartment = sbmlModel.getCompartment(vcReactionStep.getStructure().getName());
+			Compartment sbmlCompartment = sbmlModel.getCompartment(cbit.util.TokenMangler.mangleToSName(vcReactionStep.getStructure().getName()));
 			IExpression correctedRateExpr = ExpressionFactory.mult(vcRxnKinetics.getRateParameter().getExpression(), ExpressionFactory.createExpression(sbmlCompartment.getId()));
 			sbmlKLaw = new org.sbml.libsbml.KineticLaw();
 
@@ -231,44 +247,91 @@ protected void addReactions() {
 					sbmlKLaw.setSubstanceUnits(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_molecules.getSymbol()));
 				} else if (vcReactionStep instanceof cbit.vcell.model.FluxReaction) {
 					sbmlKLaw.setSubstanceUnits(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_umol_L_per_um3.getSymbol()));
-					// correctedRateExpr = IExpression.mult(correctedRateExpr, new IExpression(1e-15));
+					// correctedRateExpr = IExpression.mult(correctedRateExpr, ExpressionFactory.createExpression(1e-15));
 				} else {
 					throw new RuntimeException("Unknown reaction type - cannot handle at this time");
 				}
 			}
 
 
-			// In the first pass thro' the kinetic params, add the numeric params as local params to sbmlKLaw
-			// Store the non-numeric params in a local hash (oldName, newName)
+			// In the first pass thro' the kinetic params, store the non-numeric param names and expressions in arrays
 			String[] kinParamNames = new String[vcKineticsParams.length];
 			IExpression[] kinParamExprs = new IExpression[vcKineticsParams.length];
 			for (int j = 0; j < vcKineticsParams.length; j++){
 				if (vcKineticsParams[j].getRole() != Kinetics.ROLE_Rate) {
-					// if expression of kinetic param evaluates to a double, the parameter value is set
-					// if not, the param value is defined by a rule. Since local reaction parameters cannot be defined by a rule,
-					// such parameters (with rules) are exported as global parameters.
-					org.sbml.libsbml.Parameter sbmlKinParam = new org.sbml.libsbml.Parameter(vcKineticsParams[j].getName());
+					// if expression of kinetic param does not evaluate to a double, the param value is defined by a rule. 
+					// Since local reaction parameters cannot be defined by a rule, such parameters (with rules) are exported as global parameters.
 					if (vcKineticsParams[j].getRole() == Kinetics.ROLE_Current && (!vcKineticsParams[j].getExpression().isZero())) {
 						throw new RuntimeException("Electric current not handled by SBML export; failed to export reaction \"" + vcReactionStep.getName() + "\" at this time");
 					}
-					if (vcKineticsParams[j].getExpression().isNumeric()) {
-						sbmlKinParam.setValue(vcKineticsParams[j].getConstantValue());
-						// Set SBML units for sbmlParam using VC units from vcParam  
-						if (!vcKineticsParams[j].getUnitDefinition().isTBD()) {
-							sbmlKinParam.setUnits(cbit.util.TokenMangler.mangleToSName(vcKineticsParams[j].getUnitDefinition().getSymbol()));
-						}
-						sbmlKLaw.addParameter(sbmlKinParam);
-					} else {
+					if (!vcKineticsParams[j].getExpression().isNumeric()) {		// NON_NUMERIC KINETIC PARAM
 						// Create new name for kinetic parameter and store it in kinParamNames, store corresponding exprs in kinParamExprs
 						// Will be used later to add this param as global.
 						String newParamName = TokenMangler.mangleToSName(vcKineticsParams[j].getName() + "_" + vcReactionStep.getName());
 						kinParamNames[j] = newParamName;
 						kinParamExprs[j] = ExpressionFactory.createExpression(vcKineticsParams[j].getExpression());
+					} 
+				}
+			} // end for (j) - first pass
+
+			// Second pass - Check if any of the numeric parameters is present in any of the non-numeric param expressions
+			// If so, these need to be added as global param (else the SBML doc will not be valid)
+			for (int j = 0; j < vcKineticsParams.length; j++){
+				if (vcKineticsParams[j].getRole() != Kinetics.ROLE_Rate) {
+					// if expression of kinetic param evaluates to a double, the parameter value is set
+					if (vcKineticsParams[j].getRole() == Kinetics.ROLE_Current && (!vcKineticsParams[j].getExpression().isZero())) {
+						throw new RuntimeException("Electric current not handled by SBML export; failed to export reaction \"" + vcReactionStep.getName() + "\" at this time");
+					}
+					if (vcKineticsParams[j].getExpression().isNumeric()) {		// NUMERIC KINETIC PARAM
+						// check if it is used in other parameters that have expressions,
+						boolean bAddedParam = false;
+						String origParamName = vcKineticsParams[j].getName();
+						String newParamName = TokenMangler.mangleToSName(origParamName + "_" + vcReactionStep.getName());
+						for (int k = 0; k < vcKineticsParams.length; k++){
+							if (kinParamExprs[k] != null) {
+								// The param could be in the expression for any other param
+								if (kinParamExprs[k].hasSymbol(origParamName)) {
+									// if param is present in non-numeric param expression, this param has to be global
+									// mangle its name to avoid conflict with other globals
+									if (globalParamNamesHash.get(newParamName) == null) {
+										globalParamNamesHash.put(newParamName, newParamName);
+										org.sbml.libsbml.Parameter sbmlKinParam = new org.sbml.libsbml.Parameter(newParamName);
+										sbmlKinParam.setValue(vcKineticsParams[j].getConstantValue());
+										// Set SBML units for sbmlParam using VC units from vcParam  
+										if (!vcKineticsParams[j].getUnitDefinition().isTBD()) {
+											sbmlKinParam.setUnits(cbit.util.TokenMangler.mangleToSName(vcKineticsParams[j].getUnitDefinition().getSymbol()));
+										}
+										sbmlModel.addParameter(sbmlKinParam);
+										bAddedParam = true;
+									} else {
+										// need to get another name for param and need to change all its refereces in the other kinParam euqations.
+									}
+									// update the expression to contain new name, since the globalparam has new name
+									kinParamExprs[k].substituteInPlace(ExpressionFactory.createExpression(origParamName), ExpressionFactory.createExpression(newParamName));
+								}
+							} 
+						}	// end for - k
+						// If the param hasn't been added yet, it is definitely a local param. add it to kineticLaw now.
+						if (!bAddedParam) {
+							org.sbml.libsbml.Parameter sbmlKinParam = new org.sbml.libsbml.Parameter(origParamName);
+							sbmlKinParam.setValue(vcKineticsParams[j].getConstantValue());
+							// Set SBML units for sbmlParam using VC units from vcParam  
+							if (!vcKineticsParams[j].getUnitDefinition().isTBD()) {
+								sbmlKinParam.setUnits(cbit.util.TokenMangler.mangleToSName(vcKineticsParams[j].getUnitDefinition().getSymbol()));
+							}
+							sbmlKLaw.addParameter(sbmlKinParam);
+						} else {
+							// if parameter has been added to global param list, its name has been mangled, 
+							// hence change its occurance in rate expression if it contains that param name
+							if (correctedRateExpr.hasSymbol(origParamName)) {
+								correctedRateExpr.substituteInPlace(ExpressionFactory.createExpression(origParamName), ExpressionFactory.createExpression(newParamName));
+							}
+						}
 					}
 				}
 			} // end for (j) - first pass
 
-			// In the second pass thro' the kinetic params, the expressions are changed to reflect the new names set above
+			// In the third pass thro' the kinetic params, the expressions are changed to reflect the new names set above
 			// (using the kinParamNames and kinParamExprs above) to ensure uniqueness in the global parameter names.
 			for (int j = 0; j < vcKineticsParams.length; j++) {
 				if ((vcKineticsParams[j].getRole() != Kinetics.ROLE_Rate) && !(vcKineticsParams[j].getExpression().isNumeric())) {
@@ -291,7 +354,7 @@ protected void addReactions() {
 				} 
 			}	// end for (j)  - second pass
 					
-			// In the third pass thro' the kinetic params, the non-numeric params are added to the global params of the model
+			// In the fourth pass thro' the kinetic params, the non-numeric params are added to the global params of the model
 			for (int j = 0; j < vcKineticsParams.length; j++){
 				if ((vcKineticsParams[j].getRole() != Kinetics.ROLE_Rate) && !(vcKineticsParams[j].getExpression().isNumeric())) {
 					// Now, add this param to the globalParamNamesHash and add a global parameter to the sbmlModel
@@ -302,12 +365,16 @@ protected void addReactions() {
 						// need to get another name for param and need to change all its refereces in the other kinParam euqations.
 					}
 					ASTNode paramFormulaNode = getFormulaFromExpression(kinParamExprs[j]);
-					ParameterRule sbmlParamRule = new ParameterRule(paramName, libsbml.formulaToString(paramFormulaNode));
+					ParameterRule sbmlParamRule = new ParameterRule();	//, libsbml.formulaToString(paramFormulaNode));
+					sbmlParamRule.setName(paramName);
+					sbmlParamRule.setMath(paramFormulaNode);
 					sbmlModel.addRule(sbmlParamRule);
 					org.sbml.libsbml.Parameter sbmlKinParam = new org.sbml.libsbml.Parameter(paramName);
 					if (!vcKineticsParams[j].getUnitDefinition().isTBD()) {
 						sbmlKinParam.setUnits(cbit.util.TokenMangler.mangleToSName(vcKineticsParams[j].getUnitDefinition().getSymbol()));
 					}
+					// Since the parameter is being specified by a Rule, its 'constant' field shoud be set to 'false' (default - true).
+					sbmlKinParam.setConstant(false);
 					sbmlModel.addParameter(sbmlKinParam);
 				}
 			} // end for (j) - third pass
@@ -315,7 +382,7 @@ protected void addReactions() {
 			// After making all necessary adjustments to the rate expression, now set the sbmlKLaw.
 			ASTNode exprFormulaNode = getFormulaFromExpression(correctedRateExpr);
 			sbmlKLaw.setMath(exprFormulaNode);
-		} catch (org.vcell.expression.ExpressionException e) {
+		} catch (ExpressionException e) {
 			e.printStackTrace(System.out);
 			throw new RuntimeException("Error getting value of parameter : "+e.getMessage());
 		}
@@ -373,7 +440,7 @@ protected void addSpecies() {
 	for (int i = 0; i < vcSpeciesContexts.length; i++){
 		org.sbml.libsbml.Species sbmlSpecies = new org.sbml.libsbml.Species(vcSpeciesContexts[i].getName());
 		// Assuming that at this point, the compartment(s) for the model are already filled in.
-		Compartment compartment = sbmlModel.getCompartment(vcSpeciesContexts[i].getStructure().getName());
+		Compartment compartment = sbmlModel.getCompartment(TokenMangler.mangleToSName(vcSpeciesContexts[i].getStructure().getName()));
 		if (compartment != null) {
 			sbmlSpecies.setCompartment(compartment.getId());
 		}
@@ -383,16 +450,16 @@ protected void addSpecies() {
 
 		// Get (and set) the initial concentration value
 		// Get the simulationContext (application) that matches the 'vcPreferredSimContextName' field.
-		cbit.vcell.modelapp.SimulationContext simContext = getMatchingSimContext();
+		SimulationContext simContext = getMatchingSimContext();
 		if (simContext == null) {
 			throw new RuntimeException("No simcontext (application) specified; Cannot proceed.");
 		}
 		
 		// Get the speciesContextSpec in the simContext corresponding to the 'speciesContext'; and extract its initial concentration value.
-		cbit.vcell.modelapp.SpeciesContextSpec vcSpeciesContextsSpec = simContext.getReactionContext().getSpeciesContextSpec(vcSpeciesContexts[i]);
+		SpeciesContextSpec vcSpeciesContextsSpec = simContext.getReactionContext().getSpeciesContextSpec(vcSpeciesContexts[i]);
 		try {
 			sbmlSpecies.setInitialConcentration(vcSpeciesContextsSpec.getInitialConditionParameter().getConstantValue());
-		} catch (org.vcell.expression.ExpressionException e) {
+		} catch (ExpressionException e) {
 			// If it is in the catch block, it means that the initial concentration of the species was not a double, but an assignment, probably.
 			// Check if the expression for the species is not null and add it as an assignment rule.
 			if (vcSpeciesContextsSpec.getInitialConditionParameter().getExpression() != null) {
@@ -482,13 +549,42 @@ protected void addUnitDefinitions() {
 
 
 /**
+ * Insert the method's description here.
+ * Creation date: (4/12/2006 5:09:09 PM)
+ * @return java.lang.String
+ */
+private void generateErrorReport(SBMLDocument sbmlDoc) {
+	long numFailedChecks = sbmlDoc.checkConsistency();
+	StringBuffer errorReportBuffer = new StringBuffer();
+	errorReportBuffer.append("\n\nBIOMODEL : " + vcBioModel.getName() + " : Num Of Failed Checks = " + numFailedChecks + "\n");
+	errorReportBuffer.append("\nWARNINGS : " + sbmlDoc.getNumWarnings());
+	for (int i = 0; i < (int)sbmlDoc.getNumWarnings(); i++){
+		errorReportBuffer.append("\n\tWarning " + i + " : " + sbmlDoc.getWarning((long)i).getMessage());
+	}
+	errorReportBuffer.append("\nERRORS : " + sbmlDoc.getNumErrors());
+	for (int i = 0; i < (int)sbmlDoc.getNumErrors(); i++){
+		errorReportBuffer.append("\n\tError " + i + " : " + sbmlDoc.getError((long)i).getMessage());
+	}
+	errorReportBuffer.append("\nFATAL ERRORS : " + sbmlDoc.getNumFatals());
+	for (int i = 0; i < (int)sbmlDoc.getNumFatals(); i++){
+		errorReportBuffer.append("\n\tFatal " + i + " : " + sbmlDoc.getFatal((long)i).getMessage());
+	}
+	errorReportBuffer.append("\n------- END REPORT-------");
+
+	// set the report inner class :
+	setErrorReport(new SBMLExportErrorReport(errorReportBuffer));
+	
+}
+
+
+/**
  * 	getAnnotationElement : 
  *	For a flux reaction, we need to add an annotation specifying the structure, flux carrier, carrier valence and fluxOption. 
  *  For a simple reaction, we need to add a annotation specifying the structure (useful for import)
  *  Using XML JDOM elements, so that it is convenient for libSBML setAnnotation (requires the annotation to be provided as an xml string).
  *
  **/
-private Element getAnnotationElement(ReactionStep reactionStep) throws cbit.util.xml.XmlParseException {
+private Element getAnnotationElement(ReactionStep reactionStep) throws XmlParseException {
 	Namespace vcNamespace = Namespace.getNamespace(Translator.SBML_VCML_NS);  		//"http://www.vcell.org/vcell";
 	Element annotationElement = new Element(XMLTags.SbmlAnnotationTag, "");
 
@@ -554,14 +650,14 @@ private Element getAnnotationElement(ReactionStep reactionStep) throws cbit.util
 private boolean getBoundaryCondition(SpeciesContext speciesContext) {
 
 	// Get the simulationContext (application) that matches the 'vcPreferredSimContextName' field.
-	cbit.vcell.modelapp.SimulationContext simContext = getMatchingSimContext();
+	SimulationContext simContext = getMatchingSimContext();
 	if (simContext == null) {
 		return false;
 	}
 	
 	// Get the speciesContextSpec in the simContext corresponding to the 'speciesContext'; and extract its boundary condition value.
 	
-	cbit.vcell.modelapp.SpeciesContextSpec[] vcSpeciesContextsSpecs = simContext.getReactionContext().getSpeciesContextSpecs();
+	SpeciesContextSpec[] vcSpeciesContextsSpecs = simContext.getReactionContext().getSpeciesContextSpecs();
 	for (int i = 0; i < vcSpeciesContextsSpecs.length; i++){
 		if (speciesContext.compareEqual(vcSpeciesContextsSpecs[i].getSpeciesContext())) {
 			boolean bBoundaryCondition = vcSpeciesContextsSpecs[i].isConstant();
@@ -591,7 +687,7 @@ private ASTNode getFormulaFromExpression(IExpression expression) {
 	} catch (java.io.IOException e) {
 		e.printStackTrace(System.out);
 		throw new RuntimeException("Error converting expression to MathML string :" + e.getMessage());
-	} catch (org.vcell.expression.ExpressionException e1) {
+	} catch (ExpressionException e1) {
 		e1.printStackTrace(System.out);
 		throw new RuntimeException("Error converting expression to MathML string :" + e1.getMessage());
 	}
@@ -652,7 +748,8 @@ private SimulationContext getMatchingSimContext() {
 public String getSBMLFile() {
 
 	// Create the sbmlModel, so that other details can be added to it in translateBioModel()
-	sbmlModel = new org.sbml.libsbml.Model(vcBioModel.getName());
+	sbmlModel = new org.sbml.libsbml.Model(TokenMangler.mangleToSName(vcBioModel.getName()));
+	sbmlModel.setName(vcBioModel.getName());
 	translateBioModel();
 
 	//
@@ -665,6 +762,8 @@ public String getSBMLFile() {
 
 	org.sbml.libsbml.SBMLWriter sbmlWriter = new org.sbml.libsbml.SBMLWriter();
 	String sbmlStr = sbmlWriter.writeToString(sbmlDocument);
+
+	generateErrorReport(sbmlDocument);
 
 	sbmlModel.delete();
 	sbmlDocument.delete();
@@ -699,6 +798,26 @@ private boolean isInFeature(String speciesStructureName) {
 		}
 	}
 	return false;
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (4/12/2006 5:09:09 PM)
+ * @return java.lang.String
+ */
+public void printErrorReport() {
+	fieldErrorReport.printWarningAndErrorReport();
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (10/31/2006 12:17:53 PM)
+ * @param newFieldErrorReport cbit.vcell.vcml.SBMLExporter.SBMLExportErrorReport
+ */
+private void setErrorReport(SBMLExporter.SBMLExportErrorReport newFieldErrorReport) {
+	fieldErrorReport = newFieldErrorReport;
 }
 
 
