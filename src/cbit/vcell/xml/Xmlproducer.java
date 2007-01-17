@@ -988,6 +988,10 @@ public org.jdom.Element getXML(cbit.vcell.mapping.SimulationContext param, cbit.
 	//add attributes
 	String name = this.mangle(param.getName());
 	simulationcontext.setAttribute(XMLTags.NameAttrTag, name);
+	if (param.isStoch())
+		simulationcontext.setAttribute(XMLTags.StochAttrTag, "true");
+	else
+		simulationcontext.setAttribute(XMLTags.StochAttrTag, "false");
 	//simulationcontext.setAttribute(XMLTags.AnnotationAttrTag, this.mangle(param.getDescription()));
 	//add annotation
 	if (param.getDescription()!=null && param.getDescription().length()>0) {

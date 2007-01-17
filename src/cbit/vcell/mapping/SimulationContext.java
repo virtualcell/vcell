@@ -199,6 +199,7 @@ public class SimulationContext implements cbit.sql.Versionable, Matchable, cbit.
 	private transient BioModel bioModel = null;
 	private SimulationContext.SimulationContextParameter[] fieldSimulationContextParameters = new SimulationContextParameter[0];
 	private cbit.vcell.modelopt.AnalysisTask[] fieldAnalysisTasks = null;
+	private boolean isStoch;
 
 /**
  * SimulationContext constructor comment.
@@ -211,6 +212,7 @@ public SimulationContext(SimulationContext simulationContext) throws PropertyVet
 	this.fieldName = "copied_from_"+simulationContext.getName();
 	this.fieldDescription = "(copied from "+simulationContext.getName()+") "+simulationContext.getDescription();
 	this.bioModel = simulationContext.getBioModel();
+	this.setIsStoch(simulationContext.isStoch());
 	//
 	// copy electrical stimuli and ground
 	//
@@ -240,28 +242,45 @@ public SimulationContext(SimulationContext simulationContext) throws PropertyVet
 
 
 /**
- * SimulationContext constructor comment.
+ * SimulationContext constructor.
+ * Please see new constructor which is in effect from Sept 28, 2006.
+ * Creation date: (9/29/2006 9:53:45 AM)
+ * @param model cbit.vcell.model.Model
+ * @param geometry cbit.vcell.geometry.Geometry
+ * @exception java.beans.PropertyVetoException The exception description.
  */
-public SimulationContext(cbit.vcell.model.Model model, cbit.vcell.geometry.Geometry geometry) throws PropertyVetoException {
-
-	addVetoableChangeListener(this);
-	
-	setGeometryContext(new GeometryContext(model,geometry,this));
-	this.reactionContext = new ReactionContext(model,this);
-	this.version = null;
-	getGeometryContext().addPropertyChangeListener(this);
-	geometry.getGeometrySpec().addPropertyChangeListener(this);
-	this.fieldName = "Application_with_"+geometry.getName();
+public SimulationContext(Model argModel, Geometry argGeometry) throws java.beans.PropertyVetoException
+{
+	new SimulationContext(argModel,argGeometry,false);
 }
 
 
 /**
- * SimulationContext constructor comment.
+ * SimulationContext constructor.
+ * New constructor is in effect from sept 28,2006.
+ * Creation date: (9/29/2006 9:44:57 AM)
+ * @param model cbit.vcell.model.Model
+ * @param geometry cbit.vcell.geometry.Geometry
+ * @param argMathDesc cbit.vcell.math.MathDescription
+ * @param argVersion cbit.sql.Version
+ * @exception java.beans.PropertyVetoException The exception description.
  */
-public SimulationContext(Model model, Geometry geometry, MathDescription argMathDesc, Version argVersion) throws PropertyVetoException {
+public SimulationContext(Model argModel, Geometry argGeometry, MathDescription argMathDesc, Version argVersion) throws java.beans.PropertyVetoException
+{
+	new SimulationContext(argModel,argGeometry,argMathDesc,argVersion,false);
+}
+
+
+/**
+ * SimulationContext constructor.
+ * This constructor differs with the previos one with one more boolean input parameter, which specifies whether
+ * the new application is a stochastic application or not.
+ */
+public SimulationContext(Model model, Geometry geometry, MathDescription argMathDesc, Version argVersion, boolean bStoch) throws PropertyVetoException {
 
 	addVetoableChangeListener(this);
-	
+
+	setIsStoch(bStoch);
 	setGeometryContext(new GeometryContext(model,geometry,this));
 	this.reactionContext = new ReactionContext(model,this);
 	this.mathDesc = argMathDesc;
@@ -274,6 +293,25 @@ public SimulationContext(Model model, Geometry geometry, MathDescription argMath
 	} else {
 		this.fieldName = "Application_with_"+geometry.getName();
 	}
+}
+
+
+/**
+ * SimulationContext constructor.
+ * This constructor differs with the previos one with one more boolean input parameter, which specifies whether
+ * the new application is a stochastic application or not.
+ */
+public SimulationContext(cbit.vcell.model.Model model, cbit.vcell.geometry.Geometry geometry, boolean bStoch) throws PropertyVetoException {
+
+	addVetoableChangeListener(this);
+
+	setIsStoch(bStoch);
+	setGeometryContext(new GeometryContext(model,geometry,this));
+	this.reactionContext = new ReactionContext(model,this);
+	this.version = null;
+	getGeometryContext().addPropertyChangeListener(this);
+	geometry.getGeometrySpec().addPropertyChangeListener(this);
+	this.fieldName = "Application_with_"+geometry.getName();
 }
 
 
@@ -303,7 +341,14 @@ public Simulation addNewSimulation() throws java.beans.PropertyVetoException {
 	if (getMathDescription()==null){
 //		throw new RuntimeException("Application "+getName()+" has no generated Math, cannot add simulation");
 		try {
-			setMathDescription((new MathMapping(this)).getMathDescription());
+			if(isStoch())
+			{
+				setMathDescription((new StochMathMapping(this)).getMathDescription());
+			}
+			else
+			{
+				setMathDescription((new MathMapping(this)).getMathDescription());
+			}
 		} catch (Exception e) {
 			throw new RuntimeException(
 				"Application "+getName()+" has no generated Math\n"+
@@ -341,8 +386,11 @@ public Simulation addNewSimulation() throws java.beans.PropertyVetoException {
 	//
 	Simulation newSimulation = new Simulation(getMathDescription());
 	newSimulation.setName(newSimName);
-	if (!newSimulation.getIsSpatial()) {
-		newSimulation.getSolverTaskDescription().setSolverDescription(cbit.vcell.solver.SolverDescription.LSODA);
+	if (!newSimulation.getIsSpatial()) { //amended Sept.27, 2006
+		if(isStoch())
+			newSimulation.getSolverTaskDescription().setSolverDescription(cbit.vcell.solver.SolverDescription.StochGibson);
+		else
+			newSimulation.getSolverTaskDescription().setSolverDescription(cbit.vcell.solver.SolverDescription.LSODA);
 	}
 	
 	bioModel.addSimulation(newSimulation);
@@ -987,6 +1035,16 @@ public synchronized boolean hasListeners(String propertyName) {
 
 /**
  * Insert the method's description here.
+ * Creation date: (9/22/2006 4:07:16 PM)
+ * @return boolean
+ */
+public boolean isStoch() {
+	return isStoch;
+}
+
+
+/**
+ * Insert the method's description here.
  * Creation date: (5/31/00 11:28:20 PM)
  * @param event java.beans.PropertyChangeEvent
  */
@@ -1427,6 +1485,16 @@ public void setGroundElectrode(Electrode groundElectrode) throws java.beans.Prop
 	fireVetoableChange("groundElectrode", oldValue, groundElectrode);
 	fieldGroundElectrode = groundElectrode;
 	firePropertyChange("groundElectrode", oldValue, groundElectrode);
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (9/22/2006 4:07:16 PM)
+ * @param newIsStoch boolean
+ */
+public void setIsStoch(boolean newIsStoch) {
+	isStoch = newIsStoch;
 }
 
 

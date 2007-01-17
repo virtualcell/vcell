@@ -41,9 +41,16 @@ public SolverTaskDescription(Simulation simulation) {
 	addVetoableChangeListener(this);
 	addPropertyChangeListener(this);
 	try {
-		if (simulation.getIsSpatial()) {
+		if (simulation.getIsSpatial()) 
+		{
 			setSolverDescription(getDefaultPDESolverDescription());
-		} else {
+		} //amended Sept.27, 2006
+		else if (simulation.getMathDescription().isStoch()) 
+		{
+			setSolverDescription(getDefaultStochSolverDescription());
+		}
+		else
+		{
 			setSolverDescription(getDefaultODESolverDescription());
 		}
 	}catch (java.beans.PropertyVetoException e){
@@ -62,7 +69,18 @@ public SolverTaskDescription(Simulation simulation, CommentStringTokenizer token
 	addVetoableChangeListener(this);
 	addPropertyChangeListener(this);
 	try {
-		setSolverDescription(getDefaultODESolverDescription());
+		if (simulation.getIsSpatial()) 
+		{
+			setSolverDescription(getDefaultPDESolverDescription());
+		} //amended Sept.27, 2006
+		else if (simulation.getMathDescription().isStoch()) 
+		{
+			setSolverDescription(getDefaultStochSolverDescription());
+		}
+		else
+		{
+			setSolverDescription(getDefaultODESolverDescription());
+		}
 	}catch (java.beans.PropertyVetoException e){
 		e.printStackTrace(System.out);
 	}
@@ -239,6 +257,16 @@ private static SolverDescription getDefaultODESolverDescription() {
  */
 private static SolverDescription getDefaultPDESolverDescription() {
 	return SolverDescription.FiniteVolume;
+}
+
+
+/**
+ * Get the default non-spatial stochastic solver which is Gibson.
+ * Creation date: (9/27/2006 2:43:55 PM)
+ * @return cbit.vcell.solver.SolverDescription
+ */
+private static SolverDescription getDefaultStochSolverDescription() {
+	return SolverDescription.StochGibson;
 }
 
 
@@ -628,7 +656,18 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 				}catch (java.beans.PropertyVetoException e){
 					e.printStackTrace(System.out);
 					if (getSimulation()!=null){
-						setSolverDescription(getSimulation().getIsSpatial()?(getDefaultPDESolverDescription()):(getDefaultODESolverDescription()));
+						//setSolverDescription(getSimulation().getIsSpatial()?(getDefaultPDESolverDescription()):(getDefaultODESolverDescription()));
+						if(getSimulation().getIsSpatial())
+						{
+							getDefaultPDESolverDescription();
+						}
+						else
+						{
+							if(getSimulation().getMathDescription().isStoch())
+								getDefaultStochSolverDescription();
+							else
+								getDefaultODESolverDescription();
+						}
 					}
 				}
 				continue;

@@ -118,7 +118,29 @@ public Variable getVar() {
 public String getVCML()
 {
 	StringBuffer buffer = new StringBuffer();
-	buffer.append("\t\t"+VCML.Action+"\t"+getVar().getName()+"\t"+getOperation()+"\t"+getOperand().infix()+";\n");
+	int value = 0;
+	try
+	{
+		value = (int)(getOperand().evaluateConstant());
+	}catch (ExpressionException e) {e.printStackTrace();}
+	buffer.append("\t\t"+VCML.Action+"\t"+getVar().getName()+"\t"+getOperation()+"\t"+value+";\n");
 	return buffer.toString();	
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (9/28/2006 5:18:07 PM)
+ * @return java.lang.String
+ */
+public String toString() {
+	StringBuffer buffer = new StringBuffer();
+	int value = 0;
+	try
+	{
+		value = (int)(getOperand().evaluateConstant());
+	}catch (ExpressionException e) {e.printStackTrace();}
+	buffer.append(getVar().getName()+"  "+getOperation()+"  "+value);
+	return buffer.toString();
 }
 }

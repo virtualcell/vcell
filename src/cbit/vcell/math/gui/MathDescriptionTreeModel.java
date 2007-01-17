@@ -1,5 +1,5 @@
 package cbit.vcell.math.gui;
-
+import cbit.vcell.parser.Expression;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -17,6 +17,7 @@ import cbit.vcell.desktop.BioModelNode;
 public class MathDescriptionTreeModel extends javax.swing.tree.DefaultTreeModel {
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private cbit.vcell.math.MathDescription fieldMathDescription = null;
+
 /**
  * BioModelDbTreeModel constructor comment.
  * @param root javax.swing.tree.TreeNode
@@ -24,18 +25,24 @@ public class MathDescriptionTreeModel extends javax.swing.tree.DefaultTreeModel 
 public MathDescriptionTreeModel() {
 	super(new BioModelNode("empty",false),true);
 }
+
+
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  */
 public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().addPropertyChangeListener(listener);
 }
+
+
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  */
 public synchronized void addPropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
 	getPropertyChange().addPropertyChangeListener(propertyName, listener);
 }
+
+
 /**
  * Insert the method's description here.
  * Creation date: (11/28/00 1:06:51 PM)
@@ -89,32 +96,71 @@ private BioModelNode createBaseTree() {
 		if (subDomain instanceof cbit.vcell.math.CompartmentSubDomain){
 			CompartmentSubDomain volumeSubDomain = (CompartmentSubDomain)subDomain;
 			BioModelNode volumeSubDomainNode = new BioModelNode(volumeSubDomain,true);
-			//
-			// add equation children
-			//
-			Enumeration eqnEnum = volumeSubDomain.getEquations();
-			while (eqnEnum.hasMoreElements()){
-				Equation equation = (Equation)eqnEnum.nextElement();
-				BioModelNode equationNode = new BioModelNode(equation,false);
-				volumeSubDomainNode.add(equationNode);
+			if(getMathDescription().isStoch()) //stochastic subtree
+			{
+				//add stoch variable initial conditions
+				BioModelNode varIniConditionNode = new BioModelNode("variable_initial_conditions",true);
+				Enumeration iniConditions = volumeSubDomain.getVarIniConditions().elements();
+				while (iniConditions.hasMoreElements()){
+					VarIniCondition varIni = (VarIniCondition)iniConditions.nextElement();
+					BioModelNode varIniNode = new BioModelNode(varIni,false);
+					varIniConditionNode.add(varIniNode);
+				}
+				volumeSubDomainNode.add(varIniConditionNode);
+				//add jump processes
+				Enumeration jumpProcesses = volumeSubDomain.getJumpProcesses().elements();
+				while (jumpProcesses.hasMoreElements())
+				{
+					JumpProcess jp = (JumpProcess)jumpProcesses.nextElement();
+					BioModelNode jpNode = new BioModelNode(jp,true);
+					//add probability rate.
+					Expression probRate = jp.getProbabilityRate();
+					BioModelNode prNode = new BioModelNode("probability_rate = "+probRate.infix(),false);
+					jpNode.add(prNode);
+					//add Actions
+					Enumeration actions = jp.getActions().elements();
+					while (actions.hasMoreElements())
+					{
+						Action action = (Action)actions.nextElement();
+						BioModelNode actionNode = new BioModelNode(action,false);
+						jpNode.add(actionNode);
+					}
+					volumeSubDomainNode.add(jpNode);	
+				}
+				
+
+
+				
 			}
-			//
-			// add fast system
-			//
-			FastSystem fastSystem = volumeSubDomain.getFastSystem();
-			if (fastSystem!=null){
-				BioModelNode fsNode = new BioModelNode(fastSystem,true);
-				Enumeration enumFI = fastSystem.getFastInvariants();
-				while (enumFI.hasMoreElements()){
-					FastInvariant fi = (FastInvariant)enumFI.nextElement();
-					fsNode.add(new BioModelNode(fi,false));
-				}	
-				Enumeration enumFR = fastSystem.getFastRates();
-				while (enumFR.hasMoreElements()){
-					FastRate fr = (FastRate)enumFR.nextElement();
-					fsNode.add(new BioModelNode(fr,false));
-				}	
-				volumeSubDomainNode.add(fsNode);
+			else //non-stochastic subtree 
+			{ 
+				//
+				// add equation children
+				//
+				Enumeration eqnEnum = volumeSubDomain.getEquations();
+				while (eqnEnum.hasMoreElements()){
+					Equation equation = (Equation)eqnEnum.nextElement();
+					BioModelNode equationNode = new BioModelNode(equation,false);
+					volumeSubDomainNode.add(equationNode);
+				}
+				//
+				// add fast system
+				//
+				FastSystem fastSystem = volumeSubDomain.getFastSystem();
+				if (fastSystem!=null){
+					BioModelNode fsNode = new BioModelNode(fastSystem,true);
+					Enumeration enumFI = fastSystem.getFastInvariants();
+					while (enumFI.hasMoreElements()){
+						FastInvariant fi = (FastInvariant)enumFI.nextElement();
+						fsNode.add(new BioModelNode(fi,false));
+					}	
+					Enumeration enumFR = fastSystem.getFastRates();
+					while (enumFR.hasMoreElements()){
+						FastRate fr = (FastRate)enumFR.nextElement();
+						fsNode.add(new BioModelNode(fr,false));
+					}	
+					volumeSubDomainNode.add(fsNode);
+				}
 			}
 			volumeRootNode.add(volumeSubDomainNode);
 		}
@@ -177,30 +223,40 @@ private BioModelNode createBaseTree() {
 
 	return rootNode;
 }
+
+
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
 public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
 	getPropertyChange().firePropertyChange(evt);
 }
+
+
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
 public void firePropertyChange(java.lang.String propertyName, int oldValue, int newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
+
+
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
 public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
+
+
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
 public void firePropertyChange(java.lang.String propertyName, boolean oldValue, boolean newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
+
+
 /**
  * Gets the mathDescription property (cbit.vcell.math.MathDescription) value.
  * @return The mathDescription property value.
@@ -209,6 +265,8 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
 public cbit.vcell.math.MathDescription getMathDescription() {
 	return fieldMathDescription;
 }
+
+
 /**
  * Accessor for the propertyChange field.
  */
@@ -218,12 +276,16 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 	};
 	return propertyChange;
 }
+
+
 /**
  * The hasListeners method was generated to support the propertyChange field.
  */
 public synchronized boolean hasListeners(java.lang.String propertyName) {
 	return getPropertyChange().hasListeners(propertyName);
 }
+
+
 /**
  * Insert the method's description here.
  * Creation date: (2/14/01 3:50:24 PM)
@@ -235,18 +297,24 @@ private void refreshTree() {
 		setRoot(new BioModelNode("empty"));
 	}
 }
+
+
 /**
  * The removePropertyChangeListener method was generated to support the propertyChange field.
  */
 public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().removePropertyChangeListener(listener);
 }
+
+
 /**
  * The removePropertyChangeListener method was generated to support the propertyChange field.
  */
 public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
 	getPropertyChange().removePropertyChangeListener(propertyName, listener);
 }
+
+
 /**
  * Sets the mathDescription property (cbit.vcell.math.MathDescription) value.
  * @param mathDescription The new value for the property.

@@ -59,7 +59,11 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
 			//
 			// create new MathDescription
 			//
-			MathDescription math = (new MathMapping(scArray[i])).getMathDescription();
+			MathDescription math = null;
+			if(!scArray[i].isStoch())
+				math = (new MathMapping(scArray[i])).getMathDescription();
+			else
+				math = (new StochMathMapping(scArray[i])).getMathDescription();
 
 			//
 			// load MathDescription into SimulationContext 

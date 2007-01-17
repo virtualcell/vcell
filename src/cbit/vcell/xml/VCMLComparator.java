@@ -102,6 +102,9 @@ public class VCMLComparator {
 		map.put(XMLTags.SurfaceDescriptionTag, XMLTags.CutoffFrequencyAttrTag + "&" + XMLTags.NumSamplesXAttrTag +
 			   "&" + XMLTags.NumSamplesYAttrTag + "&" + XMLTags.NumSamplesZAttrTag);     //?
 
+		//for stochastic model , added 19th Sept, 2006
+		map.put(XMLTags.ActionTag, XMLTags.VarNameAttrTag);
+		map.put(XMLTags.ProbabilityRateTag, "TEXT");
 		ps = System.out;
 	}
 	

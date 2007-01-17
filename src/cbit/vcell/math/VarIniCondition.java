@@ -8,7 +8,7 @@ import cbit.vcell.parser.*;
  * Creation date: (6/27/2006 9:26:32 AM)
  * @author: Tracy LI
  */
-public class VarIniCondition implements java.io.Serializable
+public class VarIniCondition implements cbit.util.Matchable,java.io.Serializable
 {
 	Variable var = null;
 	cbit.vcell.parser.Expression iniVal = null;
@@ -32,6 +32,28 @@ public void bindExpression(SymbolTable symbolTable) throws ExpressionBindingExce
 {
 	iniVal.bindExpression(symbolTable);
 }
+
+/**
+ * Checks for internal representation of objects, not keys from database
+ * @return boolean
+ * @param obj java.lang.Object
+ */
+public boolean compareEqual(cbit.util.Matchable obj)
+{
+	if (obj == null) {
+		return false;
+	}
+	if (!(obj instanceof VarIniCondition)) {
+		return false;
+	}
+	
+	VarIniCondition varIniCondition = (VarIniCondition) obj;
+	if(iniVal != varIniCondition.iniVal ) return false;//initial value
+	if(!var.compareEqual(varIniCondition.getVar())) return false; //variable
+	
+	return true;
+}
+
 
 /**
  * Return a constant as initial value if it is.
@@ -89,7 +111,13 @@ public Variable getVar() {
 public String getVCML() 
 {
 	StringBuffer buffer = new StringBuffer();
-	buffer.append("\t"+VCML.VarIniCondition+"\t"+getVar().getName()+"\t"+getIniVal().infix()+";\n");
+	int initialValue =0;
+	try
+	{
+		initialValue = (int)(getIniVal().evaluateConstant());
+	}
+	catch (ExpressionException e) {e.printStackTrace();}
+	buffer.append("\t"+VCML.VarIniCondition+"\t"+getVar().getName()+"\t"+initialValue+";\n");
 	return buffer.toString();
 }
 
@@ -111,5 +139,27 @@ public void setIniVal(cbit.vcell.parser.Expression newIniVal) {
  */
 public void setVar(Variable newVar) {
 	var = newVar;
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (9/28/2006 3:05:32 PM)
+ * @return java.lang.String
+ */
+public String toString() {
+	StringBuffer buffer = new StringBuffer();
+	int initialValue =0;
+	try
+	{
+		initialValue = (int)(getIniVal().evaluateConstant());
+	}
+	catch (ExpressionException e) 
+	{
+		buffer.append("Cannot parse initial value.");
+		e.printStackTrace();
+	}
+	buffer.append(getVar().getName()+" = "+initialValue);
+	return buffer.toString();
 }
 }

@@ -153,13 +153,15 @@ public void writeStochInputFile(PrintWriter pw, String[] parameterNames) throws 
 		pw.println("<control>");
 		cbit.vcell.solver.SolverTaskDescription solverTaskDescription = getSimulation().getSolverTaskDescription();
 		cbit.vcell.solver.TimeBounds timeBounds = solverTaskDescription.getTimeBounds();
+		cbit.vcell.solver.DefaultOutputTimeSpec outputTimeSpec = ((DefaultOutputTimeSpec)solverTaskDescription.getOutputTimeSpec());
 		ErrorTolerance errorTolerance = solverTaskDescription.getErrorTolerance();
 		pw.println("STARTING_TIME"+"\t"+ timeBounds.getStartingTime());
 		//pw.println("ENDING_TIME " + timeBounds.getEndingTime());
 		//pw.println("ENDING_TIME "+"\t"+"75"); //for time =75 k134=1 k2=10 trial=1000
 		pw.println("ENDING_TIME "+"\t"+ timeBounds.getEndingTime());
-		pw.println("MAX_ITERATION"+"\t"+"10000000");//TODO: should get from user
+		pw.println("MAX_ITERATION"+"\t"+outputTimeSpec.getKeepAtMost());
 		pw.println("TOLERANCE "+"\t"+errorTolerance.getAbsoluteErrorTolerance());
+		pw.println("SAMPLE_INTERVAL"+"\t"+outputTimeSpec.getKeepEvery());
 		pw.println("NUM_TRIAL"+"\t"+"1");//TODO: should get from user
 	  	pw.println("MAX_NUM_MOLECUES "+"\t"+"30");//TODO: should get from user
 	  	pw.println("</control>");

@@ -78,8 +78,11 @@ public Simulation addNewSimulation() throws java.beans.PropertyVetoException {
 	//
 	Simulation newSimulation = new Simulation(math);
 	newSimulation.setName(newSimName);
-	if (!newSimulation.getIsSpatial()) {
-		newSimulation.getSolverTaskDescription().setSolverDescription(cbit.vcell.solver.SolverDescription.LSODA);
+	if (!newSimulation.getIsSpatial()) { //amended 15th Oct,2006
+		if(getMathDescription().isStoch())
+			newSimulation.getSolverTaskDescription().setSolverDescription(cbit.vcell.solver.SolverDescription.StochGibson);
+		else
+			newSimulation.getSolverTaskDescription().setSolverDescription(cbit.vcell.solver.SolverDescription.LSODA);
 	}
 	
 	addSimulation(newSimulation);

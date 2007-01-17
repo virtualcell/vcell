@@ -1,4 +1,5 @@
 package cbit.vcell.solver.stoch;
+import cbit.vcell.solvers.ApplicationMessage;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.FileInputStream;
@@ -13,7 +14,9 @@ import cbit.vcell.server.*;
  * @author: Tracy LI
  */
 public class GibsonSolver extends cbit.vcell.solvers.AbstractCompiledSolver {
-	
+	private int saveToFileInterval = 6;	// seconds
+	private long lastSavedMS = 0; // milliseconds since last save
+
 public GibsonSolver(cbit.vcell.solver.SimulationJob simulationJob, java.io.File directory, cbit.vcell.server.SessionLog sessionLog) throws cbit.vcell.solver.SolverException {
 	super(simulationJob, directory, sessionLog);
 }
@@ -43,17 +46,32 @@ public void cleanup()
  */
 protected cbit.vcell.solvers.ApplicationMessage getApplicationMessage(String message) {
 	String SEPARATOR = ":";
+	String DATA_PREFIX = "data:";
 	String PROGRESS_PREFIX = "progress:";
-	if (message.startsWith(PROGRESS_PREFIX)){
+	if (message.startsWith(DATA_PREFIX)){
+		double timepoint = Double.parseDouble(message.substring(message.lastIndexOf(SEPARATOR)+1));
+		setCurrentTime(timepoint);
+		return new ApplicationMessage(ApplicationMessage.DATA_MESSAGE,getProgress(),timepoint,null,message);
+	}else if (message.startsWith(PROGRESS_PREFIX)){
 		String progressString = message.substring(message.lastIndexOf(SEPARATOR)+1,message.indexOf("%"));
 		double progress = Double.parseDouble(progressString)/100.0;
-		double startTime = getSimulation().getSolverTaskDescription().getTimeBounds().getStartingTime();
-		double endTime = getSimulation().getSolverTaskDescription().getTimeBounds().getEndingTime();
-		setCurrentTime(startTime + (endTime-startTime)*progress);
-		return new cbit.vcell.solvers.ApplicationMessage(cbit.vcell.solvers.ApplicationMessage.PROGRESS_MESSAGE,progress,-1,null,message);
+		//double startTime = getSimulation().getSolverTaskDescription().getTimeBounds().getStartingTime();
+		//double endTime = getSimulation().getSolverTaskDescription().getTimeBounds().getEndingTime();
+		//setCurrentTime(startTime + (endTime-startTime)*progress);
+		return new ApplicationMessage(cbit.vcell.solvers.ApplicationMessage.PROGRESS_MESSAGE,progress,-1,null,message);
 	}else{
 		throw new RuntimeException("unrecognized message");
 	}
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (10/11/2006 11:24:18 AM)
+ * @return int
+ */
+public int getSaveToFileInterval() {
+	return saveToFileInterval;
 }
 
 
@@ -171,7 +189,7 @@ protected void initialize() throws cbit.vcell.solver.SolverException
 
 
 /**
- * Insert the method's description here.
+ * Write out the log file and result binary file.
  * Creation date: (8/15/2006 9:44:06 AM)
  */
  //print result to binary file
@@ -191,5 +209,62 @@ private final void printStochFile() throws IOException
 	stSimData.writeStochLogFile(logFile, dataFile);
 	// fire event
 	fireSolverPrinted(getCurrentTime());
+}
+
+
+/**
+ * Progressly print log and result binary files before finish running the whole simulation.
+ * Used for displaying the progress and result on the way.
+ * Creation date: (10/11/2006 11:19:43 AM)
+ */
+protected final void printToFile(double progress) throws IOException
+{
+	boolean shouldSave = false;
+	// only if enabled
+	if (isSaveEnabled()) {
+		// check to see whether we need to save
+		if (progress <= 0) {
+			// a new run just got initialized; save 0 datapoint
+			shouldSave = true;
+		} else if (progress >= 1) {
+			// a run finished; save last datapoint
+			shouldSave = true;
+		} else {
+			// in the middle of a run; only save at specified interval
+			long currentTime = System.currentTimeMillis();
+			shouldSave = currentTime - lastSavedMS > 1000 * getSaveToFileInterval();
+		}
+		if (shouldSave) {
+			// write out Stoch file
+			System.out.println("<<>><<>><<>><<>><<>>    printing at progress = "+progress);
+			printStochFile();
+			lastSavedMS = System.currentTimeMillis();
+		}
+	}
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (10/11/2006 11:16:02 AM)
+ */
+public void propertyChange(java.beans.PropertyChangeEvent event)
+{
+	super.propertyChange(event);
+	
+	if (event.getSource() == getMathExecutable() && event.getPropertyName().equals("applicationMessage")) {
+		String messageString = (String)event.getNewValue();
+		if (messageString==null || messageString.length()==0){
+			return;
+		}
+		ApplicationMessage appMessage = getApplicationMessage(messageString);
+		if (appMessage!=null && appMessage.getMessageType() == ApplicationMessage.PROGRESS_MESSAGE) {
+			try {
+				printToFile(appMessage.getProgress());
+			}catch (IOException e){
+				e.printStackTrace(System.out);
+			}
+		}
+	}
 }
 }

@@ -3324,8 +3324,11 @@ public cbit.vcell.solver.Simulation getSimulation(Element param, MathDescription
  * @param param org.jdom.Element
  */
 public cbit.vcell.mapping.SimulationContext getSimulationContext(Element param, cbit.vcell.biomodel.BioModel biomodel) throws XmlParseException{
-	//get the name
-	String name = this.unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
+	//get the attributes
+	String name = this.unMangle(param.getAttributeValue(XMLTags.NameAttrTag)); //name
+	boolean bStoch = false;
+	if ((param.getAttributeValue(XMLTags.StochAttrTag)!= null) && (param.getAttributeValue(XMLTags.StochAttrTag).compareTo("true")==0))
+		bStoch = true;
 	//Retrieve Geometry
 	Geometry newgeometry = null;
 	try {
@@ -3373,7 +3376,7 @@ public cbit.vcell.mapping.SimulationContext getSimulationContext(Element param, 
 	SimulationContext newsimcontext = null;
 	
 	try {
-		newsimcontext = new SimulationContext(biomodel.getModel(), newgeometry, newmathdesc, version);
+		newsimcontext = new SimulationContext(biomodel.getModel(), newgeometry, newmathdesc, version, bStoch);
 	} catch (java.beans.PropertyVetoException e) {
 		e.printStackTrace();
 		throw new XmlParseException("A propertyveto exception was generated when creating the new SimulationContext " + name+" : "+e.getMessage());

@@ -27,13 +27,17 @@ public class Simulation implements Versionable, cbit.util.Matchable, cbit.vcell.
 	// size quotas enforced per simulation
 	public static final int MAX_LIMIT_ODE_TIMEPOINTS = 100000;
 	public static final int MAX_LIMIT_PDE_TIMEPOINTS = 100000;
+	public static final int MAX_LIMIT_STOCH_TIMEPOINTS = 100000; //stoch
 	public static final int MAX_LIMIT_0DE_MEGABYTES = 20;
 	public static final int MAX_LIMIT_PDE_MEGABYTES = 20000;
+	public static final int MAX_LIMIT_STOCH_MEGABYTES = 20; //stoch
 	public static final int WARNING_ODE_TIMEPOINTS = 5000;
 	public static final int WARNING_PDE_TIMEPOINTS = 1000;
+	public static final int WARNING_STOCH_TIMEPOINTS = 5000; //stoch
 	public static final int WARNING_0DE_MEGABYTES = 5;
 	public static final int WARNING_PDE_MEGABYTES = 200;
-
+	public static final int WARNING_STOCH_MEGABYTES = 5; //stoch
+	
 	public static final int WARNING_SCAN_JOBS = 20;
 	public static final int MAX_LIMIT_SCAN_JOBS = 40;
 	/**

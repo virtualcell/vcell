@@ -108,6 +108,33 @@ protected boolean compareEqual0(Object object) {
 	if (!Compare.isEqualOrNull(fastSystem,subDomain.fastSystem)){
 		return false;
 	}
+	//
+	// compare jumpProcesses
+	//
+	if ((listOfJumpProcesses != null) && (subDomain.listOfJumpProcesses != null))
+	{
+		JumpProcess jumpProcesses1[] = (JumpProcess[]) listOfJumpProcesses.toArray(new JumpProcess[0]);
+		JumpProcess jumpProcesses2[] = (JumpProcess[]) subDomain.listOfJumpProcesses.toArray(new JumpProcess[0]);
+		
+		if (!Compare.isEqualOrNull(jumpProcesses1, jumpProcesses2)){ //call isEqualOrNull(Matchable[], Matchable[]) function
+			return false;
+		}
+	}
+	else return false;
+	//
+	// compare varIniConditions
+	//
+	if ((listOfVarIniConditions != null) && (subDomain.listOfVarIniConditions != null))
+	{
+		VarIniCondition varIniConditions1[] = (VarIniCondition[]) listOfVarIniConditions.toArray(new VarIniCondition[0]);
+		VarIniCondition varIniConditions2[] = (VarIniCondition[]) subDomain.listOfVarIniConditions.toArray(new VarIniCondition[0]);
+		if (!Compare.isEqualOrNull(varIniConditions1,varIniConditions2)){
+			return false;
+		}
+	
+	}
+	else return false;
+		
 	return true;
 }
 

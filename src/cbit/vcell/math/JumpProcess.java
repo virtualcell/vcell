@@ -1,24 +1,10 @@
 package cbit.vcell.math;
 import java.util.*;
-/**
- * Jump process is used for stochasitc simulation. A Jump process affects a list
- * of variable by conducting a list of actions on these variables. The chance for
- * the process to happen is denoted by probability rate.
- * Creation date: (6/21/2006 3:15:03 PM)
- * @author: Tracy LI
- */
+import cbit.util.Compare;
 public class JumpProcess implements cbit.util.Matchable,java.io.Serializable {
 	private String processName=null;
 	private cbit.vcell.parser.Expression  probabilityRate=null;
 	private Vector listOfActions = null;
-
-/**
- * Insert the method's description here.
- * Creation date: (6/30/2006 9:23:27 AM)
- */
-public JumpProcess() 
-{}
-
 
 /**
  * JumpProcess constructor comment.
@@ -61,17 +47,21 @@ public boolean compareEqual(cbit.util.Matchable object)
 	}
 	
 	JumpProcess jumpProc = (JumpProcess) object;
-	if(processName != jumpProc.processName) return false;//processName
+	if(processName.compareTo(jumpProc.processName) != 0 ) return false;//processName
 	if(!probabilityRate.compareEqual(jumpProc.probabilityRate)) return false; //probabilityRate
-	for(int i=0; i<jumpProc.listOfActions.size(); i++)//actions
+	//actions
+	if((listOfActions != null) && (jumpProc.listOfActions != null))
 	{
-		Action temAction=((Action)jumpProc.listOfActions.elementAt(i));
-		int j=0;
-		for(j=0; j<listOfActions.size(); j++)
-			if(((Action)listOfActions.elementAt(j)).compareEqual(temAction)) break;
-		if(j>=listOfActions.size()) return false;
+		Action actions1[] = (Action[]) listOfActions.toArray(new Action[0]);
+		Action actions2[] = (Action[]) jumpProc.listOfActions.toArray(new Action[0]);
+
+		if(!Compare.isEqualOrNull(actions1,actions2))
+		{
+			return false;
+		}
 	}
-		
+	else return false;
+			
 	return true;
 }
 
@@ -224,5 +214,39 @@ public void setProbabilityRate(cbit.vcell.parser.Expression newProbabilityRate) 
  */
 public void setProcessName(java.lang.String newProcessName) {
 	processName = newProcessName;
+}
+
+/**
+ * Insert the method's description here.
+ * Creation date: (10/2/2006 5:20:53 PM)
+ * @return double
+ * @param names java.lang.String[]
+ * @param values double[]
+ */
+public double evaluateProbabilityRate(String[] names, double[] values) 
+{
+	double result = 0;
+	try
+	{
+		cbit.vcell.parser.SymbolTable symTable= new cbit.vcell.parser.SimpleSymbolTable(names);
+		getProbabilityRate().bindExpression(symTable);
+		result = getProbabilityRate().evaluateVector(values);
+	} catch (cbit.vcell.parser.ExpressionException e) {e.printStackTrace();}
+
+	return result;	
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (9/28/2006 5:15:46 PM)
+ * @return java.lang.String
+ */
+public String toString() {
+	StringBuffer buffer = new StringBuffer();
+	// the jump process will be written inside compartment brackets, therefore a "\t" is needed
+	buffer.append(VCML.JumpProcess+"_"+getName());
+	
+	return buffer.toString();
 }
 }

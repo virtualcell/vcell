@@ -16,11 +16,13 @@ public class SolverTypes {
 		SolverDescription.RungeKutta4.getName(),
 		SolverDescription.AdamsMoulton.getName(),
 		SolverDescription.RungeKuttaFehlberg.getName(),
-		SolverDescription.LSODA.getName(),
-//		SolverDescription.StochGibson.getName()
+		SolverDescription.LSODA.getName()
 	};
 	private static String[] fieldPDESolverDescriptions = new String[] {
 		SolverDescription.FiniteVolume.getName()
+	};
+	private static String[] fieldStochSolverDescriptions = new String[] {
+		SolverDescription.StochGibson.getName()
 	};
 
 /**
@@ -36,5 +38,15 @@ public static java.lang.String[] getODESolverDescriptions() {
  */
 public static java.lang.String[] getPDESolverDescriptions() {
 	return (fieldPDESolverDescriptions);
+}
+
+
+/**
+ * Get stochasic solver(s)' description(s)
+ * Creation date: (9/27/2006 9:37:49 AM)
+ * @return java.lang.String[]
+ */
+public static String[] getStochSolverDescriptions() {
+	return fieldStochSolverDescriptions;
 }
 }

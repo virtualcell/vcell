@@ -2100,6 +2100,24 @@ public boolean isSpatial() {
 
 
 /**
+ * This Method is used to check whether the math model is stochastic or not.
+ * It evaluates all the variables to see if all of them are either StochVolVariables or Constants
+ * Creation date: (9/22/2006 3:12:14 PM)
+ * @return boolean
+ */
+public boolean isStoch() {
+	Enumeration enum1 = getVariables();
+	while (enum1.hasMoreElements())
+	{
+		Variable var = (Variable)enum1.nextElement();
+		if (! ((var instanceof StochVolVariable) || (var instanceof Constant))){
+			return false;
+		} 
+	}			
+	return true;
+}
+
+/**
  * This method was created in VisualAge.
  * @return boolean
  */

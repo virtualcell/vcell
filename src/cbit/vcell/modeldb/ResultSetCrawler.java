@@ -355,7 +355,7 @@ public void updateSimResults(User user, VCSimulationDataIdentifier vcSimDataID) 
 			throw new DataAccessException(e.getMessage());
 		}
 	} else {
-		System.out.println("Log file " + logFile.getName() + " not found for simInfo (" + vcSimDataID + ")");
+		System.out.println("Log file not found for simInfo (" + vcSimDataID + ")");
 		//
 		// if log file not found, remove resultset metadata database record if it exists
 		// (this cleans up the database if the dataset is no longer availlable in the file system)

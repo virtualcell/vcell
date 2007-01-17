@@ -23,10 +23,10 @@ import cbit.vcell.units.VCUnitDefinition;
  */
 public class MathMapping implements ScopedSymbolTable {
 	private SimulationContext simContext = null;
-	private MathDescription mathDesc = null;
+	protected MathDescription mathDesc = null;
 	private PotentialMapping potentialMapping = null;  // null if don't need it
-	private Vector issueList = new Vector();
 	private MathSymbolMapping mathSymbolMapping = new MathSymbolMapping();
+	protected Vector issueList = new Vector();
 
 	private MathMapping.MathMappingParameter[] fieldMathMappingParameters = new MathMappingParameter[0];
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
@@ -376,7 +376,7 @@ public MathMapping.KFluxParameter getFluxCorrectionParameter(MembraneMapping mem
  * @param origExp cbit.vcell.parser.Expression
  * @param structureMapping cbit.vcell.mapping.StructureMapping
  */
-private Expression getIdentifierSubstitutions(Expression origExp, VCUnitDefinition desiredExpUnitDef, StructureMapping structureMapping) throws ExpressionException, MappingException {
+protected Expression getIdentifierSubstitutions(Expression origExp, VCUnitDefinition desiredExpUnitDef, StructureMapping structureMapping) throws ExpressionException, MappingException {
 	String symbols[] = origExp.getSymbols(null);
 	if (symbols == null){
 		return origExp;
@@ -772,7 +772,7 @@ public MathSymbolMapping getMathSymbolMapping()  throws MappingException, MathEx
  * @return cbit.vcell.mapping.MembraneStructureAnalyzer
  * @param membrane cbit.vcell.model.Membrane
  */
-private MembraneStructureAnalyzer getMembraneStructureAnalyzer(Membrane membrane) {
+protected MembraneStructureAnalyzer getMembraneStructureAnalyzer(Membrane membrane) {
 	Enumeration enum1 = getStructureAnalyzers();
 	while (enum1.hasMoreElements()){
 		StructureAnalyzer sa = (StructureAnalyzer)enum1.nextElement();
@@ -881,7 +881,7 @@ public SpeciesContextMapping getSpeciesContextMapping(SpeciesContext speciesCont
  * This method was created in VisualAge.
  * @return java.util.Enumeration
  */
-private Enumeration getSpeciesContextMappings() {
+protected Enumeration getSpeciesContextMappings() {
 	return speciesContextMappingList.elements();
 }
 
@@ -911,7 +911,7 @@ protected java.beans.VetoableChangeSupport getVetoPropertyChange() {
  * @return cbit.vcell.mapping.StructureAnalyzer
  * @param subVolume cbit.vcell.geometry.SubVolume
  */
-private VolumeStructureAnalyzer getVolumeStructureAnalyzer(SubVolume subVolume) {
+protected VolumeStructureAnalyzer getVolumeStructureAnalyzer(SubVolume subVolume) {
 	Enumeration enum1 = getStructureAnalyzers();
 	while (enum1.hasMoreElements()){
 		StructureAnalyzer sa = (StructureAnalyzer)enum1.nextElement();
@@ -1005,7 +1005,7 @@ private boolean isDiffusionRequired(SpeciesContext speciesContext) {
  * @param name java.lang.String
  * @param exp cbit.vcell.parser.Expression
  */
-private Variable newFunctionOrConstant(String name, Expression exp) {
+protected Variable newFunctionOrConstant(String name, Expression exp) {
 	if (exp.isNumeric()){
 		return new Constant(name,exp);
 	}else{

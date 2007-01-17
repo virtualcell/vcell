@@ -38,6 +38,7 @@ public class XMLTags {
     public final static String ProbabilityRateTag = "ProbabilityRate"; //stoch
     public final static String VarNameAttrTag = "VarName"; //stoch
     public final static String OperationAttrTag = "Operation"; //stoch
+    public final static String StochAttrTag = "Stochastic"; //stoch , used with simulationspec Tag as an attribute
     //END-MATHMODEL
 
     //TAGS RELATED TO VERSION

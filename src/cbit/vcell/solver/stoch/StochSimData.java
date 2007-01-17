@@ -38,7 +38,8 @@ public StochSimData(VCDataIdentifier vcdId, StochSolverResultSet stochSolverResu
 
 
 /**
- * SimpleODEData constructor comment.
+ * Stochastic simulation data  constructor.
+ * @Input: DataInputStream
  */
 public StochSimData(DataInputStream input) throws IOException {
 	readIn(input);
@@ -93,7 +94,9 @@ public long getSizeInBytes() {
 
 
 /**
- * JMW : This really should be synchronized...
+ * it is called from the constructor. DataInputStream is generated from '.stochbi' file.
+ * it is not being used so far, since in order to display data in ODEDataViewer(actually is time-series viewer),
+ * we have to load result binary (".stochbi") to ODESimData.
  */
 public void readIn(DataInputStream input) throws IOException {
 	formatID = COMPACT_ODE_DATA_FORMAT_ID;

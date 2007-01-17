@@ -113,6 +113,58 @@ public java.beans.PropertyDescriptor bCompactPropertyDescriptor() {
 	return aDescriptor;
 }
 /**
+ * Gets the bStepMode property descriptor.
+ * @return java.beans.PropertyDescriptor
+ */
+public java.beans.PropertyDescriptor bStepModePropertyDescriptor() {
+	java.beans.PropertyDescriptor aDescriptor = null;
+	try {
+		try {
+			/* Using methods via getMethod is the faster way to create the bStepMode property descriptor. */
+			java.lang.reflect.Method aGetMethod = null;
+			try {
+				/* Attempt to find the method using getMethod with parameter types. */
+				java.lang.Class aGetMethodParameterTypes[] = {};
+				aGetMethod = getBeanClass().getMethod("getBStepMode", aGetMethodParameterTypes);
+			} catch (Throwable exception) {
+				/* Since getMethod failed, call findMethod. */
+				handleException(exception);
+				aGetMethod = findMethod(getBeanClass(), "getBStepMode", 0);
+			};
+			java.lang.reflect.Method aSetMethod = null;
+			try {
+				/* Attempt to find the method using getMethod with parameter types. */
+				java.lang.Class aSetMethodParameterTypes[] = {
+					boolean.class
+				};
+				aSetMethod = getBeanClass().getMethod("setBStepMode", aSetMethodParameterTypes);
+			} catch (Throwable exception) {
+				/* Since getMethod failed, call findMethod. */
+				handleException(exception);
+				aSetMethod = findMethod(getBeanClass(), "setBStepMode", 1);
+			};
+			aDescriptor = new java.beans.PropertyDescriptor("bStepMode"
+			, aGetMethod, aSetMethod);
+		} catch (Throwable exception) {
+			/* Since we failed using methods, try creating a default property descriptor. */
+			handleException(exception);
+			aDescriptor = new java.beans.PropertyDescriptor("bStepMode"
+			, getBeanClass());
+		};
+		aDescriptor.setBound(true);
+		/* aDescriptor.setConstrained(false); */
+		/* aDescriptor.setDisplayName("bStepMode"); */
+		/* aDescriptor.setShortDescription("bStepMode"); */
+		/* aDescriptor.setExpert(false); */
+		/* aDescriptor.setHidden(false); */
+		/* aDescriptor.setValue("preferred", new Boolean(false)); */
+		/* aDescriptor.setValue("ivjDesignTimeProperty", new Boolean(true)); */
+	} catch (Throwable exception) {
+		handleException(exception);
+	};
+	return aDescriptor;
+}
+/**
  * Gets the componentOrientation property descriptor.
  * @return java.beans.PropertyDescriptor
  */
@@ -490,6 +542,7 @@ public java.beans.PropertyDescriptor[] getPropertyDescriptors() {
 		java.beans.PropertyDescriptor aDescriptorList[] = {
 			autoColorPropertyDescriptor()
 			,bCompactPropertyDescriptor()
+			,bStepModePropertyDescriptor()
 			,componentOrientationPropertyDescriptor()
 			,currentPlotIndexPropertyDescriptor()
 			,currentPlotNamePropertyDescriptor()
