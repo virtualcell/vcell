@@ -147,8 +147,17 @@ private org.jdom.Element getMathML(Node node) throws ExpressionException {
 		}
 			
 	}else if (node instanceof ASTIdNode){
-		org.jdom.Element idNode = new org.jdom.Element(MathMLTags.IDENTIFIER);
-		idNode.setText(((ASTIdNode)node).name);
+		org.jdom.Element idNode = null;
+		String nodeName = ((ASTIdNode)node).name;
+		if (nodeName.equals("t")) {
+			idNode = new org.jdom.Element(MathMLTags.CSYMBOL);
+			idNode.setAttribute(MathMLTags.ENCODING, "text");
+			idNode.setAttribute(MathMLTags.DEFINITIONURL, "http://www.sbml.org/sbml/symbols/time");
+			idNode.setText(nodeName);
+		} else {
+			idNode = new org.jdom.Element(MathMLTags.IDENTIFIER);
+			idNode.setText(nodeName);
+		}
 		return idNode;
 	}else if (node instanceof ASTInvertTermNode){
 		org.jdom.Element applyNode = new org.jdom.Element(MathMLTags.APPLY);

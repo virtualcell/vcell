@@ -219,9 +219,9 @@ protected void addFunctionDefinitions() {
 				System.out.println("(no function body defined)");
 			} else {
 				math = math.getChild(math.getNumChildren() - 1);
-				formula = libsbml.formulaToString(math);
+				// formula = libsbml.formulaToString(math);
 			}
-			Expression fnExpr = getExpressionFromFormula(formula);
+			Expression fnExpr = getExpressionFromFormula(math);
 			lambdaFunctions[i] = new LambdaFunction(functionName, fnExpr, functionArgs);
 		}
 	} catch (ExpressionException e) {
@@ -434,8 +434,9 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
 				}
 
 				// Convert the formula from kineticLaw into MathML and then to an expression (infix) to be used in VCell kinetics
-				String sbmlRateFormula = kLaw.getFormula();
-				Expression kLawRateExpr = getExpressionFromFormula(sbmlRateFormula);
+				// String sbmlRateFormula = kLaw.getFormula();
+				ASTNode sbmlRateMath = kLaw.getMath();
+				Expression kLawRateExpr = getExpressionFromFormula(sbmlRateMath);
 				String kLawRateExprStr = kLawRateExpr.infix(); 
 				Expression vcRateExpression = new Expression(kLawRateExprStr);
 
@@ -725,7 +726,7 @@ protected void addRules() throws Exception {
 		} else {
 			// Get the assignment rule and store it in the hashMap.
 			AssignmentRule assignmentRule = (AssignmentRule)rule;
-			Expression assignmentRuleMathExpr = getExpressionFromFormula(assignmentRule.getFormula());
+			Expression assignmentRuleMathExpr = getExpressionFromFormula(assignmentRule.getMath());
 			assignmentRulesHash.put(assignmentRule.getVariable(), assignmentRuleMathExpr);
 		}
 	}
@@ -1066,7 +1067,7 @@ private boolean checkSpeciesHasSubstanceOnly(Reaction sbmlRxn) throws Expression
 		}
 	}
 	// Check if reaction rate has any species that has 'hasOnlySubstanceUnits' set
-	Expression rateExpression = getExpressionFromFormula(sbmlRxn.getKineticLaw().getFormula());
+	Expression rateExpression = getExpressionFromFormula(sbmlRxn.getKineticLaw().getMath());
 	SpeciesContext[] vcSpContexts = simContext.getModel().getSpeciesContexts();
 	for (int i = 0; i < vcSpContexts.length; i++){
 		if (rateExpression.hasSymbol(vcSpContexts[i].getName())) {
@@ -1251,9 +1252,9 @@ private org.jdom.Element getEmbeddedElementInAnnotation(String annotationStr, St
  *	NOTE : ExpressionMathMLParser will handle only the <apply> elements of the MathML string,
  *	hence the ExpressionMathMLParser is given a substring of the MathML containing the <apply> elements. 
  */
-private Expression getExpressionFromFormula(String formulaStr) throws ExpressionException {
+private Expression getExpressionFromFormula(ASTNode math) throws ExpressionException {
 	MathMLDocument mDoc = new MathMLDocument();
-	mDoc.setMath(libsbml.parseFormula(formulaStr));
+	mDoc.setMath(math);
 	String mathMLStr = libsbml.writeMathMLToString(mDoc);
 	cbit.vcell.parser.ExpressionMathMLParser exprMathMLParser = new cbit.vcell.parser.ExpressionMathMLParser(lambdaFunctions);
 	Expression expr =  exprMathMLParser.fromMathML(mathMLStr);

@@ -107,6 +107,8 @@ protected void addCompartments() {
 			if (sizeExpr != null) {
 				ASTNode ruleFormulaNode = getFormulaFromExpression(sizeExpr);
 				AssignmentRule assignRule = new AssignmentRule(vcStructures[i].getName(), ruleFormulaNode);
+				// If compartmentSize is specified by an assignment rule, the 'constant' field should be set to 'false' (default - true).
+				sbmlCompartment.setConstant(false);
 				sbmlModel.addRule(assignRule);
 			}
 		}
@@ -231,37 +233,79 @@ protected void addReactions() {
 			}
 
 
-			// In the first pass thro' the kinetic params, add the numeric params as local params to sbmlKLaw
-			// Store the non-numeric params in a local hash (oldName, newName)
+			// In the first pass thro' the kinetic params, store the non-numeric param names and expressions in arrays
 			String[] kinParamNames = new String[vcKineticsParams.length];
 			Expression[] kinParamExprs = new Expression[vcKineticsParams.length];
 			for (int j = 0; j < vcKineticsParams.length; j++){
 				if (vcKineticsParams[j].getRole() != Kinetics.ROLE_Rate) {
-					// if expression of kinetic param evaluates to a double, the parameter value is set
-					// if not, the param value is defined by a rule. Since local reaction parameters cannot be defined by a rule,
-					// such parameters (with rules) are exported as global parameters.
+					// if expression of kinetic param does not evaluate to a double, the param value is defined by a rule. 
+					// Since local reaction parameters cannot be defined by a rule, such parameters (with rules) are exported as global parameters.
 					org.sbml.libsbml.Parameter sbmlKinParam = new org.sbml.libsbml.Parameter(vcKineticsParams[j].getName());
 					if (vcKineticsParams[j].getRole() == Kinetics.ROLE_Current && (!vcKineticsParams[j].getExpression().isZero())) {
 						throw new RuntimeException("Electric current not handled by SBML export; failed to export reaction \"" + vcReactionStep.getName() + "\" at this time");
 					}
-					if (vcKineticsParams[j].getExpression().isNumeric()) {
-						sbmlKinParam.setValue(vcKineticsParams[j].getConstantValue());
-						// Set SBML units for sbmlParam using VC units from vcParam  
-						if (!vcKineticsParams[j].getUnitDefinition().isTBD()) {
-							sbmlKinParam.setUnits(cbit.util.TokenMangler.mangleToSName(vcKineticsParams[j].getUnitDefinition().getSymbol()));
-						}
-						sbmlKLaw.addParameter(sbmlKinParam);
-					} else {
+					if (!vcKineticsParams[j].getExpression().isNumeric()) {		// NON_NUMERIC KINETIC PARAM
 						// Create new name for kinetic parameter and store it in kinParamNames, store corresponding exprs in kinParamExprs
 						// Will be used later to add this param as global.
 						String newParamName = TokenMangler.mangleToSName(vcKineticsParams[j].getName() + "_" + vcReactionStep.getName());
 						kinParamNames[j] = newParamName;
 						kinParamExprs[j] = new Expression(vcKineticsParams[j].getExpression());
+					} 
+				}
+			} // end for (j) - first pass
+
+			// Second pass - Check if any of the numeric parameters is present in any of the non-numeric param expressions
+			// If so, these need to be added as global param (else the SBML doc will not be valid)
+			for (int j = 0; j < vcKineticsParams.length; j++){
+				if (vcKineticsParams[j].getRole() != Kinetics.ROLE_Rate) {
+					// if expression of kinetic param evaluates to a double, the parameter value is set
+					if (vcKineticsParams[j].getRole() == Kinetics.ROLE_Current && (!vcKineticsParams[j].getExpression().isZero())) {
+						throw new RuntimeException("Electric current not handled by SBML export; failed to export reaction \"" + vcReactionStep.getName() + "\" at this time");
+					}
+					if (vcKineticsParams[j].getExpression().isNumeric()) {		// NUMERIC KINETIC PARAM
+						// check if it is used in other parameters that have expressions,
+						boolean bAddedParam = false;
+						String origParamName = vcKineticsParams[j].getName();
+						for (int k = 0; k < vcKineticsParams.length; k++){
+							if (kinParamExprs[k] != null) {
+								// The param could be in the expression for any other param
+								if (kinParamExprs[k].hasSymbol(origParamName)) {
+									// if param is present in non-numeric param expression, this param has to be global
+									// mangle its name to avoid conflict with other globals
+									String newParamName = TokenMangler.mangleToSName(origParamName + "_" + vcReactionStep.getName());
+									if (globalParamNamesHash.get(newParamName) == null) {
+										globalParamNamesHash.put(newParamName, newParamName);
+									} else {
+										// need to get another name for param and need to change all its refereces in the other kinParam euqations.
+									}
+									org.sbml.libsbml.Parameter sbmlKinParam = new org.sbml.libsbml.Parameter(newParamName);
+									sbmlKinParam.setValue(vcKineticsParams[j].getConstantValue());
+									// Set SBML units for sbmlParam using VC units from vcParam  
+									if (!vcKineticsParams[j].getUnitDefinition().isTBD()) {
+										sbmlKinParam.setUnits(cbit.util.TokenMangler.mangleToSName(vcKineticsParams[j].getUnitDefinition().getSymbol()));
+									}
+									sbmlModel.addParameter(sbmlKinParam);
+									bAddedParam = true;
+									// update the expression to contain new name, since the globalparam has new name
+									kinParamExprs[k].substituteInPlace(new Expression(origParamName), new Expression(newParamName));
+								}
+							} 
+						}	// end for - k
+						// If the param hasn't been added yet, it is definitely a local param. add it to kineticLaw now.
+						if (!bAddedParam) {
+							org.sbml.libsbml.Parameter sbmlKinParam = new org.sbml.libsbml.Parameter(origParamName);
+							sbmlKinParam.setValue(vcKineticsParams[j].getConstantValue());
+							// Set SBML units for sbmlParam using VC units from vcParam  
+							if (!vcKineticsParams[j].getUnitDefinition().isTBD()) {
+								sbmlKinParam.setUnits(cbit.util.TokenMangler.mangleToSName(vcKineticsParams[j].getUnitDefinition().getSymbol()));
+							}
+							sbmlKLaw.addParameter(sbmlKinParam);
+						}
 					}
 				}
 			} // end for (j) - first pass
 
-			// In the second pass thro' the kinetic params, the expressions are changed to reflect the new names set above
+			// In the third pass thro' the kinetic params, the expressions are changed to reflect the new names set above
 			// (using the kinParamNames and kinParamExprs above) to ensure uniqueness in the global parameter names.
 			for (int j = 0; j < vcKineticsParams.length; j++) {
 				if ((vcKineticsParams[j].getRole() != Kinetics.ROLE_Rate) && !(vcKineticsParams[j].getExpression().isNumeric())) {
@@ -284,7 +328,7 @@ protected void addReactions() {
 				} 
 			}	// end for (j)  - second pass
 					
-			// In the third pass thro' the kinetic params, the non-numeric params are added to the global params of the model
+			// In the fourth pass thro' the kinetic params, the non-numeric params are added to the global params of the model
 			for (int j = 0; j < vcKineticsParams.length; j++){
 				if ((vcKineticsParams[j].getRole() != Kinetics.ROLE_Rate) && !(vcKineticsParams[j].getExpression().isNumeric())) {
 					// Now, add this param to the globalParamNamesHash and add a global parameter to the sbmlModel
@@ -295,12 +339,16 @@ protected void addReactions() {
 						// need to get another name for param and need to change all its refereces in the other kinParam euqations.
 					}
 					ASTNode paramFormulaNode = getFormulaFromExpression(kinParamExprs[j]);
-					ParameterRule sbmlParamRule = new ParameterRule(paramName, libsbml.formulaToString(paramFormulaNode));
+					ParameterRule sbmlParamRule = new ParameterRule();	//, libsbml.formulaToString(paramFormulaNode));
+					sbmlParamRule.setName(paramName);
+					sbmlParamRule.setMath(paramFormulaNode);
 					sbmlModel.addRule(sbmlParamRule);
 					org.sbml.libsbml.Parameter sbmlKinParam = new org.sbml.libsbml.Parameter(paramName);
 					if (!vcKineticsParams[j].getUnitDefinition().isTBD()) {
 						sbmlKinParam.setUnits(cbit.util.TokenMangler.mangleToSName(vcKineticsParams[j].getUnitDefinition().getSymbol()));
 					}
+					// Since the parameter is being specified by a Rule, its 'constant' field shoud be set to 'false' (default - true).
+					sbmlKinParam.setConstant(false);
 					sbmlModel.addParameter(sbmlKinParam);
 				}
 			} // end for (j) - third pass
