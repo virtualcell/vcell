@@ -903,7 +903,7 @@ public void gatherIssues(Vector issueList) {
 			String symbols[] = exp.getSymbols();
 			for (int j = 0; symbols!=null && j < symbols.length; j++){
 				SymbolTableEntry ste = exp.getSymbolBinding(symbols[j]);
-				if (ste instanceof SpeciesContext && reactionStep.getReactionParticipant((SpeciesContext)ste) == null){
+				if (ste instanceof SpeciesContext && reactionStep.getReactionParticipants((SpeciesContext)ste).length == 0){
 					issueList.add(new Issue(fieldKineticsParameters[i],"Expression","parameter '"+fieldKineticsParameters[i].getName()+"' references species context '"+ste.getName()+"', but it is not a reactant/product/catalyst of this reaction",Issue.SEVERITY_WARNING));
 				}else if (ste == null){
 					issueList.add(new Issue(fieldKineticsParameters[i],"Expression","parameter '"+fieldKineticsParameters[i].getName()+"' references undefined symbol '"+symbols[j]+"'",Issue.SEVERITY_ERROR));

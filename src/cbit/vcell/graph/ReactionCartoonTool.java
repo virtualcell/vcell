@@ -125,30 +125,59 @@ private int getLineTypeFromWorld(SpeciesContext speciesContext, Point worldPoint
 		// check if the ReactionStep already has a ReactionParticipant for this SpeciesContext
 		//
 		ReactionStep reactionStep = (ReactionStep)mouseOverShape.getModelObject();
-		if (reactionStep.getReactionParticipant(speciesContext) == null){
-			if (mouseOverShape instanceof SimpleReactionShape){
-				switch (mouseOverShape.getAttachmentFromAbs(worldPoint)){
-					case Shape.ATTACH_LEFT:{
-						return LINE_TYPE_REACTANT;
+		ReactionParticipant[] rps = reactionStep.getReactionParticipants(speciesContext);
+		if (mouseOverShape instanceof SimpleReactionShape){
+			switch (mouseOverShape.getAttachmentFromAbs(worldPoint)){
+				case Shape.ATTACH_LEFT:{
+					for (int i = 0; i < rps.length; i++){
+						if (rps[i] instanceof Reactant) {
+							return LINE_TYPE_NULL;
+						}
 					}
-					case Shape.ATTACH_CENTER:{
-						return LINE_TYPE_CATALYST;
-					}
-					case Shape.ATTACH_RIGHT:{
-						return LINE_TYPE_PRODUCT;
-					}
+					return LINE_TYPE_REACTANT;
 				}
-			}else if (mouseOverShape instanceof FluxReactionShape){
-				switch (mouseOverShape.getAttachmentFromAbs(worldPoint)){
-					case Shape.ATTACH_LEFT:{
-						return LINE_TYPE_FLUX;
+				case Shape.ATTACH_CENTER:{
+					for (int i = 0; i < rps.length; i++){
+						if (rps[i] instanceof Catalyst) {
+							return LINE_TYPE_NULL;
+						}
 					}
-					case Shape.ATTACH_CENTER:{
-						return LINE_TYPE_CATALYST;
+					return LINE_TYPE_CATALYST;
+				}
+				case Shape.ATTACH_RIGHT:{
+					for (int i = 0; i < rps.length; i++){
+						if (rps[i] instanceof Product) {
+							return LINE_TYPE_NULL;
+						}
 					}
-					case Shape.ATTACH_RIGHT:{
-						return LINE_TYPE_FLUX;
+					return LINE_TYPE_PRODUCT;
+				}
+			}
+		}else if (mouseOverShape instanceof FluxReactionShape){
+			switch (mouseOverShape.getAttachmentFromAbs(worldPoint)){
+				case Shape.ATTACH_LEFT:{
+					for (int i = 0; i < rps.length; i++){
+						if (rps[i] instanceof Flux) {
+							return LINE_TYPE_NULL;
+						}
 					}
+					return LINE_TYPE_FLUX;
+				}
+				case Shape.ATTACH_CENTER:{
+					for (int i = 0; i < rps.length; i++){
+						if (rps[i] instanceof Catalyst) {
+							return LINE_TYPE_NULL;
+						}
+					}
+					return LINE_TYPE_CATALYST;
+				}
+				case Shape.ATTACH_RIGHT:{
+					for (int i = 0; i < rps.length; i++){
+						if (rps[i] instanceof Flux) {
+							return LINE_TYPE_NULL;
+						}
+					}
+					return LINE_TYPE_FLUX;
 				}
 			}
 		}
