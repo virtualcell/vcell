@@ -1126,11 +1126,31 @@ private boolean checkSpeciesHasSubstanceOnly(Reaction sbmlRxn) throws Expression
 				name = s.getName();
 			}
 		} else if (sbase instanceof org.sbml.libsbml.Reaction) {
+			// For reactions, try getting name from the 'name' field. If it is obtained from VCML, this field contains the
+			// actual name of the reaction (with spaces, etc.). If the model is being imported from sbml from another tool
+			// like Copasi, etc. the reaction name uniqueness has to be checked. If a reaction name already exists in the
+			// list of reactions in the SBML model, ignore the name field from SBML and use the id field instead.
 			org.sbml.libsbml.Reaction r = (org.sbml.libsbml.Reaction)sbase;
-			if (r.getId() != null && !r.getId().equals("")) {
-				name = r.getId();
-			} else {
+			if (r.getName() != null && !r.getName().equals("")) {
+				// check for uniqueness in reaction name:
 				name = r.getName();
+				if (simContext != null) {
+					boolean bNotUnique = false;
+					for (int i = 0; i < simContext.getReactionContext().getReactionSpecs().length; i++){
+						if (name.equals(simContext.getReactionContext().getReactionSpecs(i).getReactionStep().getName())) {
+							bNotUnique = true;
+						}
+					}
+					if (bNotUnique) {
+						// If reaction name is not unique, use the name from reaction id
+						if (r.getId() != null && !r.getId().equals("")) {
+							name = r.getId();
+						}
+					}
+				}
+			} else {
+				// reaction 'name' was null, hence get it from 'id'
+				name = r.getId();
 			}
 		} else if (sbase instanceof org.sbml.libsbml.Parameter) {
 			org.sbml.libsbml.Parameter p = (org.sbml.libsbml.Parameter)sbase;

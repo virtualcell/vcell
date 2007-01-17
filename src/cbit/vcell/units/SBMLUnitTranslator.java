@@ -20,8 +20,8 @@ public class SBMLUnitTranslator {
 	static {            
 		SbmlDefaultUnits.put("substance", VCUnitDefinition.getInstance("mole"));
 		SbmlDefaultUnits.put("volume", VCUnitDefinition.UNIT_L);
-		SbmlDefaultUnits.put("area", VCUnitDefinition.getInstance("meter2"));
-		SbmlDefaultUnits.put("length", cbit.vcell.units.VCUnitDefinition.getInstance("meter"));
+		SbmlDefaultUnits.put("area", VCUnitDefinition.getInstance("metre2"));
+		SbmlDefaultUnits.put("length", cbit.vcell.units.VCUnitDefinition.getInstance("metre"));
 		SbmlDefaultUnits.put("time", VCUnitDefinition.UNIT_s);
 	}
 

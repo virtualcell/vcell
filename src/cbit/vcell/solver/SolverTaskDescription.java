@@ -69,16 +69,14 @@ public SolverTaskDescription(Simulation simulation, CommentStringTokenizer token
 	addVetoableChangeListener(this);
 	addPropertyChangeListener(this);
 	try {
-		if (simulation.getIsSpatial()) 
+		if (simulation != null && simulation.getIsSpatial()) 
 		{
 			setSolverDescription(getDefaultPDESolverDescription());
 		} //amended Sept.27, 2006
-		else if (simulation.getMathDescription().isStoch()) 
+		else if (simulation != null && simulation.getMathDescription().isStoch()) 
 		{
-			setSolverDescription(getDefaultStochSolverDescription());
-		}
-		else
-		{
+			setSolverDescription(getDefaultStochSolverDescription());		
+		} else 	{
 			setSolverDescription(getDefaultODESolverDescription());
 		}
 	}catch (java.beans.PropertyVetoException e){

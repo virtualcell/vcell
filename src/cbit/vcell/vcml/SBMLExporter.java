@@ -187,7 +187,10 @@ protected void addReactions() {
 
 		ReactionStep vcReactionStep = vcReactionSpecs[i].getReactionStep();
 		//Create sbml reaction
-		org.sbml.libsbml.Reaction sbmlReaction = new org.sbml.libsbml.Reaction(vcReactionStep.getName());
+		String rxnName = vcReactionStep.getName();
+		org.sbml.libsbml.Reaction sbmlReaction = new org.sbml.libsbml.Reaction(cbit.util.TokenMangler.mangleToSName(vcReactionStep.getName()));
+		sbmlReaction.setName(rxnName);
+			
 
 		// If the reactionStep is a flux reaction, add the details to the annotation (structure, carrier valence, flux carrier, fluxOption, etc.)
 		// If reactionStep is a simple reaction, add annotation to indicate the structure of reaction.

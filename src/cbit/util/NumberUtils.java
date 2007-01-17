@@ -29,33 +29,39 @@ public static final String formatNumber(double number) {
  * @param number double
  */
 public static final String formatNumber(double number, int numDigits) {
-	if (numDigits < 1) {
-		throw new RuntimeException("NumberUtils.formatNumber2() -- Argument 'numDigits' (desired number of digits) must be greater than 0");
-	}
-	if(number == 0){
-		return "0";
-	}
-
-	java.text.NumberFormat scinf = new java.text.DecimalFormat("0.000000000000000000000E0");
-	scinf.setMaximumFractionDigits(numDigits - 1);
-	scinf.setMinimumIntegerDigits(1);
-	scinf.setMaximumIntegerDigits(1);
-	String scistr = scinf.format(number);	
-
-	java.text.NumberFormat nf = java.text.NumberFormat.getNumberInstance();
-	nf.setGroupingUsed(false);
-	String str = null;
-	for (int i = 1; i <= numDigits; i ++) {
-		nf.setMaximumFractionDigits(i);
-		nf.setMaximumIntegerDigits(numDigits - i);
-		nf.setMinimumIntegerDigits(1);
-		str = nf.format(number);
-		if (Double.parseDouble(str) == Double.parseDouble(scistr)) {
-			return str;
+	try { 
+		if (numDigits < 1) {
+			throw new RuntimeException("NumberUtils.formatNumber() -- Argument 'numDigits' (desired number of digits) must be greater than 0");
 		}
+		if(number == 0){
+			return "0";
+		}
+
+		java.text.NumberFormat scinf = new java.text.DecimalFormat("0.000000000000000000000E0", new java.text.DecimalFormatSymbols(java.util.Locale.US));
+		scinf.setMaximumFractionDigits(numDigits - 1);
+		scinf.setMinimumIntegerDigits(1);
+		scinf.setMaximumIntegerDigits(1);
+		String scistr = scinf.format(number);	
+
+		java.text.NumberFormat nf = java.text.NumberFormat.getNumberInstance(java.util.Locale.US);
+		nf.setGroupingUsed(false);
+		String str = null;
+		for (int i = 1; i <= numDigits; i ++) {
+			nf.setMaximumFractionDigits(i);
+			nf.setMaximumIntegerDigits(numDigits - i);
+			nf.setMinimumIntegerDigits(1);
+			str = nf.format(number);
+			if (Double.parseDouble(str) == Double.parseDouble(scistr)) {
+				return str;
+			}
+		}
+
+		return scistr;
+	} catch (Exception ex) {
+		ex.printStackTrace(System.out);
 	}
 
-	return scistr;
+	return number + "";
 }
 
 
