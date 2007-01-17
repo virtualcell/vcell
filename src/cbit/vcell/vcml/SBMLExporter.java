@@ -37,6 +37,23 @@ public class SBMLExporter {
 	private cbit.vcell.biomodel.BioModel vcBioModel = null;
 	private String vcPreferredSimContextName = null;
 	private java.util.Hashtable globalParamNamesHash = new java.util.Hashtable();
+	private cbit.vcell.vcml.SBMLExporter.SBMLExportErrorReport fieldErrorReport = null;
+
+	public class SBMLExportErrorReport {
+		StringBuffer reportBuffer = null;
+
+		protected SBMLExportErrorReport(StringBuffer argBuffer) {
+			reportBuffer = argBuffer;
+		}
+
+		public void printWarningAndErrorReport() {
+			if (reportBuffer == null) {
+				System.out.println("VCell Model was exported to SBML without any errors! Resulting SBML model is VALID");
+			} else {
+				System.out.println(reportBuffer.toString());
+			}
+		}
+	}
 
 	static
 	{
@@ -61,16 +78,16 @@ protected void addCompartments() {
 	cbit.vcell.model.Structure[] vcStructures = vcBioModel.getModel().getStructures();
 	
 	for (int i = 0; i < vcStructures.length; i++){
-		org.sbml.libsbml.Compartment sbmlCompartment = new org.sbml.libsbml.Compartment(vcStructures[i].getName());
+		org.sbml.libsbml.Compartment sbmlCompartment = new org.sbml.libsbml.Compartment(TokenMangler.mangleToSName(vcStructures[i].getName()));
+		sbmlCompartment.setName(vcStructures[i].getName());
 		VCUnitDefinition sbmlSizeUnit = null;
 		if (vcStructures[i] instanceof Feature) {
 			Feature vcFeature = (Feature)vcStructures[i];
 			sbmlCompartment.setSpatialDimensions(3);
 			sbmlCompartment.setConstant(true);
 			String outside = null;
-			if (vcFeature.getParentStructure() == null) {
-			} else {
-				outside = vcFeature.getParentStructure().getName();
+			if (vcFeature.getParentStructure() != null) {
+				outside = TokenMangler.mangleToSName(vcFeature.getParentStructure().getName());
 			}
 			if (outside != null) {
 				if (outside.length() > 0) {
@@ -82,7 +99,7 @@ protected void addCompartments() {
 		} else if (vcStructures[i] instanceof Membrane) {
 			Membrane vcMembrane = (Membrane)vcStructures[i];
 			sbmlCompartment.setSpatialDimensions(2);
-			sbmlCompartment.setOutside(vcMembrane.getOutsideFeature().getName());
+			sbmlCompartment.setOutside(TokenMangler.mangleToSName(vcMembrane.getOutsideFeature().getName()));
 			sbmlSizeUnit = VCUnitDefinition.UNIT_um2;
 			sbmlCompartment.setUnits(cbit.util.TokenMangler.mangleToSName(sbmlSizeUnit.getSymbol()));
 		}
@@ -216,7 +233,7 @@ protected void addReactions() {
 			// Convert expression from kinetics rate parameter into MathML and use libSBMl utilities to convert it to formula
 			// (instead of directly using rate parameter's expression infix) to maintain integrity of formula :
 			// for example logical and inequalities are not handled gracefully by libSBMl if expression.infix is used.
-			Compartment sbmlCompartment = sbmlModel.getCompartment(vcReactionStep.getStructure().getName());
+			Compartment sbmlCompartment = sbmlModel.getCompartment(cbit.util.TokenMangler.mangleToSName(vcReactionStep.getStructure().getName()));
 			Expression correctedRateExpr = Expression.mult(vcRxnKinetics.getRateParameter().getExpression(), new Expression(sbmlCompartment.getId()));
 			sbmlKLaw = new org.sbml.libsbml.KineticLaw();
 
@@ -240,7 +257,6 @@ protected void addReactions() {
 				if (vcKineticsParams[j].getRole() != Kinetics.ROLE_Rate) {
 					// if expression of kinetic param does not evaluate to a double, the param value is defined by a rule. 
 					// Since local reaction parameters cannot be defined by a rule, such parameters (with rules) are exported as global parameters.
-					org.sbml.libsbml.Parameter sbmlKinParam = new org.sbml.libsbml.Parameter(vcKineticsParams[j].getName());
 					if (vcKineticsParams[j].getRole() == Kinetics.ROLE_Current && (!vcKineticsParams[j].getExpression().isZero())) {
 						throw new RuntimeException("Electric current not handled by SBML export; failed to export reaction \"" + vcReactionStep.getName() + "\" at this time");
 					}
@@ -266,26 +282,26 @@ protected void addReactions() {
 						// check if it is used in other parameters that have expressions,
 						boolean bAddedParam = false;
 						String origParamName = vcKineticsParams[j].getName();
+						String newParamName = TokenMangler.mangleToSName(origParamName + "_" + vcReactionStep.getName());
 						for (int k = 0; k < vcKineticsParams.length; k++){
 							if (kinParamExprs[k] != null) {
 								// The param could be in the expression for any other param
 								if (kinParamExprs[k].hasSymbol(origParamName)) {
 									// if param is present in non-numeric param expression, this param has to be global
 									// mangle its name to avoid conflict with other globals
-									String newParamName = TokenMangler.mangleToSName(origParamName + "_" + vcReactionStep.getName());
 									if (globalParamNamesHash.get(newParamName) == null) {
 										globalParamNamesHash.put(newParamName, newParamName);
+										org.sbml.libsbml.Parameter sbmlKinParam = new org.sbml.libsbml.Parameter(newParamName);
+										sbmlKinParam.setValue(vcKineticsParams[j].getConstantValue());
+										// Set SBML units for sbmlParam using VC units from vcParam  
+										if (!vcKineticsParams[j].getUnitDefinition().isTBD()) {
+											sbmlKinParam.setUnits(cbit.util.TokenMangler.mangleToSName(vcKineticsParams[j].getUnitDefinition().getSymbol()));
+										}
+										sbmlModel.addParameter(sbmlKinParam);
+										bAddedParam = true;
 									} else {
 										// need to get another name for param and need to change all its refereces in the other kinParam euqations.
 									}
-									org.sbml.libsbml.Parameter sbmlKinParam = new org.sbml.libsbml.Parameter(newParamName);
-									sbmlKinParam.setValue(vcKineticsParams[j].getConstantValue());
-									// Set SBML units for sbmlParam using VC units from vcParam  
-									if (!vcKineticsParams[j].getUnitDefinition().isTBD()) {
-										sbmlKinParam.setUnits(cbit.util.TokenMangler.mangleToSName(vcKineticsParams[j].getUnitDefinition().getSymbol()));
-									}
-									sbmlModel.addParameter(sbmlKinParam);
-									bAddedParam = true;
 									// update the expression to contain new name, since the globalparam has new name
 									kinParamExprs[k].substituteInPlace(new Expression(origParamName), new Expression(newParamName));
 								}
@@ -300,6 +316,12 @@ protected void addReactions() {
 								sbmlKinParam.setUnits(cbit.util.TokenMangler.mangleToSName(vcKineticsParams[j].getUnitDefinition().getSymbol()));
 							}
 							sbmlKLaw.addParameter(sbmlKinParam);
+						} else {
+							// if parameter has been added to global param list, its name has been mangled, 
+							// hence change its occurance in rate expression if it contains that param name
+							if (correctedRateExpr.hasSymbol(origParamName)) {
+								correctedRateExpr.substituteInPlace(new Expression(origParamName), new Expression(newParamName));
+							}
 						}
 					}
 				}
@@ -414,7 +436,7 @@ protected void addSpecies() {
 	for (int i = 0; i < vcSpeciesContexts.length; i++){
 		org.sbml.libsbml.Species sbmlSpecies = new org.sbml.libsbml.Species(vcSpeciesContexts[i].getName());
 		// Assuming that at this point, the compartment(s) for the model are already filled in.
-		Compartment compartment = sbmlModel.getCompartment(vcSpeciesContexts[i].getStructure().getName());
+		Compartment compartment = sbmlModel.getCompartment(TokenMangler.mangleToSName(vcSpeciesContexts[i].getStructure().getName()));
 		if (compartment != null) {
 			sbmlSpecies.setCompartment(compartment.getId());
 		}
@@ -519,6 +541,35 @@ protected void addUnitDefinitions() {
 	unitList.add(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_umol_L_per_um3.getSymbol()));
 	unitList.add(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_um2.getSymbol()));
 	addKineticParameterUnits(unitList);
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (4/12/2006 5:09:09 PM)
+ * @return java.lang.String
+ */
+private void generateErrorReport(SBMLDocument sbmlDoc) {
+	long numFailedChecks = sbmlDoc.checkConsistency();
+	StringBuffer errorReportBuffer = new StringBuffer();
+	errorReportBuffer.append("\n\nBIOMODEL : " + vcBioModel.getName() + " : Num Of Failed Checks = " + numFailedChecks + "\n");
+	errorReportBuffer.append("\nWARNINGS : " + sbmlDoc.getNumWarnings());
+	for (int i = 0; i < (int)sbmlDoc.getNumWarnings(); i++){
+		errorReportBuffer.append("\n\tWarning " + i + " : " + sbmlDoc.getWarning((long)i).getMessage());
+	}
+	errorReportBuffer.append("\nERRORS : " + sbmlDoc.getNumErrors());
+	for (int i = 0; i < (int)sbmlDoc.getNumErrors(); i++){
+		errorReportBuffer.append("\n\tError " + i + " : " + sbmlDoc.getError((long)i).getMessage());
+	}
+	errorReportBuffer.append("\nFATAL ERRORS : " + sbmlDoc.getNumFatals());
+	for (int i = 0; i < (int)sbmlDoc.getNumFatals(); i++){
+		errorReportBuffer.append("\n\tFatal " + i + " : " + sbmlDoc.getFatal((long)i).getMessage());
+	}
+	errorReportBuffer.append("\n------- END REPORT-------");
+
+	// set the report inner class :
+	setErrorReport(new SBMLExportErrorReport(errorReportBuffer));
+	
 }
 
 
@@ -693,7 +744,8 @@ private SimulationContext getMatchingSimContext() {
 public String getSBMLFile() {
 
 	// Create the sbmlModel, so that other details can be added to it in translateBioModel()
-	sbmlModel = new org.sbml.libsbml.Model(vcBioModel.getName());
+	sbmlModel = new org.sbml.libsbml.Model(TokenMangler.mangleToSName(vcBioModel.getName()));
+	sbmlModel.setName(vcBioModel.getName());
 	translateBioModel();
 
 	//
@@ -706,6 +758,8 @@ public String getSBMLFile() {
 
 	org.sbml.libsbml.SBMLWriter sbmlWriter = new org.sbml.libsbml.SBMLWriter();
 	String sbmlStr = sbmlWriter.writeToString(sbmlDocument);
+
+	generateErrorReport(sbmlDocument);
 
 	sbmlModel.delete();
 	sbmlDocument.delete();
@@ -740,6 +794,26 @@ private boolean isInFeature(String speciesStructureName) {
 		}
 	}
 	return false;
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (4/12/2006 5:09:09 PM)
+ * @return java.lang.String
+ */
+public void printErrorReport() {
+	fieldErrorReport.printWarningAndErrorReport();
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (10/31/2006 12:17:53 PM)
+ * @param newFieldErrorReport cbit.vcell.vcml.SBMLExporter.SBMLExportErrorReport
+ */
+private void setErrorReport(cbit.vcell.vcml.SBMLExporter.SBMLExportErrorReport newFieldErrorReport) {
+	fieldErrorReport = newFieldErrorReport;
 }
 
 

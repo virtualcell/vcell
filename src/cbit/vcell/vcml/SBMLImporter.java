@@ -1092,11 +1092,13 @@ private boolean checkSpeciesHasSubstanceOnly(Reaction sbmlRxn) throws Expression
 	protected String getActualName(SBase sbase) {
 		String name = null;
 		if (sbase instanceof org.sbml.libsbml.Model) {
+			// Model name in VCell can have spaces, so while exporting, it is mangled and stored in 'id', while actual name
+			// is stored in 'name' attribute. Hence try retrieving name from 'name', if null, get it from 'id' attribute
 			org.sbml.libsbml.Model	m = (org.sbml.libsbml.Model)sbase;
-		   	if (m.getId() != null && !m.getId().equals("")) {
-				name = m.getId();
-		   	} else {
+		   	if (m.getName() != null && !m.getName().equals("")) {
 				name = m.getName();
+		   	} else {
+				name = m.getId();
 		   	}
 		} else if (sbase instanceof org.sbml.libsbml.FunctionDefinition) {
 			FunctionDefinition	f = (FunctionDefinition)sbase;
@@ -1114,11 +1116,13 @@ private boolean checkSpeciesHasSubstanceOnly(Reaction sbmlRxn) throws Expression
 			}
 		} else if (sbase instanceof org.sbml.libsbml.Compartment) {
 			Compartment	c = (Compartment)sbase;
-			if (c.getId() != null && !c.getId().equals("")) {
-				name = c.getId();
-			} else {
+			// Compartment name in VCell can have spaces, so while exporting, it is mangled and stored in 'id', while actual name
+			// is stored in 'name' attribute. Hence try retrieving name from 'name', if null, get it from 'id' attribute
+		   	if (c.getName() != null && !c.getName().equals("")) {
 				name = c.getName();
-			}
+		   	} else {
+				name = c.getId();
+		   	}
 		} else if (sbase instanceof org.sbml.libsbml.Species) {
 			org.sbml.libsbml.Species s = (org.sbml.libsbml.Species)sbase;
 			if (s.getId() != null && !s.getId().equals("")) {
@@ -1254,7 +1258,7 @@ private org.jdom.Element getEmbeddedElementInAnnotation(String annotationStr, St
  */
 private Expression getExpressionFromFormula(ASTNode math) throws ExpressionException {
 	MathMLDocument mDoc = new MathMLDocument();
-	mDoc.setMath(math);
+	mDoc.setMath(math.deepCopy());
 	String mathMLStr = libsbml.writeMathMLToString(mDoc);
 	cbit.vcell.parser.ExpressionMathMLParser exprMathMLParser = new cbit.vcell.parser.ExpressionMathMLParser(lambdaFunctions);
 	Expression expr =  exprMathMLParser.fromMathML(mathMLStr);

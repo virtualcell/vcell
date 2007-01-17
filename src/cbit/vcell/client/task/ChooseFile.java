@@ -148,7 +148,8 @@ private File showBioModelXMLFileChooser(java.util.Hashtable hashTable) throws ja
 				throw new Exception("At least one application must be created in order to export to this format");
 			}				
 			Vector applicableAppNameList = new Vector();
-			if (fileFilter.getDescription().equals(FileFilters.FILE_FILTER_MATLABV5.getDescription()) || fileFilter.getDescription().equals(FileFilters.FILE_FILTER_MATLABV6.getDescription())) {
+			if (fileFilter.getDescription().equals(FileFilters.FILE_FILTER_MATLABV5.getDescription()) || fileFilter.getDescription().equals(FileFilters.FILE_FILTER_MATLABV6.getDescription()) || 
+				fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML.getDescription()) || fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_2.getDescription())) {
 				// only non-spatial apps
 				for (int i=0;i<simContexts.length;i++){
 					if (simContexts[i].getGeometryContext().getGeometry().getDimension()==0){
@@ -156,7 +157,7 @@ private File showBioModelXMLFileChooser(java.util.Hashtable hashTable) throws ja
 					}
 				}
 				if (applicableAppNameList.size() == 0) {
-					throw new Exception("No non-spatial applications, can only export to this format the math from a non-spatial application");
+					throw new Exception("No non-spatial applications in model " + bioModel.getName() + ", can only export the math from a non-spatial application to this format.");
 				}
 			} else {
 				// all apps
