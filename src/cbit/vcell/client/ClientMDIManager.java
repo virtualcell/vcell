@@ -107,6 +107,7 @@ public int closeWindow(java.lang.String windowID) {
 				}
 				window.removeWindowListener(windowListener);
 				window.dispose();
+				cbit.gui.SwingHacks.cleanup();				
 			}
 		}
 	}
