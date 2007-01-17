@@ -66,7 +66,6 @@ public interface MessageConstants {
 	public static final int SECOND = 1000; // in milliseconds
 	public static final int MINUTE = 60000; // in milliseconds
 
-	public static final long INTERVAL_CLIENT_TIMEOUT = 2 * MINUTE;
 	public static final long INTERVAL_PING_SERVER = 5 * MINUTE; // in milliseconds
 	public static final long INTERVAL_SERVER_FAIL = 10 * MINUTE; // in milliseconds
 	public static final long INTERVAL_DATABASE_SERVER_FAIL = 10 * 60; // in seconds
