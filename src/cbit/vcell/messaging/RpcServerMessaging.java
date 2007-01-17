@@ -83,14 +83,15 @@ public void onQueueMessage(Message message) {
 
 		// if client is not waiting any more, why bother sending the reply. Plus the temporary queue
 		// has been deleted if client has timed out.
-		if (t < MessageConstants.INTERVAL_CLIENT_TIMEOUT) {		
+		long clientTimeoutMS = Long.parseLong(cbit.vcell.server.PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.vcellClientTimeoutMS)); 
+		if (t < clientTimeoutMS) {		
 			Queue replyTo = (Queue)message.getJMSReplyTo();
 			if (replyTo != null) {
 				Message replyMessage = clientRequestReceiver.createObjectMessage(returnValue);
 				replyMessage.setStringProperty(MessageConstants.METHOD_NAME_PROPERTY, request.getMethodName());
 				replyMessage.setJMSCorrelationID(message.getJMSMessageID());
 				
-				clientRequestReceiver.sendMessage(replyTo, replyMessage, DeliveryMode.NON_PERSISTENT, MessageConstants.INTERVAL_CLIENT_TIMEOUT);
+				clientRequestReceiver.sendMessage(replyTo, replyMessage, DeliveryMode.NON_PERSISTENT, clientTimeoutMS);
 				
 				if (returnValue == null) {
 					log.print("sendClientResponse[null]");

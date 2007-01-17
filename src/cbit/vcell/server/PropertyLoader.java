@@ -121,6 +121,8 @@ public class PropertyLoader {
 	
 	public static final String vcellBNGPerl = "vcell.bng.perl.executable";
 	public static final String vcellBNGScript = "vcell.bng.script";
+
+	public static final String vcellClientTimeoutMS = "vcell.client.timeoutMS";
 	
 	private static final String ALL_PROPERTIES[] = {
 		vcellServerIDProperty,
@@ -227,7 +229,9 @@ public class PropertyLoader {
 		vcellAnonymizerBootstrapRemotePort,
 
 		vcellBNGPerl,
-		vcellBNGScript
+		vcellBNGScript,
+
+		vcellClientTimeoutMS
 	};
 
 /**

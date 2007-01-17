@@ -83,7 +83,8 @@ private Object rpc(RpcRequest request, String queueName, boolean returnRequired,
 		log.print("Sending request[" + serviceType + "," + methodName + "] to " + queueName);
 		setTimeSinceLastMessage(System.currentTimeMillis());
 		if (returnRequired) {
-			Message msg = responseRequestor.request(this, queueName, rpcMessage, DeliveryMode.PERSISTENT, MessageConstants.INTERVAL_CLIENT_TIMEOUT); 
+			long clientTimeoutMS = Long.parseLong(cbit.vcell.server.PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.vcellClientTimeoutMS)); 
+			Message msg = responseRequestor.request(this, queueName, rpcMessage, DeliveryMode.PERSISTENT, clientTimeoutMS); 
 		
 			if (msg == null || !(msg instanceof ObjectMessage)) {
 				throw new JMSException("server didn't respond to RPC call (server=" + serviceType + ", method=" + methodName +")");
