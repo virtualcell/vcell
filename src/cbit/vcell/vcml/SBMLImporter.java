@@ -327,7 +327,8 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
 		// If species is not present, and modifierNum > 0, it was not previously added as a reactant and/or pdt, hence can add it as a catalyst.
 		if (modifierNum > 0) {
 			if (bAddedAsReactant || bAddedAsProduct) {
-				throw new RuntimeException("Species" + speciesContext.getName() + " was already added as a reactant and/or product : Cannot add it as a catalyst also.");
+				System.err.println("Species " + speciesContext.getName() + " was already added as a reactant and/or product : Cannot add it as a catalyst also.");
+				// throw new RuntimeException("Species " + speciesContext.getName() + " was already added as a reactant and/or product : Cannot add it as a catalyst also.");
 			} else {
 				((SimpleReaction)vcRxn).addCatalyst(speciesContext);
 			}
@@ -456,9 +457,21 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
 				// We have to fall back on GeneralTotalKinetics.
 				boolean bSpeciesHasOnlySubstanceUnits = checkSpeciesHasSubstanceOnly(sbmlRxn);
 
-				// Retrive the compartment in which the reaction takes place and get its size units
-				// Use this to convert the SBML kinetic rate units from substance/time to substance/size/time = concentration/time
-				Compartment compartment = (Compartment)sbmlModel.getCompartment(reactionStructure.getName());
+				// Retrieve the compartment in which the reaction takes place
+				Compartment compartment = null;
+				for (int kk = 0; kk < (int)sbmlModel.getNumCompartments(); kk++){
+					compartment	= sbmlModel.getCompartment(kk);
+					String compName = getActualName(compartment);
+					if (compName.equals(reactionStructure.getName())) {
+						break;
+					} else {
+						compartment = null;		//reset compartment object, so that if there is no match, it is null when it comes out of the loop.
+					}
+				}
+				if (compartment == null) {
+					throw new RuntimeException("The compartment corresponding to " + reactionStructure.getName() + " was not found");
+				}
+				// Get the compartment size units and use it to convert the SBML kinetic rate units from substance/time to substance/size/time = concentration/time
 				if (compartment.isSetSize() && !bSpeciesHasOnlySubstanceUnits) {
 					double compartmentSize = 0.0;
 					adjustCompartmentSizes();
@@ -477,7 +490,7 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
 
 					kinetics = new cbit.vcell.model.GeneralKinetics(vcReactions[i]);
 					String SBMLFACTOR_PARAMETER = "sbmlRateFactor";
-					String SBMLCOMPARTMENTSIZE_PARAMETER = getActualName(compartment);
+					String SBMLCOMPARTMENTSIZE_PARAMETER = compartment.getId();
 					
 					ListOf listofLocalParams = kLaw.getListOfParameters();
 					for (int j = 0; j < kLaw.getNumParameters(); j++) {
@@ -500,7 +513,32 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
 							}
 						} 
 					}
+					// Check if any parameters (global/local) have the same name as kinetics rate param name;
+					// This will replace any rate expression with the global/local param value; which is unacceptable.
+					// If there is a match, replace it with a new name for rate param - say, origName_reactionName.
+					ListOf listofGlobalParams = sbmlModel.getListOfParameters();
+					for (int j = 0; j < sbmlModel.getNumParameters(); j++) {
+						org.sbml.libsbml.Parameter param = (org.sbml.libsbml.Parameter)listofGlobalParams.get(j);
+						String paramName = getActualName(param);
+						// Check if this param clashes with an existing (pre-defined) kinetic parameter - eg., reaction rate param 'J'
+						// If so, change the name of the kinetic param (say, by adding reaction name to it).
+						String origRateParamName = kinetics.getRateParameter().getName();
+						if (paramName.equals(origRateParamName)) {
+							kinetics.getRateParameter().setName(origRateParamName+"_"+cbit.util.TokenMangler.mangleToSName(rxnName));
+						}
+					}
 					
+					for (int j = 0; j < kLaw.getNumParameters(); j++) {
+						org.sbml.libsbml.Parameter param = (org.sbml.libsbml.Parameter)listofLocalParams.get(j);
+						String paramName = getActualName(param);
+						// Check if this param clashes with an existing (pre-defined) kinetic parameter - eg., reaction rate param 'J'
+						// If so, change the name of the kinetic param (say, by adding reaction name to it).
+						String origRateParamName = kinetics.getRateParameter().getName();
+						if (paramName.equals(origRateParamName)) {
+							kinetics.getRateParameter().setName(origRateParamName+"_"+cbit.util.TokenMangler.mangleToSName(rxnName));
+						}
+					}
+
 					// To remove the compartment scale factor from vcRateExpression
 					if (vcRateExpression.hasSymbol(SBMLCOMPARTMENTSIZE_PARAMETER)) {
 						Expression checkedExpr = checkCompartmentScaleFactorInRxnRateExpr(vcRateExpression, SBMLCOMPARTMENTSIZE_PARAMETER, vcReactions[i].getName());
@@ -631,19 +669,18 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
 					// sometimes, the reaction rate can contain a compartment name, not necessarily the compartment the reaction takes place.
 					for (int kk = 0; kk < (int)sbmlModel.getNumCompartments(); kk++){
 						Compartment comp1 = sbmlModel.getCompartment(kk);
-						String comp1Name = getActualName(comp1);
-						if (!comp1Name.equals(getActualName(compartment))) {
-							if (vcRateExpression.hasSymbol(comp1Name)) {
-								Structure struct1 = simContext.getModel().getStructure(comp1Name);
+						if (!comp1.getId().equals(compartment.getId())) {
+							if (vcRateExpression.hasSymbol(comp1.getId())) {
+								Structure struct1 = simContext.getModel().getStructure(comp1.getName());
 								if (comp1.isSetSize()) {
-									kinetics.setParameterValue(kinetics.getKineticsParameter(comp1Name), new Expression(comp1.getSize()));
+									kinetics.setParameterValue(kinetics.getKineticsParameter(comp1.getId()), new Expression(comp1.getSize()));
 								} else {
-									kinetics.setParameterValue(kinetics.getKineticsParameter(comp1Name), new Expression(1.0));
+									kinetics.setParameterValue(kinetics.getKineticsParameter(comp1.getId()), new Expression(1.0));
 								}
 								if (struct1 instanceof Feature) {
-									kinetics.getKineticsParameter(comp1Name).setUnitDefinition(VCUnitDefinition.UNIT_um3);
+									kinetics.getKineticsParameter(comp1.getId()).setUnitDefinition(VCUnitDefinition.UNIT_um3);
 								} else {
-									kinetics.getKineticsParameter(comp1Name).setUnitDefinition(VCUnitDefinition.UNIT_um2);
+									kinetics.getKineticsParameter(comp1.getId()).setUnitDefinition(VCUnitDefinition.UNIT_um2);
 								}
 							}
 						}
@@ -768,8 +805,16 @@ protected void addRules() throws Exception {
 				}
 				
 				// Get matching compartment name (of sbmlSpecies[i]) from feature list
-				String compartmentName = sbmlSpecies.getCompartment();
-				Structure structure = simContext.getModel().getStructure(compartmentName);
+				String compartmentId = sbmlSpecies.getCompartment();
+				String compartmentName = null;
+				Structure structure = simContext.getModel().getStructure(compartmentId);
+				// if the structure corresponding to compartmentId was null, the names of structures are probably based on 
+				// sbml compartment names rather than Id, hence find the name of the sbml compartment which has compartmentId 
+				// as its Id and use it to retrieve structure.
+				if (structure == null) {
+					compartmentName = ((Compartment)sbmlModel.getCompartment(compartmentId)).getName();
+					structure = simContext.getModel().getStructure(compartmentName);
+				}
 				simContext.getModel().addSpeciesContext(vcSpecies, structure);
 				vcSpeciesContexts[i] = simContext.getModel().getSpeciesContext(vcSpecies, structure);
 				vcSpeciesContexts[i].setHasOverride(true);
@@ -808,7 +853,7 @@ protected void addRules() throws Exception {
 							initConcentration = initConcentration * factor;
 						}
 					} else {
-						logger.sendMessage(VCLogger.HIGH_PRIORITY, TranslationMessage.UNIT_ERROR, "Unable to scale the unit for the initial condition: " + VCConcUnit.getSymbol() + " " + SBConcUnit.getSymbol());
+						logger.sendMessage(VCLogger.HIGH_PRIORITY, TranslationMessage.UNIT_ERROR, "Unable to scale the unit for the initial condition: " + VCConcUnit.getSymbol() + " -> " + SBConcUnit.getSymbol());
 					}
 					initExpr = getValueFromRule(speciesName);
 					if (initExpr == null) {
@@ -818,7 +863,7 @@ protected void addRules() throws Exception {
 					}
 				} else if (sbmlSpecies.isSetInitialAmount()) {		// If initial amount is set
 					double initAmount = sbmlSpecies.getInitialAmount();
-					Compartment compartment = (Compartment)sbmlModel.getCompartment(compartmentName);
+					Compartment compartment = (Compartment)sbmlModel.getCompartment(compartmentId);
 					VCUnitDefinition compartmentSizeUnit = getSBMLUnit(compartment.getUnits(), spatialDimBuiltinName); 
 					VCUnitDefinition SBConcUnit = substanceUnit.divideBy(compartmentSizeUnit);
 
@@ -869,7 +914,7 @@ protected void addRules() throws Exception {
 						}
 					} else if (dimension == 0 || sbmlSpecies.getHasOnlySubstanceUnits()) {
 						// Init Amount : 'hasOnlySubstanceUnits' should be true or spatial dimension of compartment should zero.
-						Compartment compartment = (Compartment)sbmlModel.getCompartment(compartmentName);
+						Compartment compartment = (Compartment)sbmlModel.getCompartment(compartmentId);
 						VCUnitDefinition compartmentSizeUnit = getSBMLUnit(compartment.getUnits(), spatialDimBuiltinName); 
 						VCUnitDefinition SBConcUnit = substanceUnit.divideBy(compartmentSizeUnit);
 
@@ -885,7 +930,7 @@ protected void addRules() throws Exception {
 							if (VCConcUnit.isCompatible(SBConcUnit)) {
 								factor = SBConcUnit.convertTo(1.0, VCConcUnit);
 							} else {
-								logger.sendMessage(VCLogger.MEDIUM_PRIORITY, TranslationMessage.UNIT_ERROR, "Unable to scale the unit for the initial condition: " + VCConcUnit.getSymbol() + " " + SBConcUnit.getSymbol());
+								logger.sendMessage(VCLogger.MEDIUM_PRIORITY, TranslationMessage.UNIT_ERROR, "Unable to scale the unit for the initial condition: " + VCConcUnit.getSymbol() + " -> " + SBConcUnit.getSymbol());
 							}
 						} else {
 							logger.sendMessage(VCLogger.MEDIUM_PRIORITY, TranslationMessage.UNIT_ERROR, "compartment "+compartmentName+" has zero size, unable to determine initial concentration for species "+speciesName);
