@@ -1,5 +1,4 @@
 package cbit.vcell.export.server;
-
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -14,10 +13,12 @@ import cbit.util.*;
  */
 public class GeometrySpecs implements Serializable {
 	private byte[][] serializedSelections = null;
+	private transient SpatialSelection[] spatialSelections = null;
 	private int axis;
 	private String slicePlane;
 	private int sliceNumber;
 	private int modeID;
+
 /**
  * This method was created in VisualAge.
  * @param selections cbit.vcell.simdata.gui.SpatialSelection[]
@@ -40,6 +41,8 @@ public GeometrySpecs(SpatialSelection[] selections, int axis, int sliceNumber, i
 	this.sliceNumber = sliceNumber;
 	this.modeID = modeID;
 }
+
+
 /**
  * Insert the method's description here.
  * Creation date: (4/2/2001 12:04:55 AM)
@@ -68,6 +71,8 @@ public boolean equals(Object object) {
 	}
 	return false;
 }
+
+
 /**
  * This method was created in VisualAge.
  * @return int
@@ -75,6 +80,8 @@ public boolean equals(Object object) {
 public int getAxis() {
 	return axis;
 }
+
+
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.simdata.gui.SpatialSelection[]
@@ -96,6 +103,8 @@ public SpatialSelection[] getCurves() {
 	}
 	return curves;
 }
+
+
 /**
  * This method was created in VisualAge.
  * @return int
@@ -103,6 +112,8 @@ public SpatialSelection[] getCurves() {
 public int getModeID() {
 	return modeID;
 }
+
+
 /**
  * Insert the method's description here.
  * Creation date: (3/2/2001 9:38:49 PM)
@@ -135,26 +146,28 @@ public int[] getPointIndexes() {
 		}
 	}
 }
+
+
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.simdata.gui.SpatialSelection[]
  */
 public SpatialSelection[] getSelections() {
 	try {
-		if (serializedSelections != null) {
-			SpatialSelection[] spatialSelections = new SpatialSelection[serializedSelections.length];
+		if (serializedSelections != null && spatialSelections == null) {
+			spatialSelections = new SpatialSelection[serializedSelections.length];
 			for (int i = 0; i < serializedSelections.length; i++){
 				spatialSelections[i] = (SpatialSelection)BeanUtils.fromSerialized(serializedSelections[i]);
 			}
-			return spatialSelections;
-		} else {
-			return null;
 		}
+		return spatialSelections;
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
 		return null;
 	}
 }
+
+
 /**
  * This method was created in VisualAge.
  * @return int
@@ -162,6 +175,8 @@ public SpatialSelection[] getSelections() {
 public int getSliceNumber() {
 	return sliceNumber;
 }
+
+
 /**
  * Insert the method's description here.
  * Creation date: (4/2/2001 4:33:23 PM)
@@ -170,6 +185,8 @@ public int getSliceNumber() {
 public int hashCode() {
 	return toString().hashCode();
 }
+
+
 /**
  * Insert the method's description here.
  * Creation date: (4/2/2001 4:23:04 PM)

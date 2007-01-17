@@ -93,13 +93,10 @@ public String toString() {
 	buf.append("TimeSpecs [");
 	buf.append("beginTimeIndex: " + beginTimeIndex + ", ");
 	buf.append("endTimeIndex: " + endTimeIndex + ", ");
-	buf.append("times: ");
+	buf.append("selectedTimes: ");
 	if (allTimes != null) {
 		buf.append("{");
-		for (int i = 0; i < allTimes.length; i++){
-			buf.append(allTimes[i]);
-			if (i < allTimes.length - 1) buf.append(",");
-		}
+		buf.append(allTimes[beginTimeIndex] + "..." + allTimes[endTimeIndex]);
 		buf.append("}");
 	} else {
 		buf.append("null");
