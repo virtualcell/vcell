@@ -10,6 +10,11 @@ public interface MathMLTags {
 	//
 	public final static String CONSTANT				= "cn";
 	public final static String IDENTIFIER			= "ci";
+	public final static String CSYMBOL				= "csymbol";
+	// Attributes for CSYMBOL
+	public final static String ENCODING				= "encoding";
+	public final static String DEFINITIONURL		= "definitionURL";
+	
 	//
 	// basic content elements
 	//

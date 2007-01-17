@@ -437,6 +437,15 @@ private SimpleNode getRootNode(Element nodeMathML) throws ExpressionException {
 	} else if (nodeMathML.getName().equals(MathMLTags.MATH)){
 		SimpleNode node = getRootNode((Element)nodeMathML.getChildren().get(0));
 		return node;
+	} else if (nodeMathML.getName().equals(MathMLTags.CSYMBOL)){
+		// check that the CSYMBOL element represents 'time' (possible options : time, delay)
+		if ((nodeMathML.getAttributeValue(MathMLTags.DEFINITIONURL)).indexOf("time") > -1) {
+			ASTIdNode idNode = new ASTIdNode();
+			idNode.name = "t";
+			return idNode;
+		} else{
+			throw new ExpressionException("node type '"+nodeMathML.getName()+":delay' not supported yet");
+		}	
 	} else{
 		throw new ExpressionException("node type '"+nodeMathML.getName()+"' not supported yet");
 	}		

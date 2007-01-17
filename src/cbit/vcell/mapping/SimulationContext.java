@@ -251,7 +251,7 @@ public SimulationContext(SimulationContext simulationContext) throws PropertyVet
  */
 public SimulationContext(Model argModel, Geometry argGeometry) throws java.beans.PropertyVetoException
 {
-	new SimulationContext(argModel,argGeometry,false);
+	this(argModel,argGeometry,false);
 }
 
 
@@ -267,7 +267,7 @@ public SimulationContext(Model argModel, Geometry argGeometry) throws java.beans
  */
 public SimulationContext(Model argModel, Geometry argGeometry, MathDescription argMathDesc, Version argVersion) throws java.beans.PropertyVetoException
 {
-	new SimulationContext(argModel,argGeometry,argMathDesc,argVersion,false);
+	this(argModel,argGeometry,argMathDesc,argVersion,false);
 }
 
 

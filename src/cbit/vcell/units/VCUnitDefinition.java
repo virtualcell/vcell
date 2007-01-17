@@ -199,11 +199,11 @@ public class VCUnitDefinition implements Matchable, Serializable {
             unit_mV_C_per_K_per_mol = new VCUnitDefinition("mV.C.K-1.mol-1");
             unit_um_per_s = new VCUnitDefinition("um.s-1");
             unit_cm_per_s = new VCUnitDefinition("cm.s-1");
-            unit_per_L = new VCUnitDefinition("liter-1");
-            unit_L = new VCUnitDefinition("liter");
+            unit_per_L = new VCUnitDefinition("litre-1");
+            unit_L = new VCUnitDefinition("litre");
             unit_mol = new VCUnitDefinition("mol");
             unit_umol = new VCUnitDefinition("umol");
-            unit_umol_L_per_um3 = new VCUnitDefinition("umol.liter.um-3");
+            unit_umol_L_per_um3 = new VCUnitDefinition("umol.litre.um-3");
         } catch (Throwable e) {
             e.printStackTrace(System.out);
         }
