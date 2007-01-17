@@ -151,6 +151,12 @@ private ExportOutput[] exportPDEData(long jobID, User user, DataServerImpl dataS
 	data.append(simulationDescription.getHeader(dataType));
 	switch (geometrySpecs.getModeID()) {
 		case GEOMETRY_SELECTIONS: {
+			// Set mesh on SpatialSelection because mesh is transient field because it's too big for messaging
+			SpatialSelection[] spatialSelections = geometrySpecs.getSelections();
+			cbit.vcell.solvers.CartesianMesh mesh = dataServerImpl.getMesh(user, vcdID);
+			for (int i = 0; i < spatialSelections.length; i ++) {
+				spatialSelections[i].setMesh(mesh);
+			}
 			int required = variableSpecs.getVariableNames().length * geometrySpecs.getCurves().length;
 			if (geometrySpecs.getPointIndexes().length > 0) {
 				required += variableSpecs.getVariableNames().length;
@@ -163,7 +169,7 @@ private ExportOutput[] exportPDEData(long jobID, User user, DataServerImpl dataS
 					progress = (double)i / required;
 					exportServiceImpl.fireExportProgress(jobID, vcdID, "CSV", progress);
 					StringBuffer data1 = new StringBuffer(data.toString());
-					data1.append(getPointsTimeSeries(user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[i], geometrySpecs.getPointIndexes(), timeSpecs.getBeginTimeIndex(), timeSpecs.getEndTimeIndex(), asciiSpecs.getSwitchRowsColumns()));
+					data1.append(getPointsTimeSeries(user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[i], geometrySpecs.getPointIndexes(), timeSpecs.getAllTimes(), timeSpecs.getBeginTimeIndex(), timeSpecs.getEndTimeIndex(), asciiSpecs.getSwitchRowsColumns()));
 					output[i] = new ExportOutput(true, dataType, simID, dataID + variableSpecs.getVariableNames()[i], data1.toString().getBytes());
 				}
 			}
@@ -175,7 +181,7 @@ private ExportOutput[] exportPDEData(long jobID, User user, DataServerImpl dataS
 					progress = (double)(done + i + s * variableSpecs.getVariableNames().length) / required;
 					exportServiceImpl.fireExportProgress(jobID, vcdID, "CSV", progress);
 					StringBuffer data1 = new StringBuffer(data.toString());
-					data1.append(getCurveTimeSeries(user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[i], geometrySpecs.getCurves()[s], timeSpecs.getBeginTimeIndex(), timeSpecs.getEndTimeIndex(), asciiSpecs.getSwitchRowsColumns()));
+					data1.append(getCurveTimeSeries(user, dataServerImpl, vcdID, variableSpecs.getVariableNames()[i], geometrySpecs.getCurves()[s], timeSpecs.getAllTimes(), timeSpecs.getBeginTimeIndex(), timeSpecs.getEndTimeIndex(), asciiSpecs.getSwitchRowsColumns()));
 					output[s * variableSpecs.getVariableNames().length + i] = new ExportOutput(true, dataType, simID, dataID + variableSpecs.getVariableNames()[i], data1.toString().getBytes());
 				}
 			}
@@ -217,10 +223,9 @@ private ExportOutput[] exportPDEData(long jobID, User user, DataServerImpl dataS
  * @return java.lang.String
  * @exception java.rmi.RemoteException The exception description.
  */
-private String getCurveTimeSeries(User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String variable, SpatialSelection curve, int beginIndex, int endIndex, boolean switchRowsColumns) throws DataAccessException, RemoteException {
+private String getCurveTimeSeries(User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String variable, SpatialSelection curve, double[] allTimes, int beginIndex, int endIndex, boolean switchRowsColumns) throws DataAccessException, RemoteException {
 
 	String simID = vcdID.getID();
-	double[] allTimes = dataServerImpl.getDataSetTimes(user, vcdID);
 	PlotData plotData = dataServerImpl.getLineScan(user, vcdID,variable, allTimes[beginIndex], curve);
 	double[] distances = plotData.getIndependent();
 	double[][] variableValues = new double[endIndex - beginIndex + 1][distances.length];
@@ -263,121 +268,6 @@ private String getCurveTimeSeries(User user, DataServerImpl dataServerImpl, VCDa
 		buffer.append("\n");
 		for (int i=0;i<variableValues.length;i++) {
 			buffer.append("," + allTimes[i+beginIndex]);
-			for (int j=0;j<distances.length;j++) {
-				buffer.append("," + variableValues[i][j]);
-			}
-			buffer.append("\n");
-		}
-	}
-
-	return buffer.toString();
-}
-
-
-/**
- * This method was created by a SmartGuide.
- * @return String
- * @param variable java.lang.String
- * @param time double
- * @param begin cbit.vcell.math.CoordinateIndex
- * @param end cbit.vcell.math.CoordinateIndex
- */
-private String getLineScan(DataSetController dsc, VCDataIdentifier vcdID, String variableNames[], int timeIndex, CoordinateIndex begin, CoordinateIndex end) throws DataAccessException, RemoteException {
-
-	String simID = vcdID.getID();
-	double timepoint = dsc.getDataSetTimes(vcdID)[timeIndex];
-	PlotData plotData = dsc.getLineScan(vcdID,variableNames[0],timepoint,begin,end);
-	double distances[] = plotData.getIndependent();
-	double variableValues[][] = new double[variableNames.length][distances.length];
-	for (int i=0;i<distances.length;i++) {
-		variableValues[0][i] = plotData.getDependent()[i];
-	}
-
-	if (variableNames.length>1) {
-		for (int i=1;i<variableNames.length;i++) {
-			plotData = dsc.getLineScan(vcdID,variableNames[i],timepoint,begin,end);
-			for (int j=0;j<distances.length;j++) {
-				variableValues[i][j] = plotData.getDependent()[j];
-			}
-		}
-	}
-	
-	StringBuffer buffer = new StringBuffer();
-
-	//
-	// put data in csv format
-	//
-	buffer.append("Line Scan at time "+timepoint+" from "+begin.x+"_"+begin.y+"_"+begin.z+" to "+end.x+"_"+end.y+"_"+end.z+"\n\n");
-	buffer.append("Distance,");
-	for (int j=0;j<variableNames.length;j++) {
-		buffer.append(variableNames[j]+",");
-	}
-	buffer.append("\n");
-	
-	for (int i=0;i<distances.length;i++) {
-		buffer.append(distances[i]+",");
-		for (int j=0;j<variableNames.length;j++) {
-			buffer.append(variableValues[j][i]+",");
-		}
-		buffer.append("\n");
-	}	
-
-	return buffer.toString();
-
-}
-
-
-/**
- * This method was created in VisualAge.
- * @return java.lang.String
- * @exception java.rmi.RemoteException The exception description.
- */
-private String getLineTimeSeries(DataSetController dsc, VCDataIdentifier vcdID, String variable, CoordinateIndex begin, CoordinateIndex end, int beginIndex, int endIndex, boolean switchRowsColumns) throws DataAccessException, RemoteException {
-
-	String simID = vcdID.getID();
-	double[] allTimes = dsc.getDataSetTimes(vcdID);
-	PlotData plotData = dsc.getLineScan(vcdID,variable, allTimes[beginIndex], begin, end);
-	double[] distances = plotData.getIndependent();
-	double[][] variableValues = new double[endIndex - beginIndex + 1][distances.length];
-	for (int i=beginIndex;i<=endIndex;i++) {
-		plotData = dsc.getLineScan(vcdID,variable, allTimes[i], begin, end);
-		for (int j=0;j<distances.length;j++) {
-//			setExportProgress((int)(100 * (step + ((double)((i - beginIndex) * distances.length + j)) / ((endIndex - beginIndex) * distances.length)) / numberOfSteps));
-			variableValues[i - beginIndex][j] = plotData.getDependent()[j];
-		}
-	}
-
-	//
-	// put data in csv format
-	//
-	StringBuffer buffer = new StringBuffer();
-	buffer.append(
-		"Time Series for variable " + variable + "\n" +
-		"over the range " + allTimes[beginIndex] + " to " + allTimes[endIndex] + "\n" +
-		"of Line Scans from " + begin.x + "_" + begin.y + "_" + begin.z + " to " + end.x + "_" + end.y + "_" + end.z + "\n\n");
-	if (switchRowsColumns) {
-		buffer.append(",Distances\n");
-		buffer.append("Times,,");
-		for (int i=beginIndex;i<=endIndex;i++) {
-			buffer.append(allTimes[i] + ",");
-		}
-		buffer.append("\n");
-		for (int i=0;i<distances.length;i++) {
-			buffer.append("," + distances[i]);
-			for (int j=beginIndex;j<=endIndex;j++) {
-				buffer.append("," + variableValues[j][i]);
-			}
-			buffer.append("\n");
-		}
-	} else {
-		buffer.append(",Times\n");
-		buffer.append("Distances,,");
-		for (int i=0;i<distances.length;i++) {
-			buffer.append(distances[i] + ",");
-		}
-		buffer.append("\n");
-		for (int i=beginIndex;i<=endIndex;i++) {
-			buffer.append("," + allTimes[i]);
 			for (int j=0;j<distances.length;j++) {
 				buffer.append("," + variableValues[i][j]);
 			}
@@ -472,20 +362,19 @@ private String getODEDataValues(long jobID, User user, DataServerImpl dataServer
  * @return java.lang.String
  * @exception java.rmi.RemoteException The exception description.
  */
-private String getPointsTimeSeries(User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String variableName, int[] pointIndexes, int beginIndex, int endIndex, boolean switchRowsColumns) throws DataAccessException, RemoteException {
+private String getPointsTimeSeries(User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String variableName, int[] pointIndexes, double[] allTimes, int beginIndex, int endIndex, boolean switchRowsColumns) throws DataAccessException, RemoteException {
+	
+	cbit.util.TimeSeriesJobSpec timeSeriesJobSpec = new cbit.util.TimeSeriesJobSpec(new String[]{variableName},new int[][]{pointIndexes},allTimes[beginIndex],1,allTimes[endIndex]);
+	cbit.util.TSJobResultsNoStats timeSeriesJobResults = (cbit.util.TSJobResultsNoStats)dataServerImpl.getTimeSeriesValues(user, vcdID, timeSeriesJobSpec);
 
-	String simID = vcdID.getID();
-	// get arrays
-	double[] allTimes = dataServerImpl.getDataSetTimes(user, vcdID);
-	double[][] variableValues = new double[pointIndexes.length][endIndex - beginIndex + 1];
-	for (int i=beginIndex;i<=endIndex;i++) {
-		SimDataBlock dataBlock = dataServerImpl.getSimDataBlock(user, vcdID, variableName, allTimes[i]);
-		for (int k=0;k<pointIndexes.length;k++) {
-//			setExportProgress((int)(100 * (step + ((double)(k * (endIndex - beginIndex) + i - beginIndex)) / ((endIndex - beginIndex) * points.length)) / numberOfSteps));
-			variableValues[k][i - beginIndex] = dataBlock.getData()[pointIndexes[k]];
-		}
-	}
-
+	// variableValues[0] is time array
+	// variableValues[1] is values for 1st spatial point.
+	// variableValues[2] is values for 2nd spatial point.
+	// variableValues[n] (n>=1) is values for nth spatial point.
+	// the length of variableValues should always be 1 + pointIndexes.length
+	// the length of variableValues[n] is allTimes.length
+	final double[][] variableValues = timeSeriesJobResults.getTimesAndValuesForVariable(variableName);
+	
 	//
 	// put data in csv format
 	//
@@ -502,7 +391,7 @@ private String getPointsTimeSeries(User user, DataServerImpl dataServerImpl, VCD
 		for (int k=0;k<pointIndexes.length;k++) {
 			buffer.append("," + "Index_"+pointIndexes[k]);
 			for (int i=beginIndex;i<=endIndex;i++) {
-				buffer.append("," + variableValues[k][i - beginIndex]);
+				buffer.append("," + variableValues[k+1][i - beginIndex]);
 			}
 			buffer.append("\n");
 		}
@@ -516,7 +405,7 @@ private String getPointsTimeSeries(User user, DataServerImpl dataServerImpl, VCD
 		for (int i=beginIndex;i<=endIndex;i++) {
 			buffer.append("," + allTimes[i]);
 			for (int k=0;k<pointIndexes.length;k++) {
-				buffer.append("," + variableValues[k][i - beginIndex]);
+				buffer.append("," + variableValues[k+1][i - beginIndex]);
 			}
 			buffer.append("\n");
 		}
