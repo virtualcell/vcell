@@ -1,0 +1,5 @@
+vcell.anonymizer.bootstrap.logfile = vcell/anonymizer/anonymizer.log
+vcell.anonymizer.bootstrap.localHost = localhost
+vcell.anonymizer.bootstrap.localPort = 40333
+vcell.anonymizer.bootstrap.remoteHost = ms3
+vcell.anonymizer.bootstrap.remotePort = 40222

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src">
+		<attributes>
+			<attribute value="VCell/nativelibs" name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" path="resources"/>
+	<classpathentry sourcepath="JRE_SRC" kind="var" path="JRE_LIB"/>
+	<classpathentry kind="lib" path="thirdParty_1.49.jar"/>
+	<classpathentry kind="lib" path="idetool.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
