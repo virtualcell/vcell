@@ -245,17 +245,7 @@ protected void addFunctionDefinitions() {
  *		Adds reactants and products and modifiers to a reaction.
  *		Input args are the sbml reaction, vc reaction
  *		This method was created mainly to handle reactions where there are reactants and/or products that appear multiple times
- *		in a reaction. Virtual Cell does not allow the import of such reactions.
- *		As a work-around, we will try to find any such duplicate reactants/products and try to place them as reactant or product
- *		and change their stoichiometry.
- *			For example : A + A -> B will be represented as 2*A -> B
- *
- *		A rough outline of the algorithm :
- *		Multiply by -1 for every occurance of a species as reactant, multiply by 1 if it occurs as a product, and 0 if it is a modifier.
- *		The total stoichiometry for the species n = total_reactant + total_pdt + total_modifier.
- *		If n < 0; add species as reactant
- *		   n = 0; add species as modifier
- *		   n > 0; add species as product.
+ *		in a reaction. Virtual Cell now allows the import of such reactions.
  *		
 **/
 
@@ -266,8 +256,8 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
 		return;
 	}
 	
-	int reactantNum;	// will be (-1 * stoichiometry_of_species) for every occurance of species as reactant
-	int pdtNum;			// will be (+1 * stoichiometry_of_species) for every occurance of species as product.
+	int reactantNum;	// will be (stoichiometry_of_species) for every occurance of species as reactant
+	int pdtNum;			// will be (stoichiometry_of_species) for every occurance of species as product.
 	int modifierNum;	// 
 	boolean bSpeciesPresent;
 	SpeciesContext[] vcSpeciesContexts = simContext.getModel().getSpeciesContexts();
@@ -279,6 +269,8 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
 		reactantNum = 0;
 		pdtNum = 0;
 		modifierNum = 0;
+		boolean bAddedAsReactant = false;
+		boolean bAddedAsProduct = false;
 		
 		// check if it is present as reactant, if so, how many reactants
 		for (int j = 0; j < (int)sbmlRxn.getNumReactants(); j++){
@@ -288,9 +280,19 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
 				logger.sendMessage(VCLogger.HIGH_PRIORITY, TranslationMessage.REACTION_ERROR, "Non-integer stoichiometry not handled in VCell at this time.");
 			}
 			if (spRef.getSpecies().equals(sbmlSpecies.getId())) {
-				reactantNum += (-1 * (int)spRef.getStoichiometry());
+				reactantNum += (int)spRef.getStoichiometry();
 				bSpeciesPresent = true;
 			}
+		}
+
+		// get the matching speciesContext for the sbmlSpecies
+		SpeciesContext speciesContext = getMatchingSpeciesContext(getActualName(sbmlSpecies), vcSpeciesContexts);
+		
+		// If species is present, add it as a reactant with its cumulative stoichiometry
+		if (bSpeciesPresent) {
+			((SimpleReaction)vcRxn).addReactant(speciesContext, reactantNum);
+			bAddedAsReactant = true;
+			bSpeciesPresent = false;
 		}
 
 		// check if it is present as product, if so, how many products
@@ -301,9 +303,16 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
 				logger.sendMessage(VCLogger.HIGH_PRIORITY, TranslationMessage.REACTION_ERROR, "Non-integer stoichiometry not handled in VCell at this time.");
 			}
 			if (spRef.getSpecies().equals(sbmlSpecies.getId())) {
-				pdtNum  += (1 * (int)spRef.getStoichiometry());
+				pdtNum  += (int)spRef.getStoichiometry();
 				bSpeciesPresent = true;
 			}
+		}
+
+		// If species is present, add it as a product with its cumulative stoichiometry
+		if (bSpeciesPresent) {
+			((SimpleReaction)vcRxn).addProduct(speciesContext, pdtNum);
+			bAddedAsProduct = true;
+			bSpeciesPresent = false;
 		}
 
 		// check if it is present as modifier, if so, how many modifiers
@@ -311,33 +320,17 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
 			ModifierSpeciesReference spRef = sbmlRxn.getModifier(j);
 			if (spRef.getSpecies().equals(sbmlSpecies.getId())) {
 				modifierNum++;
-				bSpeciesPresent = true;
 			}
 		}
 
-		// if species is not present, go to next species in model.
-		if (!bSpeciesPresent) {
-			continue;
-		}
-
-		// get the matching speciesContext for the sbmlSpecies
-		SpeciesContext speciesContext = getMatchingSpeciesContext(getActualName(sbmlSpecies), vcSpeciesContexts);
-
-		// Using the algorithm given above (in the comments), compute 'n' - even though we don't need modifierNum since it is multiplied by 0, using it for clarity. 
-		int n = reactantNum + pdtNum + (0 * modifierNum);
-		
-		// Depending on n, add species as reactant, product or catalyst to the vcReaction.
-		try {
-			if (n < 0) {
-				((SimpleReaction)vcRxn).addReactant(speciesContext, (-1*n));
-			} else if (n > 0) {
-				((SimpleReaction)vcRxn).addProduct(speciesContext, n);
-			} else if (n == 0) {
+		// If species is present and modifierNum > 0, species was already added as reactant and/or pdt, so cannot be added as catalyst; throw exception.
+		// If species is not present, and modifierNum > 0, it was not previously added as a reactant and/or pdt, hence can add it as a catalyst.
+		if (modifierNum > 0) {
+			if (bAddedAsReactant || bAddedAsProduct) {
+				throw new RuntimeException("Species" + speciesContext.getName() + " was already added as a reactant and/or product : Cannot add it as a catalyst also.");
+			} else {
 				((SimpleReaction)vcRxn).addCatalyst(speciesContext);
 			}
-		} catch (Exception e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Could not add reaction participant : " + speciesContext.getName() + " for reaction : " + vcRxn.getName());
 		}
 	}
 }

@@ -704,7 +704,7 @@ private void showMoveDialog(FeatureShape featureShape) {
 						for(int j=0;j<reactionArr.length;j+= 1){
 							if((reactionArr[j].getStructure() == parentOfMoving ||
 								reactionArr[j].getStructure() == parentOfMoving.getMembrane()) &&
-								reactionArr[j].getReactionParticipant(neededSCArr[i]) != null)
+								reactionArr[j].getReactionParticipants(neededSCArr[i]).length > 0)
 							{
 								bFound = true;
 								break;

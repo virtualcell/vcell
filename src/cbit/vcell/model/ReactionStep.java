@@ -101,12 +101,15 @@ protected ReactionStep(Structure structure, String name) throws PropertyVetoExce
 }
 public void addCatalyst(SpeciesContext speciesContext) throws ModelException, PropertyVetoException {
 
-	ReactionParticipant rp = getReactionParticipant(speciesContext);
+	ReactionParticipant[] rps = getReactionParticipants(speciesContext);
 
-	if (rp==null){
+	// NOTE : Currently, we are not allowing the case where a reactionParticipant is a reactant and/or product AND a catalyst
+	// Hence, if the rps array is not null, throw an exception, since the speciesContext is already a reactionParticipant.
+	
+	if (rps.length == 0){
 		addReactionParticipant(new Catalyst(null,this, speciesContext));
 	}else{
-		throw new ModelException("reactionParticipant already defined");
+		throw new ModelException("reactionParticipant already defined as Reactant and/or Product in the reaction.");
 	}
 		
 }   
@@ -360,20 +363,6 @@ public Expression getRateExpression(ReactionParticipant reactionParticipant) thr
 		return exp;
 	}
 }               
-public ReactionParticipant getReactionParticipant(Species species, Structure structure){
-	ReactionParticipant rpArray[] = getReactionParticipants();
-
-	for (int i = 0; i < rpArray.length; i++) {
-		if (species.compareEqual(rpArray[i].getSpecies()) &&
-			structure.compareEqual(rpArray[i].getStructure())){
-			return rpArray[i];
-		}
-	}
-	return null;
-}         
-public ReactionParticipant getReactionParticipant(SpeciesContext speciesContext){
-	return getReactionParticipant(speciesContext.getSpecies(), speciesContext.getStructure());
-}         
 public ReactionParticipant getReactionParticipantFromSymbol(String reactParticipantName) {
 
 	ReactionParticipant rp_Array[] = getReactionParticipants();
@@ -402,6 +391,22 @@ public cbit.vcell.model.ReactionParticipant[] getReactionParticipants() {
 public ReactionParticipant getReactionParticipants(int index) {
 	return getReactionParticipants()[index];
 }
+public ReactionParticipant[] getReactionParticipants(Species species, Structure structure){
+	ReactionParticipant rpArray[] = getReactionParticipants();
+	Vector rpVector = new Vector();
+
+	for (int i = 0; i < rpArray.length; i++) {
+		if (species.compareEqual(rpArray[i].getSpecies()) &&
+			structure.compareEqual(rpArray[i].getStructure())){
+			rpVector.addElement(rpArray[i]);
+		}
+	}
+	
+	return (ReactionParticipant[])BeanUtils.getArray(rpVector, ReactionParticipant.class);
+}         
+public ReactionParticipant[] getReactionParticipants(SpeciesContext speciesContext){
+	return getReactionParticipants(speciesContext.getSpecies(), speciesContext.getStructure());
+}         
 /**
  * This method was created in VisualAge.
  * @return double
