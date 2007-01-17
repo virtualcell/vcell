@@ -1,6 +1,4 @@
 package cbit.gui;
-
-
 /**
  * Insert the type's description here.
  * Creation date: (10/9/2006 1:17:05 PM)
@@ -105,6 +103,16 @@ public int getCaretPosition() {
 
 /**
  * Insert the method's description here.
+ * Creation date: (10/11/2006 12:04:52 PM)
+ * @return javax.swing.text.Document
+ */
+public Document getDocument() {
+	return textArea.getDocument();
+}
+
+
+/**
+ * Insert the method's description here.
  * Creation date: (10/10/2006 2:17:29 PM)
  * @return int
  */
@@ -130,6 +138,16 @@ public int getLineStartOffset(int line) throws javax.swing.text.BadLocationExcep
  */
 public String getText() {
 	return textArea.getText();
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (10/11/2006 12:04:52 PM)
+ * @return javax.swing.text.Document
+ */
+public JTextArea getTextArea() {
+	return textArea;
 }
 
 
@@ -164,6 +182,16 @@ public void select(int startline, int endline) {
  */
 public void setCaretPosition(int position) {
 	textArea.setCaretPosition(position);
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (10/11/2006 12:04:52 PM)
+ * @return javax.swing.text.Document
+ */
+public void setDocument(Document doc) {
+	textArea.setDocument(doc);
 }
 
 
