@@ -436,6 +436,9 @@ private static boolean equivalent(Unit ucarUnit1, Unit ucarUnit2) {
 		if (TBD_SYMBOL.equals(symbol)) {
 			return UNIT_TBD;
 		}
+		if (symbol.equalsIgnoreCase("dimensionless")) {
+			return UNIT_DIMENSIONLESS;
+		}
 		Unit dUnit;
 		try {
 			StandardUnitFormat standardUnitFormat = new StandardUnitFormat(new java.io.ByteArrayInputStream(symbol.trim().getBytes()));

@@ -1,5 +1,4 @@
 package cbit.vcell.modeldb;
-
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -21,7 +20,7 @@ public class ReactStepTable extends cbit.sql.Table {
 	public final Field structRef			= new Field("structRef",	"integer",		"NOT NULL "+StructTable.REF_TYPE);
 	//public final Field kinetics 			= new Field("kinetics",		"long raw",		"NOT NULL");
 	public final Field kinetics 			= new Field("kinetics",		"CLOB",		"");
-	public final Field name	 				= new Field("name",			"varchar(30)",	"");
+	public final Field name	 				= new Field("name",			"varchar(64)",	"");
 	public final Field chargeValence		= new Field("chargeValence","integer",		"");
 	public final Field physicsOptions		= new Field("physicsOptions","integer",		"");
 	public final Field kineticsLarge		= new Field("kineticsLRG",	"CLOB",				"");
@@ -45,6 +44,7 @@ public class ReactStepTable extends cbit.sql.Table {
 	//public static final int PERMISSION_ID_INDEX = 20;
 	//public static final int SPECIES_CONTEXT_INDEX = 22;
 	//public static final int MODEL_ID_INDEX = 23;
+
 /**
  * ModelTable constructor comment.
  */
@@ -52,6 +52,8 @@ private ReactStepTable() {
 	super(TABLE_NAME);
 	addFields(fields);
 }
+
+
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.model.ReactionParticipant
@@ -164,6 +166,8 @@ if (kinetics.getUnresolvedParameters().length!=0){
 
 	return rs;
 }
+
+
 /**
  * This method was created in VisualAge.
  * @return java.lang.String
@@ -182,6 +186,8 @@ private String getReactType(ReactionStep reactionStep) throws DataAccessExceptio
 	}
 	return reactionType;
 }
+
+
 /**
  * Insert the method's description here.
  * Creation date: (7/12/2003 2:59:27 PM)
@@ -246,6 +252,8 @@ public String getSQLReactionStepInfosQuery(KeyValue[] rxIDs,User user) {
 	sb.insert(7," DISTINCT ");
 	return sb.toString();
 }
+
+
 /**
  * Insert the method's description here.
  * Creation date: (7/12/2003 2:59:27 PM)
@@ -465,6 +473,8 @@ public String getSQLUserReactionListQuery(ReactionQuerySpec rqs, User user) {
 	sb.insert(7,Table.SQL_GLOBAL_HINT+" DISTINCT ");
 	return sb.toString();
 }
+
+
 /**
  * This method was created in VisualAge.
  * @return java.lang.String
@@ -506,6 +516,8 @@ public String getSQLValueList(ReactionStep reactionStep, KeyValue modelKey, KeyV
 	
 	return buffer.toString();
 }
+
+
 /**
  * Insert the method's description here.
  * Creation date: (7/12/2003 2:59:27 PM)

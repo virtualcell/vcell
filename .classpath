@@ -8,6 +8,6 @@
 	<classpathentry kind="src" path="resources"/>
 	<classpathentry sourcepath="JRE_SRC" kind="var" path="JRE_LIB"/>
 	<classpathentry kind="lib" path="idetool.jar"/>
-	<classpathentry kind="lib" path="thirdParty_1.50.jar"/>
+	<classpathentry kind="lib" path="thirdParty_1.51.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

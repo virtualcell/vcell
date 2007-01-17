@@ -195,8 +195,12 @@ public void firePropertyChange(String propertyName, Object oldValue, Object newV
 /**
  * The fireVetoableChange method was generated to support the vetoPropertyChange field.
  */
-public void fireVetoableChange(String propertyName, Object oldValue, Object newValue) throws java.beans.PropertyVetoException {
-	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
+public void fireVetoableChange(
+    String propertyName,
+    Object oldValue,
+    Object newValue)
+    throws java.beans.PropertyVetoException {
+    getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
 }
 /**
  * This method was created by a SmartGuide.
@@ -707,8 +711,8 @@ public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException {
 		if (e.getNewValue()==null || ((String)(e.getNewValue())).trim().length()==0){
 			throw new PropertyVetoException("reactionStep name is not specified (null)",e);
 		}
-		if (((String)(e.getNewValue())).trim().length()>30){
-			throw new PropertyVetoException("reactionStep name cannot be longer than 30 characters",e);
+		if (((String)(e.getNewValue())).trim().length()>64){
+			throw new PropertyVetoException("reactionStep name cannot be longer than 64 characters",e);
 		}
 	}
 	if (e.getSource()==this && e.getPropertyName().equals("chargeCarrierValence")){
