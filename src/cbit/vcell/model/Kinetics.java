@@ -1598,6 +1598,25 @@ private void renameParameterExpressions(java.lang.String oldName, java.lang.Stri
 
 /**
  * Insert the method's description here.
+ * Creation date: (11/29/2006 3:33:33 PM)
+ */
+public void resolveCurrentWithStructure(Structure structure) throws PropertyVetoException{
+	
+	
+	if(structure instanceof Feature && this.getKineticsParameterFromRole(Kinetics.ROLE_Current) != null){
+		this.removeKineticsParameter(this.getKineticsParameterFromRole(Kinetics.ROLE_Current));
+	}else if(structure instanceof Membrane && this.getKineticsParameterFromRole(Kinetics.ROLE_Current) == null){
+		String pname = this.getDefaultParameterName(Kinetics.ROLE_Current);
+		Kinetics.KineticsParameter currentParm = new Kinetics.KineticsParameter(pname,new Expression(0.0),Kinetics.ROLE_Current,null);
+		addKineticsParameter(currentParm);
+	}
+	
+	
+}
+
+
+/**
+ * Insert the method's description here.
  * Creation date: (4/13/2004 3:09:21 PM)
  */
 public void resolveUndefinedUnits() {

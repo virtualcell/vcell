@@ -19,7 +19,6 @@ import java.util.*;
  * @author: Ion Moraru
  */
 public class VCellClient {
-	private VCDocument startupDoc = null;
 	private ClientServerManager clientServerManager = null;
 	private StatusUpdater statusUpdater = null;
 	private RequestManager requestManager = null;
@@ -39,7 +38,7 @@ private VCellClient() {
  * Insert the method's description here.
  * Creation date: (5/5/2004 3:40:19 PM)
  */
-private void createAndShowGUI(boolean fromApplet) {
+private void createAndShowGUI(VCDocument startupDoc, boolean fromApplet) {
 	try {
 		if (!fromApplet) {
 			/* Set Look and Feel */
@@ -47,19 +46,18 @@ private void createAndShowGUI(boolean fromApplet) {
 		}
 		/* Create the first document desktop */
 		DocumentWindowManager windowManager = null;
-		VCDocument doc = getStartupDoc();
-		switch (doc.getDocumentType()) {
+		switch (startupDoc.getDocumentType()) {
 			case VCDocument.BIOMODEL_DOC: {
-				windowManager = new BioModelWindowManager(new JPanel(), getRequestManager(), (BioModel)doc, getMdiManager().getNewlyCreatedDesktops());
+				windowManager = new BioModelWindowManager(new JPanel(), getRequestManager(), (BioModel)startupDoc, getMdiManager().getNewlyCreatedDesktops());
 				((BioModelWindowManager)windowManager).preloadApps();
 				break;
 			}
 			case VCDocument.MATHMODEL_DOC: {
-				windowManager = new MathModelWindowManager(new JPanel(), getRequestManager(), (MathModel)doc, getMdiManager().getNewlyCreatedDesktops());
+				windowManager = new MathModelWindowManager(new JPanel(), getRequestManager(), (MathModel)startupDoc, getMdiManager().getNewlyCreatedDesktops());
 				break;
 			}
 			case VCDocument.GEOMETRY_DOC: {
-				windowManager = new GeometryWindowManager(new JPanel(), getRequestManager(), (Geometry)doc, getMdiManager().getNewlyCreatedDesktops());
+				windowManager = new GeometryWindowManager(new JPanel(), getRequestManager(), (Geometry)startupDoc, getMdiManager().getNewlyCreatedDesktops());
 				break;
 			}
 		}	
@@ -98,16 +96,6 @@ public MDIManager getMdiManager() {
  */
 RequestManager getRequestManager() {
 	return requestManager;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/10/2004 4:14:58 PM)
- * @return cbit.vcell.document.VCDocument
- */
-private cbit.vcell.document.VCDocument getStartupDoc() {
-	return startupDoc;
 }
 
 
@@ -175,16 +163,6 @@ private void setRequestManager(RequestManager newRequestManager) {
 
 /**
  * Insert the method's description here.
- * Creation date: (5/10/2004 4:14:58 PM)
- * @param newStartupDoc cbit.vcell.document.VCDocument
- */
-private void setStartupDoc(cbit.vcell.document.VCDocument newStartupDoc) {
-	startupDoc = newStartupDoc;
-}
-
-
-/**
- * Insert the method's description here.
  * Creation date: (5/14/2004 2:59:53 PM)
  * @param newStatusUpdater cbit.vcell.client.StatusUpdater
  */
@@ -212,9 +190,8 @@ public static VCellClient startClient(VCDocument startupDoc, final ClientServerI
 	if (startupDoc == null) {
 		startupDoc = ((ClientRequestManager)vcellClient.getRequestManager()).createDefaultDocument(VCDocument.BIOMODEL_DOC);
 	}
-	vcellClient.setStartupDoc(startupDoc);
 	// fire up the GUI
-    vcellClient.createAndShowGUI(false);
+    vcellClient.createAndShowGUI(startupDoc, false);
 	String build = System.getProperty("vcell.softwareVersion");
 	if (build != null){
 		DocumentWindowAboutBox.BUILD_NO = build;
@@ -270,14 +247,14 @@ public static void startClientFromApplet(VCellClientApplet vcellClientApplet) {
 	vcellClient.startStatusThreads();
 	// generate blank document to start with
 	vcellClientApplet.showStatus("preparing blank BioModel");
-	vcellClient.setStartupDoc(((ClientRequestManager)vcellClient.getRequestManager()).createDefaultDocument(VCDocument.BIOMODEL_DOC));
+	VCDocument startupDoc = ((ClientRequestManager)vcellClient.getRequestManager()).createDefaultDocument(VCDocument.BIOMODEL_DOC);
 	// fire up the GUI
 	vcellClientApplet.showStatus("starting the user interface");
 	String build = vcellClientApplet.getParameter("VERSION");
 	if (build != null){
 		DocumentWindowAboutBox.BUILD_NO = build;
 	}
-    vcellClient.createAndShowGUI(true);
+    vcellClient.createAndShowGUI(startupDoc, true);
 	// update the applet
 	vcellClientApplet.setClient(vcellClient);
 	vcellClientApplet.showStatus("VCell client application running");
