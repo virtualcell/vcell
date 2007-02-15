@@ -441,6 +441,33 @@ protected final void writeResolveReferences(java.io.PrintWriter out) throws Exce
  * This method was created by a SmartGuide.
  * @param out java.io.PrintWriter
  */
+protected final void writeVolumeConstantFunction(java.io.PrintWriter out, String functionName, Expression exp) throws Exception {
+
+	if (exp == null){
+		return;
+	}	
+
+	out.println("double "+getClassName()+"::"+functionName+"()");
+	out.println("{");
+
+	exp.bindExpression(simulation);
+	Expression exp2 = simulation.substituteFunctions(exp).flatten();
+	try {
+		double constant = exp2.evaluateConstant();
+	} catch (Exception ex) {
+		throw new RuntimeException("Not a constant: " + exp.infix());
+	}
+	out.println("\treturn "+exp2.infix_C()+";");
+		
+	out.println("}");
+	out.println("");
+}
+
+
+/**
+ * This method was created by a SmartGuide.
+ * @param out java.io.PrintWriter
+ */
 protected final void writeVolumeFunction(java.io.PrintWriter out, String functionName, Expression exp) throws Exception {
 
 	if (exp == null){

@@ -92,36 +92,31 @@ public void writeDeclaration(java.io.PrintWriter out) {
 	out.println("{");
 	out.println(" public:");
 	out.println("   "+getClassName() + "(char *featureName, int priority);");
-	if (volumeSubDomain.getBoundaryConditionXm().isDIRICHLET()){
-		out.println("   virtual BoundaryType getXmBoundaryType() { return BOUNDARY_VALUE; }");
-	}else{
-		out.println("   virtual BoundaryType getXmBoundaryType() { return BOUNDARY_FLUX; }");
-	}		
-	if (volumeSubDomain.getBoundaryConditionXp().isDIRICHLET()){
-		out.println("   virtual BoundaryType getXpBoundaryType() { return BOUNDARY_VALUE; }");
-	}else{
-		out.println("   virtual BoundaryType getXpBoundaryType() { return BOUNDARY_FLUX; }");
-	}		
-	if (volumeSubDomain.getBoundaryConditionYm().isDIRICHLET()){
-		out.println("   virtual BoundaryType getYmBoundaryType() { return BOUNDARY_VALUE; }");
-	}else{
-		out.println("   virtual BoundaryType getYmBoundaryType() { return BOUNDARY_FLUX; }");
-	}		
-	if (volumeSubDomain.getBoundaryConditionYp().isDIRICHLET()){
-		out.println("   virtual BoundaryType getYpBoundaryType() { return BOUNDARY_VALUE; }");
-	}else{
-		out.println("   virtual BoundaryType getYpBoundaryType() { return BOUNDARY_FLUX; }");
-	}		
-	if (volumeSubDomain.getBoundaryConditionZm().isDIRICHLET()){
-		out.println("   virtual BoundaryType getZmBoundaryType() { return BOUNDARY_VALUE; }");
-	}else{
-		out.println("   virtual BoundaryType getZmBoundaryType() { return BOUNDARY_FLUX; }");
-	}		
-	if (volumeSubDomain.getBoundaryConditionZp().isDIRICHLET()){
-		out.println("   virtual BoundaryType getZpBoundaryType() { return BOUNDARY_VALUE; }");
-	}else{
-		out.println("   virtual BoundaryType getZpBoundaryType() { return BOUNDARY_FLUX; }");
-	}	
+
+	String returnValue = "{ return BOUNDARY_VALUE; }";
+	String returnFlux = "{ return BOUNDARY_FLUX; }";
+	String returnPeriodic = "{ return BOUNDARY_PERIODIC; }";
+	
+	// XM 
+	BoundaryConditionType[] bcts = {
+		volumeSubDomain.getBoundaryConditionXm(), volumeSubDomain.getBoundaryConditionXp(), // Xm, Xp
+		volumeSubDomain.getBoundaryConditionYm(), volumeSubDomain.getBoundaryConditionYp(), // Ym, Yp
+		volumeSubDomain.getBoundaryConditionZm(), volumeSubDomain.getBoundaryConditionZp() // Zm, Zp
+	};
+	String[] methods = {
+		"virtual BoundaryType getXmBoundaryType()", "virtual BoundaryType getXpBoundaryType()", // Xm, Xp
+		"virtual BoundaryType getYmBoundaryType()", "virtual BoundaryType getYpBoundaryType()", // Ym, Yp
+		"virtual BoundaryType getZmBoundaryType()", "virtual BoundaryType getZpBoundaryType()"  // Zm, Zp
+	}; 
+	for (int i = 0; i < bcts.length; i ++) {
+		if (bcts[i].isDIRICHLET()){
+			out.println("\t" + methods[i] + " " + returnValue);
+		}else if (bcts[i].isNEUMANN()){
+			out.println("\t" + methods[i] + " " + returnFlux);
+		}else if (bcts[i].isPERIODIC()){
+			out.println("\t" + methods[i] + " " + returnPeriodic);
+		}
+	}
 	out.println("");	
 	out.println("};");
 }
