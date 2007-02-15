@@ -146,7 +146,12 @@ public static synchronized Vector readFunctionsFile(File functionsFile) throws j
 				token2 = token2.trim();
 			}
 			if (i == 0) {
-				functionName = TokenMangler.fixTokenStrict(token2);
+				// If there is a 'blank' or 'space' in the function name, throw an exception - it is not allowed, since the name
+				// might be used in expressions later and such usage does not allow spaces.
+				if  (token2.indexOf(" ") > 0) {
+					throw new java.io.IOException("Blank spaces are not allowed in function names.");
+				}
+				functionName = token2;
 			} else if (i == 1) {
 				try {
 					functionExpr = new Expression(token2);

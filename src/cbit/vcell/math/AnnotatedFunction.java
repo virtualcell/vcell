@@ -19,6 +19,9 @@ public class AnnotatedFunction extends Function implements cbit.util.Matchable {
  */
 public AnnotatedFunction(String argFunctionName, Expression argFunctionExpression, String argErrString, VariableType argFunctionType, boolean userDefined) {
 	super(argFunctionName, argFunctionExpression);
+	if (argFunctionName.indexOf(" ") > 0) {
+		throw new RuntimeException("Spaces are not allowed in user-defined function names. Try adding the function without spaces in its name.");
+	}
 	fieldSimplifiedExpression = null;
 	fieldErrorString = argErrString;
 	fieldFunctionType = argFunctionType;

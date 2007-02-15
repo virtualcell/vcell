@@ -502,7 +502,10 @@ private SimDataBlock evaluateFunction(
 	// evaluate function on dependent dataset
 	// store result 
 	//
-	double args[] = new double[varIndex];
+	//grad
+	boolean isGrad = exp.infix().indexOf("grad(") != -1;
+	//
+	double args[] = new double[varIndex+(isGrad?12*varIndex:0)];
 	double data[] = new double[dataLength];
 	args[0] = time; // time
 	args[1] = 0.0; // x
@@ -527,6 +530,9 @@ private SimDataBlock evaluateFunction(
 					int volumeIndex = mesh.getVolumeRegionIndex(i);
 					args[4 + j] = simDataBlock.getData()[volumeIndex];
 				}
+			}
+			if(isGrad){
+				getSpatialNeighborData(mesh,i,varIndex,time,dataSetList,args);
 			}
 		}else if (variableType.equals(VariableType.VOLUME_REGION)){
 			for (int j = 0; j < varIndex - 4; j++) {
@@ -1301,6 +1307,76 @@ public SimDataBlock getSimDataBlock(VCDataIdentifier vcdID, String varName, doub
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
 	}
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (2/10/2007 1:37:32 PM)
+ * @return double[]
+ */
+private double[] getSpatialNeighborData(CartesianMesh mesh,int volumeIndex,int numArgs,double time,Vector dataSetList,double[] args) {
+	
+	int regionIndex = mesh.getVolumeRegionIndex(volumeIndex);
+	double[] spatialNeighborData = args;
+	int argCount = numArgs;
+	for(int i=0;i<12;i+= 1){
+		int x = (i==0?-1:0)+(i==1?1:0)+(i==6?-2:0)+(i==7?2:0);
+		int y = (i==2?-1:0)+(i==3?1:0)+(i==8?-2:0)+(i==9?2:0);
+		int z = (i==4?-1:0)+(i==5?1:0)+(i==10?-2:0)+(i==11?2:0);
+	//for(int z=-1;z<=1;z+=2){
+		//for(int y=-1;y<=1;y+=2){
+			//for(int x=-1;x<=1;x+=2){
+				spatialNeighborData[argCount] = time;
+				argCount+= 1;
+				//
+				CoordinateIndex ci = mesh.getCoordinateIndexFromVolumeIndex(volumeIndex);
+				ci.x+= x;
+				ci.y+= y;
+				ci.z+= z;
+				if( ci.x >= 0 && ci.x < mesh.getSizeX() &&
+					ci.y >= 0 && ci.y < mesh.getSizeY() &&
+					ci.z >= 0 && ci.z < mesh.getSizeZ()){//Inside boundary of data
+					Coordinate coord = mesh.getCoordinate(ci);
+					int neighborVolumeIndex = mesh.getVolumeIndex(ci);
+					int neighborRegionIndex = mesh.getVolumeRegionIndex(neighborVolumeIndex);
+					if(neighborRegionIndex == regionIndex){
+						spatialNeighborData[argCount] = coord.getX();
+						argCount+= 1;
+						spatialNeighborData[argCount] = coord.getY();
+						argCount+= 1;
+						spatialNeighborData[argCount] = coord.getZ();
+						argCount+= 1;
+						for (int j = 0; j < numArgs - 4; j++) {
+							SimDataBlock simDataBlock = (SimDataBlock)dataSetList.elementAt(j);
+							if (simDataBlock.getVariableType().equals(VariableType.VOLUME)){
+								spatialNeighborData[argCount] = simDataBlock.getData()[neighborVolumeIndex];
+								argCount+= 1;
+							}else{
+								throw new RuntimeException("only VOLUME variables allowed in grad functions");
+							}
+						}
+						continue;
+					}
+					//else{//Outside the current region, mark neighbor as undefined
+						//for(int j=0;j<(numArgs-4);j+= 1){//four less because time and coordinate are inserted already
+							//spatialNeighborData[argCount] = Double.NaN;
+							//argCount+= 1;
+						//}
+					//}
+				}
+				//else{
+				//Outside boundary of data, mark neighbor as undefined
+				for(int j=0;j<(numArgs-1);j+= 1){//one less because time is inserted already
+					spatialNeighborData[argCount] = Double.NaN;
+					argCount+= 1;
+				}
+				//}
+			//}
+		//}
+		//}
+	}
+	return spatialNeighborData;
 }
 
 
