@@ -40,7 +40,7 @@ public CppCoderVCell(String baseFilename, java.io.File directory, SimulationJob 
 
 protected String[] getCodeIncludes()
 {
-	  String includes[] = new String[22];
+	  String includes[] = new String[23];
 
 	  includes[0] = "<assert.h>";
 	  includes[1] = "<math.h>";
@@ -64,6 +64,7 @@ protected String[] getCodeIncludes()
 	  includes[19] = "<VCELL/EqnBuilderReactionDiffusionConvection.h>";
 	  includes[20] = "<VCELL/MembraneEqnBuilderDiffusion.h>";
 	  includes[21] = "<VCELL/SparseLinearSolver.h>";
+	  includes[22] = "<VCELL/SparseVolumeEqnBuilder.h>";
 
 	  return includes;
 }                                    

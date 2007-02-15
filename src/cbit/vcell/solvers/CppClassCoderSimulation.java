@@ -123,24 +123,25 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	  		
 	  		if (simulation.getMathDescription().isPDE(volVar)){
 		  		if (simulation.getMathDescription().hasVelocity(volVar)) { // Convection
-		  			out.println("   // pdeSolver = new ImplicitPDESolver(volumeVar,mesh,"+simulation.hasTimeVaryingDiffusionOrAdvection(volVar)+");");
-		  			out.println("   // pdeSolver = new PdeSolverDiana(volumeVar,mesh"+simulation.hasTimeVaryingDiffusionOrAdvection(volVar)+");");
-		  			out.println("   // pdeSolver = new PdeSolverDiana(volumeVar,mesh,numSolveRegions,solveRegions,"+simulation.hasTimeVaryingDiffusionOrAdvection(volVar)+");");
+					out.println("#ifdef USE_PDESOLVERDIANA");		  			
 		  			out.println("\tsymmflg = 0;    // define symmflg = 0 (general) or 1 (symmetric)");
 		  			out.println("\tpdeSolver = new PdeSolverDiana(volumeVar,mesh,symmflg,numSolveRegions,solveRegions,"+simulation.hasTimeVaryingDiffusionOrAdvection(volVar)+");");
 		  			out.println("\tbuilder = new EqnBuilderReactionDiffusionConvection(volumeVar,mesh,pdeSolver);");
 		  			out.println("\tpdeSolver->setEqnBuilder(builder);");
 		  			out.println("\taddSolver(pdeSolver);");
 	  			} else {
-		  			out.println("   // pdeSolver = new ImplicitPDESolver(volumeVar,mesh,"+simulation.hasTimeVaryingDiffusionOrAdvection(volVar)+");");
-		  			out.println("   // pdeSolver = new PdeSolverDiana(volumeVar,mesh"+simulation.hasTimeVaryingDiffusionOrAdvection(volVar)+");");
-		  			out.println("   // pdeSolver = new PdeSolverDiana(volumeVar,mesh,numSolveRegions,solveRegions,"+simulation.hasTimeVaryingDiffusionOrAdvection(volVar)+");");
+					out.println("#ifdef USE_PDESOLVERDIANA");		  			
 		  			out.println("\tsymmflg = 1;    // define symmflg = 0 (general) or 1 (symmetric)");
 		  			out.println("\tpdeSolver = new PdeSolverDiana(volumeVar,mesh,symmflg,numSolveRegions,solveRegions,"+simulation.hasTimeVaryingDiffusionOrAdvection(volVar)+");");
 		  			out.println("\tbuilder = new EqnBuilderReactionDiffusion(volumeVar,mesh,pdeSolver);");	  			
 		  			out.println("\tpdeSolver->setEqnBuilder(builder);");
 		  			out.println("\taddSolver(pdeSolver);");
 	  			}
+		  		out.println("#else");
+	  			out.println("\tsmbuilder = new SparseVolumeEqnBuilder(volumeVar,mesh," + (simulation.getMathDescription().hasVelocity(volVar) ? "false" : "true") + ");");
+	  			out.println("\tslSolver = new SparseLinearSolver(volumeVar,smbuilder,"+simulation.hasTimeVaryingDiffusionOrAdvection(volVar)+");");
+	  			out.println("\taddSolver(slSolver);");
+	  			out.println("#endif");
 	  		}else{
 	  			out.println("   //odeSolver = new ODESolver(volumeVar,mesh);");
 	  			out.println("   odeSolver = new ODESolver(volumeVar,mesh,numSolveRegions,solveRegions);");
@@ -156,7 +157,7 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 		  	if (simulation.getMathDescription().isPDE(memVar)) {
 		  		out.println("\tmembraneVar = new MembraneVariable(mesh->getNumMembraneElements(),\""+memVar.getName()+"\",\""+units+"\");");
 		  		out.println("\tsmbuilder = new MembraneEqnBuilderDiffusion(membraneVar,mesh);");
-	  			out.println("\tslSolver = new SparseLinearSolver(membraneVar,smbuilder);");	  			
+	  			out.println("\tslSolver = new SparseLinearSolver(membraneVar,smbuilder,"+simulation.hasTimeVaryingDiffusionOrAdvection(memVar)+");");	  			
 	  			out.println("\taddSolver(slSolver);");
 		  		out.println("\taddVariable(membraneVar);");
 		  	} else {		  		
