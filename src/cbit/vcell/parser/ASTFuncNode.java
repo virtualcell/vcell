@@ -48,6 +48,7 @@ public class ASTFuncNode extends SimpleNode {
 	public final static int	LOG_10 		= 35;
 	public final static int	LOGBASE 	= 36;
 	public final static int	FIELD 	= 37;
+	public final static int	GRAD 	= 38;
 	
 
 	private final static String[] functionNamesVCML = {
@@ -88,7 +89,8 @@ public class ASTFuncNode extends SimpleNode {
 		"factorial",// 34
 		"log10",	// 35
 		"logbase", 	// 36
-		"field"     // 37
+		"field",     // 37
+		"grad"     // 38
 	};
 	
 	private final static String[] functionNamesMathML = {
@@ -129,7 +131,8 @@ public class ASTFuncNode extends SimpleNode {
 		MathMLTags.FACTORIAL,			// 34
 		MathMLTags.LOG_10,				// 35
 		MathMLTags.LOGBASE,		 		// 36
-		MathMLTags.FIELD                // 37
+		MathMLTags.FIELD,                // 37
+		MathMLTags.GRAD                // 38
 	};
 	
   ASTFuncNode() {
@@ -145,7 +148,7 @@ if (id != ExpressionParserTreeConstants.JJTFUNCNODE){ System.out.println("ASTFun
 
   /** Bind method, identifiers bind themselves to ValueObjects */
 public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
-	if (getFunction() == FIELD) {
+	if (getFunction() == FIELD){//|| getFunction() == GRAD) {
 		return;
 	}
 	super.bind(symbolTable);
@@ -1441,6 +1444,9 @@ public double evaluateConstant() throws ExpressionException {
 	case FIELD: {
 		throw new FunctionDomainException("field(A, B) is undefined for all constants");
 	}
+	case GRAD: {
+		throw new FunctionDomainException("grad([x,y,z,m],var) is undefined for all constants");
+	}
 	default: {
 		throw new Error("undefined function");
 	}
@@ -1982,6 +1988,91 @@ public double evaluateVector(double values[]) throws ExpressionException {
 	case FIELD: {
 		throw new FunctionDomainException("field(A, B) can't be evaluated in regular way");
 	}	
+	case GRAD: {
+		final int NUM_SPATIAL_ELEMENTS = 13; //p,xp,xxp,xm,xxm,yp,yyp,ym,yym,zp,zzp,zm,zzm - all begin with [time,x,y,z]
+		Node argNode = null;
+		String opName = null;
+		if(jjtGetNumChildren() == 1){
+			opName = "m";
+			argNode = jjtGetChild(0);
+		}else{
+			opName = ((ASTIdNode)jjtGetChild(0)).code();
+			argNode = jjtGetChild(1);
+		}
+		int numInternalArgs = values.length/NUM_SPATIAL_ELEMENTS;
+		double[] tempArgs = new double[numInternalArgs];
+		result = 0;
+		boolean isMagnitude = opName.equalsIgnoreCase("m");
+		double[] magnitudeComponents = new double[3];
+		for(int i=0;i<3;i+= 1){
+			int axisCode =
+				(opName.equalsIgnoreCase("x") || (isMagnitude && i==0)?cbit.vcell.geometry.Coordinate.X_AXIS:0) +
+				(opName.equalsIgnoreCase("y") || (isMagnitude && i==1)?cbit.vcell.geometry.Coordinate.Y_AXIS:0) +
+				(opName.equalsIgnoreCase("z") || (isMagnitude && i==2)?cbit.vcell.geometry.Coordinate.Z_AXIS:0);
+
+			int[] gradCase = getGradCase(values,axisCode,numInternalArgs);
+			//
+			if(gradCase == null){
+				throw new FunctionDomainException("grad(A,B) unknown case");
+			}else if(gradCase[0] == 3){
+				result = 0;
+			}else if(gradCase[0] == 2){
+				System.arraycopy(values,gradCase[2]*numInternalArgs,tempArgs,0,tempArgs.length);
+				double eV = argNode.evaluateVector(tempArgs);
+				double eP = tempArgs[1+axisCode];
+				System.arraycopy(values,gradCase[1]*numInternalArgs,tempArgs,0,tempArgs.length);
+				double pV = argNode.evaluateVector(tempArgs);
+				double pP = tempArgs[1+axisCode];
+				result = (eV-pV)/(eP-pP);
+				//System.out.println(
+					//"px="+values[1]+" "+
+					//"py="+values[2]+" "+
+					//"pz="+values[3]+"  "+
+					//"p2x="+tempArgs[1]+" "+
+					//"p2y="+tempArgs[2]+" "+
+					//"p2z="+tempArgs[3]+"  "+
+					//"nCode="+(gradCase[1]-1)+" "+
+					//"p="+p+" "+
+					//"p2="+p2+" "+
+					//"x="+x+" "+
+					//"x1="+x2+" "+
+					//"result="+result);
+			}else if(gradCase[0] == 1){
+				System.arraycopy(values,gradCase[3]*numInternalArgs,tempArgs,0,tempArgs.length);
+				double eeV = argNode.evaluateVector(tempArgs);
+				double eeP = tempArgs[1+axisCode];
+				System.arraycopy(values,gradCase[2]*numInternalArgs,tempArgs,0,tempArgs.length);
+				double eV = argNode.evaluateVector(tempArgs);
+				//double eP = tempArgs[1+axisCode];
+				System.arraycopy(values,gradCase[1]*numInternalArgs,tempArgs,0,tempArgs.length);
+				double pV = argNode.evaluateVector(tempArgs);
+				double pP = tempArgs[1+axisCode];
+				result = ((-3*pV)+(4*eV)+(-eeV))/(eeP-pP);
+			}else if(gradCase[0] == 0){
+				System.arraycopy(values,gradCase[3]*numInternalArgs,tempArgs,0,tempArgs.length);
+				double eV = argNode.evaluateVector(tempArgs);
+				double eP = tempArgs[1+axisCode];
+				System.arraycopy(values,gradCase[1]*numInternalArgs,tempArgs,0,tempArgs.length);
+				double wV = argNode.evaluateVector(tempArgs);
+				double wP = tempArgs[1+axisCode];
+				result = (eV-wV)/(eP-wP);			
+			}
+
+			if(!isMagnitude){
+				break;
+			}else{
+				magnitudeComponents[i] = result;
+			}
+		}
+		if(isMagnitude){
+			result = Math.sqrt(
+						(magnitudeComponents[0] *magnitudeComponents[0]) +
+						(magnitudeComponents[1] *magnitudeComponents[1]) +
+						(magnitudeComponents[2] *magnitudeComponents[2])
+					);
+		}
+		break;
+	}	
 	default: {
 		throw new Error("undefined function");
 	}
@@ -2213,6 +2304,10 @@ public Node flatten() throws ExpressionException {
 		if (tempChildren.size()!=2) throw new ExpressionException("field() expects 2 argument");
 		break;
 	}
+	case GRAD: {
+		//if (tempChildren.size()!=2) throw new ExpressionException("grad() expects 2 arguments");
+		break;
+	}
 	default: {
 		throw new ExpressionException("undefined function");
 	}
@@ -2247,6 +2342,65 @@ void getFieldDataIdentifierSpecs(java.util.Vector v) {
  */
 int getFunction() {
 	return funcType;
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (2/10/2007 2:47:07 PM)
+ */
+private static int[] getGradCase(double[] args,int axisCode,int numInternalArgs) {
+
+	final int BOTH_NEIGHBORS = 0;
+	final int NO_NEIGHBORS = 3;
+	final int USE_ADJACENT_PLUS = 1;
+	final int USE_ADJACENT = 2;
+
+	final int COORD_OFFSET = 1;
+	
+	int axisOffset = axisCode*2;
+	int wIndex = (1+0+axisOffset);
+	boolean w = Double.isNaN(args[COORD_OFFSET+numInternalArgs*wIndex]);
+	int eIndex = (1+1+axisOffset);
+	boolean e = Double.isNaN(args[COORD_OFFSET+numInternalArgs*eIndex]);
+	//
+	//Both adjacent neighbors available [ok][p][ok]
+	//
+	if(!w && !e){
+		return new int[] {BOTH_NEIGHBORS,wIndex,0,eIndex};
+	}
+	//
+	//Neither adjacent neighbor available [block][p][block]
+	//
+	if(w && e){
+		return new int[] {NO_NEIGHBORS,-1,-1,-1};
+	}
+
+	int wwIndex = (1+6+axisOffset);
+	boolean ww = Double.isNaN(args[COORD_OFFSET+numInternalArgs*wwIndex]);
+	int eeIndex = (1+7+axisOffset);
+	boolean ee = Double.isNaN(args[COORD_OFFSET+numInternalArgs*eeIndex]);
+	//
+	//One adjacent neighbor and One adjacent-adjacent neighbor available [block][p][ok][ok] -or- [ok][ok][p][block]
+	//
+	if((!e && !ee)){
+		return new int[] {USE_ADJACENT_PLUS,0,eIndex,eeIndex};
+	}
+	if((!w && !ww)){
+		return new int[] {USE_ADJACENT_PLUS,0,wIndex,wwIndex};
+	}
+	//
+	//One adjacent neighbor is available only [block][p][ok][block] -or- [block][ok][p][block]
+	//
+	if(!w){
+		return new int[] {USE_ADJACENT,0,wIndex,-1};
+	}
+	if(!e){
+		return new int[] {USE_ADJACENT,0,eIndex,-1};
+	}		
+
+	return null;
+	
 }
 
 

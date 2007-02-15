@@ -113,4 +113,7 @@ public interface MathMLTags {
 
 	// field data
 	public final static String FIELD				= "field";
+	
+	// gradients
+	public final static String GRAD					= "grad";
 }
