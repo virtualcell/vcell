@@ -223,53 +223,61 @@ private ExportOutput[] exportPDEData(long jobID, User user, DataServerImpl dataS
  * @return java.lang.String
  * @exception java.rmi.RemoteException The exception description.
  */
-private String getCurveTimeSeries(User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String variable, SpatialSelection curve, double[] allTimes, int beginIndex, int endIndex, boolean switchRowsColumns) throws DataAccessException, RemoteException {
-
-	String simID = vcdID.getID();
-	PlotData plotData = dataServerImpl.getLineScan(user, vcdID,variable, allTimes[beginIndex], curve);
-	double[] distances = plotData.getIndependent();
-	double[][] variableValues = new double[endIndex - beginIndex + 1][distances.length];
-	for (int i=beginIndex;i<=endIndex;i++) {
-		plotData = dataServerImpl.getLineScan(user, vcdID,variable, allTimes[i], curve);
-		for (int j=0;j<distances.length;j++) {
-//			setExportProgress((int)(100 * (step + ((double)((i - beginIndex) * distances.length + j)) / ((endIndex - beginIndex) * distances.length)) / numberOfSteps));
-			variableValues[i - beginIndex][j] = plotData.getDependent()[j];
-		}
+private String getCurveTimeSeries(User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String variableName, SpatialSelection curve, double[] allTimes, int beginIndex, int endIndex, boolean switchRowsColumns) throws DataAccessException, RemoteException {
+	int[] pointIndexes = null;
+	double[] distances = null;
+	
+	if (curve instanceof SpatialSelectionVolume){
+		SpatialSelection.SSHelper ssh = ((SpatialSelectionVolume)curve).getIndexSamples(0.0,1.0);
+		pointIndexes = ssh.getSampledIndexes();
+		distances = ssh.getWorldCoordinateLengths();
+	}else if(curve instanceof SpatialSelectionMembrane){
+		SpatialSelection.SSHelper ssh = ((SpatialSelectionMembrane)curve).getIndexSamples();
+		pointIndexes = ssh.getSampledIndexes();
+		distances = ssh.getWorldCoordinateLengths();
 	}
 
+	cbit.util.TimeSeriesJobSpec timeSeriesJobSpec = new cbit.util.TimeSeriesJobSpec(new String[]{variableName},new int[][]{pointIndexes},allTimes[beginIndex],1,allTimes[endIndex]);
+	cbit.util.TSJobResultsNoStats timeSeriesJobResults = (cbit.util.TSJobResultsNoStats)dataServerImpl.getTimeSeriesValues(user, vcdID, timeSeriesJobSpec);
+
+	// variableValues[0] is time array
+	// variableValues[1] is values for 1st spatial point.
+	// variableValues[2] is values for 2nd spatial point.
+	// variableValues[n] (n>=1) is values for nth spatial point.
+	// the length of variableValues should always be 1 + pointIndexes.length
+	// the length of variableValues[n] is allTimes.length
+	final double[][] variableValues = timeSeriesJobResults.getTimesAndValuesForVariable(variableName);
+	
 	//
 	// put data in csv format
 	//
 	StringBuffer buffer = new StringBuffer();
-	buffer.append(
-		"Time Series for variable " + variable + "\n" +
-		"over the range " + allTimes[beginIndex] + " to " + allTimes[endIndex] + "\n" +
-		"of " + curve + "\n\n");
+	buffer.append("Time Series for variable " + variableName + "\n" + "over the time " + allTimes[beginIndex] + " to " + allTimes[endIndex] + "\n" + "of " + curve + "\n\n");
 	if (switchRowsColumns) {
 		buffer.append(",Distances\n");
-		buffer.append("Times,,");
-		for (int i=0;i<variableValues.length;i++) {
-			buffer.append(allTimes[i+beginIndex] + ",");
+		buffer.append("Times,");
+		for (int i = beginIndex;i <= endIndex;i ++) {
+			buffer.append("," + allTimes[i]);
 		}
 		buffer.append("\n");
-		for (int i=0;i<distances.length;i++) {
-			buffer.append("," + distances[i]);
-			for (int j=0;j<variableValues.length;j++) {
-				buffer.append("," + variableValues[j][i]);
+		for (int j = 0;j < distances.length;j ++) {
+			buffer.append("," + distances[j]);
+			for (int i = beginIndex;i <= endIndex; i ++) {
+				buffer.append("," + variableValues[j + 1][i - beginIndex]);
 			}
 			buffer.append("\n");
 		}
 	} else {
 		buffer.append(",Times\n");
-		buffer.append("Distances,,");
-		for (int i=0;i<distances.length;i++) {
-			buffer.append(distances[i] + ",");
+		buffer.append("Distances,");
+		for (int i = 0;i < distances.length;i ++) {
+			buffer.append("," + distances[i]);
 		}
 		buffer.append("\n");
-		for (int i=0;i<variableValues.length;i++) {
-			buffer.append("," + allTimes[i+beginIndex]);
-			for (int j=0;j<distances.length;j++) {
-				buffer.append("," + variableValues[i][j]);
+		for (int i = beginIndex;i <= endIndex;i ++) {
+			buffer.append("," + allTimes[i]);
+			for (int j = 0;j < distances.length;j ++) {
+				buffer.append("," + variableValues[j + 1][i - beginIndex]);
 			}
 			buffer.append("\n");
 		}

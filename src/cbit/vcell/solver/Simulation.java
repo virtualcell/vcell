@@ -940,45 +940,46 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * @return boolean
  * @param volVariable cbit.vcell.math.VolVariable
  */
-public boolean hasTimeVaryingDiffusionOrAdvection(VolVariable volVariable) throws Exception {
+public boolean hasTimeVaryingDiffusionOrAdvection(Variable variable) throws Exception {
 	Enumeration enum1 = getMathDescription().getSubDomains();
 	while (enum1.hasMoreElements()){
 		SubDomain subDomain = (SubDomain)enum1.nextElement();
-		if (subDomain instanceof CompartmentSubDomain){
-			Equation equation = subDomain.getEquation(volVariable);
-			//
-			// get diffusion expressions, see if function of time or volume variables
-			//
-			if (equation instanceof PdeEquation){
-				Vector spatialExpressionList = new Vector();
-				spatialExpressionList.add(((PdeEquation)equation).getDiffusionExpression());
-				if (((PdeEquation)equation).getVelocityX()!=null){
-					spatialExpressionList.add(((PdeEquation)equation).getVelocityX());
-				}
-				if (((PdeEquation)equation).getVelocityY()!=null){
-					spatialExpressionList.add(((PdeEquation)equation).getVelocityY());
-				}
-				if (((PdeEquation)equation).getVelocityZ()!=null){
-					spatialExpressionList.add(((PdeEquation)equation).getVelocityZ());
-				}
-				for (int i = 0; i < spatialExpressionList.size(); i++){
-					Expression spatialExp = (Expression)spatialExpressionList.elementAt(i);
-					spatialExp = substituteFunctions(spatialExp);
-					String symbols[] = spatialExp.getSymbols();
-					if (symbols!=null){
-						for (int j=0;j<symbols.length;j++){
-							SymbolTableEntry entry = spatialExp.getSymbolBinding(symbols[j]);
-							if (entry instanceof ReservedVariable){
-								if (((ReservedVariable)entry).isTIME()){
-									return true;
-								}
-							}
-							if (entry instanceof VolVariable){
+		Equation equation = subDomain.getEquation(variable);
+		//
+		// get diffusion expressions, see if function of time or volume variables
+		//
+		if (equation instanceof PdeEquation){
+			Vector spatialExpressionList = new Vector();
+			spatialExpressionList.add(((PdeEquation)equation).getDiffusionExpression());
+			if (((PdeEquation)equation).getVelocityX()!=null){
+				spatialExpressionList.add(((PdeEquation)equation).getVelocityX());
+			}
+			if (((PdeEquation)equation).getVelocityY()!=null){
+				spatialExpressionList.add(((PdeEquation)equation).getVelocityY());
+			}
+			if (((PdeEquation)equation).getVelocityZ()!=null){
+				spatialExpressionList.add(((PdeEquation)equation).getVelocityZ());
+			}
+			for (int i = 0; i < spatialExpressionList.size(); i++){
+				Expression spatialExp = (Expression)spatialExpressionList.elementAt(i);
+				spatialExp = substituteFunctions(spatialExp);
+				String symbols[] = spatialExp.getSymbols();
+				if (symbols!=null){
+					for (int j=0;j<symbols.length;j++){
+						SymbolTableEntry entry = spatialExp.getSymbolBinding(symbols[j]);
+						if (entry instanceof ReservedVariable){
+							if (((ReservedVariable)entry).isTIME()){
 								return true;
 							}
-							if (entry instanceof VolumeRegionVariable){
-								return true;
-							}
+						}
+						if (entry instanceof VolVariable){
+							return true;
+						}
+						if (entry instanceof VolumeRegionVariable){
+							return true;
+						}
+						if (entry instanceof MemVariable || entry instanceof MembraneRegionVariable) {
+							return true;
 						}
 					}
 				}
