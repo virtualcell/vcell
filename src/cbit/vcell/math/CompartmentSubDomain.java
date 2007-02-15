@@ -400,6 +400,9 @@ public void setBoundaryConditionXm(BoundaryConditionType bc) {
  * @return java.lang.String
  */
 public void setBoundaryConditionXp(BoundaryConditionType bc) {
+	if (boundaryConditionTypeXm.isPERIODIC() && !bc.isPERIODIC()) {
+		throw new RuntimeException("Xm and Xp must both have periodic boundary condition");
+	}
 	boundaryConditionTypeXp = bc;
 }
 
@@ -418,6 +421,9 @@ public void setBoundaryConditionYm(BoundaryConditionType bc) {
  * @return java.lang.String
  */
 public void setBoundaryConditionYp(BoundaryConditionType bc) {
+	if (boundaryConditionTypeYm.isPERIODIC() && !bc.isPERIODIC()) {
+		throw new RuntimeException("Ym and Yp must both have periodic boundary condition");
+	}	
 	boundaryConditionTypeYp = bc;
 }
 
@@ -436,6 +442,9 @@ public void setBoundaryConditionZm(BoundaryConditionType bc) {
  * @return java.lang.String
  */
 public void setBoundaryConditionZp(BoundaryConditionType bc) {
+	if (boundaryConditionTypeZm.isPERIODIC() && !bc.isPERIODIC()) {
+		throw new RuntimeException("Zm and Zp must both have periodic boundary condition");
+	}	
 	boundaryConditionTypeZp = bc;
 }
 

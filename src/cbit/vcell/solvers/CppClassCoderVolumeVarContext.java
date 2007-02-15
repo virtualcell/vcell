@@ -184,6 +184,8 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 				out.println("    virtual double getXmBoundaryValue(long volumeIndex);");
 			}else if (bc.isNEUMANN()){
 				out.println("    virtual double getXmBoundaryFlux(long volumeIndex);");
+			} else if (bc.isPERIODIC()){
+				out.println("    virtual double getXBoundaryPeriodicConstant();");
 			}
 		}
 		if (pdeEqu.getBoundaryXp()!=null){			
@@ -204,6 +206,8 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 					out.println("    virtual double getYmBoundaryValue(long volumeIndex);");
 				}else if (bc.isNEUMANN()){
 					out.println("    virtual double getYmBoundaryFlux(long volumeIndex);");
+				}else if (bc.isPERIODIC()){
+					out.println("    virtual double getYBoundaryPeriodicConstant();");
 				}
 			}	
 			if (pdeEqu.getBoundaryYp()!=null){
@@ -225,6 +229,8 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 					out.println("    virtual double getZmBoundaryValue(long volumeIndex);");
 				}else if (bc.isNEUMANN()){
 					out.println("    virtual double getZmBoundaryFlux(long volumeIndex);");
+				} else if (bc.isPERIODIC()){
+				out.println("    virtual double getZBoundaryPeriodicConstant();");
 				}
 			}	
 			if (pdeEqu.getBoundaryZp()!=null){
@@ -440,6 +446,8 @@ public void writeImplementation(java.io.PrintWriter out) throws Exception {
 				writeVolumeFunction(out,"getXmBoundaryValue",pde.getBoundaryXm());
 			}else if (bc.isNEUMANN()){
 				writeVolumeFunction(out,"getXmBoundaryFlux", pde.getBoundaryXm());
+			}else if (bc.isPERIODIC()){
+				writeVolumeConstantFunction(out,"getXBoundaryPeriodicConstant", pde.getBoundaryXm());
 			}
 		}	
 		bc = getCompartmentSubDomain().getBoundaryConditionXp();
@@ -460,6 +468,8 @@ public void writeImplementation(java.io.PrintWriter out) throws Exception {
 					writeVolumeFunction(out,"getYmBoundaryValue",pde.getBoundaryYm());
 				}else if (bc.isNEUMANN()){
 					writeVolumeFunction(out,"getYmBoundaryFlux", pde.getBoundaryYm());
+				}else if (bc.isPERIODIC()){
+					writeVolumeConstantFunction(out,"getYBoundaryPeriodicConstant", pde.getBoundaryYm());
 				}
 			}	
 			bc = getCompartmentSubDomain().getBoundaryConditionYp();
@@ -481,6 +491,8 @@ public void writeImplementation(java.io.PrintWriter out) throws Exception {
 					writeVolumeFunction(out,"getZmBoundaryValue",pde.getBoundaryZm());
 				}else if (bc.isNEUMANN()){
 					writeVolumeFunction(out,"getZmBoundaryFlux", pde.getBoundaryZm());
+				}else if (bc.isPERIODIC()){
+					writeVolumeConstantFunction(out,"getZBoundaryPeriodicConstant", pde.getBoundaryZm());
 				}
 			}	
 			bc = getCompartmentSubDomain().getBoundaryConditionZp();

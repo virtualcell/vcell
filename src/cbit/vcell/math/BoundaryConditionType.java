@@ -1,5 +1,4 @@
 package cbit.vcell.math;
-
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -13,13 +12,16 @@ import cbit.util.*;
 public class BoundaryConditionType implements Serializable, Matchable {
 	private final static int DIRICHLET = 1;
 	private final static int NEUMANN = 2;
+	private final static int PERIODIC = 3;
 
 	private final static String OLD_DIRICHLET_STRING = "Dirichlet";
 	private final static String OLD_NEUMANN_STRING = "Neumann";
 	private final static String DIRICHLET_STRING = "Value";
 	private final static String NEUMANN_STRING = "Flux";
+	private final static String PERIODIC_STRING = "Periodic";
 	
 	private int type = DIRICHLET;
+
 /**
  * Insert the method's description here.
  * Creation date: (5/24/00 4:10:51 PM)
@@ -27,6 +29,8 @@ public class BoundaryConditionType implements Serializable, Matchable {
 private BoundaryConditionType(int aType) {
 	this.type = aType;
 }
+
+
 /**
  * Insert the method's description here.
  * Creation date: (5/24/00 4:10:33 PM)
@@ -45,10 +49,14 @@ public BoundaryConditionType(String bcTypeString) throws java.lang.IllegalArgume
 		this.type = NEUMANN;
 	}else if (bcTypeString.equalsIgnoreCase(OLD_NEUMANN_STRING)){
 		this.type = NEUMANN;
+	}else if (bcTypeString.equalsIgnoreCase(PERIODIC_STRING)) {
+		this.type = PERIODIC;
 	}else{
 		throw new IllegalArgumentException("'"+bcTypeString+"' is not a valid BoundaryConditionType");
 	}
 }
+
+
 /**
  * This method was created in VisualAge.
  * @return boolean
@@ -72,6 +80,8 @@ public boolean compareEqual(Matchable object) {
 	}
 	return true;
 }
+
+
 /**
  * Insert the method's description here.
  * Creation date: (4/2/01 3:34:43 PM)
@@ -97,6 +107,8 @@ public boolean equals(Object obj) {
 	}
 	return true;
 }
+
+
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.math.BoundaryCondition
@@ -108,6 +120,8 @@ public static BoundaryConditionType fromString(String bcString) {
 	}
 	return new BoundaryConditionType(bcString);
 }
+
+
 /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.math.BoundaryCond
@@ -115,6 +129,8 @@ public static BoundaryConditionType fromString(String bcString) {
 public static BoundaryConditionType getDIRICHLET() {
 	return new BoundaryConditionType(DIRICHLET);
 }
+
+
 /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.math.BoundaryCond
@@ -122,6 +138,17 @@ public static BoundaryConditionType getDIRICHLET() {
 public static BoundaryConditionType getNEUMANN() {
 	return new BoundaryConditionType(NEUMANN);
 }
+
+
+/**
+ * This method was created by a SmartGuide.
+ * @return cbit.vcell.math.BoundaryCond
+ */
+public static BoundaryConditionType getPERIODIC() {
+	return new BoundaryConditionType(PERIODIC);
+}
+
+
 /**
  * Insert the method's description here.
  * Creation date: (5/24/00 10:29:22 PM)
@@ -136,6 +163,8 @@ public String getUnits() {
 	}		
 	return null;
 }
+
+
 /**
  * Insert the method's description here.
  * Creation date: (4/4/2001 12:18:02 AM)
@@ -144,6 +173,8 @@ public String getUnits() {
 public int hashCode() {
 	return toString().hashCode();
 }
+
+
 /**
  * This method was created by a SmartGuide.
  * @return boolean
@@ -151,6 +182,8 @@ public int hashCode() {
 public boolean isDIRICHLET() {
 	return type==DIRICHLET;
 }
+
+
 /**
  * This method was created by a SmartGuide.
  * @return boolean
@@ -158,6 +191,17 @@ public boolean isDIRICHLET() {
 public boolean isNEUMANN() {
 	return type==NEUMANN;
 }
+
+
+/**
+ * This method was created by a SmartGuide.
+ * @return boolean
+ */
+public boolean isPERIODIC() {
+	return type==PERIODIC;
+}
+
+
 /**
  * This method was created by a SmartGuide.
  * @return java.lang.String
@@ -168,7 +212,10 @@ public String toString() {
 	}
 	if (isNEUMANN()){
 		return NEUMANN_STRING;
-	}		
+	}
+	if (isPERIODIC()) {
+		return PERIODIC_STRING;
+	}
 	return null;
 }
 }
