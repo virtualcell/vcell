@@ -17,29 +17,7 @@ ASTMultNode(int id) {
 	super(id);
 if (id != ExpressionParserTreeConstants.JJTMULTNODE){ System.out.println("ASTMultNode(), id = "+id); }
 }
-  public String code() throws ExpressionException
-  {
-	  StringBuffer buffer = new StringBuffer();
-	 
-	  buffer.append("(");
-
-	  for (int i=0;i<jjtGetNumChildren();i++){
-		  if (jjtGetChild(i) instanceof ASTInvertTermNode){
-			 buffer.append(" / ");
-//             buffer.append("(");
-			 buffer.append(jjtGetChild(i).code());
-//             buffer.append(")");
-		  }else{
-			 if (i>0) buffer.append(" * ");
-			 buffer.append(jjtGetChild(i).code());
-		  }
-	  }
-
-	  buffer.append(")");
-
-	  return buffer.toString();
-  }        
-/**
+  /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.

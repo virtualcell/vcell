@@ -14,17 +14,6 @@ public class ASTMinusTermNode extends SimpleNode {
 ASTMinusTermNode(int id) {
 	super(id);
 }
-public String code() throws ExpressionException {
-
-	StringBuffer buffer = new StringBuffer();
-	 
-	buffer.append(" - ");
-
-	buffer.append(jjtGetChild(0).code());
-
-	return buffer.toString();
-
-}    
 /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node

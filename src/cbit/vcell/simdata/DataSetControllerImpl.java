@@ -503,7 +503,7 @@ private SimDataBlock evaluateFunction(
 	// store result 
 	//
 	//grad
-	boolean isGrad = exp.infix().indexOf("grad(") != -1;
+	boolean isGrad = exp.hasGradient();
 	//
 	double args[] = new double[varIndex+(isGrad?12*varIndex:0)];
 	double data[] = new double[dataLength];

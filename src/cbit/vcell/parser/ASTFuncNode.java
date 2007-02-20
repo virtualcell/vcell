@@ -7,6 +7,11 @@ package cbit.vcell.parser;
 import net.sourceforge.interval.ia_math.*;
 
 public class ASTFuncNode extends SimpleNode {
+	
+	private static final int BOTH_NEIGHBORS = 0;
+	private static final int NO_NEIGHBORS = 3;
+	private static final int USE_ADJACENT_PLUS = 1;
+	private static final int USE_ADJACENT = 2;
  	
  	private int funcType = -1;
 
@@ -148,31 +153,17 @@ if (id != ExpressionParserTreeConstants.JJTFUNCNODE){ System.out.println("ASTFun
 
   /** Bind method, identifiers bind themselves to ValueObjects */
 public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
-	if (getFunction() == FIELD){//|| getFunction() == GRAD) {
+	if (getFunction() == FIELD){
+		return;
+	}else if (getFunction() == GRAD){
+		jjtGetChild(jjtGetNumChildren()-1).bind(symbolTable);
 		return;
 	}
 	super.bind(symbolTable);
 }    
 
 
-  public String code() throws ExpressionException
-  {
-	  StringBuffer buffer = new StringBuffer();
-	 
-	  buffer.append(getName() + "(");
-
-	  for (int i=0;i<jjtGetNumChildren();i++){
-		 if (i>0) buffer.append(", ");
-		 buffer.append(jjtGetChild(i).code());
-	  }
-
-	  buffer.append(")");
-
-	  return buffer.toString();
-  }        
-
-
-/**
+  /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.
@@ -1989,34 +1980,45 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		throw new FunctionDomainException("field(A, B) can't be evaluated in regular way");
 	}	
 	case GRAD: {
-		final int NUM_SPATIAL_ELEMENTS = 13; //p,xp,xxp,xm,xxm,yp,yyp,ym,yym,zp,zzp,zm,zzm - all begin with [time,x,y,z]
-		Node argNode = null;
-		String opName = null;
-		if(jjtGetNumChildren() == 1){
-			opName = "m";
-			argNode = jjtGetChild(0);
-		}else{
-			opName = ((ASTIdNode)jjtGetChild(0)).code();
-			argNode = jjtGetChild(1);
+		//
+		//Assumes 13 blocks of double values arranged in order given below
+		//p,xm,xp,ym,yp,zm,zp,xmm,xpp,ymm,ypp,zmm,zpp
+		//All 13 blocks composed of [time,x,y,z] followed by data values
+		//First grad argument is a code indicating the gradient function
+		//"m" = magnitude(xyz), "x" = x gradient, "y" = y gradient, "z" = z gradient,
+		//Second grad argument is variable to be evaluated
+		//
+		if(jjtGetNumChildren() != 2){
+			throw new ExpressionException("grad function expetcs 2 arguments");
 		}
-		int numInternalArgs = values.length/NUM_SPATIAL_ELEMENTS;
+		Node argNode = jjtGetChild(1);
+		String opName = ((ASTIdNode)jjtGetChild(0)).infixString(LANGUAGE_DEFAULT, null);
+		if(((values.length%Expression.GRADIENT_NUM_SPATIAL_ELEMENTS) != 0)){
+			throw new ExpressionException("number of grad values is not an even multiple of "+Expression.GRADIENT_NUM_SPATIAL_ELEMENTS+"\n"+
+											"current point plus 12 spatial neighbors)");
+		}
+		int numInternalArgs = values.length/Expression.GRADIENT_NUM_SPATIAL_ELEMENTS;
 		double[] tempArgs = new double[numInternalArgs];
 		result = 0;
-		boolean isMagnitude = opName.equalsIgnoreCase("m");
-		double[] magnitudeComponents = new double[3];
+		boolean isMagnitude = opName.equalsIgnoreCase(Expression.GRAD_MAGNITUDE);
+		double[] magnitudeComponents = (isMagnitude?new double[3]:null);
 		for(int i=0;i<3;i+= 1){
 			int axisCode =
-				(opName.equalsIgnoreCase("x") || (isMagnitude && i==0)?cbit.vcell.geometry.Coordinate.X_AXIS:0) +
-				(opName.equalsIgnoreCase("y") || (isMagnitude && i==1)?cbit.vcell.geometry.Coordinate.Y_AXIS:0) +
-				(opName.equalsIgnoreCase("z") || (isMagnitude && i==2)?cbit.vcell.geometry.Coordinate.Z_AXIS:0);
+				(opName.equalsIgnoreCase(Expression.GRAD_X) || (isMagnitude && i==0)?cbit.vcell.geometry.Coordinate.X_AXIS:0) +
+				(opName.equalsIgnoreCase(Expression.GRAD_Y) || (isMagnitude && i==1)?cbit.vcell.geometry.Coordinate.Y_AXIS:0) +
+				(opName.equalsIgnoreCase(Expression.GRAD_Z) || (isMagnitude && i==2)?cbit.vcell.geometry.Coordinate.Z_AXIS:0);
 
 			int[] gradCase = getGradCase(values,axisCode,numInternalArgs);
 			//
 			if(gradCase == null){
-				throw new FunctionDomainException("grad(A,B) unknown case");
-			}else if(gradCase[0] == 3){
+				throw new FunctionDomainException("grad(A,B) unknown case for axis code "+axisCode);
+			}else if(gradCase[0] == NO_NEIGHBORS){
+				// =[p]= (bounded on both sides)
+				//g(x) = 0;
 				result = 0;
-			}else if(gradCase[0] == 2){
+			}else if(gradCase[0] == USE_ADJACENT){
+				// =[p0][p]= or =[p][p0]= (bound on 1 side with 1 adjacent available)
+				//g(x) = (u(p0) - u(p))/(p0-p)
 				System.arraycopy(values,gradCase[2]*numInternalArgs,tempArgs,0,tempArgs.length);
 				double eV = argNode.evaluateVector(tempArgs);
 				double eP = tempArgs[1+axisCode];
@@ -2024,20 +2026,9 @@ public double evaluateVector(double values[]) throws ExpressionException {
 				double pV = argNode.evaluateVector(tempArgs);
 				double pP = tempArgs[1+axisCode];
 				result = (eV-pV)/(eP-pP);
-				//System.out.println(
-					//"px="+values[1]+" "+
-					//"py="+values[2]+" "+
-					//"pz="+values[3]+"  "+
-					//"p2x="+tempArgs[1]+" "+
-					//"p2y="+tempArgs[2]+" "+
-					//"p2z="+tempArgs[3]+"  "+
-					//"nCode="+(gradCase[1]-1)+" "+
-					//"p="+p+" "+
-					//"p2="+p2+" "+
-					//"x="+x+" "+
-					//"x1="+x2+" "+
-					//"result="+result);
-			}else if(gradCase[0] == 1){
+			}else if(gradCase[0] == USE_ADJACENT_PLUS){
+				// ...[p1][p0][p]= or =[p][p0][p1]... (bound on 1 side only)
+				//g(x) = ((-3*u(p)) + (4*u(p0)) + (-u(p1))) / (p1-p)
 				System.arraycopy(values,gradCase[3]*numInternalArgs,tempArgs,0,tempArgs.length);
 				double eeV = argNode.evaluateVector(tempArgs);
 				double eeP = tempArgs[1+axisCode];
@@ -2048,7 +2039,9 @@ public double evaluateVector(double values[]) throws ExpressionException {
 				double pV = argNode.evaluateVector(tempArgs);
 				double pP = tempArgs[1+axisCode];
 				result = ((-3*pV)+(4*eV)+(-eeV))/(eeP-pP);
-			}else if(gradCase[0] == 0){
+			}else if(gradCase[0] == BOTH_NEIGHBORS){
+				// [pm][p][pp] (not bound on either side)
+				//g(x) = (u(pp) - u(pm))/(pp-pm)
 				System.arraycopy(values,gradCase[3]*numInternalArgs,tempArgs,0,tempArgs.length);
 				double eV = argNode.evaluateVector(tempArgs);
 				double eP = tempArgs[1+axisCode];
@@ -2305,7 +2298,7 @@ public Node flatten() throws ExpressionException {
 		break;
 	}
 	case GRAD: {
-		//if (tempChildren.size()!=2) throw new ExpressionException("grad() expects 2 arguments");
+		if (tempChildren.size()!=2) throw new ExpressionException("grad() expects 2 arguments");
 		break;
 	}
 	default: {
@@ -2335,6 +2328,15 @@ void getFieldDataIdentifierSpecs(java.util.Vector v) {
 }
 
 
+boolean hasGradient(){
+	if(getFunction() == GRAD){
+		return true;
+	}else{
+		return super.hasGradient();
+	}
+}
+
+
 /**
  * Insert the method's description here.
  * Creation date: (12/20/2002 2:20:27 PM)
@@ -2351,10 +2353,6 @@ int getFunction() {
  */
 private static int[] getGradCase(double[] args,int axisCode,int numInternalArgs) {
 
-	final int BOTH_NEIGHBORS = 0;
-	final int NO_NEIGHBORS = 3;
-	final int USE_ADJACENT_PLUS = 1;
-	final int USE_ADJACENT = 2;
 
 	final int COORD_OFFSET = 1;
 	
@@ -2431,6 +2429,8 @@ String getName() {
 public String[] getSymbols(int language, NameScope nameScope) {
 	if (getFunction() == FIELD) {
 		return new String[0];
+	}else if (getFunction() == GRAD){
+		return jjtGetChild(jjtGetNumChildren()-1).getSymbols(language, nameScope);
 	}
 	return super.getSymbols(language, nameScope);
 }
@@ -2742,6 +2742,13 @@ public boolean narrow(RealInterval intervals[]) throws ExpressionBindingExceptio
  */
 void setFunction(int function) {
 	funcType = function;
+	if(getFunction() == GRAD){
+		if(jjtGetNumChildren() == 2 && jjtGetChild(1) instanceof SimpleNode){
+			if(((SimpleNode)jjtGetChild(1)).hasGradient()){
+				throw new RuntimeException("Gradient Function nesting not implemented");
+			}
+		}
+	}
 }
 
 
@@ -2754,7 +2761,7 @@ void setFunctionFromParserToken(String parserToken) {
 	for (int i = 0; i < functionNamesVCML.length; i++){
 		String definedToken = functionNamesVCML[i];
 		if (definedToken.equals(parserToken)) {
-			funcType = i;
+			setFunction(i);
 			return;
 		}
 	}

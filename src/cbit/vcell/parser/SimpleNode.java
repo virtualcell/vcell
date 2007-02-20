@@ -36,20 +36,6 @@ public abstract class SimpleNode implements Node, java.io.Serializable {
   }    
 
 
-  public String code() throws ExpressionException
-  {
-	  StringBuffer buffer = new StringBuffer();
-	 
-	  for (int i=0;i<jjtGetNumChildren();i++){
-		  buffer.append(jjtGetChild(i).code());
-	  }
-	  return buffer.toString();
-  }        
-
-
-  /* Override this method if you want to customize how the node dumps
-     out its children. */
-
   public void dump(String prefix) {
     System.out.println(toString(prefix));
     if (children != null) {
@@ -125,6 +111,17 @@ void getFieldDataIdentifierSpecs(java.util.Vector v) {
 		SimpleNode child = (SimpleNode)jjtGetChild(i);
 		child.getFieldDataIdentifierSpecs(v);		 
 	}	
+}
+
+
+boolean hasGradient() {
+	for (int i = 0;  i < jjtGetNumChildren(); i ++) {
+		SimpleNode child = (SimpleNode)jjtGetChild(i);
+		if(child.hasGradient()){
+			return true;
+		}
+	}
+	return false;
 }
 
 

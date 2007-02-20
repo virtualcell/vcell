@@ -16,9 +16,7 @@ interface Node {
   /** Bind method, identifiers bind themselves to ValueObjects */
   void bind(SymbolTable symbolTable) 
 						throws ExpressionBindingException;
-  /** cppCode method, prints expressions in syntax of 'language' */
-  String code() throws ExpressionException;          
-/**
+  /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
  */

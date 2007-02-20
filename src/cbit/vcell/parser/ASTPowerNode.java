@@ -16,21 +16,7 @@ ASTPowerNode(int id) {
 	super(id);
 if (id != ExpressionParserTreeConstants.JJTPOWERNODE){ System.out.println("ASTAddNode(), id = "+id); }
 }
-  public String code() throws ExpressionException
-  {
-      if (jjtGetNumChildren()!=2){
-	      throw new ExpressionException("ASTPowerNode.code(): Power must have two arguments");
-      }
-	  StringBuffer buffer = new StringBuffer();
-	  buffer.append("pow(");
-	  buffer.append(jjtGetChild(0).code());
-	  buffer.append(",");
-	  buffer.append(jjtGetChild(1).code());
-	  buffer.append(")");
-
-	  return buffer.toString();
-  }        
-/**
+  /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.
