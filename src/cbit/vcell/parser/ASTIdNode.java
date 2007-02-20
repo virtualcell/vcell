@@ -43,11 +43,6 @@ public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
 		throw new ExpressionBindingException("error binding identifier " + id);
 	}
 }    
-public String code() throws ExpressionException {
-	if (symbolTableEntry==null) return null;
-
-	return symbolTableEntry.getName();
-}    
 /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node

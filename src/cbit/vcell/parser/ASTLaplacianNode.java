@@ -11,18 +11,6 @@ public class ASTLaplacianNode extends SimpleNode {
 ASTLaplacianNode() {
 	super(-1);
 }  
-public String code() throws ExpressionException {
-
-	StringBuffer buffer = new StringBuffer();
-	 
-	buffer.append(" laplacian(");
-
-	buffer.append(jjtGetChild(0).code());
-
-	buffer.append(") ");
-
-	return buffer.toString();
-}    
 /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node

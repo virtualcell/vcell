@@ -15,29 +15,7 @@ ASTAddNode(int i) {
 	super(i);
 if (i != ExpressionParserTreeConstants.JJTADDNODE){ System.out.println("ASTAddNode(), i = "+i); }
 }
-  public String code() throws ExpressionException
-  {
-	  StringBuffer buffer = new StringBuffer();
-	 
-	  buffer.append("(");
-
-	  for (int i=0;i<jjtGetNumChildren();i++){
-		  if (jjtGetChild(i) instanceof ASTMinusTermNode){
-//			 buffer.append(" - ");
-//             buffer.append("(");
-			 buffer.append(jjtGetChild(i).code());
-//             buffer.append(")");
-		  }else{
-			 if (i>0) buffer.append(" + ");
-			 buffer.append(jjtGetChild(i).code());
-		  }
-	  }
-
-	  buffer.append(")");
-
-	  return buffer.toString();
-  }          
-/**
+  /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.
@@ -121,7 +99,7 @@ public Node flatten() throws ExpressionException {
 	}catch (Exception e){}		
 
 	ASTAddNode addNode = new ASTAddNode(id);
-	java.util.Vector tempChildren = new java.util.Vector();
+	java.util.Vector<Node> tempChildren = new java.util.Vector<Node>();
 
 	for (int i=0;i<jjtGetNumChildren();i++){
 		tempChildren.addElement(jjtGetChild(i).flatten());
@@ -138,7 +116,7 @@ public Node flatten() throws ExpressionException {
 	while (moreToDo){
 		moreToDo = false;
 		for (int i=0;i<tempChildren.size();i++){
-			Node child = (Node)tempChildren.elementAt(i);
+			Node child = tempChildren.elementAt(i);
 			if (child instanceof ASTAddNode){
 				//
 				// get all grandchildren and remove child
@@ -164,7 +142,7 @@ public Node flatten() throws ExpressionException {
 	while (moreFloat){
 		moreFloat = false;
 		for (int i=0;i<tempChildren.size();i++){
-			Node child = (Node)tempChildren.elementAt(i);
+			Node child = tempChildren.elementAt(i);
 			try {
 				double equivalentValue = child.evaluateConstant();
 				floatCount++;
@@ -180,10 +158,10 @@ public Node flatten() throws ExpressionException {
 		tempChildren.insertElementAt(new ASTFloatNode(floatValue),0);
 	}	
 	if (tempChildren.size()==1){
-		return (Node)tempChildren.elementAt(0);
+		return tempChildren.elementAt(0);
 	}		
 	for (int i=0;i<tempChildren.size();i++){
-		addNode.jjtAddChild((Node)tempChildren.elementAt(i));
+		addNode.jjtAddChild(tempChildren.elementAt(i));
 	}
 	return addNode;					
 //	for (int i=0;i<jjtGetNumChildren();i++){
@@ -223,7 +201,7 @@ public Node flatten() throws ExpressionException {
  * @return boolean
  */
 public boolean narrow(RealInterval intervals[]) throws ExpressionBindingException{
-	boolean retcode = true;
+
 	for (int i = 0; i < jjtGetNumChildren()-1; i++){
 		if (!IANarrow.narrow_add(getInterval(intervals),jjtGetChild(i).getInterval(intervals),jjtGetChild(i+1).getInterval(intervals))){
 			return false;

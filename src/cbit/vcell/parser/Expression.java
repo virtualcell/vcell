@@ -22,6 +22,12 @@ public class Expression implements java.io.Serializable, cbit.util.Matchable {
    private static long substituteCount = 0;
    private static long bindCount = 0;
    
+   public static final int GRADIENT_NUM_SPATIAL_ELEMENTS = 13;
+   public static final String GRAD_MAGNITUDE = "m";
+   public static final String GRAD_X = "x";
+   public static final String GRAD_Y = "y";
+   public static final String GRAD_Z = "z";
+  
 /**
  * This method was created in VisualAge.
  * @param value double
@@ -332,6 +338,12 @@ public cbit.vcell.field.FieldDataIdentifierSpec[] getFieldDataIdentifierSpecs() 
 	v.copyInto(funcs);
 	return funcs;
 }
+
+
+public boolean hasGradient(){
+	return rootNode.hasGradient();
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (9/15/2003 9:32:34 AM)

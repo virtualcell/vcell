@@ -33,19 +33,6 @@ public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
 		throw new ExpressionBindingException("error binding independent variable " + independentVar);
 	}
 }    
-public String code() throws ExpressionException {
-
-	StringBuffer buffer = new StringBuffer();
-	 
-	buffer.append(" Deriv<"+independentVar+">(");
-
-	buffer.append(jjtGetChild(0).code());
-	
-	buffer.append(" )");
-
-	return buffer.toString();
-
-}    
 /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node

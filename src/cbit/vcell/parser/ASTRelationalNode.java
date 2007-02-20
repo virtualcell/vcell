@@ -31,21 +31,7 @@ ASTRelationalNode(int id) {
 	  super.bind(symbolTable);
 	  setInterval(new RealInterval(0.0,1.0),null);  // either true or false
   }    
-  public String code() throws ExpressionException
-  {
-	  StringBuffer buffer = new StringBuffer();
-	 
-	  buffer.append("(");
-	  for (int i=0;i<jjtGetNumChildren();i++){
-		 if (i>0) buffer.append(" "+opString+" ");
-		 buffer.append(jjtGetChild(i).code());
-	  }
-
-	  buffer.append(")");
-
-	  return buffer.toString();
-  }            
-/**
+  /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.

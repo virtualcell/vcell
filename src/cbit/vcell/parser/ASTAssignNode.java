@@ -23,19 +23,6 @@ public class ASTAssignNode extends SimpleNode {
 public void bind(SymbolTable symbolTable) throws ExpressionBindingException {
     jjtGetChild(1).bind(symbolTable);
 }
-public String code() throws ExpressionException {
-	StringBuffer buffer = new StringBuffer();
-
-	if (jjtGetNumChildren()!=2){
-		throw new ExpressionException("ASTAssignNode, expected 2 children");
-	}	
-
-	buffer.append(jjtGetChild(0).code());
-	buffer.append(" = ");
-	buffer.append(jjtGetChild(1).code());
-
-	return buffer.toString();
-}            
 /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node

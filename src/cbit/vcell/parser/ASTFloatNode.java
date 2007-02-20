@@ -34,15 +34,7 @@ ASTFloatNode (int id) {
 	  super.bind(symbolTable);
 	  setInterval(new RealInterval(value.doubleValue(),value.doubleValue()),null);
   }    
-  public String code() 
-  {
-	  if (value==null){
-		  return "null";
-	  }else{
-		  return value.toString();
-	  }
-  }        
-/**
+  /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.parser.Node
  * @exception java.lang.Exception The exception description.
