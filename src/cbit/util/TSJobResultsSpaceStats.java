@@ -11,6 +11,8 @@ public class TSJobResultsSpaceStats extends TimeSeriesJobResults {
 	private double[][] unweightedMean;
 	private double[][] weightedMean = null;
 	private double[] totalSpace = null;
+	private double[][] unweightedSum;
+	private double[][] weightedSum;
 
 /**
  * TSJobResultsSpaceStats constructor comment.
@@ -26,6 +28,8 @@ public TSJobResultsSpaceStats(
     double[][] argMax,
     double[][] argUnweightedMean,
     double[][] argWeightedMean,
+    double[][] argUnweightedSum,
+    double[][] argWeightedSum,
     double[] argTotalSpace) {
 
 	super(argVariableNames, argIndices, argTimes);
@@ -33,6 +37,8 @@ public TSJobResultsSpaceStats(
     max = argMax;
     unweightedMean = argUnweightedMean;
     weightedMean = argWeightedMean;
+    unweightedSum = argUnweightedSum;
+    weightedSum = argWeightedSum;
     totalSpace = argTotalSpace;
 }
 
@@ -75,6 +81,9 @@ public double[][] getUnweightedMean() {
 	return unweightedMean;
 }
 
+public double[][] getUnweightedSum() {
+	return unweightedSum;
+}
 
 /**
  * Insert the method's description here.
@@ -84,4 +93,9 @@ public double[][] getUnweightedMean() {
 public double[][] getWeightedMean() {
 	return weightedMean;
 }
+
+public double[][] getWeightedSum() {
+	return weightedSum;
+}
+
 }

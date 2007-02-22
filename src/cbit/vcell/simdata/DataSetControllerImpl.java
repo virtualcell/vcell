@@ -1,4 +1,6 @@
 package cbit.vcell.simdata;
+import cbit.util.TSJobResultsNoStats;
+import cbit.util.TimeSeriesJobResults;
 import cbit.vcell.export.server.*;
 import cbit.rmi.event.*;
 /*©
@@ -22,6 +24,14 @@ import cbit.vcell.solvers.CartesianMesh;
  * 
  */
 public class DataSetControllerImpl implements SimDataConstants {
+	
+	private static final int NUM_STATS = 6;//min,max,mean,wmean
+	private static final int MIN_OFFSET = 0;
+	private static final int MAX_OFFSET = 1;
+	private static final int MEAN_OFFSET = 2;
+	private static final int WMEAN_OFFSET = 3;
+	private static final int SUM_OFFSET = 4;
+	private static final int WSUM_OFFSET = 5;
 	//
 	private SessionLog log = null;
 	private File rootDirectory =  null;
@@ -367,34 +377,43 @@ private cbit.util.TimeSeriesJobResults calculateStatisticsFromWhole(
 	    double[][] spaceStatsMax = new double[timeSeriesJobSpec.getVariableNames().length][desiredTimeValues.length];
 	    double[][] spaceStatsUnweightedMean = new double[timeSeriesJobSpec.getVariableNames().length][desiredTimeValues.length];
 	    double[][] spaceStatsWeightedMean = new double[timeSeriesJobSpec.getVariableNames().length][desiredTimeValues.length];
+	    double[][] spaceStatsUnweightedSum = new double[timeSeriesJobSpec.getVariableNames().length][desiredTimeValues.length];
+	    double[][] spaceStatsWeightedSum = new double[timeSeriesJobSpec.getVariableNames().length][desiredTimeValues.length];
 	    for(int k=0;k<desiredTimeValues.length;k+= 1){//times
 		    for(int i=0;i<timeSeriesFormatedValuesArr.length;i+= 1){//Variable names
 			    double min = Double.POSITIVE_INFINITY;
 			    double max = Double.NEGATIVE_INFINITY;
 			    double mean = 0;
 			    double wmean = 0;
+			    double sum = 0;
+			    double wsum = 0;
 			    for(int j=1;j<timeSeriesFormatedValuesArr[i].length;j+= 1){//index
 				    val = timeSeriesFormatedValuesArr[i][j][k];
 				    if(val < min){min=val;}
 				    if(val > max){max=val;}
-				    mean+= val;
-				    if(spatialStatsInfo.bWeightsValid){wmean+= val*spatialStatsInfo.spaceWeight[i][j-1];}
+				    sum+= val;
+				    if(spatialStatsInfo.bWeightsValid){wsum+= val*spatialStatsInfo.spaceWeight[i][j-1];}
 			    }
-			    mean/= timeSeriesJobSpec.getIndices()[i].length;
-			    if(spatialStatsInfo.bWeightsValid){wmean/= spatialStatsInfo.totalSpace[i];}
+			    mean = sum/timeSeriesJobSpec.getIndices()[i].length;
+			    if(spatialStatsInfo.bWeightsValid){wmean = wsum/spatialStatsInfo.totalSpace[i];}
 
 			    spaceStatsMin[i][k] = min;
 			    spaceStatsMax[i][k] = max;
 			    spaceStatsUnweightedMean[i][k] = mean;
 			    spaceStatsWeightedMean[i][k] = wmean;
+			    spaceStatsUnweightedSum[i][k] = sum;
+			    spaceStatsWeightedSum[i][k] = wsum;
 		    }
 	    }
         return new cbit.util.TSJobResultsSpaceStats(
             timeSeriesJobSpec.getVariableNames(),
             timeSeriesJobSpec.getIndices(),
             desiredTimeValues,
-            spaceStatsMin,spaceStatsMax,spaceStatsUnweightedMean,
+            spaceStatsMin,spaceStatsMax,
+            spaceStatsUnweightedMean,
             (spatialStatsInfo.bWeightsValid?spaceStatsWeightedMean:null),
+            spaceStatsUnweightedSum,
+            (spatialStatsInfo.bWeightsValid?spaceStatsWeightedSum:null),
             (spatialStatsInfo.bWeightsValid?spatialStatsInfo.totalSpace:null));
     }
 
@@ -1379,6 +1398,87 @@ private double[] getSpatialNeighborData(CartesianMesh mesh,int volumeIndex,int n
 	return spatialNeighborData;
 }
 
+private TimeSeriesJobResults getSpecialTimeSeriesValues(VCDataIdentifier vcdID,cbit.util.TimeSeriesJobSpec timeSeriesJobSpec,double[] wantedTimes)
+throws Exception{
+	
+	
+	String[] variableNames = timeSeriesJobSpec.getVariableNames();
+	boolean bIsSpecial = false;
+//	if(timeSeriesJobSpec.getIndices() == null){//whole spatial domain
+//		bIsSpecial = true;
+//	}else {
+		VCData vcData = getVCData(vcdID);
+//		CartesianMesh vcDataMesh = vcData.getMesh();
+		for(int i=0;i<variableNames.length;i+= 1){
+			AnnotatedFunction functionFromVarName = vcData.getFunction(variableNames[i]);
+			if(functionFromVarName != null){
+				if(functionFromVarName.getExpression().hasGradient()){
+//					Gradient functions are special for time series
+					if(timeSeriesJobSpec.isCalcTimeStats()){
+						throw new RuntimeException("Time Stats Not yet implemented for 'special' data");
+					}
+					bIsSpecial = true;
+					break;
+				}
+			}
+//			if(timeSeriesJobSpec.getIndices()[i].length > (vcDataMesh.getDataLength(VariableType.VOLUME)/2)){
+////				requested data length is greater than 1/2 the total volume domain
+//				bIsSpecial = true;
+//				break;
+//			}
+		}
+//	}
+	if(!bIsSpecial){
+		return null;
+	}
+	
+	double[][][] varIndicesTimesArr = new double[variableNames.length][][];
+	for(int varNameIndex =0;varNameIndex<variableNames.length;varNameIndex+= 1){
+		int[] dataIndices = timeSeriesJobSpec.getIndices()[varNameIndex];
+		varIndicesTimesArr[varNameIndex] = new double[dataIndices.length + 1][wantedTimes.length];
+		varIndicesTimesArr[varNameIndex][0] = wantedTimes;
+		for(int timeIndex=0;timeIndex<wantedTimes.length;timeIndex+= 1){
+			SimDataBlock simDatablock = getSimDataBlock(vcdID, variableNames[varNameIndex], wantedTimes[timeIndex]);
+			double[] data = simDatablock.getData();
+			for(int dataIndex=0;dataIndex<dataIndices.length;dataIndex+= 1){
+				varIndicesTimesArr[varNameIndex][dataIndex+1][timeIndex] = data[dataIndices[dataIndex]];
+			}
+		}
+	}
+//	for(int timeIndex=0;timeIndex<wantedTimes.length;timeIndex+= 1){
+//		for(int varNameIndex =0;varNameIndex<variableNames.length;varNameIndex+= 1){
+//			SimDataBlock simDatablock = getSimDataBlock(vcdID, variableNames[varNameIndex], wantedTimes[timeIndex]);
+//			double[] data = simDatablock.getData();
+//			if(timeSeriesJobSpec.isCalcSpaceStats()){
+//			}else if(timeSeriesJobSpec.isCalcTimeStats()){
+//				throw new RuntimeException("Time Stats Not yet implemented for 'special' data");
+//			}else{//No stats
+//				int[] dataIndexes = timeSeriesJobSpec.getIndices()[varNameIndex];
+//				varTimesValuesArr[varNameIndex][timeIndex] = new double[dataIndexes.length];
+//				for(int i=0;i<dataIndexes.length;i+= 1){
+//					varTimesValuesArr[varNameIndex][timeIndex][i] = data[dataIndexes[i]];
+//				}
+//			}
+//		}
+//	}
+	
+	TimeSeriesJobResults tsjr = null;
+	if(timeSeriesJobSpec.isCalcSpaceStats()){
+		SpatialStatsInfo ssi = calcSpatialStatsInfo(timeSeriesJobSpec, vcdID);
+		tsjr = calculateStatisticsFromWhole(timeSeriesJobSpec, varIndicesTimesArr, wantedTimes, ssi);
+	}else if(timeSeriesJobSpec.isCalcTimeStats()){
+		throw new RuntimeException("Time Stats Not yet implemented for 'special' data");		
+	}else{
+		tsjr = new TSJobResultsNoStats(
+				timeSeriesJobSpec.getVariableNames(),
+				timeSeriesJobSpec.getIndices(),
+				wantedTimes,
+				varIndicesTimesArr
+				);
+	}
+	
+	return tsjr;
+}
 
 /**
  * This method was created by a SmartGuide.
@@ -1449,11 +1549,13 @@ public cbit.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID
 				)
 		);
 
-		final int NUM_STATS = 4;//min,max,mean,wmean
-		final int MIN_OFFSET = 0;
-		final int MAX_OFFSET = 1;
-		final int MEAN_OFFSET = 2;
-		final int WMEAN_OFFSET = 3;
+		
+		//See if we need special processing
+		TimeSeriesJobResults specialTSJR = getSpecialTimeSeriesValues(vcdID,timeSeriesJobSpec,desiredTimeValues);
+		if(specialTSJR != null){
+			return specialTSJR;
+		}
+		//
 		SimulationData simData = (SimulationData)getVCData(vcdID);
 		//
 		//Determine Memory Usage for this job to protect server
@@ -1510,6 +1612,8 @@ public cbit.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID
 						timeSeries[MAX_OFFSET + 1][i] = valuesOverTime[i][0][MAX_OFFSET];// max
 						timeSeries[MEAN_OFFSET + 1][i] = valuesOverTime[i][0][MEAN_OFFSET];// mean
 						timeSeries[WMEAN_OFFSET + 1][i] = valuesOverTime[i][0][WMEAN_OFFSET];// wmean
+						timeSeries[SUM_OFFSET + 1][i] = valuesOverTime[i][0][SUM_OFFSET];// sum
+						timeSeries[WSUM_OFFSET + 1][i] = valuesOverTime[i][0][WSUM_OFFSET];// wsum
 					}else{
 						for (int j = 0; j < indices.length; j++){
 							timeSeries[j + 1][i] = valuesOverTime[i][0][j];
@@ -1526,6 +1630,8 @@ public cbit.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID
 			double[][] max = new double[timeSeriesJobSpec.getVariableNames().length][desiredTimeValues.length];
 			double[][] mean = new double[timeSeriesJobSpec.getVariableNames().length][desiredTimeValues.length];
 			double[][] wmean = new double[timeSeriesJobSpec.getVariableNames().length][desiredTimeValues.length];
+			double[][] sum = new double[timeSeriesJobSpec.getVariableNames().length][desiredTimeValues.length];
+			double[][] wsum = new double[timeSeriesJobSpec.getVariableNames().length][desiredTimeValues.length];
 			for(int i=0;i<valuesV.size();i+= 1){
 				double[][] timeStat = (double[][])valuesV.elementAt(i);
 				for(int j=0;j<desiredTimeValues.length;j+= 1){
@@ -1533,14 +1639,19 @@ public cbit.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID
 					max[i][j] = timeStat[MAX_OFFSET+1][j];
 					mean[i][j] = timeStat[MEAN_OFFSET+1][j];
 					wmean[i][j] = timeStat[WMEAN_OFFSET+1][j];
+					sum[i][j] = timeStat[SUM_OFFSET+1][j];
+					wsum[i][j] = timeStat[WSUM_OFFSET+1][j];
 				}
 			}
 			return new cbit.util.TSJobResultsSpaceStats(
 					timeSeriesJobSpec.getVariableNames(),
 					timeSeriesJobSpec.getIndices(),
 					desiredTimeValues,
-					min,max,mean,
+					min,max,
+					mean,
 					(spatialStatsInfo.bWeightsValid?wmean:null),
+					sum,
+					(spatialStatsInfo.bWeightsValid?wsum:null),
 					(spatialStatsInfo.bWeightsValid?spatialStatsInfo.totalSpace:null)
 				);
 		}else if(timeSeriesJobSpec.isCalcSpaceStats() && bHasFunctionVars){
