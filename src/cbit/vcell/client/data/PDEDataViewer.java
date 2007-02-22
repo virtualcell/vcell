@@ -172,25 +172,25 @@ private void calcStatistics(final java.awt.event.ActionEvent actionEvent) {
  */
 private void calcStatistics2() {
 
-	try{//Temp for Igor
-		if(getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.VOLUME)){
-			double[] data = getPdeDataContext().getDataValues();
-			double sum = 0;
-			double wsum = 0;
-			double totalSpace = 0;
-			for(int i = 0; i < data.length; i++){
-				sum+= data[i];
-				double space = getPdeDataContext().getCartesianMesh().calculateMeshElementVolumeFromVolumeIndex(i);
-				wsum+= data[i]*space;
-				totalSpace+= space;
-			}
-			System.out.println("Igor -- var="+getPdeDataContext().getVariableName()+" time="+getPdeDataContext().getTimePoint()+
-				"   weighted-sum="+wsum+" weighted-mean="+(wsum/totalSpace)+
-				"   sum="+sum+" mean="+(sum/data.length));
-		}
-	}catch(Throwable e){
-		System.out.println("Error calculating Igor sum\n"+e.getMessage());
-	}
+//	try{//Temp for Igor
+//		if(getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.VOLUME)){
+//			double[] data = getPdeDataContext().getDataValues();
+//			double sum = 0;
+//			double wsum = 0;
+//			double totalSpace = 0;
+//			for(int i = 0; i < data.length; i++){
+//				sum+= data[i];
+//				double space = getPdeDataContext().getCartesianMesh().calculateMeshElementVolumeFromVolumeIndex(i);
+//				wsum+= data[i]*space;
+//				totalSpace+= space;
+//			}
+//			System.out.println("Igor -- var="+getPdeDataContext().getVariableName()+" time="+getPdeDataContext().getTimePoint()+
+//				"   weighted-sum="+wsum+" weighted-mean="+(wsum/totalSpace)+
+//				"   sum="+sum+" mean="+(sum/data.length));
+//		}
+//	}catch(Throwable e){
+//		System.out.println("Error calculating Igor sum\n"+e.getMessage());
+//	}
 		
 	int[] dataIndexes = null;
 	String variableName = null;
@@ -2080,6 +2080,8 @@ private void plotStatistics(TimeSeriesJobSpec tsjs) {
 				double[] maxs = null;
 				double[] means = null;;
 				double[] wmeans = null;
+				double[] sums = null;
+				double[] wsums = null;
 				for(int i=0;i<tsjs.getIndices()[0].length;i+=BATCH_SIZE){
 					pp.setProgress((int)(100*((float)i/(float)tsjs.getIndices()[0].length)));
 					int[] indexes_batch = new int[Math.min(BATCH_SIZE,(tsjs.getIndices()[0].length-i))];
@@ -2097,6 +2099,8 @@ private void plotStatistics(TimeSeriesJobSpec tsjs) {
 						maxs = tsjrss.getMaximums()[0];
 						means = tsjrss.getUnweightedMean()[0];
 						wmeans = new double[tsjrss.getTimes().length];
+						sums = tsjrss.getUnweightedSum()[0];
+						wsums = tsjrss.getWeightedSum()[0];
 						for(int j=0;j<tsjrss.getTimes().length;j+= 1){
 							wmeans[j] = tsjrss.getWeightedMean()[0][j]*tsjrss.getTotalSpace()[0];
 						}
@@ -2106,6 +2110,8 @@ private void plotStatistics(TimeSeriesJobSpec tsjs) {
 							maxs[j] = Math.max(maxs[j],tsjrss.getMaximums()[0][j]);
 							means[j]+= tsjrss.getUnweightedMean()[0][j];
 							wmeans[j]+= tsjrss.getWeightedMean()[0][j]*tsjrss.getTotalSpace()[0];
+							sums[j]+= tsjrss.getUnweightedSum()[0][j];
+							wsums[j]+= tsjrss.getWeightedSum()[0][j];
 						}
 					}
 					totalSpace+= tsjrss.getTotalSpace()[0];
@@ -2123,6 +2129,8 @@ private void plotStatistics(TimeSeriesJobSpec tsjs) {
 						new double[][] {maxs},
 						new double[][] {means},
 						new double[][] {wmeans},
+						new double[][] {sums},
+						new double[][] {wsums},
 						new double[] {totalSpace}
 						);
 			}
@@ -2153,12 +2161,13 @@ private void plotStatistics(TimeSeriesJobSpec tsjs) {
 		//cbit.vcell.parser.SymbolTableEntry[] symbolTableEntries = new cbit.vcell.parser.SymbolTableEntry[tsjs.getVariableNames().length];
 		cbit.vcell.parser.SymbolTableEntry[] symbolTableEntries = null;
 		if(tsjs.getVariableNames().length == 1){
-			symbolTableEntries = new cbit.vcell.parser.SymbolTableEntry[3];//max.mean.min
+			symbolTableEntries = new cbit.vcell.parser.SymbolTableEntry[4];//max.mean.min,sum
 		//for(int i=0;i<symbolTableEntries.length;i+= 1){
 			try{
 				symbolTableEntries[0] = getSimulation().getMathDescription().getEntry(tsjs.getVariableNames()[0]);
 				symbolTableEntries[1] = symbolTableEntries[0];
 				symbolTableEntries[2] = symbolTableEntries[0];
+				symbolTableEntries[3] = symbolTableEntries[0];
 			}catch(cbit.vcell.parser.ExpressionBindingException e){
 				e.printStackTrace();
 			}
@@ -2167,8 +2176,17 @@ private void plotStatistics(TimeSeriesJobSpec tsjs) {
 		cbit.plot.PlotPane plotPane = new cbit.plot.PlotPane();
 		plotPane.setPlot2D(
 			new cbit.plot.SingleXPlot2D(symbolTableEntries,"Time",
-			new String[] {"Max",(tsjrss.getWeightedMean() != null?"WeightedMean":"UnweightedMean"),"Min"},
-			new double[][] {tsjrss.getTimes(),tsjrss.getMaximums()[0],(tsjrss.getWeightedMean() != null?tsjrss.getWeightedMean()[0]:tsjrss.getUnweightedMean()[0]),tsjrss.getMinimums()[0]},
+			new String[] {
+					"Max",
+					(tsjrss.getWeightedMean() != null?"WeightedMean":"UnweightedMean"),
+					"Min",
+					(tsjrss.getWeightedSum() != null?"WeightedSum":"UnweightedSum")},
+			new double[][] {
+					tsjrss.getTimes(),
+					tsjrss.getMaximums()[0],
+					(tsjrss.getWeightedMean() != null?tsjrss.getWeightedMean()[0]:tsjrss.getUnweightedMean()[0]),
+					tsjrss.getMinimums()[0],
+					(tsjrss.getWeightedSum() != null?tsjrss.getWeightedSum()[0]:tsjrss.getUnweightedSum()[0])},
 			new String[] {
 				"Statistics Plot for "+tsjrss.getVariableNames()[0]+(tsjrss.getTotalSpace() != null?" (ROI "+(bVolume?"volume":"area")+"="+tsjrss.getTotalSpace()[0]+")":""),
 				"Time (s)",

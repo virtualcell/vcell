@@ -321,18 +321,20 @@ private double[] calcSpaceStats(double[] rawVals,int varIndex,DataSetControllerI
     double max = Double.NEGATIVE_INFINITY;
     double mean = 0;
     double wmean = 0;
+    double sum = 0;
+    double wsum = 0;
     double val;
     for(int j=0;j<rawVals.length;j+= 1){
 	    val = rawVals[j];
 	    if(val < min){min=val;}
 	    if(val > max){max=val;}
-	    mean+= val;
-	    if(spatialStatsInfo.bWeightsValid){wmean+= val*spatialStatsInfo.spaceWeight[varIndex][j];}
+	    sum+= val;
+	    if(spatialStatsInfo.bWeightsValid){wsum+= val*spatialStatsInfo.spaceWeight[varIndex][j];}
     }
-    mean/= rawVals.length;
-    if(spatialStatsInfo.bWeightsValid){wmean/= spatialStatsInfo.totalSpace[varIndex];}
+    mean = sum/rawVals.length;
+    if(spatialStatsInfo.bWeightsValid){wmean = wsum/spatialStatsInfo.totalSpace[varIndex];}
 
-    return new double[] {min,max,mean,wmean};
+    return new double[] {min,max,mean,wmean,sum,wsum};
 }
 
 
