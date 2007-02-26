@@ -18,6 +18,12 @@ import cbit.vcell.client.server.*;
  */
 public class PDEDataViewer extends DataViewer {
 	//
+	private class StatsJobInfo{
+		public String variableName;
+		public Double beginTime;
+		public Double endTime;
+	};
+	//
 	private JInternalFrame dataValueSurfaceViewerJIF = null;
 	private cbit.vcell.geometry.gui.DataValueSurfaceViewer fieldDataValueSurfaceViewer = null;
 	private MeshDisplayAdapter.MeshRegionSurfaces meshRegionSurfaces = null;
@@ -139,6 +145,99 @@ public PDEDataViewer() {
 	initialize();
 }
 
+private StatsJobInfo calcStatsGetUserInfo(){
+	
+	StatsJobInfo statsJobInfo = null;
+	//get Volume variable names
+	Vector volVarnamesV = new Vector();
+	DataIdentifier[] dids = getPdeDataContext().getDataIdentifiers();
+	for(int i=0;i<dids.length;i+= 1){
+		if(	dids[i].getVariableType().equals(VariableType.VOLUME) ||
+			dids[i].getVariableType().equals(VariableType.VOLUME_REGION)){
+			if(!dids[i].equals(getPdeDataContext().getDataIdentifier())){
+				volVarnamesV.add(dids[i].getName());
+			}
+		}
+	}
+	if(volVarnamesV.size() > 0){
+		String[] volVarnamesArr = new String[volVarnamesV.size()];
+		volVarnamesV.copyInto(volVarnamesArr);
+		double[] timePoints = getPdeDataContext().getTimePoints();
+		Double[] timePointsD = new Double[timePoints.length];
+		for(int i=0;i<timePoints.length;i+= 1){
+			timePointsD[i] = new Double(timePoints[i]);
+		}
+		//
+		//Show GUI
+		//
+		JPanel jPanel = new JPanel();
+		BoxLayout mainBL = new BoxLayout(jPanel,BoxLayout.Y_AXIS);
+		jPanel.setLayout(mainBL);
+		JList varList = new JList(volVarnamesArr);
+		JScrollPane jsp = new JScrollPane(varList);
+		jPanel.add(jsp);
+		JComboBox jcb_time_begin = new JComboBox(timePointsD);
+		jcb_time_begin.setMaximumSize(new Dimension(100, 25));
+		JComboBox jcb_time_end = new JComboBox(timePointsD);
+		jcb_time_end.setSelectedIndex(timePointsD.length-1);
+		jcb_time_end.setMaximumSize(new Dimension(100, 25));
+		JPanel beginTimePanel = new JPanel();
+		beginTimePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+		BoxLayout btBL = new BoxLayout(beginTimePanel,BoxLayout.X_AXIS);
+		beginTimePanel.setLayout(btBL);
+		JLabel beginLabel = new JLabel("begin");
+//		beginLabel.setMinimumSize(new Dimension(40,25));
+		beginTimePanel.add(jcb_time_begin);
+		beginTimePanel.add(beginLabel);
+		JPanel endTimePanel = new JPanel();
+		endTimePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+		BoxLayout etBL = new BoxLayout(endTimePanel,BoxLayout.X_AXIS);
+		endTimePanel.setLayout(etBL);
+		JLabel endLabel = new JLabel("end");
+//		endLabel.setMinimumSize(new Dimension(40,25));
+		endTimePanel.add(jcb_time_end);
+		endTimePanel.add(endLabel);
+		jPanel.add(beginTimePanel);
+		jPanel.add(endTimePanel);
+		
+		
+		while(true){
+			int okCancel =
+				PopupGenerator.showComponentOKCancelDialog(this, jPanel, "Choose Variables and times");
+			if(okCancel == JOptionPane.OK_OPTION){
+				statsJobInfo = new StatsJobInfo();//User created Info
+				statsJobInfo.variableName = (String)varList.getSelectedValue();
+				statsJobInfo.beginTime = (Double)jcb_time_begin.getSelectedItem();
+				statsJobInfo.endTime = (Double)jcb_time_end.getSelectedItem();
+				if(statsJobInfo.variableName == null){//User Info Error
+					statsJobInfo = null;
+					PopupGenerator.showErrorDialog("Volume variable name must be selected from list");					
+				}else if(statsJobInfo.beginTime > statsJobInfo.endTime){//User Info Error
+					statsJobInfo = null;
+					PopupGenerator.showErrorDialog("Desired begintime must be less than endtime");
+				}else{
+					break;//User Info OK
+				}
+			}else{
+				statsJobInfo = null;//User cancelled
+				break;
+			}
+		}
+//		if(PopupGenerator.showComponentOKCancelDialog(
+//			this, jPanel, "Choose Variables and times") ==
+//				JOptionPane.OK_OPTION){
+//			statsJobInfo = new StatsJobInfo();//User created Info
+//			statsJobInfo.variableName = (String)varList.getSelectedValue();
+//			statsJobInfo.beginTime = (Double)jcb_time_begin.getSelectedItem();
+//			statsJobInfo.endTime = (Double)jcb_time_end.getSelectedItem();
+//		}else{
+//			statsJobInfo = null;//User cancelled
+//		}
+	}else{
+		statsJobInfo = new StatsJobInfo();//No Volume variables available
+	}
+	return statsJobInfo;
+}
 /**
  * Comment
  */
@@ -194,7 +293,8 @@ private void calcStatistics2() {
 		
 	int[] dataIndexes = null;
 	String variableName = null;
-	
+	double finalBeginTime = getPdeDataContext().getTimePoints()[0];
+	double finalEndtime = getPdeDataContext().getTimePoints()[getPdeDataContext().getTimePoints().length-1];
 	if(getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.VOLUME) ||
 		getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.VOLUME_REGION)){
 
@@ -203,46 +303,38 @@ private void calcStatistics2() {
 			== JOptionPane.CANCEL_OPTION){
 				return;
 		}
-		//get Volume variable names
-		Vector volVarnamesV = new Vector();
-		DataIdentifier[] dids = getPdeDataContext().getDataIdentifiers();
-		for(int i=0;i<dids.length;i+= 1){
-			if(	dids[i].getVariableType().equals(VariableType.VOLUME) ||
-				dids[i].getVariableType().equals(VariableType.VOLUME_REGION)){
-				if(!dids[i].equals(getPdeDataContext().getDataIdentifier())){
-					volVarnamesV.add(dids[i].getName());
-				}
+		//Count how many indexes are in the ROI
+		int vaoiCount=0;
+		double[] data = getPdeDataContext().getDataValues();
+		for(int i=0;i<data.length;i+= 1){
+			if(data[i] == 1.0){
+				vaoiCount+= 1;
 			}
 		}
-
-		if(volVarnamesV.size() > 0){
-			String[] volVarnamesArr = new String[volVarnamesV.size()];
-			volVarnamesV.copyInto(volVarnamesArr);
-			variableName = (String)PopupGenerator.showListDialog(this,volVarnamesArr,"Chose Variable for which Statistics will be calculated");
-			if(variableName == null){return;}
+		if(vaoiCount == 0){
+			PopupGenerator.showErrorDialog("No values of 1.0 found in ROI variable "+getPdeDataContext().getVariableName());
+			return;
+		}
+		//Get Time and variable data desired for statistics calculation
+		StatsJobInfo statsJobInfo = calcStatsGetUserInfo();
+		if(statsJobInfo == null){return;}//User cancelled
+		
+		//Create dataIndexes array
+		if(statsJobInfo.variableName != null){//User selected volume variable
+			variableName = statsJobInfo.variableName;
+			finalBeginTime = statsJobInfo.beginTime;
+			finalEndtime = statsJobInfo.endTime;
 			
-			int vaoiCount=0;
-			double[] data = getPdeDataContext().getDataValues();
+			int[] vaoiIndexes = new int[vaoiCount];
+			vaoiCount = 0;
 			for(int i=0;i<data.length;i+= 1){
 				if(data[i] == 1.0){
+					vaoiIndexes[vaoiCount] = i;
 					vaoiCount+= 1;
 				}
 			}
-			if(vaoiCount != 0){
-				int[] vaoiIndexes = new int[vaoiCount];
-				vaoiCount = 0;
-				for(int i=0;i<data.length;i+= 1){
-					if(data[i] == 1.0){
-						vaoiIndexes[vaoiCount] = i;
-						vaoiCount+= 1;
-					}
-				}
 
-				dataIndexes = vaoiIndexes;
-			}else{
-				PopupGenerator.showErrorDialog("No values of 1.0 found in ROI variable "+getPdeDataContext().getVariableName());
-				return;
-			}
+			dataIndexes = vaoiIndexes;
 		}else{
 			PopupGenerator.showErrorDialog("No other volume variables found");
 			return;
@@ -290,7 +382,7 @@ private void calcStatistics2() {
 			new cbit.util.TimeSeriesJobSpec(
 				new String[] {variableName},
 				new int[][]{dataIndexes},
-				getPdeDataContext().getTimePoints()[0],1,getPdeDataContext().getTimePoints()[getPdeDataContext().getTimePoints().length-1],
+				finalBeginTime,1,finalEndtime,
 				true,false);
 
 			plotStatistics(timeSeriesJobSpec);
@@ -2090,7 +2182,7 @@ private void plotStatistics(TimeSeriesJobSpec tsjs) {
 						new cbit.util.TimeSeriesJobSpec(
 							tsjs.getVariableNames(),
 							new int[][]{indexes_batch},
-							getPdeDataContext().getTimePoints()[0],1,getPdeDataContext().getTimePoints()[getPdeDataContext().getTimePoints().length-1],
+							tsjs.getStartTime(),1,tsjs.getEndTime(),
 							true,false);
 					cbit.util.TSJobResultsSpaceStats tsjrss = (cbit.util.TSJobResultsSpaceStats)getPdeDataContext().getTimeSeriesValues(tsjs_batch);
 					if(i==0){
@@ -2161,13 +2253,13 @@ private void plotStatistics(TimeSeriesJobSpec tsjs) {
 		//cbit.vcell.parser.SymbolTableEntry[] symbolTableEntries = new cbit.vcell.parser.SymbolTableEntry[tsjs.getVariableNames().length];
 		cbit.vcell.parser.SymbolTableEntry[] symbolTableEntries = null;
 		if(tsjs.getVariableNames().length == 1){
-			symbolTableEntries = new cbit.vcell.parser.SymbolTableEntry[4];//max.mean.min,sum
+			symbolTableEntries = new cbit.vcell.parser.SymbolTableEntry[3/*4*/];//max.mean.min,sum
 		//for(int i=0;i<symbolTableEntries.length;i+= 1){
 			try{
 				symbolTableEntries[0] = getSimulation().getMathDescription().getEntry(tsjs.getVariableNames()[0]);
 				symbolTableEntries[1] = symbolTableEntries[0];
 				symbolTableEntries[2] = symbolTableEntries[0];
-				symbolTableEntries[3] = symbolTableEntries[0];
+				//symbolTableEntries[3] = symbolTableEntries[0];
 			}catch(cbit.vcell.parser.ExpressionBindingException e){
 				e.printStackTrace();
 			}
@@ -2179,14 +2271,14 @@ private void plotStatistics(TimeSeriesJobSpec tsjs) {
 			new String[] {
 					"Max",
 					(tsjrss.getWeightedMean() != null?"WeightedMean":"UnweightedMean"),
-					"Min",
-					(tsjrss.getWeightedSum() != null?"WeightedSum":"UnweightedSum")},
+					"Min"/*,
+					(tsjrss.getWeightedSum() != null?"WeightedSum":"UnweightedSum")*/},
 			new double[][] {
 					tsjrss.getTimes(),
 					tsjrss.getMaximums()[0],
 					(tsjrss.getWeightedMean() != null?tsjrss.getWeightedMean()[0]:tsjrss.getUnweightedMean()[0]),
-					tsjrss.getMinimums()[0],
-					(tsjrss.getWeightedSum() != null?tsjrss.getWeightedSum()[0]:tsjrss.getUnweightedSum()[0])},
+					tsjrss.getMinimums()[0]/*,
+					(tsjrss.getWeightedSum() != null?tsjrss.getWeightedSum()[0]:tsjrss.getUnweightedSum()[0])*/},
 			new String[] {
 				"Statistics Plot for "+tsjrss.getVariableNames()[0]+(tsjrss.getTotalSpace() != null?" (ROI "+(bVolume?"volume":"area")+"="+tsjrss.getTotalSpace()[0]+")":""),
 				"Time (s)",
@@ -2230,6 +2322,8 @@ private void plotStatistics(TimeSeriesJobSpec tsjs) {
 		PopupGenerator.showInfoDialog("Sorry, Display of this datatype has yet to be Implemented!");
 	}	
 }
+
+
 
 
 /**

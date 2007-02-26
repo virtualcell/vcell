@@ -1726,7 +1726,7 @@ public VCData getVCData(VCDataIdentifier vcdID) throws DataAccessException, IOEx
 		} else {  // assume vcdID instanceof cbit.vcell.solver.SimulationInfo or a test adapter
 			vcData = new SimulationData(vcdID,getUserDir(vcdID.getOwner()));
 		}
-		cacheTable.put(vcData.getResultsInfoObject(),vcData);
+		cacheTable.put(vcdID,vcData);
 	}
 
 	return vcData;
