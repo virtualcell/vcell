@@ -279,8 +279,8 @@ private void configureMinMax() {
 		getDisplayAdapterService1().getActiveScaleRange().getMin() != minmaxRange.getMin() ||
 		getDisplayAdapterService1().getActiveScaleRange().getMax() != minmaxRange.getMax()){
 			
-		getDisplayAdapterService1().setActiveScaleRange(minmaxRange);
 		getDisplayAdapterService1().setValueDomain((allDataMMMH != null?allDataMMMH.getRange():null));
+		getDisplayAdapterService1().setActiveScaleRange(minmaxRange);
 
 		java.text.DecimalFormat nf = new java.text.DecimalFormat();
 		nf.applyPattern("#.###E0");
@@ -2119,6 +2119,7 @@ private void jCheckBox1_ActionPerformed(java.awt.event.ActionEvent actionEvent) 
 private void jComboBox1_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
 
 	initDataManagerVariable((String)getVarNamesJComboBox().getSelectedItem());
+	getimagePaneView1().requestFocusInWindow();
 }
 
 
