@@ -292,13 +292,6 @@ public abstract String getVCML(int spatialDimension);
 
 
 /**
- * Remove 
- * Creation date: (6/26/2006 5:39:50 PM)
- */
-public void removeJumpProcess() {}
-
-
-/**
  * Remove a jump process from jump process list by it's index in the list.
  * Creation date: (6/26/2006 5:39:50 PM)
  */
@@ -320,6 +313,16 @@ public void removeJumpProcess(String procName)
 		if(((JumpProcess)listOfJumpProcesses.elementAt(i)).getName().compareTo(procName)==0)
 			listOfJumpProcesses.remove(i) ;
 	}
+}
+
+
+/**
+ * empty the jump process list
+ * Creation date: (6/26/2006 5:39:50 PM)
+ */
+public void removeJumpProcesses()
+{
+	listOfJumpProcesses.removeAllElements();
 }
 
 
@@ -347,6 +350,16 @@ public void removeVarIniCondition(String varName)
 		if(((VarIniCondition)listOfVarIniConditions.elementAt(i)).getVar().getName().compareTo(varName)==0)
 			listOfVarIniConditions.remove(i);
 	}	
+}
+
+
+/**
+ * empty the variable initial condition list
+ * Creation date: (11/14/2006 6:40:22 PM)
+ */
+public void removeVarIniConditions() 
+{
+	listOfVarIniConditions.removeAllElements();
 }
 
 

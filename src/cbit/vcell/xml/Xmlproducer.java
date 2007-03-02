@@ -845,6 +845,9 @@ public org.jdom.Element getXML(FeatureMapping param) {
 		feature.setAttribute(XMLTags.SubVolumeAttrTag, this.mangle(subvol.getName()));
 	}
 	feature.setAttribute(XMLTags.ResolvedAttrTag, String.valueOf(param.getResolved()));
+	//Add size
+	if(param.getSizeParameter().getExpression() != null)
+		feature.setAttribute(XMLTags.SizeTag, this.mangleExpression(param.getSizeParameter().getExpression()));
 	
 	// write BoundariesyConditions
 	org.jdom.Element boundariestypes = new org.jdom.Element(XMLTags.BoundariesTypesTag);
@@ -926,6 +929,9 @@ public org.jdom.Element getXML(MembraneMapping param) {
 /*	org.jdom.Element volume = new org.jdom.Element(XMLTags.VolumeFractionTag);
 	volume.addContent( this.mangleExpression(param.getVolumeFractionExpression()) );
 	membrane.addContent( volume );*/
+	//Add size
+	if(param.getSizeParameter().getExpression() != null)
+ 		membrane.setAttribute(XMLTags.SizeTag, this.mangleExpression(param.getSizeParameter().getExpression()));
 	//Add the electrical properties
 	membrane.setAttribute(XMLTags.CalculateVoltageTag, String.valueOf(param.getCalculateVoltage()));
 	membrane.setAttribute(XMLTags.SpecificCapacitanceTag, this.mangleExpression(param.getSpecificCapacitanceParameter().getExpression()));
@@ -2848,6 +2854,21 @@ public org.jdom.Element getXML(cbit.vcell.solver.OutputTimeSpec param) {
 	return outputOptions;
 }
 
+/**
+ * This method returns a XML representation of a stochSimOption object.
+ * Creation date: (5/2/2007 09:47:20 AM)
+ * @return org.jdom.Element
+ * @param param cbit.vcell.solver.StochSimOption
+ */
+public org.jdom.Element getXML(cbit.vcell.solver.StochSimOptions param) {
+	org.jdom.Element stochSimOptions = new org.jdom.Element(XMLTags.StochSimOptionsTag);
+
+	stochSimOptions.setAttribute(XMLTags.UseCustomSeedAttrTag, String.valueOf(param.isUseCustomSeed()));
+	if(param.isUseCustomSeed())
+		stochSimOptions.setAttribute(XMLTags.CustomSeedAttrTag, String.valueOf(param.getCustomSeed()));
+	stochSimOptions.setAttribute(XMLTags.NumberOfTrialAttrTag, String.valueOf(param.getNumOfTrials()));
+	return stochSimOptions;
+}
 
 /**
  * This method returns a XML representation of a Simulation object.
@@ -2911,6 +2932,8 @@ public org.jdom.Element getXML(cbit.vcell.solver.SolverTaskDescription param) {
 	solvertask.addContent( getXML(param.getTimeStep()) );
 	//Add ErrorTolerence
 	solvertask.addContent( getXML(param.getErrorTolerance()) );
+	//Add Stochastic simulation Options, 5th Feb, 2007
+	solvertask.addContent( getXML(param.getStochOpt()));
 	//Add OutputOptions
 	solvertask.addContent(getXML(param.getOutputTimeSpec()));
 	//Add sensitivityParameter

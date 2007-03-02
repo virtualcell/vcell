@@ -1,12 +1,16 @@
 package cbit.vcell.mapping.gui;
-
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import javax.swing.JComboBox;
+
 import cbit.vcell.parser.*;
+import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.vcml.StructureSizeSolver;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.mapping.*;
+import cbit.vcell.math.BoundaryConditionType;
 import cbit.util.BeanUtils;
 /**
  * Insert the type's description here.
@@ -14,62 +18,96 @@ import cbit.util.BeanUtils;
  * @author: 
  */
 public class StructureMappingTableModel extends javax.swing.table.AbstractTableModel implements java.beans.PropertyChangeListener {
-	private final int NUM_COLUMNS = 5;
+	private final int NUM_COLUMNS = 13;
 	public final int COLUMN_STRUCTURE = 0;
 	public final int COLUMN_SUBDOMAIN = 1;
 	public final int COLUMN_RESOLVED = 2;
 	public final int COLUMN_SURFVOL = 3;
 	public final int COLUMN_VOLFRACT = 4;
+	public final int COLUMN_VOLUME = 5;
+	public final int COLUMN_SURFACE = 6;
+	public final int COLUMN_X_MINUS = 7;
+	public final int COLUMN_X_PLUS = 8;
+	public final int COLUMN_Y_MINUS = 9;
+	public final int COLUMN_Y_PLUS = 10;
+	public final int COLUMN_Z_MINUS = 11;
+	public final int COLUMN_Z_PLUS = 12;
+	
 	public final String LABEL_STRUCTURE = "Structure";
 	public final String LABEL_SUBDOMAIN = "Subdomain";
 	public final String LABEL_RESOLVED = "Resolved";
 	public final String LABEL_SURFVOL = "Surf/Vol";
 	public final String LABEL_VOLFRACT = "VolFract";
-	private String LABELS[] = { LABEL_STRUCTURE, LABEL_SUBDOMAIN, LABEL_RESOLVED, LABEL_SURFVOL, LABEL_VOLFRACT };
+	public final String LABEL_VOLUME = "Volume(um3)";
+	public final String LABEL_SURFACE = "Surface(um2)";
+	public final String LABEL_X_MINUS = "X-";
+	public final String LABEL_X_PLUS = "X+";
+	public final String LABEL_Y_MINUS = "Y-";
+	public final String LABEL_Y_PLUS = "Y+";
+	public final String LABEL_Z_MINUS = "Z-";
+	public final String LABEL_Z_PLUS = "Z+";
+		
+	private final String LABELS[] = { LABEL_STRUCTURE, LABEL_SUBDOMAIN, LABEL_RESOLVED, LABEL_SURFVOL, LABEL_VOLFRACT, LABEL_VOLUME, LABEL_SURFACE, LABEL_X_MINUS, LABEL_X_PLUS, LABEL_Y_MINUS, LABEL_Y_PLUS, LABEL_Z_MINUS, LABEL_Z_PLUS };
+	
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private cbit.vcell.mapping.GeometryContext fieldGeometryContext = null;
+
 /**
  * ReactionSpecsTableModel constructor comment.
  */
 public StructureMappingTableModel() {
 	super();
 }
+
+
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  */
 public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().addPropertyChangeListener(listener);
 }
+
+
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  */
 public synchronized void addPropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
 	getPropertyChange().addPropertyChangeListener(propertyName, listener);
 }
+
+
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
 public void firePropertyChange(java.beans.PropertyChangeEvent evt) {
 	getPropertyChange().firePropertyChange(evt);
 }
+
+
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
 public void firePropertyChange(java.lang.String propertyName, int oldValue, int newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
+
+
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
 public void firePropertyChange(java.lang.String propertyName, java.lang.Object oldValue, java.lang.Object newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
+
+
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
  */
 public void firePropertyChange(java.lang.String propertyName, boolean oldValue, boolean newValue) {
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
+
+
 /**
  * Insert the method's description here.
  * Creation date: (2/24/01 12:24:35 AM)
@@ -93,23 +131,53 @@ public Class getColumnClass(int column) {
 		case COLUMN_VOLFRACT:{
 			return cbit.vcell.parser.ScopedExpression.class;
 		}
+		case COLUMN_VOLUME:{
+			return cbit.vcell.parser.ScopedExpression.class;
+		}
+		case COLUMN_SURFACE:{
+			return cbit.vcell.parser.ScopedExpression.class;
+		}
+		case COLUMN_X_MINUS:{
+			return String.class;
+		}
+		case COLUMN_X_PLUS:{
+			return String.class;
+		}
+		case COLUMN_Y_MINUS:{
+			return String.class;
+		}
+		case COLUMN_Y_PLUS:{
+			return String.class;
+		}
+		case COLUMN_Z_MINUS:{
+			return String.class;
+		}
+		case COLUMN_Z_PLUS:{
+			return String.class;
+		}
 		default:{
 			return Object.class;
 		}
 	}
 }
+
+
 /**
  * getColumnCount method comment.
  */
 public int getColumnCount() {
 	return NUM_COLUMNS;
 }
+
+
 public String getColumnName(int column) {
 	if (column<0 || column>=NUM_COLUMNS){
 		throw new RuntimeException("ParameterTableModel.getColumnName(), column = "+column+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
 	}
 	return LABELS[column];
 }
+
+
 /**
  * Insert the method's description here.
  * Creation date: (4/3/01 10:02:00 AM)
@@ -132,6 +200,8 @@ public FeatureMapping getFeatureMapping(int row) {
 	}
 	return null;
 }
+
+
 /**
  * Gets the geometryContext property (cbit.vcell.mapping.GeometryContext) value.
  * @return The geometryContext property value.
@@ -140,6 +210,8 @@ public FeatureMapping getFeatureMapping(int row) {
 public cbit.vcell.mapping.GeometryContext getGeometryContext() {
 	return fieldGeometryContext;
 }
+
+
 /**
  * Accessor for the propertyChange field.
  */
@@ -149,6 +221,8 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 	};
 	return propertyChange;
 }
+
+
 /**
  * getRowCount method comment.
  */
@@ -166,6 +240,8 @@ public int getRowCount() {
 		return count;
 	}
 }
+
+
 /**
  * getValueAt method comment.
  */
@@ -203,7 +279,9 @@ public Object getValueAt(int row, int col) {
 			if (featureMapping.getResolved() == false && featureMapping.getFeature()!=null && featureMapping.getFeature().getMembrane()!=null){
 				Membrane membrane = featureMapping.getFeature().getMembrane();
 				MembraneMapping membraneMapping = (MembraneMapping)getGeometryContext().getStructureMapping(membrane);
-				return new ScopedExpression(membraneMapping.getSurfaceToVolumeParameter().getExpression(),membraneMapping.getNameScope(),true);
+				if(membraneMapping.getSurfaceToVolumeParameter().getExpression() != null)
+					return new ScopedExpression(membraneMapping.getSurfaceToVolumeParameter().getExpression(),membraneMapping.getNameScope(),true);
+				else return null;
 			}else{
 				return null;
 			}
@@ -212,7 +290,69 @@ public Object getValueAt(int row, int col) {
 			if (featureMapping.getResolved() == false && featureMapping.getFeature()!=null && featureMapping.getFeature().getMembrane()!=null){
 				Membrane membrane = featureMapping.getFeature().getMembrane();
 				MembraneMapping membraneMapping = (MembraneMapping)getGeometryContext().getStructureMapping(membrane);
-				return new ScopedExpression(membraneMapping.getVolumeFractionParameter().getExpression(),membraneMapping.getNameScope(),true);
+				if(membraneMapping.getVolumeFractionParameter().getExpression() != null)
+					return new ScopedExpression(membraneMapping.getVolumeFractionParameter().getExpression(),membraneMapping.getNameScope(),true);
+				else return null;
+			}else{
+				return null;
+			}
+		}
+		case COLUMN_VOLUME:{
+			if (featureMapping.getSizeParameter().getExpression() != null){
+				return new ScopedExpression(featureMapping.getSizeParameter().getExpression(),featureMapping.getNameScope(),true);
+			}else{
+				return null;
+			}
+		}
+		case COLUMN_SURFACE:{
+			if (featureMapping.getResolved() == false && featureMapping.getFeature()!=null && featureMapping.getFeature().getMembrane()!=null){
+				Membrane membrane = featureMapping.getFeature().getMembrane();
+				MembraneMapping membraneMapping = (MembraneMapping)getGeometryContext().getStructureMapping(membrane);
+				if(membraneMapping.getSizeParameter().getExpression() != null)
+					return new ScopedExpression(membraneMapping.getSizeParameter().getExpression(),membraneMapping.getNameScope(),true);
+				else return null;
+			}else{
+				return null;
+			}
+		}
+		case COLUMN_X_MINUS:{
+			if(featureMapping.getBoundaryConditionTypeXm() != null){
+				return featureMapping.getBoundaryConditionTypeXm();
+			}else{
+				return null;
+			}
+		}
+		case COLUMN_X_PLUS:{
+			if(featureMapping.getBoundaryConditionTypeXp() != null){
+				return featureMapping.getBoundaryConditionTypeXp();
+			}else{
+				return null;
+			}
+		}
+		case COLUMN_Y_MINUS:{
+			if(featureMapping.getBoundaryConditionTypeYm() != null){
+				return featureMapping.getBoundaryConditionTypeYm();
+			}else{
+				return null;
+			}
+		}
+		case COLUMN_Y_PLUS:{
+			if(featureMapping.getBoundaryConditionTypeYp() != null){
+				return featureMapping.getBoundaryConditionTypeYp();
+			}else{
+				return null;
+			}
+		}
+		case COLUMN_Z_MINUS:{
+			if(featureMapping.getBoundaryConditionTypeZm() != null){
+				return featureMapping.getBoundaryConditionTypeZm();
+			}else{
+				return null;
+			}
+		}
+		case COLUMN_Z_PLUS:{
+			if(featureMapping.getBoundaryConditionTypeZp() != null){
+				return featureMapping.getBoundaryConditionTypeZp();
 			}else{
 				return null;
 			}
@@ -222,12 +362,16 @@ public Object getValueAt(int row, int col) {
 		}
 	}
 }
+
+
 /**
  * The hasListeners method was generated to support the propertyChange field.
  */
 public synchronized boolean hasListeners(java.lang.String propertyName) {
 	return getPropertyChange().hasListeners(propertyName);
 }
+
+
 /**
  * Insert the method's description here.
  * Creation date: (2/24/01 12:27:46 AM)
@@ -240,16 +384,21 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	//
 	// see if feature is distributed and has a membrane (not top)
 	//
-	if (columnIndex == COLUMN_SURFVOL || columnIndex == COLUMN_VOLFRACT){
-		if (fm.getResolved()==false && fm.getFeature().getMembrane()!=null){
-			return true;
-		}else{
-			return false;
-		}
-	}else{
-		return false;
-	}
+	if (columnIndex == COLUMN_VOLUME) // feature size are editable  
+		return true;
+	if ((columnIndex == COLUMN_SURFACE) && (fm.getFeature().getMembrane() != null)) //membrane size are editable
+		return true;
+	// the VolFrac and Surf/Vol are editable for non-compartmental models
+	if ((getGeometryContext().getGeometry().getDimension() > 0) && (!fm.getResolved()) && ((columnIndex == COLUMN_VOLFRACT)||(columnIndex == COLUMN_SURFVOL)))
+		return true;
+	// bounday conditions are editable
+	if ((columnIndex >= COLUMN_X_MINUS) && (columnIndex <= COLUMN_Z_PLUS))
+		return true;
+
+	return false;
 }
+
+
 /**
 	 * This method gets called when a bound property is changed.
 	 * @param evt A PropertyChangeEvent object describing the event source 
@@ -272,18 +421,24 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		fireTableRowsUpdated(0,getRowCount()-1);
 	}
 }
+
+
 /**
  * The removePropertyChangeListener method was generated to support the propertyChange field.
  */
 public synchronized void removePropertyChangeListener(java.beans.PropertyChangeListener listener) {
 	getPropertyChange().removePropertyChangeListener(listener);
 }
+
+
 /**
  * The removePropertyChangeListener method was generated to support the propertyChange field.
  */
 public synchronized void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
 	getPropertyChange().removePropertyChangeListener(propertyName, listener);
 }
+
+
 /**
  * Sets the geometryContext property (cbit.vcell.mapping.GeometryContext) value.
  * @param geometryContext The new value for the property.
@@ -309,7 +464,9 @@ public void setGeometryContext(cbit.vcell.mapping.GeometryContext geometryContex
 	firePropertyChange("geometryContext", oldValue, geometryContext);
 	fireTableDataChanged();
 }
-public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+
+
+public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 	if (rowIndex<0 || rowIndex>=getRowCount()){
 		throw new RuntimeException("ReactionSpecsTableModel.setValueAt(), row = "+rowIndex+" out of range ["+0+","+(getRowCount()-1)+"]");
 	}
@@ -322,7 +479,6 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 			if (featureMapping.getResolved() == false && featureMapping.getFeature()!=null && featureMapping.getFeature().getMembrane()!=null){
 				Membrane membrane = featureMapping.getFeature().getMembrane();
 				MembraneMapping membraneMapping = (MembraneMapping)getGeometryContext().getStructureMapping(membrane);
-				cbit.vcell.parser.SymbolTable symbolTable = new cbit.vcell.model.ReservedSymbolTable(false);
 				try {
 					Expression exp = null;
 					if (aValue instanceof String){
@@ -347,7 +503,6 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 			if (featureMapping.getResolved() == false && featureMapping.getFeature()!=null && featureMapping.getFeature().getMembrane()!=null){
 				Membrane membrane = featureMapping.getFeature().getMembrane();
 				MembraneMapping membraneMapping = (MembraneMapping)getGeometryContext().getStructureMapping(membrane);
-				cbit.vcell.parser.SymbolTable symbolTable = new cbit.vcell.model.ReservedSymbolTable(false);
 				try {
 					Expression exp = null;
 					if (aValue instanceof String){
@@ -365,6 +520,144 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					e.printStackTrace(System.out);
 					cbit.vcell.client.PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
 				}
+			}
+			break;
+		}
+		case COLUMN_VOLUME:{
+			try {
+				Expression exp = null;
+				if (aValue instanceof String){
+					String newExpressionString = (String)aValue;
+					exp = new Expression(newExpressionString);
+				}else if (aValue instanceof ScopedExpression){
+					exp = ((ScopedExpression)aValue).getExpression();
+				}else if (aValue instanceof Expression){
+					exp = (Expression)aValue;
+				}
+				//for old model, once one size is input, solve the rest.                                                                                                          if it is unnamed compartment(the only one), we don't need to solve anything
+				if(!getGeometryContext().getSimulationContext().isStoch() && getGeometryContext().isAllSizeSpecifiedNull() && getGeometryContext().isAllVolFracAndSurfVolSpecified() && getGeometryContext().getStructureMappings().length > 1) 
+				{
+					featureMapping.getSizeParameter().setExpression(exp);
+					StructureSizeSolver sizeSolver = new StructureSizeSolver();
+					double size;
+					try{
+						size = exp.evaluateConstant();
+						sizeSolver.updateAbsoluteStructureSizes(getGeometryContext().getSimulationContext(), featureMapping.getFeature(), size, VCUnitDefinition.UNIT_um3);
+						fireTableRowsUpdated(0,getRowCount());
+					}catch(ExpressionException ex){
+						ex.printStackTrace(System.out);
+						cbit.vcell.client.PopupGenerator.showErrorDialog("Size of Feature " + featureMapping.getFeature().getName() + " can not be solved as constant!");
+					}
+				}
+				else 
+				{
+					featureMapping.getSizeParameter().setExpression(exp);
+					if(getGeometryContext().isAllSizeSpecifiedPositive())
+					{
+						StructureSizeSolver sizeSolver = new StructureSizeSolver();
+						sizeSolver.updateRelativeStructureSizes(getGeometryContext().getSimulationContext());
+					}
+					fireTableRowsUpdated(0, getRowCount());
+				}
+			}catch (ExpressionException e){
+				e.printStackTrace(System.out);
+				cbit.vcell.client.PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
+			}catch (java.beans.PropertyVetoException e){
+				e.printStackTrace(System.out);
+				cbit.vcell.client.PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
+			}
+			
+			break;
+		}
+		case COLUMN_SURFACE:{
+			if (featureMapping.getResolved() == false && featureMapping.getFeature()!=null && featureMapping.getFeature().getMembrane()!=null)
+			{
+				Membrane membrane = featureMapping.getFeature().getMembrane();
+				MembraneMapping membraneMapping = (MembraneMapping)getGeometryContext().getStructureMapping(membrane);
+				try {
+					Expression exp = null;
+					if (aValue instanceof String){
+						String newExpressionString = (String)aValue;
+						exp = new Expression(newExpressionString);
+					}else if (aValue instanceof ScopedExpression){
+						exp = ((ScopedExpression)aValue).getExpression();
+					}else if (aValue instanceof Expression){
+						exp = (Expression)aValue;
+					}
+					//for old model, once one size is input, solve the rest.
+					if(getGeometryContext().isAllSizeSpecifiedNull() && getGeometryContext().isAllVolFracAndSurfVolSpecified()) 
+					{
+						membraneMapping.getSizeParameter().setExpression(exp);
+						StructureSizeSolver sizeSolver = new StructureSizeSolver();
+						double size;
+						try{
+							size = exp.evaluateConstant();
+							sizeSolver.updateAbsoluteStructureSizes(getGeometryContext().getSimulationContext(), membraneMapping.getMembrane(), size, VCUnitDefinition.UNIT_um2);
+							fireTableRowsUpdated(0,getRowCount());
+						}catch(ExpressionException ex){
+							ex.printStackTrace(System.out);
+							cbit.vcell.client.PopupGenerator.showErrorDialog("Size of Membrane " + membraneMapping.getMembrane().getName() + " can not be solved as constant!");
+						}
+					}
+					else
+					{
+						membraneMapping.getSizeParameter().setExpression(exp);
+						if(getGeometryContext().isAllSizeSpecifiedPositive())
+						{
+							StructureSizeSolver sizeSolver = new StructureSizeSolver();
+							sizeSolver.updateRelativeStructureSizes(getGeometryContext().getSimulationContext());
+						}
+						fireTableRowsUpdated(0,getRowCount());
+					}
+				}catch (ExpressionException e){
+					e.printStackTrace(System.out);
+					cbit.vcell.client.PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
+				}catch (java.beans.PropertyVetoException e){
+					e.printStackTrace(System.out);
+					cbit.vcell.client.PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
+				}
+			}
+			break;
+		}
+		case COLUMN_X_MINUS:{
+			if(aValue != null)
+			{
+				featureMapping.setBoundaryConditionTypeXm(new BoundaryConditionType((String)aValue));
+			}
+			break;
+		}
+		case COLUMN_X_PLUS:{
+			if(aValue != null)
+			{
+				featureMapping.setBoundaryConditionTypeXp(new BoundaryConditionType((String)aValue));
+			}
+			break;
+		}
+		case COLUMN_Y_MINUS:{
+			if(aValue != null)
+			{
+				featureMapping.setBoundaryConditionTypeYm(new BoundaryConditionType((String)aValue));
+			}
+			break;
+		}
+		case COLUMN_Y_PLUS:{
+			if(aValue != null)
+			{
+				featureMapping.setBoundaryConditionTypeYp(new BoundaryConditionType((String)aValue));
+			}
+			break;
+		}
+		case COLUMN_Z_MINUS:{
+			if(aValue != null)
+			{
+				featureMapping.setBoundaryConditionTypeZm(new BoundaryConditionType((String)aValue));
+			}
+			break;
+		}
+		case COLUMN_Z_PLUS:{
+			if(aValue != null)
+			{
+				featureMapping.setBoundaryConditionTypeZp(new BoundaryConditionType((String)aValue));
 			}
 			break;
 		}

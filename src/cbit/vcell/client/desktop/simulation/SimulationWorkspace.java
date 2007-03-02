@@ -115,10 +115,32 @@ public String checkCompatibility(Simulation simulation) {
 private boolean checkSimulationParameters(Simulation simulation, JComponent parent) {
 	String errorMessage = null;
 	String warningMessage = null;
-	long maxTimepoints = simulation.getIsSpatial() ? Simulation.MAX_LIMIT_PDE_TIMEPOINTS : Math.max(Simulation.MAX_LIMIT_ODE_TIMEPOINTS, Simulation.MAX_LIMIT_STOCH_TIMEPOINTS);
-	long maxSizeBytes = simulation.getIsSpatial() ? (Simulation.MAX_LIMIT_PDE_MEGABYTES*1000000L) : Math.max(Simulation.MAX_LIMIT_0DE_MEGABYTES*1000000L, Simulation.MAX_LIMIT_STOCH_MEGABYTES*1000000L);
-	long warningTimepoints = simulation.getIsSpatial() ? Simulation.WARNING_PDE_TIMEPOINTS : Math.max(Simulation.WARNING_ODE_TIMEPOINTS, Simulation.WARNING_STOCH_TIMEPOINTS);
-	long warningSizeBytes = simulation.getIsSpatial() ? (Simulation.WARNING_PDE_MEGABYTES*1000000L) : Math.max(Simulation.WARNING_0DE_MEGABYTES*1000000L, Simulation.WARNING_STOCH_MEGABYTES);
+	long maxTimepoints = Simulation.MAX_LIMIT_ODE_TIMEPOINTS;
+	long warningTimepoints = Simulation.WARNING_ODE_TIMEPOINTS;
+	if(simulation.getIsSpatial())
+	{
+		maxTimepoints = Simulation.MAX_LIMIT_PDE_TIMEPOINTS;
+		warningTimepoints = Simulation.WARNING_PDE_TIMEPOINTS;
+	}
+	else if (simulation.getMathDescription().isStoch())
+	{
+		maxTimepoints = Simulation.MAX_LIMIT_STOCH_TIMEPOINTS;
+		warningTimepoints = Simulation.WARNING_STOCH_TIMEPOINTS;
+	}
+	
+	long maxSizeBytes = Simulation.MAX_LIMIT_0DE_MEGABYTES*1000000L;
+	long warningSizeBytes = Simulation.WARNING_0DE_MEGABYTES*1000000L;
+	if(simulation.getIsSpatial())
+	{
+		maxSizeBytes = Simulation.MAX_LIMIT_PDE_MEGABYTES*1000000L;
+		warningSizeBytes = Simulation.WARNING_PDE_MEGABYTES*1000000L;
+	}
+	else if (simulation.getMathDescription().isStoch())
+	{
+		maxSizeBytes = Simulation.MAX_LIMIT_STOCH_MEGABYTES*1000000L;
+		warningSizeBytes = Simulation.WARNING_STOCH_TIMEPOINTS;
+	}
+	
 	long expectedNumTimePoints = getExpectedNumTimePoints(simulation);
 	long expectedSizeBytes = getExpectedSizeBytes(simulation);
 	//

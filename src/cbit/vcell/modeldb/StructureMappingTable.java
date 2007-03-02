@@ -1,10 +1,13 @@
 package cbit.vcell.modeldb;
-
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.util.StringTokenizer;
+
 import cbit.sql.*;
+import cbit.util.BeanUtils;
+import cbit.util.TokenMangler;
 import cbit.vcell.mapping.*;
 import cbit.vcell.server.DataAccessException;
 /**
@@ -29,12 +32,14 @@ public class StructureMappingTable extends cbit.sql.Table {
 	public final Field bCalculateVoltage = new Field("bCalculateV",	"integer", "");
 	public final Field specificCap     = new Field("specificCap",	"number", "");
 	public final Field initialVoltage  = new Field("initialV",		"varchar(1024)", "");
+	public final Field sizeExp	= new Field("sizeExp",	"varchar(1024)",	""); //added Dec 23, 2006
 
 	private final Field fields[] = {subVolumeRef,structRef,simContextRef,bResolved,surfToVolExp,volFractExp,
 					boundaryTypeXm,boundaryTypeXp,boundaryTypeYm,boundaryTypeYp,boundaryTypeZm,boundaryTypeZp,
-					bCalculateVoltage,specificCap,initialVoltage};
+					bCalculateVoltage,specificCap,initialVoltage, sizeExp};
 	
 	public static final StructureMappingTable table = new StructureMappingTable();
+
 /**
  * ModelTable constructor comment.
  */
@@ -42,6 +47,8 @@ private StructureMappingTable() {
 	super(TABLE_NAME);
 	addFields(fields);
 }
+
+
 /**
  * This method was created in VisualAge.
  * @return java.lang.String
@@ -84,7 +91,7 @@ public String getSQLValueList(InsertHashtable hash, KeyValue Key, KeyValue simCo
 		buffer.append("'"+fm.getBoundaryConditionTypeZp().toString() + "',");
 		buffer.append("null" + ",");
 		buffer.append("null" + ",");
-		buffer.append("null" + ")");
+		buffer.append("null" + ",");
 	} else if (structureMapping instanceof MembraneMapping) {
 		MembraneMapping mm = (MembraneMapping) structureMapping;
 		buffer.append("'"+mm.getSurfaceToVolumeParameter().getExpression().infix() + "',");
@@ -102,8 +109,12 @@ public String getSQLValueList(InsertHashtable hash, KeyValue Key, KeyValue simCo
 			e.printStackTrace(System.out);
 			throw new DataAccessException("specific capacitance for "+mm.getMembrane().getName()+" not constant: ("+e.getMessage()+")");
 		}
-		buffer.append("'"+mm.getInitialVoltageParameter().getExpression().infix()+"')");
+		buffer.append("'"+mm.getInitialVoltageParameter().getExpression().infix()+"',");
 	}
+	if(structureMapping.getSizeParameter().getExpression() != null)
+		buffer.append("'"+TokenMangler.getSQLEscapedString(structureMapping.getSizeParameter().getExpression().infix())+ "')");
+	else
+		buffer.append("'"+ "')");
 	return buffer.toString();
 }
 }

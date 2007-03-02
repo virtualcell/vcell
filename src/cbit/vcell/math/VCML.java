@@ -102,6 +102,11 @@ public class VCML {
 	public final static String DefaultTimeStep			= "DefaultTimeStep";
 	public final static String MinimumTimeStep			= "MinimumTimeStep";
 	public final static String MaximumTimeStep			= "MaximumTimeStep";
+	//following 4 VCML tags are added on Dec 5th, 2006 to store simulation info. for stochastic simulation
+	public final static String StochSimOptions			= "StochSimOptions"; //stoch
+	public final static String UseCustomSeed			= "UseCustomSeed"; //stoch
+	public final static String CustomSeed				= "CustomSeed"; //stoch
+	public final static String NumOfTrials				= "NumOfTrials"; //stoch
 
 	public final static String Action 					= "Effect"; //stoch
 	public final static String JumpProcess 				= "JumpProcess"; //stoch

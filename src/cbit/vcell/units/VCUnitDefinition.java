@@ -56,6 +56,7 @@ public class VCUnitDefinition implements Matchable, Serializable {
     public static final VCUnitDefinition UNIT_pA;
     public static final VCUnitDefinition UNIT_pA_per_um2;
     public static final VCUnitDefinition UNIT_molecules;
+    public static final VCUnitDefinition UNIT_molecules_per_s;
     public static final VCUnitDefinition UNIT_molecules_per_um2;
     public static final VCUnitDefinition UNIT_um2_per_molecules_per_s;
     public static final VCUnitDefinition UNIT_um3_per_molecules_per_s;
@@ -120,6 +121,7 @@ public class VCUnitDefinition implements Matchable, Serializable {
         VCUnitDefinition unit_pA = null;
         VCUnitDefinition unit_pA_per_um2 = null;
         VCUnitDefinition unit_molecules = null;
+        VCUnitDefinition unit_molecules_per_s = null;
         VCUnitDefinition unit_molecules_per_um2 = null;
         VCUnitDefinition unit_um2_per_molecules_per_s = null;
         VCUnitDefinition unit_um3_per_molecules_per_s = null;
@@ -180,6 +182,7 @@ public class VCUnitDefinition implements Matchable, Serializable {
             unit_pA = new VCUnitDefinition("pA");
             unit_pA_per_um2 = new VCUnitDefinition("pA.um-2");
             unit_molecules = new VCUnitDefinition("molecules");
+            unit_molecules_per_s = new VCUnitDefinition("molecules.s-1");
             unit_molecules_per_um2 = new VCUnitDefinition("molecules.um-2");
             unit_um2_per_molecules_per_s = new VCUnitDefinition("um2.molecules-1.s-1");
             unit_um3_per_molecules_per_s = new VCUnitDefinition("um3.molecules-1.s-1");
@@ -235,6 +238,7 @@ public class VCUnitDefinition implements Matchable, Serializable {
         UNIT_pA = unit_pA;
         UNIT_pA_per_um2 = unit_pA_per_um2;
         UNIT_molecules = unit_molecules;
+        UNIT_molecules_per_s = unit_molecules_per_s;
         UNIT_molecules_per_um2 = unit_molecules_per_um2;
         UNIT_um2_per_molecules_per_s = unit_um2_per_molecules_per_s;
         UNIT_um3_per_molecules_per_s = unit_um3_per_molecules_per_s;

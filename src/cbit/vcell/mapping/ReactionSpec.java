@@ -25,24 +25,24 @@ public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable,
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private int fieldReactionMapping = INCLUDED;
 	private final static String[] mappings = {"included", "excluded", "fast", "molecular-only", "current-only"};
-	
-	
+	private ReactionSpecParameter[] fieldParameters = null;
+		
 	private ReactionSpecParameter[] fieldReactionSpecParameters = new ReactionSpecParameter[0];
 	private ReactionSpecNameScope nameScope = new ReactionSpecNameScope();
 	private transient SimulationContext fieldSimulationContext = null;
 
 	
-	public static final int ROLE_NominalRate			= 0;
-	public static final int ROLE_OverridenRate			= 1;
+	public static final int ROLE_P			= 0;
+	public static final int ROLE_P_reverse			= 1;
 	public static final int NUM_ROLES		= 2;
 	
 	public static final String RoleNames[] = {
-		"J",
-		"J_forced",
+		"P",
+		"P_reverse"
 	};
 	public static final String RoleDescriptions[] = {
-		"nominal kinetic rate",
-		"forced rate",
+		"Probability rate for forward reaction",
+		"Probability rate for reverse reaction(if any)"
 	};
 
 	public class ReactionSpecNameScope extends BioNameScope {
@@ -157,7 +157,7 @@ public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable,
 		public String getName(){
 			return fieldParameterName;
 		}
-		
+
 		public Expression getExpression(){
 			return fieldParameterExpression;
 		}
@@ -174,12 +174,20 @@ public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable,
 public ReactionSpec(ReactionSpec argReactionSpec) {
 	setReactionStep(argReactionSpec.reactionStep);
 	this.fieldReactionMapping = argReactionSpec.fieldReactionMapping;
+	for (int i = 0; i < argReactionSpec.fieldParameters.length; i++){
+		ReactionSpecParameter otherParm = argReactionSpec.fieldParameters[i];
+		Expression otherParmExp = (otherParm.getExpression()==null)?(null):(new Expression(otherParm.getExpression()));
+		fieldParameters[i] = new ReactionSpecParameter(otherParm.getName(),otherParmExp,otherParm.getRole(),otherParm.getUnitDefinition(),otherParm.getDescription());
+	}
 	refreshDependencies();
 }            
 
 
 public ReactionSpec(ReactionStep argReactionStep) {
 	setReactionStep(argReactionStep) ;
+	fieldParameters = new ReactionSpecParameter[2];
+	fieldParameters[0] = new ReactionSpecParameter(RoleNames[ROLE_P],new Expression(0.0),ROLE_P,VCUnitDefinition.UNIT_molecules_per_s,RoleDescriptions[ROLE_P]);
+	fieldParameters[1] = new ReactionSpecParameter(RoleNames[ROLE_P_reverse],new Expression(0.0),ROLE_P_reverse,VCUnitDefinition.UNIT_molecules_per_s,RoleDescriptions[ROLE_P_reverse]);
 	refreshDependencies();
 }            
 
@@ -234,6 +242,10 @@ public boolean compareEqual(Matchable object) {
 	}
 	
 	if (fieldReactionMapping != reactionSpec.fieldReactionMapping){
+		return false;
+	}
+
+	if (!Compare.isEqual(fieldParameters,reactionSpec.fieldParameters)){
 		return false;
 	}
 
@@ -386,20 +398,44 @@ public cbit.vcell.parser.NameScope getNameScope() {
 
 
 /**
- * This method was created in VisualAge.
- * @return cbit.vcell.parser.Expression
+ * Insert the method's description here.
+ * Creation date: (11/3/2006 4:03:07 PM)
+ * @param name java.lang.String
  */
-public ReactionSpec.ReactionSpecParameter getNominalRateParameter() {
-	return getReactionSpecParameterFromRole(ROLE_NominalRate);		
+public ReactionSpec.ReactionSpecParameter getParameterFromName(String name)
+{
+	for (int i = 0; i < fieldParameters.length; i++){
+		if (fieldParameters[i].getName().equals(name)){
+			return fieldParameters[i];
+		}
+	}
+	return null;
 }
 
 
 /**
- * This method was created by a SmartGuide.
- * @return java.lang.String
+ * Insert the method's description here.
+ * Creation date: (11/3/2006 4:08:07 PM)
+ * @param role int
  */
-public ReactionSpec.ReactionSpecParameter getOverridenRateParameter() {
-	return getReactionSpecParameterFromRole(ROLE_OverridenRate);		
+public ReactionSpec.ReactionSpecParameter getParameterFromRole(int role) 
+{
+	for (int i = 0; i < fieldParameters.length; i++){
+		if (fieldParameters[i].getRole() == role){
+			return fieldParameters[i];
+		}
+	}
+	return null;
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (11/3/2006 4:14:02 PM)
+ * @return cbit.vcell.model.Parameter[]
+ */
+public Parameter[] getParameters() {
+	return fieldParameters;
 }
 
 
@@ -415,6 +451,24 @@ public String[] getPossibleReactionMappings() {
 		return new String[] { mappings[INCLUDED], mappings[EXCLUDED], mappings[FAST] };
 	}
 }
+
+/**
+ * This method was created in VisualAge.
+ * @return cbit.vcell.parser.Expression
+ */
+public ReactionSpec.ReactionSpecParameter getProbabilityParameter() {
+	return getReactionSpecParameterFromRole(ROLE_P);		
+}
+
+
+/**
+ * This method was created by a SmartGuide.
+ * @return java.lang.String
+ */
+public ReactionSpec.ReactionSpecParameter getProbabilityReverseParameter() {
+	return getReactionSpecParameterFromRole(ROLE_P_reverse);		
+}
+
 
 /**
  * Accessor for the propertyChange field.
@@ -525,6 +579,16 @@ public ReactionSpecParameter getReactionSpecParameters(int index) {
  */
 public ReactionStep getReactionStep() {
 	return reactionStep;
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (11/7/2006 3:55:51 PM)
+ * @return cbit.vcell.mapping.SimulationContext
+ */
+public SimulationContext getSimulationContext() {
+	return fieldSimulationContext;
 }
 
 
@@ -641,6 +705,15 @@ public void read(CommentStringTokenizer tokens) throws ExpressionException, Mapp
  * This method was created in VisualAge.
  */
 public void refreshDependencies() {
+	for (int i = 0; i < fieldParameters.length; i++){
+		try {
+			if (fieldParameters[i].getExpression()!=null){
+				fieldParameters[i].getExpression().bindExpression(this);
+			}
+		}catch (ExpressionException e){
+			System.out.println("error binding expression '"+fieldParameters[i].getExpression().infix()+"', "+e.getMessage());
+		}
+	}
 	removeVetoableChangeListener(this);
 	addVetoableChangeListener(this);
 }
@@ -675,6 +748,19 @@ public synchronized void removeVetoableChangeListener(java.beans.VetoableChangeL
  */
 public synchronized void removeVetoableChangeListener(java.lang.String propertyName, java.beans.VetoableChangeListener listener) {
 	getVetoPropertyChange().removeVetoableChangeListener(propertyName, listener);
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (11/3/2006 4:30:02 PM)
+ */
+private void setParameters(ReactionSpecParameter[] parameters) throws java.beans.PropertyVetoException 
+{
+	ReactionSpecParameter[] oldValue = fieldParameters;
+	fireVetoableChange("parameters", oldValue, parameters);
+	fieldParameters = parameters;
+	firePropertyChange("parameters", oldValue, parameters);
 }
 
 

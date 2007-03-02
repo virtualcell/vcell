@@ -98,8 +98,12 @@ public boolean compareEqual(cbit.util.Matchable obj) {
  * @return cbit.vcell.solver.OutputTimeSpec
  * @param solverTaskDescription cbit.vcell.solver.SolverTaskDescription
  */
-public OutputTimeSpec createOutputTimeSpec(SolverTaskDescription solverTaskDescription) {
-	return new DefaultOutputTimeSpec();
+public OutputTimeSpec createOutputTimeSpec(SolverTaskDescription solverTaskDescription) 
+{
+	OutputTimeSpec ots = new DefaultOutputTimeSpec();
+	if(isSTOCHSolver()) //amended 20th Feb, 2007
+		ots = new DefaultOutputTimeSpec(1,1000000);
+	return ots;
 }
 
 
@@ -245,6 +249,9 @@ public boolean hasVariableTimestep() {
 			return true;
 		}
 		case TYPE_RUNGE_KUTTA_FEHLBERG: {
+			return true;
+		}
+		case TYPE_STOCH_GIBSON: {
 			return true;
 		}
 		default: {

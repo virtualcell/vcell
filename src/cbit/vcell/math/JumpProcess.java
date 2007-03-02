@@ -1,4 +1,5 @@
 package cbit.vcell.math;
+import cbit.vcell.parser.Expression;
 import java.util.*;
 import cbit.util.Compare;
 public class JumpProcess implements cbit.util.Matchable,java.io.Serializable {
@@ -22,13 +23,33 @@ public JumpProcess(String name, cbit.vcell.parser.Expression probRate)
 
 /**
  * Append a new action to the end of the action list if the variable in the action is not in the list
+ * if the action is already existed (e.g the species is both reactant and product), the operand should be updated.
  * Creation date: (6/21/2006 5:13:17 PM)
  */
 public void addAction(Action newAction) throws MathException
 {
-	if(getAction(newAction.getVar().getName())!=null)
-		throw new MathException("Variable: "+newAction.getVar().getName()+" is already exists in action list in jump process"+getName());
-	listOfActions.add(newAction);
+	Action action= getAction(newAction.getVar().getName());
+	
+	if( action != null )
+	{
+		Expression orgOperand = action.getOperand();
+		Expression addOperand = newAction.getOperand();
+		Expression newOperand = null;
+		try
+		{
+			newOperand = Expression.add(orgOperand,addOperand);
+			newOperand.flatten();
+		} catch(cbit.vcell.parser.ExpressionException ex)
+		{
+			ex.printStackTrace();
+		}
+		if(newOperand != null)
+			action.setOperand(newOperand);
+	}
+	else
+	{
+		listOfActions.add(newAction);
+	}
 }
 
 
@@ -64,6 +85,28 @@ public boolean compareEqual(cbit.util.Matchable object)
 			
 	return true;
 }
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (10/2/2006 5:20:53 PM)
+ * @return double
+ * @param names java.lang.String[]
+ * @param values double[]
+ */
+public double evaluateProbabilityRate(String[] names, double[] values) 
+{
+	double result = 0;
+	try
+	{
+		cbit.vcell.parser.SymbolTable symTable= new cbit.vcell.parser.SimpleSymbolTable(names);
+		getProbabilityRate().bindExpression(symTable);
+		result = getProbabilityRate().evaluateVector(values);
+	} catch (cbit.vcell.parser.ExpressionException e) {e.printStackTrace();}
+
+	return result;	
+}
+
 
 /**
  * Insert the method's description here.
@@ -153,7 +196,7 @@ public String getVCML()
 	StringBuffer buffer = new StringBuffer();
 	// the jump process will be written inside compartment brackets, therefore a "\t" is needed
 	buffer.append("\t"+VCML.JumpProcess+"\t"+getName()+" "+VCML.BeginBlock+"\n");
-	buffer.append("\t\t"+VCML.ProbabilityRate+"\t"+getProbabilityRate().infix()+";\n");
+	buffer.append("\t\t"+VCML.ProbabilityRate+"\t"+"P_"+getName()+";\n");
 	for(int i=0; i<getActions().size(); i++)
 	{
 		buffer.append(((Action)getActions().elementAt(i)).getVCML());
@@ -198,42 +241,22 @@ public void removeAction(String varName) //one problem, actions may have the sam
 
 
 /**
+ * Setthe process's name.
+ * Creation date: (6/21/2006 5:32:45 PM)
+ * @param newProcessName java.lang.String
+ */
+public void setName(java.lang.String newProcessName) {
+	processName = newProcessName;
+}
+
+
+/**
  * Assignment the probabilityRate to a new expression.
  * Creation date: (6/21/2006 5:32:45 PM)
  * @param newProbabilityRate cbit.vcell.parser.Expression
  */
 public void setProbabilityRate(cbit.vcell.parser.Expression newProbabilityRate) {
 	probabilityRate = newProbabilityRate;
-}
-
-
-/**
- * Setthe process's name.
- * Creation date: (6/21/2006 5:32:45 PM)
- * @param newProcessName java.lang.String
- */
-public void setProcessName(java.lang.String newProcessName) {
-	processName = newProcessName;
-}
-
-/**
- * Insert the method's description here.
- * Creation date: (10/2/2006 5:20:53 PM)
- * @return double
- * @param names java.lang.String[]
- * @param values double[]
- */
-public double evaluateProbabilityRate(String[] names, double[] values) 
-{
-	double result = 0;
-	try
-	{
-		cbit.vcell.parser.SymbolTable symTable= new cbit.vcell.parser.SimpleSymbolTable(names);
-		getProbabilityRate().bindExpression(symTable);
-		result = getProbabilityRate().evaluateVector(values);
-	} catch (cbit.vcell.parser.ExpressionException e) {e.printStackTrace();}
-
-	return result;	
 }
 
 

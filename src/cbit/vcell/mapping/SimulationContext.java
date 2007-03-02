@@ -338,6 +338,20 @@ public void addAnalysisTask(cbit.vcell.modelopt.AnalysisTask analysisTask) throw
  * @see #getSimulations
  */
 public Simulation addNewSimulation() throws java.beans.PropertyVetoException {
+	//The code below is used to check if the sizes are ready for required models.
+	if (getGeometry().getDimension() == 0)//non-spatial
+	{
+		if(isStoch()) //stochastic 
+		{
+			if(!getGeometryContext().isAllSizeSpecifiedPositive())
+				throw new RuntimeException("All structure sizes must be assigned positive values.");
+		}
+		else //ode
+		{
+			if((!getGeometryContext().isAllVolFracAndSurfVolSpecified())||(getGeometryContext().isAllVolFracAndSurfVolSpecified() && !getGeometryContext().isAllSizeSpecifiedPositive() && !getGeometryContext().isAllSizeSpecifiedNull()))
+				throw new RuntimeException("All structure sizes must be assigned positive values.");
+		}
+	}
 	if (getMathDescription()==null){
 //		throw new RuntimeException("Application "+getName()+" has no generated Math, cannot add simulation");
 		try {

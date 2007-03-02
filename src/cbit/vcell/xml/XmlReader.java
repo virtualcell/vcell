@@ -895,6 +895,19 @@ public FeatureMapping getFeatureMapping(Element param, SimulationContext simulat
 	//*** Create new Feature Mapping ****
 	FeatureMapping feamap = new FeatureMapping(featureref,simulationContext);
 
+	//Set Size
+	if(param.getAttributeValue(XMLTags.SizeTag) != null)
+	{
+		String size = this.unMangle( param.getAttributeValue(XMLTags.SizeTag) );
+		try {
+			feamap.getSizeParameter().setExpression(new Expression(size));
+		} catch (ExpressionException e) {
+			e.printStackTrace();
+			throw new XmlParseException("An expressionException was fired when setting the size Expression " + size + " to a featureMapping!"+" : "+e.getMessage());
+		} catch (java.beans.PropertyVetoException e) {
+			e.printStackTrace();
+		}	
+	}
 	//Retrieve subvolumeref, allow subvolumes to be 'null'
 	if (subvolumename != null) {
 		temp = "cbit.vcell.geometry.SubVolume:" + subvolumename;
@@ -2223,7 +2236,7 @@ public MembraneMapping getMembraneMapping(Element param, SimulationContext simul
 		throw new XmlParseException("The Membrane "+ temp + " could not be resolved in the dictionnary!");
 	}
 
-	//*** Create new Feature Mapping ****
+	//*** Create new Membrane Mapping ****
 	MembraneMapping memmap = new MembraneMapping(membraneref, simulationContext);
 
 	//Set SurfacetoVolumeRatio
@@ -2249,6 +2262,21 @@ public MembraneMapping getMembraneMapping(Element param, SimulationContext simul
 		e.printStackTrace();
 		throw new XmlParseException(e.getMessage());
 	}
+
+	//Set Size
+	if(param.getAttributeValue(XMLTags.SizeTag) != null)
+	{
+		String size = this.unMangle( param.getAttributeValue(XMLTags.SizeTag) );
+		try {
+			memmap.getSizeParameter().setExpression(new Expression(size));
+		} catch (ExpressionException e) {
+			e.printStackTrace();
+			throw new XmlParseException("An expressionException was fired when setting the size Expression " + size + " to a membraneMapping!"+" : "+e.getMessage());
+		} catch (java.beans.PropertyVetoException e) {
+			e.printStackTrace();
+			throw new XmlParseException(e.getMessage());
+		}
+	}	
 	//** Set electrical properties **
 	//set specific capacitance
 	double specificCap = Double.parseDouble(param.getAttributeValue(XMLTags.SpecificCapacitanceTag));
@@ -3671,6 +3699,9 @@ public cbit.vcell.solver.SolverTaskDescription getSolverTaskDescription(Element 
 		solverTaskDesc.setTimeStep( getTimeStep(param.getChild(XMLTags.TimeStepTag)) );
 		//get ErrorTolerance
 		solverTaskDesc.setErrorTolerance( getErrorTolerance(param.getChild(XMLTags.ErrorToleranceTag)) );
+		//get StochSimOptions
+		if(param.getChild(XMLTags.StochSimOptionsTag) != null)
+			solverTaskDesc.setStochOpt(getStochSimOptions(param.getChild(XMLTags.StochSimOptionsTag)));
 		//get OutputOptions
 		if (keepEvery != -1) {
 			solverTaskDesc.setOutputTimeSpec(new cbit.vcell.solver.DefaultOutputTimeSpec(keepEvery,keepAtMost));
@@ -3899,6 +3930,26 @@ public SpeciesContextSpec getSpeciesContextSpec(Element param) throws XmlParseEx
 	}
 	
 	return specspec;
+}
+
+/**
+ * This method returns a TimeStep object from a XML Element.
+ * Creation date: (5/22/2001 11:45:33 AM)
+ * @return cbit.vcell.solver.TimeStep
+ * @param param org.jdom.Element
+ */
+public cbit.vcell.solver.StochSimOptions getStochSimOptions(Element param) {
+	//get attributes
+	boolean isUseCustomSeed  = Boolean.parseBoolean( param.getAttributeValue(XMLTags.UseCustomSeedAttrTag) );
+	int customSeed = 0;
+	if(isUseCustomSeed)
+		customSeed = Integer.parseInt( param.getAttributeValue(XMLTags.CustomSeedAttrTag) );
+	int numOfTrials = Integer.parseInt( param.getAttributeValue(XMLTags.NumberOfTrialAttrTag) );
+
+	//**** create new StochSimOptions object ****
+	cbit.vcell.solver.StochSimOptions stochSimOptions = new cbit.vcell.solver.StochSimOptions(isUseCustomSeed, customSeed, numOfTrials);
+	
+	return stochSimOptions;
 }
 
 

@@ -592,7 +592,7 @@ public void simStatusChanged(SimStatusEvent simStatusEvent) {
 	}
 	Simulation simulation = null;
 	for (int i = 0; i < sims.length; i++){
-		if (simKey.equals(sims[i].getKey()) || simKey.equals(sims[i].getSimulationVersion().getParentSimulationReference())) {
+		if (simKey.equals(sims[i].getKey()) || ((sims[i].getSimulationVersion() != null) && simKey.equals(sims[i].getSimulationVersion().getParentSimulationReference()))) {
 			simulation = sims[i];
 			break;
 		}	

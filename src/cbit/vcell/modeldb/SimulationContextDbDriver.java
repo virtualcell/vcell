@@ -1,4 +1,5 @@
 package cbit.vcell.modeldb;
+import cbit.util.TokenMangler;
 import cbit.vcell.model.Feature;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -6,6 +7,7 @@ import cbit.vcell.model.Feature;
 ©*/
 import cbit.vcell.model.Structure;
 import java.beans.*;
+
 import cbit.vcell.math.BoundaryConditionType;
 import java.sql.*;
 import java.sql.Statement;
@@ -373,8 +375,23 @@ private void assignStructureMappingsSQL(Connection con,KeyValue simContextKey, S
 					throw new DataAccessException("Can't match structure and subvolume, 'even with subvolume fix'");
 				}
 			}
-			
+			Expression sizeExpression = null;
+			String sizeExpressionS = rset.getString(StructureMappingTable.table.sizeExp.getUnqualifiedColName());
+			if(!rset.wasNull()){
+				try {
+					sizeExpressionS = TokenMangler.getSQLRestoredString(sizeExpressionS);
+					sizeExpression = new Expression(sizeExpressionS);
+				} catch (ExpressionException e) {
+					e.printStackTrace();
+					throw new DataAccessException("SimulationContextDbDriver.assignStructureMappingSQL : Couldn't parse non-null size expression for Structure "+theStructure.getName());
+				}
+			}
 			StructureMapping sm = simContext.getGeometryContext().getStructureMapping(theStructure);
+			try {
+				sm.getSizeParameter().setExpression(sizeExpression);
+			} catch (Exception e1) {
+				throw new DataAccessException("SimulationContextDbDriver.assignStructureMappingSQL : Couldn't set size expression '"+sizeExpressionS+"'for Structure "+theStructure.getName());
+			}
 			if (sm instanceof FeatureMapping) {
 				FeatureMapping fm = (FeatureMapping) sm;
 				try {
