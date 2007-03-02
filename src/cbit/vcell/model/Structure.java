@@ -185,6 +185,26 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 	return propertyChange;
 }
 /**
+ * Get sub features inside this structure.
+ * If it is a feature, the sub features include all features inside it and itself.
+ * If it is a membrance, the sub features include all features inside it.
+ * Creation date: (12/11/2006 5:42:07 PM)
+ * @return java.util.Enumeration
+ */
+public Enumeration getSubFeatures() 
+{
+	Vector subFeatures = new Vector();
+	Structure[] structures = this.getModel().getStructures();
+	for (int i=0; i<structures.length; i++)
+	{
+		if((structures[i] instanceof Feature) && (structures[i].enclosedBy(this)))
+		{
+			subFeatures.addElement((Feature)structures[i]);
+		}
+	}
+	return subFeatures.elements();
+}
+/**
  * Accessor for the vetoPropertyChange field.
  */
 protected java.beans.VetoableChangeSupport getVetoPropertyChange() {

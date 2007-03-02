@@ -346,6 +346,14 @@ public Feature getResolvedFeature(SubVolume subVolume) {
 	}
 	return null;
 }
+/**
+ * Insert the method's description here.
+ * Creation date: (12/15/2006 11:30:30 AM)
+ * @return cbit.vcell.mapping.SimulationContext
+ */
+public SimulationContext getSimulationContext() {
+	return fieldSimulationContext;
+}
 public StructureMapping getStructureMapping(Structure structure){
 	if (structure==null){
 		return null;
@@ -457,6 +465,120 @@ protected java.beans.VetoableChangeSupport getVetoPropertyChange() {
  */
 public synchronized boolean hasListeners(java.lang.String propertyName) {
 	return getVetoPropertyChange().hasListeners(propertyName);
+}
+/**
+ * Check if all the sizes are null.
+ * Creation date: (12/18/2006 6:15:29 PM)
+ * @return boolean
+ */
+public boolean isAllSizeSpecifiedNull() 
+{
+	StructureMapping structureMappings[] = getStructureMappings();
+	for (int i=0;i<structureMappings.length;i++)
+	{
+		if(structureMappings[i].getSizeParameter().getExpression() != null) 
+			return false;
+	}
+	return true;
+}
+/**
+ * Check if all the structures' sizes are specified with non zero(greater than zero) values.
+ * Creation date: (12/15/2006 1:52:28 PM)
+ * @return boolean
+ */
+public boolean isAllSizeSpecifiedPositive() 
+{
+	StructureMapping structureMappings[] = getStructureMappings();
+	for (int i=0;i<structureMappings.length;i++)
+	{
+		if(structureMappings[i].getSizeParameter().getExpression() == null) 
+			return false;
+		else
+		{
+			try{
+				double size = structureMappings[i].getSizeParameter().getExpression().evaluateConstant();
+				if (size <=0)
+					return false;
+			}
+			catch (cbit.vcell.parser.ExpressionException e)
+			{
+				e.printStackTrace();
+				throw new RuntimeException("Size of structure "+structureMappings[i].getStructure().getName()+ "cannot be evaluated to a constant.");
+			}
+		}
+	}
+	return true;
+}
+/**
+ * check if all the volFractions and surface to volume ratios are specified.
+ * Creation date: (12/18/2006 6:19:12 PM)
+ * @return boolean
+ */
+public boolean isAllVolFracAndSurfVolSpecified() 
+{
+	StructureMapping structureMappings[] = getStructureMappings();
+	for (int i=0;i<structureMappings.length;i++)
+	{
+		if(structureMappings[i] instanceof FeatureMapping)
+		{
+			FeatureMapping featureMapping = (FeatureMapping)structureMappings[i];
+			if (featureMapping.getResolved() == false && featureMapping.getFeature()!=null && featureMapping.getFeature().getMembrane()!=null)
+			{
+				Membrane membrane = featureMapping.getFeature().getMembrane();
+				MembraneMapping membraneMapping = (MembraneMapping)getStructureMapping(membrane);
+				if(membraneMapping.getSurfaceToVolumeParameter().getExpression() == null)
+					return false;
+				if(membraneMapping.getVolumeFractionParameter().getExpression() == null)
+					return false;
+			}
+		}
+	}
+	return true;
+}
+/**
+ * check if all the volFractions and surface to volume ratios are specified NULL.
+ * Creation date: (12/18/2006 6:19:12 PM)
+ * @return boolean
+ */
+public boolean isAllVolFracAndSurfVolSpecifiedNull() 
+{
+	StructureMapping structureMappings[] = getStructureMappings();
+	for (int i=0;i<structureMappings.length;i++)
+	{
+		if(structureMappings[i] instanceof FeatureMapping)
+		{
+			FeatureMapping featureMapping = (FeatureMapping)structureMappings[i];
+			if (featureMapping.getResolved() == false && featureMapping.getFeature()!=null && featureMapping.getFeature().getMembrane()!=null)
+			{
+				Membrane membrane = featureMapping.getFeature().getMembrane();
+				MembraneMapping membraneMapping = (MembraneMapping)getStructureMapping(membrane);
+				if(membraneMapping.getSurfaceToVolumeParameter().getExpression() != null)
+					return false;
+				if(membraneMapping.getVolumeFractionParameter().getExpression() != null)
+					return false;
+			}
+		}
+	}
+	return true;
+}
+/**
+ * 
+ */
+public boolean isAllFeatureResolved()
+{
+	StructureMapping structureMappings[] = getStructureMappings();
+	for (int i=0;i<structureMappings.length;i++)
+	{
+		if(structureMappings[i] instanceof FeatureMapping)
+		{
+			FeatureMapping featureMapping = (FeatureMapping)structureMappings[i];
+			if (featureMapping.getResolved() == false)
+			{
+				return false;
+			}
+		}
+	}
+	return true;
 }
 /**
  * This method was created in VisualAge.

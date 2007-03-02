@@ -130,6 +130,16 @@ public String getVCML()
 
 /**
  * Insert the method's description here.
+ * Creation date: (12/5/2006 11:11:56 AM)
+ */
+public void setOperand(Expression newOperand)
+{
+	operand = newOperand;		
+}
+
+
+/**
+ * Insert the method's description here.
  * Creation date: (9/28/2006 5:18:07 PM)
  * @return java.lang.String
  */

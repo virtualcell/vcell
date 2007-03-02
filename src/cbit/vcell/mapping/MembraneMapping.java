@@ -55,9 +55,9 @@ public MembraneMapping(cbit.vcell.model.Membrane membrane, SimulationContext arg
 		setParameters(new StructureMappingParameter[] {
 						new StructureMappingParameter(getInitialVoltageName(), new Expression(0.0), ROLE_InitialVoltage,VCUnitDefinition.UNIT_mV),
 						new StructureMappingParameter(DefaultNames[ROLE_SpecificCapacitance], new Expression(1.0), ROLE_SpecificCapacitance,VCUnitDefinition.UNIT_pF_per_um2),
-						new StructureMappingParameter(DefaultNames[ROLE_SurfaceToVolumeRatio], new Expression(1.0), ROLE_SurfaceToVolumeRatio,VCUnitDefinition.UNIT_per_um),
-						new StructureMappingParameter(DefaultNames[ROLE_VolumeFraction], new Expression(0.2), ROLE_VolumeFraction,VCUnitDefinition.UNIT_DIMENSIONLESS),
-						new StructureMappingParameter(DefaultNames[ROLE_Size], null, ROLE_Size,VCUnitDefinition.UNIT_um2)
+						new StructureMappingParameter(DefaultNames[ROLE_SurfaceToVolumeRatio], /*new Expression(0)*/ null, ROLE_SurfaceToVolumeRatio,VCUnitDefinition.UNIT_per_um),
+						new StructureMappingParameter(DefaultNames[ROLE_VolumeFraction], /*new Expression(0)*/ null, ROLE_VolumeFraction,VCUnitDefinition.UNIT_DIMENSIONLESS),
+						new StructureMappingParameter(DefaultNames[ROLE_Size], /*new Expression(0)*/ null, ROLE_Size,VCUnitDefinition.UNIT_um2)
 		});
 	}catch (java.beans.PropertyVetoException e){
 		e.printStackTrace(System.out);

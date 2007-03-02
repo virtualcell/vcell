@@ -124,7 +124,7 @@ public abstract class StructureMapping implements Matchable, cbit.vcell.parser.S
 		}
 
 		public cbit.vcell.parser.Expression getExpression() {
-			return fieldParameterExpression;
+			 return fieldParameterExpression;
 		}
 
 		public VCUnitDefinition getUnitDefinition(){
@@ -155,7 +155,7 @@ public abstract class StructureMapping implements Matchable, cbit.vcell.parser.S
 	public static final int ROLE_SpecificCapacitance	= 2;
 	public static final int ROLE_InitialVoltage			= 3;
 	public static final int ROLE_Size					= 4;
-	public static final int NUM_ROLES		= 5;
+	public static final int NUM_ROLES		= 5;	//surface area for membrane or volume for feature
 	public static final String RoleTags[] = {
 		cbit.vcell.model.VCMODL.SurfaceToVolume,
 		cbit.vcell.model.VCMODL.VolumeFraction,
@@ -175,7 +175,7 @@ public abstract class StructureMapping implements Matchable, cbit.vcell.parser.S
 		new RealInterval(1.0E-3, 0.999),							// volFract
 		new RealInterval(0.0, Double.POSITIVE_INFINITY),	// Capacitance
 		new RealInterval(-120, 60),	// init voltage
-		new RealInterval(0.0, Double.POSITIVE_INFINITY)		// size
+		new RealInterval(0.0, Double.POSITIVE_INFINITY)		// area/volume
 	};
 	private StructureMapping.StructureMappingParameter[] fieldParameters = null;
 
@@ -328,6 +328,24 @@ public void fireVetoableChange(String propertyName, boolean oldValue, boolean ne
  * @param issueVector java.util.Vector
  */
 public void gatherIssues(Vector issueVector) {
+	// size parameter must be set to non zero value for new ode, and all stoch simulations.
+	if (getSizeParameter().getExpression() == null)
+	{
+		//issueVector.add(new Issue(getSizeParameter(), "parameter not set", "Size parameter of "+ getNameScope().getName()+" is compulsory and must be a positive value. \nPlease change it in StructureMapping tab.",Issue.SEVERITY_ERROR));
+	}
+	else
+	{
+		try{
+			double val = getSizeParameter().getExpression().evaluateConstant();
+			if(val <= 0)
+				issueVector.add(new Issue(getSizeParameter(), "parameter not set", "Size parameter of "+ getNameScope().getName() +" is compulsory and must be a positive value. \nPlease change it in StructureMapping tab.",Issue.SEVERITY_ERROR));
+		}catch (cbit.vcell.parser.ExpressionException e)
+		{
+			e.printStackTrace();
+			throw new RuntimeException("Parameter "+getSizeParameter().getName()+"cannot be evaluated to a constant.");
+		}
+		
+	}
 	//
 	// add constraints (simpleBounds) for predefined parameters
 	//
@@ -589,5 +607,28 @@ public void setSimulationContext(SimulationContext argSimulationContext) {
  */
 void setStructure(Structure argStructure) {
 	this.structure = argStructure;
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (12/15/2006 5:17:54 PM)
+ */
+public void showIssueDialog(SimulationContext arg_sc) 
+{
+	SimulationContext sc = arg_sc;
+	if(sc.getGeometry().getDimension() == 0)//non-spatial
+	{
+		if(sc.isStoch()) //stochastic 
+		{
+			if(!sc.getGeometryContext().isAllSizeSpecifiedPositive())
+				throw new RuntimeException("All structure sizes must be assigned positive values.");
+		}
+		else //ode
+		{
+			if((!sc.getGeometryContext().isAllVolFracAndSurfVolSpecified())||(sc.getGeometryContext().isAllVolFracAndSurfVolSpecified() && !sc.getGeometryContext().isAllSizeSpecifiedPositive() && !sc.getGeometryContext().isAllSizeSpecifiedNull()))
+				throw new RuntimeException("All structure sizes must be assigned positive values.");
+		}
+	}
 }
 }

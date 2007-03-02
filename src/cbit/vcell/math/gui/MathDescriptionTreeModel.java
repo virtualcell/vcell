@@ -114,8 +114,8 @@ private BioModelNode createBaseTree() {
 					JumpProcess jp = (JumpProcess)jumpProcesses.nextElement();
 					BioModelNode jpNode = new BioModelNode(jp,true);
 					//add probability rate.
-					Expression probRate = jp.getProbabilityRate();
-					BioModelNode prNode = new BioModelNode("probability_rate = "+probRate.infix(),false);
+					String probRate = "P_"+jp.getName();
+					BioModelNode prNode = new BioModelNode("probability_rate = "+probRate,false);
 					jpNode.add(prNode);
 					//add Actions
 					Enumeration actions = jp.getActions().elements();
@@ -127,10 +127,6 @@ private BioModelNode createBaseTree() {
 					}
 					volumeSubDomainNode.add(jpNode);	
 				}
-				
-
-
-				
 			}
 			else //non-stochastic subtree 
 			{ 

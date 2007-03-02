@@ -73,6 +73,10 @@ public class XMLTags {
     public final static String ErrorToleranceTag = "ErrorTolerance";
     public final static String AbsolutErrorToleranceTag = "Absolut";
     public final static String RelativeErrorToleranceTag = "Relative";
+    public final static String StochSimOptionsTag = "StochSimOptions"; //stoch, added Jan 5th 2007, some options for stochastic simulation
+    public final static String UseCustomSeedAttrTag = "UseCustomSeed"; //stoch
+    public final static String CustomSeedAttrTag = "CustomSeed"; //stoch
+    public final static String NumberOfTrialAttrTag = "NumberOfTrial"; //stoch
     public final static String MathOverridesTag = "MathOverrides";
     public final static String ConstantArraySpec = "ConstantArraySpec";
     public final static String MeshSpecTag = "MeshSpecification";
@@ -198,8 +202,7 @@ public class XMLTags {
     public final static String MinTimeAttrTag = "MinTime";
     public final static String ToleranceAttrTag = "Tolerance";
 
-    public final static String OptimizationSpecificationTag =
-        "OptimizationSpecification";
+    public final static String OptimizationSpecificationTag = "OptimizationSpecification";
     public final static String OptimizationVariableTag = "OptimizationVariable";
     public final static String LowerBoundTag = "LowerBound";
     public final static String UpperBoundTag = "UpperBound";
@@ -213,9 +216,9 @@ public class XMLTags {
     public final static String FluxCarrierAttrTag = "FluxCarrier";
     public final static String FluxCarrierValenceAttrTag = "FluxCarrierValence";
     public final static String FluxOptionAttrTag = "FluxOption";
-	    public final static String FluxOptionMolecularOnly = "MolecularOnly";
-	    public final static String FluxOptionElectricalOnly = "ElectricalOnly";
-	    public final static String FluxOptionMolecularAndElectrical = "MolecularAndElectrical";
+    public final static String FluxOptionMolecularOnly = "MolecularOnly";
+    public final static String FluxOptionElectricalOnly = "ElectricalOnly";
+    public final static String FluxOptionMolecularAndElectrical = "MolecularAndElectrical";
     public final static String SimpleReactionTag = "SimpleReaction";
     public final static String CatalystTag = "Modifier";
     public final static String ReactantTag = "Reactant";

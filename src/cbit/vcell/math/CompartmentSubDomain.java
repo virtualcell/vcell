@@ -341,7 +341,13 @@ private void read(MathDescription mathDesc, CommentStringTokenizer tokens) throw
 			token = tokens.nextToken();	
 			if(token.equalsIgnoreCase(VCML.ProbabilityRate))
 			{
-				Expression exp = new Expression(tokens);
+				token = tokens.nextToken();
+				String probFunName = token.substring(0, (token.length()-1));
+				Variable probFun = mathDesc.getVariable(probFunName);
+				if (probFun == null){
+					throw new MathFormatException("variable "+probFunName+" not defined");
+				}
+				Expression exp = probFun.getExpression() ;
 				jump = new JumpProcess(name,exp);
 				addJumpProcess(jump);
 			}
@@ -371,7 +377,7 @@ private void read(MathDescription mathDesc, CommentStringTokenizer tokens) throw
 						try {
 							Action action = new Action(var,opera,exp);
 							jump.addAction(action);
-						} catch (Exception e){e.printStackTrace();}
+						} catch (Exception e){e.printStackTrace();}	
 						
 					}
 					else throw new MathFormatException("unexpected identifier "+token);

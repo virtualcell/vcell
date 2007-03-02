@@ -971,4 +971,32 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		}
 	}
 }
+/**
+ * Insert the method's description here.
+ * Creation date: (11/16/2006 4:55:16 PM)
+ * @return java.lang.String
+ */
+public String isValidForStochApp() 
+{
+	String returnStr = "";
+	cbit.vcell.model.ReactionStep[] reacSteps = getModel().getReactionSteps();
+	for (int i = 0; (reacSteps != null) && (i < reacSteps.length); i++)
+	{
+		if((reacSteps[i].getKinetics().getKineticsDescription().getName().compareTo(cbit.vcell.model.KineticsDescription.HMM_irreversible.getName())==0) ||
+		   (reacSteps[i].getKinetics().getKineticsDescription().getName().compareTo(cbit.vcell.model.KineticsDescription.HMM_reversible.getName())==0) ||
+		   (reacSteps[i].getKinetics().getKineticsDescription().getName().compareTo(cbit.vcell.model.KineticsDescription.General.getName())==0) ||
+		   (reacSteps[i].getKinetics().getKineticsDescription().getName().compareTo(cbit.vcell.model.KineticsDescription.GeneralTotal.getName())==0))
+		{
+			returnStr = returnStr + " " + reacSteps[i].getName() + ",";
+		}
+	}
+	int len = returnStr.length();
+	if(len > 10)
+	{
+		returnStr = returnStr.substring(0,(len-1)) + " is (are) unable to transform to stochastic formulation.";
+	}
+	else
+		returnStr = "ok";
+	return returnStr;
+}
 }

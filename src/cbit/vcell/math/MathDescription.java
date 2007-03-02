@@ -1850,6 +1850,14 @@ public static String getVCML_withReorderedVariables(Version version, String oldV
 				varHash.addVariable(var);
 				continue;
 			}
+			//stochastic variable
+			if (token.equalsIgnoreCase(VCML.StochVolVariable))
+			{
+				token = tokens.nextToken();
+				StochVolVariable var = new StochVolVariable(token);
+				varHash.addVariable(var);
+				continue;
+			}
 			if (token.equalsIgnoreCase(VCML.Constant)){
 				token = tokens.nextToken();
 				Expression exp = new Expression(tokens);
@@ -2110,7 +2118,7 @@ public boolean isStoch() {
 	while (enum1.hasMoreElements())
 	{
 		Variable var = (Variable)enum1.nextElement();
-		if (! ((var instanceof StochVolVariable) || (var instanceof Constant))){
+		if (! ((var instanceof StochVolVariable) || (var instanceof Constant) ||(var instanceof Function))){
 			return false;
 		} 
 	}			
@@ -2202,7 +2210,7 @@ public boolean isValid() {
 		}
 		CompartmentSubDomain subDomain = (CompartmentSubDomain)subDomainList.elementAt(0);
 		//distinguish ODE model and stochastic model
-		if(subDomain.getVarIniConditions().size()>0)
+		if(isStoch())
 		{
 			//Stochastic model
 			

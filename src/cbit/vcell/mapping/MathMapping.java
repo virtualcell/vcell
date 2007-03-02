@@ -25,7 +25,7 @@ public class MathMapping implements ScopedSymbolTable {
 	private SimulationContext simContext = null;
 	protected MathDescription mathDesc = null;
 	private PotentialMapping potentialMapping = null;  // null if don't need it
-	private MathSymbolMapping mathSymbolMapping = new MathSymbolMapping();
+	protected MathSymbolMapping mathSymbolMapping = new MathSymbolMapping();
 	protected Vector issueList = new Vector();
 
 	private MathMapping.MathMappingParameter[] fieldMathMappingParameters = new MathMappingParameter[0];
@@ -36,7 +36,9 @@ public class MathMapping implements ScopedSymbolTable {
 	public static final int PARAMETER_ROLE_TOTALMASS = 0;
 	public static final int PARAMETER_ROLE_DEPENDENT_VARIABLE = 1;
 	public static final int PARAMETER_ROLE_KFLUX = 2;
-	public static final int NUM_PARAMETER_ROLES = 3;
+	public static final int PARAMETER_ROLE_P = 3;
+	public static final int PARAMETER_ROLE_P_reverse = 4;
+	public static final int NUM_PARAMETER_ROLES = 5;
 		
 	private Vector structureAnalyzerList = new Vector();
 	
@@ -197,6 +199,20 @@ public class MathMapping implements ScopedSymbolTable {
 		}
 
 	}
+	public class ProbabilityParameter extends MathMappingParameter {
+		
+		private ReactionSpec fieldReactionSpec = null;
+
+		protected ProbabilityParameter(String argName, Expression argExpression, int Role,VCUnitDefinition argVCUnitDefinition, ReactionSpec argReactionSpec) {
+			super(argName,argExpression,Role,argVCUnitDefinition);
+			this.fieldReactionSpec = argReactionSpec;
+		}
+
+		public ReactionSpec getReactionSpec() {
+			return fieldReactionSpec;
+		}
+
+	}
 	
 	static {
 		System.out.println("MathMapping: capacitances must not be overridden and must be constant (used as literals in KVL)");
@@ -232,6 +248,32 @@ MathMapping.MathMappingParameter addMathMappingParameter(String name, Expression
 		return previousParameter;
 	}
 	expression.bindExpression(this);
+	MathMapping.MathMappingParameter newParameters[] = (MathMapping.MathMappingParameter[])cbit.util.BeanUtils.addElement(fieldMathMappingParameters,newParameter);
+	setMathMapppingParameters(newParameters);
+	return newParameter;
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (3/29/2004 12:44:00 AM)
+ * @return cbit.vcell.mapping.MathMapping.MathMappingParameter
+ * @param name java.lang.String
+ * @param expression cbit.vcell.parser.Expression
+ * @param role int
+ */
+MathMapping.ProbabilityParameter addProbabilityParameter(String name, Expression expression, int role, VCUnitDefinition unitDefinition,ReactionSpec argReactionSpec) throws java.beans.PropertyVetoException, ExpressionBindingException {
+
+	MathMapping.ProbabilityParameter newParameter = new MathMapping.ProbabilityParameter(name,expression,role,unitDefinition,argReactionSpec);
+	MathMapping.MathMappingParameter previousParameter = getMathMappingParameter(name);
+	if(previousParameter != null){
+		System.out.println("MathMapping.MathMappingParameter addProbabilityParameter found duplicate parameter for name "+name);
+		if(!previousParameter.compareEqual(newParameter)){
+			throw new RuntimeException("MathMapping.MathMappingParameter addProbabilityParameter found duplicate parameter for name "+name);
+		}
+		return (MathMapping.ProbabilityParameter)previousParameter;
+	}
+	//expression.bindExpression(this);
 	MathMapping.MathMappingParameter newParameters[] = (MathMapping.MathMappingParameter[])cbit.util.BeanUtils.addElement(fieldMathMappingParameters,newParameter);
 	setMathMapppingParameters(newParameters);
 	return newParameter;
@@ -601,7 +643,7 @@ public String getMathSymbol(SymbolTableEntry ste, StructureMapping structureMapp
  * @param origExp cbit.vcell.parser.Expression
  * @param structureMapping cbit.vcell.mapping.StructureMapping
  */
-private String getMathSymbol0(SymbolTableEntry ste, StructureMapping structureMapping) throws MappingException {
+protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structureMapping) throws MappingException {
 	if (ste instanceof Kinetics.KineticsParameter){
 		int count = 0;
 		ReactionStep reactionSteps[] = simContext.getModel().getReactionSteps();
@@ -616,6 +658,10 @@ private String getMathSymbol0(SymbolTableEntry ste, StructureMapping structureMa
 		}else{
 			return ste.getName();
 		}
+	}
+	if (ste instanceof MathMapping.ProbabilityParameter){ //be careful here, to see if we need mangle the reaction name
+		MathMapping.ProbabilityParameter probParm = (MathMapping.ProbabilityParameter)ste;
+		return ste.getName();
 	}
 	if (ste instanceof MembraneVoltage){
 		return ste.getName();
@@ -679,6 +725,9 @@ private String getMathSymbol0(SymbolTableEntry ste, StructureMapping structureMa
 		}
 		if (smParm.getRole()==StructureMapping.ROLE_SpecificCapacitance){
 			return "C_"+structure.getNameScope().getName();
+		}
+		if (smParm.getRole()==StructureMapping.ROLE_Size){
+			return "Size_"+structure.getNameScope().getName();
 		}
 	}
 	//
@@ -878,6 +927,16 @@ public SpeciesContextMapping getSpeciesContextMapping(SpeciesContext speciesCont
 
 
 /**
+ * Insert the method's description here.
+ * Creation date: (10/26/2006 4:37:10 PM)
+ * @return java.util.Vector
+ */
+protected Vector getSpeciesContextMappingList() {
+	return speciesContextMappingList;
+}
+
+
+/**
  * This method was created in VisualAge.
  * @return java.util.Enumeration
  */
@@ -940,7 +999,7 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * @return boolean
  * @param speciesContext cbit.vcell.model.SpeciesContext
  */
-private boolean isDiffusionRequired(SpeciesContext speciesContext) {
+protected boolean isDiffusionRequired(SpeciesContext speciesContext) {
 	//
 	// compartmental models never need diffusion
 	//
@@ -1089,7 +1148,14 @@ private void refreshKFluxParameters() throws ExpressionException {
  */
 private void refreshMathDescription() throws MappingException, cbit.vcell.matrix.MatrixException, MathException, ExpressionException, ModelException {
 
-//System.out.println("MathMapping.refreshMathDescription()");
+	//All sizes must be set for new ODE models and ratios must be set for old ones.
+	if(simContext.getGeometry().getDimension() == 0)
+	{
+		if(!simContext.getGeometryContext().isAllVolFracAndSurfVolSpecified())
+		{
+			throw new MappingException("All structure sizes must be assigned positive values.");
+		}
+	}
 	//
 	// verify that all structures are mapped to subvolumes and all subvolumes are mapped to a structure
 	//
@@ -1479,8 +1545,8 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 		SpeciesContextSpec.SpeciesContextSpecParameter initParm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
 		if (initParm!=null){
 			try {
-				initParm.getExpression().evaluateConstant();
-				varHash.addVariable(new Constant(getMathSymbol(initParm,null),getIdentifierSubstitutions(initParm.getExpression(),initParm.getUnitDefinition(),null)));
+				double value = initParm.getExpression().evaluateConstant();
+				varHash.addVariable(new Constant(getMathSymbol(initParm,null), new Expression(value)));//getIdentifierSubstitutions(initParm.getExpression(),initParm.getUnitDefinition(),null)));
 			}catch (ExpressionException e){
 				varHash.addVariable(new Function(getMathSymbol(initParm,null),getIdentifierSubstitutions(initParm.getExpression(),initParm.getUnitDefinition(),null)));
 			}

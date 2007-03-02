@@ -12,6 +12,7 @@ import java.awt.event.*;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import cbit.xml.merge.*;
+import cbit.gui.DialogUtils;
 import cbit.image.*;
 import cbit.vcell.export.server.*;
 import cbit.vcell.xml.XMLInfo;
@@ -1630,6 +1631,40 @@ public void runSimulations(final ClientSimManager clientSimManager, final Simula
 			// user canceled, just show existing document
 			getMdiManager().showWindow(documentWindowManager.getManagerID());
 			return;
+		}
+	}
+
+	// Before running the simulation, check if all the sizes of structures are set
+	if(simulations != null && simulations.length > 0)
+	{
+		VCDocument vcd = documentWindowManager.getVCDocument();
+		if(vcd instanceof BioModel)
+		{
+			//we want to check when there is stochastic application if the rate laws set in model can be automatically transformed.
+			String stochChkMsg =((BioModel)vcd).isValidForStochApp();
+			for(int i=0; i<simulations.length; i++)
+			{
+				if(simulations[i].getMathDescription().isStoch())
+				{
+					if(!(stochChkMsg.equals("ok")))
+					{
+						DialogUtils.showErrorDialog("Problem in simulation: "+simulations[i].getName()+".\n"+stochChkMsg);
+						throw new RuntimeException("Problem in simulation: "+simulations[i].getName()+"\n"+stochChkMsg);
+					}
+				}
+				if(simulations[i].getSolverTaskDescription().getStochOpt().getNumOfTrials()>1)
+					DialogUtils.showInfoDialog("We will be having histograms of stochasic variables shortly. \nAt the time being, the result of "+simulations[i].getName()+" will be the trajectory of the first trial.");
+			}
+			try{
+				SimulationContext sc = ((BioModel)vcd).getSimulationContext(simulations[0]);
+				StructureMapping[] structureMappings = sc.getGeometryContext().getStructureMappings();
+				for (int j=0; structureMappings!=null && j < structureMappings.length; j++)
+					structureMappings[j].showIssueDialog(sc);
+			}catch (ObjectNotFoundException e)
+			{
+				e.printStackTrace();
+				throw new RuntimeException("BioModel for simulation "+simulations[0].getName() +" is not found.");
+			}
 		}
 	}
 	//

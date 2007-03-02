@@ -111,12 +111,8 @@ public Variable getVar() {
 public String getVCML() 
 {
 	StringBuffer buffer = new StringBuffer();
-	int initialValue =0;
-	try
-	{
-		initialValue = (int)(getIniVal().evaluateConstant());
-	}
-	catch (ExpressionException e) {e.printStackTrace();}
+	String initialValue = getVar().getName() + "_init"; //display the constant/function name only
+	
 	buffer.append("\t"+VCML.VarIniCondition+"\t"+getVar().getName()+"\t"+initialValue+";\n");
 	return buffer.toString();
 }
@@ -149,16 +145,8 @@ public void setVar(Variable newVar) {
  */
 public String toString() {
 	StringBuffer buffer = new StringBuffer();
-	int initialValue =0;
-	try
-	{
-		initialValue = (int)(getIniVal().evaluateConstant());
-	}
-	catch (ExpressionException e) 
-	{
-		buffer.append("Cannot parse initial value.");
-		e.printStackTrace();
-	}
+	String initialValue = getVar().getName() + "_init"; // display the constant/function name only
+	
 	buffer.append(getVar().getName()+" = "+initialValue);
 	return buffer.toString();
 }

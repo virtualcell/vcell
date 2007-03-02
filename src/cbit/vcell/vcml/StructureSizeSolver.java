@@ -7,6 +7,7 @@ import cbit.vcell.constraints.GeneralConstraint;
 import cbit.vcell.constraints.ConstraintContainerImpl;
 import cbit.vcell.constraints.AbstractConstraint;
 import cbit.vcell.constraints.SimpleBounds;
+import cbit.gui.DialogUtils;
 import cbit.util.TokenMangler;
 import net.sourceforge.interval.ia_math.RealInterval;
 /**
@@ -74,7 +75,6 @@ public void updateAbsoluteStructureSizes(cbit.vcell.mapping.SimulationContext si
 				Expression exp = Expression.mult(sumOfVolumeExp,new Expression(volFractName));
 				exp = Expression.add(exp, new Expression("-"+insideFeatureSizeName));
 				ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression(exp.infix()+"==0.0"),AbstractConstraint.MODELING_ASSUMPTION,"volFract definition"));
-				
 			}else if (structMappings[i] instanceof FeatureMapping){
 				FeatureMapping featureMapping = (FeatureMapping)structMappings[i];
 				String featureSizeName = TokenMangler.mangleToSName(featureMapping.getFeature().getName()+"_size");
@@ -145,9 +145,9 @@ public void updateAbsoluteStructureSizes(cbit.vcell.mapping.SimulationContext si
 				}
 			}
 		}else{
+			DialogUtils.showErrorDialog("cannot solve for size");
 			throw new RuntimeException("cannot solve for size");
 		}
-		
 	}catch (cbit.vcell.parser.ExpressionException e){
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
@@ -215,6 +215,7 @@ public void updateRelativeStructureSizes(cbit.vcell.mapping.SimulationContext si
 		}
 	}catch (NullPointerException e){
 		e.printStackTrace(System.out);
+		DialogUtils.showErrorDialog("structure sizes must all be specified");
 		throw new RuntimeException("structure sizes must all be specified");
 	}catch (java.beans.PropertyVetoException e){
 		e.printStackTrace(System.out);

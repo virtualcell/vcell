@@ -1,4 +1,5 @@
 package cbit.vcell.solver.stoch;
+import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 import cbit.vcell.solvers.ApplicationMessage;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -76,14 +77,14 @@ public int getSaveToFileInterval() {
 
 
 /**
- * Insert the method's description here.
+ * Get data columns and function columns to be ready for plot.
  * Creation date: (8/15/2006 11:36:43 AM)
  * @return cbit.vcell.solver.stoch.StochSolverResultSet
  */
-public StochSolverResultSet getStochSolverResultSet()
+public cbit.vcell.solver.ode.ODESolverResultSet getStochSolverResultSet()
 {
 	//read .stoch file, this funciton here equals to getODESolverRestultSet()+getStateVariableResultSet()  in ODE.
-	StochSolverResultSet stSolverResultSet = new StochSolverResultSet();
+	cbit.vcell.solver.ode.ODESolverResultSet stSolverResultSet = new cbit.vcell.solver.ode.ODESolverResultSet();
 
 	FileInputStream inputStream = null;
 	try {
@@ -99,7 +100,7 @@ public StochSolverResultSet getStochSolverResultSet()
 		}
 		while (line.indexOf(':') > 0) {
 			String name = line.substring(0, line.indexOf(':'));
-			stSolverResultSet.addDataColumn(new StochSolverResultSetColumnDescription(name));
+			stSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription(name));
 			line = line.substring(line.indexOf(':') + 1);
 		}
 		//  Read data
@@ -133,6 +134,32 @@ public StochSolverResultSet getStochSolverResultSet()
 			}
 		} catch (Exception ex) {
 			getSessionLog().exception(ex);
+		}
+	}
+	
+	//
+	// add appropriate Function columns to result set
+	//
+	cbit.vcell.math.Function functions[] = getSimulation().getFunctions();
+	for (int i = 0; i < functions.length; i++){
+		if (isFunctionSaved(functions[i]) && functions[i].getName().startsWith("P_")) // we want to add probability functions only.
+		{
+			cbit.vcell.parser.Expression exp1 = new cbit.vcell.parser.Expression(functions[i].getExpression());
+			try {
+				exp1 = getSimulation().substituteFunctions(exp1);
+			} catch (cbit.vcell.math.MathException e) {
+				e.printStackTrace(System.out);
+				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
+			} catch (cbit.vcell.parser.ExpressionException e) {
+				e.printStackTrace(System.out);
+				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
+			}
+			try {
+				cbit.vcell.solver.ode.FunctionColumnDescription cd = new cbit.vcell.solver.ode.FunctionColumnDescription(exp1.flatten(),functions[i].getName(), null, functions[i].getName(), false);
+				stSolverResultSet.addFunctionColumn(cd);
+			}catch (cbit.vcell.parser.ExpressionException e){
+				e.printStackTrace(System.out);
+			}
 		}
 	}
 		
@@ -196,17 +223,17 @@ protected void initialize() throws cbit.vcell.solver.SolverException
 private final void printStochFile() throws IOException
 {
 	// executable writes .stoch file, now we write things in .stochbi format
-	StochSolverResultSet stSolverResultSet = ((GibsonSolver)this).getStochSolverResultSet();
+	cbit.vcell.solver.ode.ODESolverResultSet stSolverResultSet = ((GibsonSolver)this).getStochSolverResultSet();
 	//if (getSimulation().getSolverTaskDescription().getOutputTimeSpec().isDefault()) {	
 		//stSolverResultSet.trimRows(((DefaultOutputTimeSpec)getSimulation().getSolverTaskDescription().getOutputTimeSpec()).getKeepAtMost());
 	//} ????this three sentences give array index out of bounds. at RowColumnResultSet row 540.
-	StochSimData stSimData = new StochSimData(new VCSimulationDataIdentifier(getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), getJobIndex()), stSolverResultSet);
+	cbit.vcell.solver.ode.ODESimData stSimData = new cbit.vcell.solver.ode.ODESimData(new VCSimulationDataIdentifier(getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), getJobIndex()), stSolverResultSet);
 	String mathName = stSimData.getMathName();
 	getSessionLog().print("AbstractJavaSolver.printToFile(" + mathName + ")");
 	File logFile = new File(getSaveDirectory(), mathName + LOGFILE_EXTENSION);
 	File dataFile = new File(getSaveDirectory(), mathName + STOCH_DATA_EXTENSION);
-	StochSimData.writeStochDataFile(stSimData, dataFile);
-	stSimData.writeStochLogFile(logFile, dataFile);
+	cbit.vcell.solver.ode.ODESimData.writeODEDataFile(stSimData, dataFile);
+	stSimData.writeODELogFile(logFile, dataFile);
 	// fire event
 	fireSolverPrinted(getCurrentTime());
 }

@@ -1,12 +1,13 @@
 package cbit.vcell.solver.stoch;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.math.*;
 import cbit.vcell.solver.*;
-import cbit.vcell.solver.Simulation;
 import cbit.vcell.math.JumpProcess;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.SubDomain;
 import java.io.*;
+import java.util.Date;
 import java.util.Vector;
 
 /**
@@ -130,6 +131,52 @@ public boolean initialize() throws Exception
 	return true;
 }
 
+/**
+ * check if the expression in probability rate contains illegal symbols
+ * which should only includes variable names and time "t".
+ * Creation date: (11/14/2006 6:28:35 PM)
+ */
+public boolean isValidProbabilityExpression(Expression probExp)
+{
+	String[] symbols = probExp.getSymbols();
+	for(int i=0; symbols != null && i<symbols.length; i++)
+	{
+		if(getSimulation().getMathDescription().getVariable(symbols[i]) != null)
+			continue;
+		else if (symbols[i].compareTo("t") == 0)
+			continue;
+		else
+			return false;
+	}
+	return true;
+}
+
+/**
+ * Insert the method's description here.
+ * Creation date: (11/14/2006 6:28:35 PM)
+ */
+private void refreshVarIniConditions() throws MathException, cbit.vcell.parser.ExpressionException
+{
+	java.util.Enumeration enuSD = getSimulation().getMathDescription().getSubDomains();
+  	SubDomain subDomain = null;
+  	if(enuSD.hasMoreElements())
+		subDomain = (SubDomain)enuSD.nextElement();
+	subDomain.removeVarIniConditions();
+	java.util.Enumeration enuVar = getSimulation().getMathDescription().getVariables();
+	while (enuVar.hasMoreElements())
+	{
+		Variable var = (Variable)enuVar.nextElement();
+		if (var instanceof StochVolVariable)
+		{
+			Variable iniFun = getSimulation().getMathDescription().getVariable(var.getName()+"_init");
+			if (iniFun == null)
+				throw new MathFormatException("variable "+var.getName()+"'s initial condition is not defined.");
+			VarIniCondition varIni = new VarIniCondition(var, iniFun.getExpression());
+			subDomain.addVarIniCondition(varIni);
+		}
+	}
+}
+
 
 /**
  * Insert the method's description here.
@@ -145,7 +192,7 @@ public void writeStochInputFile(PrintWriter pw) throws Exception
  * Write the model to a text file which serves as an input for Stochastic simulation engine.
  * Creation date: (6/22/2006 5:37:26 PM)
  */
-public void writeStochInputFile(PrintWriter pw, String[] parameterNames) throws Exception
+public void writeStochInputFile(PrintWriter pw, String[] parameterNames) throws Exception,cbit.vcell.parser.ExpressionException
 {
 	if(initialize())
 	{
@@ -155,6 +202,7 @@ public void writeStochInputFile(PrintWriter pw, String[] parameterNames) throws 
 		cbit.vcell.solver.TimeBounds timeBounds = solverTaskDescription.getTimeBounds();
 		cbit.vcell.solver.DefaultOutputTimeSpec outputTimeSpec = ((DefaultOutputTimeSpec)solverTaskDescription.getOutputTimeSpec());
 		ErrorTolerance errorTolerance = solverTaskDescription.getErrorTolerance();
+		StochSimOptions stochOpt = solverTaskDescription.getStochOpt();
 		pw.println("STARTING_TIME"+"\t"+ timeBounds.getStartingTime());
 		//pw.println("ENDING_TIME " + timeBounds.getEndingTime());
 		//pw.println("ENDING_TIME "+"\t"+"75"); //for time =75 k134=1 k2=10 trial=1000
@@ -164,6 +212,8 @@ public void writeStochInputFile(PrintWriter pw, String[] parameterNames) throws 
 		pw.println("SAMPLE_INTERVAL"+"\t"+outputTimeSpec.getKeepEvery());
 		pw.println("NUM_TRIAL"+"\t"+"1");//TODO: should get from user
 	  	pw.println("MAX_NUM_MOLECUES "+"\t"+"30");//TODO: should get from user
+	  	if(stochOpt.isUseCustomSeed())
+	  		pw.println("SEED"+"\t"+stochOpt.getCustomSeed());
 	  	pw.println("</control>");
 	  	pw.println();
 
@@ -174,17 +224,25 @@ public void writeStochInputFile(PrintWriter pw, String[] parameterNames) throws 
 			subDomain = (SubDomain)e.nextElement();
 	  	if(subDomain != null)
 	  	{
+		  	refreshVarIniConditions();
 		  	pw.println("<model>");
 			//  variables
 			pw.println("<discreteVariables>");
 			Vector varInis = subDomain.getVarIniConditions(); //There is only one subDomain for compartmental model
-			double[] vals;//need to be assigned values
 			if((varInis != null) && (varInis.size()>0))
 		    {
 			    pw.println("TotalVars"+"\t"+varInis.size());
 			  	for(int i=0; i<varInis.size(); i++)
 				{
-					pw.println(((VarIniCondition)varInis.elementAt(i)).getVar().getName()+"\t"+((VarIniCondition)varInis.elementAt(i)).evaluateIniVal());//TODO:to get the variable's contant values
+			  		try{
+			  			Expression iniExp = ((VarIniCondition)varInis.elementAt(i)).getIniVal();
+			  			double iniValue = iniExp.evaluateConstant();
+			  			pw.println(((VarIniCondition)varInis.elementAt(i)).getVar().getName()+"\t"+Math.round(iniValue));
+			  		}catch(cbit.vcell.parser.ExpressionException ex)
+			  		{
+			  			ex.printStackTrace();
+			  			throw new MathFormatException("variable "+((VarIniCondition)varInis.elementAt(i)).getVar().getName()+"'s initial condition is required to be a constant.");
+			  		}
 				}
 			}
 		    else pw.println("TotalVars"+"\t"+"0");
@@ -215,8 +273,20 @@ public void writeStochInputFile(PrintWriter pw, String[] parameterNames) throws 
 				{
 					JumpProcess temProc = (JumpProcess)jumpProcesses.elementAt(i);
 					pw.println("JumpProcess"+"\t"+temProc.getName()); //jump process name
-					pw.println("\t"+"Propensity"+"\t"+temProc.getProbabilityRate().infix()); //Propensity
-					//effects
+					Expression probExp = temProc.getProbabilityRate();
+					try {
+						probExp.bindExpression(getSimulation());
+						probExp = getSimulation().substituteFunctions(probExp).flatten();
+						if(!isValidProbabilityExpression(probExp))
+							throw new MathFormatException("probability rate in jump process "+temProc.getName()+" has illegal symbols(should only contain variable names and t).");
+					}catch(cbit.vcell.parser.ExpressionException ex)
+					{
+						ex.printStackTrace();
+						throw new cbit.vcell.parser.ExpressionException("Binding math description error in probability rate in jump process "+temProc.getName());	
+					}
+					//Expression temp = replaceVarIniInProbability(probExp);
+					pw.println("\t"+"Propensity"+"\t"+ probExp.infix()); //Propensity
+					//effects					
 					pw.println("\t"+"Effect"+"\t"+temProc.getActions().size());
 					for(int j=0; j<temProc.getActions().size(); j++)
 					{
@@ -242,4 +312,5 @@ public void writeStochInputFile(PrintWriter pw, String[] parameterNames) throws 
 	  	} //if (subDomain != null)
     } //if (initialize())
 }
+
 }
