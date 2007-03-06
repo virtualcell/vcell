@@ -92,6 +92,15 @@ public SolverTaskDescription(Simulation simulation, CommentStringTokenizer token
 
 
 /**
+ * This constructor is for management console only.
+ */
+public SolverTaskDescription(CommentStringTokenizer tokenizer) throws DataAccessException {
+	super();
+	readVCML(tokenizer);
+}
+
+
+/**
  * One of three ways to construct a SolverTaskDescription.  This constructor
  * is used when copying a SolverTaskDescription from an existing one.
  */
