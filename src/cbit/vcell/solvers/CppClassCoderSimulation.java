@@ -258,55 +258,43 @@ protected void writeGetSimTool(java.io.PrintWriter out) throws Exception {
 			newBaseDataName.append(baseDataName.charAt(i));
 		}
 	}
-	out.println("   Simulation *sim = NULL;");
-	out.println("   VCellModel *model = NULL;");
-	out.println("   CartesianMesh *mesh = NULL;");
-	out.println("   SimTool *pSimTool = new SimTool(\"Simulate\");");
-	out.println("   int numX = "+meshSampling.getX()+";");
-	out.println("   int numY = "+meshSampling.getY()+";");
-	out.println("   int numZ = "+meshSampling.getZ()+";");
-	out.println("   theApplication = new App();");
-	out.println("   try {");
-	out.println("      model = new UserVCellModel();");
-	out.println("      assert(model);");
-	out.println("      theApplication->setModel(model);");
-	out.println("      SimulationMessaging::getInstVar()->setWorkerEvent(new WorkerEvent(JOB_STARTING, \"initializing mesh...\"));");
-	out.println("      mesh = new CartesianMesh(\"" + newBaseDataName + ".vcg" + "\");");
-	out.println("      SimulationMessaging::getInstVar()->setWorkerEvent(new WorkerEvent(JOB_STARTING, \"mesh initialized\"));");
-	out.println("      assert(mesh);");
-	out.println("      sim = new UserSimulation(mesh);");
-	out.println("      assert(sim);");
-	out.println("      theApplication->setSimulation(sim);");
+	out.println("\tSimulation *sim = NULL;");
+	out.println("\tVCellModel *model = NULL;");
+	out.println("\tCartesianMesh *mesh = NULL;");
+	out.println("\tSimTool *pSimTool = new SimTool(\"Simulate\");");
+	out.println("\tint numX = "+meshSampling.getX()+";");
+	out.println("\tint numY = "+meshSampling.getY()+";");
+	out.println("\tint numZ = "+meshSampling.getZ()+";");
+	out.println("\ttheApplication = new App();");
+	out.println("\tmodel = new UserVCellModel();");
+	out.println("\tassert(model);");
+	out.println("\ttheApplication->setModel(model);");
+	out.println("\tSimulationMessaging::getInstVar()->setWorkerEvent(new WorkerEvent(JOB_STARTING, \"initializing mesh...\"));");
+	out.println("\tmesh = new CartesianMesh(\"" + newBaseDataName + ".vcg" + "\");");
+	out.println("\tSimulationMessaging::getInstVar()->setWorkerEvent(new WorkerEvent(JOB_STARTING, \"mesh initialized\"));");
+	out.println("\tassert(mesh);");
+	out.println("\tsim = new UserSimulation(mesh);");
+	out.println("\tassert(sim);");
+	out.println("\ttheApplication->setSimulation(sim);");
 	out.println();
-	out.println("      sim->initSimulation();");
-	out.println("      pSimTool->setup();");
-	out.println("      pSimTool->setBaseFilename(\""+newBaseDataName.toString()+"\");");
-	out.println("	   pSimTool->loadFinal();   // initializes to the latest file if it exists");
-	out.println("");
-	out.println("      pSimTool->setPeriodSec("+taskDesc.getTimeStep().getDefaultTimeStep()+");");
-	out.println("      pSimTool->setEndTimeSec("+taskDesc.getTimeBounds().getEndingTime()+");");
+	out.println("\tsim->initSimulation();");
+	out.println("\tpSimTool->setup();");
+	out.println("\tpSimTool->setBaseFilename(\""+newBaseDataName.toString()+"\");");
+	out.println("\tpSimTool->loadFinal();   // initializes to the latest file if it exists");
+	out.println();
+	out.println("\tpSimTool->setPeriodSec("+taskDesc.getTimeStep().getDefaultTimeStep()+");");
+	out.println("\tpSimTool->setEndTimeSec("+taskDesc.getTimeBounds().getEndingTime()+");");
 
 	if (taskDesc.getOutputTimeSpec().isDefault()){
-		out.println("      pSimTool->setStoreMultiple("+((DefaultOutputTimeSpec)taskDesc.getOutputTimeSpec()).getKeepEvery()+");");
+		out.println("\tpSimTool->setStoreMultiple("+((DefaultOutputTimeSpec)taskDesc.getOutputTimeSpec()).getKeepEvery()+");");
 	}else{
 		throw new RuntimeException("unexpected OutputTime specification type :"+taskDesc.getOutputTimeSpec().getClass().getName());
 	}
-	out.println("      pSimTool->setStoreEnable(TRUE);");
-	out.println("      pSimTool->setFileCompress(FALSE);");
+	out.println("\tpSimTool->setStoreEnable(TRUE);");
+	out.println("\tpSimTool->setFileCompress(FALSE);");
 	
-	out.println("");
-	out.println("   }catch (char *exStr){");
-	out.println("      char* title = \"Exception in initialization: \";");
-	out.println("      char* msg = new char[strlen(title) + strlen(exStr) + 1];");
-	out.println("      strcpy(msg, title);");
-	out.println("      strcat(msg, exStr);");
-	out.println("      throw msg;");
-	out.println("   }catch (...){");
-	out.println("      throw \"Unknown Exception in initialization \";");
-	out.println("   }");
-	out.println("");
-	out.println("   return pSimTool;");
-	out.println("");
+	out.println();
+	out.println("\treturn pSimTool;");
 	out.println("}");
 }
 
@@ -434,7 +422,11 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 	}		
 
 	out.println("\t}catch (char *exStr){");
-	out.println("\t\treturnMsg = \"Exception while running ... \";");
+	out.println("\t\treturnMsg = \"Exception while running : \";");
+	out.println("\t\treturnMsg += exStr;");
+	out.println("\t\treturnCode = 1;");
+	out.println("\t}catch (const char *exStr){");
+	out.println("\t\treturnMsg = \"Exception while running : \";");
 	out.println("\t\treturnMsg += exStr;");
 	out.println("\t\treturnCode = 1;");
    	out.println("\t}catch (...){");
