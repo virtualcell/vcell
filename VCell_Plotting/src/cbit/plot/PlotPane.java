@@ -160,6 +160,26 @@ private void connEtoC4(javax.swing.ButtonModel value) {
 
 
 /**
+ * connEtoC5:  (JCheckBox_stepLike.action.actionPerformed(java.awt.event.ActionEvent) --> PlotPane.jCheckBox_stepLike_ActionPerformed(Ljava.awt.event.ActionEvent;)V)
+ * @param arg1 java.awt.event.ActionEvent
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private void connEtoC5(java.awt.event.ActionEvent arg1) {
+	try {
+		// user code begin {1}
+		// user code end
+		this.jCheckBox_stepLike_ActionPerformed(arg1);
+		// user code begin {2}
+		// user code end
+	} catch (java.lang.Throwable ivjExc) {
+		// user code begin {3}
+		// user code end
+		handleException(ivjExc);
+	}
+}
+
+
+/**
  * connEtoM1:  (PlotPane.plot2DData --> Plot2DPanel1.plot2DData)
  * @param arg1 java.beans.PropertyChangeEvent
  */
@@ -539,6 +559,29 @@ private cbit.gui.JToolBarToggleButton getDataButton() {
 }
 
 /**
+ * Return the JCheckBox_stepLike property value.
+ * @return javax.swing.JCheckBox
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private javax.swing.JCheckBox getJCheckBox_stepLike() {
+	if (ivjJCheckBox_stepLike == null) {
+		try {
+			ivjJCheckBox_stepLike = new javax.swing.JCheckBox();
+			ivjJCheckBox_stepLike.setName("JCheckBox_stepLike");
+			ivjJCheckBox_stepLike.setText("Step Mode");
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjJCheckBox_stepLike;
+}
+
+
+/**
  * Return the JLabel5 property value.
  * @return javax.swing.JLabel
  */
@@ -733,21 +776,26 @@ private javax.swing.JPanel getJPanelBottom() {
 			ivjJPanelBottom.setLayout(new java.awt.GridBagLayout());
 
 			java.awt.GridBagConstraints constraintsJLabel5 = new java.awt.GridBagConstraints();
-			constraintsJLabel5.gridx = 1; constraintsJLabel5.gridy = 1;
+			constraintsJLabel5.gridx = 1; constraintsJLabel5.gridy = 0;
 			constraintsJLabel5.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			constraintsJLabel5.weightx = 1.0;
 			constraintsJLabel5.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJPanelBottom().add(getJLabel5(), constraintsJLabel5);
 
 			java.awt.GridBagConstraints constraintsPlotButton = new java.awt.GridBagConstraints();
-			constraintsPlotButton.gridx = 2; constraintsPlotButton.gridy = 1;
+			constraintsPlotButton.gridx = 2; constraintsPlotButton.gridy = 0;
 			constraintsPlotButton.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJPanelBottom().add(getPlotButton(), constraintsPlotButton);
 
 			java.awt.GridBagConstraints constraintsDataButton = new java.awt.GridBagConstraints();
-			constraintsDataButton.gridx = 3; constraintsDataButton.gridy = 1;
+			constraintsDataButton.gridx = 3; constraintsDataButton.gridy = 0;
 			constraintsDataButton.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJPanelBottom().add(getDataButton(), constraintsDataButton);
+
+			java.awt.GridBagConstraints constraintsJCheckBox_stepLike = new java.awt.GridBagConstraints();
+			constraintsJCheckBox_stepLike.gridx = 0; constraintsJCheckBox_stepLike.gridy = 0;
+			constraintsJCheckBox_stepLike.insets = new java.awt.Insets(4, 4, 4, 4);
+			getJPanelBottom().add(getJCheckBox_stepLike(), constraintsJCheckBox_stepLike);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -758,7 +806,6 @@ private javax.swing.JPanel getJPanelBottom() {
 	}
 	return ivjJPanelBottom;
 }
-
 
 /**
  * Return the JPanelData property value.
@@ -1028,6 +1075,7 @@ private void initConnections() throws java.lang.Exception {
 	// user code end
 	this.addPropertyChangeListener(ivjEventHandler);
 	getButtonGroupCivilized1().addPropertyChangeListener(ivjEventHandler);
+	getJCheckBox_stepLike().addActionListener(ivjEventHandler);
 	connPtoP1SetTarget();
 	connPtoP2SetTarget();
 	connPtoP3SetTarget();
@@ -1059,6 +1107,15 @@ private void initialize() {
 	// user code begin {2}
 	// user code end
 }
+
+/**
+ * Comment
+ */
+private void jCheckBox_stepLike_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
+	getPlot2DPanel1().setBStepMode(getJCheckBox_stepLike().isSelected());
+	getPlot2DPanel1().repaint();
+}
+
 
 /**
  * main entrypoint - starts the part when it is run as an application

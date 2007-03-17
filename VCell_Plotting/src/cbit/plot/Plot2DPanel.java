@@ -17,7 +17,6 @@ import cbit.util.Range;
  * @author: Ion Moraru
  */
 public class Plot2DPanel extends JPanel {
-
 	//
 	//
 	private final BasicStroke lineBS_10 = new BasicStroke(1.0f);
@@ -31,8 +30,57 @@ public class Plot2DPanel extends JPanel {
 	private Rectangle plotRectHolder = null;
 	private boolean bPlot2DHasInvalidData = false;
 	private boolean bPlot2DHasInvalidRange = false;
-	//
-	//
+	private Point dragStartPoint = new Point(-1, -1);
+	private Point dragEndPoint = new Point(-1, -1);
+	private NumberFormat snf = new DecimalFormat("0.000E00");
+	private Point lastPoint = null;
+	private boolean drawn = false;
+	IvjEventHandler ivjEventHandler = new IvjEventHandler();
+	private Point2DSet[] nodes = null;
+	private javax.swing.JLabel fieldStatusLabel = new JLabel();
+	private Plot2D fieldPlot2D = null;
+	private PlotData[] plotDatas = null;
+	private boolean ivjConnPtoP1Aligning = false;
+	private Plot2D ivjplot2D1 = null;
+	private int lMargin = 10;
+	private int tMargin = 10;
+	private int rMargin = 10;
+	private int bMargin = 10;
+	private int tick = 10;
+	private boolean fieldAutoColor = true;
+	private boolean fieldShowNodes = true;
+	private boolean fieldSnapToNodes = true;
+	private boolean fieldShowCrosshair = true;
+	private boolean fieldXAuto = true;
+	private boolean fieldYAuto = true;
+	private boolean fieldXStretch = false;
+	private boolean fieldYStretch = false;
+	private int fieldCurrentPlotIndex = 0;
+	private double[] fieldYMajorTicks = null;
+	private double[] fieldYMinorTicks = null;
+	private double[] fieldXMinorTicks = null;
+	private double[] fieldXMajorTicks = null;
+	private Plot2DSettingsPanel ivjPlot2DSettingsPanel1 = null;
+	private boolean ivjConnPtoP11Aligning = false;
+	private boolean ivjConnPtoP2Aligning = false;
+	private boolean ivjConnPtoP3Aligning = false;
+	private boolean ivjConnPtoP4Aligning = false;
+	private boolean ivjConnPtoP5Aligning = false;
+	private boolean ivjConnPtoP6Aligning = false;
+	private boolean ivjConnPtoP8Aligning = false;
+	private boolean ivjConnPtoP9Aligning = false;
+	private Plot2DSettings ivjplot2DSettings1 = null;
+	private Range fieldXAutoRange = null;
+	private Range fieldYAutoRange = null;
+	private boolean ivjConnPtoP12Aligning = false;
+	private boolean ivjConnPtoP13Aligning = false;
+	private Range fieldXManualRange = null;
+	private Range fieldYManualRange = null;
+	private boolean ivjConnPtoP10Aligning = false;
+	private boolean ivjConnPtoP7Aligning = false;
+	private boolean fieldBCompact = false;
+	private boolean fieldBStepMode = false;
+
 class IvjEventHandler implements java.awt.event.MouseListener, java.awt.event.MouseMotionListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener {
 		public void mouseClicked(java.awt.event.MouseEvent e) {
 			if (e.getSource() == Plot2DPanel.this) 
@@ -131,56 +179,7 @@ class IvjEventHandler implements java.awt.event.MouseListener, java.awt.event.Mo
 			if (e.getSource() == Plot2DPanel.this.getplot2D1()) 
 				connEtoC4(e);
 		};
-	}
-	private Point dragStartPoint = new Point(-1, -1);
-	private Point dragEndPoint = new Point(-1, -1);
-	private NumberFormat snf = new DecimalFormat("0.000E00");
-	private Point lastPoint = null;
-	private boolean drawn = false;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private Point2DSet[] nodes = null;
-	private javax.swing.JLabel fieldStatusLabel = new JLabel();
-	private Plot2D fieldPlot2D = null;
-	private PlotData[] plotDatas = null;
-	private boolean ivjConnPtoP1Aligning = false;
-	private Plot2D ivjplot2D1 = null;
-	private int lMargin = 10;
-	private int tMargin = 10;
-	private int rMargin = 10;
-	private int bMargin = 10;
-	private int tick = 10;
-	private boolean fieldAutoColor = true;
-	private boolean fieldShowNodes = true;
-	private boolean fieldSnapToNodes = true;
-	private boolean fieldShowCrosshair = true;
-	private boolean fieldXAuto = true;
-	private boolean fieldYAuto = true;
-	private boolean fieldXStretch = false;
-	private boolean fieldYStretch = false;
-	private int fieldCurrentPlotIndex = 0;
-	private double[] fieldYMajorTicks = null;
-	private double[] fieldYMinorTicks = null;
-	private double[] fieldXMinorTicks = null;
-	private double[] fieldXMajorTicks = null;
-	private Plot2DSettingsPanel ivjPlot2DSettingsPanel1 = null;
-	private boolean ivjConnPtoP11Aligning = false;
-	private boolean ivjConnPtoP2Aligning = false;
-	private boolean ivjConnPtoP3Aligning = false;
-	private boolean ivjConnPtoP4Aligning = false;
-	private boolean ivjConnPtoP5Aligning = false;
-	private boolean ivjConnPtoP6Aligning = false;
-	private boolean ivjConnPtoP8Aligning = false;
-	private boolean ivjConnPtoP9Aligning = false;
-	private Plot2DSettings ivjplot2DSettings1 = null;
-	private Range fieldXAutoRange = null;
-	private Range fieldYAutoRange = null;
-	private boolean ivjConnPtoP12Aligning = false;
-	private boolean ivjConnPtoP13Aligning = false;
-	private Range fieldXManualRange = null;
-	private Range fieldYManualRange = null;
-	private boolean ivjConnPtoP10Aligning = false;
-	private boolean ivjConnPtoP7Aligning = false;
-	private boolean fieldBCompact = false;
+	};
 
 public Plot2DPanel() {
 	super();
@@ -1563,6 +1562,16 @@ private int getBMargin() {
 
 
 /**
+ * Gets the bStepMode property (boolean) value.
+ * @return The bStepMode property value.
+ * @see #setBStepMode
+ */
+public boolean getBStepMode() {
+	return fieldBStepMode;
+}
+
+
+/**
  * Gets the currentPlotIndex property (int) value.
  * @return The currentPlotIndex property value.
  * @see #setCurrentPlotIndex
@@ -1659,14 +1668,29 @@ private GeneralPath getLinePlot(PlotData plotData, int index) {
  * @param index int
  * @return java.awt.geom.Line2D[]
  */
-private Line2D[] getLinePlotSegments(PlotData plotData, int index) {
+private Line2D[] getLinePlotSegments(PlotData plotData, int index) { //index means which plot(for a spacific variable), The array 'nodes' stores all the plots. comment added 4th Oct, 2006 
 	if (plotData != null && plotData.getSize()>0) {
 		nodes[index].setPoints(mapPoints(plotData));
-		Line2D[] segments = new Line2D[plotData.getSize()-1];
-		for (int i=0;i<plotData.getSize()-1;i++) {
-			segments[i] = new Line2D.Double(nodes[index].getPoints()[i], nodes[index].getPoints()[i+1]);
+		if(!getBStepMode())
+		{
+			Line2D[] segments = new Line2D[plotData.getSize()-1];
+			for (int i=0;i<plotData.getSize()-1;i++) {
+				segments[i] = new Line2D.Double(nodes[index].getPoints()[i], nodes[index].getPoints()[i+1]);
+			}
+			return segments;
 		}
-		return segments;
+		else
+		{
+			Line2D[] segments = new Line2D[(plotData.getSize()-1)*2];
+			for (int i=0;i<plotData.getSize()-1;i++) {
+
+				Point2D transientNode = new Point2D.Double(nodes[index].getPoints()[i+1].getX(),nodes[index].getPoints()[i].getY());
+				segments[2*i] = new Line2D.Double(nodes[index].getPoints()[i], transientNode);
+				segments[2*i+1] = new Line2D.Double(transientNode, nodes[index].getPoints()[i+1]);
+			}
+			return segments;
+		}
+		
 	} else {
 		return null;
 	}
@@ -2336,6 +2360,18 @@ public void setBCompact(boolean bCompact) {
  */
 private void setBMargin(int newBMargin) {
 	bMargin = newBMargin;
+}
+
+
+/**
+ * Sets the bStepMode property (boolean) value.
+ * @param bStepMode The new value for the property.
+ * @see #getBStepMode
+ */
+public void setBStepMode(boolean bStepMode) {
+	boolean oldValue = fieldBStepMode;
+	fieldBStepMode = bStepMode;
+	firePropertyChange("bStepMode", new Boolean(oldValue), new Boolean(bStepMode));
 }
 
 
