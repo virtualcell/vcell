@@ -33,7 +33,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	private SolverDescription fieldSolverDescription = null;
 	private boolean fieldUseSymbolicJacobian = false;
 	private OutputTimeSpec fieldOutputTimeSpec = new DefaultOutputTimeSpec();
-	private StochSimOptions fieldStochOpt = new StochSimOptions(); //added Dec 5th, 2006
+//	private StochSimOptions fieldStochOpt = new StochSimOptions(); //added Dec 5th, 2006
 
 /**
  * One of three ways to construct a SolverTaskDescription.  This constructor
@@ -177,7 +177,7 @@ public boolean compareEqual(Matchable object) {
 		if (!getTimeBounds().compareEqual(solverTaskDescription.getTimeBounds())) return (false);
 		if (!getTimeStep().compareEqual(solverTaskDescription.getTimeStep())) return (false);
 		if (!getErrorTolerance().compareEqual(solverTaskDescription.getErrorTolerance())) return (false);
-		if (!getStochOpt().compareEqual(solverTaskDescription.getStochOpt())) return (false);
+//		if (!getStochOpt().compareEqual(solverTaskDescription.getStochOpt())) return (false);
 		if (getUseSymbolicJacobian() != solverTaskDescription.getUseSymbolicJacobian()) return (false);
 		//
 		if (!getOutputTimeSpec().compareEqual(solverTaskDescription.getOutputTimeSpec())) return (false);
@@ -394,15 +394,15 @@ public boolean getSteady() {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (12/6/2006 6:16:42 PM)
- * @return cbit.vcell.solver.StochSimOptions
- */
-public StochSimOptions getStochOpt() {
-	return fieldStochOpt;
-}
-
+///**
+// * Insert the method's description here.
+// * Creation date: (12/6/2006 6:16:42 PM)
+// * @return cbit.vcell.solver.StochSimOptions
+// */
+//public StochSimOptions getStochOpt() {
+//	return fieldStochOpt;
+//}
+//
 
 /**
  * This method was created by a SmartGuide.
@@ -519,7 +519,7 @@ public String getVCML() {
 
 	buffer.append(getErrorTolerance().getVCML()+"\n");
 
-	buffer.append(getStochOpt().getVCML()+"\n");
+//	buffer.append(getStochOpt().getVCML()+"\n");
 
 	buffer.append(fieldOutputTimeSpec.getVCML() + "\n");
 
@@ -733,10 +733,10 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 				getErrorTolerance().readVCML(tokens);
 				continue;
 			}
-			if (token.equalsIgnoreCase(VCML.StochSimOptions)) {
-				getStochOpt().readVCML(tokens);
-				continue;
-			}
+//			if (token.equalsIgnoreCase(VCML.StochSimOptions)) {
+//				getStochOpt().readVCML(tokens);
+//				continue;
+//			}
 			if (token.equalsIgnoreCase(VCML.OutputOptions)) {
 				fieldOutputTimeSpec = OutputTimeSpec.readVCML(tokens);
 				continue;
@@ -762,7 +762,7 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 					throw new DataAccessException("unexpected token " + token + " expecting " + VCML.Constant); 
 				}
 				String name = tokens.nextToken();
-				Expression exp = new Expression(tokens);
+				IExpression exp = ExpressionFactory.createExpression(tokens);
 				Constant constant = new Constant(name,exp);
 				setSensitivityParameter(constant);
 				token = tokens.nextToken();
@@ -904,10 +904,10 @@ public void setSolverDescription(SolverDescription solverDescription) throws jav
  * Creation date: (12/6/2006 6:16:42 PM)
  * @param newFieldStochOpt cbit.vcell.solver.StochSimOptions
  */
-public void setStochOpt(StochSimOptions newStochOpt) {
-	fieldStochOpt = newStochOpt;
-}
-
+//public void setStochOpt(StochSimOptions newStochOpt) {
+//	fieldStochOpt = newStochOpt;
+//}
+//
 
 /**
  * This method was created by a SmartGuide.
