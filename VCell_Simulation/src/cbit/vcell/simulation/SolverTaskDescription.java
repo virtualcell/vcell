@@ -33,6 +33,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	private SolverDescription fieldSolverDescription = null;
 	private boolean fieldUseSymbolicJacobian = false;
 	private OutputTimeSpec fieldOutputTimeSpec = new DefaultOutputTimeSpec();
+	private StochSimOptions fieldStochOpt = new StochSimOptions(); //added Dec 5th, 2006
 
 /**
  * One of three ways to construct a SolverTaskDescription.  This constructor
@@ -43,11 +44,17 @@ public SolverTaskDescription(Simulation simulation) {
 	addVetoableChangeListener(this);
 	addPropertyChangeListener(this);
 	try {
-		if (simulation.getIsSpatial()){
+		if (simulation.getIsSpatial()) 
+		{
 			setSolverDescription(getDefaultPDESolverDescription());
-		} else if (simulation.getMathDescription().isStoch()){
+		} //amended Sept.27, 2006
+		else if (simulation.getMathDescription().isStoch()) 
+		{
 			setSolverDescription(getDefaultStochSolverDescription());
-		} else {
+			setOutputTimeSpec(new DefaultOutputTimeSpec(1,1000000));//amended Feb 20th,2007
+		}
+		else
+		{
 			setSolverDescription(getDefaultODESolverDescription());
 		}
 	}catch (java.beans.PropertyVetoException e){
@@ -66,20 +73,31 @@ public SolverTaskDescription(Simulation simulation, CommentStringTokenizer token
 	addVetoableChangeListener(this);
 	addPropertyChangeListener(this);
 	try {
-		if (simulation != null && simulation.getIsSpatial()) 
+		if (simulation.getIsSpatial()) 
 		{
 			setSolverDescription(getDefaultPDESolverDescription());
 		} //amended Sept.27, 2006
-		else if (simulation != null && simulation.getMathDescription().isStoch()) 
+		else if (simulation.getMathDescription().isStoch()) 
 		{
-			setSolverDescription(getDefaultStochSolverDescription());		
-		} else 	{
+			setSolverDescription(getDefaultStochSolverDescription());
+		}
+		else
+		{
 			setSolverDescription(getDefaultODESolverDescription());
 		}
 	}catch (java.beans.PropertyVetoException e){
 		e.printStackTrace(System.out);
 	}
 	setSimulation(simulation);
+	readVCML(tokenizer);
+}
+
+
+/**
+ * This constructor is for management console only.
+ */
+public SolverTaskDescription(CommentStringTokenizer tokenizer) throws DataAccessException {
+	super();
 	readVCML(tokenizer);
 }
 
@@ -159,6 +177,7 @@ public boolean compareEqual(Matchable object) {
 		if (!getTimeBounds().compareEqual(solverTaskDescription.getTimeBounds())) return (false);
 		if (!getTimeStep().compareEqual(solverTaskDescription.getTimeStep())) return (false);
 		if (!getErrorTolerance().compareEqual(solverTaskDescription.getErrorTolerance())) return (false);
+		if (!getStochOpt().compareEqual(solverTaskDescription.getStochOpt())) return (false);
 		if (getUseSymbolicJacobian() != solverTaskDescription.getUseSymbolicJacobian()) return (false);
 		//
 		if (!getOutputTimeSpec().compareEqual(solverTaskDescription.getOutputTimeSpec())) return (false);
@@ -253,6 +272,7 @@ private static SolverDescription getDefaultODESolverDescription() {
 private static SolverDescription getDefaultPDESolverDescription() {
 	return SolverDescription.FiniteVolume;
 }
+
 
 /**
  * Get the default non-spatial stochastic solver which is Gibson.
@@ -375,6 +395,16 @@ public boolean getSteady() {
 
 
 /**
+ * Insert the method's description here.
+ * Creation date: (12/6/2006 6:16:42 PM)
+ * @return cbit.vcell.solver.StochSimOptions
+ */
+public StochSimOptions getStochOpt() {
+	return fieldStochOpt;
+}
+
+
+/**
  * This method was created by a SmartGuide.
  * @return double
  */
@@ -454,6 +484,11 @@ public String getVCML() {
 	//			AbsoluteErrorTolerance 1e-8
 	//			RelativeErrorTolerance 1e-4
 	//		}
+	//   	StochSimOptions {
+	//			UseCustomSeed	false
+	//			CustomSeed	0
+	//			NumOfTrials	1
+	//   	}
 	//		KeepEvery 1
 	//		KeepAtMost	1000
 	//		SensitivityParameter {
@@ -483,6 +518,8 @@ public String getVCML() {
 	buffer.append(getTimeStep().getVCML()+"\n");
 
 	buffer.append(getErrorTolerance().getVCML()+"\n");
+
+	buffer.append(getStochOpt().getVCML()+"\n");
 
 	buffer.append(fieldOutputTimeSpec.getVCML() + "\n");
 
@@ -588,6 +625,11 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 	//			AbsoluteErrorTolerance 1e-8
 	//			RelativeErrorTolerance 1e-4
 	//		}
+	//		StochSimOptions {
+	//			UseCustomSeed	false
+	//			CustomSeed	0
+	//			NumOfTrials	1
+	//   	}
 
 	//		KeepEvery 1
 	//		KeepAtMost	1000
@@ -662,7 +704,6 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 							else
 								getDefaultODESolverDescription();
 						}
-						
 					}
 				}
 				continue;
@@ -692,6 +733,10 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 				getErrorTolerance().readVCML(tokens);
 				continue;
 			}
+			if (token.equalsIgnoreCase(VCML.StochSimOptions)) {
+				getStochOpt().readVCML(tokens);
+				continue;
+			}
 			if (token.equalsIgnoreCase(VCML.OutputOptions)) {
 				fieldOutputTimeSpec = OutputTimeSpec.readVCML(tokens);
 				continue;
@@ -717,7 +762,7 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 					throw new DataAccessException("unexpected token " + token + " expecting " + VCML.Constant); 
 				}
 				String name = tokens.nextToken();
-				IExpression exp = ExpressionFactory.createExpression(tokens);
+				Expression exp = new Expression(tokens);
 				Constant constant = new Constant(name,exp);
 				setSensitivityParameter(constant);
 				token = tokens.nextToken();
@@ -851,6 +896,16 @@ public void setSolverDescription(SolverDescription solverDescription) throws jav
 	fireVetoableChange("solverDescription", oldValue, solverDescription);
 	fieldSolverDescription = solverDescription;
 	firePropertyChange("solverDescription", oldValue, solverDescription);
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (12/6/2006 6:16:42 PM)
+ * @param newFieldStochOpt cbit.vcell.solver.StochSimOptions
+ */
+public void setStochOpt(StochSimOptions newStochOpt) {
+	fieldStochOpt = newStochOpt;
 }
 
 
