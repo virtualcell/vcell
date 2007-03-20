@@ -1,4 +1,4 @@
-package org.vcell.physics.math;
+package org.vcell.physics.test;
 
 
 import jscl.plugin.Expression;
@@ -7,6 +7,9 @@ import jscl.plugin.ParseException;
 import org.vcell.physics.component.IndependentVariable;
 import org.vcell.physics.component.Parameter;
 import org.vcell.physics.component.Variable;
+import org.vcell.physics.math.IndexReduction;
+import org.vcell.physics.math.MathSystem;
+import org.vcell.physics.math.OOMathSymbol;
 
 import cbit.vcell.units.VCUnitDefinition;
 

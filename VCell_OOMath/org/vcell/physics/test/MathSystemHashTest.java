@@ -1,7 +1,13 @@
-package org.vcell.physics.math;
+package org.vcell.physics.test;
 
 
 import org.vcell.expression.ExpressionFactory;
+import org.vcell.physics.math.MathSystemHash;
+import org.vcell.physics.math.MathSystemHash.IndependentVariable;
+import org.vcell.physics.math.MathSystemHash.Symbol;
+import org.vcell.physics.math.MathSystemHash.Variable;
+import org.vcell.physics.math.MathSystemHash.VariableDerivative;
+import org.vcell.physics.math.MathSystemHash.VariableInitial;
 
 import cbit.util.graph.Graph;
 import cbit.util.graph.Node;
