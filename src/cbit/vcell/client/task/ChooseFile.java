@@ -152,7 +152,7 @@ private File showBioModelXMLFileChooser(java.util.Hashtable hashTable) throws ja
 				fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML.getDescription()) || fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_2.getDescription())) {
 				// only non-spatial apps
 				for (int i=0;i<simContexts.length;i++){
-					if (simContexts[i].getGeometryContext().getGeometry().getDimension()==0){
+					if (simContexts[i].getGeometryContext().getGeometry().getDimension()==0 && !simContexts[i].isStoch()){
 						applicableAppNameList.add(simContexts[i].getName());
 					}
 				}
@@ -189,46 +189,54 @@ private File showBioModelXMLFileChooser(java.util.Hashtable hashTable) throws ja
 
 			// Select a structure and set its size only for SBML models
 			if (fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML.getDescription()) || fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_2.getDescription())) {
-				// get user choice of structure and its size and computes absolute sizes of compartments using the StructureSizeSolver.
-				cbit.vcell.model.Structure[] structures = bioModel.getModel().getStructures();
-				
-				String strucName = null;
-				double structSize = 1.0;
-				int structSelection = -1;
-				int option = JOptionPane.CANCEL_OPTION;
-
-				cbit.vcell.vcml.StructureSizeInputPanel structureSizeInputPanel = null;
-				while (structSelection < 0) {
-					structureSizeInputPanel = new cbit.vcell.vcml.StructureSizeInputPanel();
-					structureSizeInputPanel.setStructures(structures);
-					structureSizeInputPanel.setPreferredSize(new java.awt.Dimension(325, 325));
-					structureSizeInputPanel.setMaximumSize(new java.awt.Dimension(325, 325));
-					option = cbit.gui.DialogUtils.showComponentOKCancelDialog(null, structureSizeInputPanel, "Choose Structure and specify size");
-					structSelection = structureSizeInputPanel.getStructSelectionIndex();
-					if (option == JOptionPane.CANCEL_OPTION || option == JOptionPane.CLOSED_OPTION) {
-						break;
-					} else if (option == JOptionPane.OK_OPTION && structSelection < 0) {
-						cbit.gui.DialogUtils.showErrorDialog("Please select a structure and set its size");
+				if(chosenSimContext.getGeometryContext().isAllSizeSpecifiedPositive()){} //export
+				else if(chosenSimContext.getGeometryContext().isAllSizeSpecifiedNull() && chosenSimContext.getGeometryContext().isAllVolFracAndSurfVolSpecified())//popup size dialog and export
+				{
+					// get user choice of structure and its size and computes absolute sizes of compartments using the StructureSizeSolver.
+					cbit.vcell.model.Structure[] structures = bioModel.getModel().getStructures();
+					
+					String strucName = null;
+					double structSize = 1.0;
+					int structSelection = -1;
+					int option = JOptionPane.CANCEL_OPTION;
+	
+					cbit.vcell.vcml.StructureSizeInputPanel structureSizeInputPanel = null;
+					while (structSelection < 0) {
+						structureSizeInputPanel = new cbit.vcell.vcml.StructureSizeInputPanel();
+						structureSizeInputPanel.setStructures(structures);
+						structureSizeInputPanel.setPreferredSize(new java.awt.Dimension(325, 325));
+						structureSizeInputPanel.setMaximumSize(new java.awt.Dimension(325, 325));
+						option = cbit.gui.DialogUtils.showComponentOKCancelDialog(null, structureSizeInputPanel, "Choose Structure and specify size");
+						structSelection = structureSizeInputPanel.getStructSelectionIndex();
+						if (option == JOptionPane.CANCEL_OPTION || option == JOptionPane.CLOSED_OPTION) {
+							break;
+						} else if (option == JOptionPane.OK_OPTION && structSelection < 0) {
+							cbit.gui.DialogUtils.showErrorDialog("Please select a structure and set its size");
+						}
+					}
+					if (option == JOptionPane.OK_OPTION) {
+						structureSizeInputPanel.applyStructureNameAndSizeValues();
+						strucName = structureSizeInputPanel.getSelectedStructureName();
+						structSize = structureSizeInputPanel.getStructureSize();
+	
+						// Invoke StructureSizeEvaluator to compute absolute sizes of compartments
+						cbit.vcell.vcml.StructureSizeSolver ssEvaluator = new cbit.vcell.vcml.StructureSizeSolver();
+						cbit.vcell.model.Structure chosenStructure = chosenSimContext.getModel().getStructure(strucName);
+						StructureMapping chosenStructMapping = chosenSimContext.getGeometryContext().getStructureMapping(chosenStructure);
+						ssEvaluator.updateAbsoluteStructureSizes(chosenSimContext, chosenStructure, structSize, chosenStructMapping.getSizeParameter().getUnitDefinition());
+					} else if (option == JOptionPane.CANCEL_OPTION || option == JOptionPane.CLOSED_OPTION) {
+						// User did not choose to set size for any structure.
+						// Without that information, cannot export successfully into SBML, 
+						// Hence cancelling the entire export to SBML operation.
+						throw UserCancelException.CANCEL_XML_TRANSLATION;
 					}
 				}
-				if (option == JOptionPane.OK_OPTION) {
-					structureSizeInputPanel.applyStructureNameAndSizeValues();
-					strucName = structureSizeInputPanel.getSelectedStructureName();
-					structSize = structureSizeInputPanel.getStructureSize();
-
-					// Invoke StructureSizeEvaluator to compute absolute sizes of compartments
-					cbit.vcell.vcml.StructureSizeSolver ssEvaluator = new cbit.vcell.vcml.StructureSizeSolver();
-					cbit.vcell.model.Structure chosenStructure = chosenSimContext.getModel().getStructure(strucName);
-					StructureMapping chosenStructMapping = chosenSimContext.getGeometryContext().getStructureMapping(chosenStructure);
-					ssEvaluator.updateAbsoluteStructureSizes(chosenSimContext, chosenStructure, structSize, chosenStructMapping.getSizeParameter().getUnitDefinition());
-				} else if (option == JOptionPane.CANCEL_OPTION || option == JOptionPane.CLOSED_OPTION) {
-					// User did not choose to set size for any structure.
-					// Without that information, cannot export successfully into SBML, 
-					// Hence cancelling the entire export to SBML operation.
+				else //Cancel export and show error message
+				{
+					cbit.gui.DialogUtils.showErrorDialog("Error Exporting Appllication '"+chosenSimContextName+"':\nAll structure sizes must be assigned positive values.\nPlease go to StructureMapping tab to check the sizes.");
 					throw UserCancelException.CANCEL_XML_TRANSLATION;
 				}
 			}
-			
 			resetPreferredFilePath(selectedFile, userPreferences);
 			return selectedFile;
 		}
