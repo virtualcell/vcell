@@ -5,6 +5,7 @@ package cbit.vcell.solver.ode;
  * All rights reserved.
 ©*/
 import cbit.vcell.server.*;
+import cbit.vcell.util.ColumnDescription;
 import cbit.vcell.math.*;
 import java.util.*;
 /**
@@ -29,5 +30,20 @@ public class ODESolverResultSet extends cbit.vcell.util.RowColumnResultSet imple
  */
 public ODESolverResultSet() {
 	super();
+}
+
+public boolean isMultiTrialData()
+{
+	if(getColumnDescriptionsCount() > 0)
+	{
+		int totalcol = getColumnDescriptionsCount();
+		for(int i=0; i<totalcol; i++)
+		{
+			ColumnDescription cd = getColumnDescriptions(i);
+			if (cd.getName().equals("TrialNo"))
+				return true;
+		}
+	}
+	return false;
 }
 }

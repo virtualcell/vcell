@@ -62,7 +62,18 @@ public ApplicationComponents(SimulationContext simContext, BioModelWindowManager
 	getMathViewerFrame().setLocation(450, 250);
 	
 	// make the geometry viewer
-	setGeometrySummaryViewer(new GeometrySummaryViewer());
+	GeometrySummaryViewer geoViewer = new GeometrySummaryViewer();
+	if(simContext.isStoch())
+	{
+		geoViewer.setChangeGeometryEnabled(false);
+		geoViewer.setOpenGeometryEnabled(false);
+	}
+	else
+	{
+		geoViewer.setChangeGeometryEnabled(true);
+		geoViewer.setOpenGeometryEnabled(true);
+	}
+	setGeometrySummaryViewer(geoViewer);
 	getGeometrySummaryViewer().setGeometry(simContext.getGeometry());
 	setGeometrySummaryViewerFrame(DocumentWindowManager.createDefaultFrame(getGeometrySummaryViewer()));
 	//setGeometrySummaryViewerFrame(new JInternalFrameEnhanced("GEOMETRY for: "+simContext.getName(), true, true, true, true));

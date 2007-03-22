@@ -21,6 +21,10 @@ import cbit.vcell.parser.Expression;
  * Creation date: (8/13/2000 3:15:43 PM)
  * @author: John Wagner the Great
  */
+/**
+ * Amended March 12, 2007 to generate plot2D(instead of SingleXPlot2D) when multiple trials
+ * are conducted, the plot2D is used to display the histogram.
+ **/
 public class ODESolverPlotSpecificationPanel extends JPanel {
 	private JCheckBox ivjLogSensCheckbox = null;
 	private JLabel ivjMaxLabel = null;
@@ -42,6 +46,7 @@ public class ODESolverPlotSpecificationPanel extends JPanel {
 	private int fieldXIndex = -1;
 	private int[] fieldYIndices = new int[0];
 	private cbit.plot.SingleXPlot2D fieldSingleXPlot2D = null;
+	private cbit.plot.Plot2D fieldPlot2D = null;
 	private java.lang.String[] resultSetColumnNames = null;
 	private DefaultComboBoxModel ivjComboBoxModelX = null;
 	private JButton ivjDeleteFunctionButton = null;
@@ -1307,7 +1312,8 @@ private int[] getVariableIndices(ODESolverResultSet odeSolverResultSet) {
     for (int i = 0; i < odeSolverResultSet.getColumnDescriptionsCount(); i++) {
         ColumnDescription cd =
             (ColumnDescription) odeSolverResultSet.getColumnDescriptions(i);
-        if (cd.getParameterName() == null) {
+        //If the column is "TrialNo" from multiple trials, we don't put the column "TrialNo" in. amended March 12th, 2007
+        if ((!cd.getName().equals("TrialNo"))&&(cd.getParameterName() == null)) {
             plottable++; // not a parameter
         }
     }
@@ -1317,7 +1323,7 @@ private int[] getVariableIndices(ODESolverResultSet odeSolverResultSet) {
     for (int i = 0; i < odeSolverResultSet.getColumnDescriptionsCount(); i++) {
         ColumnDescription cd =
             (ColumnDescription) odeSolverResultSet.getColumnDescriptions(i);
-        if (cd.getParameterName() == null) {
+        if ((!cd.getName().equals("TrialNo"))&&(cd.getParameterName() == null)) {
             indices[plottable] = i;
             plottable++;
         }
@@ -1757,150 +1763,164 @@ private void refreshVisiblePlots(Plot2D plot2D) {
  * Comment
  */
 private void regeneratePlot2D() throws cbit.vcell.parser.ExpressionException {
-	if (getOdeSolverResultSet() == null || getXAxisComboBox().getSelectedIndex() < 0) {
+	if (getOdeSolverResultSet() == null) 
+	{
 		return;
-	} else {
-		double[] xData = getOdeSolverResultSet().extractColumn(getPlottableColumnIndices()[getXIndex()]);
-		double[][] allData = new double[getPlottableColumnIndices().length + 1][xData.length];
-		String[] yNames = new String[getPlottableColumnIndices().length];
-		allData[0] = xData;
-		double[] yData = new double[xData.length];
-
-		double currParamValue = 0.0;
-		double deltaParamValue = 0.0;
-		// Extrapolation calculations!
-		if (getSensitivityParameter() != null) {
-			int val = getSensitivityParameterSlider().getValue();
-			double nominalParamValue = getSensitivityParameter().getConstantValue();
-			double pMax = nominalParamValue*1.1;
-			double pMin = nominalParamValue*0.9;
-			int iMax = getSensitivityParameterSlider().getMaximum();
-			int iMin = getSensitivityParameterSlider().getMinimum();
-			double slope = (pMax-pMin)/(iMax-iMin);
-			currParamValue = slope*val + pMin;
-			deltaParamValue = currParamValue - nominalParamValue;
-
-			getMaxLabel().setText(Double.toString(pMax));
-			getMinLabel().setText(Double.toString(pMin));
-			getCurLabel().setText(Double.toString(currParamValue));
+	} 
+	if(!getOdeSolverResultSet().isMultiTrialData())
+	{
+		if(getXAxisComboBox().getSelectedIndex() < 0)
+		{
+			return;
 		}
-		
-		if (!getLogSensCheckbox().getModel().isSelected()) {
-			// When log sensitivity check box is not selected.
-			for (int i=0;i<allData.length-1;i++) {
-				// If sensitivity analysis is enabled, extrapolate values for State vars and non-sensitivity functions
-				if (getSensitivityParameter() != null) {
+		else 
+		{
+			double[] xData = getOdeSolverResultSet().extractColumn(getPlottableColumnIndices()[getXIndex()]);
+			double[][] allData = new double[getPlottableColumnIndices().length + 1][xData.length];
+			String[] yNames = new String[getPlottableColumnIndices().length];
+			allData[0] = xData;
+			double[] yData = new double[xData.length];
+	
+			double currParamValue = 0.0;
+			double deltaParamValue = 0.0;
+			// Extrapolation calculations!
+			if (getSensitivityParameter() != null) {
+				int val = getSensitivityParameterSlider().getValue();
+				double nominalParamValue = getSensitivityParameter().getConstantValue();
+				double pMax = nominalParamValue*1.1;
+				double pMin = nominalParamValue*0.9;
+				int iMax = getSensitivityParameterSlider().getMaximum();
+				int iMin = getSensitivityParameterSlider().getMinimum();
+				double slope = (pMax-pMin)/(iMax-iMin);
+				currParamValue = slope*val + pMin;
+				deltaParamValue = currParamValue - nominalParamValue;
+	
+				getMaxLabel().setText(Double.toString(pMax));
+				getMinLabel().setText(Double.toString(pMin));
+				getCurLabel().setText(Double.toString(currParamValue));
+			}
+			
+			if (!getLogSensCheckbox().getModel().isSelected()) {
+				// When log sensitivity check box is not selected.
+				for (int i=0;i<allData.length-1;i++) {
+					// If sensitivity analysis is enabled, extrapolate values for State vars and non-sensitivity functions
+					if (getSensitivityParameter() != null) {
+						ColumnDescription cd = getOdeSolverResultSet().getColumnDescriptions(getPlottableColumnIndices()[i]);
+						double sens[] = getSensValues(cd);
+						yData = getOdeSolverResultSet().extractColumn(getOdeSolverResultSet().findColumn(cd.getName()));
+						// sens array != null for non-sensitivity state vars and functions, so extrapolate
+						if (sens != null) {
+							for (int j = 0; j < sens.length; j++) {
+								if (Math.abs(yData[j]) > 1e-6) {
+									// away from zero, exponential extrapolation
+									allData[i+1][j] = yData[j] * Math.exp(deltaParamValue * sens[j]/ yData[j] );
+								} else {
+									// around zero - linear extrapolation
+									allData[i+1][j] = yData[j] + sens[j] * deltaParamValue;
+								}						
+							} 
+						// sens array == null for sensitivity state vars and functions, so don't change their original values
+						} else {
+							allData[i+1] = getOdeSolverResultSet().extractColumn(getPlottableColumnIndices()[i]);
+						} 
+					} else {
+						// No sensitivity analysis case, so do not alter the original values for any variable or function
+						allData[i+1] = getOdeSolverResultSet().extractColumn(getPlottableColumnIndices()[i]);
+					}
+					yNames[i] = getPlottableNames()[i];
+				}
+			} else {
+				// When log sensitivity checkbox is selected.
+	
+				// Get sensitivity parameter and its value to compute log sensitivity
+				cbit.vcell.math.Constant sensParam = getSensitivityParameter();
+				double sensParamValue = sensParam.getConstantValue();
+				getJLabelSensitivityParameter().setText("Sensitivity wrt Parameter "+sensParam.getName());
+	
+				//
+				// For each column (State vars and functions) in the result set, find the corresponding sensitivity var column
+				// in the result set (a value > -1). If the sensitivity var column does not exist (for user defined functions or
+				// sensitivity variables themselves), the column number returned is -1, so do not change that data column.
+				//
+				String[] rsetColNames = getPlottableNames();
+				for (int i=0;i<allData.length-1;i++) {
+					// Finding sensitivity var column for each column in result set.
 					ColumnDescription cd = getOdeSolverResultSet().getColumnDescriptions(getPlottableColumnIndices()[i]);
-					double sens[] = getSensValues(cd);
+					int sensIndex = -1;
+					for (int j = 0; j < rsetColNames.length; j++) {
+						if (rsetColNames[j].equals("sens_"+cd.getName()+"_wrt_"+sensParam.getName())) {
+							sensIndex = j;
+						}
+					}
 					yData = getOdeSolverResultSet().extractColumn(getOdeSolverResultSet().findColumn(cd.getName()));
-					// sens array != null for non-sensitivity state vars and functions, so extrapolate
-					if (sens != null) {
-						for (int j = 0; j < sens.length; j++) {
-							if (Math.abs(yData[j]) > 1e-6) {
+					// If sensitivity var exists, compute log sensitivity
+					if (sensIndex > -1) {
+						double[] sens = getOdeSolverResultSet().extractColumn(getOdeSolverResultSet().findColumn(rsetColNames[sensIndex]));
+						for (int k = 0; k < yData.length; k++) {
+							// Extrapolated statevars and functions
+							if (Math.abs(yData[k]) > 1e-6) {
 								// away from zero, exponential extrapolation
-								allData[i+1][j] = yData[j] * Math.exp(deltaParamValue * sens[j]/ yData[j] );
+								allData[i+1][k] = yData[k] * Math.exp(deltaParamValue * sens[k]/ yData[k] );
 							} else {
 								// around zero - linear extrapolation
-								allData[i+1][j] = yData[j] + sens[j] * deltaParamValue;
+								allData[i+1][k] = yData[k] + sens[k] * deltaParamValue;
 							}						
-						} 
-					// sens array == null for sensitivity state vars and functions, so don't change their original values
-					} else {
-						allData[i+1] = getOdeSolverResultSet().extractColumn(getPlottableColumnIndices()[i]);
-					} 
-				} else {
-					// No sensitivity analysis case, so do not alter the original values for any variable or function
-					allData[i+1] = getOdeSolverResultSet().extractColumn(getPlottableColumnIndices()[i]);
-				}
-				yNames[i] = getPlottableNames()[i];
-			}
-		} else {
-			// When log sensitivity checkbox is selected.
-
-			// Get sensitivity parameter and its value to compute log sensitivity
-			cbit.vcell.math.Constant sensParam = getSensitivityParameter();
-			double sensParamValue = sensParam.getConstantValue();
-			getJLabelSensitivityParameter().setText("Sensitivity wrt Parameter "+sensParam.getName());
-
-			//
-			// For each column (State vars and functions) in the result set, find the corresponding sensitivity var column
-			// in the result set (a value > -1). If the sensitivity var column does not exist (for user defined functions or
-			// sensitivity variables themselves), the column number returned is -1, so do not change that data column.
-			//
-			String[] rsetColNames = getPlottableNames();
-			for (int i=0;i<allData.length-1;i++) {
-				// Finding sensitivity var column for each column in result set.
-				ColumnDescription cd = getOdeSolverResultSet().getColumnDescriptions(getPlottableColumnIndices()[i]);
-				int sensIndex = -1;
-				for (int j = 0; j < rsetColNames.length; j++) {
-					if (rsetColNames[j].equals("sens_"+cd.getName()+"_wrt_"+sensParam.getName())) {
-						sensIndex = j;
-					}
-				}
-				yData = getOdeSolverResultSet().extractColumn(getOdeSolverResultSet().findColumn(cd.getName()));
-				// If sensitivity var exists, compute log sensitivity
-				if (sensIndex > -1) {
-					double[] sens = getOdeSolverResultSet().extractColumn(getOdeSolverResultSet().findColumn(rsetColNames[sensIndex]));
-					for (int k = 0; k < yData.length; k++) {
-						// Extrapolated statevars and functions
-						if (Math.abs(yData[k]) > 1e-6) {
-							// away from zero, exponential extrapolation
-							allData[i+1][k] = yData[k] * Math.exp(deltaParamValue * sens[k]/ yData[k] );
-						} else {
-							// around zero - linear extrapolation
-							allData[i+1][k] = yData[k] + sens[k] * deltaParamValue;
-						}						
-						// Log sensitivity for the state variables and functions
-						double logSens = 0.0;  // default if floating point problems
-						if (Math.abs(yData[k]) > 0){
-							double tempLogSens = sens[k] * sensParamValue / yData[k];
-							if (tempLogSens != Double.NEGATIVE_INFINITY &&
-								tempLogSens != Double.POSITIVE_INFINITY &&
-								tempLogSens != Double.NaN) {
-									
-								logSens = tempLogSens;
+							// Log sensitivity for the state variables and functions
+							double logSens = 0.0;  // default if floating point problems
+							if (Math.abs(yData[k]) > 0){
+								double tempLogSens = sens[k] * sensParamValue / yData[k];
+								if (tempLogSens != Double.NEGATIVE_INFINITY &&
+									tempLogSens != Double.POSITIVE_INFINITY &&
+									tempLogSens != Double.NaN) {
+										
+									logSens = tempLogSens;
+								}
 							}
+							allData[sensIndex+1][k] = logSens;
 						}
-						allData[sensIndex+1][k] = logSens;
+					// If sensitivity var does not exist, retain  original value of column (var or function).
+					} else {
+						if (!cd.getName().startsWith("sens_")) {
+							allData[i+1] = yData;
+						}
 					}
-				// If sensitivity var does not exist, retain  original value of column (var or function).
-				} else {
-					if (!cd.getName().startsWith("sens_")) {
-						allData[i+1] = yData;
-					}
-				}
-				yNames[i] = getPlottableNames()[i];
-			}
-		}
-			
-		String title = "";
-		String xLabel = getPlottableNames()[getXIndex()];
-		String yLabel = "";
-
-		if (yNames.length == 1) {
-			yLabel = yNames[0];
-		}
-		// Update Sensitivity parameter label depending on whether Log sensitivity check box is checked or not.
-		if (!getLogSensCheckbox().getModel().isSelected()) {
-			getJLabelSensitivityParameter().setText("");
-		}
-
-		cbit.vcell.parser.SymbolTableEntry[] symbolTableEntries = null;
-		if(getSymbolTable() != null && yNames != null && yNames.length > 0){
-			symbolTableEntries = new cbit.vcell.parser.SymbolTableEntry[yNames.length];
-			for(int i=0;i<yNames.length;i+= 1){
-				try{
-					symbolTableEntries[i] = getSymbolTable().getEntry(yNames[i]);
-				}catch(cbit.vcell.parser.ExpressionBindingException e){
-					//Do Nothing
+					yNames[i] = getPlottableNames()[i];
 				}
 			}
-			
+				
+			String title = "";
+			String xLabel = getPlottableNames()[getXIndex()];
+			String yLabel = "";
+	
+			if (yNames.length == 1) {
+				yLabel = yNames[0];
+			}
+			// Update Sensitivity parameter label depending on whether Log sensitivity check box is checked or not.
+			if (!getLogSensCheckbox().getModel().isSelected()) {
+				getJLabelSensitivityParameter().setText("");
+			}
+	
+			cbit.vcell.parser.SymbolTableEntry[] symbolTableEntries = null;
+			if(getSymbolTable() != null && yNames != null && yNames.length > 0){
+				symbolTableEntries = new cbit.vcell.parser.SymbolTableEntry[yNames.length];
+				for(int i=0;i<yNames.length;i+= 1){
+					try{
+						symbolTableEntries[i] = getSymbolTable().getEntry(yNames[i]);
+					}catch(cbit.vcell.parser.ExpressionBindingException e){
+						//Do Nothing
+					}
+				}
+				
+			}
+			SingleXPlot2D plot2D = new SingleXPlot2D(symbolTableEntries,xLabel, yNames, allData, new String[] {title, xLabel, yLabel});
+			refreshVisiblePlots(plot2D);
+			setSingleXPlot2D(plot2D);
 		}
-		SingleXPlot2D plot2D = new SingleXPlot2D(symbolTableEntries,xLabel, yNames, allData, new String[] {title, xLabel, yLabel});
-		refreshVisiblePlots(plot2D);
-		setSingleXPlot2D(plot2D);
-	} 
+	}// end of none MultitrialData)
+	else // multitrial data
+	{
+		
+	}
 }
 
 
@@ -2127,12 +2147,16 @@ private synchronized void updateChoices(ODESolverResultSet odeSolverResultSet) t
     getComboBoxModelX().removeAllElements();
     getDefaultListModelY().removeAllElements();
     for (int i = 0; i < indices.length; i++) {
-        getComboBoxModelX().addElement(names[i]);
+    	// Don't put anything in X Axis, if the results of multifple trials are being displayed.
+    	if((odeSolverResultSet != null) && (!odeSolverResultSet.isMultiTrialData()))
+    		getComboBoxModelX().addElement(names[i]);
         getDefaultListModelY().addElement(names[i]);
     }
     
     if (indices.length > 0) {
-        getXAxisComboBox().setSelectedIndex(0);
+    	//Don't put anything in X Axis, if the results of multifple trials are being displayed.
+    	if((odeSolverResultSet != null) && (!odeSolverResultSet.isMultiTrialData()))
+    		getXAxisComboBox().setSelectedIndex(0);
         getYAxisChoice().setSelectedIndex(indices.length > 1 ? 1 : 0);
     }
     regeneratePlot2D();
@@ -2158,6 +2182,13 @@ private void updateResultSet(ODESolverResultSet odeSolverResultSet) throws cbit.
 	}
 }
 
+public cbit.plot.Plot2D getPlot2D() {
+	return fieldPlot2D;
+}
+
+public void setPlot2D(cbit.plot.Plot2D fieldPlot2D) {
+	this.fieldPlot2D = fieldPlot2D;
+}
 
 /**
  * 

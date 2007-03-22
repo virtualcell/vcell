@@ -8,9 +8,11 @@ import javax.swing.JComboBox;
 import cbit.vcell.parser.*;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.vcml.StructureSizeSolver;
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.mapping.*;
 import cbit.vcell.math.BoundaryConditionType;
+import cbit.gui.DialogUtils;
 import cbit.util.BeanUtils;
 /**
  * Insert the type's description here.
@@ -126,16 +128,16 @@ public Class getColumnClass(int column) {
 			return Boolean.class;
 		}
 		case COLUMN_SURFVOL:{
-			return cbit.vcell.parser.ScopedExpression.class;
+			return Double.class;
 		}
 		case COLUMN_VOLFRACT:{
-			return cbit.vcell.parser.ScopedExpression.class;
+			return Double.class;
 		}
 		case COLUMN_VOLUME:{
-			return cbit.vcell.parser.ScopedExpression.class;
+			return Double.class;
 		}
 		case COLUMN_SURFACE:{
-			return cbit.vcell.parser.ScopedExpression.class;
+			return Double.class;
 		}
 		case COLUMN_X_MINUS:{
 			return String.class;
@@ -280,7 +282,16 @@ public Object getValueAt(int row, int col) {
 				Membrane membrane = featureMapping.getFeature().getMembrane();
 				MembraneMapping membraneMapping = (MembraneMapping)getGeometryContext().getStructureMapping(membrane);
 				if(membraneMapping.getSurfaceToVolumeParameter().getExpression() != null)
-					return new ScopedExpression(membraneMapping.getSurfaceToVolumeParameter().getExpression(),membraneMapping.getNameScope(),true);
+				{
+					double val=0;
+					try{
+						val = membraneMapping.getSurfaceToVolumeParameter().getExpression().evaluateConstant();
+					}catch(ExpressionException e){
+						e.printStackTrace(System.out);
+						DialogUtils.showErrorDialog("Surface to volume ratio of "+featureMapping.getFeature().getName()+" cannot be evaluated as a constant.");
+					}
+					return val;
+				}
 				else return null;
 			}else{
 				return null;
@@ -291,15 +302,32 @@ public Object getValueAt(int row, int col) {
 				Membrane membrane = featureMapping.getFeature().getMembrane();
 				MembraneMapping membraneMapping = (MembraneMapping)getGeometryContext().getStructureMapping(membrane);
 				if(membraneMapping.getVolumeFractionParameter().getExpression() != null)
-					return new ScopedExpression(membraneMapping.getVolumeFractionParameter().getExpression(),membraneMapping.getNameScope(),true);
+				{
+					double val=0;
+					try{
+						val = membraneMapping.getVolumeFractionParameter().getExpression().evaluateConstant();
+					}catch(ExpressionException e){
+						e.printStackTrace(System.out);
+						DialogUtils.showErrorDialog("Volume fraction of "+featureMapping.getFeature().getName()+" cannot be evaluated as a constant.");
+					}
+					return val;
+				}
 				else return null;
 			}else{
 				return null;
 			}
 		}
 		case COLUMN_VOLUME:{
-			if (featureMapping.getSizeParameter().getExpression() != null){
-				return new ScopedExpression(featureMapping.getSizeParameter().getExpression(),featureMapping.getNameScope(),true);
+			if (featureMapping.getSizeParameter().getExpression() != null)
+			{
+				double val=0;
+				try{
+					val = featureMapping.getSizeParameter().getExpression().evaluateConstant();
+				}catch(ExpressionException e){
+					e.printStackTrace(System.out);
+					DialogUtils.showErrorDialog("Volume of "+featureMapping.getFeature().getName()+" cannot be evaluated as a constant.");
+				}
+				return val;
 			}else{
 				return null;
 			}
@@ -309,7 +337,16 @@ public Object getValueAt(int row, int col) {
 				Membrane membrane = featureMapping.getFeature().getMembrane();
 				MembraneMapping membraneMapping = (MembraneMapping)getGeometryContext().getStructureMapping(membrane);
 				if(membraneMapping.getSizeParameter().getExpression() != null)
-					return new ScopedExpression(membraneMapping.getSizeParameter().getExpression(),membraneMapping.getNameScope(),true);
+				{
+					double val=0;
+					try{
+						val = membraneMapping.getSizeParameter().getExpression().evaluateConstant();
+					}catch(ExpressionException e){
+						e.printStackTrace(System.out);
+						DialogUtils.showErrorDialog("Surface area of "+membraneMapping.getMembrane().getName()+" cannot be evaluated as a constant.");
+					}
+					return val;
+				}
 				else return null;
 			}else{
 				return null;
@@ -482,10 +519,9 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 				try {
 					Expression exp = null;
 					if (aValue instanceof String){
-						String newExpressionString = (String)aValue;
-						exp = new Expression(newExpressionString);
-					}else if (aValue instanceof ScopedExpression){
-						exp = ((ScopedExpression)aValue).getExpression();
+						exp = new Expression((String)aValue);
+					}else if (aValue instanceof Double){
+						exp = new Expression(((Double)aValue).doubleValue());
 					}
 					membraneMapping.getSurfaceToVolumeParameter().setExpression(exp);
 					fireTableRowsUpdated(rowIndex,rowIndex);
@@ -506,10 +542,9 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 				try {
 					Expression exp = null;
 					if (aValue instanceof String){
-						String newExpressionString = (String)aValue;
-						exp = new Expression(newExpressionString);
-					}else if (aValue instanceof ScopedExpression){
-						exp = ((ScopedExpression)aValue).getExpression();
+						exp = new Expression((String)aValue);
+					}else if (aValue instanceof Double){
+						exp = new Expression(((Double)aValue).doubleValue());
 					}
 					membraneMapping.getVolumeFractionParameter().setExpression(exp);
 					fireTableRowsUpdated(rowIndex,rowIndex);
@@ -527,38 +562,40 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 			try {
 				Expression exp = null;
 				if (aValue instanceof String){
-					String newExpressionString = (String)aValue;
-					exp = new Expression(newExpressionString);
-				}else if (aValue instanceof ScopedExpression){
-					exp = ((ScopedExpression)aValue).getExpression();
-				}else if (aValue instanceof Expression){
-					exp = (Expression)aValue;
+					exp = new Expression((String)aValue);
+				}else if (aValue instanceof Double){
+					exp = new Expression(((Double)aValue).doubleValue());
 				}
-				//for old model, once one size is input, solve the rest.                                                                                                          if it is unnamed compartment(the only one), we don't need to solve anything
-				if(!getGeometryContext().getSimulationContext().isStoch() && getGeometryContext().isAllSizeSpecifiedNull() && getGeometryContext().isAllVolFracAndSurfVolSpecified() && getGeometryContext().getStructureMappings().length > 1) 
+				//if the input volumn is null, leave it as it was.
+				if(exp != null)
 				{
-					featureMapping.getSizeParameter().setExpression(exp);
-					StructureSizeSolver sizeSolver = new StructureSizeSolver();
-					double size;
-					try{
-						size = exp.evaluateConstant();
-						sizeSolver.updateAbsoluteStructureSizes(getGeometryContext().getSimulationContext(), featureMapping.getFeature(), size, VCUnitDefinition.UNIT_um3);
-						fireTableRowsUpdated(0,getRowCount());
-					}catch(ExpressionException ex){
-						ex.printStackTrace(System.out);
-						cbit.vcell.client.PopupGenerator.showErrorDialog("Size of Feature " + featureMapping.getFeature().getName() + " can not be solved as constant!");
-					}
-				}
-				else 
-				{
-					featureMapping.getSizeParameter().setExpression(exp);
-					if(getGeometryContext().isAllSizeSpecifiedPositive())
+					//for old model, once one size is input, solve the rest.                                                                                                          if it is unnamed compartment(the only one), we don't need to solve anything
+					if(!getGeometryContext().getSimulationContext().isStoch() && getGeometryContext().isAllSizeSpecifiedNull() && getGeometryContext().isAllVolFracAndSurfVolSpecified() && getGeometryContext().getStructureMappings().length > 1) 
 					{
+						featureMapping.getSizeParameter().setExpression(exp);
 						StructureSizeSolver sizeSolver = new StructureSizeSolver();
-						sizeSolver.updateRelativeStructureSizes(getGeometryContext().getSimulationContext());
+						double size;
+						try{
+							size = exp.evaluateConstant();
+							sizeSolver.updateAbsoluteStructureSizes(getGeometryContext().getSimulationContext(), featureMapping.getFeature(), size, VCUnitDefinition.UNIT_um3);
+							fireTableRowsUpdated(0,getRowCount());
+						}catch(ExpressionException ex){
+							ex.printStackTrace(System.out);
+							cbit.vcell.client.PopupGenerator.showErrorDialog("Size of Feature " + featureMapping.getFeature().getName() + " can not be solved as constant!");
+						}
 					}
-					fireTableRowsUpdated(0, getRowCount());
+					else 
+					{
+						featureMapping.getSizeParameter().setExpression(exp);
+						if(getGeometryContext().isAllSizeSpecifiedPositive())
+						{
+							StructureSizeSolver sizeSolver = new StructureSizeSolver();
+							sizeSolver.updateRelativeStructureSizes(getGeometryContext().getSimulationContext());
+						}
+						fireTableRowsUpdated(0, getRowCount());
+					}
 				}
+				fireTableRowsUpdated(rowIndex,rowIndex);
 			}catch (ExpressionException e){
 				e.printStackTrace(System.out);
 				cbit.vcell.client.PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
@@ -566,7 +603,6 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 				e.printStackTrace(System.out);
 				cbit.vcell.client.PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());
 			}
-			
 			break;
 		}
 		case COLUMN_SURFACE:{
@@ -577,38 +613,40 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 				try {
 					Expression exp = null;
 					if (aValue instanceof String){
-						String newExpressionString = (String)aValue;
-						exp = new Expression(newExpressionString);
-					}else if (aValue instanceof ScopedExpression){
-						exp = ((ScopedExpression)aValue).getExpression();
-					}else if (aValue instanceof Expression){
-						exp = (Expression)aValue;
+						exp = new Expression((String)aValue);
+					}else if (aValue instanceof Double){
+						exp = new Expression(((Double)aValue).doubleValue());
 					}
-					//for old model, once one size is input, solve the rest.
-					if(getGeometryContext().isAllSizeSpecifiedNull() && getGeometryContext().isAllVolFracAndSurfVolSpecified()) 
+					//if the input volumn is null, leave it as it was.
+					if(exp != null)
 					{
-						membraneMapping.getSizeParameter().setExpression(exp);
-						StructureSizeSolver sizeSolver = new StructureSizeSolver();
-						double size;
-						try{
-							size = exp.evaluateConstant();
-							sizeSolver.updateAbsoluteStructureSizes(getGeometryContext().getSimulationContext(), membraneMapping.getMembrane(), size, VCUnitDefinition.UNIT_um2);
-							fireTableRowsUpdated(0,getRowCount());
-						}catch(ExpressionException ex){
-							ex.printStackTrace(System.out);
-							cbit.vcell.client.PopupGenerator.showErrorDialog("Size of Membrane " + membraneMapping.getMembrane().getName() + " can not be solved as constant!");
-						}
-					}
-					else
-					{
-						membraneMapping.getSizeParameter().setExpression(exp);
-						if(getGeometryContext().isAllSizeSpecifiedPositive())
+						//for old model, once one size is input, solve the rest.
+						if(getGeometryContext().isAllSizeSpecifiedNull() && getGeometryContext().isAllVolFracAndSurfVolSpecified()) 
 						{
+							membraneMapping.getSizeParameter().setExpression(exp);
 							StructureSizeSolver sizeSolver = new StructureSizeSolver();
-							sizeSolver.updateRelativeStructureSizes(getGeometryContext().getSimulationContext());
+							double size;
+							try{
+								size = exp.evaluateConstant();
+								sizeSolver.updateAbsoluteStructureSizes(getGeometryContext().getSimulationContext(), membraneMapping.getMembrane(), size, VCUnitDefinition.UNIT_um2);
+								fireTableRowsUpdated(0,getRowCount());
+							}catch(ExpressionException ex){
+								ex.printStackTrace(System.out);
+								cbit.vcell.client.PopupGenerator.showErrorDialog("Size of Membrane " + membraneMapping.getMembrane().getName() + " can not be solved as constant!");
+							}
 						}
-						fireTableRowsUpdated(0,getRowCount());
+						else
+						{
+							membraneMapping.getSizeParameter().setExpression(exp);
+							if(getGeometryContext().isAllSizeSpecifiedPositive())
+							{
+								StructureSizeSolver sizeSolver = new StructureSizeSolver();
+								sizeSolver.updateRelativeStructureSizes(getGeometryContext().getSimulationContext());
+							}
+							fireTableRowsUpdated(0,getRowCount());
+						}
 					}
+					fireTableRowsUpdated(rowIndex,rowIndex);
 				}catch (ExpressionException e){
 					e.printStackTrace(System.out);
 					cbit.vcell.client.PopupGenerator.showErrorDialog("expression error\n"+e.getMessage());

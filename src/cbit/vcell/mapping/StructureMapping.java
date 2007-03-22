@@ -9,6 +9,7 @@ import java.util.*;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.model.*;
 import cbit.vcell.geometry.*;
+import cbit.gui.DialogUtils;
 import cbit.util.*;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
@@ -617,18 +618,10 @@ void setStructure(Structure argStructure) {
 public void showIssueDialog(SimulationContext arg_sc) 
 {
 	SimulationContext sc = arg_sc;
-	if(sc.getGeometry().getDimension() == 0)//non-spatial
+	if(!sc.checkAppSizes())
 	{
-		if(sc.isStoch()) //stochastic 
-		{
-			if(!sc.getGeometryContext().isAllSizeSpecifiedPositive())
-				throw new RuntimeException("All structure sizes must be assigned positive values.");
-		}
-		else //ode
-		{
-			if((!sc.getGeometryContext().isAllVolFracAndSurfVolSpecified())||(sc.getGeometryContext().isAllVolFracAndSurfVolSpecified() && !sc.getGeometryContext().isAllSizeSpecifiedPositive() && !sc.getGeometryContext().isAllSizeSpecifiedNull()))
-				throw new RuntimeException("All structure sizes must be assigned positive values.");
-		}
+		DialogUtils.showErrorDialog("All structure sizes must be assigned positive values.\nPlease go to StructureMapping tab to check the sizes.");
+		throw new RuntimeException("All structure sizes must be assigned positive values.\nPlease go to StructureMapping tab to check the sizes.");
 	}
 }
 }

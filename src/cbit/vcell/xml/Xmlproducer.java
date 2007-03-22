@@ -1978,7 +1978,7 @@ public Element getXML(VarIniCondition param)
 
 	//Add atribute
 	varIni.setAttribute(XMLTags.NameAttrTag, this.mangle(param.getVar().getName()));
-	varIni.addContent( this.mangleExpression(param.getIniVal()) );
+	varIni.addContent(this.mangleExpression(param.getIniVal()));
 	return varIni;
 }
 
@@ -2862,11 +2862,13 @@ public org.jdom.Element getXML(cbit.vcell.solver.OutputTimeSpec param) {
  */
 public org.jdom.Element getXML(cbit.vcell.solver.StochSimOptions param) {
 	org.jdom.Element stochSimOptions = new org.jdom.Element(XMLTags.StochSimOptionsTag);
-
-	stochSimOptions.setAttribute(XMLTags.UseCustomSeedAttrTag, String.valueOf(param.isUseCustomSeed()));
-	if(param.isUseCustomSeed())
-		stochSimOptions.setAttribute(XMLTags.CustomSeedAttrTag, String.valueOf(param.getCustomSeed()));
-	stochSimOptions.setAttribute(XMLTags.NumberOfTrialAttrTag, String.valueOf(param.getNumOfTrials()));
+	if(param != null)
+	{
+		stochSimOptions.setAttribute(XMLTags.UseCustomSeedAttrTag, String.valueOf(param.isUseCustomSeed()));
+		if(param.isUseCustomSeed())
+			stochSimOptions.setAttribute(XMLTags.CustomSeedAttrTag, String.valueOf(param.getCustomSeed()));
+		stochSimOptions.setAttribute(XMLTags.NumberOfTrialAttrTag, String.valueOf(param.getNumOfTrials()));
+	}
 	return stochSimOptions;
 }
 
@@ -2933,7 +2935,8 @@ public org.jdom.Element getXML(cbit.vcell.solver.SolverTaskDescription param) {
 	//Add ErrorTolerence
 	solvertask.addContent( getXML(param.getErrorTolerance()) );
 	//Add Stochastic simulation Options, 5th Feb, 2007
-	solvertask.addContent( getXML(param.getStochOpt()));
+	if(param.getStochOpt() != null)
+		solvertask.addContent( getXML(param.getStochOpt()));
 	//Add OutputOptions
 	solvertask.addContent(getXML(param.getOutputTimeSpec()));
 	//Add sensitivityParameter

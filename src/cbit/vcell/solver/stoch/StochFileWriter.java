@@ -1,5 +1,7 @@
 package cbit.vcell.solver.stoch;
+import cbit.gui.DialogUtils;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.math.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.math.JumpProcess;
@@ -210,8 +212,8 @@ public void writeStochInputFile(PrintWriter pw, String[] parameterNames) throws 
 		pw.println("MAX_ITERATION"+"\t"+outputTimeSpec.getKeepAtMost());
 		pw.println("TOLERANCE "+"\t"+errorTolerance.getAbsoluteErrorTolerance());
 		pw.println("SAMPLE_INTERVAL"+"\t"+outputTimeSpec.getKeepEvery());
-		pw.println("NUM_TRIAL"+"\t"+"1");//TODO: should get from user
-	  	pw.println("MAX_NUM_MOLECUES "+"\t"+"30");//TODO: should get from user
+		pw.println("NUM_TRIAL"+"\t"+"1");//solverTaskDescription.getStochOpt().getNumOfTrials());
+//	  	pw.println("MAX_NUM_MOLECUES "+"\t"+"30");
 	  	if(stochOpt.isUseCustomSeed())
 	  		pw.println("SEED"+"\t"+stochOpt.getCustomSeed());
 	  	pw.println("</control>");
@@ -236,11 +238,14 @@ public void writeStochInputFile(PrintWriter pw, String[] parameterNames) throws 
 				{
 			  		try{
 			  			Expression iniExp = ((VarIniCondition)varInis.elementAt(i)).getIniVal();
+			  			iniExp.bindExpression(getSimulation());
+						iniExp = getSimulation().substituteFunctions(iniExp).flatten();
 			  			double iniValue = iniExp.evaluateConstant();
 			  			pw.println(((VarIniCondition)varInis.elementAt(i)).getVar().getName()+"\t"+Math.round(iniValue));
 			  		}catch(cbit.vcell.parser.ExpressionException ex)
 			  		{
 			  			ex.printStackTrace();
+			  			DialogUtils.showErrorDialog("variable "+((VarIniCondition)varInis.elementAt(i)).getVar().getName()+"'s initial condition is required to be a constant.");
 			  			throw new MathFormatException("variable "+((VarIniCondition)varInis.elementAt(i)).getVar().getName()+"'s initial condition is required to be a constant.");
 			  		}
 				}
@@ -278,10 +283,14 @@ public void writeStochInputFile(PrintWriter pw, String[] parameterNames) throws 
 						probExp.bindExpression(getSimulation());
 						probExp = getSimulation().substituteFunctions(probExp).flatten();
 						if(!isValidProbabilityExpression(probExp))
+						{
+							DialogUtils.showErrorDialog("probability rate in jump process "+temProc.getName()+" has illegal symbols(should only contain variable names and t).");
 							throw new MathFormatException("probability rate in jump process "+temProc.getName()+" has illegal symbols(should only contain variable names and t).");
+						}
 					}catch(cbit.vcell.parser.ExpressionException ex)
 					{
 						ex.printStackTrace();
+						DialogUtils.showErrorDialog("Binding math description error in probability rate in jump process "+temProc.getName());
 						throw new cbit.vcell.parser.ExpressionException("Binding math description error in probability rate in jump process "+temProc.getName());	
 					}
 					//Expression temp = replaceVarIniInProbability(probExp);

@@ -8,6 +8,7 @@ import cbit.vcell.mapping.potential.MembraneElectricalDevice;
 import cbit.vcell.mapping.potential.PotentialMapping;
 import cbit.vcell.mapping.potential.ElectricalDevice;
 import cbit.vcell.units.VCUnitException;
+import cbit.gui.DialogUtils;
 import cbit.util.ISize;
 import cbit.vcell.math.*;
 import cbit.vcell.model.*;
@@ -149,7 +150,7 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 				rateConstant = getMathSymbol0(kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KForward), sm);
 				//System.out.println("kinetic constant name scope:"+kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KForward).getNameScope());
 			}
-			else if (kinetics.getKineticsDescription().getName().compareTo(KineticsDescription.HMM_irreversible.getName())==0)
+			/*else if (kinetics.getKineticsDescription().getName().compareTo(KineticsDescription.HMM_irreversible.getName())==0)
 		    {
 				rateConstant = getMathSymbol0(kinetics.getKineticsParameterFromRole(Kinetics.ROLE_Vmax), sm);
 				ReactionParticipant[] tempart = reactionStep.getReactionParticipants();
@@ -182,7 +183,7 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 		    else if (kinetics.getKineticsDescription().getName().compareTo(KineticsDescription.General.getName())==0)
 		    {	
 			    rateConstant = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_Rate).getExpression().infix();
-			}
+			}*/
 		    // count the structure size from the product side(location where the reaction happens actually). rateConstant*(feature_size*KMole OR membrane_Size)
 		    if(sm.getStructure() instanceof Membrane)
 		    {
@@ -272,7 +273,7 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 			{
 				rateConstant = getMathSymbol0(kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KReverse), sm);
 			}
-			else if (kinetics.getKineticsDescription().getName().compareTo(KineticsDescription.HMM_reversible.getName())==0)
+			/*else if (kinetics.getKineticsDescription().getName().compareTo(KineticsDescription.HMM_reversible.getName())==0)
 		    {
 				rateConstant = getMathSymbol0(kinetics.getKineticsParameterFromRole(Kinetics.ROLE_VmaxRev), sm);
 				ReactionParticipant[] tempart = reactionStep.getReactionParticipants();
@@ -286,7 +287,7 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 						break; //there is only one reactant in HMM reactions
 					}
 				}
-			}
+			}*/
 		    // count the structure size from the product side(location where the reaction happens actually). rateConstant*(feature_size*KMole OR membrane_Size) 
 		    if(sm.getStructure() instanceof Membrane)
 		    {
@@ -384,7 +385,7 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 	    }
 		
 		//if it is general, substitute the parameter with mathsymbol and reaction participants s with s/Size-s
-		if(kinetics.getKineticsDescription().getName().compareTo(KineticsDescription.General.getName())==0)
+		/*if(kinetics.getKineticsDescription().getName().compareTo(KineticsDescription.General.getName())==0)
 		{
 			ReactionParticipant[] tempart = reactionStep.getReactionParticipants();
 			//substitute parameters with mathsymbol(e.g. if there is "a" para in reaction1, subsitute it to "a_reaction1" in reaction1 if there are "a"s in different reactions )
@@ -413,7 +414,7 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 				Expression newExp = new Expression(tempart[k].getSpeciesContext().getName()+"/"+reactStructureSize);
 				probExp.substituteInPlace(orgExp, newExp);
 			}
-		}
+		}*/
 		//flatten the expression
 		probExp.flatten();
 	}catch (ExpressionException e){e.printStackTrace();}
@@ -440,6 +441,12 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 	 */
 	private void refreshMathDescription() throws MappingException, cbit.vcell.matrix.MatrixException, MathException, ExpressionException, ModelException
 	{
+		//All sizes must be set for new ODE models and ratios must be set for old ones.
+		if(!getSimulationContext().checkAppSizes())
+		{
+			throw new RuntimeException("Application "+getSimulationContext().getName()+":\nAll structure sizes must be assigned positive values.\nPlease go to StructureMapping tab to check the sizes.");
+		}			
+		
 		//
 		// verify that all structures are mapped to subvolumes and all subvolumes are mapped to a structure
 		//
@@ -625,15 +632,9 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 			SpeciesContextSpec.SpeciesContextSpecParameter initParm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
 			//stochastic variables 
 			if (initParm!=null){
-				//convert from concentration to number of particles, therefore the initial condition can never be constant in shochastic.
+				//convert from concentration to number of particles, all are considered as functions
 				Expression iniExp = getIniExpression(initParm.getExpression(),speciesContextSpecs[i].getSpeciesContext());
-				try {
-					iniExp.evaluateConstant();
-					varHash.addVariable(new Constant(getMathSymbol(initParm,null),iniExp));
-					
-				}catch (ExpressionException e){
-					varHash.addVariable(new Function(getMathSymbol(initParm,null),iniExp));
-				}
+				varHash.addVariable(new Function(getMathSymbol(initParm,null),iniExp));		
 			}
 		}
 
@@ -738,35 +739,48 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 			// for Mass Action, we use KForward and KReverse, for HMM_irreversible we directly use Km
 			// and for HMM_reversible we use KmFwd and KmRev, for General and General Total Kinetics we use reaction rate J directly as probability rate
 			Kinetics kinetics = reactionStep.getKinetics();
-			double forwardRate = 0;
-			double reverseRate = 0;
+			Expression forwardRate = null;
+			Expression reverseRate = null;
 			if (kinetics.getKineticsDescription().getName().compareTo(KineticsDescription.MassAction.getName())==0)
 			{
-				try
-				{
-					forwardRate = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KForward).getConstantValue();
-					reverseRate = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KReverse).getConstantValue();
-				} catch (ExpressionException e) {e.printStackTrace();}
+				forwardRate = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KForward).getExpression();
+				reverseRate = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KReverse).getExpression();
+				
 			}
-			else if (kinetics.getKineticsDescription().getName().compareTo(KineticsDescription.HMM_irreversible.getName())==0)
+			/*else if (kinetics.getKineticsDescription().getName().compareTo(KineticsDescription.HMM_irreversible.getName())==0)
 		    {
-			    try
-				{
-					forwardRate = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_Km).getConstantValue();
-				} catch (ExpressionException e) {e.printStackTrace();}
+			    forwardRate = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_Km).getExpression();
 			}
 		    else if (kinetics.getKineticsDescription().getName().compareTo(KineticsDescription.HMM_reversible.getName())==0)
 		    {
-			    try
-				{
-					forwardRate = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KmFwd).getConstantValue();
-					reverseRate = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KmRev).getConstantValue();
-				} catch (ExpressionException e) {e.printStackTrace();}
-			}
-		     
+				forwardRate = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KmFwd).getExpression();
+				reverseRate = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KmRev).getExpression();
+			}*/
+		    boolean isForwardRateNonZero = false;
+		    boolean isReverseRateNonZero = false;
+	       	if(forwardRate != null)
+	    	{
+	       		isForwardRateNonZero = true;	    	
+	    		try {
+	    			if (forwardRate.evaluateConstant()==0)
+	    				isForwardRateNonZero = false;
+	    		} catch (ExpressionException e) {
+	    		}	    		
+	    	}
+	    	
+	    	if(reverseRate != null)
+	    	{
+	    		isReverseRateNonZero = true;
+	    		try {
+	    			if(reverseRate.evaluateConstant()==0)
+	    				isReverseRateNonZero = false;
+			    }catch(ExpressionException e){			    
+			    }
+	    	}
+		    
 			// if the reaction has forward rate (Mass action,HMMs), or don't have either forward or reverse rate (some other rate laws--like general)
 			// we process it as forward reaction
-			if ((forwardRate != 0) || ((forwardRate == 0) && (reverseRate == 0)))
+			if ((isForwardRateNonZero) /*|| ((forwardRate == null) && (reverseRate == null))*/)
 			{
 				// get jump process name
 				String jpName = cbit.util.TokenMangler.mangleToSName(reactionStep.getName());
@@ -831,7 +845,7 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 				// add jump process to compartment subDomain
 				subDomain.addJumpProcess(jp);
 			}
-			if (reverseRate != 0) // one more jump process for a reversible reaction
+			if (isReverseRateNonZero) // one more jump process for a reversible reaction
 			{
 				// get jump process name
 				String jpName = cbit.util.TokenMangler.mangleToSName(reactionStep.getName())+"_reverse";
@@ -909,18 +923,18 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 			SpeciesContextSpec.SpeciesContextSpecParameter initParm = scSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
 			//stochastic variables initial expression.
 			if (initParm!=null){
-				//convert from concentration to number of particles, therefore the initial condition can never be constant in shochastic.
+				//check if initial condition is constant in shochastic.
 				Expression iniExp = getIniExpression(initParm.getExpression(),scSpecs[i].getSpeciesContext());
 				try{
 					iniExp.bindExpression(getMathDescription());
-					iniExp = iniExp.flatten();
+					iniExp.flatten().evaluateConstant();
 				}catch (ExpressionException e)
 				{
 					e.printStackTrace();
 					throw new MathFormatException("variable "+ varName +"'s initial condition is required to be a constant.");
 				}
 				
-				VarIniCondition varIni = new VarIniCondition(var,iniExp);
+				VarIniCondition varIni = new VarIniCondition(var,new Expression(getMathSymbol0(initParm, null)));
 				subDomain.addVarIniCondition(varIni);
 			}
 		}

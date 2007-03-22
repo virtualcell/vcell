@@ -399,6 +399,15 @@ public void setGeometry(cbit.vcell.geometry.Geometry geometry) {
 	firePropertyChange("geometry", oldValue, geometry);
 }
 
+public void setChangeGeometryEnabled(boolean enabledOrNot)
+{
+	getJButton1().setEnabled(enabledOrNot);
+}
+
+public void setOpenGeometryEnabled(boolean enabledOrNot)
+{
+	getJButtonOpenGeometry().setEnabled(enabledOrNot);
+}
 
 /**
  * 

@@ -16,6 +16,7 @@ import cbit.vcell.model.Model;
 import cbit.vcell.math.VCML;
 import cbit.vcell.model.VCMODL;
 import cbit.vcell.server.VCellConnection;
+import cbit.gui.DialogUtils;
 import cbit.sql.Version;
 import cbit.sql.Versionable;
 import cbit.vcell.server.User;
@@ -203,16 +204,46 @@ public class SimulationContext implements cbit.sql.Versionable, Matchable, cbit.
 
 /**
  * SimulationContext constructor comment.
+ * Please see new constructor with effect on March 15th, 2007
  */
 public SimulationContext(SimulationContext simulationContext) throws PropertyVetoException {
-	this.geoContext = new GeometryContext(simulationContext.getGeometryContext(),this);
+	this(simulationContext,false);
+}
+
+/**
+ * Construct a new SimulationContext from an old SimulationContext.
+ * Input paras: SimulationContext (the old one), boolean (is stochastic application or not) 
+ */
+public SimulationContext(SimulationContext simulationContext, boolean arg_isStoch) throws PropertyVetoException {
+	
+	if(arg_isStoch)
+	{
+		String msg = simulationContext.getBioModel().isValidForStochApp();
+		if(!msg.equals("ok"))
+		{
+			throw new RuntimeException(msg); //no need to show popup here, the exception passes to upper level.
+		}
+		if(simulationContext.getGeometry().getDimension() > 0)
+		{
+			Geometry geo = new Geometry("non-spatial",0);
+			this.geoContext = new GeometryContext(simulationContext.getBioModel().getModel(),geo,this);
+		}
+		else
+		{
+			this.geoContext = new GeometryContext(simulationContext.getGeometryContext(),this);
+		}
+	}
+	else
+	{
+		this.geoContext = new GeometryContext(simulationContext.getGeometryContext(),this);
+	}
 	this.reactionContext = new ReactionContext(simulationContext.getReactionContext(),this);
 	this.version = null;
 	this.characteristicSize = simulationContext.getCharacteristicSize();
 	this.fieldName = "copied_from_"+simulationContext.getName();
 	this.fieldDescription = "(copied from "+simulationContext.getName()+") "+simulationContext.getDescription();
 	this.bioModel = simulationContext.getBioModel();
-	this.setIsStoch(simulationContext.isStoch());
+	this.setIsStoch(arg_isStoch);
 	//
 	// copy electrical stimuli and ground
 	//
@@ -339,19 +370,11 @@ public void addAnalysisTask(cbit.vcell.modelopt.AnalysisTask analysisTask) throw
  */
 public Simulation addNewSimulation() throws java.beans.PropertyVetoException {
 	//The code below is used to check if the sizes are ready for required models.
-	if (getGeometry().getDimension() == 0)//non-spatial
+	if(!checkAppSizes())
 	{
-		if(isStoch()) //stochastic 
-		{
-			if(!getGeometryContext().isAllSizeSpecifiedPositive())
-				throw new RuntimeException("All structure sizes must be assigned positive values.");
-		}
-		else //ode
-		{
-			if((!getGeometryContext().isAllVolFracAndSurfVolSpecified())||(getGeometryContext().isAllVolFracAndSurfVolSpecified() && !getGeometryContext().isAllSizeSpecifiedPositive() && !getGeometryContext().isAllSizeSpecifiedNull()))
-				throw new RuntimeException("All structure sizes must be assigned positive values.");
-		}
+		throw new RuntimeException("All structure sizes must be assigned positive values.\nPlease go to StructureMapping tab to check the sizes.");
 	}
+	
 	if (getMathDescription()==null){
 //		throw new RuntimeException("Application "+getName()+" has no generated Math, cannot add simulation");
 		try {
@@ -1620,4 +1643,24 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		fireVetoableChange("simulations",oldSimulations,newSimulations);
 	}
 }
+
+public boolean checkAppSizes()
+{
+	//spatial
+	if(getGeometry().getDimension() > 0) return true;
+	//non-spatial
+	//old ode
+	if(!isStoch() && getGeometryContext().isAllVolFracAndSurfVolSpecified() && getGeometryContext().isAllSizeSpecifiedNull())
+	{	
+		return true;
+	}
+	else //new ode or stoch
+	{
+		if(getGeometryContext().isAllSizeSpecifiedPositive()) return true;
+		
+	}
+	
+	return false;
+}
+
 }
