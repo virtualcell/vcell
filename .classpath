@@ -2,11 +2,11 @@
 <classpath>
 	<classpathentry kind="src" path="src">
 		<attributes>
-			<attribute value="VCell/nativelibs" name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell/nativelibs/Win32"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="resources"/>
-	<classpathentry sourcepath="JRE_SRC" kind="var" path="JRE_LIB"/>
+	<classpathentry kind="var" path="JRE_LIB" sourcepath="JRE_SRC"/>
 	<classpathentry kind="lib" path="idetool.jar"/>
 	<classpathentry kind="lib" path="thirdParty_1.51.jar"/>
 	<classpathentry kind="output" path="bin"/>

@@ -1,4 +1,6 @@
 package cbit.vcell.client.desktop.biomodel;
+import java.awt.event.ActionEvent;
+
 import cbit.vcell.biomodel.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.mapping.*;
@@ -92,8 +94,10 @@ private void bioModelTreePanel1_ActionPerformed(java.awt.event.ActionEvent e) {
 		deleteApplication();
 	} else if (e.getActionCommand().equals("Rename")) {
 		renameApplication();
-	} else if (e.getActionCommand().equals("Copy")) {
-		copyApplication();
+	} else if (e.getActionCommand().equals("Copy To Stochastic Application")) {
+		copyApplication(e);
+	} else if (e.getActionCommand().equals("Copy To Non-stochastic Application")) {
+		copyApplication(e);
 	} else if (e.getActionCommand().equals("Create New Application")) {
 		newApplication(e);
 	} 
@@ -148,7 +152,7 @@ private void connEtoC3(java.awt.event.ActionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		this.copyApplication();
+		this.copyApplication(arg1);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -370,7 +374,7 @@ private void connPtoP3SetTarget() {
 /**
  * Comment
  */
-private void copyApplication() {
+private void copyApplication(ActionEvent evt) {
 	Versionable selection = getBioModelTreePanel1().getSelectedVersionable();
 	if (selection == null) {
 		PopupGenerator.showErrorDialog(this, "There is no application currently selected to be copied!");
@@ -388,8 +392,16 @@ private void copyApplication() {
 				PopupGenerator.showErrorDialog(this, "Blank name not allowed");
 			} else {
 				if (selection instanceof SimulationContext) {
-					SimulationContext newSimulationContext = getBioModel().copySimulationContext((SimulationContext)selection, newApplicationName);
-					getBioModelWindowManager().showApplicationFrame(newSimulationContext);
+					if(evt.getActionCommand().equals("Copy To Stochastic Application"))
+					{
+						SimulationContext newSimulationContext = getBioModel().copySimulationContext((SimulationContext)selection, newApplicationName, true);
+						getBioModelWindowManager().showApplicationFrame(newSimulationContext);
+					}
+					else if (evt.getActionCommand().equals("Copy To Non-stochastic Application"))
+					{
+						SimulationContext newSimulationContext = getBioModel().copySimulationContext((SimulationContext)selection, newApplicationName, false);
+						getBioModelWindowManager().showApplicationFrame(newSimulationContext);
+					}
 				}
 			}
 		}
@@ -717,7 +729,7 @@ private javax.swing.JMenuItem getJMenuItemNonStochApp() {
 		try {
 			ivjJMenuItemNonStochApp = new javax.swing.JMenuItem();
 			ivjJMenuItemNonStochApp.setName("JMenuItemNonStochApp");
-			ivjJMenuItemNonStochApp.setText("Non-Stochastic Application");
+			ivjJMenuItemNonStochApp.setText("Deterministic Application");
 			ivjJMenuItemNonStochApp.setActionCommand("Create Non-stochastic Application");
 			// user code begin {1}
 			// user code end

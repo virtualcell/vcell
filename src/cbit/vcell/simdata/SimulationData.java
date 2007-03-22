@@ -648,7 +648,11 @@ public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException {
 	long lastModified = file.lastModified();
 	cbit.vcell.solver.ode.ODESimData odeSimData = cbit.vcell.solver.ode.ODESimData.readODEDataFile(file);
 	try {
-		dataTimes = odeSimData.extractColumn(odeSimData.findColumn("t"));
+		int colIndex = odeSimData.findColumn(ReservedVariable.TIME.getName()); //look for 't' first
+		//if not time serie data, it should be multiple trial data. get the trial no as fake time data. let it run since we will not need it when displaying histogram
+		if(colIndex == -1)
+			colIndex = odeSimData.findColumn("TrialNo"); 
+		dataTimes = odeSimData.extractColumn(colIndex);
 	}catch (ExpressionException e){
 		e.printStackTrace(System.out);
 		throw new DataAccessException("error getting data times: "+e.getMessage());
@@ -667,10 +671,6 @@ public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException {
  * @return File
  */
 private synchronized File getODEDataFile() throws DataAccessException {
-	//check if stochastic result file exists or not, if so return the file. added 27th July 2006.
-	String sFileName = info.getID()+"_0_.stoch";
-	File stochFile = new File(userDirectory, sFileName);
-	if(stochFile.exists()) return stochFile;
 	refreshLogFile();
 	if (dataFilenames == null) throw new DataAccessException("ODE data filename not read from logfile");
 	File odeFile = new File(userDirectory, dataFilenames[0]);

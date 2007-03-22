@@ -55,6 +55,8 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 				connEtoM7(evt);
 			if (evt.getSource() == StructureMappingPanel.this && (evt.getPropertyName().equals("geometryContext"))) 
 				connEtoC3(evt);
+			/*if (evt.getSource() == StructureMappingPanel.this.getFeatureMapping()) 
+				testMethod(evt);*/
 		};
 		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
 			if (e.getSource() == StructureMappingPanel.this.getselectionModel1()) 
@@ -870,6 +872,8 @@ public void setGeometryContext(cbit.vcell.mapping.GeometryContext geometryContex
 	GeometryContext oldValue = fieldGeometryContext;
 	fieldGeometryContext = geometryContext;
 	firePropertyChange("geometryContext", oldValue, geometryContext);
+	
+
 }
 
 
@@ -1036,7 +1040,7 @@ public void structureMappingPanel_GeometryContext(cbit.vcell.mapping.GeometryCon
 				}
 				//3. old ode applications.
 				//volFrac and surf/vol ratio are specified but sizes are not all specified.
-				//we show volFrac and suf/vol ratio
+				//we show volFrac and suf/vol ratio and sizes.
 				
 			}
 			//Boundary conditions are not needed for compartmental models.
@@ -1131,6 +1135,9 @@ private void structureMappingPanel_Initialize() {
 
 }
 
+private void testMethod(java.beans.PropertyChangeEvent evt){
+	System.out.println(evt);
+}
 
 /**
  * 

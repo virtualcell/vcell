@@ -1652,7 +1652,7 @@ public void runSimulations(final ClientSimManager clientSimManager, final Simula
 						throw new RuntimeException("Problem in simulation: "+simulations[i].getName()+"\n"+stochChkMsg);
 					}
 				}
-				if(simulations[i].getSolverTaskDescription().getStochOpt().getNumOfTrials()>1)
+				if(simulations[i].getMathDescription().isStoch() && simulations[i].getSolverTaskDescription().getStochOpt().getNumOfTrials()>1)
 					DialogUtils.showInfoDialog("We will be having histograms of stochasic variables shortly. \nAt the time being, the result of "+simulations[i].getName()+" will be the trajectory of the first trial.");
 			}
 			try{
@@ -1756,7 +1756,20 @@ public void runSimulations(final ClientSimManager clientSimManager, final Simula
 public void saveDocument(DocumentWindowManager documentWindowManager, boolean replace) {
 	
 	/*	run some quick checks first to validate request to save or save edition */
-	
+	//If there are applications, check the if all the sizes are set for the applications.
+	if(documentWindowManager.getVCDocument() instanceof BioModel)
+	{
+		SimulationContext[] scList=((BioModel)documentWindowManager.getVCDocument()).getSimulationContexts();
+		for(int i=0;i<scList.length;i++)
+		{
+			SimulationContext sc = scList[i];
+			if(!sc.checkAppSizes())
+			{	
+				DialogUtils.showErrorDialog("Application "+sc.getName()+":\nAll structure sizes must be assigned positive values.\nPlease go to StructureMapping tab to check the sizes.");
+				throw new RuntimeException("Application "+sc.getName()+":\nAll structure sizes must be assigned positive values.\nPlease go to StructureMapping tab to check the sizes.");
+			}
+		}
+	}
 	if (documentWindowManager.getVCDocument().getVersion() == null) {
 		// never saved - can't see this happening, but check anyway and default to save as
 		// (save/save edition buttons should have not been enabled upon document window creation)
@@ -1778,7 +1791,7 @@ public void saveDocument(DocumentWindowManager documentWindowManager, boolean re
 			return;
 		}
 	}
-	
+		
 	/* request is valid, go ahead with save */
 	
 	/* block document window */
@@ -1832,6 +1845,21 @@ public void saveDocument(DocumentWindowManager documentWindowManager, boolean re
  * @param vcDocument cbit.vcell.document.VCDocument
  */
 public void saveDocumentAsNew(DocumentWindowManager documentWindowManager) {
+	//If there are applications, check the if all the sizes are set for the applications.
+	if(documentWindowManager.getVCDocument() instanceof BioModel)
+	{
+		SimulationContext[] scList=((BioModel)documentWindowManager.getVCDocument()).getSimulationContexts();
+		for(int i=0;i<scList.length;i++)
+		{
+			SimulationContext sc = scList[i];
+			if(!sc.checkAppSizes())
+			{
+				PopupGenerator.showErrorDialog("Application "+sc.getName()+":\nAll structure sizes must be assigned positive values.\nPlease go to StructureMapping tab to check the sizes.");
+				throw new RuntimeException("Application "+sc.getName()+":\nAll structure sizes must be assigned positive values.\nPlease go to StructureMapping tab to check the sizes.");
+					
+			}
+		}
+	}
 	/* block document window */
 	JFrame currentDocumentWindow = getMdiManager().blockWindow(documentWindowManager.getManagerID());
 	/* prepare hashtable for tasks */

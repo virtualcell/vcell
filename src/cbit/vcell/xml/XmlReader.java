@@ -3700,8 +3700,11 @@ public cbit.vcell.solver.SolverTaskDescription getSolverTaskDescription(Element 
 		//get ErrorTolerance
 		solverTaskDesc.setErrorTolerance( getErrorTolerance(param.getChild(XMLTags.ErrorToleranceTag)) );
 		//get StochSimOptions
-		if(param.getChild(XMLTags.StochSimOptionsTag) != null)
-			solverTaskDesc.setStochOpt(getStochSimOptions(param.getChild(XMLTags.StochSimOptionsTag)));
+		if(simulation != null && simulation.getMathDescription()!= null)
+		{
+			if( simulation.getMathDescription().isStoch() && param.getChild(XMLTags.StochSimOptionsTag) != null)
+				solverTaskDesc.setStochOpt(getStochSimOptions(param.getChild(XMLTags.StochSimOptionsTag)));
+		}
 		//get OutputOptions
 		if (keepEvery != -1) {
 			solverTaskDesc.setOutputTimeSpec(new cbit.vcell.solver.DefaultOutputTimeSpec(keepEvery,keepAtMost));

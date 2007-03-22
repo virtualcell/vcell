@@ -330,6 +330,17 @@ private void initializeInternalFrames() {
 	// Initialize Geometry Viewer internal frame
 	//String geoViewerTitle = "Geometry Viewer";
 	geoViewer.setGeometry(getMathModel().getMathDescription().getGeometry());
+	//disable changeGeometry and openGeometry button in geometry summary viewer if it is a stochastic app.
+	if(getMathModel().getMathDescription().isStoch())
+	{
+		geoViewer.setChangeGeometryEnabled(false);
+		geoViewer.setOpenGeometryEnabled(false);
+	}
+	else
+	{
+		geoViewer.setChangeGeometryEnabled(true);
+		geoViewer.setOpenGeometryEnabled(true);
+	}
 	geometryViewerEditorFrame = createDefaultFrame(geoViewer);
 	//geometryViewerEditorFrame = new JInternalFrameEnhanced(geoViewerTitle, true, true, true, true);
 	//geometryViewerEditorFrame.setContentPane(geoViewer);
@@ -522,6 +533,19 @@ private void showGeometryViewer(boolean bGeoButtonSelected) {
 		// If toggleButton is selected, check if it is open. If not, open it, add it to desktopPane
 		// If it is iconized, 'de-iconify' it.
 		setDefaultTitle(geometryViewerEditorFrame);
+		if(geoViewer != null)
+		{
+			if(getMathModel().getMathDescription().isStoch())
+			{
+				geoViewer.setChangeGeometryEnabled(false);
+				geoViewer.setOpenGeometryEnabled(false);
+			}
+			else
+			{
+				geoViewer.setChangeGeometryEnabled(true);
+				geoViewer.setOpenGeometryEnabled(true);
+			}
+		}
 		showFrame(geometryViewerEditorFrame);
 	} else {
 		// If toggleButton is unselected, check if vcmlEditor is iconized. If not closed, dispose it.

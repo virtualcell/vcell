@@ -137,32 +137,35 @@ public cbit.vcell.solver.ode.ODESolverResultSet getStochSolverResultSet()
 		}
 	}
 	
-	//
-	// add appropriate Function columns to result set
-	//
-	cbit.vcell.math.Function functions[] = getSimulation().getFunctions();
-	for (int i = 0; i < functions.length; i++){
-		if (isFunctionSaved(functions[i]) && functions[i].getName().startsWith("P_")) // we want to add probability functions only.
-		{
-			cbit.vcell.parser.Expression exp1 = new cbit.vcell.parser.Expression(functions[i].getExpression());
-			try {
-				exp1 = getSimulation().substituteFunctions(exp1);
-			} catch (cbit.vcell.math.MathException e) {
-				e.printStackTrace(System.out);
-				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
-			} catch (cbit.vcell.parser.ExpressionException e) {
-				e.printStackTrace(System.out);
-				throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
-			}
-			try {
-				cbit.vcell.solver.ode.FunctionColumnDescription cd = new cbit.vcell.solver.ode.FunctionColumnDescription(exp1.flatten(),functions[i].getName(), null, functions[i].getName(), false);
-				stSolverResultSet.addFunctionColumn(cd);
-			}catch (cbit.vcell.parser.ExpressionException e){
-				e.printStackTrace(System.out);
+	/*
+	Add appropriate Function columns to result set if the stochastic simulation is to display the trajectory
+	No function columns for the results of multiple stochastic trials
+	*/
+	if(getSimulation().getSolverTaskDescription().getStochOpt().getNumOfTrials() == 1)
+	{
+		cbit.vcell.math.Function functions[] = getSimulation().getFunctions();
+		for (int i = 0; i < functions.length; i++){
+			if (isFunctionSaved(functions[i]) && functions[i].getName().startsWith("P_")) // we want to add probability functions only.
+			{
+				cbit.vcell.parser.Expression exp1 = new cbit.vcell.parser.Expression(functions[i].getExpression());
+				try {
+					exp1 = getSimulation().substituteFunctions(exp1);
+				} catch (cbit.vcell.math.MathException e) {
+					e.printStackTrace(System.out);
+					throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
+				} catch (cbit.vcell.parser.ExpressionException e) {
+					e.printStackTrace(System.out);
+					throw new RuntimeException("Substitute function failed on function "+functions[i].getName()+" "+e.getMessage());
+				}
+				try {
+					cbit.vcell.solver.ode.FunctionColumnDescription cd = new cbit.vcell.solver.ode.FunctionColumnDescription(exp1.flatten(),functions[i].getName(), null, functions[i].getName(), false);
+					stSolverResultSet.addFunctionColumn(cd);
+				}catch (cbit.vcell.parser.ExpressionException e){
+					e.printStackTrace(System.out);
+				}
 			}
 		}
-	}
-		
+	}	
 	return stSolverResultSet;
 	
 }
@@ -193,18 +196,20 @@ protected void initialize() throws cbit.vcell.solver.SolverException
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, "Generating input file..."));
 	fireSolverStarting("generating input file...");
 	//
+	java.io.FileWriter fw = null;
+	java.io.PrintWriter pw = null;
 	try {
-		java.io.FileWriter fw = new java.io.FileWriter(inputFilename);
-		java.io.PrintWriter pw = new java.io.PrintWriter(fw);
-		
-		try{
-			stFileWriter.writeStochInputFile(pw);	
-		}catch(java.lang.Exception e){e.printStackTrace();}
-		pw.close();
+		fw = new java.io.FileWriter(inputFilename);
+		pw = new java.io.PrintWriter(fw);
+		stFileWriter.writeStochInputFile(pw);
 	} catch (Exception e) {
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, "Could not generate input file: " + e.getMessage()));
 		e.printStackTrace(System.out);
 		throw new SolverException("solver input file exception: " + e.getMessage());
+	} finally {
+		if (pw != null) {
+			pw.close();	
+		}
 	}
 	//
 	//

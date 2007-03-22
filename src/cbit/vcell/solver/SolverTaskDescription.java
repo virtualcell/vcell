@@ -31,36 +31,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
 	private SolverDescription fieldSolverDescription = null;
 	private boolean fieldUseSymbolicJacobian = false;
 	private OutputTimeSpec fieldOutputTimeSpec = new DefaultOutputTimeSpec();
-	private StochSimOptions fieldStochOpt = new StochSimOptions(); //added Dec 5th, 2006
-
-/**
- * One of three ways to construct a SolverTaskDescription.  This constructor
- * is used when creating a new SolverTaskDescription.
- */
-public SolverTaskDescription(Simulation simulation) {
-	super();
-	addVetoableChangeListener(this);
-	addPropertyChangeListener(this);
-	try {
-		if (simulation.getIsSpatial()) 
-		{
-			setSolverDescription(getDefaultPDESolverDescription());
-		} //amended Sept.27, 2006
-		else if (simulation.getMathDescription().isStoch()) 
-		{
-			setSolverDescription(getDefaultStochSolverDescription());
-			setOutputTimeSpec(new DefaultOutputTimeSpec(1,1000000));//amended Feb 20th,2007
-		}
-		else
-		{
-			setSolverDescription(getDefaultODESolverDescription());
-		}
-	}catch (java.beans.PropertyVetoException e){
-		e.printStackTrace(System.out);
-	}
-	setSimulation(simulation);
-}
-
+	private StochSimOptions fieldStochOpt = null; //added Dec 5th, 2006
 
 /**
  * One of three ways to construct a SolverTaskDescription.  This constructor
@@ -124,6 +95,11 @@ public SolverTaskDescription(Simulation simulation, SolverTaskDescription solver
 	fieldSensitivityParameter = solverTaskDescription.getSensitivityParameter();
 	fieldSolverDescription = solverTaskDescription.getSolverDescription();
 	fieldUseSymbolicJacobian = solverTaskDescription.getUseSymbolicJacobian();
+	if (simulation.getMathDescription().isStoch() && (solverTaskDescription.getStochOpt() != null)) 
+	{
+		setStochOpt(solverTaskDescription.getStochOpt());
+	}
+	else setStochOpt(null);
 }
 
 
@@ -140,6 +116,36 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
  */
 public synchronized void addPropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener) {
 	getPropertyChange().addPropertyChangeListener(propertyName, listener);
+}
+
+
+/**
+ * One of three ways to construct a SolverTaskDescription.  This constructor
+ * is used when creating a new SolverTaskDescription.
+ */
+public SolverTaskDescription(Simulation simulation) {
+	super();
+	addVetoableChangeListener(this);
+	addPropertyChangeListener(this);
+	try {
+		if (simulation.getIsSpatial()) 
+		{
+			setSolverDescription(getDefaultPDESolverDescription());
+		} //amended Sept.27, 2006
+		else if (simulation.getMathDescription().isStoch()) 
+		{
+			fieldStochOpt = new StochSimOptions();
+			setSolverDescription(getDefaultStochSolverDescription());
+			setOutputTimeSpec(new DefaultOutputTimeSpec(1,1000000));//amended Feb 20th,2007
+		}
+		else
+		{
+			setSolverDescription(getDefaultODESolverDescription());
+		}
+	}catch (java.beans.PropertyVetoException e){
+		e.printStackTrace(System.out);
+	}
+	setSimulation(simulation);
 }
 
 
@@ -175,7 +181,7 @@ public boolean compareEqual(Matchable object) {
 		if (!getTimeBounds().compareEqual(solverTaskDescription.getTimeBounds())) return (false);
 		if (!getTimeStep().compareEqual(solverTaskDescription.getTimeStep())) return (false);
 		if (!getErrorTolerance().compareEqual(solverTaskDescription.getErrorTolerance())) return (false);
-		if (!getStochOpt().compareEqual(solverTaskDescription.getStochOpt())) return (false);
+		if  (!Compare.isEqualOrNull(getStochOpt(),solverTaskDescription.getStochOpt())) return false;
 		if (getUseSymbolicJacobian() != solverTaskDescription.getUseSymbolicJacobian()) return (false);
 		//
 		if (!getOutputTimeSpec().compareEqual(solverTaskDescription.getOutputTimeSpec())) return (false);
@@ -517,7 +523,8 @@ public String getVCML() {
 
 	buffer.append(getErrorTolerance().getVCML()+"\n");
 
-	buffer.append(getStochOpt().getVCML()+"\n");
+	if(getStochOpt() != null)
+		buffer.append(getStochOpt().getVCML()+"\n");
 
 	buffer.append(fieldOutputTimeSpec.getVCML() + "\n");
 
@@ -732,7 +739,13 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 				continue;
 			}
 			if (token.equalsIgnoreCase(VCML.StochSimOptions)) {
-				getStochOpt().readVCML(tokens);
+				StochSimOptions temp=new StochSimOptions();
+				temp.readVCML(tokens);
+				if (getSimulation()!=null && getSimulation().getMathDescription()!=null)
+				{
+					if(getSimulation().getMathDescription().isStoch()) setStochOpt(temp);
+					else setStochOpt(null);					
+				}
 				continue;
 			}
 			if (token.equalsIgnoreCase(VCML.OutputOptions)) {

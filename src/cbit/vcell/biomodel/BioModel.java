@@ -6,6 +6,7 @@ import cbit.vcell.geometry.Geometry;
 ©*/
 import cbit.sql.Version;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.server.ObjectNotFoundException;
 import cbit.vcell.math.MathDescription;
 import java.beans.PropertyVetoException;
@@ -223,8 +224,8 @@ public boolean contains(Simulation simulation) {
  * @param simulationContext cbit.vcell.mapping.SimulationContext
  * @exception java.beans.PropertyVetoException The exception description.
  */
-public SimulationContext copySimulationContext(SimulationContext simulationContext, String newSimulationContextName) throws java.beans.PropertyVetoException {
-	SimulationContext simContext = new SimulationContext(simulationContext);
+public SimulationContext copySimulationContext(SimulationContext simulationContext, String newSimulationContextName, boolean isStoch) throws java.beans.PropertyVetoException {
+	SimulationContext simContext = new SimulationContext(simulationContext, isStoch);
 	simContext.setName(newSimulationContextName);
 	addSimulationContext(simContext);
 	return simContext;
@@ -982,16 +983,13 @@ public String isValidForStochApp()
 	cbit.vcell.model.ReactionStep[] reacSteps = getModel().getReactionSteps();
 	for (int i = 0; (reacSteps != null) && (i < reacSteps.length); i++)
 	{
-		if((reacSteps[i].getKinetics().getKineticsDescription().getName().compareTo(cbit.vcell.model.KineticsDescription.HMM_irreversible.getName())==0) ||
-		   (reacSteps[i].getKinetics().getKineticsDescription().getName().compareTo(cbit.vcell.model.KineticsDescription.HMM_reversible.getName())==0) ||
-		   (reacSteps[i].getKinetics().getKineticsDescription().getName().compareTo(cbit.vcell.model.KineticsDescription.General.getName())==0) ||
-		   (reacSteps[i].getKinetics().getKineticsDescription().getName().compareTo(cbit.vcell.model.KineticsDescription.GeneralTotal.getName())==0))
+		if((!(reacSteps[i] instanceof SimpleReaction)) || (!reacSteps[i].getKinetics().getKineticsDescription().equals(cbit.vcell.model.KineticsDescription.MassAction)))
 		{
 			returnStr = returnStr + " " + reacSteps[i].getName() + ",";
 		}
 	}
 	int len = returnStr.length();
-	if(len > 10)
+	if(len > 0)
 	{
 		returnStr = returnStr.substring(0,(len-1)) + " is (are) unable to transform to stochastic formulation.";
 	}

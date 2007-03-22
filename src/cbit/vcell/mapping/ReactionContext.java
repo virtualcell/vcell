@@ -34,16 +34,16 @@ public  class ReactionContext implements Serializable, Matchable, PropertyChange
  */
 ReactionContext(ReactionContext reactionContext, SimulationContext argSimulationContext) {
 	this.fieldModel = reactionContext.fieldModel;
+	this.simContext = argSimulationContext;
 	fieldReactionSpecs = new ReactionSpec[reactionContext.fieldReactionSpecs.length];
 	for (int i = 0; i < reactionContext.fieldReactionSpecs.length; i++){
 		fieldReactionSpecs[i] = new ReactionSpec(reactionContext.getReactionSpecs(i));
-		fieldReactionSpecs[i].setSimulationContext(reactionContext.getReactionSpecs(i).getSimulationContext());
+		fieldReactionSpecs[i].setSimulationContext(simContext);
 	}
 	fieldSpeciesContextSpecs = new SpeciesContextSpec[reactionContext.fieldSpeciesContextSpecs.length];
 	for (int i = 0; i < reactionContext.fieldSpeciesContextSpecs.length; i++){
-		fieldSpeciesContextSpecs[i] = new SpeciesContextSpec(reactionContext.fieldSpeciesContextSpecs[i],getSimulationContext());
-	}
-	this.simContext = argSimulationContext;
+		fieldSpeciesContextSpecs[i] = new SpeciesContextSpec(reactionContext.fieldSpeciesContextSpecs[i],simContext);
+	}	
 	refreshDependencies();
 }
 

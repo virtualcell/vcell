@@ -308,7 +308,10 @@ private void initConnections() throws java.lang.Exception {
 	// user code begin {1}
 	// user code end
 	getEquationsViewerToggleButton().addActionListener(ivjEventHandler);
-	getGeometryToggleButton().addActionListener(ivjEventHandler);
+	if((getMathDescription() != null) && (getMathDescription().isStoch()))
+		getGeometryToggleButton().setEnabled(false);
+	else
+		getGeometryToggleButton().addActionListener(ivjEventHandler);
 	getSimulationsToggleButton().addActionListener(ivjEventHandler);
 	getvcmlToggleButton().addActionListener(ivjEventHandler);
 }

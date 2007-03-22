@@ -48,7 +48,7 @@ public boolean compareEqual(cbit.util.Matchable obj)
 	}
 	
 	VarIniCondition varIniCondition = (VarIniCondition) obj;
-	if(iniVal != varIniCondition.iniVal ) return false;//initial value
+	if(!iniVal.compareEqual(varIniCondition.iniVal) ) return false;//initial value
 	if(!var.compareEqual(varIniCondition.getVar())) return false; //variable
 	
 	return true;

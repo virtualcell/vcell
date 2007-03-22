@@ -9,6 +9,7 @@ import cbit.vcell.units.VCUnitException;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.gui.DialogUtils;
 import cbit.util.ISize;
 import cbit.vcell.math.*;
 import cbit.vcell.model.*;
@@ -1149,12 +1150,9 @@ private void refreshKFluxParameters() throws ExpressionException {
 private void refreshMathDescription() throws MappingException, cbit.vcell.matrix.MatrixException, MathException, ExpressionException, ModelException {
 
 	//All sizes must be set for new ODE models and ratios must be set for old ones.
-	if(simContext.getGeometry().getDimension() == 0)
+	if(!simContext.checkAppSizes())
 	{
-		if(!simContext.getGeometryContext().isAllVolFracAndSurfVolSpecified())
-		{
-			throw new MappingException("All structure sizes must be assigned positive values.");
-		}
+		throw new RuntimeException("All structure sizes must be assigned positive values.\nPlease go to StructureMapping tab to check the sizes.");	
 	}
 	//
 	// verify that all structures are mapped to subvolumes and all subvolumes are mapped to a structure

@@ -991,8 +991,8 @@ private void copyAnalysisTaskButton_ActionPerformed() {
 
 private void createMathModel(ActionEvent e) {
 	// relays an action event with this as the source
-	updateMath();
-	refireActionPerformed(e);
+	if (updateMath())
+		refireActionPerformed(e);
 }
 
 
@@ -2281,7 +2281,7 @@ public void setUserPreferences(cbit.vcell.client.server.UserPreferences arg1) {
 /**
  * Comment
  */
-private void updateMath() {
+private boolean updateMath() {
 	try {
 		SimulationContext simContext = (SimulationContext)getSimulationWorkspace().getSimulationOwner();
 		cbit.vcell.geometry.Geometry geometry = simContext.getGeometry();
@@ -2289,6 +2289,11 @@ private void updateMath() {
 			geometry.getGeometrySurfaceDescription().updateAll();
 		}
 		// Use differnt mathmapping for different applications (stoch or non-stoch)
+		if(!simContext.checkAppSizes())
+		{
+			throw new RuntimeException("All structure sizes must be assigned positive values.\nPlease go to StructureMapping tab to check the sizes.");
+		}	
+		
 		MathMapping mathMapping = null;
 		cbit.vcell.math.MathDescription mathDesc = null;
 		if (!simContext.isStoch())
@@ -2314,9 +2319,11 @@ private void updateMath() {
 			}
 			cbit.vcell.client.PopupGenerator.showWarningDialog(this,messageBuffer.toString(),new String[] { "Ok" }, "Ok");
 		}
+		return true;
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
 		cbit.vcell.client.PopupGenerator.showErrorDialog(this, "Failed to generate new Math:\n"+exc.getMessage());
+		return false;
 	}
 }
 
@@ -2337,7 +2344,6 @@ private void viewMath_ItemStateChanged(java.awt.event.ItemEvent itemEvent) {
 		}
 	}
 }
-
 
 /**
  * 
