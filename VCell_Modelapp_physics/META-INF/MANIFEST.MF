@@ -17,5 +17,5 @@ Require-Bundle: org.vcell.expression,
  org.jdom,
  org.eclipse.osgi,
  org.vcell.geometry,
- jscl,
- org.vcell.units
+ org.vcell.units,
+ jscl2

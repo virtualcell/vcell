@@ -14,6 +14,7 @@ import org.vcell.physics.component.Capacitor;
 import org.vcell.physics.component.Connection;
 import org.vcell.physics.component.Connector;
 import org.vcell.physics.component.CurrentSource;
+import org.vcell.physics.component.Ground;
 import org.vcell.physics.component.Location;
 import org.vcell.physics.component.LumpedLocation;
 import org.vcell.physics.component.ModelComponent;
@@ -48,7 +49,7 @@ public class PhysicsMapping {
 		// (names of locations always start with the structure name followed by an underscore ... e.g. "cytosol_0_1")
 		//
 		addLocations(simContext,physicalModel);
-
+		
 		addElectricalDevices(simContext,physicalModel);
 
 		PhysicsMapping.addChemicalDevices(simContext,physicalModel);
@@ -282,6 +283,14 @@ public class PhysicsMapping {
 				if (lumpedLocation.getDimension()==3){
 					OnePortElectricalDevice infiniteConductor = new OnePortElectricalDevice("conductor_"+lumpedLocation.getName());
 					physicalModel.addModelComponent(infiniteConductor);
+					//
+					// add a ground if the outermost compartment
+					//
+					if (model.getTopFeature().getName().equals(lumpedLocation.getName())){
+						Ground ground = new Ground("gnd_"+lumpedLocation.getName());
+						physicalModel.addModelComponent(ground);
+						physicalModel.addConnection(new Connection(new Connector[] { infiniteConductor.getConnectors(0), ground.getConnectors(0) } ));
+					}
 				}
 			}else{
 				throw new RuntimeException("unexpected location type '"+locations[i].getClass().getName()+"'");
@@ -426,6 +435,9 @@ public class PhysicsMapping {
 				}
 			}
 		}
+		//
+		// add a ground device to the outermost volumetric compartment.
+		//
 	}
 
 }
