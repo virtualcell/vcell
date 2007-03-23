@@ -18,13 +18,12 @@ this class does not extend java.util.Comparator
  */
 public class XmlComparator {
 
-	private XmlComparePolicy xmlComparePolicy = null;
+	private XmlComparePolicy xmlComparePolicy;
 		
 	public XmlComparator(XmlComparePolicy xmlComparePolicy) {
 		super();
 		this.xmlComparePolicy = xmlComparePolicy;
 	}
-
 
 	private boolean compareAtts(ArrayList list1, ArrayList list2) {
 
@@ -78,7 +77,7 @@ public class XmlComparator {
 	public boolean compareXML(Element source, Element target, boolean testAll) {
 
 		boolean elementFlag = true, attFlag = true, textFlag = true;
-	    XmlElementSorter elementSorter = new XmlElementSorter();
+	    XmlElementSorter elementSorter = new XmlElementSorter(xmlComparePolicy);
 
 	    if (!source.getName().equals(target.getName())) {           //wrong element.
 	        System.out.println("Element: "  + source.getName() + " with parent: " + source.getParent() + " is lost.");

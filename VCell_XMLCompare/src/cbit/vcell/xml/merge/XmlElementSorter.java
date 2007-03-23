@@ -12,6 +12,10 @@ public class XmlElementSorter implements Comparator {
 	private XmlComparePolicy xmlComparePolicy = null;
 	
 
+	public XmlElementSorter(XmlComparePolicy argXmlComparePolicy){
+		this.xmlComparePolicy = argXmlComparePolicy;
+	}
+	
 	public int compare(Object o1, Object o2) {
 
 		int result;

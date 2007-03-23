@@ -428,7 +428,7 @@ private List mergeElementList(List list1, List list2, String comparisonSetting) 
 	private ArrayList sortElementList(List list) {
 
 		Element listArray [] = (Element [])list.toArray(new Element[list.size()]);
-		Arrays.sort(listArray, new XmlElementSorter());
+		Arrays.sort(listArray, new XmlElementSorter(xmlComparePolicy));
 		ArrayList sortedList = new ArrayList(Arrays.asList(listArray));
 
 		return sortedList;
