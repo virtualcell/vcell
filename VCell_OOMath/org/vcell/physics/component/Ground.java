@@ -17,6 +17,7 @@ public Ground(String argName) {
 	super(argName);
 	try {
 		addEquation(Expression.valueOf("V(t)-0"));
+		addEquation(Expression.valueOf("I(t)-0"));
 	}catch (ParseException e){
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());

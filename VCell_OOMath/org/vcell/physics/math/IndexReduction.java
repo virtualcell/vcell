@@ -43,8 +43,11 @@ public class IndexReduction {
 		ArrayList<Expression> differentiatedEquations = new ArrayList<Expression>();
 		ArrayList<String> substitutedVariables = new ArrayList<String>();
 		ArrayList<String> dummyVariables = new ArrayList<String>();
-		while(!done){
+		int iteration = 0;
+		final int MAX_ITERATIONS = 0;
+		while(!done && iteration < MAX_ITERATIONS){
 			done = true;
+			iteration++;
 			int offset = 10000;
 			mathSystem.show();
 			Graph dependencyGraph = mathSystem.getDependencyGraph(offset,false);
