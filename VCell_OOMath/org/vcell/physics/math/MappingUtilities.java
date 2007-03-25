@@ -16,9 +16,6 @@ import org.vcell.physics.component.ModelComponent;
 import org.vcell.physics.component.OOModel;
 import org.vcell.physics.component.PhysicalSymbol;
 
-import com.sun.java_cup.internal.reduce_action;
-
-import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathException;
 import cbit.vcell.units.VCUnitDefinition;
 
