@@ -60,11 +60,14 @@ public class JDOMTreeWalker implements Iterator {
 			add(0, iter = list.iterator());
 		}
 
-		private void pop() {
+		public Object pop() {
+			Object poppedObject = null;
 			if (size() > 0) {
+				poppedObject = get(0);
 				this.remove(0);
 			}
 			iter = size() > 0 ? (Iterator) get(0) : null;
+			return poppedObject;
 		}
 
 		public Object getNext() {
