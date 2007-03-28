@@ -6,22 +6,26 @@ package cbit.vcell.mapping.gui;
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
+import javax.swing.JTable;
 import javax.swing.table.TableColumn;
 
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Feature;
 import cbit.vcell.mapping.*;
+import cbit.vcell.parser.Expression;
 /**
  * This type was created in VisualAge.
  */
-public class StructureMappingPanel extends javax.swing.JPanel {
+public class StructureMappingPanel extends javax.swing.JPanel implements PropertyChangeListener {
 	private cbit.vcell.geometry.Geometry ivjGeometry = null;
 	private FeatureMapping ivjFeatureMapping = null;
-	private GeometryContext ivjgeometryContext1 = null;
+	private GeometryContext ivjgeometryContext1 = null;  
 	private cbit.vcell.mapping.GeometryContext fieldGeometryContext = null;  
 	private boolean ivjConnPtoP4Aligning = false;
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
@@ -55,8 +59,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 				connEtoM7(evt);
 			if (evt.getSource() == StructureMappingPanel.this && (evt.getPropertyName().equals("geometryContext"))) 
 				connEtoC3(evt);
-			/*if (evt.getSource() == StructureMappingPanel.this.getFeatureMapping()) 
-				testMethod(evt);*/
 		};
 		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
 			if (e.getSource() == StructureMappingPanel.this.getselectionModel1()) 
@@ -870,10 +872,22 @@ private void setGeometry(cbit.vcell.geometry.Geometry newValue) {
  */
 public void setGeometryContext(cbit.vcell.mapping.GeometryContext geometryContext) {
 	GeometryContext oldValue = fieldGeometryContext;
+	if (oldValue != null){
+		oldValue.removePropertyChangeListener(this);
+		StructureMapping oldStructureMappings[] = oldValue.getStructureMappings();
+		for (int i=0;i<oldStructureMappings.length;i++){
+			oldStructureMappings[i].removePropertyChangeListener(this);
+		}
+	}
 	fieldGeometryContext = geometryContext;
+	if (getGeometryContext()!=null){
+		getGeometryContext().addPropertyChangeListener(this);
+		StructureMapping newStructureMappings[] = geometryContext.getStructureMappings();
+		for (int i=0;i<newStructureMappings.length;i++){
+			newStructureMappings[i].addPropertyChangeListener(this);
+		}
+	}
 	firePropertyChange("geometryContext", oldValue, geometryContext);
-	
-
 }
 
 
@@ -983,26 +997,36 @@ private void showBoundaryDialog() {
 public void structureMappingPanel_GeometryContext(cbit.vcell.mapping.GeometryContext arg1) {
 	if(arg1 != null)
 	{
+		//refresh table
+		getScrollPaneTable1().createDefaultColumnsFromModel();
+		//set column editor
+		JComboBox combo=new JComboBox(new String[]{"Flux","Value"});
+		for(int i=StructureMappingTableModel.COLUMN_X_MINUS; i<=StructureMappingTableModel.COLUMN_Z_PLUS; i++)
+		{
+			TableColumn column=getScrollPaneTable1().getColumnModel().getColumn(i);
+			column.setCellEditor(new DefaultCellEditor(combo));
+		}
+		//set column renderer
+		for(int i=0; i<getScrollPaneTable1().getModel().getColumnCount(); i++)
+		{
+			TableColumn column=getScrollPaneTable1().getColumnModel().getColumn(i);
+			column.setCellRenderer(new StructureMappingTableRenderer());
+			
+		}
 		if(arg1.getGeometry().getDimension() == 0) //non-spatial
 		{
 			javax.swing.table.TableColumnModel tcm = getScrollPaneTable1().getColumnModel();
-			// set column 3-4's cell editor to be lightgray color for compartmental models
-			for(int i=3; i<5; i++)
-			{
-				TableColumn column=getScrollPaneTable1().getColumnModel().getColumn(i);
-				column.setCellRenderer(new StructureMappingTableRenderer());
-			}
 			//Subdomain and resolved are not needed for compartmental models.
-			for(int i=1; i<3; i++)
+			for(int i=StructureMappingTableModel.COLUMN_SUBDOMAIN; i<=StructureMappingTableModel.COLUMN_RESOLVED; i++)
 			{
 				javax.swing.table.TableColumn col = tcm.getColumn(i);
 				col.setMinWidth(0);
 				col.setMaxWidth(0);
 				col.setPreferredWidth(0);
 			}
-			if(arg1.getSimulationContext().isStoch())
+			if(arg1.getSimulationContext().isStoch())//stoch
 			{
-				for(int i=3; i<5; i++)
+				for(int i=StructureMappingTableModel.COLUMN_SURFVOL; i<=StructureMappingTableModel.COLUMN_VOLFRACT; i++)
 				{
 					javax.swing.table.TableColumn col = tcm.getColumn(i);
 					col.setMinWidth(0);
@@ -1016,21 +1040,11 @@ public void structureMappingPanel_GeometryContext(cbit.vcell.mapping.GeometryCon
 				//1. brand new ode applications.
 				//for a newly created application (or somehow the sizes are input in half way),
 				//then the volFrac and surf/vol ratio are specified null. we show the size columns only. 
-				if(arg1.isAllVolFracAndSurfVolSpecifiedNull())
-				{
-					for(int i=3; i<5; i++)
-					{
-						javax.swing.table.TableColumn col = tcm.getColumn(i);
-						col.setMinWidth(0);
-						col.setMaxWidth(0);
-						col.setPreferredWidth(0);
-					}
-				}
 				//2. ode applications with all the sizes specified.
 				// Whatever old or new applications, if sizes are all specified, we don't show volFrac and Surf/vol.
-				if(arg1.isAllSizeSpecifiedPositive())
+				if((arg1.isAllVolFracAndSurfVolSpecifiedNull())||arg1.isAllSizeSpecifiedPositive())
 				{
-					for(int i=3; i<5; i++)
+					for(int i=StructureMappingTableModel.COLUMN_SURFVOL; i<=StructureMappingTableModel.COLUMN_VOLFRACT; i++)
 					{
 						javax.swing.table.TableColumn col = tcm.getColumn(i);
 						col.setMinWidth(0);
@@ -1044,7 +1058,7 @@ public void structureMappingPanel_GeometryContext(cbit.vcell.mapping.GeometryCon
 				
 			}
 			//Boundary conditions are not needed for compartmental models.
-			for(int i=7; i<13; i++)
+			for(int i=StructureMappingTableModel.COLUMN_X_MINUS; i<=StructureMappingTableModel.COLUMN_Z_PLUS; i++)
 			{
 				javax.swing.table.TableColumn col = tcm.getColumn(i);
 				col.setMinWidth(0);
@@ -1055,13 +1069,13 @@ public void structureMappingPanel_GeometryContext(cbit.vcell.mapping.GeometryCon
 		else //spatial
 		{
 			javax.swing.table.TableColumnModel tcm = getScrollPaneTable1().getColumnModel();
-			javax.swing.table.TableColumn col = tcm.getColumn(2);
+			javax.swing.table.TableColumn col = tcm.getColumn(StructureMappingTableModel.COLUMN_RESOLVED);
 			col.setMinWidth(0);
 			col.setMaxWidth(0);
 			col.setPreferredWidth(0);
-			/*if(getGeometryContext().isAllFeatureResolved()) //if all resolved, we don't need surf/vol and volFrac
+			if(getGeometryContext().isAllFeatureResolved()) //if all resolved, we don't need surf/vol and volFrac
 			{
-				for(int i=3; i<5; i++)
+				for(int i=StructureMappingTableModel.COLUMN_SURFVOL; i<=StructureMappingTableModel.COLUMN_VOLFRACT; i++)
 				{
 					col = tcm.getColumn(i);
 					col.setMinWidth(0);
@@ -1069,18 +1083,7 @@ public void structureMappingPanel_GeometryContext(cbit.vcell.mapping.GeometryCon
 					col.setPreferredWidth(0);
 				}
 			}
-			else
-			{
-				TableColumn col0 = tcm.getColumn(0);
-				for(int i=3; i<5; i++)
-				{
-					col = tcm.getColumn(i);
-					col.setMinWidth(col0.getWidth());
-					col.setMaxWidth(col0.getWidth());
-					col.setPreferredWidth(col0.getWidth());
-				}
-			}*/
-			for(int i=5; i<7; i++)
+			for(int i=StructureMappingTableModel.COLUMN_VOLUME; i<=StructureMappingTableModel.COLUMN_SURFACE; i++)//volume and membrane sizes are not needed for spatial models
 			{
 				col = tcm.getColumn(i);
 				col.setMinWidth(0);
@@ -1089,7 +1092,7 @@ public void structureMappingPanel_GeometryContext(cbit.vcell.mapping.GeometryCon
 			}
 			if(arg1.getGeometry().getDimension() == 2) //2D,we don't need z-,z+
 			{
-				for(int i=11; i<13; i++)
+				for(int i=StructureMappingTableModel.COLUMN_Z_MINUS; i<=StructureMappingTableModel.COLUMN_Z_PLUS; i++)
 				{
 					col = tcm.getColumn(i);
 					col.setMinWidth(0);
@@ -1135,10 +1138,6 @@ private void structureMappingPanel_Initialize() {
 
 }
 
-private void testMethod(java.beans.PropertyChangeEvent evt){
-	System.out.println(evt);
-}
-
 /**
  * 
  */
@@ -1182,4 +1181,41 @@ private static void getBuilderData() {
 	D0CB8788C5419BA31E99GGBCD0GGD0CB818294G94G88G88GCF01B8B6C5419BA31E99GGBCD0GG8CGGGGGGGGGGGGGGGGGE2F5E9ECE4E5F2A0E4E1F4E1D0CB8586GGGG81G81GBAGGG5899GGGG
 **end of data**/
 }
+
+
+public void propertyChange(PropertyChangeEvent arg0) {
+	if(arg0.getSource() instanceof GeometryContext)
+	{
+		//this for spatial model
+		//when it is just created, all features are not resolved. we need to set volFrac and surf/vol ratio when they are null
+		if(((GeometryContext)arg0.getSource()).getGeometry().getDimension() >0 )
+			updateMembraneMappings(((GeometryContext)arg0.getSource()));
+		structureMappingPanel_GeometryContext(((GeometryContext)arg0.getSource()));
+	}
+	else if((arg0.getSource() instanceof FeatureMapping)&& getGeometryContext() != null)
+	    structureMappingPanel_GeometryContext(getGeometryContext());
+}
+
+//to give default volFrac and surf/vol values for spatial models. otherwise there are null point exceptions in XmlProducer for these two paras.
+//we need to decently fix this later.
+private void updateMembraneMappings(GeometryContext gc)
+{
+	StructureMapping[] sms=gc.getStructureMappings();
+	for(int i=0;i<sms.length;i++)
+	{
+		if(sms[i] instanceof MembraneMapping)
+		{
+			try{
+				if(((MembraneMapping)sms[i]).getSurfaceToVolumeParameter().getExpression() == null)
+					((MembraneMapping)sms[i]).getSurfaceToVolumeParameter().setExpression(new Expression(1.0));
+				if(((MembraneMapping)sms[i]).getVolumeFractionParameter().getExpression() == null)
+					((MembraneMapping)sms[i]).getVolumeFractionParameter().setExpression(new Expression(0.2));
+			}catch(Exception e)
+			{
+				e.printStackTrace(System.err);
+			}
+		}
+	}
+}
+
 }

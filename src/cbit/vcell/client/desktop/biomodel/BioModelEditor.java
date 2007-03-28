@@ -94,6 +94,8 @@ private void bioModelTreePanel1_ActionPerformed(java.awt.event.ActionEvent e) {
 		deleteApplication();
 	} else if (e.getActionCommand().equals("Rename")) {
 		renameApplication();
+	} else if (e.getActionCommand().equals("Copy")) {
+		copyApplication(e);
 	} else if (e.getActionCommand().equals("Copy To Stochastic Application")) {
 		copyApplication(e);
 	} else if (e.getActionCommand().equals("Copy To Non-stochastic Application")) {
@@ -392,7 +394,12 @@ private void copyApplication(ActionEvent evt) {
 				PopupGenerator.showErrorDialog(this, "Blank name not allowed");
 			} else {
 				if (selection instanceof SimulationContext) {
-					if(evt.getActionCommand().equals("Copy To Stochastic Application"))
+					if(evt.getActionCommand().equals("Copy"))
+					{
+						SimulationContext newSimulationContext = getBioModel().copySimulationContext((SimulationContext)selection, newApplicationName, ((SimulationContext)selection).isStoch());
+						getBioModelWindowManager().showApplicationFrame(newSimulationContext);
+					}
+					else if(evt.getActionCommand().equals("Copy To Stochastic Application"))
 					{
 						SimulationContext newSimulationContext = getBioModel().copySimulationContext((SimulationContext)selection, newApplicationName, true);
 						getBioModelWindowManager().showApplicationFrame(newSimulationContext);

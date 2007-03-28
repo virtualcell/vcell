@@ -21,19 +21,19 @@ import cbit.util.BeanUtils;
  */
 public class StructureMappingTableModel extends javax.swing.table.AbstractTableModel implements java.beans.PropertyChangeListener {
 	private final int NUM_COLUMNS = 13;
-	public final int COLUMN_STRUCTURE = 0;
-	public final int COLUMN_SUBDOMAIN = 1;
-	public final int COLUMN_RESOLVED = 2;
-	public final int COLUMN_SURFVOL = 3;
-	public final int COLUMN_VOLFRACT = 4;
-	public final int COLUMN_VOLUME = 5;
-	public final int COLUMN_SURFACE = 6;
-	public final int COLUMN_X_MINUS = 7;
-	public final int COLUMN_X_PLUS = 8;
-	public final int COLUMN_Y_MINUS = 9;
-	public final int COLUMN_Y_PLUS = 10;
-	public final int COLUMN_Z_MINUS = 11;
-	public final int COLUMN_Z_PLUS = 12;
+	public final static int COLUMN_STRUCTURE = 0;
+	public final static int COLUMN_SUBDOMAIN = 1;
+	public final static int COLUMN_RESOLVED = 2;
+	public final static int COLUMN_SURFVOL = 3;
+	public final static int COLUMN_VOLFRACT = 4;
+	public final static int COLUMN_VOLUME = 5;
+	public final static int COLUMN_SURFACE = 6;
+	public final static int COLUMN_X_MINUS = 7;
+	public final static int COLUMN_X_PLUS = 8;
+	public final static int COLUMN_Y_MINUS = 9;
+	public final static int COLUMN_Y_PLUS = 10;
+	public final static int COLUMN_Z_MINUS = 11;
+	public final static int COLUMN_Z_PLUS = 12;
 	
 	public final String LABEL_STRUCTURE = "Structure";
 	public final String LABEL_SUBDOMAIN = "Subdomain";
@@ -426,8 +426,10 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	if ((columnIndex == COLUMN_SURFACE) && (fm.getFeature().getMembrane() != null)) //membrane size are editable
 		return true;
 	// the VolFrac and Surf/Vol are editable for non-compartmental models
-	if ((getGeometryContext().getGeometry().getDimension() > 0) && (!fm.getResolved()) && ((columnIndex == COLUMN_VOLFRACT)||(columnIndex == COLUMN_SURFVOL)))
-		return true;
+	if ((getGeometryContext().getGeometry().getDimension() > 0) && (!fm.getResolved()))
+	{
+		if((fm.getFeature().getMembrane() != null) && ((columnIndex == COLUMN_VOLFRACT)||(columnIndex == COLUMN_SURFVOL))) return true;
+	}
 	// bounday conditions are editable
 	if ((columnIndex >= COLUMN_X_MINUS) && (columnIndex <= COLUMN_Z_PLUS))
 		return true;

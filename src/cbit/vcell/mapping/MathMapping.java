@@ -1165,12 +1165,15 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 		}
 		if (sm!=null && (sm instanceof MembraneMapping) && ((MembraneMapping)sm).getVolumeFractionParameter()!=null){
 			Expression volFractExp = ((MembraneMapping)sm).getVolumeFractionParameter().getExpression();
-			try {
-				double volFract = volFractExp.evaluateConstant();
-				if (volFract>=1.0){
-					throw new MappingException("model structure '"+((MembraneMapping)sm).getMembrane().getInsideFeature().getName()+"' has volume fraction >= 1.0");
+			if(volFractExp != null)
+			{
+				try {
+					double volFract = volFractExp.evaluateConstant();
+					if (volFract>=1.0){
+						throw new MappingException("model structure '"+((MembraneMapping)sm).getMembrane().getInsideFeature().getName()+"' has volume fraction >= 1.0");
+					}
+				}catch (ExpressionException e){
 				}
-			}catch (ExpressionException e){
 			}
 		}
 	}

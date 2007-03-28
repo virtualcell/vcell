@@ -196,7 +196,7 @@ public String getVCML()
 	StringBuffer buffer = new StringBuffer();
 	// the jump process will be written inside compartment brackets, therefore a "\t" is needed
 	buffer.append("\t"+VCML.JumpProcess+"\t"+getName()+" "+VCML.BeginBlock+"\n");
-	buffer.append("\t\t"+VCML.ProbabilityRate+"\t"+"P_"+getName()+";\n");
+	buffer.append("\t\t"+VCML.ProbabilityRate+"\t"+getProbabilityRate().infix()+";\n");
 	for(int i=0; i<getActions().size(); i++)
 	{
 		buffer.append(((Action)getActions().elementAt(i)).getVCML());

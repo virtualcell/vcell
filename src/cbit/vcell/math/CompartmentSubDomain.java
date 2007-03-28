@@ -324,7 +324,8 @@ private void read(MathDescription mathDesc, CommentStringTokenizer tokens) throw
 				throw new MathFormatException("variable "+token+" not a Stochastic Volume Variable");
 			}
 			try {
-				VarIniCondition vic= new VarIniCondition(var,new Expression(tokens));
+				Expression varIniExp = new Expression(tokens);
+				VarIniCondition vic= new VarIniCondition(var,varIniExp);
 				addVarIniCondition(vic);
 			} catch (Exception e){e.printStackTrace();}
 			continue;
@@ -341,14 +342,8 @@ private void read(MathDescription mathDesc, CommentStringTokenizer tokens) throw
 			token = tokens.nextToken();	
 			if(token.equalsIgnoreCase(VCML.ProbabilityRate))
 			{
-				token = tokens.nextToken();
-				String probFunName = token.substring(0, (token.length()-1));
-				Variable probFun = mathDesc.getVariable(probFunName);
-				if (probFun == null){
-					throw new MathFormatException("variable "+probFunName+" not defined");
-				}
-				Expression exp = probFun.getExpression() ;
-				jump = new JumpProcess(name,exp);
+				Expression probExp = new Expression(tokens);
+				jump = new JumpProcess(name,probExp);
 				addJumpProcess(jump);
 			}
 			else throw new MathFormatException("unexpected identifier "+token);

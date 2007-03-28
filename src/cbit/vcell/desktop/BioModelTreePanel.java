@@ -44,6 +44,7 @@ public class BioModelTreePanel extends JPanel {
 	private JMenuItem ivjJMenuItemAnnotation = null;
 	private JMenuItem ivjJMenuItemEdit = null;
 	private JPopupMenu ivjSimPopupMenu = null;
+	private JMenuItem ivjJMenuItemCopy = null;
 	private JMenu ivjJMenuCopy = null;
 	private JMenuItem copyStochApp = null;
 	private JMenuItem copyNonStochApp = null;
@@ -63,6 +64,8 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.M
 			if (e.getSource() == BioModelTreePanel.this.getJMenuItemRename()) 
 				connEtoC6(e);
 			if (e.getSource() == BioModelTreePanel.this.getJMenuCopy()) 
+				connEtoC11(e);
+			if (e.getSource() == BioModelTreePanel.this.getJMenuItemCopy()) 
 				connEtoC11(e);
 			if (e.getSource() == BioModelTreePanel.this.getEditAnnotationMenuItem()) 
 				connEtoC12(e);
@@ -675,6 +678,7 @@ private javax.swing.JPopupMenu getAppPopupMenu() {
 			ivjAppPopupMenu.add(getJMenuItemDelete());
 			ivjAppPopupMenu.add(getJMenuItemRename());
 			ivjAppPopupMenu.add(getJMenuItemAnnotation());
+			ivjAppPopupMenu.add(this.getJMenuItemCopy());
 			ivjAppPopupMenu.add(getJSeparator2());
 			ivjAppPopupMenu.add(getJMenuCopy());
 			ivjAppPopupMenu.add(getJMenuNew());
@@ -875,6 +879,24 @@ private javax.swing.JMenuItem getJMenuItemAnnotation() {
 	return ivjJMenuItemAnnotation;
 }
 
+private javax.swing.JMenuItem getJMenuItemCopy() {
+	if (ivjJMenuItemCopy == null) {
+		try {
+			ivjJMenuItemCopy = new javax.swing.JMenuItem();
+			ivjJMenuItemCopy.setName("JMenuItemCopy");
+			ivjJMenuItemCopy.setMnemonic('c');
+			ivjJMenuItemCopy.setText("Copy");
+			ivjJMenuItemCopy.setActionCommand("Copy");
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjJMenuItemCopy;
+}
+
+
 /**
  * Return the JMenuItemCopy property value.
  * @return javax.swing.JMenuItem
@@ -884,17 +906,16 @@ private javax.swing.JMenu getJMenuCopy() {
 	if (ivjJMenuCopy == null) {
 		try {
 			ivjJMenuCopy = new javax.swing.JMenu();
-			ivjJMenuCopy.setName("JMenuItemCopy");
-			ivjJMenuCopy.setMnemonic('c');
-			ivjJMenuCopy.setText("Copy");
+			ivjJMenuCopy.setName("JMenuCopy");
+			ivjJMenuCopy.setText("Copy As");
 			//Menu items in Menu-Copy
 			copyStochApp=new JMenuItem();
 			copyStochApp.setName("JMenuItemToStochApp");
-			copyStochApp.setText("To Stochastic Application");
+			copyStochApp.setText("Stochastic Application");
 			copyStochApp.setActionCommand("Copy To Stochastic Application");
 			copyNonStochApp = new javax.swing.JMenuItem();
 			copyNonStochApp.setName("JMenuItemToNonStochApp");
-			copyNonStochApp.setText("To Deterministic Application");
+			copyNonStochApp.setText("Deterministic Application");
 			copyNonStochApp.setActionCommand("Copy To Non-stochastic Application");
 			//add menu items to menu
 			ivjJMenuCopy.add(copyStochApp);
@@ -1274,6 +1295,7 @@ private void initConnections() throws java.lang.Exception {
 	getJMenuNew().addActionListener(ivjEventHandler);
 	getJMenuItemRename().addActionListener(ivjEventHandler);
 	getJMenuCopy().addActionListener(ivjEventHandler);
+	getJMenuItemCopy().addActionListener(ivjEventHandler);
 	getJTree2().addPropertyChangeListener(ivjEventHandler);
 	getJTree2().addMouseListener(ivjEventHandler);
 	getEditAnnotationMenuItem().addActionListener(ivjEventHandler);

@@ -1,6 +1,7 @@
 package cbit.vcell.solver.stoch;
 import cbit.gui.DialogUtils;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.math.*;
 import cbit.vcell.solver.*;
@@ -35,7 +36,7 @@ public StochFileWriter(Simulation arg_simulation)
  * Find all the dependent processes for a give process.
  * Creation date: (6/28/2006 4:16:55 PM)
  */
-private Vector getDependencies(JumpProcess process, Vector processList) 
+private Vector<String> getDependencies(JumpProcess process, Vector processList) throws Exception
 {
 	Vector result = new Vector();
 	//get affected vars in the given process.
@@ -49,7 +50,9 @@ private Vector getDependencies(JumpProcess process, Vector processList)
 	{
 		if(process.getName().compareTo(((JumpProcess)processList.elementAt(i)).getName())!=0)//to avoid comparing with it's own
 		{
-			String[] vars = ((JumpProcess)processList.elementAt(i)).getProbabilityRate().getSymbols();
+			Expression probExp = ((JumpProcess)processList.elementAt(i)).getProbabilityRate();
+			probExp = getSimulation().substituteFunctions(probExp).flatten();
+			String[] vars = probExp.getSymbols();
 			if((vars != null)&&(vars.length>0))
 			{				
 				if(hasCommonElement(affectedVars,vars))
@@ -155,33 +158,6 @@ public boolean isValidProbabilityExpression(Expression probExp)
 
 /**
  * Insert the method's description here.
- * Creation date: (11/14/2006 6:28:35 PM)
- */
-private void refreshVarIniConditions() throws MathException, cbit.vcell.parser.ExpressionException
-{
-	java.util.Enumeration enuSD = getSimulation().getMathDescription().getSubDomains();
-  	SubDomain subDomain = null;
-  	if(enuSD.hasMoreElements())
-		subDomain = (SubDomain)enuSD.nextElement();
-	subDomain.removeVarIniConditions();
-	java.util.Enumeration enuVar = getSimulation().getMathDescription().getVariables();
-	while (enuVar.hasMoreElements())
-	{
-		Variable var = (Variable)enuVar.nextElement();
-		if (var instanceof StochVolVariable)
-		{
-			Variable iniFun = getSimulation().getMathDescription().getVariable(var.getName()+"_init");
-			if (iniFun == null)
-				throw new MathFormatException("variable "+var.getName()+"'s initial condition is not defined.");
-			VarIniCondition varIni = new VarIniCondition(var, iniFun.getExpression());
-			subDomain.addVarIniCondition(varIni);
-		}
-	}
-}
-
-
-/**
- * Insert the method's description here.
  * Creation date: (6/22/2006 5:36:03 PM)
  */
 public void writeStochInputFile(PrintWriter pw) throws Exception 
@@ -226,7 +202,6 @@ public void writeStochInputFile(PrintWriter pw, String[] parameterNames) throws 
 			subDomain = (SubDomain)e.nextElement();
 	  	if(subDomain != null)
 	  	{
-		  	refreshVarIniConditions();
 		  	pw.println("<model>");
 			//  variables
 			pw.println("<discreteVariables>");
@@ -250,7 +225,7 @@ public void writeStochInputFile(PrintWriter pw, String[] parameterNames) throws 
 			  		}
 				}
 			}
-		    else pw.println("TotalVars"+"\t"+"0");
+			else pw.println("TotalVars"+"\t"+"0");
 			pw.println("</discreteVariables>");
 			pw.println();
 			
@@ -309,7 +284,7 @@ public void writeStochInputFile(PrintWriter pw, String[] parameterNames) throws 
 					{
 						pw.println("\t"+"DependentProcesses"+"\t"+dependencies.size());
 						for(int j=0; j<dependencies.size(); j++)
-							pw.println("\t\t"+((String)dependencies.elementAt(j)));
+							pw.println("\t\t"+(dependencies.elementAt(j)));
 					}
 					else pw.println("\t"+"DependentProcesses"+"\t"+"0");
 					pw.println();
