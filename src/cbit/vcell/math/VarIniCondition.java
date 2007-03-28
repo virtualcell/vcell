@@ -111,9 +111,7 @@ public Variable getVar() {
 public String getVCML() 
 {
 	StringBuffer buffer = new StringBuffer();
-	String initialValue = getVar().getName() + "_init"; //display the constant/function name only
-	
-	buffer.append("\t"+VCML.VarIniCondition+"\t"+getVar().getName()+"\t"+initialValue+";\n");
+	buffer.append("\t"+VCML.VarIniCondition+"\t"+getVar().getName()+"\t"+getIniVal().infix()+";\n");
 	return buffer.toString();
 }
 
@@ -145,7 +143,7 @@ public void setVar(Variable newVar) {
  */
 public String toString() {
 	StringBuffer buffer = new StringBuffer();
-	String initialValue = getVar().getName() + "_init"; // display the constant/function name only
+	String initialValue = getIniVal().infix(); // display the constant/function name only
 	
 	buffer.append(getVar().getName()+" = "+initialValue);
 	return buffer.toString();

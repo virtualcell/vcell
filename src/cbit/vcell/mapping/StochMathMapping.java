@@ -630,11 +630,16 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 		SpeciesContextSpec speciesContextSpecs[] = getSimulationContext().getReactionContext().getSpeciesContextSpecs();
 		for (int i = 0; i < speciesContextSpecs.length; i++){
 			SpeciesContextSpec.SpeciesContextSpecParameter initParm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
+			Expression iniExp = getIniExpression(initParm.getExpression(),speciesContextSpecs[i].getSpeciesContext());
 			//stochastic variables 
-			if (initParm!=null){
-				//convert from concentration to number of particles, all are considered as functions
-				Expression iniExp = getIniExpression(initParm.getExpression(),speciesContextSpecs[i].getSpeciesContext());
-				varHash.addVariable(new Function(getMathSymbol(initParm,null),iniExp));		
+			if (initParm!=null)
+			{
+				try {
+					double value = iniExp.evaluateConstant();
+					varHash.addVariable(new Constant(getMathSymbol0(initParm,null),new Expression(value)));
+				}catch (ExpressionException e){
+					varHash.addVariable(new Function(getMathSymbol(initParm,null),iniExp));
+				}						
 			}
 		}
 
@@ -807,7 +812,7 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 					varHash.addVariable(new Function(getMathSymbol(probParm,sm1),exp));
 				}
 								
-				JumpProcess jp = new JumpProcess(jpName,exp);
+				JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol0(probParm,sm1)));
 				// actions
 				ReactionParticipant[] reacPart = reactionStep.getReactionParticipants();
 				for(int j=0; j<reacPart.length; j++)
@@ -869,7 +874,7 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 					varHash.addVariable(new Function(getMathSymbol(probRevParm,sm2),exp));
 				}
 								
-				JumpProcess jp = new JumpProcess(jpName,exp);
+				JumpProcess jp = new JumpProcess(jpName,new Expression(getMathSymbol0(probRevParm,sm2)));
 				// actions
 				ReactionParticipant[] reacPart = reactionStep.getReactionParticipants();
 				for(int j=0; j<reacPart.length; j++)

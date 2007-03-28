@@ -1652,7 +1652,7 @@ public void runSimulations(final ClientSimManager clientSimManager, final Simula
 						throw new RuntimeException("Problem in simulation: "+simulations[i].getName()+"\n"+stochChkMsg);
 					}
 				}
-				if(simulations[i].getMathDescription().isStoch() && simulations[i].getSolverTaskDescription().getStochOpt().getNumOfTrials()>1)
+				if(simulations[i].getMathDescription().isStoch() && simulations[i].getSolverTaskDescription().getStochOpt()!= null && simulations[i].getSolverTaskDescription().getStochOpt().getNumOfTrials()>1)
 					DialogUtils.showInfoDialog("We will be having histograms of stochasic variables shortly. \nAt the time being, the result of "+simulations[i].getName()+" will be the trajectory of the first trial.");
 			}
 			try{
