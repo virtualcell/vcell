@@ -653,6 +653,10 @@ protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structure
 				count++;
 			}
 		}
+		if (getSimulationContext().getModel().getSpeciesContext(ste.getName()) != null
+			|| getSimulationContext().getModel().getSpecies(ste.getName()) != null) {
+			count ++;
+		}
 		if (count>1 || ste.getName().equals("J")){
 			return ste.getName()+"_"+ste.getNameScope().getName();
 			//return getNameScope().getSymbolName(ste);
