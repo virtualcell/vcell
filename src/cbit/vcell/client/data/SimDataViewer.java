@@ -1,4 +1,5 @@
 package cbit.vcell.client.data;
+import cbit.rmi.event.DataJobEvent;
 import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.math.Constant;
 import cbit.vcell.solver.ode.ODESolverResultSet;
@@ -75,6 +76,9 @@ private DataViewer createPDEDataViewer(int jobIndex) throws DataAccessException 
 	return pdeDataViewer;
 }
 
+public void dataJobMessage(DataJobEvent dje) {
+	getMainViewer().dataJobMessage(dje);
+}
 
 /**
  * Method generated to support the promotion of the exportMonitorPanel attribute.

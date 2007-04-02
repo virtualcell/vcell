@@ -3,10 +3,13 @@ import cbit.vcell.simdata.*;
 import swingthreads.*;
 import javax.swing.*;
 import cbit.plot.*;
+import cbit.rmi.event.DataJobEvent;
+import cbit.rmi.event.MessageEvent;
 import cbit.vcell.server.*;
 import cbit.vcell.simdata.gui.*;
 import java.awt.event.*;
 import java.awt.*;
+import java.rmi.server.ObjID;
 import java.util.*;
 import cbit.vcell.client.*;
 import cbit.util.*;
@@ -17,6 +20,9 @@ import cbit.vcell.client.server.*;
  * @author: Ion Moraru
  */
 public class PDEDataViewer extends DataViewer {
+	//
+	private HashMap<Integer, AsynchProgressPopup> jobIDProgressHash =
+		new HashMap<Integer, AsynchProgressPopup>();
 	//
 	private class StatsJobInfo{
 		public String variableName;
@@ -291,7 +297,8 @@ private void calcStatistics2() {
 //		System.out.println("Error calculating Igor sum\n"+e.getMessage());
 //	}
 		
-	int[] dataIndexes = null;
+//	int[] dataIndexes = null;
+	BitSet dataBitSet = null;
 	String variableName = null;
 	double finalBeginTime = getPdeDataContext().getTimePoints()[0];
 	double finalEndtime = getPdeDataContext().getTimePoints()[getPdeDataContext().getTimePoints().length-1];
@@ -325,16 +332,20 @@ private void calcStatistics2() {
 			finalBeginTime = statsJobInfo.beginTime;
 			finalEndtime = statsJobInfo.endTime;
 			
-			int[] vaoiIndexes = new int[vaoiCount];
-			vaoiCount = 0;
+//			int[] vaoiIndexes = new int[vaoiCount];
+//			vaoiCount = 0;
+			dataBitSet = new BitSet(data.length);
 			for(int i=0;i<data.length;i+= 1){
 				if(data[i] == 1.0){
-					vaoiIndexes[vaoiCount] = i;
-					vaoiCount+= 1;
+//					vaoiIndexes[vaoiCount] = i;
+					dataBitSet.set(i, true);
+//					vaoiCount+= 1;
+				}else{
+					dataBitSet.set(i, false);
 				}
 			}
 
-			dataIndexes = vaoiIndexes;
+//			dataIndexes = vaoiIndexes;
 		}else{
 			PopupGenerator.showErrorDialog("No other volume variables found");
 			return;
@@ -357,19 +368,21 @@ private void calcStatistics2() {
 					}
 				}
 				if(maoiCount != 0){
-					int[] maoiIndexes = new int[maoiCount];
-					maoiCount = 0;
+					dataBitSet = new BitSet(getPdeDataContext().getDataValues().length);
+//					int[] maoiIndexes = new int[maoiCount];
+//					maoiCount = 0;
 					for(int i=0;i<sl.length;i+= 1){
 						if(sl[i] instanceof SpatialSelectionMembrane){
 							int[] indexes = ((SpatialSelectionMembrane)sl[i]).getIndexSamples().getSampledIndexes();
 							for(int j=0;j<indexes.length;j+= 1){
-								maoiIndexes[maoiCount] = indexes[j];
-								maoiCount+= 1;
+									dataBitSet.set(indexes[j], true);
+//								maoiIndexes[maoiCount] = indexes[j];
+//								maoiCount+= 1;
 							}
 						}
 					}
 
-					dataIndexes = maoiIndexes;
+//					dataIndexes = maoiIndexes;
 				}
 			}else{
 				PopupGenerator.showInfoDialog("Use the Membrane Surface Viewer to calculate statistics for 3D membranes");
@@ -377,11 +390,11 @@ private void calcStatistics2() {
 			}
 	}
 
-	if(dataIndexes != null){
+	if(dataBitSet != null){
 		cbit.util.TimeSeriesJobSpec timeSeriesJobSpec =
 			new cbit.util.TimeSeriesJobSpec(
 				new String[] {variableName},
-				new int[][]{dataIndexes},
+				new BitSet[] {dataBitSet},
 				finalBeginTime,1,finalEndtime,
 				true,false);
 
@@ -1083,6 +1096,116 @@ private void connPtoP9SetTarget() {
 	}
 }
 
+public void dataJobMessage(DataJobEvent dje) {
+
+	if(!jobIDProgressHash.containsKey(dje.getJobID())){
+		return;
+	}
+	
+	VCDataIdentifier vcDataID = dje.getVCDataIdentifier();
+	AsynchProgressPopup jobPopup = jobIDProgressHash.get(dje.getJobID());
+	
+	if(dje.getEventTypeID() == MessageEvent.DATA_FAILURE){
+		jobPopup.stop();
+		PopupGenerator.showErrorDialog(
+				"Error executing Data Job:\n"+
+				(dje.getFailedJobException() != null?dje.getFailedJobException().getMessage():"empty exc"));
+		return;
+	}
+	if(!(dje.getEventTypeID() == MessageEvent.DATA_COMPLETE)){
+		jobPopup.setMessage("Progress ("+dje.getProgress().toString()+"%)");
+		return;
+	}
+	
+	jobPopup.stop();
+	TimeSeriesJobResults tsjr = dje.getTimeSeriesJobResults();
+	
+	if(tsjr instanceof TSJobResultsSpaceStats){
+		TSJobResultsSpaceStats tsjrss = (TSJobResultsSpaceStats)tsjr;
+		//Determine if Volume or Membrane
+		DataIdentifier[] diArr = getPdeDataContext().getDataIdentifiers();
+		boolean bVolume = true;
+		for(int i=0;i<diArr.length;i+= 1){
+			if(diArr[i].getName().equals(tsjrss.getVariableNames()[0])){
+				if(diArr[i].getVariableType().equals(VariableType.MEMBRANE) || diArr[i].getVariableType().equals(VariableType.MEMBRANE_REGION)){
+					bVolume = false;
+					break;
+				}
+			}
+		}
+		//cbit.vcell.parser.SymbolTableEntry[] symbolTableEntries = new cbit.vcell.parser.SymbolTableEntry[tsjs.getVariableNames().length];
+		cbit.vcell.parser.SymbolTableEntry[] symbolTableEntries = null;
+		if(tsjr.getVariableNames().length == 1){
+			symbolTableEntries = new cbit.vcell.parser.SymbolTableEntry[3/*4*/];//max.mean.min,sum
+		//for(int i=0;i<symbolTableEntries.length;i+= 1){
+			try{
+				symbolTableEntries[0] = getSimulation().getMathDescription().getEntry(tsjr.getVariableNames()[0]);
+				symbolTableEntries[1] = symbolTableEntries[0];
+				symbolTableEntries[2] = symbolTableEntries[0];
+				//symbolTableEntries[3] = symbolTableEntries[0];
+			}catch(cbit.vcell.parser.ExpressionBindingException e){
+				e.printStackTrace();
+			}
+		//}
+		}
+		cbit.plot.PlotPane plotPane = new cbit.plot.PlotPane();
+		plotPane.setPlot2D(
+			new cbit.plot.SingleXPlot2D(symbolTableEntries,"Time",
+			new String[] {
+					"Max",
+					(tsjrss.getWeightedMean() != null?"WeightedMean":"UnweightedMean"),
+					"Min"/*,
+					(tsjrss.getWeightedSum() != null?"WeightedSum":"UnweightedSum")*/},
+			new double[][] {
+					tsjrss.getTimes(),
+					tsjrss.getMaximums()[0],
+					(tsjrss.getWeightedMean() != null?tsjrss.getWeightedMean()[0]:tsjrss.getUnweightedMean()[0]),
+					tsjrss.getMinimums()[0]/*,
+					(tsjrss.getWeightedSum() != null?tsjrss.getWeightedSum()[0]:tsjrss.getUnweightedSum()[0])*/},
+			new String[] {
+				"Statistics Plot for "+tsjrss.getVariableNames()[0]+(tsjrss.getTotalSpace() != null?" (ROI "+(bVolume?"volume":"area")+"="+tsjrss.getTotalSpace()[0]+")":""),
+				"Time (s)",
+				"[" + tsjrss.getVariableNames()[0] + "]"}));
+
+
+		showComponentInFrame(plotPane,"Statistics");
+		//JInternalFrame frame =
+			//new JInternalFrame("Statistics", true, true, true, true);
+		//frame.getContentPane().add(plotPane);
+		//frame.pack();
+		//cbit.util.BeanUtils.centerOnComponent(frame,this);
+		//getDataViewerManager().showDataViewerPlotsFrames(new JInternalFrame[] {frame});
+
+	}else{
+		//if(tsjr instanceof TSJobResultsNoStats){
+			//TSJobResultsNoStats tsjrns = (TSJobResultsNoStats)tsjr;
+			//for(int i=0;i<tsjrns.getVariableNames().length;i+= 1){
+				//System.out.println(tsjrns.getVariableNames()[i]);
+				//double[][] timesAndVals = tsjrns.getTimesAndValuesForVariable(tsjrns.getVariableNames()[i]);
+				//for(int j=0;j<timesAndVals.length;j+= 1){
+					//System.out.println(timesAndVals[0][j]+","+timesAndVals[1][j]);
+				//}
+			//}
+		//}else if(tsjr instanceof TSJobResultsTimeStats){
+			//TSJobResultsTimeStats tsjrts = (TSJobResultsTimeStats)tsjr;
+			//if(tsjrts.isValuesAreSpaceStats()){
+				//for(int i=0;i<tsjrts.getVariableNames().length;i+= 1){
+					////for(int j=0;j<tsjrts.getWeightedMeans()[i].length;j+= 1){
+						//System.out.println(tsjrts.getVariableNames()[i]+" "+tsjrts.getWeightedMeans()[i][0]);
+					////}
+				//}
+			//}else{
+				//for(int i=0;i<tsjrts.getVariableNames().length;i+= 1){
+					//for(int j=0;j<tsjrts.getWeightedMeans()[i].length;j+= 1){
+						//System.out.println(tsjrts.getIndices()[i][j]+","+tsjrts.getUnweightedMeans()[i][j]);
+					//}
+				//}
+			//}
+		//}
+		PopupGenerator.showInfoDialog("Sorry, Display of this datatype has yet to be Implemented!");
+	}	
+}
+	
 
 /**
  * Return the CancelJButton property value.
@@ -1170,7 +1293,6 @@ private cbit.vcell.geometry.gui.DataValueSurfaceViewer getDataValueSurfaceViewer
 
 	return fieldDataValueSurfaceViewer;
 }
-
 
 /**
  * Return the OKJButton property value.
@@ -2147,180 +2269,203 @@ private void pdeDataContext1_VariableName() {
  * Insert the method's description here.
  * Creation date: (2/24/2006 10:52:52 AM)
  */
-private void plotStatistics(TimeSeriesJobSpec tsjs) {
+private void plotStatistics(TimeSeriesJobSpec tsjs){
+	
+	Integer newDataJobID = new Integer(new ObjID().hashCode());//Unique VM wide int
+	tsjs.setBackgroundTaskInfo(newDataJobID);
 
-	final int BATCH_THRESHOLD = 10000;
-	final int BATCH_SIZE = 2500;
-	cbit.util.TimeSeriesJobResults tsjr = null;
+	AsynchProgressPopup pp =
+	new AsynchProgressPopup(PDEDataViewer.this,
+		"Retrieving statistics for '"+tsjs.getVariableNames()[0]+"' jobID("+newDataJobID+")",
+		"Sending request to data server...",
+		false,false);
+	
+	jobIDProgressHash.put(newDataJobID,pp);
+	
 	try{
-		AsynchProgressPopup pp =
-			new AsynchProgressPopup(
-				PDEDataViewer.this,
-				"Fetching data...",
-				"Retrieving Statistics variable '" + tsjs.getVariableNames()[0],
-				false,
-				(tsjs.getIndices()[0].length <= BATCH_THRESHOLD?false:true)
-				);
 		pp.start();
-		try{
-			if(tsjs.getIndices()[0].length <= BATCH_THRESHOLD){
-				tsjr = (cbit.util.TSJobResultsSpaceStats)getPdeDataContext().getTimeSeriesValues(tsjs);
-			}else{
-				double totalSpace = 0;
-				double[] times = null;
-				double[] mins = null;
-				double[] maxs = null;
-				double[] means = null;;
-				double[] wmeans = null;
-				double[] sums = null;
-				double[] wsums = null;
-				for(int i=0;i<tsjs.getIndices()[0].length;i+=BATCH_SIZE){
-					pp.setProgress((int)(100*((float)i/(float)tsjs.getIndices()[0].length)));
-					int[] indexes_batch = new int[Math.min(BATCH_SIZE,(tsjs.getIndices()[0].length-i))];
-					System.arraycopy(tsjs.getIndices()[0],i,indexes_batch,0,indexes_batch.length);
-					cbit.util.TimeSeriesJobSpec tsjs_batch =
-						new cbit.util.TimeSeriesJobSpec(
-							tsjs.getVariableNames(),
-							new int[][]{indexes_batch},
-							tsjs.getStartTime(),1,tsjs.getEndTime(),
-							true,false);
-					cbit.util.TSJobResultsSpaceStats tsjrss = (cbit.util.TSJobResultsSpaceStats)getPdeDataContext().getTimeSeriesValues(tsjs_batch);
-					if(i==0){
-						times = tsjrss.getTimes();
-						mins = tsjrss.getMinimums()[0];
-						maxs = tsjrss.getMaximums()[0];
-						means = tsjrss.getUnweightedMean()[0];
-						wmeans = new double[tsjrss.getTimes().length];
-						sums = tsjrss.getUnweightedSum()[0];
-						wsums = tsjrss.getWeightedSum()[0];
-						for(int j=0;j<tsjrss.getTimes().length;j+= 1){
-							wmeans[j] = tsjrss.getWeightedMean()[0][j]*tsjrss.getTotalSpace()[0];
-						}
-					}else{
-						for(int j=0;j<tsjrss.getTimes().length;j+= 1){
-							mins[j] = Math.min(mins[j],tsjrss.getMinimums()[0][j]);
-							maxs[j] = Math.max(maxs[j],tsjrss.getMaximums()[0][j]);
-							means[j]+= tsjrss.getUnweightedMean()[0][j];
-							wmeans[j]+= tsjrss.getWeightedMean()[0][j]*tsjrss.getTotalSpace()[0];
-							sums[j]+= tsjrss.getUnweightedSum()[0][j];
-							wsums[j]+= tsjrss.getWeightedSum()[0][j];
-						}
-					}
-					totalSpace+= tsjrss.getTotalSpace()[0];
-				}
-				for(int i=0;i<means.length;i+= 1){
-					means[i]/= tsjs.getIndices()[0].length;
-					wmeans[i]/= totalSpace;
-				}
-				tsjr =
-					new TSJobResultsSpaceStats(
-						tsjs.getVariableNames(),
-						tsjs.getIndices(),
-						times,
-						new double[][] {mins},
-						new double[][] {maxs},
-						new double[][] {means},
-						new double[][] {wmeans},
-						new double[][] {sums},
-						new double[][] {wsums},
-						new double[] {totalSpace}
-						);
-			}
-		}finally{
-			pp.stop();
-		}
-		//plotStatistics(tsjrss);
+		getPdeDataContext().getTimeSeriesValues(tsjs);
 	}catch(Exception e){
-		PopupGenerator.showErrorDialog("Error generating stats\n"+e.getClass().getName()+"\n"+e.getMessage());
-		return;
+		jobIDProgressHash.remove(newDataJobID);
+		pp.stop();
+		e.printStackTrace();
+		PopupGenerator.showErrorDialog("Error starting statistics job\n"+e.getMessage());
 	}
+	
+	
+////	final int BATCH_THRESHOLD = 10000;
+//	final int BATCH_THRESHOLD = 1000000000;
+//	final int BATCH_SIZE = 2500;
+//	cbit.util.TimeSeriesJobResults tsjr = null;
+//	try{
+//		AsynchProgressPopup pp =
+//			new AsynchProgressPopup(
+//				PDEDataViewer.this,
+//				"Fetching data...",
+//				"Retrieving Statistics variable '" + tsjs.getVariableNames()[0],
+//				false,
+//				false//(tsjs.getIndices()[0].length <= BATCH_THRESHOLD?false:true)
+//				);
+//		pp.start();
+//		try{
+//			if(true){//if(tsjs.getIndices()[0].length <= BATCH_THRESHOLD){
+//				tsjr = (cbit.util.TSJobResultsSpaceStats)getPdeDataContext().getTimeSeriesValues(tsjs);
+//			}else{
+//				double totalSpace = 0;
+//				double[] times = null;
+//				double[] mins = null;
+//				double[] maxs = null;
+//				double[] means = null;;
+//				double[] wmeans = null;
+//				double[] sums = null;
+//				double[] wsums = null;
+//				for(int i=0;i<tsjs.getIndices()[0].length;i+=BATCH_SIZE){
+//					pp.setProgress((int)(100*((float)i/(float)tsjs.getIndices()[0].length)));
+//					int[] indexes_batch = new int[Math.min(BATCH_SIZE,(tsjs.getIndices()[0].length-i))];
+//					System.arraycopy(tsjs.getIndices()[0],i,indexes_batch,0,indexes_batch.length);
+//					cbit.util.TimeSeriesJobSpec tsjs_batch =
+//						new cbit.util.TimeSeriesJobSpec(
+//							tsjs.getVariableNames(),
+//							new int[][]{indexes_batch},
+//							tsjs.getStartTime(),1,tsjs.getEndTime(),
+//							true,false);
+//					cbit.util.TSJobResultsSpaceStats tsjrss = (cbit.util.TSJobResultsSpaceStats)getPdeDataContext().getTimeSeriesValues(tsjs_batch);
+//					if(i==0){
+//						times = tsjrss.getTimes();
+//						mins = tsjrss.getMinimums()[0];
+//						maxs = tsjrss.getMaximums()[0];
+//						means = tsjrss.getUnweightedMean()[0];
+//						wmeans = new double[tsjrss.getTimes().length];
+//						sums = tsjrss.getUnweightedSum()[0];
+//						wsums = tsjrss.getWeightedSum()[0];
+//						for(int j=0;j<tsjrss.getTimes().length;j+= 1){
+//							wmeans[j] = tsjrss.getWeightedMean()[0][j]*tsjrss.getTotalSpace()[0];
+//						}
+//					}else{
+//						for(int j=0;j<tsjrss.getTimes().length;j+= 1){
+//							mins[j] = Math.min(mins[j],tsjrss.getMinimums()[0][j]);
+//							maxs[j] = Math.max(maxs[j],tsjrss.getMaximums()[0][j]);
+//							means[j]+= tsjrss.getUnweightedMean()[0][j];
+//							wmeans[j]+= tsjrss.getWeightedMean()[0][j]*tsjrss.getTotalSpace()[0];
+//							sums[j]+= tsjrss.getUnweightedSum()[0][j];
+//							wsums[j]+= tsjrss.getWeightedSum()[0][j];
+//						}
+//					}
+//					totalSpace+= tsjrss.getTotalSpace()[0];
+//				}
+//				for(int i=0;i<means.length;i+= 1){
+//					means[i]/= tsjs.getIndices()[0].length;
+//					wmeans[i]/= totalSpace;
+//				}
+//				tsjr =
+//					new TSJobResultsSpaceStats(
+//						tsjs.getVariableNames(),
+//						tsjs.getIndices(),
+//						times,
+//						new double[][] {mins},
+//						new double[][] {maxs},
+//						new double[][] {means},
+//						new double[][] {wmeans},
+//						new double[][] {sums},
+//						new double[][] {wsums},
+//						new double[] {totalSpace}
+//						);
+//			}
+//		}finally{
+//			pp.stop();
+//		}
+//		//plotStatistics(tsjrss);
+//	}catch(Exception e){
+//		PopupGenerator.showErrorDialog("Error generating stats\n"+e.getClass().getName()+"\n"+e.getMessage());
+//		return;
+//	}
 
-	//cbit.util.TimeSeriesJobResults tsjr = getPdeDataContext().getTimeSeriesValues(timeSeriesJobSpec);
+//	cbit.util.TimeSeriesJobResults tsjr = getPdeDataContext().getTimeSeriesValues(timeSeriesJobSpec);
 	//
-	if(tsjr instanceof TSJobResultsSpaceStats){
-		TSJobResultsSpaceStats tsjrss = (TSJobResultsSpaceStats)tsjr;
-		//Determine if Volume or Membrane
-		DataIdentifier[] diArr = getPdeDataContext().getDataIdentifiers();
-		boolean bVolume = true;
-		for(int i=0;i<diArr.length;i+= 1){
-			if(diArr[i].getName().equals(tsjrss.getVariableNames()[0])){
-				if(diArr[i].getVariableType().equals(VariableType.MEMBRANE) || diArr[i].getVariableType().equals(VariableType.MEMBRANE_REGION)){
-					bVolume = false;
-					break;
-				}
-			}
-		}
-		//cbit.vcell.parser.SymbolTableEntry[] symbolTableEntries = new cbit.vcell.parser.SymbolTableEntry[tsjs.getVariableNames().length];
-		cbit.vcell.parser.SymbolTableEntry[] symbolTableEntries = null;
-		if(tsjs.getVariableNames().length == 1){
-			symbolTableEntries = new cbit.vcell.parser.SymbolTableEntry[3/*4*/];//max.mean.min,sum
-		//for(int i=0;i<symbolTableEntries.length;i+= 1){
-			try{
-				symbolTableEntries[0] = getSimulation().getMathDescription().getEntry(tsjs.getVariableNames()[0]);
-				symbolTableEntries[1] = symbolTableEntries[0];
-				symbolTableEntries[2] = symbolTableEntries[0];
-				//symbolTableEntries[3] = symbolTableEntries[0];
-			}catch(cbit.vcell.parser.ExpressionBindingException e){
-				e.printStackTrace();
-			}
-		//}
-		}
-		cbit.plot.PlotPane plotPane = new cbit.plot.PlotPane();
-		plotPane.setPlot2D(
-			new cbit.plot.SingleXPlot2D(symbolTableEntries,"Time",
-			new String[] {
-					"Max",
-					(tsjrss.getWeightedMean() != null?"WeightedMean":"UnweightedMean"),
-					"Min"/*,
-					(tsjrss.getWeightedSum() != null?"WeightedSum":"UnweightedSum")*/},
-			new double[][] {
-					tsjrss.getTimes(),
-					tsjrss.getMaximums()[0],
-					(tsjrss.getWeightedMean() != null?tsjrss.getWeightedMean()[0]:tsjrss.getUnweightedMean()[0]),
-					tsjrss.getMinimums()[0]/*,
-					(tsjrss.getWeightedSum() != null?tsjrss.getWeightedSum()[0]:tsjrss.getUnweightedSum()[0])*/},
-			new String[] {
-				"Statistics Plot for "+tsjrss.getVariableNames()[0]+(tsjrss.getTotalSpace() != null?" (ROI "+(bVolume?"volume":"area")+"="+tsjrss.getTotalSpace()[0]+")":""),
-				"Time (s)",
-				"[" + tsjrss.getVariableNames()[0] + "]"}));
-
-
-		showComponentInFrame(plotPane,"Statistics");
-		//JInternalFrame frame =
-			//new JInternalFrame("Statistics", true, true, true, true);
-		//frame.getContentPane().add(plotPane);
-		//frame.pack();
-		//cbit.util.BeanUtils.centerOnComponent(frame,this);
-		//getDataViewerManager().showDataViewerPlotsFrames(new JInternalFrame[] {frame});
-
-	}else{
-		//if(tsjr instanceof TSJobResultsNoStats){
-			//TSJobResultsNoStats tsjrns = (TSJobResultsNoStats)tsjr;
-			//for(int i=0;i<tsjrns.getVariableNames().length;i+= 1){
-				//System.out.println(tsjrns.getVariableNames()[i]);
-				//double[][] timesAndVals = tsjrns.getTimesAndValuesForVariable(tsjrns.getVariableNames()[i]);
-				//for(int j=0;j<timesAndVals.length;j+= 1){
-					//System.out.println(timesAndVals[0][j]+","+timesAndVals[1][j]);
-				//}
-			//}
-		//}else if(tsjr instanceof TSJobResultsTimeStats){
-			//TSJobResultsTimeStats tsjrts = (TSJobResultsTimeStats)tsjr;
-			//if(tsjrts.isValuesAreSpaceStats()){
-				//for(int i=0;i<tsjrts.getVariableNames().length;i+= 1){
-					////for(int j=0;j<tsjrts.getWeightedMeans()[i].length;j+= 1){
-						//System.out.println(tsjrts.getVariableNames()[i]+" "+tsjrts.getWeightedMeans()[i][0]);
-					////}
-				//}
-			//}else{
-				//for(int i=0;i<tsjrts.getVariableNames().length;i+= 1){
-					//for(int j=0;j<tsjrts.getWeightedMeans()[i].length;j+= 1){
-						//System.out.println(tsjrts.getIndices()[i][j]+","+tsjrts.getUnweightedMeans()[i][j]);
-					//}
-				//}
-			//}
-		//}
-		PopupGenerator.showInfoDialog("Sorry, Display of this datatype has yet to be Implemented!");
-	}	
+//	if(tsjr instanceof TSJobResultsSpaceStats){
+//		TSJobResultsSpaceStats tsjrss = (TSJobResultsSpaceStats)tsjr;
+//		//Determine if Volume or Membrane
+//		DataIdentifier[] diArr = getPdeDataContext().getDataIdentifiers();
+//		boolean bVolume = true;
+//		for(int i=0;i<diArr.length;i+= 1){
+//			if(diArr[i].getName().equals(tsjrss.getVariableNames()[0])){
+//				if(diArr[i].getVariableType().equals(VariableType.MEMBRANE) || diArr[i].getVariableType().equals(VariableType.MEMBRANE_REGION)){
+//					bVolume = false;
+//					break;
+//				}
+//			}
+//		}
+//		//cbit.vcell.parser.SymbolTableEntry[] symbolTableEntries = new cbit.vcell.parser.SymbolTableEntry[tsjs.getVariableNames().length];
+//		cbit.vcell.parser.SymbolTableEntry[] symbolTableEntries = null;
+//		if(tsjs.getVariableNames().length == 1){
+//			symbolTableEntries = new cbit.vcell.parser.SymbolTableEntry[3/*4*/];//max.mean.min,sum
+//		//for(int i=0;i<symbolTableEntries.length;i+= 1){
+//			try{
+//				symbolTableEntries[0] = getSimulation().getMathDescription().getEntry(tsjs.getVariableNames()[0]);
+//				symbolTableEntries[1] = symbolTableEntries[0];
+//				symbolTableEntries[2] = symbolTableEntries[0];
+//				//symbolTableEntries[3] = symbolTableEntries[0];
+//			}catch(cbit.vcell.parser.ExpressionBindingException e){
+//				e.printStackTrace();
+//			}
+//		//}
+//		}
+//		cbit.plot.PlotPane plotPane = new cbit.plot.PlotPane();
+//		plotPane.setPlot2D(
+//			new cbit.plot.SingleXPlot2D(symbolTableEntries,"Time",
+//			new String[] {
+//					"Max",
+//					(tsjrss.getWeightedMean() != null?"WeightedMean":"UnweightedMean"),
+//					"Min"/*,
+//					(tsjrss.getWeightedSum() != null?"WeightedSum":"UnweightedSum")*/},
+//			new double[][] {
+//					tsjrss.getTimes(),
+//					tsjrss.getMaximums()[0],
+//					(tsjrss.getWeightedMean() != null?tsjrss.getWeightedMean()[0]:tsjrss.getUnweightedMean()[0]),
+//					tsjrss.getMinimums()[0]/*,
+//					(tsjrss.getWeightedSum() != null?tsjrss.getWeightedSum()[0]:tsjrss.getUnweightedSum()[0])*/},
+//			new String[] {
+//				"Statistics Plot for "+tsjrss.getVariableNames()[0]+(tsjrss.getTotalSpace() != null?" (ROI "+(bVolume?"volume":"area")+"="+tsjrss.getTotalSpace()[0]+")":""),
+//				"Time (s)",
+//				"[" + tsjrss.getVariableNames()[0] + "]"}));
+//
+//
+//		showComponentInFrame(plotPane,"Statistics");
+//		//JInternalFrame frame =
+//			//new JInternalFrame("Statistics", true, true, true, true);
+//		//frame.getContentPane().add(plotPane);
+//		//frame.pack();
+//		//cbit.util.BeanUtils.centerOnComponent(frame,this);
+//		//getDataViewerManager().showDataViewerPlotsFrames(new JInternalFrame[] {frame});
+//
+//	}else{
+//		//if(tsjr instanceof TSJobResultsNoStats){
+//			//TSJobResultsNoStats tsjrns = (TSJobResultsNoStats)tsjr;
+//			//for(int i=0;i<tsjrns.getVariableNames().length;i+= 1){
+//				//System.out.println(tsjrns.getVariableNames()[i]);
+//				//double[][] timesAndVals = tsjrns.getTimesAndValuesForVariable(tsjrns.getVariableNames()[i]);
+//				//for(int j=0;j<timesAndVals.length;j+= 1){
+//					//System.out.println(timesAndVals[0][j]+","+timesAndVals[1][j]);
+//				//}
+//			//}
+//		//}else if(tsjr instanceof TSJobResultsTimeStats){
+//			//TSJobResultsTimeStats tsjrts = (TSJobResultsTimeStats)tsjr;
+//			//if(tsjrts.isValuesAreSpaceStats()){
+//				//for(int i=0;i<tsjrts.getVariableNames().length;i+= 1){
+//					////for(int j=0;j<tsjrts.getWeightedMeans()[i].length;j+= 1){
+//						//System.out.println(tsjrts.getVariableNames()[i]+" "+tsjrts.getWeightedMeans()[i][0]);
+//					////}
+//				//}
+//			//}else{
+//				//for(int i=0;i<tsjrts.getVariableNames().length;i+= 1){
+//					//for(int j=0;j<tsjrts.getWeightedMeans()[i].length;j+= 1){
+//						//System.out.println(tsjrts.getIndices()[i][j]+","+tsjrts.getUnweightedMeans()[i][j]);
+//					//}
+//				//}
+//			//}
+//		//}
+//		PopupGenerator.showInfoDialog("Sorry, Display of this datatype has yet to be Implemented!");
+//	}	
 }
 
 
