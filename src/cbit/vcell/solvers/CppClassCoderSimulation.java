@@ -7,6 +7,8 @@ import cbit.util.*;
 import java.util.*;
 import java.io.*;
 import cbit.vcell.solver.*;
+import cbit.vcell.field.FieldDataIdentifierSpec;
+import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.math.*;
 import cbit.vcell.messaging.JmsUtils;
 
@@ -326,7 +328,8 @@ public void writeImplementation(java.io.PrintWriter out) throws Exception {
 protected void writeMain(java.io.PrintWriter out) throws Exception {
 
 	Simulation simulation = simulationJob.getWorkingSim();
-	cbit.vcell.simdata.FieldDataIdentifier[] fieldDataIDs = simulationJob.getFieldDataIdentifiers();
+	FieldFunctionArguments[] fieldFuncArgs = simulation.getMathDescription().getFieldFunctionArguments();
+	//FieldDataIdentifierSpec[] fieldDataIDSs = simulationJob.getFieldDataIdentifierSpecs();
 	SolverTaskDescription taskDesc = simulation.getSolverTaskDescription();
 	if (taskDesc==null){
 		throw new Exception("task description not defined");
@@ -342,10 +345,10 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 	out.println("#endif");
 	out.println("");
 
-	if (fieldDataIDs != null && fieldDataIDs.length > 0) {
+	if (fieldFuncArgs != null && fieldFuncArgs.length > 0) {
 		out.println();
-		for (int i = 0; i < fieldDataIDs.length; i ++) {		
-			out.println("double* " + fieldDataIDs[i].getGlobalVariableName_C() + " = 0;");
+		for (int i = 0; i < fieldFuncArgs.length; i ++) {		
+			out.println("double* " + FieldDataIdentifierSpec.getGlobalVariableName_C(fieldFuncArgs[i]) + " = 0;");
 		}
 		out.println();
 		out.println("double* getFieldData(char*, char*, char*);");
@@ -361,11 +364,11 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 	out.println("\t\tSimulationMessaging::getInstVar()->waitUntilFinished();");
 	out.println("\t}");
 
-	if (fieldDataIDs != null && fieldDataIDs.length > 0) {
+	if (fieldFuncArgs != null && fieldFuncArgs.length > 0) {
 		out.println();
 		out.println("\tdelete SimulationMessaging::getInstVar();");	
-		for (int i = 0; i < fieldDataIDs.length; i ++) {
-			out.println("\tdelete[] " + fieldDataIDs[i].getGlobalVariableName_C() + ";");
+		for (int i = 0; i < fieldFuncArgs.length; i ++) {
+			out.println("\tdelete[] " + FieldDataIdentifierSpec.getGlobalVariableName_C(fieldFuncArgs[i]) + ";");
 		}
 		out.println();
 	}
@@ -403,13 +406,13 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 	out.println("\t\t}");
 	out.println("\t\tSimulationMessaging::getInstVar()->start(); // start the thread");
 
-	if (fieldDataIDs != null && fieldDataIDs.length > 0) {
+	if (fieldFuncArgs != null && fieldFuncArgs.length > 0) {
 		out.println();
-		for (int i = 0; i < fieldDataIDs.length; i ++) {
-			String fieldName = fieldDataIDs[i].getFieldName();
-			String varName = fieldDataIDs[i].getVariableName();
-			File fieldFile = new File(baseDataName + fieldDataIDs[i].getDefaultFieldDataFileNameForSimulation());
-			out.println("\t\t" + fieldDataIDs[i].getGlobalVariableName_C() + " = getFieldData(\"" + fieldName + "\",\"" + TokenMangler.getEscapedString_C(fieldFile.toString()) + "\", \"" + varName + "\");");
+		for (int i = 0; i < fieldFuncArgs.length; i ++) {
+			String fieldName = fieldFuncArgs[i].getFieldName();
+			String varName = fieldFuncArgs[i].getVariableName();
+			File fieldFile = new File(baseDataName + FieldDataIdentifierSpec.getDefaultFieldDataFileNameForSimulation(fieldFuncArgs[i]));
+			out.println("\t\t" + FieldDataIdentifierSpec.getGlobalVariableName_C(fieldFuncArgs[i]) + " = getFieldData(\"" + fieldName + "\",\"" + TokenMangler.getEscapedString_C(fieldFile.toString()) + "\", \"" + varName + "\");");
 		}
 		out.println();
 	}

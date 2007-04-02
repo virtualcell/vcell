@@ -1,7 +1,9 @@
 package cbit.vcell.server;
-import cbit.vcell.simdata.FieldDataIdentifier;
+import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.util.BigString;
+import cbit.vcell.field.FieldDataDBOperationResults;
+import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.dictionary.FormalSpeciesType;
 import cbit.vcell.dictionary.DBFormalSpecies;
@@ -39,6 +41,15 @@ cbit.vcell.document.VCDocumentInfo curate(CurateSpec curateSpec) throws DataAcce
  * @exception java.rmi.RemoteException The exception description.
  */
 void deleteBioModel(KeyValue bioModelKey) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (4/29/2004 1:03:11 PM)
+ * @param bioModelKey cbit.sql.KeyValue
+ * @exception java.rmi.RemoteException The exception description.
+ */
+public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 
 /**
@@ -179,16 +190,6 @@ cbit.vcell.export.server.ExportLog getExportLog(KeyValue simulationKey) throws D
  * @param simKey cbit.sql.KeyValue
  */
 cbit.vcell.export.server.ExportLog[] getExportLogs(boolean bAll) throws DataAccessException, RemoteException;
-
-
-/**
- * This method was created in VisualAge.
- * @return GeometryInfo
- * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
-FieldDataIdentifier[] getFieldDataIdentifiers(cbit.vcell.field.FieldDataIdentifierSpec[] fieldDataIDSpecs) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 
 /**

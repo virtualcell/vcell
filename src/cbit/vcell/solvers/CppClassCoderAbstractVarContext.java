@@ -4,6 +4,9 @@ package cbit.vcell.solvers;
  * All rights reserved.
 ©*/
 import java.util.*;
+
+import cbit.vcell.field.FieldDataIdentifierSpec;
+import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
 import cbit.vcell.solver.*;
@@ -226,11 +229,11 @@ private final void writeFieldFunctionDeclarations(java.io.PrintWriter out, Expre
 		throw new Exception("null expression");
 	}
 
-	cbit.vcell.field.FieldDataIdentifierSpec[] fieldDataIdSpecs = exp.getFieldDataIdentifierSpecs();
+	FieldFunctionArguments[] fieldFuncArgs = exp.getFieldFunctionArguments();
 
-	for (int i = 0; i < fieldDataIdSpecs.length; i ++) {
-		String localvarname = cbit.vcell.simdata.FieldDataIdentifier.getLocalVariableName_C(fieldDataIdSpecs[i]);
-		String globalvarname = cbit.vcell.simdata.FieldDataIdentifier.getGlobalVariableName_C(fieldDataIdSpecs[i]);
+	for (int i = 0; fieldFuncArgs != null && i < fieldFuncArgs.length; i ++) {
+		String localvarname = FieldDataIdentifierSpec.getLocalVariableName_C(fieldFuncArgs[i]);
+		String globalvarname = FieldDataIdentifierSpec.getGlobalVariableName_C(fieldFuncArgs[i]);
 		out.println("\tdouble " + localvarname + " = " + globalvarname + "[" + indexString + "];");	
 	}
 }

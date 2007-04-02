@@ -203,17 +203,29 @@ public SimulationData(VCDataIdentifier argVCDataID, File userDir) throws IOExcep
 		getLogFile();
 	} catch (FileNotFoundException exc) {
 		// maybe we are being asked for pre-parameter scans data files, try old style
-		if (info instanceof VCSimulationDataIdentifier) {
-			VCSimulationDataIdentifier vcSimDataID = (VCSimulationDataIdentifier)info;
-			if (vcSimDataID.getJobIndex() == 0) {
-				VCDataIdentifier vcDataID = VCSimulationDataIdentifierOldStyle.createVCSimulationDataIdentifierOldStyle(vcSimDataID);
-				info = vcDataID;
-			}
-		}
+		info = createScanFriendlyVCDataID(info);
+		getLogFile();
+//		if (info instanceof VCSimulationDataIdentifier) {
+//			VCSimulationDataIdentifier vcSimDataID = (VCSimulationDataIdentifier)info;
+//			if (vcSimDataID.getJobIndex() == 0) {
+//				VCDataIdentifier vcDataID = VCSimulationDataIdentifierOldStyle.createVCSimulationDataIdentifierOldStyle(vcSimDataID);
+//				info = vcDataID;
+//			}
+//		}
 	}
 	getVarAndFunctionDataIdentifiers();
 }
 
+public static VCDataIdentifier createScanFriendlyVCDataID(VCDataIdentifier inVCDID){
+	VCDataIdentifier outVCDID = inVCDID;
+	if (inVCDID instanceof VCSimulationDataIdentifier) {
+		VCSimulationDataIdentifier vcSimDataID = (VCSimulationDataIdentifier)inVCDID;
+		if (vcSimDataID.getJobIndex() == 0) {
+			outVCDID = VCSimulationDataIdentifierOldStyle.createVCSimulationDataIdentifierOldStyle(vcSimDataID);
+		}
+	}
+	return outVCDID;
+}
 
 /**
  * Insert the method's description here.

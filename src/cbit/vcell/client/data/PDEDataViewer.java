@@ -1,4 +1,7 @@
 package cbit.vcell.client.data;
+import cbit.vcell.math.VolVariable;
+import cbit.vcell.parser.SimpleSymbolTable;
+import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.simdata.*;
 import swingthreads.*;
 import javax.swing.*;
@@ -7,13 +10,11 @@ import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.MessageEvent;
 import cbit.vcell.server.*;
 import cbit.vcell.simdata.gui.*;
-import java.awt.event.*;
 import java.awt.*;
 import java.rmi.server.ObjID;
 import java.util.*;
 import cbit.vcell.client.*;
 import cbit.util.*;
-import cbit.vcell.client.server.*;
 /**
  * Insert the type's description here.
  * Creation date: (6/11/2004 6:03:07 AM)
@@ -1133,13 +1134,17 @@ public void dataJobMessage(DataJobEvent dje) {
 				}
 			}
 		}
-		//cbit.vcell.parser.SymbolTableEntry[] symbolTableEntries = new cbit.vcell.parser.SymbolTableEntry[tsjs.getVariableNames().length];
+
 		cbit.vcell.parser.SymbolTableEntry[] symbolTableEntries = null;
 		if(tsjr.getVariableNames().length == 1){
 			symbolTableEntries = new cbit.vcell.parser.SymbolTableEntry[3/*4*/];//max.mean.min,sum
 		//for(int i=0;i<symbolTableEntries.length;i+= 1){
 			try{
-				symbolTableEntries[0] = getSimulation().getMathDescription().getEntry(tsjr.getVariableNames()[0]);
+				if(getSimulation() != null && getSimulation().getMathDescription() != null){
+					symbolTableEntries[0] = getSimulation().getMathDescription().getEntry(tsjr.getVariableNames()[0]);
+				}else{
+					symbolTableEntries[0] = new SimpleSymbolTable(tsjr.getVariableNames()).getEntry(tsjr.getVariableNames()[0]);
+				}
 				symbolTableEntries[1] = symbolTableEntries[0];
 				symbolTableEntries[2] = symbolTableEntries[0];
 				//symbolTableEntries[3] = symbolTableEntries[0];
@@ -1293,6 +1298,7 @@ private cbit.vcell.geometry.gui.DataValueSurfaceViewer getDataValueSurfaceViewer
 
 	return fieldDataValueSurfaceViewer;
 }
+
 
 /**
  * Return the OKJButton property value.
@@ -2291,181 +2297,6 @@ private void plotStatistics(TimeSeriesJobSpec tsjs){
 		e.printStackTrace();
 		PopupGenerator.showErrorDialog("Error starting statistics job\n"+e.getMessage());
 	}
-	
-	
-////	final int BATCH_THRESHOLD = 10000;
-//	final int BATCH_THRESHOLD = 1000000000;
-//	final int BATCH_SIZE = 2500;
-//	cbit.util.TimeSeriesJobResults tsjr = null;
-//	try{
-//		AsynchProgressPopup pp =
-//			new AsynchProgressPopup(
-//				PDEDataViewer.this,
-//				"Fetching data...",
-//				"Retrieving Statistics variable '" + tsjs.getVariableNames()[0],
-//				false,
-//				false//(tsjs.getIndices()[0].length <= BATCH_THRESHOLD?false:true)
-//				);
-//		pp.start();
-//		try{
-//			if(true){//if(tsjs.getIndices()[0].length <= BATCH_THRESHOLD){
-//				tsjr = (cbit.util.TSJobResultsSpaceStats)getPdeDataContext().getTimeSeriesValues(tsjs);
-//			}else{
-//				double totalSpace = 0;
-//				double[] times = null;
-//				double[] mins = null;
-//				double[] maxs = null;
-//				double[] means = null;;
-//				double[] wmeans = null;
-//				double[] sums = null;
-//				double[] wsums = null;
-//				for(int i=0;i<tsjs.getIndices()[0].length;i+=BATCH_SIZE){
-//					pp.setProgress((int)(100*((float)i/(float)tsjs.getIndices()[0].length)));
-//					int[] indexes_batch = new int[Math.min(BATCH_SIZE,(tsjs.getIndices()[0].length-i))];
-//					System.arraycopy(tsjs.getIndices()[0],i,indexes_batch,0,indexes_batch.length);
-//					cbit.util.TimeSeriesJobSpec tsjs_batch =
-//						new cbit.util.TimeSeriesJobSpec(
-//							tsjs.getVariableNames(),
-//							new int[][]{indexes_batch},
-//							tsjs.getStartTime(),1,tsjs.getEndTime(),
-//							true,false);
-//					cbit.util.TSJobResultsSpaceStats tsjrss = (cbit.util.TSJobResultsSpaceStats)getPdeDataContext().getTimeSeriesValues(tsjs_batch);
-//					if(i==0){
-//						times = tsjrss.getTimes();
-//						mins = tsjrss.getMinimums()[0];
-//						maxs = tsjrss.getMaximums()[0];
-//						means = tsjrss.getUnweightedMean()[0];
-//						wmeans = new double[tsjrss.getTimes().length];
-//						sums = tsjrss.getUnweightedSum()[0];
-//						wsums = tsjrss.getWeightedSum()[0];
-//						for(int j=0;j<tsjrss.getTimes().length;j+= 1){
-//							wmeans[j] = tsjrss.getWeightedMean()[0][j]*tsjrss.getTotalSpace()[0];
-//						}
-//					}else{
-//						for(int j=0;j<tsjrss.getTimes().length;j+= 1){
-//							mins[j] = Math.min(mins[j],tsjrss.getMinimums()[0][j]);
-//							maxs[j] = Math.max(maxs[j],tsjrss.getMaximums()[0][j]);
-//							means[j]+= tsjrss.getUnweightedMean()[0][j];
-//							wmeans[j]+= tsjrss.getWeightedMean()[0][j]*tsjrss.getTotalSpace()[0];
-//							sums[j]+= tsjrss.getUnweightedSum()[0][j];
-//							wsums[j]+= tsjrss.getWeightedSum()[0][j];
-//						}
-//					}
-//					totalSpace+= tsjrss.getTotalSpace()[0];
-//				}
-//				for(int i=0;i<means.length;i+= 1){
-//					means[i]/= tsjs.getIndices()[0].length;
-//					wmeans[i]/= totalSpace;
-//				}
-//				tsjr =
-//					new TSJobResultsSpaceStats(
-//						tsjs.getVariableNames(),
-//						tsjs.getIndices(),
-//						times,
-//						new double[][] {mins},
-//						new double[][] {maxs},
-//						new double[][] {means},
-//						new double[][] {wmeans},
-//						new double[][] {sums},
-//						new double[][] {wsums},
-//						new double[] {totalSpace}
-//						);
-//			}
-//		}finally{
-//			pp.stop();
-//		}
-//		//plotStatistics(tsjrss);
-//	}catch(Exception e){
-//		PopupGenerator.showErrorDialog("Error generating stats\n"+e.getClass().getName()+"\n"+e.getMessage());
-//		return;
-//	}
-
-//	cbit.util.TimeSeriesJobResults tsjr = getPdeDataContext().getTimeSeriesValues(timeSeriesJobSpec);
-	//
-//	if(tsjr instanceof TSJobResultsSpaceStats){
-//		TSJobResultsSpaceStats tsjrss = (TSJobResultsSpaceStats)tsjr;
-//		//Determine if Volume or Membrane
-//		DataIdentifier[] diArr = getPdeDataContext().getDataIdentifiers();
-//		boolean bVolume = true;
-//		for(int i=0;i<diArr.length;i+= 1){
-//			if(diArr[i].getName().equals(tsjrss.getVariableNames()[0])){
-//				if(diArr[i].getVariableType().equals(VariableType.MEMBRANE) || diArr[i].getVariableType().equals(VariableType.MEMBRANE_REGION)){
-//					bVolume = false;
-//					break;
-//				}
-//			}
-//		}
-//		//cbit.vcell.parser.SymbolTableEntry[] symbolTableEntries = new cbit.vcell.parser.SymbolTableEntry[tsjs.getVariableNames().length];
-//		cbit.vcell.parser.SymbolTableEntry[] symbolTableEntries = null;
-//		if(tsjs.getVariableNames().length == 1){
-//			symbolTableEntries = new cbit.vcell.parser.SymbolTableEntry[3/*4*/];//max.mean.min,sum
-//		//for(int i=0;i<symbolTableEntries.length;i+= 1){
-//			try{
-//				symbolTableEntries[0] = getSimulation().getMathDescription().getEntry(tsjs.getVariableNames()[0]);
-//				symbolTableEntries[1] = symbolTableEntries[0];
-//				symbolTableEntries[2] = symbolTableEntries[0];
-//				//symbolTableEntries[3] = symbolTableEntries[0];
-//			}catch(cbit.vcell.parser.ExpressionBindingException e){
-//				e.printStackTrace();
-//			}
-//		//}
-//		}
-//		cbit.plot.PlotPane plotPane = new cbit.plot.PlotPane();
-//		plotPane.setPlot2D(
-//			new cbit.plot.SingleXPlot2D(symbolTableEntries,"Time",
-//			new String[] {
-//					"Max",
-//					(tsjrss.getWeightedMean() != null?"WeightedMean":"UnweightedMean"),
-//					"Min"/*,
-//					(tsjrss.getWeightedSum() != null?"WeightedSum":"UnweightedSum")*/},
-//			new double[][] {
-//					tsjrss.getTimes(),
-//					tsjrss.getMaximums()[0],
-//					(tsjrss.getWeightedMean() != null?tsjrss.getWeightedMean()[0]:tsjrss.getUnweightedMean()[0]),
-//					tsjrss.getMinimums()[0]/*,
-//					(tsjrss.getWeightedSum() != null?tsjrss.getWeightedSum()[0]:tsjrss.getUnweightedSum()[0])*/},
-//			new String[] {
-//				"Statistics Plot for "+tsjrss.getVariableNames()[0]+(tsjrss.getTotalSpace() != null?" (ROI "+(bVolume?"volume":"area")+"="+tsjrss.getTotalSpace()[0]+")":""),
-//				"Time (s)",
-//				"[" + tsjrss.getVariableNames()[0] + "]"}));
-//
-//
-//		showComponentInFrame(plotPane,"Statistics");
-//		//JInternalFrame frame =
-//			//new JInternalFrame("Statistics", true, true, true, true);
-//		//frame.getContentPane().add(plotPane);
-//		//frame.pack();
-//		//cbit.util.BeanUtils.centerOnComponent(frame,this);
-//		//getDataViewerManager().showDataViewerPlotsFrames(new JInternalFrame[] {frame});
-//
-//	}else{
-//		//if(tsjr instanceof TSJobResultsNoStats){
-//			//TSJobResultsNoStats tsjrns = (TSJobResultsNoStats)tsjr;
-//			//for(int i=0;i<tsjrns.getVariableNames().length;i+= 1){
-//				//System.out.println(tsjrns.getVariableNames()[i]);
-//				//double[][] timesAndVals = tsjrns.getTimesAndValuesForVariable(tsjrns.getVariableNames()[i]);
-//				//for(int j=0;j<timesAndVals.length;j+= 1){
-//					//System.out.println(timesAndVals[0][j]+","+timesAndVals[1][j]);
-//				//}
-//			//}
-//		//}else if(tsjr instanceof TSJobResultsTimeStats){
-//			//TSJobResultsTimeStats tsjrts = (TSJobResultsTimeStats)tsjr;
-//			//if(tsjrts.isValuesAreSpaceStats()){
-//				//for(int i=0;i<tsjrts.getVariableNames().length;i+= 1){
-//					////for(int j=0;j<tsjrts.getWeightedMeans()[i].length;j+= 1){
-//						//System.out.println(tsjrts.getVariableNames()[i]+" "+tsjrts.getWeightedMeans()[i][0]);
-//					////}
-//				//}
-//			//}else{
-//				//for(int i=0;i<tsjrts.getVariableNames().length;i+= 1){
-//					//for(int j=0;j<tsjrts.getWeightedMeans()[i].length;j+= 1){
-//						//System.out.println(tsjrts.getIndices()[i][j]+","+tsjrts.getUnweightedMeans()[i][j]);
-//					//}
-//				//}
-//			//}
-//		//}
-//		PopupGenerator.showInfoDialog("Sorry, Display of this datatype has yet to be Implemented!");
-//	}	
 }
 
 
@@ -2758,6 +2589,7 @@ private void showKymograph() {
 	gp.setPaint(true);
 	jif.setGlassPane(gp);
 	jif.setIconifiable(false);
+	final boolean origClose = jif.isClosable();
 	jif.setClosable(false);
 	jif.setMaximizable(false);
 	gp.setVisible(true);
@@ -2794,12 +2626,19 @@ private void showKymograph() {
 						BeanUtils.centerOnComponent(frame, jif);
 						plotFrames.add(frame);
 						
+						SymbolTable symbolTable;
+						if(getSimulation() != null && getSimulation().getMathDescription() != null){
+							symbolTable = getSimulation().getMathDescription();
+						}else{
+							symbolTable = new SimpleSymbolTable(new String[] {getPdeDataContext().getDataIdentifier().getName()});
+						}
+						
 						kymographPanel.initDataManager(
 							((ClientPDEDataContext)getPdeDataContext()).getDataManager(),
 							getPdeDataContext().getVariableName(),
 							startTimeAndStep[RESAMPLE_START_INDEX],(int)startTimeAndStep[RESAMPLE_STEP_INDEX],startTimeAndStep[RESAMPLE_END_INDEX],
 							indices,accumDistances,true,getPdeDataContext().getTimePoint(),
-							getSimulation().getMathDescription());
+							symbolTable);
 					}
 				}
 			} catch (Exception e) {
@@ -2831,7 +2670,7 @@ private void showKymograph() {
 			jif.getGlassPane().setVisible(false);
 			((JPanel)jif.getGlassPane()).setOpaque(false);
 			jif.setIconifiable(true);
-			jif.setClosable(true);
+			jif.setClosable(origClose);
 			jif.setMaximizable(true);
 		}
 	};
@@ -2875,6 +2714,7 @@ private void showSpatialPlot() {
 	gp.setPaint(true);
 	jif.setGlassPane(gp);
 	jif.setIconifiable(false);
+	final boolean origClose = jif.isClosable();
 	jif.setClosable(false);
 	jif.setMaximizable(false);
 	gp.setVisible(true);
@@ -2893,7 +2733,13 @@ private void showSpatialPlot() {
 						PlotPane plotPane = new PlotPane();
 						cbit.vcell.parser.SymbolTableEntry[] symbolTableEntries = new cbit.vcell.parser.SymbolTableEntry[1];
 						try{
-							symbolTableEntries[0] = getSimulation().getMathDescription().getEntry(getPdeDataContext().getVariableName());
+							if(getSimulation() != null && getSimulation().getMathDescription() != null){
+								symbolTableEntries[0] =
+									getSimulation().getMathDescription().getEntry(getPdeDataContext().getVariableName());
+							}else{
+								symbolTableEntries[0] =
+									new VolVariable(getPdeDataContext().getDataIdentifier().getName());
+							}
 						}catch(cbit.vcell.parser.ExpressionBindingException e){
 							e.printStackTrace();
 						}
@@ -2935,7 +2781,7 @@ private void showSpatialPlot() {
 			jif.getGlassPane().setVisible(false);
 			((JPanel)jif.getGlassPane()).setOpaque(false);
 			jif.setIconifiable(true);
-			jif.setClosable(true);
+			jif.setClosable(origClose);
 			jif.setMaximizable(true);
 		}
 	};
@@ -2976,6 +2822,7 @@ private void showTimePlot() {
 	gp.setPaint(true);
 	jif.setGlassPane(gp);
 	jif.setIconifiable(false);
+	final boolean origClose = jif.isClosable();
 	jif.setClosable(false);
 	jif.setMaximizable(false);
 	gp.setVisible(true);
@@ -3009,7 +2856,14 @@ private void showTimePlot() {
 						}
 						plotNames[i] = "P["+i+"] ("+niceCoordinateString(tp)+")";
 						try{
-							symbolTableEntries[i] = getSimulation().getMathDescription().getEntry(getPdeDataContext().getDataIdentifier().getName());
+//							symbolTableEntries[i] = getSimulation().getMathDescription().getEntry(getPdeDataContext().getDataIdentifier().getName());
+							if(getSimulation() != null && getSimulation().getMathDescription() != null){
+								symbolTableEntries[0] =
+									getSimulation().getMathDescription().getEntry(getPdeDataContext().getDataIdentifier().getName());
+							}else{
+								symbolTableEntries[0] =
+									new VolVariable(getPdeDataContext().getDataIdentifier().getName());
+							}
 						}catch(cbit.vcell.parser.ExpressionBindingException e){
 							e.printStackTrace();
 						}
@@ -3050,7 +2904,7 @@ private void showTimePlot() {
 			jif.getGlassPane().setVisible(false);
 			((JPanel)jif.getGlassPane()).setOpaque(false);
 			jif.setIconifiable(true);
-			jif.setClosable(true);
+			jif.setClosable(origClose);
 			jif.setMaximizable(true);
 		}
 	};

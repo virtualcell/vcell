@@ -1,5 +1,10 @@
 package cbit.vcell.anonymizer;
+import cbit.vcell.field.FieldDataDBOperationResults;
+import cbit.vcell.field.FieldDataDBOperationSpec;
+import cbit.vcell.server.DataAccessException;
+import cbit.vcell.server.ObjectNotFoundException;
 import cbit.vcell.server.SessionLog;
+import cbit.vcell.simdata.ExternalDataIdentifier;;
 /**
  * Insert the type's description here.
  * Creation date: (5/14/2006 10:57:49 PM)
@@ -35,6 +40,17 @@ public cbit.vcell.document.VCDocumentInfo curate(cbit.vcell.server.CurateSpec cu
  */
 public void deleteBioModel(cbit.sql.KeyValue bioModelKey) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException {
 	remoteCall("deleteBioModel", new Class[] {cbit.sql.KeyValue.class}, new Object[] {bioModelKey});	
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (5/14/2006 10:57:49 PM)
+ * @param bioModelKey cbit.sql.KeyValue
+ * @exception java.rmi.RemoteException The exception description.
+ */
+public void deleteExternalDataIdentifiers(cbit.sql.KeyValue[] fdiKeys) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException {
+	remoteCall("deleteFieldDataIdentifiers", new Class[] {cbit.sql.KeyValue[].class}, new Object[] {fdiKeys});	
 }
 
 
@@ -103,6 +119,9 @@ public cbit.vcell.modeldb.ReferenceQueryResult findReferences(cbit.vcell.modeldb
 	return (cbit.vcell.modeldb.ReferenceQueryResult)remoteCall("findReferences", new Class[] {cbit.vcell.modeldb.ReferenceQuerySpec.class}, new Object[] {rqs});	
 }
 
+public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException {
+	return (FieldDataDBOperationResults)remoteCall("fieldDataDBOperation", new Class[] {FieldDataDBOperationSpec.class}, new Object[] {fieldDataDBOperationSpec});	
+}
 
 /**
  * This method was created in VisualAge.
@@ -222,19 +241,6 @@ public cbit.vcell.export.server.ExportLog getExportLog(cbit.sql.KeyValue simulat
 public cbit.vcell.export.server.ExportLog[] getExportLogs(boolean bAll) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
 	return (cbit.vcell.export.server.ExportLog[])remoteCall("getExportLogs", new Class[] {boolean.class}, new Object[] {new Boolean(bAll)});
 }
-
-
-/**
- * This method was created in VisualAge.
- * @return GeometryInfo
- * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
-public cbit.vcell.simdata.FieldDataIdentifier[] getFieldDataIdentifiers(cbit.vcell.field.FieldDataIdentifierSpec[] fieldDataIDSpecs) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException {
-	return (cbit.vcell.simdata.FieldDataIdentifier[])remoteCall("getFieldDataIdentifiers", new Class[] {cbit.vcell.field.FieldDataIdentifierSpec[].class}, new Object[] {fieldDataIDSpecs});
-}
-
 
 /**
  * This method was created in VisualAge.
@@ -589,7 +595,6 @@ public cbit.util.BigString saveBioModelAs(cbit.util.BigString bioModelXML, Strin
 		new Object[]{bioModelXML, newName, independentSims});
 
 }
-
 
 /**
  * This method was created in VisualAge.

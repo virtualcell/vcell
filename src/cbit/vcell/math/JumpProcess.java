@@ -158,16 +158,6 @@ public java.util.Vector getActions() {
 
 
 /**
- * getDenpendent processes under this process..
- * Creation date: (6/21/2006 5:34:31 PM)
- */
-public void getDependencies()
-{
-
-}
-
-
-/**
  * Getthe process name.
  * Creation date: (6/21/2006 5:31:11 PM)
  * @return java.lang.String
@@ -203,6 +193,19 @@ public String getVCML()
 	}
 	buffer.append("\t"+" "+VCML.EndBlock+"\n");
 	return buffer.toString();	
+}
+
+public Expression[] getExpressions()
+{
+	Vector<Expression> expV = new Vector<Expression>();
+	expV.add(getProbabilityRate());
+	for(int i=0; i<getActions().size(); i++)
+	{
+		expV.add(getAction(i).getOperand());
+	}
+	Expression[] expArr = new Expression[expV.size()];
+	expV.copyInto(expArr);
+	return expArr;	
 }
 
 

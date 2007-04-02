@@ -4,6 +4,8 @@ import cbit.vcell.messaging.db.SimulationJobStatus;
 import java.util.Vector;
 import cbit.util.BigString;
 import cbit.image.VCImage;
+import cbit.vcell.field.FieldDataDBOperationResults;
+import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.geometry.Geometry;
 import java.io.*;
 import cbit.vcell.export.server.ExportLog;
@@ -137,6 +139,26 @@ public void deleteBioModel(User user, cbit.sql.KeyValue key) throws DataAccessEx
 /**
  * delete method comment.
  */
+public FieldDataDBOperationResults fieldDataDBOperation(User user, FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException, ObjectNotFoundException {
+	try {
+		log.print("DatabaseServerImpl.fieldDataDBOperation opType="+fieldDataDBOperationSpec.opType);
+		return dbTop.fieldDataDBOperation(user, fieldDataDBOperationSpec, true);
+	} catch (SQLException e) {
+		log.exception(e);
+		throw new DataAccessException(e.getMessage());
+	} catch (ObjectNotFoundException e) {
+		log.exception(e);
+		throw new ObjectNotFoundException(e.getMessage());
+	} catch (Throwable e) {
+		log.exception(e);
+		throw new DataAccessException(e.getMessage());
+	}
+}
+
+
+/**
+ * delete method comment.
+ */
 public void deleteGeometry(User user, cbit.sql.KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	delete(user,VersionableType.Geometry, key);
 }
@@ -203,7 +225,7 @@ public ReferenceQueryResult findReferences(User user, ReferenceQuerySpec rqs) th
 	
 	try {
 		log.print("DatabaseServerImpl.findReferences(user="+user+" refQuerySpec="+rqs+")");
-		return dbTop.findReferences(user,rqs);
+		return dbTop.findReferences(user,rqs,true);
 	} catch (SQLException e) {
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
@@ -227,7 +249,7 @@ public cbit.vcell.modeldb.VersionableFamily getAllReferences(User user, cbit.sql
 	try {
 		log.print("DatabaseServerImpl.getAllReferences(vType="+vType.getTypeName()+", Key="+key+")");
 		log.alert("DatabaseServerImpl.getAllReferences() can return 'version' objects that aren't viewable to user !!!!!!!!!!!!!!!! ");
-		return dbTop.getAllReferences(key,vType,true);
+		return dbTop.getAllReferences(user,key,vType,true);
 	} catch (SQLException e) {
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
@@ -414,28 +436,6 @@ public ExportLog[] getExportLogs(User user, boolean bAll) throws DataAccessExcep
 		throw new DataAccessException(e.getMessage());
 	}
 
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (9/18/2006 1:58:56 PM)
- * @return cbit.vcell.simdata.FieldDataInfo
- * @param fieldDataID cbit.vcell.simdata.FieldDataIdentifier
- * @exception cbit.vcell.server.DataAccessException The exception description.
- */
-public cbit.vcell.simdata.FieldDataIdentifier[] getFieldDataIdentifiers(User user, cbit.vcell.field.FieldDataIdentifierSpec[] FieldDataIDSpecs) throws cbit.vcell.server.DataAccessException {
-	try {
-		log.print("DatabaseServerImpl.getFieldDataIdentifiers()");
-		cbit.vcell.simdata.FieldDataIdentifier[] fieldDataIDs = dbTop.getFieldDataIdentifiers(user,FieldDataIDSpecs, true);
-		return fieldDataIDs;
-	} catch (SQLException e) {
-		log.exception(e);
-		throw new DataAccessException(e.getMessage());
-	} catch (Throwable e) {
-		log.exception(e);
-		throw new DataAccessException(e.getMessage());
-	}
 }
 
 
@@ -1099,7 +1099,6 @@ public BigString saveBioModelAs(User user, BigString bioModelXML, java.lang.Stri
 		throw new DataAccessException(e.getMessage());
 	}
 }
-
 
 /**
  * This method was created in VisualAge.

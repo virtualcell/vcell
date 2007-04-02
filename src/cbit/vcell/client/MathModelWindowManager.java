@@ -4,6 +4,7 @@ import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.server.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.messaging.db.*;
+import cbit.vcell.modeldb.VersionableTypeVersion;
 import cbit.sql.*;
 import cbit.vcell.client.desktop.simulation.*;
 import java.awt.*;
@@ -12,7 +13,6 @@ import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.desktop.simulation.SimulationListPanel;
 import cbit.gui.JInternalFrameEnhanced;
 import cbit.vcell.client.desktop.mathmodel.*;
-import cbit.vcell.client.desktop.mathmodel.MathModelEditor;
 import cbit.vcell.mathmodel.MathModel;
 import java.util.Hashtable;
 import cbit.vcell.client.desktop.geometry.SurfaceViewerPanel;
@@ -44,6 +44,10 @@ public class MathModelWindowManager extends DocumentWindowManager implements jav
 	// results windows and plots
 	private Hashtable simulationWindowsHash = new Hashtable();
 	private Vector dataViewerPlotsFramesVector = new Vector();
+	
+	//Field Data help.  Set if copied from a BioModel Application.
+	//Used to substitute Field Data while saving a MathModel.
+	private VersionableTypeVersion copyFromBioModelAppVersionableTypeVersion = null;
 
 /**
  * MathModelManager constructor comment.
@@ -265,6 +269,12 @@ private MathModelEditor getMathModelEditor() {
 	return mathModelEditor;
 }
 
+public VersionableTypeVersion getCopyFromBioModelAppVersionableTypeVersion(){
+	return copyFromBioModelAppVersionableTypeVersion;
+}
+public void setCopyFromBioModelAppVersionableTypeVersion(VersionableTypeVersion bioModelAppVTV){
+	copyFromBioModelAppVersionableTypeVersion = bioModelAppVTV;
+}
 
 /**
  * Insert the method's description here.

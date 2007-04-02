@@ -6,9 +6,20 @@ package cbit.vcell.modeldb;
 import java.math.BigDecimal;
 import java.sql.*;
 import cbit.sql.*;
+import cbit.util.TokenMangler;
+import cbit.vcell.biomodel.BioModelMetaData;
+import cbit.vcell.field.FieldDataDBOperationResults;
+import cbit.vcell.field.FieldDataDBOperationSpec;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.server.*;
+import cbit.vcell.simdata.ExternalDataIdentifier;
+
 import java.util.Vector;
 import java.util.Hashtable;
+
+import oracle.jdbc.driver.OracleSQLException;
+import oracle.jdbc.driver.OracleSql;
 /**
  * This type was created in VisualAge.
  */
@@ -37,6 +48,272 @@ public DbDriver(DBCacheTable dbc,SessionLog sessionLog) {
 }
 
 
+public static void cleanupDeletedReferences(Connection con,User user,ExternalDataIdentifier extDataID,boolean bPrintOnly) throws SQLException{
+	
+	KeyValue extDataIDKey = extDataID.getKey();
+	
+	try {
+		final String SIM_SUBQ = "in_sim";
+		String sql =
+			"DELETE FROM " + SimulationTable.table.getTableName()+						
+			" WHERE " +
+			SimulationTable.table.ownerRef.getQualifiedColName()+" = "+user.getID().toString()+
+			" AND "+
+			SimulationTable.table.id.getQualifiedColName() +
+			" IN ( " +
+				" SELECT "+SIM_SUBQ+"."+SimulationTable.table.id.getUnqualifiedColName()+
+				" FROM "+
+					SimulationTable.table.getTableName()+" "+SIM_SUBQ+" ,"+
+					MathDescExternalDataLinkTable.table.getTableName()+
+				" WHERE " +
+					MathDescExternalDataLinkTable.table.extDataRef +" = " + 
+						extDataIDKey.toString()+
+					" AND "+
+					SIM_SUBQ+"."+SimulationTable.table.mathRef.getUnqualifiedColName() +" = "+
+						MathDescExternalDataLinkTable.table.mathDescRef.getQualifiedColName() +
+			")";
+//		"DELETE FROM " + SimulationTable.table.getTableName()+						
+//		" WHERE " +
+//		SimulationTable.table.ownerRef.getQualifiedColName()+" = "+user.getID().toString()+
+//		" AND "+
+//		SimulationTable.table.id.getQualifiedColName() +
+//		" IN ( " +
+//			" SELECT "+SIM_SUBQ+"."+SimulationTable.table.id.getUnqualifiedColName()+
+//			" FROM "+
+//				SimulationTable.table.getTableName()+" "+SIM_SUBQ+" ,"+
+//				MathDescTable.table.getTableName()+","+
+//				MathDescExternalDataLinkTable.table.getTableName()+
+//			" WHERE " +
+//				MathDescExternalDataLinkTable.table.extDataRef +" = " + 
+//					extDataIDKey.toString()+
+//				" AND "+
+//				MathDescExternalDataLinkTable.table.mathDescRef +" = " + 
+//					MathDescTable.table.id.getQualifiedColName()+
+//				" AND " +
+//				SIM_SUBQ+"."+SimulationTable.table.mathRef.getUnqualifiedColName() +" = "+
+//				MathDescTable.table.id.getQualifiedColName() +
+//				" AND "+
+//				" NOT EXISTS ("+
+//					"SELECT "+BioModelSimulationLinkTable.table.id.getQualifiedColName()+
+//					" FROM "+BioModelSimulationLinkTable.table.getTableName()+
+//					" WHERE "+
+//					BioModelSimulationLinkTable.table.simRef.getQualifiedColName()+"="+
+//						SIM_SUBQ+"."+SimulationTable.table.id.getUnqualifiedColName()+
+//					" UNION "+
+//					"SELECT "+MathModelSimulationLinkTable.table.id.getQualifiedColName()+
+//					" FROM "+MathModelSimulationLinkTable.table.getTableName()+
+//					" WHERE "+
+//					MathModelSimulationLinkTable.table.simRef.getQualifiedColName()+"="+
+//						SIM_SUBQ+"."+SimulationTable.table.id.getUnqualifiedColName()+
+//
+//				")"+
+//		")";
+			if(bPrintOnly){
+				System.out.println(sql+";");
+			}else{
+				updateCleanSQL(con, sql);
+			}
+		
+			
+			
+		final String SIMCONT_SUBQ = "in_simcont";
+		sql =
+			"DELETE FROM " + SimContextTable.table.getTableName()+						
+			" WHERE " +
+			SimContextTable.table.ownerRef.getQualifiedColName()+" = "+user.getID().toString()+
+			" AND "+
+			SimContextTable.table.id.getQualifiedColName() +
+			" IN ( " +
+				" SELECT "+SIMCONT_SUBQ+"."+SimContextTable.table.id.getUnqualifiedColName()+
+				" FROM "+
+					SimContextTable.table.getTableName()+" "+SIMCONT_SUBQ+" ,"+
+					MathDescExternalDataLinkTable.table.getTableName()+
+				" WHERE " +
+					MathDescExternalDataLinkTable.table.extDataRef +" = " + 
+						extDataIDKey.toString()+
+					" AND "+
+					SIMCONT_SUBQ+"."+SimContextTable.table.mathRef.getUnqualifiedColName() +" = "+
+						MathDescExternalDataLinkTable.table.mathDescRef.getQualifiedColName() +
+			")";
+//		"DELETE FROM " + SimContextTable.table.getTableName()+						
+//		" WHERE " +
+//		SimContextTable.table.ownerRef.getQualifiedColName()+" = "+user.getID().toString()+
+//		" AND "+
+//		SimContextTable.table.id.getQualifiedColName() +
+//		" IN ( " +
+//			" SELECT "+SIMCONT_SUBQ+"."+SimContextTable.table.id.getUnqualifiedColName()+
+//			" FROM "+
+//			SimContextTable.table.getTableName()+" "+SIMCONT_SUBQ+" ,"+
+//				MathDescTable.table.getTableName()+","+
+//				MathDescExternalDataLinkTable.table.getTableName()+
+//			" WHERE " +
+//				MathDescExternalDataLinkTable.table.extDataRef +" = " + 
+//					extDataIDKey.toString()+
+//				" AND "+
+//				MathDescExternalDataLinkTable.table.mathDescRef +" = " + 
+//					MathDescTable.table.id.getQualifiedColName()+
+//				" AND " +
+//				SIMCONT_SUBQ+"."+SimContextTable.table.mathRef.getUnqualifiedColName() +" = "+
+//				MathDescTable.table.id.getQualifiedColName() +
+//				" AND "+
+//				" NOT EXISTS ("+
+//					"SELECT "+BioModelSimContextLinkTable.table.id.getQualifiedColName()+
+//					" FROM "+BioModelSimContextLinkTable.table.getTableName()+
+//					" WHERE "+
+//					BioModelSimContextLinkTable.table.simContextRef.getQualifiedColName()+"="+
+//						SIMCONT_SUBQ+"."+SimContextTable.table.id.getUnqualifiedColName()+
+//				")"+
+//		")";
+			if(bPrintOnly){
+				System.out.println(sql+";");
+			}else{
+				updateCleanSQL(con, sql);
+			}
+
+			
+			
+		sql =
+			"DELETE FROM " + MathDescTable.table.getTableName()+						
+			" WHERE " +
+			MathDescTable.table.ownerRef.getQualifiedColName()+" = "+user.getID().toString()+
+			" AND "+
+			MathDescTable.table.id.getQualifiedColName() +" IN "+
+			"(SELECT "+
+				MathDescExternalDataLinkTable.table.mathDescRef.getQualifiedColName()+
+				" FROM "+MathDescExternalDataLinkTable.table.getTableName()+
+				" WHERE "+
+				MathDescExternalDataLinkTable.table.extDataRef+" = "+extDataIDKey.toString()+
+			")";
+			if(bPrintOnly){
+				System.out.println(sql+";");
+			}else{
+				updateCleanSQL(con, sql);
+			}
+			
+	} catch (SQLException e) {
+		String sqlState = e.getSQLState();
+		if(!sqlState.startsWith("23")){//integrity constraint violation 
+			throw e;
+		}
+	}
+
+		
+		
+		
+		
+		
+				
+//	String sql =
+//		"DELETE FROM " +SimulationTable.table.getTableName()+							
+//		" WHERE " +
+//		SimulationTable.table.ownerRef.getQualifiedColName()+" = "+user.getID().toString()+
+//		" AND "+
+//		SimulationTable.table.id.getQualifiedColName()+				
+//		" IN ( "+									
+//			" SELECT "+SimulationTable.table.id.getQualifiedColName()+
+//			" FROM "+SimulationTable.table.getTableName()+						
+//			" WHERE " +
+//				SimulationTable.table.ownerRef.getQualifiedColName()+" = "+user.getID().toString()+
+//			" MINUS "+							
+//			" SELECT "+BioModelSimulationLinkTable.table.simRef.getQualifiedColName() +
+//			" FROM "+BioModelSimulationLinkTable.table.getTableName()+			
+//			" MINUS "+							
+//			" SELECT "+MathModelSimulationLinkTable.table.simRef.getQualifiedColName()+
+//			" FROM "+MathModelSimulationLinkTable.table.getTableName()+			
+//			" MINUS "+								
+//			" SELECT DISTINCT "+
+//				SimulationTable.table.versionParentSimRef_ColumnName+
+//				" FROM "+SimulationTable.table.getTableName()+
+//				" WHERE "+SimulationTable.table.versionParentSimRef_ColumnName+" IS NOT NULL"+	
+//		")";
+//	if(bPrintOnly){
+//		System.out.println(sql+";");
+//	}else{
+//		updateCleanSQL(con, sql);
+//	}
+//	
+//	sql =
+//		"DELETE FROM "+SimContextTable.table.getTableName()+					
+//		" WHERE "+
+//		SimContextTable.table.ownerRef.getQualifiedColName()+" = "+user.getID().toString()+
+//		" AND "+
+//		SimContextTable.table.id.getQualifiedColName()+
+//		" NOT IN ("+				
+//			" SELECT "+BioModelSimContextLinkTable.table.simContextRef.getQualifiedColName()+
+//			" FROM "+BioModelSimContextLinkTable.table.getTableName()+
+//		")";	
+//	if(bPrintOnly){
+//		System.out.println(sql+";");
+//	}else{
+//		updateCleanSQL(con, sql);
+//	}
+//	
+//	sql = 
+//		"DELETE FROM "+MathDescTable.table.getTableName()+						
+//		" WHERE "+
+//		MathDescTable.table.ownerRef.getQualifiedColName()+" = "+user.getID().toString()+
+//		" AND "+
+//		MathDescTable.table.id.getQualifiedColName()+
+//		" IN ( "+									
+//			" SELECT "+MathDescTable.table.id.getQualifiedColName()+
+//			" FROM "+ MathDescTable.table.getTableName()+					
+//			" WHERE "+
+//				MathDescTable.table.ownerRef.getQualifiedColName()+" = "+user.getID().toString()+
+//			" MINUS	"+							
+//			" SELECT "+SimContextTable.table.mathRef.getQualifiedColName()+
+//			" FROM "+SimContextTable.table.getTableName()+
+//			" WHERE "+SimContextTable.table.mathRef.getQualifiedColName()+" IS NOT NULL "+	
+//			" MINUS	"+								
+//			" SELECT "+MathModelTable.table.mathRef.getQualifiedColName()+
+//			" FROM "+MathModelTable.table.getTableName()+				
+//			" MINUS "+							
+//			" SELECT "+SimulationTable.table.mathRef.getQualifiedColName()+						
+//			" FROM "+SimulationTable.table.getTableName()+
+//			" WHERE "+SimulationTable.table.mathRef.getQualifiedColName()+" IS NOT NULL	"+	
+//		")";										
+//	if(bPrintOnly){
+//		System.out.println(sql+";");
+//	}else{
+//		updateCleanSQL(con, sql);
+//	}
+//	
+//	sql =
+//		"DELETE FROM "+GeometryTable.table.getTableName()+							
+//		" WHERE	"+								
+//		GeometryTable.table.ownerRef.getQualifiedColName()+" = "+user.getID().toString()+
+//		" AND "+
+//		GeometryTable.table.dimension.getQualifiedColName()+"=0"+						
+//		" AND "+								
+//		GeometryTable.table.id.getQualifiedColName()+
+//		" NOT IN ( "+									
+//			" SELECT "+SimContextTable.table.geometryRef.getQualifiedColName()+
+//			" FROM "+ SimContextTable.table.getTableName()+		
+//			" UNION	"+								
+//			" SELECT "+MathDescTable.table.geometryRef.getQualifiedColName()+
+//			" FROM "+MathDescTable.table.getTableName()+				
+//		")";										
+//	if(bPrintOnly){
+//		System.out.println(sql+";");
+//	}else{
+//		updateCleanSQL(con, sql);
+//	}
+//	
+//	sql=
+//		"DELETE FROM "+ModelTable.table.getTableName()+						
+//		" WHERE "+ModelTable.table.id.getQualifiedColName()+
+//		" NOT IN ( "+									
+//			"SELECT "+BioModelTable.table.modelRef.getQualifiedColName()+
+//			" FROM "+BioModelTable.table.getTableName()+				
+//			" UNION	"+							
+//			" SELECT "+SimContextTable.table.modelRef.getQualifiedColName()+
+//			" FROM "+SimContextTable.table.getTableName()+			
+//		")";										
+//	if(bPrintOnly){
+//		System.out.println(sql+";");
+//	}else{
+//		updateCleanSQL(con, sql);
+//	}
+}
 /**
  * Insert the method's description here.
  * Creation date: (5/23/2006 10:44:52 AM)
@@ -98,6 +375,210 @@ public static cbit.vcell.document.VCDocumentInfo curate(CurateSpec curateSpec,Co
 	
 	cbit.vcell.document.VCDocumentInfo dbVCDocumentInfo = (cbit.vcell.document.VCDocumentInfo)getVersionableInfos(con,null,user,vType,false,vKey,false).elementAt(0);
 	return dbVCDocumentInfo;
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (9/18/2006 1:20:15 PM)
+ * @return cbit.vcell.simdata.FieldDataInfo[]
+ * @param conn java.sql.Connection
+ * @param user cbit.vcell.server.User
+ * @param fieldNames java.lang.String[]
+ */
+public static FieldDataDBOperationResults fieldDataDBOperation(Connection con, User user,
+		FieldDataDBOperationSpec fieldDataDBOperationSpec) throws SQLException, DataAccessException {
+	
+//	if(fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_ADMIN_GETALLEXTDATAKEYS){
+//		String sql;
+//		ResultSet rset;
+//		sql = 	"SELECT "+
+//					ExternalDataTable.table.id.getUnqualifiedColName() +
+//				" FROM " +
+//					ExternalDataTable.table.getTableName();
+//				
+//		Statement stmt = con.createStatement();
+//		Vector<KeyValue> v = new Vector<KeyValue>();
+//		try {
+//			rset = stmt.executeQuery(sql);
+//			while (rset.next()) {
+//				v.add(new KeyValue(rset.getBigDecimal(ExternalDataTable.table.id.getUnqualifiedColName())));
+//			}
+//		} finally {
+//			stmt.close();
+//		}
+//		FieldDataDBOperationResults fieldDataDBOperationResults = new FieldDataDBOperationResults();
+//		fieldDataDBOperationResults.adminAllExtDataKeys = v.toArray(new KeyValue[v.size()]);
+//		return fieldDataDBOperationResults;
+//		
+//	}else
+	if(fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_COPY_NO_CONFLICT){
+		//get all current ExtDataIDs
+		ExternalDataIdentifier[] existingExtDataIDArr =
+			fieldDataDBOperation(con,user,
+					FieldDataDBOperationSpec.createGetExtDataIDsSpec(user)).extDataIDArr;
+		//Rename FieldFunc names if necessary
+		Hashtable<String,String> newNameOrigNameHash = new Hashtable<String, String>();
+		for(int i=0;i<fieldDataDBOperationSpec.sourceNames.length;i+= 1){
+			String newFieldFuncName = fieldDataDBOperationSpec.sourceNames[i];
+			while(true){
+				boolean bNameConflictExists = false;
+				for(int j=0;j<existingExtDataIDArr.length;j+= 1){
+					if(existingExtDataIDArr[j].getName().equals(newFieldFuncName)){
+						bNameConflictExists = true;
+						break;
+					}
+				}
+				bNameConflictExists =
+					bNameConflictExists || newNameOrigNameHash.containsKey(newFieldFuncName);
+				if(!bNameConflictExists){
+					newNameOrigNameHash.put(newFieldFuncName,fieldDataDBOperationSpec.sourceNames[i]);
+					break;
+				}
+				newFieldFuncName = TokenMangler.getNextEnumeratedToken(newFieldFuncName);
+			}
+		}
+		//Add new ExternalDataIdentifier (FieldData ID) to DB
+		//Copy source annotation
+		FieldDataDBOperationResults sourceUserExtDataInfo =
+			fieldDataDBOperation(con,user,
+					FieldDataDBOperationSpec.createGetExtDataIDsSpec(
+							fieldDataDBOperationSpec.sourceOwner.getVersion().getOwner()));
+		ExternalDataIdentifier[] sourceUserExtDataIDArr = sourceUserExtDataInfo.extDataIDArr;
+		Hashtable<String, ExternalDataIdentifier> oldNameNewIDHash =
+			new Hashtable<String, ExternalDataIdentifier>();
+		Hashtable<String, KeyValue> oldNameOldExtDataIDKey =
+			new Hashtable<String, KeyValue>();
+		String[] newFieldFuncNamesArr = newNameOrigNameHash.keySet().toArray(new String[0]);
+		for(int i=0;i<newFieldFuncNamesArr.length;i+= 1){
+			//find orig annotation
+			String origAnnotation =
+				"Copy Field Data name used Field Data function\r\n"+
+				"Source type: "+fieldDataDBOperationSpec.sourceOwner.getVType().getTypeName()+"\r\n"+
+				"Source owner: "+fieldDataDBOperationSpec.sourceOwner.getVersion().getOwner().getName()+"\r\n"+
+				"Source name: "+fieldDataDBOperationSpec.sourceOwner.getVersion().getName()+"\r\n"+
+				"Original Field Data name: "+newNameOrigNameHash.get(newFieldFuncNamesArr[i])+"\r\n"+
+				"New Field Data name: "+newFieldFuncNamesArr[i]+"\r\n"+
+				"Source Annotation: "+newFieldFuncNamesArr[i]+"\r\n";
+			for(int j=0;j<sourceUserExtDataInfo.extDataAnnotArr.length;j+= 1){
+				String originalName = newNameOrigNameHash.get(newFieldFuncNamesArr[i]);
+				if(sourceUserExtDataIDArr[j].getName().equals(originalName)){
+					oldNameOldExtDataIDKey.put(originalName, sourceUserExtDataInfo.extDataIDArr[j].getKey());
+					origAnnotation+= sourceUserExtDataInfo.extDataAnnotArr[j];
+					break;
+				}
+			}
+			//
+			FieldDataDBOperationResults fieldDataDBOperationResults =
+				fieldDataDBOperation(con,user,
+						FieldDataDBOperationSpec.createSaveNewExtDataIDSpec(
+								user, newFieldFuncNamesArr[i],origAnnotation));
+//			errorCleanupExtDataIDV.add(fieldDataDBOperationResults.extDataID);
+			String origFieldFuncName =
+				newNameOrigNameHash.get(fieldDataDBOperationResults.extDataID.getName());
+			if(origFieldFuncName == null){
+				throw new DataAccessException("couldn't find original FieldFuncName using new ExternalDataId");
+			}
+			oldNameNewIDHash.put(origFieldFuncName,fieldDataDBOperationResults.extDataID);
+		}
+		
+		FieldDataDBOperationResults fieldDataDBOperationResults =
+			new FieldDataDBOperationResults();
+		fieldDataDBOperationResults.oldNameNewIDHash = oldNameNewIDHash;
+		fieldDataDBOperationResults.oldNameOldExtDataIDKeyHash = oldNameOldExtDataIDKey;
+		return fieldDataDBOperationResults;
+	}else if(fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_GETEXTDATAIDS){
+		String sql;
+		ResultSet rset;
+		sql = 	"SELECT "+
+					ExternalDataTable.table.getTableName()+".*"+","+
+					UserTable.table.userid.getQualifiedColName()+
+				" FROM " +
+					ExternalDataTable.table.getTableName() + ","+
+					UserTable.table.getTableName()+
+				" WHERE " +
+					ExternalDataTable.table.ownerRef + "=" +fieldDataDBOperationSpec.owner.getID() +
+					" AND "+
+					UserTable.table.id.getQualifiedColName() + " = " + ExternalDataTable.table.ownerRef.getQualifiedColName();
+				
+		Statement stmt = con.createStatement();
+		Vector<ExternalDataIdentifier> extDataIDV = new Vector<ExternalDataIdentifier>();
+		Vector<String> extDataAnnotV = new Vector<String>();
+		try {
+			rset = stmt.executeQuery(sql);
+			while (rset.next()) {
+				extDataIDV.add(ExternalDataTable.table.getExternalDataIdentifier(rset));
+				extDataAnnotV.add(ExternalDataTable.table.getExternalDataAnnot(rset));
+			}
+		} finally {
+			stmt.close();
+		}
+		FieldDataDBOperationResults fieldDataDBOperationResults = new FieldDataDBOperationResults();
+		fieldDataDBOperationResults.extDataIDArr = extDataIDV.toArray(new ExternalDataIdentifier[extDataIDV.size()]);
+		fieldDataDBOperationResults.extDataAnnotArr = extDataAnnotV.toArray(new String[extDataAnnotV.size()]);
+		return fieldDataDBOperationResults;
+		
+	}else if(fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_SAVEEXTDATAID){
+	
+		if(!fieldDataDBOperationSpec.newExtDataIDName.equals(
+				TokenMangler.fixTokenStrict(fieldDataDBOperationSpec.newExtDataIDName))){
+			throw new DataAccessException("Error inserting Field Data name "+
+					fieldDataDBOperationSpec.newExtDataIDName+"\n"+
+					"Field Data names can contain only letters,digits and underscores");
+		}
+		
+		KeyValue newKey = getNewKey(con);
+		String sql =
+			"INSERT INTO "+ExternalDataTable.table.getTableName()+" "+
+			ExternalDataTable.table.getSQLColumnList()+
+			" VALUES "+
+			ExternalDataTable.table.getSQLValueList(
+					newKey,user,
+					fieldDataDBOperationSpec.newExtDataIDName,
+					fieldDataDBOperationSpec.annotation);
+	
+		updateCleanSQL(con,sql);
+		ExternalDataIdentifier[] fdiArr =
+			fieldDataDBOperation(con, user,
+					FieldDataDBOperationSpec.createGetExtDataIDsSpec(user)).extDataIDArr;
+		for (int i = 0; i < fdiArr.length; i++) {
+			if(fdiArr[i].getName().equals(fieldDataDBOperationSpec.newExtDataIDName)){
+				FieldDataDBOperationResults fieldDataDBOperationResults = new FieldDataDBOperationResults();
+				fieldDataDBOperationResults.extDataID = fdiArr[i];;
+				return fieldDataDBOperationResults;
+			}
+		}
+		throw new DataAccessException(
+				"Unable to retrieve inserted ExternalDataIdentifier "+
+				fieldDataDBOperationSpec.newExtDataIDName);	
+
+	
+	}else if(fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_DELETE){
+		String sql = 
+			"DELETE" + " FROM " + ExternalDataTable.table.getTableName() + 
+			" WHERE " +
+				ExternalDataTable.table.ownerRef + " = " + user.getID() +
+				" AND " +
+				ExternalDataTable.table.id + " = " + fieldDataDBOperationSpec.specEDI.getKey().toString();
+	
+//		if (externalDataKeys != null && externalDataKeys.length > 0) {
+//			sql += " AND " + ExternalDataTable.table.id + " IN (";
+//			for (int i = 0; i < externalDataKeys.length; i ++) {
+//				if (i != 0) {
+//					sql += ",";
+//				}
+//				//sql += "'" + keys[i].toString() + "'";
+//				sql += externalDataKeys[i].toString();
+//			}
+//			sql += ")";
+//		}
+	
+		updateCleanSQL(con,sql);
+		
+		return new FieldDataDBOperationResults();
+	}
+	
+	throw new DataAccessException("Unknown FieldDataDBOperation "+fieldDataDBOperationSpec.opType);
 }
 
 
@@ -391,7 +872,6 @@ private static void findAllReferences(java.sql.Connection con, VersionableTypeVe
  * @return java.util.Hashtable
  */
 public static VersionableFamily getAllReferences(java.sql.Connection con, VersionableType vType, KeyValue keyValue) throws DataAccessException, SQLException {
-
 	VersionableTypeVersion vtv = new VersionableTypeVersion(vType, getVersionFromKeyValue(con,vType,keyValue));
 	VersionableFamily refs = new VersionableFamily(vtv);
 	findAllReferences(con, refs.getTarget(), refs);
@@ -467,88 +947,6 @@ private static KeyValue[] getExternalRefs(java.sql.Connection con,cbit.sql.Field
 		return (KeyValue[])externalRefsV.toArray(new KeyValue[externalRefsV.size()]);
 	}
 	return null;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (9/18/2006 1:20:15 PM)
- * @return cbit.vcell.simdata.FieldDataInfo[]
- * @param conn java.sql.Connection
- * @param user cbit.vcell.server.User
- * @param fieldNames java.lang.String[]
- */
-public static cbit.vcell.simdata.FieldDataIdentifier[] getFieldDataIdentifiers(Connection con, User user, cbit.vcell.field.FieldDataIdentifierSpec[] fieldDataIDSpecs) throws SQLException, DataAccessException {
-	Statement stmt;
-	String sql;
-	ResultSet rset;
-	sql = 	"SELECT *" + " FROM " + FieldDataTable.table.getTableName() + 
-			" WHERE " + FieldDataTable.table.ownerRef + "=" + user.getID();
-
-	if (fieldDataIDSpecs != null && fieldDataIDSpecs.length > 0) {
-		sql += " AND " + FieldDataTable.table.fieldDataName + " IN (";
-		for (int i = 0; i < fieldDataIDSpecs.length; i ++) {
-			if (i != 0) {
-				sql += ",";
-			}
-			sql += "'" + fieldDataIDSpecs[i].getFieldName() + "'";
-		}
-		sql += ")";
-	}
-			
-	stmt = con.createStatement();
-	Vector v = new Vector();
-	v.setSize(fieldDataIDSpecs.length);
-	try {
-		rset = stmt.executeQuery(sql);
-		if (rset.next()) {
-			KeyValue key = new KeyValue(rset.getBigDecimal(FieldDataTable.table.id.getUnqualifiedColName()));
-			String fieldname = rset.getString(FieldDataTable.table.fieldDataName.getUnqualifiedColName());
-			String datapath = rset.getString(FieldDataTable.table.dataFileName.getUnqualifiedColName());
-			String varlist = rset.getString(FieldDataTable.table.variableNames.getUnqualifiedColName());
-			
-			// origin
-			String originstr = rset.getString(FieldDataTable.table.origin.getUnqualifiedColName());			
-			java.util.StringTokenizer st = new java.util.StringTokenizer(originstr, ",");
-			cbit.util.Origin origin = new cbit.util.Origin(Double.parseDouble(st.nextToken()), Double.parseDouble(st.nextToken()), Double.parseDouble(st.nextToken()));
-			// extent
-			String extentstr = rset.getString(FieldDataTable.table.extent.getUnqualifiedColName());
-			st = new java.util.StringTokenizer(extentstr, ",");
-			cbit.util.Extent extent = new cbit.util.Extent(Double.parseDouble(st.nextToken()), Double.parseDouble(st.nextToken()), Double.parseDouble(st.nextToken()));
-			// size
-			String sizestr = rset.getString(FieldDataTable.table.meshsize.getUnqualifiedColName());
-			st = new java.util.StringTokenizer(sizestr, ",");
-			cbit.util.ISize size = new cbit.util.ISize(Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()));
-			
-			st = new java.util.StringTokenizer(varlist, ",");
-			while (st.hasMoreTokens()) {
-				String varname = st.nextToken();
-				for (int j = 0; j < fieldDataIDSpecs.length; j ++) {
-					if (fieldname.equals(fieldDataIDSpecs[j].getFieldName()) && varname.equals(fieldDataIDSpecs[j].getVariableName())) {
-						cbit.vcell.simdata.FieldDataIdentifier dataId = new cbit.vcell.simdata.FieldDataIdentifier(key, fieldname, varname, datapath, origin, extent, size);
-						v.setElementAt(dataId, j);
-					}
-				}
-			}
-		}
-	} finally {
-		stmt.close();
-	}
-
-	if (fieldDataIDSpecs != null && fieldDataIDSpecs.length > 0 && v.size() != fieldDataIDSpecs.length) {
-		throw new DataAccessException("Not all field names found in database");
-	}
-
-	for (int i = 0; i < v.size(); i ++) {
-		if (v.get(i) == null) {
-			throw new DataAccessException("Field data not found in database " + fieldDataIDSpecs[i]);
-		}
-	}
-	
-	cbit.vcell.simdata.FieldDataIdentifier[] dataIds = new cbit.vcell.simdata.FieldDataIdentifier[v.size()];
-	v.copyInto(dataIds);
-	
-	return dataIds;
 }
 
 
@@ -762,6 +1160,41 @@ public static cbit.util.Preference[] getPreferences(Connection con, User user) t
 		}
 	}
 	return preferences;
+}
+
+public static KeyValue[] getMathDescKeysForExternalData(Connection con,User owner,KeyValue extDataKey) throws SQLException{
+	Statement stmt;
+	String sql;
+	ResultSet rset;
+	sql = 	"SELECT " + MathDescExternalDataLinkTable.table.mathDescRef.getQualifiedColName() + 
+			" FROM " +
+				MathDescExternalDataLinkTable.table.getTableName() + "," +
+				ExternalDataTable.table.getTableName() +
+			" WHERE " + 
+				ExternalDataTable.table.ownerRef.getQualifiedColName() + " = " + owner.getID().toString()+
+				" AND " +
+				ExternalDataTable.table.id.getQualifiedColName() + " = " + extDataKey.toString()+
+				" AND " +
+				MathDescExternalDataLinkTable.table.extDataRef.getQualifiedColName() + " = " +
+					ExternalDataTable.table.id.getQualifiedColName();
+			
+
+	stmt = con.createStatement();
+	Vector<KeyValue> mathDescKeys = new Vector<KeyValue>();
+	try {
+		rset = stmt.executeQuery(sql);
+		while (rset.next()) {
+			mathDescKeys.add(
+					new KeyValue(
+						rset.getBigDecimal(
+								MathDescExternalDataLinkTable.table.mathDescRef.toString()))
+					);
+		}
+	} finally {
+		stmt.close();
+	}
+	return mathDescKeys.toArray(new KeyValue[0]);
+	
 }
 
 
@@ -1509,7 +1942,6 @@ public static void groupSetPublic(Connection con,SessionLog newLog,User owner,
 	}
 	currentCache.remove(vKey);
 }
-
 
 /**
  * Insert the method's description here.

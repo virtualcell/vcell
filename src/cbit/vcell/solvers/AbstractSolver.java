@@ -13,6 +13,7 @@ import cbit.vcell.solver.ode.SensStateVariable;
 import cbit.vcell.solver.ode.ODEStateVariable;
 import java.util.Vector;
 import cbit.vcell.parser.*;
+import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.math.*;
 /**
  * Insert the type's description here.
@@ -182,15 +183,9 @@ protected final String getBaseName() {
 public abstract double getCurrentTime();
 
 
-/**
- * Insert the method's description here.
- * Creation date: (9/20/2006 9:48:37 AM)
- * @return cbit.vcell.field.FieldDataIdentifier[]
- */
-public final cbit.vcell.simdata.FieldDataIdentifier[] getFieldDataIdentifiers() {
-	return simulationJob.getFieldDataIdentifiers();
+public final FieldDataIdentifierSpec[] getFieldDataIdentifierSpecs() {
+	return simulationJob.getFieldDataIdentifierSpecs();
 }
-
 
 /**
  * This method was created by a SmartGuide.

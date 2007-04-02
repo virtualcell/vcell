@@ -1,5 +1,6 @@
 package cbit.vcell.client.task;
 import cbit.rmi.event.*;
+import cbit.sql.VersionableType;
 import cbit.vcell.geometry.surface.*;
 import cbit.vcell.client.*;
 import cbit.vcell.client.desktop.*;
@@ -9,6 +10,8 @@ import cbit.vcell.mathmodel.*;
 import cbit.vcell.server.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.math.*;
+import cbit.vcell.modeldb.VersionableRelationship;
+import cbit.vcell.modeldb.VersionableTypeVersion;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.desktop.controls.*;
 import cbit.vcell.document.*;
@@ -63,6 +66,17 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
 	switch (currentDocument.getDocumentType()) {
 		case VCDocument.BIOMODEL_DOC: {
 			if (bAsNew) {
+//				Substitute Field Func Names-----
+				VersionableTypeVersion originalVersionableTypeVersion = null;
+				if(currentDocument.getVersion() != null){//From Opened...
+					originalVersionableTypeVersion =
+						new VersionableTypeVersion(
+								VersionableType.BioModelMetaData,
+								currentDocument.getVersion());
+				}
+				documentManager.substituteFieldFuncNames(
+						(BioModel)currentDocument,originalVersionableTypeVersion);
+//				--------------------------------
 				savedDocument = documentManager.saveAsNew((BioModel)currentDocument, newName, independentSims);
 			} else {
 				savedDocument = documentManager.save((BioModel)currentDocument, independentSims);
@@ -71,6 +85,18 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
 		}
 		case VCDocument.MATHMODEL_DOC: {
 			if (bAsNew) {
+//				Substitute Field Func Names-----
+				VersionableTypeVersion originalVersionableTypeVersion =
+					((MathModelWindowManager)documentWindowManager).getCopyFromBioModelAppVersionableTypeVersion();
+				if(originalVersionableTypeVersion == null && currentDocument.getVersion() != null){//From Opened...
+					originalVersionableTypeVersion =
+						new VersionableTypeVersion(
+								VersionableType.MathModelMetaData,
+								currentDocument.getVersion());
+				}
+				documentManager.substituteFieldFuncNames(
+						(MathModel)currentDocument,originalVersionableTypeVersion);
+				//--------------------------------
 				savedDocument = documentManager.saveAsNew((MathModel)currentDocument, newName, independentSims);
 			} else {
 				savedDocument = documentManager.save((MathModel)currentDocument, independentSims);

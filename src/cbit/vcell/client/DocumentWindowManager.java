@@ -1,28 +1,19 @@
 package cbit.vcell.client;
 import cbit.xml.merge.TMLPanel;
 import swingthreads.*;
-import java.net.*;
-import cbit.vcell.clientdb.*;
+
 import cbit.vcell.server.*;
-import java.io.*;
 import cbit.vcell.export.server.*;
 import cbit.rmi.event.*;
-import cbit.vcell.client.data.*;
-import cbit.plot.*;
-import cbit.vcell.desktop.controls.*;
 import cbit.gui.*;
-import cbit.sql.*;
 import cbit.util.*;
 import cbit.vcell.geometry.*;
-import cbit.vcell.mathmodel.*;
 
 import java.awt.*;
-import cbit.vcell.biomodel.*;
-import cbit.vcell.client.*;
+
 import cbit.vcell.document.*;
-import java.beans.*;
 import javax.swing.*;
-import cbit.vcell.client.server.*;
+
 import cbit.vcell.solver.*;
 /**
  * Insert the type's description here.
@@ -32,7 +23,7 @@ import cbit.vcell.solver.*;
 public abstract class DocumentWindowManager extends cbit.vcell.client.TopLevelWindowManager implements PerformanceMonitorListener, java.awt.event.ActionListener, DataViewerManager {
 	private JPanel jPanel = null;
 	private String documentID = null;
-
+	
 /**
  * Insert the method's description here.
  * Creation date: (5/5/2004 5:14:36 PM)
@@ -495,6 +486,394 @@ public void showDatabaseWindow() {
  */
 public abstract void showDataViewerPlotsFrames(javax.swing.JInternalFrame[] plotFrames);
 	
+/**
+ * Insert the method's description here.
+ * Creation date: (1/22/2007 7:52:25 AM)
+ */
+public void showFieldDataWindow() {
+
+	getRequestManager().showFieldDataWindow();
+	
+//	try{
+////		if(pdeDataViewerJIF == null){
+////			pdeDataViewer = new PDEDataViewer();
+////			pdeDataViewerJIF = createDefaultFrame(pdeDataViewer);
+////			pdeDataViewerJIF.addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
+////				public void internalFrameClosing(javax.swing.event.InternalFrameEvent e) {
+////					close(pdeDataViewerJIF, getJDesktopPane());
+////				};
+////			});
+////		}
+//		if(fieldDataGUIPanelJIF == null){
+//			fieldDataGUIPanel = new FieldDataGUIPanel();
+//			fieldDataGUIPanelJIF = createDefaultFrame(fieldDataGUIPanel);
+//			fieldDataGUIPanelJIF.addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
+//				public void internalFrameClosing(javax.swing.event.InternalFrameEvent e) {
+//					close(fieldDataGUIPanelJIF, getJDesktopPane());
+//				};
+//			});
+//			fieldDataGUIPanel.setFieldDataViewManager(
+//				new FieldDataGUIPanel.FieldDataViewManager(){
+//					public void show(ExternalDataIdentifier eDI){
+//						if( pdeDataViewer == null ||
+//							!pdeDataViewer.getPdeDataContext().getVCDataIdentifier().equals(eDI)){
+//							if(pdeDataViewerJIF != null && pdeDataViewerJIF.isVisible()){
+//								PopupGenerator.showInfoDialog("Only 1 Field data can be viewed at a time.");
+//								return;
+//							}
+//							if(pdeDataViewerJIF != null){
+//								getJDesktopPane().remove(pdeDataViewerJIF);
+//							}
+//							//Create new Viewer
+//							pdeDataViewer = new PDEDataViewer();
+//							try{
+//								pdeDataViewer.setDataViewerManager(DocumentWindowManager.this);
+//							}catch(PropertyVetoException e){
+//								e.printStackTrace();
+//								//ignore
+//							}
+//							pdeDataViewerJIF = createDefaultFrame(pdeDataViewer);
+//							pdeDataViewerJIF.addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
+//								public void internalFrameClosing(javax.swing.event.InternalFrameEvent e) {
+//									close(pdeDataViewerJIF, getJDesktopPane());
+//								};
+//							});
+//							//
+//							VCDataManager vcdm = getRequestManager().getVCDataManager();
+//							PDEDataManager pdeDatamanager = new PDEDataManager(vcdm, eDI);
+//							pdeDataViewer.setPdeDataContext(pdeDatamanager.getPDEDataContext());
+//						}
+//						showFrame(pdeDataViewerJIF, getJDesktopPane());
+//					}
+//				}
+//			);
+//		}
+//		if(!fieldDataGUIPanel.isInitialized()){
+//			fieldDataGUIPanel.setClientRequestManager((ClientRequestManager)getRequestManager());
+//		}
+//		showFrame(fieldDataGUIPanelJIF, getJDesktopPane());
+//	}catch(Exception e){
+//		e.printStackTrace();
+//		PopupGenerator.showErrorDialog("Error showing FieldDataWindow\n"+e.getMessage());
+//	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+//	try{
+//		final JList fdList = new JList();
+//
+//		final java.util.Vector<ExternalDataIdentifier> fdiArrV = new java.util.Vector<ExternalDataIdentifier>(java.util.Arrays.asList(getRequestManager().getDocumentManager().getExternalDataIdentifiers()));
+//		//final cbit.vcell.simdata.FieldDataIdentifier[] fdiArr =
+//			//getRequestManager().getDocumentManager().getFieldDataIdentifiers(null);
+//
+//		JPanel fdPanel = new JPanel(new java.awt.GridBagLayout());
+//		
+////		JButton importBioformatsJButton = new JButton("Import bioformats...");
+////		importBioformatsJButton.addActionListener(
+////			new java.awt.event.ActionListener(){
+////				public void actionPerformed(java.awt.event.ActionEvent actionEvent){
+////					try{
+////						cbit.vcell.simdata.ExternalDataIdentifier[] fdiArr = new cbit.vcell.simdata.ExternalDataIdentifier[fdiArrV.size()];
+////						fdiArrV.copyInto(fdiArr);
+////						
+////						File importFile = DatabaseWindowManager.showFileChooserDialog(false,getUserPreferences());						
+////						String imageID = importFile.getPath();
+////						ImageDataset imageDataset = VirtualFrapTest.readImageDataset(imageID);
+////						int numX = imageDataset.getImages()[0].getNumX();
+////						int numY = imageDataset.getImages()[0].getNumY();
+////						int numZ = imageDataset.getSizeZ();
+////						// view image
+//////						ImageViewer imageViewer = new ImageViewer();
+//////						imageViewer.setImages(imageDataset);
+//////						imageViewer.setVisible(true);
+////						OverlayEditorPanelJAI overlayEditorPanel = new OverlayEditorPanelJAI();
+////						Extent extent = imageDataset.getImages()[0].getExtent();
+////						UShortImage roiImage = new UShortImage(new short[numX*numY*numZ],extent,numX,numY,numZ);
+////						overlayEditorPanel.setROI(roiImage);
+////						overlayEditorPanel.setImages(imageDataset);
+////						int retcode = DialogUtils.showComponentOKCancelDialog((Component)null, overlayEditorPanel, "continue to save?");
+////						if (retcode != JOptionPane.OK_OPTION){
+////							return;
+////						}
+////									
+////						
+////					    //Save DB
+////						cbit.vcell.simdata.ExternalDataIdentifier fdi = null;
+////						String fieldDataInfo = "FieldDataName,VarName,0,0,0,"+extent.getX()+","+extent.getY()+","+extent.getZ()+","+numX+","+numY+","+numZ;
+////						String fieldDataName = null;
+////						Origin origin = null;
+////						ISize isize = null;
+////						cbit.vcell.simdata.ExternalDataIdentifier fdiDB = null;
+////						String varName = null;
+////						while(fdi == null){
+////							fieldDataInfo = PopupGenerator.showInputDialog((Component)null,"Enter Field Data (name,var,O,E,S)",fieldDataInfo);
+////							if(fieldDataInfo == null || fieldDataInfo.length() == 0){
+////								PopupGenerator.showErrorDialog("Field Data info cannot be empty");
+////								continue;
+////							}
+////							java.util.StringTokenizer st = new java.util.StringTokenizer(fieldDataInfo, ",");
+////							fieldDataName = null;
+////							try{
+////								fieldDataName = st.nextToken();
+////							}catch(Exception e){
+////								PopupGenerator.showErrorDialog("Error parsing FieldDataName "+e.getMessage());
+////								continue;
+////							}
+////							for(int i=0;i<fdiArr.length;i+= 1){
+////								if(fdiArr[i].getName().equals(fieldDataName)){
+////									fieldDataName = null;
+////									PopupGenerator.showErrorDialog("Field Dataname "+fdiArr[i].getName()+" already exists,");
+////									break;
+////								}
+////							}
+////							if(fieldDataName != null){
+////								try{
+////									varName = st.nextToken();
+////									origin = new Origin(Double.parseDouble(st.nextToken()), Double.parseDouble(st.nextToken()), Double.parseDouble(st.nextToken()));
+////									extent = new Extent(Double.parseDouble(st.nextToken()), Double.parseDouble(st.nextToken()), Double.parseDouble(st.nextToken()));
+////									isize = new ISize(Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()));
+////									break;
+////								}catch(Exception e){
+////									PopupGenerator.showErrorDialog("Error parsing FieldData Info "+e.getMessage());
+////								}
+////							}
+////						}
+////						fdiDB = getRequestManager().getDocumentManager().saveExternalDataIdentifier(fieldDataName);
+////					    //Save Disk
+////					    try{
+////					    	short[][][] pixData = new short[imageDataset.getImages().length][1][];
+////					    	for (int imageNum = 0; imageNum < imageDataset.getImages().length; imageNum++) {
+////					    		short[] imageData = imageDataset.getImages()[imageNum].getPixels();
+////					    		pixData[imageNum][0] = imageData;
+////					    	}
+////					    	cbit.vcell.client.server.FieldDataFileOperationSpec fdos = new cbit.vcell.client.server.FieldDataFileOperationSpec();
+////					    	fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
+////					    	fdos.shortSpecData =  pixData;
+////					    	fdos.specFDI = fdiDB;
+////					    	fdos.varNames = new String[] {varName};
+////					    	fdos.owner = getUser();
+////					    	fdos.times = imageDataset.getImageTimeStamps();
+////					    	fdos.variableTypes = new VariableType[] {VariableType.VOLUME};
+////					    	fdos.origin = origin;
+////					    	fdos.extent = extent;
+////					    	fdos.isize = isize;
+////					    	cbit.vcell.client.server.FieldDataFileOperationResults fdor =  getRequestManager().getVCDataManager().fieldDataFileOperation(fdos);
+////					    }catch(Exception e){
+////						    getRequestManager().getDocumentManager().deleteExternalDataIdentifiers(new KeyValue[] {fdiDB.getKey()});
+////						    throw e;
+////					    }
+////
+////					    fdiArrV.clear();
+////					    cbit.vcell.simdata.ExternalDataIdentifier[] fdiArrTemp = getRequestManager().getDocumentManager().getExternalDataIdentifiers();
+////					    fdiArrV.addAll(java.util.Arrays.asList(fdiArrTemp));
+////					    fdList.removeAll();
+////					    fdList.setListData(fdiArrV);
+////					}catch(cbit.vcell.client.task.UserCancelException e){
+////					}catch(Exception e){
+////						PopupGenerator.showErrorDialog("Error importing Field Data "+e.getMessage());
+////					}
+////				}
+////			}
+////		);
+//
+//		JButton importJButton = new JButton("Import...");
+//		importJButton.addActionListener(
+//			new java.awt.event.ActionListener(){
+//				public void actionPerformed(java.awt.event.ActionEvent actionEvent){
+//					try{
+//						cbit.vcell.simdata.ExternalDataIdentifier[] fdiArr = new cbit.vcell.simdata.ExternalDataIdentifier[fdiArrV.size()];
+//						fdiArrV.copyInto(fdiArr);
+//						File importFile = DatabaseWindowManager.showFileChooserDialog(false,getUserPreferences());						
+//					    java.awt.Image image = java.awt.Toolkit.getDefaultToolkit().getImage(importFile.getAbsolutePath());
+//					    java.awt.image.PixelGrabber pg =
+//					        new java.awt.image.PixelGrabber(
+//					            image,
+//					            0,
+//					            0,
+//					            image.getWidth(null),
+//					            image.getHeight(null),
+//					            false);
+//					    pg.grabPixels();
+//					    int width = image.getWidth(null);
+//					    int height = image.getHeight(null);
+//					    System.out.println(width+ " " + height+ " "+ importFile.getAbsolutePath());
+//					    Object pixData = pg.getPixels();
+//
+//					    //Save DB
+//						cbit.vcell.simdata.ExternalDataIdentifier fdi = null;
+//						String fieldDataInfo = "FieldDataName,VarName,0,0,0,1,1,1,"+width+","+height+",1";
+//						String fieldDataName = null;
+//						Origin origin = null;
+//						Extent extent = null;
+//						ISize isize = null;
+//						cbit.vcell.simdata.ExternalDataIdentifier fdiDB = null;
+//						String varName = null;
+//						while(fdi == null){
+//							fieldDataInfo = PopupGenerator.showInputDialog((Component)null,"Enter Field Data (name,var,O,E,S)",fieldDataInfo);
+//							if(fieldDataInfo == null || fieldDataInfo.length() == 0){
+//								PopupGenerator.showErrorDialog("Field Data info cannot be empty");
+//								continue;
+//							}
+//							java.util.StringTokenizer st = new java.util.StringTokenizer(fieldDataInfo, ",");
+//							fieldDataName = null;
+//							try{
+//								fieldDataName = st.nextToken();
+//							}catch(Exception e){
+//								PopupGenerator.showErrorDialog("Error parsing FieldDataName "+e.getMessage());
+//								continue;
+//							}
+//							for(int i=0;i<fdiArr.length;i+= 1){
+//								if(fdiArr[i].getName().equals(fieldDataName)){
+//									fieldDataName = null;
+//									PopupGenerator.showErrorDialog("Field Dataname "+fdiArr[i].getName()+" already exists,");
+//									break;
+//								}
+//							}
+//							if(fieldDataName != null){
+//								try{
+//									varName = st.nextToken();
+//									origin = new Origin(Double.parseDouble(st.nextToken()), Double.parseDouble(st.nextToken()), Double.parseDouble(st.nextToken()));
+//									extent = new Extent(Double.parseDouble(st.nextToken()), Double.parseDouble(st.nextToken()), Double.parseDouble(st.nextToken()));
+//									isize = new ISize(Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()));
+//									break;
+//								}catch(Exception e){
+//									PopupGenerator.showErrorDialog("Error parsing FieldData Info "+e.getMessage());
+//								}
+//							}
+//						}
+//						fdiDB = getRequestManager().getDocumentManager().saveExternalDataIdentifier(fieldDataName);
+//					    //Save Disk
+//					    try{
+//					    	cbit.vcell.client.server.FieldDataFileOperationSpec fdos = new cbit.vcell.client.server.FieldDataFileOperationSpec();
+//					    	fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
+//					    	fdos.byteSpecData =  new byte[][][] {{(byte[])pixData}};
+//					    	fdos.specEDI = fdiDB;
+//					    	fdos.varNames = new String[] {varName};
+//					    	fdos.owner = getUser();
+//					    	fdos.times = new double[] {0};
+//					    	fdos.variableTypes = new VariableType[] {VariableType.VOLUME};
+//					    	fdos.origin = origin;
+//					    	fdos.extent = extent;
+//					    	fdos.isize = isize;
+//					    	//Create Mesh
+//					    	byte[] riBytes = new byte[isize.getX()*isize.getY()*isize.getZ()];
+//					    	Arrays.fill(riBytes, (byte)0);
+//					    	VCImage riVCImage = new VCImageUncompressed(null,riBytes,extent,isize.getX(),isize.getY(),isize.getZ());
+//					    	RegionImage regionImage = new RegionImage(riVCImage);
+//					    	fdos.cartesianMesh = CartesianMesh.createSimpleCartesianMesh(origin, extent, isize,regionImage);
+//					    	//
+//					    	fdos.cartesianMesh.write(System.out);
+//					    	//
+//					    	//Do Operation
+//					    	cbit.vcell.client.server.FieldDataFileOperationResults fdor =  getRequestManager().getVCDataManager().fieldDataFileOperation(fdos);
+//					    }catch(Exception e){
+//						    getRequestManager().getDocumentManager().deleteExternalDataIdentifiers(new KeyValue[] {fdiDB.getKey()});
+//						    throw e;
+//					    }
+//
+//					    fdiArrV.clear();
+//					    cbit.vcell.simdata.ExternalDataIdentifier[] fdiArrTemp = getRequestManager().getDocumentManager().getExternalDataIdentifiers();
+//					    fdiArrV.addAll(java.util.Arrays.asList(fdiArrTemp));
+//					    fdList.removeAll();
+//					    fdList.setListData(fdiArrV);
+//					}catch(cbit.vcell.client.task.UserCancelException e){
+//					}catch(Exception e){
+//						PopupGenerator.showErrorDialog("Error importing Field Data "+e.getMessage());
+//					}
+//				}
+//			}
+//		);
+//
+//		JButton deleteJButton = new JButton("Delete");
+//		deleteJButton.addActionListener(
+//			new java.awt.event.ActionListener(){
+//				public void actionPerformed(java.awt.event.ActionEvent actionEvent){
+//					int selectedIndex = fdList.getSelectedIndex();
+//					if(selectedIndex != -1){
+//						cbit.vcell.simdata.ExternalDataIdentifier selectedFDI = (cbit.vcell.simdata.ExternalDataIdentifier)fdiArrV.elementAt(selectedIndex);
+//						try{
+//							//Delete from DB
+//							getRequestManager().getDocumentManager().deleteExternalDataIdentifiers(new KeyValue[] {selectedFDI.getKey()});
+//							//Delete from Disk
+//							cbit.vcell.client.server.FieldDataFileOperationSpec fdos = new cbit.vcell.client.server.FieldDataFileOperationSpec();
+//					    	fdos.opType = FieldDataFileOperationSpec.FDOS_DELETE;
+//					    	fdos.specEDI = selectedFDI;
+//					    	fdos.owner = getUser();
+//					    	getRequestManager().getVCDataManager().fieldDataFileOperation(fdos);
+//
+//					    	//Update GUI
+//						    fdiArrV.clear();
+//						    cbit.vcell.simdata.ExternalDataIdentifier[] fdiArrTemp = getRequestManager().getDocumentManager().getExternalDataIdentifiers();
+//						    fdiArrV.addAll(java.util.Arrays.asList(fdiArrTemp));
+//						    fdList.removeAll();
+//						    fdList.setListData(fdiArrV);
+//						}catch(Exception e){
+//							PopupGenerator.showErrorDialog("Error deleting Field Data "+e.getMessage());
+//						}
+//					}
+//				}
+//			}
+//		);
+//
+//		fdList.setListData(fdiArrV);
+//		fdList.addListSelectionListener(
+//			new javax.swing.event.ListSelectionListener(){
+//				public void valueChanged(javax.swing.event.ListSelectionEvent e){
+//					if(!e.getValueIsAdjusting()){
+//						System.out.println("index ="+fdList.getSelectedIndex());
+//						if(fdList.getSelectedIndex() != -1){
+//						}
+//					}
+//				}
+//			}
+//		);
+//		
+//		java.awt.GridBagConstraints constraintsFDPanel = new java.awt.GridBagConstraints();
+//		constraintsFDPanel.gridx = 0; constraintsFDPanel.gridy = 0;
+//		//constraintsGrantAccessJPanel.fill = java.awt.GridBagConstraints.BOTH;
+//		//constraintsGrantAccessJPanel.anchor = java.awt.GridBagConstraints.WEST;
+//		//constraintsGrantAccessJPanel.weightx = 1.0;
+//		//constraintsGrantAccessJPanel.weighty = 1.0;
+//		//constraintsGrantAccessJPanel.insets = new java.awt.Insets(5, 10, 5, 10);
+//		Box buttonBox = new Box(BoxLayout.X_AXIS);
+//		//buttonBox.add(importBioformatsJButton);
+//		buttonBox.add(importJButton);
+//		buttonBox.add(deleteJButton);
+//		fdPanel.add(buttonBox, constraintsFDPanel);
+//		//fdPanel.add(importJButton, constraintsFDPanel);
+//
+//		//constraintsFDPanel.gridx = 1; constraintsFDPanel.gridy = 0;
+//		//fdPanel.add(deleteJButton, constraintsFDPanel);
+//
+//		constraintsFDPanel.gridx = 0; constraintsFDPanel.gridy = 1;
+//		constraintsFDPanel.gridwidth = 1;
+//		constraintsFDPanel.weightx = 1;
+//		fdPanel.add(fdList, constraintsFDPanel);
+//
+//		fdPanel.setSize(500, 300);
+//		PopupGenerator.showComponentCloseDialog(null,fdPanel,"Field Data Wiondow");
+//
+//	}catch(Exception e){
+//		PopupGenerator.showErrorDialog("Error getting Field Data Info\n"+e.getMessage());
+//	}
+	
+}
+
+
 /**
  * Insert the method's description here.
  * Creation date: (6/4/2004 4:42:35 AM)

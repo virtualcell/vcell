@@ -7,11 +7,15 @@ package cbit.vcell.server;
 import java.rmi.*;
 import cbit.sql.*;
 import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.simdata.ExternalDataIdentifier;
 
 /**
  * This type was created in VisualAge.
  */
 public interface AdminDatabaseServer extends java.rmi.Remote {
+	
+ExternalDataIdentifier[] getExternalDataIdentifiers(User fielddataOwner) throws RemoteException, DataAccessException;
+
 /**
  * Insert the method's description here.
  * Creation date: (1/31/2003 2:33:54 PM)
@@ -20,6 +24,7 @@ public interface AdminDatabaseServer extends java.rmi.Remote {
  * @param userOnly cbit.vcell.server.User
  * @exception java.rmi.RemoteException The exception description.
  */
+
 SimulationJobStatus getSimulationJobStatus(KeyValue simKey, int jobIndex) throws RemoteException, DataAccessException;
 	public java.util.List getSimulationJobStatus(String conditions) throws RemoteException, DataAccessException;
 /**

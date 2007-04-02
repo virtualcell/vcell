@@ -257,26 +257,32 @@ void read(File file, File zipFile) throws IOException, OutOfMemoryError {
  * @param varnames java.lang.String
  * @param data double[]
  */
-public static void write(File file, String varname, int varType, cbit.util.ISize size, double[] data) throws IOException {
+public static void write(File file, String[] varNameArr, VariableType[] varTypeArr, cbit.util.ISize size, double[][] dataArr) throws IOException {
 	RandomAccessFile raf = new RandomAccessFile(file, "rw");
 	FileHeader fileHeader = new FileHeader();
-	DataBlock dataBlock = null;
-	double[] writeBuffer = new double[data.length];
 	
 	fileHeader.sizeX = size.getX();
 	fileHeader.sizeY = size.getY();
 	fileHeader.sizeZ = size.getZ();
-	fileHeader.numBlocks = 1;
+	fileHeader.numBlocks = varNameArr.length;
 	fileHeader.firstBlockOffset = FileHeader.headerSize;
-
 	fileHeader.write(raf);
-   
-	dataBlock = DataBlock.createDataBlock(varname, varType, data.length, fileHeader.firstBlockOffset + DataBlock.blockSize);
-	dataBlock.writeBlockHeader(raf);	   
 
-	for (int i = 0; i < data.length; i ++) {
-		raf.writeDouble(data[i]);
+	int masterOffset = fileHeader.firstBlockOffset;
+	masterOffset += DataBlock.blockSize*varNameArr.length;
+	for(int i=0;i<varNameArr.length;i+= 1){
+		DataBlock dataBlock = 
+			DataBlock.createDataBlock(
+					varNameArr[i], varTypeArr[i].getType(), dataArr[i].length, masterOffset);
+		dataBlock.writeBlockHeader(raf);	   
+		masterOffset+= (dataArr[i].length*8);
 	}
+	for(int i=0;i<varNameArr.length;i+= 1){
+		for (int j = 0; j < dataArr[i].length; j ++) {
+			raf.writeDouble(dataArr[i][j]);
+		}
+	}
+
 	raf.close();		
 }
 }

@@ -40,6 +40,7 @@ protected ClientPDEDataContext(DataManager argDataManager) {
  */
 public void addFunction(cbit.vcell.math.AnnotatedFunction function) throws cbit.vcell.server.DataAccessException {
 	dataManager.addFunction(function);
+	firePropertyChange(PROP_CHANGE_FUNC_ADDED, null, function);
 }
 
 
@@ -213,6 +214,7 @@ public abstract void refreshIdentifiers();
  */
 public void removeFunction(cbit.vcell.math.AnnotatedFunction function) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.PermissionException {
 	dataManager.removeFunction(function);
+	firePropertyChange(PROP_CHANGE_FUNC_REMOVED, function, null);
 }
 
 

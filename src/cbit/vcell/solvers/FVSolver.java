@@ -1,4 +1,6 @@
 package cbit.vcell.solvers;
+import cbit.util.ISize;
+import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.FilamentVariable;
@@ -9,6 +11,8 @@ import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.math.MembraneRegionVariable;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Variable;
+import cbit.vcell.simdata.SimDataBlock;
+import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.parser.Expression;
@@ -539,34 +543,47 @@ public void propertyChange(java.beans.PropertyChangeEvent event) {
  * Creation date: (9/21/2006 1:28:12 PM)
  */
 private void resampleFieldData() throws SolverException {
-	fireSolverStarting("resampling field data...");
+	
 	try {	
-		cbit.vcell.simdata.FieldDataIdentifier[] fieldDataIDs = getFieldDataIdentifiers();
-		if (fieldDataIDs != null) {
-			for (int i = 0; i < fieldDataIDs.length; i ++) {
-				File fieldFile = new File(getSaveDirectory(), cppCoderVCell.getBaseFilename() + fieldDataIDs[i].getDefaultFieldDataFileNameForSimulation());
+		FieldDataIdentifierSpec[] fieldDataIDSpecs = getFieldDataIdentifierSpecs();
+		if (fieldDataIDSpecs != null) {
+			fireSolverStarting("resampling field data...");
+			for (int i = 0; i < fieldDataIDSpecs.length; i ++) {
+				File fieldFile = new File(getSaveDirectory(), cppCoderVCell.getBaseFilename() + fieldDataIDSpecs[i].getDefaultFieldDataFileNameForSimulation());
 				
 				//PrintWriter pw = new PrintWriter(new FileWriter(new File(getSaveDirectory(), cppCoderVCell.getBaseFilename()+".fdat")));
-				File origDataFile = new File(getSaveDirectory(), fieldDataIDs[i].getDataFilePath());
-				if (fieldFile.exists() && origDataFile.lastModified() < fieldFile.lastModified()) {
-					continue;
-				}
-				if (!origDataFile.exists()) {
-					throw new RuntimeException("Field Data for " + fieldDataIDs[i].getFieldName() + " doesn't exist!");
-				}
+//				File origDataFile = new File(getSaveDirectory(), fieldDataIDSpecs[i].getDataFilePath());
+//				if (fieldFile.exists() && origDataFile.lastModified() < fieldFile.lastModified()) {
+//					continue;
+//				}
+//				if (!origDataFile.exists()) {
+//					throw new RuntimeException("Field Data for " + fieldDataIDs[i].getFieldName() + " doesn't exist!");
+//				}
 
-				if (fieldDataIDs[i].getOrigin().compareEqual(getSimulation().getMathDescription().getGeometry().getOrigin())
-					&& fieldDataIDs[i].getExtent().compareEqual(getSimulation().getMathDescription().getGeometry().getExtent()) 
-					&& fieldDataIDs[i].getSize().compareEqual(getSimulation().getMeshSpecification().getSamplingSize())) {
-					cbit.util.FileUtils.copyFile(origDataFile, fieldFile);
-				} else {
-					CartesianMesh origMesh = CartesianMesh.createSimpleCartesianMesh(fieldDataIDs[i].getOrigin(), fieldDataIDs[i].getExtent(), fieldDataIDs[i].getSize());
-					CartesianMesh newMesh = CartesianMesh.createSimpleCartesianMesh(getSimulation().getMathDescription().getGeometry().getOrigin(), getSimulation().getMathDescription().getGeometry().getExtent(),
-						getSimulation().getMeshSpecification().getSamplingSize());
+				SimulationData simData = new SimulationData(fieldDataIDSpecs[i].getVCDataIdentifier(),getSaveDirectory());
+				CartesianMesh origMesh = simData.getMesh();
+				CartesianMesh newMesh = CartesianMesh.createSimpleCartesianMesh(
+						getSimulation().getMathDescription().getGeometry().getOrigin(), 
+						getSimulation().getMathDescription().getGeometry().getExtent(),
+						getSimulation().getMeshSpecification().getSamplingSize(),
+						getSimulation().getMathDescription().getGeometry().getGeometrySurfaceDescription().getRegionImage());
+				ISize origISize = new ISize(origMesh.getSizeX(),origMesh.getSizeY(),origMesh.getSizeZ());
 
-					double[] origData = cbit.vcell.simdata.DataSet.fetchSimData(fieldDataIDs[i].getVariableName(), origDataFile);
-					double[] newData = null;
-					
+				boolean bSame = false;
+				if (origMesh.getOrigin().compareEqual(getSimulation().getMathDescription().getGeometry().getOrigin())
+					&& origMesh.getExtent().compareEqual(getSimulation().getMathDescription().getGeometry().getExtent()) 
+					&& origISize.compareEqual(getSimulation().getMeshSpecification().getSamplingSize())) {
+					bSame = true;
+				} //else {
+				SimDataBlock simDataBlock = simData.getSimDataBlock(fieldDataIDSpecs[i].getFieldFuncArgs().getVariableName(), fieldDataIDSpecs[i].getFieldFuncArgs().getTime().evaluateConstant());
+				if(!simDataBlock.getVariableType().compareEqual(VariableType.VOLUME)){
+					throw new Exception("Variable "+fieldDataIDSpecs[i].getFieldFuncArgs().getVariableName()+" is not Volume type");
+				}
+				double[] origData = simDataBlock.getData();
+				double[] newData = null;
+				if(bSame){
+					newData = origData;
+				}else{
 					switch (getSimulation().getMathDescription().getGeometry().getDimension()) {
 						case 1:
 							newData = cbit.vcell.solver.test.MathTestingUtilities.resample1DSpatialSimple(origData, origMesh, newMesh);
@@ -577,12 +594,18 @@ private void resampleFieldData() throws SolverException {
 						case 3:
 							newData = cbit.vcell.solver.test.MathTestingUtilities.resample3DSpatialSimple(origData, origMesh, newMesh);
 							break;					
-					}				
-					cbit.vcell.simdata.DataSet.write(fieldFile, fieldDataIDs[i].getVariableName(), VariableType.getVariableTypeFromLength(newMesh, newData.length).getType(), getSimulation().getMeshSpecification().getSamplingSize(), newData);
+					}
 				}
+				cbit.vcell.simdata.DataSet.write(
+						fieldFile,
+						new String[] {fieldDataIDSpecs[i].getFieldFuncArgs().getVariableName()},
+						new VariableType[]{VariableType.getVariableTypeFromLength(newMesh, newData.length)},
+						getSimulation().getMeshSpecification().getSamplingSize(),
+						new double[][]{newData});
 			}
 		}
 	} catch (Exception ex) {
+		ex.printStackTrace(System.out);
 		throw new SolverException(ex.getMessage());
 	}
 }

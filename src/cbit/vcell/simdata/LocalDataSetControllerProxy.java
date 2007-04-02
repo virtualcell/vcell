@@ -7,6 +7,8 @@ import cbit.rmi.event.*;
 ©*/
 import cbit.vcell.solver.*;
 import cbit.vcell.export.server.*;
+import cbit.vcell.field.FieldDataFileOperationResults;
+import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.simdata.gui.SpatialSelection;
 import cbit.vcell.math.*;
 import cbit.plot.*;
@@ -97,6 +99,32 @@ public void addFunctions(VCDataIdentifier vcdID, AnnotatedFunction[] functions) 
 		throw new DataAccessException(e.getMessage());
 	}
 }
+
+
+public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws DataAccessException {
+	sessionLog.print("LocalDataSetControllerProxy.fieldDataFileOperation(...)");
+	try {
+		//
+		// try once with remote reference (if it exists)
+		// if it fails with a RemoteException, invalidate the remote reference and try local
+		//
+		DataSetController rdsc = getRemoteDataSetController();
+		if (rdsc!=null){
+			try {
+				return rdsc.fieldDataFileOperation(fieldDataFileOperationSpec);
+			}catch (RemoteException e){
+				sessionLog.exception(e);
+				invalidateRemoteDataSetController();
+			}
+		}
+		return getLocalDataSetController().fieldDataFileOperation(fieldDataFileOperationSpec);
+	}catch (Throwable e){
+		sessionLog.exception(e);
+		throw new DataAccessException(e.getMessage());
+	}
+}
+
+
 /**
  * This method was created by a SmartGuide.
  * @return java.lang.String[]

@@ -4,6 +4,10 @@ package cbit.vcell.parser;
  * All rights reserved.
 ©*/
 /* JJT: 0.2.2 */
+import java.util.Hashtable;
+
+import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.simdata.ExternalDataIdentifier;
 import net.sourceforge.interval.ia_math.*;
 
 
@@ -124,6 +128,19 @@ boolean hasGradient() {
 	return false;
 }
 
+void substituteFieldFunctionFieldName(Hashtable<String, ExternalDataIdentifier> substituteNamesHash) {
+	for (int i = 0;  i < jjtGetNumChildren(); i ++) {
+		SimpleNode child = (SimpleNode)jjtGetChild(i);
+		child.substituteFieldFunctionFieldName(substituteNamesHash);
+	}
+}
+
+void getFieldFunctionArguments(java.util.Vector<FieldFunctionArguments> v) {	
+	for (int i = 0;  i < jjtGetNumChildren(); i ++) {
+		SimpleNode child = (SimpleNode)jjtGetChild(i);
+		child.getFieldFunctionArguments(v);		 
+	}	
+}
 
   public Object getInfo() { return info; }
 

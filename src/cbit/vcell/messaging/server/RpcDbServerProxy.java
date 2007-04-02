@@ -6,6 +6,8 @@ import cbit.sql.Versionable;
 import cbit.vcell.solver.SolverResultSetInfo;
 import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.biomodel.BioModelMetaData;
+import cbit.vcell.field.FieldDataDBOperationResults;
+import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.server.ObjectNotFoundException;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.User;
@@ -51,6 +53,17 @@ public cbit.vcell.document.VCDocumentInfo curate(cbit.vcell.server.CurateSpec cu
  */
 public void deleteBioModel(cbit.sql.KeyValue bioModelKey) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
 	rpc("deleteBioModel",new Object[]{user, bioModelKey});
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (4/29/2004 4:31:48 PM)
+ * @param bioModelKey cbit.sql.KeyValue
+ * @exception java.rmi.RemoteException The exception description.
+ */
+public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
+	return (FieldDataDBOperationResults)rpc("fieldDataDBOperation",new Object[]{user, fieldDataDBOperationSpec});
 }
 
 
@@ -245,8 +258,8 @@ public cbit.vcell.export.server.ExportLog[] getExportLogs(boolean bAll) throws c
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.simdata.FieldDataIdentifier[] getFieldDataIdentifiers(cbit.vcell.field.FieldDataIdentifierSpec[] fieldDataIDSpecs) throws cbit.vcell.server.DataAccessException {
-	return (cbit.vcell.simdata.FieldDataIdentifier[])rpc("getFieldDataIdentifiers",new Object[]{user,fieldDataIDSpecs});
+public cbit.vcell.simdata.ExternalDataIdentifier[] getExternalDataIdentifiers() throws cbit.vcell.server.DataAccessException {
+	return (cbit.vcell.simdata.ExternalDataIdentifier[])rpc("getExternalDataIdentifiers",new Object[]{user});
 }
 
 
@@ -611,6 +624,19 @@ public BigString saveBioModel(BigString bioModelXML, String independentSims[]) t
  */
 public BigString saveBioModelAs(BigString bioModelXML, java.lang.String newName, String independentSims[]) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
 	return (BigString)rpc("saveBioModelAs",new Object[]{user, bioModelXML, newName, independentSims});
+}
+
+
+/**
+ * This method was created in VisualAge.
+ * @return Versionable
+ * @param versionable Versionable
+ * @param bVersion boolean
+ * @exception cbit.vcell.server.DataAccessException The exception description.
+ * @exception java.rmi.RemoteException The exception description.
+ */
+public cbit.vcell.simdata.ExternalDataIdentifier saveExternalDataIdentifier(String name) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
+	return (cbit.vcell.simdata.ExternalDataIdentifier)rpc("saveExternalDataIdentifier",new Object[]{user, name});
 }
 
 

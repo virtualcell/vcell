@@ -1,20 +1,32 @@
 package cbit.vcell.clientdb;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
+import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.desktop.controls.SessionManager;
 import cbit.vcell.dictionary.FormalSpeciesType;
 import cbit.vcell.dictionary.DBFormalSpecies;
+import cbit.vcell.document.VCDocument;
 import cbit.vcell.export.server.ExportLog;
+import cbit.vcell.field.FieldDataDBEvent;
+import cbit.vcell.field.FieldDataDBEventListener;
+import cbit.vcell.field.FieldDataDBOperationResults;
+import cbit.vcell.field.FieldDataDBOperationSpec;
+import cbit.vcell.field.FieldDataFileOperationResults;
+import cbit.vcell.field.FieldDataFileOperationSpec;
+import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.field.FieldFunctionContainer;
 import cbit.util.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
 import cbit.vcell.mathmodel.*;
-import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.*;
 import cbit.vcell.geometry.*;
 import cbit.vcell.server.*;
 import cbit.vcell.model.*;
+import cbit.vcell.modeldb.VersionableTypeVersion;
+
 import java.rmi.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.solver.*;
@@ -23,6 +35,7 @@ import cbit.image.VCImageInfo;
 import cbit.sql.*;
 import java.util.*;
 import cbit.vcell.server.UserMetaDbServer;
+import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.xml.XmlDialect;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.xml.XmlHelper;
@@ -58,6 +71,7 @@ public class ClientDocumentManager implements DocumentManager{
 	private Preference preferences[] = null;
 	
 	protected transient cbit.vcell.clientdb.DatabaseListener aDatabaseListener = null;
+	private transient HashSet<FieldDataDBEventListener> fieldDataDBEventListenerH = null;
 
 /**
  * ClientDocumentManager constructor comment.
@@ -75,6 +89,13 @@ public ClientDocumentManager(SessionManager argSessionManager, long cacheSize) {
 public void addDatabaseListener(cbit.vcell.clientdb.DatabaseListener newListener) {
 	aDatabaseListener = cbit.vcell.clientdb.DatabaseEventMulticaster.add(aDatabaseListener, newListener);
 	return;
+}
+
+public void addFieldDataDBListener(FieldDataDBEventListener newFieldDataDBEventListener) {
+	if(fieldDataDBEventListenerH == null){
+		fieldDataDBEventListenerH = new HashSet<FieldDataDBEventListener>();
+	}
+	fieldDataDBEventListenerH.add(newFieldDataDBEventListener);
 }
 
 
@@ -426,6 +447,28 @@ public void delete(MathModelInfo mathModelInfo) throws DataAccessException {
 
 /**
  * Insert the method's description here.
+ * Creation date: (1/9/2007 9:39:53 AM)
+ * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
+ * @exception cbit.vcell.server.DataAccessException The exception description.
+ */
+public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws cbit.vcell.server.DataAccessException {
+
+	try{
+		return sessionManager.getUserMetaDbServer().fieldDataDBOperation(fieldDataDBOperationSpec);	
+	}catch (RemoteException e){
+		handleRemoteException(e);
+		throw new DataAccessException(e.getMessage());
+	}
+}
+
+public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws cbit.vcell.server.DataAccessException {
+
+	return sessionManager.fieldDataFileOperation(fieldDataFileOperationSpec);	
+}
+
+
+/**
+ * Insert the method's description here.
  * Creation date: (10/17/2004 11:27:37 AM)
  */
 public cbit.vcell.numericstest.TestSuiteOPResults doTestSuiteOP(cbit.vcell.numericstest.TestSuiteOP tsop) throws cbit.vcell.server.DataAccessException {
@@ -542,6 +585,23 @@ protected void fireDatabaseUpdate(cbit.vcell.clientdb.DatabaseEvent event) {
 			}
 		});
 	}
+}
+
+
+protected void fireFieldDataDB(final FieldDataDBEvent fieldDataDBEvent) {
+	if (fieldDataDBEventListenerH == null) {
+		return;
+	};
+	javax.swing.SwingUtilities.invokeLater(new Runnable() {
+		public void run() {
+			Iterator<FieldDataDBEventListener> fieldDataDBListenersIter =
+				fieldDataDBEventListenerH.iterator();
+			while(fieldDataDBListenersIter.hasNext()){
+				fieldDataDBListenersIter.next().fieldDataDBEvent(fieldDataDBEvent);
+			}
+		}
+	});
+//	}
 }
 
 
@@ -2067,6 +2127,10 @@ public void removeDatabaseListener(cbit.vcell.clientdb.DatabaseListener newListe
 	return;
 }
 
+public void removeFieldDataDBListener(EventListener oldFieldDataDBListener) {
+	fieldDataDBEventListenerH.remove(oldFieldDataDBListener);
+}
+
 
 /**
  * Insert the method's description here.
@@ -2501,6 +2565,7 @@ public cbit.image.VCImage saveAsNew(cbit.image.VCImage vcImage, java.lang.String
 public cbit.vcell.biomodel.BioModel saveAsNew(cbit.vcell.biomodel.BioModel bioModel, java.lang.String newName, String independentSims[]) throws cbit.vcell.server.DataAccessException {
 	
 	try {
+
 		String bioModelXML = null;
 		try {
 			bioModelXML = cbit.vcell.xml.XmlHelper.bioModelToXML(bioModel);
@@ -2511,7 +2576,7 @@ public cbit.vcell.biomodel.BioModel saveAsNew(cbit.vcell.biomodel.BioModel bioMo
 
 		String savedBioModelXML = sessionManager.getUserMetaDbServer().saveBioModelAs(new BigString(bioModelXML), newName, independentSims).toString();
 
-		BioModel savedBioModel = getBioModelFromDatabaseXML(savedBioModelXML);
+		BioModel savedBioModel = getBioModelFromDatabaseXML(savedBioModelXML);		
 		
 		KeyValue savedKey = savedBioModel.getVersion().getVersionKey();
 
@@ -2581,6 +2646,7 @@ public cbit.vcell.geometry.Geometry saveAsNew(cbit.vcell.geometry.Geometry geome
  */
 public cbit.vcell.mathmodel.MathModel saveAsNew(cbit.vcell.mathmodel.MathModel mathModel, java.lang.String newName, String independentSims[]) throws cbit.vcell.server.DataAccessException {
 	try {
+		
 		String mathModelXML = null;
 		try {
 			mathModelXML = cbit.vcell.xml.XmlHelper.mathModelToXML(mathModel);
@@ -2931,6 +2997,108 @@ private VersionInfo setGroupPublic0(VersionInfo versionInfo, VersionableType vTy
 	return newVersionInfo;
 }
 
+
+public void substituteFieldFuncNames(VCDocument vcDocument,VersionableTypeVersion originalOwner)
+		throws DataAccessException,MathException,ExpressionException{
+
+	Vector<ExternalDataIdentifier> errorCleanupExtDataIDV = new Vector<ExternalDataIdentifier>();
+	try{
+		if(originalOwner == null ||
+			originalOwner.getVersion().getOwner().compareEqual(getUser())){
+			//Substitution for FieldFunc not needed for new doc or if we own doc
+			return;
+		}
+		//Get Objects from Document that might need to have FieldFuncs replaced
+		Vector<FieldFunctionContainer> fieldFunctionContainerV = new Vector<FieldFunctionContainer>();
+		if(vcDocument instanceof MathModel){
+			fieldFunctionContainerV.add(((MathModel)vcDocument).getMathDescription());
+		}else if(vcDocument instanceof BioModel){
+			SimulationContext[] simContextArr =
+				((BioModel)vcDocument).getSimulationContexts();
+			for(int i=0;i<simContextArr.length;i+= 1){
+				fieldFunctionContainerV.add(simContextArr[i]);
+			}
+		}
+		//Get original Field names
+		Vector<String> origFieldFuncNamesV = new Vector<String>();
+		HashSet<FieldFunctionArguments> fieldFuncArgsHashSet =
+			new HashSet<FieldFunctionArguments>();
+		for(int i=0;i<fieldFunctionContainerV.size();i+= 1){
+			FieldFunctionArguments[] fieldFuncArgsArr =
+				fieldFunctionContainerV.elementAt(i).getFieldFunctionArguments();
+			for(int j=0;j<fieldFuncArgsArr.length;j+= 1){
+				fieldFuncArgsHashSet.add(fieldFuncArgsArr[j]);
+				if(!origFieldFuncNamesV.contains(fieldFuncArgsArr[j].getFieldName())){
+					origFieldFuncNamesV.add(fieldFuncArgsArr[j].getFieldName());
+				}
+			}
+		}
+		if(fieldFuncArgsHashSet.size() == 0){//No FieldFunctions to substitute
+			return;
+		}
+		
+		FieldDataDBOperationResults copyNamesFieldDataOpResults =
+			fieldDataDBOperation(
+					FieldDataDBOperationSpec.createCopyNoConflictExtDataIDsSpec(
+							getUser(),
+							origFieldFuncNamesV.toArray(new String[0]),
+							originalOwner)
+					);
+		
+		errorCleanupExtDataIDV.addAll(copyNamesFieldDataOpResults.oldNameNewIDHash.values());
+		
+		//Copy Field Data on Data Server FileSystem
+		FieldFunctionArguments[] allFieldFunctionArguments =
+			fieldFuncArgsHashSet.toArray(new FieldFunctionArguments[0]);
+		for(int i=0;i<allFieldFunctionArguments.length;i+= 1){
+			KeyValue sourceSimDataKey =
+				copyNamesFieldDataOpResults.oldNameOldExtDataIDKeyHash.get(
+						allFieldFunctionArguments[i].getFieldName());
+			if(sourceSimDataKey == null){
+				throw new DataAccessException("Couldn't find original data key for FieldFunc "+allFieldFunctionArguments[i].getFieldName());
+			}
+			ExternalDataIdentifier newExtDataID =
+				copyNamesFieldDataOpResults.oldNameNewIDHash.get(allFieldFunctionArguments[i].getFieldName());
+			getSessionManager().
+					fieldDataFileOperation(
+							FieldDataFileOperationSpec.createCopySimFieldDataFileOperationSpec(
+									newExtDataID, 
+									sourceSimDataKey, 
+									originalOwner.getVersion().getOwner(), 
+									FieldDataFileOperationSpec.JOBINDEX_DEFAULT,
+									getUser())
+							);
+		}
+		//Finally substitute new Field names
+		for(int i=0;i<fieldFunctionContainerV.size();i+= 1){
+			fieldFunctionContainerV.elementAt(i).substituteFieldFuncNames(
+					copyNamesFieldDataOpResults.oldNameNewIDHash);
+		}
+		fireFieldDataDB(new FieldDataDBEvent(this));
+	}catch(Exception e){
+		//Cleanup
+		for(int i=0;i<errorCleanupExtDataIDV.size();i+= 1){
+			try{
+				fieldDataDBOperation(
+						FieldDataDBOperationSpec.createDeleteExtDataIDSpec(
+								errorCleanupExtDataIDV.elementAt(i))
+						);
+			}catch(Exception e2){
+				//ignore, we tried to cleanup
+			}
+			try {
+				fieldDataFileOperation(
+						FieldDataFileOperationSpec.createDeleteFieldDataFileOperationSpec(
+								errorCleanupExtDataIDV.elementAt(i))
+						);
+			} catch (Exception e1) {
+				//ignore, we tried to cleanup
+			}
+				
+		}
+		throw new RuntimeException("Error substituting Field Data names\n"+e.getMessage());
+	}
+}
 
 /**
  * Insert the method's description here.

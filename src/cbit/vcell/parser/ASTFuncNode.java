@@ -4,6 +4,11 @@ package cbit.vcell.parser;
  * All rights reserved.
 ©*/
 /* JJT: 0.2.2 */
+import java.util.Hashtable;
+
+import cbit.util.TokenMangler;
+import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.simdata.ExternalDataIdentifier;
 import net.sourceforge.interval.ia_math.*;
 
 public class ASTFuncNode extends SimpleNode {
@@ -1433,7 +1438,7 @@ public double evaluateConstant() throws ExpressionException {
 		break;
 	}
 	case FIELD: {
-		throw new FunctionDomainException("field(A, B) is undefined for all constants");
+		throw new ExpressionException("field(A, B, time) cannot be simplified to a constant");
 	}
 	case GRAD: {
 		throw new FunctionDomainException("grad([x,y,z,m],var) is undefined for all constants");
@@ -1977,7 +1982,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		break;
 	}
 	case FIELD: {
-		throw new FunctionDomainException("field(A, B) can't be evaluated in regular way");
+		throw new FunctionDomainException("field(A, B, time) can't be evaluated in regular way");
 	}	
 	case GRAD: {
 		//
@@ -2083,11 +2088,12 @@ public double evaluateVector(double values[]) throws ExpressionException {
  */
 public Node flatten() throws ExpressionException {
 	
-	try {
-		double value = evaluateConstant();
-		return new ASTFloatNode(value);
-	}catch (Exception e){}		
-
+	if (funcType!=FIELD){ // skip those that can never be constant.
+		try {
+			double value = evaluateConstant();
+			return new ASTFloatNode(value);
+		}catch (Exception e){}		
+	}
 	ASTFuncNode funcNode = new ASTFuncNode();
 	funcNode.funcType = funcType;
 	java.util.Vector tempChildren = new java.util.Vector();
@@ -2294,7 +2300,7 @@ public Node flatten() throws ExpressionException {
 		break;
 	}
 	case FIELD: {
-		if (tempChildren.size()!=2) throw new ExpressionException("field() expects 2 argument");
+		if (tempChildren.size()!=3) throw new ExpressionException("field() expects 3 argument");
 		break;
 	}
 	case GRAD: {
@@ -2317,16 +2323,32 @@ public Node flatten() throws ExpressionException {
  * Creation date: (9/15/2006 1:35:48 PM)
  * @return java.util.Vector
  */
-void getFieldDataIdentifierSpecs(java.util.Vector v) {
+//void getFieldDataIdentifierSpecs(java.util.Vector v) {
+//	if (getFunction() == ASTFuncNode.FIELD) {
+//		ASTIdNode fieldname = (ASTIdNode)jjtGetChild(0);
+//		ASTIdNode variablename = (ASTIdNode)jjtGetChild(1);
+//		v.add(new cbit.vcell.field.FieldDataIdentifierSpec(fieldname.name, variablename.name));
+//	} else {
+//		super.getFieldDataIdentifierSpecs(v);		 
+//	}	
+//}
+
+void getFieldFunctionArguments(java.util.Vector<FieldFunctionArguments> v) {
 	if (getFunction() == ASTFuncNode.FIELD) {
 		ASTIdNode fieldname = (ASTIdNode)jjtGetChild(0);
 		ASTIdNode variablename = (ASTIdNode)jjtGetChild(1);
-		v.add(new cbit.vcell.field.FieldDataIdentifierSpec(fieldname.name, variablename.name));
+		Expression time = null;
+		try {
+			time = new Expression(jjtGetChild(2).infixString(LANGUAGE_DEFAULT, null));
+		} catch (ExpressionException e) {
+			e.printStackTrace();
+			throw new RuntimeException("Unexpected time expression for FieldData\n"+e.getMessage());
+		}
+		v.add(new FieldFunctionArguments(fieldname.name, variablename.name,time));
 	} else {
-		super.getFieldDataIdentifierSpecs(v);		 
+		super.getFieldFunctionArguments(v);		 
 	}	
 }
-
 
 boolean hasGradient(){
 	if(getFunction() == GRAD){
@@ -2336,6 +2358,26 @@ boolean hasGradient(){
 	}
 }
 
+void substituteFieldFunctionFieldName(Hashtable<String, ExternalDataIdentifier> substituteNamesHash) {
+	if(getFunction() == FIELD){
+		ASTIdNode fieldFunctionFieldNameIDNode =
+			((ASTIdNode)jjtGetChild(0));
+		if(substituteNamesHash.containsKey(fieldFunctionFieldNameIDNode.name)){
+			String newFieldFunctionName =
+				substituteNamesHash.get(fieldFunctionFieldNameIDNode.name).getName();
+//			ASTIdNode newFieldFunctionFieldNameIDNode = new ASTIdNode();
+//			newFieldFunctionFieldNameIDNode.name = newFieldFunctionName;
+			fieldFunctionFieldNameIDNode.name = newFieldFunctionName;		
+//			try{
+//				substitute(fieldFunctionFieldNameIDNode, newFieldFunctionFieldNameIDNode);
+//			}catch(ExpressionException e){
+//				throw new RuntimeException("ASTFuncNode.substituteFieldFunctionFieldName: Error - "+e.getMessage());
+//			}
+		}
+	}else{
+		super.substituteFieldFunctionFieldName(substituteNamesHash);
+	}	
+}
 
 /**
  * Insert the method's description here.
@@ -2483,6 +2525,9 @@ public String infixString(int lang, NameScope nameScope) {
 			 	buffer.append(jjtGetChild(0).infixString(lang,nameScope));
 			 	buffer.append("_");
 			 	buffer.append(jjtGetChild(1).infixString(lang,nameScope));
+			 	buffer.append("_");
+			 	buffer.append(jjtGetChild(2).infixString(lang,nameScope));
+			 	return TokenMangler.fixTokenStrict(buffer.toString());
 		 	} else {
 				buffer.append(getName() + "(");
 				for (int i=0;i<jjtGetNumChildren();i++){

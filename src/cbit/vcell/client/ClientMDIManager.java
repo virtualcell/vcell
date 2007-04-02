@@ -1,11 +1,10 @@
 package cbit.vcell.client;
 import cbit.vcell.document.*;
-import cbit.vcell.geometry.*;
+import cbit.vcell.field.FieldDataGUIPanel;
+import cbit.vcell.field.FieldDataWindow;
 import cbit.util.*;
 import cbit.vcell.client.server.*;
 import java.awt.*;
-import cbit.vcell.mathmodel.*;
-import cbit.vcell.biomodel.*;
 import cbit.vcell.client.desktop.*;
 import javax.swing.*;
 import java.util.*;
@@ -19,6 +18,7 @@ public class ClientMDIManager implements MDIManager {
 	public final static String DATABASE_WINDOW_ID = "DatabaseWindow";
 	public final static String TESTING_FRAMEWORK_WINDOW_ID = "TestingFrameworkWindow";
 	public final static String BIONETGEN_WINDOW_ID = "BioNetGenWindow";
+	public final static String FIELDDATA_WINDOW_ID = "FieldDataWindow";
 	private RequestManager requestManager = null;
 	private Hashtable windowsHash = new Hashtable();
 	private Hashtable managersHash = new Hashtable();
@@ -270,6 +270,28 @@ void createRecyclableWindows() {
 		// listen for event when user clicks window close button
 		bngWindow.addWindowListener(windowListener);
 	}
+	
+	if (! getWindowsHash().containsKey(FIELDDATA_WINDOW_ID) ) {
+		// make the window
+		FieldDataWindow fieldDataWindow = new FieldDataWindow();
+		FieldDataGUIPanel fieldDataGUIPanel = new FieldDataGUIPanel();
+		fieldDataWindow.setWorkArea(fieldDataGUIPanel);
+		fieldDataWindow.setSize(600,400);
+		BeanUtils.centerOnScreen(fieldDataWindow);
+		// make the manager
+		FieldDataWindowManager fieldDataWindowManager =
+			new FieldDataWindowManager(fieldDataGUIPanel,getRequestManager());
+		// keep track of things
+		getWindowsHash().put(FIELDDATA_WINDOW_ID, fieldDataWindow);
+		getManagersHash().put(FIELDDATA_WINDOW_ID, fieldDataWindowManager);
+		// get window ready
+		setCanonicalTitle(FIELDDATA_WINDOW_ID);
+		fieldDataWindow.setFieldDataWindowManager(fieldDataWindowManager);
+		fieldDataGUIPanel.setFieldDataWindowManager(fieldDataWindowManager);
+		blockWindow(FIELDDATA_WINDOW_ID);
+		// listen for event when user clicks window close button
+		fieldDataWindow.addWindowListener(windowListener);
+	}
 }
 
 
@@ -443,6 +465,8 @@ public void setCanonicalTitle(java.lang.String windowID) {
 		windowTitle = "Math Testing Framework";
 	} else if (manager instanceof BNGWindowManager) {
 		windowTitle = "BioNetGen";
+	} else if (manager instanceof FieldDataWindowManager) {
+		windowTitle = "Field Data Manager";
 	}
 	((JFrame)getWindowsHash().get(windowID)).setTitle(windowTitle);
 }
@@ -502,10 +526,12 @@ public void updateConnectionStatus(ConnectionStatus connectionStatus) {
 		unBlockWindow(DATABASE_WINDOW_ID);
 		unBlockWindow(TESTING_FRAMEWORK_WINDOW_ID);
 		unBlockWindow(BIONETGEN_WINDOW_ID);
+		unBlockWindow(FIELDDATA_WINDOW_ID);
 	} else {
 		blockWindow(DATABASE_WINDOW_ID);
 		blockWindow(TESTING_FRAMEWORK_WINDOW_ID);
 		blockWindow(BIONETGEN_WINDOW_ID);
+		blockWindow(FIELDDATA_WINDOW_ID);
 	}
 	Enumeration windows = getWindowsHash().elements();
 	while (windows.hasMoreElements()) {

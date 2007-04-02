@@ -6,8 +6,14 @@ package cbit.vcell.modeldb;
 ©*/
 import cbit.vcell.math.*;
 import cbit.vcell.server.*;
+import cbit.vcell.simdata.ExternalDataIdentifier;
+import cbit.vcell.solver.Simulation;
 import cbit.sql.*;
+
 import java.sql.*;
+
+import cbit.vcell.field.FieldDataDBOperationSpec;
+import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.geometry.Geometry;
 /**
  * This type was created in VisualAge.
@@ -146,22 +152,6 @@ private void insertMathDescriptionSQL(InsertHashtable hash, Connection con, User
 									Version newVersion, boolean bVersionChildren)
 				throws MathException, SQLException, DataAccessException, RecordChangedException {
 					
-	//KeyValue geomKey = null;
-	//try {
-		//Geometry geom = mathDescription.getGeometry();
-		//Version geomVersion = geom.getVersion();
-		//if (geomVersion != null && geomVersion.getVersionKey() != null) {
-			//geomKey = geomDB.updateVersionable(hash, con, user, geom, bVersionChildren);
-		//} else {
-			//String geomName = geom.getName(); // + "_geometry";
-			//while (isNameUsed(con,VersionableType.Geometry,user,geomName)){
-				//geomName = cbit.util.TokenMangler.getNextRandomToken(geomName);
-			//}
-			//geomKey = geomDB.insertVersionable(hash, con, user, geom, geomName, bVersionChildren);
-		//}
-	//} catch (RecordChangedException rce) {
-		//throw rce;
-	//}
 	String sql = null;
 	Object[] o = {mathDescription, updatedGeometryKey};
 	sql = DatabasePolicySQL.enforceOwnershipInsert(user,mathDescTable,o,newVersion);
@@ -172,22 +162,10 @@ private void insertMathDescriptionSQL(InsertHashtable hash, Connection con, User
 			mathDescTable.language.getUnqualifiedColName(),
 			mathDescription.getVCML_database());
 
-//System.out.println("insertMathDescriptionSQL " + sql);
-//System.out.println("mathDescription Data = '"+mathDescription.getVCML_database()+"'");
-	//byte[] mathDescriptionData = mathDescription.getVCML_database().getBytes();
-//System.out.println("mathDescriptionData length = " + mathDescriptionData.length);
-	
-	/*
-	PreparedStatement pps;
-	pps = con.prepareStatement(sql);
-	try {
-		pps.setBytes(1, mathDescriptionData);
-		pps.executeUpdate();
-	} finally {
-		pps.close();
-	}
-	*/
 	hash.put(mathDescription,newVersion.getVersionKey());
+	
+	insertMathDescExternalDataLink(con,user,mathDescription,newVersion.getVersionKey());
+
 }
 /**
  * This method was created in VisualAge.
@@ -208,6 +186,34 @@ public KeyValue insertVersionable(InsertHashtable hash, Connection con, User use
 		throw new DataAccessException("MathException: " + e.getMessage());
 	}
 }
+
+
+private void insertMathDescExternalDataLink(Connection con,User user,MathDescription mathDesc,KeyValue newMathDescKey)throws DataAccessException{
+	try{
+		ExternalDataIdentifier[] extDataIDArr =
+			fieldDataDBOperation(
+					con, user, FieldDataDBOperationSpec.createGetExtDataIDsSpec(user)).extDataIDArr;
+		FieldFunctionArguments[] fieldFuncArgsArr = mathDesc.getFieldFunctionArguments();
+		for(int i=0;i<fieldFuncArgsArr.length;i+= 1){
+			for(int k=0;k<extDataIDArr.length;k+= 1){
+				if(extDataIDArr[k].getName().equals(fieldFuncArgsArr[i].getFieldName())){
+					KeyValue newKey = getNewKey(con);
+					updateCleanSQL(con,
+							"INSERT INTO "+
+							MathDescExternalDataLinkTable.table.getTableName()+
+							" VALUES "+
+							MathDescExternalDataLinkTable.table.getSQLValueList(
+									newKey, newMathDescKey, extDataIDArr[k].getKey())
+							);
+					break;
+				}
+			}
+		}
+	}catch(Exception e){
+		throw new DataAccessException("Error inserting MathDescription-ExtrnalData link\n"+e.getMessage());
+	}
+}
+
 /**
  * This method was created in VisualAge.
  * @return cbit.image.VCImage

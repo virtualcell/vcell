@@ -11,8 +11,8 @@ import java.util.Vector;
  */
 public class MeshRegionInfo implements cbit.util.Matchable, java.io.Serializable {
 	//
-	private Vector volumeRegionMapSubvolume = new Vector();
-	private Vector membraneRegionMapVolumeRegion = new Vector();
+	private Vector<MeshRegionInfo.VolumeRegionMapSubvolume> volumeRegionMapSubvolume = new Vector<MeshRegionInfo.VolumeRegionMapSubvolume>();
+	private Vector<MembraneRegionMapVolumeRegion> membraneRegionMapVolumeRegion = new Vector<MembraneRegionMapVolumeRegion>();
 	private byte[] fieldCompressedVolumeElementMapVolumeRegion = null;
 	private transient byte[] fieldVolumeElementMapVolumeRegion = null;
 	private int[] fieldMembraneElementMapMembraneRegion = null;
@@ -117,7 +117,7 @@ public int getMembraneRegionForMembraneElement(int membraneElementIndex) {
  * Creation date: (8/8/2005 11:33:14 AM)
  * @return java.util.Vector
  */
-java.util.Vector getMembraneRegionMapVolumeRegion() {
+java.util.Vector<MembraneRegionMapVolumeRegion> getMembraneRegionMapVolumeRegion() {
 	return membraneRegionMapVolumeRegion;
 }
 
@@ -281,7 +281,7 @@ public byte[] getVolumeElementMapVolumeRegion() {
  * Creation date: (8/8/2005 11:24:31 AM)
  * @return java.util.Vector
  */
-java.util.Vector getVolumeRegionMapSubvolume() {
+java.util.Vector<VolumeRegionMapSubvolume> getVolumeRegionMapSubvolume() {
 	return volumeRegionMapSubvolume;
 }
 

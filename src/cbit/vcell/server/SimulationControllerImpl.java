@@ -1,4 +1,7 @@
 package cbit.vcell.server;
+import cbit.vcell.field.FieldDataDBOperationSpec;
+import cbit.vcell.field.FieldDataIdentifierSpec;
+import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.messaging.db.VCellServerID;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -8,6 +11,7 @@ import java.io.File;
 import cbit.vcell.server.*;
 import java.rmi.*;
 import cbit.vcell.server.User;
+import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.solver.*;
 import cbit.vcell.solvers.*;
 import cbit.vcell.messaging.db.SimulationJobStatus;
@@ -402,10 +406,26 @@ public void startSimulation(User user, Simulation simulation, SessionLog userSes
 	localVCellConnection.getMessageService().getMessageDispatcher().removeWorkerEventListener(this);
 	localVCellConnection.getMessageService().getMessageDispatcher().addWorkerEventListener(this);
 	
-	cbit.vcell.field.FieldDataIdentifierSpec[] fieldDataIDSpecs = simulation.getMathDescription().getFieldDataIdentifierSpecs(simulation);
-	cbit.vcell.simdata.FieldDataIdentifier[] fieldDataIDs = null;
-	if (fieldDataIDSpecs.length != 0) {
-		fieldDataIDs = getLocalVCellServer().getVCellConnection(user).getUserMetaDbServer().getFieldDataIdentifiers(fieldDataIDSpecs);
+	FieldFunctionArguments[] fieldFuncArgs = simulation.getMathDescription().getFieldFunctionArguments();
+	FieldDataIdentifierSpec[] fieldDataIDs = new FieldDataIdentifierSpec[fieldFuncArgs.length];
+	if (fieldFuncArgs.length != 0) {
+		ExternalDataIdentifier[]  qualifiedSpecs =
+			getLocalVCellServer().
+				getVCellConnection(user).
+					getUserMetaDbServer().
+						fieldDataDBOperation(
+								FieldDataDBOperationSpec.createGetExtDataIDsSpec(user)).extDataIDArr;
+		for(int i=0;i<fieldFuncArgs.length;i+= 1){
+			for(int j=0;j<qualifiedSpecs.length;j+= 1){
+				if(fieldFuncArgs[i].getFieldName().equals(qualifiedSpecs[j].getName())){
+					fieldDataIDs[i] = new FieldDataIdentifierSpec(fieldFuncArgs[i],qualifiedSpecs[j]);
+					break;
+				}
+			}
+			if(fieldDataIDs[i] == null){
+				throw new DataAccessException("Failed to resolve FieldData name "+fieldFuncArgs[i].getFieldName()+" for sim "+simulation.getName());
+			}
+		}
 	} 
 	
 	for (int i = 0; i < simulation.getScanCount(); i++){

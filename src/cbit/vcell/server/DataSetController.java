@@ -11,6 +11,8 @@ import cbit.vcell.solvers.*;
 import cbit.vcell.simdata.*;
 import cbit.vcell.simdata.gui.SpatialSelection;
 import cbit.vcell.export.server.*;
+import cbit.vcell.field.FieldDataFileOperationResults;
+import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.solver.*;
 import cbit.rmi.event.*;
 /**
@@ -34,6 +36,11 @@ void addFunction(VCDataIdentifier vcdataID, AnnotatedFunction function) throws D
  * @exception java.rmi.RemoteException The exception description.
  */
 void addFunctions(VCDataIdentifier vcdID, AnnotatedFunction function[]) throws DataAccessException, RemoteException;
+
+
+public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws RemoteException, DataAccessException;
+
+
 /**
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.

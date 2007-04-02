@@ -1,6 +1,8 @@
 package cbit.vcell.clientdb;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.modeldb.VersionableTypeVersion;
 import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.dictionary.FormalSpeciesType;
@@ -9,10 +11,16 @@ import cbit.vcell.xml.XmlDialect;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.vcell.math.MathException;
 import cbit.vcell.mathmodel.*;
 import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
 import cbit.vcell.server.User;
+import cbit.vcell.field.FieldDataDBEventListener;
+import cbit.vcell.field.FieldDataDBOperationResults;
+import cbit.vcell.field.FieldDataDBOperationSpec;
+import cbit.vcell.field.FieldDataFileOperationResults;
+import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.biomodel.BioModel;
@@ -34,6 +42,8 @@ public interface DocumentManager {
  * @param newListener cbit.vcell.clientdb.DatabaseListener
  */
 public void addDatabaseListener(cbit.vcell.clientdb.DatabaseListener newListener);
+
+public void addFieldDataDBListener(FieldDataDBEventListener newFieldDataDBEventListener);
 
 
 /**
@@ -116,6 +126,16 @@ void delete(GeometryInfo geometryInfo) throws cbit.vcell.server.DataAccessExcept
  */
 void delete(MathModelInfo mathModelInfo) throws cbit.vcell.server.DataAccessException;
 
+
+/**
+ * Insert the method's description here.
+ * Creation date: (11/28/00 5:43:16 PM)
+ * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
+ * @exception cbit.vcell.server.DataAccessException The exception description.
+ */
+FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws cbit.vcell.server.DataAccessException;
+
+FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws cbit.vcell.server.DataAccessException;
 
 /**
  * Insert the method's description here.
@@ -204,7 +224,6 @@ public DBFormalSpecies[] getDatabaseSpecies(String likeString, boolean isBound, 
  * Creation date: (4/30/2003 10:25:07 PM)
  */
 public cbit.vcell.dictionary.ReactionDescription[] getDictionaryReactions(cbit.vcell.modeldb.ReactionQuerySpec reactionQuerySpec) throws DataAccessException;
-
 
 /**
  * Insert the method's description here.
@@ -567,6 +586,9 @@ MathModelInfo setGroupPrivate(MathModelInfo mathModelInfo) throws cbit.vcell.ser
  * @exception cbit.vcell.server.DataAccessException The exception description.
  */
 VCImageInfo setGroupPublic(VCImageInfo imageInfo) throws cbit.vcell.server.DataAccessException;
+
+
+public void substituteFieldFuncNames(VCDocument vcDocument,VersionableTypeVersion originalOwner) throws DataAccessException,MathException,ExpressionException;
 
 
 /**

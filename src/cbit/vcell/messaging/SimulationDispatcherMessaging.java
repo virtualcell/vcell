@@ -1,5 +1,6 @@
 package cbit.vcell.messaging;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.messaging.db.VCellServerID;
 
 
@@ -139,7 +140,7 @@ public void run() {
 							jobAdminXA.updateSimulationJobStatus(obsoleteJobDbConnection.getConnection(), jobStatus, newJobStatus);
 							// send to simulation queue
 							Simulation sim = simTask.getSimulationJob().getWorkingSim();
-							SimulationTask newSimTask = new SimulationTask(new SimulationJob(sim, simDispatcher.getFieldDataIdentifiers(sim), newJobStatus.getJobIndex()), newJobStatus.getTaskID());
+							SimulationTask newSimTask = new SimulationTask(new SimulationJob(sim, simDispatcher.getFieldDataIdentifierSpecs(sim), newJobStatus.getJobIndex()), newJobStatus.getTaskID());
 							SimulationTaskMessage taskMsg = new SimulationTaskMessage(newSimTask);							
 							taskMsg.sendSimulationTask(obsoleteJobDispatcher);							
 							// tell client
@@ -245,7 +246,7 @@ public void run() {
 					foundOne = true;					
 					jobStatus = firstQualifiedJob.getSimJobStatus();					
 					Simulation sim = simDispatcher.getSimulation(firstQualifiedJob.getUser(), jobStatus.getVCSimulationIdentifier().getSimulationKey());							
-					simTask = new SimulationTask(new SimulationJob(sim, simDispatcher.getFieldDataIdentifiers(sim), jobStatus.getJobIndex()), jobStatus.getTaskID());
+					simTask = new SimulationTask(new SimulationJob(sim, simDispatcher.getFieldDataIdentifierSpecs(sim), jobStatus.getJobIndex()), jobStatus.getTaskID());
 					log.print("**DT: going to dispatch " + simTask);
 				}
 			}
@@ -695,7 +696,7 @@ private void startSimulation(java.sql.Connection con, User user, VCSimulationIde
 	} else {
 		KeyValue simKey = vcSimID.getSimulationKey();
 		Simulation simulation = null;
-		cbit.vcell.simdata.FieldDataIdentifier[] fdis = null;
+		FieldDataIdentifierSpec[] fdis = null;
 		try {
 			simulation = simDispatcher.getSimulation(user, simKey);
 		} catch (DataAccessException ex) {
@@ -718,7 +719,7 @@ private void startSimulation(java.sql.Connection con, User user, VCSimulationIde
 				// should get smarter in the future for load balancing, quotas, priorities...
 				SimulationJobStatus oldJobStatus = jobAdminXA.getSimulationJobStatus(con, simKey, i);
 				try {
-					fdis = simDispatcher.getFieldDataIdentifiers(simulation);
+					fdis = simDispatcher.getFieldDataIdentifierSpecs(simulation);
 				} catch (DataAccessException ex) {
 					do_failed(con, oldJobStatus, user.getName(), vcSimID, i, ex.getMessage());
 					return;

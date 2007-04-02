@@ -3,9 +3,12 @@ package cbit.vcell.mapping.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.gui.ZEnforcer;
 import cbit.vcell.model.*;
 import cbit.vcell.mapping.*; 
 import java.beans.PropertyChangeListener;
+
+import javax.swing.SwingUtilities;
 /**
  * This type was created in VisualAge.
  */
@@ -1340,8 +1343,24 @@ private void showCustomEditor(java.awt.event.MouseEvent mouseEvent) {
 		switch (getScrollPaneTable().convertColumnIndexToModel(col)) {
 			case SpeciesContextSpecsTableModel.COLUMN_INITIAL: {
 				getJTextArea1().setText(getScrollPaneTable().getValueAt(row, col).toString());
-				cbit.util.BeanUtils.centerOnComponent(getJDialog1(), this);
-				getJDialog1().show();
+//				cbit.util.BeanUtils.centerOnComponent(getJDialog1(), this);
+//				getJDialog1().show();
+//				if (SwingUtilities.isEventDispatchThread()) {
+//					ZEnforcer.showModalDialogOnTop(dialog);
+//				} else {
+					try {
+						SwingUtilities.invokeLater(new Runnable() {
+							public void run() {
+								ZEnforcer.showModalDialogOnTop(getJDialog1(),InitialConditionsPanel.this);
+							}
+						});
+					} catch (Exception exc) {
+						exc.printStackTrace();
+					}
+//					finally {
+//						dialog.dispose();
+//					}
+//				}
 				return;
 			}
 		}

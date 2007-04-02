@@ -1,4 +1,6 @@
 package cbit.vcell.anonymizer;
+import cbit.vcell.field.FieldDataFileOperationResults;
+import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.server.PropertyLoader;
@@ -39,6 +41,11 @@ public void addFunction(cbit.vcell.server.VCDataIdentifier vcdataID, cbit.vcell.
  */
 public void addFunctions(cbit.vcell.server.VCDataIdentifier vcdID, cbit.vcell.math.AnnotatedFunction[] function) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
 	remoteCall("addFunctions", new Class[] {cbit.vcell.server.VCDataIdentifier.class, cbit.vcell.math.AnnotatedFunction[].class}, new Object[] {vcdID, function});
+}
+
+public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
+	return (FieldDataFileOperationResults)remoteCall("fieldDataFileOperation", 
+		new Class[] {FieldDataFileOperationSpec.class}, new Object[] {fieldDataFileOperationSpec});
 }
 
 

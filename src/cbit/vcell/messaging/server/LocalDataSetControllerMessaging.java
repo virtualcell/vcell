@@ -6,6 +6,8 @@ import cbit.rmi.event.*;
 ©*/
 import cbit.vcell.solver.*;
 import cbit.vcell.export.server.*;
+import cbit.vcell.field.FieldDataFileOperationResults;
+import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.simdata.gui.SpatialSelection;
 import cbit.vcell.math.*;
 import cbit.plot.*;
@@ -74,6 +76,21 @@ public void addFunctions(cbit.vcell.server.VCDataIdentifier vcdID, cbit.vcell.ma
 	sessionLog.print("LocalDataSetControllerMessaging.addFunctions(vcdID=" + vcdID + ", functions=" + function + ")");
 	try {
 		dataServerProxy.addFunctions(vcdID, function);
+	} catch (DataAccessException e){
+		sessionLog.exception(e);
+		throw e;
+	} catch (Throwable e){
+		sessionLog.exception(e);
+		throw new RuntimeException(e.getMessage());
+	}
+}
+
+
+
+public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws DataAccessException {
+	sessionLog.print("LocalDataSetControllerMessaging.fieldDataFileOperationSpec(...)");
+	try {
+		return dataServerProxy.fieldDataFileOperation(fieldDataFileOperationSpec);
 	} catch (DataAccessException e){
 		sessionLog.exception(e);
 		throw e;

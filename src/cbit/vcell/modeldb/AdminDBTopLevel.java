@@ -9,6 +9,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import cbit.sql.*;
 import cbit.vcell.server.*;
+import cbit.vcell.simdata.ExternalDataIdentifier;
+import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.image.*;
@@ -37,6 +39,27 @@ AdminDBTopLevel(ConnectionFactory aConFactory,SessionLog newLog) throws SQLExcep
 }
 
 
+public ExternalDataIdentifier[] getExternalDataIdentifiers(User fieldDataOwner,boolean bEnableRetry) throws SQLException,DataAccessException {
+
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		return DbDriver.fieldDataDBOperation(
+				con, null,
+				FieldDataDBOperationSpec.createGetExtDataIDsSpec(fieldDataOwner)).extDataIDArr;
+	} catch (Throwable e) {
+		log.exception(e);
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			return getExternalDataIdentifiers(fieldDataOwner,false);
+		}else{
+			handle_DataAccessException_SQLException(e);
+			return null; // never gets here;
+		}
+	} finally {
+		conFactory.release(con,lock);
+	}
+}
 /**
  * Insert the method's description here.
  * Creation date: (10/6/2005 3:14:40 PM)

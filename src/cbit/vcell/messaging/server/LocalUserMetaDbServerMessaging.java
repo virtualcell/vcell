@@ -3,6 +3,8 @@ import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.util.BigString;
 import cbit.image.VCImage;
+import cbit.vcell.field.FieldDataDBOperationResults;
+import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.geometry.Geometry;
 import java.io.*;
 import cbit.vcell.export.server.ExportLog;
@@ -80,6 +82,24 @@ public void deleteBioModel(cbit.sql.KeyValue key) throws DataAccessException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.deleteBioModel(Key="+key+")");
 		dbServerProxy.deleteBioModel(key);
+	} catch (DataAccessException e) {
+		log.exception(e);
+		throw e;
+	} catch (Throwable e) {
+		log.exception(e);
+		throw new DataAccessException(e.getMessage());
+	}
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (10/22/2003 10:23:06 AM)
+ */
+public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException {
+	try {
+		log.print("LocalUserMetaDbServerMessaging.fieldDataDBOperation(...)");
+		return dbServerProxy.fieldDataDBOperation(fieldDataDBOperationSpec);
 	} catch (DataAccessException e) {
 		log.exception(e);
 		throw e;
@@ -419,10 +439,10 @@ public ExportLog[] getExportLogs(boolean bAll) throws DataAccessException {
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.simdata.FieldDataIdentifier[] getFieldDataIdentifiers(cbit.vcell.field.FieldDataIdentifierSpec[] fieldDataIDSpecs) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException {
+public cbit.vcell.simdata.ExternalDataIdentifier[] getExternalDataIdentifiers() throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException {
 	try {
-		log.print("LocalUserMetaDbServerMessaging.getFieldDataIdentifiers()");
-		return dbServerProxy.getFieldDataIdentifiers(fieldDataIDSpecs);
+		log.print("LocalUserMetaDbServerMessaging.getExternalDataIdentifiers()");
+		return dbServerProxy.getExternalDataIdentifiers();
 	} catch (DataAccessException e) {
 		log.exception(e);
 		throw e;
@@ -1010,6 +1030,25 @@ public BigString saveBioModelAs(BigString bioModelXML, String newName, String in
 		log.print("LocalUserMetaDbServerMessaging.saveBioModel(newName="+newName+")");
 		BigString savedBioModelXML = dbServerProxy.saveBioModelAs(bioModelXML,newName,independentSims);
 		return savedBioModelXML;
+	} catch (DataAccessException e) {
+		log.exception(e);
+		throw e;
+	} catch (Throwable e) {
+		log.exception(e);
+		throw new DataAccessException(e.getMessage());
+	}
+
+}
+
+
+/**
+ * getVersionInfo method comment.
+ */
+public cbit.vcell.simdata.ExternalDataIdentifier saveExternalDataIdentifier(String name) throws DataAccessException {
+	try {
+		log.print("LocalUserMetaDbServerMessaging.saveExternalDataIdentifier()");
+		cbit.vcell.simdata.ExternalDataIdentifier savedFieldDataIdentifier = dbServerProxy.saveExternalDataIdentifier(name);
+		return savedFieldDataIdentifier;
 	} catch (DataAccessException e) {
 		log.exception(e);
 		throw e;
