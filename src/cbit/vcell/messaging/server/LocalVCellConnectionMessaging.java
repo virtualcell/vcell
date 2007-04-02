@@ -77,9 +77,10 @@ public LocalVCellConnectionMessaging(User user, String password, String host,
 	topicConn = jmsConnFactory.createTopicConnection();
 	
 	messageService = new SimpleMessageServiceMessaging(topicConn, user, sessionLog);	
-	sessionLog.print("new LocalVCellConnection(" + user.getName() + ")");	
+	sessionLog.print("new LocalVCellConnectionMessaging(" + user.getName() + ")");	
 	fieldLocalVCellServer.getExportServiceImpl().addExportListener(this);
-
+	fieldLocalVCellServer.getDataSetControllerImpl().addDataJobListener(this);
+	
 	PerformanceMonitoringFacility pmf = new PerformanceMonitoringFacility(user, sessionLog);
 	getMessageService().getMessageDispatcher().addPerformanceMonitorListener(pmf);
 	

@@ -3,6 +3,9 @@ package cbit.rmi.event;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.util.EventObject;
+
+import cbit.util.TimeSeriesJobResults;
 import cbit.vcell.export.server.*;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.server.*;
@@ -13,26 +16,42 @@ import cbit.vcell.solver.*;
 public class DataJobEvent extends MessageEvent {
 	private int eventType = 0;
 	private Double progress = null;
-	private User user = null;
-	private long jobID = 0L;
-	private VCDataIdentifier vcDataIdentifier = null;
-	//private VCSimulationIdentifier vcSimulationIdentifier = null;
-	private String hostName = null;
+	private Integer jobID;
+	private VCDataIdentifier vcDataID = null;
+	private TimeSeriesJobResults timeSeriesJobResults = null;
+	private Exception failedJobException = null;
 
 /**
  * ExportEvent constructor comment.
  */
-public DataJobEvent(Object source, long jobID, User user, VCDataIdentifier vcdID,int argEventType, Double argProgress,String argHostName) {
-	super(source, new MessageSource(source, vcdID.getID()), new MessageData(argProgress));
+public DataJobEvent(Integer argJobID,
+		int argEventType,
+		VCDataIdentifier argVCDataID,
+		Double argProgress,
+		TimeSeriesJobResults argTSJR,
+		Exception argFJE) {
+	super(argJobID,new MessageSource(argVCDataID,argVCDataID.getID()),new MessageData(argTSJR));
+	this.jobID = argJobID;
 	this.eventType = argEventType;
 	this.progress = argProgress;
-	this.jobID = jobID;
-	this.user = user;
-	this.vcDataIdentifier = vcdID;
-	this.hostName = argHostName;
+	this.jobID = argJobID;
+	this.vcDataID = argVCDataID;
+	this.timeSeriesJobResults = argTSJR;
+	this.failedJobException = argFJE;
+}
+
+public Exception getFailedJobException(){
+	return failedJobException;
+}
+
+public VCDataIdentifier getVCDataIdentifier(){
+	return vcDataID;
 }
 
 
+public Integer getJobID(){
+	return jobID;
+}
 /**
  * Insert the method's description here.
  * Creation date: (1/4/01 1:24:16 PM)
@@ -41,27 +60,6 @@ public DataJobEvent(Object source, long jobID, User user, VCDataIdentifier vcdID
 public int getEventTypeID() {
 	return eventType;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (4/2/2006 12:25:04 PM)
- * @return java.lang.String
- */
-public java.lang.String getHostName() {
-	return hostName;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (4/3/2001 5:08:40 PM)
- * @return long
- */
-public long getJobID() {
-	return jobID;
-}
-
 
 /**
  * Insert the method's description here.
@@ -72,40 +70,16 @@ public Double getProgress() {
 	return progress;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (4/3/2001 4:50:43 PM)
- * @return cbit.vcell.server.User
- */
-public User getUser() {
-	return user;
+public TimeSeriesJobResults getTimeSeriesJobResults(){
+	return timeSeriesJobResults;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (7/2/2001 8:59:46 PM)
- * @return cbit.vcell.solver.SimulationInfo
- */
-public VCDataIdentifier getVCDataIdentifier() {
-	return vcDataIdentifier;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (8/28/2002 2:39:37 PM)
- * @return boolean
- */
 public boolean isConsumable() {
 	if (eventType == DATA_PROGRESS) {
 		return true;
 	}
-
 	return false;
 }
-
 
 /**
  * Insert the method's description here.
@@ -113,16 +87,15 @@ public boolean isConsumable() {
  * @return java.lang.String
  */
 public String toString() {
-	return "ExportEvent: "
+	return "DataEvent: "
 		+"source="+getSource().toString()
 		+", jobID="
-		+ getJobID()
+		+ jobID
 		+ ", progress=\""
-		+ getProgress()
-		+ "\", user="
-		+ getUser()
-		+ ", dataID="
-		+ (getVCDataIdentifier() != null ?
-			getVCDataIdentifier().getID() : null);
+		+ getProgress();
+}
+
+public User getUser() {
+	return vcDataID.getOwner();
 }
 }

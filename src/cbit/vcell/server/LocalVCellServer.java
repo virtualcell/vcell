@@ -233,7 +233,7 @@ public ConnectionPoolStatus getConnectionPoolStatus() {
  * This method was created in VisualAge.
  * @return cbit.vcell.simdata.DataSetControllerImpl
  */
-DataSetControllerImpl getDataSetControllerImpl() {
+public DataSetControllerImpl getDataSetControllerImpl() {
 	return dscImpl;
 }
 

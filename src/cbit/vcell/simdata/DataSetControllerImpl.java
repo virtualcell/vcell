@@ -1,4 +1,5 @@
 package cbit.vcell.simdata;
+import cbit.util.NumberUtils;
 import cbit.util.TSJobResultsNoStats;
 import cbit.util.TimeSeriesJobResults;
 import cbit.vcell.export.server.*;
@@ -17,6 +18,9 @@ import cbit.vcell.math.*;
 import cbit.plot.*;
 import java.util.*;
 import java.io.*;
+
+import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
+
 import cbit.vcell.server.*;
 import cbit.vcell.solvers.CartesianMesh;
 /**
@@ -43,6 +47,37 @@ public class DataSetControllerImpl implements SimDataConstants {
 		public double[][] spaceWeight;
 		public double[] totalSpace;
 	};
+	//
+//	public class DataEventHelper{
+//		private int currentProgress;
+//		private int fireThreshold;
+//		private int totalProgress;
+//		private int lastProgress = 0;
+//		private VCDataIdentifier vcdID;
+//		public DataEventHelper(int argTotProg,VCDataIdentifier argvcdID){
+//			totalProgress = argTotProg;
+//			vcdID = argvcdID;
+//			fireThreshold = (int)(totalProgress*.01);
+//		}
+//		public void incrementProgress(int incr){
+//			currentProgress+= incr;
+//			if(lastProgress == 0 || fireThreshold == 0 ||
+//				(currentProgress-lastProgress) >= fireThreshold){
+//				fireDataJobMessage(
+//						new DataJobEvent(
+//								new Object(),
+//								System.currentTimeMillis(),
+//								vcdID.getOwner(),
+//								vcdID,
+//								MessageEvent.DATA_START,
+//								new Double(0),
+//								null//java.net.InetAddress.getLocalHost().getHostName()
+//							)
+//					);
+//				lastProgress = currentProgress;
+//			}
+//		}
+//	};
 	//
 	private class MultiFunctionIndexes{
 		private FunctionIndexes[] functionIndexesArr;
@@ -1398,36 +1433,35 @@ private double[] getSpatialNeighborData(CartesianMesh mesh,int volumeIndex,int n
 	return spatialNeighborData;
 }
 
-private TimeSeriesJobResults getSpecialTimeSeriesValues(VCDataIdentifier vcdID,cbit.util.TimeSeriesJobSpec timeSeriesJobSpec,double[] wantedTimes)
-throws Exception{
-	
+private TimeSeriesJobResults getSpecialTimeSeriesValues(VCDataIdentifier vcdID,
+		cbit.util.TimeSeriesJobSpec timeSeriesJobSpec,double[] wantedTimes) throws Exception{
 	
 	String[] variableNames = timeSeriesJobSpec.getVariableNames();
 	boolean bIsSpecial = false;
-//	if(timeSeriesJobSpec.getIndices() == null){//whole spatial domain
-//		bIsSpecial = true;
-//	}else {
-		VCData vcData = getVCData(vcdID);
-//		CartesianMesh vcDataMesh = vcData.getMesh();
-		for(int i=0;i<variableNames.length;i+= 1){
-			AnnotatedFunction functionFromVarName = vcData.getFunction(variableNames[i]);
-			if(functionFromVarName != null){
-				if(functionFromVarName.getExpression().hasGradient()){
-//					Gradient functions are special for time series
-					if(timeSeriesJobSpec.isCalcTimeStats()){
-						throw new RuntimeException("Time Stats Not yet implemented for 'special' data");
-					}
-					bIsSpecial = true;
-					break;
-				}
+	CartesianMesh mesh = getMesh(vcdID);
+	SimulationData simData = (SimulationData)getVCData(vcdID);
+	for(int i=0;i<variableNames.length;i+= 1){
+		DataSetIdentifier dsi = (DataSetIdentifier)simData.getEntry(variableNames[i]);
+		if(dsi.getVariableType().equals(VariableType.VOLUME)){
+			if(timeSeriesJobSpec.getIndices()[i].length >
+			mesh.getNumVolumeElements()*.25){
+				bIsSpecial = true;
+				break;
 			}
-//			if(timeSeriesJobSpec.getIndices()[i].length > (vcDataMesh.getDataLength(VariableType.VOLUME)/2)){
-////				requested data length is greater than 1/2 the total volume domain
-//				bIsSpecial = true;
-//				break;
-//			}
 		}
-//	}
+		AnnotatedFunction functionFromVarName = simData.getFunction(variableNames[i]);
+		if(functionFromVarName != null){
+			if(functionFromVarName.getExpression().hasGradient()){
+				//Gradient functions are special for time series
+				if(timeSeriesJobSpec.isCalcTimeStats()){
+					throw new RuntimeException("Time Stats Not yet implemented for 'special' data");
+				}
+				bIsSpecial = true;
+				break;
+			}
+		}
+	}
+
 	if(!bIsSpecial){
 		return null;
 	}
@@ -1438,6 +1472,17 @@ throws Exception{
 		varIndicesTimesArr[varNameIndex] = new double[dataIndices.length + 1][wantedTimes.length];
 		varIndicesTimesArr[varNameIndex][0] = wantedTimes;
 		for(int timeIndex=0;timeIndex<wantedTimes.length;timeIndex+= 1){
+			fireDataJobMessage(
+					new DataJobEvent(
+							timeSeriesJobSpec.getBackgroundTaskID(),
+							MessageEvent.DATA_PROGRESS,
+							vcdID,
+							new Double(
+								NumberUtils.formatNumber(
+									100.0*(double)(varNameIndex*wantedTimes.length+timeIndex)/
+									(double)(variableNames.length*wantedTimes.length),3)),
+							null,null
+						));
 			SimDataBlock simDatablock = getSimDataBlock(vcdID, variableNames[varNameIndex], wantedTimes[timeIndex]);
 			double[] data = simDatablock.getData();
 			for(int dataIndex=0;dataIndex<dataIndices.length;dataIndex+= 1){
@@ -1445,22 +1490,6 @@ throws Exception{
 			}
 		}
 	}
-//	for(int timeIndex=0;timeIndex<wantedTimes.length;timeIndex+= 1){
-//		for(int varNameIndex =0;varNameIndex<variableNames.length;varNameIndex+= 1){
-//			SimDataBlock simDatablock = getSimDataBlock(vcdID, variableNames[varNameIndex], wantedTimes[timeIndex]);
-//			double[] data = simDatablock.getData();
-//			if(timeSeriesJobSpec.isCalcSpaceStats()){
-//			}else if(timeSeriesJobSpec.isCalcTimeStats()){
-//				throw new RuntimeException("Time Stats Not yet implemented for 'special' data");
-//			}else{//No stats
-//				int[] dataIndexes = timeSeriesJobSpec.getIndices()[varNameIndex];
-//				varTimesValuesArr[varNameIndex][timeIndex] = new double[dataIndexes.length];
-//				for(int i=0;i<dataIndexes.length;i+= 1){
-//					varTimesValuesArr[varNameIndex][timeIndex][i] = data[dataIndexes[i]];
-//				}
-//			}
-//		}
-//	}
 	
 	TimeSeriesJobResults tsjr = null;
 	if(timeSeriesJobSpec.isCalcSpaceStats()){
@@ -1480,15 +1509,10 @@ throws Exception{
 	return tsjr;
 }
 
-/**
- * This method was created by a SmartGuide.
- * @return double[]
- * @param varName java.lang.String
- * @param x int
- * @param y int
- * @param z int
- */
-public cbit.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID,cbit.util.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
+
+
+
+private cbit.util.TimeSeriesJobResults getTimeSeriesValues_private(VCDataIdentifier vcdID,cbit.util.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
 
 	
 	double dataTimes[] = getDataSetTimes(vcdID);
@@ -1536,20 +1560,8 @@ public cbit.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID
 	//}
 	
 	try{
-		fireDataJobMessage(
-			new DataJobEvent(
-					new Object(),
-					System.currentTimeMillis(),
-					vcdID.getOwner(),
-					vcdID,
-					//(vcdID instanceof cbit.vcell.solver.VCSimulationDataIdentifier?((cbit.vcell.solver.VCSimulationDataIdentifier)vcdID).getVcSimID():((cbit.vcell.solver.VCSimulationDataIdentifierOldStyle)vcdID).getVcSimID()),
-					MessageEvent.DATA_START,
-					new Double(0),
-					java.net.InetAddress.getLocalHost().getHostName()
-				)
-		);
+		timeSeriesJobSpec.initIndices(getMesh(vcdID));
 
-		
 		//See if we need special processing
 		TimeSeriesJobResults specialTSJR = getSpecialTimeSeriesValues(vcdID,timeSeriesJobSpec,desiredTimeValues);
 		if(specialTSJR != null){
@@ -1676,6 +1688,251 @@ public cbit.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID
 		throw new DataAccessException("DataSetControllerImpl.getTimeSeriesValues: "+(e.getMessage() == null?e.getClass().getName():e.getMessage()));
 	}
 }
+
+
+public cbit.util.TimeSeriesJobResults getTimeSeriesValues(final VCDataIdentifier vcdID,final cbit.util.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
+
+	
+	if(!timeSeriesJobSpec.isBackgroundTask()){
+		return getTimeSeriesValues_private(vcdID,timeSeriesJobSpec);
+	}
+	
+	fireDataJobMessage(
+			new DataJobEvent(
+					timeSeriesJobSpec.getBackgroundTaskID(),
+					MessageEvent.DATA_START,
+					vcdID,
+					new Double(0),
+					null,null
+				));
+	
+	new Thread(new Runnable(){
+		public void run(){
+			try{
+				TimeSeriesJobResults timeSeriesJobResults =
+					getTimeSeriesValues_private(vcdID,timeSeriesJobSpec);
+				fireDataJobMessage(
+						new DataJobEvent(
+								timeSeriesJobSpec.getBackgroundTaskID(),
+								MessageEvent.DATA_COMPLETE,
+								vcdID,
+								new Double(100),
+								timeSeriesJobResults,null
+							));
+			}catch (Exception e) {
+				e.printStackTrace();
+				fireDataJobMessage(
+						new DataJobEvent(
+								timeSeriesJobSpec.getBackgroundTaskID(),
+								MessageEvent.DATA_FAILURE,
+								vcdID,
+								new Double(0),
+								null,e
+							));
+			}
+		}
+	}).start();
+	
+	return null;
+}
+
+/**
+ * This method was created by a SmartGuide.
+ * @return double[]
+ * @param varName java.lang.String
+ * @param x int
+ * @param y int
+ * @param z int
+ */
+//public cbit.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID,cbit.util.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
+//
+//	
+//	double dataTimes[] = getDataSetTimes(vcdID);
+//	if (dataTimes.length<=0){
+//		return null;
+//	}	
+//
+//	boolean[] wantsTheseTimes = new boolean[dataTimes.length];
+//	double[] desiredTimeValues = null;
+//	int desiredNumTimes = 0;
+//	
+//	//if(timeSeriesJobSpec.getStartTime() == dataTimes[0] && timeSeriesJobSpec.getStep() == 1){
+//		//Arrays.fill(wantsTheseTimes,true);
+//		//desiredTimeValues = dataTimes;
+//		//desiredNumTimes = dataTimes.length;
+//	//}else{
+//		Arrays.fill(wantsTheseTimes,false);
+//		double[] tempTimes = new double[dataTimes.length];
+//		
+//		int stepCounter = 0;
+//		for(int i=0;i<dataTimes.length;i+= 1){
+//			if(dataTimes[i] > timeSeriesJobSpec.getEndTime()){
+//				break;
+//			}
+//			if(dataTimes[i] == timeSeriesJobSpec.getStartTime()){
+//				tempTimes[desiredNumTimes] = dataTimes[i];
+//				desiredNumTimes+= 1;
+//				stepCounter = 0;
+//				wantsTheseTimes[i] = true;
+//				if(timeSeriesJobSpec.getStep() == 0){
+//					break;
+//				}
+//			}else if(desiredNumTimes > 0 && stepCounter%timeSeriesJobSpec.getStep() == 0){
+//				tempTimes[desiredNumTimes] = dataTimes[i];
+//				desiredNumTimes+= 1;
+//				wantsTheseTimes[i] = true;
+//			}
+//			stepCounter+= 1;
+//		}
+//		if(desiredNumTimes == 0){
+//			throw new IllegalArgumentException("Couldn't find startTime "+timeSeriesJobSpec.getStartTime());
+//		}
+//		desiredTimeValues = new double[desiredNumTimes];
+//		System.arraycopy(tempTimes,0,desiredTimeValues,0,desiredNumTimes);
+//	//}
+//	
+//	try{
+//		fireDataJobMessage(
+//			new DataJobEvent(
+//					new Object(),
+//					System.currentTimeMillis(),
+//					vcdID.getOwner(),
+//					vcdID,
+//					//(vcdID instanceof cbit.vcell.solver.VCSimulationDataIdentifier?((cbit.vcell.solver.VCSimulationDataIdentifier)vcdID).getVcSimID():((cbit.vcell.solver.VCSimulationDataIdentifierOldStyle)vcdID).getVcSimID()),
+//					MessageEvent.DATA_START,
+//					new Double(0),
+//					java.net.InetAddress.getLocalHost().getHostName(),
+//					null
+//				)
+//		);
+//		timeSeriesJobSpec.initIndices(getMesh(vcdID));
+//
+//		//See if we need special processing
+//		TimeSeriesJobResults specialTSJR = getSpecialTimeSeriesValues(vcdID,timeSeriesJobSpec,desiredTimeValues);
+//		if(specialTSJR != null){
+//			return specialTSJR;
+//		}
+//		//
+//		SimulationData simData = (SimulationData)getVCData(vcdID);
+//		//
+//		//Determine Memory Usage for this job to protect server
+//		//
+//		final long MAX_MEM_USAGE = 20000000;//No TimeSeries jobs larger than this
+//		long memUsage = 0;
+//		boolean bHasFunctionVars = false;//efficient function stats are not yet implemented so check to adjust calculation
+//		for(int i=0;i<timeSeriesJobSpec.getVariableNames().length;i+= 1){
+//			bHasFunctionVars = bHasFunctionVars || (simData.getFunction(timeSeriesJobSpec.getVariableNames()[i]) != null);
+//		}
+//		for(int i=0;i<timeSeriesJobSpec.getIndices().length;i+= 1){
+//			memUsage+= (timeSeriesJobSpec.isCalcSpaceStats() && !bHasFunctionVars ? NUM_STATS : timeSeriesJobSpec.getIndices()[i].length);
+//		}
+//		memUsage*= desiredNumTimes*8*2;
+//		System.out.println("DataSetControllerImpl.getTimeSeriesValues: job memory="+memUsage);
+//		if(memUsage > MAX_MEM_USAGE){
+//			throw new DataAccessException(
+//				"DataSetControllerImpl.getTimeSeriesValues: Job too large"+(bHasFunctionVars?"(has function vars)":"")+", requires approx. "+memUsage+
+//				" bytes of memory (only "+MAX_MEM_USAGE+" bytes allowed).  Choose fewer datapoints or times.");
+//		}
+//		//
+//		Vector valuesV = new Vector();
+//		SpatialStatsInfo spatialStatsInfo = null;
+//		if(timeSeriesJobSpec.isCalcSpaceStats()){
+//			spatialStatsInfo = calcSpatialStatsInfo(timeSeriesJobSpec,vcdID);
+//		}
+//		for(int k=0;k<timeSeriesJobSpec.getVariableNames().length;k+= 1){
+//			double[][] timeSeries = null;
+//			String varName = timeSeriesJobSpec.getVariableNames()[k];
+//			int[] indices = timeSeriesJobSpec.getIndices()[k];
+//			if(timeSeriesJobSpec.isCalcSpaceStats() && !bHasFunctionVars){
+//				timeSeries = new double[NUM_STATS + 1][desiredNumTimes];
+//			}else{
+//				timeSeries = new double[indices.length + 1][desiredNumTimes];
+//			}
+//			timeSeries[0] = desiredTimeValues;
+//			if(simData.getFunction(varName) != null){
+//				MultiFunctionIndexes mfi = new MultiFunctionIndexes(vcdID,varName,indices,wantsTheseTimes);
+//				for (int i=0;i<desiredTimeValues.length;i++){
+//					for (int j = 0; j < indices.length; j++){
+//						timeSeries[j + 1][i] = mfi.evaluateTimeFunction(i,j);
+//					}
+//				}
+//			}else{
+//				double[][][] valuesOverTime = null;
+//				if(timeSeriesJobSpec.isCalcSpaceStats() && !bHasFunctionVars){
+//					valuesOverTime = simData.getSimDataTimeSeries(new String[] {varName},new int[][]{indices},wantsTheseTimes,spatialStatsInfo);
+//				}else{
+//					valuesOverTime = simData.getSimDataTimeSeries(new String[] {varName},new int[][]{indices},wantsTheseTimes);
+//				}
+//				for (int i=0;i<desiredTimeValues.length;i++){
+//					if(timeSeriesJobSpec.isCalcSpaceStats() && !bHasFunctionVars){
+//						timeSeries[MIN_OFFSET + 1][i] = valuesOverTime[i][0][MIN_OFFSET];// min
+//						timeSeries[MAX_OFFSET + 1][i] = valuesOverTime[i][0][MAX_OFFSET];// max
+//						timeSeries[MEAN_OFFSET + 1][i] = valuesOverTime[i][0][MEAN_OFFSET];// mean
+//						timeSeries[WMEAN_OFFSET + 1][i] = valuesOverTime[i][0][WMEAN_OFFSET];// wmean
+//						timeSeries[SUM_OFFSET + 1][i] = valuesOverTime[i][0][SUM_OFFSET];// sum
+//						timeSeries[WSUM_OFFSET + 1][i] = valuesOverTime[i][0][WSUM_OFFSET];// wsum
+//					}else{
+//						for (int j = 0; j < indices.length; j++){
+//							timeSeries[j + 1][i] = valuesOverTime[i][0][j];
+//						}
+//					}
+//				}
+//			}
+//			
+//			valuesV.add(timeSeries);
+//		}
+//
+//		if(timeSeriesJobSpec.isCalcSpaceStats() && !bHasFunctionVars){
+//			double[][] min = new double[timeSeriesJobSpec.getVariableNames().length][desiredTimeValues.length];
+//			double[][] max = new double[timeSeriesJobSpec.getVariableNames().length][desiredTimeValues.length];
+//			double[][] mean = new double[timeSeriesJobSpec.getVariableNames().length][desiredTimeValues.length];
+//			double[][] wmean = new double[timeSeriesJobSpec.getVariableNames().length][desiredTimeValues.length];
+//			double[][] sum = new double[timeSeriesJobSpec.getVariableNames().length][desiredTimeValues.length];
+//			double[][] wsum = new double[timeSeriesJobSpec.getVariableNames().length][desiredTimeValues.length];
+//			for(int i=0;i<valuesV.size();i+= 1){
+//				double[][] timeStat = (double[][])valuesV.elementAt(i);
+//				for(int j=0;j<desiredTimeValues.length;j+= 1){
+//					min[i][j] = timeStat[MIN_OFFSET+1][j];
+//					max[i][j] = timeStat[MAX_OFFSET+1][j];
+//					mean[i][j] = timeStat[MEAN_OFFSET+1][j];
+//					wmean[i][j] = timeStat[WMEAN_OFFSET+1][j];
+//					sum[i][j] = timeStat[SUM_OFFSET+1][j];
+//					wsum[i][j] = timeStat[WSUM_OFFSET+1][j];
+//				}
+//			}
+//			return new cbit.util.TSJobResultsSpaceStats(
+//					timeSeriesJobSpec.getVariableNames(),
+//					timeSeriesJobSpec.getIndices(),
+//					desiredTimeValues,
+//					min,max,
+//					mean,
+//					(spatialStatsInfo.bWeightsValid?wmean:null),
+//					sum,
+//					(spatialStatsInfo.bWeightsValid?wsum:null),
+//					(spatialStatsInfo.bWeightsValid?spatialStatsInfo.totalSpace:null)
+//				);
+//		}else if(timeSeriesJobSpec.isCalcSpaceStats() && bHasFunctionVars){
+//			double[][][] timeSeriesFormatedValuesArr = new double[valuesV.size()][][];
+//			valuesV.copyInto(timeSeriesFormatedValuesArr);
+//			return calculateStatisticsFromWhole(timeSeriesJobSpec,timeSeriesFormatedValuesArr,desiredTimeValues,spatialStatsInfo);
+//		}else{
+//			double[][][] timeSeriesFormatedValuesArr = new double[valuesV.size()][][];
+//			valuesV.copyInto(timeSeriesFormatedValuesArr);
+//			return new cbit.util.TSJobResultsNoStats(
+//	            timeSeriesJobSpec.getVariableNames(),
+//	            timeSeriesJobSpec.getIndices(),
+//	            desiredTimeValues,
+//	            timeSeriesFormatedValuesArr);
+//		}
+//		
+//	}catch (DataAccessException e){
+//		log.exception(e);
+//		throw e;
+//	}catch (Throwable e){
+//		log.exception(e);
+//		throw new DataAccessException("DataSetControllerImpl.getTimeSeriesValues: "+(e.getMessage() == null?e.getClass().getName():e.getMessage()));
+//	}
+//}
 
 
 /**

@@ -25,7 +25,7 @@ import cbit.rmi.event.*;
  * Creation date: (Unknown)
  * @author: Jim Schaff.
  */
-public class LocalVCellConnection extends UnicastRemoteObject implements VCellConnection, ExportListener {
+public class LocalVCellConnection extends UnicastRemoteObject implements VCellConnection, ExportListener ,DataJobListener{
 	
 	private DataSetController dataSetControllerProxy = null;
 	private SimulationController simulationController = null;
@@ -62,6 +62,7 @@ public LocalVCellConnection(User user, String password, String host, SessionLog 
 	sessionLog.print("new LocalVCellConnection(" + user.getName() + ")");
 	
 	getLocalVCellServer().getExportServiceImpl().addExportListener(this);
+	getLocalVCellServer().getDataSetControllerImpl().addDataJobListener(this);
 
 	PerformanceMonitoringFacility pmf = new PerformanceMonitoringFacility(user, sessionLog);
 	getMessageService().getMessageDispatcher().addPerformanceMonitorListener(pmf);
@@ -318,5 +319,12 @@ static void setDatabaseResources(cbit.sql.ConnectionFactory argConFactory, KeyFa
 	conFactory = argConFactory;
 	keyFactory = argKeyFactory;
 	dbCacheTable = argDBCacheTable;
+}
+
+
+public void dataJobMessage(DataJobEvent event) {
+	if (getUser().equals(event.getUser())) {
+		messageService.getMessageCollector().dataJobMessage(event);
+	}
 }
 }
