@@ -1,14 +1,5 @@
 package cbit.vcell.client;
 import cbit.vcell.server.bionetgen.BNGService;
-import cbit.vcell.numericstest.AddTestCasesOP;
-import cbit.vcell.numericstest.AddTestSuiteOP;
-import cbit.vcell.numericstest.TestSuiteInfoNew;
-import cbit.vcell.numericstest.TestSuiteNew;
-import cbit.vcell.numericstest.TestCaseNew;
-import cbit.vcell.numericstest.TestCaseNewMathModel;
-import cbit.vcell.numericstest.TestCaseNewBioModel;
-import cbit.vcell.numericstest.TestSuiteOP;
-import java.awt.event.*;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import cbit.xml.merge.*;
@@ -20,14 +11,14 @@ import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.solver.ode.gui.*;
-import cbit.vcell.messaging.db.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.client.task.*;
 import cbit.vcell.desktop.controls.*;
-import cbit.sql.*;
 import cbit.vcell.math.*;
 import cbit.vcell.mapping.*;
 import java.beans.*;
+
+import cbit.sql.VersionableType;
 import cbit.util.*;
 import swingthreads.*;
 import java.awt.*;
@@ -35,9 +26,10 @@ import cbit.vcell.client.server.*;
 import cbit.vcell.server.*;
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
+import cbit.vcell.modeldb.VersionableTypeVersion;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.document.*;
-import cbit.vcell.client.desktop.*;
+import cbit.vcell.client.FieldDataWindowManager.SimInfoHolder;
 import java.util.*;
 import javax.swing.*;
 import cbit.vcell.xml.XMLTags;
@@ -273,6 +265,14 @@ public boolean closeWindow(java.lang.String windowID, boolean exitIfLast) {
 		}
 		return true;
 	} else if (windowManager instanceof BNGWindowManager) {
+		// nothing to check here, just close it
+		int openWindows = getMdiManager().closeWindow(windowID);
+		if (exitIfLast && (openWindows == 0)) {
+			setBExiting(true);
+			exitApplication();
+		}
+		return true;
+	} else if (windowManager instanceof FieldDataWindowManager) {
 		// nothing to check here, just close it
 		int openWindows = getMdiManager().closeWindow(windowID);
 		if (exitIfLast && (openWindows == 0)) {
@@ -566,6 +566,13 @@ public void createMathModelFromApplication(final String name, final SimulationCo
 				newMathModel.setMathDescription(newMathDesc);
 				
 				windowManager = new MathModelWindowManager(new JPanel(), ClientRequestManager.this, newMathModel, getMdiManager().getNewlyCreatedDesktops());
+				if(simContext.getBioModel().getVersion() != null){
+					((MathModelWindowManager)windowManager).
+						setCopyFromBioModelAppVersionableTypeVersion(
+								new VersionableTypeVersion(
+										VersionableType.BioModelMetaData,
+										simContext.getBioModel().getVersion()));
+				}
 			} catch (Throwable e) {
 				exc = e;
 			}
@@ -1142,7 +1149,6 @@ public SimulationStatus getServerSimulationStatus(SimulationInfo simInfo) {
 public UserPreferences getUserPreferences() {
 	return getVcellClient().getClientServerManager().getUserPreferences();
 }
-
 
 /**
  * Insert the method's description here.
@@ -1957,6 +1963,9 @@ public void showBNGWindow() {
 	getMdiManager().showWindow(ClientMDIManager.BIONETGEN_WINDOW_ID);
 }
 
+public void showFieldDataWindow() {
+	getMdiManager().showWindow(ClientMDIManager.FIELDDATA_WINDOW_ID);
+}
 
 /**
  * Insert the method's description here.
@@ -2058,4 +2067,60 @@ public void updateStatusNow() {
 	// thread safe update of gui
 	getVcellClient().getStatusUpdater().updateNow(getVcellClient().getClientServerManager().getConnectionStatus());
 }
+
+public SimInfoHolder[] getOpenDesktopDocumentInfos() throws DataAccessException{
+	Vector<SimInfoHolder> simInfoHolderV = new Vector<SimInfoHolder>();
+	Enumeration<TopLevelWindowManager> dwmEnum = getMdiManager().getWindowManagers();
+	while(dwmEnum.hasMoreElements()){
+		TopLevelWindowManager tlwm = dwmEnum.nextElement();
+		if(tlwm instanceof DocumentWindowManager){
+			DocumentWindowManager dwm = (DocumentWindowManager)tlwm;
+			VCDocument vcDoc = dwm.getVCDocument();
+			if(vcDoc.getVersion() != null){
+				if(vcDoc.getDocumentType() == VCDocument.BIOMODEL_DOC){
+					BioModel bioModel =
+						getDocumentManager().getBioModel(vcDoc.getVersion().getVersionKey());
+					SimulationContext[] simContexts = bioModel.getSimulationContexts();
+					for(int i=0;i<simContexts.length;i+= 1){
+						Simulation[] sims = simContexts[i].getSimulations();
+						for(int j=0;j<sims.length;j+= 1){
+							for(int k=0;k<sims[j].getScanCount();k+= 1){
+								FieldDataWindowManager.SimInfoHolder simInfoHolder =
+									new FieldDataWindowManager.FDSimBioModelInfo(
+											bioModel.getVersion().getVersionKey(),
+											simContexts[i].getName(),sims[j].getSimulationInfo(),
+											k,
+											!sims[j].getSolverTaskDescription().getSolverDescription().hasVariableTimestep()
+									);
+								simInfoHolderV.add(simInfoHolder);
+							}
+						}
+					}
+				}else if(vcDoc.getDocumentType() == VCDocument.MATHMODEL_DOC	){
+					MathModel mathModel =
+						getDocumentManager().getMathModel(vcDoc.getVersion().getVersionKey());
+					Simulation[] sims = mathModel.getSimulations();
+					for(int i=0;i<sims.length;i+= 1){
+						for(int k=0;k<sims[i].getScanCount();k+= 1){
+							FieldDataWindowManager.SimInfoHolder simInfoHolder =
+								new FieldDataWindowManager.FDSimMathModelInfo(
+										mathModel.getVersion().getVersionKey(),
+										sims[i].getSimulationInfo(),
+										k,
+										!sims[i].getSolverTaskDescription().getSolverDescription().hasVariableTimestep()
+								);
+							simInfoHolderV.add(simInfoHolder);
+						}
+					}
+				}
+			}
+		}
+		
+	}
+	SimInfoHolder[] simInfoHolderArr = new SimInfoHolder[simInfoHolderV.size()];
+	simInfoHolderV.copyInto(simInfoHolderArr);
+	return simInfoHolderArr;
+}
+
+
 }

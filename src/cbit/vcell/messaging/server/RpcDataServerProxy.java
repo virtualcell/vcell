@@ -1,6 +1,8 @@
 package cbit.vcell.messaging.server;
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.server.DataAccessException;
+import cbit.vcell.field.FieldDataFileOperationResults;
+import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.math.Function;
 import cbit.vcell.messaging.JmsClientMessaging;
 import cbit.vcell.messaging.MessageConstants;
@@ -43,6 +45,10 @@ public void addFunction(cbit.vcell.server.VCDataIdentifier vcdataID, cbit.vcell.
  */
 public void addFunctions(cbit.vcell.server.VCDataIdentifier vcdID, cbit.vcell.math.AnnotatedFunction[] function) throws cbit.vcell.server.DataAccessException {
 	rpc("addFunctions",new Object[]{user, vcdID,function});
+}
+
+public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws cbit.vcell.server.DataAccessException {
+	return (FieldDataFileOperationResults)rpc("fieldDataFileOperation",new Object[]{user, fieldDataFileOperationSpec});
 }
 
 

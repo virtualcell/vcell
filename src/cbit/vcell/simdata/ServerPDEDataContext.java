@@ -40,6 +40,7 @@ public ServerPDEDataContext(User user0, DataServerImpl dataServerImpl, VCDataIde
  */
 public void addFunction(cbit.vcell.math.AnnotatedFunction function) throws cbit.vcell.server.DataAccessException {
 	getDataServerImpl().addFunction(user, vcDataID, function);
+	firePropertyChange(PROP_CHANGE_FUNC_ADDED, null, function);
 }
 
 
@@ -228,6 +229,7 @@ public void refreshTimes() {
  */
 public void removeFunction(cbit.vcell.math.AnnotatedFunction function) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.PermissionException {
 	getDataServerImpl().removeFunction(user, vcDataID, function);
+	firePropertyChange(PROP_CHANGE_FUNC_REMOVED, function, null);
 }
 
 

@@ -3,6 +3,7 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.server.AdminDatabaseServer;
@@ -10,7 +11,6 @@ import cbit.sql.KeyValue;
 import cbit.sql.DBCacheTable;
 import cbit.vcell.server.SessionLog;
 import cbit.sql.ConnectionFactory;
-import cbit.sql.KeyFactory;
 import cbit.vcell.solver.SolverResultSetInfo;
 import cbit.vcell.server.DataAccessException;
 import java.util.Vector;
@@ -21,7 +21,10 @@ import cbit.vcell.server.User;
 import java.util.LinkedList;
 import java.beans.PropertyVetoException;
 import cbit.vcell.server.PermissionException;
+import cbit.vcell.simdata.ExternalDataIdentifier;
+
 import java.sql.SQLException;
+
 
 /**
  * Insert the type's description here.
@@ -242,7 +245,7 @@ private static void printUsage() {
  * Insert the method's description here.
  * Creation date: (2/2/01 3:40:29 PM)
  */
-private void scan(File userDir, Vector simInfoList, SolverResultSetInfo[] resultSetInfos, File outputDir, boolean bScanOnly) throws Exception {
+private void scan(File userDir, ExternalDataIdentifier[] extDataIDArr, Vector simInfoList, SolverResultSetInfo[] resultSetInfos, File outputDir, boolean bScanOnly) throws Exception {
 	File outputFile = null;
 	java.io.PrintWriter pw = null;
 	try {
@@ -257,10 +260,25 @@ private void scan(File userDir, Vector simInfoList, SolverResultSetInfo[] result
 				return name.endsWith(".log"); 
 			} 
 		};
-		
+				
 		// find all the log files
 		File logFiles[] = userDir.listFiles(logFileFilter);
 		java.util.List logfileList = new LinkedList(java.util.Arrays.asList(logFiles));
+		
+		//
+		//loop through all ExternalDataIdentifier keys and remove from logFile list
+		//
+		for(int i=0;extDataIDArr != null && i<extDataIDArr.length;i+= 1){
+			File extDataIDogFile = new File(userDir,
+					ExternalDataIdentifier.createCanonicalSimLogFileName(
+							extDataIDArr[i].getKey(),
+							FieldDataFileOperationSpec.JOBINDEX_DEFAULT,
+							false)
+			);
+			if (extDataIDogFile.exists()) {
+				logfileList.remove(extDataIDogFile);
+			}
+		}
 		
 		// loop through all the simulation info
 		// remove from log file list all log files that have simulations in the database
@@ -388,7 +406,8 @@ private void scanAllUsers(String startUser, boolean bScanOnly) throws SQLExcepti
 			// find all the user simulations
 			Vector simInfoList = dbTopLevel.getVersionableInfos(user,null,cbit.sql.VersionableType.Simulation,false,false, true);
 			SolverResultSetInfo[] resultSetInfos = resultSetDbTopLevel.getResultSetInfos(user, false, false);
-			scan(userDir, simInfoList, resultSetInfos, outputDir, bScanOnly);
+			ExternalDataIdentifier[] extDataIDArr = adminDbServer.getExternalDataIdentifiers(user);
+			scan(userDir, extDataIDArr,simInfoList, resultSetInfos, outputDir, bScanOnly);
 		} catch (Exception ex) {
 			log.exception(ex);
 		}
@@ -426,7 +445,8 @@ private void scanAUser(String username, boolean bScanOnly) throws SQLException, 
 		// find all the user simulations
 		Vector simInfoList = dbTopLevel.getVersionableInfos(user,null,cbit.sql.VersionableType.Simulation,false,false, true);
 		SolverResultSetInfo[] resultSetInfos = resultSetDbTopLevel.getResultSetInfos(user, false, false);
-		scan(userDir, simInfoList, resultSetInfos, outputDir, bScanOnly);
+		ExternalDataIdentifier[] extDataIDArr = adminDbServer.getExternalDataIdentifiers(user);
+		scan(userDir, extDataIDArr,simInfoList, resultSetInfos, outputDir, bScanOnly);
 		log.print("----------------------------------------------------------");
 	} catch (Exception ex) {
 		log.exception(ex);

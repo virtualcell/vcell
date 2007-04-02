@@ -1372,7 +1372,9 @@ private void updateAnnotation() {
 	try {
 		//int caretPosition = getJTextAreaDescription().getCaretPosition();
 		String text = getJTextAreaDescription().getText();
-		getSimulation().setDescription(text);
+		if(getSimulation() != null){
+			getSimulation().setDescription(text);
+		}
 		//getJTextAreaDescription().setCaretPosition(caretPosition);
 	}catch (PropertyVetoException e){
 		e.printStackTrace(System.out);

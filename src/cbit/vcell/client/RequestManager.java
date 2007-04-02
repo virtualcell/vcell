@@ -9,6 +9,7 @@ import java.awt.*;
 
 import cbit.vcell.document.*;
 import cbit.vcell.client.server.*;
+import cbit.vcell.client.FieldDataWindowManager.SimInfoHolder;
 import cbit.vcell.client.desktop.*;
 import cbit.vcell.clientdb.*;
 import java.beans.*;
@@ -150,6 +151,7 @@ DocumentManager getDocumentManager();
  */
 DynamicDataManager getDynamicDataManager(VCDataIdentifier vcdId) throws DataAccessException;
 
+SimInfoHolder[] getOpenDesktopDocumentInfos() throws DataAccessException;
 
 /**
  * Insert the method's description here.
@@ -172,7 +174,6 @@ SimulationStatus getServerSimulationStatus(SimulationInfo simInfo);
  * @return cbit.vcell.client.UserPreferences
  */
 UserPreferences getUserPreferences();
-
 
 /**
  * Insert the method's description here.
@@ -288,6 +289,7 @@ MathModelInfo selectMathModelInfo(TopLevelWindowManager tfWindowManager);
  */
 void showBNGWindow();
 
+void showFieldDataWindow();
 
 /**
  * Insert the method's description here.

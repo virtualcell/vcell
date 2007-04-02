@@ -10,6 +10,8 @@ import java.rmi.server.*;
 import java.io.*;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.export.server.ExportServiceImpl;
+import cbit.vcell.field.FieldDataFileOperationResults;
+import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.server.User;
 import cbit.vcell.server.VCDataIdentifier;
@@ -115,6 +117,18 @@ private void checkWriteAccess(User user, VCDataIdentifier vcdID) throws Permissi
 		throw new PermissionException("PermissionException: VCData="+vcdID.getID());
 	}
 }
+
+
+public FieldDataFileOperationResults fieldDataFileOperation(User user,FieldDataFileOperationSpec fieldDataOpearationSpec) throws DataAccessException {
+	//checkReadAccess(user, vcdID);
+	try {
+		return dataSetControllerImpl.fieldDataFileOperation(fieldDataOpearationSpec);
+	}catch (Throwable e){
+		log.exception(e);
+		throw new DataAccessException(e.getMessage());
+	}
+}
+
 
 
 /**

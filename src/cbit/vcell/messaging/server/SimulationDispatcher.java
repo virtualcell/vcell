@@ -1,5 +1,5 @@
 package cbit.vcell.messaging.server;
-import cbit.vcell.simdata.FieldDataIdentifier;
+import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
@@ -16,7 +16,12 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Vector;
+
 import javax.transaction.*;
+
+import cbit.vcell.field.FieldDataIdentifierSpec;
+import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.modeldb.LocalAdminDbServer;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
@@ -131,27 +136,43 @@ private RpcDbServerProxy getDbServerProxy(User user) throws JMSException {
  * @return cbit.vcell.server.User
  * @param simKey cbit.sql.KeyValue
  */
-public cbit.vcell.simdata.FieldDataIdentifier[] getFieldDataIdentifiers(Simulation sim) throws DataAccessException, JMSException {
+public FieldDataIdentifierSpec[] getFieldDataIdentifierSpecs(Simulation sim) throws DataAccessException, JMSException {
 	try {		
 		KeyValue simKey = sim.getKey();
-		log.print("Get FieldDataIdentifier for [" + simKey + "]");	
-		FieldDataIdentifier[] fieldDataIDs = (FieldDataIdentifier[])simFieldDataIDMap.get(simKey);
+		log.print("Get FieldDataIdentifierSpec for [" + simKey + "]");	
+		FieldDataIdentifierSpec[] fieldDataIDSs = (FieldDataIdentifierSpec[])simFieldDataIDMap.get(simKey);
 
-		if (fieldDataIDs != null) {
-			return fieldDataIDs;
+		if (fieldDataIDSs != null) {
+			return fieldDataIDSs;
 		}
 
 		RpcDbServerProxy dbServerProxy = getDbServerProxy(sim.getVersion().getOwner());
-		cbit.vcell.field.FieldDataIdentifierSpec[] fdiss =  sim.getMathDescription().getFieldDataIdentifierSpecs(sim);
-		if (fdiss != null && fdiss.length != 0) {
-			fieldDataIDs = dbServerProxy.getFieldDataIdentifiers(fdiss);
+		FieldFunctionArguments[] fieldFuncArgs =  sim.getMathDescription().getFieldFunctionArguments();
+		ExternalDataIdentifier[] externalDataIDs = dbServerProxy.getExternalDataIdentifiers();
+		if (externalDataIDs != null && externalDataIDs.length != 0 &&
+			fieldFuncArgs != null && fieldFuncArgs.length>0	) {
+			Vector<FieldDataIdentifierSpec> fieldDataIdV = new Vector<FieldDataIdentifierSpec>();
+			for(int j=0;fieldFuncArgs != null && j<fieldFuncArgs.length;j+= 1){
+				for(int i=0;i<externalDataIDs.length;i+= 1){
+					if(externalDataIDs[i].getName().equals(fieldFuncArgs[j].getFieldName())){
+						fieldDataIdV.add(
+								new FieldDataIdentifierSpec(fieldFuncArgs[j],externalDataIDs[i])
+								);
+						break;
+					}
+				}
+			}
+			if(fieldDataIdV.size() > 0){
+				fieldDataIDSs = new FieldDataIdentifierSpec[fieldDataIdV.size()];
+				fieldDataIdV.copyInto(fieldDataIDSs);
+			}
 		}
 
-		if (fieldDataIDs != null){
-			simFieldDataIDMap.put(simKey, fieldDataIDs);		
+		if (fieldDataIDSs != null){
+			simFieldDataIDMap.put(simKey, fieldDataIDSs);		
 		}
 		
-		return fieldDataIDs;
+		return fieldDataIDSs;
 	} catch (Exception ex) {
 		ex.printStackTrace(System.out);
 		throw new DataAccessException(ex.getMessage());
@@ -207,7 +228,7 @@ public SimulationTask getSimulationTask(SimulationJobStatus jobStatus) throws Da
 	VCSimulationIdentifier vcSimID = jobStatus.getVCSimulationIdentifier();
 	User user = getUser(vcSimID.getSimulationKey(), null);				
 	Simulation sim = getSimulation(user, vcSimID.getSimulationKey());
-	SimulationTask simTask = new SimulationTask(new SimulationJob(sim, getFieldDataIdentifiers(sim), jobStatus.getJobIndex()), jobStatus.getTaskID());
+	SimulationTask simTask = new SimulationTask(new SimulationJob(sim, getFieldDataIdentifierSpecs(sim), jobStatus.getJobIndex()), jobStatus.getTaskID());
 
 	return simTask;
 }

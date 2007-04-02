@@ -10,6 +10,7 @@ import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.User;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.server.PropertyLoader;
+import cbit.vcell.simdata.ExternalDataIdentifier;
 
 /**
  * This type was created in VisualAge.
@@ -36,6 +37,14 @@ public LocalAdminDbServer(ConnectionFactory conFactory, KeyFactory keyFactory, S
 	}		
 }
 
+public ExternalDataIdentifier[] getExternalDataIdentifiers(User fieldDataOwner) throws DataAccessException {
+	try {
+		return adminDbTop.getExternalDataIdentifiers(fieldDataOwner,true);
+	}catch (Throwable e){
+		log.exception(e);
+		throw new DataAccessException("failure getExternalDataIdentifierKeys");
+	}
+}
 
 /**
  * Insert the method's description here.

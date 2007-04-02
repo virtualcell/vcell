@@ -1,6 +1,8 @@
 package cbit.vcell.client.server;
 import java.lang.reflect.*;
 import cbit.vcell.export.server.*;
+import cbit.vcell.field.FieldDataFileOperationResults;
+import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.clientdb.*;
 import swingthreads.*;
 
@@ -309,6 +311,9 @@ private VCellConnection connectToServer() {
 	}
 }
 
+public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFielOperationSpec) throws DataAccessException{
+	return getVCDataManager().fieldDataFileOperation(fieldDataFielOperationSpec);
+}
 
 /**
  * The firePropertyChange method was generated to support the propertyChange field.
@@ -632,7 +637,6 @@ private VCellConnection getVcellConnection() {
 public synchronized boolean hasListeners(java.lang.String propertyName) {
 	return getPropertyChange().hasListeners(propertyName);
 }
-
 
 /**
  * Insert the method's description here.

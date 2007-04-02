@@ -1,12 +1,30 @@
 package cbit.vcell.parser;
 
+import cbit.sql.KeyValue;
 import cbit.util.Matchable;
+import cbit.util.TokenMangler;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.server.ClientServerManager;
+import cbit.vcell.document.VCDocument;
+import cbit.vcell.field.FieldDataDBOperationResults;
+import cbit.vcell.field.FieldDataDBOperationSpec;
+import cbit.vcell.field.FieldDataFileOperationSpec;
+import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.field.FieldFunctionContainer;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.MathException;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.server.DataAccessException;
+import cbit.vcell.server.User;
+import cbit.vcell.simdata.ExternalDataIdentifier;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
 import java.io.*;
 import java.util.*;
+import java.util.Map.Entry;
+
 import net.sourceforge.interval.ia_math.*;
 
 public class Expression implements java.io.Serializable, cbit.util.Matchable {
@@ -84,7 +102,44 @@ public Expression ( String expString ) throws ExpressionException {
 }
 public Expression(StringTokenizer tokens) throws ExpressionException {
 	read(tokens);
-}      
+}  
+
+
+public static void addFieldFuncArgsAndExpToCollection(Hashtable<FieldFunctionArguments, Vector<Expression>> fieldFuncArgsAndExpHash,Expression expression){
+	if(expression == null){
+		return;
+	}
+	FieldFunctionArguments[] fieldFuncArgs =
+			expression.getFieldFunctionArguments();
+	for(int i=0;i<fieldFuncArgs.length;i+= 1){
+		Vector<Expression> expV = null;
+		if(fieldFuncArgsAndExpHash.contains(fieldFuncArgs[i])){
+			 expV= fieldFuncArgsAndExpHash.get(fieldFuncArgs[i]);
+			
+		}else{
+			expV = new Vector<Expression>();
+			fieldFuncArgsAndExpHash.put(fieldFuncArgs[i],expV);
+			
+		}
+		expV.add(expression);
+	}
+}
+
+public static void substituteFieldFuncNames(
+		Hashtable<String, ExternalDataIdentifier> oldFieldFuncArgsNameNewID,
+		Hashtable<FieldFunctionArguments, Vector<Expression>> fieldFuncArgsExpHash
+		) throws MathException, ExpressionException{
+
+	Set<Map.Entry<FieldFunctionArguments, Vector<Expression>>> set = fieldFuncArgsExpHash.entrySet();
+	Iterator<Entry<FieldFunctionArguments, Vector<Expression>>> iter = set.iterator();
+	while(iter.hasNext()){
+		Entry<FieldFunctionArguments, Vector<Expression>> entry = iter.next();
+		for(int i=0;i<entry.getValue().size();i+= 1){
+			entry.getValue().elementAt(i).substituteFieldFunctionFieldName(oldFieldFuncArgsNameNewID);
+		}
+	}
+}
+
 /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.model.Expression
@@ -326,22 +381,21 @@ public Expression getBinaryExpression() {
 	  }
 
    }         
-/**
- * Insert the method's description here.
- * Creation date: (9/15/2006 1:35:48 PM)
- * @return java.util.Vector
- */
-public cbit.vcell.field.FieldDataIdentifierSpec[] getFieldDataIdentifierSpecs() {
-	Vector v = new Vector();
-	rootNode.getFieldDataIdentifierSpecs(v);
-	cbit.vcell.field.FieldDataIdentifierSpec[] funcs = new cbit.vcell.field.FieldDataIdentifierSpec[v.size()];
-	v.copyInto(funcs);
-	return funcs;
-}
-
-
 public boolean hasGradient(){
 	return rootNode.hasGradient();
+}
+
+public void substituteFieldFunctionFieldName(Hashtable<String, ExternalDataIdentifier> substituteNamesHash){
+	normalizedInfixString = null;
+	rootNode.substituteFieldFunctionFieldName(substituteNamesHash);
+}
+
+public FieldFunctionArguments[] getFieldFunctionArguments() {
+	Vector v = new Vector();
+	rootNode.getFieldFunctionArguments(v);
+	FieldFunctionArguments[] funcs = new FieldFunctionArguments[v.size()];
+	v.copyInto(funcs);
+	return funcs;
 }
 
 /**

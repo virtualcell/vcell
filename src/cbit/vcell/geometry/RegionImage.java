@@ -49,6 +49,19 @@ public class RegionImage implements Serializable {
 			return "RegionInfo(regionIndex="+regionIndex+", numPixel="+numPixels+", imageValue="+pixelValue+")";
 		}
 	};
+	
+	public byte[] getRegionIndexImage(){
+		int imageSize = numX*numY*numZ;
+		byte[] regionIndexImage = new byte[imageSize];
+		for (int i = 0; i < imageSize; i++) {
+			for (int j = 0; j < regionInfos.length; j++) {
+				if (regionInfos[j].isIndexInRegion(i)){
+					regionIndexImage[i] = (byte)(regionInfos[j].getRegionIndex());
+				}
+			}
+		}
+		return regionIndexImage;
+	}
 
 	private static class RegionMask{
 		BitSet mask = null;

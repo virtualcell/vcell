@@ -28,6 +28,9 @@ public abstract class PDEDataContext implements PropertyChangeListener {
 	private CartesianMesh cartesianMesh = null;
 	private Range dataRange = null;
 	private double[] fieldTimePoints = null;
+	
+	public static final String PROP_CHANGE_FUNC_ADDED = "functionAdded";
+	public static final String PROP_CHANGE_FUNC_REMOVED = "functionRemoved";
 
 /**
  * Insert the method's description here.

@@ -19,6 +19,8 @@ public interface SimDataConstants {
 	public static final String NO_VARIABLE = "";	
 	public static final double NO_TIME = -1;	
 		
+	public static final String FUNCTIONFILE_EXTENSION = ".functions";
+	public static final String MESHFILE_EXTENSION = ".mesh";
 	public static final String LOGFILE_EXTENSION = ".log";
 	public static final String PDE_DATA_EXTENSION = ".sim";
 	public static final String ODE_DATA_EXTENSION = ".ode";

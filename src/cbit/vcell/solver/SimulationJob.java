@@ -1,9 +1,10 @@
 package cbit.vcell.solver;
+import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.server.*;
 public class SimulationJob implements java.io.Serializable {
 	private Simulation workingSim = null;
 	private int jobIndex = -1;				// expect non-negative value.
-	private cbit.vcell.simdata.FieldDataIdentifier[] fieldDataIdentifiers = null;
+	private FieldDataIdentifierSpec[] fieldDataIdentifierSpecs = null;
 
 /**
  * Insert the method's description here.
@@ -11,12 +12,12 @@ public class SimulationJob implements java.io.Serializable {
  * @param masterSim cbit.vcell.solver.Simulation
  * @param jobIndex int
  */
-public SimulationJob(Simulation masterSim, cbit.vcell.simdata.FieldDataIdentifier[] arg_fieldDataIDs, int jobIndex) {
+public SimulationJob(Simulation masterSim, FieldDataIdentifierSpec[] argFDIS, int jobIndex) {
 	if (jobIndex<0){
 		throw new RuntimeException("unexpected simulation jobIndex < 0");
 	}
 	workingSim = Simulation.createWorkingSim(masterSim, jobIndex);
-	fieldDataIdentifiers = arg_fieldDataIDs;
+	fieldDataIdentifierSpecs = argFDIS;
 	this.jobIndex = jobIndex;
 }
 
@@ -36,8 +37,8 @@ public static String createSimulationJobID(String simulationID, int jobIndex) {
  * Creation date: (9/20/2006 9:49:07 AM)
  * @return cbit.vcell.field.FieldDataIdentifier[]
  */
-public cbit.vcell.simdata.FieldDataIdentifier[] getFieldDataIdentifiers() {
-	return fieldDataIdentifiers;
+public FieldDataIdentifierSpec[] getFieldDataIdentifierSpecs() {
+	return fieldDataIdentifierSpecs;
 }
 
 

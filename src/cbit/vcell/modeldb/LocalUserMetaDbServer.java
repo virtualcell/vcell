@@ -3,6 +3,8 @@ import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.util.BigString;
 import java.io.*;
 import cbit.vcell.export.server.ExportLog;
+import cbit.vcell.field.FieldDataDBOperationResults;
+import cbit.vcell.field.FieldDataDBOperationSpec;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -58,6 +60,14 @@ public cbit.vcell.document.VCDocumentInfo curate(cbit.vcell.server.CurateSpec cu
  */
 public void deleteBioModel(cbit.sql.KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	dbServerImpl.deleteBioModel(user, key);
+}
+
+
+/**
+ * delete method comment.
+ */
+public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException, ObjectNotFoundException {
+	return dbServerImpl.fieldDataDBOperation(user,fieldDataDBOperationSpec);
 }
 
 
@@ -222,19 +232,6 @@ public ExportLog getExportLog(KeyValue simulationKey) throws DataAccessException
 public ExportLog[] getExportLogs(boolean bAll) throws DataAccessException {
 	return dbServerImpl.getExportLogs(user, bAll);
 }
-
-
-/**
- * This method was created in VisualAge.
- * @return GeometryInfo
- * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
-public cbit.vcell.simdata.FieldDataIdentifier[] getFieldDataIdentifiers(cbit.vcell.field.FieldDataIdentifierSpec[] fieldDataIDSpecs) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException {
-	return dbServerImpl.getFieldDataIdentifiers(user,fieldDataIDSpecs);
-}
-
 
 /**
  * This method was created in VisualAge.
@@ -552,7 +549,6 @@ public BigString saveBioModel(BigString bioModelXML, String independentSims[]) t
 public BigString saveBioModelAs(BigString bioModelXML, String newName, String independentSims[]) throws DataAccessException {
 	return dbServerImpl.saveBioModelAs(user, bioModelXML, newName, independentSims);
 }
-
 
 /**
  * publish method comment.

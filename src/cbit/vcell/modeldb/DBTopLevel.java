@@ -10,6 +10,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import cbit.sql.*;
 import cbit.vcell.server.*;
+import cbit.vcell.field.FieldDataDBOperationResults;
+import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.image.*;
@@ -60,7 +62,7 @@ DBTopLevel(ConnectionFactory aConFactory, SessionLog newLog, DBCacheTable argDBC
  * @param user cbit.vcell.server.User
  * @param rqs cbit.vcell.modeldb.ReferenceQuerySpec
  */
-public cbit.vcell.document.VCDocumentInfo curate(User user,CurateSpec curateSpec) throws DataAccessException,java.sql.SQLException{
+cbit.vcell.document.VCDocumentInfo curate(User user,CurateSpec curateSpec) throws DataAccessException,java.sql.SQLException{
 	return curate0(user,curateSpec,true);
 }
 
@@ -99,6 +101,42 @@ private cbit.vcell.document.VCDocumentInfo curate0(User user,CurateSpec curateSp
 		conFactory.release(con,lock);
 	}
 
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (9/25/2003 7:57:54 AM)
+ * @return cbit.vcell.modeldb.VCInfoContainer
+ * @param user cbit.vcell.server.User
+ */
+FieldDataDBOperationResults fieldDataDBOperation(User user, FieldDataDBOperationSpec fieldDataDBOperationSpec, boolean bEnableRetry) throws SQLException, cbit.vcell.server.DataAccessException {
+	
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		FieldDataDBOperationResults fieldDataDBOperationResults =
+			DbDriver.fieldDataDBOperation(con, user,fieldDataDBOperationSpec);
+		con.commit();
+		return fieldDataDBOperationResults;
+	} catch (Throwable e) {
+		log.exception(e);
+		try {
+			con.rollback();
+		}catch (Throwable rbe){
+			log.exception(rbe);
+			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+		}
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			return fieldDataDBOperation(user,fieldDataDBOperationSpec,false);
+		}else{
+			handle_DataAccessException_SQLException(e);
+			return null;
+		}
+	}finally{
+		conFactory.release(con,lock);
+	}
 }
 
 
@@ -189,24 +227,70 @@ cbit.vcell.numericstest.TestSuiteOPResults doTestSuiteOP(cbit.vcell.numericstest
  * @param user cbit.vcell.server.User
  * @param rqs cbit.vcell.modeldb.ReferenceQuerySpec
  */
-public ReferenceQueryResult findReferences(User user, ReferenceQuerySpec rqs) throws DataAccessException,java.sql.SQLException{
+ReferenceQueryResult findReferences(User user, ReferenceQuerySpec rqs2, boolean bEnableRetry) throws DataAccessException,java.sql.SQLException{
 
-	VersionableFamily vf = getAllReferences(rqs.getKeyValue(),rqs.getVersionableType(),true);
-	//Check permission
-	if(vf.bDependants()){
-		VersionableTypeVersion[] vtvArr = vf.getUniqueDependants();
-		for(int i=0;i<vtvArr.length;i+= 1){
-			if(vtvArr[i].getVType().equals(VersionableType.BioModelMetaData)){
-				Vector checkedVInfos = getVersionableInfos(user,vtvArr[i].getVersion().getVersionKey(),VersionableType.BioModelMetaData,false,true,true);
-				if(checkedVInfos == null || checkedVInfos.size() == 0){throw new DataAccessException("References Not Accessible");}
-			}else if(vtvArr[i].getVType().equals(VersionableType.MathModelMetaData)){
-				Vector checkedVInfos = getVersionableInfos(user,vtvArr[i].getVersion().getVersionKey(),VersionableType.MathModelMetaData,false,true,true);
-				if(checkedVInfos == null || checkedVInfos.size() == 0){throw new DataAccessException("References Not Accessible");}
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		
+		//Use MathDescription for search if ExternalData
+		VersionableType rqsVType = null;
+		KeyValue[] vTypeKeys = null;
+		if(rqs2.isVersionableType()){
+			rqsVType = rqs2.getVersionableType();
+			vTypeKeys = new KeyValue[] {rqs2.getKeyValue()};
+		}else if(rqs2.isExternalDataIdentiferType()){
+			DbDriver.cleanupDeletedReferences(con, user, rqs2.getExternalDataIdentifier(),false);
+			con.commit();
+			rqsVType = VersionableType.MathDescription;
+			vTypeKeys = getMathDescKeysForExternalData(rqs2.getKeyValue(), user,true);
+			if(vTypeKeys == null || vTypeKeys.length == 0){
+				return null;
 			}
 		}
+		if(rqsVType == null){
+			throw new DataAccessException("findAllReferences error: Couldn't determine Query type");
+		}
+		VersionableFamily finalVersionalbeFamily = null;
+		for(int k=0;k<vTypeKeys.length;k+= 1){
+			//Find references
+			VersionableFamily vf = getAllReferences(user,vTypeKeys[k],rqsVType,true);
+			//Check permission
+			if(vf.bDependants()){
+				VersionableTypeVersion[] vtvArr = vf.getUniqueDependants();
+				for(int i=0;i<vtvArr.length;i+= 1){
+					if(vtvArr[i].getVType().equals(VersionableType.BioModelMetaData)){
+						Vector checkedVInfos = getVersionableInfos(user,vtvArr[i].getVersion().getVersionKey(),VersionableType.BioModelMetaData,false,true,true);
+						if(checkedVInfos == null || checkedVInfos.size() == 0){throw new DataAccessException("References Not Accessible");}
+					}else if(vtvArr[i].getVType().equals(VersionableType.MathModelMetaData)){
+						Vector checkedVInfos = getVersionableInfos(user,vtvArr[i].getVersion().getVersionKey(),VersionableType.MathModelMetaData,false,true,true);
+						if(checkedVInfos == null || checkedVInfos.size() == 0){throw new DataAccessException("References Not Accessible");}
+					}
+				}
+			}
+			if(finalVersionalbeFamily == null){
+				finalVersionalbeFamily = vf;
+			}else{
+				VersionableRelationship[] versRelArr = vf.getDependantRelationships();
+				for(int r=0;r<versRelArr.length;r+= 1){
+					finalVersionalbeFamily.addDependantRelationship(versRelArr[r]);
+				}
+			}
+		}
+		
+		return new ReferenceQueryResult(finalVersionalbeFamily);
+	} catch (Throwable e) {
+		log.exception(e);
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			return findReferences(user,rqs2,false);
+		}else{
+			handle_DataAccessException_SQLException(e);
+			return null; // never gets here;
+		}
+	}finally{
+		conFactory.release(con,lock);
 	}
-	
-	return new ReferenceQueryResult(vf);
 
 }
 
@@ -221,7 +305,7 @@ public ReferenceQueryResult findReferences(User user, ReferenceQuerySpec rqs) th
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-VersionableFamily getAllReferences(KeyValue key, VersionableType versionableType, boolean bEnableRetry) 
+VersionableFamily getAllReferences(User user,KeyValue key, VersionableType versionableType, boolean bEnableRetry) 
 		throws DataAccessException, java.sql.SQLException, ObjectNotFoundException {
 				
 	Object lock = new Object();
@@ -232,7 +316,7 @@ VersionableFamily getAllReferences(KeyValue key, VersionableType versionableType
 		log.exception(e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
-			return getAllReferences(key,versionableType,false);
+			return getAllReferences(user,key,versionableType,false);
 		}else{
 			handle_DataAccessException_SQLException(e);
 			return null; // never gets here;
@@ -376,24 +460,16 @@ private DbDriver getDbDriver(VersionableType vType) {
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (9/25/2003 7:57:54 AM)
- * @return cbit.vcell.modeldb.VCInfoContainer
- * @param user cbit.vcell.server.User
- */
-cbit.vcell.simdata.FieldDataIdentifier[] getFieldDataIdentifiers(User user, cbit.vcell.field.FieldDataIdentifierSpec[] fieldDataIDSpecs, boolean bEnableRetry) throws SQLException, cbit.vcell.server.DataAccessException {
-	
+KeyValue[] getMathDescKeysForExternalData(KeyValue extDataKey, User owner,boolean bEnableRetry) throws SQLException,DataAccessException{
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		return DbDriver.getFieldDataIdentifiers(con, user,fieldDataIDSpecs);
+		return DbDriver.getMathDescKeysForExternalData(con, owner,extDataKey);
 	} catch (Throwable e) {
 		log.exception(e);
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
-			return getFieldDataIdentifiers(user,fieldDataIDSpecs, false);
+			return getMathDescKeysForExternalData(extDataKey,owner, false);
 		}else{
 			handle_DataAccessException_SQLException(e);
 			return null; // never gets here;
@@ -402,6 +478,7 @@ cbit.vcell.simdata.FieldDataIdentifier[] getFieldDataIdentifiers(User user, cbit
 		conFactory.release(con,lock);
 	}
 }
+
 
 
 /**
@@ -994,6 +1071,7 @@ void groupSetPublic(User user, VersionableType versionableType, KeyValue key, bo
 		conFactory.release(con,lock);
 	}
 }
+
 
 
 /**

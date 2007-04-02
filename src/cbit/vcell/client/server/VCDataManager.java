@@ -6,6 +6,8 @@ import cbit.vcell.solvers.*;
 import cbit.vcell.math.*;
 import java.rmi.*;
 import cbit.vcell.desktop.controls.*;
+import cbit.vcell.field.FieldDataFileOperationResults;
+import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.server.*;
 /**
  * Insert the type's description here.
@@ -70,6 +72,19 @@ void addFunctions(cbit.vcell.server.VCDataIdentifier vcdID, cbit.vcell.math.Anno
 	}
 }
 
+FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFielOperationSpec) throws DataAccessException {
+	try {
+		return getDataSetController().fieldDataFileOperation(fieldDataFielOperationSpec);
+	}catch (RemoteException e){
+		handleRemoteException(e);
+		try {
+			return getDataSetController().fieldDataFileOperation(fieldDataFielOperationSpec);
+		}catch (RemoteException e2){
+			handleRemoteException(e2);
+			throw new RuntimeException(e2.getMessage());
+		}
+	}
+}
 
 /**
  * Insert the method's description here.

@@ -1,7 +1,9 @@
 package cbit.vcell.mapping;
+import cbit.vcell.modeldb.StimulusTable;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.BioNameScope;
@@ -11,8 +13,12 @@ import cbit.vcell.parser.ScopedSymbolTable;
  * All rights reserved.
 ©*/
 import java.beans.*;
+
+import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.field.FieldFunctionContainer;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.model.Model;
+import cbit.vcell.math.MathException;
 import cbit.vcell.math.VCML;
 import cbit.vcell.model.VCMODL;
 import cbit.vcell.server.VCellConnection;
@@ -25,14 +31,24 @@ import cbit.vcell.math.MathDescription;
 import cbit.sql.KeyValue;
 import cbit.sql.VersionableType;
 import cbit.vcell.server.UserMetaDbServer;
+import cbit.vcell.simdata.ExternalDataIdentifier;
+
 import java.util.*;
+import java.util.Map.Entry;
+
+import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
+
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.biomodel.BioModel;
 /**
  * This type was created in VisualAge.
  */
-public class SimulationContext implements cbit.sql.Versionable, Matchable, cbit.vcell.document.SimulationOwner, cbit.vcell.parser.ScopedSymbolTable, PropertyChangeListener, VetoableChangeListener, java.io.Serializable {
+public class SimulationContext
+	implements
+		cbit.sql.Versionable, Matchable, cbit.vcell.document.SimulationOwner,
+		cbit.vcell.parser.ScopedSymbolTable, PropertyChangeListener, VetoableChangeListener,
+		java.io.Serializable,FieldFunctionContainer {
 
 	public class SimulationContextNameScope extends BioNameScope {
 		private transient cbit.vcell.parser.NameScope nameScopes[] = null;
@@ -805,6 +821,59 @@ public ElectricalStimulus getElectricalStimuli(int index) {
 	return getElectricalStimuli()[index];
 }
 
+public Parameter[] getAllParameters(){
+	Vector<Parameter> allParameters = new Vector<Parameter>();
+	
+	SpeciesContextSpec[] speciesContextSpec =
+		getReactionContext().getSpeciesContextSpecs();
+	for(int i=0;i<speciesContextSpec.length;i+= 1){
+		allParameters.addAll(Arrays.asList(speciesContextSpec[i].getParameters()));
+	}
+	ReactionSpec[] reactionSpecArr = getReactionContext().getReactionSpecs();
+	for(int i=0;i<reactionSpecArr.length;i+= 1){
+		allParameters.addAll(Arrays.asList(reactionSpecArr[i].getReactionSpecParameters()));
+	}
+	StructureMapping[] structureMappingArr = getGeometryContext().getStructureMappings();
+	for(int i=0;i<structureMappingArr.length;i+= 1){
+		allParameters.addAll(Arrays.asList(structureMappingArr[i].getParameters()));
+	}
+	ElectricalStimulus[] electricalStimulusArr = getElectricalStimuli();
+	for(int i=0;i<electricalStimulusArr.length;i+= 1){
+		allParameters.addAll(Arrays.asList(electricalStimulusArr[i].getElectricalStimulusParameters()));
+	}
+	Parameter[] parameterArr = getSimulationContextParameters();
+	allParameters.addAll(Arrays.asList(parameterArr));
+	
+	return allParameters.toArray(new Parameter[0]);
+	
+}
+
+private Hashtable<FieldFunctionArguments, Vector<Expression>> collectFieldFuncAndExpressions() throws MathException, ExpressionException {
+	// make sure each field only added once
+	Hashtable<FieldFunctionArguments, Vector<Expression>> fieldFuncArgsExpHash =
+		new Hashtable<FieldFunctionArguments, Vector<Expression>>();
+	
+	Parameter[] parameterArr = getAllParameters();
+	for(int j=0;j<parameterArr.length;j+= 1){
+		Expression.addFieldFuncArgsAndExpToCollection(
+				fieldFuncArgsExpHash,
+				parameterArr[j].getExpression());
+	}
+	
+	return fieldFuncArgsExpHash;
+}
+
+public void substituteFieldFuncNames(Hashtable<String, ExternalDataIdentifier> oldFieldFuncArgsNameNewID) throws MathException, ExpressionException{
+	Expression.substituteFieldFuncNames(
+			oldFieldFuncArgsNameNewID, collectFieldFuncAndExpressions());
+	
+	getMathDescription().substituteFieldFuncNames(oldFieldFuncArgsNameNewID);
+}
+
+public FieldFunctionArguments[] getFieldFunctionArguments() throws MathException, ExpressionException {
+	
+	return collectFieldFuncAndExpressions().keySet().toArray(new FieldFunctionArguments[0]);
+}
 
 /**
  * getEntry method comment.

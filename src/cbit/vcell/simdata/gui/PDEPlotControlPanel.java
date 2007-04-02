@@ -13,6 +13,7 @@ import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.solvers.FVSolver;
 import java.util.Vector;
+import java.awt.GridBagConstraints;
 /**
  * Insert the type's description here.
  * Creation date: (1/21/2001 10:29:53 PM)
@@ -1312,21 +1313,21 @@ private javax.swing.JPanel getJPanel1() {
 
 			java.awt.GridBagConstraints constraintsJLabel1 = new java.awt.GridBagConstraints();
 			constraintsJLabel1.gridx = 0; constraintsJLabel1.gridy = 0;
-			constraintsJLabel1.gridwidth = 2;
+//			constraintsJLabel1.gridwidth = 2;
 			constraintsJLabel1.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJPanel1().add(getJLabel1(), constraintsJLabel1);
 
 			java.awt.GridBagConstraints constraintsJTextField1 = new java.awt.GridBagConstraints();
 			constraintsJTextField1.gridx = 0; constraintsJTextField1.gridy = 1;
-			constraintsJTextField1.gridwidth = 2;
+//			constraintsJTextField1.gridwidth = 2;
 			constraintsJTextField1.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			constraintsJTextField1.weightx = 1.0;
 			constraintsJTextField1.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJPanel1().add(getJTextField1(), constraintsJTextField1);
 
 			java.awt.GridBagConstraints constraintsTimeSliderJPanel = new java.awt.GridBagConstraints();
-			constraintsTimeSliderJPanel.gridx = 1; constraintsTimeSliderJPanel.gridy = 2;
-			constraintsTimeSliderJPanel.fill = java.awt.GridBagConstraints.VERTICAL;
+			constraintsTimeSliderJPanel.gridx = 0; constraintsTimeSliderJPanel.gridy = 2;
+			constraintsTimeSliderJPanel.fill = java.awt.GridBagConstraints.BOTH;
 			constraintsTimeSliderJPanel.weightx = 1.0;
 			constraintsTimeSliderJPanel.weighty = 1.0;
 			constraintsTimeSliderJPanel.insets = new java.awt.Insets(4, 4, 4, 4);
@@ -1527,22 +1528,23 @@ private javax.swing.JPanel getTimeSliderJPanel() {
 
 			java.awt.GridBagConstraints constraintsJLabelMin = new java.awt.GridBagConstraints();
 			constraintsJLabelMin.gridx = 1; constraintsJLabelMin.gridy = 0;
-			constraintsJLabelMin.anchor = java.awt.GridBagConstraints.NORTHEAST;
+			constraintsJLabelMin.anchor = GridBagConstraints.NORTHWEST;
+			constraintsJLabelMin.weightx = 0.0;
+//			constraintsJLabelMin.fill = GridBagConstraints.NONE;
 			constraintsJLabelMin.insets = new java.awt.Insets(4, 4, 4, 4);
-			getTimeSliderJPanel().add(getJLabelMin(), constraintsJLabelMin);
-
 			java.awt.GridBagConstraints constraintsJLabelMax = new java.awt.GridBagConstraints();
-			constraintsJLabelMax.gridx = 1; constraintsJLabelMax.gridy = 1;
-			constraintsJLabelMax.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+			constraintsJLabelMax.gridx = 1; constraintsJLabelMax.gridy = 2;
+			constraintsJLabelMax.anchor = GridBagConstraints.SOUTHWEST;
+			constraintsJLabelMax.weightx = 0.0;
 			constraintsJLabelMax.insets = new java.awt.Insets(4, 4, 4, 4);
-			getTimeSliderJPanel().add(getJLabelMax(), constraintsJLabelMax);
-
+			ivjTimeSliderJPanel.add(getJLabelMin(), constraintsJLabelMin);
 			java.awt.GridBagConstraints constraintsJSliderTime = new java.awt.GridBagConstraints();
 			constraintsJSliderTime.gridx = 0; constraintsJSliderTime.gridy = 0;
-constraintsJSliderTime.gridheight = 2;
+constraintsJSliderTime.gridheight = 3;
 			constraintsJSliderTime.fill = java.awt.GridBagConstraints.VERTICAL;
 			constraintsJSliderTime.weighty = 1.0;
 			constraintsJSliderTime.insets = new java.awt.Insets(4, 4, 4, 4);
+			ivjTimeSliderJPanel.add(getJLabelMax(), constraintsJLabelMax);
 			getTimeSliderJPanel().add(getJSliderTime(), constraintsJSliderTime);
 			// user code begin {1}
 			// user code end
@@ -1712,8 +1714,8 @@ private void newTimePoints(double[] newTimes) {
 //		getJSliderTime().setMinorTickSpacing(getJSliderTime().getMajorTickSpacing());//hides minor tick marks
 		getJSliderTime().setMinorTickSpacing(1);// testing....
 		//
-		getJLabelMin().setText(Double.toString(newTimes[0]));
-		getJLabelMax().setText(Double.toString(newTimes[newTimes.length - 1]));
+		getJLabelMin().setText(NumberUtils.formatNumber(newTimes[0],8));
+		getJLabelMax().setText(NumberUtils.formatNumber(newTimes[newTimes.length - 1],8));
 	}
 }
 

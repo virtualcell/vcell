@@ -6,8 +6,12 @@ import cbit.vcell.xml.XmlParseException;
 import org.jdom.input.SAXBuilder;
 import org.jdom.Document;
 import org.jdom.JDOMException;
+
+import com.sun.org.apache.xerces.internal.xni.parser.XMLParseException;
+
 import cbit.vcell.xml.Xmlproducer;
 import cbit.vcell.xml.XmlReader;
+import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.solver.Simulation;
@@ -17,6 +21,7 @@ import java.io.IOException;
 import java.beans.PropertyVetoException;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.server.PropertyLoader;
 
 /**
@@ -71,7 +76,7 @@ private void parse(Message message) throws XmlParseException, JMSException {
 	Simulation simulation = XmlHelper.XMLToSim(xmlString);
 	int taskID = -1;
 	int jobIndex = -1;
-	cbit.vcell.simdata.FieldDataIdentifier[] fieldDataIDs = null;
+	FieldDataIdentifierSpec[] fieldDataIDs = null;
 	try {
 		taskID = ((Integer)JmsUtils.parseProperty(message, MessageConstants.TASKID_PROPERTY, int.class)).intValue();
 	} catch (MessagePropertyNotFoundException ex) {
@@ -87,10 +92,15 @@ private void parse(Message message) throws XmlParseException, JMSException {
 	try {
 		String fdstrs = (String)JmsUtils.parseProperty(message, MessageConstants.FIELDDATAID_PROPERTY, String.class);
 		java.util.StringTokenizer st = new java.util.StringTokenizer(fdstrs, "\n");
-		fieldDataIDs = new cbit.vcell.simdata.FieldDataIdentifier[st.countTokens()];
+		fieldDataIDs = new FieldDataIdentifierSpec[st.countTokens()];
 		int count = 0;
 		while (st.hasMoreTokens()) {
-			fieldDataIDs[count ++] = cbit.vcell.simdata.FieldDataIdentifier.fromCSVString(st.nextToken());
+			try{
+				fieldDataIDs[count ++] = 
+					FieldDataIdentifierSpec.fromCSVString(st.nextToken());
+			}catch(ExpressionException e){
+				throw new XmlParseException("Error creating FieldDataIdentifierSpec "+e.getMessage());
+			}
 		}
 	} catch (MessagePropertyNotFoundException ex) {
 		 System.out.println("Property " + MessageConstants.FIELDDATAID_PROPERTY + " is missing");
@@ -98,6 +108,8 @@ private void parse(Message message) throws XmlParseException, JMSException {
 
 	simTask = new SimulationTask(new SimulationJob(simulation, fieldDataIDs, jobIndex), taskID);
 }
+
+
 
 
 /**
@@ -160,7 +172,7 @@ private javax.jms.Message toMessage(VCellQueueSession session) throws javax.jms.
 	message.setStringProperty(MessageConstants.SOLVER_TYPE_PROPERTY, simTask.goodForLSF() ? MessageConstants.SOLVER_TYPE_LSF_PROPERTY : MessageConstants.SOLVER_TYPE_JAVA_PROPERTY); // for worker message filter
 	message.setDoubleProperty(MessageConstants.SIZE_MB_PROPERTY, simTask.getEstimatedSizeMB()); // for worker message filter
 
-	cbit.vcell.simdata.FieldDataIdentifier[] fieldDataIDs = simTask.getSimulationJob().getFieldDataIdentifiers();
+	FieldDataIdentifierSpec[] fieldDataIDs = simTask.getSimulationJob().getFieldDataIdentifierSpecs();
 	if (fieldDataIDs != null && fieldDataIDs.length > 0) {
 		StringBuffer sb = new StringBuffer();
 		for (int i = 0; i < fieldDataIDs.length; i ++) {

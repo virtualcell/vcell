@@ -1,13 +1,12 @@
 package cbit.vcell.client;
-import cbit.vcell.xml.*;
 import cbit.xml.merge.*;
 import java.util.*;
 import java.io.*;
+
+import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
-import cbit.vcell.parser.Expression;
 import cbit.vcell.client.desktop.*;
-import cbit.vcell.geometry.gui.ImageAttributePanel;
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.client.server.*;
@@ -17,7 +16,6 @@ import cbit.sql.*;
 import cbit.vcell.clientdb.*;
 import java.awt.*;
 import cbit.vcell.biomodel.*;
-import cbit.vcell.client.*;
 import cbit.vcell.document.*;
 import javax.swing.*;
 import cbit.vcell.desktop.*;
@@ -57,7 +55,7 @@ public class DatabaseWindowManager extends TopLevelWindowManager{
 
 	private final int PIXEL_CLASS_WARNING_LIMIT = 10;
 	
-	private class ImageHelper{
+	public static class ImageHelper{
 		public int[] imageData;
 		public int xsize;
 		public int ysize;
@@ -534,7 +532,7 @@ public void comparePreviousEdition()  {
  * @return cbit.image.VCImage
  * @param gifData byte[]
  */
-private ImageHelper convertGIF(byte[] gifData) throws Exception, cbit.image.ImageException{
+public static ImageHelper convertGIF(byte[] gifData) throws Exception, cbit.image.ImageException{
 
 	ImageHelper ih = new ImageHelper();
 	Image tempImage = Toolkit.getDefaultToolkit().createImage(gifData);
@@ -561,7 +559,7 @@ private ImageHelper convertGIF(byte[] gifData) throws Exception, cbit.image.Imag
  * @return cbit.image.VCImage
  * @param gifData byte[]
  */
-private ImageHelper convertTIF(byte[] tifData) throws cbit.image.TiffException,IOException,cbit.image.ImageException{
+public static ImageHelper convertTIF(byte[] tifData) throws cbit.image.TiffException,IOException,cbit.image.ImageException{
 	
 	cbit.image.TiffImage tiffImage = new cbit.image.TiffImage();
 	cbit.image.ByteArrayTiffInputSource batis = new cbit.image.ByteArrayTiffInputSource(tifData);
@@ -587,7 +585,7 @@ private ImageHelper convertTIF(byte[] tifData) throws cbit.image.TiffException,I
  * Creation date: (10/11/2004 12:21:47 PM)
  * @return cbit.image.VCImage
  */
-private ImageHelper convertZIP(byte[] zipData,AsynchProgressPopup pp) {
+public static ImageHelper convertZIP(byte[] zipData,AsynchProgressPopup pp) {
 
 	//
 	// Read individual entries from zip as z-sections
@@ -1203,6 +1201,52 @@ public VCImage selectImageFromDatabase() throws DataAccessException, UserCancelE
 	throw UserCancelException.CANCEL_DB_SELECTION;
 }
 
+public static ImageHelper readFromImageFile(AsynchProgressPopup pp,File imageFile)
+	throws FileNotFoundException,IOException,ImageException{
+	
+	ImageHelper ih = null;
+	long fileSize = imageFile.length();
+	pp.setMessage("Reading file "+imageFile.getName()+" size="+fileSize);
+	// Get file bytes
+	byte[] fileBytes = new byte[(int)fileSize];
+	FileInputStream fis = null;
+	DataInputStream dis = null;
+	try{
+		fis = new FileInputStream(imageFile);
+		InputStream is = new BufferedInputStream(fis);
+		dis = new DataInputStream(is);
+		dis.readFully(fileBytes);
+	}finally{
+		try{
+			if(dis != null){dis.close();}
+		}finally{
+			if(fis != null){fis.close();}
+		}
+	}
+	// Parse bytes
+	try{
+		if(imageFile.getName().toLowerCase().endsWith(".gif")){
+			pp.setMessage("Parsing file "+imageFile.getName()+" size="+fileSize+" as gif");
+			ih = convertGIF(fileBytes);
+			
+		}else if(imageFile.getName().toLowerCase().endsWith(".tif") || imageFile.getName().toLowerCase().endsWith(".tiff")){
+			pp.setMessage("Parsing file "+imageFile.getName()+" size="+fileSize+" as tif");
+			ih = convertTIF(fileBytes);
+				
+		}else if(	imageFile.getName().toLowerCase().endsWith(".zip")){
+			pp.setMessage("Parsing file "+imageFile.getName()+" size="+fileSize+" as zip");
+			ih = convertZIP(fileBytes,pp);
+		}else{
+			throw new Exception("File name "+imageFile.getName()+" not recognized, must end with .gif,.tif,.tiff -or- zip containing gif,tif for each Z-slice");
+		}
+		
+		pp.setMessage("Finished loading "+imageFile.getName()+" ("+ih.xsize+","+ih.ysize+","+ih.zsize+")");
+	}catch(Throwable e){
+		throw new cbit.image.ImageException("Error loading image "+imageFile.getAbsolutePath()+"\n"+(e.getMessage() == null?e.getClass().getName():e.getMessage()));
+	}
+	
+	return ih;
+}
 
 /**
  * Insert the method's description here.
@@ -1375,11 +1419,21 @@ private Object showAccessPermissionDialog(JComponent aclEditor, Component reques
  * Creation date: (5/14/2004 6:11:35 PM)
  */
 private File showFileChooserDialog(boolean isXMLNotImage) throws UserCancelException {
+
+	return showFileChooserDialog(isXMLNotImage,getUserPreferences());
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (5/14/2004 6:11:35 PM)
+ */
+public static File showFileChooserDialog(boolean isXMLNotImage,UserPreferences currentUserPreferences) throws UserCancelException {
 	// the boolean isXMLNotImage is true if we are trying to choose an XML file
 	// It is false if we are trying to choose an image file
 	// This is used to set the appropriate File filters.
 
-	String defaultPath = getUserPreferences().getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
+	String defaultPath = (currentUserPreferences != null?currentUserPreferences.getGenPref(UserPreferences.GENERAL_LAST_PATH_USED):"");
 	cbit.gui.VCFileChooser fileChooser = new cbit.gui.VCFileChooser(defaultPath);
 	fileChooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
 
@@ -1417,14 +1471,16 @@ private File showFileChooserDialog(boolean isXMLNotImage) throws UserCancelExcep
 	}
 	
     int returnval = fileChooser.showOpenDialog(null);
-    if (returnval == fileChooser.APPROVE_OPTION) {
+    if (returnval == JFileChooser.APPROVE_OPTION) {
         File selectedFile = fileChooser.getSelectedFile();
         //reset the user preference for the default path, if needed.
         String newPath = selectedFile.getParent();
         if (!newPath.equals(defaultPath)) {
-			getUserPreferences().setGenPref(UserPreferences.GENERAL_LAST_PATH_USED, newPath);
+			if(currentUserPreferences != null){
+				currentUserPreferences.setGenPref(UserPreferences.GENERAL_LAST_PATH_USED, newPath);
+			}
         }
-        System.out.println("New preferred file path: " + newPath + ", Old preferred file path: " + defaultPath);
+        //System.out.println("New preferred file path: " + newPath + ", Old preferred file path: " + defaultPath);
         return selectedFile;
     }else{ // user didn't select a file
 	    throw UserCancelException.CANCEL_FILE_SELECTION;

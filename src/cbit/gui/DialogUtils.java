@@ -1,5 +1,9 @@
 package cbit.gui;
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+
+import cbit.vcell.client.task.UserCancelException;
+
 import java.awt.*;
 import java.util.*;
 /**
@@ -268,6 +272,29 @@ public static int showComponentOKCancelDialog(final Component requester,Componen
 	} finally {
 		d.dispose();
 	}
+}
+
+public static int[] showComponentOKCancelTableList(final Component requester,String title,
+		String[] columnNames,Object[][] rowData,int listSelectionModel_SelectMode)
+			throws UserCancelException{
+	
+	DefaultTableModel tableMode = new DefaultTableModel(){
+	    public boolean isCellEditable(int row, int column) {
+	        return false;
+	    }
+	};
+	tableMode.setDataVector(rowData, columnNames);
+	JTable table = new JTable(tableMode);
+	table.setSelectionMode(listSelectionModel_SelectMode);
+	JScrollPane scrollPane = new JScrollPane(table);
+	table.setPreferredScrollableViewportSize(new Dimension(500, 250));
+	
+	int result = showComponentOKCancelDialog(requester, scrollPane, title);
+	if(result != JOptionPane.OK_OPTION){
+		throw UserCancelException.CANCEL_GENERIC;
+	}
+
+	return table.getSelectedRows();
 }
 
 

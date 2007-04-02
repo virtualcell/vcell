@@ -6,6 +6,7 @@ package cbit.sql;
 ©*/
 import cbit.gui.*;
 import java.awt.*;
+
 import cbit.vcell.server.*;
 import java.sql.*;
 import java.io.*;
@@ -264,6 +265,8 @@ public static Table[] getVCellTables() {
 		cbit.vcell.modeldb.TFTestCriteriaTable.table,
 		cbit.vcell.modeldb.TFTestResultTable.table,
 		cbit.vcell.modeldb.SoftwareVersionTable.table,
+		cbit.vcell.modeldb.ExternalDataTable.table,
+		cbit.vcell.modeldb.MathDescExternalDataLinkTable.table
 		};
 	return tables;
 }

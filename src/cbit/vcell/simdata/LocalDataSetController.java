@@ -6,6 +6,8 @@ import cbit.vcell.solver.SimulationInfo;
  * All rights reserved.
 ©*/
 import cbit.vcell.export.server.*;
+import cbit.vcell.field.FieldDataFileOperationResults;
+import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.simdata.gui.SpatialSelection;
 import cbit.vcell.math.*;
 import cbit.plot.*;
@@ -59,6 +61,11 @@ public void addFunction(VCDataIdentifier vcdID, AnnotatedFunction function) thro
  */
 public void addFunctions(VCDataIdentifier vcdID, AnnotatedFunction[] functions) throws cbit.vcell.server.DataAccessException {
 	dataServerImpl.addFunctions(user, vcdID, functions);
+}
+
+
+public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws DataAccessException {
+	return dataServerImpl.fieldDataFileOperation(user,fieldDataFileOperationSpec);
 }
 
 

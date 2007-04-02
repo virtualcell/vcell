@@ -1,0 +1,174 @@
+package cbit.vcell.field;
+
+import javax.swing.JFrame;
+
+import cbit.vcell.client.FieldDataWindowManager;
+import cbit.vcell.client.TopLevelWindowManager;
+import cbit.vcell.client.desktop.TopLevelWindow;
+import cbit.vcell.client.server.ConnectionStatus;
+
+public class FieldDataWindow extends JFrame implements TopLevelWindow {
+	private FieldDataWindowManager fieldDataWindowManger;
+	private javax.swing.JPanel ivjJFrameContentPane = null;
+	
+	private boolean bTreeNeedsUpdate = true;
+
+/**
+ * FieldDataWindow constructor comment.
+ */
+public FieldDataWindow() {
+	super();
+	initialize();
+}
+
+/**
+ * Insert the method's description here.
+ * Creation date: (3/20/2007 6:26:09 AM)
+ * @return java.lang.Object
+ */
+public FieldDataWindowManager getFieldDataWindowManger() {
+	return fieldDataWindowManger;
+}
+
+
+/**
+ * Return the JFrameContentPane property value.
+ * @return javax.swing.JPanel
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private javax.swing.JPanel getJFrameContentPane() {
+	if (ivjJFrameContentPane == null) {
+		try {
+			ivjJFrameContentPane = new javax.swing.JPanel();
+			ivjJFrameContentPane.setName("JFrameContentPane");
+			ivjJFrameContentPane.setLayout(new java.awt.BorderLayout());
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjJFrameContentPane;
+}
+
+/**
+ * Insert the method's description here.
+ * Creation date: (3/20/2007 6:15:14 AM)
+ * @return cbit.vcell.client.desktop.TopLevelWindowManager
+ */
+public cbit.vcell.client.TopLevelWindowManager getTopLevelWindowManager() {
+	return (cbit.vcell.client.TopLevelWindowManager)fieldDataWindowManger;
+}
+
+
+/**
+ * Called whenever the part throws an exception.
+ * @param exception java.lang.Throwable
+ */
+private void handleException(java.lang.Throwable exception) {
+
+	/* Uncomment the following lines to print uncaught exceptions to stdout */
+	 System.out.println("--------- UNCAUGHT EXCEPTION ---------");
+	 exception.printStackTrace(System.out);
+}
+
+
+/**
+ * Initialize the class.
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private void initialize() {
+	try {
+		// user code begin {1}
+		// user code end
+		setName("FieldDataWindow");
+		setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
+		setSize(426, 240);
+		setContentPane(getJFrameContentPane());
+	} catch (java.lang.Throwable ivjExc) {
+		handleException(ivjExc);
+	}
+	// user code begin {2}
+	// user code end
+}
+
+
+/**
+ * main entrypoint - starts the part when it is run as an application
+ * @param args java.lang.String[]
+ */
+public static void main(java.lang.String[] args) {
+	try {
+		FieldDataWindow aFieldDataWindow;
+		aFieldDataWindow = new FieldDataWindow();
+		aFieldDataWindow.addWindowListener(new java.awt.event.WindowAdapter() {
+			public void windowClosing(java.awt.event.WindowEvent e) {
+				System.exit(0);
+			};
+		});
+		aFieldDataWindow.show();
+		java.awt.Insets insets = aFieldDataWindow.getInsets();
+		aFieldDataWindow.setSize(aFieldDataWindow.getWidth() + insets.left + insets.right, aFieldDataWindow.getHeight() + insets.top + insets.bottom);
+		aFieldDataWindow.setVisible(true);
+	} catch (Throwable exception) {
+		System.err.println("Exception occurred in main() of javax.swing.JFrame");
+		exception.printStackTrace(System.out);
+	}
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (3/20/2007 6:23:56 AM)
+ */
+public void setFieldDataWindowManager(FieldDataWindowManager fdwm) {
+	
+	fieldDataWindowManger = fdwm;	
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (3/20/2007 6:29:36 AM)
+ */
+public void setWorkArea(java.awt.Component c) {
+	getContentPane().add(c, java.awt.BorderLayout.CENTER);
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (3/20/2007 6:15:14 AM)
+ * @param connectionStatus cbit.vcell.client.server.ConnectionStatus
+ */
+public void updateConnectionStatus(cbit.vcell.client.server.ConnectionStatus connectionStatus) {
+	if(connectionStatus.getStatus() == ConnectionStatus.CONNECTED){
+		if(bTreeNeedsUpdate){
+			getFieldDataWindowManger().updateJTree();
+			bTreeNeedsUpdate = false;
+		}
+	}else{
+		bTreeNeedsUpdate = true;
+	}
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (3/20/2007 6:15:14 AM)
+ * @param freeBytes long
+ * @param totalBytes long
+ */
+public void updateMemoryStatus(long freeBytes, long totalBytes) {}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (3/20/2007 6:15:14 AM)
+ * @param i int
+ */
+public void updateWhileInitializing(int i) {}
+
+}
