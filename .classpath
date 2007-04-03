@@ -9,5 +9,8 @@
 	<classpathentry kind="var" path="JRE_LIB" sourcepath="JRE_SRC"/>
 	<classpathentry kind="lib" path="idetool.jar"/>
 	<classpathentry kind="lib" path="thirdParty_1.51.jar"/>
+	<classpathentry kind="lib" path="bio-formats.jar"/>
+	<classpathentry kind="lib" path="jai_imageio.jar"/>
+	<classpathentry kind="lib" path="ome-java.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
