@@ -619,7 +619,9 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 					double value = parm.getExpression().evaluateConstant();
 					varHash.addVariable(new Constant(getMathSymbol0(parm,sm),new Expression(value)));
 				}catch (ExpressionException e){
-					varHash.addVariable(new Function(getMathSymbol0(parm,sm),getIdentifierSubstitutions(parm.getExpression(),parm.getUnitDefinition(),sm)));
+					//varHash.addVariable(new Function(getMathSymbol0(parm,sm),getIdentifierSubstitutions(parm.getExpression(),parm.getUnitDefinition(),sm)));
+					e.printStackTrace(System.out);
+					throw new MappingException("Size of structure:"+sm.getNameScope().getName()+" cannot be evaluated as constant.");
 				}
 			}
 		}

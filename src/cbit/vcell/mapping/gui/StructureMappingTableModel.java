@@ -288,7 +288,7 @@ public Object getValueAt(int row, int col) {
 						val = membraneMapping.getSurfaceToVolumeParameter().getExpression().evaluateConstant();
 					}catch(ExpressionException e){
 						e.printStackTrace(System.out);
-						DialogUtils.showErrorDialog("Surface to volume ratio of "+featureMapping.getFeature().getName()+" cannot be evaluated as a constant.");
+						//DialogUtils.showErrorDialog("Surface to volume ratio of "+featureMapping.getFeature().getName()+" cannot be evaluated as a constant.");
 					}
 					return val;
 				}
@@ -308,7 +308,7 @@ public Object getValueAt(int row, int col) {
 						val = membraneMapping.getVolumeFractionParameter().getExpression().evaluateConstant();
 					}catch(ExpressionException e){
 						e.printStackTrace(System.out);
-						DialogUtils.showErrorDialog("Volume fraction of "+featureMapping.getFeature().getName()+" cannot be evaluated as a constant.");
+						//DialogUtils.showErrorDialog("Volume fraction of "+featureMapping.getFeature().getName()+" cannot be evaluated as a constant.");
 					}
 					return val;
 				}
@@ -325,7 +325,7 @@ public Object getValueAt(int row, int col) {
 					val = featureMapping.getSizeParameter().getExpression().evaluateConstant();
 				}catch(ExpressionException e){
 					e.printStackTrace(System.out);
-					DialogUtils.showErrorDialog("Volume of "+featureMapping.getFeature().getName()+" cannot be evaluated as a constant.");
+					//DialogUtils.showErrorDialog("Volume of "+featureMapping.getFeature().getName()+" cannot be evaluated as a constant.");
 				}
 				return val;
 			}else{
@@ -343,7 +343,7 @@ public Object getValueAt(int row, int col) {
 						val = membraneMapping.getSizeParameter().getExpression().evaluateConstant();
 					}catch(ExpressionException e){
 						e.printStackTrace(System.out);
-						DialogUtils.showErrorDialog("Surface area of "+membraneMapping.getMembrane().getName()+" cannot be evaluated as a constant.");
+						//DialogUtils.showErrorDialog("Surface area of "+membraneMapping.getMembrane().getName()+" cannot be evaluated as a constant.");
 					}
 					return val;
 				}

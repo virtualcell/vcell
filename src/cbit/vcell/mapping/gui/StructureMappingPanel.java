@@ -1090,7 +1090,17 @@ public void structureMappingPanel_GeometryContext(cbit.vcell.mapping.GeometryCon
 				col.setMaxWidth(0);
 				col.setPreferredWidth(0);
 			}
-			if(arg1.getGeometry().getDimension() == 2) //2D,we don't need z-,z+
+			if(arg1.getGeometry().getDimension() == 1) ////1D,we don't need y-,y+
+			{
+				for(int i=StructureMappingTableModel.COLUMN_Y_MINUS; i<=StructureMappingTableModel.COLUMN_Y_PLUS; i++)
+				{
+					col = tcm.getColumn(i);
+					col.setMinWidth(0);
+					col.setMaxWidth(0);
+					col.setPreferredWidth(0);
+				}
+			}
+			if(arg1.getGeometry().getDimension() == 1 || arg1.getGeometry().getDimension() == 2) //1D & 2D,we don't need z-,z+
 			{
 				for(int i=StructureMappingTableModel.COLUMN_Z_MINUS; i<=StructureMappingTableModel.COLUMN_Z_PLUS; i++)
 				{
@@ -1192,7 +1202,7 @@ public void propertyChange(PropertyChangeEvent arg0) {
 			updateMembraneMappings(((GeometryContext)arg0.getSource()));
 		structureMappingPanel_GeometryContext(((GeometryContext)arg0.getSource()));
 	}
-	else if((arg0.getSource() instanceof FeatureMapping)&& getGeometryContext() != null)
+	else if((arg0.getSource() instanceof StructureMapping)&& getGeometryContext() != null)
 	    structureMappingPanel_GeometryContext(getGeometryContext());
 }
 

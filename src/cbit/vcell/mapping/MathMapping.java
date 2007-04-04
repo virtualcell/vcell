@@ -1602,14 +1602,18 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 				double value = parm.getExpression().evaluateConstant();
 				varHash.addVariable(new Constant(getMathSymbol(parm,sm),new Expression(value)));
 			}catch (ExpressionException e){
-				varHash.addVariable(new Function(getMathSymbol(parm,sm),getIdentifierSubstitutions(parm.getExpression(),parm.getUnitDefinition(),sm)));
+				//varHash.addVariable(new Function(getMathSymbol(parm,sm),getIdentifierSubstitutions(parm.getExpression(),parm.getUnitDefinition(),sm)));
+				e.printStackTrace(System.out);
+				throw new MappingException("Volume Fraction of membrane:"+((MembraneMapping)sm).getNameScope().getName()+" cannot be evaluated as constant.");
 			}	
 			parm = ((MembraneMapping)sm).getSurfaceToVolumeParameter();
 			try {
 				double value = parm.getExpression().evaluateConstant();
 				varHash.addVariable(new Constant(getMathSymbol(parm,sm),new Expression(value)));
 			}catch (ExpressionException e){
-				varHash.addVariable(new Function(getMathSymbol(parm,sm),getIdentifierSubstitutions(parm.getExpression(),parm.getUnitDefinition(),sm)));
+				//varHash.addVariable(new Function(getMathSymbol(parm,sm),getIdentifierSubstitutions(parm.getExpression(),parm.getUnitDefinition(),sm)));
+				e.printStackTrace(System.out);
+				throw new MappingException("Surface to volume ratio of membrane:"+((MembraneMapping)sm).getNameScope().getName()+" cannot be evaluated as constant.");
 			}	
 		}
 	}
