@@ -1,8 +1,6 @@
 package cbit.vcell.messaging.server;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
-import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.util.BigString;
-import cbit.sql.Versionable;
 import cbit.vcell.solver.SolverResultSetInfo;
 import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.biomodel.BioModelMetaData;
@@ -12,7 +10,6 @@ import cbit.vcell.server.ObjectNotFoundException;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.User;
 import cbit.vcell.messaging.JmsClientMessaging;
-import cbit.vcell.messaging.MessageConstants;
 import cbit.vcell.modeldb.*;
 import cbit.vcell.messaging.JmsUtils;
 
@@ -248,18 +245,6 @@ public cbit.vcell.export.server.ExportLog getExportLog(cbit.sql.KeyValue simulat
  */
 public cbit.vcell.export.server.ExportLog[] getExportLogs(boolean bAll) throws cbit.vcell.server.DataAccessException {
 	return (cbit.vcell.export.server.ExportLog[])rpc("getExportLogs",new Object[]{user, new Boolean(bAll)});
-}
-
-
-/**
- * This method was created in VisualAge.
- * @return GeometryInfo
- * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
-public cbit.vcell.simdata.ExternalDataIdentifier[] getExternalDataIdentifiers() throws cbit.vcell.server.DataAccessException {
-	return (cbit.vcell.simdata.ExternalDataIdentifier[])rpc("getExternalDataIdentifiers",new Object[]{user});
 }
 
 
@@ -624,19 +609,6 @@ public BigString saveBioModel(BigString bioModelXML, String independentSims[]) t
  */
 public BigString saveBioModelAs(BigString bioModelXML, java.lang.String newName, String independentSims[]) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
 	return (BigString)rpc("saveBioModelAs",new Object[]{user, bioModelXML, newName, independentSims});
-}
-
-
-/**
- * This method was created in VisualAge.
- * @return Versionable
- * @param versionable Versionable
- * @param bVersion boolean
- * @exception cbit.vcell.server.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
-public cbit.vcell.simdata.ExternalDataIdentifier saveExternalDataIdentifier(String name) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException {
-	return (cbit.vcell.simdata.ExternalDataIdentifier)rpc("saveExternalDataIdentifier",new Object[]{user, name});
 }
 
 

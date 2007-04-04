@@ -439,27 +439,6 @@ public ExportLog[] getExportLogs(boolean bAll) throws DataAccessException {
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.simdata.ExternalDataIdentifier[] getExternalDataIdentifiers() throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException {
-	try {
-		log.print("LocalUserMetaDbServerMessaging.getExternalDataIdentifiers()");
-		return dbServerProxy.getExternalDataIdentifiers();
-	} catch (DataAccessException e) {
-		log.exception(e);
-		throw e;
-	} catch (Throwable e) {
-		log.exception(e);
-		throw new DataAccessException(e.getMessage());
-	}
-}
-
-
-/**
- * This method was created in VisualAge.
- * @return GeometryInfo
- * @param key KeyValue
- * @exception cbit.vcell.server.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
 public cbit.vcell.geometry.GeometryInfo getGeometryInfo(cbit.sql.KeyValue geoKey) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getGeometryInfo(key="+geoKey+")");
@@ -1030,25 +1009,6 @@ public BigString saveBioModelAs(BigString bioModelXML, String newName, String in
 		log.print("LocalUserMetaDbServerMessaging.saveBioModel(newName="+newName+")");
 		BigString savedBioModelXML = dbServerProxy.saveBioModelAs(bioModelXML,newName,independentSims);
 		return savedBioModelXML;
-	} catch (DataAccessException e) {
-		log.exception(e);
-		throw e;
-	} catch (Throwable e) {
-		log.exception(e);
-		throw new DataAccessException(e.getMessage());
-	}
-
-}
-
-
-/**
- * getVersionInfo method comment.
- */
-public cbit.vcell.simdata.ExternalDataIdentifier saveExternalDataIdentifier(String name) throws DataAccessException {
-	try {
-		log.print("LocalUserMetaDbServerMessaging.saveExternalDataIdentifier()");
-		cbit.vcell.simdata.ExternalDataIdentifier savedFieldDataIdentifier = dbServerProxy.saveExternalDataIdentifier(name);
-		return savedFieldDataIdentifier;
 	} catch (DataAccessException e) {
 		log.exception(e);
 		throw e;
