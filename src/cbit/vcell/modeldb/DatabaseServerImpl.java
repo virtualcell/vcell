@@ -1,13 +1,11 @@
 package cbit.vcell.modeldb;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
-import cbit.vcell.messaging.db.SimulationJobStatus;
 import java.util.Vector;
 import cbit.util.BigString;
 import cbit.image.VCImage;
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.geometry.Geometry;
-import java.io.*;
 import cbit.vcell.export.server.ExportLog;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -16,7 +14,6 @@ import cbit.vcell.export.server.ExportLog;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.solver.SolverResultSetInfo;
-import java.rmi.*;
 import java.sql.*;
 import cbit.sql.*;
 import cbit.vcell.server.User;

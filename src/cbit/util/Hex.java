@@ -56,7 +56,7 @@ public static String toString(int intData) {
 	data[0] = (byte) ((intData >> 24) & 0x000000ff);
 	data[1] = (byte) ((intData >> 16) & 0x000000ff);
 	data[2] = (byte) ((intData >> 8) & 0x000000ff);
-	data[3] = (byte) ((intData >> 4) & 0x000000ff);
+	data[3] = (byte) ((intData >> 0) & 0x000000ff);
 	return "0x"+toString(data);
 }
 }

@@ -20,6 +20,7 @@ import java.util.Vector;
 
 import javax.transaction.*;
 
+import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.modeldb.LocalAdminDbServer;
@@ -148,7 +149,10 @@ public FieldDataIdentifierSpec[] getFieldDataIdentifierSpecs(Simulation sim) thr
 
 		RpcDbServerProxy dbServerProxy = getDbServerProxy(sim.getVersion().getOwner());
 		FieldFunctionArguments[] fieldFuncArgs =  sim.getMathDescription().getFieldFunctionArguments();
-		ExternalDataIdentifier[] externalDataIDs = dbServerProxy.getExternalDataIdentifiers();
+		ExternalDataIdentifier[] externalDataIDs =
+			dbServerProxy.fieldDataDBOperation(
+					FieldDataDBOperationSpec.createGetExtDataIDsSpec(dbServerProxy.user)
+			).extDataIDArr;
 		if (externalDataIDs != null && externalDataIDs.length != 0 &&
 			fieldFuncArgs != null && fieldFuncArgs.length>0	) {
 			Vector<FieldDataIdentifierSpec> fieldDataIdV = new Vector<FieldDataIdentifierSpec>();
