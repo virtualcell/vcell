@@ -147,8 +147,12 @@ public FieldDataIdentifierSpec[] getFieldDataIdentifierSpecs(Simulation sim) thr
 			return fieldDataIDSs;
 		}
 
-		RpcDbServerProxy dbServerProxy = getDbServerProxy(sim.getVersion().getOwner());
 		FieldFunctionArguments[] fieldFuncArgs =  sim.getMathDescription().getFieldFunctionArguments();
+		if (fieldFuncArgs == null || fieldFuncArgs.length == 0) {
+			return null;
+		}
+		
+		RpcDbServerProxy dbServerProxy = getDbServerProxy(sim.getVersion().getOwner());		
 		ExternalDataIdentifier[] externalDataIDs =
 			dbServerProxy.fieldDataDBOperation(
 					FieldDataDBOperationSpec.createGetExtDataIDsSpec(dbServerProxy.user)
