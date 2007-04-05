@@ -302,11 +302,15 @@ private String getODEDataValues(long jobID, User user, DataServerImpl dataServer
 
 	ODESimData odeSimData = dataServerImpl.getODEData(user, vcdID);
 	double progress = 0.0;
-
+	boolean isTimeSeries = (odeSimData.findColumn("t") > -1)? true:false;
+	boolean isMultiTrial = (odeSimData.findColumn("TrialNo") > -1)? true:false;
 	// get arrays
 	double[] allTimes = null;
 	try {
-		allTimes = odeSimData.extractColumn(odeSimData.findColumn("t"));
+		if(isTimeSeries)
+			allTimes = odeSimData.extractColumn(odeSimData.findColumn("t"));
+		else if(isMultiTrial)
+			allTimes = odeSimData.extractColumn(odeSimData.findColumn("TrialNo"));
 	}catch (cbit.vcell.parser.ExpressionException e){
 		e.printStackTrace(System.out);
 	}
@@ -325,11 +329,20 @@ private String getODEDataValues(long jobID, User user, DataServerImpl dataServer
 	}
 	// put data in csv format
 	StringBuffer buffer = new StringBuffer();
-	buffer.append(
-		"Variable values over the time range " + allTimes[beginIndex] + " to " + allTimes[endIndex] + "\n\n");
+	if(isTimeSeries)
+	{
+		buffer.append(
+		    "Variable values over the time range " + allTimes[beginIndex] + " to " + allTimes[endIndex] + "\n\n");
+	}
+	else if(isMultiTrial)
+	{
+		buffer.append(
+		    "Variable values over the Trials " + allTimes[beginIndex] + " to " + allTimes[endIndex] + "\n\n");
+	}
 	if (switchRowsColumns) {
 		buffer.append(",Variable\n");
-		buffer.append("Time,");
+		if(isTimeSeries) buffer.append("Time,");
+		else if(isMultiTrial) buffer.append("Trial No,");
 		for (int i=beginIndex;i<=endIndex;i++) {
 			buffer.append("," + allTimes[i]);
 		}
@@ -344,7 +357,8 @@ private String getODEDataValues(long jobID, User user, DataServerImpl dataServer
 			buffer.append("\n");
 		}
 	} else {
-		buffer.append(",Time\n");
+		if(isTimeSeries) buffer.append(",Time\n");
+		else if(isMultiTrial) buffer.append(",Trial No\n");		
 		buffer.append("Variable,");
 		for (int k=0;k<variableNames.length;k++) {
 			buffer.append("," + variableNames[k]);

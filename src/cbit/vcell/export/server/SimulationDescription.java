@@ -12,6 +12,13 @@ import java.rmi.*;
 /**
  * This type was created in VisualAge.
  */
+/**
+ * This class has been modified April 2,2007.
+ * Since we've added more simulaiton methods such as stochastic and monte carlo(multiple stoch simulation),
+ * we have to give different description when exporting the data file.
+ * Data type can be "ODE Simulation", "PDE Simulation", "Stochastic Simulation" and "Monte Carlo Simulation".
+ * The time-serie data will have time series output and the monte carlo simulation will have data based on trial number.
+ */
 public class SimulationDescription {
 	private String name = null;
 	private String dataType = null;
@@ -19,9 +26,10 @@ public class SimulationDescription {
 	private int variableNumber = 0;
 	private int timeNumber = 0;
 	private String variables[] = null;
+	private cbit.vcell.solver.ode.ODESimData odeSimData = null;
 
 /**
- * SimulationInfo constructor comment.
+ * SimulationInfo constructor comment. 
  */
 public SimulationDescription(User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID) throws DataAccessException, RemoteException {
 	super();
@@ -30,19 +38,34 @@ public SimulationDescription(User user, DataServerImpl dataServerImpl, VCDataIde
 	this.name = dataID;
 
 	if (dataServerImpl.getIsODEData(user, vcdID)) {
-		this.dataType = "ODE Simulation";
-		cbit.vcell.solver.ode.ODESimData odeSimData = dataServerImpl.getODEData(user, vcdID);
+		odeSimData = dataServerImpl.getODEData(user, vcdID);
+		//set times and variables
 		try {
-			this.times = odeSimData.extractColumn(odeSimData.findColumn("t"));
+			if(odeSimData.findColumn("t") > -1)
+			{
+				this.dataType = "ODE/Stochastic Simulation in which data comes by time series.";
+				this.times = odeSimData.extractColumn(odeSimData.findColumn("t"));
+				this.variables = new String[odeSimData.getColumnDescriptionsCount()];
+				for (int i=0;i<variables.length;i++) {
+					variables[i] = odeSimData.getColumnDescriptions(i).getDisplayName();
+				}
+			}
+			else if(odeSimData.findColumn("TrialNo") > -1)
+			{
+				this.dataType = "Monte Carlo Simulation (multiple stochastic simulations) in which data comes by trial numbers. ";
+				this.times = odeSimData.extractColumn(odeSimData.findColumn("TrialNo"));
+				this.variables = new String[odeSimData.getColumnDescriptionsCount()-1];
+				for (int i=0;i<variables.length;i++) { //trail no is the first column, we don't need it
+					variables[i] = odeSimData.getColumnDescriptions(i+1).getDisplayName();
+				}
+			}
+			else throw new RuntimeException("error getting time or trial number in simulation. ");
+			
 		}catch (cbit.vcell.parser.ExpressionException e){
-			e.printStackTrace(System.out);
-			throw new RuntimeException("error getting time: "+e.getMessage());
+				e.printStackTrace(System.out);
+				throw new RuntimeException("error getting time: "+e.getMessage());
 		}
 		this.timeNumber = times.length;
-		this.variables = new String[odeSimData.getColumnDescriptionsCount()];
-		for (int i=0;i<variables.length;i++) {
-			variables[i] = odeSimData.getColumnDescriptions(i).getDisplayName();
-		}
 		this.variableNumber = variables.length;
 	} else {
 		this.dataType = "PDE Simulation";
@@ -71,8 +94,16 @@ public String getHeader(String format) {
 	String line5 = null;
 	if (format.equals(".csv")) {
 		line1 = "Simulation name,," + name + ",," + dataType + "\n";
-		line2 = "Time range,," + times[0] + "," + times[times.length - 1] + "\n";
-		line3 = "Saved timepoints,," + timeNumber + "\n";
+		if(odeSimData.findColumn("t") > -1)
+		{
+			line2 = "Time range,," + times[0] + "," + times[times.length - 1] + "\n";
+			line3 = "Saved timepoints,," + timeNumber + "\n";
+		}
+		else if(odeSimData.findColumn("TrialNo") > -1)
+		{
+			line2 = "Trial range,," + times[0] + "," + times[times.length - 1] + "\n";
+			line3 = "Total trials,," + timeNumber + "\n";
+		}
 		line4 = "Number of variables,," + variableNumber + "\n";
 		StringBuffer buffer = new StringBuffer();
 		for (int i = 0; i < variables.length; i++) {
@@ -82,5 +113,10 @@ public String getHeader(String format) {
 	}
 	header = line1 + line2 + line3 + line4 + line5 + "\n";
 	return header;
+}
+
+
+private cbit.vcell.solver.ode.ODESimData getOdeSimData() {
+	return odeSimData;
 }
 }

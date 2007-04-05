@@ -496,7 +496,11 @@ private ExportSpecs getExportSpecs() {
 		names[i] = (String)selections[i];
 	}
 	VariableSpecs variableSpecs = new VariableSpecs(names, ExportConstants.VARIABLE_MULTI);
-	TimeSpecs timeSpecs = new TimeSpecs(getJSlider1().getValue(), getJSlider2().getValue(), getTimes(), ExportConstants.TIME_RANGE);
+	TimeSpecs timeSpecs = null;
+	if(getOdeSolverResultSet().isMultiTrialData())
+		timeSpecs = new TimeSpecs(0, (getOdeSolverResultSet().getRowCount()-1), times, ExportConstants.TIME_RANGE);
+	else
+		timeSpecs = new TimeSpecs(getJSlider1().getValue(), getJSlider2().getValue(), getTimes(), ExportConstants.TIME_RANGE);
 	return new ExportSpecs(
 		getVcDataIdentifier(),
 		getExportSettings1().getSelectedFormat(),
@@ -1132,6 +1136,7 @@ public void setOdeSolverResultSet(cbit.vcell.solver.ode.ODESolverResultSet odeSo
 	cbit.vcell.solver.ode.ODESolverResultSet oldValue = fieldOdeSolverResultSet;
 	fieldOdeSolverResultSet = odeSolverResultSet;
 	firePropertyChange("odeSolverResultSet", oldValue, odeSolverResultSet);
+	updateUI(odeSolverResultSet);
 }
 
 
@@ -1206,29 +1211,32 @@ private void setTimeFromSlider(int sliderPosition, JTextField textField) {
 private void setTimeFromTextField(JTextField textField, JSlider slider) {
 	int oldVal = slider.getValue();
 	double time = 0;
-	try {
-		time = Double.parseDouble(textField.getText());
-	} catch (NumberFormatException e) {
-		// if typedTime is crap, put back old value
-		textField.setText(Double.toString(times[oldVal]));
-		return;
-	}
-	// we find neighboring time value; if out of bounds, it is set to corresponding extreme
-	// we correct text, then adjust slider; change in slider will fire other updates
-	int val = 0;
-	if (time > times[0]) {
-		if (time >= times[times.length - 1]) {
-			val = times.length - 1;
-		} else {
-			for (int i=0;i<times.length;i++) {
-				val = i;
-				if ((time >= times[i]) && (time < times[i+1]))
-					break;
+	if(textField.isEnabled())
+	{
+		try {
+			time = Double.parseDouble(textField.getText());
+		} catch (NumberFormatException e) {
+			// if typedTime is crap, put back old value
+			textField.setText(Double.toString(times[oldVal]));
+			return;
+		}
+		// we find neighboring time value; if out of bounds, it is set to corresponding extreme
+		// we correct text, then adjust slider; change in slider will fire other updates
+		int val = 0;
+		if (time > times[0]) {
+			if (time >= times[times.length - 1]) {
+				val = times.length - 1;
+			} else {
+				for (int i=0;i<times.length;i++) {
+					val = i;
+					if ((time >= times[i]) && (time < times[i+1]))
+						break;
+				}
 			}
 		}
+		textField.setText(Double.toString(times[val]));
+		slider.setValue(val);
 	}
-	textField.setText(Double.toString(times[val]));
-	slider.setValue(val);
 }
 
 
@@ -1293,8 +1301,11 @@ private synchronized void updateChoices(ODESolverResultSet odeSolverResultSet) {
 	int plottable = 0;
 	for (int i=0;i<odeSolverResultSet.getColumnDescriptionsCount();i++) {
 		ColumnDescription cd = (ColumnDescription)odeSolverResultSet.getColumnDescriptions(i);
-		if (cd.getParameterName() == null) {
-			plottable++; // not a parameter sensitivity
+		if(!cd.getName().equals("TrialNo"))
+		{
+			if (cd.getParameterName() == null) {
+				plottable++; // not a parameter sensitivity
+			}
 		}
 	}
 	
@@ -1303,9 +1314,12 @@ private synchronized void updateChoices(ODESolverResultSet odeSolverResultSet) {
 	plottable = 0;
 	for (int i=0;i<odeSolverResultSet.getColumnDescriptionsCount();i++) {
 		ColumnDescription cd = (ColumnDescription)odeSolverResultSet.getColumnDescriptions(i);
-		if (cd.getParameterName() == null) {
-			indices[plottable] = i;
-			plottable++;
+		if(!cd.getName().equals("TrialNo"))
+		{
+			if (cd.getParameterName() == null) {
+				indices[plottable] = i;
+				plottable++;
+			}
 		}
 	}
 	setPlottableColumnIndices(indices);
@@ -1323,25 +1337,58 @@ private synchronized void updateChoices(ODESolverResultSet odeSolverResultSet) {
 	setPlottableNames(names);
 
 	// get and store times
-	try {
-		setTimes(odeSolverResultSet.extractColumn(odeSolverResultSet.findColumn(ODESolverResultSet.TIME_COLUMN)));
-	}catch (cbit.vcell.parser.ExpressionException e){
-		e.printStackTrace(System.out);
+	if(odeSolverResultSet.isMultiTrialData())
+	{
+		try {
+			setTimes(odeSolverResultSet.extractColumn(odeSolverResultSet.findColumn("TrialNo")));
+		}catch (cbit.vcell.parser.ExpressionException e){
+			e.printStackTrace(System.out);
+		}
 	}
-
+	else
+	{
+		try {
+			setTimes(odeSolverResultSet.extractColumn(odeSolverResultSet.findColumn(ODESolverResultSet.TIME_COLUMN)));
+		}catch (cbit.vcell.parser.ExpressionException e){
+			e.printStackTrace(System.out);
+		}
+	}
 	// finally, update widgets
 	getDefaultListModel1().removeAllElements();
 	for (int i=0;i<plottable;i++) {
 		getDefaultListModel1().addElement(names[i]);
 	}
-	getJSlider1().setMaximum(times.length - 1);
-	getJSlider2().setMaximum(times.length - 1);
-	getJSlider1().setValue(0);
-	getJSlider2().setValue(times.length - 1);
-	getJTextField1().setText(Double.toString(times[0]));
-	getJTextField2().setText(Double.toString(times[times.length - 1]));
+	if(!odeSolverResultSet.isMultiTrialData())
+	{
+		getJSlider1().setMaximum(times.length - 1);
+		getJSlider2().setMaximum(times.length - 1);
+		getJSlider1().setValue(0);
+		getJSlider2().setValue(times.length - 1);
+		getJTextField1().setText(Double.toString(times[0]));
+		getJTextField2().setText(Double.toString(times[times.length - 1]));
+	}
 }
 
+private void updateUI(ODESolverResultSet resultSet)
+{
+	if(resultSet != null)
+	{	
+		if(resultSet.isMultiTrialData())
+		{
+			getJSlider1().setEnabled(false);
+			getJSlider2().setEnabled(false);
+			getJTextField1().setEnabled(false);
+			getJTextField2().setEnabled(false);
+		}
+		else
+		{
+			getJSlider1().setEnabled(true);
+			getJSlider2().setEnabled(true);
+			getJTextField1().setEnabled(true);
+			getJTextField2().setEnabled(true);
+		}
+	}
+}
 
 /**
  * 

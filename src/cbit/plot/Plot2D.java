@@ -22,6 +22,7 @@ public class Plot2D {
 	private int numPlots = 0;
 	private boolean[] fieldVisiblePlots = new boolean[0];
 	protected transient java.util.Vector aChangeListener = null;
+	private boolean isHistogram = false;
 	//
 	public static final int LABEL_TITLE = 0;
 	public static final int LABEL_X = 1;
@@ -264,8 +265,16 @@ public String[] getVisiblePlotColumnTitles() {
 	String xTitle = labels[LABEL_X];
 	for (int i = 0; i < getNumberOfVisiblePlots(); i++){
 		String yTitle = getPlotNames()[getVisiblePlotIndices()[i]];
-		vsisblePlotColumnTitles[2 * i] = xTitle;
-		vsisblePlotColumnTitles[2 * i + 1] = yTitle;
+		if(isHistogram)
+		{
+			vsisblePlotColumnTitles[2 * i] = "No.of molecules of " + yTitle;
+			vsisblePlotColumnTitles[2 * i + 1] = "Prob. distribution of " + yTitle;
+		}
+		else
+		{
+			vsisblePlotColumnTitles[2 * i] = xTitle;
+			vsisblePlotColumnTitles[2 * i + 1] = yTitle;
+		}
 	}
 	return vsisblePlotColumnTitles;
 }
@@ -278,8 +287,8 @@ public String[] getVisiblePlotColumnTitles() {
  */
 public Double[][] getVisiblePlotDataValuesByRow() {
 	Double[][] visiblePlotValuesByRow = new Double[getMaxPlotDataSize()][2 * getNumberOfVisiblePlots()];
-	for (int j = 0; j < getNumberOfVisiblePlots(); j++){
-		for (int i = 0; i < plotDatas[j].getSize(); i++){
+	for (int j = 0; j < getVisiblePlotIndices().length; j++){
+		for (int i = 0; i < plotDatas[getVisiblePlotIndices()[j]].getSize(); i++){
 			visiblePlotValuesByRow[i][2 * j] = new Double(plotDatas[getVisiblePlotIndices()[j]].getIndependent()[i]);
 			visiblePlotValuesByRow[i][2 * j + 1] = new Double(plotDatas[getVisiblePlotIndices()[j]].getDependent()[i]);
 		}
@@ -440,11 +449,12 @@ public void removeChangeListener(javax.swing.event.ChangeListener newListener) {
  * @param visiblePlots The new value for the property.
  * @see #getVisiblePlots
  */
-public void setVisiblePlots(boolean[] visiblePlots) {
+public void setVisiblePlots(boolean[] visiblePlots, boolean arg_isHistogram) {
 	if (visiblePlots.length != plotDatas.length) {
 		throw new IllegalArgumentException("visiblePlots array must have same length as plotData array");
 	} else {
 		fieldVisiblePlots = visiblePlots;
+		isHistogram = arg_isHistogram;
 		fireStateChanged();
 	}
 }

@@ -827,12 +827,8 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 						{
 							int stoi = ((Reactant)reacPart[j]).getStoichiometry();
 							action = new Action(varHash.getVariable( reacPart[j].getSpeciesContext().getName()),"inc", new Expression("-"+String.valueOf(stoi)));
+							jp.addAction(action);
 						}
-						else
-						{
-							action = new Action(varHash.getVariable( reacPart[j].getSpeciesContext().getName()),"inc", new Expression(0));
-						}
-						jp.addAction(action);
 					}
 					else if(reacPart[j] instanceof Product)
 					{
@@ -841,12 +837,8 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 						{
 							int stoi = ((Product)reacPart[j]).getStoichiometry();
 							action = new Action(varHash.getVariable( reacPart[j].getSpeciesContext().getName()),"inc", new Expression(stoi));
+							jp.addAction(action);
 						}
-						else
-						{
-							action = new Action(varHash.getVariable( reacPart[j].getSpeciesContext().getName()),"inc", new Expression(0));
-						}
-						jp.addAction(action);
 					}
 				}
 				// add jump process to compartment subDomain
@@ -889,12 +881,8 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 						{
 							int stoi = ((Reactant)reacPart[j]).getStoichiometry();
 							action = new Action(varHash.getVariable( reacPart[j].getSpeciesContext().getName()),"inc", new Expression(stoi));
+							jp.addAction(action);
 						}
-						else
-						{
-							action = new Action(varHash.getVariable( reacPart[j].getSpeciesContext().getName()),"inc", new Expression(0));
-						}
-						jp.addAction(action);
 					}
 					else if(reacPart[j] instanceof Product)
 					{
@@ -903,12 +891,8 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 						{
 							int stoi = ((Product)reacPart[j]).getStoichiometry();
 							action = new Action(varHash.getVariable( reacPart[j].getSpeciesContext().getName()),"inc", new Expression("-"+String.valueOf(stoi)));
+							jp.addAction(action);
 						}
-						else
-						{
-							action = new Action(varHash.getVariable( reacPart[j].getSpeciesContext().getName()),"inc", new Expression(0));
-						}
-						jp.addAction(action);
 					}
 				}
 				// add jump process to compartment subDomain

@@ -57,6 +57,7 @@ class LineIcon implements Icon {
 	private JLabel ivjBlankLabel = null;
 	private JCheckBox ivjJCheckBox_stepLike = null;
 
+
 class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == PlotPane.this.getJCheckBox_stepLike()) 
@@ -568,7 +569,7 @@ private cbit.gui.JToolBarToggleButton getDataButton() {
  * @return javax.swing.JCheckBox
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JCheckBox getJCheckBox_stepLike() {
+public javax.swing.JCheckBox getJCheckBox_stepLike() {
 	if (ivjJCheckBox_stepLike == null) {
 		try {
 			ivjJCheckBox_stepLike = new javax.swing.JCheckBox();
@@ -1399,5 +1400,14 @@ private static void getBuilderData() {
 	BD0A340A1D3AAC91EF25622DD811520C7C9F2CCFE49DB232C84FBEB13448057C9C5D410343ED35EA382D463FF3F4D9FD87FC7968963F3F9BB473D56693453E2A3D837E6F67E86CFCC1FCFA5E82BCA3F6609C799BF67E6E8155F51AECB645E46BA8371B491D20C33D0A6C3D07326C9C295F0DB4BC13657D799C613BDDD5667F83D0CB8788D3CC376BCEABGGFC06GGD0CB818294G94G88G88G42DAB1B6D3CC376BCEABGGFC06GG8CGGGGGGGGGGGGGGGGGE2F5E9ECE4E5F2A0E4E1
 	F4E1D0CB8586GGGG81G81GBAGGG08ABGGGG
 **end of data**/
+}
+
+public boolean getIsHistogram() {
+	return getPlot2DPanel1().getIsHistogram();
+}
+
+public void setIsHistogram(boolean isHistogram) {
+	getPlot2DPanel1().setIsHistogram(isHistogram);
+	getPlot2DPanel1().updateAutoRanges();
 }
 }

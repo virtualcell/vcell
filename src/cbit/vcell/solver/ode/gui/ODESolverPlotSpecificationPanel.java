@@ -1,4 +1,6 @@
 package cbit.vcell.solver.ode.gui;
+import java.awt.Point;
+import java.awt.geom.Point2D;
 import java.util.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -320,7 +322,9 @@ private void connEtoC4(java.beans.PropertyChangeEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		this.refreshVisiblePlots(this.getSingleXPlot2D());
+		if(getOdeSolverResultSet().isMultiTrialData())
+			this.refreshVisiblePlots(this.getPlot2D());
+		else this.refreshVisiblePlots(this.getSingleXPlot2D());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -1337,7 +1341,7 @@ private int[] getVariableIndices(ODESolverResultSet odeSolverResultSet) {
  * @return javax.swing.JComboBox
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JComboBox getXAxisComboBox() {
+public javax.swing.JComboBox getXAxisComboBox() {
 	if (ivjXAxisComboBox == null) {
 		try {
 			ivjXAxisComboBox = new javax.swing.JComboBox();
@@ -1754,7 +1758,9 @@ private void refreshVisiblePlots(Plot2D plot2D) {
 		for (int i=0;i<getYIndices().length;i++) {
 			visiblePlots[getYIndices()[i]] = true;
 		}
-		plot2D.setVisiblePlots(visiblePlots);
+		if((getOdeSolverResultSet()!= null) && getOdeSolverResultSet().isMultiTrialData())
+			plot2D.setVisiblePlots(visiblePlots,true);
+		else plot2D.setVisiblePlots(visiblePlots,false);
 	}
 }
 
@@ -1914,12 +1920,51 @@ private void regeneratePlot2D() throws cbit.vcell.parser.ExpressionException {
 			}
 			SingleXPlot2D plot2D = new SingleXPlot2D(symbolTableEntries,xLabel, yNames, allData, new String[] {title, xLabel, yLabel});
 			refreshVisiblePlots(plot2D);
-			setSingleXPlot2D(plot2D);
+			setSingleXPlot2D(plot2D); //here fire "singleXPlot2D" event, ODEDataViewer's event handler listens to it.
 		}
-	}// end of none MultitrialData)
+	}// end of none MultitrialData
 	else // multitrial data
 	{
+		//a column of data get from ODESolverRestultSet, which is actually the results for a specific variable during multiple trials
+		double[] rowData = new double[getOdeSolverResultSet().getRowCount()];
+		int[] plottableColumnIndices =  getPlottableColumnIndices();
+		PlotData[] plotData = new PlotData[plottableColumnIndices.length];
+		String[] yNames = getPlottableNames();
 		
+		String title = "";
+		String xLabel = "";
+		String yLabel = "";
+
+		for (int i=0; i<plottableColumnIndices.length; i++)
+		{
+			ColumnDescription cd = getOdeSolverResultSet().getColumnDescriptions(getPlottableColumnIndices()[i]);
+			rowData = getOdeSolverResultSet().extractColumn(getOdeSolverResultSet().findColumn(cd.getName()));
+			Point2D[] histogram = generateHistogram(rowData);
+			double[] x = new double[histogram.length];
+			double[] y = new double[histogram.length];
+			for (int j=0; j<histogram.length; j++)
+			{
+				x[j]= histogram[j].getX();
+		        y[j]= histogram[j].getY();
+		    }
+			plotData[i] =  new PlotData(x,y);
+		}
+		
+		cbit.vcell.parser.SymbolTableEntry[] symbolTableEntries = null;
+		if(getSymbolTable() != null && yNames != null && yNames.length > 0){
+			symbolTableEntries = new cbit.vcell.parser.SymbolTableEntry[yNames.length];
+			for(int i=0;i<yNames.length;i+= 1){
+				try{
+					symbolTableEntries[i] = getSymbolTable().getEntry(yNames[i]);
+				}catch(cbit.vcell.parser.ExpressionBindingException e){
+					//Do Nothing
+				}
+			}
+			
+		}
+		Plot2D plot2D = new Plot2D(symbolTableEntries, yNames, plotData);
+		refreshVisiblePlots(plot2D);
+		setPlot2D(plot2D);
 	}
 }
 
@@ -2122,12 +2167,19 @@ private synchronized void updateChoices(ODESolverResultSet odeSolverResultSet) t
     int[] variableIndices = getVariableIndices(odeSolverResultSet);
     int[] sensitivityIndices = getSensitivityIndices(odeSolverResultSet);
     //  Hack this here, Later we can use an array utility...
-    int[] indices = new int[variableIndices.length + sensitivityIndices.length];
+    int[] indices;
+    if(!odeSolverResultSet.isMultiTrialData())
+    	indices = new int[variableIndices.length + sensitivityIndices.length];
+    else indices = new int[variableIndices.length];
+    
     for (int i = 0; i < variableIndices.length; i++) {
         indices[i] = variableIndices[i];
     }
-    for (int i = 0; i < sensitivityIndices.length; i++) {
-        indices[variableIndices.length + i] = sensitivityIndices[i];
+    if(!odeSolverResultSet.isMultiTrialData())
+    {
+	    for (int i = 0; i < sensitivityIndices.length; i++) {
+	        indices[variableIndices.length + i] = sensitivityIndices[i];
+	    }
     }
     //  End hack
     setPlottableColumnIndices(indices);
@@ -2186,8 +2238,41 @@ public cbit.plot.Plot2D getPlot2D() {
 	return fieldPlot2D;
 }
 
-public void setPlot2D(cbit.plot.Plot2D fieldPlot2D) {
-	this.fieldPlot2D = fieldPlot2D;
+public void setPlot2D(cbit.plot.Plot2D plot2D) {
+	//amended March 29, 2007. To fire event to ODEDataViewer.
+	Plot2D oldValue = this.fieldPlot2D;
+	this.fieldPlot2D = plot2D;
+	firePropertyChange("Plot2D", oldValue, plot2D);
+}
+/*
+ * To get a hash table with keys as possible results for a specific variable after certain time period
+ * and the values as the frequency. It is sorted ascendantly.
+ */
+private Point2D[] generateHistogram(double[] rawData)
+{
+	Hashtable<Integer,Integer> temp = new Hashtable<Integer,Integer>();
+	//sum the results for a specific variable after multiple trials.
+	for(int i=0;i<rawData.length;i++)
+	{
+		int val = ((int)Math.round(rawData[i]));
+		if(temp.get(new Integer(val))!= null)
+		{
+			int v = temp.get(new Integer(val)).intValue();
+			temp.put(new Integer(val), new Integer(v+1));
+		}
+		else temp.put(new Integer(val), new Integer(1));
+	}
+	//sort the hashtable ascendantly and also calculate the frequency in terms of percentage.
+	Vector keys = new Vector(temp.keySet());
+	Collections.sort(keys);
+	Point2D[] result = new Point2D[keys.size()];
+	for (int i=0; i<keys.size(); i++)
+	{
+        Integer key = (Integer)keys.elementAt(i);
+        Double valperc = new Double(((double)temp.get(key).intValue())/((double)rawData.length));
+        result[i] = new Point2D.Double(key,valperc);
+    }
+	return result;
 }
 
 /**
