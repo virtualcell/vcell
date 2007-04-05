@@ -80,6 +80,7 @@ public class Plot2DPanel extends JPanel {
 	private boolean ivjConnPtoP7Aligning = false;
 	private boolean fieldBCompact = false;
 	private boolean fieldBStepMode = false;
+	private boolean fieldIsHistogram = false; //added March 30,2007. to indicate this plot if for trajectory or histogram
 
 class IvjEventHandler implements java.awt.event.MouseListener, java.awt.event.MouseMotionListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener {
 		public void mouseClicked(java.awt.event.MouseEvent e) {
@@ -181,11 +182,11 @@ class IvjEventHandler implements java.awt.event.MouseListener, java.awt.event.Mo
 		};
 	};
 
-public Plot2DPanel() {
+public Plot2DPanel()
+{
 	super();
 	initialize();
 }
-
 
 /**
  * connEtoC1:  (Plot2DPanel.mouseMotion.mouseMoved(java.awt.event.MouseEvent) --> Plot2DPanel.drawCrossHair(Ljava.awt.event.MouseEvent;)V)
@@ -1423,7 +1424,65 @@ private void drawLinePlot(PlotData plotData, int index, Graphics2D g, int render
 	}
 }
 
-
+//added March 30 to display histogram
+private void drawHistogram(PlotData plotData, int index, Graphics2D g, int renderHints, int width) {
+	if (plotData != null) {
+		g.setStroke(lineBS_15);
+		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		if( plotRectHolder == null ||
+			plotRectHolder.x != getLMargin() + getTick() ||
+			plotRectHolder.y != getTMargin() + getTick() - (getBCompact()?2:0) ||
+			plotRectHolder.width != getWidth() - 2 * getTick() - getLMargin() - getRMargin() ||
+			plotRectHolder.height != getHeight() - 2 * getTick() - getTMargin() - getBMargin() + (getBCompact()?4:0)){
+				
+			plotRectHolder = new Rectangle(
+				getLMargin() + getTick(),
+				getTMargin() + getTick() - (getBCompact()?2:0),
+				getWidth() - 2 * getTick() - getLMargin() - getRMargin(),
+				getHeight() - 2 * getTick() - getTMargin() - getBMargin() + (getBCompact()?4:0));
+		}
+		g.setClip(plotRectHolder);
+		
+		
+		if (plotData != null && plotData.getSize()>0) 
+		{
+			nodes[index].setPoints(mapPoints(plotData));
+			Point2D[] points =nodes[index].getPoints();
+			int w = width;
+			if (width % 2 != 0) w=w+1;
+			for(int k=0;k<points.length;k++)
+			{
+				double x=points[k].getX()-w/2;
+				double y=points[k].getY();
+				//to get transformed coordinate for y0=0, h=y0-y
+				Point2D[] transH = new Point2D.Double[1];
+				Point2D temp = new Point2D.Double(plotData.getPoints()[k].getX(),0);
+				Point2D[] origH = new Point2D.Double[1];
+				origH[0] = temp;
+				getTransform().transform(origH, 0, transH, 0, 1);
+				double h = transH[0].getY()-y;
+				Rectangle2D reac=new Rectangle2D.Double(x,y,w,h);
+				g.fill(reac);
+			}
+		}
+		if (getShowNodes() && ((renderHints & Plot2D.RENDERHINT_DRAWPOINT) == Plot2D.RENDERHINT_DRAWPOINT)) {
+//			nodes[index].setPoints(mapPoints(plotData));
+			Ellipse2D.Double circle = new Ellipse2D.Double();
+			int diameter = 2;
+			if (renderHints == Plot2D.RENDERHINT_DRAWPOINT) { // only draw points, make them larger
+				diameter = 4;
+			}
+			for (int i=0;i<plotData.getSize();i++) {
+				circle.setFrameFromCenter(nodes[index].getPoints()[i].getX(), nodes[index].getPoints()[i].getY(), nodes[index].getPoints()[i].getX() + diameter, nodes[index].getPoints()[i].getY() + diameter);
+				if (circle.intersects(plotRectHolder)) {
+					g.setColor(Color.gray);
+					g.fill(circle);
+				}
+			}
+		}
+		
+	}
+}
 /**
  * Comment
  */
@@ -2173,7 +2232,11 @@ public void paintComponent(Graphics g) {
 		for (int i=0;i<plotDatas.length;i++) {
 			if (getPlot2D().isVisiblePlot(i)) {
 				g2D.setPaint(getPlotPaint(i));
-				drawLinePlot(plotDatas[i], i, g2D,getPlot2D().getRenderHints()[i]);
+				//amended March 30,2007. draw trajectory or histogram
+				if(getIsHistogram())
+					drawHistogram(plotDatas[i], i, g2D,getPlot2D().getRenderHints()[i],10);
+				else 
+					drawLinePlot(plotDatas[i], i, g2D,getPlot2D().getRenderHints()[i]);
 			}
 		}
 	} catch (Throwable exc) {
@@ -2820,7 +2883,7 @@ public void setYStretch(boolean yStretch) {
 }
 
 
-private void updateAutoRanges() {
+protected void updateAutoRanges() {
 	if (getPlot2D() == null) return;
 	if(bPlot2DHasInvalidData){
 		setXAutoRange(null);
@@ -2834,9 +2897,21 @@ private void updateAutoRanges() {
 		setXAutoRange(NumberUtils.getDecimalRange(getPlot2D().getXDataRange(), false, false));
 	}
 	if (getYStretch()) {
-		setYAutoRange(getPlot2D().getYDataRange());
+		if(getIsHistogram())
+		{
+			Range temp = getPlot2D().getYDataRange();
+			Range yRange = new Range(temp.getMin()*2, temp.getMax()*2);
+			setYAutoRange(yRange);
+		}
+		else setYAutoRange(getPlot2D().getYDataRange());
 	} else {
-		setYAutoRange(NumberUtils.getDecimalRange(getPlot2D().getYDataRange(), false, false));
+		if(getIsHistogram())
+		{
+			Range temp = getPlot2D().getYDataRange();
+			Range yRange = new Range(temp.getMin()*2, temp.getMax()*2);
+			setYAutoRange(NumberUtils.getDecimalRange(yRange, false, false));
+		}
+		else setYAutoRange(NumberUtils.getDecimalRange(getPlot2D().getYDataRange(), false, false));
 	}
 }
 
@@ -2993,4 +3068,11 @@ private static void getBuilderData() {
 	GGG81G81GBAGGG5994GGGG
 **end of data**/
 }
+public boolean getIsHistogram() {
+	return fieldIsHistogram;
+}
+public void setIsHistogram(boolean fieldIsHistogram) {
+	this.fieldIsHistogram = fieldIsHistogram;
+}
+
 }

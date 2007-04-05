@@ -991,7 +991,7 @@ public String isValidForStochApp()
 	int len = returnStr.length();
 	if(len > 0)
 	{
-		returnStr = returnStr.substring(0,(len-1)) + " is (are) unable to transform to stochastic formulation.";
+		returnStr = returnStr.substring(0,(len-1)) + " is (are) unable to transform to stochastic formulation.\nOnly Mass Action Kinetics can be automatically transfromed.";
 	}
 	else
 		returnStr = "ok";

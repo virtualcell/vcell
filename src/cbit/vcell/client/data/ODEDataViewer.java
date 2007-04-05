@@ -27,6 +27,13 @@ class IvjEventHandler implements java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == ODEDataViewer.this && (evt.getPropertyName().equals("odeSolverResultSet"))) 
 				connPtoP1SetTarget();
+			if (evt.getSource() == ODEDataViewer.this && (evt.getPropertyName().equals("odeSolverResultSet")))
+			{
+				if(getOdeSolverResultSet()!=null)
+				{
+					iniHistogramDisplay();
+				}
+			}
 			if (evt.getSource() == ODEDataViewer.this.getODESolverPlotSpecificationPanel1() && (evt.getPropertyName().equals("odeSolverResultSet"))) 
 				connPtoP1SetSource();
 			if (evt.getSource() == ODEDataViewer.this && (evt.getPropertyName().equals("odeSolverResultSet"))) 
@@ -42,6 +49,9 @@ class IvjEventHandler implements java.beans.PropertyChangeListener {
 			if (evt.getSource() == ODEDataViewer.this.getNewODEExportPanel1() && (evt.getPropertyName().equals("vcDataIdentifier"))) 
 				connPtoP4SetSource();
 			if (evt.getSource() == ODEDataViewer.this.getODESolverPlotSpecificationPanel1() && (evt.getPropertyName().equals("singleXPlot2D"))) 
+				connEtoM2(evt);
+			//add March 29, 2007. to display histogram,which is not singleXPlot2D.
+			if (evt.getSource() == ODEDataViewer.this.getODESolverPlotSpecificationPanel1() && (evt.getPropertyName().equals("Plot2D"))) 
 				connEtoM2(evt);
 		};
 	};
@@ -64,11 +74,12 @@ public synchronized void addActionListener(ActionListener l) {
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM2(java.beans.PropertyChangeEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
-		getPlotPane1().setPlot2D(getODESolverPlotSpecificationPanel1().getSingleXPlot2D());
-		// user code begin {2}
-		// user code end
+		//amended March 29,2007. to get singleXPlot2D or plot2D from SepcificationPanel to display in plotPanel
+		//if the data are time series, we use singleXPlot2D. if the data are histograms, we use plot2D.
+		if (arg1.getPropertyName().equals("singleXPlot2D")) 
+			getPlotPane1().setPlot2D(getODESolverPlotSpecificationPanel1().getSingleXPlot2D());
+		if (arg1.getPropertyName().equals("Plot2D")) 
+			getPlotPane1().setPlot2D(getODESolverPlotSpecificationPanel1().getPlot2D());
 	} catch (java.lang.Throwable ivjExc) {
 		// user code begin {3}
 		// user code end
@@ -609,6 +620,21 @@ public void setVcDataIdentifier(cbit.vcell.server.VCDataIdentifier vcDataIdentif
 	firePropertyChange("vcDataIdentifier", oldValue, vcDataIdentifier);
 }
 
+public void iniHistogramDisplay()
+{
+	if(getOdeSolverResultSet().isMultiTrialData())
+	{
+		getPlotPane1().setIsHistogram(true);
+		getPlotPane1().getJCheckBox_stepLike().setEnabled(false);
+		getODESolverPlotSpecificationPanel1().getXAxisComboBox().setEnabled(false);
+	}
+	else
+	{
+		getPlotPane1().setIsHistogram(false);
+		getPlotPane1().getJCheckBox_stepLike().setEnabled(true);
+		getODESolverPlotSpecificationPanel1().getXAxisComboBox().setEnabled(true);
+	}
+}
 
 /**
  * 

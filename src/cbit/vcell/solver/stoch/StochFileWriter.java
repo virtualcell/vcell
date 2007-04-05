@@ -33,7 +33,7 @@ public StochFileWriter(Simulation arg_simulation)
 
 
 /**
- * Find all the dependent processes for a give process.
+ * Find all the dependent processes for a given process.
  * Creation date: (6/28/2006 4:16:55 PM)
  */
 private Vector<String> getDependencies(JumpProcess process, Vector processList) throws Exception
@@ -45,20 +45,22 @@ private Vector<String> getDependencies(JumpProcess process, Vector processList) 
 	{
 		affectedVars[i] = ((Action)process.getActions().elementAt(i)).getVar().getName();
 	}
-	//go through all the processes to find dependants
-	for(int i=0; i<processList.size(); i++)
+	if(affectedVars.length > 0)
 	{
-		if(process.getName().compareTo(((JumpProcess)processList.elementAt(i)).getName())!=0)//to avoid comparing with it's own
+		//go through all the processes to find dependants
+		for(int i=0; i<processList.size(); i++)
 		{
-			Expression probExp = ((JumpProcess)processList.elementAt(i)).getProbabilityRate();
-			probExp = getSimulation().substituteFunctions(probExp).flatten();
-			String[] vars = probExp.getSymbols();
-			if((vars != null)&&(vars.length>0))
-			{				
-				if(hasCommonElement(affectedVars,vars))
-					result.addElement(((JumpProcess)processList.elementAt(i)).getName());
+			if(!process.compareEqual(((JumpProcess)processList.elementAt(i))))//to avoid comparing with it's own
+			{
+				Expression probExp = ((JumpProcess)processList.elementAt(i)).getProbabilityRate();
+				probExp = getSimulation().substituteFunctions(probExp).flatten();
+				String[] vars = probExp.getSymbols();
+				if((vars != null)&&(vars.length>0))
+				{				
+					if(hasCommonElement(affectedVars,vars))
+						result.addElement(((JumpProcess)processList.elementAt(i)).getName());
+				}
 			}
-			else	result.addElement(((JumpProcess)processList.elementAt(i)).getName());
 		}
 	}
 	return result;
@@ -86,7 +88,7 @@ private boolean hasCommonElement(String[] oriArray, String[] comArray)
 {
 	for(int i=0; i<oriArray.length; i++)
 		for(int j=0; j<comArray.length; j++)
-			if(oriArray[i].compareTo(comArray[j])==0)
+			if(oriArray[i].equals(comArray[j]))
 				return true;
 	return false;
 }
@@ -182,15 +184,13 @@ public void writeStochInputFile(PrintWriter pw, String[] parameterNames) throws 
 		ErrorTolerance errorTolerance = solverTaskDescription.getErrorTolerance();
 		StochSimOptions stochOpt = solverTaskDescription.getStochOpt();
 		pw.println("STARTING_TIME"+"\t"+ timeBounds.getStartingTime());
-		//pw.println("ENDING_TIME " + timeBounds.getEndingTime());
-		//pw.println("ENDING_TIME "+"\t"+"75"); //for time =75 k134=1 k2=10 trial=1000
 		pw.println("ENDING_TIME "+"\t"+ timeBounds.getEndingTime());
 		pw.println("MAX_ITERATION"+"\t"+outputTimeSpec.getKeepAtMost());
 		pw.println("TOLERANCE "+"\t"+errorTolerance.getAbsoluteErrorTolerance());
 		pw.println("SAMPLE_INTERVAL"+"\t"+outputTimeSpec.getKeepEvery());
-		pw.println("NUM_TRIAL"+"\t"+"1");//solverTaskDescription.getStochOpt().getNumOfTrials());
-//	  	pw.println("MAX_NUM_MOLECUES "+"\t"+"30");
-	  	if(stochOpt.isUseCustomSeed())
+		pw.println("NUM_TRIAL"+"\t"+solverTaskDescription.getStochOpt().getNumOfTrials());
+
+		if(stochOpt.isUseCustomSeed())
 	  		pw.println("SEED"+"\t"+stochOpt.getCustomSeed());
 	  	pw.println("</control>");
 	  	pw.println();
