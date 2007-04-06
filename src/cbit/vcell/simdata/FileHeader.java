@@ -48,7 +48,7 @@ int read(DataInputStream fp) throws IOException{
 }                  
 
 
-   void write(RandomAccessFile fp) throws IOException
+   void writeNew(DataOutputStream dataOS) throws IOException
    {
 	  byte magicStringBytes[] = new byte[16];
 	  byte versionStringBytes[] = new byte[8];
@@ -65,12 +65,12 @@ int read(DataInputStream fp) throws IOException{
 	  for (int i=0;i<versionString.getBytes().length;i++){
 	  versionStringBytes[i] = (versionString.getBytes())[i];
 	  }
-	  fp.write(magicStringBytes);
-	  fp.write(versionStringBytes);
-	  fp.writeInt(numBlocks);
-	  fp.writeInt(firstBlockOffset);   
-	  fp.writeInt(sizeX); 
-	  fp.writeInt(sizeY); 
-	  fp.writeInt(sizeZ); 
+	  dataOS.write(magicStringBytes);
+	  dataOS.write(versionStringBytes);
+	  dataOS.writeInt(numBlocks);
+	  dataOS.writeInt(firstBlockOffset);   
+	  dataOS.writeInt(sizeX); 
+	  dataOS.writeInt(sizeY); 
+	  dataOS.writeInt(sizeZ); 
    }                  
 }

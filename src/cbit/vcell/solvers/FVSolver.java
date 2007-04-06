@@ -596,7 +596,7 @@ private void resampleFieldData() throws SolverException {
 							break;					
 					}
 				}
-				cbit.vcell.simdata.DataSet.write(
+				cbit.vcell.simdata.DataSet.writeNew(
 						fieldFile,
 						new String[] {fieldDataIDSpecs[i].getFieldFuncArgs().getVariableName()},
 						new VariableType[]{VariableType.getVariableTypeFromLength(newMesh, newData.length)},

@@ -250,39 +250,55 @@ void read(File file, File zipFile) throws IOException, OutOfMemoryError {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (9/21/2006 1:33:24 PM)
- * @param file java.io.File
- * @param varnames java.lang.String
- * @param data double[]
- */
-public static void write(File file, String[] varNameArr, VariableType[] varTypeArr, cbit.util.ISize size, double[][] dataArr) throws IOException {
-	RandomAccessFile raf = new RandomAccessFile(file, "rw");
-	FileHeader fileHeader = new FileHeader();
+public static void writeNew(File file, String[] varNameArr, VariableType[] varTypeArr, cbit.util.ISize size, double[][] dataArr) throws IOException {
 	
-	fileHeader.sizeX = size.getX();
-	fileHeader.sizeY = size.getY();
-	fileHeader.sizeZ = size.getZ();
-	fileHeader.numBlocks = varNameArr.length;
-	fileHeader.firstBlockOffset = FileHeader.headerSize;
-	fileHeader.write(raf);
+	FileOutputStream fos = null;
+	BufferedOutputStream bos = null;
+	DataOutputStream dos = null;
 
-	int masterOffset = fileHeader.firstBlockOffset;
-	masterOffset += DataBlock.blockSize*varNameArr.length;
-	for(int i=0;i<varNameArr.length;i+= 1){
-		DataBlock dataBlock = 
-			DataBlock.createDataBlock(
-					varNameArr[i], varTypeArr[i].getType(), dataArr[i].length, masterOffset);
-		dataBlock.writeBlockHeader(raf);	   
-		masterOffset+= (dataArr[i].length*8);
-	}
-	for(int i=0;i<varNameArr.length;i+= 1){
-		for (int j = 0; j < dataArr[i].length; j ++) {
-			raf.writeDouble(dataArr[i][j]);
+	try {
+		fos = new FileOutputStream(file);
+		bos = new BufferedOutputStream(fos);
+		dos = new DataOutputStream(bos);
+		
+		FileHeader fileHeader = new FileHeader();
+		
+		fileHeader.sizeX = size.getX();
+		fileHeader.sizeY = size.getY();
+		fileHeader.sizeZ = size.getZ();
+		fileHeader.numBlocks = varNameArr.length;
+		fileHeader.firstBlockOffset = FileHeader.headerSize;
+		fileHeader.writeNew(dos);
+
+		int masterOffset = fileHeader.firstBlockOffset;
+		masterOffset += DataBlock.blockSize*varNameArr.length;
+		for(int i=0;i<varNameArr.length;i+= 1){
+			DataBlock dataBlock = 
+				DataBlock.createDataBlock(
+						varNameArr[i], varTypeArr[i].getType(), dataArr[i].length, masterOffset);
+			dataBlock.writeBlockHeaderNew(dos);	   
+			masterOffset+= (dataArr[i].length*8);
 		}
+		for(int i=0;i<varNameArr.length;i+= 1){
+			for (int j = 0; j < dataArr[i].length; j ++) {
+				dos.writeDouble(dataArr[i][j]);
+			}
+		}
+	} catch (Exception e) {
+		e.printStackTrace();
+		if(e instanceof IOException){
+			throw (IOException)e;
+		}else{
+			throw new RuntimeException(e.getMessage());
+		}
+	}finally{
+		try{
+			try{if(dos != null){dos.close();}}
+				finally{try{if(bos != null){bos.close();}}
+					finally{if(fos != null){fos.close();}}}
+		}catch(Exception e2){
+			System.out.println("Exception: Error closing DataSet.write(...) after failure.");
+		}		
 	}
-
-	raf.close();		
 }
 }

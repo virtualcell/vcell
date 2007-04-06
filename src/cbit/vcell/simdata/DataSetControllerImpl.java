@@ -777,11 +777,11 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 			        	int num = 0;
 			        	int numTotal = 0;
 			        	zis = inZipFile.getInputStream(zeIN);
-			    long startTime = System.currentTimeMillis();
+//			    long startTime = System.currentTimeMillis();
 			        	while((num = zis.read(zdataIN, numTotal, zdataIN.length-numTotal)) != -1 && numTotal != zdataIN.length){
 			        		numTotal+= num;
 			        	}
-			    System.out.println("zipread time="+((System.currentTimeMillis()-startTime)/1000.0));
+//			    System.out.println("zipread time="+((System.currentTimeMillis()-startTime)/1000.0));
 			        	zis.close();
 			        	String newName;
 			        	String replace_orig = Simulation.createSimulationID(origSimKey);
@@ -801,10 +801,10 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 			        	zeOUT.setMethod(zeIN.getMethod());
 			        	zeOUT.setSize(zeIN.getSize());
 			        	zeOUT.setTime(zeIN.getTime());
-			    startTime = System.currentTimeMillis();
+//			    startTime = System.currentTimeMillis();
 			        	zos.putNextEntry(zeOUT);
 			        	zos.write(zdataIN, 0, zdataIN.length);
-				System.out.println("zipwrite time="+((System.currentTimeMillis()-startTime)/1000.0)+"\n");
+//				System.out.println("zipwrite time="+((System.currentTimeMillis()-startTime)/1000.0)+"\n");
 			        }
 		        }finally{
 		        	try{if(zis != null){zis.close();}}catch(Exception e){/*ignore*/};
@@ -924,7 +924,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 			zipOut = new java.util.zip.ZipOutputStream(bout);
 		    for(int t=0;t<times.length;t+= 1){
 				java.io.File temp = java.io.File.createTempFile("temp",null);
-				cbit.vcell.simdata.DataSet.write(
+				cbit.vcell.simdata.DataSet.writeNew(
 					temp,vars,varTypes,fieldDataFileOperationSpec.isize,convertedData[t]);
 				java.util.zip.ZipEntry zipEntry =
 					new java.util.zip.ZipEntry(simFileNamesV.get(t));

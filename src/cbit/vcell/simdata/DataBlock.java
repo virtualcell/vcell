@@ -108,7 +108,7 @@ void show() {
 }   
 
 
-   void writeBlockHeader(RandomAccessFile fp) throws IOException
+   void writeBlockHeaderNew(DataOutputStream dos) throws IOException
    {
 	  byte varNameBytes[] = new byte[124];
 	  for (int i=0;i<varNameBytes.length;i++){
@@ -117,9 +117,10 @@ void show() {
 	  for (int i=0;i<varName.getBytes().length;i++){
 	  varNameBytes[i] = (varName.getBytes())[i];
 	  }
-	  fp.write(varNameBytes);
-	  fp.writeInt(variableTypeInt);
-	  fp.writeInt(size);
-	  fp.writeInt(dataOffset);    
+	  dos.write(varNameBytes);
+	  dos.writeInt(variableTypeInt);
+	  dos.writeInt(size);
+	  dos.writeInt(dataOffset);    
    }               
+
 }
