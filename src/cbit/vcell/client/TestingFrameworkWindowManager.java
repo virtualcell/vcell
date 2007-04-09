@@ -33,6 +33,8 @@ import cbit.vcell.solver.test.SimulationComparisonSummary;
 import cbit.vcell.solver.test.VariableComparisonSummary;
 import org.jdom.JDOMException;
 import cbit.sql.KeyValue;
+
+import java.util.Arrays;
 import java.util.Enumeration;
 import cbit.vcell.solver.SimulationInfo;
 import java.util.Vector;
@@ -509,7 +511,9 @@ public void compare(TestCriteriaNew testCriteria){
 		}
 		if (functionList.size()>0){
 			AnnotatedFunction[] newDiffFunctions = (AnnotatedFunction[])BeanUtils.getArray(functionList,AnnotatedFunction.class);
-			mergedDataManager.addFunctions(newDiffFunctions);
+			boolean[] bReplaceArr = new boolean[newDiffFunctions.length];
+			Arrays.fill(bReplaceArr, false);
+			mergedDataManager.addFunctions(newDiffFunctions,bReplaceArr);
 		}
 
 		

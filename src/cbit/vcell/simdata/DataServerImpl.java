@@ -52,30 +52,11 @@ public DataServerImpl (SessionLog log, DataSetControllerImpl dsControllerImpl, E
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void addFunction(User user, VCDataIdentifier vcdID, AnnotatedFunction function) throws DataAccessException {
-	log.print("DataServerImpl.addFunction("+function+"="+function.getExpression()+")");
+public void addFunctions(User user, VCDataIdentifier vcdID, AnnotatedFunction[] functionArr,boolean[] bReplaceArr) throws DataAccessException {
+	log.print("DataServerImpl.addFunction()");
 	checkWriteAccess(user, vcdID);
 	try {
-		dataSetControllerImpl.addFunction(vcdID, function);
-	}catch (Throwable e){
-		log.exception(e);
-		throw new DataAccessException(e.getMessage());
-	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (10/11/00 1:11:04 PM)
- * @param function cbit.vcell.math.Function[]
- * @exception cbit.vcell.server.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
-public void addFunctions(User user, VCDataIdentifier vcdID, AnnotatedFunction[] functions) throws DataAccessException {
-	log.print("DataServerImpl.addFunctions(dataID="+vcdID.getID()+", functions="+functions+")");
-	checkWriteAccess(user, vcdID);
-	try {
-		dataSetControllerImpl.addFunctions(vcdID, functions);
+		dataSetControllerImpl.addFunctions(vcdID, functionArr,bReplaceArr);
 	}catch (Throwable e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());

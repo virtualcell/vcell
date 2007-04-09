@@ -8,6 +8,8 @@ import cbit.vcell.server.DataAccessException;
 import cbit.vcell.desktop.controls.*;
 import cbit.vcell.solvers.*;
 import java.beans.*;
+import java.util.Comparator;
+
 import cbit.image.*;
 import cbit.util.*;
 /**
@@ -31,6 +33,13 @@ public abstract class PDEDataContext implements PropertyChangeListener {
 	
 	public static final String PROP_CHANGE_FUNC_ADDED = "functionAdded";
 	public static final String PROP_CHANGE_FUNC_REMOVED = "functionRemoved";
+	
+	private Comparator<String > varNameSortComparator =
+		new Comparator<String>(){
+			public int compare(String o1, String o2) {
+				return o1.compareToIgnoreCase(o2);
+			}
+		};
 
 /**
  * Insert the method's description here.
@@ -49,7 +58,7 @@ public PDEDataContext() {
  *
  * @throws cbit.vcell.server.DataAccessException if Function cannot be bound to this dataset or SimulationInfo not found.
  */
-public abstract void addFunction(cbit.vcell.math.AnnotatedFunction function) throws cbit.vcell.server.DataAccessException;
+public abstract void addFunctions(cbit.vcell.math.AnnotatedFunction[] functionArr,boolean[] bReplaceArr) throws cbit.vcell.server.DataAccessException;
 
 
 /**
@@ -371,7 +380,7 @@ public java.lang.String[] getVariableNames() {
 		for (int i = 0; i < dataIdentifiers.length; i++){
 			varNames[i] = dataIdentifiers[i].getName();
 		}
-		java.util.Arrays.sort(varNames);
+		java.util.Arrays.sort(varNames,varNameSortComparator);
 		return varNames;
 	}
 	return null;
@@ -430,7 +439,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  * Insert the method's description here.
  * Creation date: (10/3/00 5:03:43 PM)
  */
-protected void refreshData() {
+public void refreshData() {
 	double[] newDataValues = null;
 	ParticleDataBlock newParticleDataBlock = null;
 	if (getVariableNames() != null && getTimePoints() != null && getVariableName() != null) {

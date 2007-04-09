@@ -28,29 +28,6 @@ public VCDataManager(ClientServerManager clientServerManager) {
 
 
 /**
- * adds a named <code>Function</code> to the list of variables that are availlable for this Simulation.
- *
- * @param simulationInfo simulation database reference
- * @param function named expression that is to be bound to dataset and whose name is added to variable list.
- *
- * @throws cbit.vcell.server.DataAccessException if Function cannot be bound to this dataset or SimulationInfo not found.
- */
-void addFunction(cbit.vcell.server.VCDataIdentifier vcdID, cbit.vcell.math.AnnotatedFunction function) throws DataAccessException {
-	try {
-		getDataSetController().addFunction(vcdID,function);
-	}catch (RemoteException e){
-		handleRemoteException(e);
-		try {
-			getDataSetController().addFunction(vcdID,function);
-		}catch (RemoteException e2){
-			handleRemoteException(e2);
-			throw new RuntimeException(e2.getMessage());
-		}
-	}
-}
-
-
-/**
  * adds an array of named <code>Function</code>s to the list of variables that are availlable for this Simulation.
  *
  * @param simulationInfo simulation database reference
@@ -58,13 +35,13 @@ void addFunction(cbit.vcell.server.VCDataIdentifier vcdID, cbit.vcell.math.Annot
  *
  * @throws cbit.vcell.server.DataAccessException if Functions cannot be bound to this dataset or SimulationInfo not found.
  */
-void addFunctions(cbit.vcell.server.VCDataIdentifier vcdID, cbit.vcell.math.AnnotatedFunction[] functions) throws DataAccessException {
+void addFunctions(cbit.vcell.server.VCDataIdentifier vcdID, cbit.vcell.math.AnnotatedFunction[] functions,boolean[] bReplaceArr) throws DataAccessException {
 	try {
-		getDataSetController().addFunctions(vcdID,functions);
+		getDataSetController().addFunctions(vcdID,functions,bReplaceArr);
 	}catch (RemoteException e){
 		handleRemoteException(e);
 		try {
-			getDataSetController().addFunctions(vcdID,functions);
+			getDataSetController().addFunctions(vcdID,functions,bReplaceArr);
 		}catch (RemoteException e2){
 			handleRemoteException(e2);
 			throw new RuntimeException(e2.getMessage());

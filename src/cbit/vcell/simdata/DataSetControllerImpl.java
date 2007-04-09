@@ -210,26 +210,11 @@ public void addDataJobListener(cbit.rmi.event.DataJobListener newListener) {
  * This method was created by a SmartGuide.
  * @return double[]
  */
-public void addFunction(VCDataIdentifier vcdID, AnnotatedFunction function) throws DataAccessException, ExpressionException {
-	try {
-		VCData simData = getVCData(vcdID);
-		simData.addFunction(function);
-	}catch (IOException e){
-		log.exception(e);
-		throw new DataAccessException(e.getMessage());
-	}
-}
-
-
-/**
- * This method was created by a SmartGuide.
- * @return double[]
- */
-public void addFunctions(VCDataIdentifier vcdID, AnnotatedFunction[] functions) throws DataAccessException, ExpressionException {
+public void addFunctions(VCDataIdentifier vcdID, AnnotatedFunction[] functions,boolean[] bReplaceArr) throws DataAccessException, ExpressionException {
 	try {
 		VCData simData = getVCData(vcdID);
 		for (int i=0;i<functions.length;i++){
-			simData.addFunction(functions[i]);
+			simData.addFunction(functions[i],bReplaceArr[i]);
 		}
 	}catch (IOException e){
 		log.exception(e);
@@ -2219,13 +2204,19 @@ public void removeDataJobListener(cbit.rmi.event.DataJobListener djListener) {
  * This method was created by a SmartGuide.
  * @return double[]
  */
-public void removeFunction(VCDataIdentifier vcdID, AnnotatedFunction function) throws DataAccessException, ExpressionBindingException {
+public void removeFunction(VCDataIdentifier vcdID, AnnotatedFunction function) throws DataAccessException {
 	try {
+		if(!function.isUserDefined()){
+			throw new Exception("Non User-Defined functions cannot be deleted");
+		}
 		VCData simData = getVCData(vcdID);
 		simData.removeFunction(function);
 		cacheTable.removeVariable(vcdID,function.getName());
-	}catch (IOException e){
+	}catch (Exception e){
 		log.exception(e);
+		if(e instanceof DataAccessException){
+			throw (DataAccessException)e;
+		}
 		throw new DataAccessException(e.getMessage());
 	}
 }

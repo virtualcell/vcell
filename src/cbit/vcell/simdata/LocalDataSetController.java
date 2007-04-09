@@ -42,25 +42,12 @@ public LocalDataSetController (LocalVCellConnection argvcConn, SessionLog log, D
 /**
  * Insert the method's description here.
  * Creation date: (10/11/00 1:11:04 PM)
- * @param function cbit.vcell.math.Function
- * @exception cbit.vcell.server.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
-public void addFunction(VCDataIdentifier vcdID, AnnotatedFunction function) throws cbit.vcell.server.DataAccessException {
-	log.print("LocalDataSetController.addFunction("+function+"="+function.getExpression()+")");
-	dataServerImpl.addFunction(user, vcdID, function);
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (10/11/00 1:11:04 PM)
  * @param function cbit.vcell.math.Function[]
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void addFunctions(VCDataIdentifier vcdID, AnnotatedFunction[] functions) throws cbit.vcell.server.DataAccessException {
-	dataServerImpl.addFunctions(user, vcdID, functions);
+public void addFunctions(VCDataIdentifier vcdID, AnnotatedFunction[] functions,boolean[] bReplaceArr) throws cbit.vcell.server.DataAccessException {
+	dataServerImpl.addFunctions(user, vcdID, functions,bReplaceArr);
 }
 
 

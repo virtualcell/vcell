@@ -30,7 +30,7 @@ protected VCData() {
  * Creation date: (10/11/00 1:28:51 PM)
  * @param function cbit.vcell.math.Function
  */
-public abstract void addFunction(AnnotatedFunction function) throws ExpressionException;
+public abstract void addFunction(AnnotatedFunction function,boolean bReplace) throws DataAccessException;
 
 
 /**

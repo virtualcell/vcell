@@ -60,8 +60,11 @@ public MergedData(User argUser, File argUserDir, DataSetControllerImpl argDatase
  * Creation date: (10/11/00 1:28:51 PM)
  * @param function cbit.vcell.math.Function
  */
-public synchronized void addFunction(AnnotatedFunction function) throws ExpressionException {
+public synchronized void addFunction(AnnotatedFunction function,boolean bReplace) throws DataAccessException {
 
+	if(bReplace){
+		throw new RuntimeException("Replace function in "+this.getClass().getName()+" not yet implemented");
+	}
 
 	// copied from SimulationData
 	try {
@@ -70,11 +73,11 @@ public synchronized void addFunction(AnnotatedFunction function) throws Expressi
 		ex.printStackTrace(System.out);
 	}
 	
-	addFunctionToList(function);
-
-	AnnotatedFunction annotatedFunctions[] = new AnnotatedFunction[annotatedFunctionList.size()];
-	annotatedFunctionList.copyInto(annotatedFunctions);
 	try {
+		addFunctionToList(function);
+	
+		AnnotatedFunction annotatedFunctions[] = new AnnotatedFunction[annotatedFunctionList.size()];
+		annotatedFunctionList.copyInto(annotatedFunctions);
 		FunctionFileGenerator ffg = new FunctionFileGenerator(getFunctionsFile().getPath(), annotatedFunctions);
 		ffg.generateFunctionFile();
 
@@ -83,7 +86,7 @@ public synchronized void addFunction(AnnotatedFunction function) throws Expressi
 		functionFileLength = funcFile.length();
 		functionFileLastModified = funcFile.lastModified();
 	} catch (Exception e) {
-		cbit.vcell.client.PopupGenerator.showErrorDialog(e.getMessage());
+		throw new DataAccessException(e.getMessage());
 	}
 
 

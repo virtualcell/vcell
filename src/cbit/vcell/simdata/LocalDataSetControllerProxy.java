@@ -46,37 +46,7 @@ public LocalDataSetControllerProxy (SessionLog sessionLog,
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void addFunction(VCDataIdentifier vcdID, AnnotatedFunction function) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
-	sessionLog.print("LocalDataSetControllerProxy.addFunction(simID="+vcdID.getID()+", function="+function.toString()+")");
-	try {
-		//
-		// try once with remote reference (if it exists)
-		// if it fails with a RemoteException, invalidate the remote reference and try local
-		//
-		DataSetController rdsc = getRemoteDataSetController();
-		if (rdsc!=null){
-			try {
-				rdsc.addFunction(vcdID, function);
-				return;
-			}catch (RemoteException e){
-				sessionLog.exception(e);
-				invalidateRemoteDataSetController();
-			}
-		}
-		getLocalDataSetController().addFunction(vcdID, function);
-	}catch (Throwable e){
-		sessionLog.exception(e);
-		throw new DataAccessException(e.getMessage());
-	}
-}
-/**
- * Insert the method's description here.
- * Creation date: (10/11/00 1:11:04 PM)
- * @param function cbit.vcell.math.Function
- * @exception cbit.vcell.server.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
-public void addFunctions(VCDataIdentifier vcdID, AnnotatedFunction[] functions) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
+public void addFunctions(VCDataIdentifier vcdID, AnnotatedFunction[] functions,boolean[] bReplaceArr) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
 	sessionLog.print("LocalDataSetControllerProxy.addFunctions(simID="+vcdID.getID()+", functions="+functions+")");
 	try {
 		//
@@ -86,14 +56,14 @@ public void addFunctions(VCDataIdentifier vcdID, AnnotatedFunction[] functions) 
 		DataSetController rdsc = getRemoteDataSetController();
 		if (rdsc!=null){
 			try {
-				rdsc.addFunctions(vcdID, functions);
+				rdsc.addFunctions(vcdID, functions,bReplaceArr);
 				return;
 			}catch (RemoteException e){
 				sessionLog.exception(e);
 				invalidateRemoteDataSetController();
 			}
 		}
-		getLocalDataSetController().addFunctions(vcdID, functions);
+		getLocalDataSetController().addFunctions(vcdID, functions,bReplaceArr);
 	}catch (Throwable e){
 		sessionLog.exception(e);
 		throw new DataAccessException(e.getMessage());
