@@ -1,4 +1,6 @@
 package cbit.vcell.client.data;
+import javax.swing.SwingUtilities;
+
 import cbit.vcell.simdata.*;
 /**
  * Insert the type's description here.
@@ -31,7 +33,18 @@ public void makeRemoteFile(cbit.vcell.export.server.ExportSpecs exportSpecs) thr
  */
 public void refreshIdentifiers() {
 	try {
-		setDataIdentifiers(getDataManager().getDataIdentifiers());
+		final DataIdentifier[] newDataIdentifiers = getDataManager().getDataIdentifiers();
+		SwingUtilities.invokeLater(
+				new Runnable(){
+					public void run(){
+						try{
+							setDataIdentifiers(newDataIdentifiers);
+						}catch(Exception e){
+							e.printStackTrace();
+						}
+					}
+				}
+		);
 	} catch (cbit.vcell.server.DataAccessException exc) {
 		exc.printStackTrace(System.out);
 	}

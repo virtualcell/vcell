@@ -47,35 +47,14 @@ public LocalDataSetControllerMessaging (SessionLog sLog, User argUser, cbit.vcel
 /**
  * Insert the method's description here.
  * Creation date: (2/26/2004 1:05:01 PM)
- * @param function cbit.vcell.math.Function
- * @exception cbit.vcell.server.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
-public void addFunction(cbit.vcell.server.VCDataIdentifier vcdataID, cbit.vcell.math.AnnotatedFunction function) throws cbit.vcell.server.DataAccessException {
-	sessionLog.print("LocalDataSetControllerMessaging.addFunction(vcdataID=" + vcdataID + ", function=" + function.toString() + ")");
-	try {
-		dataServerProxy.addFunction(vcdataID,function);
-	} catch (DataAccessException e){
-		sessionLog.exception(e);
-		throw e;
-	} catch (Throwable e){
-		sessionLog.exception(e);
-		throw new RuntimeException(e.getMessage());
-	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (2/26/2004 1:05:01 PM)
  * @param function cbit.vcell.math.Function[]
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void addFunctions(cbit.vcell.server.VCDataIdentifier vcdID, cbit.vcell.math.AnnotatedFunction[] function) throws cbit.vcell.server.DataAccessException {
-	sessionLog.print("LocalDataSetControllerMessaging.addFunctions(vcdID=" + vcdID + ", functions=" + function + ")");
+public void addFunctions(cbit.vcell.server.VCDataIdentifier vcdID, cbit.vcell.math.AnnotatedFunction[] functionArr,boolean[] bReplaceArr) throws cbit.vcell.server.DataAccessException {
+	sessionLog.print("LocalDataSetControllerMessaging.addFunctions(vcdID=" + vcdID);
 	try {
-		dataServerProxy.addFunctions(vcdID, function);
+		dataServerProxy.addFunctions(vcdID, functionArr,bReplaceArr);
 	} catch (DataAccessException e){
 		sessionLog.exception(e);
 		throw e;

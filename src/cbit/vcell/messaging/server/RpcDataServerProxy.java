@@ -27,24 +27,12 @@ public RpcDataServerProxy(User argUser, JmsClientMessaging clientMessaging, Sess
 /**
  * Insert the method's description here.
  * Creation date: (2/26/2004 1:01:25 PM)
- * @param function cbit.vcell.math.Function
- * @exception cbit.vcell.server.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
-public void addFunction(cbit.vcell.server.VCDataIdentifier vcdataID, cbit.vcell.math.AnnotatedFunction function) throws cbit.vcell.server.DataAccessException {
-	rpc("addFunction",new Object[]{user, vcdataID,function});
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (2/26/2004 1:01:25 PM)
  * @param function cbit.vcell.math.Function[]
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void addFunctions(cbit.vcell.server.VCDataIdentifier vcdID, cbit.vcell.math.AnnotatedFunction[] function) throws cbit.vcell.server.DataAccessException {
-	rpc("addFunctions",new Object[]{user, vcdID,function});
+public void addFunctions(cbit.vcell.server.VCDataIdentifier vcdID, cbit.vcell.math.AnnotatedFunction[] functionArr,boolean[] bReplaceArr) throws cbit.vcell.server.DataAccessException {
+	rpc("addFunctions",new Object[]{user, vcdID,functionArr,bReplaceArr});
 }
 
 public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws cbit.vcell.server.DataAccessException {

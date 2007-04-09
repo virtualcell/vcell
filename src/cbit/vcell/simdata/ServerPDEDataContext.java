@@ -1,10 +1,10 @@
 package cbit.vcell.simdata;
+import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.solver.SimulationInfo;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.*;
 /**
  * Insert the type's description here.
@@ -38,9 +38,9 @@ public ServerPDEDataContext(User user0, DataServerImpl dataServerImpl, VCDataIde
  *
  * @throws cbit.vcell.server.DataAccessException if Function cannot be bound to this dataset or SimulationInfo not found.
  */
-public void addFunction(cbit.vcell.math.AnnotatedFunction function) throws cbit.vcell.server.DataAccessException {
-	getDataServerImpl().addFunction(user, vcDataID, function);
-	firePropertyChange(PROP_CHANGE_FUNC_ADDED, null, function);
+public void addFunctions(cbit.vcell.math.AnnotatedFunction[] functionArr,boolean[] bReplaceArr) throws cbit.vcell.server.DataAccessException {
+	getDataServerImpl().addFunctions(user, vcDataID, functionArr,bReplaceArr);
+	firePropertyChange(PROP_CHANGE_FUNC_ADDED, null, functionArr);
 }
 
 

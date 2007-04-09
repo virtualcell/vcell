@@ -27,8 +27,8 @@ public class SimulationData extends VCData implements SymbolTable {
 	private double dataTimes[] = null;
 	private String dataFilenames[] = null;
 	private String zipFilenames[] = null;
-	private Vector annotatedFunctionList = new Vector();
-	private Vector dataSetIdentifierList = new Vector();
+	private Vector<AnnotatedFunction> annotatedFunctionList = new Vector<AnnotatedFunction>();
+	private Vector<DataSetIdentifier> dataSetIdentifierList = new Vector<DataSetIdentifier>();
 	
 	private long logFileLastModified = 0;
 	private long functionFileLastModified = 0;
@@ -232,27 +232,29 @@ public static VCDataIdentifier createScanFriendlyVCDataID(VCDataIdentifier inVCD
  * Creation date: (10/11/00 1:28:51 PM)
  * @param function cbit.vcell.math.Function
  */
-public synchronized void addFunction(AnnotatedFunction function) throws ExpressionException {
-	try {
-		getFunctionDataIdentifiers();
-	} catch (Exception ex) {
-		ex.printStackTrace(System.out);
-	}
+public synchronized void addFunction(AnnotatedFunction function,boolean bReplace) throws DataAccessException {
+
+	try{
+	getFunctionDataIdentifiers();
 	
-	addFunctionToList(function);
+	if(bReplace){
+		replaceFunction(function);
+	}else{
+		addFunctionToList(function);
+	}
 
 	AnnotatedFunction annotatedFunctions[] = new AnnotatedFunction[annotatedFunctionList.size()];
 	annotatedFunctionList.copyInto(annotatedFunctions);
-	try {
-		FunctionFileGenerator ffg = new FunctionFileGenerator(getFunctionsFile().getPath(), annotatedFunctions);
-		ffg.generateFunctionFile();
 
-		// my lastModified and length should be changed because I just rewrote the file.
-		File funcFile = getFunctionsFile();		
-		functionFileLength = funcFile.length();
-		functionFileLastModified = funcFile.lastModified();
-	} catch (Exception e) {
-		cbit.vcell.client.PopupGenerator.showErrorDialog(e.getMessage());
+	FunctionFileGenerator ffg = new FunctionFileGenerator(getFunctionsFile().getPath(), annotatedFunctions);
+	ffg.generateFunctionFile();
+
+	// my lastModified and length should be changed because I just rewrote the file.
+	File funcFile = getFunctionsFile();		
+	functionFileLength = funcFile.length();
+	functionFileLastModified = funcFile.lastModified();
+	}catch(Exception e){
+		throw new DataAccessException("Error adding function '"+function.getName()+"' "+e.getMessage());
 	}
 }
 
@@ -265,12 +267,62 @@ public synchronized void addFunction(AnnotatedFunction function) throws Expressi
 private synchronized void addFunctionToList(AnnotatedFunction function) throws ExpressionException {
 	// throw exception if already in list (with same name and different expression)
 	for (int i=0;i<annotatedFunctionList.size();i++){
-		AnnotatedFunction mathFunction = (AnnotatedFunction)annotatedFunctionList.elementAt(i);
-		if (mathFunction.equals(function)){
-			throw new RuntimeException("function '"+function.getName() + "' already defined");
+		if (annotatedFunctionList.elementAt(i).getName().equals(function.getName())){
+			throw new RuntimeException("Error adding function '"+function.getName() + "', already defined");
 		}
 	}
+	for (int i = 0; i < dataSetIdentifierList.size(); i++) {
+		if (dataSetIdentifierList.elementAt(i).getName().equals(function.getName())){
+			throw new RuntimeException("Error adding function '"+function.getName() + "', identifier exists with same name");
+		}
+		
+	}
+	
+	functionBindAndSubstitute(function);
+	
+	addFunctionToListInternal(function);
+	
+}
 
+private void addFunctionToListInternal(AnnotatedFunction function){
+	
+	DataSetIdentifier dsi = new DataSetIdentifier(function.getName(),function.getFunctionType(), true);	
+	// add the new function to dataSetIndentifierList so that other functions can bind this function
+	dataSetIdentifierList.addElement(dsi);
+	//Add new func
+	annotatedFunctionList.addElement((AnnotatedFunction)function);
+}
+
+/**
+ * Insert the method's description here.
+ * Creation date: (3/20/2006 11:37:48 PM)
+ * @return double[]
+ * @param rawVals double[]
+ */
+private double[] calcSpaceStats(double[] rawVals,int varIndex,DataSetControllerImpl.SpatialStatsInfo spatialStatsInfo) {
+	
+    double min = Double.POSITIVE_INFINITY;
+    double max = Double.NEGATIVE_INFINITY;
+    double mean = 0;
+    double wmean = 0;
+    double sum = 0;
+    double wsum = 0;
+    double val;
+    for(int j=0;j<rawVals.length;j+= 1){
+	    val = rawVals[j];
+	    if(val < min){min=val;}
+	    if(val > max){max=val;}
+	    sum+= val;
+	    if(spatialStatsInfo.bWeightsValid){wsum+= val*spatialStatsInfo.spaceWeight[varIndex][j];}
+    }
+    mean = sum/rawVals.length;
+    if(spatialStatsInfo.bWeightsValid){wmean = wsum/spatialStatsInfo.totalSpace[varIndex];}
+
+    return new double[] {min,max,mean,wmean,sum,wsum};
+}
+
+private void functionBindAndSubstitute(AnnotatedFunction function) throws ExpressionException{
+	
 	// attempt to bind function and substitute
 	Expression simExp = function.getSimplifiedExpression();	
 	if (simExp == null) {
@@ -306,49 +358,11 @@ private synchronized void addFunctionToList(AnnotatedFunction function) throws E
 			}
 		}
 		simExp = exp.flatten();
-		function.setSimplifiedExpression(simExp);	
+		function.setSimplifiedExpression(simExp);
 	}
 	simExp.bindExpression(this);
 	
-	DataSetIdentifier dsi = new DataSetIdentifier(function.getName(),function.getFunctionType(), true);	
-	// add the new function to dataSetIndentifierList so that other functions can bind this function
-	if (!dataSetIdentifierList.contains(dsi)) {
-		dataSetIdentifierList.addElement(dsi);
-	}
-	//function.setExpression(MathUtilities.substituteFunctions(function.getExpression(), this));
-	// Add function to annotatedFunctionList if binding function doesn't fail.
-	annotatedFunctionList.addElement((AnnotatedFunction)function);
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (3/20/2006 11:37:48 PM)
- * @return double[]
- * @param rawVals double[]
- */
-private double[] calcSpaceStats(double[] rawVals,int varIndex,DataSetControllerImpl.SpatialStatsInfo spatialStatsInfo) {
-	
-    double min = Double.POSITIVE_INFINITY;
-    double max = Double.NEGATIVE_INFINITY;
-    double mean = 0;
-    double wmean = 0;
-    double sum = 0;
-    double wsum = 0;
-    double val;
-    for(int j=0;j<rawVals.length;j+= 1){
-	    val = rawVals[j];
-	    if(val < min){min=val;}
-	    if(val > max){max=val;}
-	    sum+= val;
-	    if(spatialStatsInfo.bWeightsValid){wsum+= val*spatialStatsInfo.spaceWeight[varIndex][j];}
-    }
-    mean = sum/rawVals.length;
-    if(spatialStatsInfo.bWeightsValid){wmean = wsum/spatialStatsInfo.totalSpace[varIndex];}
-
-    return new double[] {min,max,mean,wmean,sum,wsum};
-}
-
 
 /**
  * Insert the method's description here.
@@ -858,6 +872,31 @@ private synchronized File getPDEDataZipFile(double time) throws DataAccessExcept
 }
 
 
+
+private AnnotatedFunction[] getReferringUserFunctions(String symbolName) throws DataAccessException{
+	//Check for other userdefined functions using the function we want to delete
+	Vector<AnnotatedFunction> referringFunctionV = new Vector<AnnotatedFunction>();
+	for (int i=0;i<annotatedFunctionList.size();i++){
+		if(annotatedFunctionList.elementAt(i).isUserDefined()){
+//			try{
+//				annotatedFunctionList.elementAt(i).getExpression().flatten();
+//			}catch(ExpressionException e){
+//				throw new DataAccessException(
+//						"Error getting referring functions for '"+function.getName()+"'\n"+
+//						e.getMessage());
+//			}
+			String[] existingUserDefFunctionSymbols =
+				annotatedFunctionList.elementAt(i).getExpression().getSymbols();
+			for (int j = 0; existingUserDefFunctionSymbols != null && j< existingUserDefFunctionSymbols.length; j++) {
+				if (existingUserDefFunctionSymbols[j].equals(symbolName)){
+					referringFunctionV.add(annotatedFunctionList.elementAt(i));
+				}				
+			}
+		}
+	}
+	return referringFunctionV.toArray(new AnnotatedFunction[0]);
+	
+}
 /**
  * This method was created in VisualAge.
  * @return cbit.vcell.simdata.SimResultsInfo
@@ -1591,11 +1630,20 @@ private synchronized void removeAllResults(File logFile, File meshFile) {
  * Creation date: (10/11/00 1:28:51 PM)
  * @param function cbit.vcell.math.Function
  */
-public synchronized void removeFunction(AnnotatedFunction function) {
+public synchronized void removeFunction(AnnotatedFunction function) throws DataAccessException{
 	try {
 		getFunctionDataIdentifiers();
 	} catch (Exception ex) {
 		ex.printStackTrace(System.out);
+	}
+
+	//Don't delete if any functions refer to function
+	AnnotatedFunction[] referringFuncArr = getReferringUserFunctions(function.getName());
+	if(referringFuncArr != null && referringFuncArr.length > 0){
+		throw new RuntimeException(
+				"function '"+function.getName() +"'" +
+				" cannot be removed because it is referred to in function "+
+				"'"+referringFuncArr[0].getName()+"'");		
 	}
 	
 	boolean bFoundAndRemoved = false;
@@ -1611,8 +1659,10 @@ public synchronized void removeFunction(AnnotatedFunction function) {
 				DataSetIdentifier dsi = (DataSetIdentifier)dataSetIdentifierList.elementAt(j);
 				if (dsi.getName().equals(annotatedFunc.getName())) {
 					dataSetIdentifierList.removeElement(dsi);
+					break;
 				}				
 			}
+			break;
 		}
 	}
 
@@ -1629,7 +1679,9 @@ public synchronized void removeFunction(AnnotatedFunction function) {
 			functionFileLength = funcFile.length();
 			functionFileLastModified = funcFile.lastModified();			
 		} catch (Exception e) {
-			cbit.vcell.client.PopupGenerator.showErrorDialog(e.getMessage());
+			throw new DataAccessException(
+					"Error generating function file while removing function '"+
+					function.getName()+"'\n"+e.getMessage());
 		}
 		return;
 	}
@@ -1637,6 +1689,93 @@ public synchronized void removeFunction(AnnotatedFunction function) {
 	//
 	// throw exception if not already in list (with same name)
 	//
-	throw new RuntimeException("can't remove function "+function.getName()+", not found");
+	throw new RuntimeException("Error remove function "+function.getName()+", not found");
 }
+private void replaceFunction(AnnotatedFunction function) throws ExpressionException,DataAccessException{
+	boolean bFuncNameExists = false;
+	for (int i=0;i<annotatedFunctionList.size();i++){
+		if (annotatedFunctionList.elementAt(i).getName().equals(function.getName())){
+			bFuncNameExists = true;
+			break;
+		}
+	}
+	if(!bFuncNameExists){
+		addFunctionToList(function);
+		return;
+	}
+
+//	function.getExpression().flatten();
+	Vector<String> targetUserDefinedFunctionSymbols = new Vector<String>();
+	String[] newfuncSymbols = function.getExpression().getSymbols();
+	for (int i = 0; i < newfuncSymbols.length; i++) {
+		for (int j=0;j<annotatedFunctionList.size();j++){
+			if (annotatedFunctionList.elementAt(j).getName().equals(newfuncSymbols[i])){
+				if(!targetUserDefinedFunctionSymbols.contains(newfuncSymbols[i])){
+					targetUserDefinedFunctionSymbols.add(newfuncSymbols[i]);
+				}
+				break;
+			}
+		}
+	}
+	HashSet<AnnotatedFunction> allReferringFuncs = new HashSet<AnnotatedFunction>();
+	//Check all paths for circular reference
+	if(targetUserDefinedFunctionSymbols.size() > 0){
+		Vector<AnnotatedFunction> annotFuncsReferringToTarget = new Vector<AnnotatedFunction>();
+		AnnotatedFunction targetFunction = function;
+		while(true){
+			AnnotatedFunction[] referringFuncArr =
+				getReferringUserFunctions(targetFunction.getName());
+			if(referringFuncArr != null && referringFuncArr.length > 0){
+				for (int i = 0; i < targetUserDefinedFunctionSymbols.size(); i++) {
+					for (int j = 0; j < referringFuncArr.length; j++) {
+						if(targetUserDefinedFunctionSymbols.elementAt(i).
+								equals(referringFuncArr[j].getName())){
+							throw new DataAccessException(
+									"Error: Circular reference for functions '"+
+									function.getName()+"' and '"+referringFuncArr[j].getName()+"'");
+									
+						}
+					}
+				}
+				for (int j = 0; j < referringFuncArr.length; j++) {
+					allReferringFuncs.add(referringFuncArr[j]);
+					if(!annotFuncsReferringToTarget.contains(referringFuncArr[j])){
+						annotFuncsReferringToTarget.add(referringFuncArr[j]);
+					}
+				}				
+			}
+			if(annotFuncsReferringToTarget.size() > 0){
+				targetFunction = annotFuncsReferringToTarget.elementAt(0);
+				annotFuncsReferringToTarget.remove(0);
+			}else{
+				break;
+			}
+		}
+	}
+	//Bind existing symbols to function and fail if something is wrong
+	functionBindAndSubstitute(function);
+	
+	for (int i=0;i<annotatedFunctionList.size();i++){
+		if (annotatedFunctionList.elementAt(i).getName().equals(function.getName())){
+			annotatedFunctionList.remove(i);
+			break;
+		}
+	}
+	for (int i = 0; i < dataSetIdentifierList.size(); i++) {
+		if (dataSetIdentifierList.elementAt(i).getName().equals(function.getName())){
+			dataSetIdentifierList.remove(i);
+			break;
+		}
+		
+	}
+	addFunctionToListInternal(function);
+	
+	//Bind Function to existing symbols
+	AnnotatedFunction[] allReferringFuncArr = allReferringFuncs.toArray(new AnnotatedFunction[0]);
+	for (int i = 0; i < allReferringFuncArr.length; i++) {
+		functionBindAndSubstitute(allReferringFuncArr[i]);
+	}
+}
+
+
 }

@@ -23,19 +23,11 @@ public interface DataSetController extends Remote {
 /**
  * Insert the method's description here.
  * Creation date: (10/11/00 6:21:10 PM)
- * @param function cbit.vcell.math.Function
- * @exception cbit.vcell.server.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
-void addFunction(VCDataIdentifier vcdataID, AnnotatedFunction function) throws DataAccessException, RemoteException;
-/**
- * Insert the method's description here.
- * Creation date: (10/11/00 6:21:10 PM)
  * @param function cbit.vcell.math.Function[]
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-void addFunctions(VCDataIdentifier vcdID, AnnotatedFunction function[]) throws DataAccessException, RemoteException;
+void addFunctions(VCDataIdentifier vcdID, AnnotatedFunction function[],boolean[] bReplaceArr) throws DataAccessException, RemoteException;
 
 
 public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws RemoteException, DataAccessException;

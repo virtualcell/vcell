@@ -23,24 +23,12 @@ protected AnonymizerDataSetController(AnonymizerVCellConnection arg_anonymizerVC
 /**
  * Insert the method's description here.
  * Creation date: (5/12/2006 5:54:27 PM)
- * @param function cbit.vcell.math.Function
- * @exception cbit.vcell.server.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
-public void addFunction(cbit.vcell.server.VCDataIdentifier vcdataID, cbit.vcell.math.AnnotatedFunction function) throws DataAccessException, java.rmi.RemoteException {	
-	remoteCall("addFunction", new Class[] {cbit.vcell.server.VCDataIdentifier.class, cbit.vcell.math.AnnotatedFunction.class}, new Object[] {vcdataID, function});	
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/12/2006 5:54:27 PM)
  * @param function cbit.vcell.math.Function[]
  * @exception cbit.vcell.server.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void addFunctions(cbit.vcell.server.VCDataIdentifier vcdID, cbit.vcell.math.AnnotatedFunction[] function) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
-	remoteCall("addFunctions", new Class[] {cbit.vcell.server.VCDataIdentifier.class, cbit.vcell.math.AnnotatedFunction[].class}, new Object[] {vcdID, function});
+public void addFunctions(cbit.vcell.server.VCDataIdentifier vcdID, cbit.vcell.math.AnnotatedFunction[] function,boolean[] bReplaceArr) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
+	remoteCall("addFunctions", new Class[] {cbit.vcell.server.VCDataIdentifier.class, cbit.vcell.math.AnnotatedFunction[].class}, new Object[] {vcdID, function,bReplaceArr});
 }
 
 public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {

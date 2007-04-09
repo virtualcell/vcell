@@ -38,9 +38,9 @@ protected ClientPDEDataContext(DataManager argDataManager) {
  *
  * @throws cbit.vcell.server.DataAccessException if Function cannot be bound to this dataset or SimulationInfo not found.
  */
-public void addFunction(cbit.vcell.math.AnnotatedFunction function) throws cbit.vcell.server.DataAccessException {
-	dataManager.addFunction(function);
-	firePropertyChange(PROP_CHANGE_FUNC_ADDED, null, function);
+public void addFunctions(cbit.vcell.math.AnnotatedFunction[] functionArr,boolean[] bReplaceArr) throws cbit.vcell.server.DataAccessException {
+	dataManager.addFunctions(functionArr,bReplaceArr);
+	firePropertyChange(PROP_CHANGE_FUNC_ADDED, null, functionArr);
 }
 
 

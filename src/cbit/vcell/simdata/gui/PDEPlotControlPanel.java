@@ -1,51 +1,24 @@
 package cbit.vcell.simdata.gui;
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.math.AnnotatedFunction;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import cbit.gui.ZEnforcer;
 import cbit.util.*;
-import cbit.vcell.math.Function;
-import cbit.vcell.simdata.VariableType;
-import cbit.vcell.simdata.DataIdentifier;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.solvers.FVSolver;
 import java.util.Vector;
+import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
+import java.awt.Insets;
+import java.awt.Font;
 /**
  * Insert the type's description here.
  * Creation date: (1/21/2001 10:29:53 PM)
  * @author: Ion Moraru
  */
 public class PDEPlotControlPanel extends JPanel {
-	//
-	//private class GetVariableName implements cbit.vcell.desktop.controls.ClientTask {
-		//String variableName;
-		//GetVariableName(String argVariableName){
-			//variableName = argVariableName;
-		//}
-		//public String getTaskName() { return "Get Variable Name";	}
-		//public int getTaskType() { return cbit.vcell.desktop.controls.ClientTask.TASKTYPE_SWING_BLOCKING; }
-		//public void run(java.util.Hashtable hash) {
-			//getPdeDataContext().setVariableName(variableName);
-		//}
-	//}
-	////
-	//private class GetTimepoint implements cbit.vcell.desktop.controls.ClientTask {
-		//double timepoint;
-		//GetTimepoint(double argTimepoint){
-			//timepoint = argTimepoint;
-		//}
-		//public String getTaskName() { return "Get Variable Name";	}
-		//public int getTaskType() { return cbit.vcell.desktop.controls.ClientTask.TASKTYPE_SWING_BLOCKING; }
-		//public void run(java.util.Hashtable hash) {
-			//getPdeDataContext().setTimePoint(timepoint);
-		//}
-	//}
-	//
-	private boolean bFallbackInProgress = false;
 	private JLabel ivjJLabel1 = null;
 	private JTextField ivjJTextField1 = null;
 	private cbit.vcell.simdata.PDEDataContext fieldPdeDataContext = null;
@@ -69,20 +42,7 @@ public class PDEPlotControlPanel extends JPanel {
 	private cbit.image.DisplayAdapterService ivjdisplayAdapterService1 = null;
 	private JPanel ivjTimeSliderJPanel = null;
 	private JButton ivjAddFunctionButton = null;
-	private JButton ivjDeleteFunctionButton = null;
-	private JLabel ivjFunctionExpressionLabel = null;
-	private JTextField ivjFunctionExpressionTextField = null;
-	private JLabel ivjFunctionNameLabel = null;
-	private JTextField ivjFunctionNameTextField = null;
-	private JPanel ivjFunctionPanel = null;
-	private JPanel ivjUserFunctionPanel = null;
-	private JLabel ivjFnExpressionLabel = null;
-	// Having a local functionsList in this panel to avoid having to get the functionsList from
-	// the server each time a delete or enableDeleteButton, etc. is called. When the list is null,
-	// it gets updated from the server. Then, depending on whether the function is in this list or
-	// not, it is added or removed depending on the functionality invoked.
-	
-	private Vector functionsList = new Vector();
+	private Vector<AnnotatedFunction> functionsList = new Vector<AnnotatedFunction>();  //  @jve:decl-index=0:
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener, javax.swing.event.ListDataListener, javax.swing.event.ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -90,8 +50,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 				connEtoC2(e);
 			if (e.getSource() == PDEPlotControlPanel.this.getAddFunctionButton()) 
 				connEtoC7(e);
-			if (e.getSource() == PDEPlotControlPanel.this.getDeleteFunctionButton()) 
-				connEtoC10(e);
 		};
 		public void contentsChanged(javax.swing.event.ListDataEvent e) {};
 		public void focusGained(java.awt.event.FocusEvent e) {};
@@ -127,10 +85,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
 			if (e.getSource() == PDEPlotControlPanel.this.getJList1()) 
 				connEtoC8(e);
-			if (e.getSource() == PDEPlotControlPanel.this.getJList1()) 
-				connEtoC11(e);
-			if (e.getSource() == PDEPlotControlPanel.this.getJList1()) 
-				connEtoC12(e);
 		};
 	};
 
@@ -147,82 +101,274 @@ public PDEPlotControlPanel() {
  */
 private void addFunction() {
 
-	// Get a default name for the user defined function
-	String[] existingFunctionsNames = getpdeDataContext1().getVariableNames();
-	String defaultName = null;
-	int count = 0;
-	boolean nameUsed = true;
-	while (nameUsed) {
-		boolean matchFound = false;
-		count++;
-		defaultName = "Function" + count;
-		for (int i = 0; existingFunctionsNames != null && i < existingFunctionsNames.length; i++){
-			if (existingFunctionsNames[i].equals(defaultName)) {
-				matchFound = true;
+	initFunctionsList();
+	
+	cbit.vcell.simdata.gui.FunctionSpecifierPanel fsp =
+		new cbit.vcell.simdata.gui.FunctionSpecifierPanel();
+	fsp.initFunctionInfo(
+			getJList1().getSelectedValue().toString(),
+			getPdeDataContext().getDataIdentifiers(),
+			functionsList.toArray(new AnnotatedFunction[0]));
+	final javax.swing.JDialog jd = new javax.swing.JDialog();
+	jd.setTitle("View/Add/Delete/Edit Functions");
+	jd.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+	jd.setModal(true);
+	jd.getContentPane().add(fsp);
+//	jd.pack();
+	jd.setSize(400,225);
+	BeanUtils.centerOnComponent(jd, this);
+	
+	fsp.addActionListener(
+		new ActionListener(){
+			public void actionPerformed(ActionEvent e) {
+				jd.dispose();
 			}
 		}
-		nameUsed = matchFound;
-	}
+	);
 
-	//
-	// Initialize fields
-	//
-	javax.swing.JPanel FnPanel = getFunctionPanel();
-	getFunctionNameTextField().setText(defaultName);
-	getFunctionExpressionTextField().setText("0.0");
-
-	//
-	// Show the editor with a default name and default expression for the function. If the OK option is chosen, 
-	// get the new name and expression for the function and add it to the list of columns. 
-	// Else, pop-up an error dialog indicating that function cannot be added.
-	//
-	boolean bFnNameHasSpace = true;
-	int ok = -1;
-	while (bFnNameHasSpace) {
-		// User-defined Function name cannot have spaces; if user inputs a name with spaces, 
-		// pop up the 'Add Function' dialog to prompt the user to input a function name without spaces.
-		ok = JOptionPane.showOptionDialog(this, FnPanel, "Add Function" , 0, JOptionPane.PLAIN_MESSAGE, null, new String[] {"OK", "Cancel"}, null);
-		String fnName = getFunctionNameTextField().getText();
-		if (fnName.indexOf(" " ) > 0) {
-			cbit.vcell.client.PopupGenerator.showErrorDialog("Function name cannot have spaces, please change function name.");
-			bFnNameHasSpace = true;
-		} else {
-			bFnNameHasSpace = false;
+	while(true){
+		ZEnforcer.showModalDialogOnTop(jd);
+		if(fsp.getFunctionOp() == FunctionSpecifierPanel.FUNC_OP_CANCEL){
+			break;
 		}
-	}
-	if (ok == javax.swing.JOptionPane.OK_OPTION) {
-		String funcName = getFunctionNameTextField().getText();
-		cbit.vcell.parser.Expression funcExp = null;
-		try {
-			funcExp = new Expression(getFunctionExpressionTextField().getText());
-		} catch (cbit.vcell.parser.ExpressionException e) {
-			e.printStackTrace(System.out);
-		}
-
-		DataIdentifier[] dataIdentifiers = getpdeDataContext1().getDataIdentifiers();
-		String[] dataIdNames = new String[dataIdentifiers.length];
-		VariableType[] dataIdVarTypes = new VariableType[dataIdentifiers.length];
-		
-		for (int i = 0; i < dataIdNames.length; i++){
-			dataIdNames[i] = dataIdentifiers[i].getName();
-			dataIdVarTypes[i] = dataIdentifiers[i].getVariableType();
-		}
-
-		try {
-			Function function = new Function(funcName, funcExp);
-			VariableType funcType = FVSolver.getFunctionVariableType(function, dataIdNames, dataIdVarTypes, !getpdeDataContext1().getIsODEData());
-			AnnotatedFunction newFunction = new AnnotatedFunction(funcName, funcExp, "", funcType, true);
-			getpdeDataContext1().addFunction(newFunction);
-			getpdeDataContext1().refreshIdentifiers();
-			getpdeDataContext1().refreshTimes();
-			if (!functionsList.contains(newFunction)) {
-				functionsList.addElement(newFunction);
+		AnnotatedFunction newFunction = null;
+		try{
+			if(fsp.getFunctionOp() == FunctionSpecifierPanel.FUNC_OP_ADDNEW){
+				newFunction = fsp.getNewUserCreatedAnnotatedFunction(true);
+				getPdeDataContext().addFunctions(
+						new AnnotatedFunction[] {newFunction}, new boolean[] {false});
+				functionsList.add(newFunction);
+			}else if(fsp.getFunctionOp() == FunctionSpecifierPanel.FUNC_OP_DELETE){
+				getPdeDataContext().removeFunction(fsp.getSelectedAnnotatedFunction());
+				functionsList.removeElement(fsp.getSelectedAnnotatedFunction());
+			}else if(fsp.getFunctionOp() == FunctionSpecifierPanel.FUNC_OP_REPLACE){
+				newFunction = fsp.getNewUserCreatedAnnotatedFunction(true);
+				getPdeDataContext().addFunctions(
+						new AnnotatedFunction[] {newFunction}, new boolean[] {true});
+				functionsList.remove(fsp.getSelectedAnnotatedFunction());
+				functionsList.add(newFunction);
+				getPdeDataContext().refreshData();
 			}
-		} catch (cbit.vcell.server.DataAccessException e) {
-			javax.swing.JOptionPane.showMessageDialog(this, e.getMessage()+". "+funcName+" not added.", "Error Adding Function ", javax.swing.JOptionPane.ERROR_MESSAGE);
-			e.printStackTrace(System.out);
+			break;
+		}catch(Exception e){
+			e.printStackTrace();
+			PopupGenerator.showErrorDialog("Error "+e.getMessage());
+			continue;
+		}finally{
+			new Thread(
+				new Runnable(){
+					public void run(){
+						try{
+							BeanUtils.setCursorThroughout(PDEPlotControlPanel.this, Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+							getPdeDataContext().refreshIdentifiers();
+						}finally{
+							BeanUtils.setCursorThroughout(PDEPlotControlPanel.this, Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+						}
+					}
+				}
+			).start();
 		}
 	}
+	
+//	if(bReplaceFunc){
+//		functionsList.remove(defaultFunction);
+//		getpdeDataContext1().addFunctions(new AnnotatedFunction[] {newFunction},new boolean[] {true});
+//		functionsList.add(newFunction);
+//	}else{
+//		getpdeDataContext1().addFunctions(new AnnotatedFunction[] {newFunction},new boolean[] {false});
+//		functionsList.add(newFunction);
+//	}
+
+	
+	
+	
+	
+//	// Get a default name for the user defined function
+//	String[] existingVariableNames = getpdeDataContext1().getVariableNames();
+//	String defaultName = null;
+//	int count = 1;
+//	boolean nameUsed = true;
+//	while (nameUsed) {
+//		nameUsed = false;
+//		defaultName = getpdeDataContext1().getVariableName()+"_"+count;
+//		for (int i = 0; existingVariableNames != null && i < existingVariableNames.length; i++){
+//			if (existingVariableNames[i].equals(defaultName)) {
+//				nameUsed = true;
+//				break;
+//			}
+//		}
+//		count++;
+//	}
+//
+//	initFunctionsList();
+//	defaultName = 
+//		(isDeletableFunction(getpdeDataContext1().getVariableName())?getpdeDataContext1().getVariableName():defaultName);
+//	String defaultExpression = "0.0";
+//	AnnotatedFunction defaultFunction = null;
+//	for(int i=0;functionsList != null && i<functionsList.size();i+= 1){
+//		if(functionsList.elementAt(i).getName().equals(getpdeDataContext1().getVariableName())){
+//			defaultFunction = functionsList.elementAt(i);
+////			defaultExpression = functionsList.elementAt(i).getSimplifiedExpression().infix();
+//			defaultExpression = functionsList.elementAt(i).getExpression().infix();
+//		}
+//	}
+//	javax.swing.JPanel fnPanel = getFunctionPanel();
+//	getFunctionNameTextField().setText(defaultName);
+//	getFunctionExpressionTextField().setText(defaultExpression);
+//	fnPanel.setSize(400,250);
+//
+//	//
+//	// Show the editor with a default name and default expression for the function. If the OK option is chosen, 
+//	// get the new name and expression for the function and add it to the list of columns. 
+//	// Else, pop-up an error dialog indicating that function cannot be added.
+//	//
+//	int ok = -1;
+//	boolean bReplaceFunc = false;
+//	while (true) {
+//		// User-defined Function name cannot have spaces; if user inputs a name with spaces, 
+//		// pop up the 'Add Function' dialog to prompt the user to input a function name without spaces.
+//		ok = PopupGenerator.showComponentOKCancelDialog(this,fnPanel,"Add Function");
+//		//ok = JOptionPane.showOptionDialog(this, fnPanel, "Add Function" , 0, JOptionPane.PLAIN_MESSAGE, null, new String[] {"OK", "Cancel"}, null);
+//		if (ok != javax.swing.JOptionPane.OK_OPTION) {
+//			break;
+//		}
+//		String fnName = getFunctionNameTextField().getText();
+//		if (fnName.indexOf(" " ) > 0) {
+//			cbit.vcell.client.PopupGenerator.showErrorDialog("Function name cannot have spaces, please change function name.");
+//			continue;
+//		}
+//		try{
+//			//preliminary expression check
+//			new Expression(getFunctionExpressionTextField().getText()).flatten();
+//		}catch(Exception e){
+//			PopupGenerator.showErrorDialog("Error \n"+getFunctionExpressionTextField().getText()+"\n"+e.getMessage());
+//			continue;
+//		}
+//		if(isDeletableFunction(getPdeDataContext().getVariableName()) && fnName.equals(defaultName)){
+//			JTextArea jta = new JTextArea("Replace function '"+defaultName+"'\n"+
+//					"original= '"+defaultExpression+"'\n"+
+//					"new     = '"+getFunctionExpressionTextField().getText()+"'");
+//			jta.setEditable(false);
+//			int confirm = PopupGenerator.showComponentOKCancelDialog(this,jta,"Confirm Expression Replacement");
+//			if(confirm == JOptionPane.OK_OPTION){
+//				bReplaceFunc = true;
+//			}else{
+//				continue;
+//			}
+//		}else{
+//			boolean bIsNameLegal = true;
+//			for (int i = 0; existingVariableNames != null && i < existingVariableNames.length; i++) {
+//				if(existingVariableNames[i].equals(fnName)){
+//					PopupGenerator.showErrorDialog("Error: function name '"+
+//							fnName+"' is already used by a non-replaceable variable name");
+//					bIsNameLegal = false;
+//					break;
+//				}
+//			}
+//			if(!bIsNameLegal){
+//				continue;
+//			}
+//		}
+//		break;
+//	}
+//	if (ok == javax.swing.JOptionPane.OK_OPTION) {
+//		
+//		String funcName = null;
+////		String tempFuncName = null;
+//		AnnotatedFunction newFunction = null;
+//		try {
+//			DataIdentifier[] dataIdentifiers = getpdeDataContext1().getDataIdentifiers();
+//			String[] dataIdNames = new String[dataIdentifiers.length];
+//			VariableType[] dataIdVarTypes = new VariableType[dataIdentifiers.length];
+//			
+//			for (int i = 0; i < dataIdNames.length; i++){
+//				dataIdNames[i] = dataIdentifiers[i].getName();
+//				dataIdVarTypes[i] = dataIdentifiers[i].getVariableType();
+//			}
+//
+////			AnnotatedFunction tempOldFunction = null;
+////			if(bReplaceFunc){
+////				tempFuncName = defaultName+"_old";
+////				while(true){
+////					boolean bOK = true;
+////					for(int i=0;i<existingFunctionsNames.length;i+= 1){
+////						if(existingFunctionsNames[i].equals(tempFuncName)){
+////							tempFuncName = TokenMangler.getNextEnumeratedToken(tempFuncName);
+////							bOK = false;
+////							break;
+////						}
+////					}
+////					if(bOK){
+////						break;
+////					}
+////				}
+////				Expression funcExp = new Expression(defaultExpression);
+////				Function function = new Function(tempFuncName,funcExp );
+////				VariableType funcType = FVSolver.getFunctionVariableType(function, dataIdNames, dataIdVarTypes, !getpdeDataContext1().getIsODEData());
+////				tempOldFunction = new AnnotatedFunction(tempFuncName, funcExp, "", funcType, true);
+////			}
+//		
+//		
+//		
+//			funcName = getFunctionNameTextField().getText();
+//			cbit.vcell.parser.Expression funcExp = null;
+//			funcExp = new Expression(getFunctionExpressionTextField().getText());
+//
+//
+//			Function function = new Function(funcName, funcExp);
+//			VariableType funcType = FVSolver.getFunctionVariableType(function, dataIdNames, dataIdVarTypes, !getpdeDataContext1().getIsODEData());
+//			newFunction = new AnnotatedFunction(funcName, funcExp, "", funcType, true);
+//			if(bReplaceFunc){
+//				functionsList.remove(defaultFunction);
+//				getpdeDataContext1().addFunctions(new AnnotatedFunction[] {newFunction},new boolean[] {true});
+//				functionsList.add(newFunction);
+//			}else{
+//				getpdeDataContext1().addFunctions(new AnnotatedFunction[] {newFunction},new boolean[] {false});
+//				functionsList.add(newFunction);
+//			}
+//		} catch (Exception e) {
+//			newFunction = null;
+//			e.printStackTrace(System.out);
+//			PopupGenerator.showErrorDialog("Error adding/editing function\n"+e.getMessage());
+//		}finally{
+//			final AnnotatedFunction finalNewFunc = newFunction;
+//			AsynchClientTask funcUpdate = new AsynchClientTask() {
+//				public String getTaskName() { return "function update"; }
+//				public int getTaskType() { return cbit.vcell.desktop.controls.ClientTask.TASKTYPE_SWING_BLOCKING; }
+//				public void run(java.util.Hashtable hash) throws Exception{
+//					getpdeDataContext1().refreshIdentifiers();
+//					getpdeDataContext1().refreshTimes();
+//					if (finalNewFunc == null){
+//						functionsList = null;
+//						initFunctionsList();
+//					}else{
+//						ListModel dlm = getJList1().getModel();
+//						for(int i=0;i<dlm.getSize();i+= 1){
+//							if(dlm.getElementAt(i).equals(finalNewFunc.getName())){
+//								if(getJList1().getSelectedIndex() != i){
+//									getJList1().setSelectedIndex(i);
+//								}else{
+//									ListSelectionEvent lse = new ListSelectionEvent(this,i,i,false);
+//									setUserDefinedFnExpressionLabel(lse);
+//									getPdeDataContext().refreshData();
+//								}
+//								break;
+//							}
+//						}
+//					}
+//				}
+//				public boolean skipIfAbort() {
+//					return false;
+//				}
+//				public boolean skipIfCancel(UserCancelException e) {
+//					return false;
+//				}
+//			};
+//			AsynchClientTask[] tasks = new AsynchClientTask[] {funcUpdate};
+//			cbit.vcell.client.task.ClientTaskDispatcher.dispatch(this, new Hashtable(), tasks, false);
+//
+//		}
+//	}
 }
 
 
@@ -238,63 +384,6 @@ private void connEtoC1(javax.swing.event.ChangeEvent arg1) {
 		if ((getmodel1() != null)) {
 			this.setTimeFromSlider(getmodel1().getValue());
 		}
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC10:  (DeleteFunctionButton.action.actionPerformed(java.awt.event.ActionEvent) --> PDEPlotControlPanel.deleteFunction(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC10(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.deleteFunction(getJList1().getSelectedIndex());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC11:  (JList1.listSelection.valueChanged(javax.swing.event.ListSelectionEvent) --> PDEPlotControlPanel.setUserDefinedFnExpressionLabel(Ljavax.swing.event.ListSelectionEvent;)V)
- * @param arg1 javax.swing.event.ListSelectionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC11(javax.swing.event.ListSelectionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.setUserDefinedFnExpressionLabel();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoC12:  (JList1.listSelection.valueChanged(javax.swing.event.ListSelectionEvent) --> PDEPlotControlPanel.enableDeleteButton(Ljavax.swing.event.ListSelectionEvent;)V)
- * @param arg1 javax.swing.event.ListSelectionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC12(javax.swing.event.ListSelectionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.enableDeleteButton();
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -776,39 +865,6 @@ private void connPtoP4SetTarget() {
 	}
 }
 
-
-/**
- * Comment
- */
-private void deleteFunction(int listSelectionIndex) {
-	//
-	// Get current selection in list of variables/functions, 
-	// Get list of functions in the pdeDataContext(DataManager), 
-	// Check if user defined and delete.
-	//
-	String choice = getDefaultListModelCivilized1().getElementAt(listSelectionIndex).toString();
-
-	Vector functionsVector = getFunctionsList();
-	AnnotatedFunction[] functions = new AnnotatedFunction[functionsVector.size()];
-	functionsVector.copyInto(functions);
-
-	for (int i = 0; i < functions.length; i++){
-		if (functions[i].getName().equals(choice)) {
-			if (((AnnotatedFunction)functions[i]).isUserDefined()) {
-				try {
-					getpdeDataContext1().removeFunction(functions[i]);
-					getpdeDataContext1().refreshIdentifiers();
-					getpdeDataContext1().refreshTimes();
-					functionsList.removeElement(functions[i]);
-				} catch (cbit.vcell.server.DataAccessException e) {
-					e.printStackTrace(System.out);
-				}				
-			} 
-		}
-	}
-}
-
-
 /**
  * Comment
  */
@@ -844,42 +900,6 @@ private void displayAdapterService1_CustomScaleRange(cbit.util.Range arg1) {
 
 
 /**
- * Comment
- */
-private void enableDeleteButton() {
-	if(getPdeDataContext() == null){
-		return;
-	}
-	//
-	// Get the current selected index/choice in the list.  
-	// If it is a userDefined function, enable Delete button, else disable it.
-	//
-	int selectedIndex = getJList1().getSelectedIndex();
-	String varName = (String)getJList1().getSelectedValue();
-
-	Vector functionsVector = getFunctionsList();
-	AnnotatedFunction[] functions = new AnnotatedFunction[functionsVector.size()];
-	functionsVector.copyInto(functions);
-	
-	boolean bIsFunction = false;
-	for (int i = 0; i < functions.length; i++){
-		if (functions[i].getName().equals(varName)) {
-			bIsFunction = true;
-			if (((AnnotatedFunction)functions[i]).isUserDefined()) {
-				getDeleteFunctionButton().setEnabled(true);
-			} else {
-				getDeleteFunctionButton().setEnabled(false);
-			}
-		}
-	}
-
-	if (!bIsFunction) {
-		getDeleteFunctionButton().setEnabled(false);
-	}	
-}
-
-
-/**
  * Insert the method's description here.
  * Creation date: (7/2/2003 7:15:19 PM)
  */
@@ -892,11 +912,11 @@ private void fallback(String failedVarName) {
 		if(getPdeDataContext().getSourceDataInfo() == null){
 			throw new Exception("Refresh failed");
 		}
-	}catch(Throwable exc){
+	}catch(Exception exc){
 		try{
 			getJList1().clearSelection();
 		}finally{
-			cbit.vcell.client.PopupGenerator.showErrorDialog(this,exc.getMessage()+"\nUnable to retrieve Data from Server\nTry refreshing data");
+			cbit.vcell.client.PopupGenerator.showErrorDialog(this,exc.getMessage()+"\nUnable to retrieve Data for"+failedVarName+" from Server");
 		}
 	}
 
@@ -915,7 +935,7 @@ private javax.swing.JButton getAddFunctionButton() {
 			ivjAddFunctionButton = new javax.swing.JButton();
 			ivjAddFunctionButton.setName("AddFunctionButton");
 			ivjAddFunctionButton.setPreferredSize(new java.awt.Dimension(121, 25));
-			ivjAddFunctionButton.setText("Add Function");
+			ivjAddFunctionButton.setText("Functions...");
 			ivjAddFunctionButton.setMaximumSize(new java.awt.Dimension(121, 25));
 			ivjAddFunctionButton.setMinimumSize(new java.awt.Dimension(121, 25));
 			// user code begin {1}
@@ -951,29 +971,6 @@ private cbit.gui.DefaultListModelCivilized getDefaultListModelCivilized1() {
 
 
 /**
- * Return the DeleteFunctionButton property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getDeleteFunctionButton() {
-	if (ivjDeleteFunctionButton == null) {
-		try {
-			ivjDeleteFunctionButton = new javax.swing.JButton();
-			ivjDeleteFunctionButton.setName("DeleteFunctionButton");
-			ivjDeleteFunctionButton.setText("Delete Function");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjDeleteFunctionButton;
-}
-
-
-/**
  * Gets the displayAdapterService property (cbit.image.DisplayAdapterService) value.
  * @return The displayAdapterService property value.
  * @see #setDisplayAdapterService
@@ -996,180 +993,15 @@ private cbit.image.DisplayAdapterService getdisplayAdapterService1() {
 
 
 /**
- * Return the FnExpressionLabel property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getFnExpressionLabel() {
-	if (ivjFnExpressionLabel == null) {
-		try {
-			ivjFnExpressionLabel = new javax.swing.JLabel();
-			ivjFnExpressionLabel.setName("FnExpressionLabel");
-			ivjFnExpressionLabel.setPreferredSize(new java.awt.Dimension(121, 25));
-			ivjFnExpressionLabel.setText("");
-			ivjFnExpressionLabel.setMaximumSize(new java.awt.Dimension(121, 25));
-			ivjFnExpressionLabel.setMinimumSize(new java.awt.Dimension(121, 25));
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjFnExpressionLabel;
-}
-
-/**
- * Return the FunctionExpressionLabel property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getFunctionExpressionLabel() {
-	if (ivjFunctionExpressionLabel == null) {
-		try {
-			ivjFunctionExpressionLabel = new javax.swing.JLabel();
-			ivjFunctionExpressionLabel.setName("FunctionExpressionLabel");
-			ivjFunctionExpressionLabel.setText("Function Expression");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjFunctionExpressionLabel;
-}
-
-
-/**
- * Return the FunctionExpressionTextField property value.
- * @return javax.swing.JTextField
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JTextField getFunctionExpressionTextField() {
-	if (ivjFunctionExpressionTextField == null) {
-		try {
-			ivjFunctionExpressionTextField = new javax.swing.JTextField();
-			ivjFunctionExpressionTextField.setName("FunctionExpressionTextField");
-			ivjFunctionExpressionTextField.setPreferredSize(new java.awt.Dimension(200, 30));
-			ivjFunctionExpressionTextField.setMaximumSize(new java.awt.Dimension(200, 30));
-			ivjFunctionExpressionTextField.setMinimumSize(new java.awt.Dimension(200, 30));
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjFunctionExpressionTextField;
-}
-
-
-/**
- * Return the FunctionNameLabel property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getFunctionNameLabel() {
-	if (ivjFunctionNameLabel == null) {
-		try {
-			ivjFunctionNameLabel = new javax.swing.JLabel();
-			ivjFunctionNameLabel.setName("FunctionNameLabel");
-			ivjFunctionNameLabel.setText("Function Name");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjFunctionNameLabel;
-}
-
-
-/**
- * Return the FunctionNameTextField property value.
- * @return javax.swing.JTextField
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JTextField getFunctionNameTextField() {
-	if (ivjFunctionNameTextField == null) {
-		try {
-			ivjFunctionNameTextField = new javax.swing.JTextField();
-			ivjFunctionNameTextField.setName("FunctionNameTextField");
-			ivjFunctionNameTextField.setPreferredSize(new java.awt.Dimension(200, 30));
-			ivjFunctionNameTextField.setMinimumSize(new java.awt.Dimension(200, 30));
-			ivjFunctionNameTextField.setMaximumSize(new java.awt.Dimension(200, 30));
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjFunctionNameTextField;
-}
-
-
-/**
- * Return the FunctionPanel property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getFunctionPanel() {
-	if (ivjFunctionPanel == null) {
-		try {
-			ivjFunctionPanel = new javax.swing.JPanel();
-			ivjFunctionPanel.setName("FunctionPanel");
-			ivjFunctionPanel.setLayout(new java.awt.GridBagLayout());
-			ivjFunctionPanel.setBounds(459, 353, 438, 101);
-
-			java.awt.GridBagConstraints constraintsFunctionNameLabel = new java.awt.GridBagConstraints();
-			constraintsFunctionNameLabel.gridx = 0; constraintsFunctionNameLabel.gridy = 0;
-			constraintsFunctionNameLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-			getFunctionPanel().add(getFunctionNameLabel(), constraintsFunctionNameLabel);
-
-			java.awt.GridBagConstraints constraintsFunctionExpressionLabel = new java.awt.GridBagConstraints();
-			constraintsFunctionExpressionLabel.gridx = 0; constraintsFunctionExpressionLabel.gridy = 1;
-			constraintsFunctionExpressionLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-			getFunctionPanel().add(getFunctionExpressionLabel(), constraintsFunctionExpressionLabel);
-
-			java.awt.GridBagConstraints constraintsFunctionNameTextField = new java.awt.GridBagConstraints();
-			constraintsFunctionNameTextField.gridx = 1; constraintsFunctionNameTextField.gridy = 0;
-			constraintsFunctionNameTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsFunctionNameTextField.weightx = 1.0;
-			constraintsFunctionNameTextField.insets = new java.awt.Insets(4, 4, 4, 4);
-			getFunctionPanel().add(getFunctionNameTextField(), constraintsFunctionNameTextField);
-
-			java.awt.GridBagConstraints constraintsFunctionExpressionTextField = new java.awt.GridBagConstraints();
-			constraintsFunctionExpressionTextField.gridx = 1; constraintsFunctionExpressionTextField.gridy = 1;
-			constraintsFunctionExpressionTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsFunctionExpressionTextField.weightx = 1.0;
-			constraintsFunctionExpressionTextField.insets = new java.awt.Insets(4, 4, 4, 4);
-			getFunctionPanel().add(getFunctionExpressionTextField(), constraintsFunctionExpressionTextField);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjFunctionPanel;
-}
-
-/**
  * Insert the method's description here.
  * Creation date: (3/3/2004 5:29:59 PM)
  * @return cbit.vcell.math.AnnotatedFunction[]
  */
-private Vector getFunctionsList() {
-	if (functionsList == null || functionsList.size() == 0) {
+private void initFunctionsList() {
+	if (functionsList == null){
+		functionsList = new Vector<AnnotatedFunction>();
+	}
+	if (functionsList.size() == 0) {
 		try {
 			 AnnotatedFunction[] functions = getpdeDataContext1().getFunctions();
 			 for (int i = 0; i < functions.length; i++) {
@@ -1179,7 +1011,6 @@ private Vector getFunctionsList() {
 			e.printStackTrace(System.out);
 		}
 	}
-	return functionsList;
 }
 
 
@@ -1313,21 +1144,21 @@ private javax.swing.JPanel getJPanel1() {
 
 			java.awt.GridBagConstraints constraintsJLabel1 = new java.awt.GridBagConstraints();
 			constraintsJLabel1.gridx = 0; constraintsJLabel1.gridy = 0;
-//			constraintsJLabel1.gridwidth = 2;
+			constraintsJLabel1.gridwidth = 2;
 			constraintsJLabel1.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJPanel1().add(getJLabel1(), constraintsJLabel1);
 
 			java.awt.GridBagConstraints constraintsJTextField1 = new java.awt.GridBagConstraints();
 			constraintsJTextField1.gridx = 0; constraintsJTextField1.gridy = 1;
-//			constraintsJTextField1.gridwidth = 2;
+			constraintsJTextField1.gridwidth = 2;
 			constraintsJTextField1.fill = java.awt.GridBagConstraints.HORIZONTAL;
 			constraintsJTextField1.weightx = 1.0;
 			constraintsJTextField1.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJPanel1().add(getJTextField1(), constraintsJTextField1);
 
 			java.awt.GridBagConstraints constraintsTimeSliderJPanel = new java.awt.GridBagConstraints();
-			constraintsTimeSliderJPanel.gridx = 0; constraintsTimeSliderJPanel.gridy = 2;
-			constraintsTimeSliderJPanel.fill = java.awt.GridBagConstraints.BOTH;
+			constraintsTimeSliderJPanel.gridx = 1; constraintsTimeSliderJPanel.gridy = 2;
+			constraintsTimeSliderJPanel.fill = java.awt.GridBagConstraints.VERTICAL;
 			constraintsTimeSliderJPanel.weightx = 1.0;
 			constraintsTimeSliderJPanel.weighty = 1.0;
 			constraintsTimeSliderJPanel.insets = new java.awt.Insets(4, 4, 4, 4);
@@ -1528,23 +1359,22 @@ private javax.swing.JPanel getTimeSliderJPanel() {
 
 			java.awt.GridBagConstraints constraintsJLabelMin = new java.awt.GridBagConstraints();
 			constraintsJLabelMin.gridx = 1; constraintsJLabelMin.gridy = 0;
-			constraintsJLabelMin.anchor = GridBagConstraints.NORTHWEST;
-			constraintsJLabelMin.weightx = 0.0;
-//			constraintsJLabelMin.fill = GridBagConstraints.NONE;
+			constraintsJLabelMin.anchor = java.awt.GridBagConstraints.NORTHEAST;
 			constraintsJLabelMin.insets = new java.awt.Insets(4, 4, 4, 4);
+			getTimeSliderJPanel().add(getJLabelMin(), constraintsJLabelMin);
+
 			java.awt.GridBagConstraints constraintsJLabelMax = new java.awt.GridBagConstraints();
-			constraintsJLabelMax.gridx = 1; constraintsJLabelMax.gridy = 2;
-			constraintsJLabelMax.anchor = GridBagConstraints.SOUTHWEST;
-			constraintsJLabelMax.weightx = 0.0;
+			constraintsJLabelMax.gridx = 1; constraintsJLabelMax.gridy = 1;
+			constraintsJLabelMax.anchor = java.awt.GridBagConstraints.SOUTHWEST;
 			constraintsJLabelMax.insets = new java.awt.Insets(4, 4, 4, 4);
-			ivjTimeSliderJPanel.add(getJLabelMin(), constraintsJLabelMin);
+			getTimeSliderJPanel().add(getJLabelMax(), constraintsJLabelMax);
+
 			java.awt.GridBagConstraints constraintsJSliderTime = new java.awt.GridBagConstraints();
 			constraintsJSliderTime.gridx = 0; constraintsJSliderTime.gridy = 0;
-constraintsJSliderTime.gridheight = 3;
+constraintsJSliderTime.gridheight = 2;
 			constraintsJSliderTime.fill = java.awt.GridBagConstraints.VERTICAL;
 			constraintsJSliderTime.weighty = 1.0;
 			constraintsJSliderTime.insets = new java.awt.Insets(4, 4, 4, 4);
-			ivjTimeSliderJPanel.add(getJLabelMax(), constraintsJLabelMax);
 			getTimeSliderJPanel().add(getJSliderTime(), constraintsJSliderTime);
 			// user code begin {1}
 			// user code end
@@ -1555,45 +1385,6 @@ constraintsJSliderTime.gridheight = 3;
 		}
 	}
 	return ivjTimeSliderJPanel;
-}
-
-/**
- * Return the UserFunctionPanel property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getUserFunctionPanel() {
-	if (ivjUserFunctionPanel == null) {
-		try {
-			ivjUserFunctionPanel = new javax.swing.JPanel();
-			ivjUserFunctionPanel.setName("UserFunctionPanel");
-			ivjUserFunctionPanel.setPreferredSize(new java.awt.Dimension(243, 100));
-			ivjUserFunctionPanel.setLayout(new java.awt.GridBagLayout());
-			ivjUserFunctionPanel.setMinimumSize(new java.awt.Dimension(243, 60));
-
-			java.awt.GridBagConstraints constraintsFnExpressionLabel = new java.awt.GridBagConstraints();
-			constraintsFnExpressionLabel.gridx = 1; constraintsFnExpressionLabel.gridy = 1;
-			constraintsFnExpressionLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-			getUserFunctionPanel().add(getFnExpressionLabel(), constraintsFnExpressionLabel);
-
-			java.awt.GridBagConstraints constraintsAddFunctionButton = new java.awt.GridBagConstraints();
-			constraintsAddFunctionButton.gridx = 1; constraintsAddFunctionButton.gridy = 2;
-			constraintsAddFunctionButton.insets = new java.awt.Insets(4, 4, 4, 4);
-			getUserFunctionPanel().add(getAddFunctionButton(), constraintsAddFunctionButton);
-
-			java.awt.GridBagConstraints constraintsDeleteFunctionButton = new java.awt.GridBagConstraints();
-			constraintsDeleteFunctionButton.gridx = 1; constraintsDeleteFunctionButton.gridy = 3;
-			constraintsDeleteFunctionButton.insets = new java.awt.Insets(4, 4, 4, 4);
-			getUserFunctionPanel().add(getDeleteFunctionButton(), constraintsDeleteFunctionButton);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjUserFunctionPanel;
 }
 
 /**
@@ -1623,7 +1414,6 @@ private void initConnections() throws java.lang.Exception {
 	getJList1().addListSelectionListener(ivjEventHandler);
 	getDefaultListModelCivilized1().addListDataListener(ivjEventHandler);
 	getAddFunctionButton().addActionListener(ivjEventHandler);
-	getDeleteFunctionButton().addActionListener(ivjEventHandler);
 	connPtoP1SetTarget();
 	connPtoP2SetTarget();
 	connPtoP4SetTarget();
@@ -1638,14 +1428,28 @@ private void initialize() {
 	try {
 		// user code begin {1}
 		// user code end
+		GridBagConstraints gridBagConstraints1 = new GridBagConstraints();
+		gridBagConstraints1.gridx = 0;
+		gridBagConstraints1.insets = new Insets(4, 4, 4, 4);
+		gridBagConstraints1.fill = GridBagConstraints.HORIZONTAL;
+		gridBagConstraints1.weightx = 1.0;
+		gridBagConstraints1.gridy = 1;
+		GridBagConstraints gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.fill = GridBagConstraints.BOTH;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.weighty = 1.0;
+		gridBagConstraints.ipady = 0;
+		gridBagConstraints.insets = new Insets(0, 0, 0, 0);
+		gridBagConstraints.gridx = 0;
 		setName("PDEPlotControlPanel");
 		setPreferredSize(new java.awt.Dimension(150, 600));
-		setLayout(new java.awt.BorderLayout());
-		setSize(144, 629);
+		setLayout(new GridBagLayout());
+		setSize(144, 643);
 		setMaximumSize(new java.awt.Dimension(200, 800));
 		setMinimumSize(new java.awt.Dimension(125, 300));
-		add(getJSplitPane1(), "Center");
-		add(getUserFunctionPanel(), "South");
+		this.add(getJSplitPane1(), gridBagConstraints);
+		this.add(getAddFunctionButton(), gridBagConstraints1);
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
@@ -1653,33 +1457,6 @@ private void initialize() {
 	// user code begin {2}
 	// user code end
 }
-
-/**
- * main entrypoint - starts the part when it is run as an application
- * @param args java.lang.String[]
- */
-public static void main(java.lang.String[] args) {
-	try {
-		javax.swing.JFrame frame = new javax.swing.JFrame();
-		PDEPlotControlPanel aPDEPlotControlPanel;
-		aPDEPlotControlPanel = new PDEPlotControlPanel();
-		frame.setContentPane(aPDEPlotControlPanel);
-		frame.setSize(aPDEPlotControlPanel.getSize());
-		frame.addWindowListener(new java.awt.event.WindowAdapter() {
-			public void windowClosing(java.awt.event.WindowEvent e) {
-				System.exit(0);
-			};
-		});
-		frame.show();
-		java.awt.Insets insets = frame.getInsets();
-		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
-		frame.setVisible(true);
-	} catch (Throwable exception) {
-		System.err.println("Exception occurred in main() of javax.swing.JPanel");
-		exception.printStackTrace(System.out);
-	}
-}
-
 
 /**
  * Comment
@@ -1724,20 +1501,23 @@ private void newTimePoints(double[] newTimes) {
  * Comment
  */
 private void setCursorForWindow(Cursor cursor) {
-	Container c = null;
-	// this normally is part of another panel that sits in an internal frame
-	//JInternalFrame iframe = BeanUtils.internalFrameParent(this);
-	JInternalFrame iframe = (JInternalFrame)BeanUtils.findTypeParentOfComponent(this,JInternalFrame.class);
-	if (iframe != null) {
-		c = (Container)iframe;
-	} else {
-		// just in case it will be used outside a desktop
-		Window window = SwingUtilities.windowForComponent(this);
-		c = (Container)window;
-	}
-	if (c != null) {
-		BeanUtils.setCursorThroughout(c, cursor);
-	}
+	
+	BeanUtils.setCursorThroughout(this, cursor);
+	
+//	Container c = null;
+//	// this normally is part of another panel that sits in an internal frame
+//	//JInternalFrame iframe = BeanUtils.internalFrameParent(this);
+//	JInternalFrame iframe = (JInternalFrame)BeanUtils.findTypeParentOfComponent(this,JInternalFrame.class);
+//	if (iframe != null) {
+//		c = (Container)iframe;
+//	} else {
+//		// just in case it will be used outside a desktop
+//		Window window = SwingUtilities.windowForComponent(this);
+//		c = (Container)window;
+//	}
+//	if (c != null) {
+//		BeanUtils.setCursorThroughout(c, cursor);
+//	}
 }
 
 
@@ -1953,48 +1733,13 @@ private void setTimeFromTextField(String typedValue) {
 /**
  * Comment
  */
-private void setUserDefinedFnExpressionLabel() {
-	if(getPdeDataContext() == null){
-		return;
-	}
-	// Get the current selected index/choice in the list. If it is a userDefined function, 
-	// set label text to function's expression. Else leave it blank.
-	int selectedIndex = getJList1().getSelectedIndex();
-	String varName = (String)getJList1().getSelectedValue();
-
-	Vector functionsVector = getFunctionsList();
-	AnnotatedFunction[] functions = new AnnotatedFunction[functionsVector.size()];
-	functionsVector.copyInto(functions);
-	
-	boolean bIsFunction = false;
-	for (int i = 0; i < functions.length; i++){
-		if (functions[i].getName().equals(varName)) {
-			bIsFunction = true;
-			if (((AnnotatedFunction)functions[i]).isUserDefined()) {
-				getFnExpressionLabel().setText(functions[i].getExpression().infix());
-			} else {
-				getFnExpressionLabel().setText("");
-			}
-		}
-	}
-
-	if (!bIsFunction) {
-		getFnExpressionLabel().setText("");
-	}
-}
-
-
-/**
- * Comment
- */
 private void variableNameChanged(javax.swing.event.ListSelectionEvent listSelectionEvent) {
 	if(getPdeDataContext() == null){
 		return;
 	}
 	if(listSelectionEvent != null && !listSelectionEvent.getValueIsAdjusting()){
 		int selectedIndex = getJList1().getSelectedIndex();
-		String oldVariableName = null;
-		final String newVariableName;
+//		String oldVariableName = null;
 		String[] variableNames = getPdeDataContext().getVariableNames();
 		int oldIndex = -1;
 		if(variableNames != null){
@@ -2007,17 +1752,17 @@ private void variableNameChanged(javax.swing.event.ListSelectionEvent listSelect
 				// ** When oldIndex (which no longer exists in 'variableNames') is used to access variableNames, it throws
 				// ** an exception.
 				if (variableNames.length <= oldIndex) {
-					oldVariableName = variableNames[variableNames.length-1];
+//					oldVariableName = variableNames[variableNames.length-1];
 				} else {
-					oldVariableName = variableNames[oldIndex];
+//					oldVariableName = variableNames[oldIndex];
 				}
 			}else{
 				oldIndex = listSelectionEvent.getFirstIndex();
-				oldVariableName = variableNames[oldIndex];
+//				oldVariableName = variableNames[oldIndex];
 			}
 		}
-		int newIndex = getJList1().getSelectedIndex();
-		newVariableName = (String)getJList1().getSelectedValue();
+
+		String newVariableName = (String)getJList1().getSelectedValue();
 		if(newVariableName != null){
 			try {
 				//
@@ -2052,4 +1797,4 @@ private void variableNameChanged(javax.swing.event.ListSelectionEvent listSelect
 		}
 	}
 }
-}
+}  //  @jve:decl-index=0:visual-constraint="10,10"
