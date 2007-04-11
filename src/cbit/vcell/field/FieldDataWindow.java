@@ -1,9 +1,11 @@
 package cbit.vcell.field;
 
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+
 import javax.swing.JFrame;
 
 import cbit.vcell.client.FieldDataWindowManager;
-import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.client.desktop.TopLevelWindow;
 import cbit.vcell.client.server.ConnectionStatus;
 
@@ -12,13 +14,22 @@ public class FieldDataWindow extends JFrame implements TopLevelWindow {
 	private javax.swing.JPanel ivjJFrameContentPane = null;
 	
 	private boolean bTreeNeedsUpdate = true;
-
+	private boolean bWindowOpened = false;
 /**
  * FieldDataWindow constructor comment.
  */
 public FieldDataWindow() {
 	super();
 	initialize();
+	
+	addWindowListener(
+			new WindowAdapter(){
+				public void windowOpened(WindowEvent e) {
+					bWindowOpened = true;
+					updateConnectionStatus_private(ConnectionStatus.CONNECTED);
+				}
+			}
+	);
 }
 
 /**
@@ -108,7 +119,7 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		aFieldDataWindow.show();
+		aFieldDataWindow.setVisible(true);
 		java.awt.Insets insets = aFieldDataWindow.getInsets();
 		aFieldDataWindow.setSize(aFieldDataWindow.getWidth() + insets.left + insets.right, aFieldDataWindow.getHeight() + insets.top + insets.bottom);
 		aFieldDataWindow.setVisible(true);
@@ -144,8 +155,12 @@ public void setWorkArea(java.awt.Component c) {
  * @param connectionStatus cbit.vcell.client.server.ConnectionStatus
  */
 public void updateConnectionStatus(cbit.vcell.client.server.ConnectionStatus connectionStatus) {
-	if(connectionStatus.getStatus() == ConnectionStatus.CONNECTED){
-		if(bTreeNeedsUpdate){
+	updateConnectionStatus_private(connectionStatus.getStatus());
+}
+
+private void updateConnectionStatus_private(int connectionStatus) {
+	if(connectionStatus == ConnectionStatus.CONNECTED){
+		if(bTreeNeedsUpdate && bWindowOpened){
 			getFieldDataWindowManger().updateJTree();
 			bTreeNeedsUpdate = false;
 		}

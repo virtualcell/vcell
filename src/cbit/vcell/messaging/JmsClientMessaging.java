@@ -1,7 +1,5 @@
 package cbit.vcell.messaging;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
 import javax.jms.*;
-import cbit.vcell.server.User;
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.messaging.server.RpcRequest;
 
@@ -66,7 +64,7 @@ public synchronized Object rpc(RpcRequest request, String queueName, boolean ret
  * @param simulation cbit.vcell.solver.Simulation
  * Since clientMessaging only send messages, we don't consider onException() because that's asynchronized. 
  */
-private Object rpc(RpcRequest request, String queueName, boolean returnRequired, String[] specialProperties, Object[] specialValues, boolean bEnableRetry) throws Exception {
+private synchronized Object rpc(RpcRequest request, String queueName, boolean returnRequired, String[] specialProperties, Object[] specialValues, boolean bEnableRetry) throws Exception {
 	String serviceType = request.getRequestedServiceType();
 	String methodName = request.getMethodName();
 	
