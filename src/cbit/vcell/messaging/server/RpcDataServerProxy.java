@@ -3,7 +3,6 @@ import cbit.vcell.server.SessionLog;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
-import cbit.vcell.math.Function;
 import cbit.vcell.messaging.JmsClientMessaging;
 import cbit.vcell.messaging.MessageConstants;
 import cbit.vcell.server.User;
@@ -173,7 +172,24 @@ public SimDataBlock getSimDataBlock(VCDataIdentifier vcdID, String varName, doub
  * @exception java.rmi.RemoteException The exception description.
  */
 public cbit.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID,cbit.util.TimeSeriesJobSpec timeSeriesJobSpec) throws cbit.vcell.server.DataAccessException {
-	return (cbit.util.TimeSeriesJobResults)rpc("getTimeSeriesValues",new Object[]{user, vcdID,timeSeriesJobSpec});
+//	return (cbit.util.TimeSeriesJobResults)rpc("getTimeSeriesValues",new Object[]{user, vcdID,timeSeriesJobSpec});
+	try {
+		if(!timeSeriesJobSpec.isBackgroundTask()){
+			return (cbit.util.TimeSeriesJobResults)rpc("getTimeSeriesValues",new Object[]{user, vcdID,timeSeriesJobSpec});
+		}else{
+			rpc(cbit.vcell.messaging.MessageConstants.SERVICETYPE_DATA_VALUE, "getTimeSeriesValues", new Object[]{user, vcdID,timeSeriesJobSpec}, false);
+		}
+	} catch (DataAccessException ex) {
+		log.exception(ex);
+		throw ex;
+	} catch (RuntimeException e){
+		log.exception(e);
+		throw e;
+	} catch (Exception e){
+		log.exception(e);
+		throw new RuntimeException(e.getMessage());
+	}
+	return null;
 }
 
 

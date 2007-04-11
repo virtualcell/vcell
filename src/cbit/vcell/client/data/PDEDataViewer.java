@@ -11,7 +11,7 @@ import cbit.rmi.event.MessageEvent;
 import cbit.vcell.server.*;
 import cbit.vcell.simdata.gui.*;
 import java.awt.*;
-import java.rmi.server.ObjID;
+import java.rmi.dgc.VMID;
 import java.util.*;
 import cbit.vcell.client.*;
 import cbit.util.*;
@@ -22,8 +22,8 @@ import cbit.util.*;
  */
 public class PDEDataViewer extends DataViewer {
 	//
-	private HashMap<Integer, AsynchProgressPopup> jobIDProgressHash =
-		new HashMap<Integer, AsynchProgressPopup>();
+	private HashMap<VMID, AsynchProgressPopup> jobIDProgressHash =
+		new HashMap<VMID, AsynchProgressPopup>();
 	//
 	private class StatsJobInfo{
 		public String variableName;
@@ -156,7 +156,7 @@ private StatsJobInfo calcStatsGetUserInfo(){
 	
 	StatsJobInfo statsJobInfo = null;
 	//get Volume variable names
-	Vector volVarnamesV = new Vector();
+	Vector<String> volVarnamesV = new Vector<String>();
 	DataIdentifier[] dids = getPdeDataContext().getDataIdentifiers();
 	for(int i=0;i<dids.length;i+= 1){
 		if(	dids[i].getVariableType().equals(VariableType.VOLUME) ||
@@ -1103,7 +1103,6 @@ public void dataJobMessage(DataJobEvent dje) {
 		return;
 	}
 	
-	VCDataIdentifier vcDataID = dje.getVCDataIdentifier();
 	AsynchProgressPopup jobPopup = jobIDProgressHash.get(dje.getJobID());
 	
 	if(dje.getEventTypeID() == MessageEvent.DATA_FAILURE){
@@ -2204,7 +2203,7 @@ public static void main(java.lang.String[] args) {
 				System.exit(0);
 			};
 		});
-		frame.show();
+		frame.setVisible(true);
 		java.awt.Insets insets = frame.getInsets();
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
@@ -2277,7 +2276,7 @@ private void pdeDataContext1_VariableName() {
  */
 private void plotStatistics(TimeSeriesJobSpec tsjs){
 	
-	Integer newDataJobID = new Integer(new ObjID().hashCode());//Unique VM wide int
+	VMID newDataJobID = new VMID();//Unique VM wide int
 	tsjs.setBackgroundTaskInfo(newDataJobID);
 
 	AsynchProgressPopup pp =
@@ -2320,62 +2319,28 @@ private double[] resample() {
 	int step = (int)Math.ceil((double)getPdeDataContext().getTimePoints().length/(double)RESAMPLE_LIMIT);
 	double startTime = getPdeDataContext().getTimePoints()[0];
 	double endTime = getPdeDataContext().getTimePoints()[((getPdeDataContext().getTimePoints().length-1)/step)*step];
-	int numTimePoints = (getPdeDataContext().getTimePoints().length/step) + 1;
 	getResampleStartTimeJTextField().setText(startTime+"");
 	getResampleStepJTextField().setText(step+"");
 	getResampleEndTimeJLabel().setText(endTime+"");
 	
 	double[] params = resampleRefresh();
 	
-	//if(getPdeDataContext().getTimePoints().length > limit){
-		boolean bError = false;
-		getResampleInfoJLabel().setText("There are "+getPdeDataContext().getTimePoints().length+" time points");
-		getResampleLimitJLabel().setText("Time Points limit is "+RESAMPLE_LIMIT);
-		do{
-			if(params == null){
-				getResampleResultsJLabel().setText("Error, make sure numbers are typed correctly");
-			}
-			//else{
-				//getResampleResultsJLabel().setText("Current values produce "+(int)params[RESAMPLE_NUMTP_INDEX]+" time points");
-			//}
-			//bError = false;
-			setResampleCancelBoolean(null);
-			getResampleTimesJDialog().show();
-			if(getResampleCancelBoolean() == null || getResampleCancelBoolean().booleanValue()){
-				return null;
-			}
-			params = resampleRefresh();
-			if(params == null){
-				continue;
-			}
-			//try{
-				//startTime = Double.parseDouble(getResampleStartTimeJTextField().getText());
-				//step = Integer.parseInt(getResampleStepJTextField().getText());
-			//}catch(NumberFormatException e){
-				//bError = true;
-				//continue;
-			//}
-			//int startIndex = 0;
-			//if(startTime <= getPdeDataContext().getTimePoints()[0]){
-				//startTime = getPdeDataContext().getTimePoints()[0];
-				//startIndex = 0;
-			//}else if(startTime >= getPdeDataContext().getTimePoints()[getPdeDataContext().getTimePoints().length-1]){
-				//startTime = getPdeDataContext().getTimePoints()[getPdeDataContext().getTimePoints().length-1];
-				//startIndex = getPdeDataContext().getTimePoints().length-1;
-			//}else{
-				//for(int i=0;i<getPdeDataContext().getTimePoints().length;i+= 1){
-					//if(getPdeDataContext().getTimePoints()[i] == startTime){
-						//startIndex = i;
-						//break;
-					//}else if(getPdeDataContext().getTimePoints()[i] > startTime){
-						//startTime = getPdeDataContext().getTimePoints()[i-1];
-						//startIndex = i-1;
-					//}
-				//}
-			//}
-			//numTimePoints = ((getPdeDataContext().getTimePoints().length-(int)params[START_INDEX_INDEX])/step) + 1;
-		}while((int)params[RESAMPLE_NUMTP_INDEX] > RESAMPLE_LIMIT);
-	//}
+	getResampleInfoJLabel().setText("There are "+getPdeDataContext().getTimePoints().length+" time points");
+	getResampleLimitJLabel().setText("Time Points limit is "+RESAMPLE_LIMIT);
+	do{
+		if(params == null){
+			getResampleResultsJLabel().setText("Error, make sure numbers are typed correctly");
+		}
+		setResampleCancelBoolean(null);
+		getResampleTimesJDialog().setVisible(true);
+		if(getResampleCancelBoolean() == null || getResampleCancelBoolean().booleanValue()){
+			return null;
+		}
+		params = resampleRefresh();
+		if(params == null){
+			continue;
+		}
+	}while((int)params[RESAMPLE_NUMTP_INDEX] > RESAMPLE_LIMIT);
 	return params;
 }
 
@@ -2392,9 +2357,6 @@ private double[] resampleRefresh() {
 	}
 	String stepS = getResampleStepJTextField().getText();
 	stepS = (stepS != null && stepS.length() > 0?stepS:null);
-	String endTimeS = null;
-	//String endTimeS = getResampleEndTimeJTextField().getText();
-	//endTimeS = (endTimeS != null && endTimeS.length() > 0?endTimeS:null);
 
 	double startTime = -1;
 	int step = -1;
@@ -2561,7 +2523,7 @@ private void showComponentInFrame(Component comp,String title) {
 private void showKymograph() {
 	//Collect all sample curves created by user
 	SpatialSelection[] spatialSelectionArr = getPDEDataContextPanel1().fetchSpatialSelections(getPDEDataContextPanel1().isSpatialSampling2D(),false,true);
-	final Vector lineSSOnly = new Vector();
+	final Vector<SpatialSelection> lineSSOnly = new Vector<SpatialSelection>();
 	if (spatialSelectionArr != null && spatialSelectionArr.length > 0) {
 		//
 		for (int i = 0; i < spatialSelectionArr.length; i++){
@@ -2595,7 +2557,7 @@ private void showKymograph() {
 	gp.setVisible(true);
 	// create thread that gets it and updates the gui when done
 	SwingWorker worker = new SwingWorker() {
-		Vector plotFrames = new Vector();
+		Vector<JInternalFrame> plotFrames = new Vector<JInternalFrame>();
 		Exception exc = null;
 		//AsynchProgressPopup pp = new AsynchProgressPopup(PDEDataViewer.this, "Fetching data...", "Retrieving time series for variable '" + getPdeDataContext().getVariableName(), false, false);
 		public Object construct() {
@@ -2606,7 +2568,6 @@ private void showKymograph() {
 					int[] indices = null;
 					double[] accumDistances = null;
 					for (int i = 0; i < lineSSOnly.size(); i++){
-						cbit.vcell.geometry.Coordinate tp = null;
 						if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION)){
 							SpatialSelectionVolume ssv = (SpatialSelectionVolume)lineSSOnly.get(i);
 							SpatialSelection.SSHelper ssh = ssv.getIndexSamples(0.0,1.0);
@@ -2720,8 +2681,8 @@ private void showSpatialPlot() {
 	gp.setVisible(true);
 	// create thread that gets it and updates the gui when done
 	SwingWorker worker = new SwingWorker() {
-		Hashtable failures = new Hashtable();
-		Vector plotFrames = new Vector();
+		Hashtable<SpatialSelection, Exception> failures = new Hashtable<SpatialSelection, Exception>();
+		Vector<JInternalFrame> plotFrames = new Vector<JInternalFrame>();
 		AsynchProgressPopup pp = new AsynchProgressPopup(PDEDataViewer.this, "Fetching data...", "Retrieving spatial series for variable '" + getPdeDataContext().getVariableName(), false, false);
 		public Object construct() {
 			pp.start();
@@ -2795,7 +2756,7 @@ private void showSpatialPlot() {
 private void showTimePlot() {
 	//Collect all sample curves created by user
 	SpatialSelection[] spatialSelectionArr = getPDEDataContextPanel1().fetchSpatialSelections(true,true,true);
-	final Vector singlePointSSOnly = new Vector();
+	final Vector<SpatialSelection> singlePointSSOnly = new Vector<SpatialSelection>();
 	if (spatialSelectionArr != null && spatialSelectionArr.length > 0) {
 		//
 		for (int i = 0; i < spatialSelectionArr.length; i++){
@@ -2828,7 +2789,7 @@ private void showTimePlot() {
 	gp.setVisible(true);
 	// create thread that gets it and updates the gui when done
 	SwingWorker worker = new SwingWorker() {
-		Vector plotFrames = new Vector();
+		Vector<JInternalFrame> plotFrames = new Vector<JInternalFrame>();
 		Exception exc = null;
 		AsynchProgressPopup pp = new AsynchProgressPopup(PDEDataViewer.this, "Fetching data...", "Retrieving time series for variable '" + getPdeDataContext().getVariableName(), false, false);
 		public Object construct() {

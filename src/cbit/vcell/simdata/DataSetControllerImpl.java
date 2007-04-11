@@ -4,7 +4,6 @@ import cbit.util.ISize;
 import cbit.util.NumberUtils;
 import cbit.util.TSJobResultsNoStats;
 import cbit.util.TimeSeriesJobResults;
-import cbit.vcell.export.server.*;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.rmi.event.*;
@@ -24,13 +23,10 @@ import cbit.plot.*;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
-import java.awt.Toolkit;
 import java.io.*;
 import cbit.vcell.server.*;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
@@ -53,7 +49,7 @@ public class DataSetControllerImpl implements SimDataConstants {
 	private SessionLog log = null;
 	private File rootDirectory =  null;
 	private Cachetable cacheTable = null;
-	private Vector aDataJobListener = null;
+	private Vector<DataJobListener> aDataJobListener = null;
 	//
 	public static class SpatialStatsInfo {
 		public boolean bWeightsValid;
@@ -200,7 +196,7 @@ public DataSetControllerImpl (SessionLog sessionLog, Cachetable aCacheTable, Fil
  */
 public void addDataJobListener(cbit.rmi.event.DataJobListener newListener) {
 	if (aDataJobListener == null) {
-		aDataJobListener = new java.util.Vector();
+		aDataJobListener = new java.util.Vector<DataJobListener>();
 	};
 	aDataJobListener.addElement(newListener);
 }
@@ -444,8 +440,8 @@ private SimDataBlock evaluateFunction(
 	//
 	Expression exp = function.getSimplifiedExpression();
 	String dependentIDs[] = exp.getSymbols();
-	Vector dataSetList = new Vector();
-	Vector dependencyList = new Vector();
+	Vector<SimDataBlock> dataSetList = new Vector<SimDataBlock>();
+	Vector<DataSetIdentifier> dependencyList = new Vector<DataSetIdentifier>();
 
 	//
 	//
@@ -543,7 +539,6 @@ private SimDataBlock evaluateFunction(
 			args[2] = coord.getY();
 			args[3] = coord.getZ();
 			for (int j = 0; j < varIndex - 4; j++) {
-				DataSetIdentifier dsi = (DataSetIdentifier)dependencyList.elementAt(j);
 				SimDataBlock simDataBlock = (SimDataBlock)dataSetList.elementAt(j);
 				if (simDataBlock.getVariableType().equals(VariableType.VOLUME)){
 					args[4 + j] = simDataBlock.getData()[i];
@@ -557,7 +552,6 @@ private SimDataBlock evaluateFunction(
 			}
 		}else if (variableType.equals(VariableType.VOLUME_REGION)){
 			for (int j = 0; j < varIndex - 4; j++) {
-				DataSetIdentifier dsi = (DataSetIdentifier)dependencyList.elementAt(j);
 				SimDataBlock simDataBlock = (SimDataBlock)dataSetList.elementAt(j);
 				if (simDataBlock.getVariableType().equals(VariableType.VOLUME_REGION)){
 					args[4 + j] = simDataBlock.getData()[i];
@@ -637,7 +631,7 @@ private SimDataBlock evaluateFunction(
 			data[i] = Double.POSITIVE_INFINITY;
 		}
 	}
-	DataSet dataSet = new DataSet();
+
 	PDEDataInfo pdeDataInfo = new PDEDataInfo(vcdID.getOwner(), vcdID.getID(), function.getName(), time, lastModified);
 	if (data != null) {
 		return new SimDataBlock(pdeDataInfo, data, variableType);
@@ -1098,7 +1092,7 @@ private FunctionIndexes[] findFunctionIndexes(VCDataIdentifier vcdID,AnnotatedFu
 	
 	Expression exp = function.getSimplifiedExpression();
 	String dependentIDs[] = exp.getSymbols();
-	Vector dependencyList = new Vector();
+	Vector<DataSetIdentifier> dependencyList = new Vector<DataSetIdentifier>();
 	//
 	// get Dependents
 	// variables are indexed by a number, t=0, x=1, y=2, z=3, a(i) = 4+i where a's are other variables
@@ -1290,7 +1284,7 @@ public DataIdentifier[] getDataIdentifiers(VCDataIdentifier vcdID) throws DataAc
 	VCData simData = getVCData(vcdID);
 	//filter names with _INSIDE and _OUTSIDE
 	DataIdentifier[] dataIdentifiersIncludingOutsideAndInside = simData.getVarAndFunctionDataIdentifiers();
-	Vector v = new Vector();
+	Vector<DataIdentifier> v = new Vector<DataIdentifier>();
 	for (int i = 0; i < dataIdentifiersIncludingOutsideAndInside.length; i++){
 		DataIdentifier di = dataIdentifiersIncludingOutsideAndInside[i];
 		if (!di.getName().endsWith("_INSIDE") && !di.getName().endsWith("_OUTSIDE")) {
@@ -1377,7 +1371,6 @@ public PlotData getLineScan(VCDataIdentifier vcdID, String varName, double time,
 		CartesianMesh mesh = getMesh(vcdID);
 		int sizeX = mesh.getSizeX();
 		int sizeY = mesh.getSizeY();
-		int sizeZ = mesh.getSizeZ();
 
 		SimDataBlock simDataBlock = getSimDataBlock(vcdID,varName,time);
 		if (simDataBlock == null){
@@ -1988,7 +1981,7 @@ private cbit.util.TimeSeriesJobResults getTimeSeriesValues_private(VCDataIdentif
 				" bytes of memory (only "+MAX_MEM_USAGE+" bytes allowed).  Choose fewer datapoints or times.");
 		}
 		//
-		Vector valuesV = new Vector();
+		Vector<double[][]> valuesV = new Vector<double[][]>();
 		SpatialStatsInfo spatialStatsInfo = null;
 		if(timeSeriesJobSpec.isCalcSpaceStats()){
 			spatialStatsInfo = calcSpatialStatsInfo(timeSeriesJobSpec,vcdID);
@@ -2091,48 +2084,89 @@ private cbit.util.TimeSeriesJobResults getTimeSeriesValues_private(VCDataIdentif
 
 public cbit.util.TimeSeriesJobResults getTimeSeriesValues(final VCDataIdentifier vcdID,final cbit.util.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
 
-	
-	if(!timeSeriesJobSpec.isBackgroundTask()){
-		return getTimeSeriesValues_private(vcdID,timeSeriesJobSpec);
-	}
-	
 	fireDataJobMessage(
-			new DataJobEvent(
-					timeSeriesJobSpec.getBackgroundTaskID(),
-					MessageEvent.DATA_START,
-					vcdID,
-					new Double(0),
-					null,null
-				));
+	new DataJobEvent(
+			timeSeriesJobSpec.getBackgroundTaskID(),
+			MessageEvent.DATA_START,
+			vcdID,
+			new Double(0),
+			null,null
+		));
+
+
+	try{
+		TimeSeriesJobResults timeSeriesJobResults =
+			getTimeSeriesValues_private(vcdID,timeSeriesJobSpec);
+		fireDataJobMessage(
+				new DataJobEvent(
+						timeSeriesJobSpec.getBackgroundTaskID(),
+						MessageEvent.DATA_COMPLETE,
+						vcdID,
+						new Double(100),
+						timeSeriesJobResults,null
+					));
+		
+		return (timeSeriesJobSpec.isBackgroundTask()?null:timeSeriesJobResults);
+		
+	}catch (DataAccessException e) {
+		e.printStackTrace();
+		fireDataJobMessage(
+				new DataJobEvent(
+						timeSeriesJobSpec.getBackgroundTaskID(),
+						MessageEvent.DATA_FAILURE,
+						vcdID,
+						new Double(0),
+						null,e
+					));
+		throw e;
+	}
+
 	
-	new Thread(new Runnable(){
-		public void run(){
-			try{
-				TimeSeriesJobResults timeSeriesJobResults =
-					getTimeSeriesValues_private(vcdID,timeSeriesJobSpec);
-				fireDataJobMessage(
-						new DataJobEvent(
-								timeSeriesJobSpec.getBackgroundTaskID(),
-								MessageEvent.DATA_COMPLETE,
-								vcdID,
-								new Double(100),
-								timeSeriesJobResults,null
-							));
-			}catch (Exception e) {
-				e.printStackTrace();
-				fireDataJobMessage(
-						new DataJobEvent(
-								timeSeriesJobSpec.getBackgroundTaskID(),
-								MessageEvent.DATA_FAILURE,
-								vcdID,
-								new Double(0),
-								null,e
-							));
-			}
-		}
-	}).start();
 	
-	return null;
+	
+	
+	
+//	if(!timeSeriesJobSpec.isBackgroundTask()){
+//		return getTimeSeriesValues_private(vcdID,timeSeriesJobSpec);
+//	}
+//	
+//	fireDataJobMessage(
+//			new DataJobEvent(
+//					timeSeriesJobSpec.getBackgroundTaskID(),
+//					MessageEvent.DATA_START,
+//					vcdID,
+//					new Double(0),
+//					null,null
+//				));
+//	
+//	new Thread(new Runnable(){
+//		public void run(){
+//			try{
+//				TimeSeriesJobResults timeSeriesJobResults =
+//					getTimeSeriesValues_private(vcdID,timeSeriesJobSpec);
+//				fireDataJobMessage(
+//						new DataJobEvent(
+//								timeSeriesJobSpec.getBackgroundTaskID(),
+//								MessageEvent.DATA_COMPLETE,
+//								vcdID,
+//								new Double(100),
+//								timeSeriesJobResults,null
+//							));
+//			}catch (Exception e) {
+//				e.printStackTrace();
+//				fireDataJobMessage(
+//						new DataJobEvent(
+//								timeSeriesJobSpec.getBackgroundTaskID(),
+//								MessageEvent.DATA_FAILURE,
+//								vcdID,
+//								new Double(0),
+//								null,e
+//							));
+//			}
+//		}
+//	}).start();
+//	
+//	return null;
 }
 
 /**
