@@ -3,20 +3,16 @@ package cbit.rmi.event;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.util.EventObject;
-
+import java.rmi.dgc.VMID;
 import cbit.util.TimeSeriesJobResults;
-import cbit.vcell.export.server.*;
-import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.server.*;
-import cbit.vcell.solver.*;
 /**
  * This is the event class to support the cbit.vcell.desktop.controls.ExportListener interface.
  */
 public class DataJobEvent extends MessageEvent {
 	private int eventType = 0;
 	private Double progress = null;
-	private Integer jobID;
+	private VMID jobID;
 	private VCDataIdentifier vcDataID = null;
 	private TimeSeriesJobResults timeSeriesJobResults = null;
 	private Exception failedJobException = null;
@@ -24,7 +20,7 @@ public class DataJobEvent extends MessageEvent {
 /**
  * ExportEvent constructor comment.
  */
-public DataJobEvent(Integer argJobID,
+public DataJobEvent(VMID argJobID,
 		int argEventType,
 		VCDataIdentifier argVCDataID,
 		Double argProgress,
@@ -49,7 +45,7 @@ public VCDataIdentifier getVCDataIdentifier(){
 }
 
 
-public Integer getJobID(){
+public VMID getJobID(){
 	return jobID;
 }
 /**

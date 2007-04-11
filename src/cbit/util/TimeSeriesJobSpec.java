@@ -1,5 +1,6 @@
 package cbit.util;
 
+import java.rmi.dgc.VMID;
 import java.util.BitSet;
 
 import cbit.vcell.solvers.CartesianMesh;
@@ -19,7 +20,7 @@ public class TimeSeriesJobSpec implements java.io.Serializable{
 	private boolean calcSpaceStats = false;//Calc stats over space for each timepoint
 	private boolean calcTimeStats = false;
 	private BitSet[] roi;
-	private Integer backgroundTaskID;
+	private VMID backgroundTaskID;
 
 /**
  * TimeSeriesSpec constructor comment.
@@ -144,14 +145,14 @@ public java.lang.String[] getVariableNames() {
 	return variableNames;
 }
 
-public Integer getBackgroundTaskID(){
+public VMID getBackgroundTaskID(){
 	return backgroundTaskID;
 }
 public boolean isBackgroundTask(){
 	return backgroundTaskID != null;
 }
 
-public void setBackgroundTaskInfo(Integer argBGTID){
+public void setBackgroundTaskInfo(VMID argBGTID){
 	if(argBGTID == null){
 		throw new IllegalArgumentException("Background Task must have non-null ID.");
 	}
