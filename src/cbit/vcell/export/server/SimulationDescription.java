@@ -1,12 +1,11 @@
 package cbit.vcell.export.server;
-import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.ode.ODESimData;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
 import cbit.vcell.simdata.*;
 import cbit.vcell.server.*;
-import cbit.vcell.math.*;
 import java.rmi.*;
 
 /**
@@ -26,7 +25,7 @@ public class SimulationDescription {
 	private int variableNumber = 0;
 	private int timeNumber = 0;
 	private String variables[] = null;
-	private cbit.vcell.solver.ode.ODESimData odeSimData = null;
+	private boolean bMultiTrialData = false;
 
 /**
  * SimulationInfo constructor comment. 
@@ -38,7 +37,7 @@ public SimulationDescription(User user, DataServerImpl dataServerImpl, VCDataIde
 	this.name = dataID;
 
 	if (dataServerImpl.getIsODEData(user, vcdID)) {
-		odeSimData = dataServerImpl.getODEData(user, vcdID);
+		ODESimData odeSimData = dataServerImpl.getODEData(user, vcdID);
 		//set times and variables
 		try {
 			if(odeSimData.findColumn("t") > -1)
@@ -52,6 +51,7 @@ public SimulationDescription(User user, DataServerImpl dataServerImpl, VCDataIde
 			}
 			else if(odeSimData.findColumn("TrialNo") > -1)
 			{
+				bMultiTrialData = true;
 				this.dataType = "Monte Carlo Simulation (multiple stochastic simulations) in which data comes by trial numbers. ";
 				this.times = odeSimData.extractColumn(odeSimData.findColumn("TrialNo"));
 				this.variables = new String[odeSimData.getColumnDescriptionsCount()-1];
@@ -94,15 +94,15 @@ public String getHeader(String format) {
 	String line5 = null;
 	if (format.equals(".csv")) {
 		line1 = "Simulation name,," + name + ",," + dataType + "\n";
-		if(odeSimData.findColumn("t") > -1)
-		{
-			line2 = "Time range,," + times[0] + "," + times[times.length - 1] + "\n";
-			line3 = "Saved timepoints,," + timeNumber + "\n";
-		}
-		else if(odeSimData.findColumn("TrialNo") > -1)
+		if(bMultiTrialData)
 		{
 			line2 = "Trial range,," + times[0] + "," + times[times.length - 1] + "\n";
 			line3 = "Total trials,," + timeNumber + "\n";
+		}
+		else
+		{
+			line2 = "Time range,," + times[0] + "," + times[times.length - 1] + "\n";
+			line3 = "Saved timepoints,," + timeNumber + "\n";
 		}
 		line4 = "Number of variables,," + variableNumber + "\n";
 		StringBuffer buffer = new StringBuffer();
@@ -113,10 +113,5 @@ public String getHeader(String format) {
 	}
 	header = line1 + line2 + line3 + line4 + line5 + "\n";
 	return header;
-}
-
-
-private cbit.vcell.solver.ode.ODESimData getOdeSimData() {
-	return odeSimData;
 }
 }
