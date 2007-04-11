@@ -1,34 +1,25 @@
 package cbit.vcell.client;
 
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Frame;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
-import java.util.Arrays;
 import java.util.Hashtable;
 
 import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableColumn;
 
 import cbit.gui.JInternalFrameEnhanced;
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
 import cbit.sql.KeyValue;
 import cbit.sql.VersionableType;
-import cbit.util.BeanUtils;
 import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.server.UserPreferences;
-import cbit.vcell.client.server.VCDataManager;
 import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.desktop.controls.DataListener;
 import cbit.vcell.export.server.ExportSpecs;
@@ -36,9 +27,7 @@ import cbit.vcell.field.FieldDataDBEvent;
 import cbit.vcell.field.FieldDataDBEventListener;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldDataGUIPanel;
-import cbit.vcell.field.FieldDataInfoPanel;
 import cbit.vcell.mathmodel.MathModelInfo;
-import cbit.vcell.modeldb.VersionableRelationship;
 import cbit.vcell.modeldb.VersionableTypeVersion;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.simdata.ExternalDataIdentifier;
