@@ -1,10 +1,29 @@
 package cbit.vcell.solver;
+
+import cbit.sql.KeyValue;
+import cbit.vcell.field.SimResampleInfoProvider;
+
 /**
  * Temporary, to help SimulationData to deal with multiple simulation job datasets.
  * Should be removed after making SimulationData smarter in file handling for compatibility with old stuff.
  * @deprecated
  */
-public class VCSimulationDataIdentifierOldStyle implements java.io.Serializable, cbit.vcell.server.VCDataIdentifier {
+public class VCSimulationDataIdentifierOldStyle
+	implements
+		java.io.Serializable, cbit.vcell.server.VCDataIdentifier,
+		SimResampleInfoProvider{
+
+
+	public KeyValue getSimulationKey() {
+		return vcSimID.getSimulationKey();
+	}
+
+
+	public boolean isParameterScanType() {
+		return false;
+	}
+
+
 	private VCSimulationIdentifier vcSimID = null;
 
 /**
@@ -52,6 +71,10 @@ public boolean equals(Object object) {
  */
 public java.lang.String getID() {
 	return Simulation.createSimulationID(vcSimID.getSimulationKey());
+}
+
+public int getJobIndex() {
+	return 0;
 }
 
 

@@ -1,7 +1,9 @@
 package cbit.vcell.simdata;
 import java.util.StringTokenizer;
 
-import cbit.vcell.math.CommentStringTokenizer;
+import cbit.vcell.field.FieldDataIdentifierSpec;
+import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.field.SimResampleInfoProvider;
 import cbit.vcell.parser.MathMLTags;
 import cbit.vcell.server.User;
 import cbit.vcell.server.VCDataIdentifier;
@@ -13,7 +15,7 @@ import cbit.sql.KeyValue;
  * Creation date: (9/18/2006 12:55:46 PM)
  * @author: Jim Schaff
  */
-public class ExternalDataIdentifier implements java.io.Serializable,VCDataIdentifier  {
+public class ExternalDataIdentifier implements java.io.Serializable,VCDataIdentifier{
 	private cbit.sql.KeyValue key;
 	private cbit.vcell.server.User owner;
 	private String name;
@@ -82,6 +84,12 @@ public static String createCanonicalSimFilePathName(KeyValue fieldDataKey,int ti
 		(timeIndex<10?"000"+timeIndex:"")+SimDataConstants.PDE_DATA_EXTENSION;
 }
 
+public static String createCanonicalFieldDataLogFileName(KeyValue fieldDataKey){
+	return
+	createSimIDWithJobIndex(fieldDataKey,0,false)+
+	SimDataConstants.LOGFILE_EXTENSION;
+}
+
 public static String createCanonicalFieldFunctionSyntax(ExternalDataIdentifier edi,String varName,double beginTime,double endtime){
 	return MathMLTags.FIELD+"("+edi.getName()+","+varName+","+beginTime+")";
 
@@ -90,7 +98,7 @@ public static String createCanonicalFieldFunctionSyntax(ExternalDataIdentifier e
 public static String createCanonicalSimZipFileName(KeyValue fieldDataKey,int zipIndex,int jobIndex,boolean isOldStyle){
 	return
 	createSimIDWithJobIndex(fieldDataKey,jobIndex,isOldStyle)+
-	(zipIndex<10?"0":"")+zipIndex+".zip";
+	(zipIndex<10?"0":"")+zipIndex+SimDataConstants.ZIPFILE_EXTENSION;
 }
 
 public static String createCanonicalSimLogFileName(KeyValue fieldDataKey,int jobIndex,boolean isOldStyle){
@@ -110,7 +118,16 @@ public static String createCanonicalFunctionsFileName(KeyValue fieldDataKey,int 
 		SimDataConstants.FUNCTIONFILE_EXTENSION;
 }
 
-private static String createSimIDWithJobIndex(KeyValue fieldDataKey,int jobIndex,boolean isOldStyle){
+public static String createCanonicalResampleFileName(SimResampleInfoProvider simResampleInfoProvider,FieldFunctionArguments fieldFuncArgs){
+	return
+		createSimIDWithJobIndex(
+				simResampleInfoProvider.getSimulationKey(),
+				simResampleInfoProvider.getJobIndex(),
+				!simResampleInfoProvider.isParameterScanType())+
+		FieldDataIdentifierSpec.getDefaultFieldDataFileNameForSimulation(fieldFuncArgs);
+}
+
+public static String createSimIDWithJobIndex(KeyValue fieldDataKey,int jobIndex,boolean isOldStyle){
 	if(isOldStyle && jobIndex != 0){
 		throw new IllegalArgumentException("Job index must be 0 for Old Style names");
 	}
@@ -122,7 +139,26 @@ private static String createSimIDWithJobIndex(KeyValue fieldDataKey,int jobIndex
 }
 @Override
 public String toString() {
-	// TODO Auto-generated method stub
 	return getName()+" "+getKey().toString()+" "+getOwner().toString();
+}
+
+@Override
+public boolean equals(Object obj) {
+
+	if(obj instanceof ExternalDataIdentifier){
+		return
+		((ExternalDataIdentifier)obj).getKey().equals(getKey())
+		&&
+		((ExternalDataIdentifier)obj).getName().equals(getName())
+		&&
+		((ExternalDataIdentifier)obj).getOwner().equals(getOwner());
+	}
+	return false;
+		
+}
+
+@Override
+public int hashCode() {
+	return getKey().hashCode();
 }
 }

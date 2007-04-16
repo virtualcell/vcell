@@ -2344,7 +2344,11 @@ void getFieldFunctionArguments(java.util.Vector<FieldFunctionArguments> v) {
 			e.printStackTrace();
 			throw new RuntimeException("Unexpected time expression for FieldData\n"+e.getMessage());
 		}
-		v.add(new FieldFunctionArguments(fieldname.name, variablename.name,time));
+		FieldFunctionArguments fieldFuncArgs =
+			new FieldFunctionArguments(fieldname.name, variablename.name,time);
+		if(!v.contains(fieldFuncArgs)){
+			v.add(fieldFuncArgs);
+		}
 	} else {
 		super.getFieldFunctionArguments(v);		 
 	}	

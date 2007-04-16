@@ -2,6 +2,7 @@ package cbit.vcell.client;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.desktop.controls.DataListener;
 import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.server.User;
 /**
  * Insert the type's description here.
  * Creation date: (11/18/2004 11:25:04 AM)
@@ -20,6 +21,7 @@ public void addDataListener(DataListener newListener);
  */
 public UserPreferences getUserPreferences();
 
+public User getUser();
 
 /**
  * Remove a cbit.vcell.desktop.controls.DataListener.

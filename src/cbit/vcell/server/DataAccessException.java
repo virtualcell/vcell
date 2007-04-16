@@ -21,4 +21,13 @@ public DataAccessException() {
 public DataAccessException(String s) {
 	super(s);
 }
+
+public DataAccessException(String message,Throwable cause) {
+	super(message,cause);
+}
+
+public DataAccessException(Throwable cause) {
+	super(cause);
+}
+
 }

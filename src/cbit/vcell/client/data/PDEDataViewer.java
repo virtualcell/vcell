@@ -5,13 +5,15 @@ import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.simdata.*;
 import swingthreads.*;
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
 import cbit.plot.*;
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.MessageEvent;
 import cbit.vcell.server.*;
 import cbit.vcell.simdata.gui.*;
 import java.awt.*;
-import java.rmi.dgc.VMID;
 import java.util.*;
 import cbit.vcell.client.*;
 import cbit.util.*;
@@ -22,8 +24,8 @@ import cbit.util.*;
  */
 public class PDEDataViewer extends DataViewer {
 	//
-	private HashMap<VMID, AsynchProgressPopup> jobIDProgressHash =
-		new HashMap<VMID, AsynchProgressPopup>();
+	private HashMap<VCDataJobID, AsynchProgressPopup> jobIDProgressHash =
+		new HashMap<VCDataJobID, AsynchProgressPopup>();
 	//
 	private class StatsJobInfo{
 		public String variableName;
@@ -156,19 +158,23 @@ private StatsJobInfo calcStatsGetUserInfo(){
 	
 	StatsJobInfo statsJobInfo = null;
 	//get Volume variable names
-	Vector<String> volVarnamesV = new Vector<String>();
+	TreeSet<String> volVarNamesTreeSet =
+		new TreeSet<String>(new Comparator<String>(){
+			public int compare(String o1, String o2) {
+				return o1.compareToIgnoreCase(o2);
+			}});
 	DataIdentifier[] dids = getPdeDataContext().getDataIdentifiers();
 	for(int i=0;i<dids.length;i+= 1){
 		if(	dids[i].getVariableType().equals(VariableType.VOLUME) ||
 			dids[i].getVariableType().equals(VariableType.VOLUME_REGION)){
 			if(!dids[i].equals(getPdeDataContext().getDataIdentifier())){
-				volVarnamesV.add(dids[i].getName());
+				volVarNamesTreeSet.add(dids[i].getName());
 			}
 		}
 	}
-	if(volVarnamesV.size() > 0){
-		String[] volVarnamesArr = new String[volVarnamesV.size()];
-		volVarnamesV.copyInto(volVarnamesArr);
+	if(volVarNamesTreeSet.size() > 0){
+		String[] volVarnamesArr = volVarNamesTreeSet.toArray(new String[0]);
+//		volVarnamesV.copyInto(volVarnamesArr);
 		double[] timePoints = getPdeDataContext().getTimePoints();
 		Double[] timePointsD = new Double[timePoints.length];
 		for(int i=0;i<timePoints.length;i+= 1){
@@ -181,6 +187,7 @@ private StatsJobInfo calcStatsGetUserInfo(){
 		BoxLayout mainBL = new BoxLayout(jPanel,BoxLayout.Y_AXIS);
 		jPanel.setLayout(mainBL);
 		JList varList = new JList(volVarnamesArr);
+		varList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		JScrollPane jsp = new JScrollPane(varList);
 		jPanel.add(jsp);
 		JComboBox jcb_time_begin = new JComboBox(timePointsD);
@@ -192,7 +199,7 @@ private StatsJobInfo calcStatsGetUserInfo(){
 		beginTimePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		BoxLayout btBL = new BoxLayout(beginTimePanel,BoxLayout.X_AXIS);
 		beginTimePanel.setLayout(btBL);
-		JLabel beginLabel = new JLabel("begin");
+		JLabel beginLabel = new JLabel("begin Time");
 //		beginLabel.setMinimumSize(new Dimension(40,25));
 		beginTimePanel.add(jcb_time_begin);
 		beginTimePanel.add(beginLabel);
@@ -200,17 +207,16 @@ private StatsJobInfo calcStatsGetUserInfo(){
 		endTimePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
 		BoxLayout etBL = new BoxLayout(endTimePanel,BoxLayout.X_AXIS);
 		endTimePanel.setLayout(etBL);
-		JLabel endLabel = new JLabel("end");
+		JLabel endLabel = new JLabel("end Time");
 //		endLabel.setMinimumSize(new Dimension(40,25));
 		endTimePanel.add(jcb_time_end);
 		endTimePanel.add(endLabel);
 		jPanel.add(beginTimePanel);
 		jPanel.add(endTimePanel);
-		
-		
+
 		while(true){
 			int okCancel =
-				PopupGenerator.showComponentOKCancelDialog(this, jPanel, "Choose Variables and times");
+				PopupGenerator.showComponentOKCancelDialog(this, jPanel, "Choose Volume Variable and times");
 			if(okCancel == JOptionPane.OK_OPTION){
 				statsJobInfo = new StatsJobInfo();//User created Info
 				statsJobInfo.variableName = (String)varList.getSelectedValue();
@@ -221,7 +227,7 @@ private StatsJobInfo calcStatsGetUserInfo(){
 					PopupGenerator.showErrorDialog("Volume variable name must be selected from list");					
 				}else if(statsJobInfo.beginTime > statsJobInfo.endTime){//User Info Error
 					statsJobInfo = null;
-					PopupGenerator.showErrorDialog("Desired begintime must be less than endtime");
+					PopupGenerator.showErrorDialog("Desired begintime must be less than or equal to endtime");
 				}else{
 					break;//User Info OK
 				}
@@ -397,7 +403,10 @@ private void calcStatistics2() {
 				new String[] {variableName},
 				new BitSet[] {dataBitSet},
 				finalBeginTime,1,finalEndtime,
-				true,false);
+				true,false,
+				VCDataJobID.createVCDataJobID(
+						getDataViewerManager().getUser(),
+						true));
 
 			plotStatistics(timeSeriesJobSpec);
 	}else{
@@ -1099,13 +1108,14 @@ private void connPtoP9SetTarget() {
 
 public void dataJobMessage(DataJobEvent dje) {
 
-	if(!jobIDProgressHash.containsKey(dje.getJobID())){
+	if(!jobIDProgressHash.containsKey(dje.getVcDataJobID())){
 		return;
 	}
 	
-	AsynchProgressPopup jobPopup = jobIDProgressHash.get(dje.getJobID());
+	AsynchProgressPopup jobPopup = jobIDProgressHash.get(dje.getVcDataJobID());
 	
 	if(dje.getEventTypeID() == MessageEvent.DATA_FAILURE){
+		jobIDProgressHash.remove(dje.getVcDataJobID());
 		jobPopup.stop();
 		PopupGenerator.showErrorDialog(
 				"Error executing Data Job:\n"+
@@ -1117,6 +1127,7 @@ public void dataJobMessage(DataJobEvent dje) {
 		return;
 	}
 	
+	jobIDProgressHash.remove(dje.getVcDataJobID());
 	jobPopup.stop();
 	TimeSeriesJobResults tsjr = dje.getTimeSeriesJobResults();
 	
@@ -2090,7 +2101,10 @@ private double[][] getTimeSeries(int[] indices, double startTime, int step,doubl
 		new cbit.util.TimeSeriesJobSpec(
 			new String[] {getPdeDataContext().getVariableName()},
 			new int[][]{indices},
-			startTime,step,endTime);
+			startTime,step,endTime,
+			VCDataJobID.createVCDataJobID(
+					getDataViewerManager().getUser(),
+					false));
 	cbit.util.TSJobResultsNoStats timeSeriesJobResults = (cbit.util.TSJobResultsNoStats)getPdeDataContext().getTimeSeriesValues(timeSeriesJobSpec);
 	double[][] timeSeries = timeSeriesJobResults.getTimesAndValuesForVariable(getPdeDataContext().getVariableName());
 	return timeSeries;
@@ -2249,7 +2263,7 @@ private void pdeDataContext1_VariableName() {
 		return;
 	}
 	
-	if(getPdeDataContext().getCartesianMesh().getGeometryDimension() < 3){
+	if(getPdeDataContext().getCartesianMesh() != null && getPdeDataContext().getCartesianMesh().getGeometryDimension() < 3){
 		if(getJButtonSurfaces().isVisible()){
 			getJButtonSurfaces().setVisible(false);
 			return;
@@ -2260,8 +2274,8 @@ private void pdeDataContext1_VariableName() {
 		}
 	}
 	
-	if(getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.MEMBRANE) ||
-		getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.MEMBRANE_REGION)){
+	if(getPdeDataContext().getDataIdentifier() != null && (getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.MEMBRANE) ||
+		getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.MEMBRANE_REGION))){
 
 			getJButtonSurfaces().setEnabled(true);
 	}else{
@@ -2275,23 +2289,20 @@ private void pdeDataContext1_VariableName() {
  * Creation date: (2/24/2006 10:52:52 AM)
  */
 private void plotStatistics(TimeSeriesJobSpec tsjs){
-	
-	VMID newDataJobID = new VMID();//Unique VM wide int
-	tsjs.setBackgroundTaskInfo(newDataJobID);
 
 	AsynchProgressPopup pp =
 	new AsynchProgressPopup(PDEDataViewer.this,
-		"Retrieving statistics for '"+tsjs.getVariableNames()[0]+"' jobID("+newDataJobID+")",
+		"Retrieving statistics for '"+tsjs.getVariableNames()[0]+"' jobID("+tsjs.getVcDataJobID().getJobID()+")",
 		"Sending request to data server...",
 		false,false);
 	
-	jobIDProgressHash.put(newDataJobID,pp);
+	jobIDProgressHash.put(tsjs.getVcDataJobID(),pp);
 	
 	try{
 		pp.start();
 		getPdeDataContext().getTimeSeriesValues(tsjs);
 	}catch(Exception e){
-		jobIDProgressHash.remove(newDataJobID);
+		jobIDProgressHash.remove(tsjs.getVcDataJobID());
 		pp.stop();
 		e.printStackTrace();
 		PopupGenerator.showErrorDialog("Error starting statistics job\n"+e.getMessage());
@@ -2595,6 +2606,7 @@ private void showKymograph() {
 						}
 						
 						kymographPanel.initDataManager(
+							getDataViewerManager().getUser(),
 							((ClientPDEDataContext)getPdeDataContext()).getDataManager(),
 							getPdeDataContext().getVariableName(),
 							startTimeAndStep[RESAMPLE_START_INDEX],(int)startTimeAndStep[RESAMPLE_STEP_INDEX],startTimeAndStep[RESAMPLE_END_INDEX],
@@ -2697,7 +2709,8 @@ private void showSpatialPlot() {
 							if(getSimulation() != null && getSimulation().getMathDescription() != null){
 								symbolTableEntries[0] =
 									getSimulation().getMathDescription().getEntry(getPdeDataContext().getVariableName());
-							}else{
+							}
+							if(symbolTableEntries[0] == null){
 								symbolTableEntries[0] =
 									new VolVariable(getPdeDataContext().getDataIdentifier().getName());
 							}
@@ -2821,7 +2834,8 @@ private void showTimePlot() {
 							if(getSimulation() != null && getSimulation().getMathDescription() != null){
 								symbolTableEntries[0] =
 									getSimulation().getMathDescription().getEntry(getPdeDataContext().getDataIdentifier().getName());
-							}else{
+							}
+							if(symbolTableEntries[0] == null){
 								symbolTableEntries[0] =
 									new VolVariable(getPdeDataContext().getDataIdentifier().getName());
 							}
@@ -2953,7 +2967,12 @@ private void updateDataValueSurfaceViewer() {
 						varNames[i] = getPdeDataContext().getVariableName();
 					}
 					final cbit.util.TimeSeriesJobSpec timeSeriesJobSpec =
-						new cbit.util.TimeSeriesJobSpec(varNames,indices,beginTime,1,endTime,bSpaceStats,bTimeStats);
+						new cbit.util.TimeSeriesJobSpec(
+								varNames,indices,beginTime,1,endTime,bSpaceStats,bTimeStats,
+								VCDataJobID.createVCDataJobID(
+										getDataViewerManager().getUser(),
+										true)
+								);
 
 					new Thread(
 						new Runnable(){

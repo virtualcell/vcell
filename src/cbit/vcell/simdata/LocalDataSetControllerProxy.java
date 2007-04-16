@@ -88,6 +88,9 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 			}
 		}
 		return getLocalDataSetController().fieldDataFileOperation(fieldDataFileOperationSpec);
+	}catch (DataAccessException e){
+		sessionLog.exception(e);
+		throw e;
 	}catch (Throwable e){
 		sessionLog.exception(e);
 		throw new DataAccessException(e.getMessage());
@@ -422,6 +425,9 @@ public SimDataBlock getSimDataBlock(VCDataIdentifier vcdID, String varName, doub
 			}
 		}
 		return getLocalDataSetController().getSimDataBlock(vcdID,varName,time);
+	}catch (DataAccessException e){
+		sessionLog.exception(e);
+		throw (DataAccessException)e;
 	}catch (Throwable e){
 		sessionLog.exception(e);
 		throw new DataAccessException(e.getMessage());

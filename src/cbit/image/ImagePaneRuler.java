@@ -1,4 +1,7 @@
 package cbit.image;
+
+import cbit.util.NumberUtils;
+
 /**
  * Insert the type's description here.
  * Creation date: (7/19/2003 5:40:19 PM)
@@ -201,12 +204,9 @@ protected void paintComponent(java.awt.Graphics g) {
 						}else{
 							coord = getImagePlaneManager().getWorldCoordinateFromUnitized2D((double)lastPrintPoint/(double)getWorldPixelSize(),0);
 						}
-						double doubleVal = Double.NaN;
-						if(coord != null){
-							doubleVal = cbit.vcell.geometry.Coordinate.convertAxisFromStandardXYZToNormal(coord,cbit.vcell.geometry.Coordinate.X_AXIS,getImagePlaneManager().getNormalAxis());
-						}
 						String val = "";
-						if(doubleVal != Double.NaN){
+						if(coord != null){
+							double doubleVal = cbit.vcell.geometry.Coordinate.convertAxisFromStandardXYZToNormal(coord,cbit.vcell.geometry.Coordinate.X_AXIS,getImagePlaneManager().getNormalAxis());
 							val = cbit.util.NumberUtils.formatNumber(doubleVal);
 						}
 						java.awt.geom.Rectangle2D r2d = getFont().getStringBounds(val,0,val.length(),((java.awt.Graphics2D)g).getFontRenderContext());
@@ -275,16 +275,12 @@ protected void paintComponent(java.awt.Graphics g) {
 						}else{
 							coord = getImagePlaneManager().getWorldCoordinateFromUnitized2D(0,(double)lastPrintPoint/(double)getWorldPixelSize());
 						}
-						double doubleVal = Double.NaN;
+						String val = "";
 						if(coord != null){
-							doubleVal = cbit.vcell.geometry.Coordinate.convertAxisFromStandardXYZToNormal(coord,cbit.vcell.geometry.Coordinate.Y_AXIS,getImagePlaneManager().getNormalAxis());
+							double doubleVal = cbit.vcell.geometry.Coordinate.convertAxisFromStandardXYZToNormal(coord,cbit.vcell.geometry.Coordinate.Y_AXIS,getImagePlaneManager().getNormalAxis());
+							val = doubleVal+"";
+							val = (val.length() <= VERT_TEXT_CHAR_LIMIT?val:NumberUtils.formatNumber(doubleVal,VERT_TEXT_CHAR_LIMIT));
 						}
-						String val = doubleVal+"";
-						if(doubleVal != Double.NaN){
-							//val = cbit.util.NumberUtils.formatNumber(doubleVal);
-							val = (val.length() <= VERT_TEXT_CHAR_LIMIT?val:decimalFormat.format(doubleVal));
-						}
-						//java.awt.geom.Rectangle2D r2d = getFont().getStringBounds(val,0,val.length(),((java.awt.Graphics2D)g).getFontRenderContext());
 						java.awt.font.LineMetrics lm = getFont().getLineMetrics(val,((java.awt.Graphics2D)g).getFontRenderContext());
 						if(lastLowPoint == 0){
 							g.drawString(val,2+descOffset,(int)lm.getAscent());

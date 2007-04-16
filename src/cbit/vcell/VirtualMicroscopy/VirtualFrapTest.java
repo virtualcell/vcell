@@ -1,40 +1,32 @@
 package cbit.vcell.VirtualMicroscopy;
 
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.io.File;
 import java.io.IOException;
-import java.util.Hashtable;
 
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 
 import cbit.image.ImageException;
-import cbit.sql.KeyValue;
 import cbit.util.Extent;
-import cbit.util.xml.XmlUtil;
-import cbit.vcell.server.PropertyLoader;
-import cbit.vcell.server.User;
-//import cbit.vcell.virtualmicroscopy.ROI.RoiType;
-//import cbit.vcell.virtualmicroscopy.gui.FRAPDataPanel;
-//import cbit.vcell.virtualmicroscopy.gui.FRAPStudyPanel;
-//import cbit.vcell.virtualmicroscopy.gui.LocalWorkspace;
-import cbit.vcell.xml.XmlReader;
-
+import loci.formats.ChannelSeparator;
 import loci.formats.FormatException;
 import loci.formats.FormatReader;
 import loci.formats.IFormatReader;
 import loci.formats.ImageReader;
 import loci.formats.ImageTools;
 import loci.formats.OMEXMLMetadataStore;
-import loci.formats.in.ZeissLSMReader;
 
 public class VirtualFrapTest {
-	public static void main(String[] args){
+	public static void main(String[] args) throws Exception{
+		
+		File selectedFile = null;
+		JFileChooser jfc = new JFileChooser("C:\\Temp\\vcell_data.mdb\\");
+		int result = jfc.showOpenDialog(null);
+		if(result == JFileChooser.APPROVE_OPTION){
+			selectedFile = jfc.getSelectedFile();
+			simpleReadImageDataset(selectedFile.getAbsolutePath());
+		}
 //		try {
 //			PropertyLoader.loadProperties();
 //			final int NumArgTypes = 5;
@@ -146,6 +138,90 @@ public class VirtualFrapTest {
 //		}
 
 	}
+	public static byte[][][][] simpleReadImageDataset(String imageID) throws FormatException, IOException, ImageException {
+		
+		byte[][][][] ctzxy = null;
+		ImageReader imageReader = null;
+		try{
+			imageReader = new ImageReader();
+//			Object mds = imageReader.getMetadataStoreRoot(imageID);
+//			Object tt = mds;		
+//			if(true){return null;}
+			
+	//		- image width (getSizeX(String))
+			imageReader.getSizeX(imageID);
+	//		- image height (getSizeY(String))
+			imageReader.getSizeY(imageID);
+	//		- total number of images per file (getImageCount(String))
+			imageReader.getImageCount(imageID);
+	//		- number of slices per file (getSizeZ(String))
+			imageReader.getSizeZ(imageID);
+	//		- number of timepoints per file (getSizeT(String))
+			imageReader.getSizeT(imageID);
+	//		- number of actual channels per file (getSizeC(String))
+			imageReader.getSizeC(imageID);
+	//		- number of channels per image (getRGBChannelCount(String))
+			imageReader.getRGBChannelCount(imageID);
+	//		- the ordering of the images within the file (getDimensionOrder(String))
+			imageReader.getDimensionOrder(imageID);
+	//		- whether each image is RGB (isRGB(String))
+			imageReader.isRGB(imageID);
+	//		- whether the pixel bytes in little-endian order (isLittleEndian(String))
+			imageReader.isLittleEndian(imageID);
+	//		- whether the channels in an image are interleaved (isInterleaved(String))
+			imageReader.isInterleaved(imageID);
+	//		- the type of pixel data in this file (getPixelType(String))
+			imageReader.getPixelType(imageID);
+			
+			// Read in the time stamps for individual time series images from formatReader.
+			double[] times = null;
+			Double firstTimeStamp = (Double)imageReader.getMetadataValue(imageID, "TimeStamp0");
+			if (firstTimeStamp != null) {
+				times = new double[imageReader.getSizeT(imageID)];
+				double firstTimeStampVal = firstTimeStamp.doubleValue();
+				for (int i = 0; i < times.length; i++) {
+					Double timeStamp = (Double)imageReader.getMetadataValue(imageID, "TimeStamp"+i);
+					times[i] = timeStamp.doubleValue() - firstTimeStampVal;
+				}
+			} else{
+				System.out.println(" Specified image file format does not have time stamp values.");
+			}
+
+			
+			
+			ChannelSeparator channelSeparator = new ChannelSeparator(imageReader);//XYC
+			int zSize = imageReader.getSizeZ(imageID);
+			int tSize = imageReader.getSizeT(imageID);
+			int cSize = imageReader.getSizeC(imageID);
+			int numChannelImages = cSize*tSize*zSize;
+			int width = imageReader.getSizeX(imageID);
+			int height = imageReader.getSizeY(imageID);
+			boolean isLittleEndian = imageReader.isLittleEndian(imageID);
+			String dimensionOrder = channelSeparator.getDimensionOrder(imageID);
+			boolean isZBeforeT = dimensionOrder.indexOf('Z') < dimensionOrder.indexOf('T');
+			int pixelType = imageReader.getPixelType(imageID);
+			ctzxy = new byte[cSize][tSize][zSize][];
+			if(pixelType == FormatReader.INT8 || pixelType == FormatReader.UINT8){
+				int cIndex = 0;
+				int zIndex = 0;
+				int tIndex = 0;
+				for(int i=0;i<numChannelImages;i+= 1){
+					ctzxy[cIndex][tIndex][zIndex] = channelSeparator.openBytes(imageID, i);
+					cIndex+= 1;if(cIndex == cSize){cIndex = 0;}
+					if(isZBeforeT){
+						zIndex+= 1;if(zIndex == zSize){zIndex = 0;tIndex+= 1;if(tIndex == tSize){tIndex = 0;}};
+					}else{
+						tIndex+= 1;if(tIndex == tSize){tIndex = 0;zIndex+= 1;if(zIndex == zSize){zIndex = 0;}};
+					}
+				}
+			}
+		}finally{
+			imageReader.close();
+		}
+		return ctzxy;
+	}	
+	
+	
 	
 	public static ImageDataset readImageDataset(String imageID) throws FormatException, IOException, ImageException {
 		FormatReader.setDebugLevel(3);
@@ -171,10 +247,10 @@ public class VirtualFrapTest {
 			UShortImage[] images = new UShortImage[numImages];
 			for (int i = 0; i < numImages; i++) {
 				BufferedImage origBufferedImage = formatReader.openImage(imageID, i);
-				System.out.println("original image is type "+FormatReader.getPixelTypeString(ImageTools.getPixelType(origBufferedImage)));
+				System.out.println("original image is type "+ImageTools.getPixelType(origBufferedImage));
 				int seriesCount = formatReader.getSeriesCount(imageID);
 				BufferedImage ushortBufferedImage = ImageTools.makeType(origBufferedImage, DataBuffer.TYPE_USHORT);
-				System.out.println("ushort image is type "+FormatReader.getPixelTypeString(ImageTools.getPixelType(ushortBufferedImage)));
+				System.out.println("ushort image is type "+ImageTools.getPixelType(ushortBufferedImage));
 				int zct[] = formatReader.getZCTCoords(imageID, i);
 				int pixelType = ImageTools.getPixelType(ushortBufferedImage);
 				short[][] pixels = null;

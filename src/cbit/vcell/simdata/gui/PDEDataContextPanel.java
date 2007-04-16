@@ -1323,7 +1323,8 @@ private void slice2dEnable() {
  */
 private void updateContours() {
 	//
-	if (getPdeDataContext() == null) {
+	if (getPdeDataContext() == null ||
+			getPdeDataContext().getDataIdentifier() == null) {
 		return;
 	}
 	//Remove previous curves
@@ -1372,7 +1373,8 @@ private void updateContours() {
  */
 private void updateMembraneCurves() {
 	//
-	if (getPdeDataContext() == null) {
+	if (getPdeDataContext() == null ||
+			getPdeDataContext().getDataIdentifier() == null) {
 		return;
 	}
 	int normalAxis = getImagePlaneManagerPanel().getImagePlaneManager().getNormalAxis();

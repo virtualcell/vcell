@@ -2,10 +2,8 @@ package cbit.vcell.simdata.gui;
 
 import javax.swing.JPanel;
 
-import java.awt.Cursor;
 import java.awt.GridBagLayout;
 import java.awt.Dimension;
-import java.awt.Rectangle;
 
 import javax.swing.JButton;
 import java.awt.GridBagConstraints;
@@ -13,32 +11,20 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.text.Document;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
-import javax.swing.text.Position;
-import javax.swing.text.Element;
-import java.lang.Object;
 import java.lang.String;
-import javax.swing.text.Segment;
-import javax.swing.text.AttributeSet;
-import java.lang.Runnable;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Vector;
-
-import javax.swing.text.PlainDocument;
-
 import cbit.util.BeanUtils;
+import cbit.util.TokenMangler;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.Function;
@@ -49,8 +35,6 @@ import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solvers.FVSolver;
 
 import javax.swing.JComboBox;
-import java.awt.Font;
-import java.awt.Color;
 
 public class FunctionSpecifierPanel extends JPanel implements ActionListener,UndoableEditListener{
 
@@ -63,7 +47,6 @@ public class FunctionSpecifierPanel extends JPanel implements ActionListener,Und
 	private boolean isFunctionCurrent = false;
 	private boolean isUserDefinedfunctionCurrent = false;
 	private int functionOp = FUNC_OP_CANCEL;
-	private DataIdentifier currentDataIdentifier = null;
 	private AnnotatedFunction currentAnnotatedFunction = null;  //  @jve:decl-index=0:
 	private String currentAnnotatedFunctionString = null;  //  @jve:decl-index=0:
 	
@@ -377,6 +360,12 @@ public class FunctionSpecifierPanel extends JPanel implements ActionListener,Und
 		int tempFuncOp = -1;
 		if(e.getSource() == getJButtonAddFunc()){
 			tempFuncOp = FUNC_OP_ADDNEW;
+			String editFuncNameString = getJTextFieldFuncName().getText();
+			if(!editFuncNameString.equals(TokenMangler.fixTokenStrict(editFuncNameString))){
+				PopupGenerator.showInfoDialog(
+						"Function name '"+editFuncNameString+"' has illegal characters.\nOnly letters,numbers and underscore allowed.");
+				return;
+			}
 		}else if(e.getSource() == getJButtonCancel()){
 			tempFuncOp = FUNC_OP_CANCEL;
 		}else if(e.getSource() == getJButtonDelete()){
@@ -420,8 +409,6 @@ public class FunctionSpecifierPanel extends JPanel implements ActionListener,Und
 				isErrorCurrent = false;
 				isFunctionCurrent = false;
 				isUserDefinedfunctionCurrent = false;
-					
-				String errorString = null;
 				
 				selectedDataID = getJComboBoxAllIdentifiers().getSelectedItem().toString();
 				expression = selectedDataID;
@@ -445,7 +432,6 @@ public class FunctionSpecifierPanel extends JPanel implements ActionListener,Und
 				String varType = "";
 				for(int i=0;i<allIdentifiers.length;i+= 1){
 					if(allIdentifiers[i].getName().equals(selectedDataID)){
-						currentDataIdentifier = allIdentifiers[i];
 						varType =
 							(allIdentifiers[i].getVariableType().equals(VariableType.VOLUME)?"Vol":"") +
 							(allIdentifiers[i].getVariableType().equals(VariableType.VOLUME_REGION)?"VolReg":"") +
@@ -479,6 +465,7 @@ public class FunctionSpecifierPanel extends JPanel implements ActionListener,Und
 		boolean bNameConflict = false;
 		boolean bNameSameAsSelected = false;
 		String editFuncNametext = getJTextFieldFuncName().getText();
+		boolean bEnableEditFuncName = editFuncNametext != null && editFuncNametext.length() > 0;
 		for(int i=0;i<allIdentifiers.length;i+= 1){
 			if(allIdentifiers[i].getName().equals(editFuncNametext)){
 				bNameConflict = true;
@@ -487,15 +474,16 @@ public class FunctionSpecifierPanel extends JPanel implements ActionListener,Und
 				break;
 			}
 		}
-		
+		String editFuncExprtext = getJTextFieldFuncExpression().getText();
+		boolean bEnableEditFuncExpr = editFuncExprtext != null && editFuncExprtext.length() > 0;
 		if(!isErrorCurrent){
-			getJButtonAddFunc().setEnabled(!bNameConflict);
+			getJButtonAddFunc().setEnabled(!bNameConflict && bEnableEditFuncName && bEnableEditFuncExpr);
 			getJButtonDelete().setEnabled(bNameSameAsSelected && isUserDefinedfunctionCurrent);
-			getJButtonReplaceFunc().setEnabled(
+			getJButtonReplaceFunc().setEnabled(bEnableEditFuncExpr &&
 					bNameSameAsSelected &&
 					isUserDefinedfunctionCurrent &&
 					(currentAnnotatedFunctionString != null?
-							!currentAnnotatedFunctionString.equals(getJTextFieldFuncExpression().getText()):
+							!currentAnnotatedFunctionString.equals(editFuncExprtext):
 							true)
 			);
 //			if((bNameConflict && !bNameSameAsSelected) || (bNameSameAsSelected && !isFunctionCurrent)){

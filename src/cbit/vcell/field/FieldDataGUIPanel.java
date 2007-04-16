@@ -67,6 +67,7 @@ import cbit.vcell.parser.ASTFuncNode;
 import cbit.vcell.parser.MathMLTags;
 import cbit.vcell.server.ComputeHost;
 import cbit.vcell.server.DataAccessException;
+import cbit.vcell.server.ObjectNotFoundException;
 import cbit.vcell.server.ServerInfo;
 import cbit.vcell.server.VCDataIdentifier;
 import cbit.vcell.simdata.DataIdentifier;
@@ -74,6 +75,7 @@ import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.xml.XMLTags;
 import javax.swing.JButton;
@@ -939,11 +941,13 @@ private void jButtonFDFromSim_ActionPerformed(java.awt.event.ActionEvent actionE
 					"Please open a Bio or Math model containing the\nsimulation you wish to use to create a new Field Data");
 			return;
 		}
-//		final FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
-//		fdos.opType = FieldDataFileOperationSpec.FDOS_COPYSIM;
-//		fdos.simInfo = simInfoHolder.simInfo;
-//		fdos.simJobIndex = simInfoHolder.jobIndex;
-//		fdos.owner = clientRequestManager.getDocumentManager().getUser();
+		//Check that the sim is in a state that can be copied
+		SimulationStatus simStatus =
+			clientRequestManager.getServerSimulationStatus(simInfoHolder.simInfo);
+		if(simStatus != null && (simStatus.isRunning() || simStatus.isStartRequested())){
+			throw new Exception("Can't copy 'running' simulation data from sim '"+simInfoHolder.simInfo.getName()+"'");
+		}
+
 		final FieldDataFileOperationSpec fdos =
 			FieldDataFileOperationSpec.createCopySimFieldDataFileOperationSpec(
 					null,
@@ -985,6 +989,9 @@ private void jButtonFDFromSim_ActionPerformed(java.awt.event.ActionEvent actionE
 								(fdor.dataIdentifierArr[i].getVariableType().equals(VariableType.MEMBRANE)?"(mbr) ":"")+
 								fdor.dataIdentifierArr[i].getName();
 						}
+					}catch(ObjectNotFoundException e){
+						throw new ObjectNotFoundException(
+							"Field Data Info not found.  Check sim '"+simInfoHolder.simInfo.getName()+"' has data results.");
 					}catch(Exception e){
 						throw new Exception("Error getting sim data info from server.  Try again.\n"+e.getMessage());
 					}

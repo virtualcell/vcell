@@ -1,6 +1,8 @@
 package cbit.vcell.simdata.gui;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.server.DataAccessException;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -147,7 +149,7 @@ private void addFunction() {
 						new AnnotatedFunction[] {newFunction}, new boolean[] {true});
 				functionsList.remove(fsp.getSelectedAnnotatedFunction());
 				functionsList.add(newFunction);
-				getPdeDataContext().refreshData();
+				getPdeDataContext().externalRefresh();
 			}
 			break;
 		}catch(Exception e){
@@ -900,31 +902,6 @@ private void displayAdapterService1_CustomScaleRange(cbit.util.Range arg1) {
 
 
 /**
- * Insert the method's description here.
- * Creation date: (7/2/2003 7:15:19 PM)
- */
-private void fallback(String failedVarName) {
-	//
-	try{
-		getpdeDataContext1().refreshIdentifiers();
-		getPdeDataContext().refreshTimes();
-		getPdeDataContext().setVariableName(failedVarName);
-		if(getPdeDataContext().getSourceDataInfo() == null){
-			throw new Exception("Refresh failed");
-		}
-	}catch(Exception exc){
-		try{
-			getJList1().clearSelection();
-		}finally{
-			cbit.vcell.client.PopupGenerator.showErrorDialog(this,exc.getMessage()+"\nUnable to retrieve Data for"+failedVarName+" from Server");
-		}
-	}
-
-
-}
-
-
-/**
  * Return the AddFunctionButton property value.
  * @return javax.swing.JButton
  */
@@ -1653,40 +1630,34 @@ private void setpdeDataContext1(cbit.vcell.simdata.PDEDataContext newValue) {
 private void setTimeFromSlider(int sliderPosition) {
 	if (getpdeDataContext1() != null && getpdeDataContext1().getTimePoints() != null) {
 		final double timepoint = getpdeDataContext1().getTimePoints()[sliderPosition];
-		getJTextField1().setText(Double.toString(timepoint));
+		
 
 		if (! getJSliderTime().getValueIsAdjusting()) {
 			try {
 				setCursorForWindow(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				//Mark state if conditions met
-				//if(getDisplayAdapterService() != null && !getDisplayAdapterService().getAutoScale()){
-					//if(!getDisplayAdapterService().hasStateID(getPdeDataContext().getVariableName())){
-						////getDisplayAdapterService().setCustomScaleRange(null);
-						//getDisplayAdapterService().setDefaultScaleRange(null);
-						//getDisplayAdapterService().markCurrentState(getPdeDataContext().getVariableName());
-					//}else if(getDisplayAdapterService().getCustomScaleRange() != null){
-						//getDisplayAdapterService().setDefaultScaleRange(null);
-						//getDisplayAdapterService().markCurrentState(getPdeDataContext().getVariableName());
-					//}
-				//}
-				//
 				getpdeDataContext1().setTimePoint(timepoint);
-				//SwingUtilities.invokeLater(
-						//new Runnable(){
-							//public void run(){
-								//getpdeDataContext1().setTimePoint(timepoint);
-							//}
-						//}
-				//);
-				//cbit.vcell.desktop.controls.ClientDisplayManager.getClientDisplayManager().performClientTasks(
-							//"Timepoint","Timepoint",
-							//new cbit.vcell.desktop.controls.ClientTask[] {new GetTimepoint(timepoint)},null);
-				//
-				//getDisplayAdapterService().activateMarkedState(getPdeDataContext().getVariableName());
-				//
-			} catch (Exception exc) {
-				fallback((String)getJList1().getSelectedValue());
-				return;
+				getJTextField1().setText(Double.toString(getPdeDataContext().getTimePoint()));
+				synchronizeView();
+			} catch (final Exception exc) {
+				SwingUtilities.invokeLater(new Runnable(){
+					public void run(){
+					PopupGenerator.showErrorDialog("Error updating timepoint '"+timepoint+"'\n"+exc.getMessage());
+					}});
+				int index = -1;
+				if(getPdeDataContext() != null && getPdeDataContext().getTimePoints() != null){
+					double[] timePoints = getPdeDataContext().getTimePoints();
+					for(int i=0;i<timePoints.length;i+= 1){
+						if(timePoints[i] == getPdeDataContext().getTimePoint()){
+							index = i;
+							break;
+						}
+					}
+				}
+				if(index != -1){
+					getJSliderTime().setValue(index);
+				}else{
+					getJTextField1().setText("-Error-");
+				}
 			} finally {
 				setCursorForWindow(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 			}
@@ -1708,7 +1679,7 @@ private void setTimeFromTextField(String typedValue) {
 		time = Double.parseDouble(typedValue);
 	} catch (NumberFormatException e) {
 		// if typedTime is crap, put back old value
-		getJTextField1().setText(Double.toString(times[oldVal]));
+		updateTimeTextField(times[oldVal]);
 		return;
 	}
 	// we find neighboring time value; if out of bounds, it is set to corresponding extreme
@@ -1725,8 +1696,35 @@ private void setTimeFromTextField(String typedValue) {
 			}
 		}
 	}
-	getJTextField1().setText(Double.toString(times[val]));
+	updateTimeTextField(times[val]);
 	getJSliderTime().setValue(val);
+}
+
+
+private void synchronizeView() throws DataAccessException{
+	if(getPdeDataContext() == null &&
+			getpdeDataContext1().getTimePoints() != null){
+		return;
+	}
+	double[] timePoints = getpdeDataContext1().getTimePoints();
+	int timeIndex = getJSliderTime().getValue();
+	double currentTimePoint = (timeIndex>0 && timeIndex < timePoints.length?timePoints[timeIndex]:-1);
+	if(currentTimePoint == -1){
+		return;
+	}
+	if(getpdeDataContext1().getTimePoint() != currentTimePoint){
+		updateTimeTextField(currentTimePoint);
+		if(getPdeDataContext().getTimePoint() != currentTimePoint){
+			getPdeDataContext().setTimePoint(currentTimePoint);
+		}
+	}
+	String currentVariableName = (String)getJList1().getSelectedValue();
+	if(getJList1().getSelectedValue() == currentVariableName){
+		return;
+	}
+	if(!currentVariableName.equals(getPdeDataContext().getVariableName())){
+		getPdeDataContext().setVariableName(currentVariableName);
+	}
 }
 
 
@@ -1738,63 +1736,42 @@ private void variableNameChanged(javax.swing.event.ListSelectionEvent listSelect
 		return;
 	}
 	if(listSelectionEvent != null && !listSelectionEvent.getValueIsAdjusting()){
-		int selectedIndex = getJList1().getSelectedIndex();
-//		String oldVariableName = null;
-		String[] variableNames = getPdeDataContext().getVariableNames();
-		int oldIndex = -1;
-		if(variableNames != null){
-			if(selectedIndex == listSelectionEvent.getFirstIndex()){
-				oldIndex = listSelectionEvent.getLastIndex();
-				// Before adding the add/remove user-defined functions, the list was static, hence the code in 'else'
-				// loop was valid. But with the add/remove functionality, the list now becomes dynamic, so only the
-				// 'else' part can throw exceptions, hence the change to include the check for oldIndex.
-				// ** This situation arises when the selection deleted is the last item in the JList,
-				// ** When oldIndex (which no longer exists in 'variableNames') is used to access variableNames, it throws
-				// ** an exception.
-				if (variableNames.length <= oldIndex) {
-//					oldVariableName = variableNames[variableNames.length-1];
-				} else {
-//					oldVariableName = variableNames[oldIndex];
-				}
-			}else{
-				oldIndex = listSelectionEvent.getFirstIndex();
-//				oldVariableName = variableNames[oldIndex];
-			}
-		}
-
-		String newVariableName = (String)getJList1().getSelectedValue();
+		final String newVariableName = (String)getJList1().getSelectedValue();
 		if(newVariableName != null){
 			try {
-				//
+				setCursorForWindow(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				if(getDisplayAdapterService() != null){
 					getDisplayAdapterService().activateMarkedState(newVariableName);
 				}
-				//
-				setCursorForWindow(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				//
 				getPdeDataContext().setVariableName(newVariableName);
-				//SwingUtilities.invokeLater(
-						//new Runnable(){
-							//public void run(){
-								//getPdeDataContext().setVariableName(newVariableName);
-							//}
-						//}
-				//);
-				//cbit.vcell.desktop.controls.ClientDisplayManager.getClientDisplayManager().performClientTasks(
-							//"Variable Name","Variable name",
-							//new cbit.vcell.desktop.controls.ClientTask[] {new GetVariableName(newVariableName)},null);
-				//
-				if(getPdeDataContext().getSourceDataInfo() == null){
-					fallback((String)getJList1().getSelectedValue());
-					return;
+				synchronizeView();
+			} catch (final Exception e) {
+				e.printStackTrace();
+				SwingUtilities.invokeLater(new Runnable(){
+					public void run(){
+						PopupGenerator.showErrorDialog("Error setting variable name '"+newVariableName+"'\n"+e.getMessage());
+					}});
+				int index = -1;
+				if(getPdeDataContext() != null && getPdeDataContext().getVariableName() != null){
+					for(int i=0;i<getJList1().getModel().getSize();i+= 1){
+						if(getPdeDataContext().getVariableName().equals(getJList1().getModel().getElementAt(i))){
+							index = i;
+							break;
+						}
+					}
 				}
-			} catch (IllegalArgumentException e) {
-				getJList1().setSelectedIndex(oldIndex);
-				return;
+				if(index != -1){
+					getJList1().setSelectedIndex(index);
+				}else{
+					getJList1().clearSelection();
+				}
 			} finally {
 				setCursorForWindow(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 			}
 		}
 	}
+}
+private void updateTimeTextField(double newTime){
+	getJTextField1().setText(Double.toString(newTime));
 }
 }  //  @jve:decl-index=0:visual-constraint="10,10"

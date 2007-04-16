@@ -1,10 +1,19 @@
 package cbit.vcell.solver;
+
+import cbit.vcell.field.SimResampleInfoProvider;
+
 /**
  * Insert the type's description here.
  * Creation date: (8/24/2004 10:55:36 AM)
  * @author: Jim Schaff
  */
-public class VCSimulationDataIdentifier implements java.io.Serializable, cbit.vcell.server.VCDataIdentifier {
+public class VCSimulationDataIdentifier
+	implements
+		java.io.Serializable,
+		cbit.vcell.server.VCDataIdentifier,
+		SimResampleInfoProvider{
+
+
 	private VCSimulationIdentifier vcSimID = null;
 	private int jobIndex = -1;
 
@@ -93,6 +102,9 @@ public int hashCode() {
 	return getID().toString().hashCode() + getJobIndex();
 }
 
+public boolean isParameterScanType() {
+	return true;
+}
 
 /**
  * Insert the method's description here.

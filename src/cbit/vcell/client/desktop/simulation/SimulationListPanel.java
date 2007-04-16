@@ -5,6 +5,7 @@ import java.util.*;
 import cbit.vcell.client.desktop.*;
 import cbit.vcell.solver.*;
 import javax.swing.*;
+import java.awt.Dimension;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 3:41:07 PM)
@@ -977,7 +978,7 @@ private void initialize() {
 		// user code end
 		setName("SimulationListPanel");
 		setLayout(new java.awt.GridBagLayout());
-		setSize(707, 559);
+		setSize(750, 560);
 
 		java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
 		constraintsJScrollPane1.gridx = 1; constraintsJScrollPane1.gridy = 1;
@@ -1339,4 +1340,4 @@ private static void getBuilderData() {
 	G94G88G88GC4FBB0B642BB970C819FGG6CDFGG8CGGGGGGGGGGGGGGGGGE2F5E9ECE4E5F2A0E4E1F4E1D0CB8586GGGG81G81GBAGGGBB9FGGGG
 **end of data**/
 }
-}
+}  //  @jve:decl-index=0:visual-constraint="10,10"

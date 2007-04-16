@@ -20,18 +20,20 @@ public class TimeSeriesJobSpec implements java.io.Serializable{
 	private boolean calcSpaceStats = false;//Calc stats over space for each timepoint
 	private boolean calcTimeStats = false;
 	private BitSet[] roi;
-	private VMID backgroundTaskID;
+	private VCDataJobID vcDataJobID;
+
 
 /**
  * TimeSeriesSpec constructor comment.
  */
-public TimeSeriesJobSpec(String[] argVariableNames,int[][] argIndices,double argStartTime,int argStep,double argEndTime) {
+public TimeSeriesJobSpec(String[] argVariableNames,int[][] argIndices,double argStartTime,int argStep,double argEndTime,VCDataJobID argVCDataJobID) {
 
 	variableNames = argVariableNames;
 	indices = argIndices;
 	startTime = argStartTime;
 	step = argStep;
 	endTime = argEndTime;
+	this.vcDataJobID = argVCDataJobID;
 }
 
 
@@ -45,9 +47,10 @@ public TimeSeriesJobSpec(
     int argStep,
     double argEndTime,
     boolean argBCalcSpaceStats,
-    boolean argBCalcTimeStats) {
+    boolean argBCalcTimeStats,
+    VCDataJobID argVCDataJobID) {
 	    
-    this(argVariableNames, argIndices, argStartTime, argStep, argEndTime);
+    this(argVariableNames, argIndices, argStartTime, argStep, argEndTime,argVCDataJobID);
 
     calcSpaceStats = argBCalcSpaceStats;
     calcTimeStats = argBCalcTimeStats;
@@ -59,9 +62,10 @@ public TimeSeriesJobSpec(
 	    int argStep,
 	    double argEndTime,
 	    boolean argBCalcSpaceStats,
-	    boolean argBCalcTimeStats) {
+	    boolean argBCalcTimeStats,
+	    VCDataJobID argVCDataJobID) {
 		    
-	    this(argVariableNames, null, argStartTime, argStep, argEndTime);
+	    this(argVariableNames, null, argStartTime, argStep, argEndTime,argVCDataJobID);
 	    roi = argROI;
 	    
 	    calcSpaceStats = argBCalcSpaceStats;
@@ -145,20 +149,6 @@ public java.lang.String[] getVariableNames() {
 	return variableNames;
 }
 
-public VMID getBackgroundTaskID(){
-	return backgroundTaskID;
-}
-public boolean isBackgroundTask(){
-	return backgroundTaskID != null;
-}
-
-public void setBackgroundTaskInfo(VMID argBGTID){
-	if(argBGTID == null){
-		throw new IllegalArgumentException("Background Task must have non-null ID.");
-	}
-	backgroundTaskID = argBGTID;
-}
-
 /**
  * Insert the method's description here.
  * Creation date: (2/21/2006 12:46:25 PM)
@@ -176,5 +166,10 @@ public boolean isCalcSpaceStats() {
  */
 public boolean isCalcTimeStats() {
 	return calcTimeStats;
+}
+
+
+public VCDataJobID getVcDataJobID() {
+	return vcDataJobID;
 }
 }

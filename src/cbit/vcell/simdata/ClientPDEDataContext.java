@@ -160,14 +160,14 @@ private void initialize() {
 		setCartesianMesh(getDataManager().getMesh());
 		setTimePoints(getDataManager().getDataSetTimes());
 		setDataIdentifiers(getDataManager().getDataIdentifiers());
+		if (getTimePoints() != null && getTimePoints().length >0) {
+			setTimePoint(getTimePoints()[0]);
+		}
+		if (getDataIdentifiers() != null && getDataIdentifiers().length > 0) {
+			setVariableName(getDataIdentifiers()[0].getName());
+		}
 	} catch (DataAccessException exc) {
 		exc.printStackTrace(System.out);
-	}
-	if (getTimePoints() != null && getTimePoints().length >0) {
-		setTimePoint(getTimePoints()[0]);
-	}
-	if (getDataIdentifiers() != null && getDataIdentifiers().length > 0) {
-		setVariableName(getDataIdentifiers()[0].getName());
 	}
 }
 
@@ -223,7 +223,7 @@ public void removeFunction(cbit.vcell.math.AnnotatedFunction function) throws cb
  * Creation date: (10/19/2005 12:21:50 PM)
  * @param newDataManager cbit.vcell.desktop.controls.DataManager
  */
-public void setDataManager(cbit.vcell.desktop.controls.DataManager newDataManager) {
+public void setDataManager(cbit.vcell.desktop.controls.DataManager newDataManager) throws DataAccessException{
 	VCDataIdentifier oldid = dataManager.getVCDataIdentifier();
 	VCDataIdentifier newid = newDataManager.getVCDataIdentifier();
 	if (oldid instanceof VCSimulationDataIdentifier &&
@@ -231,7 +231,7 @@ public void setDataManager(cbit.vcell.desktop.controls.DataManager newDataManage
 		((VCSimulationDataIdentifier)oldid).getVcSimID().equals(((VCSimulationDataIdentifier)newid).getVcSimID())
 	) {	
 		dataManager = newDataManager;
-		refreshData();
+		externalRefresh();
 	} else {
 		throw new RuntimeException("DataManager change not allowed: oldID = "+oldid+" newID = "+newid);
 	}
