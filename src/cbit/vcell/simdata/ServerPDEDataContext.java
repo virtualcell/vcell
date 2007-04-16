@@ -161,14 +161,14 @@ private void initialize() {
 		setDataIdentifiers(getDataServerImpl().getDataIdentifiers(user, getVCDataIdentifier()));
 		setParticleData(getDataServerImpl().getParticleDataExists(user, getVCDataIdentifier()));
 		setCartesianMesh(getDataServerImpl().getMesh(user, getVCDataIdentifier()));
+		if (getTimePoints() != null && getTimePoints().length >0) {
+			setTimePoint(getTimePoints()[0]);
+		}
+		if (getVariableNames() != null && getVariableNames().length > 0) {
+			setVariableName(getVariableNames()[0]);
+		}
 	} catch (DataAccessException exc) {
 		exc.printStackTrace(System.out);
-	}
-	if (getTimePoints() != null && getTimePoints().length >0) {
-		setTimePoint(getTimePoints()[0]);
-	}
-	if (getVariableNames() != null && getVariableNames().length > 0) {
-		setVariableName(getVariableNames()[0]);
 	}
 }
 
@@ -199,7 +199,7 @@ public void refreshIdentifiers() {
 		//
 		//Added for cases where variable was set and server couldn't deliver data
 		//if after referesh the variable is set again, the property won't propagate
-		refreshData();
+		externalRefresh();
 	} catch (DataAccessException exc) {
 		exc.printStackTrace(System.out);
 	}

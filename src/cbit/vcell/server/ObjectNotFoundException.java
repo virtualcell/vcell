@@ -16,4 +16,9 @@ public class ObjectNotFoundException extends DataAccessException {
 public ObjectNotFoundException(String s) {
 	super(s);
 }
+
+public ObjectNotFoundException(String message,Throwable cause) {
+	super(message,cause);
+}
+
 }

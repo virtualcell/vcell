@@ -283,7 +283,7 @@ private void setVcDataManager(cbit.vcell.client.server.VCDataManager newVcDataMa
  * Insert the method's description here.
  * Creation date: (10/18/2005 12:44:06 AM)
  */
-private void updateScanParamChoices() {
+private void updateScanParamChoices(){
 	
 	// figure out what job data we are looking for
 	String[] scanConstantNames = getSimulation().getMathOverrides().getScannedConstantNames();
@@ -325,7 +325,11 @@ private void updateScanParamChoices() {
 		if (currentContext == null || currentContext.getDataIdentifier() == null) {
 			pdeDataViewer.setPdeDataContext(new NewClientPDEDataContext(pdeDatamanager));
 		} else {
-			currentContext.setDataManager(pdeDatamanager);
+			try{
+				currentContext.setDataManager(pdeDatamanager);
+			}catch(Exception e){
+				e.printStackTrace();
+			}
 		}
 		if (pdeDataViewer.getPdeDataContext().getDataValues() == null) {
 			JInternalFrame frame = (JInternalFrame)cbit.util.BeanUtils.findTypeParentOfComponent(this, JInternalFrame.class);

@@ -30,6 +30,7 @@ import cbit.vcell.field.FieldDataGUIPanel;
 import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.modeldb.VersionableTypeVersion;
 import cbit.vcell.server.DataAccessException;
+import cbit.vcell.server.User;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.solver.SimulationInfo;
@@ -227,6 +228,9 @@ public void viewData(final ExternalDataIdentifier eDI){
 				public void startExport(ExportSpecs exportSpecs){
 				}
 				public void simStatusChanged(SimStatusEvent simStatusEvent) {
+				}
+				public User getUser() {
+					return getRequestManager().getDocumentManager().getUser();
 				}
 			};
 		

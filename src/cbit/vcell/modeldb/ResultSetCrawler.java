@@ -13,15 +13,20 @@ import cbit.vcell.server.SessionLog;
 import cbit.sql.ConnectionFactory;
 import cbit.vcell.solver.SolverResultSetInfo;
 import cbit.vcell.server.DataAccessException;
+
+import java.util.List;
 import java.util.Vector;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.Simulation;
 import java.io.File;
+import java.io.PrintWriter;
+
 import cbit.vcell.server.User;
 import java.util.LinkedList;
 import java.beans.PropertyVetoException;
 import cbit.vcell.server.PermissionException;
 import cbit.vcell.simdata.ExternalDataIdentifier;
+import cbit.vcell.simdata.SimDataConstants;
 
 import java.sql.SQLException;
 
@@ -52,9 +57,9 @@ public class ResultSetCrawler {
 			if (filename.startsWith(fieldBaseName + ".")){
 				return true;
 			}
-			if (filename.endsWith(".zip")){
+			if (filename.endsWith(SimDataConstants.ZIPFILE_EXTENSION)){
 				for (int i = 0; i < 10; i++){
-					if (filename.equalsIgnoreCase(fieldBaseName + "0"+i+".zip")){
+					if (filename.equalsIgnoreCase(fieldBaseName + "0"+i+SimDataConstants.ZIPFILE_EXTENSION)){
 						return true;
 					} 
 				}
@@ -107,6 +112,96 @@ private void deleteResultSet(File logFile, java.io.PrintWriter pw) {
 	}
 }
 
+private void deleteResampledFieldDataFileList(
+		File userDir,
+		ExternalDataIdentifier[] extDataIDArr,
+		List<File> deleteLogFileList,
+		File[] allLogFileArr,
+		boolean bScanOnly,
+		PrintWriter pw){
+	
+	pw.println("--Resampled Field Data Section begin----------");
+	log.print( "--Resampled Field Data Section begin----------");
+
+	//
+	// file filter for resampled files
+	//	
+	java.io.FilenameFilter resampledFileFilter = new java.io.FilenameFilter() {
+		public boolean accept(File dir, String name) { 
+			return name.endsWith(SimDataConstants.FIELDDATARESAMP_EXTENSION); 
+		} 
+	};
+	// find all the resampled files
+	File resampledFiles[] = userDir.listFiles(resampledFileFilter);
+	
+//	Vector<File> deletableFiles = new Vector<File>();
+	String[] resamplePrefixArr = new String[extDataIDArr.length];	
+	for (int j = 0; j < resampledFiles.length; j++) {
+		boolean bKeep = false;
+		//Check if any log files have link to resampled FieldData.
+		//Simulations can have links generated with resampling(field data) functions in the
+		//the Simulation ResultSet Data 'Viewer' and by running simulations.  These
+		//resampled files should be kept.
+		for (int i = 0; i < allLogFileArr.length; i++) {
+			String logFileName = allLogFileArr[i].getAbsolutePath();
+			String baseName = logFileName.substring(0,logFileName.indexOf(".log"));
+			if(resampledFiles[j].getAbsolutePath().startsWith(baseName)){
+				bKeep = true;
+				break;
+			}
+		}
+		if(bKeep){
+			//Check if we can throw away a linked resampled file if its log file
+			//is being thrown away
+			for (int i = 0; i < deleteLogFileList.size(); i++) {
+				String logFileName = deleteLogFileList.get(i).getAbsolutePath();
+				String baseName = logFileName.substring(0,logFileName.indexOf(".log"));
+				if(resampledFiles[j].getAbsolutePath().startsWith(baseName)){
+					bKeep = false;
+					break;
+				}
+			}
+			//Check if existing ExternalDataIdentifiers have a link to any resampled files.
+			//ExtDataID can have links generated with resampling(field data) functions in the
+			//the Field Data Manager 'Viewer'.  These reampled files can be discarded always.
+			for(int i=0;extDataIDArr != null && i<extDataIDArr.length;i+= 1){
+				if(resamplePrefixArr[i] == null){
+					resamplePrefixArr[i] = 
+						ExternalDataIdentifier.createSimIDWithJobIndex(
+							extDataIDArr[i].getKey(),
+							0/*always for FieldData*/,
+							false/*always for Fielddata*/);
+				}
+				if(resampledFiles[j].getName().startsWith(resamplePrefixArr[i])){
+					bKeep = false;
+					break;
+				}
+			}
+		}
+		
+		if(!bKeep){
+			if(bScanOnly){
+				pw.println("Should delete " + resampledFiles[j]);
+				log.print("Should delete " + resampledFiles[j]);
+			}else{
+				if(resampledFiles[j].delete()){
+					pw.println("deleted " + resampledFiles[j]);
+					log.print("deleted " + resampledFiles[j]);
+				}else{
+					pw.println("Couldn't delete " + resampledFiles[j]);
+					log.print("Couldn't delete " + resampledFiles[j]);				
+				}
+			}
+		}else{
+			if(bScanOnly){
+				pw.println("Don't delete " + resampledFiles[j]);
+				log.print("Don't delete " + resampledFiles[j]);
+			}
+		}
+	}
+	pw.println("----Resampled Field Data Section end----------");
+	log.print( "----Resampled Field Data Section end----------");
+}
 
 /**
  * This method was created in VisualAge.
@@ -263,20 +358,19 @@ private void scan(File userDir, ExternalDataIdentifier[] extDataIDArr, Vector si
 				
 		// find all the log files
 		File logFiles[] = userDir.listFiles(logFileFilter);
-		java.util.List logfileList = new LinkedList(java.util.Arrays.asList(logFiles));
+		File[] allLogFiles = logFiles.clone();
+		java.util.List<File> logfileList = new LinkedList<File>(java.util.Arrays.asList(logFiles));
 		
 		//
 		//loop through all ExternalDataIdentifier keys and remove from logFile list
 		//
 		for(int i=0;extDataIDArr != null && i<extDataIDArr.length;i+= 1){
-			File extDataIDogFile = new File(userDir,
-					ExternalDataIdentifier.createCanonicalSimLogFileName(
-							extDataIDArr[i].getKey(),
-							FieldDataFileOperationSpec.JOBINDEX_DEFAULT,
-							false)
-			);
-			if (extDataIDogFile.exists()) {
-				logfileList.remove(extDataIDogFile);
+			File extDataIDLogFile =
+				new File(userDir,
+						ExternalDataIdentifier.
+							createCanonicalFieldDataLogFileName(extDataIDArr[i].getKey()));
+			if (extDataIDLogFile.exists()) {
+				logfileList.remove(extDataIDLogFile);
 			}
 		}
 		
@@ -336,7 +430,11 @@ private void scan(File userDir, ExternalDataIdentifier[] extDataIDArr, Vector si
 				}
 			}
 		}	
-			
+		
+		deleteResampledFieldDataFileList(
+					userDir, extDataIDArr,logfileList,allLogFiles,bScanOnly,pw);
+		pw.println("--ResultSet Section begin----------");
+		log.print( "--ResultSet Section begin----------");
 		if (bScanOnly) {
 			for (int i = 0; i < logfileList.size(); i ++) {
 				pw.println("Should delete " + logfileList.get(i));

@@ -3,7 +3,6 @@ package cbit.vcell.field;
 import cbit.util.TokenMangler;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.server.VCDataIdentifier;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 
 /**
@@ -13,40 +12,26 @@ import cbit.vcell.simdata.ExternalDataIdentifier;
  */
 public class FieldDataIdentifierSpec implements java.io.Serializable  {
 	private FieldFunctionArguments fieldFuncArgs;
-//	private java.lang.String fieldName = null;
-//	private java.lang.String variableName = null;
-//	private Expression time = null;
-	private ExternalDataIdentifier vcDataID;
+	private ExternalDataIdentifier extDataID;
 
 
 /**
  * FieldDataIdentifier constructor comment.
  */
-public FieldDataIdentifierSpec(FieldFunctionArguments argFieldFuncArgs,VCDataIdentifier argVCDataID) {
+public FieldDataIdentifierSpec(FieldFunctionArguments argFieldFuncArgs,ExternalDataIdentifier argExtDataID) {
 	super();
 	fieldFuncArgs = argFieldFuncArgs;
-	vcDataID = (ExternalDataIdentifier)argVCDataID;
+	extDataID = argExtDataID;
 }
 
-public VCDataIdentifier getVCDataIdentifier(){
-	return vcDataID;
+public ExternalDataIdentifier getExternalDataIdentifier(){
+	return extDataID;
 }
 
 public String toString(){
-	return "[FFA=" + fieldFuncArgs.toCSVString()+", EDI="+vcDataID.toCSVString() + "]";
+	return "[FFA=" + fieldFuncArgs.toCSVString()+", EDI="+extDataID.toCSVString() + "]";
 
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (9/21/2006 2:51:03 PM)
- * @return java.lang.String
- */
-public String getDefaultFieldDataFileNameForSimulation() {
-	return getDefaultFieldDataFileNameForSimulation(fieldFuncArgs);
-}
-
 
 
 /**
@@ -81,7 +66,7 @@ public static FieldDataIdentifierSpec fromCSVString(String inputString) throws E
  * @return java.lang.String
  */
 public String toCSVString() {
-	return fieldFuncArgs.toCSVString()+","+vcDataID.toCSVString();
+	return fieldFuncArgs.toCSVString()+","+extDataID.toCSVString();
 }
 
 
@@ -125,5 +110,17 @@ public FieldFunctionArguments getFieldFuncArgs() {
  */
 public static String getDefaultFieldDataFileNameForSimulation(FieldFunctionArguments ffa) {
 	return getLocalVariableName_C(ffa) + ".fdat";
+}
+
+@Override
+public boolean equals(Object obj) {
+	if(!(obj instanceof FieldDataIdentifierSpec)){
+		return false;
+	}
+	FieldDataIdentifierSpec fdiSpec = (FieldDataIdentifierSpec)obj;
+	return
+		getFieldFuncArgs().equals(fdiSpec.getFieldFuncArgs())
+		&&
+		getExternalDataIdentifier().equals(fdiSpec.getExternalDataIdentifier());
 }
 }

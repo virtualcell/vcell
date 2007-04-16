@@ -6,20 +6,15 @@ package cbit.vcell.modeldb;
 import java.math.BigDecimal;
 import java.sql.*;
 import cbit.sql.*;
-import cbit.util.TokenMangler;
-import cbit.vcell.biomodel.BioModelMetaData;
+import cbit.vcell.field.FieldDataDBOperationDriver;
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.server.*;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 
 import java.util.Vector;
 import java.util.Hashtable;
 
-import oracle.jdbc.driver.OracleSQLException;
-import oracle.jdbc.driver.OracleSql;
 /**
  * This type was created in VisualAge.
  */
@@ -389,196 +384,7 @@ public static cbit.vcell.document.VCDocumentInfo curate(CurateSpec curateSpec,Co
 public static FieldDataDBOperationResults fieldDataDBOperation(Connection con, User user,
 		FieldDataDBOperationSpec fieldDataDBOperationSpec) throws SQLException, DataAccessException {
 	
-//	if(fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_ADMIN_GETALLEXTDATAKEYS){
-//		String sql;
-//		ResultSet rset;
-//		sql = 	"SELECT "+
-//					ExternalDataTable.table.id.getUnqualifiedColName() +
-//				" FROM " +
-//					ExternalDataTable.table.getTableName();
-//				
-//		Statement stmt = con.createStatement();
-//		Vector<KeyValue> v = new Vector<KeyValue>();
-//		try {
-//			rset = stmt.executeQuery(sql);
-//			while (rset.next()) {
-//				v.add(new KeyValue(rset.getBigDecimal(ExternalDataTable.table.id.getUnqualifiedColName())));
-//			}
-//		} finally {
-//			stmt.close();
-//		}
-//		FieldDataDBOperationResults fieldDataDBOperationResults = new FieldDataDBOperationResults();
-//		fieldDataDBOperationResults.adminAllExtDataKeys = v.toArray(new KeyValue[v.size()]);
-//		return fieldDataDBOperationResults;
-//		
-//	}else
-	if(fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_COPY_NO_CONFLICT){
-		//get all current ExtDataIDs
-		ExternalDataIdentifier[] existingExtDataIDArr =
-			fieldDataDBOperation(con,user,
-					FieldDataDBOperationSpec.createGetExtDataIDsSpec(user)).extDataIDArr;
-		//Rename FieldFunc names if necessary
-		Hashtable<String,String> newNameOrigNameHash = new Hashtable<String, String>();
-		for(int i=0;i<fieldDataDBOperationSpec.sourceNames.length;i+= 1){
-			String newFieldFuncName = fieldDataDBOperationSpec.sourceNames[i];
-			while(true){
-				boolean bNameConflictExists = false;
-				for(int j=0;j<existingExtDataIDArr.length;j+= 1){
-					if(existingExtDataIDArr[j].getName().equals(newFieldFuncName)){
-						bNameConflictExists = true;
-						break;
-					}
-				}
-				bNameConflictExists =
-					bNameConflictExists || newNameOrigNameHash.containsKey(newFieldFuncName);
-				if(!bNameConflictExists){
-					newNameOrigNameHash.put(newFieldFuncName,fieldDataDBOperationSpec.sourceNames[i]);
-					break;
-				}
-				newFieldFuncName = TokenMangler.getNextEnumeratedToken(newFieldFuncName);
-			}
-		}
-		//Add new ExternalDataIdentifier (FieldData ID) to DB
-		//Copy source annotation
-		FieldDataDBOperationResults sourceUserExtDataInfo =
-			fieldDataDBOperation(con,user,
-					FieldDataDBOperationSpec.createGetExtDataIDsSpec(
-							fieldDataDBOperationSpec.sourceOwner.getVersion().getOwner()));
-		ExternalDataIdentifier[] sourceUserExtDataIDArr = sourceUserExtDataInfo.extDataIDArr;
-		Hashtable<String, ExternalDataIdentifier> oldNameNewIDHash =
-			new Hashtable<String, ExternalDataIdentifier>();
-		Hashtable<String, KeyValue> oldNameOldExtDataIDKey =
-			new Hashtable<String, KeyValue>();
-		String[] newFieldFuncNamesArr = newNameOrigNameHash.keySet().toArray(new String[0]);
-		for(int i=0;i<newFieldFuncNamesArr.length;i+= 1){
-			//find orig annotation
-			String origAnnotation =
-				"Copy Field Data name used Field Data function\r\n"+
-				"Source type: "+fieldDataDBOperationSpec.sourceOwner.getVType().getTypeName()+"\r\n"+
-				"Source owner: "+fieldDataDBOperationSpec.sourceOwner.getVersion().getOwner().getName()+"\r\n"+
-				"Source name: "+fieldDataDBOperationSpec.sourceOwner.getVersion().getName()+"\r\n"+
-				"Original Field Data name: "+newNameOrigNameHash.get(newFieldFuncNamesArr[i])+"\r\n"+
-				"New Field Data name: "+newFieldFuncNamesArr[i]+"\r\n"+
-				"Source Annotation: "+newFieldFuncNamesArr[i]+"\r\n";
-			for(int j=0;j<sourceUserExtDataInfo.extDataAnnotArr.length;j+= 1){
-				String originalName = newNameOrigNameHash.get(newFieldFuncNamesArr[i]);
-				if(sourceUserExtDataIDArr[j].getName().equals(originalName)){
-					oldNameOldExtDataIDKey.put(originalName, sourceUserExtDataInfo.extDataIDArr[j].getKey());
-					origAnnotation+= sourceUserExtDataInfo.extDataAnnotArr[j];
-					break;
-				}
-			}
-			//
-			FieldDataDBOperationResults fieldDataDBOperationResults =
-				fieldDataDBOperation(con,user,
-						FieldDataDBOperationSpec.createSaveNewExtDataIDSpec(
-								user, newFieldFuncNamesArr[i],origAnnotation));
-//			errorCleanupExtDataIDV.add(fieldDataDBOperationResults.extDataID);
-			String origFieldFuncName =
-				newNameOrigNameHash.get(fieldDataDBOperationResults.extDataID.getName());
-			if(origFieldFuncName == null){
-				throw new DataAccessException("couldn't find original FieldFuncName using new ExternalDataId");
-			}
-			oldNameNewIDHash.put(origFieldFuncName,fieldDataDBOperationResults.extDataID);
-		}
-		
-		FieldDataDBOperationResults fieldDataDBOperationResults =
-			new FieldDataDBOperationResults();
-		fieldDataDBOperationResults.oldNameNewIDHash = oldNameNewIDHash;
-		fieldDataDBOperationResults.oldNameOldExtDataIDKeyHash = oldNameOldExtDataIDKey;
-		return fieldDataDBOperationResults;
-	}else if(fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_GETEXTDATAIDS){
-		String sql;
-		ResultSet rset;
-		sql = 	"SELECT "+
-					ExternalDataTable.table.getTableName()+".*"+","+
-					UserTable.table.userid.getQualifiedColName()+
-				" FROM " +
-					ExternalDataTable.table.getTableName() + ","+
-					UserTable.table.getTableName()+
-				" WHERE " +
-					ExternalDataTable.table.ownerRef + "=" +fieldDataDBOperationSpec.owner.getID() +
-					" AND "+
-					UserTable.table.id.getQualifiedColName() + " = " + ExternalDataTable.table.ownerRef.getQualifiedColName();
-				
-		Statement stmt = con.createStatement();
-		Vector<ExternalDataIdentifier> extDataIDV = new Vector<ExternalDataIdentifier>();
-		Vector<String> extDataAnnotV = new Vector<String>();
-		try {
-			rset = stmt.executeQuery(sql);
-			while (rset.next()) {
-				extDataIDV.add(ExternalDataTable.table.getExternalDataIdentifier(rset));
-				extDataAnnotV.add(ExternalDataTable.table.getExternalDataAnnot(rset));
-			}
-		} finally {
-			stmt.close();
-		}
-		FieldDataDBOperationResults fieldDataDBOperationResults = new FieldDataDBOperationResults();
-		fieldDataDBOperationResults.extDataIDArr = extDataIDV.toArray(new ExternalDataIdentifier[extDataIDV.size()]);
-		fieldDataDBOperationResults.extDataAnnotArr = extDataAnnotV.toArray(new String[extDataAnnotV.size()]);
-		return fieldDataDBOperationResults;
-		
-	}else if(fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_SAVEEXTDATAID){
-	
-		if(!fieldDataDBOperationSpec.newExtDataIDName.equals(
-				TokenMangler.fixTokenStrict(fieldDataDBOperationSpec.newExtDataIDName))){
-			throw new DataAccessException("Error inserting Field Data name "+
-					fieldDataDBOperationSpec.newExtDataIDName+"\n"+
-					"Field Data names can contain only letters,digits and underscores");
-		}
-		
-		KeyValue newKey = getNewKey(con);
-		String sql =
-			"INSERT INTO "+ExternalDataTable.table.getTableName()+" "+
-			ExternalDataTable.table.getSQLColumnList()+
-			" VALUES "+
-			ExternalDataTable.table.getSQLValueList(
-					newKey,user,
-					fieldDataDBOperationSpec.newExtDataIDName,
-					fieldDataDBOperationSpec.annotation);
-	
-		updateCleanSQL(con,sql);
-		ExternalDataIdentifier[] fdiArr =
-			fieldDataDBOperation(con, user,
-					FieldDataDBOperationSpec.createGetExtDataIDsSpec(user)).extDataIDArr;
-		for (int i = 0; i < fdiArr.length; i++) {
-			if(fdiArr[i].getName().equals(fieldDataDBOperationSpec.newExtDataIDName)){
-				FieldDataDBOperationResults fieldDataDBOperationResults = new FieldDataDBOperationResults();
-				fieldDataDBOperationResults.extDataID = fdiArr[i];;
-				return fieldDataDBOperationResults;
-			}
-		}
-		throw new DataAccessException(
-				"Unable to retrieve inserted ExternalDataIdentifier "+
-				fieldDataDBOperationSpec.newExtDataIDName);	
-
-	
-	}else if(fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_DELETE){
-		String sql = 
-			"DELETE" + " FROM " + ExternalDataTable.table.getTableName() + 
-			" WHERE " +
-				ExternalDataTable.table.ownerRef + " = " + user.getID() +
-				" AND " +
-				ExternalDataTable.table.id + " = " + fieldDataDBOperationSpec.specEDI.getKey().toString();
-	
-//		if (externalDataKeys != null && externalDataKeys.length > 0) {
-//			sql += " AND " + ExternalDataTable.table.id + " IN (";
-//			for (int i = 0; i < externalDataKeys.length; i ++) {
-//				if (i != 0) {
-//					sql += ",";
-//				}
-//				//sql += "'" + keys[i].toString() + "'";
-//				sql += externalDataKeys[i].toString();
-//			}
-//			sql += ")";
-//		}
-	
-		updateCleanSQL(con,sql);
-		
-		return new FieldDataDBOperationResults();
-	}
-	
-	throw new DataAccessException("Unknown FieldDataDBOperation "+fieldDataDBOperationSpec.opType);
+	return FieldDataDBOperationDriver.fieldDataDBOperation(con, user, fieldDataDBOperationSpec);
 }
 
 
@@ -1125,7 +931,7 @@ private static java.math.BigDecimal getNewGroupID(Connection con) throws java.sq
  * This method was created in VisualAge.
  * @return cbit.sql.KeyValue
  */
-protected static KeyValue getNewKey(Connection con) throws java.sql.SQLException {
+public static KeyValue getNewKey(Connection con) throws java.sql.SQLException {
 	return keyFactory.getNewKey(con);
 }
 
@@ -3586,7 +3392,7 @@ protected static void updateCleanLOB(Connection con,String conditionalColumnName
  * This method was created in VisualAge.
  * @param sql java.lang.String
  */
-protected static int updateCleanSQL(Connection con, String sql) throws SQLException {
+public static int updateCleanSQL(Connection con, String sql) throws SQLException {
 	if (sql == null || con == null) {
 		throw new IllegalArgumentException("Improper parameters for updateClean");
 	}

@@ -2025,4 +2025,9 @@ public void viewResults(TestCriteriaNew testCriteria) {
 }
 
 
+public User getUser() {
+	return getRequestManager().getDocumentManager().getUser();
+}
+
+
 }

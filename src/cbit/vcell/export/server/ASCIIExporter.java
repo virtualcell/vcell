@@ -1,4 +1,5 @@
 package cbit.vcell.export.server;
+import cbit.util.VCDataJobID;
 import cbit.vcell.solver.ode.*;
 import cbit.vcell.math.*;
 import cbit.plot.*;
@@ -237,7 +238,10 @@ private String getCurveTimeSeries(User user, DataServerImpl dataServerImpl, VCDa
 		distances = ssh.getWorldCoordinateLengths();
 	}
 
-	cbit.util.TimeSeriesJobSpec timeSeriesJobSpec = new cbit.util.TimeSeriesJobSpec(new String[]{variableName},new int[][]{pointIndexes},allTimes[beginIndex],1,allTimes[endIndex]);
+	cbit.util.TimeSeriesJobSpec timeSeriesJobSpec =
+		new cbit.util.TimeSeriesJobSpec(
+				new String[]{variableName},new int[][]{pointIndexes},allTimes[beginIndex],1,allTimes[endIndex],
+				VCDataJobID.createVCDataJobID(user, false));
 	cbit.util.TSJobResultsNoStats timeSeriesJobResults = (cbit.util.TSJobResultsNoStats)dataServerImpl.getTimeSeriesValues(user, vcdID, timeSeriesJobSpec);
 
 	// variableValues[0] is time array
@@ -386,7 +390,10 @@ private String getODEDataValues(long jobID, User user, DataServerImpl dataServer
  */
 private String getPointsTimeSeries(User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String variableName, int[] pointIndexes, double[] allTimes, int beginIndex, int endIndex, boolean switchRowsColumns) throws DataAccessException, RemoteException {
 	
-	cbit.util.TimeSeriesJobSpec timeSeriesJobSpec = new cbit.util.TimeSeriesJobSpec(new String[]{variableName},new int[][]{pointIndexes},allTimes[beginIndex],1,allTimes[endIndex]);
+	cbit.util.TimeSeriesJobSpec timeSeriesJobSpec =
+		new cbit.util.TimeSeriesJobSpec(
+				new String[]{variableName},new int[][]{pointIndexes},allTimes[beginIndex],1,allTimes[endIndex],
+				VCDataJobID.createVCDataJobID(user, false));
 	cbit.util.TSJobResultsNoStats timeSeriesJobResults = (cbit.util.TSJobResultsNoStats)dataServerImpl.getTimeSeriesValues(user, vcdID, timeSeriesJobSpec);
 
 	// variableValues[0] is time array

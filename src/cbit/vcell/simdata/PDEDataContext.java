@@ -18,6 +18,38 @@ import cbit.util.*;
  * @author: 
  */
 public abstract class PDEDataContext implements PropertyChangeListener {
+		
+	private class RefreshedData {
+		public double[] newData;
+		public VariableType newVarType;
+		public double newTimePoint;
+		public ParticleDataBlock newParticleDataBlock;
+		public Range newRange;
+		public SourceDataInfo newSourceDataInfo;
+		
+		public RefreshedData(double[] argNewData,
+				VariableType argNewVarType,
+				double argNewTimePoint,
+				ParticleDataBlock argNewParticleDataBlock){
+			newData = argNewData;
+			newVarType = argNewVarType;
+			newTimePoint = argNewTimePoint;
+			newParticleDataBlock = argNewParticleDataBlock;
+			calculateRange();
+			newSourceDataInfo = calculateSourceDataInfo(newData, newVarType,newRange);
+		}
+		private void calculateRange(){
+			double min = Double.POSITIVE_INFINITY;
+			double max = Double.NEGATIVE_INFINITY;
+			for(int i = 0; i < newData.length; i++){
+				if(!Double.isNaN(newData[i])){
+					min = Math.min(min, newData[i]);
+					max = Math.max(max, newData[i]);
+				}
+			}
+			newRange = new Range(min,max);
+		}
+	}
 	//
 	protected transient PropertyChangeSupport propertyChange = null;
 	private SourceDataInfo fieldSourceDataInfo = null;
@@ -80,21 +112,21 @@ public synchronized void addPropertyChangeListener(java.lang.String propertyName
 /**
  * Comment
  */
-protected SourceDataInfo calculateSourceDataInfo() {
+private SourceDataInfo calculateSourceDataInfo(double[] sdiData,VariableType sdiVarType,Range newRange) {
 	SourceDataInfo sdi = null;
 	CartesianMesh mesh = getCartesianMesh();
 	//
-	if (getDataIdentifier()!=null && getDataIdentifier().getVariableType().equals(VariableType.VOLUME)) {
+	if (sdiVarType.equals(VariableType.VOLUME)) {
 		//Set data to display
 		int yIncr = mesh.getSizeX();
 		int zIncr = mesh.getSizeX() * mesh.getSizeY();
 		sdi = 
 			new SourceDataInfo(
 				SourceDataInfo.RAW_VALUE_TYPE, 
-				getDataValues(), 
+				sdiData, 
 				mesh.getExtent(), 
 				mesh.getOrigin(), 
-				getDataRange(), 
+				newRange, 
 				0, 
 				mesh.getSizeX(), 
 				1, 
@@ -102,10 +134,10 @@ protected SourceDataInfo calculateSourceDataInfo() {
 				yIncr, 
 				mesh.getSizeZ(), 
 				zIncr); 
-	} else if(getDataIdentifier()!=null && getDataIdentifier().getVariableType().equals(VariableType.VOLUME_REGION)) {
+	} else if(sdiVarType.equals(VariableType.VOLUME_REGION)) {
 		//
 		double[] expandedVolumeRegionValues = new double[mesh.getSizeX()*mesh.getSizeY()*mesh.getSizeZ()];
-		double[] volumeRegionDataValues = getDataValues();
+		double[] volumeRegionDataValues = sdiData;
 		for(int i = 0;i<expandedVolumeRegionValues.length;i+= 1){
 			expandedVolumeRegionValues[i] = volumeRegionDataValues[mesh.getVolumeRegionIndex(i)];
 		}
@@ -118,7 +150,7 @@ protected SourceDataInfo calculateSourceDataInfo() {
 				expandedVolumeRegionValues, 
 				mesh.getExtent(), 
 				mesh.getOrigin(), 
-				getDataRange(), 
+				newRange, 
 				0, 
 				mesh.getSizeX(), 
 				1, 
@@ -135,7 +167,7 @@ protected SourceDataInfo calculateSourceDataInfo() {
 				null,
 				mesh.getExtent(), 
 				mesh.getOrigin(), 
-				getDataRange(), 
+				newRange, 
 				0, 
 				mesh.getSizeX(), 
 				0, 
@@ -179,6 +211,9 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
 
+public void externalRefresh() throws DataAccessException{
+	refreshData(getVariableName(), getTimePoint(),true);
+}
 
 /**
  * Insert the method's description here.
@@ -426,12 +461,12 @@ public abstract void makeRemoteFile(cbit.vcell.export.server.ExportSpecs exportS
 	 *   	and the property that has changed.
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
-	if (evt.getSource() == this && evt.getPropertyName().equals("timePoint")) {
-		refreshData();
-	}
-	if (evt.getSource() == this && evt.getPropertyName().equals("variableName")) {
-		refreshData();
-	}
+//	if (evt.getSource() == this && evt.getPropertyName().equals("timePoint")) {
+//		refreshData();
+//	}
+//	if (evt.getSource() == this && evt.getPropertyName().equals("variableName")) {
+//		refreshData();
+//	}
 }
 
 
@@ -439,43 +474,79 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  * Insert the method's description here.
  * Creation date: (10/3/00 5:03:43 PM)
  */
-public void refreshData() {
-	double[] newDataValues = null;
-	ParticleDataBlock newParticleDataBlock = null;
-	if (getVariableNames() != null && getTimePoints() != null && getVariableName() != null) {
-		try {
-			if (! BeanUtils.arrayContains(getVariableNames(), getVariableName())) {
-				throw new DataAccessException("Requested variable not found");
-			}
-			if (BeanUtils.firstIndexOf(getTimePoints(), getTimePoint()) == -1) {
-				if (getTimePoints() == null || getTimePoints().length == 0) {
-					throw new DataAccessException("No timepoints available");
-				} else {
-					setTimePoint(getTimePoints()[0]);
-				}
-			}
-			newDataValues = getSimDataBlock(getVariableName(), getTimePoint()).getData();
-			if (hasParticleData()) {
-				newParticleDataBlock = getParticleDataBlock(getTimePoint());
-			}
-		} catch (DataAccessException exc) {
-			exc.printStackTrace(System.out);
+private void refreshData(String varName,double timePoint,boolean bForce) throws DataAccessException{
+	
+	if(!bForce){
+		if(getVariableName() != null && getVariableName().equals(varName) &&
+				getTimePoint() == timePoint){
+			return;
 		}
 	}
-	setDataValues(newDataValues);
-	setParticleDataBlock(newParticleDataBlock);
-	if (getDataValues() != null) {
-		double min = Double.POSITIVE_INFINITY;
-		double max = Double.NEGATIVE_INFINITY;
-		for(int i = 0; i < getDataValues().length; i++){
-			min = Math.min(min, getDataValues()[i]);
-			max = Math.max(max, getDataValues()[i]);
+	if(varName == null){
+		varName = dataIdentifiers[0].getName();
+	}
+	if(timePoint == -1){
+		timePoint = fieldTimePoints[0];
+	}
+	
+	ParticleDataBlock newParticleDataBlock = null;
+	if (! BeanUtils.arrayContains(getVariableNames(), varName)) {
+		throw new DataAccessException("Requested variable not found");
+	}
+	if (BeanUtils.firstIndexOf(getTimePoints(), timePoint) == -1) {
+		if (getTimePoints() == null || getTimePoints().length == 0) {
+			throw new DataAccessException("No timepoints available");
+		} else {
+			throw new DataAccessException("Requested time not found");
 		}
-		setDataRange(new Range(min,max));
-		setSourceDataInfo(calculateSourceDataInfo());
-	} else {
-		setDataRange(null);
-		setSourceDataInfo(null);
+	}
+	SimDataBlock simdataBlock = getSimDataBlock(varName,timePoint);
+	if (hasParticleData()) {
+		newParticleDataBlock = getParticleDataBlock(timePoint);
+	}
+
+	RefreshedData refreshedData = new RefreshedData(
+				simdataBlock.getData(),
+				simdataBlock.getVariableType(),
+				timePoint,
+				newParticleDataBlock
+				);
+	
+	boolean bVarNameChanged = false;
+	String oldVarname = getVariableName();
+	boolean bTimePointChanged = false;
+	double oldTimePoint = getTimePoint();
+	
+	if(!varName.equals(getVariableName())){
+		DataIdentifier foundDataIdentifier = null;
+		for (int i = 0; i < dataIdentifiers.length; i++){
+			if (dataIdentifiers[i].getName().equals(varName)){
+				foundDataIdentifier = dataIdentifiers[i];
+				break;
+			}
+		}
+		if(foundDataIdentifier == null){
+			throw new DataAccessException("Couldn't find DataIdentifier for variable name "+varName);
+		}
+		fieldDataIdentifier = foundDataIdentifier;
+		bVarNameChanged = true;
+	}
+
+	if(timePoint != getTimePoint()){
+		fieldTimePoint = timePoint;
+		bTimePointChanged = true;
+	}
+	
+	setDataValues(refreshedData.newData);
+	setParticleDataBlock(refreshedData.newParticleDataBlock);
+	setDataRange(refreshedData.newRange);
+	setSourceDataInfo(refreshedData.newSourceDataInfo);
+	
+	if(bVarNameChanged){
+		firePropertyChange("variableName", oldVarname, getVariableName());
+	}
+	if(bTimePointChanged){
+		firePropertyChange("timePoint", new Double(oldTimePoint), new Double(getTimePoint()));
 	}
 }
 
@@ -536,7 +607,7 @@ protected void setCartesianMesh(CartesianMesh newCartesianMesh) {
  * Creation date: (5/22/2001 3:29:26 PM)
  * @param newVariableNames java.lang.String[]
  */
-protected void setDataIdentifiers(DataIdentifier[] newDataIdentifiers) {
+protected void setDataIdentifiers(DataIdentifier[] newDataIdentifiers) throws DataAccessException{
 	DataIdentifier[] oldDataIdentifiers = dataIdentifiers;
 	if (getVariableName()==null && dataIdentifiers!=null && dataIdentifiers.length>0){
 		setVariableName(dataIdentifiers[0].getName());
@@ -626,15 +697,21 @@ protected void setSourceDataInfo(cbit.image.SourceDataInfo sourceDataInfo) {
  * @param timePoint The new value for the property.
  * @see #getTimePoint
  */
-public void setTimePoint(double timePoint) {
-	//
-	if (BeanUtils.firstIndexOf(getTimePoints(), timePoint) == -1) {
-		throw new IllegalArgumentException("Time point="+timePoint+" does not exist");
-	}
-	//
-	double oldValue = fieldTimePoint;
-	fieldTimePoint = timePoint;
-	firePropertyChange("timePoint", new Double(oldValue), new Double(timePoint));
+public void setTimePoint(double timePoint) throws DataAccessException{
+	
+//	if(timePoint == getTimePoint()){
+//		return;
+//	}
+	refreshData(getVariableName(), timePoint,false);
+	
+//	//
+//	if (BeanUtils.firstIndexOf(getTimePoints(), timePoint) == -1) {
+//		throw new IllegalArgumentException("Time point="+timePoint+" does not exist");
+//	}
+//	//
+//	double oldValue = fieldTimePoint;
+//	fieldTimePoint = timePoint;
+//	firePropertyChange("timePoint", new Double(oldValue), new Double(timePoint));
 }
 
 
@@ -655,27 +732,34 @@ protected void setTimePoints(double[] timePoints) {
  * @param variableName The new value for the property.
  * @see #getVariableName
  */
-public void setVariableName(java.lang.String variableName) {
-	//
-	if (!BeanUtils.arrayContains(getVariableNames(),variableName)) {
-		throw new IllegalArgumentException("Variable Name="+variableName+" does not exist");
-	}
-	//
-	String oldName = getVariableName();
-	//
-	// select new DataIdentifier
-	//
-	fieldDataIdentifier = null;
-	for (int i = 0; i < dataIdentifiers.length; i++){
-		if (dataIdentifiers[i].getName().equals(variableName)){
-			fieldDataIdentifier = dataIdentifiers[i];
-		}
-	}
+public void setVariableName(java.lang.String variableName) throws DataAccessException{
 	
-	String newName = null;
-	if (fieldDataIdentifier!=null){
-		newName = fieldDataIdentifier.getName();
-	}
-	firePropertyChange("variableName", oldName, newName);
+//	if(variableName.equals(getVariableName())){
+//		return;
+//	}
+	
+	refreshData(variableName, getTimePoint(),false);
+	
+//	//
+//	if (!BeanUtils.arrayContains(getVariableNames(),variableName)) {
+//		throw new IllegalArgumentException("Variable Name="+variableName+" does not exist");
+//	}
+//	//
+//	String oldName = getVariableName();
+//	//
+//	// select new DataIdentifier
+//	//
+//	fieldDataIdentifier = null;
+//	for (int i = 0; i < dataIdentifiers.length; i++){
+//		if (dataIdentifiers[i].getName().equals(variableName)){
+//			fieldDataIdentifier = dataIdentifiers[i];
+//		}
+//	}
+//	
+//	String newName = null;
+//	if (fieldDataIdentifier!=null){
+//		newName = fieldDataIdentifier.getName();
+//	}
+//	firePropertyChange("variableName", oldName, newName);
 }
 }

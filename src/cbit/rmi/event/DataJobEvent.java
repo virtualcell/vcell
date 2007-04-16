@@ -5,6 +5,7 @@ package cbit.rmi.event;
 ©*/
 import java.rmi.dgc.VMID;
 import cbit.util.TimeSeriesJobResults;
+import cbit.util.VCDataJobID;
 import cbit.vcell.server.*;
 /**
  * This is the event class to support the cbit.vcell.desktop.controls.ExportListener interface.
@@ -12,28 +13,28 @@ import cbit.vcell.server.*;
 public class DataJobEvent extends MessageEvent {
 	private int eventType = 0;
 	private Double progress = null;
-	private VMID jobID;
 	private VCDataIdentifier vcDataID = null;
 	private TimeSeriesJobResults timeSeriesJobResults = null;
 	private Exception failedJobException = null;
+	private VCDataJobID vcDataJobID = null;
 
 /**
  * ExportEvent constructor comment.
  */
-public DataJobEvent(VMID argJobID,
+public DataJobEvent(VCDataJobID argVCDataJobID,
 		int argEventType,
 		VCDataIdentifier argVCDataID,
 		Double argProgress,
 		TimeSeriesJobResults argTSJR,
 		Exception argFJE) {
-	super(argJobID,new MessageSource(argVCDataID,argVCDataID.getID()),new MessageData(argTSJR));
-	this.jobID = argJobID;
+	super(argVCDataJobID,new MessageSource(argVCDataID,argVCDataID.getID()),new MessageData(argTSJR));
 	this.eventType = argEventType;
 	this.progress = argProgress;
-	this.jobID = argJobID;
 	this.vcDataID = argVCDataID;
 	this.timeSeriesJobResults = argTSJR;
 	this.failedJobException = argFJE;
+	this.vcDataJobID = argVCDataJobID;
+	
 }
 
 public Exception getFailedJobException(){
@@ -45,9 +46,6 @@ public VCDataIdentifier getVCDataIdentifier(){
 }
 
 
-public VMID getJobID(){
-	return jobID;
-}
 /**
  * Insert the method's description here.
  * Creation date: (1/4/01 1:24:16 PM)
@@ -86,12 +84,16 @@ public String toString() {
 	return "DataEvent: "
 		+"source="+getSource().toString()
 		+", jobID="
-		+ jobID
+		+ vcDataJobID
 		+ ", progress=\""
 		+ getProgress();
 }
 
 public User getUser() {
-	return vcDataID.getOwner();
+	return vcDataJobID.getJobOwner();
+}
+
+public VCDataJobID getVcDataJobID() {
+	return vcDataJobID;
 }
 }

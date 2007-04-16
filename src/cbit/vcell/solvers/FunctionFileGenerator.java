@@ -75,7 +75,7 @@ public AnnotatedFunction[] getFunctionList() {
  * This method was created in VisualAge.
  * @param logFile java.io.File
  */
-public static synchronized Vector readFunctionsFile(File functionsFile) throws java.io.FileNotFoundException, java.io.IOException {
+public static synchronized Vector<AnnotatedFunction> readFunctionsFile(File functionsFile) throws java.io.FileNotFoundException, java.io.IOException {
 	// Check if file exists
 	if (!functionsFile.exists()){
 		throw new java.io.FileNotFoundException("functions file "+functionsFile.getPath()+" not found");
@@ -84,7 +84,7 @@ public static synchronized Vector readFunctionsFile(File functionsFile) throws j
 	//
 	// Read characters from functionFile into character array and transfer into string buffer.
 	//
-	Vector annotatedFunctionsVector = new Vector();
+	Vector<AnnotatedFunction> annotatedFunctionsVector = new Vector<AnnotatedFunction>();
 	long fnFileLength = functionsFile.length();
 	StringBuffer stringBuffer = new StringBuffer();
 	FileInputStream is = null;

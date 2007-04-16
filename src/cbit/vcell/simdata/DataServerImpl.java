@@ -12,6 +12,7 @@ import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
+import cbit.vcell.server.ObjectNotFoundException;
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.server.User;
 import cbit.vcell.server.VCDataIdentifier;
@@ -104,9 +105,12 @@ public FieldDataFileOperationResults fieldDataFileOperation(User user,FieldDataF
 	//checkReadAccess(user, vcdID);
 	try {
 		return dataSetControllerImpl.fieldDataFileOperation(fieldDataOpearationSpec);
-	}catch (Throwable e){
+	}catch (DataAccessException e){
 		log.exception(e);
-		throw new DataAccessException(e.getMessage());
+		throw e;
+	}catch (Exception e){
+		log.exception(e);
+		throw new DataAccessException("Error FieldDataFileOperation",e);
 	}
 }
 
@@ -293,6 +297,9 @@ public SimDataBlock getSimDataBlock(User user, VCDataIdentifier vcdID, String va
 	checkReadAccess(user, vcdID);
 	try {
 		return dataSetControllerImpl.getSimDataBlock(vcdID,var,time);
+	}catch (DataAccessException e){
+		log.exception(e);
+		throw (DataAccessException)e;
 	}catch (Throwable e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());

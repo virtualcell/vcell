@@ -9,7 +9,7 @@ import java.io.ObjectInputStream;
 /**
  * This type was created in VisualAge.
  */
-public class SimDataBlock implements java.io.Serializable {
+public class SimDataBlock implements java.io.Serializable,SimDataHolder {
 
 	private transient PDEDataInfo info = null;
 	private transient double data[] = null;

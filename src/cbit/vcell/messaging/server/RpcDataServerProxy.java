@@ -174,7 +174,7 @@ public SimDataBlock getSimDataBlock(VCDataIdentifier vcdID, String varName, doub
 public cbit.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID,cbit.util.TimeSeriesJobSpec timeSeriesJobSpec) throws cbit.vcell.server.DataAccessException {
 //	return (cbit.util.TimeSeriesJobResults)rpc("getTimeSeriesValues",new Object[]{user, vcdID,timeSeriesJobSpec});
 	try {
-		if(!timeSeriesJobSpec.isBackgroundTask()){
+		if(!timeSeriesJobSpec.getVcDataJobID().isBackgroundTask()){
 			return (cbit.util.TimeSeriesJobResults)rpc("getTimeSeriesValues",new Object[]{user, vcdID,timeSeriesJobSpec});
 		}else{
 			rpc(cbit.vcell.messaging.MessageConstants.SERVICETYPE_DATA_VALUE, "getTimeSeriesValues", new Object[]{user, vcdID,timeSeriesJobSpec}, false);
