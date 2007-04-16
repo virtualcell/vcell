@@ -329,8 +329,8 @@ private static void write(Writer writer, Geometry geometry, ISize volumeSampleSi
 				cbit.vcell.render.Vect3d unitNormal = new cbit.vcell.render.Vect3d();
 				polygon.getUnitNormal(unitNormal);
 				
-				int volNeighbor1Region = uncompressedRegionIDs[polygon.getVolIndexNeighbor1()];
-				int volNeighbor2Region = uncompressedRegionIDs[polygon.getVolIndexNeighbor2()];
+				int volNeighbor1Region = (int)(0x000000FF & uncompressedRegionIDs[polygon.getVolIndexNeighbor1()]);
+				int volNeighbor2Region = (int)(0x000000FF & uncompressedRegionIDs[polygon.getVolIndexNeighbor2()]);
 
 				if (surface.getExteriorRegionIndex() == volNeighbor1Region && surface.getInteriorRegionIndex() == volNeighbor2Region) {
 					region1Outside ++;
