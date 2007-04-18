@@ -1171,12 +1171,16 @@ public VCDocumentInfo selectDocument(int documentType, TopLevelWindowManager req
 			char[] array = new char[1000];
 			StringBuffer xmlString = new StringBuffer();
 			int n;
-			BufferedReader reader = new BufferedReader( new FileReader(xmlFile) );
-			do {
-				n = reader.read(array);
-				xmlString.append(array,0,n);
-			} while (n==1000);
-			reader.close();
+			FileReader fileReader =  new FileReader(xmlFile);
+			try{
+				BufferedReader reader = new BufferedReader(fileReader);
+				while((n = reader.read(array)) != -1){
+					xmlString.append(array,0,n);
+				}
+				reader.close();
+			}finally{
+				if(fileReader != null){fileReader.close();}
+			}
 			return new cbit.vcell.xml.XMLInfo(xmlString.toString());
 		}		
 		default: {
