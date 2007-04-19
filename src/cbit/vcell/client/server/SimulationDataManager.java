@@ -62,6 +62,8 @@ public void newData(cbit.vcell.desktop.controls.DataEvent event) {
  * @exception cbit.vcell.server.DataAccessException The exception description.
  */
 public void refreshData() throws cbit.vcell.server.DataAccessException {
-	simDataViewer.refreshData();
+	if (simDataViewer != null) {
+		simDataViewer.refreshData();
+	}
 }
 }

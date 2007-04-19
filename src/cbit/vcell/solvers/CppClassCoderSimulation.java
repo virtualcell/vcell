@@ -6,6 +6,7 @@ package cbit.vcell.solvers;
 import cbit.util.*;
 import java.util.*;
 import java.io.*;
+
 import cbit.vcell.solver.*;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
@@ -76,7 +77,7 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	  		//
 	  		// need to specify which SubDomains should be solved for
 	  		//
-	  		Vector listOfSubDomains = new Vector();
+	  		Vector<SubDomain> listOfSubDomains = new Vector<SubDomain>();
 	  		int totalNumCompartments = 0;
 	  		StringBuffer compartmentNames = new StringBuffer();
 	  		Enumeration subDomainEnum = simulation.getMathDescription().getSubDomains();
@@ -272,7 +273,9 @@ protected void writeGetSimTool(java.io.PrintWriter out) throws Exception {
 	out.println("\tassert(model);");
 	out.println("\ttheApplication->setModel(model);");
 	out.println("\tSimulationMessaging::getInstVar()->setWorkerEvent(new WorkerEvent(JOB_STARTING, \"initializing mesh...\"));");
-	out.println("\tmesh = new CartesianMesh(\"" + newBaseDataName + ".vcg" + "\");");
+	out.println("\tchar tempString[1024];");
+	out.println("\tsprintf(tempString, \"%s%c" + simulationJob.getSimulationJobID() + ".vcg\\0\", outputPath, DIRECTORY_SEPARATOR);");
+	out.println("\tmesh = new CartesianMesh(tempString);");
 	out.println("\tSimulationMessaging::getInstVar()->setWorkerEvent(new WorkerEvent(JOB_STARTING, \"mesh initialized\"));");
 	out.println("\tassert(mesh);");
 	out.println("\tsim = new UserSimulation(mesh);");
@@ -280,20 +283,21 @@ protected void writeGetSimTool(java.io.PrintWriter out) throws Exception {
 	out.println("\ttheApplication->setSimulation(sim);");
 	out.println();
 	out.println("\tsim->initSimulation();");
-	out.println("\tpSimTool->setup();");
-	out.println("\tpSimTool->setBaseFilename(\""+newBaseDataName.toString()+"\");");
+	out.println("\tpSimTool->setSimulation(sim);");
+	out.println("\tsprintf(tempString, \"%s%c" + simulationJob.getSimulationJobID() + "\\0\", outputPath, DIRECTORY_SEPARATOR);");
+	out.println("\tpSimTool->setBaseFilename(tempString);");
 	out.println("\tpSimTool->loadFinal();   // initializes to the latest file if it exists");
-	out.println();
-	out.println("\tpSimTool->setPeriodSec("+taskDesc.getTimeStep().getDefaultTimeStep()+");");
+	out.println("");
+	out.println("\tpSimTool->setTimeStep("+taskDesc.getTimeStep().getDefaultTimeStep()+");");
 	out.println("\tpSimTool->setEndTimeSec("+taskDesc.getTimeBounds().getEndingTime()+");");
 
 	if (taskDesc.getOutputTimeSpec().isDefault()){
-		out.println("\tpSimTool->setStoreMultiple("+((DefaultOutputTimeSpec)taskDesc.getOutputTimeSpec()).getKeepEvery()+");");
+		out.println("\tpSimTool->setKeepEvery("+((DefaultOutputTimeSpec)taskDesc.getOutputTimeSpec()).getKeepEvery()+");");
 	}else{
 		throw new RuntimeException("unexpected OutputTime specification type :"+taskDesc.getOutputTimeSpec().getClass().getName());
 	}
-	out.println("\tpSimTool->setStoreEnable(TRUE);");
-	out.println("\tpSimTool->setFileCompress(FALSE);");
+	//out.println("\tpSimTool->setStoreEnable(TRUE);");
+	//out.println("\tpSimTool->setFileCompress(FALSE);");
 	
 	out.println();
 	out.println("\treturn pSimTool;");
@@ -335,6 +339,26 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 		throw new Exception("task description not defined");
 	}	
 	
+	out.println("#include <sys/stat.h>");
+	
+	out.println("#ifdef WIN32");
+	out.println("#define DIRECTORY_SEPARATOR '\\\\'");
+	out.println("#else");
+	out.println("#define DIRECTORY_SEPARATOR '/'");
+	out.println("#endif");
+	String parentPath = new File(baseDataName).getParent();
+	StringBuffer newParentPath = new StringBuffer();
+	for (int i = 0; i < parentPath.length(); i ++){
+		if (baseDataName.charAt(i) == '\\'){
+			newParentPath.append(baseDataName.charAt(i));
+			newParentPath.append(baseDataName.charAt(i));
+		}else{
+			newParentPath.append(baseDataName.charAt(i));
+		}
+	}	
+	out.println("static char* outputPath = \"" + newParentPath +"\";");
+	out.println();
+
 	out.println("#ifndef VCELL_CORBA");
 	out.println("//-------------------------------------------");
 	out.println("//   BATCH (NON-CORBA) IMPLEMENTATION");
@@ -390,7 +414,32 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 	out.println("\tstring returnMsg;");
 	// Fei Changes Begin
 	out.println("\ttry {");
-	out.println("\t\tif (argc == 1) { // no messaging");
+	out.println("\t\tjint taskID = -1;");
+	out.println("\t\tfor (int i = 1; i < argc; i ++) {");
+	out.println("\t\t\tif (!strcmp(argv[i], \"-nz\")) {");
+	out.println("\t\t\t\tSimTool::bSimZip = false;");
+	out.println("\t\t\t} else if (!strcmp(argv[i], \"-d\")) {");
+	out.println("\t\t\t\ti ++;");
+	out.println("\t\t\t\toutputPath = argv[i];");
+	out.println("\t\t\t} else {");
+	out.println("\t\t\t\tfor (int j = 0; j < strlen(argv[i]); j ++) {");
+	out.println("\t\t\t\t\tif (argv[i][j] < '0' || argv[i][j] > '9') {");
+	out.println("\t\t\t\t\t\tcout << \"Wrong argument : \" << argv[i] << endl;");
+	out.println("\t\t\t\t\t\tcout << \"Arguments : [-d output] [-nz] [taskID]\" <<  endl;");
+	out.println("\t\t\t\t\t\texit(1);");
+	out.println("\t\t\t\t\t}");
+	out.println("\t\t\t\t}");	
+	out.println("\t\t\t\ttaskID = atoi(argv[i]);");
+	out.println("\t\t\t}");
+	out.println("\t\t}");
+	
+	out.println("\t\tstruct stat buf;");	
+	out.println("\t\tif (stat(outputPath, &buf)) {");
+	out.println("\t\t\tcerr << \"Output directory [\" << outputPath <<\"] doesn't exist\" << endl;");
+	out.println("\t\t\texit(1);");
+	out.println("\t\t}");
+	
+	out.println("\t\tif (taskID == -1) { // no messaging");
 	out.println("\t\t\tSimulationMessaging::create();");
 	out.println("\t\t} else {");
 	out.println("\t\t\tchar* broker = \"" + JmsUtils.getJmsUrl() + "\";");
@@ -401,7 +450,6 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 	out.println("\t\t\tchar* vcusername = \"" + simulation.getVersion().getOwner().getName() + "\";");
 	out.println("\t\t\tjint simKey = " + simulation.getVersion().getVersionKey() + ";");
 	out.println("\t\t\tjint jobIndex = " + simulationJob.getJobIndex() + ";");
-	out.println("\t\t\tjint taskID = atoi(argv[1]);");
 	out.println("\t\t\tSimulationMessaging::create(broker, smqusername, password, qname, tname, vcusername, simKey, jobIndex, taskID);");
 	out.println("\t\t}");
 	out.println("\t\tSimulationMessaging::getInstVar()->start(); // start the thread");
