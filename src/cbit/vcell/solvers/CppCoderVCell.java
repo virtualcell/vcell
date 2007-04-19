@@ -40,7 +40,7 @@ public CppCoderVCell(String baseFilename, java.io.File directory, SimulationJob 
 
 protected String[] getCodeIncludes()
 {
-	  String includes[] = new String[23];
+	  String includes[] = new String[24];
 
 	  includes[0] = "<assert.h>";
 	  includes[1] = "<math.h>";
@@ -65,6 +65,7 @@ protected String[] getCodeIncludes()
 	  includes[20] = "<VCELL/MembraneEqnBuilderDiffusion.h>";
 	  includes[21] = "<VCELL/SparseLinearSolver.h>";
 	  includes[22] = "<VCELL/SparseVolumeEqnBuilder.h>";
+	  includes[23] = "<VCELL/SimulationMessaging.h>";
 
 	  return includes;
 }                                    
@@ -87,13 +88,13 @@ protected String[] getCodeIncludes()
 
 protected String[] getHeaderConstants() {
 	
-	java.util.Vector constantVector = new java.util.Vector();
+	java.util.Vector<Constant> constantVector = new java.util.Vector<Constant>();
 	
 	Variable variables[] = simulationJob.getWorkingSim().getVariables();
 	for (int i = 0; i < variables.length; i++){
 		Variable var = variables[i];
 		if (var instanceof Constant){
-			constantVector.addElement(var);
+			constantVector.addElement((Constant)var);
 		}
 	}		
 
