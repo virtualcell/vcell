@@ -1661,6 +1661,8 @@ private void setTimeFromSlider(int sliderPosition) {
 			} finally {
 				setCursorForWindow(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 			}
+		}else{
+			getJTextField1().setText(timepoint+"");
 		}
 	} else {
 		getJTextField1().setText("");
