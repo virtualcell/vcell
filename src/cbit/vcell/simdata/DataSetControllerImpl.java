@@ -768,13 +768,19 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 		        reader.close();
 		        String origLog = fileData.toString();
 		        String newLogStr;
-		        String replace_orig = Simulation.createSimulationID(origSimKey);
+	        	String replace_new =
+	        		ExternalDataIdentifier.createSimIDWithJobIndex(
+	        				fieldDataFileOperationSpec.specEDI.getKey(),
+	        				fieldDataFileOperationSpec.JOBINDEX_DEFAULT, false);
 		        if(isOldStyle){
-			        String replace_new = Simulation.createSimulationID(fieldDataFileOperationSpec.specEDI.getKey());
-			        replace_new = SimulationJob.createSimulationJobID(replace_new, 0);
+		        	String replace_orig =
+		        		ExternalDataIdentifier.createSimIDWithJobIndex(origSimKey, 0, true);
 			        newLogStr = origLog.replaceAll(replace_orig, replace_new);	        	
 		        }else{
-			        String replace_new = Simulation.createSimulationID(fieldDataFileOperationSpec.specEDI.getKey());
+		        	String replace_orig =
+		        		ExternalDataIdentifier.createSimIDWithJobIndex(
+		        				origSimKey,
+		        				fieldDataFileOperationSpec.sourceSimParamScanJobIndex, false);
 			        newLogStr= origLog.replaceAll(replace_orig, replace_new);	        	
 		        }
 		        writer = new BufferedWriter(new FileWriter(fdLogFile_new));
@@ -821,14 +827,20 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 //			    System.out.println("zipread time="+((System.currentTimeMillis()-startTime)/1000.0));
 			        	zis.close();
 			        	String newName;
-			        	String replace_orig = Simulation.createSimulationID(origSimKey);
-			        	if(isOldStyle){
-					        String replace_new = Simulation.createSimulationID(fieldDataFileOperationSpec.specEDI.getKey());
-					        replace_new = SimulationJob.createSimulationJobID(replace_new, 0);
-					        newName = zeIN.getName().replaceAll(replace_orig, replace_new);	        	
+			        	String replace_new =
+			        		ExternalDataIdentifier.createSimIDWithJobIndex(
+			        				fieldDataFileOperationSpec.specEDI.getKey(),
+			        				fieldDataFileOperationSpec.JOBINDEX_DEFAULT, false);
+				        if(isOldStyle){
+				        	String replace_orig =
+				        		ExternalDataIdentifier.createSimIDWithJobIndex(origSimKey, 0, true);
+				        	newName = zeIN.getName().replaceAll(replace_orig, replace_new);	        	
 				        }else{
-					        String replace_new = Simulation.createSimulationID(fieldDataFileOperationSpec.specEDI.getKey());
-					        newName = zeIN.getName().replaceAll(replace_orig, replace_new);	        	
+				        	String replace_orig =
+				        		ExternalDataIdentifier.createSimIDWithJobIndex(
+				        				origSimKey,
+				        				fieldDataFileOperationSpec.sourceSimParamScanJobIndex, false);
+				        	newName = zeIN.getName().replaceAll(replace_orig, replace_new);	        	
 				        }
 			        	ZipEntry zeOUT = new ZipEntry(newName);
 			        	zeOUT.setComment(zeIN.getComment());
