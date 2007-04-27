@@ -138,7 +138,7 @@ public class FieldDataWindowManager
 		if(simInfoHolders == null || simInfoHolders.length == 0){
 			return null;
 		}
-		String[] colNames = new String[] {"Simulation","Model","Type","Application","Owner","Date"};
+		String[] colNames = new String[] {"Simulation","Scan Index","Model","Type","Application","Owner","Date"};
 		String[][] rows = new String[simInfoHolders.length][colNames.length];
 		for(int i=0;i<simInfoHolders.length;i+= 1){
 			if(simInfoHolders[i] instanceof FDSimMathModelInfo){
@@ -146,22 +146,24 @@ public class FieldDataWindowManager
 					getRequestManager().getDocumentManager().getMathModelInfo(
 							((FDSimMathModelInfo)simInfoHolders[i]).getMathModelKey());
 				rows[i][0] = simInfoHolders[i].simInfo.getName();
-				rows[i][1] = mmInfo.getVersion().getName();
-				rows[i][2] = "MathModel";
-				rows[i][3] = "";
-				rows[i][4] = simInfoHolders[i].simInfo.getOwner().getName();
-				rows[i][5] = mmInfo.getVersion().getDate().toString();
+				rows[i][1] = simInfoHolders[i].jobIndex+"";
+				rows[i][2] = mmInfo.getVersion().getName();
+				rows[i][3] = "MathModel";
+				rows[i][4] = "";
+				rows[i][5] = simInfoHolders[i].simInfo.getOwner().getName();
+				rows[i][6] = mmInfo.getVersion().getDate().toString();
 				
 			}else if(simInfoHolders[i] instanceof FDSimBioModelInfo){
 				BioModelInfo bmInfo =
 					getRequestManager().getDocumentManager().getBioModelInfo(
 							((FDSimBioModelInfo)simInfoHolders[i]).getBioModelKey());					
 				rows[i][0] = simInfoHolders[i].simInfo.getName();
-				rows[i][1] = bmInfo.getVersion().getName();
-				rows[i][2] = "BioModel";
-				rows[i][3] = ((FDSimBioModelInfo)simInfoHolders[i]).getSimulationContextName();
-				rows[i][4] = simInfoHolders[i].simInfo.getOwner().getName();
-				rows[i][5] = bmInfo.getVersion().getDate().toString();
+				rows[i][1] = simInfoHolders[i].jobIndex+"";
+				rows[i][2] = bmInfo.getVersion().getName();
+				rows[i][3] = "BioModel";
+				rows[i][4] = ((FDSimBioModelInfo)simInfoHolders[i]).getSimulationContextName();
+				rows[i][5] = simInfoHolders[i].simInfo.getOwner().getName();
+				rows[i][6] = bmInfo.getVersion().getDate().toString();
 			}
 		}
 		
