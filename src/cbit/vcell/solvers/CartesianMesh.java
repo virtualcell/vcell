@@ -10,13 +10,10 @@ import java.io.*;
 
 import cbit.util.*;
 import cbit.vcell.geometry.*;
-import cbit.image.ImageException;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.math.CommentStringTokenizer;
 import cbit.vcell.math.VCML;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFormatException;
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.solvers.MeshRegionInfo.VolumeRegionMapSubvolume;
 import cbit.vcell.math.CoordinateIndex;
 /**
@@ -50,22 +47,11 @@ public class CartesianMesh implements Serializable, Matchable {
 	public final static String VERSION_1_2 = "1.2";		// added: Regions 07/02/2001
 	
 
-	private static final int NO_MEMBRANE_INDEX = -1;
-
 /**
  * This method was created by a SmartGuide.
  */
 private CartesianMesh () {
 }
-
-
-/**
- * This method was created by a SmartGuide.
- */
-private CartesianMesh (int sizeX, int sizeY, int sizeZ) {
-	this.size = new ISize(sizeX, sizeY, sizeZ);
-}
-
 
 /**
  * Insert the method's description here.
@@ -130,13 +116,7 @@ public boolean compareEqual(Matchable object) {
  * Creation date: (8/4/2005 8:25:37 AM)
  */
 public static boolean compareMesh(CartesianMesh mesh1, CartesianMesh mesh2, PrintWriter pw) {
-	try {
-		/*
-		if (mesh1.compareEqual(mesh2)) {
-			return true;
-		}		
-		*/
-		
+	try {		
 		int dimension = mesh1.getGeometryDimension();
 		
 		if (dimension != mesh2.getGeometryDimension()) {
@@ -185,32 +165,13 @@ public static boolean compareMesh(CartesianMesh mesh1, CartesianMesh mesh2, Prin
 		Vector vrmsv1 = meshRegionInfo1.getVolumeRegionMapSubvolume();
 		Vector vrmsv2 = meshRegionInfo2.getVolumeRegionMapSubvolume();
 		
-		// The volume of volume regions or area of membrane regions are printed with 6 digits after the decimal point,
-		// so we have to allow limited precision when comparing for equivalency. 1.1E-6 is used for safety, theoretically
-		// 1E-6 should work.
-		double precision = 1.1E-6;
-		double MAX_REL_ERROR = 1E-8;
-
-		// Areas and volumes are calculated using all 3 dimension sizes (e.g. size Z in 2D). Different versions of virtual cell
-		// allow for different numbers in Z, but they are really equivalent. The volumes and areas have to be scaled before comparison.
-		double scale = 0;
-		switch (dimension) {
-			case 1:
-				scale = mesh1.getExtent().getY() * mesh1.getExtent().getZ() / (mesh2.getExtent().getY() * mesh2.getExtent().getZ());
-				break;
-			case 2:
-				scale = mesh1.getExtent().getZ()/ mesh2.getExtent().getZ();
-				break;
-			case 3:
-				scale = 1;
-				break;
-		}
-		precision = Math.max(precision, precision/scale);
-
+		double precision = 1.1e-15;
+		double MAX_REL_ERROR = 1.1e-15;		
+		
 		for (int i = 0; i < meshRegionInfo1.getNumVolumeRegions(); i ++) {
 			MeshRegionInfo.VolumeRegionMapSubvolume region1 = (MeshRegionInfo.VolumeRegionMapSubvolume)vrmsv1.elementAt(i);
 			MeshRegionInfo.VolumeRegionMapSubvolume region2 = (MeshRegionInfo.VolumeRegionMapSubvolume)vrmsv2.elementAt(i);
-			double region1Volume = region1.volumeRegionVolume/scale;
+			double region1Volume = region1.volumeRegionVolume;
 			double region2Volume = region2.volumeRegionVolume;			
 			
 			if (region1.volumeRegionID != region2.volumeRegionID 
@@ -232,39 +193,11 @@ public static boolean compareMesh(CartesianMesh mesh1, CartesianMesh mesh2, Prin
 		Vector mrmsv1 = meshRegionInfo1.getMembraneRegionMapVolumeRegion();
 		Vector mrmsv2 = meshRegionInfo2.getMembraneRegionMapVolumeRegion();
 
-		int[] membraneRegionMapping = new int[meshRegionInfo1.getNumMembraneRegions()];
-		
-		for (int i = 0; i < meshRegionInfo2.getNumMembraneRegions(); i ++) {			
+		for (int i = 0; i < meshRegionInfo2.getNumMembraneRegions(); i ++) {	
+			MeshRegionInfo.MembraneRegionMapVolumeRegion region1 = (MeshRegionInfo.MembraneRegionMapVolumeRegion)mrmsv1.elementAt(i);
 			MeshRegionInfo.MembraneRegionMapVolumeRegion region2 = (MeshRegionInfo.MembraneRegionMapVolumeRegion)mrmsv2.elementAt(i);
-			int correspondingMemRegionIndex = -1;
-			int count = 0;			
-			for (int j = 0; j < meshRegionInfo1.getNumMembraneRegions(); j ++) {
-				MeshRegionInfo.MembraneRegionMapVolumeRegion region1 = (MeshRegionInfo.MembraneRegionMapVolumeRegion)mrmsv1.elementAt(j);
-					if (region1.volumeRegionInsideID == region2.volumeRegionInsideID && region1.volumeRegionOutsideID == region2.volumeRegionOutsideID) {
-						correspondingMemRegionIndex = j;
-						count ++;
-						if (count > 1) {
-							System.out.println("There are two membrane regions in the first mesh that's mapped to " + i + "th membrane region in the second mesh");
-							pw.println("There are two membrane regions in the first mesh that's mapped to " + i + "th membrane region in the second mesh");
-							return false;
-						}
-					}
-			}
-			if (correspondingMemRegionIndex==-1){
-				return false;
-			}
-			// make sure every element in the first mesh has only one mapping in the second mesh
-			for (int k = 0; k < i; k ++) {
-				if (correspondingMemRegionIndex == membraneRegionMapping[k]) {
-					System.out.println("There are two membrane regions in the second mesh that's mapped to " + correspondingMemRegionIndex + "th membrane region element in the first mesh");
-					pw.println("There are two membrane regions in the second mesh that's mapped to " + correspondingMemRegionIndex + "th membrane region element in the first mesh");
-					return false;
-				}
-			}
-			membraneRegionMapping[i] = correspondingMemRegionIndex;		
-			MeshRegionInfo.MembraneRegionMapVolumeRegion region1 = (MeshRegionInfo.MembraneRegionMapVolumeRegion)mrmsv1.elementAt(correspondingMemRegionIndex);
 
-			double region1Surface = region1.membraneRegionSurface/scale;
+			double region1Surface = region1.membraneRegionSurface;
 			double region2Surface = region2.membraneRegionSurface;
 			
 			// compare surface area, ignoring the index
@@ -296,62 +229,26 @@ public static boolean compareMesh(CartesianMesh mesh1, CartesianMesh mesh2, Prin
 		}
 		MembraneElement[] memElements1 = mesh1.getMembraneElements();
 		MembraneElement[] memElements2 = mesh2.getMembraneElements();
-		int[] mapping = new int[memElements2.length];
-		for (int i = 0; i < memElements2.length; i++){
-			int insideIndex2 = memElements2[i].getInsideVolumeIndex();
-			int outsideIndex2 = memElements2[i].getOutsideVolumeIndex();
-			int correspondingMemIndex = -1;
-			int count = 0;
-			for (int j = 0; j < memElements1.length; j++){
-				int insideIndex1 = memElements1[j].getInsideVolumeIndex();
-				int outsideIndex1 = memElements1[j].getOutsideVolumeIndex();
-				if (insideIndex1==insideIndex2 && outsideIndex1==outsideIndex2){
-					correspondingMemIndex = j;
-					count ++;
-					// make sure every element in the second mesh has only one mapping in the first mesh
-					if (count > 1) {
-						System.out.println("There are two membrane elements in the first mesh that's mapped to " + i + "th membrane element in the second mesh");
-						pw.println("There are two membrane elements in the first mesh that's mapped to " + i + "th membrane element in the second mesh");
-						return false;
-					}
-				}
-			}
-			
-			if (correspondingMemIndex==-1){
-				return false;
-			}
-			// make sure every element in the first mesh has only one mapping in the second mesh
-			for (int k = 0; k < i; k ++) {
-				if (correspondingMemIndex == mapping[k]) {
-					System.out.println("There are two membrane elements in the second mesh that's mapped to " + correspondingMemIndex + "th membrane element in the first mesh");
-					pw.println("There are two membrane elements in the second mesh that's mapped to " + correspondingMemIndex + "th membrane element in the first mesh");
-					return false;
-				}
-			}
-			mapping[i] = correspondingMemIndex;
-		}
-		for (int i = 0; i < mapping.length; i++){
-			int correspondingMemIndex = mapping[i]; // corresponding membrane index of the second mesh in the first mesh 
 
-			// compare membrane elements, ignoring the index
-			/*
-			if (memIndex != memElement.memIndex){
+		for (int i = 0; i < mesh1.getNumMembraneElements(); i++){
+		
+			// index
+			if (memElements1[i].getMembraneIndex() != memElements2[i].getMembraneIndex()){
 				return false;
-			}
-			*/
+			}			
 
 			// Inside
-			if (memElements1[correspondingMemIndex].getInsideVolumeIndex() != memElements2[i].getInsideVolumeIndex()){
+			if (memElements1[i].getInsideVolumeIndex() != memElements2[i].getInsideVolumeIndex()){
 				return false;
 			}
 
 			// Outside
-			if (memElements1[correspondingMemIndex].getOutsideVolumeIndex() != memElements2[i].getOutsideVolumeIndex()){
+			if (memElements1[i].getOutsideVolumeIndex() != memElements2[i].getOutsideVolumeIndex()){
 				return false;
 			}
 			
 			// Neighbors	
-			int[] neighborIndexes1 = memElements1[correspondingMemIndex].getMembraneNeighborIndexes();
+			int[] neighborIndexes1 = memElements1[i].getMembraneNeighborIndexes();
 			int[] neighborIndexes2 = memElements2[i].getMembraneNeighborIndexes();
 			if ((neighborIndexes1!=null && neighborIndexes2==null) ||
 				(neighborIndexes1==null && neighborIndexes2!=null)){
@@ -362,15 +259,32 @@ public static boolean compareMesh(CartesianMesh mesh1, CartesianMesh mesh2, Prin
 					return false;
 				}
 				for (int k=0;k<neighborIndexes1.length;k++){
-					if (neighborIndexes1[k] != mapping[neighborIndexes2[k]]){
+					if (neighborIndexes1[k] != neighborIndexes2[k]){
 						return false;
 					}
 				}
 			}
 			// Membrane Region ID
-			if (mesh1.getMembraneRegionIndex(correspondingMemIndex) != membraneRegionMapping[mesh2.getMembraneRegionIndex(i)]) {
+			if (mesh1.getMembraneRegionIndex(i) != mesh2.getMembraneRegionIndex(i)) {
 				return false;
-			}		
+			}
+			
+			// X, Y, Z
+			if (memElements1[i].centroidX != memElements2[i].centroidX 
+				|| memElements1[i].centroidY != memElements2[i].centroidY
+				|| memElements1[i].centroidZ != memElements2[i].centroidZ) {
+				return false;				
+			}
+			// area
+			if (Math.abs(memElements1[i].area - memElements2[i].area) > precision) {
+				return false;
+			}
+			// normal
+			if (Math.abs(memElements1[i].normalX - memElements2[i].normalX) > precision 
+					|| Math.abs(memElements1[i].normalY - memElements2[i].normalY) > precision
+					|| Math.abs(memElements1[i].normalZ - memElements2[i].normalZ) > precision) {
+				return false;
+			}
 		}
 			
 	} catch (Exception ex) {
@@ -454,9 +368,9 @@ public ContourElement[] getContourElements() {
  * @return int
  * @param coordIndex CoordinateIndex
  */
-public int getContourRegionIndex(int contourIndex) {
-	ContourElement contourElement = getContourElements()[contourIndex];
+public int getContourRegionIndex(int contourIndex) {	
 	throw new RuntimeException("CartesianMesh.getContourRegionIndex() not yet implemented");
+	//ContourElement contourElement = getContourElements()[contourIndex];
 	//return contourElement.getRegionIndex();
 }
 
@@ -890,9 +804,7 @@ public int getSubVolumeFromVolumeIndex(int volIndex) {
  */
 public String getVCML() {
 	String version = VERSION_1_0;
-	boolean bConnectivity = false;
 	if(membraneElements != null && membraneElements[0].getMembraneNeighborIndexes().length == 0){
-		bConnectivity = true;
 		version = VERSION_1_1;
 	}
 	boolean bRegion = (meshRegionInfo != null);

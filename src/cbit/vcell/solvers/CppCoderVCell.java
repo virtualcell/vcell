@@ -40,50 +40,46 @@ public CppCoderVCell(String baseFilename, java.io.File directory, SimulationJob 
 
 protected String[] getCodeIncludes()
 {
-	  String includes[] = new String[24];
-
-	  includes[0] = "<assert.h>";
-	  includes[1] = "<math.h>";
-	  includes[2] = "<stdlib.h>";
-	  includes[3] = "<VCELL/SimTypes.h>";
-	  includes[4] = "<VCELL/Variable.h>";
-	  includes[5] = "<VCELL/Feature.h>";
-	  includes[6] = "<VCELL/Mesh.h>";
-	  includes[7] = "<VCELL/SimTool.h>";
-	  includes[8] = "<VCELL/Solver.h>";
-	  includes[9] = "<VCELL/DataSet.h>";
-	  includes[10] = "<VCELL/EqnBuilderReactionDiffusion.h>";	  
-	  includes[11] = "<VCELL/EqnBuilderReactionForward.h>";
-	  includes[12] = "<VCELL/MembraneEqnBuilderForward.h>";	  
-	  includes[13] = "<VCELL/App.h>";
-	  includes[14] = "<VCELL/Contour.h>";
-	  includes[15] = "<VCELL/Element.h>";
-	  includes[16] = "<VCELL/PdeSolverDiana.h>";
-	  includes[17] = "<VCELL/Region.h>";
-	  includes[18] = "<VCELL/RegionEqnBuilder.h>";
-	  includes[19] = "<VCELL/EqnBuilderReactionDiffusionConvection.h>";
-	  includes[20] = "<VCELL/MembraneEqnBuilderDiffusion.h>";
-	  includes[21] = "<VCELL/SparseLinearSolver.h>";
-	  includes[22] = "<VCELL/SparseVolumeEqnBuilder.h>";
-	  includes[23] = "<VCELL/SimulationMessaging.h>";
-
-	  return includes;
+	  return new String[] {
+		  "<assert.h>",
+		  "<math.h>",
+		  "<stdlib.h>",
+		  "<VCELL/SimTypes.h>",
+		  "<VCELL/Variable.h>",
+		  "<VCELL/Feature.h>",
+		  "<VCELL/Mesh.h>",
+		  "<VCELL/SimTool.h>",
+		  "<VCELL/Solver.h>",
+		  "<VCELL/DataSet.h>",
+		  "<VCELL/EqnBuilderReactionDiffusion.h>",	  
+		  "<VCELL/EqnBuilderReactionForward.h>",
+		  "<VCELL/MembraneEqnBuilderForward.h>",	  
+		  "<VCELL/App.h>",
+		  "<VCELL/Contour.h>",
+		  "<VCELL/Element.h>",
+		  "<VCELL/PdeSolverDiana.h>",
+		  "<VCELL/Region.h>",
+		  "<VCELL/RegionEqnBuilder.h>",
+		  "<VCELL/EqnBuilderReactionDiffusionConvection.h>",
+		  "<VCELL/MembraneEqnBuilderDiffusion.h>",
+		  "<VCELL/SparseLinearSolver.h>",
+		  "<VCELL/SparseVolumeEqnBuilder.h>",
+		  "<VCELL/SimulationMessaging.h>"		  
+	  };
 }                                    
 
 
-   protected String[] getHeaderClassDefines()
-   {
-	  String defines[] = new String[5];
-
-	  defines[0] = "CartesianMesh";
-	  defines[1] = "Feature";
-	  defines[2] = "VolumeVariable";
-	  defines[3] = "MembraneVariable";
-	  defines[3] = "ContourVariable";
-	  defines[4] = "VolumeRegion";
-
-	  return defines;
-   }                     
+ protected String[] getHeaderClassDefines() 
+ {
+	 return new String[] {
+		  "CartesianMesh",
+		  "Feature",
+		  "VolumeVariable",
+		  "MembraneVariable",
+		  "ContourVariable",
+		  "VolumeRegion"
+	 };
+ }                     
 
 
 protected String[] getHeaderConstants() {
@@ -115,16 +111,14 @@ protected String[] getHeaderConstants() {
 
    protected String[] getHeaderIncludes()
    {
-	  String includes[] = new String[6];
-
-	  includes[0] = "<VCELL/SimTypes.h>";
-	  includes[1] = "<VCELL/VarContext.h>";
-	  includes[2] = "<VCELL/Simulation.h>";
-	  includes[3] = "<VCELL/VCellModel.h>";
-	  includes[4] = "<VCELL/Feature.h>";
-	  includes[5] = "<VCELL/FastSystem.h>";
-
-	  return includes;
+	  return new String[] {
+		  "<VCELL/SimTypes.h>",
+		  "<VCELL/VarContext.h>",
+		  "<VCELL/Simulation.h>",
+		  "<VCELL/VCellModel.h>",
+		  "<VCELL/Feature.h>",
+		  "<VCELL/FastSystem.h>"
+	  };
    }                                 
 
 
