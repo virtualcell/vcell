@@ -26,7 +26,6 @@ import cbit.vcell.server.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.server.PropertyLoader;
 import java.io.*;
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -222,7 +221,7 @@ System.out.println(compileCommand);
 	}catch (Exception e){
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, "error compiling: "+e.getMessage()));
 		e.printStackTrace(System.out);
-		throw new SolverException("error compiling: "+e.getMessage());		
+		throw new SolverException("Failed to compile your simulation, please contact the Virtual Cell for further assistance");		
 	}
 
 	
@@ -286,7 +285,7 @@ System.out.println(linkCommand);
 	}catch (Exception e){
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, "error linking: "+e.getMessage()));
 		e.printStackTrace(System.out);
-		throw new SolverException("error linking: "+e.getMessage());		
+		throw new SolverException("Failed to link your simulation, please contact the Virtual Cell for further assistance");	
 	}	
 }
 

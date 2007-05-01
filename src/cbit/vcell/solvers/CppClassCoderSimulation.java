@@ -472,10 +472,6 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 		out.println("\t\tpSimTool->startSteady("+taskDesc.getErrorTolerance().getAbsoluteErrorTolerance()+","+taskDesc.getTimeBounds().getEndingTime()+");");
 	}		
 
-	out.println("\t}catch (char *exStr){");
-	out.println("\t\treturnMsg = \"Exception while running : \";");
-	out.println("\t\treturnMsg += exStr;");
-	out.println("\t\treturnCode = 1;");
 	out.println("\t}catch (const char *exStr){");
 	out.println("\t\treturnMsg = \"Exception while running : \";");
 	out.println("\t\treturnMsg += exStr;");
