@@ -11,5 +11,6 @@
 	<classpathentry kind="lib" path="thirdParty_1.51.jar"/>
 	<classpathentry kind="lib" path="bio-formats.jar"/>
 	<classpathentry kind="lib" path="ome-java.jar"/>
+	<classpathentry kind="lib" path="WinService.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
