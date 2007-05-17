@@ -141,7 +141,7 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 		  			out.println("\taddSolver(pdeSolver);");
 	  			}
 		  		out.println("#else");
-	  			out.println("\tsmbuilder = new SparseVolumeEqnBuilder(volumeVar,mesh," + (simulation.getMathDescription().hasVelocity(volVar) ? "false" : "true") + ");");
+	  			out.println("\tsmbuilder = new SparseVolumeEqnBuilder(volumeVar,mesh," + (simulation.getMathDescription().hasVelocity(volVar) ? "false" : "true") + ", numSolveRegions, solveRegions);");
 	  			out.println("\tslSolver = new SparseLinearSolver(volumeVar,smbuilder,"+simulation.hasTimeVaryingDiffusionOrAdvection(volVar)+");");
 	  			out.println("\taddSolver(slSolver);");
 	  			out.println("#endif");
