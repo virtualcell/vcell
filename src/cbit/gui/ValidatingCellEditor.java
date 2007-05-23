@@ -84,7 +84,7 @@ public final boolean stopCellEditing() {
 			}
 			delegate.setValue(newValue);//VALIDATE_OK, delegate gets New Good value
 		}catch(UtilCancelException e){
-			delegate.setValue(lastTable.getValueAt(lastRow,lastCol));//delegate gets Last Good value
+			delegate.setValue(editorValueProvider.getEditorValue(lastTable.getValueAt(lastRow,lastCol)));//delegate gets Last Good value
 		}catch(Throwable e){//Delegate keeps UNVALIDATED value
 		}
 	}
