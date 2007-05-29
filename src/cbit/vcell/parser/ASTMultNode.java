@@ -123,8 +123,27 @@ public Node differentiate(String independentVariable) throws ExpressionException
 	return addNode;	 
 }
 public double evaluateConstant() throws ExpressionException {
-	double product = 1.0;
+	// evaluate boolean children first for conditional expressions. 
+	// if any one of them is false, just return 0;
+	// this protects against evaluating the terms outside of
+	// domain defined by the boolean conditions.
 	ExpressionException childException = null;
+	for (int i=0;i<jjtGetNumChildren();i++){
+		if (jjtGetChild(i).isBoolean()) {
+			try {
+				if (jjtGetChild(i).evaluateConstant() == 0) {
+					return 0.0;
+				}
+			}catch (ExpressionException e){
+				childException = e;
+			}		
+		}
+	}
+	if (childException != null){
+		throw childException;
+	}	
+	
+	double product = 1.0;
 	for (int i=0;i<jjtGetNumChildren();i++){
 		//
 		// see if there are any constant 0.0's, if there are simplify to 0.0
@@ -136,7 +155,7 @@ public double evaluateConstant() throws ExpressionException {
 			childException = e;
 		}		
 	}
-	if (product == 0.0){
+	if (product == -0.0){
 		return 0.0;
 	}	
 	if (childException != null){
@@ -153,6 +172,19 @@ public RealInterval evaluateInterval(RealInterval intervals[]) throws Expression
 	return getInterval(intervals);
 }    
 public double evaluateVector(double values[]) throws ExpressionException {
+	// evaluate boolean children first for conditional expressions. 
+	// if any one of them is false, just return 0;
+	// this protects against evaluating the terms outside of
+	// domain defined by the boolean conditions.
+	for (int i=0;i<jjtGetNumChildren();i++){
+		if (jjtGetChild(i).isBoolean()) {
+			if (jjtGetChild(i).evaluateVector(values) == 0) {
+				return 0.0;
+			}
+		}
+	}
+	
+	// otherwise, evaluate all terms in the old way.	
 	double product = 1.0;
 	for (int i=0;i<jjtGetNumChildren();i++){
 		product *= jjtGetChild(i).evaluateVector(values);
@@ -342,22 +374,61 @@ public Node flatten() throws ExpressionException {
 		return multNode;
 	}	
 }
+
+public boolean isBoolean() {
+	for (int i=0;i<jjtGetNumChildren();i++){
+		if (!jjtGetChild(i).isBoolean()) {
+			return false;
+		}
+	}
+	  return true;
+}
+
 public String infixString(int lang, NameScope nameScope){
 
+	boolean[] boolChildFlags = new boolean[jjtGetNumChildren()];
+	boolean bAllBoolean = true;
+	boolean bNoBoolean = true;
+	for (int i=0;i<jjtGetNumChildren();i++){
+		if (jjtGetChild(i).isBoolean()) {
+			boolChildFlags[i] = true;
+			bNoBoolean = false;
+		} else {
+			bAllBoolean = false;
+		}
+	}
+	
 	StringBuffer buffer = new StringBuffer();
 	 
 	buffer.append("(");
-
-	for (int i=0;i<jjtGetNumChildren();i++){
-		if (jjtGetChild(i) instanceof ASTInvertTermNode){
-			buffer.append(" / ");
-//             buffer.append("(");
-			buffer.append(jjtGetChild(i).infixString(lang,nameScope));
-//             buffer.append(")");
-		}else{
-			if (i>0) buffer.append(" * ");
-			buffer.append(jjtGetChild(i).infixString(lang,nameScope));
+	
+	if (bAllBoolean || bNoBoolean || lang != SimpleNode.LANGUAGE_C) { // old way
+		for (int i=0;i<jjtGetNumChildren();i++){
+			if (jjtGetChild(i) instanceof ASTInvertTermNode){
+				buffer.append(" / ");
+				buffer.append(jjtGetChild(i).infixString(lang,nameScope));
+			}else{
+				if (i>0) buffer.append(" * ");
+				buffer.append(jjtGetChild(i).infixString(lang,nameScope));
+			}
+		}		
+	} else {		
+		StringBuffer conditionBuffer = new StringBuffer();
+		StringBuffer valueBuffer = new StringBuffer();
+		for (int i=0;i<jjtGetNumChildren();i++){
+			if (boolChildFlags[i]) {
+				if (conditionBuffer.length() > 0) {
+					conditionBuffer.append(" && ");
+				}
+				conditionBuffer.append(jjtGetChild(i).infixString(lang,nameScope));
+			} else {
+				if (valueBuffer.length() > 0) {
+					valueBuffer.append(" * ");
+				}
+				valueBuffer.append(jjtGetChild(i).infixString(lang,nameScope));
+			}
 		}
+		buffer.append("((" + conditionBuffer + ") ? (" + valueBuffer + ") : 0.0)");
 	}
 
 	buffer.append(")");

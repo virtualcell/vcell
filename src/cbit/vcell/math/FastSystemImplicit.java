@@ -1,11 +1,10 @@
 package cbit.vcell.math;
-import cbit.vcell.solver.Simulation;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
 import java.util.*;
-import java.io.*;
 import cbit.vcell.parser.*;
 import cbit.vcell.matrix.RationalExpMatrix;
 import cbit.vcell.matrix.RationalExp;
@@ -39,7 +38,6 @@ public FastSystemImplicit(MathDescription mathDesc) {
  * @exception java.lang.Exception The exception description.
  */
 private void checkLinearity() throws MathException, ExpressionException {
-	int varCount=0;
 	Enumeration enum1 = fastVarList.elements();
 	while (enum1.hasMoreElements()){
 		Variable var = (Variable)enum1.nextElement();
@@ -175,7 +173,7 @@ protected void refreshAll() throws MathException, ExpressionException {
  * @return java.util.Vector
  */
 private void refreshFastVarList() throws MathException, ExpressionException {
-	fastVarList = new Vector();
+	fastVarList.clear();
 
 	//
 	// get list of unique (VolVariables and MemVariables) in fastRate expressions
@@ -200,7 +198,7 @@ private void refreshFastVarList() throws MathException, ExpressionException {
 	//
 	// make a list of the fastInvariants that reference each of these variables,
 	//
-	Hashtable hashtable = new Hashtable();
+	Hashtable<Variable, Vector<FastInvariant>> hashtable = new Hashtable<Variable, Vector<FastInvariant>>();
 	for (int i = 0; i < fastInvariantList.size(); i++) {
 		FastInvariant fi = (FastInvariant) fastInvariantList.elementAt(i);
 		Expression exp = fi.getFunction();
@@ -210,11 +208,11 @@ private void refreshFastVarList() throws MathException, ExpressionException {
 			Variable var = (Variable) enum1.nextElement();
 			if (var instanceof VolVariable || var instanceof MemVariable) {
 				if (!fastVarList.contains(var)) {
-					Vector fiList = null;
+					Vector<FastInvariant> fiList = null;
 					if (hashtable.containsKey(var)) {
-						fiList = (Vector) hashtable.get(var);
+						fiList = hashtable.get(var);
 					}else{
-						fiList = new Vector();
+						fiList = new Vector<FastInvariant>();
 					}
 					fiList.addElement(fi);
 					hashtable.put(var, fiList);
@@ -292,7 +290,9 @@ private void refreshInvarianceMatrix() throws MathException, ExpressionException
 		Expression function = ((FastInvariant)fastInvariantList.elementAt(i)).getFunction();
 		for (int j=0;j<numVars;j++){
 			Variable var = (Variable)fastVarList.elementAt(j);
-			Expression exp = function.differentiate(var.getName()).flatten();
+			Expression exp = function.differentiate(var.getName());
+			exp.bindExpression(null);
+			exp = exp.flatten();
 			RationalExp coeffRationalExp = RationalExpUtils.getRationalExp(exp);
 			matrix.set_elem(i,j,coeffRationalExp);
 		}
@@ -339,10 +339,10 @@ System.out.println("");
 	}
 	for (int i=0;i<rows;i++){
 		//
-		// if mat(i,i)!=1, rotate columns and swap variables
+		// if mat(i,i)!=1, rotate columns and swap variables (don't swap pseudo constants)
 		//
 		if (!matrix.get(i,i).isConstant() || matrix.get(i,i).getConstant().doubleValue() != 1){
-			for (int j=i+1;j<cols;j++){
+			for (int j=i+1;j<numVars;j++){
 				if (matrix.get(i,j).isConstant() && matrix.get(i,j).getConstant().doubleValue()==1.0){
 					for (int ii=0;ii<rows;ii++){
 						RationalExp temp = matrix.get(ii,i);
@@ -433,7 +433,7 @@ private void refreshSubstitutedRateExps() throws MathException, ExpressionExcept
 		//
 		for (int col=0;col<independentVarList.size();col++){
 			Variable indepVar = (Variable)independentVarList.elementAt(col);
-			cbit.vcell.matrix.RationalExp coefExp = dependencyMatrix.get(row,col);
+			cbit.vcell.matrix.RationalExp coefExp = dependencyMatrix.get(row,col).simplify();
 			if (!coefExp.isZero()){
 				exp = Expression.add(exp, new Expression(coefExp.infixString()+"*"+indepVar.getName()));
 			}

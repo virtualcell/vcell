@@ -1448,7 +1448,7 @@ public double evaluateConstant() throws ExpressionException {
 	}
 	}
 	if (Double.isInfinite(result) || Double.isNaN(result)){
-		System.out.println("ASTFuncNode.evaluateConstant("+getFunction()+") evaluated to "+result+", exp = "+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT));
+		System.out.println("ASTFuncNode.evaluateConstant("+getName()+") evaluated to "+result+", exp = "+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT));
 	}
 	return result;
 }      

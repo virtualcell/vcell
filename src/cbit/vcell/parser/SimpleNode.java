@@ -31,6 +31,10 @@ public abstract class SimpleNode implements Node, java.io.Serializable {
   }
 
 
+  public boolean isBoolean() {
+	  return false;
+  }
+  
   public void bind(SymbolTable symbolTable) throws ExpressionBindingException
   {
 	  ival = null;
@@ -256,7 +260,7 @@ private String[] stringArrayMerge(String[] array1, String[] array2) {
 	if (array2 == null){
 		return array1;
 	}
-	java.util.Vector newVector = new java.util.Vector();
+	java.util.Vector<String> newVector = new java.util.Vector<String>();
 	for (int i=0;i<array1.length;i++){
 		newVector.addElement(array1[i]);
 	}
@@ -273,7 +277,7 @@ private String[] stringArrayMerge(String[] array1, String[] array2) {
 	}			
 	String newArray[] = new String[newVector.size()];
 	for (int i=0;i<newVector.size();i++){
-		newArray[i] = (String)newVector.elementAt(i);
+		newArray[i] = newVector.elementAt(i);
 	}
 	return newArray;		
 }
