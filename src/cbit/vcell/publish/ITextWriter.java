@@ -1,6 +1,5 @@
 package cbit.vcell.publish;
 import java.awt.*;
-import java.awt.Color;
 import cbit.image.VCImage;
 import cbit.vcell.graph.ReactionCartoon;
 import cbit.vcell.graph.StructureCartoon;
@@ -11,11 +10,15 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.mapping.gui.StructureMappingCartoon;
 import cbit.vcell.math.*;
 import cbit.vcell.model.*;
+import cbit.vcell.model.gui.ReactionCanvas;
+import cbit.vcell.model.gui.ReactionCanvasDisplaySpec;
 import cbit.vcell.mapping.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.dictionary.ReactionDescription;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.parser.Expression;
+import cbit.util.BeanUtils;
 import cbit.util.Extent;
 import cbit.util.ISize;
 import cbit.util.Origin;
@@ -27,6 +30,7 @@ import java.awt.Graphics2D;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.awt.image.IndexColorModel;
+import java.awt.image.WritableRaster;
 import java.awt.print.PageFormat;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
@@ -34,6 +38,7 @@ import java.io.File;
 import java.awt.RenderingHints;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.Vector;
 
 import com.lowagie.text.Cell;
 import com.lowagie.text.Table;
@@ -96,6 +101,177 @@ public abstract class ITextWriter {
 	protected Document document;
 	
 
+/**
+	 * Comment
+	 */
+/*	private void createRegionImageIcon() throws Exception{
+	
+		final int DISPLAY_DIM_MAX = 256;
+	
+		if(getImage() == null){
+			throw new Exception("CreateRegionImageIcon error No Image");
+		}
+		
+		try{
+			// int RGB interpretation as follows:
+			// int bits(32): (alpha)31-24,(red)23-16,(green)15-8,(blue)7-0
+			// for alpha: 0-most transparent(see-through), 255-most opaque(solid)
+			
+			//Reset colormap (grayscale)
+			for(int i=0;i<cmap.length;i+= 1){
+				int iv = (int)(0x000000FF&i);
+				cmap[i] = 0xFF<<24 | iv<<16 | iv<<8 | i;
+			}
+			//stretch cmap grays
+			if(getImage() != null && getImage().getPixelClasses().length < 32){
+				for(int i=0;i< getImage().getPixelClasses().length;i+= 1){
+					int stretchIndex = (int)(0xFF&getImage().getPixelClasses()[i].getPixel());
+					int newI = 32+(i*((256-32)/getImage().getPixelClasses().length));
+					cmap[stretchIndex] = 0xFF<<24 | newI<<16 | newI<<8 | newI;
+				}
+			}
+			//Highlight the current region
+			if(getImage() != null && getCurrentPixelClassIndex() != null){
+				int index = getImage().getPixelClasses(getCurrentPixelClassIndex().intValue()).getPixel();
+				if(index > 254){throw new Exception("PixelClass indexes must be less than 255");}//need to save last(255) for (grid,blanck,etc...)
+				cmap[index] = java.awt.Color.red.getRGB();
+			}
+			//Set grid color
+			cmap[cmap.length-1] = 0xFFFFFFFF; //white
+	
+			//Make ColorModel, re-use colormap
+			java.awt.image.IndexColorModel icm =
+					new java.awt.image.IndexColorModel(8, cmap.length,cmap,0,  false ,-1/, java.awt.image.DataBuffer.TYPE_BYTE);
+	
+			
+			//Initialize image data
+			if(pixelWR == null){
+				//cbit.vcell.geometry.GeometrySpec gs = new cbit.vcell.geometry.GeometrySpec((cbit.sql.Version)null,getImage());
+				//cbit.image.VCImage sampledImage = gs.getSampledImage();
+				//if(sampledImage.getNumX() != getImage().getNumX() ||
+					//sampledImage.getNumY() != getImage().getNumY() ||
+					//sampledImage.getNumZ() != getImage().getNumZ()){
+						//cbit.vcell.client.PopupGenerator.showInfoDialog(
+							//"Image was too large ("+getImage().getNumX()+","+getImage().getNumY()+","+getImage().getNumZ()+") and has been down-sampled.\n"+
+							//"The new size will be "+sampledImage.getNumX()+","+sampledImage.getNumY()+","+sampledImage.getNumZ()+")\n"+
+							//"Features may have been distorted or removed.  If displayed image is not acceptable"+
+							//"To prevent sampling, image length should be less than "+cbit.vcell.geometry.GeometrySpec.GS_3D_MAX
+							//);
+				//}
+				cbit.image.VCImage sampledImage = getImage();
+				double side = Math.sqrt(sampledImage.getNumX()*sampledImage.getNumY()*sampledImage.getNumZ());
+				xSide = (int)Math.round(side/(double)sampledImage.getNumX());
+				if(xSide == 0){xSide = 1;}
+				if(xSide > sampledImage.getNumZ()){
+					xSide = sampledImage.getNumZ();
+				}
+				ySide = (int)Math.ceil((double)sampledImage.getNumZ()/(double)xSide);
+				if(ySide == 0){ySide = 1;}
+				if(ySide > sampledImage.getNumZ()){
+					ySide = sampledImage.getNumZ();
+				}
+				pixelWR = icm.createCompatibleWritableRaster(xSide*sampledImage.getNumX(),ySide*sampledImage.getNumY());
+				byte[] sib = sampledImage.getPixels();
+	
+				//write the image to buffer
+				int rowStride = xSide*sampledImage.getNumX()*sampledImage.getNumY();
+				int ystride = sampledImage.getNumX();
+				int zstride = sampledImage.getNumX()*sampledImage.getNumY();
+				for(int row=0;row < ySide;row+= 1){
+					for(int col=0;col<xSide;col+= 1){
+						int xoffset = col*sampledImage.getNumX();
+						int yoffset = (row*sampledImage.getNumY());
+						int zoffset = (col+(row*xSide))*zstride;
+						if(zoffset >= sib.length){
+							for(int x=0;x<sampledImage.getNumX();x+= 1){
+								for(int y=0;y<sampledImage.getNumY();y+= 1){
+									pixelWR.setSample(x+xoffset,y+yoffset,0,cmap.length-1);
+								}
+							}
+						}else{
+							for(int x=0;x<sampledImage.getNumX();x+= 1){
+								for(int y=0;y<sampledImage.getNumY();y+= 1){
+									pixelWR.setSample(x+xoffset,y+yoffset,0,(int)(0xFF&sib[x+(ystride*y)+zoffset]));
+								}
+							}
+						}
+					}
+				}
+				// scale if necessary
+				displayScale = 1.0;
+				if(pixelWR.getWidth() < DISPLAY_DIM_MAX || pixelWR.getHeight() < DISPLAY_DIM_MAX){
+					displayScale = (int)Math.min((DISPLAY_DIM_MAX/pixelWR.getWidth()),(DISPLAY_DIM_MAX/pixelWR.getHeight()));
+					if(displayScale == 0){displayScale = 1;}
+				}
+				if((displayScale == 1) && (pixelWR.getWidth() > DISPLAY_DIM_MAX || pixelWR.getHeight() > DISPLAY_DIM_MAX)){
+					displayScale = Math.max((pixelWR.getWidth()/DISPLAY_DIM_MAX),(pixelWR.getHeight()/DISPLAY_DIM_MAX));
+					//displayScale = Math.min(((double)DISPLAY_DIM_MAX/(double)pixelWR.getWidth()),((double)DISPLAY_DIM_MAX/(double)pixelWR.getHeight()));
+					if(displayScale == 0){displayScale = 1;}
+					displayScale = 1.0/displayScale;
+				}
+				if(displayScale != 1){
+					java.awt.geom.AffineTransform at = new java.awt.geom.AffineTransform();
+					at.setToScale(displayScale,displayScale);
+					java.awt.image.AffineTransformOp ato = new java.awt.image.AffineTransformOp(at,java.awt.image.AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+					smallPixelWR = ato.createCompatibleDestRaster(pixelWR);
+					ato.filter(pixelWR,smallPixelWR);
+					getFullSizeJCheckBox().setEnabled(true);
+				}else{
+					getFullSizeJCheckBox().setEnabled(false);
+				}
+			}
+	
+			//Create display image, re-use image data and colormap
+			// draw labels and grid
+			if(pixelWR != null){
+				java.awt.image.BufferedImage bi = null;
+				if(!getFullSizeJCheckBox().isEnabled() || getFullSizeJCheckBox().isSelected()){
+					bi = new java.awt.image.BufferedImage(icm,pixelWR,false,null);
+				}else{
+					bi = new java.awt.image.BufferedImage(icm,smallPixelWR,false,null);
+				}
+	
+				if(xSide > 0 || ySide > 0){
+					int gridXBlockLen = (bi.getWidth()/xSide);
+					int gridYBlockLen = (bi.getHeight()/ySide);
+					
+					java.awt.Graphics g = bi.getGraphics();
+					g.setColor(java.awt.Color.white);
+					// horiz lines
+					for(int row=0;row < ySide;row+= 1){
+						if(row > 0){
+							g.drawLine(0,row*gridYBlockLen,bi.getWidth(),row*gridYBlockLen);
+						}
+					}
+					// vert lines
+					for(int col=0;col<xSide;col+= 1){
+						if(col > 0){
+							g.drawLine(col*gridXBlockLen,0,col*gridXBlockLen,bi.getHeight());
+						}
+					}
+					// z markers
+					if(xSide > 1 || ySide > 1){
+						for(int row=0;row < xSide;row+= 1){
+							for(int col=0;col<ySide;col+= 1){
+								g.drawString(""+(1+row+(col*xSide)),row*gridXBlockLen+3,col*gridYBlockLen+12);
+							}
+						}
+					}
+				}
+				
+				javax.swing.ImageIcon rii = new javax.swing.ImageIcon(bi);
+	
+				getPixelClassImageLabel().setText(null);
+				getPixelClassImageLabel().setIcon(rii);
+			}else{
+				getPixelClassImageLabel().setIcon(null);
+				getPixelClassImageLabel().setText("No Image");
+			}
+		}catch(Throwable e){
+			throw new Exception("CreateRegionImageIcon error\n"+(e.getMessage()!=null?e.getMessage():e.getClass().getName()));
+		}
+	}
+*/
 protected ITextWriter() {
 	super();
 }
@@ -304,35 +480,176 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 		GeometrySpec geomSpec = geom.getGeometrySpec();
 		IndexColorModel icm = geomSpec.getHandleColorMap();
 		VCImage geomImage = geomSpec.getSampledImage();
-		byte [] pixels = geomImage.getPixels();			
 		int x = geomImage.getNumX(); 
 		int y = geomImage.getNumY();
 		int z = geomImage.getNumZ();
 
-		BufferedImage bufferedImage = new BufferedImage(x, y, BufferedImage.TYPE_BYTE_INDEXED, icm);
-		java.awt.image.WritableRaster wr = bufferedImage.getRaster();
-		for (int i = 0; i < x; i++){
-			for (int j = 0; j < y; j++){
-				wr.setSample(i , j, 0, geomImage.getPixel(i, j, 0));
+		BufferedImage bufferedImage = null;
+		WritableRaster pixelWR = null;
+		Image adjImage = null;
+		BufferedImage newBufferedImage = null;
+		
+		if (geom.getDimension() > 0 && geom.getDimension() < 3) {
+			bufferedImage = new BufferedImage(x, y, BufferedImage.TYPE_BYTE_INDEXED, icm);
+			pixelWR = bufferedImage.getRaster();
+			for (int i = 0; i < x; i++){
+				for (int j = 0; j < y; j++){
+					pixelWR.setSample(i , j, 0, geomImage.getPixel(i, j, 0));
+				}
+				
+			}
+			// Adjust the image width and height 
+			// retaining the aspect ratio. Start by adjusting the height, then adjust width to maintain aspect ratio.
+	
+			double scaleFactor = 1.0;
+		    if (x * scaleFactor > DEF_GEOM_WIDTH) {
+		        scaleFactor = ((double) DEF_GEOM_WIDTH) / x;
+		    }
+		    if (y * scaleFactor > DEF_GEOM_HEIGHT) {
+		        scaleFactor = ((double) DEF_GEOM_HEIGHT) / y;
+		    }
+			int adjX = (int)Math.ceil(x*scaleFactor);
+			int adjY = (int)Math.ceil(y*scaleFactor);
+			
+			adjImage = bufferedImage.getScaledInstance(adjX, adjY, BufferedImage.SCALE_REPLICATE);
+			newBufferedImage = new BufferedImage(adjX, adjY, BufferedImage.TYPE_BYTE_INDEXED, icm);
+			newBufferedImage.getGraphics().drawImage(adjImage, 0, 0, null);
+		} else if (geom.getDimension() == 3) {			
+			WritableRaster smallPixelWR = null;
+			int[] cmap = new int[256];
+			final int DISPLAY_DIM_MAX = 256;
+			if(geomImage == null){
+				throw new Exception("generateGeometryImage error : No Image");
 			}
 			
-		}
-		// Adjust the image width and height 
-		// retaining the aspect ratio. Start by adjusting the height, then adjust width to maintain aspect ratio.
-
-		double scaleFactor = 1.0;
-	    if (x * scaleFactor > DEF_GEOM_WIDTH) {
-	        scaleFactor = ((double) DEF_GEOM_WIDTH) / x;
-	    }
-	    if (y * scaleFactor > DEF_GEOM_HEIGHT) {
-	        scaleFactor = ((double) DEF_GEOM_HEIGHT) / y;
-	    }
-		int adjX = (int)Math.ceil(x*scaleFactor);
-		int adjY = (int)Math.ceil(y*scaleFactor);
+			try{
+				// int RGB interpretation as follows:
+				// int bits(32): (alpha)31-24,(red)23-16,(green)15-8,(blue)7-0
+				// for alpha: 0-most transparent(see-through), 255-most opaque(solid)
+				
+				//Reset colormap (grayscale)
+				for(int i = 0; i < cmap.length; i += 1){
+					int iv = (int)(0x000000FF&i);
+					cmap[i] = 0xFF<<24 | iv<<16 | iv<<8 | i;
+				}
+				//stretch cmap grays
+				if(geomImage != null && geomImage.getPixelClasses().length < 32){
+					for(int i=0;i< geomImage.getPixelClasses().length;i+= 1){
+						int stretchIndex = (int)(0xFF&geomImage.getPixelClasses()[i].getPixel());
+						int newI = 32+(i*((256-32)/geomImage.getPixelClasses().length));
+						cmap[stretchIndex] = 0xFF<<24 | newI<<16 | newI<<8 | newI;
+					}
+				}
+				//Set grid color
+				cmap[cmap.length-1] = 0xFFFFFFFF; //white
 		
-		Image adjImage = bufferedImage.getScaledInstance(adjX, adjY, BufferedImage.SCALE_REPLICATE);
-		BufferedImage newBufferedImage = new BufferedImage(adjX, adjY, BufferedImage.TYPE_BYTE_INDEXED, icm);
-		newBufferedImage.getGraphics().drawImage(adjImage, 0, 0, null);
+				//Initialize image data
+				int xSide = 0;
+				int ySide = 0;
+				if(pixelWR == null){
+					cbit.image.VCImage sampledImage = geomImage;
+					double side = Math.sqrt(x*y*z);
+					xSide = (int)Math.round(side/(double)x);
+					if(xSide == 0){xSide = 1;}
+					if(xSide > z){
+						xSide = z;
+					}
+					ySide = (int)Math.ceil((double)z/(double)xSide);
+					if(ySide == 0){ySide = 1;}
+					if(ySide > z){
+						ySide = z;
+					}
+					pixelWR = icm.createCompatibleWritableRaster(xSide*x,ySide*y);
+					byte[] sib = sampledImage.getPixels();
+		
+					//write the image to buffer
+					int ystride = x;
+					int zstride = x*y;
+					for(int row = 0; row < ySide; row += 1){
+						for(int col = 0; col < xSide; col += 1){
+							int xoffset = col*x;
+							int yoffset = (row*y);
+							int zoffset = (col+(row*xSide))*zstride;
+							if(zoffset >= sib.length){
+								for(int xi = 0; xi < x; xi += 1){
+									for(int yi = 0; yi < y; yi += 1){
+										pixelWR.setSample(xi + xoffset, yi + yoffset, 0, cmap.length-1);
+									}
+								}
+							}else{
+								for(int xi = 0; xi < x; xi += 1){
+									for(int yi = 0; yi < y; yi += 1){
+										pixelWR.setSample(xi + xoffset, yi + yoffset,0,(int)(0xFF&sib[xi + (ystride*yi) + zoffset]));
+									}
+								}
+							}
+						}
+					}
+					
+					// scale if necessary
+					double displayScale = 1.0;
+					if(pixelWR.getWidth() < DISPLAY_DIM_MAX || pixelWR.getHeight() < DISPLAY_DIM_MAX){
+						displayScale = (int)Math.min((DISPLAY_DIM_MAX/pixelWR.getWidth()),(DISPLAY_DIM_MAX/pixelWR.getHeight()));
+						if(displayScale == 0){displayScale = 1;}
+					}
+					if((displayScale == 1) && (pixelWR.getWidth() > DISPLAY_DIM_MAX || pixelWR.getHeight() > DISPLAY_DIM_MAX)){
+						displayScale = Math.max((pixelWR.getWidth()/DISPLAY_DIM_MAX),(pixelWR.getHeight()/DISPLAY_DIM_MAX));
+						//displayScale = Math.min(((double)DISPLAY_DIM_MAX/(double)pixelWR.getWidth()),((double)DISPLAY_DIM_MAX/(double)pixelWR.getHeight()));
+						if(displayScale == 0) {displayScale = 1;}
+						displayScale = 1.0/displayScale;
+					}
+					if(displayScale != 1){
+						java.awt.geom.AffineTransform at = new java.awt.geom.AffineTransform();
+						at.setToScale(displayScale, displayScale);
+						java.awt.image.AffineTransformOp ato = new java.awt.image.AffineTransformOp(at,java.awt.image.AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+						smallPixelWR = ato.createCompatibleDestRaster(pixelWR);
+						ato.filter(pixelWR, smallPixelWR);
+					}
+				}
+		
+				//Create display image, re-use image data and colormap
+				// draw labels and grid
+				if(pixelWR != null){
+					bufferedImage = new java.awt.image.BufferedImage(icm,smallPixelWR,false,null);
+	
+					if(xSide > 0 || ySide > 0){
+						float gridXBlockLen = ((float)(bufferedImage.getWidth())/xSide);
+						float gridYBlockLen = ((float)(bufferedImage.getHeight())/ySide);
+						
+						java.awt.Graphics g = bufferedImage.getGraphics();
+						g.setColor(java.awt.Color.white);
+						// horiz lines
+						for(int row=0;row < ySide;row+= 1){
+							if(row > 0){
+								g.drawLine(0,(int)(row*gridYBlockLen),bufferedImage.getWidth(),(int)(row*gridYBlockLen));
+							}
+						}
+						// vert lines
+						for(int col=0;col<xSide;col+= 1){
+							if(col > 0){
+								g.drawLine((int)(col*gridXBlockLen),0,(int)(col*gridXBlockLen),bufferedImage.getHeight());
+							}
+						}
+						// z markers
+						if(xSide > 1 || ySide > 1){
+							for(int row=0;row < xSide;row+= 1){
+								for(int col=0;col<ySide;col+= 1){
+									g.drawString(""+(1+row+(col*xSide)),(int)(row*gridXBlockLen)+3,(int)(col*gridYBlockLen)+12);
+								}
+							}
+						}
+					}
+				}		
+			}catch(Throwable e){
+				throw new Exception("CreateGeometryImageIcon error\n"+(e.getMessage()!=null?e.getMessage():e.getClass().getName()));
+			}
+			
+			// Adjust the image width and height 
+			adjImage = bufferedImage.getScaledInstance(smallPixelWR.getWidth(), smallPixelWR.getHeight(), BufferedImage.SCALE_REPLICATE);
+			newBufferedImage = new BufferedImage(smallPixelWR.getWidth(), smallPixelWR.getHeight(), BufferedImage.TYPE_BYTE_INDEXED, icm);
+			newBufferedImage.getGraphics().drawImage(adjImage, 0, 0, null);
+		}
+		
 		
 		ByteArrayOutputStream bos = null;
 		bos = new ByteArrayOutputStream();
@@ -348,47 +665,7 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 		imageWriter.setOutput(imageOut);
 		imageWriter.write(newBufferedImage);
 		
-		//for (int k = 0; k < z; k++) { 
-			//int intPixels [] = new int[pixels.length/z];
-			//for (int j = 0; j < pixels.length/z; j++) {
-				//intPixels[j] = icm.getRGB(((int)pixels[j + (k*x*y)]) & 0x000000FF);
-			//}
-			////bos = new ByteArrayOutputStream();
-
-			////ImageOutputStream imageOut = null;
-			////try {
-				////imageOut = ImageIO.createImageOutputStream(bos);
-			////} catch (java.io.IOException ioe) {
-				////ioe.printStackTrace(System.out);
-			////}
-			
-			////JPEGImageWriter imageWriter = new JPEGImageWriter(null);
-			////imageWriter.setOutput(imageOut);
-			////imageWriter.write(bufferedImage);
-			
-				////GIFUtils.GIFOutputStream gifOut = new GIFUtils.GIFOutputStream(bos);
-				////try {
-					////GIFUtils.GIFImage gifImage = new GIFUtils.GIFImage(intPixels, x);
-					////gifImage.write(gifOut);
-				////} catch (GIFUtils.GIFFormatException gfe) {      //try reducing to 256 colors.
-					////System.err.println("Error in image retrieval. Will try reducing the colors to 256.");
-					//////gfe.printStackTrace();
-					////int pixels2D[][] = new int[x][y];
-			        ////for (int m = x; m-- > 0; ) {
-			            ////for (int n = y; n-- > 0; ) {
-			                ////pixels2D[m][n] = intPixels[n * x + m];
-			            ////}
-			        ////}
-			        ////int palette[] = Quantize.quantizeImage(pixels2D, 256);
-		        	////intPixels = Quantize.getPixels(palette, pixels2D);      
-					////GIFUtils.GIFImage gifImage = new GIFUtils.GIFImage(intPixels, x);
-					////gifImage.write(gifOut);
-				////}
-		//}
-
 		bos.flush();
-		//printImageToFile(bos);
-		
 		return bos;
 	}
 
@@ -839,7 +1116,7 @@ public void writeBioModel(BioModel bioModel, FileOutputStream fos, PageFormat pa
 	protected void writeGeom(Section container, Geometry geom, GeometryContext geomCont) throws Exception {
 		
 		try {
-			Section geomSection = container.addSection("Geoemtry: " + geom.getName(), container.numberDepth() + 1);
+			Section geomSection = container.addSection("Geometry: " + geom.getName(), container.numberDepth() + 1);
 			if (geom.getDimension() == 0) {
 				Paragraph p = new Paragraph(new Phrase("Non spatial geometry."));
 				p.setAlignment(Paragraph.ALIGN_CENTER);
@@ -1616,7 +1893,49 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 		}
 	}
 
+	private Cell getReactionArrowImageCell(boolean bReversible) throws DocumentException {
+		// Create image for arrow(s)
+		int imageWidth = 150;
+		int imageHeight = 50;
+		BufferedImage bufferedImage = new BufferedImage(imageWidth, imageHeight, BufferedImage.TYPE_3BYTE_BGR);
+		
+		Graphics2D g = (Graphics2D)bufferedImage.getGraphics(); 
+		g.setClip(0, 0, imageWidth, imageHeight);
+		g.setColor(Color.white);
+	  	g.fillRect(0, 0, imageWidth, imageHeight);
+		g.setColor(Color.black);
+		int fontSize = 12;
+		g.setFont(new java.awt.Font("SansSerif", Font.BOLD, fontSize));
+		
+		// get image for reaction equation arrows
+		// Draw the arrows on canvas/image
+		if (bReversible){
+			// Forward  *AND* Reverse (bi-directional) arrow
+			java.awt.Polygon arrow = new java.awt.Polygon(  new int[] {20, 40, 40, 110, 110, 130, 110, 110, 40, 40},
+									 						new int[] {25, 14, 22, 22, 14, 25, 36, 28, 28, 36}, 10);
+			g.fill(arrow);
+		} else {
+			// Only Forward Arrow
+			java.awt.Polygon arrow = new java.awt.Polygon(  new int[] {20, 110, 110, 130, 110, 110, 20},
+															new int[] {22, 22, 14, 25, 36, 28, 28}, 7);
+			g.fill(arrow);
+		}	 
+		
+		Cell imageCell = null;
+		try {
+			com.lowagie.text.Image rpImage = com.lowagie.text.Image.getInstance(bufferedImage, null);
+			rpImage.setAlignment(com.lowagie.text.Image.MIDDLE);
+			imageCell = new Cell();
+			imageCell.add(rpImage);
+		} catch (Exception e) {
+			System.err.println("Unable to add structure mapping image to report.");
+			e.printStackTrace();
+		}
 
+		return imageCell;
+	}
+
+	
 //each reaction has its own table, ordered by the structures.
 	protected void writeReactions(Chapter physioChapter, Model model) throws DocumentException {
 
@@ -1626,7 +1945,8 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 		for (int i = 0; i < model.getNumStructures(); i++) {
 			ReactionStep[] reactionSteps = model.getReactionSteps();
 			ReactionStep rs = null;
-			Table reactTable = null;
+			Table modifierTable = null;
+			Table reactionTable = null;
 			boolean firstTime = true;
 			Section reactStructSection = null;
 			for (int j = 0; j < reactionSteps.length; j++) {
@@ -1653,29 +1973,78 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 					} else {
 						type = "Flux";
 					}
-					//write Reaction Participants.
-					int height = 50;                                //arbitrary
+					//write Reaction equation as a table
+
+					// Get the image arrow cell depending on type of reactionStep : MassAction => double arrow, otherwise, forward arrow
+					boolean bReversible = false;
+					if (rs.getKinetics() instanceof MassActionKinetics) {
+						bReversible = true;
+					}
+					Cell arrowImageCell = getReactionArrowImageCell(bReversible);
+					
+					// Get reactants and products strings
 					cbit.vcell.model.gui.ReactionCanvas rc = new cbit.vcell.model.gui.ReactionCanvas();
 					rc.setReactionStep(rs);
-					BufferedImage bufferedImage = new BufferedImage(ITextWriter.DEF_IMAGE_WIDTH, height, BufferedImage.TYPE_3BYTE_BGR);
-					reactEqFontSize = rc.getReactionAsImage(bufferedImage, ITextWriter.DEF_IMAGE_WIDTH, height, reactEqFontSize);
-					try {             
-						com.lowagie.text.Image rpImage = com.lowagie.text.Image.getInstance(bufferedImage, null);
-						rpImage.setAlignment(com.lowagie.text.Image.MIDDLE);
-						Cell imageCell = new Cell();
-						//imageCell.setBackgroundColor(new java.awt.Color(0xC0, 0xC0, 0xC0));
-						imageCell.add(rpImage);
-						reactTable = getTable(1, 100, 0, 1, 1);
-						reactTable.addCell(imageCell);
-					} catch (Exception e) {
-						System.err.println("Unable to add structure mapping image to report.");
-						e.printStackTrace();
+					ReactionCanvasDisplaySpec rcdSpec = rc.getReactionCanvasDisplaySpec();
+					String reactants = rcdSpec.getLeftText();
+					String products = rcdSpec.getRightText();
+					
+					// Create table and add cells for reactants, arrow(s) images, products
+					int widths [] = {8, 1, 8};
+					reactionTable = getTable(3, 100, 0, 2, 2);
+					
+					// Add reactants as cell
+					Cell tableCell = createCell(reactants, getBold());
+					tableCell.setHorizontalAlignment(Cell.ALIGN_RIGHT);
+					tableCell.setBorderColor(Color.white);
+					reactionTable.addCell(tableCell);
+					// add arrow(s) image as cell
+					if (arrowImageCell != null) {
+						arrowImageCell.setHorizontalAlignment(Cell.ALIGN_CENTER);
+						arrowImageCell.setBorderColor(Color.white);
+						reactionTable.addCell(arrowImageCell);
 					}
-					if (reactTable != null) {
-						Section reactionSection = reactStructSection.addSection(type + " " + rs.getName(), reactStructSection.numberDepth() + 1);
-						reactionSection.add(reactTable);
-						writeKineticsParams(reactionSection, rs);
+					// add products as cell
+					tableCell = createCell(products, getBold());
+					tableCell.setBorderColor(Color.white);
+					reactionTable.addCell(tableCell);
+					
+					// reactionTable.setBorderColor(Color.white);
+					reactionTable.setWidths(widths);
+					
+					// Identify modifiers, 
+					ReactionParticipant[] rpArr = rs.getReactionParticipants();
+					Vector modifiersVector = new Vector();  
+					for(int k = 0; k < rpArr.length; k += 1){
+						if (rpArr[k] instanceof Catalyst) {
+							modifiersVector.add(rpArr[k]);
+						}
 					}
+
+					// Write the modifiers in a separate table, if present
+					if (modifiersVector.size() > 0) {
+						modifierTable = getTable(1, 50, 0, 1, 1);
+						modifierTable.addCell(createCell("Modifiers List", getBold(DEF_HEADER_FONT_SIZE), 1, 1, Element.ALIGN_CENTER, true));
+						StringBuffer modifierNames = new StringBuffer();
+						for (int k = 0; k < modifiersVector.size(); k++) {
+							modifierNames.append(((Catalyst)modifiersVector.elementAt(k)).getName() + "\n");
+						}
+						modifierTable.addCell(createCell(modifierNames.toString().trim(), getFont()));
+						modifiersVector.removeAllElements();
+					}
+					
+					Section reactionSection = reactStructSection.addSection(type + " " + rs.getName(), reactStructSection.numberDepth() + 1);
+					// reaction table
+					if (reactionTable != null) {
+						reactionSection.add(reactionTable);
+						reactionTable = null;	// re-set reactionTable
+					}
+					if (modifierTable != null) {
+						reactionSection.add(modifierTable);
+						modifierTable = null;
+					}
+					// Write kinetics parameters, etc. in a table
+					writeKineticsParams(reactionSection, rs);
 				}
 			}
 		}
