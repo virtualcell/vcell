@@ -14,6 +14,11 @@ public class ASTNotNode extends SimpleNode {
 ASTNotNode(int id) {
 	super(id);
 }
+
+	public boolean isBoolean() {
+		  return true;
+	}
+
   public void bind(SymbolTable symbolTable) throws ExpressionBindingException
   {
 	  super.bind(symbolTable);

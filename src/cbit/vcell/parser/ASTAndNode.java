@@ -17,6 +17,11 @@ ASTAndNode(int id) {
 	super(id);
 if (id != ExpressionParserTreeConstants.JJTANDNODE){ System.out.println("ASTAndNode(), i = "+id); }
 }  
+
+public boolean isBoolean() {
+	  return true;
+}
+
   public void bind(SymbolTable symbolTable) throws ExpressionBindingException
   {
 	  super.bind(symbolTable);
@@ -112,7 +117,7 @@ public Node flatten() throws ExpressionException {
 	}catch (Exception e){}		
 
 	ASTAndNode andNode = new ASTAndNode(id);
-	java.util.Vector tempChildren = new java.util.Vector();
+	java.util.Vector<Node> tempChildren = new java.util.Vector<Node>();
 
 	for (int i=0;i<jjtGetNumChildren();i++){
 		tempChildren.addElement(jjtGetChild(i).flatten());
@@ -133,7 +138,7 @@ public Node flatten() throws ExpressionException {
 	}
 
 	for (int k=0;k<tempChildren.size();k++){
-		andNode.jjtAddChild((Node)tempChildren.elementAt(k));
+		andNode.jjtAddChild(tempChildren.elementAt(k));
 	}
 
 	return andNode;

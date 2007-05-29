@@ -21,20 +21,24 @@ public static void main(java.lang.String[] args) {
 		java.util.Random r = new java.util.Random();
 		String ids[] = {"id_0", "id_1", "id_2", "id_3", 
 				"id_4", "id_5", "id_6", "id_7", "id_8", "id_9"};
-		cbit.vcell.parser.SimpleSymbolTable symbolTable = new cbit.vcell.parser.SimpleSymbolTable(ids); 
+		cbit.vcell.parser.SimpleSymbolTable symbolTable = new cbit.vcell.parser.SimpleSymbolTable(ids);		
 
 		double v1[] = {0,1,2,3,4,5,6,7,8,9 };
 
-		for (int i = 0; i < num; i ++){
-			cbit.vcell.parser.Expression exp = cbit.vcell.parser.ExpressionUtils.generateExpression(r, 4, false);
-			exp.bindExpression(symbolTable);
+		for (int j = 0; j < 10; j ++) {
+			java.io.PrintWriter pw = new java.io.PrintWriter(new java.io.FileOutputStream("D:\\VCell\\Testing\\ExpressionParser\\ExpParserTest" + j + ".txt"));
+			for (int i = 0; i < num; i ++){
+				cbit.vcell.parser.Expression exp = cbit.vcell.parser.ExpressionUtils.generateExpression(r, 4, false);
+				exp.bindExpression(symbolTable);
 
-			try {
-				double d = exp.evaluateVector(v1);
-				System.out.println(d + " " + exp.infix());
-			} catch (Exception ex) {
-				System.out.println("-0.0 " + exp.infix());						
+				try {
+					double d = exp.evaluateVector(v1);
+					pw.println(d + " " + exp.infix());
+				} catch (Exception ex) {
+					System.out.println(ex.getMessage());						
+				}
 			}
+			pw.close();
 		}
 		
 		//testDifferentiate(500,3,100);

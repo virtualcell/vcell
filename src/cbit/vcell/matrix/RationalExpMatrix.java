@@ -256,10 +256,10 @@ public int gaussianElimination(RationalExpMatrix K) throws MatrixException {
 		rank++;
 		mag = get(currentRow, currentCol);
 		for (int j = currentCol; j < cols; j++){
-			set_elem(currentRow, j, get(currentRow, j).div(mag));
+			set_elem(currentRow, j, get(currentRow, j).div(mag).simplify());
 		}	
 		for (int j = 0; j < K.cols; j++){
-			K.set_elem(currentRow, j, K.get(currentRow, j).div(mag));
+			K.set_elem(currentRow, j, K.get(currentRow, j).div(mag).simplify());
 		}	
 		//
 		// eliminate pivot row component from other rows
@@ -273,13 +273,13 @@ public int gaussianElimination(RationalExpMatrix K) throws MatrixException {
 			for (int j = currentCol; j < cols; j ++){
 				RationalExp r = get(currentRow, j);
 				if (!r.isZero()){
-					set_elem(k, j, get(k, j).sub(mag2.mult(r)));
+					set_elem(k, j, get(k, j).sub(mag2.mult(r).simplify()).simplify());
 				}
 			}	
 			for (int j = 0; j < K.cols; j ++){
 				RationalExp r = K.get(currentRow, j);
 				if (!r.isZero()){
-					K.set_elem(k, j, K.get(k, j).sub(mag2.mult(r)));
+					K.set_elem(k, j, K.get(k, j).sub(mag2.mult(r).simplify()).simplify());
 				}
 			}
 		}

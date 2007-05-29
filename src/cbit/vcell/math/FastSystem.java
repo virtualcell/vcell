@@ -13,15 +13,15 @@ import cbit.util.*;
  */
 public abstract class FastSystem implements MathObject, Serializable, Matchable {
 	protected MathDescription mathDesc = null;
-	protected Vector fastInvariantList = new Vector();
-	protected Vector fastRateList = new Vector();
-	protected Vector fastVarList = new Vector();
+	protected Vector<FastInvariant> fastInvariantList = new Vector<FastInvariant>();
+	protected Vector<FastRate> fastRateList = new Vector<FastRate>();
+	protected Vector<Variable> fastVarList = new Vector<Variable>();
 	
-	protected Vector independentVarList = new Vector();
-	protected Vector dependentVarList = new Vector();
-	protected Vector dependencyExpList = new Vector();
-	protected Vector fastRateExpList = new Vector();
-	protected Vector pseudoConstantList = new Vector();
+	protected Vector<Variable> independentVarList = new Vector<Variable>();
+	protected Vector<Variable> dependentVarList = new Vector<Variable>();
+	protected Vector<Expression> dependencyExpList = new Vector<Expression>();
+	protected Vector<Expression> fastRateExpList = new Vector<Expression>();
+	protected Vector<PseudoConstant> pseudoConstantList = new Vector<PseudoConstant>();
 
 	protected boolean bNeedsRefresh = false;
 /**
@@ -143,7 +143,7 @@ public final Enumeration getDependentVariables() throws MathException, Expressio
  * @return cbit.vcell.parser.Expression[]
  */
 final Expression[] getExpressions() {
-	Vector expList = new Vector();
+	Vector<Expression> expList = new Vector<Expression>();
 	for (int i = 0; i < fastInvariantList.size(); i++){
 		FastInvariant fi = (FastInvariant)fastInvariantList.elementAt(i);
 		expList.add(fi.getFunction());

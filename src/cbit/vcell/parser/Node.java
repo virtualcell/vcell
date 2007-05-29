@@ -12,6 +12,8 @@ package cbit.vcell.parser;
 import net.sourceforge.interval.ia_math.*;
 
 interface Node {
+	
+	public boolean isBoolean();
 
   /** Bind method, identifiers bind themselves to ValueObjects */
   void bind(SymbolTable symbolTable) 
