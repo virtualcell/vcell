@@ -193,10 +193,12 @@ private void insertMathDescExternalDataLink(Connection con,User user,MathDescrip
 		ExternalDataIdentifier[] extDataIDArr =
 			fieldDataDBOperation(
 					con, user, FieldDataDBOperationSpec.createGetExtDataIDsSpec(user)).extDataIDArr;
+		boolean bExtDataInserted[] = new boolean[extDataIDArr.length];
 		FieldFunctionArguments[] fieldFuncArgsArr = mathDesc.getFieldFunctionArguments();
 		for(int i=0;i<fieldFuncArgsArr.length;i+= 1){
 			for(int k=0;k<extDataIDArr.length;k+= 1){
-				if(extDataIDArr[k].getName().equals(fieldFuncArgsArr[i].getFieldName())){
+				if( !bExtDataInserted[k] && extDataIDArr[k].getName().equals(fieldFuncArgsArr[i].getFieldName())){
+					bExtDataInserted[k] = true;
 					KeyValue newKey = getNewKey(con);
 					updateCleanSQL(con,
 							"INSERT INTO "+
