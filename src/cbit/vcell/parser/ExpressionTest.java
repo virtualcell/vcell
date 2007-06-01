@@ -25,29 +25,75 @@ public static void main(java.lang.String[] args) {
 
 		double v1[] = {0,1,2,3,4,5,6,7,8,9 };
 
-		for (int j = 0; j < 10; j ++) {
-			java.io.PrintWriter pw = new java.io.PrintWriter(new java.io.FileOutputStream("D:\\VCell\\Testing\\ExpressionParser\\ExpParserTest" + j + ".txt"));
+		for (int j = 0; j < 1; j ++) {
+			//java.io.PrintWriter pw = new java.io.PrintWriter(new java.io.FileOutputStream("D:\\VCell\\Testing\\ExpressionParser\\ExpParserTest" + j + ".txt"));
+			java.io.PrintWriter pw2 = new java.io.PrintWriter(new java.io.FileOutputStream("D:\\VCell\\Testing\\ExpressionParser\\ExpParserTest" + j + ".cpp"));
+			pw2.println("#include \"Windows.h\"");
+			pw2.println("#include \"ExpressionTest.h\"");
+			pw2.println("#include \"MathUtil.h\"");
+			pw2.println("#include \"SimpleSymbolTable.h\"");
+			pw2.println("#include <math.h>");
+			pw2.println("#include <string>");
+			pw2.println("#include <iostream>");
+			pw2.println("using namespace std;");
+			pw2.println();
+			
+			String[] undefinedFunctions = {
+					"csc",		
+					"cot",		
+					"sec",		
+					"acsc",		
+					"acot",		
+					"asec",		
+//					"sinh",		
+//					"cosh",		
+//					"tanh",		
+					"csch",		
+					"coth",		
+					"sech",		
+					"asinh",	
+					"acosh",	
+					"atanh",	
+					"acsch",	
+					"acoth",	
+					"asech",	
+					"factorial"	
+			};
+			for (int k = 0; k < undefinedFunctions.length; k ++) {
+				pw2.println("#define " + undefinedFunctions[k] + "(a) (MathUtil::" + undefinedFunctions[k] + "(a))");
+			}
+			pw2.println("#define abs(a) fabs(a)");
+			pw2.println();
+			
+			pw2.println("void main() {");
+			for (int k = 0; k < 10; k ++) {
+				pw2.println("\tdouble id_" + k + " = " + k + ";");
+			}
+
+			pw2.println("\tdouble r = 0;");
+			pw2.println("\tstring ids[] = {\"id_0\", \"id_1\", \"id_2\", \"id_3\", \"id_4\", \"id_5\", \"id_6\", \"id_7\", \"id_8\", \"id_9\"};");
+			pw2.println("\tSimpleSymbolTable* symbolTable = new SimpleSymbolTable(ids, 10);");
+			pw2.println("\tdouble values[10] = {0,1,2,3,4,5,6,7,8,9};");
+			pw2.println();
+
 			for (int i = 0; i < num; i ++){
 				cbit.vcell.parser.Expression exp = cbit.vcell.parser.ExpressionUtils.generateExpression(r, 4, false);
 				exp.bindExpression(symbolTable);
 
 				try {
 					double d = exp.evaluateVector(v1);
-					pw.println(d + " " + exp.infix());
+					pw2.println("\t// " + i);
+					pw2.println("\tr = " + exp.infix_C() + ";");
+					pw2.println("\tExpressionTest::testParser(" + i + ", \"" + d + "\", r, \"" + exp.infix() + "\", symbolTable, values);");
+					pw2.println();
 				} catch (Exception ex) {
-					System.out.println(ex.getMessage());						
+					System.out.println("!!!!!" + ex.getMessage());						
 				}
-			}
-			pw.close();
+			}			
+			//pw.close();
+			pw2.println("}");
+			pw2.close();
 		}
-		
-		//testDifferentiate(500,3,100);
-		//testBig();
-		//testEvaluateVector();
-	//	testEvaluateInterval(1000,3,100,false);
-	//	testEvaluateInterval(1000,3,100,true);
-		//testEvaluateNarrowing(100,2,100);
-		//testFlatten(300,5,100);
 	}catch (Throwable e){
 		e.printStackTrace(System.out);
 	}

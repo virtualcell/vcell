@@ -422,8 +422,16 @@ public String infixString(int lang, NameScope nameScope){
 				}
 				conditionBuffer.append(jjtGetChild(i).infixString(lang,nameScope));
 			} else {
-				if (valueBuffer.length() > 0) {
-					valueBuffer.append(" * ");
+				if (valueBuffer.length() == 0) {					
+					if (jjtGetChild(i) instanceof ASTInvertTermNode){
+						valueBuffer.append(" 1.0 / ");	
+					}
+				} else {					
+					if (jjtGetChild(i) instanceof ASTInvertTermNode){
+						valueBuffer.append(" / ");	
+					} else {
+						valueBuffer.append(" * ");
+					}
 				}
 				valueBuffer.append(jjtGetChild(i).infixString(lang,nameScope));
 			}

@@ -290,9 +290,7 @@ private void refreshInvarianceMatrix() throws MathException, ExpressionException
 		Expression function = ((FastInvariant)fastInvariantList.elementAt(i)).getFunction();
 		for (int j=0;j<numVars;j++){
 			Variable var = (Variable)fastVarList.elementAt(j);
-			Expression exp = function.differentiate(var.getName());
-			exp.bindExpression(null);
-			exp = exp.flatten();
+			Expression exp = function.differentiate(var.getName()).flatten();
 			RationalExp coeffRationalExp = RationalExpUtils.getRationalExp(exp);
 			matrix.set_elem(i,j,coeffRationalExp);
 		}

@@ -992,11 +992,11 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 						ODESolverResultSet referenceResultSet = refDataManager.getODESolverResultSet();
 						double refTimeArray[] = refDataManager.getDataSetTimes();
 						SimulationComparisonSummary simCompSummary_regr = null;							
-						if (timeArray.length != refTimeArray.length) {
-							simCompSummary_regr = MathTestingUtilities.compareUnEqualResultSets(numericalResultSet, referenceResultSet,varsToTest);
-						} else {
-							simCompSummary_regr = MathTestingUtilities.compareResultSets(numericalResultSet, referenceResultSet, varsToTest);
-						}
+						//if (timeArray.length != refTimeArray.length) {
+						simCompSummary_regr = MathTestingUtilities.compareUnEqualResultSets(numericalResultSet, referenceResultSet,varsToTest);
+						//} else {
+							//simCompSummary_regr = MathTestingUtilities.compareResultSets(numericalResultSet, referenceResultSet, varsToTest);
+						//}
 						// Get all the variable comparison summaries and the failed ones to print out report for CONSTRUCTED solution comparison.
 						failVarSummaries = simCompSummary_regr.getFailingVariableComparisonSummaries(absErr, relErr);
 						allVarSummaries = simCompSummary_regr.getVariableComparisonSummaries();
