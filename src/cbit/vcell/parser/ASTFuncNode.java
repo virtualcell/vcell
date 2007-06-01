@@ -2515,7 +2515,13 @@ public String infixString(int lang, NameScope nameScope) {
 				buffer.append(" ^ ");
 				buffer.append(jjtGetChild(1).infixString(lang,nameScope));
 				buffer.append(")");
-			}else if (lang == LANGUAGE_DEFAULT || lang == LANGUAGE_C){
+			} else  if (lang == LANGUAGE_C){
+				buffer.append("pow(");
+				buffer.append("((double)(" + jjtGetChild(0).infixString(lang,nameScope) + "))");
+				buffer.append(",");
+				buffer.append("((double)(" + jjtGetChild(1).infixString(lang,nameScope) + "))");
+				buffer.append(")");
+			} else if (lang == LANGUAGE_DEFAULT){
 				buffer.append("pow(");
 				buffer.append(jjtGetChild(0).infixString(lang,nameScope));
 				buffer.append(",");
@@ -2546,7 +2552,11 @@ public String infixString(int lang, NameScope nameScope) {
 			buffer.append(getName() + "(");
 			for (int i=0;i<jjtGetNumChildren();i++){
 				if (i>0) buffer.append(", ");
-				buffer.append(jjtGetChild(i).infixString(lang,nameScope));
+				if (lang == LANGUAGE_C){
+					buffer.append("((double)(" + jjtGetChild(i).infixString(lang,nameScope) + "))");
+				} else {
+					buffer.append(jjtGetChild(i).infixString(lang,nameScope));
+				}
 			}
 			buffer.append(")");
 			break;
