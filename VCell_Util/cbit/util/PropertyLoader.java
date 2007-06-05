@@ -27,6 +27,7 @@ public class PropertyLoader {
 	public static final String libsProperty					= "vcell.c++.libs";
 	public static final String optLibsProperty				= "vcell.opt.libs";
 	public static final String optIncludeProperty			= "vcell.opt.include";
+	public static final String finiteVolumeExecutableProperty = "vcell.finitevolume.executable";
 	//
 	public static final String idaLibraryProperty			= "vcell.ida.library";
 	public static final String idaIncludeProperty			= "vcell.ida.include";
@@ -144,6 +145,7 @@ public class PropertyLoader {
 		idaLibraryProperty,
 		idaIncludeProperty,
 		idaExecutableProperty,
+		finiteVolumeExecutableProperty,
 		
 		stochLibraryProperty,
 		stochIncludeProperty,
