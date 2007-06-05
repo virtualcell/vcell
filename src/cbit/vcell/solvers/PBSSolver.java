@@ -1,23 +1,24 @@
 package cbit.vcell.solvers;
-import cbit.vcell.server.*;
-import cbit.vcell.solver.*;
-import java.io.*;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.htc.PBSUtils;
+import cbit.vcell.server.PropertyLoader;
+import java.io.File;
+import cbit.vcell.solver.SolverStatus;
 
 /**
  * Insert the type's description here.
- * Creation date: (9/26/2003 2:08:08 PM)
+ * Creation date: (4/14/2005 10:47:25 AM)
  * @author: Fei Gao
  */
-public class LsfSolver extends HTCSolver {
+public class PBSSolver extends HTCSolver {
+	private static String PBS_SUBMIT_FILE_EXT = ".pbs.sub";
 /**
- * LSFSolver constructor comment.
- * @param simulation cbit.vcell.solver.Simulation
+ * CondorSolver constructor comment.
+ * @param simTask cbit.vcell.messaging.server.SimulationTask
  * @param directory java.io.File
  * @param sessionLog cbit.vcell.server.SessionLog
  * @exception cbit.vcell.solver.SolverException The exception description.
  */
-public LsfSolver(SimulationTask simTask, java.io.File directory, cbit.vcell.server.SessionLog sessionLog) throws cbit.vcell.solver.SolverException {
+public PBSSolver(cbit.vcell.messaging.server.SimulationTask simTask, java.io.File directory, cbit.vcell.server.SessionLog sessionLog) throws cbit.vcell.solver.SolverException {
 	super(simTask, directory, sessionLog);
 }
 
@@ -26,7 +27,7 @@ public LsfSolver(SimulationTask simTask, java.io.File directory, cbit.vcell.serv
  * Insert the method's description here.
  * Creation date: (9/26/2003 2:23:53 PM)
  */
-public String submit2Lsf() {
+public String submit2PBS() {
 	String jobid = null;
 	
 	try {
@@ -36,8 +37,9 @@ public String submit2Lsf() {
 		
 		String exeSuffix = System.getProperty(PropertyLoader.exesuffixProperty);
 		String exeFile = new File(getBaseName()).getPath() + exeSuffix;
+		String subFile = new File(getBaseName()).getPath() + PBS_SUBMIT_FILE_EXT;
 		
-		jobid = cbit.htc.LsfUtils.submitJob(exeFile + " " + cmdArguments);
+		jobid = PBSUtils.submitJob(simulationTask.getComputeResource(), subFile, exeFile, cmdArguments);
 		if (jobid == null) {
 			fireSolverAborted("Failed. (error message: submitting to job scheduler failed).");
 		}
@@ -50,5 +52,6 @@ public String submit2Lsf() {
 	}
 
 	return jobid;
+	
 }
 }

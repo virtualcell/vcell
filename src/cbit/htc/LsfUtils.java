@@ -1,7 +1,6 @@
-package cbit.vcell.lsf;
-import java.util.StringTokenizer;
-import cbit.vcell.messaging.db.VCellServerID;
+package cbit.htc;
 import cbit.vcell.server.PropertyLoader;
+import static cbit.htc.LsfConstants.*;
 
 /**
  * Insert the type's description here.
@@ -11,8 +10,23 @@ import cbit.vcell.server.PropertyLoader;
 public class LsfUtils {
 	public static cbit.vcell.server.SessionLog lsfLog = new cbit.vcell.server.StdoutSessionLog("LSF-Command");
 	public static final String ENV_LSF_BINDIR = "LSF_BINDIR";
-	public static java.lang.String BINDIR = getEnvVariable(ENV_LSF_BINDIR);
+	private static java.lang.String BINDIR = null;
 
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (2/8/2007 8:36:11 AM)
+	 * @return java.lang.String
+	 */
+	public static String getBINDIR() {
+		if (BINDIR == null) {
+			BINDIR = getEnvVariable(ENV_LSF_BINDIR);
+			if (BINDIR == null) {
+				throw new RuntimeException("LSF not installed");
+			}
+		}
+		return BINDIR;
+	}
+	
 /**
  * Insert the method's description here.
  * Creation date: (9/25/2003 8:43:41 AM)
@@ -123,10 +137,10 @@ public static String getJobExitCode(String jobid) {
  */
 public static int getJobStatus(String jobid) {
 	if (BINDIR == null) {
-		return LsfConstants.LSF_STATUS_UNKNOWN;
+		return LSF_STATUS_UNKNOWN;
 	}
 		
-	int iStatus = LsfConstants.LSF_STATUS_UNKNOWN;
+	int iStatus = LSF_STATUS_UNKNOWN;
 	cbit.util.Executable exe = null;
 	
 	try {
@@ -145,15 +159,14 @@ public static int getJobStatus(String jobid) {
 		status = st.nextToken();
 		status = st.nextToken();
 		
-		for (iStatus = 0; iStatus < LsfConstants.LSF_JOB_STATUS.length; iStatus ++) {
-			if (status.equals(LsfConstants.LSF_JOB_STATUS[iStatus])) {
+		for (iStatus = 0; iStatus < LSF_JOB_STATUS.length; iStatus ++) {
+			if (status.equals(LSF_JOB_STATUS[iStatus])) {
 				return iStatus;
 			}
 		}
 			
 		
 	} catch (cbit.util.ExecutableException ex) {
-		String err = exe.getStderrString();
 		String cmd = BINDIR + "\\bhist -l " + jobid;
 		try {		
 			exe = new cbit.util.Executable(cmd);
@@ -161,13 +174,13 @@ public static int getJobStatus(String jobid) {
 
 			String output = exe.getStdoutString();
 			if (output.indexOf("Done") >= 0) {
-				return LsfConstants.LSF_STATUS_DONE;
+				return LSF_STATUS_DONE;
 			} else if (output.indexOf("Exit") >= 0) {
-				return LsfConstants.LSF_STATUS_EXITED;
+				return LSF_STATUS_EXITED;
 			}
 		} catch (cbit.util.ExecutableException ex0) {
 			lsfLog.exception(ex0);
-			return LsfConstants.LSF_STATUS_UNKNOWN;
+			return LSF_STATUS_UNKNOWN;
 		}
 	}
 
@@ -177,40 +190,6 @@ public static int getJobStatus(String jobid) {
 
 public static final String getLsfQueue() {
 	return PropertyLoader.getProperty(PropertyLoader.lsfJobQueue, null);
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (2/21/2006 8:59:36 AM)
- * @return int
- */
-public static int getPartitionMaximumJobs() {
-	return Integer.parseInt(cbit.vcell.server.PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.lsfPartitionMaximumJobs));
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (2/21/2006 9:01:20 AM)
- * @return cbit.vcell.messaging.db.VCellServerID[]
- */
-public static cbit.vcell.messaging.db.VCellServerID[] getPartitionShareServerIDs() {
-	try {
-		String lsfPartitionShareServerIDs = PropertyLoader.getRequiredProperty(PropertyLoader.lsfPartitionShareServerIDs);
-		StringTokenizer st = new StringTokenizer(lsfPartitionShareServerIDs, " ,");
-		VCellServerID[] serverIDs = new VCellServerID[st.countTokens() + 1]; // include the current system ServerID
-		serverIDs[0] = VCellServerID.getSystemServerID();
-		
-		int count = 1;
-		while (st.hasMoreTokens()) {			
-			serverIDs[count] = VCellServerID.getServerID(st.nextToken());
-			count ++;			
-		}
-		return serverIDs;
-	} catch (Exception ex) {
-		return null;
-	}
 }
 
 

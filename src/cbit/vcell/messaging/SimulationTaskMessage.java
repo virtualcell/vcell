@@ -1,28 +1,13 @@
 package cbit.vcell.messaging;
 import javax.jms.*;
-import org.jdom.Element;
-import org.jdom.output.XMLOutputter;
 import cbit.vcell.xml.XmlParseException;
-import org.jdom.input.SAXBuilder;
-import org.jdom.Document;
-import org.jdom.JDOMException;
 
-import com.sun.org.apache.xerces.internal.xni.parser.XMLParseException;
-
-import cbit.vcell.xml.Xmlproducer;
-import cbit.vcell.xml.XmlReader;
 import cbit.vcell.field.FieldDataIdentifierSpec;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.math.MathDescription;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
-import java.io.StringReader;
-import java.io.IOException;
-import java.beans.PropertyVetoException;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.server.PropertyLoader;
 
 /**
  * Insert the type's description here.
@@ -140,25 +125,6 @@ private String simulation2XML() throws XmlParseException {
  * @return javax.jms.Message
  * @param session cbit.vcell.messaging.VCellSession
  */
-public javax.jms.Message toLsfInfoMessage(VCellJmsSession session, String jobid, String stdout, String stderr) throws javax.jms.JMSException, cbit.vcell.xml.XmlParseException {
-	Message message = session.createTextMessage(simulation2XML());
-	
-	message.setStringProperty(MessageConstants.LSFJOBID_PROPERTY, jobid);  //
-	message.setStringProperty(cbit.vcell.lsf.LsfConstants.LSF_STDOUT_FILE,stdout);
-	message.setStringProperty(cbit.vcell.lsf.LsfConstants.LSF_STDERR_FILE, stderr);	
-	message.setIntProperty(MessageConstants.TASKID_PROPERTY, simTask.getTaskID());
-	message.setIntProperty(MessageConstants.JOBINDEX_PROPERTY, simTask.getSimulationJob().getJobIndex());
-	
-	return message;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (12/31/2003 11:08:17 AM)
- * @return javax.jms.Message
- * @param session cbit.vcell.messaging.VCellSession
- */
 private javax.jms.Message toMessage(VCellQueueSession session) throws javax.jms.JMSException, cbit.vcell.xml.XmlParseException {
 	javax.jms.Message message = session.createTextMessage(simulation2XML());		
 
@@ -169,8 +135,12 @@ private javax.jms.Message toMessage(VCellQueueSession session) throws javax.jms.
 	message.setStringProperty(MessageConstants.USERNAME_PROPERTY, simTask.getUserName()); // might be used to remove from the job queue when do stopSimulation
 	message.setLongProperty(MessageConstants.SIMKEY_PROPERTY, Long.parseLong(simTask.getSimKey() + "")); // might be used to remove from the job queue when do stopSimulation
 
-	message.setStringProperty(MessageConstants.SOLVER_TYPE_PROPERTY, simTask.goodForLSF() ? MessageConstants.SOLVER_TYPE_LSF_PROPERTY : MessageConstants.SOLVER_TYPE_JAVA_PROPERTY); // for worker message filter
+	message.setStringProperty(MessageConstants.SOLVER_TYPE_PROPERTY, simTask.goodForHTC() ? MessageConstants.SOLVER_TYPE_HTC_PROPERTY : MessageConstants.SOLVER_TYPE_JAVA_PROPERTY); // for worker message filter
 	message.setDoubleProperty(MessageConstants.SIZE_MB_PROPERTY, simTask.getEstimatedSizeMB()); // for worker message filter
+	
+	if (simTask.getComputeResource() != null) {
+		message.setStringProperty(MessageConstants.COMPUTE_RESOURCE_PROPERTY, simTask.getComputeResource()); // for worker message filter
+	}
 
 	FieldDataIdentifierSpec[] fieldDataIDs = simTask.getSimulationJob().getFieldDataIdentifierSpecs();
 	if (fieldDataIDs != null && fieldDataIDs.length > 0) {

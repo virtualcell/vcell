@@ -56,10 +56,6 @@ public String getServiceType() {
  * Creation date: (1/26/2004 9:49:08 AM)
  */
 public static void mainInit(String logfile) throws Exception {
-	//
-	// Create and install a security manager
-	//
-	System.setSecurityManager(new SecurityManager());
 	if (logfile != null) {
 		java.io.PrintStream ps = new PrintStream(new FileOutputStream(logfile, true), true);
 		System.setOut(ps);

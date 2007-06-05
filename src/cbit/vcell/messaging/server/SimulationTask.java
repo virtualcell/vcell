@@ -1,5 +1,4 @@
 package cbit.vcell.messaging.server;
-import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.server.User;
@@ -14,6 +13,7 @@ import cbit.vcell.solver.SolverDescription;
 public class SimulationTask implements java.io.Serializable {
 	private SimulationJob simulationJob = null;
 	private int taskID = 0;
+	private String computeResource = null;
 
 /**
  * SimulationTask constructor comment.
@@ -30,6 +30,14 @@ public SimulationTask(SimulationJob argSimulationJob, int tid) {
 	taskID = tid;
 }
 
+public SimulationTask(SimulationJob argSimulationJob, int tid, String comres) {
+	if (argSimulationJob == null){
+		throw new RuntimeException("simulationJob is null");
+	}
+	simulationJob = argSimulationJob;
+	taskID = tid;
+	computeResource = comres;
+}
 
 /**
  * Insert the method's description here.
@@ -131,7 +139,7 @@ public java.lang.String getUserName() {
  * Creation date: (11/25/2003 2:32:00 PM)
  * @return boolean
  */
-public boolean goodForLSF() {
+public boolean goodForHTC() {
 	if (getSimulationJob().getWorkingSim() == null) {
 		return false;
 	}
@@ -154,5 +162,9 @@ public boolean goodForLSF() {
  */
 public String toString() {
 	return "[" + getSimulationJobIdentifier() + "," + taskID + "]";
+}
+
+public String getComputeResource() {
+	return computeResource;
 }
 }

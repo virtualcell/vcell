@@ -1,8 +1,12 @@
 package cbit.vcell.messaging.server;
+import cbit.htc.CondorConstants;
+import cbit.htc.CondorUtils;
+import cbit.htc.LsfConstants;
+import cbit.htc.LsfUtils;
+import cbit.htc.PBSConstants;
+import cbit.htc.PBSUtils;
 import cbit.sql.KeyValue;
-import cbit.vcell.server.ConfigurationException;
 import java.io.File;
-import java.util.Date;
 import javax.jms.*;
 import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.server.DataAccessException;
@@ -11,17 +15,13 @@ import java.net.UnknownHostException;
 import cbit.vcell.xml.XmlParseException;
 import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.messaging.JmsUtils;
-import cbit.vcell.solver.SolverFactory;
 import cbit.vcell.messaging.MessageConstants;
 import cbit.vcell.messaging.MessagePropertyNotFoundException;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.SolverException;
+import cbit.vcell.solvers.CondorSolver;
 import cbit.vcell.solvers.LsfSolver;
-import cbit.vcell.lsf.LsfConstants;
-import cbit.vcell.lsf.LsfUtils;
-
+import cbit.vcell.solvers.PBSSolver;
+import static cbit.vcell.messaging.MessageConstants.*;
 /**
  * Insert the type's description here.
  * Creation date: (10/25/2001 4:14:09 PM)
@@ -48,40 +48,58 @@ protected void doJob() throws JMSException, SolverException, XmlParseException {
 		throw new RuntimeException("previous task incomplete (currentSolver!=null)");
 	}
 	
-	log.print("Worker doing job [" + currentTask.getSimulationJobIdentifier() + "]");
-	
-	//File maindir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.localSimDataDirProperty));
-	//if (!maindir.isDirectory()){
-		//throw new ConfigurationException(maindir.toString()+" is not a directory");
-	//}
-	//File userdir = new File(maindir,currentTask.getUserName());
-	//if (!userdir.isDirectory()){
-		//throw new ConfigurationException(userdir.toString()+" is not a directory");
-	//}
+	log.print("Worker doing job [" + currentTask.getSimulationJobIdentifier() + "]");	
 
 	File userdir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.serverSimDataDirProperty),currentTask.getUserName());
 	switch (workerType) {
-		case LSF_WORKER: {
+	case NOHTC_WORKER: {			
+		doSolverJob(userdir);
+		break;
+	}
+	
+	case LSF_WORKER: {
+		doLsfJob(userdir);
+		break;
+	}
+
+	case CONDOR_WORKER: {
+		doCondorJob(userdir);
+		break;
+	}
+
+	case PBS_WORKER: {
+		doPBSJob(userdir);
+		break;
+	}
+
+	case JAVA_WORKER: 
+		doSolverJob(userdir);
+		break;			
+
+	case LSFJAVA_WORKER: {
+		if (currentTask.goodForHTC()) {
 			doLsfJob(userdir);
-			break;
-		}
-
-		case JAVA_WORKER: 
+		} else {
 			doSolverJob(userdir);
-			break;
-			
-		case NOLSF_WORKER: {			
+		}
+		break;
+	}
+	case CONDORJAVA_WORKER: {
+		if (currentTask.goodForHTC()) {
+			doCondorJob(userdir);
+		} else {
 			doSolverJob(userdir);
-			break;
 		}
-
-		default: {
-			if (currentTask.goodForLSF()) {
-				doLsfJob(userdir);
-			} else {
-				doSolverJob(userdir);
-			}
+		break;
+	}
+	case PBSJAVA_WORKER: {
+		if (currentTask.goodForHTC()) {
+			doPBSJob(userdir);
+		} else {
+			doSolverJob(userdir);
 		}
+		break;
+	}
 	}		
 			
 }
@@ -100,7 +118,7 @@ private void doLsfJob(File userdir) throws XmlParseException, SolverException, J
 	// but are not running, will be redispatched after 5 minutes. Then we have duplicate
 	// jobs or "failed" jobs actually running in LSF.
 	// to avoid this, kill the job, ask the user to try again later if the jobs
-	// are not in running status 1 minute after submission.
+	// are not in running status 20 seconds after submission.
 	if (jobid != null) { 
 		long t = System.currentTimeMillis();
 		while (true) {
@@ -119,7 +137,7 @@ private void doLsfJob(File userdir) throws XmlParseException, SolverException, J
 				} catch (InterruptedException ex) {
 				}
 				status = LsfUtils.getJobStatus(jobid);
-				if (status == cbit.vcell.lsf.LsfConstants.LSF_STATUS_EXITED) {
+				if (status == cbit.htc.LsfConstants.LSF_STATUS_EXITED) {
 					workerMessaging.sendFailed("Job [" + jobid + "] exited unexpectedly: " + LsfUtils.getJobExitCode(jobid));					
 				}
 				break;
@@ -127,7 +145,7 @@ private void doLsfJob(File userdir) throws XmlParseException, SolverException, J
 				workerMessaging.sendFailed("Job [" + jobid + "] exited unexpectedly: " + LsfUtils.getJobExitCode(jobid));
 				break;
 			} else if (System.currentTimeMillis() - t > 20 * MessageConstants.SECOND) {
-				String pendingReason = cbit.vcell.lsf.LsfUtils.getPendingReason(jobid);
+				String pendingReason = cbit.htc.LsfUtils.getPendingReason(jobid);
 				LsfUtils.killJob(jobid); // kill the job if it takes too long to dispatch the job.
 				workerMessaging.sendFailed("LSF Job scheduler timed out. Please try again later. (Job [" + jobid + "]: " + pendingReason + ")");
 				break;
@@ -170,7 +188,8 @@ public boolean isRunning() {
 		return false;
 	}
 	
-	if (workerType == LSF_WORKER || workerType == LSFJAVA_WORKER && currentTask.goodForLSF()) {		
+	if (workerType == LSF_WORKER || workerType == CONDOR_WORKER || workerType == PBS_WORKER ||
+		((workerType == LSFJAVA_WORKER || workerType == CONDORJAVA_WORKER || workerType == PBSJAVA_WORKER) && currentTask.goodForHTC())) {		
 		return true;
 	}	
 		
@@ -192,7 +211,7 @@ public boolean isRunning() {
  */
 public static void main(java.lang.String[] args) {
 	if (args.length < 2 || !args[0].startsWith("-")) {
-		System.out.println("Missing arguments: " + SimulationWorker.class.getName() + " [-lsf|-java|-lsfjava|-nolsf] serviceName memorySizeMB [logfile]");
+		System.out.println("Missing arguments: " + SimulationWorker.class.getName() + " [-lsf|-java|-lsfjava|-nohtc|-pbs|-pbsjava|-condor|-condorjava] serviceName memorySizeMB [logfile]");
 		System.exit(1);
 	}
  		
@@ -206,23 +225,27 @@ public static void main(java.lang.String[] args) {
 		}
 		mainInit(logfile);
 
-		int workerType = LSFJAVA_WORKER;		
+		int workerType = NOHTC_WORKER;		
 		if (args[0].equalsIgnoreCase("-lsf")) {
-			if (cbit.vcell.lsf.LsfUtils.BINDIR == null) {
-				System.out.println("LSF not installed");
-				System.exit(1);
-			}
+			cbit.htc.LsfUtils.getBINDIR();
 			workerType = LSF_WORKER;
+		} else	if (args[0].equalsIgnoreCase("-pbs")) {
+			PBSUtils.checkServerStatus();
+			workerType = PBS_WORKER;			
+		} else	if (args[0].equalsIgnoreCase("-condor")) {
+			workerType = CONDOR_WORKER;
 		} else if (args[0].equalsIgnoreCase("-java")) {
 			workerType = JAVA_WORKER;
 		} else  if (args[0].equalsIgnoreCase("-lsfjava")) {
-			if (cbit.vcell.lsf.LsfUtils.BINDIR == null) {
-				System.out.println("LSF not installed");
-				System.exit(1);
-			}				
+			cbit.htc.LsfUtils.getBINDIR();			
 			workerType = LSFJAVA_WORKER;
-		} else  if (args[0].equalsIgnoreCase("-nolsf")) {
-			workerType = NOLSF_WORKER;
+		} else  if (args[0].equalsIgnoreCase("-pbsjava")) {
+			PBSUtils.checkServerStatus();
+			workerType = PBSJAVA_WORKER;
+		} else  if (args[0].equalsIgnoreCase("-condorjava")) {
+			workerType = CONDORJAVA_WORKER;
+		} else  if (args[0].equalsIgnoreCase("-nohtc")) {
+			workerType = NOHTC_WORKER;
 		}
 
 		String workerName = args[1];			
@@ -231,7 +254,8 @@ public static void main(java.lang.String[] args) {
 		worker.start();
 	} catch (Throwable e) {
 		e.printStackTrace(System.out);
-	}		
+		System.exit(-1);
+	}
 }
 
 
@@ -259,6 +283,94 @@ public void onControlTopicMessage(Message message) throws JMSException {
 	} catch (MessagePropertyNotFoundException ex) {
 		log.exception(ex);
 		return;
+	}
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (12/9/2003 8:07:04 AM)
+ */
+private void doPBSJob(File userdir) throws XmlParseException, SolverException, JMSException {
+	currentSolver = new PBSSolver(currentTask, userdir,log);
+	currentSolver.addSolverListener(this);
+	String jobid = ((PBSSolver)currentSolver).submit2PBS();
+
+	// if PBS has problem with dispatching jobs, jobs that have been submitted
+	// but are not running, will be redispatched after 5 minutes. Then we have duplicate
+	// jobs or "failed" jobs actually running in LSF.
+	// to avoid this, kill the job, ask the user to try again later if the jobs
+	// are not in running status 20 seconds after submission.
+	if (jobid != null) { 
+		long t = System.currentTimeMillis();
+		while (true) {
+			try {
+				Thread.sleep(50);
+			} catch (InterruptedException ex) {
+			}
+			
+			int status = PBSUtils.getJobStatus(jobid);
+			if (status == PBSConstants.PBS_STATUS_EXISTING){
+				break;
+			} else if (status == PBSConstants.PBS_STATUS_RUNNING) {
+				break;
+			} else if (System.currentTimeMillis() - t > 20 * MessageConstants.SECOND) {
+				String pendingReason = PBSUtils.getPendingReason(jobid);
+				PBSUtils.killJob(jobid); // kill the job if it takes too long to dispatch the job.
+				workerMessaging.sendFailed("PBS Job scheduler timed out. Please try again later. (Job [" + jobid + "]: " + pendingReason + ")");
+				break;
+			}
+		}
+	}
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (12/9/2003 8:07:04 AM)
+ */
+private void doCondorJob(File userdir) throws XmlParseException, SolverException, JMSException {
+	currentSolver = new CondorSolver(currentTask, userdir,log);
+	currentSolver.addSolverListener(this);
+	String jobid = ((CondorSolver)currentSolver).submit2Condor();
+
+	// if condor has problem with dispatching jobs, jobs that have been submitted
+	// but are not running, will be redispatched after 5 minutes. Then we have duplicate
+	// jobs or "failed" jobs actually running in LSF.
+	// to avoid this, kill the job, ask the user to try again later if the jobs
+	// are not in running status 20 seconds after submission.
+	if (jobid != null) { 
+		long t = System.currentTimeMillis();
+		while (true) {
+			try {
+				Thread.sleep(50);
+			} catch (InterruptedException ex) {
+			}
+			
+			int status = CondorUtils.getJobStatus(jobid);
+			if (status == CondorConstants.CONDOR_STATUS_COMPLETED){
+				break;
+			} else if (status == CondorConstants.CONDOR_STATUS_RUNNING) {
+				// check to see if it exits soon after it runs
+				try {
+					Thread.sleep(5000);
+				} catch (InterruptedException ex) {
+				}
+				status = CondorUtils.getJobStatus(jobid);
+				if (status == CondorConstants.CONDOR_STATUS_EXITED) {
+					workerMessaging.sendFailed("Job [" + jobid + "] exited unexpectedly, check Condor");					
+				}
+				break;
+			} else 	if (status == CondorConstants.CONDOR_STATUS_EXITED) {				
+				workerMessaging.sendFailed("Job [" + jobid + "] exited unexpectedly, check Condor");
+				break;
+			} else if (System.currentTimeMillis() - t > 20 * MessageConstants.SECOND) {
+				String pendingReason = CondorUtils.getPendingReason(jobid);
+				CondorUtils.killJob(jobid); // kill the job if it takes too long to dispatch the job.
+				workerMessaging.sendFailed("Condor Job scheduler timed out. Please try again later. (Job [" + jobid + "]: " + pendingReason + ")");
+				break;
+			}
+		}
 	}
 }
 }

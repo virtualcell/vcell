@@ -6,6 +6,8 @@ import cbit.vcell.messaging.db.VCellServerID;
 
 
 import javax.jms.*;
+
+import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.server.User;
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.transaction.*;
@@ -17,6 +19,8 @@ import cbit.vcell.messaging.db.SimulationJobStatusInfo;
 import cbit.sql.KeyFactory;
 import cbit.sql.ConnectionFactory;
 import java.sql.SQLException;
+import java.util.StringTokenizer;
+
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.xml.XmlParseException;
@@ -203,7 +207,6 @@ public void run() {
 	VCellXATopicSession waitingJobStatusPublisher = null;
 
 	JtaDbConnection waitingJobDbConnection = null;
-	Message message = null;
 	
 	SimulationJobStatusInfo[] allActiveJobs = null;
 
@@ -231,10 +234,10 @@ public void run() {
 		
 		try {			
 			waitingJobDbConnection = new JtaOracleConnection(conFactory);
-			allActiveJobs = jobAdminXA.getActiveJobs(waitingJobDbConnection.getConnection(), cbit.vcell.lsf.LsfUtils.getPartitionShareServerIDs());
+			allActiveJobs = jobAdminXA.getActiveJobs(waitingJobDbConnection.getConnection(), getHTCPartitionShareServerIDs());
 			
 			if (allActiveJobs != null && allActiveJobs.length > 0) {				
-				SimulationJobStatusInfo firstQualifiedJob = BatchScheduler.schedule(allActiveJobs, cbit.vcell.lsf.LsfUtils.getPartitionMaximumJobs(), 
+				SimulationJobStatusInfo firstQualifiedJob = BatchScheduler.schedule(allActiveJobs, getHTCPartitionMaximumJobs(), 
 					JmsUtils.getMaxOdeJobsPerUser(), JmsUtils.getMaxPdeJobsPerUser(), cbit.vcell.messaging.db.VCellServerID.getSystemServerID(), log);
 				if (firstQualifiedJob != null) {
 					foundOne = true;					
@@ -480,8 +483,7 @@ public SimulationDispatcherMessaging(SimulationDispatcher simDispatcher0, Connec
  */
 private void do_failed(java.sql.Connection con, SimulationJobStatus oldJobStatus, String username, VCSimulationIdentifier vcSimID, int jobIndex, String failMsg) throws JMSException, DataAccessException, UpdateSynchronizationException {
 	
-	// if the job is in simJob queue, get it out
-	KeyValue simKey = vcSimID.getSimulationKey();
+	// if the job is in simJob queue, get it out	
 	
 	// update database
 	SimulationJobStatus newJobStatus = simDispatcher.updateEndStatus(oldJobStatus, jobAdminXA, con, vcSimID, jobIndex, null, SimulationJobStatus.SCHEDULERSTATUS_FAILED, failMsg);
@@ -802,6 +804,40 @@ private void stopSimulation(java.sql.Connection con, User user, VCSimulationIden
 				SimulationJobStatus.SCHEDULERSTATUS_FAILED, 0, "Can't start, simulation [" + vcSimID + "] doesn't exist", null, null), user.getName(), null, null);
 			message.sendToClient(mainJobStatusPublisher);
 		}
+	}
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (2/21/2006 8:59:36 AM)
+ * @return int
+ */
+private static int getHTCPartitionMaximumJobs() {
+	return Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.htcPartitionMaximumJobs));
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (2/21/2006 9:01:20 AM)
+ * @return cbit.vcell.messaging.db.VCellServerID[]
+ */
+private static cbit.vcell.messaging.db.VCellServerID[] getHTCPartitionShareServerIDs() {
+	try {
+		String lsfPartitionShareServerIDs = PropertyLoader.getRequiredProperty(PropertyLoader.htcPartitionShareServerIDs);
+		StringTokenizer st = new StringTokenizer(lsfPartitionShareServerIDs, " ,");
+		VCellServerID[] serverIDs = new VCellServerID[st.countTokens() + 1]; // include the current system ServerID
+		serverIDs[0] = VCellServerID.getSystemServerID();
+		
+		int count = 1;
+		while (st.hasMoreTokens()) {			
+			serverIDs[count] = VCellServerID.getServerID(st.nextToken());
+			count ++;			
+		}
+		return serverIDs;
+	} catch (Exception ex) {
+		return null;
 	}
 }
 }
