@@ -7,7 +7,8 @@ import java.util.Vector;
  * @author: Jim Schaff
  */
 public class SimulationComparisonSummary implements java.io.Serializable {
-	private Vector variableComparisonSummaryList = new Vector();
+	private Vector<VariableComparisonSummary> variableComparisonSummaryList = new Vector<VariableComparisonSummary>();
+	private static final double STANDARD_RELATIVE_ERROR_THRESHOLD = 1E-8;
 /**
  * SimResultsDifferenceReport constructor comment.
  */
@@ -37,11 +38,13 @@ public double getAbsoluteError(String varName) {
  * @return double
  */
 public VariableComparisonSummary[] getFailingVariableComparisonSummaries(double absErrorThreshold, double relErrorThreshold) {
-	Vector varComparisonSummaryList = new Vector();
+	Vector<VariableComparisonSummary> varComparisonSummaryList = new Vector<VariableComparisonSummary>();
 	for (int i = 0; i < variableComparisonSummaryList.size(); i++){
 		VariableComparisonSummary varComparisonSummary = (VariableComparisonSummary)variableComparisonSummaryList.elementAt(i);
-		if ((varComparisonSummary.getAbsoluteError().doubleValue() > absErrorThreshold) || (varComparisonSummary.getRelativeError().doubleValue() > relErrorThreshold)){
-			varComparisonSummaryList.add(varComparisonSummary);
+		if (varComparisonSummary.getRelativeError().doubleValue() > STANDARD_RELATIVE_ERROR_THRESHOLD){				
+			if ((varComparisonSummary.getAbsoluteError().doubleValue() > absErrorThreshold) || (varComparisonSummary.getRelativeError().doubleValue() > relErrorThreshold)){
+				varComparisonSummaryList.add(varComparisonSummary);
+			}
 		}
 	}
 	return (VariableComparisonSummary[])cbit.util.BeanUtils.getArray(varComparisonSummaryList,VariableComparisonSummary.class);
