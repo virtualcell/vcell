@@ -14,8 +14,10 @@ import org.vcell.physics.component.OOModel;
 import org.vcell.physics.math.MappingUtilities;
 import org.vcell.physics.math.MathSystem;
 import org.vcell.physics.math.ModelAnalysisResults;
+import org.vcell.physics.modelica.ModelicaModelWriter;
 
 import cbit.util.Matchable;
+import cbit.vcell.model.ModelInfo;
 import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.modelapp.physics.PhysicsMapping;
 
@@ -101,6 +103,8 @@ public class OOModelingTask implements IAnalysisTask {
 			MathSystem mathSystem = MappingUtilities.getMathSystem(ooModel);
 			this.modelAnalysisResults = MappingUtilities.analyzeMathSystem(mathSystem);
 			this.modelAnalysisResults.oOModel = ooModel;
+			this.modelAnalysisResults.modelicaModelText = new ModelicaModelWriter().write(ooModel);
+			
 		}catch (ParseException e){
 			e.printStackTrace(System.out);
 			throw new RuntimeException(e.getMessage());
