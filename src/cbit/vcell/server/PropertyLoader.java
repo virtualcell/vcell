@@ -1,4 +1,7 @@
 package cbit.vcell.server;
+
+
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -104,10 +107,6 @@ public class PropertyLoader {
 	public static final String serverManageConfig = "vcell.messaging.serverManagerConfig";
 	public static final String bootstrapConfig = "vcell.messaging.bootstrapConfig";
 
-	public static final String lsfJobQueue = "vcell.lsf.jobQueue";
-	public static final String lsfPartitionMaximumJobs = "vcell.lsf.partition.maximumJobs";
-	public static final String lsfPartitionShareServerIDs = "vcell.lsf.partition.shareServerIDs";
-
 	public static final String vcellSoftwareVersion = "vcell.softwareVersion";
 
 	public static final String vcellServerHost = "vcell.serverHost";
@@ -123,6 +122,13 @@ public class PropertyLoader {
 	public static final String vcellBNGScript = "vcell.bng.script";
 
 	public static final String vcellClientTimeoutMS = "vcell.client.timeoutMS";
+	
+	public static final String lsfJobQueue = "vcell.lsf.jobQueue";
+	
+	public static final String htcSubmitTemplates = "vcell.htc.submittemplates";		
+	public static final String htcPartitionMaximumJobs = "vcell.htc.partition.maximumJobs";
+	public static final String htcPartitionShareServerIDs = "vcell.htc.partition.shareServerIDs";
+	public static final String htcComputeResources = "vcell.htc.computeresources";
 	
 	private static final String ALL_PROPERTIES[] = {
 		vcellServerIDProperty,
@@ -202,10 +208,6 @@ public class PropertyLoader {
 		serverManageConfig,
 		bootstrapConfig,
 
-		lsfJobQueue,
-		lsfPartitionMaximumJobs,
-		lsfPartitionShareServerIDs,
-
 		vcellSoftwareVersion,
 
 		vcellServerHost,
@@ -231,7 +233,14 @@ public class PropertyLoader {
 		vcellBNGPerl,
 		vcellBNGScript,
 
-		vcellClientTimeoutMS
+		vcellClientTimeoutMS,
+		
+		lsfJobQueue,
+		
+		htcSubmitTemplates,		
+		htcComputeResources,
+		htcPartitionMaximumJobs,
+		htcPartitionShareServerIDs		
 	};
 
 /**

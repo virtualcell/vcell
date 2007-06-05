@@ -16,9 +16,10 @@ public abstract class AbstractVCellWorkingService extends AbstractService {
 
 	public static final String SERVICE_TYPE_COMPUTE_JAVA = "JavaComputeService";
 	public static final String SERVICE_TYPE_COMPUTE_LSF = "LSFComputeService";
+	public static final String SERVICE_TYPE_COMPUTE_PBS = "PBSComputeService";
+	public static final String SERVICE_TYPE_COMPUTE_CONDOR = "CondorComputeService";
 	public static final String SERVICE_TYPE_DATA = "DataService";
 	public static final String SERVICE_TYPE_DATABASE = "DatabaseService";
-	public static final String SERVICE_TYPE_BNG = "BngService";
 	public static final String SERVICE_TYPE_DISPATCH = "DispatchService";
 	public static final String SERVICE_TYPE_EXPORT = "ExportService";
 	public static final String SERVICE_TYPE_RMI = "RMIService";

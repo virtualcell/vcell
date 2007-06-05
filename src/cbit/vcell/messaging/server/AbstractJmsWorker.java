@@ -1,21 +1,17 @@
 package cbit.vcell.messaging.server;
 import javax.jms.*;
-import java.util.HashSet;
-import cbit.vcell.server.User;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.server.DataAccessException;
-import cbit.vcell.server.ObjectNotFoundException;
-import cbit.vcell.solver.SolverListener;
-import cbit.vcell.modeldb.ResultSetCrawler;
 import java.io.FileNotFoundException;
 import java.net.UnknownHostException;
 import java.util.Date;
+import java.util.StringTokenizer;
+
+import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.xml.XmlParseException;
 import cbit.vcell.solver.SolverEvent;
-import cbit.vcell.messaging.WorkerMessaging;
 import cbit.vcell.messaging.MessageConstants;
+import cbit.vcell.messaging.WorkerMessaging;
+import static cbit.vcell.messaging.MessageConstants.*;
 
 /**
  * Insert the type's description here.
@@ -23,11 +19,6 @@ import cbit.vcell.messaging.MessageConstants;
  * @author: Jim Schaff
  */
 public abstract class AbstractJmsWorker extends AbstractJmsServiceProvider implements Worker {
-	protected static final int LSF_WORKER = 0;
-	protected static final int JAVA_WORKER = 1;
-	protected static final int LSFJAVA_WORKER = 2;
-	protected static final int NOLSF_WORKER = 3;
-
 	protected double maxMemoryMB = 100;
 	protected SimulationTask currentTask = null;
 	protected cbit.vcell.solver.Solver currentSolver = null;
@@ -69,25 +60,34 @@ protected abstract void doJob() throws JMSException, SolverException, XmlParseEx
  * @return java.lang.String
  */
 public final String getJobSelector() {
+	String jobSelector = "(" + MessageConstants.MESSAGE_TYPE_PROPERTY + "='" + MessageConstants.MESSAGE_TYPE_SIMULATION_JOB_VALUE + "')";
+	String computeResources =  PropertyLoader.getRequiredProperty(PropertyLoader.htcComputeResources);
+	StringTokenizer st = new StringTokenizer(computeResources, " ,");	
+	jobSelector += " AND ((" + MessageConstants.COMPUTE_RESOURCE_PROPERTY + " IS NULL) OR (" + MessageConstants.COMPUTE_RESOURCE_PROPERTY + " IN (";
+	int count = 0;
+	while (st.hasMoreTokens()) {
+		if (count > 0) {
+			jobSelector = ", ";
+		}
+		jobSelector += "'" + st.nextToken() + "'";
+		count ++;
+	}
+	jobSelector += ")))";
+	
 	switch (workerType) {
-		case LSF_WORKER: {
-			return "(" + MessageConstants.MESSAGE_TYPE_PROPERTY + "='" + MessageConstants.MESSAGE_TYPE_SIMULATION_JOB_VALUE + "') AND (" + MessageConstants.SOLVER_TYPE_PROPERTY 
-				+ "='" + MessageConstants.SOLVER_TYPE_LSF_PROPERTY + "')";
+		case LSF_WORKER: 
+		case CONDOR_WORKER : 
+		case PBS_WORKER :{
+			jobSelector += " AND (" + MessageConstants.SOLVER_TYPE_PROPERTY + "='" + MessageConstants.SOLVER_TYPE_HTC_PROPERTY + "')";
+			break;
 		}
-
+	
 		case JAVA_WORKER: {
-			return "(" + MessageConstants.MESSAGE_TYPE_PROPERTY + "='" + MessageConstants.MESSAGE_TYPE_SIMULATION_JOB_VALUE + "') AND (" + MessageConstants.SOLVER_TYPE_PROPERTY 
-				+ "='" + MessageConstants.SOLVER_TYPE_JAVA_PROPERTY + "') AND (" + MessageConstants.SIZE_MB_PROPERTY + "<" + maxMemoryMB + ") ";
+			jobSelector += " AND (" + MessageConstants.SOLVER_TYPE_PROPERTY	+ "='" + MessageConstants.SOLVER_TYPE_JAVA_PROPERTY + "')" ;
+			break;
 		}
-
-		case NOLSF_WORKER: {
-			return "(" + MessageConstants.MESSAGE_TYPE_PROPERTY + "='" + MessageConstants.MESSAGE_TYPE_SIMULATION_JOB_VALUE + "') AND (" + MessageConstants.SIZE_MB_PROPERTY + "<" + maxMemoryMB + ") ";
-		}
-		
-		default: {
-			return MessageConstants.MESSAGE_TYPE_PROPERTY + "='" + MessageConstants.MESSAGE_TYPE_SIMULATION_JOB_VALUE + "'";
-		}
-	}	
+	}
+	return jobSelector;
 }
 
 
@@ -186,7 +186,7 @@ public final void start() {
 			
 			if (currentTask == null || !(currentTask instanceof SimulationTask)){
 				try {
-					Thread.currentThread().sleep(MessageConstants.SECOND);
+					Thread.sleep(MessageConstants.SECOND);
 				} catch (Exception ex) {
 				}
 				continue;				
@@ -194,8 +194,7 @@ public final void start() {
 			workerMessaging.stopReceiving();
 			doJob();
 			
-		} catch (Exception ex) {
-			log.print("Worker: run() -- " + ex.getMessage());
+		} catch (Exception ex) {			
 			workerMessaging.sendFailed(ex.getMessage());
 		}			
 	}

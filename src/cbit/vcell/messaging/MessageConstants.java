@@ -36,11 +36,20 @@ public interface MessageConstants {
 	public static final String MESSAGE_TYPE_PROPERTY	= "MessageType";
 	public static final String MESSAGE_TYPE_STOPSIMULATION_VALUE	= "StopSimulation";	
 
+	public static final String COMPUTE_RESOURCE_PROPERTY	= "ComputeResource";	
+	
 	public static final String SOLVER_TYPE_PROPERTY	= "SolverType";
 	public static final String SOLVER_TYPE_JAVA_PROPERTY = "JavaSolver";
-	public static final String SOLVER_TYPE_LSF_PROPERTY	= "LSFSolver";	
+	public static final String SOLVER_TYPE_HTC_PROPERTY	= "HTCSolver";	
 
-	public static final String LSFJOBID_PROPERTY = "LsfJobID";
+	public static final int LSF_WORKER = 0;
+	public static final int JAVA_WORKER = 1;
+	public static final int LSFJAVA_WORKER = 2;
+	public static final int NOHTC_WORKER = 3;	
+	public static final int PBS_WORKER = 4;	
+	public static final int PBSJAVA_WORKER = 5;
+	public static final int CONDOR_WORKER = 6;
+	public static final int CONDORJAVA_WORKER = 7;
 	
 	public static final String HOSTNAME_PROPERTY		= "HostName";
 	public static final String SERVICETYPE_PROPERTY	= "ServiceType";

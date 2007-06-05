@@ -7,12 +7,12 @@ import cbit.vcell.messaging.MessageConstants;
  * Creation date: (6/20/2006 12:23:35 PM)
  * @author: Ion Moraru
  */
-public class WorkingServiceLSFCompute extends AbstractVCellWorkingService {
+public class WorkingServicePBSCompute extends AbstractVCellWorkingService {
 
 /**
  * DaemonService constructor comment.
  */
-public WorkingServiceLSFCompute() {
+public WorkingServicePBSCompute() {
 	// must be present for Class.newInstance() to succeed...
 	super();
 }
@@ -22,7 +22,7 @@ public WorkingServiceLSFCompute() {
  * @return java.lang.String
  */
 public java.lang.String getServiceType() {
-	return SERVICE_TYPE_COMPUTE_LSF;
+	return SERVICE_TYPE_COMPUTE_PBS;
 }
 /**
  * Insert the method's description here.
@@ -30,7 +30,7 @@ public java.lang.String getServiceType() {
  */
 void startWork() throws java.lang.Throwable {
 	// TODO
-	int workerType = MessageConstants.LSF_WORKER;
+	int workerType = MessageConstants.PBS_WORKER;
 	double maxMemoryMB = 500.0; // should get this somehow from config... or maybe tuneable...
 	new cbit.vcell.messaging.server.SimulationWorker(getName(), maxMemoryMB, workerType).start();
 }
