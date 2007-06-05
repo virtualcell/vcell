@@ -17,5 +17,6 @@ public class ModelAnalysisResults {
 	public BipartiteMatchings.Matching matching = null;
 	public StronglyConnectedComponent[] sccArray = null;
 	public VarEquationAssignment[] varEqnAssignments = null;
+	public String modelicaModelText = null;
 	public MathDescription mathDescription = null;
 }

@@ -24,6 +24,7 @@ public class OOModelingPanel extends javax.swing.JPanel {
 	private javax.swing.JTextArea ivjEquationTextArea = null;
 	private org.vcell.physics.math.BipartiteMatchings.Matching fieldBipartiteMatchings = null;
 	private cbit.vcell.math.MathDescription fieldMathDescription = null;
+	private String fieldModelicaModelText = null;
 
 class IvjEventHandler implements java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -279,6 +280,10 @@ private void displaySCC() {
 			}
 		}
 	}
+	if (getModelicaModelText()!=null){
+		buffer.append("\n\n\n");
+		buffer.append(getModelicaModelText());
+	}
 	if (getMathDescription()!=null){
 		buffer.append("\n\n\n");
 		try {
@@ -303,6 +308,10 @@ public org.vcell.physics.math.BipartiteMatchings.Matching getBipartiteMatchings(
 
 public cbit.vcell.math.MathDescription getMathDescription() {
 	return fieldMathDescription;
+}
+
+public String getModelicaModelText() {
+	return fieldModelicaModelText;
 }
 
 
@@ -667,6 +676,13 @@ public void setMathDescription(cbit.vcell.math.MathDescription mathDesc) {
 	MathDescription oldValue = fieldMathDescription;
 	fieldMathDescription = mathDesc;
 	firePropertyChange("mathDescription", oldValue, mathDesc);
+}
+
+
+public void setModelicaModelText(String modelicaModelText) {
+	String oldValue = fieldModelicaModelText;
+	fieldModelicaModelText = modelicaModelText;
+	firePropertyChange("modelicaModelText", oldValue, modelicaModelText);
 }
 
 

@@ -30,11 +30,11 @@ public class OOModelTest {
 		pendulum.addSymbol(new Variable("Px(t)",VCUnitDefinition.getInstance("m")));
 		pendulum.addSymbol(new Variable("Px(0)",VCUnitDefinition.getInstance("m")));
 		pendulum.addSymbol(new Variable("Py(t)",VCUnitDefinition.getInstance("m")));
-//		pendulum.addSymbol(new Variable("Py(0)",VCUnitDefinition.getInstance("m")));
+		pendulum.addSymbol(new Variable("Py(0)",VCUnitDefinition.getInstance("m")));
 		pendulum.addSymbol(new Variable("Vx(t)",VCUnitDefinition.getInstance("m.s-1")));
 		pendulum.addSymbol(new Variable("Vx(0)",VCUnitDefinition.getInstance("m.s-1")));
 		pendulum.addSymbol(new Variable("Vy(t)",VCUnitDefinition.getInstance("m.s-1")));
-//		pendulum.addSymbol(new Variable("Vy(0)",VCUnitDefinition.getInstance("m.s-1")));
+		pendulum.addSymbol(new Variable("Vy(0)",VCUnitDefinition.getInstance("m.s-1")));
 		pendulum.addEquation(Expression.valueOf("m*d(Vx(t),t) + Px(t)/L*F(t)"));
 		pendulum.addEquation(Expression.valueOf("m*d(Vy(t),t) + Py(t)/L*F(t) + m*g"));
 		pendulum.addEquation(Expression.valueOf("Px(t)^2 + Py(t)^2 - L^2"));
@@ -44,8 +44,8 @@ public class OOModelTest {
 		pendulum.addEquation(Expression.valueOf("m - 1"));
 		pendulum.addEquation(Expression.valueOf("Px(0)-1"));
 		pendulum.addEquation(Expression.valueOf("Vx(0)-0.0"));
-//		pendulum.addEquation(Expression.valueOf("Py(0)-0"));
-//		pendulum.addEquation(Expression.valueOf("Vy(0)-0.0"));
+		pendulum.addEquation(Expression.valueOf("Py(0)-0"));
+		pendulum.addEquation(Expression.valueOf("Vy(0)-0.0"));
 		//pendulum.addEquation(Expression.valueOf("F - 1"));
 		pendulum.addEquation(Expression.valueOf("g - 9.8"));
 

@@ -1,5 +1,6 @@
 package org.vcell.physics.math;
 import java.beans.PropertyVetoException;
+import java.io.StringWriter;
 
 import jscl.plugin.Expression;
 import jscl.plugin.ParseException;
@@ -15,6 +16,7 @@ import org.vcell.physics.component.IndependentVariable;
 import org.vcell.physics.component.ModelComponent;
 import org.vcell.physics.component.OOModel;
 import org.vcell.physics.component.PhysicalSymbol;
+import org.vcell.physics.modelica.ModelicaModelWriter;
 
 import cbit.vcell.math.MathException;
 import cbit.vcell.units.VCUnitDefinition;
@@ -589,8 +591,7 @@ public static ModelAnalysisResults analyzeMathSystem(MathSystem mathSystem) thro
 			modelAnalysisResults.mathDescription = getMathDescription(varEqnAssignments);
 		} catch (Exception e) {
 			e.printStackTrace(System.out);
-		}
-		
+		}		
 		return modelAnalysisResults;
 	}	
 }

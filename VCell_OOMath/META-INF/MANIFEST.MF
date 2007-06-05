@@ -21,4 +21,5 @@ Require-Bundle: org.vcell.util,
  jscl2
 Export-Package: org.vcell.physics.component,
  org.vcell.physics.component.gui,
- org.vcell.physics.math
+ org.vcell.physics.math,
+ org.vcell.physics.modelica
