@@ -130,6 +130,8 @@ public class PropertyLoader {
 	public static final String htcPartitionShareServerIDs = "vcell.htc.partition.shareServerIDs";
 	public static final String htcComputeResources = "vcell.htc.computeresources";
 	
+	public static final String pbsHomeDir = "vcell.pbs.homeDir";
+	
 	private static final String ALL_PROPERTIES[] = {
 		vcellServerIDProperty,
 		tempDirProperty,
@@ -240,7 +242,8 @@ public class PropertyLoader {
 		htcSubmitTemplates,		
 		htcComputeResources,
 		htcPartitionMaximumJobs,
-		htcPartitionShareServerIDs		
+		htcPartitionShareServerIDs,		
+		pbsHomeDir
 	};
 
 /**

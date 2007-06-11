@@ -1,5 +1,7 @@
 package cbit.htc;
 
+import cbit.vcell.server.PropertyLoader;
+
 public class PBSConstants {
 	public static final int PBS_STATUS_UNKNOWN = -1; 			//Not a status in PBS. 
 	public static final int PBS_STATUS_JOBARRAYSTARTED = 0; 	//Job arrays only: job array has started
@@ -19,6 +21,23 @@ public class PBSConstants {
 	
 	public static final String[] PBS_JOB_STATUS = {"B", "E", "H", "Q", "R", "S", "T", "U", "W", "X"};
 
+	/*
+	The exit value of a job may fall in one of three ranges: X < 0, 0 <=X < 128, X >=128.
+	
+	X < 0:
+	This is a PBS special return value indicating that the job could not be executed. These
+	negative values are listed in the table below.
+	
+	0 <= X < 128 (or 256):
+	This is the exit value of the top process in the job, typically the shell. This may be the exit
+	value of the last command executed in the shell or the .logout script if the user has such a
+	script (csh).
+	
+	X >= 128 (or 256 depending on the system)
+	This means the job was killed with a signal. The signal is given by X modulo 128 (or
+	256). For example an exit value of 137 means the job's top process was killed with signal
+	9 (137 % 128 = 9).
+	 */
 	public static final int JOB_EXEC_OK = 0; 					//	job exec successful
 	public static final int JOB_EXEC_FAIL1 =  -1; 				//	"Job exec failed, before files, no retry"
 	public static final int JOB_EXEC_FAIL2 =  -2; 				//	"Job exec failed, after files, no retry"
@@ -32,10 +51,28 @@ public class PBSConstants {
 	public static final int JOB_EXEC_FAILUID =  -10; 			//	invalid uid/gid for job
 	public static final int JOB_EXEC_RERUN =  -11; 				//	Job rerun
 	public static final int JOB_EXEC_CHKP  =  -12; 				//	Job was checkpointed and killed
+	public static final int JOB_EXEC_FAIL_PASSWORD = -13;		// Job failed due to a bad password
+	
+	public static final String[] PBS_JOB_EXEC_STATUS = {
+		"job exec successful",
+		"Job exec failed, before files, no retry",
+		"Job exec failed, after files, no retry",
+		"Job execution failed, do retry",
+		"Job aborted on MOM initialization",
+		"Job aborted on MOM init, chkpt, no migrate",
+		"Job aborted on MOM init, chkpt, ok migrate",
+		"Job restart failed",
+		"Init. globus job failed. do retry",
+		"Init. globus job failed. no retry",
+		"invalid uid/gid for job",
+		"Job rerun",
+		"Job was checkpointed and killed",
+		"Job failed due to a bad password"
+	};
 	
 	public final static String JOB_CMD_SUBMIT = "qsub";
 	public final static String JOB_CMD_DELETE = "qdel";
 	public final static String JOB_CMD_STATUS = "qstat";	
-	public final static String JOB_CMD_HISTORY = "tracejob";
+	public final static String JOB_CMD_HISTORY = "tracejob -p " + PropertyLoader.getRequiredProperty(PropertyLoader.pbsHomeDir);
 	public final static String SERVER_CMD_STATUS = "qstat -B";
 }
