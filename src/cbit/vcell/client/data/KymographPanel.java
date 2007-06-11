@@ -7,6 +7,8 @@ import cbit.util.VCDataJobID;
 import cbit.vcell.server.User;
 
 import javax.swing.ImageIcon;
+import javax.swing.JCheckBox;
+import java.awt.GridBagConstraints;
 /**
  * Insert the type's description here.
  * Creation date: (12/14/2004 9:38:13 AM)
@@ -82,10 +84,10 @@ public class KymographPanel extends javax.swing.JPanel implements cbit.vcell.geo
 	private double initialLineScanTime = 0;
 	private double[][] timeSeriesDataOrig = null;
 	private double[] accumDistancesDataOrig = null;
-	private cbit.image.DisplayAdapterService ivjDisplayAdapterService1 = null;
+	private cbit.image.DisplayAdapterService ivjDisplayAdapterService1 = null;  //  @jve:decl-index=0:
 	private cbit.image.ImagePaneScroller ivjImagePaneScroller1 = null;
 	private cbit.image.ImagePlaneManager ivjImagePlaneManager1 = null;
-	private javax.swing.ImageIcon cmapImageIcon = null;
+	private javax.swing.ImageIcon cmapImageIcon = null;  //  @jve:decl-index=0:
 	private javax.swing.JLabel ivjColorMapJLabel = null;
 	private javax.swing.JLabel ivjMaxJLabel = null;
 	private javax.swing.JLabel ivjMinJLabel = null;
@@ -182,6 +184,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.K
 		};
 	};
 	private javax.swing.JMenuItem ivjScaleImageUDJMenuItem = null;
+	private JCheckBox jCheckBoxColor = null;
 
 /**
  * Kymograph constructor comment.
@@ -904,7 +907,7 @@ private void copyTimeDataJMenuItem_ActionPerformed(java.awt.event.ActionEvent ac
  */
 public void draw(java.awt.Graphics g) {
 
-	g.setColor(java.awt.Color.white);
+	g.setColor((!getJCheckBoxColor().isSelected()?java.awt.Color.white:java.awt.Color.red));
 	if(currentSelectionUnit != null){
 		int width = (int)getimagePaneView1().getImagePaneModel().getDimension().getWidth();
 		int height = (int)getimagePaneView1().getImagePaneModel().getDimension().getHeight();
@@ -1388,43 +1391,47 @@ private javax.swing.JPanel getJPanel1() {
 private javax.swing.JPanel getJPanel3() {
 	if (ivjJPanel3 == null) {
 		try {
+			GridBagConstraints gridBagConstraints = new GridBagConstraints();
+			gridBagConstraints.gridx = 0;
+			gridBagConstraints.gridy = 0;
 			ivjJPanel3 = new javax.swing.JPanel();
 			ivjJPanel3.setName("JPanel3");
 			ivjJPanel3.setLayout(new java.awt.GridBagLayout());
 
 			java.awt.GridBagConstraints constraintsMaxJLabel = new java.awt.GridBagConstraints();
-			constraintsMaxJLabel.gridx = 0; constraintsMaxJLabel.gridy = 2;
-			getJPanel3().add(getMaxJLabel(), constraintsMaxJLabel);
-
+			constraintsMaxJLabel.gridx = 0;
+ 	constraintsMaxJLabel.gridy = 3;
 			java.awt.GridBagConstraints constraintsColorMapJLabel = new java.awt.GridBagConstraints();
-			constraintsColorMapJLabel.gridx = 0; constraintsColorMapJLabel.gridy = 3;
+			constraintsColorMapJLabel.gridx = 0;
+ 	constraintsColorMapJLabel.gridy = 4;
 			constraintsColorMapJLabel.anchor = java.awt.GridBagConstraints.EAST;
 			constraintsColorMapJLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel3().add(getColorMapJLabel(), constraintsColorMapJLabel);
-
+			ivjJPanel3.add(getMaxJLabel(), constraintsMaxJLabel);
 			java.awt.GridBagConstraints constraintsMinJLabel = new java.awt.GridBagConstraints();
-			constraintsMinJLabel.gridx = 0; constraintsMinJLabel.gridy = 4;
-			getJPanel3().add(getMinJLabel(), constraintsMinJLabel);
-
+			constraintsMinJLabel.gridx = 0;
+ 	constraintsMinJLabel.gridy = 5;
+			ivjJPanel3.add(getColorMapJLabel(), constraintsColorMapJLabel);
 			java.awt.GridBagConstraints constraintsJLabel1 = new java.awt.GridBagConstraints();
-			constraintsJLabel1.gridx = 0; constraintsJLabel1.gridy = 1;
-			getJPanel3().add(getJLabel1(), constraintsJLabel1);
-
+			constraintsJLabel1.gridx = 0;
+ 	constraintsJLabel1.gridy = 2;
 			java.awt.GridBagConstraints constraintsJLabel2 = new java.awt.GridBagConstraints();
-			constraintsJLabel2.gridx = 0; constraintsJLabel2.gridy = 5;
-			getJPanel3().add(getJLabel2(), constraintsJLabel2);
-
+			constraintsJLabel2.gridx = 0;
+ 	constraintsJLabel2.gridy = 6;
+	ivjJPanel3.add(getMinJLabel(), constraintsMinJLabel);
+			ivjJPanel3.add(getJLabel1(), constraintsJLabel1);
 			java.awt.GridBagConstraints constraintsScaleImageModeJLabel = new java.awt.GridBagConstraints();
-			constraintsScaleImageModeJLabel.gridx = 0; constraintsScaleImageModeJLabel.gridy = 0;
-			getJPanel3().add(getScaleImageModeJLabel(), constraintsScaleImageModeJLabel);
+			constraintsScaleImageModeJLabel.gridx = 0;
+ 	constraintsScaleImageModeJLabel.gridy = 1;
+	ivjJPanel3.add(getJLabel2(), constraintsJLabel2);
+	ivjJPanel3.add(getScaleImageModeJLabel(), constraintsScaleImageModeJLabel);
+			ivjJPanel3.add(getJCheckBoxColor(), gridBagConstraints);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
 			// user code begin {2}
 			// user code end
 			handleException(ivjExc);
-		}
-	}
+		}	}
 	return ivjJPanel3;
 }
 
@@ -2139,7 +2146,7 @@ private void jComboBox1_ActionPerformed(java.awt.event.ActionEvent actionEvent) 
  */
 private void kymograph_Initialize() {
 	
-	//getDisplayAdapterService1().addColorModelForValues(DisplayAdapterService.createGrayColorModel(), DisplayAdapterService.createGraySpecialColors(), "Gray");
+	getDisplayAdapterService1().addColorModelForValues(DisplayAdapterService.createGrayColorModel(), DisplayAdapterService.createGraySpecialColors(), "Gray");
 	getDisplayAdapterService1().addColorModelForValues(DisplayAdapterService.createBlueRedColorModel(), DisplayAdapterService.createBlueRedSpecialColors(), "BlueRed");
 	getDisplayAdapterService1().setActiveColorModelID("BlueRed");
 
@@ -2360,5 +2367,31 @@ public void zoomToFill() {
  */
 private void zoomUpJButton_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
 	getImagePaneScroller1().zooming(new cbit.image.ZoomEvent(getimagePaneView1(),0,1));
+}
+
+/**
+ * This method initializes jCheckBoxColor	
+ * 	
+ * @return javax.swing.JCheckBox	
+ */
+private JCheckBox getJCheckBoxColor() {
+	if (jCheckBoxColor == null) {
+		jCheckBoxColor = new JCheckBox();
+		jCheckBoxColor.setText("B/W");
+		jCheckBoxColor.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent e) {
+				JCheckBox jCheckBox = (JCheckBox)e.getSource();
+				if(jCheckBox.isSelected()){
+					getDisplayAdapterService1().setActiveColorModelID("Gray");
+				}else{
+					getDisplayAdapterService1().setActiveColorModelID("BlueRed");
+				}
+				cmapImageIcon = null;
+				updateColorMapDisplay();
+				getimagePaneView1().getImagePaneModel().updateViewPortImage();
+			}
+		});
+	}
+	return jCheckBoxColor;
 }
 }
