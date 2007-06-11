@@ -298,7 +298,7 @@ private void doPBSJob(File userdir) throws XmlParseException, SolverException, J
 
 	// if PBS has problem with dispatching jobs, jobs that have been submitted
 	// but are not running, will be redispatched after 5 minutes. Then we have duplicate
-	// jobs or "failed" jobs actually running in LSF.
+	// jobs or "failed" jobs actually running in PBS.
 	// to avoid this, kill the job, ask the user to try again later if the jobs
 	// are not in running status 20 seconds after submission.
 	if (jobid != null) { 
@@ -311,8 +311,28 @@ private void doPBSJob(File userdir) throws XmlParseException, SolverException, J
 			
 			int status = PBSUtils.getJobStatus(jobid);
 			if (status == PBSConstants.PBS_STATUS_EXISTING){
+				int exitCode = PBSUtils.getJobExitCode(jobid);
+				if (exitCode < 0) {
+					workerMessaging.sendFailed("Job [" + jobid + "] exited unexpectedly: [" + exitCode + ":" + PBSConstants.PBS_JOB_EXEC_STATUS[-exitCode] + "]");			
+				} else if (exitCode > 0) {
+					workerMessaging.sendFailed("Job [" + jobid + "] was killed with system signal " + exitCode);
+				}
 				break;
 			} else if (status == PBSConstants.PBS_STATUS_RUNNING) {
+				//check to see if it exits soon after it runs
+				try {
+					Thread.sleep(5000);
+				} catch (InterruptedException ex) {
+				}
+				status = PBSUtils.getJobStatus(jobid);
+				if (status == PBSConstants.PBS_STATUS_EXISTING) {
+					int exitCode = PBSUtils.getJobExitCode(jobid);
+					if (exitCode < 0) {
+						workerMessaging.sendFailed("Job [" + jobid + "] exited unexpectedly: [" + exitCode + ":" + PBSConstants.PBS_JOB_EXEC_STATUS[-exitCode] + "]");			
+					} else if (exitCode > 0) {
+						workerMessaging.sendFailed("Job [" + jobid + "] was killed with system signal " + exitCode);
+					}				
+				}
 				break;
 			} else if (System.currentTimeMillis() - t > 20 * MessageConstants.SECOND) {
 				String pendingReason = PBSUtils.getPendingReason(jobid);
@@ -336,7 +356,7 @@ private void doCondorJob(File userdir) throws XmlParseException, SolverException
 
 	// if condor has problem with dispatching jobs, jobs that have been submitted
 	// but are not running, will be redispatched after 5 minutes. Then we have duplicate
-	// jobs or "failed" jobs actually running in LSF.
+	// jobs or "failed" jobs actually running in Condor.
 	// to avoid this, kill the job, ask the user to try again later if the jobs
 	// are not in running status 20 seconds after submission.
 	if (jobid != null) { 

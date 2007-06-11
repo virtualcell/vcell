@@ -1,13 +1,20 @@
 package cbit.htc;
 
+import java.io.BufferedReader;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.StringTokenizer;
-
+import cbit.util.Executable;
 import cbit.util.ExecutableException;
 import cbit.vcell.server.PropertyLoader;
+import cbit.vcell.server.SessionLog;
+import cbit.vcell.server.StdoutSessionLog;
 import static cbit.htc.PBSConstants.*;
 
 public class PBSUtils {
-	private static cbit.vcell.server.SessionLog pbsLog = new cbit.vcell.server.StdoutSessionLog("PBS-Command");
+	private static SessionLog pbsLog = new StdoutSessionLog("PBS-Command");
 	private static String pbsServer = null;
 /**
  * Insert the method's description here.
@@ -16,8 +23,7 @@ public class PBSUtils {
  * @param jobid java.lang.String
  */
 public static String checkServerStatus() throws ExecutableException {
-	cbit.util.Executable exe = null;
-	exe = new cbit.util.Executable(SERVER_CMD_STATUS);
+	cbit.util.Executable exe = new Executable(SERVER_CMD_STATUS);
 	exe.start();
 	
 	String output = exe.getStdoutString();
@@ -26,11 +32,11 @@ public static String checkServerStatus() throws ExecutableException {
 	---------------- ----- ----- ----- ----- ----- ----- ----- ----- -----------
 	dll-2-1-1            0     0     0     0     0     0     0     0 Active
 	*/	
-	java.util.StringTokenizer st = new java.util.StringTokenizer(output, "\n");	
+	StringTokenizer st = new StringTokenizer(output, "\n");	
 	st.nextToken();
 	st.nextToken();
 	String line = st.nextToken();
-	st = new java.util.StringTokenizer(line, " ");
+	st = new StringTokenizer(line, " ");
 	pbsServer = st.nextToken();			
 	
 	return pbsServer;
@@ -63,11 +69,11 @@ public static int getJobExitCode(String jobid) {
 	06/04/2007 10:04:44  S    Post job file processing error
 	 */
 	int iExitCode = JOB_EXEC_OK;
-	cbit.util.Executable exe = null;
+	Executable exe = null;
 	
 	try {
 		String cmd = JOB_CMD_HISTORY + " " + jobid;
-		exe = new cbit.util.Executable(cmd);
+		exe = new Executable(cmd);
 		exe.start();
 		
 		String output = exe.getStdoutString();
@@ -77,12 +83,12 @@ public static int getJobExitCode(String jobid) {
 			throw new RuntimeException("Job [" + jobid + "] is still running"); 
 		}
 		output = output.substring(idx);
-		StringTokenizer st = new java.util.StringTokenizer(output, "=");
+		StringTokenizer st = new StringTokenizer(output, " =");
 		st.nextToken();
 		iExitCode = Integer.parseInt(st.nextToken()); 
 		return iExitCode;
 		
-	} catch (cbit.util.ExecutableException ex) {
+	} catch (ExecutableException ex) {
 		throw new RuntimeException("No job history for job [" + jobid + "]");
 	}	
 }
@@ -94,11 +100,11 @@ public static int getJobExitCode(String jobid) {
  */
 public static int getJobStatus(String jobid) {		
 	int iStatus = PBS_STATUS_UNKNOWN;
-	cbit.util.Executable exe = null;
+	Executable exe = null;
 	
 	try {
 		String cmd = JOB_CMD_STATUS + " " + jobid;
-		exe = new cbit.util.Executable(cmd);
+		exe = new Executable(cmd);
 		exe.start();
 		
 		String output = exe.getStdoutString();
@@ -107,11 +113,11 @@ public static int getJobStatus(String jobid) {
 		----------------  ---------------- ----------------  -------- - -----
 		65.dll-2-1-1      test1.sub        fgao              00:00:00 E workq
 		*/		
-		java.util.StringTokenizer st = new java.util.StringTokenizer(output, "\n");
+		StringTokenizer st = new StringTokenizer(output, "\n");
 		st.nextToken();
 		st.nextToken();
 		String token = st.nextToken();
-		st = new java.util.StringTokenizer(token, " ");
+		st = new StringTokenizer(token, " ");
 		for (int i = 0; i < 5; i ++) {
 			token = st.nextToken();
 		}
@@ -120,7 +126,7 @@ public static int getJobStatus(String jobid) {
 				return iStatus;
 			}
 		}		
-	} catch (cbit.util.ExecutableException ex) {
+	} catch (ExecutableException ex) {
 		return PBS_STATUS_EXISTING;
 	}
 	return iStatus;
@@ -150,9 +156,9 @@ public static void killJob(String jobid) {
 		
 	try {
 		String cmd = JOB_CMD_DELETE + " " + jobid;
-		cbit.util.Executable exe = new cbit.util.Executable(cmd);
+		Executable exe = new Executable(cmd);
 		exe.start();
-	} catch (cbit.util.ExecutableException ex) {
+	} catch (ExecutableException ex) {
 		pbsLog.exception(ex);
 	}
 }
@@ -168,12 +174,12 @@ public static void main(String[] args) {
 	try {		
 		PropertyLoader.loadProperties();
 		
-		String jobid = PBSUtils.submitJob(null, "D:\\PBSPro_Jobs\\test3.sub", "dir", "");
+		String jobid = "166"; //PBSUtils.submitJob(null, "D:\\PBSPro_Jobs\\test3.sub", "dir", "");
 		int status = PBSUtils.getJobStatus(jobid);
 		int code = PBSUtils.getJobExitCode(jobid);
 		System.out.println("jobid=" + jobid);
 		System.out.println("status=" + PBS_JOB_STATUS[status]);
-		System.out.println("exitcode=" + code);
+		System.out.println("exitcode=" + code + ":" + PBS_JOB_EXEC_STATUS[-code] + "]");
 	} catch (Exception ex) {
 		ex.printStackTrace();
 	}
@@ -184,11 +190,11 @@ public static void main(String[] args) {
  * Creation date: (9/25/2003 8:04:51 AM)
  * @param command java.lang.String
  */
-public static String submitJob(String computeResource, String sub_file, String executable, String cmdArguments) throws cbit.util.ExecutableException {		
+public static String submitJob(String computeResource, String sub_file, String executable, String cmdArguments) throws ExecutableException {		
 
 	try {	
-		java.io.BufferedReader br = new java.io.BufferedReader(new java.io.FileReader(HTCUtils.getJobSubmitTemplate(computeResource)));
-		java.io.PrintWriter pw = new java.io.PrintWriter(new java.io.FileOutputStream(sub_file));
+		BufferedReader br = new BufferedReader(new FileReader(HTCUtils.getJobSubmitTemplate(computeResource)));
+		PrintWriter pw = new PrintWriter(new FileOutputStream(sub_file));
 		while (true) {
 			String line = br.readLine();
 			if (line == null) {
@@ -201,13 +207,13 @@ public static String submitJob(String computeResource, String sub_file, String e
 		pw.println();
 		pw.close();
 		br.close();
-	} catch (java.io.IOException ex) {
+	} catch (IOException ex) {
 		ex.printStackTrace(System.out);
 		return null;
 	}
 	
 	String completeCommand =  JOB_CMD_SUBMIT + " " + sub_file;
-	cbit.util.Executable exe = new cbit.util.Executable(completeCommand);
+	Executable exe = new Executable(completeCommand);
 	exe.start();
 	String jobid = exe.getStdoutString().trim();
 	return jobid;
