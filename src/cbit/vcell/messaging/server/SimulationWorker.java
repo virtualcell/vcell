@@ -300,7 +300,7 @@ private void doPBSJob(File userdir) throws XmlParseException, SolverException, J
 	// but are not running, will be redispatched after 5 minutes. Then we have duplicate
 	// jobs or "failed" jobs actually running in PBS.
 	// to avoid this, kill the job, ask the user to try again later if the jobs
-	// are not in running status 20 seconds after submission.
+	// are not in running status 1 minute after submission.
 	if (jobid != null) { 
 		long t = System.currentTimeMillis();
 		while (true) {
@@ -334,7 +334,7 @@ private void doPBSJob(File userdir) throws XmlParseException, SolverException, J
 					}				
 				}
 				break;
-			} else if (System.currentTimeMillis() - t > 20 * MessageConstants.SECOND) {
+			} else if (System.currentTimeMillis() - t > MessageConstants.MINUTE) {
 				String pendingReason = PBSUtils.getPendingReason(jobid);
 				PBSUtils.killJob(jobid); // kill the job if it takes too long to dispatch the job.
 				workerMessaging.sendFailed("PBS Job scheduler timed out. Please try again later. (Job [" + jobid + "]: " + pendingReason + ")");
