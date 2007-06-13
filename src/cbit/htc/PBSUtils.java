@@ -190,11 +190,13 @@ public static void main(String[] args) {
  * Creation date: (9/25/2003 8:04:51 AM)
  * @param command java.lang.String
  */
-public static String submitJob(String computeResource, String sub_file, String executable, String cmdArguments) throws ExecutableException {		
+public static String submitJob(String computeResource, String jobName, String sub_file, String executable, String cmdArguments) throws ExecutableException {		
 
 	try {	
 		BufferedReader br = new BufferedReader(new FileReader(HTCUtils.getJobSubmitTemplate(computeResource)));
 		PrintWriter pw = new PrintWriter(new FileOutputStream(sub_file));
+		pw.println("#PBS -N " + jobName);
+		
 		while (true) {
 			String line = br.readLine();
 			if (line == null) {
