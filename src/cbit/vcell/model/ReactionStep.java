@@ -25,6 +25,9 @@ import cbit.util.*;
  */
 public abstract class ReactionStep implements Cacheable, Serializable, ScopedSymbolTable, Matchable, VetoableChangeListener, PropertyChangeListener {
 
+	private String annotation = null;
+	
+	
 	public final static int PHYSICS_MOLECULAR_ONLY = 0;
 	public final static int PHYSICS_MOLECULAR_AND_ELECTRICAL = 1;
 	public final static int PHYSICS_ELECTRICAL_ONLY = 2;
@@ -76,7 +79,7 @@ public abstract class ReactionStep implements Cacheable, Serializable, ScopedSym
 /**
  * ReactionStep constructor comment.
  */
-protected ReactionStep(Structure structure, KeyValue key, String name) throws java.beans.PropertyVetoException {
+protected ReactionStep(Structure structure, KeyValue key, String name,String annotation) throws java.beans.PropertyVetoException {
 	super();
 	nameScope = new ReactionStep.ReactionNameScope();
 	fieldChargeCarrierValence = new ChargeCarrierValence("charge",getNameScope());
@@ -87,11 +90,31 @@ protected ReactionStep(Structure structure, KeyValue key, String name) throws ja
 	removeVetoableChangeListener(this);
 	addVetoableChangeListener(this);
 	setName(name);
+	this.annotation = annotation;
 	try {
 		setKinetics(new GeneralKinetics(this));
 	}catch (Exception e){
 		e.printStackTrace(System.out);
 	}
+}
+
+protected ReactionStep(Structure structure, KeyValue key, String name) throws java.beans.PropertyVetoException {
+	this(structure,key,name,null);
+//	super();
+//	nameScope = new ReactionStep.ReactionNameScope();
+//	fieldChargeCarrierValence = new ChargeCarrierValence("charge",getNameScope());
+//	setStructure(structure);
+//	this.key = key;
+//	removePropertyChangeListener(this);
+//	addPropertyChangeListener(this);
+//	removeVetoableChangeListener(this);
+//	addVetoableChangeListener(this);
+//	setName(name);
+//	try {
+//		setKinetics(new GeneralKinetics(this));
+//	}catch (Exception e){
+//		e.printStackTrace(System.out);
+//	}
 }
 /**
  * ReactionStep constructor comment.
@@ -168,6 +191,9 @@ protected boolean compareEqual0(ReactionStep rs) {
 	}
 	
 	if (!cbit.util.Compare.isEqual(fieldReactionParticipants, rs.fieldReactionParticipants)) {
+		return false;
+	}
+	if(!Compare.isEqualOrNull(getAnnotation(), rs.getAnnotation())){
 		return false;
 	}
 	return true;
@@ -750,4 +776,10 @@ public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException {
  * @exception java.lang.Exception The exception description.
  */
 public abstract void writeTokens(java.io.PrintWriter pw);
+public String getAnnotation() {
+	return annotation;
+}
+public void setAnnotation(String annotation) {
+	this.annotation = annotation;
+}
 }

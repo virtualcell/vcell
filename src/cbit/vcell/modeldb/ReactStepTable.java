@@ -4,9 +4,9 @@ package cbit.vcell.modeldb;
  * All rights reserved.
 ©*/
 import cbit.sql.*;
+import cbit.util.TokenMangler;
 import cbit.vcell.model.*;
 import cbit.vcell.server.*;
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.dictionary.*;
 /**
  * This type was created in VisualAge.
@@ -25,8 +25,9 @@ public class ReactStepTable extends cbit.sql.Table {
 	public final Field physicsOptions		= new Field("physicsOptions","integer",		"");
 	public final Field kineticsLarge		= new Field("kineticsLRG",	"CLOB",				"");
 	public final Field kineticsSmall		= new Field("kineticsSML",	"VARCHAR2(4000)",	"");
+	public final Field annotation			= new Field("annotation",	"VARCHAR2(4000)",	"");
 
-	private final Field fields[] = {reactType,modelRef,structRef,kinetics,name,chargeValence,physicsOptions,kineticsLarge,kineticsSmall};
+	private final Field fields[] = {reactType,modelRef,structRef,kinetics,name,chargeValence,physicsOptions,kineticsLarge,kineticsSmall,annotation};
 	
 	public static final ReactStepTable table = new ReactStepTable();
 
@@ -164,6 +165,11 @@ if (kinetics.getUnresolvedParameters().length!=0){
 		e.printStackTrace(System.out);
 	}
 
+	String annot = rset.getString(ReactStepTable.table.annotation.getUnqualifiedColName());
+	if(!rset.wasNull()){
+		annot = TokenMangler.getSQLRestoredString(annot);
+		rs.setAnnotation(annot);
+	}
 	return rs;
 }
 
@@ -507,11 +513,17 @@ public String getSQLValueList(ReactionStep reactionStep, KeyValue modelKey, KeyV
 
 	// New kinetics format
 	if(DbDriver.varchar2_CLOB_is_Varchar2_OK(kinetics)){
-		buffer.append("null"+","+DbDriver.INSERT_VARCHAR2_HERE);
+		buffer.append("null"+","+DbDriver.INSERT_VARCHAR2_HERE+",");
 	}else{
-		buffer.append(DbDriver.INSERT_CLOB_HERE+","+"null");
+		buffer.append(DbDriver.INSERT_CLOB_HERE+","+"null"+",");
 	}
 
+	if(reactionStep.getAnnotation() != null && reactionStep.getAnnotation().length() > 0){
+		String annot = TokenMangler.getSQLEscapedString(reactionStep.getAnnotation());
+		buffer.append("'"+annot+"'");
+	}else{
+		buffer.append("NULL");
+	}
 	buffer.append(")");
 	
 	return buffer.toString();

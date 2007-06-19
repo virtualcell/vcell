@@ -50,6 +50,8 @@ public abstract class CartoonTool implements MouseListener, MouseMotionListener,
 	public static final String HIGH_RES_MENU_ACTION = "High Res (x3.0)";
 	public static final String MED_RES_MENU_ACTION = "Medium Res (x2.0)";
 	public static final String LOW_RES_MENU_ACTION = "Low Res (x1.0)";
+	//MIRIAM
+	public static final String ANNOTATE_MENU_ACTION = "Annotate...";	
 	//
 	public static final String DELETE_MENU_TEXT = DELETE_MENU_ACTION;
 	public static final String PROPERTIES_MENU_TEXT = PROPERTIES_MENU_ACTION;
@@ -74,7 +76,10 @@ public abstract class CartoonTool implements MouseListener, MouseMotionListener,
 	public static final String HIGH_RES_MENU_TEXT = HIGH_RES_MENU_ACTION;
 	public static final String MED_RES_MENU_TEXT = MED_RES_MENU_ACTION;
 	public static final String LOW_RES_MENU_TEXT = LOW_RES_MENU_ACTION;
-	//	
+	//
+	//MIRIAM
+	public static final String ANNOTATE_MENU_TEXT = ANNOTATE_MENU_ACTION;	
+
 	public static final String[] ACTION_COMMANDS = {"select", "feature", "species", "line", "step", "flux", "spline","addCP","complex","bindingSite","interaction"};
 	
 	public static final int SELECT_MODE = 0;
@@ -118,12 +123,14 @@ public abstract class CartoonTool implements MouseListener, MouseMotionListener,
 		JMenuItem pasteJMenuItem = new javax.swing.JMenuItem();
 		JMenuItem pastenewJMenuItem = new javax.swing.JMenuItem();
 		JMenuItem moveJMenuItem = new javax.swing.JMenuItem();
+		//MIRIAM
+		JMenuItem annotateJMenuItem = new JMenuItem();
 		//
 		//Add new JMenuItems here too.  Used for convenience to add and remove actionlisteners
 		private JMenuItem[] jmenuItemArr =
 			{	addFeatureJMenuItem,addSpeciesJMenuItem,addEnzymeReactionJMenuItem,reactionsJMenuItem,propertiesJMenuItem,enableJMenuItem,disableJMenuItem,solveJMenuItem,resetJMenuItem,showParametersJMenuItem,
 				copyJMenuItem,deleteJMenuItem,cutJMenuItem,pasteJMenuItem,pastenewJMenuItem,moveJMenuItem,addBindingSiteJMenuItem,addComplexJMenuItem,  
-				saveAsImageJMenu
+				saveAsImageJMenu,annotateJMenuItem
 			};
 
 /**
@@ -131,6 +138,11 @@ public abstract class CartoonTool implements MouseListener, MouseMotionListener,
  * @param canvas cbit.vcell.graph.CartoonCanvas
  */
 public CartoonTool () {
+	//MIRIAM
+	annotateJMenuItem.setName("JMenuItemAnnotate");
+	annotateJMenuItem.setActionCommand(ANNOTATE_MENU_ACTION);
+//	annotateJMenuItem.setMnemonic('m');
+	annotateJMenuItem.setText(ANNOTATE_MENU_TEXT);
 	//
 	addFeatureJMenuItem.setName("JMenuItemAddFeature");
 	addFeatureJMenuItem.setActionCommand(ADD_FEATURE_MENU_ACTION);
@@ -560,6 +572,7 @@ protected final void popupMenu(Shape shape,int x, int y) throws Exception {
 			for(int i = 0; i < currentMenuList.size();i+= 1){
 				JMenuItem addableJMenuItem = (JMenuItem)currentMenuList.get(i);
 				if(
+					addableJMenuItem == annotateJMenuItem ||
 					addableJMenuItem == addFeatureJMenuItem ||
 					addableJMenuItem == addSpeciesJMenuItem ||
 					addableJMenuItem == addEnzymeReactionJMenuItem ||

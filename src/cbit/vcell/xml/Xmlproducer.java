@@ -2537,13 +2537,18 @@ public org.jdom.Element getXML(ReactionParticipant param) {
  * @param param cbit.vcell.model.ReactionStep
  */
 public org.jdom.Element getXML(ReactionStep param) throws XmlParseException {
+	org.jdom.Element rsElement = null;
 	if (param instanceof FluxReaction) {
-		return getXML((FluxReaction)param);
+		rsElement = getXML((FluxReaction)param);
 	} else if (param instanceof SimpleReaction) {
-		return getXML((SimpleReaction)param);
+		rsElement = getXML((SimpleReaction)param);
 	}
-
-	return null;
+	if(rsElement != null){
+		org.jdom.Element annotationElem = new org.jdom.Element(XMLTags.AnnotationTag);
+		annotationElem.setText(this.mangle(param.getAnnotation()));
+		rsElement.addContent(annotationElem);
+	}
+	return rsElement;
 }
 
 
