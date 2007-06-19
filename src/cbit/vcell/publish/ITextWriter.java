@@ -2034,6 +2034,14 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 					}
 					
 					Section reactionSection = reactStructSection.addSection(type + " " + rs.getName(), reactStructSection.numberDepth() + 1);
+					//Annotation
+					if (rs.getAnnotation() != null) {
+						Table annotTable = getTable(1, 100, 1, 3, 3);
+						annotTable.addCell(createCell("Reaction Annotation", getBold(DEF_HEADER_FONT_SIZE), 1, 1, Element.ALIGN_CENTER, true));
+						annotTable.addCell(createCell(rs.getAnnotation(),getFont()));
+						reactionSection.add(annotTable);
+						//reactionSection.add(new Paragraph("\""+rs.getAnnotation()+"\""));
+					}
 					// reaction table
 					if (reactionTable != null) {
 						reactionSection.add(reactionTable);

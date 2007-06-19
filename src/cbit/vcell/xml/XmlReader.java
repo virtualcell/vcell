@@ -1090,6 +1090,14 @@ public cbit.vcell.model.FluxReaction getFluxReaction( Element param, Model model
 		e.printStackTrace();
 		throw new XmlParseException( "An exception occurred while trying to create the FluxReaction " + name+" : "+e.getMessage());
 	}
+	//Annotation
+	String rsAnnotation = null;
+	String annotationText = param.getChildText(XMLTags.AnnotationTag);
+	if (annotationText!=null && annotationText.length()>0) {
+		rsAnnotation = this.unMangle(annotationText);
+	}
+	fluxreaction.setAnnotation(rsAnnotation);
+	
 	//set the valence
 	String valenceString = null;
 	try {
@@ -3188,7 +3196,14 @@ public cbit.vcell.model.SimpleReaction getSimpleReaction(Element param) throws X
         e.printStackTrace();
         throw new XmlParseException("An error occurred while trying to create the simpleReaction " + name+" : "+e.getMessage());
     }
-    
+	//Annotation
+	String rsAnnotation = null;
+	String annotationText = param.getChildText(XMLTags.AnnotationTag);
+	if (annotationText!=null && annotationText.length()>0) {
+		rsAnnotation = this.unMangle(annotationText);
+	}
+	simplereaction.setAnnotation(rsAnnotation);
+	
 	//set the fluxOption
 	String fluxOptionString = null;
 	fluxOptionString = param.getAttributeValue(XMLTags.FluxOptionAttrTag);
