@@ -1,6 +1,8 @@
 package cbit.vcell.vcml;
 import cbit.vcell.model.FluxReaction;
 import org.jdom.*;
+
+import cbit.vcell.xml.MIRIAMHelper;
 import cbit.vcell.xml.XmlParseException;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.model.Structure;
@@ -25,6 +27,7 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.xml.XMLTags;
 import cbit.util.TokenMangler;
+import cbit.util.xml.XmlUtil;
 
 /**
  * Insert the type's description here.
@@ -130,6 +133,14 @@ protected void addCompartments() {
 			}
 		}
 		
+		Element annotationElement = null;
+		if(sbmlCompartment.getAnnotation() == null || sbmlCompartment.getAnnotation().length() == 0){
+			annotationElement = new Element(XMLTags.SbmlAnnotationTag, "");
+		}else{
+			annotationElement = XmlUtil.stringToXML(sbmlCompartment.getAnnotation(), null);
+		}
+		MIRIAMHelper.addToSBML(annotationElement, vcStructures[i].getMIRIAMAnnotation(), false);
+		sbmlCompartment.setAnnotation(XmlUtil.xmlToString(annotationElement, true));
 		sbmlModel.addCompartment(sbmlCompartment);
 	}
 }
@@ -221,6 +232,7 @@ protected void addReactions() {
 			e.printStackTrace(System.out);
 			throw new RuntimeException("Could not get JDOM element for annotation : " + e.getMessage());
 		}
+		MIRIAMHelper.addToSBML(annotationElement, vcReactionSpecs[i].getReactionStep().getMIRIAMAnnotation(),false);
 		sbmlReaction.setAnnotation(cbit.util.xml.XmlUtil.xmlToString(annotationElement));
 		
 		// Get reaction kineticLaw
@@ -487,7 +499,8 @@ protected void addSpecies() {
 		speciesElement.setAttribute(XMLTags.NameAttrTag, cbit.util.TokenMangler.mangleToSName(vcSpeciesContexts[i].getSpecies().getCommonName()));
 		vcellInfoTag.addContent(speciesElement);
 		annotationElement.addContent(vcellInfoTag);
-		sbmlSpecies.setAnnotation(cbit.util.xml.XmlUtil.xmlToString(annotationElement));
+		MIRIAMHelper.addToSBML(annotationElement, vcSpeciesContexts[i].getSpecies().getMIRIAMAnnotation(),false);
+		sbmlSpecies.setAnnotation(cbit.util.xml.XmlUtil.xmlToString(annotationElement,true));
 
 		// Add the species to the sbmlModel
 		sbmlModel.addSpecies(sbmlSpecies);
@@ -747,6 +760,15 @@ public String getSBMLFile() {
 	sbmlModel = new org.sbml.libsbml.Model(TokenMangler.mangleToSName(vcBioModel.getName()));
 	sbmlModel.setName(vcBioModel.getName());
 	translateBioModel();
+
+	Element annotationElement = null;
+	if(sbmlModel.getAnnotation() == null || sbmlModel.getAnnotation().length() == 0){
+		annotationElement = new Element(XMLTags.SbmlAnnotationTag, "");
+	}else{
+		annotationElement = XmlUtil.stringToXML(sbmlModel.getAnnotation(), null);
+	}
+	MIRIAMHelper.addToSBML(annotationElement, vcBioModel.getMIRIAMAnnotation(), false);
+	sbmlModel.setAnnotation(XmlUtil.xmlToString(annotationElement, true));
 
 	//
 	// Set the SBMLDocument with the SBML model. 

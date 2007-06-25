@@ -1300,7 +1300,7 @@ roundtripTimer += l2 - l1;
 				}
 			}
 		}
-
+		bioModelMetaData.setMIRIAMAnnotation(bioModel.getMIRIAMAnnotation());
 		BioModelMetaData updatedBioModelMetaData = null;
 		if (bioModel.getVersion()==null || !bioModel.getVersion().getName().equals(bioModel.getName())){
 			KeyValue updatedBioModelKey = dbServer.getDBTopLevel().insertVersionable(user,bioModelMetaData,null/*hack*/,bioModel.getName(),false,true);
@@ -1321,6 +1321,7 @@ roundtripTimer += l2 - l1;
 		//
 		//bioModelXML = getBioModelXML(user,updatedBioModelMetaData.getVersion().getVersionKey());
 		BioModel updatedBioModel = new BioModel(updatedBioModelMetaData.getVersion());
+		updatedBioModel.setMIRIAMAnnotation(updatedBioModelMetaData.getMIRIAMAnnotation());
 		updatedBioModel.setModel((Model)memoryToDatabaseHash.get(bioModel.getModel()));
 		for (int i = 0; i < bioModel.getNumSimulationContexts(); i++){
 			updatedBioModel.addSimulationContext((SimulationContext)memoryToDatabaseHash.get(bioModel.getSimulationContexts(i)));

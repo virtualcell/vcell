@@ -16,7 +16,32 @@ public class XMLTags {
     public final static String SBML_L2_V1_NAMESPACE_URI  = "http://www.sbml.org/sbml/level2";
 	public final static String SbmlRootNodeTag			 = "sbml";
 	public final static String SbmlAnnotationTag		 = "annotation";
+	public final static String SbmlNotesTag				 = "notes";
 	public final static String VCellInfoTag				 = "VCellInfo";
+
+	//Tags related to MIRIAM
+	public static final String HTML_XHTML_ATTR_TAG			= "xhtml";
+	public static final String XHTML_URI					= "http://www.w3.org/1999/xhtml";
+//	public static final String XHTML_HTML_BEGIN_TEMPLATE	= "<html "+HTML_XHTML_ATTR_TAG+"=\""+XHTML_URI+"\">\n<head><title></title></head>";
+//	public static final String XHTML_HTML_END_TEMPLATE		= "</html>";
+//	public static final String XHTML_HTML_BODY_BEGIN_TEMPLATE= XHTML_HTML_BEGIN_TEMPLATE+"<body>";
+//	public static final String XHTML_HTML_BODY_END_TEMPLATE	= "</body>\n</html>";
+//	public static final String XHTML_FULL_EMPTY_TEMPLATE	= XHTML_HTML_BODY_BEGIN_TEMPLATE+"<pre></pre>"+XHTML_HTML_BODY_END_TEMPLATE;
+	public static final String XHTML_FULL_EMPTY_TEMPLATE	= "<html "+HTML_XHTML_ATTR_TAG+"=\""+XHTML_URI+"\">\n<head><title></title></head>\n<body><pre></pre></body>\n</html>";
+	public static final String RDF_NAMESPACE_URI			= "http://www.w3.org/1999/02/22-rdf-syntax-ns#";	//xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" 
+	public static final String RDF_NAMESPACE_PREFIX			= "rdf";
+	public static final String RDF_RDF_NAME_TAG				= "RDF";
+	public static final String RDF_DESCRIPTION_NAME_TAG		= "Description";
+	public static final String RDF_LI_NAME_TAG				= "li";
+	public static final String RDF_BAG_NAME_TAG				= "Bag";
+	public static final String RDF_RESOURCE_ATTR_TAG		= "resource";
+	public static final String DUBCORE_NAMESPACE_URI		= "http://purl.org/dc/elements/1.1/";				//xmlns:dc="http://purl.org/dc/elements/1.1/" 
+	public static final String VCARD_NAMESPACE_URI			= "http://www.w3.org/2001/vcard-rdf/3.0#";			//xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" 
+	public static final String DUBCORETERMS_NAMESPACE_URI	= "http://purl.org/dc/terms/";						//xmlns:dcterms="http://purl.org/dc/terms/" 
+	public static final String BMBIOQUAL_NAMESPACE_URI	 	= "http://biomodels.net/biology-qualifiers/";		//xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" 
+	public static final String BMBIOQUAL_NAMESPACE_PREFIX 	= "bqbiol";
+	public static final String BMMODELQUAL_NAMESPACE_URI 	= "http://biomodels.net/model-qualifiers/";			//xmlns:bqmodel="http://biomodels.net/model-qualifiers/"
+	public static final String BMMODELQUAL_NAMESPACE_PREFIX = "bqmodel";
 	
 	//END
 	

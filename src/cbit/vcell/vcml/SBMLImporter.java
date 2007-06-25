@@ -14,10 +14,14 @@ package cbit.vcell.vcml;
  */
 
 import java.beans.PropertyVetoException;
+import java.io.StringReader;
+import java.util.List;
 import java.util.TreeMap;
 import java.util.Vector;
 
 import org.jdom.*;
+import org.jdom.filter.ElementFilter;
+import org.jdom.input.SAXBuilder;
 import org.sbml.libsbml.*;
 
 import cbit.util.BeanUtils;
@@ -34,7 +38,10 @@ import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.SBMLUnitTranslator;
 import cbit.util.xml.VCLogger;
 import cbit.vcell.vcml.TranslationMessage;
+import cbit.vcell.xml.MIRIAMHelper;
 import cbit.vcell.xml.XMLTags;
+import cbit.vcell.xml.XmlHelper;
+import cbit.vcell.xml.XmlReader;
 
 public class SBMLImporter {
 
@@ -42,16 +49,16 @@ public class SBMLImporter {
 	private org.sbml.libsbml.Model sbmlModel = null;
 	private cbit.vcell.mapping.SimulationContext simContext = null;
 	private LambdaFunction[] lambdaFunctions = null;
-	private java.util.HashMap assignmentRulesHash = new java.util.HashMap();
-	private TreeMap vcUnitsHash = new TreeMap();
-	private java.util.Hashtable SbmlVcSpeciesHash = new java.util.Hashtable();
+	private java.util.HashMap<String, Expression> assignmentRulesHash = new java.util.HashMap<String, Expression>();
+	private TreeMap<String, VCUnitDefinition> vcUnitsHash = new TreeMap<String, VCUnitDefinition>();
+	private java.util.Hashtable<String, String> SbmlVcSpeciesHash = new java.util.Hashtable<String, String>();
 
 	private cbit.util.xml.VCLogger logger = null;
 	 
 	private static String RATE_NAME = XMLTags.RateTag;
 	private static String SPECIES_NAME = XMLTags.SpeciesTag;
 	private static String REACTION = XMLTags.ReactionTag;
-	private static String SIMPLE_RXN = XMLTags.SimpleReactionTag;
+//	private static String SIMPLE_RXN = XMLTags.SimpleReactionTag;
 	 
 	static
 	{
@@ -75,8 +82,8 @@ protected void addCompartments() {
 	}
 	// Using a vector here - since there can be sbml models with only features and no membranes. In that case, we will need to add a membrane in between.
 	// Hence keepign the datastructure flexible.
-	Vector structVector = new Vector();
-	java.util.HashMap structureNameMap = new java.util.HashMap();
+	Vector<Structure> structVector = new Vector<Structure>();
+	java.util.HashMap<String, Structure> structureNameMap = new java.util.HashMap<String, Structure>();
 	try {
 		// First pass - create the structures
 		for (int i = 0; i < sbmlModel.getNumCompartments(); i++) {
@@ -93,6 +100,7 @@ protected void addCompartments() {
 				logger.sendMessage(VCLogger.HIGH_PRIORITY, TranslationMessage.COMPARTMENT_ERROR, "Cannot deal with spatial dimension : " + compartment.getSpatialDimensions() + " for compartments at this time.");
 				throw new RuntimeException("Cannot deal with spatial dimension : " + compartment.getSpatialDimensions() + " for compartments at this time");
 			}
+			MIRIAMHelper.setFromSBMLAnnotation(structVector.get(i), compartment.getAnnotation());
 		}
 
 		// Second pass - connect the structures
@@ -200,8 +208,7 @@ protected void addFunctionDefinitions() {
 			FunctionDefinition fnDefn = (FunctionDefinition)listofFunctionDefinitions.get(i);
 			String functionName = getActualName(fnDefn);
 			ASTNode math = null;
-			String formula = null;
-			Vector argsVector = new Vector();
+			Vector<String> argsVector = new Vector<String>();
 			String[] functionArgs = null;
 			if (fnDefn.isSetMath()) {
 				math = fnDefn.getMath();
@@ -390,6 +397,7 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
 					} else {
 						vcReactions[i] = new cbit.vcell.model.SimpleReaction(reactionStructure, rxnName);
 					}
+					MIRIAMHelper.setFromSBMLAnnotation(vcReactions[i], rxnAnnotation);
 				} else {
 					vcReactions[i] = new cbit.vcell.model.SimpleReaction(reactionStructure, rxnName);
 				}
@@ -725,7 +733,6 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
 				}
 			}	// end - for vcReactions
 		} catch (Exception e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace(System.out);
 			throw new RuntimeException(e1.getMessage());
 		}
@@ -799,6 +806,7 @@ protected void addRules() throws Exception {
 						simContext.getModel().addSpecies(new cbit.vcell.model.Species(speciesName, speciesName));
 						vcSpecies = simContext.getModel().getSpecies(speciesName);
 					}
+					MIRIAMHelper.setFromSBMLAnnotation(vcSpecies,speciesAnnotation);
 				} else {
 					simContext.getModel().addSpecies(new cbit.vcell.model.Species(speciesName, speciesName));
 					vcSpecies = simContext.getModel().getSpecies(speciesName);
@@ -1240,7 +1248,6 @@ private boolean checkSpeciesHasSubstanceOnly(Reaction sbmlRxn) throws Expression
 		}
 		translateSBMLModel();
 
-		
 		// Create the Biomodel with the simContext and return
 		cbit.vcell.biomodel.BioModel bioModel = null;
 		try {
@@ -1252,6 +1259,7 @@ private boolean checkSpeciesHasSubstanceOnly(Reaction sbmlRxn) throws Expression
 			throw new RuntimeException("Could not create Biomodel");
 		}
 
+		MIRIAMHelper.setFromSBMLAnnotation(bioModel,sbmlModel.getAnnotation());
 		bioModel.refreshDependencies();
 		return bioModel;
 	}

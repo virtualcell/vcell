@@ -95,10 +95,10 @@ private XmlUtil() {
 	  		}
 		} catch (JDOMException e) { 
         	e.printStackTrace();
-        	throw new RuntimeException("source document is not well-formed.");
+        	throw new RuntimeException("source document is not well-formed\n"+e.getMessage());
     	} catch (IOException e) { 
         	e.printStackTrace();
-        	throw new RuntimeException("Unable to read source document.");
+        	throw new RuntimeException("Unable to read source document\n"+e.getMessage());
     	}
 
     	return root;
@@ -145,15 +145,15 @@ public static org.jdom.Element setDefaultNamespace(org.jdom.Element rootNode, or
 
 
 //utility method with default settings. 
-	public static String xmlToString(Element root) {
-
+	public static String xmlToString(Element root) {		
+		return xmlToString(root,false);		        
+	}
+	
+	public static String xmlToString(Element root,boolean bTrimAllWhiteSpace) {
 		XMLOutputter xmlOut = new XMLOutputter("   ");
 	    xmlOut.setNewlines(true);
-		xmlOut.setTrimAllWhite(false);
-		//xmlwriter.setOmitDeclaration(false);
-		//xmlwriter.setOmitEncoding(false);
-		//xmlwriter.setTextNormalize(false);
-		
+		xmlOut.setTrimAllWhite(bTrimAllWhiteSpace);		
 		return xmlOut.outputString(root);		        
 	}
+
 }

@@ -11,16 +11,26 @@ import cbit.vcell.server.ObjectNotFoundException;
 import cbit.vcell.math.MathDescription;
 import java.beans.PropertyVetoException;
 import java.util.Vector;
+
+import org.jdom.Element;
+
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.xml.MIRIAMAnnotatable;
+import cbit.vcell.xml.MIRIAMAnnotation;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.util.BeanUtils;
+import cbit.util.Compare;
 import cbit.vcell.model.gui.VCellNames;
 /**
  * Insert the type's description here.
  * Creation date: (10/17/00 3:12:16 PM)
  * @author: 
  */
-public class BioModel implements cbit.vcell.document.VCDocument, cbit.util.Matchable, java.beans.VetoableChangeListener, java.beans.PropertyChangeListener {
+public class BioModel
+	implements
+		cbit.vcell.document.VCDocument, cbit.util.Matchable, java.beans.VetoableChangeListener, java.beans.PropertyChangeListener,
+		MIRIAMAnnotatable
+{
 	private cbit.sql.Version fieldVersion = null;
 	private java.lang.String fieldName = new String("NoName");
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
@@ -30,6 +40,7 @@ public class BioModel implements cbit.vcell.document.VCDocument, cbit.util.Match
 	private cbit.vcell.solver.Simulation[] fieldSimulations = new cbit.vcell.solver.Simulation[0];
 	private java.lang.String fieldDescription = new String();
 	private java.util.Hashtable simSimContextHash = new java.util.Hashtable();
+	private MIRIAMAnnotation miriamAnnotation;
 
 /**
  * BioModel constructor comment.
@@ -44,6 +55,14 @@ public BioModel(Version version) {
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());
 	}
+}
+
+public MIRIAMAnnotation getMIRIAMAnnotation() {
+	return miriamAnnotation;
+}
+public void setMIRIAMAnnotation(MIRIAMAnnotation miriamAnnotation) {
+	this.miriamAnnotation = miriamAnnotation;
+	
 }
 
 
@@ -163,6 +182,9 @@ public boolean compareEqual(cbit.util.Matchable obj) {
 		return false;
 	}
 	if (!cbit.util.Compare.isEqualOrNull(getSimulations(),bioModel.getSimulations())){
+		return false;
+	}
+	if(!Compare.isEqualOrNull(getMIRIAMAnnotation(), bioModel.getMIRIAMAnnotation())){
 		return false;
 	}
 

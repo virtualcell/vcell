@@ -17,6 +17,7 @@ import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.User;
 import cbit.vcell.server.DependencyException;
 import cbit.vcell.server.PermissionException;
+import cbit.vcell.xml.MIRIAMAnnotation;
 /**
  * This type was created in VisualAge.
  */
@@ -245,6 +246,7 @@ private ReactionStep getReactionStep(Connection con, ResultSet rset) throws SQLE
 
 	dbc.putUnprotected(rsKey,rs);
 	
+	MIRIAMTable.table.setMIRIAMAnnotation(con, rs, rs.getKey());
 	return rs;
 }
 
@@ -349,6 +351,8 @@ public cbit.vcell.model.Species getSpecies(Connection con, KeyValue speciesID) t
 	} finally {
 		stmt.close(); // Release resources include resultset
 	}
+
+	MIRIAMTable.table.setMIRIAMAnnotation(con, species, speciesID);
 	return species;
 }
 
@@ -626,7 +630,7 @@ public Structure[] getStructuresFromModel(Connection con,KeyValue modelKey) thro
 	//System.out.println(sql);
 
 	//Connection con = conFact.getConnection();
-	Vector structList = new Vector();
+	Vector<Structure> structList = new Vector<Structure>();
 	Statement stmt = con.createStatement();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
@@ -644,11 +648,13 @@ public Structure[] getStructuresFromModel(Connection con,KeyValue modelKey) thro
 	}
 	if (structList.size() == 0) {
 		return null;
-	} else {
-		Structure structures[] = new Structure[structList.size()];
-		structList.copyInto(structures);
-		return structures;
 	}
+	Structure structures[] = new Structure[structList.size()];
+	structList.copyInto(structures);
+	for (int i = 0; i < structures.length; i++) {
+		MIRIAMTable.table.setMIRIAMAnnotation(con, structures[i], structures[i].getKey());
+	}
+	return structures;
 }
 
 
@@ -781,6 +787,8 @@ private void insertReactionStepSQL(Connection con, KeyValue modelKey, KeyValue s
 						newKey,
 						ReactStepTable.table.kineticsLarge,
 						ReactStepTable.table.kineticsSmall);
+	
+	MIRIAMTable.table.insertMIRIAM(con,reactionStep,newKey);
 }
 
 
@@ -804,6 +812,9 @@ public KeyValue insertSpecies(InsertHashtable hash, Connection con,cbit.vcell.mo
 
 	updateCleanSQL(con,sql);
 	hash.put(species,key);
+	
+	MIRIAMTable.table.insertMIRIAM(con,species,key);
+	
 	return key;
 }
 
@@ -841,6 +852,8 @@ public KeyValue insertStructure(InsertHashtable hash, Connection con, cbit.vcell
 
 	updateCleanSQL(con,sql);
 	hash.put(structure,key);
+	
+	MIRIAMTable.table.insertMIRIAM(con,structure,key);
 	
 	return key;
 }
