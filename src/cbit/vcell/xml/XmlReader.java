@@ -213,6 +213,8 @@ System.out.println("simcontext-------- "+((double)(l5-l4))/1000);
 long l6 = System.currentTimeMillis();
 System.out.println("sims-------- "+((double)(l6-l5))/1000);		
 	}
+	MIRIAMHelper.setFromSBMLAnnotation(biomodel, param);
+	MIRIAMHelper.setFromSBMLNotes(biomodel, param);
 	return biomodel;
 }
 
@@ -866,6 +868,8 @@ public cbit.vcell.model.Structure getFeature(Element param) throws XmlParseExcep
 	//*** Add Feture to the dictionnary ****
 	this.dictionary.put(param, newfeature.getClass().getName() + ":" + name, newfeature);
 
+	MIRIAMHelper.setFromSBMLAnnotation(newfeature, param);
+	MIRIAMHelper.setFromSBMLNotes(newfeature, param);
 	return newfeature;
 }
 
@@ -2117,6 +2121,7 @@ public cbit.vcell.mathmodel.MathModel getMathModel(Element param) throws XmlPars
 		throw new XmlParseException("A PropertyVetoException occurred when adding the Simulations to the MathModel " + name+" : "+e.getMessage());
 	}
 
+//	MIRIAMHelper.setFromSBMLAnnotation(mathmodel, param);
 	return mathmodel;
 }
 
@@ -2222,6 +2227,8 @@ public Membrane getMembrane(Element param) throws XmlParseException {
 	//*** Add Membrane to the Dictionnary ***
 	this.dictionary.put(param, newmembrane.getClass().getName()+":"+name, newmembrane);
 
+	MIRIAMHelper.setFromSBMLAnnotation(newmembrane, param);
+	MIRIAMHelper.setFromSBMLNotes(newmembrane, param);
 	return newmembrane;
 }
 
@@ -2588,7 +2595,7 @@ public cbit.vcell.model.Model getModel(Element param) throws XmlParseException {
 	}
 	//Get version, if any	
 	Version version = getVersion(param.getChild(XMLTags.VersionTag));
-	cbit.vcell.model.Model newmodel = newmodel = new cbit.vcell.model.Model(version);
+	cbit.vcell.model.Model newmodel = new cbit.vcell.model.Model(version);
 	
 	try {
 		//Set attributes
@@ -3125,6 +3132,8 @@ public ReactionSpec getReactionSpec(Element param) throws XmlParseException{
 		throw new XmlParseException("A PropertyVetoException was fired when setting the reactionMapping value " + temp +", in a reactionSpec object!"+" : "+e.getMessage());
 	}
 	
+	MIRIAMHelper.setFromSBMLAnnotation(reactionstepref, re);
+	MIRIAMHelper.setFromSBMLNotes(reactionstepref, re);
 	return reactionspec;
 }
 
@@ -3759,9 +3768,11 @@ public cbit.vcell.model.Species getSpecies(Element param) throws XmlParseExcepti
 	if (annotationText!=null && annotationText.length()>0) {
 		specieAnnotation = this.unMangle(annotationText);
 	}
-
 	//create new Specie
 	cbit.vcell.model.Species newspecie = new cbit.vcell.model.Species( specieName, specieAnnotation);
+
+	MIRIAMHelper.setFromSBMLAnnotation(newspecie, param);
+	MIRIAMHelper.setFromSBMLNotes(newspecie, param);
 
 	//Try to read the DBSpecie data
 	Element dbspecieElement = param.getChild(XMLTags.DBSpeciesTag);

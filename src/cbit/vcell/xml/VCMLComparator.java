@@ -56,7 +56,11 @@ public class VCMLComparator {
 				if (pkName.equals("TEXT")) {
 					result = e1.getTextTrim().compareTo(e2.getTextTrim());
 				} else {
-					result = e1.getAttributeValue(pkName).compareTo(e2.getAttributeValue(pkName));
+					if((e1.getAttributeValue(pkName) == null)){
+						result = 0;
+					}else{
+						result = e1.getAttributeValue(pkName).compareTo(e2.getAttributeValue(pkName));
+					}
 				}
 			} else {         
 				java.util.StringTokenizer tokens = new java.util.StringTokenizer(pkName,"&");

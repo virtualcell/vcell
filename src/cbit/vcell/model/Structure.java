@@ -7,14 +7,22 @@ import cbit.vcell.parser.ExpressionBindingException;
 ©*/
 import java.beans.*;
 import java.util.*;
+
+import org.jdom.Element;
+
 import cbit.sql.KeyValue;
 import cbit.util.Compare;
 import cbit.util.Matchable;
 import cbit.sql.Cacheable;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
+import cbit.vcell.xml.MIRIAMAnnotatable;
+import cbit.vcell.xml.MIRIAMAnnotation;
 
-public abstract class Structure implements java.io.Serializable, ScopedSymbolTable, Matchable, Cacheable, java.beans.VetoableChangeListener
+public abstract class Structure
+	implements
+		java.io.Serializable, ScopedSymbolTable, Matchable, Cacheable, java.beans.VetoableChangeListener,
+		MIRIAMAnnotatable
 {
 	private String fieldName = new String();
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
@@ -22,6 +30,8 @@ public abstract class Structure implements java.io.Serializable, ScopedSymbolTab
 	private cbit.sql.KeyValue fieldKey = null;
 	private StructureNameScope fieldNameScope = new Structure.StructureNameScope();
 	private transient Model fieldModel = null;
+	private MIRIAMAnnotation miriamAnnotation;
+	
 
 	public class StructureNameScope extends BioNameScope {
 		private NameScope children[] = new NameScope[0];
@@ -55,7 +65,16 @@ public abstract class Structure implements java.io.Serializable, ScopedSymbolTab
 protected Structure(KeyValue key){
 	this.fieldKey = key;
 	addVetoableChangeListener(this);
-}                        
+}      
+
+public MIRIAMAnnotation getMIRIAMAnnotation() {
+	return miriamAnnotation;
+}
+public void setMIRIAMAnnotation(MIRIAMAnnotation miriamAnnotation) {
+	this.miriamAnnotation = miriamAnnotation;
+	
+}
+
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  */
@@ -79,6 +98,9 @@ protected boolean compareEqual0(Structure s) {
 	}
 
 	if (!getName().equals(s.getName())){
+		return false;
+	}
+	if(!Compare.isEqualOrNull(getMIRIAMAnnotation(), s.getMIRIAMAnnotation())){
 		return false;
 	}
 	return true;

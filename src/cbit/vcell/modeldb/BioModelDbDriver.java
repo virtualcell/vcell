@@ -444,6 +444,7 @@ public Versionable getVersionable(Connection con, User user, VersionableType vTy
 		}
 		dbc.putUnprotected(versionable.getVersion().getVersionKey(),versionable);
 	}
+	MIRIAMTable.table.setMIRIAMAnnotation(con, (BioModelMetaData)versionable, versionable.getVersion().getVersionKey());
 	return versionable;
 }
 
@@ -477,6 +478,8 @@ private void insertBioModelMetaData(Connection con,User user ,BioModelMetaData b
 		KeyValue scKey = (KeyValue)scEnum.nextElement();
 		insertSimContextEntryLinkSQL(con, getNewKey(con), bioModelKey, scKey);
 	}
+	
+	MIRIAMTable.table.insertMIRIAM(con, bioModel, newVersion.getVersionKey());
 }
 
 

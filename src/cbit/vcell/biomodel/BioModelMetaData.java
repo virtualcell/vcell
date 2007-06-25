@@ -1,4 +1,5 @@
 package cbit.vcell.biomodel;
+import cbit.util.Compare;
 import cbit.vcell.export.server.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -7,6 +8,8 @@ import cbit.vcell.export.server.*;
 import cbit.vcell.solver.SolverResultSetInfo;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.xml.MIRIAMAnnotatable;
+import cbit.vcell.xml.MIRIAMAnnotation;
 import cbit.sql.*;
 import java.util.*;
 /**
@@ -14,8 +17,9 @@ import java.util.*;
  * Creation date: (11/13/00 3:26:20 PM)
  * @author: Jim Schaff
  */
-public class BioModelMetaData implements Versionable, java.io.Serializable {
+public class BioModelMetaData implements Versionable, java.io.Serializable ,MIRIAMAnnotatable{
 	
+
 	//
 	// the version may be 'null' when created (before first insert)
 	//
@@ -30,6 +34,7 @@ public class BioModelMetaData implements Versionable, java.io.Serializable {
 
 	private java.lang.String fieldName = new String("NoName");
 	private java.lang.String fieldDescription = new String();
+	private MIRIAMAnnotation miriamAnnotation;
 
 /**
  * BioModelMetaData constructor comment.
@@ -74,6 +79,13 @@ public BioModelMetaData(Version argVersion, KeyValue argModelKey, KeyValue simCo
 	}
 }
 
+public MIRIAMAnnotation getMIRIAMAnnotation() {
+	return miriamAnnotation;
+}
+public void setMIRIAMAnnotation(MIRIAMAnnotation miriamAnnotation) {
+	this.miriamAnnotation = miriamAnnotation;
+}
+
 
 /**
  * Insert the method's description here.
@@ -111,6 +123,9 @@ public boolean compareEqual(cbit.util.Matchable matchable) {
 		return false;
 	}
 	if (!cbit.util.Compare.isEqual(modelKey,obj.modelKey)){
+		return false;
+	}
+	if(!Compare.isEqualOrNull(getMIRIAMAnnotation(), obj.getMIRIAMAnnotation())){
 		return false;
 	}
 	return true;

@@ -279,6 +279,8 @@ public org.jdom.Element getXML(cbit.vcell.biomodel.BioModel param) throws XmlPar
 		biomodelnode.addContent( getXML(param.getVersion(), param.getName(), param.getDescription()) );
 	}
 
+	MIRIAMHelper.addToSBML(biomodelnode, param.getMIRIAMAnnotation(), true);
+
 	return biomodelnode;
 }
 
@@ -2137,6 +2139,7 @@ public org.jdom.Element getXML(cbit.vcell.mathmodel.MathModel param) throws XmlP
 		mathmodel.addContent( getXML(param.getVersion(), param.getName(), param.getDescription()) );
 	}
 	
+//	MIRIAMHelper.addToSBMLAnnotation(mathmodel, param.getMIRIAMAnnotation(), true);
 	return mathmodel;
 }
 
@@ -2548,6 +2551,7 @@ public org.jdom.Element getXML(ReactionStep param) throws XmlParseException {
 		annotationElem.setText(this.mangle(param.getAnnotation()));
 		rsElement.addContent(annotationElem);
 	}
+	MIRIAMHelper.addToSBML(rsElement, param.getMIRIAMAnnotation(), true);
 	return rsElement;
 }
 
@@ -2639,7 +2643,8 @@ public org.jdom.Element getXML(Species species) throws XmlParseException {
 		annotationElem.setText(this.mangle(species.getAnnotation()));
 		speciesElement.addContent(annotationElem);
 	}
-
+	MIRIAMHelper.addToSBML(speciesElement, species.getMIRIAMAnnotation(),true);
+	
 	//add DBSpecies
 	if (species.getDBSpecies()!=null) {
 		speciesElement.addContent( getXML(species.getDBSpecies()) );
@@ -2704,6 +2709,8 @@ public org.jdom.Element getXML(Structure structure) throws XmlParseException {
 		structureElement.setAttribute(XMLTags.KeyValueAttrTag, structure.getKey().toString());
 	}
 
+	MIRIAMHelper.addToSBML(structureElement, structure.getMIRIAMAnnotation(),true);
+	
 	return structureElement;
 }
 

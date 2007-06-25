@@ -9,9 +9,14 @@ import cbit.vcell.parser.*;
 import cbit.vcell.parser.Expression;
 import java.io.*;
 import java.util.*;
+
+import org.jdom.Element;
+
 import cbit.sql.KeyValue;
 import cbit.sql.Cacheable;
 import cbit.vcell.server.User;
+import cbit.vcell.xml.MIRIAMAnnotatable;
+import cbit.vcell.xml.MIRIAMAnnotation;
 import cbit.util.*;
 /**
  * This class is the superclass of all classes representing 
@@ -23,7 +28,11 @@ import cbit.util.*;
  * @see     cbit.vcell.model.SimpleReaction
  * @since   VCELL1.0
  */
-public abstract class ReactionStep implements Cacheable, Serializable, ScopedSymbolTable, Matchable, VetoableChangeListener, PropertyChangeListener {
+public abstract class ReactionStep
+	implements
+		Cacheable, Serializable, ScopedSymbolTable, Matchable, VetoableChangeListener, PropertyChangeListener,
+		MIRIAMAnnotatable
+{
 
 	private String annotation = null;
 	
@@ -49,6 +58,7 @@ public abstract class ReactionStep implements Cacheable, Serializable, ScopedSym
 	private ChargeCarrierValence fieldChargeCarrierValence = null;  // see constructor
 	private cbit.vcell.model.ReactionParticipant[] fieldReactionParticipants = new ReactionParticipant[0];
 	private ReactionNameScope nameScope = null; // see constructor
+	private MIRIAMAnnotation miriamAnnotation;
 
 	public class ReactionNameScope extends BioNameScope {
 		private final NameScope children[] = new NameScope[0]; // always empty
@@ -122,6 +132,17 @@ protected ReactionStep(Structure structure, KeyValue key, String name) throws ja
 protected ReactionStep(Structure structure, String name) throws PropertyVetoException {
 	this(structure,null,name);
 }
+
+
+public MIRIAMAnnotation getMIRIAMAnnotation() {
+	return miriamAnnotation;
+}
+public void setMIRIAMAnnotation(MIRIAMAnnotation miriamAnnotation) {
+	this.miriamAnnotation = miriamAnnotation;
+	
+}
+
+
 public void addCatalyst(SpeciesContext speciesContext) throws ModelException, PropertyVetoException {
 
 	ReactionParticipant[] rps = getReactionParticipants(speciesContext);
@@ -194,6 +215,9 @@ protected boolean compareEqual0(ReactionStep rs) {
 		return false;
 	}
 	if(!Compare.isEqualOrNull(getAnnotation(), rs.getAnnotation())){
+		return false;
+	}
+	if(!Compare.isEqualOrNull(getMIRIAMAnnotation(), rs.getMIRIAMAnnotation())){
 		return false;
 	}
 	return true;
