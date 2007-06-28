@@ -102,6 +102,9 @@ public class MIRIAMHelper {
 		public Element getTypeElement(){
 			return typeElement;
 		}
+		public Element getListElement(){
+			return listElement;
+		}
 	}
 
 	public static class MIRIAMTableRow{
@@ -275,8 +278,12 @@ public class MIRIAMHelper {
 			return;
 		}
 		if(descrHeir instanceof TextDescriptiveHeirarchy){
-			deleteElementWithCascade(((TextDescriptiveHeirarchy)descrHeir).getText().getParent());
-		}if(descrHeir instanceof AttributeDescriptiveHeirarchy){
+			if(descrHeir.isCreatorChild()){
+				deleteElementWithCascade(descrHeir.getListElement());
+			}else{
+				deleteElementWithCascade(((TextDescriptiveHeirarchy)descrHeir).getText().getParent());
+			}
+		}else if(descrHeir instanceof AttributeDescriptiveHeirarchy){
 			deleteElementWithCascade(((AttributeDescriptiveHeirarchy)descrHeir).getAttribute().getParent());
 		}else{
 			throw new IllegalArgumentException("Expecting Text or Element but got something else.");
