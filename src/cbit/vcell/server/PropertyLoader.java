@@ -16,6 +16,7 @@ public class PropertyLoader {
 	public static final String tempDirProperty				= "vcell.tempdir";
 	public static final String serverSimDataDirProperty		= "vcell.serverSimdatadir";
 	public static final String localSimDataDirProperty		= "vcell.localSimdatadir";
+	
 	public static final String compilerProperty				= "vcell.c++.compiler";
 	public static final String linkerProperty				= "vcell.c++.linker";
 	public static final String exeOutputProperty			= "vcell.c++.exeoutput";
@@ -26,6 +27,8 @@ public class PropertyLoader {
 	public static final String includeProperty				= "vcell.c++.include";
 	public static final String definesProperty				= "vcell.c++.defines";
 	public static final String libsProperty					= "vcell.c++.libs";
+	public static final String finiteVolumeExecutableProperty = "vcell.finitevolume.executable";
+	
 	public static final String optLibsProperty				= "vcell.opt.libs";
 	public static final String optIncludeProperty			= "vcell.opt.include";
 	//
@@ -137,6 +140,7 @@ public class PropertyLoader {
 		tempDirProperty,
 		serverSimDataDirProperty,
 		localSimDataDirProperty,
+		
 		compilerProperty,
 		linkerProperty,
 		exeOutputProperty,
@@ -147,8 +151,11 @@ public class PropertyLoader {
 		includeProperty,
 		definesProperty,
 		libsProperty,
+		finiteVolumeExecutableProperty,
+		
 		optLibsProperty,
 		optIncludeProperty,
+		
 		idaLibraryProperty,
 		idaIncludeProperty,
 		idaExecutableProperty,
@@ -168,10 +175,12 @@ public class PropertyLoader {
 		exportUseLocalDataServer,
 		userGuideURLProperty,
 		tutorialURLProperty,
+		
 		dbDriverName,
 		dbConnectURL,
 		dbUserid,
 		dbPassword,
+		
 		vcmlSchemaUrlProperty,
 		sbml1SchemaUrlProperty,
 		sbml2SchemaUrlProperty,

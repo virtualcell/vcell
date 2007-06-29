@@ -40,34 +40,35 @@ public CppCoderVCell(String baseFilename, java.io.File directory, SimulationJob 
 
 protected String[] getCodeIncludes()
 {
-	  return new String[] {
-		  "<assert.h>",
-		  "<math.h>",
-		  "<stdlib.h>",
-		  "<VCELL/SimTypes.h>",
-		  "<VCELL/Variable.h>",
-		  "<VCELL/Feature.h>",
-		  "<VCELL/Mesh.h>",
-		  "<VCELL/SimTool.h>",
-		  "<VCELL/Solver.h>",
-		  "<VCELL/DataSet.h>",
-		  "<VCELL/EqnBuilderReactionDiffusion.h>",	  
-		  "<VCELL/EqnBuilderReactionForward.h>",
-		  "<VCELL/MembraneEqnBuilderForward.h>",	  
-		  "<VCELL/App.h>",
-		  "<VCELL/Contour.h>",
-		  "<VCELL/Element.h>",
-		  "<VCELL/PdeSolverDiana.h>",
-		  "<VCELL/Region.h>",
-		  "<VCELL/RegionEqnBuilder.h>",
-		  "<VCELL/EqnBuilderReactionDiffusionConvection.h>",
-		  "<VCELL/MembraneEqnBuilderDiffusion.h>",
-		  "<VCELL/SparseLinearSolver.h>",
-		  "<VCELL/SparseVolumeEqnBuilder.h>",
-		  "<VCELL/SimulationMessaging.h>"		  
-	  };
+	  return new String[] { 
+			  "<assert.h>",	  
+			  "<math.h>",
+			  "<stdlib.h>",
+			  "<VCELL/SimTypes.h>",
+			  "<VCELL/VolumeVariable.h>",
+			  "<VCELL/MembraneVariable.h>",
+			  "<VCELL/Feature.h>",
+			  "<VCELL/CartesianMesh.h>",
+			  "<VCELL/SimTool.h>",
+			  "<VCELL/ODESolver.h>",
+			  "<VCELL/DataSet.h>",
+			  "<VCELL/EqnBuilderReactionDiffusion.h>",
+			  "<VCELL/EqnBuilderReactionForward.h>",
+			  "<VCELL/MembraneEqnBuilderForward.h>",
+			  "<VCELL/Contour.h>",
+			  "<VCELL/Element.h>",
+			  "<VCELL/PdeSolverDiana.h>",
+			  "<VCELL/Region.h>",
+			  "<VCELL/VolumeRegionEqnBuilder.h>",
+			  "<VCELL/MembraneRegionEqnBuilder.h>",
+			  "<VCELL/EqnBuilderReactionDiffusionConvection.h>",
+			  "<VCELL/MembraneEqnBuilderDiffusion.h>",
+			  "<VCELL/SparseLinearSolver.h>",
+			  "<VCELL/SparseVolumeEqnBuilder.h>",
+			  "<VCELL/SimulationMessaging.h>",
+			  "<VCELL/FieldData.h>"
+			 };
 }                                    
-
 
  protected String[] getHeaderClassDefines() 
  {
@@ -79,8 +80,7 @@ protected String[] getCodeIncludes()
 		  "ContourVariable",
 		  "VolumeRegion"
 	 };
- }                     
-
+}                     
 
 protected String[] getHeaderConstants() {
 	
@@ -109,17 +109,18 @@ protected String[] getHeaderConstants() {
 }            
 
 
-   protected String[] getHeaderIncludes()
-   {
+ protected String[] getHeaderIncludes()
+ {
 	  return new String[] {
-		  "<VCELL/SimTypes.h>",
-		  "<VCELL/VarContext.h>",
-		  "<VCELL/Simulation.h>",
-		  "<VCELL/VCellModel.h>",
-		  "<VCELL/Feature.h>",
-		  "<VCELL/FastSystem.h>"
+			  "<VCELL/SimTypes.h>",
+			  "<VCELL/VolumeVarContext.h>",
+			  "<VCELL/MembraneVarContext.h>",
+			  "<VCELL/Simulation.h>",
+			  "<VCELL/VCellModel.h>",
+			  "<VCELL/Feature.h>",
+			  "<VCELL/FastSystem.h>"
 	  };
-   }                                 
+}                                 
 
 
 /**

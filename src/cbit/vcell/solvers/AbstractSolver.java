@@ -350,4 +350,9 @@ public synchronized void removeSolverListener(cbit.vcell.solver.SolverListener l
 protected final void setSolverStatus(SolverStatus solverStatus) {
 	fieldSolverStatus = solverStatus;
 }
+
+
+public SimulationJob getSimulationJob() {
+	return simulationJob;
+}
 }

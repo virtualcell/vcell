@@ -6,6 +6,7 @@ package cbit.vcell.parser;
 /* JJT: 0.2.2 */
 import java.util.Hashtable;
 
+import cbit.sql.Field;
 import cbit.util.TokenMangler;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.simdata.ExternalDataIdentifier;
@@ -1090,6 +1091,12 @@ public Node differentiate(String independentVariable) throws ExpressionException
 		ASTFloatNode floatNode = new ASTFloatNode(0.0);
 		return floatNode;
 	}
+	case FIELD:
+		if (jjtGetChild(2) instanceof ASTFloatNode) {
+			return new ASTFloatNode(0.0);
+		} else {
+			throw new Error("derivative not defined for field data with non-constant time argument");
+		}
 	default: {
 		throw new Error("undefined function");
 	}
@@ -2352,6 +2359,27 @@ void getFieldFunctionArguments(java.util.Vector<FieldFunctionArguments> v) {
 	} else {
 		super.getFieldFunctionArguments(v);		 
 	}	
+}
+
+/**
+ * This method was created by a SmartGuide.
+ * @return cbit.vcell.parser.Node
+ * @param origExp cbit.vcell.parser.Node
+ * @param newExp cbit.vcell.parser.Node
+ * @exception java.lang.Exception The exception description.
+ */
+public void substitute(Node origNode, Node newNode) throws ExpressionException {
+	if (getFunction() == ASTFuncNode.FIELD) {
+		// only substitute time argument
+		if (jjtGetChild(2).equals(origNode)){
+			children[2] = newNode.copyTree();
+			newNode.jjtSetParent(this);
+		}else{				
+			jjtGetChild(2).substitute(origNode,newNode);
+		}
+	} else {
+		super.substitute(origNode, newNode);
+	}
 }
 
 boolean hasGradient(){

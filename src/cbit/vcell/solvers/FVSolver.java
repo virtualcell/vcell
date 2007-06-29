@@ -34,7 +34,7 @@ import java.util.Map.Entry;
  * 
  */
 public class FVSolver extends AbstractCompiledSolver implements Solver {
-	private CppCoderVCell cppCoderVCell = null;
+	protected CppCoderVCell cppCoderVCell = null;
 	private SimResampleInfoProvider simResampleInfoProvider;
 	
 	public static final int HESM_KEEP_AND_CONTINUE = 0;
@@ -83,43 +83,6 @@ private void autoCode(boolean bNoCompile) throws SolverException {
 	String ExeFilename = baseName+exeSuffix;
 	String ObjFilename = baseName+System.getProperty(PropertyLoader.objsuffixProperty);
 
-	// ** Dumping the functions of a simulation into a '.functions' file.
-	String functionFileName = baseName+".functions";
-	AnnotatedFunction[] annotatedFunctionList = createAnnotatedFunctionsList(getSimulation());
-	
-	//Try to save existing user defined functions
-	try{
-		File existingFunctionFile = new File(functionFileName);
-		if(existingFunctionFile.exists()){
-			Vector<AnnotatedFunction> oldUserDefinedFunctions =
-				new Vector<AnnotatedFunction>();
-			Vector<AnnotatedFunction> allOldFunctionV =
-				FunctionFileGenerator.readFunctionsFile(existingFunctionFile);
-			for(int i=0;i<allOldFunctionV.size();i+= 1){
-				if(allOldFunctionV.elementAt(i).isUserDefined()){
-					oldUserDefinedFunctions.add(allOldFunctionV.elementAt(i));
-				}
-			}
-			Vector<AnnotatedFunction> finalFuncListV =
-				new Vector<AnnotatedFunction>(Arrays.asList(annotatedFunctionList));
-			finalFuncListV.addAll(oldUserDefinedFunctions);
-			
-			annotatedFunctionList = finalFuncListV.toArray(new AnnotatedFunction[0]);
-		}
-	}catch(Exception e){
-		e.printStackTrace();
-		//ignore
-	}
-	
-	FunctionFileGenerator functionFileGenerator = new FunctionFileGenerator(functionFileName, annotatedFunctionList);
-
-	try {
-		functionFileGenerator.generateFunctionFile();		
-	}catch (Exception e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException("autocode exception: Error creating .function file for "+functionFileGenerator.getBasefileName()+e.getMessage());
-	}		
-	
 	try {
 		cppCoderVCell.initialize();
 	}catch (Exception e){
@@ -511,6 +474,72 @@ public static VariableType getFunctionVariableType(Function function, String[] v
  * This method was created by a SmartGuide.
  */
 protected void initialize() throws SolverException {
+	initStep1();
+
+	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, "PDESolver initializing"));
+	fireSolverStarting("PDESolver initializing...");
+	
+	autoCode(false);
+	
+	String baseName = cppCoderVCell.getBaseFilename();
+	String exeSuffix = System.getProperty(PropertyLoader.exesuffixProperty); // ".exe";
+	File exeFile = new File(getSaveDirectory(), baseName + exeSuffix);
+	boolean bCORBA = false;
+
+	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,"PDESolver starting"));
+	
+	try{
+		bCORBA = Boolean.getBoolean(cbit.vcell.server.PropertyLoader.corbaEnabled);
+	}catch (Throwable t){}
+
+	if (bCORBA) {
+		throw new RuntimeException("MathExecutableCORBA not supported");
+		//executable = new MathExecutableCORBA(exeFile,mathDesc.getSimulationID(),getSessionLog());
+	}else{
+		setMathExecutable(new MathExecutable(exeFile));
+	}
+
+}
+
+
+protected void initStep1() throws SolverException {
+	// ** Dumping the functions of a simulation into a '.functions' file.
+	String functionFileName = getBaseName() + ".functions";
+	AnnotatedFunction[] annotatedFunctionList = createAnnotatedFunctionsList(getSimulation());
+	
+	//Try to save existing user defined functions
+	try{
+		File existingFunctionFile = new File(functionFileName);
+		if(existingFunctionFile.exists()){
+			Vector<AnnotatedFunction> oldUserDefinedFunctions =
+				new Vector<AnnotatedFunction>();
+			Vector<AnnotatedFunction> allOldFunctionV =
+				FunctionFileGenerator.readFunctionsFile(existingFunctionFile);
+			for(int i=0;i<allOldFunctionV.size();i+= 1){
+				if(allOldFunctionV.elementAt(i).isUserDefined()){
+					oldUserDefinedFunctions.add(allOldFunctionV.elementAt(i));
+				}
+			}
+			Vector<AnnotatedFunction> finalFuncListV =
+				new Vector<AnnotatedFunction>(Arrays.asList(annotatedFunctionList));
+			finalFuncListV.addAll(oldUserDefinedFunctions);
+			
+			annotatedFunctionList = finalFuncListV.toArray(new AnnotatedFunction[0]);
+		}
+	}catch(Exception e){
+		e.printStackTrace();
+		//ignore
+	}
+	
+	FunctionFileGenerator functionFileGenerator = new FunctionFileGenerator(functionFileName, annotatedFunctionList);
+
+	try {
+		functionFileGenerator.generateFunctionFile();		
+	}catch (Exception e){
+		e.printStackTrace(System.out);
+		throw new RuntimeException("autocode exception: Error creating .function file for "+functionFileGenerator.getBasefileName()+e.getMessage());
+	}		
+		
 	fireSolverStarting("processing geometry...");
 	try {	
 		cbit.vcell.geometry.Geometry geo = getSimulation().getMathDescription().getGeometry();
@@ -538,31 +567,6 @@ protected void initialize() throws SolverException {
 	} catch (Exception ex) {
 		throw new SolverException(ex.getMessage());
 	}
-	
-
-	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, "PDESolver initializing"));
-	fireSolverStarting("PDESolver initializing...");
-	
-	autoCode(false);
-	
-	String baseName = cppCoderVCell.getBaseFilename();
-	String exeSuffix = System.getProperty(PropertyLoader.exesuffixProperty); // ".exe";
-	File exeFile = new File(getSaveDirectory(), baseName + exeSuffix);
-	boolean bCORBA = false;
-
-	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,"PDESolver starting"));
-	
-	try{
-		bCORBA = Boolean.getBoolean(cbit.vcell.server.PropertyLoader.corbaEnabled);
-	}catch (Throwable t){}
-
-	if (bCORBA) {
-		throw new RuntimeException("MathExecutableCORBA not supported");
-		//executable = new MathExecutableCORBA(exeFile,mathDesc.getSimulationID(),getSessionLog());
-	}else{
-		setMathExecutable(new MathExecutable(exeFile));
-	}
-
 }
 
 

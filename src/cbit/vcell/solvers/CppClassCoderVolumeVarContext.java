@@ -108,7 +108,7 @@ protected Variable[] getRequiredVariables() throws Exception {
  * @param out java.io.PrintWriter
  */
 protected void writeConstructor(java.io.PrintWriter out) throws Exception {
-	out.println(getClassName()+"::"+getClassName()+"(Feature *Afeature,CString AspeciesName)");
+	out.println(getClassName()+"::"+getClassName()+"(Feature *Afeature, string& AspeciesName)");
 	out.println(": "+getParentClassName()+"(Afeature,AspeciesName)");
 	out.println("{");
 	try {
@@ -171,8 +171,8 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 	out.println("class " + getClassName() + " : public " + getParentClassName());
 	out.println("{");
 	out.println(" public:");
-	out.println("    "+getClassName() + "(Feature *feature, CString speciesName);");
-	out.println("    virtual boolean resolveReferences(Simulation *sim);");
+	out.println("    "+getClassName() + "(Feature *feature, string& speciesName);");
+	out.println("    virtual bool resolveReferences(Simulation *sim);");
 
 	BoundaryConditionType bc = null;
 	int dimension = getSimulation().getMathDescription().getGeometry().getDimension();
