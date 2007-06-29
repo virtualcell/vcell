@@ -3,6 +3,9 @@ package cbit.vcell.xml;
 import javax.swing.JPanel;
 import java.awt.Dimension;
 import java.awt.GridBagLayout;
+
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JButton;
@@ -13,6 +16,8 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 
+import cbit.gui.DialogUtils;
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.xml.MIRIAMHelper.DescriptiveHeirarchy;
 
@@ -23,13 +28,86 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.VetoableChangeListener;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.TreeMap;
 import java.util.Vector;
 import javax.swing.JLabel;
+import javax.swing.JComboBox;
+import javax.swing.JTextField;
+import javax.swing.BorderFactory;
+
+import org.jdom.Element;
+
+import java.awt.SystemColor;
 
 public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
+	
+	//SBML tag types
+	private static String TYPE_ID_SPECIES = "species";
+	private static String TYPE_ID_MODEL = "model";
+	private static String TYPE_ID_REACTION = "reaction";
+	private static String TYPE_ID_COMPARTMENT = "compartment";
+	String[] BIOMODNET_QUALIFERS = new String[]{
+			"hasPart (bio)",
+			"hasVersion (bio)",
+			"is (bio)",
+			"is (model)",
+			"isDescribedBy (bio)",
+			"isDescribedBy (model)",
+			"isHomologTo (bio)",
+			"isPartOf (bio)",
+			"isVersionOf (bio)"
+	};
+	
+	String[][] PROVIDER_TYPES = new String[][]{
+			new String[] {TYPE_ID_SPECIES},
+			new String[] {TYPE_ID_SPECIES},
+			new String[] {TYPE_ID_MODEL},
+			new String[] {TYPE_ID_REACTION},
+			new String[] {TYPE_ID_MODEL},
+			new String[] {TYPE_ID_SPECIES},
+			new String[] {TYPE_ID_REACTION},
+			new String[] {TYPE_ID_SPECIES},
+			new String[] {TYPE_ID_REACTION},
+			new String[] {TYPE_ID_SPECIES},
+			new String[] {TYPE_ID_MODEL,TYPE_ID_COMPARTMENT,TYPE_ID_SPECIES,TYPE_ID_REACTION},
+			new String[] {TYPE_ID_SPECIES},
+			new String[] {TYPE_ID_MODEL,TYPE_ID_REACTION},
+			new String[] {TYPE_ID_REACTION},
+			new String[] {TYPE_ID_MODEL},
+			new String[] {TYPE_ID_MODEL},
+			new String[] {TYPE_ID_MODEL},
+			new String[] {TYPE_ID_MODEL,TYPE_ID_REACTION},
+			new String[] {TYPE_ID_MODEL},
+			new String[] {TYPE_ID_SPECIES},
+			new String[] {TYPE_ID_MODEL},
+	};
+	String[] KNOWN_IDENTITY_PROVIDERS = new String[] {
+			"http://pir.georgetown.edu/pirsf/",
+			"http://www.bind.ca/",
+			"http://www.doi.org/",
+			"http://www.ebi.ac.uk/IntEnz/",
+			"http://www.ebi.ac.uk/biomodels/",
+			"http://www.ebi.ac.uk/chebi/",
+			"http://www.ebi.ac.uk/intact/",
+			"http://www.ebi.ac.uk/interpro/",
+			"http://www.ec-code.org/",
+			"http://www.ensembl.org/",
+			"http://www.geneontology.org/",
+			"http://www.genome.jp/kegg/compound/",
+			"http://www.genome.jp/kegg/pathway/",
+			"http://www.genome.jp/kegg/reaction/",
+			"http://www.ncbi.nlm.nih.gov/PubMed/",
+			"http://www.ncbi.nlm.nih.gov/Taxonomy/",
+			"http://www.pubmed.gov/",
+			"http://www.reactome.org/",
+			"http://www.taxonomy.org/",
+			"http://www.uniprot.org/",
+			"http://www.who.int/classifications/icd/"
+	};
 
 	private JScrollPane jScrollPane = null;
 	private JTable jTableMIRIAM = null;
@@ -40,7 +118,7 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 	
 	private Vector<ActionListener> actionListenerV = new Vector<ActionListener>();
 	public static final String ACTION_OK ="OK";  //  @jve:decl-index=0:
-	public static final String ACTION_ADD ="Add...";
+	public static final String ACTION_ADD ="Add Annotation...";  //  @jve:decl-index=0:
 	public static final String ACTION_EDIT ="Edit...";
 	public static final String ACTION_DELETE ="Delete Annotation";
 	
@@ -48,6 +126,13 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 	private JButton jButtonEditAnnotation = null;
 	Vector<Integer> rowMapV;
 	private JButton jButtonCopy = null;
+	private JPanel jPanelNewIdentifier = null;  //  @jve:decl-index=0:visual-constraint="111,410"
+	private JComboBox jComboBoxURI = null;
+	private JLabel jLabel2 = null;
+	private JTextField jTextFieldFormalID = null;
+	private JLabel jLabel3 = null;
+	private JComboBox jComboBoxQualifier = null;
+	private JLabel jLabel4 = null;
 
 
 	/**
@@ -57,7 +142,7 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 	public MIRIAMAnnotationEditor() {
 		super();
 		initialize();
-		jButtonAdd.setVisible(false);
+		initProviders();
 		jButtonEditAnnotation.setVisible(false);
 	}
 
@@ -200,7 +285,7 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 	private JButton getJButtonAdd() {
 		if (jButtonAdd == null) {
 			jButtonAdd = new JButton();
-			jButtonAdd.setText("Add Annotation...");
+			jButtonAdd.setText(ACTION_ADD);
 			jButtonAdd.addActionListener(this);
 		}
 		return jButtonAdd;
@@ -350,5 +435,130 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 			});
 		}
 		return jButtonCopy;
+	}
+
+	/**
+	 * This method initializes jPanelNewIdentifier	
+	 * 	
+	 * @return javax.swing.JPanel	
+	 */
+	private JPanel getJPanelNewIdentifier() {
+		if (jPanelNewIdentifier == null) {
+			GridBagConstraints gridBagConstraints12 = new GridBagConstraints();
+			gridBagConstraints12.insets = new Insets(0, 20, 0, 4);
+			gridBagConstraints12.gridy = 0;
+			gridBagConstraints12.gridx = 4;
+			jLabel4 = new JLabel();
+			jLabel4.setText("Qualifier");
+			GridBagConstraints gridBagConstraints7 = new GridBagConstraints();
+			gridBagConstraints7.fill = GridBagConstraints.VERTICAL;
+			gridBagConstraints7.gridx = 5;
+			gridBagConstraints7.gridy = 0;
+			gridBagConstraints7.weightx = 0.0;
+			gridBagConstraints7.insets = new Insets(4, 0, 4, 4);
+			GridBagConstraints gridBagConstraints6 = new GridBagConstraints();
+			gridBagConstraints6.insets = new Insets(0, 20, 0, 4);
+			gridBagConstraints6.gridy = 0;
+			gridBagConstraints6.gridx = 2;
+			jLabel3 = new JLabel();
+			jLabel3.setText("Immortal ID");
+			GridBagConstraints gridBagConstraints51 = new GridBagConstraints();
+			gridBagConstraints51.fill = GridBagConstraints.HORIZONTAL;
+			gridBagConstraints51.gridy = 0;
+			gridBagConstraints51.weightx = 1.0;
+			gridBagConstraints51.gridx = 3;
+			GridBagConstraints gridBagConstraints41 = new GridBagConstraints();
+			gridBagConstraints41.insets = new Insets(0, 4, 0, 4);
+			gridBagConstraints41.gridy = 0;
+			gridBagConstraints41.gridx = 0;
+			jLabel2 = new JLabel();
+			jLabel2.setText("Identitiy Provider");
+			GridBagConstraints gridBagConstraints3 = new GridBagConstraints();
+			gridBagConstraints3.fill = GridBagConstraints.NONE;
+			gridBagConstraints3.gridx = 1;
+			gridBagConstraints3.gridy = 0;
+			gridBagConstraints3.weightx = 0.0D;
+			gridBagConstraints3.insets = new Insets(4, 0, 4, 0);
+			jPanelNewIdentifier = new JPanel();
+			jPanelNewIdentifier.setLayout(new GridBagLayout());
+			jPanelNewIdentifier.setPreferredSize(new Dimension(725, 37));
+			jPanelNewIdentifier.setBorder(BorderFactory.createLineBorder(SystemColor.windowBorder, 2));
+			jPanelNewIdentifier.add(getJComboBoxURI(), gridBagConstraints3);
+			jPanelNewIdentifier.add(jLabel2, gridBagConstraints41);
+			jPanelNewIdentifier.add(getJTextFieldFormalID(), gridBagConstraints51);
+			jPanelNewIdentifier.add(jLabel3, gridBagConstraints6);
+			jPanelNewIdentifier.add(getJComboBoxQualifier(), gridBagConstraints7);
+			jPanelNewIdentifier.add(jLabel4, gridBagConstraints12);
+		}
+		return jPanelNewIdentifier;
+	}
+
+	/**
+	 * This method initializes jComboBoxURI	
+	 * 	
+	 * @return javax.swing.JComboBox	
+	 */
+	private JComboBox getJComboBoxURI() {
+		if (jComboBoxURI == null) {
+			jComboBoxURI = new JComboBox();
+		}
+		return jComboBoxURI;
+	}
+
+	/**
+	 * This method initializes jTextFieldFormalID	
+	 * 	
+	 * @return javax.swing.JTextField	
+	 */
+	private JTextField getJTextFieldFormalID() {
+		if (jTextFieldFormalID == null) {
+			jTextFieldFormalID = new JTextField();
+			jTextFieldFormalID.setText("NewID");
+		}
+		return jTextFieldFormalID;
+	}
+
+	/**
+	 * This method initializes jComboBoxQualifier	
+	 * 	
+	 * @return javax.swing.JComboBox	
+	 */
+	private JComboBox getJComboBoxQualifier() {
+		if (jComboBoxQualifier == null) {
+			jComboBoxQualifier = new JComboBox();
+		}
+		return jComboBoxQualifier;
+	}
+
+	private void initProviders(){
+//		jListFormalID.setListData(new String[] {"No Formal Identifiers currently defined"});
+		((DefaultComboBoxModel)getJComboBoxURI().getModel()).removeAllElements();
+		for (int i = 0; i < KNOWN_IDENTITY_PROVIDERS.length; i++) {
+			((DefaultComboBoxModel)getJComboBoxURI().getModel()).addElement(KNOWN_IDENTITY_PROVIDERS[i]);
+		}
+		for (int i = 0; i < BIOMODNET_QUALIFERS.length; i++) {
+			((DefaultComboBoxModel)getJComboBoxQualifier().getModel()).addElement(BIOMODNET_QUALIFERS[i]);
+		}
+	}
+	public void addIdentifierDialog() throws URISyntaxException{
+//		JScrollPane jsp = new JScrollPane(jPanelNewIdentifier);
+//		jsp.setPreferredSize(new Dimension(800,40));
+		if(PopupGenerator.showComponentOKCancelDialog(MIRIAMAnnotationEditor.this, getJPanelNewIdentifier(), "Define New Formal Identifier") == JOptionPane.OK_OPTION){
+			String qualifierName = (String)jComboBoxQualifier.getSelectedItem();
+			URI qualifierURI = null;
+			if(qualifierName.endsWith("(bio)")){
+				qualifierURI = new URI(XMLTags.BMBIOQUAL_NAMESPACE_URI);
+			}else if(qualifierName.endsWith("(model)")){
+				qualifierURI = new URI(XMLTags.BMMODELQUAL_NAMESPACE_URI);
+			}
+			qualifierName = qualifierName.substring(0,qualifierName.indexOf(" ("));
+			Element newID =
+				MIRIAMHelper.createRDFIdentifier((String)jComboBoxURI.getSelectedItem(), jTextFieldFormalID.getText());
+			MIRIAMHelper.addIdentifierToAnnotation(
+					newID,
+					getSelectedMIRIAMAnnotatable().getMIRIAMAnnotation(),
+					qualifierName,
+					qualifierURI);
+		}
 	}
 }  //  @jve:decl-index=0:visual-constraint="10,10"
