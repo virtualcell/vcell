@@ -3,6 +3,7 @@ package cbit.vcell.xml;
 import java.io.File;
 import java.io.FileReader;
 import java.net.URI;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -194,7 +195,7 @@ public class MIRIAMHelper {
 //		}
 //		userNotesElement.addContent(miriamAnnotation.getUserNotes().detach());
 	}
-	public static void addIdentifierToAnnotation(Element identiferElement,MIRIAMAnnotation miriamAnnotation,String qualifier){
+	public static void addIdentifierToAnnotation(Element identiferElement,MIRIAMAnnotation miriamAnnotation,String qualifier,URI qualNamespace){
 		if(miriamAnnotation.getAnnotation() == null){
 			miriamAnnotation.setAnnotation(createAnnotationSkeleton());
 		}
@@ -203,7 +204,11 @@ public class MIRIAMHelper {
 		pendingElements.add(miriamAnnotation.getAnnotation());
 		while(pendingElements.size() > 0){
 			Element checkElement = pendingElements.remove(0);
-			if(checkElement.getNamespaceURI().equals(XMLTags.BMBIOQUAL_NAMESPACE_URI) &&
+			if(checkElement.getNamespaceURI().equals(qualNamespace.toString()) &&
+					checkElement.getName().equals(qualifier)){
+				qualififierElement = checkElement;
+				break;
+			}else if(checkElement.getNamespaceURI().equals(qualNamespace.toString()) &&
 					checkElement.getName().equals(qualifier)){
 				qualififierElement = checkElement;
 				break;
@@ -213,25 +218,31 @@ public class MIRIAMHelper {
 			}
 		}
 		if(qualififierElement == null){
-			qualififierElement = addQualifierToAnnotation(miriamAnnotation.getAnnotation(),qualifier);
+			qualififierElement = addQualifierToAnnotation(miriamAnnotation.getAnnotation(),qualifier,qualNamespace);
 		}
 		qualififierElement.getChild(
 			XMLTags.RDF_BAG_NAME_TAG,Namespace.getNamespace(XMLTags.RDF_NAMESPACE_URI)).addContent(identiferElement);
 	}
-	private static Element addQualifierToAnnotation(Element annotationElement,String qualifier){
+	private static Element addQualifierToAnnotation(Element annotationElement,String qualifier,URI qualifierNamespace){
 		Element rdfElement =
 			annotationElement.getChild(XMLTags.RDF_RDF_NAME_TAG,Namespace.getNamespace(XMLTags.RDF_NAMESPACE_URI));
 		if(rdfElement != null){
 			Element descrElement =
 				rdfElement.getChild(XMLTags.RDF_DESCRIPTION_NAME_TAG,Namespace.getNamespace(XMLTags.RDF_NAMESPACE_URI));
 			if(descrElement != null){
-				Element bqBiol =
-					new Element(qualifier,XMLTags.BMBIOQUAL_NAMESPACE_PREFIX,XMLTags.BMBIOQUAL_NAMESPACE_URI);
-				descrElement.addContent(bqBiol);
+				String qualifierPrefix = null;
+				if(qualifierNamespace.toString().equals(XMLTags.BMBIOQUAL_NAMESPACE_URI)){
+					qualifierPrefix = XMLTags.BMBIOQUAL_NAMESPACE_PREFIX;
+				}else if(qualifierNamespace.toString().equals(XMLTags.BMMODELQUAL_NAMESPACE_URI)){
+					qualifierPrefix = XMLTags.BMMODELQUAL_NAMESPACE_PREFIX;
+				}
+				Element qualiferElement =
+					new Element(qualifier,qualifierPrefix,qualifierNamespace.toString());
+				descrElement.addContent(qualiferElement);
 				Element rdfBag =
 					new Element(XMLTags.RDF_BAG_NAME_TAG,XMLTags.RDF_NAMESPACE_PREFIX,XMLTags.RDF_NAMESPACE_URI);
-				bqBiol.addContent(rdfBag);
-				return bqBiol;	
+				qualiferElement.addContent(rdfBag);
+				return qualiferElement;	
 			}
 		}
 		throw new RuntimeException("Couldn't find heirarchy to add qualifier");

@@ -14,6 +14,7 @@ import cbit.vcell.desktop.*;
 import cbit.vcell.xml.MIRIAMAnnotatable;
 import cbit.vcell.xml.MIRIAMAnnotationEditor;
 import cbit.vcell.xml.MIRIAMHelper;
+import cbit.gui.DialogUtils;
 import cbit.gui.ZEnforcer;
 import cbit.util.*;
 import javax.swing.JMenuItem;
@@ -3179,20 +3180,36 @@ private void showMIRIAMWindow(final BioModel bioModel) {
 	miriamAnnotationEditor.addActionListener(
 		new ActionListener(){
 			public void actionPerformed(ActionEvent e) {
-				if(e.getActionCommand().equals(MIRIAMAnnotationEditor.ACTION_OK)){
-					jd.dispose();
-				}else if(e.getActionCommand().equals(MIRIAMAnnotationEditor.ACTION_DELETE)){
-					MIRIAMAnnotatable miriamAnnotatable = miriamAnnotationEditor.getSelectedMIRIAMAnnotatable();
-					if(miriamAnnotatable == null || miriamAnnotatable.getMIRIAMAnnotation() == null){
-						return;
+				try{
+					if(e.getActionCommand().equals(MIRIAMAnnotationEditor.ACTION_OK)){
+						jd.dispose();
+					}else if(e.getActionCommand().equals(MIRIAMAnnotationEditor.ACTION_DELETE)){
+						MIRIAMAnnotatable miriamAnnotatable = miriamAnnotationEditor.getSelectedMIRIAMAnnotatable();
+						if(miriamAnnotatable == null || miriamAnnotatable.getMIRIAMAnnotation() == null){
+							return;
+						}
+						MIRIAMHelper.deleteDescriptiveHeirarchy(miriamAnnotationEditor.getSelectedDescriptionHeirarchy());
+						if(miriamAnnotatable.getMIRIAMAnnotation().getAnnotation().getChildren().size() == 0){
+							miriamAnnotatable.setMIRIAMAnnotation(null);
+						}
+						TreeMap<MIRIAMAnnotatable, Vector<MIRIAMHelper.DescriptiveHeirarchy>> mirimaDescrHeir =
+							MIRIAMHelper.showList(bioModel);
+						miriamAnnotationEditor.setMIRIAMAnnotation(mirimaDescrHeir);
+					}else if(e.getActionCommand().equals(MIRIAMAnnotationEditor.ACTION_ADD)){
+						final String ID_CHOICE = "Identifier";
+						String choice =
+							(String)DialogUtils.showListDialog(DocumentWindow.this, new String[] {ID_CHOICE/*,"Creator","Date"*/}, "Choose Annotation Type");
+						if(choice != null){
+							if(choice.equals(ID_CHOICE)){
+								miriamAnnotationEditor.addIdentifierDialog();
+								TreeMap<MIRIAMAnnotatable, Vector<MIRIAMHelper.DescriptiveHeirarchy>> mirimaDescrHeir =
+									MIRIAMHelper.showList(bioModel);
+								miriamAnnotationEditor.setMIRIAMAnnotation(mirimaDescrHeir);
+							}
+						}
 					}
-					MIRIAMHelper.deleteDescriptiveHeirarchy(miriamAnnotationEditor.getSelectedDescriptionHeirarchy());
-					if(miriamAnnotatable.getMIRIAMAnnotation().getAnnotation().getChildren().size() == 0){
-						miriamAnnotatable.setMIRIAMAnnotation(null);
-					}
-					TreeMap<MIRIAMAnnotatable, Vector<MIRIAMHelper.DescriptiveHeirarchy>> mirimaDescrHeir =
-						MIRIAMHelper.showList(bioModel);
-					miriamAnnotationEditor.setMIRIAMAnnotation(mirimaDescrHeir);
+				}catch(Exception e2){
+					DialogUtils.showErrorDialog("Error during Edit action\n"+e2.getMessage());
 				}
 			}
 		}
