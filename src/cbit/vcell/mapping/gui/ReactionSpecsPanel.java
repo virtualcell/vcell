@@ -1,4 +1,7 @@
 package cbit.vcell.mapping.gui;
+
+import cbit.vcell.mapping.SimulationContext;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -140,6 +143,13 @@ private void connPtoP2SetTarget() {
 			// user code end
 			ivjConnPtoP2Aligning = true;
 			setsimulationContext1(this.getSimulationContext());
+			//amended on 14th June, 2007. fast column in reactionSpecTable is not needed for stochastic applications.
+			if(getsimulationContext1().isStoch())
+			{
+				getFastColumn().setMaxWidth(0);
+				getFastColumn().setMinWidth(0);
+				getFastColumn().setPreferredWidth(0);
+			}
 			// user code begin {2}
 			// user code end
 			ivjConnPtoP2Aligning = false;
