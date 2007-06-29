@@ -5,6 +5,9 @@ package cbit.vcell.solvers;
  * All rights reserved.
 ©*/
 import java.util.*;
+
+import cbit.vcell.field.FieldDataIdentifierSpec;
+import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
 import cbit.vcell.solver.*;
@@ -91,7 +94,7 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 	out.println("{");
 	out.println(" public:");
 	out.println("    "+getClassName() + "();");
-	out.println("    virtual boolean resolveReferences(Simulation *sim);");
+	out.println("    virtual bool resolveReferences(Simulation *sim);");
 	out.println("    void initVars();");
 	out.println("    void updateDependentVars();");
 	out.println(" protected:");
@@ -226,7 +229,7 @@ protected void writeInitVars(java.io.PrintWriter out, String functionName) throw
  * @param out java.io.PrintWriter
  */
 protected void writeResolveReferences(java.io.PrintWriter out) throws Exception {
-	out.println("boolean "+getClassName()+"::resolveReferences(Simulation *sim)");
+	out.println("bool "+getClassName()+"::resolveReferences(Simulation *sim)");
 	out.println("{");
 	out.println("   ASSERTION(sim);");
 	out.println("   this->mesh = sim->getMesh();");
@@ -318,6 +321,14 @@ protected void writeUpdateMatrix(java.io.PrintWriter out, String functionName) t
 		varCount++;
 	}
 
+	FieldFunctionArguments[] fieldFuncArgs = simulation.getMathDescription().getFieldFunctionArguments();
+
+	for (int i = 0; fieldFuncArgs != null && i < fieldFuncArgs.length; i ++) {
+		String localvarname = FieldDataIdentifierSpec.getLocalVariableName_C(fieldFuncArgs[i]);
+		String globalvarname = FieldDataIdentifierSpec.getGlobalVariableName_C(fieldFuncArgs[i]);
+		out.println("\tdouble " + localvarname + " = " + globalvarname + "->getData()[currIndex];");	
+	}
+	
 	int frCount=0;
 	enum_fre = getFastSystem().getFastRateExpressions();
 	while (enum_fre.hasMoreElements()){

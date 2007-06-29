@@ -1,6 +1,7 @@
 package cbit.vcell.solver;
 
 import cbit.vcell.solvers.FVSolver;
+import cbit.vcell.solvers.FVSolverStandalone;
 import cbit.vcell.solver.ode.*;
 import java.io.*;
 import cbit.vcell.server.*;
@@ -37,7 +38,12 @@ public static cbit.vcell.solver.Solver createSolver(SessionLog sessionLog, File 
 	} else if (solverDescription.equals(SolverDescription.LSODA)) {
 		solver = new IDASolverStandalone(simJob, directory, sessionLog);
 	} else if (solverDescription.equals(SolverDescription.FiniteVolume)) {
-		solver = new FVSolver(simJob, directory, sessionLog);
+		String fvstandaloneExe = PropertyLoader.getProperty(PropertyLoader.finiteVolumeExecutableProperty, null);
+		if (fvstandaloneExe == null) {
+			solver = new FVSolver(simJob, directory, sessionLog);
+		} else {
+			solver = new FVSolverStandalone(simJob, directory, sessionLog);
+		}
 	} else if (solverDescription.equals(SolverDescription.StochGibson)) {
 		solver = new cbit.vcell.solver.stoch.GibsonSolver(simJob, directory, sessionLog);
 	}

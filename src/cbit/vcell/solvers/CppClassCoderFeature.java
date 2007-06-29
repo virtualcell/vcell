@@ -40,7 +40,7 @@ public CompartmentSubDomain getCompartmentSubDomain() {
  */
 protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	int handle = simulation.getMathDescription().getHandle(volumeSubDomain);	
-	out.println(getClassName()+"::"+getClassName()+"(char *Aname, int priority)");
+	out.println(getClassName()+"::"+getClassName()+"(string& Aname, int priority)");
 	out.println(": Feature(Aname, "+handle+", priority)");
  	out.println("{");
  	Enumeration enum1 = cppCoder.getCppClassCoders();
@@ -49,31 +49,31 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
  		if (coder instanceof CppClassCoderVolumeVarContext){
  			CppClassCoderVolumeVarContext vcClassCoder = (CppClassCoderVolumeVarContext)coder;
  			if (vcClassCoder.getCompartmentSubDomain() == volumeSubDomain){
-				out.println("   addVolumeVarContext(new "+vcClassCoder.getClassName()+"(this,\""+vcClassCoder.getVariable().getName()+"\"));");
+				out.println("\taddVolumeVarContext(new "+vcClassCoder.getClassName()+"(this, string(\""+vcClassCoder.getVariable().getName()+"\")));");
 			}	
 		}
  		if (coder instanceof CppClassCoderMembraneVarContext){
  			CppClassCoderMembraneVarContext vcClassCoder = (CppClassCoderMembraneVarContext)coder;
  			if (vcClassCoder.getInsideCompartment() == volumeSubDomain){
-				out.println("   addMembraneVarContext(new "+vcClassCoder.getClassName()+"(this,\""+vcClassCoder.getVariable().getName()+"\"));");
+				out.println("\taddMembraneVarContext(new "+vcClassCoder.getClassName()+"(this, string(\""+vcClassCoder.getVariable().getName()+"\")));");
 			}	
 		}
  		if (coder instanceof CppClassCoderMembraneRegionVarContext){
  			CppClassCoderMembraneRegionVarContext vcClassCoder = (CppClassCoderMembraneRegionVarContext)coder;
  			if (vcClassCoder.getInsideCompartment() == volumeSubDomain){
-				out.println("   addMembraneRegionVarContext(new "+vcClassCoder.getClassName()+"(this,\""+vcClassCoder.getVariable().getName()+"\"));");
+				out.println("\taddMembraneRegionVarContext(new "+vcClassCoder.getClassName()+"(this, string(\""+vcClassCoder.getVariable().getName()+"\")));");
 			}	
 		}
  		if (coder instanceof CppClassCoderVolumeRegionVarContext){
  			CppClassCoderVolumeRegionVarContext vcClassCoder = (CppClassCoderVolumeRegionVarContext)coder;
  			if (vcClassCoder.getCompartmentSubDomain() == volumeSubDomain){
-				out.println("   addVolumeRegionVarContext(new "+vcClassCoder.getClassName()+"(this,\""+vcClassCoder.getVariable().getName()+"\"));");
+				out.println("\taddVolumeRegionVarContext(new "+vcClassCoder.getClassName()+"(this, string(\""+vcClassCoder.getVariable().getName()+"\")));");
 			}	
 		}
  		if (coder instanceof CppClassCoderFastSystem){
  			CppClassCoderFastSystem vcClassCoder = (CppClassCoderFastSystem)coder;
  			if (vcClassCoder.getCompartment() == volumeSubDomain){
-				out.println("   fastSystem = new "+vcClassCoder.getClassName()+"();");
+				out.println("\tfastSystem = new "+vcClassCoder.getClassName()+"();");
 			}	
 		}
 	}		
@@ -91,7 +91,7 @@ public void writeDeclaration(java.io.PrintWriter out) {
 	out.println("class " + getClassName() + " : public " + getParentClassName());
 	out.println("{");
 	out.println(" public:");
-	out.println("   "+getClassName() + "(char *featureName, int priority);");
+	out.println("   "+getClassName() + "(string& featureName, int priority);");
 
 	String returnValue = "{ return BOUNDARY_VALUE; }";
 	String returnFlux = "{ return BOUNDARY_FLUX; }";

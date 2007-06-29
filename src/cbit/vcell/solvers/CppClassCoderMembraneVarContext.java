@@ -66,17 +66,17 @@ public CompartmentSubDomain getOutsideCompartment() {
  * @param out java.io.PrintWriter
  */
 protected void writeConstructor(java.io.PrintWriter out) throws Exception {
-	out.println(getClassName()+"::"+getClassName()+"(Feature *Afeature,CString AspeciesName)");
+	out.println(getClassName()+"::"+getClassName()+"(Feature *Afeature, string& AspeciesName)");
 	out.println(": "+getParentClassName()+"(Afeature,AspeciesName)");
 	out.println("{");
 	try {
 		Expression ic = getEquation().getInitialExpression();
 		ic.bindExpression(getSimulation());
 		double value = ic.evaluateConstant();
-		out.println("   initialValue = new double;");
-		out.println("   *initialValue = "+value+";");
+		out.println("\tinitialValue = new double;");
+		out.println("\t*initialValue = "+value+";");
 	}catch (Exception e){
-		out.println("   initialValue = NULL;");
+		out.println("\tinitialValue = NULL;");
 	}	
 	//if (getEquation() instanceof PdeEquation){
 		//try {
@@ -96,16 +96,16 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	for (int i = 0; i < requiredVariables.length; i++){
 		Variable var = requiredVariables[i];
 		if (var instanceof VolVariable){
-			out.println("   var_"+var.getName()+" = NULL;");
+			out.println("\tvar_"+var.getName()+" = NULL;");
 		}
 		if (var instanceof MemVariable){
-			out.println("   var_"+var.getName()+" = NULL;");
+			out.println("\tvar_"+var.getName()+" = NULL;");
 		}
 		if (var instanceof VolumeRegionVariable){
-			out.println("   var_"+var.getName()+" = NULL;");
+			out.println("\tvar_"+var.getName()+" = NULL;");
 		}
 		if (var instanceof MembraneRegionVariable){
-			out.println("   var_"+var.getName()+" = NULL;");
+			out.println("\tvar_"+var.getName()+" = NULL;");
 		}
 	}		  	
 	out.println("}");
@@ -123,9 +123,9 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 
 	out.println("class " + getClassName() + " : public " + getParentClassName());
 	out.println("{");
-	out.println(" public:");
-	out.println("    "+getClassName() + "(Feature *feature, CString speciesName);");
-	out.println("    virtual boolean resolveReferences(Simulation *sim);");
+	out.println("public:");
+	out.println("\t"+getClassName() + "(Feature *feature, string& speciesName);");
+	out.println("\tvirtual bool resolveReferences(Simulation *sim);");
 
 	BoundaryConditionType bc = null;
 	int dimension = getSimulation().getMathDescription().getGeometry().getDimension();
@@ -134,17 +134,17 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 		if (pdeEqu.getBoundaryXm()!=null){
 			bc = getMembraneSubDomain().getBoundaryConditionXm();
 			if (bc.isDIRICHLET()){
-				out.println("    virtual double getXmBoundaryValue(MembraneElement *memElement);");
+				out.println("\tvirtual double getXmBoundaryValue(MembraneElement *memElement);");
 			}else if (bc.isNEUMANN()){
-				out.println("    virtual double getXmBoundaryFlux(MembraneElement *memElement);");
+				out.println("\tvirtual double getXmBoundaryFlux(MembraneElement *memElement);");
 			}
 		}
 		if (pdeEqu.getBoundaryXp()!=null){			
 			bc = getMembraneSubDomain().getBoundaryConditionXp();
 			if (bc.isDIRICHLET()){
-				out.println("    virtual double getXpBoundaryValue(MembraneElement *memElement);");
+				out.println("\tvirtual double getXpBoundaryValue(MembraneElement *memElement);");
 			}else if (bc.isNEUMANN()){
-				out.println("    virtual double getXpBoundaryFlux(MembraneElement *memElement);");
+				out.println("\tvirtual double getXpBoundaryFlux(MembraneElement *memElement);");
 			}
 		}
 		if (pdeEqu.getVelocityX() != null) {
@@ -154,17 +154,17 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 			if (pdeEqu.getBoundaryYm()!=null){
 				bc = getMembraneSubDomain().getBoundaryConditionYm();
 				if (bc.isDIRICHLET()){
-					out.println("    virtual double getYmBoundaryValue(MembraneElement *memElement);");
+					out.println("\tvirtual double getYmBoundaryValue(MembraneElement *memElement);");
 				}else if (bc.isNEUMANN()){
-					out.println("    virtual double getYmBoundaryFlux(MembraneElement *memElement);");
+					out.println("\tvirtual double getYmBoundaryFlux(MembraneElement *memElement);");
 				}
 			}	
 			if (pdeEqu.getBoundaryYp()!=null){
 				bc = getMembraneSubDomain().getBoundaryConditionYp();
 				if (bc.isDIRICHLET()){
-					out.println("    virtual double getYpBoundaryValue(MembraneElement *memElement);");
+					out.println("\tvirtual double getYpBoundaryValue(MembraneElement *memElement);");
 				}else if (bc.isNEUMANN()){
-					out.println("    virtual double getYpBoundaryFlux(MembraneElement *memElement);");
+					out.println("\tvirtual double getYpBoundaryFlux(MembraneElement *memElement);");
 				}
 			}
 			if (pdeEqu.getVelocityY() != null) {
@@ -175,17 +175,17 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 			if (pdeEqu.getBoundaryZm()!=null){
 				bc = getMembraneSubDomain().getBoundaryConditionZm();
 				if (bc.isDIRICHLET()){
-					out.println("    virtual double getZmBoundaryValue(MembraneElement *memElement);");
+					out.println("\tvirtual double getZmBoundaryValue(MembraneElement *memElement);");
 				}else if (bc.isNEUMANN()){
-					out.println("    virtual double getZmBoundaryFlux(MembraneElement *memElement);");
+					out.println("\tvirtual double getZmBoundaryFlux(MembraneElement *memElement);");
 				}
 			}	
 			if (pdeEqu.getBoundaryZp()!=null){
 				bc = getMembraneSubDomain().getBoundaryConditionZp();
 				if (bc.isDIRICHLET()){
-					out.println("    virtual double getZpBoundaryValue(MembraneElement *memElement);");
+					out.println("\tvirtual double getZpBoundaryValue(MembraneElement *memElement);");
 				}else if (bc.isNEUMANN()){
-					out.println("    virtual double getZpBoundaryFlux(MembraneElement *memElement);");
+					out.println("\tvirtual double getZpBoundaryFlux(MembraneElement *memElement);");
 				}
 			}
 			if (pdeEqu.getVelocityZ() != null) {
@@ -198,23 +198,23 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 		ic.bindExpression(getSimulation());
 		double value = ic.evaluateConstant();
 	}catch (Exception e){
-		out.println("    virtual double getInitialValue(MembraneElement *memElement);");
+		out.println("\tvirtual double getInitialValue(MembraneElement *memElement);");
 	}
-	out.println(" protected:");
-	out.println("    virtual double getMembraneReactionRate(MembraneElement *memElement);");
-	out.println("    virtual double getMembraneDiffusionRate(MembraneElement *memElement);");
-	out.println(" private:");
+	out.println("protected:");
+	out.println("\tvirtual double getMembraneReactionRate(MembraneElement *memElement);");
+	out.println("\tvirtual double getMembraneDiffusionRate(MembraneElement *memElement);");
+	out.println("private:");
 	Variable requiredVariables[] = getRequiredVariables();
 	for (int i = 0; i < requiredVariables.length; i++){
 		Variable var = requiredVariables[i];
 		if (var instanceof VolVariable){
-			out.println("    VolumeVariable      *var_"+var.getName()+";");
+			out.println("\tVolumeVariable      *var_"+var.getName()+";");
 		}else if (var instanceof MemVariable){
-			out.println("    MembraneVariable    *var_"+var.getName()+";");
+			out.println("\tMembraneVariable    *var_"+var.getName()+";");
 		}else if (var instanceof MembraneRegionVariable){
-			out.println("    MembraneRegionVariable    *var_"+var.getName()+";");
+			out.println("\tMembraneRegionVariable    *var_"+var.getName()+";");
 		}else if (var instanceof VolumeRegionVariable){
-			out.println("    VolumeRegionVariable    *var_"+var.getName()+";");
+			out.println("\tVolumeRegionVariable    *var_"+var.getName()+";");
 		}else if (var instanceof ReservedVariable){
 		}else if (var instanceof Constant){
 		}else if (var instanceof Function){

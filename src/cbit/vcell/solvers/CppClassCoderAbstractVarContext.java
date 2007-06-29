@@ -234,7 +234,7 @@ private final void writeFieldFunctionDeclarations(java.io.PrintWriter out, Expre
 	for (int i = 0; fieldFuncArgs != null && i < fieldFuncArgs.length; i ++) {
 		String localvarname = FieldDataIdentifierSpec.getLocalVariableName_C(fieldFuncArgs[i]);
 		String globalvarname = FieldDataIdentifierSpec.getGlobalVariableName_C(fieldFuncArgs[i]);
-		out.println("\tdouble " + localvarname + " = " + globalvarname + "[" + indexString + "];");	
+		out.println("\tdouble " + localvarname + " = " + globalvarname + "->getData()[" + indexString + "];");	
 	}
 }
 
@@ -393,10 +393,10 @@ protected final void writeMembraneRegionFunctionDeclarations(java.io.PrintWriter
  * @param out java.io.PrintWriter
  */
 protected final void writeResolveReferences(java.io.PrintWriter out) throws Exception {
-	out.println("boolean "+getClassName()+"::resolveReferences(Simulation *sim)");
+	out.println("bool "+getClassName()+"::resolveReferences(Simulation *sim)");
 	out.println("{");
 	out.println("   if (!"+getParentClassName()+"::resolveReferences(sim)){");
-	out.println("      return FALSE;");
+	out.println("      return false;");
 	out.println("   }");
 	out.println("   ASSERTION(sim);");
 	out.println("");
@@ -408,33 +408,33 @@ protected final void writeResolveReferences(java.io.PrintWriter out) throws Exce
 			out.println("   var_"+var.getName()+" = (VolumeVariable*)sim->getVariableFromName(\""+var.getName()+"\");");
 			out.println("   if (var_"+var.getName()+"==NULL){");
 			out.println("      printf(\"could not resolve '"+var.getName()+"'\\n\");");
-			out.println("      return FALSE;");
+			out.println("      return false;");
 			out.println("   }");
 			out.println("");
 		}else if (var instanceof MemVariable){	
 			out.println("   var_"+var.getName()+" = (MembraneVariable*)sim->getVariableFromName(\""+var.getName()+"\");");
 			out.println("   if (var_"+var.getName()+"==NULL){");
 			out.println("      printf(\"could not resolve '"+var.getName()+"'\\n\");");
-			out.println("      return FALSE;");
+			out.println("      return false;");
 			out.println("   }");
 			out.println("");
 		}else if (var instanceof MembraneRegionVariable){	
 			out.println("   var_"+var.getName()+" = (MembraneRegionVariable*)sim->getVariableFromName(\""+var.getName()+"\");");
 			out.println("   if (var_"+var.getName()+"==NULL){");
 			out.println("      printf(\"could not resolve '"+var.getName()+"'\\n\");");
-			out.println("      return FALSE;");
+			out.println("      return false;");
 			out.println("   }");
 			out.println("");
 		}else if (var instanceof VolumeRegionVariable){	
 			out.println("   var_"+var.getName()+" = (VolumeRegionVariable*)sim->getVariableFromName(\""+var.getName()+"\");");
 			out.println("   if (var_"+var.getName()+"==NULL){");
 			out.println("      printf(\"could not resolve '"+var.getName()+"'\\n\");");
-			out.println("      return FALSE;");
+			out.println("      return false;");
 			out.println("   }");
 			out.println("");
 		}	
 	}		  	
-	out.println("   return TRUE;");
+	out.println("   return true;");
 	out.println("}");
 	out.println("");
 }

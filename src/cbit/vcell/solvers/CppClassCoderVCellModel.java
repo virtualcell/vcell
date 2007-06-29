@@ -43,7 +43,7 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
  			// calculate a priority based on level of nesting 
  			//
  			CompartmentSubDomain subDomain = featureClassCoder.getCompartmentSubDomain();
-			out.println("   addFeature(new "+featureClassCoder.getClassName()+"(\""+subDomain.getName()+"\","+subDomain.getPriority()+"));");
+			out.println("\taddFeature(new "+featureClassCoder.getClassName()+"(string(\""+subDomain.getName()+"\"),"+subDomain.getPriority()+"));");
 		}
 	}
  	//
@@ -51,7 +51,7 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
  	//
  	cbit.vcell.geometry.FilamentGroup fg = simulation.getMathDescription().getGeometry().getGeometrySpec().getFilamentGroup();
   	for (int i=0;i<fg.getFilamentCount();i++){
-	  	out.println("	addContour(new Contour("+i+"));  // for Filament "+fg.getFilamentNames()[i]);
+	  	out.println("\taddContour(new Contour("+i+"));  // for Filament "+fg.getFilamentNames()[i]);
   	}	 	
 	out.println("}");
 }
