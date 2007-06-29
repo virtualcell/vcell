@@ -12,7 +12,7 @@ package cbit.vcell.solver;
 public class SolverDescription implements java.io.Serializable, cbit.util.Matchable {
 	private int type;
 	
-	private static final int NUM_SOLVERS = 8;
+	private static final int NUM_SOLVERS = 10;
 	private static final int TYPE_FORWARD_EULER = 0;
 	private static final int TYPE_RUNGE_KUTTA2 = 1;
 	private static final int TYPE_RUNGE_KUTTA4 = 2;
@@ -20,7 +20,9 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 	private static final int TYPE_ADAMS_MOULTON = 4;
 	private static final int TYPE_LSODA = 5;
 	private static final int TYPE_FINITE_VOLUME = 6;
-	private static final int TYPE_STOCH_GIBSON = 7;	
+	private static final int TYPE_STOCH_GIBSON = 7;
+	private static final int TYPE_HYBRID_EM = 8;
+	private static final int TYPE_HYBRID_MIL = 9;
 
 	private static final String[] DESCRIPTIONS = {
 		"Forward Euler (First Order, Fixed Time Step)",
@@ -30,7 +32,9 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		"Adams-Moulton (Fifth Order, Fixed Time Step)",
 		"LSODA (Variable Order, Variable Time Step)",
 		"Finite Volume, Regular Grid",
-		"Gibson (Next Reaction Stochastic Method)"
+		"Gibson (Next Reaction Stochastic Method)",
+		"Hybrid (Gibson + Euler-Maruyama Method)",
+		"Hybrid (Gibson + Milstein Method)"
 	};
 	private static final boolean[] IS_ODE = {
 		true,   // TYPE_FORWARD_EULER
@@ -40,7 +44,9 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		true,	// TYPE_ADAMS_MOULTON
 		true,	// TYPE_LSODA
 		false,	// TYPE_FINITE_VOLUME
-		false	// TYPE_STOCH_GIBSON
+		false,	// TYPE_STOCH_GIBSON
+		false,	// TYPE_Hybrid_Euler
+		false	// TYPE_Hybrid_Milstein
 	};
 	private static final boolean[] IS_STOCH = {
 		false,  // TYPE_FORWARD_EULER
@@ -50,7 +56,9 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		false,	// TYPE_ADAMS_MOULTON
 		false,	// TYPE_LSODA
 		false,	// TYPE_FINITE_VOLUME
-		true	// TYPE_STOCH_GIBSON
+		true,	// TYPE_STOCH_GIBSON
+		true,	// TYPE_Hybrid_Euler
+		true	// TYPE_Hybrid_Milstein
 	};
 	private static final boolean[] IS_INTERPRETED = {
 		true,   // TYPE_FORWARD_EULER
@@ -60,7 +68,9 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		true,	// TYPE_ADAMS_MOULTON
 		false,	// TYPE_LSODA
 		false,	// TYPE_FINITE_VOLUME
-		false 	// TYPE_STOCH_GIBSON
+		false, 	// TYPE_STOCH_GIBSON
+		false, 	// TYPE_Hybrid_Euler
+		false 	// TYPE_Hybrid_Milstein
 	};
 		
 			
@@ -72,6 +82,8 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 	public static final SolverDescription LSODA					= new SolverDescription(TYPE_LSODA);
 	public static final SolverDescription FiniteVolume			= new SolverDescription(TYPE_FINITE_VOLUME);
 	public static final SolverDescription StochGibson			= new SolverDescription(TYPE_STOCH_GIBSON);
+	public static final SolverDescription HybridEuler			= new SolverDescription(TYPE_HYBRID_EM);
+	public static final SolverDescription HybridMilstein		= new SolverDescription(TYPE_HYBRID_MIL);
 
 /**
  * SolverDescription constructor comment.
@@ -100,9 +112,14 @@ public boolean compareEqual(cbit.util.Matchable obj) {
  */
 public OutputTimeSpec createOutputTimeSpec(SolverTaskDescription solverTaskDescription) 
 {
-	OutputTimeSpec ots = new DefaultOutputTimeSpec();
-	if(isSTOCHSolver()) //amended 20th Feb, 2007
+	OutputTimeSpec ots = null;
+	if(type == TYPE_STOCH_GIBSON) //amended 20th Feb, 2007
 		ots = new DefaultOutputTimeSpec(1,1000000);
+	//amended again 2nd June,2007
+	else if((type == TYPE_HYBRID_EM) || (type == TYPE_HYBRID_MIL))
+		ots = new UniformOutputTimeSpec(0.1);
+	else
+		ots = new DefaultOutputTimeSpec();
 	return ots;
 }
 
@@ -251,9 +268,15 @@ public boolean hasVariableTimestep() {
 		case TYPE_RUNGE_KUTTA_FEHLBERG: {
 			return true;
 		}
-		case TYPE_STOCH_GIBSON: {
-			return true;
-		}
+//		case TYPE_STOCH_GIBSON: {//set it to false, to hide min, default and max time step textfield, but have to deal with error tolerance
+//			return true;
+//		}
+//		case TYPE_HYBRID_EM: {//set it to false
+//			return true;
+//		}
+//		case TYPE_HYBRID_MIL: {//set it to false
+//			return true;
+//		}
 		default: {
 			return false;
 		}
@@ -311,6 +334,12 @@ public boolean supports(OutputTimeSpec outputTimeSpec) {
 	switch (type) {
 		case TYPE_LSODA:{
 			return (outputTimeSpec.isDefault() || outputTimeSpec.isExplicit() || outputTimeSpec.isUniform());
+		}
+		case TYPE_HYBRID_EM:{
+			return outputTimeSpec.isUniform();
+		}
+		case TYPE_HYBRID_MIL:{
+			return outputTimeSpec.isUniform();
 		}
 		default: {
 			return (outputTimeSpec.isDefault());

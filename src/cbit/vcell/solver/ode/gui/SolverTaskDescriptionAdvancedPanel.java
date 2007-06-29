@@ -1047,7 +1047,8 @@ private void enableOutputOptionPanel() {
 		cbit.util.BeanUtils.enableComponents(getDefaultOutputPanel(), false);
 		cbit.util.BeanUtils.enableComponents(getUniformOutputPanel(), false);
 		cbit.util.BeanUtils.enableComponents(getExplicitOutputPanel(), false);
-	} else if (solverTaskDescription.getSolverDescription().equals(SolverDescription.LSODA)){
+	} else if (solverTaskDescription.getSolverDescription().equals(SolverDescription.LSODA))
+	{ 
 		getDefaultOutputRadioButton().setEnabled(true);
 		getUniformOutputRadioButton().setEnabled(true);	
 		getExplicitOutputRadioButton().setEnabled(true);
@@ -1070,7 +1071,19 @@ private void enableOutputOptionPanel() {
 			getOutputTimeStepTextField().setEnabled(false);
 			getOutputTimesTextField().setEnabled(true);
 		}
-	} else {
+	}else if ((solverTaskDescription.getSolverDescription().equals(SolverDescription.HybridEuler))||(solverTaskDescription.getSolverDescription().equals(SolverDescription.HybridMilstein))){
+		//amended June 5th, 2007 to display uniformOutputTimeSpec for Hybrid methods
+		getDefaultOutputRadioButton().setEnabled(false);
+		getUniformOutputRadioButton().setEnabled(true);	
+		getExplicitOutputRadioButton().setEnabled(false);
+		cbit.util.BeanUtils.enableComponents(getDefaultOutputPanel(), false);
+		cbit.util.BeanUtils.enableComponents(getUniformOutputPanel(), true);
+		cbit.util.BeanUtils.enableComponents(getExplicitOutputPanel(), false);
+		getKeepAtMostTextField().setEnabled(false);
+		getKeepEveryTextField().setEnabled(false);
+		getOutputTimeStepTextField().setEnabled(true);
+		getOutputTimesTextField().setEnabled(false);
+	}else {
 		getDefaultOutputRadioButton().setEnabled(true);
 		getUniformOutputRadioButton().setEnabled(false);	
 		getExplicitOutputRadioButton().setEnabled(false);
@@ -1098,6 +1111,8 @@ private void enableVariableTimeStepOptions() {
 	}
 	//cbit.util.BeanUtils.enableComponents(getTimeStepPanel(),bEnableTimeStep);
 	cbit.util.BeanUtils.enableComponents(getErrorTolerancePanel(),bHasVariableTS);
+	if(getSolverTaskDescription().getSolverDescription().equals(SolverDescription.StochGibson)||getSolverTaskDescription().getSolverDescription().equals(SolverDescription.HybridEuler)||getSolverTaskDescription().getSolverDescription().equals(SolverDescription.HybridMilstein))
+		cbit.util.BeanUtils.enableComponents(getErrorTolerancePanel(), true);
 	getTimeStepPanel().enableComponents(bHasVariableTS);
 }
 

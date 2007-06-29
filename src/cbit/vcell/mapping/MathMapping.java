@@ -2136,7 +2136,7 @@ private void refreshSpeciesContextMappings() throws ExpressionException, Mapping
 /**
  * This method was created by a SmartGuide.
  */
-private void refreshStructureAnalyzers() {
+protected void refreshStructureAnalyzers() {
 
 	structureAnalyzerList.removeAllElements();
 	

@@ -10,7 +10,7 @@ import cbit.vcell.solver.*;
 import cbit.vcell.server.*;
 
 /**
- * Insert the type's description here.
+ * Gibson solver 
  * Creation date: (7/13/2006 9:00:41 AM)
  * @author: Tracy LI
  */
@@ -138,14 +138,14 @@ public cbit.vcell.solver.ode.ODESolverResultSet getStochSolverResultSet()
 	}
 	
 	/*
-	Add appropriate Function columns to result set if the stochastic simulation is to display the trajectory
+	Add appropriate Function columns to result set if the stochastic simulation is to display the trajectory.
 	No function columns for the results of multiple stochastic trials
 	*/
 	if(getSimulation().getSolverTaskDescription().getStochOpt().getNumOfTrials() == 1)
 	{
 		cbit.vcell.math.Function functions[] = getSimulation().getFunctions();
 		for (int i = 0; i < functions.length; i++){
-			if (isFunctionSaved(functions[i]) && functions[i].getName().startsWith("P_")) // we want to add probability functions only.
+			if (isFunctionSaved(functions[i])) 
 			{
 				cbit.vcell.parser.Expression exp1 = new cbit.vcell.parser.Expression(functions[i].getExpression());
 				try {
