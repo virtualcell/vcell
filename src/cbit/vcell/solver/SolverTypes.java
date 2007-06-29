@@ -21,8 +21,11 @@ public class SolverTypes {
 	private static String[] fieldPDESolverDescriptions = new String[] {
 		SolverDescription.FiniteVolume.getName()
 	};
+	//Amended again June 2nd, 2007
 	private static String[] fieldStochSolverDescriptions = new String[] {
-		SolverDescription.StochGibson.getName()
+		SolverDescription.StochGibson.getName(),
+		SolverDescription.HybridEuler.getName(),
+		SolverDescription.HybridMilstein.getName()
 	};
 
 /**

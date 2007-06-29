@@ -3,6 +3,8 @@ package cbit.vcell.solver;
 import cbit.vcell.solvers.FVSolver;
 import cbit.vcell.solvers.FVSolverStandalone;
 import cbit.vcell.solver.ode.*;
+import cbit.vcell.solver.stoch.HybridSolver;
+
 import java.io.*;
 import cbit.vcell.server.*;
 /*©
@@ -46,6 +48,10 @@ public static cbit.vcell.solver.Solver createSolver(SessionLog sessionLog, File 
 		}
 	} else if (solverDescription.equals(SolverDescription.StochGibson)) {
 		solver = new cbit.vcell.solver.stoch.GibsonSolver(simJob, directory, sessionLog);
+	} else if (solverDescription.equals(SolverDescription.HybridEuler)) {
+		solver = new cbit.vcell.solver.stoch.HybridSolver(simJob, directory, sessionLog, HybridSolver.EMIntegrator);
+	} else if (solverDescription.equals(SolverDescription.HybridMilstein)) {
+		solver = new cbit.vcell.solver.stoch.HybridSolver(simJob, directory, sessionLog, HybridSolver.MilsteinIntegrator);
 	}
 	else {
 		throw new SolverException("Unknown solver: " + solverDescription);

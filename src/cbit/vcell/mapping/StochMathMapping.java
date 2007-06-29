@@ -685,13 +685,8 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 			SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
 			if (scm.getVariable()==null && scm.getDependencyExpression()!=null){
 				StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(scm.getSpeciesContext().getStructure());
-				Expression exp = getIdentifierSubstitutions(scm.getDependencyExpression(),scm.getSpeciesContext().getUnitDefinition(),sm);
-				try {
-					double value = exp.evaluateConstant();
-					varHash.addVariable(new Constant(getMathSymbol(scm.getSpeciesContext(),sm),new Expression(value)));
-				}catch (ExpressionException e){
-					varHash.addVariable(new Function(getMathSymbol(scm.getSpeciesContext(),sm),exp));
-				}
+				Expression exp = scm.getDependencyExpression();
+				varHash.addVariable(new Function(getMathSymbol(scm.getSpeciesContext(),sm),exp));
 			}
 		}
 
@@ -910,6 +905,9 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 		for (int i = 0; i < speciesContextSpecs.length; i++){
 			//get stochastic variable by name
 			String varName = scSpecs[i].getSpeciesContext().getName();
+			if (scSpecs[i].isConstant()) {
+				continue;
+			}
 			StochVolVariable var = (StochVolVariable)mathDesc.getVariable(varName);
 			SpeciesContextSpec.SpeciesContextSpecParameter initParm = scSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
 			//stochastic variables initial expression.
@@ -1075,12 +1073,10 @@ private void refreshVariables() throws MappingException
 		SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
 		SpeciesContextSpec scs = getSimulationContext().getReactionContext().getSpeciesContextSpec(scm.getSpeciesContext());
 		//stochastic variable is always a function of size.
-		//if (scm.getDependencyExpression() == null && !scs.isConstant()){
-			StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(scm.getSpeciesContext().getStructure());
-			Structure struct = scm.getSpeciesContext().getStructure();
+		if (scm.getDependencyExpression() == null && !scs.isConstant()){
 			scm.setVariable(new StochVolVariable(scm.getSpeciesContext().getName()));
 			mathSymbolMapping.put(scm.getSpeciesContext(),scm.getVariable().getName());
-		//}
+		}
 	}
 }
 }

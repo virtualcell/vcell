@@ -48,6 +48,15 @@ public double getOutputTimeStep() {
 	return fieldOutputTimeStep;
 }
 
+/**
+ * Set a new unifromOutputTimeSpec.
+ * It is initialized in SolverDescription and default value is 0.1.
+ * @return null. Amended June 2nd, 2007
+ */
+public void setOuputTimeStep(double arg_outputTimeStep)
+{
+	fieldOutputTimeStep = arg_outputTimeStep;
+}
 
 /**
  * Insert the method's description here.
