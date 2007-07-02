@@ -12,5 +12,6 @@
 	<classpathentry kind="lib" path="bio-formats.jar"/>
 	<classpathentry kind="lib" path="ome-java.jar"/>
 	<classpathentry kind="lib" path="WinService.jar"/>
+	<classpathentry kind="lib" path="NetCDF2_2_20_VCell.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
