@@ -17,11 +17,16 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 import cbit.vcell.solvers.ApplicationMessage;
 /**
- * Hybrid_Euler Method. This method is proposed by Howard Salis.
- * This method separates system into either fast or slow. For fast 
- * system, Chemical Langvine'
- * @author liye
+ * The HybridSolver is used to solve stochastic stiff problem.
+ * Two types of solvers are provided in this class, which are Gibson_Euler Method
+ * and gibson_Milstein Method. Both methods are proposed by Howard Salis.
+ * The basic idea is to separate the whole system into fast and slow sub-systems.
+ * Chemical Langvine Equation is used  to solve fast sub-system, and SSA is used to solve
+ * slow sub-systme.
  *
+ * @author Tracy LI
+ * Created in June 2007.
+ * @version 1.0
  */
 public class HybridSolver extends cbit.vcell.solvers.AbstractCompiledSolver {
 	public static final int EMIntegrator = 1;
