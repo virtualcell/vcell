@@ -247,7 +247,36 @@ public class MIRIAMHelper {
 		}
 		throw new RuntimeException("Couldn't find heirarchy to add qualifier");
 	}
-	
+	public static Element addDateToAnnotation(Element annotationElement,String date,String dateQualifier){
+		Element rdfElement =
+			annotationElement.getChild(XMLTags.RDF_RDF_NAME_TAG,Namespace.getNamespace(XMLTags.RDF_NAMESPACE_URI));
+		if(rdfElement != null){
+			Element descrElement =
+				rdfElement.getChild(XMLTags.RDF_DESCRIPTION_NAME_TAG,Namespace.getNamespace(XMLTags.RDF_NAMESPACE_URI));
+			if(descrElement != null){
+//				String qualifierPrefix = null;
+//				if(qualifierNamespace.toString().equals(XMLTags.BMBIOQUAL_NAMESPACE_URI)){
+//					qualifierPrefix = XMLTags.BMBIOQUAL_NAMESPACE_PREFIX;
+//				}else if(qualifierNamespace.toString().equals(XMLTags.BMMODELQUAL_NAMESPACE_URI)){
+//					qualifierPrefix = XMLTags.BMMODELQUAL_NAMESPACE_PREFIX;
+//				}
+				Element dctermElement =
+					new Element(dateQualifier,XMLTags.DUBCORETERMS_NAMESPACE_PREFIX,XMLTags.DUBCORETERMS_NAMESPACE_URI);
+				Attribute parsetType =
+					new Attribute(XMLTags.RDF_PARSETYPE_ATTR_TAG,XMLTags.RDF_PARSETYPE_ATTR_DATE_VALUE,
+							Namespace.getNamespace(XMLTags.RDF_NAMESPACE_PREFIX,XMLTags.RDF_NAMESPACE_URI));
+				dctermElement.setAttribute(parsetType);
+				descrElement.addContent(dctermElement);
+				Element dateElement =
+					new Element(XMLTags.DUBCORETERMS_W3CDTF_NAME_TAG,XMLTags.DUBCORETERMS_NAMESPACE_PREFIX,XMLTags.DUBCORETERMS_NAMESPACE_URI);
+				dateElement.addContent(date);
+				dctermElement.addContent(dateElement);
+				return dctermElement;	
+			}
+		}
+		throw new RuntimeException("Couldn't find heirarchy to add qualifier");
+	}
+
 	
 	public static void cleanEmptySpace(Element element){
 		List elementContent = element.getContent();

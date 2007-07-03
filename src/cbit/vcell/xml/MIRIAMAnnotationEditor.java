@@ -30,6 +30,10 @@ import java.beans.PropertyChangeListener;
 import java.beans.VetoableChangeListener;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.text.FieldPosition;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.TreeMap;
@@ -50,6 +54,16 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 	private static String TYPE_ID_MODEL = "model";
 	private static String TYPE_ID_REACTION = "reaction";
 	private static String TYPE_ID_COMPARTMENT = "compartment";
+	String[] DATE_QUALIFIERS = new String[] {
+			"Created",
+			"Valid",
+			"Available",
+			"Issued",
+			"Modified",
+			"Date Accepted",
+			"Date Copyrighted",
+			"Date Submitted"
+	};
 	String[] BIOMODNET_QUALIFERS = new String[]{
 			"hasPart (bio)",
 			"hasVersion (bio)",
@@ -126,15 +140,18 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 	private JButton jButtonEditAnnotation = null;
 	Vector<Integer> rowMapV;
 	private JButton jButtonCopy = null;
-	private JPanel jPanelNewIdentifier = null;  //  @jve:decl-index=0:visual-constraint="111,410"
+	private JPanel jPanelNewIdentifier = null;  //  @jve:decl-index=0:visual-constraint="86,363"
 	private JComboBox jComboBoxURI = null;
 	private JLabel jLabel2 = null;
 	private JTextField jTextFieldFormalID = null;
 	private JLabel jLabel3 = null;
 	private JComboBox jComboBoxQualifier = null;
 	private JLabel jLabel4 = null;
-
-
+	private JPanel jPanelTimeUTC = null;  //  @jve:decl-index=0:visual-constraint="88,417"
+	private JTextField jTextFieldTimeUTC = null;
+	private JLabel jLabelTimeUTCEG = null;
+	private JLabel jLabelTimeUTC = null;
+	private JComboBox jComboBoxTimeUTCType = null;
 	/**
 	 * This method initializes 
 	 * 
@@ -142,7 +159,7 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 	public MIRIAMAnnotationEditor() {
 		super();
 		initialize();
-		initProviders();
+		initQualifiers();
 		jButtonEditAnnotation.setVisible(false);
 	}
 
@@ -530,7 +547,7 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 		return jComboBoxQualifier;
 	}
 
-	private void initProviders(){
+	private void initQualifiers(){
 //		jListFormalID.setListData(new String[] {"No Formal Identifiers currently defined"});
 		((DefaultComboBoxModel)getJComboBoxURI().getModel()).removeAllElements();
 		for (int i = 0; i < KNOWN_IDENTITY_PROVIDERS.length; i++) {
@@ -538,6 +555,11 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 		}
 		for (int i = 0; i < BIOMODNET_QUALIFERS.length; i++) {
 			((DefaultComboBoxModel)getJComboBoxQualifier().getModel()).addElement(BIOMODNET_QUALIFERS[i]);
+		}
+		
+		((DefaultComboBoxModel)getJComboBoxTimeUTCType().getModel()).removeAllElements();
+		for (int i = 0; i < DATE_QUALIFIERS.length; i++) {
+			((DefaultComboBoxModel)getJComboBoxTimeUTCType().getModel()).addElement(DATE_QUALIFIERS[i]);
 		}
 	}
 	public void addIdentifierDialog() throws URISyntaxException{
@@ -560,5 +582,104 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 					qualifierName,
 					qualifierURI);
 		}
+	}
+
+	
+	public void addTimeUTCDialog(){
+//		JScrollPane jsp = new JScrollPane(jPanelNewIdentifier);
+//		jsp.setPreferredSize(new Dimension(800,40));
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
+		getJTextFieldTimeUTC().setText(sdf.format(new Date()));
+		if(PopupGenerator.showComponentOKCancelDialog(MIRIAMAnnotationEditor.this, getJPanelTimeUTC(), "Define New Date") == JOptionPane.OK_OPTION){
+			MIRIAMHelper.addDateToAnnotation(
+					getSelectedMIRIAMAnnotatable().getMIRIAMAnnotation().getAnnotation(),
+					getJTextFieldTimeUTC().getText(),
+					(String)getJComboBoxTimeUTCType().getSelectedItem());
+//			String qualifierName = (String)jComboBoxQualifier.getSelectedItem();
+//			URI qualifierURI = null;
+//			if(qualifierName.endsWith("(bio)")){
+//				qualifierURI = new URI(XMLTags.BMBIOQUAL_NAMESPACE_URI);
+//			}else if(qualifierName.endsWith("(model)")){
+//				qualifierURI = new URI(XMLTags.BMMODELQUAL_NAMESPACE_URI);
+//			}
+//			qualifierName = qualifierName.substring(0,qualifierName.indexOf(" ("));
+//			Element newID =
+//				MIRIAMHelper.createRDFIdentifier((String)jComboBoxURI.getSelectedItem(), jTextFieldFormalID.getText());
+//			MIRIAMHelper.addIdentifierToAnnotation(
+//					newID,
+//					getSelectedMIRIAMAnnotatable().getMIRIAMAnnotation(),
+//					qualifierName,
+//					qualifierURI);
+		}
+	}
+
+	/**
+	 * This method initializes jPanelTimeUTC	
+	 * 	
+	 * @return javax.swing.JPanel	
+	 */
+	private JPanel getJPanelTimeUTC() {
+		if (jPanelTimeUTC == null) {
+			GridBagConstraints gridBagConstraints13 = new GridBagConstraints();
+			gridBagConstraints13.fill = GridBagConstraints.NONE;
+			gridBagConstraints13.gridy = 2;
+			gridBagConstraints13.weightx = 0.0;
+			gridBagConstraints13.insets = new Insets(4, 4, 4, 4);
+			gridBagConstraints13.gridx = 0;
+			GridBagConstraints gridBagConstraints9 = new GridBagConstraints();
+			gridBagConstraints9.gridx = 0;
+			gridBagConstraints9.gridwidth = 2;
+			gridBagConstraints9.fill = GridBagConstraints.NONE;
+			gridBagConstraints9.gridy = 0;
+			jLabelTimeUTC = new JLabel();
+			jLabelTimeUTC.setText("Enter W3C-DTF compliant Data-Time");
+			GridBagConstraints gridBagConstraints10 = new GridBagConstraints();
+			gridBagConstraints10.gridx = 0;
+			gridBagConstraints10.insets = new Insets(4, 4, 4, 4);
+			gridBagConstraints10.gridwidth = 2;
+			gridBagConstraints10.fill = GridBagConstraints.NONE;
+			gridBagConstraints10.gridy = 1;
+			jLabelTimeUTCEG = new JLabel();
+			jLabelTimeUTCEG.setText("yyyy-MM-dd'T'HH:mm:ssZ (Z is signed hour offset from GMT)");
+			GridBagConstraints gridBagConstraints8 = new GridBagConstraints();
+			gridBagConstraints8.fill = GridBagConstraints.HORIZONTAL;
+			gridBagConstraints8.gridy = 2;
+			gridBagConstraints8.weightx = 1.0;
+			gridBagConstraints8.insets = new Insets(4, 4, 4, 4);
+			gridBagConstraints8.gridx = 1;
+			jPanelTimeUTC = new JPanel();
+			jPanelTimeUTC.setLayout(new GridBagLayout());
+			jPanelTimeUTC.setSize(new Dimension(735, 95));
+			jPanelTimeUTC.add(getJTextFieldTimeUTC(), gridBagConstraints8);
+			jPanelTimeUTC.add(jLabelTimeUTCEG, gridBagConstraints10);
+			jPanelTimeUTC.add(jLabelTimeUTC, gridBagConstraints9);
+			jPanelTimeUTC.add(getJComboBoxTimeUTCType(), gridBagConstraints13);
+		}
+		return jPanelTimeUTC;
+	}
+
+	/**
+	 * This method initializes jTextFieldTimeUTC	
+	 * 	
+	 * @return javax.swing.JTextField	
+	 */
+	private JTextField getJTextFieldTimeUTC() {
+		if (jTextFieldTimeUTC == null) {
+			jTextFieldTimeUTC = new JTextField();
+		}
+		return jTextFieldTimeUTC;
+	}
+
+	/**
+	 * This method initializes jComboBoxTimeUTCType	
+	 * 	
+	 * @return javax.swing.JComboBox	
+	 */
+	private JComboBox getJComboBoxTimeUTCType() {
+		if (jComboBoxTimeUTCType == null) {
+			jComboBoxTimeUTCType = new JComboBox();
+		}
+		return jComboBoxTimeUTCType;
 	}
 }  //  @jve:decl-index=0:visual-constraint="10,10"
