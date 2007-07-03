@@ -195,10 +195,14 @@ public class MIRIAMHelper {
 //		}
 //		userNotesElement.addContent(miriamAnnotation.getUserNotes().detach());
 	}
-	public static void addIdentifierToAnnotation(Element identiferElement,MIRIAMAnnotation miriamAnnotation,String qualifier,URI qualNamespace){
-		if(miriamAnnotation.getAnnotation() == null){
-			miriamAnnotation.setAnnotation(createAnnotationSkeleton());
+	public static void addIdentifierToAnnotation(Element identiferElement,MIRIAMAnnotatable miriamAnnotatable,String qualifier,URI qualNamespace){
+		if(miriamAnnotatable.getMIRIAMAnnotation() == null){
+			miriamAnnotatable.setMIRIAMAnnotation(new MIRIAMAnnotation());
 		}
+		if(miriamAnnotatable.getMIRIAMAnnotation().getAnnotation() == null){
+			miriamAnnotatable.getMIRIAMAnnotation().setAnnotation(createAnnotationSkeleton());
+		}
+		MIRIAMAnnotation miriamAnnotation = miriamAnnotatable.getMIRIAMAnnotation();
 		Element qualififierElement = null;
 		Vector<Element> pendingElements = new Vector<Element>();
 		pendingElements.add(miriamAnnotation.getAnnotation());
@@ -247,7 +251,15 @@ public class MIRIAMHelper {
 		}
 		throw new RuntimeException("Couldn't find heirarchy to add qualifier");
 	}
-	public static Element addDateToAnnotation(Element annotationElement,String date,String dateQualifier){
+	public static Element addDateToAnnotation(MIRIAMAnnotatable miriamAnnotatable,String date,String dateQualifier){
+		if(miriamAnnotatable.getMIRIAMAnnotation() == null){
+			miriamAnnotatable.setMIRIAMAnnotation(new MIRIAMAnnotation());
+		}
+		if(miriamAnnotatable.getMIRIAMAnnotation().getAnnotation() == null){
+			miriamAnnotatable.getMIRIAMAnnotation().setAnnotation(createAnnotationSkeleton());
+		}
+//		MIRIAMAnnotation miriamAnnotation = miriamAnnotatable.getMIRIAMAnnotation();
+		Element annotationElement = miriamAnnotatable.getMIRIAMAnnotation().getAnnotation();
 		Element rdfElement =
 			annotationElement.getChild(XMLTags.RDF_RDF_NAME_TAG,Namespace.getNamespace(XMLTags.RDF_NAMESPACE_URI));
 		if(rdfElement != null){
