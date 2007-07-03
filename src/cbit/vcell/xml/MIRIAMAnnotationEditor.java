@@ -578,7 +578,7 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 				MIRIAMHelper.createRDFIdentifier((String)jComboBoxURI.getSelectedItem(), jTextFieldFormalID.getText());
 			MIRIAMHelper.addIdentifierToAnnotation(
 					newID,
-					getSelectedMIRIAMAnnotatable().getMIRIAMAnnotation(),
+					getSelectedMIRIAMAnnotatable(),
 					qualifierName,
 					qualifierURI);
 		}
@@ -593,7 +593,7 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 		getJTextFieldTimeUTC().setText(sdf.format(new Date()));
 		if(PopupGenerator.showComponentOKCancelDialog(MIRIAMAnnotationEditor.this, getJPanelTimeUTC(), "Define New Date") == JOptionPane.OK_OPTION){
 			MIRIAMHelper.addDateToAnnotation(
-					getSelectedMIRIAMAnnotatable().getMIRIAMAnnotation().getAnnotation(),
+					getSelectedMIRIAMAnnotatable(),
 					getJTextFieldTimeUTC().getText(),
 					(String)getJComboBoxTimeUTCType().getSelectedItem());
 //			String qualifierName = (String)jComboBoxQualifier.getSelectedItem();
