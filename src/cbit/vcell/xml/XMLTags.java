@@ -35,9 +35,13 @@ public class XMLTags {
 	public static final String RDF_LI_NAME_TAG				= "li";
 	public static final String RDF_BAG_NAME_TAG				= "Bag";
 	public static final String RDF_RESOURCE_ATTR_TAG		= "resource";
+	public static final String RDF_PARSETYPE_ATTR_TAG		= "parseType";
+	public static final String RDF_PARSETYPE_ATTR_DATE_VALUE= "Resource";
 	public static final String DUBCORE_NAMESPACE_URI		= "http://purl.org/dc/elements/1.1/";				//xmlns:dc="http://purl.org/dc/elements/1.1/" 
 	public static final String VCARD_NAMESPACE_URI			= "http://www.w3.org/2001/vcard-rdf/3.0#";			//xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" 
 	public static final String DUBCORETERMS_NAMESPACE_URI	= "http://purl.org/dc/terms/";						//xmlns:dcterms="http://purl.org/dc/terms/" 
+	public static final String DUBCORETERMS_NAMESPACE_PREFIX= "dcterms"; 
+	public static final String DUBCORETERMS_W3CDTF_NAME_TAG = "W3CDTF"; 
 	public static final String BMBIOQUAL_NAMESPACE_URI	 	= "http://biomodels.net/biology-qualifiers/";		//xmlns:bqbiol="http://biomodels.net/biology-qualifiers/" 
 	public static final String BMBIOQUAL_NAMESPACE_PREFIX 	= "bqbiol";
 	public static final String BMMODELQUAL_NAMESPACE_URI 	= "http://biomodels.net/model-qualifiers/";			//xmlns:bqmodel="http://biomodels.net/model-qualifiers/"
