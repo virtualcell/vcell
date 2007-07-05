@@ -34,10 +34,8 @@ public String submit2Lsf() {
 
 		fireSolverStarting("submitting to job scheduler...");
 		
-		String exeSuffix = System.getProperty(PropertyLoader.exesuffixProperty);
-		String exeFile = new File(getBaseName()).getPath() + exeSuffix;
-		
-		jobid = cbit.htc.LsfUtils.submitJob(exeFile + " " + cmdArguments);
+		String cmd = realSolver.getMathExecutable().getCommand();		
+		jobid = cbit.htc.LsfUtils.submitJob(cmd + " " + cmdArguments);
 		if (jobid == null) {
 			fireSolverAborted("Failed. (error message: submitting to job scheduler failed).");
 		}

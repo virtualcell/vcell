@@ -93,7 +93,7 @@ public void finalize() {
  * Creation date: (10/22/2002 4:34:39 PM)
  * @return java.lang.String
  */
-private java.lang.String getCommand() {
+public java.lang.String getCommand() {
 	return command;
 }
 

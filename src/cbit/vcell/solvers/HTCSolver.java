@@ -59,7 +59,7 @@ public HTCSolver(SimulationTask simTask, java.io.File directory, cbit.vcell.serv
 		}
 		
 	});	
-	cmdArguments = String.valueOf(simTask.getTaskID());
+	cmdArguments = "-tid " + String.valueOf(simTask.getTaskID());
 }
 
 

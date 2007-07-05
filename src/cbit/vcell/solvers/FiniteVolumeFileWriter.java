@@ -300,12 +300,12 @@ private void writeCompartment_VarContext_Equation(CompartmentSubDomain volSubDom
 		}
 		if (((PdeEquation)equation).getVelocityY() != null) {
 			writer.println("VELOCITY_Y " + subsituteExpression(((PdeEquation)equation).getVelocityX()).infix() + ";");
-		} else {
+		} else if (simulation.getMathDescription().getGeometry().getDimension() > 1){
 			writer.println("VELOCITY_Y 0.0;");
 		}
 		if (((PdeEquation)equation).getVelocityZ() != null) {
 			writer.println("VELOCITY_Z " + subsituteExpression(((PdeEquation)equation).getVelocityX()).infix() + ";");			
-		} else {
+		} else if (simulation.getMathDescription().getGeometry().getDimension() > 2){
 			writer.println("VELOCITY_Z 0.0;");
 		}
 		
