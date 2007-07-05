@@ -34,13 +34,12 @@ public String submit2PBS() {
 		initialize();		
 
 		fireSolverStarting("submitting to job scheduler...");
-		
-		String exeSuffix = System.getProperty(PropertyLoader.exesuffixProperty);
-		String exeFile = new File(getBaseName()).getPath() + exeSuffix;
+				
+		String cmd = realSolver.getMathExecutable().getCommand();
 		String subFile = new File(getBaseName()).getPath() + PBS_SUBMIT_FILE_EXT;
 		String jobname = "S_" + simulationTask.getSimKey() + "_" + simulationTask.getSimulationJob().getJobIndex();
 		
-		jobid = PBSUtils.submitJob(simulationTask.getComputeResource(), jobname, subFile, exeFile, cmdArguments);
+		jobid = PBSUtils.submitJob(simulationTask.getComputeResource(), jobname, subFile, cmd, cmdArguments);
 		if (jobid == null) {
 			fireSolverAborted("Failed. (error message: submitting to job scheduler failed).");
 		}
