@@ -3198,13 +3198,16 @@ private void showMIRIAMWindow(final BioModel bioModel) {
 					}else if(e.getActionCommand().equals(MIRIAMAnnotationEditor.ACTION_ADD)){
 						final String ID_CHOICE = "Identifier";
 						final String DATE_CHOICE = "Date";
+						final String CREATOR_CHOICE = "Creator";
 						String choice =
-							(String)DialogUtils.showListDialog(DocumentWindow.this, new String[] {ID_CHOICE,DATE_CHOICE/*,"Creator","Date"*/}, "Choose Annotation Type");
+							(String)DialogUtils.showListDialog(DocumentWindow.this, new String[] {CREATOR_CHOICE,ID_CHOICE,DATE_CHOICE/*,"Creator","Date"*/}, "Choose Annotation Type");
 						if(choice != null){
 							if(choice.equals(ID_CHOICE)){
 								miriamAnnotationEditor.addIdentifierDialog();
 							}else if(choice.equals(DATE_CHOICE)){
 								miriamAnnotationEditor.addTimeUTCDialog();
+							}else if(choice.equals(CREATOR_CHOICE)){
+								miriamAnnotationEditor.addCreatorDialog();
 							}
 							TreeMap<MIRIAMAnnotatable, Vector<MIRIAMHelper.DescriptiveHeirarchy>> mirimaDescrHeir =
 								MIRIAMHelper.showList(bioModel);

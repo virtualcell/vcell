@@ -251,6 +251,7 @@ public class MIRIAMHelper {
 		}
 		throw new RuntimeException("Couldn't find heirarchy to add qualifier");
 	}
+
 	public static Element addDateToAnnotation(MIRIAMAnnotatable miriamAnnotatable,String date,String dateQualifier){
 		if(miriamAnnotatable.getMIRIAMAnnotation() == null){
 			miriamAnnotatable.setMIRIAMAnnotation(new MIRIAMAnnotation());
@@ -286,10 +287,82 @@ public class MIRIAMHelper {
 				return dctermElement;	
 			}
 		}
-		throw new RuntimeException("Couldn't find heirarchy to add qualifier");
+		throw new RuntimeException("Couldn't find heirarchy to add date");
 	}
 
-	
+	public static Element addCreatorToAnnotation(MIRIAMAnnotatable miriamAnnotatable,String familyName,String givenName,String email,String organization){
+		if(miriamAnnotatable.getMIRIAMAnnotation() == null){
+			miriamAnnotatable.setMIRIAMAnnotation(new MIRIAMAnnotation());
+		}
+		if(miriamAnnotatable.getMIRIAMAnnotation().getAnnotation() == null){
+			miriamAnnotatable.getMIRIAMAnnotation().setAnnotation(createAnnotationSkeleton());
+		}
+		Element annotationElement = miriamAnnotatable.getMIRIAMAnnotation().getAnnotation();
+		Element rdfElement =
+			annotationElement.getChild(XMLTags.RDF_RDF_NAME_TAG,Namespace.getNamespace(XMLTags.RDF_NAMESPACE_URI));
+		if(rdfElement != null){
+			Element descrElement =
+				rdfElement.getChild(XMLTags.RDF_DESCRIPTION_NAME_TAG,Namespace.getNamespace(XMLTags.RDF_NAMESPACE_URI));
+			if(descrElement != null){
+				Element creatorElement =
+					descrElement.getChild(XMLTags.DUBCORE_CREATOR_NAME_TAG,Namespace.getNamespace(XMLTags.DUBCORE_NAMESPACE_URI));
+				if(creatorElement == null){
+					creatorElement =
+						new Element(XMLTags.DUBCORE_CREATOR_NAME_TAG,XMLTags.DUBCORE_NAMESPACE_PREFIX,XMLTags.DUBCORE_NAMESPACE_URI);
+					Attribute parsetType =
+						new Attribute(XMLTags.RDF_PARSETYPE_ATTR_TAG,XMLTags.RDF_PARSETYPE_ATTR_DATE_VALUE,
+								Namespace.getNamespace(XMLTags.RDF_NAMESPACE_PREFIX,XMLTags.RDF_NAMESPACE_URI));
+					creatorElement.setAttribute(parsetType);
+					descrElement.addContent(creatorElement);
+				}
+				Element creatorBagElement =
+					creatorElement.getChild(XMLTags.RDF_BAG_NAME_TAG,Namespace.getNamespace(XMLTags.RDF_NAMESPACE_URI));
+				if(creatorBagElement == null){
+					creatorBagElement =
+						new Element(XMLTags.RDF_BAG_NAME_TAG,XMLTags.RDF_NAMESPACE_PREFIX,XMLTags.RDF_NAMESPACE_URI);
+					creatorElement.addContent(creatorBagElement);
+				}
+				Element creatorLineElement =
+					new Element(XMLTags.RDF_LI_NAME_TAG,XMLTags.RDF_NAMESPACE_PREFIX,XMLTags.RDF_NAMESPACE_URI);
+				Attribute parsetType =
+					new Attribute(XMLTags.RDF_PARSETYPE_ATTR_TAG,XMLTags.RDF_PARSETYPE_ATTR_DATE_VALUE,
+							Namespace.getNamespace(XMLTags.RDF_NAMESPACE_PREFIX,XMLTags.RDF_NAMESPACE_URI));
+				creatorLineElement.setAttribute(parsetType);
+				creatorBagElement.addContent(creatorLineElement);
+				Element vCardNameGroupElement =
+					new Element(XMLTags.VCARD_NAMEGROUP_NAME_TAG,XMLTags.VCARD_NAMESPACE_PREFIX,XMLTags.VCARD_NAMESPACE_URI);
+				parsetType =
+					new Attribute(XMLTags.RDF_PARSETYPE_ATTR_TAG,XMLTags.RDF_PARSETYPE_ATTR_DATE_VALUE,
+							Namespace.getNamespace(XMLTags.RDF_NAMESPACE_PREFIX,XMLTags.RDF_NAMESPACE_URI));
+				vCardNameGroupElement.setAttribute(parsetType);
+				creatorLineElement.addContent(vCardNameGroupElement);
+				Element vCardNameFamilyElement =
+					new Element(XMLTags.VCARD_NAMEGROUP_FAMILY_NAME_TAG,XMLTags.VCARD_NAMESPACE_PREFIX,XMLTags.VCARD_NAMESPACE_URI);
+				Element vCardNameGivenElement =
+					new Element(XMLTags.VCARD_NAMEGROUP_GIVEN_NAME_TAG,XMLTags.VCARD_NAMESPACE_PREFIX,XMLTags.VCARD_NAMESPACE_URI);
+				vCardNameGroupElement.addContent(vCardNameFamilyElement);
+				vCardNameGroupElement.addContent(vCardNameGivenElement);
+				Element vCardEmailElement =
+					new Element(XMLTags.VCARD_EMAIL_NAME_TAG,XMLTags.VCARD_NAMESPACE_PREFIX,XMLTags.VCARD_NAMESPACE_URI);
+				creatorLineElement.addContent(vCardEmailElement);
+				Element vCardOrgGroupElement =
+					new Element(XMLTags.VCARD_ORGGROUP_NAME_TAG,XMLTags.VCARD_NAMESPACE_PREFIX,XMLTags.VCARD_NAMESPACE_URI);
+				creatorLineElement.addContent(vCardOrgGroupElement);
+				Element vCardOrgGroupOrgNameElement =
+					new Element(XMLTags.VCARD_ORGGROUP_ORGNAME_NAME_TAG,XMLTags.VCARD_NAMESPACE_PREFIX,XMLTags.VCARD_NAMESPACE_URI);
+				vCardOrgGroupElement.addContent(vCardOrgGroupOrgNameElement);
+				
+				vCardNameFamilyElement.addContent(familyName);
+				vCardNameGivenElement.addContent(givenName);
+				vCardEmailElement.addContent(email);
+				vCardOrgGroupOrgNameElement.addContent(organization);
+				
+				return creatorElement;	
+			}
+		}
+		throw new RuntimeException("Couldn't find heirarchy to add creator");
+	}
+
 	public static void cleanEmptySpace(Element element){
 		List elementContent = element.getContent();
 		for (int i = 0; i < elementContent.size(); i++) {
