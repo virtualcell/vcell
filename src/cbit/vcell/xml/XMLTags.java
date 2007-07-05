@@ -38,7 +38,16 @@ public class XMLTags {
 	public static final String RDF_PARSETYPE_ATTR_TAG		= "parseType";
 	public static final String RDF_PARSETYPE_ATTR_DATE_VALUE= "Resource";
 	public static final String DUBCORE_NAMESPACE_URI		= "http://purl.org/dc/elements/1.1/";				//xmlns:dc="http://purl.org/dc/elements/1.1/" 
+	public static final String DUBCORE_NAMESPACE_PREFIX		= "dc"; 
+	public static final String DUBCORE_CREATOR_NAME_TAG		= "creator"; 
 	public static final String VCARD_NAMESPACE_URI			= "http://www.w3.org/2001/vcard-rdf/3.0#";			//xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" 
+	public static final String VCARD_NAMESPACE_PREFIX		= "vCard"; 
+	public static final String VCARD_NAMEGROUP_NAME_TAG		= "N"; 
+	public static final String VCARD_NAMEGROUP_GIVEN_NAME_TAG	= "Given"; 
+	public static final String VCARD_NAMEGROUP_FAMILY_NAME_TAG	= "Family"; 
+	public static final String VCARD_EMAIL_NAME_TAG			= "EMAIL"; 
+	public static final String VCARD_ORGGROUP_NAME_TAG		= "ORG"; 
+	public static final String VCARD_ORGGROUP_ORGNAME_NAME_TAG	= "Orgname"; 
 	public static final String DUBCORETERMS_NAMESPACE_URI	= "http://purl.org/dc/terms/";						//xmlns:dcterms="http://purl.org/dc/terms/" 
 	public static final String DUBCORETERMS_NAMESPACE_PREFIX= "dcterms"; 
 	public static final String DUBCORETERMS_W3CDTF_NAME_TAG = "W3CDTF"; 

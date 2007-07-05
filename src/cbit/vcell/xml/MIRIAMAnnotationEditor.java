@@ -152,6 +152,15 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 	private JLabel jLabelTimeUTCEG = null;
 	private JLabel jLabelTimeUTC = null;
 	private JComboBox jComboBoxTimeUTCType = null;
+	private JPanel jPanelCreator = null;  //  @jve:decl-index=0:visual-constraint="646,75"
+	private JLabel jLabelGiven = null;
+	private JTextField jTextFieldGiven = null;
+	private JLabel jLabelFamily = null;
+	private JLabel jLabelEmail = null;
+	private JLabel JLabelOrganization = null;
+	private JTextField jTextFieldFamily = null;
+	private JTextField jTextFieldEmail = null;
+	private JTextField jTextFieldOrganization = null;
 	/**
 	 * This method initializes 
 	 * 
@@ -369,7 +378,7 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 				rowMapV.add(i);
 				latestCreator.add(rowData.get(i).descriptiveHeirarchy);
 				int index = i+1;
-				while(rowData.get(index).descriptiveHeirarchy.isCreatorChild()){
+				while(rowData.get(index).descriptiveHeirarchy != null && rowData.get(index).descriptiveHeirarchy.isCreatorChild()){
 					if(rowData.get(index).descriptiveHeirarchy.isSameCreator(latestCreator.firstElement())){
 						rowArrV.lastElement()[4]+= ","+rowData.get(index).rowData[4];
 						latestCreator.add(rowData.get(index).descriptiveHeirarchy);
@@ -614,6 +623,22 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 		}
 	}
 
+	public void addCreatorDialog(){
+		if(PopupGenerator.showComponentOKCancelDialog(MIRIAMAnnotationEditor.this, getJPanelCreator(), "Define New Creator") == JOptionPane.OK_OPTION){
+			MIRIAMHelper.addCreatorToAnnotation(
+					getSelectedMIRIAMAnnotatable(),
+					getJTextFieldFamily().getText(),
+					getJTextFieldGiven().getText(),
+					getJTextFieldEmail().getText(),
+					getJTextFieldOrganization().getText());
+			
+//			MIRIAMHelper.addDateToAnnotation(
+//					getSelectedMIRIAMAnnotatable(),
+//					getJTextFieldTimeUTC().getText(),
+//					(String)getJComboBoxTimeUTCType().getSelectedItem());
+		}
+	}
+
 	/**
 	 * This method initializes jPanelTimeUTC	
 	 * 	
@@ -681,5 +706,127 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 			jComboBoxTimeUTCType = new JComboBox();
 		}
 		return jComboBoxTimeUTCType;
+	}
+
+	/**
+	 * This method initializes jPanelCreator	
+	 * 	
+	 * @return javax.swing.JPanel	
+	 */
+	private JPanel getJPanelCreator() {
+		if (jPanelCreator == null) {
+			GridBagConstraints gridBagConstraints22 = new GridBagConstraints();
+			gridBagConstraints22.fill = GridBagConstraints.HORIZONTAL;
+			gridBagConstraints22.gridy = 3;
+			gridBagConstraints22.weightx = 1.0;
+			gridBagConstraints22.insets = new Insets(4, 4, 4, 4);
+			gridBagConstraints22.gridx = 1;
+			GridBagConstraints gridBagConstraints20 = new GridBagConstraints();
+			gridBagConstraints20.fill = GridBagConstraints.HORIZONTAL;
+			gridBagConstraints20.gridy = 2;
+			gridBagConstraints20.weightx = 1.0;
+			gridBagConstraints20.insets = new Insets(4, 4, 4, 4);
+			gridBagConstraints20.gridx = 1;
+			GridBagConstraints gridBagConstraints19 = new GridBagConstraints();
+			gridBagConstraints19.fill = GridBagConstraints.HORIZONTAL;
+			gridBagConstraints19.gridy = 1;
+			gridBagConstraints19.weightx = 1.0;
+			gridBagConstraints19.insets = new Insets(4, 4, 4, 4);
+			gridBagConstraints19.gridx = 1;
+			GridBagConstraints gridBagConstraints18 = new GridBagConstraints();
+			gridBagConstraints18.gridx = 0;
+			gridBagConstraints18.insets = new Insets(4, 4, 4, 4);
+			gridBagConstraints18.anchor = GridBagConstraints.EAST;
+			gridBagConstraints18.gridy = 3;
+			JLabelOrganization = new JLabel();
+			JLabelOrganization.setText("Organization");
+			GridBagConstraints gridBagConstraints17 = new GridBagConstraints();
+			gridBagConstraints17.gridx = 0;
+			gridBagConstraints17.insets = new Insets(4, 4, 4, 4);
+			gridBagConstraints17.anchor = GridBagConstraints.EAST;
+			gridBagConstraints17.gridy = 2;
+			jLabelEmail = new JLabel();
+			jLabelEmail.setText("Email");
+			GridBagConstraints gridBagConstraints16 = new GridBagConstraints();
+			gridBagConstraints16.gridx = 0;
+			gridBagConstraints16.insets = new Insets(4, 4, 4, 4);
+			gridBagConstraints16.anchor = GridBagConstraints.EAST;
+			gridBagConstraints16.gridy = 1;
+			jLabelFamily = new JLabel();
+			jLabelFamily.setText("Family Name");
+			GridBagConstraints gridBagConstraints15 = new GridBagConstraints();
+			gridBagConstraints15.fill = GridBagConstraints.HORIZONTAL;
+			gridBagConstraints15.gridy = 0;
+			gridBagConstraints15.weightx = 1.0;
+			gridBagConstraints15.insets = new Insets(4, 4, 4, 4);
+			gridBagConstraints15.gridx = 1;
+			GridBagConstraints gridBagConstraints14 = new GridBagConstraints();
+			gridBagConstraints14.gridx = 0;
+			gridBagConstraints14.insets = new Insets(4, 4, 4, 4);
+			gridBagConstraints14.anchor = GridBagConstraints.EAST;
+			gridBagConstraints14.gridy = 0;
+			jLabelGiven = new JLabel();
+			jLabelGiven.setText("Given Name");
+			jPanelCreator = new JPanel();
+			jPanelCreator.setLayout(new GridBagLayout());
+			jPanelCreator.setSize(new Dimension(331, 147));
+			jPanelCreator.add(jLabelGiven, gridBagConstraints14);
+			jPanelCreator.add(getJTextFieldGiven(), gridBagConstraints15);
+			jPanelCreator.add(jLabelFamily, gridBagConstraints16);
+			jPanelCreator.add(jLabelEmail, gridBagConstraints17);
+			jPanelCreator.add(JLabelOrganization, gridBagConstraints18);
+			jPanelCreator.add(getJTextFieldFamily(), gridBagConstraints19);
+			jPanelCreator.add(getJTextFieldEmail(), gridBagConstraints20);
+			jPanelCreator.add(getJTextFieldOrganization(), gridBagConstraints22);
+		}
+		return jPanelCreator;
+	}
+
+	/**
+	 * This method initializes jTextFieldGiven	
+	 * 	
+	 * @return javax.swing.JTextField	
+	 */
+	private JTextField getJTextFieldGiven() {
+		if (jTextFieldGiven == null) {
+			jTextFieldGiven = new JTextField();
+		}
+		return jTextFieldGiven;
+	}
+
+	/**
+	 * This method initializes jTextFieldFamily	
+	 * 	
+	 * @return javax.swing.JTextField	
+	 */
+	private JTextField getJTextFieldFamily() {
+		if (jTextFieldFamily == null) {
+			jTextFieldFamily = new JTextField();
+		}
+		return jTextFieldFamily;
+	}
+
+	/**
+	 * This method initializes jTextFieldEmail	
+	 * 	
+	 * @return javax.swing.JTextField	
+	 */
+	private JTextField getJTextFieldEmail() {
+		if (jTextFieldEmail == null) {
+			jTextFieldEmail = new JTextField();
+		}
+		return jTextFieldEmail;
+	}
+
+	/**
+	 * This method initializes jTextFieldOrganization	
+	 * 	
+	 * @return javax.swing.JTextField	
+	 */
+	private JTextField getJTextFieldOrganization() {
+		if (jTextFieldOrganization == null) {
+			jTextFieldOrganization = new JTextField();
+		}
+		return jTextFieldOrganization;
 	}
 }  //  @jve:decl-index=0:visual-constraint="10,10"
