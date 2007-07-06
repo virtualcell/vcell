@@ -251,13 +251,14 @@ private void writeCompartment_VarContext(CompartmentSubDomain volSubDomain) thro
 		}
 	}
 
-	//
-	// add VolumeVarContext coders
-	//
 	Enumeration enum_equ = volSubDomain.getEquations();
 	while (enum_equ.hasMoreElements()){
 		Equation equation = (Equation)enum_equ.nextElement();
-		writeCompartment_VarContext_Equation(volSubDomain, equation);
+		if (equation instanceof VolumeRegionEquation){
+			writeCompartmentRegion_VarContext_Equation(volSubDomain, (VolumeRegionEquation)equation);
+		} else {
+			writeCompartment_VarContext_Equation(volSubDomain, equation);
+		}
 		
 		if (equation instanceof cbit.vcell.math.PdeEquation){
 			pdeVolVariableList.remove(equation.getVariable());
@@ -299,12 +300,12 @@ private void writeCompartment_VarContext_Equation(CompartmentSubDomain volSubDom
 			writer.println("VELOCITY_X 0.0;");
 		}
 		if (((PdeEquation)equation).getVelocityY() != null) {
-			writer.println("VELOCITY_Y " + subsituteExpression(((PdeEquation)equation).getVelocityX()).infix() + ";");
+			writer.println("VELOCITY_Y " + subsituteExpression(((PdeEquation)equation).getVelocityY()).infix() + ";");
 		} else if (simulation.getMathDescription().getGeometry().getDimension() > 1){
 			writer.println("VELOCITY_Y 0.0;");
 		}
 		if (((PdeEquation)equation).getVelocityZ() != null) {
-			writer.println("VELOCITY_Z " + subsituteExpression(((PdeEquation)equation).getVelocityX()).infix() + ";");			
+			writer.println("VELOCITY_Z " + subsituteExpression(((PdeEquation)equation).getVelocityZ()).infix() + ";");			
 		} else if (simulation.getMathDescription().getGeometry().getDimension() > 2){
 			writer.println("VELOCITY_Z 0.0;");
 		}
@@ -452,7 +453,11 @@ private void writeMembrane_VarContext(MembraneSubDomain memSubDomain) throws Exc
 	Enumeration enum_equ = memSubDomain.getEquations();
 	while (enum_equ.hasMoreElements()){
 		Equation equation = (Equation)enum_equ.nextElement();
-		writeMembrane_VarContext_Equation(memSubDomain, equation);
+		if (equation instanceof MembraneRegionEquation) {
+			writeMembraneRegion_VarContext_Equation(memSubDomain, (MembraneRegionEquation)equation);
+		} else{
+			writeMembrane_VarContext_Equation(memSubDomain, equation);
+		}
 	}	
 
 }
@@ -469,25 +474,13 @@ BOUNDARY_YM 5.0;
 BOUNDARY_YP 5.0;
 EQUATION_END
  */
-private void writeMembrane_VarContext_Equation(MembraneSubDomain memSubDomain, Equation equation) throws Exception {	
+private void writeMembraneRegion_VarContext_Equation(MembraneSubDomain memSubDomain, MembraneRegionEquation equation) throws Exception {	
 	writer.println("EQUATION_BEGIN " + equation.getVariable().getName());
 	writer.println("INITIAL " + subsituteExpression(equation.getInitialExpression()).infix() + ";");
-	writer.println("RATE " + subsituteExpression(equation.getRateExpression()).infix() + ";");
-	if (equation instanceof PdeEquation) {
-		writer.println("DIFFUSION " + subsituteExpression(((PdeEquation)equation).getDiffusionExpression()).infix() + ";");
-		
-		PdeEquation pde = (PdeEquation)equation;
-		BoundaryConditionType[] bctypes = new BoundaryConditionType[] {
-				memSubDomain.getBoundaryConditionXm(),
-				memSubDomain.getBoundaryConditionXp(),
-				memSubDomain.getBoundaryConditionYm(),
-				memSubDomain.getBoundaryConditionYp(),
-				memSubDomain.getBoundaryConditionZm(),
-				memSubDomain.getBoundaryConditionZp()
-		};
-		writeBoundaryValues(bctypes, pde);		
-	}	
-
+	writer.println("RATE " + subsituteExpression(((MembraneRegionEquation)equation).getMembraneRateExpression()).infix() + ";");
+	writer.println("UNIFORMRATE " + subsituteExpression(((MembraneRegionEquation)equation).getUniformRateExpression()).infix() + ";");
+	writer.println("INFLUX 0.0;");
+	writer.println("OUTFLUX 0.0;");
 	writer.println("EQUATION_END");
 	writer.println();
 }
@@ -764,6 +757,64 @@ private void writeFieldData() throws Exception {
 	}	
 	
 	writer.println("FIELD_DATA_END");
+	writer.println();
+}
+
+
+/**
+EQUATION_BEGIN rf
+INITIAL 5.0;
+RATE ( - ((0.02 * ( - rB - rfB + (20.0 * ((x > -3.0) && (x < 3.0) && (y > -5.0) && (y < 5.0))) + _VCell_FieldData_0) * rf) - (0.1 * rfB)) - (50.0 * rf * ((x > -5.0) && (x < 5.0) && (y > -5.0) && (y < 5.0))));
+DIFFUSION 10.0;
+BOUNDARY_XM 5.0;
+BOUNDARY_XP 5.0;
+BOUNDARY_YM 5.0;
+BOUNDARY_YP 5.0;
+EQUATION_END
+ */
+private void writeMembrane_VarContext_Equation(MembraneSubDomain memSubDomain, Equation equation) throws Exception {	
+	writer.println("EQUATION_BEGIN " + equation.getVariable().getName());
+	writer.println("INITIAL " + subsituteExpression(equation.getInitialExpression()).infix() + ";");
+	writer.println("RATE " + subsituteExpression(equation.getRateExpression()).infix() + ";");
+	if (equation instanceof PdeEquation) {
+		writer.println("DIFFUSION " + subsituteExpression(((PdeEquation)equation).getDiffusionExpression()).infix() + ";");
+		
+		PdeEquation pde = (PdeEquation)equation;
+		BoundaryConditionType[] bctypes = new BoundaryConditionType[] {
+				memSubDomain.getBoundaryConditionXm(),
+				memSubDomain.getBoundaryConditionXp(),
+				memSubDomain.getBoundaryConditionYm(),
+				memSubDomain.getBoundaryConditionYp(),
+				memSubDomain.getBoundaryConditionZm(),
+				memSubDomain.getBoundaryConditionZp()
+		};
+		writeBoundaryValues(bctypes, pde);		
+	}	
+
+	writer.println("EQUATION_END");
+	writer.println();
+}
+
+
+/**
+ EQUATION_BEGIN rf
+INITIAL 5.0;
+RATE ( - ((0.02 * ( - rB - rfB + (20.0 * ((x > -3.0) && (x < 3.0) && (y > -5.0) && (y < 5.0))) + _VCell_FieldData_0) * rf) - (0.1 * rfB)) - (50.0 * rf * ((x > -5.0) && (x < 5.0) && (y > -5.0) && (y < 5.0))));
+DIFFUSION 10.0;
+BOUNDARY_XM 5.0;
+BOUNDARY_XP 5.0;
+BOUNDARY_YM 5.0;
+BOUNDARY_YP 5.0;
+EQUATION_END
+ */
+private void writeCompartmentRegion_VarContext_Equation(CompartmentSubDomain volSubDomain, VolumeRegionEquation equation) throws Exception {	
+	writer.println("EQUATION_BEGIN " + equation.getVariable().getName());
+	writer.println("INITIAL " + subsituteExpression(equation.getInitialExpression()).infix() + ";");
+	writer.println("RATE " + subsituteExpression(equation.getVolumeRateExpression()).infix() + ";");
+	writer.println("UNIFORMRATE " + subsituteExpression(equation.getUniformRateExpression()).infix() + ";");
+	writer.println("INFLUX 0.0;");
+	writer.println("OUTFLUX 0.0;");	
+	writer.println("EQUATION_END");
 	writer.println();
 }
 }

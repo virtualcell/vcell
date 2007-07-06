@@ -46,8 +46,9 @@ protected String[] getCodeIncludes()
 			  "<stdlib.h>",
 			  "<VCELL/SimTypes.h>",
 			  "<VCELL/VolumeVariable.h>",
+			  "<VCELL/VolumeRegionVariable.h>",
 			  "<VCELL/MembraneVariable.h>",
-			  "<VCELL/Feature.h>",
+			  "<VCELL/MembraneRegionVariable.h>",
 			  "<VCELL/CartesianMesh.h>",
 			  "<VCELL/SimTool.h>",
 			  "<VCELL/ODESolver.h>",
@@ -58,7 +59,8 @@ protected String[] getCodeIncludes()
 			  "<VCELL/Contour.h>",
 			  "<VCELL/Element.h>",
 			  "<VCELL/PdeSolverDiana.h>",
-			  "<VCELL/Region.h>",
+			  "<VCELL/VolumeRegion.h>",
+			  "<VCELL/MembraneRegion.h>",
 			  "<VCELL/VolumeRegionEqnBuilder.h>",
 			  "<VCELL/MembraneRegionEqnBuilder.h>",
 			  "<VCELL/EqnBuilderReactionDiffusionConvection.h>",
@@ -74,7 +76,6 @@ protected String[] getCodeIncludes()
  {
 	 return new String[] {
 		  "CartesianMesh",
-		  "Feature",
 		  "VolumeVariable",
 		  "MembraneVariable",
 		  "ContourVariable",
@@ -114,7 +115,9 @@ protected String[] getHeaderConstants() {
 	  return new String[] {
 			  "<VCELL/SimTypes.h>",
 			  "<VCELL/VolumeVarContext.h>",
+			  "<VCELL/VolumeRegionVarContext.h>",
 			  "<VCELL/MembraneVarContext.h>",
+			  "<VCELL/MembraneRegionVarContext.h>",
 			  "<VCELL/Simulation.h>",
 			  "<VCELL/VCellModel.h>",
 			  "<VCELL/Feature.h>",

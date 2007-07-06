@@ -67,7 +67,7 @@ public CompartmentSubDomain getOutsideCompartment() {
  * @param out java.io.PrintWriter
  */
 protected void writeConstructor(java.io.PrintWriter out) throws Exception {
-	out.println(getClassName()+"::"+getClassName()+"(Feature *Afeature,CString AspeciesName)");
+	out.println(getClassName()+"::"+getClassName()+"(Feature *Afeature, string& AspeciesName)");
 	out.println(": "+getParentClassName()+"(Afeature,AspeciesName)");
 	out.println("{");
 	try {
@@ -112,8 +112,8 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 	out.println("class " + getClassName() + " : public " + getParentClassName());
 	out.println("{");
 	out.println(" public:");
-	out.println("    "+getClassName() + "(Feature *feature, CString speciesName);");
-	out.println("    virtual boolean resolveReferences(Simulation *sim);");
+	out.println("\t"+getClassName() + "(Feature *feature, string& speciesName);");
+	out.println("\tvirtual bool resolveReferences(Simulation *sim);");
 
 	BoundaryConditionType bc = null;
 	try {
@@ -166,7 +166,10 @@ public void writeImplementation(java.io.PrintWriter out) throws Exception {
 	boolean bFlippedInsideOutside = isFlippedInsideOutside(getMembraneSubDomain());
 	writeMembraneFunction(out,"getMembraneReactionRate", ((MembraneRegionEquation)getEquation()).getMembraneRateExpression(),bFlippedInsideOutside);
 	out.println("");
-	out.println("void "+getClassName()+"::getFlux(MembraneElement *element,double *in,double *out){}");
+	out.println("void "+getClassName()+"::getFlux(MembraneElement *element,double *inFlux, double *outFlux){");
+	out.println("\t*inFlux = 0.0;");
+	out.println("\t*outFlux = 0.0;");			
+	out.println("}");
 	out.println("");
 	try {
 		double value = getEquation().getInitialExpression().evaluateConstant();
