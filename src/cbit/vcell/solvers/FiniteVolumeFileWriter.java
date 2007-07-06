@@ -472,7 +472,7 @@ EQUATION_END
 private void writeMembrane_VarContext_Equation(MembraneSubDomain memSubDomain, Equation equation) throws Exception {	
 	writer.println("EQUATION_BEGIN " + equation.getVariable().getName());
 	writer.println("INITIAL " + subsituteExpression(equation.getInitialExpression()).infix() + ";");
-	writer.println("REACTION " + subsituteExpression(equation.getRateExpression()).infix() + ";");
+	writer.println("RATE " + subsituteExpression(equation.getRateExpression()).infix() + ";");
 	if (equation instanceof PdeEquation) {
 		writer.println("DIFFUSION " + subsituteExpression(((PdeEquation)equation).getDiffusionExpression()).infix() + ";");
 		
