@@ -1,6 +1,7 @@
 package cbit.rmi.event;
 
-import cbit.util.VCDataIdentifier;
+import org.vcell.util.VCDataIdentifier;
+
 import cbit.vcell.simulation.Simulation;
 import cbit.vcell.simulation.VCSimulationIdentifier;
 
@@ -74,7 +75,7 @@ public int getJobIndex() {
  * Creation date: (8/24/2004 11:12:39 AM)
  * @return cbit.vcell.server.User
  */
-public cbit.util.document.User getOwner() {
+public org.vcell.util.document.User getOwner() {
 	return vcSimID.getOwner();
 }
 
@@ -84,7 +85,7 @@ public cbit.util.document.User getOwner() {
  * Creation date: (8/24/2004 10:59:23 AM)
  * @return cbit.sql.KeyValue
  */
-public cbit.util.document.KeyValue getSimulationKey() {
+public org.vcell.util.document.KeyValue getSimulationKey() {
 	return vcSimID.getSimulationKey();
 }
 

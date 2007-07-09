@@ -1,5 +1,5 @@
 package cbit.vcell.util.events;
-import cbit.util.document.User;
+import org.vcell.util.document.User;
 /**
  * Insert the type's description here.
  * Creation date: (11/12/2000 12:38:59 PM)

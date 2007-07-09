@@ -8,7 +8,7 @@ import java.io.Serializable;
  * Creation date: (1/31/2003 11:02:54 AM)
  * @author: Jim Schaff
  */
-public class SimulationJobStatus implements cbit.util.Matchable, Serializable {
+public class SimulationJobStatus implements org.vcell.util.Matchable, Serializable {
 	//
 	// mandatory fields - not null
 	//
@@ -56,7 +56,7 @@ public SimulationJobStatus(VCellServerID serverID, VCSimulationIdentifier vcSimI
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (obj instanceof SimulationJobStatus){
 		SimulationJobStatus jobStatus = (SimulationJobStatus)obj;
 		if (jobStatus.fieldSchedulerStatus != fieldSchedulerStatus){

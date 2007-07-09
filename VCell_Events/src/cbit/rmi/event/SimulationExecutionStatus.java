@@ -2,15 +2,16 @@ package cbit.rmi.event;
 
 import java.util.Date;
 
-import cbit.util.Matchable;
-import cbit.util.document.KeyValue;
+import org.vcell.util.Matchable;
+import org.vcell.util.document.KeyValue;
+
 
 /**
  * Insert the type's description here.
  * Creation date: (1/31/2003 11:27:24 AM)
  * @author: Jim Schaff
  */
-public class SimulationExecutionStatus implements cbit.util.Matchable, java.io.Serializable {
+public class SimulationExecutionStatus implements org.vcell.util.Matchable, java.io.Serializable {
 	private Date fieldStartDate = null;
 	private Date fieldLatestUpdateDate = null;
 	private Date fieldEndDate = null;

@@ -1,5 +1,6 @@
 package cbit.rmi.event;
-import cbit.util.document.User;
+import org.vcell.util.document.User;
+
 import cbit.vcell.util.events.MessageData;
 import cbit.vcell.util.events.MessageEvent;
 import cbit.vcell.util.events.MessageSource;
@@ -70,7 +71,7 @@ public PerformanceData getPerfData() {
  * Creation date: (9/17/2004 12:51:09 PM)
  * @return cbit.vcell.server.User
  */
-public cbit.util.document.User getUser() {
+public org.vcell.util.document.User getUser() {
 	return user;
 }
 

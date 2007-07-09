@@ -1,6 +1,7 @@
 package cbit.rmi.event;
 
-import cbit.util.VCDataIdentifier;
+import org.vcell.util.VCDataIdentifier;
+
 import cbit.vcell.simulation.Simulation;
 import cbit.vcell.simulation.VCSimulationIdentifier;
 
@@ -66,7 +67,7 @@ public java.lang.String getID() {
  * @return cbit.vcell.server.User
  * @deprecated
  */
-public cbit.util.document.User getOwner() {
+public org.vcell.util.document.User getOwner() {
 	return vcSimID.getOwner();
 }
 

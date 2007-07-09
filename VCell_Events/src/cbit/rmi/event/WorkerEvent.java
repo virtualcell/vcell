@@ -131,7 +131,7 @@ public Double getTimePoint() {
  * Creation date: (3/11/2004 9:33:30 AM)
  * @return cbit.vcell.server.User
  */
-public cbit.util.document.User getUser() {
+public org.vcell.util.document.User getUser() {
 	return vcSimulationIdentifier.getOwner();
 }
 
