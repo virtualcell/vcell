@@ -3,13 +3,6 @@ import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.sql.OracleKeyFactory;
 import cbit.sql.OraclePoolingConnectionFactory;
-import cbit.util.DataAccessException;
-import cbit.util.PropertyLoader;
-import cbit.util.SessionLog;
-import cbit.util.StdoutSessionLog;
-import cbit.util.document.BioModelInfo;
-import cbit.util.document.MathModelInfo;
-import cbit.util.document.UserInfo;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.modeldb.DatabasePolicySQL;
@@ -21,6 +14,14 @@ import cbit.vcell.client.test.ClientTester;
 
 import java.io.File;
 import java.io.FileWriter;
+
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+import org.vcell.util.StdoutSessionLog;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.UserInfo;
 
 /**
  * Creation date: (8/5/2003 12:09:27 PM)

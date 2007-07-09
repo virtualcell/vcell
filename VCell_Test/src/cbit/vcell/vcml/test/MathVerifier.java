@@ -1,11 +1,6 @@
 package cbit.vcell.vcml.test;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import cbit.util.BigString;
-import cbit.util.DataAccessException;
-import cbit.util.PermissionException;
-import cbit.util.PropertyLoader;
-import cbit.util.SessionLog;
 import cbit.vcell.math.MathDescription;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -21,16 +16,21 @@ import cbit.sql.ConnectionFactory;
 import java.beans.*;
 import java.util.Vector;
 import cbit.vcell.biomodel.BioModelMetaData;
-import cbit.util.BeanUtils;
-import cbit.util.document.BioModelInfo;
-import cbit.util.document.KeyValue;
-import cbit.util.document.User;
-import cbit.util.document.UserInfo;
-import cbit.util.document.VersionableType;
 
 import java.io.File;
 
 import org.vcell.expression.ExpressionException;
+import org.vcell.util.BeanUtils;
+import org.vcell.util.BigString;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PermissionException;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.UserInfo;
+import org.vcell.util.document.VersionableType;
 
 
 import cbit.vcell.math.MathException;
@@ -67,7 +67,7 @@ public class MathVerifier {
 	private DatabaseServerImpl dbServerImpl = null;
 	private cbit.sql.KeyFactory keyFactory = null;
 	private DBCacheTable cacheTable = null;
-	private cbit.util.SessionLog log = null;
+	private org.vcell.util.SessionLog log = null;
 	private cbit.vcell.modeldb.MathDescriptionDbDriver mathDescDbDriver = null;
 	private java.util.HashSet skipHash = new java.util.HashSet(); // holds KeyValues of BioModels to skip
 
@@ -103,7 +103,7 @@ public void scan(User users[], boolean bUpdateDatabase, KeyValue bioModelKey, in
 	for (int i=0;i<users.length;i++){
 		User user = users[i];
 		BioModelInfo bioModelInfos[] = dbServerImpl.getBioModelInfos(user,false);
-		SessionLog userLog = new cbit.util.StdoutSessionLog(user.toString());
+		SessionLog userLog = new org.vcell.util.StdoutSessionLog(user.toString());
 		userLog.print("Testing user '"+user+"'");
 
 		//
@@ -198,7 +198,7 @@ public void scan(User users[], boolean bUpdateDatabase, KeyValue bioModelKey, in
 						cbit.vcell.mapping.MathMapping mathMapping = new cbit.vcell.mapping.MathMapping(simContextNewMath);
 						MathDescription newMathDesc = mathMapping.getMathDescription();
 						String issueString = null;
-						cbit.util.Issue issues[] = mathMapping.getIssues();
+						org.vcell.util.Issue issues[] = mathMapping.getIssues();
 						if (issues!=null && issues.length>0){
 							StringBuffer buffer = new StringBuffer("Issues("+issues.length+"):");
 							for (int l = 0; l < issues.length; l++){
@@ -226,8 +226,8 @@ public void scan(User users[], boolean bUpdateDatabase, KeyValue bioModelKey, in
 								String UPDATESTATUS = "UPDATE "+SimContextStat2Table.table.getTableName()+
 													  " SET "  +SimContextStat2Table.table.hasData.getUnqualifiedColName()+" = "+((bApplicationHasData)?(1):(0))+", "+
 													            SimContextStat2Table.table.equiv.getUnqualifiedColName()+" = "+(mathEquivalency.equals(MathDescription.MATH_DIFFERENT)?(0):(1))+", "+
-													            SimContextStat2Table.table.status.getUnqualifiedColName()+" = '"+cbit.util.TokenMangler.getSQLEscapedString(mathEquivalency+": "+reasonForDecision.toString())+"'"+
-													            ((issueString!=null)?(", "+SimContextStat2Table.table.comments.getUnqualifiedColName()+" = '"+cbit.util.TokenMangler.getSQLEscapedString(issueString,255)+"'"):(""))+
+													            SimContextStat2Table.table.status.getUnqualifiedColName()+" = '"+org.vcell.util.TokenMangler.getSQLEscapedString(mathEquivalency+": "+reasonForDecision.toString())+"'"+
+													            ((issueString!=null)?(", "+SimContextStat2Table.table.comments.getUnqualifiedColName()+" = '"+org.vcell.util.TokenMangler.getSQLEscapedString(issueString,255)+"'"):(""))+
 													  " WHERE "+SimContextStat2Table.table.simContextRef.getUnqualifiedColName()+" = "+simContextFromDB.getKey();
 								int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
 								if (numRowsChanged!=1){
@@ -255,7 +255,7 @@ public void scan(User users[], boolean bUpdateDatabase, KeyValue bioModelKey, in
 								stmt = con.createStatement();
 								//KeyValue mathKey = origMathDesc.getKey();
 								String UPDATESTATUS = "UPDATE "+SimContextStat2Table.table.getTableName()+
-													  " SET "  +SimContextStat2Table.table.status.getUnqualifiedColName()+" = 'EXCEPTION: "+cbit.util.TokenMangler.getSQLEscapedString(e.toString())+"'"+
+													  " SET "  +SimContextStat2Table.table.status.getUnqualifiedColName()+" = 'EXCEPTION: "+org.vcell.util.TokenMangler.getSQLEscapedString(e.toString())+"'"+
 													  " WHERE "+SimContextStat2Table.table.simContextRef.getUnqualifiedColName()+" = "+simContextFromDB.getKey();
 								int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
 								if (numRowsChanged!=1){
@@ -294,7 +294,7 @@ public void scan(User users[], boolean bUpdateDatabase, KeyValue bioModelKey, in
 									stmt = con.createStatement();
 									String UPDATESTATUS = "UPDATE "+SimStatTable.table.getTableName()+
 														  " SET "  +SimStatTable.table.equiv.getUnqualifiedColName()+" = "+((bSimEquivalent)?(1):(0))+ ", "+
-														            SimStatTable.table.status.getUnqualifiedColName()+" = '"+cbit.util.TokenMangler.getSQLEscapedString(mathEquivalency)+"'" +
+														            SimStatTable.table.status.getUnqualifiedColName()+" = '"+org.vcell.util.TokenMangler.getSQLEscapedString(mathEquivalency)+"'" +
 														  " WHERE "+SimStatTable.table.simRef.getUnqualifiedColName()+" = "+appSimsFromDB[l].getKey();
 									int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
 									if (numRowsChanged!=1){
@@ -322,7 +322,7 @@ public void scan(User users[], boolean bUpdateDatabase, KeyValue bioModelKey, in
 									stmt = con.createStatement();
 									//KeyValue mathKey = origMathDesc.getKey();
 									String UPDATESTATUS = "UPDATE "+SimStatTable.table.getTableName()+
-														  " SET "  +SimStatTable.table.status.getUnqualifiedColName()+" = 'EXCEPTION: "+cbit.util.TokenMangler.getSQLEscapedString(e.toString())+"'"+
+														  " SET "  +SimStatTable.table.status.getUnqualifiedColName()+" = 'EXCEPTION: "+org.vcell.util.TokenMangler.getSQLEscapedString(e.toString())+"'"+
 														  " WHERE "+SimStatTable.table.simRef.getUnqualifiedColName()+" = "+appSimsFromDB[l].getKey();
 									int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
 									if (numRowsChanged!=1){
@@ -367,8 +367,8 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 	final java.util.Date totalVolumeCorrectionFixDate = calendar.getTime();
 	
 
-	User user = new User("Administrator", new cbit.util.document.KeyValue("2"));
-	SessionLog userLog = new cbit.util.StdoutSessionLog(user.toString());
+	User user = new User("Administrator", new org.vcell.util.document.KeyValue("2"));
+	SessionLog userLog = new org.vcell.util.StdoutSessionLog(user.toString());
 	for (int i=0;i<bioModelKeys.length;i++){
 		BioModelInfo bioModelInfo = dbServerImpl.getBioModelInfo(user,bioModelKeys[i]);
 		userLog.print("Testing bioModel with key '"+bioModelKeys[i]+"'");
@@ -448,7 +448,7 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 					cbit.vcell.mapping.MathMapping mathMapping = new cbit.vcell.mapping.MathMapping(simContextNewMath);
 					MathDescription newMathDesc = mathMapping.getMathDescription();
 					String issueString = null;
-					cbit.util.Issue issues[] = mathMapping.getIssues();
+					org.vcell.util.Issue issues[] = mathMapping.getIssues();
 					if (issues!=null && issues.length>0){
 						StringBuffer buffer = new StringBuffer("Issues("+issues.length+"):");
 						for (int l = 0; l < issues.length; l++){
@@ -476,8 +476,8 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 							String UPDATESTATUS = "UPDATE "+SimContextStat2Table.table.getTableName()+
 												  " SET "  +SimContextStat2Table.table.hasData.getUnqualifiedColName()+" = "+((bApplicationHasData)?(1):(0))+", "+
 												            SimContextStat2Table.table.equiv.getUnqualifiedColName()+" = "+(mathEquivalency.equals(MathDescription.MATH_DIFFERENT)?(0):(1))+", "+
-												            SimContextStat2Table.table.status.getUnqualifiedColName()+" = '"+cbit.util.TokenMangler.getSQLEscapedString(mathEquivalency+": "+reasonForDecision.toString())+"'"+
-												            ((issueString!=null)?(", "+SimContextStat2Table.table.comments.getUnqualifiedColName()+" = '"+cbit.util.TokenMangler.getSQLEscapedString(issueString,255)+"'"):(""))+
+												            SimContextStat2Table.table.status.getUnqualifiedColName()+" = '"+org.vcell.util.TokenMangler.getSQLEscapedString(mathEquivalency+": "+reasonForDecision.toString())+"'"+
+												            ((issueString!=null)?(", "+SimContextStat2Table.table.comments.getUnqualifiedColName()+" = '"+org.vcell.util.TokenMangler.getSQLEscapedString(issueString,255)+"'"):(""))+
 												  " WHERE "+SimContextStat2Table.table.simContextRef.getUnqualifiedColName()+" = "+simContextFromDB.getKey();
 							int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
 							if (numRowsChanged!=1){
@@ -503,7 +503,7 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 						try {
 							con = conFactory.getConnection(new Object());
 							stmt = con.createStatement();
-                            String status = "'EXCEPTION: "+cbit.util.TokenMangler.getSQLEscapedString(e.toString())+"'";
+                            String status = "'EXCEPTION: "+org.vcell.util.TokenMangler.getSQLEscapedString(e.toString())+"'";
                             if (status.length() > 255) status = status.substring(0,254)+"'";
                             String UPDATESTATUS = "UPDATE "+SimContextStat2Table.table.getTableName()+
 					                              " SET "+SimContextStat2Table.table.status.getUnqualifiedColName()+" = "+status+
@@ -545,7 +545,7 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 								stmt = con.createStatement();
 								String UPDATESTATUS = "UPDATE "+SimStatTable.table.getTableName()+
 													  " SET "  +SimStatTable.table.equiv.getUnqualifiedColName()+" = "+((bSimEquivalent)?(1):(0))+ ", "+
-													            SimStatTable.table.status.getUnqualifiedColName()+" = '"+cbit.util.TokenMangler.getSQLEscapedString(mathEquivalency)+"'" +
+													            SimStatTable.table.status.getUnqualifiedColName()+" = '"+org.vcell.util.TokenMangler.getSQLEscapedString(mathEquivalency)+"'" +
 													  " WHERE "+SimStatTable.table.simRef.getUnqualifiedColName()+" = "+appSimsFromDB[l].getKey();
 								int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
 								if (numRowsChanged!=1){
@@ -571,7 +571,7 @@ public void scanBioModels(boolean bUpdateDatabase, KeyValue[] bioModelKeys) thro
 							try {
 								con = conFactory.getConnection(new Object());
 								stmt = con.createStatement();
-	                            String status = "'EXCEPTION: "+cbit.util.TokenMangler.getSQLEscapedString(e.toString())+"'";
+	                            String status = "'EXCEPTION: "+org.vcell.util.TokenMangler.getSQLEscapedString(e.toString())+"'";
 	                            if (status.length() > 255) status = status.substring(0,254)+"'";
 	                            String UPDATESTATUS = "UPDATE "+SimStatTable.table.getTableName()+
                                 					  " SET "+SimStatTable.table.status.getUnqualifiedColName()+" = "+status+
@@ -617,8 +617,8 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
     calendar.set(2002, java.util.Calendar.JANUARY, 1);
     final java.util.Date totalVolumeCorrectionFixDate = calendar.getTime();
 
-    User user = new User("Administrator", new cbit.util.document.KeyValue("2"));
-    SessionLog userLog = new cbit.util.StdoutSessionLog(user.toString());
+    User user = new User("Administrator", new org.vcell.util.document.KeyValue("2"));
+    SessionLog userLog = new org.vcell.util.StdoutSessionLog(user.toString());
     for (int i = 0; i < simContextKeys.length; i++) {
         userLog.print("Testing SimContext with key '" + simContextKeys[i] + "'");
         // get biomodel refs
@@ -644,7 +644,7 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
 			con.close();
         }
 
-        KeyValue[] bmKeys = (cbit.util.document.KeyValue[]) cbit.util.BeanUtils.getArray(keys, cbit.util.document.KeyValue.class);
+        KeyValue[] bmKeys = (org.vcell.util.document.KeyValue[]) org.vcell.util.BeanUtils.getArray(keys, org.vcell.util.document.KeyValue.class);
         try {
 			// use the first biomodel...
 	        BioModelInfo bioModelInfo = dbServerImpl.getBioModelInfo(user, bmKeys[0]);
@@ -730,7 +730,7 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
                     cbit.vcell.mapping.MathMapping mathMapping = new cbit.vcell.mapping.MathMapping(simContextNewMath);
                     MathDescription newMathDesc = mathMapping.getMathDescription();
                     String issueString = null;
-                    cbit.util.Issue issues[] = mathMapping.getIssues();
+                    org.vcell.util.Issue issues[] = mathMapping.getIssues();
                     if (issues != null && issues.length > 0) {
                         StringBuffer buffer = new StringBuffer("Issues(" + issues.length + "):");
                         for (int l = 0; l < issues.length; l++) {
@@ -758,8 +758,8 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
                             String UPDATESTATUS = "UPDATE "+SimContextStat2Table.table.getTableName()+
 				                             	  " SET "+SimContextStat2Table.table.hasData.getUnqualifiedColName()+" = "+((bApplicationHasData)?(1):(0))+", "
     			                       				     +SimContextStat2Table.table.equiv.getUnqualifiedColName()+" = "+(mathEquivalency.equals(MathDescription.MATH_DIFFERENT) ? (0) : (1))+", "
-       				                       			     +SimContextStat2Table.table.status.getUnqualifiedColName()+" = '"+cbit.util.TokenMangler.getSQLEscapedString(mathEquivalency+": "+reasonForDecision.toString())+"'"
-           				                     		     +((issueString != null) ? (", "+SimContextStat2Table.table.comments.getUnqualifiedColName()+" = '"+cbit.util.TokenMangler.getSQLEscapedString(issueString, 255)+"'") : (""))+
+       				                       			     +SimContextStat2Table.table.status.getUnqualifiedColName()+" = '"+org.vcell.util.TokenMangler.getSQLEscapedString(mathEquivalency+": "+reasonForDecision.toString())+"'"
+           				                     		     +((issueString != null) ? (", "+SimContextStat2Table.table.comments.getUnqualifiedColName()+" = '"+org.vcell.util.TokenMangler.getSQLEscapedString(issueString, 255)+"'") : (""))+
            				                     	  " WHERE "+SimContextStat2Table.table.simContextRef.getUnqualifiedColName()+" = "+simContextFromDB.getKey();
                             int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
                             if (numRowsChanged != 1) {
@@ -785,7 +785,7 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
                         try {
                             con = conFactory.getConnection(new Object());
                             stmt = con.createStatement();
-                            String status = "'EXCEPTION: "+cbit.util.TokenMangler.getSQLEscapedString(e.toString())+"'";
+                            String status = "'EXCEPTION: "+org.vcell.util.TokenMangler.getSQLEscapedString(e.toString())+"'";
                             if (status.length() > 255) status = status.substring(0,254)+"'";
                             String UPDATESTATUS = "UPDATE "+SimContextStat2Table.table.getTableName()+
 					                              " SET "+SimContextStat2Table.table.status.getUnqualifiedColName()+" = "+status+
@@ -824,7 +824,7 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
                                 con = conFactory.getConnection(new Object());
                                 stmt = con.createStatement();
                                 String UPDATESTATUS = "UPDATE "+SimStatTable.table.getTableName()+
-                                					  " SET "+SimStatTable.table.equiv.getUnqualifiedColName()+" = "+((bSimEquivalent) ? (1) : (0))+", "+SimStatTable.table.status.getUnqualifiedColName()+" = '"+cbit.util.TokenMangler.getSQLEscapedString(mathEquivalency)+"'"+
+                                					  " SET "+SimStatTable.table.equiv.getUnqualifiedColName()+" = "+((bSimEquivalent) ? (1) : (0))+", "+SimStatTable.table.status.getUnqualifiedColName()+" = '"+org.vcell.util.TokenMangler.getSQLEscapedString(mathEquivalency)+"'"+
                                 					  " WHERE "+SimStatTable.table.simRef.getUnqualifiedColName()+" = "+appSimsFromDB[l].getKey();
                                 int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
                                 if (numRowsChanged != 1) {
@@ -850,7 +850,7 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
                             try {
                                 con = conFactory.getConnection(new Object());
                                 stmt = con.createStatement();
-	                            String status = "'EXCEPTION: "+cbit.util.TokenMangler.getSQLEscapedString(e.toString())+"'";
+	                            String status = "'EXCEPTION: "+org.vcell.util.TokenMangler.getSQLEscapedString(e.toString())+"'";
 	                            if (status.length() > 255) status = status.substring(0,254)+"'";
 	                            String UPDATESTATUS = "UPDATE "+SimStatTable.table.getTableName()+
                                 					  " SET "+SimStatTable.table.status.getUnqualifiedColName()+" = "+status+
@@ -885,7 +885,7 @@ public void scanSimContexts(boolean bUpdateDatabase, KeyValue[] simContextKeys) 
 					stmt = con.createStatement();
 					//KeyValue mathKey = origMathDesc.getKey();
 					String UPDATESTATUS = "UPDATE "+SimContextStat2Table.table.getTableName()+
-										  " SET "+SimContextStat2Table.table.status.getUnqualifiedColName()+" = 'BIOMODEL EXCEPTION: "+cbit.util.TokenMangler.getSQLEscapedString(e.toString())+"'"+
+										  " SET "+SimContextStat2Table.table.status.getUnqualifiedColName()+" = 'BIOMODEL EXCEPTION: "+org.vcell.util.TokenMangler.getSQLEscapedString(e.toString())+"'"+
 										  " WHERE "+ SimContextStat2Table.table.simContextRef.getUnqualifiedColName()+" = "+simContextKeys[i];
 					int numRowsChanged = stmt.executeUpdate(UPDATESTATUS);
 					if (numRowsChanged != 1) {

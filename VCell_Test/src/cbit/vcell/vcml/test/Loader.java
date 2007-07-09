@@ -1,8 +1,4 @@
 package cbit.vcell.vcml.test;
-import cbit.util.DataAccessException;
-import cbit.util.PropertyLoader;
-import cbit.util.document.BioModelInfo;
-import cbit.util.document.MathModelInfo;
 import cbit.vcell.client.database.ClientDocumentManager;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.test.ClientTester;
@@ -22,6 +18,10 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import org.jdom.Document;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.MathModelInfo;
  
 /**
  * Loader utility for external 'ML' files (currently CellML and SBML) in the VC.

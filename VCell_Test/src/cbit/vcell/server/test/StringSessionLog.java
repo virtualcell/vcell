@@ -7,7 +7,8 @@ package cbit.vcell.server.test;
 import java.io.IOException;
 import java.io.ByteArrayOutputStream;
 
-import cbit.util.SessionLog;
+import org.vcell.util.SessionLog;
+
 /**
  * Insert the type's description here.
  * Creation date: (3/8/01 5:54:05 PM)
@@ -21,7 +22,7 @@ public class StringSessionLog implements SessionLog {
  */
 public StringSessionLog(String name) {
 	java.io.PrintStream logPrintStream = new java.io.PrintStream(byteArrayOutputStream);
-	log = new cbit.util.StdoutSessionLog(name,logPrintStream);
+	log = new org.vcell.util.StdoutSessionLog(name,logPrintStream);
 }
 /**
  * This method was created in VisualAge.

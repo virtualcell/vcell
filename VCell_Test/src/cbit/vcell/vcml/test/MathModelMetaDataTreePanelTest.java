@@ -1,11 +1,13 @@
 package cbit.vcell.vcml.test;
-import cbit.util.document.MathModelInfo;
 import cbit.vcell.mathmodel.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
 import java.util.*;
+
+import org.vcell.util.document.MathModelInfo;
+
 import cbit.vcell.mapping.*;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.client.database.DocumentManager;

@@ -2,7 +2,6 @@ package cbit.vcell.vcml.test;
 import cbit.vcell.cellml.CELLMLTags;
 import cbit.vcell.cellml.VCQualCellTranslator;
 import cbit.vcell.cellml.VCQuanCellTranslator;
-import cbit.util.TokenMangler;
 import cbit.vcell.vcml.Translator;
 import cbit.vcell.xml.XMLTags;
 import junit.framework.TestCase;
@@ -12,6 +11,7 @@ import org.jdom.Namespace;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.util.TokenMangler;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

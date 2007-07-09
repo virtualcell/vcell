@@ -17,7 +17,6 @@ import cbit.vcell.simdata.ODESolverResultSetColumnDescription;
 import cbit.vcell.simdata.RowColumnResultSet;
 import cbit.vcell.simulation.*;
 import cbit.sql.DBCacheTable;
-import cbit.util.SessionLog;
 import cbit.sql.ConnectionFactory;
 import java.beans.*;
 import cbit.vcell.biomodel.BioModel;
@@ -34,22 +33,23 @@ import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.math.MathDescription;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import cbit.util.BigString;
-import cbit.util.DataAccessException;
-import cbit.util.PropertyLoader;
-import cbit.util.StdoutSessionLog;
-import cbit.util.document.BioModelInfo;
-import cbit.util.document.KeyValue;
-import cbit.util.document.SimulationVersion;
-import cbit.util.document.User;
-import cbit.util.document.UserInfo;
-import cbit.util.document.VersionFlag;
 import cbit.sql.KeyFactory;
 import java.sql.SQLException;
 
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.util.BigString;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+import org.vcell.util.StdoutSessionLog;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.SimulationVersion;
+import org.vcell.util.document.User;
+import org.vcell.util.document.UserInfo;
+import org.vcell.util.document.VersionFlag;
 
 
 import cbit.vcell.mapping.MappingException;
@@ -70,7 +70,7 @@ public class SBVCVerifier {
 	private DatabaseServerImpl dbServerImpl = null;
 	private cbit.sql.KeyFactory keyFactory = null;
 	private DBCacheTable cacheTable = null;
-	private cbit.util.SessionLog log = null;
+	private org.vcell.util.SessionLog log = null;
 
 /**
  * ResultSetCrawler constructor comment.
@@ -110,7 +110,7 @@ public static void main(java.lang.String[] args) {
 		DatabasePolicySQL.bSilent = true;
 		DatabasePolicySQL.bAllowAdministrativeAccess = true;
 		
-		SessionLog log = new cbit.util.StdoutSessionLog("Admin");
+		SessionLog log = new org.vcell.util.StdoutSessionLog("Admin");
 		cbit.sql.ConnectionFactory conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
 		cbit.sql.KeyFactory keyFactory = new cbit.sql.OracleKeyFactory();
 		DbDriver.setKeyFactory(keyFactory);
@@ -131,7 +131,7 @@ public static void main(java.lang.String[] args) {
 				//}
 			}
 		}
-		User users[] = (User[])cbit.util.BeanUtils.getArray(userList,User.class);
+		User users[] = (User[])org.vcell.util.BeanUtils.getArray(userList,User.class);
 
 		if (args[2].equals("-includeBM") && args.length==4) {
 			File includeFile = new File(args[3]);
@@ -148,7 +148,7 @@ public static void main(java.lang.String[] args) {
 					String token = tokens.nextToken();
 					includeKeyList.add(new KeyValue(token));
 				}
-				sbvcVerifier.scanBioModels((KeyValue[])cbit.util.BeanUtils.getArray(includeKeyList,KeyValue.class));
+				sbvcVerifier.scanBioModels((KeyValue[])org.vcell.util.BeanUtils.getArray(includeKeyList,KeyValue.class));
 			}
 		} else {
 			sbvcVerifier.scanBioModels(users);
@@ -187,7 +187,7 @@ private String printComparisonReport(SimulationComparisonSummary simCompSummary,
 	reportStrBuffer.append("\t\tPassed Variables : \n");
 	// Check if varSummary exists in failed summaries list. If not, simulation passed.
 	for (int m = 0; m < allVarSummaries.length; m++) {
-		if (!cbit.util.BeanUtils.arrayContains(failedVarSummaries, allVarSummaries[m])) {
+		if (!org.vcell.util.BeanUtils.arrayContains(failedVarSummaries, allVarSummaries[m])) {
 			reportStrBuffer.append("\t\t\t"+allVarSummaries[m].toShortString()+"\n");
 		}
 	}
@@ -203,8 +203,8 @@ private String printComparisonReport(SimulationComparisonSummary simCompSummary,
 public void scanBioModels(KeyValue[] bioModelKeys) throws MathException, MappingException, SQLException, DataAccessException, ModelException, ExpressionException {
 
 //	User user = new User("Administrator", new cbit.sql.KeyValue("2"));
-	User user = new User("anu", new cbit.util.document.KeyValue("2302355"));
-	SessionLog userLog = new cbit.util.StdoutSessionLog(user.toString());
+	User user = new User("anu", new org.vcell.util.document.KeyValue("2302355"));
+	SessionLog userLog = new org.vcell.util.StdoutSessionLog(user.toString());
 	for (int i=0;i<bioModelKeys.length;i++){
 		BioModelInfo bioModelInfo = dbServerImpl.getBioModelInfo(user,bioModelKeys[i]);
 		userLog.print("Testing bioModel with key '"+bioModelKeys[i]+"'");
@@ -283,7 +283,7 @@ public void scanBioModels(KeyValue[] bioModelKeys) throws MathException, Mapping
 			        MathMapping mathMapping_1 = new MathMapping(simContexts[k]);
 			        MathDescription mathDesc_1 = mathMapping_1.getMathDescription();
 			        simContexts[k].setMathDescription(mathDesc_1);
-			        SimulationVersion simVersion_1 = new SimulationVersion(new KeyValue("100"), "sim_1_1", simContexts[k].getVersion().getOwner(), new cbit.util.document.GroupAccessNone(), null, new java.math.BigDecimal(1.0), new java.util.Date(), VersionFlag.Archived, "", null);
+			        SimulationVersion simVersion_1 = new SimulationVersion(new KeyValue("100"), "sim_1_1", simContexts[k].getVersion().getOwner(), new org.vcell.util.document.GroupAccessNone(), null, new java.math.BigDecimal(1.0), new java.util.Date(), VersionFlag.Archived, "", null);
 			        Simulation sim_11 = new Simulation(simVersion_1, mathDesc_1);
 			        sim_11.setName("sim_1_1");
 			        sim_11.getSolverTaskDescription().setTimeBounds(new cbit.vcell.simulation.TimeBounds(0, endTime));
@@ -306,7 +306,7 @@ public void scanBioModels(KeyValue[] bioModelKeys) throws MathException, Mapping
 			        MathMapping mathMapping_2 = new MathMapping(simContext_2);
 			        MathDescription mathDesc_2 = mathMapping_2.getMathDescription();
 			        simContext_2.setMathDescription(mathDesc_2);
-			        SimulationVersion simVersion_2 = new SimulationVersion(new KeyValue("100"), "sim_1_2", bioModel_1.getVersion().getOwner(), new cbit.util.document.GroupAccessNone(), null, new java.math.BigDecimal(1.0), new java.util.Date(), VersionFlag.Archived, "", null);
+			        SimulationVersion simVersion_2 = new SimulationVersion(new KeyValue("100"), "sim_1_2", bioModel_1.getVersion().getOwner(), new org.vcell.util.document.GroupAccessNone(), null, new java.math.BigDecimal(1.0), new java.util.Date(), VersionFlag.Archived, "", null);
 			        Simulation sim_12 = new Simulation(simVersion_2, mathDesc_2);
 			        sim_12.setName("sim_1_2");
 			        sim_12.getSolverTaskDescription().setTimeBounds(new cbit.vcell.simulation.TimeBounds(0, endTime));
@@ -368,7 +368,7 @@ public void scanBioModels(User[] users) throws MathException, MappingException, 
 	for (int ii = 0; ii < users.length; ii++){
 		User user = users[ii];
 		BioModelInfo[] bioModelInfos = dbServerImpl.getBioModelInfos(user, false);
-		SessionLog userLog = new cbit.util.StdoutSessionLog(user.toString());
+		SessionLog userLog = new org.vcell.util.StdoutSessionLog(user.toString());
 		userLog.print("Testing User '"+user.getName()+"'");
 
         for (int i = 0; i < bioModelInfos.length; i++) {

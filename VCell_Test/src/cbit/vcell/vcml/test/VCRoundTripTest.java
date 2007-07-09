@@ -19,17 +19,17 @@ import cbit.vcell.vcml.compare.VCMLComparator;
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlReader;
 import cbit.vcell.xml.Xmlproducer;
-import cbit.util.PropertyLoader;
-import cbit.util.SessionLog;
-import cbit.util.StdoutSessionLog;
-import cbit.util.document.KeyValue;
-import cbit.util.document.User;
-import cbit.util.document.UserInfo;
 import cbit.util.xml.XmlUtil;
 
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+import org.vcell.util.StdoutSessionLog;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.UserInfo;
 
 import java.io.FileOutputStream;
 import java.io.FileReader;

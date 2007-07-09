@@ -4,10 +4,11 @@ package cbit.vcell.server.test;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.StdoutSessionLog;
 import cbit.vcell.server.*;
 import java.io.*;
 import java.util.*;
+
+import org.vcell.util.StdoutSessionLog;
 /**
  * Insert the type's description here.
  * Creation date: (3/8/01 3:01:11 PM)

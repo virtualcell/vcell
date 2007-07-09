@@ -1,5 +1,4 @@
 package cbit.vcell.vcml.test;
-import cbit.util.PropertyLoader;
 import cbit.vcell.vcml.Translator;
 import junit.framework.Test;
 import junit.framework.TestFailure;
@@ -9,6 +8,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Enumeration; 
+
+import org.vcell.util.PropertyLoader;
 /**
  * Controller for all the translation testing classes.
  * @author: Rashad Badrawi 

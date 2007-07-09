@@ -1,13 +1,13 @@
 package cbit.vcell.vcml.test;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.document.SimulationVersion;
 
 import cbit.vcell.biomodel.BioModel;
 
 import cbit.vcell.simdata.FunctionColumnDescription;
 import cbit.vcell.math.Variable;
-import cbit.util.PropertyLoader;
-import cbit.util.document.SimulationVersion;
 import cbit.vcell.xml.XmlDialect;
 
 /**
@@ -110,7 +110,7 @@ public static void main(java.lang.String[] args) {
         simContext.setMathDescription(mathDesc);
         SimulationVersion simVersion =
             new SimulationVersion(
-                new cbit.util.document.KeyValue("100"),
+                new org.vcell.util.document.KeyValue("100"),
                 sbmlFile.getName(),
                 null,
                 null,

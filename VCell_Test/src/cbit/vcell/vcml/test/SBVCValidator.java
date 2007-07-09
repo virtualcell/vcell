@@ -24,20 +24,20 @@ import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.math.MathDescription;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import cbit.util.BigString;
-import cbit.util.DataAccessException;
-import cbit.util.PropertyLoader;
-import cbit.util.SessionLog;
-import cbit.util.StdoutSessionLog;
-import cbit.util.document.BioModelInfo;
-import cbit.util.document.KeyValue;
-import cbit.util.document.User;
-import cbit.util.document.UserInfo;
 import cbit.sql.KeyFactory;
 import java.sql.SQLException;
 
 import org.vcell.expression.ExpressionException;
 import org.vcell.sbml.SBMLExporter;
+import org.vcell.util.BigString;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+import org.vcell.util.StdoutSessionLog;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.UserInfo;
 
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.model.ModelException;
@@ -118,7 +118,7 @@ public static void main(java.lang.String[] args) {
 				//}
 			}
 		}
-		User users[] = (User[])cbit.util.BeanUtils.getArray(userList,User.class);
+		User users[] = (User[])org.vcell.util.BeanUtils.getArray(userList,User.class);
 
 		if (args[2].equals("-includeBM") && args.length==4) {
 			File includeFile = new File(args[3]);
@@ -135,7 +135,7 @@ public static void main(java.lang.String[] args) {
 					String token = tokens.nextToken();
 					includeKeyList.add(new KeyValue(token));
 				}
-				sbvcValidator.scanBioModels((KeyValue[])cbit.util.BeanUtils.getArray(includeKeyList,KeyValue.class));
+				sbvcValidator.scanBioModels((KeyValue[])org.vcell.util.BeanUtils.getArray(includeKeyList,KeyValue.class));
 			}
 		} else {
 			sbvcValidator.scanBioModels(users);

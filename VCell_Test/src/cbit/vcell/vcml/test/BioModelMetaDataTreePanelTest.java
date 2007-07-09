@@ -5,7 +5,8 @@ package cbit.vcell.vcml.test;
 ©*/
 import java.util.*;
 
-import cbit.util.document.BioModelInfo;
+import org.vcell.util.document.BioModelInfo;
+
 import cbit.vcell.mapping.*;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.client.database.DocumentManager;
