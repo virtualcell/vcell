@@ -497,7 +497,7 @@ public static StructureAnalyzer.Dependency[] refreshTotalDependancies(RationalMa
 			dependencyList.add(dependency);
 		}
 	}
-	return (StructureAnalyzer.Dependency[])cbit.util.BeanUtils.getArray(dependencyList,StructureAnalyzer.Dependency.class);
+	return (StructureAnalyzer.Dependency[])org.vcell.util.BeanUtils.getArray(dependencyList,StructureAnalyzer.Dependency.class);
 }
 
 

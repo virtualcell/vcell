@@ -85,7 +85,7 @@ public class MathMapping implements ScopedSymbolTable, MathFactory {
 			return nameScopes;
 		}
 		public String getName() {
-			return "MathMapping_for_"+cbit.util.TokenMangler.fixTokenStrict(simContext.getName());
+			return "MathMapping_for_"+org.vcell.util.TokenMangler.fixTokenStrict(simContext.getName());
 		}
 		public org.vcell.expression.NameScope getParent() {
 			//System.out.println("MathMappingNameScope.getParent() returning null ... no parent");
@@ -125,7 +125,7 @@ public class MathMapping implements ScopedSymbolTable, MathFactory {
 			this.fieldVCUnitDefinition = argVCUnitDefinition;
 		}
 
-		public boolean compareEqual(cbit.util.Matchable obj) {
+		public boolean compareEqual(org.vcell.util.Matchable obj) {
 			if (!(obj instanceof MathMappingParameter)){
 				return false;
 			}
@@ -246,7 +246,7 @@ MathMapping.MathMappingParameter addMathMappingParameter(String name, IExpressio
 		return previousParameter;
 	}
 	expression.bindExpression(this);
-	MathMapping.MathMappingParameter newParameters[] = (MathMapping.MathMappingParameter[])cbit.util.BeanUtils.addElement(fieldMathMappingParameters,newParameter);
+	MathMapping.MathMappingParameter newParameters[] = (MathMapping.MathMappingParameter[])org.vcell.util.BeanUtils.addElement(fieldMathMappingParameters,newParameter);
 	setMathMapppingParameters(newParameters);
 	return newParameter;
 }
@@ -400,26 +400,26 @@ protected IExpression getIdentifierSubstitutions(IExpression origExp, VCUnitDefi
 		expUnitDef = VCUnitEvaluator.getUnitDefinition(origExp);
 		if (desiredExpUnitDef == null){
 			System.out.println("...........exp='"+origExp.infix()+"', desiredUnits are null");
-			issueList.add(new cbit.util.Issue(origExp, "Units","expected=[null], observed=["+expUnitDef.getSymbol()+"]",cbit.util.Issue.SEVERITY_WARNING));
+			issueList.add(new org.vcell.util.Issue(origExp, "Units","expected=[null], observed=["+expUnitDef.getSymbol()+"]",org.vcell.util.Issue.SEVERITY_WARNING));
 		}else if (expUnitDef == null){
 			System.out.println("...........exp='"+origExp.infix()+"', evaluated Units are null");
-			issueList.add(new cbit.util.Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=[null]",cbit.util.Issue.SEVERITY_WARNING));
+			issueList.add(new org.vcell.util.Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=[null]",org.vcell.util.Issue.SEVERITY_WARNING));
 		}else if (desiredExpUnitDef.isTBD()){
 			System.out.println("...........exp='"+origExp.infix()+"', desiredUnits are ["+desiredExpUnitDef.getSymbol()+"] and expression units are ["+expUnitDef.getSymbol()+"]");
-			issueList.add(new cbit.util.Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+origExp.infix(),cbit.util.Issue.SEVERITY_WARNING));
+			issueList.add(new org.vcell.util.Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+origExp.infix(),org.vcell.util.Issue.SEVERITY_WARNING));
 		}else if (!desiredExpUnitDef.compareEqual(expUnitDef) && !expUnitDef.isTBD()){
 			System.out.println("...........exp='"+origExp.infix()+"', desiredUnits are ["+desiredExpUnitDef.getSymbol()+"] and expression units are ["+expUnitDef.getSymbol()+"]");
-			issueList.add(new cbit.util.Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+origExp.infix(),cbit.util.Issue.SEVERITY_WARNING));
+			issueList.add(new org.vcell.util.Issue(origExp, "Units","expected=["+desiredExpUnitDef.getSymbol()+"], observed=["+expUnitDef.getSymbol()+"] for exp = "+origExp.infix(),org.vcell.util.Issue.SEVERITY_WARNING));
 		}
 	}catch (VCUnitException e){
 		System.out.println(".........exp='"+origExp.infix()+"' exception='"+e.getMessage()+"'");
-		issueList.add(new cbit.util.Issue(origExp, "Units","expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),cbit.util.Issue.SEVERITY_WARNING));
+		issueList.add(new org.vcell.util.Issue(origExp, "Units","expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),org.vcell.util.Issue.SEVERITY_WARNING));
 	}catch (ExpressionException e){
 		System.out.println(".........exp='"+origExp.infix()+"' exception='"+e.getMessage()+"'");
-		issueList.add(new cbit.util.Issue(origExp, "Units","expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),cbit.util.Issue.SEVERITY_WARNING));
+		issueList.add(new org.vcell.util.Issue(origExp, "Units","expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),org.vcell.util.Issue.SEVERITY_WARNING));
 	}catch (Exception e){
 		e.printStackTrace(System.out);
-		issueList.add(new cbit.util.Issue(origExp, "Units","expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),cbit.util.Issue.SEVERITY_WARNING));
+		issueList.add(new org.vcell.util.Issue(origExp, "Units","expected=["+((desiredExpUnitDef!=null)?(desiredExpUnitDef.getSymbol()):("null"))+"], exception="+e.getMessage(),org.vcell.util.Issue.SEVERITY_WARNING));
 	}
 	IExpression newExp = ExpressionFactory.createExpression(origExp);
 	for (int i=0;i<symbols.length;i++){
@@ -467,8 +467,8 @@ private static IExpression getInsideFluxCorrectionExpression(SimulationContext s
  * Creation date: (11/8/2004 3:36:31 PM)
  * @return cbit.util.Issue
  */
-public cbit.util.Issue[] getIssues() {
-	return (cbit.util.Issue[])cbit.util.BeanUtils.getArray(issueList,cbit.util.Issue.class);
+public org.vcell.util.Issue[] getIssues() {
+	return (org.vcell.util.Issue[])org.vcell.util.BeanUtils.getArray(issueList,org.vcell.util.Issue.class);
 }
 
 
@@ -1067,7 +1067,7 @@ private void refreshKFluxParameters() throws ExpressionException {
 	//
 	for (int i = 0; i < newMathMappingParameters.length; i++){
 		if (newMathMappingParameters[i].getRole() == PARAMETER_ROLE_KFLUX){
-			newMathMappingParameters = (MathMappingParameter[])cbit.util.BeanUtils.removeElement(newMathMappingParameters,newMathMappingParameters[i]);
+			newMathMappingParameters = (MathMappingParameter[])org.vcell.util.BeanUtils.removeElement(newMathMappingParameters,newMathMappingParameters[i]);
 		}		
 	}
 	
@@ -1087,7 +1087,7 @@ private void refreshKFluxParameters() throws ExpressionException {
 			Feature insideFeature = membraneMapping.getMembrane().getInsideFeature();
 			String insideName = "KFlux_"+membraneMapping.getNameScope().getName()+"_"+insideFeature.getNameScope().getName();
 			KFluxParameter insideKFluxParameter = new KFluxParameter(insideName,insideCorrectionExp,VCUnitDefinition.UNIT_per_um,membraneMapping,insideFeature);
-			newMathMappingParameters = (MathMappingParameter[])cbit.util.BeanUtils.addElement(newMathMappingParameters,insideKFluxParameter);
+			newMathMappingParameters = (MathMappingParameter[])org.vcell.util.BeanUtils.addElement(newMathMappingParameters,insideKFluxParameter);
 
 			//
 			// add "outside" flux correction
@@ -1097,7 +1097,7 @@ private void refreshKFluxParameters() throws ExpressionException {
 			Feature outsideFeature = membraneMapping.getMembrane().getOutsideFeature();
 			String outsideName = "KFlux_"+membraneMapping.getNameScope().getName()+"_"+outsideFeature.getNameScope().getName();
 			KFluxParameter outsideKFluxParameter = new KFluxParameter(outsideName,outsideCorrectionExp,VCUnitDefinition.UNIT_per_um,membraneMapping,outsideFeature);
-			newMathMappingParameters = (MathMappingParameter[])cbit.util.BeanUtils.addElement(newMathMappingParameters,outsideKFluxParameter);
+			newMathMappingParameters = (MathMappingParameter[])org.vcell.util.BeanUtils.addElement(newMathMappingParameters,outsideKFluxParameter);
 		}
 	}
 	try {
@@ -2196,7 +2196,7 @@ private void refreshVariables() throws MappingException {
  * @param mathMappingParameter cbit.vcell.mapping.MathMapping.MathMappingParameter
  */
 void removeMathMappingParameter(MathMapping.MathMappingParameter mathMappingParameter) throws java.beans.PropertyVetoException {
-	MathMappingParameter newMathMappingParameters[] = (MathMappingParameter[])cbit.util.BeanUtils.removeElement(fieldMathMappingParameters,mathMappingParameter);
+	MathMappingParameter newMathMappingParameters[] = (MathMappingParameter[])org.vcell.util.BeanUtils.removeElement(fieldMathMappingParameters,mathMappingParameter);
 	setMathMapppingParameters(newMathMappingParameters);
 }
 

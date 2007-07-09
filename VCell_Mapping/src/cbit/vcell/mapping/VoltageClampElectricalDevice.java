@@ -49,7 +49,7 @@ public VoltageClampElectricalDevice(cbit.vcell.modelapp.VoltageClampStimulus arg
 		int role = stimulusParameters[i].getRole();
 		if (role==ElectricalStimulus.ROLE_UserDefined){
 			ElectricalDeviceParameter newParam = new ElectricalDeviceParameter(stimulusParameters[i].getName(),ExpressionFactory.createExpression(stimulusParameters[i].getExpression()),ROLE_UserDefined,stimulusParameters[i].getUnitDefinition());
-			parameters = (ElectricalDeviceParameter[])cbit.util.BeanUtils.addElement(parameters,newParam);
+			parameters = (ElectricalDeviceParameter[])org.vcell.util.BeanUtils.addElement(parameters,newParam);
 		}
 	}
 	
