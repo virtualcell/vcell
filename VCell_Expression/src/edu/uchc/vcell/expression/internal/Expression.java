@@ -18,13 +18,13 @@ import org.vcell.expression.NameScope;
 import org.vcell.expression.ParserException;
 import org.vcell.expression.SymbolTable;
 import org.vcell.expression.SymbolTableEntry;
+import org.vcell.util.Matchable;
+import org.vcell.util.document.FieldDataIdentifierSpec;
 
-import cbit.util.Matchable;
-import cbit.util.document.FieldDataIdentifierSpec;
 
 /**
  */
-public class Expression implements java.io.Serializable, cbit.util.Matchable, IExpression {
+public class Expression implements java.io.Serializable, org.vcell.util.Matchable, IExpression {
 
 //   private String expString = null;
 	private SimpleNode rootNode = null;
@@ -180,7 +180,7 @@ bindCount++;/////////////////
  * This method was created in VisualAge.
  * @param obj java.lang.Object
  * @return boolean
- * @see cbit.util.Matchable#compareEqual(Matchable)
+ * @see org.vcell.util.Matchable#compareEqual(Matchable)
  */
 public boolean compareEqual(Matchable obj) {
 	if (!(obj instanceof Expression)){

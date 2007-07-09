@@ -16,8 +16,8 @@ import org.vcell.expression.FunctionDomainException;
 import org.vcell.expression.NameScope;
 import org.vcell.expression.SymbolTable;
 import org.vcell.expression.ExpressionTerm.Operator;
+import org.vcell.util.document.FieldDataIdentifierSpec;
 
-import cbit.util.document.FieldDataIdentifierSpec;
 import cbit.util.xml.MathMLTags;
 
 /**

@@ -11,8 +11,8 @@ import org.vcell.expression.ExpressionException;
 import org.vcell.expression.NameScope;
 import org.vcell.expression.SymbolTable;
 import org.vcell.expression.SymbolTableEntry;
+import org.vcell.util.document.FieldDataIdentifierSpec;
 
-import cbit.util.document.FieldDataIdentifierSpec;
 
 
 /**

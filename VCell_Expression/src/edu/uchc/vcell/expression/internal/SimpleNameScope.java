@@ -7,8 +7,8 @@ import java.util.Arrays;
 import org.vcell.expression.AbstractNameScope;
 import org.vcell.expression.NameScope;
 import org.vcell.expression.ScopedSymbolTable;
+import org.vcell.util.TokenMangler;
 
-import cbit.util.TokenMangler;
 
 /**
  * Insert the type's description here.

@@ -347,11 +347,11 @@ public String infixString(int lang, NameScope nameScope) {
 	if (lang == LANGUAGE_DEFAULT || lang == LANGUAGE_C){
 		return idName;
 	}else if (lang == LANGUAGE_MATLAB){
-		return cbit.util.TokenMangler.getEscapedTokenMatlab(idName);
+		return org.vcell.util.TokenMangler.getEscapedTokenMatlab(idName);
 	}else if (lang == LANGUAGE_JSCL) {
 		return ExpressionUtilities.getEscapedTokenJSCL(idName);
 	}else if (lang == LANGUAGE_ECLiPSe) {
-		return cbit.util.TokenMangler.getEscapedTokenECLiPSe(idName);
+		return org.vcell.util.TokenMangler.getEscapedTokenECLiPSe(idName);
 	}else{
 		throw new RuntimeException("Lanaguage '"+lang+" not supported");
 	}
