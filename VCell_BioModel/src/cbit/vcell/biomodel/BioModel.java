@@ -8,12 +8,13 @@ import cbit.vcell.math.MathDescription;
 import java.beans.PropertyVetoException;
 import java.util.Vector;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.document.BioModelChildSummary;
+import org.vcell.util.document.Version;
+
 
 import cbit.vcell.simulation.Simulation;
-import cbit.util.BeanUtils;
-import cbit.util.ObjectNotFoundException;
-import cbit.util.document.BioModelChildSummary;
-import cbit.util.document.Version;
 import cbit.vcell.model.VCellNames;
 import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.modelapp.SimulationContextOwner;
@@ -22,8 +23,8 @@ import cbit.vcell.modelapp.SimulationContextOwner;
  * Creation date: (10/17/00 3:12:16 PM)
  * @author: 
  */
-public class BioModel implements cbit.util.document.VCDocument, SimulationContextOwner, cbit.util.Matchable, java.beans.VetoableChangeListener, java.beans.PropertyChangeListener {
-	private cbit.util.document.Version fieldVersion = null;
+public class BioModel implements org.vcell.util.document.VCDocument, SimulationContextOwner, org.vcell.util.Matchable, java.beans.VetoableChangeListener, java.beans.PropertyChangeListener {
+	private org.vcell.util.document.Version fieldVersion = null;
 	private java.lang.String fieldName = new String("NoName");
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
@@ -179,24 +180,24 @@ public void clearVersion(){
  * @return boolean
  * @param obj cbit.util.Matchable
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (!(obj instanceof BioModel)){
 		return false;
 	}
 	BioModel bioModel = (BioModel)obj;
-	if (!cbit.util.Compare.isEqualOrNull(getName(),bioModel.getName())){
+	if (!org.vcell.util.Compare.isEqualOrNull(getName(),bioModel.getName())){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqualOrNull(getDescription(),bioModel.getDescription())){
+	if (!org.vcell.util.Compare.isEqualOrNull(getDescription(),bioModel.getDescription())){
 		return false;
 	}
 	if (!getModel().compareEqual(bioModel.getModel())){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqualOrNull(getSimulationContexts(),bioModel.getSimulationContexts())){
+	if (!org.vcell.util.Compare.isEqualOrNull(getSimulationContexts(),bioModel.getSimulationContexts())){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqualOrNull(getSimulations(),bioModel.getSimulations())){
+	if (!org.vcell.util.Compare.isEqualOrNull(getSimulations(),bioModel.getSimulations())){
 		return false;
 	}
 
@@ -532,7 +533,7 @@ public Simulation[] getSimulations(SimulationContext simulationContext) {
  * Gets the version property (cbit.sql.Version) value.
  * @return The version property value.
  */
-public cbit.util.document.Version getVersion() {
+public org.vcell.util.document.Version getVersion() {
 	return fieldVersion;
 }
 
@@ -816,7 +817,7 @@ public void setSimulations(cbit.vcell.simulation.Simulation[] simulations) throw
  * Creation date: (11/14/00 3:49:12 PM)
  * @param version cbit.sql.Version
  */
-private void setVersion(cbit.util.document.Version version) throws PropertyVetoException {
+private void setVersion(org.vcell.util.document.Version version) throws PropertyVetoException {
 	this.fieldVersion = version;
 	if (version != null){
 		setName(version.getName());
