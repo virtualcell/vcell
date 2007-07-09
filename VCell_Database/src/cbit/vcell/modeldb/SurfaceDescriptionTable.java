@@ -2,12 +2,13 @@ package cbit.vcell.modeldb;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.ISize;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
+
 import cbit.sql.Field;
 import cbit.sql.Table;
-import cbit.util.DataAccessException;
-import cbit.util.ISize;
-import cbit.util.SessionLog;
-import cbit.util.document.KeyValue;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 /**
  * This type was created in VisualAge.
@@ -47,7 +48,7 @@ public String getSQLValueList(KeyValue key, GeometrySurfaceDescription geometryS
 	buffer.append("(");
 	buffer.append(key + ",");
 	buffer.append(geomKey + ",");
-	cbit.util.ISize sampleSize = geometrySurfaceDescription.getVolumeSampleSize();
+	org.vcell.util.ISize sampleSize = geometrySurfaceDescription.getVolumeSampleSize();
 	if (sampleSize==null){
 		throw new DataAccessException("sampleSize is null in GeometrySurfaceDescription, cannot save");
 	}

@@ -3,10 +3,11 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.User;
+
 import cbit.image.VCImageInfo;
-import cbit.util.document.BioModelInfo;
-import cbit.util.document.MathModelInfo;
-import cbit.util.document.User;
 import cbit.vcell.geometry.GeometryInfo;
 
 /**
@@ -44,7 +45,7 @@ public VCInfoContainer(User argUser, VCImageInfo[] newVcImageInfos, GeometryInfo
  * Creation date: (9/26/2003 12:43:24 PM)
  * @return cbit.vcell.biomodel.BioModelInfo[]
  */
-public cbit.util.document.BioModelInfo[] getBioModelInfos() {
+public org.vcell.util.document.BioModelInfo[] getBioModelInfos() {
 	if (bioModelInfos == null) {
 		inflate();
 	}
@@ -70,7 +71,7 @@ public cbit.vcell.geometry.GeometryInfo[] getGeometryInfos() {
  * Creation date: (9/26/2003 12:43:24 PM)
  * @return cbit.vcell.mathmodel.MathModelInfo[]
  */
-public cbit.util.document.MathModelInfo[] getMathModelInfos() {
+public org.vcell.util.document.MathModelInfo[] getMathModelInfos() {
 	if (mathModelInfos == null) {
 		inflate();
 	}
@@ -83,7 +84,7 @@ public cbit.util.document.MathModelInfo[] getMathModelInfos() {
  * Creation date: (9/24/2003 12:50:51 PM)
  * @return cbit.vcell.server.User
  */
-public cbit.util.document.User getUser() {
+public org.vcell.util.document.User getUser() {
 	if (user == null) {
 		inflate();
 	}
@@ -117,7 +118,7 @@ private void inflate() {
 
 	try {
 		//Object objArray[] =  { user, bioModelInfos, mathModelInfos, geometryInfos, vcImageInfos};
-		Object objArray[] = (Object[])cbit.util.BeanUtils.fromCompressedSerialized(compressedBytes);
+		Object objArray[] = (Object[])org.vcell.util.BeanUtils.fromCompressedSerialized(compressedBytes);
 		user = (User)objArray[0];
 		bioModelInfos = (BioModelInfo[])objArray[1];
 		mathModelInfos = (MathModelInfo[])objArray[2];	
@@ -156,7 +157,7 @@ private void writeObject(ObjectOutputStream s) throws IOException {
 	Object objArray[] =  { user, bioModelInfos, mathModelInfos, geometryInfos, vcImageInfos};
 
 	if (compressedBytes == null) {
-		compressedBytes = cbit.util.BeanUtils.toCompressedSerialized(objArray);
+		compressedBytes = org.vcell.util.BeanUtils.toCompressedSerialized(objArray);
 	}
 	s.writeInt(compressedBytes.length);
 	s.write(compressedBytes);

@@ -44,7 +44,7 @@ public DBSpeciesTable() {
  * @param key KeyValue
  * @param compound Compound
  */
-public String getSQLValueList(cbit.util.document.KeyValue key, DBFormalSpecies dbfs) {
+public String getSQLValueList(org.vcell.util.document.KeyValue key, DBFormalSpecies dbfs) {
 
     StringBuffer buffer = new StringBuffer();
     buffer.append("(");

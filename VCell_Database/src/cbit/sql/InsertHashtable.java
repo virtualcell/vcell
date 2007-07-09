@@ -6,8 +6,9 @@ package cbit.sql;
 ©*/
 import java.util.Hashtable;
 
-import cbit.util.ObjectReferenceWrapper;
-import cbit.util.document.KeyValue;
+import org.vcell.util.ObjectReferenceWrapper;
+import org.vcell.util.document.KeyValue;
+
 /**
  * Used for internal references within (or between) Versionable objects
  * Versionable objects themselves are not stored here

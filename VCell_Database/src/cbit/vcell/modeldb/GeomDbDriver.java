@@ -11,6 +11,16 @@ import java.sql.Statement;
 import java.util.Vector;
 
 import org.vcell.expression.ExpressionException;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.DependencyException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.PermissionException;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.Versionable;
+import org.vcell.util.document.VersionableType;
 
 import cbit.image.BrowseImage;
 import cbit.image.ImageException;
@@ -22,10 +32,6 @@ import cbit.sql.InsertHashtable;
 import cbit.sql.RecordChangedException;
 import cbit.sql.Table;
 import cbit.sql.VersionTable;
-import cbit.util.DataAccessException;
-import cbit.util.ObjectNotFoundException;
-import cbit.util.PermissionException;
-import cbit.util.SessionLog;
 import cbit.vcell.geometry.Curve;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
@@ -34,12 +40,6 @@ import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
-import cbit.util.DependencyException;
-import cbit.util.document.KeyValue;
-import cbit.util.document.User;
-import cbit.util.document.Version;
-import cbit.util.document.Versionable;
-import cbit.util.document.VersionableType;
 //import cbit.util.VersionFlag;
 //import cbit.util.Version;
 /**
@@ -102,7 +102,7 @@ private void deleteGeometrySQL(Connection con, User user,KeyValue geomKey) throw
 /**
  * only the owner can delete a Model
  */
-private void deleteVCImageSQL(Connection con, User user, KeyValue imageKey) throws SQLException, DataAccessException,cbit.util.DependencyException {
+private void deleteVCImageSQL(Connection con, User user, KeyValue imageKey) throws SQLException, DataAccessException,org.vcell.util.DependencyException {
 	String sql;
 
 	//Check if any geometries use this image, if so Do Not delete image and return error
@@ -174,7 +174,7 @@ private KeyValue getExtentRefKeyFromGeometry(Connection con, KeyValue geomKey) t
 		if (rset.next()) {
 			return new KeyValue(rset.getBigDecimal(geomTable.extentRef.toString()));
 		}else{
-			throw new cbit.util.ObjectNotFoundException("getSizeKeyFromGeometry for Image id="+geomKey+" not found");
+			throw new org.vcell.util.ObjectNotFoundException("getSizeKeyFromGeometry for Image id="+geomKey+" not found");
 		}
  	}finally {
 		stmt.close(); // Release resources include resultset
@@ -208,7 +208,7 @@ private KeyValue getExtentRefKeyFromImage(Connection con, KeyValue imageKey) thr
 		if (rset.next()) {
 			return new KeyValue(rset.getBigDecimal(imageTable.extentRef.toString()));
 		}else{
-			throw new cbit.util.ObjectNotFoundException("getSizeKeyFromImage for Image id="+imageKey+" not found");
+			throw new org.vcell.util.ObjectNotFoundException("getSizeKeyFromImage for Image id="+imageKey+" not found");
 		}
  	}finally {
 		stmt.close(); // Release resources include resultset
@@ -279,7 +279,7 @@ private cbit.vcell.geometry.Geometry getGeometry(Connection con, User user, KeyV
 		if (rset.next()) {
 			geom = getGeometry(con, user,rset);
 		}else{
-			throw new cbit.util.ObjectNotFoundException("Geometry id="+geomKey+" not found for user '"+user+"'");
+			throw new org.vcell.util.ObjectNotFoundException("Geometry id="+geomKey+" not found for user '"+user+"'");
 		}
   	}finally{
 		stmt.close(); // Release resources include resultset
@@ -385,7 +385,7 @@ private KeyValue getImageRefKeyFromGeometry(Connection con, KeyValue geomKey) th
 			}
 			return new KeyValue(iR);
 		}else{
-			throw new cbit.util.ObjectNotFoundException("getSizeKeyFromGeometry for Image id="+geomKey+" not found");
+			throw new org.vcell.util.ObjectNotFoundException("getSizeKeyFromGeometry for Image id="+geomKey+" not found");
 		}
  	}finally {
 		stmt.close(); // Release resources include resultset
@@ -434,7 +434,7 @@ private void getImageRegionsForVCImage(Connection con, VCImage vcImage) throws S
 			}
 			vcpcVector.addElement(vcpc);
 		}
-		VCPixelClass vcPixelClasses[] = (VCPixelClass[])cbit.util.BeanUtils.getArray(vcpcVector,VCPixelClass.class);
+		VCPixelClass vcPixelClasses[] = (VCPixelClass[])org.vcell.util.BeanUtils.getArray(vcpcVector,VCPixelClass.class);
 		vcImage.setPixelClasses(vcPixelClasses);
 		
 	} catch (PropertyVetoException e) {
@@ -656,7 +656,7 @@ System.out.println(sql);
 			VolumeGeometricRegion volumeRegion = geoRegionTable.getVolumeRegion(rset,geom,log);
 			regionList.add(volumeRegion);
 		}
-		VolumeGeometricRegion volumeRegions[] = (VolumeGeometricRegion[])cbit.util.BeanUtils.getArray(regionList,VolumeGeometricRegion.class);
+		VolumeGeometricRegion volumeRegions[] = (VolumeGeometricRegion[])org.vcell.util.BeanUtils.getArray(regionList,VolumeGeometricRegion.class);
 		
 		//
 		// read surface regions from GeometricRegionTable
@@ -683,7 +683,7 @@ System.out.println(sql);
 		//
 		// set regions onto the geometrySurfaceDescription
 		//
-		GeometricRegion regions[] = (GeometricRegion[])cbit.util.BeanUtils.getArray(regionList,GeometricRegion.class);
+		GeometricRegion regions[] = (GeometricRegion[])org.vcell.util.BeanUtils.getArray(regionList,GeometricRegion.class);
 		geom.getGeometrySurfaceDescription().setGeometricRegions(regions);
 		
 		
@@ -725,7 +725,7 @@ private cbit.image.VCImage getVCImage(Connection con, User user, KeyValue imageK
 			vcImage = imageTable.getImage(rset,con,log,imageDataTable);
 			getImageRegionsForVCImage(con, vcImage);
 		}else{
-			throw new cbit.util.ObjectNotFoundException("Image id="+imageKey+" not found for user '"+user+"'");
+			throw new org.vcell.util.ObjectNotFoundException("Image id="+imageKey+" not found for user '"+user+"'");
 		}
  	}finally {
 		stmt.close(); // Release resources include resultset

@@ -7,11 +7,12 @@ package cbit.vcell.modeldb;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
+
 import cbit.image.VCPixelClass;
 import cbit.sql.Field;
 import cbit.sql.Table;
-import cbit.util.SessionLog;
-import cbit.util.document.KeyValue;
 /**
  * This type was created in VisualAge.
  */

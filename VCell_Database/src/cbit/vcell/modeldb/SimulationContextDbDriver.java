@@ -12,24 +12,24 @@ import org.vcell.expression.IExpression;
 import org.vcell.modelapp.Activator;
 import org.vcell.modelapp.analysis.IAnalysisTask;
 import org.vcell.modelapp.analysis.IAnalysisTaskFactory;
+import org.vcell.util.Coordinate;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.DependencyException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.PermissionException;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionFlag;
+import org.vcell.util.document.Versionable;
+import org.vcell.util.document.VersionableType;
 
 import cbit.sql.DBCacheTable;
 import cbit.sql.Field;
 import cbit.sql.InsertHashtable;
 import cbit.sql.RecordChangedException;
 import cbit.sql.Table;
-import cbit.util.Coordinate;
-import cbit.util.DataAccessException;
-import cbit.util.DependencyException;
-import cbit.util.ObjectNotFoundException;
-import cbit.util.PermissionException;
-import cbit.util.SessionLog;
-import cbit.util.document.KeyValue;
-import cbit.util.document.User;
-import cbit.util.document.Version;
-import cbit.util.document.VersionFlag;
-import cbit.util.document.Versionable;
-import cbit.util.document.VersionableType;
 import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Model;
@@ -302,12 +302,12 @@ private void assignStimuliSQL(Connection con,KeyValue simContextKey, SimulationC
 				double posY = rset.getBigDecimal(stimulusTable.positionY.toString()).doubleValue();
 				double posZ = rset.getBigDecimal(stimulusTable.positionZ.toString()).doubleValue();
 
-				cbit.util.CommentStringTokenizer paramsCST = null;
+				org.vcell.util.CommentStringTokenizer paramsCST = null;
 				String paramsS = rset.getString(StimulusTable.table.params.toString());
 				if(!rset.wasNull()){
 					paramsCST =
-						new cbit.util.CommentStringTokenizer(
-							cbit.util.TokenMangler.getSQLRestoredString(paramsS)
+						new org.vcell.util.CommentStringTokenizer(
+							org.vcell.util.TokenMangler.getSQLRestoredString(paramsS)
 						);
 				}
 				
@@ -321,13 +321,13 @@ private void assignStimuliSQL(Connection con,KeyValue simContextKey, SimulationC
 					Electrode electrode = new Electrode((Feature)theStructure,new Coordinate(posX,posY,posZ));
 					CurrentClampStimulus stimulus = new CurrentClampStimulus(electrode,name,exp,simContext);
 					stimulus.parameterVCMLSet(paramsCST);
-					ElectricalStimulus newStimuli[] = (ElectricalStimulus[])cbit.util.BeanUtils.addElement(simContext.getElectricalStimuli(),stimulus);
+					ElectricalStimulus newStimuli[] = (ElectricalStimulus[])org.vcell.util.BeanUtils.addElement(simContext.getElectricalStimuli(),stimulus);
 					simContext.setElectricalStimuli(newStimuli);
 				}else if (stimulusType == StimulusTable.VOLTAGE_CLAMP_STIMULUS){
 					Electrode electrode = new Electrode((Feature)theStructure,new Coordinate(posX,posY,posZ));
 					VoltageClampStimulus stimulus = new VoltageClampStimulus(electrode,name,exp,simContext);
 					stimulus.parameterVCMLSet(paramsCST);
-					ElectricalStimulus newStimuli[] = (ElectricalStimulus[])cbit.util.BeanUtils.addElement(simContext.getElectricalStimuli(),stimulus);
+					ElectricalStimulus newStimuli[] = (ElectricalStimulus[])org.vcell.util.BeanUtils.addElement(simContext.getElectricalStimuli(),stimulus);
 					simContext.setElectricalStimuli(newStimuli);
 				}else{
 					throw new DataAccessException("unknown stimulusType <"+stimulusType+">");
@@ -524,9 +524,9 @@ private void deleteSimContextSQL(Connection con,User user, KeyValue simContextKe
 	try {
 		mathDescDB.deleteVersionable(con,user,VersionableType.MathDescription,mathKey);
 		log.print("SimulationContextDbDriver.delete("+simContextKey+") deletion of MathDescription("+mathKey+") succeeded");
-	}catch (cbit.util.PermissionException e){
+	}catch (org.vcell.util.PermissionException e){
 		log.alert("SimulationContextDbDriver.delete("+simContextKey+") deletion of MathDescription("+mathKey+") failed: "+e.getMessage());
-	}catch (cbit.util.DependencyException e){
+	}catch (org.vcell.util.DependencyException e){
 		log.alert("SimulationContextDbDriver.delete("+simContextKey+") deletion of MathDescription("+mathKey+") failed: "+e.getMessage());
 	}
 }

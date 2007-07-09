@@ -4,9 +4,10 @@ package cbit.vcell.modeldb;
  * All rights reserved.
 ©*/
 
-import cbit.util.DataAccessException;
-import cbit.util.document.KeyValue;
-import cbit.util.document.User;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.sql.*;
 /**
  * This type was created in VisualAge.

@@ -8,14 +8,15 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionableType;
+
 import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.sql.VersionTable;
-import cbit.util.SessionLog;
-import cbit.util.document.KeyValue;
-import cbit.util.document.User;
-import cbit.util.document.Version;
-import cbit.util.document.VersionableType;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.modelapp.SimulationContext;
 
@@ -50,7 +51,7 @@ private SimContextTable() {
  * @param rset java.sql.ResultSet
  * @param log cbit.vcell.server.SessionLog
  */
-public cbit.util.document.VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,cbit.util.DataAccessException {
+public org.vcell.util.document.VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,org.vcell.util.DataAccessException {
 
 	KeyValue mathRef = null;
 	java.math.BigDecimal mathRefValue = rset.getBigDecimal(SimContextTable.table.mathRef.toString());
@@ -100,7 +101,7 @@ public String getInfoSQL(User user,String extraConditions,String special) {
  */
 public SimulationContext getSimContext(	Connection con,User user,ResultSet rset,SessionLog log,
 										GeomDbDriver geomDB,ModelDbDriver modelDB,MathDescriptionDbDriver mathDB) 
-							throws SQLException,cbit.util.DataAccessException, java.beans.PropertyVetoException {
+							throws SQLException,org.vcell.util.DataAccessException, java.beans.PropertyVetoException {
 			
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
 	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);

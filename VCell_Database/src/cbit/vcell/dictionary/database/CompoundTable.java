@@ -2,10 +2,11 @@ package cbit.vcell.dictionary.database;
 
 import java.util.Vector;
 
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
+
 import cbit.sql.Field;
 import cbit.sql.Table;
-import cbit.util.SessionLog;
-import cbit.util.document.KeyValue;
 import cbit.vcell.dictionary.BoundCompound;
 import cbit.vcell.dictionary.CompoundInfo;
 import cbit.vcell.dictionary.DBFormalSpecies;
@@ -51,8 +52,8 @@ public DBFormalSpecies[] getCompounds(java.sql.ResultSet rset, SessionLog log,bo
 	String currentFormula = null;
 	String currentKeggID = null;
 	String currentPreferred = null;
-	cbit.util.document.KeyValue currentCompoundID = null;
-	cbit.util.document.KeyValue currentDBSpeciesID = null;
+	org.vcell.util.document.KeyValue currentCompoundID = null;
+	org.vcell.util.document.KeyValue currentDBSpeciesID = null;
 	
 	while(rset.next() || rset.isAfterLast()){
 			
@@ -87,13 +88,13 @@ public DBFormalSpecies[] getCompounds(java.sql.ResultSet rset, SessionLog log,bo
 			currentKeggID = 	rset.getString(CompoundTable.table.keggID.toString());
 			currentCASID = 		rset.getString(CompoundTable.table.casID.toString());
 			currentFormula = 	rset.getString(CompoundTable.table.formula.toString());
-				currentFormula = 	(currentFormula != null ?cbit.util.TokenMangler.getSQLRestoredString(currentFormula):null);
+				currentFormula = 	(currentFormula != null ?org.vcell.util.TokenMangler.getSQLRestoredString(currentFormula):null);
 			if(createBound){
 				currentDBSpeciesID =	new KeyValue(rset.getBigDecimal("dbspecies_id"));
 			}
 		}
 		currentPreferred = 	rset.getString(CompoundAliasTable.table.preferred.toString());
-		currentAliasName = 	cbit.util.TokenMangler.getSQLRestoredString(rset.getString(CompoundAliasTable.table.name.toString()));
+		currentAliasName = 	org.vcell.util.TokenMangler.getSQLRestoredString(rset.getString(CompoundAliasTable.table.name.toString()));
 		if(currentPreferred.compareToIgnoreCase("T") == 0){
 			aliasNames.add(0,currentAliasName);
 		}else{

@@ -11,8 +11,9 @@ import java.sql.SQLException;
 
 import javax.swing.JFrame;
 
-import cbit.util.SessionLog;
-import cbit.util.StdoutSessionLog;
+import org.vcell.util.SessionLog;
+import org.vcell.util.StdoutSessionLog;
+
 /**
  * This type was created in VisualAge.
  */
@@ -194,7 +195,7 @@ public static void main(java.lang.String[] args) {
         SessionLog log = new StdoutSessionLog("CompareDatabaseSchema");
         ConnectionFactory conFactory = null;
         KeyFactory keyFactory = null;
-        new cbit.util.PropertyLoader();
+        new org.vcell.util.PropertyLoader();
 
         //
         // get appropriate database factory objects

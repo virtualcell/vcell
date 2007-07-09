@@ -7,15 +7,16 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionInfo;
+
 import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.sql.VersionTable;
-import cbit.util.DataAccessException;
-import cbit.util.SessionLog;
-import cbit.util.document.KeyValue;
-import cbit.util.document.User;
-import cbit.util.document.Version;
-import cbit.util.document.VersionInfo;
 import cbit.vcell.math.MathDescription;
 /**
  * This type was created in VisualAge.
@@ -47,7 +48,7 @@ private MathDescTable() {
  * @param rset java.sql.ResultSet
  * @param log cbit.vcell.server.SessionLog
  */
-public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,cbit.util.DataAccessException {
+public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,org.vcell.util.DataAccessException {
 	
 	KeyValue geomRef = new KeyValue(rset.getBigDecimal(MathDescTable.table.geometryRef.toString()));
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
@@ -68,8 +69,8 @@ public String getInfoSQL(User user,String extraConditions,String special) {
 	String sql;
 	//Field[] f = {userTable.userid,new cbit.sql.StarField(vTable)};
 	Field[] f = new Field[] {vTable.id,userTable.userid};
-	f = (Field[])cbit.util.BeanUtils.addElements(f,vTable.versionFields);
-	f = (Field[])cbit.util.BeanUtils.addElement(f,vTable.geometryRef);
+	f = (Field[])org.vcell.util.BeanUtils.addElements(f,vTable.versionFields);
+	f = (Field[])org.vcell.util.BeanUtils.addElement(f,vTable.geometryRef);
 	
 	Table[] t = {vTable,userTable};
 	String condition = userTable.id.getQualifiedColName() + " = " + vTable.ownerRef.getQualifiedColName();  // links in the userTable
@@ -133,7 +134,7 @@ public MathDescription getMathDescription(ResultSet rset, Connection con,Session
 	//
 	//mathDescription.setGeometry(geom);
 	
-	cbit.util.CommentStringTokenizer tokens = new cbit.util.CommentStringTokenizer(mathDescriptionDataString);
+	org.vcell.util.CommentStringTokenizer tokens = new org.vcell.util.CommentStringTokenizer(mathDescriptionDataString);
 	try {
 		mathDescription.read_database(tokens);
 	} catch (cbit.vcell.math.MathException e) {
@@ -144,16 +145,16 @@ public MathDescription getMathDescription(ResultSet rset, Connection con,Session
 		log.print("MathException '"+e.getMessage()+"' while reading VCML for MathDescription, trying to reorder variables in VCML and reread VCML");
 		try {
 			String newVCML = MathDescription.getVCML_withReorderedVariables(version,mathDescriptionDataString);
-			tokens = new cbit.util.CommentStringTokenizer(newVCML);
+			tokens = new org.vcell.util.CommentStringTokenizer(newVCML);
 			mathDescription = new MathDescription(version);
 			mathDescription.read_database(tokens);
 		}catch (Exception e2){
 			e2.printStackTrace(System.out);
-			throw new cbit.util.DataAccessException(e2.getMessage());
+			throw new org.vcell.util.DataAccessException(e2.getMessage());
 		}
 	} catch (Exception e){
 		e.printStackTrace(System.out);
-		throw new cbit.util.DataAccessException(e.getMessage());
+		throw new org.vcell.util.DataAccessException(e.getMessage());
 	}
 	//
 	return mathDescription;

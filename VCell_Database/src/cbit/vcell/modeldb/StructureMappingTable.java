@@ -5,11 +5,12 @@ package cbit.vcell.modeldb;
  * All rights reserved.
 ©*/
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.document.KeyValue;
+
 import cbit.sql.Field;
 import cbit.sql.InsertHashtable;
 import cbit.sql.Table;
-import cbit.util.DataAccessException;
-import cbit.util.document.KeyValue;
 import cbit.vcell.modelapp.FeatureMapping;
 import cbit.vcell.modelapp.MembraneMapping;
 import cbit.vcell.modelapp.StructureMapping;

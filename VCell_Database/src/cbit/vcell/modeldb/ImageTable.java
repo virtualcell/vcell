@@ -7,6 +7,13 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionInfo;
+
 import cbit.image.GIFImage;
 import cbit.image.GifParsingException;
 import cbit.image.ImageException;
@@ -16,12 +23,6 @@ import cbit.image.VCImageInfo;
 import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.sql.VersionTable;
-import cbit.util.DataAccessException;
-import cbit.util.SessionLog;
-import cbit.util.document.KeyValue;
-import cbit.util.document.User;
-import cbit.util.document.Version;
-import cbit.util.document.VersionInfo;
 /**
  * This type was created in VisualAge.
  */
@@ -68,7 +69,7 @@ public VCImageCompressed getImage(ResultSet rset,Connection con,SessionLog log,I
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
 	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
 	try {
-		cbit.util.Extent extent = new cbit.util.Extent(ex,ey,ez);
+		org.vcell.util.Extent extent = new org.vcell.util.Extent(ex,ey,ez);
 		VCImageCompressed vcImage = new VCImageCompressed(version,data,extent,nx,ny,nz);
 		return vcImage;
 	}catch (ImageException e){
@@ -102,12 +103,12 @@ public VersionInfo getInfo(ResultSet rset, Connection con,SessionLog log) throws
 	int x = rset.getInt(ImageTable.table.numX.toString());
 	int y = rset.getInt(ImageTable.table.numY.toString());
 	int z = rset.getInt(ImageTable.table.numZ.toString());
-	cbit.util.ISize size = new cbit.util.ISize(x,y,z);
+	org.vcell.util.ISize size = new org.vcell.util.ISize(x,y,z);
 	
 	double extentX = rset.getBigDecimal(ExtentTable.table.extentX.toString()).doubleValue();
 	double extentY = rset.getBigDecimal(ExtentTable.table.extentY.toString()).doubleValue();
 	double extentZ = rset.getBigDecimal(ExtentTable.table.extentZ.toString()).doubleValue();
-	cbit.util.Extent extent = new cbit.util.Extent(extentX,extentY,extentZ);
+	org.vcell.util.Extent extent = new org.vcell.util.Extent(extentX,extentY,extentZ);
 
 	return new VCImageInfo(version,size,extent,gifImage);
 }

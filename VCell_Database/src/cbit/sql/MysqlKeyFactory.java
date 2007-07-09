@@ -9,7 +9,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import cbit.util.document.KeyValue;
+import org.vcell.util.document.KeyValue;
+
 /**
  * This type was created in VisualAge.
  */

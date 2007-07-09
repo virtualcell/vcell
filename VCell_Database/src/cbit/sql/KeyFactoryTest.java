@@ -8,7 +8,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import cbit.util.StdoutSessionLog;
+import org.vcell.util.StdoutSessionLog;
+
 /**
  * This type was created in VisualAge.
  */
@@ -58,7 +59,7 @@ public static void main(String args[]) {
 			System.exit(1);
 		}
 
-		new cbit.util.PropertyLoader();
+		new org.vcell.util.PropertyLoader();
 		
 		KeyFactory keyFactory = null;
 		if (args[0].equalsIgnoreCase("ORACLE")){

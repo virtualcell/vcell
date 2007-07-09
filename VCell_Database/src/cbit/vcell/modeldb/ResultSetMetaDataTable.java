@@ -7,13 +7,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
+
 import cbit.rmi.event.VCSimulationDataIdentifier;
 import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.sql.VersionTable;
-import cbit.util.DataAccessException;
-import cbit.util.SessionLog;
-import cbit.util.document.KeyValue;
 import cbit.vcell.simulation.SimulationInfo;
 
 /**

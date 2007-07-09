@@ -13,6 +13,28 @@ import java.sql.Statement;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.DependencyException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.PermissionException;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.CurateSpec;
+import org.vcell.util.document.FieldDataIdentifierSpec;
+import org.vcell.util.document.GroupAccess;
+import org.vcell.util.document.GroupAccessAll;
+import org.vcell.util.document.GroupAccessNone;
+import org.vcell.util.document.GroupAccessSome;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionFlag;
+import org.vcell.util.document.VersionInfo;
+import org.vcell.util.document.Versionable;
+import org.vcell.util.document.VersionableFamily;
+import org.vcell.util.document.VersionableRelationship;
+import org.vcell.util.document.VersionableType;
+import org.vcell.util.document.VersionableTypeVersion;
+
 import cbit.sql.DBCacheTable;
 import cbit.sql.Field;
 import cbit.sql.InsertHashtable;
@@ -21,27 +43,6 @@ import cbit.sql.RecordChangedException;
 import cbit.sql.StarField;
 import cbit.sql.Table;
 import cbit.sql.VersionTable;
-import cbit.util.DataAccessException;
-import cbit.util.ObjectNotFoundException;
-import cbit.util.PermissionException;
-import cbit.util.SessionLog;
-import cbit.util.DependencyException;
-import cbit.util.document.CurateSpec;
-import cbit.util.document.FieldDataIdentifierSpec;
-import cbit.util.document.GroupAccess;
-import cbit.util.document.GroupAccessAll;
-import cbit.util.document.GroupAccessNone;
-import cbit.util.document.GroupAccessSome;
-import cbit.util.document.KeyValue;
-import cbit.util.document.User;
-import cbit.util.document.Version;
-import cbit.util.document.VersionFlag;
-import cbit.util.document.VersionInfo;
-import cbit.util.document.Versionable;
-import cbit.util.document.VersionableFamily;
-import cbit.util.document.VersionableRelationship;
-import cbit.util.document.VersionableType;
-import cbit.util.document.VersionableTypeVersion;
 /**
  * This type was created in VisualAge.
  */
@@ -74,12 +75,12 @@ public DbDriver(DBCacheTable dbc,SessionLog sessionLog) {
  * Insert the method's description here.
  * Creation date: (5/23/2006 10:44:52 AM)
  */
-public static cbit.util.document.VCDocumentInfo curate(CurateSpec curateSpec,Connection con,User user,DBCacheTable currentCache) throws DataAccessException,SQLException{
+public static org.vcell.util.document.VCDocumentInfo curate(CurateSpec curateSpec,Connection con,User user,DBCacheTable currentCache) throws DataAccessException,SQLException{
 
 	VersionableType vType = null;
-	if(curateSpec.getVCDocumentInfo() instanceof cbit.util.document.BioModelInfo){
+	if(curateSpec.getVCDocumentInfo() instanceof org.vcell.util.document.BioModelInfo){
 		vType = VersionableType.BioModelMetaData;
-	}else if(curateSpec.getVCDocumentInfo() instanceof cbit.util.document.MathModelInfo){
+	}else if(curateSpec.getVCDocumentInfo() instanceof org.vcell.util.document.MathModelInfo){
 		vType = VersionableType.MathModelMetaData;
 	}else{
 		throw new DataAccessException("Expecting BioModelInfo or MathModelInfo but got type="+curateSpec.getVCDocumentInfo().getClass().getName());
@@ -129,7 +130,7 @@ public static cbit.util.document.VCDocumentInfo curate(CurateSpec curateSpec,Con
 	}
 
 	
-	cbit.util.document.VCDocumentInfo dbVCDocumentInfo = (cbit.util.document.VCDocumentInfo)getVersionableInfos(con,null,user,vType,false,vKey,false).elementAt(0);
+	org.vcell.util.document.VCDocumentInfo dbVCDocumentInfo = (org.vcell.util.document.VCDocumentInfo)getVersionableInfos(con,null,user,vType,false,vKey,false).elementAt(0);
 	return dbVCDocumentInfo;
 }
 
@@ -463,7 +464,7 @@ protected static KeyValue[] getChildrenFromLinkTable(java.sql.Connection con, Ta
 	} finally {
 		stmt.close();
 	}
-	return (KeyValue[])cbit.util.BeanUtils.getArray(keyList,KeyValue.class);
+	return (KeyValue[])org.vcell.util.BeanUtils.getArray(keyList,KeyValue.class);
 }
 
 
@@ -689,7 +690,7 @@ protected static KeyValue getNewKey(Connection con) throws java.sql.SQLException
  * @param user java.lang.String
  * @param imageName java.lang.String
  */
-public static cbit.util.Preference[] getPreferences(Connection con, User user) throws SQLException {
+public static org.vcell.util.Preference[] getPreferences(Connection con, User user) throws SQLException {
 	
 	String sql =
 		"SELECT " + 
@@ -702,7 +703,7 @@ public static cbit.util.Preference[] getPreferences(Connection con, User user) t
 				
 			
 	Statement stmt = null;
-	cbit.util.Preference[] preferences = null;
+	org.vcell.util.Preference[] preferences = null;
 	try {
 		stmt = con.createStatement();
 		ResultSet rset = stmt.executeQuery(sql);
@@ -785,15 +786,15 @@ public static cbit.vcell.simdata.FieldDataIdentifier[] getFieldDataIdentifiers(C
 			// origin
 			String originstr = rset.getString(FieldDataTable.table.origin.getUnqualifiedColName());			
 			java.util.StringTokenizer st = new java.util.StringTokenizer(originstr, ",");
-			cbit.util.Origin origin = new cbit.util.Origin(Double.parseDouble(st.nextToken()), Double.parseDouble(st.nextToken()), Double.parseDouble(st.nextToken()));
+			org.vcell.util.Origin origin = new org.vcell.util.Origin(Double.parseDouble(st.nextToken()), Double.parseDouble(st.nextToken()), Double.parseDouble(st.nextToken()));
 			// extent
 			String extentstr = rset.getString(FieldDataTable.table.extent.getUnqualifiedColName());
 			st = new java.util.StringTokenizer(extentstr, ",");
-			cbit.util.Extent extent = new cbit.util.Extent(Double.parseDouble(st.nextToken()), Double.parseDouble(st.nextToken()), Double.parseDouble(st.nextToken()));
+			org.vcell.util.Extent extent = new org.vcell.util.Extent(Double.parseDouble(st.nextToken()), Double.parseDouble(st.nextToken()), Double.parseDouble(st.nextToken()));
 			// size
 			String sizestr = rset.getString(FieldDataTable.table.meshsize.getUnqualifiedColName());
 			st = new java.util.StringTokenizer(sizestr, ",");
-			cbit.util.ISize size = new cbit.util.ISize(Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()));
+			org.vcell.util.ISize size = new org.vcell.util.ISize(Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()));
 			
 			st = new java.util.StringTokenizer(varlist, ",");
 			while (st.hasMoreTokens()) {
@@ -837,8 +838,8 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 	//
 	cbit.image.VCImageInfo[] vcImageInfos = null;
 	cbit.vcell.geometry.GeometryInfo[] geometryInfos = null;
-	cbit.util.document.MathModelInfo[] mathModelInfos = null;
-	cbit.util.document.BioModelInfo[] bioModelInfos = null;
+	org.vcell.util.document.MathModelInfo[] mathModelInfos = null;
+	org.vcell.util.document.BioModelInfo[] bioModelInfos = null;
 	
 	//
 	StringBuffer sql = null;
@@ -866,7 +867,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 			tempInfos = new Vector();
 			distinctV = new Vector();
 			while(rset.next()){
-				cbit.util.document.BioModelInfo versionInfo = (cbit.util.document.BioModelInfo)BioModelTable.table.getInfo(rset,con,mySessionLog);
+				org.vcell.util.document.BioModelInfo versionInfo = (org.vcell.util.document.BioModelInfo)BioModelTable.table.getInfo(rset,con,mySessionLog);
 				if(!distinctV.contains(versionInfo.getVersion().getVersionKey().toString())){
 					tempInfos.add(versionInfo);
 					distinctV.add(versionInfo.getVersion().getVersionKey().toString());
@@ -874,7 +875,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 			}
 			rset.close();
 			if(tempInfos.size() > 0){
-				bioModelInfos = new cbit.util.document.BioModelInfo[tempInfos.size()];
+				bioModelInfos = new org.vcell.util.document.BioModelInfo[tempInfos.size()];
 				tempInfos.copyInto(bioModelInfos);
 			}
 			System.out.println("BioModelInfo Time="+(((double)System.currentTimeMillis()-beginTime)/(double)1000));
@@ -895,7 +896,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 			tempInfos = new Vector();
 			distinctV = new Vector();
 			while(rset.next()){
-				cbit.util.document.MathModelInfo versionInfo = (cbit.util.document.MathModelInfo)MathModelTable.table.getInfo(rset,con,mySessionLog);
+				org.vcell.util.document.MathModelInfo versionInfo = (org.vcell.util.document.MathModelInfo)MathModelTable.table.getInfo(rset,con,mySessionLog);
 				if(!distinctV.contains(versionInfo.getVersion().getVersionKey().toString())){
 					tempInfos.add(versionInfo);
 					distinctV.add(versionInfo.getVersion().getVersionKey().toString());
@@ -903,7 +904,7 @@ public static VCInfoContainer getVCInfoContainer(User user,Connection con,Sessio
 			}
 			rset.close();
 			if(tempInfos.size() > 0){
-				mathModelInfos = new cbit.util.document.MathModelInfo[tempInfos.size()];
+				mathModelInfos = new org.vcell.util.document.MathModelInfo[tempInfos.size()];
 				tempInfos.copyInto(mathModelInfos);
 			}
 			System.out.println("MathModelInfo Time="+(((double)System.currentTimeMillis()-beginTime)/(double)1000));
@@ -1795,7 +1796,7 @@ private static Version permissionInit(Connection con,VersionableType vType,KeyVa
  * @param user java.lang.String
  * @param imageName java.lang.String
  */
-public static void replacePreferences(Connection con, User user, cbit.util.Preference[] preferences) throws SQLException {
+public static void replacePreferences(Connection con, User user, org.vcell.util.Preference[] preferences) throws SQLException {
 
 	String sql =
 		"DELETE FROM " +
@@ -1816,8 +1817,8 @@ public static void replacePreferences(Connection con, User user, cbit.util.Prefe
 		for (int i = 0; i < preferences.length; i++){
 			String key = preferences[i].getKey();
 			String value = preferences[i].getValue();
-			pstmt.setString(1,cbit.util.TokenMangler.getSQLEscapedString(key));
-			pstmt.setString(2,cbit.util.TokenMangler.getSQLEscapedString(value));
+			pstmt.setString(1,org.vcell.util.TokenMangler.getSQLEscapedString(key));
+			pstmt.setString(2,org.vcell.util.TokenMangler.getSQLEscapedString(value));
 			pstmt.executeUpdate();
 		}
 	}finally{
@@ -2019,7 +2020,7 @@ public static cbit.vcell.numericstest.TestSuiteNew testSuiteGet(BigDecimal getTh
 				reportStatusMessage = null;
 			}
 			if(reportStatusMessage != null && reportStatusMessage.length() > 0){
-				reportStatusMessage = cbit.util.TokenMangler.getSQLRestoredString(reportStatusMessage);
+				reportStatusMessage = org.vcell.util.TokenMangler.getSQLRestoredString(reportStatusMessage);
 			}
 			Vector v = (Vector)tcritH.get(tcaseRef);
 			if(v == null){
@@ -2037,7 +2038,7 @@ public static cbit.vcell.numericstest.TestSuiteNew testSuiteGet(BigDecimal getTh
 			}
 
 			cbit.vcell.simulation.SimulationInfo regrSimInfo = null;
-			cbit.util.document.MathModelInfo regrMathModelInfo = null;
+			org.vcell.util.document.MathModelInfo regrMathModelInfo = null;
 			if(simRegrRef != null){
 				regrSimInfo = (cbit.vcell.simulation.SimulationInfo)simulationInfoH.get(simRegrRef);
 				if(regrSimInfo == null){
@@ -2047,11 +2048,11 @@ public static cbit.vcell.numericstest.TestSuiteNew testSuiteGet(BigDecimal getTh
 						simulationInfoH.put(simRegrRef,regrSimInfo);
 					}
 				}
-				regrMathModelInfo = (cbit.util.document.MathModelInfo)mathModelInfoH.get(mathRegrRef);
+				regrMathModelInfo = (org.vcell.util.document.MathModelInfo)mathModelInfoH.get(mathRegrRef);
 				if(regrMathModelInfo == null){
 					Vector regMathVector = getVersionableInfos(con,sessionLog,user,VersionableType.MathModelMetaData,false,new KeyValue(mathRegrRef),false);
 					if (regMathVector != null && regMathVector.size() > 0) {
-						regrMathModelInfo = (cbit.util.document.MathModelInfo)regMathVector.firstElement();
+						regrMathModelInfo = (org.vcell.util.document.MathModelInfo)regMathVector.firstElement();
 						mathModelInfoH.put(mathRegrRef,regrMathModelInfo);
 					}
 				}
@@ -2147,7 +2148,7 @@ public static cbit.vcell.numericstest.TestSuiteNew testSuiteGet(BigDecimal getTh
 				reportStatusMessage = null;
 			}
 			if(reportStatusMessage != null && reportStatusMessage.length() > 0){
-				reportStatusMessage = cbit.util.TokenMangler.getSQLRestoredString(reportStatusMessage);
+				reportStatusMessage = org.vcell.util.TokenMangler.getSQLRestoredString(reportStatusMessage);
 			}
 			Vector v = (Vector)tcritH.get(tcaseRef);
 			if(v == null){
@@ -2167,7 +2168,7 @@ public static cbit.vcell.numericstest.TestSuiteNew testSuiteGet(BigDecimal getTh
 			}
 
 			cbit.vcell.simulation.SimulationInfo regrSimInfo = null;
-			cbit.util.document.BioModelInfo regrBioModelInfo = null;
+			org.vcell.util.document.BioModelInfo regrBioModelInfo = null;
 			if(regrSimRef != null){
 				regrSimInfo = (cbit.vcell.simulation.SimulationInfo)simulationInfoH.get(regrSimRef);
 				if(regrSimInfo == null){
@@ -2179,11 +2180,11 @@ public static cbit.vcell.numericstest.TestSuiteNew testSuiteGet(BigDecimal getTh
 						throw new DataAccessException("Found more than 1 versionable for simregRef="+regrSimRef);
 					}
 				}
-				regrBioModelInfo = (cbit.util.document.BioModelInfo)mathModelInfoH.get(regrBioModelRef);
+				regrBioModelInfo = (org.vcell.util.document.BioModelInfo)mathModelInfoH.get(regrBioModelRef);
 				if(regrBioModelInfo == null){
 					Vector regBioModelVector = getVersionableInfos(con,sessionLog,user,VersionableType.BioModelMetaData,false,new KeyValue(regrBioModelRef),false);
 					if (regBioModelVector != null && regBioModelVector.size() == 1) {
-						regrBioModelInfo = (cbit.util.document.BioModelInfo)regBioModelVector.firstElement();
+						regrBioModelInfo = (org.vcell.util.document.BioModelInfo)regBioModelVector.firstElement();
 						mathModelInfoH.put(regrBioModelRef,regrBioModelInfo);
 					}else{
 						throw new DataAccessException("Found more than 1 versionable for reegrbiomodelRef="+regrBioModelRef);
@@ -2299,27 +2300,27 @@ public static cbit.vcell.numericstest.TestSuiteNew testSuiteGet(BigDecimal getTh
 			if(rset.wasNull()){
 				tcAnnot = "";
 			}else{
-				tcAnnot = cbit.util.TokenMangler.getSQLRestoredString(tcAnnot);
+				tcAnnot = org.vcell.util.TokenMangler.getSQLRestoredString(tcAnnot);
 			}
 			java.util.Date tcDate = VersionTable.getDate(rset,TFTestCaseTable.table.creationDate.getUnqualifiedColName());
 
-			cbit.util.document.MathModelInfo mmInfo = null;
-			cbit.util.document.BioModelInfo bmInfo = null;
+			org.vcell.util.document.MathModelInfo mmInfo = null;
+			org.vcell.util.document.BioModelInfo bmInfo = null;
 			if(mmRef != null){
-				mmInfo = (cbit.util.document.MathModelInfo)mathModelInfoH.get(mmRef);		
+				mmInfo = (org.vcell.util.document.MathModelInfo)mathModelInfoH.get(mmRef);		
 				if(mmInfo == null){
 					Vector mathVector = getVersionableInfos(con,sessionLog,user,VersionableType.MathModelMetaData,false,new KeyValue(mmRef),false);
 					if (mathVector != null && mathVector.size() > 0) {
-						mmInfo = (cbit.util.document.MathModelInfo)mathVector.firstElement();
+						mmInfo = (org.vcell.util.document.MathModelInfo)mathVector.firstElement();
 						mathModelInfoH.put(mmRef,mmInfo);
 					}
 				}
 			}else if(bioModelRef != null){
-				bmInfo = (cbit.util.document.BioModelInfo)bioModelInfoH.get(bioModelRef);		
+				bmInfo = (org.vcell.util.document.BioModelInfo)bioModelInfoH.get(bioModelRef);		
 				if(bmInfo == null){
 					Vector bmAppVector = getVersionableInfos(con,sessionLog,user,VersionableType.BioModelMetaData,false,new KeyValue(bioModelRef),false);
 					if (bmAppVector != null && bmAppVector.size() > 0) {
-						bmInfo = (cbit.util.document.BioModelInfo)bmAppVector.firstElement();
+						bmInfo = (org.vcell.util.document.BioModelInfo)bmAppVector.firstElement();
 						bioModelInfoH.put(bioModelRef,bmInfo);
 					}
 				}
@@ -2530,7 +2531,7 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 			BigDecimal tcKey = keyFactory.getUniqueBigDecimal(con);
 			String annotation = addtc_tsop.getAnnotation();
 			if(annotation != null){
-				annotation = cbit.util.TokenMangler.getSQLEscapedString(annotation);
+				annotation = org.vcell.util.TokenMangler.getSQLEscapedString(annotation);
 			}
 			stmt.executeUpdate(
 				"INSERT INTO "+TFTestCaseTable.table.getTableName()+" VALUES("+
@@ -2557,7 +2558,7 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 			KeyValue mmKey = addtc_tsop.getMathModelKey();
 			String annotation = addtc_tsop.getAnnotation();
 			if(annotation != null){
-				annotation = cbit.util.TokenMangler.getSQLEscapedString(annotation);
+				annotation = org.vcell.util.TokenMangler.getSQLEscapedString(annotation);
 			}
 			stmt.executeUpdate(
 				"INSERT INTO "+TFTestCaseTable.table.getTableName()+" VALUES("+
@@ -2922,7 +2923,7 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 			}
 			String reportStatusMessage = edittcrit_tsop.getNewReportStatusMessage();
 			if(reportStatusMessage != null){
-				reportStatusMessage = cbit.util.TokenMangler.getSQLEscapedString(reportStatusMessage);
+				reportStatusMessage = org.vcell.util.TokenMangler.getSQLEscapedString(reportStatusMessage);
 				reportStatusMessage =
 					reportStatusMessage.substring(0,Math.min(TFTestCriteriaTable.MAX_MESSAGE_SIZE,reportStatusMessage.length()));
 			}
@@ -3070,7 +3071,7 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 				if(i != 0){sb.append(",");}sb.append(tcaseKeys[i].toString());
 				String annotation = annots[i];
 				if(annotation != null){
-					annotation = cbit.util.TokenMangler.getSQLEscapedString(annotation);
+					annotation = org.vcell.util.TokenMangler.getSQLEscapedString(annotation);
 				}
 				stmt.executeUpdate(
 					"UPDATE "+TFTestCaseTable.table.getTableName()+
@@ -3123,7 +3124,7 @@ public static void updateAnnotation(Connection con,SessionLog newLog,User user,
 	if (!version.getOwner().compareEqual(user)){
 		throw new PermissionException("Cannot unpublish "+vType.getTypeName()+" \""+version.getName()+"\" ("+vKey+"), not owned by "+user.getName());
 	}
-	annot = cbit.util.TokenMangler.getSQLEscapedString(annot);
+	annot = org.vcell.util.TokenMangler.getSQLEscapedString(annot);
 	newLog.print("GeomDbDriver.updateAnnotation(user=" + user + ", key=" + vKey + "Annot="+annot+")");
 	VersionTable vTable = VersionTable.getVersionTable(vType);
 	String set = vTable.versionAnnot.getQualifiedColName() + " = " + "'" + annot + "'";
@@ -3308,7 +3309,7 @@ public static String varchar2_CLOB_get(ResultSet rset,Field varchar2Field,Field 
 			results = null;
 		}else{
 			//Strings have to be SQL unmangled
-			results = cbit.util.TokenMangler.getSQLRestoredString(temp);
+			results = org.vcell.util.TokenMangler.getSQLRestoredString(temp);
 		}
 	}else{
 		//CLOBs do not have to be SQL unmangled
@@ -3328,7 +3329,7 @@ public static String varchar2_CLOB_get(ResultSet rset,Field varchar2Field,Field 
  */
 public static boolean varchar2_CLOB_is_Varchar2_OK(String data) {
 
-	return (cbit.util.TokenMangler.getSQLEscapedString(data).length() <= ORACLE_VARCHAR2_SIZE_LIMIT);
+	return (org.vcell.util.TokenMangler.getSQLEscapedString(data).length() <= ORACLE_VARCHAR2_SIZE_LIMIT);
 	
 }
 
@@ -3371,7 +3372,7 @@ public static void varchar2_CLOB_update(
         sb.replace(
             marker_index,
             marker_index + INSERT_VARCHAR2_HERE.length(),
-            "'" + cbit.util.TokenMangler.getSQLEscapedString(data) + "'");
+            "'" + org.vcell.util.TokenMangler.getSQLEscapedString(data) + "'");
         updateCleanSQL(con, sb.toString());
     }else{
 	    throw new RuntimeException("Expected charchar2_CLOB Marker Not Found in sql");

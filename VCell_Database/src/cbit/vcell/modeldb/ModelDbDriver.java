@@ -10,20 +10,21 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Vector;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.Versionable;
+import org.vcell.util.document.VersionableType;
+
 import cbit.sql.DBCacheTable;
 import cbit.sql.Field;
 import cbit.sql.InsertHashtable;
 import cbit.sql.RecordChangedException;
 import cbit.sql.Table;
 import cbit.sql.VersionTable;
-import cbit.util.DataAccessException;
-import cbit.util.ObjectNotFoundException;
-import cbit.util.SessionLog;
-import cbit.util.document.KeyValue;
-import cbit.util.document.User;
-import cbit.util.document.Version;
-import cbit.util.document.Versionable;
-import cbit.util.document.VersionableType;
 import cbit.vcell.model.Diagram;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Membrane;
@@ -56,7 +57,7 @@ public ModelDbDriver(DBCacheTable argdbc,ReactStepDbDriver argReactStepDB,Sessio
  * only the owner can delete a Model
  */
 private void deleteModelSQL(Connection con, User user, KeyValue modelKey) 
-				throws SQLException,cbit.util.DependencyException,ObjectNotFoundException {
+				throws SQLException,org.vcell.util.DependencyException,ObjectNotFoundException {
 
 	//
 	// first the reactions are deleted, then the model, the order is important because both the 
@@ -90,8 +91,8 @@ private void deleteModelSQL(Connection con, User user, KeyValue modelKey)
  * @param versionKey cbit.sql.KeyValue
  */
 public void deleteVersionable(Connection con, User user, VersionableType vType, KeyValue vKey) 
-				throws cbit.util.DependencyException, ObjectNotFoundException,
-						SQLException,DataAccessException,cbit.util.PermissionException {
+				throws org.vcell.util.DependencyException, ObjectNotFoundException,
+						SQLException,DataAccessException,org.vcell.util.PermissionException {
 
 	deleteVersionableInit(con, user, vType, vKey);
 	if (vType.equals(VersionableType.Model)){
@@ -184,7 +185,7 @@ private cbit.vcell.model.Model getModel(Connection con,User user, KeyValue model
 		if (rset.next()) {
 			model = getModel(rset,con,user);
 		} else {
-			throw new cbit.util.ObjectNotFoundException("Model id=" + modelKey + " not found for user '" + user + "'");
+			throw new org.vcell.util.ObjectNotFoundException("Model id=" + modelKey + " not found for user '" + user + "'");
 		}
 	} finally {
 		stmt.close(); // Release resources include resultset
@@ -335,7 +336,7 @@ public SpeciesContext getSpeciesContext(Connection con, KeyValue speciesContextI
 		if (rset.next()) {
 			speciesContext = getSpeciesContext(con,rset);
 		} else {
-			throw new cbit.util.ObjectNotFoundException("SpeciesContext id=" + speciesContextID + " not found");
+			throw new org.vcell.util.ObjectNotFoundException("SpeciesContext id=" + speciesContextID + " not found");
 		}
 	} finally {
 		stmt.close(); // Release resources include resultset

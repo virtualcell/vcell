@@ -7,11 +7,12 @@ package cbit.vcell.modeldb;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
+
 import cbit.sql.Field;
 import cbit.sql.Table;
-import cbit.util.DataAccessException;
-import cbit.util.SessionLog;
-import cbit.util.document.KeyValue;
 import cbit.vcell.model.Diagram;
 /**
  * This type was created in VisualAge.
@@ -62,7 +63,7 @@ public Diagram getDiagram(ResultSet rset, SessionLog log) throws SQLException, D
 		//languageString = buffer.toString();
 	//}
 	
-	cbit.util.CommentStringTokenizer tokens = new cbit.util.CommentStringTokenizer(languageString);
+	org.vcell.util.CommentStringTokenizer tokens = new org.vcell.util.CommentStringTokenizer(languageString);
 	try {
 		diagram.fromTokens(tokens);
 	}catch (Exception e){

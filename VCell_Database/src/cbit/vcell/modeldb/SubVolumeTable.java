@@ -10,13 +10,13 @@ import java.sql.SQLException;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
 
 import cbit.sql.Field;
 import cbit.sql.InsertHashtable;
 import cbit.sql.Table;
-import cbit.util.DataAccessException;
-import cbit.util.SessionLog;
-import cbit.util.document.KeyValue;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.Geometry;

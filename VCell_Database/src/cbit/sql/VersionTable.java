@@ -8,14 +8,15 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 
-import cbit.util.DataAccessException;
-import cbit.util.SessionLog;
-import cbit.util.document.KeyValue;
-import cbit.util.document.SimulationVersion;
-import cbit.util.document.Version;
-import cbit.util.document.VersionFlag;
-import cbit.util.document.Versionable;
-import cbit.util.document.VersionableType;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.SimulationVersion;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionFlag;
+import org.vcell.util.document.Versionable;
+import org.vcell.util.document.VersionableType;
+
 import cbit.vcell.modeldb.BioModelSimContextLinkTable;
 import cbit.vcell.modeldb.BioModelSimulationLinkTable;
 import cbit.vcell.modeldb.BioModelTable;
@@ -244,7 +245,7 @@ public static java.util.Vector getReferencingVersionableTypes(VersionableType vT
  * @param rset ResultSet
  * @param log SessionLog
  */
-public static Version getVersion(ResultSet rset, cbit.util.document.GroupAccess groupAccess,SessionLog log) throws SQLException ,DataAccessException{
+public static Version getVersion(ResultSet rset, org.vcell.util.document.GroupAccess groupAccess,SessionLog log) throws SQLException ,DataAccessException{
 	KeyValue vBranchPointRef = null;
 	java.math.BigDecimal vBranchID = null;
 	java.util.Date vDate = null;
@@ -274,7 +275,7 @@ public static Version getVersion(ResultSet rset, cbit.util.document.GroupAccess 
 	if (rset.wasNull()) {
 		vAnnot = null;
 	} else {
-		vAnnot = cbit.util.TokenMangler.getSQLRestoredString(vAnnotDB);
+		vAnnot = org.vcell.util.TokenMangler.getSQLRestoredString(vAnnotDB);
 	}
 	boolean bFoundParentSimRefColumn = false;
 	KeyValue parentSimRef = null;
@@ -304,7 +305,7 @@ public static Version getVersion(ResultSet rset, cbit.util.document.GroupAccess 
 	String name = rset.getString(VersionTable.name_ColumnName);
 	String ownerName = rset.getString(cbit.vcell.modeldb.UserTable.table.userid.toString());
 	KeyValue ownerID = new KeyValue(rset.getBigDecimal(VersionTable.ownerRef_ColumnName));
-	cbit.util.document.User owner = new cbit.util.document.User(ownerName, ownerID);
+	org.vcell.util.document.User owner = new org.vcell.util.document.User(ownerName, ownerID);
 	//cbit.vcell.server.AccessInfo privacy = new cbit.vcell.server.AccessInfo(rset.getInt(VersionTable.privacy_ColumnName));
 	//
 	if (bFoundParentSimRefColumn){
@@ -337,7 +338,7 @@ protected static String getVersionGroupSQLValue(Version version) {
 	buffer.append(formatDateToOracle(version.getDate()) + ",");
 	buffer.append(version.getFlag().getIntValue() + ",");
 	if (version.getAnnot() != null) {
-		buffer.append("'"+cbit.util.TokenMangler.getSQLEscapedString(version.getAnnot())+"'");
+		buffer.append("'"+org.vcell.util.TokenMangler.getSQLEscapedString(version.getAnnot())+"'");
 	} else {
 		buffer.append("NULL");
 	}

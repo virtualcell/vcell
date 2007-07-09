@@ -4,11 +4,12 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.util.DataAccessException;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
+
 import cbit.sql.Field;
 import cbit.sql.Table;
-import cbit.util.DataAccessException;
-import cbit.util.SessionLog;
-import cbit.util.document.KeyValue;
 import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.dictionary.database.DBSpeciesTable;
 import cbit.vcell.model.Species;
@@ -42,7 +43,7 @@ public Species getSpecies(java.sql.ResultSet rset, SessionLog log,DBSpecies dbSp
 	
 	String annotation = rset.getString(SpeciesTable.table.annotation.toString());
 	if (annotation!=null){
-		annotation = cbit.util.TokenMangler.getSQLRestoredString(annotation);
+		annotation = org.vcell.util.TokenMangler.getSQLRestoredString(annotation);
 	}
 	String cNameStr = rset.getString(SpeciesTable.table.commonName.toString());
 	Species species = new Species(cNameStr,annotation,dbSpecies);
@@ -64,7 +65,7 @@ public String getSQLValueList(KeyValue key, KeyValue ownerKey, Species species) 
 	buffer.append("'"+species.getCommonName()+"'"+",");
 	KeyValue dbSpeciesKey = (species.getDBSpecies() == null ? null :species.getDBSpecies().getDBSpeciesKey());
 	buffer.append((dbSpeciesKey != null?dbSpeciesKey.toString():"null")+",");
-	buffer.append((species.getAnnotation() != null ? "'"+cbit.util.TokenMangler.getSQLEscapedString(species.getAnnotation())+"'" : "null")+")");
+	buffer.append((species.getAnnotation() != null ? "'"+org.vcell.util.TokenMangler.getSQLEscapedString(species.getAnnotation())+"'" : "null")+")");
 	
 	return buffer.toString();
 }

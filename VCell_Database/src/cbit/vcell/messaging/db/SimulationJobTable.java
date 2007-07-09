@@ -3,6 +3,8 @@ package cbit.vcell.messaging.db;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.vcell.util.document.KeyValue;
+
 import cbit.rmi.event.SimulationExecutionStatus;
 import cbit.rmi.event.SimulationJobStatus;
 import cbit.rmi.event.SimulationQueueEntryStatus;
@@ -10,7 +12,6 @@ import cbit.rmi.event.VCellServerID;
 import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.sql.VersionTable;
-import cbit.util.document.KeyValue;
 import cbit.vcell.modeldb.DatabaseConstants;
 import cbit.vcell.modeldb.SimulationTable;
 import cbit.vcell.modeldb.UserTable;
@@ -78,7 +79,7 @@ public SimulationJobStatus getSimulationJobStatus(ResultSet rset) throws SQLExce
 	KeyValue userKey = new KeyValue(rset.getBigDecimal(SimulationTable.table.ownerRef.toString()));
 	//userKey
 	String userid = rset.getString(UserTable.table.userid.toString());
-	cbit.util.document.User owner = new cbit.util.document.User(userid,userKey);
+	org.vcell.util.document.User owner = new org.vcell.util.document.User(userid,userKey);
 	//submitDate
 	java.util.Date parsedSubmitDate = rset.getTimestamp(submitDate.toString());
 	//taskID

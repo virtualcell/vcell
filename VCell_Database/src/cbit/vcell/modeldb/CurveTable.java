@@ -5,11 +5,12 @@ package cbit.vcell.modeldb;
  * All rights reserved.
 ©*/
 
+import org.vcell.util.Coordinate;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.document.KeyValue;
+
 import cbit.sql.Field;
 import cbit.sql.Table;
-import cbit.util.Coordinate;
-import cbit.util.DataAccessException;
-import cbit.util.document.KeyValue;
 import cbit.vcell.geometry.ControlPointCurve;
 /**
  * This type was created in VisualAge.
@@ -42,7 +43,7 @@ public CurveTable() {
 public static cbit.vcell.geometry.Curve decodeCurve(String encodedShape) throws Exception {
 	cbit.vcell.geometry.Curve rCurve = null;
 	try {
-		cbit.util.CommentStringTokenizer st = new cbit.util.CommentStringTokenizer(encodedShape);
+		org.vcell.util.CommentStringTokenizer st = new org.vcell.util.CommentStringTokenizer(encodedShape);
 		String curveType = st.nextToken();
 		Class classType = Class.forName(curveType);
 		Object oCurve = classType.newInstance();

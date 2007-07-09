@@ -5,13 +5,13 @@ package cbit.vcell.modeldb;
  * All rights reserved.
 ©*/
 import org.vcell.expression.ExpressionFactory;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
-import cbit.util.DataAccessException;
-import cbit.util.SessionLog;
-import cbit.util.document.KeyValue;
-import cbit.util.document.User;
 import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.DBNonFormalUnboundSpecies;
 import cbit.vcell.dictionary.ReactionDescription;
@@ -130,7 +130,7 @@ public ReactionStep getReactionStep(Structure structure, KeyValue rsKey, java.sq
 		//buffer.append("\n}\n");
 		//kinetics_vcml = buffer.toString();
 	//}
-	cbit.util.CommentStringTokenizer tokens = new cbit.util.CommentStringTokenizer(kinetics_vcml);
+	org.vcell.util.CommentStringTokenizer tokens = new org.vcell.util.CommentStringTokenizer(kinetics_vcml);
 
 	
 	

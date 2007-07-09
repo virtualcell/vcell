@@ -3,32 +3,33 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Vector;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.DependencyException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.PermissionException;
+import org.vcell.util.ReferenceQueryResult;
+import org.vcell.util.ReferenceQuerySpec;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.CurateSpec;
+import org.vcell.util.document.FieldDataIdentifierSpec;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.Versionable;
+import org.vcell.util.document.VersionableFamily;
+import org.vcell.util.document.VersionableType;
+import org.vcell.util.document.VersionableTypeVersion;
+
 import cbit.image.VCImage;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.DBCacheTable;
 import cbit.sql.InsertHashtable;
 import cbit.sql.RecordChangedException;
-import cbit.util.DataAccessException;
-import cbit.util.ObjectNotFoundException;
-import cbit.util.PermissionException;
-import cbit.util.ReferenceQueryResult;
-import cbit.util.ReferenceQuerySpec;
-import cbit.util.SessionLog;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.model.Model;
 import cbit.vcell.modelapp.SimulationContext;
-import cbit.util.DependencyException;
-import cbit.util.document.CurateSpec;
-import cbit.util.document.FieldDataIdentifierSpec;
-import cbit.util.document.KeyValue;
-import cbit.util.document.User;
-import cbit.util.document.Versionable;
-import cbit.util.document.VersionableFamily;
-import cbit.util.document.VersionableType;
-import cbit.util.document.VersionableTypeVersion;
 import cbit.vcell.simulation.Simulation;
 /**
  * This type was created in VisualAge.
@@ -73,7 +74,7 @@ public DBTopLevel(ConnectionFactory aConFactory, SessionLog newLog, DBCacheTable
  * @param user cbit.vcell.server.User
  * @param rqs cbit.vcell.modeldb.ReferenceQuerySpec
  */
-public cbit.util.document.VCDocumentInfo curate(User user,CurateSpec curateSpec) throws DataAccessException,java.sql.SQLException{
+public org.vcell.util.document.VCDocumentInfo curate(User user,CurateSpec curateSpec) throws DataAccessException,java.sql.SQLException{
 	return curate0(user,curateSpec,true);
 }
 
@@ -85,12 +86,12 @@ public cbit.util.document.VCDocumentInfo curate(User user,CurateSpec curateSpec)
  * @param user cbit.vcell.server.User
  * @param rqs cbit.vcell.modeldb.ReferenceQuerySpec
  */
-private cbit.util.document.VCDocumentInfo curate0(User user,CurateSpec curateSpec,boolean bEnableRetry) throws DataAccessException,java.sql.SQLException{
+private org.vcell.util.document.VCDocumentInfo curate0(User user,CurateSpec curateSpec,boolean bEnableRetry) throws DataAccessException,java.sql.SQLException{
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		cbit.util.document.VCDocumentInfo newVCDocumentInfo = DbDriver.curate(curateSpec,con,user,dbCacheTable);
+		org.vcell.util.document.VCDocumentInfo newVCDocumentInfo = DbDriver.curate(curateSpec,con,user,dbCacheTable);
 		con.commit();
 		return newVCDocumentInfo;
 	} catch (Throwable e) {
@@ -121,7 +122,7 @@ private cbit.util.document.VCDocumentInfo curate0(User user,CurateSpec curateSpe
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -161,7 +162,7 @@ void deleteVersionable(User user, VersionableType versionableType, KeyValue key,
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -230,7 +231,7 @@ public ReferenceQueryResult findReferences(User user, ReferenceQuerySpec rqs) th
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -262,7 +263,7 @@ VersionableFamily getAllReferences(KeyValue key, VersionableType versionableType
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -277,7 +278,7 @@ BioModelMetaData getBioModelMetaData(User user, KeyValue key) throws DataAccessE
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -321,7 +322,7 @@ BioModelMetaData[] getBioModelMetaDatas(User user, boolean bAll, boolean bEnable
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -422,7 +423,7 @@ cbit.vcell.simdata.FieldDataIdentifier[] getFieldDataIdentifiers(User user, Fiel
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -437,7 +438,7 @@ Geometry getGeometry(User user, KeyValue key, boolean bCheckPermission) throws D
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -452,7 +453,7 @@ MathDescription getMathDescription(User user, KeyValue key) throws DataAccessExc
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -467,7 +468,7 @@ MathModelMetaData getMathModelMetaData(User user, KeyValue key) throws DataAcces
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -511,7 +512,7 @@ MathModelMetaData[] getMathModelMetaDatas(User user, boolean bAll, boolean bEnab
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -559,7 +560,7 @@ String getMathModelXML(User user, KeyValue key, boolean bEnableRetry)
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -571,12 +572,12 @@ Model getModel(User user, KeyValue key) throws DataAccessException, java.sql.SQL
 /**
  * publish method comment.
  */
-public cbit.util.Preference[] getPreferences(User user,boolean bEnableRetry) throws DataAccessException,SQLException {
+public org.vcell.util.Preference[] getPreferences(User user,boolean bEnableRetry) throws DataAccessException,SQLException {
 	
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		cbit.util.Preference[] preferences = DbDriver.getPreferences(con,user);
+		org.vcell.util.Preference[] preferences = DbDriver.getPreferences(con,user);
 		return preferences;
 	} catch (Throwable e) {
 		log.exception(e);
@@ -603,7 +604,7 @@ public cbit.util.Preference[] getPreferences(User user,boolean bEnableRetry) thr
  * Insert the method's description here.
  * Creation date: (8/25/2003 5:16:48 PM)
  */
-cbit.vcell.model.ReactionStep getReactionStep(User user,cbit.util.document.KeyValue reactionStepKey,boolean bEnableRetry) throws DataAccessException, java.sql.SQLException {
+cbit.vcell.model.ReactionStep getReactionStep(User user,org.vcell.util.document.KeyValue reactionStepKey,boolean bEnableRetry) throws DataAccessException, java.sql.SQLException {
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
@@ -629,7 +630,7 @@ cbit.vcell.model.ReactionStep getReactionStep(User user,cbit.util.document.KeyVa
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -644,7 +645,7 @@ Simulation getSimulation(User user, KeyValue key) throws DataAccessException, ja
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -659,7 +660,7 @@ SimulationContext getSimulationContext(User user, KeyValue key) throws DataAcces
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -691,7 +692,7 @@ cbit.vcell.numericstest.TestSuiteNew getTestSuite(java.math.BigDecimal getThisTS
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -723,7 +724,7 @@ cbit.vcell.numericstest.TestSuiteInfoNew[] getTestSuiteInfos(User user,boolean b
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -765,7 +766,7 @@ VCInfoContainer getVCInfoContainer(User user, boolean bEnableRetry) throws DataA
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -826,7 +827,7 @@ private Versionable getVersionable(User user, KeyValue key, VersionableType vers
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -858,7 +859,7 @@ public Vector getVersionableInfos(User user, KeyValue key, VersionableType versi
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -897,7 +898,7 @@ void groupAddUser(User user, VersionableType versionableType, KeyValue key, bool
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -936,7 +937,7 @@ void groupRemoveUser(User user, VersionableType versionableType, KeyValue key, b
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -975,7 +976,7 @@ void groupSetPrivate(User user, VersionableType versionableType, KeyValue key, b
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -1014,7 +1015,7 @@ void groupSetPublic(User user, VersionableType versionableType, KeyValue key, bo
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -1054,11 +1055,11 @@ KeyValue insertVersionable(User user, VCImage vcImage, String name, boolean bVer
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-KeyValue insertVersionable(User user, BioModelMetaData bioModelMetaData,cbit.util.document.BioModelChildSummary bmcs, String name, boolean bVersion, boolean bEnableRetry) 
+KeyValue insertVersionable(User user, BioModelMetaData bioModelMetaData,org.vcell.util.document.BioModelChildSummary bmcs, String name, boolean bVersion, boolean bEnableRetry) 
 		throws DataAccessException, java.sql.SQLException, RecordChangedException {
 			
 	Object lock = new Object();
@@ -1094,7 +1095,7 @@ KeyValue insertVersionable(User user, BioModelMetaData bioModelMetaData,cbit.uti
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -1134,7 +1135,7 @@ KeyValue insertVersionable(User user, Geometry geometry, KeyValue updatedImageKe
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -1174,7 +1175,7 @@ KeyValue insertVersionable(User user, SimulationContext simulationContext, KeyVa
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -1214,11 +1215,11 @@ KeyValue insertVersionable(User user, MathDescription mathDescription, KeyValue 
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-KeyValue insertVersionable(User user, MathModelMetaData mathModelMetaData, cbit.util.document.MathModelChildSummary mmcs,String name, boolean bVersion, boolean bEnableRetry) 
+KeyValue insertVersionable(User user, MathModelMetaData mathModelMetaData, org.vcell.util.document.MathModelChildSummary mmcs,String name, boolean bVersion, boolean bEnableRetry) 
 		throws DataAccessException, java.sql.SQLException, RecordChangedException {
 			
 	Object lock = new Object();
@@ -1254,7 +1255,7 @@ KeyValue insertVersionable(User user, MathModelMetaData mathModelMetaData, cbit.
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -1294,7 +1295,7 @@ KeyValue insertVersionable(User user, Model model, String name, boolean bVersion
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -1334,7 +1335,7 @@ KeyValue insertVersionable(User user, Simulation simulation, KeyValue updatedMat
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -1373,7 +1374,7 @@ void insertVersionableChildSummary(User user,VersionableType vType,KeyValue vKey
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -1445,7 +1446,7 @@ boolean isNameUsed(User owner, VersionableType vType, String vName, boolean bEna
 /**
  * publish method comment.
  */
-public void replacePreferences(User user,cbit.util.Preference[] preferences,boolean bEnableRetry) throws DataAccessException,java.sql.SQLException {
+public void replacePreferences(User user,org.vcell.util.Preference[] preferences,boolean bEnableRetry) throws DataAccessException,java.sql.SQLException {
 	
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
@@ -1479,7 +1480,7 @@ public void replacePreferences(User user,cbit.util.Preference[] preferences,bool
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -1519,11 +1520,11 @@ KeyValue updateVersionable(User user, VCImage vcImage, boolean bVersion, boolean
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-KeyValue updateVersionable(User user, BioModelMetaData bioModelMetaData, cbit.util.document.BioModelChildSummary bmcs,boolean bVersion, boolean bEnableRetry) 
+KeyValue updateVersionable(User user, BioModelMetaData bioModelMetaData, org.vcell.util.document.BioModelChildSummary bmcs,boolean bVersion, boolean bEnableRetry) 
 		throws DataAccessException, java.sql.SQLException, RecordChangedException{
 			
 	Object lock = new Object();
@@ -1559,7 +1560,7 @@ KeyValue updateVersionable(User user, BioModelMetaData bioModelMetaData, cbit.ut
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -1599,7 +1600,7 @@ KeyValue updateVersionable(User user, Geometry geometry, KeyValue updatedImageKe
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -1639,7 +1640,7 @@ KeyValue updateVersionable(User user, SimulationContext simulationContext, KeyVa
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -1679,11 +1680,11 @@ KeyValue updateVersionable(User user, MathDescription mathDescription, KeyValue 
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-KeyValue updateVersionable(User user, MathModelMetaData mathModelMetaData, cbit.util.document.MathModelChildSummary mmcs,boolean bVersion, boolean bEnableRetry) 
+KeyValue updateVersionable(User user, MathModelMetaData mathModelMetaData, org.vcell.util.document.MathModelChildSummary mmcs,boolean bVersion, boolean bEnableRetry) 
 		throws DataAccessException, java.sql.SQLException, RecordChangedException{
 			
 	Object lock = new Object();
@@ -1719,7 +1720,7 @@ KeyValue updateVersionable(User user, MathModelMetaData mathModelMetaData, cbit.
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -1759,7 +1760,7 @@ KeyValue updateVersionable(User user, Model model, boolean bVersion, boolean bEn
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */

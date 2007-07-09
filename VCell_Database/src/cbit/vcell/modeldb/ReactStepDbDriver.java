@@ -8,15 +8,21 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.DependencyException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.PermissionException;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.Versionable;
+import org.vcell.util.document.VersionableType;
+
 import cbit.sql.DBCacheTable;
 import cbit.sql.Field;
 import cbit.sql.InsertHashtable;
 import cbit.sql.StarField;
 import cbit.sql.Table;
-import cbit.util.DataAccessException;
-import cbit.util.ObjectNotFoundException;
-import cbit.util.PermissionException;
-import cbit.util.SessionLog;
 import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Flux;
@@ -28,11 +34,6 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
-import cbit.util.DependencyException;
-import cbit.util.document.KeyValue;
-import cbit.util.document.User;
-import cbit.util.document.Versionable;
-import cbit.util.document.VersionableType;
 /**
  * This type was created in VisualAge.
  */
@@ -360,7 +361,7 @@ public cbit.vcell.model.Species getSpecies(Connection con, KeyValue speciesID) t
 		if (rset.next()) {
 			species = getSpecies(rset,con);
 		} else {
-			throw new cbit.util.ObjectNotFoundException("Species id=" + speciesID + " not found");
+			throw new org.vcell.util.ObjectNotFoundException("Species id=" + speciesID + " not found");
 		}
 	} finally {
 		stmt.close(); // Release resources include resultset

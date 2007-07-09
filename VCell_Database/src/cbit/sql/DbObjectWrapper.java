@@ -6,8 +6,9 @@ package cbit.sql;
 ©*/
 import java.io.IOException;
 
-import cbit.util.BeanUtils;
-import cbit.util.Cacheable;
+import org.vcell.util.BeanUtils;
+import org.vcell.util.Cacheable;
+
 /**
  * This type was created in VisualAge.
  */

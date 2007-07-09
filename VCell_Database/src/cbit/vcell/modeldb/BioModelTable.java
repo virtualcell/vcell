@@ -9,16 +9,17 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.BioModelChildSummary;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionInfo;
+
 import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.sql.VersionTable;
-import cbit.util.DataAccessException;
-import cbit.util.SessionLog;
-import cbit.util.document.BioModelChildSummary;
-import cbit.util.document.KeyValue;
-import cbit.util.document.User;
-import cbit.util.document.Version;
-import cbit.util.document.VersionInfo;
 import cbit.vcell.biomodel.BioModelMetaData;
 /**
  * This type was created in VisualAge.
@@ -109,7 +110,7 @@ public BioModelMetaData getBioModelMetaData(ResultSet rset, Connection con,Sessi
  * @param rset java.sql.ResultSet
  * @param log cbit.vcell.server.SessionLog
  */
-public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,cbit.util.DataAccessException {
+public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,org.vcell.util.DataAccessException {
 
 	String serialDbChildSummary =
 		DbDriver.varchar2_CLOB_get(rset,BioModelTable.table.childSummarySmall,BioModelTable.table.childSummaryLarge);
@@ -124,7 +125,7 @@ public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws 
 	Version version = getVersion(rset,DbDriver.getGroupAccessFromGroupID(con,groupid),log);
 
 		
-	return new cbit.util.document.BioModelInfo(version, modelRef, bioModelChildSummary);
+	return new org.vcell.util.document.BioModelInfo(version, modelRef, bioModelChildSummary);
 }
 /**
  * This method was created in VisualAge.

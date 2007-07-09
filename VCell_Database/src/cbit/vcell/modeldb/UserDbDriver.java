@@ -9,12 +9,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import cbit.util.DataAccessException;
-import cbit.util.ObjectNotFoundException;
-import cbit.util.SessionLog;
-import cbit.util.document.KeyValue;
-import cbit.util.document.User;
-import cbit.util.document.UserInfo;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.UserInfo;
+
 /**
  * This type was created in VisualAge.
  */
@@ -116,7 +117,7 @@ public UserInfo getUserInfo(Connection con, KeyValue key) throws SQLException, D
 		stmt.close(); // Release resources include resultset
 	}
 	if (userInfo == null) {
-		throw new cbit.util.ObjectNotFoundException("UserInfo with id = '" + key + "' not found");
+		throw new org.vcell.util.ObjectNotFoundException("UserInfo with id = '" + key + "' not found");
 	}
 	return userInfo;
 }

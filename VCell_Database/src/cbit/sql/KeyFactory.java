@@ -1,6 +1,6 @@
 package cbit.sql;
 
-import cbit.util.document.KeyValue;
+import org.vcell.util.document.KeyValue;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

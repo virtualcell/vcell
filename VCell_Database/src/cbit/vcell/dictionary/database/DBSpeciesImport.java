@@ -2,6 +2,10 @@ package cbit.vcell.dictionary.database;
 
 import java.util.Vector;
 
+import org.vcell.util.SessionLog;
+import org.vcell.util.StdoutSessionLog;
+import org.vcell.util.document.KeyValue;
+
 import cbit.sql.ConnectionFactory;
 import cbit.sql.DBCacheTable;
 import cbit.sql.Field;
@@ -11,9 +15,6 @@ import cbit.sql.MysqlKeyFactory;
 import cbit.sql.OracleKeyFactory;
 import cbit.sql.OraclePoolingConnectionFactory;
 import cbit.sql.Table;
-import cbit.util.SessionLog;
-import cbit.util.StdoutSessionLog;
-import cbit.util.document.KeyValue;
 import cbit.vcell.dictionary.CompoundInfo;
 import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.dictionary.EnzymeInfo;
@@ -313,7 +314,7 @@ public class DBSpeciesImport {
 			
 			//this.lock = new Object();
 			//this.con = conFactory.getConnection(lock);
-			this.dictDb = new cbit.vcell.modeldb.DictionaryDbDriver(new cbit.util.NullSessionLog(),new DBCacheTable(100000,1000000));
+			this.dictDb = new cbit.vcell.modeldb.DictionaryDbDriver(new org.vcell.util.NullSessionLog(),new DBCacheTable(100000,1000000));
 		}
 		public java.sql.Connection getConnection() throws java.sql.SQLException{
 			if(this.con == null){

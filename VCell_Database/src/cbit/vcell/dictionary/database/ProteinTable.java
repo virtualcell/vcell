@@ -1,10 +1,11 @@
 package cbit.vcell.dictionary.database;
 import java.util.Vector;
 
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
+
 import cbit.sql.Field;
 import cbit.sql.Table;
-import cbit.util.SessionLog;
-import cbit.util.document.KeyValue;
 import cbit.vcell.dictionary.BoundProtein;
 import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.FormalProtein;
@@ -60,8 +61,8 @@ public DBFormalSpecies[] getProteins(java.sql.ResultSet rset, SessionLog log,boo
 	String currentDescription = null;
 	double currentMolWeight = ProteinInfo.UNKNOWN_MW;
 	
-	cbit.util.document.KeyValue currentProteinID = null;
-	cbit.util.document.KeyValue currentDBSpeciesID = null;
+	org.vcell.util.document.KeyValue currentProteinID = null;
+	org.vcell.util.document.KeyValue currentDBSpeciesID = null;
 	
 	while(rset.next() || rset.isAfterLast()){
 			
@@ -101,11 +102,11 @@ public DBFormalSpecies[] getProteins(java.sql.ResultSet rset, SessionLog log,boo
 			currentSwissProtId = 	rset.getString(ProteinTable.table.swissProtEntryName.toString());
 			currentAccession =		rset.getString(ProteinTable.table.accessionNumber.toString());
 			currentOrganism = 		rset.getString(ProteinTable.table.organism.toString());
-				currentOrganism = (currentOrganism != null?cbit.util.TokenMangler.getSQLRestoredString(currentOrganism):null);
+				currentOrganism = (currentOrganism != null?org.vcell.util.TokenMangler.getSQLRestoredString(currentOrganism):null);
 			currentKeywords = rset.getString(ProteinTable.table.keywords.toString());
-				currentKeywords = (currentKeywords != null?cbit.util.TokenMangler.getSQLRestoredString(currentKeywords):null);
+				currentKeywords = (currentKeywords != null?org.vcell.util.TokenMangler.getSQLRestoredString(currentKeywords):null);
 			currentDescription = rset.getString(ProteinTable.table.description.toString());
-				currentDescription = (currentDescription != null?cbit.util.TokenMangler.getSQLRestoredString(currentDescription):null);
+				currentDescription = (currentDescription != null?org.vcell.util.TokenMangler.getSQLRestoredString(currentDescription):null);
 			currentMolWeight = rset.getDouble(ProteinTable.table.molWeight.toString());
 			if(rset.wasNull()){
 				currentMolWeight = ProteinInfo.UNKNOWN_MW;
@@ -115,7 +116,7 @@ public DBFormalSpecies[] getProteins(java.sql.ResultSet rset, SessionLog log,boo
 				currentDBSpeciesID =	new KeyValue(rset.getBigDecimal("dbspecies_id"));
 			}
 		}
-		currentAliasName = 	cbit.util.TokenMangler.getSQLRestoredString(rset.getString(ProteinAliasTable.table.name.toString()));
+		currentAliasName = 	org.vcell.util.TokenMangler.getSQLRestoredString(rset.getString(ProteinAliasTable.table.name.toString()));
 		if(!aliasNames.contains(currentAliasName)){
 			currentPreferred = rset.getString(ProteinAliasTable.table.preferred.toString());
 			if(currentPreferred.compareToIgnoreCase("true") == 0){
@@ -152,11 +153,11 @@ public DBFormalSpecies[] getProteins(java.sql.ResultSet rset, SessionLog log,boo
 public String getSQLUpdateList(ProteinInfo protein) {
     StringBuffer buffer = new StringBuffer();
     
-    buffer.append(organism + "=" + (protein.getOrganism() != null?"'"+cbit.util.TokenMangler.getSQLEscapedString(protein.getOrganism())+"'":"null") + ",");
-    buffer.append(accessionNumber + "=" + (protein.getAccession() != null?"'"+cbit.util.TokenMangler.getSQLEscapedString(protein.getAccession())+"'":"null") + ",");
-    buffer.append(swissProtEntryName + "=" + (protein.getFormalID() != null?"'"+cbit.util.TokenMangler.getSQLEscapedString(protein.getFormalID())+"'":"null") + ",");
-    buffer.append(keywords + "=" + (protein.getKeyWords() != null?"'"+cbit.util.TokenMangler.getSQLEscapedString(protein.getKeyWords())+"'":"null") + ",");
-    buffer.append(description + "=" + (protein.getDescription() != null?"'"+cbit.util.TokenMangler.getSQLEscapedString(protein.getDescription())+"'":"null") + ",");
+    buffer.append(organism + "=" + (protein.getOrganism() != null?"'"+org.vcell.util.TokenMangler.getSQLEscapedString(protein.getOrganism())+"'":"null") + ",");
+    buffer.append(accessionNumber + "=" + (protein.getAccession() != null?"'"+org.vcell.util.TokenMangler.getSQLEscapedString(protein.getAccession())+"'":"null") + ",");
+    buffer.append(swissProtEntryName + "=" + (protein.getFormalID() != null?"'"+org.vcell.util.TokenMangler.getSQLEscapedString(protein.getFormalID())+"'":"null") + ",");
+    buffer.append(keywords + "=" + (protein.getKeyWords() != null?"'"+org.vcell.util.TokenMangler.getSQLEscapedString(protein.getKeyWords())+"'":"null") + ",");
+    buffer.append(description + "=" + (protein.getDescription() != null?"'"+org.vcell.util.TokenMangler.getSQLEscapedString(protein.getDescription())+"'":"null") + ",");
     buffer.append(molWeight + "=" + protein.getMolecularWeight());
     
     return buffer.toString();
@@ -175,11 +176,11 @@ public String getSQLValueList(KeyValue key, ProteinInfo protein) {
     buffer.append("(");
     buffer.append(key + ",");
     
-    buffer.append((protein.getOrganism() != null?"'"+cbit.util.TokenMangler.getSQLEscapedString(protein.getOrganism())+"'":"null") + ",");
-    buffer.append((protein.getAccession() != null?"'"+cbit.util.TokenMangler.getSQLEscapedString(protein.getAccession())+"'":"null") + ",");
-    buffer.append((protein.getFormalID() != null?"'"+cbit.util.TokenMangler.getSQLEscapedString(protein.getFormalID())+"'":"null") + ",");
-    buffer.append((protein.getKeyWords() != null?"'"+cbit.util.TokenMangler.getSQLEscapedString(protein.getKeyWords())+"'":"null") + ",");
-    buffer.append((protein.getDescription() != null?"'"+cbit.util.TokenMangler.getSQLEscapedString(protein.getDescription())+"'":"null") + ",");
+    buffer.append((protein.getOrganism() != null?"'"+org.vcell.util.TokenMangler.getSQLEscapedString(protein.getOrganism())+"'":"null") + ",");
+    buffer.append((protein.getAccession() != null?"'"+org.vcell.util.TokenMangler.getSQLEscapedString(protein.getAccession())+"'":"null") + ",");
+    buffer.append((protein.getFormalID() != null?"'"+org.vcell.util.TokenMangler.getSQLEscapedString(protein.getFormalID())+"'":"null") + ",");
+    buffer.append((protein.getKeyWords() != null?"'"+org.vcell.util.TokenMangler.getSQLEscapedString(protein.getKeyWords())+"'":"null") + ",");
+    buffer.append((protein.getDescription() != null?"'"+org.vcell.util.TokenMangler.getSQLEscapedString(protein.getDescription())+"'":"null") + ",");
     buffer.append(molWeight + "=" + protein.getMolecularWeight());
 
     buffer.append(")");

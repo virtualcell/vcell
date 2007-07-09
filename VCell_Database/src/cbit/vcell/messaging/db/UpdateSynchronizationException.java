@@ -5,7 +5,7 @@ package cbit.vcell.messaging.db;
  * Creation date: (5/27/2003 11:53:54 AM)
  * @author: Fei Gao
  */
-public class UpdateSynchronizationException extends cbit.util.DataAccessException {
+public class UpdateSynchronizationException extends org.vcell.util.DataAccessException {
 /**
  * UpdateSynchronizationException constructor comment.
  */

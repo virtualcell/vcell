@@ -6,14 +6,15 @@ package cbit.vcell.modeldb;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.PermissionException;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.sql.ConnectionFactory;
 import cbit.sql.DBCacheTable;
-import cbit.util.DataAccessException;
-import cbit.util.ObjectNotFoundException;
-import cbit.util.PermissionException;
-import cbit.util.SessionLog;
-import cbit.util.document.KeyValue;
-import cbit.util.document.User;
 import cbit.vcell.export.ExportLog;
 /**
  * This type was created in VisualAge.
@@ -69,7 +70,7 @@ void deleteResultSetExport(User user,KeyValue eleKey,boolean bEnableRetry) throw
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -107,7 +108,7 @@ public void deleteResultSetInfoSQL(User user, KeyValue simKey, boolean bEnableRe
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -137,7 +138,7 @@ ExportLog getResultSetExport(User user, KeyValue simKey, boolean bEnableRetry) t
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -167,7 +168,7 @@ ExportLog[] getResultSetExports(User user, boolean bAll, boolean bEnableRetry) t
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -197,7 +198,7 @@ public SolverResultSetInfo getResultSetInfo(User user, KeyValue simKey, int jobI
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -227,7 +228,7 @@ SolverResultSetInfo[] getResultSetInfos(User user, KeyValue simKey, boolean bEna
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */

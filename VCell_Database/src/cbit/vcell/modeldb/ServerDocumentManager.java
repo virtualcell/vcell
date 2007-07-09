@@ -4,19 +4,20 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.TokenMangler;
+import org.vcell.util.document.BioModelChildSummary;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.MathModelChildSummary;
+import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionInfo;
+import org.vcell.util.document.Versionable;
+import org.vcell.util.document.VersionableType;
+
 import cbit.image.VCImage;
-import cbit.util.BeanUtils;
-import cbit.util.DataAccessException;
-import cbit.util.ObjectNotFoundException;
-import cbit.util.TokenMangler;
-import cbit.util.document.BioModelChildSummary;
-import cbit.util.document.KeyValue;
-import cbit.util.document.MathModelChildSummary;
-import cbit.util.document.User;
-import cbit.util.document.Version;
-import cbit.util.document.VersionInfo;
-import cbit.util.document.Versionable;
-import cbit.util.document.VersionableType;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.geometry.Geometry;
@@ -517,7 +518,7 @@ public String getMathModelXML(User user, KeyValue mathModelKey) throws DataAcces
  * Insert the method's description here.
  * Creation date: (2/5/01 4:58:40 PM)
  */
-boolean isChanged(User user, cbit.image.VCImage vcImage) throws cbit.util.DataAccessException {
+boolean isChanged(User user, cbit.image.VCImage vcImage) throws org.vcell.util.DataAccessException {
 	//
 	// identify versionable as it was last loaded from the database
 	//
@@ -592,7 +593,7 @@ boolean isChanged(User user, Geometry geometry) throws DataAccessException {
  * Insert the method's description here.
  * Creation date: (10/28/00 12:08:30 AM)
  */
-private boolean isChanged0(User user, cbit.util.document.Versionable versionable, Versionable savedVersionable) throws DataAccessException {
+private boolean isChanged0(User user, org.vcell.util.document.Versionable versionable, Versionable savedVersionable) throws DataAccessException {
 	/*
 	//
 	// identify versionable as it was last loaded from the database

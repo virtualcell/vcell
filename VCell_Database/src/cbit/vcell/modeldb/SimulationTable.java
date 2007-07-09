@@ -9,18 +9,19 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.SimulationVersion;
+import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionInfo;
+import org.vcell.util.document.VersionableType;
+
 import cbit.rmi.event.VCSimulationDataIdentifier;
 import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.sql.VersionTable;
-import cbit.util.DataAccessException;
-import cbit.util.SessionLog;
-import cbit.util.document.KeyValue;
-import cbit.util.document.SimulationVersion;
-import cbit.util.document.User;
-import cbit.util.document.Version;
-import cbit.util.document.VersionInfo;
-import cbit.util.document.VersionableType;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.simulation.Simulation;
 import cbit.vcell.simulation.SimulationInfo;
@@ -59,7 +60,7 @@ private SimulationTable() {
  * @param rset java.sql.ResultSet
  * @param log cbit.vcell.server.SessionLog
  */
-public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,cbit.util.DataAccessException {
+public VersionInfo getInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,org.vcell.util.DataAccessException {
 	
 	KeyValue mathRef = new KeyValue(rset.getBigDecimal(SimulationTable.table.mathRef.toString()));
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
@@ -79,8 +80,8 @@ public String getInfoSQL(User user,String extraConditions,String special) {
 	String sql;
 	//Field[] f = {userTable.userid,new cbit.sql.StarField(vTable)};
 	Field[] f = new Field[] {vTable.id,userTable.userid};
-	f = (Field[])cbit.util.BeanUtils.addElements(f,vTable.versionFields);
-	f = (Field[])cbit.util.BeanUtils.addElement(f,vTable.mathRef);
+	f = (Field[])org.vcell.util.BeanUtils.addElements(f,vTable.versionFields);
+	f = (Field[])org.vcell.util.BeanUtils.addElement(f,vTable.mathRef);
 
 	Table[] t = {vTable,userTable};
 
@@ -98,7 +99,7 @@ public String getInfoSQL(User user,String extraConditions,String special) {
  * @param rset java.sql.ResultSet
  * @param log cbit.vcell.server.SessionLog
  */
-public SolverResultSetInfo getResultSetInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,cbit.util.DataAccessException {
+public SolverResultSetInfo getResultSetInfo(ResultSet rset,Connection con,SessionLog log) throws SQLException,org.vcell.util.DataAccessException {
 	
 	KeyValue mathRef = new KeyValue(rset.getBigDecimal(SimulationTable.table.mathRef.toString()));
 	java.math.BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
@@ -131,9 +132,9 @@ public String getResultSetInfoSQL(User user,String extraConditions,String specia
 	//Field[] f = {userTable.userid,new cbit.sql.StarField(vTable),
 		         //rsetTable.dataFilePath,rsetTable.startDate,rsetTable.endDate};
 	Field[] f = new Field[] {vTable.id,userTable.userid};
-	f = (Field[])cbit.util.BeanUtils.addElements(f,vTable.versionFields);
-	f = (Field[])cbit.util.BeanUtils.addElement(f,vTable.mathRef);
-	f = (Field[])cbit.util.BeanUtils.addElements(f,new Field[] {rsetTable.dataFilePath,rsetTable.startDate,rsetTable.endDate,rsetTable.jobIndex});
+	f = (Field[])org.vcell.util.BeanUtils.addElements(f,vTable.versionFields);
+	f = (Field[])org.vcell.util.BeanUtils.addElement(f,vTable.mathRef);
+	f = (Field[])org.vcell.util.BeanUtils.addElements(f,new Field[] {rsetTable.dataFilePath,rsetTable.startDate,rsetTable.endDate,rsetTable.jobIndex});
 	
 	Table[] t = {vTable,userTable,rsetTable};
 	
@@ -162,8 +163,8 @@ public Simulation getSimulation(ResultSet rset, SessionLog log, Connection con, 
 	//
 //	System.out.println("taskDescriptionString '"+taskDescriptionString+"'");
 	String taskDescriptionString = rset.getString(SimulationTable.table.taskDescription.getUnqualifiedColName());
-	taskDescriptionString = cbit.util.TokenMangler.getSQLRestoredString(taskDescriptionString);
-	cbit.util.CommentStringTokenizer solverTaskDescTokens = new cbit.util.CommentStringTokenizer(taskDescriptionString);
+	taskDescriptionString = org.vcell.util.TokenMangler.getSQLRestoredString(taskDescriptionString);
+	org.vcell.util.CommentStringTokenizer solverTaskDescTokens = new org.vcell.util.CommentStringTokenizer(taskDescriptionString);
 	
 	//
 	// get MathOverride Data (language) (MUST BE READ FIRST)
@@ -189,7 +190,7 @@ public Simulation getSimulation(ResultSet rset, SessionLog log, Connection con, 
 		buffer.append("\n}\n");
 		mathOverridesString = buffer.toString();
 	}
-	cbit.util.CommentStringTokenizer mathOverrideTokens = new cbit.util.CommentStringTokenizer(mathOverridesString);
+	org.vcell.util.CommentStringTokenizer mathOverrideTokens = new org.vcell.util.CommentStringTokenizer(mathOverridesString);
 
 	//
 	// Get Version
@@ -214,7 +215,7 @@ public Simulation getSimulation(ResultSet rset, SessionLog log, Connection con, 
 		int msY = rset.getInt(SimulationTable.table.meshSpecY.getUnqualifiedColName());
 		int msZ = rset.getInt(SimulationTable.table.meshSpecZ.getUnqualifiedColName());
 		cbit.vcell.simulation.MeshSpecification meshSpec = new cbit.vcell.simulation.MeshSpecification(simulation.getMathDescription().getGeometry());
-		meshSpec.setSamplingSize(new cbit.util.ISize(msX,msY,msZ));
+		meshSpec.setSamplingSize(new org.vcell.util.ISize(msX,msY,msZ));
 		simulation.getMeshSpecification().copyFrom(meshSpec);
 	}
 	
@@ -248,7 +249,7 @@ public String getSQLValueList(Simulation simulation,KeyValue mathKey,Version ver
 		buffer.append(DbDriver.INSERT_CLOB_HERE+","+"null"+",");
 	}
 	
-	buffer.append((solverTD != null?"'"+cbit.util.TokenMangler.getSQLEscapedString(solverTD.getVCML())+"'":"null")+",");
+	buffer.append((solverTD != null?"'"+org.vcell.util.TokenMangler.getSQLEscapedString(solverTD.getVCML())+"'":"null")+",");
 	if (simulation.getMathDescription() != null &&
 		simulation.getMathDescription().getGeometry() != null &&
 		simulation.getMathDescription().getGeometry().getDimension()>0){

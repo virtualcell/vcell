@@ -3,10 +3,11 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.util.document.User;
+
 import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.sql.VersionTable;
-import cbit.util.document.User;
 /**
  * This type was created in VisualAge.
  */
@@ -46,38 +47,38 @@ public static String enforceOwnershipDelete(User user, VersionTable vTable, Stri
  * @param conditions java.lang.String[]
  * @param special java.lang.String
  */
-public static String enforceOwnershipInsert(User user, VersionTable vTable, Object[] valueData, cbit.util.document.Version version) 
-									throws cbit.util.DataAccessException {
+public static String enforceOwnershipInsert(User user, VersionTable vTable, Object[] valueData, org.vcell.util.document.Version version) 
+									throws org.vcell.util.DataAccessException {
 	//
 	if (!version.getOwner().compareEqual(user)) {
-		throw new cbit.util.DataAccessException("enforceOwnershipInsert User " + user + " Not Equal to Version owner " + version.getOwner());
+		throw new org.vcell.util.DataAccessException("enforceOwnershipInsert User " + user + " Not Equal to Version owner " + version.getOwner());
 	}
 	StringBuffer sb = new StringBuffer();
 	sb.append("INSERT INTO " + vTable.getTableName() + " ");
 	sb.append(vTable.getSQLColumnList());
 	sb.append(" VALUES ");
 	if (vTable instanceof GeometryTable) {
-		sb.append(((GeometryTable) vTable).getSQLValueList(	(cbit.util.document.KeyValue) valueData[0], 
+		sb.append(((GeometryTable) vTable).getSQLValueList(	(org.vcell.util.document.KeyValue) valueData[0], 
 															(cbit.vcell.geometry.Geometry) valueData[1], 
-															(cbit.util.document.KeyValue) valueData[2], 
+															(org.vcell.util.document.KeyValue) valueData[2], 
 															version));
 	}else if (vTable instanceof ImageTable) {
 		sb.append(((ImageTable) vTable).getSQLValueList(	(cbit.image.VCImage) valueData[0], 
-															(cbit.util.document.KeyValue) valueData[1], 
+															(org.vcell.util.document.KeyValue) valueData[1], 
 															version));
 	}else if (vTable instanceof SimContextTable) {
 		sb.append(((SimContextTable) vTable).getSQLValueList(	(cbit.vcell.modelapp.SimulationContext) valueData[0], 
-																(cbit.util.document.KeyValue) valueData[1],
-																(cbit.util.document.KeyValue) valueData[2],
-																(cbit.util.document.KeyValue) valueData[3],
+																(org.vcell.util.document.KeyValue) valueData[1],
+																(org.vcell.util.document.KeyValue) valueData[2],
+																(org.vcell.util.document.KeyValue) valueData[3],
 																version));
 	}else if (vTable instanceof MathDescTable) {
 		sb.append(((MathDescTable) vTable).getSQLValueList(	(cbit.vcell.math.MathDescription) valueData[0], 
-															(cbit.util.document.KeyValue) valueData[1], 
+															(org.vcell.util.document.KeyValue) valueData[1], 
 															version));
 	}else if (vTable instanceof SimulationTable) {
 		sb.append(((SimulationTable) vTable).getSQLValueList(	(cbit.vcell.simulation.Simulation) valueData[0], 
-															(cbit.util.document.KeyValue) valueData[1], 
+															(org.vcell.util.document.KeyValue) valueData[1], 
 															version));
 	}else if (vTable instanceof BioModelTable) {
 		sb.append(((BioModelTable) vTable).getSQLValueList(	(cbit.vcell.biomodel.BioModelMetaData) valueData[0],
@@ -119,7 +120,7 @@ public static String enforceOwnershipSelect(User user, Field[] fields, Table[] t
  */ 
 public static String enforceOwnershipSelect(User user, Field[] fields, Table[] tables, String conditions, String special, boolean bCheckPermission) {
 
-	boolean isAdministrator = user.getName().equals(cbit.util.PropertyLoader.ADMINISTRATOR_ACCOUNT) && user.getID().equals(new cbit.util.document.KeyValue("2"));
+	boolean isAdministrator = user.getName().equals(org.vcell.util.PropertyLoader.ADMINISTRATOR_ACCOUNT) && user.getID().equals(new org.vcell.util.document.KeyValue("2"));
 	if (bAllowAdministrativeAccess && isAdministrator){
 		bCheckPermission = false;
 	}
@@ -284,7 +285,7 @@ static String getVTableDirectSelectClause(VersionTable vTable,User user) {
 							//
 							// the object is public
 							//
-							vTable.privacy.getQualifiedColName() + " = " + cbit.util.document.GroupAccess.GROUPACCESS_ALL +
+							vTable.privacy.getQualifiedColName() + " = " + org.vcell.util.document.GroupAccess.GROUPACCESS_ALL +
 							" OR " +
 							//
 							// this user is in the access control list for this object

@@ -1,7 +1,8 @@
 package cbit.vcell.modeldb;
 
+import org.vcell.util.SessionLog;
+
 import cbit.sql.ConnectionFactory;
-import cbit.util.SessionLog;
 /**
  * Insert the type's description here.
  * Creation date: (8/28/2003 4:57:38 PM)
@@ -17,7 +18,7 @@ public abstract class AbstractDBTopLevel {
  * @param confactory cbit.sql.ConnectionFactory
  * @param argSessionLog cbit.vcell.server.SessionLog
  */
-AbstractDBTopLevel(cbit.sql.ConnectionFactory argConFactory, cbit.util.SessionLog argSessionLog) {
+AbstractDBTopLevel(cbit.sql.ConnectionFactory argConFactory, org.vcell.util.SessionLog argSessionLog) {
 	this.conFactory = argConFactory;
 	this.log = argSessionLog;
 }
@@ -25,13 +26,13 @@ AbstractDBTopLevel(cbit.sql.ConnectionFactory argConFactory, cbit.util.SessionLo
  * Insert the method's description here.
  * Creation date: (9/12/2003 9:24:49 AM)
  */
-protected void handle_DataAccessException_SQLException(Throwable t) throws cbit.util.DataAccessException, java.sql.SQLException {
+protected void handle_DataAccessException_SQLException(Throwable t) throws org.vcell.util.DataAccessException, java.sql.SQLException {
 	if (t == null){
 		return;
 	}
 	t.printStackTrace(System.out);
-	if (t instanceof cbit.util.DataAccessException){
-		throw (cbit.util.DataAccessException)t;
+	if (t instanceof org.vcell.util.DataAccessException){
+		throw (org.vcell.util.DataAccessException)t;
 	}else if (t instanceof java.sql.SQLException){
 		throw (java.sql.SQLException)t;
 	}else if (t instanceof Error){

@@ -4,10 +4,10 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.document.VersionableFamily;
-import cbit.util.document.VersionableRelationship;
-import cbit.util.document.VersionableType;
-import cbit.util.document.VersionableTypeVersion;
+import org.vcell.util.document.VersionableFamily;
+import org.vcell.util.document.VersionableRelationship;
+import org.vcell.util.document.VersionableType;
+import org.vcell.util.document.VersionableTypeVersion;
 /**
  * This type was created in VisualAge.
  */
@@ -24,8 +24,8 @@ public static void main(java.lang.String[] args) {
 	try {
 		String versionableTypeS = args[0];
 		String keyValueS = args[1];
-		cbit.util.document.KeyValue rootKey = new cbit.util.document.KeyValue(keyValueS); //new cbit.sql.KeyValue("1368");
-		cbit.util.document.VersionableType rootType = null; //cbit.sql.VersionableType.VCImage;
+		org.vcell.util.document.KeyValue rootKey = new org.vcell.util.document.KeyValue(keyValueS); //new cbit.sql.KeyValue("1368");
+		org.vcell.util.document.VersionableType rootType = null; //cbit.sql.VersionableType.VCImage;
 		if (VersionableType.VCImage.toString().equals(versionableTypeS)) {
 			rootType = VersionableType.VCImage;
 		} else

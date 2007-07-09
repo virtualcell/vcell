@@ -1,8 +1,9 @@
 package cbit.vcell.dictionary.database;
 
+import org.vcell.util.document.KeyValue;
+
 import cbit.sql.Field;
 import cbit.sql.Table;
-import cbit.util.document.KeyValue;
 
 /**
  * Represents a table for storing compound information in a database
@@ -42,7 +43,7 @@ public class CompoundAliasTable extends Table {
         StringBuffer buffer = new StringBuffer();
 		buffer.append(id + "=" + newKey + "'");
         buffer.append(compoundRef + "=" + argCompoundRef + ",");
-        buffer.append(name + "='" + cbit.util.TokenMangler.getSQLEscapedString(argName) + "',");
+        buffer.append(name + "='" + org.vcell.util.TokenMangler.getSQLEscapedString(argName) + "',");
         buffer.append(preferred + "='" + (bPreferred?"T":"F") + "'");
         return buffer.toString();
     }
@@ -64,7 +65,7 @@ public class CompoundAliasTable extends Table {
         buffer.append("(");
         buffer.append(newKey + ",");
         buffer.append(argCompoundRef + ",");
-        buffer.append("'" + cbit.util.TokenMangler.getSQLEscapedString(argName) + "',");
+        buffer.append("'" + org.vcell.util.TokenMangler.getSQLEscapedString(argName) + "',");
         buffer.append("'" + (bPreferred?"T":"F") + "'");
         buffer.append(")");
         return buffer.toString();

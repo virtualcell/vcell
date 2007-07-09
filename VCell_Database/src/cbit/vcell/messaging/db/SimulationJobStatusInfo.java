@@ -1,6 +1,7 @@
 package cbit.vcell.messaging.db;
+import org.vcell.util.document.User;
+
 import cbit.rmi.event.SimulationJobStatus;
-import cbit.util.document.User;
 
 /**
  * Insert the type's description here.

@@ -3,15 +3,16 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Vector;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.UserInfo;
+
 import cbit.rmi.event.SimulationJobStatus;
 import cbit.rmi.event.VCellServerID;
 import cbit.sql.ConnectionFactory;
-import cbit.util.DataAccessException;
-import cbit.util.ObjectNotFoundException;
-import cbit.util.SessionLog;
-import cbit.util.document.KeyValue;
-import cbit.util.document.User;
-import cbit.util.document.UserInfo;
 import cbit.vcell.messaging.db.SimulationJobDbDriver;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
@@ -90,7 +91,7 @@ SimulationJobStatus getSimulationJobStatus(KeyValue simKey, int jobIndex, boolea
  * @return java.util.List
  * @param conditions java.lang.String
  */
-public java.util.List getSimulationJobStatus(String conditions, boolean bEnableRetry) throws java.sql.SQLException, cbit.util.DataAccessException {
+public java.util.List getSimulationJobStatus(String conditions, boolean bEnableRetry) throws java.sql.SQLException, org.vcell.util.DataAccessException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
@@ -185,7 +186,7 @@ SimulationStatus[] getSimulationStatus(KeyValue simulationKeys[], boolean bEnabl
 			if (v.isEmpty()) {
 				simStatuses[i] = null;
 			} else {
-				simStatuses[i] = new SimulationStatus((SimulationJobStatus[])cbit.util.BeanUtils.getArray(v, SimulationJobStatus.class));
+				simStatuses[i] = new SimulationStatus((SimulationJobStatus[])org.vcell.util.BeanUtils.getArray(v, SimulationJobStatus.class));
 			}
 		}
 		return simStatuses;
@@ -243,7 +244,7 @@ SimulationStatus getSimulationStatus(KeyValue simKey, boolean bEnableRetry) thro
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -275,7 +276,7 @@ User getUser(String userid, String password, boolean bEnableRetry)
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -306,7 +307,7 @@ User getUser(String userid, boolean bEnableRetry) throws DataAccessException, ja
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -337,7 +338,7 @@ User getUserFromSimulationKey(KeyValue simKey, boolean bEnableRetry) throws Data
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
@@ -369,7 +370,7 @@ UserInfo getUserInfo(KeyValue key, boolean bEnableRetry)
  * @param object cbit.sql.Versionable
  * @param name java.lang.String
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */

@@ -1,11 +1,12 @@
 package cbit.vcell.modeldb;
 import java.sql.Connection;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.rmi.event.SimulationJobStatus;
 import cbit.rmi.event.VCellServerID;
-import cbit.util.DataAccessException;
-import cbit.util.document.KeyValue;
-import cbit.util.document.User;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
 public interface AdminDatabaseServerXA {
 /**
@@ -13,7 +14,7 @@ public interface AdminDatabaseServerXA {
  * Creation date: (10/4/2005 1:06:44 PM)
  * @return cbit.vcell.messaging.db.SimulationJobStatus[]
  * @param con java.sql.Connection
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
 SimulationJobStatusInfo[] getActiveJobs(java.sql.Connection con, VCellServerID[] serverIDs) throws DataAccessException;
 
@@ -24,7 +25,7 @@ SimulationJobStatusInfo[] getActiveJobs(java.sql.Connection con, VCellServerID[]
  * @return cbit.vcell.messaging.db.SimulationJobStatus
  * @param con java.sql.Connection
  * @param intervalSeconds long
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
 SimulationJobStatus getNextObsoleteSimulation(Connection con, long intervalSeconds) throws DataAccessException;
 
@@ -36,7 +37,7 @@ SimulationJobStatus getNextObsoleteSimulation(Connection con, long intervalSecon
  * @param con java.sql.Connection
  * @param simKey cbit.sql.KeyValue
  * @param jobIndex int
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
 SimulationJobStatus getSimulationJobStatus(Connection con, KeyValue simKey, int jobIndex) throws DataAccessException;
 
@@ -48,7 +49,7 @@ SimulationJobStatus getSimulationJobStatus(Connection con, KeyValue simKey, int 
  * @param con java.sql.Connection
  * @param bActiveOnly boolean
  * @param userOnly cbit.vcell.server.User
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
 SimulationJobStatus[] getSimulationJobStatus(Connection con, boolean bActiveOnly, User userOnly) throws DataAccessException;
 
@@ -59,7 +60,7 @@ SimulationJobStatus[] getSimulationJobStatus(Connection con, boolean bActiveOnly
  * @return cbit.vcell.messaging.db.SimulationJobStatus
  * @param con java.sql.Connection
  * @param simulationJobStatus cbit.vcell.messaging.db.SimulationJobStatus
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
 SimulationJobStatus insertSimulationJobStatus(Connection con, SimulationJobStatus simulationJobStatus) throws DataAccessException;
 
@@ -71,7 +72,7 @@ SimulationJobStatus insertSimulationJobStatus(Connection con, SimulationJobStatu
  * @param con java.sql.Connection
  * @param oldSimulationJobStatus cbit.vcell.messaging.db.SimulationJobStatus
  * @param newSimulationJobStatus cbit.vcell.messaging.db.SimulationJobStatus
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
 SimulationJobStatus updateSimulationJobStatus(Connection con, SimulationJobStatus oldSimulationJobStatus, SimulationJobStatus newSimulationJobStatus) throws DataAccessException;
 }

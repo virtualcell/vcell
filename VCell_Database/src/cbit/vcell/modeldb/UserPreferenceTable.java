@@ -40,15 +40,15 @@ private UserPreferenceTable() {
  * @return java.util.Dictionary
  * @param rset java.sql.ResultSet
  */
-public cbit.util.Preference[] getUserPreferences(ResultSet rset) throws SQLException{
+public org.vcell.util.Preference[] getUserPreferences(ResultSet rset) throws SQLException{
 
 	java.util.Vector preferenceList = new java.util.Vector();
 	while (rset.next()){
 		String propKey = rset.getString(UserPreferenceTable.table.userPrefKey.getUnqualifiedColName());
 		String propValue = rset.getString(UserPreferenceTable.table.userPrefValue.getUnqualifiedColName());
-		preferenceList.add(new cbit.util.Preference(cbit.util.TokenMangler.getSQLRestoredString(propKey),cbit.util.TokenMangler.getSQLRestoredString(propValue)));
+		preferenceList.add(new org.vcell.util.Preference(org.vcell.util.TokenMangler.getSQLRestoredString(propKey),org.vcell.util.TokenMangler.getSQLRestoredString(propValue)));
 	}
 
-	return (cbit.util.Preference[])cbit.util.BeanUtils.getArray(preferenceList,cbit.util.Preference.class);
+	return (org.vcell.util.Preference[])org.vcell.util.BeanUtils.getArray(preferenceList,org.vcell.util.Preference.class);
 }
 }

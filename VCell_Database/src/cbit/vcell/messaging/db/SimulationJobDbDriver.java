@@ -6,12 +6,13 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.rmi.event.SimulationJobStatus;
 import cbit.rmi.event.VCellServerID;
-import cbit.util.DataAccessException;
-import cbit.util.SessionLog;
-import cbit.util.document.KeyValue;
-import cbit.util.document.User;
 import cbit.vcell.solvers.SimpleJobStatus;
 import cbit.vcell.modeldb.DatabaseConstants;
 import cbit.vcell.modeldb.SimulationTable;
@@ -28,7 +29,7 @@ public class SimulationJobDbDriver {
 	private static final cbit.vcell.modeldb.UserTable userTable = cbit.vcell.modeldb.UserTable.table;
 	private static final cbit.vcell.modeldb.MathDescTable mathDescTable = cbit.vcell.modeldb.MathDescTable.table;
 	private static final cbit.vcell.modeldb.GeometryTable geometryTable = cbit.vcell.modeldb.GeometryTable.table;
-	private cbit.util.SessionLog log = null;
+	private org.vcell.util.SessionLog log = null;
 	private java.lang.String standardJobStatusSQL = null;
 
 /**
@@ -273,7 +274,7 @@ public List getSimulationJobStatus(Connection con, String conditions) throws jav
 			try {
 				String taskDesc = rset.getString(SimulationTable.table.taskDescription.getUnqualifiedColName());
 				if (taskDesc != null) {
-					std = new cbit.vcell.simulation.SolverTaskDescription(null, new cbit.util.CommentStringTokenizer(cbit.util.TokenMangler.getSQLRestoredString(taskDesc)));
+					std = new cbit.vcell.simulation.SolverTaskDescription(null, new org.vcell.util.CommentStringTokenizer(org.vcell.util.TokenMangler.getSQLRestoredString(taskDesc)));
 				}
 				
 			} catch (DataAccessException ex) {

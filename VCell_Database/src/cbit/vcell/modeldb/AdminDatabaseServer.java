@@ -6,11 +6,12 @@ package cbit.vcell.modeldb;
 ©*/
 import java.rmi.RemoteException;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.UserInfo;
+
 import cbit.rmi.event.SimulationJobStatus;
-import cbit.util.DataAccessException;
-import cbit.util.document.KeyValue;
-import cbit.util.document.User;
-import cbit.util.document.UserInfo;
 
 /**
  * This type was created in VisualAge.
@@ -84,7 +85,7 @@ SimulationJobStatus insertSimulationJobStatus(SimulationJobStatus simulationJobS
  * @param userid java.lang.String
  * @param password java.lang.String
  */
-cbit.util.document.UserInfo insertUserInfo(cbit.util.document.UserInfo newUserInfo) throws RemoteException, DataAccessException;
+org.vcell.util.document.UserInfo insertUserInfo(org.vcell.util.document.UserInfo newUserInfo) throws RemoteException, DataAccessException;
 /**
  * Insert the method's description here.
  * Creation date: (1/31/2003 2:30:21 PM)
@@ -99,5 +100,5 @@ SimulationJobStatus updateSimulationJobStatus(SimulationJobStatus oldSimulationJ
  * @param userid java.lang.String
  * @param password java.lang.String
  */
-cbit.util.document.UserInfo updateUserInfo(cbit.util.document.UserInfo newUserInfo) throws RemoteException, DataAccessException;
+org.vcell.util.document.UserInfo updateUserInfo(org.vcell.util.document.UserInfo newUserInfo) throws RemoteException, DataAccessException;
 }

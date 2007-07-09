@@ -5,9 +5,10 @@ package cbit.vcell.modeldb;
  * All rights reserved.
 ©*/
 
+import org.vcell.util.document.KeyValue;
+
 import cbit.sql.Field;
 import cbit.sql.Table;
-import cbit.util.document.KeyValue;
 import cbit.vcell.modelapp.SpeciesContextSpec;
 /**
  * This type was created in VisualAge.

@@ -1,8 +1,9 @@
 package cbit.vcell.dictionary.database;
 
+import org.vcell.util.document.KeyValue;
+
 import cbit.sql.Field;
 import cbit.sql.Table;
-import cbit.util.document.KeyValue;
 
 /**
  * Represents a table for storing Protein names and aliases in a db table
@@ -42,7 +43,7 @@ public class ProteinAliasTable extends Table {
         StringBuffer buffer = new StringBuffer();
 		buffer.append(id + "=" + newKey + "'");
         buffer.append(proteinRef + "=" + argProteinRef + ",");
-        buffer.append(name + "='" + cbit.util.TokenMangler.getSQLEscapedString(argName) + "',");
+        buffer.append(name + "='" + org.vcell.util.TokenMangler.getSQLEscapedString(argName) + "',");
         buffer.append(preferred + "='" + (bPreferred?"T":"F") + "'");
         return buffer.toString();
     }
@@ -64,7 +65,7 @@ public String getSQLValueList(
     buffer.append("(");
     buffer.append(newKey + ",");
     buffer.append(argProteinRef + ",");
-    buffer.append("'" + cbit.util.TokenMangler.getSQLEscapedString(argName) + "',");
+    buffer.append("'" + org.vcell.util.TokenMangler.getSQLEscapedString(argName) + "',");
     buffer.append("'" + (bPreferred?"T":"F") + "'");
     buffer.append(")");
     return buffer.toString();

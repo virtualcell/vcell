@@ -9,15 +9,16 @@ import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-import cbit.util.CacheException;
-import cbit.util.CacheStatus;
-import cbit.util.Cacheable;
-import cbit.util.Immutable;
-import cbit.util.Ping;
-import cbit.util.Pingable;
-import cbit.util.PropertyLoader;
-import cbit.util.TimeWrapper;
-import cbit.util.document.KeyValue;
+import org.vcell.util.CacheException;
+import org.vcell.util.CacheStatus;
+import org.vcell.util.Cacheable;
+import org.vcell.util.Immutable;
+import org.vcell.util.Ping;
+import org.vcell.util.Pingable;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.TimeWrapper;
+import org.vcell.util.document.KeyValue;
+
 /**
  * This type was created in VisualAge.
  */
@@ -207,7 +208,7 @@ public void putProtected(KeyValue key, Cacheable cacheable) {
 	long dataSize = 1000;
 	byte[] objData = null;
 	try {
-		objData = cbit.util.BeanUtils.toSerialized(cacheable);
+		objData = org.vcell.util.BeanUtils.toSerialized(cacheable);
 		//
 		// dataSize is length*3 because three copies are stored in DbObjectWrapper (reference/bytes/working).
 		//
@@ -253,7 +254,7 @@ public void putUnprotected(KeyValue key, Cacheable cacheable) {
 	}
 	long dataSize = 1000;
 	try {
-		byte[] objData = cbit.util.BeanUtils.toSerialized(cacheable);
+		byte[] objData = org.vcell.util.BeanUtils.toSerialized(cacheable);
 		dataSize = objData.length;
 	}catch (IOException e){
 		e.printStackTrace(System.out);

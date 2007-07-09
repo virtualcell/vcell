@@ -5,15 +5,16 @@ package cbit.vcell.modeldb;
 ©*/
 import java.rmi.RemoteException;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.UserInfo;
+
 import cbit.rmi.event.SimulationJobStatus;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
-import cbit.util.DataAccessException;
-import cbit.util.PropertyLoader;
-import cbit.util.SessionLog;
-import cbit.util.document.KeyValue;
-import cbit.util.document.User;
-import cbit.util.document.UserInfo;
 
 /**
  * This type was created in VisualAge.
@@ -80,7 +81,7 @@ public java.util.List getSimulationJobStatus(java.lang.String conditions) throws
  * @param userOnly cbit.vcell.server.User
  * @exception java.rmi.RemoteException The exception description.
  */
-public SimulationJobStatus[] getSimulationJobStatus(boolean bActiveOnly, cbit.util.document.User userOnly) throws DataAccessException {
+public SimulationJobStatus[] getSimulationJobStatus(boolean bActiveOnly, org.vcell.util.document.User userOnly) throws DataAccessException {
 	try {
 		return adminDbTop.getSimulationJobStatus(bActiveOnly,userOnly,true);
 	}catch (Throwable e){
@@ -122,7 +123,7 @@ public User getUser(String userid, String password) throws DataAccessException {
  * @param userid java.lang.String
  * @param password java.lang.String
  */
-public cbit.util.document.User getUserFromSimulationKey(cbit.util.document.KeyValue simKey) throws DataAccessException {
+public org.vcell.util.document.User getUserFromSimulationKey(org.vcell.util.document.KeyValue simKey) throws DataAccessException {
 	try {
 		return adminDbTop.getUserFromSimulationKey(simKey,true);
 	} catch (Throwable e){
@@ -180,7 +181,7 @@ public SimulationJobStatus insertSimulationJobStatus(SimulationJobStatus simulat
  * @return cbit.sql.UserInfo
  * @param newUserInfo cbit.sql.UserInfo
  */
-public cbit.util.document.UserInfo insertUserInfo(UserInfo newUserInfo) throws DataAccessException {
+public org.vcell.util.document.UserInfo insertUserInfo(UserInfo newUserInfo) throws DataAccessException {
 	try {
 		KeyValue key = adminDbTop.insertUserInfo(newUserInfo,true);
 		return adminDbTop.getUserInfo(key,true);

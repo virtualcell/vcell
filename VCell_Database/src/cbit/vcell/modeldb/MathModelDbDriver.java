@@ -10,21 +10,22 @@ import java.sql.Statement;
 import java.util.Enumeration;
 import java.util.Vector;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.MathModelChildSummary;
+import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionFlag;
+import org.vcell.util.document.Versionable;
+import org.vcell.util.document.VersionableType;
+
 import cbit.sql.DBCacheTable;
 import cbit.sql.Field;
 import cbit.sql.InsertHashtable;
 import cbit.sql.RecordChangedException;
 import cbit.sql.Table;
-import cbit.util.DataAccessException;
-import cbit.util.ObjectNotFoundException;
-import cbit.util.SessionLog;
-import cbit.util.document.KeyValue;
-import cbit.util.document.MathModelChildSummary;
-import cbit.util.document.User;
-import cbit.util.document.Version;
-import cbit.util.document.VersionFlag;
-import cbit.util.document.Versionable;
-import cbit.util.document.VersionableType;
 import cbit.vcell.mathmodel.MathModelMetaData;
 /**
  * This type was created in VisualAge.
@@ -51,7 +52,7 @@ public MathModelDbDriver(DBCacheTable argdbc,SimulationDbDriver argSimDB, MathDe
  * only the owner can delete a Model
  */
 private void deleteMathModelMetaDataSQL(Connection con, User user, KeyValue mathModelKey) 
-				throws SQLException,cbit.util.DependencyException,DataAccessException,cbit.util.PermissionException,ObjectNotFoundException {
+				throws SQLException,org.vcell.util.DependencyException,DataAccessException,org.vcell.util.PermissionException,ObjectNotFoundException {
 
 
 	//
@@ -108,8 +109,8 @@ private void deleteMathModelMetaDataSQL(Connection con, User user, KeyValue math
  * @param versionKey cbit.sql.KeyValue
  */
 public void deleteVersionable(Connection con, User user, VersionableType vType, KeyValue vKey) 
-				throws cbit.util.DependencyException, ObjectNotFoundException,
-						SQLException,DataAccessException,cbit.util.PermissionException {
+				throws org.vcell.util.DependencyException, ObjectNotFoundException,
+						SQLException,DataAccessException,org.vcell.util.PermissionException {
 
 	deleteVersionableInit(con, user, vType, vKey);
 	if (vType.equals(VersionableType.MathModelMetaData)){
@@ -235,7 +236,7 @@ private MathModelMetaData getMathModelMetaData(Connection con,User user, KeyValu
 		if (rset.next()) {
 			mathModelMetaData = mathModelTable.getMathModelMetaData(rset,con,log,simKeys);
 		} else {
-			throw new cbit.util.ObjectNotFoundException("MathModel id=" + mathModelKey + " not found for user '" + user + "'");
+			throw new org.vcell.util.ObjectNotFoundException("MathModel id=" + mathModelKey + " not found for user '" + user + "'");
 		}
 	} finally {
 		stmt.close(); // Release resources include resultset

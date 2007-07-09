@@ -8,14 +8,15 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.vcell.util.SessionLog;
+import org.vcell.util.StdoutSessionLog;
+
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
 import cbit.sql.MysqlConnectionFactory;
 import cbit.sql.MysqlKeyFactory;
 import cbit.sql.OracleKeyFactory;
 import cbit.sql.OraclePoolingConnectionFactory;
-import cbit.util.SessionLog;
-import cbit.util.StdoutSessionLog;
 /**
  * Insert the type's description here.
  * Creation date: (2/7/2003 11:59:47 PM)
@@ -660,7 +661,7 @@ private static void fixBadSpeciesNames(Statement stmt) throws SQLException{
 	if(rset != null){
 		while(rset.next()){
 			String speciesName = rset.getString(cbit.vcell.modeldb.SpeciesTable.table.commonName.toString());
-			String fixedSpeciesName = cbit.util.TokenMangler.fixTokenStrict(speciesName);
+			String fixedSpeciesName = org.vcell.util.TokenMangler.fixTokenStrict(speciesName);
 			if(!speciesName.equals(fixedSpeciesName)){
 				fixedSpeciesIDV.add(rset.getBigDecimal(cbit.vcell.modeldb.SpeciesTable.table.id.toString()));
 				String pad = "";
@@ -684,8 +685,8 @@ private static void fixBadSpeciesNames(Statement stmt) throws SQLException{
 			"INSERT INTO "+tempspnameTableName + " VALUES " +
 			"("+
 			((java.math.BigDecimal)fixedSpeciesIDV.get(i)).toString()+","+
-			"'"+cbit.util.TokenMangler.getEscapedString(origSpeciesName)+"'"+","+
-			"'"+cbit.util.TokenMangler.getEscapedString(fixedSpeciesName)+"'"+
+			"'"+org.vcell.util.TokenMangler.getEscapedString(origSpeciesName)+"'"+","+
+			"'"+org.vcell.util.TokenMangler.getEscapedString(fixedSpeciesName)+"'"+
 			")";
 			
 		doUpdate(sql,stmt);
@@ -740,7 +741,7 @@ public static void main(String[] args) {
         SessionLog log = new StdoutSessionLog("ChangeVCellSchema");
         ConnectionFactory conFactory = null;
         KeyFactory keyFactory = null;
-        new cbit.util.PropertyLoader();
+        new org.vcell.util.PropertyLoader();
         if (args[0].equalsIgnoreCase("ORACLE")) {
             conFactory =
                 new OraclePoolingConnectionFactory(

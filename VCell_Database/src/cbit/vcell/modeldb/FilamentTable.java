@@ -4,10 +4,11 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.util.DataAccessException;
+import org.vcell.util.document.KeyValue;
+
 import cbit.sql.Field;
 import cbit.sql.Table;
-import cbit.util.DataAccessException;
-import cbit.util.document.KeyValue;
 /**
  * This type was created in VisualAge.
  */

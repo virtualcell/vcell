@@ -9,24 +9,25 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.DependencyException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.PermissionException;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.Versionable;
+import org.vcell.util.document.VersionableType;
+
 import cbit.sql.DBCacheTable;
 import cbit.sql.Field;
 import cbit.sql.InsertHashtable;
 import cbit.sql.RecordChangedException;
 import cbit.sql.Table;
-import cbit.util.DataAccessException;
-import cbit.util.ObjectNotFoundException;
-import cbit.util.PermissionException;
-import cbit.util.SessionLog;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
-import cbit.util.DependencyException;
-import cbit.util.document.KeyValue;
-import cbit.util.document.User;
-import cbit.util.document.Version;
-import cbit.util.document.Versionable;
-import cbit.util.document.VersionableType;
 /**
  * This type was created in VisualAge.
  */
@@ -125,7 +126,7 @@ private MathDescription getMathDescriptionSQL(Connection con,User user, KeyValue
 			}
 			
 		} else {
-			throw new cbit.util.ObjectNotFoundException("MathDescription id=" + mathDescKey + " not found for user '" + user + "'");
+			throw new org.vcell.util.ObjectNotFoundException("MathDescription id=" + mathDescKey + " not found for user '" + user + "'");
 		}
 	} finally {
 		stmt.close(); // Release resources include resultset
