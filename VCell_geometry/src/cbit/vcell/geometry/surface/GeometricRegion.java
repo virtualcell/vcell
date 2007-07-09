@@ -5,7 +5,7 @@ import cbit.vcell.units.VCUnitDefinition;
  * Creation date: (5/27/2004 11:31:42 AM)
  * @author: Jim Schaff
  */
-public abstract class GeometricRegion implements java.io.Serializable, cbit.util.Matchable {
+public abstract class GeometricRegion implements java.io.Serializable, org.vcell.util.Matchable {
 	private String fieldName = null;
 	private GeometricRegion[] fieldAdjacentGeometricRegions = new GeometricRegion[0];
 	private double fieldSize = -1;
@@ -28,7 +28,7 @@ public GeometricRegion(String argName, double argSize, VCUnitDefinition argSizeU
  * @param adjacentRegion cbit.vcell.geometry.surface.GeometricRegion
  */
 public void addAdjacentGeometricRegion(GeometricRegion adjacentRegion) {
-	setAdjacentGeometricRegions((GeometricRegion[])cbit.util.BeanUtils.addElement(fieldAdjacentGeometricRegions,adjacentRegion));
+	setAdjacentGeometricRegions((GeometricRegion[])org.vcell.util.BeanUtils.addElement(fieldAdjacentGeometricRegions,adjacentRegion));
 }
 
 
@@ -39,7 +39,7 @@ public void addAdjacentGeometricRegion(GeometricRegion adjacentRegion) {
  * @param obj cbit.util.Matchable
  */
 protected boolean compareEqual0(GeometricRegion geometricRegion) {
-	if (!cbit.util.Compare.isEqual(getName(),geometricRegion.getName())){
+	if (!org.vcell.util.Compare.isEqual(getName(),geometricRegion.getName())){
 		return false;
 	}
 	if (fieldAdjacentGeometricRegions!=null || geometricRegion.fieldAdjacentGeometricRegions!=null){

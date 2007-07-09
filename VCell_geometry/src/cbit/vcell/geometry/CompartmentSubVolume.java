@@ -3,8 +3,8 @@ package cbit.vcell.geometry;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.Matchable;
-import cbit.util.document.KeyValue;
+import org.vcell.util.Matchable;
+import org.vcell.util.document.KeyValue;
 /**
  * This type was created in VisualAge.
  */

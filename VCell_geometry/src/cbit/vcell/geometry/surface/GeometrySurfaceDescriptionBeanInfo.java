@@ -536,7 +536,7 @@ public java.beans.PropertyDescriptor volumeSampleSizePropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.util.ISize.class
+					org.vcell.util.ISize.class
 				};
 				aSetMethod = getBeanClass().getMethod("setVolumeSampleSize", aSetMethodParameterTypes);
 			} catch (Throwable exception) {

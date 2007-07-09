@@ -5,8 +5,8 @@ package cbit.vcell.geometry;
  * All rights reserved.
 ©*/
 import org.vcell.expression.ExpressionFactory;
+import org.vcell.util.document.Version;
 
-import cbit.util.document.Version;
 /**
  * This type was created in VisualAge.
  */
@@ -23,8 +23,8 @@ public static Geometry getExample(int dim) throws Exception {
 		throw new IllegalArgumentException("expected dimension between 1 and 3");
 	}
 	Geometry geo = new Geometry("getExample()",dim);
-	geo.getGeometrySpec().setOrigin(new cbit.util.Origin(-6,-1,-1));
-	geo.getGeometrySpec().setExtent(new cbit.util.Extent(12.0,2.0,2.0));
+	geo.getGeometrySpec().setOrigin(new org.vcell.util.Origin(-6,-1,-1));
+	geo.getGeometrySpec().setExtent(new org.vcell.util.Extent(12.0,2.0,2.0));
 //	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("feature1",new cbit.vcell.parser.Expression("1.0;")));
 //	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("feature1",new cbit.vcell.parser.Expression("(x+0.5)*(x+0.5)+y*y+(z+1)*(z+1)<0.5;")));
 	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("cytosol",ExpressionFactory.createExpression("(pow(x,2)+pow(y,2)+pow(z,2)<0.1)||(pow(x-1,2)+pow(y,2)+pow(z,2)<0.1)||(pow(x,2)+pow(y-1,2)+pow(z,2)<0.1)||(pow(x,2)+pow(y,2)+pow(z-1,2)<0.1);")));
@@ -41,8 +41,8 @@ public static Geometry getExample(int dim) throws Exception {
  */
 public static Geometry getExample_er_cytsol2D() throws Exception {
 	Geometry geo = new Geometry("getExample_er_cytosol()",2);
-	geo.getGeometrySpec().setOrigin(new cbit.util.Origin(-1,-1,-1));
-	geo.getGeometrySpec().setExtent(new cbit.util.Extent(2.0,2.0,2.0));
+	geo.getGeometrySpec().setOrigin(new org.vcell.util.Origin(-1,-1,-1));
+	geo.getGeometrySpec().setExtent(new org.vcell.util.Extent(2.0,2.0,2.0));
 //	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("feature1",new cbit.vcell.parser.Expression("1.0;")));
 //	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("feature1",new cbit.vcell.parser.Expression("(x+0.5)*(x+0.5)+y*y+(z+1)*(z+1)<0.5;")));
 	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("er",ExpressionFactory.createExpression("pow(x+0.5,2)+pow(y,2)<0.5;")));
@@ -58,8 +58,8 @@ public static Geometry getExample_er_cytsol2D() throws Exception {
  */
 public static Geometry getExample_er_cytsol3D() throws Exception {
 	Geometry geo = new Geometry("getExample_er_cytosol()",3);
-	geo.getGeometrySpec().setOrigin(new cbit.util.Origin(-1,-1,-1));
-	geo.getGeometrySpec().setExtent(new cbit.util.Extent(2.0,2.0,2.0));
+	geo.getGeometrySpec().setOrigin(new org.vcell.util.Origin(-1,-1,-1));
+	geo.getGeometrySpec().setExtent(new org.vcell.util.Extent(2.0,2.0,2.0));
 //	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("feature1",new cbit.vcell.parser.Expression("1.0;")));
 	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("er",ExpressionFactory.createExpression("x^2+y^2+(z-0.5)^2<0.5;")));
 	//geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("er",new cbit.vcell.parser.Expression("(pow(x,2)+pow(y,2)+pow(z,2)<0.1)||(pow(x-1,2)+pow(y,2)+pow(z,2)<0.1)||(pow(x,2)+pow(y-1,2)+pow(z,2)<0.1)||(pow(x,2)+pow(y,2)+pow(z-1,2)<0.1);")));
@@ -90,11 +90,11 @@ public static Geometry getImageExample2D() {
 			}
 		}
 
-		cbit.util.Extent extent = new cbit.util.Extent(10,10,10);
+		org.vcell.util.Extent extent = new org.vcell.util.Extent(10,10,10);
 		cbit.image.VCImage vcImage = new cbit.image.VCImageUncompressed(null,array,extent,100,100,1);
 
 		Geometry geo = new Geometry("getImageExample()",vcImage);
-		geo.getGeometrySpec().setOrigin(new cbit.util.Origin(-5,-5,-5));
+		geo.getGeometrySpec().setOrigin(new org.vcell.util.Origin(-5,-5,-5));
 
 	//	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("featureAnal1",new cbit.vcell.parser.Expression("pow(x,2)+pow(y,2)+pow(z,2)<25;")));
 	//	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("feature1",new cbit.vcell.parser.Expression("1.0;")));
@@ -116,7 +116,7 @@ public static Geometry getImageExample2D() {
  * This method was created in VisualAge.
  * @return cbit.vcell.geometry.Geometry
  */
-public static Geometry getImageExample2D(cbit.util.document.User user) throws Exception {
+public static Geometry getImageExample2D(org.vcell.util.document.User user) throws Exception {
 
 	byte pixelValue1 = (byte)50;
 	byte pixelValue2 = (byte)200;
@@ -131,11 +131,11 @@ public static Geometry getImageExample2D(cbit.util.document.User user) throws Ex
 			}
 		}
 	}
-	cbit.util.Extent extent = new cbit.util.Extent(2,2,2);
+	org.vcell.util.Extent extent = new org.vcell.util.Extent(2,2,2);
 	cbit.image.VCImage vcImage = new cbit.image.VCImageUncompressed(null,array,extent,100,100,1);
 
 	Geometry geo = new Geometry("getImageExample("+user+")",vcImage);
-	geo.getGeometrySpec().setOrigin(new cbit.util.Origin(-1,-1,-1));
+	geo.getGeometrySpec().setOrigin(new org.vcell.util.Origin(-1,-1,-1));
 	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("featureAnal1",ExpressionFactory.createExpression("pow(x+0.5,2)+pow(y,2)+pow(z+1,2)<0.5;")));
 //	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("feature1",new cbit.vcell.parser.Expression("1.0;")));
 //	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("feature1",new cbit.vcell.parser.Expression("(x+0.5)*(x+0.5)+y*y+(z+1)*(z+1)<0.5;")));
@@ -175,11 +175,11 @@ public static Geometry getImageExample3D() {
 			}
 		}
 
-		cbit.util.Extent extent = new cbit.util.Extent(10,10,10);
+		org.vcell.util.Extent extent = new org.vcell.util.Extent(10,10,10);
 		cbit.image.VCImage vcImage = new cbit.image.VCImageUncompressed(null,array,extent,50,50,50);
 
 		Geometry geo = new Geometry("getImageExample()",vcImage);
-		geo.getGeometrySpec().setOrigin(new cbit.util.Origin(-5,-5,-5));
+		geo.getGeometrySpec().setOrigin(new org.vcell.util.Origin(-5,-5,-5));
 
 	//	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("featureAnal1",new cbit.vcell.parser.Expression("pow(x,2)+pow(y,2)+pow(z,2)<25;")));
 	//	geo.getGeometrySpec().addSubVolume(new AnalyticSubVolume("feature1",new cbit.vcell.parser.Expression("1.0;")));

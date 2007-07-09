@@ -9,8 +9,8 @@ import org.vcell.expression.ExpressionException;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.SymbolTable;
 import org.vcell.expression.SymbolTableEntry;
+import org.vcell.util.Coordinate;
 
-import cbit.util.Coordinate;
 /**
  * This type was created in VisualAge.
  *  JMW : we need to fix this class so that all exceptions/error
@@ -64,7 +64,7 @@ public Object clone() {
 /**
  * compareEqual method comment.
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (!super.compareEqual(obj)) {
 		return false;
 	}

@@ -1,5 +1,4 @@
 package cbit.vcell.geometry;
-import cbit.util.ObjectReferenceWrapper;
 import cbit.util.graph.Edge;
 import cbit.util.graph.Graph;
 import cbit.util.graph.Tree;
@@ -10,6 +9,9 @@ import cbit.util.graph.Node;
 ©*/
 import java.io.Serializable;
 import java.util.*;
+
+import org.vcell.util.ObjectReferenceWrapper;
+
 import cbit.image.VCImage;
 
 public class RegionImage implements Serializable {
@@ -284,7 +286,7 @@ private void calculateRegions(VCImage vcImage) throws cbit.image.ImageException 
 	Graph connectionGraph = new Graph();
 	for (int k = 0; k < numZ; k++){
 		for (int i = 0; i < regionMasks[k].length; i++){
-			Node node = new Node(k+","+i, new cbit.util.ObjectReferenceWrapper(regionMasks[k][i]));
+			Node node = new Node(k+","+i, new org.vcell.util.ObjectReferenceWrapper(regionMasks[k][i]));
 			connectionGraph.addNode(node);
 		}
 	}
@@ -406,7 +408,7 @@ private static RegionMask[] calculateRegions3D(byte[] imageArray, int sliceOffse
 		}
 	}
 			
-	return (RegionMask[])cbit.util.BeanUtils.getArray(regionMaskList,RegionImage.RegionMask.class);
+	return (RegionMask[])org.vcell.util.BeanUtils.getArray(regionMaskList,RegionImage.RegionMask.class);
 }
 
 
@@ -454,7 +456,7 @@ private static RegionMask[] calculateRegions3Dfaster(byte[] imageArray, int slic
 		}
 	}
 			
-	return (RegionMask[])cbit.util.BeanUtils.getArray(regionMaskList,RegionImage.RegionMask.class);
+	return (RegionMask[])org.vcell.util.BeanUtils.getArray(regionMaskList,RegionImage.RegionMask.class);
 }
 
 

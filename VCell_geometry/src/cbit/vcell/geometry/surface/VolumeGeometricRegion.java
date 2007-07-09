@@ -26,7 +26,7 @@ public VolumeGeometricRegion(String argName, double argSize, VCUnitDefinition ar
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (obj instanceof VolumeGeometricRegion){
 		VolumeGeometricRegion volumeRegion = (VolumeGeometricRegion)obj;
 		if (!super.compareEqual0(volumeRegion)){
@@ -35,7 +35,7 @@ public boolean compareEqual(cbit.util.Matchable obj) {
 		if (fieldRegionID != volumeRegion.fieldRegionID){
 			return false;
 		}
-		if (!cbit.util.Compare.isEqual(fieldSubVolume,volumeRegion.fieldSubVolume)){
+		if (!org.vcell.util.Compare.isEqual(fieldSubVolume,volumeRegion.fieldSubVolume)){
 			return false;
 		}
 		return true;

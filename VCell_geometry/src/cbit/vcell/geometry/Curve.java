@@ -4,8 +4,9 @@ package cbit.vcell.geometry;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.Coordinate;
 import java.io.Serializable;
+
+import org.vcell.util.Coordinate;
 
 import edu.uchc.vcell.expression.internal.*;
 /**
@@ -16,7 +17,7 @@ import edu.uchc.vcell.expression.internal.*;
  *  decision reflecting immutability from the standpoint of
  *  the user.
  */
-public abstract class Curve implements cbit.util.Matchable, java.io.Serializable, Cloneable {
+public abstract class Curve implements org.vcell.util.Matchable, java.io.Serializable, Cloneable {
 	//Leave false by default
 	private boolean bClosed = false;
 	//
@@ -106,7 +107,7 @@ public Object clone() {
 /**
  * compareEqual method comment.
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (obj == null) {
 		return false;
 	}
@@ -345,7 +346,7 @@ public boolean isClosed() {
  * @param c1 cbit.vcell.geometry.Coordinate
  * @param delta cbit.vcell.geometry.Coordinate
  */
-public boolean isInside(cbit.util.Origin origin, cbit.util.Extent extent, Coordinate delta) {
+public boolean isInside(org.vcell.util.Origin origin, org.vcell.util.Extent extent, Coordinate delta) {
 	//
 	// This util. checks sample of this curve that are straight line segments and that if their endpoints
 	// are inside the the whole thing is inside.

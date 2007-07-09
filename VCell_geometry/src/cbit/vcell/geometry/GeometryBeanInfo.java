@@ -190,7 +190,7 @@ public java.beans.MethodDescriptor compareEqual_cbitutilMatchableMethodDescripto
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.util.Matchable.class
+				org.vcell.util.Matchable.class
 			};
 			aMethod = getBeanClass().getMethod("compareEqual", aParameterTypes);
 		} catch (Throwable exception) {
@@ -499,7 +499,7 @@ public java.beans.MethodDescriptor forceNewVersionAnnotation_cbitsqlVersionMetho
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.util.document.Version.class
+				org.vcell.util.document.Version.class
 			};
 			aMethod = getBeanClass().getMethod("forceNewVersionAnnotation", aParameterTypes);
 		} catch (Throwable exception) {

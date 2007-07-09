@@ -14,7 +14,7 @@ import java.beans.PropertyChangeSupport;
  * Creation date: (8/19/00 3:27:35 PM)
  * @author: 
  */
-public class FilamentGroup implements Serializable, cbit.util.Matchable {
+public class FilamentGroup implements Serializable, org.vcell.util.Matchable {
 	public static String FILAMENT_GROUP_PROPERTY = "filamentGroup";
 	//HashSet enforces No Duplicates
 	private HashSet curves = new HashSet();
@@ -22,7 +22,7 @@ public class FilamentGroup implements Serializable, cbit.util.Matchable {
 	private HashSet filamentNamesCurves = new HashSet();
 
 	// Inner Class defining FilamentName-Curve association
-	private class FilamentNameCurvePairs implements Serializable, cbit.util.Matchable {
+	private class FilamentNameCurvePairs implements Serializable, org.vcell.util.Matchable {
 		private String filamentName = null;
 		private Curve curve = null;
 		public FilamentNameCurvePairs(String argFilName, Curve argCurve) {
@@ -35,7 +35,7 @@ public class FilamentGroup implements Serializable, cbit.util.Matchable {
 		public String getFilamentName() {
 			return filamentName;
 		}
-		public boolean compareEqual(cbit.util.Matchable obj) {
+		public boolean compareEqual(org.vcell.util.Matchable obj) {
 			if (obj == null) {
 				return false;
 			}
@@ -44,10 +44,10 @@ public class FilamentGroup implements Serializable, cbit.util.Matchable {
 			}
 			FilamentNameCurvePairs fncp = null;
 			fncp = (FilamentNameCurvePairs) obj;
-			if (!cbit.util.Compare.isEqual(filamentName, fncp.filamentName)) {
+			if (!org.vcell.util.Compare.isEqual(filamentName, fncp.filamentName)) {
 				return false;
 			}
-			if (!cbit.util.Compare.isEqual(curve, fncp.curve)) {
+			if (!org.vcell.util.Compare.isEqual(curve, fncp.curve)) {
 				return false;
 			}
 			return true;
@@ -135,7 +135,7 @@ private synchronized void cleanupFilament(String filamentName) {
 /**
  * compareEqual method comment.
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (obj == null) {
 		return false;
 	}
@@ -152,7 +152,7 @@ public boolean compareEqual(cbit.util.Matchable obj) {
 	while (curvesI.hasNext()) {
 		Curve thisCurve = (Curve) curvesI.next();
 		Curve fgCurve = (Curve) fgCurvesI.next();
-		if (!cbit.util.Compare.isEqual(thisCurve, fgCurve)) {
+		if (!org.vcell.util.Compare.isEqual(thisCurve, fgCurve)) {
 			return false;
 		}
 	}
@@ -162,7 +162,7 @@ public boolean compareEqual(cbit.util.Matchable obj) {
 	while (filamentNamesI.hasNext()) {
 		String thisFilamentNames = (String) filamentNamesI.next();
 		String fgFilamentNames = (String) fgFilamentNamesI.next();
-		if (!cbit.util.Compare.isEqual(thisFilamentNames, fgFilamentNames)) {
+		if (!org.vcell.util.Compare.isEqual(thisFilamentNames, fgFilamentNames)) {
 			return false;
 		}
 	}
@@ -172,7 +172,7 @@ public boolean compareEqual(cbit.util.Matchable obj) {
 	while (filamentNamesCurvesI.hasNext()) {
 		FilamentNameCurvePairs thisFilamentNamesCurves = (FilamentNameCurvePairs) filamentNamesCurvesI.next();
 		FilamentNameCurvePairs fgFilamentNamesCurves = (FilamentNameCurvePairs) fgFilamentNamesCurvesI.next();
-		if (!cbit.util.Compare.isEqual(thisFilamentNamesCurves, fgFilamentNamesCurves)) {
+		if (!org.vcell.util.Compare.isEqual(thisFilamentNamesCurves, fgFilamentNamesCurves)) {
 			return false;
 		}
 	}

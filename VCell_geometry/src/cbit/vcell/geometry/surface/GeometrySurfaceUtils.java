@@ -1,11 +1,12 @@
 package cbit.vcell.geometry.surface;
+import org.vcell.util.StdoutSessionLog;
+
 import cbit.render.*;
 import cbit.render.objects.Surface;
 import cbit.render.objects.SurfaceCollection;
 import cbit.render.objects.TaubinSmoothing;
 import cbit.render.objects.TaubinSmoothingSpecification;
 import cbit.render.objects.TaubinSmoothingWrong;
-import cbit.util.StdoutSessionLog;
 /**
  * Insert the type's description here.
  * Creation date: (6/28/2004 2:52:23 PM)
@@ -246,7 +247,7 @@ static GeometricRegion[] getUpdatedGeometricRegions(GeometrySurfaceDescription g
 		System.out.println("added surfaceRegion("+surfaceRegion.getName()+")");
 	}
 
-	return (GeometricRegion[])cbit.util.BeanUtils.getArray(regionList,GeometricRegion.class);
+	return (GeometricRegion[])org.vcell.util.BeanUtils.getArray(regionList,GeometricRegion.class);
 }
 
 
@@ -284,8 +285,8 @@ static SurfaceCollection getUpdatedSurfaceCollection(GeometrySurfaceDescription 
 	// make the surfaces (if necessary)
 	//
 	cbit.vcell.geometry.surface.SurfaceGenerator surfaceGenerator = new cbit.vcell.geometry.surface.SurfaceGenerator(new StdoutSessionLog("suface generator"));
-	cbit.util.Extent extent = geoSurfaceDescription.getGeometry().getGeometrySpec().getExtent();
-	cbit.util.Origin origin = geoSurfaceDescription.getGeometry().getGeometrySpec().getOrigin();
+	org.vcell.util.Extent extent = geoSurfaceDescription.getGeometry().getGeometrySpec().getExtent();
+	org.vcell.util.Origin origin = geoSurfaceDescription.getGeometry().getGeometrySpec().getOrigin();
 	SurfaceCollection surfaceCollection = surfaceGenerator.generateSurface(regionImage, 3, extent, origin);
 	//
 	// smooth surfaces

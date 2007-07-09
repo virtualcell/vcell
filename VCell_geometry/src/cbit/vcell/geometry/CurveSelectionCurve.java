@@ -1,6 +1,6 @@
 package cbit.vcell.geometry;
 
-import cbit.util.Coordinate;
+import org.vcell.util.Coordinate;
 
 /**
  * Insert the type's description here.

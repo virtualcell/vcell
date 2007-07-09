@@ -1,9 +1,11 @@
 package cbit.vcell.geometry.surface;
 import java.io.Writer;
 import cbit.vcell.geometry.RegionImage;
-import cbit.util.ISize;
 import java.util.zip.DeflaterOutputStream;
 import java.io.ByteArrayOutputStream;
+
+import org.vcell.util.ISize;
+
 import cbit.vcell.geometry.Geometry;
 import cbit.render.*;
 import cbit.render.objects.Node;
@@ -28,7 +30,7 @@ public static void write(Geometry geometry, ISize newSize, java.io.Writer writer
 
 	// clone geometry to isolate sampling from model (setVolumeSampleSize());
 	
-	Geometry newGeometry = (Geometry)cbit.util.BeanUtils.cloneSerializable(geometry);
+	Geometry newGeometry = (Geometry)org.vcell.util.BeanUtils.cloneSerializable(geometry);
 	
 	GeometrySurfaceDescription geoSurfaceDesc = geometry.getGeometrySurfaceDescription();
 	ISize oldSize = geoSurfaceDesc.getVolumeSampleSize();
@@ -132,8 +134,8 @@ private static void write(Writer writer, Geometry geometry, ISize volumeSampleSi
 	//	
 	writer.write("name "+geometry.getName()+"\n");
 	writer.write("dimension "+geometry.getDimension()+"\n");
-	cbit.util.Extent extent = geometry.getExtent();
-	cbit.util.Origin origin = geometry.getOrigin();
+	org.vcell.util.Extent extent = geometry.getExtent();
+	org.vcell.util.Origin origin = geometry.getOrigin();
 	switch (geometry.getDimension()) {
 		case 1:			
 			writer.write("size "+extent.getX()+"\n");
@@ -183,7 +185,7 @@ private static void write(Writer writer, Geometry geometry, ISize volumeSampleSi
 		}
 	});
 
-	VolumeGeometricRegion volRegions[] = (VolumeGeometricRegion[])cbit.util.BeanUtils.getArray(volRegionList,VolumeGeometricRegion.class);
+	VolumeGeometricRegion volRegions[] = (VolumeGeometricRegion[])org.vcell.util.BeanUtils.getArray(volRegionList,VolumeGeometricRegion.class);
 	
 	writer.write("volumeRegions "+numVolumeRegions +"\n");
 	for (int i = 0; i < volRegions.length; i++){
@@ -238,7 +240,7 @@ private static void write(Writer writer, Geometry geometry, ISize volumeSampleSi
 		dos.close();
 		byte[] compressedRegionIDs = bos.toByteArray();
 		//writer.write(cbit.util.Hex.toString(uncompressedRegionIDs)+"\n");
-		writer.write(cbit.util.Hex.toString(compressedRegionIDs)+"\n");
+		writer.write(org.vcell.util.Hex.toString(compressedRegionIDs)+"\n");
 	} else {
 		writer.write("\n");
 	}

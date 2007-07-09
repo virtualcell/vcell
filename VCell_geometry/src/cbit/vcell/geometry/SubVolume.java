@@ -8,10 +8,11 @@ import java.awt.*;
 import java.io.*;
 import java.util.*;
 
-import cbit.util.Cacheable;
-import cbit.util.Compare;
-import cbit.util.Matchable;
-import cbit.util.document.KeyValue;
+import org.vcell.util.Cacheable;
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+import org.vcell.util.document.KeyValue;
+
 /**
  * This type was created in VisualAge.
  */

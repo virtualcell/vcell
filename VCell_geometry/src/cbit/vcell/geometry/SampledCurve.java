@@ -4,7 +4,8 @@ package cbit.vcell.geometry;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.Coordinate;
+import org.vcell.util.Coordinate;
+
 import edu.uchc.vcell.expression.internal.*;
 /**
  * This type was created in VisualAge.
@@ -211,7 +212,7 @@ public double getZ(double u) {
  * Insert the method's description here.
  * Creation date: (10/9/00 7:00:19 PM)
  */
-protected boolean isSampledCurveInside(cbit.util.Origin origin, cbit.util.Extent extent, Coordinate delta) {
+protected boolean isSampledCurveInside(org.vcell.util.Origin origin, org.vcell.util.Extent extent, Coordinate delta) {
 	//
 	// This util. checks sample of this curve that are straight line segments and that if their endpoints
 	// are inside the the whole thing is inside.

@@ -1,11 +1,12 @@
 package cbit.vcell.geometry.surface;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.StdoutSessionLog;
+
 import cbit.render.*;
 import cbit.render.objects.FilterSpecification;
 import cbit.render.objects.SurfaceCollection;
 import cbit.render.objects.TaubinSmoothing;
 import cbit.render.objects.TaubinSmoothingSpecification;
-import cbit.util.PropertyLoader;
-import cbit.util.StdoutSessionLog;
 import cbit.image.*;
 /**
  * Insert the type's description here.
@@ -40,7 +41,7 @@ public static VCImage createImage(int sX, int sY, int sZ) {
 		//
 		// Create an image...
 		int nX = inImage.getNumX()/sX, nY = inImage.getNumY()/sY, nZ = inImage.getNumZ()/sZ;
-		cbit.util.Extent extent = new cbit.util.Extent(1.0, 1.0, 1.0);
+		org.vcell.util.Extent extent = new org.vcell.util.Extent(1.0, 1.0, 1.0);
 		byte[] pixels = new byte[nX*nY*nZ];
 		//
 		int l = 0;
@@ -72,7 +73,7 @@ public static void main(String args[]) {
 		//
 		VCImage vcImage = createImage(1, 1, 1);
 		cbit.vcell.geometry.Geometry geometry = new cbit.vcell.geometry.Geometry ("GriddingTestGeometry",vcImage);
-		geometry.getGeometrySpec().setOrigin(new cbit.util.Origin(0, 0, 0));
+		geometry.getGeometrySpec().setOrigin(new org.vcell.util.Origin(0, 0, 0));
 		SurfaceGenerator surfaceGenerator = new SurfaceGenerator(new StdoutSessionLog("TriangleTest"));
 		System.out.println("generating surface");
 		java.util.Date timeOne = new java.util.Date();
