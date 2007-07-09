@@ -40,7 +40,7 @@ public Component getTableCellRendererComponent(JTable table, Object value, boole
 			if (doubleValue.isNaN() || doubleValue.isInfinite()) {
 				setText(java.text.NumberFormat.getInstance().format(doubleValue.doubleValue()));
 			} else {
-				String formattedDouble = cbit.util.NumberUtils.formatNumber(doubleValue.doubleValue());
+				String formattedDouble = org.vcell.util.NumberUtils.formatNumber(doubleValue.doubleValue());
 				setText(formattedDouble);
 			}
 		}

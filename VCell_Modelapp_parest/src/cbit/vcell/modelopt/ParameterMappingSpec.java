@@ -4,7 +4,7 @@ package cbit.vcell.modelopt;
  * Creation date: (8/22/2005 9:35:15 AM)
  * @author: Jim Schaff
  */
-public class ParameterMappingSpec implements java.io.Serializable, cbit.util.Matchable {
+public class ParameterMappingSpec implements java.io.Serializable, org.vcell.util.Matchable {
 	private cbit.vcell.model.Parameter modelParameter = null;
 	private double low = Double.NEGATIVE_INFINITY;
 	private double high = Double.POSITIVE_INFINITY;
@@ -56,11 +56,11 @@ public synchronized void addPropertyChangeListener(java.lang.String propertyName
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (obj instanceof ParameterMappingSpec){
 		ParameterMappingSpec pms = (ParameterMappingSpec)obj;
 
-		if (!cbit.util.Compare.isEqual(modelParameter,pms.modelParameter)){
+		if (!org.vcell.util.Compare.isEqual(modelParameter,pms.modelParameter)){
 			return false;
 		}
 		

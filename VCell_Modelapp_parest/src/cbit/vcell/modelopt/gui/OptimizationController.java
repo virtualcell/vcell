@@ -25,7 +25,7 @@ public class OptimizationController {
 	private OptTestPanel optTestPanel = null;
 	private ParameterEstimationTask parameterEstimationTask = null;
 
-	public class OptSolverUpdater extends cbit.gui.AsynchGuiUpdater {
+	public class OptSolverUpdater extends org.vcell.util.gui.AsynchGuiUpdater {
 		private int progressRunner = 0;
 		private OptSolverCallbacks optSolverCallbacks = null;
 
@@ -54,7 +54,7 @@ public class OptimizationController {
 				optTestPanel.getSolverTypeComboBox().setEnabled(true);
 			}else if (params instanceof Exception){
 				parameterEstimationTask.appendSolverMessageText("\n"+((Exception)params).getMessage());
-				cbit.gui.DialogUtils.showErrorDialog(OptimizationController.this.optTestPanel,((Exception)params).getMessage());
+				org.vcell.util.gui.DialogUtils.showErrorDialog(OptimizationController.this.optTestPanel,((Exception)params).getMessage());
 				parameterEstimationTask.setOptimizationResultSet(null);
 				this.stop();
 				optTestPanel.getSolveButton().setEnabled(true);
@@ -130,15 +130,15 @@ public void plot() {
 				}
 			}
 		}
-		DataSource[] dataSources = (DataSource[])cbit.util.BeanUtils.getArray(dataSourceList,DataSource.class);
+		DataSource[] dataSources = (DataSource[])org.vcell.util.BeanUtils.getArray(dataSourceList,DataSource.class);
 		MultisourcePlotPane multisourcePlotPane = new MultisourcePlotPane();
 		multisourcePlotPane.setDataSources(dataSources);	
 
 		String[] nameArray = new String[nameVector.size()];
-		nameArray = (String[])cbit.util.BeanUtils.getArray(nameVector, String.class);
+		nameArray = (String[])org.vcell.util.BeanUtils.getArray(nameVector, String.class);
 		multisourcePlotPane.select(nameArray);
 		
-		cbit.gui.DialogUtils.showComponentCloseDialog(optTestPanel,multisourcePlotPane,"Data Plotter");
+		org.vcell.util.gui.DialogUtils.showComponentCloseDialog(optTestPanel,multisourcePlotPane,"Data Plotter");
 	}catch (org.vcell.expression.ExpressionException e){
 		e.printStackTrace(System.out);
 	}
@@ -183,11 +183,11 @@ public void saveSolutionAsNewSimulation() {
 			cbit.vcell.modelapp.SimulationContext simContext = parameterEstimationTask.getModelOptimizationSpec().getSimulationContext();
 			cbit.vcell.simulation.Simulation newSim = simContext.addNewSimulation(new MathMapping(simContext));
 			parameterEstimationTask.getModelOptimizationMapping().applySolutionToMathOverrides(newSim,parameterEstimationTask.getOptimizationResultSet());
-			cbit.gui.DialogUtils.showInfoDialog("created simulation \""+newSim.getName()+"\"");
+			org.vcell.util.gui.DialogUtils.showInfoDialog("created simulation \""+newSim.getName()+"\"");
 		}
 	}catch (Exception e){
 		e.printStackTrace(System.out);
-		cbit.gui.DialogUtils.showErrorDialog(optTestPanel,"Error creating simulation: "+e.getMessage());
+		org.vcell.util.gui.DialogUtils.showErrorDialog(optTestPanel,"Error creating simulation: "+e.getMessage());
 	}
 }
 
@@ -232,8 +232,8 @@ public void solve() {
 		parameterEstimationTask.gatherIssues(issueList);
 		boolean bFailed = false;
 		for (int i = 0; i < issueList.size(); i++){
-			cbit.util.Issue issue = (cbit.util.Issue)issueList.elementAt(i);
-			if (issue.getSeverity() == cbit.util.Issue.SEVERITY_ERROR){
+			org.vcell.util.Issue issue = (org.vcell.util.Issue)issueList.elementAt(i);
+			if (issue.getSeverity() == org.vcell.util.Issue.SEVERITY_ERROR){
 				bFailed = true;
 			}
 			parameterEstimationTask.appendSolverMessageText(issue.getMessage()+"\n");
@@ -282,7 +282,7 @@ public void solve() {
 	}catch (Exception e){
 		e.printStackTrace(System.out);
 		getParameterEstimationTask().appendSolverMessageText("\n"+e.getMessage()+"\n");
-		cbit.gui.DialogUtils.showErrorDialog(optTestPanel,e.getMessage());
+		org.vcell.util.gui.DialogUtils.showErrorDialog(optTestPanel,e.getMessage());
 	}
 }
 

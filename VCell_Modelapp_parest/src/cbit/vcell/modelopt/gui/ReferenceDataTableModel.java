@@ -1,13 +1,14 @@
 package cbit.vcell.modelopt.gui;
 import java.util.*;
 
+import org.vcell.util.gui.sorttable.ManageTableModel;
+
 
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.messaging.admin.sorttable.ManageTableModel;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)

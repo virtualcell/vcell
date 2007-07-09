@@ -136,7 +136,7 @@ cbit.vcell.mapping.MathSymbolMapping computeOptimizationSpec() throws cbit.vcell
 	//
 	ParameterMappingSpec[] parameterMappingSpecs = modelOptimizationSpec.getParameterMappingSpecs();
 	Vector parameterMappingList = new Vector();
-	cbit.vcell.math.Variable allVars[] = (cbit.vcell.math.Variable[])cbit.util.BeanUtils.getArray(origMathDesc.getVariables(),cbit.vcell.math.Variable.class);
+	cbit.vcell.math.Variable allVars[] = (cbit.vcell.math.Variable[])org.vcell.util.BeanUtils.getArray(origMathDesc.getVariables(),cbit.vcell.math.Variable.class);
 	for (int i = 0; i < parameterMappingSpecs.length; i++){
 		cbit.vcell.model.Parameter modelParameter = parameterMappingSpecs[i].getModelParameter();
 		String mathSymbol = mathMapping.getMathSymbol(modelParameter,structureMapping);
@@ -170,7 +170,7 @@ cbit.vcell.mapping.MathSymbolMapping computeOptimizationSpec() throws cbit.vcell
 			parameterMappingList.add(parameterMapping);
 		}
 	}
-	parameterMappings = (ParameterMapping[])cbit.util.BeanUtils.getArray(parameterMappingList,ParameterMapping.class);
+	parameterMappings = (ParameterMapping[])org.vcell.util.BeanUtils.getArray(parameterMappingList,ParameterMapping.class);
 	try {
 		origMathDesc.setAllVariables(allVars);
 	}catch (org.vcell.expression.ExpressionBindingException e){
@@ -188,9 +188,9 @@ cbit.vcell.mapping.MathSymbolMapping computeOptimizationSpec() throws cbit.vcell
 	Vector issueList = new Vector();
 	optSpec.gatherIssues(issueList);
 	for (int i = 0; i < issueList.size(); i++){
-		cbit.util.Issue issue = (cbit.util.Issue)issueList.elementAt(i);
+		org.vcell.util.Issue issue = (org.vcell.util.Issue)issueList.elementAt(i);
 		System.out.println(issue.toString());
-		if (issue.getSeverity()==cbit.util.Issue.SEVERITY_ERROR){
+		if (issue.getSeverity()==org.vcell.util.Issue.SEVERITY_ERROR){
 			throw new RuntimeException(issue.getMessage());
 		}
 	}

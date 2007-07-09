@@ -7,7 +7,7 @@ import org.vcell.modelapp.analysis.IAnalysisTask;
  * Creation date: (5/2/2006 4:35:02 PM)
  * @author: Jim Schaff
  */
-public abstract class AbstractAnalysisTask implements cbit.util.Matchable, java.io.Serializable, IAnalysisTask {
+public abstract class AbstractAnalysisTask implements org.vcell.util.Matchable, java.io.Serializable, IAnalysisTask {
 
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private java.lang.String fieldName = new String();

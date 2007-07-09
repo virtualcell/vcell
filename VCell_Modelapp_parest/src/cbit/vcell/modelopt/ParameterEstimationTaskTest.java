@@ -21,7 +21,7 @@ public static ParameterEstimationTask getExample() {
 		parameterMappingSpecs[1].setSelected(true);
 
 		String dataString = "SimpleReferenceData { 3 2 t Ca_er 1 1 0 1 1 2 2 3 }";
-		parameterEstimationTask.getModelOptimizationSpec().setReferenceData(cbit.vcell.opt.SimpleReferenceData.fromVCML(new cbit.util.CommentStringTokenizer(dataString)));
+		parameterEstimationTask.getModelOptimizationSpec().setReferenceData(cbit.vcell.opt.SimpleReferenceData.fromVCML(new org.vcell.util.CommentStringTokenizer(dataString)));
 		
 		return parameterEstimationTask;
 	}catch (Throwable e){

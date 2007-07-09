@@ -13,7 +13,7 @@ import cbit.vcell.math.*;
  * Creation date: (8/22/2005 9:21:42 AM)
  * @author: Jim Schaff
  */
-public class ModelOptimizationSpec implements java.io.Serializable, cbit.util.Matchable {
+public class ModelOptimizationSpec implements java.io.Serializable, org.vcell.util.Matchable {
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private cbit.vcell.modelapp.SimulationContext fieldSimulationContext = null;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
@@ -162,19 +162,19 @@ public org.vcell.expression.SymbolTableEntry[] calculateTimeDependentModelObject
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (obj instanceof ModelOptimizationSpec){
 		ModelOptimizationSpec mos = (ModelOptimizationSpec)obj;
 
-		if (!cbit.util.Compare.isEqual(fieldParameterMappingSpecs,mos.fieldParameterMappingSpecs)){
+		if (!org.vcell.util.Compare.isEqual(fieldParameterMappingSpecs,mos.fieldParameterMappingSpecs)){
 			return false;
 		}
 
-		if (!cbit.util.Compare.isEqualOrNull(fieldReferenceData,mos.fieldReferenceData)){
+		if (!org.vcell.util.Compare.isEqualOrNull(fieldReferenceData,mos.fieldReferenceData)){
 			return false;
 		}
 
-		if (!cbit.util.Compare.isEqualOrNull(fieldReferenceDataMappingSpecs,mos.fieldReferenceDataMappingSpecs)){
+		if (!org.vcell.util.Compare.isEqualOrNull(fieldReferenceDataMappingSpecs,mos.fieldReferenceDataMappingSpecs)){
 			return false;
 		}
 
@@ -308,7 +308,7 @@ private cbit.vcell.model.Parameter[] getModelParameters() {
 				}
 			}
 			if (!bHasStateVariables){
-				spanningTrees = (cbit.util.graph.Tree[])cbit.util.BeanUtils.removeElement(spanningTrees,spanningTrees[i]);
+				spanningTrees = (cbit.util.graph.Tree[])org.vcell.util.BeanUtils.removeElement(spanningTrees,spanningTrees[i]);
 				i--;
 			}
 		}
@@ -336,7 +336,7 @@ private cbit.vcell.model.Parameter[] getModelParameters() {
 		throw new RuntimeException(e.getMessage());
 	}
 	
-	cbit.vcell.model.Parameter[] modelParameters = (cbit.vcell.model.Parameter[])cbit.util.BeanUtils.getArray(modelParameterList,cbit.vcell.model.Parameter.class);
+	cbit.vcell.model.Parameter[] modelParameters = (cbit.vcell.model.Parameter[])org.vcell.util.BeanUtils.getArray(modelParameterList,cbit.vcell.model.Parameter.class);
 	return modelParameters;
 }
 
@@ -454,7 +454,7 @@ private void initializeParameterMappingSpecs() throws org.vcell.expression.Expre
 	java.util.Vector issueList = new java.util.Vector();
 	getSimulationContext().gatherIssues(issueList);
 	getSimulationContext().getModel().gatherIssues(issueList);
-	cbit.util.Issue[] issues = (cbit.util.Issue[])cbit.util.BeanUtils.getArray(issueList,cbit.util.Issue.class);
+	org.vcell.util.Issue[] issues = (org.vcell.util.Issue[])org.vcell.util.BeanUtils.getArray(issueList,org.vcell.util.Issue.class);
 	
 	for (int i = 0; i < parameterMappingSpecs.length; i++){
 		parameterMappingSpecs[i] = new ParameterMappingSpec(modelParameters[i]);

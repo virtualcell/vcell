@@ -36,7 +36,7 @@ public static void main(java.lang.String[] args) {
 		frame.setVisible(true);
 
 		String dataString = "SimpleReferenceData { 3 2 t Ca_er 1 1 0 0.0 0.1 1 0.2 3 }";
-		cbit.vcell.opt.SimpleReferenceData refData = cbit.vcell.opt.SimpleReferenceData.fromVCML(new cbit.util.CommentStringTokenizer(dataString));
+		cbit.vcell.opt.SimpleReferenceData refData = cbit.vcell.opt.SimpleReferenceData.fromVCML(new org.vcell.util.CommentStringTokenizer(dataString));
 		aReferenceDataPanel.setReferenceData(refData);
 		System.out.println("setting 1");
 		Thread.sleep(3000);

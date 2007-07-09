@@ -6,9 +6,9 @@ import org.vcell.expression.SymbolTableEntry;
 import org.vcell.expression.ui.ResolvedValuesSelection;
 import org.vcell.expression.ui.ScopedExpression;
 import org.vcell.expression.ui.ScopedExpressionTableCellRenderer;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.SimpleTransferable;
 
-import cbit.gui.DialogUtils;
-import cbit.gui.SimpleTransferable;
 import cbit.vcell.math.Variable;
 import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.modelopt.ParameterMappingSpec;
@@ -20,7 +20,7 @@ import cbit.vcell.modelopt.ParameterMappingSpec;
  */
 public class ParameterMappingPanel extends javax.swing.JPanel {
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
-	private cbit.vcell.messaging.admin.sorttable.JSortTable ivjScrollPaneTable = null;
+	private org.vcell.util.gui.sorttable.JSortTable ivjScrollPaneTable = null;
 	private ParameterMappingTableModel ivjparameterMappingTableModel = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private cbit.vcell.modelopt.ParameterEstimationTask fieldParameterEstimationTask = null;
@@ -30,7 +30,7 @@ public class ParameterMappingPanel extends javax.swing.JPanel {
 	private javax.swing.JMenuItem ivjJMenuItemPaste = null;
 	private javax.swing.JMenuItem ivjJMenuItemPasteAll = null;
 	private javax.swing.JPopupMenu ivjJPopupMenuCopyPaste = null;
-	private cbit.vcell.messaging.admin.sorttable.JSortTable ivjJSortTableThis = null;
+	private org.vcell.util.gui.sorttable.JSortTable ivjJSortTableThis = null;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -456,7 +456,7 @@ private javax.swing.JScrollPane getJScrollPane1() {
  * @return cbit.vcell.messaging.admin.sorttable.JSortTable
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.messaging.admin.sorttable.JSortTable getJSortTableThis() {
+private org.vcell.util.gui.sorttable.JSortTable getJSortTableThis() {
 	// user code begin {1}
 	// user code end
 	return ivjJSortTableThis;
@@ -521,10 +521,10 @@ private ParameterMappingTableModel getparameterMappingTableModel() {
  * @return cbit.vcell.messaging.admin.sorttable.JSortTable
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.messaging.admin.sorttable.JSortTable getScrollPaneTable() {
+private org.vcell.util.gui.sorttable.JSortTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
-			ivjScrollPaneTable = new cbit.vcell.messaging.admin.sorttable.JSortTable();
+			ivjScrollPaneTable = new org.vcell.util.gui.sorttable.JSortTable();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
 			getJScrollPane1().getViewport().setBackingStoreEnabled(true);
@@ -588,7 +588,7 @@ public void chooseApplyPaste(
 	boolean[] bEnableDisplay = new boolean[changingParameters.length];
 	for(int i=0;i<changingParameters.length;i+= 1){
 		//bEnableDisplay[i] = !changingParamters[i].getExpression().equals(newParameterExpression[i]);
-		bEnableDisplay[i] = !cbit.util.Compare.isEqualOrNull(ExpressionFactory.createExpression(changingParameters[i].getCurrent()),newParameterExpression[i]);
+		bEnableDisplay[i] = !org.vcell.util.Compare.isEqualOrNull(ExpressionFactory.createExpression(changingParameters[i].getCurrent()),newParameterExpression[i]);
 		bAtLeatOneDifferent = bAtLeatOneDifferent || bEnableDisplay[i];
 	}
 
@@ -710,9 +710,9 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 			//
 			ResolvedValuesSelection rvs =
 				new ResolvedValuesSelection(
-					(SymbolTableEntry[])cbit.util.BeanUtils.getArray(primarySymbolTableEntriesV,SymbolTableEntry.class),
-					(SymbolTableEntry[])cbit.util.BeanUtils.getArray(alternateSymbolTableEntriesV,SymbolTableEntry.class),
-					(IExpression[])cbit.util.BeanUtils.getArray(resolvedValuesV,IExpression.class),
+					(SymbolTableEntry[])org.vcell.util.BeanUtils.getArray(primarySymbolTableEntriesV,SymbolTableEntry.class),
+					(SymbolTableEntry[])org.vcell.util.BeanUtils.getArray(alternateSymbolTableEntriesV,SymbolTableEntry.class),
+					(IExpression[])org.vcell.util.BeanUtils.getArray(resolvedValuesV,IExpression.class),
 					sb.toString());
 
 			SimpleTransferable.sendToClipboard(rvs);
@@ -952,7 +952,7 @@ private void popupCopyPaste(java.awt.event.MouseEvent mouseEvent) {
  * @param newValue cbit.vcell.messaging.admin.sorttable.JSortTable
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setJSortTableThis(cbit.vcell.messaging.admin.sorttable.JSortTable newValue) {
+private void setJSortTableThis(org.vcell.util.gui.sorttable.JSortTable newValue) {
 	if (ivjJSortTableThis != newValue) {
 		try {
 			/* Stop listening for events from the current object */

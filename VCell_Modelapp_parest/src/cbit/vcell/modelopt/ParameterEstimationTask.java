@@ -62,7 +62,7 @@ public void appendSolverMessageText(String message) {
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (obj instanceof ParameterEstimationTask){
 		ParameterEstimationTask task = (ParameterEstimationTask)obj;
 
@@ -74,7 +74,7 @@ public boolean compareEqual(cbit.util.Matchable obj) {
 			return false;
 		}
 
-		if (!cbit.util.Compare.isEqual(getOptimizationSolverSpec(),task.getOptimizationSolverSpec())){
+		if (!org.vcell.util.Compare.isEqual(getOptimizationSolverSpec(),task.getOptimizationSolverSpec())){
 			return false;
 		}
 		
