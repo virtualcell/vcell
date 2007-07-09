@@ -1,5 +1,6 @@
 package cbit.vcell.opt;
-import cbit.util.DataAccessException;
+import org.vcell.util.DataAccessException;
+
 import cbit.vcell.simdata.ColumnDescription;
 import cbit.vcell.simdata.RowColumnResultSet;
 /**
@@ -79,15 +80,15 @@ public SimpleReferenceData(RowColumnResultSet rowColumnResultSet, double[] argDa
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (obj instanceof SimpleReferenceData){
 		SimpleReferenceData srd = (SimpleReferenceData)obj;
 
-		if (!cbit.util.Compare.isEqual(dataNames,srd.dataNames)){
+		if (!org.vcell.util.Compare.isEqual(dataNames,srd.dataNames)){
 			return false;
 		}
 		
-		if (!cbit.util.Compare.isEqual(columnWeights,srd.columnWeights)){
+		if (!org.vcell.util.Compare.isEqual(columnWeights,srd.columnWeights)){
 			return false;
 		}
 
@@ -98,7 +99,7 @@ public boolean compareEqual(cbit.util.Matchable obj) {
 		for (int i = 0; i < rowData.size(); i++){
 			double[] thisData = (double[])rowData.get(i);
 			double[] otherData = (double[])srd.rowData.get(i);
-			if (!cbit.util.Compare.isEqual(thisData,otherData)){
+			if (!org.vcell.util.Compare.isEqual(thisData,otherData)){
 				return false;
 			}
 		}
@@ -131,7 +132,7 @@ public int findColumn(java.lang.String colName) {
  * @return cbit.vcell.opt.SimpleConstraintData
  * @param tokens cbit.vcell.math.CommentStringTokenizer
  */
-public static SimpleReferenceData fromVCML(cbit.util.CommentStringTokenizer tokens) throws DataAccessException {
+public static SimpleReferenceData fromVCML(org.vcell.util.CommentStringTokenizer tokens) throws DataAccessException {
 	String token = tokens.nextToken();
 	if (!token.equals("SimpleReferenceData")){
 		throw new DataAccessException("unexpected identifier '"+token+"', expecting '"+"Data"+"'");

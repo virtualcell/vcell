@@ -3,8 +3,9 @@ package cbit.vcell.opt.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.gui.DialogUtils;
-import cbit.gui.SwingWorker;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.SwingWorker;
+
 import cbit.vcell.opt.*;
 import cbit.vcell.opt.solvers.*;
 /**
@@ -556,7 +557,7 @@ private javax.swing.JTextArea getTextArea1() {
 		try {
 			ivjTextArea1 = new javax.swing.JTextArea();
 			ivjTextArea1.setName("TextArea1");
-			ivjTextArea1.setBorder(new cbit.gui.BevelBorderBean());
+			ivjTextArea1.setBorder(new org.vcell.util.gui.BevelBorderBean());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -579,7 +580,7 @@ private javax.swing.JTextArea getTextArea2() {
 		try {
 			ivjTextArea2 = new javax.swing.JTextArea();
 			ivjTextArea2.setName("TextArea2");
-			ivjTextArea2.setBorder(new cbit.gui.BevelBorderBean());
+			ivjTextArea2.setBorder(new org.vcell.util.gui.BevelBorderBean());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

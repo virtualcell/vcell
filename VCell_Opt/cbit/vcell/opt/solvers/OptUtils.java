@@ -122,7 +122,7 @@ public final class OptUtils {
 			
 			double L2Error = 0.0;
 			
-			String[] varsToTest = (String[])cbit.util.BeanUtils.removeElement(referenceData.getColumnNames(),"t");
+			String[] varsToTest = (String[])org.vcell.util.BeanUtils.removeElement(referenceData.getColumnNames(),"t");
 			for (int i = 0; i < varsToTest.length; i++){
 				double weight = referenceData.getColumnWeights()[i];
 				int refRSIndex = referenceData.findColumn(varsToTest[i]);
@@ -436,11 +436,11 @@ public static AugmentedObjectiveFunction getAugmentedObjectiveFunction(Optimizat
 		}			
 	}
 	if (equExpList.size()>0){
-		IExpression exps[] = (IExpression[])cbit.util.BeanUtils.getArray(equExpList,IExpression.class);
+		IExpression exps[] = (IExpression[])org.vcell.util.BeanUtils.getArray(equExpList,IExpression.class);
 		equalityConstraints = new DynamicVectorFunction(exps,origSymbols);
 	}
 	if (inequExpList.size()>0){
-		IExpression exps[] = (IExpression[])cbit.util.BeanUtils.getArray(inequExpList,IExpression.class);
+		IExpression exps[] = (IExpression[])org.vcell.util.BeanUtils.getArray(inequExpList,IExpression.class);
 		inequalityConstraints = new DynamicVectorFunction(exps,origSymbols);
 	}
 	

@@ -9,8 +9,8 @@ import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.SimpleSymbolTable;
+import org.vcell.util.*;
 
-import cbit.util.*;
 /**
  * Insert the type's description here.
  * Creation date: (3/3/00 12:06:21 AM)

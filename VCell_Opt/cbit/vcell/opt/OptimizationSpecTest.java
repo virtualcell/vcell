@@ -4,12 +4,12 @@ package cbit.vcell.opt;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.CommentStringTokenizer;
 import cbit.vcell.math.*;
 import java.util.*;
 
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
+import org.vcell.util.CommentStringTokenizer;
 
 import edu.uchc.vcell.expression.internal.*;
 /**
@@ -133,7 +133,7 @@ public static OptimizationSpec getOdeExample() throws ExpressionException, Excep
 		public int getNumColumns() {
 			return names.length;
 		}
-		public boolean compareEqual(cbit.util.Matchable obj){
+		public boolean compareEqual(org.vcell.util.Matchable obj){
 			return equals(obj);
 		}
 	};

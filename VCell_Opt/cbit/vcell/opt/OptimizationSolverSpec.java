@@ -4,7 +4,7 @@ package cbit.vcell.opt;
  * Creation date: (8/4/2005 12:48:37 PM)
  * @author: Jim Schaff
  */
-public class OptimizationSolverSpec implements cbit.util.Matchable, java.io.Serializable {
+public class OptimizationSolverSpec implements org.vcell.util.Matchable, java.io.Serializable {
 	private String solverType = null;
 	private double objectiveFunctionChangeTolerance;
 
@@ -75,7 +75,7 @@ public OptimizationSolverSpec(String argSolverName, double argObjectiveFunctionC
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	return equals(obj);
 }
 

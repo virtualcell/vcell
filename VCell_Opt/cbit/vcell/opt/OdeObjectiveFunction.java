@@ -1,5 +1,6 @@
 package cbit.vcell.opt;
-import cbit.util.DataAccessException;
+import org.vcell.util.DataAccessException;
+
 import cbit.vcell.math.MathDescription;
 /**
  * Insert the type's description here.
@@ -35,7 +36,7 @@ public OdeObjectiveFunction(MathDescription argMathDescription, ReferenceData ar
  * Creation date: (8/3/2005 1:17:52 PM)
  * @param tokens cbit.vcell.math.CommentStringTokenizer
  */
-public static OdeObjectiveFunction fromVCML(cbit.util.CommentStringTokenizer tokens) throws DataAccessException {
+public static OdeObjectiveFunction fromVCML(org.vcell.util.CommentStringTokenizer tokens) throws DataAccessException {
 	try {
 		String token = tokens.nextToken();
 		if (!token.equalsIgnoreCase("{")){
@@ -62,7 +63,7 @@ public static OdeObjectiveFunction fromVCML(cbit.util.CommentStringTokenizer tok
 		throw e;
 	}catch (Throwable e){
 		e.printStackTrace(System.out);
-		throw new cbit.util.DataAccessException("line #"+(tokens.lineIndex()+1)+" Exception: "+e.getMessage());
+		throw new org.vcell.util.DataAccessException("line #"+(tokens.lineIndex()+1)+" Exception: "+e.getMessage());
 	}
 }
 
@@ -77,7 +78,7 @@ public void gatherIssues(java.util.Vector issueList) {
 	// check for a data column named "t"
 	//
 	if (simpleReferenceData.findColumn("t")<0){
-		issueList.add(new cbit.util.Issue(this,"objectiveFunction","missing time data column with name 't'",cbit.util.Issue.SEVERITY_ERROR));
+		issueList.add(new org.vcell.util.Issue(this,"objectiveFunction","missing time data column with name 't'",org.vcell.util.Issue.SEVERITY_ERROR));
 	}
 	//
 	// for those columns that are not "t", check for a corresponding math description Function or VolumeVariable
@@ -89,13 +90,13 @@ public void gatherIssues(java.util.Vector issueList) {
 		}
 		cbit.vcell.math.Variable mathVar = mathDescription.getVariable(columnNames[i]);
 		if (mathVar==null){
-			issueList.add(new cbit.util.Issue(this,"objectiveFunction","data column '"+columnNames[i]+"' not found in math model",cbit.util.Issue.SEVERITY_ERROR));
+			issueList.add(new org.vcell.util.Issue(this,"objectiveFunction","data column '"+columnNames[i]+"' not found in math model",org.vcell.util.Issue.SEVERITY_ERROR));
 		}else if (!(mathVar instanceof cbit.vcell.math.VolVariable) && !(mathVar instanceof cbit.vcell.math.Function)){
-			issueList.add(new cbit.util.Issue(this,"objectiveFunction","data column '"+columnNames[i]+"' not a variable or function in math model",cbit.util.Issue.SEVERITY_ERROR));
+			issueList.add(new org.vcell.util.Issue(this,"objectiveFunction","data column '"+columnNames[i]+"' not a variable or function in math model",org.vcell.util.Issue.SEVERITY_ERROR));
 		}
 	}
 	if (simpleReferenceData.findColumn("t")<0){
-		issueList.add(new cbit.util.Issue(this,"objectiveFunction","missing time data column with name 't'",cbit.util.Issue.SEVERITY_ERROR));
+		issueList.add(new org.vcell.util.Issue(this,"objectiveFunction","missing time data column with name 't'",org.vcell.util.Issue.SEVERITY_ERROR));
 	}
 	
 }
