@@ -22,8 +22,8 @@ import org.vcell.physics.component.OOModel;
 import org.vcell.physics.component.OnePortElectricalDevice;
 import org.vcell.physics.component.TwoPortElectricalComponent;
 import org.vcell.physics.component.VoltageSource;
+import org.vcell.util.TokenMangler;
 
-import cbit.util.TokenMangler;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;

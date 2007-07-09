@@ -15,8 +15,8 @@ import org.vcell.physics.math.MappingUtilities;
 import org.vcell.physics.math.MathSystem;
 import org.vcell.physics.math.ModelAnalysisResults;
 import org.vcell.physics.modelica.ModelicaModelWriter;
+import org.vcell.util.Matchable;
 
-import cbit.util.Matchable;
 import cbit.vcell.model.ModelInfo;
 import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.modelapp.physics.PhysicsMapping;
