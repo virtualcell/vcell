@@ -388,7 +388,7 @@ public VCImage getVCImage() throws ImageException {
 			bytepix[i] = (byte)(0xff&(int)originalDouble[i]);
 		}
 	}
-	VCImageUncompressed vci = new VCImageUncompressed(null,bytepix,new cbit.util.Extent(getSizeX(),getSizeY(),getSizeZ()),getSizeX(),getSizeY(),getSizeZ());
+	VCImageUncompressed vci = new VCImageUncompressed(null,bytepix,new org.vcell.util.Extent(getSizeX(),getSizeY(),getSizeZ()),getSizeX(),getSizeY(),getSizeZ());
 	return vci;
 }
 

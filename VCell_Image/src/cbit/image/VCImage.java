@@ -5,19 +5,20 @@ package cbit.image;
 ©*/
 import java.io.Serializable;
 import java.util.*;
-import cbit.util.Compare;
-import cbit.util.Matchable;
-import cbit.util.document.KeyValue;
-import cbit.util.document.User;
-import cbit.util.document.Version;
 
-public abstract class VCImage implements Serializable, cbit.util.document.Versionable, java.beans.VetoableChangeListener {
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
+
+public abstract class VCImage implements Serializable, org.vcell.util.document.Versionable, java.beans.VetoableChangeListener {
 	//	private KeyValue key = null; //Deprecated
 	//	private User owner = null; //Deprecated
 	private int numX = 0;
 	private int numY = 0;
 	private int numZ = 0;
-	private cbit.util.Extent extent = new cbit.util.Extent(10, 10, 10);
+	private org.vcell.util.Extent extent = new org.vcell.util.Extent(10, 10, 10);
 	//	private String imageName = null;
 	//	private String annot = ""; //Deprecated
 	private Version version = null;
@@ -58,7 +59,7 @@ protected VCImage(VCImage vci) throws ImageException {
  * @param name java.lang.String
  * @param annot java.lang.String
  */
-protected VCImage(Version aVersion, cbit.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throws ImageException {
+protected VCImage(Version aVersion, org.vcell.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throws ImageException {
 	
 	this.version = aVersion;
 	if (aNumX<1 || aNumY<1 || aNumZ<1){
@@ -135,14 +136,14 @@ public boolean compareEqual(Matchable obj) {
 	}
 	VCImage vci = (VCImage)obj;
 
-	if(!cbit.util.Compare.isEqual(getName(),vci.getName())){
+	if(!org.vcell.util.Compare.isEqual(getName(),vci.getName())){
 		return false;
 	}
-	if(!cbit.util.Compare.isEqual(getDescription(),vci.getDescription())){
+	if(!org.vcell.util.Compare.isEqual(getDescription(),vci.getDescription())){
 		return false;
 	}
 	
-	if(!cbit.util.Compare.isEqual(getExtent(),vci.getExtent())){
+	if(!org.vcell.util.Compare.isEqual(getExtent(),vci.getExtent())){
 		return false;
 	}
 
@@ -158,7 +159,7 @@ public boolean compareEqual(Matchable obj) {
 		return false;
 	}
 
-	if(!cbit.util.Compare.isEqual(fieldPixelClasses,vci.fieldPixelClasses)){
+	if(!org.vcell.util.Compare.isEqual(fieldPixelClasses,vci.fieldPixelClasses)){
 		return false;
 	}
 
@@ -199,7 +200,7 @@ public static VCImage concatenateZSeries(VCImage images[]) throws ImageException
 	int nX = images[0].getNumX();
 	int nY = images[0].getNumY();
 	int nZ = images[0].getNumZ();
-	cbit.util.Extent extent0 = images[0].getExtent();
+	org.vcell.util.Extent extent0 = images[0].getExtent();
 	for (int i=1;i<images.length;i++){
 		if (images[i].getNumX() != nX){
 			throw new ImageException("image "+(i+1)+" x dimension doesn't match the first image");
@@ -222,7 +223,7 @@ public static VCImage concatenateZSeries(VCImage images[]) throws ImageException
 			bigBuffer[index++] = currPix[j];
 		}
 	}		
-	VCImage vcImage = new VCImageUncompressed(null,bigBuffer,new cbit.util.Extent(extent0.getX(),extent0.getY(),extent0.getZ()*images.length),nX,nY,nZ);
+	VCImage vcImage = new VCImageUncompressed(null,bigBuffer,new org.vcell.util.Extent(extent0.getX(),extent0.getY(),extent0.getZ()*images.length),nX,nY,nZ);
 	return vcImage;
 }
 
@@ -305,7 +306,7 @@ public java.lang.String getDescription() {
  * This method was created in VisualAge.
  * @return int
  */
-public cbit.util.Extent getExtent() {
+public org.vcell.util.Extent getExtent() {
 	return extent;
 }
 
@@ -638,8 +639,8 @@ public void setDescription(java.lang.String description) {
  * This method was created in VisualAge.
  * @return int
  */
-public void setExtent(cbit.util.Extent newExtent) {
-	cbit.util.Extent oldExtent = this.extent;
+public void setExtent(org.vcell.util.Extent newExtent) {
+	org.vcell.util.Extent oldExtent = this.extent;
 	this.extent = newExtent;
 	firePropertyChange("extent",oldExtent,newExtent);
 }

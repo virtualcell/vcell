@@ -232,7 +232,7 @@ End Paste into scrapbook*/
 	for(int c= 0;c<destPixels.length;c+= 1){
 		destPixels[c] = destAllPixels[c][0];
 	}
-	return new VCImageUncompressed(null,destPixels,new cbit.util.Extent(1,1,1),destXSize,destYSize,1);
+	return new VCImageUncompressed(null,destPixels,new org.vcell.util.Extent(1,1,1),destXSize,destYSize,1);
 /*
 	//Make arrays of all the different src pixel values in the z plane for each x,y location
 	for (int x = 0; x < xs; x += 1) {

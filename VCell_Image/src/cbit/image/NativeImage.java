@@ -4,7 +4,6 @@ package cbit.image;
  * All rights reserved.
 ©*/
 import java.awt.image.ImageObserver;
-import cbit.util.ISize;
 import java.io.Serializable;
 import java.awt.image.PixelGrabber;
 import java.awt.image.ColorModel;
@@ -13,6 +12,8 @@ import java.awt.image.DirectColorModel;
 import java.util.Hashtable;
 import java.util.Enumeration;
 import java.util.Vector;
+
+import org.vcell.util.ISize;
 /**
  * This type was created in VisualAge.
  */

@@ -20,7 +20,7 @@ public java.beans.MethodDescriptor compareEqual_cbitutilMatchableMethodDescripto
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.util.Matchable.class
+				org.vcell.util.Matchable.class
 			};
 			aMethod = getBeanClass().getMethod("compareEqual", aParameterTypes);
 		} catch (Throwable exception) {
@@ -171,7 +171,7 @@ public java.beans.PropertyDescriptor extentPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.util.Extent.class
+					org.vcell.util.Extent.class
 				};
 				aSetMethod = getBeanClass().getMethod("setExtent", aSetMethodParameterTypes);
 			} catch (Throwable exception) {
@@ -1543,7 +1543,7 @@ public java.beans.MethodDescriptor setExtent_cbitutilExtentMethodDescriptor() {
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.util.Extent.class
+				org.vcell.util.Extent.class
 			};
 			aMethod = getBeanClass().getMethod("setExtent", aParameterTypes);
 		} catch (Throwable exception) {

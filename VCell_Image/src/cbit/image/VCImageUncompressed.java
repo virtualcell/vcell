@@ -28,7 +28,7 @@ public VCImageUncompressed(VCImage vcimage) throws ImageException {
  * @param name java.lang.String
  * @param annot java.lang.String
  */
-public VCImageUncompressed(cbit.util.document.Version aVersion,byte pixels[], cbit.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throws ImageException {
+public VCImageUncompressed(org.vcell.util.document.Version aVersion,byte pixels[], org.vcell.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throws ImageException {
 	super(aVersion, aExtent, aNumX, aNumY, aNumZ);
 	if (aNumX*aNumY*aNumZ != pixels.length){
 		throw new IllegalArgumentException("size ("+aNumX+","+aNumY+","+aNumZ+") not consistent with "+pixels.length+" pixels");
@@ -45,7 +45,7 @@ public VCImageUncompressed(cbit.util.document.Version aVersion,byte pixels[], cb
  * @param name java.lang.String
  * @param annot java.lang.String
  */
-public VCImageUncompressed(cbit.util.document.Version aVersion,int sourceValues[], cbit.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throws ImageException {
+public VCImageUncompressed(org.vcell.util.document.Version aVersion,int sourceValues[], org.vcell.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throws ImageException {
 	super(aVersion, aExtent, aNumX, aNumY, aNumZ);
 	if (aNumX*aNumY*aNumZ != sourceValues.length){
 		throw new IllegalArgumentException("size ("+aNumX+","+aNumY+","+aNumZ+") not consistent with "+sourceValues.length+" pixels");
