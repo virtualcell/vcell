@@ -15,7 +15,7 @@ public class SurfaceUtils {
 			OrigSurface quadSurface = (OrigSurface)quadSurfaceCollection.getSurfaces(0);
 			OrigSurface quadSurfaceCopy = null;
 			try {
-				quadSurfaceCopy = (OrigSurface)cbit.util.BeanUtils.cloneSerializable(quadSurface);
+				quadSurfaceCopy = (OrigSurface)org.vcell.util.BeanUtils.cloneSerializable(quadSurface);
 			}catch (Throwable e){
 				e.printStackTrace(System.out);
 				throw new RuntimeException(e.getMessage());

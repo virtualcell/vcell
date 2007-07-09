@@ -5,6 +5,10 @@ import java.awt.event.WindowEvent;
 
 import javax.swing.JFrame;
 
+import org.vcell.util.Extent;
+import org.vcell.util.ISize;
+import org.vcell.util.Origin;
+
 import cbit.render.objects.ByteImage;
 import cbit.render.objects.ByteImageTest;
 import cbit.render.objects.RegionImage;
@@ -13,9 +17,6 @@ import cbit.render.objects.SurfaceGenerator;
 import cbit.render.objects.TaubinSmoothing;
 import cbit.render.objects.TaubinSmoothingSpecification;
 import cbit.render.objects.TaubinSmoothingWrong;
-import cbit.util.Extent;
-import cbit.util.ISize;
-import cbit.util.Origin;
 
 public class RenderTests {
 

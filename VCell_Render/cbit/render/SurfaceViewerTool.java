@@ -139,7 +139,7 @@ public void fullRepaint() {
 		getSurfaceCanvas().repaint();
 	}finally{
 		if(canvasParentWindow != null){
-			javax.swing.SwingUtilities.invokeLater(new Runnable() {public void run(){cbit.util.BeanUtils.setCursorThroughout(canvasParentWindow,java.awt.Cursor.getDefaultCursor());}});
+			javax.swing.SwingUtilities.invokeLater(new Runnable() {public void run(){org.vcell.util.BeanUtils.setCursorThroughout(canvasParentWindow,java.awt.Cursor.getDefaultCursor());}});
 		}
 	}
 	
@@ -417,8 +417,8 @@ public void resetView() {
 
 	Vect3d oldViewAngle = trackball.getRotation();
 	
-	cbit.util.Extent extent = new cbit.util.Extent(10,10,10);
-	cbit.util.Origin origin = new cbit.util.Origin(-5,-5,-5);
+	org.vcell.util.Extent extent = new org.vcell.util.Extent(10,10,10);
+	org.vcell.util.Origin origin = new org.vcell.util.Origin(-5,-5,-5);
 	double scale = 0.2;
 	Vect3d center = new Vect3d(origin.getX()+extent.getX()/2.0, origin.getY()+extent.getY()/2.0, origin.getZ()+extent.getZ()/2.0); 
 	Vect3d size = new Vect3d(extent.getX()*scale, extent.getY()*scale, extent.getZ()*scale); 

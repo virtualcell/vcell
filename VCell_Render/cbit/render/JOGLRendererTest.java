@@ -6,6 +6,8 @@ import javax.swing.*;
 
 import javax.media.opengl.*;
 
+import org.vcell.util.ISize;
+
 import cbit.render.objects.AnalyticField;
 import cbit.render.objects.BoundingBox;
 import cbit.render.objects.ByteImage;
@@ -14,7 +16,6 @@ import cbit.render.objects.SpatialFunction;
 import cbit.render.objects.SurfaceCollection;
 import cbit.render.objects.SurfaceCollectionTest;
 import cbit.render.objects.Vect3d;
-import cbit.util.ISize;
 
 /**
  * JGears.java <BR>

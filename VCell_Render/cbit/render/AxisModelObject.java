@@ -2,9 +2,10 @@ package cbit.render;
 
 import javax.media.opengl.GL;
 
+import org.vcell.util.Extent;
+
 import cbit.render.objects.BoundingBox;
 import cbit.render.objects.Vect3d;
-import cbit.util.Extent;
 
 import com.sun.opengl.util.GLUT;
 
