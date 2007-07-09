@@ -19,7 +19,7 @@ public class Plot2DDataPanel extends JPanel {
 	private JScrollPane ivjJScrollPane1 = null;
 	private Plot2D ivjplot2D1 = null;
 	private JTable ivjScrollPaneTable = null;
-	private cbit.gui.NonEditableDefaultTableModel ivjNonEditableDefaultTableModel1 = null;
+	private org.vcell.util.gui.NonEditableDefaultTableModel ivjNonEditableDefaultTableModel1 = null;
 	private JMenuItem ivjJMenuItemCopy = null;
 	private JPopupMenu ivjJPopupMenu1 = null;
 	private JMenuItem ivjJMenuItemCopyAll = null;
@@ -251,7 +251,7 @@ private void controlKeys() {
  * Comment
  */
 private void copyCells(String actionCommand) {
-	cbit.gui.SimpleTransferable.sendToClipboard(getTabDelimitedData(actionCommand));
+	org.vcell.util.gui.SimpleTransferable.sendToClipboard(getTabDelimitedData(actionCommand));
 }
 	/**
  * Return the JMenuItemCopy property value.
@@ -345,10 +345,10 @@ private javax.swing.JScrollPane getJScrollPane1() {
  * @return cbit.gui.NonEditableDefaultTableModel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.NonEditableDefaultTableModel getNonEditableDefaultTableModel1() {
+private org.vcell.util.gui.NonEditableDefaultTableModel getNonEditableDefaultTableModel1() {
 	if (ivjNonEditableDefaultTableModel1 == null) {
 		try {
-			ivjNonEditableDefaultTableModel1 = new cbit.gui.NonEditableDefaultTableModel();
+			ivjNonEditableDefaultTableModel1 = new org.vcell.util.gui.NonEditableDefaultTableModel();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

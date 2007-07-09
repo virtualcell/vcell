@@ -1446,7 +1446,7 @@ public java.beans.PropertyDescriptor xAutoRangePropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.util.Range.class
+					org.vcell.util.Range.class
 				};
 				aSetMethod = getBeanClass().getMethod("setXAutoRange", aSetMethodParameterTypes);
 			} catch (Throwable exception) {
@@ -1539,7 +1539,7 @@ public java.beans.PropertyDescriptor xManualRangePropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.util.Range.class
+					org.vcell.util.Range.class
 				};
 				aSetMethod = getBeanClass().getMethod("setXManualRange", aSetMethodParameterTypes);
 			} catch (Throwable exception) {
@@ -1736,7 +1736,7 @@ public java.beans.PropertyDescriptor yAutoRangePropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.util.Range.class
+					org.vcell.util.Range.class
 				};
 				aSetMethod = getBeanClass().getMethod("setYAutoRange", aSetMethodParameterTypes);
 			} catch (Throwable exception) {
@@ -1829,7 +1829,7 @@ public java.beans.PropertyDescriptor yManualRangePropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.util.Range.class
+					org.vcell.util.Range.class
 				};
 				aSetMethod = getBeanClass().getMethod("setYManualRange", aSetMethodParameterTypes);
 			} catch (Throwable exception) {

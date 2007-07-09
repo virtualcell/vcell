@@ -6,11 +6,12 @@ package cbit.plot;
 import java.awt.event.*;
 import java.awt.*;
 import javax.swing.*;
+
+import org.vcell.util.*;
+
 import java.awt.geom.*;
 import java.text.*;
 import java.util.*;
-import cbit.util.*;
-import cbit.util.Range;
 /**
  * Insert the type's description here.
  * Creation date: (2/7/2001 12:38:12 AM)
@@ -2295,7 +2296,7 @@ private void processMouseClick(java.awt.event.MouseEvent mouseEvent) {
 		// save current settings before showing panel; plot will update live
 		getplot2DSettings1().saveSettings();
 //		int newSettings = JOptionPane.showOptionDialog(this, getPlot2DSettingsPanel1(), "Plot Settings", 0, JOptionPane.PLAIN_MESSAGE, null, new String[] {"OK", "Cancel"}, null);
-		int newSettings = cbit.gui.DialogUtils.showComponentOKCancelDialog(this, getPlot2DSettingsPanel1(), "Plot Settings");
+		int newSettings = org.vcell.util.gui.DialogUtils.showComponentOKCancelDialog(this, getPlot2DSettingsPanel1(), "Plot Settings");
 		if (newSettings != JOptionPane.OK_OPTION) {
 			// user didn't ok, put back old settings
 			getplot2DSettings1().restoreSavedSettings();

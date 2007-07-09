@@ -9,7 +9,7 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 package cbit.plot;
-import cbit.gui.DefaultListSelectionModelFixed;
+import org.vcell.util.gui.DefaultListSelectionModelFixed;
 /**
  * Insert the type's description here.
  * Creation date: (8/31/2005 4:03:04 PM)
@@ -21,7 +21,7 @@ public class MultisourcePlotPane extends javax.swing.JPanel {
 	private MultisourcePlotListModel ivjmultisourcePlotListModel = null;
 	private cbit.plot.PlotPane ivjplotPane = null;
 	private cbit.plot.DataSource[] fieldDataSources = null;
-	private cbit.gui.DefaultListSelectionModelFixed ivjdefaultListSelectionModelFixed = null;
+	private org.vcell.util.gui.DefaultListSelectionModelFixed ivjdefaultListSelectionModelFixed = null;
 	private javax.swing.JScrollPane ivjReferenceDataListScrollPane = null;
 
 class IvjEventHandler implements java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
@@ -182,10 +182,10 @@ public DataSource getDataSources(int index) {
  * @return cbit.util.DefaultListSelectionModelFixed
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.DefaultListSelectionModelFixed getdefaultListSelectionModelFixed() {
+private org.vcell.util.gui.DefaultListSelectionModelFixed getdefaultListSelectionModelFixed() {
 	if (ivjdefaultListSelectionModelFixed == null) {
 		try {
-			ivjdefaultListSelectionModelFixed = new cbit.gui.DefaultListSelectionModelFixed();
+			ivjdefaultListSelectionModelFixed = new org.vcell.util.gui.DefaultListSelectionModelFixed();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -449,8 +449,8 @@ private void selectionModel1_ValueChanged(javax.swing.event.ListSelectionEvent l
 	
 	
 	String[] labels = {"", "t", ""};	
-	String[] names = (String[])cbit.util.BeanUtils.getArray(nameList,String.class);	
-	cbit.plot.PlotData[] plotDatas = (cbit.plot.PlotData[])cbit.util.BeanUtils.getArray(plotDataList,cbit.plot.PlotData.class);
+	String[] names = (String[])org.vcell.util.BeanUtils.getArray(nameList,String.class);	
+	cbit.plot.PlotData[] plotDatas = (cbit.plot.PlotData[])org.vcell.util.BeanUtils.getArray(plotDataList,cbit.plot.PlotData.class);
 	boolean visibleFlags[] = new boolean[plotDatas.length];
 	for (int i = 0; i < visibleFlags.length; i++){
 		visibleFlags[i] = true;

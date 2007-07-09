@@ -14,7 +14,7 @@ package cbit.plot;
  * Creation date: (8/31/2005 4:07:05 PM)
  * @author: Jim Schaff
  */
-public class MultisourcePlotListModel extends cbit.gui.DefaultListModelCivilized implements java.beans.PropertyChangeListener {
+public class MultisourcePlotListModel extends org.vcell.util.gui.DefaultListModelCivilized implements java.beans.PropertyChangeListener {
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private cbit.plot.DataSource[] fieldDataSources = null;
 
@@ -147,7 +147,7 @@ private void refreshAll() {
 			dataReferenceList.add(new DataReference(dataSource,columnNames[j]));
 		}
 	}
-	setContents(cbit.util.BeanUtils.getArray(dataReferenceList,DataReference.class));
+	setContents(org.vcell.util.BeanUtils.getArray(dataReferenceList,DataReference.class));
 }
 
 

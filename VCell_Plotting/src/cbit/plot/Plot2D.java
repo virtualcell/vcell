@@ -5,7 +5,8 @@ import java.util.*;
  * All rights reserved.
 ©*/
 import javax.swing.event.*;
-import cbit.util.Range;
+
+import org.vcell.util.Range;
 /**
  * Insert the type's description here.
  * Creation date: (2/8/2001 12:43:18 PM)
