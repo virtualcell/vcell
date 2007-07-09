@@ -10,8 +10,8 @@ import java.io.*;
 import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.IExpression;
+import org.vcell.util.*;
 
-import cbit.util.*;
 /**
  * This type was created in VisualAge.
  */

@@ -71,7 +71,7 @@ public void bind(SymbolTable symbolTable) throws org.vcell.expression.Expression
  * @return boolean
  * @param obj Matchable
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (!(obj instanceof Constant)){
 		return false;
 	}
@@ -79,7 +79,7 @@ public boolean compareEqual(cbit.util.Matchable obj) {
 		return false;
 	}
 	Constant v = (Constant)obj;
-	if (!cbit.util.Compare.isEqualOrNull(exp,v.exp)){
+	if (!org.vcell.util.Compare.isEqualOrNull(exp,v.exp)){
 		return false;
 	}
 	

@@ -14,7 +14,7 @@ import org.vcell.expression.SymbolTable;
  * @author:Tracy LI
  * @see:JumpProcess
  */
-public class Action implements cbit.util.Matchable,java.io.Serializable
+public class Action implements org.vcell.util.Matchable,java.io.Serializable
 {
 	private Variable var;
 	private String operation;
@@ -48,7 +48,7 @@ public void bindExpression(SymbolTable symbolTable) throws ExpressionBindingExce
  * Creation date: (6/22/2006 11:01:21 AM)
  * @return boolean
  */
-public boolean compareEqual(cbit.util.Matchable object) 
+public boolean compareEqual(org.vcell.util.Matchable object) 
 {
 	Action action=(Action) object;
 	if(!action.var.compareEqual(var)) return false;//var

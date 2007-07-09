@@ -23,7 +23,7 @@ public InsideVariable(String name, String volVariableName) {
  * @return boolean
  * @param obj Matchable
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (!(obj instanceof InsideVariable)){
 		return false;
 	}
@@ -31,7 +31,7 @@ public boolean compareEqual(cbit.util.Matchable obj) {
 		return false;
 	}
 	InsideVariable v = (InsideVariable)obj;
-	if (!cbit.util.Compare.isEqual(volVariableName,v.volVariableName)){
+	if (!org.vcell.util.Compare.isEqual(volVariableName,v.volVariableName)){
 		return false;
 	}
 	

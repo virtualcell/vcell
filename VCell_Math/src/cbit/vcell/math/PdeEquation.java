@@ -1,5 +1,4 @@
 package cbit.vcell.math;
-import cbit.util.CommentStringTokenizer;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -11,6 +10,7 @@ import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.SymbolTable;
+import org.vcell.util.CommentStringTokenizer;
 
 import edu.uchc.vcell.expression.internal.*;
 /**
@@ -72,7 +72,7 @@ public PdeEquation (VolVariable volVar) {
  * @return boolean
  * @param object cbit.util.Matchable
  */
-public boolean compareEqual(cbit.util.Matchable object) {
+public boolean compareEqual(org.vcell.util.Matchable object) {
 	PdeEquation equ = null;
 	if (!(object instanceof PdeEquation)){
 		return false;
@@ -82,34 +82,34 @@ public boolean compareEqual(cbit.util.Matchable object) {
 	if (!compareEqual0(equ)){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqualOrNull(diffusionExp,equ.diffusionExp)){
+	if (!org.vcell.util.Compare.isEqualOrNull(diffusionExp,equ.diffusionExp)){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqualOrNull(boundaryXm,equ.boundaryXm)){
+	if (!org.vcell.util.Compare.isEqualOrNull(boundaryXm,equ.boundaryXm)){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqualOrNull(boundaryXp,equ.boundaryXp)){
+	if (!org.vcell.util.Compare.isEqualOrNull(boundaryXp,equ.boundaryXp)){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqualOrNull(boundaryYm,equ.boundaryYm)){
+	if (!org.vcell.util.Compare.isEqualOrNull(boundaryYm,equ.boundaryYm)){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqualOrNull(boundaryYp,equ.boundaryYp)){
+	if (!org.vcell.util.Compare.isEqualOrNull(boundaryYp,equ.boundaryYp)){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqualOrNull(boundaryZm,equ.boundaryZm)){
+	if (!org.vcell.util.Compare.isEqualOrNull(boundaryZm,equ.boundaryZm)){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqualOrNull(boundaryZp,equ.boundaryZp)){
+	if (!org.vcell.util.Compare.isEqualOrNull(boundaryZp,equ.boundaryZp)){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqualOrNull(velocityX,equ.velocityX)){
+	if (!org.vcell.util.Compare.isEqualOrNull(velocityX,equ.velocityX)){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqualOrNull(velocityY,equ.velocityY)){
+	if (!org.vcell.util.Compare.isEqualOrNull(velocityY,equ.velocityY)){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqualOrNull(velocityZ,equ.velocityZ)){
+	if (!org.vcell.util.Compare.isEqualOrNull(velocityZ,equ.velocityZ)){
 		return false;
 	}
 	return true;

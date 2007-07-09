@@ -6,11 +6,11 @@ package cbit.vcell.math;
 ©*/
 
 import java.io.Serializable;
-import cbit.util.Compare;
-import cbit.util.Matchable;
 import java.util.*;
 
 import org.vcell.expression.IExpression;
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
 
 import edu.uchc.vcell.expression.internal.*;
 /**

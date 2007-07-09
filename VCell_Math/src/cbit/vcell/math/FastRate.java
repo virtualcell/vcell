@@ -4,8 +4,8 @@ package cbit.vcell.math;
  * All rights reserved.
 ©*/
 import org.vcell.expression.IExpression;
+import org.vcell.util.Matchable;
 
-import cbit.util.Matchable;
 import edu.uchc.vcell.expression.internal.*;
 
 /**

@@ -5,11 +5,11 @@ import org.vcell.expression.ExpressionException;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.SimpleSymbolTable;
 import org.vcell.expression.SymbolTable;
+import org.vcell.util.CommentStringTokenizer;
+import org.vcell.util.Compare;
+import org.vcell.util.document.SimulationVersion;
 
-import cbit.util.CommentStringTokenizer;
-import cbit.util.Compare;
-import cbit.util.document.SimulationVersion;
-public class JumpProcess implements cbit.util.Matchable,java.io.Serializable {
+public class JumpProcess implements org.vcell.util.Matchable,java.io.Serializable {
 	private String processName=null;
 	private IExpression  probabilityRate=null;
 	private Vector listOfActions = null;
@@ -45,7 +45,7 @@ public void addAction(Action newAction) throws MathException
  * @return boolean
  * @param object java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable object) 
+public boolean compareEqual(org.vcell.util.Matchable object) 
 {
 	if (object == null) {
 		return false;

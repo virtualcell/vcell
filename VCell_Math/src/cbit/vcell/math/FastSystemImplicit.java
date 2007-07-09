@@ -9,8 +9,8 @@ import org.vcell.expression.ExpressionUtilities;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.RationalExpression;
 import org.vcell.expression.ISymbolicProcessor;
+import org.vcell.util.CommentStringTokenizer;
 
-import cbit.util.CommentStringTokenizer;
 import cbit.vcell.matrix.RationalExpMatrix;
 /**
  * This type was created in VisualAge.
