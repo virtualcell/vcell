@@ -5,7 +5,7 @@ package cbit.vcell.dictionary;
  * Creation date: (9/19/2003 4:42:07 PM)
  * @author: Frank Morgan
  */
-public interface SpeciesDescription extends cbit.util.Cacheable{
+public interface SpeciesDescription extends org.vcell.util.Cacheable{
 /**
  * Insert the method's description here.
  * Creation date: (9/19/2003 4:42:34 PM)

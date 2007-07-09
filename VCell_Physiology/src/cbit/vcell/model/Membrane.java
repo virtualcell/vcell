@@ -5,8 +5,9 @@ package cbit.vcell.model;
 ©*/
 import java.util.*;
 
-import cbit.util.Matchable;
-import cbit.util.document.KeyValue;
+import org.vcell.util.Matchable;
+import org.vcell.util.document.KeyValue;
+
 
 public class Membrane extends Structure {
 	public Feature insideFeature = null;
@@ -16,7 +17,7 @@ public class Membrane extends Structure {
 public Membrane(KeyValue key, String name) throws java.beans.PropertyVetoException {
 	super(key);
 	setName(name);
-	fieldMembraneVoltage = new MembraneVoltage(cbit.util.TokenMangler.fixTokenStrict("Voltage_"+name),this);
+	fieldMembraneVoltage = new MembraneVoltage(org.vcell.util.TokenMangler.fixTokenStrict("Voltage_"+name),this);
 }
 
 

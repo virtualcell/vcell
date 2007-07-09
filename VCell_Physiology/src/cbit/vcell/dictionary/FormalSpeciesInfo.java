@@ -5,7 +5,7 @@ package cbit.vcell.dictionary;
  * Creation date: (2/18/2003 3:07:17 PM)
  * @author: Frank Morgan
  */
-public abstract class FormalSpeciesInfo implements cbit.util.Cacheable{
+public abstract class FormalSpeciesInfo implements org.vcell.util.Cacheable{
 
 	private String formalID = null;
 	private String[] names = null;
@@ -37,14 +37,14 @@ protected FormalSpeciesInfo(String argFormalID,String[] argNames) {
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	
 	if (obj instanceof FormalSpeciesInfo){
 		FormalSpeciesInfo formalSpeciesInfo = (FormalSpeciesInfo)obj;
 		if (!formalID.equals(formalSpeciesInfo.getFormalID())){
 			return false;
 		}
-		if(!cbit.util.Compare.isEqual(names,formalSpeciesInfo.getNames())){
+		if(!org.vcell.util.Compare.isEqual(names,formalSpeciesInfo.getNames())){
 			return false;
 		}
 	}else{

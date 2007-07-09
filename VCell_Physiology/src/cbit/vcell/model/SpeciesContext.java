@@ -10,12 +10,12 @@ import org.vcell.expression.ExpressionException;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.NameScope;
 import org.vcell.expression.SymbolTableEntry;
+import org.vcell.util.Cacheable;
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+import org.vcell.util.document.KeyValue;
 
 import cbit.vcell.model.*;
-import cbit.util.Cacheable;
-import cbit.util.Compare;
-import cbit.util.Matchable;
-import cbit.util.document.KeyValue;
 import edu.uchc.vcell.expression.internal.*;
 
 public class SpeciesContext implements Cacheable, Matchable, SymbolTableEntry, VetoableChangeListener, PropertyChangeListener {
@@ -105,7 +105,7 @@ public boolean compareEqual(Matchable obj) {
  * @param structure cbit.vcell.model.Structure
  */
 private final static String createContextName(Species species, Structure structure) {
-	return cbit.util.TokenMangler.fixTokenStrict(species.getCommonName()+"_"+structure.getName());
+	return org.vcell.util.TokenMangler.fixTokenStrict(species.getCommonName()+"_"+structure.getName());
 }
 
 
@@ -130,7 +130,7 @@ public void fireVetoableChange(String propertyName, Object oldValue, Object newV
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-public void fromTokens(cbit.util.CommentStringTokenizer tokens) throws Exception {
+public void fromTokens(org.vcell.util.CommentStringTokenizer tokens) throws Exception {
 	String token = null;
 	tokens.nextToken();  // read "{"
 	while (tokens.hasMoreTokens()){

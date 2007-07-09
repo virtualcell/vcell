@@ -1,15 +1,16 @@
 package cbit.vcell.model;
 import java.beans.*;
+
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.Matchable;
-import cbit.util.Compare;
-import cbit.util.document.KeyValue;
-import cbit.util.document.User;
 
-public class Species implements java.beans.VetoableChangeListener,cbit.util.Cacheable {
+public class Species implements java.beans.VetoableChangeListener,org.vcell.util.Cacheable {
 
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;

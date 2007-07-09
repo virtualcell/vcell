@@ -85,7 +85,7 @@ private static void testReactionStep(ReactionStep reactionStep) throws Expressio
 	System.out.println("Rate = " + k.getRateParameter());
 	System.out.println("Current = " + k.getCurrentParameter());
 	System.out.println(reactionStep.getVCML());
-	cbit.util.CommentStringTokenizer tokens = new cbit.util.CommentStringTokenizer(k.getVCML());
+	org.vcell.util.CommentStringTokenizer tokens = new org.vcell.util.CommentStringTokenizer(k.getVCML());
 	tokens.nextToken();
 	String kineticType = tokens.nextToken();
 	Kinetics newK = KineticsDescription.fromVCMLKineticsName(kineticType).createKinetics(reactionStep);

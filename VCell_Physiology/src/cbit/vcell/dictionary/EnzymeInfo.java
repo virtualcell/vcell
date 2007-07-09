@@ -6,7 +6,7 @@ import java.util.Vector;
  * Creation date: (6/24/2002 10:38:00 AM)
  * @author: Steven Woolley
  */
-public class EnzymeInfo extends FormalSpeciesInfo implements cbit.util.Cacheable{
+public class EnzymeInfo extends FormalSpeciesInfo implements org.vcell.util.Cacheable{
 	
     private String reaction = null;
     private String sysname = null;
@@ -82,7 +82,7 @@ public EnzymeInfo(
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 
 	if(!super.compareEqual(obj)){
 		return false;
@@ -90,10 +90,10 @@ public boolean compareEqual(cbit.util.Matchable obj) {
 	
 	if (obj instanceof EnzymeInfo){
 		EnzymeInfo enzymeInfo = (EnzymeInfo)obj;
-		if (!cbit.util.Compare.isEqualOrNull(reaction,enzymeInfo.getReaction())){
+		if (!org.vcell.util.Compare.isEqualOrNull(reaction,enzymeInfo.getReaction())){
 			return false;
 		}
-		if (!cbit.util.Compare.isEqualOrNull(sysname,enzymeInfo.getSysname())){
+		if (!org.vcell.util.Compare.isEqualOrNull(sysname,enzymeInfo.getSysname())){
 			return false;
 		}
 	}else{

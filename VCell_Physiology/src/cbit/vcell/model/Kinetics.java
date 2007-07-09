@@ -17,8 +17,8 @@ import org.vcell.expression.NameScope;
 import org.vcell.expression.SymbolTable;
 import org.vcell.expression.SymbolTableEntry;
 import org.vcell.expression.VCUnitEvaluator;
+import org.vcell.util.*;
 
-import cbit.util.*;
 import edu.uchc.vcell.expression.internal.*;
 import net.sourceforge.interval.ia_math.RealInterval;
 /**
@@ -587,7 +587,7 @@ public void fireVetoableChange(java.lang.String propertyName, java.lang.Object o
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-public final void fromTokens(cbit.util.CommentStringTokenizer tokens) throws ExpressionException, PropertyVetoException {
+public final void fromTokens(org.vcell.util.CommentStringTokenizer tokens) throws ExpressionException, PropertyVetoException {
 	//
 	//  old format (version 1) (still supported for reading)
 	//

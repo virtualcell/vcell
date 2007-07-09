@@ -7,12 +7,12 @@ package cbit.vcell.dictionary;
  */
 public abstract class DBFormalSpecies implements SpeciesDescription {
 
-	private cbit.util.document.KeyValue dbFormalSpeciesKey = null;
+	private org.vcell.util.document.KeyValue dbFormalSpeciesKey = null;
 	private FormalSpeciesInfo formalSpeciesInfo = null;
 /**
  * DBFormalSpeciesInfo constructor comment.
  */
-public DBFormalSpecies(cbit.util.document.KeyValue argKey, FormalSpeciesInfo argFormalSpeciesInfo) {
+public DBFormalSpecies(org.vcell.util.document.KeyValue argKey, FormalSpeciesInfo argFormalSpeciesInfo) {
 
 	if(argKey == null || argFormalSpeciesInfo == null){
 		throw new IllegalArgumentException(this.getClass().getName());
@@ -26,7 +26,7 @@ public DBFormalSpecies(cbit.util.document.KeyValue argKey, FormalSpeciesInfo arg
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	
 	if (obj instanceof DBFormalSpecies){
 		DBFormalSpecies dbFormalSpecies = (DBFormalSpecies)obj;
@@ -47,7 +47,7 @@ public boolean compareEqual(cbit.util.Matchable obj) {
  * Creation date: (2/18/2003 5:46:02 PM)
  * @return cbit.sql.KeyValue
  */
-public cbit.util.document.KeyValue getDBFormalSpeciesKey() {
+public org.vcell.util.document.KeyValue getDBFormalSpeciesKey() {
 	return dbFormalSpeciesKey;
 }
 /**

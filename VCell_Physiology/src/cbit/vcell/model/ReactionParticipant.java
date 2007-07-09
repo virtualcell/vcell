@@ -3,10 +3,10 @@ package cbit.vcell.model;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.Compare;
-import cbit.util.document.KeyValue;
+import org.vcell.util.Compare;
+import org.vcell.util.document.KeyValue;
 
-public abstract class ReactionParticipant implements cbit.util.Cacheable, cbit.util.Matchable, java.beans.PropertyChangeListener, java.io.Serializable {
+public abstract class ReactionParticipant implements org.vcell.util.Cacheable, org.vcell.util.Matchable, java.beans.PropertyChangeListener, java.io.Serializable {
 	private KeyValue key = null;
 	protected SpeciesContext speciesContext = null;
 	protected ReactionStep parent = null;
@@ -135,7 +135,7 @@ public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, 
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-public abstract void fromTokens(cbit.util.CommentStringTokenizer tokens, Model model) throws Exception;
+public abstract void fromTokens(org.vcell.util.CommentStringTokenizer tokens, Model model) throws Exception;
 
 
 /**

@@ -6,12 +6,12 @@ import cbit.vcell.model.SpeciesContext;
  * Creation date: (4/23/2003 1:42:35 PM)
  * @author: Frank Morgan
  */
-public class ReactionDescription implements java.io.Serializable, cbit.util.Cacheable{
+public class ReactionDescription implements java.io.Serializable, org.vcell.util.Cacheable{
 	private String reactionName = null;
 	//
 	//cbit.vcell.modeldb.ReactStepTable.id
 	//will be null for Dictionary reactions
-	private cbit.util.document.KeyValue vcellRXID = null;
+	private org.vcell.util.document.KeyValue vcellRXID = null;
 	//
 	private java.util.Vector reactionElements = new java.util.Vector();// SpeciesDescritpion
 	private java.util.Vector reSpeciesContextNames = null;// String (Original SpeciesContext Names from Database)
@@ -37,7 +37,7 @@ public ReactionDescription(String argReactionName){
 }
 
 
-public ReactionDescription(String argReactionName,String argReactionType,cbit.util.document.KeyValue argVCellRXID){
+public ReactionDescription(String argReactionName,String argReactionType,org.vcell.util.document.KeyValue argVCellRXID){
 	
 	if(argReactionName == null){
 		throw new IllegalArgumentException("ReactionName cannot be null");
@@ -157,7 +157,7 @@ public void addReactionElement(SpeciesDescription argReactElement,String origina
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	return false;
 }
 
@@ -338,7 +338,7 @@ public int getResolvedIndex(SpeciesContext resolveToSC) {
 		}
 
 
-public cbit.util.document.KeyValue getVCellRXID(){
+public org.vcell.util.document.KeyValue getVCellRXID(){
 	return vcellRXID;
 }
 

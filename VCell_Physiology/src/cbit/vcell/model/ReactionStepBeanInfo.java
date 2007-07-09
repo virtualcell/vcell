@@ -401,7 +401,7 @@ public java.beans.MethodDescriptor fromTokens_cbitvcellmathCommentStringTokenize
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.util.CommentStringTokenizer.class,
+				org.vcell.util.CommentStringTokenizer.class,
 				cbit.vcell.model.Model.class
 			};
 			aMethod = getBeanClass().getMethod("fromTokens", aParameterTypes);

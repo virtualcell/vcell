@@ -1,11 +1,11 @@
 package cbit.vcell.model;
 
-import cbit.util.*;
 import java.beans.PropertyVetoException;
 
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.util.*;
 /**
  * Insert the type's description here.
  * Creation date: (2/18/2002 5:07:08 PM)
@@ -37,7 +37,7 @@ public GHKKinetics(ReactionStep reactionStep) throws ExpressionException {
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (obj == this){
 		return true;
 	}

@@ -6,12 +6,12 @@ import java.beans.PropertyVetoException;
  * All rights reserved.
 ©*/
 import java.util.*;
-import cbit.util.*;
 import javax.swing.*;
 
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.util.*;
 
 import edu.uchc.vcell.expression.internal.*;
 /**
@@ -51,7 +51,7 @@ public HMM_REVKinetics(ReactionStep reactionStep) throws ExpressionException {
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (obj == this){
 		return true;
 	}

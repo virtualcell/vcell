@@ -5,8 +5,9 @@ package cbit.vcell.model;
 ©*/
 import java.util.*;
 
-import cbit.util.Matchable;
-import cbit.util.document.KeyValue;
+import org.vcell.util.Matchable;
+import org.vcell.util.document.KeyValue;
+
 
 public class Feature extends Structure
 {

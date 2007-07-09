@@ -8,13 +8,13 @@ import java.beans.*;
 
 import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.IExpression;
+import org.vcell.util.*;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.Version;
 
-import cbit.util.*;
-import cbit.util.document.KeyValue;
-import cbit.util.document.Version;
 import cbit.vcell.model.Feature;
 
-public class Model implements cbit.util.document.Versionable, Matchable, PropertyChangeListener, VetoableChangeListener, java.io.Serializable, org.vcell.expression.ScopedSymbolTable {
+public class Model implements org.vcell.util.document.Versionable, Matchable, PropertyChangeListener, VetoableChangeListener, java.io.Serializable, org.vcell.expression.ScopedSymbolTable {
 	private Version version = null;
 	protected transient PropertyChangeSupport propertyChange;
 	private java.lang.String fieldName = new String("NoName");

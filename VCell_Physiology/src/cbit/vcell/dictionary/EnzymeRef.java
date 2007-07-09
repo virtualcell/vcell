@@ -5,7 +5,7 @@ package cbit.vcell.dictionary;
  * Creation date: (6/24/2002 11:03:01 AM)
  * @author: Steven Woolley
  */
-public class EnzymeRef implements cbit.util.Cacheable{
+public class EnzymeRef implements org.vcell.util.Cacheable{
     //type indicates how the compound is related to the enzyme. 
     //The type includes R for a reactant, I for an inhibitor, C for a cofactor, and E for an effector.
 
@@ -46,7 +46,7 @@ public EnzymeRef(String argECNumber, char argEnzymeType) {
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	
 	if (obj instanceof EnzymeRef){
 		EnzymeRef enzymeRef = (EnzymeRef)obj;

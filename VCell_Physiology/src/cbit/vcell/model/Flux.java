@@ -3,8 +3,8 @@ package cbit.vcell.model;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.Matchable;
-import cbit.util.document.KeyValue;
+import org.vcell.util.Matchable;
+import org.vcell.util.document.KeyValue;
 
 public class Flux extends ReactionParticipant
 {
@@ -37,7 +37,7 @@ public boolean compareEqual(Matchable obj) {
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-public void fromTokens(cbit.util.CommentStringTokenizer tokens, Model model) throws Exception {
+public void fromTokens(org.vcell.util.CommentStringTokenizer tokens, Model model) throws Exception {
 
 	throw new Exception("not implemented");
 }

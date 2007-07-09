@@ -14,7 +14,7 @@ public class BoundCompound extends DBSpecies {
  * @param argKey cbit.sql.KeyValue
  * @param argDBFormalSpeciesInfo DBFormalSpeciesInfo
  */
-public BoundCompound(cbit.util.document.KeyValue argDBSpeciesKey,FormalCompound argFormalCompound) {
+public BoundCompound(org.vcell.util.document.KeyValue argDBSpeciesKey,FormalCompound argFormalCompound) {
 	
 	super(argDBSpeciesKey,argFormalCompound);
 
@@ -35,7 +35,7 @@ public CompoundInfo getCompoundInfo() {
  * Creation date: (2/18/2003 6:51:31 PM)
  * @return cbit.vcell.dictionary.FormalSpeciesInfo
  */
-public cbit.util.document.KeyValue getCompoundKey() {
+public org.vcell.util.document.KeyValue getCompoundKey() {
 	return formalCompound.getDBFormalSpeciesKey();
 }
 /**

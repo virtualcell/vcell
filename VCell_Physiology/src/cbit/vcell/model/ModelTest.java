@@ -427,7 +427,7 @@ public static Model getExample_Bound() throws Exception {
 	double FRACTIONAL_VOLUME_CYTOSOL   = 0.15;
 	double SURFACE_TO_VOLUME_CYTOSOL   = 0.25;
 
-	cbit.util.document.Version version = new cbit.util.document.Version("boundModel",new cbit.util.document.User("frm",new cbit.util.document.KeyValue("227")));
+	org.vcell.util.document.Version version = new org.vcell.util.document.Version("boundModel",new org.vcell.util.document.User("frm",new org.vcell.util.document.KeyValue("227")));
 	Model model = new Model(version);
 
 	FormalSpeciesInfo fsi = null;
@@ -437,15 +437,15 @@ public static Model getExample_Bound() throws Exception {
 	String[] names1 = new String[1];
 	names1[0] = "IP3";
 	fsi = new CompoundInfo(names1[0]+"_KeggID",names1,names1[0]+"_Formula",names1[0]+"_casID",null);
-	dbfs = new FormalCompound(new cbit.util.document.KeyValue("0"),(CompoundInfo)fsi);
-	dbs = new BoundCompound(new cbit.util.document.KeyValue("1"),(FormalCompound)dbfs);
+	dbfs = new FormalCompound(new org.vcell.util.document.KeyValue("0"),(CompoundInfo)fsi);
+	dbs = new BoundCompound(new org.vcell.util.document.KeyValue("1"),(FormalCompound)dbfs);
 	model.addSpecies(new Species(names1[0],null,dbs));
 	
 	String[] names2 = new String[1];
 	names2[0] = "Calcium";
 	fsi = new CompoundInfo(names2[0]+"_KeggID",names2,names2[0]+"_Formula",names2[0]+"_casID",null);
-	dbfs = new FormalCompound(new cbit.util.document.KeyValue("2"),(CompoundInfo)fsi);
-	dbs = new BoundCompound(new cbit.util.document.KeyValue("3"),(FormalCompound)dbfs);
+	dbfs = new FormalCompound(new org.vcell.util.document.KeyValue("2"),(CompoundInfo)fsi);
+	dbs = new BoundCompound(new org.vcell.util.document.KeyValue("3"),(FormalCompound)dbfs);
 	model.addSpecies(new Species(names2[0],null,dbs));
 
 	String keywords = "keword1,keyword2";
@@ -453,8 +453,8 @@ public static Model getExample_Bound() throws Exception {
 	String[] names3 = new String[1];
 	names3[0] = "IP3_Receptor";
 	fsi = new ProteinInfo(names3[0]+"_SwissProtID",names3,names3[0]+"_Organism",names3[0]+"_Accession",keywords,descr);
-	dbfs = new FormalProtein(new cbit.util.document.KeyValue("4"),(ProteinInfo)fsi);
-	dbs = new BoundProtein(new cbit.util.document.KeyValue("5"),(FormalProtein)dbfs);
+	dbfs = new FormalProtein(new org.vcell.util.document.KeyValue("4"),(ProteinInfo)fsi);
+	dbs = new BoundProtein(new org.vcell.util.document.KeyValue("5"),(FormalProtein)dbfs);
 	model.addSpecies(new Species(names3[0],null,dbs));
 
 	//names[0] = "IP3_Receptor_Activated";
@@ -983,7 +983,7 @@ public static Model getExample2() throws Exception {
 						"   SimpleReaction SIMPLE_REACTION_ABC 75 150 " +
 						"   SimpleReaction SIMPLE_REACION_CDA 200 125 " +
 						"} ";
-	cbit.util.CommentStringTokenizer st = new cbit.util.CommentStringTokenizer(diagramFile);
+	org.vcell.util.CommentStringTokenizer st = new org.vcell.util.CommentStringTokenizer(diagramFile);
 	diagram.fromTokens(st);
 			
 	return model;
@@ -1204,7 +1204,7 @@ public static Model getExampleHMM() throws Exception {
 						"   SimpleReaction SIMPLE_REACTION_ABC 75 150 " +
 						"   SimpleReaction SIMPLE_REACION_CDA 200 125 " +
 						"} ";
-	cbit.util.CommentStringTokenizer st = new cbit.util.CommentStringTokenizer(diagramFile);
+	org.vcell.util.CommentStringTokenizer st = new org.vcell.util.CommentStringTokenizer(diagramFile);
 	diagram.fromTokens(st);
 			
 	return model;
@@ -1319,7 +1319,7 @@ public static Model getExampleWithCurrent() throws Exception {
 						"   SimpleReaction SIMPLE_REACTION_ABC 75 150 " +
 						"   SimpleReaction SIMPLE_REACION_CDA 200 125 " +
 						"} ";
-	cbit.util.CommentStringTokenizer st = new cbit.util.CommentStringTokenizer(diagramFile);
+	org.vcell.util.CommentStringTokenizer st = new org.vcell.util.CommentStringTokenizer(diagramFile);
 	diagram.fromTokens(st);
 			
 	FluxReaction fr;

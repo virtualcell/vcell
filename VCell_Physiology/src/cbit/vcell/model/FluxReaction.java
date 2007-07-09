@@ -7,18 +7,18 @@ import java.beans.*;
 
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
+import org.vcell.util.*;
 
-import cbit.util.*;
 
 public class FluxReaction extends ReactionStep {
 	private Species fieldFluxCarrier = null;
 
-public FluxReaction(Membrane membrane, cbit.util.document.KeyValue argKey, String name) throws PropertyVetoException {
+public FluxReaction(Membrane membrane, org.vcell.util.document.KeyValue argKey, String name) throws PropertyVetoException {
     super(membrane, argKey, name);
 }
 
 
-public FluxReaction(Membrane membrane, Species fluxCarrier, Model model,cbit.util.document.KeyValue key,String name) throws Exception {
+public FluxReaction(Membrane membrane, Species fluxCarrier, Model model,org.vcell.util.document.KeyValue key,String name) throws Exception {
 	super(membrane,key,name);
 	setFluxCarrier(fluxCarrier,model);
 }   
@@ -56,7 +56,7 @@ public boolean compareEqual(Matchable obj) {
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-public void fromTokens(cbit.util.CommentStringTokenizer tokens, Model model) throws Exception {
+public void fromTokens(org.vcell.util.CommentStringTokenizer tokens, Model model) throws Exception {
 	String token = null;
 //	tokens.nextToken();  // read "{"
 	while (tokens.hasMoreTokens()){

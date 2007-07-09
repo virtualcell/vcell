@@ -10,18 +10,18 @@ import java.util.*;
 import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.NameScope;
 import org.vcell.expression.ScopedSymbolTable;
+import org.vcell.util.Cacheable;
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+import org.vcell.util.document.KeyValue;
 
-import cbit.util.Cacheable;
-import cbit.util.Compare;
-import cbit.util.Matchable;
-import cbit.util.document.KeyValue;
 
 public abstract class Structure implements java.io.Serializable, ScopedSymbolTable, Matchable, Cacheable, java.beans.VetoableChangeListener
 {
 	private String fieldName = new String();
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.util.document.KeyValue fieldKey = null;
+	private org.vcell.util.document.KeyValue fieldKey = null;
 	private StructureNameScope fieldNameScope = new Structure.StructureNameScope();
 	private transient Model fieldModel = null;
 
@@ -38,7 +38,7 @@ public abstract class Structure implements java.io.Serializable, ScopedSymbolTab
 			return children;
 		}
 		public String getName() {
-			return cbit.util.TokenMangler.fixTokenStrict(Structure.this.getName());
+			return org.vcell.util.TokenMangler.fixTokenStrict(Structure.this.getName());
 		}
 		public org.vcell.expression.NameScope getParent() {
 			if (Structure.this.fieldModel != null){
@@ -119,7 +119,7 @@ public org.vcell.expression.SymbolTableEntry getEntry(java.lang.String identifie
  * @return The key property value.
  * @see #setKey
  */
-public cbit.util.document.KeyValue getKey() {
+public org.vcell.util.document.KeyValue getKey() {
 	return fieldKey;
 }
 /**

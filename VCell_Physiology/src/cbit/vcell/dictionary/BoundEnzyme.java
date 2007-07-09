@@ -5,7 +5,7 @@ package cbit.vcell.dictionary;
  * Creation date: (2/18/2003 6:10:04 PM)
  * @author: Frank Morgan
  */
-public class BoundEnzyme extends DBSpecies implements cbit.util.Cacheable{
+public class BoundEnzyme extends DBSpecies implements org.vcell.util.Cacheable{
 
 	private FormalEnzyme formalEnzyme = null;
 
@@ -14,7 +14,7 @@ public class BoundEnzyme extends DBSpecies implements cbit.util.Cacheable{
  * @param argKey cbit.sql.KeyValue
  * @param argDBFormalSpeciesInfo DBFormalSpeciesInfo
  */
-public BoundEnzyme(cbit.util.document.KeyValue argDBSpeciesKey,FormalEnzyme argFormalEnzyme) {
+public BoundEnzyme(org.vcell.util.document.KeyValue argDBSpeciesKey,FormalEnzyme argFormalEnzyme) {
 	
 	super(argDBSpeciesKey,argFormalEnzyme);
 
@@ -34,7 +34,7 @@ public EnzymeInfo getEnzymeInfo() {
  * Creation date: (2/18/2003 6:51:31 PM)
  * @return cbit.vcell.dictionary.FormalSpeciesInfo
  */
-public cbit.util.document.KeyValue getEnzymeKey() {
+public org.vcell.util.document.KeyValue getEnzymeKey() {
 	return formalEnzyme.getDBFormalSpeciesKey();
 }
 /**

@@ -75,7 +75,7 @@ public CompoundInfo(String argFormalID, String[] argNames,
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 
 	if(!super.compareEqual(obj)){
 		return false;
@@ -83,13 +83,13 @@ public boolean compareEqual(cbit.util.Matchable obj) {
 	
 	if (obj instanceof CompoundInfo){
 		CompoundInfo compoundInfo = (CompoundInfo)obj;
-		if (!cbit.util.Compare.isEqualOrNull(casID,compoundInfo.getCasID())){
+		if (!org.vcell.util.Compare.isEqualOrNull(casID,compoundInfo.getCasID())){
 			return false;
 		}
-		if (!cbit.util.Compare.isEqualOrNull(formula,compoundInfo.getFormula())){
+		if (!org.vcell.util.Compare.isEqualOrNull(formula,compoundInfo.getFormula())){
 			return false;
 		}
-		if(!cbit.util.Compare.isEqualOrNull(enzymes,compoundInfo.getEnzymes())){
+		if(!org.vcell.util.Compare.isEqualOrNull(enzymes,compoundInfo.getEnzymes())){
 			return false;
 		}
 	}else{

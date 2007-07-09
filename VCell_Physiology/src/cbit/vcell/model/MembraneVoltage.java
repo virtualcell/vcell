@@ -7,7 +7,7 @@ import org.vcell.expression.NameScope;
  * Creation date: (2/20/2002 4:16:31 PM)
  * @author: Jim Schaff
  */
-public class MembraneVoltage implements org.vcell.expression.SymbolTableEntry, java.io.Serializable, cbit.util.Matchable {
+public class MembraneVoltage implements org.vcell.expression.SymbolTableEntry, java.io.Serializable, org.vcell.util.Matchable {
 	private java.lang.String fieldName = new String();
 	private Membrane fieldMembrane = null;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
@@ -61,7 +61,7 @@ public synchronized void addVetoableChangeListener(java.lang.String propertyName
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (obj instanceof MembraneVoltage){
 		MembraneVoltage mv = (MembraneVoltage)obj;
 		if (!mv.getName().equals(getName())){

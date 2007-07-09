@@ -6,13 +6,13 @@ package cbit.vcell.model;
 ©*/
 
 import org.vcell.expression.ExpressionFactory;
+import org.vcell.util.*;
 
-import cbit.util.*;
 
 
 public class SimpleReaction extends ReactionStep
 {
-public SimpleReaction(Structure structure,cbit.util.document.KeyValue key,String name) throws java.beans.PropertyVetoException {
+public SimpleReaction(Structure structure,org.vcell.util.document.KeyValue key,String name) throws java.beans.PropertyVetoException {
 	super(structure,key,name);
 }   
 public SimpleReaction(Structure structure,String name) throws java.beans.PropertyVetoException {
@@ -87,7 +87,7 @@ public boolean compareEqual(Matchable obj) {
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-public void fromTokens(cbit.util.CommentStringTokenizer tokens, Model model) throws Exception {
+public void fromTokens(org.vcell.util.CommentStringTokenizer tokens, Model model) throws Exception {
 //	String token = tokens.nextToken(); // read "{"
 //	if (!VCMODL.BeginBlock.equals(token)){
 //		throw new Exception("read '"+token+"', expecting '"+VCMODL.BeginBlock+"'");
