@@ -7,27 +7,28 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Vector;
 
+import org.vcell.util.BeanUtils;
+import org.vcell.util.BigString;
+import org.vcell.util.Compare;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.ISize;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.PermissionException;
+import org.vcell.util.Preference;
+import org.vcell.util.ReferenceQueryResult;
+import org.vcell.util.ReferenceQuerySpec;
+import org.vcell.util.document.BioModelChildSummary;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.CurateSpec;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.MathModelChildSummary;
+import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionInfo;
+import org.vcell.util.document.VersionableType;
+
 import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
-import cbit.util.ReferenceQuerySpec;
-import cbit.util.BeanUtils;
-import cbit.util.BigString;
-import cbit.util.Compare;
-import cbit.util.DataAccessException;
-import cbit.util.ISize;
-import cbit.util.ObjectNotFoundException;
-import cbit.util.PermissionException;
-import cbit.util.Preference;
-import cbit.util.ReferenceQueryResult;
-import cbit.util.document.BioModelChildSummary;
-import cbit.util.document.BioModelInfo;
-import cbit.util.document.CurateSpec;
-import cbit.util.document.KeyValue;
-import cbit.util.document.MathModelChildSummary;
-import cbit.util.document.MathModelInfo;
-import cbit.util.document.Version;
-import cbit.util.document.VersionInfo;
-import cbit.util.document.VersionableType;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.desktop.controls.SessionManager;
 import cbit.vcell.dictionary.DBFormalSpecies;
@@ -282,7 +283,7 @@ private void cacheSimulations(Simulation[] sims) throws DataAccessException{
 public void curate(CurateSpec curateSpec) throws DataAccessException{
 	
 	try{
-		cbit.util.document.VCDocumentInfo newVCDocumentInfo = getSessionManager().getUserMetaDbServer().curate(curateSpec);
+		org.vcell.util.document.VCDocumentInfo newVCDocumentInfo = getSessionManager().getUserMetaDbServer().curate(curateSpec);
 		
 		xmlHash.remove(curateSpec.getVCDocumentInfo().getVersion().getVersionKey());
 		
@@ -308,9 +309,9 @@ public void curate(CurateSpec curateSpec) throws DataAccessException{
  * Insert the method's description here.
  * Creation date: (2/5/01 4:58:40 PM)
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-public void delete(cbit.image.VCImageInfo vcImageInfo) throws cbit.util.DataAccessException {
+public void delete(cbit.image.VCImageInfo vcImageInfo) throws org.vcell.util.DataAccessException {
 
 	try {
 		//
@@ -447,7 +448,7 @@ public void delete(MathModelInfo mathModelInfo) throws DataAccessException {
  * Insert the method's description here.
  * Creation date: (10/17/2004 11:27:37 AM)
  */
-public cbit.vcell.numericstest.TestSuiteOPResults doTestSuiteOP(cbit.vcell.numericstest.TestSuiteOP tsop) throws cbit.util.DataAccessException {
+public cbit.vcell.numericstest.TestSuiteOPResults doTestSuiteOP(cbit.vcell.numericstest.TestSuiteOP tsop) throws org.vcell.util.DataAccessException {
 	if(!getUser().isTestAccount()){
 		throw new PermissionException("User="+getUser().getName()+" not allowed TestSuiteInfo");
 	}
@@ -469,7 +470,7 @@ public cbit.vcell.numericstest.TestSuiteOPResults doTestSuiteOP(cbit.vcell.numer
  * @param vType cbit.sql.VersionableType
  * @param key cbit.sql.KeyValue
  */
-public ReferenceQueryResult findReferences(ReferenceQuerySpec rqs) throws cbit.util.DataAccessException {
+public ReferenceQueryResult findReferences(ReferenceQuerySpec rqs) throws org.vcell.util.DataAccessException {
 
 	try{
 		return getSessionManager().getUserMetaDbServer().findReferences(rqs);
@@ -1056,7 +1057,7 @@ System.out.println("<<<NULL>>>> ClientDocumentManager.getImageInfo("+key+")");
  * Insert the method's description here.
  * Creation date: (2/5/01 4:58:40 PM)
  */
-public cbit.image.VCImageInfo[] getImageInfos() throws cbit.util.DataAccessException {
+public cbit.image.VCImageInfo[] getImageInfos() throws org.vcell.util.DataAccessException {
 	if (bImageInfosDirty){
 		reloadVCImageInfos();
 		bImageInfosDirty = false;
@@ -1279,10 +1280,10 @@ private String getMathModelXML(KeyValue vKey) throws DataAccessException {
  * This method was created in VisualAge.
  * @return void
  * @param key KeyValue
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public Preference[] getPreferences() throws cbit.util.DataAccessException{
+public Preference[] getPreferences() throws org.vcell.util.DataAccessException{
 
 	System.out.println("ClientDocumentManager.getPreferences()");
 	if (preferences!=null){
@@ -1303,7 +1304,7 @@ public Preference[] getPreferences() throws cbit.util.DataAccessException{
  * Insert the method's description here.
  * Creation date: (8/25/2003 5:10:41 PM)
  */
-public cbit.vcell.model.ReactionStep getReactionStep(cbit.util.document.KeyValue reactionStepKey) throws cbit.util.DataAccessException {
+public cbit.vcell.model.ReactionStep getReactionStep(org.vcell.util.document.KeyValue reactionStepKey) throws org.vcell.util.DataAccessException {
 	try {
 		ReactionStep rStep = sessionManager.getUserMetaDbServer().getReactionStep(reactionStepKey);
 		if(rStep != null){
@@ -1433,7 +1434,7 @@ private String getSimulationXML(KeyValue vKey) throws DataAccessException {
  * Insert the method's description here.
  * Creation date: (10/17/2004 11:27:37 AM)
  */
-public cbit.vcell.numericstest.TestSuiteNew getTestSuite(java.math.BigDecimal getThisTS) throws cbit.util.DataAccessException {
+public cbit.vcell.numericstest.TestSuiteNew getTestSuite(java.math.BigDecimal getThisTS) throws org.vcell.util.DataAccessException {
 	if(!getUser().isTestAccount()){
 		throw new PermissionException("User="+getUser().getName()+" not allowed TestSuiteInfo");
 	}
@@ -1450,7 +1451,7 @@ public cbit.vcell.numericstest.TestSuiteNew getTestSuite(java.math.BigDecimal ge
  * Insert the method's description here.
  * Creation date: (10/17/2004 11:27:37 AM)
  */
-public cbit.vcell.numericstest.TestSuiteInfoNew[] getTestSuiteInfos() throws cbit.util.DataAccessException {
+public cbit.vcell.numericstest.TestSuiteInfoNew[] getTestSuiteInfos() throws org.vcell.util.DataAccessException {
 	
 	if(!getUser().isTestAccount()){
 		throw new PermissionException("User="+getUser().getName()+" not allowed TestSuiteInfo");
@@ -1468,7 +1469,7 @@ public cbit.vcell.numericstest.TestSuiteInfoNew[] getTestSuiteInfos() throws cbi
  * Insert the method's description here.
  * Creation date: (1/19/01 10:54:29 AM)
  */
-public cbit.util.document.User getUser() {
+public org.vcell.util.document.User getUser() {
 	return sessionManager.getUser();
 }
 
@@ -1477,7 +1478,7 @@ public cbit.util.document.User getUser() {
  * Insert the method's description here.
  * Creation date: (9/15/2003 3:33:10 PM)
  */
-public cbit.vcell.dictionary.ReactionDescription[] getUserReactionDescriptions(cbit.vcell.dictionary.ReactionQuerySpec reactionQuerySpec) throws cbit.util.DataAccessException {
+public cbit.vcell.dictionary.ReactionDescription[] getUserReactionDescriptions(cbit.vcell.dictionary.ReactionQuerySpec reactionQuerySpec) throws org.vcell.util.DataAccessException {
 	try {
 		return sessionManager.getUserMetaDbServer().getUserReactionDescriptions(reactionQuerySpec);
 	}catch (RemoteException e){
@@ -1491,7 +1492,7 @@ public cbit.vcell.dictionary.ReactionDescription[] getUserReactionDescriptions(c
  * Insert the method's description here.
  * Creation date: (9/15/2003 3:33:10 PM)
  */
-public cbit.vcell.model.ReactionStepInfo[] getUserReactionStepInfos(cbit.util.document.KeyValue[] reactionStepKeys) throws cbit.util.DataAccessException {
+public cbit.vcell.model.ReactionStepInfo[] getUserReactionStepInfos(org.vcell.util.document.KeyValue[] reactionStepKeys) throws org.vcell.util.DataAccessException {
 	try {
 		return sessionManager.getUserMetaDbServer().getReactionStepInfos(reactionStepKeys);
 	}catch (RemoteException e){
@@ -1501,7 +1502,7 @@ public cbit.vcell.model.ReactionStepInfo[] getUserReactionStepInfos(cbit.util.do
 }
 
 
-public String getXML(BioModelInfo bmInfo) throws cbit.util.DataAccessException, cbit.util.xml.XmlParseException{
+public String getXML(BioModelInfo bmInfo) throws org.vcell.util.DataAccessException, cbit.util.xml.XmlParseException{
 	return getBioModelXML(bmInfo.getVersion().getVersionKey()); // faster ... this is how it's cached.
 }
 
@@ -1512,12 +1513,12 @@ public String getXML(BioModelInfo bmInfo) throws cbit.util.DataAccessException, 
  * @return java.lang.String
  * @param bioModel cbit.vcell.biomodel.BioModel
  */
-public java.lang.String getXML(cbit.util.document.BioModelInfo bioModelInfoArg, XmlDialect toDialect) throws java.io.IOException, cbit.util.xml.XmlParseException, DataAccessException {
+public java.lang.String getXML(org.vcell.util.document.BioModelInfo bioModelInfoArg, XmlDialect toDialect) throws java.io.IOException, cbit.util.xml.XmlParseException, DataAccessException {
 	return XmlHelper.exportXML(getBioModel(bioModelInfoArg), toDialect);
 }
 
 
-public String getXML(MathModelInfo mmInfo) throws cbit.util.DataAccessException, cbit.util.xml.XmlParseException{
+public String getXML(MathModelInfo mmInfo) throws org.vcell.util.DataAccessException, cbit.util.xml.XmlParseException{
 	
 	return getMathModelXML(mmInfo.getVersion().getVersionKey());
 	
@@ -1530,7 +1531,7 @@ public String getXML(MathModelInfo mmInfo) throws cbit.util.DataAccessException,
  * @return java.lang.String
  * @param bioModel cbit.vcell.biomodel.BioModel
  */
-public java.lang.String getXML(cbit.util.document.MathModelInfo mathModelInfoArg, XmlDialect toDialect) throws java.io.IOException, cbit.util.xml.XmlParseException, DataAccessException {
+public java.lang.String getXML(org.vcell.util.document.MathModelInfo mathModelInfoArg, XmlDialect toDialect) throws java.io.IOException, cbit.util.xml.XmlParseException, DataAccessException {
 	return XmlHelper.exportXML(getMathModel(mathModelInfoArg), toDialect);
 }
 
@@ -1640,7 +1641,7 @@ public void initAllDatabaseInfos() throws DataAccessException {
  * Insert the method's description here.
  * Creation date: (2/5/01 4:58:40 PM)
  */
-public boolean isChanged(cbit.image.VCImage vcImage, String vcImageXML) throws cbit.util.DataAccessException {
+public boolean isChanged(cbit.image.VCImage vcImage, String vcImageXML) throws org.vcell.util.DataAccessException {
 	//
 	// get versionable from database or from cache (should be in cache)
 	//
@@ -1766,7 +1767,7 @@ public boolean isChanged(BioModel bioModel, String bioModelXML) throws DataAcces
  * @return boolean
  * @param vcDocument cbit.vcell.document.VCDocument
  */
-public boolean isChanged(cbit.util.document.VCDocument vcDocument) throws DataAccessException {
+public boolean isChanged(org.vcell.util.document.VCDocument vcDocument) throws DataAccessException {
 	if (vcDocument instanceof BioModel) {
 		return isChanged((BioModel)vcDocument,null);
 	} else if (vcDocument instanceof MathModel) {
@@ -2251,10 +2252,10 @@ private VersionInfo removeUserFromGroup0(VersionInfo versionInfo, VersionableTyp
  * This method was created in VisualAge.
  * @return void
  * @param key KeyValue
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void replacePreferences(Preference[] argPreferences) throws cbit.util.DataAccessException{
+public void replacePreferences(Preference[] argPreferences) throws org.vcell.util.DataAccessException{
 
 	if (argPreferences==null){
 		throw new IllegalArgumentException("preferences were null");
@@ -2276,7 +2277,7 @@ public void replacePreferences(Preference[] argPreferences) throws cbit.util.Dat
  * Insert the method's description here.
  * Creation date: (2/5/01 4:58:40 PM)
  */
-public cbit.image.VCImage save(cbit.image.VCImage vcImage) throws cbit.util.DataAccessException {
+public cbit.image.VCImage save(cbit.image.VCImage vcImage) throws org.vcell.util.DataAccessException {
 	try {
 		String vcImageXML = null;
 		try {
@@ -2467,7 +2468,7 @@ public Simulation save(Simulation simulation, boolean bForceIndependent) throws 
  * Insert the method's description here.
  * Creation date: (2/5/01 4:58:40 PM)
  */
-public cbit.image.VCImage saveAsNew(cbit.image.VCImage vcImage, java.lang.String newName) throws cbit.util.DataAccessException {
+public cbit.image.VCImage saveAsNew(cbit.image.VCImage vcImage, java.lang.String newName) throws org.vcell.util.DataAccessException {
 	try {		
 		String vcImageXML = null;
 		try {
@@ -2517,7 +2518,7 @@ public cbit.image.VCImage saveAsNew(cbit.image.VCImage vcImage, java.lang.String
  * Insert the method's description here.
  * Creation date: (1/19/01 11:27:52 AM)
  */
-public cbit.vcell.biomodel.BioModel saveAsNew(cbit.vcell.biomodel.BioModel bioModel, java.lang.String newName, String independentSims[]) throws cbit.util.DataAccessException {
+public cbit.vcell.biomodel.BioModel saveAsNew(cbit.vcell.biomodel.BioModel bioModel, java.lang.String newName, String independentSims[]) throws org.vcell.util.DataAccessException {
 	
 	try {
 		String bioModelXML = null;
@@ -2555,7 +2556,7 @@ public cbit.vcell.biomodel.BioModel saveAsNew(cbit.vcell.biomodel.BioModel bioMo
  * Insert the method's description here.
  * Creation date: (1/19/01 11:27:52 AM)
  */
-public cbit.vcell.geometry.Geometry saveAsNew(cbit.vcell.geometry.Geometry geometry, java.lang.String newName) throws cbit.util.DataAccessException {
+public cbit.vcell.geometry.Geometry saveAsNew(cbit.vcell.geometry.Geometry geometry, java.lang.String newName) throws org.vcell.util.DataAccessException {
 	try {
 		String geometryXML = null;
 		try {
@@ -2598,7 +2599,7 @@ public cbit.vcell.geometry.Geometry saveAsNew(cbit.vcell.geometry.Geometry geome
  * Insert the method's description here.
  * Creation date: (1/19/01 11:27:52 AM)
  */
-public cbit.vcell.mathmodel.MathModel saveAsNew(cbit.vcell.mathmodel.MathModel mathModel, java.lang.String newName, String independentSims[]) throws cbit.util.DataAccessException {
+public cbit.vcell.mathmodel.MathModel saveAsNew(cbit.vcell.mathmodel.MathModel mathModel, java.lang.String newName, String independentSims[]) throws org.vcell.util.DataAccessException {
 	try {
 		String mathModelXML = null;
 		try {
@@ -2955,9 +2956,9 @@ private VersionInfo setGroupPublic0(VersionInfo versionInfo, VersionableType vTy
  * Insert the method's description here.
  * Creation date: (10/14/2005 1:40:39 AM)
  * @param jobEvent cbit.rmi.event.SimulationJobStatusEvent
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-public void updateServerSimulationStatusFromJobEvent(cbit.rmi.event.SimulationJobStatusEvent jobEvent) throws cbit.util.DataAccessException {
+public void updateServerSimulationStatusFromJobEvent(cbit.rmi.event.SimulationJobStatusEvent jobEvent) throws org.vcell.util.DataAccessException {
 	simulationStatusHash.put(jobEvent.getVCSimulationIdentifier().getSimulationKey(), SimulationStatus.updateFromJobEvent(getServerSimulationStatus(jobEvent.getVCSimulationIdentifier()), jobEvent.getJobStatus(), jobEvent.getProgress()));
 }
 }

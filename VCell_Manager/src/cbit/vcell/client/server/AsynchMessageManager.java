@@ -2,6 +2,8 @@ package cbit.vcell.client.server;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 
+import org.vcell.util.DataAccessException;
+
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.DataJobListener;
 import cbit.rmi.event.DataJobSender;
@@ -17,7 +19,6 @@ import cbit.rmi.event.SimulationJobStatusSender;
 import cbit.rmi.event.VCellMessageEvent;
 import cbit.rmi.event.VCellMessageEventListener;
 import cbit.rmi.event.VCellMessageEventSender;
-import cbit.util.DataAccessException;
 /**
  * Insert the type's description here.
  * Creation date: (6/9/2004 2:17:35 PM)

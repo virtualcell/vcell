@@ -437,7 +437,7 @@ public java.beans.MethodDescriptor delete_cbitvcellbiomodelBioModelInfoMethodDes
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.util.document.BioModelInfo.class
+				org.vcell.util.document.BioModelInfo.class
 			};
 			aMethod = getBeanClass().getMethod("delete", aParameterTypes);
 		} catch (Throwable exception) {
@@ -640,7 +640,7 @@ public java.beans.MethodDescriptor getBioModel_cbitvcellbiomodelBioModelInfoMeth
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.util.document.BioModelInfo.class
+				org.vcell.util.document.BioModelInfo.class
 			};
 			aMethod = getBeanClass().getMethod("getBioModel", aParameterTypes);
 		} catch (Throwable exception) {
@@ -721,7 +721,7 @@ public java.beans.MethodDescriptor getBioModelMetaData_cbitvcellbiomodelBioModel
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.util.document.BioModelInfo.class
+				org.vcell.util.document.BioModelInfo.class
 			};
 			aMethod = getBeanClass().getMethod("getBioModelMetaData", aParameterTypes);
 		} catch (Throwable exception) {
@@ -1038,7 +1038,7 @@ public java.beans.MethodDescriptor isChanged_cbitvcelldocumentVCDocumentMethodDe
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.util.document.VCDocument.class
+				org.vcell.util.document.VCDocument.class
 			};
 			aMethod = getBeanClass().getMethod("isChanged", aParameterTypes);
 		} catch (Throwable exception) {

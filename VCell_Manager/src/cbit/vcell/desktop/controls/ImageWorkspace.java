@@ -5,8 +5,9 @@ package cbit.vcell.desktop.controls;
 ©*/
 import java.beans.PropertyVetoException;
 
+import org.vcell.util.DataAccessException;
+
 import cbit.image.VCImage;
-import cbit.util.DataAccessException;
 /**
  * Insert the type's description here.
  * Creation date: (1/16/01 10:50:11 AM)

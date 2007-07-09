@@ -3,8 +3,9 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Vector;
 
-import cbit.util.BeanUtils;
-import cbit.util.Preference;
+import org.vcell.util.BeanUtils;
+import org.vcell.util.Preference;
+
 
 
 /**

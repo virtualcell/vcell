@@ -3,7 +3,8 @@ import java.rmi.RemoteException;
 
 import javax.swing.event.EventListenerList;
 
-import cbit.util.DataAccessException;
+import org.vcell.util.DataAccessException;
+
 import cbit.vcell.export.ExportJobStatus;
 import cbit.vcell.export.ExportSpecs;
 import cbit.vcell.simulation.VCSimulationIdentifier;
@@ -76,7 +77,7 @@ private ClientServerManager getClientServerManager() {
  * Insert the method's description here.
  * Creation date: (6/4/2004 3:22:42 PM)
  */
-public ExportJobStatus getExportJobStatus(ExportSpecs exportSpecs) throws cbit.util.DataAccessException {
+public ExportJobStatus getExportJobStatus(ExportSpecs exportSpecs) throws org.vcell.util.DataAccessException {
 	try {
 		return getClientServerManager().getExportController().getExportJobStatus(exportSpecs);
 	} catch (RemoteException rexc) {
@@ -96,7 +97,7 @@ public ExportJobStatus getExportJobStatus(ExportSpecs exportSpecs) throws cbit.u
  * Insert the method's description here.
  * Creation date: (6/4/2004 3:22:42 PM)
  */
-public SimulationStatus getServerSimulationStatus(VCSimulationIdentifier vcSimulationIdentifier) throws cbit.util.DataAccessException {
+public SimulationStatus getServerSimulationStatus(VCSimulationIdentifier vcSimulationIdentifier) throws org.vcell.util.DataAccessException {
 	return getClientServerManager().getDocumentManager().getServerSimulationStatus(vcSimulationIdentifier);
 }
 

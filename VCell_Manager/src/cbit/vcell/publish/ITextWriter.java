@@ -19,12 +19,12 @@ import javax.imageio.stream.ImageOutputStream;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.ui.ExpressionPrintFormatter;
+import org.vcell.util.Coordinate;
+import org.vcell.util.Extent;
+import org.vcell.util.ISize;
+import org.vcell.util.Origin;
 
 import cbit.image.VCImage;
-import cbit.util.Coordinate;
-import cbit.util.Extent;
-import cbit.util.ISize;
-import cbit.util.Origin;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.dictionary.ReactionCanvasDisplaySpec;
 import cbit.vcell.geometry.Geometry;
@@ -278,7 +278,7 @@ protected Cell createHeaderCell(String text, Font font, int colspan) throws Docu
 		// Getting rid of species so that the image created will not have a problem being added to the document
 		// when there are more than 15 species in the model.
 		Model sparseModel = new Model(model.getName());
-		Structure[] oldStructures = (Structure[])cbit.util.BeanUtils.cloneSerializable(model.getStructures());
+		Structure[] oldStructures = (Structure[])org.vcell.util.BeanUtils.cloneSerializable(model.getStructures());
 		sparseModel.setStructures(oldStructures);
 		 
 		StructureCartoon scartoon = new StructureCartoon();

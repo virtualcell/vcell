@@ -1,8 +1,9 @@
 package cbit.vcell.client.server;
 import java.rmi.RemoteException;
 
+import org.vcell.util.DataAccessException;
+
 import cbit.rmi.event.ExportEvent;
-import cbit.util.DataAccessException;
 import cbit.vcell.export.ExportJobStatus;
 import cbit.vcell.export.ExportSpecs;
 import cbit.vcell.export.server.ExportController;

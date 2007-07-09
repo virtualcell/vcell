@@ -1,5 +1,5 @@
 package cbit.vcell.desktop.controls;
-import cbit.util.VCDataIdentifier;
+import org.vcell.util.VCDataIdentifier;
 /**
  * Insert the type's description here.
  * Creation date: (3/4/2004 12:13:57 PM)

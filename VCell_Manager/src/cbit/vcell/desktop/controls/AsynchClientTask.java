@@ -1,5 +1,5 @@
 package cbit.vcell.desktop.controls;
-import cbit.util.UserCancelException;
+import org.vcell.util.UserCancelException;
 
 /**
  * Insert the type's description here.

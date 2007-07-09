@@ -4,7 +4,7 @@ package cbit.vcell.client.database;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.document.VersionInfo;
+import org.vcell.util.document.VersionInfo;
 /**
  * This is the event class to support the cbit.vcell.clientdb.DatabaseListener interface.
  */

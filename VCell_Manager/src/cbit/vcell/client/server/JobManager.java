@@ -1,6 +1,7 @@
 package cbit.vcell.client.server;
 
-import cbit.util.DataAccessException;
+import org.vcell.util.DataAccessException;
+
 import cbit.vcell.export.ExportJobStatus;
 import cbit.vcell.export.ExportSpecs;
 import cbit.vcell.simulation.VCSimulationIdentifier;

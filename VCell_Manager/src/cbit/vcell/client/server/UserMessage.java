@@ -116,7 +116,7 @@ public java.lang.String getMessage(String replacementText) {
 		if (message.indexOf(TEXT_REPLACE)==-1){
 			throw new RuntimeException("not expecting replacement text");
 		}else{
-			return cbit.util.TokenMangler.replaceSubString(message,TEXT_REPLACE,replacementText);
+			return org.vcell.util.TokenMangler.replaceSubString(message,TEXT_REPLACE,replacementText);
 		}
 	}else if (message.indexOf(TEXT_REPLACE) > -1){
 		throw new RuntimeException("expecting non-null replacement text");
