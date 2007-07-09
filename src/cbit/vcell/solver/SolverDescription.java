@@ -12,7 +12,8 @@ package cbit.vcell.solver;
 public class SolverDescription implements java.io.Serializable, cbit.util.Matchable {
 	private int type;
 	
-	private static final int NUM_SOLVERS = 10;
+	private static final int NUM_SOLVERS = 11;
+	
 	private static final int TYPE_FORWARD_EULER = 0;
 	private static final int TYPE_RUNGE_KUTTA2 = 1;
 	private static final int TYPE_RUNGE_KUTTA4 = 2;
@@ -23,6 +24,7 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 	private static final int TYPE_STOCH_GIBSON = 7;
 	private static final int TYPE_HYBRID_EM = 8;
 	private static final int TYPE_HYBRID_MIL = 9;
+	private static final int TYPE_CVODE = 10;	
 
 	private static final String[] DESCRIPTIONS = {
 		"Forward Euler (First Order, Fixed Time Step)",
@@ -34,7 +36,8 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		"Finite Volume, Regular Grid",
 		"Gibson (Next Reaction Stochastic Method)",
 		"Hybrid (Gibson + Euler-Maruyama Method)",
-		"Hybrid (Gibson + Milstein Method)"
+		"Hybrid (Gibson + Milstein Method)",
+		"CVODE (Variable Order, Variable Time Step)"
 	};
 	private static final boolean[] IS_ODE = {
 		true,   // TYPE_FORWARD_EULER
@@ -46,7 +49,8 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		false,	// TYPE_FINITE_VOLUME
 		false,	// TYPE_STOCH_GIBSON
 		false,	// TYPE_Hybrid_Euler
-		false	// TYPE_Hybrid_Milstein
+		false,	// TYPE_Hybrid_Milstein
+		true	// TYPE_CVODE
 	};
 	private static final boolean[] IS_STOCH = {
 		false,  // TYPE_FORWARD_EULER
@@ -58,7 +62,8 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		false,	// TYPE_FINITE_VOLUME
 		true,	// TYPE_STOCH_GIBSON
 		true,	// TYPE_Hybrid_Euler
-		true	// TYPE_Hybrid_Milstein
+		true,	// TYPE_Hybrid_Milstein
+		false	// TYPE_CVODE
 	};
 	private static final boolean[] IS_INTERPRETED = {
 		true,   // TYPE_FORWARD_EULER
@@ -70,7 +75,8 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		false,	// TYPE_FINITE_VOLUME
 		false, 	// TYPE_STOCH_GIBSON
 		false, 	// TYPE_Hybrid_Euler
-		false 	// TYPE_Hybrid_Milstein
+		false, 	// TYPE_Hybrid_Milstein
+		false	// TYPE_CVODE
 	};
 		
 			
@@ -84,6 +90,7 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 	public static final SolverDescription StochGibson			= new SolverDescription(TYPE_STOCH_GIBSON);
 	public static final SolverDescription HybridEuler			= new SolverDescription(TYPE_HYBRID_EM);
 	public static final SolverDescription HybridMilstein		= new SolverDescription(TYPE_HYBRID_MIL);
+	public static final SolverDescription CVODE					= new SolverDescription(TYPE_CVODE);
 
 /**
  * SolverDescription constructor comment.

@@ -16,7 +16,8 @@ public class SolverTypes {
 		SolverDescription.RungeKutta4.getName(),
 		SolverDescription.AdamsMoulton.getName(),
 		SolverDescription.RungeKuttaFehlberg.getName(),
-		SolverDescription.LSODA.getName()
+		SolverDescription.LSODA.getName(),
+		SolverDescription.CVODE.getName()
 	};
 	private static String[] fieldPDESolverDescriptions = new String[] {
 		SolverDescription.FiniteVolume.getName()

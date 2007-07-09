@@ -35,6 +35,8 @@ public class PropertyLoader {
 	public static final String idaLibraryProperty			= "vcell.ida.library";
 	public static final String idaIncludeProperty			= "vcell.ida.include";
 	public static final String idaExecutableProperty		= "vcell.ida.executable";
+	public static final String cvodeExecutableProperty		= "vcell.cvode.executable";
+	
 	//Stoch properties
 	public static final String stochLibraryProperty			= "vcell.stoch.library";
 	public static final String stochIncludeProperty			= "vcell.stoch.include";
@@ -161,6 +163,7 @@ public class PropertyLoader {
 		idaLibraryProperty,
 		idaIncludeProperty,
 		idaExecutableProperty,
+		cvodeExecutableProperty,
 		
 		stochLibraryProperty,
 		stochIncludeProperty,
