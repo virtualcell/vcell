@@ -53,7 +53,7 @@ public BNGSpecies[] parseBNGSpeciesName() {
 			complexSpeciesComponentsVector.addElement(ssSpecies);
 		}
 	}
-	BNGSpecies[] complexSpeciesComponents = (BNGSpecies[])cbit.util.BeanUtils.getArray(complexSpeciesComponentsVector, BNGSpecies.class);
+	BNGSpecies[] complexSpeciesComponents = (BNGSpecies[])org.vcell.util.BeanUtils.getArray(complexSpeciesComponentsVector, BNGSpecies.class);
 	return complexSpeciesComponents;
 }
 }

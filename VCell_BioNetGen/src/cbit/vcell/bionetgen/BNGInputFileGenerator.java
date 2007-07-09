@@ -1,6 +1,7 @@
 package cbit.vcell.bionetgen;
-import cbit.util.BigString;
 import java.io.PrintWriter;
+
+import org.vcell.util.BigString;
 /**
  * Insert the type's description here.
  * Creation date: (1/16/2006 3:16:28 PM)

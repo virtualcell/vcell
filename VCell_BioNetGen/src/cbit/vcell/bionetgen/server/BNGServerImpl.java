@@ -2,16 +2,17 @@ package cbit.vcell.bionetgen.server;
 import java.util.Random;
 import java.io.File;
 import java.io.FileOutputStream;
-import cbit.util.DataAccessException;
-import cbit.util.PropertyLoader;
-import cbit.util.SessionLog;
-import cbit.util.document.User;
 
 import java.io.PrintWriter;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.io.BufferedReader;
 import java.io.IOException;
+
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.User;
 
 /**
  * Insert the type's description here.
@@ -103,10 +104,10 @@ public BNGOutput executeBNG(User user, BNGInput bngRules) throws DataAccessExcep
  		+ PropertyLoader.getRequiredProperty(PropertyLoader.vcellBNGScript) + "\" \"" + bngInputFile.getAbsolutePath() + "\"";
 
  	BNGOutput bngOutput = null;
- 	cbit.util.Executable executable = null;
+ 	org.vcell.util.Executable executable = null;
 	try {
 		log.print("-------------Starting BNG ...-------------------------------");
-		executable = new cbit.util.Executable(perlCommand);
+		executable = new org.vcell.util.Executable(perlCommand);
 		executable.start();
 
 		File[] files = tempDir.listFiles();
@@ -123,7 +124,7 @@ public BNGOutput executeBNG(User user, BNGInput bngRules) throws DataAccessExcep
 		bngOutput = new BNGOutput(executable.getStdoutString(), filenames, filecontents);
 	
 		log.print("--------------Finished BNG----------------------------");
-	} catch (cbit.util.ExecutableException e) {
+	} catch (org.vcell.util.ExecutableException e) {
 		log.exception(e);		
 		throw new DataAccessException(executable.getStderrString());
 	} catch (Exception e) {

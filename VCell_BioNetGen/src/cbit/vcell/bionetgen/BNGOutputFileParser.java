@@ -6,8 +6,8 @@ import java.io.*;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.util.TokenMangler;
 
-import cbit.util.TokenMangler;
 /**
  * Insert the type's description here.
  * Creation date: (1/17/2006 10:36:29 AM)
@@ -250,7 +250,7 @@ public static BNGOutputSpec createBngOutputSpec(File bngOutputFile) throws FileN
 							reactantVector.addElement(getSpecies(specNo, speciesVector));
 						}
 					}
-					reactantsArray = (BNGSpecies[])cbit.util.BeanUtils.getArray(reactantVector, BNGSpecies.class);
+					reactantsArray = (BNGSpecies[])org.vcell.util.BeanUtils.getArray(reactantVector, BNGSpecies.class);
 				} else if (i == 2) {
 					// This string is a list of numbers (species indices) separated by commas, representing the product(s)
 					StringTokenizer nextPart = new StringTokenizer(token2, commaDelimiters);
@@ -268,7 +268,7 @@ public static BNGOutputSpec createBngOutputSpec(File bngOutputFile) throws FileN
 							productVector.addElement(getSpecies(specNo, speciesVector));
 						}
 					}
-					productsArray = (BNGSpecies[])cbit.util.BeanUtils.getArray(productVector, BNGSpecies.class);
+					productsArray = (BNGSpecies[])org.vcell.util.BeanUtils.getArray(productVector, BNGSpecies.class);
 				} else if (i == 3) {
 					//
 					// This string is a list of parameters (rate consts) for the reaction; some of them could have coefficients.
@@ -350,8 +350,8 @@ public static BNGOutputSpec createBngOutputSpec(File bngOutputFile) throws FileN
 			}
 			// After parsing observable group from the line, create a new ObservableGroup and add it to observable group vector.
 			if (observableName != null && obsMultiplicityVector.size() > 0 && obsSpeciesVector.size() > 0) {
-				BNGSpecies[] obsSpeciesArray = (BNGSpecies[])cbit.util.BeanUtils.getArray(obsSpeciesVector, BNGSpecies.class);
-				Integer[] obsMultiplicityArray = (Integer[])cbit.util.BeanUtils.getArray(obsMultiplicityVector, Integer.class);
+				BNGSpecies[] obsSpeciesArray = (BNGSpecies[])org.vcell.util.BeanUtils.getArray(obsSpeciesVector, BNGSpecies.class);
+				Integer[] obsMultiplicityArray = (Integer[])org.vcell.util.BeanUtils.getArray(obsMultiplicityVector, Integer.class);
 				int[] obsMultiplicityFactors = new int[obsMultiplicityArray.length];
 				for (int k = 0; k < obsMultiplicityFactors.length; k++){
 					obsMultiplicityFactors[k] = obsMultiplicityArray[k].intValue();
@@ -363,11 +363,11 @@ public static BNGOutputSpec createBngOutputSpec(File bngOutputFile) throws FileN
 	}
 
 	// Create the BNGOutputSpec from the parsed BNG .net (output) file and return.
-	BNGParameter[] paramsArray = (BNGParameter[])cbit.util.BeanUtils.getArray(paramVector, BNGParameter.class);
-	BNGMolecule[] moleculesArray = (BNGMolecule[])cbit.util.BeanUtils.getArray(moleculesVector, BNGMolecule.class);
-	BNGSpecies[] speciesArray = (BNGSpecies[])cbit.util.BeanUtils.getArray(speciesVector, BNGSpecies.class);
-	BNGReaction[] rxnsArray = (BNGReaction[])cbit.util.BeanUtils.getArray(rxnVector, BNGReaction.class);
-	ObservableGroup[] observableGpsArray = (ObservableGroup[])cbit.util.BeanUtils.getArray(obsGroupsVector, ObservableGroup.class);
+	BNGParameter[] paramsArray = (BNGParameter[])org.vcell.util.BeanUtils.getArray(paramVector, BNGParameter.class);
+	BNGMolecule[] moleculesArray = (BNGMolecule[])org.vcell.util.BeanUtils.getArray(moleculesVector, BNGMolecule.class);
+	BNGSpecies[] speciesArray = (BNGSpecies[])org.vcell.util.BeanUtils.getArray(speciesVector, BNGSpecies.class);
+	BNGReaction[] rxnsArray = (BNGReaction[])org.vcell.util.BeanUtils.getArray(rxnVector, BNGReaction.class);
+	ObservableGroup[] observableGpsArray = (ObservableGroup[])org.vcell.util.BeanUtils.getArray(obsGroupsVector, ObservableGroup.class);
 	
 	BNGOutputSpec bngOutput = new BNGOutputSpec(paramsArray, moleculesArray, speciesArray, null, rxnsArray, observableGpsArray);
 	return bngOutput;
