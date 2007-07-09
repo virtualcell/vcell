@@ -39,6 +39,8 @@ public static cbit.vcell.solver.Solver createSolver(SessionLog sessionLog, File 
 		solver = new RungeKuttaFehlbergSolver(simJob, directory, sessionLog);
 	} else if (solverDescription.equals(SolverDescription.LSODA)) {
 		solver = new IDASolverStandalone(simJob, directory, sessionLog);
+	} else if (solverDescription.equals(SolverDescription.CVODE)) {
+		solver = new CVodeSolverStandalone(simJob, directory, sessionLog);
 	} else if (solverDescription.equals(SolverDescription.FiniteVolume)) {
 		String fvstandaloneExe = PropertyLoader.getProperty(PropertyLoader.finiteVolumeExecutableProperty, null);
 		if (fvstandaloneExe == null) {

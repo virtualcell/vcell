@@ -1,5 +1,4 @@
 package cbit.vcell.mapping;
-import cbit.vcell.modeldb.StimulusTable;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.parser.Expression;
@@ -7,7 +6,6 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.BioNameScope;
-import cbit.vcell.parser.ScopedSymbolTable;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -21,23 +19,13 @@ import cbit.vcell.model.Model;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.VCML;
 import cbit.vcell.model.VCMODL;
-import cbit.vcell.server.VCellConnection;
-import cbit.gui.DialogUtils;
 import cbit.sql.Version;
-import cbit.sql.Versionable;
-import cbit.vcell.server.User;
 import cbit.util.*;
 import cbit.vcell.math.MathDescription;
 import cbit.sql.KeyValue;
-import cbit.sql.VersionableType;
-import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 
 import java.util.*;
-import java.util.Map.Entry;
-
-import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
-
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.biomodel.BioModel;
@@ -443,7 +431,7 @@ public Simulation addNewSimulation() throws java.beans.PropertyVetoException {
 		if(isStoch())
 			newSimulation.getSolverTaskDescription().setSolverDescription(cbit.vcell.solver.SolverDescription.StochGibson);
 		else
-			newSimulation.getSolverTaskDescription().setSolverDescription(cbit.vcell.solver.SolverDescription.LSODA);
+			newSimulation.getSolverTaskDescription().setSolverDescription(cbit.vcell.solver.SolverDescription.CVODE);
 	}
 	
 	bioModel.addSimulation(newSimulation);
@@ -675,7 +663,7 @@ public Simulation copySimulation(Simulation simulation) throws java.beans.Proper
  * @param allSimulations cbit.vcell.solver.Simulation[]
  */
 private Simulation[] extractLocalSimulations(Simulation[] allSimulations) {
-	Vector list = new Vector();
+	Vector<Simulation> list = new Vector<Simulation>();
 	for (int i = 0; i < allSimulations.length; i++){
 		if (allSimulations[i].getMathDescription()==getMathDescription()){
 			list.add(allSimulations[i]);
