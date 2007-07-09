@@ -4,13 +4,12 @@ package cbit.vcell.simulation;
  * All rights reserved.
 ©*/
 import cbit.vcell.math.*;
-import cbit.vcell.math.VCML;
 import java.util.*;
 
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.util.*;
 
-import cbit.util.*;
 import edu.uchc.vcell.expression.internal.*;
 /**
  * Insert the class' description here.

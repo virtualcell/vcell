@@ -206,7 +206,7 @@ public java.beans.MethodDescriptor compareEqual_cbitutilMatchableMethodDescripto
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.util.Matchable.class
+				org.vcell.util.Matchable.class
 			};
 			aMethod = getBeanClass().getMethod("compareEqual", aParameterTypes);
 		} catch (Throwable exception) {
@@ -1468,7 +1468,7 @@ public java.beans.MethodDescriptor readVCML_cbitvcellmathCommentStringTokenizerM
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.util.CommentStringTokenizer.class
+				org.vcell.util.CommentStringTokenizer.class
 			};
 			aMethod = getBeanClass().getMethod("readVCML", aParameterTypes);
 		} catch (Throwable exception) {

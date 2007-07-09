@@ -1,13 +1,14 @@
 package cbit.vcell.simulation;
-import cbit.util.CommentStringTokenizer;
-import cbit.util.DataAccessException;
+import org.vcell.util.CommentStringTokenizer;
+import org.vcell.util.DataAccessException;
+
 import cbit.vcell.math.VCML;
 /**
  * Insert the type's description here.
  * Creation date: (9/6/2005 3:00:40 PM)
  * @author: Jim Schaff
  */
-public abstract class OutputTimeSpec implements cbit.util.Matchable, java.io.Serializable {
+public abstract class OutputTimeSpec implements org.vcell.util.Matchable, java.io.Serializable {
 
 /**
  * OutputTimeSpec constructor comment.

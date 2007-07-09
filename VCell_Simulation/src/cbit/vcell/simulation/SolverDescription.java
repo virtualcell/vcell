@@ -10,7 +10,7 @@ package cbit.vcell.simulation;
  * @author: Jim Schaff
  * Stochastic description is added on 12th July 2006.
  */
-public class SolverDescription implements java.io.Serializable, cbit.util.Matchable {
+public class SolverDescription implements java.io.Serializable, org.vcell.util.Matchable {
 	private int type;
 	
 	private static final int NUM_SOLVERS = 8;
@@ -85,7 +85,7 @@ private SolverDescription(int argSolverType) {
  * @return boolean
  * @param obj cbit.util.Matchable
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	return equals(obj);
 }
 /**
@@ -155,7 +155,7 @@ public double getEstimatedMemoryMB(Simulation simulation) {
 				break;
 			}
 		}
-		cbit.util.ISize samplingSize = simulation.getMeshSpecification().getSamplingSize();
+		org.vcell.util.ISize samplingSize = simulation.getMeshSpecification().getSamplingSize();
 		long numMeshPoints = samplingSize.getX()*samplingSize.getY()*samplingSize.getZ();
 		//
 		// calculated assuming PCG on Digital DS20 running Tru64 (cxx)

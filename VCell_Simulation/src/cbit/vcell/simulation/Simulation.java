@@ -15,14 +15,14 @@ import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.SymbolTableEntry;
+import org.vcell.util.BeanUtils;
+import org.vcell.util.CommentStringTokenizer;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.document.FieldDataIdentifierSpec;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.SimulationVersion;
+import org.vcell.util.document.Versionable;
 
-import cbit.util.BeanUtils;
-import cbit.util.CommentStringTokenizer;
-import cbit.util.DataAccessException;
-import cbit.util.document.FieldDataIdentifierSpec;
-import cbit.util.document.KeyValue;
-import cbit.util.document.SimulationVersion;
-import cbit.util.document.Versionable;
 import cbit.vcell.math.*;
 import cbit.vcell.simulation.SimulationInfo;
 /**
@@ -31,7 +31,7 @@ import cbit.vcell.simulation.SimulationInfo;
  * Creation date: (8/16/2000 11:08:33 PM)
  * @author: John Wagner
  */
-public class Simulation implements Versionable, cbit.util.Matchable, org.vcell.expression.SymbolTable, MathOverridesListener, java.beans.VetoableChangeListener, java.io.Serializable {
+public class Simulation implements Versionable, org.vcell.util.Matchable, org.vcell.expression.SymbolTable, MathOverridesListener, java.beans.VetoableChangeListener, java.io.Serializable {
 	// size quotas enforced per simulation
 	public static final int MAX_LIMIT_ODE_TIMEPOINTS = 100000;
 	public static final int MAX_LIMIT_PDE_TIMEPOINTS = 100000;
@@ -276,7 +276,7 @@ public void applyOverrides(MathDescription newMath) throws ExpressionException, 
 	//
 	// replace original constants with "Simulation" constants
 	//
-	Variable newVarArray[] = (Variable[])cbit.util.BeanUtils.getArray(newMath.getVariables(),Variable.class);
+	Variable newVarArray[] = (Variable[])org.vcell.util.BeanUtils.getArray(newMath.getVariables(),Variable.class);
 	for (int i = 0; i < newVarArray.length; i++){
 		if (newVarArray[i] instanceof Constant){
 			Constant origConstant = (Constant)newVarArray[i];
@@ -300,7 +300,7 @@ public void clearVersion() {
 /**
  * compareEqual method comment.
  */
-public boolean compareEqual(cbit.util.Matchable object) {
+public boolean compareEqual(org.vcell.util.Matchable object) {
 	if (this == object) {
 		return (true);
 	}
@@ -315,10 +315,10 @@ public boolean compareEqual(cbit.util.Matchable object) {
 		//
 		// check for true equality
 		//
-		if (!cbit.util.Compare.isEqual(getName(),simulation.getName())){
+		if (!org.vcell.util.Compare.isEqual(getName(),simulation.getName())){
 			return false;
 		}
-		if (!cbit.util.Compare.isEqualOrNull(getDescription(),simulation.getDescription())){
+		if (!org.vcell.util.Compare.isEqualOrNull(getDescription(),simulation.getDescription())){
 			return false;
 		}
 		return true;
@@ -339,7 +339,7 @@ private boolean compareEqualMathematically(Simulation simulation) {
 	if (!getMathDescription().compareEqual(simulation.getMathDescription())) return (false);
 	if (!getMathOverrides().compareEqual(simulation.getMathOverrides())) return (false);
 	if (!getSolverTaskDescription().compareEqual(simulation.getSolverTaskDescription())) return (false);
-	if (!cbit.util.Compare.isEqualOrNull(getMeshSpecification(),simulation.getMeshSpecification())) return (false);
+	if (!org.vcell.util.Compare.isEqualOrNull(getMeshSpecification(),simulation.getMeshSpecification())) return (false);
 
 	return true;
 }
@@ -559,7 +559,7 @@ public Function[] getFunctions() {
 		}
 	}
 
-	return (Function[])cbit.util.BeanUtils.getArray(functList,Function.class);
+	return (Function[])org.vcell.util.BeanUtils.getArray(functList,Function.class);
 }
 
 /**
@@ -891,7 +891,7 @@ public Variable[] getVariables() {
 		}
 	}
 
-	Variable variables[] = (Variable[])cbit.util.BeanUtils.getArray(varList,Variable.class);
+	Variable variables[] = (Variable[])org.vcell.util.BeanUtils.getArray(varList,Variable.class);
 
 	return variables;
 }
@@ -941,7 +941,7 @@ public String getVCML() throws MathException {
  * Creation date: (10/24/00 1:34:10 PM)
  * @return cbit.sql.Version
  */
-public cbit.util.document.Version getVersion() {
+public org.vcell.util.document.Version getVersion() {
 	return fieldSimulationVersion;
 }
 
@@ -1320,7 +1320,7 @@ public static boolean testEquivalency(Simulation memorySimulation, Simulation da
 		if (!memorySimulation.getSolverTaskDescription().compareEqual(databaseSimulation.getSolverTaskDescription())){
 			return false;
 		}
-		if (!cbit.util.Compare.isEqualOrNull(memorySimulation.getMeshSpecification(),databaseSimulation.getMeshSpecification())){
+		if (!org.vcell.util.Compare.isEqualOrNull(memorySimulation.getMeshSpecification(),databaseSimulation.getMeshSpecification())){
 			return false;
 		}
 		//
@@ -1404,7 +1404,7 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 				varVector.addElement(allVariables[i]);
 			}
 		}
-		Variable[] variables = (Variable[])cbit.util.BeanUtils.getArray(varVector, Variable.class);
+		Variable[] variables = (Variable[])org.vcell.util.BeanUtils.getArray(varVector, Variable.class);
 		String[] variableNames = new String[variables.length];
 		for (int i = 0; i < variableNames.length; i++){
 			variableNames[i] = variables[i].getName();
@@ -1466,7 +1466,7 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 			}
 		}
 
-		AnnotatedFunction[] annotatedFunctionList = (AnnotatedFunction[])cbit.util.BeanUtils.getArray(annotatedFunctionVector, AnnotatedFunction.class);
+		AnnotatedFunction[] annotatedFunctionList = (AnnotatedFunction[])org.vcell.util.BeanUtils.getArray(annotatedFunctionVector, AnnotatedFunction.class);
 		return annotatedFunctionList;	
 	}
 	

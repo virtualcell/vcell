@@ -67,7 +67,7 @@ public java.beans.MethodDescriptor compareEqual_cbitutilMatchableMethodDescripto
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.util.Matchable.class
+				org.vcell.util.Matchable.class
 			};
 			aMethod = getBeanClass().getMethod("compareEqual", aParameterTypes);
 		} catch (java.lang.Throwable exception) {
@@ -815,7 +815,7 @@ public java.beans.PropertyDescriptor samplingSizePropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.util.ISize.class
+					org.vcell.util.ISize.class
 				};
 				aSetMethod = getBeanClass().getMethod("setSamplingSize", aSetMethodParameterTypes);
 			} catch (java.lang.Throwable exception) {
@@ -998,7 +998,7 @@ public java.beans.MethodDescriptor setSamplingSize_cbitutilISizeMethodDescriptor
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.util.ISize.class
+				org.vcell.util.ISize.class
 			};
 			aMethod = getBeanClass().getMethod("setSamplingSize", aParameterTypes);
 		} catch (java.lang.Throwable exception) {

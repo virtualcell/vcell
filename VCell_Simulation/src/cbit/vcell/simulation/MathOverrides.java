@@ -9,9 +9,9 @@ import java.util.Hashtable;
 import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.util.CommentStringTokenizer;
+import org.vcell.util.DataAccessException;
 
-import cbit.util.CommentStringTokenizer;
-import cbit.util.DataAccessException;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.VCML;
@@ -22,7 +22,7 @@ import cbit.vcell.math.VCML;
  * Creation date: (8/17/2000 3:47:33 PM)
  * @author: John Wagner
  */
-public class MathOverrides implements cbit.util.Matchable, java.io.Serializable {
+public class MathOverrides implements org.vcell.util.Matchable, java.io.Serializable {
 	private Simulation simulation = null;
 	//
 	// key = constant name (String)
@@ -31,7 +31,7 @@ public class MathOverrides implements cbit.util.Matchable, java.io.Serializable 
 	private java.util.Hashtable overridesHash = new java.util.Hashtable();
 	protected transient cbit.vcell.simulation.MathOverridesListener aMathOverridesListener = null;
 	
-	class Element implements java.io.Serializable, cbit.util.Matchable {
+	class Element implements java.io.Serializable, org.vcell.util.Matchable {
 		private IExpression actualValue;
 		private String name;
 		private ConstantArraySpec spec;
@@ -46,12 +46,12 @@ public class MathOverrides implements cbit.util.Matchable, java.io.Serializable 
 			this.name = argName;
 			this.spec = ConstantArraySpec.clone(argSpec);
 		}
-		public boolean compareEqual(cbit.util.Matchable obj){
+		public boolean compareEqual(org.vcell.util.Matchable obj){
 			if (obj instanceof MathOverrides.Element){
 				MathOverrides.Element element = (MathOverrides.Element)obj;
-				if (!cbit.util.Compare.isEqualOrNull(actualValue,element.actualValue) ||
-					!cbit.util.Compare.isEqual(name,element.name) ||
-					!cbit.util.Compare.isEqualOrNull(spec,element.spec)){
+				if (!org.vcell.util.Compare.isEqualOrNull(actualValue,element.actualValue) ||
+					!org.vcell.util.Compare.isEqual(name,element.name) ||
+					!org.vcell.util.Compare.isEqualOrNull(spec,element.spec)){
 					return false;
 				}
 				return true;
@@ -164,14 +164,14 @@ private void checkUnresolved(IExpression exp, MathDescription mathDescription, S
  * Creation date: (10/24/00 1:23:14 PM)
  * @return boolean
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (!(obj instanceof MathOverrides)){
 		return false;
 	}
 	//
 	// use the superclass definition of equals(), it compares contents not references.
 	//
-	boolean returnValue = cbit.util.Compare.isEqual(toVector(getOverridesHash().elements()),toVector(((MathOverrides)obj).getOverridesHash().elements()));
+	boolean returnValue = org.vcell.util.Compare.isEqual(toVector(getOverridesHash().elements()),toVector(((MathOverrides)obj).getOverridesHash().elements()));
 	return returnValue;
 }
 
@@ -237,7 +237,7 @@ public IExpression getActualExpression(String key, int index) {
 		for (int i = 0; i < names.length; i++){
 			bounds[i] = getConstantArraySpec(names[i]).getNumValues() - 1;
 		}
-		int[] coordinates = cbit.util.BeanUtils.indexToCoordinate(index, bounds);
+		int[] coordinates = org.vcell.util.BeanUtils.indexToCoordinate(index, bounds);
 		int localIndex = coordinates[java.util.Arrays.binarySearch(names, key)];
 		return getConstantArraySpec(key).getConstants()[localIndex].getExpression();
 	}
@@ -265,7 +265,7 @@ public String[] getAllConstantNames() {
 	while (en.hasMoreElements()) {
 		v.add(((Constant)en.nextElement()).getName());
 	}
-	return (String[])cbit.util.BeanUtils.getArray(v, String.class);
+	return (String[])org.vcell.util.BeanUtils.getArray(v, String.class);
 }
 
 
@@ -353,7 +353,7 @@ public String[] getScannedConstantNames() {
 	for (int i = 0; i < overrides.length; i++){
 		if (isScan(overrides[i])) v.add(overrides[i]);
 	}
-	return (String[])cbit.util.BeanUtils.getArray(v, String.class);
+	return (String[])org.vcell.util.BeanUtils.getArray(v, String.class);
 }
 
 
