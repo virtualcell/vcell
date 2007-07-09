@@ -9,7 +9,6 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 package cbit.vcell.xml.merge.gui;
-import cbit.gui.DialogUtils;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.xml.merge.ChangedNodeInfo;
 import cbit.vcell.xml.merge.DefaultXmlComparePolicy;
@@ -19,6 +18,7 @@ import cbit.vcell.xml.merge.XmlTreeDiff;
 
 import org.jdom.Document;
 import org.jdom.Element;
+import org.vcell.util.gui.DialogUtils;
 
 import java.awt.Component;
 import java.util.Enumeration;

@@ -155,7 +155,7 @@ public String toString() {
 public String toXmlString() {
 	StringBuffer result = new StringBuffer();
 	String unescapedValue = (getValue()!=null)?getValue():"";
-	String value = cbit.util.TokenMangler.getEscapedString(unescapedValue.trim());
+	String value = org.vcell.util.TokenMangler.getEscapedString(unescapedValue.trim());
 	
 	if (isElement()) {
 		//this node is an Element
