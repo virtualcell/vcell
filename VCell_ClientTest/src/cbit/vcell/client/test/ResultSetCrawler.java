@@ -9,18 +9,19 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.Vector;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PermissionException;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+import org.vcell.util.StdoutSessionLog;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.UserInfo;
+import org.vcell.util.document.VersionableType;
+
 import cbit.rmi.event.VCSimulationDataIdentifier;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.DBCacheTable;
-import cbit.util.DataAccessException;
-import cbit.util.PermissionException;
-import cbit.util.PropertyLoader;
-import cbit.util.SessionLog;
-import cbit.util.StdoutSessionLog;
-import cbit.util.document.KeyValue;
-import cbit.util.document.User;
-import cbit.util.document.UserInfo;
-import cbit.util.document.VersionableType;
 import cbit.vcell.modeldb.AdminDatabaseServer;
 import cbit.vcell.modeldb.DBTopLevel;
 import cbit.vcell.modeldb.LocalAdminDbServer;
@@ -37,7 +38,7 @@ import cbit.vcell.simulation.SimulationInfo;
 public class ResultSetCrawler {
 	private AdminDatabaseServer adminDbServer = null;
 	private cbit.sql.ConnectionFactory conFactory = null;
-	private cbit.util.SessionLog log = null;
+	private org.vcell.util.SessionLog log = null;
 	private cbit.sql.DBCacheTable dbCacheTable = null;
 	private cbit.vcell.modeldb.ResultSetDBTopLevel resultSetDbTopLevel = null;
 	private File dataRootDir = null;

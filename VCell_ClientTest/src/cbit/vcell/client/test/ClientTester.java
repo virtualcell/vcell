@@ -2,11 +2,12 @@ package cbit.vcell.client.test;
 
 import java.awt.Frame;
 
+import org.vcell.util.NullSessionLog;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+
 import cbit.sql.ConnectionFactory;
 import cbit.sql.DBCacheTable;
-import cbit.util.NullSessionLog;
-import cbit.util.PropertyLoader;
-import cbit.util.SessionLog;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.ClientServerManager;
 /**
@@ -110,7 +111,7 @@ protected static cbit.vcell.server.VCellConnectionFactory VCellConnectionFactory
 	if (args[0].startsWith("-")) {
 		String userid = args[1];
 		String password = args[2];
-		SessionLog log = new cbit.util.StdoutSessionLog(userid);
+		SessionLog log = new org.vcell.util.StdoutSessionLog(userid);
 		if (args[0].equalsIgnoreCase("-jms")) {
 			vcConnFactory = new cbit.vcell.server.LocalVCellConnectionFactory(userid, password, log, false);
 		} else if (args[0].equalsIgnoreCase("-local")) {
@@ -141,12 +142,12 @@ protected static cbit.vcell.server.VCellServerFactory VCellServerFactoryInit(Str
 	}
 	cbit.vcell.server.VCellServerFactory vcServerFactory = null;
 	PropertyLoader.loadProperties();
-	cbit.util.document.User user = null;
+	org.vcell.util.document.User user = null;
 	if (!args[0].equalsIgnoreCase("-local")) {
 		String host = args[0];
 		String userid = args[1];
-		cbit.util.document.KeyValue userKey = new cbit.util.document.KeyValue(args[2]);
-		user = new cbit.util.document.User(userid, userKey);
+		org.vcell.util.document.KeyValue userKey = new org.vcell.util.document.KeyValue(args[2]);
+		user = new org.vcell.util.document.User(userid, userKey);
 		String password = args[3];
 		System.setSecurityManager(new java.rmi.RMISecurityManager());
 		vcServerFactory = new cbit.vcell.server.RMIVCellServerFactory(host, user, password);

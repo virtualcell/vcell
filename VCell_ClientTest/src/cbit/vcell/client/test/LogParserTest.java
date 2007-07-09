@@ -6,7 +6,8 @@ package cbit.vcell.client.test;
 ©*/
 import java.io.File;
 
-import cbit.util.SessionLog;
+import org.vcell.util.SessionLog;
+
 import cbit.util.admin.LogParser;
 /**
  * Insert the type's description here.
@@ -32,7 +33,7 @@ public static void main(java.lang.String[] args) {
         String connectURL = "jdbc:oracle:thin:@" + host + ":1521:" + db;
         String dbSchemaUser = args[5];
         String dbPassword = args[6];
-        SessionLog sessionLog = new cbit.util.StdoutSessionLog("logParser");
+        SessionLog sessionLog = new org.vcell.util.StdoutSessionLog("logParser");
         cbit.sql.ConnectionFactory connFactory = new cbit.sql.OraclePoolingConnectionFactory(sessionLog,driverName,connectURL,dbSchemaUser,dbPassword);
         File files[] = null;
 		java.util.Vector fileList = new java.util.Vector();
@@ -62,7 +63,7 @@ public static void main(java.lang.String[] args) {
 				}
 			}
 		}
-		files = (File[])cbit.util.BeanUtils.getArray(fileList,File.class);
+		files = (File[])org.vcell.util.BeanUtils.getArray(fileList,File.class);
 		System.out.println("Files:");
 		for (int i = 0; i < files.length; i++){
 			System.out.println(files[i].getAbsolutePath());
