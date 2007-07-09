@@ -5,11 +5,11 @@ package cbit.vcell.modelapp;
  * Creation date: (4/8/2002 11:10:05 AM)
  * @author: Anuradha Lakshminarayana
  */
-public class Electrode implements java.io.Serializable, cbit.util.Matchable {
+public class Electrode implements java.io.Serializable, org.vcell.util.Matchable {
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private cbit.vcell.model.Feature fieldFeature = null;
-	private cbit.util.Coordinate fieldPosition = null;
+	private org.vcell.util.Coordinate fieldPosition = null;
 /**
  * Electrode constructor comment.
  */
@@ -20,7 +20,7 @@ public Electrode(Electrode electrode) {
 /**
  * Electrode constructor comment.
  */
-public Electrode(cbit.vcell.model.Feature argFeature, cbit.util.Coordinate argPosition) {
+public Electrode(cbit.vcell.model.Feature argFeature, org.vcell.util.Coordinate argPosition) {
 	fieldFeature = argFeature;
 	fieldPosition = argPosition;
 }
@@ -53,7 +53,7 @@ public synchronized void addVetoableChangeListener(java.lang.String propertyName
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	Electrode electrode = null;
 	if (!(obj instanceof Electrode)){
 		return false;
@@ -61,10 +61,10 @@ public boolean compareEqual(cbit.util.Matchable obj) {
 		electrode = (Electrode)obj;
 	}
 
-	if (!cbit.util.Compare.isEqualOrNull(getFeature(),electrode.getFeature())){
+	if (!org.vcell.util.Compare.isEqualOrNull(getFeature(),electrode.getFeature())){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqualOrNull(getPosition(),electrode.getPosition())){
+	if (!org.vcell.util.Compare.isEqualOrNull(getPosition(),electrode.getPosition())){
 		return false;
 	}
 	return true;
@@ -130,7 +130,7 @@ public cbit.vcell.model.Feature getFeature() {
  * @return The position property value.
  * @see #setPosition
  */
-public cbit.util.Coordinate getPosition() {
+public org.vcell.util.Coordinate getPosition() {
 	return fieldPosition;
 }
 /**
@@ -202,8 +202,8 @@ public void setFeature(cbit.vcell.model.Feature feature) throws java.beans.Prope
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getPosition
  */
-public void setPosition(cbit.util.Coordinate position) throws java.beans.PropertyVetoException {
-	cbit.util.Coordinate oldValue = fieldPosition;
+public void setPosition(org.vcell.util.Coordinate position) throws java.beans.PropertyVetoException {
+	org.vcell.util.Coordinate oldValue = fieldPosition;
 	fireVetoableChange("position", oldValue, position);
 	fieldPosition = position;
 	firePropertyChange("position", oldValue, position);

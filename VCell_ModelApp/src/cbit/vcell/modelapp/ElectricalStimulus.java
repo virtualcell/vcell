@@ -9,8 +9,8 @@ import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.NameScope;
 import org.vcell.expression.SymbolTableEntry;
+import org.vcell.util.BeanUtils;
 
-import cbit.util.BeanUtils;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.VCMODL;
@@ -20,7 +20,7 @@ import cbit.vcell.units.VCUnitDefinition;
  * Creation date: (4/8/2002 11:14:58 AM)
  * @author: Anuradha Lakshminarayana
  */
-public abstract class ElectricalStimulus implements cbit.util.Matchable, org.vcell.expression.ScopedSymbolTable, java.io.Serializable, java.beans.PropertyChangeListener, java.beans.VetoableChangeListener {
+public abstract class ElectricalStimulus implements org.vcell.util.Matchable, org.vcell.expression.ScopedSymbolTable, java.io.Serializable, java.beans.PropertyChangeListener, java.beans.VetoableChangeListener {
 
 	private static final String GENERAL_PROTOCOL = "General_Protocol";
 	
@@ -33,7 +33,7 @@ public abstract class ElectricalStimulus implements cbit.util.Matchable, org.vce
 			return children;
 		}
 		public String getName() {
-			return cbit.util.TokenMangler.fixTokenStrict(ElectricalStimulus.this.getName());
+			return org.vcell.util.TokenMangler.fixTokenStrict(ElectricalStimulus.this.getName());
 		}
 		public org.vcell.expression.NameScope getParent() {
 			return ElectricalStimulus.this.simulationContext.getNameScope();
@@ -69,7 +69,7 @@ public abstract class ElectricalStimulus implements cbit.util.Matchable, org.vce
 			this.fieldVCUnitDefinition = argVCUnitDefinition;
 		}
 
-		public boolean compareEqual(cbit.util.Matchable obj) {
+		public boolean compareEqual(org.vcell.util.Matchable obj) {
 			if (!(obj instanceof ElectricalStimulusParameter)){
 				return false;
 			}
@@ -181,7 +181,7 @@ public abstract class ElectricalStimulus implements cbit.util.Matchable, org.vce
 			setDescription("unresolved");
 		}
 
-		public boolean compareEqual(cbit.util.Matchable obj) {
+		public boolean compareEqual(org.vcell.util.Matchable obj) {
 			if (!(obj instanceof UnresolvedParameter)){
 				return false;
 			}
@@ -408,17 +408,17 @@ private final void cleanupParameters() throws ExpressionException, PropertyVetoE
  * @return boolean
  * @param obj java.lang.Object
  */
-protected final boolean compareEqual0(cbit.util.Matchable obj) {
+protected final boolean compareEqual0(org.vcell.util.Matchable obj) {
 	if (obj instanceof ElectricalStimulus){
 		ElectricalStimulus es = (ElectricalStimulus)obj;
 		
-		if (!cbit.util.Compare.isEqual(getName(),es.getName())){
+		if (!org.vcell.util.Compare.isEqual(getName(),es.getName())){
 			return false;
 		}
-		if (!cbit.util.Compare.isEqualOrNull(getAnnotation(),es.getAnnotation())){
+		if (!org.vcell.util.Compare.isEqualOrNull(getAnnotation(),es.getAnnotation())){
 			return false;
 		}
-		if (!cbit.util.Compare.isEqual(getElectrode(),es.getElectrode())){
+		if (!org.vcell.util.Compare.isEqual(getElectrode(),es.getElectrode())){
 			return false;
 		}
 		
@@ -822,7 +822,7 @@ private boolean isReferenced(Parameter parm, int level) throws ExpressionExcepti
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-public final void parameterVCMLSet(cbit.util.CommentStringTokenizer tokens) throws ExpressionException,PropertyVetoException{
+public final void parameterVCMLSet(org.vcell.util.CommentStringTokenizer tokens) throws ExpressionException,PropertyVetoException{
 
 	if(tokens == null){
 		return;

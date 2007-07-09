@@ -7,10 +7,10 @@ import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.NameScope;
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
 
 import net.sourceforge.interval.ia_math.RealInterval;
-import cbit.util.Compare;
-import cbit.util.Matchable;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Membrane;
@@ -19,7 +19,7 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.VCMODL;
 import cbit.vcell.units.VCUnitDefinition;
 
-public class SpeciesContextSpec implements cbit.util.Matchable, org.vcell.expression.ScopedSymbolTable, Serializable {
+public class SpeciesContextSpec implements org.vcell.util.Matchable, org.vcell.expression.ScopedSymbolTable, Serializable {
 
 	public class SpeciesContextSpecNameScope extends BioNameScope {
 		private final NameScope children[] = new NameScope[0]; // always empty
@@ -66,7 +66,7 @@ public class SpeciesContextSpec implements cbit.util.Matchable, org.vcell.expres
 			setDescription(argDescription);
 		}
 
-		public boolean compareEqual(cbit.util.Matchable obj) {
+		public boolean compareEqual(org.vcell.util.Matchable obj) {
 			if (!(obj instanceof SpeciesContextSpecParameter)){
 				return false;
 			}

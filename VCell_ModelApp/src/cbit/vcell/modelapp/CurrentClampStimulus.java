@@ -41,7 +41,7 @@ public CurrentClampStimulus(Electrode argElectrode, String argName, IExpression 
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (obj instanceof CurrentClampStimulus){
 		CurrentClampStimulus ccs = (CurrentClampStimulus)obj;
 

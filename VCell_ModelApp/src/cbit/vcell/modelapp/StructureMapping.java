@@ -6,11 +6,11 @@ import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.NameScope;
 import org.vcell.expression.SymbolTableEntry;
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+import org.vcell.util.TokenMangler;
 
 import net.sourceforge.interval.ia_math.RealInterval;
-import cbit.util.Compare;
-import cbit.util.Matchable;
-import cbit.util.TokenMangler;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.SimpleBoundsIssue;
@@ -72,7 +72,7 @@ public abstract class StructureMapping implements Matchable, org.vcell.expressio
 			this(structureMappingParameter.getName(),ExpressionFactory.createExpression(structureMappingParameter.getExpression()),structureMappingParameter.getRole(),structureMappingParameter.getUnitDefinition());
 		}
 
-		public boolean compareEqual(cbit.util.Matchable obj) {
+		public boolean compareEqual(org.vcell.util.Matchable obj) {
 			if (!(obj instanceof StructureMappingParameter)){
 				return false;
 			}

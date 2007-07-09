@@ -20,7 +20,7 @@ public java.beans.MethodDescriptor compareEqual_cbitutilMatchableMethodDescripto
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.util.Matchable.class
+				org.vcell.util.Matchable.class
 			};
 			aMethod = getBeanClass().getMethod("compareEqual", aParameterTypes);
 		} catch (Throwable exception) {

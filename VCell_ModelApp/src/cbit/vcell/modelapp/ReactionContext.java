@@ -4,9 +4,10 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Vector;
 
-import cbit.util.BeanUtils;
-import cbit.util.Compare;
-import cbit.util.Matchable;
+import org.vcell.util.BeanUtils;
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.ReactionStep;

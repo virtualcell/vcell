@@ -7,9 +7,9 @@ package cbit.vcell.modelapp;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
 
-import cbit.util.Compare;
-import cbit.util.Matchable;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.math.BoundaryConditionType;
 import cbit.vcell.model.Feature;

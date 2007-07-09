@@ -9,9 +9,9 @@ import java.beans.PropertyVetoException;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.util.Matchable;
+import org.vcell.util.TokenMangler;
 
-import cbit.util.Matchable;
-import cbit.util.TokenMangler;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.units.VCUnitDefinition;

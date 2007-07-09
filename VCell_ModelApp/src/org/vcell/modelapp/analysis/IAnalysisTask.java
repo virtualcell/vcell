@@ -1,6 +1,6 @@
 package org.vcell.modelapp.analysis;
 
-import cbit.util.Matchable;
+import org.vcell.util.Matchable;
 
 public interface IAnalysisTask extends Matchable{
 

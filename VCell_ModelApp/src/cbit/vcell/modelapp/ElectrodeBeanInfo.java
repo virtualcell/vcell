@@ -205,7 +205,7 @@ public java.beans.PropertyDescriptor positionPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.util.Coordinate.class
+					org.vcell.util.Coordinate.class
 				};
 				aSetMethod = getBeanClass().getMethod("setPosition", aSetMethodParameterTypes);
 			} catch (Throwable exception) {

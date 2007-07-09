@@ -11,9 +11,10 @@ import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.Vector;
 
-import cbit.util.BeanUtils;
-import cbit.util.Compare;
-import cbit.util.Matchable;
+import org.vcell.util.BeanUtils;
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+
 import cbit.vcell.geometry.CompartmentSubVolume;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.SubVolume;

@@ -12,8 +12,8 @@ import org.vcell.expression.IExpression;
 import org.vcell.expression.NameScope;
 import org.vcell.expression.ScopedSymbolTable;
 import org.vcell.expression.SymbolTableEntry;
+import org.vcell.util.Matchable;
 
-import cbit.util.Matchable;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
@@ -98,7 +98,7 @@ public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable,
 			setDescription(argDescription);
 		}
 
-		public boolean compareEqual(cbit.util.Matchable obj) {
+		public boolean compareEqual(org.vcell.util.Matchable obj) {
 			if (!(obj instanceof ReactionSpecParameter)){
 				return false;
 			}

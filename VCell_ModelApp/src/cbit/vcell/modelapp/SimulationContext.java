@@ -10,13 +10,13 @@ import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.NameScope;
 import org.vcell.modelapp.analysis.IAnalysisTask;
+import org.vcell.util.BeanUtils;
+import org.vcell.util.Compare;
+import org.vcell.util.Matchable;
+import org.vcell.util.TokenMangler;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.Version;
 
-import cbit.util.BeanUtils;
-import cbit.util.Compare;
-import cbit.util.Matchable;
-import cbit.util.TokenMangler;
-import cbit.util.document.KeyValue;
-import cbit.util.document.Version;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathFactory;
@@ -29,7 +29,7 @@ import cbit.vcell.simulation.Simulation;
 /**
  * This type was created in VisualAge.
  */
-public class SimulationContext implements cbit.util.document.Versionable, Matchable, cbit.vcell.simulation.SimulationOwner, org.vcell.expression.ScopedSymbolTable, PropertyChangeListener, VetoableChangeListener, java.io.Serializable {
+public class SimulationContext implements org.vcell.util.document.Versionable, Matchable, cbit.vcell.simulation.SimulationOwner, org.vcell.expression.ScopedSymbolTable, PropertyChangeListener, VetoableChangeListener, java.io.Serializable {
 
 	public class SimulationContextNameScope extends BioNameScope {
 		private transient org.vcell.expression.NameScope nameScopes[] = null;
@@ -433,10 +433,10 @@ public boolean compareEqual(Matchable object) {
 		simContext = (SimulationContext)object;
 	}
 
-	if (!cbit.util.Compare.isEqual(getName(),simContext.getName())){
+	if (!org.vcell.util.Compare.isEqual(getName(),simContext.getName())){
 		return false;
 	}
-	if (!cbit.util.Compare.isEqual(getDescription(),simContext.getDescription())){
+	if (!org.vcell.util.Compare.isEqual(getDescription(),simContext.getDescription())){
 		return false;
 	}
 	
@@ -506,7 +506,7 @@ public IAnalysisTask copyAnalysisTask(IAnalysisTask analysisTask) throws java.be
 	boolean found = true;
 	while (found) {
 		found = false;
-		newAnalysisTaskName = cbit.util.TokenMangler.getNextEnumeratedToken(newAnalysisTaskName);
+		newAnalysisTaskName = org.vcell.util.TokenMangler.getNextEnumeratedToken(newAnalysisTaskName);
 		for (int i = 0;analysisTasks!=null && i < analysisTasks.length; i++){
 			if (analysisTasks[i].getName().equals(newAnalysisTaskName)){
 				found = true;
@@ -1003,7 +1003,7 @@ private void refreshCharacteristicSize() throws PropertyVetoException {
 		setCharacteristicSize(null);
 		return;
 	}
-	cbit.util.Extent extent = geo.getExtent();
+	org.vcell.util.Extent extent = geo.getExtent();
 	
 	if (characteristicSize == null){
 		//
@@ -1482,7 +1482,7 @@ public void setTemperatureKelvin(double temperatureKelvin) throws java.beans.Pro
  * Creation date: (11/14/00 3:49:12 PM)
  * @param version cbit.sql.Version
  */
-private void setVersion(cbit.util.document.Version newVersion) throws PropertyVetoException {
+private void setVersion(org.vcell.util.document.Version newVersion) throws PropertyVetoException {
 	this.version = newVersion;
 	if (newVersion != null){
 		setName(newVersion.getName());
