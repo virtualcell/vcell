@@ -9,9 +9,9 @@ import org.vcell.expression.ExpressionException;
 import org.vcell.modelapp.analysis.IAnalysisTask;
 import org.vcell.modelapp.analysis.IAnalysisTaskFactory;
 import org.vcell.ncbc.physics.component.PhysicalModel;
+import org.vcell.util.Matchable;
 
 import cbit.image.ImageException;
-import cbit.util.Matchable;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.modelapp.SimulationContext;
 

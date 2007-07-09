@@ -28,7 +28,7 @@ Device(String argName, Location argLocation) {
  * @param connector ncbc.physics.component.Connector
  */
 void addConnector(Connector connector) {
-	this.connectors = (Connector[])cbit.util.BeanUtils.addElement(connectors,connector);
+	this.connectors = (Connector[])org.vcell.util.BeanUtils.addElement(connectors,connector);
 }
 
 
@@ -38,7 +38,7 @@ void addConnector(Connector connector) {
  * @param equation ncbc.physics.component.Equation
  */
 void addEquation(Equation equation) {
-	this.equations = (Equation[])cbit.util.BeanUtils.addElement(equations,equation);
+	this.equations = (Equation[])org.vcell.util.BeanUtils.addElement(equations,equation);
 }
 
 
@@ -48,7 +48,7 @@ void addEquation(Equation equation) {
  * @param identifier ncbc.physics.component.Identifier
  */
 void addIdentifier(Identifier identifier) {
-	this.identifiers = (Identifier[])cbit.util.BeanUtils.addElement(identifiers,identifier);
+	this.identifiers = (Identifier[])org.vcell.util.BeanUtils.addElement(identifiers,identifier);
 }
 
 

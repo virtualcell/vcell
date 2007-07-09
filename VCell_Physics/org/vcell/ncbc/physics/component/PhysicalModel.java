@@ -28,7 +28,7 @@ public void addConnection(Connection newConnection) throws java.beans.PropertyVe
 	if (newConnection==null){
 		throw new IllegalArgumentException("connection was null");
 	}
-	setConnections((Connection[])cbit.util.BeanUtils.addElement(fieldConnections,newConnection));
+	setConnections((Connection[])org.vcell.util.BeanUtils.addElement(fieldConnections,newConnection));
 }
 
 
@@ -41,7 +41,7 @@ public void addDevice(Device newDevice) throws java.beans.PropertyVetoException 
 	if (newDevice==null){
 		throw new IllegalArgumentException("device was null");
 	}
-	setDevices((Device[])cbit.util.BeanUtils.addElement(fieldDevices,newDevice));
+	setDevices((Device[])org.vcell.util.BeanUtils.addElement(fieldDevices,newDevice));
 }
 
 
@@ -54,7 +54,7 @@ public void addLocation(Location newLocation) throws java.beans.PropertyVetoExce
 	if (newLocation==null){
 		throw new IllegalArgumentException("location was null");
 	}
-	setLocations((Location[])cbit.util.BeanUtils.addElement(fieldLocations,newLocation));
+	setLocations((Location[])org.vcell.util.BeanUtils.addElement(fieldLocations,newLocation));
 }
 
 
@@ -230,7 +230,7 @@ public Device[] getDevices(Location location, Class deviceClass) {
 		}
 	}
 	
-	return (Device[])cbit.util.BeanUtils.getArray(deviceList,deviceClass);
+	return (Device[])org.vcell.util.BeanUtils.getArray(deviceList,deviceClass);
 }
 
 

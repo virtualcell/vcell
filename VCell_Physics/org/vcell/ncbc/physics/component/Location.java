@@ -25,7 +25,7 @@ public Location(String argName) {
  * @param identifier ncbc.physics.component.Identifier
  */
 public void addAdjacentLocation(Location adjacentLocation) {
-	setAdjacentLocations((Location[])cbit.util.BeanUtils.addElement(adjacentLocations,adjacentLocation));
+	setAdjacentLocations((Location[])org.vcell.util.BeanUtils.addElement(adjacentLocations,adjacentLocation));
 }
 /**
  * Insert the method's description here.

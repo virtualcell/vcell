@@ -117,8 +117,8 @@ public static Graph getCircuitGraph(SimulationContext simContext) throws Express
 		Node probeNode = graph.getNode(probeElectrode.getFeature().getName());
 		if (stimulus instanceof cbit.vcell.modelapp.CurrentClampStimulus){
 			cbit.vcell.modelapp.CurrentClampStimulus ccStimulus = (cbit.vcell.modelapp.CurrentClampStimulus)stimulus;
-			ElectricalDevice device = new SimpleElectricalDevice(cbit.util.TokenMangler.fixToken(ccStimulus.getName()),
-																cbit.util.TokenMangler.fixToken(ccStimulus.getVoltageParameter().getName()),
+			ElectricalDevice device = new SimpleElectricalDevice(org.vcell.util.TokenMangler.fixToken(ccStimulus.getName()),
+																org.vcell.util.TokenMangler.fixToken(ccStimulus.getVoltageParameter().getName()),
 																null,  // no specified initial voltage
 																0.0,   // no capacitance
 																ccStimulus.getCurrentParameter().getExpression(),
@@ -147,8 +147,8 @@ public static Graph getCircuitGraph(SimulationContext simContext) throws Express
 				//
 				IExpression currentSource = getTotalMembraneCurrent(simContext,membrane);
 				Function initialVoltageFunction = new Function(membraneMapping.getInitialVoltageParameter().getName(),membraneMapping.getInitialVoltageParameter().getExpression());
-				ElectricalDevice device = new SimpleElectricalDevice(cbit.util.TokenMangler.fixTokenStrict(membrane.getName()),
-																	cbit.util.TokenMangler.fixTokenStrict(membrane.getMembraneVoltage().getName()),
+				ElectricalDevice device = new SimpleElectricalDevice(org.vcell.util.TokenMangler.fixTokenStrict(membrane.getName()),
+																	org.vcell.util.TokenMangler.fixTokenStrict(membrane.getMembraneVoltage().getName()),
 																	initialVoltageFunction,
 																	capacitance,
 																	currentSource,
@@ -180,8 +180,8 @@ public static Graph getCircuitGraph(SimulationContext simContext) throws Express
 		Node probeNode = graph.getNode(probeElectrode.getFeature().getName());
 		if (stimulus instanceof cbit.vcell.modelapp.VoltageClampStimulus){
 			cbit.vcell.modelapp.VoltageClampStimulus vcStimulus = (cbit.vcell.modelapp.VoltageClampStimulus)stimulus;
-			ElectricalDevice device = new SimpleElectricalDevice(cbit.util.TokenMangler.fixTokenStrict(vcStimulus.getName()),
-																cbit.util.TokenMangler.fixTokenStrict(vcStimulus.getVoltageParameter().getName()),
+			ElectricalDevice device = new SimpleElectricalDevice(org.vcell.util.TokenMangler.fixTokenStrict(vcStimulus.getName()),
+																org.vcell.util.TokenMangler.fixTokenStrict(vcStimulus.getVoltageParameter().getName()),
 																new Function(vcStimulus.getVoltageParameter().getName(),vcStimulus.getVoltageParameter().getExpression()),
 																0.0,   // no capacitance
 																null,   // no current specified
