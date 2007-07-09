@@ -569,7 +569,7 @@ public Shape[] pickWorld(java.awt.Rectangle argRectWorld) {
 			pickedList.add(shape);
 		}
 	}
-	return (Shape[])cbit.util.BeanUtils.getArray(pickedList,Shape.class);
+	return (Shape[])org.vcell.util.BeanUtils.getArray(pickedList,Shape.class);
 }
 
 

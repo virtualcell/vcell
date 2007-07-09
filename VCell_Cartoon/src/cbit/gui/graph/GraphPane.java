@@ -273,8 +273,8 @@ public boolean isFocusTraversable() {
 public static void main(java.lang.String[] args) {
 	try {
 		javax.swing.JFrame frame = new javax.swing.JFrame();
-		javax.swing.JDesktopPane desktop = new cbit.gui.JDesktopPaneEnhanced();
-		javax.swing.JInternalFrame iframe = new cbit.gui.JInternalFrameEnhanced("", true, true, true, true);
+		javax.swing.JDesktopPane desktop = new org.vcell.util.gui.JDesktopPaneEnhanced();
+		javax.swing.JInternalFrame iframe = new org.vcell.util.gui.JInternalFrameEnhanced("", true, true, true, true);
 		javax.swing.JPanel panel = new javax.swing.JPanel();
 		GraphPane aGraphPane = new GraphPane();
 		panel.setName("JInternalFrameContentPane");

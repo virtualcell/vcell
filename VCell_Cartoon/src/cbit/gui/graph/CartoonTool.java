@@ -5,8 +5,10 @@ package cbit.gui.graph;
  * All rights reserved.
 ©*/
 import javax.swing.*;
+
+import org.vcell.util.gui.*;
+
 import java.util.*;
-import cbit.gui.*;
 import java.awt.event.*;
 import java.awt.*;
 /**
@@ -306,7 +308,7 @@ public final static String getActionCommand(int mode) {
  * Creation date: (7/14/00 11:40:05 AM)
  * @return cbit.gui.ButtonGroupCivilized
  */
-public cbit.gui.ButtonGroupCivilized getButtonGroup() {
+public org.vcell.util.gui.ButtonGroupCivilized getButtonGroup() {
 	return buttonGroup;
 }
 
@@ -321,12 +323,12 @@ protected static final java.awt.Container getDialogOwner(GraphPane graphPaneSeek
 		return null;
 	}
 	
-	Container dialogOwner = (JDesktopPane)cbit.util.BeanUtils.findTypeParentOfComponent(graphPaneSeekingOwner,javax.swing.JDesktopPane.class);
+	Container dialogOwner = (JDesktopPane)org.vcell.util.BeanUtils.findTypeParentOfComponent(graphPaneSeekingOwner,javax.swing.JDesktopPane.class);
 	if (dialogOwner!=null){
 		return dialogOwner;
 	}
 	
-	dialogOwner = (JFrame)cbit.util.BeanUtils.findTypeParentOfComponent(graphPaneSeekingOwner,javax.swing.JFrame.class);
+	dialogOwner = (JFrame)org.vcell.util.BeanUtils.findTypeParentOfComponent(graphPaneSeekingOwner,javax.swing.JFrame.class);
 	if (dialogOwner!=null){
 		return ((JFrame)dialogOwner).getContentPane();
 	}
@@ -361,7 +363,7 @@ protected JDesktopPane getJDesktopPane() {
 	if(getGraphPane() == null){
 		return null;
 	}
-	return (JDesktopPane)cbit.util.BeanUtils.findTypeParentOfComponent(getGraphPane(),javax.swing.JDesktopPane.class);
+	return (JDesktopPane)org.vcell.util.BeanUtils.findTypeParentOfComponent(getGraphPane(),javax.swing.JDesktopPane.class);
 }
 
 
@@ -647,7 +649,7 @@ protected Point screenToWorld(Point screenPoint) {
  * Creation date: (7/14/00 11:40:05 AM)
  * @param newButtonGroup cbit.gui.ButtonGroupCivilized
  */
-public void setButtonGroup(cbit.gui.ButtonGroupCivilized newButtonGroup) {
+public void setButtonGroup(org.vcell.util.gui.ButtonGroupCivilized newButtonGroup) {
 	buttonGroup = newButtonGroup;
 	setMode(SELECT_MODE);
 }
