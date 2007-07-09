@@ -23,11 +23,12 @@ import org.sbml.libsbml.Unit;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.util.TokenMangler;
+
 import cbit.vcell.vcml.Translator;
 
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.xml.XMLTags;
-import cbit.util.TokenMangler;
 import cbit.util.xml.XmlParseException;
 
 /**
@@ -99,13 +100,13 @@ protected void addCompartments() {
 				}
 			}
 			sbmlSizeUnit = VCUnitDefinition.UNIT_L;
-			sbmlCompartment.setUnits(cbit.util.TokenMangler.mangleToSName(sbmlSizeUnit.getSymbol()));
+			sbmlCompartment.setUnits(org.vcell.util.TokenMangler.mangleToSName(sbmlSizeUnit.getSymbol()));
 		} else if (vcStructures[i] instanceof Membrane) {
 			Membrane vcMembrane = (Membrane)vcStructures[i];
 			sbmlCompartment.setSpatialDimensions(2);
 			sbmlCompartment.setOutside(TokenMangler.mangleToSName(vcMembrane.getOutsideFeature().getName()));
 			sbmlSizeUnit = VCUnitDefinition.UNIT_um2;
-			sbmlCompartment.setUnits(cbit.util.TokenMangler.mangleToSName(sbmlSizeUnit.getSymbol()));
+			sbmlCompartment.setUnits(org.vcell.util.TokenMangler.mangleToSName(sbmlSizeUnit.getSymbol()));
 		}
 
 		StructureMapping vcStructMapping = getMatchingSimContext().getGeometryContext().getStructureMapping(vcStructures[i]);
@@ -170,7 +171,7 @@ private void addKineticParameterUnits(ArrayList unitsList) {
 		if (paramUnitDefn == null || paramUnitDefn.isTBD()) {
 			continue;
 		}
-		String unitSymbol = cbit.util.TokenMangler.mangleToSName(paramUnitDefn.getSymbol());
+		String unitSymbol = org.vcell.util.TokenMangler.mangleToSName(paramUnitDefn.getSymbol());
 		// If this unit is present in the unitsList (already in the list of unitDefinitions for SBML model), continue.
 		if (unitSymbol == null || unitsList.contains(unitSymbol)) {
 			continue;
@@ -211,7 +212,7 @@ protected void addReactions() {
 		ReactionStep vcReactionStep = vcReactionSpecs[i].getReactionStep();
 		//Create sbml reaction
 		String rxnName = vcReactionStep.getName();
-		org.sbml.libsbml.Reaction sbmlReaction = new org.sbml.libsbml.Reaction(cbit.util.TokenMangler.mangleToSName(vcReactionStep.getName()));
+		org.sbml.libsbml.Reaction sbmlReaction = new org.sbml.libsbml.Reaction(org.vcell.util.TokenMangler.mangleToSName(vcReactionStep.getName()));
 		sbmlReaction.setName(rxnName);
 			
 
@@ -237,16 +238,16 @@ protected void addReactions() {
 			// Convert expression from kinetics rate parameter into MathML and use libSBMl utilities to convert it to formula
 			// (instead of directly using rate parameter's expression infix) to maintain integrity of formula :
 			// for example logical and inequalities are not handled gracefully by libSBMl if expression.infix is used.
-			Compartment sbmlCompartment = sbmlModel.getCompartment(cbit.util.TokenMangler.mangleToSName(vcReactionStep.getStructure().getName()));
+			Compartment sbmlCompartment = sbmlModel.getCompartment(org.vcell.util.TokenMangler.mangleToSName(vcReactionStep.getStructure().getName()));
 			IExpression correctedRateExpr = ExpressionFactory.mult(vcRxnKinetics.getRateParameter().getExpression(), ExpressionFactory.createExpression(sbmlCompartment.getId()));
 			sbmlKLaw = new org.sbml.libsbml.KineticLaw();
 
 			// If the reaction is not in a feature, but in a membrane, use/set subtanceUnits for the kinetic law.
 			if (!isInFeature(vcReactionStep.getStructure().getName())) {
 				if (vcReactionStep instanceof cbit.vcell.model.SimpleReaction) {
-					sbmlKLaw.setSubstanceUnits(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_molecules.getSymbol()));
+					sbmlKLaw.setSubstanceUnits(org.vcell.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_molecules.getSymbol()));
 				} else if (vcReactionStep instanceof cbit.vcell.model.FluxReaction) {
-					sbmlKLaw.setSubstanceUnits(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_umol_L_per_um3.getSymbol()));
+					sbmlKLaw.setSubstanceUnits(org.vcell.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_umol_L_per_um3.getSymbol()));
 					// correctedRateExpr = IExpression.mult(correctedRateExpr, ExpressionFactory.createExpression(1e-15));
 				} else {
 					throw new RuntimeException("Unknown reaction type - cannot handle at this time");
@@ -299,7 +300,7 @@ protected void addReactions() {
 										sbmlKinParam.setValue(vcKineticsParams[j].getConstantValue());
 										// Set SBML units for sbmlParam using VC units from vcParam  
 										if (!vcKineticsParams[j].getUnitDefinition().isTBD()) {
-											sbmlKinParam.setUnits(cbit.util.TokenMangler.mangleToSName(vcKineticsParams[j].getUnitDefinition().getSymbol()));
+											sbmlKinParam.setUnits(org.vcell.util.TokenMangler.mangleToSName(vcKineticsParams[j].getUnitDefinition().getSymbol()));
 										}
 										sbmlModel.addParameter(sbmlKinParam);
 										bAddedParam = true;
@@ -317,7 +318,7 @@ protected void addReactions() {
 							sbmlKinParam.setValue(vcKineticsParams[j].getConstantValue());
 							// Set SBML units for sbmlParam using VC units from vcParam  
 							if (!vcKineticsParams[j].getUnitDefinition().isTBD()) {
-								sbmlKinParam.setUnits(cbit.util.TokenMangler.mangleToSName(vcKineticsParams[j].getUnitDefinition().getSymbol()));
+								sbmlKinParam.setUnits(org.vcell.util.TokenMangler.mangleToSName(vcKineticsParams[j].getUnitDefinition().getSymbol()));
 							}
 							sbmlKLaw.addParameter(sbmlKinParam);
 						} else {
@@ -371,7 +372,7 @@ protected void addReactions() {
 					sbmlModel.addRule(sbmlParamRule);
 					org.sbml.libsbml.Parameter sbmlKinParam = new org.sbml.libsbml.Parameter(paramName);
 					if (!vcKineticsParams[j].getUnitDefinition().isTBD()) {
-						sbmlKinParam.setUnits(cbit.util.TokenMangler.mangleToSName(vcKineticsParams[j].getUnitDefinition().getSymbol()));
+						sbmlKinParam.setUnits(org.vcell.util.TokenMangler.mangleToSName(vcKineticsParams[j].getUnitDefinition().getSymbol()));
 					}
 					// Since the parameter is being specified by a Rule, its 'constant' field shoud be set to 'false' (default - true).
 					sbmlKinParam.setConstant(false);
@@ -475,8 +476,8 @@ protected void addSpecies() {
 
 		// If species is in membrane, the units should be in molecules/um2; hence set the spatialSize and substance units
 		if (!isInFeature(vcSpeciesContexts[i].getStructure().getName())) {
-			sbmlSpecies.setSpatialSizeUnits(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_um2.getSymbol()));
-			sbmlSpecies.setSubstanceUnits(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_molecules.getSymbol()));
+			sbmlSpecies.setSpatialSizeUnits(org.vcell.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_um2.getSymbol()));
+			sbmlSpecies.setSubstanceUnits(org.vcell.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_molecules.getSymbol()));
 		}
 
 		// Convert from VC -> SBML units, i.e., from uM -> ??		
@@ -488,7 +489,7 @@ protected void addSpecies() {
 		Element annotationElement = new Element(XMLTags.SbmlAnnotationTag, "");
 		Element vcellInfoTag = new Element(XMLTags.VCellInfoTag, ns);
 		Element speciesElement = new Element(XMLTags.SpeciesTag, ns);
-		speciesElement.setAttribute(XMLTags.NameAttrTag, cbit.util.TokenMangler.mangleToSName(vcSpeciesContexts[i].getSpecies().getCommonName()));
+		speciesElement.setAttribute(XMLTags.NameAttrTag, org.vcell.util.TokenMangler.mangleToSName(vcSpeciesContexts[i].getSpecies().getCommonName()));
 		vcellInfoTag.addContent(speciesElement);
 		annotationElement.addContent(vcellInfoTag);
 		sbmlSpecies.setAnnotation(cbit.util.xml.XmlUtil.xmlToString(annotationElement));
@@ -522,28 +523,28 @@ protected void addUnitDefinitions() {
 	sbmlModel.addUnitDefinition(unitDefn);
 
 	// Redefine 'item' as molecules
-	unitDefn = new UnitDefinition(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_molecules.getSymbol()));
+	unitDefn = new UnitDefinition(org.vcell.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_molecules.getSymbol()));
 	Unit itemUnit = new Unit("item");
 	unitDefn.addUnit(itemUnit);
 	sbmlModel.addUnitDefinition(unitDefn);
 
 	// Define umol.L.um-3 - VCell (actual units of concentration, but with a multiplication factor.  Value = 1e-15 umol).
-	unitDefn = new UnitDefinition(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_umol_L_per_um3.getSymbol()));
+	unitDefn = new UnitDefinition(org.vcell.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_umol_L_per_um3.getSymbol()));
 	org.sbml.libsbml.Unit umol_unit = new Unit("mole", 1, -21);
 	unitDefn.addUnit(umol_unit);
 	sbmlModel.addUnitDefinition(unitDefn);
 
 	// Define um2 - VCell
-	unitDefn = new UnitDefinition(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_um2.getSymbol()));
+	unitDefn = new UnitDefinition(org.vcell.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_um2.getSymbol()));
 	org.sbml.libsbml.Unit um2_unit = new Unit("metre", 2, -6);
 	unitDefn.addUnit(um2_unit);
 	sbmlModel.addUnitDefinition(unitDefn);
 
 	// Add units from paramater list in kinetics
 	ArrayList unitList = new ArrayList();
-	unitList.add(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_molecules.getSymbol()));
-	unitList.add(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_umol_L_per_um3.getSymbol()));
-	unitList.add(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_um2.getSymbol()));
+	unitList.add(org.vcell.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_molecules.getSymbol()));
+	unitList.add(org.vcell.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_umol_L_per_um3.getSymbol()));
+	unitList.add(org.vcell.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_um2.getSymbol()));
 	addKineticParameterUnits(unitList);
 }
 

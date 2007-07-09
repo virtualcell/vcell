@@ -30,17 +30,17 @@ import org.vcell.expression.SymbolTable;
 import org.vcell.modelapp.Activator;
 import org.vcell.modelapp.analysis.IAnalysisTask;
 import org.vcell.modelapp.analysis.IAnalysisTaskFactory;
+import org.vcell.util.*;
+import org.vcell.util.document.GroupAccess;
+import org.vcell.util.document.GroupAccessAll;
+import org.vcell.util.document.GroupAccessNone;
+import org.vcell.util.document.GroupAccessSome;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.SimulationVersion;
+import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionFlag;
 
-import cbit.util.*;
-import cbit.util.document.GroupAccess;
-import cbit.util.document.GroupAccessAll;
-import cbit.util.document.GroupAccessNone;
-import cbit.util.document.GroupAccessSome;
-import cbit.util.document.KeyValue;
-import cbit.util.document.SimulationVersion;
-import cbit.util.document.User;
-import cbit.util.document.Version;
-import cbit.util.document.VersionFlag;
 import cbit.util.xml.XmlParseException;
 import cbit.vcell.simulation.ConstantArraySpec;
 import cbit.vcell.simulation.DefaultOutputTimeSpec;
@@ -4129,7 +4129,7 @@ public VCImage getVCImage(Element param, Extent extent) throws XmlParseException
 
 	//getpixels
 	String temp = tempelement.getText();
-	byte[] data = cbit.util.Hex.toBytes(temp); //decode
+	byte[] data = org.vcell.util.Hex.toBytes(temp); //decode
 
 	//create the VCImage object
 	VCImageCompressed newimage = null;	

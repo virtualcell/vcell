@@ -2,9 +2,9 @@ package cbit.vcell.vcml;
 
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.util.TokenMangler;
 
 import net.sourceforge.interval.ia_math.RealInterval;
-import cbit.util.TokenMangler;
 import cbit.vcell.constraints.AbstractConstraint;
 import cbit.vcell.constraints.ConstraintContainerImpl;
 import cbit.vcell.constraints.GeneralConstraint;

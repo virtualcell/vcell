@@ -8,10 +8,10 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.vcell.expression.ExpressionException;
+import org.vcell.util.Extent;
+import org.vcell.util.document.VCDocument;
 
 import cbit.image.VCImage;
-import cbit.util.Extent;
-import cbit.util.document.VCDocument;
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlParseException;
 import cbit.util.xml.XmlUtil;
@@ -486,7 +486,7 @@ public static Geometry XMLToGeometry(String xmlString) throws XmlParseException 
 		XmlReader reader = new XmlReader(printKeys);
 		Element extentElement = root.getChild(XMLTags.ExtentTag, ns);
 		Element imageElement = root.getChild(XMLTags.ImageTag, ns);
-		cbit.util.Extent extent = reader.getExtent(extentElement);
+		org.vcell.util.Extent extent = reader.getExtent(extentElement);
 		vcImage = reader.getVCImage(imageElement,extent);
 
 		vcImage.refreshDependencies();

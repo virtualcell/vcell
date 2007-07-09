@@ -21,6 +21,15 @@ import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
 import org.vcell.modelapp.analysis.IAnalysisTask;
+import org.vcell.util.*;
+import org.vcell.util.document.GroupAccess;
+import org.vcell.util.document.GroupAccessAll;
+import org.vcell.util.document.GroupAccessNone;
+import org.vcell.util.document.GroupAccessSome;
+import org.vcell.util.document.SimulationVersion;
+import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.Versionable;
 
 import java.util.ArrayList;
 /*©
@@ -44,15 +53,6 @@ import cbit.vcell.modelapp.StructureMapping;
 import cbit.vcell.modelapp.VoltageClampStimulus;
 
 import java.util.Enumeration;
-import cbit.util.*;
-import cbit.util.document.GroupAccess;
-import cbit.util.document.GroupAccessAll;
-import cbit.util.document.GroupAccessNone;
-import cbit.util.document.GroupAccessSome;
-import cbit.util.document.SimulationVersion;
-import cbit.util.document.User;
-import cbit.util.document.Version;
-import cbit.util.document.Versionable;
 import cbit.util.xml.XmlParseException;
 
 /**
@@ -128,7 +128,7 @@ public org.jdom.Element getXML(cbit.image.VCImage param) throws XmlParseExceptio
 		imagedata.setAttribute(XMLTags.ZAttrTag, String.valueOf(param.getNumZ()));
 		imagedata.setAttribute(XMLTags.CompressedSizeTag, String.valueOf(compressedPixels.length));
 		//Get imagedata content
-		imagedata.addContent(cbit.util.Hex.toString(compressedPixels)); //encode
+		imagedata.addContent(org.vcell.util.Hex.toString(compressedPixels)); //encode
 		//Add imagedata to VCImage element
 		image.addContent(imagedata);
 		//Add PixelClass elements

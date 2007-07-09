@@ -24,7 +24,6 @@ import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.LambdaFunction;
 
-import cbit.util.BeanUtils;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.model.*;
@@ -42,6 +41,7 @@ import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlHelper;
 
 import org.vcell.expression.ExpressionUtilities;
+import org.vcell.util.BeanUtils;
 
 public class SBMLImporter {
 
@@ -531,7 +531,7 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
 						// If so, change the name of the kinetic param (say, by adding reaction name to it).
 						String origRateParamName = kinetics.getRateParameter().getName();
 						if (paramName.equals(origRateParamName)) {
-							kinetics.getRateParameter().setName(origRateParamName+"_"+cbit.util.TokenMangler.mangleToSName(rxnName));
+							kinetics.getRateParameter().setName(origRateParamName+"_"+org.vcell.util.TokenMangler.mangleToSName(rxnName));
 						}
 					}
 					
@@ -542,7 +542,7 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
 						// If so, change the name of the kinetic param (say, by adding reaction name to it).
 						String origRateParamName = kinetics.getRateParameter().getName();
 						if (paramName.equals(origRateParamName)) {
-							kinetics.getRateParameter().setName(origRateParamName+"_"+cbit.util.TokenMangler.mangleToSName(rxnName));
+							kinetics.getRateParameter().setName(origRateParamName+"_"+org.vcell.util.TokenMangler.mangleToSName(rxnName));
 						}
 					}
 

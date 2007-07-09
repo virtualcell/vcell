@@ -8,8 +8,8 @@ import org.jdom.Attribute;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.jdom.filter.ElementFilter;
+import org.vcell.util.TokenMangler;
 
-import cbit.util.TokenMangler;
 import cbit.util.xml.JDOMTreeWalker;
 import cbit.util.xml.MathMLTags;
 import cbit.vcell.vcml.Translator;

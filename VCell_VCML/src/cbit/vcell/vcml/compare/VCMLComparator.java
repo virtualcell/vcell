@@ -4,8 +4,8 @@ import java.util.Comparator;
 import java.util.Hashtable;
 
 import org.jdom.Element;
+import org.vcell.util.Matchable;
 
-import cbit.util.Matchable;
 import cbit.util.xml.XmlParseException;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
