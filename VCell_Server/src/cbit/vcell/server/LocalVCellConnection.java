@@ -8,15 +8,16 @@ import java.net.URL;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.User;
+
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
 import cbit.rmi.event.SimpleMessageService;
 import cbit.sql.DBCacheTable;
 import cbit.sql.KeyFactory;
-import cbit.util.DataAccessException;
-import cbit.util.PropertyLoader;
-import cbit.util.SessionLog;
-import cbit.util.document.User;
 import cbit.vcell.server.simdata.LocalDataSetController;
 import cbit.vcell.server.simdata.LocalDataSetControllerProxy;
 /**
@@ -86,7 +87,7 @@ public void exportMessage(ExportEvent event) {
  * Insert the method's description here.
  * Creation date: (7/11/2006 12:43:05 PM)
  * @return cbit.vcell.server.DataSetController
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 public cbit.vcell.server.bionetgen.BNGService getBNGService() throws DataAccessException, java.rmi.RemoteException {

@@ -1,11 +1,12 @@
 package cbit.vcell.messaging.server;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.SessionLog;
+
 import cbit.sql.ConnectionFactory;
 import cbit.sql.DBCacheTable;
 import cbit.sql.KeyFactory;
 import cbit.sql.OracleKeyFactory;
 import cbit.sql.OraclePoolingConnectionFactory;
-import cbit.util.DataAccessException;
-import cbit.util.SessionLog;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 /**
  * Insert the type's description here.

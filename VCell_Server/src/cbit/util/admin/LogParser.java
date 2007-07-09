@@ -196,7 +196,7 @@ public String showSummary() {
 		buffer.append("Month of "+MONTH[i%12]+" "+(startYear+(i/12))+"\n");
 		java.util.Hashtable userHash = monthHashTables[i];
 		java.util.Enumeration enumKeys = userHash.keys();
-		String users[] = (String[])cbit.util.BeanUtils.getArray(enumKeys,String.class);
+		String users[] = (String[])org.vcell.util.BeanUtils.getArray(enumKeys,String.class);
 		java.util.Arrays.sort(users);
 		for (int j=0;j<users.length;j++){
 			String userid = users[j];
@@ -232,7 +232,7 @@ public String showSummary() {
 		buffer.append("Summary for Year "+(startYear+i)+"\n");
 		java.util.Hashtable userHash = yearHashTables[i];
 		java.util.Enumeration enumKeys = userHash.keys();
-		String users[] = (String[])cbit.util.BeanUtils.getArray(enumKeys,String.class);
+		String users[] = (String[])org.vcell.util.BeanUtils.getArray(enumKeys,String.class);
 		java.util.Arrays.sort(users);
 		for (int j=0;j<users.length;j++){
 			String userid = users[j];
@@ -265,7 +265,7 @@ public String showSummary() {
 	}
 	buffer.append("\n\nTOTALS BY USER\n\n");
 	java.util.Enumeration enumKeys = totalUserHashtable.keys();
-	String users[] = (String[])cbit.util.BeanUtils.getArray(enumKeys,String.class);
+	String users[] = (String[])org.vcell.util.BeanUtils.getArray(enumKeys,String.class);
 	java.util.Arrays.sort(users);
 	int totalUsersThatLoggedOn = 0;
 	int totalUsersThatSaved = 0;

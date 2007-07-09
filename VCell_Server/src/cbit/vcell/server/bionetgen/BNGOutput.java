@@ -1,13 +1,13 @@
 package cbit.vcell.server.bionetgen;
-import cbit.util.BigString;
+import org.vcell.util.BigString;
 /**
  * Insert the type's description here.
  * Creation date: (6/27/2005 2:59:47 PM)
  * @author: Anuradha Lakshminarayana
  */
 public class BNGOutput implements java.io.Serializable {
-	private cbit.util.BigString consoleOutput;
-	private cbit.util.BigString[] bng_fileContents;
+	private org.vcell.util.BigString consoleOutput;
+	private org.vcell.util.BigString[] bng_fileContents;
 	private String[] bng_filenames;
 
 /**

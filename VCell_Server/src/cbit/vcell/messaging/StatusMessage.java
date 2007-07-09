@@ -3,8 +3,9 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.ObjectMessage;
 
+import org.vcell.util.MessageConstants;
+
 import cbit.rmi.event.SimulationJobStatus;
-import cbit.util.MessageConstants;
 
 /**
  * Insert the type's description here.

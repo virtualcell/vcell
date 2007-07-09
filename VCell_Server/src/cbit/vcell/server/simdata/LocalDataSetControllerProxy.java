@@ -3,13 +3,14 @@ package cbit.vcell.server.simdata;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
+import org.vcell.util.CoordinateIndex;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+import org.vcell.util.VCDataIdentifier;
+
 import cbit.plot.PlotData;
 import cbit.rmi.event.ExportEvent;
-import cbit.util.CoordinateIndex;
-import cbit.util.DataAccessException;
-import cbit.util.PropertyLoader;
-import cbit.util.SessionLog;
-import cbit.util.VCDataIdentifier;
 import cbit.vcell.export.ExportSpecs;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.DataIdentifier;
@@ -44,10 +45,10 @@ public LocalDataSetControllerProxy (SessionLog sessionLog,
  * Insert the method's description here.
  * Creation date: (10/11/00 1:11:04 PM)
  * @param function cbit.vcell.math.Function
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void addFunction(VCDataIdentifier vcdID, AnnotatedFunction function) throws cbit.util.DataAccessException, java.rmi.RemoteException {
+public void addFunction(VCDataIdentifier vcdID, AnnotatedFunction function) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
 	sessionLog.print("LocalDataSetControllerProxy.addFunction(simID="+vcdID.getID()+", function="+function.toString()+")");
 	try {
 		//
@@ -74,10 +75,10 @@ public void addFunction(VCDataIdentifier vcdID, AnnotatedFunction function) thro
  * Insert the method's description here.
  * Creation date: (10/11/00 1:11:04 PM)
  * @param function cbit.vcell.math.Function
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void addFunctions(VCDataIdentifier vcdID, AnnotatedFunction[] functions) throws cbit.util.DataAccessException, java.rmi.RemoteException {
+public void addFunctions(VCDataIdentifier vcdID, AnnotatedFunction[] functions) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
 	sessionLog.print("LocalDataSetControllerProxy.addFunctions(simID="+vcdID.getID()+", functions="+functions+")");
 	try {
 		//
@@ -156,10 +157,10 @@ public double[] getDataSetTimes(VCDataIdentifier vcdID) throws DataAccessExcepti
  * Insert the method's description here.
  * Creation date: (10/11/00 1:11:04 PM)
  * @param function cbit.vcell.math.Function
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public AnnotatedFunction[] getFunctions(VCDataIdentifier vcdID) throws cbit.util.DataAccessException, java.rmi.RemoteException {
+public AnnotatedFunction[] getFunctions(VCDataIdentifier vcdID) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
 	sessionLog.print("LocalDataSetControllerProxy.getFunctions(simID="+vcdID.getID()+")");
 	try {
 		//
@@ -303,7 +304,7 @@ public CartesianMesh getMesh(VCDataIdentifier vcdID) throws DataAccessException 
  * Insert the method's description here.
  * Creation date: (1/14/00 11:20:51 AM)
  * @return cbit.vcell.export.data.ODESimData
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 public cbit.vcell.simdata.ODESimData getODEData(VCDataIdentifier vcdID) throws DataAccessException, RemoteException {
@@ -438,7 +439,7 @@ public SimDataBlock getSimDataBlock(VCDataIdentifier vcdID, String varName, doub
  * @param varName java.lang.String
  * @param index int
  */
-public cbit.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID,cbit.util.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
+public org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID,org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
 	sessionLog.print("LocalDataSetControllerProxy.getTimeSeriesValues(simID="+vcdID.getID()+", "+timeSeriesJobSpec+")");
 	try {
 		//
@@ -470,7 +471,7 @@ private void invalidateRemoteDataSetController() {
 /**
  * This method was created in VisualAge.
  * @param simInfo cbit.vcell.solver.SimulationInfo
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
 public ExportEvent makeRemoteFile(ExportSpecs exportSpecs) throws DataAccessException {
 	sessionLog.print("LocalDataSetControllerProxy.makeRemoteFile(simID="+exportSpecs.getVCDataIdentifier().getID()+","+exportSpecs+")");
@@ -498,10 +499,10 @@ public ExportEvent makeRemoteFile(ExportSpecs exportSpecs) throws DataAccessExce
  * Insert the method's description here.
  * Creation date: (10/11/00 1:11:04 PM)
  * @param function cbit.vcell.math.Function
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void removeFunction(VCDataIdentifier vcdID, AnnotatedFunction function) throws cbit.util.DataAccessException, java.rmi.RemoteException {
+public void removeFunction(VCDataIdentifier vcdID, AnnotatedFunction function) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
 	sessionLog.print("LocalDataSetControllerProxy.removeFunction(simID="+vcdID.getID()+", function="+function+")");
 	try {
 		//

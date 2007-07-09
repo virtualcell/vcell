@@ -7,10 +7,11 @@ package cbit.vcell.server;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import cbit.util.Ping;
-import cbit.util.Pingable;
-import cbit.util.PropertyLoader;
-import cbit.util.SessionLog;
+import org.vcell.util.Ping;
+import org.vcell.util.Pingable;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+
 /**
  * This type was created in VisualAge.
  */

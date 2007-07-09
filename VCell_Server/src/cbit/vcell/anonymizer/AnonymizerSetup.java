@@ -9,7 +9,8 @@ import java.rmi.activation.ActivationGroupDesc;
 import java.rmi.activation.ActivationGroupID;
 import java.util.Properties;
 
-import cbit.util.PropertyLoader;
+import org.vcell.util.PropertyLoader;
+
 import cbit.vcell.server.VCellBootstrap;
 
 public class AnonymizerSetup {

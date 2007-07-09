@@ -1,9 +1,10 @@
 package cbit.vcell.server;
 import java.rmi.RemoteException;
 
-import cbit.util.CacheStatus;
-import cbit.util.DataAccessException;
-import cbit.util.document.User;
+import org.vcell.util.CacheStatus;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.document.User;
+
 import cbit.vcell.modeldb.AdminDatabaseServer;
 import cbit.vcell.solvers.SimulationJob;
 import cbit.vcell.solvers.SolverController;
@@ -75,7 +76,7 @@ ServerInfo[] getSlaveServerInfos() throws RemoteException;
  * This method was created in VisualAge.
  * @return cbit.vcell.server.VCellServer
  * @param host java.lang.String
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception cbit.vcell.server.AuthenticationException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  * @exception cbit.vcell.server.ConnectionException The exception description.

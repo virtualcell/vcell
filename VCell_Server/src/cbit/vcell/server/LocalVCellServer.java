@@ -7,12 +7,13 @@ import java.util.Enumeration;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-import cbit.util.CacheStatus;
-import cbit.util.DataAccessException;
-import cbit.util.PropertyLoader;
-import cbit.util.SessionLog;
-import cbit.util.StdoutSessionLog;
-import cbit.util.document.User;
+import org.vcell.util.CacheStatus;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+import org.vcell.util.StdoutSessionLog;
+import org.vcell.util.document.User;
+
 import cbit.vcell.export.ExportServiceImpl;
 import cbit.vcell.messaging.server.LocalVCellConnectionMessaging;
 import cbit.vcell.modeldb.AdminDatabaseServer;
@@ -202,7 +203,7 @@ public User[] getConnectedUsers() {
 				userList.addElement(vcConn.getUser());
 			}
 		}
-		return (User[])cbit.util.BeanUtils.getArray(userList,User.class);
+		return (User[])org.vcell.util.BeanUtils.getArray(userList,User.class);
 	}catch (Throwable e){
 		sessionLog.exception(e);
 		throw new RuntimeException(e.getMessage());
@@ -319,7 +320,7 @@ public ProcessStatus getProcessStatus() {
 			sessionLog.alert("error reading property '"+PropertyLoader.maxJavaMemoryBytesProperty+"', "+e.getMessage());
 		}
 		try {
-			cbit.util.Executable executable = new cbit.util.Executable(PROGRAM);
+			org.vcell.util.Executable executable = new org.vcell.util.Executable(PROGRAM);
 			executable.start();
 			String stdout = executable.getStdoutString();
 			StringTokenizer tokens = new StringTokenizer(stdout);
@@ -381,7 +382,7 @@ public ServerInfo[] getSlaveServerInfos() {
 			sessionLog.alert("failure retrieving ServerInfo for active computeHost "+activeHosts[i].getHostName());
 		}
 	}
-	return (ServerInfo[])cbit.util.BeanUtils.getArray(slaveServerInfoList,ServerInfo.class);
+	return (ServerInfo[])org.vcell.util.BeanUtils.getArray(slaveServerInfoList,ServerInfo.class);
 }
 
 

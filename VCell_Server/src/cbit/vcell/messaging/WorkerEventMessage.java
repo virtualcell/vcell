@@ -5,10 +5,11 @@ import javax.jms.Message;
 import javax.jms.ObjectMessage;
 import javax.jms.TextMessage;
 
+import org.vcell.util.MessageConstants;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.rmi.event.WorkerEvent;
-import cbit.util.MessageConstants;
-import cbit.util.document.KeyValue;
-import cbit.util.document.User;
 import cbit.vcell.messaging.server.SimulationDispatcher;
 import cbit.vcell.simulation.Simulation;
 import cbit.vcell.simulation.SimulationInfo;
@@ -42,7 +43,7 @@ public WorkerEventMessage(WorkerEvent event) {
  * Creation date: (12/31/2003 12:53:34 PM)
  * @param param javax.jms.Message
  */
-public WorkerEventMessage(SimulationDispatcher dispatcher, Message message0) throws JMSException, cbit.util.DataAccessException {
+public WorkerEventMessage(SimulationDispatcher dispatcher, Message message0) throws JMSException, org.vcell.util.DataAccessException {
 	parseMessage(dispatcher, message0);
 }
 
@@ -105,7 +106,7 @@ private void parseMessage(SimulationDispatcher dispatcher, Message message) thro
 				if (sim == null) {
 					throw new RuntimeException("Null Simulation"); //wrong message	
 				}
-			} catch (cbit.util.DataAccessException ex) {
+			} catch (org.vcell.util.DataAccessException ex) {
 				throw new RuntimeException("Null Simulation"); // wrong message
 			}
 			

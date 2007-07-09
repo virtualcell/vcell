@@ -1,6 +1,6 @@
 package cbit.vcell.anonymizer;
-import cbit.util.PropertyLoader;
-import cbit.util.SessionLog;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
 /**
  * Insert the type's description here.
  * Creation date: (5/14/2006 11:13:53 PM)
@@ -20,13 +20,13 @@ protected AnonymizerSimulationController(AnonymizerVCellConnection arg_anonymize
  * Insert the method's description here.
  * Creation date: (5/12/2006 5:54:27 PM)
  * @param function cbit.vcell.math.Function
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 private void remoteCall(String methodName, Class[] argClasses, Object[] args) throws java.rmi.RemoteException {
 	try {
 		remoteCall(anonymizerVCellConnection.getRemoteSimulationController(), methodName, argClasses, args);
-	} catch (cbit.util.DataAccessException ex) {
+	} catch (org.vcell.util.DataAccessException ex) {
 		// should never happen
 		sessionLog.exception(ex);
 	}

@@ -1,6 +1,6 @@
 package cbit.vcell.messaging.server;
 
-import cbit.util.document.User;
+import org.vcell.util.document.User;
 
 /**
  * Insert the type's description here.

@@ -22,7 +22,7 @@ public class BNGUtils {
 	private final static String prefix = "vcell_bng_";
 
 	private static File workingDir = null;
-	private static cbit.util.Executable executable = null;
+	private static org.vcell.util.Executable executable = null;
 	private static boolean bFirstTime = true;
 
 	private static File file_exe_bng = null;
@@ -115,11 +115,11 @@ public static BNGOutput executeBNG(BNGInput bngRules) throws Exception {
 		System.out.println("-------------Starting BNG ...-------------------------------");
 		// run BNG
 		String cmd = escapeSpace(file_exe_bng.getAbsolutePath()) + " " + escapeSpace(bngInputFile.getAbsolutePath());
-		executable = new cbit.util.Executable(cmd);
+		executable = new org.vcell.util.Executable(cmd);
 		executable.start();
 		
 		String stdoutString = executable.getStdoutString();
-		if (executable.getStatus() == cbit.util.ExecutableStatus.STOPPED && stdoutString.length() == 0) {
+		if (executable.getStatus() == org.vcell.util.ExecutableStatus.STOPPED && stdoutString.length() == 0) {
 			stdoutString = "Stopped by user. No output from BioNetGen.";	
 		}
 		
@@ -137,11 +137,11 @@ public static BNGOutput executeBNG(BNGInput bngRules) throws Exception {
 		bngOutput = new BNGOutput(stdoutString, filenames, filecontents);
 		System.out.println("--------------Finished BNG----------------------------");
 		
-	} catch(cbit.util.ExecutableException ex ){
+	} catch(org.vcell.util.ExecutableException ex ){
 		if (executable.getStderrString().trim().length() == 0) {
 			throw ex;
 		}
-		throw new cbit.util.ExecutableException(executable.getStderrString());
+		throw new org.vcell.util.ExecutableException(executable.getStderrString());
 	} finally {
 		if (workingDir != null && workingDir.exists()) {
 			File[] files = workingDir.listFiles();
@@ -283,7 +283,7 @@ private static void writeFileFromResource(String resname, File file) throws Exce
 		}
 		if (!bWindows) {
 			System.out.println("Make " + file + " executable");
-			cbit.util.Executable exe = new cbit.util.Executable("chmod 755 " + file);
+			org.vcell.util.Executable exe = new org.vcell.util.Executable("chmod 755 " + file);
 			exe.start();
 		}
 	} finally {

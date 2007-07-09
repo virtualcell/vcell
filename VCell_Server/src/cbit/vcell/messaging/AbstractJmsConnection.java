@@ -8,7 +8,8 @@ import java.util.List;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 
-import cbit.util.MessageConstants;
+import org.vcell.util.MessageConstants;
+
 
 /**
  * Insert the type's description here.

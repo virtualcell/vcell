@@ -1,6 +1,6 @@
 package cbit.vcell.server;
 
-import cbit.util.DataAccessException;
+import org.vcell.util.DataAccessException;
 
 /**
  * Insert the type's description here.

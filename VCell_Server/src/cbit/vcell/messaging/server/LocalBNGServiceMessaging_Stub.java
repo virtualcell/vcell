@@ -3,7 +3,7 @@
 
 package cbit.vcell.messaging.server;
 
-import cbit.util.DataAccessException;
+import org.vcell.util.DataAccessException;
 
 public final class LocalBNGServiceMessaging_Stub
     extends java.rmi.server.RemoteStub

@@ -5,15 +5,16 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.ObjectMessage;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.MessageConstants;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.rmi.event.SimulationJobStatus;
 import cbit.rmi.event.VCellServerID;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
-import cbit.util.DataAccessException;
-import cbit.util.MessageConstants;
-import cbit.util.SessionLog;
-import cbit.util.document.KeyValue;
-import cbit.util.document.User;
 import cbit.util.xml.XmlParseException;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
@@ -455,7 +456,7 @@ public void run() {
  * Client constructor comment.
  */
 public SimulationDispatcherMessaging(SimulationDispatcher simDispatcher0, ConnectionFactory conFactory0, KeyFactory keyFactory0, SessionLog log0) 
-	throws java.sql.SQLException, JMSException, cbit.util.DataAccessException {
+	throws java.sql.SQLException, JMSException, org.vcell.util.DataAccessException {
 	super(simDispatcher0, log0);
 	simDispatcher = simDispatcher0;
 	conFactory = conFactory0;
@@ -702,7 +703,7 @@ private void startSimulation(java.sql.Connection con, User user, VCSimulationIde
 			return;
 		}
 		if (simulation != null) {
-			if (simulation.getScanCount() > Integer.parseInt(cbit.util.PropertyLoader.getRequiredProperty(cbit.util.PropertyLoader.maxJobsPerScan))) {
+			if (simulation.getScanCount() > Integer.parseInt(org.vcell.util.PropertyLoader.getRequiredProperty(org.vcell.util.PropertyLoader.maxJobsPerScan))) {
 				log.alert("Too many simulations (" + simulation.getScanCount() + ") for parameter scan." + vcSimID);
 				StatusMessage message = new StatusMessage(new SimulationJobStatus(VCellServerID.getSystemServerID(), vcSimID, -1, null, 
 					SimulationJobStatus.SCHEDULERSTATUS_FAILED, 0, "Too many simulations (" + simulation.getScanCount() + ") for parameter scan.", null, null), user.getName(), null, null);

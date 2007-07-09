@@ -1,17 +1,18 @@
 package cbit.vcell.server;
 import java.rmi.RemoteException;
 
-import cbit.util.BigString;
-import cbit.util.DataAccessException;
-import cbit.util.ObjectNotFoundException;
-import cbit.util.ReferenceQueryResult;
-import cbit.util.ReferenceQuerySpec;
-import cbit.util.document.CurateSpec;
-import cbit.util.document.FieldDataIdentifierSpec;
-import cbit.util.document.KeyValue;
-import cbit.util.document.MathModelInfo;
-import cbit.util.document.VersionableFamily;
-import cbit.util.document.VersionableType;
+import org.vcell.util.BigString;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.ReferenceQueryResult;
+import org.vcell.util.ReferenceQuerySpec;
+import org.vcell.util.document.CurateSpec;
+import org.vcell.util.document.FieldDataIdentifierSpec;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.VersionableFamily;
+import org.vcell.util.document.VersionableType;
+
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.DBSpecies;
@@ -32,7 +33,7 @@ public interface UserMetaDbServer extends java.rmi.Remote {
  * Insert the method's description here.
  * Creation date: (5/23/2006 9:42:56 AM)
  */
-cbit.util.document.VCDocumentInfo curate(CurateSpec curateSpec) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
+org.vcell.util.document.VCDocumentInfo curate(CurateSpec curateSpec) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 
 /**
@@ -66,7 +67,7 @@ void deleteMathModel(KeyValue mathModelKey) throws DataAccessException, ObjectNo
  * Insert the method's description here.
  * Creation date: (10/13/2003 5:37:35 PM)
  */
-public void deleteResultSetExport(cbit.util.document.KeyValue eleKey) throws DataAccessException,java.rmi.RemoteException;
+public void deleteResultSetExport(org.vcell.util.document.KeyValue eleKey) throws DataAccessException,java.rmi.RemoteException;
 
 
 /**
@@ -82,7 +83,7 @@ void deleteVCImage(KeyValue imageKey) throws DataAccessException, ObjectNotFound
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 TestSuiteOPResults doTestSuiteOP(TestSuiteOP tsop) throws DataAccessException, java.rmi.RemoteException;
@@ -92,7 +93,7 @@ TestSuiteOPResults doTestSuiteOP(TestSuiteOP tsop) throws DataAccessException, j
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 ReferenceQueryResult findReferences(ReferenceQuerySpec rqs) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
@@ -111,27 +112,27 @@ VersionableFamily getAllReferences(VersionableType vType, KeyValue key) throws R
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-cbit.util.document.BioModelInfo getBioModelInfo(KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
+org.vcell.util.document.BioModelInfo getBioModelInfo(KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 
 /**
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-cbit.util.document.BioModelInfo[] getBioModelInfos(boolean bAll) throws DataAccessException, java.rmi.RemoteException;
+org.vcell.util.document.BioModelInfo[] getBioModelInfos(boolean bAll) throws DataAccessException, java.rmi.RemoteException;
 
 
 /**
  * This method was created in VisualAge.
  * @return Geometry
  * @param key KeyValue
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 BioModelMetaData getBioModelMetaData(KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
@@ -141,7 +142,7 @@ BioModelMetaData getBioModelMetaData(KeyValue key) throws DataAccessException, O
  * This method was created in VisualAge.
  * @return Geometry
  * @param key KeyValue
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 BioModelMetaData[] getBioModelMetaDatas(boolean bAll) throws DataAccessException, java.rmi.RemoteException;
@@ -151,7 +152,7 @@ BioModelMetaData[] getBioModelMetaDatas(boolean bAll) throws DataAccessException
  * This method was created in VisualAge.
  * @return Geometry
  * @param key KeyValue
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 BigString getBioModelXML(KeyValue key) throws DataAccessException, java.rmi.RemoteException;
@@ -196,7 +197,7 @@ FieldDataIdentifier[] getFieldDataIdentifiers(FieldDataIdentifierSpec[] fieldDat
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 cbit.vcell.geometry.GeometryInfo getGeometryInfo(KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
@@ -206,7 +207,7 @@ cbit.vcell.geometry.GeometryInfo getGeometryInfo(KeyValue key) throws DataAccess
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 cbit.vcell.geometry.GeometryInfo[] getGeometryInfos(boolean bAll) throws DataAccessException, java.rmi.RemoteException;
@@ -216,7 +217,7 @@ cbit.vcell.geometry.GeometryInfo[] getGeometryInfos(boolean bAll) throws DataAcc
  * This method was created in VisualAge.
  * @return Geometry
  * @param key KeyValue
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 BigString getGeometryXML(KeyValue key) throws DataAccessException, java.rmi.RemoteException;
@@ -226,7 +227,7 @@ BigString getGeometryXML(KeyValue key) throws DataAccessException, java.rmi.Remo
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 MathModelInfo getMathModelInfo(KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
@@ -236,7 +237,7 @@ MathModelInfo getMathModelInfo(KeyValue key) throws DataAccessException, ObjectN
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 MathModelInfo[] getMathModelInfos(boolean bAll) throws DataAccessException, java.rmi.RemoteException;
@@ -246,7 +247,7 @@ MathModelInfo[] getMathModelInfos(boolean bAll) throws DataAccessException, java
  * This method was created in VisualAge.
  * @return Geometry
  * @param key KeyValue
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 MathModelMetaData getMathModelMetaData(KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
@@ -256,7 +257,7 @@ MathModelMetaData getMathModelMetaData(KeyValue key) throws DataAccessException,
  * This method was created in VisualAge.
  * @return MathModelMetaData[]
  * @param bAll boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 MathModelMetaData[] getMathModelMetaDatas(boolean bAll) throws DataAccessException, java.rmi.RemoteException;
@@ -266,7 +267,7 @@ MathModelMetaData[] getMathModelMetaDatas(boolean bAll) throws DataAccessExcepti
  * This method was created in VisualAge.
  * @return Geometry
  * @param key KeyValue
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 BigString getMathModelXML(KeyValue key) throws DataAccessException, java.rmi.RemoteException;
@@ -276,10 +277,10 @@ BigString getMathModelXML(KeyValue key) throws DataAccessException, java.rmi.Rem
  * Insert the method's description here.
  * Creation date: (6/10/2004 7:29:11 PM)
  * @return cbit.util.Preference
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-cbit.util.Preference[] getPreferences() throws DataAccessException, java.rmi.RemoteException;
+org.vcell.util.Preference[] getPreferences() throws DataAccessException, java.rmi.RemoteException;
 
 
 public cbit.vcell.model.ReactionStep getReactionStep(KeyValue rxID) throws DataAccessException, java.rmi.RemoteException;
@@ -319,7 +320,7 @@ SimulationStatus getSimulationStatus(KeyValue simulationKey) throws DataAccessEx
  * This method was created in VisualAge.
  * @return Geometry
  * @param key KeyValue
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 BigString getSimulationXML(KeyValue key) throws DataAccessException, java.rmi.RemoteException;
@@ -329,7 +330,7 @@ BigString getSimulationXML(KeyValue key) throws DataAccessException, java.rmi.Re
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 TestSuiteNew getTestSuite(java.math.BigDecimal getThisTS) throws DataAccessException, java.rmi.RemoteException;
@@ -339,7 +340,7 @@ TestSuiteNew getTestSuite(java.math.BigDecimal getThisTS) throws DataAccessExcep
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 TestSuiteInfoNew[] getTestSuiteInfos() throws DataAccessException, java.rmi.RemoteException;
@@ -358,7 +359,7 @@ cbit.vcell.dictionary.ReactionDescription[] getUserReactionDescriptions(cbit.vce
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 cbit.image.VCImageInfo getVCImageInfo(KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
@@ -368,7 +369,7 @@ cbit.image.VCImageInfo getVCImageInfo(KeyValue key) throws DataAccessException, 
  * This method was created in VisualAge.
  * @return GeometryInfo
  * @param key KeyValue
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 cbit.image.VCImageInfo[] getVCImageInfos(boolean bAll) throws DataAccessException, java.rmi.RemoteException;
@@ -378,7 +379,7 @@ cbit.image.VCImageInfo[] getVCImageInfos(boolean bAll) throws DataAccessExceptio
  * This method was created in VisualAge.
  * @return Geometry
  * @param key KeyValue
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 BigString getVCImageXML(KeyValue key) throws DataAccessException, java.rmi.RemoteException;
@@ -396,40 +397,40 @@ cbit.vcell.modeldb.VCInfoContainer getVCInfoContainer() throws DataAccessExcepti
  * This method was created in VisualAge.
  * @return void
  * @param key KeyValue
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-cbit.util.document.VersionInfo groupAddUser(VersionableType vType, KeyValue key,String addUserToGroup,boolean isHidden) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
+org.vcell.util.document.VersionInfo groupAddUser(VersionableType vType, KeyValue key,String addUserToGroup,boolean isHidden) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 
 /**
  * This method was created in VisualAge.
  * @return void
  * @param key KeyValue
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-cbit.util.document.VersionInfo groupRemoveUser(VersionableType vType, KeyValue key,String userRemoveFromGroup,boolean isHiddenFromOwner) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
+org.vcell.util.document.VersionInfo groupRemoveUser(VersionableType vType, KeyValue key,String userRemoveFromGroup,boolean isHiddenFromOwner) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 
 /**
  * This method was created in VisualAge.
  * @return void
  * @param key KeyValue
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-cbit.util.document.VersionInfo groupSetPrivate(VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
+org.vcell.util.document.VersionInfo groupSetPrivate(VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 
 /**
  * This method was created in VisualAge.
  * @return void
  * @param key KeyValue
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-cbit.util.document.VersionInfo groupSetPublic(VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
+org.vcell.util.document.VersionInfo groupSetPublic(VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 
 /**
@@ -438,7 +439,7 @@ cbit.util.document.VersionInfo groupSetPublic(VersionableType vType, KeyValue ke
  * @param preferences cbit.util.Preference[]
  * @exception java.rmi.RemoteException The exception description.
  */
-void replacePreferences(cbit.util.Preference[] preferences) throws java.rmi.RemoteException, DataAccessException;
+void replacePreferences(org.vcell.util.Preference[] preferences) throws java.rmi.RemoteException, DataAccessException;
 
 
 /**
@@ -446,7 +447,7 @@ void replacePreferences(cbit.util.Preference[] preferences) throws java.rmi.Remo
  * @return Versionable
  * @param versionable Versionable
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 BigString saveBioModel(BigString bioModelXML, String independentSims[]) throws DataAccessException, java.rmi.RemoteException;
@@ -457,7 +458,7 @@ BigString saveBioModel(BigString bioModelXML, String independentSims[]) throws D
  * @return Versionable
  * @param versionable Versionable
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 BigString saveBioModelAs(BigString bioModelXML, String newName, String independentSims[]) throws DataAccessException, java.rmi.RemoteException;
@@ -468,7 +469,7 @@ BigString saveBioModelAs(BigString bioModelXML, String newName, String independe
  * @return Versionable
  * @param versionable Versionable
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 BigString saveGeometry(BigString geometryXML) throws DataAccessException, java.rmi.RemoteException;
@@ -479,7 +480,7 @@ BigString saveGeometry(BigString geometryXML) throws DataAccessException, java.r
  * @return Versionable
  * @param versionable Versionable
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 BigString saveGeometryAs(BigString geometryXML, String newName) throws DataAccessException, java.rmi.RemoteException;
@@ -490,7 +491,7 @@ BigString saveGeometryAs(BigString geometryXML, String newName) throws DataAcces
  * @return Versionable
  * @param versionable Versionable
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 BigString saveMathModel(BigString mathModelXML, String independentSims[]) throws DataAccessException, java.rmi.RemoteException;
@@ -501,7 +502,7 @@ BigString saveMathModel(BigString mathModelXML, String independentSims[]) throws
  * @return Versionable
  * @param versionable Versionable
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 BigString saveMathModelAs(BigString mathModelXML, String newName, String independentSims[]) throws DataAccessException, java.rmi.RemoteException;
@@ -512,7 +513,7 @@ BigString saveMathModelAs(BigString mathModelXML, String newName, String indepen
  * @return Versionable
  * @param versionable Versionable
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 BigString saveSimulation(BigString simulationXML, boolean forceIndependent) throws DataAccessException, java.rmi.RemoteException;
@@ -523,7 +524,7 @@ BigString saveSimulation(BigString simulationXML, boolean forceIndependent) thro
  * @return Versionable
  * @param versionable Versionable
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 BigString saveVCImage(BigString vcImageXML) throws DataAccessException, java.rmi.RemoteException;
@@ -534,7 +535,7 @@ BigString saveVCImage(BigString vcImageXML) throws DataAccessException, java.rmi
  * @return Versionable
  * @param versionable Versionable
  * @param bVersion boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
 BigString saveVCImageAs(BigString vcImageXML, String newName) throws DataAccessException, java.rmi.RemoteException;

@@ -58,9 +58,9 @@ public static ServerPerformance getDaemonPerformance() {
 	try {
 		String PROGRAM = null;
 		try {
-			PROGRAM = System.getProperty(cbit.util.PropertyLoader.serverStatisticsProperty);
+			PROGRAM = System.getProperty(org.vcell.util.PropertyLoader.serverStatisticsProperty);
 		} catch (Exception e){
-			throw new RuntimeException("required System property \""+cbit.util.PropertyLoader.serverStatisticsProperty+"\" not defined");
+			throw new RuntimeException("required System property \""+org.vcell.util.PropertyLoader.serverStatisticsProperty+"\" not defined");
 		}
 
 		long memoryBytes = -1;
@@ -69,12 +69,12 @@ public static ServerPerformance getDaemonPerformance() {
 		long javaTotalMemoryBytes = Runtime.getRuntime().totalMemory();
 		long maxJavaMemoryBytes = -1;
 		try {
-			maxJavaMemoryBytes = Long.parseLong(cbit.util.PropertyLoader.getRequiredProperty(cbit.util.PropertyLoader.maxJavaMemoryBytesProperty));
+			maxJavaMemoryBytes = Long.parseLong(org.vcell.util.PropertyLoader.getRequiredProperty(org.vcell.util.PropertyLoader.maxJavaMemoryBytesProperty));
 		}catch (NumberFormatException e){
-			System.out.println("error reading property '"+cbit.util.PropertyLoader.maxJavaMemoryBytesProperty+"', "+e.getMessage());
+			System.out.println("error reading property '"+org.vcell.util.PropertyLoader.maxJavaMemoryBytesProperty+"', "+e.getMessage());
 		}
 		try {
-			cbit.util.Executable executable = new cbit.util.Executable(PROGRAM);
+			org.vcell.util.Executable executable = new org.vcell.util.Executable(PROGRAM);
 			executable.start();
 			String stdout = executable.getStdoutString();
 			java.util.StringTokenizer tokens = new java.util.StringTokenizer(stdout);
@@ -99,7 +99,7 @@ public static ServerPerformance getDaemonPerformance() {
  * @return java.lang.String
  * @param keyword java.lang.String
  */
-public static String getEnvVariable(String keyword, cbit.util.SessionLog log) {
+public static String getEnvVariable(String keyword, org.vcell.util.SessionLog log) {
 	String value = null;
 	String osName = System.getProperty("os.name");
 	String command = null;
@@ -111,7 +111,7 @@ public static String getEnvVariable(String keyword, cbit.util.SessionLog log) {
 	}
 	
 	try {
-		cbit.util.Executable exe = new cbit.util.Executable(command);
+		org.vcell.util.Executable exe = new org.vcell.util.Executable(command);
 		exe.start();
 		value = exe.getStdoutString().trim();
 	} catch (Exception e) {

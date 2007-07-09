@@ -4,6 +4,14 @@ import java.rmi.RemoteException;
 
 import javax.swing.event.EventListenerList;
 
+import org.vcell.util.ConfigurationException;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PermissionException;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.FieldDataIdentifierSpec;
+import org.vcell.util.document.User;
+
 import cbit.rmi.event.SimulationJobStatus;
 import cbit.rmi.event.SimulationJobStatusEvent;
 import cbit.rmi.event.SimulationJobStatusListener;
@@ -11,13 +19,6 @@ import cbit.rmi.event.SimulationJobStatusSender;
 import cbit.rmi.event.VCSimulationDataIdentifier;
 import cbit.rmi.event.VCellServerID;
 import cbit.rmi.event.WorkerEventListener;
-import cbit.util.ConfigurationException;
-import cbit.util.DataAccessException;
-import cbit.util.PermissionException;
-import cbit.util.PropertyLoader;
-import cbit.util.SessionLog;
-import cbit.util.document.FieldDataIdentifierSpec;
-import cbit.util.document.User;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.messaging.server.DispatcherDbManager;
 import cbit.vcell.messaging.server.LocalDispatcherDbManager;
@@ -257,7 +258,7 @@ public SolverControllerInfo[] getSolverControllerInfos() {
 		SolverProxy solverProxy = (SolverProxy)solverProxyEnum.nextElement();
 		scList.add(new SolverControllerInfo(solverProxy));
 	}
-	return (SolverControllerInfo[])cbit.util.BeanUtils.getArray(scList,SolverControllerInfo.class);
+	return (SolverControllerInfo[])org.vcell.util.BeanUtils.getArray(scList,SolverControllerInfo.class);
 }
 
 

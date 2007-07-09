@@ -2,9 +2,10 @@ package cbit.vcell.messaging;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
-import cbit.util.MessageConstants;
-import cbit.util.PropertyLoader;
-import cbit.util.SessionLog;
+import org.vcell.util.MessageConstants;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.messaging.server.Worker;
 

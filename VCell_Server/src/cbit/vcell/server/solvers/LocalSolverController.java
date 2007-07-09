@@ -5,13 +5,14 @@ import java.util.HashSet;
 
 import javax.swing.event.EventListenerList;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+
 import cbit.rmi.event.VCSimulationDataIdentifier;
 import cbit.rmi.event.WorkerEvent;
 import cbit.rmi.event.WorkerEventListener;
 import cbit.rmi.event.WorkerEventSender;
-import cbit.util.DataAccessException;
-import cbit.util.PropertyLoader;
-import cbit.util.SessionLog;
 import cbit.vcell.server.LocalVCellConnection;
 import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solvers.SimExecutionException;
@@ -110,12 +111,12 @@ public int getMessagingInterval() {
  * Creation date: (6/28/01 2:34:17 PM)
  * @return double
  */
-public double getProgress() throws cbit.util.DataAccessException {
+public double getProgress() throws org.vcell.util.DataAccessException {
 	try {
 		return solverControllerImpl.getSolver().getProgress();
 	}catch (Throwable e){
 		log.exception(e);
-		throw new cbit.util.DataAccessException(e.getMessage());
+		throw new org.vcell.util.DataAccessException(e.getMessage());
 	}	
 }
 
@@ -133,7 +134,7 @@ public SessionLog getSessionLog() {
 /**
  * getMathDescriptionVCML method comment.
  */
-private cbit.vcell.simulation.Simulation getSimulation() throws cbit.util.DataAccessException {
+private cbit.vcell.simulation.Simulation getSimulation() throws org.vcell.util.DataAccessException {
 	return getSimulationJob().getWorkingSim();
 }
 
@@ -141,12 +142,12 @@ private cbit.vcell.simulation.Simulation getSimulation() throws cbit.util.DataAc
 /**
  * getMathDescriptionVCML method comment.
  */
-public cbit.vcell.solvers.SimulationJob getSimulationJob() throws cbit.util.DataAccessException {
+public cbit.vcell.solvers.SimulationJob getSimulationJob() throws org.vcell.util.DataAccessException {
 	try {
 		return solverControllerImpl.getSimulationJob();
 	}catch (Throwable e){
 		log.exception(e);
-		throw new cbit.util.DataAccessException(e.getMessage());
+		throw new org.vcell.util.DataAccessException(e.getMessage());
 	}	
 }
 
@@ -156,12 +157,12 @@ public cbit.vcell.solvers.SimulationJob getSimulationJob() throws cbit.util.Data
  * @return java.lang.String
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.solvers.SolverStatus getSolverStatus() throws cbit.util.DataAccessException {
+public cbit.vcell.solvers.SolverStatus getSolverStatus() throws org.vcell.util.DataAccessException {
 	try {
 		return solverControllerImpl.getSolver().getSolverStatus();
 	}catch (Throwable e){
 		log.exception(e);
-		throw new cbit.util.DataAccessException(e.getMessage());
+		throw new org.vcell.util.DataAccessException(e.getMessage());
 	}	
 }
 
@@ -311,13 +312,13 @@ public void solverStopped(cbit.vcell.solvers.SolverEvent event) {
 /**
  * startSimulation method comment.
  */
-public void startSimulationJob() throws SimExecutionException, cbit.util.DataAccessException {
+public void startSimulationJob() throws SimExecutionException, org.vcell.util.DataAccessException {
 	try {
 		resultSetSavedSet.remove(getSimulationJob().getVCDataIdentifier());
 		solverControllerImpl.startSimulationJob();
 	}catch (Throwable e){
 		log.exception(e);
-		throw new cbit.util.DataAccessException(e.getMessage());
+		throw new org.vcell.util.DataAccessException(e.getMessage());
 	}	
 }
 
@@ -325,12 +326,12 @@ public void startSimulationJob() throws SimExecutionException, cbit.util.DataAcc
 /**
  * stopSimulation method comment.
  */
-public void stopSimulationJob() throws cbit.util.DataAccessException {
+public void stopSimulationJob() throws org.vcell.util.DataAccessException {
 	try {
 		solverControllerImpl.stopSimulationJob();
 	}catch (Throwable e){
 		log.exception(e);
-		throw new cbit.util.DataAccessException(e.getMessage());
+		throw new org.vcell.util.DataAccessException(e.getMessage());
 	}
 }
 }

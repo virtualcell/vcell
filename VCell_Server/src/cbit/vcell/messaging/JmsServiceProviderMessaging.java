@@ -12,7 +12,7 @@ import cbit.vcell.messaging.server.ServiceProvider;
  */
 public abstract class JmsServiceProviderMessaging implements ControlTopicListener {
 	protected JmsConnectionFactory jmsConnFactory = null;
-	protected cbit.util.SessionLog log = null;
+	protected org.vcell.util.SessionLog log = null;
 	protected VCellQueueConnection queueConn = null;
 	protected VCellTopicConnection topicConn = null;
 	protected VCellTopicSession listenTopicSession = null;
@@ -21,7 +21,7 @@ public abstract class JmsServiceProviderMessaging implements ControlTopicListene
 /**
  * JmsMessaging constructor comment.
  */
-protected JmsServiceProviderMessaging(ServiceProvider serviceProvider0, cbit.util.SessionLog log0) throws JMSException {
+protected JmsServiceProviderMessaging(ServiceProvider serviceProvider0, org.vcell.util.SessionLog log0) throws JMSException {
 	log = log0;
 	jmsConnFactory = new JmsConnectionFactoryImpl();
 	jmsServiceProvider = serviceProvider0;

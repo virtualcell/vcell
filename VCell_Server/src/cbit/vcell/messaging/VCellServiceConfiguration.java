@@ -1,6 +1,6 @@
 package cbit.vcell.messaging;
 
-import cbit.util.ComparableObject;
+import org.vcell.util.ComparableObject;
 
 /**
  * Insert the type's description here.

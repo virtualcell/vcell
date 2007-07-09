@@ -1,6 +1,7 @@
 package cbit.vcell.messaging.server;
-import cbit.util.DataAccessException;
-import cbit.util.document.User;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.document.User;
+
 import cbit.vcell.messaging.JmsClientMessaging;
 import cbit.vcell.messaging.JmsUtils;
 import cbit.vcell.simulation.VCSimulationIdentifier;
@@ -17,7 +18,7 @@ public class RpcSimServerProxy extends AbstractRpcServerProxy implements cbit.vc
 /**
  * DataServerProxy constructor comment.
  */
-public RpcSimServerProxy(User argUser, JmsClientMessaging clientMessaging, cbit.util.SessionLog log) throws javax.jms.JMSException {
+public RpcSimServerProxy(User argUser, JmsClientMessaging clientMessaging, org.vcell.util.SessionLog log) throws javax.jms.JMSException {
 	super(argUser, clientMessaging, JmsUtils.getQueueSimReq(), log);
 }
 
@@ -32,7 +33,7 @@ public RpcSimServerProxy(User argUser, JmsClientMessaging clientMessaging, cbit.
  */
 private Object rpc(String methodName, Object[] args) throws DataAccessException {
 	try {
-		return rpc(cbit.util.MessageConstants.SERVICETYPE_DISPATCH_VALUE, methodName, args, true);
+		return rpc(org.vcell.util.MessageConstants.SERVICETYPE_DISPATCH_VALUE, methodName, args, true);
 	} catch (DataAccessException ex) {
 		log.exception(ex);
 		throw ex;
@@ -53,7 +54,7 @@ private Object rpc(String methodName, Object[] args) throws DataAccessException 
  */
 private void rpcNoWait(String methodName, Object[] args) throws DataAccessException {
 	try {
-		rpc(cbit.util.MessageConstants.SERVICETYPE_DISPATCH_VALUE, methodName, args, false);
+		rpc(org.vcell.util.MessageConstants.SERVICETYPE_DISPATCH_VALUE, methodName, args, false);
 	} catch (DataAccessException ex) {
 		log.exception(ex);
 		throw ex;

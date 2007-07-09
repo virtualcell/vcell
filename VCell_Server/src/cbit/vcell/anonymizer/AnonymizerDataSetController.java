@@ -1,7 +1,8 @@
 package cbit.vcell.anonymizer;
-import cbit.util.DataAccessException;
-import cbit.util.PropertyLoader;
-import cbit.util.SessionLog;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+
 import cbit.vcell.mesh.CartesianMesh;
 /**
  * Insert the type's description here.
@@ -22,11 +23,11 @@ protected AnonymizerDataSetController(AnonymizerVCellConnection arg_anonymizerVC
  * Insert the method's description here.
  * Creation date: (5/12/2006 5:54:27 PM)
  * @param function cbit.vcell.math.Function
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void addFunction(cbit.util.VCDataIdentifier vcdataID, cbit.vcell.math.AnnotatedFunction function) throws DataAccessException, java.rmi.RemoteException {	
-	remoteCall("addFunction", new Class[] {cbit.util.VCDataIdentifier.class, cbit.vcell.math.AnnotatedFunction.class}, new Object[] {vcdataID, function});	
+public void addFunction(org.vcell.util.VCDataIdentifier vcdataID, cbit.vcell.math.AnnotatedFunction function) throws DataAccessException, java.rmi.RemoteException {	
+	remoteCall("addFunction", new Class[] {org.vcell.util.VCDataIdentifier.class, cbit.vcell.math.AnnotatedFunction.class}, new Object[] {vcdataID, function});	
 }
 
 
@@ -34,11 +35,11 @@ public void addFunction(cbit.util.VCDataIdentifier vcdataID, cbit.vcell.math.Ann
  * Insert the method's description here.
  * Creation date: (5/12/2006 5:54:27 PM)
  * @param function cbit.vcell.math.Function[]
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void addFunctions(cbit.util.VCDataIdentifier vcdID, cbit.vcell.math.AnnotatedFunction[] function) throws cbit.util.DataAccessException, java.rmi.RemoteException {
-	remoteCall("addFunctions", new Class[] {cbit.util.VCDataIdentifier.class, cbit.vcell.math.AnnotatedFunction[].class}, new Object[] {vcdID, function});
+public void addFunctions(org.vcell.util.VCDataIdentifier vcdID, cbit.vcell.math.AnnotatedFunction[] function) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
+	remoteCall("addFunctions", new Class[] {org.vcell.util.VCDataIdentifier.class, cbit.vcell.math.AnnotatedFunction[].class}, new Object[] {vcdID, function});
 }
 
 
@@ -46,8 +47,8 @@ public void addFunctions(cbit.util.VCDataIdentifier vcdID, cbit.vcell.math.Annot
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.math.DataIdentifier[] getDataIdentifiers(cbit.util.VCDataIdentifier vcdataID) throws cbit.util.DataAccessException, java.rmi.RemoteException {    
-	return (cbit.vcell.math.DataIdentifier[])remoteCall("getDataIdentifiers", new Class[] {cbit.util.VCDataIdentifier.class}, new Object[] {vcdataID});
+public cbit.vcell.math.DataIdentifier[] getDataIdentifiers(org.vcell.util.VCDataIdentifier vcdataID) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {    
+	return (cbit.vcell.math.DataIdentifier[])remoteCall("getDataIdentifiers", new Class[] {org.vcell.util.VCDataIdentifier.class}, new Object[] {vcdataID});
 }
 
 
@@ -55,8 +56,8 @@ public cbit.vcell.math.DataIdentifier[] getDataIdentifiers(cbit.util.VCDataIdent
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
-public double[] getDataSetTimes(cbit.util.VCDataIdentifier vcdataID) throws cbit.util.DataAccessException, java.rmi.RemoteException {	
-	return (double[])remoteCall("getDataSetTimes", new Class[] {cbit.util.VCDataIdentifier.class}, new Object[] {vcdataID});
+public double[] getDataSetTimes(org.vcell.util.VCDataIdentifier vcdataID) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {	
+	return (double[])remoteCall("getDataSetTimes", new Class[] {org.vcell.util.VCDataIdentifier.class}, new Object[] {vcdataID});
 }
 
 
@@ -64,11 +65,11 @@ public double[] getDataSetTimes(cbit.util.VCDataIdentifier vcdataID) throws cbit
  * Insert the method's description here.
  * Creation date: (5/12/2006 5:54:27 PM)
  * @param function cbit.vcell.math.Function
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.math.AnnotatedFunction[] getFunctions(cbit.util.VCDataIdentifier vcdataID) throws cbit.util.DataAccessException, java.rmi.RemoteException {	
-	return (cbit.vcell.math.AnnotatedFunction[])remoteCall("getFunctions", new Class[] {cbit.util.VCDataIdentifier.class}, new Object[] {vcdataID});
+public cbit.vcell.math.AnnotatedFunction[] getFunctions(org.vcell.util.VCDataIdentifier vcdataID) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {	
+	return (cbit.vcell.math.AnnotatedFunction[])remoteCall("getFunctions", new Class[] {org.vcell.util.VCDataIdentifier.class}, new Object[] {vcdataID});
 }
 
 
@@ -76,11 +77,11 @@ public cbit.vcell.math.AnnotatedFunction[] getFunctions(cbit.util.VCDataIdentifi
  * Insert the method's description here.
  * Creation date: (5/12/2006 5:54:27 PM)
  * @return boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public boolean getIsODEData(cbit.util.VCDataIdentifier vcdataID) throws cbit.util.DataAccessException, java.rmi.RemoteException {
-	return ((Boolean)remoteCall("getIsODEData", new Class[] {cbit.util.VCDataIdentifier.class}, new Object[] {vcdataID})).booleanValue();
+public boolean getIsODEData(org.vcell.util.VCDataIdentifier vcdataID) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
+	return ((Boolean)remoteCall("getIsODEData", new Class[] {org.vcell.util.VCDataIdentifier.class}, new Object[] {vcdataID})).booleanValue();
 }
 
 
@@ -93,9 +94,9 @@ public boolean getIsODEData(cbit.util.VCDataIdentifier vcdataID) throws cbit.uti
  * @param end cbit.vcell.math.CoordinateIndex
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.plot.PlotData getLineScan(cbit.util.VCDataIdentifier vcdataID, String variable, double time, cbit.util.CoordinateIndex begin, cbit.util.CoordinateIndex end) throws cbit.util.DataAccessException, java.rmi.RemoteException {
+public cbit.plot.PlotData getLineScan(org.vcell.util.VCDataIdentifier vcdataID, String variable, double time, org.vcell.util.CoordinateIndex begin, org.vcell.util.CoordinateIndex end) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
 	return (cbit.plot.PlotData)remoteCall("getLineScan", 
-		new Class[] {cbit.util.VCDataIdentifier.class, String.class, double.class, cbit.util.CoordinateIndex.class, cbit.util.CoordinateIndex.class}, 
+		new Class[] {org.vcell.util.VCDataIdentifier.class, String.class, double.class, org.vcell.util.CoordinateIndex.class, org.vcell.util.CoordinateIndex.class}, 
 		new Object[] {vcdataID, variable, new Double(time), begin, end});
 }
 
@@ -108,9 +109,9 @@ public cbit.plot.PlotData getLineScan(cbit.util.VCDataIdentifier vcdataID, Strin
  * @param spatialSelection cbit.vcell.simdata.gui.SpatialSelection
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.plot.PlotData getLineScan(cbit.util.VCDataIdentifier vcdataID, String variable, double time, cbit.vcell.simdata.SpatialSelection spatialSelection) throws cbit.util.DataAccessException, java.rmi.RemoteException {
+public cbit.plot.PlotData getLineScan(org.vcell.util.VCDataIdentifier vcdataID, String variable, double time, cbit.vcell.simdata.SpatialSelection spatialSelection) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
 	return (cbit.plot.PlotData)remoteCall("getLineScan", 
-		new Class[] {cbit.util.VCDataIdentifier.class, String.class, double.class, cbit.vcell.simdata.SpatialSelection.class}, 
+		new Class[] {org.vcell.util.VCDataIdentifier.class, String.class, double.class, cbit.vcell.simdata.SpatialSelection.class}, 
 		new Object[] {vcdataID, variable, new Double(time), spatialSelection});
 }
 
@@ -119,8 +120,8 @@ public cbit.plot.PlotData getLineScan(cbit.util.VCDataIdentifier vcdataID, Strin
  * This method was created in VisualAge.
  * @return CartesianMesh
  */
-public CartesianMesh getMesh(cbit.util.VCDataIdentifier vcdataID) throws cbit.util.DataAccessException, java.rmi.RemoteException {
-	return (CartesianMesh)remoteCall("getMesh", new Class[] {cbit.util.VCDataIdentifier.class}, new Object[] {vcdataID});
+public CartesianMesh getMesh(org.vcell.util.VCDataIdentifier vcdataID) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
+	return (CartesianMesh)remoteCall("getMesh", new Class[] {org.vcell.util.VCDataIdentifier.class}, new Object[] {vcdataID});
 }
 
 
@@ -128,11 +129,11 @@ public CartesianMesh getMesh(cbit.util.VCDataIdentifier vcdataID) throws cbit.ut
  * Insert the method's description here.
  * Creation date: (5/12/2006 5:54:27 PM)
  * @param odeSimData cbit.vcell.export.data.ODESimData
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.simdata.ODESimData getODEData(cbit.util.VCDataIdentifier vcdataID) throws cbit.util.DataAccessException, java.rmi.RemoteException {
-	return (cbit.vcell.simdata.ODESimData)remoteCall("getODEData", new Class[] {cbit.util.VCDataIdentifier.class}, new Object[] {vcdataID});
+public cbit.vcell.simdata.ODESimData getODEData(org.vcell.util.VCDataIdentifier vcdataID) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
+	return (cbit.vcell.simdata.ODESimData)remoteCall("getODEData", new Class[] {org.vcell.util.VCDataIdentifier.class}, new Object[] {vcdataID});
 }
 
 
@@ -140,12 +141,12 @@ public cbit.vcell.simdata.ODESimData getODEData(cbit.util.VCDataIdentifier vcdat
  * This method was created in VisualAge.
  * @return ParticleData
  * @param time double
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.simdata.ParticleDataBlock getParticleDataBlock(cbit.util.VCDataIdentifier vcdataID, double time) throws cbit.util.DataAccessException, java.rmi.RemoteException {
+public cbit.vcell.simdata.ParticleDataBlock getParticleDataBlock(org.vcell.util.VCDataIdentifier vcdataID, double time) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
 	return (cbit.vcell.simdata.ParticleDataBlock)remoteCall("getParticleDataBlock", 
-		new Class[] {cbit.util.VCDataIdentifier.class, double.class}, new Object[] {vcdataID, new Double(time)});
+		new Class[] {org.vcell.util.VCDataIdentifier.class, double.class}, new Object[] {vcdataID, new Double(time)});
 }
 
 
@@ -153,8 +154,8 @@ public cbit.vcell.simdata.ParticleDataBlock getParticleDataBlock(cbit.util.VCDat
  * This method was created in VisualAge.
  * @return boolean
  */
-public boolean getParticleDataExists(cbit.util.VCDataIdentifier vcdataID) throws cbit.util.DataAccessException, java.rmi.RemoteException {
-	return ((Boolean)remoteCall("getParticleDataExists", new Class[] {cbit.util.VCDataIdentifier.class}, new Object[] {vcdataID})).booleanValue();
+public boolean getParticleDataExists(org.vcell.util.VCDataIdentifier vcdataID) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
+	return ((Boolean)remoteCall("getParticleDataExists", new Class[] {org.vcell.util.VCDataIdentifier.class}, new Object[] {vcdataID})).booleanValue();
 }
 
 
@@ -163,9 +164,9 @@ public boolean getParticleDataExists(cbit.util.VCDataIdentifier vcdataID) throws
  * @return java.lang.String
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.simdata.SimDataBlock getSimDataBlock(cbit.util.VCDataIdentifier vcdataID, String varName, double time) throws cbit.util.DataAccessException, java.rmi.RemoteException {
+public cbit.vcell.simdata.SimDataBlock getSimDataBlock(org.vcell.util.VCDataIdentifier vcdataID, String varName, double time) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
 	return (cbit.vcell.simdata.SimDataBlock)remoteCall("getSimDataBlock", 
-		new Class[] {cbit.util.VCDataIdentifier.class, String.class, double.class}, new Object[] {vcdataID, varName, new Double(time)});
+		new Class[] {org.vcell.util.VCDataIdentifier.class, String.class, double.class}, new Object[] {vcdataID, varName, new Double(time)});
 
 }
 
@@ -179,9 +180,9 @@ public cbit.vcell.simdata.SimDataBlock getSimDataBlock(cbit.util.VCDataIdentifie
  * @param z int
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.TimeSeriesJobResults getTimeSeriesValues(cbit.util.VCDataIdentifier vcdataID, cbit.util.TimeSeriesJobSpec timeSeriesJobSpec) throws cbit.util.DataAccessException, java.rmi.RemoteException {
-	return (cbit.util.TimeSeriesJobResults)remoteCall("getTimeSeriesValues", 
-		new Class[] {cbit.util.VCDataIdentifier.class, cbit.util.TimeSeriesJobSpec.class}, new Object[] {vcdataID, timeSeriesJobSpec});
+public org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(org.vcell.util.VCDataIdentifier vcdataID, org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
+	return (org.vcell.util.TimeSeriesJobResults)remoteCall("getTimeSeriesValues", 
+		new Class[] {org.vcell.util.VCDataIdentifier.class, org.vcell.util.TimeSeriesJobSpec.class}, new Object[] {vcdataID, timeSeriesJobSpec});
 
 }
 
@@ -191,10 +192,10 @@ public cbit.util.TimeSeriesJobResults getTimeSeriesValues(cbit.util.VCDataIdenti
  * Creation date: (5/12/2006 5:54:27 PM)
  * @return cbit.rmi.event.ExportEvent
  * @param exportSpecs cbit.vcell.export.server.ExportSpecs
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.rmi.event.ExportEvent makeRemoteFile(cbit.vcell.export.ExportSpecs exportSpecs) throws cbit.util.DataAccessException, java.rmi.RemoteException {
+public cbit.rmi.event.ExportEvent makeRemoteFile(cbit.vcell.export.ExportSpecs exportSpecs) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
 	return (cbit.rmi.event.ExportEvent)remoteCall("makeRemoteFile", new Class[] {cbit.vcell.export.ExportSpecs.class}, new Object[] {exportSpecs});
 }
 
@@ -203,10 +204,10 @@ public cbit.rmi.event.ExportEvent makeRemoteFile(cbit.vcell.export.ExportSpecs e
  * Insert the method's description here.
  * Creation date: (5/12/2006 5:54:27 PM)
  * @param function cbit.vcell.math.Function
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-private Object remoteCall(String methodName, Class[] argClasses, Object[] args) throws java.rmi.RemoteException, cbit.util.DataAccessException {
+private Object remoteCall(String methodName, Class[] argClasses, Object[] args) throws java.rmi.RemoteException, org.vcell.util.DataAccessException {
 	return remoteCall(anonymizerVCellConnection.getRemoteDataSetController(), methodName, argClasses, args);
 }
 
@@ -215,10 +216,10 @@ private Object remoteCall(String methodName, Class[] argClasses, Object[] args) 
  * Insert the method's description here.
  * Creation date: (5/12/2006 5:54:27 PM)
  * @param function cbit.vcell.math.Function
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public void removeFunction(cbit.util.VCDataIdentifier vcdataID, cbit.vcell.math.AnnotatedFunction function) throws cbit.util.DataAccessException, java.rmi.RemoteException {
-	remoteCall("removeFunction", new Class[] {cbit.util.VCDataIdentifier.class, cbit.vcell.math.AnnotatedFunction.class}, new Object[] {vcdataID, function});	
+public void removeFunction(org.vcell.util.VCDataIdentifier vcdataID, cbit.vcell.math.AnnotatedFunction function) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
+	remoteCall("removeFunction", new Class[] {org.vcell.util.VCDataIdentifier.class, cbit.vcell.math.AnnotatedFunction.class}, new Object[] {vcdataID, function});	
 }
 }

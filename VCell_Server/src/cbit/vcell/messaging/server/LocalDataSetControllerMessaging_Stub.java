@@ -3,8 +3,9 @@
 
 package cbit.vcell.messaging.server;
 
-import cbit.util.DataAccessException;
-import cbit.util.VCDataIdentifier;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.VCDataIdentifier;
+
 import cbit.vcell.math.DataIdentifier;
 import cbit.vcell.simdata.SpatialSelection;
 
@@ -39,14 +40,14 @@ public final class LocalDataSetControllerMessaging_Stub
 	    $method_getDataSetTimes_3 = cbit.vcell.server.DataSetController.class.getMethod("getDataSetTimes", new java.lang.Class[] {VCDataIdentifier.class});
 	    $method_getFunctions_4 = cbit.vcell.server.DataSetController.class.getMethod("getFunctions", new java.lang.Class[] {VCDataIdentifier.class});
 	    $method_getIsODEData_5 = cbit.vcell.server.DataSetController.class.getMethod("getIsODEData", new java.lang.Class[] {VCDataIdentifier.class});
-	    $method_getLineScan_6 = cbit.vcell.server.DataSetController.class.getMethod("getLineScan", new java.lang.Class[] {VCDataIdentifier.class, java.lang.String.class, double.class, cbit.util.CoordinateIndex.class, cbit.util.CoordinateIndex.class});
+	    $method_getLineScan_6 = cbit.vcell.server.DataSetController.class.getMethod("getLineScan", new java.lang.Class[] {VCDataIdentifier.class, java.lang.String.class, double.class, org.vcell.util.CoordinateIndex.class, org.vcell.util.CoordinateIndex.class});
 	    $method_getLineScan_7 = cbit.vcell.server.DataSetController.class.getMethod("getLineScan", new java.lang.Class[] {VCDataIdentifier.class, java.lang.String.class, double.class, SpatialSelection.class});
 	    $method_getMesh_8 = cbit.vcell.server.DataSetController.class.getMethod("getMesh", new java.lang.Class[] {VCDataIdentifier.class});
 	    $method_getODEData_9 = cbit.vcell.server.DataSetController.class.getMethod("getODEData", new java.lang.Class[] {VCDataIdentifier.class});
 	    $method_getParticleDataBlock_10 = cbit.vcell.server.DataSetController.class.getMethod("getParticleDataBlock", new java.lang.Class[] {VCDataIdentifier.class, double.class});
 	    $method_getParticleDataExists_11 = cbit.vcell.server.DataSetController.class.getMethod("getParticleDataExists", new java.lang.Class[] {VCDataIdentifier.class});
 	    $method_getSimDataBlock_12 = cbit.vcell.server.DataSetController.class.getMethod("getSimDataBlock", new java.lang.Class[] {VCDataIdentifier.class, java.lang.String.class, double.class});
-	    $method_getTimeSeriesValues_13 = cbit.vcell.server.DataSetController.class.getMethod("getTimeSeriesValues", new java.lang.Class[] {VCDataIdentifier.class, cbit.util.TimeSeriesJobSpec.class});
+	    $method_getTimeSeriesValues_13 = cbit.vcell.server.DataSetController.class.getMethod("getTimeSeriesValues", new java.lang.Class[] {VCDataIdentifier.class, org.vcell.util.TimeSeriesJobSpec.class});
 	    $method_makeRemoteFile_14 = cbit.vcell.server.DataSetController.class.getMethod("makeRemoteFile", new java.lang.Class[] {cbit.vcell.export.ExportSpecs.class});
 	    $method_removeFunction_15 = cbit.vcell.server.DataSetController.class.getMethod("removeFunction", new java.lang.Class[] {VCDataIdentifier.class, cbit.vcell.math.AnnotatedFunction.class});
 	} catch (java.lang.NoSuchMethodException e) {
@@ -169,7 +170,7 @@ public final class LocalDataSetControllerMessaging_Stub
     }
     
     // implementation of getLineScan(VCDataIdentifier, String, double, CoordinateIndex, CoordinateIndex)
-    public cbit.plot.PlotData getLineScan(VCDataIdentifier $param_VCDataIdentifier_1, java.lang.String $param_String_2, double $param_double_3, cbit.util.CoordinateIndex $param_CoordinateIndex_4, cbit.util.CoordinateIndex $param_CoordinateIndex_5)
+    public cbit.plot.PlotData getLineScan(VCDataIdentifier $param_VCDataIdentifier_1, java.lang.String $param_String_2, double $param_double_3, org.vcell.util.CoordinateIndex $param_CoordinateIndex_4, org.vcell.util.CoordinateIndex $param_CoordinateIndex_5)
 	throws DataAccessException, java.rmi.RemoteException
     {
 	try {
@@ -295,12 +296,12 @@ public final class LocalDataSetControllerMessaging_Stub
     }
     
     // implementation of getTimeSeriesValues(VCDataIdentifier, TimeSeriesJobSpec)
-    public cbit.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier $param_VCDataIdentifier_1, cbit.util.TimeSeriesJobSpec $param_TimeSeriesJobSpec_2)
+    public org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier $param_VCDataIdentifier_1, org.vcell.util.TimeSeriesJobSpec $param_TimeSeriesJobSpec_2)
 	throws DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getTimeSeriesValues_13, new java.lang.Object[] {$param_VCDataIdentifier_1, $param_TimeSeriesJobSpec_2}, 5894587440704882934L);
-	    return ((cbit.util.TimeSeriesJobResults) $result);
+	    return ((org.vcell.util.TimeSeriesJobResults) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {

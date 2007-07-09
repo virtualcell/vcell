@@ -58,7 +58,7 @@ public ServerConfiguration(File configurationFile) throws IOException, FileNotFo
 		line = reader.readLine();
 	}
 	if (host != null) hosts.add(host);
-	allHosts = ((VCellHost[])cbit.util.BeanUtils.getArray(hosts, VCellHost.class));
+	allHosts = ((VCellHost[])org.vcell.util.BeanUtils.getArray(hosts, VCellHost.class));
 }
 /**
  * Insert the method's description here.

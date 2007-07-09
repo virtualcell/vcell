@@ -1,6 +1,7 @@
 package cbit.vcell.messaging.server;
-import cbit.util.document.KeyValue;
-import cbit.util.document.User;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.vcell.simulation.SimulationInfo;
 import cbit.vcell.simulation.SolverDescription;
 import cbit.vcell.solvers.SimulationJob;
@@ -100,7 +101,7 @@ public int getTaskID() {
  * Creation date: (3/11/2004 8:51:11 AM)
  * @return java.lang.String
  */
-public cbit.util.document.User getUser() {
+public org.vcell.util.document.User getUser() {
 	if (getSimulationJob().getWorkingSim() == null) {
 		return null;
 	}

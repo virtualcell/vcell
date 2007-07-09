@@ -7,12 +7,13 @@ import java.rmi.RemoteException;
 import java.rmi.activation.Activatable;
 import java.rmi.activation.ActivationID;
 
-import cbit.util.DataAccessException;
-import cbit.util.PermissionException;
-import cbit.util.PropertyLoader;
-import cbit.util.SessionLog;
-import cbit.util.StdoutSessionLog;
-import cbit.util.document.User;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PermissionException;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+import org.vcell.util.StdoutSessionLog;
+import org.vcell.util.document.User;
+
 import cbit.vcell.server.AuthenticationException;
 import cbit.vcell.server.VCellBootstrap;
 import cbit.vcell.server.VCellConnection;

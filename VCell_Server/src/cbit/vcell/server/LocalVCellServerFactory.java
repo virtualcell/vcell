@@ -1,11 +1,12 @@
 package cbit.vcell.server;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PermissionException;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.User;
+
 import cbit.sql.DBCacheTable;
-import cbit.util.DataAccessException;
-import cbit.util.PermissionException;
-import cbit.util.PropertyLoader;
-import cbit.util.SessionLog;
-import cbit.util.document.User;
 import cbit.vcell.modeldb.AdminDatabaseServer;
 /**
  * This type was created in VisualAge.

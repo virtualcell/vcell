@@ -3,7 +3,7 @@
 
 package cbit.vcell.server;
 
-import cbit.util.CacheStatus;
+import org.vcell.util.CacheStatus;
 
 public final class LocalVCellServer_Stub
     extends java.rmi.server.RemoteStub
@@ -27,7 +27,7 @@ public final class LocalVCellServer_Stub
     
     static {
 	try {
-	    $method_createSolverController_0 = cbit.vcell.server.VCellServer.class.getMethod("createSolverController", new java.lang.Class[] {cbit.util.document.User.class, cbit.vcell.solvers.SimulationJob.class});
+	    $method_createSolverController_0 = cbit.vcell.server.VCellServer.class.getMethod("createSolverController", new java.lang.Class[] {org.vcell.util.document.User.class, cbit.vcell.solvers.SimulationJob.class});
 	    $method_getAdminDatabaseServer_1 = cbit.vcell.server.VCellServer.class.getMethod("getAdminDatabaseServer", new java.lang.Class[] {});
 	    $method_getCacheStatus_2 = cbit.vcell.server.VCellServer.class.getMethod("getCacheStatus", new java.lang.Class[] {});
 	    $method_getConnectedUsers_3 = cbit.vcell.server.VCellServer.class.getMethod("getConnectedUsers", new java.lang.Class[] {});
@@ -37,7 +37,7 @@ public final class LocalVCellServer_Stub
 	    $method_getSlaveServerInfos_7 = cbit.vcell.server.VCellServer.class.getMethod("getSlaveServerInfos", new java.lang.Class[] {});
 	    $method_getSlaveVCellServer_8 = cbit.vcell.server.VCellServer.class.getMethod("getSlaveVCellServer", new java.lang.Class[] {java.lang.String.class});
 	    $method_getSolverControllerInfos_9 = cbit.vcell.server.VCellServer.class.getMethod("getSolverControllerInfos", new java.lang.Class[] {});
-	    $method_getVCellConnection_10 = cbit.vcell.server.VCellServer.class.getMethod("getVCellConnection", new java.lang.Class[] {cbit.util.document.User.class});
+	    $method_getVCellConnection_10 = cbit.vcell.server.VCellServer.class.getMethod("getVCellConnection", new java.lang.Class[] {org.vcell.util.document.User.class});
 	    $method_isPrimaryServer_11 = cbit.vcell.server.VCellServer.class.getMethod("isPrimaryServer", new java.lang.Class[] {});
 	    $method_shutdown_12 = cbit.vcell.server.VCellServer.class.getMethod("shutdown", new java.lang.Class[] {});
 	} catch (java.lang.NoSuchMethodException e) {
@@ -54,7 +54,7 @@ public final class LocalVCellServer_Stub
     // methods from remote interfaces
     
     // implementation of createSolverController(User, SimulationJob)
-    public cbit.vcell.solvers.SolverController createSolverController(cbit.util.document.User $param_User_1, cbit.vcell.solvers.SimulationJob $param_SimulationJob_2)
+    public cbit.vcell.solvers.SolverController createSolverController(org.vcell.util.document.User $param_User_1, cbit.vcell.solvers.SimulationJob $param_SimulationJob_2)
 	throws cbit.vcell.solvers.SolverException, cbit.vcell.solvers.SimExecutionException, java.rmi.RemoteException
     {
 	try {
@@ -106,12 +106,12 @@ public final class LocalVCellServer_Stub
     }
     
     // implementation of getConnectedUsers()
-    public cbit.util.document.User[] getConnectedUsers()
+    public org.vcell.util.document.User[] getConnectedUsers()
 	throws java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getConnectedUsers_3, null, -6164111988825886192L);
-	    return ((cbit.util.document.User[]) $result);
+	    return ((org.vcell.util.document.User[]) $result);
 	} catch (java.lang.RuntimeException e) {
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
@@ -187,7 +187,7 @@ public final class LocalVCellServer_Stub
     
     // implementation of getSlaveVCellServer(String)
     public cbit.vcell.server.VCellServer getSlaveVCellServer(java.lang.String $param_String_1)
-	throws cbit.vcell.server.AuthenticationException, cbit.vcell.server.ConnectionException, cbit.util.DataAccessException, java.rmi.RemoteException
+	throws cbit.vcell.server.AuthenticationException, cbit.vcell.server.ConnectionException, org.vcell.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getSlaveVCellServer_8, new java.lang.Object[] {$param_String_1}, 4346839914193805136L);
@@ -200,7 +200,7 @@ public final class LocalVCellServer_Stub
 	    throw e;
 	} catch (cbit.vcell.server.ConnectionException e) {
 	    throw e;
-	} catch (cbit.util.DataAccessException e) {
+	} catch (org.vcell.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -224,8 +224,8 @@ public final class LocalVCellServer_Stub
     }
     
     // implementation of getVCellConnection(User)
-    public cbit.vcell.server.VCellConnection getVCellConnection(cbit.util.document.User $param_User_1)
-	throws cbit.util.DataAccessException, java.rmi.RemoteException
+    public cbit.vcell.server.VCellConnection getVCellConnection(org.vcell.util.document.User $param_User_1)
+	throws org.vcell.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getVCellConnection_10, new java.lang.Object[] {$param_User_1}, -4865898240361431869L);
@@ -234,7 +234,7 @@ public final class LocalVCellServer_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.util.DataAccessException e) {
+	} catch (org.vcell.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);

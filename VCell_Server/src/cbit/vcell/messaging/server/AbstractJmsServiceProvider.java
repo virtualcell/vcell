@@ -3,7 +3,8 @@ package cbit.vcell.messaging.server;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 
-import cbit.util.PropertyLoader;
+import org.vcell.util.PropertyLoader;
+
 import cbit.vcell.messaging.VCServiceInfo;
 import cbit.vcell.modeldb.DatabasePolicySQL;
 

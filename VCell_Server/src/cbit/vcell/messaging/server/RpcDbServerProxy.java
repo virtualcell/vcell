@@ -1,18 +1,19 @@
 package cbit.vcell.messaging.server;
-import cbit.util.BigString;
-import cbit.util.DataAccessException;
-import cbit.util.ObjectNotFoundException;
-import cbit.util.ReferenceQueryResult;
-import cbit.util.ReferenceQuerySpec;
-import cbit.util.SessionLog;
-import cbit.util.document.CurateSpec;
-import cbit.util.document.FieldDataIdentifierSpec;
-import cbit.util.document.KeyValue;
-import cbit.util.document.User;
-import cbit.util.document.VCDocumentInfo;
-import cbit.util.document.VersionInfo;
-import cbit.util.document.VersionableFamily;
-import cbit.util.document.VersionableType;
+import org.vcell.util.BigString;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.ReferenceQueryResult;
+import org.vcell.util.ReferenceQuerySpec;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.CurateSpec;
+import org.vcell.util.document.FieldDataIdentifierSpec;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.VCDocumentInfo;
+import org.vcell.util.document.VersionInfo;
+import org.vcell.util.document.VersionableFamily;
+import org.vcell.util.document.VersionableType;
+
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.dictionary.ReactionQuerySpec;
 import cbit.vcell.export.ExportLog;
@@ -150,8 +151,8 @@ public VersionableFamily getAllReferences(VersionableType vType, KeyValue key) t
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.document.BioModelInfo getBioModelInfo(KeyValue key) throws DataAccessException, ObjectNotFoundException {
-	return (cbit.util.document.BioModelInfo)rpc("getBioModelInfo",new Object[]{user,key});
+public org.vcell.util.document.BioModelInfo getBioModelInfo(KeyValue key) throws DataAccessException, ObjectNotFoundException {
+	return (org.vcell.util.document.BioModelInfo)rpc("getBioModelInfo",new Object[]{user,key});
 }
 
 
@@ -162,8 +163,8 @@ public cbit.util.document.BioModelInfo getBioModelInfo(KeyValue key) throws Data
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.document.BioModelInfo[] getBioModelInfos(boolean bAll) throws DataAccessException {
-	return (cbit.util.document.BioModelInfo[])rpc("getBioModelInfos",new Object[]{user, new Boolean(bAll)});
+public org.vcell.util.document.BioModelInfo[] getBioModelInfos(boolean bAll) throws DataAccessException {
+	return (org.vcell.util.document.BioModelInfo[])rpc("getBioModelInfos",new Object[]{user, new Boolean(bAll)});
 }
 
 
@@ -302,8 +303,8 @@ public BigString getGeometryXML(KeyValue key) throws DataAccessException {
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.document.MathModelInfo getMathModelInfo(KeyValue key) throws DataAccessException, ObjectNotFoundException {
-	return (cbit.util.document.MathModelInfo)rpc("getMathModelInfo",new Object[]{user,key});
+public org.vcell.util.document.MathModelInfo getMathModelInfo(KeyValue key) throws DataAccessException, ObjectNotFoundException {
+	return (org.vcell.util.document.MathModelInfo)rpc("getMathModelInfo",new Object[]{user,key});
 }
 
 
@@ -314,8 +315,8 @@ public cbit.util.document.MathModelInfo getMathModelInfo(KeyValue key) throws Da
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.document.MathModelInfo[] getMathModelInfos(boolean bAll) throws DataAccessException {
-	return (cbit.util.document.MathModelInfo[])rpc("getMathModelInfos",new Object[]{user, new Boolean(bAll)});
+public org.vcell.util.document.MathModelInfo[] getMathModelInfos(boolean bAll) throws DataAccessException {
+	return (org.vcell.util.document.MathModelInfo[])rpc("getMathModelInfos",new Object[]{user, new Boolean(bAll)});
 }
 
 
@@ -362,8 +363,8 @@ public BigString getMathModelXML(KeyValue key) throws DataAccessException {
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.Preference[] getPreferences() throws DataAccessException {
-	return (cbit.util.Preference[])rpc("getPreferences",new Object[]{user});
+public org.vcell.util.Preference[] getPreferences() throws DataAccessException {
+	return (org.vcell.util.Preference[])rpc("getPreferences",new Object[]{user});
 }
 
 
@@ -565,7 +566,7 @@ public VersionInfo groupSetPublic(VersionableType vType, KeyValue key) throws Da
  * @param preferences cbit.util.Preference[]
  * @exception java.rmi.RemoteException The exception description.
  */
-public void replacePreferences(cbit.util.Preference[] preferences) throws DataAccessException {
+public void replacePreferences(org.vcell.util.Preference[] preferences) throws DataAccessException {
 	rpc("replacePreferences",new Object[]{user, preferences});
 }
 
@@ -580,7 +581,7 @@ public void replacePreferences(cbit.util.Preference[] preferences) throws DataAc
  */
 private Object rpc(String methodName, Object[] args) throws ObjectNotFoundException, DataAccessException {
 	try {
-		return rpc(cbit.util.MessageConstants.SERVICETYPE_DB_VALUE, methodName, args, true);
+		return rpc(org.vcell.util.MessageConstants.SERVICETYPE_DB_VALUE, methodName, args, true);
 	} catch (ObjectNotFoundException ex) {
 		log.exception(ex);
 		throw ex;
@@ -683,7 +684,7 @@ public BigString saveMathModelAs(BigString mathModelXML, java.lang.String newNam
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.BigString saveSimulation(cbit.util.BigString simulationXML, boolean bForceIndependent) throws DataAccessException {
+public org.vcell.util.BigString saveSimulation(org.vcell.util.BigString simulationXML, boolean bForceIndependent) throws DataAccessException {
 	return (BigString)rpc("saveSimulation",new Object[]{user, simulationXML, new Boolean(bForceIndependent)});
 }
 

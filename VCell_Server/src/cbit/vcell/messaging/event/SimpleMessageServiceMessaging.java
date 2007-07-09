@@ -1,12 +1,13 @@
 package cbit.vcell.messaging.event;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.User;
+
 import cbit.rmi.event.MessageCollector;
 import cbit.rmi.event.MessageDispatcher;
 import cbit.rmi.event.MessageHandler;
 import cbit.rmi.event.SimpleMessageCollector;
 import cbit.rmi.event.SimpleMessageDispatcher;
 import cbit.rmi.event.SimpleMessageHandler;
-import cbit.util.SessionLog;
-import cbit.util.document.User;
 import cbit.vcell.messaging.JmsMessageCollector;
 import cbit.vcell.messaging.VCellTopicConnection;
 

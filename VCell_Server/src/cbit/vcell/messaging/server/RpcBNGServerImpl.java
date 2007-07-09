@@ -1,6 +1,6 @@
 package cbit.vcell.messaging.server;
 
-import cbit.util.SessionLog;
+import org.vcell.util.SessionLog;
 
 /**
  * Insert the type's description here.

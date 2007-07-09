@@ -4,8 +4,9 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.ObjectMessage;
 
-import cbit.util.MessageConstants;
-import cbit.util.SessionLog;
+import org.vcell.util.MessageConstants;
+import org.vcell.util.SessionLog;
+
 import cbit.vcell.messaging.server.RpcRequest;
 
 /**

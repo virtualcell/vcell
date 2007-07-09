@@ -8,7 +8,8 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.UnexpectedException;
 
-import cbit.util.PropertyLoader;
+import org.vcell.util.PropertyLoader;
+
 /**
  * This type was created in VisualAge.
  */

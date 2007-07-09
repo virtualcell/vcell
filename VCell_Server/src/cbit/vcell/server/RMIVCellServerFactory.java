@@ -6,7 +6,8 @@ package cbit.vcell.server;
 ©*/
 import java.rmi.RemoteException;
 
-import cbit.util.document.User;
+import org.vcell.util.document.User;
+
 /**
  * This type was created in VisualAge.
  */

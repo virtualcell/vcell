@@ -1,21 +1,22 @@
 package cbit.vcell.messaging.server;
 import java.rmi.RemoteException;
 
-import cbit.util.BigString;
-import cbit.util.DataAccessException;
-import cbit.util.ObjectNotFoundException;
-import cbit.util.PropertyLoader;
-import cbit.util.ReferenceQueryResult;
-import cbit.util.ReferenceQuerySpec;
-import cbit.util.SessionLog;
-import cbit.util.document.CurateSpec;
-import cbit.util.document.FieldDataIdentifierSpec;
-import cbit.util.document.KeyValue;
-import cbit.util.document.User;
-import cbit.util.document.VCDocumentInfo;
-import cbit.util.document.VersionInfo;
-import cbit.util.document.VersionableFamily;
-import cbit.util.document.VersionableType;
+import org.vcell.util.BigString;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.ReferenceQueryResult;
+import org.vcell.util.ReferenceQuerySpec;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.CurateSpec;
+import org.vcell.util.document.FieldDataIdentifierSpec;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.VCDocumentInfo;
+import org.vcell.util.document.VersionInfo;
+import org.vcell.util.document.VersionableFamily;
+import org.vcell.util.document.VersionableType;
+
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.DBSpecies;
@@ -234,7 +235,7 @@ public VersionableFamily getAllReferences(VersionableType vType, KeyValue key) t
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.document.BioModelInfo getBioModelInfo(KeyValue bioModelKey) throws DataAccessException, ObjectNotFoundException {
+public org.vcell.util.document.BioModelInfo getBioModelInfo(KeyValue bioModelKey) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getBioModelInfo(key="+bioModelKey+")");
 		return dbServerProxy.getBioModelInfo(bioModelKey);
@@ -255,7 +256,7 @@ public cbit.util.document.BioModelInfo getBioModelInfo(KeyValue bioModelKey) thr
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.document.BioModelInfo[] getBioModelInfos(boolean bAll) throws DataAccessException {
+public org.vcell.util.document.BioModelInfo[] getBioModelInfos(boolean bAll) throws DataAccessException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getBioModelInfos(bAll="+bAll+")");
 		return dbServerProxy.getBioModelInfos(bAll);
@@ -504,7 +505,7 @@ public BigString getGeometryXML(KeyValue geometryKey) throws DataAccessException
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.document.MathModelInfo getMathModelInfo(KeyValue mathModelKey) throws DataAccessException, ObjectNotFoundException {
+public org.vcell.util.document.MathModelInfo getMathModelInfo(KeyValue mathModelKey) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getMathModelInfo(key="+mathModelKey+")");
 		return dbServerProxy.getMathModelInfo(mathModelKey);
@@ -525,7 +526,7 @@ public cbit.util.document.MathModelInfo getMathModelInfo(KeyValue mathModelKey) 
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.document.MathModelInfo[] getMathModelInfos(boolean bAll) throws DataAccessException {
+public org.vcell.util.document.MathModelInfo[] getMathModelInfos(boolean bAll) throws DataAccessException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getMathModelInfos(bAll="+bAll+")");
 		return dbServerProxy.getMathModelInfos(bAll);
@@ -603,10 +604,10 @@ public BigString getMathModelXML(KeyValue mathModelKey) throws DataAccessExcepti
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.Preference[] getPreferences() throws DataAccessException {
+public org.vcell.util.Preference[] getPreferences() throws DataAccessException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.getPreferences()");
-		cbit.util.Preference[] preferences = dbServerProxy.getPreferences();
+		org.vcell.util.Preference[] preferences = dbServerProxy.getPreferences();
 		return preferences;
 	} catch (DataAccessException e) {
 		log.exception(e);
@@ -883,7 +884,7 @@ public VCInfoContainer getVCInfoContainer() throws DataAccessException {
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.document.VersionInfo groupAddUser(VersionableType vType, KeyValue key,String addUserToGroup, boolean isHidden) throws DataAccessException, ObjectNotFoundException {
+public org.vcell.util.document.VersionInfo groupAddUser(VersionableType vType, KeyValue key,String addUserToGroup, boolean isHidden) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.groupAddUser(vType="+vType.getTypeName()+", Key="+key+", userToAdd="+addUserToGroup+", isHidden="+isHidden+")");
 		VersionInfo newVersionInfo = dbServerProxy.groupAddUser(vType,key,addUserToGroup,isHidden);
@@ -905,7 +906,7 @@ public cbit.util.document.VersionInfo groupAddUser(VersionableType vType, KeyVal
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.document.VersionInfo groupRemoveUser(VersionableType vType, KeyValue key,String userRemoveFromGroup,boolean isHiddenFromOwner) throws DataAccessException, ObjectNotFoundException {
+public org.vcell.util.document.VersionInfo groupRemoveUser(VersionableType vType, KeyValue key,String userRemoveFromGroup,boolean isHiddenFromOwner) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.groupRemoveUser(vType="+vType.getTypeName()+", Key="+key+", userRemoveFromGroup="+userRemoveFromGroup+")");
 		VersionInfo newVersionInfo = dbServerProxy.groupRemoveUser(vType,key,userRemoveFromGroup,isHiddenFromOwner);
@@ -927,7 +928,7 @@ public cbit.util.document.VersionInfo groupRemoveUser(VersionableType vType, Key
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.document.VersionInfo groupSetPrivate(VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException {
+public org.vcell.util.document.VersionInfo groupSetPrivate(VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.groupSetPrivate(vType="+vType.getTypeName()+", Key="+key+")");
 		VersionInfo newVersionInfo = dbServerProxy.groupSetPrivate(vType,key);
@@ -949,7 +950,7 @@ public cbit.util.document.VersionInfo groupSetPrivate(VersionableType vType, Key
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.document.VersionInfo groupSetPublic(VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException {
+public org.vcell.util.document.VersionInfo groupSetPublic(VersionableType vType, KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.groupSetPublic(vType="+vType.getTypeName()+", Key="+key+")");
 		VersionInfo newVersionInfo = dbServerProxy.groupSetPublic(vType,key);
@@ -970,7 +971,7 @@ public cbit.util.document.VersionInfo groupSetPublic(VersionableType vType, KeyV
  * @param preferences cbit.util.Preference[]
  * @exception java.rmi.RemoteException The exception description.
  */
-public void replacePreferences(cbit.util.Preference[] preferences) throws DataAccessException {
+public void replacePreferences(org.vcell.util.Preference[] preferences) throws DataAccessException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.replacePreferences()");
 		dbServerProxy.replacePreferences(preferences);
@@ -1108,7 +1109,7 @@ public BigString saveMathModelAs(BigString mathModelXML, String newName, String 
  * @exception DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.BigString saveSimulation(cbit.util.BigString simulationXML, boolean bForceIndependent) throws DataAccessException {
+public org.vcell.util.BigString saveSimulation(org.vcell.util.BigString simulationXML, boolean bForceIndependent) throws DataAccessException {
 	try {
 		log.print("LocalUserMetaDbServerMessaging.saveSimulation()");
 		BigString savedSimulationXML = dbServerProxy.saveSimulation(simulationXML,bForceIndependent);

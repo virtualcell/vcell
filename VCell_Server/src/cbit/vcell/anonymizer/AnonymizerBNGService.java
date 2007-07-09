@@ -1,6 +1,7 @@
 package cbit.vcell.anonymizer;
-import cbit.util.PropertyLoader;
-import cbit.util.SessionLog;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+
 import cbit.vcell.server.bionetgen.BNGOutput;
 
 /**
@@ -25,7 +26,7 @@ public AnonymizerBNGService(AnonymizerVCellConnection arg_anonymizerVCellConnect
  * Insert the method's description here.
  * Creation date: (7/11/2006 3:24:16 PM)
  */
-public cbit.vcell.server.bionetgen.BNGOutput executeBNG(cbit.vcell.server.bionetgen.BNGInput bngRulesInput) throws cbit.util.DataAccessException, java.rmi.RemoteException {
+public cbit.vcell.server.bionetgen.BNGOutput executeBNG(cbit.vcell.server.bionetgen.BNGInput bngRulesInput) throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
 	return (BNGOutput)remoteCall("executeBNG", new Class[] {cbit.vcell.server.bionetgen.BNGInput.class}, new Object[] {bngRulesInput});
 }
 
@@ -34,10 +35,10 @@ public cbit.vcell.server.bionetgen.BNGOutput executeBNG(cbit.vcell.server.bionet
  * Insert the method's description here.
  * Creation date: (5/12/2006 5:54:27 PM)
  * @param function cbit.vcell.math.Function
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-private Object remoteCall(String methodName, Class[] argClasses, Object[] args) throws java.rmi.RemoteException, cbit.util.DataAccessException, cbit.util.ObjectNotFoundException {
+private Object remoteCall(String methodName, Class[] argClasses, Object[] args) throws java.rmi.RemoteException, org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException {
 	return remoteCall(anonymizerVCellConnection.getRemoteBNGService(), methodName, argClasses, args);
 }
 }

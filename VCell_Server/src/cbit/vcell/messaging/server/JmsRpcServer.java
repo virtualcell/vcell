@@ -6,9 +6,10 @@ import java.util.Map;
 
 import javax.jms.JMSException;
 
-import cbit.util.DataAccessException;
-import cbit.util.SessionLog;
-import cbit.util.StdoutSessionLog;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.SessionLog;
+import org.vcell.util.StdoutSessionLog;
+
 import cbit.vcell.messaging.RpcServerMessaging;
 
 /**

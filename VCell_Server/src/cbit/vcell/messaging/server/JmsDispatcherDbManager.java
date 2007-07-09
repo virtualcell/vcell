@@ -1,11 +1,12 @@
 package cbit.vcell.messaging.server;
 import java.util.Date;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.MessageConstants;
+
 import cbit.rmi.event.SimulationJobStatus;
 import cbit.rmi.event.SimulationQueueEntryStatus;
 import cbit.rmi.event.VCellServerID;
-import cbit.util.DataAccessException;
-import cbit.util.MessageConstants;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.modeldb.AdminDatabaseServerXA;
 import cbit.vcell.simulation.VCSimulationIdentifier;

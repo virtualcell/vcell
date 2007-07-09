@@ -1,7 +1,8 @@
 package cbit.vcell.messaging.server;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.document.KeyValue;
+
 import cbit.rmi.event.SimulationJobStatus;
-import cbit.util.DataAccessException;
-import cbit.util.document.KeyValue;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.modeldb.AdminDatabaseServer;
 import cbit.vcell.simulation.VCSimulationIdentifier;

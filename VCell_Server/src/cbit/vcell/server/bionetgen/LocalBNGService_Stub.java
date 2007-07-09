@@ -29,7 +29,7 @@ public final class LocalBNGService_Stub
     
     // implementation of executeBNG(BNGInput)
     public cbit.vcell.server.bionetgen.BNGOutput executeBNG(cbit.vcell.server.bionetgen.BNGInput $param_BNGInput_1)
-	throws cbit.util.DataAccessException, java.rmi.RemoteException
+	throws org.vcell.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_executeBNG_0, new java.lang.Object[] {$param_BNGInput_1}, 5716613448246541433L);
@@ -38,7 +38,7 @@ public final class LocalBNGService_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.util.DataAccessException e) {
+	} catch (org.vcell.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);

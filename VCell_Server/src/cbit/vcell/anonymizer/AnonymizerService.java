@@ -2,8 +2,9 @@ package cbit.vcell.anonymizer;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import cbit.util.DataAccessException;
-import cbit.util.SessionLog;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.SessionLog;
+
 
 /**
  * Insert the type's description here.
@@ -28,10 +29,10 @@ public AnonymizerService(int port, AnonymizerVCellConnection arg_anonymizerVCell
  * Insert the method's description here.
  * Creation date: (5/12/2006 5:54:27 PM)
  * @param function cbit.vcell.math.Function
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-protected Object remoteCall(Object remoteService, String methodName, Class[] argClasses, Object[] args) throws java.rmi.RemoteException, cbit.util.DataAccessException, cbit.util.ObjectNotFoundException {
+protected Object remoteCall(Object remoteService, String methodName, Class[] argClasses, Object[] args) throws java.rmi.RemoteException, org.vcell.util.DataAccessException, org.vcell.util.ObjectNotFoundException {
 	StringBuffer message = new StringBuffer();
 	message.append(remoteService.getClass() + "." + methodName + "(");
 	for (int i = 0; i < args.length; i ++) {
@@ -61,9 +62,9 @@ protected Object remoteCall(Object remoteService, String methodName, Class[] arg
 				status = "retry succeeded";
 			} catch (InvocationTargetException itex2) {
 				sessionLog.exception(itex2);	
-				if (itex.getTargetException() instanceof cbit.util.ObjectNotFoundException) {
-					throw (cbit.util.ObjectNotFoundException)itex.getTargetException();
-				} else if (itex.getTargetException() instanceof cbit.util.DataAccessException) {
+				if (itex.getTargetException() instanceof org.vcell.util.ObjectNotFoundException) {
+					throw (org.vcell.util.ObjectNotFoundException)itex.getTargetException();
+				} else if (itex.getTargetException() instanceof org.vcell.util.DataAccessException) {
 					throw (DataAccessException)itex.getTargetException();
 				} else	if (itex.getTargetException() instanceof java.rmi.RemoteException) {
 					throw (java.rmi.RemoteException)itex.getTargetException();
@@ -75,9 +76,9 @@ protected Object remoteCall(Object remoteService, String methodName, Class[] arg
 			} finally {
 				sessionLog.print(status + " " + message);
 			} 
-		} else if (itex.getTargetException() instanceof cbit.util.ObjectNotFoundException) {
-			throw (cbit.util.ObjectNotFoundException)itex.getTargetException();
-		} else if (itex.getTargetException() instanceof cbit.util.DataAccessException) {
+		} else if (itex.getTargetException() instanceof org.vcell.util.ObjectNotFoundException) {
+			throw (org.vcell.util.ObjectNotFoundException)itex.getTargetException();
+		} else if (itex.getTargetException() instanceof org.vcell.util.DataAccessException) {
 			throw (DataAccessException)itex.getTargetException();
 		} else {			
 			throw new RuntimeException(itex.getMessage());

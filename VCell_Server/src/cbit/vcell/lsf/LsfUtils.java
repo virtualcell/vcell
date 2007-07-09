@@ -1,10 +1,11 @@
 package cbit.vcell.lsf;
 import java.util.StringTokenizer;
 
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+import org.vcell.util.StdoutSessionLog;
+
 import cbit.rmi.event.VCellServerID;
-import cbit.util.PropertyLoader;
-import cbit.util.SessionLog;
-import cbit.util.StdoutSessionLog;
 
 /**
  * Insert the type's description here.
@@ -34,7 +35,7 @@ public static String getEnvVariable(String keyword) {
 	}
 	
 	try {
-		cbit.util.Executable exe = new cbit.util.Executable(command);
+		org.vcell.util.Executable exe = new org.vcell.util.Executable(command);
 		exe.start();
 		value = exe.getStdoutString().trim();
 	} catch (Exception e) {
@@ -56,12 +57,12 @@ public static String getExecutionHost(String jobid) {
 		return null;
 	}
 
-	cbit.util.Executable exe = null;
+	org.vcell.util.Executable exe = null;
 	String host = null;
 	
 	try {
 		String cmd = BINDIR + "\\bhist -l " + jobid;
-		exe = new cbit.util.Executable(cmd);
+		exe = new org.vcell.util.Executable(cmd);
 		exe.start();
 		
 		String output = exe.getStdoutString();
@@ -79,7 +80,7 @@ public static String getExecutionHost(String jobid) {
 				}
 			}
 		}
-	} catch (cbit.util.ExecutableException ex) {	
+	} catch (org.vcell.util.ExecutableException ex) {	
 		lsfLog.exception(ex);
 	}
 
@@ -97,7 +98,7 @@ public static String getJobExitCode(String jobid) {
 	if (BINDIR != null) {
 		String cmd = BINDIR + "\\bhist -l " + jobid;
 		try {		
-			cbit.util.Executable exe = new cbit.util.Executable(cmd);
+			org.vcell.util.Executable exe = new org.vcell.util.Executable(cmd);
 			exe.start();
 
 			String output = exe.getStdoutString();
@@ -109,7 +110,7 @@ public static String getJobExitCode(String jobid) {
 					return s.substring(0, index + 1);
 				}
 			} 
-		} catch (cbit.util.ExecutableException ex) {
+		} catch (org.vcell.util.ExecutableException ex) {
 			lsfLog.exception(ex);
 		}
 	}
@@ -130,11 +131,11 @@ public static int getJobStatus(String jobid) {
 	}
 		
 	int iStatus = LsfConstants.LSF_STATUS_UNKNOWN;
-	cbit.util.Executable exe = null;
+	org.vcell.util.Executable exe = null;
 	
 	try {
 		String cmd = BINDIR + "\\bjobs " + jobid;
-		exe = new cbit.util.Executable(cmd);
+		exe = new org.vcell.util.Executable(cmd);
 		exe.start();
 		
 		String output = exe.getStdoutString();
@@ -155,11 +156,11 @@ public static int getJobStatus(String jobid) {
 		}
 			
 		
-	} catch (cbit.util.ExecutableException ex) {
+	} catch (org.vcell.util.ExecutableException ex) {
 		String err = exe.getStderrString();
 		String cmd = BINDIR + "\\bhist -l " + jobid;
 		try {		
-			exe = new cbit.util.Executable(cmd);
+			exe = new org.vcell.util.Executable(cmd);
 			exe.start();
 
 			String output = exe.getStdoutString();
@@ -168,7 +169,7 @@ public static int getJobStatus(String jobid) {
 			} else if (output.indexOf("Exit") >= 0) {
 				return LsfConstants.LSF_STATUS_EXITED;
 			}
-		} catch (cbit.util.ExecutableException ex0) {
+		} catch (org.vcell.util.ExecutableException ex0) {
 			lsfLog.exception(ex0);
 			return LsfConstants.LSF_STATUS_UNKNOWN;
 		}
@@ -228,14 +229,14 @@ public static String getPendingReason(String jobid) {
 		return "";
 	}
 		
-	cbit.util.Executable exe = null;
+	org.vcell.util.Executable exe = null;
 	String reason = "";
 	final String STRING_PENDING_REASONS = "PENDING REASONS:";
 	final String STRING_SCHEDULING_PARAMETERS = "SCHEDULING PARAMETERS";
 	
 	try {
 		String cmd = BINDIR + "\\bjobs -l " + jobid;
-		exe = new cbit.util.Executable(cmd);
+		exe = new org.vcell.util.Executable(cmd);
 		exe.start();
 		
 		String output = exe.getStdoutString();
@@ -249,7 +250,7 @@ public static String getPendingReason(String jobid) {
 			}	
 		}		
 		
-	} catch (cbit.util.ExecutableException ex) {
+	} catch (org.vcell.util.ExecutableException ex) {
 		lsfLog.exception(ex);
 	}
 
@@ -269,9 +270,9 @@ public static void killJob(String jobid) {
 		
 	try {
 		String cmd = BINDIR + "\\bkill " + jobid;
-		cbit.util.Executable exe = new cbit.util.Executable(cmd);
+		org.vcell.util.Executable exe = new org.vcell.util.Executable(cmd);
 		exe.start();
-	} catch (cbit.util.ExecutableException ex) {
+	} catch (org.vcell.util.ExecutableException ex) {
 		lsfLog.exception(ex);
 	}
 }
@@ -350,7 +351,7 @@ public static void main(String[] args) {
  * Creation date: (9/25/2003 8:04:51 AM)
  * @param command java.lang.String
  */
-public static String submitJob(String job) throws cbit.util.ExecutableException {
+public static String submitJob(String job) throws org.vcell.util.ExecutableException {
 	return submitJob(job, getLsfQueue());
 }
 
@@ -360,7 +361,7 @@ public static String submitJob(String job) throws cbit.util.ExecutableException 
  * Creation date: (9/25/2003 8:04:51 AM)
  * @param command java.lang.String
  */
-public static String submitJob(String job, String queuename) throws cbit.util.ExecutableException {
+public static String submitJob(String job, String queuename) throws org.vcell.util.ExecutableException {
 	if (BINDIR == null) {
 		return null;
 	}
@@ -370,7 +371,7 @@ public static String submitJob(String job, String queuename) throws cbit.util.Ex
 		completeCommand += " -q " + queuename;
 	}
 	completeCommand += " " + job;
-	cbit.util.Executable exe = new cbit.util.Executable(completeCommand, 20 * cbit.util.MessageConstants.SECOND);
+	org.vcell.util.Executable exe = new org.vcell.util.Executable(completeCommand, 20 * org.vcell.util.MessageConstants.SECOND);
 	exe.start();
 	String output = exe.getStdoutString();
 	if (output.indexOf ("submitted to") > 0) { // success submission

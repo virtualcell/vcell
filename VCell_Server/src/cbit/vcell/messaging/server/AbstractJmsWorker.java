@@ -5,9 +5,10 @@ import java.util.Date;
 
 import javax.jms.JMSException;
 
-import cbit.util.MessageConstants;
-import cbit.util.SessionLog;
-import cbit.util.StdoutSessionLog;
+import org.vcell.util.MessageConstants;
+import org.vcell.util.SessionLog;
+import org.vcell.util.StdoutSessionLog;
+
 import cbit.util.xml.XmlParseException;
 import cbit.vcell.messaging.WorkerMessaging;
 import cbit.vcell.solvers.SolverEvent;

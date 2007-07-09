@@ -2,11 +2,12 @@ package cbit.vcell.anonymizer;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.User;
+
 import cbit.rmi.event.SimpleMessageService;
-import cbit.util.DataAccessException;
-import cbit.util.PropertyLoader;
-import cbit.util.SessionLog;
-import cbit.util.document.User;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.server.RMIVCellConnectionFactory;
 import cbit.vcell.server.SimulationController;
@@ -72,10 +73,10 @@ private void connect() throws cbit.vcell.server.AuthenticationException, cbit.vc
  * Insert the method's description here.
  * Creation date: (7/11/2006 3:22:07 PM)
  * @return cbit.vcell.server.DataSetController
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.vcell.server.bionetgen.BNGService getBNGService() throws cbit.util.DataAccessException, java.rmi.RemoteException {
+public cbit.vcell.server.bionetgen.BNGService getBNGService() throws org.vcell.util.DataAccessException, java.rmi.RemoteException {
 	if (bngService == null) {
 		bngService = new AnonymizerBNGService(this, sessionLog);
 	}

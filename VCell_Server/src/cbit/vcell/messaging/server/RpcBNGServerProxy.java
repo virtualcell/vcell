@@ -1,7 +1,7 @@
 package cbit.vcell.messaging.server;
-import cbit.util.DataAccessException;
-import cbit.util.SessionLog;
-import cbit.util.document.User;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.User;
 /**
  * Insert the type's description here.
  * Creation date: (7/11/2006 11:16:33 AM)
@@ -40,7 +40,7 @@ public cbit.vcell.server.bionetgen.BNGOutput executeBNG(cbit.vcell.server.bionet
  */
 private Object rpc(String methodName, Object[] args) throws DataAccessException {
 	try {
-		return rpc(cbit.util.MessageConstants.SERVICETYPE_BIONETGEN_VALUE, methodName, args, true);
+		return rpc(org.vcell.util.MessageConstants.SERVICETYPE_BIONETGEN_VALUE, methodName, args, true);
 	} catch (DataAccessException ex) {
 		log.exception(ex);
 		throw ex;

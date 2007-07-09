@@ -7,18 +7,19 @@ import java.util.Map;
 import javax.jms.JMSException;
 import javax.jms.Message;
 
+import org.vcell.util.BigString;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.MessageConstants;
+import org.vcell.util.document.FieldDataIdentifierSpec;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+
 import cbit.rmi.event.SimulationJobStatus;
 import cbit.rmi.event.VCSimulationDataIdentifier;
 import cbit.rmi.event.WorkerEvent;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.DBCacheTable;
 import cbit.sql.KeyFactory;
-import cbit.util.BigString;
-import cbit.util.DataAccessException;
-import cbit.util.MessageConstants;
-import cbit.util.document.FieldDataIdentifierSpec;
-import cbit.util.document.KeyValue;
-import cbit.util.document.User;
 import cbit.vcell.messaging.JmsClientMessaging;
 import cbit.vcell.messaging.SimulationDispatcherMessaging;
 import cbit.vcell.messaging.StatusMessage;
@@ -41,7 +42,7 @@ public class SimulationDispatcher extends AbstractJmsServiceProvider {
 	private Map<User,RpcDbServerProxy> userDbServerMap = null;
 	private ConnectionFactory conFactory = null;
 	private KeyFactory keyFactory = null;
-	private cbit.util.SessionLog log = null;
+	private org.vcell.util.SessionLog log = null;
 	private JmsClientMessaging clientMessaging = null;
 	private LocalAdminDbServer adminDbServer = null;
 	
@@ -58,7 +59,7 @@ public class SimulationDispatcher extends AbstractJmsServiceProvider {
  * Scheduler constructor comment.
  */
 public SimulationDispatcher(String serviceName) throws Exception {
-	log = new cbit.util.StdoutSessionLog(serviceName);	
+	log = new org.vcell.util.StdoutSessionLog(serviceName);	
 	
 	String hostName = cbit.vcell.messaging.ManageUtils.getLocalHostName();
 	serviceInfo = new cbit.vcell.messaging.VCServiceInfo(hostName, MessageConstants.SERVICETYPE_DISPATCH_VALUE, serviceName);

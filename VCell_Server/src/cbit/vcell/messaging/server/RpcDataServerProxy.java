@@ -1,9 +1,10 @@
 package cbit.vcell.messaging.server;
-import cbit.util.DataAccessException;
-import cbit.util.MessageConstants;
-import cbit.util.SessionLog;
-import cbit.util.VCDataIdentifier;
-import cbit.util.document.User;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.MessageConstants;
+import org.vcell.util.SessionLog;
+import org.vcell.util.VCDataIdentifier;
+import org.vcell.util.document.User;
+
 import cbit.vcell.math.DataIdentifier;
 import cbit.vcell.messaging.JmsClientMessaging;
 import cbit.vcell.simdata.ParticleDataBlock;
@@ -99,7 +100,7 @@ public boolean getIsODEData(VCDataIdentifier vcdID) throws DataAccessException {
  * @param end cbit.vcell.math.CoordinateIndex
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.plot.PlotData getLineScan(VCDataIdentifier vcdID, String variable, double time, cbit.util.CoordinateIndex begin, cbit.util.CoordinateIndex end) throws DataAccessException {
+public cbit.plot.PlotData getLineScan(VCDataIdentifier vcdID, String variable, double time, org.vcell.util.CoordinateIndex begin, org.vcell.util.CoordinateIndex end) throws DataAccessException {
 	return (cbit.plot.PlotData)rpc("getLineScan",new Object[]{user, vcdID,variable,new Double(time),begin, end});
 }
 
@@ -179,8 +180,8 @@ public SimDataBlock getSimDataBlock(VCDataIdentifier vcdID, String varName, doub
  * @param z int
  * @exception java.rmi.RemoteException The exception description.
  */
-public cbit.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID,cbit.util.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
-	return (cbit.util.TimeSeriesJobResults)rpc("getTimeSeriesValues",new Object[]{user, vcdID,timeSeriesJobSpec});
+public org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID,org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
+	return (org.vcell.util.TimeSeriesJobResults)rpc("getTimeSeriesValues",new Object[]{user, vcdID,timeSeriesJobSpec});
 }
 
 
@@ -194,7 +195,7 @@ public cbit.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID
  */
 public cbit.rmi.event.ExportEvent makeRemoteFile(cbit.vcell.export.ExportSpecs exportSpecs) throws DataAccessException {
 	try {
-		rpc(cbit.util.MessageConstants.SERVICETYPE_DATA_VALUE, "makeRemoteFile", new Object[]{user, exportSpecs}, false, new String[]{MessageConstants.SERVICE_DATA_ISEXPORTING}, new Object[]{new Boolean(true)});
+		rpc(org.vcell.util.MessageConstants.SERVICETYPE_DATA_VALUE, "makeRemoteFile", new Object[]{user, exportSpecs}, false, new String[]{MessageConstants.SERVICE_DATA_ISEXPORTING}, new Object[]{new Boolean(true)});
 	} catch (DataAccessException ex) {
 		log.exception(ex);
 		throw ex;
@@ -231,7 +232,7 @@ public void removeFunction(VCDataIdentifier vcdataID, cbit.vcell.math.AnnotatedF
  */
 private Object rpc(String methodName, Object[] args) throws DataAccessException {
 	try {
-		return rpc(cbit.util.MessageConstants.SERVICETYPE_DATA_VALUE, methodName, args, true);
+		return rpc(org.vcell.util.MessageConstants.SERVICETYPE_DATA_VALUE, methodName, args, true);
 	} catch (DataAccessException ex) {
 		log.exception(ex);
 		throw ex;

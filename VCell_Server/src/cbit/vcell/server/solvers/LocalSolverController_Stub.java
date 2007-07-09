@@ -40,7 +40,7 @@ public final class LocalSolverController_Stub
     
     // implementation of getHost()
     public java.lang.String getHost()
-	throws cbit.util.DataAccessException, java.rmi.RemoteException
+	throws org.vcell.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getHost_0, null, 6303500972804249791L);
@@ -49,7 +49,7 @@ public final class LocalSolverController_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.util.DataAccessException e) {
+	} catch (org.vcell.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -58,7 +58,7 @@ public final class LocalSolverController_Stub
     
     // implementation of getProgress()
     public double getProgress()
-	throws cbit.util.DataAccessException, cbit.vcell.solvers.SolverNotRunningException, java.rmi.RemoteException
+	throws org.vcell.util.DataAccessException, cbit.vcell.solvers.SolverNotRunningException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getProgress_1, null, -8180129235656248200L);
@@ -67,7 +67,7 @@ public final class LocalSolverController_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.util.DataAccessException e) {
+	} catch (org.vcell.util.DataAccessException e) {
 	    throw e;
 	} catch (cbit.vcell.solvers.SolverNotRunningException e) {
 	    throw e;
@@ -78,7 +78,7 @@ public final class LocalSolverController_Stub
     
     // implementation of getSimulationJob()
     public cbit.vcell.solvers.SimulationJob getSimulationJob()
-	throws cbit.util.DataAccessException, java.rmi.RemoteException
+	throws org.vcell.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getSimulationJob_2, null, -5054384535408496800L);
@@ -87,7 +87,7 @@ public final class LocalSolverController_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.util.DataAccessException e) {
+	} catch (org.vcell.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -96,7 +96,7 @@ public final class LocalSolverController_Stub
     
     // implementation of getSolverStatus()
     public cbit.vcell.solvers.SolverStatus getSolverStatus()
-	throws cbit.util.DataAccessException, java.rmi.RemoteException
+	throws org.vcell.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    Object $result = ref.invoke(this, $method_getSolverStatus_3, null, -3057449742020537727L);
@@ -105,7 +105,7 @@ public final class LocalSolverController_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.util.DataAccessException e) {
+	} catch (org.vcell.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
@@ -114,7 +114,7 @@ public final class LocalSolverController_Stub
     
     // implementation of startSimulationJob()
     public void startSimulationJob()
-	throws cbit.util.DataAccessException, cbit.vcell.solvers.SimExecutionException, java.rmi.RemoteException
+	throws org.vcell.util.DataAccessException, cbit.vcell.solvers.SimExecutionException, java.rmi.RemoteException
     {
 	try {
 	    ref.invoke(this, $method_startSimulationJob_4, null, 2014841305969865019L);
@@ -122,7 +122,7 @@ public final class LocalSolverController_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.util.DataAccessException e) {
+	} catch (org.vcell.util.DataAccessException e) {
 	    throw e;
 	} catch (cbit.vcell.solvers.SimExecutionException e) {
 	    throw e;
@@ -133,7 +133,7 @@ public final class LocalSolverController_Stub
     
     // implementation of stopSimulationJob()
     public void stopSimulationJob()
-	throws cbit.util.DataAccessException, java.rmi.RemoteException
+	throws org.vcell.util.DataAccessException, java.rmi.RemoteException
     {
 	try {
 	    ref.invoke(this, $method_stopSimulationJob_5, null, -2088673216025717036L);
@@ -141,7 +141,7 @@ public final class LocalSolverController_Stub
 	    throw e;
 	} catch (java.rmi.RemoteException e) {
 	    throw e;
-	} catch (cbit.util.DataAccessException e) {
+	} catch (org.vcell.util.DataAccessException e) {
 	    throw e;
 	} catch (java.lang.Exception e) {
 	    throw new java.rmi.UnexpectedException("undeclared checked exception", e);
