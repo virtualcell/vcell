@@ -33,7 +33,7 @@ public ModelComponent(String argName) {
  * @param symbol ncbc.physics2.component.Symbol
  */
 public void addConnector(Connector connector) {
-	setConnectors((Connector[])cbit.util.BeanUtils.addElement(fieldConnectors,connector));
+	setConnectors((Connector[])org.vcell.util.BeanUtils.addElement(fieldConnectors,connector));
 }
 
 
@@ -43,7 +43,7 @@ public void addConnector(Connector connector) {
  * @param symbol ncbc.physics2.component.Symbol
  */
 public void addEquation(Expression exp) {
-	setEquations((Expression[])cbit.util.BeanUtils.addElement(fieldEquations,exp));
+	setEquations((Expression[])org.vcell.util.BeanUtils.addElement(fieldEquations,exp));
 }
 
 
@@ -61,7 +61,7 @@ public synchronized void addPropertyChangeListener(java.beans.PropertyChangeList
  * @param physicalSymbol ncbc.physics2.component.Symbol
  */
 public void addSymbol(PhysicalSymbol physicalSymbol) {
-	setSymbols((PhysicalSymbol[])cbit.util.BeanUtils.addElement(fieldSymbols,physicalSymbol));
+	setSymbols((PhysicalSymbol[])org.vcell.util.BeanUtils.addElement(fieldSymbols,physicalSymbol));
 }
 
 

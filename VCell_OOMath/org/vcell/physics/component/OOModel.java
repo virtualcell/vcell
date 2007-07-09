@@ -26,7 +26,7 @@ public OOModel() {
  * @param connection ncbc.physics2.component.Connection
  */
 public void addConnection(Connection connection) {
-	setConnections((Connection[])cbit.util.BeanUtils.addElement(fieldConnections,connection));
+	setConnections((Connection[])org.vcell.util.BeanUtils.addElement(fieldConnections,connection));
 }
 
 
@@ -36,7 +36,7 @@ public void addConnection(Connection connection) {
  * @param modelComponent ncbc.physics2.component.ModelComponent
  */
 public void addModelComponent(ModelComponent modelComponent) {
-	setModelComponents((ModelComponent[])cbit.util.BeanUtils.addElement(fieldModelComponents,modelComponent));
+	setModelComponents((ModelComponent[])org.vcell.util.BeanUtils.addElement(fieldModelComponents,modelComponent));
 }
 
 

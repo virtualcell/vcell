@@ -308,7 +308,7 @@ protected void menuAction(Shape shape, String menuAction) {
 		Shape shapes[] = reactionModelGraphModel.getAllSelectedShapes();
 
 	}catch (Throwable e){
-		cbit.gui.DialogUtils.showErrorDialog("Error:\n"+e.getMessage());
+		org.vcell.util.gui.DialogUtils.showErrorDialog("Error:\n"+e.getMessage());
 	}
 }
 

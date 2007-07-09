@@ -207,7 +207,7 @@ public void show() {
 	for (int i = 0; i < symbols.length; i++){
 		System.out.println(i+") "+symbols[i].getName());
 	}
-	Expression[] expressions = (Expression[])cbit.util.BeanUtils.getArray(equationList,Expression.class);
+	Expression[] expressions = (Expression[])org.vcell.util.BeanUtils.getArray(equationList,Expression.class);
 	for (int i = 0; i < expressions.length; i++){
 		System.out.println(i+") "+expressions[i].infix()+" == 0.0");
 	}

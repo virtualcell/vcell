@@ -38,7 +38,7 @@ public static void main(java.lang.String[] args) {
 		ooModelPanel.setPreferredSize(new java.awt.Dimension(800,800));
 		ooModelPanel.setMinimumSize(new java.awt.Dimension(800,800));
 
-		cbit.gui.DialogUtils.showComponentOKCancelDialog(null,ooModelPanel,"graph");
+		org.vcell.util.gui.DialogUtils.showComponentOKCancelDialog(null,ooModelPanel,"graph");
 
 	} catch (Throwable e) {
 		e.printStackTrace(System.out);

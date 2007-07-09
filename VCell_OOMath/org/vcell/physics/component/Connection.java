@@ -32,7 +32,7 @@ public void addConnector(Connector connector) {
 	if (contains(connector)){
 		throw new RuntimeException("connection already contains connector "+connector);
 	}
-	connectors = (Connector[])cbit.util.BeanUtils.addElement(connectors,connector);
+	connectors = (Connector[])org.vcell.util.BeanUtils.addElement(connectors,connector);
 }
 
 
