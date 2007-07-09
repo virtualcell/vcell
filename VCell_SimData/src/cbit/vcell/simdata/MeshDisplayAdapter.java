@@ -6,11 +6,13 @@ package cbit.vcell.simdata;
 import cbit.render.objects.Quadrilateral;
 import cbit.render.objects.Surface;
 import cbit.render.objects.SurfaceCollection;
-import cbit.util.Coordinate;
-import cbit.util.CoordinateIndex;
-import cbit.util.NullSessionLog;
 import cbit.vcell.geometry.*;
 import java.util.*;
+
+import org.vcell.util.Coordinate;
+import org.vcell.util.CoordinateIndex;
+import org.vcell.util.NullSessionLog;
+
 import cbit.vcell.mesh.CartesianMesh;
 import cbit.vcell.mesh.ContourElement;
 import cbit.vcell.mesh.MembraneElement;

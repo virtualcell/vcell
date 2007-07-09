@@ -14,9 +14,9 @@ import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.SymbolTable;
 import org.vcell.expression.SymbolTableEntry;
+import org.vcell.util.*;
+import org.vcell.util.document.User;
 
-import cbit.util.*;
-import cbit.util.document.User;
 import edu.uchc.vcell.expression.internal.*;
 /**
  * This type was created in VisualAge.
@@ -230,7 +230,7 @@ private boolean checkTimeArrays(double[] timeArray) {
  * @return long
  * @param dataType int
  * @param timepoint double
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
 public long getDataBlockTimeStamp(int dataType, double timepoint) throws DataAccessException {
 	long latestTimeStamp = Long.MIN_VALUE;

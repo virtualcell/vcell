@@ -168,7 +168,7 @@ public java.beans.PropertyDescriptor activeScaleRangePropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.util.Range.class
+					org.vcell.util.Range.class
 				};
 				aSetMethod = getBeanClass().getMethod("setActiveScaleRange", aSetMethodParameterTypes);
 			} catch (Throwable exception) {
@@ -402,7 +402,7 @@ public java.beans.PropertyDescriptor customScaleRangePropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.util.Range.class
+					org.vcell.util.Range.class
 				};
 				aSetMethod = getBeanClass().getMethod("setCustomScaleRange", aSetMethodParameterTypes);
 			} catch (Throwable exception) {
@@ -766,7 +766,7 @@ public java.beans.PropertyDescriptor valueDomainPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.util.Range.class
+					org.vcell.util.Range.class
 				};
 				aSetMethod = getBeanClass().getMethod("setValueDomain", aSetMethodParameterTypes);
 			} catch (Throwable exception) {

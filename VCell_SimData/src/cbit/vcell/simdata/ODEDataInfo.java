@@ -16,7 +16,7 @@ public class ODEDataInfo extends DataInfo {
  * @param user cbit.vcell.server.User
  * @param simID java.lang.String
  */
-public ODEDataInfo(cbit.util.document.User user, String simID, long dataBlockTimeStamp) {
+public ODEDataInfo(org.vcell.util.document.User user, String simID, long dataBlockTimeStamp) {
 	super(user, simID, NO_VARIABLE, NO_TIME, dataBlockTimeStamp, "Ode");
 }
 }

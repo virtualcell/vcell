@@ -3,13 +3,14 @@ package cbit.vcell.mesh;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.util.Coordinate;
+
 import cbit.render.objects.Vect3d;
-import cbit.util.Coordinate;
 import cbit.vcell.math.*;
 /**
  * This type was created in VisualAge.
  */
-public class MembraneElement implements java.io.Serializable, cbit.util.Matchable {
+public class MembraneElement implements java.io.Serializable, org.vcell.util.Matchable {
 	private int memIndex;
 	private int insideIndex;
 	private int outsideIndex;
@@ -59,7 +60,7 @@ public MembraneElement(int argMembraneIndex, int argInsideIndex, int argOutsideI
  * @return boolean
  * @param object cbit.util.Matchable
  */
-public boolean compareEqual(cbit.util.Matchable object) {
+public boolean compareEqual(org.vcell.util.Matchable object) {
 	if (this == object){
 		return true;
 	}

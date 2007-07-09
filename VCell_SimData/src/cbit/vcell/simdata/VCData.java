@@ -9,8 +9,8 @@ import cbit.vcell.mesh.CartesianMesh;
 import java.io.*;
 
 import org.vcell.expression.ExpressionException;
+import org.vcell.util.*;
 
-import cbit.util.*;
 import edu.uchc.vcell.expression.internal.*;
 /**
  * This type was created in VisualAge.
@@ -38,7 +38,7 @@ public abstract void addFunction(AnnotatedFunction function) throws ExpressionEx
  * @return long
  * @param dataType int
  * @param timepoint double
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
 public abstract long getDataBlockTimeStamp(int dataType, double timepoint) throws DataAccessException;
 

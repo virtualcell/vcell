@@ -4,13 +4,15 @@ package cbit.vcell.simdata;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.CommentStringTokenizer;
-import cbit.util.Coordinate;
-import cbit.util.DataAccessException;
-import cbit.util.document.User;
 
 import java.util.*;
 import java.io.*;
+
+import org.vcell.util.CommentStringTokenizer;
+import org.vcell.util.Coordinate;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.document.User;
+
 import cbit.vcell.geometry.*;
 /**
  * This type was created in VisualAge.

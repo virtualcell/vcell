@@ -7,13 +7,14 @@ package cbit.vcell.simdata;
 import java.util.Hashtable;
 import java.util.Enumeration;
 
-import cbit.util.CacheException;
-import cbit.util.CacheStatus;
-import cbit.util.Ping;
-import cbit.util.Pingable;
-import cbit.util.PropertyLoader;
-import cbit.util.TimeWrapper;
-import cbit.util.VCDataIdentifier;
+import org.vcell.util.CacheException;
+import org.vcell.util.CacheStatus;
+import org.vcell.util.Ping;
+import org.vcell.util.Pingable;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.TimeWrapper;
+import org.vcell.util.VCDataIdentifier;
+
 /**
  * This type was created in VisualAge.
  */

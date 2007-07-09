@@ -1,8 +1,8 @@
 package cbit.vcell.simdata;
-import cbit.util.CoordinateIndex;
-import cbit.util.DataAccessException;
-import cbit.util.PermissionException;
-import cbit.util.VCDataIdentifier;
+import org.vcell.util.CoordinateIndex;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PermissionException;
+import org.vcell.util.VCDataIdentifier;
 
 import cbit.plot.PlotData;
 import cbit.vcell.math.Function;
@@ -15,7 +15,7 @@ public interface DataManager {
  * 
  * @param function named expression that is to be bound to dataset and whose name is added to variable list.
  * 
- * @throws cbit.util.DataAccessException if Function cannot be bound to this dataset or SimulationInfo not found.
+ * @throws org.vcell.util.DataAccessException if Function cannot be bound to this dataset or SimulationInfo not found.
  */
 void addFunction(cbit.vcell.math.AnnotatedFunction function) throws DataAccessException;
 
@@ -24,7 +24,7 @@ void addFunction(cbit.vcell.math.AnnotatedFunction function) throws DataAccessEx
  * 
  * @param functions represent named expressions that are to be bound to dataset and whose names are added to variable list.
  * 
- * @throws cbit.util.DataAccessException if Functions cannot be bound to this dataset or SimulationInfo not found.
+ * @throws org.vcell.util.DataAccessException if Functions cannot be bound to this dataset or SimulationInfo not found.
  */
 void addFunctions(cbit.vcell.math.AnnotatedFunction[] functions) throws DataAccessException;
 
@@ -35,7 +35,7 @@ void addFunctions(cbit.vcell.math.AnnotatedFunction[] functions) throws DataAcce
  * 
  * @returns array of availlable data names.
  * 
- * @throws cbit.util.DataAccessException if SimulationInfo not found.
+ * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  */
 cbit.vcell.math.DataIdentifier[] getDataIdentifiers() throws DataAccessException;
 
@@ -45,7 +45,7 @@ cbit.vcell.math.DataIdentifier[] getDataIdentifiers() throws DataAccessException
  * 
  * @returns double array of times of availlable data, or null if no data.
  * 
- * @throws cbit.util.DataAccessException if SimulationInfo not found.
+ * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  */
 double[] getDataSetTimes() throws DataAccessException;
 
@@ -55,7 +55,7 @@ double[] getDataSetTimes() throws DataAccessException;
  * 
  * @returns array of functions, or null if no functions.
  * 
- * @throws cbit.util.DataAccessException if SimulationInfo not found.
+ * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  * 
  * @see Function
  */
@@ -67,7 +67,7 @@ cbit.vcell.math.AnnotatedFunction[] getFunctions() throws DataAccessException;
  * 
  * @returns <i>true</i> if results are of type ODE, <i>false</i> otherwise.
  * 
- * @throws cbit.util.DataAccessException if SimulationInfo not found.
+ * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  * 
  * @see Function
  */
@@ -84,7 +84,7 @@ boolean getIsODEData() throws DataAccessException;
  * 
  * @returns annotated array of 'concentration vs. distance' in a plot ready format.
  * 
- * @throws cbit.util.DataAccessException if SimulationInfo not found.
+ * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  * 
  * @see PlotData
  */
@@ -100,7 +100,7 @@ PlotData getLineScan(String variable, double time, CoordinateIndex begin, Coordi
  * 
  * @returns annotated array of 'concentration vs. distance' in a plot ready format.
  * 
- * @throws cbit.util.DataAccessException if SimulationInfo not found.
+ * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  * 
  * @see PlotData
  */
@@ -112,7 +112,7 @@ PlotData getLineScan(String variable, double time, SpatialSelection spatialSelec
  * 
  * @returns mesh associated with this data (allows spatial interpretation of indexed data).
  * 
- * @throws cbit.util.DataAccessException if SimulationInfo not found.
+ * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  * 
  * @see CartesianMesh
  */
@@ -125,7 +125,7 @@ CartesianMesh getMesh() throws DataAccessException;
  * 
  * @returns non-spatial (ODE) data.
  * 
- * @throws cbit.util.DataAccessException if SimulationInfo not found.
+ * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  */
 ODESolverResultSet getODESolverResultSet() throws DataAccessException;
 
@@ -135,7 +135,7 @@ ODESolverResultSet getODESolverResultSet() throws DataAccessException;
  * 
  * @returns particle data for this result set.
  * 
- * @throws cbit.util.DataAccessException if SimulationInfo not found, or if no particle data.
+ * @throws org.vcell.util.DataAccessException if SimulationInfo not found, or if no particle data.
  * 
  * @see ParticleDataBlock
  */
@@ -147,7 +147,7 @@ cbit.vcell.simdata.ParticleDataBlock getParticleDataBlock(double time) throws Da
  * 
  * @returns <i>true</i> if there is particle data availlable.
  * 
- * @throws cbit.util.DataAccessException if SimulationInfo not found.
+ * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  */
 boolean getParticleDataExists() throws DataAccessException;
 
@@ -169,7 +169,7 @@ public PDEDataContext getPDEDataContext();
  * @returns spatial (PDE) data for this result set associated with the specified variable name and time, 
  *          or <i>null</i> if no data availlable.
  * 
- * @throws cbit.util.DataAccessException if SimulationInfo not found.
+ * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  */
 cbit.vcell.simdata.SimDataBlock getSimDataBlock(String varName, double time) throws DataAccessException;
 
@@ -182,11 +182,11 @@ cbit.vcell.simdata.SimDataBlock getSimDataBlock(String varName, double time) thr
  * 
  * @returns annotated array of 'concentration vs. time' in a plot ready format.
  * 
- * @throws cbit.util.DataAccessException if SimulationInfo not found.
+ * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  * 
  * @see CartesianMesh for transformation between indices and coordinates.
  */
-cbit.util.TimeSeriesJobResults getTimeSeriesValues(cbit.util.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException;
+org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException;
 
 
 /**
@@ -201,7 +201,7 @@ VCDataIdentifier getVCDataIdentifier();
  * 
  * @param function function to be removed.
  * 
- * @throws cbit.util.DataAccessException if SimulationInfo not found.
+ * @throws org.vcell.util.DataAccessException if SimulationInfo not found.
  * @throws cbit.vcell.server.PermissionException if not the owner of this dataset.
  */
 void removeFunction(cbit.vcell.math.AnnotatedFunction function) throws DataAccessException, PermissionException;

@@ -5,7 +5,9 @@ package cbit.vcell.mesh;
 ©*/
 import java.util.*;
 import java.io.*;
-import cbit.util.*;
+
+import org.vcell.util.*;
+
 import cbit.vcell.math.VCML;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.MathFormatException;
@@ -434,7 +436,7 @@ public static double coordComponentFromSinglePlanePolicy(Origin argOrigin, Exten
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-public static CartesianMesh fromTokens(cbit.util.CommentStringTokenizer meshTokens,cbit.util.CommentStringTokenizer membraneMeshMetricsTokens) throws MathException {
+public static CartesianMesh fromTokens(org.vcell.util.CommentStringTokenizer meshTokens,org.vcell.util.CommentStringTokenizer membraneMeshMetricsTokens) throws MathException {
 	CartesianMesh mesh = new CartesianMesh();
 
 	MembraneMeshMetrics membraneMeshMetrics = null;
@@ -476,7 +478,7 @@ public int getContourRegionIndex(int contourIndex) {
  * @return cbit.vcell.geometry.Coordinate
  * @param coordIndex cbit.vcell.math.CoordinateIndex
  */
-public Coordinate getCoordinate(cbit.util.CoordinateIndex coordIndex) {
+public Coordinate getCoordinate(org.vcell.util.CoordinateIndex coordIndex) {
 	//
 	//
 	// calculate coordinates based on element coordinates 
@@ -1046,7 +1048,7 @@ private void inflate() {
 
 	try {
 		//Object objArray[] =  { version, size, origin, extent, meshRegionInfo, membraneElements, contourElements};
-		Object objArray[] = (Object[])cbit.util.BeanUtils.fromCompressedSerialized(compressedBytes);
+		Object objArray[] = (Object[])org.vcell.util.BeanUtils.fromCompressedSerialized(compressedBytes);
 		version = (String)objArray[0];
 		size = (ISize)objArray[1];
 		origin = (Origin)objArray[2];
@@ -1130,7 +1132,7 @@ public boolean isMembraneConnectivityOK() {
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-private void read(cbit.util.CommentStringTokenizer tokens,MembraneMeshMetrics membraneMeshMetrics) throws MathException {
+private void read(org.vcell.util.CommentStringTokenizer tokens,MembraneMeshMetrics membraneMeshMetrics) throws MathException {
 	//
 	// clear previous contents
 	//
@@ -1572,7 +1574,7 @@ private void read(cbit.util.CommentStringTokenizer tokens,MembraneMeshMetrics me
  * Insert the method's description here.
  * Creation date: (2/15/2006 2:06:21 PM)
  */
-public MembraneMeshMetrics readMembraneMeshMetrics(cbit.util.CommentStringTokenizer tokens) throws MathException{
+public MembraneMeshMetrics readMembraneMeshMetrics(org.vcell.util.CommentStringTokenizer tokens) throws MathException{
 
 	MembraneMeshMetrics membraneMeshMetrics = new MembraneMeshMetrics();
 	
@@ -1671,7 +1673,7 @@ private void readObject(ObjectInputStream s) throws IOException, ClassNotFoundEx
  * This method was created in VisualAge.
  * @param extent cbit.util.Extent
  */
-private void setExtent(cbit.util.Extent argExtent) {
+private void setExtent(org.vcell.util.Extent argExtent) {
 	this.extent = argExtent;
 }
 
@@ -1680,7 +1682,7 @@ private void setExtent(cbit.util.Extent argExtent) {
  * This method was created in VisualAge.
  * @param extent cbit.util.Extent
  */
-private void setOrigin(cbit.util.Origin origin) {
+private void setOrigin(org.vcell.util.Origin origin) {
 	this.origin = origin;
 }
 
@@ -1706,7 +1708,7 @@ private void writeObject(ObjectOutputStream s) throws IOException {
 	Object objArray[] =  { version, size, origin, extent, meshRegionInfo, membraneElements, contourElements};
 
 	if (compressedBytes == null) {
-		compressedBytes = cbit.util.BeanUtils.toCompressedSerialized(objArray);
+		compressedBytes = org.vcell.util.BeanUtils.toCompressedSerialized(objArray);
 	}
 	s.writeInt(compressedBytes.length);
 	s.write(compressedBytes);

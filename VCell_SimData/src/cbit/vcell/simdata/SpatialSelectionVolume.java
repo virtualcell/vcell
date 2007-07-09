@@ -5,10 +5,12 @@ package cbit.vcell.simdata;
  * All rights reserved.
 ©*/
 import cbit.render.objects.Vect3d;
-import cbit.util.Coordinate;
-import cbit.util.CoordinateIndex;
 import cbit.vcell.geometry.*;
 import java.util.Vector;
+
+import org.vcell.util.Coordinate;
+import org.vcell.util.CoordinateIndex;
+
 import cbit.vcell.math.VariableType;
 import cbit.vcell.mesh.CartesianMesh;
 
@@ -41,7 +43,7 @@ public SpatialSelectionVolume(cbit.vcell.geometry.CurveSelectionInfo argCurveSel
  * @param ci cbit.vcell.math.CoordinateIndex
  * @param ci2 cbit.vcell.math.CoordinateIndex
  */
-private boolean areTouching(cbit.util.CoordinateIndex ci1, cbit.util.CoordinateIndex ci2) {
+private boolean areTouching(org.vcell.util.CoordinateIndex ci1, org.vcell.util.CoordinateIndex ci2) {
 	
 	int dx = Math.abs(ci1.x-ci2.x);
 	int dy = Math.abs(ci1.y-ci2.y);
@@ -60,7 +62,7 @@ private boolean areTouching(cbit.util.CoordinateIndex ci1, cbit.util.CoordinateI
  * @param ci cbit.vcell.math.CoordinateIndex
  * @param ci2 cbit.vcell.math.CoordinateIndex
  */
-private boolean areTouchingFace(cbit.util.CoordinateIndex ci1, cbit.util.CoordinateIndex ci2) {
+private boolean areTouchingFace(org.vcell.util.CoordinateIndex ci1, org.vcell.util.CoordinateIndex ci2) {
 	
 	int dx = Math.abs(ci1.x-ci2.x);
 	int dy = Math.abs(ci1.y-ci2.y);

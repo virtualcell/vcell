@@ -4,7 +4,8 @@ package cbit.vcell.simdata;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.Coordinate;
+import org.vcell.util.Coordinate;
+
 import cbit.vcell.geometry.*;
 /**
  * This type was created in VisualAge.

@@ -20,7 +20,7 @@ public class ExportLog implements Serializable {
  * Creation date: (10/19/2001 3:56:22 PM)
  * @param exportLogFile java.io.File
  */
-public ExportLog(cbit.util.document.KeyValue argSimulationRef,ExportLogEntry[] argExportLogEntries){
+public ExportLog(org.vcell.util.document.KeyValue argSimulationRef,ExportLogEntry[] argExportLogEntries){
 
 	this.simulationID = argSimulationRef.toString();
 	this.exportLogEntries = argExportLogEntries;
@@ -40,7 +40,7 @@ public ExportLog(File exportLogFile) throws FileNotFoundException, IOException {
 			entries.add(new ExportLogEntry(line));
 			line = reader.readLine();
 		}
-		setExportLogEntries((ExportLogEntry[])cbit.util.BeanUtils.getArray(entries, ExportLogEntry.class));
+		setExportLogEntries((ExportLogEntry[])org.vcell.util.BeanUtils.getArray(entries, ExportLogEntry.class));
 		String fileName = exportLogFile.getName();
 		String prefix = "SimID_";
 		String suffix = ".export";
@@ -82,8 +82,8 @@ public String getSimulationIdentifier() {
  * Creation date: (10/24/01 4:22:59 PM)
  * @return cbit.sql.KeyValue
  */
-public cbit.util.document.KeyValue getSimulationKey() {
-	return new cbit.util.document.KeyValue(getSimulationID());
+public org.vcell.util.document.KeyValue getSimulationKey() {
+	return new org.vcell.util.document.KeyValue(getSimulationID());
 }
 /**
  * Insert the method's description here.

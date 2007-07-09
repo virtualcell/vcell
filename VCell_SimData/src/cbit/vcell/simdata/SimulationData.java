@@ -8,7 +8,6 @@ import cbit.vcell.mesh.CartesianMesh;
 
 import java.io.*;
 import java.util.*;
-import cbit.util.*;
 
 import java.util.zip.*;
 
@@ -17,6 +16,7 @@ import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.SymbolTable;
 import org.vcell.expression.SymbolTableEntry;
+import org.vcell.util.*;
 
 import edu.uchc.vcell.expression.internal.*;
 /**
@@ -209,7 +209,7 @@ private double[] calcSpaceStats(double[] rawVals,int varIndex,DataSetControllerI
  * @return long
  * @param dataType int
  * @param timepoint double
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
 public synchronized long getDataBlockTimeStamp(int dataType, double timepoint) throws DataAccessException {
 	switch (dataType) {

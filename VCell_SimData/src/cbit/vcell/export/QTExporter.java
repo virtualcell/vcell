@@ -6,9 +6,11 @@ import cbit.vcell.export.quicktime.*;
 import java.io.*;
 import java.util.zip.*;
 import java.rmi.*;
+
+import org.vcell.util.*;
+import org.vcell.util.document.User;
+
 import cbit.vcell.simdata.*;
-import cbit.util.*;
-import cbit.util.document.User;
 import cbit.vcell.geometry.*;
 /**
  * Insert the type's description here.

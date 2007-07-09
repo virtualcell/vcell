@@ -10,7 +10,7 @@ import java.io.*;
  * This type was created in VisualAge.
  */
 public class ExportSpecs implements Serializable {
-	private cbit.util.VCDataIdentifier vcDataIdentifier = null;
+	private org.vcell.util.VCDataIdentifier vcDataIdentifier = null;
 	private int format;
 	private TimeSpecs timeSpecs;
 	private VariableSpecs variableSpecs;
@@ -20,7 +20,7 @@ public class ExportSpecs implements Serializable {
 /**
  * This method was created in VisualAge.
  */
-public ExportSpecs(cbit.util.VCDataIdentifier vcdID, int format, VariableSpecs variableSpecs, TimeSpecs timeSpecs, GeometrySpecs geometrySpecs, FormatSpecificSpecs formatSpecificSpecs) {
+public ExportSpecs(org.vcell.util.VCDataIdentifier vcdID, int format, VariableSpecs variableSpecs, TimeSpecs timeSpecs, GeometrySpecs geometrySpecs, FormatSpecificSpecs formatSpecificSpecs) {
 	this.vcDataIdentifier = vcdID;
 	this.format = format;
 	this.variableSpecs = variableSpecs;
@@ -104,7 +104,7 @@ public VariableSpecs getVariableSpecs() {
  * Creation date: (4/1/2001 7:20:40 PM)
  * @return cbit.vcell.solver.SimulationInfo
  */
-public cbit.util.VCDataIdentifier getVCDataIdentifier() {
+public org.vcell.util.VCDataIdentifier getVCDataIdentifier() {
 	return vcDataIdentifier;
 }
 

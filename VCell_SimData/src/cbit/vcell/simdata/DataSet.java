@@ -237,7 +237,7 @@ void read(File file, File zipFile) throws IOException, OutOfMemoryError {
  * @param varnames java.lang.String
  * @param data double[]
  */
-public static void write(File file, String varname, int varType, cbit.util.ISize size, double[] data) throws IOException {
+public static void write(File file, String varname, int varType, org.vcell.util.ISize size, double[] data) throws IOException {
 	RandomAccessFile raf = new RandomAccessFile(file, "rw");
 	FileHeader fileHeader = new FileHeader();
 	DataBlock dataBlock = null;

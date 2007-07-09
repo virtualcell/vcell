@@ -3,9 +3,10 @@ import java.util.*;
 import java.io.*;
 import java.rmi.*;
 
-import cbit.util.DataAccessException;
-import cbit.util.VCDataIdentifier;
-import cbit.util.document.User;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.VCDataIdentifier;
+import org.vcell.util.document.User;
+
 import cbit.vcell.mesh.CartesianMesh;
 import cbit.vcell.simdata.*;
 import cbit.vcell.export.nrrd.*;

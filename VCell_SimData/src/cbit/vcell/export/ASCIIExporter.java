@@ -1,14 +1,16 @@
 package cbit.vcell.export;
-import cbit.util.Coordinate;
-import cbit.util.CoordinateIndex;
-import cbit.util.DataAccessException;
-import cbit.util.VCDataIdentifier;
-import cbit.util.document.User;
 import cbit.vcell.math.*;
 import cbit.vcell.mesh.CartesianMesh;
 import cbit.plot.*;
 import cbit.vcell.geometry.*;
 import java.rmi.*;
+
+import org.vcell.util.Coordinate;
+import org.vcell.util.CoordinateIndex;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.VCDataIdentifier;
+import org.vcell.util.document.User;
+
 import cbit.vcell.simdata.*;
 /**
  * Insert the type's description here.
@@ -401,7 +403,7 @@ private String getLineTimeSeries(User user, DataServerImpl dsc, VCDataIdentifier
  * @param beginIndex int
  * @param endIndex int
  * @param switchRowsColumns boolean
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
 private String getODEDataValues(long jobID, User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String[] variableNames, int beginIndex, int endIndex, boolean switchRowsColumns) throws DataAccessException, RemoteException {
 

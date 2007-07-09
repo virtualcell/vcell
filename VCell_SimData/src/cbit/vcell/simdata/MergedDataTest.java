@@ -1,12 +1,13 @@
 package cbit.vcell.simdata;
 
-import cbit.util.PropertyLoader;
-import cbit.util.SessionLog;
-import cbit.util.StdoutSessionLog;
-import cbit.util.VCDataIdentifier;
-import cbit.util.document.User;
 
 import java.io.File;
+
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+import org.vcell.util.StdoutSessionLog;
+import org.vcell.util.VCDataIdentifier;
+import org.vcell.util.document.User;
 /**
  * Insert the type's description here.
  * Creation date: (10/10/2003 11:48:54 AM)
@@ -20,13 +21,13 @@ public class MergedDataTest {
  */
 public static void main(String[] args) {
 
-	final User user = new cbit.util.document.User("anu",new cbit.util.document.KeyValue("2302355"));
+	final User user = new org.vcell.util.document.User("anu",new org.vcell.util.document.KeyValue("2302355"));
 	File userFile = new File("\\\\fs2\\RAID\\vcell\\users");
 	VCDataIdentifier vcData1 = new VCDataIdentifier() {
 		public String getID() {
 			return "SimID_6389673";
 		}
-		public cbit.util.document.User getOwner() {
+		public org.vcell.util.document.User getOwner() {
 			return user;
 		}
 	};
@@ -34,7 +35,7 @@ public static void main(String[] args) {
 		public String getID() {
 			return "SimID_6383968";
 		}
-		public cbit.util.document.User getOwner() {
+		public org.vcell.util.document.User getOwner() {
 			return user;
 		}
 	};
@@ -51,7 +52,7 @@ public static void main(String[] args) {
 		dscImpl = new DataSetControllerImpl(sessionLog,dataCachetable,userFile);
 	} catch (java.io.IOException e) {
 		e.printStackTrace(System.out);
-	} catch (cbit.util.DataAccessException e) {
+	} catch (org.vcell.util.DataAccessException e) {
 		e.printStackTrace(System.out);
 	}
 
@@ -62,7 +63,7 @@ public static void main(String[] args) {
 		ODEDataBlock combinedODEDataBlk = mergedData.getODEDataBlock();
 		ODESimData combinedODESimData = combinedODEDataBlk.getODESimData();
 		ODESolverResultSetTest.plot(combinedODESimData);
-	} catch (cbit.util.DataAccessException e1) {
+	} catch (org.vcell.util.DataAccessException e1) {
 		e1.printStackTrace(System.out);
 	} catch (java.io.IOException e2) {
 		e2.printStackTrace(System.out);

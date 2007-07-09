@@ -1,7 +1,8 @@
 package cbit.vcell.export;
 import java.io.Serializable;
 
-import cbit.util.Matchable;
+import org.vcell.util.Matchable;
+
 /**
  * Insert the type's description here.
  * Creation date: (6/4/2004 3:34:42 PM)

@@ -14,7 +14,7 @@ public class ParticleDataInfo extends DataInfo {
  * @param simID java.lang.String
  * @param simTime double
  */
-public ParticleDataInfo(cbit.util.document.User user, String simID, double simTime, long dataBlockTimeStamp) {
+public ParticleDataInfo(org.vcell.util.document.User user, String simID, double simTime, long dataBlockTimeStamp) {
 	super(user, simID, NO_VARIABLE, simTime, dataBlockTimeStamp, "Particle");
 }
 }

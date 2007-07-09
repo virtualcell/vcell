@@ -1,9 +1,9 @@
 package cbit.vcell.simdata;
-import cbit.util.ISize;
-import cbit.util.Extent;
-import cbit.util.Origin;
-import cbit.util.document.FieldDataIdentifierSpec;
-import cbit.util.document.KeyValue;
+import org.vcell.util.Extent;
+import org.vcell.util.ISize;
+import org.vcell.util.Origin;
+import org.vcell.util.document.FieldDataIdentifierSpec;
+import org.vcell.util.document.KeyValue;
 /**
  * Insert the type's description here.
  * Creation date: (9/18/2006 12:55:46 PM)
@@ -14,9 +14,9 @@ public class FieldDataIdentifier implements java.io.Serializable  {
 	private java.lang.String fieldName = null;
 	private java.lang.String variableName = null;
 	private java.lang.String dataFilePath = null;
-	private cbit.util.Origin origin;
-	private cbit.util.Extent extent;
-	private cbit.util.ISize size;
+	private org.vcell.util.Origin origin;
+	private org.vcell.util.Extent extent;
+	private org.vcell.util.ISize size;
 
 /**
  * FieldDataIdentifier constructor comment.
@@ -98,7 +98,7 @@ public String getDefaultFieldDataFileNameForSimulation() {
  * Creation date: (9/21/2006 12:33:44 PM)
  * @return cbit.util.Extent
  */
-public cbit.util.Extent getExtent() {
+public org.vcell.util.Extent getExtent() {
 	return extent;
 }
 
@@ -168,7 +168,7 @@ public static String getLocalVariableName_C(FieldDataIdentifierSpec fdis) {
  * Creation date: (9/21/2006 12:33:29 PM)
  * @return cbit.util.Origin
  */
-public cbit.util.Origin getOrigin() {
+public org.vcell.util.Origin getOrigin() {
 	return origin;
 }
 
@@ -178,7 +178,7 @@ public cbit.util.Origin getOrigin() {
  * Creation date: (9/21/2006 12:33:59 PM)
  * @return cbit.util.ISize
  */
-public cbit.util.ISize getSize() {
+public org.vcell.util.ISize getSize() {
 	return size;
 }
 

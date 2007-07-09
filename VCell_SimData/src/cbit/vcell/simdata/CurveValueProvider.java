@@ -1,6 +1,6 @@
 package cbit.vcell.simdata;
 
-import cbit.util.Coordinate;
+import org.vcell.util.Coordinate;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

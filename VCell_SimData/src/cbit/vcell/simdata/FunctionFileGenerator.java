@@ -24,8 +24,8 @@ import java.io.FileInputStream;
 
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.util.TokenMangler;
 
-import cbit.util.TokenMangler;
 /**
  * Insert the type's description here.
  * Creation date: (1/12/2004 11:06:55 AM)

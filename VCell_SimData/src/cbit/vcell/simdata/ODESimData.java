@@ -1,7 +1,5 @@
 package cbit.vcell.simdata;
 
-import cbit.util.DataAccessException;
-import cbit.util.VCDataIdentifier;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -11,6 +9,8 @@ import java.io.*;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.VCDataIdentifier;
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 8:57:59 PM)
@@ -196,7 +196,7 @@ public void readIn(DataInputStream input) throws IOException {
  * Creation date: (1/14/00 3:55:39 PM)
  * @return cbit.vcell.simdata.ODESimData
  * @param odeDataFile java.io.File
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
 public static ODESimData readODEDataFile(File odeDataFile) throws DataAccessException {
 	try {

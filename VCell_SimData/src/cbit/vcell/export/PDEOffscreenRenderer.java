@@ -4,9 +4,6 @@ package cbit.vcell.export;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.Coordinate;
-import cbit.util.VCDataIdentifier;
-import cbit.util.document.User;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.mesh.CartesianMesh;
 import java.util.*;
@@ -16,6 +13,10 @@ import java.awt.image.BufferedImage;
 import cbit.vcell.simdata.*;
 
 import java.awt.*;
+
+import org.vcell.util.Coordinate;
+import org.vcell.util.VCDataIdentifier;
+import org.vcell.util.document.User;
 /**
  * Insert the type's description here.
  * Creation date: (3/1/2001 11:37:38 PM)
@@ -122,8 +123,8 @@ public int[] getPixelsRGB() {
 			cbit.vcell.geometry.CurveRenderer curveRenderer = new cbit.vcell.geometry.CurveRenderer();
 			curveRenderer.setNormalAxis(getNormalAxis());
 
-			cbit.util.Origin origin = mesh.getOrigin();
-			cbit.util.Extent extent = mesh.getExtent();
+			org.vcell.util.Origin origin = mesh.getOrigin();
+			org.vcell.util.Extent extent = mesh.getExtent();
 			curveRenderer.setWorldOrigin(new Coordinate(origin.getX(),origin.getY(),origin.getZ()));
 			double pixelScaleX = extent.getX()/mesh.getSizeX();
 			double pixelScaleY = extent.getY()/mesh.getSizeY();
@@ -135,7 +136,7 @@ public int[] getPixelsRGB() {
 			//Hashtable curveHash = meshDisplayAdapter.getCurvesFromMembranes(getNormalAxis(),getSlice(),membraneValues);
 			Hashtable curvesAndMembraneIndexes = meshDisplayAdapter.getCurvesAndMembraneIndexes(getNormalAxis(),getSlice());
 			if (curvesAndMembraneIndexes!=null){
-				Curve curves[] = (Curve[])cbit.util.BeanUtils.getArray(curvesAndMembraneIndexes.keys(),Curve.class);
+				Curve curves[] = (Curve[])org.vcell.util.BeanUtils.getArray(curvesAndMembraneIndexes.keys(),Curve.class);
 				for (int i=0;curves!=null && i<curves.length;i++){
 					curveRenderer.addCurve(curves[i]);
 					curveRenderer.renderPropertySegmentColors(curves[i],getCurveColors(curvesAndMembraneIndexes,curves[i],getDisplayAdapterService(),meshDisplayAdapter));
@@ -168,8 +169,8 @@ public int[] getPixelsRGB() {
 		cbit.vcell.geometry.CurveRenderer curveRenderer = new cbit.vcell.geometry.CurveRenderer();
 		curveRenderer.setNormalAxis(getNormalAxis());
 
-		cbit.util.Origin origin = mesh.getOrigin();
-		cbit.util.Extent extent = mesh.getExtent();
+		org.vcell.util.Origin origin = mesh.getOrigin();
+		org.vcell.util.Extent extent = mesh.getExtent();
 		curveRenderer.setWorldOrigin(new Coordinate(origin.getX(),origin.getY(),origin.getZ()));
 		double pixelScaleX = extent.getX()/mesh.getSizeX();
 		double pixelScaleY = extent.getY()/mesh.getSizeY();
@@ -179,7 +180,7 @@ public int[] getPixelsRGB() {
 		//Hashtable curveHash = meshDisplayAdapter.getCurvesFromMembranes(getNormalAxis(),getSlice(),membraneData);
 		Hashtable curvesAndMembraneIndexes = meshDisplayAdapter.getCurvesAndMembraneIndexes(getNormalAxis(),getSlice());
 		if (curvesAndMembraneIndexes!=null){
-			Curve curves[] = (Curve[])cbit.util.BeanUtils.getArray(curvesAndMembraneIndexes.keys(),Curve.class);
+			Curve curves[] = (Curve[])org.vcell.util.BeanUtils.getArray(curvesAndMembraneIndexes.keys(),Curve.class);
 			for (int i=0;curves!=null && i<curves.length;i++){
 				curveRenderer.addCurve(curves[i]);
 				curveRenderer.renderPropertySegmentColors(curves[i],getCurveColors(curvesAndMembraneIndexes,curves[i],getDisplayAdapterService(),meshDisplayAdapter));

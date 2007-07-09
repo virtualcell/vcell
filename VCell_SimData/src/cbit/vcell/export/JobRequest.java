@@ -4,9 +4,10 @@ package cbit.vcell.export;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.document.User;
 
 import java.util.*;
+
+import org.vcell.util.document.User;
 /**
  * Insert the type's description here.
  * Creation date: (4/3/2001 3:01:34 PM)

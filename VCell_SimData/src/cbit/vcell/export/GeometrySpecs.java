@@ -6,7 +6,8 @@ package cbit.vcell.export;
 ©*/
 import cbit.vcell.simdata.SpatialSelection;
 import java.io.*;
-import cbit.util.*;
+
+import org.vcell.util.*;
 /**
  * This type was created in VisualAge.
  */

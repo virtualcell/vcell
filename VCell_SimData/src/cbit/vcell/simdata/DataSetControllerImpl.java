@@ -4,13 +4,6 @@ package cbit.vcell.simdata;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.Coordinate;
-import cbit.util.CoordinateIndex;
-import cbit.util.DataAccessException;
-import cbit.util.PropertyLoader;
-import cbit.util.SessionLog;
-import cbit.util.VCDataIdentifier;
-import cbit.util.document.User;
 import cbit.vcell.geometry.*;
 import cbit.vcell.math.*;
 import cbit.vcell.mesh.CartesianMesh;
@@ -27,6 +20,13 @@ import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.SymbolTableEntry;
+import org.vcell.util.Coordinate;
+import org.vcell.util.CoordinateIndex;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+import org.vcell.util.VCDataIdentifier;
+import org.vcell.util.document.User;
 
 import cbit.vcell.util.events.MessageEvent;
 import edu.uchc.vcell.expression.internal.*;
@@ -228,7 +228,7 @@ public void addFunctions(VCDataIdentifier vcdID, AnnotatedFunction[] functions) 
  * Insert the method's description here.
  * Creation date: (3/20/2006 3:37:39 PM)
  */
-private SpatialStatsInfo calcSpatialStatsInfo(cbit.util.TimeSeriesJobSpec timeSeriesJobSpec,VCDataIdentifier vcdID) throws Exception{
+private SpatialStatsInfo calcSpatialStatsInfo(org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec,VCDataIdentifier vcdID) throws Exception{
 
 	SpatialStatsInfo ssi = new SpatialStatsInfo();
 	//Determine weights for indices of each variable if we are going to be calculating spatial statistics
@@ -282,8 +282,8 @@ private SpatialStatsInfo calcSpatialStatsInfo(cbit.util.TimeSeriesJobSpec timeSe
  * Insert the method's description here.
  * Creation date: (2/16/2006 12:28:29 PM)
  */
-private cbit.util.TimeSeriesJobResults calculateStatisticsFromWhole(
-	cbit.util.TimeSeriesJobSpec timeSeriesJobSpec,
+private org.vcell.util.TimeSeriesJobResults calculateStatisticsFromWhole(
+	org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec,
     double[][][] timeSeriesFormatedValuesArr,
     double[] desiredTimeValues,
     SpatialStatsInfo spatialStatsInfo) throws Exception{
@@ -337,7 +337,7 @@ private cbit.util.TimeSeriesJobResults calculateStatisticsFromWhole(
 		    }
 	    }
 	    if(!timeSeriesJobSpec.isCalcSpaceStats()){//No space stats
-	        return new cbit.util.TSJobResultsTimeStats(
+	        return new org.vcell.util.TSJobResultsTimeStats(
 	            timeSeriesJobSpec.getVariableNames(),
 	            timeSeriesJobSpec.getIndices(),
 	            desiredTimeValues,
@@ -366,7 +366,7 @@ private cbit.util.TimeSeriesJobResults calculateStatisticsFromWhole(
 			    timeSpaceStatsUnweightedMean[i] = mean;
 			    timeSpaceStatsWeightedMean[i] = wmean;
 		    }
-	        return new cbit.util.TSJobResultsTimeStats(
+	        return new org.vcell.util.TSJobResultsTimeStats(
 	            timeSeriesJobSpec.getVariableNames(),
 	            timeSeriesJobSpec.getIndices(),
 	            desiredTimeValues,
@@ -402,7 +402,7 @@ private cbit.util.TimeSeriesJobResults calculateStatisticsFromWhole(
 			    spaceStatsWeightedMean[i][k] = wmean;
 		    }
 	    }
-        return new cbit.util.TSJobResultsSpaceStats(
+        return new org.vcell.util.TSJobResultsSpaceStats(
             timeSeriesJobSpec.getVariableNames(),
             timeSeriesJobSpec.getIndices(),
             desiredTimeValues,
@@ -1324,7 +1324,7 @@ public SimDataBlock getSimDataBlock(VCDataIdentifier vcdID, String varName, doub
  * @param y int
  * @param z int
  */
-public cbit.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID,cbit.util.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
+public org.vcell.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID,org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec) throws DataAccessException {
 
 	
 	double dataTimes[] = getDataSetTimes(vcdID);
@@ -1471,7 +1471,7 @@ public cbit.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID
 					wmean[i][j] = timeStat[WMEAN_OFFSET+1][j];
 				}
 			}
-			return new cbit.util.TSJobResultsSpaceStats(
+			return new org.vcell.util.TSJobResultsSpaceStats(
 					timeSeriesJobSpec.getVariableNames(),
 					timeSeriesJobSpec.getIndices(),
 					desiredTimeValues,
@@ -1486,7 +1486,7 @@ public cbit.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID
 		}else{
 			double[][][] timeSeriesFormatedValuesArr = new double[valuesV.size()][][];
 			valuesV.copyInto(timeSeriesFormatedValuesArr);
-			return new cbit.util.TSJobResultsNoStats(
+			return new org.vcell.util.TSJobResultsNoStats(
 	            timeSeriesJobSpec.getVariableNames(),
 	            timeSeriesJobSpec.getIndices(),
 	            desiredTimeValues,

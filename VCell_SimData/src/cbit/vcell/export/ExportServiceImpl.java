@@ -9,10 +9,11 @@ import java.util.zip.*;
 import java.net.*;
 import java.util.*;
 
+import org.vcell.util.*;
+import org.vcell.util.document.User;
+
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
-import cbit.util.*;
-import cbit.util.document.User;
 import cbit.vcell.simdata.*;
 import cbit.vcell.export.nrrd.*;
 

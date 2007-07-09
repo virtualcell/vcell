@@ -9,7 +9,7 @@ import java.util.Vector;
  * Creation date: (7/4/2001 5:04:16 PM)
  * @author: Frank Morgan
  */
-public class MeshRegionInfo implements cbit.util.Matchable, java.io.Serializable {
+public class MeshRegionInfo implements org.vcell.util.Matchable, java.io.Serializable {
 	//
 	private Vector volumeRegionMapSubvolume = new Vector();
 	private Vector membraneRegionMapVolumeRegion = new Vector();
@@ -55,7 +55,7 @@ public MeshRegionInfo() {
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	return false;
 }
 
@@ -219,7 +219,7 @@ public String getVCMLVolumeElementsMapVolumeRegion(int numX,boolean bCompress) {
 		buffer.append("\n");
 	}else{
 		buffer.append("\t"+numVolumeElementsMapVolumeRegion+" Compressed \n");
-		String hex = cbit.util.Hex.toString(getCompressedVolumeElementMapVolumeRegion());
+		String hex = org.vcell.util.Hex.toString(getCompressedVolumeElementMapVolumeRegion());
 		int i = 0;
 		while(i < hex.length()){
 			int len = ((hex.length()-i)<40?hex.length()-i:40);
