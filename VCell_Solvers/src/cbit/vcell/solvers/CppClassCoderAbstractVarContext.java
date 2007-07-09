@@ -8,8 +8,8 @@ import java.util.Vector;
 
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.IExpression;
+import org.vcell.util.document.FieldDataIdentifierSpec;
 
-import cbit.util.document.FieldDataIdentifierSpec;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Equation;
 import cbit.vcell.math.FilamentVariable;
@@ -97,7 +97,7 @@ protected Variable[] getRequiredVariables() throws Exception {
 		}
 	}
 
-	return (Variable[])cbit.util.BeanUtils.getArray(uniqueVarList,Variable.class);
+	return (Variable[])org.vcell.util.BeanUtils.getArray(uniqueVarList,Variable.class);
 }
 
 

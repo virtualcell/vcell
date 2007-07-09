@@ -1,7 +1,5 @@
 package cbit.vcell.solver.stoch;
 import cbit.rmi.event.VCSimulationDataIdentifier;
-import cbit.util.PropertyLoader;
-import cbit.util.SessionLog;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.solvers.ApplicationMessage;
 import cbit.vcell.solvers.SimulationJob;
@@ -13,6 +11,9 @@ import java.io.InputStreamReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.File;
+
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
 
 /**
  * Insert the type's description here.

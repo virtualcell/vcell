@@ -8,7 +8,7 @@ package cbit.vcell.solver.ode;
  * Creation date: (8/6/2001 11:06:04 PM)
  * @author: Jim Schaff
  */
-import cbit.util.PropertyLoader;
+import org.vcell.util.PropertyLoader;
 public class CompilerTest {
 public static void main(java.lang.String[] args) {
 	try {
@@ -29,7 +29,7 @@ public static void main(java.lang.String[] args) {
 			}
 		};
 		//
-		Compiler compiler = new Compiler(new cbit.util.StdoutSessionLog("TEST"));
+		Compiler compiler = new Compiler(new org.vcell.util.StdoutSessionLog("TEST"));
 		compiler.setDefines(System.getProperty(PropertyLoader.definesProperty));
 		compiler.setIncludes(System.getProperty(PropertyLoader.idaIncludeProperty));
 		compiler.compile("E:\\Bullshit\\NewSIMULATION.cpp", "E:\\Bullshit\\CompilerTest.obj");

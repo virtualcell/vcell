@@ -2,8 +2,9 @@ package cbit.vcell.solver.ode;
 import java.io.File;
 import java.io.IOException;
 
+import org.vcell.util.SessionLog;
+
 import cbit.rmi.event.VCSimulationDataIdentifier;
-import cbit.util.SessionLog;
 import cbit.vcell.simdata.ODESimData;
 import cbit.vcell.simdata.ODESolverResultSet;
 import cbit.vcell.simdata.SimDataConstants;

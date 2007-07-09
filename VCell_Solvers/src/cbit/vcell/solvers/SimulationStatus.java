@@ -1,6 +1,7 @@
 package cbit.vcell.solvers;
+import org.vcell.util.MessageConstants;
+
 import cbit.rmi.event.SimulationJobStatus;
-import cbit.util.MessageConstants;
 import cbit.vcell.simulation.VCSimulationIdentifier;
 
 /*©
@@ -519,7 +520,7 @@ public static SimulationStatus updateFromJobEvent(SimulationStatus oldStatus, Si
 	}
 	if (oldJobStatus == null) {
 		// we have nothing for this job, update
-		SimulationJobStatus[] newJobStatuses = (SimulationJobStatus[])cbit.util.BeanUtils.addElement(oldStatus.getJobStatuses(), newJobStatus);
+		SimulationJobStatus[] newJobStatuses = (SimulationJobStatus[])org.vcell.util.BeanUtils.addElement(oldStatus.getJobStatuses(), newJobStatus);
 		newSimStatus = new SimulationStatus(newJobStatuses);
 		newSimStatus.progressHash = oldStatus.progressHash;
 		newSimStatus.progressHash.put(Integer.toString(newJobStatus.getJobIndex()), progressFromEvent);

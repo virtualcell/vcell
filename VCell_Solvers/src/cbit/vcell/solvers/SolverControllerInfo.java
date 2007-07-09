@@ -29,11 +29,11 @@ public SolverControllerInfo(SolverProxy solverProxy) {
 	}catch (RemoteException e){}
 	try {
 		this.solverStatus = solverProxy.getSolverStatus();
-	}catch (cbit.util.DataAccessException e){
+	}catch (org.vcell.util.DataAccessException e){
 	}catch (RemoteException e){}
 	try {
 		this.host = solverProxy.getHost();
-	}catch (cbit.util.DataAccessException e){
+	}catch (org.vcell.util.DataAccessException e){
 	}catch (RemoteException e){}
 	this.startDate = solverProxy.getStartDate();
 	try {

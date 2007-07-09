@@ -3,8 +3,8 @@ package cbit.vcell.solver.ode;
 import java.io.File;
 
 import org.vcell.expression.ExpressionException;
+import org.vcell.util.SessionLog;
 
-import cbit.util.SessionLog;
 import cbit.vcell.solvers.SimulationJob;
 import cbit.vcell.solvers.SolverException;
 /*©

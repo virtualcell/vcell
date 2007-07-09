@@ -1,7 +1,8 @@
 package cbit.vcell.solver.ode;
 
-import cbit.util.PropertyLoader;
-import cbit.util.SessionLog;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+
 import cbit.vcell.solvers.SolverException;
 import cbit.vcell.solvers.SolverStatus;
 /**

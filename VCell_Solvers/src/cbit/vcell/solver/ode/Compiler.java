@@ -3,8 +3,8 @@ package cbit.vcell.solver.ode;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.PropertyLoader;
-import cbit.util.SessionLog;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
 /**
  * Insert the type's description here.
  * Creation date: (3/23/2001 1:23:14 PM)
@@ -43,7 +43,7 @@ public int compile(String inputFilename, String outputFilename) throws Exception
 			+ outputFilename;
 	System.out.println("%%%%%%Compiling with: " + compileCommand);
 	//
-	cbit.util.Executable executable = new cbit.util.Executable(compileCommand);
+	org.vcell.util.Executable executable = new org.vcell.util.Executable(compileCommand);
 	executable.start();
 	//
 	String stdoutString = executable.getStdoutString();
@@ -139,7 +139,7 @@ public int link(String inputFilenames[], String outputFilename) throws Exception
 		+ exeOutputSpecifier + outputFilename;
 	System.out.println("%%%%%%Linking with: " + linkCommand);
 	//
-	cbit.util.Executable executable = new cbit.util.Executable(linkCommand);
+	org.vcell.util.Executable executable = new org.vcell.util.Executable(linkCommand);
 	executable.start();
 	//
 	String stdoutString = executable.getStdoutString();

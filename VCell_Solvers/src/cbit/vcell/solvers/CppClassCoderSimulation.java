@@ -7,9 +7,10 @@ import java.io.File;
 import java.util.Enumeration;
 import java.util.Vector;
 
-import cbit.util.ISize;
-import cbit.util.PropertyLoader;
-import cbit.util.TokenMangler;
+import org.vcell.util.ISize;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.TokenMangler;
+
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.FilamentVariable;
 import cbit.vcell.math.MemVariable;

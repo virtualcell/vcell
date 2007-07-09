@@ -9,9 +9,9 @@ import java.io.File;
 
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.util.ConfigurationException;
+import org.vcell.util.SessionLog;
 
-import cbit.util.ConfigurationException;
-import cbit.util.SessionLog;
 import cbit.vcell.math.Constant;
 import cbit.vcell.simdata.FieldDataIdentifier;
 import cbit.vcell.solver.ode.ODEStateVariable;

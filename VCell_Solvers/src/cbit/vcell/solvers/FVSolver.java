@@ -5,8 +5,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
-import cbit.util.PropertyLoader;
-import cbit.util.SessionLog;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.mesh.CartesianMesh;
@@ -357,7 +358,7 @@ private void resampleFieldData() throws SolverException {
 				if (fieldDataIDs[i].getOrigin().compareEqual(getSimulation().getMathDescription().getGeometry().getOrigin())
 					&& fieldDataIDs[i].getExtent().compareEqual(getSimulation().getMathDescription().getGeometry().getExtent()) 
 					&& fieldDataIDs[i].getSize().compareEqual(getSimulation().getMeshSpecification().getSamplingSize())) {
-					cbit.util.FileUtils.copyFile(origDataFile, fieldFile);
+					org.vcell.util.FileUtils.copyFile(origDataFile, fieldFile);
 				} else {
 					CartesianMesh origMesh = CartesianMesh.createSimpleCartesianMesh(fieldDataIDs[i].getOrigin(), fieldDataIDs[i].getExtent(), fieldDataIDs[i].getSize());
 					CartesianMesh newMesh = CartesianMesh.createSimpleCartesianMesh(getSimulation().getMathDescription().getGeometry().getOrigin(), getSimulation().getMathDescription().getGeometry().getExtent(),

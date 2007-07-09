@@ -6,7 +6,8 @@ package cbit.vcell.solvers;
 ©*/
 import java.io.File;
 
-import cbit.util.SessionLog;
+import org.vcell.util.SessionLog;
+
 /**
  * Insert the type's description here.
  * Creation date: (6/26/2001 3:18:18 PM)
@@ -116,7 +117,7 @@ private void runSolver() {
 		getMathExecutable().start();
 		cleanup();
 		//  getMathExecutable().start() may end prematurely (error or user stop), so check status before firing...
-		if (getMathExecutable().getStatus().equals(cbit.util.ExecutableStatus.COMPLETE)) {
+		if (getMathExecutable().getStatus().equals(org.vcell.util.ExecutableStatus.COMPLETE)) {
 			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_FINISHED, "finished"));
 			fireSolverFinished();
 		}
@@ -125,7 +126,7 @@ private void runSolver() {
 		getSessionLog().exception(integratorException);
 		setSolverStatus(new SolverStatus (SolverStatus.SOLVER_ABORTED, integratorException.getMessage()));
 		fireSolverAborted(integratorException.getMessage());
-	} catch (cbit.util.ExecutableException executableException) {
+	} catch (org.vcell.util.ExecutableException executableException) {
 		cleanup();
 		getSessionLog().exception(executableException);
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, "Could not execute code: " + executableException.getMessage()));

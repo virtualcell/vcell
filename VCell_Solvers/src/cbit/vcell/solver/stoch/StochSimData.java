@@ -14,9 +14,9 @@ import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.VCDataIdentifier;
 
-import cbit.util.DataAccessException;
-import cbit.util.VCDataIdentifier;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.simdata.ColumnDescription;
 import cbit.vcell.simdata.FunctionColumnDescription;

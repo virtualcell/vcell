@@ -2,7 +2,8 @@ package cbit.vcell.numericstest;
 
 import java.math.BigDecimal;
 
-import cbit.util.document.Version;
+import org.vcell.util.document.Version;
+
 /**
  * Insert the type's description here.
  * Creation date: (10/16/2004 2:01:25 PM)

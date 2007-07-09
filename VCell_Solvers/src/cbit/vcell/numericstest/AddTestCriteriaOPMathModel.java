@@ -2,7 +2,8 @@ package cbit.vcell.numericstest;
 
 import java.math.BigDecimal;
 
-import cbit.util.document.KeyValue;
+import org.vcell.util.document.KeyValue;
+
 /**
  * Insert the type's description here.
  * Creation date: (10/19/2004 6:21:59 AM)
@@ -34,7 +35,7 @@ public AddTestCriteriaOPMathModel(BigDecimal argTCKey,KeyValue argMMSimKey,KeyVa
  * Creation date: (11/11/2004 5:04:01 PM)
  * @return cbit.sql.KeyValue
  */
-public cbit.util.document.KeyValue getMathModelSimKey() {
+public org.vcell.util.document.KeyValue getMathModelSimKey() {
 	return mathModelSimKey;
 }
 /**
@@ -42,7 +43,7 @@ public cbit.util.document.KeyValue getMathModelSimKey() {
  * Creation date: (11/11/2004 5:04:01 PM)
  * @return cbit.sql.KeyValue
  */
-public cbit.util.document.KeyValue getRegressionMathModelKey() {
+public org.vcell.util.document.KeyValue getRegressionMathModelKey() {
 	return regressionMathModelKey;
 }
 /**
@@ -50,7 +51,7 @@ public cbit.util.document.KeyValue getRegressionMathModelKey() {
  * Creation date: (11/11/2004 5:04:01 PM)
  * @return cbit.sql.KeyValue
  */
-public cbit.util.document.KeyValue getRegressionMathModelSimKey() {
+public org.vcell.util.document.KeyValue getRegressionMathModelSimKey() {
 	return regressionMathModelSimKey;
 }
 }

@@ -2,7 +2,8 @@ package cbit.vcell.solvers;
 
 import java.io.File;
 
-import cbit.util.SessionLog;
+import org.vcell.util.SessionLog;
+
 import cbit.vcell.simulation.SolverDescription;
 import cbit.vcell.solver.ode.AdamsMoultonFiveSolver;
 import cbit.vcell.solver.ode.ForwardEulerSolver;

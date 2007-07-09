@@ -1,6 +1,6 @@
 package cbit.vcell.numericstest;
 
-import cbit.util.document.KeyValue;
+import org.vcell.util.document.KeyValue;
 /**
  * Insert the type's description here.
  * Creation date: (11/11/2004 1:48:13 PM)

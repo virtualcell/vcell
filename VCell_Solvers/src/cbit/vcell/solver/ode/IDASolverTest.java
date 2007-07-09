@@ -4,7 +4,8 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.PrintWriter;
 
-import cbit.util.PropertyLoader;
+import org.vcell.util.PropertyLoader;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -102,9 +103,9 @@ public void testStandalone(String username) {
 			String cmd_old = old_idastandalone +  " " +  inputfilepath + " " + oldOutput.getAbsolutePath();
 			String cmd_new = new_idastandalone +  " " +  inputfilepath + " " + newOutput.getAbsolutePath();
 			try {
-				cbit.util.Executable exe = new cbit.util.Executable(cmd_old);
+				org.vcell.util.Executable exe = new org.vcell.util.Executable(cmd_old);
 				exe.start();
-				exe = new cbit.util.Executable(cmd_new);
+				exe = new org.vcell.util.Executable(cmd_new);
 				exe.start();
 			} catch (Exception ex) {
 				if (!newOutput.exists()) {

@@ -9,9 +9,9 @@ import java.util.Vector;
 
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.util.SessionLog;
 
 import cbit.rmi.event.VCSimulationDataIdentifier;
-import cbit.util.SessionLog;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.Equation;
 import cbit.vcell.math.Function;
@@ -111,7 +111,7 @@ private StateVariable[] createStateVariables() throws cbit.vcell.math.MathExcept
 		throw new MathException("there are no equations defined");
 	}
 
-	StateVariable stateVars[] = (StateVariable[])cbit.util.BeanUtils.getArray(stateVariables,StateVariable.class);
+	StateVariable stateVars[] = (StateVariable[])org.vcell.util.BeanUtils.getArray(stateVariables,StateVariable.class);
 	return(stateVars);
 }
 

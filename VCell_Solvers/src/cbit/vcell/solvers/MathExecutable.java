@@ -8,7 +8,7 @@ import java.io.File;
 /**
  * This type was created in VisualAge.
  */
-public class MathExecutable extends cbit.util.Executable {
+public class MathExecutable extends org.vcell.util.Executable {
 	private int currentStringPosition = 0;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private java.lang.String fieldApplicationMessage = new String();
@@ -114,7 +114,7 @@ public static void main(java.lang.String[] args) {
 	try {
 		MathExecutable mathExecutable = new MathExecutable(args[0]);
 		mathExecutable.start();
-	}catch (cbit.util.ExecutableException e) {
+	}catch (org.vcell.util.ExecutableException e) {
 		System.out.println("\nExecutable Exception thrown, normally handled upstream by other classes...");
 	}
 }

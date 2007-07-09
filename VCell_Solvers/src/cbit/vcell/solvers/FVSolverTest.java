@@ -6,9 +6,10 @@ package cbit.vcell.solvers;
 ©*/
 import java.io.File;
 
-import cbit.util.PropertyLoader;
-import cbit.util.SessionLog;
-import cbit.util.StdoutSessionLog;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+import org.vcell.util.StdoutSessionLog;
+
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathDescriptionTest;
 /**

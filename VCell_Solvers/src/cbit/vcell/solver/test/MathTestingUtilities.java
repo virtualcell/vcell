@@ -5,9 +5,9 @@ import java.util.Vector;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.util.Coordinate;
+import org.vcell.util.CoordinateIndex;
 
-import cbit.util.Coordinate;
-import cbit.util.CoordinateIndex;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
@@ -57,7 +57,7 @@ public class MathTestingUtilities {
  * Insert the method's description here.
  * Creation date: (8/20/2003 12:58:10 PM)
  */
-public static SimulationComparisonSummary comparePDEResults(Simulation testSim, DataManager testDataManager, Simulation refSim, DataManager refDataManager, String varsToCompare[]) throws cbit.util.DataAccessException, org.vcell.expression.ExpressionException {
+public static SimulationComparisonSummary comparePDEResults(Simulation testSim, DataManager testDataManager, Simulation refSim, DataManager refDataManager, String varsToCompare[]) throws org.vcell.util.DataAccessException, org.vcell.expression.ExpressionException {
 
 	java.util.Hashtable tempVarHash = new java.util.Hashtable();
 	boolean bTimesEqual = true;
@@ -281,7 +281,7 @@ public static SimulationComparisonSummary comparePDEResults(Simulation testSim, 
  * Insert the method's description here.
  * Creation date: (8/20/2003 12:58:10 PM)
  */
-public static SimulationComparisonSummary comparePDEResultsWithExact(Simulation sim, DataManager dataManager) throws cbit.util.DataAccessException, org.vcell.expression.ExpressionException {
+public static SimulationComparisonSummary comparePDEResultsWithExact(Simulation sim, DataManager dataManager) throws org.vcell.util.DataAccessException, org.vcell.expression.ExpressionException {
 
 	java.util.Hashtable tempVarHash = new java.util.Hashtable();
 	
@@ -524,7 +524,7 @@ public static MathDescription constructExactMath(MathDescription mathDesc, java.
 	}
 	MathDescription exactMath = null;
 	try {
-		exactMath = (MathDescription)cbit.util.BeanUtils.cloneSerializable(mathDesc);
+		exactMath = (MathDescription)org.vcell.util.BeanUtils.cloneSerializable(mathDesc);
 		exactMath.setDescription("constructed exact solution from MathDescription ("+mathDesc.getName()+")");
 		exactMath.setName("exact from "+mathDesc.getName());
 	}catch (Throwable e){
@@ -992,9 +992,9 @@ public static MathDescription constructOdesForSensitivity(MathDescription mathDe
 		// Substitute the rate expressions for the newly added ODEs in equnsVector.
 		//
 
-		Variable vars[] = (Variable[])cbit.util.BeanUtils.getArray(varsVector, Variable.class);		
-		Variable var_1s[] = (Variable[])cbit.util.BeanUtils.getArray(var1s, Variable.class);
-		Variable var_2s[] = (Variable[])cbit.util.BeanUtils.getArray(var2s, Variable.class);
+		Variable vars[] = (Variable[])org.vcell.util.BeanUtils.getArray(varsVector, Variable.class);		
+		Variable var_1s[] = (Variable[])org.vcell.util.BeanUtils.getArray(var1s, Variable.class);
+		Variable var_2s[] = (Variable[])org.vcell.util.BeanUtils.getArray(var2s, Variable.class);
 
 		Vector newEqunsVector = new Vector();
 		for (int i = 0; i < equnsVector.size(); i++) {
@@ -1244,7 +1244,7 @@ public static IExpression[] getInsideOutsideFunctions(IExpression analyticSubDom
 			throw new ExpressionException("expression '"+exp+"' is neither relational nor logical, bad analytic geometry");
 		}
 	}
-	return (IExpression[])cbit.util.BeanUtils.getArray(expList,IExpression.class);
+	return (IExpression[])org.vcell.util.BeanUtils.getArray(expList,IExpression.class);
 }
 
 
@@ -1292,7 +1292,7 @@ public static Function[] getOutwardNormal(IExpression analyticSubVolume, String 
 	
 	Variable vars[] = varHash.getReorderedVariables();
 	java.util.Vector varList = new java.util.Vector(java.util.Arrays.asList(vars));
-	return (Function[])cbit.util.BeanUtils.getArray(varList,Function.class);
+	return (Function[])org.vcell.util.BeanUtils.getArray(varList,Function.class);
 }
 
 
@@ -1340,7 +1340,7 @@ public static Function[] getOutwardNormalFromInsideOutsideFunction(IExpression i
 	varList.add(new Function(normalZName,normalZ));
 	varList.add(new Function(distanceToSurfaceName,distanceToSurface));
 
-	return (Function[])cbit.util.BeanUtils.getArray(varList,Function.class);
+	return (Function[])org.vcell.util.BeanUtils.getArray(varList,Function.class);
 }
 
 

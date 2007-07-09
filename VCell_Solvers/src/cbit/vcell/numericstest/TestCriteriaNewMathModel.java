@@ -1,5 +1,6 @@
 package cbit.vcell.numericstest;
-import cbit.util.document.MathModelInfo;
+import org.vcell.util.document.MathModelInfo;
+
 import cbit.vcell.simulation.SimulationInfo;
 import cbit.vcell.solver.test.VariableComparisonSummary;
 /**

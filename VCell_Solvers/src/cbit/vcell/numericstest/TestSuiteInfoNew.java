@@ -5,7 +5,7 @@ import java.math.BigDecimal;
  * Creation date: (10/16/2004 1:43:54 PM)
  * @author: Frank Morgan
  */
-public class TestSuiteInfoNew implements cbit.util.Matchable, java.io.Serializable {
+public class TestSuiteInfoNew implements org.vcell.util.Matchable, java.io.Serializable {
 
 	private BigDecimal tsKey;
 	private String tsID;
@@ -33,7 +33,7 @@ public TestSuiteInfoNew(BigDecimal argTSKey,String argTSID,String argTSVCellBuil
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	
 	if(obj == this){
 		return true;

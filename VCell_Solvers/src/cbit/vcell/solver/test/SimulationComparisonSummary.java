@@ -44,7 +44,7 @@ public VariableComparisonSummary[] getFailingVariableComparisonSummaries(double 
 			varComparisonSummaryList.add(varComparisonSummary);
 		}
 	}
-	return (VariableComparisonSummary[])cbit.util.BeanUtils.getArray(varComparisonSummaryList,VariableComparisonSummary.class);
+	return (VariableComparisonSummary[])org.vcell.util.BeanUtils.getArray(varComparisonSummaryList,VariableComparisonSummary.class);
 }
 /**
  * Insert the method's description here.
@@ -86,7 +86,7 @@ public double getRelativeError(String varName) {
  * @return cbit.vcell.solver.test.VariableComparisonSummary[]
  */
 public VariableComparisonSummary[] getVariableComparisonSummaries() {
-	return (VariableComparisonSummary[])cbit.util.BeanUtils.getArray(variableComparisonSummaryList,VariableComparisonSummary.class);
+	return (VariableComparisonSummary[])org.vcell.util.BeanUtils.getArray(variableComparisonSummaryList,VariableComparisonSummary.class);
 }
 /**
  * Insert the method's description here.

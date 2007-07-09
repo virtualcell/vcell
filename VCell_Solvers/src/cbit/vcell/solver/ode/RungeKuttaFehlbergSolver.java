@@ -4,8 +4,8 @@ import java.io.File;
 import java.io.IOException;
 
 import org.vcell.expression.ExpressionException;
+import org.vcell.util.SessionLog;
 
-import cbit.util.SessionLog;
 import cbit.vcell.math.MathException;
 import cbit.vcell.simulation.DefaultOutputTimeSpec;
 import cbit.vcell.simulation.SolverTaskDescription;
