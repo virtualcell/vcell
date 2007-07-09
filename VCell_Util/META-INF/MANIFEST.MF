@@ -4,8 +4,8 @@ Bundle-Name: org.vcell.util
 Bundle-SymbolicName: org.vcell.util
 Bundle-Version: 1.0.0
 Bundle-Localization: plugin
-Export-Package: cbit.gui,
- cbit.util,
- cbit.util.document,
- cbit.vcell.messaging.admin.sorttable
+Export-Package: org.vcell.util,
+ org.vcell.util.document,
+ org.vcell.util.gui,
+ org.vcell.util.gui.sorttable
 Require-Bundle: edu.stanford.ejalbert
