@@ -320,7 +320,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 							simpleBound.setBounds(new RealInterval(Double.POSITIVE_INFINITY,simpleBound.getBounds().hi()));
 						}else{
 							e.printStackTrace(System.out);
-							cbit.gui.DialogUtils.showErrorDialog("Number format error:\n"+e.getMessage());
+							org.vcell.util.gui.DialogUtils.showErrorDialog("Number format error:\n"+e.getMessage());
 						}
 					}
 					fireTableRowsUpdated(rowIndex,rowIndex);
@@ -342,7 +342,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 							simpleBound.setBounds(new RealInterval(simpleBound.getBounds().hi(),Double.POSITIVE_INFINITY));
 						}else{
 							e.printStackTrace(System.out);
-							cbit.gui.DialogUtils.showErrorDialog("Number format error:\n"+e.getMessage());
+							org.vcell.util.gui.DialogUtils.showErrorDialog("Number format error:\n"+e.getMessage());
 						}
 					}
 					fireTableRowsUpdated(rowIndex,rowIndex);

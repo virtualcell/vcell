@@ -243,7 +243,7 @@ public java.lang.String getSymbols(int index) {
  * @return cbit.vcell.parser.SymbolTableEntry
  */
 public org.vcell.expression.SymbolTableEntry[] getSymbolTableEntries() {
-	return (ConstraintSolver.Symbol[])cbit.util.BeanUtils.getArray(symbolList,ConstraintSolver.Symbol.class);
+	return (ConstraintSolver.Symbol[])org.vcell.util.BeanUtils.getArray(symbolList,ConstraintSolver.Symbol.class);
 }
 
 

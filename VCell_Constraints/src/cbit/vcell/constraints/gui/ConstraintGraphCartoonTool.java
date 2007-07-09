@@ -3,7 +3,8 @@ package cbit.vcell.constraints.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.gui.DialogUtils;
+import org.vcell.util.gui.DialogUtils;
+
 import cbit.gui.graph.Shape;
 import cbit.gui.graph.SimpleContainerShape;
 import cbit.gui.graph.SimpleGraphCartoonTool;
@@ -94,14 +95,14 @@ protected void menuAction(Shape shape, String menuAction) {
 			if (boundsToDelete.size()>0){
 				cbit.vcell.constraints.SimpleBounds bounds[] = constraintsGraphModel.getConstraintContainerImpl().getSimpleBounds();
 				for (int i = 0; i < boundsToDelete.size(); i++){
-					bounds = (cbit.vcell.constraints.SimpleBounds[])cbit.util.BeanUtils.removeElement(bounds,boundsToDelete.elementAt(i));
+					bounds = (cbit.vcell.constraints.SimpleBounds[])org.vcell.util.BeanUtils.removeElement(bounds,boundsToDelete.elementAt(i));
 				}
 				constraintsGraphModel.getConstraintContainerImpl().setSimpleBounds(bounds);
 			}
 			if (genConstraintsToDelete.size()>0){
 				cbit.vcell.constraints.GeneralConstraint genConstraints[] = constraintsGraphModel.getConstraintContainerImpl().getGeneralConstraints();
 				for (int i = 0; i < genConstraintsToDelete.size(); i++){
-					genConstraints = (cbit.vcell.constraints.GeneralConstraint[])cbit.util.BeanUtils.removeElement(genConstraints,genConstraintsToDelete.elementAt(i));
+					genConstraints = (cbit.vcell.constraints.GeneralConstraint[])org.vcell.util.BeanUtils.removeElement(genConstraints,genConstraintsToDelete.elementAt(i));
 				}
 				constraintsGraphModel.getConstraintContainerImpl().setGeneralConstraints(genConstraints);
 			}
