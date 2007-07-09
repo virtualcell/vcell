@@ -1,7 +1,5 @@
 package cbit.vcell.client.desktop.testingframework;
 
-import cbit.util.DataAccessException;
-import cbit.util.document.MathModelInfo;
 import cbit.vcell.numericstest.*;
 import cbit.vcell.simulation.Simulation;
 import cbit.vcell.simulation.SimulationInfo;
@@ -11,6 +9,9 @@ import java.util.Enumeration;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.client.database.DatabaseListener;
 import org.jdom.JDOMException;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.document.MathModelInfo;
+
 import java.io.IOException;
 import cbit.vcell.mathmodel.MathModel;
 /**
@@ -40,8 +41,8 @@ public class TestingFrmwkTreeModel
 	};
 	//
 	class GetTestSuites implements Runnable{
-		cbit.gui.AsynchProgressPopup pp = 
-			new cbit.gui.AsynchProgressPopup(null,"Refresh Testing FrameWork Display","starting...",false,true);
+		org.vcell.util.gui.AsynchProgressPopup pp = 
+			new org.vcell.util.gui.AsynchProgressPopup(null,"Refresh Testing FrameWork Display","starting...",false,true);
 		public GetTestSuites(){
 		}
 		public void run(){
@@ -67,7 +68,7 @@ public class TestingFrmwkTreeModel
 								pp.setProgress(i*100/(testSuiteInfos.length+1));
 								pp.setMessage("Getting Testsuite "+testSuiteInfos[i].getTSID());
 								latestTestSuites[i] = getDocumentManager().getTestSuite(testSuiteInfos[i].getTSKey());
-							} catch (cbit.util.DataAccessException e) {
+							} catch (org.vcell.util.DataAccessException e) {
 								latestTestSuites[i] = null;
 							}
 						}
@@ -131,7 +132,7 @@ private synchronized BioModelNode createBaseTree(TestSuiteGroup tsg) throws Data
 				}else{
 					rootRootNode.add(new BioModelNode("TestSuite Not Updated "+tsg.latestTestSuiteInfos[i].getTSID(),false));
 				}
-			} catch (cbit.util.DataAccessException e) {
+			} catch (org.vcell.util.DataAccessException e) {
 				// temporary fix ...
 			}
 		}

@@ -1,5 +1,4 @@
 package cbit.vcell.client;
-import cbit.util.document.KeyValue;
 import cbit.vcell.simulation.Simulation;
 import cbit.vcell.simulation.SimulationOwner;
 import cbit.vcell.simulation.VCSimulationIdentifier;
@@ -10,8 +9,10 @@ import cbit.vcell.client.desktop.simulation.*;
 import java.awt.*;
 import javax.swing.*;
 
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.gui.*;
 
-import cbit.gui.*;
+
 import java.util.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.modelapp.SimulationContext;
@@ -222,7 +223,7 @@ private void createBioModelFrame() {
 	getBioModelEditor().setBioModelWindowManager(this);
 	getBioModelEditor().setBioModel(getBioModel());
 	getBioModelEditor().setDocumentManager(getRequestManager().getDocumentManager());
-	cbit.gui.JInternalFrameEnhanced editorFrame = new cbit.gui.JInternalFrameEnhanced("Model", true, false, true, true);
+	org.vcell.util.gui.JInternalFrameEnhanced editorFrame = new org.vcell.util.gui.JInternalFrameEnhanced("Model", true, false, true, true);
 	editorFrame.setContentPane(bioModelEditor);
 	getJDesktopPane().add(editorFrame);
 	editorFrame.show();
@@ -287,7 +288,7 @@ private javax.swing.JPanel getJPanel() {
  * Creation date: (5/14/2004 3:41:06 PM)
  * @return cbit.vcell.document.VCDocument
  */
-public cbit.util.document.VCDocument getVCDocument() {
+public org.vcell.util.document.VCDocument getVCDocument() {
 	return getBioModel();
 }
 
@@ -401,7 +402,7 @@ private void remove(ApplicationComponents appComponents, SimulationContext sc) {
  * Creation date: (5/28/2004 3:40:45 AM)
  * @param newDocument cbit.vcell.document.VCDocument
  */
-public void resetDocument(cbit.util.document.VCDocument newDocument) {
+public void resetDocument(org.vcell.util.document.VCDocument newDocument) {
 	setBioModel((BioModel)newDocument);
 	setDocumentID(getBioModel());
 	getBioModelEditor().setBioModel(getBioModel());
@@ -456,7 +457,7 @@ private void setJDesktopPane(javax.swing.JDesktopPane newJDesktopPane) {
  */
 public void showApplicationFrame(SimulationContext simContext) {
 	try {
-		cbit.util.BeanUtils.setCursorThroughout(getJDesktopPane(), Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		org.vcell.util.BeanUtils.setCursorThroughout(getJDesktopPane(), Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		if (! getApplicationsHash().containsKey(simContext)) {
 			// create components
 			createAppComponents(simContext);
@@ -464,7 +465,7 @@ public void showApplicationFrame(SimulationContext simContext) {
 		JInternalFrameEnhanced editorFrame = ((ApplicationComponents)getApplicationsHash().get(simContext)).getAppEditorFrame();
 		showFrame(editorFrame);
 	} finally {	
-		cbit.util.BeanUtils.setCursorThroughout(getJDesktopPane(), Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+		org.vcell.util.BeanUtils.setCursorThroughout(getJDesktopPane(), Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 	}
 }
 

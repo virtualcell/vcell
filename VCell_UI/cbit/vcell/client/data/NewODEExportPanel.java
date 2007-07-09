@@ -1,5 +1,4 @@
 package cbit.vcell.client.data;
-import cbit.util.VCDataIdentifier;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -11,6 +10,8 @@ import cbit.vcell.export.VariableSpecs;
 import cbit.vcell.export.gui.ExportSettings;
 import cbit.vcell.export.server.*;
 import javax.swing.*;
+
+import org.vcell.util.VCDataIdentifier;
 
 import cbit.vcell.simdata.ColumnDescription;
 import cbit.vcell.simdata.ODESolverResultSet;
@@ -1023,11 +1024,11 @@ private void initialize() {
 	try {
 		// user code begin {1}
 		// user code end
-		cbit.gui.LineBorderBean ivjLocalBorder1;
-		ivjLocalBorder1 = new cbit.gui.LineBorderBean();
+		org.vcell.util.gui.LineBorderBean ivjLocalBorder1;
+		ivjLocalBorder1 = new org.vcell.util.gui.LineBorderBean();
 		ivjLocalBorder1.setLineColor(java.awt.Color.blue);
-		cbit.gui.TitledBorderBean ivjLocalBorder;
-		ivjLocalBorder = new cbit.gui.TitledBorderBean();
+		org.vcell.util.gui.TitledBorderBean ivjLocalBorder;
+		ivjLocalBorder = new org.vcell.util.gui.TitledBorderBean();
 		ivjLocalBorder.setBorder(ivjLocalBorder1);
 		ivjLocalBorder.setTitle("Select data to be exported");
 		setName("ODEExportPanel");

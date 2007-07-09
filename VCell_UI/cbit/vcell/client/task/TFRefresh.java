@@ -1,10 +1,11 @@
 package cbit.vcell.client.task;
 
+import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.AsynchProgressPopup;
+
 import cbit.vcell.client.TestingFrameworkWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.desktop.controls.AsynchClientTask;
-import cbit.gui.AsynchProgressPopup;
-import cbit.util.UserCancelException;
 /**
  * Insert the type's description here.
  * Creation date: (11/17/2004 2:20:58 PM)

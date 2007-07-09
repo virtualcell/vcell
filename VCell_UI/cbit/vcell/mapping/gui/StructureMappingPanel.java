@@ -32,7 +32,7 @@ public class StructureMappingPanel extends javax.swing.JPanel {
 	private javax.swing.JButton ivjSetButton = null;
 	private Component ivjComponent1 = null;
 	private javax.swing.DefaultCellEditor ivjDefaultCellEditor1 = null;
-	private cbit.gui.JTableFixed ivjScrollPaneTable1 = null;
+	private org.vcell.util.gui.JTableFixed ivjScrollPaneTable1 = null;
 	private StructureMappingTableModel ivjStructureMappingTableModel1 = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private boolean ivjConnPtoP3Aligning = false;
@@ -529,10 +529,10 @@ private javax.swing.JScrollPane getJScrollPane1() {
  * @return cbit.gui.JTableFixed
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.JTableFixed getScrollPaneTable1() {
+private org.vcell.util.gui.JTableFixed getScrollPaneTable1() {
 	if (ivjScrollPaneTable1 == null) {
 		try {
-			ivjScrollPaneTable1 = new cbit.gui.JTableFixed();
+			ivjScrollPaneTable1 = new org.vcell.util.gui.JTableFixed();
 			ivjScrollPaneTable1.setName("ScrollPaneTable1");
 			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable1.getTableHeader());
 			getJScrollPane1().getViewport().setBackingStoreEnabled(true);
@@ -901,8 +901,8 @@ private void setStructureMappingBoundaryTypeDialog1(StructureMappingBoundaryType
  * Comment
  */
 private void showBoundaryDialog() {
-	cbit.util.BeanUtils.centerOnComponent(getStructureMappingBoundaryTypeDialog1(), this);
-	cbit.gui.ZEnforcer.showModalDialogOnTop(getStructureMappingBoundaryTypeDialog1(),this);
+	org.vcell.util.BeanUtils.centerOnComponent(getStructureMappingBoundaryTypeDialog1(), this);
+	org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(getStructureMappingBoundaryTypeDialog1(),this);
 	//getStructureMappingBoundaryTypeDialog1().show();
 }
 /**

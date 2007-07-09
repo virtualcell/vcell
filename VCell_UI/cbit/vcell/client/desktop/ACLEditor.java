@@ -1,10 +1,10 @@
 package cbit.vcell.client.desktop;
 
-import cbit.util.document.GroupAccess;
-import cbit.util.document.GroupAccessAll;
-import cbit.util.document.GroupAccessNone;
-import cbit.util.document.GroupAccessSome;
-import cbit.util.document.User;
+import org.vcell.util.document.GroupAccess;
+import org.vcell.util.document.GroupAccessAll;
+import org.vcell.util.document.GroupAccessNone;
+import org.vcell.util.document.GroupAccessSome;
+import org.vcell.util.document.User;
 
 /**
  * Insert the type's description here.
@@ -108,21 +108,21 @@ private void accessAction(java.awt.event.ActionEvent actionEvent) {
 		if(getJTextFieldACLUser().getText().length() > 0){
 			String[] oldAccessList = getACLState().getAccessList();
 			if(oldAccessList != null && oldAccessList.length > 0){
-				if(cbit.util.BeanUtils.arrayContains(oldAccessList,getJTextFieldACLUser().getText())){
+				if(org.vcell.util.BeanUtils.arrayContains(oldAccessList,getJTextFieldACLUser().getText())){
 					cbit.vcell.client.PopupGenerator.showErrorDialog("User "+getJTextFieldACLUser().getText()+" already in list");
 					return;
 				}
 			}
 			ACLState newState =
 				new ACLState(
-					(String[])cbit.util.BeanUtils.addElement(
+					(String[])org.vcell.util.BeanUtils.addElement(
 						(getACLState() != null?getACLState().getAccessList():new String[0]),getJTextFieldACLUser().getText()));
 			setACLState(newState);
 		}
 	}else if(actionEvent.getSource() == getJButtonRemoveACLUser() && getACLState() != null){
 		String removeUser = (String)getJListACL().getSelectedValue();
 		if(removeUser != null){
-			String[] newUserList = (String[])cbit.util.BeanUtils.removeElement(getACLState().getAccessList(),removeUser);
+			String[] newUserList = (String[])org.vcell.util.BeanUtils.removeElement(getACLState().getAccessList(),removeUser);
 			ACLState newState = new ACLState(newUserList);
 			setACLState(newState);
 		}
@@ -724,12 +724,12 @@ private void updateInterface() {
 	if(currentState.isAccessPrivate()){
 		if(!getPrivateRadioButton().isSelected()){getPrivateRadioButton().setSelected(true);}
 		if(getGrantAccessJPanel().isEnabled()){
-			cbit.util.BeanUtils.enableComponents(getGrantAccessJPanel(),false);
+			org.vcell.util.BeanUtils.enableComponents(getGrantAccessJPanel(),false);
 		}
 	}else if(currentState.isAccessPublic()){
 		if(!getPublicRadioButton().isSelected()){getPublicRadioButton().setSelected(true);}
 		if(getGrantAccessJPanel().isEnabled()){
-			cbit.util.BeanUtils.enableComponents(getGrantAccessJPanel(),false);
+			org.vcell.util.BeanUtils.enableComponents(getGrantAccessJPanel(),false);
 		}
 	}else if(currentState != null){
 		String[] currentUserList = (currentState != null?currentState.getAccessList():new String[0]);
@@ -737,7 +737,7 @@ private void updateInterface() {
 		getJTextFieldACLUser().setText(null);
 		if(!getACLRadioButton().isSelected()){getACLRadioButton().setSelected(true);}
 		if(!getCurrentUsersLabel().isEnabled()){
-			cbit.util.BeanUtils.enableComponents(getGrantAccessJPanel(),true);
+			org.vcell.util.BeanUtils.enableComponents(getGrantAccessJPanel(),true);
 		}
 	}
 }

@@ -3,11 +3,12 @@ package cbit.vcell.solver.ode.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.*;
 import cbit.vcell.math.Constant;
 import cbit.vcell.simulation.*;
 
 import java.util.*;
+
+import org.vcell.util.*;
 /**
  * Insert the class' description here.
  * Creation date: (8/19/2000 8:59:36 PM)
@@ -793,8 +794,8 @@ private javax.swing.JLabel getJLabelTimeSamples() {
 private javax.swing.JLabel getJLabelTitle() {
 	if (ivjJLabelTitle == null) {
 		try {
-			cbit.gui.EmptyBorderBean ivjLocalBorder;
-			ivjLocalBorder = new cbit.gui.EmptyBorderBean();
+			org.vcell.util.gui.EmptyBorderBean ivjLocalBorder;
+			ivjLocalBorder = new org.vcell.util.gui.EmptyBorderBean();
 			ivjLocalBorder.setInsets(new java.awt.Insets(10, 0, 10, 0));
 			ivjJLabelTitle = new javax.swing.JLabel();
 			ivjJLabelTitle.setName("JLabelTitle");
@@ -1154,7 +1155,7 @@ private void handleException(Throwable exception) {
 			location = getLocationOnScreen();
 		} catch (java.awt.IllegalComponentStateException e) {
 		}
-		cbit.gui.DialogUtils.showWarningDialog(this, "Error in value : " + exception.getMessage(), new String[] {"Ok"}, "Ok");
+		org.vcell.util.gui.DialogUtils.showWarningDialog(this, "Error in value : " + exception.getMessage(), new String[] {"Ok"}, "Ok");
 		// javax.swing.JOptionPane.showMessageDialog(this, exception.getMessage(), "Warning", javax.swing.JOptionPane.WARNING_MESSAGE);
 	}
 }

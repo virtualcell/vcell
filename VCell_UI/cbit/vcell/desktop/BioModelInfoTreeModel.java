@@ -4,9 +4,9 @@ package cbit.vcell.desktop;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.DataAccessException;
-import cbit.util.document.BioModelChildSummary;
-import cbit.util.document.BioModelInfo;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.document.BioModelChildSummary;
+import org.vcell.util.document.BioModelInfo;
 /**
  * Insert the type's description here.
  * Creation date: (2/14/01 3:33:23 PM)
@@ -14,7 +14,7 @@ import cbit.util.document.BioModelInfo;
  */
 public class BioModelInfoTreeModel extends javax.swing.tree.DefaultTreeModel {
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.util.document.BioModelInfo fieldBioModelInfo = null;
+	private org.vcell.util.document.BioModelInfo fieldBioModelInfo = null;
 /**
  * BioModelDbTreeModel constructor comment.
  * @param root javax.swing.tree.TreeNode
@@ -146,7 +146,7 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
  * @return The bioModelInfo property value.
  * @see #setBioModelInfo
  */
-public cbit.util.document.BioModelInfo getBioModelInfo() {
+public org.vcell.util.document.BioModelInfo getBioModelInfo() {
 	return fieldBioModelInfo;
 }
 /**
@@ -196,8 +196,8 @@ public synchronized void removePropertyChangeListener(java.lang.String propertyN
  * @param bioModelInfo The new value for the property.
  * @see #getBioModelInfo
  */
-public void setBioModelInfo(cbit.util.document.BioModelInfo bioModelInfo) {
-	cbit.util.document.BioModelInfo oldValue = fieldBioModelInfo;
+public void setBioModelInfo(org.vcell.util.document.BioModelInfo bioModelInfo) {
+	org.vcell.util.document.BioModelInfo oldValue = fieldBioModelInfo;
 	fieldBioModelInfo = bioModelInfo;
 	firePropertyChange("bioModelInfo", oldValue, bioModelInfo);
 	refreshTree();

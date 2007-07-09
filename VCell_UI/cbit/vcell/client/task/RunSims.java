@@ -1,14 +1,16 @@
 package cbit.vcell.client.task;
 import cbit.vcell.client.server.*;
 import java.util.*;
+
+import org.vcell.util.*;
+import org.vcell.util.document.VCDocument;
+
 import cbit.vcell.client.*;
 import cbit.vcell.client.database.DocumentManager;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.simulation.*;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.desktop.controls.*;
-import cbit.util.*;
-import cbit.util.document.VCDocument;
 /**
  * Insert the type's description here.
  * Creation date: (5/31/2004 6:03:16 PM)

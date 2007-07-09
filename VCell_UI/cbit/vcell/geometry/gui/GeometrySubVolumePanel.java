@@ -592,9 +592,9 @@ private void geometrySubVolumePanel_Initialize() {
 	getScrollPaneTable().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
 	getScrollPaneTable().setDefaultEditor(
 		Object.class,
-		new cbit.gui.ValidatingCellEditor(
+		new org.vcell.util.gui.ValidatingCellEditor(
 			new javax.swing.JTextField(),
-			new cbit.gui.EditorValueProvider () {
+			new org.vcell.util.gui.EditorValueProvider () {
 				public Object getEditorValue(Object obj){
 					if(obj instanceof SubVolume){
 						return ((SubVolume)obj).getName();

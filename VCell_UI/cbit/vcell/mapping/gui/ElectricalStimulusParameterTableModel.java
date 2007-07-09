@@ -17,7 +17,7 @@ import cbit.vcell.modelapp.ElectricalStimulus;
  * Creation date: (2/23/01 10:52:36 PM)
  * @author: 
  */
-public class ElectricalStimulusParameterTableModel extends cbit.vcell.messaging.admin.sorttable.ManageTableModel implements java.beans.PropertyChangeListener {
+public class ElectricalStimulusParameterTableModel extends org.vcell.util.gui.sorttable.ManageTableModel implements java.beans.PropertyChangeListener {
 
 	static {
 		System.out.println("ElectricalStimulusParameterTableModel: artifically filtering out voltage or current parameters that are not applicable");

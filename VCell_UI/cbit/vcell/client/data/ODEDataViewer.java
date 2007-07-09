@@ -2,7 +2,8 @@ package cbit.vcell.client.data;
 import java.awt.event.*;
 import java.awt.*;
 
-import cbit.util.VCDataIdentifier;
+import org.vcell.util.VCDataIdentifier;
+
 import cbit.vcell.export.gui.ExportMonitorPanel;
 /**
  * Insert the type's description here.

@@ -20,16 +20,16 @@ import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.modelapp.SpeciesContextSpec;
 import cbit.vcell.modelapp.StructureMapping;
 import cbit.vcell.model.Model;
-import cbit.gui.JTableFixed;
 import cbit.vcell.model.Parameter;
 import java.util.Vector;
 
 import org.vcell.expression.ui.ScopedExpression;
 import org.vcell.expression.ui.ScopedExpressionTableCellRenderer;
+import org.vcell.util.BeanUtils;
+import org.vcell.util.gui.JTableFixed;
 
 
 import cbit.vcell.desktop.BioModelNode;
-import cbit.util.BeanUtils;
 /**
  * Insert the type's description here.
  * Creation date: (5/6/2004 10:49:26 AM)
@@ -236,7 +236,7 @@ private BioModelNode createStructuralMappingsSubTree() {
 					geoMappingParamsVector.addElement(strucMappingParams[j]);
 				} 
 			}
-			StructureMapping.StructureMappingParameter[] geoMappingParams = (StructureMapping.StructureMappingParameter[])cbit.util.BeanUtils.getArray(geoMappingParamsVector, StructureMapping.StructureMappingParameter.class);
+			StructureMapping.StructureMappingParameter[] geoMappingParams = (StructureMapping.StructureMappingParameter[])org.vcell.util.BeanUtils.getArray(geoMappingParamsVector, StructureMapping.StructureMappingParameter.class);
 			BioModelNode geoMappingParamsNode = null;
 			if (geoMappingParams != null && geoMappingParams.length > 0) {
 				createParamTable(geoMappingParams, structureMappings[i], true);

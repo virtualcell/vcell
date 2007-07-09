@@ -810,8 +810,8 @@ private javax.swing.JLabel getJLabel8() {
 private javax.swing.JScrollPane getJScrollPane1() {
 	if (ivjJScrollPane1 == null) {
 		try {
-			cbit.gui.BevelBorderBean ivjLocalBorder;
-			ivjLocalBorder = new cbit.gui.BevelBorderBean();
+			org.vcell.util.gui.BevelBorderBean ivjLocalBorder;
+			ivjLocalBorder = new org.vcell.util.gui.BevelBorderBean();
 			ivjLocalBorder.setColor(new java.awt.Color(160,160,255));
 			ivjJScrollPane1 = new javax.swing.JScrollPane();
 			ivjJScrollPane1.setName("JScrollPane1");
@@ -1099,7 +1099,7 @@ private void renameFluxReaction() {
 		String newName = null;
 		try{
 			newName = cbit.vcell.client.PopupGenerator.showInputDialog(this,"reaction name:",getFluxReaction1().getName());
-		}catch(cbit.util.UserCancelException e){
+		}catch(org.vcell.util.UserCancelException e){
 			return;
 		}
 		if (newName != null) {

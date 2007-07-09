@@ -19,7 +19,7 @@ import cbit.vcell.model.*;
  *
  *
  */
-public class FeatureDialog extends cbit.gui.JInternalFrameEnhanced implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, javax.swing.event.DocumentListener {
+public class FeatureDialog extends org.vcell.util.gui.JInternalFrameEnhanced implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, javax.swing.event.DocumentListener {
 	private javax.swing.JPanel ivjPanel1 = null;
 	private cbit.vcell.model.Feature fieldParentFeature = null;
 	private cbit.vcell.model.Feature fieldChildFeature = null;
@@ -911,7 +911,7 @@ private void updateInterface() {
 		
 	boolean bChildNameChanged =
 		getChildFeature() == null ||
-		!cbit.util.Compare.isEqualOrNull(getChildFeature().getName(),getNameJTextField().getText());
+		!org.vcell.util.Compare.isEqualOrNull(getChildFeature().getName(),getNameJTextField().getText());
 	//
 	boolean bOKEnabled =
 		(	

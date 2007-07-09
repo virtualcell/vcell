@@ -1,7 +1,9 @@
 package cbit.image.gui;
 import java.awt.*;
+
+import org.vcell.util.Range;
+
 import cbit.image.*;
-import cbit.util.Range;
 /**
  * This type was created in VisualAge.
  */

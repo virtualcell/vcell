@@ -1,6 +1,7 @@
 package cbit.vcell.client.task;
-import cbit.util.UserCancelException;
-import cbit.util.document.VCDocument;
+import org.vcell.util.UserCancelException;
+import org.vcell.util.document.VCDocument;
+
 import cbit.vcell.client.*;
 import cbit.vcell.desktop.controls.*;
 /**

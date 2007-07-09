@@ -27,7 +27,7 @@ public class MathDescEditor extends JPanel implements java.awt.event.ActionListe
 	private boolean fieldFlattenVisibility = false;
 	private boolean ivjConnPtoP2Aligning = false;
 	private boolean ivjConnPtoP1Aligning = false;
-	private cbit.gui.LineNumberedTextPanel ivjlineNumberedTextArea1 = null;
+	private org.vcell.util.gui.LineNumberedTextPanel ivjlineNumberedTextArea1 = null;
 	private JTextArea ivjtextArea1 = null;
 
 /**
@@ -754,7 +754,7 @@ private String createSensitivitySolution(java.awt.event.ActionEvent actionEvent)
 			constsVector.addElement(var);
 		}
 	}
-	Constant constantsList[] = (Constant[])cbit.util.BeanUtils.getArray(constsVector, Constant.class);
+	Constant constantsList[] = (Constant[])org.vcell.util.BeanUtils.getArray(constsVector, Constant.class);
 
 	//
 	// Get the names of the constants in the mathDesc to display in the list box
@@ -997,10 +997,10 @@ public boolean getFlattenVisibility() {
  * @return cbit.gui.LineNumberedTextPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.LineNumberedTextPanel getlineNumberedTextArea1() {
+private org.vcell.util.gui.LineNumberedTextPanel getlineNumberedTextArea1() {
 	if (ivjlineNumberedTextArea1 == null) {
 		try {
-			ivjlineNumberedTextArea1 = new cbit.gui.LineNumberedTextPanel();
+			ivjlineNumberedTextArea1 = new org.vcell.util.gui.LineNumberedTextPanel();
 			ivjlineNumberedTextArea1.setName("lineNumberedTextArea1");
 			// user code begin {1}
 			// user code end

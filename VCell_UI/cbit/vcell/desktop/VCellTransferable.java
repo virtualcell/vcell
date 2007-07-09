@@ -1,13 +1,15 @@
 package cbit.vcell.desktop;
 import java.awt.datatransfer.*;
+
+import org.vcell.util.BeanUtils;
+
 import cbit.vcell.model.Species;
-import cbit.util.BeanUtils;
 /**
  * Insert the type's description here.
  * Creation date: (5/8/2003 2:40:40 PM)
  * @author: Frank Morgan
  */
-public class VCellTransferable extends cbit.gui.SimpleTransferable {
+public class VCellTransferable extends org.vcell.util.gui.SimpleTransferable {
 
 	public static final DataFlavor SPECIES_FLAVOR =
 		new DataFlavor(DataFlavor.javaJVMLocalObjectMimeType+"; class="+cbit.vcell.model.Species.class.getName(),"Species");

@@ -1,16 +1,18 @@
 package cbit.vcell.client;
-import cbit.gui.GlassPane;
-import cbit.gui.SwingHacks;
-import cbit.util.*;
-import cbit.util.document.CurateSpec;
-import cbit.util.document.VCDocument;
-import cbit.util.document.Version;
-import cbit.util.document.VersionFlag;
 import cbit.vcell.client.server.*;
 
 import java.awt.*;
 import cbit.vcell.client.desktop.*;
 import javax.swing.*;
+
+import org.vcell.util.*;
+import org.vcell.util.document.CurateSpec;
+import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionFlag;
+import org.vcell.util.gui.GlassPane;
+import org.vcell.util.gui.SwingHacks;
+
 import java.util.*;
 import java.awt.event.*;
 /**

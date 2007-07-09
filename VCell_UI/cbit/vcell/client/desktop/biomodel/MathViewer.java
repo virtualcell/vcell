@@ -400,7 +400,7 @@ public void updateMath() {
 		//
 		// inform user if any issues
 		//
-		cbit.util.Issue issues[] = mathMapping.getIssues();
+		org.vcell.util.Issue issues[] = mathMapping.getIssues();
 		if (issues!=null && issues.length>0){
 			StringBuffer messageBuffer = new StringBuffer("Issues encountered during Math Generation:\n");
 			for (int i = 0; i < issues.length; i++){

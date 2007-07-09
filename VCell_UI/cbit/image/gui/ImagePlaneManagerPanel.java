@@ -2,7 +2,8 @@ package cbit.image.gui;
 
 import java.awt.*;
 
-import cbit.util.Coordinate;
+import org.vcell.util.Coordinate;
+
 import cbit.vcell.simdata.DisplayAdapterService;
 import cbit.vcell.simdata.SourceDataInfo;
 
@@ -126,7 +127,7 @@ private void calculateScaling(java.awt.Dimension ipmDimension) {
 		double wd_y = getSourceDataInfo().getExtent().getY() / getimagePaneModel().getScaledLength(getSourceDataInfo().getYSize());
 		double wd_z = getSourceDataInfo().getExtent().getZ() / getimagePaneModel().getScaledLength(getSourceDataInfo().getZSize());
 		getCurveRenderer().setWorldDelta(new Coordinate(wd_x, wd_y, wd_z));
-		cbit.util.Origin o = getSourceDataInfo().getOrigin();
+		org.vcell.util.Origin o = getSourceDataInfo().getOrigin();
 		getCurveRenderer().setWorldOrigin(new Coordinate(o.getX(), o.getY(), o.getZ()));
 		getCurveRenderer().setDefaultLineWidthMultiplier((double) getimagePaneModel().getZoom());
 	} else {
@@ -905,7 +906,7 @@ private javax.swing.JLabel getInfoJlabel() {
 		try {
 			ivjInfoJlabel = new javax.swing.JLabel();
 			ivjInfoJlabel.setName("InfoJlabel");
-			ivjInfoJlabel.setBorder(new cbit.gui.LineBorderBean());
+			ivjInfoJlabel.setBorder(new org.vcell.util.gui.LineBorderBean());
 			ivjInfoJlabel.setText("Info");
 			ivjInfoJlabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
 			// user code begin {1}
@@ -1406,7 +1407,7 @@ private void setToolCursor() {
 			//cursor = Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR);
 		}
 	}
-	cbit.util.BeanUtils.setCursorThroughout(getImagePaneScroller1(), cursor);
+	org.vcell.util.BeanUtils.setCursorThroughout(getImagePaneScroller1(), cursor);
 }
 /**
  * Comment
@@ -1478,11 +1479,11 @@ private void updateInfo(java.awt.event.MouseEvent mouseEvent) {
 						}
 					}
 					if (infoS == null && getSourceDataInfo() != null) {
-						cbit.util.CoordinateIndex ci = getImagePlaneManager().getDataIndexFromUnitized2D(unitP.getX(), unitP.getY());
+						org.vcell.util.CoordinateIndex ci = getImagePlaneManager().getDataIndexFromUnitized2D(unitP.getX(), unitP.getY());
 						Coordinate quantizedWC = getSourceDataInfo().getWorldCoordinateFromIndex(ci);
-						String xCoordString = cbit.util.NumberUtils.formatNumber(quantizedWC.getX());
-						String yCoordString = cbit.util.NumberUtils.formatNumber(quantizedWC.getY());
-						String zCoordString = cbit.util.NumberUtils.formatNumber(quantizedWC.getZ());
+						String xCoordString = org.vcell.util.NumberUtils.formatNumber(quantizedWC.getX());
+						String yCoordString = org.vcell.util.NumberUtils.formatNumber(quantizedWC.getY());
+						String zCoordString = org.vcell.util.NumberUtils.formatNumber(quantizedWC.getZ());
 						infoS = 
 							"(" + xCoordString +
 							(getSourceDataInfo().getYSize() > 1?"," + yCoordString:"") +

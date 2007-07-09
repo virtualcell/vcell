@@ -17,7 +17,7 @@ public class DataSelectRetrieve extends javax.swing.JPanel implements java.awt.e
 		public final int selectionMode;
 		public final int selectionType;
 		public final int selectAreaRadius;
-		public final cbit.util.Range selectAreaRange;
+		public final org.vcell.util.Range selectAreaRange;
 		public final IExpression selectAreaAnalytic;
 		public final String selectAreaRegionName;
 		public final boolean bRetrieveTimeData;
@@ -39,9 +39,9 @@ public class DataSelectRetrieve extends javax.swing.JPanel implements java.awt.e
 
 			selectAreaRadius = getJComboBoxAreaRadius().getSelectedIndex();
 
-			cbit.util.Range rangeTemp = null;
+			org.vcell.util.Range rangeTemp = null;
 				try{
-					rangeTemp = new cbit.util.Range(Double.parseDouble(getJTextFieldAreaMinRange().getText()),Double.parseDouble(getJTextFieldAreaMaxRange().getText()));
+					rangeTemp = new org.vcell.util.Range(Double.parseDouble(getJTextFieldAreaMinRange().getText()),Double.parseDouble(getJTextFieldAreaMaxRange().getText()));
 				}catch(Throwable e){
 					//Do nothing
 				}
@@ -1151,8 +1151,8 @@ private javax.swing.JLabel getJLabelRange() {
 private javax.swing.JPanel getJPanel1() {
 	if (ivjJPanel1 == null) {
 		try {
-			cbit.gui.TitledBorderBean ivjLocalBorder2;
-			ivjLocalBorder2 = new cbit.gui.TitledBorderBean();
+			org.vcell.util.gui.TitledBorderBean ivjLocalBorder2;
+			ivjLocalBorder2 = new org.vcell.util.gui.TitledBorderBean();
 			ivjLocalBorder2.setTitle("Data Retrieval Specification");
 			ivjJPanel1 = new javax.swing.JPanel();
 			ivjJPanel1.setName("JPanel1");
@@ -1195,7 +1195,7 @@ private javax.swing.JPanel getJPanel10() {
 		try {
 			ivjJPanel10 = new javax.swing.JPanel();
 			ivjJPanel10.setName("JPanel10");
-			ivjJPanel10.setBorder(new cbit.gui.LineBorderBean());
+			ivjJPanel10.setBorder(new org.vcell.util.gui.LineBorderBean());
 			ivjJPanel10.setLayout(new java.awt.GridBagLayout());
 
 			java.awt.GridBagConstraints constraintsJRadioButtonLine = new java.awt.GridBagConstraints();
@@ -1229,7 +1229,7 @@ private javax.swing.JPanel getJPanel11() {
 		try {
 			ivjJPanel11 = new javax.swing.JPanel();
 			ivjJPanel11.setName("JPanel11");
-			ivjJPanel11.setBorder(new cbit.gui.LineBorderBean());
+			ivjJPanel11.setBorder(new org.vcell.util.gui.LineBorderBean());
 			ivjJPanel11.setLayout(new java.awt.GridBagLayout());
 
 			java.awt.GridBagConstraints constraintsJPanel3 = new java.awt.GridBagConstraints();
@@ -1310,7 +1310,7 @@ private javax.swing.JPanel getJPanel2() {
 		try {
 			ivjJPanel2 = new javax.swing.JPanel();
 			ivjJPanel2.setName("JPanel2");
-			ivjJPanel2.setBorder(new cbit.gui.LineBorderBean());
+			ivjJPanel2.setBorder(new org.vcell.util.gui.LineBorderBean());
 			ivjJPanel2.setLayout(new java.awt.GridBagLayout());
 
 			java.awt.GridBagConstraints constraintsJRadioButtonSelectAdd = new java.awt.GridBagConstraints();
@@ -1382,8 +1382,8 @@ private javax.swing.JPanel getJPanel3() {
 private javax.swing.JPanel getJPanel4() {
 	if (ivjJPanel4 == null) {
 		try {
-			cbit.gui.LineBorderBean ivjLocalBorder1;
-			ivjLocalBorder1 = new cbit.gui.LineBorderBean();
+			org.vcell.util.gui.LineBorderBean ivjLocalBorder1;
+			ivjLocalBorder1 = new org.vcell.util.gui.LineBorderBean();
 			ivjLocalBorder1.setThickness(2);
 			ivjJPanel4 = new javax.swing.JPanel();
 			ivjJPanel4.setName("JPanel4");
@@ -1443,7 +1443,7 @@ private javax.swing.JPanel getJPanel5() {
 		try {
 			ivjJPanel5 = new javax.swing.JPanel();
 			ivjJPanel5.setName("JPanel5");
-			ivjJPanel5.setBorder(new cbit.gui.LineBorderBean());
+			ivjJPanel5.setBorder(new org.vcell.util.gui.LineBorderBean());
 			ivjJPanel5.setLayout(new java.awt.GridBagLayout());
 
 			java.awt.GridBagConstraints constraintsJRadioButtonAOIManual = new java.awt.GridBagConstraints();
@@ -1530,7 +1530,7 @@ private javax.swing.JPanel getJPanel7() {
 		try {
 			ivjJPanel7 = new javax.swing.JPanel();
 			ivjJPanel7.setName("JPanel7");
-			ivjJPanel7.setBorder(new cbit.gui.LineBorderBean());
+			ivjJPanel7.setBorder(new org.vcell.util.gui.LineBorderBean());
 			ivjJPanel7.setLayout(new java.awt.GridBagLayout());
 
 			java.awt.GridBagConstraints constraintsJRadioButtonAOIRegion = new java.awt.GridBagConstraints();
@@ -1571,7 +1571,7 @@ private javax.swing.JPanel getJPanel8() {
 		try {
 			ivjJPanel8 = new javax.swing.JPanel();
 			ivjJPanel8.setName("JPanel8");
-			ivjJPanel8.setBorder(new cbit.gui.LineBorderBean());
+			ivjJPanel8.setBorder(new org.vcell.util.gui.LineBorderBean());
 			ivjJPanel8.setLayout(new java.awt.GridBagLayout());
 
 			java.awt.GridBagConstraints constraintsJCheckBoxRetrieveSpaceStatistics = new java.awt.GridBagConstraints();
@@ -1606,7 +1606,7 @@ private javax.swing.JPanel getJPanel9() {
 		try {
 			ivjJPanel9 = new javax.swing.JPanel();
 			ivjJPanel9.setName("JPanel9");
-			ivjJPanel9.setBorder(new cbit.gui.LineBorderBean());
+			ivjJPanel9.setBorder(new org.vcell.util.gui.LineBorderBean());
 			ivjJPanel9.setLayout(new java.awt.GridBagLayout());
 
 			java.awt.GridBagConstraints constraintsJCheckBoxRetrieveOverTime = new java.awt.GridBagConstraints();
@@ -1639,8 +1639,8 @@ private javax.swing.JPanel getJPanel9() {
 private javax.swing.JPanel getJPanelSelectionMode() {
 	if (ivjJPanelSelectionMode == null) {
 		try {
-			cbit.gui.TitledBorderBean ivjLocalBorder;
-			ivjLocalBorder = new cbit.gui.TitledBorderBean();
+			org.vcell.util.gui.TitledBorderBean ivjLocalBorder;
+			ivjLocalBorder = new org.vcell.util.gui.TitledBorderBean();
 			ivjLocalBorder.setTitle("Data Selection Mode ");
 			ivjJPanelSelectionMode = new javax.swing.JPanel();
 			ivjJPanelSelectionMode.setName("JPanelSelectionMode");

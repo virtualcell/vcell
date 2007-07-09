@@ -19,11 +19,11 @@ class IvjEventHandler implements java.beans.PropertyChangeListener {
 		};
 	}
 	private JPanel ivjJPanel1 = null;
-	private cbit.gui.JTreeFancy ivjJTree1 = null;
+	private org.vcell.util.gui.JTreeFancy ivjJTree1 = null;
 	private BioModelInfoCellRenderer ivjbioModelInfoCellRenderer = null;
 	private cbit.vcell.client.database.DocumentManager fieldDocumentManager = null;
 	private BioModelInfoTreeModel ivjbioModelInfoTreeModel = null;
-	private cbit.util.document.BioModelInfo fieldBioModelInfo = null;
+	private org.vcell.util.document.BioModelInfo fieldBioModelInfo = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 /**
  * BioModelMetaDataPanel constructor comment.
@@ -181,7 +181,7 @@ public void expandAllRows() {
  * @return The bioModelInfo property value.
  * @see #setBioModelInfo
  */
-public cbit.util.document.BioModelInfo getBioModelInfo() {
+public org.vcell.util.document.BioModelInfo getBioModelInfo() {
 	return fieldBioModelInfo;
 }
 /**
@@ -260,10 +260,10 @@ private javax.swing.JPanel getJPanel1() {
  * @return javax.swing.JTree
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.JTreeFancy getJTree1() {
+private org.vcell.util.gui.JTreeFancy getJTree1() {
 	if (ivjJTree1 == null) {
 		try {
-			ivjJTree1 = new cbit.gui.JTreeFancy();
+			ivjJTree1 = new org.vcell.util.gui.JTreeFancy();
 			ivjJTree1.setName("JTree1");
 			ivjJTree1.setToolTipText("Contents of saved BioModel");
 			ivjJTree1.setEnabled(true);
@@ -367,8 +367,8 @@ public void refresh() {
  * @param bioModelInfo The new value for the property.
  * @see #getBioModelInfo
  */
-public void setBioModelInfo(cbit.util.document.BioModelInfo bioModelInfo) {
-	cbit.util.document.BioModelInfo oldValue = fieldBioModelInfo;
+public void setBioModelInfo(org.vcell.util.document.BioModelInfo bioModelInfo) {
+	org.vcell.util.document.BioModelInfo oldValue = fieldBioModelInfo;
 	fieldBioModelInfo = bioModelInfo;
 	firePropertyChange("bioModelInfo", oldValue, bioModelInfo);
 }

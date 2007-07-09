@@ -4,11 +4,12 @@ package cbit.vcell.geometry.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.gui.ColorIcon;
 import cbit.vcell.geometry.*;
 import javax.swing.JLabel;
 import java.awt.Component;
 import javax.swing.JTable;
+
+import org.vcell.util.gui.ColorIcon;
 /**
  * Insert the type's description here.
  * Creation date: (3/31/2001 10:05:14 PM)

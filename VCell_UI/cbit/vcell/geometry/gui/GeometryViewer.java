@@ -427,7 +427,7 @@ private void connPtoP1SetTarget() {
  */
 private cbit.vcell.geometry.gui.GeometrySizeDialog createGeometrySizeDialog() {
 	//cbit.vcell.desktop.controls.ClientDisplayManager.getClientDisplayManager().getMainClientWindow()
-	Frame frame = (Frame)cbit.util.BeanUtils.findTypeParentOfComponent(this,Frame.class);
+	Frame frame = (Frame)org.vcell.util.BeanUtils.findTypeParentOfComponent(this,Frame.class);
 	GeometrySizeDialog gsd = new cbit.vcell.geometry.gui.GeometrySizeDialog(frame,false);
 	gsd.setName("GeometrySizeDialog1");
 	gsd.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -610,8 +610,8 @@ private cbit.vcell.geometry.GeometrySpec getGeometrySpec() {
 private GeometrySubVolumePanel getGeometrySubVolumePanel() {
 	if (ivjGeometrySubVolumePanel == null) {
 		try {
-			cbit.gui.BevelBorderBean ivjLocalBorder;
-			ivjLocalBorder = new cbit.gui.BevelBorderBean();
+			org.vcell.util.gui.BevelBorderBean ivjLocalBorder;
+			ivjLocalBorder = new org.vcell.util.gui.BevelBorderBean();
 			ivjLocalBorder.setColor(new java.awt.Color(160,160,255));
 			ivjGeometrySubVolumePanel = new cbit.vcell.geometry.gui.GeometrySubVolumePanel();
 			ivjGeometrySubVolumePanel.setName("GeometrySubVolumePanel");
@@ -657,8 +657,8 @@ private cbit.image.gui.ImagePlaneManagerPanel getImagePlaneManagerPanel1() {
 private javax.swing.JButton getJButtonChangeDomain() {
 	if (ivjJButtonChangeDomain == null) {
 		try {
-			cbit.gui.BevelBorderBean ivjLocalBorder1;
-			ivjLocalBorder1 = new cbit.gui.BevelBorderBean();
+			org.vcell.util.gui.BevelBorderBean ivjLocalBorder1;
+			ivjLocalBorder1 = new org.vcell.util.gui.BevelBorderBean();
 			ivjLocalBorder1.setColor(new java.awt.Color(160,160,255));
 			ivjJButtonChangeDomain = new javax.swing.JButton();
 			ivjJButtonChangeDomain.setName("JButtonChangeDomain");
@@ -1008,9 +1008,9 @@ private void setGeometrySpec(cbit.vcell.geometry.GeometrySpec newValue) {
  * Comment
  */
 private void showSizeDialog() {
-	cbit.util.BeanUtils.centerOnComponent(getGeometrySizeDialog1(), this);
+	org.vcell.util.BeanUtils.centerOnComponent(getGeometrySizeDialog1(), this);
 	//getGeometrySizeDialog1().show();
-	cbit.gui.ZEnforcer.showModalDialogOnTop(getGeometrySizeDialog1(),this);
+	org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(getGeometrySizeDialog1(),this);
 }
 
 

@@ -5,17 +5,19 @@ package cbit.vcell.desktop;
 ©*/
 import cbit.vcell.geometry.*;
 import cbit.vcell.server.*;
-import cbit.util.DataAccessException;
-import cbit.util.Matchable;
-import cbit.util.document.BioModelInfo;
-import cbit.util.document.User;
-import cbit.util.document.Version;
-import cbit.util.document.VersionInfo;
 
 import javax.swing.tree.*;
 import java.lang.reflect.*;
 import cbit.vcell.biomodel.*;
 import javax.swing.*;
+
+import org.vcell.util.DataAccessException;
+import org.vcell.util.Matchable;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionInfo;
+
 import java.awt.event.*;
 /**
  * Insert the type's description here.
@@ -1437,7 +1439,7 @@ public boolean getPopupMenuDisabled() {
 /**
  * Comment
  */
-public cbit.util.document.BioModelInfo getSelectedBioModelInfo(BioModelNode selectedBioModelNode) {
+public org.vcell.util.document.BioModelInfo getSelectedBioModelInfo(BioModelNode selectedBioModelNode) {
 	if (selectedBioModelNode.getUserObject() instanceof BioModelInfo){
 		return (BioModelInfo)selectedBioModelNode.getUserObject();
 	}
@@ -1614,9 +1616,9 @@ private void refireActionPerformed(ActionEvent e) {
 
 /**
  * 
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-private void refresh() throws cbit.util.DataAccessException {
+private void refresh() throws org.vcell.util.DataAccessException {
 	//getGeometryDbTreeModel().reload();
 	getGeometryDbTreeModel().refreshTree();
 
@@ -1816,7 +1818,7 @@ private void setselectionModel1(javax.swing.tree.TreeSelectionModel newValue) {
  * Comment
  */
 private void splitPaneResizeWeight() {
-	cbit.util.BeanUtils.attemptResizeWeight(getJSplitPane1(), 1);
+	org.vcell.util.BeanUtils.attemptResizeWeight(getJSplitPane1(), 1);
 }
 
 
@@ -1835,7 +1837,7 @@ private void treeSelection() {
 
 
 	try {
-		cbit.util.BeanUtils.setCursorThroughout(this,java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
+		org.vcell.util.BeanUtils.setCursorThroughout(this,java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
 		
 		if (object instanceof VersionInfo){
 			setSelectedVersionInfo((VersionInfo)object);
@@ -1849,7 +1851,7 @@ private void treeSelection() {
 	} catch (Exception exc) {
 		handleException(exc);
 	} finally {
-		cbit.util.BeanUtils.setCursorThroughout(this,java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
+		org.vcell.util.BeanUtils.setCursorThroughout(this,java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.DEFAULT_CURSOR));
 	}
 
 }

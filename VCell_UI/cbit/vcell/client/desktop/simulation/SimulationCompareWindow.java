@@ -1,7 +1,8 @@
 package cbit.vcell.client.desktop.simulation;
 import java.awt.*;
 
-import cbit.util.VCDataIdentifier;
+import org.vcell.util.VCDataIdentifier;
+
 import cbit.vcell.client.data.*;
 public class SimulationCompareWindow {
 	private VCDataIdentifier vcDataIdentifier = null;
@@ -48,7 +49,7 @@ public VCDataIdentifier getVcDataIdentifier() {
  */
 private void initialize(DataViewer dataViewer) {
 	// create frame
-	setFrame(new cbit.gui.JInternalFrameEnhanced("Comparing ... "+getVcDataIdentifier().getID(), true, true, true, true));
+	setFrame(new org.vcell.util.gui.JInternalFrameEnhanced("Comparing ... "+getVcDataIdentifier().getID(), true, true, true, true));
 	getFrame().setContentPane(dataViewer);
 	if (dataViewer instanceof ODEDataViewer) {
 		getFrame().setSize(450, 450);

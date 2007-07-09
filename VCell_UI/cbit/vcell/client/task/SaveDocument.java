@@ -1,7 +1,8 @@
 package cbit.vcell.client.task;
+import org.vcell.util.UserCancelException;
+import org.vcell.util.document.VCDocument;
+
 import cbit.rmi.event.*;
-import cbit.util.UserCancelException;
-import cbit.util.document.VCDocument;
 import cbit.vcell.client.*;
 import cbit.vcell.client.database.DocumentManager;
 import cbit.vcell.geometry.*;

@@ -1,7 +1,5 @@
 package cbit.vcell.client.data;
 import cbit.rmi.event.VCSimulationDataIdentifier;
-import cbit.util.DataAccessException;
-import cbit.util.VCDataIdentifier;
 import cbit.vcell.math.Constant;
 import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.server.ODEDataManager;
@@ -11,6 +9,9 @@ import cbit.vcell.desktop.controls.NewClientPDEDataContext;
 import cbit.vcell.export.gui.ExportMonitorPanel;
 
 import javax.swing.*;
+
+import org.vcell.util.DataAccessException;
+import org.vcell.util.VCDataIdentifier;
 
 import cbit.vcell.simulation.Simulation;
 /**
@@ -54,8 +55,8 @@ private DataViewer createODEDataViewer(int jobIndex) {
 	odeDataViewer = new ODEDataViewer();
 	try {
 		odeDataViewer.setOdeSolverResultSet(odeDatamanager.getODESolverResultSet());
-	} catch (cbit.util.DataAccessException exc) {
-		cbit.gui.DialogUtils.showErrorDialog(odeDataViewer, "Could not fetch data for requested parameter choices\nJob may have failed or not yet started\n" + exc.getMessage());
+	} catch (org.vcell.util.DataAccessException exc) {
+		org.vcell.util.gui.DialogUtils.showErrorDialog(odeDataViewer, "Could not fetch data for requested parameter choices\nJob may have failed or not yet started\n" + exc.getMessage());
 		exc.printStackTrace();
 	}
 	odeDataViewer.setVcDataIdentifier(vcdid);
@@ -129,9 +130,9 @@ private cbit.vcell.client.server.VCDataManager getVcDataManager() {
 /**
  * Insert the method's description here.
  * Creation date: (10/17/2005 11:37:52 PM)
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-private void initialize() throws cbit.util.DataAccessException {
+private void initialize() throws org.vcell.util.DataAccessException {
 	
 	// create main viewer for jobIndex 0 and wire it up
 	if (isODEData) {
@@ -160,7 +161,7 @@ private void initialize() throws cbit.util.DataAccessException {
 	if (getSimulation().getScanCount() > 1) {
 		JPanel panel = new JPanel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-		cbit.gui.EmptyBorderBean ebb = new cbit.gui.EmptyBorderBean();
+		org.vcell.util.gui.EmptyBorderBean ebb = new org.vcell.util.gui.EmptyBorderBean();
 		ebb.setInsets(new java.awt.Insets(4,2,4,2));
 		JLabel label = new JLabel("View data for parameter values: ");
 		label.setBorder(ebb);
@@ -205,7 +206,7 @@ private void initialize() throws cbit.util.DataAccessException {
 			JScrollPane scr = new JScrollPane(table);
 			JPanel p = new JPanel();
 			scr.setPreferredSize(new java.awt.Dimension (100, Math.min(150, table.getPreferredSize().height + table.getTableHeader().getPreferredSize().height + 5)));
-			ebb = new cbit.gui.EmptyBorderBean();
+			ebb = new org.vcell.util.gui.EmptyBorderBean();
 			ebb.setInsets(new java.awt.Insets(4,2,4,2));
 			p.setBorder(ebb);
 			p.setLayout(new java.awt.BorderLayout());
@@ -226,9 +227,9 @@ private void initialize() throws cbit.util.DataAccessException {
 /**
  * Insert the method's description here.
  * Creation date: (6/11/2004 2:43:49 PM)
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-public void refreshData() throws cbit.util.DataAccessException {
+public void refreshData() throws org.vcell.util.DataAccessException {
 	if (isODEData) {
 		updateScanParamChoices(); // this takes care of all logic to get the fresh data
 	} else {
@@ -293,7 +294,7 @@ private void updateScanParamChoices() {
 	}
 	int jobIndex = -1;
 	try {
-		jobIndex = cbit.util.BeanUtils.coordinateToIndex(indices, bounds);
+		jobIndex = org.vcell.util.BeanUtils.coordinateToIndex(indices, bounds);
 	} catch (RuntimeException exc) {}
 	
 	// update viewer
@@ -313,7 +314,7 @@ private void updateScanParamChoices() {
 			odeDataViewer.setVcDataIdentifier(vcdid);
 		} catch (DataAccessException exc) {
 			exc.printStackTrace();
-			cbit.gui.DialogUtils.showErrorDialog(odeDataViewer, "Could not fetch data for requested parameter choices\nJob may have failed or not yet started\n" + exc.getMessage());
+			org.vcell.util.gui.DialogUtils.showErrorDialog(odeDataViewer, "Could not fetch data for requested parameter choices\nJob may have failed or not yet started\n" + exc.getMessage());
 			odeDataViewer.setOdeSolverResultSet(null);
 		}
 	} else {
@@ -325,10 +326,10 @@ private void updateScanParamChoices() {
 			currentContext.setDataManager(pdeDatamanager);
 		}
 		if (pdeDataViewer.getPdeDataContext().getDataValues() == null) {
-			JInternalFrame frame = (JInternalFrame)cbit.util.BeanUtils.findTypeParentOfComponent(this, JInternalFrame.class);
+			JInternalFrame frame = (JInternalFrame)org.vcell.util.BeanUtils.findTypeParentOfComponent(this, JInternalFrame.class);
 			frame.setSize(frame.getWidth(), frame.getHeight() - 1);
 			frame.setSize(frame.getWidth(), frame.getHeight() + 1);
-			cbit.gui.DialogUtils.showErrorDialog(odeDataViewer, "Could not fetch data for requested parameter choices\nJob may have failed or not yet started\n");
+			org.vcell.util.gui.DialogUtils.showErrorDialog(odeDataViewer, "Could not fetch data for requested parameter choices\nJob may have failed or not yet started\n");
 		}
 	}
 }

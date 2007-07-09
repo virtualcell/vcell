@@ -2,8 +2,8 @@ package cbit.vcell.client.task;
 
 //import cbit.vcell.numericstest.TestSuiteInfoNew;
 //import cbit.vcell.clientdb.DocumentManager;
-import cbit.util.DataAccessException;
-import cbit.util.UserCancelException;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.UserCancelException;
 //import cbit.vcell.numericstest.AddTestSuiteOP;
 import cbit.vcell.client.TestingFrameworkWindowManager;
 import cbit.vcell.desktop.controls.AsynchClientTask;

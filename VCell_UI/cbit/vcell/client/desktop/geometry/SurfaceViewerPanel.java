@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import javax.media.opengl.GLJPanel;
 
-import cbit.gui.DialogUtils;
 import cbit.image.VCImage;
 import cbit.render.AxisModelObject;
 import cbit.render.JOGLRenderer;
@@ -25,7 +24,9 @@ import java.beans.PropertyVetoException;
 
 import javax.swing.SwingConstants;
 
-import cbit.util.UserCancelException;
+import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.DialogUtils;
+
 import cbit.vcell.desktop.controls.AsynchClientTask;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryTest;

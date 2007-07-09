@@ -1,10 +1,9 @@
 package cbit.vcell.math.gui;
-import cbit.util.*;
+import org.vcell.util.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.Extent;
 /**
  * Insert the type's description here.
  * Creation date: (1/9/01 8:56:10 AM)
@@ -249,8 +248,8 @@ private javax.swing.JTextField getGeometrySizeTextField() {
 private javax.swing.JLabel getJLabelTitle() {
 	if (ivjJLabelTitle == null) {
 		try {
-			cbit.gui.EmptyBorderBean ivjLocalBorder;
-			ivjLocalBorder = new cbit.gui.EmptyBorderBean();
+			org.vcell.util.gui.EmptyBorderBean ivjLocalBorder;
+			ivjLocalBorder = new org.vcell.util.gui.EmptyBorderBean();
 			ivjLocalBorder.setInsets(new java.awt.Insets(10, 0, 10, 0));
 			ivjJLabelTitle = new javax.swing.JLabel();
 			ivjJLabelTitle.setName("JLabelTitle");
@@ -659,7 +658,7 @@ public void updateSize() {
 	} catch (java.beans.PropertyVetoException pexc) {
 		error = "Problem with sampling size " +pexc.getMessage();
 	}
-	cbit.gui.DialogUtils.showErrorDialog("Error in mesh value - " + error);
+	org.vcell.util.gui.DialogUtils.showErrorDialog("Error in mesh value - " + error);
 }
 
 

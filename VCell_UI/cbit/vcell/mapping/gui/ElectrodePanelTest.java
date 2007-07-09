@@ -1,6 +1,7 @@
 package cbit.vcell.mapping.gui;
 
-import cbit.util.Coordinate;
+import org.vcell.util.Coordinate;
+
 import cbit.vcell.model.*;
 import cbit.vcell.geometry.*;
 import edu.uchc.vcell.expression.internal.*;

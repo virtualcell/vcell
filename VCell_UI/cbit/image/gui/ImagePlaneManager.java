@@ -4,10 +4,11 @@ package cbit.image.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.util.Coordinate;
+import org.vcell.util.CoordinateIndex;
+import org.vcell.util.Extent;
+
 import cbit.vcell.simdata.SourceDataInfo;
-import cbit.util.Coordinate;
-import cbit.util.CoordinateIndex;
-import cbit.util.Extent;
 /**
  * Insert the type's description here.
  * Creation date: (10/11/00 10:14:12 AM)
@@ -280,7 +281,7 @@ public int sliceBoundary() {
 public Coordinate snapWorldCoordinate(Coordinate targetC) {
 	if(getSourceDataInfo() != null){
 		double distance = 0;
-		cbit.util.CoordinateIndex centerCI = getSourceDataInfo().getDataIndexFromWorldCoordinate(targetC);
+		org.vcell.util.CoordinateIndex centerCI = getSourceDataInfo().getDataIndexFromWorldCoordinate(targetC);
 		Coordinate centerCoord = getSourceDataInfo().getWorldCoordinateFromIndex(centerCI);
 		return centerCoord;
 	}
@@ -292,7 +293,7 @@ public Coordinate snapWorldCoordinate(Coordinate targetC) {
  */
 public Coordinate snapWorldCoordinateFace(Coordinate targetC) {
 	
-		cbit.util.CoordinateIndex centerCI = getSourceDataInfo().getDataIndexFromWorldCoordinate(targetC);
+		org.vcell.util.CoordinateIndex centerCI = getSourceDataInfo().getDataIndexFromWorldCoordinate(targetC);
 		Coordinate centerCoord = getSourceDataInfo().getWorldCoordinateFromIndex(centerCI);
 
 		double diffX = centerCoord.getX()-targetC.getX();
@@ -347,7 +348,7 @@ private void updateImagePlaneData() {
 	int startIndex = getSourceDataInfo().getStartIndex();
 	SourceDataInfo sdiSource = getSourceDataInfo();
 	//
-	cbit.util.Origin org = sdiSource.getOrigin();
+	org.vcell.util.Origin org = sdiSource.getOrigin();
 	Extent ext = sdiSource.getExtent();
 	//
 	int startDelta = worldSlice() * (int)Coordinate.convertAxisFromStandardXYZToNormal(sdiSource.getXIncrement(),sdiSource.getYIncrement(),sdiSource.getZIncrement(),Coordinate.Z_AXIS,getNormalAxis()) ;

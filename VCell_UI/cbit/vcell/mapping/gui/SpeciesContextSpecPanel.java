@@ -20,7 +20,7 @@ public class SpeciesContextSpecPanel extends javax.swing.JPanel implements java.
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private javax.swing.JPanel ivjJPanel1 = null;
 	private javax.swing.JScrollPane ivjjsortTable = null;
-	private cbit.vcell.messaging.admin.sorttable.JSortTable ivjScrollPaneTable = null;
+	private org.vcell.util.gui.sorttable.JSortTable ivjScrollPaneTable = null;
 	private SpeciesContextSpecParameterTableModel ivjSpeciesContextSpecParameterTableModel1 = null;
 	private GeometryContext ivjgeometryContext1 = null;
 	private java.awt.Component ivjComponent1 = null;
@@ -484,10 +484,10 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
  * @return cbit.vcell.messaging.admin.sorttable.JSortTable
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.messaging.admin.sorttable.JSortTable getScrollPaneTable() {
+private org.vcell.util.gui.sorttable.JSortTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
-			ivjScrollPaneTable = new cbit.vcell.messaging.admin.sorttable.JSortTable();
+			ivjScrollPaneTable = new org.vcell.util.gui.sorttable.JSortTable();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			getjsortTable().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
 			getjsortTable().getViewport().setBackingStoreEnabled(true);

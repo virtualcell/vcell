@@ -376,7 +376,7 @@ public java.beans.PropertyDescriptor vcDataIdentifierPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.util.VCDataIdentifier.class
+					org.vcell.util.VCDataIdentifier.class
 				};
 				aSetMethod = getBeanClass().getMethod("setVcDataIdentifier", aSetMethodParameterTypes);
 			} catch (Throwable exception) {

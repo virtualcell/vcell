@@ -1,5 +1,6 @@
 package cbit.image.gui;
-import cbit.util.Range;
+import org.vcell.util.Range;
+
 import cbit.vcell.simdata.DisplayAdapterService;
 import cbit.vcell.simdata.SourceDataInfo;
 /*©

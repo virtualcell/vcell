@@ -1,6 +1,7 @@
 package cbit.vcell.client.task;
 
-import cbit.util.UserCancelException;
+import org.vcell.util.UserCancelException;
+
 import cbit.vcell.desktop.controls.AsynchClientTask;
 
 /**

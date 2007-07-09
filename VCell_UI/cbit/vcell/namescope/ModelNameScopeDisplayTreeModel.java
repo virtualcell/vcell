@@ -12,9 +12,9 @@ package cbit.vcell.namescope;
 
 import org.vcell.expression.ui.ScopedExpression;
 import org.vcell.expression.ui.ScopedExpressionTableCellRenderer;
+import org.vcell.util.gui.JTableFixed;
 
 import cbit.vcell.model.gui.ModelParameterTableModel;
-import cbit.gui.JTableFixed;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Structure;
 import cbit.vcell.desktop.BioModelNode;

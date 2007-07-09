@@ -1,6 +1,6 @@
 package cbit.image.gui;
 
-import cbit.util.Coordinate;
+import org.vcell.util.Coordinate;
 
 /**
  * Insert the type's description here.
@@ -210,7 +210,7 @@ protected void paintComponent(java.awt.Graphics g) {
 						}
 						String val = "";
 						if(doubleVal != Double.NaN){
-							val = cbit.util.NumberUtils.formatNumber(doubleVal);
+							val = org.vcell.util.NumberUtils.formatNumber(doubleVal);
 						}
 						java.awt.geom.Rectangle2D r2d = getFont().getStringBounds(val,0,val.length(),((java.awt.Graphics2D)g).getFontRenderContext());
 						java.awt.font.LineMetrics lm = getFont().getLineMetrics(val,((java.awt.Graphics2D)g).getFontRenderContext());

@@ -2,7 +2,8 @@ package cbit.vcell.mapping.gui;
 
 import java.util.*;
 
-import cbit.util.Coordinate;
+import org.vcell.util.Coordinate;
+
 import cbit.vcell.model.*;
 /**
  * Insert the type's description here.

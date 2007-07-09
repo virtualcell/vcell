@@ -1,5 +1,7 @@
 package cbit.vcell.export.gui;
 import javax.swing.*;
+
+import org.vcell.util.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -9,7 +11,6 @@ import java.awt.*;
 import cbit.vcell.export.ExportConstants;
 import cbit.vcell.export.server.*;
 import cbit.vcell.simdata.DisplayPreferences;
-import cbit.util.*;
 /**
  * Insert the type's description here.
  * Creation date: (1/18/00 12:04:07 PM)

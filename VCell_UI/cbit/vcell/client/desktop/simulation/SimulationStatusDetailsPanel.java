@@ -1,6 +1,7 @@
 package cbit.vcell.client.desktop.simulation;
 
-import cbit.gui.DateRenderer;
+import org.vcell.util.gui.DateRenderer;
+
 import cbit.vcell.simulation.Simulation;
 
 /**
@@ -512,7 +513,7 @@ public void setSimulationStatusDetails(SimulationStatusDetails simulationStatusD
  */
 public void simulationStatusDetailsPanel_Initialize() {
 	getScrollPaneTable().setDefaultRenderer(java.util.Date.class, new DateRenderer());
-	getScrollPaneTable().setDefaultRenderer(Object.class, new cbit.gui.DefaultTableCellRendererEnhanced());
+	getScrollPaneTable().setDefaultRenderer(Object.class, new org.vcell.util.gui.DefaultTableCellRendererEnhanced());
 	return;
 }
 

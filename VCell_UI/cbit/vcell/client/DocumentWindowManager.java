@@ -1,17 +1,17 @@
 package cbit.vcell.client;
-import cbit.gui.AsynchProgressPopup;
-import cbit.gui.SwingWorker;
 import cbit.vcell.simulation.*;
 import cbit.vcell.export.ExportSpecs;
 import cbit.rmi.event.*;
-import cbit.gui.*;
-import cbit.util.*;
-import cbit.util.document.User;
-import cbit.util.document.VCDocument;
 import cbit.vcell.geometry.*;
 
 import java.awt.*;
 import javax.swing.*;
+
+import org.vcell.util.*;
+import org.vcell.util.document.User;
+import org.vcell.util.document.VCDocument;
+import org.vcell.util.gui.*;
+
 import cbit.vcell.client.server.*;
 import cbit.vcell.xml.merge.gui.TMLPanel;
 /**
@@ -124,13 +124,13 @@ public void compareWithSaved() {
 			comparePane.setMessage(comparePanel);
 			JDialog compareDialog = comparePane.createDialog(DocumentWindowManager.this.getComponent(), "Compare Models");      
 			compareDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			cbit.gui.ZEnforcer.showModalDialogOnTop(compareDialog,DocumentWindowManager.this.getComponent());
+			org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(compareDialog,DocumentWindowManager.this.getComponent());
 			if ("Apply Changes".equals(comparePane.getValue())) {
 				if (!comparePanel.tagsResolved()) {
 					JOptionPane messagePane = new JOptionPane("Please resolve all tagged elements/attributes before proceeding.");
 					JDialog messageDialog = messagePane.createDialog(comparePanel, "Error");
 					messageDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-					cbit.gui.ZEnforcer.showModalDialogOnTop(messageDialog,comparePanel);
+					org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(messageDialog,comparePanel);
 				} else {
 					BeanUtils.setCursorThroughout((Container)getComponent(), Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					try {
@@ -542,7 +542,7 @@ public void startExport(ExportSpecs exportSpecs) {
  */
 public void tileWindows(boolean horizontal) {
 	JInternalFrame[] iframes = getOpenWindows();
-	Rectangle[] bounds = cbit.util.BeanUtils.getTiledBounds(iframes.length, getJDesktopPane().getWidth(), getJDesktopPane().getHeight(), horizontal);
+	Rectangle[] bounds = org.vcell.util.BeanUtils.getTiledBounds(iframes.length, getJDesktopPane().getWidth(), getJDesktopPane().getHeight(), horizontal);
 	for (int i=0;i<iframes.length;i++) {
 		iframes[i].setBounds(bounds[i]);
 		iframes[i].show();

@@ -12,17 +12,7 @@ import cbit.vcell.client.task.*;
 import cbit.vcell.desktop.controls.*;
 import cbit.vcell.math.*;
 import java.beans.*;
-import cbit.util.*;
-import cbit.util.document.BioModelInfo;
-import cbit.util.document.CurateSpec;
-import cbit.util.document.MathModelInfo;
-import cbit.util.document.VCDocument;
-import cbit.util.document.VCDocumentInfo;
 import cbit.util.xml.XmlParseException;
-import cbit.gui.AsynchGuiUpdater;
-import cbit.gui.AsynchProgressPopup;
-import cbit.gui.FileFilters;
-import cbit.gui.SwingWorker;
 import java.awt.*;
 import cbit.vcell.client.server.*;
 import cbit.vcell.simdata.DataManager;
@@ -39,6 +29,16 @@ import java.util.*;
 import javax.swing.*;
 
 import org.vcell.expression.ExpressionFactory;
+import org.vcell.util.*;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.CurateSpec;
+import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.VCDocumentInfo;
+import org.vcell.util.gui.AsynchGuiUpdater;
+import org.vcell.util.gui.AsynchProgressPopup;
+import org.vcell.util.gui.FileFilters;
+import org.vcell.util.gui.SwingWorker;
 
 
 import cbit.vcell.xml.XMLTags;
@@ -804,7 +804,7 @@ protected void downloadExportedData(final cbit.rmi.event.ExportEvent evt) {
 		public Object construct() {
 			pp.start();
 			String defaultPath = getUserPreferences().getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
-			final cbit.gui.VCFileChooser fileChooser = new cbit.gui.VCFileChooser(defaultPath);
+			final org.vcell.util.gui.VCFileChooser fileChooser = new org.vcell.util.gui.VCFileChooser(defaultPath);
 			try {
 				// get it
 			    java.net.URLConnection connection = url.openConnection();
@@ -875,7 +875,7 @@ protected void downloadExportedData(final cbit.rmi.event.ExportEvent evt) {
 			if (get() != null) {
 				Throwable e = (Throwable)get();
 				e.printStackTrace(System.out);
-				cbit.gui.DialogUtils.showErrorDialog("Downloading failed\n"+e.getMessage());
+				org.vcell.util.gui.DialogUtils.showErrorDialog("Downloading failed\n"+e.getMessage());
 			}
 		}
 	};

@@ -1,5 +1,4 @@
 package cbit.vcell.graph;
-import cbit.gui.*;
 import cbit.gui.graph.*;
 import cbit.gui.graph.Shape;
 import cbit.vcell.desktop.VCellTransferable;
@@ -13,6 +12,8 @@ import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
 import javax.swing.event.InternalFrameEvent;
+
+import org.vcell.util.gui.*;
 
 import cbit.vcell.client.database.DocumentManager;
 
@@ -69,7 +70,7 @@ protected static final void pasteReactionSteps(ReactionStep[] reactionStepsArr,M
 		Structure currentStruct = struct;
 		String copiedStructName = reactionStepsArr[counter].getStructure().getName();
 		do{
-			ReactionStep newReactionStep = (ReactionStep)cbit.util.BeanUtils.cloneSerializable(reactionStepsArr[counter]);
+			ReactionStep newReactionStep = (ReactionStep)org.vcell.util.BeanUtils.cloneSerializable(reactionStepsArr[counter]);
 			newReactionStep.refreshDependencies();
 			if(!newReactionStep.getStructure().getClass().equals(struct.getClass())){
 				throw new Exception("Copied RectionStep structure type="+newReactionStep.getStructure().getClass().getName()+
@@ -91,7 +92,7 @@ protected static final void pasteReactionSteps(ReactionStep[] reactionStepsArr,M
 			}
 			String newName = newReactionStep.getName();
 			while(model.getReactionStep(newName) != null){
-				newName = cbit.util.TokenMangler.getNextEnumeratedToken(newName);
+				newName = org.vcell.util.TokenMangler.getNextEnumeratedToken(newName);
 			}
 			newReactionStep.setName(newName);
 			newReactionStep.setStructure(currentStruct);
@@ -194,7 +195,7 @@ protected static final SpeciesContext pasteSpecies(Species species,Model model, 
 			if(bNew){
 				String newName = species.getCommonName();
 				while(model.getSpecies(newName) != null){
-					newName = cbit.util.TokenMangler.getNextEnumeratedToken(newName);
+					newName = org.vcell.util.TokenMangler.getNextEnumeratedToken(newName);
 				}
 				newSpecies = new Species(newName,species.getAnnotation(),species.getDBSpecies());
 				model.addSpecies(newSpecies);
@@ -289,7 +290,7 @@ protected void showCreateSpeciesContextDialog(GraphPane myGraphPane, final Model
 	//
 	getDialogOwner(myGraphPane).remove(createSpeciesContextDialog);
 	getDialogOwner(myGraphPane).add(createSpeciesContextDialog, JDesktopPane.MODAL_LAYER);
-	cbit.util.BeanUtils.centerOnComponent(createSpeciesContextDialog, getDialogOwner(myGraphPane));
+	org.vcell.util.BeanUtils.centerOnComponent(createSpeciesContextDialog, getDialogOwner(myGraphPane));
 	createSpeciesContextDialog.setVisible(true);
 }
 
@@ -309,7 +310,7 @@ protected void showEditSpeciesDialog(GraphPane myGraphPane,SpeciesContext specie
 	//
 	getDialogOwner(myGraphPane).remove(editSpeciesDialog);
 	getDialogOwner(myGraphPane).add(editSpeciesDialog, JDesktopPane.MODAL_LAYER);
-	cbit.util.BeanUtils.centerOnComponent(editSpeciesDialog, getDialogOwner(myGraphPane));
+	org.vcell.util.BeanUtils.centerOnComponent(editSpeciesDialog, getDialogOwner(myGraphPane));
 	editSpeciesDialog.setVisible(true);
 }
 
@@ -343,7 +344,7 @@ public static final void showFeaturePropertiesDialog(GraphPane myGraphPane,Model
 	featureDialog.setLocation(location);
 	//
 	getDialogOwner(myGraphPane).add(featureDialog, JDesktopPane.MODAL_LAYER);
-	cbit.util.BeanUtils.centerOnComponent(featureDialog, getDialogOwner(myGraphPane));
+	org.vcell.util.BeanUtils.centerOnComponent(featureDialog, getDialogOwner(myGraphPane));
 	featureDialog.show();
 }
 
@@ -360,7 +361,7 @@ public static final void showMembranePropertiesDialog(GraphPane myGraphPane,Memb
 	membraneDialog.setTitle("Membrane Dialog for "+membrane.getName());
 	membraneDialog.setLocation(location);
 	getDialogOwner(myGraphPane).add(membraneDialog, JDesktopPane.MODAL_LAYER);
-	cbit.util.BeanUtils.centerOnComponent(membraneDialog, getDialogOwner(myGraphPane));
+	org.vcell.util.BeanUtils.centerOnComponent(membraneDialog, getDialogOwner(myGraphPane));
 	membraneDialog.show();
 }
 }

@@ -818,8 +818,8 @@ private javax.swing.JSplitPane getJSplitPane1() {
 private javax.swing.JTextArea getJTextArea1() {
 	if (ivjJTextArea1 == null) {
 		try {
-			cbit.gui.BevelBorderBean ivjLocalBorder;
-			ivjLocalBorder = new cbit.gui.BevelBorderBean();
+			org.vcell.util.gui.BevelBorderBean ivjLocalBorder;
+			ivjLocalBorder = new org.vcell.util.gui.BevelBorderBean();
 			ivjLocalBorder.setColor(new java.awt.Color(160,160,255));
 			ivjLocalBorder.setBevelType(1);
 			ivjJTextArea1 = new javax.swing.JTextArea();
@@ -1063,9 +1063,9 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 			//
 			ResolvedValuesSelection rvs =
 				new ResolvedValuesSelection(
-					(SymbolTableEntry[])cbit.util.BeanUtils.getArray(primarySymbolTableEntriesV,SymbolTableEntry.class),
-					(SymbolTableEntry[])cbit.util.BeanUtils.getArray(alternateSymbolTableEntriesV,SymbolTableEntry.class),
-					(IExpression[])cbit.util.BeanUtils.getArray(resolvedValuesV,IExpression.class),
+					(SymbolTableEntry[])org.vcell.util.BeanUtils.getArray(primarySymbolTableEntriesV,SymbolTableEntry.class),
+					(SymbolTableEntry[])org.vcell.util.BeanUtils.getArray(alternateSymbolTableEntriesV,SymbolTableEntry.class),
+					(IExpression[])org.vcell.util.BeanUtils.getArray(resolvedValuesV,IExpression.class),
 					sb.toString());
 
 			cbit.vcell.desktop.VCellTransferable.sendToClipboard(rvs);
@@ -1170,7 +1170,7 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 								changedParametersV.add(pasteDestination);
 								newExpressionsV.add(rvs.getExpressionValues()[j]);
 								pasteDescriptionsV.add(
-									cbit.gui.DialogUtils.formatPasteList(
+									org.vcell.util.gui.DialogUtils.formatPasteList(
 										scs.getSpeciesContext().getName(),
 										pasteDestination.getName(),
 										pasteDestination.getExpression().infix(),
@@ -1344,7 +1344,7 @@ private void showCustomEditor(java.awt.event.MouseEvent mouseEvent) {
 		switch (getScrollPaneTable().convertColumnIndexToModel(col)) {
 			case SpeciesContextSpecsTableModel.COLUMN_INITIAL: {
 				getJTextArea1().setText(getScrollPaneTable().getValueAt(row, col).toString());
-				cbit.util.BeanUtils.centerOnComponent(getJDialog1(), this);
+				org.vcell.util.BeanUtils.centerOnComponent(getJDialog1(), this);
 				getJDialog1().show();
 				return;
 			}

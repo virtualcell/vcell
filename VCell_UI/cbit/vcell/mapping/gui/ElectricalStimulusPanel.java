@@ -1,8 +1,8 @@
 package cbit.vcell.mapping.gui;
 
 import org.vcell.expression.ExpressionFactory;
+import org.vcell.util.Coordinate;
 
-import cbit.util.Coordinate;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Feature;
 import cbit.vcell.modelapp.CurrentClampStimulus;
@@ -19,7 +19,7 @@ import cbit.vcell.client.server.UserMessage;
  */
 public class ElectricalStimulusPanel extends javax.swing.JPanel {
 	private javax.swing.JScrollPane ivjparameterTable = null;
-	private cbit.vcell.messaging.admin.sorttable.JSortTable ivjScrollPaneTable = null;
+	private org.vcell.util.gui.sorttable.JSortTable ivjScrollPaneTable = null;
 	private cbit.vcell.modelapp.SimulationContext fieldSimulationContext = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	private ElectricalStimulus ivjelectricalStimulus = null;
@@ -1183,10 +1183,10 @@ private ElectrodePanel getpatchElectrodePanel() {
  * @return cbit.vcell.messaging.admin.sorttable.JSortTable
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.messaging.admin.sorttable.JSortTable getScrollPaneTable() {
+private org.vcell.util.gui.sorttable.JSortTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
-			ivjScrollPaneTable = new cbit.vcell.messaging.admin.sorttable.JSortTable();
+			ivjScrollPaneTable = new org.vcell.util.gui.sorttable.JSortTable();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			getparameterTable().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
 			getparameterTable().getViewport().setBackingStoreEnabled(true);

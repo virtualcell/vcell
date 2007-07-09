@@ -197,7 +197,7 @@ private void connPtoP1SetTarget() {
  * Comment
  */
 private void displayAnnotation() {
-	if(cbit.util.Compare.isEqualOrNull(getJTextAreaDescription().getText(),getSimulation().getDescription())){
+	if(org.vcell.util.Compare.isEqualOrNull(getJTextAreaDescription().getText(),getSimulation().getDescription())){
 		return;
 	}
 	try {
@@ -215,7 +215,7 @@ private void displayAnnotation() {
 private void displayMesh() {
     try {
         if (getSimulation()!=null && getSimulation().getMeshSpecification() != null) {
-            cbit.util.ISize samplingSize =
+            org.vcell.util.ISize samplingSize =
                 getSimulation().getMeshSpecification().getSamplingSize();
             String labelText = "";
             switch (getSimulation().getMathDescription().getGeometry().getDimension()) {
@@ -268,7 +268,7 @@ private void displayOther() {
 		getJLabelSpatial().setText("");
 	}
 	try {
-		cbit.util.Extent extent = getSimulation().getMathDescription().getGeometry().getExtent();
+		org.vcell.util.Extent extent = getSimulation().getMathDescription().getGeometry().getExtent();
 		String labelText = "";
 		switch (getSimulation().getMathDescription().getGeometry().getDimension()) {
 			case 0: {
@@ -973,7 +973,7 @@ private javax.swing.JTextArea getJTextAreaDescription() {
 		try {
 			ivjJTextAreaDescription = new javax.swing.JTextArea();
 			ivjJTextAreaDescription.setName("JTextAreaDescription");
-			ivjJTextAreaDescription.setBorder(new cbit.gui.EmptyBorderBean());
+			ivjJTextAreaDescription.setBorder(new org.vcell.util.gui.EmptyBorderBean());
 			ivjJTextAreaDescription.setForeground(java.awt.Color.blue);
 			ivjJTextAreaDescription.setFont(new java.awt.Font("dialog", 0, 12));
 			ivjJTextAreaDescription.setBounds(0, 0, 160, 120);

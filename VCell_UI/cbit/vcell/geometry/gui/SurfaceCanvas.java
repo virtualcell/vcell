@@ -39,8 +39,8 @@ public class SurfaceCanvas extends javax.swing.JPanel implements java.beans.Prop
 	private java.awt.image.BufferedImage cachedProjectedImage = null;
 	private SurfaceCollection fieldSurfaceCollection = null;
 	private Trackball fieldTrackball = new Trackball(new Camera());
-	private cbit.util.Origin fieldOrigin = new cbit.util.Origin(0, 0, 0);
-	private cbit.util.Extent fieldExtent = new cbit.util.Extent(1, 1, 1);
+	private org.vcell.util.Origin fieldOrigin = new org.vcell.util.Origin(0, 0, 0);
+	private org.vcell.util.Extent fieldExtent = new org.vcell.util.Extent(1, 1, 1);
 	private boolean fieldEnableDepthCueing = false;
 	private boolean fieldBQuickRender = false;
 	private boolean[] fieldSurfacesShowing = null;
@@ -169,7 +169,7 @@ public boolean getEnableDepthCueing() {
  * @return The extent property value.
  * @see #setExtent
  */
-public cbit.util.Extent getExtent() {
+public org.vcell.util.Extent getExtent() {
 	return fieldExtent;
 }
 
@@ -179,7 +179,7 @@ public cbit.util.Extent getExtent() {
  * @return The origin property value.
  * @see #setOrigin
  */
-public cbit.util.Origin getOrigin() {
+public org.vcell.util.Origin getOrigin() {
 	return fieldOrigin;
 }
 
@@ -641,7 +641,7 @@ public void setEnableDepthCueing(boolean enableDepthCueing) {
  * @param extent The new value for the property.
  * @see #getExtent
  */
-public void setExtent(cbit.util.Extent extent) {
+public void setExtent(org.vcell.util.Extent extent) {
 	fieldExtent = extent;
 }
 
@@ -651,7 +651,7 @@ public void setExtent(cbit.util.Extent extent) {
  * @param origin The new value for the property.
  * @see #getOrigin
  */
-public void setOrigin(cbit.util.Origin origin) {
+public void setOrigin(org.vcell.util.Origin origin) {
 	fieldOrigin = origin;
 }
 

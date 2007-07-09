@@ -64,7 +64,7 @@ public void write_V5_OdeFile(java.io.PrintWriter pw,String odeFileName) throws M
 		Variable var = (Variable)variables[i];
 		if (var instanceof Constant){
 			Constant constant = (Constant)var;
-			pw.println(cbit.util.TokenMangler.getEscapedTokenMatlab(constant.getName())+" = "+constant.getExpression().infix_Matlab()+";");
+			pw.println(org.vcell.util.TokenMangler.getEscapedTokenMatlab(constant.getName())+" = "+constant.getExpression().infix_Matlab()+";");
 		}
 	}
 
@@ -76,7 +76,7 @@ public void write_V5_OdeFile(java.io.PrintWriter pw,String odeFileName) throws M
 			volVarList.addElement(variables[i]);
 		}
 	}
-	VolVariable volVars[] = (VolVariable[])cbit.util.BeanUtils.getArray(volVarList,VolVariable.class);
+	VolVariable volVars[] = (VolVariable[])org.vcell.util.BeanUtils.getArray(volVarList,VolVariable.class);
 	CompartmentSubDomain subDomain = (CompartmentSubDomain)mathDesc.getSubDomains().nextElement();
 	//
 	// print volVariables (in order and assign to var vector)
@@ -85,12 +85,12 @@ public void write_V5_OdeFile(java.io.PrintWriter pw,String odeFileName) throws M
 	pw.println("% need this for time=0 (initial conditions) when y is empty");
 	for (int i = 0; i < volVars.length; i++){
 		IExpression initialExp = subDomain.getEquation(volVars[i]).getInitialExpression();
-		pw.println(cbit.util.TokenMangler.getEscapedTokenMatlab(volVars[i].getName())+" = "+initialExp.infix_Matlab()+";\t\t% initial condition for '"+volVars[i].getName()+"'");
+		pw.println(org.vcell.util.TokenMangler.getEscapedTokenMatlab(volVars[i].getName())+" = "+initialExp.infix_Matlab()+";\t\t% initial condition for '"+volVars[i].getName()+"'");
 	}
 	pw.println("SIZEY = size(y);");
 	pw.println("if SIZEY ~= 0\t\t% when y is not empty");
 	for (int i = 0; i < volVars.length; i++){
-		pw.println("\t"+cbit.util.TokenMangler.getEscapedTokenMatlab(volVars[i].getName())+" = "+"y("+(i+1)+");");
+		pw.println("\t"+org.vcell.util.TokenMangler.getEscapedTokenMatlab(volVars[i].getName())+" = "+"y("+(i+1)+");");
 	}
 	pw.println("end");
 
@@ -102,7 +102,7 @@ public void write_V5_OdeFile(java.io.PrintWriter pw,String odeFileName) throws M
 		Variable var = (Variable)variables[i];
 		if (var instanceof Function){
 			Function function = (Function)var;
-			pw.println(cbit.util.TokenMangler.getEscapedTokenMatlab(function.getName())+" = "+function.getExpression().infix_Matlab()+";");
+			pw.println(org.vcell.util.TokenMangler.getEscapedTokenMatlab(function.getName())+" = "+function.getExpression().infix_Matlab()+";");
 		}
 	}
 	
@@ -117,7 +117,7 @@ public void write_V5_OdeFile(java.io.PrintWriter pw,String odeFileName) throws M
 	pw.println("\tcase ''");
 	pw.println("\t\tdydt = [");
 	for (int i=0;i<volVars.length;i++){
-		pw.println("\t\t\t"+subDomain.getEquation(volVars[i]).getRateExpression().infix_Matlab()+";    % rate for "+cbit.util.TokenMangler.getEscapedTokenMatlab(volVars[i].getName()));
+		pw.println("\t\t\t"+subDomain.getEquation(volVars[i]).getRateExpression().infix_Matlab()+";    % rate for "+org.vcell.util.TokenMangler.getEscapedTokenMatlab(volVars[i].getName()));
 	}
 	pw.println("\t\t];");
 	pw.println("\t\tvarargout{1} = dydt;");
@@ -131,7 +131,7 @@ public void write_V5_OdeFile(java.io.PrintWriter pw,String odeFileName) throws M
 		pw.println("\t\ttspan = ["+beginTime+" "+endTime+"];");
 	pw.print("\t\ty0 = [");
 	for (int j=0;j<volVars.length;j++){
-		pw.println("\t\t\t"+cbit.util.TokenMangler.getEscapedTokenMatlab(volVars[j].getName())+",\t\t% set above under variables");
+		pw.println("\t\t\t"+org.vcell.util.TokenMangler.getEscapedTokenMatlab(volVars[j].getName())+",\t\t% set above under variables");
 	}
 	pw.println("\t\t];");
 	pw.println("\t\toptions = odeset('maxorder',5);");
@@ -234,7 +234,7 @@ public void write_V6_MFile(java.io.PrintWriter pw, String functionName) throws M
 			}
 		}
 	}
-	Constant constants[] = (Constant[])cbit.util.BeanUtils.getArray(constantList,Constant.class);
+	Constant constants[] = (Constant[])org.vcell.util.BeanUtils.getArray(constantList,Constant.class);
 	
 	//
 	// collect "variables" (VolVariables only)
@@ -245,7 +245,7 @@ public void write_V6_MFile(java.io.PrintWriter pw, String functionName) throws M
 			volVarList.addElement(variables[i]);
 		}
 	}
-	VolVariable volVars[] = (VolVariable[])cbit.util.BeanUtils.getArray(volVarList,VolVariable.class);
+	VolVariable volVars[] = (VolVariable[])org.vcell.util.BeanUtils.getArray(volVarList,VolVariable.class);
 	
 	//
 	// collect "functions" (Functions and Constants with identifiers)
@@ -264,7 +264,7 @@ public void write_V6_MFile(java.io.PrintWriter pw, String functionName) throws M
 			functionList.addElement(variables[i]);
 		}
 	}
-	Variable functions[] = (Variable[])cbit.util.BeanUtils.getArray(functionList,Variable.class);
+	Variable functions[] = (Variable[])org.vcell.util.BeanUtils.getArray(functionList,Variable.class);
 
 	
 	pw.println("");
@@ -299,7 +299,7 @@ public void write_V6_MFile(java.io.PrintWriter pw, String functionName) throws M
 			e.printStackTrace(System.out);
 			throw new RuntimeException("error evaluating initial condition for variable "+volVars[j].getName());
 		}
-		pw.println("\t"+defaultInitialCondition+";\t\t% yinit("+(j+1)+") is the initial condition for '"+cbit.util.TokenMangler.getEscapedTokenMatlab(volVars[j].getName())+"'");
+		pw.println("\t"+defaultInitialCondition+";\t\t% yinit("+(j+1)+") is the initial condition for '"+org.vcell.util.TokenMangler.getEscapedTokenMatlab(volVars[j].getName())+"'");
 	}
 	pw.println("];");
 	pw.println("if nargin >= 2");
@@ -327,7 +327,7 @@ public void write_V6_MFile(java.io.PrintWriter pw, String functionName) throws M
 			}
 		}
 		if (!isInitialCondition){
-			pw.println("\t"+constants[i].getExpression().infix_Matlab()+";\t\t% param("+(paramIndex+1)+") is '"+cbit.util.TokenMangler.getEscapedTokenMatlab(constants[i].getName())+"'");
+			pw.println("\t"+constants[i].getExpression().infix_Matlab()+";\t\t% param("+(paramIndex+1)+") is '"+org.vcell.util.TokenMangler.getEscapedTokenMatlab(constants[i].getName())+"'");
 			paramIndex++;
 		}
 	}
@@ -360,7 +360,7 @@ public void write_V6_MFile(java.io.PrintWriter pw, String functionName) throws M
 	//
 	pw.println("\t% State Variables");
 	for (int i = 0; i < volVars.length; i++){
-		pw.println("\t"+cbit.util.TokenMangler.getEscapedTokenMatlab(volVars[i].getName())+" = y("+(i+1)+");");
+		pw.println("\t"+org.vcell.util.TokenMangler.getEscapedTokenMatlab(volVars[i].getName())+" = y("+(i+1)+");");
 	}
 	//
 	// print constants
@@ -381,12 +381,12 @@ public void write_V6_MFile(java.io.PrintWriter pw, String functionName) throws M
 			//
 			// this constant is not a parameter, it is really the initial condition of one of the state variables
 			//
-			pw.println("\t"+cbit.util.TokenMangler.getEscapedTokenMatlab(constants[i].getName())+" = y0("+(initialConditionIndex+1)+");\t\t% note: initial condition used as a constant");
+			pw.println("\t"+org.vcell.util.TokenMangler.getEscapedTokenMatlab(constants[i].getName())+" = y0("+(initialConditionIndex+1)+");\t\t% note: initial condition used as a constant");
 		}else{
 			//
 			// this constant is a regular parameter, resolve to the parameter vector
 			//
-			pw.println("\t"+cbit.util.TokenMangler.getEscapedTokenMatlab(constants[i].getName())+" = p("+(paramIndex+1)+");");
+			pw.println("\t"+org.vcell.util.TokenMangler.getEscapedTokenMatlab(constants[i].getName())+" = p("+(paramIndex+1)+");");
 			paramIndex++;
 		}
 	}
@@ -395,12 +395,12 @@ public void write_V6_MFile(java.io.PrintWriter pw, String functionName) throws M
 	//
 	pw.println("\t% Functions");
 	for (int i = 0; i < functions.length; i++){
-		pw.println("\t"+cbit.util.TokenMangler.getEscapedTokenMatlab(functions[i].getName())+" = "+functions[i].getExpression().infix_Matlab()+";");
+		pw.println("\t"+org.vcell.util.TokenMangler.getEscapedTokenMatlab(functions[i].getName())+" = "+functions[i].getExpression().infix_Matlab()+";");
 	}
 	pw.println("\t% Rates");
 	pw.println("\tdydt = [");
 	for (int i=0;i<volVars.length;i++){
-		pw.println("\t\t"+subDomain.getEquation(volVars[i]).getRateExpression().infix_Matlab()+";    % rate for "+cbit.util.TokenMangler.getEscapedTokenMatlab(volVars[i].getName()));
+		pw.println("\t\t"+subDomain.getEquation(volVars[i]).getRateExpression().infix_Matlab()+";    % rate for "+org.vcell.util.TokenMangler.getEscapedTokenMatlab(volVars[i].getName()));
 	}
 	pw.println("\t];");
 }

@@ -80,7 +80,7 @@ private void actionOutputOptionButtonState(java.awt.event.ItemEvent itemEvent) t
 		getSolverTaskDescription().setOutputTimeSpec(new DefaultOutputTimeSpec());
 	} else if(itemEvent.getSource() == getUniformOutputRadioButton() && !getSolverTaskDescription().getOutputTimeSpec().isUniform()){
 		TimeBounds timeBounds = getTornOffSolverTaskDescription().getTimeBounds();
-		cbit.util.Range outputTimeRange = cbit.util.NumberUtils.getDecimalRange(timeBounds.getStartingTime(), timeBounds.getEndingTime()/100, true, true);
+		org.vcell.util.Range outputTimeRange = org.vcell.util.NumberUtils.getDecimalRange(timeBounds.getStartingTime(), timeBounds.getEndingTime()/100, true, true);
 		double outputTime = outputTimeRange.getMax();
 		getSolverTaskDescription().setOutputTimeSpec(new UniformOutputTimeSpec(outputTime));
 	} else if(itemEvent.getSource() == getExplicitOutputRadioButton() && !getSolverTaskDescription().getOutputTimeSpec().isExplicit()){
@@ -920,16 +920,16 @@ private void enableOutputOptionPanel() {
 		getDefaultOutputRadioButton().setEnabled(false);
 		getUniformOutputRadioButton().setEnabled(false);	
 		getExplicitOutputRadioButton().setEnabled(false);
-		cbit.util.BeanUtils.enableComponents(getDefaultOutputPanel(), false);
-		cbit.util.BeanUtils.enableComponents(getUniformOutputPanel(), false);
-		cbit.util.BeanUtils.enableComponents(getExplicitOutputPanel(), false);
+		org.vcell.util.BeanUtils.enableComponents(getDefaultOutputPanel(), false);
+		org.vcell.util.BeanUtils.enableComponents(getUniformOutputPanel(), false);
+		org.vcell.util.BeanUtils.enableComponents(getExplicitOutputPanel(), false);
 	} else if (solverTaskDescription.getSolverDescription().equals(SolverDescription.LSODA)){
 		getDefaultOutputRadioButton().setEnabled(true);
 		getUniformOutputRadioButton().setEnabled(true);	
 		getExplicitOutputRadioButton().setEnabled(true);
-		cbit.util.BeanUtils.enableComponents(getDefaultOutputPanel(), true);
-		cbit.util.BeanUtils.enableComponents(getUniformOutputPanel(), true);
-		cbit.util.BeanUtils.enableComponents(getExplicitOutputPanel(), true);
+		org.vcell.util.BeanUtils.enableComponents(getDefaultOutputPanel(), true);
+		org.vcell.util.BeanUtils.enableComponents(getUniformOutputPanel(), true);
+		org.vcell.util.BeanUtils.enableComponents(getExplicitOutputPanel(), true);
 		if (solverTaskDescription.getOutputTimeSpec().isDefault()){
 			getKeepAtMostTextField().setEnabled(true);
 			getKeepEveryTextField().setEnabled(true);
@@ -950,9 +950,9 @@ private void enableOutputOptionPanel() {
 		getDefaultOutputRadioButton().setEnabled(true);
 		getUniformOutputRadioButton().setEnabled(false);	
 		getExplicitOutputRadioButton().setEnabled(false);
-		cbit.util.BeanUtils.enableComponents(getDefaultOutputPanel(), true);
-		cbit.util.BeanUtils.enableComponents(getUniformOutputPanel(), false);
-		cbit.util.BeanUtils.enableComponents(getExplicitOutputPanel(), false);
+		org.vcell.util.BeanUtils.enableComponents(getDefaultOutputPanel(), true);
+		org.vcell.util.BeanUtils.enableComponents(getUniformOutputPanel(), false);
+		org.vcell.util.BeanUtils.enableComponents(getExplicitOutputPanel(), false);
 		if (solverTaskDescription.getSolverDescription().equals(SolverDescription.FiniteVolume)) {
 			getKeepAtMostLabel().setEnabled(false);
 			getPointsLabel().setEnabled(false);
@@ -973,7 +973,7 @@ private void enableVariableTimeStepOptions() {
 		bHasVariableTS = getSolverTaskDescription().getSolverDescription().hasVariableTimestep();
 	}
 	//cbit.util.BeanUtils.enableComponents(getTimeStepPanel(),bEnableTimeStep);
-	cbit.util.BeanUtils.enableComponents(getErrorTolerancePanel(),bHasVariableTS);
+	org.vcell.util.BeanUtils.enableComponents(getErrorTolerancePanel(),bHasVariableTS);
 	getTimeStepPanel().enableComponents(bHasVariableTS);
 }
 
@@ -1320,8 +1320,8 @@ private javax.swing.JLabel getJLabel4() {
 private javax.swing.JLabel getJLabelTitle() {
 	if (ivjJLabelTitle == null) {
 		try {
-			cbit.gui.EmptyBorderBean ivjLocalBorder;
-			ivjLocalBorder = new cbit.gui.EmptyBorderBean();
+			org.vcell.util.gui.EmptyBorderBean ivjLocalBorder;
+			ivjLocalBorder = new org.vcell.util.gui.EmptyBorderBean();
 			ivjLocalBorder.setInsets(new java.awt.Insets(10, 0, 10, 0));
 			ivjJLabelTitle = new javax.swing.JLabel();
 			ivjJLabelTitle.setName("JLabelTitle");
@@ -2171,7 +2171,7 @@ private void setNewOutputOption(java.awt.event.FocusEvent focusEvent) {
 			throw new RuntimeException("Problems while setting the output options " + e.getMessage());
 		}
 	} catch (Exception e) {
-		cbit.gui.DialogUtils.showErrorDialog("Error in Value : " + e.getMessage());
+		org.vcell.util.gui.DialogUtils.showErrorDialog("Error in Value : " + e.getMessage());
 	}
 }
 

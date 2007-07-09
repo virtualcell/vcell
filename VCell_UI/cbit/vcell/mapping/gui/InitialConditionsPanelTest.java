@@ -24,7 +24,7 @@ public static void main(String args[]) {
 		} catch (java.lang.Throwable ivjExc) {
 			frame = new java.awt.Frame();
 		}
-		new cbit.gui.WindowCloser(frame,true);
+		new org.vcell.util.gui.WindowCloser(frame,true);
 		InitialConditionsPanel aInitialConditionsPanel;
 		aInitialConditionsPanel = new InitialConditionsPanel();
 		frame.add("Center", aInitialConditionsPanel);

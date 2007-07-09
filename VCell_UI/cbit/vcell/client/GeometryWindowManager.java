@@ -1,8 +1,10 @@
 package cbit.vcell.client;
 import cbit.vcell.simulation.VCSimulationIdentifier;
-import cbit.gui.JInternalFrameEnhanced;
 import java.awt.*;
 import javax.swing.*;
+
+import org.vcell.util.gui.JInternalFrameEnhanced;
+
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.client.desktop.geometry.*;
 import cbit.vcell.client.server.SimStatusEvent;
@@ -128,7 +130,7 @@ private javax.swing.JPanel getJPanel() {
  * Creation date: (5/25/2004 2:46:07 AM)
  * @return cbit.vcell.document.VCDocument
  */
-public cbit.util.document.VCDocument getVCDocument() {
+public org.vcell.util.document.VCDocument getVCDocument() {
 	return getGeometry();
 }
 
@@ -214,7 +216,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  * Creation date: (6/2/2004 2:00:39 PM)
  * @param newDocument cbit.vcell.document.VCDocument
  */
-public void resetDocument(cbit.util.document.VCDocument newDocument) {
+public void resetDocument(org.vcell.util.document.VCDocument newDocument) {
 	setGeometry((Geometry)newDocument);
 	setDocumentID(getGeometry());
 	geoViewer.setGeometry(getGeometry());
@@ -331,7 +333,7 @@ private void showSurfaceViewer(boolean bSurfaceViewerButtonSelected) {
 			try{
 				surfaceViewer.updateSurfaces();
 			}catch(Exception e){
-				cbit.gui.DialogUtils.showErrorDialog("Error initializing Surfaces\n"+e.getClass().getName()+"\n"+e.getMessage());
+				org.vcell.util.gui.DialogUtils.showErrorDialog("Error initializing Surfaces\n"+e.getClass().getName()+"\n"+e.getMessage());
 			}
 		}
 	} else {

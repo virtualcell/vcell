@@ -3,10 +3,11 @@ package cbit.vcell.desktop;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.DataAccessException;
-import cbit.util.document.User;
 import cbit.vcell.geometry.*;
 import java.util.Vector;
+
+import org.vcell.util.DataAccessException;
+import org.vcell.util.document.User;
 /**
  * Insert the type's description here.
  * Creation date: (2/14/01 3:33:23 PM)

@@ -1,8 +1,8 @@
 package cbit.vcell.model.gui;
 import org.vcell.expression.ExpressionFactory;
+import org.vcell.util.UserCancelException;
+import org.vcell.util.document.KeyValue;
 
-import cbit.util.UserCancelException;
-import cbit.util.document.KeyValue;
 import cbit.vcell.desktop.controls.AsynchClientTask;
 import cbit.vcell.dictionary.ReactionDescription;
 import cbit.vcell.dictionary.DBNonFormalUnboundSpecies;
@@ -336,14 +336,14 @@ private void bfnActionPerformed(java.awt.event.ActionEvent actionEvent) {
 private void closeParent() {
     //Try to close whoever contains us
     javax.swing.JInternalFrame jif =
-        (javax.swing.JInternalFrame) cbit.util.BeanUtils.findTypeParentOfComponent(
+        (javax.swing.JInternalFrame) org.vcell.util.BeanUtils.findTypeParentOfComponent(
             this,
             javax.swing.JInternalFrame.class);
     if (jif != null) {
         jif.dispose();
     } else {
         java.awt.Window window =
-            (java.awt.Window) cbit.util.BeanUtils.findTypeParentOfComponent(
+            (java.awt.Window) org.vcell.util.BeanUtils.findTypeParentOfComponent(
                 this,
                 java.awt.Window.class);
         if (window != null) {
@@ -424,7 +424,7 @@ private void configureRXParameterList(javax.swing.event.ListSelectionEvent listS
 						
 					pndlm.addElement(new MapStringToObject(descriptiveText/*reactionStepInfos[i].getDescriptiveText()*/,reactionStepInfos[i]));
 				}
-			}catch(cbit.util.DataAccessException e){
+			}catch(org.vcell.util.DataAccessException e){
 				cbit.vcell.client.PopupGenerator.showErrorDialog("Error Getting Parameter names\n"+e.getMessage());
 			}
 		}else{//Dictionary ReactionDescription
@@ -1020,7 +1020,7 @@ private void done() {
 				if(bUnique){
 					break;
 				}
-				uniqueName = cbit.util.TokenMangler.getNextEnumeratedToken(uniqueName);
+				uniqueName = org.vcell.util.TokenMangler.getNextEnumeratedToken(uniqueName);
 			}
 			//Create RX components and determine which must be newly added to model
 			java.util.Vector speciesContextV = new java.util.Vector();
@@ -1037,7 +1037,7 @@ private void done() {
 					newlyAddedSpecies.add(currentSpecies);
 					//Make sure species name doesn't conflict
 					while(getModel().getSpecies(currentSpecies.getCommonName()) != null){
-						currentSpecies.setCommonName(cbit.util.TokenMangler.getNextEnumeratedToken(currentSpecies.getCommonName()));
+						currentSpecies.setCommonName(org.vcell.util.TokenMangler.getNextEnumeratedToken(currentSpecies.getCommonName()));
 					}
 					if(dbfr.isFlux(i)){
 						newFluxSpecies = currentSpecies;
@@ -1140,7 +1140,7 @@ private void done() {
 					String kpName = kpArr[i].getName();
 					Kinetics.KineticsParameter kp = null;
 					while(getModel().getKineticsParameter(kpName) != null){
-						String newKPName = cbit.util.TokenMangler.getNextEnumeratedToken(kpName);
+						String newKPName = org.vcell.util.TokenMangler.getNextEnumeratedToken(kpName);
 						kinetics.renameParameter(kpName,newKPName);
 						kpName = newKPName;
 					}
@@ -1209,7 +1209,7 @@ private void done() {
 				Object[] sbc = (Object[])speciesWithChangedBindings.get(i);
 				Species changedSpecies = (Species)sbc[SPECIES_INDEX];
 				cbit.vcell.dictionary.DBSpecies originalDBSpecies = (cbit.vcell.dictionary.DBSpecies)sbc[ORIG_DBS_INDEX];
-				if(!cbit.util.Compare.isEqualOrNull(originalDBSpecies,changedSpecies.getDBSpecies())){
+				if(!org.vcell.util.Compare.isEqualOrNull(originalDBSpecies,changedSpecies.getDBSpecies())){
 					changedSpecies.setDBSpecies(originalDBSpecies);
 				}
 			}catch(Exception ee){
@@ -1606,11 +1606,11 @@ private javax.swing.JLabel getJLabel2() {
 private javax.swing.JPanel getJPanel() {
 	if (ivjJPanel == null) {
 		try {
-			cbit.gui.LineBorderBean ivjLocalBorder4;
-			ivjLocalBorder4 = new cbit.gui.LineBorderBean();
+			org.vcell.util.gui.LineBorderBean ivjLocalBorder4;
+			ivjLocalBorder4 = new org.vcell.util.gui.LineBorderBean();
 			ivjLocalBorder4.setThickness(2);
-			cbit.gui.TitledBorderBean ivjLocalBorder3;
-			ivjLocalBorder3 = new cbit.gui.TitledBorderBean();
+			org.vcell.util.gui.TitledBorderBean ivjLocalBorder3;
+			ivjLocalBorder3 = new org.vcell.util.gui.TitledBorderBean();
 			ivjLocalBorder3.setTitleFont(new java.awt.Font("Arial", 1, 14));
 			ivjLocalBorder3.setBorder(ivjLocalBorder4);
 			ivjLocalBorder3.setTitleColor(java.awt.Color.black);
@@ -1674,11 +1674,11 @@ private javax.swing.JPanel getJPanel() {
 private javax.swing.JPanel getJPanel1() {
 	if (ivjJPanel1 == null) {
 		try {
-			cbit.gui.LineBorderBean ivjLocalBorder2;
-			ivjLocalBorder2 = new cbit.gui.LineBorderBean();
+			org.vcell.util.gui.LineBorderBean ivjLocalBorder2;
+			ivjLocalBorder2 = new org.vcell.util.gui.LineBorderBean();
 			ivjLocalBorder2.setThickness(2);
-			cbit.gui.TitledBorderBean ivjLocalBorder1;
-			ivjLocalBorder1 = new cbit.gui.TitledBorderBean();
+			org.vcell.util.gui.TitledBorderBean ivjLocalBorder1;
+			ivjLocalBorder1 = new org.vcell.util.gui.TitledBorderBean();
 			ivjLocalBorder1.setTitleFont(new java.awt.Font("Arial", 1, 14));
 			ivjLocalBorder1.setBorder(ivjLocalBorder2);
 			ivjLocalBorder1.setTitleColor(java.awt.Color.black);
@@ -1888,11 +1888,11 @@ private javax.swing.JButton getNextJButton() {
 private javax.swing.JPanel getParameterJPanel() {
 	if (ivjParameterJPanel == null) {
 		try {
-			cbit.gui.LineBorderBean ivjLocalBorder8;
-			ivjLocalBorder8 = new cbit.gui.LineBorderBean();
+			org.vcell.util.gui.LineBorderBean ivjLocalBorder8;
+			ivjLocalBorder8 = new org.vcell.util.gui.LineBorderBean();
 			ivjLocalBorder8.setThickness(1);
-			cbit.gui.TitledBorderBean ivjLocalBorder7;
-			ivjLocalBorder7 = new cbit.gui.TitledBorderBean();
+			org.vcell.util.gui.TitledBorderBean ivjLocalBorder7;
+			ivjLocalBorder7 = new org.vcell.util.gui.TitledBorderBean();
 			ivjLocalBorder7.setTitleFont(new java.awt.Font("Arial", 1, 14));
 			ivjLocalBorder7.setBorder(ivjLocalBorder8);
 			ivjLocalBorder7.setTitleColor(java.awt.Color.black);
@@ -2051,11 +2051,11 @@ private javax.swing.JScrollPane getParameterValuesJScrollPane() {
 private ReactionCanvas getReactionCanvas1() {
 	if (ivjReactionCanvas1 == null) {
 		try {
-			cbit.gui.LineBorderBean ivjLocalBorder12;
-			ivjLocalBorder12 = new cbit.gui.LineBorderBean();
+			org.vcell.util.gui.LineBorderBean ivjLocalBorder12;
+			ivjLocalBorder12 = new org.vcell.util.gui.LineBorderBean();
 			ivjLocalBorder12.setThickness(2);
-			cbit.gui.TitledBorderBean ivjLocalBorder11;
-			ivjLocalBorder11 = new cbit.gui.TitledBorderBean();
+			org.vcell.util.gui.TitledBorderBean ivjLocalBorder11;
+			ivjLocalBorder11 = new org.vcell.util.gui.TitledBorderBean();
 			ivjLocalBorder11.setTitleFont(new java.awt.Font("Arial", 1, 14));
 			ivjLocalBorder11.setBorder(ivjLocalBorder12);
 			ivjLocalBorder11.setTitle("Reaction Stoichiometry");
@@ -2160,11 +2160,11 @@ private javax.swing.JLabel getResolveHighlightJLabel() {
 private javax.swing.JPanel getResolverJPanel() {
 	if (ivjResolverJPanel == null) {
 		try {
-			cbit.gui.LineBorderBean ivjLocalBorder10;
-			ivjLocalBorder10 = new cbit.gui.LineBorderBean();
+			org.vcell.util.gui.LineBorderBean ivjLocalBorder10;
+			ivjLocalBorder10 = new org.vcell.util.gui.LineBorderBean();
 			ivjLocalBorder10.setThickness(2);
-			cbit.gui.TitledBorderBean ivjLocalBorder9;
-			ivjLocalBorder9 = new cbit.gui.TitledBorderBean();
+			org.vcell.util.gui.TitledBorderBean ivjLocalBorder9;
+			ivjLocalBorder9 = new org.vcell.util.gui.TitledBorderBean();
 			ivjLocalBorder9.setTitleFont(new java.awt.Font("Arial", 1, 14));
 			ivjLocalBorder9.setBorder(ivjLocalBorder10);
 			ivjLocalBorder9.setTitle("Resolve Reaction Participants with Model");
@@ -2227,11 +2227,11 @@ private javax.swing.ListSelectionModel getRXDescriptionLSM() {
 private javax.swing.JPanel getRXParticipantsJPanel() {
 	if (ivjRXParticipantsJPanel == null) {
 		try {
-			cbit.gui.LineBorderBean ivjLocalBorder14;
-			ivjLocalBorder14 = new cbit.gui.LineBorderBean();
+			org.vcell.util.gui.LineBorderBean ivjLocalBorder14;
+			ivjLocalBorder14 = new org.vcell.util.gui.LineBorderBean();
 			ivjLocalBorder14.setThickness(2);
-			cbit.gui.TitledBorderBean ivjLocalBorder13;
-			ivjLocalBorder13 = new cbit.gui.TitledBorderBean();
+			org.vcell.util.gui.TitledBorderBean ivjLocalBorder13;
+			ivjLocalBorder13 = new org.vcell.util.gui.TitledBorderBean();
 			ivjLocalBorder13.setTitleFont(new java.awt.Font("Arial", 1, 14));
 			ivjLocalBorder13.setBorder(ivjLocalBorder14);
 			ivjLocalBorder13.setTitle("Assign Reaction Participants To Model");
@@ -2259,8 +2259,8 @@ private javax.swing.JPanel getRXParticipantsJPanel() {
 private javax.swing.JPanel getSearchCriteriaJPanel() {
 	if (ivjSearchCriteriaJPanel == null) {
 		try {
-			cbit.gui.TitledBorderBean ivjLocalBorder;
-			ivjLocalBorder = new cbit.gui.TitledBorderBean();
+			org.vcell.util.gui.TitledBorderBean ivjLocalBorder;
+			ivjLocalBorder = new org.vcell.util.gui.TitledBorderBean();
 			ivjLocalBorder.setTitleFont(new java.awt.Font("Arial", 1, 14));
 			ivjLocalBorder.setTitle("Reaction Search");
 			ivjSearchCriteriaJPanel = new javax.swing.JPanel();
@@ -2324,11 +2324,11 @@ private javax.swing.JRadioButton getSearchDictionaryJRadioButton() {
 private javax.swing.JPanel getSearchResultsJPanel() {
 	if (ivjSearchResultsJPanel == null) {
 		try {
-			cbit.gui.LineBorderBean ivjLocalBorder6;
-			ivjLocalBorder6 = new cbit.gui.LineBorderBean();
+			org.vcell.util.gui.LineBorderBean ivjLocalBorder6;
+			ivjLocalBorder6 = new org.vcell.util.gui.LineBorderBean();
 			ivjLocalBorder6.setThickness(2);
-			cbit.gui.TitledBorderBean ivjLocalBorder5;
-			ivjLocalBorder5 = new cbit.gui.TitledBorderBean();
+			org.vcell.util.gui.TitledBorderBean ivjLocalBorder5;
+			ivjLocalBorder5 = new org.vcell.util.gui.TitledBorderBean();
 			ivjLocalBorder5.setTitleFont(new java.awt.Font("Arial", 1, 14));
 			ivjLocalBorder5.setBorder(ivjLocalBorder6);
 			ivjLocalBorder5.setTitleColor(java.awt.Color.black);
@@ -2543,7 +2543,7 @@ private boolean lastSearchIsSameAsCurrent() {
 		s = null;
 	}
 	if(lastSearchChangeInfo[2] instanceof String){
-		if(!cbit.util.Compare.isEqualOrNull(s,((String)lastSearchChangeInfo[2]))){
+		if(!org.vcell.util.Compare.isEqualOrNull(s,((String)lastSearchChangeInfo[2]))){
 			return false;
 		}
 	}
@@ -2634,7 +2634,7 @@ private void parameterNameSelectionChanged() {
 				public int getTaskType() {
 					return cbit.vcell.desktop.controls.ClientTask.TASKTYPE_NONSWING_BLOCKING;
 				}
-				public void run(java.util.Hashtable hash) throws cbit.util.DataAccessException{
+				public void run(java.util.Hashtable hash) throws org.vcell.util.DataAccessException{
 					ReactionStep rStep = getDocumentManager().getReactionStep(reactionStepKey);
 					if(rStep != null){
 						hash.put(RXSTEP_HASH_VALUE_KEY,rStep);
@@ -2655,7 +2655,7 @@ private void parameterNameSelectionChanged() {
 				public int getTaskType() {
 					return cbit.vcell.desktop.controls.ClientTask.TASKTYPE_SWING_BLOCKING;
 				}
-				public void run(java.util.Hashtable hash) throws cbit.util.DataAccessException{
+				public void run(java.util.Hashtable hash) throws org.vcell.util.DataAccessException{
 					ReactionStep rStep = (ReactionStep)hash.get(RXSTEP_HASH_VALUE_KEY);
 					if(rStep != null){
 						Kinetics.KineticsParameter[] kpArr = rStep.getKinetics().getKineticsParameters();
@@ -2767,7 +2767,7 @@ private void resolve2() {
 			if(dbsd instanceof cbit.vcell.dictionary.DBFormalSpecies){//get DBSpecies (Dictionary Reactions)
 				try{
 					dbSpecies = getDocumentManager().getBoundSpecies((cbit.vcell.dictionary.DBFormalSpecies)dbsd);
-				}catch(cbit.util.DataAccessException e){
+				}catch(org.vcell.util.DataAccessException e){
 					//Do Nothing, this SC won't be bound in database, user can do it later
 				}
 			}else{//get DBSpecies (user Reactions)
@@ -2780,7 +2780,7 @@ private void resolve2() {
 				}
 			}
 			species =
-				new cbit.vcell.model.Species(cbit.util.TokenMangler.fixTokenStrict(dbsd.getPreferredName()),
+				new cbit.vcell.model.Species(org.vcell.util.TokenMangler.fixTokenStrict(dbsd.getPreferredName()),
 					null,
 					dbSpecies);
 		}
@@ -2837,7 +2837,7 @@ private void search(){
 			public int getTaskType() {
 				return cbit.vcell.desktop.controls.ClientTask.TASKTYPE_NONSWING_BLOCKING;
 			}
-			public void run(java.util.Hashtable hash) throws cbit.util.DataAccessException{
+			public void run(java.util.Hashtable hash) throws org.vcell.util.DataAccessException{
 				ReactionDescription[] dbfr = docManager.getDictionaryReactions(reactionQuerySpec);
 				if(dbfr != null && dbfr.length >0){
 					hash.put(RXDESC_VALUE_KEY,dbfr);
@@ -2943,7 +2943,7 @@ private void searchUserReactions(final ReactionQuerySpec reactionQuerySpec){
 					if(dbrd != null && dbrd.length >0){
 						hash.put(RXSTRING_VALUE_KEY,dbrdS);
 					}
-				}catch(cbit.util.DataAccessException e){
+				}catch(org.vcell.util.DataAccessException e){
 					cbit.vcell.client.PopupGenerator.showErrorDialog(DBReactionWizardPanel.this,e.getMessage());
 				}
 			}
@@ -3336,8 +3336,8 @@ private cbit.vcell.dictionary.DBFormalSpecies showSpeciesBrowser() {
 	//}
 	sqd.setDocumentManager(getDocumentManager());
 	sqd.setSize(550,500);
-	cbit.util.BeanUtils.centerOnScreen(sqd);
-	cbit.gui.ZEnforcer.showModalDialogOnTop(sqd,this);
+	org.vcell.util.BeanUtils.centerOnScreen(sqd);
+	org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(sqd,this);
 	//sqd.setVisible(true);
 
 	cbit.vcell.dictionary.DBFormalSpecies dbfs = null;

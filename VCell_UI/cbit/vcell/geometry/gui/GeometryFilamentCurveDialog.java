@@ -9,7 +9,7 @@ package cbit.vcell.geometry.gui;
  * Creation date: (8/17/00 4:54:24 PM)
  * @author: 
  */
-public class GeometryFilamentCurveDialog extends cbit.gui.JInternalFrameEnhanced {
+public class GeometryFilamentCurveDialog extends org.vcell.util.gui.JInternalFrameEnhanced {
 
 	//
 	public class JIFCloser implements java.beans.VetoableChangeListener {

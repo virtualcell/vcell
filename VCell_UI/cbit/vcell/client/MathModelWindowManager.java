@@ -1,5 +1,4 @@
 package cbit.vcell.client;
-import cbit.util.document.KeyValue;
 import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.server.*;
 import cbit.vcell.simulation.*;
@@ -7,9 +6,12 @@ import cbit.vcell.solvers.SimulationStatus;
 import cbit.vcell.client.desktop.simulation.*;
 import java.awt.*;
 import javax.swing.*;
+
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.gui.JInternalFrameEnhanced;
+
 import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.desktop.simulation.SimulationListPanel;
-import cbit.gui.JInternalFrameEnhanced;
 import cbit.vcell.client.desktop.mathmodel.*;
 import cbit.vcell.mathmodel.MathModel;
 import java.util.Hashtable;
@@ -107,7 +109,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 							//);
 							surfaceViewer.updateSurfaces();
 						}catch(Exception e2){
-							cbit.gui.DialogUtils.showErrorDialog("Error Generating Surfaces"+"\n"+e2.getClass().getName()+"\n"+e2.getMessage());
+							org.vcell.util.gui.DialogUtils.showErrorDialog("Error Generating Surfaces"+"\n"+e2.getClass().getName()+"\n"+e2.getMessage());
 						}
 					//}
 				//}
@@ -147,7 +149,7 @@ public void addResultsFrame(cbit.vcell.client.desktop.simulation.SimulationWindo
  * Creation date: (7/20/2004 1:13:06 PM)
  */
 private void checkValidSimulationDataViewerFrames() {
-	SimulationWindow[] simWindows = (SimulationWindow[])cbit.util.BeanUtils.getArray(simulationWindowsHash.elements(), SimulationWindow.class);
+	SimulationWindow[] simWindows = (SimulationWindow[])org.vcell.util.BeanUtils.getArray(simulationWindowsHash.elements(), SimulationWindow.class);
 	Simulation[] sims = getMathModel().getSimulations();
 	Hashtable hash = new Hashtable();
 	for (int i = 0; i < sims.length; i++){
@@ -270,7 +272,7 @@ private MathModelEditor getMathModelEditor() {
  * Creation date: (5/17/2004 4:56:56 PM)
  * @return cbit.vcell.document.VCDocument
  */
-public cbit.util.document.VCDocument getVCDocument() {
+public org.vcell.util.document.VCDocument getVCDocument() {
 	return getMathModel();
 }
 
@@ -406,7 +408,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  * Creation date: (5/28/2004 3:40:45 AM)
  * @param newDocument cbit.vcell.document.VCDocument
  */
-public void resetDocument(cbit.util.document.VCDocument newDocument) {
+public void resetDocument(org.vcell.util.document.VCDocument newDocument) {
 	setMathModel((MathModel)newDocument);
 	setDocumentID(getMathModel());
 	setMathModel((MathModel)newDocument);

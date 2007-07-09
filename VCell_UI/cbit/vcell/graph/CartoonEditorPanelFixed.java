@@ -8,14 +8,14 @@ import cbit.vcell.model.render.StructureCartoon;
  * @author: Frank Morgan
  */
 public class CartoonEditorPanelFixed extends javax.swing.JPanel {
-	private cbit.gui.JToolBarToggleButton ivjFeatureButton = null;
+	private org.vcell.util.gui.JToolBarToggleButton ivjFeatureButton = null;
 	private javax.swing.JToolBar ivjJToolBar = null;
-	private cbit.gui.JToolBarToggleButton ivjSelectButton = null;
-	private cbit.gui.JToolBarToggleButton ivjSpeciesButton = null;
+	private org.vcell.util.gui.JToolBarToggleButton ivjSelectButton = null;
+	private org.vcell.util.gui.JToolBarToggleButton ivjSpeciesButton = null;
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
 	private StructureCartoon ivjStructureCartoon1 = null;
 	private StructureCartoonTool ivjStructureCartoonTool1 = null;
-	private cbit.gui.ButtonGroupCivilized ivjButtonGroupCivilized1 = null;
+	private org.vcell.util.gui.ButtonGroupCivilized ivjButtonGroupCivilized1 = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private javax.swing.ButtonModel ivjselection1 = null;
@@ -301,10 +301,10 @@ private cbit.vcell.biomodel.BioModel getbioModel1() {
  * @return cbit.gui.ButtonGroupCivilized
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.ButtonGroupCivilized getButtonGroupCivilized1() {
+private org.vcell.util.gui.ButtonGroupCivilized getButtonGroupCivilized1() {
 	if (ivjButtonGroupCivilized1 == null) {
 		try {
-			ivjButtonGroupCivilized1 = new cbit.gui.ButtonGroupCivilized();
+			ivjButtonGroupCivilized1 = new org.vcell.util.gui.ButtonGroupCivilized();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -332,10 +332,10 @@ public cbit.vcell.client.database.DocumentManager getDocumentManager() {
  * @return cbit.gui.JToolBarToggleButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.JToolBarToggleButton getFeatureButton() {
+private org.vcell.util.gui.JToolBarToggleButton getFeatureButton() {
 	if (ivjFeatureButton == null) {
 		try {
-			ivjFeatureButton = new cbit.gui.JToolBarToggleButton();
+			ivjFeatureButton = new org.vcell.util.gui.JToolBarToggleButton();
 			ivjFeatureButton.setName("FeatureButton");
 			ivjFeatureButton.setToolTipText("Feature Tool");
 			ivjFeatureButton.setText("");
@@ -434,10 +434,10 @@ private javax.swing.JToolBar getJToolBar() {
  * @return cbit.gui.JToolBarToggleButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.JToolBarToggleButton getSelectButton() {
+private org.vcell.util.gui.JToolBarToggleButton getSelectButton() {
 	if (ivjSelectButton == null) {
 		try {
-			ivjSelectButton = new cbit.gui.JToolBarToggleButton();
+			ivjSelectButton = new org.vcell.util.gui.JToolBarToggleButton();
 			ivjSelectButton.setName("SelectButton");
 			ivjSelectButton.setToolTipText("Select Tool");
 			ivjSelectButton.setText("");
@@ -476,10 +476,10 @@ private javax.swing.ButtonModel getselection1() {
  * @return cbit.gui.JToolBarToggleButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.JToolBarToggleButton getSpeciesButton() {
+private org.vcell.util.gui.JToolBarToggleButton getSpeciesButton() {
 	if (ivjSpeciesButton == null) {
 		try {
-			ivjSpeciesButton = new cbit.gui.JToolBarToggleButton();
+			ivjSpeciesButton = new org.vcell.util.gui.JToolBarToggleButton();
 			ivjSpeciesButton.setName("SpeciesButton");
 			ivjSpeciesButton.setToolTipText("Species Tool");
 			ivjSpeciesButton.setText("");

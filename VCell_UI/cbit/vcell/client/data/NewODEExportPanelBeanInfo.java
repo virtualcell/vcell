@@ -1,6 +1,6 @@
 package cbit.vcell.client.data;
 
-import cbit.util.VCDataIdentifier;
+import org.vcell.util.VCDataIdentifier;
 
 /**
  * The bean information class for cbit.vcell.client.data.NewODEExportPanel.

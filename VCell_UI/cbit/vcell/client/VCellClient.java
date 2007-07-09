@@ -1,13 +1,15 @@
 package cbit.vcell.client;
 import java.awt.event.*;
 
-import cbit.util.document.VCDocument;
 import cbit.vcell.desktop.*;
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.client.server.*;
 import cbit.vcell.client.desktop.*;
 import javax.swing.*;
+
+import org.vcell.util.document.VCDocument;
+
 import cbit.vcell.biomodel.*;
 /**
  * Insert the type's description here.
@@ -216,7 +218,7 @@ public static VCellClient startClient(VCDocument startupDoc, final ClientServerI
 			}
 		};
 		loginDialog.addActionListener(listener);
-		cbit.gui.ZEnforcer.showModalDialogOnTop(loginDialog);
+		org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(loginDialog);
     } else {
 		vcellClient.getRequestManager().connectToServer(clientServerInfo);
     }

@@ -8,9 +8,11 @@ import java.awt.*;
 import cbit.vcell.client.desktop.simulation.*;
 import cbit.vcell.client.*;
 import javax.swing.*;
+
+import org.vcell.util.*;
+import org.vcell.util.gui.*;
+
 import java.util.*;
-import cbit.util.*;
-import cbit.gui.*;
 import cbit.vcell.math.gui.*;
 import cbit.vcell.geometry.gui.*;
 import cbit.vcell.mapping.*;
@@ -139,7 +141,7 @@ public ApplicationEditor getAppEditor() {
  * Creation date: (6/3/2004 4:40:40 PM)
  * @return cbit.gui.JInternalFrameEnhanced
  */
-public cbit.gui.JInternalFrameEnhanced getAppEditorFrame() {
+public org.vcell.util.gui.JInternalFrameEnhanced getAppEditorFrame() {
 	return appEditorFrame;
 }
 
@@ -173,7 +175,7 @@ public GeometrySummaryViewer getGeometrySummaryViewer() {
  * Creation date: (6/4/2004 1:27:33 AM)
  * @return cbit.gui.JInternalFrameEnhanced
  */
-public cbit.gui.JInternalFrameEnhanced getGeometrySummaryViewerFrame() {
+public org.vcell.util.gui.JInternalFrameEnhanced getGeometrySummaryViewerFrame() {
 	return geometrySummaryViewerFrame;
 }
 
@@ -193,7 +195,7 @@ public MathViewer getMathViewer() {
  * Creation date: (6/3/2004 4:40:40 PM)
  * @return cbit.gui.JInternalFrameEnhanced
  */
-public cbit.gui.JInternalFrameEnhanced getMathViewerFrame() {
+public org.vcell.util.gui.JInternalFrameEnhanced getMathViewerFrame() {
 	return mathViewerFrame;
 }
 
@@ -222,7 +224,7 @@ public SurfaceViewerPanel getSurfaceViewer() {
  * Creation date: (6/3/2004 4:40:40 PM)
  * @return cbit.gui.JInternalFrameEnhanced
  */
-public cbit.gui.JInternalFrameEnhanced getSurfaceViewerFrame() {
+public org.vcell.util.gui.JInternalFrameEnhanced getSurfaceViewerFrame() {
 	return surfaceViewerFrame;
 }
 
@@ -275,7 +277,7 @@ private void setAppEditor(ApplicationEditor newAppEditor) {
  * Creation date: (6/3/2004 4:40:40 PM)
  * @param newAppEditorFrame cbit.gui.JInternalFrameEnhanced
  */
-private void setAppEditorFrame(cbit.gui.JInternalFrameEnhanced newAppEditorFrame) {
+private void setAppEditorFrame(org.vcell.util.gui.JInternalFrameEnhanced newAppEditorFrame) {
 	appEditorFrame = newAppEditorFrame;
 }
 
@@ -295,7 +297,7 @@ private void setGeometrySummaryViewer(GeometrySummaryViewer newGeometrySummaryVi
  * Creation date: (6/4/2004 1:27:33 AM)
  * @param newGeometrySummaryViewerFrame cbit.gui.JInternalFrameEnhanced
  */
-private void setGeometrySummaryViewerFrame(cbit.gui.JInternalFrameEnhanced newGeometrySummaryViewerFrame) {
+private void setGeometrySummaryViewerFrame(org.vcell.util.gui.JInternalFrameEnhanced newGeometrySummaryViewerFrame) {
 	geometrySummaryViewerFrame = newGeometrySummaryViewerFrame;
 }
 
@@ -315,7 +317,7 @@ private void setMathViewer(MathViewer newMathViewer) {
  * Creation date: (6/3/2004 4:40:40 PM)
  * @param newMathViewerFrame cbit.gui.JInternalFrameEnhanced
  */
-private void setMathViewerFrame(cbit.gui.JInternalFrameEnhanced newMathViewerFrame) {
+private void setMathViewerFrame(org.vcell.util.gui.JInternalFrameEnhanced newMathViewerFrame) {
 	mathViewerFrame = newMathViewerFrame;
 }
 
@@ -335,7 +337,7 @@ private void setSurfaceViewer(SurfaceViewerPanel newSurfaceViewer) {
  * Creation date: (6/3/2004 4:40:40 PM)
  * @param newMathViewerFrame cbit.gui.JInternalFrameEnhanced
  */
-private void setSurfaceViewerFrame(cbit.gui.JInternalFrameEnhanced newSurfaceViewerFrame) {
+private void setSurfaceViewerFrame(org.vcell.util.gui.JInternalFrameEnhanced newSurfaceViewerFrame) {
 	surfaceViewerFrame = newSurfaceViewerFrame;
 }
 }

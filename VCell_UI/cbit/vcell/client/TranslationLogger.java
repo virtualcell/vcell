@@ -4,10 +4,11 @@ import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.client.server.UserMessage;
 import cbit.vcell.vcml.TranslationMessage;
 
-import cbit.util.UserCancelException;
 import cbit.util.xml.VCLogger;
 
 import java.util.ArrayList;
+
+import org.vcell.util.UserCancelException;
 /**
 This class represents the otherwise missing link between the GUI layer classes and the XML translation package. 
 It allows user interaction while importing/exporting a document, like providing extra parameters, or the option to 

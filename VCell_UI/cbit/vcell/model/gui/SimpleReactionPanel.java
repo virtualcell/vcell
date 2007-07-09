@@ -845,7 +845,7 @@ private void renameSimpleReaction() {
 		String newName = null;
 		try{
 			newName = cbit.vcell.client.PopupGenerator.showInputDialog(this,"reaction name:",getSimpleReaction().getName());
-		}catch(cbit.util.UserCancelException e){
+		}catch(org.vcell.util.UserCancelException e){
 			return;
 		}
 

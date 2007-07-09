@@ -1,7 +1,4 @@
 package cbit.vcell.desktop;
-import cbit.util.document.BioModelInfo;
-import cbit.util.document.MathModelInfo;
-import cbit.util.document.User;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.modeldb.SolverResultSetInfo;
 /*©
@@ -16,6 +13,10 @@ import cbit.vcell.biomodel.*;
  * @author: 
  */
 import javax.swing.*;
+
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.User;
  
 public class ResultSetCellRenderer extends VCellBasicCellRenderer {
 /**

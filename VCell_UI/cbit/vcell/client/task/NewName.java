@@ -1,7 +1,8 @@
 package cbit.vcell.client.task;
 import javax.swing.*;
 
-import cbit.util.UserCancelException;
+import org.vcell.util.UserCancelException;
+
 import cbit.vcell.client.*;
 import cbit.vcell.desktop.controls.*;
 /**

@@ -56,7 +56,7 @@ class NameScopeTreeCellEditor implements TreeCellEditor {
 				0,
 				true);
 			System.out.println(comp);
-			cbit.gui.JTableFixed jTable = ((NameScopeParametersPanel)comp).getAJTable();
+			org.vcell.util.gui.JTableFixed jTable = ((NameScopeParametersPanel)comp).getAJTable();
 			jTable.editingCanceled(null);
 			// jTable.editingStopped(null);
 			jTable.clearSelection();

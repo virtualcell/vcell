@@ -19,7 +19,7 @@ public class ExportMonitorPanel extends JPanel {
 	private boolean ivjConnPtoP1Aligning = false;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private ExportMonitorTableModel ivjExportMonitorTableModel1 = null;
-	private cbit.gui.DefaultTableCellRendererEnhanced ivjDefaultTableCellRendererEnhanced1 = null;
+	private org.vcell.util.gui.DefaultTableCellRendererEnhanced ivjDefaultTableCellRendererEnhanced1 = null;
 	private boolean fieldHasJobs = false;
 
 class IvjEventHandler implements java.beans.PropertyChangeListener {
@@ -145,10 +145,10 @@ private void connPtoP2SetTarget() {
  * @return cbit.gui.DefaultTableCellRendererEnhanced
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.DefaultTableCellRendererEnhanced getDefaultTableCellRendererEnhanced1() {
+private org.vcell.util.gui.DefaultTableCellRendererEnhanced getDefaultTableCellRendererEnhanced1() {
 	if (ivjDefaultTableCellRendererEnhanced1 == null) {
 		try {
-			ivjDefaultTableCellRendererEnhanced1 = new cbit.gui.DefaultTableCellRendererEnhanced();
+			ivjDefaultTableCellRendererEnhanced1 = new org.vcell.util.gui.DefaultTableCellRendererEnhanced();
 			ivjDefaultTableCellRendererEnhanced1.setName("DefaultTableCellRendererEnhanced1");
 			ivjDefaultTableCellRendererEnhanced1.setText("DefaultTableCellRendererEnhanced1");
 			ivjDefaultTableCellRendererEnhanced1.setBounds(29, 336, 212, 16);

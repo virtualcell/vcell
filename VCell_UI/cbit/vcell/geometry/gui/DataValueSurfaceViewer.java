@@ -1,6 +1,7 @@
 package cbit.vcell.geometry.gui;
 
 import org.vcell.expression.IExpression;
+import org.vcell.util.Coordinate;
 
 import cbit.render.SurfaceCanvas;
 import cbit.render.SurfaceViewerTool;
@@ -9,7 +10,6 @@ import cbit.render.objects.Quadrilateral;
 import cbit.render.objects.Surface;
 import cbit.render.objects.SurfaceCollection;
 import cbit.render.objects.Vect3d;
-import cbit.util.Coordinate;
 
 /**
  * Insert the type's description here. Creation date: (9/20/2005 9:13:34 AM)
@@ -33,9 +33,9 @@ public class DataValueSurfaceViewer extends javax.swing.JPanel implements
 
 		public int getMembraneIndex(int surfaceIndex, int polygonIndex);
 
-		public cbit.util.TimeSeriesJobResults getTimeSeriesData(
+		public org.vcell.util.TimeSeriesJobResults getTimeSeriesData(
 				int[][] indices, boolean bAllTimes, boolean bTimeStats,
-				boolean bSpaceStats) throws cbit.util.DataAccessException;
+				boolean bSpaceStats) throws org.vcell.util.DataAccessException;
 
 		public Vect3d getCentroid(int surfaceIndex, int polygonIndex);
 
@@ -47,9 +47,9 @@ public class DataValueSurfaceViewer extends javax.swing.JPanel implements
 	public class SurfaceCollectionDataInfo {
 		private SurfaceCollection surfaceCollection;
 
-		private cbit.util.Origin origin;
+		private org.vcell.util.Origin origin;
 
-		private cbit.util.Extent extent;
+		private org.vcell.util.Extent extent;
 
 		private String[] surfaceNames;
 
@@ -59,7 +59,7 @@ public class DataValueSurfaceViewer extends javax.swing.JPanel implements
 
 		public SurfaceCollectionDataInfo(
 				SurfaceCollection argSurfaceCollection,
-				cbit.util.Origin argOrigin, cbit.util.Extent argExtent,
+				org.vcell.util.Origin argOrigin, org.vcell.util.Extent argExtent,
 				String[] argSurfaceNames, Double[] argSurfaceAreas,
 				int argDimension) {
 			surfaceCollection = argSurfaceCollection;
@@ -74,11 +74,11 @@ public class DataValueSurfaceViewer extends javax.swing.JPanel implements
 			return surfaceCollection;
 		}
 
-		public cbit.util.Origin getSurfaceCollectionOrigin() {
+		public org.vcell.util.Origin getSurfaceCollectionOrigin() {
 			return origin;
 		}
 
-		public cbit.util.Extent getSurfaceCollectionExtent() {
+		public org.vcell.util.Extent getSurfaceCollectionExtent() {
 			return extent;
 		}
 
@@ -1988,7 +1988,7 @@ public class DataValueSurfaceViewer extends javax.swing.JPanel implements
 	 * PM)
 	 */
 	public void init(SurfaceCollection argSurfaceCollection,
-			cbit.util.Origin argOrigin, cbit.util.Extent argExtent,
+			org.vcell.util.Origin argOrigin, org.vcell.util.Extent argExtent,
 			String[] argSurfaceNames, Double[] argSurfaceAreas, int argDimension) {
 
 		setSurfaceCollectionDataInfoProvider(null);
@@ -2252,7 +2252,7 @@ public class DataValueSurfaceViewer extends javax.swing.JPanel implements
 	 * Insert the method's description here. Creation date: (2/19/2006 2:52:44
 	 * PM)
 	 */
-	private void pickByRange(cbit.util.Range pickRange) {
+	private void pickByRange(org.vcell.util.Range pickRange) {
 
 		String[] surfNames = getSurfaceCollectionDataInfo().getSurfaceNames();
 		String surfSelect = (String) cbit.vcell.client.PopupGenerator

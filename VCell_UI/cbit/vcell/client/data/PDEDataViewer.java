@@ -5,10 +5,13 @@ import cbit.render.objects.Vect3d;
 import cbit.vcell.math.DataIdentifier;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.*;
-import cbit.gui.AsynchProgressPopup;
-import cbit.gui.GlassPane;
-import cbit.gui.SwingWorker;
 import javax.swing.*;
+
+import org.vcell.util.*;
+import org.vcell.util.gui.AsynchProgressPopup;
+import org.vcell.util.gui.GlassPane;
+import org.vcell.util.gui.SwingWorker;
+
 import cbit.plot.*;
 import cbit.vcell.simdata.gui.*;
 
@@ -17,7 +20,6 @@ import java.util.*;
 import cbit.vcell.client.*;
 import cbit.vcell.desktop.controls.ClientPDEDataContext;
 import cbit.vcell.export.gui.ExportMonitorPanel;
-import cbit.util.*;
 /**
  * Insert the type's description here.
  * Creation date: (6/11/2004 6:03:07 AM)
@@ -268,8 +270,8 @@ private void calcStatistics2() {
 	}
 
 	if(dataIndexes != null){
-		cbit.util.TimeSeriesJobSpec timeSeriesJobSpec =
-			new cbit.util.TimeSeriesJobSpec(
+		org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec =
+			new org.vcell.util.TimeSeriesJobSpec(
 				new String[] {variableName},
 				new int[][]{dataIndexes},
 				getPdeDataContext().getTimePoints()[0],1,getPdeDataContext().getTimePoints()[getPdeDataContext().getTimePoints().length-1],
@@ -1042,7 +1044,7 @@ private cbit.vcell.geometry.gui.DataValueSurfaceViewer getDataValueSurfaceViewer
 			getPdeDataContext().getCartesianMesh().getGeometryDimension()
 		);
 		
-		dataValueSurfaceViewerJIF = new cbit.gui.JInternalFrameEnhanced("DataValueSurfaceViewer",true,true,true,true);
+		dataValueSurfaceViewerJIF = new org.vcell.util.gui.JInternalFrameEnhanced("DataValueSurfaceViewer",true,true,true,true);
 		dataValueSurfaceViewerJIF.setContentPane(fieldDataValueSurfaceViewer0);
 		//dataValueSurfaceViewerJIF.pack();
 		dataValueSurfaceViewerJIF.setSize(800,800);
@@ -1148,11 +1150,11 @@ public ExportMonitorPanel getExportMonitorPanel() {
 private ExportMonitorPanel getExportMonitorPanel1() {
 	if (ivjExportMonitorPanel1 == null) {
 		try {
-			cbit.gui.LineBorderBean ivjLocalBorder1;
-			ivjLocalBorder1 = new cbit.gui.LineBorderBean();
+			org.vcell.util.gui.LineBorderBean ivjLocalBorder1;
+			ivjLocalBorder1 = new org.vcell.util.gui.LineBorderBean();
 			ivjLocalBorder1.setLineColor(java.awt.Color.blue);
-			cbit.gui.TitledBorderBean ivjLocalBorder;
-			ivjLocalBorder = new cbit.gui.TitledBorderBean();
+			org.vcell.util.gui.TitledBorderBean ivjLocalBorder;
+			ivjLocalBorder = new org.vcell.util.gui.TitledBorderBean();
 			ivjLocalBorder.setBorder(ivjLocalBorder1);
 			ivjLocalBorder.setTitle("Export jobs");
 			ivjExportMonitorPanel1 = new ExportMonitorPanel();
@@ -1638,7 +1640,7 @@ private javax.swing.JLabel getResampleEndTimeJLabel() {
 		try {
 			ivjResampleEndTimeJLabel = new javax.swing.JLabel();
 			ivjResampleEndTimeJLabel.setName("ResampleEndTimeJLabel");
-			ivjResampleEndTimeJLabel.setBorder(new cbit.gui.LineBorderBean());
+			ivjResampleEndTimeJLabel.setBorder(new org.vcell.util.gui.LineBorderBean());
 			ivjResampleEndTimeJLabel.setText("End Time");
 			// user code begin {1}
 			// user code end
@@ -1839,12 +1841,12 @@ private javax.swing.JLabel getStepJLabel() {
  */
 private double[][] getTimeSeries(int[] indices, double startTime, int step,double endTime) throws DataAccessException{
 	
-	cbit.util.TimeSeriesJobSpec timeSeriesJobSpec =
-		new cbit.util.TimeSeriesJobSpec(
+	org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec =
+		new org.vcell.util.TimeSeriesJobSpec(
 			new String[] {getPdeDataContext().getVariableName()},
 			new int[][]{indices},
 			startTime,step,endTime);
-	cbit.util.TSJobResultsNoStats timeSeriesJobResults = (cbit.util.TSJobResultsNoStats)getPdeDataContext().getTimeSeriesValues(timeSeriesJobSpec);
+	org.vcell.util.TSJobResultsNoStats timeSeriesJobResults = (org.vcell.util.TSJobResultsNoStats)getPdeDataContext().getTimeSeriesValues(timeSeriesJobSpec);
 	double[][] timeSeries = timeSeriesJobResults.getTimesAndValuesForVariable(getPdeDataContext().getVariableName());
 	return timeSeries;
 }
@@ -2031,7 +2033,7 @@ private void plotStatistics(TimeSeriesJobSpec tsjs) {
 
 	final int BATCH_THRESHOLD = 10000;
 	final int BATCH_SIZE = 2500;
-	cbit.util.TimeSeriesJobResults tsjr = null;
+	org.vcell.util.TimeSeriesJobResults tsjr = null;
 	try{
 		AsynchProgressPopup pp =
 			new AsynchProgressPopup(
@@ -2044,7 +2046,7 @@ private void plotStatistics(TimeSeriesJobSpec tsjs) {
 		pp.start();
 		try{
 			if(tsjs.getIndices()[0].length <= BATCH_THRESHOLD){
-				tsjr = (cbit.util.TSJobResultsSpaceStats)getPdeDataContext().getTimeSeriesValues(tsjs);
+				tsjr = (org.vcell.util.TSJobResultsSpaceStats)getPdeDataContext().getTimeSeriesValues(tsjs);
 			}else{
 				double totalSpace = 0;
 				double[] times = null;
@@ -2056,13 +2058,13 @@ private void plotStatistics(TimeSeriesJobSpec tsjs) {
 					pp.setProgress((int)(100*((float)i/(float)tsjs.getIndices()[0].length)));
 					int[] indexes_batch = new int[Math.min(BATCH_SIZE,(tsjs.getIndices()[0].length-i))];
 					System.arraycopy(tsjs.getIndices()[0],i,indexes_batch,0,indexes_batch.length);
-					cbit.util.TimeSeriesJobSpec tsjs_batch =
-						new cbit.util.TimeSeriesJobSpec(
+					org.vcell.util.TimeSeriesJobSpec tsjs_batch =
+						new org.vcell.util.TimeSeriesJobSpec(
 							tsjs.getVariableNames(),
 							new int[][]{indexes_batch},
 							getPdeDataContext().getTimePoints()[0],1,getPdeDataContext().getTimePoints()[getPdeDataContext().getTimePoints().length-1],
 							true,false);
-					cbit.util.TSJobResultsSpaceStats tsjrss = (cbit.util.TSJobResultsSpaceStats)getPdeDataContext().getTimeSeriesValues(tsjs_batch);
+					org.vcell.util.TSJobResultsSpaceStats tsjrss = (org.vcell.util.TSJobResultsSpaceStats)getPdeDataContext().getTimeSeriesValues(tsjs_batch);
 					if(i==0){
 						times = tsjrss.getTimes();
 						mins = tsjrss.getMinimums()[0];
@@ -2407,7 +2409,7 @@ private void showComponentInFrame(Component comp,String title) {
 		new JInternalFrame(title, true, true, true, true);
 	frame.getContentPane().add(comp);
 	frame.pack();
-	cbit.util.BeanUtils.centerOnComponent(frame,this);
+	org.vcell.util.BeanUtils.centerOnComponent(frame,this);
 	getDataViewerManager().showDataViewerPlotsFrames(new JInternalFrame[] {frame});
 	
 }
@@ -2805,7 +2807,7 @@ private void updateDataValueSurfaceViewer() {
 			public void showComponentInFrame(Component comp,String title){
 				PDEDataViewer.this.showComponentInFrame(comp,title);
 			}
-			public cbit.util.TimeSeriesJobResults getTimeSeriesData(int[][] indices,boolean bAllTimes,boolean bTimeStats,boolean bSpaceStats) throws cbit.util.DataAccessException{
+			public org.vcell.util.TimeSeriesJobResults getTimeSeriesData(int[][] indices,boolean bAllTimes,boolean bTimeStats,boolean bSpaceStats) throws org.vcell.util.DataAccessException{
 				try{
 					double beginTime = (bAllTimes?getPdeDataContext().getTimePoints()[0]:getPdeDataContext().getTimePoint());
 					double endTime = (bAllTimes?getPdeDataContext().getTimePoints()[getPdeDataContext().getTimePoints().length-1]:beginTime);
@@ -2813,8 +2815,8 @@ private void updateDataValueSurfaceViewer() {
 					for(int i=0;i<varNames.length;i+= 1){
 						varNames[i] = getPdeDataContext().getVariableName();
 					}
-					final cbit.util.TimeSeriesJobSpec timeSeriesJobSpec =
-						new cbit.util.TimeSeriesJobSpec(varNames,indices,beginTime,1,endTime,bSpaceStats,bTimeStats);
+					final org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec =
+						new org.vcell.util.TimeSeriesJobSpec(varNames,indices,beginTime,1,endTime,bSpaceStats,bTimeStats);
 
 					new Thread(
 						new Runnable(){

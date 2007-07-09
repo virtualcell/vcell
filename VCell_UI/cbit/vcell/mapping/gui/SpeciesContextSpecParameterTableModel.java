@@ -18,7 +18,7 @@ import org.vcell.expression.IExpression;
  * Creation date: (2/23/01 10:52:36 PM)
  * @author: 
  */
-public class SpeciesContextSpecParameterTableModel extends cbit.vcell.messaging.admin.sorttable.ManageTableModel implements java.beans.PropertyChangeListener {
+public class SpeciesContextSpecParameterTableModel extends org.vcell.util.gui.sorttable.ManageTableModel implements java.beans.PropertyChangeListener {
 
 	static {
 		System.out.println("SpeciesContextSpecParameterTableModel: artifically filtering out membrane diffusion parameters and diffusion/bc's that are not applicable");

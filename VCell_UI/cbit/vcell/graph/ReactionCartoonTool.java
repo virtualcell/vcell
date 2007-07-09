@@ -9,13 +9,15 @@ import cbit.gui.graph.Shape;
 import java.awt.event.*;
 import java.awt.*;
 import cbit.vcell.model.*;
-import cbit.gui.*;
 import javax.swing.*;
 
 import cbit.vcell.model.gui.SimpleReactionPanelDialog;
 import cbit.vcell.model.gui.FluxReaction_Dialog;
 
 import javax.swing.event.InternalFrameEvent;
+
+import org.vcell.util.gui.*;
+
 import cbit.vcell.model.gui.EditSpeciesDialog;
 import cbit.vcell.model.render.CatalystShape;
 import cbit.vcell.model.render.FluxReactionShape;
@@ -1403,7 +1405,7 @@ public void showFluxReactionPropertiesDialog(FluxReactionShape fluxReactionShape
 	FluxReaction_Dialog fluxReaction_Dialog = new FluxReaction_Dialog((Frame)null,true);
 	fluxReaction_Dialog.init(fluxReactionShape.getFluxReaction(), getReactionCartoon().getModel());
 	fluxReaction_Dialog.setTitle("Flux Reaction Editor");
-	cbit.util.BeanUtils.centerOnScreen(fluxReaction_Dialog);
+	org.vcell.util.BeanUtils.centerOnScreen(fluxReaction_Dialog);
 	ZEnforcer.showModalDialogOnTop(fluxReaction_Dialog);
 	//fluxReaction_Dialog.show();
 	//
@@ -1480,7 +1482,7 @@ public void showReactionBrowserDialog(ReactionCartoon sCartoon, Structure struct
 	}
 	getDialogOwner(getGraphPane()).add(jif, JDesktopPane.MODAL_LAYER);
 	jif.pack();
-	cbit.util.BeanUtils.centerOnComponent(jif, getDialogOwner(getGraphPane()));
+	org.vcell.util.BeanUtils.centerOnComponent(jif, getDialogOwner(getGraphPane()));
 	jif.show();
 }
 
@@ -1498,12 +1500,12 @@ public void showReactionBrowserDialog(ReactionCartoon sCartoon, Structure struct
 		Model model = getReactionCartoon().getModel();
 		System.out.println("Processing save as Image request for: " + struct.getName() + " " + model.getName() + "(" + resLevel + ")");
 		//set file filter
-		cbit.util.SimpleFilenameFilter gifFilter = new cbit.util.SimpleFilenameFilter("gif");
+		org.vcell.util.SimpleFilenameFilter gifFilter = new org.vcell.util.SimpleFilenameFilter("gif");
 		final java.io.File defaultFile = new java.io.File(model.getName() + "_" + struct.getName() + ".gif");
 		cbit.vcell.client.server.ClientServerManager csm = (cbit.vcell.client.server.ClientServerManager)getDocumentManager().getSessionManager();
 		UserPreferences userPref = csm.getUserPreferences();
 		String defaultPath = userPref.getGenPref(cbit.vcell.client.server.UserPreferences.GENERAL_LAST_PATH_USED);
-		cbit.gui.VCFileChooser fileChooser = new cbit.gui.VCFileChooser(defaultPath);
+		org.vcell.util.gui.VCFileChooser fileChooser = new org.vcell.util.gui.VCFileChooser(defaultPath);
 		fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 		fileChooser.setMultiSelectionEnabled(false);
 		fileChooser.addChoosableFileFilter(gifFilter);
@@ -1554,7 +1556,7 @@ public void showReactionBrowserDialog(ReactionCartoon sCartoon, Structure struct
 		SimpleReactionPanelDialog simpleReactionDialog = new SimpleReactionPanelDialog((Frame)null,true);
 		simpleReactionDialog.setSimpleReaction(simpleReactionShape.getSimpleReaction());
 		simpleReactionDialog.setTitle("Reaction Kinetics Editor");
-		cbit.util.BeanUtils.centerOnScreen(simpleReactionDialog);
+		org.vcell.util.BeanUtils.centerOnScreen(simpleReactionDialog);
 		ZEnforcer.showModalDialogOnTop(simpleReactionDialog);
 		
 		//

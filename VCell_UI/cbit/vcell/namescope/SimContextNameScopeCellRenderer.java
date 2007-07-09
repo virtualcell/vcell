@@ -19,7 +19,6 @@ import javax.swing.JCheckBox;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Structure;
-import cbit.gui.JTableFixed;
 import cbit.vcell.model.Model;
 import cbit.vcell.modelapp.MembraneMapping;
 import cbit.vcell.modelapp.SimulationContext;
@@ -27,6 +26,8 @@ import cbit.vcell.modelapp.SpeciesContextSpec;
 import cbit.vcell.modelapp.StructureMapping;
 import cbit.vcell.desktop.BioModelNode;
 import javax.swing.JTree;
+
+import org.vcell.util.gui.JTableFixed;
 
 /**
  * Insert the type's description here.

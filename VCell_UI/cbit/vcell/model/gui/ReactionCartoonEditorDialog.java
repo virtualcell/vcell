@@ -8,7 +8,7 @@ import cbit.vcell.model.*;
 /**
  * This type was created in VisualAge.
  */
-public class ReactionCartoonEditorDialog extends cbit.gui.JInternalFrameEnhanced {
+public class ReactionCartoonEditorDialog extends org.vcell.util.gui.JInternalFrameEnhanced {
 	private javax.swing.JPanel ivjContentsPane = null;
 	private cbit.vcell.graph.ReactionCartoonEditorPanel ivjReactionCartoonEditorPanel = null;
 /**

@@ -8,7 +8,7 @@ import cbit.plot.DataSource;
  * Creation date: (8/31/2005 4:07:05 PM)
  * @author: Jim Schaff
  */
-public class BNGDataPlotListModel extends cbit.gui.DefaultListModelCivilized implements java.beans.PropertyChangeListener {
+public class BNGDataPlotListModel extends org.vcell.util.gui.DefaultListModelCivilized implements java.beans.PropertyChangeListener {
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private DataSource fieldDataSource = null;
 

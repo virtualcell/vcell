@@ -1,6 +1,5 @@
 package cbit.vcell.client.desktop.testingframework;
 
-import cbit.util.document.MathModelInfo;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.simulation.SimulationInfo;
 import javax.swing.tree.TreeNode;
@@ -11,6 +10,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.ActionEvent;
 import javax.swing.tree.TreeSelectionModel;
 import javax.swing.tree.TreePath;
+
+import org.vcell.util.document.MathModelInfo;
 
 /**
  * Insert the type's description here.

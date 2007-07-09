@@ -1,11 +1,12 @@
 package cbit.vcell.desktop;
 
-import cbit.util.document.MathModelInfo;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.simulation.SimulationInfo;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.*;
+
+import org.vcell.util.document.MathModelInfo;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -17,15 +18,15 @@ import javax.swing.*;
  */
 public class MathModelMetaDataPanel extends JPanel {
 	private JPanel ivjJPanel1 = null;
-	private cbit.gui.JTreeFancy ivjJTree1 = null;
+	private org.vcell.util.gui.JTreeFancy ivjJTree1 = null;
 	private MathModelMetaDataCellRenderer ivjmathModelMetaDataCellRenderer = null;
 	private MathModelMetaDataTreeModel ivjmathModelMetaDataTreeModel = null;
 	private cbit.vcell.client.database.DocumentManager fieldDocumentManager = null;
 	private boolean fieldPopupMenuDisabled = false;
-	private cbit.util.document.MathModelInfo fieldMathModelInfo = null;
+	private org.vcell.util.document.MathModelInfo fieldMathModelInfo = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private cbit.util.document.MathModelInfo ivjmathModelInfo1 = null;
+	private org.vcell.util.document.MathModelInfo ivjmathModelInfo1 = null;
 
 class IvjEventHandler implements java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -118,7 +119,7 @@ private void connEtoC8() {
  * @param value cbit.vcell.mathmodel.MathModelInfo
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM1(cbit.util.document.MathModelInfo value) {
+private void connEtoM1(org.vcell.util.document.MathModelInfo value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -278,10 +279,10 @@ private javax.swing.JPanel getJPanel1() {
  * @return cbit.gui.JTreeFancy
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.JTreeFancy getJTree1() {
+private org.vcell.util.gui.JTreeFancy getJTree1() {
 	if (ivjJTree1 == null) {
 		try {
-			ivjJTree1 = new cbit.gui.JTreeFancy();
+			ivjJTree1 = new org.vcell.util.gui.JTreeFancy();
 			ivjJTree1.setName("JTree1");
 			ivjJTree1.setEnabled(true);
 			ivjJTree1.setRootVisible(false);
@@ -301,7 +302,7 @@ private cbit.gui.JTreeFancy getJTree1() {
  * @return The mathModelInfo property value.
  * @see #setMathModelInfo
  */
-public cbit.util.document.MathModelInfo getMathModelInfo() {
+public org.vcell.util.document.MathModelInfo getMathModelInfo() {
 	return fieldMathModelInfo;
 }
 /**
@@ -309,7 +310,7 @@ public cbit.util.document.MathModelInfo getMathModelInfo() {
  * @return cbit.vcell.mathmodel.MathModelInfo
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.util.document.MathModelInfo getmathModelInfo1() {
+private org.vcell.util.document.MathModelInfo getmathModelInfo1() {
 	// user code begin {1}
 	// user code end
 	return ivjmathModelInfo1;
@@ -460,8 +461,8 @@ public void setDocumentManager(cbit.vcell.client.database.DocumentManager docume
  * @param mathModelInfo The new value for the property.
  * @see #getMathModelInfo
  */
-public void setMathModelInfo(cbit.util.document.MathModelInfo mathModelInfo) {
-	cbit.util.document.MathModelInfo oldValue = fieldMathModelInfo;
+public void setMathModelInfo(org.vcell.util.document.MathModelInfo mathModelInfo) {
+	org.vcell.util.document.MathModelInfo oldValue = fieldMathModelInfo;
 	fieldMathModelInfo = mathModelInfo;
 	firePropertyChange("mathModelInfo", oldValue, mathModelInfo);
 }
@@ -470,10 +471,10 @@ public void setMathModelInfo(cbit.util.document.MathModelInfo mathModelInfo) {
  * @param newValue cbit.vcell.mathmodel.MathModelInfo
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setmathModelInfo1(cbit.util.document.MathModelInfo newValue) {
+private void setmathModelInfo1(org.vcell.util.document.MathModelInfo newValue) {
 	if (ivjmathModelInfo1 != newValue) {
 		try {
-			cbit.util.document.MathModelInfo oldValue = getmathModelInfo1();
+			org.vcell.util.document.MathModelInfo oldValue = getmathModelInfo1();
 			ivjmathModelInfo1 = newValue;
 			connPtoP1SetSource();
 			connEtoM1(ivjmathModelInfo1);

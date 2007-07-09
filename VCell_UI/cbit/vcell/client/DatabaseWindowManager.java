@@ -9,31 +9,32 @@ import cbit.vcell.client.desktop.*;
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.client.server.*;
-import cbit.util.*;
-import cbit.util.document.BioModelInfo;
-import cbit.util.document.CurateSpec;
-import cbit.util.document.GroupAccess;
-import cbit.util.document.GroupAccessSome;
-import cbit.util.document.MathModelInfo;
-import cbit.util.document.User;
-import cbit.util.document.VCDocument;
-import cbit.util.document.VCDocumentInfo;
-import cbit.util.document.Version;
-import cbit.util.document.VersionInfo;
-import cbit.util.document.VersionableRelationship;
-import cbit.util.document.VersionableType;
-import cbit.util.document.VersionableTypeVersion;
 import java.awt.*;
 import javax.swing.*;
 import cbit.vcell.desktop.*;
-import cbit.gui.AsynchProgressPopup;
-import cbit.gui.FileFilters;
-import cbit.gui.SwingWorker;
 import cbit.vcell.client.desktop.geometry.ImageBrowser;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.modelapp.SimulationContext;
 
 import javax.swing.filechooser.FileFilter;
+
+import org.vcell.util.*;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.CurateSpec;
+import org.vcell.util.document.GroupAccess;
+import org.vcell.util.document.GroupAccessSome;
+import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.User;
+import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.VCDocumentInfo;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionInfo;
+import org.vcell.util.document.VersionableRelationship;
+import org.vcell.util.document.VersionableType;
+import org.vcell.util.document.VersionableTypeVersion;
+import org.vcell.util.gui.AsynchProgressPopup;
+import org.vcell.util.gui.FileFilters;
+import org.vcell.util.gui.SwingWorker;
 
 /**
  * Insert the type's description here.
@@ -510,13 +511,13 @@ public void comparePreviousEdition()  {
 				comparePane.setMessage(comparePanel);
 				JDialog compareDialog = comparePane.createDialog(DatabaseWindowManager.this.getDatabaseWindowPanel(), "Compare Models");
 				compareDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-				cbit.gui.ZEnforcer.showModalDialogOnTop(compareDialog,DatabaseWindowManager.this.getDatabaseWindowPanel());
+				org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(compareDialog,DatabaseWindowManager.this.getDatabaseWindowPanel());
 				if ("Apply Changes".equals(comparePane.getValue())) {
 					if (!comparePanel.tagsResolved()) {
 						JOptionPane messagePane = new javax.swing.JOptionPane("Please resolve all tagged elements/attributes before proceeding.");
 						JDialog messageDialog = messagePane.createDialog(comparePanel, "Error");
 						messageDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-						cbit.gui.ZEnforcer.showModalDialogOnTop(messageDialog,comparePanel);
+						org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(messageDialog,comparePanel);
 					} else {
 						BeanUtils.setCursorThroughout((Container)getComponent(), Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 						try {
@@ -775,7 +776,7 @@ public void findModelsUsingSelectedGeometry() {
 	VCDocumentInfo selectedDocument = getPanelSelection();
 	
 	if(!(selectedDocument instanceof GeometryInfo)){
-		cbit.gui.DialogUtils.showErrorDialog("DatabaseWindowManager.findModelsUsingSelectedGeometry expected a GeometryInfo\nbut got type="+selectedDocument.getClass().getName()+" instead");
+		org.vcell.util.gui.DialogUtils.showErrorDialog("DatabaseWindowManager.findModelsUsingSelectedGeometry expected a GeometryInfo\nbut got type="+selectedDocument.getClass().getName()+" instead");
 		return;
 	}
 
@@ -842,7 +843,7 @@ public void findModelsUsingSelectedGeometry() {
 
 		if(choices.size() > 0){
 			Object[] listObj = choices.keySet().toArray();
-			Object o = cbit.gui.DialogUtils.showListDialog(getComponent(),listObj,"Models Referencing Geometry (Select To Open) "+selectedDocument.getVersion().getName()+" "+selectedDocument.getVersion().getDate());
+			Object o = org.vcell.util.gui.DialogUtils.showListDialog(getComponent(),listObj,"Models Referencing Geometry (Select To Open) "+selectedDocument.getVersion().getName()+" "+selectedDocument.getVersion().getDate());
 			if(o != null){
 				VersionableTypeVersion v = (VersionableTypeVersion)choices.get(o);
 				//System.out.println(v);
@@ -856,11 +857,11 @@ public void findModelsUsingSelectedGeometry() {
 			}
 		}else{
 			if(dependants == null){
-				cbit.gui.DialogUtils.showInfoDialog(
+				org.vcell.util.gui.DialogUtils.showInfoDialog(
 					"No Model references found.\n"+
 					(rqr.getVersionableFamily().getTarget().getVersion().getFlag().isArchived()?"Info: Not Deletable (key="+rqr.getVersionableFamily().getTarget().getVersion().getVersionKey()+") because legacy ARCHIVE set":""));
 			}else{
-				cbit.gui.DialogUtils.showInfoDialog(
+				org.vcell.util.gui.DialogUtils.showInfoDialog(
 					"No current Model references found.\n"+
 					"Geometry has internal database references from\n"+
 					"previously linked Model(s).\n"+
@@ -871,7 +872,7 @@ public void findModelsUsingSelectedGeometry() {
 
 		
 		}catch(DataAccessException e){
-		cbit.gui.DialogUtils.showErrorDialog("Error find Geometry Model references\n"+e.getClass().getName()+"\n"+e.getMessage());
+		org.vcell.util.gui.DialogUtils.showErrorDialog("Error find Geometry Model references\n"+e.getClass().getName()+"\n"+e.getMessage());
 	}
 	
 }
@@ -1370,7 +1371,7 @@ private Object showAccessPermissionDialog(JComponent aclEditor, Component reques
 	accessPermissionDialog.setValue(null);
 	JDialog d = accessPermissionDialog.createDialog(requester, "Changing Permissions:");
 	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	cbit.gui.ZEnforcer.showModalDialogOnTop(d,requester);
+	org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(d,requester);
 	return accessPermissionDialog.getValue();
 	
 }
@@ -1385,7 +1386,7 @@ private File showFileChooserDialog(boolean isXMLNotImage) throws UserCancelExcep
 	// This is used to set the appropriate File filters.
 
 	String defaultPath = getUserPreferences().getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
-	cbit.gui.VCFileChooser fileChooser = new cbit.gui.VCFileChooser(defaultPath);
+	org.vcell.util.gui.VCFileChooser fileChooser = new org.vcell.util.gui.VCFileChooser(defaultPath);
 	fileChooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
 
 	if (isXMLNotImage) {
@@ -1451,7 +1452,7 @@ private Object showImagePropertiesDialog() {
 	d.setSize(400,600);
 	d.setLocation(300,200);
 	BeanUtils.centerOnComponent(d,null);
-	cbit.gui.ZEnforcer.showModalDialogOnTop(d,null);
+	org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(d,null);
 	return imageAttributePanel.getStatus();
 }
 
@@ -1467,7 +1468,7 @@ private Object showImageSelectorDialog(JComponent imageBrowser, Component reques
 	imageSelectDialog.setMessage(imageBrowser);
 	JDialog d = imageSelectDialog.createDialog(requester, "Select Image:");
 	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	cbit.gui.ZEnforcer.showModalDialogOnTop(d,requester);
+	org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(d,requester);
 	return imageSelectDialog.getValue();
 }
 
@@ -1490,7 +1491,7 @@ private Object showOpenDialog(JComponent tree, TopLevelWindowManager requester) 
 	getMathModelDbTreePanel().addActionListener(doubleClickListener);
 	getGeometryTreePanel().addActionListener(doubleClickListener);
 
-	cbit.gui.ZEnforcer.showModalDialogOnTop(theJDialog,requester.getComponent());
+	org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(theJDialog,requester.getComponent());
 	
 	getBioModelDbTreePanel().removeActionListener(doubleClickListener);
 	getMathModelDbTreePanel().removeActionListener(doubleClickListener);
@@ -1536,7 +1537,7 @@ public String showSaveDialog(int documentType, Component requester) throws UserC
 	saveDialog.setMessage(panel);
 	JDialog d = saveDialog.createDialog(requester, "Save document:");
 	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	cbit.gui.ZEnforcer.showModalDialogOnTop(d,requester);
+	org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(d,requester);
 	if ("Save".equals(saveDialog.getValue())) {
 		return saveDialog.getInputValue() == null ? null : saveDialog.getInputValue().toString();
 	} else {

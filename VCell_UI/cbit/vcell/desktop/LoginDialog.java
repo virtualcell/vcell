@@ -5,7 +5,9 @@ package cbit.vcell.desktop;
 ©*/
 import java.awt.event.*;
 import javax.swing.*;
-import cbit.util.*;
+
+import org.vcell.util.*;
+
 import cbit.vcell.client.PopupGenerator;
 
 /**

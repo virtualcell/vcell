@@ -10,9 +10,9 @@ import javax.swing.*;
 
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.util.*;
 
 import java.awt.*;
-import cbit.util.*;
 import cbit.vcell.math.Function;
 import cbit.vcell.simdata.FunctionFileGenerator;
 import cbit.vcell.simulation.Simulation;
@@ -54,7 +54,7 @@ public class PDEPlotControlPanel extends JPanel {
 	private JTextField ivjJTextField1 = null;
 	private cbit.vcell.simdata.PDEDataContext fieldPdeDataContext = null;
 	private boolean ivjConnPtoP1Aligning = false;
-	private cbit.gui.DefaultListModelCivilized ivjDefaultListModelCivilized1 = null;
+	private org.vcell.util.gui.DefaultListModelCivilized ivjDefaultListModelCivilized1 = null;
 	private JLabel ivjJLabel2 = null;
 	private JList ivjJList1 = null;
 	private JPanel ivjJPanel1 = null;
@@ -209,7 +209,7 @@ private void addFunction() {
 			if (!functionsList.contains(newFunction)) {
 				functionsList.addElement(newFunction);
 			}
-		} catch (cbit.util.DataAccessException e) {
+		} catch (org.vcell.util.DataAccessException e) {
 			javax.swing.JOptionPane.showMessageDialog(this, e.getMessage()+". "+funcName+" not added.", "Error Adding Function ", javax.swing.JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace(System.out);
 		}
@@ -791,7 +791,7 @@ private void deleteFunction(int listSelectionIndex) {
 					getpdeDataContext1().refreshIdentifiers();
 					getpdeDataContext1().refreshTimes();
 					functionsList.removeElement(functions[i]);
-				} catch (cbit.util.DataAccessException e) {
+				} catch (org.vcell.util.DataAccessException e) {
 					e.printStackTrace(System.out);
 				}				
 			} 
@@ -822,7 +822,7 @@ private void displayAdapterService1_AutoScale(boolean arg1) {
 /**
  * Comment
  */
-private void displayAdapterService1_CustomScaleRange(cbit.util.Range arg1) {
+private void displayAdapterService1_CustomScaleRange(org.vcell.util.Range arg1) {
 	String varName = (String)getJList1().getSelectedValue();
 	if(varName != null){
 		if(arg1 == null){
@@ -925,10 +925,10 @@ private javax.swing.JButton getAddFunctionButton() {
  * @return cbit.gui.DefaultListModelCivilized
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.DefaultListModelCivilized getDefaultListModelCivilized1() {
+private org.vcell.util.gui.DefaultListModelCivilized getDefaultListModelCivilized1() {
 	if (ivjDefaultListModelCivilized1 == null) {
 		try {
-			ivjDefaultListModelCivilized1 = new cbit.gui.DefaultListModelCivilized();
+			ivjDefaultListModelCivilized1 = new org.vcell.util.gui.DefaultListModelCivilized();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1166,7 +1166,7 @@ private Vector getFunctionsList() {
 			 for (int i = 0; i < functions.length; i++) {
 				 functionsList.addElement(functions[i]);
 			 }
-		} catch (cbit.util.DataAccessException e) {
+		} catch (org.vcell.util.DataAccessException e) {
 			e.printStackTrace(System.out);
 		}
 	}

@@ -21,7 +21,7 @@ public class MathDescPanel extends javax.swing.JPanel implements java.beans.Prop
 	private ExpressionCanvas ivjExpressionCanvas1 = null;
 	private javax.swing.JPanel ivjJPanel1 = null;
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
-	private cbit.gui.ButtonGroupCivilized ivjButtonGroupCivilized1 = null;
+	private org.vcell.util.gui.ButtonGroupCivilized ivjButtonGroupCivilized1 = null;
 	private javax.swing.JPanel ivjJPanel2 = null;
 	private javax.swing.JRadioButton ivjJRadioButtonName = null;
 	private javax.swing.JRadioButton ivjJRadioButtonValue = null;
@@ -273,10 +273,10 @@ private void connPtoP2SetTarget() {
  * @return cbit.gui.ButtonGroupCivilized
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.ButtonGroupCivilized getButtonGroupCivilized1() {
+private org.vcell.util.gui.ButtonGroupCivilized getButtonGroupCivilized1() {
 	if (ivjButtonGroupCivilized1 == null) {
 		try {
-			ivjButtonGroupCivilized1 = new cbit.gui.ButtonGroupCivilized();
+			ivjButtonGroupCivilized1 = new org.vcell.util.gui.ButtonGroupCivilized();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -451,8 +451,8 @@ private javax.swing.JRadioButton getJRadioButtonValue() {
 private javax.swing.JScrollPane getJScrollPane1() {
 	if (ivjJScrollPane1 == null) {
 		try {
-			cbit.gui.BevelBorderBean ivjLocalBorder;
-			ivjLocalBorder = new cbit.gui.BevelBorderBean();
+			org.vcell.util.gui.BevelBorderBean ivjLocalBorder;
+			ivjLocalBorder = new org.vcell.util.gui.BevelBorderBean();
 			ivjLocalBorder.setColor(new java.awt.Color(160,160,255));
 			ivjJScrollPane1 = new javax.swing.JScrollPane();
 			ivjJScrollPane1.setName("JScrollPane1");

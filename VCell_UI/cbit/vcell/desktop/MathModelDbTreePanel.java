@@ -13,21 +13,22 @@ import cbit.vcell.mapping.*;
 import cbit.vcell.server.*;
 import cbit.vcell.simulation.*;
 import cbit.vcell.xml.merge.NodeInfo;
-import cbit.util.DataAccessException;
-import cbit.util.Matchable;
-import cbit.util.document.BioModelInfo;
-import cbit.util.document.GroupAccessAll;
-import cbit.util.document.MathModelInfo;
-import cbit.util.document.User;
-import cbit.util.document.Version;
-import cbit.util.document.VersionFlag;
-import cbit.util.document.VersionInfo;
 
 import javax.swing.tree.*;
 import java.lang.reflect.*;
 import cbit.vcell.biomodel.*;
 import java.awt.event.*;
 import javax.swing.*;
+
+import org.vcell.util.DataAccessException;
+import org.vcell.util.Matchable;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.GroupAccessAll;
+import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionFlag;
+import org.vcell.util.document.VersionInfo;
 /**
  * Insert the type's description here.
  * Creation date: (11/28/00 11:34:01 AM)
@@ -716,7 +717,7 @@ private void connEtoM1(VersionInfo value) {
 	try {
 		// user code begin {1}
 		// user code end
-		getMathModelMetaDataPanel().setMathModelInfo((cbit.util.document.MathModelInfo)getselectedVersionInfo1());
+		getMathModelMetaDataPanel().setMathModelInfo((org.vcell.util.document.MathModelInfo)getselectedVersionInfo1());
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -1021,9 +1022,9 @@ private void enableToolTips(JTree tree) {
 
 /**
  * 
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-private void expandTreeToOwner() throws cbit.util.DataAccessException {
+private void expandTreeToOwner() throws org.vcell.util.DataAccessException {
 	//
 	// expand tree up to and including the "Owner" subtree's first children
 	//
@@ -1857,7 +1858,7 @@ public boolean getPopupMenuDisabled() {
 /**
  * Comment
  */
-public cbit.util.document.BioModelInfo getSelectedBioModelInfo(BioModelNode selectedBioModelNode) {
+public org.vcell.util.document.BioModelInfo getSelectedBioModelInfo(BioModelNode selectedBioModelNode) {
 	if (selectedBioModelNode.getUserObject() instanceof BioModelInfo){
 		return (BioModelInfo)selectedBioModelNode.getUserObject();
 	}
@@ -2101,7 +2102,7 @@ private void refireActionPerformed(ActionEvent e) {
 
 /**
  * 
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
 private void refresh() throws DataAccessException{
 	//getMathModelDbTreeModel().reload();
@@ -2267,7 +2268,7 @@ private void setselectionModel1(javax.swing.tree.TreeSelectionModel newValue) {
  * Comment
  */
 private void splitPaneResizeWeight() {
-	cbit.util.BeanUtils.attemptResizeWeight(getJSplitPane1(), 1);
+	org.vcell.util.BeanUtils.attemptResizeWeight(getJSplitPane1(), 1);
 }
 
 

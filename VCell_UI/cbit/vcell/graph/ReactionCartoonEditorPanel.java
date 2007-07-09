@@ -24,11 +24,11 @@ public class ReactionCartoonEditorPanel extends JPanel implements java.awt.event
 	private JPanel ivjJPanel1 = null;
 	private JToolBar ivjJToolBar1 = null;
 	private ButtonModel ivjSelection = null;
-	private cbit.gui.JToolBarToggleButton ivjFluxButton = null;
-	private cbit.gui.JToolBarToggleButton ivjLineButton = null;
-	private cbit.gui.JToolBarToggleButton ivjSelectButton = null;
-	private cbit.gui.JToolBarToggleButton ivjStepButton = null;
-	private cbit.gui.ButtonGroupCivilized ivjButtonGroupCivilized = null;
+	private org.vcell.util.gui.JToolBarToggleButton ivjFluxButton = null;
+	private org.vcell.util.gui.JToolBarToggleButton ivjLineButton = null;
+	private org.vcell.util.gui.JToolBarToggleButton ivjSelectButton = null;
+	private org.vcell.util.gui.JToolBarToggleButton ivjStepButton = null;
+	private org.vcell.util.gui.ButtonGroupCivilized ivjButtonGroupCivilized = null;
 	private JScrollPane ivjJScrollPane1 = null;
 	private JLabel ivjJLabel3 = null;
 	private JButton ivjAnnealLayoutButton = null;
@@ -41,7 +41,7 @@ public class ReactionCartoonEditorPanel extends JPanel implements java.awt.event
 	private JButton ivjZoomOutButton = null;
 	private JButton ivjGlgLayoutJButton = null;
 	private cbit.vcell.model.Structure fieldStructure = null;
-	private cbit.gui.JToolBarToggleButton ivjSpeciesButton = null;
+	private org.vcell.util.gui.JToolBarToggleButton ivjSpeciesButton = null;
 	private cbit.vcell.client.database.DocumentManager fieldDocumentManager = null;
 	private ReactionCartoon ivjReactionCartoon1 = null;
 	private ReactionCartoonTool ivjReactionCartoonTool1 = null;
@@ -637,10 +637,10 @@ private javax.swing.JButton getAnnealLayoutButton() {
  * @return cbit.gui.ButtonGroupCivilized
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.ButtonGroupCivilized getButtonGroupCivilized() {
+private org.vcell.util.gui.ButtonGroupCivilized getButtonGroupCivilized() {
 	if (ivjButtonGroupCivilized == null) {
 		try {
-			ivjButtonGroupCivilized = new cbit.gui.ButtonGroupCivilized();
+			ivjButtonGroupCivilized = new org.vcell.util.gui.ButtonGroupCivilized();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -738,10 +738,10 @@ private javax.swing.JPanel getFeatureSizePanel() {
  * @return cbit.gui.JToolBarToggleButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.JToolBarToggleButton getFluxButton() {
+private org.vcell.util.gui.JToolBarToggleButton getFluxButton() {
 	if (ivjFluxButton == null) {
 		try {
-			ivjFluxButton = new cbit.gui.JToolBarToggleButton();
+			ivjFluxButton = new org.vcell.util.gui.JToolBarToggleButton();
 			ivjFluxButton.setName("FluxButton");
 			ivjFluxButton.setToolTipText("Flux Tool");
 			ivjFluxButton.setText("");
@@ -993,10 +993,10 @@ private javax.swing.JButton getLevellerLayoutButton() {
  * @return cbit.gui.JToolBarToggleButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.JToolBarToggleButton getLineButton() {
+private org.vcell.util.gui.JToolBarToggleButton getLineButton() {
 	if (ivjLineButton == null) {
 		try {
-			ivjLineButton = new cbit.gui.JToolBarToggleButton();
+			ivjLineButton = new org.vcell.util.gui.JToolBarToggleButton();
 			ivjLineButton.setName("LineButton");
 			ivjLineButton.setToolTipText("RX Connection Tool");
 			ivjLineButton.setText("");
@@ -1169,10 +1169,10 @@ private javax.swing.JButton getRelaxerLayoutButton() {
  * @return cbit.gui.JToolBarToggleButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.JToolBarToggleButton getSelectButton() {
+private org.vcell.util.gui.JToolBarToggleButton getSelectButton() {
 	if (ivjSelectButton == null) {
 		try {
-			ivjSelectButton = new cbit.gui.JToolBarToggleButton();
+			ivjSelectButton = new org.vcell.util.gui.JToolBarToggleButton();
 			ivjSelectButton.setName("SelectButton");
 			ivjSelectButton.setToolTipText("Select Tool");
 			ivjSelectButton.setText("");
@@ -1209,10 +1209,10 @@ private javax.swing.ButtonModel getSelection() {
  * @return cbit.gui.JToolBarToggleButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.JToolBarToggleButton getSpeciesButton() {
+private org.vcell.util.gui.JToolBarToggleButton getSpeciesButton() {
 	if (ivjSpeciesButton == null) {
 		try {
-			ivjSpeciesButton = new cbit.gui.JToolBarToggleButton();
+			ivjSpeciesButton = new org.vcell.util.gui.JToolBarToggleButton();
 			ivjSpeciesButton.setName("SpeciesButton");
 			ivjSpeciesButton.setToolTipText("Species Tool");
 			ivjSpeciesButton.setText("");
@@ -1245,10 +1245,10 @@ private java.lang.String getStabilizer() {
  * @return cbit.gui.JToolBarToggleButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.JToolBarToggleButton getStepButton() {
+private org.vcell.util.gui.JToolBarToggleButton getStepButton() {
 	if (ivjStepButton == null) {
 		try {
-			ivjStepButton = new cbit.gui.JToolBarToggleButton();
+			ivjStepButton = new org.vcell.util.gui.JToolBarToggleButton();
 			ivjStepButton.setName("StepButton");
 			ivjStepButton.setToolTipText("Reaction Tool");
 			ivjStepButton.setText("");

@@ -2,8 +2,8 @@ package org.vcell.ui;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.vcell.util.document.VCDocument;
 
-import cbit.util.document.VCDocument;
 import cbit.vcell.client.VCellClient;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.test.VCellClientTest;

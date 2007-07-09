@@ -27,7 +27,7 @@ public java.beans.PropertyDescriptor buttonGroupPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.gui.ButtonGroupCivilized.class
+					org.vcell.util.gui.ButtonGroupCivilized.class
 				};
 				aSetMethod = getBeanClass().getMethod("setButtonGroup", aSetMethodParameterTypes);
 			} catch (Throwable exception) {
@@ -811,7 +811,7 @@ public java.beans.MethodDescriptor setButtonGroup_cbitguiButtonGroupCivilizedMet
 		try {
 			/* Attempt to find the method using getMethod with parameter types. */
 			java.lang.Class aParameterTypes[] = {
-				cbit.gui.ButtonGroupCivilized.class
+				org.vcell.util.gui.ButtonGroupCivilized.class
 			};
 			aMethod = getBeanClass().getMethod("setButtonGroup", aParameterTypes);
 		} catch (Throwable exception) {

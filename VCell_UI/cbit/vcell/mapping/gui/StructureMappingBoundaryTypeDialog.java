@@ -1038,8 +1038,8 @@ private cbit.vcell.geometry.Geometry getgeometry1() {
 private javax.swing.JButton getOkButton() {
 	if (ivjOkButton == null) {
 		try {
-			cbit.gui.BevelBorderBean ivjLocalBorder;
-			ivjLocalBorder = new cbit.gui.BevelBorderBean();
+			org.vcell.util.gui.BevelBorderBean ivjLocalBorder;
+			ivjLocalBorder = new org.vcell.util.gui.BevelBorderBean();
 			ivjLocalBorder.setColor(new java.awt.Color(160,160,255));
 			ivjOkButton = new javax.swing.JButton();
 			ivjOkButton.setName("OkButton");

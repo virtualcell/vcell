@@ -3,12 +3,14 @@ import cbit.vcell.client.desktop.*;
 import java.awt.*;
 import java.util.*;
 import cbit.vcell.desktop.controls.*;
-import cbit.gui.AsynchProgressPopup;
-import cbit.gui.ProgressDialogListener;
-import cbit.gui.SwingWorker;
-import cbit.util.*;
 
 import javax.swing.*;
+
+import org.vcell.util.*;
+import org.vcell.util.gui.AsynchProgressPopup;
+import org.vcell.util.gui.ProgressDialogListener;
+import org.vcell.util.gui.SwingWorker;
+
 import cbit.vcell.client.*;
 /**
  * Insert the type's description here.

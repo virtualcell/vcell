@@ -8,10 +8,6 @@ import cbit.vcell.simdata.MergedData;
 import cbit.vcell.simdata.ODESolverResultSet;
 import javax.swing.JFrame;
 
-import cbit.util.PropertyLoader;
-import cbit.util.SessionLog;
-import cbit.util.StdoutSessionLog;
-import cbit.util.UserCancelException;
 import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simulation.Simulation;
 import cbit.vcell.simulation.SimulationInfo;
@@ -25,7 +21,6 @@ import cbit.vcell.client.data.DynamicDataManager;
 import cbit.vcell.client.database.ClientDocumentManager;
 import cbit.vcell.client.database.DocumentManager;
 import cbit.vcell.biomodel.BioModel;
-import cbit.gui.AsynchProgressPopup;
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.VCSimulationDataIdentifier;
 import cbit.sql.*;
@@ -34,24 +29,29 @@ import javax.swing.JDialog;
 import java.awt.Component;
 import javax.swing.JComponent;
 import cbit.vcell.client.server.SimStatusEvent;
-import cbit.util.VCDataIdentifier;
 import cbit.vcell.solver.test.SimulationComparisonSummary;
 import cbit.vcell.solver.test.VariableComparisonSummary;
 import org.jdom.JDOMException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.util.BeanUtils;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+import org.vcell.util.StdoutSessionLog;
+import org.vcell.util.UserCancelException;
+import org.vcell.util.VCDataIdentifier;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.User;
+import org.vcell.util.gui.AsynchProgressPopup;
 
 import java.util.Enumeration;
 import java.util.Vector;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.solvers.SimulationStatus;
 import cbit.vcell.client.desktop.TestingFrameworkWindowPanel;
-import cbit.util.BeanUtils;
-import cbit.util.DataAccessException;
-import cbit.util.document.BioModelInfo;
-import cbit.util.document.KeyValue;
-import cbit.util.document.MathModelInfo;
-import cbit.util.document.User;
 import cbit.vcell.client.desktop.testingframework.EditTestCriteriaPanel;
 import cbit.vcell.client.desktop.testingframework.AddTestSuitePanel;
 import cbit.vcell.client.desktop.testingframework.TestCaseAddPanel;
@@ -706,7 +706,7 @@ public void exportMessage(ExportEvent exportEvent) {
  * Insert the method's description here.
  * Creation date: (8/18/2003 5:36:47 PM)
  */
-public String generateTestCaseReport(TestCaseNew testCase,TestCriteriaNew onlyThisTCrit,cbit.gui.AsynchProgressPopup pp) {
+public String generateTestCaseReport(TestCaseNew testCase,TestCriteriaNew onlyThisTCrit,org.vcell.util.gui.AsynchProgressPopup pp) {
 
 	StringBuffer reportTCBuffer = new StringBuffer();
 	if (testCase == null) {
@@ -866,7 +866,7 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 						reportTCBuffer.append("\t\tPassed Variables : \n");
 						// Check if varSummary exists in failed summaries list. If not, simulation passed.
 						for (int m = 0; m < allVarSummaries.length; m++) {
-							if (!cbit.util.BeanUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
+							if (!org.vcell.util.BeanUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
 								reportTCBuffer.append("\t\t\t"+allVarSummaries[m].toShortString()+"\n");
 							}
 						}
@@ -892,7 +892,7 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 						reportTCBuffer.append("\t\tPassed Variables : \n");
 						// Check if varSummary exists in failed summaries list. If not, simulation passed.
 						for (int m = 0; m < allVarSummaries.length; m++) {
-							if (!cbit.util.BeanUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
+							if (!org.vcell.util.BeanUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
 								reportTCBuffer.append("\t\t\t"+allVarSummaries[m].toShortString()+"\n");
 							}
 						}
@@ -921,7 +921,7 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 						reportTCBuffer.append("\t\tPassed Variables : \n");
 						// Check if varSummary exists in failed summaries list. If not, simulation passed.
 						for (int m = 0; m < allVarSummaries.length; m++) {
-							if (!cbit.util.BeanUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
+							if (!org.vcell.util.BeanUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
 								reportTCBuffer.append("\t\t\t"+allVarSummaries[m].toShortString()+"\n");
 							}
 						}							
@@ -953,7 +953,7 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 						reportTCBuffer.append("\t\tPassed Variables : \n");
 						// Check if varSummary exists in failed summaries list. If not, simulation passed.
 						for (int m = 0; m < allVarSummaries.length; m++) {
-							if (!cbit.util.BeanUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
+							if (!org.vcell.util.BeanUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
 								reportTCBuffer.append("\t\t\t"+allVarSummaries[m].toShortString()+"\n");
 							}
 						}
@@ -982,7 +982,7 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 						reportTCBuffer.append("\t\tPassed Variables : \n");
 						// Check if varSummary exists in failed summaries list. If not, simulation passed.
 						for (int m = 0; m < allVarSummaries.length; m++) {
-							if (!cbit.util.BeanUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
+							if (!org.vcell.util.BeanUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
 								reportTCBuffer.append("\t\t\t"+allVarSummaries[m].toShortString()+"\n");
 							}
 						}
@@ -1019,7 +1019,7 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 						reportTCBuffer.append("\t\tPassed Variables : \n");
 						// Check if varSummary exists in failed summaries list. If not, simulation passed.
 						for (int m = 0; m < allVarSummaries.length; m++) {
-							if (!cbit.util.BeanUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
+							if (!org.vcell.util.BeanUtils.arrayContains(failVarSummaries, allVarSummaries[m])) {
 								reportTCBuffer.append("\t\t\t"+allVarSummaries[m].toShortString()+"\n");
 							}
 						}													
@@ -1382,7 +1382,7 @@ public boolean isRecyclable() {
  */
 public void loadModel(TestCaseNew testCase) throws DataAccessException{
 	
-	cbit.util.document.VCDocumentInfo vcDocInfo = null;
+	org.vcell.util.document.VCDocumentInfo vcDocInfo = null;
 	if (testCase instanceof TestCaseNewMathModel) {
 		TestCaseNewMathModel mathTestCase = (TestCaseNewMathModel)testCase;
 		vcDocInfo = getRequestManager().getDocumentManager().getMathModelInfo(mathTestCase.getMathModelInfo().getVersion().getVersionKey());
@@ -1526,7 +1526,7 @@ public SimulationInfo selectRefSimInfo(MathModelInfo mmInfo) {
 	MathModel mathModel = null;
 	try {
 		 mathModel = getRequestManager().getDocumentManager().getMathModel(mmInfo);
-	} catch (cbit.util.DataAccessException e) {
+	} catch (org.vcell.util.DataAccessException e) {
 		e.printStackTrace(System.out);
 	}
 	return selectSimInfoPrivate(mathModel.getSimulations());
@@ -1611,7 +1611,7 @@ private Object showAddTestCaseDialog(JComponent addTCPanel, Component requester)
 	JDialog d = getAddTestCaseDialog().createDialog(requester, "Add New TestCase:");
 	d.setResizable(true);
 	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	cbit.gui.ZEnforcer.showModalDialogOnTop(d);
+	org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(d);
 	return getAddTestCaseDialog().getValue();
 	
 }
@@ -1630,7 +1630,7 @@ private Object showAddTestSuiteDialog(JComponent addTSPanel, Component requester
 	JDialog d = getAddTestSuiteDialog().createDialog(requester, "Add New TestSuite:");
 	d.setResizable(true);
 	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	cbit.gui.ZEnforcer.showModalDialogOnTop(d);
+	org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(d);
 	return getAddTestSuiteDialog().getValue();
 	
 }
@@ -1675,7 +1675,7 @@ private Object showEditTestCriteriaDialog(JComponent editTCrPanel, Component req
 	JDialog d = getEditTestCriteriaDialog().createDialog(requester, "Edit Test Criteria:");
 	d.setResizable(true);
 	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	cbit.gui.ZEnforcer.showModalDialogOnTop(d);
+	org.vcell.util.gui.ZEnforcer.showModalDialogOnTop(d);
 	return getEditTestCriteriaDialog().getValue();
 }
 

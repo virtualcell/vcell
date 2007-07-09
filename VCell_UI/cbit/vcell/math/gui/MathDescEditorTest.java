@@ -111,9 +111,9 @@ public static MathDescription getMathDescExample_Stoch() throws Exception
 
 	// //copy from getODEExampleWagner---all are nonsense here , just for making MathDescriton valid
 	Geometry geo = new Geometry("getOdeExampleWagner()",0);
-	geo.getGeometrySpec().setExtent(new cbit.util.Extent(1.0, 1.0, 1.0));
+	geo.getGeometrySpec().setExtent(new org.vcell.util.Extent(1.0, 1.0, 1.0));
 
-	geo.getGeometrySpec().setOrigin(new cbit.util.Origin(0.0, 0.0, 0.0));
+	geo.getGeometrySpec().setOrigin(new org.vcell.util.Origin(0.0, 0.0, 0.0));
 	md.setGeometry(geo);
 
 	//	Constants

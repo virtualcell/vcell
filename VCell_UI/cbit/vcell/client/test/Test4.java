@@ -2,7 +2,8 @@ package cbit.vcell.client.test;
 import cbit.vcell.client.desktop.biomodel.*;
 import java.awt.*;
 import javax.swing.*;
-import cbit.gui.*;
+
+import org.vcell.util.gui.*;
 /**
  * Insert the type's description here.
  * Creation date: (5/24/2004 12:05:09 AM)

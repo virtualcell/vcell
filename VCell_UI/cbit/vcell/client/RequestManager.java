@@ -1,11 +1,12 @@
 package cbit.vcell.client;
 
-import cbit.util.DataAccessException;
-import cbit.util.VCDataIdentifier;
-import cbit.util.document.BioModelInfo;
-import cbit.util.document.MathModelInfo;
-import cbit.util.document.VCDocument;
-import cbit.util.document.VCDocumentInfo;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.VCDataIdentifier;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.VCDocumentInfo;
+
 import cbit.vcell.export.ExportSpecs;
 import cbit.vcell.export.server.*;
 

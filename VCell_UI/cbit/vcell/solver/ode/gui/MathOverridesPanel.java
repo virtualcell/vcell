@@ -22,7 +22,7 @@ public class MathOverridesPanel extends JPanel {
 	private JScrollPane ivjScrollPane = null;
 	private MathOverridesTableModel ivjMathOverridesTableModel = null;
 	private boolean fieldEditable = true;
-	private cbit.gui.JTableFixed ivjJTableFixed = null;
+	private org.vcell.util.gui.JTableFixed ivjJTableFixed = null;
 	private DefaultCellEditor ivjDefaultCellEditor1 = null;
 	private Component ivjComponent1 = null;
 	private cbit.vcell.simulation.MathOverrides fieldMathOverrides = null;
@@ -476,9 +476,9 @@ private synchronized void copyCells(String actionCommand) {
 				
 			}
 			ResolvedValuesSelection rvs = new ResolvedValuesSelection(
-					(SymbolTableEntry[])cbit.util.BeanUtils.getArray(primarySymbolTableEntriesV,SymbolTableEntry.class),
+					(SymbolTableEntry[])org.vcell.util.BeanUtils.getArray(primarySymbolTableEntriesV,SymbolTableEntry.class),
 					null,
-					(IExpression[])cbit.util.BeanUtils.getArray(resolvedValuesV,IExpression.class),
+					(IExpression[])org.vcell.util.BeanUtils.getArray(resolvedValuesV,IExpression.class),
 					buffer.toString());
 
 			cbit.vcell.desktop.VCellTransferable.sendToClipboard(rvs);
@@ -533,8 +533,8 @@ public boolean getEditable() {
 private javax.swing.JLabel getJLabelTitle() {
 	if (ivjJLabelTitle == null) {
 		try {
-			cbit.gui.EmptyBorderBean ivjLocalBorder;
-			ivjLocalBorder = new cbit.gui.EmptyBorderBean();
+			org.vcell.util.gui.EmptyBorderBean ivjLocalBorder;
+			ivjLocalBorder = new org.vcell.util.gui.EmptyBorderBean();
 			ivjLocalBorder.setInsets(new java.awt.Insets(10, 0, 10, 0));
 			ivjJLabelTitle = new javax.swing.JLabel();
 			ivjJLabelTitle.setName("JLabelTitle");
@@ -673,10 +673,10 @@ private javax.swing.JPopupMenu getJPopupMenu1() {
  * @return cbit.gui.JTableFixed
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.JTableFixed getJTableFixed() {
+private org.vcell.util.gui.JTableFixed getJTableFixed() {
 	if (ivjJTableFixed == null) {
 		try {
-			ivjJTableFixed = new cbit.gui.JTableFixed();
+			ivjJTableFixed = new org.vcell.util.gui.JTableFixed();
 			ivjJTableFixed.setName("JTableFixed");
 			getScrollPane().setColumnHeaderView(ivjJTableFixed.getTableHeader());
 			getScrollPane().getViewport().setBackingStoreEnabled(true);
@@ -939,7 +939,7 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 							throw new Exception("MathOverridesPanel can't find value for '"+rowName+"'");
 						}
 						pasteDescriptionsV.add(
-							cbit.gui.DialogUtils.formatPasteList(
+							org.vcell.util.gui.DialogUtils.formatPasteList(
 								rowName,
 								pastedConstant.getName(),
 								originalValueDescription,

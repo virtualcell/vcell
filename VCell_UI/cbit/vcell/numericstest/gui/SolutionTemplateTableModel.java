@@ -7,13 +7,13 @@ package cbit.vcell.numericstest.gui;
 
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.util.BeanUtils;
 
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.modelapp.ReactionSpec;
 import cbit.vcell.modelapp.SpeciesContextSpec;
-import cbit.util.BeanUtils;
 import cbit.vcell.numericstest.*;
 /**
  * Insert the type's description here.

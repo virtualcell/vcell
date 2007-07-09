@@ -18,10 +18,10 @@ public static void main(java.lang.String[] args) {
 		cbit.vcell.geometry.Geometry geo = new cbit.vcell.geometry.Geometry("geo1",3);
 		geo.getGeometrySpec().addSubVolume(new cbit.vcell.geometry.AnalyticSubVolume("sv1",ExpressionFactory.createExpression("x<z")));
 		geo.getGeometrySpec().addSubVolume(new cbit.vcell.geometry.AnalyticSubVolume("sv2",ExpressionFactory.createExpression("1.0")));
-		geo.getGeometrySpec().setExtent(new cbit.util.Extent(10.0,10.0,10.0));
-		geo.getGeometrySpec().setOrigin(new cbit.util.Origin(0.0,0.0,0.0));
-		cbit.util.Origin origin = geo.getOrigin();
-		cbit.util.Extent extent = geo.getExtent();
+		geo.getGeometrySpec().setExtent(new org.vcell.util.Extent(10.0,10.0,10.0));
+		geo.getGeometrySpec().setOrigin(new org.vcell.util.Origin(0.0,0.0,0.0));
+		org.vcell.util.Origin origin = geo.getOrigin();
+		org.vcell.util.Extent extent = geo.getExtent();
 		geo.getGeometrySurfaceDescription().setFilterCutoffFrequency(new Double(0.6));
 		geo.getGeometrySurfaceDescription().updateAll();
 		if (geo.getGeometrySpec().getValid()==false){

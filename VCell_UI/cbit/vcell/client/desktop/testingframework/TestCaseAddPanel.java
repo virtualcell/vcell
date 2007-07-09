@@ -1,6 +1,7 @@
 package cbit.vcell.client.desktop.testingframework;
-import cbit.util.document.KeyValue;
-import cbit.util.document.Version;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.Version;
+
 import cbit.vcell.numericstest.AddTestCasesOP;
 import cbit.vcell.numericstest.TestCaseNewMathModel;
 import cbit.vcell.numericstest.TestCaseNewBioModel;
@@ -29,11 +30,11 @@ public class TestCaseAddPanel extends javax.swing.JPanel {
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private javax.swing.JTextArea ivjAnnotationTextArea = null;
 	private cbit.vcell.numericstest.TestCaseNew fieldNewTestCase = null;
-	private cbit.util.document.MathModelInfo fieldMathModelInfo = null;
+	private org.vcell.util.document.MathModelInfo fieldMathModelInfo = null;
 	private javax.swing.JLabel ivjBioModelAppLabel = null;
 	private javax.swing.JButton ivjSelectBMAppButton = null;
 	private String ivjappName = null;
-	private cbit.util.document.BioModelInfo ivjbioModelInfo = null;
+	private org.vcell.util.document.BioModelInfo ivjbioModelInfo = null;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -126,7 +127,7 @@ public void applyTestCaseInfo(java.awt.event.ActionEvent actionEvent) {
 		KeyValue appKey = null;
 		try {
 			appKey = getTestingFrameworkWindowManager().getSimContextKey(getbioModelInfo(),getappName());
-		}catch (cbit.util.DataAccessException e){
+		}catch (org.vcell.util.DataAccessException e){
 			e.printStackTrace(System.out);
 			PopupGenerator.showErrorDialog("Exception while retrieving BioModel");
 			return;
@@ -305,7 +306,7 @@ private void connEtoC7(java.awt.event.ActionEvent arg1) {
  * @param value cbit.vcell.biomodel.BioModelInfo
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC8(cbit.util.document.BioModelInfo value) {
+private void connEtoC8(org.vcell.util.document.BioModelInfo value) {
 	try {
 		// user code begin {1}
 		// user code end
@@ -447,7 +448,7 @@ private javax.swing.JLabel getBioModelAppLabel() {
  * @return cbit.vcell.biomodel.BioModelInfo
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.util.document.BioModelInfo getbioModelInfo() {
+private org.vcell.util.document.BioModelInfo getbioModelInfo() {
 	// user code begin {1}
 	// user code end
 	return ivjbioModelInfo;
@@ -653,7 +654,7 @@ private javax.swing.JPanel getJPanel3() {
  * @return The mathModelInfo property value.
  * @see #setMathModelInfo
  */
-private cbit.util.document.MathModelInfo getMathModelInfo() {
+private org.vcell.util.document.MathModelInfo getMathModelInfo() {
 	return fieldMathModelInfo;
 }
 
@@ -938,7 +939,7 @@ public void resetTextFields() {
  * Comment
  */
 private void selectBMApp() {
-	cbit.util.document.BioModelInfo bmInfo = getTestingFrameworkWindowManager().selectBioModelInfo();
+	org.vcell.util.document.BioModelInfo bmInfo = getTestingFrameworkWindowManager().selectBioModelInfo();
 	if (bmInfo != null) {
 		getBioModelAppLabel().setText(bmInfo.getVersion().getName());
 		String simContextNames[] = bmInfo.getBioModelChildSummary().getSimulationContextNames();
@@ -958,7 +959,7 @@ private void selectBMApp() {
  * Comment
  */
 private void selectMathModel(java.awt.event.ActionEvent actionEvent) {
-	cbit.util.document.MathModelInfo mmInfo = getTestingFrameworkWindowManager().selectMathModelInfo();
+	org.vcell.util.document.MathModelInfo mmInfo = getTestingFrameworkWindowManager().selectMathModelInfo();
 	if (mmInfo != null) {
 		getMathmodelLabel().setText(mmInfo.getVersion().getName());
 		setMathModelInfo(mmInfo);
@@ -997,7 +998,7 @@ private void setappName(java.lang.String newValue) {
  * @param newValue cbit.vcell.biomodel.BioModelInfo
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setbioModelInfo(cbit.util.document.BioModelInfo newValue) {
+private void setbioModelInfo(org.vcell.util.document.BioModelInfo newValue) {
 	if (ivjbioModelInfo != newValue) {
 		try {
 			ivjbioModelInfo = newValue;
@@ -1019,8 +1020,8 @@ private void setbioModelInfo(cbit.util.document.BioModelInfo newValue) {
  * @param mathModelInfo The new value for the property.
  * @see #getMathModelInfo
  */
-private void setMathModelInfo(cbit.util.document.MathModelInfo mathModelInfo) {
-	cbit.util.document.MathModelInfo oldValue = fieldMathModelInfo;
+private void setMathModelInfo(org.vcell.util.document.MathModelInfo mathModelInfo) {
+	org.vcell.util.document.MathModelInfo oldValue = fieldMathModelInfo;
 	fieldMathModelInfo = mathModelInfo;
 	firePropertyChange("mathModelInfo", oldValue, mathModelInfo);
 }

@@ -2,14 +2,16 @@ package cbit.vcell.client.task;
 
 import java.util.*;
 import javax.swing.*;
+
+import org.vcell.util.*;
+import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionFlag;
+
 import cbit.vcell.client.*;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.solvers.SimulationStatus;
 import cbit.vcell.modeldb.SolverResultSetInfo;
-import cbit.util.*;
-import cbit.util.document.VCDocument;
-import cbit.util.document.Version;
-import cbit.util.document.VersionFlag;
 import cbit.vcell.simulation.*;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.desktop.controls.*;

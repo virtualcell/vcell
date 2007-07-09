@@ -19,7 +19,7 @@ public class SimulationListPanel extends JPanel {
 	private JButton ivjNewButton = null;
 	private JButton ivjResultsButton = null;
 	private JButton ivjRunButton = null;
-	private cbit.gui.JTableFixed ivjScrollPaneTable = null;
+	private org.vcell.util.gui.JTableFixed ivjScrollPaneTable = null;
 	private JButton ivjStopButton = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private SimulationListTableModel ivjSimulationListTableModel1 = null;
@@ -478,7 +478,7 @@ private void copySimulations() {
 	for (int i = 0; i < selections.length; i++){
 		v.add(getSimulationWorkspace().getSimulations()[selections[i]]);
 	}
-	Simulation[] toCopy = (Simulation[])cbit.util.BeanUtils.getArray(v, Simulation.class);
+	Simulation[] toCopy = (Simulation[])org.vcell.util.BeanUtils.getArray(v, Simulation.class);
 	int index = -1;
 	try {
 		index = getSimulationWorkspace().copySimulations(toCopy);
@@ -496,7 +496,7 @@ private void copySimulations() {
  */
 private void customizeTable() {
 	getScrollPaneTable().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-	getScrollPaneTable().setDefaultRenderer(Object.class, new cbit.gui.DefaultTableCellRendererEnhanced());
+	getScrollPaneTable().setDefaultRenderer(Object.class, new org.vcell.util.gui.DefaultTableCellRendererEnhanced());
 }
 
 
@@ -512,7 +512,7 @@ private void deleteSimulations() {
 			v.add(getSimulationWorkspace().getSimulations()[selections[i]]);
 		}
 	}
-	Simulation[] toDelete = (Simulation[])cbit.util.BeanUtils.getArray(v, Simulation.class);
+	Simulation[] toDelete = (Simulation[])org.vcell.util.BeanUtils.getArray(v, Simulation.class);
 	try {
 		getSimulationWorkspace().deleteSimulations(toDelete);
 	} catch (Throwable exc) {
@@ -785,10 +785,10 @@ private javax.swing.JButton getRunButton() {
  * @return cbit.gui.JTableFixed
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.JTableFixed getScrollPaneTable() {
+private org.vcell.util.gui.JTableFixed getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
-			ivjScrollPaneTable = new cbit.gui.JTableFixed();
+			ivjScrollPaneTable = new org.vcell.util.gui.JTableFixed();
 			ivjScrollPaneTable.setName("ScrollPaneTable");
 			getJScrollPane1().setColumnHeaderView(ivjScrollPaneTable.getTableHeader());
 			getJScrollPane1().getViewport().setBackingStoreEnabled(true);
@@ -1112,7 +1112,7 @@ private void runSimulations() {
 	for (int i = 0; i < selections.length; i++){
 		v.add(getSimulationWorkspace().getSimulations()[selections[i]]);
 	}
-	Simulation[] toRun = (Simulation[])cbit.util.BeanUtils.getArray(v, Simulation.class);
+	Simulation[] toRun = (Simulation[])org.vcell.util.BeanUtils.getArray(v, Simulation.class);
 	getSimulationWorkspace().runSimulations(toRun);
 }
 
@@ -1253,7 +1253,7 @@ private void showSimulationResults() {
 	for (int i = 0; i < selections.length; i++){
 		v.add(getSimulationWorkspace().getSimulations()[selections[i]]);
 	}
-	Simulation[] toShow = (Simulation[])cbit.util.BeanUtils.getArray(v, Simulation.class);
+	Simulation[] toShow = (Simulation[])org.vcell.util.BeanUtils.getArray(v, Simulation.class);
 	getSimulationWorkspace().showSimulationResults(toShow);
 }
 
@@ -1267,7 +1267,7 @@ public void showSimulationStatusDetails(java.awt.event.ActionEvent actionEvent) 
 	for (int i = 0; i < selections.length; i++){
 		v.add(getSimulationWorkspace().getSimulations()[selections[i]]);
 	}
-	Simulation[] sims = (Simulation[])cbit.util.BeanUtils.getArray(v, Simulation.class);
+	Simulation[] sims = (Simulation[])org.vcell.util.BeanUtils.getArray(v, Simulation.class);
 	getSimulationWorkspace().showSimulationStatusDetails(sims);
 	return;
 }
@@ -1282,7 +1282,7 @@ private void stopSimulations() {
 	for (int i = 0; i < selections.length; i++){
 		v.add(getSimulationWorkspace().getSimulations()[selections[i]]);
 	}
-	Simulation[] toStop = (Simulation[])cbit.util.BeanUtils.getArray(v, Simulation.class);
+	Simulation[] toStop = (Simulation[])org.vcell.util.BeanUtils.getArray(v, Simulation.class);
 	getSimulationWorkspace().stopSimulations(toStop);
 }
 }

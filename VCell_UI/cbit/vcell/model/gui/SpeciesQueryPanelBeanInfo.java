@@ -10,7 +10,7 @@
  *******************************************************************************/
 package cbit.vcell.model.gui;
 
-import cbit.util.document.User;
+import org.vcell.util.document.User;
 
 /**
  * The bean information class for cbit.vcell.model.gui.SpeciesQueryPanel.

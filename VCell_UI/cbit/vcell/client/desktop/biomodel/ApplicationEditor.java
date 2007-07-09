@@ -1,5 +1,4 @@
 package cbit.vcell.client.desktop.biomodel;
-import cbit.gui.DialogUtils;
 import cbit.vcell.simulation.Simulation;
 import cbit.vcell.mapping.*;
 import cbit.vcell.mapping.gui.AnalysisTaskComboBoxModel;
@@ -14,6 +13,7 @@ import org.vcell.modelapp.Activator;
 import org.vcell.modelapp.analysis.IAnalysisTask;
 import org.vcell.modelapp.analysis.IAnalysisTaskFactory;
 import org.vcell.modelapp.analysis.IAnalysisTaskView;
+import org.vcell.util.gui.DialogUtils;
 
 /**
  * Insert the type's description here.
@@ -994,7 +994,7 @@ private void copyAnalysisTaskButton_ActionPerformed() {
 		}
 	}catch (Exception e){
 		e.printStackTrace(System.out);
-		cbit.gui.DialogUtils.showErrorDialog(this,e.getMessage());
+		org.vcell.util.gui.DialogUtils.showErrorDialog(this,e.getMessage());
 	}
 }
 
@@ -1991,7 +1991,7 @@ private void newAnalysisTaskButton_ActionPerformed() {
 				boolean found = true;
 				while (found) {
 					found = false;
-					analysisName = cbit.util.TokenMangler.getNextEnumeratedToken(analysisName);
+					analysisName = org.vcell.util.TokenMangler.getNextEnumeratedToken(analysisName);
 					for (int i = 0;analysisTasks!=null && i < analysisTasks.length; i++){
 						if (analysisTasks[i].getName().equals(analysisName)){
 							found = true;
@@ -2002,8 +2002,8 @@ private void newAnalysisTaskButton_ActionPerformed() {
 
 				String newAnalysisName = null;
 				try {
-					newAnalysisName = cbit.gui.DialogUtils.showInputDialog0(this,"name for new "+analysisTaskFactory.getDisplayName()+" set",analysisName);
-				} catch (cbit.gui.UtilCancelException ex) {
+					newAnalysisName = org.vcell.util.gui.DialogUtils.showInputDialog0(this,"name for new "+analysisTaskFactory.getDisplayName()+" set",analysisName);
+				} catch (org.vcell.util.gui.UtilCancelException ex) {
 					// user canceled; it's ok
 				}
 
@@ -2025,7 +2025,7 @@ private void newAnalysisTaskButton_ActionPerformed() {
 		refreshAnalysisTaskEnables();
 	}catch (Exception e){
 		e.printStackTrace(System.out);
-		cbit.gui.DialogUtils.showErrorDialog(this,e.getMessage());
+		org.vcell.util.gui.DialogUtils.showErrorDialog(this,e.getMessage());
 	}
 }
 
@@ -2310,7 +2310,7 @@ private void updateMath() {
 		//
 		// inform user if any issues
 		//
-		cbit.util.Issue issues[] = mathMapping.getIssues();
+		org.vcell.util.Issue issues[] = mathMapping.getIssues();
 		if (issues!=null && issues.length>0){
 			StringBuffer messageBuffer = new StringBuffer("Issues encountered during Math Generation:\n");
 			

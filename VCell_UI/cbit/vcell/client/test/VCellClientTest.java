@@ -1,8 +1,9 @@
 package cbit.vcell.client.test;
-import cbit.util.PropertyLoader;
 import cbit.vcell.client.server.*;
 import cbit.vcell.client.*;
 import javax.swing.*;
+
+import org.vcell.util.PropertyLoader;
 /**
  * Insert the type's description here.
  * Creation date: (5/3/2004 12:02:01 PM)
@@ -24,7 +25,7 @@ public static void main(java.lang.String[] args) {
 	String host = System.getProperty(PropertyLoader.vcellServerHost);
 	String user = null;
 	String password = null;
-	cbit.util.document.VCDocument initialDocument = null;
+	org.vcell.util.document.VCDocument initialDocument = null;
 	if (args.length == 3) {
 		host = args[0];
 		user = args[1];

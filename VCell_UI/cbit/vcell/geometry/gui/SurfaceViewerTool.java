@@ -135,18 +135,18 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
 public void fullRepaint() {
 
 	if(canvasParentWindow == null){
-		canvasParentWindow = cbit.util.BeanUtils.findTypeParentOfComponent(getSurfaceCanvas(),java.awt.Frame.class);
+		canvasParentWindow = org.vcell.util.BeanUtils.findTypeParentOfComponent(getSurfaceCanvas(),java.awt.Frame.class);
 		if(canvasParentWindow == null){
-			canvasParentWindow = cbit.util.BeanUtils.findTypeParentOfComponent(getSurfaceCanvas(),javax.swing.JInternalFrame.class);
+			canvasParentWindow = org.vcell.util.BeanUtils.findTypeParentOfComponent(getSurfaceCanvas(),javax.swing.JInternalFrame.class);
 		}
 	}
 	
 	try{
 		if(canvasParentWindow != null){
 			if(javax.swing.SwingUtilities.isEventDispatchThread()){
-				cbit.util.BeanUtils.setCursorThroughout(canvasParentWindow,java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
+				org.vcell.util.BeanUtils.setCursorThroughout(canvasParentWindow,java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
 			}else{
-				javax.swing.SwingUtilities.invokeLater(new Runnable() {public void run(){cbit.util.BeanUtils.setCursorThroughout(canvasParentWindow,java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));}});
+				javax.swing.SwingUtilities.invokeLater(new Runnable() {public void run(){org.vcell.util.BeanUtils.setCursorThroughout(canvasParentWindow,java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));}});
 			}
 		}
 		getSurfaceCanvas().setBQuickRender(false);
@@ -154,7 +154,7 @@ public void fullRepaint() {
 		getSurfaceCanvas().repaint();
 	}finally{
 		if(canvasParentWindow != null){
-			javax.swing.SwingUtilities.invokeLater(new Runnable() {public void run(){cbit.util.BeanUtils.setCursorThroughout(canvasParentWindow,java.awt.Cursor.getDefaultCursor());}});
+			javax.swing.SwingUtilities.invokeLater(new Runnable() {public void run(){org.vcell.util.BeanUtils.setCursorThroughout(canvasParentWindow,java.awt.Cursor.getDefaultCursor());}});
 		}
 	}
 	
@@ -440,8 +440,8 @@ public void resetView() {
 
 	Vect3d oldViewAngle = fieldSurfaceCanvas.getTrackball().getRotation();
 	
-	cbit.util.Extent extent = getSurfaceCanvas().getExtent();
-	cbit.util.Origin origin = getSurfaceCanvas().getOrigin();
+	org.vcell.util.Extent extent = getSurfaceCanvas().getExtent();
+	org.vcell.util.Origin origin = getSurfaceCanvas().getOrigin();
 	double scale = 0.2;
 	Vect3d center = new Vect3d(origin.getX()+extent.getX()/2.0, origin.getY()+extent.getY()/2.0, origin.getZ()+extent.getZ()/2.0); 
 	Vect3d size = new Vect3d(extent.getX()*scale, extent.getY()*scale, extent.getZ()*scale); 

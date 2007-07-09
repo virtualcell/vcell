@@ -21,8 +21,8 @@ import javax.swing.JTree;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.NameScope;
 import org.vcell.expression.ui.ScopedExpression;
+import org.vcell.util.gui.JTableFixed;
 
-import cbit.gui.JTableFixed;
 /**
  * Insert the type's description here.
  * Creation date: (4/12/2004 3:27:37 PM)

@@ -2,8 +2,6 @@ package cbit.vcell.client.bionetgen;
 
 import java.io.PrintWriter;
 
-import cbit.gui.LineNumberedTextPanel;
-import cbit.gui.VCFileChooser;
 import java.io.File;
 import java.util.Hashtable;
 import cbit.vcell.model.Structure;
@@ -19,10 +17,14 @@ import cbit.vcell.simdata.ODESolverResultSet;
 import cbit.vcell.simdata.ODESolverResultSetColumnDescription;
 
 import javax.swing.JFileChooser;
+
+import org.vcell.util.BigString;
+import org.vcell.util.gui.LineNumberedTextPanel;
+import org.vcell.util.gui.VCFileChooser;
+
 import cbit.vcell.client.PopupGenerator;
 
 import cbit.plot.DataSource;
-import cbit.util.BigString;
 /**
  * Insert the type's description here.
  * Creation date: (7/1/2005 1:46:25 PM)
@@ -767,8 +769,8 @@ private cbit.vcell.model.ReactionStep[] getCollapsedReactionSteps(cbit.vcell.mod
 				fwdProductsVector.addElement(rps[j].getSpeciesContext());
 			}
 		}
-		SpeciesContext[] fwdReactants = (SpeciesContext[])cbit.util.BeanUtils.getArray(fwdReactantsVector, SpeciesContext.class);
-		SpeciesContext[] fwdProducts = (SpeciesContext[])cbit.util.BeanUtils.getArray(fwdProductsVector, SpeciesContext.class);
+		SpeciesContext[] fwdReactants = (SpeciesContext[])org.vcell.util.BeanUtils.getArray(fwdReactantsVector, SpeciesContext.class);
+		SpeciesContext[] fwdProducts = (SpeciesContext[])org.vcell.util.BeanUtils.getArray(fwdProductsVector, SpeciesContext.class);
 
 		boolean bReverseReactionFound = false;
 
@@ -786,11 +788,11 @@ private cbit.vcell.model.ReactionStep[] getCollapsedReactionSteps(cbit.vcell.mod
 					revProductsVector.addElement(revRps[j].getSpeciesContext());
 				}
 			}
-			SpeciesContext[] revReactants = (SpeciesContext[])cbit.util.BeanUtils.getArray(revReactantsVector, SpeciesContext.class);
-			SpeciesContext[] revProducts = (SpeciesContext[])cbit.util.BeanUtils.getArray(revProductsVector, SpeciesContext.class);
+			SpeciesContext[] revReactants = (SpeciesContext[])org.vcell.util.BeanUtils.getArray(revReactantsVector, SpeciesContext.class);
+			SpeciesContext[] revProducts = (SpeciesContext[])org.vcell.util.BeanUtils.getArray(revProductsVector, SpeciesContext.class);
 
 			// Check if reactants of reaction in outer 'for' loop match products in inner 'for' loop and vice versa.
-			if (cbit.util.BeanUtils.arrayEquals(fwdReactants, revProducts) && cbit.util.BeanUtils.arrayEquals(fwdProducts, revReactants)) {
+			if (org.vcell.util.BeanUtils.arrayEquals(fwdReactants, revProducts) && org.vcell.util.BeanUtils.arrayEquals(fwdProducts, revReactants)) {
 				// Set the reverse kinetic rate expression for the reaction in outer loop with the forward rate from reactionStep in inner loop
 				cbit.vcell.model.MassActionKinetics revMAKinetics = (cbit.vcell.model.MassActionKinetics)revRStep.getKinetics(); // inner 'for' loop
 				cbit.vcell.model.MassActionKinetics fwdMAKinetics = (cbit.vcell.model.MassActionKinetics)fwdRStep.getKinetics();  // outer 'for' loop
@@ -819,7 +821,7 @@ private cbit.vcell.model.ReactionStep[] getCollapsedReactionSteps(cbit.vcell.mod
 	}
 
 	// Convert the vector into an array of reactionSteps and return
-	cbit.vcell.model.ReactionStep[] collapsedRxnSteps = (cbit.vcell.model.ReactionStep[])cbit.util.BeanUtils.getArray(collapsedRxnStepsVector, cbit.vcell.model.ReactionStep.class);
+	cbit.vcell.model.ReactionStep[] collapsedRxnSteps = (cbit.vcell.model.ReactionStep[])org.vcell.util.BeanUtils.getArray(collapsedRxnStepsVector, cbit.vcell.model.ReactionStep.class);
 	return collapsedRxnSteps;
 }
 
@@ -1557,10 +1559,10 @@ private javax.swing.JTabbedPane getJTabbedPane1() {
  * @return cbit.gui.LineNumberedTextPanel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.LineNumberedTextPanel getlineNumberedTextPanel() {
+private org.vcell.util.gui.LineNumberedTextPanel getlineNumberedTextPanel() {
 	if (ivjlineNumberedTextPanel == null) {
 		try {
-			ivjlineNumberedTextPanel = new cbit.gui.LineNumberedTextPanel();
+			ivjlineNumberedTextPanel = new org.vcell.util.gui.LineNumberedTextPanel();
 			ivjlineNumberedTextPanel.setName("lineNumberedTextPanel");
 			// user code begin {1}
 			// user code end

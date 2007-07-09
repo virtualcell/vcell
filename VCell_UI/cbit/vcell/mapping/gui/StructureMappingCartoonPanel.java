@@ -23,10 +23,10 @@ import cbit.vcell.mapping.*;
 public class StructureMappingCartoonPanel extends JPanel implements java.beans.PropertyChangeListener {
 	private cbit.gui.graph.GraphPane ivjStructureGraphPane = null;
 	private StructureMappingPanel ivjStructureMappingPanel = null;
-	private cbit.gui.ButtonGroupCivilized ivjButtonGroupCivilized = null;
+	private org.vcell.util.gui.ButtonGroupCivilized ivjButtonGroupCivilized = null;
 	private JToolBar ivjJToolBar1 = null;
-	private cbit.gui.JToolBarToggleButton ivjLineButton = null;
-	private cbit.gui.JToolBarToggleButton ivjSelectButton = null;
+	private org.vcell.util.gui.JToolBarToggleButton ivjLineButton = null;
+	private org.vcell.util.gui.JToolBarToggleButton ivjSelectButton = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	private ButtonModel ivjSelection = null;
 	private JScrollPane ivjJScrollPane1 = null;
@@ -432,10 +432,10 @@ private void connPtoP3SetTarget() {
  * @return cbit.gui.ButtonGroupCivilized
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.ButtonGroupCivilized getButtonGroupCivilized() {
+private org.vcell.util.gui.ButtonGroupCivilized getButtonGroupCivilized() {
 	if (ivjButtonGroupCivilized == null) {
 		try {
-			ivjButtonGroupCivilized = new cbit.gui.ButtonGroupCivilized();
+			ivjButtonGroupCivilized = new org.vcell.util.gui.ButtonGroupCivilized();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -562,10 +562,10 @@ private javax.swing.JToolBar getJToolBar1() {
  * @return cbit.gui.JToolBarToggleButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.JToolBarToggleButton getLineButton() {
+private org.vcell.util.gui.JToolBarToggleButton getLineButton() {
 	if (ivjLineButton == null) {
 		try {
-			ivjLineButton = new cbit.gui.JToolBarToggleButton();
+			ivjLineButton = new org.vcell.util.gui.JToolBarToggleButton();
 			ivjLineButton.setName("LineButton");
 			ivjLineButton.setText("");
 			ivjLineButton.setMaximumSize(new java.awt.Dimension(28, 28));
@@ -590,10 +590,10 @@ private cbit.gui.JToolBarToggleButton getLineButton() {
  * @return cbit.gui.JToolBarToggleButton
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.JToolBarToggleButton getSelectButton() {
+private org.vcell.util.gui.JToolBarToggleButton getSelectButton() {
 	if (ivjSelectButton == null) {
 		try {
-			ivjSelectButton = new cbit.gui.JToolBarToggleButton();
+			ivjSelectButton = new org.vcell.util.gui.JToolBarToggleButton();
 			ivjSelectButton.setName("SelectButton");
 			ivjSelectButton.setText("");
 			ivjSelectButton.setMaximumSize(new java.awt.Dimension(28, 28));

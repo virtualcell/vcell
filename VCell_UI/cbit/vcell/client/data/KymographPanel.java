@@ -5,10 +5,11 @@ import cbit.image.gui.ImagePaneScroller;
 import cbit.image.gui.ImagePaneView;
 import cbit.image.gui.ImagePlaneManager;
 import cbit.image.gui.ZoomEvent;
-import cbit.util.Range;
 import cbit.vcell.simdata.DisplayAdapterService;
 
 import javax.swing.ImageIcon;
+
+import org.vcell.util.Range;
 /**
  * Insert the type's description here.
  * Creation date: (12/14/2004 9:38:13 AM)
@@ -1480,7 +1481,7 @@ private cbit.plot.PlotPane getPlotPaneLineScan() {
 		try {
 			ivjPlotPaneLineScan = new cbit.plot.PlotPane();
 			ivjPlotPaneLineScan.setName("PlotPaneLineScan");
-			ivjPlotPaneLineScan.setBorder(new cbit.gui.LineBorderBean());
+			ivjPlotPaneLineScan.setBorder(new org.vcell.util.gui.LineBorderBean());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1502,7 +1503,7 @@ private cbit.plot.PlotPane getPlotPaneTimeSeries() {
 		try {
 			ivjPlotPaneTimeSeries = new cbit.plot.PlotPane();
 			ivjPlotPaneTimeSeries.setName("PlotPaneTimeSeries");
-			ivjPlotPaneTimeSeries.setBorder(new cbit.gui.LineBorderBean());
+			ivjPlotPaneTimeSeries.setBorder(new org.vcell.util.gui.LineBorderBean());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1824,7 +1825,7 @@ public void initDataManager(
 	double[] accumDistances,
 	boolean waitOnInitialLoad,
 	double argInitialLineScanTime)
-				throws cbit.util.DataAccessException{
+				throws org.vcell.util.DataAccessException{
 	
 	bBlockInitialLoad = waitOnInitialLoad;
 	resampleStepOrig = step;
@@ -1865,14 +1866,14 @@ private void initDataManagerVariable(String variableName) {
 	final String finalVarName = variableName;
 	Thread fetchThread = new Thread(
 		new Runnable(){
-			cbit.gui.AsynchProgressPopup pp =
-				new cbit.gui.AsynchProgressPopup(null,"Time Series Data ("+finalVarName+")","Fetching Data...",false,false);
+			org.vcell.util.gui.AsynchProgressPopup pp =
+				new org.vcell.util.gui.AsynchProgressPopup(null,"Time Series Data ("+finalVarName+")","Fetching Data...",false,false);
 			public void run(){
 				pp.start();
 				try{
-					cbit.util.TimeSeriesJobSpec timeSeriesJobSpec =
-						new cbit.util.TimeSeriesJobSpec(new String[] {finalVarName},new int[][] {dataManagerIndices},resampleStartTimeOrig,resampleStepOrig,resampleEndTimeOrig);
-					cbit.util.TSJobResultsNoStats timeSeriesJobResults = (cbit.util.TSJobResultsNoStats)dataManager.getTimeSeriesValues(timeSeriesJobSpec);
+					org.vcell.util.TimeSeriesJobSpec timeSeriesJobSpec =
+						new org.vcell.util.TimeSeriesJobSpec(new String[] {finalVarName},new int[][] {dataManagerIndices},resampleStartTimeOrig,resampleStepOrig,resampleEndTimeOrig);
+					org.vcell.util.TSJobResultsNoStats timeSeriesJobResults = (org.vcell.util.TSJobResultsNoStats)dataManager.getTimeSeriesValues(timeSeriesJobSpec);
 					final double[][] timeSeries = timeSeriesJobResults.getTimesAndValuesForVariable(finalVarName);
 					currentInfo = finalVarName;
 					if(javax.swing.SwingUtilities.isEventDispatchThread()){
@@ -2229,7 +2230,7 @@ private void scaleImageModeFromMenu(java.awt.event.ActionEvent actionEvent) {
 				return;
 			}
 			scaleImageMode = SCALE_IMAGE_USERDEFINED;
-		}catch(cbit.util.UserCancelException e){
+		}catch(org.vcell.util.UserCancelException e){
 			//getimagePaneView1().getImagePaneModel().updateViewPortImage();
 			getimagePaneView1().repaint();
 			return;

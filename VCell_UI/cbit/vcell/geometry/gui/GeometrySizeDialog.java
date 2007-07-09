@@ -133,8 +133,8 @@ private void connEtoM6() {
 private javax.swing.JButton getButton1() {
 	if (ivjButton1 == null) {
 		try {
-			cbit.gui.BevelBorderBean ivjLocalBorder1;
-			ivjLocalBorder1 = new cbit.gui.BevelBorderBean();
+			org.vcell.util.gui.BevelBorderBean ivjLocalBorder1;
+			ivjLocalBorder1 = new org.vcell.util.gui.BevelBorderBean();
 			ivjLocalBorder1.setColor(new java.awt.Color(160,160,255));
 			ivjButton1 = new javax.swing.JButton();
 			ivjButton1.setName("Button1");
@@ -158,8 +158,8 @@ private javax.swing.JButton getButton1() {
 private javax.swing.JButton getButton2() {
 	if (ivjButton2 == null) {
 		try {
-			cbit.gui.BevelBorderBean ivjLocalBorder;
-			ivjLocalBorder = new cbit.gui.BevelBorderBean();
+			org.vcell.util.gui.BevelBorderBean ivjLocalBorder;
+			ivjLocalBorder = new org.vcell.util.gui.BevelBorderBean();
 			ivjLocalBorder.setColor(new java.awt.Color(160,160,255));
 			ivjButton2 = new javax.swing.JButton();
 			ivjButton2.setName("Button2");
@@ -888,8 +888,8 @@ private void Ok() throws PropertyVetoException {
 	bUpdating = true;
 	try {
 		GeometrySpec geometrySpec = getGeometry().getGeometrySpec();
-		geometrySpec.setExtent(new cbit.util.Extent(worldExtentX,worldExtentY,worldExtentZ));
-		geometrySpec.setOrigin(new cbit.util.Origin(worldOriginX,worldOriginY,worldOriginZ));
+		geometrySpec.setExtent(new org.vcell.util.Extent(worldExtentX,worldExtentY,worldExtentZ));
+		geometrySpec.setOrigin(new org.vcell.util.Origin(worldOriginX,worldOriginY,worldOriginZ));
 	}finally{
 		bUpdating = false;
 	}

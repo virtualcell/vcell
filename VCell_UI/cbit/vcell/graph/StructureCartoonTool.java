@@ -18,8 +18,9 @@ import java.util.*;
 import java.awt.event.*;
 import java.awt.*;
 import cbit.vcell.model.*;
-import cbit.gui.*;
 import javax.swing.event.InternalFrameEvent;
+
+import org.vcell.util.gui.*;
 
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.desktop.VCellTransferable;
@@ -823,7 +824,7 @@ public void showParametersDialog() {
 	);
 	
 	getJDesktopPane().add(internalFrame);
-	cbit.util.BeanUtils.centerOnComponent(internalFrame,getJDesktopPane());
+	org.vcell.util.BeanUtils.centerOnComponent(internalFrame,getJDesktopPane());
 	internalFrame.show();
 }
 
@@ -847,7 +848,7 @@ public void showReactionCartoonEditorPanel(final StructureShape structureShape) 
 		
 		reactionEditorHash.put(structureShape.getStructure(),reactionCartoonEditorDialog);
 		rced = reactionCartoonEditorDialog;
-		cbit.util.BeanUtils.centerOnComponent(rced, getJDesktopPane());
+		org.vcell.util.BeanUtils.centerOnComponent(rced, getJDesktopPane());
 		rced.setLocation(rced.getLocation().x + reactionEditorHash.size() * 15, rced.getLocation().y + reactionEditorHash.size() * 15);
 	}
 
@@ -867,11 +868,11 @@ public void showReactionCartoonEditorPanel(final StructureShape structureShape) 
 		}
 		System.out.println("Processing save as Image request for: " + model.getName() + "(" + resLevel + ")");
 		//set file filter
-		cbit.util.SimpleFilenameFilter gifFilter = new cbit.util.SimpleFilenameFilter("gif");
+		org.vcell.util.SimpleFilenameFilter gifFilter = new org.vcell.util.SimpleFilenameFilter("gif");
 		cbit.vcell.client.server.ClientServerManager csm = (cbit.vcell.client.server.ClientServerManager)getDocumentManager().getSessionManager();
 		UserPreferences userPref = csm.getUserPreferences();
 		String defaultPath = userPref.getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
-		cbit.gui.VCFileChooser fileChooser = new cbit.gui.VCFileChooser(defaultPath);
+		org.vcell.util.gui.VCFileChooser fileChooser = new org.vcell.util.gui.VCFileChooser(defaultPath);
 		fileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 		fileChooser.setMultiSelectionEnabled(false);
 		fileChooser.addChoosableFileFilter(gifFilter);

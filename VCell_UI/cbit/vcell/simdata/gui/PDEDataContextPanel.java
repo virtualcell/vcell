@@ -1,6 +1,7 @@
 package cbit.vcell.simdata.gui;
 
-import cbit.util.Coordinate;
+import org.vcell.util.Coordinate;
+
 import cbit.vcell.math.VariableType;
 import cbit.vcell.mesh.CartesianMesh;
 import cbit.vcell.simdata.*;
@@ -761,9 +762,9 @@ public String getCurveValue(cbit.vcell.geometry.CurveSelectionInfo csi) {
 									getPdeDataContext().getDataIdentifier().getVariableType());
 						if(membraneValues != null){
 							Coordinate segmentWC = getPdeDataContext().getCartesianMesh().getCoordinateFromMembraneIndex(membraneIndexes[csi.getSegment()]);
-							String xCoordString = cbit.util.NumberUtils.formatNumber(segmentWC.getX());
-							String yCoordString = cbit.util.NumberUtils.formatNumber(segmentWC.getY());
-							String zCoordString = cbit.util.NumberUtils.formatNumber(segmentWC.getZ());
+							String xCoordString = org.vcell.util.NumberUtils.formatNumber(segmentWC.getX());
+							String yCoordString = org.vcell.util.NumberUtils.formatNumber(segmentWC.getY());
+							String zCoordString = org.vcell.util.NumberUtils.formatNumber(segmentWC.getZ());
 							infoS = "("+xCoordString+","+yCoordString+","+zCoordString+")  ["+
 										membraneIndexes[csi.getSegment()]+"]  Value = " +
 										membraneValues[csi.getSegment()];

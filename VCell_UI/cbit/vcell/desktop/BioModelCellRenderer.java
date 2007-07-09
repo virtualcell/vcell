@@ -3,9 +3,6 @@ package cbit.vcell.desktop;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.document.BioModelInfo;
-import cbit.util.document.User;
-import cbit.util.document.VersionFlag;
 
 import cbit.vcell.mapping.*;
 import cbit.vcell.modelapp.SimulationContext;
@@ -16,6 +13,10 @@ import cbit.vcell.biomodel.*;
  * @author: 
  */
 import javax.swing.*;
+
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.User;
+import org.vcell.util.document.VersionFlag;
 
  
 public class BioModelCellRenderer extends VCellBasicCellRenderer {

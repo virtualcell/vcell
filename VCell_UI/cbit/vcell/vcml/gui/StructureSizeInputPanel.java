@@ -9,7 +9,8 @@
  *     IBM Corporation - initial API and implementation
  *******************************************************************************/
 package cbit.vcell.vcml.gui;
-import cbit.gui.DialogUtils;
+import org.vcell.util.gui.DialogUtils;
+
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Structure;

@@ -1,10 +1,11 @@
 package cbit.vcell.geometry.gui;
 
+import org.vcell.util.StdoutSessionLog;
+
 import cbit.render.*;
 import cbit.render.objects.FilterSpecification;
 import cbit.render.objects.SurfaceCollection;
 import cbit.render.objects.TaubinSmoothingSpecification;
-import cbit.util.StdoutSessionLog;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.surface.SurfaceGenerator;
 /**

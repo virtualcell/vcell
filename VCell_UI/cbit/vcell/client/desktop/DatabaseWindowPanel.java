@@ -1,12 +1,13 @@
 package cbit.vcell.client.desktop;
-import cbit.util.document.BioModelInfo;
-import cbit.util.document.MathModelInfo;
-import cbit.util.document.VCDocument;
-import cbit.util.document.VCDocumentInfo;
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.biomodel.*;
 import javax.swing.*;
+
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.VCDocumentInfo;
 /**
  * Insert the type's description here.
  * Creation date: (5/24/2004 1:13:39 PM)
@@ -23,7 +24,7 @@ public class DatabaseWindowPanel extends JPanel {
 	private boolean ivjConnPtoP3Aligning = false;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private cbit.vcell.client.DatabaseWindowManager fieldDatabaseWindowManager = null;
-	private cbit.util.document.VCDocumentInfo fieldSelectedDocumentInfo = null;
+	private org.vcell.util.document.VCDocumentInfo fieldSelectedDocumentInfo = null;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -644,7 +645,7 @@ public void setLatestOnly(boolean latestOnly) {
  * @param selectedDocumentInfo The new value for the property.
  * @see #getSelectedDocumentInfo
  */
-private void setSelectedDocumentInfo(cbit.util.document.VCDocumentInfo selectedDocumentInfo) {
+private void setSelectedDocumentInfo(org.vcell.util.document.VCDocumentInfo selectedDocumentInfo) {
 	VCDocumentInfo oldValue = fieldSelectedDocumentInfo;
 	fieldSelectedDocumentInfo = selectedDocumentInfo;
 	firePropertyChange("selectedDocumentInfo", oldValue, selectedDocumentInfo);

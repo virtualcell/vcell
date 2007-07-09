@@ -1,5 +1,6 @@
 package cbit.image.gui;
-import cbit.util.Range;
+import org.vcell.util.Range;
+
 import cbit.vcell.simdata.DisplayAdapterService;
 import cbit.vcell.simdata.SourceDataInfo;
 /*©
@@ -41,7 +42,7 @@ public final static SourceDataInfo getExampleSDI(String type, int w, int h) {
 			}
 		}
 		//
-		sdi = new SourceDataInfo(SourceDataInfo.INT_RGB_TYPE, pixels, new cbit.util.Extent(1, 2, 3), new cbit.util.Origin(0, -5, 10), null, 0, w, 1, h, w, numZ, h * w);
+		sdi = new SourceDataInfo(SourceDataInfo.INT_RGB_TYPE, pixels, new org.vcell.util.Extent(1, 2, 3), new org.vcell.util.Origin(0, -5, 10), null, 0, w, 1, h, w, numZ, h * w);
 	} else if (type.equals("double")) {
 		double[] pixels = new double[w * h * numZ];
 		for (int z = 0; z < numZ; z += 1) {
@@ -57,13 +58,13 @@ public final static SourceDataInfo getExampleSDI(String type, int w, int h) {
 				}
 			}
 		}
-		sdi = new SourceDataInfo(SourceDataInfo.RAW_VALUE_TYPE, pixels, new cbit.util.Extent(1, 2, 3), new cbit.util.Origin(0, -5, 10), new Range(-150, 650), 0, w, 1, h, w, numZ, h * w);
+		sdi = new SourceDataInfo(SourceDataInfo.RAW_VALUE_TYPE, pixels, new org.vcell.util.Extent(1, 2, 3), new org.vcell.util.Origin(0, -5, 10), new Range(-150, 650), 0, w, 1, h, w, numZ, h * w);
 	} else if (type.equals("index")) {
 		byte[] pixels = new byte[w * h * numZ];
 		for (int i = 0; i < pixels.length; i += 1) {
 			pixels[i] = (byte) (i % 256);
 		}
-		sdi = new SourceDataInfo(SourceDataInfo.INDEX_TYPE, pixels, new cbit.util.Extent(1, 2, 3), new cbit.util.Origin(0, -5, 10), null, 0, w, 1, h, w, numZ, h * w);
+		sdi = new SourceDataInfo(SourceDataInfo.INDEX_TYPE, pixels, new org.vcell.util.Extent(1, 2, 3), new org.vcell.util.Origin(0, -5, 10), null, 0, w, 1, h, w, numZ, h * w);
 	} else if(type.equals("facecube")){
 		numZ = 50;
 		w = 50;
@@ -139,7 +140,7 @@ public final static SourceDataInfo getExampleSDI(String type, int w, int h) {
 				}
 			}
 		}
-		sdi = new SourceDataInfo(SourceDataInfo.INT_RGB_TYPE, pixels, new cbit.util.Extent(1, 2, 3), new cbit.util.Origin(0, -5, 10), null, 0, w, 1, h, w, numZ, h * w);
+		sdi = new SourceDataInfo(SourceDataInfo.INT_RGB_TYPE, pixels, new org.vcell.util.Extent(1, 2, 3), new org.vcell.util.Origin(0, -5, 10), null, 0, w, 1, h, w, numZ, h * w);
 	}
 	//
 	return sdi;

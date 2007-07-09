@@ -1,6 +1,7 @@
 package cbit.vcell.desktop;
+import org.vcell.util.DataAccessException;
+
 import cbit.image.VCImageInfo;
-import cbit.util.DataAccessException;
 import cbit.vcell.geometry.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.

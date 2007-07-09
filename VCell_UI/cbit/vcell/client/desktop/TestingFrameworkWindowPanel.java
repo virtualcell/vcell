@@ -2,6 +2,10 @@ package cbit.vcell.client.desktop;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 
+import org.vcell.util.UserCancelException;
+import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.gui.AsynchProgressPopup;
+
 import cbit.vcell.simulation.SimulationInfo;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestCaseNew;
@@ -10,9 +14,6 @@ import cbit.vcell.client.desktop.testingframework.TestingFrameworkPanel;
 import cbit.vcell.numericstest.TestCriteriaNew;
 import java.awt.event.ActionEvent;
 
-import cbit.gui.AsynchProgressPopup;
-import cbit.util.UserCancelException;
-import cbit.util.document.MathModelInfo;
 import cbit.vcell.client.server.UserMessage;
 import cbit.vcell.client.task.TFRefresh;
 import cbit.vcell.client.task.TFAddTestSuite;

@@ -1,7 +1,8 @@
 package cbit.vcell.client.bionetgen;
 import java.util.Vector;
 
-import cbit.gui.DefaultListSelectionModelFixed;
+import org.vcell.util.gui.DefaultListSelectionModelFixed;
+
 import cbit.plot.DataReference;
 import cbit.plot.DataSource;
 
@@ -14,7 +15,7 @@ public class BNGDataPlotPanel extends javax.swing.JPanel {
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private javax.swing.JList ivjJList1 = null;
 	private cbit.plot.PlotPane ivjplotPane = null;
-	private cbit.gui.DefaultListSelectionModelFixed ivjdefaultListSelectionModelFixed = null;
+	private org.vcell.util.gui.DefaultListSelectionModelFixed ivjdefaultListSelectionModelFixed = null;
 	private javax.swing.JScrollPane ivjReferenceDataListScrollPane = null;
 	private DataSource fieldDataSource = null;
 	private BNGDataPlotListModel ivjbngDataPlotListModel = null;
@@ -187,10 +188,10 @@ public DataSource getDataSource() {
  * @return cbit.util.DefaultListSelectionModelFixed
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.DefaultListSelectionModelFixed getdefaultListSelectionModelFixed() {
+private org.vcell.util.gui.DefaultListSelectionModelFixed getdefaultListSelectionModelFixed() {
 	if (ivjdefaultListSelectionModelFixed == null) {
 		try {
-			ivjdefaultListSelectionModelFixed = new cbit.gui.DefaultListSelectionModelFixed();
+			ivjdefaultListSelectionModelFixed = new org.vcell.util.gui.DefaultListSelectionModelFixed();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -416,7 +417,7 @@ private void selectionModel1_ValueChanged(javax.swing.event.ListSelectionEvent l
 	}
 	
 	String[] labels = {"", "t", ""};	
-	String[] names = (String[])cbit.util.BeanUtils.getArray(nameList,String.class);	
+	String[] names = (String[])org.vcell.util.BeanUtils.getArray(nameList,String.class);	
 
 	cbit.plot.Plot2D plot2D = new cbit.plot.SingleXPlot2D("Time", names, dataValues,labels, visibleFlags);
 	getplotPane().setPlot2D(plot2D);

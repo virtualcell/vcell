@@ -1,10 +1,12 @@
 package cbit.vcell.client;
-import cbit.util.UserCancelException;
 import cbit.vcell.client.server.*;
 
 import javax.swing.*;
+
+import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.*;
+
 import java.awt.*;
-import cbit.gui.*;
 import java.util.*;
 /**
  * Insert the type's description here.

@@ -36,14 +36,14 @@ public static void main(java.lang.String[] args) {
 		String clientTesterArgs[] = new String[] { location, username, password };
 		
 		cbit.vcell.client.server.ClientServerManager sessionManager = cbit.vcell.client.test.ClientTester.mainInit(clientTesterArgs,"SimulationSolverTest");
-		cbit.util.document.BioModelInfo bmInfos[] = sessionManager.getDocumentManager().getBioModelInfos();
+		org.vcell.util.document.BioModelInfo bmInfos[] = sessionManager.getDocumentManager().getBioModelInfos();
 
 		//
 		// select BioModel by name
 		//
-		cbit.util.document.BioModelInfo selectedBMInfo = null;
+		org.vcell.util.document.BioModelInfo selectedBMInfo = null;
 		for (int i = 0; i < bmInfos.length; i++){
-			cbit.util.document.BioModelInfo bmInfo = bmInfos[i];
+			org.vcell.util.document.BioModelInfo bmInfo = bmInfos[i];
 			if (bmInfo.getVersion().getName().equals(bioModelName)){
 				selectedBMInfo = bmInfo;
 				break;

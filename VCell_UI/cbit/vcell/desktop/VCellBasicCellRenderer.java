@@ -1,11 +1,5 @@
 package cbit.vcell.desktop;
-import cbit.util.ISize;
 import cbit.image.VCImageInfo;
-import cbit.util.Extent;
-import cbit.util.document.BioModelInfo;
-import cbit.util.document.MathModelInfo;
-import cbit.util.document.User;
-import cbit.util.document.Version;
 import cbit.vcell.mathmodel.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -26,6 +20,13 @@ import cbit.vcell.geometry.GeometryInfo;
  * @author: 
  */
 import javax.swing.*;
+
+import org.vcell.util.Extent;
+import org.vcell.util.ISize;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
 
  
 public class VCellBasicCellRenderer extends javax.swing.tree.DefaultTreeCellRenderer {
@@ -519,7 +520,7 @@ protected void setComponentProperties(JLabel component, cbit.vcell.desktop.Annot
 	component.setIcon(fieldTextIcon);
 	
 	component.setToolTipText(annot.toString());
-	component.setText(cbit.util.TokenMangler.replaceSubString(annot.toString(),"\n"," "));
+	component.setText(org.vcell.util.TokenMangler.replaceSubString(annot.toString(),"\n"," "));
 }
 
 

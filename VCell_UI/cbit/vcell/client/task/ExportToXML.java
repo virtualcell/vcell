@@ -4,6 +4,10 @@ import cbit.vcell.mathmodel.*;
 import cbit.vcell.xml.*;
 import java.io.*;
 
+import org.vcell.util.*;
+import org.vcell.util.document.VCDocument;
+import org.vcell.util.gui.FileFilters;
+
 
 import cbit.vcell.client.database.DocumentManager;
 import cbit.vcell.mapping.*;
@@ -11,9 +15,6 @@ import cbit.vcell.math.*;
 import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.desktop.controls.*;
-import cbit.gui.FileFilters;
-import cbit.util.*;
-import cbit.util.document.VCDocument;
 /**
  * Insert the type's description here.
  * Creation date: (5/31/2004 6:03:16 PM)

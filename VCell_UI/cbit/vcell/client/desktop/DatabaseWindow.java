@@ -7,7 +7,9 @@ import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.biomodel.*;
 import javax.swing.*;
-import cbit.util.BeanUtils;
+
+import org.vcell.util.BeanUtils;
+
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 /**

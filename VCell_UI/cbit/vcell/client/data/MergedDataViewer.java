@@ -1,9 +1,10 @@
 package cbit.vcell.client.data;
-import cbit.util.DataAccessException;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.VCDataIdentifier;
+
 import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simdata.ODESolverResultSet;
 import cbit.vcell.client.server.MergedDataManager;
-import cbit.util.VCDataIdentifier;
 import cbit.vcell.client.server.VCDataManager;
 /**
  * Insert the type's description here.
@@ -57,8 +58,8 @@ private DataViewer createDataViewer() {
 			pdeDataViewer.setPdeDataContext(mergedDataManager.getPDEDataContext());
 			return pdeDataViewer;
 		}
-	} catch (cbit.util.DataAccessException exc) {
-		cbit.gui.DialogUtils.showErrorDialog("Could not fetch requested data.\nJCompare may have failed.\n" + exc.getMessage());
+	} catch (org.vcell.util.DataAccessException exc) {
+		org.vcell.util.gui.DialogUtils.showErrorDialog("Could not fetch requested data.\nJCompare may have failed.\n" + exc.getMessage());
 		exc.printStackTrace();
 	}
 	return null;
@@ -97,9 +98,9 @@ private cbit.vcell.client.server.VCDataManager getVcDataManager() {
 /**
  * Insert the method's description here.
  * Creation date: (10/17/2005 11:37:52 PM)
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-private void initialize() throws cbit.util.DataAccessException {
+private void initialize() throws org.vcell.util.DataAccessException {
 	
 	// create main viewer and wire it up
 	setMainViewer(createDataViewer());
@@ -124,9 +125,9 @@ private void initialize() throws cbit.util.DataAccessException {
 /**
  * Insert the method's description here.
  * Creation date: (6/11/2004 2:43:49 PM)
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-public void refreshData() throws cbit.util.DataAccessException {
+public void refreshData() throws org.vcell.util.DataAccessException {
 	if (isODEData) {
 		ODESolverResultSet osr = null;
 		osr = odeDataViewer.getOdeSolverResultSet();

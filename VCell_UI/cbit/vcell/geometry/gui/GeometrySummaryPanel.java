@@ -3,14 +3,16 @@ package cbit.vcell.geometry.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.Origin;
-import cbit.util.Extent;
-import cbit.util.document.Version;
 
 import java.awt.image.MemoryImageSource;
+
+import org.vcell.util.Extent;
+import org.vcell.util.Origin;
+import org.vcell.util.document.Version;
+import org.vcell.util.gui.ColorIcon;
+
 import cbit.vcell.geometry.*;
 import cbit.vcell.simdata.DisplayAdapterService;
-import cbit.gui.ColorIcon;
 import cbit.image.*;
 import cbit.image.gui.ImagePlaneManagerPanel;
 /**
@@ -31,7 +33,7 @@ public class GeometrySummaryPanel extends javax.swing.JPanel {
 	private cbit.vcell.geometry.Geometry fieldGeometry = null;
 	private boolean ivjConnPtoP3Aligning = false;
 	private Geometry ivjgeometry1 = null;
-	private cbit.gui.DefaultListModelCivilized ivjDefaultListModelCivilized = null;
+	private org.vcell.util.gui.DefaultListModelCivilized ivjDefaultListModelCivilized = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private javax.swing.JLabel ivjGeometryVersionLabel = null;
 	private javax.swing.JLabel ivjJLabel2 = null;
@@ -466,7 +468,7 @@ public javax.swing.Icon createIcon(VCImage sampledImage, Geometry geom) throws c
 			for (int c = 0; c < compartmentalXY; c += 1) {
 				compartmentalPixels[c] = ((byte[]) (sampledImage.getPixels()))[0];
 			}
-			sampledGeometryHandles = new cbit.image.VCImageUncompressed(null, compartmentalPixels, new cbit.util.Extent(1, 1, 1), COMPARTMENT_SIZE_X, COMPARTMENT_SIZE_Y, 1);
+			sampledGeometryHandles = new cbit.image.VCImageUncompressed(null, compartmentalPixels, new org.vcell.util.Extent(1, 1, 1), COMPARTMENT_SIZE_X, COMPARTMENT_SIZE_Y, 1);
 		}
 		MemoryImageSource mis = new MemoryImageSource(	sampledGeometryHandles.getNumX(), 
 														sampledGeometryHandles.getNumY(), 
@@ -532,10 +534,10 @@ private javax.swing.ListCellRenderer getcellRenderer1() {
  * @return cbit.gui.DefaultListModelCivilized
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.gui.DefaultListModelCivilized getDefaultListModelCivilized() {
+private org.vcell.util.gui.DefaultListModelCivilized getDefaultListModelCivilized() {
 	if (ivjDefaultListModelCivilized == null) {
 		try {
-			ivjDefaultListModelCivilized = new cbit.gui.DefaultListModelCivilized();
+			ivjDefaultListModelCivilized = new org.vcell.util.gui.DefaultListModelCivilized();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -618,7 +620,7 @@ private javax.swing.JLabel getGeometryVersionLabel() {
 		try {
 			ivjGeometryVersionLabel = new javax.swing.JLabel();
 			ivjGeometryVersionLabel.setName("GeometryVersionLabel");
-			ivjGeometryVersionLabel.setBorder(new cbit.gui.LineBorderBean());
+			ivjGeometryVersionLabel.setBorder(new org.vcell.util.gui.LineBorderBean());
 			ivjGeometryVersionLabel.setText("GeometryName");
 			// user code begin {1}
 			// user code end
@@ -1044,8 +1046,8 @@ private void initGeometry(cbit.vcell.geometry.Geometry arg1) {
 			byte[] pixels = vcImage.getPixels();
 			
 			cbit.vcell.simdata.DisplayAdapterService das = new cbit.vcell.simdata.DisplayAdapterService();
-			das.setActiveScaleRange(new cbit.util.Range(0, 255));
-			das.setValueDomain(new cbit.util.Range(0, 255));
+			das.setActiveScaleRange(new org.vcell.util.Range(0, 255));
+			das.setValueDomain(new org.vcell.util.Range(0, 255));
 			das.addColorModelForValues(cbit.vcell.simdata.DisplayAdapterService.createContrastColorModel(), cbit.vcell.simdata.DisplayAdapterService.createGraySpecialColors(), "Contrast");
 			das.setActiveColorModelID("Contrast");
 			int[] rgb = new int[pixels.length];
@@ -1059,7 +1061,7 @@ private void initGeometry(cbit.vcell.geometry.Geometry arg1) {
 					rgb,
 					getGeometry().getExtent(),
 					getGeometry().getOrigin(),
-					new cbit.util.Range(0,255),
+					new org.vcell.util.Range(0,255),
 					0,
 					vcImage.getNumX(),1,
 					vcImage.getNumY(),vcImage.getNumX(),

@@ -1,8 +1,8 @@
 package cbit.vcell.desktop;
 
 import org.vcell.expression.IExpression;
+import org.vcell.util.gui.DialogUtils;
 
-import cbit.gui.DialogUtils;
 import cbit.vcell.modelapp.SpeciesContextSpec;
 import cbit.vcell.simulation.ConstantArraySpec;
 import cbit.vcell.simulation.MathOverrides;
@@ -39,7 +39,7 @@ public static void chooseApplyPaste(
 	boolean[] bEnableDisplay = new boolean[changingParamters.length];
 	for(int i=0;i<changingParamters.length;i+= 1){
 		//bEnableDisplay[i] = !changingParamters[i].getExpression().equals(newParameterExpression[i]);
-		bEnableDisplay[i] = !cbit.util.Compare.isEqualOrNull(changingParamters[i].getExpression(),newParameterExpression[i]);
+		bEnableDisplay[i] = !org.vcell.util.Compare.isEqualOrNull(changingParamters[i].getExpression(),newParameterExpression[i]);
 		bAtLeatOneDifferent = bAtLeatOneDifferent || bEnableDisplay[i];
 	}
 
@@ -89,7 +89,7 @@ public static void chooseApplyPaste(
 	boolean[] bEnableDisplay = new boolean[changingParamters.length];
 	for(int i=0;i<changingParamters.length;i+= 1){
 		//bEnableDisplay[i] = !changingParamters[i].getExpression().equals(newParameterExpression[i]);
-		bEnableDisplay[i] = !cbit.util.Compare.isEqualOrNull(changingParamters[i].getExpression(),newParameterExpression[i]);
+		bEnableDisplay[i] = !org.vcell.util.Compare.isEqualOrNull(changingParamters[i].getExpression(),newParameterExpression[i]);
 		bAtLeatOneDifferent = bAtLeatOneDifferent || bEnableDisplay[i];
 	}
 
@@ -146,13 +146,13 @@ public static void chooseApplyPaste(
 	for(int i=0;i<changingMathOverridesNames.length;i+= 1){
 		if(newMathOverridesValuesV.elementAt(i) instanceof IExpression){
 			bEnableDisplay[i] =
-				!cbit.util.Compare.isEqualOrNull(
+				!org.vcell.util.Compare.isEqualOrNull(
 					mathOverrides.getActualExpression(changingMathOverridesNames[i],0),
 					//((cbit.vcell.math.Constant)newMathOverridesValuesV.elementAt(i)).getExpression());
 					((IExpression)newMathOverridesValuesV.elementAt(i)));
 		}else if(newMathOverridesValuesV.elementAt(i) instanceof ConstantArraySpec){
 			bEnableDisplay[i] =
-				!cbit.util.Compare.isEqualOrNull(
+				!org.vcell.util.Compare.isEqualOrNull(
 					mathOverrides.getConstantArraySpec(changingMathOverridesNames[i]),
 					(ConstantArraySpec)newMathOverridesValuesV.elementAt(i));
 		}else{
@@ -213,7 +213,7 @@ public static void chooseApplyPaste_NOT_USED(
 	boolean[] bEnableDisplay = new boolean[changingMathOverridesNames.length];
 	for(int i=0;i<changingMathOverridesNames.length;i+= 1){
 		//bEnableDisplay[i] = !changingParamters[i].getExpression().equals(newParameterExpression[i]);
-		bEnableDisplay[i] = !cbit.util.Compare.isEqualOrNull(mathOverrides.getActualExpression(changingMathOverridesNames[i],0),newMathOverridesValues[i].getExpression());
+		bEnableDisplay[i] = !org.vcell.util.Compare.isEqualOrNull(mathOverrides.getActualExpression(changingMathOverridesNames[i],0),newMathOverridesValues[i].getExpression());
 		bAtLeatOneDifferent = bAtLeatOneDifferent || bEnableDisplay[i];
 	}
 

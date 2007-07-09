@@ -1,6 +1,7 @@
 package cbit.vcell.client.data;
+import org.vcell.util.DataAccessException;
+
 import cbit.rmi.event.VCSimulationDataIdentifier;
-import cbit.util.DataAccessException;
 import cbit.vcell.simulation.Simulation;
 import cbit.vcell.simulation.VCSimulationIdentifier;
 import cbit.vcell.client.server.VCDataManager;
@@ -33,7 +34,7 @@ public SimulationDataManager(VCDataManager vcDataManager, Simulation simulation)
  * Creation date: (10/16/2005 2:42:43 PM)
  * @return javax.swing.JPanel
  */
-public cbit.vcell.client.data.DataViewer createViewer(boolean expectODEData) throws cbit.util.DataAccessException {
+public cbit.vcell.client.data.DataViewer createViewer(boolean expectODEData) throws org.vcell.util.DataAccessException {
 	simDataViewer = new SimDataViewer(simulation, vcDataManager, expectODEData);
 	return simDataViewer;
 }
@@ -57,9 +58,9 @@ public void newData(cbit.vcell.desktop.controls.DataEvent event) {
 /**
  * Insert the method's description here.
  * Creation date: (6/11/2004 2:43:49 PM)
- * @exception cbit.util.DataAccessException The exception description.
+ * @exception org.vcell.util.DataAccessException The exception description.
  */
-public void refreshData() throws cbit.util.DataAccessException {
+public void refreshData() throws org.vcell.util.DataAccessException {
 	simDataViewer.refreshData();
 }
 }

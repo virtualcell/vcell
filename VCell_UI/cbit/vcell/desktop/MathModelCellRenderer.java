@@ -3,15 +3,16 @@ package cbit.vcell.desktop;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.util.document.MathModelInfo;
-import cbit.util.document.User;
-import cbit.util.document.VersionFlag;
 /**
  * Insert the type's description here.
  * Creation date: (7/27/2000 6:30:41 PM)
  * @author: 
  */
 import javax.swing.*;
+
+import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.User;
+import org.vcell.util.document.VersionFlag;
  
 public class MathModelCellRenderer extends VCellBasicCellRenderer {
 	private User sessionUser = null;

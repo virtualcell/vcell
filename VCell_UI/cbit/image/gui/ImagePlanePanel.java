@@ -5,7 +5,7 @@ package cbit.image.gui;
  * All rights reserved.
 ©*/
 
-import cbit.util.Coordinate;
+import org.vcell.util.Coordinate;
 /**
  * Insert the type's description here.
  * Creation date: (10/11/00 3:05:12 PM)
@@ -775,8 +775,8 @@ private void initialize() {
 	try {
 		// user code begin {1}
 		// user code end
-		cbit.gui.TitledBorderBean ivjLocalBorder;
-		ivjLocalBorder = new cbit.gui.TitledBorderBean();
+		org.vcell.util.gui.TitledBorderBean ivjLocalBorder;
+		ivjLocalBorder = new org.vcell.util.gui.TitledBorderBean();
 		ivjLocalBorder.setTitle("Slice");
 		setName("ImagePlanePanel");
 		setBorder(ivjLocalBorder);
@@ -815,7 +815,7 @@ private void initialize() {
  * Creation date: (10/11/00 4:02:12 PM)
  */
 private void initView() {
-	cbit.util.BeanUtils.enableComponents(this, getImagePlaneMananager() != null);
+	org.vcell.util.BeanUtils.enableComponents(this, getImagePlaneMananager() != null);
 	normalAxisChanged();
 	updateSliceLabel();
 }
@@ -960,7 +960,7 @@ private void updateSliceLabel() {
 	    }else if(getImagePlaneMananager().getNormalAxis() == Coordinate.X_AXIS){
         	currSliceText = "X";
 	    }
-	    getSliceLabel().setText(currSliceText+" ["+getImagePlaneMananager().getSlice()+"] = "+cbit.util.NumberUtils.formatNumber(sliceWorld));
+	    getSliceLabel().setText(currSliceText+" ["+getImagePlaneMananager().getSlice()+"] = "+org.vcell.util.NumberUtils.formatNumber(sliceWorld));
         javax.swing.border.Border border = getBorder();
         if(border != null && border instanceof javax.swing.border.TitledBorder){
 	        ((javax.swing.border.TitledBorder)border).setTitle("Slice [0-"+(getImagePlaneMananager().sliceBoundary()-1)+"]");

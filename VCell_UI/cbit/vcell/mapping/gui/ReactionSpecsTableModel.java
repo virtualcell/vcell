@@ -5,10 +5,11 @@ package cbit.vcell.mapping.gui;
  * All rights reserved.
 ©*/
 
+import org.vcell.util.BeanUtils;
+
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.modelapp.ReactionSpec;
-import cbit.util.BeanUtils;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)

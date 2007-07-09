@@ -1,12 +1,13 @@
 package cbit.vcell.client.task;
 import cbit.vcell.client.server.*;
-import cbit.gui.FileFilters;
-import cbit.util.*;
-import cbit.util.document.VCDocument;
 
 import java.util.*;
 import java.io.*;
 import javax.swing.*;
+
+import org.vcell.util.*;
+import org.vcell.util.document.VCDocument;
+import org.vcell.util.gui.FileFilters;
 
 
 import cbit.vcell.geometry.*;
@@ -87,7 +88,7 @@ private File showBioModelXMLFileChooser(java.util.Hashtable hashTable) throws ja
 	UserPreferences userPreferences = (UserPreferences)hashTable.get("userPreferences");
 	TopLevelWindowManager topLevelWindowManager = (TopLevelWindowManager)hashTable.get("topLevelWindowManager");
 	String defaultPath = userPreferences.getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
-	cbit.gui.VCFileChooser fileChooser = new cbit.gui.VCFileChooser(defaultPath);
+	org.vcell.util.gui.VCFileChooser fileChooser = new org.vcell.util.gui.VCFileChooser(defaultPath);
 	fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 	fileChooser.setMultiSelectionEnabled(false);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML);
@@ -173,7 +174,7 @@ private File showBioModelXMLFileChooser(java.util.Hashtable hashTable) throws ja
 			if (applicableAppNameList.size() == 1){
 				chosenSimContextName = (String)applicableAppNameList.get(0);
 			} else if (!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_PDF.getDescription())) {
-				String[] applicationNames = (String[])cbit.util.BeanUtils.getArray(applicableAppNameList,String.class);
+				String[] applicationNames = (String[])org.vcell.util.BeanUtils.getArray(applicableAppNameList,String.class);
 				Object choice = PopupGenerator.showListDialog(topLevelWindowManager, applicationNames, "Please select Application");
 				if (choice == null) {
 					// user cancelled
@@ -205,12 +206,12 @@ private File showBioModelXMLFileChooser(java.util.Hashtable hashTable) throws ja
 					structureSizeInputPanel.setStructures(structures);
 					structureSizeInputPanel.setPreferredSize(new java.awt.Dimension(325, 325));
 					structureSizeInputPanel.setMaximumSize(new java.awt.Dimension(325, 325));
-					option = cbit.gui.DialogUtils.showComponentOKCancelDialog(null, structureSizeInputPanel, "Choose Structure and specify size");
+					option = org.vcell.util.gui.DialogUtils.showComponentOKCancelDialog(null, structureSizeInputPanel, "Choose Structure and specify size");
 					structSelection = structureSizeInputPanel.getStructSelectionIndex();
 					if (option == JOptionPane.CANCEL_OPTION || option == JOptionPane.CLOSED_OPTION) {
 						break;
 					} else if (option == JOptionPane.OK_OPTION && structSelection < 0) {
-						cbit.gui.DialogUtils.showErrorDialog("Please select a structure and set its size");
+						org.vcell.util.gui.DialogUtils.showErrorDialog("Please select a structure and set its size");
 					}
 				}
 				if (option == JOptionPane.OK_OPTION) {
@@ -251,7 +252,7 @@ private File showGeometryModelXMLFileChooser(java.util.Hashtable hashTable) thro
 	UserPreferences userPreferences = (UserPreferences)hashTable.get("userPreferences");
 	TopLevelWindowManager topLevelWindowManager = (TopLevelWindowManager)hashTable.get("topLevelWindowManager");
 	String defaultPath = userPreferences.getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
-	cbit.gui.VCFileChooser fileChooser = new cbit.gui.VCFileChooser(defaultPath);
+	org.vcell.util.gui.VCFileChooser fileChooser = new org.vcell.util.gui.VCFileChooser(defaultPath);
 	fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 	fileChooser.setMultiSelectionEnabled(false);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_VCML);
@@ -314,7 +315,7 @@ private File showMathModelXMLFileChooser(java.util.Hashtable hashTable) throws j
 	UserPreferences userPreferences = (UserPreferences)hashTable.get("userPreferences");
 	TopLevelWindowManager topLevelWindowManager = (TopLevelWindowManager)hashTable.get("topLevelWindowManager");
 	String defaultPath = userPreferences.getGenPref(UserPreferences.GENERAL_LAST_PATH_USED);
-	cbit.gui.VCFileChooser fileChooser = new cbit.gui.VCFileChooser(defaultPath);
+	org.vcell.util.gui.VCFileChooser fileChooser = new org.vcell.util.gui.VCFileChooser(defaultPath);
 	fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 	fileChooser.setMultiSelectionEnabled(false);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_CELLML);

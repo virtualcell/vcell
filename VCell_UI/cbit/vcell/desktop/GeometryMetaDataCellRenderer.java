@@ -1,9 +1,5 @@
 package cbit.vcell.desktop;
 import cbit.vcell.mathmodel.*;
-import cbit.util.*;
-import cbit.util.document.BioModelInfo;
-import cbit.util.document.MathModelInfo;
-import cbit.util.document.Version;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -16,6 +12,11 @@ import cbit.vcell.geometry.GeometryInfo;
  * @author: 
  */
 import javax.swing.*;
+
+import org.vcell.util.*;
+import org.vcell.util.document.BioModelInfo;
+import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.Version;
  
 public class GeometryMetaDataCellRenderer extends VCellBasicCellRenderer {
 /**

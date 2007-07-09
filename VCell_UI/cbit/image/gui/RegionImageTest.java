@@ -1,8 +1,5 @@
 package cbit.image.gui;
 
-import cbit.util.Origin;
-import cbit.util.Extent;
-import cbit.util.ISize;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryException;
 import cbit.vcell.geometry.GeometryTest;
@@ -11,6 +8,10 @@ import cbit.vcell.simdata.SourceDataInfo;
 import cbit.image.ImageException;
 
 import java.util.Date;
+
+import org.vcell.util.Extent;
+import org.vcell.util.ISize;
+import org.vcell.util.Origin;
 /**
  * Insert the type's description here.
  * Creation date: (3/28/2002 12:05:35 PM)
@@ -115,7 +116,7 @@ public static void displayImages(cbit.image.VCImage image1, cbit.image.VCImage i
  * @return cbit.image.VCImage
  */
 public static cbit.image.VCImage getExample1() throws ImageException {
-	cbit.util.Extent extent = new cbit.util.Extent(1.0,1.0,1.0);
+	org.vcell.util.Extent extent = new org.vcell.util.Extent(1.0,1.0,1.0);
 	int nX = 40;
 	int nY = 40;
 	int nZ = 1;
@@ -197,7 +198,7 @@ public static cbit.image.VCImage getImage(RegionImage regionImage) throws ImageE
 			}
 		}
 	}
-	cbit.util.Extent extent = new cbit.util.Extent(1.0,1.0,1.0);
+	org.vcell.util.Extent extent = new org.vcell.util.Extent(1.0,1.0,1.0);
 	cbit.image.VCImage vcImage = new cbit.image.VCImageUncompressed(null,pixels,extent,nX,nY,nZ);
 	return vcImage;
 }
@@ -212,7 +213,7 @@ public static cbit.image.gui.ImagePaneView getImagePaneView(cbit.image.VCImage i
 	int nX = image.getNumX();
 	int nY = image.getNumY();
 	int nZ = image.getNumZ();
-	cbit.util.Range range = new cbit.util.Range(0,image.getNumPixelClasses());
+	org.vcell.util.Range range = new org.vcell.util.Range(0,image.getNumPixelClasses());
 	cbit.vcell.simdata.SourceDataInfo sdi = new cbit.vcell.simdata.SourceDataInfo(cbit.vcell.simdata.SourceDataInfo.INDEX_TYPE,image.getPixels(),new Extent(1,1,1),new Origin(0,0,0),range,0,nX,1,nY,nX,nZ,nX*nY);
 	aImagePaneView.getImagePaneModel().setMode(cbit.image.gui.ImagePaneModel.NORMAL_MODE);
 	cbit.vcell.simdata.DisplayAdapterService das = new cbit.vcell.simdata.DisplayAdapterService();

@@ -1,9 +1,10 @@
 package cbit.vcell.client.desktop.biomodel;
-import cbit.util.UserCancelException;
-import cbit.util.document.Versionable;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.modelapp.SimulationContext;
 import javax.swing.*;
+
+import org.vcell.util.UserCancelException;
+import org.vcell.util.document.Versionable;
 
 import cbit.vcell.client.database.DocumentManager;
 import cbit.vcell.client.*;
@@ -28,7 +29,7 @@ public class BioModelEditor extends JPanel {
 	private JSeparator ivjJSeparator1 = null;
 	private JMenuItem ivjOpenAppMenuItem = null;
 	private JMenuItem ivjRenameMenuItem = null;
-	private cbit.gui.JInternalFrameEnhanced ivjjInternalFrameApplication = null;
+	private org.vcell.util.gui.JInternalFrameEnhanced ivjjInternalFrameApplication = null;
 	private JMenuBar ivjjInternalFrameApplicationJMenuBar = null;
 	private cbit.vcell.biomodel.BioModel fieldBioModel = new BioModel(null);
 	private DocumentManager fieldDocumentManager = null;
@@ -618,10 +619,10 @@ public DocumentManager getDocumentManager() {
  * @return cbit.gui.JInternalFrameEnhanced
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-public cbit.gui.JInternalFrameEnhanced getjInternalFrameApplication() {
+public org.vcell.util.gui.JInternalFrameEnhanced getjInternalFrameApplication() {
 	if (ivjjInternalFrameApplication == null) {
 		try {
-			ivjjInternalFrameApplication = new cbit.gui.JInternalFrameEnhanced();
+			ivjjInternalFrameApplication = new org.vcell.util.gui.JInternalFrameEnhanced();
 			ivjjInternalFrameApplication.setName("jInternalFrameApplication");
 			ivjjInternalFrameApplication.setVisible(true);
 			ivjjInternalFrameApplication.setStripped(true);

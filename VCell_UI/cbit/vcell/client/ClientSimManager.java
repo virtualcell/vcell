@@ -1,7 +1,4 @@
 package cbit.vcell.client;
-import cbit.gui.AsynchProgressPopup;
-import cbit.gui.DialogUtils;
-import cbit.gui.SwingWorker;
 import cbit.vcell.client.server.*;
 import cbit.vcell.solvers.SimulationStatus;
 import cbit.vcell.simulation.*;
@@ -9,12 +6,16 @@ import cbit.vcell.simulation.*;
 import cbit.vcell.client.data.*;
 import javax.swing.*;
 
+import org.vcell.util.*;
+import org.vcell.util.gui.AsynchProgressPopup;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.SwingWorker;
+
 import java.awt.Dimension;
 import java.beans.*;
 import cbit.vcell.client.desktop.simulation.*;
 
 import java.util.*;
-import cbit.util.*;
 /**
  * Insert the type's description here.
  * Creation date: (6/7/2004 10:31:36 AM)

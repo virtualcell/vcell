@@ -16,9 +16,9 @@ public class ImageContainerPanelTool implements CommandListener, MouseListener, 
 	private boolean bPickMode = false;
 
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private cbit.util.CoordinateIndex fieldClickedPoint = new cbit.util.CoordinateIndex();
-	private cbit.util.CoordinateIndex fieldBeginLine = new cbit.util.CoordinateIndex();
-	private cbit.util.CoordinateIndex fieldEndLine = new cbit.util.CoordinateIndex();
+	private org.vcell.util.CoordinateIndex fieldClickedPoint = new org.vcell.util.CoordinateIndex();
+	private org.vcell.util.CoordinateIndex fieldBeginLine = new org.vcell.util.CoordinateIndex();
+	private org.vcell.util.CoordinateIndex fieldEndLine = new org.vcell.util.CoordinateIndex();
 	private int fieldSliceNumber = 0;
 	private int fieldSlicePlane = 2;
 /**
@@ -83,7 +83,7 @@ public void firePropertyChange(String propertyName, Object oldValue, Object newV
  * @return The beginLine property value.
  * @see #setBeginLine
  */
-public cbit.util.CoordinateIndex getBeginLine() {
+public org.vcell.util.CoordinateIndex getBeginLine() {
 	return fieldBeginLine;
 }
 /**
@@ -91,7 +91,7 @@ public cbit.util.CoordinateIndex getBeginLine() {
  * @return The clickedPoint property value.
  * @see #setClickedPoint
  */
-public cbit.util.CoordinateIndex getClickedPoint() {
+public org.vcell.util.CoordinateIndex getClickedPoint() {
 	return fieldClickedPoint;
 }
 /**
@@ -99,7 +99,7 @@ public cbit.util.CoordinateIndex getClickedPoint() {
  * @return The endLine property value.
  * @see #setEndLine
  */
-public cbit.util.CoordinateIndex getEndLine() {
+public org.vcell.util.CoordinateIndex getEndLine() {
 	return fieldEndLine;
 }
 /**
@@ -166,7 +166,7 @@ public void mouseClicked(java.awt.event.MouseEvent e) {
 		if(currentImage == null){
 			return;
 		}
-		cbit.util.CoordinateIndex currentCI = getImageContainer().getCoordinateIndexFromDisplay(currentImage.x, currentImage.y);
+		org.vcell.util.CoordinateIndex currentCI = getImageContainer().getCoordinateIndexFromDisplay(currentImage.x, currentImage.y);
 		setClickedPoint(currentCI);
 	} catch (Exception exc) {
 		exc.printStackTrace();
@@ -271,8 +271,8 @@ public void mouseReleased(java.awt.event.MouseEvent event) {
 				//
 				// get real image coordinates from display coordinates
 				//
-				cbit.util.CoordinateIndex beginCI = getImageContainer().getCoordinateIndexFromDisplay(beginImage.x,beginImage.y);
-				cbit.util.CoordinateIndex endCI = getImageContainer().getCoordinateIndexFromDisplay(endImage.x,endImage.y);
+				org.vcell.util.CoordinateIndex beginCI = getImageContainer().getCoordinateIndexFromDisplay(beginImage.x,beginImage.y);
+				org.vcell.util.CoordinateIndex endCI = getImageContainer().getCoordinateIndexFromDisplay(endImage.x,endImage.y);
 				cbit.plot.PlotData lineScan = getImageContainer().getLineScan(beginImage,endImage);
 				String beginCoordString = getImageContainer().getCoordinateString(beginCI.x,beginCI.y,beginCI.z);
 				String endCoordString = getImageContainer().getCoordinateString(endCI.x,endCI.y,endCI.z);
@@ -306,7 +306,7 @@ public void refreshStatus(java.awt.Point canvasPoint) {
 	java.awt.Point imagePoint = imageContainerPanel.getImagePaneScroller().getImagePaneView().getImagePoint(canvasPoint);
 	String statusText = new String("");
 	double value;
-	cbit.util.CoordinateIndex ci;
+	org.vcell.util.CoordinateIndex ci;
 	if (imagePoint!=null){	
 		try {
 			ci = getImageContainer().getCoordinateIndexFromDisplay(imagePoint.x,imagePoint.y);
@@ -370,7 +370,7 @@ public void setAxisZ() {
  * @param beginLine The new value for the property.
  * @see #getBeginLine
  */
-private void setBeginLine(cbit.util.CoordinateIndex beginLine) {
+private void setBeginLine(org.vcell.util.CoordinateIndex beginLine) {
 	fieldBeginLine = beginLine;
 }
 /**
@@ -378,8 +378,8 @@ private void setBeginLine(cbit.util.CoordinateIndex beginLine) {
  * @param clickedPoint The new value for the property.
  * @see #getClickedPoint
  */
-private void setClickedPoint(cbit.util.CoordinateIndex clickedPoint) {
-	cbit.util.CoordinateIndex oldValue = fieldClickedPoint;
+private void setClickedPoint(org.vcell.util.CoordinateIndex clickedPoint) {
+	org.vcell.util.CoordinateIndex oldValue = fieldClickedPoint;
 	fieldClickedPoint = clickedPoint;
 	firePropertyChange("clickedPoint", oldValue, clickedPoint);
 }
@@ -388,8 +388,8 @@ private void setClickedPoint(cbit.util.CoordinateIndex clickedPoint) {
  * @param endLine The new value for the property.
  * @see #getEndLine
  */
-private void setEndLine(cbit.util.CoordinateIndex endLine) {
-	cbit.util.CoordinateIndex oldValue = fieldEndLine;
+private void setEndLine(org.vcell.util.CoordinateIndex endLine) {
+	org.vcell.util.CoordinateIndex oldValue = fieldEndLine;
 	fieldEndLine = endLine;
 	firePropertyChange("endLine", oldValue, endLine);
 }

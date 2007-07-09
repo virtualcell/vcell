@@ -9,13 +9,13 @@ import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.ui.ScopedExpression;
+import org.vcell.util.BeanUtils;
 
 import cbit.vcell.model.Membrane;
 import cbit.vcell.modelapp.GeometryContext;
 import cbit.vcell.modelapp.MembraneMapping;
 import cbit.vcell.modelapp.StructureMapping;
 import cbit.vcell.mapping.*;
-import cbit.util.BeanUtils;
 import edu.uchc.vcell.expression.internal.*;
 /**
  * Insert the type's description here.

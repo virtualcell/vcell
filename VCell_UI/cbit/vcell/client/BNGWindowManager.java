@@ -1,5 +1,4 @@
 package cbit.vcell.client;
-import cbit.util.UserCancelException;
 import cbit.vcell.client.server.UserMessage;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.DisplayBNGOutput;
@@ -11,14 +10,16 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.File;
 
-import cbit.gui.FileFilters;
-import cbit.gui.VCFileChooser;
 import cbit.vcell.server.bionetgen.BNGInput;
 import cbit.vcell.server.bionetgen.BNGService;
 import cbit.vcell.client.bionetgen.BNGOutputPanel;
 import cbit.vcell.desktop.controls.AsynchClientTask;
 
 import javax.swing.JFileChooser;
+
+import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.FileFilters;
+import org.vcell.util.gui.VCFileChooser;
 
 
 /**
@@ -227,7 +228,7 @@ public String uploadBNGLFile() throws java.io.FileNotFoundException, java.io.IOE
 			}
 			// Check if file has .bngl extension
 			if (!selectedFile.getPath().endsWith(".bngl")) {
-				cbit.gui.DialogUtils.showErrorDialog("File " + selectedFile.getPath() + " is not a .bngl file");
+				org.vcell.util.gui.DialogUtils.showErrorDialog("File " + selectedFile.getPath() + " is not a .bngl file");
 				throw new RuntimeException("File " + selectedFile.getPath() + " is not a .bngl file");
 			}
 			// Read characters from file into character array and transfer into string buffer.
