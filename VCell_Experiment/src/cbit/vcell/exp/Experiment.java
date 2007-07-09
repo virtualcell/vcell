@@ -9,7 +9,7 @@ import cbit.vcell.model.BioNameScope;
  * Creation date: (12/31/2004 6:08:52 AM)
  * @author: Jim Schaff
  */
-public class Experiment implements cbit.util.Matchable, java.io.Serializable, org.vcell.expression.ScopedSymbolTable {
+public class Experiment implements org.vcell.util.Matchable, java.io.Serializable, org.vcell.expression.ScopedSymbolTable {
 // name, description
 	private java.lang.String fieldName = new String();
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
@@ -28,7 +28,7 @@ public class Experiment implements cbit.util.Matchable, java.io.Serializable, or
 			return children;
 		}
 		public String getName() {
-			return cbit.util.TokenMangler.fixTokenStrict(Experiment.this.getName());
+			return org.vcell.util.TokenMangler.fixTokenStrict(Experiment.this.getName());
 		}
 		public org.vcell.expression.NameScope getParent() {
 			//System.out.println("ExperimentNameScope.getParent() returning null ... no parent");
@@ -112,7 +112,7 @@ public class Experiment implements cbit.util.Matchable, java.io.Serializable, or
 		}
 
 
-		public boolean compareEqual(cbit.util.Matchable obj) {
+		public boolean compareEqual(org.vcell.util.Matchable obj) {
 			if (!(obj instanceof ExperimentParameter)){
 				return false;
 			}
@@ -240,7 +240,7 @@ public synchronized void addVetoableChangeListener(java.lang.String propertyName
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	return false;
 }
 
