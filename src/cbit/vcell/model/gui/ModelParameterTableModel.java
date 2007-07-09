@@ -9,6 +9,7 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.geometry.*;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.FluxReaction;
+import cbit.vcell.model.VCMODL;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.parser.ExpressionException;
 import cbit.util.BeanUtils;
@@ -86,13 +87,14 @@ public class ModelParameterTableModel extends cbit.vcell.messaging.admin.ManageT
 			return 1;
 		}
 	}
-	private final int NUM_COLUMNS = 5;
+	private final int NUM_COLUMNS = 6;
 	private final int COLUMN_SCOPE = 0;
 	private final int COLUMN_DESCRIPTION = 1;
 	private final int COLUMN_NAME = 2;
 	private final int COLUMN_VALUE = 3;
 	private final int COLUMN_UNIT = 4;
-	private String LABELS[] = { "Context", "Description", "Parameter", "Expression", "Units"  };
+	private final int COLUMN_ANNOTATION = 5;
+	private String LABELS[] = { "Context", "Description", "Parameter", "Expression", "Units" , "Annotation" };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private final int indexes[] = new int[0];
 	private cbit.vcell.model.Model fieldModel = null;
@@ -177,6 +179,9 @@ public Class getColumnClass(int column) {
 		case COLUMN_DESCRIPTION:{
 			return String.class;
 		}
+		case COLUMN_ANNOTATION:{
+			return String.class;
+		}
 		default:{
 			return Object.class;
 		}
@@ -252,6 +257,35 @@ private cbit.vcell.model.Parameter getParameter(int row) {
 	throw new RuntimeException("rowIndex = "+row+" not found");
 }
 
+private ReactionStep getReactionStep(int row) {
+
+	if (getModel()==null){
+		return null;
+	}
+	if (row<0){
+		throw new RuntimeException("ParameterTableModel.getValueAt(), row = "+row+" out of range");
+	}
+	int count = getModel().getModelParameters().length;
+	int index = row;
+	if (index<count){
+		return null;
+	}
+	index -= count;	// not in ModelParameters, subtract offset and move on
+	ReactionStep[] reactionSteps = getModel().getReactionSteps();
+	for (int i = 0; index>=0 && i < reactionSteps.length; i++){
+		count = reactionSteps[i].getKinetics().getUnresolvedParameters().length;
+		if (index < count){
+			return reactionSteps[i];
+		}
+		index -= count;
+		count = reactionSteps[i].getKinetics().getKineticsParameters().length;
+		if (index < count){
+			return reactionSteps[i];
+		}
+		index -= count;
+	}
+	throw new RuntimeException("rowIndex = "+row+" not found");
+}
 
 /**
  * Accessor for the propertyChange field.
@@ -338,6 +372,17 @@ public Object getValueAt(int row, int col) {
 			//return new cbit.vcell.parser.ScopedExpression(parameter.getExpression(),getBioModel().getModel().getNameScope());
 			return new cbit.vcell.parser.ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
 		}
+		case COLUMN_ANNOTATION:{
+			//System.out.println(row+" "+getParameter(row));
+			ReactionStep rxStep = getReactionStep(row);
+			if(rxStep != null &&
+				parameter instanceof Kinetics.KineticsParameter &&
+				((Kinetics.KineticsParameter)parameter).getRole() == Kinetics.ROLE_Rate){
+				return (rxStep.getAnnotation() != null?rxStep.getAnnotation():"");
+			}
+			return null;
+			//return (parameter instanceof Kinetics.KineticsParameter?parameter.getDescription():"");
+		}
 		default:{
 			return null;
 		}
@@ -372,17 +417,27 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 		return parameter.isExpressionEditable();
 	}else if (columnIndex == COLUMN_DESCRIPTION){
 		return false;
+	}else if (columnIndex == COLUMN_ANNOTATION){
+		return false;
 	}else{
 		return false;
 	}
 }
 
+public ReactionStep getEditableAnnotationReactionStep(int rowIndex){
+	cbit.vcell.model.Parameter parameter = (cbit.vcell.model.Parameter)getData().get(rowIndex);
+	if(parameter instanceof Kinetics.KineticsParameter &&
+	((Kinetics.KineticsParameter)parameter).getRole() == Kinetics.ROLE_Rate){
+		return getReactionStep(rowIndex);
+	}
+	return null;
+}
 
 /**
  * isSortable method comment.
  */
 public boolean isSortable(int col) {
-	return true;
+	return (col != COLUMN_ANNOTATION);
 }
 
 
@@ -556,6 +611,25 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 								//fireTableRowsUpdated(rowIndex,rowIndex);
 							}
 						}
+					}
+				}catch (cbit.vcell.units.VCUnitException e){
+					e.printStackTrace(System.out);
+					cbit.vcell.client.PopupGenerator.showErrorDialog("Error changing parameter units:\n"+e.getMessage());
+				}
+				break;
+			}
+			case COLUMN_ANNOTATION:{
+				try {
+					if (aValue instanceof String){
+						String rxStepAnnotation = (String)aValue;
+//						if (!parameter.getUnitDefinition().getSymbol().equals(newUnitSymbol)){
+							if (parameter instanceof cbit.vcell.model.Kinetics.KineticsParameter){
+								getReactionStep(rowIndex).setAnnotation(rxStepAnnotation);
+//								Kinetics.KineticsParameter kineticsParameter = (Kinetics.KineticsParameter)parameter;
+//								kineticsParameter.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.getInstance(newUnitSymbol));
+								fireTableRowsUpdated(rowIndex,rowIndex);
+							}
+//						}
 					}
 				}catch (cbit.vcell.units.VCUnitException e){
 					e.printStackTrace(System.out);
