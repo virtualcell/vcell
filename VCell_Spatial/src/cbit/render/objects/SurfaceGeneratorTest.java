@@ -1,7 +1,7 @@
 package cbit.render.objects;
-import cbit.util.Extent;
-import cbit.util.ISize;
-import cbit.util.Origin;
+import org.vcell.util.Extent;
+import org.vcell.util.ISize;
+import org.vcell.util.Origin;
 /**
  * Insert the type's description here.
  * Creation date: (3/11/2002 12:45:46 PM)

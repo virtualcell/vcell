@@ -6,7 +6,8 @@ package cbit.render.objects;
 ©*/
 import java.io.*;
 import java.util.zip.*;
-import cbit.util.Extent;
+
+import org.vcell.util.Extent;
 /**
  * This type was created in VisualAge.
  */
@@ -29,7 +30,7 @@ public ByteImage(ByteImage image) throws ImageException {
  * @param name java.lang.String
  * @param annot java.lang.String
  */
-public ByteImage(byte pixels[], cbit.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throws ImageException {
+public ByteImage(byte pixels[], org.vcell.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throws ImageException {
 	super(aExtent, aNumX, aNumY, aNumZ);
 	if (aNumX*aNumY*aNumZ != pixels.length){
 		throw new IllegalArgumentException("size ("+aNumX+","+aNumY+","+aNumZ+") not consistent with "+pixels.length+" pixels");
@@ -45,7 +46,7 @@ public ByteImage(byte pixels[], cbit.util.Extent aExtent, int aNumX, int aNumY, 
  * @param name java.lang.String
  * @param annot java.lang.String
  */
-public ByteImage(int sourceValues[], cbit.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throws ImageException {
+public ByteImage(int sourceValues[], org.vcell.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throws ImageException {
 	super(aExtent, aNumX, aNumY, aNumZ);
 	if (aNumX*aNumY*aNumZ != sourceValues.length){
 		throw new IllegalArgumentException("size ("+aNumX+","+aNumY+","+aNumZ+") not consistent with "+sourceValues.length+" pixels");
@@ -187,7 +188,7 @@ public static ByteImage concatenateZSeries(ByteImage images[]) throws ImageExcep
 	int nX = images[0].getNumX();
 	int nY = images[0].getNumY();
 	int nZ = images[0].getNumZ();
-	cbit.util.Extent extent0 = images[0].getExtent();
+	org.vcell.util.Extent extent0 = images[0].getExtent();
 	for (int i=1;i<images.length;i++){
 		if (images[i].getNumX() != nX){
 			throw new ImageException("image "+(i+1)+" x dimension doesn't match the first image");
@@ -210,7 +211,7 @@ public static ByteImage concatenateZSeries(ByteImage images[]) throws ImageExcep
 			bigBuffer[index++] = currPix[j];
 		}
 	}		
-	ByteImage byteImage = new ByteImage(bigBuffer,new cbit.util.Extent(extent0.getX(),extent0.getY(),extent0.getZ()*images.length),nX,nY,nZ);
+	ByteImage byteImage = new ByteImage(bigBuffer,new org.vcell.util.Extent(extent0.getX(),extent0.getY(),extent0.getZ()*images.length),nX,nY,nZ);
 	return byteImage;
 }
 }

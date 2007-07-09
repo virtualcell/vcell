@@ -219,7 +219,7 @@ private SurfaceCollection generateSurface(RegionImage image, Node[][][] nodes, B
 }
 
 
-public SurfaceCollection generateSurface(RegionImage regionImage, int dimension, cbit.util.Extent extent, cbit.util.Origin origin) {
+public SurfaceCollection generateSurface(RegionImage regionImage, int dimension, org.vcell.util.Extent extent, org.vcell.util.Origin origin) {
 	double dX = extent.getX() / (regionImage.getNumX() -1);
 	double dY = extent.getY() / (regionImage.getNumY() -1);
 	double dZ = extent.getZ() / (regionImage.getNumZ() -1);
@@ -416,7 +416,7 @@ private SurfaceCollection generateSurface(RegionImageOrig image, Node[][][] node
 }
 
 
-public SurfaceCollection generateSurface(RegionImageOrig regionImage, int dimension, cbit.util.Extent extent, cbit.util.Origin origin) {
+public SurfaceCollection generateSurface(RegionImageOrig regionImage, int dimension, org.vcell.util.Extent extent, org.vcell.util.Origin origin) {
 	double dX = extent.getX() / regionImage.getNumX();
 	double dY = extent.getY() / regionImage.getNumY();
 	double dZ = extent.getZ() / regionImage.getNumZ();

@@ -6,9 +6,10 @@ import java.awt.event.WindowListener;
 
 import javax.swing.JFrame;
 
-import cbit.util.Extent;
-import cbit.util.ISize;
-import cbit.util.Origin;
+import org.vcell.util.Extent;
+import org.vcell.util.ISize;
+import org.vcell.util.Origin;
+
 
 public class ByteImageTest {
 	public static ByteImage getBoxInBox(ISize sampleSize, Extent extent, double sizeRatio) throws ImageException {

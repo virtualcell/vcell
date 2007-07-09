@@ -456,7 +456,7 @@ private static RegionMask[] calculateRegions3D(byte[] imageArray, int sliceOffse
 		}
 	}
 			
-	return (RegionMask[])cbit.util.BeanUtils.getArray(regionMaskList,RegionImage.RegionMask.class);
+	return (RegionMask[])org.vcell.util.BeanUtils.getArray(regionMaskList,RegionImage.RegionMask.class);
 }
 
 
@@ -504,7 +504,7 @@ private static RegionMask[] calculateRegions3Dfaster(byte[] imageArray, int slic
 		}
 	}
 			
-	return (RegionMask[])cbit.util.BeanUtils.getArray(regionMaskList,RegionImage.RegionMask.class);
+	return (RegionMask[])org.vcell.util.BeanUtils.getArray(regionMaskList,RegionImage.RegionMask.class);
 }
 
 

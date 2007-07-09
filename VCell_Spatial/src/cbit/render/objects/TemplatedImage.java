@@ -25,7 +25,7 @@ public class TemplatedImage<datatype extends Number> extends Image implements Se
  * @param name java.lang.String
  * @param annot java.lang.String
  */
-public TemplatedImage(datatype pixels[], cbit.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throws ImageException {
+public TemplatedImage(datatype pixels[], org.vcell.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throws ImageException {
 	super(aExtent, aNumX, aNumY, aNumZ);
 	if (aNumX*aNumY*aNumZ != pixels.length){
 		throw new IllegalArgumentException("size ("+aNumX+","+aNumY+","+aNumZ+") not consistent with "+pixels.length+" pixels");

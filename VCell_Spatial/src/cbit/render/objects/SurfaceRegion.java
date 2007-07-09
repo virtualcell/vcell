@@ -20,7 +20,7 @@ public SurfaceRegion(String argName, double size, VCUnitDefinition sizeUnit) {
  * @return boolean
  * @param obj java.lang.Object
  */
-public boolean compareEqual(cbit.util.Matchable obj) {
+public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (obj instanceof SurfaceRegion){
 		SurfaceRegion surfaceRegion = (SurfaceRegion)obj;
 		if (!super.compareEqual0(surfaceRegion)){

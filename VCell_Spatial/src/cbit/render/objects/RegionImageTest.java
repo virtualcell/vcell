@@ -1,9 +1,10 @@
 package cbit.render.objects;
 
-import cbit.util.Origin;
-import cbit.util.Extent;
-import cbit.util.ISize;
 import java.util.Date;
+
+import org.vcell.util.Extent;
+import org.vcell.util.ISize;
+import org.vcell.util.Origin;
 /**
  * Insert the type's description here.
  * Creation date: (3/28/2002 12:05:35 PM)
@@ -75,7 +76,7 @@ public static RegionImage createRegionImage(ByteImage vcImage) throws ImageExcep
  * @return ByteImage
  */
 public static ByteImage getExample1() throws ImageException {
-	cbit.util.Extent extent = new cbit.util.Extent(1.0,1.0,1.0);
+	org.vcell.util.Extent extent = new org.vcell.util.Extent(1.0,1.0,1.0);
 	int nX = 40;
 	int nY = 40;
 	int nZ = 1;
@@ -148,7 +149,7 @@ public static ByteImage getImage(RegionImage regionImage) throws ImageException 
 			}
 		}
 	}
-	cbit.util.Extent extent = new cbit.util.Extent(1.0,1.0,1.0);
+	org.vcell.util.Extent extent = new org.vcell.util.Extent(1.0,1.0,1.0);
 	ByteImage vcImage = new ByteImage(pixels,extent,nX,nY,nZ);
 	return vcImage;
 }
