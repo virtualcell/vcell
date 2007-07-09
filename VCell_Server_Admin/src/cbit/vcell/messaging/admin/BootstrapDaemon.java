@@ -18,9 +18,9 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
+import org.vcell.util.MessageConstants;
+import org.vcell.util.PropertyLoader;
 
-import cbit.util.MessageConstants;
-import cbit.util.PropertyLoader;
 import cbit.vcell.messaging.JmsUtils;
 import cbit.vcell.messaging.ManageConstants;
 import cbit.vcell.messaging.ManageUtils;
@@ -335,13 +335,13 @@ protected void readConfiguration() throws FileNotFoundException, IOException, JD
 	}
 
 	if (vcServerInfo.getLogfile() == null || vcServerInfo.getLogfile().trim().length() == 0 || vcServerInfo.getLogfile().equals("-")) {
-		log = new cbit.util.StdoutSessionLog(vcServerInfo.getServerName());
+		log = new org.vcell.util.StdoutSessionLog(vcServerInfo.getServerName());
 	} else {
 		ManageUtils.archiveByDateAndTime(vcServerInfo.getLogfile(), vcServerInfo.getArchiveDir());
 		PrintStream ps = new java.io.PrintStream(new java.io.FileOutputStream(vcServerInfo.getLogfile(), true), true);
 		System.setOut(ps);
 		System.setErr(ps);
-		log = new cbit.util.StdoutSessionLog(vcServerInfo.getServerName());
+		log = new org.vcell.util.StdoutSessionLog(vcServerInfo.getServerName());
 	}
 
 	// service

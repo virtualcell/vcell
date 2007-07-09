@@ -4,8 +4,9 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.vcell.util.gui.sorttable.ManageTableModel;
+
 import cbit.vcell.messaging.VCServiceInfo;
-import cbit.vcell.messaging.admin.sorttable.ManageTableModel;
 
 /**
  * Insert the type's description here.

@@ -20,8 +20,9 @@ import javax.jms.Topic;
 
 import org.jdom.JDOMException;
 import org.jdom.output.XMLOutputter;
+import org.vcell.util.MessageConstants;
+import org.vcell.util.SessionLog;
 
-import cbit.util.SessionLog;
 import cbit.vcell.messaging.ControlMessageCollector;
 import cbit.vcell.messaging.ControlTopicListener;
 import cbit.vcell.messaging.JmsConnectionFactory;
@@ -29,7 +30,6 @@ import cbit.vcell.messaging.JmsConnectionFactoryImpl;
 import cbit.vcell.messaging.JmsUtils;
 import cbit.vcell.messaging.ManageConstants;
 import cbit.vcell.messaging.ManageUtils;
-import cbit.util.MessageConstants;
 import cbit.vcell.messaging.MessagePropertyNotFoundException;
 import cbit.vcell.messaging.VCServerInfo;
 import cbit.vcell.messaging.VCServiceInfo;

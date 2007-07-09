@@ -2,8 +2,9 @@ package cbit.vcell.messaging.admin;
 
 import java.util.Date;
 
+import org.vcell.util.gui.sorttable.ManageTableModel;
+
 import cbit.vcell.messaging.VCServerInfo;
-import cbit.vcell.messaging.admin.sorttable.ManageTableModel;
 
 /**
  * Insert the type's description here.

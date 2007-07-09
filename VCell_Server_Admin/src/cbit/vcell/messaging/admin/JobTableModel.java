@@ -1,7 +1,8 @@
 package cbit.vcell.messaging.admin;
 import java.util.Date;
 
-import cbit.vcell.messaging.admin.sorttable.ManageTableModel;
+import org.vcell.util.gui.sorttable.ManageTableModel;
+
 import cbit.vcell.solvers.SimpleJobStatus;
 
 /**

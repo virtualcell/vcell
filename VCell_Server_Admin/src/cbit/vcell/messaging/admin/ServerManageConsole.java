@@ -31,15 +31,17 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
-import cbit.gui.DateRenderer;
-import cbit.gui.SwingWorker;
+import org.vcell.util.BigString;
+import org.vcell.util.MessageConstants;
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.gui.DateRenderer;
+import org.vcell.util.gui.SwingWorker;
+import org.vcell.util.gui.sorttable.ManageTableModel;
+
 import cbit.rmi.event.VCellServerID;
-import cbit.util.BigString;
-import cbit.util.MessageConstants;
-import cbit.util.PropertyLoader;
-import cbit.util.SessionLog;
-import cbit.util.document.KeyValue;
-import cbit.util.document.User;
 import cbit.vcell.messaging.ControlMessageCollector;
 import cbit.vcell.messaging.ControlTopicListener;
 import cbit.vcell.messaging.JmsClientMessaging;
@@ -49,7 +51,6 @@ import cbit.vcell.messaging.ManageConstants;
 import cbit.vcell.messaging.VCServerInfo;
 import cbit.vcell.messaging.VCServiceInfo;
 import cbit.vcell.messaging.VCellTopicSession;
-import cbit.vcell.messaging.admin.sorttable.ManageTableModel;
 import cbit.vcell.messaging.db.SimulationJobTable;
 import cbit.vcell.messaging.server.RpcDbServerProxy;
 import cbit.vcell.messaging.server.RpcSimServerProxy;
@@ -85,11 +86,11 @@ public class ServerManageConsole extends JFrame implements ControlTopicListener 
 	private JTabbedPane ivjTabbedPane = null;
 	private JPanel ivjServerStatusPage = null;
 	private JPanel ivjServerStatusPanel = null;
-	private cbit.vcell.messaging.admin.sorttable.JSortTable ivjServerStatusTable = null;
+	private org.vcell.util.gui.sorttable.JSortTable ivjServerStatusTable = null;
 	private JScrollPane ivjServerStatusTableScrollPane = null;
 	private JPanel ivjServiceStatusPage = null;
 	private JScrollPane ivjJScrollPane1 = null;
-	private cbit.vcell.messaging.admin.sorttable.JSortTable ivjServiceStatusTable = null;
+	private org.vcell.util.gui.sorttable.JSortTable ivjServiceStatusTable = null;
 	private JPanel ivjJPanel5 = null;
 	private JButton ivjServerStatusOpenButton = null;
 	private JPanel ivjJPanel6 = null;
@@ -106,7 +107,7 @@ public class ServerManageConsole extends JFrame implements ControlTopicListener 
 	private JPanel ivjJPanel15 = null;
 	private JPanel ivjJPanel4 = null;
 	private JPanel ivjJPanel9 = null;
-	private cbit.vcell.messaging.admin.sorttable.JSortTable ivjQueryResultTable = null;
+	private org.vcell.util.gui.sorttable.JSortTable ivjQueryResultTable = null;
 	private JPanel ivjQueryStatusPanel = null;
 	private JCheckBox ivjQueryCompletedCheck = null;
 	private JCheckBox ivjQueryFailedCheck = null;
@@ -191,7 +192,7 @@ public class ServerManageConsole extends JFrame implements ControlTopicListener 
 	private JPanel ivjJPanel12 = null;
 	private java.awt.FlowLayout ivjJPanel12FlowLayout = null;
 	private JPanel ivjUserConnectionPage = null;
-	private cbit.vcell.messaging.admin.sorttable.JSortTable ivjUserConnectionTable = null;
+	private org.vcell.util.gui.sorttable.JSortTable ivjUserConnectionTable = null;
 	private JScrollPane ivjJScrollPane4 = null;
 	private UserConnectionTableModel ivjUserConnectionTableModel1 = null;
 	private JLabel ivjNumUserConnectionLabel = null;
@@ -1430,7 +1431,7 @@ public Date getConnectionTimeFromRMIbootstrapLogfile(User user) throws Exception
  * Creation date: (7/19/2004 3:44:01 PM)
  * @return cbit.vcell.messaging.server.RpcDbServerProxy
  */
-private cbit.vcell.messaging.server.RpcDbServerProxy getDbProxy(User user) throws JMSException, cbit.util.DataAccessException, java.rmi.RemoteException {
+private cbit.vcell.messaging.server.RpcDbServerProxy getDbProxy(User user) throws JMSException, org.vcell.util.DataAccessException, java.rmi.RemoteException {
 	if (dbProxyHash == null) {
 		dbProxyHash = new HashMap();
 	}
@@ -3272,10 +3273,10 @@ private javax.swing.JButton getQueryResetButton() {
  * @return cbit.vcell.messaging.admin.sorttable.JSortTable
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.messaging.admin.sorttable.JSortTable getQueryResultTable() {
+private org.vcell.util.gui.sorttable.JSortTable getQueryResultTable() {
 	if (ivjQueryResultTable == null) {
 		try {
-			ivjQueryResultTable = new cbit.vcell.messaging.admin.sorttable.JSortTable();
+			ivjQueryResultTable = new org.vcell.util.gui.sorttable.JSortTable();
 			ivjQueryResultTable.setName("QueryResultTable");
 			getJScrollPane2().setColumnHeaderView(ivjQueryResultTable.getTableHeader());
 			getJScrollPane2().getViewport().setBackingStoreEnabled(true);
@@ -3963,10 +3964,10 @@ private java.awt.FlowLayout getServerStatusPanelFlowLayout() {
  * @return cbit.vcell.messaging.admin.sorttable.JSortTable
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.messaging.admin.sorttable.JSortTable getServerStatusTable() {
+private org.vcell.util.gui.sorttable.JSortTable getServerStatusTable() {
 	if (ivjServerStatusTable == null) {
 		try {
-			ivjServerStatusTable = new cbit.vcell.messaging.admin.sorttable.JSortTable();
+			ivjServerStatusTable = new org.vcell.util.gui.sorttable.JSortTable();
 			ivjServerStatusTable.setName("ServerStatusTable");
 			getServerStatusTableScrollPane().setColumnHeaderView(ivjServerStatusTable.getTableHeader());
 			getServerStatusTableScrollPane().getViewport().setBackingStoreEnabled(true);
@@ -4038,10 +4039,10 @@ private javax.swing.JPanel getServiceStatusPage() {
  * @return cbit.vcell.messaging.admin.sorttable.JSortTable
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.messaging.admin.sorttable.JSortTable getServiceStatusTable() {
+private org.vcell.util.gui.sorttable.JSortTable getServiceStatusTable() {
 	if (ivjServiceStatusTable == null) {
 		try {
-			ivjServiceStatusTable = new cbit.vcell.messaging.admin.sorttable.JSortTable();
+			ivjServiceStatusTable = new org.vcell.util.gui.sorttable.JSortTable();
 			ivjServiceStatusTable.setName("ServiceStatusTable");
 			getJScrollPane1().setColumnHeaderView(ivjServiceStatusTable.getTableHeader());
 			getJScrollPane1().getViewport().setBackingStoreEnabled(true);
@@ -4064,7 +4065,7 @@ private cbit.vcell.messaging.admin.sorttable.JSortTable getServiceStatusTable() 
  * Creation date: (7/19/2004 3:44:01 PM)
  * @return cbit.vcell.messaging.server.RpcsimServerProxy
  */
-private RpcSimServerProxy getSimProxy(User user) throws JMSException, cbit.util.DataAccessException, java.rmi.RemoteException {
+private RpcSimServerProxy getSimProxy(User user) throws JMSException, org.vcell.util.DataAccessException, java.rmi.RemoteException {
 	if (simProxyHash == null) {
 		simProxyHash = new HashMap();
 	}
@@ -4228,10 +4229,10 @@ private javax.swing.JPanel getUserConnectionPage() {
  * @return cbit.vcell.messaging.admin.sorttable.JSortTable
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.messaging.admin.sorttable.JSortTable getUserConnectionTable() {
+private org.vcell.util.gui.sorttable.JSortTable getUserConnectionTable() {
 	if (ivjUserConnectionTable == null) {
 		try {
-			ivjUserConnectionTable = new cbit.vcell.messaging.admin.sorttable.JSortTable();
+			ivjUserConnectionTable = new org.vcell.util.gui.sorttable.JSortTable();
 			ivjUserConnectionTable.setName("UserConnectionTable");
 			getJScrollPane4().setColumnHeaderView(ivjUserConnectionTable.getTableHeader());
 			getJScrollPane4().getViewport().setBackingStoreEnabled(true);
@@ -4811,7 +4812,7 @@ private void pingAll() {
  //*/
 public void prepare() {	
 	try {
-		log = new cbit.util.StdoutSessionLog("Console");
+		log = new org.vcell.util.StdoutSessionLog("Console");
 		PropertyLoader.loadProperties();
 		setTitle("Virtual Cell Management Console -- " + VCellServerID.getSystemServerID());
 		reconnect();
@@ -5417,7 +5418,7 @@ public void setSelectedReturnedSimulationJobStatus(int selectedRow) {
  * Method generated to support the promotion of the userConnectionTableModel attribute.
  * @param arg1 cbit.vcell.messaging.admin.sorttable.SortTableModel
  */
-public void setUserConnectionTableModel(cbit.vcell.messaging.admin.sorttable.SortTableModel arg1) {
+public void setUserConnectionTableModel(org.vcell.util.gui.sorttable.SortTableModel arg1) {
 	getUserConnectionTable().setModel(arg1);
 }
 

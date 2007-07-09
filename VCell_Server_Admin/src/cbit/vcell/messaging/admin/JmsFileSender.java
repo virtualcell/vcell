@@ -4,10 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Enumeration;
 
+import org.vcell.util.PropertyLoader;
+import org.vcell.util.SessionLog;
+
 import progress.message.jclient.channel.RecoverableFileChannel;
 import progress.message.jclient.channel.RecoverableFileChannelFactory;
-import cbit.util.PropertyLoader;
-import cbit.util.SessionLog;
 import cbit.vcell.messaging.JmsConnectionFactory;
 import cbit.vcell.messaging.JmsConnectionFactoryImpl;
 import cbit.vcell.messaging.JmsUtils;
@@ -177,7 +178,7 @@ public static void main(String[] args) {
 		JmsConnectionFactory jmsConnFactory = new JmsConnectionFactoryImpl();
 		VCellQueueConnection queueConn = jmsConnFactory.createQueueConnection();
 
-		SessionLog log = new cbit.util.StdoutSessionLog("test");
+		SessionLog log = new org.vcell.util.StdoutSessionLog("test");
 		JmsFileSender sender = new JmsFileSender(queueConn, log);
 		queueConn.startConnection();
 		java.io.BufferedReader br = new java.io.BufferedReader(new java.io.InputStreamReader(System.in));

@@ -33,7 +33,7 @@ public class ServerDetailDialog extends javax.swing.JDialog {
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private boolean action;
 	private javax.swing.JButton ivjBrowseButton = null;
-	private cbit.vcell.messaging.admin.sorttable.JSortTable ivjServiceConfigTable = null;
+	private org.vcell.util.gui.sorttable.JSortTable ivjServiceConfigTable = null;
 	private javax.swing.JScrollPane ivjJScrollPane2 = null;
 	private boolean bChanged = false;
 	private javax.swing.JPanel ivjJPanel3 = null;
@@ -1164,10 +1164,10 @@ private javax.swing.JButton getModifyServiceButton() {
  * @return cbit.vcell.messaging.admin.sorttable.JSortTable
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private cbit.vcell.messaging.admin.sorttable.JSortTable getServiceConfigTable() {
+private org.vcell.util.gui.sorttable.JSortTable getServiceConfigTable() {
 	if (ivjServiceConfigTable == null) {
 		try {
-			ivjServiceConfigTable = new cbit.vcell.messaging.admin.sorttable.JSortTable();
+			ivjServiceConfigTable = new org.vcell.util.gui.sorttable.JSortTable();
 			ivjServiceConfigTable.setName("ServiceConfigTable");
 			getJScrollPane2().setColumnHeaderView(ivjServiceConfigTable.getTableHeader());
 			getJScrollPane2().getViewport().setBackingStoreEnabled(true);

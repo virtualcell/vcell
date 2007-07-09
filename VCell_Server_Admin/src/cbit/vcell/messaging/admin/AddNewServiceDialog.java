@@ -1,6 +1,7 @@
 package cbit.vcell.messaging.admin;
 
-import cbit.util.MessageConstants;
+import org.vcell.util.MessageConstants;
+
 import cbit.vcell.messaging.ManageConstants;
 import cbit.vcell.messaging.VCServerInfo;
 import cbit.vcell.messaging.VCServiceInfo;
