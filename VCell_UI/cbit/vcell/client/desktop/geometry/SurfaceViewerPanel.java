@@ -5,10 +5,6 @@ import java.awt.Dimension;
 import javax.media.opengl.GLJPanel;
 
 import cbit.image.VCImage;
-import cbit.render.AxisModelObject;
-import cbit.render.JOGLRenderer;
-import cbit.render.SurfaceCollectionModelObject;
-import cbit.render.VolumeMIP;
 import cbit.render.objects.BoundingBox;
 import cbit.render.objects.ByteImage;
 
@@ -24,6 +20,10 @@ import java.beans.PropertyVetoException;
 
 import javax.swing.SwingConstants;
 
+import org.vcell.render.AxisModelObject;
+import org.vcell.render.JOGLRenderer;
+import org.vcell.render.SurfaceCollectionModelObject;
+import org.vcell.render.VolumeMIP;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 

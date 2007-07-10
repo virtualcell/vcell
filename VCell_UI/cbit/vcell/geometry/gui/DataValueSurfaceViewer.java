@@ -1,10 +1,10 @@
 package cbit.vcell.geometry.gui;
 
 import org.vcell.expression.IExpression;
+import org.vcell.render.SurfaceCanvas;
+import org.vcell.render.SurfaceViewerTool;
 import org.vcell.util.Coordinate;
 
-import cbit.render.SurfaceCanvas;
-import cbit.render.SurfaceViewerTool;
 import cbit.render.objects.Node;
 import cbit.render.objects.Quadrilateral;
 import cbit.render.objects.Surface;
@@ -1903,7 +1903,7 @@ public class DataValueSurfaceViewer extends javax.swing.JPanel implements
 	private SurfaceCanvas getSurfaceCanvas1() {
 		if (ivjSurfaceCanvas1 == null) {
 			try {
-				ivjSurfaceCanvas1 = new cbit.render.SurfaceCanvas();
+				ivjSurfaceCanvas1 = new org.vcell.render.SurfaceCanvas();
 				ivjSurfaceCanvas1.setName("SurfaceCanvas1");
 				// user code begin {1}
 				// user code end
@@ -1946,7 +1946,7 @@ public class DataValueSurfaceViewer extends javax.swing.JPanel implements
 	private SurfaceViewerTool getSurfaceViewerTool1() {
 		if (ivjSurfaceViewerTool1 == null) {
 			try {
-				ivjSurfaceViewerTool1 = new cbit.render.SurfaceViewerTool();
+				ivjSurfaceViewerTool1 = new org.vcell.render.SurfaceViewerTool();
 				// user code begin {1}
 				// user code end
 			} catch (java.lang.Throwable ivjExc) {

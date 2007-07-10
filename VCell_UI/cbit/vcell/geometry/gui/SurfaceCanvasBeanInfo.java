@@ -890,7 +890,7 @@ public java.beans.PropertyDescriptor trackballPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.render.Trackball.class
+					org.vcell.render.Trackball.class
 				};
 				aSetMethod = getBeanClass().getMethod("setTrackball", aSetMethodParameterTypes);
 			} catch (Throwable exception) {

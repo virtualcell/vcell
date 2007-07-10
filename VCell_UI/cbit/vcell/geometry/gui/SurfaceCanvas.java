@@ -1,5 +1,6 @@
 package cbit.vcell.geometry.gui;
-import cbit.render.*;
+import org.vcell.render.*;
+
 import cbit.render.objects.SurfaceCollection;
 import cbit.render.objects.Vect3d;
 
