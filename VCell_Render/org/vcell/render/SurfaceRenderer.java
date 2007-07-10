@@ -1,4 +1,4 @@
-package cbit.render;
+package org.vcell.render;
 import cbit.render.objects.ByteImage;
 import cbit.render.objects.ImageException;
 import cbit.render.objects.Node;

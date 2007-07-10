@@ -1,4 +1,4 @@
-package cbit.render;
+package org.vcell.render;
 
 
 import java.nio.*;
@@ -99,8 +99,8 @@ public class VolumeMIP extends ModelObject {
     	}
         
 		for (int j=0;j<imageHeight;j++){
-			for (int i=0;i<imageWidth;i++){
-				for (int k=0;k<imageDepth;k++){
+			for (int k=0;k<imageDepth;k++){
+				for (int i=0;i<imageWidth;i++){
     				int index = redImage.getIndex(i,j,k);
     				imageBufZXYs[j].put(redPixels[index]);
     				imageBufZXYs[j].put(greenPixels[index]);
@@ -113,19 +113,20 @@ public class VolumeMIP extends ModelObject {
     }
 
 	public void draw(GL gl){
-//		GLU glu = new GLU();
-//		gl.glGetDoublev(GL.GL_PROJECTION_MATRIX, projectionMatrix, 0);
-//		gl.glGetDoublev(GL.GL_MODELVIEW_MATRIX, modelviewMatrix, 0);
-//		gl.glGetIntegerv(GL.GL_VIEWPORT,viewport,0);
-//		glu.gluUnProject(0,0,0,modelviewMatrix,0,projectionMatrix,0,viewport,0,unprojected0.q,0);
-//		glu.gluUnProject(0,0,1,modelviewMatrix,0,projectionMatrix,0,viewport,0,unprojected1.q,0);
-//		Vect3d eyeVector = Vect3d.sub(unprojected0, unprojected1);
-//		double abs_dotX = Math.abs(eyeVector.q[0]); 
-//		double abs_dotY = Math.abs(eyeVector.q[1]); 
-//		double abs_dotZ = Math.abs(eyeVector.q[2]);
-		double abs_dotX = 1.0; 
-		double abs_dotY = 0.0;
-		double abs_dotZ = 0.0;
+		GLU glu = new GLU();
+		gl.glGetDoublev(GL.GL_PROJECTION_MATRIX, projectionMatrix, 0);
+		gl.glGetDoublev(GL.GL_MODELVIEW_MATRIX, modelviewMatrix, 0);
+		gl.glGetIntegerv(GL.GL_VIEWPORT,viewport,0);
+		glu.gluUnProject(0,0,0,modelviewMatrix,0,projectionMatrix,0,viewport,0,unprojected0.q,0);
+		glu.gluUnProject(0,0,1,modelviewMatrix,0,projectionMatrix,0,viewport,0,unprojected1.q,0);
+		Vect3d eyeVector = Vect3d.sub(unprojected0, unprojected1);
+		eyeVector.unit();
+		double abs_dotX = Math.abs(eyeVector.q[0]); 
+		double abs_dotY = Math.abs(eyeVector.q[1]); 
+		double abs_dotZ = Math.abs(eyeVector.q[2]);
+//		double abs_dotX = 1.0; 
+//		double abs_dotY = 0.0;
+//		double abs_dotZ = 0.0;
 		if (abs_dotX >= abs_dotY && abs_dotX >= abs_dotZ){
 	    	if (callListID_X<0 || isDirty()){
 			    if (callListID_X == -1){
@@ -195,17 +196,19 @@ public class VolumeMIP extends ModelObject {
     	    	gl.glTexCoord2f(1f, 0f);	 	gl.glVertex3f(i*ex/imageWidth,ey,0f);
     	        gl.glEnd();
             }
+            break;
         }
         case 1:{
 	        for (int i=0;i<imageHeight;i++){
-	            gl.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGB, imageDepth, imageWidth, 0, GL.GL_RGB, GL.GL_UNSIGNED_BYTE, imageBufZXYs[i]);
+	            gl.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGB, imageWidth, imageDepth, 0, GL.GL_RGB, GL.GL_UNSIGNED_BYTE, imageBufZXYs[i]);
 	            gl.glBegin(GL.GL_QUADS);
 		    	gl.glTexCoord2f(0f, 0f);	    gl.glVertex3f(0f,i*ey/imageHeight,0f);
-		    	gl.glTexCoord2f(0f, 1f);    	gl.glVertex3f(ex,i*ey/imageHeight,0f);
+		    	gl.glTexCoord2f(1f, 0f);    	gl.glVertex3f(ex,i*ey/imageHeight,0f);
 		    	gl.glTexCoord2f(1f, 1f);    	gl.glVertex3f(ex,i*ey/imageHeight,ez);
-		    	gl.glTexCoord2f(1f, 0f);	 	gl.glVertex3f(0f,i*ey/imageHeight,ez);
+		    	gl.glTexCoord2f(0f, 1f);	 	gl.glVertex3f(0f,i*ey/imageHeight,ez);
 		        gl.glEnd();
 	        }
+	        break;
         }
         case 2: {
             for (int i=0;i<imageDepth;i++){
@@ -217,6 +220,7 @@ public class VolumeMIP extends ModelObject {
     	    	gl.glTexCoord2f(1f, 0f);	   	gl.glVertex3f(ex,0f,i*ez/imageDepth);
     	        gl.glEnd();
             }
+            break;
         }
         }
         gl.glDisable(GL.GL_TEXTURE_2D);
