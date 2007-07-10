@@ -954,8 +954,11 @@ private void showAnnotationDialog(java.awt.event.MouseEvent me){
 		if(me.getClickCount() != 2){
 			return;
 		}
-//		System.out.println("double-Click r="+getScrollPaneTable().getSelectedRow()+" c="+getScrollPaneTable().getSelectedColumn());
-		
+		int viewSelectedColIndex = getScrollPaneTable().getSelectedColumn();
+		int modelSelectedColIndex= getScrollPaneTable().convertColumnIndexToModel(viewSelectedColIndex);
+		if(modelSelectedColIndex != ModelParameterTableModel.COLUMN_ANNOTATION){
+			return;
+		}
 		ReactionStep rs =
 			getmodelParameterTableModel().getEditableAnnotationReactionStep(getScrollPaneTable().getSelectedRow());
 		if(rs != null){
@@ -964,7 +967,7 @@ private void showAnnotationDialog(java.awt.event.MouseEvent me){
 				newAnnotation = null;
 			}
 			rs.setAnnotation(newAnnotation);
-			getmodelParameterTableModel().fireTableDataChanged();
+			getmodelParameterTableModel().fireTableRowsUpdated(getScrollPaneTable().getSelectedRow(), getScrollPaneTable().getSelectedRow());
 		}
 	}catch(cbit.gui.UtilCancelException e){
 		//Do Nothing
