@@ -82,7 +82,7 @@ public Simulation addNewSimulation() throws java.beans.PropertyVetoException {
 		if(getMathDescription().isStoch())
 			newSimulation.getSolverTaskDescription().setSolverDescription(cbit.vcell.solver.SolverDescription.StochGibson);
 		else
-			newSimulation.getSolverTaskDescription().setSolverDescription(cbit.vcell.solver.SolverDescription.LSODA);
+			newSimulation.getSolverTaskDescription().setSolverDescription(cbit.vcell.solver.SolverDescription.CVODE);
 	}
 	
 	addSimulation(newSimulation);
