@@ -396,12 +396,12 @@ private void writeFeature_boundaryConditions(CompartmentSubDomain csd) throws Ex
 private void writeMembrane_boundaryConditions(MembraneSubDomain msd) throws Exception {
 	writer.print("BOUNDARY_CONDITIONS ");
 	BoundaryConditionType[] bctypes = new BoundaryConditionType[] {
-			msd.getBoundaryConditionXm(),
-			msd.getBoundaryConditionXp(),
-			msd.getBoundaryConditionYm(),
-			msd.getBoundaryConditionYp(),
-			msd.getBoundaryConditionZm(),
-			msd.getBoundaryConditionZp()
+			msd.getInsideCompartment().getBoundaryConditionXm(),
+			msd.getInsideCompartment().getBoundaryConditionXp(),
+			msd.getInsideCompartment().getBoundaryConditionYm(),
+			msd.getInsideCompartment().getBoundaryConditionYp(),
+			msd.getInsideCompartment().getBoundaryConditionZm(),
+			msd.getInsideCompartment().getBoundaryConditionZp()
 	};
 	writeBoundaryConditions(bctypes);
 	writer.println();
@@ -781,12 +781,12 @@ private void writeMembrane_VarContext_Equation(MembraneSubDomain memSubDomain, E
 		
 		PdeEquation pde = (PdeEquation)equation;
 		BoundaryConditionType[] bctypes = new BoundaryConditionType[] {
-				memSubDomain.getBoundaryConditionXm(),
-				memSubDomain.getBoundaryConditionXp(),
-				memSubDomain.getBoundaryConditionYm(),
-				memSubDomain.getBoundaryConditionYp(),
-				memSubDomain.getBoundaryConditionZm(),
-				memSubDomain.getBoundaryConditionZp()
+				memSubDomain.getInsideCompartment().getBoundaryConditionXm(),
+				memSubDomain.getInsideCompartment().getBoundaryConditionXp(),
+				memSubDomain.getInsideCompartment().getBoundaryConditionYm(),
+				memSubDomain.getInsideCompartment().getBoundaryConditionYp(),
+				memSubDomain.getInsideCompartment().getBoundaryConditionZm(),
+				memSubDomain.getInsideCompartment().getBoundaryConditionZp()
 		};
 		writeBoundaryValues(bctypes, pde);		
 	}	
