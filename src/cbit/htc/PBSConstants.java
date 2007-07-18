@@ -5,7 +5,7 @@ import cbit.vcell.server.PropertyLoader;
 public class PBSConstants {
 	public static final int PBS_STATUS_UNKNOWN = -1; 			//Not a status in PBS. 
 	public static final int PBS_STATUS_JOBARRAYSTARTED = 0; 	//Job arrays only: job array has started
-	public static final int PBS_STATUS_EXISTING = 1; 			// Job is exiting after having run
+	public static final int PBS_STATUS_EXITING = 1; 			// Job is exiting after having run
 	public static final int PBS_STATUS_HELD = 2; 				// Job is held. A job is put into a held state by the server or by a user or
 																// administrator. A job stays in a held state until it is released by a user or
 																// administrator.

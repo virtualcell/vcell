@@ -127,7 +127,7 @@ public static int getJobStatus(String jobid) {
 			}
 		}		
 	} catch (ExecutableException ex) {
-		return PBS_STATUS_EXISTING;
+		return PBS_STATUS_EXITING;
 	}
 	return iStatus;
 }

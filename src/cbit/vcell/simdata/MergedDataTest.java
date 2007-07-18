@@ -44,9 +44,9 @@ public static void main(String[] args) {
 	Cachetable dataCachetable = new Cachetable(10*Cachetable.minute);
 	DataSetControllerImpl dscImpl = null;
 	try {
-		simData1 = new SimulationData(vcData1, userFile);
-		simData2 = new SimulationData(vcData2, userFile);
-		dscImpl = new DataSetControllerImpl(sessionLog,dataCachetable,userFile);
+		simData1 = new SimulationData(vcData1, userFile, null);
+		simData2 = new SimulationData(vcData2, userFile, null);
+		dscImpl = new DataSetControllerImpl(sessionLog,dataCachetable,userFile, null);
 	} catch (java.io.IOException e) {
 		e.printStackTrace(System.out);
 	} catch (cbit.vcell.server.DataAccessException e) {

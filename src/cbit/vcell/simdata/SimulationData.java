@@ -1,7 +1,6 @@
 package cbit.vcell.simdata;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
-import cbit.vcell.solver.VCSimulationIdentifier;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -49,7 +48,7 @@ public class SimulationData extends VCData implements SymbolTable {
 		private boolean meshCopied = false;
 		private boolean keepRunning = true;
 		private double[] copiedDataTimepoints = new double[0];
-		private Vector v = new Vector();
+		private Vector<File> v = new Vector<File>();
 		private DataMoverThread() {
 			// just so it doesn't get instantiated elsewhere by mistake
 		}
@@ -195,25 +194,31 @@ public class SimulationData extends VCData implements SymbolTable {
 /**
  * SimResults constructor comment.
  */
-public SimulationData(VCDataIdentifier argVCDataID, File userDir) throws IOException, DataAccessException {
-	this.info = argVCDataID;
-	this.userDirectory = userDir;
+public SimulationData(VCDataIdentifier argVCDataID, File primaryUserDir, File secondaryUserDir) throws IOException, DataAccessException {	
+	try {
+		this.info = argVCDataID;
+		this.userDirectory = primaryUserDir;
+		checkLogFile();
+	} catch (FileNotFoundException exc) {		 
+		if (secondaryUserDir == null) {
+			throw new FileNotFoundException("secondarySimDataDirProperty not specified, primary user directory, " + primaryUserDir + " doesn't exist.");
+		}
+		this.info = argVCDataID;
+		userDirectory = secondaryUserDir;
+		checkLogFile();
+	}
+	getVarAndFunctionDataIdentifiers();
+}
+
+private void checkLogFile() throws FileNotFoundException {
 	try {
 		// must exist for constructor to succeed
 		getLogFile();
-	} catch (FileNotFoundException exc) {
+	} catch (FileNotFoundException ex) {
 		// maybe we are being asked for pre-parameter scans data files, try old style
 		info = createScanFriendlyVCDataID(info);
 		getLogFile();
-//		if (info instanceof VCSimulationDataIdentifier) {
-//			VCSimulationDataIdentifier vcSimDataID = (VCSimulationDataIdentifier)info;
-//			if (vcSimDataID.getJobIndex() == 0) {
-//				VCDataIdentifier vcDataID = VCSimulationDataIdentifierOldStyle.createVCSimulationDataIdentifierOldStyle(vcSimDataID);
-//				info = vcDataID;
-//			}
-//		}
 	}
-	getVarAndFunctionDataIdentifiers();
 }
 
 public static VCDataIdentifier createScanFriendlyVCDataID(VCDataIdentifier inVCDID){

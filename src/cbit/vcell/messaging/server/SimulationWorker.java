@@ -50,7 +50,7 @@ protected void doJob() throws JMSException, SolverException, XmlParseException {
 	
 	log.print("Worker doing job [" + currentTask.getSimulationJobIdentifier() + "]");	
 
-	File userdir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.serverSimDataDirProperty),currentTask.getUserName());
+	File userdir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty),currentTask.getUserName());
 	switch (workerType) {
 	case NOHTC_WORKER: {			
 		doSolverJob(userdir);
@@ -300,17 +300,18 @@ private void doPBSJob(File userdir) throws XmlParseException, SolverException, J
 	// but are not running, will be redispatched after 5 minutes. Then we have duplicate
 	// jobs or "failed" jobs actually running in PBS.
 	// to avoid this, kill the job, ask the user to try again later if the jobs
-	// are not in running status 1 minute after submission.
+	// are not in running status 2 minutes after submission.
 	if (jobid != null) { 
 		long t = System.currentTimeMillis();
+		int status;
 		while (true) {
 			try {
-				Thread.sleep(50);
+				Thread.sleep(500);
 			} catch (InterruptedException ex) {
 			}
 			
-			int status = PBSUtils.getJobStatus(jobid);
-			if (status == PBSConstants.PBS_STATUS_EXISTING){
+			status = PBSUtils.getJobStatus(jobid);
+			if (status == PBSConstants.PBS_STATUS_EXITING){
 				int exitCode = PBSUtils.getJobExitCode(jobid);
 				if (exitCode < 0) {
 					workerMessaging.sendFailed("Job [" + jobid + "] exited unexpectedly: [" + exitCode + ":" + PBSConstants.PBS_JOB_EXEC_STATUS[-exitCode] + "]");			
@@ -325,7 +326,7 @@ private void doPBSJob(File userdir) throws XmlParseException, SolverException, J
 				} catch (InterruptedException ex) {
 				}
 				status = PBSUtils.getJobStatus(jobid);
-				if (status == PBSConstants.PBS_STATUS_EXISTING) {
+				if (status == PBSConstants.PBS_STATUS_EXITING) {
 					int exitCode = PBSUtils.getJobExitCode(jobid);
 					if (exitCode < 0) {
 						workerMessaging.sendFailed("Job [" + jobid + "] exited unexpectedly: [" + exitCode + ":" + PBSConstants.PBS_JOB_EXEC_STATUS[-exitCode] + "]");			
@@ -334,13 +335,14 @@ private void doPBSJob(File userdir) throws XmlParseException, SolverException, J
 					}				
 				}
 				break;
-			} else if (System.currentTimeMillis() - t > MessageConstants.MINUTE) {
+			} else if (System.currentTimeMillis() - t > 2 * MessageConstants.MINUTE) {
 				String pendingReason = PBSUtils.getPendingReason(jobid);
 				PBSUtils.killJob(jobid); // kill the job if it takes too long to dispatch the job.
 				workerMessaging.sendFailed("PBS Job scheduler timed out. Please try again later. (Job [" + jobid + "]: " + pendingReason + ")");
 				break;
 			}
 		}
+		System.out.println("It took " + (System.currentTimeMillis() - t) + " ms to verify pbs job status=" + PBSConstants.PBS_JOB_STATUS[status]);
 	}
 }
 

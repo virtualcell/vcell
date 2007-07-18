@@ -73,7 +73,7 @@ private FunctionFileCrawler(ConnectionFactory argConFactory, AdminDatabaseServer
 	this.adminDbServer = argAdminDbServer;
 	this.dbCacheTable = argDbCacheTable;
 	this.resultSetDbTopLevel = new ResultSetDBTopLevel(conFactory,log,dbCacheTable);
-	dataRootDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.serverSimDataDirProperty));
+	dataRootDir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty));
 	outputDirName = argOutputDirName;
 }
 

@@ -9,7 +9,6 @@ import java.util.*;
  * All rights reserved.
 ©*/
 import cbit.vcell.server.LocalVCellConnection;
-import cbit.vcell.server.VCellConnection;
 import cbit.rmi.event.*;
 import javax.swing.event.*;
 /**
@@ -22,7 +21,7 @@ public class LocalSolverController extends java.rmi.server.UnicastRemoteObject i
 	private LocalVCellConnection vcConn = null;
 	private SimulationData.DataMoverThread dataMover = null;
 
-	private HashSet resultSetSavedSet = new HashSet();
+	private HashSet<VCSimulationDataIdentifier> resultSetSavedSet = new HashSet<VCSimulationDataIdentifier>();
 	private long timeOfLastProgressMessage = 0;
 	private long timeOfLastDataMessage = 0;
 	// how often do we send optional events (data, progress) to be dispatched to the client
@@ -41,7 +40,7 @@ public LocalSolverController(LocalVCellConnection vcellConnection, SessionLog se
 	if (!localDirectory.equals(serverDirectory)) {
 		SimulationData simData = null;
 		try {
-			simData = new SimulationData(simJob.getVCDataIdentifier(), localDirectory);
+			simData = new SimulationData(simJob.getVCDataIdentifier(), localDirectory, null);
 		} catch (IOException ex) {
 			log.exception(ex);
 			throw new SolverException(ex.getMessage());
@@ -148,14 +147,6 @@ public double getProgress() throws cbit.vcell.server.DataAccessException {
  */
 public cbit.vcell.server.SessionLog getSessionLog() {
 	return log;
-}
-
-
-/**
- * getMathDescriptionVCML method comment.
- */
-private cbit.vcell.solver.Simulation getSimulation() throws cbit.vcell.server.DataAccessException {
-	return getSimulationJob().getWorkingSim();
 }
 
 
@@ -272,7 +263,6 @@ public void solverFinished(cbit.vcell.solver.SolverEvent event) {
 		if (dataMover != null) {
 			dataMover.stopRunning();
 		}
-		Simulation sim = getSimulation();
 		fireWorkerEvent(new WorkerEvent(this, getSimulationJob().getVCDataIdentifier().getVcSimID(), getSimulationJob().getVCDataIdentifier().getJobIndex(), WorkerEvent.JOB_COMPLETED, vcConn.getHost(), 0, new Double(event.getProgress()), new Double(event.getTimePoint())));
 		//fireJobProgressEvent(new JobProgressEvent(this,new MessageSource(this,getSimulationIdentifier()),sim.getSimulationInfo(),event.getProgress(),event.getTimePoint()));
 		//fireJobCompletedEvent(new JobCompletedEvent(this,new MessageSource(this,getSimulationIdentifier()),sim.getSimulationInfo(),false,event.getProgress(),event.getTimePoint()));

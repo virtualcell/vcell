@@ -43,6 +43,7 @@ public String submit2PBS() {
 		if (jobid == null) {
 			fireSolverAborted("Failed. (error message: submitting to job scheduler failed).");
 		}
+		fireSolverStarting("submitted to job scheduler, job id is " + jobid);
 
 	} catch (Throwable throwable) {
 		cleanup();

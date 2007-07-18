@@ -17,7 +17,7 @@ import cbit.vcell.export.server.*;
  * 
  */
 public class LocalVCellServer extends UnicastRemoteObject implements VCellServer {
-	private java.util.Vector vcellConnectionList = new Vector();
+	private java.util.Vector<VCellConnection> vcellConnectionList = new Vector<VCellConnection>();
 	private String hostName = null;
 	private boolean bRemoteMode = false;
 	private AdminDatabaseServer adminDbServer = null;
@@ -50,7 +50,9 @@ public LocalVCellServer(boolean bPrimaryServer, String argHostName, cbit.vcell.m
 	this.bPrimaryServer = bPrimaryServer;
 	this.sessionLog = new StdoutSessionLog(PropertyLoader.ADMINISTRATOR_ACCOUNT);
 	this.dataCachetable = new Cachetable(10*Cachetable.minute);
-	this.dscImpl = new DataSetControllerImpl(sessionLog,dataCachetable,null);
+	this.dscImpl = new DataSetControllerImpl(sessionLog,dataCachetable, 
+			new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty)), 
+			new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirProperty)));
 	this.simControllerImpl = new SimulationControllerImpl(sessionLog,adminDbServer, this);
 	this.exportServiceImpl = new ExportServiceImpl(sessionLog);
 	if (bPrimaryServer){
@@ -189,7 +191,7 @@ public CacheStatus getCacheStatus() {
  */
 public User[] getConnectedUsers() {
 	try {
-		Vector userList = new Vector();
+		Vector<User> userList = new Vector<User>();
 		Enumeration enum1 = vcellConnectionList.elements();
 		while (enum1.hasMoreElements()){
 			VCellConnection vcConn = (VCellConnection)enum1.nextElement();
@@ -370,7 +372,7 @@ SimulationControllerImpl getSimulationControllerImpl() {
 public ServerInfo[] getSlaveServerInfos() {
 	ConnectionPoolStatus connPoolStatus = getConnectionPoolStatus();
 	ComputeHost activeHosts[] = connPoolStatus.getActiveHosts();
-	Vector slaveServerInfoList = new Vector();
+	Vector<ServerInfo> slaveServerInfoList = new Vector<ServerInfo>();
 	for (int i = 0;activeHosts!=null && i < activeHosts.length; i++){
 		try {
 			VCellServer slaveVCellServer = getSlaveVCellServer(activeHosts[i].getHostName());
@@ -490,7 +492,6 @@ VCellConnection getVCellConnection(String userid, String password) throws Remote
  * @exception java.lang.Exception The exception description.
  */
 private synchronized VCellConnection getVCellConnection0(User user) {
-	LocalVCellConnection localConnection = null;
 	//
 	// Lookup existing VCellConnections
 	//
@@ -583,13 +584,13 @@ public void shutdown() throws java.rmi.RemoteException {
 				sessionLog.alert("LocalVCellServer.shutdown():  waiting for job abort messages to be sent (30 seconds)");
 				System.out.flush();
 				try {
-					Thread.currentThread().sleep(30000);
+					Thread.sleep(30000);
 				}catch (InterruptedException e){
 				}
 				sessionLog.alert("LocalVCellServer.shutdown():  shutting down server (on "+hostName+") in 5 seconds, request from "+clientHost);
 				System.out.flush();
 				try {
-					Thread.currentThread().sleep(5000);
+					Thread.sleep(5000);
 				}catch (InterruptedException e){
 				}
 			}finally{

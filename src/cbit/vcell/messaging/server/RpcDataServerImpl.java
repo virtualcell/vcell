@@ -5,7 +5,10 @@ package cbit.vcell.messaging.server;
 ©*/
 import cbit.vcell.messaging.MessageConstants;
 import cbit.vcell.simdata.DataServerImpl;
+import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.server.SessionLog;
+
+import java.io.File;
 import java.io.FileNotFoundException;
 import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataSetControllerImpl;
@@ -27,7 +30,9 @@ public RpcDataServerImpl (cbit.vcell.messaging.RpcServerMessaging messaging, Ses
 	rpcServerMessaging = messaging;
 
 	Cachetable cacheTable = new Cachetable(MessageConstants.MINUTE * 20);
-	DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(sessionLog,cacheTable,null);
+	DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(sessionLog, cacheTable, 
+			new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty)), 
+			new File(PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirProperty)));
 	//add dataJobListener
 	dataSetControllerImpl.addDataJobListener(this);
 	

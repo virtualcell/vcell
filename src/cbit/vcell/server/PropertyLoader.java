@@ -14,7 +14,8 @@ public class PropertyLoader {
 	public static final String vcellServerIDProperty        = "vcell.server.id";
 	
 	public static final String tempDirProperty				= "vcell.tempdir";
-	public static final String serverSimDataDirProperty		= "vcell.serverSimdatadir";
+	public static final String primarySimDataDirProperty	= "vcell.primarySimdatadir";
+	public static final String secondarySimDataDirProperty	= "vcell.secondarySimdatadir";
 	public static final String localSimDataDirProperty		= "vcell.localSimdatadir";
 	
 	public static final String compilerProperty				= "vcell.c++.compiler";
@@ -142,7 +143,8 @@ public class PropertyLoader {
 	private static final String ALL_PROPERTIES[] = {
 		vcellServerIDProperty,
 		tempDirProperty,
-		serverSimDataDirProperty,
+		primarySimDataDirProperty,
+		secondarySimDataDirProperty,
 		localSimDataDirProperty,
 		
 		compilerProperty,

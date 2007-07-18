@@ -65,7 +65,8 @@ public class DataSetControllerImpl implements SimDataConstants {
 	private static final int WSUM_OFFSET = 5;
 	//
 	private SessionLog log = null;
-	private File rootDirectory =  null;
+	private File primaryRootDirectory =  null;
+	private File secondaryRootDirectory =  null;
 	private Cachetable cacheTable = null;
 	private Vector<DataJobListener> aDataJobListener = null;
 	//
@@ -181,26 +182,10 @@ public class DataSetControllerImpl implements SimDataConstants {
 /**
  * This method was created by a SmartGuide.
  */
-public DataSetControllerImpl (SessionLog sessionLog, Cachetable aCacheTable, File rootDir) throws FileNotFoundException {
+public DataSetControllerImpl (SessionLog sessionLog, Cachetable aCacheTable, File primaryDir, File secondDir) throws FileNotFoundException {
 	this.cacheTable = aCacheTable;
-	this.rootDirectory = rootDir;
-	if (rootDirectory == null){
-		try {
-			String usersDir = System.getProperty(PropertyLoader.serverSimDataDirProperty);
-			if (!usersDir.endsWith(new String(File.separator))){
-				usersDir += File.separator;
-			}
-			rootDirectory = new File(usersDir);
-			if (!rootDirectory.exists() || !rootDirectory.isDirectory()){
-				String msg = "DataSetControllerImpl(): users directory "+usersDir+" not found or is not a directory";
-				sessionLog.alert(msg);
-				throw new FileNotFoundException(msg);
-			}
-		}catch (Exception e){
-			sessionLog.exception(e);
-			throw new FileNotFoundException("required System property \""+PropertyLoader.serverSimDataDirProperty+"\" not defined");
-		}		
-	}
+	this.primaryRootDirectory = primaryDir;
+	this.secondaryRootDirectory = secondDir;
 	this.log = sessionLog;
 }
 
@@ -726,8 +711,8 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 			//
 			//log,mesh,zip,func
 			//
-			File sourceDir = new File(rootDirectory,fieldDataFileOperationSpec.sourceOwner.getName());
 			KeyValue origSimKey = fieldDataFileOperationSpec.sourceSimDataKey;
+			File sourceDir = new File(primaryRootDirectory,fieldDataFileOperationSpec.sourceOwner.getName());			
 			File meshFile_orig = new File(sourceDir,ExternalDataIdentifier.createCanonicalMeshFileName(origSimKey,simJobIndex,isOldStyle));
 			File funcFile_orig = new File(sourceDir,ExternalDataIdentifier.createCanonicalFunctionsFileName(origSimKey,simJobIndex,isOldStyle));
 			File fdLogFile_orig = new File(sourceDir,ExternalDataIdentifier.createCanonicalSimLogFileName(origSimKey,simJobIndex,isOldStyle));
@@ -736,7 +721,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 				throw new RuntimeException("Couldn't find all of the files required to copy sim");
 			}
 	
-			File userDir = getUserDir(fieldDataFileOperationSpec.owner);
+			File userDir = getPrimaryUserDir(fieldDataFileOperationSpec.owner, true);
 			File meshFile_new = new File(userDir,ExternalDataIdentifier.createCanonicalMeshFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
 			File funcFile_new = new File(userDir,ExternalDataIdentifier.createCanonicalFunctionsFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
 			File fdLogFile_new = new File(userDir,ExternalDataIdentifier.createCanonicalSimLogFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
@@ -915,7 +900,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 		VariableType[] varTypes = fieldDataFileOperationSpec.variableTypes;
 		File userDir = null;
 		try{
-			userDir = getUserDir(fieldDataFileOperationSpec.owner);
+			userDir = getPrimaryUserDir(fieldDataFileOperationSpec.owner, true);
 		}catch(FileNotFoundException e){
 			throw new RuntimeException("Couldn't create new user directory on server");
 		}
@@ -1068,7 +1053,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 
 		File userDir = null;
 		try{
-			userDir = getUserDir(fieldDataFileOperationSpec.specEDI.getOwner());
+			userDir = getPrimaryUserDir(fieldDataFileOperationSpec.specEDI.getOwner(), true);
 		}catch(FileNotFoundException e){
 			throw new RuntimeException("Couldn't create new user directory on server");
 		}
@@ -1408,7 +1393,7 @@ private Expression fieldFunctionSubstitution(final VCDataIdentifier vcdID,Annota
 		try{
 		FVSolver.resampleFieldData(
 				fieldDataIdentifierSpecArr,
-				getUserDir(simResampleInfoProvider.getOwner()),
+				getPrimaryUserDir(simResampleInfoProvider.getOwner(), true),
 				getMesh(simResampleInfoProvider),
 				simResampleInfoProvider,
 				FVSolver.HESM_KEEP_AND_CONTINUE);
@@ -1424,7 +1409,7 @@ private Expression fieldFunctionSubstitution(final VCDataIdentifier vcdID,Annota
 //				);
 			File resampledFile =
 			new File(
-				getUserDir(simResampleInfoProvider.getOwner()),
+				getPrimaryUserDir(simResampleInfoProvider.getOwner(), true),
 				ExternalDataIdentifier.createCanonicalResampleFileName(
 					simResampleInfoProvider,
 					fieldfuncArgumentsArr[i])
@@ -2061,15 +2046,6 @@ public boolean getParticleDataExists(VCDataIdentifier vcdID) throws DataAccessEx
 
 
 /**
- * This method was created in VisualAge.
- * @return java.io.File
- */
-private File getRootDir() {
-	return rootDirectory;
-}
-
-
-/**
  * This method was created by a SmartGuide.
  * @return double[]
  * @param varName java.lang.String
@@ -2520,23 +2496,36 @@ public cbit.util.TimeSeriesJobResults getTimeSeriesValues(final VCDataIdentifier
  * @return java.io.File
  * @param user cbit.vcell.server.User
  */
-private File getUserDir(User user) throws FileNotFoundException {
-	File userDir = new File(getRootDir(),user.getName());
+private File getPrimaryUserDir(User user, boolean bVerify) throws FileNotFoundException {
+	File userDir = new File(primaryRootDirectory, user.getName());
 	if (userDir.exists()){
 		if (userDir.isDirectory()){
 			return userDir;
-		}else{
-			throw new FileNotFoundException("file "+userDir.getPath()+" is not a directory");
+		} else {
+			throw new FileNotFoundException("file " + userDir.getPath() + " is not a directory");
 		}
 	}else{
 		if (userDir.mkdir()){
 			return userDir;
-		}else{
+		} else if (bVerify) {
 			throw new FileNotFoundException("cannot create directory "+userDir.getPath());
 		}
 	}
+	return null;
 }
 
+private File getSecondaryUserDir(User user) throws FileNotFoundException {
+	File userDir = new File(secondaryRootDirectory, user.getName());
+	if (userDir.exists()){
+		if (userDir.isDirectory()){
+			return userDir;
+		}else{
+			throw new FileNotFoundException("file " + userDir.getPath() + " is not a directory");
+		}
+	}else{
+		return null;
+	}
+}
 
 /**
  * This method was created in VisualAge.
@@ -2555,13 +2544,13 @@ public VCData getVCData(VCDataIdentifier vcdID) throws DataAccessException, IOEx
 			try {
 				User user = vcdID.getOwner();
 				VCDataIdentifier[] vcdIdentifiers = ((MergedDataInfo)vcdID).getDataIDs();
-				vcData = new MergedData(user, getUserDir(vcdID.getOwner()), this, vcdIdentifiers);
+				vcData = new MergedData(user, getPrimaryUserDir(vcdID.getOwner(), false), getSecondaryUserDir(vcdID.getOwner()), this, vcdIdentifiers);
 			} catch (IOException e) {
 				e.printStackTrace(System.out);
 				throw new RuntimeException(e.getMessage());
 			}
 		} else {  // assume vcdID instanceof cbit.vcell.solver.SimulationInfo or a test adapter
-			vcData = new SimulationData(vcdID,getUserDir(vcdID.getOwner()));
+			vcData = new SimulationData(vcdID, getPrimaryUserDir(vcdID.getOwner(), false), getSecondaryUserDir(vcdID.getOwner()));
 		}
 		cacheTable.put(vcdID,vcData);
 	}
