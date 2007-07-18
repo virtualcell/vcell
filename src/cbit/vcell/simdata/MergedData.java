@@ -1,7 +1,6 @@
 package cbit.vcell.simdata;
 import cbit.vcell.util.ColumnDescription;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
-import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 import cbit.vcell.solver.test.MathTestingUtilities;
@@ -15,18 +14,15 @@ import java.io.*;
 import java.util.*;
 import cbit.vcell.server.*;
 import cbit.vcell.solvers.*;
-import cbit.vcell.geometry.*;
 import cbit.vcell.parser.*;
-import cbit.rmi.event.*;
-import cbit.util.*;
 /**
  * This type was created in VisualAge.
  */
 public class MergedData extends VCData implements SymbolTable {
 
 	private double dataTimes[] = null;
-	private Vector dataSetIdentifierList = new Vector();
-	private Vector annotatedFunctionList = new Vector();
+	private Vector<DataSetIdentifier> dataSetIdentifierList = new Vector<DataSetIdentifier>();
+	private Vector<AnnotatedFunction> annotatedFunctionList = new Vector<AnnotatedFunction>();
 	private String datasetName = null;
 	private VCDataIdentifier[] datasetsIDList=null;
 	private MergedDataInfo dataInfo=null;
@@ -41,7 +37,7 @@ public class MergedData extends VCData implements SymbolTable {
  * Insert the method's description here.
  * Creation date: (9/29/2003 5:45:44 PM)
  */
-public MergedData(User argUser, File argUserDir, DataSetControllerImpl argDatasetContrlrImpl, VCDataIdentifier[] argDatasetIDs) throws DataAccessException, IOException  {
+public MergedData(User argUser, File argPrimaryUserDir, File argSecondaryUserDir, DataSetControllerImpl argDatasetContrlrImpl, VCDataIdentifier[] argDatasetIDs) throws DataAccessException, IOException  {
 	dataSetControllerImpl = argDatasetContrlrImpl;
 	if (argDatasetIDs.length < 2) {
 		throw new RuntimeException("\nLess than 2 datasets, no comparison!!\n");
@@ -49,7 +45,16 @@ public MergedData(User argUser, File argUserDir, DataSetControllerImpl argDatase
 	dataInfo = new MergedDataInfo(argUser,argDatasetIDs);	
 	datasetName = dataInfo.getDatasetName();
 	datasetsIDList = argDatasetIDs;
-	userDirectory = argUserDir;
+	try {
+		userDirectory = argPrimaryUserDir;
+		getFunctionsFile();
+	} catch (FileNotFoundException exc) {		 
+		if (argSecondaryUserDir == null) {
+			throw new FileNotFoundException("secondarySimDataDirProperty not specified, primary user directory, " + argPrimaryUserDir + " doesn't exist.");
+		}
+		userDirectory = argSecondaryUserDir;
+		getFunctionsFile();
+	}
 	mergeDatasets();
 	getDataTimes();
 }

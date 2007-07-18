@@ -639,9 +639,7 @@ public static void resampleFieldData(
 			if(handleExistingResampleMode == HESM_KEEP_AND_CONTINUE && resampleEntry.getValue().exists()){
 				continue;
 			}
-			SimulationData simData =
-				new SimulationData(
-						resampleEntry.getKey().getExternalDataIdentifier(),userDirectory/*readDirectory*/);
+			SimulationData simData = new SimulationData(resampleEntry.getKey().getExternalDataIdentifier(),userDirectory, null);
 			CartesianMesh origMesh = simData.getMesh();
 			boolean bSame = false;
 			if (origMesh.getOrigin().compareEqual(newMesh.getOrigin())

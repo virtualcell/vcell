@@ -120,10 +120,10 @@ public SimDataBlock get(PDEDataInfo pdeDataInfo) {
 private synchronized TimeWrapper get0(Object key) {
 	TimeWrapper timeWrapper = (TimeWrapper)hashTable.get(key);
 	if (timeWrapper!=null){
-System.out.println("........Cachetable.get(key="+key+") <<<returning object>>>");
+//System.out.println("........Cachetable.get(key="+key+") <<<returning object>>>");
 		return timeWrapper;
 	}else{
-System.out.println("........Cachetable.get(key="+key+") <<<missed>>>");
+//System.out.println("........Cachetable.get(key="+key+") <<<missed>>>");
 		return null;
 	}
 }
@@ -232,7 +232,7 @@ private synchronized TimeWrapper put(Object key, TimeWrapper timeWrapper) throws
 	if (currMemSize<0 || currMemSize>=maxMemSize){
 		throw new CacheException("Error: adding data item "+key+". currMemSize="+currMemSize+" maxMemSize="+maxMemSize);
 	}
-	System.out.println("........Cachetable.put(key="+key+")");
+	//System.out.println("........Cachetable.put(key="+key+")");
 	return oldTimeWrapper;
 }
 /**

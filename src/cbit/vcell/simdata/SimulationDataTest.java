@@ -25,7 +25,7 @@ public static void main(String[] args) {
 	int runs = 0;
 	while (true) {
 		try {
-			simData1 = new cbit.vcell.simdata.SimulationData(vcData1, userFile);
+			simData1 = new cbit.vcell.simdata.SimulationData(vcData1, userFile, null);
 			double a[] = simData1.getDataTimes();
 			if (a == null) {
 				continue;
