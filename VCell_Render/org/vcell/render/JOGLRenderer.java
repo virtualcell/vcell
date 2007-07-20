@@ -75,7 +75,7 @@ public class JOGLRenderer implements GLEventListener, MouseListener,
 //        gl.glCullFace(GL.GL_BACK);
         gl.glLightfv(GL.GL_LIGHT0, GL.GL_POSITION, new float[] { 0f, 0f, 10f, 0f }, 0);  // light from infinity toward positive z
         trackball.getCamera().applyProjection(gl);
-        gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT | GL.GL_ACCUM_BUFFER_BIT);
+        gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT | GL.GL_ACCUM_BUFFER_BIT | GL.GL_STENCIL_BUFFER_BIT);
         gl.glMatrixMode(GL.GL_MODELVIEW);
         gl.glLoadIdentity();
 	    gl.glLightfv(GL.GL_LIGHT0, GL.GL_POSITION, new float[] { 0f, 0f, 10f, 0f }, 0);

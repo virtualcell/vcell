@@ -99,8 +99,8 @@ public class VolumeMIP extends ModelObject {
     	}
         
 		for (int j=0;j<imageHeight;j++){
-			for (int k=0;k<imageDepth;k++){
-				for (int i=0;i<imageWidth;i++){
+			for (int i=0;i<imageWidth;i++){
+				for (int k=0;k<imageDepth;k++){
     				int index = redImage.getIndex(i,j,k);
     				imageBufZXYs[j].put(redPixels[index]);
     				imageBufZXYs[j].put(greenPixels[index]);
@@ -124,9 +124,6 @@ public class VolumeMIP extends ModelObject {
 		double abs_dotX = Math.abs(eyeVector.q[0]); 
 		double abs_dotY = Math.abs(eyeVector.q[1]); 
 		double abs_dotZ = Math.abs(eyeVector.q[2]);
-//		double abs_dotX = 1.0; 
-//		double abs_dotY = 0.0;
-//		double abs_dotZ = 0.0;
 		if (abs_dotX >= abs_dotY && abs_dotX >= abs_dotZ){
 	    	if (callListID_X<0 || isDirty()){
 			    if (callListID_X == -1){
@@ -168,44 +165,45 @@ public class VolumeMIP extends ModelObject {
     
 	public void drawDirection(GL gl, int direction) {
         gl.glTexEnvf(GL.GL_TEXTURE_ENV, GL.GL_TEXTURE_ENV_MODE, GL.GL_DECAL);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_CLAMP);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_CLAMP);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR);
-        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR);
+        int repeat = GL.GL_CLAMP;
+        int interpolation = GL.GL_LINEAR;
+//      interpolation = GL.GL_NEAREST;
+        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, repeat);
+        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, repeat);
+        gl.glPixelStorei(GL.GL_UNPACK_ALIGNMENT, 1);
+        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, interpolation);
+        gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, interpolation);
         gl.glEnable(GL.GL_TEXTURE_2D);
         gl.glDisable(GL.GL_DEPTH_TEST);
         gl.glBlendEquation(GL.GL_MAX);
         gl.glEnable(GL.GL_BLEND);
         gl.glShadeModel(GL.GL_FLAT);
 
-        //gl.glDepthMask(false);
-		
 		float ex = (float)redImage.getExtent().getX();
 		float ey = (float)redImage.getExtent().getY();
 		float ez = (float)redImage.getExtent().getZ();
-//        gl.glColor3f(0f,0f,0f);
-//        gl.glClear(GL.GL_COLOR_BUFFER_BIT);
+
         switch (direction){
         case 0:{
             for (int i=0;i<imageWidth;i++){
                 gl.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGB, imageHeight, imageDepth, 0, GL.GL_RGB, GL.GL_UNSIGNED_BYTE, imageBufYZXs[i]);
                 gl.glBegin(GL.GL_QUADS);
-    	    	gl.glTexCoord2f(0f, 0f);	    gl.glVertex3f(i*ex/imageWidth,0f,0f);
-    	    	gl.glTexCoord2f(0f, 1f);    	gl.glVertex3f(i*ex/imageWidth,0f,ez);
-    	    	gl.glTexCoord2f(1f, 1f);    	gl.glVertex3f(i*ex/imageWidth,ey,ez);
-    	    	gl.glTexCoord2f(1f, 0f);	 	gl.glVertex3f(i*ex/imageWidth,ey,0f);
+    	    	gl.glTexCoord2f(0f, 0f);	    gl.glVertex3f(i*ex/(imageWidth-1),0f,0f);
+    	    	gl.glTexCoord2f(1f, 0f);    	gl.glVertex3f(i*ex/(imageWidth-1),ey,0f);
+    	    	gl.glTexCoord2f(1f, 1f);    	gl.glVertex3f(i*ex/(imageWidth-1),ey,ez);
+    	    	gl.glTexCoord2f(0f, 1f);	 	gl.glVertex3f(i*ex/(imageWidth-1),0f,ez);
     	        gl.glEnd();
             }
             break;
         }
         case 1:{
 	        for (int i=0;i<imageHeight;i++){
-	            gl.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGB, imageWidth, imageDepth, 0, GL.GL_RGB, GL.GL_UNSIGNED_BYTE, imageBufZXYs[i]);
+	            gl.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGB, imageDepth, imageWidth, 0, GL.GL_RGB, GL.GL_UNSIGNED_BYTE, imageBufZXYs[i]);
 	            gl.glBegin(GL.GL_QUADS);
-		    	gl.glTexCoord2f(0f, 0f);	    gl.glVertex3f(0f,i*ey/imageHeight,0f);
-		    	gl.glTexCoord2f(1f, 0f);    	gl.glVertex3f(ex,i*ey/imageHeight,0f);
-		    	gl.glTexCoord2f(1f, 1f);    	gl.glVertex3f(ex,i*ey/imageHeight,ez);
-		    	gl.glTexCoord2f(0f, 1f);	 	gl.glVertex3f(0f,i*ey/imageHeight,ez);
+		    	gl.glTexCoord2f(0f, 0f);	    gl.glVertex3f(0f,i*ey/(imageHeight-1),0f);
+		    	gl.glTexCoord2f(1f, 0f);    	gl.glVertex3f(0f,i*ey/(imageHeight-1),ez);
+		    	gl.glTexCoord2f(1f, 1f);    	gl.glVertex3f(ex,i*ey/(imageHeight-1),ez);
+		    	gl.glTexCoord2f(0f, 1f);	 	gl.glVertex3f(ex,i*ey/(imageHeight-1),0f);
 		        gl.glEnd();
 	        }
 	        break;
@@ -214,19 +212,18 @@ public class VolumeMIP extends ModelObject {
             for (int i=0;i<imageDepth;i++){
                 gl.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGB, imageWidth, imageHeight, 0, GL.GL_RGB, GL.GL_UNSIGNED_BYTE, imageBufXYZs[i]);
                 gl.glBegin(GL.GL_QUADS);
-    	    	gl.glTexCoord2f(0f, 0f);	   	gl.glVertex3f(0f,0f,i*ez/imageDepth);
-    	    	gl.glTexCoord2f(0f, 1f);   		gl.glVertex3f(0f,ey,i*ez/imageDepth);
-    	    	gl.glTexCoord2f(1f, 1f);   		gl.glVertex3f(ex,ey,i*ez/imageDepth);
-    	    	gl.glTexCoord2f(1f, 0f);	   	gl.glVertex3f(ex,0f,i*ez/imageDepth);
+    	    	gl.glTexCoord2f(0f, 0f);	   	gl.glVertex3f(0f,0f,i*ez/(imageDepth-1));
+    	    	gl.glTexCoord2f(0f, 1f);   		gl.glVertex3f(0f,ey,i*ez/(imageDepth-1));
+    	    	gl.glTexCoord2f(1f, 1f);   		gl.glVertex3f(ex,ey,i*ez/(imageDepth-1));
+    	    	gl.glTexCoord2f(1f, 0f);	   	gl.glVertex3f(ex,0f,i*ez/(imageDepth-1));
     	        gl.glEnd();
-            }
+           }
             break;
         }
         }
         gl.glDisable(GL.GL_TEXTURE_2D);
         gl.glEnable(GL.GL_DEPTH_TEST);
         gl.glDisable(GL.GL_BLEND);
-		//gl.glDepthMask(true);
 	}
 
 }
