@@ -170,7 +170,8 @@ public SSHelper getIndexSamples(double begin,double end) {
 	int uniquePointCount = 0;
 	Vector wcV = new Vector();
 	//Vector ciV = new Vector();
-	double[] cellStepArr = new double[SAMPLE_MULT*10];//big enough
+//	double[] cellStepArr = new double[SAMPLE_MULT*10];//big enough
+	double[] cellStepArr = new double[SSV_NUM_SAMPLES];//big enough
 	int cellStepCounter = 0;
 	
 	int lastISample = -1;
