@@ -188,10 +188,11 @@ public class VolumeMIP extends ModelObject {
             for (int i=0;i<imageWidth;i++){
                 gl.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGB, imageHeight, imageDepth, 0, GL.GL_RGB, GL.GL_UNSIGNED_BYTE, imageBufYZXs[i]);
                 gl.glBegin(GL.GL_QUADS);
-    	    	gl.glTexCoord2f(0f, 0f);	    gl.glVertex3f(i*ex/(imageWidth-1),0f,0f);
-    	    	gl.glTexCoord2f(1f, 0f);    	gl.glVertex3f(i*ex/(imageWidth-1),ey,0f);
-    	    	gl.glTexCoord2f(1f, 1f);    	gl.glVertex3f(i*ex/(imageWidth-1),ey,ez);
-    	    	gl.glTexCoord2f(0f, 1f);	 	gl.glVertex3f(i*ex/(imageWidth-1),0f,ez);
+                float xPosition = (imageWidth>1)?(i*ex/(imageWidth-1)):(ex/2f);
+    	    	gl.glTexCoord2f(0f, 0f);	    gl.glVertex3f(xPosition,0f,0f);
+    	    	gl.glTexCoord2f(1f, 0f);    	gl.glVertex3f(xPosition,ey,0f);
+    	    	gl.glTexCoord2f(1f, 1f);    	gl.glVertex3f(xPosition,ey,ez);
+    	    	gl.glTexCoord2f(0f, 1f);	 	gl.glVertex3f(xPosition,0f,ez);
     	        gl.glEnd();
             }
             break;
@@ -200,10 +201,11 @@ public class VolumeMIP extends ModelObject {
 	        for (int i=0;i<imageHeight;i++){
 	            gl.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGB, imageDepth, imageWidth, 0, GL.GL_RGB, GL.GL_UNSIGNED_BYTE, imageBufZXYs[i]);
 	            gl.glBegin(GL.GL_QUADS);
-		    	gl.glTexCoord2f(0f, 0f);	    gl.glVertex3f(0f,i*ey/(imageHeight-1),0f);
-		    	gl.glTexCoord2f(1f, 0f);    	gl.glVertex3f(0f,i*ey/(imageHeight-1),ez);
-		    	gl.glTexCoord2f(1f, 1f);    	gl.glVertex3f(ex,i*ey/(imageHeight-1),ez);
-		    	gl.glTexCoord2f(0f, 1f);	 	gl.glVertex3f(ex,i*ey/(imageHeight-1),0f);
+                float yPosition = (imageHeight>1)?(i*ey/(imageHeight-1)):(ey/2f);
+		    	gl.glTexCoord2f(0f, 0f);	    gl.glVertex3f(0f,yPosition,0f);
+		    	gl.glTexCoord2f(1f, 0f);    	gl.glVertex3f(0f,yPosition,ez);
+		    	gl.glTexCoord2f(1f, 1f);    	gl.glVertex3f(ex,yPosition,ez);
+		    	gl.glTexCoord2f(0f, 1f);	 	gl.glVertex3f(ex,yPosition,0f);
 		        gl.glEnd();
 	        }
 	        break;
@@ -212,10 +214,11 @@ public class VolumeMIP extends ModelObject {
             for (int i=0;i<imageDepth;i++){
                 gl.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGB, imageWidth, imageHeight, 0, GL.GL_RGB, GL.GL_UNSIGNED_BYTE, imageBufXYZs[i]);
                 gl.glBegin(GL.GL_QUADS);
-    	    	gl.glTexCoord2f(0f, 0f);	   	gl.glVertex3f(0f,0f,i*ez/(imageDepth-1));
-    	    	gl.glTexCoord2f(0f, 1f);   		gl.glVertex3f(0f,ey,i*ez/(imageDepth-1));
-    	    	gl.glTexCoord2f(1f, 1f);   		gl.glVertex3f(ex,ey,i*ez/(imageDepth-1));
-    	    	gl.glTexCoord2f(1f, 0f);	   	gl.glVertex3f(ex,0f,i*ez/(imageDepth-1));
+                float zPosition = (imageDepth>1)?(i*ez/(imageDepth-1)):(ez/2f);
+    	    	gl.glTexCoord2f(0f, 0f);	   	gl.glVertex3f(0f,0f,zPosition);
+    	    	gl.glTexCoord2f(0f, 1f);   		gl.glVertex3f(0f,ey,zPosition);
+    	    	gl.glTexCoord2f(1f, 1f);   		gl.glVertex3f(ex,ey,zPosition);
+    	    	gl.glTexCoord2f(1f, 0f);	   	gl.glVertex3f(ex,0f,zPosition);
     	        gl.glEnd();
            }
             break;

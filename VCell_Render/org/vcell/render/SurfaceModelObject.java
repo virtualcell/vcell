@@ -40,7 +40,7 @@ public class SurfaceModelObject extends ModelObject {
 			return;
 		}
 		if (surfaceColors==null){
-	 		gl.glMaterialfv(GL.GL_FRONT_AND_BACK, GL.GL_AMBIENT, new float[] { 0.0f, 0.0f, 0.0f, 1.0f}, 0);
+	 		gl.glMaterialfv(GL.GL_FRONT_AND_BACK, GL.GL_AMBIENT, new float[] { 1.0f, 1.0f, 1.0f, 1.0f}, 0);
 	 		gl.glMaterialfv(GL.GL_FRONT_AND_BACK, GL.GL_DIFFUSE, new float[] { 0.2f, 0.8f, 0.2f, 1.0f}, 0);
 		}
 		if (!isShowSurfacesWireframe()){
@@ -53,7 +53,7 @@ public class SurfaceModelObject extends ModelObject {
 			}
 			if (surfaceColors!=null){
 				Color color = new Color(surfaceColors[j]);
-		 		gl.glMaterialfv(GL.GL_FRONT_AND_BACK, GL.GL_AMBIENT, new float[] { 0.0f, 0.0f, 0.0f, 1.0f}, 0);
+		 		gl.glMaterialfv(GL.GL_FRONT_AND_BACK, GL.GL_AMBIENT, new float[] { 0.1f, 0.1f, 0.1f, 1.0f}, 0);
 				gl.glMaterialfv(GL.GL_FRONT_AND_BACK, GL.GL_DIFFUSE, new float[] { color.getRed()/255.0f, color.getGreen()/255.0f, color.getBlue()/255.0f, 1.0f }, 0);
 			}
 			Quadrilateral quad = (Quadrilateral)surface.getPolygons(j);
