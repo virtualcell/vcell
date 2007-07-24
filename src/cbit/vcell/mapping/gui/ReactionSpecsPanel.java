@@ -144,7 +144,7 @@ private void connPtoP2SetTarget() {
 			ivjConnPtoP2Aligning = true;
 			setsimulationContext1(this.getSimulationContext());
 			//amended on 14th June, 2007. fast column in reactionSpecTable is not needed for stochastic applications.
-			if(getsimulationContext1().isStoch())
+			if(getsimulationContext1() != null && getsimulationContext1().isStoch())
 			{
 				getFastColumn().setMaxWidth(0);
 				getFastColumn().setMinWidth(0);
