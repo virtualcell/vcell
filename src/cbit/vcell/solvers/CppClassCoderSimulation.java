@@ -412,18 +412,22 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 	out.println("\t\t\t} else if (!strcmp(argv[i], \"-d\")) {");
 	out.println("\t\t\t\ti ++;");
 	out.println("\t\t\t\toutputPath = argv[i];");
-	out.println("\t\t\t} else {");
+	out.println("\t\t\t} else if (!strcmp(argv[i], \"-tid\")) {");
+	out.println("\t\t\t\ti ++;");
+	out.println("\t\t\t\tif (i >= argc) {");
+	out.println("\t\t\t\t\tcout << \"Missing taskID!\" << endl;");
+	out.println("\t\t\t\t\texit(1);");
+	out.println("\t\t\t\t}");
 	out.println("\t\t\t\tfor (int j = 0; j < (int)strlen(argv[i]); j ++) {");
 	out.println("\t\t\t\t\tif (argv[i][j] < '0' || argv[i][j] > '9') {");
-	out.println("\t\t\t\t\t\tcout << \"Wrong argument : \" << argv[i] << endl;");
-	out.println("\t\t\t\t\t\tcout << \"Arguments : [-d output] [-nz] [taskID]\" <<  endl;");
+	out.println("\t\t\t\t\t\tcout << \"Wrong argument : \" << argv[i] << \", taskID must be an integer!\" << endl;");
+	out.println("\t\t\t\t\t\tcout << \"Arguments : [-d output] [-nz] [-tid taskID]\" <<  endl;");
 	out.println("\t\t\t\t\t\texit(1);");
 	out.println("\t\t\t\t\t}");
-	out.println("\t\t\t\t}");	
+	out.println("\t\t\t\t}");
 	out.println("\t\t\t\ttaskID = atoi(argv[i]);");
-	out.println("\t\t\t}");
+	out.println("\t\t\t}");	
 	out.println("\t\t}");
-	
 	out.println("\t\tstruct stat buf;");	
 	out.println("\t\tif (stat(outputPath, &buf)) {");
 	out.println("\t\t\tcerr << \"Output directory [\" << outputPath <<\"] doesn't exist\" << endl;");
