@@ -25,7 +25,6 @@ import cbit.vcell.math.Variable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.StochSimOptions;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import flanagan.math.Fmath;
 /**
@@ -151,6 +150,7 @@ public class NetCDFWriter {
 					vars.addElement(varInis[i].getVar());
 				}
 			}
+			//get reaction rate law types and rate constants
 			ReactionRateLaw[] reactionRateLaws = getReactionRateLaws(probs);
 			
 		  	cbit.vcell.solver.SolverTaskDescription solverTaskDescription = getSimulation().getSolverTaskDescription();
@@ -229,7 +229,7 @@ public class NetCDFWriter {
 			try{
 				ArrayDouble.D0 scalarDouble = new ArrayDouble.D0();
 				//TStart, TEnd, SaveTime
-				if(((timeBounds.getEndingTime()-timeBounds.getEndingTime())/outputTimeSpec.getOutputTimeStep())== ((timeBounds.getEndingTime()-timeBounds.getEndingTime())%outputTimeSpec.getOutputTimeStep()))
+				if((timeBounds.getEndingTime()>timeBounds.getStartingTime()) && (outputTimeSpec.getOutputTimeStep()>0))
 				{
 					scalarDouble.set(timeBounds.getStartingTime());
 					ncfile.write("TStart", scalarDouble);
@@ -240,8 +240,8 @@ public class NetCDFWriter {
 				}
 				else
 				{
-					System.err.println("(TEnd-TStart/SaveTime) should be an integer.");
-					throw new RuntimeException("(TEnd-TStart/SaveTime) should be an integer.");
+					System.err.println("Time setting error. Ending time smaller than starting time or save interval is not a positive value.");
+					throw new RuntimeException("Time setting error. Ending time smaller than starting time or save interval is not a positive value.");
 				}
 				
 				//Volume
@@ -292,7 +292,6 @@ public class NetCDFWriter {
 			    }
 			    
 			    //Reaction_Rate_Laws
-			    
 			    ArrayInt A3 = new ArrayInt.D1(numReactions.getLength());
 			    idx = A3.getIndex();
 			    for(int i=0; i<numReactions.getLength(); i++)
@@ -593,7 +592,7 @@ public class NetCDFWriter {
 			    	  throw new ExpressionException(e.getMessage());
 			      }
 				      
-			      System.out.println("var "+varSymbols[j]+" has order "+varInProbOrderHash[i].get(var));     
+//			      System.out.println("var "+varSymbols[j]+" has order "+varInProbOrderHash[i].get(var));     
 			}
 			coefExp = new Expression(diffExp);
 			//remove the factors from differentiation in coefficient. e.g. when differentiate a X^3, we will get a 3! in coefficient
@@ -603,7 +602,7 @@ public class NetCDFWriter {
 			      factor = factor * new Fmath().factorial(order);
 			}
 			coefExp = new Expression(coefExp.infix()+"/"+factor);
-			System.out.println("coefficient = "+coefExp.flatten().infix());
+//			System.out.println("coefficient = "+coefExp.flatten().infix());
 			//save info. into rate law array
 			int totalOrder = 0;
 			for(int j=0; j<varSymbols.length; j++)
@@ -644,7 +643,7 @@ public class NetCDFWriter {
 			{
 				if(varSymbols.length == 1) // second order, two same molecules 
 				{
-					//k= c*6.02e23/2, since in VCell, "/2" is already incorporated into c, so we remove this item from the conversion.
+					//k= c*6.02e23/2, since in VCell, "/2" is already incorporated into c, so we don'y need to take care of this item from the conversion.
 					coefExp = new Expression(coefExp.flatten().infix()+"*6.02e23");
 					results[i].setLawType(ReactionRateLaw.order_2_1substrate);
 					try{

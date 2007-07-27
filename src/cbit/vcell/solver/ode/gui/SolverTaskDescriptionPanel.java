@@ -10,6 +10,8 @@ import cbit.vcell.math.Variable;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.Function;
 import cbit.vcell.server.VCellConnection;
+
+import java.awt.Color;
 import java.awt.event.*;
 import java.util.*;
 import cbit.vcell.solver.*;
@@ -594,20 +596,28 @@ private void connEtoM7(java.awt.event.FocusEvent arg1) {
 	setTimeBoundsFactory(localValue);
 }
 
-
 /**
- * Insert the method's description here.
+ * Disable the time step in solver task description panel.
  * Creation date: (10/4/2006 5:19:25 PM)
  */
 public void disableTimeStep() 
 {
 	getTimeStepLabel().setEnabled(false);
-	getTimeStepTextField().setText("");
-	getTimeStepTextField().setBackground(new java.awt.Color(235,235,235));
+	getTimeStepTextField().setBackground(new java.awt.Color(220,220,220));
 	getTimeStepTextField().setEnabled(false);
 	getJLabel2().setEnabled(false);
 }
 
+/**
+ * Enable the time step in solver task description panel.
+ */
+public void enableTimeStep()
+{
+	getTimeStepLabel().setEnabled(true);
+	getTimeStepTextField().setBackground(Color.white);
+	getTimeStepTextField().setEnabled(true);
+	getJLabel2().setEnabled(true);
+}
 
 /**
  * Return the ConstantChoice property value.
@@ -1606,7 +1616,9 @@ public void updateKeepEvery() {
  * Comment
  */
 private void updateSensitivityParameterDisplay(cbit.vcell.math.Constant sensParam) {
-	getPerformSensitivityAnalysisCheckbox().setEnabled(! getTornOffSolverTaskDescription().getSimulation().getIsSpatial());
+	if(getTornOffSolverTaskDescription().getSimulation().getIsSpatial() || getTornOffSolverTaskDescription().getSimulation().getMathDescription().isStoch())
+		getPerformSensitivityAnalysisCheckbox().setEnabled(false);
+	else getPerformSensitivityAnalysisCheckbox().setEnabled(true);
 	if (sensParam == null){
 		if (getPerformSensitivityAnalysisCheckbox().isSelected()){
 			getPerformSensitivityAnalysisCheckbox().setSelected(false);
@@ -1629,13 +1641,16 @@ private void updateSensitivityParameterDisplay(cbit.vcell.math.Constant sensPara
  * Comment
  */
 public void updateTimeStepDisplay() {
-	if (getTornOffSolverTaskDescription().getSolverDescription().hasVariableTimestep()) {
+	if (getTornOffSolverTaskDescription().getSolverDescription().hasVariableTimestep() || getTornOffSolverTaskDescription().getSolverDescription().equals(SolverDescription.StochGibson))
+	{
 		getTimeStepLabel().setEnabled(false);
 		getTimeStepTextField().setEnabled(false);
+		getTimeStepTextField().setBackground(new java.awt.Color(220,220,220));
 		getJLabel2().setEnabled(false);
 	} else {
 		getTimeStepLabel().setEnabled(true);
 		getTimeStepTextField().setEnabled(true);
+		getTimeStepTextField().setBackground(Color.white);
 		getJLabel2().setEnabled(true);
 	}
 }

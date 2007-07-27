@@ -1,4 +1,4 @@
-package cbit.vcell.solver;
+package cbit.vcell.solver.stoch;
 import cbit.vcell.server.DataAccessException;
 /**
  * This class is used to store some stochastic simulation
@@ -42,7 +42,7 @@ public StochSimOptions(boolean arg_useCustomSeed, int arg_customSeed, int arg_nu
 
 
 /**
- * Checks for internal representation of objects, not keys from database
+ * Checks for internal representation of objects
  * @return boolean
  * @param obj java.lang.Object
  */

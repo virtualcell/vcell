@@ -323,7 +323,7 @@ private void displayTask() {
 		getJLabelOutput().setText("");
 	}
 	try {
-		if(getSimulation().getMathDescription().isStoch())
+		if(getSimulation().getSolverTaskDescription().getSolverDescription().equals(SolverDescription.StochGibson))//don't display time step for gibson solver only
 			getJLabelTimestep().setText("");
 		else
 			getJLabelTimestep().setText(Double.toString(getSimulation().getSolverTaskDescription().getTimeStep().getDefaultTimeStep()));

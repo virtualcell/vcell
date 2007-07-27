@@ -11,6 +11,7 @@ import ucar.ma2.Array;
 import ucar.ma2.ArrayDouble;
 
 import cbit.gui.DialogUtils;
+import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
@@ -31,6 +32,7 @@ import cbit.vcell.solvers.ApplicationMessage;
 public class HybridSolver extends cbit.vcell.solvers.AbstractCompiledSolver {
 	public static final int EMIntegrator = 1;
 	public static final int MilsteinIntegrator = 2;
+	public static final int AdaptiveMilsteinIntegrator = 3;
 	private int saveToFileInterval = 6;	// seconds
 	private long lastSavedMS = 0; // milliseconds since last save
 	private int integratorType = EMIntegrator;
@@ -107,7 +109,6 @@ public cbit.vcell.solver.ode.ODESolverResultSet getHybridSolverResultSet()
 
 	try{
 		String filename = getBaseName() + ".nc";
-		//String filename = "c:/bistableMulti.nc";
 		NetCDFEvaluator ncEva = new NetCDFEvaluator();
 		NetCDFReader ncReader = null;
 		try
@@ -303,22 +304,44 @@ protected void initialize() throws cbit.vcell.solver.SolverException
 	//
 	setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING,"HybridSolver starting"));	
 	//get executable path+name.
+	//Hybrid solver's usage: ProgramName <NetCDF Filename> <epsilon> <lambda> <MSR_Tolerance> <SDE_Tolerance> <SDE_dt> [-R <Random Seed>] [-OV]
 	String executableName = "";
+	String randomNumber = "";
+	//if one of the following paras is applied, all the paras in front of it must be set.
+	String epsilon = " 100";
+	String lambda = " 10";
+	String MSR_Tolerance = " 0.01";
+	String SDE_Tolerance = " 1e-4";
+	String SDE_dt = " 0.1";
+	String paraString = "";
+	if(getSimulation().getSolverTaskDescription().getStochOpt() instanceof StochHybridOptions)
+	{
+		StochHybridOptions sho = ((StochHybridOptions)getSimulation().getSolverTaskDescription().getStochOpt());
+		epsilon = " "+String.valueOf(sho.getEpsilon());
+	    lambda = " "+String.valueOf(sho.getLambda());
+	    MSR_Tolerance = " "+String.valueOf(sho.getMSRTolerance());
+	    if(getSimulation().getSolverTaskDescription().getSolverDescription().equals(SolverDescription.HybridMilAdaptive))
+	    	SDE_Tolerance = " "+String.valueOf(sho.getSDETolerance());
+	    else SDE_Tolerance = "";
+	    SDE_dt = " "+String.valueOf(getSimulation().getSolverTaskDescription().getTimeStep().getDefaultTimeStep());
+	    paraString = epsilon + lambda + MSR_Tolerance + SDE_Tolerance + SDE_dt;
+	    if(sho.isUseCustomSeed())
+	    	randomNumber = " -R "+String.valueOf(sho.getCustomSeed());
+	}
+	
 	if(getIntegratorType() == HybridSolver.EMIntegrator)
 	{
 		executableName = cbit.vcell.server.PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.hybridEMExecutableProperty);
 	}
-	else 
+	else if (getIntegratorType() == HybridSolver.MilsteinIntegrator)
 	{
 		executableName = cbit.vcell.server.PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.hybridMilExecutableProperty);
 	}
-	if(getSimulation().getSolverTaskDescription().getStochOpt().isUseCustomSeed())
+	else 
 	{
-		String randomNum = String.valueOf(getSimulation().getSolverTaskDescription().getStochOpt().getCustomSeed());
-		setMathExecutable(new cbit.vcell.solvers.MathExecutable(executableName + " " +getBaseName() + ".nc" + " -R " + randomNum + " -OV"));
+		executableName = cbit.vcell.server.PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.hybridMilAdaptiveExecutableProperty);
 	}
-	else
-		setMathExecutable(new cbit.vcell.solvers.MathExecutable(executableName + " " +getBaseName() + ".nc" + " -OV"));
+	setMathExecutable(new cbit.vcell.solvers.MathExecutable(executableName + " " +getBaseName() + ".nc" + paraString +randomNumber + " -OV"));
 }
 
 
@@ -338,8 +361,8 @@ private final void printStochFile() throws IOException
 	File dataFile = new File(getSaveDirectory(), mathName + STOCH_DATA_EXTENSION);
 	cbit.vcell.solver.ode.ODESimData.writeODEDataFile(stSimData, dataFile);
 	stSimData.writeODELogFile(logFile, dataFile);
-	// fire event
-	fireSolverPrinted(getCurrentTime());
+	// we don't show intermediate data for hybrid solvers. so, event shouldn't be fired.
+	//fireSolverPrinted(getCurrentTime());
 }
 
 
@@ -414,7 +437,7 @@ public void setIntegratorType(int integratorType) {
 public static void main(String[] args) {
 	try{
 	HybridSolver hs = new HybridSolver(null,null,null,HybridSolver.EMIntegrator);
-	hs.getHybridSolverResultSet();
+	hs.getHybridSolverResultSet(); //put file name to be open in getHybridSolverResultSet()
 	}catch(Exception e){
 		e.printStackTrace(System.err);
 	}

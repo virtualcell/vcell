@@ -115,6 +115,11 @@ public class XMLTags {
     public final static String UseCustomSeedAttrTag = "UseCustomSeed"; //stoch
     public final static String CustomSeedAttrTag = "CustomSeed"; //stoch
     public final static String NumberOfTrialAttrTag = "NumberOfTrial"; //stoch
+    //added 20th July, 2007 for simulation parameters of stochasitc hybrid solvers
+    public final static String HybridEpsilonAttrTag = "Epsilon";//stoch
+    public final static String HybridLambdaAttrTag = "Lambda";//stoch
+    public final static String HybridMSRToleranceAttrTag = "MSRTolerance";//stoch
+    public final static String HybridSDEToleranceAttrTag = "SDETolerance";//stoch
     public final static String MathOverridesTag = "MathOverrides";
     public final static String ConstantArraySpec = "ConstantArraySpec";
     public final static String MeshSpecTag = "MeshSpecification";
