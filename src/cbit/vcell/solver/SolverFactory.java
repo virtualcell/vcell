@@ -54,6 +54,8 @@ public static cbit.vcell.solver.Solver createSolver(SessionLog sessionLog, File 
 		solver = new cbit.vcell.solver.stoch.HybridSolver(simJob, directory, sessionLog, HybridSolver.EMIntegrator);
 	} else if (solverDescription.equals(SolverDescription.HybridMilstein)) {
 		solver = new cbit.vcell.solver.stoch.HybridSolver(simJob, directory, sessionLog, HybridSolver.MilsteinIntegrator);
+	} else if (solverDescription.equals(SolverDescription.HybridMilAdaptive)) {
+		solver = new cbit.vcell.solver.stoch.HybridSolver(simJob, directory, sessionLog, HybridSolver.AdaptiveMilsteinIntegrator);
 	}
 	else {
 		throw new SolverException("Unknown solver: " + solverDescription);

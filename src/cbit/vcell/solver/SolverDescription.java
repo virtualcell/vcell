@@ -11,9 +11,8 @@ package cbit.vcell.solver;
  */
 public class SolverDescription implements java.io.Serializable, cbit.util.Matchable {
 	private int type;
-	
-	private static final int NUM_SOLVERS = 11;
-	
+
+	private static final int NUM_SOLVERS = 12;
 	private static final int TYPE_FORWARD_EULER = 0;
 	private static final int TYPE_RUNGE_KUTTA2 = 1;
 	private static final int TYPE_RUNGE_KUTTA4 = 2;
@@ -24,7 +23,9 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 	private static final int TYPE_STOCH_GIBSON = 7;
 	private static final int TYPE_HYBRID_EM = 8;
 	private static final int TYPE_HYBRID_MIL = 9;
-	private static final int TYPE_CVODE = 10;	
+	private static final int TYPE_HYBRID_MIL_Adaptive = 10; //added adaptive milstein solver on July 12, 2007
+	private static final int TYPE_CVODE = 11;	
+
 
 	private static final String[] DESCRIPTIONS = {
 		"Forward Euler (First Order, Fixed Time Step)",
@@ -37,6 +38,7 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		"Gibson (Next Reaction Stochastic Method)",
 		"Hybrid (Gibson + Euler-Maruyama Method)",
 		"Hybrid (Gibson + Milstein Method)",
+		"Hybrid (Adaptive Gibson + Milstein Method)",
 		"CVODE (Variable Order, Variable Time Step)"
 	};
 	private static final boolean[] IS_ODE = {
@@ -50,6 +52,7 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		false,	// TYPE_STOCH_GIBSON
 		false,	// TYPE_Hybrid_Euler
 		false,	// TYPE_Hybrid_Milstein
+		false,	// TYPE_HYBRID_MIL_Adaptive
 		true	// TYPE_CVODE
 	};
 	private static final boolean[] IS_STOCH = {
@@ -63,6 +66,7 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		true,	// TYPE_STOCH_GIBSON
 		true,	// TYPE_Hybrid_Euler
 		true,	// TYPE_Hybrid_Milstein
+		true,	// TYPE_HYBRID_MIL_Adaptive
 		false	// TYPE_CVODE
 	};
 	private static final boolean[] IS_INTERPRETED = {
@@ -76,6 +80,7 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		false, 	// TYPE_STOCH_GIBSON
 		false, 	// TYPE_Hybrid_Euler
 		false, 	// TYPE_Hybrid_Milstein
+		false,  // TYPE_HYBRID_MIL_Adaptive
 		false	// TYPE_CVODE
 	};
 		
@@ -90,6 +95,7 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 	public static final SolverDescription StochGibson			= new SolverDescription(TYPE_STOCH_GIBSON);
 	public static final SolverDescription HybridEuler			= new SolverDescription(TYPE_HYBRID_EM);
 	public static final SolverDescription HybridMilstein		= new SolverDescription(TYPE_HYBRID_MIL);
+	public static final SolverDescription HybridMilAdaptive     = new SolverDescription(TYPE_HYBRID_MIL_Adaptive);
 	public static final SolverDescription CVODE					= new SolverDescription(TYPE_CVODE);
 
 /**
@@ -120,10 +126,10 @@ public boolean compareEqual(cbit.util.Matchable obj) {
 public OutputTimeSpec createOutputTimeSpec(SolverTaskDescription solverTaskDescription) 
 {
 	OutputTimeSpec ots = null;
-	if(type == TYPE_STOCH_GIBSON) //amended 20th Feb, 2007
-		ots = new DefaultOutputTimeSpec(1,1000000);
+	//if(type == TYPE_STOCH_GIBSON) //amended 20th Feb, 2007
+		//ots = new DefaultOutputTimeSpec(1,1000);
 	//amended again 2nd June,2007
-	else if((type == TYPE_HYBRID_EM) || (type == TYPE_HYBRID_MIL))
+	if((type == TYPE_HYBRID_EM) || (type == TYPE_HYBRID_MIL) || (type == TYPE_HYBRID_MIL_Adaptive))
 		ots = new UniformOutputTimeSpec(0.1);
 	else
 		ots = new DefaultOutputTimeSpec();
@@ -275,15 +281,9 @@ public boolean hasVariableTimestep() {
 		case TYPE_RUNGE_KUTTA_FEHLBERG: {
 			return true;
 		}
-//		case TYPE_STOCH_GIBSON: {//set it to false, to hide min, default and max time step textfield, but have to deal with error tolerance
-//			return true;
-//		}
-//		case TYPE_HYBRID_EM: {//set it to false
-//			return true;
-//		}
-//		case TYPE_HYBRID_MIL: {//set it to false
-//			return true;
-//		}
+		case TYPE_CVODE:{
+			return true;
+		}
 		default: {
 			return false;
 		}
@@ -342,10 +342,19 @@ public boolean supports(OutputTimeSpec outputTimeSpec) {
 		case TYPE_LSODA:{
 			return (outputTimeSpec.isDefault() || outputTimeSpec.isExplicit() || outputTimeSpec.isUniform());
 		}
+		case TYPE_CVODE:{
+			return (outputTimeSpec.isDefault() || outputTimeSpec.isExplicit() || outputTimeSpec.isUniform());
+		}
+		case TYPE_STOCH_GIBSON:{
+			return (outputTimeSpec.isDefault() || outputTimeSpec.isUniform());
+		}
 		case TYPE_HYBRID_EM:{
 			return outputTimeSpec.isUniform();
 		}
 		case TYPE_HYBRID_MIL:{
+			return outputTimeSpec.isUniform();
+		}
+		case TYPE_HYBRID_MIL_Adaptive:{
 			return outputTimeSpec.isUniform();
 		}
 		default: {

@@ -15,7 +15,6 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solver.StochSimOptions;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 

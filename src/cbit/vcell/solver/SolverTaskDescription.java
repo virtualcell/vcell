@@ -6,6 +6,8 @@ package cbit.vcell.solver;
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
 import cbit.vcell.server.DataAccessException;
+import cbit.vcell.solver.stoch.StochHybridOptions;
+import cbit.vcell.solver.stoch.StochSimOptions;
 import cbit.vcell.math.CommentStringTokenizer;
 import cbit.vcell.math.VCML;
 import java.util.*;
@@ -136,7 +138,7 @@ public SolverTaskDescription(Simulation simulation) {
 		{
 			fieldStochOpt = new StochSimOptions();
 			setSolverDescription(getDefaultStochSolverDescription());
-			setOutputTimeSpec(new DefaultOutputTimeSpec(1,1000000));//amended Feb 20th,2007
+			//setOutputTimeSpec(new DefaultOutputTimeSpec(1,1000000));//amended Feb 20th,2007
 		}
 		else
 		{
@@ -492,6 +494,11 @@ public String getVCML() {
 	//			UseCustomSeed	false
 	//			CustomSeed	0
 	//			NumOfTrials	1
+	//          //if Hybrid, we have following four more
+	//          Epsilon 100
+	//          Lambda 10
+	//          MSRTolerance 0.01
+	//          SDETolerance 1e-4
 	//   	}
 	//		KeepEvery 1
 	//		KeepAtMost	1000
@@ -634,6 +641,11 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 	//			UseCustomSeed	false
 	//			CustomSeed	0
 	//			NumOfTrials	1
+    //          if Hybrid, we have following four more
+	//          Epsilon 100
+	//          Lambda 10
+	//          MSRTolerance 0.01
+	//          SDETolerance 1e-4
 	//   	}
 
 	//		KeepEvery 1
@@ -660,7 +672,8 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 	//
 	//	
 	int keepEvery = -1;
-	int keepAtMost = -1;		
+	int keepAtMost = -1;
+	SolverDescription sd = null; 
 	try {
 		String token = tokens.nextToken();
 		if (token.equalsIgnoreCase(VCML.SolverTaskDescription)) {
@@ -693,7 +706,9 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 				// catch property veto exception to correct inappropriate solver selection in database
 				//
 				try {
-					setSolverDescription(SolverDescription.fromName(token));
+					//amended July 22nd, 2007
+					sd = SolverDescription.fromName(token);
+					setSolverDescription(sd);
 				}catch (java.beans.PropertyVetoException e){
 					e.printStackTrace(System.out);
 					if (getSimulation()!=null){
@@ -739,7 +754,11 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 				continue;
 			}
 			if (token.equalsIgnoreCase(VCML.StochSimOptions)) {
-				StochSimOptions temp=new StochSimOptions();
+				// Amended July 22nd, 2007 
+				StochSimOptions temp = null;
+				if(sd != null && sd.equals(SolverDescription.StochGibson))
+					temp = new StochSimOptions();
+				else temp = new StochHybridOptions();
 				temp.readVCML(tokens);
 				if (getSimulation()!=null && getSimulation().getMathDescription()!=null)
 				{

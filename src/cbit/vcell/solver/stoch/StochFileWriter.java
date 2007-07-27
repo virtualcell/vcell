@@ -180,14 +180,17 @@ public void writeStochInputFile(PrintWriter pw, String[] parameterNames) throws 
 		pw.println("<control>");
 		cbit.vcell.solver.SolverTaskDescription solverTaskDescription = getSimulation().getSolverTaskDescription();
 		cbit.vcell.solver.TimeBounds timeBounds = solverTaskDescription.getTimeBounds();
-		cbit.vcell.solver.DefaultOutputTimeSpec outputTimeSpec = ((DefaultOutputTimeSpec)solverTaskDescription.getOutputTimeSpec());
+		cbit.vcell.solver.OutputTimeSpec outputTimeSpec = solverTaskDescription.getOutputTimeSpec();
 		ErrorTolerance errorTolerance = solverTaskDescription.getErrorTolerance();
 		StochSimOptions stochOpt = solverTaskDescription.getStochOpt();
 		pw.println("STARTING_TIME"+"\t"+ timeBounds.getStartingTime());
 		pw.println("ENDING_TIME "+"\t"+ timeBounds.getEndingTime());
-		pw.println("MAX_ITERATION"+"\t"+outputTimeSpec.getKeepAtMost());
+//		pw.println("MAX_ITERATION"+"\t"+outputTimeSpec.getKeepAtMost());
 		pw.println("TOLERANCE "+"\t"+errorTolerance.getAbsoluteErrorTolerance());
-		pw.println("SAMPLE_INTERVAL"+"\t"+outputTimeSpec.getKeepEvery());
+		if(outputTimeSpec.isDefault())
+			pw.println("SAMPLE_INTERVAL"+"\t"+((DefaultOutputTimeSpec)outputTimeSpec).getKeepEvery());
+		else if (outputTimeSpec.isUniform())
+			pw.println("SAVE_PERIOD"+"\t"+((UniformOutputTimeSpec)outputTimeSpec).getOutputTimeStep());
 		pw.println("NUM_TRIAL"+"\t"+solverTaskDescription.getStochOpt().getNumOfTrials());
 
 		if(stochOpt.isUseCustomSeed())

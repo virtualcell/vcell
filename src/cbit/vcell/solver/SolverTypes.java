@@ -26,7 +26,8 @@ public class SolverTypes {
 	private static String[] fieldStochSolverDescriptions = new String[] {
 		SolverDescription.StochGibson.getName(),
 		SolverDescription.HybridEuler.getName(),
-		SolverDescription.HybridMilstein.getName()
+		SolverDescription.HybridMilstein.getName(),
+		SolverDescription.HybridMilAdaptive.getName() //added July 12, 2007
 	};
 
 /**

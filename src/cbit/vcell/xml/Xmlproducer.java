@@ -1,5 +1,7 @@
 package cbit.vcell.xml;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.solver.stoch.StochHybridOptions;
 import cbit.sql.KeyValue;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
@@ -2872,7 +2874,7 @@ public org.jdom.Element getXML(cbit.vcell.solver.OutputTimeSpec param) {
  * @return org.jdom.Element
  * @param param cbit.vcell.solver.StochSimOption
  */
-public org.jdom.Element getXML(cbit.vcell.solver.StochSimOptions param) {
+public org.jdom.Element getXML(cbit.vcell.solver.stoch.StochSimOptions param, boolean isHybrid) {
 	org.jdom.Element stochSimOptions = new org.jdom.Element(XMLTags.StochSimOptionsTag);
 	if(param != null)
 	{
@@ -2880,6 +2882,13 @@ public org.jdom.Element getXML(cbit.vcell.solver.StochSimOptions param) {
 		if(param.isUseCustomSeed())
 			stochSimOptions.setAttribute(XMLTags.CustomSeedAttrTag, String.valueOf(param.getCustomSeed()));
 		stochSimOptions.setAttribute(XMLTags.NumberOfTrialAttrTag, String.valueOf(param.getNumOfTrials()));
+		if(isHybrid)
+		{
+			stochSimOptions.setAttribute(XMLTags.HybridEpsilonAttrTag, String.valueOf(((StochHybridOptions)param).getEpsilon()));
+			stochSimOptions.setAttribute(XMLTags.HybridLambdaAttrTag, String.valueOf(((StochHybridOptions)param).getLambda()));
+			stochSimOptions.setAttribute(XMLTags.HybridMSRToleranceAttrTag, String.valueOf(((StochHybridOptions)param).getMSRTolerance()));
+			stochSimOptions.setAttribute(XMLTags.HybridSDEToleranceAttrTag, String.valueOf(((StochHybridOptions)param).getSDETolerance()));
+		}
 	}
 	return stochSimOptions;
 }
@@ -2947,8 +2956,13 @@ public org.jdom.Element getXML(cbit.vcell.solver.SolverTaskDescription param) {
 	//Add ErrorTolerence
 	solvertask.addContent( getXML(param.getErrorTolerance()) );
 	//Add Stochastic simulation Options, 5th Feb, 2007
+	//Amended 2oth July, 2007. We need to distinguish hybrid and SSA options
 	if(param.getStochOpt() != null)
-		solvertask.addContent( getXML(param.getStochOpt()));
+	{
+		if(param.getSolverDescription().equals(SolverDescription.StochGibson))
+			solvertask.addContent( getXML(param.getStochOpt(),false));
+		else solvertask.addContent(getXML(param.getStochOpt(),true));
+	}
 	//Add OutputOptions
 	solvertask.addContent(getXML(param.getOutputTimeSpec()));
 	//Add sensitivityParameter

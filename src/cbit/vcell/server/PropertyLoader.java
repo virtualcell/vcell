@@ -44,6 +44,7 @@ public class PropertyLoader {
 	public static final String stochExecutableProperty		= "vcell.stoch.executable";	
 	public static final String hybridEMExecutableProperty	= "vcell.hybridEM.executable";
 	public static final String hybridMilExecutableProperty	= "vcell.hybridMil.executable";
+	public static final String hybridMilAdaptiveExecutableProperty = "vcell.hybridMilAdaptive.executable";
 	//
 	public static final String corbaEnabled					= "vcell.corbaEnabled";
 	public static final String databaseCacheSizeProperty	= "vcell.databaseCacheSize";
@@ -172,6 +173,7 @@ public class PropertyLoader {
 		stochExecutableProperty,
 		hybridEMExecutableProperty,
 		hybridMilExecutableProperty,
+		hybridMilAdaptiveExecutableProperty,
 		
 		corbaEnabled,
 		databaseCacheSizeProperty,

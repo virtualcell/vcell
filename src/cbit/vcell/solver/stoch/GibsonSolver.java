@@ -234,13 +234,14 @@ private final void printStochFile() throws IOException
 	//} ????this three sentences give array index out of bounds. at RowColumnResultSet row 540.
 	cbit.vcell.solver.ode.ODESimData stSimData = new cbit.vcell.solver.ode.ODESimData(new VCSimulationDataIdentifier(getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), getJobIndex()), stSolverResultSet);
 	String mathName = stSimData.getMathName();
-	getSessionLog().print("AbstractJavaSolver.printToFile(" + mathName + ")");
+	getSessionLog().print("GibsonSolver.printToFile(" + mathName + ")");
 	File logFile = new File(getSaveDirectory(), mathName + LOGFILE_EXTENSION);
 	File dataFile = new File(getSaveDirectory(), mathName + STOCH_DATA_EXTENSION);
 	cbit.vcell.solver.ode.ODESimData.writeODEDataFile(stSimData, dataFile);
 	stSimData.writeODELogFile(logFile, dataFile);
-	// fire event
-	fireSolverPrinted(getCurrentTime());
+	// fire event to inform that solver has data printed. however, for gibson multiple trial and hybrid solvers, we don't show intermediate results
+	if(getSimulation().getSolverTaskDescription().getStochOpt().getNumOfTrials() == 1)
+		fireSolverPrinted(getCurrentTime());
 }
 
 

@@ -1,6 +1,8 @@
 package cbit.vcell.xml;
 import org.jdom.DataConversionException;
 import cbit.vcell.solver.ConstantArraySpec;
+import cbit.vcell.solver.SolverDescription;
+
 import org.jdom.Attribute;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
@@ -3679,7 +3681,8 @@ public SimulationVersion getSimulationVersion(Element xmlVersion) throws XmlPars
 public cbit.vcell.solver.SolverTaskDescription getSolverTaskDescription(Element param, cbit.vcell.solver.Simulation simulation) throws XmlParseException{
 	//*** create new SolverTaskDescription ***
 	cbit.vcell.solver.SolverTaskDescription solverTaskDesc = new cbit.vcell.solver.SolverTaskDescription(simulation);
-	
+	//Added July 22nd, 2007, used as condition for stochSimOptions or stochHybridOprtions
+	SolverDescription sd = null;
 	//Retrieve attributes
 	String taskType = param.getAttributeValue(XMLTags.TaskTypeTag);
 	int keepEvery = -1;
@@ -3701,7 +3704,8 @@ public cbit.vcell.solver.SolverTaskDescription getSolverTaskDescription(Element 
 	//set Attributes
 	try {
 		//set solver
-		solverTaskDesc.setSolverDescription(cbit.vcell.solver.SolverDescription.fromName(solverName));
+		sd = cbit.vcell.solver.SolverDescription.fromName(solverName);
+		solverTaskDesc.setSolverDescription(sd);
 		
 		if ( taskType.equalsIgnoreCase(XMLTags.UnsteadyTag) ) {
 			solverTaskDesc.setTaskType(solverTaskDesc.TASK_UNSTEADY );
@@ -3727,7 +3731,12 @@ public cbit.vcell.solver.SolverTaskDescription getSolverTaskDescription(Element 
 		if(simulation != null && simulation.getMathDescription()!= null)
 		{
 			if( simulation.getMathDescription().isStoch() && param.getChild(XMLTags.StochSimOptionsTag) != null)
-				solverTaskDesc.setStochOpt(getStochSimOptions(param.getChild(XMLTags.StochSimOptionsTag)));
+			{   //Amended July 22nd, 2007 to read either stochSimOptions or stochHybridOptions
+				if(sd != null && sd.equals(SolverDescription.StochGibson))
+					solverTaskDesc.setStochOpt(getStochSimOptions(param.getChild(XMLTags.StochSimOptionsTag),false));
+				else 
+					solverTaskDesc.setStochOpt(getStochSimOptions(param.getChild(XMLTags.StochSimOptionsTag),true));
+			}
 		}
 		//get OutputOptions
 		if (keepEvery != -1) {
@@ -3967,18 +3976,31 @@ public SpeciesContextSpec getSpeciesContextSpec(Element param) throws XmlParseEx
  * @return cbit.vcell.solver.TimeStep
  * @param param org.jdom.Element
  */
-public cbit.vcell.solver.StochSimOptions getStochSimOptions(Element param) {
+public cbit.vcell.solver.stoch.StochSimOptions getStochSimOptions(Element param, boolean isHybrid) {
 	//get attributes
 	boolean isUseCustomSeed  = Boolean.parseBoolean( param.getAttributeValue(XMLTags.UseCustomSeedAttrTag) );
 	int customSeed = 0;
 	if(isUseCustomSeed)
 		customSeed = Integer.parseInt( param.getAttributeValue(XMLTags.CustomSeedAttrTag) );
 	int numOfTrials = Integer.parseInt( param.getAttributeValue(XMLTags.NumberOfTrialAttrTag) );
-
-	//**** create new StochSimOptions object ****
-	cbit.vcell.solver.StochSimOptions stochSimOptions = new cbit.vcell.solver.StochSimOptions(isUseCustomSeed, customSeed, numOfTrials);
-	
-	return stochSimOptions;
+	// Amended July 22nd,2007 to add StochHybridOptions
+	if(isHybrid)
+	{
+		if(param.getAttributeValue(XMLTags.HybridEpsilonAttrTag) != null &&
+		   param.getAttributeValue(XMLTags.HybridLambdaAttrTag) != null &&
+		   param.getAttributeValue(XMLTags.HybridMSRToleranceAttrTag) !=null &&
+		   param.getAttributeValue(XMLTags.HybridSDEToleranceAttrTag) !=null )
+		{
+			double epsilon = Double.parseDouble( param.getAttributeValue(XMLTags.HybridEpsilonAttrTag) );
+			double lambda = Double.parseDouble( param.getAttributeValue(XMLTags.HybridLambdaAttrTag) );
+			double MSRTolerance = Double.parseDouble( param.getAttributeValue(XMLTags.HybridMSRToleranceAttrTag) );
+			double sDETDolerance = Double.parseDouble( param.getAttributeValue(XMLTags.HybridSDEToleranceAttrTag) );
+			//**** create a new StochHybridOptions object and return ****
+			return new cbit.vcell.solver.stoch.StochHybridOptions(isUseCustomSeed, customSeed, numOfTrials, epsilon, lambda, MSRTolerance, sDETDolerance);
+		}
+	}
+	//**** create new StochSimOptions object and return ****
+	return new cbit.vcell.solver.stoch.StochSimOptions(isUseCustomSeed, customSeed, numOfTrials);
 }
 
 

@@ -251,11 +251,21 @@ public void prepareToEdit(cbit.vcell.solver.Simulation simulation) {
 		getMeshSpecificationPanel1().setMeshSpecification(clonedSimulation == null ? null : clonedSimulation.getMeshSpecification());
 		getSolverTaskDescriptionPanel1().setSolverTaskDescription(clonedSimulation == null ? null : clonedSimulation.getSolverTaskDescription());
 		getSolverTaskDescriptionAdvancedPanel1().setSolverTaskDescription(clonedSimulation == null ? null : clonedSimulation.getSolverTaskDescription());
-		if(simulation.getMathDescription().isStoch()) //disable time step for stochastic simulation
+		//some extra process here to enable/disable proper time steps.
+		if(simulation.getSolverTaskDescription().getSolverDescription().compareEqual(SolverDescription.StochGibson))
 		{
 			getSolverTaskDescriptionPanel1().disableTimeStep();
-			getSolverTaskDescriptionAdvancedPanel1().getTimeStepPanel().disableTimeStep();
+			getSolverTaskDescriptionAdvancedPanel1().getTimeStepPanel().setEnabled(false);
 		}
+		else if(simulation.getSolverTaskDescription().getSolverDescription().compareEqual(SolverDescription.HybridEuler)||
+				simulation.getSolverTaskDescription().getSolverDescription().compareEqual(SolverDescription.HybridMilstein)||
+				simulation.getSolverTaskDescription().getSolverDescription().compareEqual(SolverDescription.HybridMilAdaptive))
+		{
+			getSolverTaskDescriptionPanel1().enableTimeStep();
+			getSolverTaskDescriptionAdvancedPanel1().getTimeStepPanel().setEnabled(true);
+			getSolverTaskDescriptionAdvancedPanel1().getTimeStepPanel().disableMinAndMaxTimeStep();
+		}
+		
 		boolean shouldMeshBeEnabled = false;
 		MeshSpecification meshSpec = clonedSimulation.getMeshSpecification();
 		if(	meshSpec != null && 
