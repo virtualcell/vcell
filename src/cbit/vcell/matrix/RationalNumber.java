@@ -22,7 +22,7 @@ public RationalNumber(long integer) {
  * RationalNumber constructor comment.
  */
 public RationalNumber(long numerator, long denominator) {
-	long sign = (numerator*denominator < 0)?(-1):(1);
+	long sign = (numerator<0 != denominator<0)?(-1):(1);
 	long gcf = getGreatestCommonFactor(numerator,denominator);
 	this.num = Math.abs(numerator)*sign/gcf;
 	this.den = Math.abs(denominator)/gcf;
