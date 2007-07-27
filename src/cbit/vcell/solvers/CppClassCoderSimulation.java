@@ -477,6 +477,10 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 	out.println("\t\treturnMsg = \"Exception while running : \";");
 	out.println("\t\treturnMsg += exStr;");
 	out.println("\t\treturnCode = 1;");
+	out.println("\t}catch (string& exStr){");
+	out.println("\t\treturnMsg = \"Exception while running : \";");
+	out.println("\t\treturnMsg += exStr;");
+	out.println("\t\treturnCode = 1;");
    	out.println("\t}catch (...){");
 	out.println("\t\treturnMsg = \"Unknown exception while running ... \";");
 	out.println("\t\treturnCode = 1;");
