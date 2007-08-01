@@ -1,29 +1,14 @@
 package cbit.vcell.client.bionetgen;
-import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
-import cbit.vcell.modelopt.gui.DataSource;
-import cbit.vcell.opt.SimpleReferenceData;
-import java.io.PrintWriter;
-import cbit.gui.VCFileChooser;
-import java.io.File;
-import java.util.Hashtable;
-import cbit.vcell.model.Structure;
-import cbit.vcell.model.GeneralKinetics;
-import cbit.vcell.model.ReactionParticipant;
-import java.util.ArrayList;
-import cbit.vcell.parser.Expression;
 import java.util.Vector;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Species;
-import cbit.vcell.server.bionetgen.BNGOutput;
-import cbit.vcell.server.bionetgen.BNGInput;
-import cbit.util.FileFilters;
-import javax.swing.JFileChooser;
-import cbit.vcell.client.task.UserCancelException;
-import cbit.vcell.client.UserMessage;
-import cbit.vcell.client.PopupGenerator;
-import cbit.util.AsynchProgressPopup;
 
-import cbit.util.BigString;
+import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.model.ReactionParticipant;
+import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.modelopt.gui.DataSource;
+import cbit.vcell.server.bionetgen.BNGInput;
+import cbit.vcell.server.bionetgen.BNGOutput;
+import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
+import cbit.vcell.xml.sbml_transform.BnglSbmlTransformer;
 /**
  * Insert the type's description here.
  * Creation date: (7/1/2005 1:46:25 PM)
@@ -403,6 +388,7 @@ private void connEtoC4(javax.swing.event.ListSelectionEvent arg1) {
 		// user code begin {1}
 		// user code end
 		this.enableImportButton();
+		enableSaveOutputButton();
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -422,6 +408,7 @@ private void connEtoC5() {
 		// user code begin {1}
 		// user code end
 		this.enableImportButton();
+		enableSaveOutputButton();
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -654,21 +641,35 @@ private void connPtoP3SetTarget() {
 
 
 /**
- * Comment
+ * Enable Import button if an *.xml file is present in BNGOutput; disable otherwise.
  */
 private void enableImportButton() {
-	String selectedValue = (String)getOutputFormatsList().getSelectedValue();
-
-	if (selectedValue == null) {
+	BNGOutput out = getBngOutput();
+	
+	if( null == out ) {
 		getImportButton().setEnabled(false);
 		return;
 	}
+	
+	String[] files = out.getBNGFilenames();
+	final String XML_SUFFIX = ".xml";
+	for( int i = 0; i < files.length; ++i ) {
+		String file = files[i];
+		if( file.endsWith(XML_SUFFIX) ) {
+			getImportButton().setEnabled(true);
+			return;
+		}
+	}
+	getImportButton().setEnabled(false);
+}
 
-	String XML_SUFFIX = ".xml";
-	if (selectedValue.endsWith(XML_SUFFIX)) {
-		getImportButton().setEnabled(true);
-	} else {
-		getImportButton().setEnabled(false);
+private void enableSaveOutputButton() {
+	String selectedValue = (String)getOutputFormatsList().getSelectedValue();
+	
+	if (selectedValue == null && getSaveButton().isEnabled() ) {
+		getSaveButton().setEnabled(false);
+	} else if (selectedValue != null && ! getSaveButton().isEnabled() ) {
+		getSaveButton().setEnabled(true);
 	}
 }
 
@@ -1948,6 +1949,7 @@ private javax.swing.JButton getSaveButton() {
 			ivjSaveButton.setName("SaveButton");
 			ivjSaveButton.setFont(new java.awt.Font("Arial", 1, 12));
 			ivjSaveButton.setText("Save Output as text file");
+			enableSaveOutputButton();
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -2142,21 +2144,9 @@ private void saveOutput(java.awt.event.ActionEvent actionEvent) {
  * Comment
  */
 private void sbmlImportButton_ActionPerformed() {
-	String selectedValue = (String)getOutputFormatsList().getSelectedValue();
-	if (selectedValue == null) {
-		PopupGenerator.showErrorDialog("No output format selected.");
-		return;
-	}
-
-	String XML_SUFFIX = ".xml";
-	if (selectedValue.endsWith(XML_SUFFIX)) {
-		String sbmlStr = getOutputTextArea().getText();
-		getBngWindowManager().importSbml(sbmlStr);
-	} else {
-		PopupGenerator.showErrorDialog("SBML (.xml) file not selected; cannot import into the Virtual Cell.");
-	}
+	String sbml = BnglSbmlTransformer.transformSBML(getBngOutput());
+	getBngWindowManager().importSbml(sbml);
 }
-
 
 /**
  * Set the bngInput to a new value.
@@ -2187,6 +2177,8 @@ private void setbngInput(cbit.vcell.server.bionetgen.BNGInput newValue) {
 public void setBngOutput(BNGOutput bngOutput) {
 	BNGOutput oldValue = fieldBngOutput;
 	fieldBngOutput = bngOutput;
+	enableImportButton();
+	enableSaveOutputButton();
 	firePropertyChange("bngOutput", oldValue, bngOutput);
 }
 
