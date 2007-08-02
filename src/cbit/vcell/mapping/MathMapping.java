@@ -2002,7 +2002,7 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 					Expression outFlux = getIdentifierSubstitutions(resolvedFluxes[i].outFlux,VCUnitDefinition.UNIT_uM_um_per_s,simContext.getGeometryContext().getStructureMapping(membraneStructureAnalyzer.getMembrane()));
 					jc.setOutFlux(outFlux);
 				}else{
-					throw new MappingException(scm.getSpeciesContext().getName()+" has spatially resolved flux at membrane "+membrane.getName()+", but doesn't diffuse in compartment "+scm.getSpeciesContext().getStructure().getName());
+					throw new MappingException("APPLICATION  " + simContext.getName() + " : " + scm.getSpeciesContext().getName()+" has spatially resolved flux at membrane "+membrane.getName()+", but doesn't diffuse in compartment "+scm.getSpeciesContext().getStructure().getName());
 				}
 			}
 		}
