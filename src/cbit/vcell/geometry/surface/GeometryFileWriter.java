@@ -218,8 +218,8 @@ private static void write(Writer writer, Geometry geometry, ISize volumeSampleSi
 	
 	// regionImage
 	if (regionImage != null) {
-		if (regionImage.getNumRegions()>255){
-			throw new RuntimeException("cannot process a geometry with nore than 255 volume regions");
+		if (regionImage.getNumRegions() > 255){
+			throw new RuntimeException("cannot process a geometry with more than 255 volume regions");
 		}
 		uncompressedRegionIDs = new byte[regionImage.getNumX()*regionImage.getNumY()*regionImage.getNumZ()];
 		for (int i = 0; i < uncompressedRegionIDs.length; i++){
