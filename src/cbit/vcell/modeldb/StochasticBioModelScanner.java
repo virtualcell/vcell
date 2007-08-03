@@ -6,6 +6,8 @@ import java.io.PrintStream;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelInfo;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.SimulationContext;
@@ -90,6 +92,17 @@ public class StochasticBioModelScanner implements VCDatabaseVisitor {
 		try{
 			VCDatabaseScanner.scanBioModels(args, visitor, bAbortOnDataAccessException);
 		}catch(Exception e){e.printStackTrace(System.err);}
+	}
+
+	//
+	// required for implementation of interface ... not used.
+	//
+	
+	public boolean filterGeometry(GeometryInfo geometryInfo) {
+		return false;
+	}
+
+	public void visitGeometry(Geometry geometry, PrintStream arg_p) {
 	}
 
 }
