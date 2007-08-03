@@ -12,9 +12,12 @@ import cbit.sql.DBCacheTable;
 import cbit.sql.KeyFactory;
 import cbit.sql.KeyValue;
 import cbit.sql.UserInfo;
+import cbit.sql.VersionableType;
 import cbit.util.BigString;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelInfo;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.PropertyLoader;
@@ -77,17 +80,15 @@ public User[] getAllUsers() throws DataAccessException{
  * @throws DataAccessException 
  * @throws XmlParseException 
  */
-public void scanBioModels(VCDatabaseVisitor databaseVisitor, User users[], KeyValue singleModelKey, HashSet<KeyValue> includeHash, HashSet<KeyValue> excludeHash, boolean bAbortOnDataAccessException) throws DataAccessException, XmlParseException {
+public void scanBioModels(VCDatabaseVisitor databaseVisitor, PrintStream logFilePrintStream, User users[], KeyValue singleModelKey, HashSet<KeyValue> includeHash, HashSet<KeyValue> excludeHash, boolean bAbortOnDataAccessException) throws DataAccessException, XmlParseException {
 	if (users==null){
 		users = getAllUsers();
 	}
 	try
 	{
-		FileOutputStream sout = new FileOutputStream("C:\\visitBioModel.txt");
-		PrintStream p = new PrintStream(sout);
 		//start visiting models and writing log
-		p.println("Start scanning bio-models......");
-		p.println("\n");
+		logFilePrintStream.println("Start scanning bio-models......");
+		logFilePrintStream.println("\n");
 		
 		for (int i=0;i<users.length;i++)
 		{
@@ -113,7 +114,7 @@ public void scanBioModels(VCDatabaseVisitor databaseVisitor, User users[], KeyVa
 					BigString bioModelXML = dbServerImpl.getBioModelXML(user, bioModelInfos[j].getVersion().getVersionKey());
 					BioModel bioModel = cbit.vcell.xml.XmlHelper.XMLToBioModel(bioModelXML.toString());
 					bioModel.refreshDependencies();
-					databaseVisitor.visitBioModel(bioModel,p);
+					databaseVisitor.visitBioModel(bioModel,logFilePrintStream);
 				}catch (Exception e2){
 					log.exception(e2);
 					if (bAbortOnDataAccessException){
@@ -123,18 +124,83 @@ public void scanBioModels(VCDatabaseVisitor databaseVisitor, User users[], KeyVa
 			}
 		}
 		
-	    p.close();
+		logFilePrintStream.close();
 	}catch(Exception e)
 	{
 		System.err.println("error writing to log file.");
 	}
 }
 
+/**
+ * Insert the method's description here.
+ * Creation date: (2/2/01 3:40:29 PM)
+ * @throws DataAccessException 
+ * @throws XmlParseException 
+ */
+public void scanGeometries(VCDatabaseVisitor databaseVisitor, PrintStream logFilePrintStream, User users[], KeyValue singleGeometryKey, HashSet<KeyValue> includeHash, HashSet<KeyValue> excludeHash, boolean bAbortOnDataAccessException) throws DataAccessException, XmlParseException {
+	if (users==null){
+		users = getAllUsers();
+	}
+	try
+	{
+		//start visiting models and writing log
+		logFilePrintStream.println("Start scanning geometries......");
+		logFilePrintStream.println("\n");
+		
+		for (int i=0;i<users.length;i++)
+		{
+			User user = users[i];
+			GeometryInfo geoInfos[] = dbServerImpl.getGeometryInfos(user,false);
+			for (int j = 0; j < geoInfos.length; j++){
+				if (singleGeometryKey!=null && !geoInfos[j].getVersion().getVersionKey().compareEqual(singleGeometryKey)){
+					System.out.println("skipping geometry, not the single one that we wanted");
+					continue;
+				}
+				if (excludeHash!=null && excludeHash.contains(geoInfos[j].getVersion().getVersionKey())){
+					System.out.println("skipping geometry with key '"+geoInfos[j].getVersion().getVersionKey()+"'");
+					continue;
+				}
+				if (includeHash!=null && !includeHash.contains(geoInfos[j].getVersion().getVersionKey())){
+					System.out.println("not including geometry with key '"+geoInfos[j].getVersion().getVersionKey()+"'");
+					continue;
+				}
+				if (!databaseVisitor.filterGeometry(geoInfos[j])){
+					continue;
+				}
+				try {
+					BigString geometryXML = dbServerImpl.getGeometryXML(user, geoInfos[j].getVersion().getVersionKey());
+					Geometry geometry = cbit.vcell.xml.XmlHelper.XMLToGeometry(geometryXML.toString());
+					geometry.refreshDependencies();
+					databaseVisitor.visitGeometry(geometry,logFilePrintStream);
+				}catch (Exception e2){
+					log.exception(e2);
+					if (bAbortOnDataAccessException){
+						throw e2;
+					}
+				}
+			}
+		}
+		
+		logFilePrintStream.close();
+	}catch(Exception e)
+	{
+		System.err.println("error writing to log file.");
+	}
+}
+
+public static void scanGeometries(final java.lang.String[] args, final VCDatabaseVisitor visitor, final boolean bAbortOnDataAccessException) {
+	scanDbObjects(VersionableType.Geometry, args, visitor, bAbortOnDataAccessException);
+}
+
 public static void scanBioModels(final java.lang.String[] args, final VCDatabaseVisitor visitor, final boolean bAbortOnDataAccessException) {
+	scanDbObjects(VersionableType.BioModelMetaData, args, visitor, bAbortOnDataAccessException);
+}
+
+private static void scanDbObjects(VersionableType versionableType, final java.lang.String[] args, final VCDatabaseVisitor visitor, final boolean bAbortOnDataAccessException) {
 	try {
 				
 		if ((args.length<2 || args.length>4)){
-			System.out.println("Usage: VCBioModelVisitor (-all | userid) (logfileName | -) [(-include includefile) | (-exclude excludefile) | biomodelkey]");
+			System.out.println("Usage: VCDatabaseScanner (-all | userid) (logfileName | -) [(-include includefile) | (-exclude excludefile) | biomodelkey]");
 			System.out.println("     where 'logfileSpec'\t\t\ta filename or '-' for STDOUT");
 			System.out.println("     and '-include' to test biomodel keys from includefile");
 			System.out.println("     and '-include' to test all biomodel keys except from excludefile");
@@ -159,8 +225,9 @@ public static void scanBioModels(final java.lang.String[] args, final VCDatabase
 		//
 		// Redirect output to the logfile (append if exists)
 		//
+		PrintStream logFilePrintStream = System.out;
 		if (!args[1].equals("-")){
-			System.setOut(new java.io.PrintStream(new java.io.FileOutputStream(args[1], true), true));
+			logFilePrintStream = new java.io.PrintStream(new java.io.FileOutputStream(args[1], true), true);
 		}
 		
 		HashSet<KeyValue> includeHash = null;
@@ -191,7 +258,13 @@ public static void scanBioModels(final java.lang.String[] args, final VCDatabase
 		} else if (args.length==3){
 			singleKey = new KeyValue(args[2]);
 		}
-		databaseScanner.scanBioModels(visitor, users, singleKey, includeHash, excludeHash, bAbortOnDataAccessException);
+		if (versionableType.equals(VersionableType.BioModelMetaData)){
+			databaseScanner.scanBioModels(visitor, logFilePrintStream, users, singleKey, includeHash, excludeHash, bAbortOnDataAccessException);
+		}else if (versionableType.equals(VersionableType.Geometry)){
+			databaseScanner.scanGeometries(visitor, logFilePrintStream, users, singleKey, includeHash, excludeHash, bAbortOnDataAccessException);
+		}else{
+			throw new RuntimeException("versionableType "+versionableType.toString()+" not yet supported");
+		}
 
 	} catch (Throwable exception) {
 		System.out.println("Exception occurred in main() of VCBioModelVisitor");
