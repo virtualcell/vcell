@@ -9,9 +9,10 @@ package cbit.vcell.xml.sbml_transform;
  */
 public class SbmlTransformException extends RuntimeException {
 	private static final long serialVersionUID = -1389435452311195040L;
+	public static final String DefaultMessage = "SBML transformation error";
 
 	public SbmlTransformException() {
-		super();
+		super(DefaultMessage);
 	}
 
 	public SbmlTransformException(String message, Throwable cause) {
@@ -23,7 +24,7 @@ public class SbmlTransformException extends RuntimeException {
 	}
 
 	public SbmlTransformException(Throwable cause) {
-		super(cause);
+		super(DefaultMessage, cause);
 	}
 
 	public String getMessage() {

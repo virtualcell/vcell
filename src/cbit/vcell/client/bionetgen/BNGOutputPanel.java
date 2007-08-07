@@ -1,6 +1,7 @@
 package cbit.vcell.client.bionetgen;
 import java.util.Vector;
 
+import cbit.gui.DialogUtils;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.SpeciesContext;
@@ -9,6 +10,7 @@ import cbit.vcell.server.bionetgen.BNGInput;
 import cbit.vcell.server.bionetgen.BNGOutput;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 import cbit.vcell.xml.sbml_transform.BnglSbmlTransformer;
+import cbit.vcell.xml.sbml_transform.SbmlTransformException;
 /**
  * Insert the type's description here.
  * Creation date: (7/1/2005 1:46:25 PM)
@@ -208,10 +210,9 @@ private void bngHelpSamples() {
  */
 public void bNGOutputPanel_Initialize() {
 	getlineNumberedTextPanel().setTextFont(new java.awt.Font("dialog", 0, 14));
-	getlineNumberedTextPanel().setText("# All text following the occurence of \'#\' character in a line is ignored.\n \n# The model consists of a monovalent extracellular ligand, \n# a monovalent cell-surface receptor kinase, and a cytosolic adapter \n# protein. The receptor dimerizes through a receptor-receptor \n# interaction that depends on ligand binding. When two receptors \n# are juxtaposed through dimerization one of the receptor kinases \n# can transphosphorylate the second receptor kinase. \n# Apapter protein A can bind to phosphorylated receptor tyrosine. \n\n\nbegin parameters\n  1 L0   1\n  2 R0   1\n  3 A0   5\n  4 kp1  0.5\n  5 km1  0.1\n  6 kp2  1.1\n  7 km2  0.1\n  8 p1  10\n  9 d1   5\n 10 kpA  1e1\n 11 kmA  0.02\nend parameters\n\nbegin species\n  1  L(r)       L0  # Ligand has one site for binding to receptor. \n                    # L0 is initial concentration\n  2  R(l,d,Y~U) R0  # Dimer has three sites: l for binding to a ligand, \n                    # d for binding to another receptor, and\n                    # Y - tyrosine. Initially Y is unphosphorylated, Y~U.\n  3  A(SH2)     A0  # A has a single SH2 domain that binds phosphotyrosine\nend species\n\n\nbegin reaction rules\n\n# Ligand binding (L+R)\n# Note: specifying r in R here means that the r component must not \n#       be bound.  This prevents dissociation of ligand from R\n#       when R is in a dimer.\n  1  L(r) + R(l,d) <-> L(r!1).R(l!1,d) kp1, km1\n\n# Aggregation (R-L + R-L)\n# Note:  R must be bound to ligand to dimerize.\n  2  R(l!+,d) + R(l!+,d) <-> R(l!+,d!2).R(l!+,d!2) kp2, km2\n\n# Transphosphorylation\n# Note:  R must be bound to another R to be transphosphorylated.\n  3  R(d!+,Y~U) -> R(d!+,Y~P) p1 \n\n# Dephosphorylation\n# Note:  R can be in any complex, but tyrosine is not protected by bound A.\n  4  R(Y~P) -> R(Y~U) d1\n\n# Adaptor binding phosphotyrosine (reversible). \n# Note: Doesn\'t depend on whether R is bound to\n#       receptor, i.e. binding rate is same whether R is a monomer, is \n#       in association with a ligand, in a dimer, or in a complex.\n\n  5  R(Y~P) + A(SH2) <-> R(Y~P!1).A(SH2!1) kpA, kmA\nend reaction rules\n\nbegin observables\n  Molecules R_dim  R(d!+)      # All receptors in dimer\n  Molecules R_phos R(Y~P!?)    # Total of all phosphotyrosines\n  Molecules A_R    A(SH2!1).R(Y~P!1) # Total of all A\'s associated with phosphotyrosines\n  Molecules A_tot  A()     # Total of A. Should be a constant during simulation.\n  Molecules R_tot  R()     # Total of R. Should be a constant during simulation.\n  Molecules L_tot  L()     # Total of L. Should be a constant during simulation.\nend observables\n\n\ngenerate_network();\nwriteSBML();\nsimulate_ode({t_end=>50,n_steps=>20});\n\n# Print concentratons at unevenly spaced times (array-valued parameter)\n#simulate_ode({sample_times=>[1,10,100]});\n");
+	getlineNumberedTextPanel().setText("# All text following the occurence of \'#\' character in a line is ignored.\n \n# The model consists of a monovalent extracellular ligand, \n# a monovalent cell-surface receptor kinase, and a cytosolic adapter \n# protein. The receptor dimerizes through a receptor-receptor \n# interaction that depends on ligand binding. When two receptors \n# are juxtaposed through dimerization one of the receptor kinases \n# can transphosphorylate the second receptor kinase. \n# Apapter protein A can bind to phosphorylated receptor tyrosine. \n\n\nbegin parameters\n  L0   1\n  R0   1\n  A0   5\n  kp1  0.5\n  km1  0.1\n  kp2  1.1\n  km2  0.1\n  p1  10\n  d1   5\n kpA  1e1\n kmA  0.02\nend parameters\n\nbegin species\n  L(r)       L0  # Ligand has one site for binding to receptor. \n                    # L0 is initial concentration\n  R(l,d,Y~U) R0  # Dimer has three sites: l for binding to a ligand, \n                    # d for binding to another receptor, and\n                    # Y - tyrosine. Initially Y is unphosphorylated, Y~U.\n  A(SH2)     A0  # A has a single SH2 domain that binds phosphotyrosine\nend species\n\n\nbegin reaction rules\n\n# Ligand binding (L+R)\n# Note: specifying r in R here means that the r component must not \n#       be bound.  This prevents dissociation of ligand from R\n#       when R is in a dimer.\n  L(r) + R(l,d) <-> L(r!1).R(l!1,d) kp1, km1\n\n# Aggregation (R-L + R-L)\n# Note:  R must be bound to ligand to dimerize.\n  R(l!+,d) + R(l!+,d) <-> R(l!+,d!2).R(l!+,d!2) kp2, km2\n\n# Transphosphorylation\n# Note:  R must be bound to another R to be transphosphorylated.\n  R(d!+,Y~U) -> R(d!+,Y~P) p1 \n\n# Dephosphorylation\n# Note:  R can be in any complex, but tyrosine is not protected by bound A.\n  R(Y~P) -> R(Y~U) d1\n\n# Adaptor binding phosphotyrosine (reversible). \n# Note: Doesn\'t depend on whether R is bound to\n#       receptor, i.e. binding rate is same whether R is a monomer, is \n#       in association with a ligand, in a dimer, or in a complex.\n\n  R(Y~P) + A(SH2) <-> R(Y~P!1).A(SH2!1) kpA, kmA\nend reaction rules\n\nbegin observables\n  Molecules R_dim  R(d!+)      # All receptors in dimer\n  Molecules R_phos R(Y~P!?)    # Total of all phosphotyrosines\n  Molecules A_R    A(SH2!1).R(Y~P!1) # Total of all A\'s associated with phosphotyrosines\n  Molecules A_tot  A()     # Total of A. Should be a constant during simulation.\n  Molecules R_tot  R()     # Total of R. Should be a constant during simulation.\n  Molecules L_tot  L()     # Total of L. Should be a constant during simulation.\nend observables\n\n\ngenerate_network();\nwriteSBML();\nsimulate_ode({t_end=>50,n_steps=>20});\n\n# Print concentratons at unevenly spaced times (array-valued parameter)\n#simulate_ode({sample_times=>[1,10,100]});\n");
 	return;
 }
-
 
 /**
  * Comment
@@ -2144,7 +2145,18 @@ private void saveOutput(java.awt.event.ActionEvent actionEvent) {
  * Comment
  */
 private void sbmlImportButton_ActionPerformed() {
-	String sbml = BnglSbmlTransformer.transformSBML(getBngOutput());
+	String sbml;
+	try {
+	sbml = BnglSbmlTransformer.transformSBML(getBngOutput());
+	} catch(SbmlTransformException e) {
+		e.printStackTrace(System.out);
+		DialogUtils.showErrorDialog(e.getMessage());
+		return;
+	} catch(Exception e) {
+		e.printStackTrace(System.out);
+		DialogUtils.showErrorDialog(SbmlTransformException.DefaultMessage);
+		return;
+	}
 	getBngWindowManager().importSbml(sbml);
 }
 

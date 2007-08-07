@@ -74,9 +74,13 @@ class SpeciesRenamer extends ASbmlTransformer {
 	
 	private void reNameSpecie(String id, String name) {
 		for( int ip = 0, maxP = speciePatternIds.size(); ip < maxP; ++ip ) {
+			try {
 			Pair<Pattern, String> pair = speciePatternIds.get(ip);
 			Matcher matcher = pair.one.matcher(name);
 			name = matcher.replaceAll(pair.two);
+			} catch( Exception e) {
+				throw new SbmlTransformException(getErrorMessage(ip), e);
+			}
 		}
 		
 		//assure uniqueness
@@ -87,27 +91,29 @@ class SpeciesRenamer extends ASbmlTransformer {
 	}
 	
 	/** Adds a rule for creating new SBML specie id based on specie name
-	 * @param pattReplace two strings expected; 
+	 * @param parameters two strings expected; 
 	 * first is regex pattern that will be applied to SBML species name
 	 * second is replacement string 
 	 */
-	public void addTransformation(String[] pattReplace) {
-		super.addTransformation(pattReplace);
+	public void addTransformation(String[] parameters, String comment) {
+		super.storeTransformationInfo(parameters, comment);
 		if( speciePatternIds == null ) {
 			speciePatternIds = new ArrayList<Pair<Pattern, String> >();
 		}
-		speciePatternIds.add(new Pair<Pattern, String>(Pattern.compile(pattReplace[0]), pattReplace[1]) );
+		speciePatternIds.add(new Pair<Pattern, String>(Pattern.compile(parameters[0]), parameters[1]) );
 	}
 	
-	protected int countParameters() {	return 2;}
+	public int countParameters() {	return 2;}
 	
 	public void transform(Document doc) {
 		if( null == speciePatternIds ) return;
 		try {
 			mapChanges(doc);
+		} catch(SbmlTransformException e) {throw e;
+		
 		} catch(Exception e) {
 			String msg = "error mapping name changes";
-			throw new Exceptn(msg, e.getCause());
+			throw new Exceptn(msg, e);
 		}
 		NodeList nl;
 
@@ -122,7 +128,7 @@ class SpeciesRenamer extends ASbmlTransformer {
 			}
 		} catch(Exception e) {
 			String msg = "error changing specie ids";
-			throw new Exceptn(msg, e.getCause());
+			throw new Exceptn(msg, e);
 		}
 
 		try {
@@ -136,7 +142,7 @@ class SpeciesRenamer extends ASbmlTransformer {
 			}
 		} catch(Exception e) {
 			String msg = "error changing specie references";
-			throw new Exceptn(msg, e.getCause());
+			throw new Exceptn(msg, e);
 		}
 
 		try {
@@ -152,7 +158,7 @@ class SpeciesRenamer extends ASbmlTransformer {
 			}
 		} catch(Exception e) {
 			String msg = "error changing specie references in math expressions";
-			throw new Exceptn(msg, e.getCause());
+			throw new Exceptn(msg, e);
 		}
 
 
@@ -173,14 +179,6 @@ class SpeciesRenamer extends ASbmlTransformer {
 	}
 
 
-	public void setDefaultTransformations() {
-		List<String[]> trList = getDefaultSpecieRenames();
-		for( int i = 0, max = trList.size(); i < max; ++i ) {
-			String[] tr = trList.get(i);
-			addTransformation(tr);
-		}
-	}
-	
 	public void removeTransformation(int i) {
 		speciePatternIds.remove(i);
 	}

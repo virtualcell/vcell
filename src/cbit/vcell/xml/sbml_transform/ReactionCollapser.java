@@ -18,8 +18,8 @@ class ReactionCollapser extends ASbmlTransformer {
 
 	public static final String Name = "mergeReversibleReactions";
 
-	public void addTransformation(String[] str) {
-		super.addTransformation(str);
+	public void addTransformation(String[] parameters, String comment) {
+		super.storeTransformationInfo(parameters, comment);
 	}
 
 	public String getName() {return Name;}

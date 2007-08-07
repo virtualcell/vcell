@@ -65,7 +65,7 @@ public class SbmlTransformer {
 		args = strList.toArray(args);
 		
 		try {
-		tr.addTransformation(args);
+		tr.addTransformation(args, "");
 		} catch(Exception e) {
 			String msg = "error in command \"" + command + "\"";
 			throw new SbmlTransformException(msg, e);
@@ -109,45 +109,6 @@ public class SbmlTransformer {
 			}
 		}
 	}
-	
-	/** may be useful for GUI transformation mode
-	 * not currently used 
-	 */
-	public void setDefaultTransformations() {
-		transMap.put(ReactionCollapser.Name, new ReactionCollapser() );
-		
-		UnitTransformer ut = new UnitTransformer();
-		ut.setDefaultTransformations();
-		transMap.put( ut.getName(), ut );
-		
-		SpeciesRenamer sr = new SpeciesRenamer();
-		sr.setDefaultTransformations();
-		transMap.put( sr.getName(), sr);
-		
-		SpeciesCompartmentalizer sc = new SpeciesCompartmentalizer();
-		sc.setDefaultTransformations();
-		transMap.put(sc.getName(), sc);
-	}
-
-	public static void main(String [] args) {
-		File xml = new File("P:/Isaac/nuclear_transport_delta.xml");
-		File out = new File("out.xml");
-		try {
-			InputStream is = new FileInputStream(xml);
-			SbmlTransformer st = new SbmlTransformer(is);
-			
-			st.setDefaultTransformations();
-			st.transform();
-			
-			OutputStream os = new FileOutputStream(out);
-			st.writeXml(os);
-			os.close();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
 
 	
 }
