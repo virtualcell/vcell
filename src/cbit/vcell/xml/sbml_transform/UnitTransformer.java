@@ -23,22 +23,22 @@ class UnitTransformer extends ASbmlTransformer {
 		listOfUnitDefs = doc.getDocumentElement();		
 	}
 
-	protected int countParameters() {	return 2;}
+	public int countParameters() {	return 2;}
 
-	public void addTransformation(String[] str) {
-		super.addTransformation(str);
+	public void addTransformation(String[] parameters, String comment) {
+		super.storeTransformationInfo(parameters, comment);
 		
-		if( All.equals(str[0]) ) {
+		if( All.equals(parameters[0]) ) {
 			
 		} else {
-			String msg = "unknown type \"" + str[0] + "\"";
+			String msg = "unknown type \"" + parameters[0] + "\"";
 			throw new SbmlTransformException(msg);
 		}
 		
-		if( Default.equals(str[1]) ) {
+		if( Default.equals(parameters[1]) ) {
 			
 		} else {
-			String msg = "unknown unit \"" + str[1] + "\"";
+			String msg = "unknown unit \"" + parameters[1] + "\"";
 			throw new SbmlTransformException(msg);
 		}
 		

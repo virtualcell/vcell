@@ -22,12 +22,18 @@ interface ISbmlTransformer {
 	 * or an array of empty strings of correct size;
 	 */
 	String[] getTransformation(int i);
-
+	
 	/** 
-	 * @param transform should contain correct number of valid transformation 
-	 * description strings (go figure :--)
+	 * @param parameters should contain correct number of valid transformation 
+	 * description strings.  
+	 * @see countParameters
 	 */
-	void addTransformation(String[] transform);
+	void addTransformation(String[] parameters, String comment);
+	
+	/**
+	 * @return the minimal expected number of parameters describing this transformation
+	 */
+	int countParameters();
 	
 	/** Applies stored transformations to a DOM object
 	 * @param doc

@@ -33,25 +33,8 @@ class SpeciesCompartmentalizer extends ASbmlTransformer {
 	 */
 	private Map<String, String> compIds = null;
 	
-	/**
-	 * @return a list of string triplets.  The first string is a regular expression match
-	 * pattern, the second string is the name of destination compartment, the third is the name 
-	 * of enclosing compartment.  Species with names that match the pattern can 
-	 * be moved to the destination compartment that is located inside enclosing 
-	 * compartment.  One destination compartment should be the top-level (outmost)
-	 * its enclosing compartment should be null.
-	 */
-	public static List<String[]> getDefaultCompartmentPattern() {
-		List<String[] > list = new ArrayList<String[] >();
-		
-		list.add(new String[] {"loc\\([^\\)]*?l~N", "Nucleus", "Cytoplasm"});
-		list.add(new String[] {"loc\\([^\\)]*?l~C", "Cytoplasm", "environment"});
-		
-		return list;
-	}
-	
 	public String getName() {return Name;}
-	protected int countParameters() {	return 3;}
+	public int countParameters() {	return 3;}
 	
 	/** Adds a rule for re-assigning species to different compartments based on 
 	 * specie name
@@ -62,40 +45,66 @@ class SpeciesCompartmentalizer extends ASbmlTransformer {
 	 * third is id of the enclosing compartment, shall be "" for one 
 	 * outmost compartment 
 	 */
-	public void addTransformation(String[] str) {
-		super.addTransformation(str);
+	public void addTransformation(String[] parameters, String comment) {
 		if( compartmentNamePattern == null ) {
 			compartmentNamePattern = new ArrayList<Pair<Pattern, String> >();
 			compIds = new HashMap<String, String>();
 		}
 		
-		String pattern = str[0];
-		String compartment = str[1];
-		String enclosed = str[2];
+		super.storeTransformationInfo(parameters, comment);
+		String pattern = parameters[0];
+		String compartment = parameters[1];
+		String enclosed = parameters[2];
 		
 		Pattern p = Pattern.compile(pattern);
 		compartmentNamePattern.add(new Pair<Pattern, String>(p, compartment) );
 		
-		compIds.put(compartment, enclosed);
+		String enclStored = compIds.get(compartment);
+		
+		if( null == compartment || compartment.length() == 0 )
+			throw new SbmlTransformException("empty compartment name");
+		
+		if( 
+				null == enclStored || //compartment is not defined or
+				enclStored.equals(enclosed) //defined again inside same enclosure
+		) {
+			compIds.put(compartment, enclosed);
+		} else {
+			StringBuffer buff = new StringBuffer();
+			buff.append("compartment \"" + compartment + "\" defined twice: ");
+			if( enclStored.length() == 0 ) buff.append("top level");
+			else buff.append("inside \"" + enclStored + "\"");
+			buff.append(" and ");
+			if( enclosed.length() == 0 ) buff.append("top level");
+			else buff.append("inside \"" + enclosed + "\"");
+			throw new SbmlTransformException(buff.toString());
+		}
 	}
 	
 	private void ensureSingleTopLevel() {
+
+		//put all enclosures as keys
+		java.util.Set<String> enclSet = new java.util.HashSet<String>( compIds.values() );
+		for( Iterator<String> iter = enclSet.iterator(); iter.hasNext(); ) {
+			String encl = iter.next();
+			if( encl.length() > 0 && ! compIds.containsKey(encl) ) 
+				compIds.put(encl, "");
+		}
+
 		String topLevel = null;
-		
+		//check for multiple top-levels		
 		for (Iterator<Map.Entry<String, String>> iter = compIds.entrySet().iterator(); iter.hasNext();) {
 			Map.Entry<String, String> e = (Map.Entry<String, String>) iter.next();
 			String compId = e.getKey();
 			String encl = e.getValue();
-			
-			if( null == encl || encl.length() == 0 ) {
+
+			if( encl.length() == 0 ) {
 				if( null != topLevel ) {
-					String msg = "multiple top-level compartments found: '" + topLevel + 
-					"' and '" + compId + "'";
+					String msg = "compartments \"" + topLevel + "\" and \"" + compId + 
+					"\" are both top-level";
 					throw new Exceptn(msg);
 				}
 				topLevel = compId;
-			} else if( ! compIds.containsKey(encl) ) {
-					compIds.put(encl, "");
 			}
 		}
 	}
@@ -140,13 +149,13 @@ class SpeciesCompartmentalizer extends ASbmlTransformer {
 	public void transform(Document doc) {
 		if( null== compartmentNamePattern ) return;
 
-		ensureSingleTopLevel();
 
 		try {
+			ensureSingleTopLevel();
 			replaceCompartmentList(doc);
 		} catch(Exception e) {
 			String msg = "error creating compartment list";
-			throw new Exceptn(msg, e.getCause());
+			throw new Exceptn(msg, e);
 		}
 
 		try {
@@ -161,7 +170,7 @@ class SpeciesCompartmentalizer extends ASbmlTransformer {
 			doc.normalize();
 		} catch(Exception e) {
 			String msg = "error changing specie compartments";
-			throw new Exceptn(msg, e.getCause());
+			throw new Exceptn(msg, e);
 		}
 	}
 
@@ -182,14 +191,6 @@ class SpeciesCompartmentalizer extends ASbmlTransformer {
 	}
 
 
-
-	public void setDefaultTransformations() {
-		List<String[]> trList = getDefaultCompartmentPattern();
-		for( int i = 0, max = trList.size(); i < max; ++i ) {
-			String[] tr = trList.get(i);
-			addTransformation(tr);
-		}
-	}
 
 	public void removeTransformation(int i) {
 		Pair<Pattern, String> p = compartmentNamePattern.remove(i);
