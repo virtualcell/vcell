@@ -43,31 +43,36 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	out.println(getClassName()+"::"+getClassName()+"(string& Aname, int priority)");
 	out.println(": Feature(Aname, "+handle+", priority)");
  	out.println("{");
+ 	out.println("\tstring varname;");
  	Enumeration enum1 = cppCoder.getCppClassCoders();
  	while (enum1.hasMoreElements()){
  		CppClassCoder coder = (CppClassCoder)enum1.nextElement();
  		if (coder instanceof CppClassCoderVolumeVarContext){
  			CppClassCoderVolumeVarContext vcClassCoder = (CppClassCoderVolumeVarContext)coder;
  			if (vcClassCoder.getCompartmentSubDomain() == volumeSubDomain){
-				out.println("\taddVolumeVarContext(new "+vcClassCoder.getClassName()+"(this, string(\""+vcClassCoder.getVariable().getName()+"\")));");
+ 	 			out.println("\tvarname=" + "\""+vcClassCoder.getVariable().getName()+"\";");
+ 	 			out.println("\taddVolumeVarContext(new "+vcClassCoder.getClassName()+"(this, varname));");
 			}	
 		}
  		if (coder instanceof CppClassCoderMembraneVarContext){
  			CppClassCoderMembraneVarContext vcClassCoder = (CppClassCoderMembraneVarContext)coder;
  			if (vcClassCoder.getInsideCompartment() == volumeSubDomain){
-				out.println("\taddMembraneVarContext(new "+vcClassCoder.getClassName()+"(this, string(\""+vcClassCoder.getVariable().getName()+"\")));");
+ 				out.println("\tvarname=" + "\""+vcClassCoder.getVariable().getName()+"\";");
+				out.println("\taddMembraneVarContext(new "+vcClassCoder.getClassName()+"(this, varname));");
 			}	
 		}
  		if (coder instanceof CppClassCoderMembraneRegionVarContext){
  			CppClassCoderMembraneRegionVarContext vcClassCoder = (CppClassCoderMembraneRegionVarContext)coder;
- 			if (vcClassCoder.getInsideCompartment() == volumeSubDomain){
-				out.println("\taddMembraneRegionVarContext(new "+vcClassCoder.getClassName()+"(this, string(\""+vcClassCoder.getVariable().getName()+"\")));");
+  			if (vcClassCoder.getInsideCompartment() == volumeSubDomain){
+  				out.println("\tvarname=" + "\""+vcClassCoder.getVariable().getName()+"\";");
+				out.println("\taddMembraneRegionVarContext(new "+vcClassCoder.getClassName()+"(this, varname));");
 			}	
 		}
  		if (coder instanceof CppClassCoderVolumeRegionVarContext){
  			CppClassCoderVolumeRegionVarContext vcClassCoder = (CppClassCoderVolumeRegionVarContext)coder;
  			if (vcClassCoder.getCompartmentSubDomain() == volumeSubDomain){
-				out.println("\taddVolumeRegionVarContext(new "+vcClassCoder.getClassName()+"(this, string(\""+vcClassCoder.getVariable().getName()+"\")));");
+ 				out.println("\tvarname=" + "\""+vcClassCoder.getVariable().getName()+"\";");
+				out.println("\taddVolumeRegionVarContext(new "+vcClassCoder.getClassName()+"(this, varname));");
 			}	
 		}
  		if (coder instanceof CppClassCoderFastSystem){

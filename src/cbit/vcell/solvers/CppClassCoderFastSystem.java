@@ -53,14 +53,14 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	out.println(getClassName()+"::"+getClassName()+"()");
 	out.println(": "+getParentClassName()+"("+getFastSystem().getNumIndependentVariables()+","+getFastSystem().getNumDependentVariables()+")");
 	out.println("{");
-	out.println("   setTolerance(1e-7);");
-	out.println("   ");
+	out.println("\tsetTolerance(1e-7);");
+	out.println();
 
 	int varCount=0;
 	Enumeration enum_vars = getFastSystem().getIndependentVariables();
 	while (enum_vars.hasMoreElements()){
 		Variable var = (Variable)enum_vars.nextElement();
-		out.println("   pVars["+varCount+"] = var_"+var.getName()+" = NULL;");
+		out.println("\tpVars["+varCount+"] = var_"+var.getName()+" = NULL;");
 		varCount++;
 	}
 	out.println("");
@@ -69,7 +69,7 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	enum_vars = getFastSystem().getDependentVariables();
 	while (enum_vars.hasMoreElements()){
 		Variable var = (Variable)enum_vars.nextElement();
-		out.println("   pDependentVars["+varCount+"] = var_"+var.getName()+" = NULL;");
+		out.println("\tpDependentVars["+varCount+"] = var_"+var.getName()+" = NULL;");
 		varCount++;
 	}
 	out.println("");
@@ -77,7 +77,7 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	Enumeration enum_pc = getFastSystem().getPseudoConstants();
 	while (enum_pc.hasMoreElements()){
 		PseudoConstant pc = (PseudoConstant)enum_pc.nextElement();
-		out.println("   "+pc.getName()+" = 0.0;");
+		out.println("\t"+pc.getName()+" = 0.0;");
 	}
 	out.println("}");
 }
@@ -92,14 +92,14 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 
 	out.println("class " + getClassName() + " : public " + getParentClassName());
 	out.println("{");
-	out.println(" public:");
-	out.println("    "+getClassName() + "();");
-	out.println("    virtual bool resolveReferences(Simulation *sim);");
-	out.println("    void initVars();");
-	out.println("    void updateDependentVars();");
-	out.println(" protected:");
-	out.println("    void updateMatrix();");
-	out.println(" private:");
+	out.println("public:");
+	out.println("\t "+getClassName() + "();");
+	out.println("\tvirtual bool resolveReferences(Simulation *sim);");
+	out.println("\tvoid initVars();");
+	out.println("\tvoid updateDependentVars();");
+	out.println("protected:");
+	out.println("\tvoid updateMatrix();");
+	out.println("private:");
 	out.println("\tMesh *mesh;");
 	out.println("\tSimulation *simulation;");
 
@@ -111,14 +111,14 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 	enum_vars = getFastSystem().getDependentVariables();
 	while (enum_vars.hasMoreElements()){
 		Variable var = (Variable)enum_vars.nextElement();
-		out.println("   Variable    *var_"+var.getName()+";");
+		out.println("\tVariable *var_"+var.getName()+";");
 	}
 	out.println("");
 
 	Enumeration enum_pc = getFastSystem().getPseudoConstants();
 	while (enum_pc.hasMoreElements()){
 		PseudoConstant pc = (PseudoConstant)enum_pc.nextElement();
-		out.println("   double     "+pc.getName()+";");
+		out.println("\tdouble "+pc.getName()+";");
 	}
 	out.println("};");
 }
@@ -143,25 +143,25 @@ protected void writeFastFunctionDeclarations(java.io.PrintWriter out, Expression
 			//
 			ReservedVariable rv = (ReservedVariable)var;
 			if (rv.isTIME()){
-				out.println("   double t = simulation->getTime_sec();");
+				out.println("\tdouble t = simulation->getTime_sec();");
 			}else if (rv.isX()){
 				if (!wc_defined){
-					out.println("   WorldCoord wc = mesh->getVolumeWorldCoord("+volumeIndexString+");");
+					out.println("\tWorldCoord wc = mesh->getVolumeWorldCoord("+volumeIndexString+");");
 					wc_defined = true;
 				}	
-				out.println("   double x = wc.x;");
+				out.println("\tdouble x = wc.x;");
 			}else if (rv.isY()){
 				if (!wc_defined){
-					out.println("   WorldCoord wc = mesh->getVolumeWorldCoord("+volumeIndexString+");");
+					out.println("\tWorldCoord wc = mesh->getVolumeWorldCoord("+volumeIndexString+");");
 					wc_defined = true;
 				}	
-				out.println("   double y = wc.y;");
+				out.println("\tdouble y = wc.y;");
 			}else if (rv.isZ()){
 				if (!wc_defined){
-					out.println("   WorldCoord wc = mesh->getVolumeWorldCoord("+volumeIndexString+");");
+					out.println("\tWorldCoord wc = mesh->getVolumeWorldCoord("+volumeIndexString+");");
 					wc_defined = true;
 				}	
-				out.println("   double z = wc.z;");
+				out.println("\tdouble z = wc.z;");
 			}		
 		}		
 	}	
@@ -202,22 +202,20 @@ protected void writeInitVars(java.io.PrintWriter out, String functionName) throw
 //out.println("  if (ip3) printf(\"initVars(), ip3[%d] = %lg\\n\",currIndex,ip3->getCurr(currIndex));");
 	while (enum1.hasMoreElements()){
 		Variable var = (Variable)enum1.nextElement();
-		out.println("   double "+var.getName()+" = var_"+var.getName()+"->getCurr(currIndex);");
-		out.println("   setX("+varCount+","+var.getName()+");");
+		out.println("\tdouble "+var.getName()+" = var_"+var.getName()+"->getCurr(currIndex);");
+		out.println("\tsetX("+varCount+","+var.getName()+");");
 		varCount++;
 	}
 	enum1 = getFastSystem().getDependentVariables();
 	while (enum1.hasMoreElements()){
 		Variable var = (Variable)enum1.nextElement();
-		out.println("   double "+var.getName()+" = var_"+var.getName()+"->getCurr(currIndex);");
+		out.println("\tdouble "+var.getName()+" = var_"+var.getName()+"->getCurr(currIndex);");
 	}
-
-	MathDescription mathDesc = simulation.getMathDescription();
 	int invariantCount=0;
 	enum1 = getFastSystem().getPseudoConstants();
 	while (enum1.hasMoreElements()){
 		PseudoConstant pc = (PseudoConstant)enum1.nextElement();
-		out.println("   "+pc.getName()+" = "+simulation.substituteFunctions(pc.getPseudoExpression()).flatten().infix_C()+";");
+		out.println("\t"+pc.getName()+" = "+simulation.substituteFunctions(pc.getPseudoExpression()).flatten().infix_C()+";");
 		invariantCount++;
 	}
 		
@@ -231,20 +229,20 @@ protected void writeInitVars(java.io.PrintWriter out, String functionName) throw
 protected void writeResolveReferences(java.io.PrintWriter out) throws Exception {
 	out.println("bool "+getClassName()+"::resolveReferences(Simulation *sim)");
 	out.println("{");
-	out.println("   ASSERTION(sim);");
-	out.println("   this->mesh = sim->getMesh();");
+	out.println("\tASSERTION(sim);");
+	out.println("\tthis->mesh = sim->getMesh();");
 	out.println("\tthis->simulation = sim;");
 	out.println("");
 	Enumeration enum1 = getFastSystem().getIndependentVariables();
 	int varCount=0;
 	while (enum1.hasMoreElements()){
 		Variable var = (Variable)enum1.nextElement();
-		out.println("   var_"+var.getName()+" = sim->getVariableFromName(\""+var.getName()+"\");");
-		out.println("   if (var_"+var.getName()+"==NULL){");
-		out.println("      printf(\"could not resolve '"+var.getName()+"'\\n\");");
-		out.println("      return FALSE;");
-		out.println("   }");
-		out.println("   pVars["+varCount+"] = var_"+var.getName()+";");
+		out.println("\tvar_"+var.getName()+" = sim->getVariableFromName(\""+var.getName()+"\");");
+		out.println("\tif (var_"+var.getName()+"==NULL){");
+		out.println("\t\tprintf(\"could not resolve '"+var.getName()+"'\\n\");");
+		out.println("\t\treturn false;");
+		out.println("\t}");
+		out.println("\tpVars["+varCount+"] = var_"+var.getName()+";");
 		out.println("");
 		varCount++;
 	}		  	
@@ -252,16 +250,16 @@ protected void writeResolveReferences(java.io.PrintWriter out) throws Exception 
 	varCount=0;
 	while (enum1.hasMoreElements()){
 		Variable var = (Variable)enum1.nextElement();
-		out.println("   var_"+var.getName()+" = sim->getVariableFromName(\""+var.getName()+"\");");
-		out.println("   if (var_"+var.getName()+"==NULL){");
-		out.println("      printf(\"could not resolve '"+var.getName()+"'\\n\");");
-		out.println("      return FALSE;");
-		out.println("   }");
-		out.println("   pDependentVars["+varCount+"] = var_"+var.getName()+";");
+		out.println("\tvar_"+var.getName()+" = sim->getVariableFromName(\""+var.getName()+"\");");
+		out.println("\tif (var_"+var.getName()+"==NULL){");
+		out.println("\t\tprintf(\"could not resolve '"+var.getName()+"'\\n\");");
+		out.println("\t\treturn false;");
+		out.println("\t}");
+		out.println("\tpDependentVars["+varCount+"] = var_"+var.getName()+";");
 		out.println("");
 		varCount++;
 	}		  	
-	out.println("   return TRUE;");
+	out.println("\treturn true;");
 	out.println("}");
 	out.println("");
 }
@@ -278,7 +276,7 @@ protected void writeUpdateDependentVars(java.io.PrintWriter out, String function
 	Enumeration enum1 = getFastSystem().getIndependentVariables();
 	while (enum1.hasMoreElements()){
 		Variable var = (Variable)enum1.nextElement();
-		out.println("   double "+var.getName()+" = getX("+varCount+");");
+		out.println("\tdouble "+var.getName()+" = getX("+varCount+");");
 		varCount++;
 	}
 
@@ -287,7 +285,7 @@ protected void writeUpdateDependentVars(java.io.PrintWriter out, String function
 	while (enum_exp.hasMoreElements()){
 		Expression exp = (Expression)enum_exp.nextElement();
 		Variable depVar = (Variable)enum_var.nextElement();
-		out.println("   var_"+depVar.getName()+"->setCurr(currIndex,"+exp.infix_C()+");");
+		out.println("\tvar_"+depVar.getName()+"->setCurr(currIndex,"+exp.infix_C()+");");
 	}
 	
 	out.println("}");
@@ -317,7 +315,7 @@ protected void writeUpdateMatrix(java.io.PrintWriter out, String functionName) t
 	Enumeration enum1 = getFastSystem().getIndependentVariables();
 	while (enum1.hasMoreElements()){
 		Variable var = (Variable)enum1.nextElement();
-		out.println("   double "+var.getName()+" = getX("+varCount+");");
+		out.println("\tdouble "+var.getName()+" = getX("+varCount+");");
 		varCount++;
 	}
 
@@ -340,12 +338,12 @@ protected void writeUpdateMatrix(java.io.PrintWriter out, String functionName) t
 			Expression exp = simulation.substituteFunctions(fre).flatten();
 			Expression differential = exp.differentiate(var.getName());
 			differential.bindExpression(simulation);
-			out.println("   setMatrix("+frCount+", "+varCount+", "+differential.flatten().infix_C()+");");
+			out.println("\tsetMatrix("+frCount+", "+varCount+", "+differential.flatten().infix_C()+");");
 			varCount++;
 		}
 		Expression exp = Expression.negate(fre);
 		exp = simulation.substituteFunctions(exp);
-		out.println("   setMatrix("+frCount+", "+varCount+", "+exp.flatten().infix_C()+");");
+		out.println("\tsetMatrix("+frCount+", "+varCount+", "+exp.flatten().infix_C()+");");
 		frCount++;
 		out.println("");
 	}

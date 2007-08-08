@@ -9,7 +9,7 @@ import java.util.*;
 
 public abstract class CppCoder implements Coder
 {
-	protected Vector cppClassCoderList = new Vector();
+	protected Vector<CppClassCoder> cppClassCoderList = new Vector<CppClassCoder>();
 	protected String baseFilename = null;
 	protected File dir = null;
    protected CppCoder(String baseFilename, File directory)
@@ -93,8 +93,6 @@ protected void writeCppCodeBegin(PrintWriter out) throws Exception {
 	out.println("");
 	out.println("#ifdef WIN32");
 	out.println("#include <Windows.h>");
-	out.println("#else");
-	out.println("#include <UnixDefs.h>");
 	out.println("#endif");	  
 	out.println("");
 	out.println("#include \"" + baseFilename + ".h\"");

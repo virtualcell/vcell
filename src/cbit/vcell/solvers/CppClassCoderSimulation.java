@@ -60,6 +60,7 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	out.println("\tint *solveRegions;");
 	out.println("\tint numVolumeRegions = mesh->getNumVolumeRegions();");
 	out.println("\tint regionCount;");
+	out.println("\tstring varname, units;");
 	out.println("");	
 
 	out.println("\tint symmflg = 1;    // define symmflg = 0 (general) or 1 (symmetric)");
@@ -72,7 +73,9 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	  	if (var instanceof VolVariable){
 	  		units = "uM";
 	  		VolVariable volVar = (VolVariable)var;
-	  		out.println("   volumeVar = new VolumeVariable(sizeX,sizeY,sizeZ,string(\""+volVar.getName()+"\"),string(\""+units+"\"));");
+	  		out.println("\tvarname = \"" + volVar.getName() + "\";");
+	  		out.println("\tunits = \"" + units+ "\";");
+	  		out.println("\tvolumeVar = new VolumeVariable(sizeX, sizeY, sizeZ, varname, units);");
 	  		
 	  		//
 	  		// need to specify which SubDomains should be solved for
@@ -146,70 +149,76 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	  			out.println("\taddSolver(slSolver);");
 	  			out.println("#endif");
 	  		}else{
-	  			out.println("   //odeSolver = new ODESolver(volumeVar,mesh);");
-	  			out.println("   odeSolver = new ODESolver(volumeVar,mesh,numSolveRegions,solveRegions);");
-	  			out.println("   builder = new EqnBuilderReactionForward(volumeVar,mesh,odeSolver);");
-	  			out.println("   odeSolver->setEqnBuilder(builder);");
-	  			out.println("   addSolver(odeSolver);");
+	  			out.println("\t//odeSolver = new ODESolver(volumeVar,mesh);");
+	  			out.println("\todeSolver = new ODESolver(volumeVar,mesh,numSolveRegions,solveRegions);");
+	  			out.println("\tbuilder = new EqnBuilderReactionForward(volumeVar,mesh,odeSolver);");
+	  			out.println("\todeSolver->setEqnBuilder(builder);");
+	  			out.println("\taddSolver(odeSolver);");
 	  		}		
-	  		out.println("   addVariable(volumeVar);");
+	  		out.println("\taddVariable(volumeVar);");
 	  		out.println("");
 	  	}else if (var instanceof MemVariable) { // membraneVariable
 		  	units = "molecules/squm";
 	  		MemVariable memVar = (MemVariable)var;
+	  		out.println("\tvarname = \"" + memVar.getName() + "\";");
+	  		out.println("\tunits = \"" + units+ "\";");		  		
+	  		out.println("\tmembraneVar = new MembraneVariable(mesh->getNumMembraneElements(),varname, units);");
 		  	if (simulation.getMathDescription().isPDE(memVar)) {
-		  		out.println("\tmembraneVar = new MembraneVariable(mesh->getNumMembraneElements(),string(\""+memVar.getName()+"\"),string(\""+units+"\"));");
 		  		out.println("\tsmbuilder = new MembraneEqnBuilderDiffusion(membraneVar,mesh);");
 	  			out.println("\tslSolver = new SparseLinearSolver(membraneVar,smbuilder,"+simulation.hasTimeVaryingDiffusionOrAdvection(memVar)+");");	  			
 	  			out.println("\taddSolver(slSolver);");
 		  		out.println("\taddVariable(membraneVar);");
 		  	} else {		  		
-		  		out.println("   // solving for all regions");
-		  		out.println("   numSolveRegions = 0;  // flag specifying to solve for all regions");
-		  		out.println("   solveRegions = NULL;");
-		  		out.println("   membraneVar = new MembraneVariable(mesh->getNumMembraneElements(),string(\""+memVar.getName()+"\"),string(\""+units+"\"));");
-	  			out.println("   odeSolver = new ODESolver(membraneVar,mesh,numSolveRegions,solveRegions);");
-	  			out.println("   builder = new MembraneEqnBuilderForward(membraneVar,mesh,odeSolver);");
-	  			out.println("   odeSolver->setEqnBuilder(builder);");
-	  			out.println("   addSolver(odeSolver);");
-		  		out.println("   addVariable(membraneVar);");
+		  		out.println("\t// solving for all regions");
+		  		out.println("\tnumSolveRegions = 0;  // flag specifying to solve for all regions");
+		  		out.println("\tsolveRegions = NULL;");
+	  			out.println("\tbuilder = new MembraneEqnBuilderForward(membraneVar,mesh,odeSolver);");
+	  			out.println("\todeSolver->setEqnBuilder(builder);");
+	  			out.println("\taddSolver(odeSolver);");
+		  		out.println("\taddVariable(membraneVar);");
 		  	}
 	  	}else if (var instanceof FilamentVariable) { // contourVariable
 	  		units = "molecules/um";
 	  		FilamentVariable filamentVar = (FilamentVariable)var;
-	  		out.println("   // solving for all regions");
-	  		out.println("   numSolveRegions = 0;  // flag specifying to solve for all regions");
-	  		out.println("   solveRegions = NULL;");
-	  		out.println("   contourVar = new ContourVariable(mesh->getNumMembraneElements(),string(\""+filamentVar.getName()+"\"),string(\""+units+"\"));");
-  			out.println("   odeSolver = new ODESolver(contourVar,mesh,numSolveRegions,solveRegions);");
-  			out.println("   builder = new ContourEqnBuilderForward(contourVar,mesh,odeSolver);");
-  			out.println("   odeSolver->setEqnBuilder(builder);");
-  			out.println("   addSolver(odeSolver);");
-	  		out.println("   addVariable(contourVar);");
+	  		out.println("\t// solving for all regions");
+	  		out.println("\tnumSolveRegions = 0;  // flag specifying to solve for all regions");
+	  		out.println("\tsolveRegions = NULL;");
+	  		out.println("\tvarname = \"" + filamentVar.getName() + "\";");
+	  		out.println("\tunits = \"" + units+ "\";");  		
+	  		out.println("\tcontourVar = new ContourVariable(mesh->getNumMembraneElements(), varname, units);");
+  			out.println("\todeSolver = new ODESolver(contourVar,mesh,numSolveRegions,solveRegions);");
+  			out.println("\tbuilder = new ContourEqnBuilderForward(contourVar,mesh,odeSolver);");
+  			out.println("\todeSolver->setEqnBuilder(builder);");
+  			out.println("\taddSolver(odeSolver);");
+	  		out.println("\taddVariable(contourVar);");
 	  	}else if (var instanceof VolumeRegionVariable) { // volumeRegionVariable
 	  		units = "uM";
 	  		VolumeRegionVariable volumeRegionVar = (VolumeRegionVariable)var;
-	  		out.println("   // solving for all regions");
-	  		out.println("   numSolveRegions = 0;  // flag specifying to solve for all regions");
-	  		out.println("   solveRegions = NULL;");
-	  		out.println("   volumeRegionVar = new VolumeRegionVariable(mesh->getNumVolumeRegions(),string(\""+volumeRegionVar.getName()+"\"),string(\""+units+"\"));");
-  			out.println("   odeSolver = new ODESolver(volumeRegionVar,mesh,numSolveRegions,solveRegions);");
-  			out.println("   builder = new VolumeRegionEqnBuilder(volumeRegionVar,mesh,odeSolver);");
-  			out.println("   odeSolver->setEqnBuilder(builder);");
-  			out.println("   addSolver(odeSolver);");
-	  		out.println("   addVariable(volumeRegionVar);");
+	  		out.println("\t// solving for all regions");
+	  		out.println("\tnumSolveRegions = 0;  // flag specifying to solve for all regions");
+	  		out.println("\tsolveRegions = NULL;");
+	  		out.println("\tvarname = \"" + volumeRegionVar.getName() + "\";");
+	  		out.println("\tunits = \"" + units+ "\";");		  		  		
+	  		out.println("\tvolumeRegionVar = new VolumeRegionVariable(mesh->getNumVolumeRegions(), varname, units);");
+  			out.println("\todeSolver = new ODESolver(volumeRegionVar,mesh,numSolveRegions,solveRegions);");
+  			out.println("\tbuilder = new VolumeRegionEqnBuilder(volumeRegionVar,mesh,odeSolver);");
+  			out.println("\todeSolver->setEqnBuilder(builder);");
+  			out.println("\taddSolver(odeSolver);");
+	  		out.println("\taddVariable(volumeRegionVar);");
 	  	}else if (var instanceof MembraneRegionVariable) { // membraneRegionVariable
 	  		units = "molecules/um^2";
 	  		MembraneRegionVariable membraneRegionVar = (MembraneRegionVariable)var;
-	  		out.println("   // solving for all regions");
-	  		out.println("   numSolveRegions = 0;  // flag specifying to solve for all regions");
-	  		out.println("   solveRegions = NULL;");
-	  		out.println("   membraneRegionVar = new MembraneRegionVariable(mesh->getNumMembraneRegions(),string(\""+membraneRegionVar.getName()+"\"),string(\""+units+"\"));");
-  			out.println("   odeSolver = new ODESolver(membraneRegionVar,mesh,numSolveRegions,solveRegions);");
-  			out.println("   builder = new MembraneRegionEqnBuilder(membraneRegionVar,mesh,odeSolver);");
-  			out.println("   odeSolver->setEqnBuilder(builder);");
-  			out.println("   addSolver(odeSolver);");
-	  		out.println("   addVariable(membraneRegionVar);");
+	  		out.println("\t// solving for all regions");
+	  		out.println("\tnumSolveRegions = 0;  // flag specifying to solve for all regions");
+	  		out.println("\tsolveRegions = NULL;");
+	  		out.println("\tvarname = \"" + membraneRegionVar.getName() + "\";");
+	  		out.println("\tunits = \"" + units+ "\";");		  		  		
+	  		out.println("\tmembraneRegionVar = new MembraneRegionVariable(mesh->getNumMembraneRegions(), varname, units);");
+  			out.println("\todeSolver = new ODESolver(membraneRegionVar,mesh,numSolveRegions,solveRegions);");
+  			out.println("\tbuilder = new MembraneRegionEqnBuilder(membraneRegionVar,mesh,odeSolver);");
+  			out.println("\todeSolver->setEqnBuilder(builder);");
+  			out.println("\taddSolver(odeSolver);");
+	  		out.println("\taddVariable(membraneRegionVar);");
 	  	}	
 	}		  	
 	out.println("}");
@@ -228,7 +237,7 @@ public void writeDeclaration(java.io.PrintWriter out) {
 	out.println("class " + getClassName() + " : public " + getParentClassName());
 	out.println("{");
 	out.println(" public:");
-	out.println("   "+getClassName() + "(CartesianMesh *mesh);");
+	out.println("\t"+getClassName() + "(CartesianMesh *mesh);");
 	out.println("};");
 }
 
@@ -249,7 +258,6 @@ protected void writeGetSimTool(java.io.PrintWriter out) throws Exception {
 	out.println("SimTool *getSimTool()");
 	out.println("{");
 	out.println("");
-	ISize meshSampling = simulation.getMeshSpecification().getSamplingSize();
 //	char fs = File.separatorChar;
 //	String baseDataName = "SIMULATION" + fs + mathDesc.getName() + fs + "UserData" ;
 	StringBuffer newBaseDataName = new StringBuffer();
@@ -493,32 +501,6 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 	out.println("\treturn vcellExit(returnCode, (char*)returnMsg.c_str());");
 	out.println("}");
    	
-	//out.println("   try {");
-	//out.println("          SimTool *pSimTool = getSimTool();");
-	//if (taskDesc.getTaskType() == SolverTaskDescription.TASK_UNSTEADY){
-		//out.println("      pSimTool->start();");
-	//}else{
-		//out.println("      pSimTool->startSteady("+taskDesc.getErrorTolerance().getAbsoluteErrorTolerance()+","+taskDesc.getTimeBounds().getEndingTime()+");");
-	//}		
-	//out.println("      cerr << \"Simulation Complete in Main() ... \" << endl;");
-	//out.println("   }catch (char *exStr){");
-	//out.println("      cerr << \"Exception while running ... \" << exStr << endl;");
-	//out.println("      exit(-1);");
-	//out.println("   }catch (...){");
-	//out.println("      cerr << \"Unknown Exception while running ... \" << endl;");
-	//out.println("      exit(-1);");
-	//out.println("   }");
-	//out.println("");
-	
-	//out.println("#ifdef VCELL_MPI");
-	//out.println("   MPI_Finalize();");
-	//out.println("#endif");
-	
-	//out.println("   exit(0);");
-	//out.println("}");
-	
-	// Fei Changes End
-	
 	out.println("#else  // end not VCELL_CORBA");
 	out.println("//-------------------------------------------");
 	out.println("//   CORBA IMPLEMENTATION");
@@ -539,55 +521,50 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 	out.println("");
 	out.println("int main(int argc, char* argv[], char*[])");
 	out.println("{");
-	out.println("    try");
-	out.println("    {");
-	out.println("	//");
-	out.println("	// Create ORB and BOA");
-	out.println("	//");
-	out.println("	CORBA_ORB_var orb = CORBA_ORB_init(argc, argv);");
-	out.println("	CORBA_BOA_var boa = orb -> BOA_init(argc, argv);");
-	out.println("	");
-	out.println("	orb->conc_model(CORBA_ORB::ConcModelThreaded);");
-	out.println("	boa->conc_model(CORBA_BOA::ConcModelThreadPool);");
-	out.println("	boa->conc_model_thread_pool(4);");
-	out.println("	");
-	out.println("	//");
-	out.println("	// Create implementation object");
-	out.println("	//");
-	out.println("	mathService_Simulation_var p = new Simulation_impl(getSimTool());");
-	out.println("	");
-	out.println("	//");
-	out.println("	// Save reference");
-	out.println("	//");
-	out.println("	CORBA_String_var s = orb -> object_to_string(p);");
-	out.println("	");
-	out.println("	const char* refFile = \"Simulation.ref\";");
-	out.println("	ofstream out(refFile);");
-	out.println("	if(out.fail())");
-	out.println("	{");
-	out.println("	    cerr << argv[0] << \": can't open `\" << refFile << \"': \"");
-	out.println("		 << strerror(errno) << endl;");
-	out.println("	    return 1;");
-	out.println("	}");
-	out.println("	");
-	out.println("	out << s << endl;");
-	out.println("	out.close();");
-	out.println("	");
-	out.println("	//");
-	out.println("	// Run implementation");
-	out.println("	//");
-	out.println("	boa -> impl_is_ready(CORBA_ImplementationDef::_nil());");
-	out.println("    }");
-	out.println("    catch(CORBA_SystemException& ex)");
-	out.println("    {");
-	out.println("	OBPrintException(ex);");
-	out.println("	return 1;");
-	out.println("    }");
+	out.println("\ttry {");
+	out.println("\t\t//");
+	out.println("\t\t// Create ORB and BOA");
+	out.println("\t\t//");
+	out.println("\t\tCORBA_ORB_var orb = CORBA_ORB_init(argc, argv);");
+	out.println("\t\tCORBA_BOA_var boa = orb -> BOA_init(argc, argv);");
+	out.println();
+	out.println("\t\torb->conc_model(CORBA_ORB::ConcModelThreaded);");
+	out.println("\t\tboa->conc_model(CORBA_BOA::ConcModelThreadPool);");
+	out.println("\t\tboa->conc_model_thread_pool(4);");
+	out.println();
+	out.println("\t\t//");
+	out.println("\t\t// Create implementation object");
+	out.println("\t\t//");
+	out.println("\t\tmathService_Simulation_var p = new Simulation_impl(getSimTool());");
+	out.println();
+	out.println("\t\t//");
+	out.println("\t\t// Save reference");
+	out.println("\t\t//");
+	out.println("\t\tCORBA_String_var s = orb -> object_to_string(p);");
+	out.println();
+	out.println("\t\tconst char* refFile = \"Simulation.ref\";");
+	out.println("\t\tofstream out(refFile);");
+	out.println("\t\tif(out.fail()) {");
+	out.println("\t\t\tcerr << argv[0] << \": can't open '\" << refFile << \"': \" << strerror(errno) << endl;");
+	out.println("\t\t\treturn 1;");
+	out.println("\t\t}");
+	out.println();
+	out.println("\t\tout << s << endl;");
+	out.println("\t\tout.close();");
+	out.println();
+	out.println("\t\t//");
+	out.println("\t\t// Run implementation");
+	out.println("\t\t//");
+	out.println("\t\tboa -> impl_is_ready(CORBA_ImplementationDef::_nil());");
+	out.println("\t} catch(CORBA_SystemException& ex) {");
+	out.println("\t\tOBPrintException(ex);");
+	out.println("\t\treturn 1;");
+	out.println("\t}");
 	out.println("");
-	out.println("    return 0;");
+	out.println("\t return 0;");
 	out.println("}");
-	out.println("");
+	out.println();
 	out.println("#endif // end VCELL_CORBA");
-	out.println("");
+	out.println();
 }
 }

@@ -60,7 +60,7 @@ protected Variable[] getRequiredVariables() throws Exception {
 	//
 	Enumeration enum1 = equation.getRequiredVariables(simulation);
 
-	Vector uniqueVarList = new Vector();
+	Vector<Variable> uniqueVarList = new Vector<Variable>();
 	while (enum1.hasMoreElements()) {
 		Variable var = (Variable)enum1.nextElement();
 		if (var instanceof InsideVariable){
@@ -357,8 +357,6 @@ protected final void writeMembraneRegionFunction(java.io.PrintWriter out, String
  */
 protected final void writeMembraneRegionFunctionDeclarations(java.io.PrintWriter out, String membraneRegionString, Expression exp) throws Exception {
 
-	boolean wc_defined = false;
-	MathDescription mathDesc = simulation.getMathDescription();
 	Enumeration enum1 = simulation.getRequiredVariables(exp);
 	
 	while (enum1.hasMoreElements()){
@@ -395,46 +393,45 @@ protected final void writeMembraneRegionFunctionDeclarations(java.io.PrintWriter
 protected final void writeResolveReferences(java.io.PrintWriter out) throws Exception {
 	out.println("bool "+getClassName()+"::resolveReferences(Simulation *sim)");
 	out.println("{");
-	out.println("   if (!"+getParentClassName()+"::resolveReferences(sim)){");
-	out.println("      return false;");
-	out.println("   }");
-	out.println("   ASSERTION(sim);");
-	out.println("");
+	out.println("\tif (!"+getParentClassName()+"::resolveReferences(sim)){");
+	out.println("\t\treturn false;");
+	out.println("\t}");
+	out.println("\tASSERTION(sim);");
+	out.println();
 	Variable[] requiredVariables = getRequiredVariables();
-	Vector volVarList = new Vector();
 	for (int i = 0; i < requiredVariables.length; i++){
 		Variable var = requiredVariables[i];
 		if (var instanceof VolVariable){
-			out.println("   var_"+var.getName()+" = (VolumeVariable*)sim->getVariableFromName(\""+var.getName()+"\");");
-			out.println("   if (var_"+var.getName()+"==NULL){");
-			out.println("      printf(\"could not resolve '"+var.getName()+"'\\n\");");
-			out.println("      return false;");
-			out.println("   }");
+			out.println("\tvar_"+var.getName()+" = (VolumeVariable*)sim->getVariableFromName(\""+var.getName()+"\");");
+			out.println("\tif (var_"+var.getName()+"==NULL){");
+			out.println("\t\tprintf(\"could not resolve '"+var.getName()+"'\\n\");");
+			out.println("\t\treturn false;");
+			out.println("\t}");
 			out.println("");
-		}else if (var instanceof MemVariable){	
-			out.println("   var_"+var.getName()+" = (MembraneVariable*)sim->getVariableFromName(\""+var.getName()+"\");");
-			out.println("   if (var_"+var.getName()+"==NULL){");
-			out.println("      printf(\"could not resolve '"+var.getName()+"'\\n\");");
-			out.println("      return false;");
-			out.println("   }");
+		}else if (var instanceof MemVariable){
+			out.println("\tvar_"+var.getName()+" = (MembraneVariable*)sim->getVariableFromName(\""+var.getName()+"\");");
+			out.println("\t if (var_"+var.getName()+"==NULL){");
+			out.println("\t\tprintf(\"could not resolve '"+var.getName()+"'\\n\");");
+			out.println("\t\treturn false;");
+			out.println("\t}");
 			out.println("");
-		}else if (var instanceof MembraneRegionVariable){	
-			out.println("   var_"+var.getName()+" = (MembraneRegionVariable*)sim->getVariableFromName(\""+var.getName()+"\");");
-			out.println("   if (var_"+var.getName()+"==NULL){");
-			out.println("      printf(\"could not resolve '"+var.getName()+"'\\n\");");
-			out.println("      return false;");
-			out.println("   }");
+		}else if (var instanceof MembraneRegionVariable){
+			out.println("\tvar_"+var.getName()+" = (MembraneRegionVariable*)sim->getVariableFromName(\""+var.getName()+"\");");
+			out.println("\tif (var_"+var.getName()+"==NULL){");
+			out.println("\t\tprintf(\"could not resolve '"+var.getName()+"'\\n\");");
+			out.println("\t\treturn false;");
+			out.println("\t}");
 			out.println("");
-		}else if (var instanceof VolumeRegionVariable){	
-			out.println("   var_"+var.getName()+" = (VolumeRegionVariable*)sim->getVariableFromName(\""+var.getName()+"\");");
-			out.println("   if (var_"+var.getName()+"==NULL){");
-			out.println("      printf(\"could not resolve '"+var.getName()+"'\\n\");");
-			out.println("      return false;");
-			out.println("   }");
+		}else if (var instanceof VolumeRegionVariable){
+			out.println("\tvar_"+var.getName()+" = (VolumeRegionVariable*)sim->getVariableFromName(\""+var.getName()+"\");");
+			out.println("\t if (var_"+var.getName()+"==NULL){");
+			out.println("\t\tprintf(\"could not resolve '"+var.getName()+"'\\n\");");
+			out.println("\t\treturn false;");
+			out.println("\t}");
 			out.println("");
 		}	
 	}		  	
-	out.println("   return true;");
+	out.println("\treturn true;");
 	out.println("}");
 	out.println("");
 }
@@ -456,7 +453,7 @@ protected final void writeVolumeConstantFunction(java.io.PrintWriter out, String
 	exp.bindExpression(simulation);
 	Expression exp2 = simulation.substituteFunctions(exp).flatten();
 	try {
-		double constant = exp2.evaluateConstant();
+		exp2.evaluateConstant();
 	} catch (Exception ex) {
 		throw new RuntimeException("Not a constant: " + exp.infix());
 	}
@@ -579,7 +576,6 @@ protected final void writeVolumeRegionFunctionDeclarations(java.io.PrintWriter o
 		throw new Exception("null expression");
 	}	
 
-	boolean wc_defined = false;
 	String regionIndexString = "regionIndex";
 	out.println("	long "+regionIndexString+" = "+volumeRegionString+"->getId();");
 	Enumeration enum1 = getSimulation().getRequiredVariables(exp);

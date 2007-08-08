@@ -30,6 +30,7 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	out.println(getClassName()+"::"+getClassName()+"()");
 	out.println(": "+getParentClassName()+"()");
  	out.println("{");
+ 	out.println("\tstring featurename;");
  	//
  	// add 'Features' to VCellModel
  	//
@@ -43,7 +44,8 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
  			// calculate a priority based on level of nesting 
  			//
  			CompartmentSubDomain subDomain = featureClassCoder.getCompartmentSubDomain();
-			out.println("\taddFeature(new "+featureClassCoder.getClassName()+"(string(\""+subDomain.getName()+"\"),"+subDomain.getPriority()+"));");
+ 			out.println("\tfeaturename=\""+subDomain.getName()+"\";");
+			out.println("\taddFeature(new "+featureClassCoder.getClassName()+"(featurename,"+subDomain.getPriority()+"));");
 		}
 	}
  	//
@@ -66,8 +68,8 @@ public void writeDeclaration(java.io.PrintWriter out) {
 
 	out.println("class " + getClassName() + " : public " + getParentClassName());
 	out.println("{");
-	out.println(" public:");
-	out.println("   "+getClassName() + "();");
+	out.println("public:");
+	out.println("\t"+getClassName() + "();");
 	out.println("};");
 }
 /**
