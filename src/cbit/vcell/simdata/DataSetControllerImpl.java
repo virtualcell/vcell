@@ -67,7 +67,7 @@ public class DataSetControllerImpl implements SimDataConstants {
 	private SessionLog log = null;
 	private File primaryRootDirectory =  null;
 	private File secondaryRootDirectory =  null;
-	private Cachetable cacheTable = null;
+	private Cachetable cacheTable0 = null;
 	private Vector<DataJobListener> aDataJobListener = null;
 	//
 	public static class SpatialStatsInfo {
@@ -183,7 +183,7 @@ public class DataSetControllerImpl implements SimDataConstants {
  * This method was created by a SmartGuide.
  */
 public DataSetControllerImpl (SessionLog sessionLog, Cachetable aCacheTable, File primaryDir, File secondDir) throws FileNotFoundException {
-	this.cacheTable = aCacheTable;
+	this.cacheTable0 = aCacheTable;
 	this.primaryRootDirectory = primaryDir;
 	this.secondaryRootDirectory = secondDir;
 	this.log = sessionLog;
@@ -1970,14 +1970,17 @@ public ODEDataBlock getODEDataBlock(VCDataIdentifier vcdID) throws DataAccessExc
 		//
 		VCData simData = getVCData(vcdID);
 		ODEDataInfo odeDataInfo = new ODEDataInfo(vcdID.getOwner(), vcdID.getID(), simData.getDataBlockTimeStamp(ODE_DATA, 0));
-		ODEDataBlock odeDataBlock = cacheTable.get(odeDataInfo);
+		ODEDataBlock odeDataBlock = (cacheTable0 != null?cacheTable0.get(odeDataInfo):null);
 		if (odeDataBlock != null){
 			return odeDataBlock;
 		}else{
 			if (simData.getIsODEData()) {
 				odeDataBlock = simData.getODEDataBlock();
 				if (odeDataBlock != null){
-					cacheTable.put(odeDataInfo, odeDataBlock);
+//					cacheTable.put(odeDataInfo, odeDataBlock);
+					if(cacheTable0 != null){
+						cacheTable0.put(odeDataInfo, odeDataBlock);
+					}
 					return odeDataBlock;
 				}else{
 					String msg = "failure reading ODE data for " + vcdID.getOwner().getName() + "'s " + vcdID.getID();
@@ -2012,13 +2015,16 @@ public ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdID, double tim
 		//
 		VCData simData = getVCData(vcdID);
 		ParticleDataInfo particleDataInfo = new ParticleDataInfo(vcdID.getOwner(), vcdID.getID(), time, simData.getDataBlockTimeStamp(PARTICLE_DATA, time));
-		ParticleDataBlock particleDataBlock = cacheTable.get(particleDataInfo);
+		ParticleDataBlock particleDataBlock = (cacheTable0 != null?cacheTable0.get(particleDataInfo):null);
 		if (particleDataBlock != null){
 			return particleDataBlock;
 		}else{
 			particleDataBlock = simData.getParticleDataBlock(time);
 			if (particleDataBlock != null){
-				cacheTable.put(particleDataInfo, particleDataBlock);
+//				cacheTable.put(particleDataInfo, particleDataBlock);
+				if(cacheTable0 != null){
+					cacheTable0.put(particleDataInfo, particleDataBlock);
+				}
 				return particleDataBlock;
 			}else{
 				String msg = "failure reading at t = " + time + " for " + vcdID.getOwner().getName() + "'s " + vcdID.getID();
@@ -2071,11 +2077,14 @@ public SimDataBlock getSimDataBlock(VCDataIdentifier vcdID, String varName, doub
 		SimDataBlock simDataBlock = null;
 		AnnotatedFunction function = simData.getFunction(varName);
 		if (function == null){
-			simDataBlock = cacheTable.get(pdeDataInfo);
+			simDataBlock = (cacheTable0 != null?cacheTable0.get(pdeDataInfo):null);
 			if (simDataBlock == null) {
 				simDataBlock = simData.getSimDataBlock(varName,time);
 				if (simDataBlock != null && dataCachingEnabled) {
-					cacheTable.put(pdeDataInfo,simDataBlock);
+//					cacheTable.put(pdeDataInfo,simDataBlock);
+					if(cacheTable0 != null){
+						cacheTable0.put(pdeDataInfo,simDataBlock);
+					}
 				}
 			}				
 		}else{
@@ -2535,7 +2544,7 @@ private File getSecondaryUserDir(User user) throws FileNotFoundException {
  */
 public VCData getVCData(VCDataIdentifier vcdID) throws DataAccessException, IOException {
 
-	VCData vcData = (VCData)cacheTable.get(vcdID);
+	VCData vcData = (cacheTable0 != null?cacheTable0.get(vcdID):null);
 	//
 	// check to see if cached version is compatible with current data
 	//
@@ -2552,7 +2561,10 @@ public VCData getVCData(VCDataIdentifier vcdID) throws DataAccessException, IOEx
 		} else {  // assume vcdID instanceof cbit.vcell.solver.SimulationInfo or a test adapter
 			vcData = new SimulationData(vcdID, getPrimaryUserDir(vcdID.getOwner(), false), getSecondaryUserDir(vcdID.getOwner()));
 		}
-		cacheTable.put(vcdID,vcData);
+//		cacheTable.put(vcdID,vcData);
+		if(cacheTable0 != null){
+			cacheTable0.put(vcdID,vcData);
+		}
 	}
 
 	return vcData;
@@ -2580,7 +2592,10 @@ public void removeFunction(VCDataIdentifier vcdID, AnnotatedFunction function) t
 		}
 		VCData simData = getVCData(vcdID);
 		simData.removeFunction(function);
-		cacheTable.removeVariable(vcdID,function.getName());
+//		cacheTable.removeVariable(vcdID,function.getName());
+		if(cacheTable0 != null){
+			cacheTable0.removeVariable(vcdID,function.getName());
+		}
 	}catch (Exception e){
 		log.exception(e);
 		if(e instanceof DataAccessException){

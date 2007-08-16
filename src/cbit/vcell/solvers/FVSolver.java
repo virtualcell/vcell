@@ -11,6 +11,8 @@ import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.math.MembraneRegionVariable;
 import cbit.vcell.math.Variable;
+import cbit.vcell.simdata.Cachetable;
+import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimulationData;
@@ -18,6 +20,7 @@ import cbit.vcell.simdata.VariableType;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.math.Function;
+import cbit.vcell.modeldb.NullSessionLog;
 import cbit.vcell.server.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -639,18 +642,18 @@ public static void resampleFieldData(
 			if(handleExistingResampleMode == HESM_KEEP_AND_CONTINUE && resampleEntry.getValue().exists()){
 				continue;
 			}
-			SimulationData simData = new SimulationData(resampleEntry.getKey().getExternalDataIdentifier(),userDirectory, null);
-			CartesianMesh origMesh = simData.getMesh();
+			DataSetControllerImpl dsci = new DataSetControllerImpl(new NullSessionLog(),null,userDirectory.getParentFile(),null);
+			CartesianMesh origMesh = dsci.getMesh(resampleEntry.getKey().getExternalDataIdentifier());
 			boolean bSame = false;
 			if (origMesh.getOrigin().compareEqual(newMesh.getOrigin())
-				&& origMesh.getExtent().compareEqual(newMesh)
+				&& origMesh.getExtent().compareEqual(newMesh.getExtent())
 				&& origMesh.getSizeX() == newMesh.getSizeX()
 				&& origMesh.getSizeY() == newMesh.getSizeY()
 				&& origMesh.getSizeZ() == newMesh.getSizeZ()
 				) {
 				bSame = true;
 			}
-			SimDataBlock simDataBlock = simData.getSimDataBlock(resampleEntry.getKey().getFieldFuncArgs().getVariableName(), resampleEntry.getKey().getFieldFuncArgs().getTime().evaluateConstant());
+			SimDataBlock simDataBlock = dsci.getSimDataBlock(resampleEntry.getKey().getExternalDataIdentifier(),resampleEntry.getKey().getFieldFuncArgs().getVariableName(), resampleEntry.getKey().getFieldFuncArgs().getTime().evaluateConstant());
 			if(!simDataBlock.getVariableType().compareEqual(VariableType.VOLUME)){
 				throw new Exception("Variable "+resampleEntry.getKey().getFieldFuncArgs().getVariableName()+" is not Volume type");
 			}
