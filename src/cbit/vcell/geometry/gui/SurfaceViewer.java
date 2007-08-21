@@ -1,5 +1,6 @@
 package cbit.vcell.geometry.gui;
 
+import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.surface.TaubinSmoothingSpecification;
 /**
  * Insert the type's description here.
@@ -512,14 +513,18 @@ private cbit.vcell.geometry.surface.SurfaceCollection createQuadSurface(cbit.vce
 		System.out.println("SurfaceViewer.createSurface(): size = "+sampleSize);
 		
 		cbit.image.VCImage image = geometrySpec.createSampledImage(sampleSize);
-		cbit.vcell.geometry.RegionImage regionImage = new cbit.vcell.geometry.RegionImage(image);
+		cbit.vcell.geometry.RegionImage regionImage =
+			new cbit.vcell.geometry.RegionImage(
+					image,
+					3, geometrySpec.getExtent(), geometrySpec.getOrigin(),RegionImage.NO_SMOOTHING);
 
 		//
 		// get the surfaces
 		//
-		cbit.vcell.geometry.surface.SurfaceGenerator surfaceGenerator = new cbit.vcell.geometry.surface.SurfaceGenerator(new cbit.vcell.server.StdoutSessionLog("suface generator"));
-		cbit.vcell.geometry.surface.SurfaceCollection surfaceCollection = surfaceGenerator.generateSurface(regionImage, 3, geometrySpec.getExtent(), geometrySpec.getOrigin());
-		return surfaceCollection;
+//		cbit.vcell.geometry.surface.SurfaceGenerator surfaceGenerator = new cbit.vcell.geometry.surface.SurfaceGenerator(new cbit.vcell.server.StdoutSessionLog("suface generator"));
+//		cbit.vcell.geometry.surface.SurfaceCollection surfaceCollection = surfaceGenerator.generateSurface(regionImage, 3, geometrySpec.getExtent(), geometrySpec.getOrigin());
+//		return surfaceCollection;
+		return regionImage.getSurfacecollection();
 	}else{
 		return null;
 	}

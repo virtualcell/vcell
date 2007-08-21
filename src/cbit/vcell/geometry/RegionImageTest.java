@@ -39,7 +39,8 @@ public static RegionImage createRegionImage(cbit.image.VCImage vcImage) throws I
 	// create region image
 	//
 	Date startDate = new Date();
-	RegionImage regionImage = new RegionImage(vcImage);
+	int dimension = 1+(vcImage.getNumY() > 1?1:0)+(vcImage.getNumZ() > 1?1:0);
+	RegionImage regionImage = new RegionImage(vcImage,dimension,new Extent(1,1,1),new Origin(0,0,0),RegionImage.NO_SMOOTHING);
 	Date endDate = new Date();
 	System.out.println("RegionImage construction took " + (endDate.getTime() - startDate.getTime())/1000.0 + " seconds");
 	

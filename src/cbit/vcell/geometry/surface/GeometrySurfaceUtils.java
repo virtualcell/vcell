@@ -1,4 +1,9 @@
 package cbit.vcell.geometry.surface;
+
+import progress.message.client.EExclusiveQueueOpen;
+import cbit.util.ISize;
+import cbit.vcell.geometry.RegionImage;
+
 /**
  * Insert the type's description here.
  * Creation date: (6/28/2004 2:52:23 PM)
@@ -12,7 +17,7 @@ public class GeometrySurfaceUtils {
  * @param geoSurfaceDescription cbit.vcell.geometry.surface.GeometrySurfaceDescription
  * @param surfaceCollection cbit.vcell.geometry.surface.SurfaceCollection
  */
-static GeometricRegion[] getUpdatedGeometricRegions(GeometrySurfaceDescription geoSurfaceDescription, cbit.vcell.geometry.RegionImage regionImage, SurfaceCollection surfaceCollection) {
+public static GeometricRegion[] getUpdatedGeometricRegions(GeometrySurfaceDescription geoSurfaceDescription, cbit.vcell.geometry.RegionImage regionImage, SurfaceCollection surfaceCollection) {
 	//
 	// parse regionImage into ResolvedVolumeLocations
 	//
@@ -255,40 +260,23 @@ static cbit.vcell.geometry.RegionImage getUpdatedRegionImage(GeometrySurfaceDesc
 	//
 	cbit.vcell.geometry.GeometrySpec geometrySpec = geoSurfaceDescription.getGeometry().getGeometrySpec();
 	if (geoSurfaceDescription.getRegionImage()==null || 
+		geoSurfaceDescription.getFilterCutoffFrequency() != geoSurfaceDescription.getRegionImage().getFilterCutoffFrequency() ||
 		geoSurfaceDescription.getRegionImage().getNumX()!=geoSurfaceDescription.getVolumeSampleSize().getX() ||
 		geoSurfaceDescription.getRegionImage().getNumY()!=geoSurfaceDescription.getVolumeSampleSize().getY() ||	
 		geoSurfaceDescription.getRegionImage().getNumZ()!=geoSurfaceDescription.getVolumeSampleSize().getZ()){
 			
 		cbit.image.VCImage image = geometrySpec.createSampledImage(geoSurfaceDescription.getVolumeSampleSize());
-		cbit.vcell.geometry.RegionImage regionImage = new cbit.vcell.geometry.RegionImage(image);
+		cbit.vcell.geometry.RegionImage regionImage =
+		new RegionImage(
+				image,
+				geoSurfaceDescription.getGeometry().getDimension(),
+				geoSurfaceDescription.getGeometry().getExtent(),
+				geoSurfaceDescription.getGeometry().getOrigin(),
+				geoSurfaceDescription.getFilterCutoffFrequency().doubleValue()
+				);
 		return regionImage;
 	}
 	return geoSurfaceDescription.getRegionImage();
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/28/2004 3:02:36 PM)
- * @return cbit.vcell.geometry.surface.SurfaceCollection
- */
-static SurfaceCollection getUpdatedSurfaceCollection(GeometrySurfaceDescription geoSurfaceDescription, cbit.vcell.geometry.RegionImage regionImage) {
-	//
-	// make the surfaces (if necessary)
-	//
-	cbit.vcell.geometry.surface.SurfaceGenerator surfaceGenerator = new cbit.vcell.geometry.surface.SurfaceGenerator(new cbit.vcell.server.StdoutSessionLog("suface generator"));
-	cbit.util.Extent extent = geoSurfaceDescription.getGeometry().getGeometrySpec().getExtent();
-	cbit.util.Origin origin = geoSurfaceDescription.getGeometry().getGeometrySpec().getOrigin();
-	cbit.vcell.geometry.surface.SurfaceCollection surfaceCollection = surfaceGenerator.generateSurface(regionImage, 3, extent, origin);
-	//
-	// smooth surfaces
-	//
-	if (geoSurfaceDescription.getFilterCutoffFrequency().doubleValue()<0.6){
-		TaubinSmoothing taubinSmoothing = new TaubinSmoothingWrong();
-		TaubinSmoothingSpecification taubinSpec = TaubinSmoothingSpecification.getInstance(geoSurfaceDescription.getFilterCutoffFrequency().doubleValue());
-		taubinSmoothing.smooth(surfaceCollection,taubinSpec);
-	}
-	return surfaceCollection;
 }
 
 
@@ -312,21 +300,13 @@ public static void updateGeometricRegions(GeometrySurfaceDescription geoSurfaceD
 	if (updatedRegionImage != geoSurfaceDescription.getRegionImage()){  // getUpdatedRegionImage returns same image if not changed
 		bChanged = true;
 	}
-	//
-	// make the surfaces (if necessary)
-	//
-	SurfaceCollection updatedSurfaceCollection = geoSurfaceDescription.getSurfaceCollection();
-	if (geoSurfaceDescription.getSurfaceCollection()==null || bChanged) {
-		updatedSurfaceCollection = getUpdatedSurfaceCollection(geoSurfaceDescription,updatedRegionImage);
-		bChanged = true;
-	}
 
 	//
 	// parse regionImage into VolumeGeometricRegions and SurfaceCollection into SurfaceGeometricRegions
 	//
 	GeometricRegion updatedGeometricRegions[] = geoSurfaceDescription.getGeometricRegions();
 	if (geoSurfaceDescription.getGeometricRegions()==null || bChanged){
-		updatedGeometricRegions = getUpdatedGeometricRegions(geoSurfaceDescription,updatedRegionImage,updatedSurfaceCollection);
+		updatedGeometricRegions = getUpdatedGeometricRegions(geoSurfaceDescription,updatedRegionImage,updatedRegionImage.getSurfacecollection());
 	}
 
 	geoSurfaceDescription.setGeometricRegions(updatedGeometricRegions);	
