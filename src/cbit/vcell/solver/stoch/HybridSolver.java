@@ -19,8 +19,8 @@ import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 import cbit.vcell.solvers.ApplicationMessage;
 /**
  * The HybridSolver is used to solve stochastic stiff problem.
- * Two types of solvers are provided in this class, which are Gibson_Euler Method
- * and gibson_Milstein Method. Both methods are proposed by Howard Salis.
+ * Two types of solvers are provided in this class, which are fixed time step methods (Gibson_Euler
+ * and gibson_Milstein) and adaptive time step Method(Adaptive gibson_Milstein). Those methods are proposed by Howard Salis.
  * The basic idea is to separate the whole system into fast and slow sub-systems.
  * Chemical Langvine Equation is used  to solve fast sub-system, and SSA is used to solve
  * slow sub-systme.
@@ -50,6 +50,9 @@ public HybridSolver(cbit.vcell.solver.SimulationJob simulationJob, java.io.File 
  */
 public void cleanup() 
 {
+	if (getSolverStatus().getStatus() != SolverStatus.SOLVER_FINISHED) {
+		return;
+	}
 	try
 	{
 		printStochFile();
@@ -361,6 +364,7 @@ private final void printStochFile() throws IOException
 	File dataFile = new File(getSaveDirectory(), mathName + STOCH_DATA_EXTENSION);
 	cbit.vcell.solver.ode.ODESimData.writeODEDataFile(stSimData, dataFile);
 	stSimData.writeODELogFile(logFile, dataFile);
+	
 	// we don't show intermediate data for hybrid solvers. so, event shouldn't be fired.
 	//fireSolverPrinted(getCurrentTime());
 }

@@ -5,7 +5,6 @@ import java.io.IOException;
 
 import com.sun.java_cup.internal.reduce_action;
 
-import cbit.gui.DialogUtils;
 import sun.rmi.runtime.GetThreadPoolAction;
 import ucar.ma2.Array;
 import ucar.ma2.ArrayChar;
@@ -40,8 +39,9 @@ public class NetCDFReader {
 		try {
 			ncfile = NetcdfFile.open(filename);
 		} catch (IOException ioe) {
-		    DialogUtils.showErrorDialog("Cannot open NetCDF file:" + filename +". \n Please check if file is not existing or damaged.");
-		    throw new IOException("Cannot open file:"+filename +"!");
+		    // DialogUtils.showErrorDialog("Cannot open NetCDF file:" + filename +". \n Please check if file is not existing or damaged.");
+			ioe.printStackTrace(System.out);
+		    throw new IOException("Cannot open file:"+filename +"!"+ ioe.getMessage());
 		} 
 	}
 	/**
@@ -51,7 +51,8 @@ public class NetCDFReader {
 		if (null != ncfile) try {
 	      ncfile.close();
 	    } catch (IOException ioe) {
-	    	DialogUtils.showErrorDialog("Cannot close NetCDF file:" + filename +". \n Please check if file is not existing or damaged.");
+	    	//DialogUtils.showErrorDialog("Cannot close NetCDF file:" + filename +". \n Please check if file is not existing or damaged.");
+	    	ioe.printStackTrace(System.out);
 		    throw new IOException("Cannot close file:"+filename+"!");
 	    }
 	}
