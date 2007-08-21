@@ -2,7 +2,6 @@ package cbit.vcell.geometry.gui;
 
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.server.StdoutSessionLog;
-import cbit.vcell.geometry.surface.SurfaceGenerator;
 import cbit.vcell.geometry.surface.SurfaceCollection;
 /**
  * Insert the type's description here.
@@ -31,7 +30,6 @@ public static void main(java.lang.String[] args) {
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
 
-		SurfaceGenerator surfaceGenerator = new SurfaceGenerator(new StdoutSessionLog("surfGen"));
 		Geometry geometry = cbit.vcell.geometry.GeometryTest.getExample_er_cytsol3D();
 
 		aSurfaceViewer.setGeometry(geometry);

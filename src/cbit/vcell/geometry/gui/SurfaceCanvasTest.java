@@ -1,11 +1,9 @@
 package cbit.vcell.geometry.gui;
 
 import cbit.vcell.geometry.surface.FilterSpecification;
-import cbit.vcell.geometry.surface.TaubinSmoothing;
 import cbit.vcell.geometry.surface.TaubinSmoothingSpecification;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.server.StdoutSessionLog;
-import cbit.vcell.geometry.surface.SurfaceGenerator;
+import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.surface.SurfaceCollection;
 /**
  * Insert the type's description here.
@@ -34,18 +32,20 @@ public static void main(java.lang.String[] args) {
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		frame.setVisible(true);
 
-		SurfaceGenerator surfaceGenerator = new SurfaceGenerator(new StdoutSessionLog("surfGen"));
 		Geometry geometry = cbit.vcell.geometry.GeometryTest.getExample_er_cytsol3D();
 		//for (int i = 0; i < 100; i++){
 			//double d = i/100.0;
-			SurfaceCollection surfaceCollection = surfaceGenerator.generateSurface(geometry);
-			System.out.println("smoothing");
-			cbit.vcell.geometry.surface.TaubinSmoothing taubin = new cbit.vcell.geometry.surface.TaubinSmoothing();
-			FilterSpecification filterSpec = new FilterSpecification(0.3,0.7,0.2,0.2);
-			TaubinSmoothingSpecification taubinSpec = TaubinSmoothingSpecification.fromFilterSpecification(filterSpec);
-			taubin.smooth(surfaceCollection, taubinSpec);
-			System.out.println("painting");
-			aSurfaceCanvas.setSurfaceCollection(surfaceCollection);
+		cbit.image.VCImage image = geometry.getGeometrySpec().createSampledImage(geometry.getGeometrySpec().getDefaultSampledImageSize());
+		cbit.vcell.geometry.RegionImage regionImage =
+		new RegionImage(image,geometry.getDimension(),geometry.getExtent(),geometry.getOrigin(),.3);
+		SurfaceCollection surfaceCollection = regionImage.getSurfacecollection();
+		System.out.println("smoothing");
+		cbit.vcell.geometry.surface.TaubinSmoothing taubin = new cbit.vcell.geometry.surface.TaubinSmoothing();
+		FilterSpecification filterSpec = new FilterSpecification(0.3,0.7,0.2,0.2);
+		TaubinSmoothingSpecification taubinSpec = TaubinSmoothingSpecification.fromFilterSpecification(filterSpec);
+		taubin.smooth(surfaceCollection, taubinSpec);
+		System.out.println("painting");
+		aSurfaceCanvas.setSurfaceCollection(surfaceCollection);
 		//}
 	} catch (Throwable exception) {
 		System.err.println("Exception occurred in main() of javax.swing.JPanel");

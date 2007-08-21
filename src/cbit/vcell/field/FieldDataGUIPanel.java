@@ -1594,7 +1594,7 @@ private void addNewExternalData(
 											new byte[fdos.isize.getXYZ()],//empty regions
 											fdos.extent,
 											fdos.isize.getX(),fdos.isize.getY(),fdos.isize.getZ()
-											)));
+											),0,null,null,RegionImage.NO_SMOOTHING));
 				}
 				
 				//Add to Server Disk

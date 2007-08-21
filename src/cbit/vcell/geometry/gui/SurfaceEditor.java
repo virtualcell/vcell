@@ -1001,9 +1001,9 @@ private void onNewSurfaceCollection(SurfaceCollection argSurfaceCollection) {
 		for (int i = 0; i < argSurfaceCollection.getSurfaceCount(); i++){
 			surfaceColors[i][0] =
 				0x00000000 |
-				(0x00FF0000 & (colorModel.getRed(i+colorOffset)<<16)) |
-				(0x0000FF00 & (colorModel.getGreen(i+colorOffset)<<8)) |
-				(0x000000FF & (colorModel.getBlue(i+colorOffset)));
+				(0x00FF0000 & (colorModel.getRed(Math.min(255, i+colorOffset))<<16)) |
+				(0x0000FF00 & (colorModel.getGreen(Math.min(255, i+colorOffset))<<8)) |
+				(0x000000FF & (colorModel.getBlue(Math.min(255, i+colorOffset))));
 		}
 		getSurfaceCanvas1().setSurfacesColors(surfaceColors);
 	}

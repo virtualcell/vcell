@@ -286,14 +286,12 @@ public MeshRegionSurfaces generateMeshRegionSurfaces() throws cbit.image.ImageEx
 				subVolumeIDField,
 				getMesh().getExtent(),
 				getMesh().getSizeX(),getMesh().getSizeY(),getMesh().getSizeZ()
-			)
+			),
+			getMesh().getGeometryDimension(),getMesh().getExtent(),getMesh().getOrigin(),RegionImage.NO_SMOOTHING
 	);
 
-	cbit.vcell.geometry.surface.SurfaceGenerator surfaceGenerator =
-		new cbit.vcell.geometry.surface.SurfaceGenerator(new cbit.vcell.modeldb.NullSessionLog());
-	cbit.vcell.geometry.surface.SurfaceCollection surfaceCollection =
-		surfaceGenerator.generateSurface(meshRegionImage,getMesh().getGeometryDimension(),getMesh().getExtent(),getMesh().getOrigin());
-
+	cbit.vcell.geometry.surface.SurfaceCollection surfaceCollection = meshRegionImage.getSurfacecollection();
+	
 	MembraneElement[] membraneElements = (MembraneElement[])getMesh().getMembraneElements().clone();
 
 	int[][] surface_polygon_MembraneIndexes = new int[surfaceCollection.getSurfaceCount()][];

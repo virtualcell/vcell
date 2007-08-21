@@ -598,7 +598,6 @@ public void updateAll() throws GeometryException, cbit.image.ImageException, cbi
 	//
 	// make new RegionImage if necessary missing or wrong size
 	//
-	GeometrySpec geometrySpec = getGeometry().getGeometrySpec();
 	boolean bChanged = false;
 	RegionImage updatedRegionImage = GeometrySurfaceUtils.getUpdatedRegionImage(this);
 	if (updatedRegionImage != getRegionImage()){  // getUpdatedRegionImage returns same image if not changed
@@ -609,7 +608,7 @@ public void updateAll() throws GeometryException, cbit.image.ImageException, cbi
 	// make the surfaces (if necessary)
 	//
 	if (getSurfaceCollection()==null || bChanged) {
-		setSurfaceCollection(GeometrySurfaceUtils.getUpdatedSurfaceCollection(this,getRegionImage()));
+		setSurfaceCollection(updatedRegionImage.getSurfacecollection());
 		bChanged = true;
 	}
 
@@ -623,8 +622,7 @@ public void updateAll() throws GeometryException, cbit.image.ImageException, cbi
 			e.printStackTrace(System.out);
 			throw new GeometryException("unexpected exception while generating regions: "+e.getMessage());
 		}
-	}
-		
+	}		
 }
 
 
