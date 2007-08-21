@@ -126,7 +126,7 @@ public class TxtResultEvaluator {
 	 */
 	public static void main(String[] args) {
 		TxtResultEvaluator evaluator = new TxtResultEvaluator();
-		evaluator.getResults("C:/Hy3S/TestCases/example2-2-1/VCell_SSA/trial_6000_out.txt",6000 );
+		evaluator.getResults("C:/Hy3S_2/TestCases/HMM/VCell_SSA/trial30000_out.txt",30000 );
 		evaluator.printAllHistograms();
 	}
 

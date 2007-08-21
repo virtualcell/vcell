@@ -363,6 +363,9 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2, b
 						System.out.println("EXPRESSIONS DIFFERENT: no symbols, delta eval: "+(result2-result1));
 						return false;
 					}
+					else {
+						return true;
+					}
 				} else {
 					return true;
 				}

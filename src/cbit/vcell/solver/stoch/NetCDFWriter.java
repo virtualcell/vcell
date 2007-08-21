@@ -15,6 +15,7 @@ import ucar.ma2.InvalidRangeException;
 import ucar.nc2.Dimension;
 import ucar.nc2.NetcdfFileWriteable;
 
+import cbit.util.Compare;
 import cbit.vcell.math.Action;
 import cbit.vcell.math.JumpProcess;
 import cbit.vcell.math.MathException;
@@ -135,11 +136,15 @@ public class NetCDFWriter {
 			java.util.Enumeration e = getSimulation().getMathDescription().getSubDomains();//Model info. will be extracted from subDomain of mathDescription
 		  	SubDomain subDomain = (SubDomain)e.nextElement();//remember we are dealing with compartmental model here. only 1 subdomain.
 		  	JumpProcess reactions[] = (JumpProcess[])subDomain.getJumpProcesses().toArray(new JumpProcess[subDomain.getJumpProcesses().size()]);
+		  	//get species variable names
+		  	String[] speciesNames = new String[getSimulation().getVariables().length];
+		  	for(int i=0; i< getSimulation().getVariables().length; i++)
+		  		speciesNames[i]=getSimulation().getVariables()[i].getName();
 		  	Expression probs[] = new Expression[reactions.length]; // the probabilities for reactions
 		  	for(int i=0; i< reactions.length; i++) 
 			{
 				probs[i] = getSimulation().substituteFunctions(reactions[i].getProbabilityRate());
-				probs[i]=probs[i].flatten();
+				probs[i] = probs[i].flatten();
 			}
 			VarIniCondition varInis[] = (VarIniCondition[])subDomain.getVarIniConditions().toArray(new VarIniCondition[subDomain.getVarIniConditions().size()]);
 			Vector vars = new Vector(); // the non-constant stoch variables
@@ -150,6 +155,7 @@ public class NetCDFWriter {
 					vars.addElement(varInis[i].getVar());
 				}
 			}
+					
 			//get reaction rate law types and rate constants
 			ReactionRateLaw[] reactionRateLaws = getReactionRateLaws(probs);
 			
@@ -222,7 +228,7 @@ public class NetCDFWriter {
 				ncfile.create();
 			}catch(IOException ioe){
 				ioe.printStackTrace(System.err);
-				throw new IOException(ioe.getMessage());
+				throw new IOException("Error creating hybrid file "+filename+": "+ioe.getMessage());
 			}
 			
 			//write data to the NetCDF file
@@ -264,32 +270,26 @@ public class NetCDFWriter {
 				ncfile.write("ExpType", scalarInt);
 				ncfile.write("MaxNumModels", scalarInt);
 				ncfile.write("NumModels", scalarInt);
-				
+					
 				//SpeciesSplitOnDivision
 				ArrayInt A1 = new ArrayInt.D1(numSpecies.getLength());
 				Index idx = A1.getIndex();
 				for(int i=0; i<numSpecies.getLength(); i++)
+				{
 					A1.setInt(idx.set(i), 0);
-				try{
-					ncfile.write("SpeciesSplitOnDivision", new int[1], A1);
-			    } catch (IOException ioe) {
-			    	System.err.println("ERROR writing file");
-			    } catch (InvalidRangeException ire) {
-			    	ire.printStackTrace();
-			    }
+				}
+				ncfile.write("SpeciesSplitOnDivision", new int[1], A1);
+			    
 				
 			    //SaveSpeciesData
 			    ArrayInt A2 = new ArrayInt.D1(numSpecies.getLength());
 			    idx = A2.getIndex();
 			    for(int i=0; i<numSpecies.getLength(); i++)
+			    {
 			    	A2.setInt(idx.set(i), 1);
-			    try{
-					ncfile.write("SaveSpeciesData", new int[1], A2);
-			    } catch (IOException ioe) {
-			    	System.err.println("ERROR writing file");
-			    } catch (InvalidRangeException ire) {
-			    	ire.printStackTrace();
 			    }
+			    ncfile.write("SaveSpeciesData", new int[1], A2);
+			    
 			    
 			    //Reaction_Rate_Laws
 			    ArrayInt A3 = new ArrayInt.D1(numReactions.getLength());
@@ -298,13 +298,8 @@ public class NetCDFWriter {
 			    {
 			    	A3.setInt(idx.set(i),reactionRateLaws[i].getLawType());
 			    }
-			    try{
-					ncfile.write("Reaction_Rate_Laws", new int[1], A3);
-			    } catch (IOException ioe) {
-			    	System.err.println("ERROR writing file");
-			    } catch (InvalidRangeException ire) {
-			    	ire.printStackTrace();
-			    }
+			    ncfile.write("Reaction_Rate_Laws", new int[1], A3);
+			    
 			    
 			    //Reaction_DListLen
 			    ArrayInt A4 = new ArrayInt.D1(numReactions.getLength());
@@ -320,13 +315,7 @@ public class NetCDFWriter {
 			    	else if(reactionRateLaws[i].getLawType() == ReactionRateLaw.order_3_3substrate)
 			    		A4.setInt(idx.set(i),3);
 			    }
-			    try{
-					ncfile.write("Reaction_DListLen", new int[1], A4);
-			    } catch (IOException ioe) {
-			    	System.err.println("ERROR writing file");
-			    } catch (InvalidRangeException ire) {
-			    	ire.printStackTrace();
-			    }
+			    ncfile.write("Reaction_DListLen", new int[1], A4);
 			    
 			    //Reaction_StoichListLen
 			    ArrayInt A5 = new ArrayInt.D1(numReactions.getLength());
@@ -335,13 +324,8 @@ public class NetCDFWriter {
 			    {
 			    	A5.setInt(idx.set(i),reactions[i].getActions().size());
 			    }
-			    try{
-					ncfile.write("Reaction_StoichListLen", new int[1], A5);
-			    } catch (IOException ioe) {
-			    	System.err.println("ERROR writing file");
-			    } catch (InvalidRangeException ire) {
-			    	ire.printStackTrace();
-			    }
+			    ncfile.write("Reaction_StoichListLen", new int[1], A5);
+			    
 			    
 			    //Reaction_OptionalData
 			    ArrayInt A6 = new ArrayInt.D1(numReactions.getLength());
@@ -350,14 +334,8 @@ public class NetCDFWriter {
 			    {
 			    	A6.setInt(idx.set(i), 0);
 			    }
-			    try{
-					ncfile.write("Reaction_OptionalData", new int[1], A6);
-			    } catch (IOException ioe) {
-			    	System.err.println("ERROR writing file");
-			    } catch (InvalidRangeException ire) {
-			    	ire.printStackTrace();
-			    }
-			    
+			    ncfile.write("Reaction_OptionalData", new int[1], A6);
+			    			    
 			    //Reaction_StoichCoeff
 			    ArrayInt  A7 = new ArrayInt.D2(numReactions.getLength(), numMaxStoichList.getLength());
 			    idx = A7.getIndex();
@@ -377,14 +355,8 @@ public class NetCDFWriter {
 			    		}
 			    	}
 				}
-			    try{
-					ncfile.write("Reaction_StoichCoeff", new int[2], A7);
-			    } catch (IOException ioe) {
-			    	System.err.println("ERROR writing file when processing reaction stoich coeff.");
-			    } catch (InvalidRangeException ire) {
-			    	ire.printStackTrace();
-			    }
-			    
+			    ncfile.write("Reaction_StoichCoeff", new int[2], A7);
+			    			    
 			    //Reaction_StoichSpecies
 			    ArrayInt  A8 = new ArrayInt.D2(numReactions.getLength(), numMaxStoichList.getLength());
 			    idx = A8.getIndex();
@@ -396,13 +368,8 @@ public class NetCDFWriter {
 			    		A8.setInt(idx.set(i, j), getVariableIndex(((Action)actions.elementAt(j)).getVar().getName(), vars));
 			    	}
 				}
-			    try{
-					ncfile.write("Reaction_StoichSpecies", new int[2], A8);
-			    } catch (IOException ioe) {
-			    	System.err.println("ERROR writing file when processing reaction stoich species");
-			    } catch (InvalidRangeException ire) {
-			    	ire.printStackTrace();
-			    }
+			    ncfile.write("Reaction_StoichSpecies", new int[2], A8);
+			    
 			    //Reaction_DepList
 			    ArrayInt A9 = new ArrayInt.D2(numReactions.getLength(), numMaxDepList.getLength());
 				idx = A9.getIndex();
@@ -446,13 +413,8 @@ public class NetCDFWriter {
 						A9.setInt(idx.set(i,1),getVariableIndex(lowOrderName, vars));
 					}
 				}
-				try {
-				     ncfile.write("Reaction_DepList",new int[2],A9);
-				} catch (IOException ioe) {
-				     System.err.println("ERROR writing file when processing reaction Dep List.");
-				} catch (InvalidRangeException ire) {
-				     ire.printStackTrace();
-				}
+				ncfile.write("Reaction_DepList",new int[2],A9);
+				
 			    //Reaction_names
 			    ArrayChar A10 = new ArrayChar.D2(numReactions.getLength(), stringLen.getLength());
 			    for(int i=0; i<numReactions.getLength(); i++)
@@ -469,37 +431,26 @@ public class NetCDFWriter {
 			    	}
 			    	else throw new RuntimeException("Name of Reaction:"+name+ " is too long. Please shorten to "+ stringLen.getLength()+" chars." );
 				}
-				try {
-				     ncfile.write("Reaction_names", A10);
-				} catch (IOException ioe) {
-				     System.err.println("ERROR writing chars when processing reaction names.");
-				} catch (InvalidRangeException ire) {
-				     ire.printStackTrace();
-				}
-								
+				ncfile.write("Reaction_names", A10);
+												
 			    //Species_names
-				try {
-				     ArrayChar A11 = new ArrayChar.D2(numSpecies.getLength(), stringLen.getLength());
-				     for(int i=0; i<numSpecies.getLength(); i++)
-					 {
-				    	 String name = ((Variable)vars.elementAt(i)).getName();
-				    	 int diff = stringLen.getLength()-name.length();
-				    	 if(diff >= 0)
+			     ArrayChar A11 = new ArrayChar.D2(numSpecies.getLength(), stringLen.getLength());
+			     for(int i=0; i<numSpecies.getLength(); i++)
+				 {
+			    	 String name = ((Variable)vars.elementAt(i)).getName();
+			    	 int diff = stringLen.getLength()-name.length();
+			    	 if(diff >= 0)
+			    	 {
+				    	 for(int j=0; j<diff; j++)
 				    	 {
-					    	 for(int j=0; j<diff; j++)
-					    	 {
-					    		 name = name + " ";
-					    	 }
-					    	 A11.setString( i, name);
+				    		 name = name + " ";
 				    	 }
-				    	 else throw new RuntimeException("Name of Species:"+name+ " is too long. Please shorten to "+ stringLen.getLength()+" chars." );
-					 }
-				     ncfile.write("Species_names", A11);
-				} catch (IOException ioe) {
-				     System.err.println("ERROR writing chars when processing species names.");
-				} catch (InvalidRangeException ire) {
-				     ire.printStackTrace();
-				}
+				    	 A11.setString( i, name);
+			    	 }
+			    	 else throw new RuntimeException("Name of Species:"+name+ " is too long. Please shorten to "+ stringLen.getLength()+" chars." );
+				 }
+			     ncfile.write("Species_names", A11);
+				
 				//SpeciesIC(NumSpecies) ;
 				ArrayInt A12 = new ArrayInt.D1(numSpecies.getLength());
 			    idx = A12.getIndex();
@@ -517,13 +468,8 @@ public class NetCDFWriter {
 			    		throw new ExpressionException(ex.getMessage());
 			    	}
 			    }
-			    try{
-					ncfile.write("SpeciesIC", new int[1], A12);
-			    } catch (IOException ioe) {
-			    	System.err.println("ERROR writing file when processing species initial conditions.");
-			    } catch (InvalidRangeException ire) {
-			    	ire.printStackTrace();
-			    }
+			    ncfile.write("SpeciesIC", new int[1], A12);
+			    
 				//Reaction_Rate_Constants(NumReactions, NumMaxDepList) ;
 			    ArrayDouble A13 = new ArrayDouble.D2(numReactions.getLength(), numMaxDepList.getLength());
 				idx = A13.getIndex();
@@ -532,25 +478,24 @@ public class NetCDFWriter {
 					ReactionRateLaw rl = reactionRateLaws[i];
 					A13.setDouble(idx.set(i,0), rl.getRateConstant());
 				}
-				try{
-					ncfile.write("Reaction_Rate_Constants", A13);
-			    } catch (IOException ioe) {
-			    	System.err.println("ERROR writing file when processing reaction rate constants.");
-			    } catch (InvalidRangeException ire) {
-			    	ire.printStackTrace();
-			    }
+				ncfile.write("Reaction_Rate_Constants", A13);
 			    
+			} catch (IOException ioe)
+			{
+				ioe.printStackTrace(System.err);
+				throw new IOException("Error writing hybrid input file "+filename+": "+ioe.getMessage());
 			}catch(InvalidRangeException ire)
 			{
 				ire.printStackTrace(System.err);
-				throw new InvalidRangeException(ire.getMessage());
+				throw new InvalidRangeException("Error writing hybrid input file "+filename+": "+ire.getMessage());
 			}
 			
 			try {
 			   ncfile.close();
 			} catch (IOException ioe) {
-			   ioe.printStackTrace();
+			   throw new IOException("Error closing file "+filename+". "+ioe.getMessage());
 			}
+			
 		}		
 	}		
 			
@@ -559,7 +504,7 @@ public class NetCDFWriter {
 	 * @param reacs
 	 * @return ReactionRateLaw[]
 	 */		
-	private  ReactionRateLaw[] getReactionRateLaws(Expression[] probs) throws ExpressionException
+	private  ReactionRateLaw[] getReactionRateLaws(Expression[] probs) throws ExpressionException, MathException
 	{
 		ReactionRateLaw[] results = new ReactionRateLaw[probs.length];
 		varInProbOrderHash = new Hashtable[probs.length];
@@ -569,45 +514,34 @@ public class NetCDFWriter {
 			results[i] = new ReactionRateLaw();
 			Expression prob = probs[i];
 			String[] symbols = prob.getSymbols();
-			String[] varSymbols = getVariableSymbols(symbols);//get variables involved in the reaction
-			
-			//get orders of variables in the reaction. useful when reactions are mass actions
-			//Meanwhile, also get coefficient for the reaction to infer the rate constant.
-			//the differentiate will remove sth. like X*(X-1) or X*2-X or X^2...etc from the prob expression.
-			//useful when reacions are mass actions
-			Expression coefExp = null; //coefficient
-			Expression diffExp = new Expression(prob); //probability expression
-			for (int j = 0; j < varSymbols.length; j++) {
-			      String var = varSymbols[j];
-			      try{  
-				      diffExp = diffExp.differentiate(var).flatten();
-				      varInProbOrderHash[i].put(var,1);
-				      while (diffExp.hasSymbol(var) && varInProbOrderHash[i].get(var)<5){
-				          varInProbOrderHash[i].put(var,varInProbOrderHash[i].get(var)+1);
-				          diffExp = diffExp.differentiate(var).flatten();
-				      }
-			      }catch(ExpressionException e)
-			      {
-			    	  e.printStackTrace(System.err);
-			    	  throw new ExpressionException(e.getMessage());
-			      }
-				      
-//			      System.out.println("var "+varSymbols[j]+" has order "+varInProbOrderHash[i].get(var));     
-			}
-			coefExp = new Expression(diffExp);
-			//remove the factors from differentiation in coefficient. e.g. when differentiate a X^3, we will get a 3! in coefficient
-			double factor=1;
-			for (int k = 0; k < varSymbols.length; k++) {
-			      int order = varInProbOrderHash[i].get(varSymbols[k]);
-			      factor = factor * new Fmath().factorial(order);
-			}
-			coefExp = new Expression(coefExp.infix()+"/"+factor);
-//			System.out.println("coefficient = "+coefExp.flatten().infix());
-			//save info. into rate law array
-			int totalOrder = 0;
-			for(int j=0; j<varSymbols.length; j++)
+			String[] varSymbols = getVariableSymbols(symbols);//get stoch variables involved in the reaction
+			int maxOrder = 5;// max allowed order for each variable(species)
+			int totalOrder = 0;// order of the reaction
+			Expression coefExp = null;// the expression of the rate constant
+			if(symbols != null)
 			{
-				totalOrder = totalOrder + varInProbOrderHash[i].get(varSymbols[j]);
+				if((varSymbols != null && !Compare.isEqual(symbols, varSymbols)) || varSymbols == null)
+				{
+					throw new MathException("Unrecognized symbols in propensity function "+ prob + ". Propensity function should contain stochastic variable symbols only.");
+				}
+				
+				if(symbols != null && varSymbols != null)
+				{
+					PropensitySolver.PropensityFunction pf = PropensitySolver.solvePropensity(prob, varSymbols, maxOrder);
+					//save info. into rate law array
+					//get total order and save each var's order according to each reaction.
+					for(int j=0; j<pf.getSpeciesOrders().length; j++)
+					{
+						varInProbOrderHash[i].put(pf.getSpeceisNames()[j], pf.getSpeciesOrders()[j]);
+						totalOrder = totalOrder + pf.getSpeciesOrders()[j];
+					}
+					//get rate constant
+					coefExp = new Expression(pf.getRateExpression());
+				}
+			}
+			else
+			{
+				coefExp = new Expression(prob);
 			}
 			if(totalOrder == 0)
 			{

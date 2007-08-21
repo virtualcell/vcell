@@ -11,7 +11,7 @@ import ucar.ma2.ArrayChar;
 import ucar.ma2.ArrayDouble;
 import ucar.ma2.InvalidRangeException;
 import ucar.nc2.Variable;
-import cbit.gui.DialogUtils;
+
 /**
  * To get trajetory or the histogram from results which is in a NetCDF format.
  * It is referenced by HybridSolver.java. However, there is a main function attached for testing purpose.
@@ -46,8 +46,8 @@ public class NetCDFEvaluator {
 			ncreader = new NetCDFReader(fn);
 		}catch(IOException ioe)
 		{
-			ioe.printStackTrace(System.err );
-			DialogUtils.showErrorDialog("Can not open NetCDF file:"+fn+"!");
+			ioe.printStackTrace(System.out );
+			//DialogUtils.showErrorDialog("Can not open NetCDF file:"+fn+"!");
 			throw new RuntimeException("Can not open NetCDF file:"+fn+"!");
 		} 
 		
@@ -128,7 +128,7 @@ public class NetCDFEvaluator {
 				if(shape.length == 2) //more than one species
 				{
 					ArrayDouble.D2 temData = (ArrayDouble.D2)data;
-					for(int i=4;i<shape[1];i++)//go through species one by one
+					for(int i=0;i<shape[1];i++)//go through species one by one
 					{
 						System.out.println(names[i]+":");
 						//get one specie's values at a specific time point over trials
@@ -186,11 +186,12 @@ public class NetCDFEvaluator {
 	/**
 	 * @param args
 	 */
+	//need to put specific NETCDF file name and last time point number(e.g No.50 means there are total 51 time points) for printAllHistogram().
 	public static void main(String[] args) {
 		NetCDFEvaluator ncEva = new NetCDFEvaluator();
 		try
 		{
-			ncEva.setNetCDFTarget("C:/Sim.nc");
+			ncEva.setNetCDFTarget("C:/Hy3S_2/TestCases/HMM/Hy3S/trial100000_MILAdaptive.nc");
 		}catch (Exception e) {e.printStackTrace(System.err);}
 		
 //		try
@@ -219,7 +220,7 @@ public class NetCDFEvaluator {
 //			}
 //		}catch (Exception e){e.printStackTrace(System.err);}
 		try{
-			ncEva.printAllHistograms(20);
+			ncEva.printAllHistograms(50);
 		}catch(IOException e)
 		{
 			e.printStackTrace(System.err);
