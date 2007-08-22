@@ -58,8 +58,6 @@ public static void main(java.lang.String[] args) {
 		System.exit(1);
 	}
 	
-	System.out.println("Usage: " + DatabaseServer.class.getName() + " serviceName [logfile]");
-	
 	try {
 		String logfile = null;
 		if (args.length >= 2) {

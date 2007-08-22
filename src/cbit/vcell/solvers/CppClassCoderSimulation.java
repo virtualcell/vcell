@@ -172,6 +172,7 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 		  		out.println("\t// solving for all regions");
 		  		out.println("\tnumSolveRegions = 0;  // flag specifying to solve for all regions");
 		  		out.println("\tsolveRegions = NULL;");
+		  		out.println("\todeSolver = new ODESolver(membraneVar,mesh,numSolveRegions,solveRegions);");
 	  			out.println("\tbuilder = new MembraneEqnBuilderForward(membraneVar,mesh,odeSolver);");
 	  			out.println("\todeSolver->setEqnBuilder(builder);");
 	  			out.println("\taddSolver(odeSolver);");
