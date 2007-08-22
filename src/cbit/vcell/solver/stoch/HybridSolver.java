@@ -50,7 +50,7 @@ public HybridSolver(cbit.vcell.solver.SimulationJob simulationJob, java.io.File 
  */
 public void cleanup() 
 {
-	if (getSolverStatus().getStatus() != SolverStatus.SOLVER_FINISHED) {
+	if (!getMathExecutable().getStatus().equals(cbit.util.ExecutableStatus.COMPLETE)) {
 		return;
 	}
 	try
@@ -190,14 +190,14 @@ public cbit.vcell.solver.ode.ODESolverResultSet getHybridSolverResultSet()
 			//Read data
 			ArrayDouble data = (ArrayDouble)ncEva.getDataOverTrials(ncReader.getTimePoints().length-1);//data only, no trial numbers
 			int trialNum[] = ncEva.getNetCDFReader().getTrialNumbers();
-			System.out.println("total trials are "+trialNum.length);
+			//System.out.println("total trials are "+trialNum.length);
 			//shape[0]:number of trials, shape[1]: num of species
 			int[] shape = data.getShape();
             
 			if(shape.length == 1) //one species
 			{
 				ArrayDouble.D1 temData = (ArrayDouble.D1)data;
-				System.out.println("one species over trials, size is: "+temData.getSize());
+				//System.out.println("one species over trials, size is: "+temData.getSize());
 				for(int k=0; k<trialNum.length; k++)//rows
 				{
 					double[] values = new double[stSolverResultSet.getDataColumnCount()];
@@ -213,7 +213,7 @@ public cbit.vcell.solver.ode.ODESolverResultSet getHybridSolverResultSet()
 			if(shape.length == 2) //more than one species
 			{
 				ArrayDouble.D2 temData = (ArrayDouble.D2)data;
-				System.out.println("multiple species in multiple trials, the length of trials is :"+data.getShape()[0]+", and the total number of speceis is: "+data.getShape()[1]);
+				//System.out.println("multiple species in multiple trials, the length of trials is :"+data.getShape()[0]+", and the total number of speceis is: "+data.getShape()[1]);
 				for(int k=0; k<trialNum.length; k++)//rows
 				{
 					double[] values = new double[stSolverResultSet.getDataColumnCount()];
