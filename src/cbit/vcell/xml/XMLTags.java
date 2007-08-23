@@ -277,12 +277,15 @@ public class XMLTags {
     public final static String KineticsTypeGHK = "GHKKinetics";
     public final static String KineticsTypeHMM_Irr = "HMMIrreversible";
     public final static String KineticsTypeHMM_Rev = "HMMReversible";
-    public final static String KineticsTypeGeneralTotal = "GeneralTotalKinetics";
+    public final static String KineticsTypeGeneralTotal_oldname = "GeneralTotalKinetics";
+    public final static String KineticsTypeGeneralLumped = "GeneralLumpedKinetics";
+    public final static String KineticsTypeGeneralCurrentLumped = "GeneralCurrentLumpedKinetics";
     
     public final static String PseudoSteadyAttrTag = "PseudoSteady";
     public final static String ParameterTag = "Parameter";
     public final static String ExpressionAttrTag = "ExpressionAttr";
     public final static String RateTag = "Rate";
+    public final static String ReactionRateTag = "ReactionRate";
     public final static String ReactionTag = "Reaction";
     public final static String FeatureTag = "Feature";
     public final static String MembraneTag = "Membrane";
@@ -343,18 +346,18 @@ public class XMLTags {
     public static final String ParamRoleUserDefinedTag = "user defined";
 	public static final String ParamRoleReactionRateTag = "reaction rate";
 	public static final String ParamRoleInwardCurrentTag = "inward current density";
-	public static final String ParamRoleForwardRateTag = "forward rate constant";
-	public static final String ParamRoleReverseRateTag = "reverse rate constant";
-	public static final String ParamRoleKmTag = "Km (1/2 max)";
-	public static final String ParamRoleMaxReactionRateTag = "max reaction rate";
-	public static final String ParamRoleKmForwardTag = "Km forward";
-	public static final String ParamRoleMaxForwardRateTag = "max forward rate";
-	public static final String ParamRoleKmReverseTag = "Km reverese";
-	public static final String ParamRoleMaxReverseRateTag = "max reverse rate";
-	public static final String ParamRolePermeabilityTag = "permeability";
-	public static final String ParamRoleConductivityTag = "conductivity";
-	public static final String ParamRoleAssumedCompartmentSizeTag = "assumedCompartmentSize";
-	public static final String ParamRoleTotalRateTag = "totalRate";
+//	public static final String ParamRoleForwardRateTag = "forward rate constant";
+//	public static final String ParamRoleReverseRateTag = "reverse rate constant";
+//	public static final String ParamRoleKmTag = "Km (1/2 max)";
+//	public static final String ParamRoleMaxReactionRateTag = "max reaction rate";
+//	public static final String ParamRoleKmForwardTag = "Km forward";
+//	public static final String ParamRoleMaxForwardRateTag = "max forward rate";
+//	public static final String ParamRoleKmReverseTag = "Km reverese";
+//	public static final String ParamRoleMaxReverseRateTag = "max reverse rate";
+//	public static final String ParamRolePermeabilityTag = "permeability";
+//	public static final String ParamRoleConductivityTag = "conductivity";
+//	public static final String ParamRoleAssumedCompartmentSizeTag = "assumedCompartmentSize";
+//	public static final String ParamRoleTotalRateTag = "totalRate";
 	public static final String DefaultReactionRateSymbol = "J";
 	public static final String VelocityTag = "Velocity";
 

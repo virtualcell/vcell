@@ -442,10 +442,7 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 	private void refreshMathDescription() throws MappingException, cbit.vcell.matrix.MatrixException, MathException, ExpressionException, ModelException
 	{
 		//All sizes must be set for new ODE models and ratios must be set for old ones.
-		if(!getSimulationContext().checkAppSizes())
-		{
-			throw new RuntimeException("Application "+getSimulationContext().getName()+":\nAll structure sizes must be assigned positive values.\nPlease go to StructureMapping tab to check the sizes.");
-		}			
+		getSimulationContext().checkValidity();
 		
 		//
 		// verify that all structures are mapped to subvolumes and all subvolumes are mapped to a structure
@@ -558,13 +555,16 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 		for (int j=0;j<reactionSteps.length;j++){
 			ReactionStep rs = reactionSteps[j];
 			Kinetics.KineticsParameter parameters[] = rs.getKinetics().getKineticsParameters();
+			if (rs.getKinetics() instanceof LumpedKinetics){
+				throw new RuntimeException("Lumped Kinetics not yet supported for Stochastic Math Generation");
+			}
 			if (parameters != null){
 				for (int i=0;i<parameters.length;i++){
-					if (parameters[i].getRole() == Kinetics.ROLE_Current && (parameters[i].getExpression()==null || parameters[i].getExpression().isZero())){
+					if (parameters[i].getRole() == Kinetics.ROLE_CurrentDensity && (parameters[i].getExpression()==null || parameters[i].getExpression().isZero())){
 						continue;
 					}
 					//don't add rate, we'll do it later when creating the jump processes
-					if (parameters[i].getRole() != Kinetics.ROLE_Rate)
+					if (parameters[i].getRole() != Kinetics.ROLE_ReactionRate)
 					{
 						try {
 							double value = parameters[i].getExpression().evaluateConstant();
@@ -583,16 +583,19 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 			ReactionStep rs = reactionSteps[j];
 			
 			Kinetics.KineticsParameter parameters[] = rs.getKinetics().getKineticsParameters();
+			if (rs.getKinetics() instanceof LumpedKinetics){
+				throw new RuntimeException("Lumped Kinetics not yet supported for Stochastic Math Generation");
+			}
 			if (parameters != null){
 				for (int i=0;i<parameters.length;i++){
-					if (parameters[i].getRole() == Kinetics.ROLE_Current && (parameters[i].getExpression()==null || parameters[i].getExpression().isZero())){
+					if (parameters[i].getRole() == Kinetics.ROLE_CurrentDensity && (parameters[i].getExpression()==null || parameters[i].getExpression().isZero())){
 						continue;
 					}
-					if (parameters[i].getRole() == Kinetics.ROLE_Rate && reactionSteps[j].getPhysicsOptions()==ReactionStep.PHYSICS_ELECTRICAL_ONLY){
+					if (parameters[i].getRole() == Kinetics.ROLE_ReactionRate && reactionSteps[j].getPhysicsOptions()==ReactionStep.PHYSICS_ELECTRICAL_ONLY){
 						continue;
 					}
 					//don't add rate, we'll do it later when creating the jump processes
-					if(parameters[i].getRole() != Kinetics.ROLE_Rate)
+					if(parameters[i].getRole() != Kinetics.ROLE_ReactionRate)
 					{	
 						try {
 							parameters[i].getExpression().evaluateConstant();

@@ -403,7 +403,6 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
 				}
 				
 				KineticLaw kLaw = sbmlRxn.getKineticLaw();
-				Kinetics kinetics = null;
 				
 				// Translate RATE_PARAM from substance/time to concentration/time or surface density/time (for membranes)
 				// Kinetic law substance unit
@@ -479,6 +478,7 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
 				if (compartment == null) {
 					throw new RuntimeException("The compartment corresponding to " + reactionStructure.getName() + " was not found");
 				}
+				Kinetics kinetics = null;
 				// Get the compartment size units and use it to convert the SBML kinetic rate units from substance/time to substance/size/time = concentration/time
 				if (compartment.isSetSize() && !bSpeciesHasOnlySubstanceUnits) {
 					double compartmentSize = 0.0;
@@ -496,7 +496,9 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
 						logger.sendMessage(VCLogger.HIGH_PRIORITY, TranslationMessage.UNIT_ERROR, "Unable to determine compartment size (used to scale reaction rate)");
 					}
 
-					kinetics = new cbit.vcell.model.GeneralKinetics(vcReactions[i]);
+					GeneralKinetics distributedKinetics = new cbit.vcell.model.GeneralKinetics(vcReactions[i]);
+					kinetics = distributedKinetics;
+					
 					String SBMLFACTOR_PARAMETER = "sbmlRateFactor";
 					String SBMLCOMPARTMENTSIZE_PARAMETER = compartment.getId();
 					
@@ -517,7 +519,7 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
 						if (embeddedRxnElement != null) {
 							if (embeddedRxnElement.getName().equals(XMLTags.RateTag)) {
 								vcRateParamName = embeddedRxnElement.getAttributeValue(XMLTags.NameAttrTag);
-								kinetics.getRateParameter().setName(vcRateParamName);
+								distributedKinetics.getReactionRateParameter().setName(vcRateParamName);
 							}
 						} 
 					}
@@ -530,9 +532,9 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
 						String paramName = getActualName(param);
 						// Check if this param clashes with an existing (pre-defined) kinetic parameter - eg., reaction rate param 'J'
 						// If so, change the name of the kinetic param (say, by adding reaction name to it).
-						String origRateParamName = kinetics.getRateParameter().getName();
+						String origRateParamName = distributedKinetics.getReactionRateParameter().getName();
 						if (paramName.equals(origRateParamName)) {
-							kinetics.getRateParameter().setName(origRateParamName+"_"+cbit.util.TokenMangler.mangleToSName(rxnName));
+							distributedKinetics.getReactionRateParameter().setName(origRateParamName+"_"+cbit.util.TokenMangler.mangleToSName(rxnName));
 						}
 					}
 					
@@ -541,9 +543,9 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
 						String paramName = getActualName(param);
 						// Check if this param clashes with an existing (pre-defined) kinetic parameter - eg., reaction rate param 'J'
 						// If so, change the name of the kinetic param (say, by adding reaction name to it).
-						String origRateParamName = kinetics.getRateParameter().getName();
+						String origRateParamName = distributedKinetics.getReactionRateParameter().getName();
 						if (paramName.equals(origRateParamName)) {
-							kinetics.getRateParameter().setName(origRateParamName+"_"+cbit.util.TokenMangler.mangleToSName(rxnName));
+							distributedKinetics.getReactionRateParameter().setName(origRateParamName+"_"+cbit.util.TokenMangler.mangleToSName(rxnName));
 						}
 					}
 
@@ -551,13 +553,13 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
 					if (vcRateExpression.hasSymbol(SBMLCOMPARTMENTSIZE_PARAMETER)) {
 						Expression checkedExpr = checkCompartmentScaleFactorInRxnRateExpr(vcRateExpression, SBMLCOMPARTMENTSIZE_PARAMETER, vcReactions[i].getName());
 						vcRateExpression = checkedExpr;
-						kinetics.setParameterValue(kinetics.getRateParameter(),vcRateExpression);
+						distributedKinetics.setParameterValue(distributedKinetics.getReactionRateParameter(),vcRateExpression);
 					} else {
 						// If the compartment scale factor is not present, need to divide rate by compartment size for unit consistency between VCell and SBML
 						vcRateExpression = Expression.mult(vcRateExpression, Expression.invert(new Expression(SBMLCOMPARTMENTSIZE_PARAMETER)));
-						kinetics.setParameterValue(kinetics.getRateParameter(),vcRateExpression);
-						kinetics.setParameterValue(kinetics.getKineticsParameter(SBMLCOMPARTMENTSIZE_PARAMETER),new Expression(compartmentSize));
-						kinetics.getKineticsParameter(SBMLCOMPARTMENTSIZE_PARAMETER).setUnitDefinition(compartmentSizeUnit);
+						distributedKinetics.setParameterValue(distributedKinetics.getReactionRateParameter(),vcRateExpression);
+						distributedKinetics.setParameterValue(distributedKinetics.getKineticsParameter(SBMLCOMPARTMENTSIZE_PARAMETER),new Expression(compartmentSize));
+						distributedKinetics.getKineticsParameter(SBMLCOMPARTMENTSIZE_PARAMETER).setUnitDefinition(compartmentSizeUnit);
 					}
 					
 					//
@@ -571,11 +573,11 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
 						if (rateScalefactor == 1.0 && rateFactorUnit.getSymbol().equals("1")) {
 							// Ignore the factor since rateFactor and its units are 1
 						} else {
-							Expression currentRateExpr = kinetics.getRateParameter().getExpression();
+							Expression currentRateExpr = distributedKinetics.getReactionRateParameter().getExpression();
 							currentRateExpr = Expression.mult(vcRateExpression, new Expression(SBMLFACTOR_PARAMETER));
-							kinetics.setParameterValue(kinetics.getRateParameter(),currentRateExpr);
-							kinetics.setParameterValue(kinetics.getKineticsParameter(SBMLFACTOR_PARAMETER), new Expression(rateScalefactor));
-							kinetics.getKineticsParameter(SBMLFACTOR_PARAMETER).setUnitDefinition(rateFactorUnit);
+							distributedKinetics.setParameterValue(distributedKinetics.getReactionRateParameter(),currentRateExpr);
+							distributedKinetics.setParameterValue(distributedKinetics.getKineticsParameter(SBMLFACTOR_PARAMETER), new Expression(rateScalefactor));
+							distributedKinetics.getKineticsParameter(SBMLFACTOR_PARAMETER).setUnitDefinition(rateFactorUnit);
 						}
 					} else {
 						logger.sendMessage(VCLogger.HIGH_PRIORITY, TranslationMessage.UNIT_ERROR, "Unable to scale the unit for kinetic rate: " + VC_RateUnit.getSymbol() + " " + SBML_RateUnit.getSymbol());
@@ -643,12 +645,12 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
 												// Substitute any occurance of speciesName in rate expression for kinetics with 'speciesName*concScaleFactor'
 												// * Get current rate expression from kinetics, substitute corresponding values, re-set kinetics expression *
 												String CONCFACTOR_PARAMETER = getActualName(species) + "_ConcFactor";
-												Expression currentRateExpr = kinetics.getRateParameter().getExpression();
+												Expression currentRateExpr = distributedKinetics.getReactionRateParameter().getExpression();
 												currentRateExpr.substituteInPlace(new Expression(getActualName(species)), new Expression(getActualName(species)+"*"+CONCFACTOR_PARAMETER));
-												kinetics.setParameterValue(kinetics.getRateParameter(),currentRateExpr);
+												distributedKinetics.setParameterValue(distributedKinetics.getReactionRateParameter(),currentRateExpr);
 												// Add the concentration factor as a parameter
-												kinetics.setParameterValue(kinetics.getKineticsParameter(CONCFACTOR_PARAMETER), new Expression(concScaleFactor));
-												kinetics.getKineticsParameter(CONCFACTOR_PARAMETER).setUnitDefinition(concScaleFactorUnit);
+												distributedKinetics.setParameterValue(distributedKinetics.getKineticsParameter(CONCFACTOR_PARAMETER), new Expression(concScaleFactor));
+												distributedKinetics.getKineticsParameter(CONCFACTOR_PARAMETER).setUnitDefinition(concScaleFactorUnit);
 											}
 										} else {
 											logger.sendMessage(VCLogger.HIGH_PRIORITY, TranslationMessage.UNIT_ERROR, "Unable to scale the unit for species concentration: " + VC_conc_unit.getSymbol() + " " + SBML_conc_unit.getSymbol());
@@ -660,7 +662,9 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
 					} 	// end - if symbols != null
 				} else {
 					// compartment size is not set
-					kinetics = new GeneralTotalKinetics(vcReactions[i]);
+					GeneralLumpedKinetics lumpedKinetics = new GeneralLumpedKinetics(vcReactions[i]);
+					kinetics = lumpedKinetics;
+					
 					if (reactionStructure instanceof Feature) {
 						// 'vcRateExpression' in this case is the total rate (in substance/time). In order to be consistent with VC units for
 						// rate, we need a multiplicative factor, which we can get by using the ReservedSymbol KMOLE. The units of KMOLE are
@@ -668,11 +672,11 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
 						// since membrane reactions are already in terms of molecules.
 						String SBMLUNIT_PARAMETER = ReservedSymbol.KMOLE.getName();
 						vcRateExpression = Expression.mult(vcRateExpression, Expression.invert(new Expression(SBMLUNIT_PARAMETER)));
-						kinetics.setParameterValue(((GeneralTotalKinetics)kinetics).getTotalRateParamter(), vcRateExpression);
+						lumpedKinetics.setParameterValue(((GeneralLumpedKinetics)lumpedKinetics).getLumpedReactionRateParameter(), vcRateExpression);
 						// kinetics.setParameterValue(kinetics.getKineticsParameter(SBMLUNIT_PARAMETER), ReservedSymbol.KMOLE.getExpression());
 						// kinetics.getKineticsParameter(SBMLUNIT_PARAMETER).setUnitDefinition(ReservedSymbol.KMOLE.getUnitDefinition());
 					} else if (reactionStructure instanceof Membrane) {
-						kinetics.setParameterValue(((GeneralTotalKinetics)kinetics).getTotalRateParamter(), vcRateExpression);
+						lumpedKinetics.setParameterValue(((GeneralLumpedKinetics)lumpedKinetics).getLumpedReactionRateParameter(), vcRateExpression);
 					}
 					// sometimes, the reaction rate can contain a compartment name, not necessarily the compartment the reaction takes place.
 					for (int kk = 0; kk < (int)sbmlModel.getNumCompartments(); kk++){
@@ -681,14 +685,14 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
 							if (vcRateExpression.hasSymbol(comp1.getId())) {
 								Structure struct1 = simContext.getModel().getStructure(comp1.getName());
 								if (comp1.isSetSize()) {
-									kinetics.setParameterValue(kinetics.getKineticsParameter(comp1.getId()), new Expression(comp1.getSize()));
+									lumpedKinetics.setParameterValue(lumpedKinetics.getKineticsParameter(comp1.getId()), new Expression(comp1.getSize()));
 								} else {
-									kinetics.setParameterValue(kinetics.getKineticsParameter(comp1.getId()), new Expression(1.0));
+									lumpedKinetics.setParameterValue(lumpedKinetics.getKineticsParameter(comp1.getId()), new Expression(1.0));
 								}
 								if (struct1 instanceof Feature) {
-									kinetics.getKineticsParameter(comp1.getId()).setUnitDefinition(VCUnitDefinition.UNIT_um3);
+									lumpedKinetics.getKineticsParameter(comp1.getId()).setUnitDefinition(VCUnitDefinition.UNIT_um3);
 								} else {
-									kinetics.getKineticsParameter(comp1.getId()).setUnitDefinition(VCUnitDefinition.UNIT_um2);
+									lumpedKinetics.getKineticsParameter(comp1.getId()).setUnitDefinition(VCUnitDefinition.UNIT_um2);
 								}
 							}
 						}

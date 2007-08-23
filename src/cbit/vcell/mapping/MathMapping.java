@@ -1,4 +1,5 @@
 package cbit.vcell.mapping;
+import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.vcell.mapping.potential.VoltageClampElectricalDevice;
 import cbit.vcell.mapping.potential.CurrentClampElectricalDevice;
 import cbit.vcell.mapping.potential.MembraneElectricalDevice;
@@ -1154,10 +1155,7 @@ private void refreshKFluxParameters() throws ExpressionException {
 private void refreshMathDescription() throws MappingException, cbit.vcell.matrix.MatrixException, MathException, ExpressionException, ModelException {
 
 	//All sizes must be set for new ODE models and ratios must be set for old ones.
-	if(!simContext.checkAppSizes())
-	{
-		throw new RuntimeException("All structure sizes must be assigned positive values.\nPlease go to StructureMapping tab to check the sizes.");	
-	}
+	simContext.checkValidity();
 	//
 	// verify that all structures are mapped to subvolumes and all subvolumes are mapped to a structure
 	//
@@ -1485,7 +1483,7 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 		Kinetics.KineticsParameter parameters[] = rs.getKinetics().getKineticsParameters();
 		if (parameters != null){
 			for (int i=0;i<parameters.length;i++){
-				if (parameters[i].getRole() == Kinetics.ROLE_Current && (parameters[i].getExpression()==null || parameters[i].getExpression().isZero())){
+				if (((parameters[i].getRole() == Kinetics.ROLE_CurrentDensity)||(parameters[i].getRole() == Kinetics.ROLE_LumpedCurrent)) && (parameters[i].getExpression()==null || parameters[i].getExpression().isZero())){
 					continue;
 				}
 				try {
@@ -1525,10 +1523,10 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 		Kinetics.KineticsParameter parameters[] = rs.getKinetics().getKineticsParameters();
 		if (parameters != null){
 			for (int i=0;i<parameters.length;i++){
-				if (parameters[i].getRole() == Kinetics.ROLE_Current && (parameters[i].getExpression()==null || parameters[i].getExpression().isZero())){
+				if (((parameters[i].getRole() == Kinetics.ROLE_CurrentDensity)||(parameters[i].getRole() == Kinetics.ROLE_LumpedCurrent)) && (parameters[i].getExpression()==null || parameters[i].getExpression().isZero())){
 					continue;
 				}
-				if (parameters[i].getRole() == Kinetics.ROLE_Rate && reactionSteps[j].getPhysicsOptions()==ReactionStep.PHYSICS_ELECTRICAL_ONLY){
+				if (((parameters[i].getRole() == Kinetics.ROLE_ReactionRate)||(parameters[i].getRole() == Kinetics.ROLE_LumpedReactionRate)) && reactionSteps[j].getPhysicsOptions()==ReactionStep.PHYSICS_ELECTRICAL_ONLY){
 					continue;
 				}
 				try {
@@ -1614,7 +1612,20 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 				//varHash.addVariable(new Function(getMathSymbol(parm,sm),getIdentifierSubstitutions(parm.getExpression(),parm.getUnitDefinition(),sm)));
 				e.printStackTrace(System.out);
 				throw new MappingException("Surface to volume ratio of membrane:"+((MembraneMapping)sm).getNameScope().getName()+" cannot be evaluated as constant.");
-			}	
+			}
+		}
+		if (simContext.getGeometry().getDimension()==0){
+			StructureMappingParameter sizeParm = sm.getSizeParameter();
+			if (sizeParm!=null && sizeParm.getExpression()!=null){
+				try {
+					double value = sizeParm.getExpression().evaluateConstant();
+					varHash.addVariable(new Constant(getMathSymbol(sizeParm,sm),new Expression(value)));
+				}catch (ExpressionException e){
+					//varHash.addVariable(new Function(getMathSymbol(parm,sm),getIdentifierSubstitutions(parm.getExpression(),parm.getUnitDefinition(),sm)));
+					e.printStackTrace(System.out);
+					throw new MappingException("Size of structure:"+sm.getNameScope().getName()+" cannot be evaluated as constant.");
+				}
+			}
 		}
 	}
 	//for (int i=0;i<structureMappings.length;i++){

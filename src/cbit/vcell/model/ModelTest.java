@@ -118,7 +118,7 @@ public static Model getExample() throws Exception {
 	fr = new FluxReaction(plasmaMembrane,ip3,model,"IP3_FLUX");
 	GeneralKinetics genKinetics = new GeneralKinetics(fr);
 	fr.setKinetics(genKinetics);
-	genKinetics.setParameterValue(genKinetics.getRateParameter(),new Expression("Jfinal * (1 - exp(-t/TAU));"));
+	genKinetics.setParameterValue(genKinetics.getReactionRateParameter(),new Expression("Jfinal * (1 - exp(-t/TAU));"));
 	genKinetics.setParameterValue("Jfinal",Double.toString(0.034));
 	genKinetics.setParameterValue("TAU",Double.toString(IP3_FLUX_TIME_CONSTANT));
 	model.addReactionStep(fr);
@@ -169,7 +169,7 @@ public static Model getExample() throws Exception {
 //	fr.addCatalyst(calcium_er);
 //	fr.setInwardFlux(-channel_flux+" * "+ (4/(channel_density*channel_density))+" * pow(RI,3);");
 	genKinetics = (GeneralKinetics)fr.getKinetics();
-	genKinetics.setParameterValue(genKinetics.getRateParameter(),new Expression("Jchan * ("+calcium_cytosol.getName()+" - "+calcium_er.getName()+") * pow("+ri_erMembrane.getName()+"/Rtotal,3);"));
+	genKinetics.setParameterValue(genKinetics.getReactionRateParameter(),new Expression("Jchan * ("+calcium_cytosol.getName()+" - "+calcium_er.getName()+") * pow("+ri_erMembrane.getName()+"/Rtotal,3);"));
 	genKinetics.setParameterValue("Rtotal",Double.toString(TOTAL_CHANNEL));
 	genKinetics.setParameterValue("Jchan",Double.toString(4.6));
 	model.addReactionStep(fr);
@@ -187,7 +187,7 @@ public static Model getExample() throws Exception {
 //	reaction = model.getReaction("Serca_Pump");
 	fr = new FluxReaction(erMembrane,calcium,model,"SERCA_FLUX");
 	genKinetics = (GeneralKinetics)fr.getKinetics();
-	genKinetics.setParameterValue(genKinetics.getRateParameter(),new Expression("Vmax * pow("+calcium_cytosol.getName()+",2) / (pow(Kd,2) + pow("+calcium_er.getName()+",2));"));
+	genKinetics.setParameterValue(genKinetics.getReactionRateParameter(),new Expression("Vmax * pow("+calcium_cytosol.getName()+",2) / (pow(Kd,2) + pow("+calcium_er.getName()+",2));"));
 	genKinetics.setParameterValue("Kd",Double.toString(0.7));
 	genKinetics.setParameterValue("Vmax",Double.toString(77.77));
 	model.addReactionStep(fr);
@@ -355,7 +355,7 @@ public static Model getExample_Bound() throws Exception {
 	fr = new FluxReaction(plasmaMembrane,ip3,model,"IP3_FLUX");
 	GeneralKinetics genKinetics = new GeneralKinetics(fr);
 	fr.setKinetics(genKinetics);
-	genKinetics.setParameterValue(genKinetics.getRateParameter(),new Expression("Jfinal * (1 - exp(-t/TAU));"));
+	genKinetics.setParameterValue(genKinetics.getReactionRateParameter(),new Expression("Jfinal * (1 - exp(-t/TAU));"));
 	genKinetics.setParameterValue("Jfinal",Double.toString(0.034));
 	genKinetics.setParameterValue("TAU",Double.toString(IP3_FLUX_TIME_CONSTANT));
 	model.addReactionStep(fr);
@@ -406,7 +406,7 @@ public static Model getExample_Bound() throws Exception {
 //	fr.addCatalyst(calcium_er);
 //	fr.setInwardFlux(-channel_flux+" * "+ (4/(channel_density*channel_density))+" * pow(RI,3);");
 	genKinetics = (GeneralKinetics)fr.getKinetics();
-	genKinetics.setParameterValue(genKinetics.getRateParameter(),new Expression("Jchan * ("+calcium_cytosol.getName()+" - "+calcium_er.getName()+") * pow("+ri_erMembrane.getName()+"/Rtotal,3);"));
+	genKinetics.setParameterValue(genKinetics.getReactionRateParameter(),new Expression("Jchan * ("+calcium_cytosol.getName()+" - "+calcium_er.getName()+") * pow("+ri_erMembrane.getName()+"/Rtotal,3);"));
 	genKinetics.setParameterValue("Rtotal",Double.toString(TOTAL_CHANNEL));
 	genKinetics.setParameterValue("Jchan",Double.toString(4.6));
 	model.addReactionStep(fr);
@@ -424,7 +424,7 @@ public static Model getExample_Bound() throws Exception {
 //	reaction = model.getReaction("Serca_Pump");
 	fr = new FluxReaction(erMembrane,calcium,model,"SERCA_FLUX");
 	genKinetics = (GeneralKinetics)fr.getKinetics();
-	genKinetics.setParameterValue(genKinetics.getRateParameter(),new Expression("Vmax * pow("+calcium_cytosol.getName()+",2) / (pow(Kd,2) + pow("+calcium_er.getName()+",2));"));
+	genKinetics.setParameterValue(genKinetics.getReactionRateParameter(),new Expression("Vmax * pow("+calcium_cytosol.getName()+",2) / (pow(Kd,2) + pow("+calcium_er.getName()+",2));"));
 	genKinetics.setParameterValue("Kd",Double.toString(0.7));
 	genKinetics.setParameterValue("Vmax",Double.toString(77.77));
 	model.addReactionStep(fr);
@@ -658,7 +658,7 @@ public static Model getExample_Wagner() throws Exception {
 	fr.addCatalyst(RCinh_bound_ERmem);
 	GeneralKinetics genKinetics = new GeneralKinetics(fr);
 	fr.setKinetics(genKinetics);
-	genKinetics.setParameterValue(genKinetics.getRateParameter(),new Expression("-LAMBDA1*(Ca_er-Ca_cytosol)*pow((IP3_cytosol/(IP3_cytosol+dI))*(IP3RaCa_erMembrane/(IP3RaCa_erMembrane+IP3Ra_erMembrane))*(IP3Ri_erMembrane/(IP3RiCa_erMembrane+IP3Ri_erMembrane)),3);"));
+	genKinetics.setParameterValue(genKinetics.getReactionRateParameter(),new Expression("-LAMBDA1*(Ca_er-Ca_cytosol)*pow((IP3_cytosol/(IP3_cytosol+dI))*(IP3RaCa_erMembrane/(IP3RaCa_erMembrane+IP3Ra_erMembrane))*(IP3Ri_erMembrane/(IP3RiCa_erMembrane+IP3Ri_erMembrane)),3);"));
 	genKinetics.setParameterValue("LAMBDA1",Double.toString(LAMBDA));
 	genKinetics.setParameterValue("dI",Double.toString(dI));
 	model.addReactionStep(fr);
@@ -669,7 +669,7 @@ public static Model getExample_Wagner() throws Exception {
 	fr = new FluxReaction(ERmem,Ca,model,"SERCA_FLUX");
 	genKinetics = new GeneralKinetics(fr);
 	fr.setKinetics(genKinetics);
-	genKinetics.setParameterValue(genKinetics.getRateParameter(),new Expression("LAMBDA2*vP*Ca_cytosol*Ca_cytosol/(kP*kP + Ca_cytosol*Ca_cytosol);"));
+	genKinetics.setParameterValue(genKinetics.getReactionRateParameter(),new Expression("LAMBDA2*vP*Ca_cytosol*Ca_cytosol/(kP*kP + Ca_cytosol*Ca_cytosol);"));
 	genKinetics.setParameterValue("vP",Double.toString(vP));
 	genKinetics.setParameterValue("kP",Double.toString(kP));
 	genKinetics.setParameterValue("LAMBDA2",Double.toString(LAMBDA));
@@ -681,7 +681,7 @@ public static Model getExample_Wagner() throws Exception {
 	fr = new FluxReaction(ERmem,Ca,model,"LEAK_FLUX");
 	genKinetics = new GeneralKinetics(fr);
 	fr.setKinetics(genKinetics);
-	genKinetics.setParameterValue(genKinetics.getRateParameter(),new Expression("-LAMBDA3*vL*(Ca_er-Ca_cytosol);"));
+	genKinetics.setParameterValue(genKinetics.getReactionRateParameter(),new Expression("-LAMBDA3*vL*(Ca_er-Ca_cytosol);"));
 	genKinetics.setParameterValue("vL",Double.toString(vL));
 	genKinetics.setParameterValue("LAMBDA3",Double.toString(LAMBDA));
 	model.addReactionStep(fr);

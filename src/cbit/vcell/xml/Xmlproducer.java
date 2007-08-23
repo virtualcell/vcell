@@ -2312,9 +2312,12 @@ public org.jdom.Element getXML(Kinetics param) throws XmlParseException {
 	} else if (param instanceof HMM_REVKinetics) {
 		//Process a HenriMichaelasMentenKinetics (reversible)
 		kineticsType = XMLTags.KineticsTypeHMM_Rev;
-	} else if (param instanceof GeneralTotalKinetics) {
-		//Process a GeneralTotalKinetics
-		kineticsType = XMLTags.KineticsTypeGeneralTotal;
+	} else if (param instanceof GeneralLumpedKinetics) {
+		//Process a GeneralLumpedKinetics
+		kineticsType = XMLTags.KineticsTypeGeneralLumped;
+	} else if (param instanceof GeneralCurrentLumpedKinetics) {
+		//Process a GeneralCurrentLumpedKinetics
+		kineticsType = XMLTags.KineticsTypeGeneralCurrentLumped;
 	} 
 	org.jdom.Element kinetics = new org.jdom.Element(XMLTags.KineticsTag);
 	//Add atributes

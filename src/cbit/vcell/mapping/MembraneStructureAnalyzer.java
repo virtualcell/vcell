@@ -141,10 +141,16 @@ private void refreshResolvedFluxes() throws Exception {
 			//
 			// add flux term to ResolvedFlux.inFlux
 			//
-			if (rf.inFlux.isZero()){
-				rf.inFlux = Expression.mult(new Expression(mathMapping.getNameScope().getSymbolName(fr.getKinetics().getRateParameter())),insideFluxCorrection).flatten();
+			if (fr.getKinetics() instanceof DistributedKinetics){
+				if (rf.inFlux.isZero()){
+					rf.inFlux = Expression.mult(new Expression(mathMapping.getNameScope().getSymbolName(((DistributedKinetics)fr.getKinetics()).getReactionRateParameter())),insideFluxCorrection).flatten();
+				}else{
+					rf.inFlux = Expression.add(rf.inFlux,Expression.mult(new Expression(mathMapping.getNameScope().getSymbolName(((DistributedKinetics)fr.getKinetics()).getReactionRateParameter())),insideFluxCorrection).flatten());
+				}
+			}else if (fr.getKinetics() instanceof LumpedKinetics){
+				throw new RuntimeException("Lumped Kinetics for fluxes not yet supported");
 			}else{
-				rf.inFlux = Expression.add(rf.inFlux,Expression.mult(new Expression(mathMapping.getNameScope().getSymbolName(fr.getKinetics().getRateParameter())),insideFluxCorrection).flatten());
+				throw new RuntimeException("unexpected Kinetic type in MembraneStructureAnalyzer.refreshResolvedFluxes()");
 			}
 			rf.inFlux.bindExpression(mathMapping);
 		}
@@ -175,10 +181,16 @@ private void refreshResolvedFluxes() throws Exception {
 			//
 			// sub flux term to resolvedFlux.outFlux
 			//
-			if (rf.outFlux.isZero()){
-				rf.outFlux = Expression.mult(new Expression("-"+mathMapping.getNameScope().getSymbolName(fr.getKinetics().getRateParameter())),outsideFluxCorrection).flatten();
+			if (fr.getKinetics() instanceof DistributedKinetics){
+				if (rf.outFlux.isZero()){
+					rf.outFlux = Expression.mult(new Expression("-"+mathMapping.getNameScope().getSymbolName(((DistributedKinetics)fr.getKinetics()).getReactionRateParameter())),outsideFluxCorrection).flatten();
+				}else{
+					rf.outFlux = Expression.add(rf.outFlux,Expression.mult(new Expression("-"+mathMapping.getNameScope().getSymbolName(((DistributedKinetics)fr.getKinetics()).getReactionRateParameter())),outsideFluxCorrection).flatten());
+				}
+			}else if (fr.getKinetics() instanceof LumpedKinetics){
+				throw new RuntimeException("Lumped Kinetics not yet supported for Flux Reaction: "+fr.getName());
 			}else{
-				rf.outFlux = Expression.add(rf.outFlux,Expression.mult(new Expression("-"+mathMapping.getNameScope().getSymbolName(fr.getKinetics().getRateParameter())),outsideFluxCorrection).flatten());
+				throw new RuntimeException("unexpected Kinetics type for Flux Reaction "+fr.getName());
 			}
 			rf.outFlux.bindExpression(mathMapping);
 		}
@@ -245,9 +257,9 @@ private void refreshResolvedFluxes() throws Exception {
 									insideFluxCorrection = new Expression(ReservedSymbol.KMOLE.getName());
 								}
 								if (rf.inFlux.isZero()){
-									rf.inFlux = Expression.mult(insideFluxCorrection,new Expression(sr.getRateExpression(rp_Array[k]).infix(mathMapping.getNameScope())));
+									rf.inFlux = Expression.mult(insideFluxCorrection,new Expression(sr.getReactionRateExpression(rp_Array[k],mathMapping.getSimulationContext()).infix(mathMapping.getNameScope())));
 								}else{
-									rf.inFlux = Expression.add(rf.inFlux,Expression.mult(insideFluxCorrection,new Expression(sr.getRateExpression(rp_Array[k]).infix(mathMapping.getNameScope()))));
+									rf.inFlux = Expression.add(rf.inFlux,Expression.mult(insideFluxCorrection,new Expression(sr.getReactionRateExpression(rp_Array[k],mathMapping.getSimulationContext()).infix(mathMapping.getNameScope()))));
 								}
 								rf.inFlux.bindExpression(mathMapping);
 							}else if (rp_Array[k].getStructure() == getMembrane().getOutsideFeature()){
@@ -265,9 +277,9 @@ private void refreshResolvedFluxes() throws Exception {
 									outsideFluxCorrection = new Expression(ReservedSymbol.KMOLE.getName());
 								}
 								if (rf.outFlux.isZero()){
-									rf.outFlux = Expression.mult(outsideFluxCorrection,new Expression(sr.getRateExpression(rp_Array[k]).infix(mathMapping.getNameScope())));
+									rf.outFlux = Expression.mult(outsideFluxCorrection,new Expression(sr.getReactionRateExpression(rp_Array[k],mathMapping.getSimulationContext()).infix(mathMapping.getNameScope())));
 								}else{
-									rf.outFlux = Expression.add(rf.outFlux,Expression.mult(outsideFluxCorrection,new Expression(sr.getRateExpression(rp_Array[k]).infix(mathMapping.getNameScope()))));
+									rf.outFlux = Expression.add(rf.outFlux,Expression.mult(outsideFluxCorrection,new Expression(sr.getReactionRateExpression(rp_Array[k],mathMapping.getSimulationContext()).infix(mathMapping.getNameScope()))));
 								}
 								rf.outFlux.bindExpression(mathMapping);
 							}else{

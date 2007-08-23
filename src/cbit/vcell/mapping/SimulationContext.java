@@ -3,6 +3,8 @@ import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.model.LumpedKinetics;
+import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.BioNameScope;
@@ -374,9 +376,11 @@ public void addAnalysisTask(cbit.vcell.modelopt.AnalysisTask analysisTask) throw
  */
 public Simulation addNewSimulation() throws java.beans.PropertyVetoException {
 	//The code below is used to check if the sizes are ready for required models.
-	if(!checkAppSizes())
-	{
-		throw new RuntimeException("All structure sizes must be assigned positive values.\nPlease go to StructureMapping tab to check the sizes.");
+	try {
+		checkValidity();
+	} catch (MappingException e1) {
+		e1.printStackTrace(System.out);
+		throw new RuntimeException(e1.getMessage());
 	}
 	
 	if (getMathDescription()==null){
@@ -1701,23 +1705,34 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 	}
 }
 
-public boolean checkAppSizes()
+public void checkValidity() throws MappingException
 {
 	//spatial
-	if(getGeometry().getDimension() > 0) return true;
-	//non-spatial
-	//old ode
-	if(!isStoch() && getGeometryContext().isAllVolFracAndSurfVolSpecified() && getGeometryContext().isAllSizeSpecifiedNull())
-	{	
-		return true;
+	if(getGeometry().getDimension() > 0) {
+		//
+		// fail if any enabled Reactions have LumpedKinetics.
+		//
+		StringBuffer buffer = new StringBuffer();
+		ReactionSpec[] reactionSpecs = getReactionContext().getReactionSpecs();
+		for (int i = 0; i < reactionSpecs.length; i++) {
+			if (!reactionSpecs[i].isExcluded() && reactionSpecs[i].getReactionStep().getKinetics() instanceof LumpedKinetics){
+				buffer.append("reaction \""+reactionSpecs[i].getReactionStep().getName()+"\" in compartment \""+reactionSpecs[i].getReactionStep().getStructure().getName()+"\"\n");
+			}
+		}
+		if (buffer.length()>0){
+			throw new MappingException("Spatial application \""+getName()+"\" cannot process reactions with spatially lumped kinetics, see kinetics for :\n"+buffer.toString());			
+				
+		}
+	}else{
+		// old-stle ODE models should still work
+		if (!isStoch() && getGeometryContext().isAllVolFracAndSurfVolSpecified() && getGeometryContext().isAllSizeSpecifiedNull()){
+			return; // old style ODE models
+		}
+		// otherwise, all sizes should be present and positive.
+		if (!getGeometryContext().isAllSizeSpecifiedPositive()){
+			throw new MappingException("Application "+getName()+":\nAll structure sizes must be assigned positive values.\nPlease go to StructureMapping tab to check the sizes.");
+		}
 	}
-	else //new ode or stoch
-	{
-		if(getGeometryContext().isAllSizeSpecifiedPositive()) return true;
-		
-	}
-	
-	return false;
 }
 
 }

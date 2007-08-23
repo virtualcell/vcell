@@ -6,6 +6,8 @@ package cbit.vcell.model;
 import java.beans.*;
 import cbit.vcell.parser.*;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.units.VCUnitDefinition;
+
 import java.util.*;
 import java.io.Serializable;
 import cbit.util.*;
@@ -31,8 +33,8 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 	private static final String PREDEFINED_MANGLED_PREFIX = "PREDEFINED_MANGLED_PREFIX";
 
 	public static final int ROLE_UserDefined	= 0;
-	public static final int ROLE_Rate			= 1;
-	public static final int ROLE_Current		= 2;
+	public static final int ROLE_ReactionRate	= 1;
+	public static final int ROLE_CurrentDensity	= 2;
 	public static final int ROLE_KForward		= 3;
 	public static final int ROLE_KReverse		= 4;
 	public static final int ROLE_Km				= 5;
@@ -43,8 +45,8 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 	public static final int ROLE_VmaxRev		= 10;
 	public static final int ROLE_Permeability	= 11;
 	public static final int ROLE_Conductivity	= 12;
-	public static final int ROLE_AssumedCompartmentSize	= 13;
-	public static final int ROLE_TotalRate		= 14;
+	public static final int ROLE_LumpedReactionRate = 13;
+	public static final int ROLE_LumpedCurrent	= 14;
 
 	public static final int NUM_ROLES			= 15;
 
@@ -63,14 +65,14 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 		"max reverse rate",
 		"permeability",
 		"conductivity",
-		"assumed compartment size",
-		"total rate",
+		"lumped reaction rate",
+		"lumped current",
 	};
 
 
 	private static final String RoleTags[] = {
 		"no tag",
-		VCMODL.Rate,
+		VCMODL.ReactionRate,
 		VCMODL.CurrentDensity,
 		VCMODL.ForwardRate,
 		VCMODL.ReverseRate,
@@ -82,8 +84,8 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 		VCMODL.VmaxRev,
 		VCMODL.Permeability,
 		VCMODL.Conductivity,
-		VCMODL.AssumedCompartmentSize,
-		VCMODL.TotalRate,
+		VCMODL.LumpedReactionRate,
+		VCMODL.LumpedCurrent,
 	};
 
 	private static final String DefaultNames[] = {
@@ -100,14 +102,14 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 		"VmaxRev",
 		"P",
 		"C",
-		"CompartmentSize",
-		"TR",
+		"LumpedJ",
+		"LumpedI",
 	};
 
 	private static final RealInterval[] bounds = {
 		null, // user defined
-		null, // rate
-		null, // current
+		null, // reaction rate
+		null, // current density
 		new RealInterval(0,Double.POSITIVE_INFINITY), // Kf
 		new RealInterval(0,Double.POSITIVE_INFINITY), // Kr
 		new RealInterval(0,Double.POSITIVE_INFINITY), // Km
@@ -118,8 +120,8 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 		new RealInterval(0,Double.POSITIVE_INFINITY), // VmaxRev
 		new RealInterval(0,Double.POSITIVE_INFINITY), // Permeability
 		new RealInterval(0,Double.POSITIVE_INFINITY), // Conductivity
-		new RealInterval(0,Double.POSITIVE_INFINITY),  // Assumed Compartment Size
-		null	// total rate
+		null,   // lumped rate
+		null	// lumped current
 	};
 
 
@@ -168,17 +170,33 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 			//
 			// don't allow direct editing of rates and currents if they are generated
 			//
-			if (getRole() == ROLE_Rate){
-				// only allow editing "Rate" for GeneralKinetics
+			if (getRole() == ROLE_ReactionRate){
+				// only allow editing "ReactionRate" for GeneralKinetics
 				if (Kinetics.this instanceof cbit.vcell.model.GeneralKinetics){
 					return true;
 				}else{
 					return false;
 				}
 			}
-			if (getRole() == ROLE_Current){
-				// only allow editing "Current" for GeneralCurrentKinetics
+			if (getRole() == ROLE_LumpedReactionRate){
+				// only allow editing "LumpedReactionRate" for GeneralLumpedKinetics
+				if (Kinetics.this instanceof cbit.vcell.model.GeneralLumpedKinetics){
+					return true;
+				}else{
+					return false;
+				}
+			}
+			if (getRole() == ROLE_CurrentDensity){
+				// only allow editing "CurrentDensity" for GeneralCurrentKinetics
 				if (Kinetics.this instanceof cbit.vcell.model.GeneralCurrentKinetics){
+					return true;
+				}else{
+					return false;
+				}
+			}
+			if (getRole() == ROLE_LumpedCurrent){
+				// only allow editing "Current" for GeneralCurrentLumpedKinetics
+				if (Kinetics.this instanceof cbit.vcell.model.GeneralCurrentLumpedKinetics){
 					return true;
 				}else{
 					return false;
@@ -227,6 +245,10 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 			}else{
 				return null;
 			}
+		}
+
+		public Kinetics getKinetics() {
+			return Kinetics.this;
 		}
 
 		public int getRole() {
@@ -868,7 +890,7 @@ public final void fromTokens(cbit.vcell.math.CommentStringTokenizer tokens) thro
  * Insert the method's description here.
  * Creation date: (5/12/2004 2:53:13 PM)
  */
-public void gatherIssues(Vector issueList) {
+public void gatherIssues(Vector<Issue> issueList) {
 	//
 	// for each user unresolved parameter, make an issue
 	//
@@ -951,21 +973,6 @@ public void gatherIssues(Vector issueList) {
 		}
 	}
 	
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (10/14/2003 8:53:00 AM)
- * @return cbit.vcell.model.Parameter
- */
-public final KineticsParameter getCurrentParameter() {
-	for (int i = 0; i < fieldKineticsParameters.length; i++){
-		if (fieldKineticsParameters[i].getRole() == ROLE_Current){
-			return fieldKineticsParameters[i];
-		}
-	}
-	return null;
 }
 
 
@@ -1108,21 +1115,6 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 		propertyChange = new java.beans.PropertyChangeSupport(this);
 	};
 	return propertyChange;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (10/14/2003 8:53:00 AM)
- * @return cbit.vcell.model.Parameter
- */
-public final KineticsParameter getRateParameter() {
-	for (int i = 0; i < fieldKineticsParameters.length; i++){
-		if (fieldKineticsParameters[i].getRole() == ROLE_Rate){
-			return fieldKineticsParameters[i];
-		}
-	}
-	return null;
 }
 
 
@@ -1603,11 +1595,20 @@ private void renameParameterExpressions(java.lang.String oldName, java.lang.Stri
 public void resolveCurrentWithStructure(Structure structure) throws PropertyVetoException{
 	
 	
-	if(structure instanceof Feature && this.getKineticsParameterFromRole(Kinetics.ROLE_Current) != null){
-		this.removeKineticsParameter(this.getKineticsParameterFromRole(Kinetics.ROLE_Current));
-	}else if(structure instanceof Membrane && this.getKineticsParameterFromRole(Kinetics.ROLE_Current) == null){
-		String pname = this.getDefaultParameterName(Kinetics.ROLE_Current);
-		Kinetics.KineticsParameter currentParm = new Kinetics.KineticsParameter(pname,new Expression(0.0),Kinetics.ROLE_Current,null);
+	if(structure instanceof Feature && this.getKineticsParameterFromRole(Kinetics.ROLE_CurrentDensity) != null){
+		this.removeKineticsParameter(this.getKineticsParameterFromRole(Kinetics.ROLE_CurrentDensity));
+		
+	}else if(structure instanceof Feature && this.getKineticsParameterFromRole(Kinetics.ROLE_LumpedCurrent) != null){
+		this.removeKineticsParameter(this.getKineticsParameterFromRole(Kinetics.ROLE_LumpedCurrent));
+		
+	}else if(structure instanceof Membrane && this.getKineticsParameterFromRole(Kinetics.ROLE_CurrentDensity) == null){
+		String pname = this.getDefaultParameterName(Kinetics.ROLE_CurrentDensity);
+		Kinetics.KineticsParameter currentParm = new Kinetics.KineticsParameter(pname,new Expression(0.0),Kinetics.ROLE_CurrentDensity,VCUnitDefinition.UNIT_pA_per_um2);
+		addKineticsParameter(currentParm);
+		
+	}else if(structure instanceof Membrane && this.getKineticsParameterFromRole(Kinetics.ROLE_LumpedCurrent) == null){
+		String pname = this.getDefaultParameterName(Kinetics.ROLE_LumpedCurrent);
+		Kinetics.KineticsParameter currentParm = new Kinetics.KineticsParameter(pname,new Expression(0.0),Kinetics.ROLE_LumpedCurrent,VCUnitDefinition.UNIT_pA);
 		addKineticsParameter(currentParm);
 	}
 	
@@ -1866,4 +1867,7 @@ public final void writeTokens(java.io.PrintWriter pw) {
 	
 	pw.println("\t\t"+VCMODL.EndBlock+" ");
 }
+
+public abstract KineticsParameter getAuthoritativeParameter();
+
 }

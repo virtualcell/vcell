@@ -1,5 +1,6 @@
 package cbit.vcell.model;
 
+import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.parser.*;
 /**
  * Insert the type's description here.
@@ -80,8 +81,10 @@ private static void testReactionStep(ReactionStep reactionStep) throws Expressio
 	Kinetics k = reactionStep.getKinetics();
 	
 	System.out.println("\n\n\n      TEST FOR ReactionStep "+reactionStep.getName()+" ************* ");
-	System.out.println("Rate = " + k.getRateParameter());
-	System.out.println("Current = " + k.getCurrentParameter());
+	KineticsParameter[] params = reactionStep.getKinetics().getKineticsParameters();
+	for (int i = 0; i < params.length; i++) {
+		System.out.println(params[i].getDescription()+" = "+params[i].toString());
+	}
 	System.out.println(reactionStep.getVCML());
 	cbit.vcell.math.CommentStringTokenizer tokens = new cbit.vcell.math.CommentStringTokenizer(k.getVCML());
 	tokens.nextToken();

@@ -1698,9 +1698,15 @@ public cbit.vcell.model.Kinetics getKinetics(Element param, ReactionStep reactio
 		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeHMM_Rev) ) {
 			//create HMM_RevKinetics
 			newKinetics = new HMM_REVKinetics(reaction);
-		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeGeneralTotal) ) {
+		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeGeneralTotal_oldname) ) {
 			//create GeneralTotalKinetics
-			newKinetics = new GeneralTotalKinetics(reaction);
+			newKinetics = new GeneralLumpedKinetics(reaction);
+		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeGeneralLumped) ) {
+			//create GeneralLumpedKinetics
+			newKinetics = new GeneralLumpedKinetics(reaction);
+		} else if ( type.equalsIgnoreCase(XMLTags.KineticsTypeGeneralCurrentLumped) ) {
+			//create GeneralCurrentLumpedKinetics
+			newKinetics = new GeneralCurrentLumpedKinetics(reaction);
 		} else {
 			throw new XmlParseException("Unknown kinetics type: " + type);
 		}

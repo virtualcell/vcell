@@ -16,6 +16,7 @@ import cbit.vcell.client.task.*;
 import cbit.vcell.desktop.controls.*;
 import cbit.vcell.math.*;
 import cbit.vcell.mapping.*;
+
 import java.beans.*;
 
 import cbit.sql.VersionableType;
@@ -1661,11 +1662,13 @@ public void runSimulations(final ClientSimManager clientSimManager, final Simula
 			}
 			try{
 				SimulationContext sc = ((BioModel)vcd).getSimulationContext(simulations[0]);
-				StructureMapping[] structureMappings = sc.getGeometryContext().getStructureMappings();
-				for (int j=0; structureMappings!=null && j < structureMappings.length; j++)
-					structureMappings[j].showIssueDialog(sc);
-			}catch (ObjectNotFoundException e)
-			{
+				try {
+					sc.checkValidity();
+				} catch (MappingException e) {
+					e.printStackTrace();
+					throw new RuntimeException(e.getMessage());
+				}
+			}catch (ObjectNotFoundException e){
 				e.printStackTrace();
 				throw new RuntimeException("BioModel for simulation "+simulations[0].getName() +" is not found.");
 			}
@@ -1767,10 +1770,11 @@ public void saveDocument(DocumentWindowManager documentWindowManager, boolean re
 		for(int i=0;i<scList.length;i++)
 		{
 			SimulationContext sc = scList[i];
-			if(!sc.checkAppSizes())
-			{	
-				DialogUtils.showErrorDialog("Application "+sc.getName()+":\nAll structure sizes must be assigned positive values.\nPlease go to StructureMapping tab to check the sizes.");
-				throw new RuntimeException("Application "+sc.getName()+":\nAll structure sizes must be assigned positive values.\nPlease go to StructureMapping tab to check the sizes.");
+			try {
+				sc.checkValidity();
+			} catch (MappingException e) {
+				e.printStackTrace(System.out);
+				throw new RuntimeException(e.getMessage());
 			}
 		}
 	}
@@ -1856,11 +1860,11 @@ public void saveDocumentAsNew(DocumentWindowManager documentWindowManager) {
 		for(int i=0;i<scList.length;i++)
 		{
 			SimulationContext sc = scList[i];
-			if(!sc.checkAppSizes())
-			{
-				PopupGenerator.showErrorDialog("Application "+sc.getName()+":\nAll structure sizes must be assigned positive values.\nPlease go to StructureMapping tab to check the sizes.");
-				throw new RuntimeException("Application "+sc.getName()+":\nAll structure sizes must be assigned positive values.\nPlease go to StructureMapping tab to check the sizes.");
-					
+			try {
+				sc.checkValidity();
+			} catch (MappingException e) {
+				e.printStackTrace(System.out);
+				throw new RuntimeException(e.getMessage());
 			}
 		}
 	}

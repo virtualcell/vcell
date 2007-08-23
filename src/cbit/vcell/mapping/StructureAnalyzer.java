@@ -179,9 +179,9 @@ private void refreshFastMatrices() throws Exception {
 						Membrane membrane = (Membrane)structure;
 						MembraneMapping membraneMapping = (MembraneMapping)mathMapping.getSimulationContext().getGeometryContext().getStructureMapping(membrane);
 						Parameter fluxCorrectionParameter = mathMapping.getFluxCorrectionParameter(membraneMapping,(Feature)rps[0].getStructure());
-						exp = Expression.add(exp,new Expression(mathMapping.getNameScope().getSymbolName(fluxCorrectionParameter)+"* ("+fastReactionSteps[j].getRateExpression(rps[0]).infix(mathMapping.getNameScope())+")"));
+						exp = Expression.add(exp,new Expression(mathMapping.getNameScope().getSymbolName(fluxCorrectionParameter)+"* ("+fastReactionSteps[j].getReactionRateExpression(rps[0],mathMapping.getSimulationContext()).infix(mathMapping.getNameScope())+")"));
 					}else{
-						exp = Expression.add(exp,new Expression(fastReactionSteps[j].getRateExpression(rps[0]).infix(mathMapping.getNameScope())));
+						exp = Expression.add(exp,new Expression(fastReactionSteps[j].getReactionRateExpression(rps[0],mathMapping.getSimulationContext()).infix(mathMapping.getNameScope())));
 					}
 				}
 			}
@@ -534,14 +534,14 @@ private void refreshTotalMatrices() throws Exception {
 							MembraneMapping membraneMapping = (MembraneMapping)mathMapping.getSimulationContext().getGeometryContext().getStructureMapping(membrane);
 							Parameter fluxCorrectionParameter = mathMapping.getFluxCorrectionParameter(membraneMapping,(Feature)sc.getStructure());
 							if (reactionSteps[j] instanceof FluxReaction){
-								exp = Expression.add(exp,new Expression(mathMapping.getNameScope().getSymbolName(fluxCorrectionParameter)+"*"+reactionSteps[j].getRateExpression(rps[0]).infix(mathMapping.getNameScope())));
+								exp = Expression.add(exp,new Expression(mathMapping.getNameScope().getSymbolName(fluxCorrectionParameter)+"*"+reactionSteps[j].getReactionRateExpression(rps[0],mathMapping.getSimulationContext()).infix(mathMapping.getNameScope())));
 							}else if (reactionSteps[j] instanceof SimpleReaction){
-								exp = Expression.add(exp,new Expression(mathMapping.getNameScope().getSymbolName(fluxCorrectionParameter)+"*"+ReservedSymbol.KMOLE.getName()+"*"+reactionSteps[j].getRateExpression(rps[0]).infix(mathMapping.getNameScope())));
+								exp = Expression.add(exp,new Expression(mathMapping.getNameScope().getSymbolName(fluxCorrectionParameter)+"*"+ReservedSymbol.KMOLE.getName()+"*"+reactionSteps[j].getReactionRateExpression(rps[0],mathMapping.getSimulationContext()).infix(mathMapping.getNameScope())));
 							}else{
 								throw new RuntimeException("Internal Error: expected ReactionStep "+reactionSteps[j]+" to be of type SimpleReaction or FluxReaction");
 							}
 						}else{
-							exp = Expression.add(exp,new Expression(reactionSteps[j].getRateExpression(rps[0]).infix(mathMapping.getNameScope())));
+							exp = Expression.add(exp,new Expression(reactionSteps[j].getReactionRateExpression(rps[0],mathMapping.getSimulationContext()).infix(mathMapping.getNameScope())));
 						}
 					}
 				}

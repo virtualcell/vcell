@@ -245,11 +245,11 @@ private cbit.vcell.model.Parameter[] getModelParameters() {
 		cbit.vcell.model.Kinetics.KineticsParameter[] kineticsParameters = reactionSteps[i].getKinetics().getKineticsParameters();
 		for (int j = 0; j < kineticsParameters.length; j++){
 			if (kineticsParameters[j].getExpression()!=null && kineticsParameters[j].getExpression().isNumeric()){
-				if (kineticsParameters[j].getRole() == cbit.vcell.model.Kinetics.ROLE_Current && 
+				if (((kineticsParameters[j].getRole() == cbit.vcell.model.Kinetics.ROLE_CurrentDensity)||(kineticsParameters[j].getRole() == cbit.vcell.model.Kinetics.ROLE_LumpedCurrent)) && 
 					reactionSteps[i].getPhysicsOptions() == cbit.vcell.model.ReactionStep.PHYSICS_MOLECULAR_ONLY){
 					continue;
 				}
-				if (kineticsParameters[j].getRole() == cbit.vcell.model.Kinetics.ROLE_Rate && 
+				if (((kineticsParameters[j].getRole() == cbit.vcell.model.Kinetics.ROLE_ReactionRate)||(kineticsParameters[j].getRole() == cbit.vcell.model.Kinetics.ROLE_LumpedReactionRate)) && 
 					reactionSteps[i].getPhysicsOptions() == cbit.vcell.model.ReactionStep.PHYSICS_ELECTRICAL_ONLY){
 					continue;
 				}

@@ -548,13 +548,13 @@ public static boolean testIfSame(MathDescription oldMathDesc, MathDescription ne
 										//
 										// difference couldn't be reconciled
 										//
-										System.out.println("expressions are different Old: '"+oldExps[k]+"'\n"+
-														   "expressions are different New: '"+newExps[k]+"'");
+										System.out.println("expressions are different Old: '"+oldExps[k].infix()+"'\n"+
+														   "expressions are different New: '"+newExps[k].infix()+"'");
 										reasonForDecision.append(EXPRESSION_IS_DIFFERENT);
 										return false;
 									}else{
-										//System.out.println("expressions are equivalent Old: '"+oldExps[k]+"'\n"+
-														   //"expressions are equivalent New: '"+newExps[k]+"'");
+										//System.out.println("expressions are equivalent Old: '"+oldExps[k].infix()+"'\n"+
+														   //"expressions are equivalent New: '"+newExps[k].infix()+"'");
 									}
 								}
 							}

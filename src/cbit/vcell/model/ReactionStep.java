@@ -5,8 +5,15 @@ package cbit.vcell.model;
  * All rights reserved.
 ©*/
 import java.beans.*;
+
+import cbit.vcell.mapping.MathMapping;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.StructureAnalyzer;
+import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.vcell.parser.*;
 import cbit.vcell.parser.Expression;
+
 import java.io.*;
 import java.util.*;
 
@@ -398,25 +405,69 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 	};
 	return propertyChange;
 }
-public Expression getRateExpression(ReactionParticipant reactionParticipant) throws Exception {
+
+public Expression getReactionRateExpression(ReactionParticipant reactionParticipant, SimulationContext simContext) throws Exception {
 	if (reactionParticipant instanceof Catalyst){
 		throw new Exception("Catalyst "+reactionParticipant+" doesn't have a rate for this reaction");
 		//return new Expression(0.0);
 	}	
-	
 	double stoich = getStoichiometry(reactionParticipant.getSpecies(),reactionParticipant.getStructure());
 	if (stoich==0.0){
 		return new Expression(0.0);
-	}else if (stoich!=1){
-		Expression exp = Expression.mult(new Expression(stoich),new Expression(getKinetics().getRateParameter().getName()));
-		exp.bindExpression(this);
-		return exp;
-	}else{
-		Expression exp = new Expression(getKinetics().getRateParameter().getName());
-		exp.bindExpression(this);
-		return exp;
 	}
-}               
+	if (getKinetics() instanceof DistributedKinetics){
+		DistributedKinetics distributedKinetics = (DistributedKinetics)getKinetics();
+		if (stoich!=1){
+			Expression exp = Expression.mult(new Expression(stoich),new Expression(distributedKinetics.getReactionRateParameter().getName()));
+			exp.bindExpression(this);
+			return exp;
+		}else{
+			Expression exp = new Expression(distributedKinetics.getReactionRateParameter().getName());
+			exp.bindExpression(this);
+			return exp;
+		}
+	}else if (getKinetics() instanceof LumpedKinetics){
+		StructureMapping structureMapping = simContext.getGeometryContext().getStructureMapping(getStructure());
+		final StructureMappingParameter sizeParameter = structureMapping.getSizeParameter();
+		//
+		// need to put this into concentration/time with respect to structure for reaction.
+		//
+		SymbolTable tempSymbolTable = new SymbolTable(){
+			public SymbolTableEntry getEntry(String identifierString) throws ExpressionBindingException {
+				SymbolTableEntry ste = ReactionStep.this.getEntry(identifierString);
+				if (ste!=null){
+					return ste;
+				}
+				if (identifierString.equals(sizeParameter.getName())){
+					return sizeParameter;
+				}
+				return null;
+			}
+		};
+		
+		LumpedKinetics lumpedKinetics = (LumpedKinetics)getKinetics();
+		Expression factor = null;
+		if (getStructure() instanceof Feature || ((getStructure() instanceof Membrane) && this instanceof FluxReaction)){
+			factor = Expression.mult(new Expression(ReservedSymbol.KMOLE.getName()),Expression.invert(new Expression(sizeParameter.getName())));
+		}else if (getStructure() instanceof Membrane && this instanceof SimpleReaction){
+			factor = Expression.invert(new Expression(sizeParameter.getName()));
+		}else{
+			throw new RuntimeException("failed to create reaction rate expression for reaction "+getName()+", with kinetic type of "+getKinetics().getClass().getName());
+		}
+		if (stoich!=1){
+			Expression exp = Expression.mult(new Expression(stoich),Expression.mult(new Expression(lumpedKinetics.getLumpedReactionRateParameter().getName()),factor));
+			exp.bindExpression(tempSymbolTable);
+			return exp;
+		}else{
+			Expression exp = Expression.mult(new Expression(lumpedKinetics.getLumpedReactionRateParameter().getName()),factor);
+			exp.bindExpression(tempSymbolTable);
+			return exp;
+		}
+	}else{
+		throw new RuntimeException("unexpected kinetic type "+getKinetics().getClass().getName());
+	}
+}   
+
 public ReactionParticipant getReactionParticipantFromSymbol(String reactParticipantName) {
 
 	ReactionParticipant rp_Array[] = getReactionParticipants();

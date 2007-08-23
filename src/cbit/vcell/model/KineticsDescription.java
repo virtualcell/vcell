@@ -19,9 +19,10 @@ public  class KineticsDescription implements java.io.Serializable {
 	public final static KineticsDescription GeneralCurrent = new KineticsDescription("GeneralCurrentKinetics", "GeneralCurrent", VCMODL.GeneralCurrentKinetics, true, false, GeneralCurrentKinetics.class);
 	public final static KineticsDescription GHK = new KineticsDescription("GHKKinetics", "Goldman-Hodgkin-Katz", VCMODL.GHKKinetics, true, true, GHKKinetics.class);
 	public final static KineticsDescription Nernst = new KineticsDescription("NernstKinetics", "Nernst", VCMODL.NernstKinetics, true, true, NernstKinetics.class);
-	public final static KineticsDescription GeneralTotal = new KineticsDescription("GeneralTotalKinetics", "GeneralTotal", VCMODL.GeneralTotalKinetics, false, false, GeneralTotalKinetics.class);
+	public final static KineticsDescription GeneralLumped = new KineticsDescription("GeneralLumpedKinetics", "GeneralLumped", VCMODL.GeneralLumpedKinetics, false, false, GeneralLumpedKinetics.class);
+	public final static KineticsDescription GeneralCurrentLumped = new KineticsDescription("GeneralCurrentLumpedKinetics", "GeneralCurrentLumped", VCMODL.GeneralCurrentLumpedKinetics, true, false, GeneralCurrentLumpedKinetics.class);
 
-	private static KineticsDescription fieldKineticsList[] = new KineticsDescription[] { MassAction, HMM_irreversible, HMM_reversible, General, GeneralCurrent, GHK, Nernst, GeneralTotal };
+	private static KineticsDescription fieldKineticsList[] = new KineticsDescription[] { MassAction, HMM_irreversible, HMM_reversible, General, GeneralCurrent, GHK, Nernst, GeneralLumped, GeneralCurrentLumped };
 	
 /**
  * KineticsDescription constructor comment.
