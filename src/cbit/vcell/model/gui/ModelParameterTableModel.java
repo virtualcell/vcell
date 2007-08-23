@@ -345,10 +345,11 @@ public Object getValueAt(int row, int col) {
 		}
 		case COLUMN_ANNOTATION:{
 			ReactionStep rxStep = getEditableAnnotationReactionStep(row);
-			if(rxStep != null &&
-				parameter instanceof Kinetics.KineticsParameter &&
-				((Kinetics.KineticsParameter)parameter).getRole() == Kinetics.ROLE_Rate){
-				return (rxStep.getAnnotation() != null?rxStep.getAnnotation():"");
+			if(rxStep != null && parameter instanceof Kinetics.KineticsParameter){
+				KineticsParameter param = (KineticsParameter)parameter;
+				if (param.getKinetics().getAuthoritativeParameter() == param){
+					return (rxStep.getAnnotation() != null?rxStep.getAnnotation():"");
+				}
 			}
 			return null;
 			//return (parameter instanceof Kinetics.KineticsParameter?parameter.getDescription():"");
@@ -397,16 +398,10 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 public ReactionStep getEditableAnnotationReactionStep(int rowIndex){
 
 	cbit.vcell.model.Parameter sortedParameter = (cbit.vcell.model.Parameter)getData().get(rowIndex);
-	if(sortedParameter instanceof Kinetics.KineticsParameter &&
-	((Kinetics.KineticsParameter)sortedParameter).getRole() == Kinetics.ROLE_Rate){
-		ReactionStep[] reactionSteps = getModel().getReactionSteps();
-		for (int i = 0;i < reactionSteps.length; i++){
-			KineticsParameter[] kineticsParamterArr = reactionSteps[i].getKinetics().getKineticsParameters();
-			for (int j = 0; j < kineticsParamterArr.length; j++) {
-				if(sortedParameter == kineticsParamterArr[j]){
-					return reactionSteps[i];
-				}
-			}
+	if(sortedParameter instanceof Kinetics.KineticsParameter){
+		KineticsParameter param = (KineticsParameter)sortedParameter;
+		if (param.getKinetics().getAuthoritativeParameter() == param){
+			return param.getKinetics().getReactionStep();
 		}
 	}
 	return null;

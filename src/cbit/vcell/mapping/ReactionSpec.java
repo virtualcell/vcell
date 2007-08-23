@@ -328,14 +328,6 @@ public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierSt
 
 	
 	//
-	// (SPECIAL CASE) see if corresponding ReactionStep "rate" matches this identifier.
-	//	
-	SymbolTableEntry reactionStepSTE = getReactionStep().getLocalEntry(identifierString);
-	if (reactionStepSTE instanceof Kinetics.KineticsParameter && ((Kinetics.KineticsParameter)reactionStepSTE).getRole()==Kinetics.ROLE_Rate){
-		return reactionStepSTE;
-	}
-
-	//
 	// travel in namespace
 	//
 	ste = getNameScope().getExternalEntry(identifierString);

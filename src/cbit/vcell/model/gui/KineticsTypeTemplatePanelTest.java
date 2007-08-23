@@ -58,8 +58,8 @@ public static void main(java.lang.String[] args) {
 
 
 		aKineticsTypeTemplatePanel.setKinetics(ghkKinetics);
-		System.out.println("Rate = "+ghkKinetics.getRateParameter().getExpression());
-		System.out.println("Current = "+ghkKinetics.getCurrentParameter().getExpression());
+		System.out.println("Rate = "+ghkKinetics.getReactionRateParameter().getExpression());
+		System.out.println("Current = "+ghkKinetics.getCurrentDensityParameter().getExpression());
 		
 	} catch (Throwable exception) {
 		System.err.println("Exception occurred in main() of java.awt.Panel");

@@ -11,7 +11,7 @@ import java.beans.PropertyVetoException;
  * Creation date: (2/18/2002 5:07:08 PM)
  * @author: Anuradha Lakshminarayana
  */
-public class GHKKinetics extends Kinetics {
+public class GHKKinetics extends DistributedKinetics {
 /**
  * NernstKinetics constructor comment.
  * @param reactionStep cbit.vcell.model.ReactionStep
@@ -20,8 +20,8 @@ public class GHKKinetics extends Kinetics {
 public GHKKinetics(ReactionStep reactionStep) throws ExpressionException {
 	super(KineticsDescription.GHK.getName(),reactionStep);
 	try {
-		KineticsParameter currentParm = new KineticsParameter(getDefaultParameterName(ROLE_Current),new Expression(0.0),ROLE_Current,null);
-		KineticsParameter rateParm = new KineticsParameter(getDefaultParameterName(ROLE_Rate),new Expression(0.0),ROLE_Rate,null);
+		KineticsParameter currentParm = new KineticsParameter(getDefaultParameterName(ROLE_CurrentDensity),new Expression(0.0),ROLE_CurrentDensity,null);
+		KineticsParameter rateParm = new KineticsParameter(getDefaultParameterName(ROLE_ReactionRate),new Expression(0.0),ROLE_ReactionRate,null);
 		KineticsParameter permeabilityParm = new KineticsParameter(getDefaultParameterName(ROLE_Permeability),new Expression(0.0),ROLE_Permeability,null);
 
 		setKineticsParameters(new KineticsParameter[] { currentParm, rateParm, permeabilityParm });
@@ -117,13 +117,13 @@ protected void refreshUnits() {
 	}
 	try {
 		bRefreshingUnits=true;
-		Kinetics.KineticsParameter rateParm = getRateParameter();
+		Kinetics.KineticsParameter rateParm = getReactionRateParameter();
 		if (rateParm != null){
 			rateParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_uM_um_per_s);
 		}
-		Kinetics.KineticsParameter currentParm = getCurrentParameter();
-		if (currentParm != null){
-			currentParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_pA_per_um2);
+		Kinetics.KineticsParameter currentDensityParm = getCurrentDensityParameter();
+		if (currentDensityParm != null){
+			currentDensityParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_pA_per_um2);
 		}
 		Kinetics.KineticsParameter permeabilityParm = getPermeabilityParameter();
 		if (permeabilityParm != null){
@@ -139,8 +139,8 @@ protected void refreshUnits() {
  * @exception cbit.vcell.parser.ExpressionException The exception description.
  */
 protected void updateGeneratedExpressions() throws cbit.vcell.parser.ExpressionException, PropertyVetoException {
-	KineticsParameter currentParm = getKineticsParameterFromRole(ROLE_Current);
-	KineticsParameter rateParm = getKineticsParameterFromRole(ROLE_Rate);
+	KineticsParameter currentParm = getKineticsParameterFromRole(ROLE_CurrentDensity);
+	KineticsParameter rateParm = getKineticsParameterFromRole(ROLE_ReactionRate);
 	if (currentParm==null && rateParm==null){
 		return;
 	}
@@ -185,7 +185,7 @@ protected void updateGeneratedExpressions() throws cbit.vcell.parser.ExpressionE
 			}
 			tempRateExpression.bindExpression(getReactionStep());
 			if (rateParm == null){
-				addKineticsParameter(new KineticsParameter(getDefaultParameterName(ROLE_Rate),tempRateExpression,ROLE_Rate,cbit.vcell.units.VCUnitDefinition.UNIT_molecules_per_um2_per_s));
+				addKineticsParameter(new KineticsParameter(getDefaultParameterName(ROLE_ReactionRate),tempRateExpression,ROLE_ReactionRate,cbit.vcell.units.VCUnitDefinition.UNIT_molecules_per_um2_per_s));
 			}else{
 				rateParm.setExpression(tempRateExpression);
 			}

@@ -12,10 +12,13 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.model.DistributedKinetics;
+import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Model;
 import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.MathMapping;
+import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.util.graph.*;
 
 /**
@@ -898,14 +901,42 @@ private static Expression getTotalMembraneCurrent(SimulationContext simContext, 
 		if (reactionSpecs[i].isExcluded()){
 			continue;
 		}
-		cbit.vcell.model.ReactionStep rs = reactionSpecs[i].getReactionStep();
-		if (rs.getStructure() == membrane){
-			Expression current = new Expression(rs.getKinetics().getCurrentParameter().getExpression().infix(mathMapping.getNameScope()));
-			if (!current.compareEqual(new Expression(0.0))){
-				//
-				// change sign convension from inward current to outward current (which is consistent with voltage convension)
-				//
-				currentExp = Expression.add(currentExp, Expression.negate(new Expression(mathMapping.getNameScope().getSymbolName(rs.getKinetics().getCurrentParameter()))));
+		if (reactionSpecs[i].getReactionStep().getKinetics() instanceof DistributedKinetics){
+			cbit.vcell.model.ReactionStep rs = reactionSpecs[i].getReactionStep();
+			DistributedKinetics distributedKinetics = (DistributedKinetics)rs.getKinetics();
+			if (rs.getStructure() == membrane){
+				Expression current = new Expression(distributedKinetics.getCurrentDensityParameter().getExpression().infix(mathMapping.getNameScope()));
+				if (!current.compareEqual(new Expression(0.0))){
+					//
+					// change sign convension from inward current to outward current (which is consistent with voltage convension)
+					//
+					currentExp = Expression.add(currentExp, Expression.negate(new Expression(mathMapping.getNameScope().getSymbolName(distributedKinetics.getCurrentDensityParameter()))));
+				}
+			}
+		}else{
+			cbit.vcell.model.ReactionStep rs = reactionSpecs[i].getReactionStep();
+			LumpedKinetics lumpedKinetics = (LumpedKinetics)rs.getKinetics();
+			if (rs.getStructure() == membrane){
+				Expression current = new Expression(lumpedKinetics.getLumpedCurrentParameter().getExpression().infix(mathMapping.getNameScope()));
+				if (!current.isZero()){
+					//
+					// change sign convension from inward current to outward current (which is consistent with voltage convension)
+					//
+					if (membraneMapping.getResolved(mathMapping.getSimulationContext())){
+						throw new RuntimeException("math generation for total currents within spatial electrophysiology not yet implemented");
+					}
+					StructureMappingParameter sizeParameter = membraneMapping.getSizeParameter();
+					if (sizeParameter==null || sizeParameter.getExpression()==null || sizeParameter.getExpression().isZero()){
+						throw new RuntimeException("math generation for total currents from reaction "+rs.getName()+" (across membrane "+membrane.getName()+") requires size of membrane "+membrane.getName());
+					}
+					//
+					// translate from total current into current density
+					// @TODO later we will express in terms of total currents where possible.
+					//
+					Expression lumpedCurrentSymbolExp = new Expression(mathMapping.getNameScope().getSymbolName(lumpedKinetics.getLumpedCurrentParameter()));
+					Expression membraneSizeExp = new Expression(mathMapping.getNameScope().getSymbolName(sizeParameter));
+					currentExp = Expression.add(currentExp, Expression.negate(Expression.mult(lumpedCurrentSymbolExp,Expression.invert(membraneSizeExp))));
+				}
 			}
 		}
 	}

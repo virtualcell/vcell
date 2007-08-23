@@ -2289,10 +2289,7 @@ private boolean updateMath() {
 			geometry.getGeometrySurfaceDescription().updateAll();
 		}
 		// Use differnt mathmapping for different applications (stoch or non-stoch)
-		if(!simContext.checkAppSizes())
-		{
-			throw new RuntimeException("All structure sizes must be assigned positive values.\nPlease go to StructureMapping tab to check the sizes.");
-		}	
+		simContext.checkValidity();
 		
 		MathMapping mathMapping = null;
 		cbit.vcell.math.MathDescription mathDesc = null;

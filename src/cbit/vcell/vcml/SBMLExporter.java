@@ -9,6 +9,9 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.mapping.SimulationContext;
 import org.sbml.libsbml.*;
 import java.util.Vector;
+
+import cbit.vcell.model.DistributedKinetics;
+import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Kinetics;
@@ -214,7 +217,9 @@ protected void addReactions() {
 		if (vcReactionSpecs[i].isExcluded()) {
 			continue;
 		}
-
+		if (vcReactionSpecs[i].getReactionStep().getKinetics() instanceof LumpedKinetics){
+			throw new RuntimeException("Lumped Kinetics cannot yet be exported to SBML");
+		}
 		ReactionStep vcReactionStep = vcReactionSpecs[i].getReactionStep();
 		//Create sbml reaction
 		String rxnName = vcReactionStep.getName();
@@ -236,7 +241,7 @@ protected void addReactions() {
 		sbmlReaction.setAnnotation(cbit.util.xml.XmlUtil.xmlToString(annotationElement));
 		
 		// Get reaction kineticLaw
-		Kinetics vcRxnKinetics = vcReactionStep.getKinetics();
+		DistributedKinetics vcRxnKinetics = (DistributedKinetics)(vcReactionStep.getKinetics());
 		org.sbml.libsbml.KineticLaw sbmlKLaw = null;
 
 		// Add parameters, if any, to the kineticLaw
@@ -246,7 +251,7 @@ protected void addReactions() {
 			// (instead of directly using rate parameter's expression infix) to maintain integrity of formula :
 			// for example logical and inequalities are not handled gracefully by libSBMl if expression.infix is used.
 			Compartment sbmlCompartment = sbmlModel.getCompartment(cbit.util.TokenMangler.mangleToSName(vcReactionStep.getStructure().getName()));
-			Expression correctedRateExpr = Expression.mult(vcRxnKinetics.getRateParameter().getExpression(), new Expression(sbmlCompartment.getId()));
+			Expression correctedRateExpr = Expression.mult(vcRxnKinetics.getReactionRateParameter().getExpression(), new Expression(sbmlCompartment.getId()));
 			sbmlKLaw = new org.sbml.libsbml.KineticLaw();
 
 			// If the reaction is not in a feature, but in a membrane, use/set subtanceUnits for the kinetic law.
@@ -266,10 +271,10 @@ protected void addReactions() {
 			String[] kinParamNames = new String[vcKineticsParams.length];
 			Expression[] kinParamExprs = new Expression[vcKineticsParams.length];
 			for (int j = 0; j < vcKineticsParams.length; j++){
-				if (vcKineticsParams[j].getRole() != Kinetics.ROLE_Rate) {
+				if (vcKineticsParams[j].getRole() != Kinetics.ROLE_ReactionRate) {
 					// if expression of kinetic param does not evaluate to a double, the param value is defined by a rule. 
 					// Since local reaction parameters cannot be defined by a rule, such parameters (with rules) are exported as global parameters.
-					if (vcKineticsParams[j].getRole() == Kinetics.ROLE_Current && (!vcKineticsParams[j].getExpression().isZero())) {
+					if (vcKineticsParams[j].getRole() == Kinetics.ROLE_CurrentDensity && (!vcKineticsParams[j].getExpression().isZero())) {
 						throw new RuntimeException("Electric current not handled by SBML export; failed to export reaction \"" + vcReactionStep.getName() + "\" at this time");
 					}
 					if (!vcKineticsParams[j].getExpression().isNumeric()) {		// NON_NUMERIC KINETIC PARAM
@@ -285,9 +290,9 @@ protected void addReactions() {
 			// Second pass - Check if any of the numeric parameters is present in any of the non-numeric param expressions
 			// If so, these need to be added as global param (else the SBML doc will not be valid)
 			for (int j = 0; j < vcKineticsParams.length; j++){
-				if (vcKineticsParams[j].getRole() != Kinetics.ROLE_Rate) {
+				if (vcKineticsParams[j].getRole() != Kinetics.ROLE_ReactionRate) {
 					// if expression of kinetic param evaluates to a double, the parameter value is set
-					if (vcKineticsParams[j].getRole() == Kinetics.ROLE_Current && (!vcKineticsParams[j].getExpression().isZero())) {
+					if (vcKineticsParams[j].getRole() == Kinetics.ROLE_CurrentDensity && (!vcKineticsParams[j].getExpression().isZero())) {
 						throw new RuntimeException("Electric current not handled by SBML export; failed to export reaction \"" + vcReactionStep.getName() + "\" at this time");
 					}
 					if (vcKineticsParams[j].getExpression().isNumeric()) {		// NUMERIC KINETIC PARAM
@@ -342,14 +347,14 @@ protected void addReactions() {
 			// In the third pass thro' the kinetic params, the expressions are changed to reflect the new names set above
 			// (using the kinParamNames and kinParamExprs above) to ensure uniqueness in the global parameter names.
 			for (int j = 0; j < vcKineticsParams.length; j++) {
-				if ((vcKineticsParams[j].getRole() != Kinetics.ROLE_Rate) && !(vcKineticsParams[j].getExpression().isNumeric())) {
+				if ((vcKineticsParams[j].getRole() != Kinetics.ROLE_ReactionRate) && !(vcKineticsParams[j].getExpression().isNumeric())) {
 					String oldName = vcKineticsParams[j].getName();
 					String newName = kinParamNames[j];
 					// change the name of this parameter in the rate expression 
 					correctedRateExpr.substituteInPlace(new Expression(oldName), new Expression(newName));
 					// Change the occurence of this param in other param expressions
 					for (int k = 0; k < vcKineticsParams.length; k++){
-						if ((vcKineticsParams[k].getRole() != Kinetics.ROLE_Rate) && !(vcKineticsParams[k].getExpression().isNumeric())) {
+						if ((vcKineticsParams[k].getRole() != Kinetics.ROLE_ReactionRate) && !(vcKineticsParams[k].getExpression().isNumeric())) {
 							if (k != j && vcKineticsParams[k].getExpression().hasSymbol(oldName)) {
 								// for all params except the current param represented by index j (whose name was changed)
 								kinParamExprs[k].substituteInPlace(new Expression(oldName), new Expression(newName));
@@ -364,7 +369,7 @@ protected void addReactions() {
 					
 			// In the fourth pass thro' the kinetic params, the non-numeric params are added to the global params of the model
 			for (int j = 0; j < vcKineticsParams.length; j++){
-				if ((vcKineticsParams[j].getRole() != Kinetics.ROLE_Rate) && !(vcKineticsParams[j].getExpression().isNumeric())) {
+				if ((vcKineticsParams[j].getRole() != Kinetics.ROLE_ReactionRate) && !(vcKineticsParams[j].getExpression().isNumeric())) {
 					// Now, add this param to the globalParamNamesHash and add a global parameter to the sbmlModel
 					String paramName = kinParamNames[j];
 					if (globalParamNamesHash.get(paramName) == null) {
@@ -642,8 +647,14 @@ private Element getAnnotationElement(ReactionStep reactionStep) throws cbit.vcel
 
 	// Add rate name as an element of annotation - this is especially useful when roundtripping VCell models, when the reaction
 	// rate parameters have been renamed by user.
-	Element rateElement = new Element(XMLTags.RateTag, vcNamespace);
-	rateElement.setAttribute(XMLTags.NameAttrTag, reactionStep.getKinetics().getRateParameter().getName());
+	Element rateElement = new Element(XMLTags.ReactionRateTag, vcNamespace);
+	if (reactionStep.getKinetics() instanceof DistributedKinetics){
+		rateElement.setAttribute(XMLTags.NameAttrTag, ((DistributedKinetics)reactionStep.getKinetics()).getReactionRateParameter().getName());
+	}else if (reactionStep.getKinetics() instanceof LumpedKinetics){
+		rateElement.setAttribute(XMLTags.NameAttrTag, ((LumpedKinetics)reactionStep.getKinetics()).getLumpedReactionRateParameter().getName());
+	}else{
+		throw new RuntimeException("unexpected kinetic type "+reactionStep.getKinetics().getClass().getName());
+	}
 
 	vcellInfoElement.addContent(rxnElement);
 	vcellInfoElement.addContent(rateElement);

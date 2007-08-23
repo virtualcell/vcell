@@ -55,9 +55,11 @@ public class VCMODL {
 	public final static String NernstKinetics			       = "NernstKinetics";
 	public final static String HMM_IrreversibleKinetics 	   = "HenriMichaelasMentenKineticsIrr";
 	public final static String HMM_ReversibleKinetics		   = "HenriMichaelasMentenKineticsRev";
-	public final static String GeneralTotalKinetics   	       = "GeneralTotalKinetics";
+	public final static String GeneralLumpedKinetics   	      	= "GeneralLumpedKinetics";
+	public final static String GeneralCurrentLumpedKinetics		= "GeneralCurrentLumpedKinetics";
 	public final static String CurrentDensity				   = "CurrentDensity";
-	public final static String Rate							   = "Rate";
+	public final static String LumpedCurrent				   = "LumpedCurrent";
+	public final static String ReactionRate					   = "Rate";
 	public final static String Valence						   = "Valence";
 	public final static String PhysicsOptions				   = "PhysicsOptions";
 	public final static String MembraneVoltageName			   = "MembraneVoltageName";
@@ -76,8 +78,8 @@ public class VCMODL {
 	public final static String VmaxFwd						   = "VmaxFwd";
 	public final static String KmRev						   = "KmRev";
 	public final static String VmaxRev						   = "VmaxRev";
-	public final static String TotalRate					   = "TotalRate";
-	public final static String AssumedCompartmentSize		   = "AssumedCompartmentSize";
+	public final static String LumpedReactionRate			   = "LumpedReactionRate";
+	public final static String TotalRate_oldname			   = "TotalRate"; // "TotalRate" is the old name for "LumpedReactionRate"
 	public final static String Feature						   = "Compartment";
 	public final static String Membrane						   = "Membrane";
 	public final static String Context						   = "Context";

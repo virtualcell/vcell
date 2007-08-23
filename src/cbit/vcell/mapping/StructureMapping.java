@@ -610,18 +610,4 @@ void setStructure(Structure argStructure) {
 	this.structure = argStructure;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (12/15/2006 5:17:54 PM)
- */
-public void showIssueDialog(SimulationContext arg_sc) 
-{
-	SimulationContext sc = arg_sc;
-	if(!sc.checkAppSizes())
-	{
-		DialogUtils.showErrorDialog("All structure sizes must be assigned positive values.\nPlease go to StructureMapping tab to check the sizes.");
-		throw new RuntimeException("All structure sizes must be assigned positive values.\nPlease go to StructureMapping tab to check the sizes.");
-	}
-}
 }

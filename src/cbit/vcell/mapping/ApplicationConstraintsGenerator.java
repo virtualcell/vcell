@@ -2,6 +2,7 @@ package cbit.vcell.mapping;
 import net.sourceforge.interval.ia_math.RealInterval;
 import cbit.vcell.constraints.*;
 import cbit.vcell.model.*;
+import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.math.*;
 /**
@@ -64,7 +65,8 @@ public static ConstraintContainerImpl fromApplication(SimulationContext simConte
 									"non-negative reverse rate"));
 				}
 			}
-			Expression kineticRateConstraintExp = new Expression(kinetics.getRateParameter().getName()+"=="+kinetics.getRateParameter().getExpression().infix());
+			KineticsParameter authoritativeParameter = kinetics.getAuthoritativeParameter();
+			Expression kineticRateConstraintExp = new Expression(authoritativeParameter.getName()+"=="+authoritativeParameter.getExpression().infix());
 			kineticRateConstraintExp = getSteadyStateExpression(kineticRateConstraintExp);
 			if (!kineticRateConstraintExp.compareEqual(new Expression(1.0))){
 				ccImpl.addGeneralConstraint(new GeneralConstraint(
@@ -238,7 +240,8 @@ public static ConstraintContainerImpl steadyStateFromApplication(SimulationConte
 									"non-negative reverse rate"));
 				}
 			}
-			Expression kineticRateConstraintExp = new Expression(kinetics.getRateParameter().getName()+"=="+kinetics.getRateParameter().getExpression().infix());
+			KineticsParameter authoritativeParameter = kinetics.getAuthoritativeParameter();
+			Expression kineticRateConstraintExp = new Expression(authoritativeParameter.getName()+"=="+authoritativeParameter.getExpression().infix());
 			kineticRateConstraintExp = getSteadyStateExpression(kineticRateConstraintExp);
 			if (!kineticRateConstraintExp.compareEqual(new Expression(1.0))){
 				ccImpl.addGeneralConstraint(new GeneralConstraint(

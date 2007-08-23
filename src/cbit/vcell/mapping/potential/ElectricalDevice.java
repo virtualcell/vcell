@@ -14,12 +14,14 @@ public abstract class ElectricalDevice implements ScopedSymbolTable {
 	protected cbit.vcell.mapping.MathMapping mathMapping = null; // for determining NameScope parent only
 	private Expression dependentVoltageExpression = null;
 
-	public static final int ROLE_TotalCurrentDensity			= 0;
-	public static final int ROLE_TransmembraneCurrentDensity	= 1;
-	public static final int ROLE_Voltage						= 2;
-	public static final int ROLE_UserDefined					= 3;
-	public static final int NUM_ROLES		= 4;
+	public static final int ROLE_TotalCurrent					= 0;
+	public static final int ROLE_TotalCurrentDensity			= 1;
+	public static final int ROLE_TransmembraneCurrentDensity	= 2;
+	public static final int ROLE_Voltage						= 3;
+	public static final int ROLE_UserDefined					= 4;
+	public static final int NUM_ROLES		= 5;
 	public static final String DefaultNames[] = {
+		"LumpedI",
 		"I",
 		"F",
 		"V",
