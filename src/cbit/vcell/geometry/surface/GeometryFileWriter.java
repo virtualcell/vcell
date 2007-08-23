@@ -213,25 +213,23 @@ private static void write(Writer writer, Geometry geometry, ISize volumeSampleSi
 			writer.write("volumeSamples "+volumeSampleSize.getX()+" "+volumeSampleSize.getY()+" "+volumeSampleSize.getZ()+"\n");
 			break;
 	}
-
-	byte[] uncompressedRegionIDs = null;
 	
 	// regionImage
 	if (regionImage != null) {
-		if (regionImage.getNumRegions() > 255){
-			throw new RuntimeException("cannot process a geometry with more than 255 volume regions");
+		if (regionImage.getNumRegions() > 65536){
+			throw new RuntimeException("cannot process a geometry with more than 65536 volume regions");
 		}
-		uncompressedRegionIDs = new byte[regionImage.getNumX()*regionImage.getNumY()*regionImage.getNumZ()];
-		for (int i = 0; i < uncompressedRegionIDs.length; i++){
-			uncompressedRegionIDs[i] = (byte)regionImage.getRegionInfoFromOffset(i).getRegionIndex();
+		byte[] uncompressedRegionIDs = new byte[2 * regionImage.getNumX()*regionImage.getNumY()*regionImage.getNumZ()];
+		for (int i = 0, j = 0; i < uncompressedRegionIDs.length; i += 2, j ++){
+			int regindex = regionImage.getRegionInfoFromOffset(j).getRegionIndex();
+			uncompressedRegionIDs[i] = (byte)(regindex & 0x000000ff);
+			uncompressedRegionIDs[i + 1] = (byte)((regindex & 0x0000ff00) >> 8);
 		}
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DeflaterOutputStream dos = new DeflaterOutputStream(bos);
-		//DeflaterOutputStream dos = new DeflaterOutputStream(bos,new Deflater(5,false));
 		dos.write(uncompressedRegionIDs,0,uncompressedRegionIDs.length);
 		dos.close();
 		byte[] compressedRegionIDs = bos.toByteArray();
-		//writer.write(cbit.util.Hex.toString(uncompressedRegionIDs)+"\n");
 		writer.write(cbit.util.Hex.toString(compressedRegionIDs)+"\n");
 	} else {
 		writer.write("\n");
@@ -329,8 +327,8 @@ private static void write(Writer writer, Geometry geometry, ISize volumeSampleSi
 				cbit.vcell.render.Vect3d unitNormal = new cbit.vcell.render.Vect3d();
 				polygon.getUnitNormal(unitNormal);
 				
-				int volNeighbor1Region = (int)(0x000000FF & uncompressedRegionIDs[polygon.getVolIndexNeighbor1()]);
-				int volNeighbor2Region = (int)(0x000000FF & uncompressedRegionIDs[polygon.getVolIndexNeighbor2()]);
+				int volNeighbor1Region = regionImage.getRegionInfoFromOffset(polygon.getVolIndexNeighbor1()).getRegionIndex();
+				int volNeighbor2Region = regionImage.getRegionInfoFromOffset(polygon.getVolIndexNeighbor2()).getRegionIndex();
 
 				if (surface.getExteriorRegionIndex() == volNeighbor1Region && surface.getInteriorRegionIndex() == volNeighbor2Region) {
 					region1Outside ++;

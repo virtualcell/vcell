@@ -326,8 +326,8 @@ public static CartesianMesh createSimpleCartesianMesh(Origin orig, Extent extent
 	mesh.setSize(size.getX(), size.getY(), size.getZ());
 	
 	mesh.meshRegionInfo = new MeshRegionInfo();	
-	byte[] compressRegionBytes = BeanUtils.compress(regionImage.getRegionIndexImage());
-	mesh.meshRegionInfo.setCompressedVolumeElementMapVolumeRegion(compressRegionBytes);
+	byte[] compressRegionBytes = BeanUtils.compress(regionImage.getShortEncodedRegionIndexImage());
+	mesh.meshRegionInfo.setCompressedVolumeElementMapVolumeRegion(compressRegionBytes, mesh.getNumVolumeElements());
 	
 	return mesh;
 }
@@ -799,57 +799,6 @@ public int getSubVolumeFromVolumeIndex(int volIndex) {
 
 
 /**
- * This method was created by a SmartGuide.
- * @return java.lang.String
- */
-public String getVCML() {
-	String version = VERSION_1_0;
-	if(membraneElements != null && membraneElements[0].getMembraneNeighborIndexes().length == 0){
-		version = VERSION_1_1;
-	}
-	boolean bRegion = (meshRegionInfo != null);
-	if(bRegion){
-		version = VERSION_1_2;
-	}
-	StringBuffer buffer = new StringBuffer();
-	buffer.append(version+"\n");
-	buffer.append(VCML.CartesianMesh+" {\n");
-	buffer.append("\t"+VCML.Size+" "+getSizeX()+" "+getSizeY()+" "+getSizeZ()+"\n");
-	buffer.append("\t"+VCML.Extent+" "+getExtent().getX()+" "+getExtent().getY()+" "+getExtent().getZ()+"\n");
-	buffer.append("\t"+VCML.Origin+" "+getOrigin().getX()+" "+getOrigin().getY()+" "+getOrigin().getZ()+"\n");
-	if(bRegion){
-		buffer.append(meshRegionInfo.getVCMLVolumeRegionMapSubvolume());
-		buffer.append(meshRegionInfo.getVCMLMembraneRegionsMapVolumeRegion());
-		buffer.append(meshRegionInfo.getVCMLVolumeElementsMapVolumeRegion(getSizeX(),false));
-	}
-	if (membraneElements != null){
-		buffer.append("\t"+VCML.MembraneElements+" {\n");
-		buffer.append("\t"+membraneElements.length+"\n");
-		for (int i=0;i<membraneElements.length;i++){
-			buffer.append("\t\t"+membraneElements[i].toString());
-			if(bRegion){
-				buffer.append(" "+meshRegionInfo.getMembraneRegionForMembraneElement(i));
-			}
-			buffer.append("\n");
-		}
-		buffer.append("\t}\n");
-	}
-	if(contourElements != null){
-		buffer.append("\t"+VCML.ContourElements+" {\n");
-		buffer.append("\t"+contourElements.length+"\n");
-		for (int i=0;i<contourElements.length;i++){
-			buffer.append("\t\t"+contourElements[i].toString());
-			buffer.append("\n");
-		}
-		buffer.append("\t}\n");
-
-	}
-	buffer.append("}\n");
-	return buffer.toString();		
-}
-
-
-/**
  * This method was created in VisualAge.
  * @return int
  * @param coordIndex CoordinateIndex
@@ -876,8 +825,7 @@ public int getVolumeIndex(CoordinateIndex coordIndex) {
  * @param coordIndex CoordinateIndex
  */
 public int getVolumeRegionIndex(int volumeIndex) {
-	byte regionIndex = getMeshRegionInfo().getVolumeElementMapVolumeRegion()[volumeIndex];
-	return ((int)regionIndex)&0xff;
+	return getMeshRegionInfo().getVolumeElementMapVolumeRegion(volumeIndex);
 }
 
 
@@ -888,8 +836,7 @@ public int getVolumeRegionIndex(int volumeIndex) {
  */
 public int getVolumeRegionIndex(CoordinateIndex coordIndex) {
 	int volumeIndex = getVolumeIndex(coordIndex);
-	byte regionIndex = getMeshRegionInfo().getVolumeElementMapVolumeRegion()[volumeIndex];
-	return ((int)regionIndex)&0xff;
+	return getMeshRegionInfo().getVolumeElementMapVolumeRegion(volumeIndex);
 }
 
 
@@ -1234,11 +1181,11 @@ private void read(cbit.vcell.math.CommentStringTokenizer tokens,MembraneMeshMetr
 				//Un-HEX the compressed data
 				byte[] compressedData = Hex.toBytes(hexOfCompressed.toString());
 				try{
-					meshRegionInfo.setCompressedVolumeElementMapVolumeRegion(compressedData);
+					meshRegionInfo.setCompressedVolumeElementMapVolumeRegion(compressedData, numVolumeElements);
 				}catch(IOException e){
 					throw new MathFormatException("CartesianMesh.read->VolumeElementsMapVolumeRegion "+e.toString());
 				}
-				checkCount = meshRegionInfo.getVolumeElementMapVolumeRegion().length;
+				checkCount = meshRegionInfo.getUncompressedVolumeElementMapVolumeRegionLength();
 			}else{
 				while (tokens.hasMoreTokens()){
 					token = tokens.nextToken();
@@ -1254,7 +1201,7 @@ private void read(cbit.vcell.math.CommentStringTokenizer tokens,MembraneMeshMetr
 					checkCount+= 1;
 				}
 			}
-			if(checkCount != numVolumeElements){
+			if(checkCount != numVolumeElements && checkCount != 2 * numVolumeElements){
 				throw new MathFormatException("CartesianMesh.read->VolumeElementsMapVolumeRegion: read "+checkCount+" VolumeElements but was expecting "+numVolumeElements);
 			}
 			continue;
