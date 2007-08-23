@@ -137,15 +137,13 @@ public class RegionImage implements Serializable {
 		}
 	};
 	
-	public byte[] getRegionIndexImage(){
+	public byte[] getShortEncodedRegionIndexImage(){
 		int imageSize = numX*numY*numZ;
-		byte[] regionIndexImage = new byte[imageSize];
-		for (int i = 0; i < imageSize; i++) {
-			for (int j = 0; j < regionInfos.length; j++) {
-				if (regionInfos[j].isIndexInRegion(i)){
-					regionIndexImage[i] = (byte)(regionInfos[j].getRegionIndex());
-				}
-			}
+		byte[] regionIndexImage = new byte[2 * imageSize];
+		for (int i = 0; i < imageSize * 2; i += 2) {
+			int regionIndex  = mapLinkRegionToDistinctRegion[mapImageIndexToLinkRegion[i]];
+			regionIndexImage[i] = (byte)(regionIndex & 0x000000ff);				
+			regionIndexImage[i + 1] = (byte)((regionIndex & 0x0000ff00) >> 8);
 		}
 		return regionIndexImage;
 	}
@@ -1404,21 +1402,6 @@ public int getNumZ() {
  * @param y int
  * @param z int
  */
-public int getOffset(int x, int y, int z) {
-	//if (x<0||x>=numX||y<0||y>=numY||z<0||z>=numZ){
-		//throw new IndexOutOfBoundsException("("+x+","+y+","+z+") is outside (0,0,0) and ("+(numX-1)+","+(numY-1)+","+(numZ-1)+")");
-	//}
-	return x + y*numX + z*numXY;
-}
-
-
-/**
- * This method was created in VisualAge.
- * @return byte
- * @param x int
- * @param y int
- * @param z int
- */
 private int getRegionIndex(int x, int y, int z) throws IndexOutOfBoundsException {
 	if (x<0||x>=numX||y<0||y>=numY||z<0||z>=numZ){
 		throw new IndexOutOfBoundsException("("+x+","+y+","+z+") is outside (0,0,0) and ("+(numX-1)+","+(numY-1)+","+(numZ-1)+")");
@@ -1427,27 +1410,6 @@ private int getRegionIndex(int x, int y, int z) throws IndexOutOfBoundsException
 	for (int i = 0; i < regionInfos.length; i++){
 		if (regionInfos[i].mask.get(index)){
 			return regionInfos[i].regionIndex;
-		}
-	}
-	throw new RuntimeException("pixel("+x+","+y+","+z+") not assigned to a region");
-}
-
-
-/**
- * This method was created in VisualAge.
- * @return byte
- * @param x int
- * @param y int
- * @param z int
- */
-public RegionInfo getRegionInfo(int x, int y, int z) throws IndexOutOfBoundsException {
-	//if (x<0||x>=numX||y<0||y>=numY||z<0||z>=numZ){
-		//throw new IndexOutOfBoundsException("("+x+","+y+","+z+") is outside (0,0,0) and ("+(numX-1)+","+(numY-1)+","+(numZ-1)+")");
-	//}
-	int index = x + y*numX + z*numXY;
-	for (int i = 0; i < regionInfos.length; i++){
-		if (regionInfos[i].mask.get(index)){
-			return regionInfos[i];
 		}
 	}
 	throw new RuntimeException("pixel("+x+","+y+","+z+") not assigned to a region");

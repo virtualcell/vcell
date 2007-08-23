@@ -16,6 +16,7 @@ public class MeshRegionInfo implements cbit.util.Matchable, java.io.Serializable
 	private byte[] fieldCompressedVolumeElementMapVolumeRegion = null;
 	private transient byte[] fieldVolumeElementMapVolumeRegion = null;
 	private int[] fieldMembraneElementMapMembraneRegion = null;
+	private int numVolumeElements;
 	//
 	class VolumeRegionMapSubvolume implements java.io.Serializable {
 		public int volumeRegionID;
@@ -204,41 +205,6 @@ public String getVCMLMembraneRegionsMapVolumeRegion() {
  * Creation date: (7/5/2001 1:05:24 PM)
  * @return java.lang.String
  */
-public String getVCMLVolumeElementsMapVolumeRegion(int numX,boolean bCompress) {
-	StringBuffer buffer = new StringBuffer();
-	buffer.append("\t"+cbit.vcell.math.VCML.VolumeElementsMapVolumeRegion+" {\n");
-	int numVolumeElementsMapVolumeRegion = getVolumeElementMapVolumeRegion().length;
-	if(!bCompress){
-		buffer.append("\t"+numVolumeElementsMapVolumeRegion+" UnCompressed \n");
-		for(int i = 0;i<numVolumeElementsMapVolumeRegion;i+= 1){
-			if(i%numX == 0){
-				buffer.append("\n\t\t");
-			}
-			buffer.append(fieldVolumeElementMapVolumeRegion[i]+" ");
-		}
-		buffer.append("\n");
-	}else{
-		buffer.append("\t"+numVolumeElementsMapVolumeRegion+" Compressed \n");
-		String hex = cbit.util.Hex.toString(getCompressedVolumeElementMapVolumeRegion());
-		int i = 0;
-		while(i < hex.length()){
-			int len = ((hex.length()-i)<40?hex.length()-i:40);
-			buffer.append("\t"+hex.substring(i,i+len)+"\n");
-			i+= len;
-		}
-	}
-	buffer.append("\t}\n");
-
-	return buffer.toString();
-
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (7/5/2001 1:05:24 PM)
- * @return java.lang.String
- */
 public String getVCMLVolumeRegionMapSubvolume() {
 	StringBuffer buffer = new StringBuffer();
 	buffer.append("\t"+cbit.vcell.math.VCML.VolumeRegionsMapSubvolume+" {\n");
@@ -260,21 +226,31 @@ public String getVCMLVolumeRegionMapSubvolume() {
  * Creation date: (7/4/2001 5:50:56 PM)
  * @param cvemvr byte[]
  */
-public byte[] getVolumeElementMapVolumeRegion() {
+public int getVolumeElementMapVolumeRegion(int index) {
     if (fieldVolumeElementMapVolumeRegion == null) {
         if (fieldCompressedVolumeElementMapVolumeRegion != null) {
             try{
 	            fieldVolumeElementMapVolumeRegion = uncompress(fieldCompressedVolumeElementMapVolumeRegion);
             }catch(java.io.IOException e){
-	            throw new RuntimeException(e.toString());
+	            throw new RuntimeException(e.getMessage());
             }
-        }else{
-	        return null;
+        } else {
+	        throw new RuntimeException("MeshRegionInfo no compressed volume element map volume region data");
         }
     }
-    return fieldVolumeElementMapVolumeRegion;
+    if (fieldVolumeElementMapVolumeRegion.length == 2 * numVolumeElements) {
+    	// unsigned short
+    	return (int)(0x0000ffff & fieldVolumeElementMapVolumeRegion[index] & (fieldVolumeElementMapVolumeRegion[index + 1] << 8));
+    } else {
+    	// byte
+    	return (int)(0x000000ff & fieldVolumeElementMapVolumeRegion[index]);
+    }
 }
 
+public int getUncompressedVolumeElementMapVolumeRegionLength() {
+	getVolumeElementMapVolumeRegion(0);
+	return fieldVolumeElementMapVolumeRegion.length;
+}
 
 /**
  * Insert the method's description here.
@@ -332,21 +308,11 @@ public void mapVolumeRegionToSubvolume(int volumeRegionID, int subvolumeID, doub
  * Creation date: (7/4/2001 5:50:56 PM)
  * @param cvemvr byte[]
  */
-public void setCompressedVolumeElementMapVolumeRegion(byte[] cvemvr) throws java.io.IOException{
+public void setCompressedVolumeElementMapVolumeRegion(byte[] cvemvr, int nve) throws java.io.IOException{
     fieldCompressedVolumeElementMapVolumeRegion = cvemvr;
     fieldVolumeElementMapVolumeRegion = uncompress(cvemvr);
+    numVolumeElements = nve;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (7/4/2001 5:50:56 PM)
- * @param cvemvr byte[]
- */
-public void setVolumeElementMapVolumeRegion(byte[] vemvr) {
-	fieldVolumeElementMapVolumeRegion = vemvr;
-	fieldCompressedVolumeElementMapVolumeRegion = null;
-	}
 
 
 /**
