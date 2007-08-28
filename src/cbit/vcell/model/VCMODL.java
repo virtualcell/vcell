@@ -80,6 +80,7 @@ public class VCMODL {
 	public final static String VmaxRev						   = "VmaxRev";
 	public final static String LumpedReactionRate			   = "LumpedReactionRate";
 	public final static String TotalRate_oldname			   = "TotalRate"; // "TotalRate" is the old name for "LumpedReactionRate"
+	public final static String AssumedCompartmentSize_oldname  = "AssumedCompartmentSize";
 	public final static String Feature						   = "Compartment";
 	public final static String Membrane						   = "Membrane";
 	public final static String Context						   = "Context";

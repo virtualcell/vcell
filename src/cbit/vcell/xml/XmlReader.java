@@ -12,6 +12,7 @@ import cbit.vcell.mapping.*;
 import cbit.image.*;
 import org.jdom.input.SAXBuilder;
 import cbit.vcell.model.*;
+import cbit.vcell.model.gui.VCellNames;
 import cbit.vcell.math.*;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -1770,6 +1771,15 @@ public cbit.vcell.model.Kinetics getKinetics(Element param, ReactionStep reactio
 			}else{
 				continue;
 			}
+			// hack for bringing in General Total kinetics without breaking.
+			if (tempParam == null && newKinetics instanceof GeneralLumpedKinetics) {
+				if (role.equals(Kinetics.GTK_AssumedCompartmentSize_oldname) || role.equals(Kinetics.GTK_ReactionRate_oldname) || role.equals(Kinetics.GTK_CurrentDensity_oldname)) {
+					continue;
+				} else if (role.equals(VCMODL.TotalRate_oldname)) {
+					tempParam = newKinetics.getKineticsParameterFromRole(Kinetics.ROLE_LumpedReactionRate);
+				}
+			}
+					
 			if (tempParam == null) {
 				throw new XmlParseException("parameter with role '"+role+"' not found in kinetics type '"+type+"'");
 			} 

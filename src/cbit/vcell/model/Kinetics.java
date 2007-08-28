@@ -26,6 +26,14 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 	private transient boolean bReading = false;
 	private transient boolean bResolvingUnits = false;
 	public transient boolean bRefreshingUnits = false;
+	
+	// !! HACK ALERT!!
+	// For older models that did have GeneralTotalKinetics: need this to bring the params into GeneralLumpedKinetics 
+	public static String GTK_TotalRate_oldname = "total rate";
+	public static String GTK_AssumedCompartmentSize_oldname = "assumed compartment size";
+	public static String GTK_ReactionRate_oldname = "reaction rate";
+	public static String GTK_CurrentDensity_oldname = "inward current density";
+
 
 	public static final String ISSUECATEGORY_KineticsApplicability = "KineticsApplicablity";
 	public static final String ISSUECATEGORY_ParameterLoop = "ParameterLoop";
@@ -708,6 +716,14 @@ public final void fromTokens(cbit.vcell.math.CommentStringTokenizer tokens) thro
 			//
 			// not written as a parameter, try a requiredIdentifier
 			//
+			if (this instanceof GeneralLumpedKinetics) {
+				if (token.equals(VCMODL.ReactionRate) || token.equals(VCMODL.CurrentDensity) || token.equals(VCMODL.AssumedCompartmentSize_oldname)){
+					token = tokens.nextToken();
+					continue;
+				} else if (token.equals(VCMODL.TotalRate_oldname)) {
+					token = VCMODL.LumpedReactionRate;
+				}
+			}
 			boolean bTokenFound = false;
 			for (int i = 0; i < RoleTags.length; i++){
 				if (token.equalsIgnoreCase(RoleTags[i])){
@@ -1099,6 +1115,12 @@ public Parameter getParameter(String pName){
 			}	
 		}
 
+		if (paramDesc.equals(Kinetics.GTK_TotalRate_oldname)) {
+			paramRole = ROLE_LumpedReactionRate;
+		} 
+		if (paramDesc.equals(Kinetics.GTK_AssumedCompartmentSize_oldname)) {
+			paramRole = ROLE_UserDefined;
+		} 
 		if (paramRole == -1) {
 			throw new IllegalArgumentException("Parameter description: " + paramDesc + " is not valid.");
 		}
