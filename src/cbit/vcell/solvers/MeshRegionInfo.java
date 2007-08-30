@@ -240,7 +240,7 @@ public int getVolumeElementMapVolumeRegion(int index) {
     }
     if (fieldVolumeElementMapVolumeRegion.length == 2 * numVolumeElements) {
     	// unsigned short
-    	return (int)(0x0000ffff & fieldVolumeElementMapVolumeRegion[index] & (fieldVolumeElementMapVolumeRegion[index + 1] << 8));
+    	return (int)((0x000000ff & fieldVolumeElementMapVolumeRegion[2 * index]) | ((0x000000ff & fieldVolumeElementMapVolumeRegion[2 * index + 1]) << 8));
     } else {
     	// byte
     	return (int)(0x000000ff & fieldVolumeElementMapVolumeRegion[index]);
