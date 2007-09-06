@@ -1,4 +1,8 @@
 package cbit.vcell.messaging.server;
+import cbit.vcell.math.MemVariable;
+import cbit.vcell.math.Variable;
+import cbit.vcell.math.VolVariable;
+import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.server.User;
@@ -39,20 +43,29 @@ public SimulationTask(SimulationJob argSimulationJob, int tid, String comres) {
 	computeResource = comres;
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (10/18/2001 5:12:58 PM)
- * @return double
- */
-public double getEstimatedSizeMB() {
-	try {
-		return getSimulationJob().getWorkingSim().getSolverTaskDescription().getSolverDescription().getEstimatedMemoryMB(getSimulationJob().getWorkingSim());
-	} catch (Exception ex) {
-		System.out.println("!!!Note: getEstimatedSizeMB()" + ex.getMessage());
-		return 1.0;
+public double getEstimatedMemorySizeMB() {
+	//
+	// calculate number of PDE variables and total number of spatial variables
+	//
+	int pdeVarCount=0;
+	int odeVarCount=0;
+	Simulation simulation = getSimulationJob().getWorkingSim();
+	Variable variables[] = simulation.getVariables();
+	for (int i=0;i<variables.length;i++){
+	  	if ((variables[i] instanceof VolVariable && simulation.getMathDescription().isPDE((VolVariable)variables[i]))
+	  			|| (variables[i] instanceof MemVariable && simulation.getMathDescription().isPDE((MemVariable)variables[i]))) {
+	  		pdeVarCount ++;
+	  	} else {
+	  		odeVarCount ++;
+	  	}
 	}
+	cbit.util.ISize samplingSize = simulation.getMeshSpecification().getSamplingSize();
+	long numMeshPoints = samplingSize.getX()*samplingSize.getY()*samplingSize.getZ();
+	
+	// 180 bytes per pde variable plus ode per mesh point + 15M overhead 
+	// there is 70M PBS overhead which will be added when submitted to pbs
+	return ((180 * pdeVarCount + 16 * odeVarCount) * numMeshPoints / 1e6 + 15);
 }
-
 
 /**
  * Insert the method's description here.

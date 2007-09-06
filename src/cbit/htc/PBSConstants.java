@@ -75,4 +75,5 @@ public class PBSConstants {
 	public final static String JOB_CMD_STATUS = "qstat";	
 	public final static String JOB_CMD_HISTORY = "tracejob -p " + PropertyLoader.getRequiredProperty(PropertyLoader.pbsHomeDir);
 	public final static String SERVER_CMD_STATUS = "qstat -B";
+	public final static int PBS_MEM_OVERHEAD_MB = 70;
 }
