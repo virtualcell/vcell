@@ -10,6 +10,7 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -59,6 +60,14 @@ private XmlUtil() {
 		}
 		
 		return buf.toString();
+	}
+	
+	public static void writeXMLString(String xmlString, String filename) throws IOException {
+		File outputFile = new File(filename);
+		java.io.FileWriter fileWriter = new java.io.FileWriter(outputFile);
+		fileWriter.write(xmlString);
+		fileWriter.flush();
+		fileWriter.close();
 	}
 
 

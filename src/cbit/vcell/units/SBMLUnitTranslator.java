@@ -154,52 +154,29 @@ public static org.sbml.libsbml.UnitDefinition getSBMLUnitDefinition(VCUnitDefini
 	/*
 	 *  getVCUnit : 
 	 */
-	private static ucar.units.Unit getVCUnit(org.sbml.libsbml.Unit unit) {
+	private static VCUnitDefinition getVCUnit(org.sbml.libsbml.Unit unit) {
 		// Get the attributes of the unit 'element', 'kind', 'multiplier', 'scale', 'offset', etc.
 		String unitKind = org.sbml.libsbml.libsbml.UnitKind_toString(unit.getKind());
 		int unitExponent = unit.getExponent();
 		int unitScale = unit.getScale();
 		double unitMultiplier = unit.getMultiplier();
 		double unitOffset = unit.getOffset();
+		String vcScaleStr = Double.toString(Math.pow((unitMultiplier*Math.pow(10, unitScale)), unitExponent));
 
-		ucar.units.Unit vcUnit = null;
-		ucar.units.UnitName uName;
+		VCUnitDefinition vcUnit = null;
 
 		// convert the sbmlUnit into a vcell unit with the appropriate multiplier, scale, exponent, offset, etc ..
-		try { 
-            ucar.units.UnitDB unitDB = ucar.units.UnitSystemManager.instance().getUnitDB();
-			if (unit.isDimensionless()) {        //'dimensionless' can be part of a bigger unit definition     
-				String dimensionlessStr = Double.toString(Math.pow((unitMultiplier*Math.pow(10, unitScale)), unitExponent));
-				vcUnit = VCUnitDefinition.getInstance(dimensionlessStr).getUcarUnit();
-				return vcUnit;
+		if (unit.isDimensionless()) {        //'dimensionless' can be part of a bigger unit definition     
+			vcUnit = VCUnitDefinition.getInstance(vcScaleStr);
+			return vcUnit;
+		} else {
+			if (unit.isItem()) {
+				System.out.println("SBML 'item' unit found, interpreted as 'molecule'");
+				vcUnit = VCUnitDefinition.getInstance(vcScaleStr + " molecules" + unitExponent);
 			} else {
-				if (unit.isItem()) {
-					System.out.println("SBML 'item' unit found, interpreted as 'molecule'");
-					vcUnit = unitDB.get("molecules");
-					uName = ucar.units.UnitName.newUnitName("molecules");
-				} else {
-					vcUnit = unitDB.get(unitKind);
-					uName = ucar.units.UnitName.newUnitName(unitKind); 
-				}
-				
-				if (unitScale != 0) {                        
-					vcUnit = new ucar.units.ScaledUnit(Double.parseDouble("1.0e" + unitScale), vcUnit, uName);
-				}
-				if (unitMultiplier != 1) {
-					vcUnit = new ucar.units.ScaledUnit(unitMultiplier, vcUnit, uName);
-				}
-				if (unitExponent != 1) {
-					vcUnit = vcUnit.raiseTo(new ucar.units.RationalNumber(unitExponent));
-				}
-				if (unitOffset  != 0) {
-					vcUnit = new ucar.units.OffsetUnit(vcUnit, unitOffset, uName);
-				}
+				vcUnit = VCUnitDefinition.getInstance(vcScaleStr + " " + unitKind + unitExponent);
 			}
-		} catch (ucar.units.UnitException e) {
-			e.printStackTrace();
-			throw new cbit.vcell.units.VCUnitException("Unable to set unit value: "+e.getMessage());
 		}
-
 		return vcUnit;
 	}
 
@@ -211,11 +188,11 @@ public static VCUnitDefinition getVCUnitDefinition(org.sbml.libsbml.UnitDefiniti
 	org.sbml.libsbml.ListOf listofUnits = sbmlUnitDefn.getListOfUnits();
 	for (int j = 0; j < sbmlUnitDefn.getNumUnits(); j++) {
 		org.sbml.libsbml.Unit sbmlUnit = (org.sbml.libsbml.Unit)listofUnits.get(j);
-		ucar.units.Unit vcUnit = getVCUnit(sbmlUnit);
+		VCUnitDefinition vcUnit = getVCUnit(sbmlUnit);
 		if (vcUnitDefn == null) {
-			vcUnitDefn = VCUnitDefinition.getInstance(vcUnit);
+			vcUnitDefn = vcUnit;
 		} else {
-			vcUnitDefn = vcUnitDefn.multiplyBy(VCUnitDefinition.getInstance(vcUnit));        //?
+			vcUnitDefn = vcUnitDefn.multiplyBy(vcUnit);        //?
 		}
 	}
 	System.out.println("sbmlUnit : " + sbmlUnitDefn.toString() + ";\t VC Unit : " + vcUnitDefn.toString());
