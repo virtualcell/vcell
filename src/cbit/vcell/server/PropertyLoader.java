@@ -141,6 +141,8 @@ public class PropertyLoader {
 	
 	public static final String pbsHomeDir = "vcell.pbs.homeDir";
 	
+	public static final String limitJobMemoryMB="vcell.limit.jobMemoryMB";
+	
 	private static final String ALL_PROPERTIES[] = {
 		vcellServerIDProperty,
 		tempDirProperty,
@@ -263,7 +265,9 @@ public class PropertyLoader {
 		htcComputeResources,
 		htcPartitionMaximumJobs,
 		htcPartitionShareServerIDs,		
-		pbsHomeDir
+		pbsHomeDir,
+		
+		limitJobMemoryMB
 	};
 
 /**

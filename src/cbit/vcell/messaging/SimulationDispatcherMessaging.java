@@ -285,17 +285,28 @@ public void run() {
 				if (!join) {
 					throw new RuntimeException("**DT: join failed");
 				} else {
-					log.print("**DT: queued " + simTask);
-
-					SimulationTaskMessage taskMsg = new SimulationTaskMessage(simTask);
-					// send the job the job queue
-					taskMsg.sendSimulationTask(waitingJobDispatcher);
-					//update database
-					SimulationJobStatus newJobStatus = simDispatcher.updateQueueStatus(jobStatus, jobAdminXA, waitingJobDbConnection.getConnection(), 
-						jobStatus.getVCSimulationIdentifier(), jobStatus.getJobIndex(), MessageConstants.QUEUE_ID_SIMULATIONJOB, simTask.getTaskID(), false);						
-					// tell client
-					StatusMessage statusMsg = new StatusMessage(newJobStatus, simTask.getUserName(), null, null);
-					statusMsg.sendToClient(waitingJobStatusPublisher);
+					double requiredMemMB = simTask.getEstimatedMemorySizeMB();
+					if (requiredMemMB > Double.parseDouble(PropertyLoader.getRequiredProperty(PropertyLoader.limitJobMemoryMB))) {						
+						SimulationJobStatus newJobStatus = simDispatcher.updateEndStatus(jobStatus, jobAdminXA, waitingJobDbConnection.getConnection(), 
+								jobStatus.getVCSimulationIdentifier(), jobStatus.getJobIndex(), null, SimulationJobStatus.SCHEDULERSTATUS_FAILED, 
+								"Simulation [" + simTask.getSimulationInfo().getName() + ", " + jobStatus.getJobIndex() + "] requires approximately " + requiredMemMB + "mb memory. Exceeds current memory limit.");
+						
+						// tell client
+						StatusMessage message = new StatusMessage(newJobStatus, simTask.getUserName(), null, null);
+						message.sendToClient(waitingJobStatusPublisher);						
+					} else {
+						log.print("**DT: queued " + simTask);
+	
+						SimulationTaskMessage taskMsg = new SimulationTaskMessage(simTask);
+						// send the job the job queue
+						taskMsg.sendSimulationTask(waitingJobDispatcher);
+						//update database
+						SimulationJobStatus newJobStatus = simDispatcher.updateQueueStatus(jobStatus, jobAdminXA, waitingJobDbConnection.getConnection(), 
+							jobStatus.getVCSimulationIdentifier(), jobStatus.getJobIndex(), MessageConstants.QUEUE_ID_SIMULATIONJOB, simTask.getTaskID(), false);						
+						// tell client
+						StatusMessage statusMsg = new StatusMessage(newJobStatus, simTask.getUserName(), null, null);
+						statusMsg.sendToClient(waitingJobStatusPublisher);
+					}
 				
 					tm.commit();						
 					yield();

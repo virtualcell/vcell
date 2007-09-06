@@ -136,7 +136,7 @@ private javax.jms.Message toMessage(VCellQueueSession session) throws javax.jms.
 	message.setLongProperty(MessageConstants.SIMKEY_PROPERTY, Long.parseLong(simTask.getSimKey() + "")); // might be used to remove from the job queue when do stopSimulation
 
 	message.setStringProperty(MessageConstants.SOLVER_TYPE_PROPERTY, simTask.goodForHTC() ? MessageConstants.SOLVER_TYPE_HTC_PROPERTY : MessageConstants.SOLVER_TYPE_JAVA_PROPERTY); // for worker message filter
-	message.setDoubleProperty(MessageConstants.SIZE_MB_PROPERTY, simTask.getEstimatedSizeMB()); // for worker message filter
+	message.setDoubleProperty(MessageConstants.SIZE_MB_PROPERTY, simTask.getEstimatedMemorySizeMB()); // for worker message filter
 	
 	if (simTask.getComputeResource() != null) {
 		message.setStringProperty(MessageConstants.COMPUTE_RESOURCE_PROPERTY, simTask.getComputeResource()); // for worker message filter

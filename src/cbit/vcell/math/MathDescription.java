@@ -2149,7 +2149,7 @@ private boolean isPDE() throws Exception {
  * @return boolean
  * @param volVariable cbit.vcell.math.VolVariable
  */
-public boolean isPDE(MemVariable memVariable) throws Exception {
+public boolean isPDE(MemVariable memVariable) {
 	Enumeration enum1 = getSubDomains();
 	while (enum1.hasMoreElements()){
 		SubDomain subDomain = (SubDomain)enum1.nextElement();
@@ -2169,7 +2169,7 @@ public boolean isPDE(MemVariable memVariable) throws Exception {
  * @return boolean
  * @param volVariable cbit.vcell.math.VolVariable
  */
-public boolean isPDE(VolVariable volVariable) throws Exception {
+public boolean isPDE(VolVariable volVariable) {
 	Enumeration enum1 = getSubDomains();
 	while (enum1.hasMoreElements()){
 		SubDomain subDomain = (SubDomain)enum1.nextElement();

@@ -80,10 +80,13 @@ public final String getJobSelector() {
 		case PBS_WORKER :{
 			jobSelector += " AND (" + MessageConstants.SOLVER_TYPE_PROPERTY + "='" + MessageConstants.SOLVER_TYPE_HTC_PROPERTY + "')";
 			break;
-		}
-	
+		}	
 		case JAVA_WORKER: {
 			jobSelector += " AND (" + MessageConstants.SOLVER_TYPE_PROPERTY	+ "='" + MessageConstants.SOLVER_TYPE_JAVA_PROPERTY + "')" ;
+			break;
+		}
+		case NOHTC_WORKER: {
+			jobSelector += " AND (" + MessageConstants.SIZE_MB_PROPERTY + "<" + maxMemoryMB + ")";			
 			break;
 		}
 	}
