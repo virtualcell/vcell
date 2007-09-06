@@ -9,12 +9,14 @@ import cbit.util.xml.VCLogger;
 
 import java.util.ArrayList;
 /**
-This class represents the otherwise missing link between the GUI layer classes and the XML translation package. 
-It allows user interaction while importing/exporting a document, like providing extra parameters, or the option to 
-cancel the process altogether.
-
- * Creation date: (9/21/2004 10:36:23 AM)
- * @author: Rashad Badrawi
+	* This class represents the otherwise missing link between the GUI layer classes and the XML translation package. 
+	* It allows user interaction while importing/exporting a document, like providing extra parameters, or the option to 
+ 	* cancel the process altogether.
+ 	* 
+ 	* For HIGH_PRIORITY messages, the logger halts execution by throwing an exception
+ 	*  
+ 	* Creation date: (9/21/2004 10:36:23 AM)
+ 	* @author: Rashad Badrawi
  */
 public class TranslationLogger implements VCLogger {
 	  
@@ -49,7 +51,6 @@ public class TranslationLogger implements VCLogger {
 		throw UserCancelException.CANCEL_XML_TRANSLATION;
 	}
 
-
 	public void sendAllMessages() {
 
 		StringBuffer messageBuf = new StringBuffer("The translation process has encountered the following problem(s):\n ");
@@ -62,13 +63,11 @@ public class TranslationLogger implements VCLogger {
 		String value = PopupGenerator.showWarningDialog(requester, null, userMessage, null);       //'value' not used.
 	}
 
-
 	public void sendMessage(int messageLevel, int messageType) throws UserCancelException {
 
 		String message = TranslationMessage.getDefaultMessage(messageType);
 		sendMessage(messageLevel, messageType, message);	
 	}
-
 
 	public void sendMessage(int messageLevel, int messageType, String message) throws UserCancelException {
 

@@ -3,12 +3,21 @@ import cbit.vcell.biomodel.BioModel;
 import org.jdom.Element;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.math.Variable;
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.model.ReservedSymbol;
+
 import java.io.File;
+import java.util.Hashtable;
+
 import cbit.vcell.server.StdoutSessionLog;
 import cbit.vcell.server.SessionLog;
+import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlUtil;
+import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.xml.XmlDialect;
 import cbit.vcell.xml.XMLTags;
 
@@ -38,7 +47,6 @@ public static int factorial(int n) {
 
     return factorial;
 }
-
 
 /**
  * Starts the application.
@@ -98,15 +106,21 @@ public static void main(java.lang.String[] args) {
         BioModel bioModel_1 = (BioModel) cbit.vcell.xml.XmlHelper.importXMLVerbose(logger, sbmlString, fromDialect);
 
         // Export the previously imported document.
-        String exportedSBMLStr = cbit.vcell.xml.XmlHelper.exportXML(bioModel_1, fromDialect, bioModel_1.getSimulationContexts(0).getName());
-
-        // Import the exported biomodel
-        BioModel bioModel_2 = (BioModel) cbit.vcell.xml.XmlHelper.importXMLVerbose(logger, exportedSBMLStr, fromDialect);
+//        String exportedSBMLStr = cbit.vcell.xml.XmlHelper.exportXML(bioModel_1, fromDialect, bioModel_1.getSimulationContexts(0).getName());
+//
+//        // Import the exported biomodel
+//        BioModel bioModel_2 = (BioModel) cbit.vcell.xml.XmlHelper.importXMLVerbose(logger, exportedSBMLStr, fromDialect);
         
+        // Instantiate an SBMLImporter to get the speciesUnitsHash - to compute the conversion factor from VC->SB species units.
+		cbit.vcell.vcml.SBMLImporter sbmlImporter = new cbit.vcell.vcml.SBMLImporter(sbmlString, logger);
+		BioModel tempBioModel = sbmlImporter.getBioModel();
+		Hashtable<String, SBMLImporter.SBVCConcentrationUnits> speciesUnitsHash = sbmlImporter.getSpeciesUnitsHash();
+		double timeFactor = sbmlImporter.getSBMLTimeUnitsFactor();
+
 		//
         // select only Application, generate math, and create a single Simulation.
 		//
-        cbit.vcell.mapping.SimulationContext simContext = bioModel_2.getSimulationContexts(0);
+        cbit.vcell.mapping.SimulationContext simContext = bioModel_1.getSimulationContexts(0);
         cbit.vcell.mapping.MathMapping mathMapping = new cbit.vcell.mapping.MathMapping(simContext);
         cbit.vcell.math.MathDescription mathDesc = mathMapping.getMathDescription();
         simContext.setMathDescription(mathDesc);
@@ -124,6 +138,9 @@ public static void main(java.lang.String[] args) {
                 null);
         cbit.vcell.solver.Simulation sim = new cbit.vcell.solver.Simulation(simVersion, mathDesc);
         sim.setName(sbmlFile.getName());
+        // if time factor from SBML is not 1 (i.e., it is not in secs but in minutes or hours), convert endTime to min/hr as : endTime*timeFactor
+       	endTime = endTime*timeFactor;
+        	
         sim.getSolverTaskDescription().setTimeBounds(new cbit.vcell.solver.TimeBounds(0, endTime));
         cbit.vcell.solver.TimeStep timeStep = new cbit.vcell.solver.TimeStep();
         sim.getSolverTaskDescription().setTimeStep(new cbit.vcell.solver.TimeStep(timeStep.getMinimumTimeStep(),timeStep.getDefaultTimeStep(),endTime/10000));
@@ -204,8 +221,7 @@ public static void main(java.lang.String[] args) {
                 Variable var = sim.getVariable(speciesNames[i]);
                 data[i + 1] = new double[data[0].length];
                 if (var instanceof cbit.vcell.math.Constant) {
-                    double value =
-                        ((cbit.vcell.math.Constant) var).getExpression().evaluateConstant();
+                    double value = ((cbit.vcell.math.Constant) var).getExpression().evaluateConstant();
                     for (int j = 0; j < data[i + 1].length; j++) {
                         data[i + 1][j] = value;
                     }
@@ -240,7 +256,7 @@ public static void main(java.lang.String[] args) {
                     if (data[0][index] == sampleTimes[i]) {
                         break;
                     } else {
-                        throw new RuntimeException("");
+                        throw new RuntimeException("sampleTime does not match at last time point");
                     }
                 }
                 //
@@ -255,28 +271,49 @@ public static void main(java.lang.String[] args) {
                 index++;
             }
 
-            //
             // if data[0][index] == sampleTime no need to interpolate
-            //
             if (data[0][index] == sampleTimes[i]) {
-                outputStream.print(data[0][index]);
+            	// if timeFactor is not 1.0, time is not in seconds (mins or hrs); if timeFactor is 60, divide sampleTime/60; if it is 3600, divide sampleTime/3600.
+            	if (timeFactor != 1.0) {
+            		outputStream.print(data[0][index]/timeFactor);
+            	} else {
+            		outputStream.print(data[0][index]);
+            	}
                 for (int j = 0; j < speciesNames.length; j++) {
-                    outputStream.print("," + data[j + 1][index] * 0.000001); //hack, for now.
+                	SBMLImporter.SBVCConcentrationUnits spConcUnits = speciesUnitsHash.get(speciesNames[j]);
+                	if (spConcUnits != null) {
+                		VCUnitDefinition sbunits = spConcUnits.getSBConcentrationUnits();
+                		VCUnitDefinition vcunits = spConcUnits.getVCConcentrationUnits();
+                		double unitFactor = SBMLImporter.getSpeciesConcUnitFactor(vcunits, sbunits);
+                    	outputStream.print("," + data[j + 1][index] * unitFactor); 		//earlier, hack unitfactor = 0.000001
+                	}
                 }
                 // System.out.println("No interpolation needed!");
                 outputStream.println();
             } else {
-                //
                 // if data[0][index] < sampleTime, must interpolate
-                //
-
-                double fraction =
-                    (sampleTimes[i] - data[0][index]) / (data[0][index + 1] - data[0][index]);
-                outputStream.print(sampleTimes[i]);
+                double fraction = (sampleTimes[i] - data[0][index]) / (data[0][index + 1] - data[0][index]);
+            	// if timeFactor is not 1.0, time is not in seconds (mins or hrs); if timeFactor is 60, divide sampleTime/60; if it is 3600, divide sampleTime/3600.
+            	if (timeFactor != 1.0) {
+            		outputStream.print(sampleTimes[i]/timeFactor);
+            	} else {
+            		outputStream.print(sampleTimes[i]);
+            	}
                 for (int j = 0; j < speciesNames.length; j++) {
                     double interpolatedValue = 0.0;
                     double[] speciesVals = null;
                     double[] times = null;
+                    
+                    //Get the unit factor (VC->SBML units)
+                    double unitFactor;
+                	SBMLImporter.SBVCConcentrationUnits spConcUnits = speciesUnitsHash.get(speciesNames[j]);
+                	if (spConcUnits != null) {
+                		VCUnitDefinition sbunits = spConcUnits.getSBConcentrationUnits();
+                		VCUnitDefinition vcunits = spConcUnits.getVCConcentrationUnits();
+                		unitFactor = SBMLImporter.getSpeciesConcUnitFactor(vcunits, sbunits);
+                	} else {
+                		throw new RuntimeException("Could not convert units from VC - SBML, insufficient information");
+                	}
 
                     // For 3rd order interpolation, index <= origDataLen-3
                     // For 2nd order interpolation, index <= origDataLen-2
@@ -324,7 +361,7 @@ public static void main(java.lang.String[] args) {
                     //speciesVals = new double[] { data[j+1][index], data[j+1][index+1] };
                     //interpolatedValue = taylorInterpolation(sampleTimes[i], times, speciesVals);
 
-                    interpolatedValue = interpolatedValue * 0.000001; //hack, for now.
+                    interpolatedValue = interpolatedValue * unitFactor; 		//earlier, hack unitfactor = 0.000001 
                     // System.out.println("Sample time: " + sampleTimes[i] + ", between time[" + index + "]=" + data[0][index]+" and time["+(index+1)+"]="+(data[0][index+1])+", interpolated = "+interpolatedValue);
                     outputStream.print("," + interpolatedValue);
                 }
@@ -332,7 +369,6 @@ public static void main(java.lang.String[] args) {
             }
         }
         outputStream.close();
-
     } catch (Throwable e) {
         e.printStackTrace(System.out);
         System.exit(1);
