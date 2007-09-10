@@ -57,7 +57,7 @@ protected void doJob() throws JMSException, SolverException, XmlParseException {
 		//throw new ConfigurationException(userdir.toString()+" is not a directory");
 	//}
 
-	File userdir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.serverSimDataDirProperty),currentTask.getUserName());
+	File userdir = new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty),currentTask.getUserName());
 	switch (workerType) {
 		case LSF_WORKER: {
 			doLsfJob(userdir);

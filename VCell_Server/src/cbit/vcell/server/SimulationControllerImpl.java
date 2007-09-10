@@ -197,7 +197,7 @@ private SolverController createNewSolverController(User user, SimulationJob simu
 		userSessionLog,
 		simulationJob,
 		getUserSimulationDirectory(user, PropertyLoader.getRequiredProperty(PropertyLoader.localSimDataDirProperty)),
-		getUserSimulationDirectory(user, PropertyLoader.getRequiredProperty(PropertyLoader.serverSimDataDirProperty))
+		getUserSimulationDirectory(user, PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirProperty))
 		);
 
 	if (getLocalVCellServer().isPrimaryServer()) {
