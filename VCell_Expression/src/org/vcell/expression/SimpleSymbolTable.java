@@ -1,5 +1,7 @@
 package org.vcell.expression;
 
+import java.io.Serializable;
+
 
 /**
  * Insert the type's description here.
@@ -27,12 +29,12 @@ package org.vcell.expression;
  *   NOTE: Expression's hold their symbolTable binding within it's internal state.  So consider
  *         side-effect when binding Expressions that are externally referenced.
  */
-public class SimpleSymbolTable implements org.vcell.expression.ScopedSymbolTable {
+public class SimpleSymbolTable implements org.vcell.expression.ScopedSymbolTable, Serializable {
 	
 	private SimpleSymbolTableEntry steArray[] = null;
 	private NameScope nameScope = null;
 	
-	private class SimpleSymbolTableEntry implements org.vcell.expression.SymbolTableEntry {
+	private class SimpleSymbolTableEntry implements org.vcell.expression.SymbolTableEntry, Serializable {
 		private String name = null;
 		private int index = -1;
 		private NameScope nameScope = null;
