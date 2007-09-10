@@ -1,6 +1,5 @@
 package org.vcell.util;
 
-
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -13,8 +12,10 @@ public class PropertyLoader {
 	public static final String vcellServerIDProperty        = "vcell.server.id";
 	
 	public static final String tempDirProperty				= "vcell.tempdir";
-	public static final String serverSimDataDirProperty		= "vcell.serverSimdatadir";
+	public static final String primarySimDataDirProperty	= "vcell.primarySimdatadir";
+	public static final String secondarySimDataDirProperty	= "vcell.secondarySimdatadir";
 	public static final String localSimDataDirProperty		= "vcell.localSimdatadir";
+	
 	public static final String compilerProperty				= "vcell.c++.compiler";
 	public static final String linkerProperty				= "vcell.c++.linker";
 	public static final String exeOutputProperty			= "vcell.c++.exeoutput";
@@ -25,17 +26,23 @@ public class PropertyLoader {
 	public static final String includeProperty				= "vcell.c++.include";
 	public static final String definesProperty				= "vcell.c++.defines";
 	public static final String libsProperty					= "vcell.c++.libs";
+	public static final String finiteVolumeExecutableProperty = "vcell.finitevolume.executable";
+	
 	public static final String optLibsProperty				= "vcell.opt.libs";
 	public static final String optIncludeProperty			= "vcell.opt.include";
-	public static final String finiteVolumeExecutableProperty = "vcell.finitevolume.executable";
 	//
 	public static final String idaLibraryProperty			= "vcell.ida.library";
 	public static final String idaIncludeProperty			= "vcell.ida.include";
 	public static final String idaExecutableProperty		= "vcell.ida.executable";
+	public static final String cvodeExecutableProperty		= "vcell.cvode.executable";
+	
 	//Stoch properties
 	public static final String stochLibraryProperty			= "vcell.stoch.library";
 	public static final String stochIncludeProperty			= "vcell.stoch.include";
 	public static final String stochExecutableProperty		= "vcell.stoch.executable";	
+	public static final String hybridEMExecutableProperty	= "vcell.hybridEM.executable";
+	public static final String hybridMilExecutableProperty	= "vcell.hybridMil.executable";
+	public static final String hybridMilAdaptiveExecutableProperty = "vcell.hybridMilAdaptive.executable";
 	//
 	public static final String corbaEnabled					= "vcell.corbaEnabled";
 	public static final String databaseCacheSizeProperty	= "vcell.databaseCacheSize";
@@ -107,10 +114,6 @@ public class PropertyLoader {
 	public static final String serverManageConfig = "vcell.messaging.serverManagerConfig";
 	public static final String bootstrapConfig = "vcell.messaging.bootstrapConfig";
 
-	public static final String lsfJobQueue = "vcell.lsf.jobQueue";
-	public static final String lsfPartitionMaximumJobs = "vcell.lsf.partition.maximumJobs";
-	public static final String lsfPartitionShareServerIDs = "vcell.lsf.partition.shareServerIDs";
-
 	public static final String vcellSoftwareVersion = "vcell.softwareVersion";
 
 	public static final String vcellServerHost = "vcell.serverHost";
@@ -124,12 +127,27 @@ public class PropertyLoader {
 	
 	public static final String vcellBNGPerl = "vcell.bng.perl.executable";
 	public static final String vcellBNGScript = "vcell.bng.script";
+
+	public static final String vcellClientTimeoutMS = "vcell.client.timeoutMS";
+	
+	public static final String lsfJobQueue = "vcell.lsf.jobQueue";
+	
+	public static final String htcSubmitTemplates = "vcell.htc.submittemplates";		
+	public static final String htcPartitionMaximumJobs = "vcell.htc.partition.maximumJobs";
+	public static final String htcPartitionShareServerIDs = "vcell.htc.partition.shareServerIDs";
+	public static final String htcComputeResources = "vcell.htc.computeresources";
+	
+	public static final String pbsHomeDir = "vcell.pbs.homeDir";
+	
+	public static final String limitJobMemoryMB="vcell.limit.jobMemoryMB";
 	
 	private static final String ALL_PROPERTIES[] = {
 		vcellServerIDProperty,
 		tempDirProperty,
-		serverSimDataDirProperty,
+		primarySimDataDirProperty,
+		secondarySimDataDirProperty,
 		localSimDataDirProperty,
+		
 		compilerProperty,
 		linkerProperty,
 		exeOutputProperty,
@@ -140,16 +158,22 @@ public class PropertyLoader {
 		includeProperty,
 		definesProperty,
 		libsProperty,
+		finiteVolumeExecutableProperty,
+		
 		optLibsProperty,
 		optIncludeProperty,
+		
 		idaLibraryProperty,
 		idaIncludeProperty,
 		idaExecutableProperty,
-		finiteVolumeExecutableProperty,
+		cvodeExecutableProperty,
 		
 		stochLibraryProperty,
 		stochIncludeProperty,
 		stochExecutableProperty,
+		hybridEMExecutableProperty,
+		hybridMilExecutableProperty,
+		hybridMilAdaptiveExecutableProperty,
 		
 		corbaEnabled,
 		databaseCacheSizeProperty,
@@ -162,10 +186,12 @@ public class PropertyLoader {
 		exportUseLocalDataServer,
 		userGuideURLProperty,
 		tutorialURLProperty,
+		
 		dbDriverName,
 		dbConnectURL,
 		dbUserid,
 		dbPassword,
+		
 		vcmlSchemaUrlProperty,
 		sbml1SchemaUrlProperty,
 		sbml2SchemaUrlProperty,
@@ -204,10 +230,6 @@ public class PropertyLoader {
 		serverManageConfig,
 		bootstrapConfig,
 
-		lsfJobQueue,
-		lsfPartitionMaximumJobs,
-		lsfPartitionShareServerIDs,
-
 		vcellSoftwareVersion,
 
 		vcellServerHost,
@@ -231,7 +253,19 @@ public class PropertyLoader {
 		vcellAnonymizerBootstrapRemotePort,
 
 		vcellBNGPerl,
-		vcellBNGScript
+		vcellBNGScript,
+
+		vcellClientTimeoutMS,
+		
+		lsfJobQueue,
+		
+		htcSubmitTemplates,		
+		htcComputeResources,
+		htcPartitionMaximumJobs,
+		htcPartitionShareServerIDs,		
+		pbsHomeDir,
+		
+		limitJobMemoryMB
 	};
 
 /**
