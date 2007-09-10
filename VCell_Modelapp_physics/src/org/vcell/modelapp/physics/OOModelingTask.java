@@ -103,8 +103,8 @@ public class OOModelingTask implements IAnalysisTask {
 			MathSystem mathSystem = MappingUtilities.getMathSystem(ooModel);
 			this.modelAnalysisResults = MappingUtilities.analyzeMathSystem(mathSystem);
 			this.modelAnalysisResults.oOModel = ooModel;
-			this.modelAnalysisResults.modelicaModelText = new ModelicaModelWriter().write(ooModel);
-			
+			this.modelAnalysisResults.modelicaModelText = "not yet implemented: see OOModelingTask.OOModelingTask()";  // new ModelicaModelWriter().write(ooModel);
+			System.out.println("OOModelingTask.OOModelingTask() ... modelica not yet implemented");
 		}catch (ParseException e){
 			e.printStackTrace(System.out);
 			throw new RuntimeException(e.getMessage());
