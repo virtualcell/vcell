@@ -156,6 +156,28 @@ public static org.vcell.physics.math.MathSystem getMathSystem(OOModel oOModel) t
 			System.out.println("adding equation for "+modelComponents[i].getName()+": "+clonedExp.toString());
 		}
 	}
+	//
+	// for each connector that doesn't have a connection, add a zero-flux equation
+	// effort variables are left alone.
+	//
+	for (int i = 0; i < modelComponents.length; i++){
+		if (modelComponents[i].getName().equals("Species0_c")){
+			System.out.println("found it");
+		}
+		Connector[] connectors = modelComponents[i].getConnectors();
+		for (int j = 0; j < connectors.length; j++) {
+			boolean bFoundConnection = false;
+			if (oOModel.getConnection(connectors[j])!=null){
+				bFoundConnection = true;
+			}
+			if (!bFoundConnection){
+				ModelComponent parent = connectors[j].getParent();
+				if (connectors[j].getFlowVariable()!=null){
+					mathSystem.addEquation(Expression.valueOf(ExpressionUtilities.getEscapedTokenJSCL(parent.getName()+"."+connectors[j].getFlowVariable().getName()+"+0.0")));
+				}
+			}
+		}
+	}
 	for (int i = 0; i < connections.length; i++){
 		//
 		// for connections, just add coupling equations, variables should already be there

@@ -9,7 +9,9 @@ import java.awt.Point;
 import javax.swing.JViewport;
 
 import org.vcell.physics.component.OOModel;
+import org.vcell.util.gui.DialogUtils;
 
+import cbit.gui.graph.ContainerShape;
 import cbit.gui.graph.EdgeShape;
 import cbit.gui.graph.ElipseShape;
 import cbit.gui.graph.Shape;
@@ -300,15 +302,28 @@ public void layoutGlg() {
  */
 protected void menuAction(Shape shape, String menuAction) {
 	try {
-	
+		
 		if(shape == null){return;}
 
 		// if multiselect, then get them all
-		OOModelGraphModel reactionModelGraphModel = (OOModelGraphModel)getGraphModel();
-		Shape shapes[] = reactionModelGraphModel.getAllSelectedShapes();
-
+		OOModelGraphModel constraintsGraphModel = (OOModelGraphModel)getGraphModel();
+		Shape shapes[] = constraintsGraphModel.getAllSelectedShapes();
+		//	
+		if (menuAction.equals(NEW_MENU_ACTION)){
+			//
+			// popup the "new" dialog
+			//
+		}else if (menuAction.equals(DELETE_MENU_ACTION)){
+			//
+			// try to delete
+			//
+		}else if (menuAction.equals(PROPERTIES_MENU_ACTION)){
+			//
+			// popup properties dialog
+			//
+		}
 	}catch (Throwable e){
-		org.vcell.util.gui.DialogUtils.showErrorDialog("Error:\n"+e.getMessage());
+		DialogUtils.showErrorDialog("Error:\n"+e.getMessage());
 	}
 }
 
@@ -348,15 +363,21 @@ protected boolean shapeHasMenuAction(Shape shape, String menuAction) {
 		return false;
 	}
 	
-	//if (menuAction.equals(PROPERTIES_MENU_ACTION)){
-		//if (shape instanceof SimpleComplexNode || 
-			//shape instanceof StateComplexNode || 
-			//shape instanceof BindingSiteFrontNode || 
-			//shape instanceof InteractionEdgeShape){
-			//return true;
-		//}
-	//}
-
+	if (menuAction.equals(NEW_MENU_ACTION)){
+		if (shape instanceof SimpleContainerShape){
+			return true;
+		}
+	}
+	if (menuAction.equals(DELETE_MENU_ACTION)){
+		if (shape instanceof DeviceNode || shape instanceof ConnectorEdge){
+			return true;
+		}
+	}
+	if (menuAction.equals(PROPERTIES_MENU_ACTION)){
+		if (shape instanceof DeviceNode || shape instanceof ConnectorEdge){
+			return true;
+		}
+	}
 	return false;
 }
 
@@ -372,14 +393,21 @@ protected boolean shapeHasMenuActionEnabled(Shape shape, java.lang.String menuAc
 		return false;
 	}
 	
-	//if (menuAction.equals(PROPERTIES_MENU_ACTION)){
-		//if (shape instanceof SimpleComplexNode || 
-			//shape instanceof StateComplexNode || 
-			//shape instanceof BindingSiteFrontNode || 
-			//shape instanceof InteractionEdgeShape){
-			//return true;
-		//}
-	//}
+	if (menuAction.equals(NEW_MENU_ACTION)){
+		if (shape instanceof SimpleContainerShape){
+			return true;
+		}
+	}
+	if (menuAction.equals(DELETE_MENU_ACTION)){
+		if (shape instanceof DeviceNode || shape instanceof ConnectorEdge){
+			return true;
+		}
+	}
+	if (menuAction.equals(PROPERTIES_MENU_ACTION)){
+		if (shape instanceof DeviceNode || shape instanceof ConnectorEdge){
+			return true;
+		}
+	}
 
 	return false;
 }

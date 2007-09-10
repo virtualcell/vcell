@@ -108,7 +108,14 @@ public Connection getConnections(int index) {
 	return getConnections()[index];
 }
 
-
+public Connection getConnection(Connector connector){
+	for (Connection connection : fieldConnections){
+		if (connection.contains(connector)){
+			return connection;
+		}
+	}
+	return null;
+}
 /**
  * Gets the modelComponents index property (ncbc.physics2.component.ModelComponent) value.
  * @return The modelComponents property value.
