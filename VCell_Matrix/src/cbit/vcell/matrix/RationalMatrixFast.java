@@ -90,7 +90,7 @@ void div_elem(int r, int c, long num, long den) {
 	long numerator = numData[index] * den;
 	long denominator = denData[index] * num;
 
-	long sign = (numerator*denominator < 0)?(-1):(1);
+	long sign = (numerator<0 != denominator<0)?(-1):(1);
 	long gcf = RationalNumber.getGreatestCommonFactor(numerator,denominator);
 	numData[index] = Math.abs(numerator)*sign/gcf;
 	denData[index] = Math.abs(denominator)/gcf;
@@ -519,7 +519,7 @@ void scale_row(int row, int columnOffset, long scaleNum, long scaleDen) {
 			//
 			// simplify and store in destRow 
 			//
-			long sign = (numerator*denominator < 0)?(-1):(1);
+			long sign = (numerator<0 != denominator<0)?(-1):(1);
 			long gcf = RationalNumber.getGreatestCommonFactor(numerator,denominator);
 			numData[row_index] = Math.abs(numerator)*sign/gcf;
 			denData[row_index] = Math.abs(denominator)/gcf;
@@ -547,7 +547,7 @@ public void set_elem(int r, int c, long numerator, long denominator) {
 	}
 	int index = c + r * cols;
 
-	long sign = (numerator*denominator < 0)?(-1):(1);
+	long sign = (numerator<0 != denominator<0)?(-1):(1);
 	long gcf = RationalNumber.getGreatestCommonFactor(numerator,denominator);
 	numData[index] = Math.abs(numerator)*sign/gcf;
 	denData[index] = Math.abs(denominator)/gcf;
@@ -604,7 +604,7 @@ void sub_elem(int r, int c, long num, long den) {
 	long numerator = numData[index] * den - num * denData[index];
 	long denominator = denData[index] * den;
 
-	long sign = (numerator*denominator < 0)?(-1):(1);
+	long sign = (numerator<0 != denominator<0)?(-1):(1);
 	long gcf = RationalNumber.getGreatestCommonFactor(numerator,denominator);
 	numData[index] = Math.abs(numerator)*sign/gcf;
 	denData[index] = Math.abs(denominator)/gcf;
@@ -635,7 +635,7 @@ void sub_scaled_row(int pivotRow, int columnOffset, long scaleNum, long scaleDen
 			//
 			// simplify only once.and store in destRow 
 			//
-			long sign = (numerator*denominator < 0)?(-1):(1);
+			long sign = (numerator<0 != denominator<0)?(-1):(1);
 			long gcf = RationalNumber.getGreatestCommonFactor(numerator,denominator);
 			numerator = Math.abs(numerator)*sign/gcf;
 			denominator = Math.abs(denominator)/gcf;
@@ -649,7 +649,7 @@ void sub_scaled_row(int pivotRow, int columnOffset, long scaleNum, long scaleDen
 			//
 			// simplify only once.and store in destRow 
 			//
-			sign = (numerator*denominator < 0)?(-1):(1);
+			sign = (numerator<0 != denominator<0)?(-1):(1);
 			gcf = RationalNumber.getGreatestCommonFactor(numerator,denominator);
 			numData[destRow_index] = Math.abs(numerator)*sign/gcf;
 			denData[destRow_index] = Math.abs(denominator)/gcf;
