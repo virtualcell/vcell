@@ -58,9 +58,12 @@ public double getEstimatedMemorySizeMB() {
 	  	} else {
 	  		odeVarCount ++;
 	  	}
+	}	
+	long numMeshPoints = 1;
+	if (simulation.getMathDescription().getGeometry().getDimension() > 0) {
+		cbit.util.ISize samplingSize = simulation.getMeshSpecification().getSamplingSize();
+		numMeshPoints = samplingSize.getX()*samplingSize.getY()*samplingSize.getZ();
 	}
-	cbit.util.ISize samplingSize = simulation.getMeshSpecification().getSamplingSize();
-	long numMeshPoints = samplingSize.getX()*samplingSize.getY()*samplingSize.getZ();
 	
 	// 180 bytes per pde variable plus ode per mesh point + 15M overhead 
 	// there is 70M PBS overhead which will be added when submitted to pbs
