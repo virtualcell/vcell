@@ -162,7 +162,7 @@ public DataSetControllerImpl (SessionLog sessionLog, Cachetable aCacheTable, Fil
 	this.rootDirectory = rootDir;
 	if (rootDirectory == null){
 		try {
-			String usersDir = System.getProperty(PropertyLoader.serverSimDataDirProperty);
+			String usersDir = System.getProperty(PropertyLoader.primarySimDataDirProperty);
 			if (!usersDir.endsWith(new String(File.separator))){
 				usersDir += File.separator;
 			}
@@ -174,7 +174,7 @@ public DataSetControllerImpl (SessionLog sessionLog, Cachetable aCacheTable, Fil
 			}
 		}catch (Exception e){
 			sessionLog.exception(e);
-			throw new FileNotFoundException("required System property \""+PropertyLoader.serverSimDataDirProperty+"\" not defined");
+			throw new FileNotFoundException("required System property \""+PropertyLoader.primarySimDataDirProperty+"\" not defined");
 		}		
 	}
 	this.log = sessionLog;
