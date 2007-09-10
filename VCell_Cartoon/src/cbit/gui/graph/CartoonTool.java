@@ -38,6 +38,7 @@ public abstract class CartoonTool implements MouseListener, MouseMotionListener,
 	public static final String ADD_SPECIES_MENU_ACTION = "Add Species";
 	public static final String ADD_BINDINGSITE_MENU_ACTION = "Add Binding Site";
 	public static final String ADD_COMPLEX_MENU_ACTION = "Add Complex";
+	public static final String NEW_MENU_ACTION = "New...";
 	public static final String COPY_MENU_ACTION = "Copy";
 	public static final String CUT_MENU_ACTION = "Cut";
 	public static final String PASTE_MENU_ACTION = "Paste";
@@ -61,6 +62,7 @@ public abstract class CartoonTool implements MouseListener, MouseMotionListener,
 	public static final String ADD_SPECIES_MENU_TEXT = ADD_SPECIES_MENU_ACTION;
 	public static final String ADD_BINDINGSITE_MENU_TEXT = ADD_BINDINGSITE_MENU_ACTION;
 	public static final String ADD_COMPLEX_MENU_TEXT = ADD_COMPLEX_MENU_ACTION;
+	public static final String NEW_MENU_TEXT = NEW_MENU_ACTION;
 	public static final String COPY_MENU_TEXT = COPY_MENU_ACTION;
 	public static final String CUT_MENU_TEXT = CUT_MENU_ACTION;
 	public static final String PASTE_MENU_TEXT = PASTE_MENU_ACTION;
@@ -114,6 +116,7 @@ public abstract class CartoonTool implements MouseListener, MouseMotionListener,
 		JMenuItem medResJMenuItem = new javax.swing.JMenuItem();
 		JMenuItem lowResJMenuItem = new javax.swing.JMenuItem();
 		//Things for Edit menu
+		JMenuItem newJMenuItem = new javax.swing.JMenuItem();
 		JMenuItem copyJMenuItem = new javax.swing.JMenuItem();
 		JMenuItem deleteJMenuItem = new javax.swing.JMenuItem();
 		JMenuItem cutJMenuItem = new javax.swing.JMenuItem();
@@ -124,7 +127,7 @@ public abstract class CartoonTool implements MouseListener, MouseMotionListener,
 		//Add new JMenuItems here too.  Used for convenience to add and remove actionlisteners
 		private JMenuItem[] jmenuItemArr =
 			{	addFeatureJMenuItem,addSpeciesJMenuItem,addEnzymeReactionJMenuItem,reactionsJMenuItem,propertiesJMenuItem,enableJMenuItem,disableJMenuItem,solveJMenuItem,resetJMenuItem,showParametersJMenuItem,
-				copyJMenuItem,deleteJMenuItem,cutJMenuItem,pasteJMenuItem,pastenewJMenuItem,moveJMenuItem,addBindingSiteJMenuItem,addComplexJMenuItem,  
+				newJMenuItem,copyJMenuItem,deleteJMenuItem,cutJMenuItem,pasteJMenuItem,pastenewJMenuItem,moveJMenuItem,addBindingSiteJMenuItem,addComplexJMenuItem,  
 				saveAsImageJMenu
 			};
 		protected transient java.beans.PropertyChangeSupport propertyChange;
@@ -217,6 +220,12 @@ public CartoonTool () {
 	//
 	//Things for Edit menu
 	//
+	copyJMenuItem.setName("JMenuItemNew");
+	copyJMenuItem.setActionCommand(NEW_MENU_ACTION);
+	copyJMenuItem.setMnemonic('n');
+	copyJMenuItem.setText(NEW_MENU_TEXT);
+	copyJMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N,Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+
 	copyJMenuItem.setName("JMenuItemCopy");
 	copyJMenuItem.setActionCommand(COPY_MENU_ACTION);
 	copyJMenuItem.setMnemonic('c');
@@ -399,6 +408,9 @@ public void keyPressed(KeyEvent e) {
 			getGraphModel().clearSelection();
 		}	
 	}
+	if((e.getKeyCode() == KeyEvent.VK_N) && ((e.getModifiers() & Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()) != 0)){
+		menuAction(getGraphModel().getSelectedShape(),NEW_MENU_ACTION);
+	}
 	if((e.getKeyCode() == KeyEvent.VK_C) && ((e.getModifiers() & Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()) != 0)){
 		menuAction(getGraphModel().getSelectedShape(),COPY_MENU_ACTION);
 	}
@@ -580,6 +592,7 @@ protected final void popupMenu(Shape shape,int x, int y) throws Exception {
 				){ 
 					popupMenu.add(addableJMenuItem);
 				}else if(
+					addableJMenuItem == newJMenuItem ||
 					addableJMenuItem == copyJMenuItem ||
 					addableJMenuItem == deleteJMenuItem ||
 					addableJMenuItem == cutJMenuItem ||
