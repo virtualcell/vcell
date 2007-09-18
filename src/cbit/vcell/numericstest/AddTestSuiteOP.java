@@ -11,19 +11,13 @@ public class AddTestSuiteOP extends TestSuiteOP {
 	private String testSuiteVersionID;
 	private String vCellBuildVersionID;
 	private String numericsBuildVersionID;
-/**
- * Insert the method's description here.
- * Creation date: (10/19/2004 6:12:02 AM)
- */
-public AddTestSuiteOP(String argNewVCBuildVersion,String argNewNumericsBuildVersion,AddTestCasesOP[] argAddTCOPs) {
+	private String tsAnnot;
 
-	this(null,argNewVCBuildVersion,argNewNumericsBuildVersion,argAddTCOPs);	
-}
 /**
  * Insert the method's description here.
  * Creation date: (10/19/2004 6:12:02 AM)
  */
-public AddTestSuiteOP(String argTSID,String argNewVCBuildVersion,String argNewNumericsBuildVersion,AddTestCasesOP[] argAddTCOPs) {
+public AddTestSuiteOP(String argTSID,String argNewVCBuildVersion,String argNewNumericsBuildVersion,AddTestCasesOP[] argAddTCOPs,String argTSAnnot) {
 
 	super(null);
 
@@ -49,6 +43,7 @@ public AddTestSuiteOP(String argTSID,String argNewVCBuildVersion,String argNewNu
 	
 	vCellBuildVersionID = argNewVCBuildVersion;
 	numericsBuildVersionID = argNewNumericsBuildVersion;
+	tsAnnot = argTSAnnot;
 	
 }
 /**
@@ -82,5 +77,9 @@ public java.lang.String getTestSuiteVersionID() {
  */
 public java.lang.String getVCellBuildVersionID() {
 	return vCellBuildVersionID;
+}
+
+public String getTestSuiteAnnotation(){
+	return tsAnnot;
 }
 }

@@ -24,8 +24,10 @@ public class TFTestResultTable extends cbit.sql.Table {
 	public final Field meanSqrError = 		new Field("meanSqrError",		"NUMBER",			"NOT NULL");
 	public final Field timeAbsError = 		new Field("timeAbsError",		"NUMBER",			"NOT NULL");
 	public final Field indexAbsError = 		new Field("indexAbsError",		"INTEGER",			"NOT NULL");
+	public final Field timeRelError = 		new Field("timeRelError",		"NUMBER",			"NOT NULL");
+	public final Field indexRelError = 		new Field("indexRelError",		"INTEGER",			"NOT NULL");
 	
-	private final Field fields[] = {testCriteriaRef,varName,absError,relError,maxRef,minRef,meanSqrError,timeAbsError,indexAbsError};
+	private final Field fields[] = {testCriteriaRef,varName,absError,relError,maxRef,minRef,meanSqrError,timeAbsError,indexAbsError,timeRelError,indexRelError};
 	
 	public static final TFTestResultTable table = new TFTestResultTable();
 	

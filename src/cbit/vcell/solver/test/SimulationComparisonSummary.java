@@ -41,10 +41,8 @@ public VariableComparisonSummary[] getFailingVariableComparisonSummaries(double 
 	Vector<VariableComparisonSummary> varComparisonSummaryList = new Vector<VariableComparisonSummary>();
 	for (int i = 0; i < variableComparisonSummaryList.size(); i++){
 		VariableComparisonSummary varComparisonSummary = (VariableComparisonSummary)variableComparisonSummaryList.elementAt(i);
-		if (varComparisonSummary.getRelativeError().doubleValue() > STANDARD_RELATIVE_ERROR_THRESHOLD){				
-			if ((varComparisonSummary.getAbsoluteError().doubleValue() > absErrorThreshold) || (varComparisonSummary.getRelativeError().doubleValue() > relErrorThreshold)){
-				varComparisonSummaryList.add(varComparisonSummary);
-			}
+		if(VariableComparisonSummary.isFailed(varComparisonSummary)){
+			varComparisonSummaryList.add(varComparisonSummary);
 		}
 	}
 	return (VariableComparisonSummary[])cbit.util.BeanUtils.getArray(varComparisonSummaryList,VariableComparisonSummary.class);

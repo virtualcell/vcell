@@ -2,57 +2,76 @@ package cbit.vcell.client;
 import cbit.vcell.desktop.controls.DataManager;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.math.AnnotatedFunction;
+import cbit.gui.DialogUtils;
 import cbit.rmi.event.ExportEvent;
-import javax.swing.SwingUtilities;
-import cbit.vcell.simdata.MergedData;
-import cbit.vcell.server.PropertyLoader;
-import javax.swing.JFrame;
-import cbit.vcell.simdata.Cachetable;
-import cbit.vcell.server.StdoutSessionLog;
-import cbit.vcell.server.SessionLog;
 import cbit.vcell.server.User;
 import cbit.vcell.simdata.MergedDataInfo;
-import javax.swing.JDesktopPane;
 import javax.swing.JInternalFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+
 import cbit.vcell.client.desktop.simulation.SimulationCompareWindow;
 import cbit.vcell.client.data.DataViewer;
 import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.biomodel.BioModel;
-import cbit.sql.*;
 import java.math.*;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.clientdb.DocumentManager;
 import javax.swing.JDialog;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FocusTraversalPolicy;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+
 import javax.swing.JComponent;
 import cbit.vcell.client.server.DynamicDataManager;
 import cbit.vcell.server.VCDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSet;
+import cbit.vcell.solver.test.DataErrorSummary;
 import cbit.vcell.solver.test.SimulationComparisonSummary;
 import cbit.vcell.solver.test.VariableComparisonSummary;
-import org.jdom.JDOMException;
 import cbit.sql.KeyValue;
 
+import java.text.DateFormat;
 import java.util.Arrays;
-import java.util.Enumeration;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+
 import cbit.vcell.solver.SimulationInfo;
 import java.util.Vector;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.client.desktop.TestingFrameworkWindowPanel;
 import cbit.vcell.mathmodel.MathModelInfo;
+import cbit.vcell.messaging.admin.ColumnComparator;
+import cbit.vcell.messaging.admin.ManageTableModel;
+import cbit.vcell.messaging.admin.sorttable.JSortTable;
 import cbit.util.BeanUtils;
 import cbit.vcell.client.desktop.testingframework.EditTestCriteriaPanel;
 import cbit.vcell.client.desktop.testingframework.AddTestSuitePanel;
 import cbit.vcell.client.desktop.testingframework.TestCaseAddPanel;
+import cbit.vcell.client.desktop.testingframework.TestingFrameworkPanel;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.clientdb.ClientDocumentManager;
 import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
+
 import cbit.vcell.client.task.UserCancelException;
-import cbit.vcell.client.server.UserPreferences;
-import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.numericstest.*;
+import cbit.vcell.numericstest.TestCriteriaCrossRefOPResults.CrossRefData;
 import cbit.util.AsynchProgressPopup;
 /**
  * Insert the type's description here.
@@ -110,34 +129,35 @@ public void addDataListener(cbit.vcell.desktop.controls.DataListener newListener
  * @param testCase cbit.vcell.numericstestingframework.TestCase
  */
 
-public void addNewTestSuiteToTF() throws UserCancelException,DataAccessException {
+public void addNewTestSuiteToTF() throws Exception {
 
-	getAddTestSuitePanel().resetTextFields(true);
+	getAddTestSuitePanel().resetTextFields(null);
 	Object choice = showAddTestSuiteDialog(getAddTestSuitePanel(), null);
 
 	if (choice != null && choice.equals("OK")) {
 		// set the newly defined TestSuite in the newTestSuite object.
 		TestSuiteInfoNew newTestSuiteInfo = getAddTestSuitePanel().getTestSuiteInfo();
 		if (newTestSuiteInfo != null) {
-			// check if the newly defined testSuite already exists.
-			TestSuiteInfoNew[] testSuiteInfos = null;
-			
-			testSuiteInfos = getRequestManager().getDocumentManager().getTestSuiteInfos();
-			
-			for (int i = 0; i < testSuiteInfos.length; i++) {
-				if (newTestSuiteInfo.getTSID().equals(testSuiteInfos[i].getTSID())) {
-					PopupGenerator.showErrorDialog("TestSuite Version "+newTestSuiteInfo.getTSID()+" already exists, Choose another version no. for new TestSuite");
-					return;
-				}
-			}
-			//addTestSuite(newTestSuiteInfo);
-			AddTestSuiteOP testSuiteOP =
-				new AddTestSuiteOP(
-					newTestSuiteInfo.getTSID(),
-					newTestSuiteInfo.getTSVCellBuild(),
-					newTestSuiteInfo.getTSNumericsBuild(),
-					null);
-			getRequestManager().getDocumentManager().doTestSuiteOP(testSuiteOP);
+			saveNewTestSuiteInfo(newTestSuiteInfo);
+//			// check if the newly defined testSuite already exists.
+//			TestSuiteInfoNew[] testSuiteInfos = null;
+//			
+//			testSuiteInfos = getRequestManager().getDocumentManager().getTestSuiteInfos();
+//			
+//			for (int i = 0; i < testSuiteInfos.length; i++) {
+//				if (newTestSuiteInfo.getTSID().equals(testSuiteInfos[i].getTSID())) {
+//					PopupGenerator.showErrorDialog("TestSuite Version "+newTestSuiteInfo.getTSID()+" already exists, Choose another version no. for new TestSuite");
+//					return;
+//				}
+//			}
+//			//addTestSuite(newTestSuiteInfo);
+//			AddTestSuiteOP testSuiteOP =
+//				new AddTestSuiteOP(
+//					newTestSuiteInfo.getTSID(),
+//					newTestSuiteInfo.getTSVCellBuild(),
+//					newTestSuiteInfo.getTSNumericsBuild(),
+//					null);
+//			getRequestManager().getDocumentManager().doTestSuiteOP(testSuiteOP);
 		}
 	} else if (choice.equals("Cancel")) {
 		throw UserCancelException.CANCEL_DB_SELECTION;
@@ -584,7 +604,7 @@ public String duplicateTestSuite(
 		new AddTestSuiteOP(
 			newTestSuiteInfo.getTSID(),
 			newTestSuiteInfo.getTSVCellBuild(),
-			newTestSuiteInfo.getTSNumericsBuild(),null);
+			newTestSuiteInfo.getTSNumericsBuild(),null,newTestSuiteInfo.getTSAnnotation());
 		
 	getRequestManager().getDocumentManager().doTestSuiteOP(testSuiteOP);
 
@@ -682,6 +702,38 @@ public String duplicateTestSuite(
 	}
 }
 
+
+public void updateTestCaseAnnotation(TestCaseNew testCase,String newAnnotation) throws DataAccessException{
+	EditTestCasesOP etcop =
+		new EditTestCasesOP(new BigDecimal[] {testCase.getTCKey()},new String[] {newAnnotation});
+	getRequestManager().getDocumentManager().doTestSuiteOP(etcop);
+
+}
+
+public void updateTestSuiteAnnotation(TestSuiteInfoNew tsInfoNew,String newAnnotation) throws DataAccessException{
+	EditTestSuiteOP etsop =
+		new EditTestSuiteOP(new BigDecimal[] {tsInfoNew.getTSKey()},new String[] {newAnnotation});
+	getRequestManager().getDocumentManager().doTestSuiteOP(etsop);
+
+}
+
+public void toggleTestCaseSteadyState(TestCaseNew[] testCases) throws DataAccessException{
+	BigDecimal[] testCaseKeys = new BigDecimal[testCases.length];
+	boolean[] isSteadyState = new boolean[testCases.length];
+	for (int i = 0; i < testCaseKeys.length; i++) {
+		testCaseKeys[i] = testCases[i].getTCKey();
+		String type = testCases[i].getType();
+		if(type.equals(TestCaseNew.EXACT) || type.equals(TestCaseNew.EXACT_STEADY)){
+			isSteadyState[i] = (type.equals(TestCaseNew.EXACT)?true:false);
+		}else{
+			throw new IllegalArgumentException("TestCase "+testCases[i].getVersion().getName()+" MUST be EXACT type");
+		}
+	}
+
+	EditTestCasesOP etcop =
+		new EditTestCasesOP(testCaseKeys,isSteadyState);
+	getRequestManager().getDocumentManager().doTestSuiteOP(etcop);
+}
 /**
  * Insert the method's description here.
  * Creation date: (6/15/2004 2:55:34 AM)
@@ -713,7 +765,7 @@ public String generateTestCaseReport(TestCaseNew testCase,TestCriteriaNew onlyTh
 		pp.setMessage(testCase.getVersion().getName()+" "+testCase.getType()+" Getting Simulations");
 		// Get the Simulations
 		Simulation[] sims = null;
-		reportTCBuffer.append("\n\tTEST CASE : "+(testCase.getVersion() != null?testCase.getVersion().getName():"Null")+" "+testCase.getAnnotation()+"\n");
+		reportTCBuffer.append("\n\tTEST CASE : "+(testCase.getVersion() != null?testCase.getVersion().getName():"Null")+"\n\tAnnotation : "+testCase.getAnnotation()+"\n");
 		try{
 			if(testCase instanceof TestCaseNewMathModel){
 				MathModelInfo mmInfo = ((TestCaseNewMathModel)testCase).getMathModelInfo();
@@ -842,8 +894,8 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 				// SPATIAL simulation
 				if (sim.getMathDescription().isSpatial()){
 					// Get EXACT solution if test case type is EXACT, Compare with numerical
-					if (testCase.getType().equals(TestCaseNew.EXACT)) {
-						SimulationComparisonSummary simCompSummary = MathTestingUtilities.comparePDEResultsWithExact(sim, dataManager);
+					if (testCase.getType().equals(TestCaseNew.EXACT) || testCase.getType().equals(TestCaseNew.EXACT_STEADY)) {
+						SimulationComparisonSummary simCompSummary = MathTestingUtilities.comparePDEResultsWithExact(sim, dataManager,testCase.getType(),testCriteria.getMaxAbsError(),testCriteria.getMaxRelError());
 						// Failed var summaries
 						failVarSummaries = simCompSummary.getFailingVariableComparisonSummaries(absErr, relErr);
 						allVarSummaries = simCompSummary.getVariableComparisonSummaries();
@@ -869,7 +921,7 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 						}
 					// Get CONSTRUCTED solution if test case type is CONSTRUCTED, Compare with numerical
 					} else if (testCase.getType().equals(TestCaseNew.CONSTRUCTED)) {
-						SimulationComparisonSummary simCompSummary = MathTestingUtilities.comparePDEResultsWithExact(sim, dataManager);
+						SimulationComparisonSummary simCompSummary = MathTestingUtilities.comparePDEResultsWithExact(sim, dataManager,testCase.getType(),testCriteria.getMaxAbsError(),testCriteria.getMaxRelError());
 						// Failed var summaries
 						failVarSummaries = simCompSummary.getFailingVariableComparisonSummaries(absErr, relErr);
 						allVarSummaries = simCompSummary.getVariableComparisonSummaries();
@@ -898,7 +950,7 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 						VCDataIdentifier refVcdID = new VCSimulationDataIdentifier(refSimInfo.getAuthoritativeVCSimulationIdentifier(), 0);
 						DataManager refDataManager = getRequestManager().getDataManager(refVcdID, refSim.getIsSpatial());
 						String varsToCompare[] = getVariableNamesToCompare(sim,refSim);
-						SimulationComparisonSummary simCompSummary = MathTestingUtilities.comparePDEResults(sim, dataManager, refSim, refDataManager, varsToCompare);
+						SimulationComparisonSummary simCompSummary = MathTestingUtilities.comparePDEResults(sim, dataManager, refSim, refDataManager, varsToCompare,testCriteria.getMaxAbsError(),testCriteria.getMaxRelError());
 						// Failed var summaries
 						failVarSummaries = simCompSummary.getFailingVariableComparisonSummaries(absErr, relErr);
 						allVarSummaries = simCompSummary.getVariableComparisonSummaries();
@@ -926,10 +978,10 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 				}else{  // NON-SPATIAL CASE
 					ODESolverResultSet numericalResultSet = dataManager.getODESolverResultSet();
 					// Get EXACT result set if test case type is EXACT, Compare with numerical
-					if (testCase.getType().equals(TestCaseNew.EXACT)) {
+					if (testCase.getType().equals(TestCaseNew.EXACT) || testCase.getType().equals(TestCaseNew.EXACT_STEADY)) {
 						ODESolverResultSet exactResultSet = MathTestingUtilities.getExactResultSet(sim.getMathDescription(), timeArray, sim.getSolverTaskDescription().getSensitivityParameter());
 						String varsToCompare[] = getVariableNamesToCompare(sim,sim);
-						SimulationComparisonSummary simCompSummary_exact = MathTestingUtilities.compareResultSets(numericalResultSet,exactResultSet,varsToCompare);
+						SimulationComparisonSummary simCompSummary_exact = MathTestingUtilities.compareResultSets(numericalResultSet,exactResultSet,varsToCompare,testCase.getType(),testCriteria.getMaxAbsError(),testCriteria.getMaxRelError());
 
 						// Get all the variable comparison summaries and the failed ones to print out report for EXACT solution comparison.
 						failVarSummaries = simCompSummary_exact.getFailingVariableComparisonSummaries(absErr, relErr);
@@ -958,7 +1010,7 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 					} else if (testCase.getType().equals(TestCaseNew.CONSTRUCTED)) {
 						ODESolverResultSet constructedResultSet = MathTestingUtilities.getConstructedResultSet(sim.getMathDescription(), timeArray);
 						String varsToCompare[] = getVariableNamesToCompare(sim,sim);
-						SimulationComparisonSummary simCompSummary_constr = MathTestingUtilities.compareResultSets(numericalResultSet,constructedResultSet,varsToCompare);
+						SimulationComparisonSummary simCompSummary_constr = MathTestingUtilities.compareResultSets(numericalResultSet,constructedResultSet,varsToCompare,testCase.getType(),testCriteria.getMaxAbsError(),testCriteria.getMaxRelError());
 
 						// Get all the variable comparison summaries and the failed ones to print out report for CONSTRUCTED solution comparison.
 						failVarSummaries = simCompSummary_constr.getFailingVariableComparisonSummaries(absErr, relErr);
@@ -993,7 +1045,7 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 						double refTimeArray[] = refDataManager.getDataSetTimes();
 						SimulationComparisonSummary simCompSummary_regr = null;							
 						//if (timeArray.length != refTimeArray.length) {
-						simCompSummary_regr = MathTestingUtilities.compareUnEqualResultSets(numericalResultSet, referenceResultSet,varsToTest);
+						simCompSummary_regr = MathTestingUtilities.compareUnEqualResultSets(numericalResultSet, referenceResultSet,varsToTest,testCriteria.getMaxAbsError(),testCriteria.getMaxRelError());
 						//} else {
 							//simCompSummary_regr = MathTestingUtilities.compareResultSets(numericalResultSet, referenceResultSet, varsToTest);
 						//}
@@ -1047,13 +1099,13 @@ private String generateTestCriteriaReport(TestCaseNew testCase,TestCriteriaNew t
 		updateTCritStatus(testCriteria,simReportStatus,simReportStatusMessage);
 	}catch(Throwable e){
 		reportTCBuffer.append("\t\tUpdate DB Results failed. "+e.getClass().getName()+" "+e.getMessage()+"\n");
-		//try{
-			//getRequestManager().getDocumentManager().doTestSuiteOP(
-				//new EditTestCriteriaOPReportStatus(testCriteria.getTCritKey(),TestCriteriaNew.TCRIT_STATUS_RPERROR,e.getClass().getName()+" "+e.getMessage())
-				//);
-		//}catch(Throwable e2){
-			////Nothing more can be done
-		//}
+		try{
+			getRequestManager().getDocumentManager().doTestSuiteOP(
+				new EditTestCriteriaOPReportStatus(testCriteria.getTCritKey(),TestCriteriaNew.TCRIT_STATUS_RPERROR,e.getClass().getName()+" "+e.getMessage())
+				);
+		}catch(Throwable e2){
+			//Nothing more can be done
+		}
 	}
 		
 	//}
@@ -1192,16 +1244,23 @@ private TestCriteriaNew getMatchingTestCriteria(Simulation sim, TestCriteriaNew[
  * Creation date: (4/10/2003 11:27:32 AM)
  * @param testCase cbit.vcell.numericstestingframework.TestCase
  */
-public TestCaseNew getNewTestCase(){
+public TestCaseNew getNewTestCase() throws UserCancelException{
 	// invoke the testCaseAddPanel to define testCaseInfo parameters.
 	// This is where we invoke the TestCaseAddPanel to define a testCase for the test suite ...
 	getTestCaseAddPanel().resetTextFields();
-	Object choice = showAddTestCaseDialog(getTestCaseAddPanel(), null);
-	
-	if (choice != null && choice.equals("OK")) {
-		return getTestCaseAddPanel().getNewTestCase();
+	while(true){
+		Object choice = showAddTestCaseDialog(getTestCaseAddPanel(), null);
+		
+		if (choice != null && choice.equals("OK")) {
+			try{
+				return getTestCaseAddPanel().getNewTestCase();
+			}catch(Exception e){
+				PopupGenerator.showErrorDialog("Error getting New TestCase:\n"+e.getMessage());
+				continue;
+			}
+		}
+		throw UserCancelException.CANCEL_GENERIC;
 	}
-	return null;	
 }
 
 
@@ -1217,14 +1276,16 @@ public TestCriteriaNew getNewTestCriteriaFromUser(String solutionType, TestCrite
 	getEditTestCriteriaPanel().setSolutionType(solutionType);
 	getEditTestCriteriaPanel().resetTextFields();
 
-	// display the editCriteriaPanel.
-	Object choice = showEditTestCriteriaDialog(getEditTestCriteriaPanel(), null);
-
-	if (choice != null && choice.equals("OK")) {
-		return getEditTestCriteriaPanel().getNewTestCriteria();
+	while(true){
+		// display the editCriteriaPanel.
+		Object choice = showEditTestCriteriaDialog(getEditTestCriteriaPanel(), null);
+	
+		if (choice != null && choice.equals("OK")) {
+			return getEditTestCriteriaPanel().getNewTestCriteria();
+		}
+	
+		throw UserCancelException.CANCEL_GENERIC;
 	}
-
-	throw UserCancelException.CANCEL_GENERIC;
 }
 
 
@@ -1234,16 +1295,17 @@ public TestCriteriaNew getNewTestCriteriaFromUser(String solutionType, TestCrite
  * @param testCase cbit.vcell.numericstestingframework.TestCase
  */
 
-public TestSuiteInfoNew getNewTestSuiteInfoFromUser() throws UserCancelException{
+public TestSuiteInfoNew getNewTestSuiteInfoFromUser(String tsAnnotation) throws Exception{
 
-	getAddTestSuitePanel().resetTextFields(true);
-	Object choice = showAddTestSuiteDialog(getAddTestSuitePanel(), null);
-
-	if (choice != null && choice.equals("OK")) {
-		return getAddTestSuitePanel().getTestSuiteInfo();
-	}
+	getAddTestSuitePanel().resetTextFields(tsAnnotation);
+	while(true){
+		Object choice = showAddTestSuiteDialog(getAddTestSuitePanel(), null);
 	
-	throw UserCancelException.CANCEL_DB_SELECTION;
+		if (choice != null && choice.equals("OK")) {
+			return getAddTestSuitePanel().getTestSuiteInfo();
+		}
+		throw UserCancelException.CANCEL_DB_SELECTION;
+	}
 
 }
 
@@ -1391,6 +1453,402 @@ public void loadModel(TestCaseNew testCase) throws DataAccessException{
 }
 
 
+public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew tcrit,final String varName){
+	
+	try {
+		QueryTestCriteriaCrossRefOP queryTestCriteriaCrossRefOP =
+			new QueryTestCriteriaCrossRefOP(tsin.getTSKey(),tcrit.getTCritKey(),varName);
+		TestCriteriaCrossRefOPResults testCriteriaCrossRefOPResults =
+			(TestCriteriaCrossRefOPResults)getRequestManager().getDocumentManager().doTestSuiteOP(queryTestCriteriaCrossRefOP);
+
+		final Vector<TestCriteriaCrossRefOPResults.CrossRefData> xrefDataV = testCriteriaCrossRefOPResults.getCrossRefData();
+		final TestSuiteInfoNew[] testSuiteInfos = getRequestManager().getDocumentManager().getTestSuiteInfos();
+		Vector<TestSuiteInfoNew> missingTestSuites = new Vector<TestSuiteInfoNew>();
+		for (int i = 0; i < testSuiteInfos.length; i++) {
+			boolean bFound = false;
+			for (int j = 0; j < xrefDataV.size(); j++) {
+				if(xrefDataV.elementAt(j).tsVersion.equals(testSuiteInfos[i].getTSID())){
+					bFound = true;
+					break;
+				}
+			}
+			if(!bFound){
+				missingTestSuites.add(testSuiteInfos[i]);
+			}
+		}
+		TestCriteriaCrossRefOPResults.CrossRefData xrefDataSource = null;
+		for (int i = 0; i < xrefDataV.size(); i++) {
+			if(xrefDataV.elementAt(i).tcritKey.equals(tcrit.getTCritKey())){
+				xrefDataSource = xrefDataV.elementAt(i);
+				break;
+			}
+		}
+		if(xrefDataSource == null){
+			throw new RuntimeException("Couldn't find source Test Criteria in query results.");
+		}
+		final int numColumns = 8;
+		final int XREFDATA_ALLOWANCE = 1;
+		final int TSKEY_ALLOWANCE = 1;
+		final int XREFDATA_OFFSET = numColumns;
+		final int TSDATE_OFFSET = 1;
+		final int VARNAME_OFFSET = 3;
+		final int TSKEYMISSING_OFFSET = numColumns+1;
+		final String[] colNames = new String[numColumns];
+		final Object[][] sourceRows = new Object[xrefDataV.size()+missingTestSuites.size()][numColumns+XREFDATA_ALLOWANCE+TSKEY_ALLOWANCE];
+		String sourceTestSuite = null;
+		colNames[0] = "tsVersion";
+		colNames[1] = "tsDate";
+		colNames[2] = "tsBaseVersion";
+		colNames[3] = "varName";
+		colNames[4] = "RelErorr";
+		colNames[5] = "limitRelErorr";
+		colNames[6] = "limitAbsErorr";
+		colNames[7] = "AbsErorr";
+
+		for (int i = 0; i < xrefDataV.size(); i++) {
+			sourceRows[i][colNames.length] = xrefDataV.elementAt(i);
+			if(xrefDataV.elementAt(i).tcritKey.equals(queryTestCriteriaCrossRefOP.getTestCriterium())){
+				sourceTestSuite = xrefDataV.elementAt(i).tsVersion;
+			}
+			sourceRows[i][0] = xrefDataV.elementAt(i).tsVersion;
+			sourceRows[i][2] =
+				(xrefDataV.elementAt(i).tsRefVersion == null?
+						(xrefDataV.elementAt(i).regressionModelID == null/* && xrefDataV.elementAt(i).regressionMMref==null*/?"":"Ref Model exist BUT outside of TestSuites")
+						:xrefDataV.elementAt(i).tsRefVersion);
+			sourceRows[i][6] = xrefDataV.elementAt(i).maxAbsErorr;
+			sourceRows[i][5] = xrefDataV.elementAt(i).maxRelErorr;
+			if(xrefDataV.elementAt(i).varName != null){
+				sourceRows[i][VARNAME_OFFSET] = xrefDataV.elementAt(i).varName;
+				sourceRows[i][4] = xrefDataV.elementAt(i).varCompSummary.getRelativeError();
+				sourceRows[i][7] = xrefDataV.elementAt(i).varCompSummary.getAbsoluteError();
+			}else{
+				sourceRows[i][VARNAME_OFFSET] = "-No Report-";
+				sourceRows[i][4] = null;//"No Report";
+				sourceRows[i][7] = null;//"No Report";
+			}
+			for (int j = 0; j < testSuiteInfos.length; j++) {
+				if(xrefDataV.elementAt(i).tsVersion.equals(testSuiteInfos[j].getTSID())){
+					sourceRows[i][1] = testSuiteInfos[j].getTSDate();
+					break;
+				}
+			}
+		}
+		
+		for (int i = xrefDataV.size(); i < sourceRows.length; i++) {
+			sourceRows[i][0] = missingTestSuites.elementAt(i-xrefDataV.size()).getTSID();
+			sourceRows[i][TSDATE_OFFSET] = missingTestSuites.elementAt(i-xrefDataV.size()).getTSDate();
+			sourceRows[i][TSKEYMISSING_OFFSET] = missingTestSuites.elementAt(i-xrefDataV.size()).getTSKey();
+		}
+		
+//		Arrays.sort(rows,
+//				new Comparator<Object[]>(){
+//					public int compare(Object[] o1, Object[] o2) {
+//						return ((String)o1[0]).compareToIgnoreCase((String)o2[0]);
+////						if(o1[0].equals(o2[0])){
+////							return o1[3].compareToIgnoreCase(o2[3]);
+////						}
+////						return o1[0].compareToIgnoreCase(o2[0]);
+//					}
+//				}
+//			);
+		
+		final ManageTableModel tableModel = new ManageTableModel(){
+			public Class<?> getColumnClass(int columnIndex) {
+				if(columnIndex==TSDATE_OFFSET){
+					return Date.class;
+				}else if(columnIndex >=4 && columnIndex<= 7){
+					return Double.class;
+				}
+				return String.class;
+			}
+			public boolean isCellEditable(int row, int column) {
+		        return false;
+		    }
+			public Object getValueAt(int rowIndex, int columnIndex) {
+				return ((Object[])rows.get(rowIndex))[columnIndex];
+			}
+			public int getColumnCount() {
+				return colNames.length;
+			}
+			public String getColumnName(int column) {
+				return colNames[column];
+			}
+			public void sortColumn(final int col, final boolean ascending) {
+				Collections.sort((List<Object[]>)rows,
+						new Comparator<Object[]>(){
+							public int compare(Object[] o1, Object[] o2) {
+								if(o1[col] == null && o2[col] == null){
+									return 0;
+								}
+//								if(ascending){
+									if(o1[col] == null){
+										return 1;
+									}
+									if(o2[col] == null){
+										return -1;
+									}
+//								}else{
+//									if(o1[col] == null){
+//										return -1;
+//									}
+//									if(o2[col] == null){
+//										return 1;
+//									}
+//								}
+								if(getColumnClass(col).equals(String.class)){
+									if(ascending){
+										return ((String)o1[col]).compareToIgnoreCase(((String)o2[col]));
+									}else{
+										return ((String)o2[col]).compareToIgnoreCase(((String)o1[col]));
+									}
+								}else if(getColumnClass(col).equals(Date.class)){
+									if(ascending){
+										return ((Date)o1[col]).compareTo(((Date)o2[col]));
+									}
+									return ((Date)o2[col]).compareTo(((Date)o1[col]));
+								}else if(getColumnClass(col).equals(Double.class)){
+									if(ascending){
+										return ((Double)o1[col]).compareTo(((Double)o2[col]));
+									}
+									return ((Double)o2[col]).compareTo(((Double)o1[col]));
+									
+								}
+								throw new RuntimeException("TestSuite XRef Query unexpecte column class "+getColumnClass(col).getName());
+							}
+						}
+					);
+			}
+
+		};
+		tableModel.setData(Arrays.asList(sourceRows));
+		
+		//Create table
+		final JSortTable table = new JSortTable(tableModel);
+		table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+		JScrollPane scrollPane = new JScrollPane(table);
+		table.setPreferredScrollableViewportSize(new Dimension(500, 250));
+
+		table.getColumnModel().getColumn(TSDATE_OFFSET).setCellRenderer(
+				new DefaultTableCellRenderer(){
+//					DateFormat formatter = DateFormat.getDateTimeInstance();
+					public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+						return super.getTableCellRendererComponent(table,(value == null?null:((Date)value).toString())/*formatter.format((Date)value)*/, isSelected, hasFocus, row, column);
+					}
+				}
+			);
+		DefaultTableCellRenderer dtcr = new DefaultTableCellRenderer(){
+			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+				return super.getTableCellRendererComponent(table,(value == null?null:((Double)value).toString())/*formatter.format((Date)value)*/, isSelected, hasFocus, row, column);
+			}			
+		};
+		table.getColumnModel().getColumn(4).setCellRenderer(dtcr);
+		table.getColumnModel().getColumn(5).setCellRenderer(dtcr);
+		table.getColumnModel().getColumn(6).setCellRenderer(dtcr);
+		table.getColumnModel().getColumn(7).setCellRenderer(dtcr);
+//		table.getColumnModel().getColumn(4).setCellRenderer(
+//				new DefaultTableCellRenderer(){
+//					public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+//						return super.getTableCellRendererComponent(table,(value == null?null:((Double)value).toString())/*formatter.format((Date)value)*/, isSelected, hasFocus, row, column);
+//					}
+//				}
+//			);
+
+//		table.getTableHeader().setReorderingAllowed(false);
+
+		final JDialog d = new JDialog();
+
+		//Popup Menu
+		final TestCriteriaCrossRefOPResults.CrossRefData xrefDataSourceFinal = xrefDataSource;
+		final JPopupMenu queryPopupMenu = new JPopupMenu();
+		final JMenuItem changeLimitsMenuItem = new JMenuItem("Change Selected Error Limits...");
+		final String OPEN_MODEL = "Open Model(s)";
+		final JMenuItem openModelMenuItem = new JMenuItem(OPEN_MODEL);
+		final String OPEN_REGRREFMODEL = "Open Regr Ref Model(s)";
+		final JMenuItem openRegrRefModelMenuItem = new JMenuItem(OPEN_REGRREFMODEL);
+		final JMenuItem showInTreeMenuItem = new JMenuItem("Select in Tree View");
+		
+		queryPopupMenu.add(changeLimitsMenuItem);
+		queryPopupMenu.add(openModelMenuItem);
+		queryPopupMenu.add(openRegrRefModelMenuItem);
+		queryPopupMenu.add(showInTreeMenuItem);
+		
+		showInTreeMenuItem.addActionListener(
+			new ActionListener(){
+				public void actionPerformed(ActionEvent actionEvent) {
+					int[] selectedRows = table.getSelectedRows();
+					if(selectedRows == null || selectedRows.length != 1){
+						PopupGenerator.showErrorDialog("Action "+actionEvent.getActionCommand()+" accepts only single selection!");
+						return;
+					}
+					TestCriteriaCrossRefOPResults.CrossRefData xrefData =
+						(TestCriteriaCrossRefOPResults.CrossRefData)tableModel.getValueAt(selectedRows[0], XREFDATA_OFFSET);
+					BigDecimal missingTSKey = (BigDecimal)tableModel.getValueAt(selectedRows[0], TSKEYMISSING_OFFSET);
+					getTestingFrameworkWindowPanel().selectInTreeView((xrefData != null?xrefData.tsKey:missingTSKey),(xrefData != null?xrefData.tcaseKey:null),(xrefData != null?xrefData.tcritKey:null));
+					d.setVisible(true);
+				}
+			}
+		);
+		
+		ActionListener openModelsActionListener = 
+		new ActionListener(){
+			public void actionPerformed(ActionEvent actionEvent) {
+				int[] selectedRows = table.getSelectedRows();
+				String failureS = "";
+				TestCriteriaCrossRefOPResults.CrossRefData xrefData = null;
+				int openCount = 0;
+				for (int i = 0; i < selectedRows.length; i++) {
+					try {
+						xrefData =
+							(TestCriteriaCrossRefOPResults.CrossRefData)tableModel.getValueAt(selectedRows[i], XREFDATA_OFFSET);
+						if(xrefData != null && (actionEvent.getActionCommand().equals(OPEN_REGRREFMODEL)?xrefData.regressionModelID != null:true)){
+							openCount+= 1;
+							cbit.vcell.document.VCDocumentInfo vcDocInfo = null;
+							if(xrefData.isBioModel){
+								vcDocInfo = getRequestManager().getDocumentManager().getBioModelInfo(new KeyValue((actionEvent.getActionCommand().equals(OPEN_REGRREFMODEL)?xrefData.regressionModelID:xrefData.modelID)));
+							}else{
+								vcDocInfo = getRequestManager().getDocumentManager().getMathModelInfo(new KeyValue((actionEvent.getActionCommand().equals(OPEN_REGRREFMODEL)?xrefData.regressionModelID:xrefData.modelID)));
+							}
+							getRequestManager().openDocument(vcDocInfo, TestingFrameworkWindowManager.this, true);
+						}
+					} catch (Exception e) {
+						failureS+= failureS+"key="+xrefData.modelID+" "+e.getMessage()+"\n";
+						e.printStackTrace();
+					}
+				}
+				if(failureS.length() > 0 || openCount == 0){
+					PopupGenerator.showErrorDialog("Failed to open some models\n"+failureS+(openCount == 0?"Selection(s) had no model(s)":""));
+				}
+				d.setVisible(true);
+			}
+		};
+		openModelMenuItem.addActionListener(openModelsActionListener);
+		openRegrRefModelMenuItem.addActionListener(openModelsActionListener);
+		
+		changeLimitsMenuItem.addActionListener(
+			new ActionListener(){
+				public void actionPerformed(ActionEvent actionEvent) {
+					int[] selectedRows = table.getSelectedRows();
+					Vector<BigDecimal> changeTCritV = new Vector<BigDecimal>();
+					for (int i = 0; i < selectedRows.length; i++) {
+						TestCriteriaCrossRefOPResults.CrossRefData xrefData =
+							(TestCriteriaCrossRefOPResults.CrossRefData)tableModel.getValueAt(selectedRows[i], XREFDATA_OFFSET);
+						if(xrefData != null){
+							changeTCritV.add(xrefData.tcritKey);
+						}
+					}
+					if(changeTCritV.size() > 0){
+						double relativeError = -1;
+						double absoluteError = -1;
+						while(true){
+							try{
+								String ret = PopupGenerator.showInputDialog(getTestingFrameworkWindowPanel(),
+										"Enter new TestCriteria Error Limits for '"+xrefDataSourceFinal.simName+"'.",
+										"RelativeErrorLimit,AbsoluteErrorLimit");
+								int commaPosition = ret.indexOf(',');
+								if(commaPosition == -1){
+									throw new Exception("No comma found separating RelativeErrorLimit AbsoluteErrorLimit");
+								}
+								if(commaPosition != ret.lastIndexOf(',')){
+									throw new Exception("Only 1 comma allowed separating RelativeErrorLimit and AbsoluteErrorLimit");
+								}
+								relativeError = Double.parseDouble(ret.substring(0, commaPosition));
+								absoluteError = Double.parseDouble(ret.substring(commaPosition+1,ret.length()));
+								if(relativeError <= 0 || absoluteError <= 0){
+									throw new Exception("Error limits must be greater than 0");
+								}
+								break;
+							}catch(UserCancelException e){
+								d.setVisible(true);
+								return;
+							}catch(Exception e){
+								PopupGenerator.showErrorDialog("Error parsing Error Limits\n"+e.getMessage());
+							}
+						}
+						double[] relErrorLimitArr = new double[changeTCritV.size()];
+						Arrays.fill(relErrorLimitArr, relativeError);
+						double[] absErrorLimitArr = new double[changeTCritV.size()];
+						Arrays.fill(absErrorLimitArr, absoluteError);
+						ChangeTestCriteriaErrorLimitOP changeTestCriteriaErrorLimitOP =
+						new ChangeTestCriteriaErrorLimitOP(
+								(BigDecimal[])changeTCritV.toArray(new BigDecimal[changeTCritV.size()]),
+								relErrorLimitArr,absErrorLimitArr);
+						try{
+							getTestingFrameworkWindowPanel().getDocumentManager().doTestSuiteOP(changeTestCriteriaErrorLimitOP);
+						}catch(Exception e){
+							PopupGenerator.showErrorDialog("Failed Changing Error limits for selected "+xrefDataSourceFinal.simName+"\n"+e.getMessage());
+							return;
+						}
+						d.dispose();
+						getTestingFrameworkWindowPanel().refreshTree(null);
+						new Thread(new Runnable(){
+							public void run() {
+								TestingFrameworkWindowManager.this.queryTCritCrossRef(tsin, tcrit, varName);
+							}
+						}).start();
+					}else{
+						PopupGenerator.showErrorDialog("No selected rows contain Test Criteria.");
+					}
+				}
+			}
+		);
+		table.addMouseListener(new MouseAdapter(){
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				super.mouseClicked(e);
+				checkPopup(e);
+			}
+			@Override
+			public void mousePressed(MouseEvent e) {
+				super.mousePressed(e);
+				checkPopup(e);
+			}
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				super.mouseReleased(e);
+				checkPopup(e);
+			}
+			private void checkPopup(MouseEvent mouseEvent){
+				table.getSelectionModel().setSelectionInterval(table.rowAtPoint(mouseEvent.getPoint()),table.rowAtPoint(mouseEvent.getPoint()));
+				if(mouseEvent.isPopupTrigger()){doPopup(mouseEvent);}
+				else{queryPopupMenu.setVisible(false);}
+			}
+			private void doPopup(MouseEvent mouseEvent){
+//				int selectedRow = table.getSelectedRow();
+//				TestCriteriaCrossRefOPResults.CrossRefData xrefData =
+//					(TestCriteriaCrossRefOPResults.CrossRefData)tableModel.getValueAt(selectedRow, numColumns);
+//				if(xrefData == null){
+//					showChangeLimitsMenuItem.setEnabled(false);
+//				}else{
+//					showChangeLimitsMenuItem.setEnabled(true);
+//				}
+				queryPopupMenu.show(mouseEvent.getComponent(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
+			}
+		});
+		
+		//Create dialog
+		d.setTitle(
+				(xrefDataSource.isBioModel?"BM":"MM")+
+				" "+xrefDataSource.tcSolutionType+
+				" ("+sourceTestSuite+") "+
+				" \""+(xrefDataSource.isBioModel?xrefDataSource.bmName:xrefDataSource.mmName)+
+				"\"  ::  "+(xrefDataSource.isBioModel?"app=\""+xrefDataSource.bmAppName+"\"  ::  sim=\""+xrefDataSource.simName+"\"":"sim=\""+xrefDataSource.simName+"\""));
+		d.setModal(false);
+		d.getContentPane().add(scrollPane);
+//		scrollPane.setDialogParent(d);
+		d.setSize(600,400);
+		d.setLocation(300,200);
+		BeanUtils.centerOnComponent(d,null);
+		d.setVisible(true);
+//		cbit.gui.ZEnforcer.showModalDialogOnTop(d,null);
+//		return imageAttributePanel.getStatus();
+
+	} catch (DataAccessException e) {
+		e.printStackTrace();
+		PopupGenerator.showErrorDialog("Error Query TestCriteria Cross Ref:\n"+e.getMessage());
+	}
+	
+}
+
 /**
  * Remove a cbit.vcell.desktop.controls.DataListener.
  */
@@ -1418,12 +1876,6 @@ public void removeTestCase(TestCaseNew testCase) throws DataAccessException{
 public void removeTestSuite(TestSuiteInfoNew tsInfo) throws DataAccessException{
 
 	TestSuiteNew testSuite = getRequestManager().getDocumentManager().getTestSuite(tsInfo.getTSKey());
-	TestCaseNew[] testCases = testSuite.getTestCases();
-	if (testCases != null) {
-		throw new RuntimeException(
-			"Cannot delete TestSuite that contains test cases. Remove test cases before deleting test suite!");
-	}
-	
 	getRequestManager().getDocumentManager().doTestSuiteOP(new RemoveTestSuiteOP(tsInfo.getTSKey()));
 }
 
@@ -1443,8 +1895,10 @@ public void saveNewTestSuiteInfo(TestSuiteInfoNew newTestSuiteInfo) throws DataA
 			newTestSuiteInfo.getTSID(),
 			newTestSuiteInfo.getTSVCellBuild(),
 			newTestSuiteInfo.getTSNumericsBuild(),
-			null);
+			null,newTestSuiteInfo.getTSAnnotation());
 	getRequestManager().getDocumentManager().doTestSuiteOP(testSuiteOP);
+	
+	getTestingFrameworkWindowPanel().refreshTree(newTestSuiteInfo);
 }
 
 
@@ -1601,7 +2055,7 @@ private void setTestingFrameworkWindowPanel(cbit.vcell.client.desktop.TestingFra
  */
 private Object showAddTestCaseDialog(JComponent addTCPanel, Component requester) {
 
-	addTCPanel.setPreferredSize(new java.awt.Dimension(500, 200));
+	addTCPanel.setPreferredSize(new java.awt.Dimension(600, 200));
 	getAddTestCaseDialog().setMessage("");
 	getAddTestCaseDialog().setMessage(addTCPanel); 
 	getAddTestCaseDialog().setValue(null);
@@ -1846,7 +2300,7 @@ public String startTestSuiteSimulations(TestSuiteInfoNew testSuiteInfo,AsynchPro
  * Creation date: (11/16/2004 7:44:27 AM)
  * 
  */
-public String updateSimRunningStatus(AsynchProgressPopup pp){
+public String updateSimRunningStatus(AsynchProgressPopup pp,TestSuiteInfoNew tsin){
 
 	StringBuffer errors = new StringBuffer();
 	
@@ -1856,6 +2310,9 @@ public String updateSimRunningStatus(AsynchProgressPopup pp){
 		if(tsinfos != null && tsinfos.length > 0){
 			for(int i=0;i<tsinfos.length;i+= 1){
 				try{
+					if(tsin != null && !tsinfos[i].getTSKey().equals(tsin.getTSKey())){
+						continue;
+					}
 					pp.setProgress(i*50/tsinfos.length);
 					pp.setMessage("Update SimsRunning, Getting Testsuite "+tsinfos[i].getTSID());
 					TestSuiteNew tsn = getRequestManager().getDocumentManager().getTestSuite(tsinfos[i].getTSKey());

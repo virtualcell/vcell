@@ -9,6 +9,11 @@ import cbit.sql.*;
 import cbit.vcell.field.FieldDataDBOperationDriver;
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
+import cbit.vcell.numericstest.EditTestCriteriaOPReportStatus;
+import cbit.vcell.numericstest.RemoveTestResultsOP;
+import cbit.vcell.numericstest.TestCaseNew;
+import cbit.vcell.numericstest.TestCriteriaCrossRefOPResults;
+import cbit.vcell.numericstest.TestCriteriaNew;
 import cbit.vcell.server.*;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 
@@ -2159,8 +2164,10 @@ public static cbit.vcell.numericstest.TestSuiteNew testSuiteGet(BigDecimal getTh
 			double mse = rset.getDouble(TFTestResultTable.table.meanSqrError.getUnqualifiedColName());
 			double timeAbsError = rset.getDouble(TFTestResultTable.table.timeAbsError.getUnqualifiedColName());
 			int indexAbsError = rset.getInt(TFTestResultTable.table.indexAbsError.getUnqualifiedColName());
+			double timeRelError = rset.getDouble(TFTestResultTable.table.timeRelError.getUnqualifiedColName());
+			int indexRelError = rset.getInt(TFTestResultTable.table.indexRelError.getUnqualifiedColName());
 			Vector v = (Vector)vcsH.get(tcritRef);if(v == null){v = new Vector();vcsH.put(tcritRef,v);}
-			v.add(new cbit.vcell.solver.test.VariableComparisonSummary(varName,minRef,maxRef,absError,relError,mse,timeAbsError,indexAbsError));
+			v.add(new cbit.vcell.solver.test.VariableComparisonSummary(varName,minRef,maxRef,absError,relError,mse,timeAbsError,indexAbsError,timeRelError,indexRelError));
 //counter+= 1;
 		}
 //System.out.println("VCS count="+counter+" time="+((System.currentTimeMillis()-begTime)/1000));
@@ -2578,22 +2585,21 @@ public static cbit.vcell.numericstest.TestSuiteNew testSuiteGet(BigDecimal getTh
 		String tsVCBuild = null;
 		String tsNumericsBuild = null;
 		java.util.Date tsDate = null;
+		String tsAnnot = null;
 		if(rset.next()){
 			tsKey = rset.getBigDecimal(TFTestSuiteTable.table.id.getUnqualifiedColName());
 			tsVersion = rset.getString(TFTestSuiteTable.table.tsVersion.getUnqualifiedColName());
 			tsVCBuild = rset.getString(TFTestSuiteTable.table.vcBuildVersion.getUnqualifiedColName());
 			tsNumericsBuild = rset.getString(TFTestSuiteTable.table.vcNumericsVersion.getUnqualifiedColName());
 			tsDate = VersionTable.getDate(rset,TFTestSuiteTable.table.creationDate.getUnqualifiedColName());
-			//if(rset.next()){
-				//throw new DataAccessException("More than 1 TestSuite with key="+getThisTS+" found");
-			//}
+			tsAnnot = rset.getString(TFTestSuiteTable.table.tsAnnotation.getUnqualifiedColName());
 		}else{
 			throw new ObjectNotFoundException("TestSuite with key="+getThisTS+" not found");
 		}
 		rset.close();
 
 		cbit.vcell.numericstest.TestSuiteInfoNew tsiNew =
-			new cbit.vcell.numericstest.TestSuiteInfoNew(tsKey,tsVersion,tsVCBuild,tsNumericsBuild,tsDate);
+			new cbit.vcell.numericstest.TestSuiteInfoNew(tsKey,tsVersion,tsVCBuild,tsNumericsBuild,tsDate,tsAnnot);
 
 		cbit.vcell.numericstest.TestSuiteNew tsn = new cbit.vcell.numericstest.TestSuiteNew(tsiNew,tcnArr);
 		//testSuiteHash.put(tsKey,tsn);
@@ -2638,7 +2644,8 @@ public static cbit.vcell.numericstest.TestSuiteInfoNew[] testSuiteInfosGet(Conne
 			String vcBuildS = rset.getString(TFTestSuiteTable.table.vcBuildVersion.getUnqualifiedColName());
 			String vcNumericS = rset.getString(TFTestSuiteTable.table.vcNumericsVersion.getUnqualifiedColName());
 			java.util.Date date = VersionTable.getDate(rset,TFTestSuiteTable.table.creationDate.getUnqualifiedColName());
-			tsiV.add(new cbit.vcell.numericstest.TestSuiteInfoNew(tsKey,tsID,vcBuildS,vcNumericS,date));
+			String tsAnnot = rset.getString(TFTestSuiteTable.table.tsAnnotation.getUnqualifiedColName());
+			tsiV.add(new cbit.vcell.numericstest.TestSuiteInfoNew(tsKey,tsID,vcBuildS,vcNumericS,date,tsAnnot));
 		}
 	}finally{
 		if(stmt != null){
@@ -2665,7 +2672,7 @@ public static cbit.vcell.numericstest.TestSuiteInfoNew[] testSuiteInfosGet(Conne
 public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.numericstest.TestSuiteOP tsop,Connection con,User user,SessionLog sessionLog) 
 			throws SQLException,DataAccessException{
 
-	java.util.TreeSet changedTestSuiteKeys = new java.util.TreeSet();
+	java.util.TreeSet<BigDecimal> changedTestSuiteKeys = new java.util.TreeSet<BigDecimal>();
 	
 	String sql = null;
 	Statement stmt = null;
@@ -2675,12 +2682,21 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 		
 		if(tsop instanceof cbit.vcell.numericstest.AddTestSuiteOP){
 			cbit.vcell.numericstest.AddTestSuiteOP addts_tsop = (cbit.vcell.numericstest.AddTestSuiteOP)tsop;
+			String annotation = addts_tsop.getTestSuiteAnnotation();
+			if(annotation != null){
+				if(annotation.length() == 0){
+					annotation = null;
+				}else{
+					annotation = cbit.util.TokenMangler.getSQLEscapedString(annotation);
+				}
+			}
+
 			BigDecimal changedTSKey = keyFactory.getUniqueBigDecimal(con);
 			sql = 
 				"INSERT INTO "+TFTestSuiteTable.table.getTableName()+" VALUES("+
 					changedTSKey+",'"+addts_tsop.getTestSuiteVersionID()+"',"+
 					"'"+addts_tsop.getVCellBuildVersionID()+"'"+","+"'"+addts_tsop.getNumericsBuildVersionID()+"'"+","+
-					"SYSDATE,SYSDATE"+")";
+					"SYSDATE,SYSDATE,"+(annotation == null?"NULL":"'"+annotation+"'")+")";
 			stmt.executeUpdate(sql);
 			if(addts_tsop.getAddTestCasesOPs() != null){
 				for(int i=0;i<addts_tsop.getAddTestCasesOPs().length;i+= 1){
@@ -3071,7 +3087,8 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 					"'"+vcs[i].getName()+"'"+","+
 					"TO_NUMBER('"+vcs[i].getAbsoluteError()+"')"+","+"TO_NUMBER('"+vcs[i].getRelativeError()+"')"+","+
 					"TO_NUMBER('"+vcs[i].getMaxRef()+"')"+","+"TO_NUMBER('"+vcs[i].getMinRef()+"')"+","+"TO_NUMBER('"+vcs[i].getMeanSqError()+"')"+","+
-					"TO_NUMBER('"+vcs[i].getTimeAbsoluteError()+"')"+","+"TO_NUMBER('"+vcs[i].getIndexAbsoluteError()+"')"+
+					"TO_NUMBER('"+vcs[i].getTimeAbsoluteError()+"')"+","+"TO_NUMBER('"+vcs[i].getIndexAbsoluteError()+"')"+","+
+					"TO_NUMBER('"+vcs[i].getTimeRelativeError()+"')"+","+"TO_NUMBER('"+vcs[i].getIndexRelativeError()+"')"+
 					")";
 				stmt.executeUpdate(sql);
 			}
@@ -3139,6 +3156,9 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 					TFTestCriteriaTable.table.reportMessage.getQualifiedColName()+"="+(reportStatusMessage!= null?"'"+reportStatusMessage+"'":"null")+
 				" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKey.toString()
 				);
+			if(newRS.equals(cbit.vcell.numericstest.TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT)){
+				testSuiteOP(new RemoveTestResultsOP(new BigDecimal[] {tcritKey}), con, user, sessionLog);
+			}
 
 			ResultSet rset = stmt.executeQuery(
 				"SELECT DISTINCT "+TFTestSuiteTable.table.id.getQualifiedColName()+
@@ -3181,12 +3201,12 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 			stmt.executeUpdate(
 				"UPDATE "+TFTestCriteriaTable.table.getTableName()+
 				" SET "+
-					TFTestCriteriaTable.table.reportStatus.getQualifiedColName()+"="+"'"+cbit.vcell.numericstest.TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT+"'"+","+
 					TFTestCriteriaTable.table.maxAbsError.getQualifiedColName()+"="+(maxAbsError != null?"TO_NUMBER("+maxAbsError.toString()+")":"null")+","+
 					TFTestCriteriaTable.table.maxRelError.getQualifiedColName()+"="+(maxRelError != null?"TO_NUMBER("+maxRelError.toString()+")":"null")+","+
 					TFTestCriteriaTable.table.regressionMMSimRef.getQualifiedColName()+"="+(regrMathModelSimLink != null?regrMathModelSimLink.toString():"null")+
 				" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKey.toString()
 				);
+			testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKey,cbit.vcell.numericstest.TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user, sessionLog);
 
 			ResultSet rset = stmt.executeQuery(
 				"SELECT DISTINCT "+TFTestSuiteTable.table.id.getQualifiedColName()+
@@ -3245,13 +3265,13 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 			stmt.executeUpdate(
 				"UPDATE "+TFTestCriteriaTable.table.getTableName()+
 				" SET "+
-					TFTestCriteriaTable.table.reportStatus.getQualifiedColName()+"="+"'"+cbit.vcell.numericstest.TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT+"'"+","+
 					TFTestCriteriaTable.table.maxAbsError.getQualifiedColName()+"="+(maxAbsError != null?"TO_NUMBER("+maxAbsError.toString()+")":"null")+","+
 					TFTestCriteriaTable.table.maxRelError.getQualifiedColName()+"="+(maxRelError != null?"TO_NUMBER("+maxRelError.toString()+")":"null")+","+
 					TFTestCriteriaTable.table.regressionBMAPPRef.getQualifiedColName()+"="+(bmscAppKey != null?bmscAppKey.toString():"NULL")+","+
 					TFTestCriteriaTable.table.regressionBMSimRef.getQualifiedColName()+"="+(bmsltSimKey != null?bmsltSimKey.toString():"NULL")+
 				" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKey.toString()
 				);
+			testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKey,cbit.vcell.numericstest.TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user, sessionLog);
 			
 			ResultSet rset = stmt.executeQuery(
 				"SELECT DISTINCT "+TFTestSuiteTable.table.id.getQualifiedColName()+
@@ -3263,10 +3283,43 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 				changedTestSuiteKeys.add(rset.getBigDecimal(TFTestSuiteTable.table.id.getUnqualifiedColName()));			
 			}
 			rset.close();
+		}else if(tsop instanceof cbit.vcell.numericstest.ChangeTestCriteriaErrorLimitOP){
+			cbit.vcell.numericstest.ChangeTestCriteriaErrorLimitOP edittcrit_tsop = (cbit.vcell.numericstest.ChangeTestCriteriaErrorLimitOP)tsop;
+			BigDecimal[] tcritKeyArr = edittcrit_tsop.getTestCriteriaKeys();
+			double[] maxAbsErrorArr = edittcrit_tsop.getAbsErrorLimits();
+			double[] maxRelErrorArr = edittcrit_tsop.getRelErrorLimits();
+			if(tcritKeyArr == null || (maxAbsErrorArr != null && maxAbsErrorArr.length != tcritKeyArr.length) || (maxAbsErrorArr != null && maxRelErrorArr.length != tcritKeyArr.length)){
+				throw new DataAccessException(tsop.getClass().getName()+" Improper arguments.");
+			}
+			StringBuffer tcritList = new StringBuffer();
+			for (int i = 0; i < tcritKeyArr.length; i++) {
+				if(i!= 0){tcritList.append(",");}
+				tcritList.append(tcritKeyArr[i]);
+				stmt.executeUpdate(
+					"UPDATE "+TFTestCriteriaTable.table.getTableName()+
+					" SET "+
+					(maxAbsErrorArr != null?TFTestCriteriaTable.table.maxAbsError.getQualifiedColName()+"="+maxAbsErrorArr[i]:"")+
+					(maxAbsErrorArr != null && maxRelErrorArr != null?",":"")+
+					(maxRelErrorArr != null?TFTestCriteriaTable.table.maxRelError.getQualifiedColName()+"="+maxRelErrorArr[i]:"")+
+					" WHERE "+TFTestCriteriaTable.table.id.getQualifiedColName()+"="+tcritKeyArr[i].toString()
+					);
+				testSuiteOP(new EditTestCriteriaOPReportStatus(tcritKeyArr[i],cbit.vcell.numericstest.TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null), con, user, sessionLog);
+			}
+			ResultSet rset = stmt.executeQuery(
+					"SELECT DISTINCT "+TFTestSuiteTable.table.id.getQualifiedColName()+
+					" FROM "+TFTestSuiteTable.table.getTableName()+","+TFTestCaseTable.table.getTableName()+","+TFTestCriteriaTable.table.getTableName()+
+					" WHERE "+TFTestCaseTable.table.id.getQualifiedColName()+"="+TFTestCriteriaTable.table.testCaseRef.getQualifiedColName()+
+					" AND " +TFTestCriteriaTable.table.id.getQualifiedColName()+" IN ("+tcritList.toString()+")"+
+					" AND " +TFTestCaseTable.table.testSuiteRef.getQualifiedColName()+"="+TFTestSuiteTable.table.id.getQualifiedColName());
+				while(rset.next()){
+					changedTestSuiteKeys.add(rset.getBigDecimal(TFTestSuiteTable.table.id.getUnqualifiedColName()));			
+				}
+
 		}else if(tsop instanceof cbit.vcell.numericstest.EditTestCasesOP){
 			cbit.vcell.numericstest.EditTestCasesOP edittc_tsop = (cbit.vcell.numericstest.EditTestCasesOP)tsop;
 			BigDecimal[] tcaseKeys = edittc_tsop.getTestCasesKeys();
 			String[] annots = edittc_tsop.getNewAnnotations();
+			boolean[] newSteadyStates = edittc_tsop.getNewSteadyStates();
 			if(tcaseKeys == null || tcaseKeys.length == 0){
 				throw new DataAccessException(tsop.getClass().getName()+" had no TestCase keys");
 			}
@@ -3274,16 +3327,66 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 			
 			for(int i=0;i<tcaseKeys.length;i+= 1){
 				if(i != 0){sb.append(",");}sb.append(tcaseKeys[i].toString());
-				String annotation = annots[i];
-				if(annotation != null){
-					annotation = cbit.util.TokenMangler.getSQLEscapedString(annotation);
+				if(annots != null){
+					String annotation = annots[i];
+					if(annotation != null){
+						if(annotation.length() == 0){
+							annotation = null;
+						}else{
+							annotation = cbit.util.TokenMangler.getSQLEscapedString(annotation);
+						}
+					}
+					stmt.executeUpdate(
+						"UPDATE "+TFTestCaseTable.table.getTableName()+
+						" SET "+
+							TFTestCaseTable.table.tcAnnotation.getQualifiedColName()+"="+(annotation == null?"NULL":"'"+annotation+"'")+
+						" WHERE "+TFTestCaseTable.table.id.getQualifiedColName()+"="+tcaseKeys[i].toString()
+						);
 				}
-				stmt.executeUpdate(
-					"UPDATE "+TFTestCaseTable.table.getTableName()+
-					" SET "+
-						TFTestCaseTable.table.tcAnnotation.getQualifiedColName()+"="+annotation+
-					" WHERE "+TFTestCaseTable.table.id.getQualifiedColName()+"="+tcaseKeys[i].toString()
-					);
+				if(newSteadyStates != null){
+					//Make sure the change is for EXACT type
+					ResultSet rset = stmt.executeQuery(
+							"SELECT DISTINCT "+TFTestCriteriaTable.table.id.getQualifiedColName()+
+							" FROM "+
+							TFTestCaseTable.table.getTableName() +","+
+							TFTestCriteriaTable.table.getTableName()+
+							" WHERE " +
+								TFTestCaseTable.table.id.getQualifiedColName()+"="+tcaseKeys[i].toString()+
+								" AND " +
+								"("+
+									TFTestCaseTable.table.tcSolutionType.getQualifiedColName()+"='"+TestCaseNew.EXACT+"'"+
+									" OR "+
+									TFTestCaseTable.table.tcSolutionType.getQualifiedColName()+"='"+TestCaseNew.EXACT_STEADY+"'"+
+								")"+
+								" AND "+
+								TFTestCriteriaTable.table.testCaseRef+"="+TFTestCaseTable.table.id.getQualifiedColName()
+							);
+					//Get TestCriteria Keys for Test case
+					Vector<BigDecimal> tcritKeyV = new Vector<BigDecimal>();
+					while(rset.next()){
+						tcritKeyV.add(rset.getBigDecimal(TFTestCriteriaTable.table.id.getUnqualifiedColName()));
+					}
+					if(tcritKeyV.size() == 0){
+						throw new DataAccessException("Updating SteadyState on TestCase that is not EXACT is NOT allowed.");						
+					}
+					rset.close();
+					//Change SteadyState type for TestCase
+					boolean newSteadyState = newSteadyStates[i];
+					stmt.executeUpdate(
+						"UPDATE "+TFTestCaseTable.table.getTableName()+
+						" SET "+
+							TFTestCaseTable.table.tcSolutionType.getQualifiedColName()+"="+
+							(newSteadyState?"'"+TestCaseNew.EXACT_STEADY+"'":"'"+TestCaseNew.EXACT+"'")+
+						" WHERE "+TFTestCaseTable.table.id.getQualifiedColName()+"="+tcaseKeys[i].toString()
+						);
+					//Change Report status
+					for (int j = 0; j < tcritKeyV.size(); j++) {
+						EditTestCriteriaOPReportStatus etcors = 
+							new EditTestCriteriaOPReportStatus(tcritKeyV.elementAt(j),TestCriteriaNew.TCRIT_STATUS_NEEDSREPORT,null);
+						testSuiteOP(etcors, con, user, sessionLog);
+						
+					}
+				}
 			}
 			
 			ResultSet rset = stmt.executeQuery(
@@ -3295,6 +3398,300 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 				changedTestSuiteKeys.add(rset.getBigDecimal(TFTestSuiteTable.table.id.getUnqualifiedColName()));			
 			}
 			rset.close();
+		}else if(tsop instanceof cbit.vcell.numericstest.EditTestSuiteOP){
+			cbit.vcell.numericstest.EditTestSuiteOP editts_tsop = (cbit.vcell.numericstest.EditTestSuiteOP)tsop;
+			BigDecimal[] tsKeys = editts_tsop.getTestSuiteKeys();
+			String[] annots = editts_tsop.getNewAnnotations();
+			if(tsKeys == null || tsKeys.length == 0){
+				throw new DataAccessException(tsop.getClass().getName()+" had no TestCase keys");
+			}
+			StringBuffer sb = new StringBuffer();
+			for(int i=0;i<tsKeys.length;i+= 1){
+				if(i != 0){sb.append(",");}sb.append(tsKeys[i].toString());
+				if(annots != null){
+					String annotation = annots[i];
+					if(annotation != null){
+						if(annotation.length() == 0){
+							annotation = null;
+						}else{
+							annotation = cbit.util.TokenMangler.getSQLEscapedString(annotation);
+						}
+					}
+					stmt.executeUpdate(
+						"UPDATE "+TFTestSuiteTable.table.getTableName()+
+						" SET "+
+							TFTestSuiteTable.table.tsAnnotation.getQualifiedColName()+"="+(annotation == null?"NULL":"'"+annotation+"'")+
+						" WHERE "+TFTestSuiteTable.table.id.getQualifiedColName()+"="+tsKeys[i].toString()
+						);
+				}
+			}			
+			
+			ResultSet rset = stmt.executeQuery(
+					"SELECT DISTINCT "+TFTestSuiteTable.table.id.getQualifiedColName()+
+					" FROM "+TFTestSuiteTable.table.getTableName()+
+					" WHERE "+TFTestSuiteTable.table.id.getQualifiedColName()+" IN ("+sb.toString()+")");
+				while(rset.next()){
+					changedTestSuiteKeys.add(rset.getBigDecimal(TFTestSuiteTable.table.id.getUnqualifiedColName()));			
+				}
+				rset.close();
+		}else if(tsop instanceof cbit.vcell.numericstest.QueryTestCriteriaCrossRefOP){
+			cbit.vcell.numericstest.QueryTestCriteriaCrossRefOP qtcritxr_tsop = (cbit.vcell.numericstest.QueryTestCriteriaCrossRefOP)tsop;
+			Vector<TestCriteriaCrossRefOPResults.CrossRefData> crossRefV = new Vector<TestCriteriaCrossRefOPResults.CrossRefData>();
+			//
+			//BioModel query
+			//
+			String TSID = "tsid";
+			String TCID = "tcid";
+			String TCRID = "tcrid";
+			String BMNAME = "bmname";
+			String SCNAME = "scname";
+			String SIMNAME = "simname";
+			String TSALT = "TSALT";
+			String TCALT = "TCALT";
+			String TCRALT = "TCRALT";
+			String BSCALT = "BSCALT";
+			String MMSIMALT = "MMSIMALT";
+			String MODELID = "MODELID";
+			sql =
+				"SELECT DISTINCT " +
+				TFTestSuiteTable.table.tsVersion.getQualifiedColName() +"," +
+				TFTestSuiteTable.table.id.getQualifiedColName()+" "+TSID+","+
+				TFTestCaseTable.table.id.getQualifiedColName() +" "+TCID+","+
+				TFTestCriteriaTable.table.id.getQualifiedColName() +" "+TCRID+","+
+				BioModelTable.table.name.getQualifiedColName() +" "+BMNAME+","+
+				SimContextTable.table.name.getQualifiedColName() +" "+SCNAME+","+
+				SimulationTable.table.name.getQualifiedColName() +" "+SIMNAME+","+
+				TFTestCriteriaTable.table.maxAbsError.getQualifiedColName()+","+
+				TFTestCriteriaTable.table.maxRelError.getQualifiedColName()+","+
+				TFTestResultTable.table.varName.getQualifiedColName()+","+
+				TFTestResultTable.table.minRef.getQualifiedColName()+","+
+				TFTestResultTable.table.maxRef.getQualifiedColName()+","+
+				TFTestResultTable.table.absError.getQualifiedColName()+","+
+				TFTestResultTable.table.relError.getQualifiedColName()+","+
+				TFTestResultTable.table.meanSqrError.getQualifiedColName()+","+
+				TFTestResultTable.table.timeAbsError.getQualifiedColName()+","+
+				TFTestResultTable.table.indexAbsError.getQualifiedColName()+","+
+				TFTestResultTable.table.timeRelError.getQualifiedColName()+","+
+				TFTestResultTable.table.indexRelError.getQualifiedColName() +","+
+				TSALT+"."+TFTestSuiteTable.table.tsVersion.getUnqualifiedColName() +","+
+				BSCALT+"."+BioModelSimContextLinkTable.table.bioModelRef.getUnqualifiedColName() +","+
+				TFTestCaseTable.table.tcSolutionType.getQualifiedColName() +","+
+				BioModelTable.table.id.getQualifiedColName() +" "+MODELID+
+//				"DECODE("+
+//					TSALT+"."+TFTestSuiteTable.table.id.getUnqualifiedColName()+",NULL,DECODE("+
+//					TCRALT+"."+TFTestCriteriaTable.table.regressionBMAPPRef.getUnqualifiedColName()+",NULL,NULL,'regressionBMAPPRef exist BUT outside of TestSuites')"+
+//					","+TSALT+"."+TFTestSuiteTable.table.tsVersion.getUnqualifiedColName()+")"+
+				" FROM " +
+				TFTestSuiteTable.table.getTableName()+","+
+				TFTestCaseTable.table.getTableName()+","+
+				TFTestCriteriaTable.table.getTableName()+","+
+				TFTestResultTable.table.getTableName()+","+
+				BioModelSimContextLinkTable.table.getTableName()+","+
+				BioModelTable.table.getTableName()+","+
+				SimContextTable.table.getTableName()+","+
+				SimulationTable.table.getTableName() +
+				","+
+		BioModelSimulationLinkTable.table.getTableName()+","+
+				TFTestSuiteTable.table.getTableName()+" "+TSALT+","+
+				TFTestCaseTable.table.getTableName()+" "+TCALT+","+
+				TFTestCriteriaTable.table.getTableName()+" "+TCRALT+
+				","+BioModelSimContextLinkTable.table.getTableName()+" "+BSCALT+
+				" WHERE " +
+				TFTestSuiteTable.table.id.getQualifiedColName() +"="+ TFTestCaseTable.table.testSuiteRef.getQualifiedColName()+
+				" AND " +
+				TFTestCriteriaTable.table.testCaseRef.getQualifiedColName() +"="+ TFTestCaseTable.table.id.getQualifiedColName()+
+				" AND " +
+				TFTestResultTable.table.testCriteriaRef.getQualifiedColName()+"(+)" +"="+ TFTestCriteriaTable.table.id.getQualifiedColName()+
+				(qtcritxr_tsop.getVarName() != null?" AND "+TFTestResultTable.table.varName.getQualifiedColName()+"(+)"+"="+"'"+qtcritxr_tsop.getVarName()+"'":"")+
+				" AND " +
+				TFTestCaseTable.table.bmAppRef.getQualifiedColName() +"="+ BioModelSimContextLinkTable.table.id.getQualifiedColName()+
+				" AND " +
+				BioModelSimContextLinkTable.table.bioModelRef.getQualifiedColName() +"="+ BioModelTable.table.id.getQualifiedColName()+
+				" AND " +
+				BioModelSimContextLinkTable.table.simContextRef.getQualifiedColName() +"="+ SimContextTable.table.id.getQualifiedColName()+
+				" AND " +
+		BioModelSimulationLinkTable.table.bioModelRef.getQualifiedColName() +"="+ BioModelTable.table.id.getQualifiedColName()+
+		" AND " +
+		BioModelSimulationLinkTable.table.simRef.getQualifiedColName() +"="+ SimulationTable.table.id.getQualifiedColName()+
+				" AND " +
+					BioModelTable.table.versionBranchID.getQualifiedColName() +"="+
+					"("+
+						"SELECT DISTINCT " +
+						BioModelTable.table.versionBranchID.getQualifiedColName()+
+						" FROM " + 
+						TFTestCaseTable.table.getTableName()+","+
+						TFTestCriteriaTable.table.getTableName()+","+
+						BioModelSimContextLinkTable.table.getTableName()+","+
+						BioModelTable.table.getTableName()+
+						" WHERE " +
+						TFTestCriteriaTable.table.id.getQualifiedColName() +"="+ qtcritxr_tsop.getTestCriterium()+
+						" AND " +
+						TFTestCriteriaTable.table.testCaseRef.getQualifiedColName() +"="+ TFTestCaseTable.table.id.getQualifiedColName()+
+						" AND " +
+						TFTestCaseTable.table.bmAppRef.getQualifiedColName() +"="+ BioModelSimContextLinkTable.table.id.getQualifiedColName()+
+						" AND " +
+						BioModelSimContextLinkTable.table.bioModelRef.getQualifiedColName() +"="+ BioModelTable.table.id.getQualifiedColName()+
+					")"+
+				" AND " +
+					SimContextTable.table.name.getQualifiedColName() +"="+
+					"("+
+						"SELECT DISTINCT " +
+						SimContextTable.table.name.getQualifiedColName()+
+						" FROM " +
+						TFTestCaseTable.table.getTableName()+","+
+						TFTestCriteriaTable.table.getTableName()+","+
+						BioModelSimContextLinkTable.table.getTableName()+","+
+						SimContextTable.table.getTableName()+
+						" WHERE " +
+						TFTestCriteriaTable.table.id.getQualifiedColName() +"="+ qtcritxr_tsop.getTestCriterium()+
+						" AND " +
+						TFTestCriteriaTable.table.testCaseRef.getQualifiedColName() +"="+ TFTestCaseTable.table.id.getQualifiedColName()+
+						" AND " +
+						TFTestCaseTable.table.bmAppRef.getQualifiedColName() +"="+ BioModelSimContextLinkTable.table.id.getQualifiedColName()+
+						" AND " +
+						BioModelSimContextLinkTable.table.simContextRef.getQualifiedColName() +"="+SimContextTable.table.id.getQualifiedColName() +
+					")"+
+				" AND " +
+					SimulationTable.table.name.getQualifiedColName()+"="+
+					"("+
+						"SELECT DISTINCT " +
+						SimulationTable.table.name.getQualifiedColName()+
+						" FROM " +
+						TFTestCriteriaTable.table.getTableName()+","+
+						SimulationTable.table.getTableName()+
+						" WHERE " +
+						TFTestCriteriaTable.table.id.getQualifiedColName() +"="+ qtcritxr_tsop.getTestCriterium()+
+						" AND " +
+						TFTestCriteriaTable.table.simulationRef.getQualifiedColName() +"="+ SimulationTable.table.id.getQualifiedColName()+
+					")"+
+				//reference info
+				" AND " +
+				TSALT+"."+TFTestSuiteTable.table.id.getUnqualifiedColName()+"(+)" +"="+ TCALT+"."+TFTestCaseTable.table.testSuiteRef.getUnqualifiedColName()+
+				" AND "+
+				BSCALT+"."+BioModelSimContextLinkTable.table.id.getUnqualifiedColName()+"(+)" +"="+ TCRALT+"."+TFTestCriteriaTable.table.regressionBMAPPRef.getUnqualifiedColName()+
+				" AND "+
+				TCALT+"."+TFTestCaseTable.table.bmAppRef.getUnqualifiedColName()+"(+)" +"="+ TCRALT+"."+TFTestCriteriaTable.table.regressionBMAPPRef.getUnqualifiedColName()+
+				" AND "+
+				TCRALT+"."+TFTestCriteriaTable.table.id.getUnqualifiedColName() +"="+ TFTestCriteriaTable.table.id.getQualifiedColName()+
+				" ORDER BY "+TSID;
+
+			ResultSet rset = stmt.executeQuery(sql);
+			while(rset.next()){
+				crossRefV.add(new TestCriteriaCrossRefOPResults.CrossRefData(rset,true));	
+			}
+			rset.close();
+			
+			
+			
+			
+			//
+			//MathModel query
+			//
+			String MMNAME = "mmname";
+			sql =
+				"SELECT DISTINCT " +
+				TFTestSuiteTable.table.tsVersion.getQualifiedColName() +"," +
+				TFTestSuiteTable.table.id.getQualifiedColName()+" "+TSID+","+
+				TFTestCaseTable.table.id.getQualifiedColName() +" "+TCID+","+
+				TFTestCriteriaTable.table.id.getQualifiedColName() +" "+TCRID+","+
+				MathModelTable.table.name.getQualifiedColName() +" "+MMNAME+","+
+				SimulationTable.table.name.getQualifiedColName() +" "+SIMNAME+","+
+				TFTestCriteriaTable.table.maxAbsError.getQualifiedColName()+","+
+				TFTestCriteriaTable.table.maxRelError.getQualifiedColName()+","+
+				TFTestResultTable.table.varName.getQualifiedColName()+","+
+				TFTestResultTable.table.minRef.getQualifiedColName()+","+
+				TFTestResultTable.table.maxRef.getQualifiedColName()+","+
+				TFTestResultTable.table.absError.getQualifiedColName()+","+
+				TFTestResultTable.table.relError.getQualifiedColName()+","+
+				TFTestResultTable.table.meanSqrError.getQualifiedColName()+","+
+				TFTestResultTable.table.timeAbsError.getQualifiedColName()+","+
+				TFTestResultTable.table.indexAbsError.getQualifiedColName()+","+
+				TFTestResultTable.table.timeRelError.getQualifiedColName()+","+
+				TFTestResultTable.table.indexRelError.getQualifiedColName() +","+
+				TSALT+"."+TFTestSuiteTable.table.tsVersion.getUnqualifiedColName() +","+
+				MMSIMALT+"."+MathModelSimulationLinkTable.table.mathModelRef.getUnqualifiedColName() +","+
+				TFTestCaseTable.table.tcSolutionType.getQualifiedColName() +","+
+				MathModelTable.table.id.getQualifiedColName() +" "+MODELID+
+//				"DECODE("+
+//				TSALT+"."+TFTestSuiteTable.table.id.getUnqualifiedColName()+",NULL,DECODE("+
+//				TCRALT+"."+TFTestCriteriaTable.table.regressionMMSimRef.getUnqualifiedColName()+",NULL,NULL,'regressionMMSimRef exist BUT outside of TestSuites')"+
+//				","+TSALT+"."+TFTestSuiteTable.table.tsVersion.getUnqualifiedColName()+")"+
+				" FROM " +
+				TFTestSuiteTable.table.getTableName()+","+
+				TFTestCaseTable.table.getTableName()+","+
+				TFTestCriteriaTable.table.getTableName()+","+
+				TFTestResultTable.table.getTableName()+","+
+				MathModelTable.table.getTableName()+","+
+				SimulationTable.table.getTableName() +
+				","+
+		MathModelSimulationLinkTable.table.getTableName()+","+
+				TFTestSuiteTable.table.getTableName()+" "+TSALT+","+
+				TFTestCaseTable.table.getTableName()+" "+TCALT+","+
+				TFTestCriteriaTable.table.getTableName()+" "+TCRALT+","+
+				MathModelSimulationLinkTable.table.getTableName()+" "+MMSIMALT+
+				" WHERE " +
+				TFTestSuiteTable.table.id.getQualifiedColName()+"="+ TFTestCaseTable.table.testSuiteRef.getQualifiedColName()+
+				" AND " +
+				TFTestCriteriaTable.table.testCaseRef.getQualifiedColName() +"="+ TFTestCaseTable.table.id.getQualifiedColName()+
+				" AND " +
+				TFTestResultTable.table.testCriteriaRef.getQualifiedColName()+"(+)" +"="+ TFTestCriteriaTable.table.id.getQualifiedColName()+
+				(qtcritxr_tsop.getVarName() != null?" AND "+TFTestResultTable.table.varName.getQualifiedColName()+"(+)"+"="+"'"+qtcritxr_tsop.getVarName()+"'":"")+
+				" AND " +
+				TFTestCaseTable.table.mathModelRef.getQualifiedColName() +"="+ MathModelTable.table.id.getQualifiedColName()+
+				" AND " +
+				TFTestCriteriaTable.table.simulationRef.getQualifiedColName() +"="+ SimulationTable.table.id.getQualifiedColName()+
+				" AND "+
+		MathModelSimulationLinkTable.table.mathModelRef.getQualifiedColName() +"="+ MathModelTable.table.id.getQualifiedColName()+
+		" AND " +
+		MathModelSimulationLinkTable.table.simRef.getQualifiedColName() +"="+ SimulationTable.table.id.getQualifiedColName()+
+				" AND " +
+				MathModelTable.table.versionBranchID.getQualifiedColName() +"="+
+				"("+
+				"SELECT DISTINCT " +
+				MathModelTable.table.versionBranchID.getQualifiedColName()+
+				" FROM " + 
+				TFTestCaseTable.table.getTableName()+","+
+				TFTestCriteriaTable.table.getTableName()+","+
+				MathModelTable.table.getTableName()+
+				" WHERE " +
+				TFTestCriteriaTable.table.id.getQualifiedColName() +"="+ qtcritxr_tsop.getTestCriterium()+
+				" AND " +
+				TFTestCriteriaTable.table.testCaseRef.getQualifiedColName() +"="+ TFTestCaseTable.table.id.getQualifiedColName()+
+				" AND " +
+				TFTestCaseTable.table.mathModelRef.getQualifiedColName() +"="+ MathModelTable.table.id.getQualifiedColName()+
+				")"+
+				" AND " +
+				SimulationTable.table.name.getQualifiedColName()+"="+
+				"("+
+				"SELECT DISTINCT " +
+				SimulationTable.table.name.getQualifiedColName()+
+				" FROM " +
+				TFTestCriteriaTable.table.getTableName()+","+
+				SimulationTable.table.getTableName()+
+				" WHERE " +
+				TFTestCriteriaTable.table.id.getQualifiedColName() +"="+ qtcritxr_tsop.getTestCriterium()+
+				" AND " +
+				TFTestCriteriaTable.table.simulationRef.getQualifiedColName() +"="+ SimulationTable.table.id.getQualifiedColName()+
+				")"+
+				//reference info
+				" AND " +
+				TSALT+"."+TFTestSuiteTable.table.id.getUnqualifiedColName()+"(+)"  +"="+ TCALT+"."+TFTestCaseTable.table.testSuiteRef.getUnqualifiedColName()+
+				" AND "+
+				TCALT+"."+TFTestCaseTable.table.mathModelRef.getUnqualifiedColName()+"(+)"  +"="+ MMSIMALT+"."+MathModelSimulationLinkTable.table.mathModelRef.getUnqualifiedColName()+
+				" AND "+
+				TCRALT+"."+TFTestCriteriaTable.table.regressionMMSimRef.getUnqualifiedColName()+"="+ MMSIMALT+"."+MathModelSimulationLinkTable.table.id.getUnqualifiedColName()+"(+)" +
+				" AND "+
+				TCRALT+"."+TFTestCriteriaTable.table.id.getUnqualifiedColName() +"="+ TFTestCriteriaTable.table.id.getQualifiedColName()+
+				" ORDER BY "+TSID;
+
+			rset = stmt.executeQuery(sql);
+			while(rset.next()){
+				crossRefV.add(new TestCriteriaCrossRefOPResults.CrossRefData(rset,false));	
+			}
+			rset.close();
+				
+			return new TestCriteriaCrossRefOPResults(qtcritxr_tsop.getTestSuiteKey(),qtcritxr_tsop.getTestCriterium(),crossRefV);
+
 		}else{
 			throw new IllegalArgumentException("Unsupported OP+"+tsop);
 		}

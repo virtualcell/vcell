@@ -52,6 +52,7 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.modeldb.DatabasePolicySQL;
 import cbit.vcell.modeldb.DbDriver;
+import cbit.vcell.numericstest.TestCaseNew;
 
 
 public class SBVCVerifier {
@@ -331,12 +332,12 @@ public void scanBioModels(KeyValue[] bioModelKeys) throws MathException, Mapping
 						varsToCompare[j] = odeSolverResultSet_1.getColumnDescriptions(j).getName();
 					}
 
-					// Compare the result sets ...
-					SimulationComparisonSummary simComparisonSummary = MathTestingUtilities.compareResultSets(odeSolverResultSet_2, odeSolverResultSet_1, varsToCompare);
-
-					// Get comparison report ...
 					double absErr = 1e-8;
 					double relErr = 1e-8;
+					// Compare the result sets ...
+					SimulationComparisonSummary simComparisonSummary = MathTestingUtilities.compareResultSets(odeSolverResultSet_2, odeSolverResultSet_1, varsToCompare,TestCaseNew.EXACT,absErr,relErr);
+
+					// Get comparison report ...
 					String comparisonReport = printComparisonReport(simComparisonSummary, absErr, relErr);
 					System.out.println("\n\n Biomodel Key : " + bioModelKeys[i].toString() + "\t; Name : " + bioModel_1.getName() + ";\t Application : " + simContexts[k].getName() + "\n\n");
 					System.out.println("\n Math Equivalency : " + mathEquivalency);
@@ -485,12 +486,12 @@ public void scanBioModels(User[] users) throws MathException, MappingException, 
 							varsToCompare[j] = odeSolverResultSet_1.getColumnDescriptions(j).getName();
 						}
 
-						// Compare the result sets ...
-						SimulationComparisonSummary simComparisonSummary = MathTestingUtilities.compareResultSets(odeSolverResultSet_2, odeSolverResultSet_1, varsToCompare);
-
-						// Get comparison report ...
 						double absErr = 1e-8;
 						double relErr = 1e-8;
+						// Compare the result sets ...
+						SimulationComparisonSummary simComparisonSummary = MathTestingUtilities.compareResultSets(odeSolverResultSet_2, odeSolverResultSet_1, varsToCompare,TestCaseNew.EXACT,absErr,relErr);
+
+						// Get comparison report ...
 						String comparisonReport = printComparisonReport(simComparisonSummary, absErr, relErr);
 						System.out.println("Comparison Report : \n\n\t\t" + comparisonReport);
 					} // else

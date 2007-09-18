@@ -9,6 +9,8 @@ import cbit.vcell.desktop.controls.DataManager;
 import java.util.Vector;
 import cbit.vcell.mapping.VariableHash;
 import cbit.vcell.numericstest.ConstructedSolutionTemplate;
+import cbit.vcell.numericstest.TestCaseNew;
+
 import java.util.Enumeration;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.mathmodel.MathModel;
@@ -93,7 +95,7 @@ public static double calcWeightedSquaredError(ODESolverResultSet testResultSet, 
  * Insert the method's description here.
  * Creation date: (8/20/2003 12:58:10 PM)
  */
-public static SimulationComparisonSummary comparePDEResults(Simulation testSim, DataManager testDataManager, Simulation refSim, DataManager refDataManager, String varsToCompare[]) throws cbit.vcell.server.DataAccessException, cbit.vcell.parser.ExpressionException {
+public static SimulationComparisonSummary comparePDEResults(Simulation testSim, DataManager testDataManager, Simulation refSim, DataManager refDataManager, String varsToCompare[],double absErrorThreshold, double relErrorThreshold) throws cbit.vcell.server.DataAccessException, cbit.vcell.parser.ExpressionException {
 
 	java.util.Hashtable tempVarHash = new java.util.Hashtable();
 	boolean bTimesEqual = true;
@@ -208,7 +210,7 @@ public static SimulationComparisonSummary comparePDEResults(Simulation testSim, 
 				resampledTestData = testSimDataBlock.getData();
 			} else {
 				// Time resampling (interpolation) needed.
-				while ((t < testTimeArray.length-2) && (refTimeArray[j] > testTimeArray[t+1])) {
+				while ((t < testTimeArray.length-2) && (refTimeArray[j] >= testTimeArray[t+1])) {
 					t++;
 				}
 				SimDataBlock testSimDataBlock_1 = testDataManager.getSimDataBlock(testVar.getName(), testTimeArray[t]);
@@ -293,7 +295,7 @@ public static SimulationComparisonSummary comparePDEResults(Simulation testSim, 
 					tempVar = new DataErrorSummary(null);
 					tempVarHash.put(hashKey, tempVar);
 				}
-				tempVar.addDataValues(refData[k], spaceResampledData[k], refTimeArray[j], k);
+				tempVar.addDataValues(refData[k], spaceResampledData[k], refTimeArray[j], k,absErrorThreshold,relErrorThreshold);
 			}  // end for (k)
 		} // end for (j)
 	} // end for (i)
@@ -306,7 +308,8 @@ public static SimulationComparisonSummary comparePDEResults(Simulation testSim, 
 			new VariableComparisonSummary(key,
 				tempVarSummary.getMinRef(), tempVarSummary.getMaxRef(), 
 				tempVarSummary.getMaxAbsoluteError(), tempVarSummary.getMaxRelativeError(), tempVarSummary.getL2Norm(),
-				tempVarSummary.getTimetMaxAbsoluteError(), tempVarSummary.getIndexAtMaxAbsoluteError())
+				tempVarSummary.getTimeAtMaxAbsoluteError(), tempVarSummary.getIndexAtMaxAbsoluteError(),
+				tempVarSummary.getTimeAtMaxRelativeError(), tempVarSummary.getIndexAtMaxRelativeError())
 		);
 	}		
 	return simComparisonSummary;
@@ -317,7 +320,7 @@ public static SimulationComparisonSummary comparePDEResults(Simulation testSim, 
  * Insert the method's description here.
  * Creation date: (8/20/2003 12:58:10 PM)
  */
-public static SimulationComparisonSummary comparePDEResultsWithExact(Simulation sim, cbit.vcell.desktop.controls.DataManager dataManager) throws cbit.vcell.server.DataAccessException, cbit.vcell.parser.ExpressionException {
+public static SimulationComparisonSummary comparePDEResultsWithExact(Simulation sim, cbit.vcell.desktop.controls.DataManager dataManager,String type,double absErrorThreshold, double relErrorThreshold) throws cbit.vcell.server.DataAccessException, cbit.vcell.parser.ExpressionException {
 
 	java.util.Hashtable tempVarHash = new java.util.Hashtable();
 	
@@ -363,6 +366,11 @@ public static SimulationComparisonSummary comparePDEResultsWithExact(Simulation 
 				vars[i] instanceof VolumeRegionVariable || vars[i] instanceof MembraneRegionVariable || vars[i] instanceof FilamentRegionVariable) {	
 			// for each time in timeArray, 
 			for (int j = 0; j < timeArray.length; j++){
+				if(type.equals(TestCaseNew.EXACT_STEADY)){
+					if(j != (timeArray.length-1)){
+						continue;
+					}
+				}
 				// get data block from varName, data from datablock
 				cbit.vcell.simdata.SimDataBlock simDataBlock = dataManager.getSimDataBlock(vars[i].getName(), timeArray[j]);
 				double[] data = simDataBlock.getData();
@@ -398,7 +406,7 @@ public static SimulationComparisonSummary comparePDEResultsWithExact(Simulation 
 					valueArray[yIndex] = subDomainCoord.getY();		// y
 					valueArray[zIndex] = subDomainCoord.getZ();		// z
 					double value = tempVar.getExactExp().evaluateVector(valueArray);  // EXACT soln at coord subDomainCoord
-					tempVar.addDataValues(value, data[k], timeArray[j], k);
+					tempVar.addDataValues(value, data[k], timeArray[j], k,absErrorThreshold,relErrorThreshold);
 				}  // end for (k)
 			} // end for (j)
 		} // end - if (var)
@@ -411,7 +419,8 @@ public static SimulationComparisonSummary comparePDEResultsWithExact(Simulation 
 			new VariableComparisonSummary(key,
 				tempVarSummary.getMinRef(), tempVarSummary.getMaxRef(), 
 				tempVarSummary.getMaxAbsoluteError(), tempVarSummary.getMaxRelativeError(), tempVarSummary.getL2Norm(),
-				tempVarSummary.getTimetMaxAbsoluteError(), tempVarSummary.getIndexAtMaxAbsoluteError())
+				tempVarSummary.getTimeAtMaxAbsoluteError(), tempVarSummary.getIndexAtMaxAbsoluteError(),
+				tempVarSummary.getTimeAtMaxRelativeError(), tempVarSummary.getIndexAtMaxRelativeError())
 		);
 	}	
 	
@@ -425,7 +434,7 @@ public static SimulationComparisonSummary comparePDEResultsWithExact(Simulation 
  * @param testResultSet cbit.vcell.solver.ode.ODESolverResultSet
  * @param referenceResultSet cbit.vcell.solver.ode.ODESolverResultSet
  */
-public static SimulationComparisonSummary compareResultSets(cbit.vcell.solver.ode.ODESolverResultSet testResultSet, cbit.vcell.solver.ode.ODESolverResultSet referenceResultSet, String varsToTest[]) throws Exception {
+public static SimulationComparisonSummary compareResultSets(cbit.vcell.solver.ode.ODESolverResultSet testResultSet, cbit.vcell.solver.ode.ODESolverResultSet referenceResultSet, String varsToTest[],String type,double absErrorThreshold, double relErrorThreshold) throws Exception {
 
 	if (varsToTest==null){
 		throw new IllegalArgumentException("varsToTest must not be null");
@@ -450,11 +459,17 @@ public static SimulationComparisonSummary compareResultSets(cbit.vcell.solver.od
 		
 		DataErrorSummary tempVar = new DataErrorSummary();
 		for (int j = 0; j < refData.length; j++){
-			tempVar.addDataValues(refData[j], testData[j], timeData[j], 0);
+			if(type.equals(TestCaseNew.EXACT_STEADY)){
+				if(j != (refData.length-1)){
+					continue;
+				}
+			}
+			tempVar.addDataValues(refData[j], testData[j], timeData[j], 0,absErrorThreshold,relErrorThreshold);
 		}
 		simComparisonSummary.addVariableComparisonSummary(new VariableComparisonSummary(refColDesc.getName(),
 			tempVar.getMinRef(),tempVar.getMaxRef(),tempVar.getMaxAbsoluteError(),tempVar.getMaxRelativeError(), tempVar.getL2Norm(),
-			tempVar.getTimetMaxAbsoluteError(), tempVar.getIndexAtMaxAbsoluteError()));
+			tempVar.getTimeAtMaxAbsoluteError(), tempVar.getIndexAtMaxAbsoluteError(),
+			tempVar.getTimeAtMaxRelativeError(), tempVar.getIndexAtMaxRelativeError()));
 	}
 	return simComparisonSummary;
 }
@@ -466,7 +481,7 @@ public static SimulationComparisonSummary compareResultSets(cbit.vcell.solver.od
  * @param testResultSet cbit.vcell.solver.ode.ODESolverResultSet
  * @param referenceResultSet cbit.vcell.solver.ode.ODESolverResultSet
  */
-public static SimulationComparisonSummary compareUnEqualResultSets(ODESolverResultSet testResultSet, ODESolverResultSet referenceResultSet, String varsToTest[]) throws Exception {
+public static SimulationComparisonSummary compareUnEqualResultSets(ODESolverResultSet testResultSet, ODESolverResultSet referenceResultSet, String varsToTest[],double absErrorThreshold, double relErrorThreshold) throws Exception {
 	
 	if (varsToTest==null){
 		throw new IllegalArgumentException("varsToTest must not be null");
@@ -502,21 +517,22 @@ public static SimulationComparisonSummary compareUnEqualResultSets(ODESolverResu
 			// b)  interpolate the values that fall within the test dataset.
 			// c)  extrapolate forward (in time) for points which are after testData
 			//
-			while ((k < testData.length-2) && (refRSTimes[j] > testRSTimes[k+1])) {
+			while ((k < testData.length-2) && (refRSTimes[j] >= testRSTimes[k+1])) {
 				k++;
 			}
 			//
 			// apply first order linear basis for reference data interpolation.
 			//
-			resampledTestData[j] = testData[k] + (testData[k+1]-testData[k])*(refRSTimes[j] - testRSTimes[k])/(testRSTimes[k+1] - testRSTimes[k]);
+			resampledTestData[j] = testData[k] + (testData[k+1]-testData[k]) * ((refRSTimes[j] - testRSTimes[k])/(testRSTimes[k+1] - testRSTimes[k]));
 		}
 		DataErrorSummary tempVar = new DataErrorSummary();
 		for (int j = 0; j < refData.length; j++){
-			tempVar.addDataValues(refData[j], resampledTestData[j], refRSTimes[j], 0);
+			tempVar.addDataValues(refData[j], resampledTestData[j], refRSTimes[j], 0,absErrorThreshold,relErrorThreshold);
 		}
 		simComparisonSummary.addVariableComparisonSummary(new VariableComparisonSummary(refColDesc.getName(),
 			tempVar.getMinRef(),tempVar.getMaxRef(),tempVar.getMaxAbsoluteError(),tempVar.getMaxRelativeError(), tempVar.getL2Norm(),
-			tempVar.getTimetMaxAbsoluteError(), tempVar.getIndexAtMaxAbsoluteError()));
+			tempVar.getTimeAtMaxAbsoluteError(), tempVar.getIndexAtMaxAbsoluteError(),
+			tempVar.getTimeAtMaxRelativeError(), tempVar.getIndexAtMaxRelativeError()));
 	}
 
 	return simComparisonSummary;

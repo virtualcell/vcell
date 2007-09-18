@@ -10,6 +10,20 @@ public class EditTestCasesOP extends TestSuiteOP {
 
 	private BigDecimal[] testCasesKeys;
 	private String[] newAnnotations;
+	private boolean[] newSteadyState;
+	
+	public EditTestCasesOP(BigDecimal[] editTheseTCases,boolean[] argIsSteadyState) {
+		
+		super(null);
+
+		if(editTheseTCases.length != argIsSteadyState.length){
+			throw new IllegalArgumentException(this.getClass().getName()+" argument array lengths not equal");
+		}
+		
+		testCasesKeys = editTheseTCases;
+		newSteadyState = argIsSteadyState;
+	}
+
 /**
  * EditTestCriteria constructor comment.
  * @param tsin cbit.vcell.numericstest.TestSuiteInfoNew
@@ -32,6 +46,10 @@ public EditTestCasesOP(BigDecimal[] editTheseTCases,String[] argAnnots) {
  */
 public java.lang.String[] getNewAnnotations() {
 	return newAnnotations;
+}
+
+public boolean[] getNewSteadyStates(){
+	return newSteadyState;
 }
 /**
  * Insert the method's description here.

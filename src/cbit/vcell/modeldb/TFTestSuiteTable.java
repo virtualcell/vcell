@@ -20,8 +20,9 @@ public class TFTestSuiteTable extends cbit.sql.Table {
 	public final Field vcNumericsVersion =		new Field("vcNumericsVersion",	"VARCHAR2(64)",	"NOT NULL");
 	public final Field creationDate =			new Field("creationDate",		"DATE",			"NOT NULL");
 	public final Field changeDate =				new Field("changeDate",			"DATE",			"");
+	public final Field tsAnnotation =			new Field("tsAnnotation",		"VARCHAR2(512)",	"");
 	
-	private final Field fields[] = {tsVersion,vcBuildVersion,vcNumericsVersion,creationDate,changeDate};
+	private final Field fields[] = {tsVersion,vcBuildVersion,vcNumericsVersion,creationDate,changeDate,tsAnnotation};
 	
 	public static final TFTestSuiteTable table = new TFTestSuiteTable();
 

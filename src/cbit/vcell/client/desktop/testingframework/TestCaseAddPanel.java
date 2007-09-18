@@ -4,6 +4,9 @@ import cbit.vcell.numericstest.TestCaseNewMathModel;
 import cbit.vcell.numericstest.TestCaseNewBioModel;
 import cbit.vcell.numericstest.TestCaseNew;
 import cbit.vcell.client.PopupGenerator;
+import javax.swing.JRadioButton;
+import java.awt.GridBagConstraints;
+import java.awt.Dimension;
 /**
  * Insert the type's description here.
  * Creation date: (7/22/2004 9:21:05 AM)
@@ -14,10 +17,8 @@ public class TestCaseAddPanel extends javax.swing.JPanel {
 	private String solutionType = null;
 	private javax.swing.JPanel ivjJPanel1 = null;
 	private javax.swing.JPanel ivjJPanel2 = null;
-	private javax.swing.JPanel ivjJPanel3 = null;
 	private javax.swing.JLabel ivjAnnotationLabel = null;
-	private javax.swing.JButton ivjApplyButton = null;
-	private javax.swing.ButtonGroup ivjbuttonGroup1 = null;
+	private javax.swing.ButtonGroup ivjbuttonGroup1 = null;  //  @jve:decl-index=0:
 	private javax.swing.JRadioButton ivjConstructedRadioButton = null;
 	private javax.swing.JRadioButton ivjExactRadioButton = null;
 	private javax.swing.JLabel ivjMathmodelLabel = null;
@@ -26,19 +27,18 @@ public class TestCaseAddPanel extends javax.swing.JPanel {
 	private javax.swing.JLabel ivjSolutionTypeLabel = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private javax.swing.JTextArea ivjAnnotationTextArea = null;
-	private cbit.vcell.numericstest.TestCaseNew fieldNewTestCase = null;
+	private cbit.vcell.numericstest.TestCaseNew fieldNewTestCase = null;  //  @jve:decl-index=0:
 	private cbit.vcell.mathmodel.MathModelInfo fieldMathModelInfo = null;
 	private javax.swing.JLabel ivjBioModelAppLabel = null;
 	private javax.swing.JButton ivjSelectBMAppButton = null;
 	private String ivjappName = null;
-	private cbit.vcell.biomodel.BioModelInfo ivjbioModelInfo = null;
+	private cbit.vcell.biomodel.BioModelInfo ivjbioModelInfo = null;  //  @jve:decl-index=0:
+	private JRadioButton ivjExactRadioButtonSteady = null;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == TestCaseAddPanel.this.getSelectMModelButton()) 
 				connEtoC5(e);
-			if (e.getSource() == TestCaseAddPanel.this.getApplyButton()) 
-				connEtoC6(e);
 			if (e.getSource() == TestCaseAddPanel.this.getSelectBMAppButton()) 
 				connEtoC7(e);
 		};
@@ -63,81 +63,63 @@ public TestCaseAddPanel() {
 /**
  * Comment
  */
-public void applyTestCaseInfo(java.awt.event.ActionEvent actionEvent) {
+private void applyTestCaseInfo() throws Exception{
+	fieldNewTestCase = null;
 	if (getMathModelInfo() == null && getbioModelInfo() == null) {
-		PopupGenerator.showErrorDialog("Nothing selected, choose either a MathModel or a BioModel/App combination before setting TestCaseInfo");
-		return;
+		throw new Exception("Nothing selected, choose either a MathModel or a BioModel/App combination before setting TestCaseInfo");
+//		return;
 	}
 	if (getMathModelInfo() != null && getbioModelInfo() != null) {
-		PopupGenerator.showErrorDialog("must choose either a MathModel or a BioModel/App combination (BUT NOT BOTH)");
-		return;
+		throw new Exception("must choose either a MathModel or a BioModel/App combination (BUT NOT BOTH)");
+//		return;
 	}
 	
-	//
-	// math model selected
-	//
-	if (getMathModelInfo() != null) {
-		String type = null;
-		String annotation = null;
-		// testcaseinfo TYPE
-		if (getExactRadioButton().isSelected()) {
-			type = TestCaseNew.EXACT;
-		} else if (getConstructedRadioButton().isSelected()) {
-			type = TestCaseNew.CONSTRUCTED;
-		} else if (getRegressionRadioButton().isSelected()) {
-			type = TestCaseNew.REGRESSION;
-		} else {
-			PopupGenerator.showErrorDialog("Solution Type Not Chosen");
-			return;
-		}
-		annotation = getAnnotationTextArea().getText();
+	// testcaseinfo TYPE
+	String type = null;
+	if (getExactRadioButton().isSelected()) {
+		type = TestCaseNew.EXACT;
+	} else if (getIvjExactRadioButtonSteady().isSelected()) {
+		type = TestCaseNew.EXACT_STEADY;
+	}  else if (getConstructedRadioButton().isSelected()) {
+		type = TestCaseNew.CONSTRUCTED;
+	} else if (getRegressionRadioButton().isSelected()) {
+		type = TestCaseNew.REGRESSION;
+	} else {
+		throw new Exception("Solution Type Not Chosen");
+	}
+	String annotation = null;
+	annotation = getAnnotationTextArea().getText();
 
+	if (getMathModelInfo() != null) {
+		//
+		// math model selected
+		//
 		TestCaseNewMathModel mathTestCase = new TestCaseNewMathModel(null, getMathModelInfo(), type, annotation, null);
 		setNewTestCase(mathTestCase);
-	//
-	// bio model selected
-	//
 	} else {
+		//
+		// bio model selected
+		//
 		if (getappName()==null){
-			PopupGenerator.showErrorDialog("no application selected");
-			return;
-		}
-		String type = null;
-		String annotation = null;
-		// testcaseinfo TYPE
-		if (getExactRadioButton().isSelected()) {
-			type = TestCaseNew.EXACT;
-		} else if (getConstructedRadioButton().isSelected()) {
-			type = TestCaseNew.CONSTRUCTED;
-		} else if (getRegressionRadioButton().isSelected()) {
-			type = TestCaseNew.REGRESSION;
-		} else {
-			PopupGenerator.showErrorDialog("Solution Type Not Chosen");
-			return;
+			throw new Exception("no application selected");
 		}
 		if (!type.equals(TestCaseNew.REGRESSION)){
-			PopupGenerator.showErrorDialog("BioModel/App test case must be of type 'REGRESSION'");
-			return;
+			throw new Exception("BioModel/App test case must be of type 'REGRESSION'");
 		}
-		annotation = getAnnotationTextArea().getText();
 
 		cbit.sql.KeyValue appKey = null;
 		try {
 			appKey = getTestingFrameworkWindowManager().getSimContextKey(getbioModelInfo(),getappName());
 		}catch (cbit.vcell.server.DataAccessException e){
 			e.printStackTrace(System.out);
-			PopupGenerator.showErrorDialog("Exception while retrieving BioModel");
-			return;
+			throw new Exception("Exception while retrieving BioModel SimContextKey");
 		}
 		if (appKey==null){
-			PopupGenerator.showErrorDialog("BioModel/App test case cannot be created, selected application='"+getappName()+"' not found in BioModel");
-			return;
+			throw new Exception("BioModel/App test case cannot be created, selected application='"+getappName()+"' not found in BioModel");
 		}
 		TestCaseNewBioModel bioTestCase = new TestCaseNewBioModel(null, getbioModelInfo(), getappName(), appKey, type, annotation, null);
 		setNewTestCase(bioTestCase);
-		
-	}
-		
+	}	
 }
 
 
@@ -259,26 +241,6 @@ private void connEtoC5(java.awt.event.ActionEvent arg1) {
 
 
 /**
- * connEtoC6:  (ApplyButton.action.actionPerformed(java.awt.event.ActionEvent) --> TestCaseAddPanel.applyTestCaseInfo(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC6(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.applyTestCaseInfo(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
  * connEtoC7:  (SelectBMAppButton.action.actionPerformed(java.awt.event.ActionEvent) --> TestCaseAddPanel.selectBMApp()V)
  * @param arg1 java.awt.event.ActionEvent
  */
@@ -381,29 +343,6 @@ private javax.swing.JTextArea getAnnotationTextArea() {
 	}
 	return ivjAnnotationTextArea;
 }
-
-/**
- * Return the ApplyButton property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getApplyButton() {
-	if (ivjApplyButton == null) {
-		try {
-			ivjApplyButton = new javax.swing.JButton();
-			ivjApplyButton.setName("ApplyButton");
-			ivjApplyButton.setText("Apply");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjApplyButton;
-}
-
 
 /**
  * Return the appName property value.
@@ -574,6 +513,9 @@ private javax.swing.JPanel getJPanel1() {
 private javax.swing.JPanel getJPanel2() {
 	if (ivjJPanel2 == null) {
 		try {
+			GridBagConstraints gridBagConstraints = new GridBagConstraints();
+			gridBagConstraints.gridx = 2;
+			gridBagConstraints.gridy = 0;
 			ivjJPanel2 = new javax.swing.JPanel();
 			ivjJPanel2.setName("JPanel2");
 			ivjJPanel2.setLayout(new java.awt.GridBagLayout());
@@ -594,56 +536,30 @@ private javax.swing.JPanel getJPanel2() {
 			getJPanel2().add(getAnnotationLabel(), constraintsAnnotationLabel);
 
 			java.awt.GridBagConstraints constraintsConstructedRadioButton = new java.awt.GridBagConstraints();
-			constraintsConstructedRadioButton.gridx = 2; constraintsConstructedRadioButton.gridy = 0;
+			constraintsConstructedRadioButton.gridx = 3;
+ 	constraintsConstructedRadioButton.gridy = 0;
 			constraintsConstructedRadioButton.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel2().add(getConstructedRadioButton(), constraintsConstructedRadioButton);
-
 			java.awt.GridBagConstraints constraintsRegressionRadioButton = new java.awt.GridBagConstraints();
-			constraintsRegressionRadioButton.gridx = 3; constraintsRegressionRadioButton.gridy = 0;
+			constraintsRegressionRadioButton.gridx = 4;
+ 	constraintsRegressionRadioButton.gridy = 0;
 			constraintsRegressionRadioButton.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel2().add(getRegressionRadioButton(), constraintsRegressionRadioButton);
-
+			ivjJPanel2.add(getConstructedRadioButton(), constraintsConstructedRadioButton);
 			java.awt.GridBagConstraints constraintsAnnotationTextArea = new java.awt.GridBagConstraints();
 			constraintsAnnotationTextArea.gridx = 1; constraintsAnnotationTextArea.gridy = 1;
-			constraintsAnnotationTextArea.gridwidth = 3;
+			constraintsAnnotationTextArea.gridwidth = 4;
 constraintsAnnotationTextArea.gridheight = 2;
 			constraintsAnnotationTextArea.fill = java.awt.GridBagConstraints.BOTH;
 			constraintsAnnotationTextArea.weightx = 1.0;
 			constraintsAnnotationTextArea.weighty = 1.0;
 			constraintsAnnotationTextArea.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel2().add(getAnnotationTextArea(), constraintsAnnotationTextArea);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
+			ivjJPanel2.add(getRegressionRadioButton(), constraintsRegressionRadioButton);
+			ivjJPanel2.add(getAnnotationTextArea(), constraintsAnnotationTextArea);
+			ivjJPanel2.add(getIvjExactRadioButtonSteady(), gridBagConstraints);
+		}catch(Exception e){
+			handleException(e);
 		}
 	}
 	return ivjJPanel2;
-}
-
-/**
- * Return the JPanel3 property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getJPanel3() {
-	if (ivjJPanel3 == null) {
-		try {
-			ivjJPanel3 = new javax.swing.JPanel();
-			ivjJPanel3.setName("JPanel3");
-			ivjJPanel3.setLayout(new java.awt.FlowLayout());
-			getJPanel3().add(getApplyButton(), getApplyButton().getName());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJPanel3;
 }
 
 /**
@@ -684,7 +600,8 @@ private javax.swing.JLabel getMathmodelLabel() {
  * @return The newTestCase property value.
  * @see #setNewTestCase
  */
-public cbit.vcell.numericstest.TestCaseNew getNewTestCase() {
+public cbit.vcell.numericstest.TestCaseNew getNewTestCase() throws Exception{
+	applyTestCaseInfo();
 	return fieldNewTestCase;
 }
 
@@ -825,7 +742,6 @@ private void initConnections() throws java.lang.Exception {
 	getConstructedRadioButton().addItemListener(ivjEventHandler);
 	getRegressionRadioButton().addItemListener(ivjEventHandler);
 	getSelectMModelButton().addActionListener(ivjEventHandler);
-	getApplyButton().addActionListener(ivjEventHandler);
 	getSelectBMAppButton().addActionListener(ivjEventHandler);
 }
 
@@ -839,7 +755,7 @@ private void initialize() {
 		// user code end
 		setName("TestCaseAddPanel");
 		setLayout(new java.awt.GridBagLayout());
-		setSize(492, 291);
+		setSize(563, 291);
 
 		java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
 		constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 0;
@@ -858,14 +774,7 @@ constraintsJPanel2.gridheight = 3;
 		constraintsJPanel2.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJPanel2(), constraintsJPanel2);
 
-		java.awt.GridBagConstraints constraintsJPanel3 = new java.awt.GridBagConstraints();
-		constraintsJPanel3.gridx = 0; constraintsJPanel3.gridy = 4;
-		constraintsJPanel3.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsJPanel3.weightx = 1.0;
-		constraintsJPanel3.weighty = 1.0;
-		constraintsJPanel3.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJPanel3(), constraintsJPanel3);
-		initConnections();
+ 		initConnections();
 		connEtoC1();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
@@ -911,7 +820,15 @@ private void refreshBioModelAppLabel() {
 	}else{
 		getBioModelAppLabel().setText("");
 	}
-	return;
+}
+
+private void refreshMathModelAppLabel() {
+	if (getMathModelInfo()!=null){
+		cbit.sql.Version bmVersion = getMathModelInfo().getVersion();
+		getMathmodelLabel().setText(getMathModelInfo().getVersion().getName());
+	}else{
+		getMathmodelLabel().setText("");
+	}
 }
 
 
@@ -923,6 +840,8 @@ public void resetTextFields() {
 	getMathmodelLabel().setText("");
 	if (getExactRadioButton().isSelected()) {
 		getExactRadioButton().setSelected(false);
+	} else if (getIvjExactRadioButtonSteady().isSelected()) {
+		getIvjExactRadioButtonSteady().setSelected(false);
 	} else if (getConstructedRadioButton().isSelected()) {
 		getConstructedRadioButton().setSelected(false);
 	} else if (getRegressionRadioButton().isSelected()) {
@@ -999,6 +918,9 @@ private void setbioModelInfo(cbit.vcell.biomodel.BioModelInfo newValue) {
 	if (ivjbioModelInfo != newValue) {
 		try {
 			ivjbioModelInfo = newValue;
+			if(newValue != null){
+				getRegressionRadioButton().setSelected(true);
+			}
 			connEtoC8(ivjbioModelInfo);
 			// user code begin {1}
 			// user code end
@@ -1021,6 +943,7 @@ private void setMathModelInfo(cbit.vcell.mathmodel.MathModelInfo mathModelInfo) 
 	cbit.vcell.mathmodel.MathModelInfo oldValue = fieldMathModelInfo;
 	fieldMathModelInfo = mathModelInfo;
 	firePropertyChange("mathModelInfo", oldValue, mathModelInfo);
+	refreshMathModelAppLabel();
 }
 
 
@@ -1029,10 +952,10 @@ private void setMathModelInfo(cbit.vcell.mathmodel.MathModelInfo mathModelInfo) 
  * @param newTestCase The new value for the property.
  * @see #getNewTestCase
  */
-public void setNewTestCase(cbit.vcell.numericstest.TestCaseNew newTestCase) {
-	cbit.vcell.numericstest.TestCaseNew oldValue = fieldNewTestCase;
+private void setNewTestCase(cbit.vcell.numericstest.TestCaseNew newTestCase) {
+//	cbit.vcell.numericstest.TestCaseNew oldValue = fieldNewTestCase;
 	fieldNewTestCase = newTestCase;
-	firePropertyChange("newTestCase", oldValue, newTestCase);
+//	firePropertyChange("newTestCase", oldValue, newTestCase);
 }
 
 
@@ -1064,6 +987,7 @@ public void setTestingFrameworkWindowManager(cbit.vcell.client.TestingFrameworkW
 private void testCaseAddPanel_Initialize() {
 	//cbit.util.BeanUtils.enableComponents(this,false);
 	getbuttonGroup1().add(getExactRadioButton());
+	getbuttonGroup1().add(getIvjExactRadioButtonSteady());
 	getbuttonGroup1().add(getConstructedRadioButton());
 	getbuttonGroup1().add(getRegressionRadioButton());
 }	
@@ -1111,4 +1035,18 @@ private static void getBuilderData() {
 	GGGGGGGGGGGGGGE2F5E9ECE4E5F2A0E4E1F4E1D0CB8586GGGG81G81GBAGGG6098GGGG
 **end of data**/
 }
+
+/**
+ * This method initializes ivjExactRadioButtonSteady	
+ * 	
+ * @return javax.swing.JRadioButton	
+ */
+private JRadioButton getIvjExactRadioButtonSteady() {
+	if (ivjExactRadioButtonSteady == null) {
+		ivjExactRadioButtonSteady = new JRadioButton();
+		ivjExactRadioButtonSteady.setName("ExactRadioButton");
+		ivjExactRadioButtonSteady.setText("Exact Steady");
+	}
+	return ivjExactRadioButtonSteady;
 }
+}  //  @jve:decl-index=0:visual-constraint="10,10"
