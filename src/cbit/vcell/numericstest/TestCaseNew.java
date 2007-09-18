@@ -18,13 +18,14 @@ public abstract class TestCaseNew implements java.io.Serializable {
 	private String annotation;
 	
 	public static final String EXACT = 			"EXACT";
+	public static final String EXACT_STEADY = 	"EXACT_STEADY";
 	public static final String CONSTRUCTED = 	"CONSTRUCTED";
 	public static final String REGRESSION = 	"REGRESSION";
 /**
  * TestCaseNew constructor comment.
  */
 public TestCaseNew(BigDecimal argTCKey,Version argVersion,String argType,String argAnnot,TestCriteriaNew[] argTestCriterias) {
-	if (! (argType.equals(EXACT) || argType.equals(CONSTRUCTED) || argType.equals(REGRESSION)) ) {
+	if (! (argType.equals(EXACT) || argType.equals(EXACT_STEADY) || argType.equals(CONSTRUCTED) || argType.equals(REGRESSION)) ) {
 		throw new IllegalArgumentException("Unsupported ty[e="+argType);
 	}
 

@@ -14,6 +14,12 @@ public class DataErrorSummary {
 	private long nonZeroRefDataCounter = 0;
 	private double fieldTimeAtMaxAbsoluteError = -1;
 	private int fieldIndexAtMaxAbsoluteError = -1;
+	private double fieldTimeAtMaxRelativeError = -1;
+	private int fieldIndexAtMaxRelativeError = -1;
+	
+	public static double DEFAULT_ABS_ERROR = 1e-12;
+	public static double DEFAULT_REL_ERROR = 1e-12;
+
 
 /**
  * DataErrorSummary constructor comment.
@@ -28,7 +34,13 @@ public DataErrorSummary() {
 		}
 
 
-public void addDataValues(double ref, double test, double time, int index) {
+public void addDataValues(double ref, double test, double time, int index,double absErrorThreshold, double relErrorThreshold) {
+    if(Double.isNaN(ref) || Double.isInfinite(ref)){
+    	throw new IllegalArgumentException("DataErrorSummary: Reference value is NAN or INF time="+time+" index="+index);
+    }
+    if(Double.isNaN(test) || Double.isInfinite(test)){
+    	throw new IllegalArgumentException("DataError Summary: Test value is NAN or INF time="+time+" index="+index);    	
+    }
     maxRef = Math.max(maxRef, ref);
     minRef = Math.min(minRef, ref);
     double absError = Math.abs(ref - test);
@@ -41,12 +53,20 @@ public void addDataValues(double ref, double test, double time, int index) {
     	fieldTimeAtMaxAbsoluteError = time;
     	fieldIndexAtMaxAbsoluteError = index;
     }
-    if (ref != 0.0) {
-        double relError = Math.abs(absError / ref);
-        maxRelError = Math.max(maxRelError, relError);
+    double denominator = (Math.abs(test)*relErrorThreshold + absErrorThreshold);
+    if(denominator != 0){
+        double relError = Math.abs(absError / denominator);
         relSumSquaredError += relError * relError;
         nonZeroRefDataCounter++;
+        if (relError >= maxRelError){
+        	maxRelError = relError;
+        	fieldTimeAtMaxRelativeError = time;
+        	fieldIndexAtMaxRelativeError = index;
+        }
+    }else{
+    	throw new IllegalArgumentException("Rel and Abs error threshold expression evaluated to 0");
     }
+
 }
 
 
@@ -103,7 +123,17 @@ public double getMinRef() {
  * Creation date: (11/23/2004 7:06:55 PM)
  * @return double[]
  */
-public double getTimetMaxAbsoluteError() {
+public double getTimeAtMaxAbsoluteError() {
 	return fieldTimeAtMaxAbsoluteError;
+}
+
+
+public int getIndexAtMaxRelativeError() {
+	return fieldIndexAtMaxRelativeError;
+}
+
+
+public double getTimeAtMaxRelativeError() {
+	return fieldTimeAtMaxRelativeError;
 }
 }

@@ -77,13 +77,15 @@ public void run(java.util.Hashtable hashTable){
 	if(errors == null){
 		errors="";
 	}
+	String error = "";
 	if(tcrit != null){
-		errors+= tfwm.startSimulations(new TestCriteriaNew[] {tcrit},pp);
+		error = tfwm.startSimulations(new TestCriteriaNew[] {tcrit},pp);
 	}else if(tcn != null){
-		errors+= tfwm.startSimulations(tcn.getTestCriterias(),pp);
+		error = tfwm.startSimulations(tcn.getTestCriterias(),pp);
 	}else if (tsin != null){
-		errors+= tfwm.startTestSuiteSimulations(tsin,pp);
+		error = tfwm.startTestSuiteSimulations(tsin,pp);
 	}
+	errors+= (error == null?"":error);
 	if(errors != null && errors.length() > 0){
 		hashTable.put(TFRefresh.TF_ERRORS,errors);
 	}

@@ -20,14 +20,13 @@ public class EditTestCriteriaPanel extends javax.swing.JPanel {
 	private javax.swing.JLabel ivjRelErrLabel = null;
 	private javax.swing.JButton ivjApplyButton = null;
 	private javax.swing.JPanel ivjJPanel1 = null;
-	private javax.swing.JPanel ivjJPanel2 = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private javax.swing.JTextField ivjAbsErrTextField = null;
 	private javax.swing.JTextField ivjRelErrTextField = null;
 	private cbit.vcell.client.TestingFrameworkWindowManager fieldTestingFrameworkWindowManager = null;
 	private java.lang.String fieldSolutionType = null;
 	private cbit.vcell.numericstest.TestCriteriaNew fieldExistingTestCriteria = null;
-	private cbit.vcell.numericstest.TestCriteriaNew fieldNewTestCriteria = null;
+	private cbit.vcell.numericstest.TestCriteriaNew fieldNewTestCriteria = null;  //  @jve:decl-index=0:
 	private cbit.vcell.solver.SimulationInfo fieldReferenceSimInfo = null;
 	private cbit.vcell.mathmodel.MathModelInfo fieldReferenceMathModelInfo = null;
 	private javax.swing.JButton ivjSelectRefBMAppJButton = null;
@@ -44,8 +43,6 @@ class IvjEventHandler implements java.awt.event.ActionListener {
 				connEtoC1(e);
 			if (e.getSource() == EditTestCriteriaPanel.this.getRefSimButton()) 
 				connEtoC2(e);
-			if (e.getSource() == EditTestCriteriaPanel.this.getApplyButton()) 
-				connEtoC3(e);
 			if (e.getSource() == EditTestCriteriaPanel.this.getSelectRefSimJButton()) 
 				connEtoC5(e);
 			if (e.getSource() == EditTestCriteriaPanel.this.getSelectRefBMAppJButton()) 
@@ -62,7 +59,7 @@ public EditTestCriteriaPanel() {
 /**
  * Comment
  */
-private void applyTestCriteriaInfo(java.awt.event.ActionEvent actionEvent) {
+private void applyTestCriteriaInfo() {
 	TestCriteriaNew newTestCriteria = null;
 	Double relErr = Double.valueOf(getRelErrTextField().getText());
 	Double absErr = Double.valueOf(getAbsErrTextField().getText());
@@ -155,24 +152,6 @@ private void connEtoC2(java.awt.event.ActionEvent arg1) {
 	}
 }
 /**
- * connEtoC3:  (ApplyButton.action.actionPerformed(java.awt.event.ActionEvent) --> EditTestCriteriaPanel.applyTestCriteriaInfo(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC3(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.applyTestCriteriaInfo(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-/**
  * connEtoC4:  (SelectRefBMAppJButton.action.actionPerformed(java.awt.event.ActionEvent) --> EditTestCriteriaPanel.selectBMApp()V)
  * @param arg1 java.awt.event.ActionEvent
  */
@@ -248,27 +227,6 @@ private javax.swing.JTextField getAbsErrTextField() {
 		}
 	}
 	return ivjAbsErrTextField;
-}
-/**
- * Return the ApplyButton property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getApplyButton() {
-	if (ivjApplyButton == null) {
-		try {
-			ivjApplyButton = new javax.swing.JButton();
-			ivjApplyButton.setName("ApplyButton");
-			ivjApplyButton.setText("Apply");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjApplyButton;
 }
 /**
  * Return the appName property value.
@@ -440,33 +398,12 @@ private javax.swing.JPanel getJPanel1() {
 	return ivjJPanel1;
 }
 /**
- * Return the JPanel2 property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getJPanel2() {
-	if (ivjJPanel2 == null) {
-		try {
-			ivjJPanel2 = new javax.swing.JPanel();
-			ivjJPanel2.setName("JPanel2");
-			ivjJPanel2.setLayout(new java.awt.FlowLayout());
-			getJPanel2().add(getApplyButton(), getApplyButton().getName());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJPanel2;
-}
-/**
  * Gets the newTestCriteria property (cbit.vcell.numericstest.TestCriteriaNew) value.
  * @return The newTestCriteria property value.
  * @see #setNewTestCriteria
  */
 public cbit.vcell.numericstest.TestCriteriaNew getNewTestCriteria() {
+	applyTestCriteriaInfo();
 	return fieldNewTestCriteria;
 }
 /**
@@ -688,7 +625,6 @@ private void initConnections() throws java.lang.Exception {
 	// user code end
 	getRefMathModelButton().addActionListener(ivjEventHandler);
 	getRefSimButton().addActionListener(ivjEventHandler);
-	getApplyButton().addActionListener(ivjEventHandler);
 	getSelectRefSimJButton().addActionListener(ivjEventHandler);
 	getSelectRefBMAppJButton().addActionListener(ivjEventHandler);
 }
@@ -712,14 +648,7 @@ private void initialize() {
 		constraintsJPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJPanel1(), constraintsJPanel1);
 
-		java.awt.GridBagConstraints constraintsJPanel2 = new java.awt.GridBagConstraints();
-		constraintsJPanel2.gridx = 0; constraintsJPanel2.gridy = 1;
-		constraintsJPanel2.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsJPanel2.weightx = 1.0;
-		constraintsJPanel2.weighty = 1.0;
-		constraintsJPanel2.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJPanel2(), constraintsJPanel2);
-		initConnections();
+ 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}

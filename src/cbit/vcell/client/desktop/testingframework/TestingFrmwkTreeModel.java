@@ -1,18 +1,15 @@
 package cbit.vcell.client.desktop.testingframework;
 
+import java.util.Arrays;
+import java.util.Comparator;
+
 import cbit.vcell.numericstest.*;
 import cbit.vcell.solver.test.VariableComparisonSummary;
-import java.util.Vector;
-import java.util.Enumeration;
+
 import cbit.vcell.desktop.BioModelNode;
-import cbit.vcell.clientdb.DatabaseListener;
-import cbit.vcell.mathmodel.MathModelInfo;
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.server.DataAccessException;
-import org.jdom.JDOMException;
-import java.io.IOException;
-import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.solver.Simulation;
 /**
  * Insert the type's description here.
  * Creation date: (7/23/2004 10:10:20 AM)
@@ -23,33 +20,55 @@ public class TestingFrmwkTreeModel
 				implements java.beans.PropertyChangeListener {
 
 
-		
+	public static final String TS_NODE_REFRESH = "TS_NODE_REFRESH";
+	
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	public static final String FAILED_VARIABLE_MAE_MRE = "FV_MAE_MRE";
 	public static final String SIMULATIONS_NO_REPORT = "SIM_NR";
 	private cbit.vcell.clientdb.DocumentManager fieldDocumentManager = null;
 	//
-	private TestSuiteGroup testSuiteGroup;
+	public static class TestCriteriaVarUserObj{
+		private VariableComparisonSummary varCompSummary;
+		private TestCriteriaNew tCrit;
+		private TestCriteriaVarUserObj(TestCriteriaNew argTCrit,VariableComparisonSummary argvarCompSummary){
+			varCompSummary = argvarCompSummary;
+			tCrit = argTCrit;
+		}
+		public TestCriteriaNew getTestCriteria(){
+			return tCrit;
+		}
+		public VariableComparisonSummary getVariableComparisonSummary(){
+			return varCompSummary;
+		}
+		public String toString(){
+			return "Var = " + varCompSummary.getName() + " MAE = " + varCompSummary.getAbsoluteError() + " MRE = " + varCompSummary.getRelativeError();
+		}
+	}
 	//
 	class TestSuiteGroup{
 		public TestSuiteInfoNew[] latestTestSuiteInfos = null;
-		public TestSuiteNew[] latestTestSuites = null;
+//		public TestSuiteNew[] latestTestSuites = null;
+		public TestSuiteNew latestTestSuite = null;
 		public boolean hadUpdateTSError = false;
 		public TestSuiteGroup(){
 		}
 	};
 	//
 	class GetTestSuites implements Runnable{
+		private TestSuiteInfoNew tsin;
 		cbit.util.AsynchProgressPopup pp = 
 			new cbit.util.AsynchProgressPopup(null,"Refresh Testing FrameWork Display","starting...",false,true);
-		public GetTestSuites(){
+		public GetTestSuites(TestSuiteInfoNew argtsin){
+			tsin = argtsin;
 		}
 		public void run(){
 			pp.start();
 			TestSuiteGroup tsg = new TestSuiteGroup();
+			boolean bRemove = false;
 			try{
 				TestSuiteInfoNew[] latestTestSuiteInfos = null;
-				TestSuiteNew[] latestTestSuites = null;
+//				TestSuiteNew[] latestTestSuites = null;
+				TestSuiteNew latestTestSuite = null;
 				boolean hadUpdateTSError = false;
 				if(getDocumentManager() != null){
 					TestSuiteInfoNew[] testSuiteInfos = null;
@@ -61,28 +80,65 @@ public class TestingFrmwkTreeModel
 					}
 					if(testSuiteInfos != null){
 						latestTestSuiteInfos = testSuiteInfos;
-						latestTestSuites = new TestSuiteNew[testSuiteInfos.length];
-						for (int i=0;i<testSuiteInfos.length;i++){
+						if(tsin == null){
+//							latestTestSuites = new TestSuiteNew[testSuiteInfos.length];
+//							for (int i=0;i<testSuiteInfos.length;i++){
+//								try {
+//									pp.setProgress(i*100/(testSuiteInfos.length+1));
+//									pp.setMessage("Getting Testsuite "+testSuiteInfos[i].getTSID());
+//									latestTestSuites[i] = getDocumentManager().getTestSuite(testSuiteInfos[i].getTSKey());
+//								} catch (cbit.vcell.server.DataAccessException e) {
+//									latestTestSuites[i] = null;
+//								}
+//							}
+						}else{
 							try {
-								pp.setProgress(i*100/(testSuiteInfos.length+1));
-								pp.setMessage("Getting Testsuite "+testSuiteInfos[i].getTSID());
-								latestTestSuites[i] = getDocumentManager().getTestSuite(testSuiteInfos[i].getTSKey());
+								pp.setProgress(50);
+								if(tsin.getTSKey() != null){//from Refesh or remove TestSuite
+									bRemove = true;
+									for (int i=0;i<testSuiteInfos.length;i++){
+										if(testSuiteInfos[i].getTSKey().equals(tsin.getTSKey())){
+											bRemove = false;
+											break;
+										}
+									}
+									if(!bRemove){
+										pp.setMessage("Getting Testsuite "+tsin.getTSID());
+										latestTestSuite = getDocumentManager().getTestSuite(tsin.getTSKey());
+//										if(latestTestSuite.getTestCases() == null || latestTestSuite.getTestCases().length == 0){
+//											return;
+//										}
+									}else{
+										pp.setMessage("Remove Testsuite "+tsin.getTSID());
+										latestTestSuiteInfos = new TestSuiteInfoNew[] {tsin};
+									}
+								}else{//from Duplicate TestSuite
+									for (int i=0;i<testSuiteInfos.length;i++){
+										if(testSuiteInfos[i].getTSID().equals(tsin.getTSID())){
+											latestTestSuite = getDocumentManager().getTestSuite(testSuiteInfos[i].getTSKey());
+											break;
+										}
+									}
+								}
 							} catch (cbit.vcell.server.DataAccessException e) {
-								latestTestSuites[i] = null;
+								tsg = new TestSuiteGroup();
+								PopupGenerator.showErrorDialog(e.getMessage());
+								return;
 							}
 						}
 					}
 				}
 				
 				tsg.latestTestSuiteInfos = latestTestSuiteInfos;
-				tsg.latestTestSuites = latestTestSuites;
+//				tsg.latestTestSuites = latestTestSuites;
+				tsg.latestTestSuite = latestTestSuite;
 				tsg.hadUpdateTSError = hadUpdateTSError;
 			}finally{
 				if(tsg.latestTestSuiteInfos != null){
 					pp.setProgress(tsg.latestTestSuiteInfos.length*100/(tsg.latestTestSuiteInfos.length+1));
 				}
 				pp.setMessage("Updating Display");
-				updateTree(tsg);
+				updateTree(tsg,bRemove);
 				pp.stop();
 			}
 		}
@@ -117,22 +173,38 @@ private synchronized BioModelNode createBaseTree(TestSuiteGroup tsg) throws Data
 	boolean isTFUser = getDocumentManager().getUser().isTestAccount();
 	if (isTFUser && tsg != null && !tsg.hadUpdateTSError){
 		BioModelNode rootRootNode = new BioModelNode("TestSuites",true);
-		//
-		// get list of test suites
-		//
-		//TestSuiteInfoNew[] testSuiteInfos = getDocumentManager().getTestSuiteInfos();
-		//
-		// for each test suite, get test cases
-		//
-		for (int i=0;tsg.latestTestSuites!=null && i<tsg.latestTestSuites.length;i++){
-			try {
-				if(tsg.latestTestSuites[i] != null){
-					rootRootNode.add(createTestSuiteSubTree(tsg.latestTestSuites[i]));
-				}else{
-					rootRootNode.add(new BioModelNode("TestSuite Not Updated "+tsg.latestTestSuiteInfos[i].getTSID(),false));
+//		if(tsg.latestTestSuites != null){
+//			//
+//			// get list of test suites
+//			//
+//			//TestSuiteInfoNew[] testSuiteInfos = getDocumentManager().getTestSuiteInfos();
+//			//
+//			// for each test suite, get test cases
+//			//
+//			for (int i=0;tsg.latestTestSuites!=null && i<tsg.latestTestSuites.length;i++){
+//				try {
+//					if(tsg.latestTestSuites[i] != null){
+//						rootRootNode.add(createTestSuiteSubTree(tsg.latestTestSuites[i]));
+//					}else{
+//						rootRootNode.add(new BioModelNode("TestSuite Not Updated "+tsg.latestTestSuiteInfos[i].getTSID(),false));
+//					}
+//				} catch (cbit.vcell.server.DataAccessException e) {
+//					// temporary fix ...
+//				}
+//			}
+//		}else
+		if(tsg.latestTestSuiteInfos != null){
+			Arrays.sort(tsg.latestTestSuiteInfos,
+				new Comparator<TestSuiteInfoNew>(){
+					public int compare(TestSuiteInfoNew o1, TestSuiteInfoNew o2) {
+						return o1.getTSID().compareToIgnoreCase(o2.getTSID());
+					}
 				}
-			} catch (cbit.vcell.server.DataAccessException e) {
-				// temporary fix ...
+			);
+			for (int i = 0; i < tsg.latestTestSuiteInfos.length; i++) {
+				BioModelNode tsNodeNoDetail = new BioModelNode(tsg.latestTestSuiteInfos[i],true);
+				tsNodeNoDetail.add(new BioModelNode(null,false));
+				rootRootNode.add(tsNodeNoDetail);
 			}
 		}
 		return rootRootNode;
@@ -174,16 +246,15 @@ private BioModelNode createSimulationSubTree(TestCriteriaNew tcInfo, BioModelNod
                 // Create nodes for errors and add them as children to varNode
                 // To enhance readability of errors in ResultSetsubtree on panel ...
 				VariableComparisonSummary var1 = varCompSummaries[i];
-                String varInfo = "Var = " + var1.getName() + " MAE = " + var1.getAbsoluteError() + " MRE = " + var1.getRelativeError();
-                BioModelNode varInfoNode = new BioModelNode(varInfo, true);
-                if (tcInfo != null
-                    && (tcInfo.getMaxAbsError().doubleValue() < var1.getAbsoluteError().doubleValue()
-                    || tcInfo.getMaxRelError().doubleValue() < var1.getRelativeError().doubleValue())) {
+				TestCriteriaVarUserObj tcritVarUserObj = new TestCriteriaVarUserObj(tcInfo,var1);
+//                String varInfo = "Var = " + var1.getName() + " MAE = " + var1.getAbsoluteError() + " MRE = " + var1.getRelativeError();
+                BioModelNode varInfoNode = new BioModelNode(tcritVarUserObj, true);
+                if(VariableComparisonSummary.isFailed(var1)){
                     varInfoNode.setRenderHint(FAILED_VARIABLE_MAE_MRE, Boolean.TRUE);
                     hasFailedVars = true;
                 }
 
-                varInfo = "Mean Square Error = " + var1.getMeanSqError();
+                String varInfo = "Mean Square Error = " + var1.getMeanSqError();
                 varInfoNode.add(new cbit.vcell.desktop.BioModelNode(varInfo, false));
                 varInfo = "minRef = " + var1.getMinRef();
                 varInfoNode.add(new cbit.vcell.desktop.BioModelNode(varInfo, false));
@@ -192,6 +263,10 @@ private BioModelNode createSimulationSubTree(TestCriteriaNew tcInfo, BioModelNod
                 varInfo = "timeAbsError = " + var1.getTimeAbsoluteError();
                 varInfoNode.add(new cbit.vcell.desktop.BioModelNode(varInfo, false));
                 varInfo = "indexAbsError = " + var1.getIndexAbsoluteError();
+                varInfoNode.add(new cbit.vcell.desktop.BioModelNode(varInfo, false));
+                varInfo = "timeRelError = " + var1.getTimeRelativeError();
+                varInfoNode.add(new cbit.vcell.desktop.BioModelNode(varInfo, false));
+                varInfo = "indexRelError = " + var1.getIndexRelativeError();
                 varInfoNode.add(new cbit.vcell.desktop.BioModelNode(varInfo, false));
                 reportInfoNode.add(varInfoNode);
             }
@@ -253,7 +328,7 @@ private BioModelNode createTestCaseSubTree(TestCaseNew testCase) throws DataAcce
 			BioModelNode simInfoNode = new BioModelNode(tcInfo, true);
 			String tcInfoStr = null;
 			if (tcInfo != null) {
-				tcInfoStr = "TestCriteria : MaxAbsError = "+tcInfo.getMaxAbsError()+"; MaxRelError = "+tcInfo.getMaxRelError()+"; ";
+				tcInfoStr = "TestCriteria : LimitAbsError = "+tcInfo.getMaxAbsError()+"; LimitRelError = "+tcInfo.getMaxRelError()+"; ";
 				if (testCase.getType().equals(TestCaseNew.REGRESSION)) {
 					if (tcInfo.getRegressionSimInfo() != null) {
 						SimulationInfo refSimInfo = tcInfo.getRegressionSimInfo();
@@ -358,7 +433,7 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	try {
 		if (evt.getSource() == this && evt.getPropertyName().equals("documentManager")){
-			refreshTree();
+			refreshTree(null);
 		}
 	}catch (Throwable e){
 		e.printStackTrace();
@@ -368,11 +443,11 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  * Insert the method's description here.
  * Creation date: (2/14/01 3:50:24 PM)
  */
-public void refreshTree() {
+public void refreshTree(TestSuiteInfoNew tsin) {
 	
 	if (getDocumentManager() != null){
 		if(getDocumentManager().getUser().isTestAccount()){
-			(new Thread(new GetTestSuites())).start();
+			(new Thread(new GetTestSuites(tsin))).start();
 		}else{
 			setRoot(new BioModelNode(getDocumentManager().getUser().getName()+" Not TestAccount User"));
 		}
@@ -402,33 +477,88 @@ public void setDocumentManager(cbit.vcell.clientdb.DocumentManager documentManag
 	fieldDocumentManager = documentManager;
 	firePropertyChange("documentManager", oldValue, documentManager);
 }
+
+
 	/**
 	 * Invoked when an action occurs.
 	 */
-private void updateTree(TestSuiteGroup tsg) {
+private void updateTree(final TestSuiteGroup tsg,boolean bRemove) {
 	
 	if(tsg != null){
-		BioModelNode finalNode = null;
-		Throwable error = null;
-		try {
-			finalNode = createBaseTree(tsg);
-			final BioModelNode ffNode = finalNode;
+		if(tsg.latestTestSuite == null && tsg.latestTestSuiteInfos != null && !bRemove /*tsg.latestTestSuites != null  && !bRemove*/){
+			BioModelNode finalNode = null;
+			Throwable error = null;
+			try {
+				finalNode = createBaseTree(tsg);
+				final BioModelNode ffNode = finalNode;
+				javax.swing.SwingUtilities.invokeLater(
+					new Runnable(){
+						public void run(){
+							setRoot(ffNode);
+						}
+					}
+				);
+			}catch (Throwable exc){
+				exc.printStackTrace();
+				error = exc;
+			}finally{
+				if(finalNode == null){
+					setRoot(new BioModelNode("Error Creating TF Tree"+(error != null?error.getClass().getName():""),false));
+				}
+			}
+		}else if(tsg.latestTestSuite != null && !bRemove){
+
+				javax.swing.SwingUtilities.invokeLater(
+					new Runnable(){
+						public void run(){
+							try{
+								BioModelNode finalNode = null;
+								BioModelNode rootNode = (BioModelNode)getRoot();
+								finalNode = createTestSuiteSubTree(tsg.latestTestSuite);
+								for (int i = 0; i < rootNode.getChildCount(); i++) {
+									BioModelNode childNode = (BioModelNode)rootNode.getChildAt(i);
+									TestSuiteInfoNew childtsin = (TestSuiteInfoNew)childNode.getUserObject();
+									if(childtsin.getTSKey().equals(tsg.latestTestSuite.getTSInfoNew().getTSKey())){
+										removeNodeFromParent(childNode);
+										insertNodeInto(finalNode, rootNode, i);
+										firePropertyChange(TS_NODE_REFRESH, childNode, finalNode);
+										return;
+									}
+								}
+								//Must be NEW TeestSuite
+								//insert at top
+								insertNodeInto(finalNode, rootNode, 0);
+							}catch(Throwable e){
+								e.printStackTrace();
+								PopupGenerator.showErrorDialog("Error updating tree.  "+e.getMessage());
+							}
+						}
+					}
+				);
+		}else if(tsg.latestTestSuiteInfos != null && bRemove){//Remove tree nodes that aren't in DB
 			javax.swing.SwingUtilities.invokeLater(
 				new Runnable(){
 					public void run(){
-						setRoot(ffNode);
+						try{
+							BioModelNode rootNode = (BioModelNode)getRoot();
+							for (int j = 0; j < tsg.latestTestSuiteInfos.length; j++) {
+								for (int i = 0; i < rootNode.getChildCount(); i++) {
+									BioModelNode childNode = (BioModelNode)rootNode.getChildAt(i);
+									TestSuiteInfoNew childtsin = (TestSuiteInfoNew)childNode.getUserObject();
+									if(childtsin.getTSKey().equals(tsg.latestTestSuiteInfos[j].getTSKey())){
+										removeNodeFromParent(childNode);
+										break;
+									}
+								}
+							}
+						}catch(Throwable e){
+							e.printStackTrace();
+							PopupGenerator.showErrorDialog("Error updating tree.  "+e.getMessage());
+						}
 					}
 				}
 			);
-		}catch (Throwable exc){
-			exc.printStackTrace();
-			error = exc;
-		}finally{
-			if(finalNode == null){
-				setRoot(new BioModelNode("Error Creating TF Tree"+(error != null?error.getClass().getName():""),false));
-			}
 		}
 	}
-	
 }
 }

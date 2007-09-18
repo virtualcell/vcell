@@ -16,14 +16,21 @@ import cbit.util.AsynchProgressPopup;
 public class TFUpdateRunningStatus extends AsynchClientTask {
 
 	private TestingFrameworkWindowManager tfwm;
+	private TestSuiteInfoNew tsin;
 /**
  * Insert the method's description here.
  * Creation date: (11/17/2004 3:06:56 PM)
  */
-public TFUpdateRunningStatus(TestingFrameworkWindowManager argtfwm) {
-	
-	tfwm = argtfwm;
-}
+//public TFUpdateRunningStatus(TestingFrameworkWindowManager argtfwm) {
+//	
+//	this(argtfwm,null);
+//}
+	public TFUpdateRunningStatus(TestingFrameworkWindowManager argtfwm,TestSuiteInfoNew argtsin) {
+		
+		tfwm = argtfwm;
+		tsin = argtsin;
+	}
+
 /**
  * Insert the method's description here.
  * Creation date: (11/17/2004 2:08:09 PM)
@@ -49,7 +56,7 @@ public int getTaskType() {
 public void run(java.util.Hashtable hashTable){
 
 	AsynchProgressPopup pp = (AsynchProgressPopup)hashTable.get(ClientTaskDispatcher.PROGRESS_POPUP);
-	String errors = tfwm.updateSimRunningStatus(pp);
+	String errors = tfwm.updateSimRunningStatus(pp,tsin);
 	if(errors != null){
 		hashTable.put(TFRefresh.TF_ERRORS,errors);
 	}

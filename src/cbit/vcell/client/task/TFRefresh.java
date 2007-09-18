@@ -2,6 +2,7 @@ package cbit.vcell.client.task;
 
 import cbit.vcell.client.TestingFrameworkWindowManager;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.util.AsynchProgressPopup;
 /**
  * Insert the type's description here.
@@ -14,15 +15,23 @@ public class TFRefresh extends AsynchClientTask {
 	public static final String TF_REPORT = "TF_REPORT";
 	
 	private TestingFrameworkWindowManager tfwm;
+	private TestSuiteInfoNew tsin;
 /**
  * Insert the method's description here.
  * Creation date: (11/17/2004 3:17:09 PM)
  */
 public TFRefresh(TestingFrameworkWindowManager argtfwm) {
 
-	tfwm = argtfwm;
+this(argtfwm,null);
 	
-	}
+}
+public TFRefresh(TestingFrameworkWindowManager argtfwm,TestSuiteInfoNew argtsin) {
+
+	tfwm = argtfwm;
+	tsin = argtsin;
+	
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (11/17/2004 2:20:58 PM)
@@ -47,7 +56,7 @@ public int getTaskType() {
  */
 public void run(java.util.Hashtable hashTable){
 	
-	tfwm.getTestingFrameworkWindowPanel().refreshTree();
+	tfwm.getTestingFrameworkWindowPanel().refreshTree(tsin);
 	
 	String errors = (String)hashTable.get(TF_ERRORS);
 	if(errors != null){

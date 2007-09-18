@@ -12,21 +12,22 @@ public class TestSuiteInfoNew implements cbit.util.Matchable, java.io.Serializab
 	private String tsVCellBuild;
 	private String tsNumericsBuild;
 	private java.util.Date tsDate;
+	private String tsAnnot;
 
 /**
  * TestSuiteInfoNew constructor comment.
  * @param argType java.lang.String
  * @param argAnnotation java.lang.String
  */
-public TestSuiteInfoNew(BigDecimal argTSKey,String argTSID,String argTSVCellBuild,String argTSNumericsBuild,java.util.Date argTSDate) {
+public TestSuiteInfoNew(BigDecimal argTSKey,String argTSID,String argTSVCellBuild,String argTSNumericsBuild,java.util.Date argTSDate,String argTSAnnot) {
 
 	tsKey = argTSKey;
 	tsID = argTSID;
 	tsVCellBuild = argTSVCellBuild;
 	tsNumericsBuild = argTSNumericsBuild;
 	tsDate = argTSDate;
+	tsAnnot = argTSAnnot;
 }
-
 
 /**
  * Checks for internal representation of objects, not keys from database
@@ -80,6 +81,11 @@ public java.util.Date getTSDate() {
  */
 public java.lang.String getTSID() {
 	return tsID;
+}
+
+
+public java.lang.String getTSAnnotation() {
+	return tsAnnot;
 }
 
 

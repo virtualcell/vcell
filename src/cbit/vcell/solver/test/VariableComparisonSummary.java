@@ -14,6 +14,8 @@ public class VariableComparisonSummary implements java.io.Serializable {
 	private Double mse;
 	private Double timeAbsError;
 	private Integer indexAbsError;
+	private Double timeRelError;
+	private Integer indexRelError;
 
 public VariableComparisonSummary(	String argVarName,
 									double argMinRef,
@@ -22,7 +24,9 @@ public VariableComparisonSummary(	String argVarName,
 									double argRelativeError,
 									double argMeanSqErr,
 									double argTimeAbsError,
-									int    argIndexAbsError){
+									int    argIndexAbsError,
+									double argTimeRelError,
+									int    argIndexRelError){
 
 	this.varName = argVarName;
 	this.minRef = 		new Double(argMinRef);
@@ -32,6 +36,13 @@ public VariableComparisonSummary(	String argVarName,
 	this.mse = 			new Double(argMeanSqErr);
 	this.timeAbsError =	new Double(argTimeAbsError);
 	this.indexAbsError= new Integer(argIndexAbsError);
+	this.timeRelError =	new Double(argTimeRelError);
+	this.indexRelError= new Integer(argIndexRelError);
+}
+
+
+public static boolean isFailed(VariableComparisonSummary varCompSummary){
+	return varCompSummary.getRelativeError().doubleValue() > 1.0;
 }
 
 
@@ -100,7 +111,7 @@ public Double getTimeAbsoluteError() {
  * @return java.lang.String
  */
 public String toShortString() {
-	return "var="+getName()+":MSE="+mse+",MAE="+absError+",MRE="+relError+",MnR="+minRef+",MxR="+maxRef+",@t="+timeAbsError+",@index="+indexAbsError;
+	return "var="+getName()+":MSE="+mse+",MAE="+absError+",MRE="+relError+",MnR="+minRef+",MxR="+maxRef+",@tA="+timeAbsError+",@indexA="+indexAbsError+",@tR="+timeRelError+",@indexR="+indexRelError;
 }
 
 
@@ -111,5 +122,15 @@ public String toShortString() {
  */
 public String toString() {
 	return "VariableComparisonSummary@"+Integer.toHexString(hashCode())+": "+toShortString();
+}
+
+
+public Integer getIndexRelativeError() {
+	return indexRelError;
+}
+
+
+public Double getTimeRelativeError() {
+	return timeRelError;
 }
 }

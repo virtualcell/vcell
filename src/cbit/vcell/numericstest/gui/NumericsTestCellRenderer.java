@@ -296,7 +296,10 @@ private void setComponentProperties(
             + "\" ; "
             + testCaseDate
             + " ; "
-            + testCase.getType());
+            + testCase.getType()
+            + " ; ["
+            + testCase.getAnnotation()
+            + "]");
         component.setToolTipText("Test Case");
         }
 /**
@@ -308,7 +311,11 @@ private void setComponentProperties(
 protected void setComponentProperties(javax.swing.JLabel component, Object object) {
 	if (object instanceof TestSuiteInfoNew) {
 		TestSuiteInfoNew tsn = (TestSuiteInfoNew)object;
-		component.setText("Version No. : "+tsn.getTSID()+"; Vcell Version No. : "+tsn.getTSVCellBuild()+"; Numerics Build No. : "+tsn.getTSNumericsBuild());
+		component.setText(
+				"Version No. : "+tsn.getTSID()+
+				"; Vcell Version No. : "+tsn.getTSVCellBuild()+
+				"; Numerics Build No. : "+tsn.getTSNumericsBuild()+
+				" ; ["+(tsn.getTSAnnotation() == null?"":tsn.getTSAnnotation())+"]");
 		component.setToolTipText("Test Suite Info");
 	}
 	//if (object instanceof TestCaseNew){

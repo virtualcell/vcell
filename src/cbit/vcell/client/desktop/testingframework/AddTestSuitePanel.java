@@ -3,6 +3,11 @@ import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.AddTestSuiteOP;
 import cbit.vcell.numericstest.AddTestCasesOP;
 import cbit.vcell.client.PopupGenerator;
+import javax.swing.JLabel;
+import java.awt.GridBagConstraints;
+import java.awt.Insets;
+import javax.swing.JTextArea;
+import java.awt.Dimension;
 
 /**
  * Insert the type's description here.
@@ -15,21 +20,15 @@ public class AddTestSuitePanel extends javax.swing.JPanel {
 	private javax.swing.JTextField ivjVersionTextField = null;
 	private cbit.vcell.client.TestingFrameworkWindowManager fieldTestingFrameworkWindowManager = null;
 	private javax.swing.JButton ivjApplyButton = null;
-	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private javax.swing.JPanel ivjJPanel1 = null;
-	private javax.swing.JPanel ivjJPanel2 = null;
 	private javax.swing.JTextField ivjNumericsVersionTextField = null;
 	private javax.swing.JLabel ivjNumVersLabel = null;
 	private javax.swing.JLabel ivjVcellVersLabel = null;
 	private javax.swing.JTextField ivjVCellVerTextField = null;
-	private cbit.vcell.numericstest.TestSuiteInfoNew fieldTestSuiteInfo = null;
+	private cbit.vcell.numericstest.TestSuiteInfoNew fieldTestSuiteInfo = null;  //  @jve:decl-index=0:
+	private JLabel jLabelAnnot = null;
+	private JTextArea jTextAreaAnnot = null;
 
-class IvjEventHandler implements java.awt.event.ActionListener {
-		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == AddTestSuitePanel.this.getApplyButton()) 
-				connEtoC2(e);
-		};
-	};
 
 /**
  * AddTestSuitePanel constructor comment.
@@ -42,18 +41,17 @@ public AddTestSuitePanel() {
 /**
  * Comment
  */
-private void applyTestSuite() {
+private void applyTestSuite() throws Exception{
 	String testSuiteVersionID = getVersionTextField().getText();
 	String vCellBuildVersion = getVCellVerTextField().getText();
 	String numericsBuildVersion = getNumericsVersionTextField().getText();
 	if (testSuiteVersionID == null || testSuiteVersionID.length() == 0 || 
 		vCellBuildVersion == null || vCellBuildVersion.length() == 0 || 
 		numericsBuildVersion == null || numericsBuildVersion.length() == 0) {
-		PopupGenerator.showErrorDialog("TestSuite must have Version no./VCell Version no./Numerics Version no.");
-		return;
+		throw new Exception("TestSuite must have Version no./VCell Version no./Numerics Version no.");
 	}
 
-	TestSuiteInfoNew newTSInfo = new TestSuiteInfoNew(null, testSuiteVersionID, vCellBuildVersion, numericsBuildVersion, null);
+	TestSuiteInfoNew newTSInfo = new TestSuiteInfoNew(null, testSuiteVersionID, vCellBuildVersion, numericsBuildVersion, null,getJTextAreaAnnot().getText());
 	setTestSuiteInfo(newTSInfo);
 }
 
@@ -78,29 +76,6 @@ private void connEtoC2(java.awt.event.ActionEvent arg1) {
 }
 
 /**
- * Return the ApplyButton property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getApplyButton() {
-	if (ivjApplyButton == null) {
-		try {
-			ivjApplyButton = new javax.swing.JButton();
-			ivjApplyButton.setName("ApplyButton");
-			ivjApplyButton.setText("Apply");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjApplyButton;
-}
-
-
-/**
  * Return the JPanel1 property value.
  * @return javax.swing.JPanel
  */
@@ -108,9 +83,28 @@ private javax.swing.JButton getApplyButton() {
 private javax.swing.JPanel getJPanel1() {
 	if (ivjJPanel1 == null) {
 		try {
+			GridBagConstraints gridBagConstraints1 = new GridBagConstraints();
+			gridBagConstraints1.fill = GridBagConstraints.BOTH;
+			gridBagConstraints1.gridy = 4;
+			gridBagConstraints1.weightx = 1.0;
+			gridBagConstraints1.weighty = 1.0;
+			gridBagConstraints1.gridwidth = 2;
+			gridBagConstraints1.insets = new Insets(4, 4, 4, 4);
+			gridBagConstraints1.gridx = 0;
+			GridBagConstraints gridBagConstraints = new GridBagConstraints();
+			gridBagConstraints.gridx = 0;
+			gridBagConstraints.gridwidth = 2;
+			gridBagConstraints.insets = new Insets(4, 4, 4, 4);
+			gridBagConstraints.fill = GridBagConstraints.NONE;
+			gridBagConstraints.gridy = 3;
+			jLabelAnnot = new JLabel();
+			jLabelAnnot.setText("Test Suite Annotation");
 			ivjJPanel1 = new javax.swing.JPanel();
 			ivjJPanel1.setName("JPanel1");
 			ivjJPanel1.setLayout(new java.awt.GridBagLayout());
+			
+			ivjJPanel1.add(jLabelAnnot, gridBagConstraints);
+			ivjJPanel1.add(getJTextAreaAnnot(), gridBagConstraints1);
 
 			java.awt.GridBagConstraints constraintsVersionLabel = new java.awt.GridBagConstraints();
 			constraintsVersionLabel.gridx = 0; constraintsVersionLabel.gridy = 0;
@@ -159,30 +153,6 @@ private javax.swing.JPanel getJPanel1() {
 	}
 	return ivjJPanel1;
 }
-
-/**
- * Return the JPanel2 property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getJPanel2() {
-	if (ivjJPanel2 == null) {
-		try {
-			ivjJPanel2 = new javax.swing.JPanel();
-			ivjJPanel2.setName("JPanel2");
-			ivjJPanel2.setLayout(new java.awt.FlowLayout());
-			getJPanel2().add(getApplyButton(), getApplyButton().getName());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJPanel2;
-}
-
 
 /**
  * Return the NumericsVersionTextField property value.
@@ -245,7 +215,8 @@ public cbit.vcell.client.TestingFrameworkWindowManager getTestingFrameworkWindow
  * @return The testSuiteInfo property value.
  * @see #setTestSuiteInfo
  */
-public cbit.vcell.numericstest.TestSuiteInfoNew getTestSuiteInfo() {
+public cbit.vcell.numericstest.TestSuiteInfoNew getTestSuiteInfo() throws Exception{
+	applyTestSuite();
 	return fieldTestSuiteInfo;
 }
 
@@ -360,7 +331,6 @@ private void handleException(java.lang.Throwable exception) {
 private void initConnections() throws java.lang.Exception {
 	// user code begin {1}
 	// user code end
-	getApplyButton().addActionListener(ivjEventHandler);
 }
 
 /**
@@ -373,7 +343,7 @@ private void initialize() {
 		// user code end
 		setName("AddTestSuitePanel");
 		setLayout(new java.awt.GridBagLayout());
-		setSize(468, 167);
+		setSize(468, 226);
 
 		java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
 		constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 0;
@@ -383,14 +353,7 @@ private void initialize() {
 		constraintsJPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJPanel1(), constraintsJPanel1);
 
-		java.awt.GridBagConstraints constraintsJPanel2 = new java.awt.GridBagConstraints();
-		constraintsJPanel2.gridx = 0; constraintsJPanel2.gridy = 1;
-		constraintsJPanel2.fill = java.awt.GridBagConstraints.BOTH;
-		constraintsJPanel2.weightx = 1.0;
-		constraintsJPanel2.weighty = 1.0;
-		constraintsJPanel2.insets = new java.awt.Insets(4, 4, 4, 4);
-		add(getJPanel2(), constraintsJPanel2);
-		initConnections();
+ 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
@@ -430,10 +393,11 @@ public static void main(java.lang.String[] args) {
  * @param testSuiteInfo The new value for the property.
  * @see #getTestSuiteInfo
  */
-public void resetTextFields(boolean letUserAddTestCase) {
+public void resetTextFields(String tsAnnotation) {
 	getVersionTextField().setText("");
 	getVCellVerTextField().setText("");
 	getNumericsVersionTextField().setText("");
+	getJTextAreaAnnot().setText(tsAnnotation);
 }
 
 
@@ -454,7 +418,7 @@ public void setTestingFrameworkWindowManager(cbit.vcell.client.TestingFrameworkW
  * @param testSuiteInfo The new value for the property.
  * @see #getTestSuiteInfo
  */
-public void setTestSuiteInfo(cbit.vcell.numericstest.TestSuiteInfoNew testSuiteInfo) {
+private void setTestSuiteInfo(cbit.vcell.numericstest.TestSuiteInfoNew testSuiteInfo) {
 	cbit.vcell.numericstest.TestSuiteInfoNew oldValue = fieldTestSuiteInfo;
 	fieldTestSuiteInfo = testSuiteInfo;
 	firePropertyChange("testSuiteInfo", oldValue, testSuiteInfo);
@@ -495,4 +459,16 @@ private static void getBuilderData() {
 	3B7FDFAC62F96550EDF5DE497D52E84C3CD2FE195AED6D65701DBA7B8D18816F098C782517F99C69B19CC1316F557BFDAED114DD62E4135F036F581B2F49C2785B1741087907789856C97B5EB1E2392F28E87E8FD0CB8788041F2B286A92GG28B8GGD0CB818294G94G88G88GF0FBB0B6041F2B286A92GG28B8GG8CGGGGGGGGGGGGGGGGGE2F5E9ECE4E5F2A0E4E1F4E1D0CB8586GGGG81G81GBAGGGA493GGGG
 **end of data**/
 }
+
+/**
+ * This method initializes jTextAreaAnnot	
+ * 	
+ * @return javax.swing.JTextArea	
+ */
+private JTextArea getJTextAreaAnnot() {
+	if (jTextAreaAnnot == null) {
+		jTextAreaAnnot = new JTextArea();
+	}
+	return jTextAreaAnnot;
 }
+}  //  @jve:decl-index=0:visual-constraint="10,10"

@@ -1,6 +1,7 @@
 package cbit.vcell.solver.test;
 
 import cbit.vcell.solver.ode.ODESolverResultSet;
+import cbit.vcell.numericstest.TestCaseNew;
 import cbit.vcell.parser.*;
 /**
  * Insert the type's description here.
@@ -60,11 +61,11 @@ public static void testOdeCompareResultSets(double epsilon) {
 		ODESolverResultSet r2 = cbit.vcell.solver.ode.ODESolverResultSetTest.getExample(times,names,exps2);
 		
 		System.out.println("comparing identical result sets using no interpolation");
-		SimulationComparisonSummary simCompareSummaryNoInterpolation = MathTestingUtilities.compareResultSets(r1,r2,names);
+		SimulationComparisonSummary simCompareSummaryNoInterpolation = MathTestingUtilities.compareResultSets(r1,r2,names,TestCaseNew.EXACT,DataErrorSummary.DEFAULT_ABS_ERROR,DataErrorSummary.DEFAULT_REL_ERROR);
 		show(simCompareSummaryNoInterpolation);
 		
 		System.out.println("comparing identical result sets using interpolation");
-		SimulationComparisonSummary simCompareSummary = MathTestingUtilities.compareUnEqualResultSets(r1,r2,names);
+		SimulationComparisonSummary simCompareSummary = MathTestingUtilities.compareUnEqualResultSets(r1,r2,names,DataErrorSummary.DEFAULT_ABS_ERROR,DataErrorSummary.DEFAULT_REL_ERROR);
 		show(simCompareSummary);
 		
 	} catch (Throwable e) {
@@ -98,11 +99,11 @@ public static void testOdeCompareResultSetsInterpolated(double epsilon) {
 		ODESolverResultSet r2 = cbit.vcell.solver.ode.ODESolverResultSetTest.getExample(times2,names,exps2);
 		
 		System.out.println("comparing different result sets using interpolation");
-		SimulationComparisonSummary simCompareSummary1 = MathTestingUtilities.compareUnEqualResultSets(r1,r2,names);
+		SimulationComparisonSummary simCompareSummary1 = MathTestingUtilities.compareUnEqualResultSets(r1,r2,names,DataErrorSummary.DEFAULT_ABS_ERROR,DataErrorSummary.DEFAULT_REL_ERROR);
 		show(simCompareSummary1);
 
 		System.out.println("comparing different result sets using interpolation (Switching r1 & r2)");
-		SimulationComparisonSummary simCompareSummary2 = MathTestingUtilities.compareUnEqualResultSets(r2,r1,names);
+		SimulationComparisonSummary simCompareSummary2 = MathTestingUtilities.compareUnEqualResultSets(r2,r1,names,DataErrorSummary.DEFAULT_ABS_ERROR,DataErrorSummary.DEFAULT_REL_ERROR);
 		show(simCompareSummary2);		
 		
 	} catch (Throwable e) {
