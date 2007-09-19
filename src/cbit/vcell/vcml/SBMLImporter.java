@@ -428,7 +428,7 @@ protected void addReactionParticipants(org.sbml.libsbml.Reaction sbmlRxn, Reacti
 			if (bAddedAsReactant || bAddedAsProduct) {
 				logger.sendMessage(VCLogger.LOW_PRIORITY, TranslationMessage.REACTION_ERROR, "Species " + speciesContext.getName() + " was already added as a reactant and/or product to " + vcRxn.getName() + "; Cannot add it as a catalyst also.");
 			} else {
-				((SimpleReaction)vcRxn).addCatalyst(speciesContext);
+				vcRxn.addCatalyst(speciesContext);
 			}
 		}
 	}
