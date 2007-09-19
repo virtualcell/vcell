@@ -327,22 +327,22 @@ private SimpleNode getRootNode(Element nodeMathML) throws ExpressionException {
 		//       <apply>                             </multNode>
 		//         ...expression2                    <multNode>
 		//       </apply>                                expressionOtherwise
-		//       <apply>                                 <relationalNode "==">
-		//         ...condition2                             <andNode>"
+		//       <apply>                                 <notNode>
+		//         ...condition2                             <orNode>
 		//       </apply>                                        condition1
 		//    </piece>                                           condition2
-		//    <otherwise>                                    </andNode>
-		//       <apply>                                     false "0.0"
-		//          ...expressionOtherwise                </relationalNode>
-		//       </apply>                            </multNode>
-		//    </othewise>                        </addNode>
+		//    <otherwise>                                    </orNode>
+		//       <apply>                                 </notNode>   
+		//          ...expressionOtherwise           </multNode>    
+		//       </apply>                        </addNode>    
+		//    </othewise>                        
 		// </piecewise>                             
 		//
 		//
 		//
 		ASTAddNode addNode = new ASTAddNode();
 		Element piecewise = nodeMathML;
-		Vector conditionExpList = new Vector();
+		Vector<SimpleNode> conditionExpList = new Vector<SimpleNode>();
 		java.util.List children = piecewise.getChildren();
 		for (int i = 0; i < children.size(); i++){
 			Element child = (Element)children.get(i);
@@ -372,22 +372,28 @@ private SimpleNode getRootNode(Element nodeMathML) throws ExpressionException {
 				ASTMultNode multNode = new ASTMultNode();
 				multNode.jjtAddChild(vcellExp);
 				//
-				// form "otherwise" conditional expression
-				//
-				ASTRelationalNode equalNode = new ASTRelationalNode();
-				equalNode.setOperationFromToken("==");
-				ASTFloatNode falseNode = new ASTFloatNode(0.0);
-				equalNode.jjtAddChild(falseNode);
-				//
 				// gather conditionals
 				//
-				ASTAndNode andNode = new ASTAndNode();
-				for (int j = 0; j < conditionExpList.size(); j++){
-					andNode.jjtAddChild((SimpleNode)conditionExpList.elementAt(j));
+				if (conditionExpList.size() > 1) {
+					ASTOrNode orNode = new ASTOrNode();
+					for (int j = 0; j < conditionExpList.size(); j++){
+						orNode.jjtAddChild(conditionExpList.elementAt(j));
+					}
+					//
+					// form "otherwise" conditional expression
+					//
+					ASTNotNode notNode = new ASTNotNode();
+					notNode.jjtAddChild(orNode);
+					multNode.jjtAddChild(notNode);
+					addNode.jjtAddChild(multNode);
+				} else if (conditionExpList.size() == 1){		// only one condition (piece) in piecewise.
+					ASTNotNode notNode = new ASTNotNode();
+					notNode.jjtAddChild(conditionExpList.elementAt(0));
+					multNode.jjtAddChild(notNode);
+					addNode.jjtAddChild(multNode);
+				} else if (conditionExpList.size() < 1) {		// no piece elements in piecewise
+					addNode.jjtAddChild(vcellExp);
 				}
-				equalNode.jjtAddChild(andNode);
-				multNode.jjtAddChild(equalNode);
-				addNode.jjtAddChild(multNode);
 			}
 		}
 		return addNode;

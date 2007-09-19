@@ -1287,7 +1287,11 @@ public double evaluateConstant() throws ExpressionException {
 	}
 	case CSC: {
 		if (jjtGetNumChildren()!=1) throw new Error("csc() expects 1 argument");
-		result = flanagan.math.Fmath.csc(jjtGetChild(0).evaluateConstant());
+		double argument = jjtGetChild(0).evaluateConstant();
+		if (Math.abs(argument) == 0.0){
+			throw new FunctionDomainException("csc(u) & u = 0.0 undefined, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+		}
+		result = flanagan.math.Fmath.csc(argument);
 		break;
 	}
 	case COT: {
@@ -1855,7 +1859,11 @@ public double evaluateVector(double values[]) throws ExpressionException {
 	}
 	case CSC: {
 		if (jjtGetNumChildren()!=1) throw new Error("csc() expects 1 argument");
-		result = flanagan.math.Fmath.csc(jjtGetChild(0).evaluateVector(values));
+		double argument = jjtGetChild(0).evaluateVector(values);
+		if (Math.abs(argument) == 0.0){
+			throw new FunctionDomainException("csc(u) & u = 0.0 undefined, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)+"'");
+		}
+		result = flanagan.math.Fmath.csc(argument);
 		break;
 	}
 	case COT: {

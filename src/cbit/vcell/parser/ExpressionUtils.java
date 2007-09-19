@@ -476,7 +476,7 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2, b
 		}
 		if (numEvaluations < REQUIRED_NUM_EVALUATIONS){
 			//savedException.printStackTrace(System.out);
-			throw new RuntimeException("too many failed evaluations ("+numEvaluations+" of "+REQUIRED_NUM_EVALUATIONS+") ("+savedException.getMessage()+") of expressions '"+exp1+"' and '"+exp2+"'");
+			throw new RuntimeException("too many failed evaluations ("+numEvaluations+" of "+REQUIRED_NUM_EVALUATIONS+") ("+savedException.toString()+") of expressions '"+exp1+"' and '"+exp2+"'");
 		}
 		return true;
 	}catch (cbit.vcell.parser.ExpressionException e){

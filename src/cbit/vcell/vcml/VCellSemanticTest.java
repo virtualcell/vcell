@@ -106,10 +106,10 @@ public static void main(java.lang.String[] args) {
         BioModel bioModel_1 = (BioModel) cbit.vcell.xml.XmlHelper.importXMLVerbose(logger, sbmlString, fromDialect);
 
         // Export the previously imported document.
-//        String exportedSBMLStr = cbit.vcell.xml.XmlHelper.exportXML(bioModel_1, fromDialect, bioModel_1.getSimulationContexts(0).getName());
-//
-//        // Import the exported biomodel
-//        BioModel bioModel_2 = (BioModel) cbit.vcell.xml.XmlHelper.importXMLVerbose(logger, exportedSBMLStr, fromDialect);
+        String exportedSBMLStr = cbit.vcell.xml.XmlHelper.exportXML(bioModel_1, fromDialect, bioModel_1.getSimulationContexts(0).getName());
+
+        // Import the exported biomodel
+        BioModel bioModel_2 = (BioModel) cbit.vcell.xml.XmlHelper.importXMLVerbose(logger, exportedSBMLStr, fromDialect);
         
         // Instantiate an SBMLImporter to get the speciesUnitsHash - to compute the conversion factor from VC->SB species units.
 		cbit.vcell.vcml.SBMLImporter sbmlImporter = new cbit.vcell.vcml.SBMLImporter(sbmlString, logger);
@@ -120,7 +120,7 @@ public static void main(java.lang.String[] args) {
 		//
         // select only Application, generate math, and create a single Simulation.
 		//
-        cbit.vcell.mapping.SimulationContext simContext = bioModel_1.getSimulationContexts(0);
+        cbit.vcell.mapping.SimulationContext simContext = bioModel_2.getSimulationContexts(0);
         cbit.vcell.mapping.MathMapping mathMapping = new cbit.vcell.mapping.MathMapping(simContext);
         cbit.vcell.math.MathDescription mathDesc = mathMapping.getMathDescription();
         simContext.setMathDescription(mathDesc);
@@ -145,7 +145,8 @@ public static void main(java.lang.String[] args) {
         cbit.vcell.solver.TimeStep timeStep = new cbit.vcell.solver.TimeStep();
         sim.getSolverTaskDescription().setTimeStep(new cbit.vcell.solver.TimeStep(timeStep.getMinimumTimeStep(),timeStep.getDefaultTimeStep(),endTime/10000));
         sim.getSolverTaskDescription().setOutputTimeSpec(new cbit.vcell.solver.UniformOutputTimeSpec((endTime-0)/numTimeSteps));
-        sim.getSolverTaskDescription().setErrorTolerance(new cbit.vcell.solver.ErrorTolerance(1e-10, 1e-12));
+        sim.getSolverTaskDescription().setErrorTolerance(new cbit.vcell.solver.ErrorTolerance(1e-9, 1e-9));
+//        sim.getSolverTaskDescription().setErrorTolerance(new cbit.vcell.solver.ErrorTolerance(1e-10, 1e-12));
 
         //        
 		// solve simulation - USING NativeIDASolver ....
