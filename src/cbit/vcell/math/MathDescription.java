@@ -2207,11 +2207,11 @@ public boolean isStoch() {
 	while (enum1.hasMoreElements())
 	{
 		Variable var = (Variable)enum1.nextElement();
-		if (! ((var instanceof StochVolVariable) || (var instanceof Constant) ||(var instanceof Function))){
-			return false;
+		if (var instanceof StochVolVariable) {
+			return true;
 		} 
 	}			
-	return true;
+	return false;
 }
 
 /**
