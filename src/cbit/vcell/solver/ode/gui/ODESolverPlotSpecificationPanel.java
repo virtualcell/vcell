@@ -809,9 +809,10 @@ private javax.swing.JTextField getFunctionNameTextField() {
 		try {
 			ivjFunctionNameTextField = new javax.swing.JTextField();
 			ivjFunctionNameTextField.setName("FunctionNameTextField");
-			ivjFunctionNameTextField.setPreferredSize(new java.awt.Dimension(200, 30));
-			ivjFunctionNameTextField.setMaximumSize(new java.awt.Dimension(200, 30));
-			ivjFunctionNameTextField.setMinimumSize(new java.awt.Dimension(200, 30));
+			ivjFunctionNameTextField.setSize(new java.awt.Dimension(600, 30));
+			ivjFunctionNameTextField.setPreferredSize(new java.awt.Dimension(600, 30));
+			ivjFunctionNameTextField.setMaximumSize(new java.awt.Dimension(600, 30));
+			ivjFunctionNameTextField.setMinimumSize(new java.awt.Dimension(600, 30));			
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

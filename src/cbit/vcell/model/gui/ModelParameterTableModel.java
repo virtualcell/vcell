@@ -95,7 +95,7 @@ public class ModelParameterTableModel extends cbit.vcell.messaging.admin.ManageT
 	private final int COLUMN_VALUE = 3;
 	private final int COLUMN_UNIT = 4;
 	public static final int COLUMN_ANNOTATION = 5;
-	private String LABELS[] = { "Context", "Description", "Parameter", "Expression", "Units" , "Annotation" };
+	private String LABELS[] = { "Reaction", "Description", "Name", "Expression", "Units" , "Annotation" };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private final int indexes[] = new int[0];
 	private cbit.vcell.model.Model fieldModel = null;
