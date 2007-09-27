@@ -24,7 +24,7 @@ public class ParameterTableModel extends javax.swing.table.AbstractTableModel im
 	private final int COLUMN_NAME = 1;
 	private final int COLUMN_VALUE = 2;
 	private final int COLUMN_UNITS = 3;
-	private String LABELS[] = { "Description", "Parameter", "Expression", "Units" };
+	private String LABELS[] = { "Description", "Name", "Expression", "Units" };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private cbit.vcell.model.Kinetics fieldKinetics = null;
 /**
