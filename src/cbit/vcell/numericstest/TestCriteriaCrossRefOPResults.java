@@ -13,7 +13,7 @@ public class TestCriteriaCrossRefOPResults extends TestSuiteOPResults implements
 	private BigDecimal testCriterium;
 	private Vector<CrossRefData> crossRefData;
 	
-	public static class CrossRefData {
+	public static class CrossRefData implements Serializable{
 		public boolean isBioModel;
 		public String tsVersion;
 		public BigDecimal tsKey;
