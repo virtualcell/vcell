@@ -86,7 +86,6 @@ public static void addChemicalDevices(cbit.vcell.modelapp.SimulationContext simC
 	for (int i = 0; i < reactionSpecs.length; i++){
 		cbit.vcell.modelapp.ReactionSpec rs = reactionSpecs[i];
 		if (rs.getReactionMapping() == cbit.vcell.modelapp.ReactionSpec.INCLUDED ||
-			rs.getReactionMapping() == cbit.vcell.modelapp.ReactionSpec.MOLECULAR_ONLY||
 			rs.getReactionMapping() == cbit.vcell.modelapp.ReactionSpec.FAST){
 			//
 			// collect the reactionParticipant names and stoichiometries (need to pass to Reaction Devices).
