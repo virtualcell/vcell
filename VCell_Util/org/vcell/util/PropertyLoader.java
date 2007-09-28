@@ -72,7 +72,7 @@ public class PropertyLoader {
 	public static final String odeComputeServerHosts		= "vcell.odeComputeServerHosts";   // comma-separated list of hosts
 	public static final String pdeComputeServerHosts		= "vcell.pdeComputeServerHosts";   // comma-separated list of hosts
 	public static final String hostSeparator	= ",";
-	//added by RB, to accomodate some experiment-related stuff
+	//added by RB, to accommodate some experiment-related stuff
 	public static final String expSchemaUrlProperty = "vcell.experiment.expSchemaUrl";
 	public static final String expXMLRep = "vcell.experiment.expXMLRep";
 	public static final String expLoadDump = "vcell.experiment.expLoadDump";
@@ -114,6 +114,10 @@ public class PropertyLoader {
 	public static final String serverManageConfig = "vcell.messaging.serverManagerConfig";
 	public static final String bootstrapConfig = "vcell.messaging.bootstrapConfig";
 
+	public static final String lsfJobQueue = "vcell.lsf.jobQueue";
+	public static final String lsfPartitionMaximumJobs = "vcell.lsf.partition.maximumJobs";
+	public static final String lsfPartitionShareServerIDs = "vcell.lsf.partition.shareServerIDs";
+
 	public static final String vcellSoftwareVersion = "vcell.softwareVersion";
 
 	public static final String vcellServerHost = "vcell.serverHost";
@@ -129,8 +133,6 @@ public class PropertyLoader {
 	public static final String vcellBNGScript = "vcell.bng.script";
 
 	public static final String vcellClientTimeoutMS = "vcell.client.timeoutMS";
-	
-	public static final String lsfJobQueue = "vcell.lsf.jobQueue";
 	
 	public static final String htcSubmitTemplates = "vcell.htc.submittemplates";		
 	public static final String htcPartitionMaximumJobs = "vcell.htc.partition.maximumJobs";
@@ -229,6 +231,10 @@ public class PropertyLoader {
 		jmsClientStatusTopic,
 		serverManageConfig,
 		bootstrapConfig,
+
+		lsfJobQueue,
+		lsfPartitionMaximumJobs,
+		lsfPartitionShareServerIDs,
 
 		vcellSoftwareVersion,
 
