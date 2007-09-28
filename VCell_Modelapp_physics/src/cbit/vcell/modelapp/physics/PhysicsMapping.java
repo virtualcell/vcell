@@ -131,85 +131,87 @@ public class PhysicsMapping {
 		for (int i = 0; i < reactionSpecs.length; i++){
 			cbit.vcell.modelapp.ReactionSpec rs = reactionSpecs[i];
 			if (rs.getReactionMapping() == cbit.vcell.modelapp.ReactionSpec.INCLUDED ||
-				rs.getReactionMapping() == cbit.vcell.modelapp.ReactionSpec.MOLECULAR_ONLY||
 				rs.getReactionMapping() == cbit.vcell.modelapp.ReactionSpec.FAST){
 				//
 				// collect the reactionParticipant names and stoichiometries (need to pass to Reaction Devices).
 				//
-				cbit.vcell.model.ReactionParticipant reactionParticipants[] = rs.getReactionStep().getReactionParticipants();
-				String allSpeciesNames[] = new String[reactionParticipants.length];
-				int allStoichs[] = new int[reactionParticipants.length];
-				for (int k = 0; k < reactionParticipants.length; k++){
-					allSpeciesNames[k] = reactionParticipants[k].getName();
-					if (reactionParticipants[k] instanceof cbit.vcell.model.Reactant){
-						allStoichs[k] = -1*reactionParticipants[k].getStoichiometry();
-					}else if (reactionParticipants[k] instanceof cbit.vcell.model.Product){
-						allStoichs[k] =reactionParticipants[k].getStoichiometry();;
-					}else if (reactionParticipants[k] instanceof cbit.vcell.model.Catalyst){
-						allStoichs[k] = 0;
+				if (rs.getReactionStep().getPhysicsOptions()==ReactionStep.PHYSICS_MOLECULAR_ONLY || 
+					rs.getReactionStep().getPhysicsOptions()==ReactionStep.PHYSICS_MOLECULAR_AND_ELECTRICAL){
+					cbit.vcell.model.ReactionParticipant reactionParticipants[] = rs.getReactionStep().getReactionParticipants();
+					String allSpeciesNames[] = new String[reactionParticipants.length];
+					int allStoichs[] = new int[reactionParticipants.length];
+					for (int k = 0; k < reactionParticipants.length; k++){
+						allSpeciesNames[k] = reactionParticipants[k].getName();
+						if (reactionParticipants[k] instanceof cbit.vcell.model.Reactant){
+							allStoichs[k] = -1*reactionParticipants[k].getStoichiometry();
+						}else if (reactionParticipants[k] instanceof cbit.vcell.model.Product){
+							allStoichs[k] =reactionParticipants[k].getStoichiometry();;
+						}else if (reactionParticipants[k] instanceof cbit.vcell.model.Catalyst){
+							allStoichs[k] = 0;
+						}
 					}
-				}
-				cbit.vcell.model.Kinetics.KineticsParameter[] parameters = reactionSpecs[i].getReactionStep().getKinetics().getKineticsParameters();
-				Expression[] equations = new Expression[parameters.length];
-				//
-				// PASS 1: create all parameter expressions ignoring which should be "implicitFunctions".
-				//
-				for (int p = 0; p < parameters.length; p++){
-					try {
-						equations[p] = Expression.valueOf(parameters[p].getName()+" - ("+parameters[p].getExpression().infix_JSCL()+")");
-					} catch (ParseException e) {
-						e.printStackTrace();
-						throw new RuntimeException("Exception while parsing expression: "+e.getMessage());
+					cbit.vcell.model.Kinetics.KineticsParameter[] parameters = reactionSpecs[i].getReactionStep().getKinetics().getKineticsParameters();
+					Expression[] equations = new Expression[parameters.length];
+					//
+					// PASS 1: create all parameter expressions ignoring which should be "implicitFunctions".
+					//
+					for (int p = 0; p < parameters.length; p++){
+						try {
+							equations[p] = Expression.valueOf(parameters[p].getName()+" - ("+parameters[p].getExpression().infix_JSCL()+")");
+						} catch (ParseException e) {
+							e.printStackTrace();
+							throw new RuntimeException("Exception while parsing expression: "+e.getMessage());
+						}
 					}
-				}
-				//
-				// PASS 2: a) for all parameter expressions that are not constant, make them "implicitFunctions"
-				//         b) for all speciesContexts, make them "implicitFunctions"
-				// (FUTURE: could do proper dependency analysis to determine which should be "implicitFunctions").
-				//
-				for (int p = 0; p < parameters.length; p++){
-					if (!parameters[p].getExpression().isNumeric()){
+					//
+					// PASS 2: a) for all parameter expressions that are not constant, make them "implicitFunctions"
+					//         b) for all speciesContexts, make them "implicitFunctions"
+					// (FUTURE: could do proper dependency analysis to determine which should be "implicitFunctions").
+					//
+					for (int p = 0; p < parameters.length; p++){
+						if (!parameters[p].getExpression().isNumeric()){
+							for (int j = 0; j < equations.length; j++) {
+								try {
+									equations[j] = equations[j].substitute(Variable.valueOf(parameters[p].getName()), Expression.valueOf(parameters[p].getName()+"(t)"));
+								} catch (ParseException e) {
+									e.printStackTrace();
+									throw new RuntimeException("Exception while paring expression: "+e.getMessage());
+								}
+							}
+						}
+					}
+					for (int s = 0; s < allSpeciesNames.length; s++){
 						for (int j = 0; j < equations.length; j++) {
 							try {
-								equations[j] = equations[j].substitute(Variable.valueOf(parameters[p].getName()), Expression.valueOf(parameters[p].getName()+"(t)"));
+								equations[j] = equations[j].substitute(Variable.valueOf(allSpeciesNames[s]), Expression.valueOf(allSpeciesNames[s]+"(t)"));
 							} catch (ParseException e) {
 								e.printStackTrace();
 								throw new RuntimeException("Exception while paring expression: "+e.getMessage());
 							}
 						}
 					}
-				}
-				for (int s = 0; s < allSpeciesNames.length; s++){
-					for (int j = 0; j < equations.length; j++) {
-						try {
-							equations[j] = equations[j].substitute(Variable.valueOf(allSpeciesNames[s]), Expression.valueOf(allSpeciesNames[s]+"(t)"));
-						} catch (ParseException e) {
-							e.printStackTrace();
-							throw new RuntimeException("Exception while paring expression: "+e.getMessage());
-						}
+	
+					org.vcell.physics.component.Reaction reaction;
+					try {
+						reaction = new org.vcell.physics.component.Reaction(
+								TokenMangler.fixTokenStrict(rs.getReactionStep().getName()),
+								allSpeciesNames,
+								allStoichs,
+								rs.getReactionStep().getKinetics().getRateParameter().getName(),
+								equations);
+					} catch (ParseException e) {
+						e.printStackTrace();
+						throw new RuntimeException(e.getMessage());
 					}
-				}
-
-				org.vcell.physics.component.Reaction reaction;
-				try {
-					reaction = new org.vcell.physics.component.Reaction(
-							TokenMangler.fixTokenStrict(rs.getReactionStep().getName()),
-							allSpeciesNames,
-							allStoichs,
-							rs.getReactionStep().getKinetics().getRateParameter().getName(),
-							equations);
-				} catch (ParseException e) {
-					e.printStackTrace();
-					throw new RuntimeException(e.getMessage());
-				}
-				oOModel.addModelComponent(reaction);
-				org.vcell.physics.component.ModelComponent modelComponents[] = oOModel.getModelComponents();
-				for (int l = 0; l < modelComponents.length; l++){
-					if (modelComponents[l] instanceof org.vcell.physics.component.Species){
-						org.vcell.physics.component.Species species = (org.vcell.physics.component.Species)modelComponents[l];
-						for (int k = 0; k < allSpeciesNames.length; k++){
-							if (species.getName().equals(allSpeciesNames[k])){
-								oOModel.joinConnection(reaction.getConnectors(k),species.getConnectors(0));
+					oOModel.addModelComponent(reaction);
+					org.vcell.physics.component.ModelComponent modelComponents[] = oOModel.getModelComponents();
+					for (int l = 0; l < modelComponents.length; l++){
+						if (modelComponents[l] instanceof org.vcell.physics.component.Species){
+							org.vcell.physics.component.Species species = (org.vcell.physics.component.Species)modelComponents[l];
+							for (int k = 0; k < allSpeciesNames.length; k++){
+								if (species.getName().equals(allSpeciesNames[k])){
+									oOModel.joinConnection(reaction.getConnectors(k),species.getConnectors(0));
+								}
 							}
 						}
 					}
