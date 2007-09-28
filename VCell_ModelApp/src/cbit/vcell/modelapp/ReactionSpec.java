@@ -27,12 +27,10 @@ public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable,
 	public final static int INCLUDED = 0;
 	public final static int EXCLUDED = 1;
 	public final static int FAST = 2;
-	public final static int MOLECULAR_ONLY = 3;
-	public final static int CURRENT_ONLY = 4;
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private int fieldReactionMapping = INCLUDED;
-	private final static String[] mappings = {"included", "excluded", "fast", "molecular-only", "current-only"};
+	private final static String[] mappings = {"included", "excluded", "fast"};
 	
 	
 	private ReactionSpecParameter[] fieldReactionSpecParameters = new ReactionSpecParameter[0];
@@ -418,7 +416,7 @@ public ReactionSpec.ReactionSpecParameter getOverridenRateParameter() {
  */
 public String[] getPossibleReactionMappings() {
 	if (reactionStep instanceof FluxReaction){
-		return new String[] { mappings[INCLUDED], mappings[EXCLUDED], mappings[MOLECULAR_ONLY], mappings[CURRENT_ONLY] };
+		return new String[] { mappings[INCLUDED], mappings[EXCLUDED]};
 	}else{
 		return new String[] { mappings[INCLUDED], mappings[EXCLUDED], mappings[FAST] };
 	}
@@ -461,7 +459,7 @@ public String getReactionMappingDescription() {
  * @return int
  */
 public static String[] getReactionMappings_Flux() {
-	return new String[] { mappings[INCLUDED], mappings[EXCLUDED], mappings[MOLECULAR_ONLY], mappings[CURRENT_ONLY] };
+	return new String[] { mappings[INCLUDED], mappings[EXCLUDED]};
 }
 
 /**
@@ -704,12 +702,6 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 	if (evt.getSource() == this && evt.getPropertyName().equals("reactionMapping")){
 		if (((Integer)evt.getNewValue()).intValue() == FAST && getReactionStep() instanceof FluxReaction){
 			throw new java.beans.PropertyVetoException("flux reaction cannot be '"+mappings[FAST]+"'",evt);
-		}
-		if (((Integer)evt.getNewValue()).intValue() == MOLECULAR_ONLY && !(getReactionStep() instanceof FluxReaction)){
-			throw new java.beans.PropertyVetoException("only flux reactions can be mapped as '"+mappings[MOLECULAR_ONLY]+"'",evt);
-		}
-		if (((Integer)evt.getNewValue()).intValue() == CURRENT_ONLY && !(getReactionStep() instanceof FluxReaction)){
-			throw new java.beans.PropertyVetoException("only flux reactions can be mapped as '"+mappings[CURRENT_ONLY]+"'",evt);
 		}
 	}
 }
