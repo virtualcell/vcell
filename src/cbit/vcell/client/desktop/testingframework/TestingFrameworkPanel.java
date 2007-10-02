@@ -267,7 +267,9 @@ public static boolean hasNullChild(BioModelNode bmNode){
 private void actionsOnMouseClick(MouseEvent mouseEvent) {
 
 	if (mouseEvent.isPopupTrigger()) {
-		getJTree1().setSelectionPath(getJTree1().getPathForLocation(mouseEvent.getPoint().x, mouseEvent.getPoint().y));
+		if(getJTree1().getSelectionCount() <= 1){
+			getJTree1().setSelectionPath(getJTree1().getPathForLocation(mouseEvent.getPoint().x, mouseEvent.getPoint().y));
+		}
 		if (getTreeSelection() instanceof String) {
 			if (((String)getTreeSelection()).equals("TestSuites") && getJTree1().getSelectionPath().getParentPath() == null) {
 				getMainPopupMenu().show(mouseEvent.getComponent(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);

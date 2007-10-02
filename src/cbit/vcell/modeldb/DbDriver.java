@@ -3452,6 +3452,11 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 			String BSCALT = "BSCALT";
 			String MMSIMALT = "MMSIMALT";
 			String MODELID = "MODELID";
+			String REFTSUITEKEY = "REFTSUITEKEY";
+			String REFTCASEKEY = "REFTCASEKEY";
+			String REFTCRITKEY = "REFTCRITKEY";
+//			String TCRALT2 = "TCRALT2";
+//			String SIM2 = "SIM2";
 			sql =
 				"SELECT DISTINCT " +
 				TFTestSuiteTable.table.tsVersion.getQualifiedColName() +"," +
@@ -3476,11 +3481,10 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 				TSALT+"."+TFTestSuiteTable.table.tsVersion.getUnqualifiedColName() +","+
 				BSCALT+"."+BioModelSimContextLinkTable.table.bioModelRef.getUnqualifiedColName() +","+
 				TFTestCaseTable.table.tcSolutionType.getQualifiedColName() +","+
-				BioModelTable.table.id.getQualifiedColName() +" "+MODELID+
-//				"DECODE("+
-//					TSALT+"."+TFTestSuiteTable.table.id.getUnqualifiedColName()+",NULL,DECODE("+
-//					TCRALT+"."+TFTestCriteriaTable.table.regressionBMAPPRef.getUnqualifiedColName()+",NULL,NULL,'regressionBMAPPRef exist BUT outside of TestSuites')"+
-//					","+TSALT+"."+TFTestSuiteTable.table.tsVersion.getUnqualifiedColName()+")"+
+				BioModelTable.table.id.getQualifiedColName() +" "+MODELID +","+
+				TSALT+"."+TFTestSuiteTable.table.id.getUnqualifiedColName() +" "+REFTSUITEKEY +","+
+				TCALT+"."+TFTestCaseTable.table.id.getUnqualifiedColName() +" "+REFTCASEKEY +","+
+				"NULL " +REFTCRITKEY +//TCRALT2+"."+TFTestCriteriaTable.table.id.getUnqualifiedColName() +" "+REFTCRITKEY +
 				" FROM " +
 				TFTestSuiteTable.table.getTableName()+","+
 				TFTestCaseTable.table.getTableName()+","+
@@ -3489,13 +3493,14 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 				BioModelSimContextLinkTable.table.getTableName()+","+
 				BioModelTable.table.getTableName()+","+
 				SimContextTable.table.getTableName()+","+
-				SimulationTable.table.getTableName() +
-				","+
-		BioModelSimulationLinkTable.table.getTableName()+","+
+				SimulationTable.table.getTableName() +","+
+				BioModelSimulationLinkTable.table.getTableName()+","+
 				TFTestSuiteTable.table.getTableName()+" "+TSALT+","+
 				TFTestCaseTable.table.getTableName()+" "+TCALT+","+
 				TFTestCriteriaTable.table.getTableName()+" "+TCRALT+
 				","+BioModelSimContextLinkTable.table.getTableName()+" "+BSCALT+
+//				","+SimulationTable.table.getTableName()+" "+SIM2+
+//				","+TFTestCriteriaTable.table.getTableName()+" "+TCRALT2+
 				" WHERE " +
 				TFTestSuiteTable.table.id.getQualifiedColName() +"="+ TFTestCaseTable.table.testSuiteRef.getQualifiedColName()+
 				" AND " +
@@ -3573,6 +3578,12 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 				TCALT+"."+TFTestCaseTable.table.bmAppRef.getUnqualifiedColName()+"(+)" +"="+ TCRALT+"."+TFTestCriteriaTable.table.regressionBMAPPRef.getUnqualifiedColName()+
 				" AND "+
 				TCRALT+"."+TFTestCriteriaTable.table.id.getUnqualifiedColName() +"="+ TFTestCriteriaTable.table.id.getQualifiedColName()+
+//				" AND "+
+//				TCRALT2+"."+TFTestCriteriaTable.table.testCaseRef.getUnqualifiedColName()+"(+)" +"="+ TCALT+"."+TFTestCaseTable.table.id.getUnqualifiedColName()+
+//				" AND "+
+//				TCRALT2+"."+TFTestCriteriaTable.table.simulationRef.getUnqualifiedColName()+"="+ SIM2+"."+SimulationTable.table.id.getUnqualifiedColName()+
+//				" AND "+
+//				SIM2+"."+SimulationTable.table.name.getUnqualifiedColName()+"="+SimulationTable.table.name.getQualifiedColName()+
 				" ORDER BY "+TSID;
 
 			ResultSet rset = stmt.executeQuery(sql);
@@ -3611,24 +3622,24 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 				TSALT+"."+TFTestSuiteTable.table.tsVersion.getUnqualifiedColName() +","+
 				MMSIMALT+"."+MathModelSimulationLinkTable.table.mathModelRef.getUnqualifiedColName() +","+
 				TFTestCaseTable.table.tcSolutionType.getQualifiedColName() +","+
-				MathModelTable.table.id.getQualifiedColName() +" "+MODELID+
-//				"DECODE("+
-//				TSALT+"."+TFTestSuiteTable.table.id.getUnqualifiedColName()+",NULL,DECODE("+
-//				TCRALT+"."+TFTestCriteriaTable.table.regressionMMSimRef.getUnqualifiedColName()+",NULL,NULL,'regressionMMSimRef exist BUT outside of TestSuites')"+
-//				","+TSALT+"."+TFTestSuiteTable.table.tsVersion.getUnqualifiedColName()+")"+
+				MathModelTable.table.id.getQualifiedColName() +" "+MODELID +","+
+				TSALT+"."+TFTestSuiteTable.table.id.getUnqualifiedColName() +" "+REFTSUITEKEY +","+
+				TCALT+"."+TFTestCaseTable.table.id.getUnqualifiedColName() +" "+REFTCASEKEY +","+
+				"NULL " +REFTCRITKEY +//TCRALT2+"."+TFTestCriteriaTable.table.id.getUnqualifiedColName() +" "+REFTCRITKEY +
 				" FROM " +
 				TFTestSuiteTable.table.getTableName()+","+
 				TFTestCaseTable.table.getTableName()+","+
 				TFTestCriteriaTable.table.getTableName()+","+
 				TFTestResultTable.table.getTableName()+","+
 				MathModelTable.table.getTableName()+","+
-				SimulationTable.table.getTableName() +
-				","+
-		MathModelSimulationLinkTable.table.getTableName()+","+
+				SimulationTable.table.getTableName() +","+
+				MathModelSimulationLinkTable.table.getTableName()+","+
 				TFTestSuiteTable.table.getTableName()+" "+TSALT+","+
 				TFTestCaseTable.table.getTableName()+" "+TCALT+","+
 				TFTestCriteriaTable.table.getTableName()+" "+TCRALT+","+
 				MathModelSimulationLinkTable.table.getTableName()+" "+MMSIMALT+
+//				","+SimulationTable.table.getTableName()+" "+SIM2+
+//				","+TFTestCriteriaTable.table.getTableName()+" "+TCRALT2+
 				" WHERE " +
 				TFTestSuiteTable.table.id.getQualifiedColName()+"="+ TFTestCaseTable.table.testSuiteRef.getQualifiedColName()+
 				" AND " +
@@ -3682,6 +3693,12 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 				TCRALT+"."+TFTestCriteriaTable.table.regressionMMSimRef.getUnqualifiedColName()+"="+ MMSIMALT+"."+MathModelSimulationLinkTable.table.id.getUnqualifiedColName()+"(+)" +
 				" AND "+
 				TCRALT+"."+TFTestCriteriaTable.table.id.getUnqualifiedColName() +"="+ TFTestCriteriaTable.table.id.getQualifiedColName()+
+//				" AND "+
+//				TCRALT2+"."+TFTestCriteriaTable.table.testCaseRef.getUnqualifiedColName()+"(+)" +"="+ TCALT+"."+TFTestCaseTable.table.id.getUnqualifiedColName()+
+//				" AND "+
+//				TCRALT2+"."+TFTestCriteriaTable.table.simulationRef.getUnqualifiedColName()+"="+ SIM2+"."+SimulationTable.table.id.getUnqualifiedColName()+
+//				" AND "+
+//				SIM2+"."+SimulationTable.table.name.getUnqualifiedColName()+"="+SimulationTable.table.name.getQualifiedColName()+
 				" ORDER BY "+TSID;
 
 			rset = stmt.executeQuery(sql);

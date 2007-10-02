@@ -1,4 +1,5 @@
 package cbit.vcell.client;
+import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.desktop.controls.DataManager;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.math.AnnotatedFunction;
@@ -46,7 +47,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Hashtable;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import cbit.vcell.solver.SimulationInfo;
 import java.util.Vector;
@@ -69,6 +73,12 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 
+import com.sun.corba.se.impl.encoding.OSFCodeSetRegistry.Entry;
+
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.client.task.TFGenerateReport;
+import cbit.vcell.client.task.TFRefresh;
 import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.numericstest.*;
 import cbit.vcell.numericstest.TestCriteriaCrossRefOPResults.CrossRefData;
@@ -715,6 +725,104 @@ public void updateTestSuiteAnnotation(TestSuiteInfoNew tsInfoNew,String newAnnot
 		new EditTestSuiteOP(new BigDecimal[] {tsInfoNew.getTSKey()},new String[] {newAnnotation});
 	getRequestManager().getDocumentManager().doTestSuiteOP(etsop);
 
+}
+
+private void updateReports(final Hashtable<TestSuiteInfoNew, Vector<TestCriteriaCrossRefOPResults.CrossRefData>> genReportHash){
+	new Thread(
+	new Runnable() {
+		public void run() {
+			Set<java.util.Map.Entry<TestSuiteInfoNew, Vector<TestCriteriaCrossRefOPResults.CrossRefData>>> tsInfoEntry = genReportHash
+					.entrySet();
+			Iterator<java.util.Map.Entry<TestSuiteInfoNew, Vector<TestCriteriaCrossRefOPResults.CrossRefData>>> tsInfoIter = tsInfoEntry
+					.iterator();
+			while (tsInfoIter.hasNext()) {
+				try {
+					java.util.Map.Entry<TestSuiteInfoNew, Vector<TestCriteriaCrossRefOPResults.CrossRefData>> entry = tsInfoIter
+							.next();
+					TestSuiteInfoNew tsInfo = entry.getKey();
+					Vector<TestCriteriaCrossRefOPResults.CrossRefData> xrefDataV = entry
+							.getValue();
+					//
+					Vector<AsynchClientTask> tasksVLocal = new java.util.Vector<AsynchClientTask>();
+					tasksVLocal
+							.add(new cbit.vcell.client.task.TFUpdateRunningStatus(
+									TestingFrameworkWindowManager.this, tsInfo));
+					TestSuiteNew tsNew = getTestingFrameworkWindowPanel()
+							.getDocumentManager().getTestSuite(
+									tsInfo.getTSKey());
+					for (int i = 0; i < xrefDataV.size(); i++) {
+						boolean bDone = false;
+						for (int j = 0; j < tsNew.getTestCases().length; j++) {
+							if (tsNew.getTestCases()[j].getTCKey().equals(
+									xrefDataV.elementAt(i).tcaseKey)) {
+								for (int k = 0; k < tsNew.getTestCases()[j]
+										.getTestCriterias().length; k++) {
+									if (tsNew.getTestCases()[j]
+											.getTestCriterias()[k]
+											.getTCritKey()
+											.equals(
+													xrefDataV.elementAt(i).tcritKey)) {
+										tasksVLocal
+												.add(new TFGenerateReport(
+														TestingFrameworkWindowManager.this,
+														tsNew.getTestCases()[j],
+														tsNew.getTestCases()[j]
+																.getTestCriterias()[k]));
+										bDone = true;
+										break;
+									}
+								}
+							}
+							if (bDone) {
+								break;
+							}
+						}
+					}
+					final String END_NOTIFIER = "END NOTIFIER";
+					tasksVLocal.add(new AsynchClientTask() {
+						public boolean skipIfAbort() {
+							return false;
+						}
+
+						public boolean skipIfCancel(UserCancelException exc) {
+							return false;
+						}
+
+						public String getTaskName() {
+							return END_NOTIFIER;
+						}
+
+						public int getTaskType() {
+							return TASKTYPE_NONSWING_BLOCKING;
+						}
+
+						public void run(Hashtable hashTable) throws Exception {
+							hashTable.put(END_NOTIFIER, END_NOTIFIER);
+						}
+
+					});
+					tasksVLocal.add(new TFRefresh(
+							TestingFrameworkWindowManager.this, tsInfo));
+
+					AsynchClientTask[] tasksArr = new AsynchClientTask[tasksVLocal
+							.size()];
+					tasksVLocal.copyInto(tasksArr);
+					java.util.Hashtable hashLocal = new java.util.Hashtable();
+					ClientTaskDispatcher.dispatch(
+							getTestingFrameworkWindowPanel(), hashLocal,
+							tasksArr, true);
+					//Wait for each report to complete before going on to next because report methods are not thread safe?
+					while (!hashLocal.contains(END_NOTIFIER)) {
+						Thread.sleep(100);
+					}
+				} catch (Exception e) {
+					PopupGenerator.showErrorDialog("Error updating reports\n"
+							+ e.getMessage());
+					return;
+				}
+			}
+		}
+	}).start();
 }
 
 public void toggleTestCaseSteadyState(TestCaseNew[] testCases) throws DataAccessException{
@@ -1655,7 +1763,8 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 
 //		table.getTableHeader().setReorderingAllowed(false);
 
-		final JDialog d = new JDialog();
+//		final JDialog d = new JDialog();
+		final JInternalFrame d = new JInternalFrame();
 
 		//Popup Menu
 		final TestCriteriaCrossRefOPResults.CrossRefData xrefDataSourceFinal = xrefDataSource;
@@ -1665,14 +1774,18 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 		final JMenuItem openModelMenuItem = new JMenuItem(OPEN_MODEL);
 		final String OPEN_REGRREFMODEL = "Open Regr Ref Model(s)";
 		final JMenuItem openRegrRefModelMenuItem = new JMenuItem(OPEN_REGRREFMODEL);
-		final JMenuItem showInTreeMenuItem = new JMenuItem("Select in Tree View");
+		final String SELECT_REF_IN_TREE = "Select in Tree View";
+		final JMenuItem showInTreeMenuItem = new JMenuItem(SELECT_REF_IN_TREE);
+		final String SELECT_REGR_REF_IN_TREE = "Select RegrRef TCase in Tree View";
+		final JMenuItem showRegrRefInTreeMenuItem = new JMenuItem(SELECT_REGR_REF_IN_TREE);
 		
 		queryPopupMenu.add(changeLimitsMenuItem);
 		queryPopupMenu.add(openModelMenuItem);
 		queryPopupMenu.add(openRegrRefModelMenuItem);
 		queryPopupMenu.add(showInTreeMenuItem);
+		queryPopupMenu.add(showRegrRefInTreeMenuItem);
 		
-		showInTreeMenuItem.addActionListener(
+		ActionListener showInTreeActionListener = 
 			new ActionListener(){
 				public void actionPerformed(ActionEvent actionEvent) {
 					int[] selectedRows = table.getSelectedRows();
@@ -1683,12 +1796,21 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 					TestCriteriaCrossRefOPResults.CrossRefData xrefData =
 						(TestCriteriaCrossRefOPResults.CrossRefData)tableModel.getValueAt(selectedRows[0], XREFDATA_OFFSET);
 					BigDecimal missingTSKey = (BigDecimal)tableModel.getValueAt(selectedRows[0], TSKEYMISSING_OFFSET);
-					getTestingFrameworkWindowPanel().selectInTreeView((xrefData != null?xrefData.tsKey:missingTSKey),(xrefData != null?xrefData.tcaseKey:null),(xrefData != null?xrefData.tcritKey:null));
+					if(actionEvent.getActionCommand().equals(SELECT_REF_IN_TREE)){
+						getTestingFrameworkWindowPanel().selectInTreeView((xrefData != null?xrefData.tsKey:missingTSKey),(xrefData != null?xrefData.tcaseKey:null),(xrefData != null?xrefData.tcritKey:null));
+					}else if(actionEvent.getActionCommand().equals(SELECT_REGR_REF_IN_TREE)){
+						if(xrefData == null){
+							PopupGenerator.showErrorDialog(d, "No Regression Reference info available.");
+							return;
+						}
+						getTestingFrameworkWindowPanel().selectInTreeView((xrefData != null?xrefData.regressionModelTSuiteID:null),(xrefData != null?xrefData.regressionModelTCaseID:null),(xrefData != null?xrefData.regressionModelTCritID:null));						
+					}
 					d.setVisible(true);
 				}
-			}
-		);
-		
+			};
+		showInTreeMenuItem.addActionListener(showInTreeActionListener);
+		showRegrRefInTreeMenuItem.addActionListener(showInTreeActionListener);
+				
 		ActionListener openModelsActionListener = 
 		new ActionListener(){
 			public void actionPerformed(ActionEvent actionEvent) {
@@ -1728,21 +1850,30 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 			new ActionListener(){
 				public void actionPerformed(ActionEvent actionEvent) {
 					int[] selectedRows = table.getSelectedRows();
-					Vector<BigDecimal> changeTCritV = new Vector<BigDecimal>();
+					Vector<TestCriteriaCrossRefOPResults.CrossRefData> changeTCritV = new Vector<TestCriteriaCrossRefOPResults.CrossRefData>();
 					for (int i = 0; i < selectedRows.length; i++) {
 						TestCriteriaCrossRefOPResults.CrossRefData xrefData =
 							(TestCriteriaCrossRefOPResults.CrossRefData)tableModel.getValueAt(selectedRows[i], XREFDATA_OFFSET);
 						if(xrefData != null){
-							changeTCritV.add(xrefData.tcritKey);
+							boolean bFound = false;
+							for (int j = 0; j < changeTCritV.size(); j++) {
+								if(changeTCritV.elementAt(j).tcritKey.equals(xrefData.tcritKey)){
+									bFound = true;
+									break;
+								}
+							}
+							if(!bFound){
+								changeTCritV.add(xrefData);
+							}
 						}
 					}
 					if(changeTCritV.size() > 0){
-						double relativeError = -1;
-						double absoluteError = -1;
+						Double relativeErrorLimit = null;
+						Double absoluteErrorLimit = null;
 						while(true){
 							try{
-								String ret = PopupGenerator.showInputDialog(getTestingFrameworkWindowPanel(),
-										"Enter new TestCriteria Error Limits for '"+xrefDataSourceFinal.simName+"'.",
+								String ret = PopupGenerator.showInputDialog(d,
+										"Enter new TestCriteria Error Limits for '"+xrefDataSourceFinal.simName+"'.  '-'(dash) to keep original value.",
 										"RelativeErrorLimit,AbsoluteErrorLimit");
 								int commaPosition = ret.indexOf(',');
 								if(commaPosition == -1){
@@ -1751,9 +1882,16 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 								if(commaPosition != ret.lastIndexOf(',')){
 									throw new Exception("Only 1 comma allowed separating RelativeErrorLimit and AbsoluteErrorLimit");
 								}
-								relativeError = Double.parseDouble(ret.substring(0, commaPosition));
-								absoluteError = Double.parseDouble(ret.substring(commaPosition+1,ret.length()));
-								if(relativeError <= 0 || absoluteError <= 0){
+								final String KEEP_ORIGINAL_VALUE = "-";
+								String relativeErrorS = ret.substring(0, commaPosition);
+								String absoluteErrorS = ret.substring(commaPosition+1,ret.length());
+								if(!relativeErrorS.equals(KEEP_ORIGINAL_VALUE)){
+									relativeErrorLimit = Double.parseDouble(relativeErrorS);
+								}
+								if(!absoluteErrorS.equals(KEEP_ORIGINAL_VALUE)){
+									absoluteErrorLimit = Double.parseDouble(absoluteErrorS);
+								}
+								if((relativeErrorLimit != null && relativeErrorLimit <= 0) || (absoluteErrorLimit != null && absoluteErrorLimit <= 0)){
 									throw new Exception("Error limits must be greater than 0");
 								}
 								break;
@@ -1765,13 +1903,66 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 							}
 						}
 						double[] relErrorLimitArr = new double[changeTCritV.size()];
-						Arrays.fill(relErrorLimitArr, relativeError);
 						double[] absErrorLimitArr = new double[changeTCritV.size()];
-						Arrays.fill(absErrorLimitArr, absoluteError);
+						Object[][] rows = new Object[changeTCritV.size()][5];
+						for (int j = 0; j < changeTCritV.size(); j++) {
+							relErrorLimitArr[j] = (relativeErrorLimit != null?relativeErrorLimit.doubleValue():changeTCritV.elementAt(j).maxRelErorr);
+							absErrorLimitArr[j] = (absoluteErrorLimit != null?absoluteErrorLimit.doubleValue():changeTCritV.elementAt(j).maxAbsErorr);
+							rows[j][2] = new Double(relErrorLimitArr[j]);
+							rows[j][4] = new Double(absErrorLimitArr[j]);
+							rows[j][1] = new Double(changeTCritV.elementAt(j).maxRelErorr);
+							rows[j][3] = new Double(changeTCritV.elementAt(j).maxAbsErorr);
+							rows[j][0] = changeTCritV.elementAt(j).tsVersion;
+						}
+						try{
+							PopupGenerator.showComponentOKCancelTableList(
+								d, "Confirm Error Limit Changes",
+								new String[] {"TSVersion","Orig RelErrorLimit","New RelErrorLimit","Orig AbsErrorLimit","New AbsErrorLimit"},
+								rows,
+								ListSelectionModel.SINGLE_SELECTION);
+						}catch(UserCancelException e){
+							d.setVisible(true);
+							return;
+						}
+						
+						//Get information needed to generate new TestCriteria Reports
+						final String YES_ANSWER = "Yes";
+						Hashtable<TestSuiteInfoNew, Vector<TestCriteriaCrossRefOPResults.CrossRefData>> genReportHash = null;
+						String genRepResult = PopupGenerator.showWarningDialog(d, "Generate Reports for changed Test Criterias?", new String[] {YES_ANSWER,"No"}, YES_ANSWER);
+						if(genRepResult != null && genRepResult.equals(YES_ANSWER)){
+							genReportHash = new Hashtable<TestSuiteInfoNew, Vector<TestCriteriaCrossRefOPResults.CrossRefData>>();
+							for (int i = 0; i < changeTCritV.size(); i++) {
+								boolean bFound = false;
+								for (int j = 0; j < testSuiteInfos.length; j++) {
+									if(changeTCritV.elementAt(i).tsVersion.equals(testSuiteInfos[j].getTSID())){
+										bFound = true;
+										Vector<TestCriteriaCrossRefOPResults.CrossRefData> tempV = genReportHash.get(testSuiteInfos[j]);
+										if(tempV == null){
+											tempV = new Vector<TestCriteriaCrossRefOPResults.CrossRefData>();
+											genReportHash.put(testSuiteInfos[j],tempV);
+										}
+										tempV.add(changeTCritV.elementAt(i));
+									}
+								}
+								if(!bFound){
+									PopupGenerator.showErrorDialog("Couldn't find testsuiteinfo for testcriteria");
+									return;
+								}
+							}
+						}
+						
+						
+						
+						
+						BigDecimal[] changeTCritBDArr = new BigDecimal[changeTCritV.size()];
+						for (int i = 0; i < changeTCritV.size(); i++) {
+							changeTCritBDArr[i] = changeTCritV.elementAt(i).tcritKey;
+						}
 						ChangeTestCriteriaErrorLimitOP changeTestCriteriaErrorLimitOP =
-						new ChangeTestCriteriaErrorLimitOP(
-								(BigDecimal[])changeTCritV.toArray(new BigDecimal[changeTCritV.size()]),
-								relErrorLimitArr,absErrorLimitArr);
+							new ChangeTestCriteriaErrorLimitOP(changeTCritBDArr,absErrorLimitArr,relErrorLimitArr);
+						if(genReportHash != null){
+							updateReports(genReportHash);
+						}
 						try{
 							getTestingFrameworkWindowPanel().getDocumentManager().doTestSuiteOP(changeTestCriteriaErrorLimitOP);
 						}catch(Exception e){
@@ -1808,19 +1999,42 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 				checkPopup(e);
 			}
 			private void checkPopup(MouseEvent mouseEvent){
-				table.getSelectionModel().setSelectionInterval(table.rowAtPoint(mouseEvent.getPoint()),table.rowAtPoint(mouseEvent.getPoint()));
-				if(mouseEvent.isPopupTrigger()){doPopup(mouseEvent);}
-				else{queryPopupMenu.setVisible(false);}
+				if(mouseEvent.isPopupTrigger()){
+//Not use because popupmenu will not show at edge
+//					if(table.getSelectedRowCount() <= 1){
+//						table.getSelectionModel().setSelectionInterval(table.rowAtPoint(mouseEvent.getPoint()),table.rowAtPoint(mouseEvent.getPoint()));
+//					}
+					doPopup(mouseEvent);
+				}
+				else{
+					queryPopupMenu.setVisible(false);
+				}
 			}
 			private void doPopup(MouseEvent mouseEvent){
 //				int selectedRow = table.getSelectedRow();
 //				TestCriteriaCrossRefOPResults.CrossRefData xrefData =
 //					(TestCriteriaCrossRefOPResults.CrossRefData)tableModel.getValueAt(selectedRow, numColumns);
-//				if(xrefData == null){
-//					showChangeLimitsMenuItem.setEnabled(false);
-//				}else{
-//					showChangeLimitsMenuItem.setEnabled(true);
-//				}
+//				queryPopupMenu.add(changeLimitsMenuItem);
+//				queryPopupMenu.add(openModelMenuItem);
+//				queryPopupMenu.add(openRegrRefModelMenuItem);
+//				queryPopupMenu.add(showInTreeMenuItem);
+				if(table.getSelectedRowCount() == 0){
+					changeLimitsMenuItem.setEnabled(false);
+					openModelMenuItem.setEnabled(false);
+					openRegrRefModelMenuItem.setEnabled(false);
+					showInTreeMenuItem.setEnabled(false);
+					showRegrRefInTreeMenuItem.setEnabled(false);
+				}else{
+					changeLimitsMenuItem.setEnabled(true);
+					openModelMenuItem.setEnabled(true);
+					openRegrRefModelMenuItem.setEnabled(true);
+					showInTreeMenuItem.setEnabled(true);
+					if(table.getSelectedRowCount() == 1){
+						TestCriteriaCrossRefOPResults.CrossRefData xrefData =
+							(TestCriteriaCrossRefOPResults.CrossRefData)tableModel.getValueAt(table.getSelectedRow(), numColumns);
+						showRegrRefInTreeMenuItem.setEnabled(xrefData != null && xrefData.regressionModelID != null && xrefData.tsRefVersion != null);
+					}
+				}
 				queryPopupMenu.show(mouseEvent.getComponent(), mouseEvent.getPoint().x, mouseEvent.getPoint().y);
 			}
 		});
@@ -1832,15 +2046,15 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 				" ("+sourceTestSuite+") "+
 				" \""+(xrefDataSource.isBioModel?xrefDataSource.bmName:xrefDataSource.mmName)+
 				"\"  ::  "+(xrefDataSource.isBioModel?"app=\""+xrefDataSource.bmAppName+"\"  ::  sim=\""+xrefDataSource.simName+"\"":"sim=\""+xrefDataSource.simName+"\""));
-		d.setModal(false);
+//		d.setModal(false);
 		d.getContentPane().add(scrollPane);
-//		scrollPane.setDialogParent(d);
 		d.setSize(600,400);
-		d.setLocation(300,200);
-		BeanUtils.centerOnComponent(d,null);
-		d.setVisible(true);
-//		cbit.gui.ZEnforcer.showModalDialogOnTop(d,null);
-//		return imageAttributePanel.getStatus();
+//		d.setLocation(300,200);
+//		BeanUtils.centerOnComponent(d,null);
+//		d.setVisible(true);
+		d.setClosable(true);
+		d.setResizable(true);
+		showDataViewerPlotsFrame(d);
 
 	} catch (DataAccessException e) {
 		e.printStackTrace();

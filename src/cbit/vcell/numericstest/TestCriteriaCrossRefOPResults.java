@@ -31,6 +31,9 @@ public class TestCriteriaCrossRefOPResults extends TestSuiteOPResults implements
 		public BigDecimal regressionModelID;
 		public String tcSolutionType;
 		public BigDecimal modelID;
+		public BigDecimal regressionModelTSuiteID;
+		public BigDecimal regressionModelTCaseID;
+		public BigDecimal regressionModelTCritID;
 		
 		public CrossRefData(ResultSet rset,boolean isBioModel) throws SQLException{
 			this.isBioModel = isBioModel;
@@ -65,6 +68,9 @@ public class TestCriteriaCrossRefOPResults extends TestSuiteOPResults implements
 				regressionModelID = rset.getBigDecimal(21);
 				tcSolutionType = rset.getString(22);
 				modelID = rset.getBigDecimal(23);
+				regressionModelTSuiteID = rset.getBigDecimal(24);
+				regressionModelTCaseID = rset.getBigDecimal(25);
+				regressionModelTCritID = rset.getBigDecimal(26);
 			}else{
 				mmName = rset.getString(5);
 				simName = rset.getString(6);				
@@ -91,6 +97,9 @@ public class TestCriteriaCrossRefOPResults extends TestSuiteOPResults implements
 				regressionModelID = rset.getBigDecimal(20);
 				tcSolutionType = rset.getString(21);
 				modelID = rset.getBigDecimal(22);
+				regressionModelTSuiteID = rset.getBigDecimal(23);
+				regressionModelTCaseID = rset.getBigDecimal(24);
+				regressionModelTCritID = rset.getBigDecimal(25);
 			}		
 		}
 	}

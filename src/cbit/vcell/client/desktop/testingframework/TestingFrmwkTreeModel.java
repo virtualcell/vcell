@@ -197,7 +197,7 @@ private synchronized BioModelNode createBaseTree(TestSuiteGroup tsg) throws Data
 			Arrays.sort(tsg.latestTestSuiteInfos,
 				new Comparator<TestSuiteInfoNew>(){
 					public int compare(TestSuiteInfoNew o1, TestSuiteInfoNew o2) {
-						return o1.getTSID().compareToIgnoreCase(o2.getTSID());
+						return o1.getTSDate().compareTo(o2.getTSDate());
 					}
 				}
 			);
@@ -527,7 +527,8 @@ private void updateTree(final TestSuiteGroup tsg,boolean bRemove) {
 								}
 								//Must be NEW TeestSuite
 								//insert at top
-								insertNodeInto(finalNode, rootNode, 0);
+								
+								insertNodeInto(finalNode, rootNode, rootNode.getChildCount());
 							}catch(Throwable e){
 								e.printStackTrace();
 								PopupGenerator.showErrorDialog("Error updating tree.  "+e.getMessage());
