@@ -140,10 +140,10 @@ public class RegionImage implements Serializable {
 	public byte[] getShortEncodedRegionIndexImage(){
 		int imageSize = numX*numY*numZ;
 		byte[] regionIndexImage = new byte[2 * imageSize];
-		for (int i = 0; i < imageSize * 2; i += 2) {
+		for (int i = 0; i < imageSize; i ++) {
 			int regionIndex  = mapLinkRegionToDistinctRegion[mapImageIndexToLinkRegion[i]];
-			regionIndexImage[i] = (byte)(regionIndex & 0x000000ff);				
-			regionIndexImage[i + 1] = (byte)((regionIndex & 0x0000ff00) >> 8);
+			regionIndexImage[2 * i] = (byte)(regionIndex & 0x000000ff);				
+			regionIndexImage[2 * i + 1] = (byte)((regionIndex & 0x0000ff00) >> 8);
 		}
 		return regionIndexImage;
 	}
