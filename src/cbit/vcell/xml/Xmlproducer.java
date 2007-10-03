@@ -923,13 +923,21 @@ public org.jdom.Element getXML(MembraneMapping param) {
 	//Add atributes
 	membrane.setAttribute(XMLTags.MembraneAttrTag, this.mangle(param.getMembrane().getName()));
 	// write FluxCorrections
-	//SurfaceToVolumeRatio
-	membrane.setAttribute(XMLTags.SurfaceToVolumeRatioTag, this.mangleExpression(param.getSurfaceToVolumeParameter().getExpression()) );
+	
+	//SurfaceToVolumeRatio if it exsits, amended Sept. 27th, 2007
+	if(param.getSurfaceToVolumeParameter().getExpression() != null)
+	{
+		membrane.setAttribute(XMLTags.SurfaceToVolumeRatioTag, this.mangleExpression(param.getSurfaceToVolumeParameter().getExpression()) );
+	}
 /*	org.jdom.Element surface = new org.jdom.Element(XMLTags.SurfaceToVolumeRatioTag);
 	surface.addContent( this.mangleExpression(param.getSurfaceToVolumeExpression()) );
 	membrane.addContent( surface );*/
-	//VolumeFraction
-	membrane.setAttribute(XMLTags.VolumeFractionTag, this.mangleExpression(param.getVolumeFractionParameter().getExpression()));
+	
+	//VolumeFraction if it exsits, amended Sept. 27th, 2007
+	if(param.getVolumeFractionParameter().getExpression() != null)
+	{
+		membrane.setAttribute(XMLTags.VolumeFractionTag, this.mangleExpression(param.getVolumeFractionParameter().getExpression()));
+	}
 /*	org.jdom.Element volume = new org.jdom.Element(XMLTags.VolumeFractionTag);
 	volume.addContent( this.mangleExpression(param.getVolumeFractionExpression()) );
 	membrane.addContent( volume );*/

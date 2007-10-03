@@ -2272,30 +2272,36 @@ public MembraneMapping getMembraneMapping(Element param, SimulationContext simul
 	//*** Create new Membrane Mapping ****
 	MembraneMapping memmap = new MembraneMapping(membraneref, simulationContext);
 
-	//Set SurfacetoVolumeRatio
-	String ratio = this.unMangle( param.getAttributeValue(XMLTags.SurfaceToVolumeRatioTag) );
-	try {
-		memmap.getSurfaceToVolumeParameter().setExpression(new Expression(ratio));
-	} catch (ExpressionException e) {
-		e.printStackTrace();
-		throw new XmlParseException("An expressionException was fired when setting the SurfacetoVolumeRatio Expression " + ratio + " to a membraneMapping!"+" : "+e.getMessage());
-	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
-		throw new XmlParseException(e.getMessage());
+	//Set SurfacetoVolumeRatio when it exists, amended Sept. 27th, 2007
+	if(param.getAttributeValue(XMLTags.SurfaceToVolumeRatioTag)!= null)
+	{
+		String ratio = this.unMangle( param.getAttributeValue(XMLTags.SurfaceToVolumeRatioTag) );
+		try {
+			memmap.getSurfaceToVolumeParameter().setExpression(new Expression(ratio));
+		} catch (ExpressionException e) {
+			e.printStackTrace();
+			throw new XmlParseException("An expressionException was fired when setting the SurfacetoVolumeRatio Expression " + ratio + " to a membraneMapping!"+" : "+e.getMessage());
+		} catch (java.beans.PropertyVetoException e) {
+			e.printStackTrace();
+			throw new XmlParseException(e.getMessage());
+		}
 	}
-
-	//Set VolumeFraction
-	String fraction = this.unMangle( param.getAttributeValue(XMLTags.VolumeFractionTag) );
-	try {
-		memmap.getVolumeFractionParameter().setExpression(new Expression(fraction));
-	} catch (ExpressionException e) {
-		e.printStackTrace();
-		throw new XmlParseException("An expressionException was fired when setting the VolumeFraction Expression " + fraction + " to a membraneMapping!"+" : "+e.getMessage());
-	} catch (java.beans.PropertyVetoException e) {
-		e.printStackTrace();
-		throw new XmlParseException(e.getMessage());
+	
+	//Set VolumeFraction when it exists, amended Sept. 27th, 2007
+	if(param.getAttributeValue(XMLTags.VolumeFractionTag) != null)
+	{
+		String fraction = this.unMangle( param.getAttributeValue(XMLTags.VolumeFractionTag) );
+		try {
+			memmap.getVolumeFractionParameter().setExpression(new Expression(fraction));
+		} catch (ExpressionException e) {
+			e.printStackTrace();
+			throw new XmlParseException("An expressionException was fired when setting the VolumeFraction Expression " + fraction + " to a membraneMapping!"+" : "+e.getMessage());
+		} catch (java.beans.PropertyVetoException e) {
+			e.printStackTrace();
+			throw new XmlParseException(e.getMessage());
+		}
 	}
-
+	
 	//Set Size
 	if(param.getAttributeValue(XMLTags.SizeTag) != null)
 	{

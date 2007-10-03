@@ -13,7 +13,17 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionUtils;
 import cbit.vcell.parser.SimpleSymbolTable;
-
+/**
+ * This PropensitySolver parses a probablity expression(either from biomodel or from mathmodel)
+ * to check the validity and extract necessary information(e.g. rate constant, and order of each
+ * stochastic variables). The prob expression should be in the form that binomials multiply together.
+ * The form of binomial can be constant (e.g. K), var ^ order, var-i (if there is i in the binomial,
+ * there should be (var-0)....(var-i+1) in the expression). This is based on the assumption that 
+ * the reactions are all using Mass Action kinetic laws.
+ * The class is used in NetCDFWriter.
+ * authors: Jim Schaff, Tracy Li
+ * version: 1.0 Beta
+ */
 public class PropensitySolver {
 	
 	public static class RootOrderIterator {

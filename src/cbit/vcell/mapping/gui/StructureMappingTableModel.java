@@ -589,7 +589,9 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 					else 
 					{
 						featureMapping.getSizeParameter().setExpression(exp);
-						if(getGeometryContext().isAllSizeSpecifiedPositive())
+						//solve relative structure sizes(surface volume ratio, volume fraction) for non-stochastic applications
+						//amended Sept. 27th, 2007
+						if(getGeometryContext().isAllSizeSpecifiedPositive()&& !getGeometryContext().getSimulationContext().isStoch())
 						{
 							StructureSizeSolver sizeSolver = new StructureSizeSolver();
 							sizeSolver.updateRelativeStructureSizes(getGeometryContext().getSimulationContext());
@@ -640,7 +642,9 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 						else
 						{
 							membraneMapping.getSizeParameter().setExpression(exp);
-							if(getGeometryContext().isAllSizeSpecifiedPositive())
+							//solve relative structure sizes(surface volume ratio, volume fraction) for non-stochastic applications
+							//amended Sept. 27th, 2007
+							if(getGeometryContext().isAllSizeSpecifiedPositive() && !getGeometryContext().getSimulationContext().isStoch())
 							{
 								StructureSizeSolver sizeSolver = new StructureSizeSolver();
 								sizeSolver.updateRelativeStructureSizes(getGeometryContext().getSimulationContext());

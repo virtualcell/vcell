@@ -46,6 +46,8 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
 		BioModel bioModel = (BioModel)documentWindowManager.getVCDocument();
 		SimulationContext scArray[] = bioModel.getSimulationContexts();
 		for (int i = 0;scArray!=null && i < scArray.length; i++){
+			//check if all structure sizes are specified
+			scArray[i].checkValidity();
 			//
 			// compute Geometric Regions if necessary
 			//

@@ -1660,18 +1660,6 @@ public void runSimulations(final ClientSimManager clientSimManager, final Simula
 					}
 				}
 			}
-			try{
-				SimulationContext sc = ((BioModel)vcd).getSimulationContext(simulations[0]);
-				try {
-					sc.checkValidity();
-				} catch (MappingException e) {
-					e.printStackTrace();
-					throw new RuntimeException(e.getMessage());
-				}
-			}catch (ObjectNotFoundException e){
-				e.printStackTrace();
-				throw new RuntimeException("BioModel for simulation "+simulations[0].getName() +" is not found.");
-			}
 		}
 	}
 	//
@@ -1763,21 +1751,6 @@ public void runSimulations(final ClientSimManager clientSimManager, final Simula
 public void saveDocument(DocumentWindowManager documentWindowManager, boolean replace) {
 	
 	/*	run some quick checks first to validate request to save or save edition */
-	//If there are applications, check the if all the sizes are set for the applications.
-	if(documentWindowManager.getVCDocument() instanceof BioModel)
-	{
-		SimulationContext[] scList=((BioModel)documentWindowManager.getVCDocument()).getSimulationContexts();
-		for(int i=0;i<scList.length;i++)
-		{
-			SimulationContext sc = scList[i];
-			try {
-				sc.checkValidity();
-			} catch (MappingException e) {
-				e.printStackTrace(System.out);
-				throw new RuntimeException(e.getMessage());
-			}
-		}
-	}
 	if (documentWindowManager.getVCDocument().getVersion() == null) {
 		// never saved - can't see this happening, but check anyway and default to save as
 		// (save/save edition buttons should have not been enabled upon document window creation)
@@ -1853,21 +1826,7 @@ public void saveDocument(DocumentWindowManager documentWindowManager, boolean re
  * @param vcDocument cbit.vcell.document.VCDocument
  */
 public void saveDocumentAsNew(DocumentWindowManager documentWindowManager) {
-	//If there are applications, check the if all the sizes are set for the applications.
-	if(documentWindowManager.getVCDocument() instanceof BioModel)
-	{
-		SimulationContext[] scList=((BioModel)documentWindowManager.getVCDocument()).getSimulationContexts();
-		for(int i=0;i<scList.length;i++)
-		{
-			SimulationContext sc = scList[i];
-			try {
-				sc.checkValidity();
-			} catch (MappingException e) {
-				e.printStackTrace(System.out);
-				throw new RuntimeException(e.getMessage());
-			}
-		}
-	}
+	
 	/* block document window */
 	JFrame currentDocumentWindow = getMdiManager().blockWindow(documentWindowManager.getManagerID());
 	/* prepare hashtable for tasks */

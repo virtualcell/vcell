@@ -1,5 +1,4 @@
 package cbit.vcell.solver.stoch;
-import cbit.gui.DialogUtils;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.client.PopupGenerator;
@@ -140,7 +139,7 @@ public boolean initialize() throws Exception
 
 /**
  * check if the expression in probability rate contains illegal symbols
- * which should only includes variable names and time "t".
+ * which should only includes variable names .
  * Creation date: (11/14/2006 6:28:35 PM)
  */
 public boolean isValidProbabilityExpression(Expression probExp)
@@ -149,8 +148,6 @@ public boolean isValidProbabilityExpression(Expression probExp)
 	for(int i=0; symbols != null && i<symbols.length; i++)
 	{
 		if(getSimulation().getMathDescription().getVariable(symbols[i]) != null)
-			continue;
-		else if (symbols[i].compareTo("t") == 0)
 			continue;
 		else
 			return false;
@@ -223,7 +220,6 @@ public void writeStochInputFile(PrintWriter pw, String[] parameterNames) throws 
 			  		}catch(cbit.vcell.parser.ExpressionException ex)
 			  		{
 			  			ex.printStackTrace();
-			  			DialogUtils.showErrorDialog("variable "+((VarIniCondition)varInis.elementAt(i)).getVar().getName()+"'s initial condition is required to be a constant.");
 			  			throw new MathFormatException("variable "+((VarIniCondition)varInis.elementAt(i)).getVar().getName()+"'s initial condition is required to be a constant.");
 			  		}
 				}
@@ -262,14 +258,12 @@ public void writeStochInputFile(PrintWriter pw, String[] parameterNames) throws 
 						probExp = getSimulation().substituteFunctions(probExp).flatten();
 						if(!isValidProbabilityExpression(probExp))
 						{
-							DialogUtils.showErrorDialog("probability rate in jump process "+temProc.getName()+" has illegal symbols(should only contain variable names and t).");
-							throw new MathFormatException("probability rate in jump process "+temProc.getName()+" has illegal symbols(should only contain variable names and t).");
+							throw new MathFormatException("probability rate in jump process "+temProc.getName()+" has illegal symbols(should only contain variable names).");
 						}
 					}catch(cbit.vcell.parser.ExpressionException ex)
 					{
 						ex.printStackTrace();
-						DialogUtils.showErrorDialog("Binding math description error in probability rate in jump process "+temProc.getName());
-						throw new cbit.vcell.parser.ExpressionException("Binding math description error in probability rate in jump process "+temProc.getName());	
+						throw new cbit.vcell.parser.ExpressionException("Binding math description error in probability rate in jump process "+temProc.getName()+". Some symbols can not be resolved.");	
 					}
 					//Expression temp = replaceVarIniInProbability(probExp);
 					pw.println("\t"+"Propensity"+"\t"+ probExp.infix()); //Propensity
