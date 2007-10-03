@@ -13,10 +13,15 @@ import java.util.Vector;
 import org.jdom.Attribute;
 import org.jdom.Element;
 import org.jdom.Namespace;
+import org.sbml.libsbml.Model;
+import org.sbml.libsbml.SBMLDocument;
+import org.sbml.libsbml.SBMLReader;
+import org.sbml.libsbml.Species;
 
 import cbit.util.Executable;
 import cbit.util.ExecutableException;
 import cbit.util.ExecutableStatus;
+import cbit.util.TokenMangler;
 import cbit.util.graph.Edge;
 import cbit.util.graph.Graph;
 import cbit.util.graph.Node;
@@ -32,6 +37,11 @@ import cbit.vcell.util.ColumnDescription;
 import cbit.vcell.vcml.VCellSemanticTest;
 
 public class CopasiSBMLSolverTest {
+	static
+	{
+		System.loadLibrary("sbmlj");
+	}
+
 	public static void main(String[] args){
 		try {
 			if (args.length!=2){
@@ -184,12 +194,35 @@ public class CopasiSBMLSolverTest {
 	
 	
 	public static ODESolverResultSet solveCopasi(String filePrefix, File outDir, String sbmlText, int stepNumber, float stepSize, float duration) throws IOException, ExecutableException, DataAccessException{
+		// fix species names (with commas) for Copasi. 
+		// Using 'sbmlText', go thro' libSBML, mangle name of species, and write out modified sbml text.
+		SBMLReader reader = new SBMLReader();
+		SBMLDocument oldDocument = reader.readSBMLFromString(sbmlText);
+		Model sbmlModel = oldDocument.getModel();
+		
+		for (int i = 0; i < (int)sbmlModel.getNumSpecies(); i++) {
+			Species sp = (Species)sbmlModel.getSpecies((long)i);
+			if (sp.getName().indexOf(",") > 0) {
+				sp.setName(TokenMangler.mangleToSName(sp.getName()));
+			}
+		}
+
+		SBMLDocument newDocument = new org.sbml.libsbml.SBMLDocument(2);
+		newDocument.setModel(sbmlModel);
+		org.sbml.libsbml.SBMLWriter sbmlWriter = new org.sbml.libsbml.SBMLWriter();
+		String modifiedSbmlStr = sbmlWriter.writeToString(newDocument);
+		sbmlModel.delete();
+		oldDocument.delete();
+		newDocument.delete();
+		sbmlWriter.delete();	
+		System.err.println("Successfully changed string");
+
 		String delimiter = ",";
 		if (!outDir.exists()){
 			throw new RuntimeException("directory "+outDir.getAbsolutePath()+" doesn't exist");
 		}
 		File sbmlFile = new File(outDir,filePrefix+".sbml");
-		XmlUtil.writeXMLString(sbmlText,sbmlFile.getAbsolutePath());
+		XmlUtil.writeXMLString(modifiedSbmlStr,sbmlFile.getAbsolutePath());
 		
 		File origCopasiFile = new File(outDir,filePrefix+".orig.cps");
 		File modifiedCopasiFile = new File(outDir,filePrefix+".mod.cps");

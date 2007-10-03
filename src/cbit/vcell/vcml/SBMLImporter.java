@@ -33,6 +33,7 @@ import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.model.*;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.LambdaFunction;
 import cbit.vcell.units.VCUnitDefinition;
@@ -264,9 +265,9 @@ protected void addCompartments() {
  *
  **/
 
-protected void addEvents() throws Exception {
+protected void addEvents() {
 	if (sbmlModel.getNumEvents() > 0) {
-		logger.sendMessage(cbit.vcell.client.TranslationLogger.HIGH_PRIORITY, TranslationMessage.UNSUPPORED_ELEMENTS_OR_ATTS, "VCell doesn't support Events at this time");
+		throw new RuntimeException("VCell doesn't support Events at this time");
 	}
 }
 
@@ -869,9 +870,12 @@ protected void addReactions() {
 			for (int j = 0; j < kLaw.getNumParameters(); j++) {
 				org.sbml.libsbml.Parameter param = (org.sbml.libsbml.Parameter)listofLocalParams.get(j);
 				String paramName = param.getId();
-				kinetics.setParameterValue(paramName, Double.toString(param.getValue()));
-				VCUnitDefinition paramUnit = getSBMLUnit(param.getUnits(),null);
-				kinetics.getKineticsParameter(paramName).setUnitDefinition(paramUnit);
+				// check if sbml local param is in kinetic params list; if so, add its value. 
+				if (kinetics.getKineticsParameter(paramName) != null) {
+					kinetics.setParameterValue(paramName, Double.toString(param.getValue()));
+					VCUnitDefinition paramUnit = getSBMLUnit(param.getUnits(),null);
+					kinetics.getKineticsParameter(paramName).setUnitDefinition(paramUnit);
+				}
 			}
 
 			// set the reaction kinetics, and add reaction to the vcell model.					
@@ -895,7 +899,7 @@ protected void addReactions() {
  *		Rate rules and Algebraic rules are not allowed (used) in the Virtual Cell.
  *		
 **/
-protected void addRules() throws Exception {
+protected void addRules() throws ExpressionException {
 	if (sbmlModel == null) {
 		throw new RuntimeException("SBML model is NULL");
 	}
@@ -907,7 +911,7 @@ protected void addRules() throws Exception {
 	for (int i = 0; i < sbmlModel.getNumRules(); i++){
 		Rule rule = (org.sbml.libsbml.Rule)listofRules.get(i);
 		if (!(rule instanceof AssignmentRule)) {
-			logger.sendMessage(VCLogger.HIGH_PRIORITY, TranslationMessage.UNSUPPORED_ELEMENTS_OR_ATTS, "Algebraic or Rate rules are not handled in the Virtual Cell at this time");
+			throw new RuntimeException("Algebraic or Rate rules are not handled in the Virtual Cell at this time");
 		} else {
 			// Get the assignment rule and store it in the hashMap.
 			AssignmentRule assignmentRule = (AssignmentRule)rule;
@@ -1112,7 +1116,15 @@ public static double getSpeciesConcUnitFactor(VCUnitDefinition fromUnit, VCUnitD
 
 				// If any of the symbols in the expression for speciesConc is a rule, expand it.
 				substituteGlobalParamRulesInPlace(initExpr, true);
-				initExpr = initExpr.flatten();
+				cbit.vcell.parser.SymbolTable reservedSymbolTable= new ReservedSymbolTable(true);
+				try {
+					initExpr.bindExpression(reservedSymbolTable);
+					initExpr = initExpr.flatten();
+				} catch (ExpressionBindingException e) {
+					// logger.sendMessage(VCLogger.HIGH_PRIORITY, TranslationMessage.SPECIES_ERROR, " Species " + speciesName + " could not be added; the initial condition expression is a function of variables other than 'time'; this is not allowed for a non-spatial model.");
+					throw new RuntimeException("Species " + speciesName + " could not be added : it could have an assignment rule which is a function of other species or reserved spatial symbols (x, y z); this is not allowed for a non-spatial model in VCell.");
+				}
+
 
 				speciesContextSpec.getInitialConditionParameter().setExpression(initExpr);
 				speciesContextSpec.setConstant(sbmlSpecies.getBoundaryCondition() || sbmlSpecies.getConstant());
@@ -1124,11 +1136,9 @@ public static double getSpeciesConcUnitFactor(VCUnitDefinition fromUnit, VCUnitD
 					SbmlVcSpeciesHash.put(vcSpeciesContexts[i].getName(), speciesName);
 				}
 			}
-		}catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace(System.out);
-//			System.out.println("Error adding species context ;\t"+ e.getMessage());
-			throw new RuntimeException("Error adding species context ;\t"+ e.getMessage());
-
+			throw new RuntimeException("Error adding species context; "+ e.getMessage());
 		}
 	}
 
@@ -1524,9 +1534,9 @@ private Structure getReactionStructure(org.sbml.libsbml.Reaction sbmlRxn, Specie
     			if (compartment2.isSetOutside()) {
     				outside2 = sbmlModel.getCompartment(compartment2.getOutside());
     			}
-				if ( (outside1.getSpatialDimensions() == 2) && (compartment2.getId().equals(outside1.getOutside())) ) {
+				if ( (outside1 != null) && ((outside1.getSpatialDimensions() == 2) && (compartment2.getId().equals(outside1.getOutside()))) ) {
 					struct = simContext.getModel().getStructure(outside1.getId());
-				} else if ( (outside2.getSpatialDimensions() == 2) && (compartment1.getId().equals(outside2.getOutside())) ) {
+				} else if ( (outside2 != null) && ((outside2.getSpatialDimensions() == 2) && (compartment1.getId().equals(outside2.getOutside()))) ) {
 					struct = simContext.getModel().getStructure(outside2.getId());				
 				}
     		}
@@ -1651,12 +1661,87 @@ private Expression getValueFromRule(String paramName)  {
 }
 
 /**
+ * checkForUnsupportedVCellFeatures:
+ * 
+ * Check if SBML model has algebraic, rate rules, events, other functionality that VCell does not support, 
+ * such as: 'hasOnlySubstanceUnits'; compartments with dimension 0; species that have assignment rules that contain other species, etc.
+ * If so, stop the import process, since there is no point proceeding with the import any further.
+ * 
+ */
+private void checkForUnsupportedVCellFeatures() throws Exception {
+	
+	// Check if rules, if present, are algrbraic or rate rules
+	if (sbmlModel.getNumRules() > 0) {
+		for (int i = 0; i < sbmlModel.getNumRules(); i++){
+			Rule rule = (org.sbml.libsbml.Rule)sbmlModel.getRule((long)i);
+			if (!(rule instanceof AssignmentRule)) {
+				logger.sendMessage(cbit.vcell.client.TranslationLogger.HIGH_PRIORITY, TranslationMessage.UNSUPPORED_ELEMENTS_OR_ATTS, "Algebraic or Rate rules are not handled in the Virtual Cell at this time");
+			} 
+		}
+	}
+	// Check if events are present.
+	if (sbmlModel.getNumEvents() > 0) {
+		logger.sendMessage(cbit.vcell.client.TranslationLogger.HIGH_PRIORITY, TranslationMessage.UNSUPPORED_ELEMENTS_OR_ATTS, "VCell doesn't support Events at this time");
+	}
+	// Check if species are specified by assignemnt rules; and if they refer to other species ...
+	if (sbmlModel.getNumRules() > 0) {
+		for (int i = 0; i < sbmlModel.getNumRules(); i++){
+			Rule rule = (org.sbml.libsbml.Rule)sbmlModel.getRule((long)i);
+			if (rule instanceof AssignmentRule) {
+				// Check if assignment rule variable is a species. 
+				AssignmentRule assignRule = (AssignmentRule)rule;
+				Species ruleSpecies = sbmlModel.getSpecies(assignRule.getVariable());
+				if (ruleSpecies != null) {
+					Expression assignRuleMathExpr = getExpressionFromFormula(assignRule.getMath());
+					// if the rule variable is a species, check if rule math refers to other species; if so, throw exception - can't handle it in VCell.
+					if (assignRuleMathExpr != null) {
+						for (int j = 0; j < sbmlModel.getNumSpecies(); j++) {
+							Species sp = (Species)sbmlModel.getSpecies((long)j);
+							if (sp.getId().equals(ruleSpecies.getId())) {
+								continue;
+							} else {
+								if (assignRuleMathExpr.hasSymbol(sp.getId())) {
+									logger.sendMessage(cbit.vcell.client.TranslationLogger.HIGH_PRIORITY, TranslationMessage.SPECIES_ERROR, "An assignment rule for species " + ruleSpecies.getId() + " contains another species in the model, this is not allowed for a non-spatial model in VCell");
+								} else if (assignRuleMathExpr.hasSymbol("x") || assignRuleMathExpr.hasSymbol("y") || assignRuleMathExpr.hasSymbol("z")) {
+									logger.sendMessage(cbit.vcell.client.TranslationLogger.HIGH_PRIORITY, TranslationMessage.SPECIES_ERROR, "An assignment rule for species " + ruleSpecies.getId() + " contains reserved spatial variable(s) (x,y,z), this is not allowed for a non-spatial model in VCell");
+								}
+							}
+						}
+					}
+				}
+			} 
+		}
+	}
+	// Check if any of the species have 'hasOnlySubstanceUnits set:
+	for (int j = 0; j < (int)sbmlModel.getNumSpecies(); j++) {
+		Species sp = (Species)sbmlModel.getSpecies(j);
+		if (sp.getHasOnlySubstanceUnits()) {
+			logger.sendMessage(cbit.vcell.client.TranslationLogger.HIGH_PRIORITY, TranslationMessage.SPECIES_ERROR, "Species " + sp.getId() + " has 'hasOnlySubstanceUnits' set to true, this is not supported in VCell");
+		}
+	}
+	// Check if any of the compartments have spatial dimension 0
+	for (int i = 0; i < (int)sbmlModel.getNumCompartments(); i++) {
+		Compartment comp = (Compartment)sbmlModel.getCompartment(i);
+		if (comp.getSpatialDimensions() == 0) {
+			logger.sendMessage(cbit.vcell.client.TranslationLogger.HIGH_PRIORITY, TranslationMessage.COMPARTMENT_ERROR, "Compartment " + comp.getId() + " has spatial dimension 0; this is not supported in VCell");
+		}
+	}
+}
+
+/**
  * translateSBMLModel:
  *
  */
 public void translateSBMLModel() {
+	// Check for SBML features not supported in VCell; stop import process if present.
+	try {
+		checkForUnsupportedVCellFeatures();
+	} catch (Exception e) {
+		e.printStackTrace(System.out);
+		throw new RuntimeException(e.getMessage());
+	}
+	
 	// Create Virtual Cell Model with species, compartment, etc. and read in the 'values' from the SBML model
-
 	// Add Function Definitions (Lambda functions).
 	addFunctionDefinitions();
 	// Add Unit definitions
@@ -1664,9 +1749,9 @@ public void translateSBMLModel() {
 	// Add Rules
 	try {
 		addRules();
-	} catch (Exception e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
+	} catch (ExpressionException ee) {
+		ee.printStackTrace(System.out);
+		throw new RuntimeException(ee.getMessage());
 	}
 	// Add features/compartments
 	addCompartments();
@@ -1677,11 +1762,6 @@ public void translateSBMLModel() {
 	// Add Reactions
 	addReactions();
 	// Add Events
-	try {
-		addEvents();
-	} catch (Exception e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
-	}
+	addEvents();
 }
 }
