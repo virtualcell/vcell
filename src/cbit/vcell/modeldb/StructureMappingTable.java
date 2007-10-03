@@ -94,8 +94,24 @@ public String getSQLValueList(InsertHashtable hash, KeyValue Key, KeyValue simCo
 		buffer.append("null" + ",");
 	} else if (structureMapping instanceof MembraneMapping) {
 		MembraneMapping mm = (MembraneMapping) structureMapping;
-		buffer.append("'"+mm.getSurfaceToVolumeParameter().getExpression().infix() + "',");
-		buffer.append("'"+mm.getVolumeFractionParameter().getExpression().infix() + "',");
+		//surface volume ratios and volume fractions can be null in stochastic applications and other old models
+		//amended Sept. 17th, 2007
+		if(mm.getSurfaceToVolumeParameter().getExpression() != null)
+		{
+			buffer.append("'"+mm.getSurfaceToVolumeParameter().getExpression().infix() + "',");
+		}
+		else
+		{
+			buffer.append("null" + ",");
+		}
+		if(mm.getVolumeFractionParameter().getExpression() != null)
+		{
+			buffer.append("'"+mm.getVolumeFractionParameter().getExpression().infix() + "',");
+		}
+		else
+		{
+			buffer.append("null" + ",");
+		}
 		buffer.append("null" + ",");
 		buffer.append("null" + ",");
 		buffer.append("null" + ",");

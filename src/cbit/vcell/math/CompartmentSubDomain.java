@@ -343,6 +343,20 @@ private void read(MathDescription mathDesc, CommentStringTokenizer tokens) throw
 			if(token.equalsIgnoreCase(VCML.ProbabilityRate))
 			{
 				Expression probExp = new Expression(tokens);
+				//check if probability functions contain "t", which is not allowed.
+				Expression extProb = MathUtilities.substituteFunctions(probExp,mathDesc).flatten();
+				String[] symbols = extProb.getSymbols();
+				if(symbols != null)
+				{
+					for(int i=0; i<symbols.length; i++)
+					{
+						if(symbols[i].equals("t"))
+						{
+							throw new MathFormatException("Unexpected symbol \'t\'  in probability rate of jump process "+name+". Probability rate should not be a function of t.");
+						}	
+					}
+				}
+				probExp.bindExpression(mathDesc);
 				jump = new JumpProcess(name,probExp);
 				addJumpProcess(jump);
 			}
