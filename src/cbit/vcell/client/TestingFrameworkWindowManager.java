@@ -1960,9 +1960,6 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 						}
 						ChangeTestCriteriaErrorLimitOP changeTestCriteriaErrorLimitOP =
 							new ChangeTestCriteriaErrorLimitOP(changeTCritBDArr,absErrorLimitArr,relErrorLimitArr);
-						if(genReportHash != null){
-							updateReports(genReportHash);
-						}
 						try{
 							getTestingFrameworkWindowPanel().getDocumentManager().doTestSuiteOP(changeTestCriteriaErrorLimitOP);
 						}catch(Exception e){
@@ -1971,11 +1968,15 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 						}
 						d.dispose();
 						getTestingFrameworkWindowPanel().refreshTree(null);
-						new Thread(new Runnable(){
-							public void run() {
-								TestingFrameworkWindowManager.this.queryTCritCrossRef(tsin, tcrit, varName);
-							}
-						}).start();
+						if(genReportHash != null){
+							updateReports(genReportHash);
+						}else{
+							new Thread(new Runnable(){
+								public void run() {
+									TestingFrameworkWindowManager.this.queryTCritCrossRef(tsin, tcrit, varName);
+								}
+							}).start();
+						}
 					}else{
 						PopupGenerator.showErrorDialog("No selected rows contain Test Criteria.");
 					}
