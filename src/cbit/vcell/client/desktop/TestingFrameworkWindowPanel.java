@@ -406,7 +406,10 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 			Object refObj = ((BioModelNode)selectedTreePaths[0].getLastPathComponent()).getUserObject();
 			for (int i = 1; i < selectedTreePaths.length; i++) {
 				Object currentObj = ((BioModelNode)selectedTreePaths[i].getLastPathComponent()).getUserObject();
-				if((refObj == null && currentObj == null) || ((refObj != null && currentObj != null) && (refObj.getClass().equals(currentObj.getClass())))){
+				if((refObj == null && currentObj == null) || 
+					((refObj != null && currentObj != null) && (refObj.getClass().equals(currentObj.getClass()))) ||
+					(refObj instanceof TestCaseNew && currentObj instanceof TestCaseNew)
+				){
 					continue;
 				}else{
 					throw new IllegalArgumentException("Multiple selections must all be of same type");
