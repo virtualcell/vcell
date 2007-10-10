@@ -7,11 +7,9 @@
 	</classpathentry>
 	<classpathentry kind="src" path="resources"/>
 	<classpathentry kind="var" path="JRE_LIB" sourcepath="JRE_SRC"/>
-	<classpathentry kind="lib" path="idetool.jar"/>
+	<classpathentry kind="lib" path="sbmlj.jar"/>
 	<classpathentry kind="lib" path="thirdParty_1.51.jar"/>
 	<classpathentry kind="lib" path="bio-formats.jar"/>
-	<classpathentry kind="lib" path="ome-java.jar"/>
-	<classpathentry kind="lib" path="WinService.jar"/>
 	<classpathentry kind="lib" path="NetCDF2_2_20_VCell.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
