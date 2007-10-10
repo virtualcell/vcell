@@ -19,7 +19,6 @@ import java.util.Hashtable;
 import java.util.TreeMap;
 import java.util.Vector;
 
-import org.jdom.*;
 import org.sbml.libsbml.*;
 import org.sbml.libsbml.Parameter;
 import org.sbml.libsbml.Species;
@@ -30,7 +29,6 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.model.*;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
@@ -41,12 +39,14 @@ import cbit.vcell.units.SBMLUnitTranslator;
 import cbit.util.xml.VCLogger;
 import cbit.vcell.vcml.StructureSizeSolver;
 import cbit.vcell.vcml.TranslationMessage;
-import cbit.vcell.vcml.Translator;
 import cbit.vcell.xml.MIRIAMHelper;
 import cbit.vcell.xml.XMLTags;
 
 public class SBMLImporter {
 
+	private static int level = 2;
+	private static int version = 3;
+	
 	private String sbmlString = null;
 	private org.sbml.libsbml.Model sbmlModel = null;
 	private cbit.vcell.mapping.SimulationContext simContext = null;
@@ -88,7 +88,11 @@ public class SBMLImporter {
 	}
 	static
 	{
-		System.loadLibrary("sbmlj");
+		try {
+			System.loadLibrary("sbmlj");
+		}catch (Exception e){
+			e.printStackTrace(System.out);
+		}
 	}
 
 	public SBMLImporter(String argSbmlString, cbit.util.xml.VCLogger argVCLogger) {
@@ -127,7 +131,7 @@ protected void addCompartments() {
 				logger.sendMessage(VCLogger.HIGH_PRIORITY, TranslationMessage.COMPARTMENT_ERROR, "Cannot deal with spatial dimension : " + compartment.getSpatialDimensions() + " for compartments at this time.");
 				throw new RuntimeException("Cannot deal with spatial dimension : " + compartment.getSpatialDimensions() + " for compartments at this time");
 			}
-			MIRIAMHelper.setFromSBMLAnnotation(structVector.get(i), compartment.getAnnotation());
+			MIRIAMHelper.setFromSBMLAnnotation(structVector.get(i), XMLNode.convertXMLNodeToString(compartment.getAnnotation()));
 		}
 
 		// Second pass - connect the structures - add membranes if needed.
@@ -456,26 +460,27 @@ protected void addReactions() {
 			Structure reactionStructure = getReactionStructure(sbmlRxn, vcSpeciesContexts); 
 			// Check of reaction annotation is present; if so, does it have an embedded element (flux or simpleRxn).
 			// Create a fluxReaction or simpleReaction accordingly.
-			String rxnAnnotation = sbmlRxn.getAnnotation();
-			org.jdom.Element embeddedRxnElement = null;
-			if (rxnAnnotation != null && rxnAnnotation.length() > 0) {
+			XMLNode rxnAnnotation = sbmlRxn.getAnnotation();
+			XMLNode embeddedRxnElement = null;
+			if (rxnAnnotation != null) {
 				embeddedRxnElement = getEmbeddedElementInAnnotation(rxnAnnotation, REACTION);
 				if (embeddedRxnElement != null) {
 					if (embeddedRxnElement.getName().equals(XMLTags.FluxStepTag)) {
 						// If embedded element is a flux reaction, set flux reaction's strucure, flux carrier, physicsOption from the element attibutes.
-						String structName = embeddedRxnElement.getAttributeValue(XMLTags.StructureAttrTag);
+						XMLAttributes attributes = embeddedRxnElement.getAttributes();
+						String structName = attributes.getValue(XMLTags.StructureAttrTag);
 						Structure struct = simContext.getModel().getStructure(structName);
 						if (!(struct instanceof Membrane)) {
 							throw new RuntimeException("Appears that the flux reaction is not occuring on a membrane.");
 						}
-						String fluxCarrierSpName = embeddedRxnElement.getAttributeValue(XMLTags.FluxCarrierAttrTag);
+						String fluxCarrierSpName = attributes.getValue(XMLTags.FluxCarrierAttrTag);
 						cbit.vcell.model.Species fluxCarrierSp = simContext.getModel().getSpecies(fluxCarrierSpName);
 						if (fluxCarrierSp == null) {
 							logger.sendMessage(VCLogger.HIGH_PRIORITY, TranslationMessage.REACTION_ERROR, "Unknown FluxCarrier : " + fluxCarrierSpName + " for SBML reaction : " + rxnName);
 						}
 						vcReactions[i] = new FluxReaction((Membrane)struct, fluxCarrierSp, simContext.getModel(), rxnName);
 						// Set the fluxOption on the flux reaction based on whether it is molecular, molecular & electrical, electrical.
-						String fluxOptionStr = embeddedRxnElement.getAttributeValue(XMLTags.FluxOptionAttrTag);
+						String fluxOptionStr = attributes.getValue(XMLTags.FluxOptionAttrTag);
 						if (fluxOptionStr.equals(XMLTags.FluxOptionMolecularOnly)) {
 							((FluxReaction)vcReactions[i]).setPhysicsOptions(ReactionStep.PHYSICS_MOLECULAR_ONLY);
 						} else if (fluxOptionStr.equals(XMLTags.FluxOptionMolecularAndElectrical)) {
@@ -492,7 +497,7 @@ protected void addReactions() {
 				} else {
 					vcReactions[i] = new cbit.vcell.model.SimpleReaction(reactionStructure, rxnName);
 				}
-				MIRIAMHelper.setFromSBMLAnnotation(vcReactions[i], rxnAnnotation);
+				MIRIAMHelper.setFromSBMLAnnotation(vcReactions[i], XMLNode.convertXMLNodeToString(rxnAnnotation));
 			} else {
 				vcReactions[i] = new cbit.vcell.model.SimpleReaction(reactionStructure, rxnName);
 			}
@@ -974,13 +979,13 @@ public static double getSpeciesConcUnitFactor(VCUnitDefinition fromUnit, VCUnitD
 				// Sometimes, the species name can be null or a blank string; in that case, use species id as the name.
 				String speciesName = sbmlSpecies.getId();
 				cbit.vcell.model.Species vcSpecies = null;
-				String speciesAnnotation = sbmlSpecies.getAnnotation();
-				if (speciesAnnotation != null && speciesAnnotation.length() > 0) {
-					Element embeddedElement = getEmbeddedElementInAnnotation(speciesAnnotation, SPECIES_NAME);
+				XMLNode speciesAnnotation = sbmlSpecies.getAnnotation();
+				if (speciesAnnotation != null) {
+					XMLNode embeddedElement = getEmbeddedElementInAnnotation(speciesAnnotation, SPECIES_NAME);
 					if (embeddedElement != null) {
 						// Get the species name from annotation and create the species.
 						if (embeddedElement.getName().equals(cbit.vcell.xml.XMLTags.SpeciesTag)) {
-							String vcSpeciesName = embeddedElement.getAttributeValue(cbit.vcell.xml.XMLTags.NameAttrTag);
+							String vcSpeciesName = embeddedElement.getAttributes().getValue(cbit.vcell.xml.XMLTags.NameAttrTag);
 							vcSpecies = simContext.getModel().getSpecies(vcSpeciesName);
 							if (vcSpecies == null) {
 								simContext.getModel().addSpecies(new cbit.vcell.model.Species(vcSpeciesName, vcSpeciesName));
@@ -993,7 +998,7 @@ public static double getSpeciesConcUnitFactor(VCUnitDefinition fromUnit, VCUnitD
 						simContext.getModel().addSpecies(new cbit.vcell.model.Species(speciesName, speciesName));
 						vcSpecies = simContext.getModel().getSpecies(speciesName);
 					}
-					MIRIAMHelper.setFromSBMLAnnotation(vcSpecies,speciesAnnotation);
+					MIRIAMHelper.setFromSBMLAnnotation(vcSpecies,XMLNode.convertXMLNodeToString(speciesAnnotation));
 				} else {
 					simContext.getModel().addSpecies(new cbit.vcell.model.Species(speciesName, speciesName));
 					vcSpecies = simContext.getModel().getSpecies(speciesName);
@@ -1242,15 +1247,16 @@ private boolean checkSpeciesHasSubstanceOnly(Reaction sbmlRxn) throws Expression
  * @throws ExpressionException
  */
 private void resolveRxnParameterNameConflicts(Reaction sbmlRxn, Kinetics vcKinetics) throws PropertyVetoException {
-	String rxnAnnotation = sbmlRxn.getAnnotation();
+	XMLNode rxnAnnotation = sbmlRxn.getAnnotation();
 	// If the name of the rate parameter has been changed by user, it is stored in rxnAnnotation. 
 	// Retrieve this to re-set rate param name.
-	if (rxnAnnotation != null && rxnAnnotation.length() > 0) {
-		Element embeddedRxnElement = getEmbeddedElementInAnnotation(rxnAnnotation, RATE_NAME);
+	if (rxnAnnotation != null) {
+		XMLNode embeddedRxnElement = getEmbeddedElementInAnnotation(rxnAnnotation, RATE_NAME);
 		String vcRateParamName = null;
 		if (embeddedRxnElement != null) {
 			if (embeddedRxnElement.getName().equals(XMLTags.RateTag)) {
-				vcRateParamName = embeddedRxnElement.getAttributeValue(XMLTags.NameAttrTag);
+				XMLAttributes attributes = embeddedRxnElement.getAttributes();
+				vcRateParamName = attributes.getValue(XMLTags.NameAttrTag);
 				vcKinetics.getAuthoritativeParameter().setName(vcRateParamName);
 			}
 		} 
@@ -1373,7 +1379,7 @@ public BioModel getBioModel() {
 
 	// For an SBML level 1 model, convert it to level 2 (using document.setLevel(int)) and read it in
 	if (document.getLevel() == 1) {
-		document.setLevel(2);
+		document.setLevelAndVersion(2,3);
 	}
 	sbmlModel = document.getModel();
 	
@@ -1411,7 +1417,7 @@ public BioModel getBioModel() {
 		throw new RuntimeException("Could not create Biomodel");
 	}
 
-	MIRIAMHelper.setFromSBMLAnnotation(bioModel,sbmlModel.getAnnotation());
+	MIRIAMHelper.setFromSBMLAnnotation(bioModel,sbmlModel.getAnnotationString());
 	bioModel.refreshDependencies();
 	return bioModel;
 }
@@ -1420,28 +1426,36 @@ public BioModel getBioModel() {
  *  getEmbeddedElementInRxnAnnotation :
  *  Takes the reaction annotation as an argument and returns the embedded element  (fluxstep or simple reaction), if present.
  */
-private org.jdom.Element getEmbeddedElementInAnnotation(String annotationStr, String tag) {
+private XMLNode getEmbeddedElementInAnnotation(XMLNode annotationNode, String tag) {
 	// Get the XML element corresponding to the annotation xmlString.
-	Element annotationElement = cbit.util.xml.XmlUtil.stringToXML(annotationStr, null);
-	Namespace ns = Namespace.getNamespace(Translator.SBML_VCML_NS);
-
-	Element vcInfoElement = annotationElement.getChild(XMLTags.VCellInfoTag, ns);
-	Element embeddedElement = null;
-	
-	// If there is an annotation element for the reaction or species, retrieve and return.
-	if (annotationElement != null && vcInfoElement != null) {
-		if (tag.equals(RATE_NAME)) {
-			embeddedElement = vcInfoElement.getChild(XMLTags.RateTag, ns);
-		} else if (tag.equals(SPECIES_NAME)) {
-			embeddedElement = vcInfoElement.getChild(XMLTags.SpeciesTag, ns);
-		} else if (tag.equals(REACTION)) {
-			embeddedElement = vcInfoElement.getChild(XMLTags.FluxStepTag, ns);
-			if (embeddedElement == null) {
-				embeddedElement = vcInfoElement.getChild(XMLTags.SimpleReactionTag, ns);
-			}
+	XMLNode embeddedElement = null;
+	XMLNode vcInfoElement = null;
+	for (int i=0;i<annotationNode.getNumChildren();i++){
+		XMLNode annotationChildNode = annotationNode.getChild(i);
+		if (annotationChildNode.getName().equals(XMLTags.VCellInfoTag)){
+			vcInfoElement = annotationChildNode;
 		}
 	}
-	
+	String elementName = null;
+	if (tag.equals(RATE_NAME)) {
+		elementName = XMLTags.RateTag;
+	} else if (tag.equals(SPECIES_NAME)) {
+		elementName = XMLTags.SpeciesTag;
+	} else if (tag.equals(REACTION)) {
+		elementName = XMLTags.FluxStepTag;
+		if (elementName == null) {
+			elementName = XMLTags.SimpleReactionTag;
+		}
+	}
+	// If there is an annotation element for the reaction or species, retrieve and return.
+	if (vcInfoElement != null) {
+		for (int j = 0; j < vcInfoElement.getNumChildren(); j++) {
+			XMLNode infoChild = vcInfoElement.getChild(j);
+			if (infoChild.getName().equals(elementName)){
+				return infoChild;
+			}
+		}
+	}	
 	return embeddedElement;
 }
 
@@ -1454,9 +1468,9 @@ private org.jdom.Element getEmbeddedElementInAnnotation(String annotationStr, St
  *	hence the ExpressionMathMLParser is given a substring of the MathML containing the <apply> elements. 
  */
 private Expression getExpressionFromFormula(ASTNode math) throws ExpressionException {
-	MathMLDocument mDoc = new MathMLDocument();
-	mDoc.setMath(math.deepCopy());
-	String mathMLStr = libsbml.writeMathMLToString(mDoc);
+//	MathMLDocument mDoc = new MathMLDocument();
+//	mDoc.setMath(math.deepCopy());
+	String mathMLStr = libsbml.writeMathMLToString(math);
 	cbit.vcell.parser.ExpressionMathMLParser exprMathMLParser = new cbit.vcell.parser.ExpressionMathMLParser(lambdaFunctions);
 	Expression expr =  exprMathMLParser.fromMathML(mathMLStr);
 	return expr;
@@ -1484,13 +1498,14 @@ private Structure getReactionStructure(org.sbml.libsbml.Reaction sbmlRxn, Specie
 
     // Check annotation for reaction - if we are importing an exported VCell model, it will contain annotation for reaction.
     // If annotation has structure name, return the corresponding structure.
-    String rxnAnnotation = sbmlRxn.getAnnotation();
+    XMLNode rxnAnnotation = sbmlRxn.getAnnotation();
     String structName = null;
-    if (rxnAnnotation != null && rxnAnnotation.length() > 0) {
+    if (rxnAnnotation != null) {
         // Get the embedded element in the annotation str (fluxStep or simpleReaction), and the structure attribute from the element.
-        org.jdom.Element embeddedElement = getEmbeddedElementInAnnotation(rxnAnnotation, REACTION);
+        XMLNode embeddedElement = getEmbeddedElementInAnnotation(rxnAnnotation, REACTION);
         if (embeddedElement != null) {
-            structName = embeddedElement.getAttributeValue(cbit.vcell.xml.XMLTags.StructureAttrTag);
+        	XMLAttributes attributes = embeddedElement.getAttributes();
+            structName = attributes.getValue(cbit.vcell.xml.XMLTags.StructureAttrTag);
 	        // Using the structName, get the structure from the structures (compartments) list.
 	        struct = simContext.getModel().getStructure(structName);
 	        return struct;
@@ -1594,9 +1609,9 @@ private VCUnitDefinition getSBMLUnit(String unitSymbol, String builtInName) {
 			SbmlUnit = VCUnitDefinition.UNIT_TBD;
 		}
 	} else {
-		if (org.sbml.libsbml.Unit.isUnitKind(unitSymbol)) {
+		if (org.sbml.libsbml.Unit.isUnitKind(unitSymbol,level,version)) {
 			SbmlUnit = VCUnitDefinition.getInstance(unitSymbol);
-		} else if (org.sbml.libsbml.Unit.isBuiltIn(unitSymbol)) {
+		} else if (org.sbml.libsbml.Unit.isBuiltIn(unitSymbol,level)) {
 			//check if its a built-in unit that was explicitly specified
 			SbmlUnit = (VCUnitDefinition)vcUnitsHash.get(builtInName);
 			if (SbmlUnit == null) { 

@@ -75,14 +75,8 @@ public class TranslationLogger implements VCLogger {
 			!TranslationMessage.isValidMessageType(messageType)) {
 			throw new IllegalArgumentException("Invalid params for sending translation message.");
 		}
-		if (messageLevel == TranslationLogger.LOW_PRIORITY) {
+		if (messageLevel == TranslationLogger.LOW_PRIORITY || messageLevel == TranslationLogger.MEDIUM_PRIORITY) {
 			messages.add(message);
-		} else if (messageLevel == TranslationLogger.MEDIUM_PRIORITY) {
-			UserMessage userMessage = new UserMessage(message, TranslationLogger.OPTIONS, TranslationLogger.OPTIONS[0]);
-			String value = PopupGenerator.showWarningDialog(requester, null, userMessage, null);
-			if (!value.equals(OPTIONS[0])) {
-				processException(messageType);
-			}
 		} else if (messageLevel == TranslationLogger.HIGH_PRIORITY) {      
 			UserMessage userMessage = new UserMessage(message, new String [] {TranslationLogger.CANCEL_OPTION}, TranslationLogger.CANCEL_OPTION);
 			String value = PopupGenerator.showWarningDialog(requester, null, userMessage, null);

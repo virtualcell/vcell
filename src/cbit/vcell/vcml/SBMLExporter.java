@@ -139,10 +139,11 @@ protected void addCompartments() {
 		}
 		
 		Element annotationElement = null;
-		if(sbmlCompartment.getAnnotation() == null || sbmlCompartment.getAnnotation().length() == 0){
+		String sbmlAnnotationString = sbmlCompartment.getAnnotationString();
+		if(sbmlAnnotationString == null || sbmlAnnotationString.length() == 0){
 			annotationElement = new Element(XMLTags.SbmlAnnotationTag, "");
 		}else{
-			annotationElement = XmlUtil.stringToXML(sbmlCompartment.getAnnotation(), null);
+			annotationElement = XmlUtil.stringToXML(sbmlAnnotationString, null);
 		}
 		MIRIAMHelper.addToSBML(annotationElement, vcStructures[i].getMIRIAMAnnotation(), false);
 		sbmlCompartment.setAnnotation(XmlUtil.xmlToString(annotationElement, true));
@@ -387,10 +388,8 @@ protected void addReactions() {
 						// need to get another name for param and need to change all its refereces in the other kinParam euqations.
 					}
 					ASTNode paramFormulaNode = getFormulaFromExpression(kinParamExprs[j]);
-					ParameterRule sbmlParamRule = new ParameterRule();	//, libsbml.formulaToString(paramFormulaNode));
-					sbmlParamRule.setName(paramName);
-					sbmlParamRule.setMath(paramFormulaNode);
-					sbmlModel.addRule(sbmlParamRule);
+					AssignmentRule sbmlParamAssignmentRule = new AssignmentRule(paramName, paramFormulaNode);
+					sbmlModel.addRule(sbmlParamAssignmentRule);
 					org.sbml.libsbml.Parameter sbmlKinParam = new org.sbml.libsbml.Parameter(paramName);
 					if (!vcKineticsParams[j].getUnitDefinition().isTBD()) {
 						sbmlKinParam.setUnits(cbit.util.TokenMangler.mangleToSName(vcKineticsParams[j].getUnitDefinition().getSymbol()));
@@ -580,17 +579,13 @@ private void generateErrorReport(SBMLDocument sbmlDoc) {
 	long numFailedChecks = sbmlDoc.checkConsistency();
 	StringBuffer errorReportBuffer = new StringBuffer();
 	errorReportBuffer.append("\n\nBIOMODEL : " + vcBioModel.getName() + " : Num Of Failed Checks = " + numFailedChecks + "\n");
-	errorReportBuffer.append("\nWARNINGS : " + sbmlDoc.getNumWarnings());
-	for (int i = 0; i < (int)sbmlDoc.getNumWarnings(); i++){
-		errorReportBuffer.append("\n\tWarning " + i + " : " + sbmlDoc.getWarning((long)i).getMessage());
-	}
-	errorReportBuffer.append("\nERRORS : " + sbmlDoc.getNumErrors());
-	for (int i = 0; i < (int)sbmlDoc.getNumErrors(); i++){
-		errorReportBuffer.append("\n\tError " + i + " : " + sbmlDoc.getError((long)i).getMessage());
-	}
-	errorReportBuffer.append("\nFATAL ERRORS : " + sbmlDoc.getNumFatals());
-	for (int i = 0; i < (int)sbmlDoc.getNumFatals(); i++){
-		errorReportBuffer.append("\n\tFatal " + i + " : " + sbmlDoc.getFatal((long)i).getMessage());
+	long numSBMLErrors = sbmlDoc.getNumErrors();
+	errorReportBuffer.append("\nWARNINGS : " + sbmlDoc.getErrorLog().getNumFailsWithSeverity(XMLError.Warning));
+	for (long i = 0; i < numSBMLErrors; i++){
+		SBMLError sbmlError = sbmlDoc.getError(i);
+		if (sbmlError.getSeverity()==XMLError.Warning){
+			errorReportBuffer.append("\n\tlibSBML issue: severity=" + sbmlError.getSeverity()+ ", message=" + sbmlError.getMessage());
+		}
 	}
 	errorReportBuffer.append("\n------- END REPORT-------");
 
@@ -722,8 +717,8 @@ private ASTNode getFormulaFromExpression(Expression expression) {
 	}
 	
 	// Use libSBMl routines to convert MathML string to MathML document and a libSBML-readable formula string
-	MathMLDocument d = libsbml.readMathMLFromString(expMathMLStr);
-	ASTNode mathNode = d.getMath();
+
+	ASTNode mathNode = libsbml.readMathMLFromString(expMathMLStr);
 	return mathNode.deepCopy();
 }
 
@@ -782,10 +777,11 @@ public String getSBMLFile() {
 	translateBioModel();
 
 	Element annotationElement = null;
-	if(sbmlModel.getAnnotation() == null || sbmlModel.getAnnotation().length() == 0){
+	String sbmlAnnotationString = sbmlModel.getAnnotationString();
+	if(sbmlAnnotationString == null || sbmlAnnotationString.length() == 0){
 		annotationElement = new Element(XMLTags.SbmlAnnotationTag, "");
 	}else{
-		annotationElement = XmlUtil.stringToXML(sbmlModel.getAnnotation(), null);
+		annotationElement = XmlUtil.stringToXML(sbmlAnnotationString, null);
 	}
 	MIRIAMHelper.addToSBML(annotationElement, vcBioModel.getMIRIAMAnnotation(), false);
 	sbmlModel.setAnnotation(XmlUtil.xmlToString(annotationElement, true));
