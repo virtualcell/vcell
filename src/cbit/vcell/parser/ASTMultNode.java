@@ -139,10 +139,7 @@ public double evaluateConstant() throws ExpressionException {
 			}		
 		}
 	}
-	if (childException != null){
-		throw childException;
-	}	
-	
+
 	double product = 1.0;
 	for (int i=0;i<jjtGetNumChildren();i++){
 		//
