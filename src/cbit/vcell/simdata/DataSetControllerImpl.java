@@ -36,8 +36,6 @@ import java.util.zip.ZipOutputStream;
 import java.io.*;
 
 import cbit.vcell.server.*;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
@@ -49,6 +47,19 @@ import cbit.vcell.solvers.FVSolver;
  * 
  */
 public class DataSetControllerImpl implements SimDataConstants {
+	
+	private static class VolumeIndexNearFar {
+		public int volIndexNear;
+		public int volIndexFar;
+		public VolumeIndexNearFar(int indexNear,int indexFar){
+			this.volIndexNear = indexNear;
+			this.volIndexFar = indexFar;
+		}
+		public static double interpolate(double valNear,double valFar){
+			return 1.5 * valNear-0.5 * valFar;
+
+		}
+	};
 	
 	private boolean dataCachingEnabled = true;
 	
@@ -93,22 +104,48 @@ public class DataSetControllerImpl implements SimDataConstants {
 			dataSetTimes = DataSetControllerImpl.this.getDataSetTimes(argVcdID);
 			simData = (SimulationData)getVCData(argVcdID);
 			functionIndexesArr = findFunctionIndexes(argVcdID,simData.getFunction(argVarName),argIndices);
-			blockSize = functionIndexesArr[0].getIndexes().length;
-			for(int i=0;i<functionIndexesArr.length;i+= 1){
-				FunctionIndexes fi = functionIndexesArr[i];
-				String[] tempVN = new String[allFuncVarNames.length + fi.getSimFileVarNames().length];
-				System.arraycopy(allFuncVarNames,0,tempVN,0,allFuncVarNames.length);
-				System.arraycopy(fi.getSimFileVarNames(),0,tempVN,allFuncVarNames.length,fi.getSimFileVarNames().length);
-				int[][] tempInd = new int[allFuncIndexes.length + fi.getIndexes().length][];
-				for(int j=0;j<tempInd.length;j+= 1){
-					if(j < allFuncIndexes.length){
-						tempInd[j] = allFuncIndexes[j];
-					}else{
-						tempInd[j] = new int[] {fi.getIndexes()[j-allFuncIndexes.length]};
+			if(!functionIndexesArr[0].hasNearFarInterpolation()){
+				blockSize = functionIndexesArr[0].getIndexes().length;
+				for(int i=0;i<functionIndexesArr.length;i+= 1){
+					FunctionIndexes fi = functionIndexesArr[i];
+					String[] tempVN = new String[allFuncVarNames.length + fi.getSimFileVarNames().length];
+					System.arraycopy(allFuncVarNames,0,tempVN,0,allFuncVarNames.length);
+					System.arraycopy(fi.getSimFileVarNames(),0,tempVN,allFuncVarNames.length,fi.getSimFileVarNames().length);
+					int[][] tempInd = new int[allFuncIndexes.length + fi.getIndexes().length][];
+					for(int j=0;j<tempInd.length;j+= 1){
+						if(j < allFuncIndexes.length){
+							tempInd[j] = allFuncIndexes[j];
+						}else{
+							tempInd[j] = new int[] {fi.getIndexes()[j-allFuncIndexes.length]};
+						}
 					}
+					allFuncIndexes = tempInd;
+					allFuncVarNames = tempVN;
 				}
-				allFuncIndexes = tempInd;
-				allFuncVarNames = tempVN;
+			}else{
+				blockSize = functionIndexesArr[0].getIndexes().length*2;
+				int varIndex = -1;
+				for(int i=0;i<functionIndexesArr.length;i+= 1){
+					FunctionIndexes fi = functionIndexesArr[i];
+					String[] tempVN = new String[allFuncVarNames.length + fi.getSimFileVarNames().length*2];
+					System.arraycopy(allFuncVarNames,0,tempVN,0,allFuncVarNames.length);
+					System.arraycopy(fi.getSimFileVarNames(),0,tempVN,allFuncVarNames.length,fi.getSimFileVarNames().length);
+					System.arraycopy(fi.getSimFileVarNames(),0,tempVN,allFuncVarNames.length+fi.getSimFileVarNames().length,fi.getSimFileVarNames().length);
+					int[][] tempInd = new int[allFuncIndexes.length + fi.getIndexes().length*2][];
+					for(int j=0;j<tempInd.length;j+= 1){
+						if(j < allFuncIndexes.length){
+							tempInd[j] = allFuncIndexes[j];
+						}else if(j < allFuncIndexes.length + fi.getIndexes().length){
+							tempInd[j] = new int[] {fi.getIndexes()[j-allFuncIndexes.length]};
+						}else{
+							varIndex = j-allFuncIndexes.length-fi.getIndexes().length;
+							tempInd[j] = new int[] {fi.getIndexes()[varIndex]};
+							tempInd[j][0] = fi.findFarIndex(varIndex, tempInd[j][0]);
+						}
+					}
+					allFuncIndexes = tempInd;
+					allFuncVarNames = tempVN;
+				}				
 			}
 		}
 		public double evaluateTimeFunction(int timeIndex,int varNameIndex)
@@ -151,7 +188,30 @@ public class DataSetControllerImpl implements SimDataConstants {
 		private String[] simFileVarNames;
 		private int[] funcIndexes;
 		private double[] functionArgs;
-		
+		private VolumeIndexNearFar[] inside_near_far_indexes;
+		private VolumeIndexNearFar[] outside_near_far_indexes;
+
+		public int findFarIndex(int varIndex,int origVal){
+			if(inside_near_far_indexes[varIndex] != null && inside_near_far_indexes[varIndex].volIndexFar != -1){
+				return inside_near_far_indexes[varIndex].volIndexFar;
+			}else if(outside_near_far_indexes[varIndex] != null && outside_near_far_indexes[varIndex].volIndexFar != -1){
+				return outside_near_far_indexes[varIndex].volIndexFar;			
+			}
+			return origVal;
+		}
+		public boolean hasNearFarInterpolation(){
+			for (int i = 0; i < inside_near_far_indexes.length; i++) {
+				if(inside_near_far_indexes[i] != null){
+					return true;
+				}
+			}
+			for (int i = 0; i < outside_near_far_indexes.length; i++) {
+				if(outside_near_far_indexes[i] != null){
+					return true;
+				}
+			}
+			return false;
+		}
 		public String[] getSimFileVarNames(){
 			return simFileVarNames;
 		}
@@ -165,17 +225,35 @@ public class DataSetControllerImpl implements SimDataConstants {
 			functionArgs[3] = xyz.getZ(); // z
 			for(int i=0;i<funcVarNames.length;i+= 1){
 				functionArgs[i+4] = argValues[i];
+				if(inside_near_far_indexes[i] != null && inside_near_far_indexes[i].volIndexFar != -1){
+					functionArgs[i+4] = VolumeIndexNearFar.interpolate(argValues[i], argValues[funcVarNames.length+i]);
+				}else if(outside_near_far_indexes[i] != null && outside_near_far_indexes[i].volIndexFar != -1){
+					functionArgs[i+4] = VolumeIndexNearFar.interpolate(argValues[i], argValues[funcVarNames.length+i]);			
+				}
 			}
 			return function.getSimplifiedExpression().evaluateVector(functionArgs);
 		}
-		public FunctionIndexes(AnnotatedFunction argAF,Coordinate argXYZ,String[] argVarNames,String[] argSimFileVarNames,int[] argIndexes){
+		public FunctionIndexes(AnnotatedFunction argAF,Coordinate argXYZ,
+				String[] argVarNames,String[] argSimFileVarNames,int[] argIndexes,
+				VolumeIndexNearFar[] arg_inside_near_far_indexes,
+				VolumeIndexNearFar[] arg_outside_near_far_indexes){
+			for(int i=0;i<argVarNames.length;i+= 1){
+				if(
+					(arg_inside_near_far_indexes[i] != null && arg_inside_near_far_indexes[i].volIndexNear != argIndexes[i])
+					||
+					(arg_outside_near_far_indexes[i] != null && arg_outside_near_far_indexes[i].volIndexNear != argIndexes[i]))
+				{
+					throw new RuntimeException("FunctionIndexes: 'near' indexes should always match argIndexes when they exist");
+				}
+			}
 			function = argAF;
 			xyz = argXYZ;
 			funcVarNames = argVarNames;
 			funcIndexes = argIndexes;
 			simFileVarNames = argSimFileVarNames;
 			functionArgs = new double[argSimFileVarNames.length+4];
-			
+			inside_near_far_indexes = arg_inside_near_far_indexes;
+			outside_near_far_indexes = arg_outside_near_far_indexes;
 		}
 	};
 
@@ -412,6 +490,48 @@ private cbit.util.TimeSeriesJobResults calculateStatisticsFromWhole(
     throw new IllegalArgumentException("Couldn't determine format of data to return");
 }
 
+private double interpolateVolDataValToMemb(CartesianMesh mesh,int membraneIndex,SimDataHolder simDataHolder,boolean isInside,boolean IsRegion){
+	
+	VolumeIndexNearFar volIndexNearFar = interpolateFindNearFarIndex(mesh, membraneIndex, isInside,IsRegion);
+	if(volIndexNearFar.volIndexFar == -1){
+		return simDataHolder.getData()[volIndexNearFar.volIndexNear];
+	}
+	return VolumeIndexNearFar.interpolate(simDataHolder.getData()[volIndexNearFar.volIndexNear], simDataHolder.getData()[volIndexNearFar.volIndexFar]);
+	
+}
+private VolumeIndexNearFar interpolateFindNearFarIndex(CartesianMesh mesh,int membraneIndex,boolean isInside,boolean isRegion){
+	int volIndexNear = -1;
+	int volIndexFar = -1;
+	if(isInside){
+		volIndexNear = mesh.getMembraneElements()[membraneIndex].getInsideVolumeIndex();
+		volIndexFar = volIndexNear+(volIndexNear-mesh.getMembraneElements()[membraneIndex].getOutsideVolumeIndex());
+	}else{
+		volIndexNear = mesh.getMembraneElements()[membraneIndex].getOutsideVolumeIndex();
+		volIndexFar = volIndexNear+(volIndexNear-mesh.getMembraneElements()[membraneIndex].getInsideVolumeIndex());
+	}
+	//Check if totally out of bounds
+	if(volIndexFar < 0 || volIndexFar > mesh.getNumVolumeElements()){
+		volIndexFar = -1;
+	}else{
+		//Check if index wrapped
+		CoordinateIndex coordFar = mesh.getCoordinateIndexFromVolumeIndex(volIndexFar);
+		CoordinateIndex coordNear = mesh.getCoordinateIndexFromVolumeIndex(volIndexNear);
+		if( Math.abs(coordFar.x-coordNear.x) > 1 ||
+			Math.abs(coordFar.y-coordNear.y) > 1 ||
+			Math.abs(coordFar.z-coordNear.z) > 1
+		){
+			volIndexFar = -1;
+		}else{
+			//Check if in same region
+			if(mesh.getVolumeRegionIndex(volIndexNear) != mesh.getVolumeRegionIndex(volIndexFar)){
+				volIndexFar = -1;
+			}			
+		}
+	}
+	volIndexNear = (isRegion?mesh.getVolumeRegionIndex(volIndexNear):volIndexNear);
+	volIndexFar = (volIndexFar == -1?-1:(isRegion?mesh.getVolumeRegionIndex(volIndexFar):volIndexFar));
+	return new VolumeIndexNearFar(volIndexNear,volIndexFar);
+}
 
 /**
  * Insert the method's description here.
@@ -430,33 +550,6 @@ private SimDataBlock evaluateFunction(
 	throws ExpressionException, DataAccessException, IOException, MathException {
 
 	Expression exp = fieldFunctionSubstitution(vcdID, function);
-//	if(vcdID instanceof VCSimulationDataIdentifier){
-//		exp = fieldFunctionSubstitution((VCSimulationDataIdentifier)vcdID, function);
-//	}else if(vcdID instanceof VCSimulationDataIdentifierOldStyle){
-//		exp = fieldFunctionSubstitution((VCSimulationDataIdentifierOldStyle)vcdID, function);
-//	}else if(vcdID instanceof ExternalDataIdentifier){
-//		SimResampleInfoProvider simResampleInfoProvider =
-//			new SimResampleInfoProvider() {
-//				public int getJobIndex() {
-//					return 0;
-//				}
-//				public KeyValue getSimulationKey() {
-//					return ((ExternalDataIdentifier)vcdID).getKey();
-//				}
-//				public boolean isParameterScanType() {
-//					return true;
-//				}
-//				public String getID() {
-//					return ((ExternalDataIdentifier)vcdID).getID();
-//				}
-//				public User getOwner() {
-//					return ((ExternalDataIdentifier)vcdID).getOwner();
-//				}
-//		};
-//		exp = fieldFunctionSubstitution(simResampleInfoProvider, function);
-//	}else{
-//		exp = function.getSimplifiedExpression();
-//	}
 		
 	//
 	// get Dependent datasets
@@ -615,19 +708,13 @@ private SimDataBlock evaluateFunction(
 				DataSetIdentifier dsi = (DataSetIdentifier)dependencyList.elementAt(j);
 				SimDataHolder simDataHolder = dataSetList.elementAt(j);
 				if (simDataHolder.getVariableType().equals(VariableType.VOLUME) && dsi.getName().endsWith("_INSIDE")){
-					int volInsideIndex = mesh.getMembraneElements()[i].getInsideVolumeIndex();
-					args[4 + j] = simDataHolder.getData()[volInsideIndex];
+					args[4 + j] = interpolateVolDataValToMemb(mesh,i,simDataHolder,true,false);//simDataHolder.getData()[volInsideIndex];
 				}else if (simDataHolder.getVariableType().equals(VariableType.VOLUME) && dsi.getName().endsWith("_OUTSIDE")){
-					int volOutsideIndex = mesh.getMembraneElements()[i].getOutsideVolumeIndex();
-					args[4 + j] = simDataHolder.getData()[volOutsideIndex];
+					args[4 + j] = interpolateVolDataValToMemb(mesh,i,simDataHolder,false,false);//simDataHolder.getData()[volOutsideIndex];
 				}else if (simDataHolder.getVariableType().equals(VariableType.VOLUME_REGION) && dsi.getName().endsWith("_INSIDE")){
-					int insideVolumeIndex = mesh.getMembraneElements()[i].getInsideVolumeIndex();
-					int volRegionIndex = mesh.getVolumeRegionIndex(insideVolumeIndex);
-					args[4 + j] = simDataHolder.getData()[volRegionIndex];
+					args[4 + j] = interpolateVolDataValToMemb(mesh,i,simDataHolder,true,true);//simDataHolder.getData()[volRegionIndex];
 				}else if (simDataHolder.getVariableType().equals(VariableType.VOLUME_REGION) && dsi.getName().endsWith("_OUTSIDE")){
-					int outsideVolumeIndex = mesh.getMembraneElements()[i].getOutsideVolumeIndex();
-					int volRegionIndex = mesh.getVolumeRegionIndex(outsideVolumeIndex);
-					args[4 + j] = simDataHolder.getData()[volRegionIndex];
+					args[4 + j] = interpolateVolDataValToMemb(mesh,i,simDataHolder,false,true);//simDataHolder.getData()[volRegionIndex];
 				}else if (simDataHolder.getVariableType().equals(VariableType.MEMBRANE)){
 					args[4 + j] = simDataHolder.getData()[i];
 				}else if (simDataHolder.getVariableType().equals(VariableType.MEMBRANE_REGION)){
@@ -643,28 +730,22 @@ private SimDataBlock evaluateFunction(
 					//
 					// find "inside" volume element index for first membrane element in MembraneRegion 'i'.
 					//
-					int insideVolumeIndex = -1;
 					for (int k = 0; k < mesh.getMembraneElements().length; k++){
 						if (mesh.getMembraneRegionIndex(k)==i){
-							insideVolumeIndex = mesh.getMembraneElements()[k].getInsideVolumeIndex();
+							args[4 + j] = interpolateVolDataValToMemb(mesh,i,simDataHolder,true,true);
 							break;
 						}
 					}
-					int volRegionIndex = mesh.getVolumeRegionIndex(insideVolumeIndex);
-					args[4 + j] = simDataHolder.getData()[volRegionIndex];
 				}else if (simDataHolder.getVariableType().equals(VariableType.VOLUME_REGION) && dsi.getName().endsWith("_OUTSIDE")){
 					//
 					// find "outside" volume element index for first membrane element in MembraneRegion 'i'.
 					//
-					int outsideVolumeIndex = -1;
 					for (int k = 0; k < mesh.getMembraneElements().length; k++){
 						if (mesh.getMembraneRegionIndex(k)==i){
-							outsideVolumeIndex = mesh.getMembraneElements()[k].getOutsideVolumeIndex();
+							args[4 + j] = interpolateVolDataValToMemb(mesh,i,simDataHolder,false,true);
 							break;
 						}
 					}
-					int volRegionIndex = mesh.getVolumeRegionIndex(outsideVolumeIndex);
-					args[4 + j] = simDataHolder.getData()[volRegionIndex];
 				}else if (simDataHolder.getVariableType().equals(VariableType.MEMBRANE)){
 					args[4 + j] = simDataHolder.getData()[i];
 				}else if (simDataHolder.getVariableType().equals(VariableType.MEMBRANE_REGION)){
@@ -756,7 +837,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 	        	String replace_new =
 	        		ExternalDataIdentifier.createSimIDWithJobIndex(
 	        				fieldDataFileOperationSpec.specEDI.getKey(),
-	        				fieldDataFileOperationSpec.JOBINDEX_DEFAULT, false);
+	        				FieldDataFileOperationSpec.JOBINDEX_DEFAULT, false);
 		        if(isOldStyle){
 		        	String replace_orig =
 		        		ExternalDataIdentifier.createSimIDWithJobIndex(origSimKey, 0, true);
@@ -815,7 +896,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 			        	String replace_new =
 			        		ExternalDataIdentifier.createSimIDWithJobIndex(
 			        				fieldDataFileOperationSpec.specEDI.getKey(),
-			        				fieldDataFileOperationSpec.JOBINDEX_DEFAULT, false);
+			        				FieldDataFileOperationSpec.JOBINDEX_DEFAULT, false);
 				        if(isOldStyle){
 				        	String replace_orig =
 				        		ExternalDataIdentifier.createSimIDWithJobIndex(origSimKey, 0, true);
@@ -1176,6 +1257,9 @@ private FunctionIndexes[] findFunctionIndexes(VCDataIdentifier vcdID,AnnotatedFu
 	String[] varNames = new String[varIndex-4];
 	String[] simFileVarNames = new String[varNames.length];
 	int[][] varIndexes = new int[dataIndexes.length][varNames.length];
+	//New data needed for INSIDE-OUTSIDE interpolation
+	VolumeIndexNearFar[][] inside_near_far_indexes = new VolumeIndexNearFar[dataIndexes.length][varNames.length];
+	VolumeIndexNearFar[][] outside_near_far_indexes = new VolumeIndexNearFar[dataIndexes.length][varNames.length];
 	
 	CartesianMesh mesh = getMesh(vcdID);
 	//
@@ -1214,28 +1298,32 @@ private FunctionIndexes[] findFunctionIndexes(VCDataIdentifier vcdID,AnnotatedFu
 			coords[i] = mesh.getCoordinateFromMembraneIndex(dataIndexes[i]);
 			for (int j = 0; j < varIndex - 4; j++) {
 				DataSetIdentifier dsi = (DataSetIdentifier)dependencyList.elementAt(j);
-				if (dsi.getVariableType().equals(VariableType.VOLUME) && dsi.getName().endsWith("_INSIDE")){
+				if (dsi.getVariableType().equals(VariableType.VOLUME) && dsi.getName().endsWith("_INSIDE")){		
 					int volInsideIndex = mesh.getMembraneElements()[dataIndexes[i]].getInsideVolumeIndex();
 					varNames[j]=dsi.getName();
 					simFileVarNames[j] = dsi.getName().substring(0,dsi.getName().lastIndexOf("_"));
 					varIndexes[i][j] = volInsideIndex;
-				}else if (dsi.getVariableType().equals(VariableType.VOLUME) && dsi.getName().endsWith("_OUTSIDE")){
+					inside_near_far_indexes[i][j] = interpolateFindNearFarIndex(mesh, dataIndexes[i], true, false);
+				}else if (dsi.getVariableType().equals(VariableType.VOLUME) && dsi.getName().endsWith("_OUTSIDE")){					
 					int volOutsideIndex = mesh.getMembraneElements()[dataIndexes[i]].getOutsideVolumeIndex();
 					varNames[j]=dsi.getName();
 					simFileVarNames[j] = dsi.getName().substring(0,dsi.getName().lastIndexOf("_"));
 					varIndexes[i][j] = volOutsideIndex;
-				}else if (dsi.getVariableType().equals(VariableType.VOLUME_REGION) && dsi.getName().endsWith("_INSIDE")){
+					outside_near_far_indexes[i][j] = interpolateFindNearFarIndex(mesh, dataIndexes[i], false, false);
+				}else if (dsi.getVariableType().equals(VariableType.VOLUME_REGION) && dsi.getName().endsWith("_INSIDE")){					
 					int insideVolumeIndex = mesh.getMembraneElements()[dataIndexes[i]].getInsideVolumeIndex();
 					int volRegionIndex = mesh.getVolumeRegionIndex(insideVolumeIndex);
 					varNames[j]=dsi.getName();
 					simFileVarNames[j] = dsi.getName().substring(0,dsi.getName().lastIndexOf("_"));
 					varIndexes[i][j] = volRegionIndex;
-				}else if (dsi.getVariableType().equals(VariableType.VOLUME_REGION) && dsi.getName().endsWith("_OUTSIDE")){
+					inside_near_far_indexes[i][j] = interpolateFindNearFarIndex(mesh, dataIndexes[i], true, true);
+				}else if (dsi.getVariableType().equals(VariableType.VOLUME_REGION) && dsi.getName().endsWith("_OUTSIDE")){					
 					int outsideVolumeIndex = mesh.getMembraneElements()[dataIndexes[i]].getOutsideVolumeIndex();
 					int volRegionIndex = mesh.getVolumeRegionIndex(outsideVolumeIndex);
 					varNames[j]=dsi.getName();
 					simFileVarNames[j] = dsi.getName().substring(0,dsi.getName().lastIndexOf("_"));
 					varIndexes[i][j] = volRegionIndex;
+					outside_near_far_indexes[i][j] = interpolateFindNearFarIndex(mesh, dataIndexes[i], false, true);
 				}else if (dsi.getVariableType().equals(VariableType.MEMBRANE)){
 					varNames[j]=dsi.getName();
 					simFileVarNames[j] = dsi.getName();
@@ -1250,7 +1338,7 @@ private FunctionIndexes[] findFunctionIndexes(VCDataIdentifier vcdID,AnnotatedFu
 		}else if (variableType.equals(VariableType.MEMBRANE_REGION)){
 			for (int j = 0; j < varIndex - 4; j++) {
 				DataSetIdentifier dsi = (DataSetIdentifier)dependencyList.elementAt(j);
-				if (dsi.getVariableType().equals(VariableType.VOLUME_REGION) && dsi.getName().endsWith("_INSIDE")){
+				if (dsi.getVariableType().equals(VariableType.VOLUME_REGION) && dsi.getName().endsWith("_INSIDE")){					
 					//
 					// find "inside" volume element index for first membrane element in MembraneRegion 'i'.
 					//
@@ -1265,7 +1353,8 @@ private FunctionIndexes[] findFunctionIndexes(VCDataIdentifier vcdID,AnnotatedFu
 					varNames[j]=dsi.getName();
 					simFileVarNames[j] = dsi.getName().substring(0,dsi.getName().lastIndexOf("_"));
 					varIndexes[i][j] = volRegionIndex;
-				}else if (dsi.getVariableType().equals(VariableType.VOLUME_REGION) && dsi.getName().endsWith("_OUTSIDE")){
+					inside_near_far_indexes[i][j] = interpolateFindNearFarIndex(mesh, dataIndexes[i], true, true);;
+				}else if (dsi.getVariableType().equals(VariableType.VOLUME_REGION) && dsi.getName().endsWith("_OUTSIDE")){					
 					//
 					// find "outside" volume element index for first membrane element in MembraneRegion 'i'.
 					//
@@ -1280,6 +1369,7 @@ private FunctionIndexes[] findFunctionIndexes(VCDataIdentifier vcdID,AnnotatedFu
 					varNames[j]=dsi.getName();
 					simFileVarNames[j] = dsi.getName().substring(0,dsi.getName().lastIndexOf("_"));
 					varIndexes[i][j] = volRegionIndex;
+					outside_near_far_indexes[i][j] = interpolateFindNearFarIndex(mesh, dataIndexes[i], false, true);
 				}else if (dsi.getVariableType().equals(VariableType.MEMBRANE)){
 					varNames[j]=dsi.getName();
 					simFileVarNames[j] = dsi.getName();
@@ -1296,7 +1386,7 @@ private FunctionIndexes[] findFunctionIndexes(VCDataIdentifier vcdID,AnnotatedFu
 
 	FunctionIndexes[] fiArr = new FunctionIndexes[dataIndexes.length];
 	for(int i=0;i<dataIndexes.length;i+= 1){
-		fiArr[i] = new FunctionIndexes(function,coords[i],varNames,simFileVarNames,varIndexes[i]);
+		fiArr[i] = new FunctionIndexes(function,coords[i],varNames,simFileVarNames,varIndexes[i],inside_near_far_indexes[i],outside_near_far_indexes[i]/*,insideArgIndex,outsideArgIndex*/);
 	}
 	return fiArr;
 	//
@@ -2220,6 +2310,17 @@ private TimeSeriesJobResults getSpecialTimeSeriesValues(VCDataIdentifier vcdID,
 				bIsSpecial = true;
 				break;
 			}
+//			Expression exp = functionFromVarName.getSimplifiedExpression();
+//			String[] funcSymbols = exp.getSymbols();
+//			if(funcSymbols != null){
+//				for (int j = 0; j < funcSymbols.length; j++) {
+//					SymbolTableEntry ste = exp.getSymbolBinding(funcSymbols[j]);
+//					if(ste.getName().endsWith("_INSIDE") || ste.getName().endsWith("_OUTSIDE")){
+//						bIsSpecial = true;
+//						break;
+//					}
+//				}
+//			}
 		}
 	}
 
@@ -2472,6 +2573,7 @@ public cbit.util.TimeSeriesJobResults getTimeSeriesValues(final VCDataIdentifier
 		);
 
 	dataCachingEnabled = false;
+	Exception failException = null;
 	try{
 		TimeSeriesJobResults timeSeriesJobResults =
 			getTimeSeriesValues_private(vcdID,timeSeriesJobSpec);
@@ -2482,21 +2584,27 @@ public cbit.util.TimeSeriesJobResults getTimeSeriesValues(final VCDataIdentifier
 						new Double(100),
 						timeSeriesJobResults,null
 					);
-		
 		return timeSeriesJobResults;
 		
-	}catch (DataAccessException e) {
+	}catch (Exception e) {
+		failException = e;
 		e.printStackTrace();
-		fireDataJobEventIfNecessary(
-				timeSeriesJobSpec.getVcDataJobID(),
-						MessageEvent.DATA_FAILURE,
-						vcdID,
-						new Double(0),
-						null,e
-					);
-		throw e;
+		if(e instanceof DataAccessException){
+			throw (DataAccessException)e;
+		}else{
+			throw new DataAccessException(e.getClass().getName()+"\n"+e.getMessage());
+		}
 	}finally{
 		dataCachingEnabled = true;
+		if(failException != null){
+			fireDataJobEventIfNecessary(
+					timeSeriesJobSpec.getVcDataJobID(),
+							MessageEvent.DATA_FAILURE,
+							vcdID,
+							new Double(0),
+							null,failException
+						);			
+		}
 	}
 }
 
