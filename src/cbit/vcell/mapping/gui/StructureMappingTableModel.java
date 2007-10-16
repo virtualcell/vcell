@@ -5,9 +5,10 @@ package cbit.vcell.mapping.gui;
 ©*/
 import javax.swing.JComboBox;
 
+import org.vcell.sbml.vcell.StructureSizeSolver;
+
 import cbit.vcell.parser.*;
 import cbit.vcell.units.VCUnitDefinition;
-import cbit.vcell.vcml.StructureSizeSolver;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.mapping.*;

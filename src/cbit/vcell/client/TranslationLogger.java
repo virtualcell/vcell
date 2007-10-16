@@ -3,7 +3,6 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.UserCancelException;
-import cbit.vcell.vcml.TranslationMessage;
 
 import cbit.util.xml.VCLogger;
 
@@ -18,7 +17,7 @@ import java.util.ArrayList;
  	* Creation date: (9/21/2004 10:36:23 AM)
  	* @author: Rashad Badrawi
  */
-public class TranslationLogger implements VCLogger {
+public class TranslationLogger extends VCLogger {
 	  
 	private static String OPTIONS [] = {"Continue", "Cancel"};
 	private static String OK_OPTION = "OK";
@@ -65,14 +64,14 @@ public class TranslationLogger implements VCLogger {
 
 	public void sendMessage(int messageLevel, int messageType) throws UserCancelException {
 
-		String message = TranslationMessage.getDefaultMessage(messageType);
+		String message = VCLogger.getDefaultMessage(messageType);
 		sendMessage(messageLevel, messageType, message);	
 	}
 
 	public void sendMessage(int messageLevel, int messageType, String message) throws UserCancelException {
 
 		if (message == null || message.length() == 0 || messageLevel < 0 || messageLevel > 2 || 
-			!TranslationMessage.isValidMessageType(messageType)) {
+			!VCLogger.isValidMessageType(messageType)) {
 			throw new IllegalArgumentException("Invalid params for sending translation message.");
 		}
 		if (messageLevel == TranslationLogger.LOW_PRIORITY || messageLevel == TranslationLogger.MEDIUM_PRIORITY) {

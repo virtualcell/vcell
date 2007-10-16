@@ -1509,7 +1509,7 @@ private Element nodeInfo2Element(NodeInfo node) {
 	public VCDocument processComparisonResult() throws Exception {
 		try { 
 			final String DEF_VCML_SL = "http://www.nrcam.uchc.edu/xml/biomodel.xsd";            //assuming its only used for VCML
-			String schemaLocation = cbit.vcell.vcml.Translator.VCML_NS + " " + 
+			String schemaLocation = cbit.vcell.xml.XMLTags.VCML_NS + " " + 
 			                        cbit.vcell.server.PropertyLoader.getProperty(cbit.vcell.server.PropertyLoader.vcmlSchemaUrlProperty, DEF_VCML_SL); 
 			NodeInfo root = (NodeInfo)getTree().getModel().getRoot();
 			//if (!isNormal(root)) {

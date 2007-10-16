@@ -1,35 +1,30 @@
 package cbit.vcell.clientdb;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
-import cbit.vcell.messaging.db.SimulationJobStatus;
-import cbit.vcell.modeldb.VersionableTypeVersion;
+import cbit.image.VCImage;
+import cbit.image.VCImageInfo;
+import cbit.sql.KeyValue;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.dictionary.FormalSpeciesType;
-import cbit.vcell.xml.XmlDialect;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.math.MathException;
-import cbit.vcell.mathmodel.*;
-import cbit.image.VCImage;
-import cbit.image.VCImageInfo;
-import cbit.vcell.server.User;
+import cbit.vcell.document.VCDocument;
 import cbit.vcell.field.FieldDataDBEventListener;
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
-import cbit.vcell.geometry.*;
-import cbit.vcell.solver.*;
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.biomodel.BioModelInfo;
+import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
-import java.rmi.RemoteException;
+import cbit.vcell.math.MathException;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.mathmodel.MathModelInfo;
+import cbit.vcell.modeldb.VersionableTypeVersion;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.server.DataAccessException;
-import cbit.sql.*;
-import cbit.vcell.document.*;
+import cbit.vcell.server.User;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solver.ode.gui.SimulationStatus;
 /**
  * Insert the type's description here.
  * Creation date: (10/28/00 12:05:57 AM)
@@ -361,25 +356,9 @@ public cbit.vcell.model.ReactionStepInfo[] getUserReactionStepInfos(KeyValue rea
 	public String getXML(BioModelInfo bmInfo) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException, cbit.vcell.xml.XmlParseException;
 
 
-/**
- * This method returns a XML String of the given bioModel object with a specific type.
- * Creation date: (8/22/2000 3:30:43 PM)
- * @return java.lang.String
- * @param bioModel cbit.vcell.biomodel.BioModel
- */
-String getXML(cbit.vcell.biomodel.BioModelInfo bioModelInfoArg, XmlDialect toDialect) throws RemoteException, cbit.vcell.xml.XmlParseException, java.io.IOException, cbit.vcell.server.DataAccessException;
-
 
 	public String getXML(MathModelInfo mmInfo) throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException, cbit.vcell.xml.XmlParseException;
 
-
-/**
- * This method returns a XML String of the given MathModel object with a specific type.
- * Creation date: (8/22/2000 3:30:43 PM)
- * @return java.lang.String
- * @param bioModel cbit.vcell.biomodel.BioModel
- */
-String getXML(MathModelInfo mathModelInfoArg, XmlDialect toDialect) throws RemoteException, cbit.vcell.xml.XmlParseException, java.io.IOException,cbit.vcell.server.DataAccessException;
 
 
 /**

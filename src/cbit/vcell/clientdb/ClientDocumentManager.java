@@ -1,12 +1,33 @@
 package cbit.vcell.clientdb;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
-import cbit.vcell.client.server.ClientServerManager;
+import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.EventListener;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Vector;
+
+import cbit.image.VCImage;
+import cbit.image.VCImageInfo;
+import cbit.sql.KeyValue;
+import cbit.sql.Version;
+import cbit.sql.VersionInfo;
+import cbit.sql.VersionableType;
+import cbit.util.BeanUtils;
+import cbit.util.BigString;
+import cbit.util.Compare;
+import cbit.util.ISize;
+import cbit.util.Preference;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.biomodel.BioModelChildSummary;
+import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.desktop.controls.SessionManager;
-import cbit.vcell.dictionary.FormalSpeciesType;
 import cbit.vcell.dictionary.DBFormalSpecies;
+import cbit.vcell.dictionary.FormalSpeciesType;
 import cbit.vcell.document.VCDocument;
-import cbit.vcell.export.server.ExportLog;
 import cbit.vcell.field.FieldDataDBEvent;
 import cbit.vcell.field.FieldDataDBEventListener;
 import cbit.vcell.field.FieldDataDBOperationResults;
@@ -15,31 +36,29 @@ import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldFunctionContainer;
-import cbit.util.*;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.mathmodel.*;
-import cbit.vcell.math.*;
-import cbit.vcell.geometry.*;
-import cbit.vcell.server.*;
-import cbit.vcell.model.*;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryInfo;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.MathException;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.mathmodel.MathModelChildSummary;
+import cbit.vcell.mathmodel.MathModelInfo;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.Structure;
 import cbit.vcell.modeldb.VersionableTypeVersion;
-
-import java.rmi.*;
-import cbit.vcell.mapping.*;
-import cbit.vcell.solver.*;
-import cbit.image.VCImage;
-import cbit.image.VCImageInfo;
-import cbit.sql.*;
-import java.util.*;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.server.CurateSpec;
+import cbit.vcell.server.DataAccessException;
+import cbit.vcell.server.ObjectNotFoundException;
+import cbit.vcell.server.PermissionException;
 import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.simdata.ExternalDataIdentifier;
-import cbit.vcell.xml.XmlDialect;
-import cbit.vcell.biomodel.*;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.xml.XmlHelper;
-import cbit.vcell.messaging.db.SimulationJobStatus;
 /**
  * Insert the type's description here.
  * Creation date: (10/28/00 12:08:30 AM)
@@ -1547,32 +1566,10 @@ public String getXML(BioModelInfo bmInfo) throws cbit.vcell.server.DataAccessExc
 }
 
 
-/**
- * This method returns a XML String of the given bioModel object with a specific type.
- * Creation date: (2/4/2002 5:17:15 PM)
- * @return java.lang.String
- * @param bioModel cbit.vcell.biomodel.BioModel
- */
-public java.lang.String getXML(cbit.vcell.biomodel.BioModelInfo bioModelInfoArg, XmlDialect toDialect) throws java.io.IOException, cbit.vcell.xml.XmlParseException, DataAccessException {
-	return XmlHelper.exportXML(getBioModel(bioModelInfoArg), toDialect);
-}
-
-
 public String getXML(MathModelInfo mmInfo) throws cbit.vcell.server.DataAccessException, cbit.vcell.xml.XmlParseException{
 	
 	return getMathModelXML(mmInfo.getVersion().getVersionKey());
 	
-}
-
-
-/**
- * This method returns a XML String of the given MathModel object with a specific type.
- * Creation date: (2/4/2002 5:17:15 PM)
- * @return java.lang.String
- * @param bioModel cbit.vcell.biomodel.BioModel
- */
-public java.lang.String getXML(cbit.vcell.mathmodel.MathModelInfo mathModelInfoArg, XmlDialect toDialect) throws java.io.IOException, cbit.vcell.xml.XmlParseException, DataAccessException {
-	return XmlHelper.exportXML(getMathModel(mathModelInfoArg), toDialect);
 }
 
 
