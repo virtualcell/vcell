@@ -19,7 +19,7 @@ public interface FileFilters {
 	public static final FileFilter FILE_FILTER_XML 		= new ExtensionFilter(".xml", 	"XML Files (*.xml)");
 	public static final FileFilter FILE_FILTER_VCML		= new ExtensionFilter(".xml", 	"VCML format (*.xml)");
 	public static final FileFilter FILE_FILTER_SBML		= new ExtensionFilter(".xml", 	"SBML format <Level1,Version2>  (*.xml)");
-	public static final FileFilter FILE_FILTER_SBML_2	= new ExtensionFilter(".xml", 	"SBML format <Level2,Version1>  (*.xml)");
+	public static final FileFilter FILE_FILTER_SBML_2	= new ExtensionFilter(".xml", 	"SBML format <Level2,Version3>  (*.xml)");
 	public static final FileFilter FILE_FILTER_CELLML	= new ExtensionFilter(".xml", 	"CELLML format (*.xml)");
 	public static final FileFilter FILE_FILTER_AVS		= new ExtensionFilter(".avs", 	"AVS Unstructured Cell Data (*.avs)");
 	public static final FileFilter FILE_FILTER_STL		= new ExtensionFilter(".stl", 	"Stereolithography (STL) file (*.stl)");

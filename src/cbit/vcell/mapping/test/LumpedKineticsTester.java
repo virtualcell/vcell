@@ -3,6 +3,8 @@ package cbit.vcell.mapping.test;
 import java.io.PrintStream;
 import java.io.StringWriter;
 
+import org.vcell.sbml.vcell.StructureSizeSolver;
+
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.geometry.Geometry;
@@ -32,7 +34,6 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.units.VCUnitDefinition;
-import cbit.vcell.vcml.StructureSizeSolver;
 
 public class LumpedKineticsTester implements VCDatabaseVisitor {
 	int count = 0;

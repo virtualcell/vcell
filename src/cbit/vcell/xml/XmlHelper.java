@@ -8,8 +8,6 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.vcml.Translator;
-import cbit.vcell.vcml.VCQualCellTranslator;
 import cbit.util.Extent;
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlUtil;
@@ -28,6 +26,9 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.Namespace;
+import org.vcell.cellml.VCQualCellTranslator;
+import org.vcell.sbml.vcell.MathModel_SBMLExporter;
+import org.vcell.sbml.vcell.SBMLExporter;
 
 /**
 This class represents the 'API' of the XML framework for all VC classes, outside that framework. Most of the methods of
@@ -69,7 +70,7 @@ public class XmlHelper {
 			}
 			Xmlproducer xmlProducer = new Xmlproducer(printkeys);
 			Element element = xmlProducer.getXML(bioModel);
-			element = XmlUtil.setDefaultNamespace(element, Namespace.getNamespace(Translator.VCML_NS));		
+			element = XmlUtil.setDefaultNamespace(element, Namespace.getNamespace(XMLTags.VCML_NS));		
 			xmlString = XmlUtil.xmlToString(element);
 		} catch (ExpressionException e) {
 			e.printStackTrace();
@@ -112,17 +113,35 @@ public static cbit.xml.merge.XmlTreeDiff compareMerge(String xmlBaseString, Stri
 
 }
 
-
 /**
- * Exports VCML format to another supported format (currently: SBML or CellML).
- * Creation date: (4/4/2003 3:59:37 PM)
+ * Exports VCML format to another supported format (currently: SBML or CellML). It allows 
+   choosing a specific Simulation Spec to export.
+ * Creation date: (4/8/2003 12:30:27 PM)
  * @return java.lang.String
  */
-public static String exportXML(VCDocument vcDoc, XmlDialect toDialect) throws XmlParseException {
+public static String exportSBML(VCDocument vcDoc, int level, int version, String appName) throws XmlParseException {
 
-	return exportXML(vcDoc, toDialect, null);
+	if (vcDoc == null) {
+        throw new XmlParseException("Invalid arguments for exporting SBML.");
+    } 
+	if (vcDoc instanceof BioModel) {
+	    SBMLExporter sbmlExporter = new SBMLExporter((BioModel)vcDoc, level, version);
+	    sbmlExporter.setVcPreferredSimContextName(appName);
+	    return sbmlExporter.getSBMLFile();
+	} else if (vcDoc instanceof MathModel) {
+		try {
+			return MathModel_SBMLExporter.getSBML((MathModel)vcDoc).toSBML();
+		} catch (ExpressionException e) {
+			e.printStackTrace(System.out);
+			throw new XmlParseException(e.getMessage());
+		} catch (IOException e) {
+			e.printStackTrace(System.out);
+			throw new XmlParseException(e.getMessage());
+		}
+	} else{
+		throw new RuntimeException("unsupported Document Type "+vcDoc.getClass().getName()+" for SBML export");
+	}
 }
-
 
 /**
  * Exports VCML format to another supported format (currently: SBML or CellML). It allows 
@@ -130,78 +149,9 @@ public static String exportXML(VCDocument vcDoc, XmlDialect toDialect) throws Xm
  * Creation date: (4/8/2003 12:30:27 PM)
  * @return java.lang.String
  */
-public static String exportXML(VCDocument vcDoc, XmlDialect toDialect, String appName) throws XmlParseException {
-
-	if (vcDoc == null) {
-        throw new XmlParseException("Invalid arguments for exporting XML.");
-    } 
-	String resultXML = null;
-
-	cbit.vcell.vcml.SBMLExporter sbmlExporter = null;
-	if (toDialect.equals(XmlDialect.SBML_L1V1) || toDialect.equals(XmlDialect.SBML_L2V1)) {
-		int level = -1;
-		if (toDialect.equals(XmlDialect.SBML_L1V1)) {
-			level = 1;
-		} else if (toDialect.equals(XmlDialect.SBML_L2V1)) {
-			level = 2;
-		}
-		if (vcDoc instanceof BioModel) {
-		    sbmlExporter = new cbit.vcell.vcml.SBMLExporter((BioModel)vcDoc, level);
-		    sbmlExporter.setVcPreferredSimContextName(appName);
-		    resultXML = sbmlExporter.getSBMLFile();
-		} else if (vcDoc instanceof MathModel) {
-			// Invoke SBMLExporter_alt ...
-		}
-    } else {   
-	    String sourceXML; 
-		if (vcDoc instanceof BioModel) {
-			sourceXML = XmlHelper.bioModelToXML((BioModel)vcDoc, false);
-		} else if (vcDoc instanceof MathModel) {
-			sourceXML = XmlHelper.mathModelToXML((MathModel)vcDoc, false);
-		} else {
-			throw new XmlParseException("Invalid document type to translate: " + vcDoc.toString());
-		}
-		resultXML = exportXML(sourceXML, toDialect, appName);
-    }
-
-	return resultXML;
+public static String exportCellML(VCDocument vcDoc, String appName) throws XmlParseException {
+	throw new RuntimeException("CellML support has been disabled");
 }
-
-
-	private static String exportXML(String sourceXml, XmlDialect toDialect) throws XmlParseException {
-
-		return exportXML(sourceXml, toDialect, null);
-	}
-
-
-	private static String exportXML(String sourceXml, XmlDialect toDialect, String appName) throws XmlParseException {
-
-		String transType = getTranslatorType(XmlDialect.VCML, toDialect);
-		if (transType == null) {
-			throw new XmlParseException("Invalid translation request from VCML to " + toDialect.getName());
-		}
-		try {
-			String result;
-	    	BufferedReader br = new BufferedReader(new StringReader(sourceXml));
-		    StringWriter sw = new StringWriter();
-		    Translator t = Translator.getTranslator(transType);
-		    if (appName != null && appName.length() > 0 ) {           			
-		    	if (t instanceof VCQualCellTranslator) {
-		    		((VCQualCellTranslator)t).setPreferedSimSpec(appName);
-		    	}
-		    }
-		    Document doc = t.translate(br, false);                            //no validation for VCML.
-			t.printTarget(sw);
-			sw.flush();
-			result = sw.toString();
-			sw.close();
-
-			return result;
-		} catch (Exception e){
-			e.printStackTrace();
-			throw new XmlParseException(e.getMessage());
-		}
-	}
 
 
 	public static String geometryToXML(Geometry geometry) throws XmlParseException {
@@ -219,43 +169,11 @@ public static String exportXML(VCDocument vcDoc, XmlDialect toDialect, String ap
 		}
 		Xmlproducer xmlProducer = new Xmlproducer(printkeys);
 		Element element = xmlProducer.getXML(geometry);
-		element = XmlUtil.setDefaultNamespace(element, Namespace.getNamespace(Translator.VCML_NS));		
+		element = XmlUtil.setDefaultNamespace(element, Namespace.getNamespace(XMLTags.VCML_NS));		
 		geometryString = XmlUtil.xmlToString(element);
 		
 		return geometryString;
 	}
-
-
-	//switches from XmlDialect lingo to Translator lingo
-	private static String getTranslatorType(XmlDialect fromDialect, XmlDialect toDialect) {
-
-		String transType = null;
-		
-		if (fromDialect.equals(XmlDialect.VCML)) {
-			if (toDialect.equals(XmlDialect.SBML_L1V1)) {
-				transType = Translator.VCSB_1;
-			} else if (toDialect.equals(XmlDialect.SBML_L2V1)) {
-				transType = Translator.VCSB_2;
-			} else if (toDialect.equals(XmlDialect.QUAL_CELLML)) {
-				transType = Translator.VC_QUAL_CELL;
-			} else if (toDialect.equals(XmlDialect.QUAN_CELLML)) {
-				transType = Translator.VC_QUAN_CELL;
-			}
-		} else if (toDialect.equals(XmlDialect.VCML)) {
-			if (fromDialect.equals(XmlDialect.SBML_L1V1)) {
-		    	transType = Translator.SBVC_1;
-	    	}else if (fromDialect.equals(XmlDialect.SBML_L2V1)) {
-				transType = Translator.SBVC_2;				  	
-	    	} else if (fromDialect.equals(XmlDialect.QUAL_CELLML)) {
-		    	transType = Translator.CELL_QUAL_VC;
-	    	} else if (fromDialect.equals(XmlDialect.QUAN_CELLML)) {
-				transType = Translator.CELL_QUAN_VC;
-	    	}
-		}
-
-		return transType;
-	}
-
 
 	public static String imageToXML(VCImage vcImage) throws XmlParseException {
 
@@ -277,96 +195,35 @@ public static String exportXML(VCDocument vcDoc, XmlDialect toDialect, String ap
 		Element extentElement = xmlProducer.getXML(extent);
 		container.addContent(imageElement);
 		container.addContent(extentElement);
-		container = XmlUtil.setDefaultNamespace(container, Namespace.getNamespace(Translator.VCML_NS));		
+		container = XmlUtil.setDefaultNamespace(container, Namespace.getNamespace(XMLTags.VCML_NS));		
 		xmlString = XmlUtil.xmlToString(container);
 		
 		return xmlString;
 	}
 
-
-public static VCDocument importXML(String xmlString, XmlDialect fromDialect) throws Exception {
+/**
+Allows the translation process to interact with the user via TranslationMessager
+*/
+public static VCDocument importSBML(VCLogger vcLogger, String xmlString) throws Exception {
 
 	//checks that the string is not empty
-    if (xmlString == null || xmlString.length() == 0 || fromDialect == null) {
-        throw new XmlParseException("Invalid params for importing xml.");
+    if (xmlString == null || xmlString.length() == 0 || vcLogger == null) {
+        throw new XmlParseException("Invalid params for importing sbml.");
     }
-	String transType = getTranslatorType(fromDialect, XmlDialect.VCML);
-	if (transType == null) {
-		throw new XmlParseException("Invalid translation request to VCML from " + fromDialect.getName());
-	}
     VCDocument vcDoc = null;
-	if (transType.equals(Translator.SBVC_1) || transType.equals(Translator.SBVC_2)) {
-		cbit.vcell.client.TranslationLogger vcLogger = new cbit.vcell.client.TranslationLogger((java.awt.Component)null);
-		cbit.vcell.vcml.SBMLImporter sbmlImporter = new cbit.vcell.vcml.SBMLImporter(xmlString, vcLogger);
-		vcDoc = sbmlImporter.getBioModel();
-	} else {
-	    Translator t = Translator.getTranslator(transType);
-		Document tDoc;
-		tDoc = t.translate(new BufferedReader(new StringReader(xmlString)), false); 
-		//Read the VCML into a BioModel or a MathModel
-	    XmlReader xmlReader = new XmlReader(false);
-	    if (!transType.equals(Translator.CELL_QUAN_VC)){
-	    	vcDoc = xmlReader.getBioModel(tDoc.getRootElement());
-	    }else {
-	    	vcDoc = xmlReader.getMathModel(tDoc.getRootElement());
-	    }
-	}
-
+	org.vcell.sbml.vcell.SBMLImporter sbmlImporter = new org.vcell.sbml.vcell.SBMLImporter(xmlString, vcLogger);
+	vcDoc = sbmlImporter.getBioModel();
 	vcDoc.refreshDependencies();
-    
     return vcDoc;
-    /*
-	if ( rootElement.getNamespaceURI().length()==0) {
-    	//Fix the defaultnamespace
-    	Namespace namespace =  Namespace.getNamespace(fromDialect.getUri());
-    	rootElement = XmlUtil.setDefaultNamespace(rootElement, namespace);
-	}
-	*/ 
 }
 
+public static VCDocument importBioCellML(VCLogger vcLogger, String xmlString) throws Exception {
+	throw new Exception("CellML support has been disabled.");
+}
 
-	/**
-	Allows the translation process to interact with the user via TranslationMessager
-	*/
-	public static VCDocument importXMLVerbose(VCLogger vcLogger, String xmlString, XmlDialect fromDialect) throws Exception {
-
-		//checks that the string is not empty
-	    if (xmlString == null || xmlString.length() == 0 || fromDialect == null || vcLogger == null) {
-	        throw new XmlParseException("Invalid params for importing xml.");
-	    }
-		String transType = getTranslatorType(fromDialect, XmlDialect.VCML);
-		if (transType == null) {
-			throw new XmlParseException("Invalid translation request to VCML from " + fromDialect.getName());
-		}
-	    VCDocument vcDoc = null;
-		if (transType.equals(Translator.SBVC_1) || transType.equals(Translator.SBVC_2)) {
-			cbit.vcell.vcml.SBMLImporter sbmlImporter = new cbit.vcell.vcml.SBMLImporter(xmlString, vcLogger);
-			vcDoc = sbmlImporter.getBioModel();
-		} else {
-			Translator t = Translator.getTranslator(transType);
-			t.setVCLogger(vcLogger);
-			Document tDoc;
-			tDoc = t.translate(new BufferedReader(new StringReader(xmlString)), false); 
-			//Read the VCML into a BioModel or a MathModel
-		    XmlReader xmlReader = new XmlReader(false);
-		    if (!transType.equals(Translator.CELL_QUAN_VC)){
-		    	vcDoc = xmlReader.getBioModel(tDoc.getRootElement());
-		    }else {
-		    	vcDoc = xmlReader.getMathModel(tDoc.getRootElement());
-		    }
-		}
-
-		vcDoc.refreshDependencies();
-	    
-	    return vcDoc;
-	    /*
-		if ( rootElement.getNamespaceURI().length()==0) {
-	    	//Fix the defaultnamespace
-	    	Namespace namespace =  Namespace.getNamespace(fromDialect.getUri());
-	    	rootElement = XmlUtil.setDefaultNamespace(rootElement, namespace);
-		}
-		*/ 
-	}
+public static VCDocument importMathCellML(VCLogger vcLogger, String xmlString) throws Exception {
+	throw new Exception("CellML support has been disabled.");
+}
 
 
 	public static String mathModelToXML(MathModel mathModel) throws XmlParseException {
@@ -384,7 +241,7 @@ public static VCDocument importXML(String xmlString, XmlDialect fromDialect) thr
 		}
 		Xmlproducer xmlProducer = new Xmlproducer(printkeys);
 		Element element = xmlProducer.getXML(mathModel);
-		element = XmlUtil.setDefaultNamespace(element, Namespace.getNamespace(Translator.VCML_NS));		
+		element = XmlUtil.setDefaultNamespace(element, Namespace.getNamespace(XMLTags.VCML_NS));		
 		xmlString = XmlUtil.xmlToString(element);
 		
 		return xmlString;
@@ -412,7 +269,7 @@ public static VCDocument importXML(String xmlString, XmlDialect fromDialect) thr
 		} 
 		container.addContent(mathElement);
 		container.addContent(simElement);
-		container = XmlUtil.setDefaultNamespace(container, Namespace.getNamespace(Translator.VCML_NS));		
+		container = XmlUtil.setDefaultNamespace(container, Namespace.getNamespace(XMLTags.VCML_NS));		
 		simString = XmlUtil.xmlToString(container);
 		
 		return simString;
@@ -429,7 +286,7 @@ public static VCDocument importXML(String xmlString, XmlDialect fromDialect) thr
 
 long l0 = System.currentTimeMillis();
 		BioModel bioModel = null;
-		Namespace ns = Namespace.getNamespace(Translator.VCML_NS);
+		Namespace ns = Namespace.getNamespace(XMLTags.VCML_NS);
 		
 		if (xmlString == null || xmlString.length() == 0){
 			throw new XmlParseException("Invalid xml for BioModel: " + xmlString);
@@ -465,11 +322,9 @@ public static VCDocument XMLToDocument(VCLogger vcLogger, String xmlString) thro
 	} else if (xmlType.equals(XMLTags.GeometryTag)) {
 		doc = XmlHelper.XMLToGeometry(xmlString);
 	} else if (xmlType.equals(XMLTags.SbmlRootNodeTag)) {
-		cbit.vcell.xml.XmlDialect fromDialect = cbit.vcell.xml.XmlDialect.getTargetDialect(rootElement.getName(), rootElement.getNamespaceURI(), XMLTags.BioModelTag);
-		doc = XmlHelper.importXMLVerbose(vcLogger, xmlString, fromDialect);
+		doc = XmlHelper.importSBML(vcLogger, xmlString);
 	} else if (xmlType.equals(XMLTags.CellmlRootNodeTag)) {
-		cbit.vcell.xml.XmlDialect fromDialect = cbit.vcell.xml.XmlDialect.getTargetDialect(rootElement.getName(), rootElement.getNamespaceURI(), XMLTags.BioModelTag);
-		doc = XmlHelper.importXMLVerbose(vcLogger, xmlString, fromDialect);
+		doc = XmlHelper.importMathCellML(vcLogger, xmlString);
 	} else { // unknown XML format
 		throw new RuntimeException("unsupported XML format, first element tag is <"+rootElement.getName()+">");
 	}
@@ -492,7 +347,7 @@ public static Geometry XMLToGeometry(String xmlString) throws XmlParseException 
 	static Geometry XMLToGeometry(String xmlString, boolean printkeys) throws XmlParseException {
 
 		Geometry geometry = null;
-		Namespace ns = Namespace.getNamespace(Translator.VCML_NS);
+		Namespace ns = Namespace.getNamespace(XMLTags.VCML_NS);
 		
 		if (xmlString == null || xmlString.length() == 0){
 			throw new XmlParseException("Invalid xml for Geometry: " + xmlString);
@@ -516,7 +371,7 @@ public static Geometry XMLToGeometry(String xmlString) throws XmlParseException 
 	static VCImage XMLToImage(String xmlString, boolean printKeys) throws XmlParseException {
 
 		VCImage vcImage = null;
-		Namespace ns = Namespace.getNamespace(Translator.VCML_NS);
+		Namespace ns = Namespace.getNamespace(XMLTags.VCML_NS);
 		
 		if (xmlString == null || xmlString.length() == 0) {
 			throw new XmlParseException("Invalid xml for Image: " + xmlString);
@@ -543,7 +398,7 @@ public static Geometry XMLToGeometry(String xmlString) throws XmlParseException 
 	static MathModel XMLToMathModel(String xmlString, boolean printkeys) throws XmlParseException {
 
 		MathModel mathModel = null;
-		Namespace ns = Namespace.getNamespace(Translator.VCML_NS);
+		Namespace ns = Namespace.getNamespace(XMLTags.VCML_NS);
 		
 		if (xmlString == null || xmlString.length() == 0){
 			throw new XmlParseException("Invalid xml for MathModel: " + xmlString);
@@ -561,7 +416,7 @@ public static Geometry XMLToGeometry(String xmlString) throws XmlParseException 
 	public static Simulation XMLToSim(String xmlString) throws XmlParseException {
 
 		Simulation sim = null;
-		Namespace ns = Namespace.getNamespace(Translator.VCML_NS);
+		Namespace ns = Namespace.getNamespace(XMLTags.VCML_NS);
 		
 		try {
 			if (xmlString == null || xmlString.length() == 0) {

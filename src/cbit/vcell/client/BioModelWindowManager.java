@@ -1,31 +1,32 @@
 package cbit.vcell.client;
+import java.awt.BorderLayout;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.Hashtable;
+import java.util.Vector;
+
+import javax.swing.JDesktopPane;
+import javax.swing.JInternalFrame;
+import javax.swing.JPanel;
+
+import cbit.gui.DialogUtils;
+import cbit.gui.JInternalFrameEnhanced;
+import cbit.sql.KeyValue;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.desktop.biomodel.ApplicationComponents;
+import cbit.vcell.client.desktop.biomodel.ApplicationEditor;
+import cbit.vcell.client.desktop.biomodel.BioModelEditor;
+import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
+import cbit.vcell.client.desktop.simulation.SimulationWindow;
+import cbit.vcell.desktop.controls.DataEvent;
+import cbit.vcell.document.SimulationOwner;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
-import cbit.vcell.client.desktop.geometry.GeometrySummaryViewer;
-import cbit.vcell.client.data.*;
-import cbit.vcell.xml.XmlDialect;
-import cbit.vcell.math.MathDescription;
-import java.io.File;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.messaging.db.*;
-import cbit.vcell.client.desktop.simulation.*;
-import cbit.vcell.document.*;
-import java.awt.*;
-import javax.swing.*;
-import cbit.sql.*;
-import cbit.gui.*;
-import java.util.*;
-import cbit.vcell.mapping.*;
-import cbit.vcell.math.gui.*;
-import cbit.vcell.geometry.gui.*;
-import cbit.vcell.client.*;
-import cbit.vcell.client.desktop.biomodel.*;
-import cbit.vcell.biomodel.*;
-import cbit.vcell.desktop.controls.*;
-import cbit.vcell.solver.Simulation;
-import cbit.util.FileFilters;
-import cbit.vcell.client.server.UserPreferences;
-import javax.swing.filechooser.FileFilter;
 /**
  * Insert the type's description here.
  * Creation date: (5/5/2004 1:17:07 PM)

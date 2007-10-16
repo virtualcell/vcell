@@ -200,9 +200,9 @@ private File showBioModelXMLFileChooser(java.util.Hashtable hashTable) throws ja
 					int structSelection = -1;
 					int option = JOptionPane.CANCEL_OPTION;
 	
-					cbit.vcell.vcml.StructureSizeInputPanel structureSizeInputPanel = null;
+					org.vcell.sbml.test.StructureSizeInputPanel structureSizeInputPanel = null;
 					while (structSelection < 0) {
-						structureSizeInputPanel = new cbit.vcell.vcml.StructureSizeInputPanel();
+						structureSizeInputPanel = new org.vcell.sbml.test.StructureSizeInputPanel();
 						structureSizeInputPanel.setStructures(structures);
 						structureSizeInputPanel.setPreferredSize(new java.awt.Dimension(325, 325));
 						structureSizeInputPanel.setMaximumSize(new java.awt.Dimension(325, 325));
@@ -220,7 +220,7 @@ private File showBioModelXMLFileChooser(java.util.Hashtable hashTable) throws ja
 						structSize = structureSizeInputPanel.getStructureSize();
 	
 						// Invoke StructureSizeEvaluator to compute absolute sizes of compartments
-						cbit.vcell.vcml.StructureSizeSolver ssEvaluator = new cbit.vcell.vcml.StructureSizeSolver();
+						org.vcell.sbml.vcell.StructureSizeSolver ssEvaluator = new org.vcell.sbml.vcell.StructureSizeSolver();
 						cbit.vcell.model.Structure chosenStructure = chosenSimContext.getModel().getStructure(strucName);
 						StructureMapping chosenStructMapping = chosenSimContext.getGeometryContext().getStructureMapping(chosenStructure);
 						ssEvaluator.updateAbsoluteStructureSizes(chosenSimContext, chosenStructure, structSize, chosenStructMapping.getSizeParameter().getUnitDefinition());
@@ -323,6 +323,7 @@ private File showMathModelXMLFileChooser(java.util.Hashtable hashTable) throws j
 	cbit.gui.VCFileChooser fileChooser = new cbit.gui.VCFileChooser(defaultPath);
 	fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 	fileChooser.setMultiSelectionEnabled(false);
+	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_2);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_CELLML);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MATLABV5);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MATLABV6);

@@ -97,17 +97,13 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
 				// SBML or CellML; get application name
 				Integer chosenSimContextIndex = (Integer)hashTable.get("chosenSimContextIndex");
 				String applicationName = bioModel.getSimulationContexts(chosenSimContextIndex.intValue()).getName();
-				// get dialect
-				XmlDialect toDialect = null;
 				if (fileFilter.equals(FileFilters.FILE_FILTER_SBML)) {
-					toDialect = XmlDialect.SBML_L1V1;
+					resultString = XmlHelper.exportSBML(bioModel, 1, 2, applicationName);
 				} else if (fileFilter.equals(FileFilters.FILE_FILTER_SBML_2)){
-					toDialect = XmlDialect.SBML_L2V1;
+					resultString = XmlHelper.exportSBML(bioModel, 2, 3, applicationName);
 				} else if (fileFilter.equals(FileFilters.FILE_FILTER_CELLML)) {
-					toDialect = XmlDialect.QUAL_CELLML;
+					resultString = XmlHelper.exportCellML(bioModel, applicationName);
 				}
-				//convert the given model using the specified application
-				resultString = XmlHelper.exportXML(bioModel, toDialect, applicationName);
 			} else {
 				// if format is VCML, get it from biomodel.
 				resultString = XmlHelper.bioModelToXML(bioModel);
@@ -127,7 +123,7 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
 			if (fileFilter.equals(FileFilters.FILE_FILTER_VCML)) {
 				resultString = XmlHelper.mathModelToXML(mathModel);
 			} else if (fileFilter.equals(FileFilters.FILE_FILTER_CELLML)) {
-				resultString = XmlHelper.exportXML(mathModel, cbit.vcell.xml.XmlDialect.QUAN_CELLML);
+				resultString = XmlHelper.exportCellML(mathModel, null);
 			}
 		}
 	} else if (documentToExport instanceof Geometry){
