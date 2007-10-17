@@ -60,6 +60,7 @@ public class VCellSBMLSolver implements SBMLSolver {
 			    // Round trip the sbml model : sbml -> vcell -> sbml.
 			    BioModel bioModel_1 = (BioModel) cbit.vcell.xml.XmlHelper.importSBML(logger, sbmlString);
 			    sbmlString = cbit.vcell.xml.XmlHelper.exportSBML(bioModel_1, 2, 3, bioModel_1.getSimulationContexts(0).getName());
+			    SBMLUtils.writeStringToFile(sbmlString, new File(outDir,filePrefix+".vcroundtrip.sbml").getAbsolutePath());
 		    }
 			//    
 		    // Instantiate an SBMLImporter to get the speciesUnitsHash - to compute the conversion factor from VC->SB species units.
