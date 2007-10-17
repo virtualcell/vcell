@@ -6,40 +6,23 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringReader;
-import java.util.HashMap;
-import java.util.List;
 import java.util.StringTokenizer;
-import java.util.Vector;
 
-import org.jdom.Attribute;
 import org.jdom.Element;
 import org.jdom.Namespace;
-import org.sbml.libsbml.Model;
-import org.sbml.libsbml.SBMLDocument;
-import org.sbml.libsbml.SBMLReader;
-import org.sbml.libsbml.Species;
 import org.vcell.sbml.SBMLUtils;
 import org.vcell.sbml.SimSpec;
 import org.vcell.sbml.copasi.CopasiSBMLSolver;
 import org.vcell.sbml.mathsbml.MathSBMLSolver;
 import org.vcell.sbml.vcell.VCellSBMLSolver;
 
-import cbit.util.Executable;
-import cbit.util.ExecutableException;
-import cbit.util.ExecutableStatus;
-import cbit.util.TokenMangler;
-import cbit.util.graph.Edge;
-import cbit.util.graph.Graph;
-import cbit.util.graph.Node;
+import cbit.util.NumberUtils;
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.solver.test.SimulationComparisonSummary;
 import cbit.vcell.solver.test.VariableComparisonSummary;
-import cbit.vcell.solvers.MathExecutable;
-import cbit.vcell.util.ColumnDescription;
 
 public class BiomodelsDB_SBMLSolverTest {
 	static
@@ -63,7 +46,7 @@ public class BiomodelsDB_SBMLSolverTest {
 			}
 			PrintWriter printWriter = new PrintWriter(new FileWriter(new File(outDir, "summary.log")));
 			try {
-				printWriter.println(" | *BIOMODEL ID* | *BioModel name* | *PASS* | *Rel Error (VC/COP):(VC/MSBML):(COP/MSBML)* | *Exception* | *Comments* |");
+				printWriter.println(" | *BIOMODEL ID* | *BioModel name* | *PASS* | *Rel Error (VC/VC)(VC/COP)(VC/MSBML)(COP/MSBML)* | *Exception* | *Comments* |");
 				File[] sbmlFiles = dataDir.listFiles();
 				for (File sbmlFile : sbmlFiles){
 					StringTokenizer stringTokenizer = new StringTokenizer(sbmlFile.getName(),".",false);
@@ -100,9 +83,11 @@ public class BiomodelsDB_SBMLSolverTest {
 						
 						
 						String passedString = "%NO%";
+						String rt_passedString = "%NO%";
 						String relErrorVCCopasiString = "";
 						String relErrorVCMathSBMLString = "";
 						String relErrorCopasiMathSBMLString = "";
+						String relErrorVCRoundtripString = "";
 						try {
 							//
 							// get COPASI solution (time and species concentrations)
@@ -144,16 +129,34 @@ public class BiomodelsDB_SBMLSolverTest {
 							ODESolverResultSet vcellResults = null;
 							try {
 								VCellSBMLSolver vcellSBMLSolver = new VCellSBMLSolver();
-								vcellSBMLSolver.setRoundTrip(true);
+								vcellSBMLSolver.setRoundTrip(false);
 								String columnDelimiter = vcellSBMLSolver.getResultsFileColumnDelimiter();
 								File resultFile = vcellSBMLSolver.solve(filePrefix, outDir, sbmlText, simSpec);
 								vcellResults = readResultFile(resultFile, columnDelimiter); 
 							}catch (Exception e){
-								printWriter.println("vcell_simulate failed");
+								printWriter.println("vcell solve() failed");
 								e.printStackTrace(printWriter);
-								System.out.println("vcell_simulate failed");
+								System.out.println("vcell solve() failed");
 								e.printStackTrace(System.out);
 								combinedErrorBuffer.append(" *VCELL* _"+e.getMessage()+"_ ");
+							}
+
+							//
+							// get VCell solution with an embedded "ROUND TRIP" (time and species concentrations)
+							//
+							ODESolverResultSet vcellResults_RT = null;
+							try {
+								VCellSBMLSolver vcellSBMLSolver_RT = new VCellSBMLSolver();
+								vcellSBMLSolver_RT.setRoundTrip(true);
+								String columnDelimiter = vcellSBMLSolver_RT.getResultsFileColumnDelimiter();
+								File resultFile = vcellSBMLSolver_RT.solve(filePrefix, outDir, sbmlText, simSpec);
+								vcellResults_RT = readResultFile(resultFile, columnDelimiter); 
+							}catch (Exception e){
+								printWriter.println("vcell solve(roundtrip=true) failed");
+								e.printStackTrace(printWriter);
+								System.out.println("vcell solve(roundtrip=true) failed");
+								e.printStackTrace(System.out);
+								combinedErrorBuffer.append(" *VCELL_RT* _"+e.getMessage()+"_ ");
 							}
 							//
 							// compare results from COPASI and VCELL
@@ -164,9 +167,9 @@ public class BiomodelsDB_SBMLSolverTest {
 									double maxRelError = summary.getMaxRelativeError();
 									if (maxRelError<1){
 										passedString = "%Y%";
-										relErrorVCCopasiString = Double.toString(maxRelError);
+										relErrorVCCopasiString = NumberUtils.formatNumber(maxRelError,3);
 									}else{
-										relErrorVCCopasiString = "*"+Double.toString(maxRelError)+"*";
+										relErrorVCCopasiString = "*"+NumberUtils.formatNumber(maxRelError,3)+"*";
 										VariableComparisonSummary[] vcSummaries = summary.getVariableComparisonSummaries();
 										for (VariableComparisonSummary vcSummary : vcSummaries){
 											System.out.println(vcSummary.toShortString());
@@ -181,6 +184,31 @@ public class BiomodelsDB_SBMLSolverTest {
 								}
 							}
 							//
+							// compare results from VCELL and VCELL_RT
+							//
+							if (vcellResults!=null && vcellResults_RT!=null){
+								try {
+									SimulationComparisonSummary summary = MathTestingUtilities.compareUnEqualResultSets(vcellResults, vcellResults_RT, varsToTest, 1e-5, 1e-5);
+									double maxRelError = summary.getMaxRelativeError();
+									if (maxRelError<1){
+										relErrorVCRoundtripString = NumberUtils.formatNumber(maxRelError,3);
+										rt_passedString = "%Y%";
+									}else{
+										relErrorVCRoundtripString = "*"+NumberUtils.formatNumber(maxRelError,3)+"*";
+										VariableComparisonSummary[] vcSummaries = summary.getVariableComparisonSummaries();
+										for (VariableComparisonSummary vcSummary : vcSummaries){
+											System.out.println(vcSummary.toShortString());
+										}
+									}
+								} catch (Exception e) {
+									printWriter.println("COMPARE VC/VCRT failed");
+									e.printStackTrace(printWriter);
+									System.out.println("COMPARE VC/VCRT failed");
+									e.printStackTrace(System.out);
+									combinedErrorBuffer.append(" *COMPARE VC/VCRT* _"+e.getMessage()+"_ ");
+								}
+							}
+							//
 							// compare results from MathSBML and VCELL
 							//
 							if (mathSBMLResults!=null && vcellResults!=null){
@@ -188,10 +216,10 @@ public class BiomodelsDB_SBMLSolverTest {
 									SimulationComparisonSummary summary = MathTestingUtilities.compareUnEqualResultSets(mathSBMLResults, vcellResults, varsToTest, 1e-5, 1e-5);
 									double maxRelError = summary.getMaxRelativeError();
 									if (maxRelError<1){
-										relErrorVCMathSBMLString = Double.toString(maxRelError);
+										relErrorVCMathSBMLString = NumberUtils.formatNumber(maxRelError,3);
 										passedString = "%Y%";
 									}else{
-										relErrorVCMathSBMLString = "*"+Double.toString(maxRelError)+"*";
+										relErrorVCMathSBMLString = "*"+NumberUtils.formatNumber(maxRelError,3)+"*";
 										VariableComparisonSummary[] vcSummaries = summary.getVariableComparisonSummaries();
 										for (VariableComparisonSummary vcSummary : vcSummaries){
 											System.out.println(vcSummary.toShortString());
@@ -213,10 +241,10 @@ public class BiomodelsDB_SBMLSolverTest {
 									SimulationComparisonSummary summary = MathTestingUtilities.compareUnEqualResultSets(copasiResults, mathSBMLResults, varsToTest, 1e-5, 1e-5);
 									double maxRelError = summary.getMaxRelativeError();
 									if (maxRelError<1){
-										relErrorCopasiMathSBMLString = Double.toString(maxRelError);
+										relErrorCopasiMathSBMLString = NumberUtils.formatNumber(maxRelError,3);
 //										passedString = "%Y%";
 									}else{
-										relErrorCopasiMathSBMLString = "*"+Double.toString(maxRelError)+"*";
+										relErrorCopasiMathSBMLString = "*"+NumberUtils.formatNumber(maxRelError,3)+"*";
 										VariableComparisonSummary[] vcSummaries = summary.getVariableComparisonSummaries();
 										for (VariableComparisonSummary vcSummary : vcSummaries){
 											System.out.println(vcSummary.toShortString());
@@ -234,7 +262,7 @@ public class BiomodelsDB_SBMLSolverTest {
 							e.printStackTrace(printWriter);
 							combinedErrorBuffer.append(" *UNKNOWN* _"+e.getMessage()+"_ ");
 						}
-						printWriter.println(" | "+sbmlLink+" | "+sbmlModelName+" | "+passedString+" | ("+relErrorVCCopasiString+") : ("+relErrorVCMathSBMLString+") : ("+relErrorCopasiMathSBMLString+") | "+combinedErrorBuffer.toString()+" | |");
+						printWriter.println(" | "+sbmlLink+" | "+sbmlModelName+" | "+passedString+" "+rt_passedString+" | ("+relErrorVCRoundtripString+")("+relErrorVCCopasiString+")("+relErrorVCMathSBMLString+")("+relErrorCopasiMathSBMLString+") | "+combinedErrorBuffer.toString()+" | |");
 						printWriter.flush();
 					}finally{
 						if (new_sysout!=null){
