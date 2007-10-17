@@ -6,7 +6,6 @@ import cbit.vcell.server.User;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.modeldb.SimulationTable;
 import cbit.sql.KeyValue;
-import cbit.vcell.modeldb.DbDriver;
 import cbit.vcell.modeldb.DatabaseConstants;
 import cbit.vcell.server.SessionLog;
 import java.util.ArrayList;
@@ -97,7 +96,7 @@ public SimulationJobStatusInfo[] getActiveJobs(Connection con, VCellServerID[] s
 		
 	//log.print(sql);
 	Statement stmt = con.createStatement();
-	java.util.List simJobStatusInfoList = new java.util.ArrayList();
+	java.util.List<SimulationJobStatusInfo> simJobStatusInfoList = new java.util.ArrayList<SimulationJobStatusInfo>();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
 		while (rset.next()) {
@@ -162,7 +161,7 @@ public SimulationJobStatus[] getSimulationJobStatus(Connection con, KeyValue sim
 			
 	//log.print(sql);
 	Statement stmt = con.createStatement();
-	java.util.List simJobStatusList = new java.util.ArrayList();
+	java.util.List<SimulationJobStatus> simJobStatusList = new java.util.ArrayList<SimulationJobStatus>();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
 		while (rset.next()) {
@@ -190,7 +189,7 @@ public SimulationJobStatus[] getSimulationJobStatus(Connection con, KeyValue sim
 		
 	//log.print(sql);
 	Statement stmt = con.createStatement();
-	List simJobStatuses = new java.util.ArrayList();
+	List<SimulationJobStatus> simJobStatuses = new java.util.ArrayList<SimulationJobStatus>();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
 		while (rset.next()) {
@@ -239,9 +238,7 @@ public SimulationJobStatus getSimulationJobStatus(Connection con, KeyValue simKe
  * @return java.util.List of SimpleJobStatus for managementGUI
  * @param conditions java.lang.String
  */
-public List getSimulationJobStatus(Connection con, String conditions) throws java.sql.SQLException {
-	StringBuffer where = new StringBuffer();
-	
+public List<SimpleJobStatus> getSimulationJobStatus(Connection con, String conditions) throws java.sql.SQLException {	
 	StringBuffer sql = new StringBuffer();
 	
 	sql.append("SELECT sysdate as " + DatabaseConstants.SYSDATE_COLUMN_NAME + "," + jobTable.getTableName() + ".*," + userTable.userid.getQualifiedColName() 
@@ -256,7 +253,7 @@ public List getSimulationJobStatus(Connection con, String conditions) throws jav
 	sql.append(" order by " + jobTable.submitDate.getQualifiedColName());
 	//log.print(sql);
 	
-	List resultList = new ArrayList();
+	List<SimpleJobStatus> resultList = new ArrayList<SimpleJobStatus>();
 	Statement stmt = con.createStatement();	
 	SimulationJobStatus simJobStatus = null;
 	cbit.vcell.solver.SolverTaskDescription std = null;
@@ -311,7 +308,7 @@ public SimulationJobStatus[] getSimulationJobStatus(Connection con, boolean bAct
 			
 	//log.print(sql);
 	Statement stmt = con.createStatement();
-	java.util.List simJobStatusList = new java.util.ArrayList();
+	java.util.List<SimulationJobStatus> simJobStatusList = new java.util.ArrayList<SimulationJobStatus>();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
 		while (rset.next()) {
@@ -332,19 +329,14 @@ public SimulationJobStatus[] getSimulationJobStatus(Connection con, boolean bAct
  * @return java.util.List
  * @param conditions java.lang.String
  */
-public User getUserFromSimulationKey(Connection con, KeyValue simKey) throws SQLException {
-	StringBuffer where = new StringBuffer();
-	
+public User getUserFromSimulationKey(Connection con, KeyValue simKey) throws SQLException {	
 	String sql = "SELECT " + userTable.id.getQualifiedColName() + "," + userTable.userid.getQualifiedColName() 
 		+ " FROM " + simTable.getTableName() + "," + userTable.getTableName() 
 		+ " WHERE " + simTable.ownerRef.getQualifiedColName() + "=" + userTable.id.getQualifiedColName()
 			+ " AND " + simTable.id.getQualifiedColName() + "=" + simKey;
 	
 	//log.print(sql);
-	List resultList = new ArrayList();
-
 	Statement stmt = con.createStatement();	
-	SimulationJobStatus simJobStatus = null;
 	try {
 		ResultSet rset = stmt.executeQuery(sql.toString());
 		if (rset.next()) {

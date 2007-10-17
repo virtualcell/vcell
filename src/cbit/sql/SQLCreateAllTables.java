@@ -1,17 +1,9 @@
 package cbit.sql;
 
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.gui.*;
 import java.awt.*;
 
-import cbit.vcell.modeldb.MIRIAMTable;
 import cbit.vcell.server.*;
 import java.sql.*;
-import java.io.*;
-import oracle.jdbc.driver.*;
 import javax.swing.*;
 /**
  * This type was created in VisualAge.
@@ -117,7 +109,6 @@ private static void destroyAndRecreateTables(SessionLog log, ConnectionFactory c
 					//
 					Statement s = con.createStatement();
 					try {
-						String sql = null;
 						// Add void user
 						s.executeUpdate(cbit.vcell.modeldb.UserTable.getCreateVoidUserSQL());
 						// Add PRIVATE group
@@ -268,7 +259,8 @@ public static Table[] getVCellTables() {
 		cbit.vcell.modeldb.SoftwareVersionTable.table,
 		cbit.vcell.modeldb.ExternalDataTable.table,
 		cbit.vcell.modeldb.MathDescExternalDataLinkTable.table,
-		cbit.vcell.modeldb.MIRIAMTable.table
+		cbit.vcell.modeldb.MIRIAMTable.table,
+		cbit.vcell.messaging.db.ServiceTable.table
 		};
 	return tables;
 }

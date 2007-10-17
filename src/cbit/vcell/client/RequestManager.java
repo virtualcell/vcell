@@ -120,14 +120,6 @@ AsynchMessageManager getAsynchMessageManager();
 
 /**
  * Insert the method's description here.
- * Creation date: (6/9/2004 3:20:26 PM)
- * @return cbit.vcell.client.AsynchMessageManager
- */
-cbit.vcell.server.bionetgen.BNGService getBNGService();
-
-
-/**
- * Insert the method's description here.
  * Creation date: (6/11/2004 6:40:26 AM)
  * @return cbit.vcell.desktop.controls.DataManager
  * @param vcDataIdentifier cbit.vcell.server.VCDataIdentifier

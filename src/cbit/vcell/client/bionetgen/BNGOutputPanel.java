@@ -42,7 +42,6 @@ public class BNGOutputPanel extends javax.swing.JPanel {
 	private javax.swing.JPanel ivjHelpPanel = null;
 	private javax.swing.JLabel ivjOutputWarningLabel = null;
 	private cbit.vcell.client.BNGWindowManager fieldBngWindowManager = new cbit.vcell.client.BNGWindowManager(null, null);
-	private cbit.vcell.server.bionetgen.BNGService fieldBngService = null;
 	private javax.swing.JButton ivjHelpButton = null;
 	private javax.swing.JButton ivjOpenFileButton = null;
 	private javax.swing.JButton ivjJButtonManual = null;
@@ -136,28 +135,6 @@ public BNGOutputPanel(java.awt.LayoutManager layout, boolean isDoubleBuffered) {
  */
 public BNGOutputPanel(boolean isDoubleBuffered) {
 	super(isDoubleBuffered);
-}
-
-
-/**
- * Comment
- */
-private void bngHelp() {
-	PopupGenerator.browserLauncher("http://www.ccam.uchc.edu/mblinov/bionetgen/index.html", 
-								   "For Help using BioNetGen, please visit : http://www.ccam.uchc.edu/mblinov/bionetgen/index.html", 
-								   false);
-	// PopupGenerator.showErrorDialog(this.getClass().getName()+"\n"+"Cannot invoke BrowserLauncher when isApplet is null");
-}
-
-
-/**
- * Comment
- */
-private void bngHelp1() {
-	PopupGenerator.browserLauncher("http://www.ccam.uchc.edu", 
-								   "please visit : http://www.ccam.uchc.edu", 
-								   false);
-	// PopupGenerator.showErrorDialog(this.getClass().getName()+"\n"+"Cannot invoke BrowserLauncher when isApplet is null");
 }
 
 
@@ -728,16 +705,6 @@ private cbit.vcell.server.bionetgen.BNGOutput getbngOutput1() {
 	// user code end
 	return ivjbngOutput1;
 }
-
-/**
- * Gets the bngService property (cbit.vcell.server.bionetgen.BNGService) value.
- * @return The bngService property value.
- * @see #setBngService
- */
-public cbit.vcell.server.bionetgen.BNGService getBngService() {
-	return fieldBngService;
-}
-
 
 /**
  * Gets the bngWindowManager property (cbit.vcell.client.BNGWindowManager) value.
@@ -2220,18 +2187,6 @@ private void setbngOutput1(cbit.vcell.server.bionetgen.BNGOutput newValue) {
 	// user code begin {3}
 	// user code end
 }
-
-/**
- * Sets the bngService property (cbit.vcell.server.bionetgen.BNGService) value.
- * @param bngService The new value for the property.
- * @see #getBngService
- */
-public void setBngService(cbit.vcell.server.bionetgen.BNGService bngService) {
-	cbit.vcell.server.bionetgen.BNGService oldValue = fieldBngService;
-	fieldBngService = bngService;
-	firePropertyChange("bngService", oldValue, bngService);
-}
-
 
 /**
  * Sets the bngWindowManager property (cbit.vcell.client.BNGWindowManager) value.

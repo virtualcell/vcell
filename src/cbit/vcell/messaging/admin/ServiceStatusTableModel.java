@@ -13,29 +13,19 @@ public class ServiceStatusTableModel extends ManageTableModel {
  */
 public ServiceStatusTableModel() {
 	super();
-	columns = new String[] {"Host", "Type", "Name", "Alive", "Start Date", "FJM", "TJM", "MJM"};
+	columns = new String[] {"Site", "Type", "Ordinal", "Startup Type", "MemoryMB", "Date", "Status", "Status Message", "PBS Job ID"};
 }
-/**
- * Insert the method's description here.
- * Creation date: (8/18/2003 8:24:43 AM)
- * @param status cbit.vcell.messaging.admin.PerformanceStatus
- */
-public synchronized void clear() {
-	rows.clear();
-	fireTableDataChanged();
-}
+
 /**
  * Insert the method's description here.
  * Creation date: (8/19/2003 2:14:05 PM)
  * @return java.lang.Class
  * @param columnIndex int
  */
-public Class getColumnClass(int columnIndex) {
-	if (columnIndex == 3) {
-		return Boolean.class;
-	} else if (columnIndex == 4) {
+public Class<?> getColumnClass(int columnIndex) {
+	if (columnIndex == 5) {
 		return Date.class;
-	} else if (columnIndex > 4) {
+	} else if (columnIndex == 2 || columnIndex == 4) {
 		return Number.class;
 	} else {		
 		return String.class;
@@ -48,8 +38,8 @@ public Object getValueAt(int row, int col) {
 	if (row >= rows.size() || col >= columns.length) {
 		return null;
 	}		
-	VCServiceInfo serviceInfo = (VCServiceInfo)rows.get(row);
-	Object[] values = serviceInfo.toObjects();
+	ServiceStatus serviceStatus = (ServiceStatus)rows.get(row);
+	Object[] values = serviceStatus.toObjects();
 	return values[col];
 }
 /**

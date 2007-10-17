@@ -71,7 +71,7 @@ private synchronized Object rpc(RpcRequest request, String queueName, boolean re
 	try {		
 		ObjectMessage rpcMessage = responseRequestor.createObjectMessage(request);
 		rpcMessage.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY,MessageConstants.MESSAGE_TYPE_RPC_SERVICE_VALUE);
-		rpcMessage.setStringProperty(MessageConstants.SERVICETYPE_PROPERTY,serviceType);
+		rpcMessage.setStringProperty(MessageConstants.SERVICE_TYPE_PROPERTY,serviceType);
 		if (specialValues != null) {
 			for (int i = 0; i < specialValues.length; i ++) {
 				rpcMessage.setObjectProperty(specialProperties[i], specialValues[i]);

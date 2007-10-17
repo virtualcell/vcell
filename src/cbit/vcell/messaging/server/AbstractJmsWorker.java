@@ -1,17 +1,17 @@
 package cbit.vcell.messaging.server;
 import javax.jms.*;
 import java.io.FileNotFoundException;
-import java.net.UnknownHostException;
-import java.util.Date;
 import java.util.StringTokenizer;
-
 import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.xml.XmlParseException;
 import cbit.vcell.solver.SolverEvent;
 import cbit.vcell.messaging.MessageConstants;
 import cbit.vcell.messaging.WorkerMessaging;
+import cbit.vcell.messaging.admin.ServiceSpec;
+import cbit.vcell.messaging.db.VCellServerID;
 import static cbit.vcell.messaging.MessageConstants.*;
+import static cbit.vcell.messaging.admin.ManageConstants.*;
 
 /**
  * Insert the type's description here.
@@ -19,17 +19,12 @@ import static cbit.vcell.messaging.MessageConstants.*;
  * @author: Jim Schaff
  */
 public abstract class AbstractJmsWorker extends AbstractJmsServiceProvider implements Worker {
-	protected double maxMemoryMB = 100;
+	protected int maxMemoryMB = 100;
 	protected SimulationTask currentTask = null;
 	protected cbit.vcell.solver.Solver currentSolver = null;
-
 	protected boolean bStopped = true;
-	protected cbit.vcell.server.SessionLog log = null;
-
 	protected WorkerMessaging workerMessaging = null;
-
-	protected int workerType = LSFJAVA_WORKER;
-
+	protected int workerType;
 	
 /**
  * Insert the method's description here.
@@ -37,22 +32,36 @@ public abstract class AbstractJmsWorker extends AbstractJmsServiceProvider imple
  * @param nodeName java.lang.String
  * @param parentNode cbit.vcell.appserver.ComputationalNode
  */
-public AbstractJmsWorker(String workerName, double maxMemoryMB0, int workerType0) throws JMSException, FileNotFoundException, UnknownHostException {
-	this.maxMemoryMB = maxMemoryMB0;
-	workerType = workerType0;
-	log = new cbit.vcell.server.StdoutSessionLog(workerName);	
+public AbstractJmsWorker(int wType, int workerOrdinal, int workerMem, String logdir) throws JMSException, FileNotFoundException {
+	workerType = wType;
+	maxMemoryMB = workerMem;	
+		
+	String servicetype; 
+	switch (workerType) {
+	case LSF_WORKER:
+	case LSFJAVA_WORKER:
+	case CONDOR_WORKER:
+	case CONDORJAVA_WORKER:
+	case PBS_WORKER:
+	case PBSJAVA_WORKER:
+		servicetype = SERVICETYPE_HTCCOMPUTE_VALUE;
+		break;
+	case JAVA_WORKER:
+		servicetype = SERVICETYPE_ODECOMPUTE_VALUE;
+		break;
+	default:
+		servicetype = SERVICETYPE_LOCALCOMPUTE_VALUE;
+		break;
+	}
+	serviceSpec = new ServiceSpec(VCellServerID.getSystemServerID().toString(), servicetype, workerOrdinal, SERVICE_STARTUPTYPE_AUTOMATIC, maxMemoryMB, true);
+	initLog(logdir);
 	
-	String hostName = cbit.vcell.messaging.admin.ManageUtils.getLocalHostName();	
-	serviceInfo = new cbit.vcell.messaging.admin.VCServiceInfo(hostName, MessageConstants.SERVICETYPE_COMPUTE_VALUE, workerName);
-	serviceInfo.setAlive(true);
-	serviceInfo.setBootTime(new Date());	
-
+	log = new cbit.vcell.server.StdoutSessionLog(serviceSpec.getID());
 	workerMessaging = new WorkerMessaging(this, log);
 }
 
 
 protected abstract void doJob() throws JMSException, SolverException, XmlParseException;
-
 
 /**
  * Insert the method's description here.

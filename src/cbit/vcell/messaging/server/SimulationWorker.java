@@ -34,8 +34,8 @@ public class SimulationWorker extends AbstractJmsWorker  {
  * @param argParentNode cbit.vcell.appserver.ComputationalNode
  * @param argInitialContext javax.naming.Context
  */
-public SimulationWorker(String argName, double maxMemoryMB, int workerType0) throws JMSException, DataAccessException, FileNotFoundException, UnknownHostException {
-	super(argName, maxMemoryMB, workerType0);
+public SimulationWorker( int wt, int wo, int wm, String logdir) throws JMSException, DataAccessException, FileNotFoundException, UnknownHostException {
+	super(wt, wo, wm, logdir);
 }
 
 
@@ -211,7 +211,7 @@ public boolean isRunning() {
  */
 public static void main(java.lang.String[] args) {
 	if (args.length < 2 || !args[0].startsWith("-")) {
-		System.out.println("Missing arguments: " + SimulationWorker.class.getName() + " [-lsf|-java|-lsfjava|-nohtc|-pbs|-pbsjava|-condor|-condorjava] serviceName memorySizeMB [logfile]");
+		System.out.println("Missing arguments: " + SimulationWorker.class.getName() + " [-lsf|-java|-lsfjava|-nohtc|-pbs|-pbsjava|-condor|-condorjava] serviceOrdinal memorySizeMB [logdir]");
 		System.exit(1);
 	}
  		
@@ -219,12 +219,8 @@ public static void main(java.lang.String[] args) {
 	// Create and install a security manager
 	//
 	try {
-		String logfile = null;
-		if (args.length >= 4) {
-			logfile = args[3];
-		}
-		mainInit(logfile);
-
+		PropertyLoader.loadProperties();
+		
 		int workerType = NOHTC_WORKER;		
 		if (args[0].equalsIgnoreCase("-lsf")) {
 			cbit.htc.LsfUtils.getBINDIR();
@@ -246,11 +242,17 @@ public static void main(java.lang.String[] args) {
 			workerType = CONDORJAVA_WORKER;
 		} else  if (args[0].equalsIgnoreCase("-nohtc")) {
 			workerType = NOHTC_WORKER;
+		} else {
+			throw new IllegalArgumentException("wrong argument");
 		}
-
-		String workerName = args[1];			
-		double maxMemoryMB = Double.parseDouble(args[2]);		
-		SimulationWorker worker = new SimulationWorker(workerName, maxMemoryMB, workerType);
+		
+		int serviceOrdinal = Integer.parseInt(args[1]);	
+		int maxMemoryMB = Integer.parseInt(args[2]);		
+		String logdir = null;
+		if (args.length > 3) {
+			logdir = args[3];
+		}
+		SimulationWorker worker = new SimulationWorker(workerType, serviceOrdinal, maxMemoryMB, logdir);
 		worker.start();
 	} catch (Throwable e) {
 		e.printStackTrace(System.out);

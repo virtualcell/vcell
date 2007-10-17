@@ -106,6 +106,10 @@ public synchronized void setValueAt(int row, Object server) {
 	fireTableDataChanged();
 }
 
+public synchronized void clear() {
+	rows.clear();
+	fireTableDataChanged();
+}
 
 /**
  * Insert the method's description here.

@@ -1,6 +1,7 @@
 package cbit.vcell.messaging;
 import javax.jms.*;
-import cbit.vcell.messaging.admin.ManageConstants;
+import static cbit.vcell.messaging.admin.ManageConstants.*;
+import cbit.vcell.messaging.admin.ServiceSpec;
 import cbit.vcell.messaging.server.ServiceProvider;
 
 /**
@@ -49,23 +50,13 @@ private void closeJmsConnection() {
  * Creation date: (12/3/2003 10:28:36 AM)
  * @return java.lang.String
  */
-private final String getDaemonControlFilter(cbit.vcell.messaging.admin.VCServiceInfo serviceInfo) {
-	return ManageConstants.MESSAGE_TYPE_PROPERTY + " NOT IN " 
-		+ "('" + ManageConstants.MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE + "'"
-		+ ",'" + ManageConstants.MESSAGE_TYPE_CHANGECONFIG_VALUE + "'"
-		+ ",'" + ManageConstants.MESSAGE_TYPE_IAMALIVE_VALUE + "'"
-		+ ",'" + ManageConstants.MESSAGE_TYPE_OPENSERVICELOG_VALUE + "'"
-		+ ",'" + ManageConstants.MESSAGE_TYPE_OPENSERVERLOG_VALUE + "'"
-		+ ",'" + ManageConstants.MESSAGE_TYPE_ISSERVERALIVE_VALUE + "'"
-		+ ",'" + ManageConstants.MESSAGE_TYPE_ISSERVICEALIVE_VALUE + "'"
-		+ ",'" + ManageConstants.MESSAGE_TYPE_STARTBOOTSTRAP_VALUE + "'"
-		+ ",'" + ManageConstants.MESSAGE_TYPE_STARTSERVICE_VALUE + "'"
-		+ ")" 
-		+ " OR ("
-		+ ManageConstants.MESSAGE_TYPE_PROPERTY + "='" + ManageConstants.MESSAGE_TYPE_ISSERVICEALIVE_VALUE + "'"
-		+ " AND " + ManageConstants.HOSTNAME_PROPERTY + "='" + serviceInfo.getHostName() + "'"  
-		+ ")";
-		
+private final String getDaemonControlFilter(ServiceSpec serviceSpec) {
+	return MESSAGE_TYPE_PROPERTY + " NOT IN " 
+		+ "('" + MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE + "'"
+		+ ",'" + MESSAGE_TYPE_REFRESHSERVERMANAGER_VALUE + "'"
+		+ ",'" + MESSAGE_TYPE_IAMALIVE_VALUE + "'"
+		+ ",'" + MESSAGE_TYPE_STARTSERVICE_VALUE + "'"
+		+ ")";		
 }
 
 
@@ -96,17 +87,17 @@ protected VCellTopicConnection getTopicConnection() {
  * Got message from server_control topic 
  */
 public void onControlTopicMessage(Message message) {
-	onDaemonMessage(listenTopicSession, message, jmsServiceProvider.getServiceInfo());
+	onDaemonMessage(listenTopicSession, message, jmsServiceProvider.getServiceSpec());
 }
 
 
 /**
  * onMessage method comment.
  */
-public final void onDaemonMessage(VCellTopicSession controlSession, javax.jms.Message message, cbit.vcell.messaging.admin.VCServiceInfo serviceInfo) {
+public final void onDaemonMessage(VCellTopicSession controlSession, javax.jms.Message message, ServiceSpec serviceSpec) {
 	try {
-		String msgType = (String)JmsUtils.parseProperty(message, ManageConstants.MESSAGE_TYPE_PROPERTY, String.class);
-		String hostname = null, serviceType = null, serviceName = null;
+		String msgType = (String)JmsUtils.parseProperty(message, MESSAGE_TYPE_PROPERTY, String.class);
+		String serviceID = null;
 		
 		if (msgType == null) {
 			return;
@@ -114,55 +105,27 @@ public final void onDaemonMessage(VCellTopicSession controlSession, javax.jms.Me
 		
 		log.print("JmsMessaging: onDaemonMessage:onMessage [" + JmsUtils.toString(message) + "]");	
 		
-		if (msgType.equals(ManageConstants.MESSAGE_TYPE_ISSERVICEALIVE_VALUE)) {
-			hostname = (String)JmsUtils.parseProperty(message, ManageConstants.HOSTNAME_PROPERTY, String.class);
-			if (hostname == null || !hostname.equalsIgnoreCase(serviceInfo.getHostName())) {
-				return;
-			}
-
-			try {
-				serviceType = (String)JmsUtils.parseProperty(message, ManageConstants.SERVICETYPE_PROPERTY, String.class);
-				serviceName = (String)JmsUtils.parseProperty(message, ManageConstants.SERVICENAME_PROPERTY, String.class);
-			} catch (MessagePropertyNotFoundException ex) {
-				// it's ok
-			}
-			if (serviceType == null && serviceName == null || 
-				serviceType != null && serviceName != null && serviceType.equalsIgnoreCase(serviceInfo.getServiceType()) && serviceName.equalsIgnoreCase(serviceInfo.getServiceName()))  {
-				Message reply = controlSession.createMessage();
-				reply.setStringProperty(ManageConstants.MESSAGE_TYPE_PROPERTY, ManageConstants.MESSAGE_TYPE_IAMALIVE_VALUE);
-				reply.setStringProperty(ManageConstants.HOSTNAME_PROPERTY, serviceInfo.getHostName());
-				reply.setStringProperty(ManageConstants.SERVICETYPE_PROPERTY, serviceInfo.getServiceType());
-				reply.setStringProperty(ManageConstants.SERVICENAME_PROPERTY, serviceInfo.getServiceName());
-				log.print("sending reply [" + JmsUtils.toString(reply) + "]");
-				if (message.getJMSReplyTo() != null) {
-					reply.setJMSCorrelationID(message.getJMSMessageID());
-					controlSession.publishMessage((Topic)message.getJMSReplyTo(), reply);
-				} else {
-					controlSession.publishMessage(JmsUtils.getTopicDaemonControl(), reply);
-				}
-			}
-		} else if (msgType.equals(ManageConstants.MESSAGE_TYPE_ASKPERFORMANCESTATUS_VALUE)) {			
-			serviceInfo.setPerformance(JmsUtils.getServicePerformance());			
-			Message reply = controlSession.createObjectMessage(serviceInfo);
-			reply.setStringProperty(ManageConstants.MESSAGE_TYPE_PROPERTY, ManageConstants.MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE);
+		if (msgType.equals(MESSAGE_TYPE_ISSERVICEALIVE_VALUE)) {			
+			Message reply = controlSession.createMessage();
+			reply.setStringProperty(MESSAGE_TYPE_PROPERTY, MESSAGE_TYPE_IAMALIVE_VALUE);
+			reply.setStringProperty(SERVICE_ID_PROPERTY, serviceSpec.getID());
+			log.print("sending reply [" + JmsUtils.toString(reply) + "]");
+			if (message.getJMSReplyTo() != null) {
+				reply.setJMSCorrelationID(message.getJMSMessageID());
+				controlSession.publishMessage((Topic)message.getJMSReplyTo(), reply);
+			} else {
+				controlSession.publishMessage(JmsUtils.getTopicDaemonControl(), reply);
+			}		
+		} else if (msgType.equals(MESSAGE_TYPE_ASKPERFORMANCESTATUS_VALUE)) {				
+			Message reply = controlSession.createObjectMessage(serviceSpec);
+			reply.setStringProperty(MESSAGE_TYPE_PROPERTY, MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE);
+			reply.setStringProperty(SERVICE_ID_PROPERTY, serviceSpec.getID());
 			controlSession.publishMessage(JmsUtils.getTopicDaemonControl(), reply);			
 			log.print("sending reply [" + JmsUtils.toString(reply) + "]");
 			
-		} else if (msgType.equals(cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_STOPSERVICE_VALUE)) {
-			hostname = (String)JmsUtils.parseProperty(message, ManageConstants.HOSTNAME_PROPERTY, String.class);
-			serviceType = (String)JmsUtils.parseProperty(message, ManageConstants.SERVICETYPE_PROPERTY, String.class);
-			serviceName = (String)JmsUtils.parseProperty(message, ManageConstants.SERVICENAME_PROPERTY, String.class);
-			if (hostname != null && hostname.equalsIgnoreCase(serviceInfo.getHostName()) 
-				&& serviceType != null && serviceType.equalsIgnoreCase(serviceInfo.getServiceType()) 
-				&& serviceName != null && serviceName.equalsIgnoreCase(serviceInfo.getServiceName()))  {
-				stopService();
-			}
-			
-		} else if (msgType.equals(cbit.vcell.messaging.admin.ManageConstants.MESSAGE_TYPE_STOPBOOTSTRAP_VALUE)) {
-			hostname = (String)JmsUtils.parseProperty(message, ManageConstants.HOSTNAME_PROPERTY, String.class);
-			String serverType = (String)JmsUtils.parseProperty(message, ManageConstants.SERVER_TYPE_PROPERTY, String.class);
-			if (hostname != null && hostname.equalsIgnoreCase(serviceInfo.getHostName()) 
-				&& serverType != null && serverType.equalsIgnoreCase(ManageConstants.SERVER_TYPE_BOOTSTRAP))  {
+		} else if (msgType.equals(MESSAGE_TYPE_STOPSERVICE_VALUE)) {
+			serviceID = (String)JmsUtils.parseProperty(message, SERVICE_ID_PROPERTY, String.class);
+			if (serviceID != null && serviceID.equalsIgnoreCase(serviceSpec.getID()))  {
 				stopService();
 			}
 		}
@@ -181,7 +144,7 @@ public final void onDaemonMessage(VCellTopicSession controlSession, javax.jms.Me
 protected void reconnect() throws JMSException {
 	topicConn = jmsConnFactory.createTopicConnection();
 	listenTopicSession = topicConn.getAutoSession();	
-	listenTopicSession.setupListener(JmsUtils.getTopicDaemonControl(), getDaemonControlFilter(jmsServiceProvider.getServiceInfo()), new ControlMessageCollector(this));
+	listenTopicSession.setupListener(JmsUtils.getTopicDaemonControl(), getDaemonControlFilter(jmsServiceProvider.getServiceSpec()), new ControlMessageCollector(this));
 	topicConn.startConnection();
 }
 

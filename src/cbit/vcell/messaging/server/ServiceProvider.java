@@ -6,9 +6,8 @@ package cbit.vcell.messaging.server;
  * @author: Fei Gao
  */
 public interface ServiceProvider {
-public String getHostName();
-public cbit.vcell.messaging.admin.VCServiceInfo getServiceInfo();
-public String getServiceName();
+public cbit.vcell.messaging.admin.ServiceSpec getServiceSpec();
+public String getServiceID();
 public String getServiceType();
-	public void stop();
+public void stop();
 }

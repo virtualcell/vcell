@@ -1,7 +1,6 @@
 package cbit.vcell.messaging;
 import javax.jms.*;
-import cbit.vcell.xml.XmlParseException;
-import cbit.vcell.messaging.admin.ManageConstants;
+import cbit.vcell.messaging.admin.ManageUtils;
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.messaging.server.Worker;
 import cbit.vcell.messaging.server.SimulationTask;
@@ -18,8 +17,6 @@ public class WorkerMessaging extends JmsServiceProviderMessaging implements Cont
 	private String jobSelector = null;
 	private Worker myWorker = null;
 	private SimulationTask currentTask = null;
-	private VCellTopicSession listenSession = null;
-	private VCellTopicSession topicSession = null;
 	private long lastMsgTimeStamp = 0;
 	
 class KeepAliveThread extends Thread {
@@ -88,7 +85,7 @@ public SimulationTask getNextTask() {
 			currentTask = taskMsg.getSimulationTask();
 			
 			log.print("Job accepted: " + currentTask);
-			WorkerEventMessage.sendAccepted(jobRetriever, this, currentTask.getSimulationInfo(), currentTask.getSimulationJob().getJobIndex(), myWorker.getHostName(), currentTask.getTaskID());
+			WorkerEventMessage.sendAccepted(jobRetriever, this, currentTask.getSimulationInfo(), currentTask.getSimulationJob().getJobIndex(), ManageUtils.getHostName(), currentTask.getTaskID());
 			jobRetriever.commit();
 			
 			lastMsgTimeStamp = System.currentTimeMillis();
@@ -129,8 +126,6 @@ protected void reconnect() throws JMSException {
 
 	super.reconnect();
 	listenTopicSession.setupListener(JmsUtils.getTopicServiceControl(), null, new ControlMessageCollector(myWorker));	
-	topicSession = topicConn.getAutoSession();
-	
 	topicConn.startConnection();	
 }
 
@@ -147,7 +142,7 @@ public void sendCompleted(double progress, double timeSec) {
 	// have to keep sending the messages because it's important
 	try {
 		log.print("sendComplete(" + currentTask.getSimulationJobIdentifier() + ")");
-		WorkerEventMessage.sendCompleted(workerEventSession, this, currentTask.getSimulationInfo(), currentTask.getSimulationJob().getJobIndex(), myWorker.getHostName(), currentTask.getTaskID(), progress, timeSec);
+		WorkerEventMessage.sendCompleted(workerEventSession, this, currentTask.getSimulationInfo(), currentTask.getSimulationJob().getJobIndex(), ManageUtils.getHostName(), currentTask.getTaskID(), progress, timeSec);
 		
 		lastMsgTimeStamp = System.currentTimeMillis();
 	} catch (JMSException jmse) {
@@ -167,7 +162,7 @@ public void sendFailed(String failureMessage) {
 		
 	try {
 		log.print("sendFailure(" + currentTask.getSimulationJobIdentifier() + "," + failureMessage +")");
-		WorkerEventMessage.sendFailed(workerEventSession, this, currentTask.getSimulationInfo(), currentTask.getSimulationJob().getJobIndex(), myWorker.getHostName(), currentTask.getTaskID(), failureMessage);
+		WorkerEventMessage.sendFailed(workerEventSession, this, currentTask.getSimulationInfo(), currentTask.getSimulationJob().getJobIndex(), ManageUtils.getHostName(), currentTask.getTaskID(), failureMessage);
 		
 		lastMsgTimeStamp = System.currentTimeMillis();
 	} catch (JMSException ex) {
@@ -189,7 +184,7 @@ public void sendNewData(double progress, double timeSec) {
 		long t = System.currentTimeMillis();
 		if (bProgress || t - lastMsgTimeStamp > MessageConstants.INTERVAL_PROGRESS_MESSAGE) { // don't send data message too frequently
 			log.print("sendNewData(" + currentTask.getSimulationJobIdentifier() + "," + (progress * 100) + "%," + timeSec + ")");		
-			WorkerEventMessage.sendNewData(workerEventSession, this, currentTask.getSimulationInfo(), currentTask.getSimulationJob().getJobIndex(), myWorker.getHostName(), currentTask.getTaskID(), progress, timeSec);
+			WorkerEventMessage.sendNewData(workerEventSession, this, currentTask.getSimulationInfo(), currentTask.getSimulationJob().getJobIndex(), ManageUtils.getHostName(), currentTask.getTaskID(), progress, timeSec);
 		
 			lastMsgTimeStamp = System.currentTimeMillis();
 			bProgress = false;
@@ -214,7 +209,7 @@ public void sendProgress(double progress, double timeSec) {
 	if (!bProgress || t - lastMsgTimeStamp > MessageConstants.INTERVAL_PROGRESS_MESSAGE 
 		|| ((int)(progress * 100)) % 25 == 0) { // don't send progress message too frequently
 			log.print("sendProgress(" + currentTask.getSimulationJobIdentifier() + "," + (progress * 100) + "%," + timeSec + ")");
-			WorkerEventMessage.sendProgress(workerEventSession, this, currentTask.getSimulationInfo(), currentTask.getSimulationJob().getJobIndex(), myWorker.getHostName(), currentTask.getTaskID(), progress, timeSec);
+			WorkerEventMessage.sendProgress(workerEventSession, this, currentTask.getSimulationInfo(), currentTask.getSimulationJob().getJobIndex(), ManageUtils.getHostName(), currentTask.getTaskID(), progress, timeSec);
 			
 			lastMsgTimeStamp = System.currentTimeMillis();
 			bProgress = true;
@@ -236,7 +231,7 @@ public void sendStarting(String startingMessage) {
 	
 	try {
 		log.print("sendStarting(" + currentTask.getSimulationJobIdentifier() + ")");
-		WorkerEventMessage.sendStarting(workerEventSession, this, currentTask.getSimulationInfo(), currentTask.getSimulationJob().getJobIndex(), myWorker.getHostName(), currentTask.getTaskID(), startingMessage);
+		WorkerEventMessage.sendStarting(workerEventSession, this, currentTask.getSimulationInfo(), currentTask.getSimulationJob().getJobIndex(), ManageUtils.getHostName(), currentTask.getTaskID(), startingMessage);
 	
 		lastMsgTimeStamp = System.currentTimeMillis();
 	} catch (JMSException e) {
@@ -257,7 +252,7 @@ public void sendWorkerAlive() {
 	// have to keep sending the messages because it's important
 	try {
 		log.print("sendWorkerAlive(" + currentTask.getSimulationJobIdentifier() + ")");
-		WorkerEventMessage.sendWorkerAlive(workerEventSession, this, currentTask.getSimulationInfo(), currentTask.getSimulationJob().getJobIndex(), myWorker.getHostName(), currentTask.getTaskID());
+		WorkerEventMessage.sendWorkerAlive(workerEventSession, this, currentTask.getSimulationInfo(), currentTask.getSimulationJob().getJobIndex(), ManageUtils.getHostName(), currentTask.getTaskID());
 		
 		lastMsgTimeStamp = System.currentTimeMillis();
 	} catch (JMSException jmse) {

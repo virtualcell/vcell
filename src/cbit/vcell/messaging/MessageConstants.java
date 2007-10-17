@@ -1,5 +1,4 @@
 package cbit.vcell.messaging;
-import cbit.vcell.server.PropertyLoader;
 /**
  * Insert the type's description here.
  * Creation date: (10/23/2001 12:16:47 PM)
@@ -52,17 +51,18 @@ public interface MessageConstants {
 	public static final int CONDORJAVA_WORKER = 7;
 	
 	public static final String HOSTNAME_PROPERTY		= "HostName";
-	public static final String SERVICETYPE_PROPERTY	= "ServiceType";
+	public static final String SERVICE_TYPE_PROPERTY	= "ServiceType";
 		
-	public static final String SERVICETYPE_DB_VALUE		= "Database";
-	public static final String SERVICETYPE_DATA_VALUE		= "Data";
-	public static final String SERVICETYPE_BIONETGEN_VALUE		= "BioNetGen";
-	public static final String SERVICETYPE_DISPATCH_VALUE = "Dispatch";
-	public static final String SERVICETYPE_COMPUTE_VALUE = "Compute";
-	public static final String SERVICE_DATA_ISEXPORTING = "IsExporting";
+	public static final String SERVICETYPE_DB_VALUE	= "Db";
+	public static final String SERVICETYPE_DATA_VALUE = "Data";
+	public static final String SERVICETYPE_DATAEXPORT_VALUE = "Exprt";
+	public static final String SERVICETYPE_DISPATCH_VALUE = "Dsptch";
+	public static final String SERVICETYPE_HTCCOMPUTE_VALUE = "HtcC";	// high throughput computing, include LSF, PBS, Condor
+	public static final String SERVICETYPE_ODECOMPUTE_VALUE = "OdeC";
+	public static final String SERVICETYPE_LOCALCOMPUTE_VALUE = "LclC";
 
-	public static final String[] AllServiceTypes = {SERVICETYPE_DB_VALUE, SERVICETYPE_DATA_VALUE, SERVICETYPE_DISPATCH_VALUE,
-		SERVICETYPE_COMPUTE_VALUE, SERVICETYPE_BIONETGEN_VALUE};	
+	public static final String[] AllServiceTypes = {SERVICETYPE_DB_VALUE, SERVICETYPE_DATA_VALUE, SERVICETYPE_DATAEXPORT_VALUE, 
+		SERVICETYPE_DISPATCH_VALUE,	SERVICETYPE_HTCCOMPUTE_VALUE, SERVICETYPE_ODECOMPUTE_VALUE, SERVICETYPE_LOCALCOMPUTE_VALUE};	
 
 	public static final int PRIORITY_LOW = 0;
 	public static final int PRIORITY_DEFAULT = 5;

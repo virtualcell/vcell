@@ -58,60 +58,6 @@ public java.beans.PropertyDescriptor bngOutputPropertyDescriptor() {
 
 
 /**
- * Gets the bngService property descriptor.
- * @return java.beans.PropertyDescriptor
- */
-public java.beans.PropertyDescriptor bngServicePropertyDescriptor() {
-	java.beans.PropertyDescriptor aDescriptor = null;
-	try {
-		try {
-			/* Using methods via getMethod is the faster way to create the bngService property descriptor. */
-			java.lang.reflect.Method aGetMethod = null;
-			try {
-				/* Attempt to find the method using getMethod with parameter types. */
-				java.lang.Class aGetMethodParameterTypes[] = {};
-				aGetMethod = getBeanClass().getMethod("getBngService", aGetMethodParameterTypes);
-			} catch (Throwable exception) {
-				/* Since getMethod failed, call findMethod. */
-				handleException(exception);
-				aGetMethod = findMethod(getBeanClass(), "getBngService", 0);
-			};
-			java.lang.reflect.Method aSetMethod = null;
-			try {
-				/* Attempt to find the method using getMethod with parameter types. */
-				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.vcell.server.bionetgen.BNGService.class
-				};
-				aSetMethod = getBeanClass().getMethod("setBngService", aSetMethodParameterTypes);
-			} catch (Throwable exception) {
-				/* Since getMethod failed, call findMethod. */
-				handleException(exception);
-				aSetMethod = findMethod(getBeanClass(), "setBngService", 1);
-			};
-			aDescriptor = new java.beans.PropertyDescriptor("bngService"
-			, aGetMethod, aSetMethod);
-		} catch (Throwable exception) {
-			/* Since we failed using methods, try creating a default property descriptor. */
-			handleException(exception);
-			aDescriptor = new java.beans.PropertyDescriptor("bngService"
-			, getBeanClass());
-		};
-		aDescriptor.setBound(true);
-		/* aDescriptor.setConstrained(false); */
-		/* aDescriptor.setDisplayName("bngService"); */
-		/* aDescriptor.setShortDescription("bngService"); */
-		/* aDescriptor.setExpert(false); */
-		/* aDescriptor.setHidden(false); */
-		/* aDescriptor.setValue("preferred", new Boolean(false)); */
-		/* aDescriptor.setValue("ivjDesignTimeProperty", new Boolean(true)); */
-	} catch (Throwable exception) {
-		handleException(exception);
-	};
-	return aDescriptor;
-}
-
-
-/**
  * Gets the bngWindowManager property descriptor.
  * @return java.beans.PropertyDescriptor
  */
@@ -389,7 +335,6 @@ public java.beans.PropertyDescriptor[] getPropertyDescriptors() {
 	try {
 		java.beans.PropertyDescriptor aDescriptorList[] = {
 			bngOutputPropertyDescriptor()
-			,bngServicePropertyDescriptor()
 			,bngWindowManagerPropertyDescriptor()
 			,componentOrientationPropertyDescriptor()
 		};

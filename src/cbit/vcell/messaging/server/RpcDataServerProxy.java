@@ -203,7 +203,7 @@ public cbit.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID
  */
 public cbit.rmi.event.ExportEvent makeRemoteFile(cbit.vcell.export.server.ExportSpecs exportSpecs) throws cbit.vcell.server.DataAccessException {
 	try {
-		rpc(cbit.vcell.messaging.MessageConstants.SERVICETYPE_DATA_VALUE, "makeRemoteFile", new Object[]{user, exportSpecs}, false, new String[]{MessageConstants.SERVICE_DATA_ISEXPORTING}, new Object[]{new Boolean(true)});
+		rpc(cbit.vcell.messaging.MessageConstants.SERVICETYPE_DATA_VALUE, "makeRemoteFile", new Object[]{user, exportSpecs}, false, new String[]{MessageConstants.SERVICETYPE_DATAEXPORT_VALUE}, new Object[]{new Boolean(true)});
 	} catch (DataAccessException ex) {
 		log.exception(ex);
 		throw ex;
