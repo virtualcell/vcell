@@ -1,4 +1,6 @@
 package cbit.vcell.modeldb;
+import cbit.vcell.messaging.admin.ServiceStatus;
+import cbit.vcell.messaging.admin.SimpleJobStatus;
 import cbit.vcell.messaging.db.VCellServerID;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 /*©
@@ -11,11 +13,8 @@ import cbit.sql.*;
 import cbit.vcell.server.*;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.field.FieldDataDBOperationSpec;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.GeometryInfo;
-import cbit.image.*;
 import java.util.Vector;
-import cbit.vcell.math.MathDescription;
+import cbit.vcell.messaging.db.ServiceStatusDbDriver;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
@@ -27,15 +26,17 @@ import cbit.vcell.messaging.db.SimulationJobDbDriver;
 public class AdminDBTopLevel extends AbstractDBTopLevel{
 	private UserDbDriver userDB = null;
 	private SimulationJobDbDriver jobDB = null;
+	private ServiceStatusDbDriver serviceStatusDB = null; 
 	private static final int SQL_ERROR_CODE_BADCONNECTION = 1010; //??????????????????????????????????????
 
 /**
  * DBTopLevel constructor comment.
  */
-AdminDBTopLevel(ConnectionFactory aConFactory,SessionLog newLog) throws SQLException{
+public AdminDBTopLevel(ConnectionFactory aConFactory,SessionLog newLog) throws SQLException{
 	super(aConFactory,newLog);
 	userDB = new UserDbDriver(log);
 	jobDB = new SimulationJobDbDriver(log); 
+	serviceStatusDB = new ServiceStatusDbDriver();
 }
 
 
@@ -115,7 +116,7 @@ SimulationJobStatus getSimulationJobStatus(KeyValue simKey, int jobIndex, boolea
  * @return java.util.List
  * @param conditions java.lang.String
  */
-public java.util.List getSimulationJobStatus(String conditions, boolean bEnableRetry) throws java.sql.SQLException, cbit.vcell.server.DataAccessException {
+public java.util.List<SimpleJobStatus> getSimulationJobStatus(String conditions, boolean bEnableRetry) throws java.sql.SQLException, cbit.vcell.server.DataAccessException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
@@ -201,7 +202,7 @@ SimulationStatus[] getSimulationStatus(KeyValue simulationKeys[], boolean bEnabl
 		SimulationJobStatus[] jobStatuses = jobDB.getSimulationJobStatus(con,simulationKeys);
 		SimulationStatus[] simStatuses = new SimulationStatus[simulationKeys.length];
 		for (int i = 0; i < simulationKeys.length; i++){
-			Vector v = new Vector();
+			Vector<SimulationJobStatus> v = new Vector<SimulationJobStatus>();
 			for (int j = 0; j < jobStatuses.length; j++){
 				if(jobStatuses[j].getVCSimulationIdentifier().getSimulationKey().equals(simulationKeys[i])) {
 					v.add(jobStatuses[j]);
@@ -304,7 +305,7 @@ User getUser(String userid, String password, boolean bEnableRetry)
  * @exception java.sql.SQLException The exception description.
  * @exception cbit.sql.RecordChangedException The exception description.
  */
-User getUser(String userid, boolean bEnableRetry) throws DataAccessException, java.sql.SQLException {
+public User getUser(String userid, boolean bEnableRetry) throws DataAccessException, java.sql.SQLException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
@@ -587,4 +588,163 @@ KeyValue updateUserInfo(UserInfo newUserInfo, boolean bEnableRetry) throws SQLEx
 		conFactory.release(con,lock);
 	}
 }
+
+public interface TransactionalServiceOperation {
+	public ServiceStatus doOperation(ServiceStatus oldStatus) throws Exception;
+}
+
+public ServiceStatus insertServiceStatus(ServiceStatus serviceStatus, boolean bEnableRetry) throws SQLException, UpdateSynchronizationException {
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {		
+		ServiceStatus currentServiceStatus = serviceStatusDB.getServiceStatus(con,serviceStatus.getServiceSpec().getServerID(), 
+				serviceStatus.getServiceSpec().getType(), serviceStatus.getServiceSpec().getOrdinal(), false);
+		if (currentServiceStatus != null){
+			throw new UpdateSynchronizationException("service already exists:" + currentServiceStatus);
+		}
+		serviceStatusDB.insertServiceStatus(con, serviceStatus, DbDriver.getNewKey(con));
+		con.commit();
+		ServiceStatus newServiceStatus = serviceStatusDB.getServiceStatus(con,serviceStatus.getServiceSpec().getServerID(), 
+				serviceStatus.getServiceSpec().getType(), serviceStatus.getServiceSpec().getOrdinal(), false);		
+		return newServiceStatus;
+	}  catch (Throwable e) {
+		log.exception(e);
+		try {
+			con.rollback();
+		}catch (Throwable rbe){
+			log.exception(rbe);
+			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+		}
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			return insertServiceStatus(serviceStatus, false);
+		}else{
+			handle_SQLException(e);
+			return null; // never gets here;
+		}
+	}finally{
+		conFactory.release(con,lock);
+	}
+}
+
+public void deleteServiceStatus(ServiceStatus serviceStatus, boolean bEnableRetry) throws SQLException, UpdateSynchronizationException {
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {		
+		ServiceStatus currentServiceStatus = serviceStatusDB.getServiceStatus(con,serviceStatus.getServiceSpec().getServerID(), 
+				serviceStatus.getServiceSpec().getType(), serviceStatus.getServiceSpec().getOrdinal(), false);
+		if (currentServiceStatus == null){
+			throw new UpdateSynchronizationException("service doesn't exist:" + currentServiceStatus);
+		}
+		serviceStatusDB.deleteServiceStatus(con, serviceStatus, DbDriver.getNewKey(con));
+		con.commit();
+	}  catch (Throwable e) {
+		log.exception(e);
+		try {
+			con.rollback();
+		}catch (Throwable rbe){
+			log.exception(rbe);
+			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+		}
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			deleteServiceStatus(serviceStatus, false);
+		}else{
+			handle_SQLException(e);
+		}
+	}finally{
+		conFactory.release(con,lock);
+	}
+}
+
+public void disableServiceStatus(ServiceStatus serviceStatus, boolean bEnableRetry) throws SQLException, UpdateSynchronizationException {
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {		
+		ServiceStatus currentServiceStatus = serviceStatusDB.getServiceStatus(con,serviceStatus.getServiceSpec().getServerID(), 
+				serviceStatus.getServiceSpec().getType(), serviceStatus.getServiceSpec().getOrdinal(), false);
+		if (currentServiceStatus == null){
+			throw new UpdateSynchronizationException("service doesn't exist:" + currentServiceStatus);
+		}
+		serviceStatusDB.disableServiceStatus(con, serviceStatus, DbDriver.getNewKey(con));
+		con.commit();
+	}  catch (Throwable e) {
+		log.exception(e);
+		try {
+			con.rollback();
+		}catch (Throwable rbe){
+			log.exception(rbe);
+			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+		}
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			disableServiceStatus(serviceStatus, false);
+		}else{
+			handle_SQLException(e);
+		}
+	}finally{
+		conFactory.release(con,lock);
+	}
+}
+
+public ServiceStatus updateServiceStatus(ServiceStatus oldServiceStatus, TransactionalServiceOperation serviceOP, boolean bEnableRetry) throws SQLException, UpdateSynchronizationException {
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {	
+		ServiceStatus currentServiceStatus = serviceStatusDB.getServiceStatus(con,oldServiceStatus.getServiceSpec().getServerID(), 
+				oldServiceStatus.getServiceSpec().getType(), oldServiceStatus.getServiceSpec().getOrdinal(), true);
+		if (!currentServiceStatus.compareEqual(oldServiceStatus)){			
+			throw new UpdateSynchronizationException("current service status " + currentServiceStatus + " doesn't match argument for "+ oldServiceStatus);
+		}
+		ServiceStatus newServiceStatus = null;
+		try {
+			newServiceStatus = serviceOP.doOperation(oldServiceStatus);
+		} catch (Exception ex) {
+			throw new UpdateSynchronizationException("transactional operation failed for " + newServiceStatus + " : " + ex.getMessage());
+		}
+		serviceStatusDB.updateServiceStatus(con,newServiceStatus);
+		con.commit();
+		ServiceStatus updatedServiceStatus = serviceStatusDB.getServiceStatus(con, oldServiceStatus.getServiceSpec().getServerID(), 
+				oldServiceStatus.getServiceSpec().getType(), oldServiceStatus.getServiceSpec().getOrdinal(), false);
+		return updatedServiceStatus;
+	}  catch (Throwable e) {
+		log.exception(e);
+		try {
+			con.rollback();
+		}catch (Throwable rbe){
+			log.exception(rbe);
+			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+		}
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			return updateServiceStatus(oldServiceStatus,serviceOP,false);
+		}else{
+			handle_SQLException(e);
+			return null; // never gets here;
+		}
+	}finally{
+		conFactory.release(con,lock);
+	}
+}
+
+public java.util.List<ServiceStatus> getAllServiceStatus(boolean bEnableRetry) throws java.sql.SQLException, cbit.vcell.server.DataAccessException {
+
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		return serviceStatusDB.getAllServiceStatus(con);
+	} catch (Throwable e) {
+		log.exception(e);
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			return getAllServiceStatus(false);
+		}else{
+			handle_SQLException(e);
+			return null; // never gets here;
+		}
+	} finally {
+		conFactory.release(con,lock);
+	}
+}
+
 }

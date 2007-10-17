@@ -1,5 +1,6 @@
 package cbit.vcell.messaging.admin;
-import cbit.vcell.server.PropertyLoader;
+import java.net.UnknownHostException;
+import java.util.StringTokenizer;
 
 /**
  * Insert the type's description here.
@@ -16,6 +17,17 @@ public ManageUtils() {
 	super();
 }
 
+public static String getHostName() {
+	try {
+		String hostname = cbit.vcell.messaging.admin.ManageUtils.getLocalHostName();
+		StringTokenizer st = new StringTokenizer(hostname, ".");
+		hostname = st.nextToken(); // abbr hostname
+		return hostname;
+	} catch (UnknownHostException ex) {
+		ex.printStackTrace();
+		return "UnknownHost";
+	}	 
+}
 
 /**
  * Insert the method's description here.

@@ -4,20 +4,9 @@ package cbit.vcell.messaging.server;
  * All rights reserved.
 ©*/
 import java.net.URL;
-import cbit.vcell.solver.*;
-import cbit.sql.*;
-import java.sql.*;
-import cbit.vcell.model.*;
-import cbit.vcell.solvers.*;
-import cbit.vcell.geometry.*;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.mapping.*;
-import cbit.vcell.simdata.*;
-import cbit.vcell.export.server.*;
 import java.io.*;
 import java.rmi.*;
 import java.rmi.server.*;
-import java.util.*;
 import cbit.rmi.event.*;
 import cbit.vcell.messaging.*;
 import cbit.vcell.messaging.event.*;
@@ -35,7 +24,6 @@ public class LocalVCellConnectionMessaging extends UnicastRemoteObject implement
 	private LocalSimulationControllerMessaging simulationControllerMessaging = null;
 	private LocalUserMetaDbServerMessaging userMetaDbServerMessaging = null;
 	private cbit.vcell.messaging.event.SimpleMessageServiceMessaging messageService = null;
-	private LocalBNGServiceMessaging bngServiceMessaging = null;
 
 	private VCellTopicConnection topicConn = null;
 	private VCellQueueConnection queueConn = null;
@@ -58,9 +46,7 @@ public class LocalVCellConnectionMessaging extends UnicastRemoteObject implement
 	private JmsClientMessaging dbClientMessaging = null;
 	private JmsClientMessaging dataClientMessaging = null;
 	private JmsClientMessaging simClientMessaging = null;
-	private JmsClientMessaging bngClientMessaging = null;
-
-/**
+	/**
  * This method was created by a SmartGuide.
  * @exception java.rmi.RemoteException The exception description.
  */
@@ -126,31 +112,6 @@ public void exportMessage(ExportEvent event) {
 		messageService.getMessageCollector().exportMessage(event);
 	}
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (7/11/2006 12:32:06 PM)
- * @return cbit.vcell.server.DataSetController
- * @exception cbit.vcell.server.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
-public cbit.vcell.server.bionetgen.BNGService getBNGService() throws java.rmi.RemoteException, DataAccessException {
-	fieldSessionLog.print("LocalVCellConnectionMessaging.getBNGService()");
-	if (bngServiceMessaging == null) {
-		try {
-			bngClientMessaging = new JmsClientMessaging(queueConn, fieldSessionLog);
-			bngServiceMessaging = new LocalBNGServiceMessaging(fieldSessionLog, getUser(), bngClientMessaging);
-			fieldSessionLog.print("new bngClientMessaging=" + bngClientMessaging);
-		} catch (javax.jms.JMSException ex) {
-			fieldSessionLog.exception(ex);
-			throw new DataAccessException(ex.getMessage());
-		}
-	}
-	
-	return bngServiceMessaging;
-}
-
 
 /**
  * This method was created by a SmartGuide.

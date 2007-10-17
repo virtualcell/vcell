@@ -7,18 +7,14 @@ import cbit.util.BigString;
 import cbit.rmi.event.WorkerEvent;
 import cbit.sql.KeyValue;
 import javax.jms.*;
-import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.server.DataAccessException;
-import cbit.vcell.server.ObjectNotFoundException;
+import cbit.vcell.server.PropertyLoader;
+
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Vector;
-
-import javax.transaction.*;
 
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldDataIdentifierSpec;
@@ -26,23 +22,22 @@ import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.modeldb.LocalAdminDbServer;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
-import cbit.sql.VersionableType;
 import cbit.sql.DBCacheTable;
 import cbit.vcell.messaging.JmsClientMessaging;
 import cbit.vcell.messaging.SimulationDispatcherMessaging;
 import cbit.vcell.messaging.MessageConstants;
+import cbit.vcell.messaging.admin.ManageConstants;
+import cbit.vcell.messaging.admin.ServiceSpec;
 import cbit.vcell.messaging.db.SimulationJobStatus;
-import cbit.vcell.server.AdminDatabaseServer;
+import cbit.vcell.messaging.db.VCellServerID;
 import cbit.vcell.server.AdminDatabaseServerXA;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.server.User;
 import cbit.vcell.messaging.VCellTopicSession;
 import cbit.vcell.messaging.WorkerEventMessage;
-import cbit.vcell.messaging.JmsUtils;
 import cbit.vcell.messaging.StatusMessage;
 import java.util.HashSet;
 import cbit.vcell.modeldb.ResultSetCrawler;
-import cbit.vcell.messaging.JmsUtils;
 
 /**
  * Insert the type's description here.
@@ -50,34 +45,32 @@ import cbit.vcell.messaging.JmsUtils;
  * @author: Jim Schaff
  */
 public class SimulationDispatcher extends AbstractJmsServiceProvider {
-	private Map userDbServerMap = null;
+	private Map<User, RpcDbServerProxy> userDbServerMap = null;
 	private ConnectionFactory conFactory = null;
 	private KeyFactory keyFactory = null;
-	private cbit.vcell.server.SessionLog log = null;
 	private JmsClientMessaging clientMessaging = null;
 	private LocalAdminDbServer adminDbServer = null;
 	
 	private boolean bStop = false;		
 	private SimulationDispatcherMessaging dispatcherMessaging = null;
 	private cbit.sql.DBCacheTable simulationMap = null;
-	private Map simUserMap = Collections.synchronizedMap(new java.util.HashMap());
-	private Map simFieldDataIDMap = Collections.synchronizedMap(new java.util.HashMap());
+	private Map<KeyValue, User> simUserMap = Collections.synchronizedMap(new HashMap<KeyValue, User>());
+	private Map<KeyValue, FieldDataIdentifierSpec[]> simFieldDataIDMap = Collections.synchronizedMap(new HashMap<KeyValue, FieldDataIdentifierSpec[]>());
 
 	private MessagingDispatcherDbManager dispatcherDbManager = new JmsDispatcherDbManager();
-	protected HashSet resultSetSavedSet = new HashSet();
+	protected HashSet<VCSimulationDataIdentifier> resultSetSavedSet = new HashSet<VCSimulationDataIdentifier>();
 	protected ResultSetCrawler rsCrawler = null;	
 
 /**
  * Scheduler constructor comment.
  */
-public SimulationDispatcher(String serviceName) throws Exception {
-	log = new cbit.vcell.server.StdoutSessionLog(serviceName);	
+public SimulationDispatcher(int serviceOrdinal, String logdir) throws Exception {	
+	serviceSpec = new ServiceSpec(VCellServerID.getSystemServerID().toString(), 
+			MessageConstants.SERVICETYPE_DISPATCH_VALUE, serviceOrdinal, ManageConstants.SERVICE_STARTUPTYPE_AUTOMATIC, 100, true);	
+	initLog(logdir);
+
+	log = new cbit.vcell.server.StdoutSessionLog(serviceSpec.getID());
 	
-	String hostName = cbit.vcell.messaging.admin.ManageUtils.getLocalHostName();
-	serviceInfo = new cbit.vcell.messaging.admin.VCServiceInfo(hostName, MessageConstants.SERVICETYPE_DISPATCH_VALUE, serviceName);
-	serviceInfo.setAlive(true);
-	serviceInfo.setBootTime(new java.util.Date());
-		
 	conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
 	keyFactory = new cbit.sql.OracleKeyFactory();		
 	adminDbServer = new cbit.vcell.modeldb.LocalAdminDbServer(conFactory,keyFactory,log);
@@ -115,7 +108,7 @@ private RpcDbServerProxy getDbServerProxy(User user) throws JMSException {
 	}
 
 	if (userDbServerMap == null) {
-		userDbServerMap = Collections.synchronizedMap(new HashMap());
+		userDbServerMap = Collections.synchronizedMap(new HashMap<User, RpcDbServerProxy>());
 	}
 		
 	synchronized (userDbServerMap) {
@@ -280,19 +273,20 @@ public User getUser(KeyValue simKey, String username) throws DataAccessException
  */
 public static void main(java.lang.String[] args) {
 	if (args.length < 1) {
-		System.out.println("Missing arguments: " + SimulationDispatcher.class.getName() + " serviceName [logfile]");
+		System.out.println("Missing arguments: " + SimulationDispatcher.class.getName() + " serviceOrdinal [logdir]");
 		System.exit(1);
 	}
 	
 	try {
-		String logfile = null;
-		if (args.length >= 2) {
-			logfile = args[1];
+		PropertyLoader.loadProperties();		
+		
+		int serviceOrdinal = Integer.parseInt(args[0]);
+		String logdir = null;
+		if (args.length > 1) {
+			logdir = args[1];
 		}
-		mainInit(logfile);
-
-		String serviceName = args[0];
-		SimulationDispatcher simulationDispatcher = new SimulationDispatcher(serviceName);
+		
+		SimulationDispatcher simulationDispatcher = new SimulationDispatcher(serviceOrdinal, logdir);
 		simulationDispatcher.start();
 	} catch (Throwable e) {
 		e.printStackTrace(System.out);

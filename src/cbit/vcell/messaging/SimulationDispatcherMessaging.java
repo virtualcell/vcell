@@ -57,7 +57,7 @@ class SimulationMonitorThread extends Thread {
 
 public SimulationMonitorThread() {
 	super();
-	setName(simDispatcher.getServiceName() + "_MT");
+	setName(simDispatcher.getServiceID() + "_MT");
 }
 
 public void run() {
@@ -194,7 +194,7 @@ public void run() {
 	class DispatchThread extends Thread {
 	public DispatchThread() {
 		super();
-		setName(simDispatcher.getServiceName() + "_DT");
+		setName(simDispatcher.getServiceID() + "_DT");
 	}
 	
 public void run() {
@@ -359,7 +359,7 @@ public void run() {
 public class StatusThread extends Thread {
 	public StatusThread() {
 		super();
-		setName(simDispatcher.getServiceName() + "_ST");
+		setName(simDispatcher.getServiceID() + "_ST");
 	}
 
 	
@@ -672,7 +672,7 @@ public VCSimulationIdentifier processNextRequest() {
  */
 protected void reconnect() throws JMSException {
 	// msg filter selector 
-	jobSelector =  MessageConstants.MESSAGE_TYPE_PROPERTY + "='" + MessageConstants.MESSAGE_TYPE_RPC_SERVICE_VALUE  + "' AND " + MessageConstants.SERVICETYPE_PROPERTY + "='" + simDispatcher.getServiceType() + "'";	
+	jobSelector =  MessageConstants.MESSAGE_TYPE_PROPERTY + "='" + MessageConstants.MESSAGE_TYPE_RPC_SERVICE_VALUE  + "' AND " + MessageConstants.SERVICE_TYPE_PROPERTY + "='" + simDispatcher.getServiceType() + "'";	
 	
 	xaQueueConn = jmsConnFactory.createXAQueueConnection();
 	mainJobDispatcher = xaQueueConn.getXASession();		

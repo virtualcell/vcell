@@ -220,4 +220,12 @@ public static String submitJob(String computeResource, String jobName, String su
 	String jobid = exe.getStdoutString().trim();
 	return jobid;
 }
+
+public static String submitJob(String sub_file) throws ExecutableException {	
+	String completeCommand =  JOB_CMD_SUBMIT + " " + sub_file;
+	Executable exe = new Executable(completeCommand);
+	exe.start();
+	String jobid = exe.getStdoutString().trim();
+	return jobid;
+}
 }

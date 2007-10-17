@@ -154,7 +154,6 @@ public class ClientServerManager implements SessionManager {
 	private SimulationController simulationController = null;
 	private UserMetaDbServer userMetaDbServer = null;
 	private DataSetController dataSetController = null;
-	private BNGService bngService = null;
 	private cbit.rmi.event.RemoteMessageHandler remoteMessageHandler = null;
 	// gotten from call to vcellConnection
 	private User user = null;
@@ -357,35 +356,6 @@ public AsynchMessageManager getAsynchMessageManager() {
 		asynchMessageManager = new AsynchMessageManager();
 	}
 	return asynchMessageManager;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/13/2004 1:54:04 PM)
- * @return UserMetaDbServer
- */
-public cbit.vcell.server.bionetgen.BNGService getBNGSerivce() throws DataAccessException {
-	if (bngService!=null){
-		return bngService;
-	}else if (getVcellConnection()==null){
-		throw new RuntimeException("cannot get Database Server, no VCell Connection\ntry Server->Reconnect");
-	}else{
-		try {
-			bngService = getVcellConnection().getBNGService();
-			return bngService;
-		} catch (java.rmi.RemoteException rexc) {
-			rexc.printStackTrace(System.out);
-			try {
-				// one more time before we fail../
-				bngService = getVcellConnection().getBNGService();
-				return bngService;
-			} catch (java.rmi.RemoteException rexc2) {
-				rexc.printStackTrace(System.out);
-				throw new DataAccessException("RemoteException: "+rexc2.getMessage());
-			}
-		}
-	}
 }
 
 
@@ -710,6 +680,5 @@ private void setVcellConnection(VCellConnection newVcellConnection) {
 	dataSetController = null;
 	userMetaDbServer = null;
 	remoteMessageHandler = null;
-	bngService = null;
 }
 }

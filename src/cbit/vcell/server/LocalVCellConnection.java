@@ -4,20 +4,11 @@ package cbit.vcell.server;
  * All rights reserved.
 ©*/
 import java.net.URL;
-import cbit.vcell.solver.*;
 import cbit.sql.*;
-import java.sql.*;
-import cbit.vcell.model.*;
-import cbit.vcell.solvers.*;
-import cbit.vcell.geometry.*;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.mapping.*;
 import cbit.vcell.simdata.*;
-import cbit.vcell.export.server.*;
 import java.io.*;
 import java.rmi.*;
 import java.rmi.server.*;
-import java.util.*;
 import cbit.rmi.event.*;
 /**
  * The user's connection to the Virtual Cell.  It is obtained from the VCellServer
@@ -30,7 +21,6 @@ public class LocalVCellConnection extends UnicastRemoteObject implements VCellCo
 	private DataSetController dataSetControllerProxy = null;
 	private SimulationController simulationController = null;
 	private UserMetaDbServer userMetaDbServer = null;
-	private cbit.vcell.server.bionetgen.BNGService bngService = null;
 	private SimpleMessageService messageService = new SimpleMessageService();
 	//
 	private User fieldUser = null;
@@ -80,21 +70,6 @@ public void exportMessage(ExportEvent event) {
 	if (getUser().equals(event.getUser())) {
 		messageService.getMessageCollector().exportMessage(event);
 	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (7/11/2006 12:43:05 PM)
- * @return cbit.vcell.server.DataSetController
- * @exception cbit.vcell.server.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
-public cbit.vcell.server.bionetgen.BNGService getBNGService() throws DataAccessException, java.rmi.RemoteException {
-	if (bngService == null){
-		bngService = new cbit.vcell.server.bionetgen.LocalBNGService(getUser(),getSessionLog());
-	}
-	return bngService;
 }
 
 

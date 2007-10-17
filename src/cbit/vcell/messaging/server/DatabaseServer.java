@@ -1,13 +1,7 @@
 package cbit.vcell.messaging.server;
-import java.io.Serializable;
 import cbit.vcell.server.DataAccessException;
-import cbit.sql.DBCacheTable;
-import javax.jms.*;
-import cbit.sql.ConnectionFactory;
-import cbit.sql.OraclePoolingConnectionFactory;
-import cbit.sql.KeyFactory;
-import cbit.sql.OracleKeyFactory;
-import cbit.vcell.messaging.MessageConstants;
+import cbit.vcell.server.PropertyLoader;
+import static cbit.vcell.messaging.MessageConstants.*;
 import cbit.vcell.messaging.JmsUtils;
 
 /**
@@ -17,14 +11,14 @@ import cbit.vcell.messaging.JmsUtils;
  */
 public class DatabaseServer extends JmsRpcServer {
 	private RpcDbServerImpl rpcDbServerImpl = null;
-	private static String filter =  MessageConstants.MESSAGE_TYPE_PROPERTY + "='" + MessageConstants.MESSAGE_TYPE_RPC_SERVICE_VALUE  + "' AND " 
-		+ MessageConstants.SERVICETYPE_PROPERTY + "='" + MessageConstants.SERVICETYPE_DB_VALUE + "'";
+	private static String filter =  "(" + MESSAGE_TYPE_PROPERTY + "='" + MESSAGE_TYPE_RPC_SERVICE_VALUE  + "') AND (" 
+		+ SERVICE_TYPE_PROPERTY + "='" + SERVICETYPE_DB_VALUE + "')";
 
 /**
  * Scheduler constructor comment.
  */
-public DatabaseServer(String serviceName) throws Exception {	
-	super(MessageConstants.SERVICETYPE_DB_VALUE, serviceName, JmsUtils.getQueueDbReq(), filter);	
+public DatabaseServer(int serviceOrdinal, String logdir) throws Exception {	
+	super(SERVICETYPE_DB_VALUE, serviceOrdinal, JmsUtils.getQueueDbReq(), filter, logdir);	
 }
 
 
@@ -54,18 +48,20 @@ public RpcServerImpl getRpcServerImpl() throws DataAccessException {
  */
 public static void main(java.lang.String[] args) {
 	if (args.length < 1) {
-		System.out.println("Missing arguments: " + DatabaseServer.class.getName() + " serviceName [logfile]");
+		System.out.println("Missing arguments: " + DatabaseServer.class.getName() + " serviceOrdinal [logdir]");
 		System.exit(1);
 	}
 	
 	try {
-		String logfile = null;
-		if (args.length >= 2) {
-			logfile = args[1];
+		PropertyLoader.loadProperties();
+		
+		int serviceOrdinal = Integer.parseInt(args[0]);
+		String logdir = null;
+		if (args.length > 1) {
+			logdir = args[1];
 		}
-		mainInit(logfile);
-		String serviceName = args[0];
-        DatabaseServer databaseServer = new DatabaseServer(serviceName);       
+		
+        DatabaseServer databaseServer = new DatabaseServer(serviceOrdinal, logdir);       
         databaseServer.start();        
     } catch (Throwable e) {
 	    e.printStackTrace(System.out); 

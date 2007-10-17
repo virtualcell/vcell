@@ -17,6 +17,9 @@ public class PropertyLoader {
 	public static final String primarySimDataDirProperty	= "vcell.primarySimdatadir";
 	public static final String secondarySimDataDirProperty	= "vcell.secondarySimdatadir";
 	public static final String localSimDataDirProperty		= "vcell.localSimdatadir";
+	public static final String serviceLogDir = "vcell.service.logdir";
+	public static final String serviceClassPath = "vcell.service.classpath";
+	public static final String servicePropertyFile = "vcell.service.propertyFile";
 	
 	public static final String compilerProperty				= "vcell.c++.compiler";
 	public static final String linkerProperty				= "vcell.c++.linker";
@@ -149,6 +152,9 @@ public class PropertyLoader {
 		primarySimDataDirProperty,
 		secondarySimDataDirProperty,
 		localSimDataDirProperty,
+		serviceLogDir,
+		serviceClassPath,
+		servicePropertyFile,
 		
 		compilerProperty,
 		linkerProperty,
@@ -479,7 +485,7 @@ private static final void verifyPropertyFile(String propertyFileName) {
 		//
 		// complain if property file has an unknown property
 		//
-		java.util.Iterator propNameIterator = p.keySet().iterator();
+		java.util.Iterator<Object> propNameIterator = p.keySet().iterator();
 		while (propNameIterator.hasNext()){
 			String propName = (String)propNameIterator.next();
 			boolean bFound = false;

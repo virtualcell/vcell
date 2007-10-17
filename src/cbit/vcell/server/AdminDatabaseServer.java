@@ -6,6 +6,7 @@ package cbit.vcell.server;
 ©*/
 import java.rmi.*;
 import cbit.sql.*;
+import cbit.vcell.messaging.admin.SimpleJobStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 
@@ -26,7 +27,7 @@ ExternalDataIdentifier[] getExternalDataIdentifiers(User fielddataOwner) throws 
  */
 
 SimulationJobStatus getSimulationJobStatus(KeyValue simKey, int jobIndex) throws RemoteException, DataAccessException;
-	public java.util.List getSimulationJobStatus(String conditions) throws RemoteException, DataAccessException;
+	public java.util.List<SimpleJobStatus> getSimulationJobStatus(String conditions) throws RemoteException, DataAccessException;
 /**
  * Insert the method's description here.
  * Creation date: (1/31/2003 2:33:54 PM)

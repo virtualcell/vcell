@@ -1,17 +1,10 @@
 package cbit.vcell.messaging.server;
-import java.io.Serializable;
 import cbit.vcell.server.DataAccessException;
-import cbit.sql.DBCacheTable;
-import cbit.sql.KeyFactory;
 import javax.jms.*;
-import java.util.*;
-import cbit.vcell.server.User;
-import java.io.FileNotFoundException;
-import cbit.vcell.messaging.admin.ServicePerformance;
-import cbit.vcell.server.PropertyLoader;
-import cbit.vcell.server.SessionLog;
+import cbit.vcell.messaging.admin.ManageConstants;
+import cbit.vcell.messaging.admin.ServiceSpec;
+import cbit.vcell.messaging.db.VCellServerID;
 import cbit.vcell.messaging.RpcServerMessaging;
-import cbit.vcell.messaging.MessageConstants;
 
 /**
  * Insert the type's description here.
@@ -20,20 +13,16 @@ import cbit.vcell.messaging.MessageConstants;
  */
 public abstract class JmsRpcServer extends AbstractJmsServiceProvider implements RpcServer {	
 	protected RpcServerMessaging rpcServerMessaging = null;	
-	protected cbit.vcell.server.SessionLog log = null;
-	protected Map userServerMap = Collections.synchronizedMap(new HashMap());
 
 /**
  * Scheduler constructor comment.
  */
-public JmsRpcServer(String serviceType, String serviceName, String queueName, String filter) throws Exception {
-	log = new cbit.vcell.server.StdoutSessionLog(serviceName);		
-
-	String hostName = cbit.vcell.messaging.admin.ManageUtils.getLocalHostName();
-	serviceInfo = new cbit.vcell.messaging.admin.VCServiceInfo(hostName, serviceType, serviceName);
-	serviceInfo.setAlive(true);
-	serviceInfo.setBootTime(new java.util.Date());			
+public JmsRpcServer(String serviceType, int serviceOrdinal, String queueName, String filter, String logdir) throws Exception {
+	serviceSpec = new ServiceSpec(VCellServerID.getSystemServerID().toString(), 
+			serviceType, serviceOrdinal, ManageConstants.SERVICE_STARTUPTYPE_AUTOMATIC, 100, true);
+	initLog(logdir);
 	
+	log = new cbit.vcell.server.StdoutSessionLog(serviceSpec.getID());	
 	rpcServerMessaging = new RpcServerMessaging(this, queueName, filter, log);	
 }
 
@@ -50,16 +39,6 @@ public JmsRpcServer(String serviceType, String serviceName, String queueName, St
 public final Object dispatchRPC(RpcRequest request) throws Exception {
 	return getRpcServerImpl().rpc(request);
 }
-
-/**
- * Insert the method's description here.
- * Creation date: (1/3/2002 8:18:25 PM)
- * @param logMessage java.lang.String
- */
-protected SessionLog getLog() {
-	return this.log;
-}
-
 
 /**
  * Insert the method's description here.

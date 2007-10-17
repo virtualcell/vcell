@@ -3,17 +3,14 @@ import cbit.vcell.client.task.DisplayBNGOutput;
 import cbit.vcell.client.task.RunBioNetGen;
 import java.util.Hashtable;
 import cbit.vcell.client.task.AsynchClientTask;
-import java.util.Vector;
 import java.io.PrintWriter;
 import java.io.File;
 import cbit.gui.VCFileChooser;
 import cbit.vcell.server.bionetgen.BNGInput;
-import cbit.vcell.server.bionetgen.BNGService;
 import cbit.vcell.client.bionetgen.BNGOutputPanel;
 import cbit.vcell.client.task.UserCancelException;
 import javax.swing.JFileChooser;
 import cbit.vcell.client.server.UserPreferences;
-import cbit.util.AsynchProgressPopup;
 import java.io.FileInputStream;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -42,15 +39,6 @@ public BNGWindowManager(BNGOutputPanel argBngOutputPanel, RequestManager request
  */
 public cbit.vcell.client.bionetgen.BNGOutputPanel getBngOutputPanel() {
 	return fieldBngOutputPanel;
-}
-
-
-/**
- * Gets the bngOutputPanel property (cbit.vcell.client.bionetgen.BNGOutputPanel) value.
- * @return The bngOutputPanel property value.
- */
-public BNGService getBngService() {
-	return getRequestManager().getBNGService();
 }
 
 

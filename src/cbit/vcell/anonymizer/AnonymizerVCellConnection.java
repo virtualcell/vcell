@@ -1,7 +1,6 @@
 package cbit.vcell.anonymizer;
 import cbit.vcell.server.RMIVCellConnectionFactory;
 import cbit.vcell.server.URLFinder;
-import cbit.vcell.server.ConnectionPool;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -10,20 +9,13 @@ import cbit.vcell.server.SessionLog;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.server.SimulationController;
 import cbit.vcell.server.UserMetaDbServer;
-import cbit.vcell.server.VCellServer;
 import cbit.vcell.server.PropertyLoader;
-import cbit.rmi.event.ExportListener;
-import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.SimpleMessageService;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.server.DataAccessException;
-import cbit.vcell.client.server.AsynchMessageManager;
 import cbit.vcell.server.User;
-import java.net.URL;
-import java.io.*;
 import java.rmi.*;
 import java.rmi.server.*;
-import java.util.*;
 /**
  * The user's connection to the Virtual Cell.  It is obtained from the VCellServer
  * after the user has been authenticated.
@@ -44,8 +36,6 @@ public class AnonymizerVCellConnection extends UnicastRemoteObject implements VC
 	private DataSetController remoteDataSetController = null;
 	private AnonymizerUserMetaDbServer userMetaDbServer = null;
 	private UserMetaDbServer remoteUserMetaDbServer = null;
-	private AnonymizerBNGService bngService = null;
-	private cbit.vcell.server.bionetgen.BNGService remoteBNGService = null;
 	
 /**
  * This method was created by a SmartGuide.
@@ -80,22 +70,6 @@ private void connect() throws cbit.vcell.server.AuthenticationException, cbit.vc
 
 
 /**
- * Insert the method's description here.
- * Creation date: (7/11/2006 3:22:07 PM)
- * @return cbit.vcell.server.DataSetController
- * @exception cbit.vcell.server.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
-public cbit.vcell.server.bionetgen.BNGService getBNGService() throws cbit.vcell.server.DataAccessException, java.rmi.RemoteException {
-	if (bngService == null) {
-		bngService = new AnonymizerBNGService(this, sessionLog);
-	}
-
-	return bngService;
-}
-
-
-/**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.server.DataSetController
  * @exception java.lang.Exception The exception description.
@@ -106,20 +80,6 @@ public DataSetController getDataSetController() throws RemoteException, DataAcce
 	}
 
 	return dataSetController;
-}
-
-
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.server.DataSetController
- * @exception java.lang.Exception The exception description.
- */
-cbit.vcell.server.bionetgen.BNGService getRemoteBNGService() throws RemoteException, DataAccessException {
-	if (remoteBNGService == null) {
-		remoteBNGService = getRemoteVCellConnection().getBNGService();
-	}
-
-	return remoteBNGService;
 }
 
 

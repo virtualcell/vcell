@@ -1,10 +1,7 @@
 package cbit.vcell.messaging.server;
-import cbit.vcell.simdata.Cachetable;
-import javax.jms.*;
-import cbit.vcell.server.User;
+import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.server.DataAccessException;
-import java.io.FileNotFoundException;
-import cbit.vcell.messaging.MessageConstants;
+import static cbit.vcell.messaging.MessageConstants.*;
 import cbit.vcell.messaging.JmsUtils;
 
 /**
@@ -14,15 +11,15 @@ import cbit.vcell.messaging.JmsUtils;
  */
 public class SimDataServer extends JmsRpcServer {
 	private RpcDataServerImpl rpcDataServerImpl = null;
-	private static String filter =  MessageConstants.MESSAGE_TYPE_PROPERTY + "='" + MessageConstants.MESSAGE_TYPE_RPC_SERVICE_VALUE  + "' AND " 
-		+ MessageConstants.SERVICETYPE_PROPERTY + "='" + MessageConstants.SERVICETYPE_DATA_VALUE + "'";	
+	private static String filter = "(" + MESSAGE_TYPE_PROPERTY + "='" + MESSAGE_TYPE_RPC_SERVICE_VALUE  + "') AND (" 
+		+ SERVICE_TYPE_PROPERTY + "='" + SERVICETYPE_DATA_VALUE + "')";	
 
 /**
  * Scheduler constructor comment.
  */
-public SimDataServer(String serviceName, boolean bExportOnly) throws Exception {
-	super(MessageConstants.SERVICETYPE_DATA_VALUE, serviceName, JmsUtils.getQueueSimDataReq(), 
-		filter+" AND " + MessageConstants.SERVICE_DATA_ISEXPORTING + (bExportOnly?" is NOT NULL":" is NULL"));	
+public SimDataServer(int serviceOrdinal, boolean bExportOnly, String logdir) throws Exception {
+	super(bExportOnly ? SERVICETYPE_DATAEXPORT_VALUE : SERVICETYPE_DATA_VALUE, serviceOrdinal, JmsUtils.getQueueSimDataReq(), 
+		filter + " AND (" + SERVICETYPE_DATAEXPORT_VALUE + (bExportOnly ? " is NOT NULL)" : " is NULL)"), logdir);	
 }
 
 
@@ -50,28 +47,28 @@ public RpcServerImpl getRpcServerImpl() throws DataAccessException {
  */
 public static void main(java.lang.String[] args) {
 	if (args.length < 1) {
-		System.out.println("Missing arguments: " + SimDataServer.class.getName() + " serviceName EXPORTONLY [logfile]");
+		System.out.println("Missing arguments: " + SimDataServer.class.getName() + " serviceOrdinal [EXPORTONLY] [logdir]");
 		System.exit(1);
 	}
 	
 	try {
-		String logfile = null;
-		boolean bExportOnly = false;
+		PropertyLoader.loadProperties();
 		
-		if (args.length >= 2) {
+		int serviceOrdinal = Integer.parseInt(args[0]);		
+		String logdir = null;
+		boolean bExportOnly = false;		
+		if (args.length > 1) {
 			if (args[1].equalsIgnoreCase("EXPORTONLY")) {
 				bExportOnly = true;
-				if (args.length >= 3) {	
-					logfile = args[2];
+				if (args.length > 2) {	
+					logdir = args[2];
 				}
 			} else {
-				logfile = args[1];
+				logdir = args[1];
 			}
 		}
-		mainInit(logfile);
-
-		String serviceName = args[0];
-        SimDataServer simDataServer = new SimDataServer(serviceName, bExportOnly);
+		
+        SimDataServer simDataServer = new SimDataServer(serviceOrdinal, bExportOnly, logdir);
         simDataServer.start();
     } catch (Throwable e) {
         e.printStackTrace(System.out);
