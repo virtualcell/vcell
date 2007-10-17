@@ -16,6 +16,7 @@ import cbit.vcell.math.Variable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.xml.XmlHelper;
 
 public class VCellSBMLSolver implements SBMLSolver {
 	
@@ -56,24 +57,37 @@ public class VCellSBMLSolver implements SBMLSolver {
 		        }
 		    };
 	
-		    if (bRoundTrip){
-			    // Round trip the sbml model : sbml -> vcell -> sbml.
-			    BioModel bioModel_1 = (BioModel) cbit.vcell.xml.XmlHelper.importSBML(logger, sbmlString);
-			    sbmlString = cbit.vcell.xml.XmlHelper.exportSBML(bioModel_1, 2, 3, bioModel_1.getSimulationContexts(0).getName());
-			    SBMLUtils.writeStringToFile(sbmlString, new File(outDir,filePrefix+".vcroundtrip.sbml").getAbsolutePath());
-		    }
 			//    
 		    // Instantiate an SBMLImporter to get the speciesUnitsHash - to compute the conversion factor from VC->SB species units.
+		    // and import SBML  (sbml->bioModel)
 			org.vcell.sbml.vcell.SBMLImporter sbmlImporter = new org.vcell.sbml.vcell.SBMLImporter(sbmlString, logger);
-			BioModel tempBioModel = sbmlImporter.getBioModel();
+			BioModel bioModel = sbmlImporter.getBioModel();
 			Hashtable<String, SBMLImporter.SBVCConcentrationUnits> speciesUnitsHash = sbmlImporter.getSpeciesUnitsHash();
 			double timeFactor = sbmlImporter.getSBMLTimeUnitsFactor();
 	
+		    if (bRoundTrip){
+			    // Round trip the bioModel (bioModel->sbml->bioModel).
+		    	
+		    	// save imported "bioModel" as VCML
+			    String vcml_1 = XmlHelper.bioModelToXML(bioModel);
+			    SBMLUtils.writeStringToFile(vcml_1, new File(outDir,filePrefix+".vcml").getAbsolutePath());
+			    
+			    // export bioModel as sbml and save
+			    String vcml_sbml = cbit.vcell.xml.XmlHelper.exportSBML(bioModel, 2, 3, bioModel.getSimulationContexts(0).getName());
+			    SBMLUtils.writeStringToFile(vcml_sbml, new File(outDir,filePrefix+".vcml.sbml").getAbsolutePath());
+			    
+			    // re-import bioModel from exported sbml
+			    BioModel newBioModel = (BioModel)XmlHelper.importSBML(logger, vcml_sbml);
+			    String vcml_sbml_vcml = XmlHelper.bioModelToXML(newBioModel);
+			    SBMLUtils.writeStringToFile(vcml_sbml_vcml, new File(outDir,filePrefix+".vcml.sbml.vcml").getAbsolutePath());
+			    
+			    // have rest of code use the round-tripped biomodel
+			    bioModel = newBioModel;
+		    }
 			//
 		    // select only Application, generate math, and create a single Simulation.
 			//
-	//		    cbit.vcell.mapping.SimulationContext simContext = bioModel_2.getSimulationContexts(0);
-		    cbit.vcell.mapping.SimulationContext simContext = tempBioModel.getSimulationContexts(0);
+		    cbit.vcell.mapping.SimulationContext simContext = bioModel.getSimulationContexts(0);
 		    cbit.vcell.mapping.MathMapping mathMapping = new cbit.vcell.mapping.MathMapping(simContext);
 		    cbit.vcell.math.MathDescription mathDesc = mathMapping.getMathDescription();
 		    simContext.setMathDescription(mathDesc);
