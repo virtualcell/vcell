@@ -149,17 +149,20 @@ protected void addCompartments() {
 			}
 		}
 		
-		Element annotationElement = null;
-		String sbmlAnnotationString = sbmlCompartment.getAnnotationString();
-		if(sbmlAnnotationString == null || sbmlAnnotationString.length() == 0){
-			annotationElement = new Element(XMLTags.SbmlAnnotationTag, "");
-		}else{
-			annotationElement = XmlUtil.stringToXML(sbmlAnnotationString, null);
-		}
-		MIRIAMHelper.addToSBML(annotationElement, vcStructures[i].getMIRIAMAnnotation(), false);
-		if (annotationElement.getChildren().size()>0){
-			sbmlCompartment.setAnnotation(XmlUtil.xmlToString(annotationElement, true));
-		}
+//		Element annotationElement = null;
+//		String sbmlAnnotationString = sbmlCompartment.getAnnotationString();
+//		if(sbmlAnnotationString == null || sbmlAnnotationString.length() == 0){
+//			annotationElement = new Element(XMLTags.SbmlAnnotationTag, "");
+//		}else{
+//			annotationElement = XmlUtil.stringToXML(sbmlAnnotationString, null);
+//		}
+//		MIRIAMHelper.addToSBML(annotationElement, vcStructures[i].getMIRIAMAnnotation(), false);
+//		if (annotationElement.getChildren().size()>0){
+//			String annotationString = XmlUtil.xmlToString(annotationElement, true);
+//			System.out.println("compartment annotation string:\n"+annotationString);
+//			System.out.flush();
+//			sbmlCompartment.setAnnotation(new String(annotationString));
+//		}
 		sbmlModel.addCompartment(sbmlCompartment);
 	}
 }
@@ -250,8 +253,8 @@ protected void addReactions() {
 			e.printStackTrace(System.out);
 			throw new RuntimeException("Could not get JDOM element for annotation : " + e.getMessage());
 		}
-		MIRIAMHelper.addToSBML(annotationElement, vcReactionSpecs[i].getReactionStep().getMIRIAMAnnotation(),false);
-		sbmlReaction.setAnnotation(cbit.util.xml.XmlUtil.xmlToString(annotationElement));
+//		MIRIAMHelper.addToSBML(annotationElement, vcReactionSpecs[i].getReactionStep().getMIRIAMAnnotation(),false);
+//		sbmlReaction.setAnnotation(cbit.util.xml.XmlUtil.xmlToString(annotationElement));
 		
 		// Get reaction kineticLaw
 		Kinetics vcRxnKinetics = vcReactionStep.getKinetics();
@@ -525,8 +528,8 @@ protected void addSpecies() {
 		speciesElement.setAttribute(XMLTags.NameAttrTag, cbit.util.TokenMangler.mangleToSName(vcSpeciesContexts[i].getSpecies().getCommonName()));
 		vcellInfoTag.addContent(speciesElement);
 		annotationElement.addContent(vcellInfoTag);
-		MIRIAMHelper.addToSBML(annotationElement, vcSpeciesContexts[i].getSpecies().getMIRIAMAnnotation(),false);
-		sbmlSpecies.setAnnotation(cbit.util.xml.XmlUtil.xmlToString(annotationElement,true));
+//		MIRIAMHelper.addToSBML(annotationElement, vcSpeciesContexts[i].getSpecies().getMIRIAMAnnotation(),false);
+//		sbmlSpecies.setAnnotation(cbit.util.xml.XmlUtil.xmlToString(annotationElement,true));
 
 		// Add the species to the sbmlModel
 		sbmlModel.addSpecies(sbmlSpecies);
@@ -796,8 +799,8 @@ public String getSBMLFile() {
 	}else{
 		annotationElement = XmlUtil.stringToXML(sbmlAnnotationString, null);
 	}
-	MIRIAMHelper.addToSBML(annotationElement, vcBioModel.getMIRIAMAnnotation(), false);
-	sbmlModel.setAnnotation(XmlUtil.xmlToString(annotationElement, true));
+//	MIRIAMHelper.addToSBML(annotationElement, vcBioModel.getMIRIAMAnnotation(), false);
+//	sbmlModel.setAnnotation(XmlUtil.xmlToString(annotationElement, true));
 
 	//
 	// Set the SBMLDocument with the SBML model. 

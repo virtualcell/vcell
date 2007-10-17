@@ -119,12 +119,12 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
 		} else if (fileFilter.equals(FileFilters.FILE_FILTER_PDF)) {            
 			documentManager.generatePDF(mathModel, new FileOutputStream(exportFile));
 			return;                                                       //will take care of writing to the file as well.
-		}else{ // should be an XML document (VCML or CellML)
-			if (fileFilter.equals(FileFilters.FILE_FILTER_VCML)) {
-				resultString = XmlHelper.mathModelToXML(mathModel);
-			} else if (fileFilter.equals(FileFilters.FILE_FILTER_CELLML)) {
-				resultString = XmlHelper.exportCellML(mathModel, null);
-			}
+		}else if (fileFilter.equals(FileFilters.FILE_FILTER_VCML)) {
+			resultString = XmlHelper.mathModelToXML(mathModel);
+		} else if (fileFilter.equals(FileFilters.FILE_FILTER_CELLML)) {
+			resultString = XmlHelper.exportCellML(mathModel, null);
+		} else if (fileFilter.equals(FileFilters.FILE_FILTER_SBML_2)) {
+			resultString = XmlHelper.exportSBML(mathModel, 2, 3, null);
 		}
 	} else if (documentToExport instanceof Geometry){
 		Geometry geom = (Geometry)documentToExport;
