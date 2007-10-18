@@ -1,9 +1,7 @@
 package cbit.vcell.messaging.admin;
 
 import static cbit.vcell.messaging.admin.ManageConstants.SERVICE_STARTUP_TYPES;
-
 import java.io.Serializable;
-
 import cbit.util.Matchable;
 
 public class ServiceSpec implements Matchable, Serializable, ComparableObject {
@@ -13,20 +11,13 @@ public class ServiceSpec implements Matchable, Serializable, ComparableObject {
 	private int startupType;
 	private int memoryMB;	
 	
-	private boolean bRunning = false;
-	
 	public ServiceSpec(String sID, String t, int o, int st, int mm) {
-		this(sID, t, o, st, mm, false);
-	}
-	
-	public ServiceSpec(String sID, String t, int o, int st, int mm, boolean br) {
 		super();
 		this.serverID = sID;
 		this.type = t;
 		this.ordinal = o;
 		this.startupType = st;
 		this.memoryMB = mm;
-		this.bRunning = br;
 	}
 	
 	public int getMemoryMB() {
@@ -61,7 +52,7 @@ public class ServiceSpec implements Matchable, Serializable, ComparableObject {
 	}
 	
 	public Object[] toObjects() {
-		return new Object[] {serverID, type, ordinal, SERVICE_STARTUP_TYPES[startupType], memoryMB, bRunning};
+		return new Object[] {serverID, type, ordinal, SERVICE_STARTUP_TYPES[startupType], memoryMB};
 	}
 		
 	public boolean equals(Object obj) {
@@ -87,13 +78,5 @@ public class ServiceSpec implements Matchable, Serializable, ComparableObject {
 			return true;
 		}		
 		return false;
-	}
-
-	public boolean isRunning() {
-		return bRunning;
-	}
-
-	public void setRunning(boolean running) {
-		bRunning = running;
 	}
 }

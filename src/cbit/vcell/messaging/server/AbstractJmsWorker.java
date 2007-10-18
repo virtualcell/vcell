@@ -1,6 +1,7 @@
 package cbit.vcell.messaging.server;
 import javax.jms.*;
 import java.io.FileNotFoundException;
+import java.util.Date;
 import java.util.StringTokenizer;
 import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.solver.SolverException;
@@ -8,6 +9,8 @@ import cbit.vcell.xml.XmlParseException;
 import cbit.vcell.solver.SolverEvent;
 import cbit.vcell.messaging.MessageConstants;
 import cbit.vcell.messaging.WorkerMessaging;
+import cbit.vcell.messaging.admin.ManageUtils;
+import cbit.vcell.messaging.admin.ServiceInstanceStatus;
 import cbit.vcell.messaging.admin.ServiceSpec;
 import cbit.vcell.messaging.db.VCellServerID;
 import static cbit.vcell.messaging.MessageConstants.*;
@@ -53,10 +56,10 @@ public AbstractJmsWorker(int wType, int workerOrdinal, int workerMem, String log
 		servicetype = SERVICETYPE_LOCALCOMPUTE_VALUE;
 		break;
 	}
-	serviceSpec = new ServiceSpec(VCellServerID.getSystemServerID().toString(), servicetype, workerOrdinal, SERVICE_STARTUPTYPE_AUTOMATIC, maxMemoryMB, true);
+	serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID().toString(), servicetype, workerOrdinal, ManageUtils.getHostName(), new Date(), true);
 	initLog(logdir);
 	
-	log = new cbit.vcell.server.StdoutSessionLog(serviceSpec.getID());
+	log = new cbit.vcell.server.StdoutSessionLog(serviceInstanceStatus.getID());
 	workerMessaging = new WorkerMessaging(this, log);
 }
 

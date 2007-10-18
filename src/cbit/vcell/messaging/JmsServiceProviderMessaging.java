@@ -1,6 +1,7 @@
 package cbit.vcell.messaging;
 import javax.jms.*;
 import static cbit.vcell.messaging.admin.ManageConstants.*;
+import cbit.vcell.messaging.admin.ServiceInstanceStatus;
 import cbit.vcell.messaging.admin.ServiceSpec;
 import cbit.vcell.messaging.server.ServiceProvider;
 
@@ -50,7 +51,7 @@ private void closeJmsConnection() {
  * Creation date: (12/3/2003 10:28:36 AM)
  * @return java.lang.String
  */
-private final String getDaemonControlFilter(ServiceSpec serviceSpec) {
+private final String getDaemonControlFilter() {
 	return MESSAGE_TYPE_PROPERTY + " NOT IN " 
 		+ "('" + MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE + "'"
 		+ ",'" + MESSAGE_TYPE_REFRESHSERVERMANAGER_VALUE + "'"
@@ -87,14 +88,14 @@ protected VCellTopicConnection getTopicConnection() {
  * Got message from server_control topic 
  */
 public void onControlTopicMessage(Message message) {
-	onDaemonMessage(listenTopicSession, message, jmsServiceProvider.getServiceSpec());
+	onDaemonMessage(listenTopicSession, message, jmsServiceProvider.getServiceInstanceStatus());
 }
 
 
 /**
  * onMessage method comment.
  */
-public final void onDaemonMessage(VCellTopicSession controlSession, javax.jms.Message message, ServiceSpec serviceSpec) {
+public final void onDaemonMessage(VCellTopicSession controlSession, javax.jms.Message message, ServiceInstanceStatus serviceInstanceStatus) {
 	try {
 		String msgType = (String)JmsUtils.parseProperty(message, MESSAGE_TYPE_PROPERTY, String.class);
 		String serviceID = null;
@@ -106,9 +107,9 @@ public final void onDaemonMessage(VCellTopicSession controlSession, javax.jms.Me
 		log.print("JmsMessaging: onDaemonMessage:onMessage [" + JmsUtils.toString(message) + "]");	
 		
 		if (msgType.equals(MESSAGE_TYPE_ISSERVICEALIVE_VALUE)) {			
-			Message reply = controlSession.createMessage();
+			Message reply = controlSession.createObjectMessage(serviceInstanceStatus);
 			reply.setStringProperty(MESSAGE_TYPE_PROPERTY, MESSAGE_TYPE_IAMALIVE_VALUE);
-			reply.setStringProperty(SERVICE_ID_PROPERTY, serviceSpec.getID());
+			reply.setStringProperty(SERVICE_ID_PROPERTY, serviceInstanceStatus.getID());
 			log.print("sending reply [" + JmsUtils.toString(reply) + "]");
 			if (message.getJMSReplyTo() != null) {
 				reply.setJMSCorrelationID(message.getJMSMessageID());
@@ -117,15 +118,15 @@ public final void onDaemonMessage(VCellTopicSession controlSession, javax.jms.Me
 				controlSession.publishMessage(JmsUtils.getTopicDaemonControl(), reply);
 			}		
 		} else if (msgType.equals(MESSAGE_TYPE_ASKPERFORMANCESTATUS_VALUE)) {				
-			Message reply = controlSession.createObjectMessage(serviceSpec);
+			Message reply = controlSession.createObjectMessage(serviceInstanceStatus);
 			reply.setStringProperty(MESSAGE_TYPE_PROPERTY, MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE);
-			reply.setStringProperty(SERVICE_ID_PROPERTY, serviceSpec.getID());
+			reply.setStringProperty(SERVICE_ID_PROPERTY, serviceInstanceStatus.getID());
 			controlSession.publishMessage(JmsUtils.getTopicDaemonControl(), reply);			
 			log.print("sending reply [" + JmsUtils.toString(reply) + "]");
 			
 		} else if (msgType.equals(MESSAGE_TYPE_STOPSERVICE_VALUE)) {
 			serviceID = (String)JmsUtils.parseProperty(message, SERVICE_ID_PROPERTY, String.class);
-			if (serviceID != null && serviceID.equalsIgnoreCase(serviceSpec.getID()))  {
+			if (serviceID != null && serviceID.equalsIgnoreCase(serviceInstanceStatus.getID()))  {
 				stopService();
 			}
 		}
@@ -144,7 +145,7 @@ public final void onDaemonMessage(VCellTopicSession controlSession, javax.jms.Me
 protected void reconnect() throws JMSException {
 	topicConn = jmsConnFactory.createTopicConnection();
 	listenTopicSession = topicConn.getAutoSession();	
-	listenTopicSession.setupListener(JmsUtils.getTopicDaemonControl(), getDaemonControlFilter(jmsServiceProvider.getServiceSpec()), new ControlMessageCollector(this));
+	listenTopicSession.setupListener(JmsUtils.getTopicDaemonControl(), getDaemonControlFilter(), new ControlMessageCollector(this));
 	topicConn.startConnection();
 }
 
@@ -161,7 +162,8 @@ protected void stopService() {
 				closeJmsConnection();
 			}
 		};
-		t.join(5000);	
+		t.start();
+		t.join(3000);	
 	} catch (InterruptedException ex) {
 	} finally {
 		System.exit(0);

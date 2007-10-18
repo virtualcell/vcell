@@ -36,12 +36,12 @@ public class ServerManagerDaemon implements ControlTopicListener {
 	private VCellQueueConnection queueConn = null;
 	private JmsConnectionFactory jmsConnFactory = null;
 	private boolean stopped = false;
-	private Set<String> serviceAliveSet = Collections.synchronizedSet(new HashSet<String>());
-	List<ServiceStatus> serviceList = Collections.synchronizedList(new ArrayList<ServiceStatus>());
+	private List<ServiceInstanceStatus> serviceAliveList = Collections.synchronizedList(new ArrayList<ServiceInstanceStatus>());
+	private List<ServiceStatus> serviceList = Collections.synchronizedList(new ArrayList<ServiceStatus>());
 	private cbit.vcell.messaging.VCellTopicSession topicSession = null;
 	private cbit.vcell.messaging.VCellTopicSession listenSession = null;
 	
-	ServiceSpec serviceSpec = null;
+	ServiceInstanceStatus serviceInstanceStatus = null;
 	
 	private ConnectionFactory conFactory = null;
 	private KeyFactory keyFactory = null;
@@ -53,8 +53,7 @@ public class ServerManagerDaemon implements ControlTopicListener {
 public ServerManagerDaemon() throws IOException, SQLException, javax.jms.JMSException {
 	super();	
 	
-	serviceSpec = new ServiceSpec(VCellServerID.getSystemServerID().toString(), ManageConstants.SERVICE_TYPE_SERVERMANAGER, 0, 
-			ManageConstants.SERVICE_STARTUPTYPE_AUTOMATIC, 100, true); 
+	serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID().toString(), ManageConstants.SERVICE_TYPE_SERVERMANAGER, 0, ManageUtils.getHostName(), new Date(), true); 
 	log = new StdoutSessionLog("ServerManager");
 	try {
 		conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
@@ -94,23 +93,59 @@ private void startAllServices() throws JMSException, SQLException, DataAccessExc
 	log.print("Starting all the services");
 	serviceList = adminDbTop.getAllServiceStatus(true);	
 	
-	pingAll();
-	
+	pingAll();	
 
 	Iterator<ServiceStatus> iter = serviceList.iterator();
 	while (iter.hasNext()) {
 		ServiceStatus service = iter.next();		
-		if (service.getServiceSpec().getStartupType() == ManageConstants.SERVICE_STARTUPTYPE_AUTOMATIC) {
-			if (serviceAliveSet.contains(service.getServiceSpec().getID())) {
-				continue;
+		if (service.getServiceSpec().getStartupType() == ManageConstants.SERVICE_STARTUPTYPE_AUTOMATIC) {			
+			boolean alive = false;
+			ServiceInstanceStatus foundSis = null; 
+			Iterator<ServiceInstanceStatus> aliveIter = serviceAliveList.iterator();
+			while (aliveIter.hasNext()) {
+				ServiceInstanceStatus sis = aliveIter.next();
+				if (sis.getSpecID().equals(service.getServiceSpec().getID())) {
+					if (alive) { // there are more than instances for the same service
+						if (foundSis.getStartDate().compareTo(sis.getStartDate()) > 0) { // kill the service with earlier start date
+							stopService(sis);
+						} else {
+							stopService(foundSis);
+							foundSis = sis;
+						}
+					} else {
+						alive = true;
+						foundSis = sis;
+					}
+				}
 			}
 			
-			startAService(service, true);
+			if (!alive) {
+				try {
+					startAService(service);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}
 		}
 	}	
 }
 
-private void startAService(ServiceStatus service, boolean boot) throws UpdateSynchronizationException, SQLException {
+private void stopService(ServiceInstanceStatus sis) {
+	try {			
+		Message msg = topicSession.createMessage();
+			
+		msg.setStringProperty(ManageConstants.MESSAGE_TYPE_PROPERTY, ManageConstants.MESSAGE_TYPE_STOPSERVICE_VALUE);
+		msg.setStringProperty(ManageConstants.SERVICE_ID_PROPERTY, sis.getID());
+		
+		log.print("sending stop service message [" + JmsUtils.toString(msg) + "]");		
+		topicSession.publishMessage(JmsUtils.getTopicDaemonControl(), msg);		
+		
+	} catch (Exception ex) {
+		ex.printStackTrace();
+	}	
+}
+
+private void startAService(ServiceStatus service) throws UpdateSynchronizationException, SQLException {
 	log.print("starting service " + service);
 	AdminDBTopLevel.TransactionalServiceOperation tso = new AdminDBTopLevel.TransactionalServiceOperation() {
 		public ServiceStatus doOperation(ServiceStatus oldStatus) throws Exception {
@@ -168,23 +203,12 @@ private void startAService(ServiceStatus service, boolean boot) throws UpdateSyn
 }	
 
 private String submit2PBS(ServiceStatus service) throws IOException, ExecutableException {
-	if (service.getPbsJobId() != null) {
-		PBSUtils.killJob(service.getPbsJobId() + "");
-	}
-	File sub_file = File.createTempFile("service", ".pbs.sub");
-	PrintWriter pw = new PrintWriter(sub_file);
-	
-	pw.println("#PBS -N " + service.getServiceSpec().getID());
-	pw.println("#PBS -l select=1:ncpus=1:mem=" + (service.getServiceSpec().getMemoryMB() + PBS_MEM_OVERHEAD_MB) + "mb");
-	pw.println("#PBS -q workq" + service.getServiceSpec().getServerID());
-	pw.println("#PBS -m a");
-	pw.println("#PBS -M fgao@uchc.edu");
-	pw.println("#PBS -j oe");
-	pw.println();
-	
+	killService(service);
+
 	String cmdArguments = "";
 	String mainclass = "";
 	String logDir = PropertyLoader.getRequiredProperty(PropertyLoader.serviceLogDir);
+	File logfile = new File(logDir, service.getServiceSpec().getID() + ".log");
 	
 	File propertyFile = new File(PropertyLoader.getRequiredProperty(PropertyLoader.servicePropertyFile));
 	if (!propertyFile.exists()) {
@@ -232,10 +256,23 @@ private String submit2PBS(ServiceStatus service) throws IOException, ExecutableE
 		mainclass = SimulationWorker.class.getName();		
 	}
 	
-	pw.println("java " + jvm_prop + " -cp " + jvm_classpath + " " + mainclass + " " + cmdArguments);	
+	File sub_file = File.createTempFile("service", ".pbs.sub");
+	PrintWriter pw = new PrintWriter(sub_file);
+
+	pw.println("#PBS -N " + service.getServiceSpec().getID()); // job name
+	pw.println("#PBS -l select=1:ncpus=1:mem=" + (service.getServiceSpec().getMemoryMB() + PBS_MEM_OVERHEAD_MB) + "mb"); // resource
+	pw.println("#PBS -q workq" + service.getServiceSpec().getServerID()); // queue
+	pw.println("#PBS -m a"); // send mail when job is aborted by batch system
+	pw.println("#PBS -M fgao@uchc.edu"); // send mail to me
+	pw.println("#PBS -j oe"); // join output and error
+	pw.println("#PBS -k oe"); // keep output and error on execution
+	pw.println("#PBS -o " + logfile); // output to specific files
+	pw.println("#PBS -e " + logfile); // error to specific files
+	pw.println();	
+	pw.println("nice java " + jvm_prop + " -cp " + jvm_classpath + " " + mainclass + " " + cmdArguments);  // nice process	
 	pw.close();
 	
-	log.print("PBS sub file  for service " + serviceSpec + " is " + sub_file.getAbsolutePath());
+	log.print("PBS sub file  for service " + service.getServiceSpec() + " is " + sub_file.getAbsolutePath());
 	String jobid = PBSUtils.submitJob(sub_file.getAbsolutePath());
 	return jobid;
 }
@@ -262,9 +299,9 @@ public void onControlTopicMessage(Message message) {
 		String msgType = (String)JmsUtils.parseProperty(message, ManageConstants.MESSAGE_TYPE_PROPERTY, String.class);
 		
 		if (msgType.equals(MESSAGE_TYPE_ASKPERFORMANCESTATUS_VALUE)) {
-			Message reply = topicSession.createObjectMessage(serviceSpec);
+			Message reply = topicSession.createObjectMessage(serviceInstanceStatus);
 			reply.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE);
-			reply.setStringProperty(SERVICE_ID_PROPERTY, serviceSpec.getID());
+			reply.setStringProperty(SERVICE_ID_PROPERTY, serviceInstanceStatus.getID());
 			topicSession.publishMessage(JmsUtils.getTopicDaemonControl(), reply);			
 			log.print("sending reply [" + JmsUtils.toString(reply) + "]");			
 		} else if (msgType.equals(MESSAGE_TYPE_IAMALIVE_VALUE)) {
@@ -318,14 +355,10 @@ public static void main(String[] args) {
 }
 
 private void on_iamalive(Message message) throws JMSException  {
-	try {
-		String serviceID = (String)JmsUtils.parseProperty(message, ManageConstants.SERVICE_ID_PROPERTY, String.class);
-		
-		if (serviceID != null) {
-			serviceAliveSet.add(serviceID);
-		}
-	} catch (MessagePropertyNotFoundException ex) {
-		log.exception(ex);
+	Object obj = ((ObjectMessage)message).getObject();			
+	if (obj instanceof ServiceInstanceStatus) {
+		ServiceInstanceStatus status = (ServiceInstanceStatus)obj;			
+		serviceAliveList.add(status);			
 	}
 }
 
@@ -401,7 +434,7 @@ private boolean ping(ServiceSpec service) throws JMSException {
 */
 private void pingAll() throws JMSException {
 	
-	serviceAliveSet.clear();
+	serviceAliveList.clear();
 	
 	Message msg = topicSession.createMessage();
 		
@@ -418,6 +451,11 @@ private void pingAll() throws JMSException {
 	}
 }
 
+private void killService(ServiceStatus service) {
+	if (service.getPbsJobId() != null) {
+		PBSUtils.killJob(service.getPbsJobId() + "");
+	}
+}
 /**
 * Insert the method's description here.
 * Creation date: (8/7/2003 5:12:22 PM)

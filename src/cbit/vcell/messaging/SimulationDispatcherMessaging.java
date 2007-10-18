@@ -57,7 +57,7 @@ class SimulationMonitorThread extends Thread {
 
 public SimulationMonitorThread() {
 	super();
-	setName(simDispatcher.getServiceID() + "_MT");
+	setName(simDispatcher.getServiceInstanceID() + "_MT");
 }
 
 public void run() {
@@ -194,7 +194,7 @@ public void run() {
 	class DispatchThread extends Thread {
 	public DispatchThread() {
 		super();
-		setName(simDispatcher.getServiceID() + "_DT");
+		setName(simDispatcher.getServiceInstanceID() + "_DT");
 	}
 	
 public void run() {
@@ -359,7 +359,7 @@ public void run() {
 public class StatusThread extends Thread {
 	public StatusThread() {
 		super();
-		setName(simDispatcher.getServiceID() + "_ST");
+		setName(simDispatcher.getServiceInstanceID() + "_ST");
 	}
 
 	
