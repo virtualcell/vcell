@@ -11,6 +11,7 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.PropertyLoader;
 
+import java.util.Date;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
@@ -27,6 +28,8 @@ import cbit.vcell.messaging.JmsClientMessaging;
 import cbit.vcell.messaging.SimulationDispatcherMessaging;
 import cbit.vcell.messaging.MessageConstants;
 import cbit.vcell.messaging.admin.ManageConstants;
+import cbit.vcell.messaging.admin.ManageUtils;
+import cbit.vcell.messaging.admin.ServiceInstanceStatus;
 import cbit.vcell.messaging.admin.ServiceSpec;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.VCellServerID;
@@ -65,11 +68,11 @@ public class SimulationDispatcher extends AbstractJmsServiceProvider {
  * Scheduler constructor comment.
  */
 public SimulationDispatcher(int serviceOrdinal, String logdir) throws Exception {	
-	serviceSpec = new ServiceSpec(VCellServerID.getSystemServerID().toString(), 
-			MessageConstants.SERVICETYPE_DISPATCH_VALUE, serviceOrdinal, ManageConstants.SERVICE_STARTUPTYPE_AUTOMATIC, 100, true);	
+	serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID().toString(), 
+			MessageConstants.SERVICETYPE_DISPATCH_VALUE, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);	
 	initLog(logdir);
 
-	log = new cbit.vcell.server.StdoutSessionLog(serviceSpec.getID());
+	log = new cbit.vcell.server.StdoutSessionLog(serviceInstanceStatus.getID());
 	
 	conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
 	keyFactory = new cbit.sql.OracleKeyFactory();		

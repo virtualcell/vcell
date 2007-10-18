@@ -1,7 +1,11 @@
 package cbit.vcell.messaging.server;
+import java.util.Date;
+
 import cbit.vcell.server.DataAccessException;
 import javax.jms.*;
 import cbit.vcell.messaging.admin.ManageConstants;
+import cbit.vcell.messaging.admin.ManageUtils;
+import cbit.vcell.messaging.admin.ServiceInstanceStatus;
 import cbit.vcell.messaging.admin.ServiceSpec;
 import cbit.vcell.messaging.db.VCellServerID;
 import cbit.vcell.messaging.RpcServerMessaging;
@@ -18,11 +22,10 @@ public abstract class JmsRpcServer extends AbstractJmsServiceProvider implements
  * Scheduler constructor comment.
  */
 public JmsRpcServer(String serviceType, int serviceOrdinal, String queueName, String filter, String logdir) throws Exception {
-	serviceSpec = new ServiceSpec(VCellServerID.getSystemServerID().toString(), 
-			serviceType, serviceOrdinal, ManageConstants.SERVICE_STARTUPTYPE_AUTOMATIC, 100, true);
+	serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID().toString(), serviceType, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);
 	initLog(logdir);
 	
-	log = new cbit.vcell.server.StdoutSessionLog(serviceSpec.getID());	
+	log = new cbit.vcell.server.StdoutSessionLog(serviceInstanceStatus.getID());	
 	rpcServerMessaging = new RpcServerMessaging(this, queueName, filter, log);	
 }
 

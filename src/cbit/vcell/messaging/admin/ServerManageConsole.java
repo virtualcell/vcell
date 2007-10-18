@@ -26,6 +26,8 @@ import java.util.List;
 import javax.jms.*;
 import javax.swing.*;
 
+import swingthreads.SwingWorker;
+
 import cbit.vcell.messaging.*;
 import cbit.vcell.messaging.admin.sorttable.JSortTable;
 import cbit.vcell.messaging.db.*;
@@ -45,7 +47,7 @@ public class ServerManageConsole extends JFrame implements ControlTopicListener 
 	private JmsFileReceiver fileChannelReceiver = null;
 	private List<SimpleUserConnection> userList = Collections.synchronizedList(new LinkedList<SimpleUserConnection>());
 	private List<ServiceStatus> serviceConfigList = Collections.synchronizedList(new LinkedList<ServiceStatus>());
-	private List<ServiceSpec> serviceStatusList = Collections.synchronizedList(new LinkedList<ServiceSpec>());
+	private List<ServiceInstanceStatus> serviceInstanceStatusList = Collections.synchronizedList(new LinkedList<ServiceInstanceStatus>());
 	private JPanel ivjJFrameContentPane = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private cbit.vcell.messaging.VCellTopicConnection topicConn = null;
@@ -304,7 +306,7 @@ public void exitButton_ActionPerformed(ActionEvent actionEvent) {
  */
 private void filterService() {
 	if (getFilterServiceShowAllRadioButton().isSelected()) {
-		showServices(serviceStatusList);
+		showServices(serviceInstanceStatusList);
 	} else {
 //		String name = (String)getFilterServiceNameCombo().getSelectedItem();
 //		String value = (String)getFilterServiceValueCombo().getSelectedItem();
@@ -1775,7 +1777,7 @@ private cbit.vcell.messaging.admin.sorttable.JSortTable getServiceStatusTable() 
 	if (ivjServiceStatusTable == null) {
 		try {
 			ivjServiceStatusTable = new cbit.vcell.messaging.admin.sorttable.JSortTable();
-			ivjServiceStatusTable.setModel(new ServiceSpecTableModel());
+			ivjServiceStatusTable.setModel(new ServiceInstanceStatusTableModel());
 			//ivjServiceStatusTable.setBounds(0, 0, 200, 200);
 			// user code begin {1}
 			// user code end
@@ -2154,6 +2156,7 @@ private void initialize() {
 		statusChecks.add(getQueryFailedCheck());
 
 		getQueryResultTable().setDefaultRenderer(Date.class, new DateRenderer());
+		getServiceStatusTable().setDefaultRenderer(Date.class, new DateRenderer());
 		
 		initConnections();
 	} catch (java.lang.Throwable ivjExc) {
@@ -2194,7 +2197,7 @@ public static void main(java.lang.String[] args) {
  * Comment
  */
 public void messageResetButton_ActionEvents() {
-	getBroadcastMessageTextArea().setText("The Virtual Cell is going to reboot in 5 minutes due to. Please save your work and logout." 
+	getBroadcastMessageTextArea().setText("The Virtual Cell is going to reboot in 5 minutes due to technical requirements. Please save your work and logout." 
 		+ " We are sorry for any inconvenience." 
 		+ " If you have any questions, please contact the Virtual Cell at VCell_Support@uchc.edu.");
 	getBroadcastMessageToTextField().setText("All");
@@ -2206,17 +2209,24 @@ public void messageResetButton_ActionEvents() {
  * Creation date: (9/10/2003 2:27:25 PM)
  * @param service cbit.vcell.messaging.admin.VCellService
  */
-private void onArrivingService(ServiceSpec arrivingService) {
-	int index = serviceStatusList.indexOf(arrivingService);	
+private void onArrivingService(ServiceInstanceStatus arrivingService) {
+	if (arrivingService.getType().equals(SERVICE_TYPE_SERVERMANAGER)) {
+		serviceInstanceStatusList.add(0, arrivingService);
+		filterService();
+		return;
+	}	
 	
-	if (index < 0) {
-		if (arrivingService.getType().equals(SERVICE_TYPE_SERVERMANAGER)) {
-			serviceStatusList.add(0, arrivingService);
-		} else {
-			serviceStatusList.add(arrivingService);
+	List<ServiceInstanceStatus> tempList = new ArrayList<ServiceInstanceStatus>(serviceInstanceStatusList);
+	for (int i = 0; i < tempList.size(); i ++) {
+		ServiceInstanceStatus sis = tempList.get(i);
+		if (sis.getSpecID().equals(arrivingService.getSpecID())) {
+			if (sis.isRunning()) {
+				serviceInstanceStatusList.add(arrivingService);			
+			} else {
+				serviceInstanceStatusList.set(i, arrivingService);				
+			}
+			break;
 		}
-	} else {
-		serviceStatusList.set(index, arrivingService);			
 	}
 
 	filterService();
@@ -2237,8 +2247,8 @@ public void onControlTopicMessage(Message message) {
 		
 		if (msgType.equals(ManageConstants.MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE) && message instanceof ObjectMessage) {			
 			Object obj = ((ObjectMessage)message).getObject();			
-			if (obj instanceof ServiceSpec) {
-				final ServiceSpec serviceInfo = (ServiceSpec)obj;
+			if (obj instanceof ServiceInstanceStatus) {
+				final ServiceInstanceStatus serviceInfo = (ServiceInstanceStatus)obj;
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
 						onArrivingService(serviceInfo);
@@ -2632,14 +2642,15 @@ private void refresh () {
 			t1.setName("Refresh Thread");
 			t1.start();			
 		} else if (tabIndex == 1) {		
-			((ServiceSpecTableModel)getServiceStatusTable().getModel()).clear();
-			serviceStatusList.clear();
+			((ServiceInstanceStatusTableModel)getServiceStatusTable().getModel()).clear();
+			serviceInstanceStatusList.clear();
 			
 			for (int i = 0; i < serviceConfigList.size(); i ++) {
-				serviceStatusList.add(serviceConfigList.get(i).getServiceSpec());
+				ServiceSpec ss = serviceConfigList.get(i).getServiceSpec();
+				serviceInstanceStatusList.add(new ServiceInstanceStatus(ss.getServerID(), ss.getType(), ss.getOrdinal(), null, null, false));
 			}
 			
-			showServices(serviceStatusList);
+			showServices(serviceInstanceStatusList);
 			Thread pingThread = new Thread(new Runnable() {
 				public void run() {			
 					pingAll(waitingTimeSec);	
@@ -2797,8 +2808,8 @@ public void serviceStatusTable_MouseClicked(java.awt.event.MouseEvent mouseEvent
 
 	for (int i = 0; i < selectedCount; i ++){	
 		int row = selectedRows[i];
-		ServiceSpec serviceSpec = (ServiceSpec)((ServiceSpecTableModel)getServiceStatusTable().getModel()).getValueAt(row);		
-		if (serviceSpec.isRunning()) {
+		ServiceInstanceStatus serviceInstanceStatus = (ServiceInstanceStatus)((ServiceInstanceStatusTableModel)getServiceStatusTable().getModel()).getValueAt(row);		
+		if (serviceInstanceStatus.isRunning()) {
 			getStopServiceButton().setEnabled(true);
 		} else {
 			//getStartServiceButton().setEnabled(true);
@@ -2830,9 +2841,13 @@ public void setUserConnectionTableModel(cbit.vcell.messaging.admin.sorttable.Sor
  * Creation date: (2/17/2004 1:21:46 PM)
  * @param serviceList0 java.util.List
  */
-private void showServices(List<ServiceSpec> serviceList0) {
-	((ServiceSpecTableModel)(getServiceStatusTable().getModel())).setData(serviceList0);
-	getNumServiceLabel().setText(serviceList0.size() + "");
+private void showServices(final List<ServiceInstanceStatus> serviceList0) {
+	SwingUtilities.invokeLater(new Runnable() {
+		public void run() {
+			((ServiceInstanceStatusTableModel)(getServiceStatusTable().getModel())).setData(serviceList0);
+			getNumServiceLabel().setText(serviceList0.size() + "");
+		}
+	});
 }
 
 private void showConfigs(List<ServiceStatus> configList0) {
@@ -2909,15 +2924,15 @@ private void stopServices() {
 
 		for (int i = 0; i < selectedCount; i ++){					
 			int row = selectedRows[i];
-			ServiceSpec serviceSpec = (ServiceSpec)((ServiceSpecTableModel)getServiceStatusTable().getModel()).getValueAt(row);		
-			if (!serviceSpec.isRunning()) {
+			ServiceInstanceStatus serviceInstanceStatus = (ServiceInstanceStatus)((ServiceInstanceStatusTableModel)getServiceStatusTable().getModel()).getValueAt(row);		
+			if (!serviceInstanceStatus.isRunning()) {
 				continue;
 			}			
 			
 			Message msg = topicSession.createMessage();
 				
 			msg.setStringProperty(ManageConstants.MESSAGE_TYPE_PROPERTY, ManageConstants.MESSAGE_TYPE_STOPSERVICE_VALUE);
-			msg.setStringProperty(ManageConstants.SERVICE_ID_PROPERTY, serviceSpec.getID());
+			msg.setStringProperty(ManageConstants.SERVICE_ID_PROPERTY, serviceInstanceStatus.getID());
 			
 			log.print("sending stop service message [" + JmsUtils.toString(msg) + "]");		
 			topicSession.publishMessage(JmsUtils.getTopicDaemonControl(), msg);			
