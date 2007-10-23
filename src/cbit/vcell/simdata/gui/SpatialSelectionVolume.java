@@ -6,7 +6,11 @@ package cbit.vcell.simdata.gui;
 ©*/
 import cbit.vcell.geometry.*;
 import cbit.vcell.simdata.VariableType;
+
+import java.util.Arrays;
 import java.util.Vector;
+
+import sun.awt.geom.Crossings;
 import cbit.vcell.math.CoordinateIndex;
 
 /**
@@ -364,17 +368,23 @@ private SSHelper makeSSHelper(int[] indexes,int indexCounter,Vector wcV,boolean 
 		Coordinate[] finalWC = new Coordinate[wcV.size()];
 		wcV.copyInto(finalWC);
 		//
-		SSHelper ssvHelper = null;
 		try{
-			ssvHelper = resampleMeshBoundaries(finalIndexes,finalWC,bRecenter);
-		}catch(Throwable e){
-			//Do nothing
+			return resampleMeshBoundaries(finalIndexes,finalWC,bRecenter);
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new RuntimeException("Error resampling mesh boundaries");
 		}
-		if(ssvHelper != null){
-			return ssvHelper;
-		}
-		//
-		return new SSHelper(finalWC,finalIndexes,getVariableType());
+//		SSHelper ssvHelper = null;
+//		try{
+//			ssvHelper = resampleMeshBoundaries(finalIndexes,finalWC,bRecenter);
+//		}catch(Throwable e){
+//			e.printStackTrace();
+//		}
+//		if(ssvHelper != null){
+//			return ssvHelper;
+//		}
+//		//
+//		return new SSHelper(finalWC,finalIndexes,getVariableType(),null);
 }
 /**
  * Insert the method's description here.
@@ -434,9 +444,13 @@ private SSHelper resampleMeshBoundaries(int[] indexes,Coordinate[] wcV,boolean b
 
 	final int MEMBRANE_BOUNDARY = -1;
 	final int NON_MEMBRANE_BOUNDARY = -2;
+	final int MEMB_INDEX = 0;
+	final int IN_VOL = 1;
+	final int OUT_VOL = 2;
 	
 	int newCount = 0;
 	int[] newIndexes = new int[indexes.length*3];
+	int[][][] newCrossingMembraneIndex = new int[newIndexes.length][4][3];
 	Coordinate[] newWCV = new Coordinate[wcV.length*3];
 
 	for(int i=1;i<wcV.length;i+= 1){
@@ -473,10 +487,14 @@ private SSHelper resampleMeshBoundaries(int[] indexes,Coordinate[] wcV,boolean b
 		//System.out.println("p1="+i+" p2="+(i-1));
 		boolean[] bCrossMembraneArr = new boolean[faces.length];
 		java.util.Arrays.fill(bCrossMembraneArr,false);
+		int[][] crossMembraneIndexInOutArr = new int[bCrossMembraneArr.length][3];
 		Coordinate[] intersectArr = new Coordinate[faces.length];
 		int intersectNotNullCount = 0;
 		//Find out where the line segment between volume elements intersect the face(s)
 		for(int j=0;j<faces.length;j+= 1){
+			crossMembraneIndexInOutArr[j][MEMB_INDEX] = -1;
+			crossMembraneIndexInOutArr[j][IN_VOL] = -1;
+			crossMembraneIndexInOutArr[j][OUT_VOL] = -1;
 			intersectArr[j] = 
 				lineMeshFaceIntersect3D(
 					getMesh().getCoordinate(faces[j][0]),getMesh().getCoordinate(faces[j][1]),
@@ -492,6 +510,9 @@ private SSHelper resampleMeshBoundaries(int[] indexes,Coordinate[] wcV,boolean b
 				int outside = getMesh().getMembraneElements()[k].getOutsideVolumeIndex();
 				if((vi1 == inside && vi2 == outside) || (vi1 == outside && vi2 == inside)){
 					bCrossMembraneArr[j] = true;
+					crossMembraneIndexInOutArr[j][MEMB_INDEX] = k;
+					crossMembraneIndexInOutArr[j][IN_VOL] = inside;
+					crossMembraneIndexInOutArr[j][OUT_VOL] = outside;
 					break;
 				}
 			}
@@ -509,6 +530,7 @@ private SSHelper resampleMeshBoundaries(int[] indexes,Coordinate[] wcV,boolean b
 		if(faces.length == 1 && intersectNotNullCount == 1){
 			// through face, use where it intersects and mark if has Membrane
 			newIndexes[newCount] = (bCrossMembraneArr[0]?MEMBRANE_BOUNDARY:NON_MEMBRANE_BOUNDARY);
+			newCrossingMembraneIndex[newCount] = crossMembraneIndexInOutArr;
 			newWCV[newCount] = intersectArr[0];
 			newCount+= 1;
 		}else if(faces.length == 4 && intersectNotNullCount == 4){
@@ -524,6 +546,7 @@ private SSHelper resampleMeshBoundaries(int[] indexes,Coordinate[] wcV,boolean b
 					(mc1.getZ()+mc2.getZ()+mc3.getZ()+mc4.getZ())/4.0
 				);
 			newIndexes[newCount] = (bCrossMembraneArr[0]||bCrossMembraneArr[1]||bCrossMembraneArr[2]||bCrossMembraneArr[3]?MEMBRANE_BOUNDARY:NON_MEMBRANE_BOUNDARY);
+//			newCrossingMembraneIndex[newCount] = crossMembraneIndexInOutArr;
 			newWCV[newCount] = corner;
 			newCount+= 1;
 		}
@@ -562,6 +585,7 @@ private SSHelper resampleMeshBoundaries(int[] indexes,Coordinate[] wcV,boolean b
 
 	// Final pass, remove markers, add additional points at membrane intersections
 	int[] finalIndexes = new int[finalCount];
+	int[] finalCrossingMembrane = null;
 	Coordinate[] finalWC = new Coordinate[finalCount];
 	finalCount = 0;
 	for(int i=0;i<newCount;i+= 1){
@@ -571,6 +595,24 @@ private SSHelper resampleMeshBoundaries(int[] indexes,Coordinate[] wcV,boolean b
 			finalWC[finalCount] = newWCV[i];
 			finalCount+= 1;
 		}else if(newIndexes[i] == MEMBRANE_BOUNDARY){
+			for (int j = 0; j < newCrossingMembraneIndex[i].length; j++) {
+				if( newCrossingMembraneIndex[i][j][MEMB_INDEX] != -1
+					&&
+					(
+					(newCrossingMembraneIndex[i][j][IN_VOL] == newIndexes[i-1] && newCrossingMembraneIndex[i][j][OUT_VOL] == newIndexes[i+1])
+					||
+					(newCrossingMembraneIndex[i][j][OUT_VOL] == newIndexes[i-1] && newCrossingMembraneIndex[i][j][IN_VOL] == newIndexes[i+1])					
+					)
+				){
+					if(finalCrossingMembrane == null){//make once only if needed
+						finalCrossingMembrane = new int[finalIndexes.length];
+						Arrays.fill(finalCrossingMembrane, -1);
+					}
+					finalCrossingMembrane[finalCount] = newCrossingMembraneIndex[i][j][MEMB_INDEX];
+					finalCrossingMembrane[finalCount+1] = newCrossingMembraneIndex[i][j][MEMB_INDEX];
+					break;
+				}
+			}
 			// Add 2 new membrane intersection points, one for each side of the face
 			finalIndexes[finalCount] = newIndexes[i-1];
 			//finalWC[finalCount] = offsetCoordinate(newWCV[i],newWCV[i-1]);
@@ -586,56 +628,7 @@ private SSHelper resampleMeshBoundaries(int[] indexes,Coordinate[] wcV,boolean b
 	}
 
 	
-	return new SSHelper(finalWC,finalIndexes,getVariableType());
-
-	
-	
-	
-
-		//else if(faces.length == 4 && intersectNotNullCount == 4){
-			//// through corner
-			//for(int j=0;j<faces.length;j+= 1){
-				//for(int k=0;k<faces.length;k+= 1){
-					//if(intersectArr[j].distanceTo(intersectArr[k]) > EPS){
-						//throw new Exception(this.getClass().getName()+".resampleMeshBoundaries Unexpected corner intersection");
-					//}
-				//}
-			//}
-			//newIndexes[newCount] = (bCrossMembraneArr[0]||bCrossMembraneArr[1]||bCrossMembraneArr[2]||bCrossMembraneArr[3]?MEMBRANE_BOUNDARY:NON_MEMBRANE_BOUNDARY);
-			//newWCV[newCount] = intersectArr[0];
-			//newCount+= 1;
-		//}else if(faces.length == 4 && intersectNotNullCount == 2){
-			//// corner, but cut across neighbor small amount
-			//CoordinateIndex tempCI = null;
-			//int tempCount = 0;
-			//int[] tempIndexes = new int[2];
-			//Coordinate[] tempWC = new Coordinate[2];
-			//for(int j=0;j<faces.length;j+= 1){
-				//if(intersectArr[j] != null){
-					//CoordinateIndex temptempCI = null;
-					//if(faces[j][0] == ci1){temptempCI = faces[j][1];}
-					//if(faces[j][0] == ci2){temptempCI = faces[j][1];}
-					//if(faces[j][1] == ci1){temptempCI = faces[j][0];}
-					//if(faces[j][1] == ci2){temptempCI = faces[j][0];}
-					//if(tempCI != null && !tempCI.compareEqual(temptempCI)){
-						//throw new Exception(this.getClass().getName()+".resampleMeshBoundaries Unexpected neighbor face");
-					//}
-					//tempCI = temptempCI;
-					//tempIndexes[tempCount] = (bCrossMembraneArr[j]?MEMBRANE_BOUNDARY:NON_MEMBRANE_BOUNDARY);
-					//tempWC[tempCount] = intersectArr[j];
-					//tempCount+= 1;					
-				//}
-			//}
-			//newIndexes[newCount] = tempIndexes[0];
-			//newWCV[newCount] = tempWC[0];
-			//newCount+= 1;
-			//newIndexes[newCount] = getConvertedIndexFromCI(tempCI);
-			//newWCV[newCount] = new Coordinate(((tempWC[0].getX()+tempWC[1].getX())/2.0),((tempWC[0].getY()+tempWC[1].getY())/2.0),((tempWC[0].getZ()+tempWC[1].getZ())/2.0));
-			//newCount+= 1;
-			//newIndexes[newCount] = tempIndexes[1];
-			//newWCV[newCount] = tempWC[1];
-			//newCount+= 1;
-		//}		
+	return new SSHelper(finalWC,finalIndexes,getVariableType(),finalCrossingMembrane);
 }
 /**
  * Insert the method's description here.
