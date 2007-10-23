@@ -60,6 +60,7 @@ public class KymographPanel extends javax.swing.JPanel implements cbit.vcell.geo
 	private String NONE_MESSAGE = "Mouse Click, Arrow Keys Change Graph.  Mouse Menu for Options";
 	private cbit.vcell.desktop.controls.DataManager dataManager = null;
 	private int[] dataManagerIndices = null;
+	private int[] crossingMembraneIndices = null;
 	private double[] dataManagerAccumDistances = null;
 	private boolean bLocalScaling = false;
 	private cbit.vcell.parser.SymbolTable symbolTable;
@@ -1830,7 +1831,8 @@ private void initConnections() throws java.lang.Exception {
 public void initDataManager(
 	User argUserRequestingData,
 	cbit.vcell.desktop.controls.DataManager argDataManager,
-	String variableName,double initTime,int step,double endTime,int[] indices,
+	String variableName,double initTime,int step,double endTime,
+	int[] indices,int[] argCrossingMembraneIndices,
 	double[] accumDistances,
 	boolean waitOnInitialLoad,
 	double argInitialLineScanTime,
@@ -1850,6 +1852,7 @@ public void initDataManager(
 	dataManager = argDataManager;
 	dataManagerAccumDistances = accumDistances;
 	dataManagerIndices = indices;
+	crossingMembraneIndices = argCrossingMembraneIndices;
 	currentSelectionImg = new java.awt.Point(0,0);
 	currentSelectionUnit = new java.awt.geom.Point2D.Double(0,0);;
 
@@ -1891,8 +1894,11 @@ private void initDataManagerVariable(final String finalVarName) {
 				pp.start();
 				try{
 					cbit.util.TimeSeriesJobSpec timeSeriesJobSpec =
-						new cbit.util.TimeSeriesJobSpec(new String[] {
-								finalVarName},new int[][] {dataManagerIndices},resampleStartTimeOrig,resampleStepOrig,resampleEndTimeOrig,
+						new cbit.util.TimeSeriesJobSpec(
+								new String[] {finalVarName},
+								new int[][] {dataManagerIndices},
+								new int[][] {crossingMembraneIndices},
+								resampleStartTimeOrig,resampleStepOrig,resampleEndTimeOrig,
 								VCDataJobID.createVCDataJobID(userRequestingData, false));
 					cbit.util.TSJobResultsNoStats timeSeriesJobResults = (cbit.util.TSJobResultsNoStats)dataManager.getTimeSeriesValues(timeSeriesJobSpec);
 					final double[][] timeSeries = timeSeriesJobResults.getTimesAndValuesForVariable(finalVarName);

@@ -80,7 +80,7 @@ public SSHelper getIndexSamples() {
 		return new SSHelper(
 			new Coordinate[] {twoCP[0],twoCP[1]},
 			new int[] {fieldSampledDataIndexes[membraneSegmentSelectionIndexes[0]],fieldSampledDataIndexes[membraneSegmentSelectionIndexes[0]]},
-			getVariableType());
+			getVariableType(),null);
 	}
 	
 	int[] indexes = new int[membraneSegmentSelectionIndexes.length+1];
@@ -142,7 +142,7 @@ public SSHelper getIndexSamples() {
 		//}
 	}
 	
-	return new SSHelper(wcArr,indexes,getVariableType());
+	return new SSHelper(wcArr,indexes,getVariableType(),null);
 }
 /**
  * Insert the method's description here.

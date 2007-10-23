@@ -27,10 +27,11 @@ public abstract class SpatialSelection implements java.io.Serializable, cbit.uti
 		int[]			indexes;
 		double[]		lengths;
 		double[]		values;
+		int[]			membraneIndexesInOut;
 		
-		public SSHelper(Coordinate[] coords,int[] argIndexes,VariableType vt){
-			if(coords.length != argIndexes.length){
-				throw new IllegalArgumentException(this.getClass().getName()+" Coordinate and index arrays must be same length");
+		public SSHelper(Coordinate[] coords,int[] argIndexes,VariableType vt,int[] argMembraneIndexesInOut){
+			if(coords.length != argIndexes.length || (argMembraneIndexesInOut != null && argIndexes.length != argMembraneIndexesInOut.length)){
+				throw new IllegalArgumentException(this.getClass().getName()+" Coordinate,index and membIndexInOut arrays must be same length");
 			}
 			if(!(vt.equals(VariableType.VOLUME) || vt.equals(VariableType.VOLUME_REGION)) &&
 				!(vt.equals(VariableType.MEMBRANE) || vt.equals(VariableType.MEMBRANE_REGION))){
@@ -40,6 +41,7 @@ public abstract class SpatialSelection implements java.io.Serializable, cbit.uti
 			meshCoords = coords;
 			indexes = argIndexes;
 			calculateAccumWCLengths();
+			membraneIndexesInOut = argMembraneIndexesInOut;
 		};
 		private void calculateAccumWCLengths(){
 			lengths = new double[meshCoords.length];
@@ -50,6 +52,9 @@ public abstract class SpatialSelection implements java.io.Serializable, cbit.uti
 				}
 				lengths[i] = accumDist;
 			}
+		}
+		public int[] getMembraneIndexesInOut(){
+			return membraneIndexesInOut;
 		}
 		public int[] getSampledIndexes(){
 			return indexes;

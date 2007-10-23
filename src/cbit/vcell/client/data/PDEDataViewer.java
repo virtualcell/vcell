@@ -2100,7 +2100,7 @@ private double[][] getTimeSeries(int[] indices, double startTime, int step,doubl
 	cbit.util.TimeSeriesJobSpec timeSeriesJobSpec =
 		new cbit.util.TimeSeriesJobSpec(
 			new String[] {getPdeDataContext().getVariableName()},
-			new int[][]{indices},
+			new int[][]{indices},null,
 			startTime,step,endTime,
 			VCDataJobID.createVCDataJobID(
 					getDataViewerManager().getUser(),
@@ -2577,12 +2577,14 @@ private void showKymograph() {
 				VariableType varType = getPdeDataContext().getDataIdentifier().getVariableType();
 				if(lineSSOnly.size() > 0){
 					int[] indices = null;
+					int[] crossingMembraneIndices = null;
 					double[] accumDistances = null;
 					for (int i = 0; i < lineSSOnly.size(); i++){
 						if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION)){
 							SpatialSelectionVolume ssv = (SpatialSelectionVolume)lineSSOnly.get(i);
 							SpatialSelection.SSHelper ssh = ssv.getIndexSamples(0.0,1.0);
 							indices = ssh.getSampledIndexes();
+							crossingMembraneIndices = ssh.getMembraneIndexesInOut();
 							accumDistances = ssh.getWorldCoordinateLengths();
 						}else if(varType.equals(VariableType.MEMBRANE) || varType.equals(VariableType.MEMBRANE_REGION)){
 							SpatialSelectionMembrane ssm = (SpatialSelectionMembrane)lineSSOnly.get(i);
@@ -2610,7 +2612,7 @@ private void showKymograph() {
 							((ClientPDEDataContext)getPdeDataContext()).getDataManager(),
 							getPdeDataContext().getVariableName(),
 							startTimeAndStep[RESAMPLE_START_INDEX],(int)startTimeAndStep[RESAMPLE_STEP_INDEX],startTimeAndStep[RESAMPLE_END_INDEX],
-							indices,accumDistances,true,getPdeDataContext().getTimePoint(),
+							indices,crossingMembraneIndices,accumDistances,true,getPdeDataContext().getTimePoint(),
 							symbolTable);
 					}
 				}

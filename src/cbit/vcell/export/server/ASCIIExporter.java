@@ -227,11 +227,13 @@ private ExportOutput[] exportPDEData(long jobID, User user, DataServerImpl dataS
 private String getCurveTimeSeries(User user, DataServerImpl dataServerImpl, VCDataIdentifier vcdID, String variableName, SpatialSelection curve, double[] allTimes, int beginIndex, int endIndex, boolean switchRowsColumns) throws DataAccessException, RemoteException {
 	int[] pointIndexes = null;
 	double[] distances = null;
+	int[] crossingMembraneIndexes = null;
 	
 	if (curve instanceof SpatialSelectionVolume){
 		SpatialSelection.SSHelper ssh = ((SpatialSelectionVolume)curve).getIndexSamples(0.0,1.0);
 		pointIndexes = ssh.getSampledIndexes();
 		distances = ssh.getWorldCoordinateLengths();
+		crossingMembraneIndexes = ssh.getMembraneIndexesInOut();
 	}else if(curve instanceof SpatialSelectionMembrane){
 		SpatialSelection.SSHelper ssh = ((SpatialSelectionMembrane)curve).getIndexSamples();
 		pointIndexes = ssh.getSampledIndexes();
@@ -240,7 +242,7 @@ private String getCurveTimeSeries(User user, DataServerImpl dataServerImpl, VCDa
 
 	cbit.util.TimeSeriesJobSpec timeSeriesJobSpec =
 		new cbit.util.TimeSeriesJobSpec(
-				new String[]{variableName},new int[][]{pointIndexes},allTimes[beginIndex],1,allTimes[endIndex],
+				new String[]{variableName},new int[][]{pointIndexes},new int[][]{crossingMembraneIndexes},allTimes[beginIndex],1,allTimes[endIndex],
 				VCDataJobID.createVCDataJobID(user, false));
 	cbit.util.TSJobResultsNoStats timeSeriesJobResults = (cbit.util.TSJobResultsNoStats)dataServerImpl.getTimeSeriesValues(user, vcdID, timeSeriesJobSpec);
 
@@ -392,7 +394,7 @@ private String getPointsTimeSeries(User user, DataServerImpl dataServerImpl, VCD
 	
 	cbit.util.TimeSeriesJobSpec timeSeriesJobSpec =
 		new cbit.util.TimeSeriesJobSpec(
-				new String[]{variableName},new int[][]{pointIndexes},allTimes[beginIndex],1,allTimes[endIndex],
+				new String[]{variableName},new int[][]{pointIndexes},null,allTimes[beginIndex],1,allTimes[endIndex],
 				VCDataJobID.createVCDataJobID(user, false));
 	cbit.util.TSJobResultsNoStats timeSeriesJobResults = (cbit.util.TSJobResultsNoStats)dataServerImpl.getTimeSeriesValues(user, vcdID, timeSeriesJobSpec);
 
