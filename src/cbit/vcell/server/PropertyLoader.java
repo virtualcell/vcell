@@ -17,9 +17,7 @@ public class PropertyLoader {
 	public static final String primarySimDataDirProperty	= "vcell.primarySimdatadir";
 	public static final String secondarySimDataDirProperty	= "vcell.secondarySimdatadir";
 	public static final String localSimDataDirProperty		= "vcell.localSimdatadir";
-	public static final String serviceLogDir = "vcell.service.logdir";
-	public static final String serviceClassPath = "vcell.service.classpath";
-	public static final String servicePropertyFile = "vcell.service.propertyFile";
+	public static final String serviceSubmitScript = "vcell.service.submitScript";
 	
 	public static final String compilerProperty				= "vcell.c++.compiler";
 	public static final String linkerProperty				= "vcell.c++.linker";
@@ -152,9 +150,7 @@ public class PropertyLoader {
 		primarySimDataDirProperty,
 		secondarySimDataDirProperty,
 		localSimDataDirProperty,
-		serviceLogDir,
-		serviceClassPath,
-		servicePropertyFile,
+		serviceSubmitScript,
 		
 		compilerProperty,
 		linkerProperty,
