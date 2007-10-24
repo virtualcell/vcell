@@ -657,17 +657,20 @@ public void deleteServiceStatus(ServiceStatus serviceStatus, boolean bEnableRetr
 	}
 }
 
-public void disableServiceStatus(ServiceStatus serviceStatus, boolean bEnableRetry) throws SQLException, UpdateSynchronizationException {
+public ServiceStatus modifyServiceStatus(ServiceStatus oldServiceStatus, ServiceStatus newServiceStatus, boolean bEnableRetry) throws SQLException, UpdateSynchronizationException {
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {		
-		ServiceStatus currentServiceStatus = serviceStatusDB.getServiceStatus(con,serviceStatus.getServiceSpec().getServerID(), 
-				serviceStatus.getServiceSpec().getType(), serviceStatus.getServiceSpec().getOrdinal(), false);
-		if (currentServiceStatus == null){
+		ServiceStatus currentServiceStatus = serviceStatusDB.getServiceStatus(con,oldServiceStatus.getServiceSpec().getServerID(), 
+				oldServiceStatus.getServiceSpec().getType(), oldServiceStatus.getServiceSpec().getOrdinal(), false);
+		if (!currentServiceStatus.compareEqual(oldServiceStatus)){
 			throw new UpdateSynchronizationException("service doesn't exist:" + currentServiceStatus);
 		}
-		serviceStatusDB.disableServiceStatus(con, serviceStatus, DbDriver.getNewKey(con));
+		serviceStatusDB.updateServiceStatus(con,newServiceStatus);
 		con.commit();
+		ServiceStatus updatedServiceStatus = serviceStatusDB.getServiceStatus(con, oldServiceStatus.getServiceSpec().getServerID(), 
+				oldServiceStatus.getServiceSpec().getType(), oldServiceStatus.getServiceSpec().getOrdinal(), false);
+		return updatedServiceStatus;
 	}  catch (Throwable e) {
 		log.exception(e);
 		try {
@@ -678,9 +681,10 @@ public void disableServiceStatus(ServiceStatus serviceStatus, boolean bEnableRet
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
-			disableServiceStatus(serviceStatus, false);
+			return modifyServiceStatus(oldServiceStatus, newServiceStatus, false);
 		}else{
 			handle_SQLException(e);
+			return null;
 		}
 	}finally{
 		conFactory.release(con,lock);

@@ -118,7 +118,7 @@ public class ServerManageConsole extends JFrame implements ControlTopicListener 
 	private JTextField ivjBroadcastMessageToTextField = null;
 	private JButton ivjNewServiceButton = null;
 	private JButton ivjDeleteServiceButton = null;
-	private JButton ivjDisableServiceButton = null;
+	private JButton ivjModifyServiceButton = null;
 	private JButton ivjRefreshServerManagerButton = null;
 	private JProgressBar ivjProgressBar = null;
 	
@@ -151,8 +151,8 @@ public class ServerManageConsole extends JFrame implements ControlTopicListener 
 				if (e.getSource() == getDeleteServiceButton()) {
 					deleteService();
 				}
-				if (e.getSource() == getDisableServiceButton()) {
-					disableService();
+				if (e.getSource() == getModifyServiceButton()) {
+					modifyService();
 				}
 				if (e.getSource() == getRefreshServerManagerButton()) {
 					refreshServerManager();
@@ -228,9 +228,7 @@ public ServerManageConsole() throws java.io.IOException, java.io.FileNotFoundExc
 	initialize();
 }
 
-void newService() {
-	refresh();
-	
+void newService() {	
 	AddNewServiceDialog dialog = new AddNewServiceDialog(this);
 	dialog.setLocationRelativeTo(this);
 	dialog.setVisible(true);
@@ -240,12 +238,12 @@ void newService() {
 		ServiceStatus config = new ServiceStatus(ss, null, ManageConstants.SERVICE_STATUS_NOTRUNNING, "newly created",	null);
 		try {
 			config = adminDbTop.insertServiceStatus(config, true);
-			refresh();
 		} catch (Exception e) {
 			e.printStackTrace();
 			javax.swing.JOptionPane.showMessageDialog(this, e.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
 		}
-	}
+		refresh();
+	}	
 }
 
 private void deleteService() {
@@ -258,6 +256,7 @@ private void deleteService() {
 	
 	try {
 		adminDbTop.deleteServiceStatus(config, true);
+		stopService(config.getServiceSpec());
 	} catch (Exception e) {
 		e.printStackTrace();
 		javax.swing.JOptionPane.showMessageDialog(this, e.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
@@ -265,21 +264,32 @@ private void deleteService() {
 	refresh();
 }
 
-private void disableService() {
+private void modifyService() {	
 	int srow = getConfigTable().getSelectedRow();
-	ServiceStatus config = (ServiceStatus)((ServiceStatusTableModel)getConfigTable().getModel()).getValueAt(srow);
-	int n = javax.swing.JOptionPane.showConfirmDialog(this, "You are going to change startup type for " + config + " to " + getDisableServiceButton().getText() + ". Continue?", "Confirm", javax.swing.JOptionPane.YES_NO_OPTION);
-	if (n == javax.swing.JOptionPane.NO_OPTION) {
-		return;
+	ServiceStatus oldConfig = (ServiceStatus)((ServiceStatusTableModel)getConfigTable().getModel()).getValueAt(srow);
+	ServiceSpec oldSpec = oldConfig.getServiceSpec();
+	
+	AddNewServiceDialog dialog = new AddNewServiceDialog(this);
+	dialog.modifyService(oldSpec);
+	dialog.setLocationRelativeTo(this);
+	dialog.setVisible(true);
+	
+	if (dialog.isAction()) {
+		ServiceSpec newSpec = dialog.getServiceSpec();
+		if (newSpec.getMemoryMB() == oldSpec.getMemoryMB() && newSpec.getStartupType() == oldSpec.getStartupType()) {
+			return;
+		}
+		ServiceStatus newConfig = new ServiceStatus(newSpec, null, ManageConstants.SERVICE_STATUS_NOTRUNNING, "newly modified",	null);
+		try {
+			newConfig = adminDbTop.modifyServiceStatus(oldConfig, newConfig, true);
+			stopService(newConfig.getServiceSpec());						
+		} catch (Exception e) {
+			e.printStackTrace();
+			javax.swing.JOptionPane.showMessageDialog(this, e.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+		}
+		refresh();
 	}
 	
-	try {
-		adminDbTop.disableServiceStatus(config, true);
-	} catch (Exception e) {
-		e.printStackTrace();
-		javax.swing.JOptionPane.showMessageDialog(this, e.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
-	}
-	refresh();
 }
 /**
  * Insert the method's description here.
@@ -1913,7 +1923,7 @@ private javax.swing.JPanel getConfigPage() {
 			Box box = Box.createHorizontalBox();
 			box.add(Box.createHorizontalGlue());
 			box.add(getNewServiceButton());
-			box.add(getDisableServiceButton());
+			box.add(getModifyServiceButton());
 			box.add(getDeleteServiceButton());
 			box.add(Box.createHorizontalGlue());
 			box.add(getRefreshServerManagerButton());
@@ -1953,12 +1963,12 @@ private JButton getRefreshServerManagerButton() {
 	return ivjRefreshServerManagerButton;
 }
 
-private JButton getDisableServiceButton() {
-	if (ivjDisableServiceButton == null) {
-		ivjDisableServiceButton = new JButton("Manual");
-		ivjDisableServiceButton.setEnabled(false);
+private JButton getModifyServiceButton() {
+	if (ivjModifyServiceButton == null) {
+		ivjModifyServiceButton = new JButton("Modify");
+		ivjModifyServiceButton.setEnabled(false);
 	}
-	return ivjDisableServiceButton;
+	return ivjModifyServiceButton;
 }
 
 private javax.swing.JLabel getNumConfigsLabel() {
@@ -2093,7 +2103,7 @@ private void initConnections() throws java.lang.Exception {
 	getMessageResetButton().addActionListener(ivjEventHandler);
 	getNewServiceButton().addActionListener(ivjEventHandler);
 	getDeleteServiceButton().addActionListener(ivjEventHandler);
-	getDisableServiceButton().addActionListener(ivjEventHandler);
+	getModifyServiceButton().addActionListener(ivjEventHandler);
 	getRefreshServerManagerButton().addActionListener(ivjEventHandler);
 }
 
@@ -2141,7 +2151,6 @@ private void initialize() {
 		}	
 		// user code end
 		setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-		setTitle("Virtual Cell Management Console");
 		setSize(1085, 700);
 		setContentPane(getJFrameContentPane());
 		
@@ -2502,17 +2511,11 @@ public void configTable_mouseClicked(java.awt.event.MouseEvent mouseEvent) {
 	int srow = getConfigTable().getSelectedRow();
 	if (srow < 0) {
 		getDeleteServiceButton().setEnabled(false);
-		getDisableServiceButton().setEnabled(false);
+		getModifyServiceButton().setEnabled(false);
 	}
 	
-	getDeleteServiceButton().setEnabled(true);	
-	ServiceStatus config = (ServiceStatus)((ServiceStatusTableModel)getConfigTable().getModel()).getValueAt(srow);
-	if (config.getServiceSpec().getStartupType() == SERVICE_STARTUPTYPE_AUTOMATIC) {
-		getDisableServiceButton().setText("Manual");
-	} else {
-		getDisableServiceButton().setText("Automatic");
-	}
-	getDisableServiceButton().setEnabled(true);
+	getDeleteServiceButton().setEnabled(true);
+	getModifyServiceButton().setEnabled(true);
 }
 
 /**
@@ -2597,9 +2600,14 @@ private void reconnect() throws JMSException {
 }
 
 private void refresh () {
+	int count = getServiceStatusTable().getRowCount();
+	boolean bAll = false;
+	if (count == 0) {
+		bAll = true;
+	}
 	int tabIndex = getTabbedPane().getSelectedIndex();
 	if (tabIndex == 0 || tabIndex == 1) {
-		final int waitingTimeSec = 10;
+		final int waitingTimeSec = 5;
 		
 		Thread t = new Thread(new Runnable() {
 			public void run() {
@@ -2624,10 +2632,10 @@ private void refresh () {
 		}	
 		
 		showConfigs(serviceConfigList);
-		getDisableServiceButton().setEnabled(false);
+		getModifyServiceButton().setEnabled(false);
 		getDeleteServiceButton().setEnabled(false);
 		
-		if (tabIndex == 0) {		
+		if (!bAll && tabIndex == 0) {		
 			Thread t1 = new Thread(new Runnable() {
 				public void run() {
 					SwingUtilities.invokeLater(new Runnable() {
@@ -2641,7 +2649,7 @@ private void refresh () {
 			});			
 			t1.setName("Refresh Thread");
 			t1.start();			
-		} else if (tabIndex == 1) {		
+		} else {		
 			((ServiceInstanceStatusTableModel)getServiceStatusTable().getModel()).clear();
 			serviceInstanceStatusList.clear();
 			
@@ -2929,19 +2937,39 @@ private void stopServices() {
 				continue;
 			}			
 			
-			Message msg = topicSession.createMessage();
-				
-			msg.setStringProperty(ManageConstants.MESSAGE_TYPE_PROPERTY, ManageConstants.MESSAGE_TYPE_STOPSERVICE_VALUE);
-			msg.setStringProperty(ManageConstants.SERVICE_ID_PROPERTY, serviceInstanceStatus.getID());
-			
-			log.print("sending stop service message [" + JmsUtils.toString(msg) + "]");		
-			topicSession.publishMessage(JmsUtils.getTopicDaemonControl(), msg);			
+			sendStopMessage(serviceInstanceStatus.getID());		
 		}
 		refresh();
 		clearServiceStatusTab();
 	} catch (Exception ex) {
 		javax.swing.JOptionPane.showMessageDialog(this, "Failed!!: " + ex.getMessage(), "Bad News", javax.swing.JOptionPane.ERROR_MESSAGE);
 	}	
+}
+
+private void sendStopMessage(String serviceInstanceID) throws JMSException {
+	Message msg = topicSession.createMessage();
+	
+	msg.setStringProperty(ManageConstants.MESSAGE_TYPE_PROPERTY, ManageConstants.MESSAGE_TYPE_STOPSERVICE_VALUE);
+	msg.setStringProperty(ManageConstants.SERVICE_ID_PROPERTY, serviceInstanceID);
+	
+	log.print("sending stop service message [" + JmsUtils.toString(msg) + "]");		
+	topicSession.publishMessage(JmsUtils.getTopicDaemonControl(), msg);		
+}
+
+private void stopService(ServiceSpec ss) {
+	try {	
+		int count = getServiceStatusTable().getRowCount();
+		for (int i = 0; i < count; i ++){					
+			ServiceInstanceStatus serviceInstanceStatus = (ServiceInstanceStatus)((ServiceInstanceStatusTableModel)getServiceStatusTable().getModel()).getValueAt(i);
+			if (!serviceInstanceStatus.isRunning() || !serviceInstanceStatus.getSpecID().equals(ss.getID())) {
+				continue;
+			}
+			
+			sendStopMessage(serviceInstanceStatus.getID());
+		}
+	} catch (Exception ex) {
+		javax.swing.JOptionPane.showMessageDialog(this, "Failed!!: " + ex.getMessage(), "Bad News", javax.swing.JOptionPane.ERROR_MESSAGE);
+	}
 }
 
 

@@ -9,6 +9,7 @@ import java.util.*;
 
 import javax.jms.*;
 
+import cbit.htc.HTCUtils;
 import cbit.htc.PBSConstants;
 import cbit.htc.PBSUtils;
 import cbit.sql.ConnectionFactory;
@@ -54,7 +55,7 @@ public ServerManagerDaemon() throws IOException, SQLException, javax.jms.JMSExce
 	super();	
 	
 	serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID().toString(), ManageConstants.SERVICE_TYPE_SERVERMANAGER, 0, ManageUtils.getHostName(), new Date(), true); 
-	log = new StdoutSessionLog("ServerManager");
+	log = new StdoutSessionLog(serviceInstanceStatus.getID());
 	try {
 		conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
 	} catch (ClassNotFoundException e) {
@@ -204,73 +205,32 @@ private void startAService(ServiceStatus service) throws UpdateSynchronizationEx
 
 private String submit2PBS(ServiceStatus service) throws IOException, ExecutableException {
 	killService(service);
-
-	String cmdArguments = "";
-	String mainclass = "";
-	String logDir = PropertyLoader.getRequiredProperty(PropertyLoader.serviceLogDir);
-	File logfile = new File(logDir, service.getServiceSpec().getID() + ".log");
 	
-	File propertyFile = new File(PropertyLoader.getRequiredProperty(PropertyLoader.servicePropertyFile));
-	if (!propertyFile.exists()) {
-		throw new RuntimeException("property file for service " + service + " doesn't exist");
-	}
-	String jvm_classpath=PropertyLoader.getRequiredProperty(PropertyLoader.serviceClassPath);
-	String jvm_prop = "-Xmx" + service.getServiceSpec().getMemoryMB() + "M -Dvcell.propertyfile=" + PropertyLoader.getRequiredProperty(PropertyLoader.servicePropertyFile);
+	String executable = PropertyLoader.getRequiredProperty(PropertyLoader.serviceSubmitScript);
 	
 	String type = service.getServiceSpec().getType();
 	int ordinal = service.getServiceSpec().getOrdinal();
-	if (type.equals(SERVICETYPE_DB_VALUE)) {
-		cmdArguments = ordinal + " " // servicename 
-			+ logDir; // logfile
-		mainclass = DatabaseServer.class.getName();
-	} else if (type.equals(SERVICETYPE_DATA_VALUE)) {
-		cmdArguments = ordinal + " " // servicename 
-			+ logDir; // logfile
-		mainclass = SimDataServer.class.getName();
-	} else if (type.equals(SERVICETYPE_DISPATCH_VALUE)) {
-		cmdArguments = ordinal + " " // servicename 
-			+ logDir; // logfile
-		mainclass = SimulationDispatcher.class.getName();
-	} else if (type.equals(SERVICETYPE_DATAEXPORT_VALUE)) {
-		cmdArguments = ordinal + " " // servicename 
-			+ "exportonly "
-			+ logDir; // logfile
-		mainclass = SimDataServer.class.getName();		
-	} else if (type.equals(SERVICETYPE_HTCCOMPUTE_VALUE)) {
-		cmdArguments = "-pbs " 
-			+ ordinal + " " // servicename
-			+ "0 " // memory, is not useful when submit to PBS
-			+ logDir; // logfile
-		mainclass = SimulationWorker.class.getName();		
-	} else if (type.equals(SERVICETYPE_ODECOMPUTE_VALUE)) {
-		cmdArguments = "-java " 
-			+ ordinal + " " // servicename
-			+ "0 " // memory, is not useful for ODE
-			+ logDir; // logfile
-		mainclass = SimulationWorker.class.getName();		
-	} else if (type.equals(SERVICETYPE_LOCALCOMPUTE_VALUE)) {
-		cmdArguments = "-nohtc " 
-			+ ordinal + " " // servicename
-			+ "500 " // memory, used in message filter
-			+ logDir; // logfile
-		mainclass = SimulationWorker.class.getName();		
-	}
+	String cmdArguments = VCellServerID.getSystemServerID().toString().toLowerCase() + " " 
+		+ type + " " + ordinal + " " + service.getServiceSpec().getMemoryMB(); // site, type, ordinal, memory
 	
-	File sub_file = File.createTempFile("service", ".pbs.sub");
+	File sub_file = File.createTempFile("service", ".pbs.sub");	
 	PrintWriter pw = new PrintWriter(sub_file);
-
+	BufferedReader br = new BufferedReader(new FileReader(HTCUtils.getJobSubmitTemplate(null)));
 	pw.println("#PBS -N " + service.getServiceSpec().getID()); // job name
 	pw.println("#PBS -l select=1:ncpus=1:mem=" + (service.getServiceSpec().getMemoryMB() + PBS_MEM_OVERHEAD_MB) + "mb"); // resource
-	pw.println("#PBS -q workq" + service.getServiceSpec().getServerID()); // queue
-	pw.println("#PBS -m a"); // send mail when job is aborted by batch system
-	pw.println("#PBS -M fgao@uchc.edu"); // send mail to me
-	pw.println("#PBS -j oe"); // join output and error
-	pw.println("#PBS -k oe"); // keep output and error on execution
-	pw.println("#PBS -o " + logfile); // output to specific files
-	pw.println("#PBS -e " + logfile); // error to specific files
-	pw.println();	
-	pw.println("nice java " + jvm_prop + " -cp " + jvm_classpath + " " + mainclass + " " + cmdArguments);  // nice process	
+	
+	while (true) {
+		String line = br.readLine();
+		if (line == null) {
+			break;
+		}
+		pw.println(line);
+	}
+	
+	pw.println(executable + " " + cmdArguments);
+	pw.println();
 	pw.close();
+	br.close();	
 	
 	log.print("PBS sub file  for service " + service.getServiceSpec() + " is " + sub_file.getAbsolutePath());
 	String jobid = PBSUtils.submitJob(sub_file.getAbsolutePath());
@@ -371,6 +331,9 @@ private void on_stopservice(Message message) throws JMSException {
 		String serviceID = (String)JmsUtils.parseProperty(message, ManageConstants.SERVICE_ID_PROPERTY, String.class);
 		
 		if (serviceID != null) {
+			if (serviceID.equals(serviceInstanceStatus.getID())) { // stop myself
+				System.exit(0);
+			}
 			Iterator<ServiceStatus> iter = serviceList.iterator();
 			while (iter.hasNext()) {
 				ServiceStatus service = iter.next();		

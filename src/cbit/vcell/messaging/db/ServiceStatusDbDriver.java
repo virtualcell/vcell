@@ -59,17 +59,6 @@ public void deleteServiceStatus(Connection con, ServiceStatus serviceStatus, Key
 	executeUpdate(con,sql);
 }
 
-public void disableServiceStatus(Connection con, ServiceStatus serviceStatus, KeyValue key) throws SQLException {
-	if (serviceStatus == null){
-		throw new IllegalArgumentException("ServiceStatus cannot be null");
-	}
-	String sql = "update " + serviceTable.getTableName() + " set " + serviceTable.startupType + "=" 
-		+ (serviceStatus.getServiceSpec().getStartupType() == ManageConstants.SERVICE_STARTUPTYPE_MANUAL ? ManageConstants.SERVICE_STARTUPTYPE_AUTOMATIC : ManageConstants.SERVICE_STARTUPTYPE_MANUAL) + " where " + serviceTable.serverID + "='" + serviceStatus.getServiceSpec().getServerID() 
-		+ "' and " + serviceTable.type + "='" + serviceStatus.getServiceSpec().getType() + "' and " + serviceTable.ordinal + "=" + serviceStatus.getServiceSpec().getOrdinal();
-
-	//log.print(sql);			
-	executeUpdate(con,sql);
-}
 /**
  * This method was created in VisualAge.
  * @return int

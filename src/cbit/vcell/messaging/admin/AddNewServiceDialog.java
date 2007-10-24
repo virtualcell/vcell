@@ -1,5 +1,7 @@
 package cbit.vcell.messaging.admin;
 
+import java.awt.Color;
+
 import javax.swing.*;
 
 import cbit.vcell.messaging.MessageConstants;
@@ -422,6 +424,21 @@ private void initialize() {
 	// user code end
 }
 
+public void modifyService(ServiceSpec ss) {
+	this.setTitle("Modify Service");
+	getNewButton().setText("Modify");	 
+	getSiteField().setText(ss.getServerID());
+	getSiteField().setEditable(false);
+	getSiteField().setBackground(Color.white);
+	getTypeCombo().setSelectedItem(ss.getType());
+	getTypeCombo().setEnabled(false);
+	getTypeCombo().setBackground(Color.white);
+	getOrdinalCombo().setSelectedItem(ss.getOrdinal());
+	getOrdinalCombo().setEnabled(false);
+	getOrdinalCombo().setBackground(Color.white);
+	getStartupCombo().setSelectedIndex(ss.getStartupType());
+	getMemoryMBField().setText(ss.getMemoryMB() + "");
+}
 /**
  * Insert the method's description here.
  * Creation date: (8/22/2003 5:10:29 PM)
