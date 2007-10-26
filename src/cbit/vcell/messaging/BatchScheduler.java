@@ -1,4 +1,6 @@
 package cbit.vcell.messaging;
+
+import java.util.Hashtable;
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.server.User;
 import cbit.vcell.messaging.db.SimulationJobStatusInfo;
@@ -23,8 +25,8 @@ public BatchScheduler() {
  * Creation date: (5/11/2006 9:32:58 AM)
  */
 public static SimulationJobStatusInfo schedule(SimulationJobStatusInfo[] allActiveJobs, int globalPdeQuota, int userQuotaOde, int userQuotaPde, VCellServerID systemID, SessionLog log) {
-	java.util.Hashtable userPdeRunningJobs = new java.util.Hashtable();
-	java.util.Hashtable userOdeRunningJobs = new java.util.Hashtable();
+	Hashtable<User, Integer> userPdeRunningJobs = new Hashtable<User, Integer>();
+	Hashtable<User, Integer> userOdeRunningJobs = new Hashtable<User, Integer>();
 
 	cbit.vcell.messaging.db.SimulationJobStatus jobStatus = null;
 	int runningPDEs = 0;
@@ -46,18 +48,18 @@ public static SimulationJobStatusInfo schedule(SimulationJobStatusInfo[] allActi
 		if (jobStatus.getServerID().equals(systemID)) { // the number of running jobs on this site
 			User user = allActiveJobs[i].getUser();
 			if(allActiveJobs[i].isPDE()) {
-				Object numUserPdeJobs = userPdeRunningJobs.get(user);
+				Integer numUserPdeJobs = userPdeRunningJobs.get(user);
 				if (numUserPdeJobs == null) {
-					userPdeRunningJobs.put(user, new Integer(1));
+					userPdeRunningJobs.put(user, 1);
 				} else {
-					userPdeRunningJobs.put(user, new Integer(((Integer)numUserPdeJobs).intValue() + 1));
+					userPdeRunningJobs.put(user, numUserPdeJobs.intValue() + 1);
 				}
 			} else {
-				Object numUserOdeJobs = userOdeRunningJobs.get(user);
+				Integer numUserOdeJobs = userOdeRunningJobs.get(user);
 				if (numUserOdeJobs == null) {
-					userOdeRunningJobs.put(user, new Integer(1));
+					userOdeRunningJobs.put(user, 1);
 				} else {
-					userOdeRunningJobs.put(user, new Integer(((Integer)numUserOdeJobs).intValue() + 1));
+					userOdeRunningJobs.put(user, numUserOdeJobs.intValue() + 1);
 				}
 			}
 		}
@@ -75,7 +77,7 @@ public static SimulationJobStatusInfo schedule(SimulationJobStatusInfo[] allActi
 		
 		User user = allActiveJobs[i].getUser();
 		if (allActiveJobs[i].isPDE() && runningPDEs >= globalPdeQuota) {
-			log.print("Global LSF quota reached [" + jobStatus.getVCSimulationIdentifier() + "]");
+			log.print("Global PDE quota reached [" + jobStatus.getVCSimulationIdentifier() + "]");
 			continue; // global LSF quota violated
 		}							
 
@@ -83,7 +85,7 @@ public static SimulationJobStatusInfo schedule(SimulationJobStatusInfo[] allActi
 			Object numUserPdeJobs = userPdeRunningJobs.get(user);
 			if (numUserPdeJobs != null) {
 				if (((Integer)numUserPdeJobs).intValue() >= userQuotaPde) {
-					log.print("User PDE quota reached [" + jobStatus.getVCSimulationIdentifier() + "]");
+					//log.print("User PDE quota reached [" + jobStatus.getVCSimulationIdentifier() + "]");
 					continue; // user PDE quota reached
 				}
 			}
