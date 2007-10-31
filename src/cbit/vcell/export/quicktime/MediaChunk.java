@@ -4,16 +4,15 @@ package cbit.vcell.export.quicktime;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.io.IOException;
+import java.io.OutputStream;
+
 import cbit.vcell.export.quicktime.atoms.*;
 /**
  * This type was created in VisualAge.
  */
 public interface MediaChunk {
-/**
- * This method was created in VisualAge.
- * @return java.lang.Byte[]
- */
-byte[] getDataBytes();
+void writeBytes(OutputStream out)  throws IOException;
 /**
  * This method was created in VisualAge.
  * @return java.lang.String

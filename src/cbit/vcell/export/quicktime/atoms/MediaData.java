@@ -30,7 +30,9 @@ public boolean writeData(DataOutputStream out) {
 	try {
 		out.writeInt(size);
 		out.writeBytes(type);
-		for (int i=0;i<mediaChunks.length;i++) out.write(mediaChunks[i].getDataBytes());
+		for (int i=0;i<mediaChunks.length;i++) {
+			mediaChunks[i].writeBytes(out);
+		}
 		return true;
 	} catch (IOException e) {
 		System.out.println("Unable to write: " + e.getMessage());

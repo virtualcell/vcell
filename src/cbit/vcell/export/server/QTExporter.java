@@ -8,7 +8,6 @@ import java.util.zip.*;
 import java.rmi.*;
 import cbit.vcell.simdata.*;
 import cbit.vcell.server.*;
-import cbit.util.*;
 import cbit.vcell.geometry.*;
 /**
  * Insert the type's description here.
@@ -65,7 +64,11 @@ private ExportOutput[] makeSimpleMovies(long jobID, User user, DataServerImpl da
 			}else{
 				sampleDuration = (int)Math.ceil((allTimes[i + 1] - allTimes[i]) / interval * duration);
 			}
-			sample = new VideoMediaSampleRaw(width, height, sampleDuration, bytes, bitsPerPixel, isGrayscale);
+//			sample = new VideoMediaSampleRaw(width, height, sampleDuration, bytes, bitsPerPixel, isGrayscale);
+			sample = new VideoMediaSampleRaw(width, height, sampleDuration,
+					new MediaSample.MediaSampleStream(bytes),
+					bytes.length,
+					bitsPerPixel, isGrayscale);
 			chunks[i - beginTimeIndex] = new VideoMediaChunk(sample);
 		}
 		
@@ -208,7 +211,11 @@ private ExportOutput[] makeOverlayMovie(long jobID, User user, DataServerImpl da
 		}else{
 			sampleDuration = (int)Math.ceil((allTimes[i + 1] - allTimes[i]) / interval * duration);
 		}
-		sample = new VideoMediaSampleRaw(width, height * varNames.length, sampleDuration, bytes, bitsPerPixel, isGrayscale);
+//		sample = new VideoMediaSampleRaw(width, height * varNames.length, sampleDuration, bytes, bitsPerPixel, isGrayscale);
+		sample = new VideoMediaSampleRaw(width, height * varNames.length, sampleDuration,
+				new MediaSample.MediaSampleStream(bytes),
+				bytes.length,
+				bitsPerPixel, isGrayscale);
 		chunks[i - beginTimeIndex] = new VideoMediaChunk(sample);
 	}
 	
