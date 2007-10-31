@@ -5,17 +5,20 @@ package cbit.vcell.export.quicktime;
  * All rights reserved.
 ©*/
 import cbit.vcell.export.quicktime.atoms.*;
+
+import java.io.BufferedInputStream;
+import java.io.InputStream;
 import java.util.zip.*;
 /**
  * This type was created in VisualAge.
  */
 public abstract class VideoMediaSample implements MediaSample {
-	private short colorDepth;
-	private boolean isGrayscale;
-	private short width;
-	private short height;
-	private byte[] dataBytes = null;
-	private int duration;
+//	private short colorDepth;
+//	private boolean isGrayscale;
+//	private short width;
+//	private short height;
+//	private InputStream dataInputStream = null;
+//	private int duration;
 	public final static String mediaType = "vide";
 /**
  * This method was created in VisualAge.
@@ -26,7 +29,7 @@ public abstract short getColorDepth();
  * This method was created in VisualAge.
  * @return byte[]
  */
-public abstract byte[] getDataBytes();
+public abstract MediaSample.MediaSampleStream getDataInputStream();
 /**
  * This method was created in VisualAge.
  * @return java.lang.String

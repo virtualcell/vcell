@@ -7,6 +7,8 @@ package cbit.vcell.export.quicktime;
 import cbit.vcell.export.quicktime.atoms.*;
 import java.io.*;
 import java.util.zip.*;
+
+import com.sun.imageio.plugins.common.InputStreamAdapter;
 /**
  * This type was created in VisualAge.
  */
@@ -19,7 +21,7 @@ public class VideoMediaChunk implements MediaChunk {
 	private int height;
 	private int offset;
 	private int size;
-	private byte[] dataBytes = null;
+	private MediaSample.MediaSampleStream[] dataInputStreamArr;
 	private int duration;
 	private String dataReference = "self";
 	private SampleDescriptionEntry sampleDescriptionEntry = null;
@@ -48,15 +50,17 @@ public VideoMediaChunk(VideoMediaSample[] samples) throws DataFormatException {
 		int size = 0;
 		for (int j=0;j<samples.length;j++) size += samples[j].getSize();
 		setSize(size);
-		setDataBytes(new byte[size]);
-		int counter = 0;
+//		setDataBytes(new byte[size]);
+//		int counter = 0;
 		int duration = 0;
+		dataInputStreamArr = new MediaSample.MediaSampleStream[samples.length];
 		for (int j=0;j<samples.length;j++) {
-			for (int k=0;k<samples[j].getDataBytes().length;k++) {
-				getDataBytes()[counter] = samples[j].getDataBytes()[k];
-				counter++;
-			}
+//			for (int k=0;k<samples[j].getDataBytes().length;k++) {
+//				getDataBytes()[counter] = samples[j].getDataBytes()[k];
+//				counter++;
+//			}
 			duration += samples[j].getDuration();
+			dataInputStreamArr[j] = samples[j].getDataInputStream();
 		}
 		setDuration(duration);
 	}
@@ -66,13 +70,6 @@ public VideoMediaChunk(VideoMediaSample[] samples) throws DataFormatException {
  */
 public VideoMediaChunk(VideoMediaSample sample) throws DataFormatException {
 	this(new VideoMediaSample[] {sample});
-}
-/**
- * This method was created in VisualAge.
- * @return byte[]
- */
-public byte[] getDataBytes() {
-	return dataBytes;
 }
 /**
  * This method was created in VisualAge.
@@ -153,13 +150,6 @@ public int getWidth() {
 }
 /**
  * This method was created in VisualAge.
- * @param newValue byte[]
- */
-private void setDataBytes(byte[] newValue) {
-	this.dataBytes = newValue;
-}
-/**
- * This method was created in VisualAge.
  * @param newValue java.lang.String
  */
 private void setDataFormat(String newValue) {
@@ -227,5 +217,18 @@ private void setSize(int newValue) {
  */
 private void setWidth(int newValue) {
 	this.width = newValue;
+}
+public void writeBytes(OutputStream out) throws IOException{
+	StringBuffer ioErrors = new StringBuffer();
+	for (int i = 0; i < dataInputStreamArr.length; i++) {
+			try {
+				dataInputStreamArr[i].writeBytes(out);
+			} catch (IOException e) {
+				ioErrors.append(e.getMessage()+"\n");
+			}
+	}
+	if(ioErrors.length() > 0){
+		throw new IOException(ioErrors.toString());
+	}
 }
 }

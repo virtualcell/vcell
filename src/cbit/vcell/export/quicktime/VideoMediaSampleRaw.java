@@ -5,33 +5,36 @@ package cbit.vcell.export.quicktime;
  * All rights reserved.
 ©*/
 import cbit.vcell.export.quicktime.atoms.*;
+
 import java.util.zip.*;
 /**
  * This type was created in VisualAge.
  */
-public class VideoMediaSampleRaw extends VideoMediaSample implements MediaSample {
+public class VideoMediaSampleRaw extends VideoMediaSample implements MediaSample{
 	private short colorDepth;
 	private boolean isGrayscale;
 	private int width;
 	private int height;
-	private byte[] dataBytes = null;
 	private int duration;
+	private MediaSample.MediaSampleStream dataInputStream;
+	private int dataBytesSize;
 	private VideoSampleDescriptionEntryRaw sampleDescriptionEntry = null;
 	public final static String dataFormat = "raw ";
 /**
  * VideoMediaSampleRaw constructor comment.
  */
-public VideoMediaSampleRaw(int width, int height, int duration, byte[] data, int bitsPerPixel, boolean grayscale) throws DataFormatException {
+public VideoMediaSampleRaw(int width, int height, int duration, MediaSample.MediaSampleStream dataIS, int dataBytesSize,int bitsPerPixel, boolean grayscale) throws DataFormatException {
 	if
 	(
 		((grayscale) && (bitsPerPixel != 8)) ||
 		((bitsPerPixel != 8) && (bitsPerPixel != 16) && (bitsPerPixel != 24) && (bitsPerPixel != 32)) ||
-		(data.length != width * height * bitsPerPixel / 8)
+		(dataBytesSize != width * height * bitsPerPixel / 8)
 	)
 	throw new DataFormatException("Raw video data invalid !");
 	setWidth(width);
 	setHeight(height);
-	setDataBytes(data);
+	setDataInputStream(dataIS);
+	setDataBytesSize(dataBytesSize);
 	setDuration(duration);
 	setIsGrayscale(grayscale);
 	setColorDepth((short)bitsPerPixel);
@@ -49,8 +52,8 @@ public short getColorDepth() {
  * This method was created in VisualAge.
  * @return byte[]
  */
-public byte[] getDataBytes() {
-	return dataBytes;
+public MediaSample.MediaSampleStream getDataInputStream() {
+	return dataInputStream;
 }
 /**
  * This method was created in VisualAge.
@@ -98,7 +101,7 @@ public SampleDescriptionEntry getSampleDescriptionEntry() {
  * getSize method comment.
  */
 public int getSize() {
-	return dataBytes.length;
+	return dataBytesSize;
 }
 /**
  * This method was created in VisualAge.
@@ -124,9 +127,13 @@ private void setColorDepth(short newValue) {
  * This method was created in VisualAge.
  * @param newValue byte[]
  */
-private void setDataBytes(byte[] newValue) {
-	this.dataBytes = newValue;
+private void setDataInputStream(MediaSample.MediaSampleStream dataIS) {
+	this.dataInputStream = dataIS;
 }
+private void setDataBytesSize(int dataSize) {
+	this.dataBytesSize = dataSize;
+}
+
 /**
  * This method was created in VisualAge.
  * @param newValue int
