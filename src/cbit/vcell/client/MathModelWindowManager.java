@@ -1,9 +1,7 @@
 package cbit.vcell.client;
 import cbit.vcell.desktop.controls.DataEvent;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
-import cbit.vcell.server.*;
 import cbit.vcell.solver.*;
-import cbit.vcell.messaging.db.*;
 import cbit.vcell.modeldb.VersionableTypeVersion;
 import cbit.sql.*;
 import cbit.vcell.client.desktop.simulation.*;
@@ -42,8 +40,8 @@ public class MathModelWindowManager extends DocumentWindowManager implements jav
 	private JInternalFrameEnhanced surfaceViewerFrame = null;	
 	
 	// results windows and plots
-	private Hashtable simulationWindowsHash = new Hashtable();
-	private Vector dataViewerPlotsFramesVector = new Vector();
+	private Hashtable<VCSimulationIdentifier, SimulationWindow> simulationWindowsHash = new Hashtable<VCSimulationIdentifier, SimulationWindow>();
+	private Vector<JInternalFrame> dataViewerPlotsFramesVector = new Vector<JInternalFrame>();
 	
 	//Field Data help.  Set if copied from a BioModel Application.
 	//Used to substitute Field Data while saving a MathModel.
@@ -153,7 +151,7 @@ public void addResultsFrame(cbit.vcell.client.desktop.simulation.SimulationWindo
 private void checkValidSimulationDataViewerFrames() {
 	SimulationWindow[] simWindows = (SimulationWindow[])cbit.util.BeanUtils.getArray(simulationWindowsHash.elements(), SimulationWindow.class);
 	Simulation[] sims = getMathModel().getSimulations();
-	Hashtable hash = new Hashtable();
+	Hashtable<VCSimulationIdentifier, Simulation> hash = new Hashtable<VCSimulationIdentifier, Simulation>();
 	for (int i = 0; i < sims.length; i++){
 		cbit.vcell.solver.SimulationInfo simInfo = sims[i].getSimulationInfo();
 		if (simInfo != null) {
@@ -177,10 +175,10 @@ private void checkValidSimulationDataViewerFrames() {
  */
 private void cleanSimWindowsHash() {
 
-	Enumeration enum1 = simulationWindowsHash.keys();
-	Vector toRemove = new Vector();
+	Enumeration<VCSimulationIdentifier> enum1 = simulationWindowsHash.keys();
+	Vector<VCSimulationIdentifier> toRemove = new Vector<VCSimulationIdentifier>();
 	while(enum1.hasMoreElements()){
-		VCSimulationIdentifier vcsid = (VCSimulationIdentifier)enum1.nextElement();
+		VCSimulationIdentifier vcsid = enum1.nextElement();
 		Simulation[] sims = getMathModel().getSimulations();
 		boolean bFound = false;
 		for(int i=0;i<sims.length;i+= 1){
@@ -379,7 +377,7 @@ private void initializeInternalFrames() {
 	simsPanel.setSimulationWorkspace(new SimulationWorkspace(this, getMathModel()));
 	simsListEditorFrame = new JInternalFrameEnhanced(simsListTitle, true, true, true, true);
 	simsListEditorFrame.setContentPane(simsPanel);
-	simsListEditorFrame.setSize(550, 550);
+	simsListEditorFrame.setSize(600, 550);
 	simsListEditorFrame.setLocation(500, 300);
 	simsListEditorFrame.setMinimumSize(new Dimension(500, 500));
 	simsListEditorFrame.addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
@@ -442,9 +440,9 @@ public void resetDocument(cbit.vcell.document.VCDocument newDocument) {
 		simWorkspace.setSimulationOwner((MathModel)newDocument);
 	}
 	checkValidSimulationDataViewerFrames();
-	Enumeration en = dataViewerPlotsFramesVector.elements();
+	Enumeration<JInternalFrame> en = dataViewerPlotsFramesVector.elements();
 	while (en.hasMoreElements()) {
-		close((JInternalFrame)en.nextElement(), getJDesktopPane());
+		close(en.nextElement(), getJDesktopPane());
 	}
 	getRequestManager().updateStatusNow();
 }
