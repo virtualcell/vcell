@@ -64,17 +64,17 @@ protected void executeProcess() throws cbit.util.ExecutableException {
 		System.out.println("Executable.executeProcess(" + getCommand() + ") stdout:\n" + getOutputString());
 		// finally, throw if it was a failure
 		if (getStatus().isError()) {
-			throw new Exception("simulation failed, return code = " + getExitValue() + "\nstderr = '" + getErrorString()+"'");
+			throw new Exception(getErrorString());
 		}
 	} catch (Throwable e) {
 		if (getStatus().isError()) {
 			// process failed and we relay the exception thrown on error status finish above
-			throw new ExecutableException("Executable.executeProcess(" + getCommand() + ") error running executable: " + e.getMessage());
+			throw new ExecutableException(e.getMessage() + "(" + getCommand() + ")");
 		} else {
 			//something really unexpected happened, update status and log it before relaying...
 			setStatus(ExecutableStatus.getError("error running executable " + e.getMessage()));
 			e.printStackTrace(System.out);
-			throw new ExecutableException("Executable.executeProcess(" + getCommand() + ") unexpected error: " + e.getMessage());
+			throw new ExecutableException("Unexpected error: " + e.getMessage() + "(" + getCommand() + ")");
 		}			
 	}
 }
