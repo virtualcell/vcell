@@ -58,34 +58,6 @@ public GeometrySummaryPanel() {
 }
 
 /**
- * GeometrySummaryPanel constructor comment.
- * @param layout java.awt.LayoutManager
- */
-public GeometrySummaryPanel(java.awt.LayoutManager layout) {
-	super(layout);
-}
-
-
-/**
- * GeometrySummaryPanel constructor comment.
- * @param layout java.awt.LayoutManager
- * @param isDoubleBuffered boolean
- */
-public GeometrySummaryPanel(java.awt.LayoutManager layout, boolean isDoubleBuffered) {
-	super(layout, isDoubleBuffered);
-}
-
-
-/**
- * GeometrySummaryPanel constructor comment.
- * @param isDoubleBuffered boolean
- */
-public GeometrySummaryPanel(boolean isDoubleBuffered) {
-	super(isDoubleBuffered);
-}
-
-
-/**
  * connEtoC1:  (geometry1.this --> GeometrySummaryPanel.initGeometry(Lcbit.vcell.geometry.Geometry;)V)
  * @param value cbit.vcell.geometry.Geometry
  */
@@ -1106,6 +1078,7 @@ private void initialize() {
 		connPtoP1SetTarget();
 		connEtoM1();
 		connEtoM2();
+		getImagePlaneManagerPanel1().setMode(ImagePaneModel.MESH_MODE);
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
