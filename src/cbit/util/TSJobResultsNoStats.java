@@ -10,7 +10,7 @@ public class TSJobResultsNoStats extends TimeSeriesJobResults {
 	//values encoding: double[varNameIndex][dataIndex+1][timeIndex]
 	//for each varNameIndex:
 	//		double[0][0...numTimes-1] contains the times
-	//		double[1...numIndexes-1][0...numTimes-1] contains the data values at each index for times
+	//		double[1...numIndexes][0...numTimes-1] contains the data values at each index for times
 	//
 	private double[][][] values;
 
@@ -34,7 +34,7 @@ public double[][] getTimesAndValuesForVariable(String variableName) {
 	//
 	//double[numIndexes+1][numTimes]
 	//double[0][0...numTimes-1] contains the times
-	//double[1...numIndexes-1][0...numTimes-1] contains the data values at each index for times
+	//double[1...numIndexes][0...numTimes-1] contains the data values at each index for times
 	//
 	return values[getIndexForVarName(variableName)];
 }
