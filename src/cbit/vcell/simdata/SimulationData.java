@@ -992,7 +992,7 @@ public synchronized double[][] getSimDataLineScan(String[] varNames,int[][] inde
 		}
 	}
 
-	double[][][] timeResults = getSimDataTimeSeries(varNames,indexes,wantsThisTime);
+	double[][][] timeResults = getSimDataTimeSeries(varNames,indexes,wantsThisTime,null);
 	double[][] results = new double[varNames.length][];
 	for(int i=0;i<varNames.length;i+= 1){
 		results[i] = new double[indexes[i].length];
@@ -1051,9 +1051,13 @@ public synchronized double[][] getSimDataLineScan(String[] varNames,int[][] inde
  * @param user cbit.vcell.server.User
  * @param simID java.lang.String
  */
-public double[][][] getSimDataTimeSeries(String varNames[],int[][] indexes,boolean[] wantsThisTime) throws DataAccessException,IOException{
+public double[][][] getSimDataTimeSeries(
+		String varNames[],
+		int[][] indexes,
+		boolean[] wantsThisTime,
+		DataSetControllerImpl.ProgressListener progressListener) throws DataAccessException,IOException{
 
-	return getSimDataTimeSeries0(varNames,indexes,wantsThisTime,null);
+	return getSimDataTimeSeries0(varNames,indexes,wantsThisTime,null,progressListener);
 }
 
 
@@ -1067,9 +1071,10 @@ public double[][][] getSimDataTimeSeries(
 		String varNames[],
 		int[][] indexes,
 		boolean[] wantsThisTime,
-		DataSetControllerImpl.SpatialStatsInfo spatialStatsInfo) throws DataAccessException,IOException{
+		DataSetControllerImpl.SpatialStatsInfo spatialStatsInfo,
+		DataSetControllerImpl.ProgressListener progressListener) throws DataAccessException,IOException{
 
-	return getSimDataTimeSeries0(varNames,indexes,wantsThisTime,spatialStatsInfo);
+	return getSimDataTimeSeries0(varNames,indexes,wantsThisTime,spatialStatsInfo,progressListener);
 
 }
 
@@ -1084,7 +1089,8 @@ private synchronized double[][][] getSimDataTimeSeries0(
 		String varNames[],
 		int[][] indexes,
 		boolean[] wantsThisTime,
-		DataSetControllerImpl.SpatialStatsInfo spatialStatsInfo) throws DataAccessException,IOException{
+		DataSetControllerImpl.SpatialStatsInfo spatialStatsInfo,
+		DataSetControllerImpl.ProgressListener progressListener) throws DataAccessException,IOException{
 
 	
 	refreshLogFile();
@@ -1152,27 +1158,34 @@ private synchronized double[][][] getSimDataTimeSeries0(
 				indexes
 			);
 		int counter = 0;
-		resultsCounter = 0;
+		int progressCounter = 0;
 		while(sdr.hasMoreData()){
 			sdr.getNextDataAtCurrentTime(singleTimePointResultsBuffer);
 			// Copy data to timeSeries format
 			if(wantsThisTime[counter]){
 				for(int i=0;i<varNames.length;i+= 1){
 					if(spatialStatsInfo != null){
-						results[resultsCounter][i] = calcSpaceStats(singleTimePointResultsBuffer[i],i,spatialStatsInfo);
+						results[progressCounter][i] = calcSpaceStats(singleTimePointResultsBuffer[i],i,spatialStatsInfo);
 					}else{
 						for(int j=0;j<indexes[i].length;j+= 1){
-							results[resultsCounter][i][j] = singleTimePointResultsBuffer[i][j];
+							results[progressCounter][i][j] = singleTimePointResultsBuffer[i][j];
 						}
 					}
 				}
-				resultsCounter+= 1;
+				progressCounter+= 1;
+				if(progressListener != null){
+					progressListener.updateProgress(100.0 * (double)progressCounter / (double)resultsCounter);
+				}
 			}
 			counter+= 1;
 		}
 		return results;
+	}catch(DataAccessException e){
+		throw e;
+	}catch(IOException e){
+		throw e;
 	}catch(Throwable e){
-		throw new DataAccessException(e.getMessage());
+		throw new DataAccessException(e.getMessage(),e);
 	}finally{
 		if(sdr != null){
 			sdr.close();
@@ -1299,7 +1312,7 @@ synchronized int[] getVolumeSize() throws IOException, DataAccessException {
  */
 private void readFunctions() throws FileNotFoundException, IOException {
 
-	Vector annotatedFuncsVector = FunctionFileGenerator.readFunctionsFile(getFunctionsFile());
+	Vector<AnnotatedFunction> annotatedFuncsVector = FunctionFileGenerator.readFunctionsFile(getFunctionsFile());
 
 	//
 	// Convert this annotatedfunctionsVector into the field annotatedFunctionsList.

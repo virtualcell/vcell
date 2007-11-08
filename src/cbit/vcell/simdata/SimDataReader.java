@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
+
+import cbit.vcell.server.DataAccessException;
+
 /**
  * Insert the type's description here.
  * Creation date: (10/24/2004 3:33:16 PM)
@@ -32,8 +35,8 @@ public class SimDataReader{
 	private int[][][] reMapper;
 
 	private ReorderVarIndexes rvi = new ReorderVarIndexes();
-	private class ReorderVarIndexes implements java.util.Comparator{
-		public int compare(Object o1, Object o2){
+	private class ReorderVarIndexes implements java.util.Comparator<long[]>{
+		public int compare(long[] o1, long[] o2){
 			long[] temp1 = (long[])o1;
 			long[] temp2 = (long[])o2;
 			return (int)(temp1[1]-temp2[1]);
@@ -100,13 +103,13 @@ public void close(){
  * Insert the method's description here.
  * Creation date: (10/26/2004 10:18:50 AM)
  */
-public void getNextDataAtCurrentTime(double[][] returnValues) throws IOException{
+public void getNextDataAtCurrentTime(double[][] returnValues) throws IOException,DataAccessException{
 	
 	if(masterTimeIndex >= times.length){
 		throw new RuntimeException("No More Time Data");
 	}
 
-	long currentTimeIndex = masterTimeIndex;
+//	long currentTimeIndex = masterTimeIndex;
 
 //long beginTime = System.currentTimeMillis();
 
@@ -154,11 +157,13 @@ public void getNextDataAtCurrentTime(double[][] returnValues) throws IOException
 //System.out.println("Time for Blocks="+(blockTime-entryTime));
 
 			// Beginning of All SimData(Blocks) (All doubles) check DataBlocks in order (Always move forward in stream)
+			int variableFoundCount = 0;
 			for(int j=0;j<dataBlockList.length;j+= 1){
 				boolean isBlockIndexAligned = false;
 				// See if current block is a variable we want
 				for(int k=0;k<varNames.length;k+= 1){
 					if(varNames[k].equals(dataBlockList[j].getVarName())){
+						variableFoundCount+= 1;
 						// Align to beginning of current block
 						if(!isBlockIndexAligned){
 							skip(dis,dataBlockList[j].getDataOffset()-masterStreamIndex);
@@ -186,7 +191,9 @@ public void getNextDataAtCurrentTime(double[][] returnValues) throws IOException
 					}
 				}
 			}
-				
+			if(variableFoundCount != varNames.length){
+				throw new DataAccessException(this.getClass().getName()+".getNextDataAtCurrentTime: At least 1 variable name was not found in Datablock list");
+			}
 //long dataTime = System.currentTimeMillis();
 //System.out.println("Time for data="+(dataTime-blockTime)+"\n");
 
@@ -329,24 +336,6 @@ private void order(String[] argVarNames, int[][] argVarIndexes) {
 
 /**
  * Insert the method's description here.
- * Creation date: (10/25/2004 8:21:03 AM)
- * @param buffer byte[]
- * @param offset int
- * @param length int
- */
-private int read(InputStream is,byte[] buffer, int offset, int length) throws IOException{
-
-	int numBytesRead = is.read(buffer,offset,length);
-	if(numBytesRead != -1){
-		incrementStreamCounts(numBytesRead);;
-	}
-
-	return numBytesRead;
-}
-
-
-/**
- * Insert the method's description here.
  * Creation date: (10/26/2004 10:50:57 AM)
  * @return cbit.vcell.simdata.FileHeader
  * @param dis java.io.DataInputStream
@@ -364,9 +353,6 @@ private FileHeader readFileHeader(DataInputStream dis) throws IOException{
  * @param skipCount int
  */
 private void skip(InputStream is,long skipCount) throws IOException{
-
-long beginTime = System.currentTimeMillis();
-
 	if(skipCount == 0){
 		return;
 	}
@@ -379,8 +365,5 @@ long beginTime = System.currentTimeMillis();
 	}
 
 	incrementStreamCounts(total);
-
-//System.out.println("skip time="+(System.currentTimeMillis()-beginTime));
-
 }
 }
