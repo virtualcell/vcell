@@ -56,7 +56,7 @@ public class StructureMappingTableModel extends javax.swing.table.AbstractTableM
 	private cbit.vcell.mapping.GeometryContext fieldGeometryContext = null;
 
 /**
- * ReactionSpecsTableModel constructor comment.
+ * StructureMappingTableModel constructor comment.
  */
 public StructureMappingTableModel() {
 	super();
@@ -175,7 +175,7 @@ public int getColumnCount() {
 
 public String getColumnName(int column) {
 	if (column<0 || column>=NUM_COLUMNS){
-		throw new RuntimeException("ParameterTableModel.getColumnName(), column = "+column+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
+		throw new RuntimeException("StructureMappingTableModel.getColumnName(), column = "+column+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
 	}
 	return LABELS[column];
 }
@@ -508,10 +508,10 @@ public void setGeometryContext(cbit.vcell.mapping.GeometryContext geometryContex
 
 public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 	if (rowIndex<0 || rowIndex>=getRowCount()){
-		throw new RuntimeException("ReactionSpecsTableModel.setValueAt(), row = "+rowIndex+" out of range ["+0+","+(getRowCount()-1)+"]");
+		throw new RuntimeException("StructureMappingTableModel.setValueAt(), row = "+rowIndex+" out of range ["+0+","+(getRowCount()-1)+"]");
 	}
 	if (columnIndex<0 || columnIndex>=NUM_COLUMNS){
-		throw new RuntimeException("ReactionSpecsTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
+		throw new RuntimeException("StructureMappingTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
 	}
 	FeatureMapping featureMapping = getFeatureMapping(rowIndex);
 	switch (columnIndex){
