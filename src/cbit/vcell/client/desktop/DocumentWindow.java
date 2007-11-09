@@ -5,12 +5,15 @@ import java.awt.event.*;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.server.*;
 import cbit.vcell.client.*;
+
 import java.text.*;
 import java.util.TreeMap;
 import java.util.Vector;
 import java.awt.*;
 import javax.swing.*;
 import cbit.vcell.desktop.*;
+import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.gui.TransformMassActionPanel;
 import cbit.vcell.xml.MIRIAMAnnotatable;
 import cbit.vcell.xml.MIRIAMAnnotationEditor;
 import cbit.vcell.xml.MIRIAMHelper;
@@ -148,6 +151,9 @@ public class DocumentWindow extends JFrame implements TopLevelWindow {
 	private JMenuItem ivjJMenuItemOnlineHelp = null;
 	private JMenu ivjBNGMenu = null;
 	private JMenuItem ivjRunBNGMenuItem = null;
+	//Added Oct. 17th, 2007. To put a tool menu in 
+	private JMenu toolMenu = null;
+	private JMenuItem transMAMenuItem = null;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -223,6 +229,8 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				connEtoC25(e);
 			if (e.getSource() == DocumentWindow.this.getRunBNGMenuItem()) 
 				connEtoC26(e);
+			if (e.getSource() == DocumentWindow.this.getTransMAMenuItem()) 
+				showTransMADialog();
 			if (e.getSource() == DocumentWindow.this.getJMenuItemFieldData()) 
 				connEtoC38(e);
 		};
@@ -1092,6 +1100,51 @@ private javax.swing.JMenu getBNGMenu() {
 }
 
 /**
+ * Return the tool menu.
+ * @return javax.swing.JMenu
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private javax.swing.JMenu getToolMenu() {
+	if (toolMenu == null) {
+		try {
+			toolMenu = new javax.swing.JMenu();
+			toolMenu.setName("ToolMenu");
+			toolMenu.setText("Tool");
+			toolMenu.add(getTransMAMenuItem());
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return toolMenu;
+}
+
+/**
+ * Return the getTransMAMenuItem.
+ * @return javax.swing.JMenuItem
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private javax.swing.JMenuItem getTransMAMenuItem() {
+	if (transMAMenuItem == null) {
+		try {
+			transMAMenuItem = new javax.swing.JMenuItem();
+			transMAMenuItem.setName("TransMA");
+			transMAMenuItem.setText("Transform to Stochastic Capable");
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return transMAMenuItem;
+}
+
+/**
  * Return the CascadeMenuItem property value.
  * @return javax.swing.JMenuItem
  */
@@ -1287,6 +1340,7 @@ private javax.swing.JMenuBar getDocumentWindowJMenuBar() {
 			ivjDocumentWindowJMenuBar.add(getServerMenu());
 			ivjDocumentWindowJMenuBar.add(getWindowMenu());
 			ivjDocumentWindowJMenuBar.add(getBNGMenu());
+			ivjDocumentWindowJMenuBar.add(getToolMenu());
 			ivjDocumentWindowJMenuBar.add(getHelpMenu());
 			// user code begin {1}
 			// user code end
@@ -2716,6 +2770,7 @@ private void initConnections() throws java.lang.Exception {
 	getTestingFrameworkMenuItem().addActionListener(ivjEventHandler);
 	getJMenuItemOnlineHelp().addActionListener(ivjEventHandler);
 	getRunBNGMenuItem().addActionListener(ivjEventHandler);
+	getTransMAMenuItem().addActionListener(ivjEventHandler);
 	getJMenuItemFieldData().addActionListener(ivjEventHandler);
 }
 
@@ -3068,6 +3123,11 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 			if(getWindowManager() != null && getWindowManager() instanceof BioModelWindowManager){
 				getJMenuItemMIRIAM().setEnabled(true);
 			}
+			getTransMAMenuItem().setEnabled(
+					getWindowManager() != null && 
+					getWindowManager().getVCDocument() != null &&
+					getWindowManager().getVCDocument() instanceof BioModel
+			);
 			break;
 		}
 		case ConnectionStatus.INITIALIZING: {
@@ -3225,5 +3285,24 @@ private void showMIRIAMWindow(final BioModel bioModel) {
 //	jd.setVisible(true);
 //	MIRIAMHelper.showList(getBioModel());
 }
-
+public void showTransMADialog() 
+{
+	BioModel biomodel = null;
+	if (getWindowManager().getVCDocument() instanceof BioModel)
+		biomodel = (BioModel)getWindowManager().getVCDocument();
+	TransformMassActionPanel transMAPanel = new TransformMassActionPanel();
+	transMAPanel.setModel(biomodel.getModel());
+	int choice = DialogUtils.showComponentOKCancelDialog(null, transMAPanel, "Transform to Stochastic Capable Model");
+	if(choice == JOptionPane.OK_OPTION)
+	{
+		try
+		{
+			transMAPanel.saveTransformedReactions();
+		}catch(Exception e)
+		{
+			PopupGenerator.showWarningDialog(getTopLevelWindowManager(), null, new UserMessage(e.getMessage(), new String[]{"Ok"},"Ok"), null);
+			
+		}
+	}
+}
 }

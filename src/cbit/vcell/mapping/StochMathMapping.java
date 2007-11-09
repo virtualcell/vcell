@@ -8,11 +8,13 @@ import cbit.vcell.mapping.potential.MembraneElectricalDevice;
 import cbit.vcell.mapping.potential.PotentialMapping;
 import cbit.vcell.mapping.potential.ElectricalDevice;
 import cbit.vcell.solver.stoch.FluxSolver;
+import cbit.vcell.solver.stoch.MassActionSolver;
 import cbit.vcell.units.VCUnitException;
 import cbit.gui.DialogUtils;
 import cbit.util.ISize;
 import cbit.vcell.math.*;
 import cbit.vcell.model.*;
+import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.*;
 import cbit.vcell.parser.*;
 import java.util.*;
@@ -396,6 +398,12 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 	 */
 	private void refreshMathDescription() throws MappingException, cbit.vcell.matrix.MatrixException, MathException, ExpressionException, ModelException
 	{
+		//We have to check if all the reactions are able to tranform to stochastic jump processes before generating the math.
+		String stochChkMsg =getSimulationContext().getBioModel().isValidForStochApp();
+		if(!(stochChkMsg.equals("ok")))
+		{
+			throw new ModelException("Problem in application: "+ getSimulationContext().getName()+"\n"+stochChkMsg);
+		}
 		//All sizes must be set for new ODE models and ratios must be set for old ones.
 		getSimulationContext().checkValidity();
 		
@@ -710,8 +718,8 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 			{
 				// check the reaction rate law to see if we need to decompose a reaction(reversible) into two jump processes.
 				// rate constants are important in calculating the probability rate.
-				// for Mass Action, we use KForward and KReverse, for HMM_irreversible we directly use Km
-				// and for HMM_reversible we use KmFwd and KmRev, for General and General Total Kinetics we use reaction rate J directly as probability rate
+				// for Mass Action, we use KForward and KReverse, 
+				// for General Kinetics we parse reaction rate J to see if it is in Mass Action form.
 				Expression forwardRate = null;
 				Expression reverseRate = null;
 				if (kinetics.getKineticsDescription().equals(KineticsDescription.MassAction))
@@ -719,6 +727,26 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 					forwardRate = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KForward).getExpression();
 					reverseRate = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_KReverse).getExpression();
 					
+				}
+				else if (kinetics.getKineticsDescription().equals(KineticsDescription.General))
+				{
+					Expression rateExp = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
+					MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(rateExp, reactionStep);
+					if(maFunc.getForwardRate() == null && maFunc.getReverseRate() == null)
+					{
+						throw new MappingException("Cannot generate stochastic math mapping for the reaction:" + reactionStep.getName() + "\nLooking for the rate function according to the form of k1*Reactant1^Stoir1*Reactant2^Stoir2...-k2*Product1^Stoip1*Product2^Stoip2.");
+					}
+					else
+					{
+						if(maFunc.getForwardRate() != null)
+						{
+							forwardRate = maFunc.getForwardRate();
+						}
+						if(maFunc.getReverseRate() != null)
+						{
+							reverseRate = maFunc.getReverseRate();
+						}
+					}
 				}
 				/*else if (kinetics.getKineticsDescription().getName().compareTo(KineticsDescription.HMM_irreversible.getName())==0)
 			    {
@@ -733,8 +761,8 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 			    boolean isReverseRateNonZero = false;
 		       	if(forwardRate != null)
 		    	{
-		       		isForwardRateNonZero = true;	    	
-		    		try {
+		       		isForwardRateNonZero = true;
+		       		try {
 		    			if (forwardRate.evaluateConstant()==0)
 		    				isForwardRateNonZero = false;
 		    		} catch (ExpressionException e) {
@@ -876,7 +904,7 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 					Expression fluxRate = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
 					fluxRate = substitueKineticPara(fluxRate, reactionStep, false);
 					//we have to pass the math description para to flux solver, coz somehow math description in simulation context is not updated.
-					FluxSolver.FluxFunction fluxFunc = FluxSolver.solveFlux(fluxRate, reactionStep, getSimulationContext(), mathDesc);
+					FluxSolver.FluxFunction fluxFunc = FluxSolver.solveFlux(fluxRate, reactionStep);
 					//create jump process for forward flux if it exists.
 					if(fluxFunc.getRateToInside() != null && !fluxFunc.getRateToInside().isZero()) 
 					{

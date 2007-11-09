@@ -1008,7 +1008,7 @@ public String isValidForStochApp()
 	// Mass Action and centain form of general Flux can be automatically transformed.
 	for (int i = 0; (reacSteps != null) && (i < reacSteps.length); i++)
 	{
-		if(((reacSteps[i] instanceof SimpleReaction) && (!reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.MassAction))) ||
+		if(((reacSteps[i] instanceof SimpleReaction) && (!(reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.MassAction) || reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General)))) ||
 		  ((reacSteps[i] instanceof FluxReaction) && (!reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General))))
 		{
 			returnStr = returnStr + " " + reacSteps[i].getName() + ",";
@@ -1017,7 +1017,7 @@ public String isValidForStochApp()
 	int len = returnStr.length();
 	if(len > 0)
 	{
-		returnStr = returnStr.substring(0,(len-1)) + " is (are) unable to transform to stochastic formulation.\nMass Action Kinetics and fluxes described by general flux desity can be automatically transfromed.";
+		returnStr = returnStr.substring(0,(len-1)) + " is (are) unable to transform to stochastic formulation.\n Reactions described by mass action(all) or general(certain forms) kinetics and fluxes described by general flux desity(certain forms) can be automatically transfromed.";
 	}
 	else
 		returnStr = "ok";

@@ -395,15 +395,6 @@ private void connPtoP1SetTarget() {
 	try {
 		getScrollPaneTable1().setModel(getStructureMappingTableModel1());
 		getScrollPaneTable1().createDefaultColumnsFromModel();
-		// user code begin {1}
-		// set column 7-12's cell editor to comboBox
-		JComboBox combo=new JComboBox(new String[]{"Flux","Value"});
-		for(int i=7; i<13; i++)
-		{
-			TableColumn column=getScrollPaneTable1().getColumnModel().getColumn(i);
-			column.setCellEditor(new DefaultCellEditor(combo));
-		}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
 		// user code begin {3}
 		// user code end

@@ -420,7 +420,7 @@ protected void addKineticsParameter(KineticsParameter newParameter) throws Prope
  * @param parameters cbit.vcell.model.KineticsParameter[]
  */
 public void addKineticsParameters(KineticsParameter[] newparameters) throws PropertyVetoException {
-	ArrayList newArrayList  = new ArrayList();
+	ArrayList<KineticsParameter> newArrayList  = new ArrayList<KineticsParameter>();
 
 	//check the new parameters are not repeated
 	for (int i = 0; i < newparameters.length; i++){
@@ -447,7 +447,7 @@ public void addKineticsParameters(KineticsParameter[] newparameters) throws Prop
 
 	//put it back into an array
 	KineticsParameter[] allNewParameters = new KineticsParameter[newArrayList.size()];
-	allNewParameters = (KineticsParameter[])newArrayList.toArray(allNewParameters);	;
+	allNewParameters = (KineticsParameter[])newArrayList.toArray(allNewParameters);	
 	//save the whole new array into this kinetics
 	this.setKineticsParameters(allNewParameters);
 }
