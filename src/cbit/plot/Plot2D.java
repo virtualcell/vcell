@@ -21,7 +21,7 @@ public class Plot2D {
 	private int[] fieldRenderHints = new int[0];
 	private int numPlots = 0;
 	private boolean[] fieldVisiblePlots = new boolean[0];
-	protected transient java.util.Vector aChangeListener = null;
+	protected transient java.util.Vector<ChangeListener> aChangeListener = null;
 	private boolean isHistogram = false;
 	//
 	public static final int LABEL_TITLE = 0;
@@ -115,7 +115,7 @@ public Plot2D(cbit.vcell.parser.SymbolTableEntry[] argSymbolTableEntries,String[
  */
 public void addChangeListener(javax.swing.event.ChangeListener newListener) {
 	if (aChangeListener == null) {
-		aChangeListener = new java.util.Vector();
+		aChangeListener = new java.util.Vector<ChangeListener>();
 	};
 	if (! aChangeListener.contains(newListener)) {
 		aChangeListener.addElement(newListener);
@@ -129,7 +129,7 @@ public void addChangeListener(javax.swing.event.ChangeListener newListener) {
 protected void fireStateChanged() {
 	if (aChangeListener != null) {
 		ChangeEvent e = new ChangeEvent(this);
-		Enumeration en = aChangeListener.elements();
+		Enumeration<ChangeListener> en = aChangeListener.elements();
 		while (en.hasMoreElements()) {
 			ChangeListener listener = (ChangeListener)en.nextElement();
 			listener.stateChanged(e);
@@ -331,6 +331,21 @@ public Range getXDataRange() {
 	}
 	xDataRange = new Range(xmin, xmax);
 	return xDataRange;
+}
+
+/**
+ * Insert the method's description here.
+ * Creation date: (2/8/2001 1:32:46 PM)
+ * @return cbit.image.Range
+ */
+public boolean visiblePlotsInvalid() {
+	boolean bVisblePlotsInvalid = false;
+	for (int i=0;i<plotDatas.length;i++) {
+		if (isVisiblePlot(i) && plotDatas[i].hasInvalidNumericValues()){
+			bVisblePlotsInvalid = true;
+		}
+	}
+	return bVisblePlotsInvalid;
 }
 
 

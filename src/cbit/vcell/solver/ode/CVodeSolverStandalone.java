@@ -9,7 +9,7 @@ import cbit.vcell.solver.SolverException;
  * Creation date: (10/23/2004 8:07:49 AM)
  * @author: Jim Schaff
  */
-public class CVodeSolverStandalone extends IDASolver {
+public class CVodeSolverStandalone extends SundialsSolver {
 /**
  * IDASolverStandalone constructor comment.
  * @param simulation cbit.vcell.solver.Simulation
@@ -33,9 +33,9 @@ protected void initialize() throws cbit.vcell.solver.SolverException {
 	//
 	sessionLog.print("CVOdeSolverStandalone.initialize() baseName = " + getBaseName());
 	//
-	IDAFileWriter idaFileWriter = new IDAFileWriter(getSimulation());
+	CVodeFileWriter cvodeFileWriter = new CVodeFileWriter(getSimulation());
 	try {
-		idaFileWriter.initialize();
+		cvodeFileWriter.initialize();
 	} catch (Exception e) {
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, "Could not initialize CVodeFileWriter..."));
 		e.printStackTrace(System.out);
@@ -46,7 +46,7 @@ protected void initialize() throws cbit.vcell.solver.SolverException {
 	//
 	try {
 		java.io.FileOutputStream fileOutputStream = new java.io.FileOutputStream(inputFilename);
-		idaFileWriter.writeIDAFile(new java.io.PrintWriter(fileOutputStream));
+		cvodeFileWriter.writeInputFile(new java.io.PrintWriter(fileOutputStream));
 		fileOutputStream.close();
 	} catch (Exception e) {
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, "Could not generate input file: " + e.getMessage()));

@@ -121,7 +121,7 @@ public class VCellSBMLSolver implements SBMLSolver {
 			cbit.vcell.solver.ode.IDAFileWriter idaFileWriter = new cbit.vcell.solver.ode.IDAFileWriter(sim);
 			idaFileWriter.initialize();
 			java.io.StringWriter stringWriter = new java.io.StringWriter();
-			idaFileWriter.writeIDAFile(new java.io.PrintWriter(stringWriter,true));
+			idaFileWriter.writeInputFile(new java.io.PrintWriter(stringWriter,true));
 			stringWriter.close();
 			StringBuffer buffer = stringWriter.getBuffer();
 			String idaInputString = buffer.toString();

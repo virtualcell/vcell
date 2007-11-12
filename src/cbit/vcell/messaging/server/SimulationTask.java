@@ -161,7 +161,7 @@ public boolean goodForHTC() {
 	}
 	
 	SolverDescription solverDescription = getSimulationJob().getWorkingSim().getSolverTaskDescription().getSolverDescription();
-	//if (solverDescription.equals(cbit.vcell.solver.SolverDescription.LSODA) || solverDescription.equals(cbit.vcell.solver.SolverDescription.FiniteVolume)) {
+	//if (solverDescription.equals(cbit.vcell.solver.SolverDescription.IDA) || solverDescription.equals(cbit.vcell.solver.SolverDescription.FiniteVolume)) {
 	// because normally all the IDA jobs are fast and IDASolver has to print data to file after the getSimulationJob().getWorkingSim(), we don't submit IDA jobs to LSF.
 	if (solverDescription.equals(cbit.vcell.solver.SolverDescription.FiniteVolume)) {
 		return true;

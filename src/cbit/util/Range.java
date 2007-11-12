@@ -46,6 +46,9 @@ public Object clone() {
 	return newRange;
 }
 
+public boolean isValid(){
+	return !(Double.isNaN(min) || Double.isInfinite(min) || Double.isNaN(max) || Double.isInfinite(max) || (min > max));
+}
 
 /**
  * Checks for internal representation of objects, not keys from database

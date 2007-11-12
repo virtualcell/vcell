@@ -1,10 +1,4 @@
 package cbit.vcell.util;
-import cbit.vcell.solver.stoch.*;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.server.*;
 import cbit.vcell.math.*;
 import java.util.*;
 import cbit.vcell.solver.ode.*;
@@ -23,9 +17,9 @@ import cbit.vcell.parser.*;
  * @author: John Wagner
  */
 public class RowColumnResultSet implements java.io.Serializable {
-	private Vector fieldDataColumnDescriptions = new Vector ();
-	private Vector fieldFunctionColumnDescriptions = new Vector ();
-	private Vector fieldValues = new Vector ();  // vector of rows (each row is a double[])
+	private Vector<ColumnDescription> fieldDataColumnDescriptions = new Vector<ColumnDescription>();
+	private Vector<ColumnDescription> fieldFunctionColumnDescriptions = new Vector<ColumnDescription>();
+	private Vector<double[]> fieldValues = new Vector<double[]> ();  // vector of rows (each row is a double[])
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private cbit.vcell.util.ColumnDescription[] fieldColumnDescriptions = new ColumnDescription[0];
 
@@ -213,7 +207,15 @@ public synchronized double[] extractColumn(int c) throws ExpressionException {
 			
 			values = new double[getRowCount()];
 			for (int r = 0; r < getRowCount(); r++) {
-				values[r] = exp.evaluateVector(getRow(r));
+				try {
+					values[r] = exp.evaluateVector(getRow(r));
+				}catch (DivideByZeroException e){
+					e.printStackTrace(System.out);
+					values[r] = Double.NaN;
+				}catch (FunctionDomainException e){
+					e.printStackTrace(System.out);
+					values[r] = Double.NaN;
+				}
 			}			
 		}else{				
 			values = new double[getRowCount()];
@@ -529,14 +531,14 @@ System.out.println("scale["+i+"] = "+scale[i]);
 	double maxSquaredRatio = 10*10;
 	int t = findColumn("t");
 	final double TOLERANCE = 0.1;
-	LinkedList linkedList = new LinkedList(fieldValues);
+	LinkedList<double[]> linkedList = new LinkedList<double[]>(fieldValues);
 	while (maxRowCount<linkedList.size() && threshold<TOLERANCE){
-		ListIterator iter = linkedList.listIterator(0);
-		double a[] = (double[])iter.next();
-		double b[] = (double[])iter.next();
+		ListIterator<double[]> iter = linkedList.listIterator(0);
+		double a[] = iter.next();
+		double b[] = iter.next();
 		double c[] = null;
 		while (iter.hasNext()) {
-			c = (double[])iter.next();
+			c = iter.next();
 			if (calculateErrorFactor(t,a,b,c,scale)<threshold && !isCorner(t,a,b,c,scale,minSquaredRatio,maxSquaredRatio)){
 				iter.previous();
 				iter.previous();
@@ -561,7 +563,7 @@ System.out.println("scale["+i+"] = "+scale[i]);
 	if (linkedList.size()>maxRowCount){
 		throw new RuntimeException("sample tolerance "+TOLERANCE+" exceeded while removing time points, "+linkedList.size()+" remaining (keepAtMost="+maxRowCount+")");
 	}
-	Vector values = new Vector (linkedList);
+	Vector<double[]> values = new Vector<double[]>(linkedList);
 	fieldValues = values;
 }
 }

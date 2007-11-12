@@ -48,6 +48,19 @@ public RationalMatrixFast(int r, int c, long values[]){
 		denData[i] = 1;
 	}	
 }
+
+public RationalMatrixFast transpose(){
+	RationalMatrixFast transposedMatrix = new RationalMatrixFast(cols, rows);
+	for (int i = 0; i < rows; i++) {
+		for (int j = 0; j < cols; j++) {
+			int transposedIndex = transposedMatrix.get_index(j, i);
+			int thisIndex = this.get_index(i, j);
+			transposedMatrix.numData[transposedIndex] = this.numData[thisIndex];
+			transposedMatrix.denData[transposedIndex] = this.denData[thisIndex];
+		}
+	}
+	return transposedMatrix;
+}
 /**
  * This method was created by a SmartGuide.
  * @param mat cbit.vcell.math.Matrix
