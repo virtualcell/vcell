@@ -3,7 +3,7 @@ import cbit.vcell.math.VolVariable;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.simdata.*;
-import swingthreads.*;
+
 import javax.swing.*;
 
 import cbit.image.DisplayAdapterService;
@@ -38,15 +38,34 @@ import cbit.util.*;
  */
 public class PDEDataViewer extends DataViewer {
 	//
-	private interface TimeSeriesJobResultsAction extends Runnable{
+	private class ThreadSafeDataJobInfo {
+		public AsynchProgressPopup pp;
+		TimeSeriesJobResultsAction timeSeriesJobResultsAction;
+		public ThreadSafeDataJobInfo(AsynchProgressPopup pp,TimeSeriesJobResultsAction timeSeriesJobResultsAction){
+			this.pp = pp;
+			this.timeSeriesJobResultsAction = timeSeriesJobResultsAction;
+		}
+	};
+	public interface TimeSeriesJobStarter {
+		void startTimeSeriesJob(TimeSeriesJobSpec tsjs,TimeSeriesJobResultsAction resultsAction,boolean bInputBlocking);
+	}
+	public interface TimeSeriesJobResultsAction extends Runnable{
 		void setTimeSeriesJobResults(TimeSeriesJobResults timeSeriesJobResults);
+		void setTimeSeriesJobFailed(Throwable e);
 	}
 	private class PlotSpaceStats implements TimeSeriesJobResultsAction{
 		private TimeSeriesJobResults timeSeriesJobResults;
+		private Throwable timeSeriesJobFailed;
 		public void setTimeSeriesJobResults(TimeSeriesJobResults timeSeriesJobResults){
 			this.timeSeriesJobResults = timeSeriesJobResults;
 		}
+		public void setTimeSeriesJobFailed(Throwable e){
+			timeSeriesJobFailed = e;
+		}
 		public void run() {
+			if(timeSeriesJobFailed != null){
+				return;//Do Nothing Special
+			}
 			TSJobResultsSpaceStats tsjrss = (TSJobResultsSpaceStats)timeSeriesJobResults;
 			//Determine if Volume or Membrane
 			DataIdentifier[] diArr = getPdeDataContext().getDataIdentifiers();
@@ -98,13 +117,7 @@ public class PDEDataViewer extends DataViewer {
 					"[" + tsjrss.getVariableNames()[0] + "]"}));
 
 
-			showComponentInFrame(plotPane,"Statistics");
-			//JInternalFrame frame =
-				//new JInternalFrame("Statistics", true, true, true, true);
-			//frame.getContentPane().add(plotPane);
-			//frame.pack();
-			//cbit.util.BeanUtils.centerOnComponent(frame,this);
-			//getDataViewerManager().showDataViewerPlotsFrames(new JInternalFrame[] {frame});
+			showComponentInFrame(plotPane,"Statistics: ("+tsjrss.getVariableNames()[0]+") "+getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName());
 		}
 	};
 	//
@@ -124,12 +137,6 @@ public class PDEDataViewer extends DataViewer {
 	private MeshDisplayAdapter.MeshRegionSurfaces meshRegionSurfaces = null;
 	private static final String   SHOW_MEMB_SURFACE_BUTTON_STRING = "Show Membrane Surfaces";
 	private static final String UPDATE_MEMB_SURFACE_BUTTON_STRING = "Update Membrane Surfaces";
-	//
-	private static final int RESAMPLE_LIMIT = 500;
-	private static final int RESAMPLE_START_INDEX = 0;
-	private static final int RESAMPLE_STEP_INDEX = 1;
-	private static final int RESAMPLE_END_INDEX = 2;
-	private static final int RESAMPLE_NUMTP_INDEX = 3;
 	//
 	private cbit.vcell.simdata.PDEDataContext fieldPdeDataContext = null;
 	private JButton ivjJButtonSpatial = null;
@@ -152,24 +159,7 @@ public class PDEDataViewer extends DataViewer {
 	private NewPDEExportPanel ivjPDEExportPanel1 = null;
 	private cbit.vcell.export.ExportMonitorPanel ivjExportMonitorPanel1 = null;
 	private JButton ivjKymographJButton = null;
-	private JPanel ivjJDialogContentPane = null;
-	private JLabel ivjJLabel1 = null;
-	private JPanel ivjJPanel1 = null;
-	private JLabel ivjStartTimeJLabel = null;
-	private JLabel ivjStepJLabel = null;
-	private JButton ivjCancelJButton = null;
-	private JDialog ivjResampleTimesJDialog = null;
-	private JLabel ivjResampleResultsJLabel = null;
-	private JLabel ivjResampleInfoJLabel = null;
-	private JTextField ivjResampleStartTimeJTextField = null;
-	private JTextField ivjResampleStepJTextField = null;
-	private JLabel ivjResampleLimitJLabel = null;
-	private Boolean ivjResampleCancelBoolean = null;
-	private JButton ivjDoneJButton = null;
-	private JLabel ivjEndTimeJLabel = null;
-	private JButton ivjRefreshJButton = null;
 	private boolean ivjConnPtoP9Aligning = false;
-	private JLabel ivjResampleEndTimeJLabel = null;
 	private JButton ivjJButtonSurfaces = null;
 	private boolean ivjConnPtoP10Aligning = false;
 	private PDEDataContext ivjpdeDataContext1 = null;
@@ -182,12 +172,6 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 				connEtoC3(e);
 			if (e.getSource() == PDEDataViewer.this.getKymographJButton()) 
 				connEtoC4(e);
-			if (e.getSource() == PDEDataViewer.this.getCancelJButton()) 
-				connEtoM1(e);
-			if (e.getSource() == PDEDataViewer.this.getDoneJButton()) 
-				connEtoM3(e);
-			if (e.getSource() == PDEDataViewer.this.getRefreshJButton()) 
-				connEtoC5(e);
 			if (e.getSource() == PDEDataViewer.this.getJButtonSurfaces()) 
 				connEtoC6(e);
 			if (e.getSource() == PDEDataViewer.this.getJButtonStatistics()) 
@@ -553,26 +537,6 @@ private void connEtoC4(java.awt.event.ActionEvent arg1) {
 
 
 /**
- * connEtoC5:  (RefreshJButton.action.actionPerformed(java.awt.event.ActionEvent) --> PDEDataViewer.resampleRefresh()V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC5(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.resampleRefresh();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
  * connEtoC6:  (JButtonSurfaces.action.actionPerformed(java.awt.event.ActionEvent) --> PDEDataViewer.showMembraneSurfaces(Ljava.awt.event.ActionEvent;)V)
  * @param arg1 java.awt.event.ActionEvent
  */
@@ -641,92 +605,6 @@ private void connEtoC9(java.awt.event.ActionEvent arg1) {
 		// user code begin {1}
 		// user code end
 		this.calcStatistics(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM1:  (CancelJButton.action.actionPerformed(java.awt.event.ActionEvent) --> ResampleCancelBoolean.Boolean(boolean))
- * @return java.lang.Boolean
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private java.lang.Boolean connEtoM1(java.awt.event.ActionEvent arg1) {
-	Boolean connEtoM1Result = null;
-	try {
-		// user code begin {1}
-		// user code end
-		connEtoM1Result = new Boolean(true);
-		setResampleCancelBoolean(connEtoM1Result);
-		connEtoM2(connEtoM1Result);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-	return connEtoM1Result;
-}
-
-/**
- * connEtoM2:  ( (CancelJButton,action.actionPerformed(java.awt.event.ActionEvent) --> ResampleCancelBoolean,this).normalResult --> ResampleTimesJDialog.dispose()V)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM2(java.lang.Boolean result) {
-	try {
-		// user code begin {1}
-		// user code end
-		getResampleTimesJDialog().dispose();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-/**
- * connEtoM3:  (OKJButton.action.actionPerformed(java.awt.event.ActionEvent) --> ResampleCancelBoolean.Boolean(boolean))
- * @return java.lang.Boolean
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private java.lang.Boolean connEtoM3(java.awt.event.ActionEvent arg1) {
-	Boolean connEtoM3Result = null;
-	try {
-		// user code begin {1}
-		// user code end
-		connEtoM3Result = new Boolean(false);
-		setResampleCancelBoolean(connEtoM3Result);
-		connEtoM4(connEtoM3Result);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-	return connEtoM3Result;
-}
-
-/**
- * connEtoM4:  ( (OKJButton,action.actionPerformed(java.awt.event.ActionEvent) --> ResampleCancelBoolean,Boolean(boolean)).normalResult --> ResampleTimesJDialog.dispose()V)
- * @param result java.lang.Boolean
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM4(java.lang.Boolean result) {
-	try {
-		// user code begin {1}
-		// user code end
-		getResampleTimesJDialog().dispose();
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -1163,153 +1041,55 @@ private void connPtoP9SetTarget() {
 	}
 }
 
-public void dataJobMessage(final DataJobEvent dje) {
-
-	if(!jobIDProgressHash.containsKey(dje.getVcDataJobID())){
-		return;
+private synchronized ThreadSafeDataJobInfo getThreadSafeDataJobInfo(VCDataJobID vcDataJobID){
+	if(!jobIDProgressHash.containsKey(vcDataJobID)){
+		return null;
 	}
-	
-	final AsynchProgressPopup jobPopup = jobIDProgressHash.get(dje.getVcDataJobID());
-	
-	if(dje.getEventTypeID() == MessageEvent.DATA_FAILURE){
-		jobIDProgressHash.remove(dje.getVcDataJobID());
-		SwingUtilities.invokeLater(new Runnable(){public void run(){jobPopup.stop();}});
-//		jobPopup.stop();
-		PopupGenerator.showErrorDialog(
-				"Error executing Data Job:\n"+
-				(dje.getFailedJobException() != null?dje.getFailedJobException().getMessage():"empty exc"));
-		return;
-	}
-	if(!(dje.getEventTypeID() == MessageEvent.DATA_COMPLETE)){
-		SwingUtilities.invokeLater(new Runnable(){public void run(){jobPopup.setMessage("Progress ("+dje.getProgress().toString()+"%)");}});
-		//		jobPopup.setMessage("Progress ("+dje.getProgress().toString()+"%)");
-		return;
-	}
-	
-	jobIDProgressHash.remove(dje.getVcDataJobID());
-	SwingUtilities.invokeLater(new Runnable(){public void run(){jobPopup.stop();}});
-//	jobPopup.stop();
-//	TimeSeriesJobResults tsjr = dje.getTimeSeriesJobResults();
-	if(jobIDActionHash.containsKey(dje.getVcDataJobID())){
-		TimeSeriesJobResultsAction timeSeriesJobResultsAction = jobIDActionHash.get(dje.getVcDataJobID());
-		jobIDActionHash.remove(dje.getVcDataJobID());
-		timeSeriesJobResultsAction.setTimeSeriesJobResults(dje.getTimeSeriesJobResults());
-		new Thread(timeSeriesJobResultsAction).start();
-	}
-	
-//	if(tsjr instanceof TSJobResultsSpaceStats){
-//		TSJobResultsSpaceStats tsjrss = (TSJobResultsSpaceStats)tsjr;
-//		//Determine if Volume or Membrane
-//		DataIdentifier[] diArr = getPdeDataContext().getDataIdentifiers();
-//		boolean bVolume = true;
-//		for(int i=0;i<diArr.length;i+= 1){
-//			if(diArr[i].getName().equals(tsjrss.getVariableNames()[0])){
-//				if(diArr[i].getVariableType().equals(VariableType.MEMBRANE) || diArr[i].getVariableType().equals(VariableType.MEMBRANE_REGION)){
-//					bVolume = false;
-//					break;
-//				}
-//			}
-//		}
-//
-//		cbit.vcell.parser.SymbolTableEntry[] symbolTableEntries = null;
-//		if(tsjr.getVariableNames().length == 1){
-//			symbolTableEntries = new cbit.vcell.parser.SymbolTableEntry[3/*4*/];//max.mean.min,sum
-//		//for(int i=0;i<symbolTableEntries.length;i+= 1){
-//			try{
-//				if(getSimulation() != null && getSimulation().getMathDescription() != null){
-//					symbolTableEntries[0] = getSimulation().getMathDescription().getEntry(tsjr.getVariableNames()[0]);
-//				}else{
-//					symbolTableEntries[0] = new SimpleSymbolTable(tsjr.getVariableNames()).getEntry(tsjr.getVariableNames()[0]);
-//				}
-//				symbolTableEntries[1] = symbolTableEntries[0];
-//				symbolTableEntries[2] = symbolTableEntries[0];
-//				//symbolTableEntries[3] = symbolTableEntries[0];
-//			}catch(cbit.vcell.parser.ExpressionBindingException e){
-//				e.printStackTrace();
-//			}
-//		//}
-//		}
-//		cbit.plot.PlotPane plotPane = new cbit.plot.PlotPane();
-//		plotPane.setPlot2D(
-//			new cbit.plot.SingleXPlot2D(symbolTableEntries,"Time",
-//			new String[] {
-//					"Max",
-//					(tsjrss.getWeightedMean() != null?"WeightedMean":"UnweightedMean"),
-//					"Min"/*,
-//					(tsjrss.getWeightedSum() != null?"WeightedSum":"UnweightedSum")*/},
-//			new double[][] {
-//					tsjrss.getTimes(),
-//					tsjrss.getMaximums()[0],
-//					(tsjrss.getWeightedMean() != null?tsjrss.getWeightedMean()[0]:tsjrss.getUnweightedMean()[0]),
-//					tsjrss.getMinimums()[0]/*,
-//					(tsjrss.getWeightedSum() != null?tsjrss.getWeightedSum()[0]:tsjrss.getUnweightedSum()[0])*/},
-//			new String[] {
-//				"Statistics Plot for "+tsjrss.getVariableNames()[0]+(tsjrss.getTotalSpace() != null?" (ROI "+(bVolume?"volume":"area")+"="+tsjrss.getTotalSpace()[0]+")":""),
-//				"Time (s)",
-//				"[" + tsjrss.getVariableNames()[0] + "]"}));
-//
-//
-//		showComponentInFrame(plotPane,"Statistics");
-//		//JInternalFrame frame =
-//			//new JInternalFrame("Statistics", true, true, true, true);
-//		//frame.getContentPane().add(plotPane);
-//		//frame.pack();
-//		//cbit.util.BeanUtils.centerOnComponent(frame,this);
-//		//getDataViewerManager().showDataViewerPlotsFrames(new JInternalFrame[] {frame});
-//
-//	}else{
-//		//if(tsjr instanceof TSJobResultsNoStats){
-//			//TSJobResultsNoStats tsjrns = (TSJobResultsNoStats)tsjr;
-//			//for(int i=0;i<tsjrns.getVariableNames().length;i+= 1){
-//				//System.out.println(tsjrns.getVariableNames()[i]);
-//				//double[][] timesAndVals = tsjrns.getTimesAndValuesForVariable(tsjrns.getVariableNames()[i]);
-//				//for(int j=0;j<timesAndVals.length;j+= 1){
-//					//System.out.println(timesAndVals[0][j]+","+timesAndVals[1][j]);
-//				//}
-//			//}
-//		//}else if(tsjr instanceof TSJobResultsTimeStats){
-//			//TSJobResultsTimeStats tsjrts = (TSJobResultsTimeStats)tsjr;
-//			//if(tsjrts.isValuesAreSpaceStats()){
-//				//for(int i=0;i<tsjrts.getVariableNames().length;i+= 1){
-//					////for(int j=0;j<tsjrts.getWeightedMeans()[i].length;j+= 1){
-//						//System.out.println(tsjrts.getVariableNames()[i]+" "+tsjrts.getWeightedMeans()[i][0]);
-//					////}
-//				//}
-//			//}else{
-//				//for(int i=0;i<tsjrts.getVariableNames().length;i+= 1){
-//					//for(int j=0;j<tsjrts.getWeightedMeans()[i].length;j+= 1){
-//						//System.out.println(tsjrts.getIndices()[i][j]+","+tsjrts.getUnweightedMeans()[i][j]);
-//					//}
-//				//}
-//			//}
-//		//}
-//		PopupGenerator.showInfoDialog("Sorry, Display of this datatype has yet to be Implemented!");
-//	}	
+	return new ThreadSafeDataJobInfo(jobIDProgressHash.get(vcDataJobID),jobIDActionHash.get(vcDataJobID));
 }
-	
-
-/**
- * Return the CancelJButton property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getCancelJButton() {
-	if (ivjCancelJButton == null) {
-		try {
-			ivjCancelJButton = new javax.swing.JButton();
-			ivjCancelJButton.setName("CancelJButton");
-			ivjCancelJButton.setText("Cancel");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
+private synchronized void dataJobCleanup(VCDataJobID vcDataJobID){
+	jobIDProgressHash.remove(vcDataJobID);
+	jobIDActionHash.remove(vcDataJobID);
+}
+private synchronized void dataJobFailed(VCDataJobID vcDataJobID,final Exception failException){
+	final ThreadSafeDataJobInfo threadSafeDataJobInfo = getThreadSafeDataJobInfo(vcDataJobID);
+	if(threadSafeDataJobInfo != null){
+		dataJobCleanup(vcDataJobID);
+		SwingUtilities.invokeLater(new Runnable(){public void run(){threadSafeDataJobInfo.pp.stop();}});
+		if(threadSafeDataJobInfo.timeSeriesJobResultsAction != null){
+			threadSafeDataJobInfo.timeSeriesJobResultsAction.setTimeSeriesJobFailed((failException != null?failException:new Exception("Data Job Failed")));
+			new Thread(threadSafeDataJobInfo.timeSeriesJobResultsAction).start();
 		}
 	}
-	return ivjCancelJButton;
-}
+	new Thread(new Runnable(){
+		public void run() {
+			PopupGenerator.showErrorDialog(
+					"Error executing Data Job:\n"+
+					(failException != null?failException.getMessage():"Unknown Reason"));
+		}
+	}).start();
 
+}
+public void dataJobMessage(final DataJobEvent dje) {
+
+	final ThreadSafeDataJobInfo threadSafeDataJobInfo = getThreadSafeDataJobInfo(dje.getVcDataJobID());
+	if(threadSafeDataJobInfo == null){
+		return;
+	}
+	if(dje.getEventTypeID() == MessageEvent.DATA_FAILURE){
+		dataJobFailed(dje.getVcDataJobID(),dje.getFailedJobException());
+	}else{
+		if(!(dje.getEventTypeID() == MessageEvent.DATA_COMPLETE)){
+			SwingUtilities.invokeLater(new Runnable(){public void run(){threadSafeDataJobInfo.pp.setMessage("Progress ("+NumberUtils.formatNumber(dje.getProgress(),3)+"%)");}});
+			return;
+		}
+		dataJobCleanup(dje.getVcDataJobID());
+		SwingUtilities.invokeLater(new Runnable(){public void run(){threadSafeDataJobInfo.pp.stop();}});
+		threadSafeDataJobInfo.timeSeriesJobResultsAction.setTimeSeriesJobResults(dje.getTimeSeriesJobResults());
+		new Thread(threadSafeDataJobInfo.timeSeriesJobResultsAction).start();
+	}
+}
+	
 
 /**
  * Insert the method's description here.
@@ -1373,51 +1153,6 @@ private cbit.vcell.geometry.gui.DataValueSurfaceViewer getDataValueSurfaceViewer
 	}
 
 	return fieldDataValueSurfaceViewer;
-}
-
-
-/**
- * Return the OKJButton property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getDoneJButton() {
-	if (ivjDoneJButton == null) {
-		try {
-			ivjDoneJButton = new javax.swing.JButton();
-			ivjDoneJButton.setName("DoneJButton");
-			ivjDoneJButton.setText("Done");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjDoneJButton;
-}
-
-/**
- * Return the EndTimeJLabel property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getEndTimeJLabel() {
-	if (ivjEndTimeJLabel == null) {
-		try {
-			ivjEndTimeJLabel = new javax.swing.JLabel();
-			ivjEndTimeJLabel.setName("EndTimeJLabel");
-			ivjEndTimeJLabel.setText("End Time");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjEndTimeJLabel;
 }
 
 
@@ -1575,156 +1310,6 @@ private javax.swing.JButton getJButtonTime() {
 	return ivjJButtonTime;
 }
 
-
-/**
- * Return the JDialogContentPane property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getJDialogContentPane() {
-	if (ivjJDialogContentPane == null) {
-		try {
-			ivjJDialogContentPane = new javax.swing.JPanel();
-			ivjJDialogContentPane.setName("JDialogContentPane");
-			ivjJDialogContentPane.setLayout(new java.awt.GridBagLayout());
-
-			java.awt.GridBagConstraints constraintsResampleStartTimeJTextField = new java.awt.GridBagConstraints();
-			constraintsResampleStartTimeJTextField.gridx = 0; constraintsResampleStartTimeJTextField.gridy = 4;
-			constraintsResampleStartTimeJTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsResampleStartTimeJTextField.weightx = 1.0;
-			constraintsResampleStartTimeJTextField.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJDialogContentPane().add(getResampleStartTimeJTextField(), constraintsResampleStartTimeJTextField);
-
-			java.awt.GridBagConstraints constraintsResampleStepJTextField = new java.awt.GridBagConstraints();
-			constraintsResampleStepJTextField.gridx = 1; constraintsResampleStepJTextField.gridy = 4;
-			constraintsResampleStepJTextField.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsResampleStepJTextField.weightx = 1.0;
-			constraintsResampleStepJTextField.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJDialogContentPane().add(getResampleStepJTextField(), constraintsResampleStepJTextField);
-
-			java.awt.GridBagConstraints constraintsResampleInfoJLabel = new java.awt.GridBagConstraints();
-			constraintsResampleInfoJLabel.gridx = 0; constraintsResampleInfoJLabel.gridy = 0;
-			constraintsResampleInfoJLabel.gridwidth = 3;
-			constraintsResampleInfoJLabel.weightx = 1.0;
-			constraintsResampleInfoJLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJDialogContentPane().add(getResampleInfoJLabel(), constraintsResampleInfoJLabel);
-
-			java.awt.GridBagConstraints constraintsStartTimeJLabel = new java.awt.GridBagConstraints();
-			constraintsStartTimeJLabel.gridx = 0; constraintsStartTimeJLabel.gridy = 3;
-			constraintsStartTimeJLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJDialogContentPane().add(getStartTimeJLabel(), constraintsStartTimeJLabel);
-
-			java.awt.GridBagConstraints constraintsStepJLabel = new java.awt.GridBagConstraints();
-			constraintsStepJLabel.gridx = 1; constraintsStepJLabel.gridy = 3;
-			constraintsStepJLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJDialogContentPane().add(getStepJLabel(), constraintsStepJLabel);
-
-			java.awt.GridBagConstraints constraintsJLabel1 = new java.awt.GridBagConstraints();
-			constraintsJLabel1.gridx = 0; constraintsJLabel1.gridy = 1;
-			constraintsJLabel1.gridwidth = 3;
-			constraintsJLabel1.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJDialogContentPane().add(getJLabel1(), constraintsJLabel1);
-
-			java.awt.GridBagConstraints constraintsResampleLimitJLabel = new java.awt.GridBagConstraints();
-			constraintsResampleLimitJLabel.gridx = 0; constraintsResampleLimitJLabel.gridy = 2;
-			constraintsResampleLimitJLabel.gridwidth = 3;
-			constraintsResampleLimitJLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJDialogContentPane().add(getResampleLimitJLabel(), constraintsResampleLimitJLabel);
-
-			java.awt.GridBagConstraints constraintsResampleResultsJLabel = new java.awt.GridBagConstraints();
-			constraintsResampleResultsJLabel.gridx = 0; constraintsResampleResultsJLabel.gridy = 5;
-			constraintsResampleResultsJLabel.gridwidth = 3;
-			constraintsResampleResultsJLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsResampleResultsJLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJDialogContentPane().add(getResampleResultsJLabel(), constraintsResampleResultsJLabel);
-
-			java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
-			constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 6;
-			constraintsJPanel1.gridwidth = 3;
-			constraintsJPanel1.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsJPanel1.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJDialogContentPane().add(getJPanel1(), constraintsJPanel1);
-
-			java.awt.GridBagConstraints constraintsEndTimeJLabel = new java.awt.GridBagConstraints();
-			constraintsEndTimeJLabel.gridx = 2; constraintsEndTimeJLabel.gridy = 3;
-			constraintsEndTimeJLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJDialogContentPane().add(getEndTimeJLabel(), constraintsEndTimeJLabel);
-
-			java.awt.GridBagConstraints constraintsResampleEndTimeJLabel = new java.awt.GridBagConstraints();
-			constraintsResampleEndTimeJLabel.gridx = 2; constraintsResampleEndTimeJLabel.gridy = 4;
-			constraintsResampleEndTimeJLabel.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsResampleEndTimeJLabel.weightx = 1.0;
-			constraintsResampleEndTimeJLabel.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJDialogContentPane().add(getResampleEndTimeJLabel(), constraintsResampleEndTimeJLabel);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJDialogContentPane;
-}
-
-/**
- * Return the JLabel1 property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getJLabel1() {
-	if (ivjJLabel1 == null) {
-		try {
-			ivjJLabel1 = new javax.swing.JLabel();
-			ivjJLabel1.setName("JLabel1");
-			ivjJLabel1.setText("Type a Start Time and/or Step");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJLabel1;
-}
-
-/**
- * Return the JPanel1 property value.
- * @return javax.swing.JPanel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JPanel getJPanel1() {
-	if (ivjJPanel1 == null) {
-		try {
-			ivjJPanel1 = new javax.swing.JPanel();
-			ivjJPanel1.setName("JPanel1");
-			ivjJPanel1.setLayout(new java.awt.GridBagLayout());
-
-			java.awt.GridBagConstraints constraintsDoneJButton = new java.awt.GridBagConstraints();
-			constraintsDoneJButton.gridx = 0; constraintsDoneJButton.gridy = 0;
-			constraintsDoneJButton.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel1().add(getDoneJButton(), constraintsDoneJButton);
-
-			java.awt.GridBagConstraints constraintsCancelJButton = new java.awt.GridBagConstraints();
-			constraintsCancelJButton.gridx = 2; constraintsCancelJButton.gridy = 0;
-			constraintsCancelJButton.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel1().add(getCancelJButton(), constraintsCancelJButton);
-
-			java.awt.GridBagConstraints constraintsRefreshJButton = new java.awt.GridBagConstraints();
-			constraintsRefreshJButton.gridx = 1; constraintsRefreshJButton.gridy = 0;
-			constraintsRefreshJButton.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel1().add(getRefreshJButton(), constraintsRefreshJButton);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJPanel1;
-}
 
 /**
  * Return the JPanel1 property value.
@@ -1909,271 +1494,12 @@ private cbit.vcell.simdata.gui.PDEPlotControlPanel getPDEPlotControlPanel1() {
 
 
 /**
- * Return the RefreshJButton property value.
- * @return javax.swing.JButton
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JButton getRefreshJButton() {
-	if (ivjRefreshJButton == null) {
-		try {
-			ivjRefreshJButton = new javax.swing.JButton();
-			ivjRefreshJButton.setName("RefreshJButton");
-			ivjRefreshJButton.setText("Refresh");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjRefreshJButton;
-}
-
-
-/**
- * Return the CancelFactory property value.
- * @return java.lang.Boolean
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private java.lang.Boolean getResampleCancelBoolean() {
-	// user code begin {1}
-	// user code end
-	return ivjResampleCancelBoolean;
-}
-
-/**
- * Return the ResampleEndTimeJLabel property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getResampleEndTimeJLabel() {
-	if (ivjResampleEndTimeJLabel == null) {
-		try {
-			ivjResampleEndTimeJLabel = new javax.swing.JLabel();
-			ivjResampleEndTimeJLabel.setName("ResampleEndTimeJLabel");
-			ivjResampleEndTimeJLabel.setBorder(new cbit.gui.LineBorderBean());
-			ivjResampleEndTimeJLabel.setText("End Time");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjResampleEndTimeJLabel;
-}
-
-/**
- * Return the InfoJLabel property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getResampleInfoJLabel() {
-	if (ivjResampleInfoJLabel == null) {
-		try {
-			ivjResampleInfoJLabel = new javax.swing.JLabel();
-			ivjResampleInfoJLabel.setName("ResampleInfoJLabel");
-			ivjResampleInfoJLabel.setText("There are XXX time points");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjResampleInfoJLabel;
-}
-
-/**
- * Return the JLabel2 property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getResampleLimitJLabel() {
-	if (ivjResampleLimitJLabel == null) {
-		try {
-			ivjResampleLimitJLabel = new javax.swing.JLabel();
-			ivjResampleLimitJLabel.setName("ResampleLimitJLabel");
-			ivjResampleLimitJLabel.setText("Suggested Time Point limit is XXX");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjResampleLimitJLabel;
-}
-
-/**
- * Return the ResultsJLabel property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getResampleResultsJLabel() {
-	if (ivjResampleResultsJLabel == null) {
-		try {
-			ivjResampleResultsJLabel = new javax.swing.JLabel();
-			ivjResampleResultsJLabel.setName("ResampleResultsJLabel");
-			ivjResampleResultsJLabel.setText("Current values produce XXX time points");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjResampleResultsJLabel;
-}
-
-/**
- * Return the JTextField1 property value.
- * @return javax.swing.JTextField
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JTextField getResampleStartTimeJTextField() {
-	if (ivjResampleStartTimeJTextField == null) {
-		try {
-			ivjResampleStartTimeJTextField = new javax.swing.JTextField();
-			ivjResampleStartTimeJTextField.setName("ResampleStartTimeJTextField");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjResampleStartTimeJTextField;
-}
-
-/**
- * Return the JTextField2 property value.
- * @return javax.swing.JTextField
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JTextField getResampleStepJTextField() {
-	if (ivjResampleStepJTextField == null) {
-		try {
-			ivjResampleStepJTextField = new javax.swing.JTextField();
-			ivjResampleStepJTextField.setName("ResampleStepJTextField");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjResampleStepJTextField;
-}
-
-/**
- * Return the JDialog1 property value.
- * @return javax.swing.JDialog
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JDialog getResampleTimesJDialog() {
-	if (ivjResampleTimesJDialog == null) {
-		try {
-			ivjResampleTimesJDialog = new javax.swing.JDialog();
-			ivjResampleTimesJDialog.setName("ResampleTimesJDialog");
-			ivjResampleTimesJDialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-			ivjResampleTimesJDialog.setBounds(752, 487, 281, 205);
-			ivjResampleTimesJDialog.setModal(true);
-			getResampleTimesJDialog().setContentPane(getJDialogContentPane());
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjResampleTimesJDialog;
-}
-
-/**
  * Gets the simulation property (cbit.vcell.solver.Simulation) value.
  * @return The simulation property value.
  * @see #setSimulation
  */
 public cbit.vcell.solver.Simulation getSimulation() {
 	return fieldSimulation;
-}
-
-
-/**
- * Return the StartTimeJLabel property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getStartTimeJLabel() {
-	if (ivjStartTimeJLabel == null) {
-		try {
-			ivjStartTimeJLabel = new javax.swing.JLabel();
-			ivjStartTimeJLabel.setName("StartTimeJLabel");
-			ivjStartTimeJLabel.setText("Start Time");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjStartTimeJLabel;
-}
-
-
-/**
- * Return the StepJLabel property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getStepJLabel() {
-	if (ivjStepJLabel == null) {
-		try {
-			ivjStepJLabel = new javax.swing.JLabel();
-			ivjStepJLabel.setName("StepJLabel");
-			ivjStepJLabel.setText("Step Count");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjStepJLabel;
-}
-
-/**
- * Insert the method's description here.
- * Creation date: (12/22/2004 12:28:48 PM)
- * @return double[][]
- * @param indices int[]
- * @param startTime double
- * @param step int
- */
-private double[][] getTimeSeries(int[] indices, double startTime, int step,double endTime) throws DataAccessException{
-	
-	cbit.util.TimeSeriesJobSpec timeSeriesJobSpec =
-		new cbit.util.TimeSeriesJobSpec(
-			new String[] {getPdeDataContext().getVariableName()},
-			new int[][]{indices},null,
-			startTime,step,endTime,
-			VCDataJobID.createVCDataJobID(
-					getDataViewerManager().getUser(),
-					false));
-	cbit.util.TSJobResultsNoStats timeSeriesJobResults = (cbit.util.TSJobResultsNoStats)getPdeDataContext().getTimeSeriesValues(timeSeriesJobSpec);
-	double[][] timeSeries = timeSeriesJobResults.getTimesAndValuesForVariable(getPdeDataContext().getVariableName());
-	return timeSeries;
 }
 
 
@@ -2230,9 +1556,6 @@ private void initConnections() throws java.lang.Exception {
 	getJButtonTime().addActionListener(ivjEventHandler);
 	getPDEExportPanel1().addPropertyChangeListener(ivjEventHandler);
 	getKymographJButton().addActionListener(ivjEventHandler);
-	getCancelJButton().addActionListener(ivjEventHandler);
-	getDoneJButton().addActionListener(ivjEventHandler);
-	getRefreshJButton().addActionListener(ivjEventHandler);
 	getJButtonSurfaces().addActionListener(ivjEventHandler);
 	getJButtonStatistics().addActionListener(ivjEventHandler);
 	connPtoP1SetTarget();
@@ -2354,147 +1677,39 @@ private void pdeDataContext1_VariableName() {
  * Insert the method's description here.
  * Creation date: (2/24/2006 10:52:52 AM)
  */
-private void startTimeSeriesJob(TimeSeriesJobSpec tsjs,TimeSeriesJobResultsAction resultsAction,boolean bInputBlocking){
+private void startTimeSeriesJob(final TimeSeriesJobSpec tsjs,TimeSeriesJobResultsAction resultsAction,boolean bInputBlocking){
 
 	if(tsjs.getVcDataJobID() == null || !tsjs.getVcDataJobID().isBackgroundTask()){
 		throw new RuntimeException("Use getTimeSeries(...) if not a background job");
 	}
-	final AsynchProgressPopup pp =
-	new AsynchProgressPopup(PDEDataViewer.this,
-		"Retrieving Data for '"+tsjs.getVariableNames()[0]+"' jobID("+tsjs.getVcDataJobID().getJobID()+")",
-		"Sending request to data server...",
-		bInputBlocking,false);
-	
-	jobIDProgressHash.put(tsjs.getVcDataJobID(),pp);
-	if(resultsAction != null){
-		jobIDActionHash.put(tsjs.getVcDataJobID(), resultsAction);
-	}
+	AsynchProgressPopup pp = null;
 	try{
-		SwingUtilities.invokeLater(new Runnable(){public void run(){pp.start();}});
-		getPdeDataContext().getTimeSeriesValues(tsjs);
-	}catch(Exception e){
-		SwingUtilities.invokeLater(new Runnable(){public void run(){pp.stop();}});
-//		pp.stop();
-		jobIDProgressHash.remove(tsjs.getVcDataJobID());
-		jobIDActionHash.remove(tsjs.getVcDataJobID());
-		e.printStackTrace();
-		PopupGenerator.showErrorDialog("Error starting statistics job\n"+e.getMessage());
-	}
-}
-
-
-
-
-/**
- * Insert the method's description here.
- * Creation date: (12/22/2004 11:46:00 AM)
- */
-private double[] resample() {
-
-	if(getPdeDataContext().getTimePoints().length <= RESAMPLE_LIMIT){
-		return new double[]{
-				getPdeDataContext().getTimePoints()[0],
-				1,
-				getPdeDataContext().getTimePoints()[getPdeDataContext().getTimePoints().length-1],
-				getPdeDataContext().getTimePoints().length
-			};
-	}
+		pp = new AsynchProgressPopup(PDEDataViewer.this,
+			"Retrieving Data for '"+tsjs.getVariableNames()[0]+"' jobID("+tsjs.getVcDataJobID().getJobID()+")",
+			"Sending request to data server...",
+			bInputBlocking,false);
 	
-	int step = (int)Math.ceil((double)getPdeDataContext().getTimePoints().length/(double)RESAMPLE_LIMIT);
-	double startTime = getPdeDataContext().getTimePoints()[0];
-	double endTime = getPdeDataContext().getTimePoints()[((getPdeDataContext().getTimePoints().length-1)/step)*step];
-	getResampleStartTimeJTextField().setText(startTime+"");
-	getResampleStepJTextField().setText(step+"");
-	getResampleEndTimeJLabel().setText(endTime+"");
-	
-	double[] params = resampleRefresh();
-	
-	getResampleInfoJLabel().setText("There are "+getPdeDataContext().getTimePoints().length+" time points");
-	getResampleLimitJLabel().setText("Time Points limit is "+RESAMPLE_LIMIT);
-	do{
-		if(params == null){
-			getResampleResultsJLabel().setText("Error, make sure numbers are typed correctly");
+		jobIDProgressHash.put(tsjs.getVcDataJobID(),pp);
+		if(resultsAction != null){
+			jobIDActionHash.put(tsjs.getVcDataJobID(), resultsAction);
 		}
-		setResampleCancelBoolean(null);
-		getResampleTimesJDialog().setVisible(true);
-		if(getResampleCancelBoolean() == null || getResampleCancelBoolean().booleanValue()){
-			return null;
-		}
-		params = resampleRefresh();
-		if(params == null){
-			continue;
-		}
-	}while((int)params[RESAMPLE_NUMTP_INDEX] > RESAMPLE_LIMIT);
-	return params;
-}
-
-
-/**
- * Comment
- */
-private double[] resampleRefresh() {
-
-	String startTimeS = getResampleStartTimeJTextField().getText();
-	startTimeS = (startTimeS != null && startTimeS.length() > 0?startTimeS:null);
-	if(startTimeS == null){
-		throw new NumberFormatException();
-	}
-	String stepS = getResampleStepJTextField().getText();
-	stepS = (stepS != null && stepS.length() > 0?stepS:null);
-
-	double startTime = -1;
-	int step = -1;
-	double endTime = -1;
-	int numTimePoints = -1;
-	
-	try{
-		startTime = Double.parseDouble(startTimeS);
-		step = (stepS != null?Integer.parseInt(stepS):0);
-		//endTime = (endTimeS != null?Double.parseDouble(endTimeS):0);
-	}catch(NumberFormatException e){
-		return null;
-	}
-
-	
-	int startIndex = 0;
-	if(startTime <= getPdeDataContext().getTimePoints()[0]){
-		startTime = getPdeDataContext().getTimePoints()[0];
-		startIndex = 0;
-	}else if(startTime >= getPdeDataContext().getTimePoints()[getPdeDataContext().getTimePoints().length-1]){
-		startTime = getPdeDataContext().getTimePoints()[getPdeDataContext().getTimePoints().length-1];
-		startIndex = getPdeDataContext().getTimePoints().length-1;
-	}else{
-		for(int i=0;i<getPdeDataContext().getTimePoints().length;i+= 1){
-			if(getPdeDataContext().getTimePoints()[i] == startTime){
-				startIndex = i;
-				break;
-			}else if(getPdeDataContext().getTimePoints()[i] > startTime){
-				startTime = getPdeDataContext().getTimePoints()[i-1];
-				startIndex = i-1;
-				break;
+		final AsynchProgressPopup finalPP = pp;
+		SwingUtilities.invokeLater(new Runnable(){public void run(){finalPP.start();}});
+		new Thread(new Runnable(){public void run(){
+			try {
+				getPdeDataContext().getTimeSeriesValues(tsjs);
+			} catch (DataAccessException e) {
+				dataJobFailed(tsjs.getVcDataJobID(), e);
 			}
-		}
+		}}).start();
+	}catch(Exception e){
+		final AsynchProgressPopup finalPP = pp;
+		if(pp != null){SwingUtilities.invokeLater(new Runnable(){public void run(){finalPP.stop();}});}
+		dataJobFailed(tsjs.getVcDataJobID(), e);
 	}
-
-	int extra = (((getPdeDataContext().getTimePoints().length-startIndex)%step) != 0?1:0);
-	int numSteps = ((getPdeDataContext().getTimePoints().length-startIndex)/step);
-	numTimePoints =  numSteps + extra;
-	if(numTimePoints > RESAMPLE_LIMIT){
-		numTimePoints = RESAMPLE_LIMIT;
-	}
-	int endIndex = startIndex + step*(numTimePoints-1);
-	endTime = getPdeDataContext().getTimePoints()[endIndex];
-	
-	double[] params = new double[] {startTime,step,endTime,numTimePoints};
-
-	getResampleEndTimeJLabel().setText(params[RESAMPLE_END_INDEX]+"");
-	getResampleResultsJLabel().setText("Current values produce "+(int)params[RESAMPLE_NUMTP_INDEX]+" time points");
-	//getResampleResultsJLabel().setText(startIndex+" "+endIndex+" "+step+" "+(int)params[RESAMPLE_NUMTP_INDEX]);
-
-	return params;
-	
-
 }
+
+
 
 
 /**
@@ -2553,27 +1768,6 @@ private void setpdeDataContext1(cbit.vcell.simdata.PDEDataContext newValue) {
 }
 
 /**
- * Set the CancelFactory to a new value.
- * @param newValue java.lang.Boolean
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void setResampleCancelBoolean(java.lang.Boolean newValue) {
-	if (ivjResampleCancelBoolean != newValue) {
-		try {
-			ivjResampleCancelBoolean = newValue;
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	};
-	// user code begin {3}
-	// user code end
-}
-
-/**
  * Sets the simulation property (cbit.vcell.solver.Simulation) value.
  * @param simulation The new value for the property.
  * @see #getSimulation
@@ -2591,12 +1785,12 @@ public void setSimulation(cbit.vcell.solver.Simulation simulation) {
  */
 private void showComponentInFrame(Component comp,String title) {
 	
-	JInternalFrame frame =
+	final JInternalFrame frame =
 		new JInternalFrame(title, true, true, true, true);
 	frame.getContentPane().add(comp);
 	frame.pack();
 	cbit.util.BeanUtils.centerOnComponent(frame,this);
-	getDataViewerManager().showDataViewerPlotsFrames(new JInternalFrame[] {frame});
+	SwingUtilities.invokeLater(new Runnable(){public void run(){getDataViewerManager().showDataViewerPlotsFrames(new JInternalFrame[] {frame});}});
 	
 }
 
@@ -2623,106 +1817,62 @@ private void showKymograph() {
 	if(lineSSOnly.size() == 0){
 		PopupGenerator.showErrorDialog(this, "No line samples match DataType="+getPdeDataContext().getDataIdentifier().getVariableType());
 		return;
-	}
-	//
-	final double[] startTimeAndStep = resample();
-	if(startTimeAndStep == null){
-		return;
-	}
-	//
-	final JInternalFrame jif = (JInternalFrame)BeanUtils.findTypeParentOfComponent(this, JInternalFrame.class);
-	GlassPane gp = new GlassPane(true);
-	gp.setPaint(true);
-	jif.setGlassPane(gp);
-	jif.setIconifiable(false);
-	final boolean origClose = jif.isClosable();
-	jif.setClosable(false);
-	jif.setMaximizable(false);
-	gp.setVisible(true);
-	// create thread that gets it and updates the gui when done
-	SwingWorker worker = new SwingWorker() {
-		Vector<JInternalFrame> plotFrames = new Vector<JInternalFrame>();
-		Exception exc = null;
-		//AsynchProgressPopup pp = new AsynchProgressPopup(PDEDataViewer.this, "Fetching data...", "Retrieving time series for variable '" + getPdeDataContext().getVariableName(), false, false);
-		public Object construct() {
-			try {
-				//pp.start();
-				VariableType varType = getPdeDataContext().getDataIdentifier().getVariableType();
-				if(lineSSOnly.size() > 0){
-					int[] indices = null;
-					int[] crossingMembraneIndices = null;
-					double[] accumDistances = null;
-					for (int i = 0; i < lineSSOnly.size(); i++){
-						if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION)){
-							SpatialSelectionVolume ssv = (SpatialSelectionVolume)lineSSOnly.get(i);
-							SpatialSelection.SSHelper ssh = ssv.getIndexSamples(0.0,1.0);
-							indices = ssh.getSampledIndexes();
-							crossingMembraneIndices = ssh.getMembraneIndexesInOut();
-							accumDistances = ssh.getWorldCoordinateLengths();
-						}else if(varType.equals(VariableType.MEMBRANE) || varType.equals(VariableType.MEMBRANE_REGION)){
-							SpatialSelectionMembrane ssm = (SpatialSelectionMembrane)lineSSOnly.get(i);
-							SpatialSelection.SSHelper ssh = ssm.getIndexSamples();
-							indices = ssh.getSampledIndexes();
-							accumDistances = ssh.getWorldCoordinateLengths();
-						}
+	}	
+	
+	try {
+		VariableType varType = getPdeDataContext().getDataIdentifier().getVariableType();
+		if(lineSSOnly.size() > 0){
+			int[] indices = null;
+			int[] crossingMembraneIndices = null;
+			double[] accumDistances = null;
+			for (int i = 0; i < lineSSOnly.size(); i++){
+				if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION)){
+					SpatialSelectionVolume ssv = (SpatialSelectionVolume)lineSSOnly.get(i);
+					SpatialSelection.SSHelper ssh = ssv.getIndexSamples(0.0,1.0);
+					indices = ssh.getSampledIndexes();
+					crossingMembraneIndices = ssh.getMembraneIndexesInOut();
+					accumDistances = ssh.getWorldCoordinateLengths();
+				}else if(varType.equals(VariableType.MEMBRANE) || varType.equals(VariableType.MEMBRANE_REGION)){
+					SpatialSelectionMembrane ssm = (SpatialSelectionMembrane)lineSSOnly.get(i);
+					SpatialSelection.SSHelper ssh = ssm.getIndexSamples();
+					indices = ssh.getSampledIndexes();
+					accumDistances = ssh.getWorldCoordinateLengths();
+				}
+	
+				KymographPanel  kymographPanel = new KymographPanel();
+				showComponentInFrame(kymographPanel, "Kymograph: "+getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName());
 
-						KymographPanel  kymographPanel = new KymographPanel();
-						JInternalFrame frame = new JInternalFrame("LINESCAN-TIME PLOTS", true, true, true, true);
-						frame.setContentPane(kymographPanel);
-						frame.pack();
-						BeanUtils.centerOnComponent(frame, jif);
-						plotFrames.add(frame);
-						
-						SymbolTable symbolTable;
-						if(getSimulation() != null && getSimulation().getMathDescription() != null){
-							symbolTable = getSimulation().getMathDescription();
-						}else{
-							symbolTable = new SimpleSymbolTable(new String[] {getPdeDataContext().getDataIdentifier().getName()});
+				SymbolTable symbolTable;
+				if(getSimulation() != null && getSimulation().getMathDescription() != null){
+					symbolTable = getSimulation().getMathDescription();
+				}else{
+					symbolTable = new SimpleSymbolTable(new String[] {getPdeDataContext().getDataIdentifier().getName()});
+				}
+				
+				kymographPanel.initDataManager(
+					getDataViewerManager().getUser(),
+					((ClientPDEDataContext)getPdeDataContext()).getDataManager(),
+					getPdeDataContext().getVariableName(),
+					getPdeDataContext().getTimePoints()[0],
+					1,
+					getPdeDataContext().getTimePoints()[getPdeDataContext().getTimePoints().length-1],
+					indices,crossingMembraneIndices,accumDistances,true,getPdeDataContext().getTimePoint(),
+					symbolTable,
+					new PDEDataViewer.TimeSeriesJobStarter(){
+						public void startTimeSeriesJob(
+								TimeSeriesJobSpec tsjs,
+								TimeSeriesJobResultsAction resultsAction,
+								boolean inputBlocking) {
+							PDEDataViewer.this.startTimeSeriesJob(tsjs, resultsAction, inputBlocking);
 						}
-						
-						kymographPanel.initDataManager(
-							getDataViewerManager().getUser(),
-							((ClientPDEDataContext)getPdeDataContext()).getDataManager(),
-							getPdeDataContext().getVariableName(),
-							startTimeAndStep[RESAMPLE_START_INDEX],(int)startTimeAndStep[RESAMPLE_STEP_INDEX],startTimeAndStep[RESAMPLE_END_INDEX],
-							indices,crossingMembraneIndices,accumDistances,true,getPdeDataContext().getTimePoint(),
-							symbolTable);
-					}
-				}
-			} catch (Exception e) {
-				e.printStackTrace(System.out);
-				exc = e;
+					});
 			}
-			return null;
 		}
-		public void finished() {
-			// look for errors and notify
-			if (exc != null) {
-				PopupGenerator.showErrorDialog(PDEDataViewer.this, "Failed to retrieve data:\n"+exc.getMessage());
-			}
-			// pass it to the manager
-			//pp.stop();
-			if(plotFrames.size() != 0){
-				JInternalFrame[] plotFramesArr = new JInternalFrame[plotFrames.size()];
-				plotFrames.copyInto(plotFramesArr);
-				getDataViewerManager().showDataViewerPlotsFrames(plotFramesArr);
-				for(int i=0;i<plotFramesArr.length;i+= 1){
-					((KymographPanel)plotFramesArr[i].getContentPane()).zoomToFill();
-				}
-			}
-			// unblock
-			jif.setGlassPane(new JPanel());
-			jif.getGlassPane().setVisible(false);
-			((JPanel)jif.getGlassPane()).setOpaque(false);
-			jif.setGlassPane(new JPanel());
-			jif.getGlassPane().setVisible(false);
-			((JPanel)jif.getGlassPane()).setOpaque(false);
-			jif.setIconifiable(true);
-			jif.setClosable(origClose);
-			jif.setMaximizable(true);
-		}
-	};
-	worker.start();
+	} catch (Exception e) {
+		PopupGenerator.showErrorDialog(this.getClass().getName()+".showKymograph: "+e.getMessage());
+		e.printStackTrace(System.out);
+	}
+
 }
 
 
@@ -2756,85 +1906,57 @@ private void showSpatialPlot() {
 			break;
 		}
 	}
-	// block
-	final JInternalFrame jif = (JInternalFrame)BeanUtils.findTypeParentOfComponent(this, JInternalFrame.class);
-	GlassPane gp = new GlassPane(true);
-	gp.setPaint(true);
-	jif.setGlassPane(gp);
-	jif.setIconifiable(false);
-	final boolean origClose = jif.isClosable();
-	jif.setClosable(false);
-	jif.setMaximizable(false);
-	gp.setVisible(true);
-	// create thread that gets it and updates the gui when done
-	SwingWorker worker = new SwingWorker() {
-		Hashtable<SpatialSelection, Exception> failures = new Hashtable<SpatialSelection, Exception>();
-		Vector<JInternalFrame> plotFrames = new Vector<JInternalFrame>();
-		AsynchProgressPopup pp = new AsynchProgressPopup(PDEDataViewer.this, "Fetching data...", "Retrieving spatial series for variable '" + getPdeDataContext().getVariableName(), false, false);
-		public Object construct() {
-			pp.start();
-			// get plots, ignoring points
-			for (int i = 0; i < sl.length; i++){
-				try {
-					if (! sl[i].isPoint()) {
-						PlotData plotData = getPdeDataContext().getLineScan(getPdeDataContext().getVariableName(), getPdeDataContext().getTimePoint(), sl[i]);
-						PlotPane plotPane = new PlotPane();
-						cbit.vcell.parser.SymbolTableEntry[] symbolTableEntries = new cbit.vcell.parser.SymbolTableEntry[1];
-						try{
-							if(getSimulation() != null && getSimulation().getMathDescription() != null){
-								symbolTableEntries[0] =
-									getSimulation().getMathDescription().getEntry(getPdeDataContext().getVariableName());
-							}
-							if(symbolTableEntries[0] == null){
-								symbolTableEntries[0] =
-									new VolVariable(getPdeDataContext().getDataIdentifier().getName());
-							}
-						}catch(cbit.vcell.parser.ExpressionBindingException e){
-							e.printStackTrace();
-						}
-						plotPane.setPlot2D(new Plot2D(symbolTableEntries,new String[] { getPdeDataContext().getVariableName() },new PlotData[] { plotData }, new String[] {"Values along curve", "Distance (\u00b5m)", "[" + getPdeDataContext().getVariableName() + "]"}));
-						JInternalFrame frame = new JInternalFrame("SPATIAL PLOT for "+getPdeDataContext().getVariableName(), true, true, true, true);
-						frame.setContentPane(plotPane);
-						frame.pack();
-						BeanUtils.centerOnComponent(frame, jif);
-						plotFrames.add(frame);
+	
+	// get plots, ignoring points
+	for (int i = 0; i < sl.length; i++){
+		try {
+			if (! sl[i].isPoint()) {
+				final cbit.vcell.parser.SymbolTableEntry[] symbolTableEntries = new cbit.vcell.parser.SymbolTableEntry[1];
+				try{
+					if(getSimulation() != null && getSimulation().getMathDescription() != null){
+						symbolTableEntries[0] =
+							getSimulation().getMathDescription().getEntry(getPdeDataContext().getVariableName());
 					}
-				} catch (Exception exc) {
-					exc.printStackTrace(System.out);
-					failures.put(sl[i], exc);
+					if(symbolTableEntries[0] == null){
+						symbolTableEntries[0] =
+							new VolVariable(getPdeDataContext().getDataIdentifier().getName());
+					}
+				}catch(cbit.vcell.parser.ExpressionBindingException e){
+					e.printStackTrace();
 				}
+				
+				final int finalI = i;
+				new Thread(
+					new Runnable(){
+						public void run(){
+							AsynchProgressPopup pp = new AsynchProgressPopup(PDEDataViewer.this, "Fetching data...", "Retrieving spatial series for variable '" + getPdeDataContext().getVariableName(), false, false);
+							try{
+								pp.start();
+								String varName = getPdeDataContext().getVariableName();
+								double timePoint = getPdeDataContext().getTimePoint();
+								PlotData plotData = getPdeDataContext().getLineScan(varName, timePoint, sl[finalI]);
+								PlotPane plotPane = new PlotPane();
+								plotPane.setPlot2D(
+										new Plot2D(
+											symbolTableEntries,
+											new String[] { varName },new PlotData[] { plotData },
+											new String[] {"Values along curve", "Distance (\u00b5m)", "[" + varName + "]"}));
+								showComponentInFrame(plotPane, "Line Plot: ("+varName+") "+getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName());
+							}catch(Exception e){
+								pp.stop();
+								PopupGenerator.showErrorDialog("Show Spatial Plot error:\n"+e.getMessage());
+							}finally{
+								pp.stop();
+							}
+						}
+					}
+				).start();
 			}
-			return null;
+		} catch (Exception exc) {
+			exc.printStackTrace();
+			PopupGenerator.showErrorDialog("Spatial Plot error:\n"+exc.getMessage());
 		}
-		public void finished() {
-			// look for errors and notify
-			if (! failures.isEmpty()) {
-				Enumeration<SpatialSelection> en = failures.keys();
-				SpatialSelection selection = null;
-				String sls = "Failed to retrieve data for selections:\n";
-				String errors = "\nErrors:\n";
-				while (en.hasMoreElements()) {
-					selection = en.nextElement();
-					sls += sl+"\n";
-					errors += ((Exception)failures.get(selection)).getMessage()+"\n";
-				}
-				PopupGenerator.showErrorDialog(PDEDataViewer.this, sls + errors);
-			}
-			// create array and pass'em to the manager
-			pp.stop();
-			if(plotFrames.size() != 0){
-				getDataViewerManager().showDataViewerPlotsFrames((JInternalFrame[])BeanUtils.getArray(plotFrames, JInternalFrame.class));
-			}
-			// unblock
-			jif.setGlassPane(new JPanel());
-			jif.getGlassPane().setVisible(false);
-			((JPanel)jif.getGlassPane()).setOpaque(false);
-			jif.setIconifiable(true);
-			jif.setClosable(origClose);
-			jif.setMaximizable(true);
-		}
-	};
-	worker.start();
+	}
 }
 
 
@@ -2856,109 +1978,87 @@ private void showTimePlot() {
 		}
 	}
 	//
-	final double[] startTimeAndStep = resample();
-	if(startTimeAndStep == null){
-		return;
-	}
-	//
 	if(singlePointSSOnly.size() == 0){
 		PopupGenerator.showErrorDialog(this, "No Time sampling points match DataType="+getPdeDataContext().getDataIdentifier().getVariableType());
 		return;
 	}
-	//
-	final JInternalFrame jif = (JInternalFrame)BeanUtils.findTypeParentOfComponent(this, JInternalFrame.class);
-	GlassPane gp = new GlassPane(true);
-	gp.setPaint(true);
-	jif.setGlassPane(gp);
-	jif.setIconifiable(false);
-	final boolean origClose = jif.isClosable();
-	jif.setClosable(false);
-	jif.setMaximizable(false);
-	gp.setVisible(true);
-	// create thread that gets it and updates the gui when done
-	SwingWorker worker = new SwingWorker() {
-		Vector<JInternalFrame> plotFrames = new Vector<JInternalFrame>();
-		Exception exc = null;
-		AsynchProgressPopup pp = new AsynchProgressPopup(PDEDataViewer.this, "Fetching data...", "Retrieving time series for variable '" + getPdeDataContext().getVariableName(), false, false);
-		public Object construct() {
-			try {
-				pp.start();
-				VariableType varType = getPdeDataContext().getDataIdentifier().getVariableType();
-				if(singlePointSSOnly.size() > 0){
-					int[] indices = null;
-					String[] plotNames = null;
-					//
-					indices = new int[singlePointSSOnly.size()];
-					plotNames = new String[singlePointSSOnly.size()];
-					cbit.vcell.parser.SymbolTableEntry[] symbolTableEntries = new cbit.vcell.parser.SymbolTableEntry[plotNames.length];
-					for (int i = 0; i < singlePointSSOnly.size(); i++){
-						cbit.vcell.geometry.Coordinate tp = null;
-						if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION)){
-							SpatialSelectionVolume ssv = (SpatialSelectionVolume)singlePointSSOnly.get(i);
-							indices[i] = ssv.getIndex(0);
-							tp = ssv.getCurveSelectionInfo().getCurve().getBeginningCoordinate();
-						}else if(varType.equals(VariableType.MEMBRANE) || varType.equals(VariableType.MEMBRANE_REGION)){
-							SpatialSelectionMembrane ssm = (SpatialSelectionMembrane)singlePointSSOnly.get(i);
-							indices[i] = ssm.getIndex(0);
-							double midU = ssm.getCurveSelectionInfo().getCurveUfromSelectionU(.5);
-							tp = ((cbit.vcell.geometry.SampledCurve)ssm.getCurveSelectionInfo().getCurve()).coordinateFromNormalizedU(midU);
-						}
-						plotNames[i] = "P["+i+"] ("+niceCoordinateString(tp)+")";
-						try{
-//							symbolTableEntries[i] = getSimulation().getMathDescription().getEntry(getPdeDataContext().getDataIdentifier().getName());
-							if(getSimulation() != null && getSimulation().getMathDescription() != null){
-								symbolTableEntries[0] =
-									getSimulation().getMathDescription().getEntry(getPdeDataContext().getDataIdentifier().getName());
-							}
-							if(symbolTableEntries[0] == null){
-								symbolTableEntries[0] =
-									new VolVariable(getPdeDataContext().getDataIdentifier().getName());
-							}
-						}catch(cbit.vcell.parser.ExpressionBindingException e){
-							e.printStackTrace();
-						}
-					}
-
-					double[][] timeSeries = getTimeSeries(indices,startTimeAndStep[RESAMPLE_START_INDEX],(int)startTimeAndStep[RESAMPLE_STEP_INDEX],startTimeAndStep[RESAMPLE_END_INDEX]);
-					PlotPane plotPane = new PlotPane();
-					plotPane.setPlot2D(new SingleXPlot2D(symbolTableEntries,"Time", plotNames, timeSeries, new String[] {"Time series for " + getPdeDataContext().getVariableName(), "Time (s)", "[" + getPdeDataContext().getVariableName() + "]"}));
-					JInternalFrame frame = new JInternalFrame("TIME PLOT"+(singlePointSSOnly.size() > 1?"S":"")+" for "+getPdeDataContext().getVariableName(), true, true, true, true);
-					frame.setContentPane(plotPane);
-					frame.pack();
-					BeanUtils.centerOnComponent(frame, jif);
-					plotFrames.add(frame);
+	
+	try {
+		VariableType varType = getPdeDataContext().getDataIdentifier().getVariableType();
+		if(singlePointSSOnly.size() > 0){
+			int[] indices = null;
+			//
+			indices = new int[singlePointSSOnly.size()];
+			final String[] plotNames = new String[singlePointSSOnly.size()];
+			final cbit.vcell.parser.SymbolTableEntry[] symbolTableEntries = new cbit.vcell.parser.SymbolTableEntry[plotNames.length];
+			for (int i = 0; i < singlePointSSOnly.size(); i++){
+				cbit.vcell.geometry.Coordinate tp = null;
+				if (varType.equals(VariableType.VOLUME) || varType.equals(VariableType.VOLUME_REGION)){
+					SpatialSelectionVolume ssv = (SpatialSelectionVolume)singlePointSSOnly.get(i);
+					indices[i] = ssv.getIndex(0);
+					tp = ssv.getCurveSelectionInfo().getCurve().getBeginningCoordinate();
+				}else if(varType.equals(VariableType.MEMBRANE) || varType.equals(VariableType.MEMBRANE_REGION)){
+					SpatialSelectionMembrane ssm = (SpatialSelectionMembrane)singlePointSSOnly.get(i);
+					indices[i] = ssm.getIndex(0);
+					double midU = ssm.getCurveSelectionInfo().getCurveUfromSelectionU(.5);
+					tp = ((cbit.vcell.geometry.SampledCurve)ssm.getCurveSelectionInfo().getCurve()).coordinateFromNormalizedU(midU);
 				}
-			} catch (Exception e) {
-				e.printStackTrace(System.out);
-				exc = e;
+				plotNames[i] = "P["+i+"] ("+niceCoordinateString(tp)+")";
+				try{
+					if(getSimulation() != null && getSimulation().getMathDescription() != null){
+						symbolTableEntries[0] =
+							getSimulation().getMathDescription().getEntry(getPdeDataContext().getDataIdentifier().getName());
+					}
+					if(symbolTableEntries[0] == null){
+						symbolTableEntries[0] =
+							new VolVariable(getPdeDataContext().getDataIdentifier().getName());
+					}
+				}catch(cbit.vcell.parser.ExpressionBindingException e){
+					e.printStackTrace();
+				}
 			}
-			return null;
+	
+			PDEDataViewer.this.startTimeSeriesJob(
+					new TimeSeriesJobSpec(
+							new String[] {getPdeDataContext().getVariableName()},
+							new int[][] {indices},null,
+							getPdeDataContext().getTimePoints()[0],
+							1,
+							getPdeDataContext().getTimePoints()[getPdeDataContext().getTimePoints().length-1],
+							VCDataJobID.createVCDataJobID(
+									getDataViewerManager().getUser(),
+									true)
+					),
+					new PDEDataViewer.TimeSeriesJobResultsAction(){
+						private Throwable timeSeriesJobFailed;
+						private TSJobResultsNoStats tsJobResultsNoStats;
+						public void setTimeSeriesJobFailed(Throwable e) {
+							timeSeriesJobFailed = e;
+						}
+						public void setTimeSeriesJobResults(TimeSeriesJobResults timeSeriesJobResults) {
+							this.tsJobResultsNoStats = (TSJobResultsNoStats)timeSeriesJobResults;
+						}
+						public void run() {
+							if(timeSeriesJobFailed != null){
+								PopupGenerator.showErrorDialog("showTimePlot failed:\n"+timeSeriesJobFailed.getMessage());
+							}else{
+								PlotPane plotPane = new PlotPane();
+								plotPane.setPlot2D(
+										new SingleXPlot2D(
+												symbolTableEntries,
+												"Time",
+												plotNames,
+												tsJobResultsNoStats.getTimesAndValuesForVariable(tsJobResultsNoStats.getVariableNames()[0]),
+												new String[] {"Time series for " + getPdeDataContext().getVariableName(), "Time (s)", "[" + tsJobResultsNoStats.getVariableNames()[0] + "]"}));
+								showComponentInFrame(plotPane, "Timeplot: ("+tsJobResultsNoStats.getVariableNames()[0]+")  "+getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName());							
+							}
+						}
+					},false);
 		}
-		public void finished() {
-			// look for errors and notify
-			if (exc != null) {
-				PopupGenerator.showErrorDialog(PDEDataViewer.this, "Failed to retrieve data:\n"+exc.getMessage());
-			}
-			// pass it to the manager
-			pp.stop();
-			if(plotFrames.size() != 0){
-				JInternalFrame[] plotFramesArr = new JInternalFrame[plotFrames.size()];
-				plotFrames.copyInto(plotFramesArr);
-				getDataViewerManager().showDataViewerPlotsFrames(plotFramesArr);
-			}
-			// unblock
-			jif.setGlassPane(new JPanel());
-			jif.getGlassPane().setVisible(false);
-			((JPanel)jif.getGlassPane()).setOpaque(false);
-			jif.setGlassPane(new JPanel());
-			jif.getGlassPane().setVisible(false);
-			((JPanel)jif.getGlassPane()).setOpaque(false);
-			jif.setIconifiable(true);
-			jif.setClosable(origClose);
-			jif.setMaximizable(true);
-		}
-	};
-	worker.start();
+	} catch (Exception e) {
+		e.printStackTrace(System.out);
+	}
+
 }
 
 
@@ -3066,13 +2166,13 @@ private void updateDataValueSurfaceViewer() {
 										true)
 								);
 
-					new Thread(
-						new Runnable(){
-							public void run(){
+//					new Thread(
+//						new Runnable(){
+//							public void run(){
 								startTimeSeriesJob(timeSeriesJobSpec,new PlotSpaceStats(),false);
-							}
-						}
-					).start();
+//							}
+//						}
+//					).start();
 					//
 //					return null;
 //				}catch(Throwable e){
@@ -3125,10 +2225,18 @@ private void makeSurfaceMovie(
 		startTimeSeriesJob(timeSeriesJobSpec,
 			new TimeSeriesJobResultsAction(){
 				private TimeSeriesJobResults timeSeriesJobResults;
+				private Throwable timeSeriesJobFailed;
 				public void setTimeSeriesJobResults(TimeSeriesJobResults timeSeriesJobResults) {
 					this.timeSeriesJobResults = timeSeriesJobResults;
 				}
+				public void setTimeSeriesJobFailed(Throwable e) {
+					timeSeriesJobFailed = e;
+				}
 				public void run() {
+					if(timeSeriesJobFailed != null){
+						return;//Do Nothing Special
+					}
+
 					final AsynchProgressPopup pp = new AsynchProgressPopup(PDEDataViewer.this,
 							"Creating Movie...","Creating Movie...",
 							true,false);
