@@ -2471,15 +2471,16 @@ private TimeSeriesJobResults getSpecialTimeSeriesValues(VCDataIdentifier vcdID,
 //						dataIndices,
 //						adjustMembraneVals,
 //						mesh);
-				adjustMembraneAdjacentVolumeValues(
-						varIndicesTimesArr[varNameIndex],true,simDatablock,
-						timeSeriesJobSpec.getIndices()[varNameIndex],
-						timeSeriesJobSpec.getCrossingMembraneIndices()[varNameIndex],
-						vcdID,
-						variableNames[varNameIndex],
-						mesh,
-						timeInfo);
-
+				if(timeSeriesJobSpec.getCrossingMembraneIndices() != null && timeSeriesJobSpec.getCrossingMembraneIndices().length > 0){
+					adjustMembraneAdjacentVolumeValues(
+							varIndicesTimesArr[varNameIndex],true,simDatablock,
+							timeSeriesJobSpec.getIndices()[varNameIndex],
+							timeSeriesJobSpec.getCrossingMembraneIndices()[varNameIndex],
+							vcdID,
+							variableNames[varNameIndex],
+							mesh,
+							timeInfo);
+				}
 				for (int i = 0; i < timeSeriesJobSpec.getCrossingMembraneIndices()[varNameIndex].length; i++) {
 					if(timeSeriesJobSpec.getCrossingMembraneIndices()[varNameIndex][i] != -1){
 						varIndicesTimesArr[varNameIndex][i+1][timeIndex] = adjustMembraneVals[i];
@@ -2721,17 +2722,18 @@ private cbit.util.TimeSeriesJobResults getTimeSeriesValues_private(final VCDataI
 	            timeSeriesJobSpec.getIndices(),
 	            desiredTimeValues,
 	            timeSeriesFormatedValuesArr);
-//			adjustMembraneAdjacentVolumeValues(vcdID, timeSeriesJobSpec,tsJobResultsNoStats,getMesh(vcdID));
-			adjustMembraneAdjacentVolumeValues(
-					tsJobResultsNoStats.getTimesAndValuesForVariable(timeSeriesJobSpec.getVariableNames()[0]),
-					true,null,
-					timeSeriesJobSpec.getIndices()[0],
-					timeSeriesJobSpec.getCrossingMembraneIndices()[0],
-					vcdID,
-					timeSeriesJobSpec.getVariableNames()[0],
-					getMesh(vcdID),
-					timeInfo
-				);
+			if(timeSeriesJobSpec.getCrossingMembraneIndices() != null && timeSeriesJobSpec.getCrossingMembraneIndices().length > 0){
+				adjustMembraneAdjacentVolumeValues(
+						tsJobResultsNoStats.getTimesAndValuesForVariable(timeSeriesJobSpec.getVariableNames()[0]),
+						true,null,
+						timeSeriesJobSpec.getIndices()[0],
+						timeSeriesJobSpec.getCrossingMembraneIndices()[0],
+						vcdID,
+						timeSeriesJobSpec.getVariableNames()[0],
+						getMesh(vcdID),
+						timeInfo
+					);
+			}
 			return tsJobResultsNoStats;
 		}
 		
@@ -2875,7 +2877,7 @@ private void adjustMembraneAdjacentVolumeValues(
 		return;
 	}
 	if(bTimeFormat){
-		if(dataToAdjust.length != volumeDataIndexes.length+1 || dataToAdjust[0].length != timeInfo.wantsTheseTimes.length){
+		if(dataToAdjust.length != volumeDataIndexes.length+1 || dataToAdjust[0].length != timeInfo.desiredTimeValues.length){
 			throw new IllegalArgumentException(this.getClass().getName()+".adjustMembraneAdjacentVolumeValues array format wrong for time flag="+bTimeFormat);
 		}
 	}else{

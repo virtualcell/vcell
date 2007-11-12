@@ -1108,16 +1108,17 @@ private synchronized double[][][] getSimDataTimeSeries0(
 			resultsCounter+= 1;
 		}
 	}
+	double[] tempDataTimes = dataTimes.clone();
 	
 	String[] tempZipFileNames = null;
 	if (bZipFormat2) {
-		tempZipFileNames = new String[zipFilenames.length];
+		tempZipFileNames = new String[tempDataTimes.length];
 	}
-	String[] tempSimDataFileNames = new String[dataFilenames.length];
-	for(int i=0;i<dataFilenames.length;i+= 1){
+	String[] tempSimDataFileNames = new String[tempDataTimes.length];
+	for(int i=0;i<tempDataTimes.length;i+= 1){
 		if (bZipFormat2 || bZipFormat1) {
 			if(bZipFormat2){
-				tempZipFileNames[i] = getPDEDataZipFile(dataTimes[i]).getAbsolutePath();
+				tempZipFileNames[i] = getPDEDataZipFile(tempDataTimes[i]).getAbsolutePath();
 			}
 			tempSimDataFileNames[i] = dataFilenames[i];
 		} else {
@@ -1147,11 +1148,24 @@ private synchronized double[][][] getSimDataTimeSeries0(
 	for(int i=0;i<singleTimePointResultsBuffer.length;i+= 1){
 		singleTimePointResultsBuffer[i] = new double[indexes[i].length];
 	}
+	
+	//In case sim files have been updated since "wantsThisTime" was calculated
+	if(wantsThisTime.length < tempDataTimes.length){
+		double[] tempTempDataTimes = new double[wantsThisTime.length];
+		System.arraycopy(tempDataTimes, 0, tempTempDataTimes, 0, wantsThisTime.length);
+		tempDataTimes = tempTempDataTimes;
+		String[] tempTempZipFileNames = new String[wantsThisTime.length];
+		System.arraycopy(tempZipFileNames, 0, tempTempZipFileNames, 0, wantsThisTime.length);
+		tempZipFileNames = tempTempZipFileNames;
+		String[] tempTempSimDataFileNames = new String[wantsThisTime.length];
+		System.arraycopy(tempSimDataFileNames, 0, tempTempSimDataFileNames, 0, wantsThisTime.length);
+		tempSimDataFileNames = tempTempSimDataFileNames;
+	}
 	try{
 		sdr =
 			new SimDataReader(
 				wantsThisTime,
-				dataTimes,
+				tempDataTimes,
 				tempZipFileNames,
 				tempSimDataFileNames,
 				varNames,
