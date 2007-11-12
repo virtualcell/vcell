@@ -47,6 +47,18 @@ public RationalExpMatrix (RationalExpMatrix mat) {
 		e.printStackTrace(System.out);
 	}				
 }
+
+public RationalExpMatrix transpose(){
+	RationalExpMatrix transposedMatrix = new RationalExpMatrix(cols,rows);
+	for (int i = 0; i < rows; i++) {
+		for (int j = 0; j < cols; j++) {
+			transposedMatrix.set_elem(j, i, new RationalExp(get(i, j)));
+		}
+	}
+	return transposedMatrix;
+}
+
+
 public RationalMatrix findNullSpace() throws MatrixException {
 	
 	if (rows <= 1){

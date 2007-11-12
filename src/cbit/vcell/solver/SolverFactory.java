@@ -37,7 +37,7 @@ public static cbit.vcell.solver.Solver createSolver(SessionLog sessionLog, File 
 		solver = new AdamsMoultonFiveSolver(simJob, directory, sessionLog);
 	} else if (solverDescription.equals(SolverDescription.RungeKuttaFehlberg)) {
 		solver = new RungeKuttaFehlbergSolver(simJob, directory, sessionLog);
-	} else if (solverDescription.equals(SolverDescription.LSODA)) {
+	} else if (solverDescription.equals(SolverDescription.IDA)) {
 		solver = new IDASolverStandalone(simJob, directory, sessionLog);
 	} else if (solverDescription.equals(SolverDescription.CVODE)) {
 		solver = new CVodeSolverStandalone(simJob, directory, sessionLog);

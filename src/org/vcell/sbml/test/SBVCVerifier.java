@@ -153,7 +153,7 @@ private static ODESolverResultSet solveSimulation(Simulation sim, boolean hasFas
 			IDAFileWriter idaFileWriter = new IDAFileWriter(sim);
 			idaFileWriter.initialize();
 			java.io.StringWriter stringWriter = new java.io.StringWriter();
-			idaFileWriter.writeIDAFile(new java.io.PrintWriter(stringWriter,true));
+			idaFileWriter.writeInputFile(new java.io.PrintWriter(stringWriter,true));
 			stringWriter.close();
 			StringBuffer buffer = stringWriter.getBuffer();
 			String idaInputString = buffer.toString();

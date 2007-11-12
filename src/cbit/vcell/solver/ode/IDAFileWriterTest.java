@@ -26,7 +26,7 @@ public static void main(java.lang.String[] args) {
 		
 		IDAFileWriter idaFileWriter = new IDAFileWriter(simulation);
 		idaFileWriter.initialize();
-		idaFileWriter.writeIDAFile(new java.io.PrintWriter (System.out));
+		idaFileWriter.writeInputFile(new java.io.PrintWriter (System.out));
 		//
 	}catch (Throwable e){
 		e.printStackTrace(System.out);

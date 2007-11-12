@@ -27,7 +27,6 @@ public class Plot2DPanel extends JPanel {
 	private String yCompactMaxS = "?";
 	private final int COMP_TICK_LEN = 5;
 	private Rectangle plotRectHolder = null;
-	private boolean bPlot2DHasInvalidData = false;
 	private boolean bPlot2DHasInvalidRange = false;
 	private Point dragStartPoint = new Point(-1, -1);
 	private Point dragEndPoint = new Point(-1, -1);
@@ -2217,10 +2216,11 @@ public void paintComponent(Graphics g) {
 			g.drawString("NO DATA",5,this.getSize().height/2);
 			return;
 		}
-		if(bPlot2DHasInvalidData ||bPlot2DHasInvalidRange){
+		boolean bVisiblePlotHasInvalidData = getPlot2D().visiblePlotsInvalid();
+		if(bVisiblePlotHasInvalidData || bPlot2DHasInvalidRange){
 			g.drawString("PLOT DISABLED",5,this.getSize().height/2);
 			g.drawString("Invalid Numeric "+
-				(bPlot2DHasInvalidData?"Data":"")+(bPlot2DHasInvalidRange && !bPlot2DHasInvalidData?"Range":"")+
+				(bVisiblePlotHasInvalidData?"Data":"")+(bPlot2DHasInvalidRange && !bVisiblePlotHasInvalidData?"Range":"")+
 				" (NaN or Infinity)",5,g.getFontMetrics().getHeight() + this.getSize().height/2);
 			return;
 		}
@@ -2522,15 +2522,6 @@ public void setPlot2D(Plot2D plot2D) {
 	Plot2D oldValue = fieldPlot2D;
 	fieldPlot2D = plot2D;
 
-	if (plot2D != null) {
-		bPlot2DHasInvalidData = false;
-		for(int i=0;i<plot2D.getPlotDatas().length;i+= 1){
-			if(plot2D.getPlotDatas()[i].hasInvalidNumericValues()){
-				bPlot2DHasInvalidData = true;
-				break;
-			}
-		}
-	}
 	firePropertyChange("plot2D", oldValue, plot2D);
 }
 
@@ -2884,7 +2875,7 @@ public void setYStretch(boolean yStretch) {
 
 protected void updateAutoRanges() {
 	if (getPlot2D() == null) return;
-	if(bPlot2DHasInvalidData){
+	if(getPlot2D().visiblePlotsInvalid()){
 		setXAutoRange(null);
 		setYAutoRange(null);
 		return;
@@ -2922,36 +2913,15 @@ private void updateAxes() {
 	
 	Range xR = getXAuto() ? getXAutoRange() : getXManualRange();
 	Range yR = getYAuto() ? getYAutoRange() : getYManualRange();
-
-	if(xR != null &&
-			(
-			Double.isNaN(xR.getMin()) ||
-			Double.isInfinite(xR.getMin()) ||
-			Double.isNaN(xR.getMax()) ||
-			Double.isInfinite(xR.getMax())
-			)
-		){
-		bPlot2DHasInvalidRange = true;
-	}else{
-		bPlot2DHasInvalidRange = false;
+	bPlot2DHasInvalidRange = false;
+	if (xR != null){
+		bPlot2DHasInvalidRange = bPlot2DHasInvalidRange || !xR.isValid();
 	}
-
-	if(!bPlot2DHasInvalidRange){
-		if(yR != null &&
-				(
-				Double.isNaN(yR.getMin()) ||
-				Double.isInfinite(yR.getMin()) ||
-				Double.isNaN(yR.getMax()) ||
-				Double.isInfinite(yR.getMax())
-				)
-			){
-			bPlot2DHasInvalidRange = true;
-		}else{
-			bPlot2DHasInvalidRange = false;
-		}
+	if (yR != null){
+		bPlot2DHasInvalidRange = bPlot2DHasInvalidRange || !yR.isValid();
 	}
 	
-	if(bPlot2DHasInvalidData || bPlot2DHasInvalidRange){
+	if(getPlot2D().visiblePlotsInvalid() || bPlot2DHasInvalidRange){
 		setXMajorTicks(null);
 		setYMajorTicks(null);
 		setXMinorTicks(null);
@@ -3029,7 +2999,6 @@ private void updateVisiblePlots(Plot2D plot2D) {
 	setCurrentPlotIndex(index);
 	repaint();
 }
-
 
 public boolean getIsHistogram() {
 	return fieldIsHistogram;

@@ -1,5 +1,4 @@
 package cbit.vcell.solver.ode;
-import cbit.vcell.parser.*;
 import cbit.vcell.server.*;
 import java.io.*;
 /*©
@@ -22,9 +21,9 @@ public abstract class DefaultODESolver extends AbstractJavaSolver implements ODE
 	private int fieldValueVectorCount = 0;
 	//
 	private ODESolverResultSet fieldODESolverResultSet = null;
-	private Vector fieldIdentifiers = null;
-	private Vector fieldSensVariables = null;
-	private Vector fieldStateVariables = null;
+	private Vector<Variable> fieldIdentifiers = null;
+	private Vector<SensVariable> fieldSensVariables = null;
+	private Vector<StateVariable> fieldStateVariables = null;
 	private FastAlgebraicSystem fieldFastAlgebraicSystem = null;
 	private int fieldVariableIndexes[] = null;
 	// current state of the computation
@@ -77,9 +76,9 @@ protected void check(double values[]) throws SolverException {
 /**
  * This method was created in VisualAge.
  */
-private Vector createIdentifiers() throws MathException, ExpressionException {
+private Vector<Variable> createIdentifiers() throws MathException, ExpressionException {
 	// create list of possible identifiers (including reserved x,y,z,t)
-	Vector identifiers = new Vector();
+	Vector<Variable> identifiers = new Vector<Variable>();
 	// add reserved variables x,y,z,t
 	identifiers.addElement(ReservedVariable.fromString("t"));
 	identifiers.addElement(ReservedVariable.fromString("x"));
@@ -93,7 +92,7 @@ private Vector createIdentifiers() throws MathException, ExpressionException {
 		}
 	}
 	//  Add sensitivity variables (for sensitivity equations)...
-	fieldSensVariables = new Vector();
+	fieldSensVariables = new Vector<SensVariable>();
 	if (getSensitivityParameter() != null) {
 		for (int i = 0; i < variables.length; i++){
 			if (variables[i] instanceof VolVariable){
@@ -105,9 +104,9 @@ private Vector createIdentifiers() throws MathException, ExpressionException {
 	}
 	//  Add pseudoConstants for fast system (if necessary)...
 	if (getFastAlgebraicSystem() != null) {
-		Enumeration enum1 = getSubDomain().getFastSystem().getPseudoConstants();
+		Enumeration<PseudoConstant> enum1 = getSubDomain().getFastSystem().getPseudoConstants();
 		while (enum1.hasMoreElements()) {
-			identifiers.addElement((PseudoConstant) enum1.nextElement());
+			identifiers.addElement(enum1.nextElement());
 		}
 	}
 	//  Assign indices...
@@ -129,8 +128,6 @@ private ODESolverResultSet createODESolverResultSet() throws ExpressionException
 	for (int i = 0; i < symbols.length; i++) {
 		symbols[i] = ((Variable)fieldIdentifiers.elementAt(i)).getName();
 	}
-	SimpleSymbolTable varsSymbolTable = new SimpleSymbolTable(symbols);
-
 	
 	//  Initialize the ResultSet...
 	ODESolverResultSet odeSolverResultSet = new ODESolverResultSet();
@@ -200,12 +197,12 @@ private ODESolverResultSet createODESolverResultSet() throws ExpressionException
 /**
  * This method was created in VisualAge.
  */
-private Vector createSensitivityVariables() throws MathException, ExpressionException {
-	Vector sensVariables = new Vector();
+private Vector<SensVariable> createSensitivityVariables() throws MathException, ExpressionException {
+	Vector<SensVariable> sensVariables = new Vector<SensVariable>();
 	if (getSensitivityParameter() != null) {
 		for (int i = 0; i < fieldIdentifiers.size(); i++) {
 			if (fieldIdentifiers.elementAt(i) instanceof SensVariable) {
-				sensVariables.addElement(fieldIdentifiers.elementAt(i));
+				sensVariables.addElement((SensVariable)fieldIdentifiers.elementAt(i));
 			}
 		}
 	}
@@ -216,12 +213,12 @@ private Vector createSensitivityVariables() throws MathException, ExpressionExce
 /**
  * This method was created in VisualAge.
  */
-private Vector createStateVariables() throws MathException, ExpressionException {
-	Vector stateVariables = new Vector();
+private Vector<StateVariable> createStateVariables() throws MathException, ExpressionException {
+	Vector<StateVariable> stateVariables = new Vector<StateVariable>();
 	// get Ode's from MathDescription and create ODEStateVariables
-	Enumeration enum1 = getSubDomain().getEquations();
+	Enumeration<Equation> enum1 = getSubDomain().getEquations();
 	while (enum1.hasMoreElements()) {
-		Equation equation = (Equation) enum1.nextElement();
+		Equation equation = enum1.nextElement();
 		if (equation instanceof OdeEquation) {
 			stateVariables.addElement(new ODEStateVariable((OdeEquation) equation, getSimulation()));
 		} else {
@@ -231,7 +228,7 @@ private Vector createStateVariables() throws MathException, ExpressionException 
 	// get Jacobian and RateSensitivities from MathDescription and create SensStateVariables
 	for (int v = 0; v < fieldSensVariables.size(); v++) {
 		stateVariables.addElement(
-			new SensStateVariable((SensVariable) fieldSensVariables.elementAt(v),
+			new SensStateVariable(fieldSensVariables.elementAt(v),
 									getSimulation().getMathDescription().getRateSensitivity(), 
 									getSimulation().getMathDescription().getJacobian(),
 									fieldSensVariables, 
@@ -431,6 +428,9 @@ protected void initialize() throws SolverException {
 		// create a fast system if necessary
 		fieldFastAlgebraicSystem = null;
 		if (getSubDomain().getFastSystem() != null) {
+			if (!getSimulation().getSolverTaskDescription().getSolverDescription().solvesFastSystem()) {
+				throw new SolverException(getSimulation().getSolverTaskDescription().getSolverDescription().getName() + " doesn't support models containing fast system (algebraic constraints). Please change the solver");
+			}
 			fieldFastAlgebraicSystem = new FastAlgebraicSystem(getSimulation(), getSubDomain().getFastSystem());
 		}
 		//refreshIdentifiers();
@@ -530,86 +530,6 @@ protected void integrate() throws SolverException, UserStopException, IOExceptio
 		throw new SolverException(expressionException.getMessage());
 	} catch (MathException mathException) {
 		throw new SolverException(mathException.getMessage());
-	}
-}
-
-
-/**
- * THIS METHOD HAS BEEN REPLACED BY createIdentifiers().
- * I am keeping it around until that new method has been
- * sufficiently tested.  JMW
- */
-private void refreshXXXIdentifiers() throws MathException, ExpressionException {
-	fieldIdentifiers = createIdentifiers();
-	fieldSensVariables = createSensitivityVariables();
-	// create list of possible identifiers (including reserved x,y,z,t)
-	fieldIdentifiers = new Vector();
-	// add reserved variables x,y,z,t
-	fieldIdentifiers.addElement(ReservedVariable.fromString("t"));
-	fieldIdentifiers.addElement(ReservedVariable.fromString("x"));
-	fieldIdentifiers.addElement(ReservedVariable.fromString("y"));
-	fieldIdentifiers.addElement(ReservedVariable.fromString("z"));
-	// add regular variables and constants
-	Variable variables[] = getSimulation().getVariables();
-	for (int i=0;i<variables.length;i++){
-		if (variables[i] instanceof VolVariable || variables[i] instanceof Constant) {
-			fieldIdentifiers.addElement(variables[i]);
-		}
-	}
-	//  Add sensitivity variables (for sensitivity equations)...
-	fieldSensVariables = new Vector();
-	if (getSensitivityParameter() != null) {
-		for (int i = 0; i < variables.length; i++){
-			if (variables[i] instanceof VolVariable){
-				VolVariable volVariable = (VolVariable)variables[i];
-				SensVariable sv = new SensVariable(volVariable, getSensitivityParameter());
-				fieldIdentifiers.addElement(sv);
-				fieldSensVariables.addElement(sv);
-			}
-		}
-	}
-	//  Add pseudoConstants for fast system (if necessary)...
-	if (getFastAlgebraicSystem() != null) {
-		Enumeration enum1 = getSubDomain().getFastSystem().getPseudoConstants();
-		while (enum1.hasMoreElements()) {
-			fieldIdentifiers.addElement((PseudoConstant) enum1.nextElement());
-		}
-	}
-	//  Assign indices...
-	for (int i = 0; i < fieldIdentifiers.size(); i++) {
-		Variable variable = (Variable) fieldIdentifiers.elementAt(i);
-		variable.setIndex(i);
-	}
-}
-
-
-/**
- * THIS METHOD HAS BEEN REPLACED BY createStateVariables().
- * I am keeping it around until that new method has been
- * sufficiently tested.  JMW
- */
-private void refreshXXXStateVariables() throws MathException, ExpressionException {
-	fieldStateVariables = new Vector();
-	// get Ode's from MathDescription and create ODEStateVariables
-	Enumeration enum1 = getSubDomain().getEquations();
-	while (enum1.hasMoreElements()) {
-		Equation equation = (Equation) enum1.nextElement();
-		if (equation instanceof OdeEquation) {
-			fieldStateVariables.addElement(new ODEStateVariable((OdeEquation) equation, getSimulation()));
-		} else {
-			throw new MathException("encountered non-ode equation, unsupported");
-		}
-	}
-	// get Jacobian and RateSensitivities from MathDescription and create SensStateVariables
-	for (int v = 0; v < fieldSensVariables.size(); v++) {
-		fieldStateVariables.addElement(
-			new SensStateVariable((SensVariable) fieldSensVariables.elementAt(v),
-				getSimulation().getMathDescription().getRateSensitivity(), 
-				getSimulation().getMathDescription().getJacobian(),
-				fieldSensVariables, getSimulation()));
-	}
-	if (fieldStateVariables.size() == 0) {
-		throw new MathException("there are no equations defined");
 	}
 }
 

@@ -152,7 +152,7 @@ public cbit.vcell.opt.OptimizationResultSet solve(OptimizationSpec os, Optimizat
 		cbit.vcell.solver.ode.IDAFileWriter idaFileWriter = new cbit.vcell.solver.ode.IDAFileWriter(simulation);
 		idaFileWriter.initialize();
 		java.io.StringWriter stringWriter = new java.io.StringWriter();
-		idaFileWriter.writeIDAFile(new java.io.PrintWriter(stringWriter,true), parameterNames);
+		idaFileWriter.writeInputFile(new java.io.PrintWriter(stringWriter,true), parameterNames);
 		stringWriter.close();
 		StringBuffer buffer = stringWriter.getBuffer();
 		String idaInputString = buffer.toString();

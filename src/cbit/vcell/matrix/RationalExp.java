@@ -7,12 +7,12 @@ import java.util.Vector;
  */
 public class RationalExp implements java.io.Serializable {
 
-	private Vector numTermList = new Vector();
-	private Vector denTermList = new Vector();
+	private Vector<Term> numTermList = new Vector<Term>();
+	private Vector<Term> denTermList = new Vector<Term>();
 
 	private class Term implements java.io.Serializable {
 		private long coefficient = 1;
-		private Vector symbolList = new Vector();
+		private Vector<String> symbolList = new Vector<String>();
 
 		public Term(long coeff){
 			coefficient = coeff;
@@ -29,7 +29,7 @@ public class RationalExp implements java.io.Serializable {
 		}
 		public Term(Term term){
 			coefficient = term.coefficient;
-			symbolList = (Vector)term.symbolList.clone();
+			symbolList = (Vector<String>)term.symbolList.clone();
 		}
 		public boolean hasSymbol(String symbol){
 			return symbolList.contains(symbol);
@@ -53,7 +53,7 @@ public class RationalExp implements java.io.Serializable {
 			//
 			// same number of symbols, compare symbols by removing like elements from copy
 			//
-			Vector newVector = (Vector)symbolList.clone();
+			Vector<String> newVector = (Vector<String>)symbolList.clone();
 			for (int i=0;i<term.symbolList.size();i++){
 				if (!newVector.remove(term.symbolList.elementAt(i))){
 					// symbol not found in 'this'
@@ -155,7 +155,25 @@ public RationalExp(String symbol) {
  * @param numList java.util.Vector
  * @param denList java.util.Vector
  */
-private RationalExp(Vector argNumTermList, Vector argDenTermList){
+public RationalExp(RationalExp rationalExp){
+	this.numTermList = new Vector<Term>(rationalExp.numTermList.size());
+	for (int i = 0; i < rationalExp.numTermList.size(); i++) {
+		numTermList.add(new RationalExp.Term(rationalExp.numTermList.get(i)));
+	}
+	this.denTermList = new Vector<Term>(rationalExp.denTermList.size());
+	for (int i = 0; i < rationalExp.denTermList.size(); i++){
+		denTermList.add(new RationalExp.Term(rationalExp.denTermList.get(i)));
+	}
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (3/30/2003 1:49:18 PM)
+ * @param numList java.util.Vector
+ * @param denList java.util.Vector
+ */
+private RationalExp(Vector<Term> argNumTermList, Vector<Term> argDenTermList){
 	if (argNumTermList==null || argNumTermList.size()<1){
 		throw new IllegalArgumentException("must have at least 1 numerator term");
 	}
@@ -184,8 +202,8 @@ public RationalExp add(RationalExp rational) {
 			//
 			// get the common denominator by cross-multiply and add
 			//
-			Vector newNumTermList = addTerms(multiplyTerms(this.numTermList,rational.denTermList),multiplyTerms(this.denTermList,rational.numTermList));
-			Vector newDenTermList = multiplyTerms(this.denTermList,rational.denTermList);
+			Vector<Term> newNumTermList = addTerms(multiplyTerms(this.numTermList,rational.denTermList),multiplyTerms(this.denTermList,rational.numTermList));
+			Vector<Term> newDenTermList = multiplyTerms(this.denTermList,rational.denTermList);
 
 			RationalExp newRationalExp = new RationalExp(newNumTermList,newDenTermList);
 			
@@ -202,17 +220,17 @@ public RationalExp add(RationalExp rational) {
  * @param vector1 java.util.Vector
  * @param vector2 java.util.Vector
  */
-private Vector addTerms(Vector vector1, Vector vector2) {
+private Vector<Term> addTerms(Vector<Term> vector1, Vector<Term> vector2) {
 	if (vector1 == null && vector2 == null){
 		return null;
 	}
 	if (vector1 == null && vector2 != null){
-		return (Vector)vector2.clone();
+		return (Vector<Term>)vector2.clone();
 	}
 	if (vector1 != null && vector2 == null){
-		return (Vector)vector1.clone();
+		return (Vector<Term>)vector1.clone();
 	}
-	Vector newVector = (Vector)vector1.clone();
+	Vector<Term> newVector = (Vector<Term>)vector1.clone();
 	newVector.addAll(vector2);
 	collectTerms(newVector);
 
@@ -225,7 +243,7 @@ private Vector addTerms(Vector vector1, Vector vector2) {
  * Creation date: (3/31/2003 10:32:20 AM)
  * @param vector java.util.Vector
  */
-private void collectTerms(Vector vector) {
+private void collectTerms(Vector<Term> vector) {
 	//
 	// collect terms
 	//
@@ -269,8 +287,8 @@ public RationalExp div(RationalExp rational) {
 	}else if (isZero()){
 		return new RationalExp(0);
 	}else{
-		Vector newNumTermList = multiplyTerms(this.numTermList,rational.denTermList);
-		Vector newDenTermList = multiplyTerms(this.denTermList,rational.numTermList);
+		Vector<Term> newNumTermList = multiplyTerms(this.numTermList,rational.denTermList);
+		Vector<Term> newDenTermList = multiplyTerms(this.denTermList,rational.numTermList);
 
 		RationalExp newRationalExp = new RationalExp(newNumTermList,newDenTermList);
 		
@@ -336,7 +354,7 @@ public String infixString() {
  * Creation date: (3/28/2003 5:48:52 PM)
  * @return java.lang.String
  */
-private String infixString(Vector termList) {
+private String infixString(Vector<Term> termList) {
 	StringBuffer buffer = new StringBuffer();
 	for (int i = 0; i < termList.size(); i++){
 		Term term = (Term)termList.elementAt(i);
@@ -403,8 +421,8 @@ public RationalExp minus() {
  * @param vector1 java.util.Vector
  * @param vector2 java.util.Vector
  */
-private Vector minusTerms(Vector vector) {
-	Vector newVector = new Vector();
+private Vector<Term> minusTerms(Vector<Term> vector) {
+	Vector<Term> newVector = new Vector<Term>();
 	
 	for (int i = 0; i < vector.size(); i++){
 		Term term = (Term)vector.elementAt(i);
@@ -438,8 +456,8 @@ public RationalExp mult(RationalExp rational) {
 	}else if (rational.isZero()){
 		return new RationalExp(0);
 	}else{
-		Vector newNumTermList = multiplyTerms(this.numTermList,rational.numTermList);
-		Vector newDenTermList = multiplyTerms(this.denTermList,rational.denTermList);
+		Vector<Term> newNumTermList = multiplyTerms(this.numTermList,rational.numTermList);
+		Vector<Term> newDenTermList = multiplyTerms(this.denTermList,rational.denTermList);
 
 		RationalExp newRationalExp = new RationalExp(newNumTermList,newDenTermList);
 		
@@ -455,17 +473,17 @@ public RationalExp mult(RationalExp rational) {
  * @param vector1 java.util.Vector
  * @param vector2 java.util.Vector
  */
-private Vector multiplyTerms(Vector vector1, Vector vector2) {
+private Vector<Term> multiplyTerms(Vector<Term> vector1, Vector<Term> vector2) {
 	if (vector1 == null && vector2 == null){
 		return null;
 	}
 	if (vector1 == null && vector2 != null){
-		return (Vector)vector2.clone();
+		return (Vector<Term>)vector2.clone();
 	}
 	if (vector1 != null && vector2 == null){
-		return (Vector)vector1.clone();
+		return (Vector<Term>)vector1.clone();
 	}
-	Vector newVector = new Vector();
+	Vector<Term> newVector = new Vector<Term>();
 	for (int i = 0; i < vector1.size(); i++){
 		Term term1 = (Term)vector1.elementAt(i);
 		for (int j = 0; j < vector2.size(); j++){
@@ -613,8 +631,8 @@ public RationalExp sub(RationalExp rational) {
 			//
 			// get the common denominator by cross-multiply and subtract
 			//
-			Vector newNumTermList = addTerms(multiplyTerms(this.numTermList,rational.denTermList),minusTerms(multiplyTerms(this.denTermList,rational.numTermList)));
-			Vector newDenTermList = multiplyTerms(this.denTermList,rational.denTermList);
+			Vector<Term> newNumTermList = addTerms(multiplyTerms(this.numTermList,rational.denTermList),minusTerms(multiplyTerms(this.denTermList,rational.numTermList)));
+			Vector<Term> newDenTermList = multiplyTerms(this.denTermList,rational.denTermList);
 
 			RationalExp newRationalExp = new RationalExp(newNumTermList,newDenTermList);
 			

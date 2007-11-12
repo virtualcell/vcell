@@ -91,7 +91,7 @@ private double calculateWeightedError(double[] x) {
 		cbit.vcell.solver.ode.IDAFileWriter idaFileWriter = new cbit.vcell.solver.ode.IDAFileWriter(simulation);
 		idaFileWriter.initialize();
 		java.io.StringWriter stringWriter = new java.io.StringWriter();
-		idaFileWriter.writeIDAFile(new java.io.PrintWriter(stringWriter,true), unscaledParameterNames);
+		idaFileWriter.writeInputFile(new java.io.PrintWriter(stringWriter,true), unscaledParameterNames);
 		stringWriter.close();
 		StringBuffer buffer = stringWriter.getBuffer();
 		idaInputString = buffer.toString();

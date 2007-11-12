@@ -23,7 +23,7 @@ import cbit.vcell.solver.*;
  * Creation date: (3/9/2001 3:04:39 PM)
  * @author: John Wagner
  */
-public abstract class IDASolver extends cbit.vcell.solvers.AbstractCompiledSolver implements ODESolver {
+public abstract class SundialsSolver extends cbit.vcell.solvers.AbstractCompiledSolver implements ODESolver {
 	private int saveToFileInterval = 6;	// seconds
 	private long lastSavedMS = 0; // milliseconds since last save
 
@@ -32,13 +32,10 @@ public abstract class IDASolver extends cbit.vcell.solvers.AbstractCompiledSolve
  * @param sessionLog cbit.vcell.server.SessionLog
  * @param simulation cbit.vcell.solver.Simulation
  */
-public IDASolver(cbit.vcell.solver.SimulationJob simulationJob, File directory, cbit.vcell.server.SessionLog sessionLog) throws SolverException {
+public SundialsSolver(cbit.vcell.solver.SimulationJob simulationJob, File directory, cbit.vcell.server.SessionLog sessionLog) throws SolverException {
 	super(simulationJob, directory, sessionLog);
 	if (getSimulation().getIsSpatial()) {
-		throw new SolverException("Cannot use IDASolver on spatial simulation");
-	}
-	if (getSimulation().getMathDescription().hasFastSystems()) {
-		throw new SolverException("Cannot use IDASolver with Fast Systems (pseudo-steady approximations)");
+		throw new SolverException("Cannot use SundialsSolver on spatial simulation");
 	}
 }
 
@@ -310,7 +307,7 @@ private final void printODEFile() throws IOException {
 	}
 	ODESimData odeSimData = new ODESimData(new VCSimulationDataIdentifier(getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), getJobIndex()), odeSolverResultSet);
 	String mathName = odeSimData.getMathName();
-	getSessionLog().print("AbstractJavaSolver.printToFile(" + mathName + ")");
+	getSessionLog().print("SundialsSolver.printODEFile(" + mathName + ")");
 	File logFile = new File(getSaveDirectory(), mathName + LOGFILE_EXTENSION);
 	File dataFile = new File(getSaveDirectory(), mathName + ODE_DATA_EXTENSION);
 	ODESimData.writeODEDataFile(odeSimData, dataFile);

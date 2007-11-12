@@ -125,7 +125,7 @@ protected String getAvailablePseudoConstantName() throws ExpressionBindingExcept
  * This method was created in VisualAge.
  * @return java.util.Enumeration
  */
-public Enumeration getDependencyExps() throws MathException, ExpressionException {
+public Enumeration<Expression> getDependencyExps() throws MathException, ExpressionException {
 	refreshAll();
 	return dependencyExpList.elements();
 }
@@ -133,7 +133,7 @@ public Enumeration getDependencyExps() throws MathException, ExpressionException
  * This method was created by a SmartGuide.
  * @return java.util.Enumeration
  */
-public final Enumeration getDependentVariables() throws MathException, ExpressionException {
+public final Enumeration<Variable> getDependentVariables() throws MathException, ExpressionException {
 	refreshAll();
 	return dependentVarList.elements();
 }
@@ -158,14 +158,14 @@ final Expression[] getExpressions() {
  * This method was created in VisualAge.
  * @return java.util.Enumeration
  */
-public Enumeration getFastInvariants() {
+public Enumeration<FastInvariant> getFastInvariants() {
 	return fastInvariantList.elements();
 }
 /**
  * This method was created in VisualAge.
  * @return java.util.Enumeration
  */
-public Enumeration getFastRateExpressions() throws MathException, ExpressionException {
+public Enumeration<Expression> getFastRateExpressions() throws MathException, ExpressionException {
 	refreshAll();
 	return fastRateExpList.elements();
 }
@@ -174,7 +174,7 @@ public Enumeration getFastRateExpressions() throws MathException, ExpressionExce
  * Creation date: (3/2/2001 5:36:48 PM)
  * @return java.util.Vector
  */
-public Enumeration getFastRates() {
+public Enumeration<FastRate> getFastRates() {
 	return fastRateList.elements();
 }
 /**
@@ -201,7 +201,7 @@ Expression getFlattenedExpression(cbit.vcell.solver.Simulation sim, Expression e
  * This method was created by a SmartGuide.
  * @return java.util.Enumeration
  */
-public final Enumeration getIndependentVariables() throws MathException, ExpressionException {
+public final Enumeration<Variable> getIndependentVariables() throws MathException, ExpressionException {
 	refreshAll();
 	return independentVarList.elements();
 }
@@ -256,7 +256,7 @@ protected PseudoConstant getPseudoConstant(String id) throws MathException, Expr
  * This method was created in VisualAge.
  * @return java.util.Enumeration
  */
-public Enumeration getPseudoConstants() throws MathException, ExpressionException {
+public Enumeration<PseudoConstant> getPseudoConstants() throws MathException, ExpressionException {
 	refreshAll();
 	return pseudoConstantList.elements();
 }
