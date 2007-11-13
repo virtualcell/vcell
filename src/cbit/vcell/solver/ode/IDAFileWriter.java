@@ -199,7 +199,7 @@ protected void writeEquations(java.io.PrintWriter pw) throws MathException, Expr
 			}
 			pw.println();
 		}
-		pw.println("RHS DIFFERENTIAL " + getStateVariableCount() + " ALGEBRAIC " + 0);
+		pw.println("RHS DIFFERENTIAL " + getStateVariableCount() + " ALGEBRAIC 0");
 		for (int i = 0; i < getStateVariableCount(); i++) {
 			StateVariable stateVar = (StateVariable)getStateVariable(i);
 			Expression rateExpr = new Expression(0.0);
@@ -207,9 +207,10 @@ protected void writeEquations(java.io.PrintWriter pw) throws MathException, Expr
 				rateExpr = ((ODEStateVariable)stateVar).getRateExpression();
 			} else if (stateVar instanceof SensStateVariable) {
 				rateExpr = ((SensStateVariable)stateVar).getRateExpression();
-			}		
+			}	
+			
 			rateExpr.bindExpression(varsSymbolTable);
-			rateExpr = MathUtilities.substituteFunctions(rateExpr, varsSymbolTable);
+			rateExpr = MathUtilities.substituteFunctions(rateExpr, varsSymbolTable).flatten();
 			pw.println(rateExpr.infix() + ";");
 		}
 	}
