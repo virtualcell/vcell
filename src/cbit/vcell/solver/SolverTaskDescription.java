@@ -46,15 +46,15 @@ public SolverTaskDescription(Simulation simulation, CommentStringTokenizer token
 	try {
 		if (simulation.getIsSpatial()) 
 		{
-			setSolverDescription(getDefaultPDESolverDescription());
+			setSolverDescription(SolverDescription.getDefaultPDESolverDescription());
 		} //amended Sept.27, 2006
 		else if (simulation.getMathDescription().isStoch()) 
 		{
-			setSolverDescription(getDefaultStochSolverDescription());
+			setSolverDescription(SolverDescription.getDefaultStochSolverDescription());
 		}
 		else
 		{
-			setSolverDescription(getDefaultODESolverDescription());
+			setSolverDescription(SolverDescription.getDefaultODESolverDescription());
 		}
 	}catch (java.beans.PropertyVetoException e){
 		e.printStackTrace(System.out);
@@ -132,17 +132,17 @@ public SolverTaskDescription(Simulation simulation) {
 	try {
 		if (simulation.getIsSpatial()) 
 		{
-			setSolverDescription(getDefaultPDESolverDescription());
+			setSolverDescription(SolverDescription.getDefaultPDESolverDescription());
 		} //amended Sept.27, 2006
 		else if (simulation.getMathDescription().isStoch()) 
 		{
 			fieldStochOpt = new StochSimOptions();
-			setSolverDescription(getDefaultStochSolverDescription());
+			setSolverDescription(SolverDescription.getDefaultStochSolverDescription());
 			//setOutputTimeSpec(new DefaultOutputTimeSpec(1,1000000));//amended Feb 20th,2007
 		}
 		else
 		{
-			setSolverDescription(getDefaultODESolverDescription());
+			setSolverDescription(SolverDescription.getDefaultODESolverDescription());
 		}
 	}catch (java.beans.PropertyVetoException e){
 		e.printStackTrace(System.out);
@@ -258,37 +258,6 @@ public void fireVetoableChange(java.lang.String propertyName, java.lang.Object o
 public void fireVetoableChange(java.lang.String propertyName, boolean oldValue, boolean newValue) throws java.beans.PropertyVetoException {
 	getVetoPropertyChange().fireVetoableChange(propertyName, oldValue, newValue);
 }
-
-
-/**
- * Gets the solver property (java.lang.String) value.
- * @return The solver property value.
- * @see #setSolver
- */
-private static SolverDescription getDefaultODESolverDescription() {
-	return SolverDescription.RungeKuttaFehlberg;
-}
-
-
-/**
- * Gets the solver property (java.lang.String) value.
- * @return The solver property value.
- * @see #setSolver
- */
-private static SolverDescription getDefaultPDESolverDescription() {
-	return SolverDescription.FiniteVolume;
-}
-
-
-/**
- * Get the default non-spatial stochastic solver which is Gibson.
- * Creation date: (9/27/2006 2:43:55 PM)
- * @return cbit.vcell.solver.SolverDescription
- */
-private static SolverDescription getDefaultStochSolverDescription() {
-	return SolverDescription.StochGibson;
-}
-
 
 /**
  * Gets the errorTolerance property (cbit.vcell.solver.ErrorTolerance) value.
@@ -710,21 +679,7 @@ public void readVCML(CommentStringTokenizer tokens) throws DataAccessException {
 					sd = SolverDescription.fromName(token);
 					setSolverDescription(sd);
 				}catch (java.beans.PropertyVetoException e){
-					e.printStackTrace(System.out);
-					if (getSimulation()!=null){
-						//setSolverDescription(getSimulation().getIsSpatial()?(getDefaultPDESolverDescription()):(getDefaultODESolverDescription()));
-						if(getSimulation().getIsSpatial())
-						{
-							getDefaultPDESolverDescription();
-						}
-						else
-						{
-							if(getSimulation().getMathDescription().isStoch())
-								getDefaultStochSolverDescription();
-							else
-								getDefaultODESolverDescription();
-						}
-					}
+					e.printStackTrace(System.out);					
 				}
 				continue;
 			}

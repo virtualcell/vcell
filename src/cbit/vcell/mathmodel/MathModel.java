@@ -77,13 +77,7 @@ public Simulation addNewSimulation() throws java.beans.PropertyVetoException {
 	// create new Simulation and add to MathModel.
 	//
 	Simulation newSimulation = new Simulation(math);
-	newSimulation.setName(newSimName);
-	if (!newSimulation.getIsSpatial()) { //amended 15th Oct,2006
-		if(getMathDescription().isStoch())
-			newSimulation.getSolverTaskDescription().setSolverDescription(cbit.vcell.solver.SolverDescription.StochGibson);
-		else
-			newSimulation.getSolverTaskDescription().setSolverDescription(cbit.vcell.solver.SolverDescription.CVODE);
-	}
+	newSimulation.setName(newSimName);	
 	
 	addSimulation(newSimulation);
 

@@ -287,6 +287,35 @@ public boolean compareEqual(cbit.util.Matchable obj) {
 
 
 /**
+ * Gets the solver property (java.lang.String) value.
+ * @return The solver property value.
+ * @see #setSolver
+ */
+public static SolverDescription getDefaultODESolverDescription() {
+	return IDA;
+}
+
+
+/**
+ * Gets the solver property (java.lang.String) value.
+ * @return The solver property value.
+ * @see #setSolver
+ */
+public static SolverDescription getDefaultPDESolverDescription() {
+	return FiniteVolume;
+}
+
+
+/**
+ * Get the default non-spatial stochastic solver which is Gibson.
+ * Creation date: (9/27/2006 2:43:55 PM)
+ * @return cbit.vcell.solver.SolverDescription
+ */
+public static SolverDescription getDefaultStochSolverDescription() {
+	return StochGibson;
+}
+
+/**
  * Insert the method's description here.
  * Creation date: (9/8/2005 11:27:58 AM)
  * @return cbit.vcell.solver.OutputTimeSpec

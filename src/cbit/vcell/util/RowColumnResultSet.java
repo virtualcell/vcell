@@ -105,6 +105,9 @@ public synchronized void addPropertyChangeListener(java.lang.String propertyName
 public synchronized void addRow (double[] values) {
 	// cbit.util.Assertion.assert(values.length == getDataColumnCount());
 	double[] v = new double[getDataColumnCount()];
+	if (values.length != getDataColumnCount()) {
+		throw new RuntimeException("number of values in row is not equal to number of columns");
+	}
 	for (int c = 0; c < getDataColumnCount(); c++) v[c] = values[c];
 	fieldValues.addElement(v);
 }

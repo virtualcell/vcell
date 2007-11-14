@@ -5,6 +5,7 @@ import cbit.vcell.opt.ReferenceData;
 import cbit.sql.KeyValue;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.ode.IDASolverStandalone;
 import cbit.vcell.solver.SolverStatus;
 /**
@@ -86,7 +87,7 @@ private double calculateWeightedError(double[] x) {
 		ReferenceData refData = odeObjectiveFunction.getReferenceData();
 		double refDataEndTime = refData.getColumnData(0)[refData.getNumRows()-1];
 		simulation.getSolverTaskDescription().setTimeBounds(new cbit.vcell.solver.TimeBounds(0.0, refDataEndTime));
-
+		simulation.getSolverTaskDescription().setSolverDescription(SolverDescription.IDA);
 
 		cbit.vcell.solver.ode.IDAFileWriter idaFileWriter = new cbit.vcell.solver.ode.IDAFileWriter(simulation);
 		idaFileWriter.initialize();
