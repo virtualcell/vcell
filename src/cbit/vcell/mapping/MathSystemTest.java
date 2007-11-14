@@ -63,10 +63,6 @@ public static MathSystemHash fromMath(cbit.vcell.math.MathDescription mathDesc) 
 				hash.addSymbol(new MathSystemHash.VariableDerivative(var,ode.getRateExpression()));
 			}
 		}
-		if (subDomains[i].getFastSystem()!=null){
-			throw new RuntimeException("MathSystemHash doesn't yet support fast systems");
-		}
-
 	}
 	return hash;
 }

@@ -1,6 +1,7 @@
 package cbit.vcell.mapping;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.model.LumpedKinetics;
@@ -430,13 +431,7 @@ public Simulation addNewSimulation() throws java.beans.PropertyVetoException {
 	// create new Simulation and add to BioModel.
 	//
 	Simulation newSimulation = new Simulation(getMathDescription());
-	newSimulation.setName(newSimName);
-	if (!newSimulation.getIsSpatial()) { //amended Sept.27, 2006
-		if(isStoch())
-			newSimulation.getSolverTaskDescription().setSolverDescription(cbit.vcell.solver.SolverDescription.StochGibson);
-		else
-			newSimulation.getSolverTaskDescription().setSolverDescription(cbit.vcell.solver.SolverDescription.CVODE);
-	}
+	newSimulation.setName(newSimName);	
 	
 	bioModel.addSimulation(newSimulation);
 
