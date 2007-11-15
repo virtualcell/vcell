@@ -2921,7 +2921,7 @@ private void updateAxes() {
 		bPlot2DHasInvalidRange = bPlot2DHasInvalidRange || !yR.isValid();
 	}
 	
-	if(getPlot2D().visiblePlotsInvalid() || bPlot2DHasInvalidRange){
+	if(getPlot2D() == null || getPlot2D().visiblePlotsInvalid() || bPlot2DHasInvalidRange){
 		setXMajorTicks(null);
 		setYMajorTicks(null);
 		setXMinorTicks(null);
