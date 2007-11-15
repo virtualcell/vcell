@@ -1970,7 +1970,7 @@ private void initDataManagerVariable(final String finalVarName) {
 			new cbit.util.TimeSeriesJobSpec(
 					new String[] {finalVarName},
 					new int[][] {dataManagerIndices},
-					new int[][] {crossingMembraneIndices},
+					(crossingMembraneIndices != null?new int[][] {crossingMembraneIndices}:null),
 					resampleStartTimeOrig,resampleStepOrig,timeValues[timeValues.length-1]/*resampleEndTimeOrig*/,
 					VCDataJobID.createVCDataJobID(userRequestingData, true));
 		timeSeriesJobStarter.startTimeSeriesJob(timeSeriesJobSpec,

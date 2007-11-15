@@ -2011,22 +2011,17 @@ public PlotData getLineScan(VCDataIdentifier vcdID, String varName, double time,
 			}else{
 				throw new RuntimeException(SpatialSelectionVolume.class.getName()+" does not support variableType="+dataIdentifier.getVariableType());
 			}
-
-//			adjustMembraneAdjacentVolumeValues(
-//					ssvHelper.getMembraneIndexesInOut(),
-//					vcdID,varName,time,
-//					ssvHelper.getSampledIndexes(),ssvHelper.getSampledValues(),mesh);
 			try {
-				
-				adjustMembraneAdjacentVolumeValues(
+				if(ssvHelper.getMembraneIndexesInOut() != null && ssvHelper.getMembraneIndexesInOut().length > 0){
+					adjustMembraneAdjacentVolumeValues(
 						new double[][] {ssvHelper.getSampledValues()},false,simDataBlock,
 						ssvHelper.getSampledIndexes(),
 						ssvHelper.getMembraneIndexesInOut(),
 						vcdID,
 						varName,
 						mesh,
-						new TimeInfo(vcdID,time,1,time)
-					);
+						new TimeInfo(vcdID,time,1,time));
+				}
 			} catch (Exception e) {
 				throw new DataAccessException("Error getLineScan adjustingMembraneValues\n"+e.getMessage(),e);
 			}
@@ -2460,32 +2455,15 @@ private TimeSeriesJobResults getSpecialTimeSeriesValues(VCDataIdentifier vcdID,
 			for(int dataIndex=0;dataIndex<dataIndices.length;dataIndex+= 1){
 				varIndicesTimesArr[varNameIndex][dataIndex+1][timeIndex] = data[dataIndices[dataIndex]];
 			}
-			if(timeSeriesJobSpec.getCrossingMembraneIndices() != null){
-				double[] adjustMembraneVals =
-					new double[timeSeriesJobSpec.getCrossingMembraneIndices()[varNameIndex].length];
-//				adjustMembraneAdjacentVolumeValues(
-//						timeSeriesJobSpec.getCrossingMembraneIndices()[varNameIndex],
-//						vcdID,
-//						variableNames[varNameIndex],
-//						wantedTimes[timeIndex],
-//						dataIndices,
-//						adjustMembraneVals,
-//						mesh);
-				if(timeSeriesJobSpec.getCrossingMembraneIndices() != null && timeSeriesJobSpec.getCrossingMembraneIndices().length > 0){
-					adjustMembraneAdjacentVolumeValues(
-							varIndicesTimesArr[varNameIndex],true,simDatablock,
-							timeSeriesJobSpec.getIndices()[varNameIndex],
-							timeSeriesJobSpec.getCrossingMembraneIndices()[varNameIndex],
-							vcdID,
-							variableNames[varNameIndex],
-							mesh,
-							timeInfo);
-				}
-				for (int i = 0; i < timeSeriesJobSpec.getCrossingMembraneIndices()[varNameIndex].length; i++) {
-					if(timeSeriesJobSpec.getCrossingMembraneIndices()[varNameIndex][i] != -1){
-						varIndicesTimesArr[varNameIndex][i+1][timeIndex] = adjustMembraneVals[i];
-					}
-				}
+			if(timeSeriesJobSpec.getCrossingMembraneIndices() != null && timeSeriesJobSpec.getCrossingMembraneIndices().length > 0){
+				adjustMembraneAdjacentVolumeValues(
+					varIndicesTimesArr[varNameIndex],true,simDatablock,
+					timeSeriesJobSpec.getIndices()[varNameIndex],
+					timeSeriesJobSpec.getCrossingMembraneIndices()[varNameIndex],
+					vcdID,
+					variableNames[varNameIndex],
+					mesh,
+					timeInfo);
 			}
 		}
 	}
@@ -2873,7 +2851,7 @@ private void adjustMembraneAdjacentVolumeValues(
 		CartesianMesh mesh,
 		TimeInfo timeInfo) throws Exception{
 	
-	if(membraneIndexesInOut == null){
+	if(membraneIndexesInOut == null || membraneIndexesInOut.length == 0){
 		return;
 	}
 	if(bTimeFormat){
