@@ -34,10 +34,10 @@ import cbit.vcell.solver.ode.gui.SimulationStatus;
  */
 public class BioModelWindowManager extends DocumentWindowManager implements java.beans.PropertyChangeListener, java.awt.event.ActionListener {
 	private BioModel bioModel = null;
-	private Hashtable applicationsHash = new Hashtable();
+	private Hashtable<SimulationContext, ApplicationComponents> applicationsHash = new Hashtable<SimulationContext, ApplicationComponents>();
 	private JDesktopPane jDesktopPane = null;
 	private BioModelEditor bioModelEditor = null;
-	private Vector dataViewerPlotsFramesVector = new Vector();
+	private Vector<JInternalFrame> dataViewerPlotsFramesVector = new Vector<JInternalFrame>();
 
 	private cbit.vcell.opt.solvers.LocalOptimizationService localOptService = null;
 
@@ -79,7 +79,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 	if (e.getSource() instanceof cbit.vcell.client.desktop.geometry.GeometrySummaryViewer && e.getActionCommand().equals("Change Geometry...")) {
 		Geometry geom = ((cbit.vcell.client.desktop.geometry.GeometrySummaryViewer.GeometrySummaryViewerEvent)e).getGeometry();
 		// Lookup application components based on instance of GeometrySummaryViewer
- 		Enumeration appComponentsEnum = getApplicationsHash().elements();
+ 		Enumeration<ApplicationComponents> appComponentsEnum = getApplicationsHash().elements();
 		while (appComponentsEnum.hasMoreElements()) {
 			ApplicationComponents appComponents = (ApplicationComponents)appComponentsEnum.nextElement();
 			GeometrySummaryViewer geomViewer = appComponents.getGeometrySummaryViewer();
@@ -96,7 +96,7 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 	if (e.getSource() instanceof cbit.vcell.client.desktop.geometry.GeometrySummaryViewer && e.getActionCommand().equals("View Surfaces")) {
 		Geometry geom = ((cbit.vcell.client.desktop.geometry.GeometrySummaryViewer.GeometrySummaryViewerEvent)e).getGeometry();
 		// Lookup application components based on instance of GeometrySummaryViewer
- 		Enumeration appComponentsEnum = getApplicationsHash().elements();
+ 		Enumeration<ApplicationComponents> appComponentsEnum = getApplicationsHash().elements();
 		while (appComponentsEnum.hasMoreElements()) {
 			ApplicationComponents appComponents = (ApplicationComponents)appComponentsEnum.nextElement();
 			GeometrySummaryViewer geomViewer = appComponents.getGeometrySummaryViewer();
@@ -146,7 +146,7 @@ public void addResultsFrame(cbit.vcell.client.desktop.simulation.SimulationWindo
  * Creation date: (6/1/2004 2:33:41 AM)
  */
 private void checkValidApplicationFrames(boolean reset) {
-	Enumeration en = getApplicationsHash().keys();
+	Enumeration<SimulationContext> en = getApplicationsHash().keys();
 	while (en.hasMoreElements()) {
 		SimulationContext sc = (SimulationContext)en.nextElement();
 		ApplicationComponents appComponents = (ApplicationComponents)getApplicationsHash().get(sc);
@@ -193,7 +193,7 @@ private void checkValidApplicationFrames(boolean reset) {
 private void checkValidSimulationDataViewerFrames(ApplicationComponents appComponents, SimulationContext found) {
 	SimulationWindow[] simWindows = appComponents.getSimulationWindows();
 	Simulation[] sims = found.getSimulations();
-	Hashtable hash = new Hashtable();
+	Hashtable<VCSimulationIdentifier, Simulation> hash = new Hashtable<VCSimulationIdentifier, Simulation>();
 	for (int i = 0; i < sims.length; i++){
 		cbit.vcell.solver.SimulationInfo simInfo = sims[i].getSimulationInfo();
 		if (simInfo != null) {
@@ -247,7 +247,7 @@ private void createBioModelFrame() {
  * Creation date: (6/4/2004 2:33:22 AM)
  * @return java.util.Hashtable
  */
-private java.util.Hashtable getApplicationsHash() {
+private java.util.Hashtable<SimulationContext, ApplicationComponents> getApplicationsHash() {
 	return applicationsHash;
 }
 
@@ -322,7 +322,7 @@ public cbit.vcell.document.VCDocument getVCDocument() {
  * @return cbit.vcell.document.VCDocument
  */
 cbit.vcell.client.desktop.simulation.SimulationWindow haveSimulationWindow(VCSimulationIdentifier vcSimulationIdentifier) {
-	Enumeration en = getApplicationsHash().elements();
+	Enumeration<ApplicationComponents> en = getApplicationsHash().elements();
 	while (en.hasMoreElements()) {
 		ApplicationComponents appComponents = (ApplicationComponents)en.nextElement();
 		SimulationWindow window = appComponents.haveSimulationWindow(vcSimulationIdentifier);
@@ -381,7 +381,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	}
 	if (evt.getSource() == getBioModel() && evt.getPropertyName().equals("simulations")) {
 		// close any window we should not have anymore
-		Enumeration en = getApplicationsHash().keys();
+		Enumeration<SimulationContext> en = getApplicationsHash().keys();
 		while (en.hasMoreElements()) {
 			SimulationContext sc = (SimulationContext)en.nextElement();
 			ApplicationComponents appComponents = (ApplicationComponents)getApplicationsHash().get(sc);
@@ -430,7 +430,7 @@ public void resetDocument(cbit.vcell.document.VCDocument newDocument) {
 	setDocumentID(getBioModel());
 	getBioModelEditor().setBioModel(getBioModel());
 	checkValidApplicationFrames(true);
-	Enumeration en = dataViewerPlotsFramesVector.elements();
+	Enumeration<JInternalFrame> en = dataViewerPlotsFramesVector.elements();
 	while (en.hasMoreElements()) {
 		close((JInternalFrame)en.nextElement(), getJDesktopPane());
 	}
@@ -547,20 +547,6 @@ private void showGeometryViewerFrame(SimulationContext simContext) {
  * Insert the method's description here.
  * Creation date: (5/5/2004 9:44:15 PM)
  */
-private void showMathViewerFrame(SimulationContext simContext) {
-	JInternalFrameEnhanced editorFrame = null;
-	if (getApplicationsHash().containsKey(simContext)) {
-		editorFrame = ((ApplicationComponents)getApplicationsHash().get(simContext)).getMathViewerFrame();
-		showFrame(editorFrame);
-	}
-	editorFrame.requestFocus();
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (5/5/2004 9:44:15 PM)
- */
 private void showSurfaceViewerFrame(SimulationContext simContext) {
 	JInternalFrameEnhanced editorFrame = null;
 	if (getApplicationsHash().containsKey(simContext)) {
@@ -628,7 +614,7 @@ public void simStatusChanged(SimStatusEvent simStatusEvent) {
 	// was the gui on it ever opened?
 	SimulationContext simContext = null;
 	simulation = null;
-	Enumeration en = getApplicationsHash().keys();
+	Enumeration<SimulationContext> en = getApplicationsHash().keys();
 	while (en.hasMoreElements()) {
 		SimulationContext sc = (SimulationContext)en.nextElement();
 		sims = sc.getSimulations();

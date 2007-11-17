@@ -24,7 +24,7 @@ private static String showDialog(final Component requester, final UserPreference
 	//
 	// if userMessage is a warning that can be ignored, and the preference is to ignore it, then return default selection.
 	//
-	if (userMessage.getUserPreferenceWarning() > -1 && !preferences.getShowWarning(userMessage.getUserPreferenceWarning())){
+	if (userMessage.getUserPreferenceWarning() > -1 && preferences!=null && !preferences.getShowWarning(userMessage.getUserPreferenceWarning())){
 		return userMessage.getDefaultSelection();
 	}
 

@@ -8,29 +8,46 @@ import cbit.vcell.server.DataAccessException;
 public class SimpleReferenceData implements ReferenceData, java.io.Serializable {
 	private String dataNames[] = null;
 	private double[] columnWeights = null;
-	private java.util.Vector rowData = new java.util.Vector();
+	private java.util.Vector<double[]> rowData = new java.util.Vector<double[]>();
 
-/**
- * SimpleConstraintData constructor comment.
- */
-public SimpleReferenceData(String[] argColumnNames, double[] argColumnWeights, java.util.Vector argRowData) {
-	super();
-	this.dataNames = argColumnNames;
-	this.columnWeights = argColumnWeights;
+	/**
+	 * SimpleConstraintData constructor comment.
+	 */
+	public SimpleReferenceData(String[] argColumnNames, double[] argColumnWeights, java.util.Vector<double[]> argRowData) {
+		super();
+		this.dataNames = argColumnNames;
+		this.columnWeights = argColumnWeights;
 
-	for (int i = 0; i < argRowData.size(); i++){
-		if ((argRowData.elementAt(i) instanceof double[])){
-			double[] rowData = (double[])argRowData.elementAt(i);
-			if (rowData.length!=argColumnNames.length){
-				throw new IllegalArgumentException("rowData not same size as number of columns");
+		for (int i = 0; i < argRowData.size(); i++){
+			if ((argRowData.elementAt(i) instanceof double[])){
+				double[] rowData = (double[])argRowData.elementAt(i);
+				if (rowData.length!=argColumnNames.length){
+					throw new IllegalArgumentException("rowData not same size as number of columns");
+				}
+			}else{
+				throw new IllegalArgumentException("rowdata argument not of type double[] in SimpleReferenceData");
 			}
-		}else{
-			throw new IllegalArgumentException("rowdata argument not of type double[] in SimpleReferenceData");
 		}
+
+		this.rowData = argRowData;
 	}
 
-	this.rowData = argRowData;
-}
+	/**
+	 * SimpleConstraintData constructor comment.
+	 */
+	public SimpleReferenceData(String[] argColumnNames, double[] argColumnWeights, double[][] columnData) {
+		super();
+		this.dataNames = argColumnNames;
+		this.columnWeights = argColumnWeights;
+
+		for (int i = 0; i < columnData[0].length; i++){
+			double[] row = new double[columnData.length];
+			for (int j = 0; j < columnData.length; j++){
+				row[j] = columnData[j][i];
+			}
+			rowData.add(row);
+		}
+	}
 
 
 /**

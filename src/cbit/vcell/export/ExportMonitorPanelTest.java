@@ -1,4 +1,5 @@
 package cbit.vcell.export;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -36,7 +37,7 @@ public static void main(java.lang.String[] args) {
 			aExportMonitorPanel,
 			123456789L,
 			null,
-			new VCSimulationIdentifier(new cbit.sql.KeyValue("234"), null),
+			new VCSimulationDataIdentifier(new VCSimulationIdentifier(new cbit.sql.KeyValue("234"), null),1),
 			ExportEvent.EXPORT_PROGRESS,
 			"CSV",
 			"",
@@ -46,7 +47,7 @@ public static void main(java.lang.String[] args) {
 			aExportMonitorPanel,
 			987654321L,
 			null,
-			new VCSimulationIdentifier(new cbit.sql.KeyValue("234"), null),
+			new VCSimulationDataIdentifier(new VCSimulationIdentifier(new cbit.sql.KeyValue("234"), null),1),
 			ExportEvent.EXPORT_COMPLETE,
 			"GIF",
 			"http://nrcam.uchc.edu/export/987654321.zip",

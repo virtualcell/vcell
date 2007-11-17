@@ -848,12 +848,13 @@ private void copyJMenuItem_ActionPerformed(java.awt.event.ActionEvent actionEven
 		" Distances(columns) from "+currentDistances[0]+" to "+currentDistances[currentDistances.length-1]+" along sample line "+
 		" Times(rows) from "+currentTimes[0]+" to "+currentTimes[currentTimes.length-1]+"\n"+
 		"\n");
-	sb.append("Min\tMax\tMean\n");
+	sb.append("Min(All)\tMax(All)\tMean(All)\n");
 	sb.append((allDataMMMH != null?allDataMMMH.min+"\t"+allDataMMMH.max+"\t"+allDataMMMH.mean:"\"?\"\t\"?\"\t\"?\"")+"\n");
+	sb.append("Distances");
 	for(int i=0;i<currentDistances.length;i+= 1){
 		sb.append("\t"+currentDistances[i]);
 	}
-	sb.append("\n\n");
+	sb.append("\nTimes\n");
 	int counter = 0;
 	for(int i=0;i<currentTimes.length;i+= 1){
 		sb.append(currentTimes[i]);

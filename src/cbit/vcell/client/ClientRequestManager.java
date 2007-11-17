@@ -211,7 +211,7 @@ private boolean checkDifferentFromBlank(int documentType, VCDocument vcDocument)
  * Creation date: (6/16/2004 11:17:18 AM)
  */
 private boolean closeAllWindows(boolean duringExit) {
-	Enumeration en = getMdiManager().getWindowManagers();
+	Enumeration<TopLevelWindowManager> en = getMdiManager().getWindowManagers();
 	while (en.hasMoreElements()) {
 		TopLevelWindowManager windowManager = (TopLevelWindowManager)en.nextElement();
 		boolean closed = closeWindow(windowManager.getManagerID(), duringExit);
@@ -827,7 +827,7 @@ protected void downloadExportedData(final cbit.rmi.event.ExportEvent evt) {
 				fileChooser.setMultiSelectionEnabled(false);
 				fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_ZIP);
 				fileChooser.setFileFilter(FileFilters.FILE_FILTER_ZIP);
-			    String name = evt.getVCSimulationIdentifier().getID();
+			    String name = evt.getVCDataIdentifier().getID();
 			    //if (evt.getVCDataIdentifier() instanceof cbit.vcell.solver.SimulationInfo){
 				    //cbit.vcell.solver.SimulationInfo simInfo = (cbit.vcell.solver.SimulationInfo)evt.getVCDataIdentifier();
 				    //name = simInfo.getName();
@@ -925,7 +925,7 @@ public void exportDocument(TopLevelWindowManager manager) {
 	/* block window */
 	JFrame currentWindow = getMdiManager().blockWindow(manager.getManagerID());
 	/* prepare hashtable for tasks */
-	Hashtable hash = new Hashtable();
+	Hashtable<String,Object> hash = new Hashtable<String,Object>();
 	hash.put("mdiManager", getMdiManager());
 	hash.put("documentManager", getDocumentManager());
 	hash.put("topLevelWindowManager", manager);
@@ -1661,7 +1661,7 @@ public void runSimulations(final ClientSimManager clientSimManager, final Simula
 	/* block document window */
 	JFrame currentDocumentWindow = getMdiManager().blockWindow(documentWindowManager.getManagerID());
 	/* prepare hashtable for tasks */
-	Hashtable hash = new Hashtable();
+	Hashtable<String, Object> hash = new Hashtable<String, Object>();
 	hash.put("mdiManager", getMdiManager());
 	hash.put("documentManager", getDocumentManager());
 	hash.put("documentWindowManager", documentWindowManager);
@@ -1757,7 +1757,7 @@ public void saveDocument(DocumentWindowManager documentWindowManager, boolean re
 	/* block document window */
 	JFrame currentDocumentWindow = getMdiManager().blockWindow(documentWindowManager.getManagerID());
 	/* prepare hashtable for tasks */
-	Hashtable hash = new Hashtable();
+	Hashtable<String, Object> hash = new Hashtable<String, Object>();
 	hash.put("mdiManager", getMdiManager());
 	hash.put("documentManager", getDocumentManager());
 	hash.put("documentWindowManager", documentWindowManager);
@@ -1809,7 +1809,7 @@ public void saveDocumentAsNew(DocumentWindowManager documentWindowManager) {
 	/* block document window */
 	JFrame currentDocumentWindow = getMdiManager().blockWindow(documentWindowManager.getManagerID());
 	/* prepare hashtable for tasks */
-	Hashtable hash = new Hashtable();
+	Hashtable<String, Object> hash = new Hashtable<String, Object>();
 	hash.put("mdiManager", getMdiManager());
 	hash.put("documentManager", getDocumentManager());
 	hash.put("documentWindowManager", documentWindowManager);
@@ -1957,7 +1957,7 @@ public void stopSimulations(final ClientSimManager clientSimManager, final Simul
 	// stop is single step operation, don't bother with tasks, thread inline
 	SwingWorker worker = new SwingWorker() {
 		public Object construct() {
-			Hashtable failures = new Hashtable();
+			Hashtable<Simulation, Throwable> failures = new Hashtable<Simulation, Throwable>();
 			if (simulations != null && simulations.length > 0) {
 				for (int i = 0; i < simulations.length; i++){
 					try {
@@ -1983,9 +1983,9 @@ public void stopSimulations(final ClientSimManager clientSimManager, final Simul
 			return failures;
 		}
 		public void finished() {
-			Hashtable failures = (Hashtable)get();
+			Hashtable<Simulation,Throwable> failures = (Hashtable<Simulation, Throwable>)get();
 			if (! failures.isEmpty()) {
-				Enumeration en = failures.keys();
+				Enumeration<Simulation> en = failures.keys();
 				while (en.hasMoreElements()) {
 					Simulation sim = (Simulation)en.nextElement();
 					Throwable exc = (Throwable)failures.get(sim);

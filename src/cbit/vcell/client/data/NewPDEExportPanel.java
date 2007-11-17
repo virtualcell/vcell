@@ -2099,7 +2099,8 @@ private void startExport() {
 					while (en.hasMoreElements()) {
 						names.append("\n" + en.nextElement());
 					}
-					String choice = PopupGenerator.showWarningDialog((TopLevelWindowManager)getDataViewerManager(), getDataViewerManager().getUserPreferences(), UserMessage.warn_noScaleSettings,null);
+					String choice = PopupGenerator.showWarningDialog(this, getDataViewerManager().getUserPreferences(), UserMessage.warn_noScaleSettings,null);
+					//String choice = PopupGenerator.showWarningDialog((TopLevelWindowManager)getDataViewerManager(), getDataViewerManager().getUserPreferences(), UserMessage.warn_noScaleSettings,null);
 					if (choice.equals(UserMessage.OPTION_CANCEL)){
 						// user canceled
 						return;

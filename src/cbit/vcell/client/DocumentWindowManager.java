@@ -215,8 +215,11 @@ public void dataJobMessage(DataJobEvent event){
  * @param exportEvent cbit.rmi.event.ExportEvent
  */
 public void exportMessage(ExportEvent exportEvent) {
-	if (haveSimulationWindow(exportEvent.getVCSimulationIdentifier()) == null) {// && exportEvent.getEventTypeID() != ExportEvent.EXPORT_COMPLETE) {
-		return;
+	if(exportEvent.getVCDataIdentifier() instanceof VCSimulationDataIdentifier){
+		VCSimulationDataIdentifier vcSimulationDataIdentifier = (VCSimulationDataIdentifier)(exportEvent.getVCDataIdentifier());
+		if (haveSimulationWindow(vcSimulationDataIdentifier.getVcSimID()) == null) {// && exportEvent.getEventTypeID() != ExportEvent.EXPORT_COMPLETE) {
+			return;
+		}		
 	}
 	// just pass them along...
 	fireExportMessage(exportEvent);

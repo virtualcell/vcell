@@ -3,10 +3,7 @@ package cbit.rmi.event;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.export.server.*;
-import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.server.*;
-import cbit.vcell.solver.*;
 /**
  * This is the event class to support the cbit.vcell.desktop.controls.ExportListener interface.
  */
@@ -17,12 +14,12 @@ public class ExportEvent extends MessageEvent {
 	private String location = null;
 	private User user = null;
 	private long jobID = 0L;
-	private VCSimulationIdentifier vcSimulationIdentifier = null;
+	private VCDataIdentifier vcDataIdentifier = null;
 
 /**
  * ExportEvent constructor comment.
  */
-public ExportEvent(Object source, long jobID, User user, VCSimulationIdentifier vcsID, int argEventType, String format, String location, Double argProgress) {
+public ExportEvent(Object source, long jobID, User user, VCDataIdentifier vcsID, int argEventType, String format, String location, Double argProgress) {
 	super(source, new MessageSource(source, vcsID.getID()), new MessageData(argProgress));
 	this.eventType = argEventType;
 	this.format = format;
@@ -30,7 +27,7 @@ public ExportEvent(Object source, long jobID, User user, VCSimulationIdentifier 
 	this.progress = argProgress;
 	this.jobID = jobID;
 	this.user = user;
-	this.vcSimulationIdentifier = vcsID;
+	this.vcDataIdentifier = vcsID;
 }
 
 
@@ -99,8 +96,8 @@ public User getUser() {
  * Creation date: (7/2/2001 8:59:46 PM)
  * @return cbit.vcell.solver.SimulationInfo
  */
-public VCSimulationIdentifier getVCSimulationIdentifier() {
-	return vcSimulationIdentifier;
+public VCDataIdentifier getVCDataIdentifier() {
+	return vcDataIdentifier;
 }
 
 
@@ -133,7 +130,7 @@ public String toString() {
 		+ "\", user="
 		+ getUser()
 		+ ", simID="
-		+ (getVCSimulationIdentifier() != null ?
-			getVCSimulationIdentifier().getID() : null);
+		+ (getVCDataIdentifier() != null ?
+			getVCDataIdentifier().getID() : null);
 }
 }

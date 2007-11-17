@@ -84,7 +84,7 @@ public class UserPreferences {
  * Creation date: (6/12/2004 9:08:03 PM)
  * @param clientServerManager cbit.vcell.client.server.ClientServerManager
  */
-UserPreferences(ClientServerManager clientServerManager) {
+public UserPreferences(ClientServerManager clientServerManager) {
 	this.clientServerManager = clientServerManager;
 }
 
