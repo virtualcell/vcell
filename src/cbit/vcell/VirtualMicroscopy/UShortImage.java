@@ -8,44 +8,33 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
-import java.awt.image.RenderedImage;
-import java.awt.image.renderable.ParameterBlock;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.io.Serializable;
-import java.nio.IntBuffer;
 import java.util.ArrayList;
-import java.util.Hashtable;
 
 //import com.sun.java.util.jar.pack.Attribute.FormatException;
 
 import cbit.image.ImageException;
 import cbit.util.Extent;
+import cbit.util.Matchable;
+import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
 
-//import javax.media.jai.JAI;
-//import javax.media.jai.KernelJAI;
-//
-//import loci.formats.DataTools;
-//import loci.formats.FormatException;
-//import loci.formats.ImageTools;
-//
-//import visad.data.jai.JAIForm;
-//
-//import cbit.image.ImageException;
-//import cbit.util.Extent;
-//import cbit.vcell.virtualmicroscopy.imaging.ItkUtils;
-//import cbit.vcell.virtualmicroscopy.imaging.ItkUtils.FilterOp;
-//import cbit.vcell.virtualmicroscopy.imaging.ItkUtils.FilterParameter;
 /**
  * This type was created in VisualAge.
  */
 public class UShortImage extends Image implements Serializable {
 	private short pixels[] = null;
 
-	public UShortImage(UShortImage image) throws ImageException {
+	public UShortImage(Image image) throws ImageException {
 		super(image);
-		this.pixels = image.getPixels().clone();
+		if (image instanceof UShortImage){
+			this.pixels = ((UShortImage)image).getPixels().clone();
+		}else if (image instanceof FloatImage){
+			float[] floatPixels = ((FloatImage)image).getPixels().clone(); 
+			this.pixels = new short[floatPixels.length];
+			for (int i = 0; i < floatPixels.length; i++) {
+				this.pixels[i] = (short)((int)Math.round(floatPixels[i]));
+			}
+		}
 	}
 /**
  * This method was created in VisualAge.
@@ -61,7 +50,7 @@ public UShortImage(short pixels[], cbit.util.Extent aExtent, int aNumX, int aNum
 	if (aNumX*aNumY*aNumZ != pixels.length){
 		throw new IllegalArgumentException("size ("+aNumX+","+aNumY+","+aNumZ+") not consistent with "+pixels.length+" pixels");
 	}
-	this.pixels = pixels.clone();
+	this.pixels = pixels;
 }
 public short getPixel(int x, int y, int z) throws ImageException {
 	if (x<0||x>=getNumX()||y<0||y>=getNumY()||z<0||z>=getNumZ()){
@@ -70,6 +59,23 @@ public short getPixel(int x, int y, int z) throws ImageException {
 	int index = x + getNumX()*(y + z*getNumY()); 
 	return (short) getPixels()[index];
 }
+
+public boolean compareEqual(Matchable obj) {
+	if (!(obj instanceof UShortImage)){
+		return false;
+	}
+	UShortImage usImage = (UShortImage)obj;
+
+	if (!super.compareEqual(obj)){
+		return false;
+	}
+
+	if(!cbit.util.Compare.isEqual(pixels,usImage.pixels)){
+		return false;
+	}
+	return true;
+}
+
 
 public void reverse() {
 	int minValue = 0xffff&((int)pixels[0]);
@@ -234,27 +240,6 @@ public long countPixelsByValue(short value){
 	return count;
 }
 
-public double getPixelAreaXY(){
-	double deltaX = getExtent().getX()/getNumX();
-	double deltaY = getExtent().getX()/getNumY();
-	//double deltaZ = getExtent().getX()/getNumZ();
-	return (deltaX*deltaY);
-}
-
-//public void dilate(int radius) throws FormatException, ImageException, IOException {
-//	Hashtable<FilterParameter, Number> paramHash = new Hashtable<FilterParameter,Number>();
-//	paramHash.put(FilterParameter.FILTERPARAM_RADIUS, radius);
-//	paramHash.put(FilterParameter.FILTERPARAM_MASKVALUE, 0xffff);
-//	ItkUtils.MaskImageFilter(this, this, FilterOp.FILTER_DILATE, paramHash);
-//}
-//
-//public void erode(int radius) throws FormatException, IOException, ImageException{
-//	Hashtable<FilterParameter, Number> paramHash = new Hashtable<FilterParameter,Number>();
-//	paramHash.put(FilterParameter.FILTERPARAM_RADIUS, radius);
-//	paramHash.put(FilterParameter.FILTERPARAM_MASKVALUE, 0xffff);
-//	ItkUtils.MaskImageFilter(this, this, FilterOp.FILTER_ERODE, paramHash);
-//}
-
 //private static BufferedImage dilate3(BufferedImage bi)
 //	{
 //		BufferedImage buff = new BufferedImage(bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_INT_RGB);
@@ -367,6 +352,20 @@ public void setPixel(int x, int y, int z, short newValue) throws ImageException 
 	getPixels()[index] = newValue;
 }
 
+public void showPixelsAsMatrix(){
+	System.out.println("image ("+getNumX()+","+getNumY()+","+getNumZ()+"), "+getExtent());
+	int index=0;
+	for (int k = 0; k < getNumZ(); k++) {
+		for (int j = 0; j < getNumY(); j++) {
+			for (int i = 0; i < getNumX(); i++) {
+				System.out.print((int)(0xffff&pixels[index++])+" ");
+			}
+			System.out.println();
+		}
+		System.out.println();
+	}
+	System.out.println();
+}
 
 /**
  * This method was created in VisualAge.
@@ -407,6 +406,8 @@ public short[] getUniquePixelValues() throws ImageException{
 	}
 	return uniquePixelValues;
 }
+
+@Override
 public Rectangle getNonzeroBoundingBox() {
 	int minX = Integer.MAX_VALUE;
 	int maxX = 0;
@@ -425,11 +426,14 @@ public Rectangle getNonzeroBoundingBox() {
 	return new Rectangle(minX,minY,maxX-minX+1,maxY-minY+1);
 }
 
+
 public UShortImage crop(Rectangle rect) throws ImageException {
-	short[] croppedPixels = new short[rect.width*rect.height];
-	for (int i = 0; i < rect.width; i++) {
+	short[] croppedPixels = new short[rect.width*rect.height*getNumZ()];
+	for (int k = 0; k < getNumZ(); k++) {
 		for (int j = 0; j < rect.height; j++) {
-			croppedPixels[i+j*rect.width] = pixels[rect.x+i+(j+rect.y)*getNumX()];
+			for (int i = 0; i < rect.width; i++) {
+				croppedPixels[i+j*rect.width+(k*rect.width*rect.height)] = pixels[rect.x+i+(j+rect.y)*getNumX()+k*getNumX()*getNumY()];
+			}
 		}
 	}
 	Extent croppedExtent = null;
@@ -439,37 +443,20 @@ public UShortImage crop(Rectangle rect) throws ImageException {
 	return new UShortImage(croppedPixels,croppedExtent,rect.width,rect.height,getNumZ());
 }
 
-///**
-// * This method was created by a SmartGuide.
-// * @return cbit.image.FileImage
-// * @param images cbit.image.FileImage[]
-// * @exception java.lang.Exception The exception description.
-// */
-//public TemplatedImage(TemplatedImage<short> images[], Extent newExtent) throws ImageException {
-//	super(newExtent,images[0].getNumX(),images[0].getNumY(),images[0].getNumZ()*images.length);
-//	for (int i=1;i<images.length;i++){
-//		if (images[i].getNumX() != nX){
-//			throw new ImageException("image "+(i+1)+" x dimension doesn't match the first image");
-//		}	
-//		if (images[i].getNumY() != nY){
-//			throw new ImageException("image "+(i+1)+" y dimension doesn't match the first image");
-//		}	
-//		if (images[i].getNumZ() < 1){
-//			throw new ImageException("image "+(i+1)+" z dimension must be at least 1");
-//		}	
-//		nZ += images[i].getNumZ();
-//	}
-//	int nTotal = nX*nY*nZ;
-//	short bigBuffer[] = new short[nTotal];
-//	int index = 0;
-//	for (int i=0;i<images.length;i++){
-//		short currPix[] = images[i].getPixels();
-//		int currTotal = images[i].getNumX()*images[i].getNumY()*images[i].getNumZ();
-//		for (int j=0;j<currTotal;j++){
-//			bigBuffer[index++] = currPix[j];
-//		}
-//	}		
-//	TemplatedImage<short> byteImage = new TemplatedImage<short>(bigBuffer,new cbit.util.Extent(extent0.getX(),extent0.getY(),extent0.getZ()*images.length),nX,nY,nZ);
-//	return byteImage;
-//}
+@Override
+public ImageStatistics getImageStatistics() {
+	ImageStatistics stats = new ImageStatistics();
+	stats.minValue = 0xffff&((int)pixels[0]);
+	stats.maxValue = 0xffff&((int)pixels[0]);
+	stats.meanValue = 0.0;
+	for (int i = 0; i < pixels.length; i++) {
+		int value = 0xffff&((int)pixels[i]);
+		stats.minValue = Math.min(stats.minValue,value);
+		stats.maxValue = Math.max(stats.maxValue,value);
+		stats.meanValue += value;
+	}
+	stats.meanValue = stats.meanValue/pixels.length;
+	
+	return stats;
+}
 }

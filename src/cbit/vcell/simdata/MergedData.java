@@ -1,20 +1,29 @@
 package cbit.vcell.simdata;
-import cbit.vcell.util.ColumnDescription;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Vector;
+
+import cbit.vcell.math.AnnotatedFunction;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.ReservedVariable;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolTable;
+import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.server.DataAccessException;
+import cbit.vcell.server.User;
+import cbit.vcell.server.VCDataIdentifier;
+import cbit.vcell.simdata.DataSetControllerImpl.ProgressListener;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
+import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 import cbit.vcell.solver.test.MathTestingUtilities;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.solver.ode.ODESimData;
-import cbit.vcell.math.*;
-import java.io.*;
-import java.util.*;
-import cbit.vcell.server.*;
-import cbit.vcell.solvers.*;
-import cbit.vcell.parser.*;
+import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.solvers.FunctionFileGenerator;
+import cbit.vcell.util.ColumnDescription;
 /**
  * This type was created in VisualAge.
  */
@@ -23,7 +32,6 @@ public class MergedData extends VCData implements SymbolTable {
 	private double dataTimes[] = null;
 	private Vector<DataSetIdentifier> dataSetIdentifierList = new Vector<DataSetIdentifier>();
 	private Vector<AnnotatedFunction> annotatedFunctionList = new Vector<AnnotatedFunction>();
-	private String datasetName = null;
 	private VCDataIdentifier[] datasetsIDList=null;
 	private MergedDataInfo dataInfo=null;
 	private final static long SizeInBytes = 2000;  // a guess
@@ -43,7 +51,6 @@ public MergedData(User argUser, File argPrimaryUserDir, File argSecondaryUserDir
 		throw new RuntimeException("\nLess than 2 datasets, no comparison!!\n");
 	} 
 	dataInfo = new MergedDataInfo(argUser,argDatasetIDs);	
-	datasetName = dataInfo.getDatasetName();
 	datasetsIDList = argDatasetIDs;
 	try {
 		userDirectory = argPrimaryUserDir;
@@ -67,22 +74,18 @@ public MergedData(User argUser, File argPrimaryUserDir, File argSecondaryUserDir
  */
 public synchronized void addFunction(AnnotatedFunction function,boolean bReplace) throws DataAccessException {
 
-	if(bReplace){
-		throw new RuntimeException("Replace function in "+this.getClass().getName()+" not yet implemented");
-	}
-
-	// copied from SimulationData
 	try {
 		getFunctionDataIdentifiers();
-	} catch (Exception ex) {
-		ex.printStackTrace(System.out);
-	}
-	
-	try {
-		addFunctionToList(function);
+
+		if(bReplace){
+			replaceFunction(function);
+		}else{
+			addFunctionToList(function);
+		}
 	
 		AnnotatedFunction annotatedFunctions[] = new AnnotatedFunction[annotatedFunctionList.size()];
 		annotatedFunctionList.copyInto(annotatedFunctions);
+
 		FunctionFileGenerator ffg = new FunctionFileGenerator(getFunctionsFile().getPath(), annotatedFunctions);
 		ffg.generateFunctionFile();
 
@@ -93,44 +96,6 @@ public synchronized void addFunction(AnnotatedFunction function,boolean bReplace
 	} catch (Exception e) {
 		throw new DataAccessException(e.getMessage());
 	}
-
-
-
-	
-	////
-	//// throw exception if already in list (with same name and different expression)
-	////
-	//for (int i=0;i<annotatedFunctionList.size();i++){
-		//if (((Function)annotatedFunctionList.elementAt(i)).getName().equals(function.getName())){
-			////
-			//// has same name, if different expression, complain, else ignore.
-			////
-			//if (((Function)annotatedFunctionList.elementAt(i)).compareEqual(function)){
-				////
-				//// same function added twice, ignore.
-				////
-				//return;
-			//}else{
-				//throw new RuntimeException("function '"+function.getName()+" = "+function.getExpression()+"' already defined");
-			//}
-		//}
-	//}
-
-	//// Get Function Name and type, create DataSetIdentifier var for function and add it to dataSetIdentifier list.
-	//DataSetIdentifier newDataSetId = new DataSetIdentifier(function.getName(), function.getFunctionType(), true);
-	//if (!dataSetIdentifierList.contains(newDataSetId)) {
-		//dataSetIdentifierList.addElement(newDataSetId);
-	//}
-	
-	////
-	//// attempt to bind function
-	////
-	//function.bind(this);
-
-	////
-	//// add to list
-	////
-	//annotatedFunctionList.addElement(function);
 }
 
 
@@ -142,17 +107,24 @@ public synchronized void addFunction(AnnotatedFunction function,boolean bReplace
 private synchronized void addFunctionToList(AnnotatedFunction function) throws ExpressionException {
 	// throw exception if already in list (with same name and different expression)
 	for (int i=0;i<annotatedFunctionList.size();i++){
-		AnnotatedFunction mathFunction = (AnnotatedFunction)annotatedFunctionList.elementAt(i);
-		if (mathFunction.getName().equals(function.getName())){
-			// has same name, if different expression, complain, else ignore.
-			if (mathFunction.compareEqual(function)){
-				// same function added twice, ignore.
-				return;
-			} else {
-				throw new RuntimeException("function '"+function.getName()+" = "+function.getExpression()+"' already defined");
-			}
+		if (annotatedFunctionList.elementAt(i).getName().equals(function.getName())){
+			throw new RuntimeException("Error adding function '"+function.getName() + "', already defined");
 		}
 	}
+	for (int i = 0; i < dataSetIdentifierList.size(); i++) {
+		if (dataSetIdentifierList.elementAt(i).getName().equals(function.getName())){
+			throw new RuntimeException("Error adding function '"+function.getName() + "', identifier exists with same name");
+		}
+		
+	}
+
+	functionBindAndSubstitute(function);
+	
+	addFunctionToListInternal(function);
+	
+}
+
+private void functionBindAndSubstitute(AnnotatedFunction function) throws ExpressionException {
 
 	// attempt to bind function and substitute
 	Expression simExp = function.getSimplifiedExpression();	
@@ -192,14 +164,16 @@ private synchronized void addFunctionToList(AnnotatedFunction function) throws E
 		function.setSimplifiedExpression(simExp);	
 	}
 	simExp.bindExpression(this);
+	function.getExpression().bindExpression(this);
+	
+}
+
+private void addFunctionToListInternal(AnnotatedFunction function){
 	
 	DataSetIdentifier dsi = new DataSetIdentifier(function.getName(),function.getFunctionType(), true);	
 	// add the new function to dataSetIndentifierList so that other functions can bind this function
-	if (!dataSetIdentifierList.contains(dsi)) {
-		dataSetIdentifierList.addElement(dsi);
-	}
-	//function.setExpression(MathUtilities.substituteFunctions(function.getExpression(), this));
-	// Add function to annotatedFunctionList if binding function doesn't fail.
+	dataSetIdentifierList.addElement(dsi);
+	//Add new func
 	annotatedFunctionList.addElement((AnnotatedFunction)function);
 }
 
@@ -259,7 +233,7 @@ public long getDataBlockTimeStamp(int dataType, double timepoint) throws DataAcc
 				while ((timeArrayCounter < timeArray.length-2) && (timepoint > timeArray[timeArrayCounter+1])) {
 					timeArrayCounter++;
 				}
-				datatimeStamp = vcdata.getDataBlockTimeStamp(dataType, timeArray[timeArrayCounter+1]);			 	
+				datatimeStamp = vcdata.getDataBlockTimeStamp(dataType, timeArray[Math.min(timeArray.length-1,timeArrayCounter+1)]);			 	
 		 	}
 			latestTimeStamp = Math.max(latestTimeStamp, datatimeStamp);
 		}
@@ -293,6 +267,24 @@ private DataSetIdentifier getDataSetIdentifier(String identifier) {
 		DataSetIdentifier dsi = (DataSetIdentifier)dataSetIdentifierList.elementAt(i);
 		if (dsi.getName().equals(identifier)){
 			return dsi;
+		}
+	}
+	if (annotatedFunctionList.size()==0){
+		try {
+			// read functions and try again
+			readFunctions();
+			for (int i=0;i<dataSetIdentifierList.size();i++){
+				DataSetIdentifier dsi = (DataSetIdentifier)dataSetIdentifierList.elementAt(i);
+				if (dsi.getName().equals(identifier)){
+					return dsi;
+				}
+			}
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 	return null;
@@ -672,15 +664,20 @@ public SimDataBlock getSimDataBlock(String varName, double time) throws DataAcce
 			SimDataBlock simDataBlock_1 = getDatasetControllerImpl().getSimDataBlock(vcDataID, actualVarName, timeArray[timeArrayCounter]);
 			
 			double[] data_1 = simDataBlock_1.getData();
-			SimDataBlock simDataBlock_2 = getDatasetControllerImpl().getSimDataBlock(vcDataID, actualVarName, timeArray[timeArrayCounter+1]);
-			lastModified = simDataBlock_2.getPDEDataInfo().getTimeStamp();
-			double[] data_2 = simDataBlock_2.getData();			
-			timeResampledData = new double[data_1.length];
-			//
-			// apply first order linear basis for test data interpolation. Interpolate for each indx in the datablock.
-			//
-			for (int m = 0; m < data_1.length; m++) {
-				timeResampledData[m] = data_1[m] + (data_2[m]-data_1[m])*(time - timeArray[timeArrayCounter])/(timeArray[timeArrayCounter+1] - timeArray[timeArrayCounter]);
+			if ((timeArrayCounter+1)<(timeArray.length-1)){
+				SimDataBlock simDataBlock_2 = getDatasetControllerImpl().getSimDataBlock(vcDataID, actualVarName, timeArray[timeArrayCounter+1]);
+				lastModified = simDataBlock_2.getPDEDataInfo().getTimeStamp();
+				double[] data_2 = simDataBlock_2.getData();			
+				timeResampledData = new double[data_1.length];
+				//
+				// apply first order linear basis for test data interpolation. Interpolate for each indx in the datablock.
+				//
+				for (int m = 0; m < data_1.length; m++) {
+					timeResampledData[m] = data_1[m] + (data_2[m]-data_1[m])*(time - timeArray[timeArrayCounter])/(timeArray[timeArrayCounter+1] - timeArray[timeArrayCounter]);
+				}
+			}else{ // past end of array, zero order interpolation
+				lastModified = simDataBlock_1.getPDEDataInfo().getTimeStamp();
+				timeResampledData = data_1;
 			}
 		}
 
@@ -758,6 +755,148 @@ public SimDataBlock getSimDataBlock(String varName, double time) throws DataAcce
 	}
 }
 
+/**
+ * This method was created in VisualAge.
+ * @return cbit.vcell.simdata.DataBlock
+ * @param user cbit.vcell.server.User
+ * @param simID java.lang.String
+ */
+synchronized double[][][] getSimDataTimeSeries0(
+		String varNames[],
+		int[][] indexes,
+		boolean[] wantsThisTime,
+		DataSetControllerImpl.SpatialStatsInfo spatialStatsInfo,
+		ProgressListener progressListener) throws DataAccessException,IOException{
+
+	//
+	// gather list of where to find each variable
+	//
+	VCDataIdentifier[] varVCDataIDs = new VCDataIdentifier[varNames.length];
+	DataSetIdentifier[] varDataSetIDs = new DataSetIdentifier[varNames.length];
+	for (int i = 0; i < varNames.length; i++) {
+		varVCDataIDs[i] = getVCDataIdentifierFromDataId(varNames[i]);
+		varDataSetIDs[i] = getDataSetIdentifier(varNames[i]);
+	}
+	
+	//
+	// length of times to be returned.
+	//
+	int resultsCount = 0;
+	for(int i=0;i<wantsThisTime.length;i+= 1){
+		if(wantsThisTime[i]){
+			resultsCount+= 1;
+		}
+	}
+	double[] timeArray = getDataTimes();
+	double[] globalTimesActuallyUsed = new double[resultsCount];
+	int globalTimesActuallyUsedCounter = 0;
+	for(int i=0;i<wantsThisTime.length;i+= 1){
+		if(wantsThisTime[i]){
+			globalTimesActuallyUsed[globalTimesActuallyUsedCounter++] = timeArray[i];
+		}
+	}
+
+	//
+	// for each Dataset, create subtask
+	//
+	double[][][] results = new double[resultsCount][varNames.length][];
+	for (int i = 0; i < varVCDataIDs.length; i++) {
+		VCData vcData = dataSetControllerImpl.getVCData(varVCDataIDs[i]);
+		// get data specific time array
+		double[] localTimeArray = vcData.getDataTimes();
+		// trim time array and set booleans
+		boolean[] localWantsThisTime = new boolean[localTimeArray.length];
+		for (int j = 0; j < wantsThisTime.length; j++) {
+			if (wantsThisTime[j]){
+				boolean found = false;
+				// look for previous index in local array and set previous and next to true
+				for (int k = 0; k < localTimeArray.length; k++) {
+					if (localTimeArray[k]==timeArray[j]){
+						localWantsThisTime[k]=true;
+						found = true;
+						break;
+					}
+					if (k<localTimeArray.length-2 && localTimeArray[k]<timeArray[j] && localTimeArray[k+1]>timeArray[j]){
+						localWantsThisTime[k]=true;
+						localWantsThisTime[k+1]=true;
+						found = true;
+					}
+				}
+				if (!found){
+					if (timeArray[0]<localTimeArray[0]){
+						localWantsThisTime[0] = true;
+					}else if (timeArray[timeArray.length-1]<localTimeArray[localWantsThisTime.length-1]){
+						localWantsThisTime[localWantsThisTime.length-1] = true;
+					}
+				}
+			}
+		}	
+		String fullyQualifiedName = varDataSetIDs[i].getName();
+		int indx = fullyQualifiedName.indexOf(".");
+		String dataIDString = fullyQualifiedName.substring(indx+1, fullyQualifiedName.length());
+		double[][][] partialResults = vcData.getSimDataTimeSeries0(new String[] { dataIDString }, new int[][] { indexes[i] }, localWantsThisTime, spatialStatsInfo, progressListener);
+
+		//
+		// get local results times array
+		//
+		int localResultsCount = 0;
+		for(int ii=0;ii<localWantsThisTime.length;ii+= 1){
+			if(localWantsThisTime[ii]){
+				localResultsCount+= 1;
+			}
+		}
+		double[] localTimesActuallyUsed = new double[localResultsCount];
+		int localTimesActuallyUsedCounter = 0;
+		for(int ii=0;ii<localWantsThisTime.length;ii+= 1){
+			if(localWantsThisTime[ii]){
+				localTimesActuallyUsed[localTimesActuallyUsedCounter++] = localTimeArray[ii];
+			}
+		}
+		
+		//
+		// based on local and global times arrays (that are actually used)
+		// iterpolate local results back to the global times
+		//
+		for (int k = 0; k < globalTimesActuallyUsed.length; k++) {
+			// find value in local results
+			int leftIndex = -1;  // greatest index where localTimesActuallyUsed[leftIndex] <= globalTimesActuallyUsed[k]
+			int rightIndex = -1;
+			for (int j = 0; j < localTimesActuallyUsed.length; j++) {
+				if (localTimesActuallyUsed[j] <= globalTimesActuallyUsed[k]){
+					leftIndex=j;
+				}
+				if (rightIndex==-1 && localTimesActuallyUsed[j] > globalTimesActuallyUsed[k]){
+					rightIndex=j;
+					break;
+				}
+			}
+			if (leftIndex>-1 && rightIndex>-1){
+				// 1st order interpolation ... value = (alpha)*results[left] + (1-alpha)*results[right]
+				// alpha is zero if time is on left, is one if time is on right
+				double alpha = (globalTimesActuallyUsed[k]-localTimesActuallyUsed[leftIndex]) / 
+								(localTimesActuallyUsed[rightIndex]-localTimesActuallyUsed[leftIndex]);
+				int partialResultsCount = partialResults[0][0].length;
+				results[k][i] = new double[partialResultsCount];
+				for (int index = 0; index < partialResultsCount; index++) {
+					double leftResults = partialResults[leftIndex][0][index];
+					double rightResults = partialResults[rightIndex][0][index];
+					results[k][i][index] = alpha*leftResults + (1.0-alpha)*rightResults;
+				}
+			}else if (leftIndex>-1 && rightIndex==-1){
+				// just use leftIndex
+				results[k][i] = partialResults[leftIndex][0];
+			}else if (leftIndex==-1 && rightIndex>-1){
+				// just use rightIndex
+				results[k][i] = partialResults[rightIndex][0];
+			}else{
+				throw new RuntimeException("error interpolating results in MergedData");
+			}
+		}
+	}
+	return results;
+}
+
+
 
 /**
  * This method was created in VisualAge.
@@ -773,6 +912,7 @@ public long getSizeInBytes() {
  * @return java.lang.String[]
  */
 public DataIdentifier[] getVarAndFunctionDataIdentifiers() throws IOException, DataAccessException {
+	getFunctionDataIdentifiers();
 	DataIdentifier[] dis = new DataIdentifier[dataSetIdentifierList.size()];
 	for (int i = 0; i < dataSetIdentifierList.size(); i ++){
 		DataSetIdentifier dsi = (DataSetIdentifier)dataSetIdentifierList.elementAt(i);
@@ -854,7 +994,7 @@ private void mergeDatasets() throws DataAccessException, IOException {
  */
 private void readFunctions() throws FileNotFoundException, IOException {
 
-	Vector annotatedFuncsVector = FunctionFileGenerator.readFunctionsFile(getFunctionsFile());
+	Vector<AnnotatedFunction> annotatedFuncsVector = FunctionFileGenerator.readFunctionsFile(getFunctionsFile());
 
 	//
 	// Convert this annotatedfunctionsVector into the field annotatedFunctionsList.
@@ -862,8 +1002,9 @@ private void readFunctions() throws FileNotFoundException, IOException {
 
 	annotatedFunctionList.clear();
 	for (int i = 0; i < annotatedFuncsVector.size(); i++){
-		AnnotatedFunction annotatedFunction = (AnnotatedFunction)annotatedFuncsVector.elementAt(i);
+		AnnotatedFunction annotatedFunction = annotatedFuncsVector.elementAt(i);
 		try {
+			functionBindAndSubstitute(annotatedFunction);
 			addFunctionToList(annotatedFunction);
 		} catch (ExpressionException e) {
 			throw new RuntimeException("Could not add function "+annotatedFunction.getName()+" to annotatedFunctionList");
@@ -1029,4 +1170,119 @@ private ODESolverResultSet resampleODEData(ODESimData refSimdata, ODESimData sim
 
 	return newODEresultSet;
 }
+
+
+private void replaceFunction(AnnotatedFunction function) throws ExpressionException,DataAccessException{
+	boolean bFuncNameExists = false;
+	for (int i=0;i<annotatedFunctionList.size();i++){
+		if (annotatedFunctionList.elementAt(i).getName().equals(function.getName())){
+			bFuncNameExists = true;
+			break;
+		}
+	}
+	if(!bFuncNameExists){
+		addFunctionToList(function);
+		return;
+	}
+
+//	function.getExpression().flatten();
+	Vector<String> targetUserDefinedFunctionSymbols = new Vector<String>();
+	String[] newfuncSymbols = function.getExpression().getSymbols();
+	for (int i = 0; i < newfuncSymbols.length; i++) {
+		for (int j=0;j<annotatedFunctionList.size();j++){
+			if (annotatedFunctionList.elementAt(j).getName().equals(newfuncSymbols[i])){
+				if(!targetUserDefinedFunctionSymbols.contains(newfuncSymbols[i])){
+					targetUserDefinedFunctionSymbols.add(newfuncSymbols[i]);
+				}
+				break;
+			}
+		}
+	}
+	HashSet<AnnotatedFunction> allReferringFuncs = new HashSet<AnnotatedFunction>();
+	//Check all paths for circular reference
+	if(targetUserDefinedFunctionSymbols.size() > 0){
+		Vector<AnnotatedFunction> annotFuncsReferringToTarget = new Vector<AnnotatedFunction>();
+		AnnotatedFunction targetFunction = function;
+		while(true){
+			AnnotatedFunction[] referringFuncArr =
+				getReferringUserFunctions(targetFunction.getName());
+			if(referringFuncArr != null && referringFuncArr.length > 0){
+				for (int i = 0; i < targetUserDefinedFunctionSymbols.size(); i++) {
+					for (int j = 0; j < referringFuncArr.length; j++) {
+						if(targetUserDefinedFunctionSymbols.elementAt(i).
+								equals(referringFuncArr[j].getName())){
+							throw new DataAccessException(
+									"Error: Circular reference for functions '"+
+									function.getName()+"' and '"+referringFuncArr[j].getName()+"'");
+									
+						}
+					}
+				}
+				for (int j = 0; j < referringFuncArr.length; j++) {
+					allReferringFuncs.add(referringFuncArr[j]);
+					if(!annotFuncsReferringToTarget.contains(referringFuncArr[j])){
+						annotFuncsReferringToTarget.add(referringFuncArr[j]);
+					}
+				}				
+			}
+			if(annotFuncsReferringToTarget.size() > 0){
+				targetFunction = annotFuncsReferringToTarget.elementAt(0);
+				annotFuncsReferringToTarget.remove(0);
+			}else{
+				break;
+			}
+		}
+	}
+	//Bind existing symbols to function and fail if something is wrong
+	functionBindAndSubstitute(function);
+	
+	for (int i=0;i<annotatedFunctionList.size();i++){
+		if (annotatedFunctionList.elementAt(i).getName().equals(function.getName())){
+			annotatedFunctionList.remove(i);
+			break;
+		}
+	}
+	for (int i = 0; i < dataSetIdentifierList.size(); i++) {
+		if (dataSetIdentifierList.elementAt(i).getName().equals(function.getName())){
+			dataSetIdentifierList.remove(i);
+			break;
+		}
+		
+	}
+	addFunctionToListInternal(function);
+	
+	//Bind Function to existing symbols
+	AnnotatedFunction[] allReferringFuncArr = allReferringFuncs.toArray(new AnnotatedFunction[0]);
+	for (int i = 0; i < allReferringFuncArr.length; i++) {
+		functionBindAndSubstitute(allReferringFuncArr[i]);
+	}
+}
+
+
+private AnnotatedFunction[] getReferringUserFunctions(String symbolName) throws DataAccessException{
+	//Check for other userdefined functions using the function we want to delete
+	Vector<AnnotatedFunction> referringFunctionV = new Vector<AnnotatedFunction>();
+	for (int i=0;i<annotatedFunctionList.size();i++){
+		if(annotatedFunctionList.elementAt(i).isUserDefined()){
+//			try{
+//				annotatedFunctionList.elementAt(i).getExpression().flatten();
+//			}catch(ExpressionException e){
+//				throw new DataAccessException(
+//						"Error getting referring functions for '"+function.getName()+"'\n"+
+//						e.getMessage());
+//			}
+			String[] existingUserDefFunctionSymbols =
+				annotatedFunctionList.elementAt(i).getExpression().getSymbols();
+			for (int j = 0; existingUserDefFunctionSymbols != null && j< existingUserDefFunctionSymbols.length; j++) {
+				if (existingUserDefFunctionSymbols[j].equals(symbolName)){
+					referringFunctionV.add(annotatedFunctionList.elementAt(i));
+				}				
+			}
+		}
+	}
+	return referringFunctionV.toArray(new AnnotatedFunction[0]);
+	
+}
+
+
 }

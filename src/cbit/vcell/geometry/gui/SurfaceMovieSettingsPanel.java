@@ -15,6 +15,7 @@ public class SurfaceMovieSettingsPanel extends JPanel implements ActionListener{
 	private final JLabel movieWidthValLabel = new JLabel();
 	private final JLabel movieHeightValLabel = new JLabel();
 	private final JComboBox fpsComboBox = new JComboBox();
+	private final JComboBox formatComboBox = new JComboBox();
 	private final JComboBox beginTimeComboBox = new JComboBox();
 	private final JComboBox endTimeComboBox = new JComboBox();
 	private final JLabel totalFramesValLabel = new JLabel();
@@ -24,15 +25,32 @@ public class SurfaceMovieSettingsPanel extends JPanel implements ActionListener{
 		super();
 		final GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[] {0,7};
-		gridBagLayout.rowHeights = new int[] {0,7,7,7,7,7,7};
+		gridBagLayout.rowHeights = new int[] {7,0,7,7,7,7,7,7};
 		setLayout(gridBagLayout);
+
+		final JLabel movieFormatLabel = new JLabel();
+		movieFormatLabel.setText("Movie Format:");
+		final GridBagConstraints gridBagConstraints_14 = new GridBagConstraints();
+		gridBagConstraints_14.insets = new Insets(0, 0, 0, 4);
+		gridBagConstraints_14.anchor = GridBagConstraints.EAST;
+		gridBagConstraints_14.gridx = 0;
+		gridBagConstraints_14.gridy = 0;
+		add(movieFormatLabel, gridBagConstraints_14);
+
+		formatComboBox.setActionCommand("formatComboBox");
+		final GridBagConstraints gridBagConstraints_15 = new GridBagConstraints();
+		gridBagConstraints_15.fill = GridBagConstraints.HORIZONTAL;
+		gridBagConstraints_15.weightx = 1;
+		gridBagConstraints_15.gridy = 0;
+		gridBagConstraints_15.gridx = 1;
+		add(formatComboBox, gridBagConstraints_15);
 
 		final JLabel movieWidthLabel = new JLabel();
 		movieWidthLabel.setText("Movie Width:");
 		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.insets = new Insets(0, 0, 0, 4);
 		gridBagConstraints.anchor = GridBagConstraints.EAST;
-		gridBagConstraints.gridy = 0;
+		gridBagConstraints.gridy = 1;
 		gridBagConstraints.gridx = 0;
 		add(movieWidthLabel, gridBagConstraints);
 
@@ -40,7 +58,7 @@ public class SurfaceMovieSettingsPanel extends JPanel implements ActionListener{
 		final GridBagConstraints gridBagConstraints_7 = new GridBagConstraints();
 		gridBagConstraints_7.anchor = GridBagConstraints.WEST;
 		gridBagConstraints_7.weightx = 1;
-		gridBagConstraints_7.gridy = 0;
+		gridBagConstraints_7.gridy = 1;
 		gridBagConstraints_7.gridx = 1;
 		add(movieWidthValLabel, gridBagConstraints_7);
 
@@ -49,7 +67,7 @@ public class SurfaceMovieSettingsPanel extends JPanel implements ActionListener{
 		final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
 		gridBagConstraints_1.insets = new Insets(0, 0, 0, 4);
 		gridBagConstraints_1.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_1.gridy = 1;
+		gridBagConstraints_1.gridy = 2;
 		gridBagConstraints_1.gridx = 0;
 		add(movieHeightLabel, gridBagConstraints_1);
 
@@ -57,7 +75,7 @@ public class SurfaceMovieSettingsPanel extends JPanel implements ActionListener{
 		final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
 		gridBagConstraints_8.weightx = 1;
 		gridBagConstraints_8.anchor = GridBagConstraints.WEST;
-		gridBagConstraints_8.gridy = 1;
+		gridBagConstraints_8.gridy = 2;
 		gridBagConstraints_8.gridx = 1;
 		add(movieHeightValLabel, gridBagConstraints_8);
 
@@ -66,14 +84,14 @@ public class SurfaceMovieSettingsPanel extends JPanel implements ActionListener{
 		final GridBagConstraints gridBagConstraints_2 = new GridBagConstraints();
 		gridBagConstraints_2.insets = new Insets(0, 0, 0, 4);
 		gridBagConstraints_2.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_2.gridy = 2;
+		gridBagConstraints_2.gridy = 3;
 		gridBagConstraints_2.gridx = 0;
 		add(framesPerSecondLabel, gridBagConstraints_2);
 
 		final GridBagConstraints gridBagConstraints_9 = new GridBagConstraints();
 		gridBagConstraints_9.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_9.weightx = 1;
-		gridBagConstraints_9.gridy = 2;
+		gridBagConstraints_9.gridy = 3;
 		gridBagConstraints_9.gridx = 1;
 		add(fpsComboBox, gridBagConstraints_9);
 		fpsComboBox.addActionListener(this);
@@ -83,14 +101,14 @@ public class SurfaceMovieSettingsPanel extends JPanel implements ActionListener{
 		final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
 		gridBagConstraints_3.insets = new Insets(0, 0, 0, 4);
 		gridBagConstraints_3.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_3.gridy = 3;
+		gridBagConstraints_3.gridy = 4;
 		gridBagConstraints_3.gridx = 0;
 		add(beginTimeLabel, gridBagConstraints_3);
 
 		final GridBagConstraints gridBagConstraints_10 = new GridBagConstraints();
 		gridBagConstraints_10.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_10.weightx = 1;
-		gridBagConstraints_10.gridy = 3;
+		gridBagConstraints_10.gridy = 4;
 		gridBagConstraints_10.gridx = 1;
 		add(beginTimeComboBox, gridBagConstraints_10);
 		beginTimeComboBox.addActionListener(this);
@@ -100,14 +118,14 @@ public class SurfaceMovieSettingsPanel extends JPanel implements ActionListener{
 		final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
 		gridBagConstraints_4.insets = new Insets(0, 0, 0, 4);
 		gridBagConstraints_4.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_4.gridy = 4;
+		gridBagConstraints_4.gridy = 5;
 		gridBagConstraints_4.gridx = 0;
 		add(endTimeLabel, gridBagConstraints_4);
 
 		final GridBagConstraints gridBagConstraints_11 = new GridBagConstraints();
 		gridBagConstraints_11.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_11.weightx = 1;
-		gridBagConstraints_11.gridy = 4;
+		gridBagConstraints_11.gridy = 5;
 		gridBagConstraints_11.gridx = 1;
 		add(endTimeComboBox, gridBagConstraints_11);
 		endTimeComboBox.addActionListener(this);
@@ -117,7 +135,7 @@ public class SurfaceMovieSettingsPanel extends JPanel implements ActionListener{
 		final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
 		gridBagConstraints_5.insets = new Insets(0, 0, 0, 4);
 		gridBagConstraints_5.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_5.gridy = 5;
+		gridBagConstraints_5.gridy = 6;
 		gridBagConstraints_5.gridx = 0;
 		add(totalFramesLabel, gridBagConstraints_5);
 
@@ -125,7 +143,7 @@ public class SurfaceMovieSettingsPanel extends JPanel implements ActionListener{
 		final GridBagConstraints gridBagConstraints_12 = new GridBagConstraints();
 		gridBagConstraints_12.anchor = GridBagConstraints.WEST;
 		gridBagConstraints_12.weightx = 1;
-		gridBagConstraints_12.gridy = 5;
+		gridBagConstraints_12.gridy = 6;
 		gridBagConstraints_12.gridx = 1;
 		add(totalFramesValLabel, gridBagConstraints_12);
 
@@ -134,7 +152,7 @@ public class SurfaceMovieSettingsPanel extends JPanel implements ActionListener{
 		final GridBagConstraints gridBagConstraints_6 = new GridBagConstraints();
 		gridBagConstraints_6.insets = new Insets(0, 0, 0, 4);
 		gridBagConstraints_6.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_6.gridy = 6;
+		gridBagConstraints_6.gridy = 7;
 		gridBagConstraints_6.gridx = 0;
 		add(totalDurationLabel, gridBagConstraints_6);
 
@@ -142,7 +160,7 @@ public class SurfaceMovieSettingsPanel extends JPanel implements ActionListener{
 		final GridBagConstraints gridBagConstraints_13 = new GridBagConstraints();
 		gridBagConstraints_13.anchor = GridBagConstraints.WEST;
 		gridBagConstraints_13.weightx = 1;
-		gridBagConstraints_13.gridy = 6;
+		gridBagConstraints_13.gridy = 7;
 		gridBagConstraints_13.gridx = 1;
 		add(totalDurationValLabel, gridBagConstraints_13);
 	}
@@ -151,6 +169,10 @@ public class SurfaceMovieSettingsPanel extends JPanel implements ActionListener{
 		movieWidthValLabel.setText(width+"");
 		movieHeightValLabel.setText(height+"");
 		try{
+			formatComboBox.removeActionListener(this);
+			formatComboBox.addItem("QuickTime Movie *.qt");
+			formatComboBox.setSelectedIndex(0);
+
 			fpsComboBox.removeActionListener(this);
 			for (int i = 1; i <= 30; i++) {
 				fpsComboBox.addItem(i+"");

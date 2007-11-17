@@ -11,11 +11,9 @@ import cbit.vcell.math.VolVariable;
 import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.math.MembraneRegionVariable;
 import cbit.vcell.math.Variable;
-import cbit.vcell.simdata.Cachetable;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.SimDataBlock;
-import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.parser.Expression;
@@ -554,6 +552,9 @@ protected void initStep1() throws SolverException {
 		FieldDataIdentifierSpec[] argFieldDataIDSpecs = getFieldDataIdentifierSpecs();
 		if(argFieldDataIDSpecs != null && argFieldDataIDSpecs.length > 0){
 			fireSolverStarting("resampling field data...");
+			for (int i = 0; i < argFieldDataIDSpecs.length; i++) {
+				argFieldDataIDSpecs[i].getFieldFuncArgs().getTime().bindExpression(getSimulation());
+			}
 			resampleFieldData(
 					argFieldDataIDSpecs,
 					getSaveDirectory(),//getSaveDirectory(),
@@ -562,7 +563,7 @@ protected void initStep1() throws SolverException {
 						getSimulation().getMathDescription().getGeometry().getExtent(),
 						getSimulation().getMeshSpecification().getSamplingSize(),
 						getSimulation().getMathDescription().getGeometry().getGeometrySurfaceDescription().getRegionImage()),
-						simResampleInfoProvider,
+					simResampleInfoProvider,	
 					HESM_OVERWRITE_AND_CONTINUE
 				);
 		}

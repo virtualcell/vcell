@@ -298,33 +298,6 @@ private void addFunctionToListInternal(AnnotatedFunction function){
 	annotatedFunctionList.addElement((AnnotatedFunction)function);
 }
 
-/**
- * Insert the method's description here.
- * Creation date: (3/20/2006 11:37:48 PM)
- * @return double[]
- * @param rawVals double[]
- */
-private double[] calcSpaceStats(double[] rawVals,int varIndex,DataSetControllerImpl.SpatialStatsInfo spatialStatsInfo) {
-	
-    double min = Double.POSITIVE_INFINITY;
-    double max = Double.NEGATIVE_INFINITY;
-    double mean = 0;
-    double wmean = 0;
-    double sum = 0;
-    double wsum = 0;
-    double val;
-    for(int j=0;j<rawVals.length;j+= 1){
-	    val = rawVals[j];
-	    if(val < min){min=val;}
-	    if(val > max){max=val;}
-	    sum+= val;
-	    if(spatialStatsInfo.bWeightsValid){wsum+= val*spatialStatsInfo.spaceWeight[varIndex][j];}
-    }
-    mean = sum/rawVals.length;
-    if(spatialStatsInfo.bWeightsValid){wmean = wsum/spatialStatsInfo.totalSpace[varIndex];}
-
-    return new double[] {min,max,mean,wmean,sum,wsum};
-}
 
 private void functionBindAndSubstitute(AnnotatedFunction function) throws ExpressionException{
 	
@@ -1045,21 +1018,6 @@ public synchronized double[][] getSimDataLineScan(String[] varNames,int[][] inde
 }
 
 
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.simdata.DataBlock
- * @param user cbit.vcell.server.User
- * @param simID java.lang.String
- */
-public double[][][] getSimDataTimeSeries(
-		String varNames[],
-		int[][] indexes,
-		boolean[] wantsThisTime,
-		DataSetControllerImpl.ProgressListener progressListener) throws DataAccessException,IOException{
-
-	return getSimDataTimeSeries0(varNames,indexes,wantsThisTime,null,progressListener);
-}
-
 
 /**
  * This method was created in VisualAge.
@@ -1067,25 +1025,7 @@ public double[][][] getSimDataTimeSeries(
  * @param user cbit.vcell.server.User
  * @param simID java.lang.String
  */
-public double[][][] getSimDataTimeSeries(
-		String varNames[],
-		int[][] indexes,
-		boolean[] wantsThisTime,
-		DataSetControllerImpl.SpatialStatsInfo spatialStatsInfo,
-		DataSetControllerImpl.ProgressListener progressListener) throws DataAccessException,IOException{
-
-	return getSimDataTimeSeries0(varNames,indexes,wantsThisTime,spatialStatsInfo,progressListener);
-
-}
-
-
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.simdata.DataBlock
- * @param user cbit.vcell.server.User
- * @param simID java.lang.String
- */
-private synchronized double[][][] getSimDataTimeSeries0(
+synchronized double[][][] getSimDataTimeSeries0(
 		String varNames[],
 		int[][] indexes,
 		boolean[] wantsThisTime,

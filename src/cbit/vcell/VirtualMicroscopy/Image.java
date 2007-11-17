@@ -3,12 +3,13 @@ package cbit.vcell.VirtualMicroscopy;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.awt.Rectangle;
 import java.io.Serializable;
 
 import cbit.image.ImageException;
 import cbit.util.Matchable;
 
-public abstract class Image implements Serializable {
+public abstract class Image implements Serializable, Matchable {
 	private int numX = 0;
 	private int numY = 0;
 	private int numZ = 0;
@@ -16,6 +17,18 @@ public abstract class Image implements Serializable {
 	private java.lang.String fieldName = new String();
 	private java.lang.String fieldDescription = new String("NoName");
 
+public static class ImageStatistics {
+	public double minValue;
+	public double maxValue;
+	public double meanValue;
+	public double sigma;
+	public double sum;
+	public double variance;
+	public String toString(){
+		return "min="+minValue+", max="+maxValue+", mean="+meanValue+", sigma="+sigma+", sum="+sum+", variance="+variance;
+	}
+}
+	
 /**
  * This method was created in VisualAge.
  * @param pix byte[]
@@ -25,7 +38,7 @@ public abstract class Image implements Serializable {
  * @param name java.lang.String
  * @param annot java.lang.String
  */
-protected Image(Image vci) throws ImageException {
+protected Image(Image vci) {
 	this.numX = vci.getNumX();
 	this.numY = vci.getNumY();
 	this.numZ = vci.getNumZ();
@@ -58,6 +71,22 @@ protected Image(cbit.util.Extent aExtent, int aNumX, int aNumY, int aNumZ) throw
 	setExtent(aExtent);
 }
 
+public abstract ImageStatistics getImageStatistics();
+
+public abstract Rectangle getNonzeroBoundingBox();
+
+public abstract int[] getNonzeroIndices();
+
+public abstract void reverse();
+
+public final double getPixelAreaXY(){
+	double deltaX = getExtent().getX()/getNumX();
+	double deltaY = getExtent().getX()/getNumY();
+	//double deltaZ = getExtent().getX()/getNumZ();
+	return (deltaX*deltaY);
+}
+
+
 
 /**
  * This method was created in VisualAge.
@@ -70,14 +99,14 @@ public boolean compareEqual(Matchable obj) {
 	}
 	Image vci = (Image)obj;
 
-	if(!cbit.util.Compare.isEqual(getName(),vci.getName())){
+	if(!cbit.util.Compare.isEqualOrNull(getName(),vci.getName())){
 		return false;
 	}
-	if(!cbit.util.Compare.isEqual(getDescription(),vci.getDescription())){
+	if(!cbit.util.Compare.isEqualOrNull(getDescription(),vci.getDescription())){
 		return false;
 	}
 	
-	if(!cbit.util.Compare.isEqual(getExtent(),vci.getExtent())){
+	if(!cbit.util.Compare.isEqualOrNull(getExtent(),vci.getExtent())){
 		return false;
 	}
 
@@ -101,7 +130,7 @@ public boolean compareEqual(Matchable obj) {
  * @return The description property value.
  * @see #setDescription
  */
-public java.lang.String getDescription() {
+public final java.lang.String getDescription() {
 	return fieldDescription;
 }
 
@@ -110,7 +139,7 @@ public java.lang.String getDescription() {
  * This method was created in VisualAge.
  * @return int
  */
-public cbit.util.Extent getExtent() {
+public final cbit.util.Extent getExtent() {
 	return extent;
 }
 
@@ -122,7 +151,7 @@ public cbit.util.Extent getExtent() {
  * @param y int
  * @param z int
  */
-public int getIndex(int x, int y, int z) throws ImageException {
+public final int getIndex(int x, int y, int z) throws ImageException {
 	if (x<0||x>=numX||y<0||y>=numY||z<0||z>=numZ){
 		throw new IllegalArgumentException("("+x+","+y+","+z+") is not inside (0,0,0) and ("+(numX-1)+","+(numY-1)+","+(numZ-1)+")");
 	}
@@ -135,7 +164,7 @@ public int getIndex(int x, int y, int z) throws ImageException {
  * @return The name property value.
  * @see #setName
  */
-public java.lang.String getName() {
+public final java.lang.String getName() {
 	return fieldName;
 }
 
@@ -144,7 +173,7 @@ public java.lang.String getName() {
  * This method was created in VisualAge.
  * @return int
  */
-public int getNumX() {
+public final int getNumX() {
 	return numX;
 }
 
@@ -154,7 +183,7 @@ public int getNumX() {
  * Creation date: (9/30/2005 10:45:30 AM)
  * @return int
  */
-public int getNumXYZ() {
+public final int getNumXYZ() {
 	return numX*numY*numZ;
 }
 
@@ -163,7 +192,7 @@ public int getNumXYZ() {
  * This method was created in VisualAge.
  * @return int
  */
-public int getNumY() {
+public final int getNumY() {
 	return numY;
 }
 
@@ -172,7 +201,7 @@ public int getNumY() {
  * This method was created in VisualAge.
  * @return int
  */
-public int getNumZ() {
+public final int getNumZ() {
 	return numZ;
 }
 
@@ -182,7 +211,7 @@ public int getNumZ() {
  * @param description The new value for the property.
  * @see #getDescription
  */
-public void setDescription(java.lang.String description) {
+public final void setDescription(java.lang.String description) {
 	fieldDescription = description;
 }
 
@@ -191,7 +220,7 @@ public void setDescription(java.lang.String description) {
  * This method was created in VisualAge.
  * @return int
  */
-public void setExtent(cbit.util.Extent newExtent) {
+public final void setExtent(cbit.util.Extent newExtent) {
 	this.extent = newExtent;
 }
 
@@ -202,7 +231,7 @@ public void setExtent(cbit.util.Extent newExtent) {
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getName
  */
-public void setName(java.lang.String name) throws java.beans.PropertyVetoException {
+public final void setName(java.lang.String name) throws java.beans.PropertyVetoException {
 	fieldName = name;
 }
 

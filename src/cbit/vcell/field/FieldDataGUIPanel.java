@@ -44,7 +44,7 @@ import cbit.util.Origin;
 import cbit.util.TokenMangler;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
-import cbit.vcell.VirtualMicroscopy.VirtualFrapTest;
+import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.applets.ServerMonitorInfo;
 import cbit.vcell.applets.ServerTableModel;
 import cbit.vcell.client.ClientRequestManager;
@@ -1086,13 +1086,16 @@ private void jButtonFDFromFile_ActionPerformed(java.awt.event.ActionEvent action
 				if(imageHelper == null){
 					try{
 						try{
-							imagedataSet = VirtualFrapTest.readImageDataset(imageFile.getAbsolutePath());
+							imagedataSet = ImageDatasetReader.readImageDataset(imageFile.getAbsolutePath());
 						}catch (Exception e){
 							throw new DataFormatException();
 						}
 						//[time][var][data]
-						UShortImage[] uShortImages = imagedataSet.getImages();
-						int numXY = uShortImages[0].getNumX()*uShortImages[0].getNumY();
+						boolean bCropOutBlack = true;
+						if (bCropOutBlack){
+							imagedataSet = imagedataSet.crop(imagedataSet.getNonzeroBoundingRectangle());
+						}
+						int numXY = imagedataSet.getISize().getX()*imagedataSet.getISize().getY();
 						int numXYZ = imagedataSet.getSizeZ()*numXY;
 				    	fdos.variableTypes = new VariableType[imagedataSet.getSizeC()];
 				    	fdos.varNames = new String[imagedataSet.getSizeC()];
@@ -1104,7 +1107,7 @@ private void jButtonFDFromFile_ActionPerformed(java.awt.event.ActionEvent action
 							for(int t=0;t<imagedataSet.getSizeT();t+=1){
 	//							int index=0;
 								for(int z=0;z<imagedataSet.getSizeZ();z+=1){
-									UShortImage ushortImage = imagedataSet.getImages()[imagedataSet.getIndexFromZCT(z,c,t)];
+									UShortImage ushortImage = imagedataSet.getImage(z,c,t);
 									shortData[t][c] = ushortImage.getPixels();
 									for(int i=0;i<shortData[t][c].length;i+= 1){
 										if(shortData[t][c][i] > 255){
@@ -1127,8 +1130,8 @@ private void jButtonFDFromFile_ActionPerformed(java.awt.event.ActionEvent action
 							}
 						}
 				    	fdos.origin = new Origin(0,0,0);
-				    	fdos.extent = (uShortImages[0].getExtent() != null?uShortImages[0].getExtent():new Extent(1,1,1));
-						fdos.isize = new ISize(uShortImages[0].getNumX(),uShortImages[0].getNumY(),imagedataSet.getSizeZ());
+				    	fdos.extent = (imagedataSet.getExtent()!=null)?(imagedataSet.getExtent()):(new Extent(1,1,1));
+						fdos.isize = imagedataSet.getISize();
 					}catch(DataFormatException e){
 						System.out.println("BioFormat couldn't read "+e.getMessage());
 						imagedataSet = null;

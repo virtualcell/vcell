@@ -154,13 +154,13 @@ public class DataSetControllerImpl implements SimDataConstants {
 		private int blockSize;
 		private double[][][] valuesOverTime = null;
 //		private double[][] valuesOverLine = null;
-		private SimulationData simData = null;
+		private VCData simData = null;
 		private double[] dataSetTimes = null;
 		private boolean[] wantsTheseTimes = null;
 		private DataSetControllerImpl.ProgressListener progressListener;
 		
 		public MultiFunctionIndexes(
-				final VCDataIdentifier argVcdID,
+				final VCDataIdentifier argVcdID, 
 				AnnotatedFunction argFunc,
 				int[] argIndices,
 				boolean[] argWantsTheseTimes,
@@ -169,7 +169,7 @@ public class DataSetControllerImpl implements SimDataConstants {
 										
 			wantsTheseTimes = argWantsTheseTimes;
 			dataSetTimes = DataSetControllerImpl.this.getDataSetTimes(argVcdID);
-			simData = (SimulationData)getVCData(argVcdID);
+			simData = getVCData(argVcdID);
 			functionIndexesArr = findFunctionIndexes(argVcdID,argFunc,argIndices);
 			if(!functionIndexesArr[0].hasNearFarInterpolation()){
 				blockSize = functionIndexesArr[0].getIndexes().length;
@@ -562,6 +562,8 @@ private cbit.util.TimeSeriesJobResults calculateStatisticsFromWhole(
 
     throw new IllegalArgumentException("Couldn't determine format of data to return");
 }
+
+
 
 
 private double interpolateVolDataValToMemb(CartesianMesh mesh,int membraneIndex,SimDataHolder simDataHolder,boolean isInside,boolean IsRegion){
@@ -2370,7 +2372,7 @@ private TimeSeriesJobResults getSpecialTimeSeriesValues(VCDataIdentifier vcdID,
 	String[] variableNames = timeSeriesJobSpec.getVariableNames();
 	boolean bIsSpecial = false;
 	CartesianMesh mesh = getMesh(vcdID);
-	SimulationData simData = (SimulationData)getVCData(vcdID);
+	VCData simData = getVCData(vcdID);
 	//
 	//Gradient and FieldData functions are special.
 	//They have to be evaluated using the 'full data' method using evaluateFunction(...).
@@ -2560,7 +2562,7 @@ private cbit.util.TimeSeriesJobResults getTimeSeriesValues_private(final VCDataI
 			return specialTSJR;
 		}
 		//
-		SimulationData simData = (SimulationData)getVCData(vcdID);
+		VCData vcData = getVCData(vcdID);
 		//
 		//Determine Memory Usage for this job to protect server
 		//
@@ -2568,7 +2570,7 @@ private cbit.util.TimeSeriesJobResults getTimeSeriesValues_private(final VCDataI
 		long memUsage = 0;
 		boolean bHasFunctionVars = false;//efficient function stats are not yet implemented so check to adjust calculation
 		for(int i=0;i<timeSeriesJobSpec.getVariableNames().length;i+= 1){
-			bHasFunctionVars = bHasFunctionVars || (simData.getFunction(timeSeriesJobSpec.getVariableNames()[i]) != null);
+			bHasFunctionVars = bHasFunctionVars || (vcData.getFunction(timeSeriesJobSpec.getVariableNames()[i]) != null);
 		}
 		for(int i=0;i<timeSeriesJobSpec.getIndices().length;i+= 1){
 			memUsage+= (timeSeriesJobSpec.isCalcSpaceStats() && !bHasFunctionVars ? NUM_STATS : timeSeriesJobSpec.getIndices()[i].length);
@@ -2596,20 +2598,20 @@ private cbit.util.TimeSeriesJobResults getTimeSeriesValues_private(final VCDataI
 				timeSeries = new double[indices.length + 1][desiredNumTimes];
 			}
 			timeSeries[0] = desiredTimeValues;
-			DataSetControllerImpl.ProgressListener progressListener =
-				new DataSetControllerImpl.ProgressListener(){
-					public void updateProgress(double progress) {
-						fireDataJobEventIfNecessary(
-								timeSeriesJobSpec.getVcDataJobID(),
-								MessageEvent.DATA_PROGRESS,
-								vcdID,
-								new Double(progress),
-								null,null
-							);
-					}
+			ProgressListener progressListener = new ProgressListener(){
+				public void updateProgress(double progress) {
+					fireDataJobEventIfNecessary(
+							timeSeriesJobSpec.getVcDataJobID(),
+							MessageEvent.DATA_PROGRESS,
+							vcdID,
+							new Double(progress),
+							null,null
+						);
+				}
 			};
-			if(simData.getFunction(varName) != null){
-				MultiFunctionIndexes mfi = new MultiFunctionIndexes(vcdID,simData.getFunction(varName),indices,wantsTheseTimes,progressListener);
+			if(vcData.getFunction(varName) != null){
+				AnnotatedFunction function = vcData.getFunction(varName);
+				MultiFunctionIndexes mfi = new MultiFunctionIndexes(vcdID,function,indices,wantsTheseTimes, progressListener);
 				for (int i=0;i<desiredTimeValues.length;i++){
 					fireDataJobEventIfNecessary(
 							timeSeriesJobSpec.getVcDataJobID(),
@@ -2627,9 +2629,9 @@ private cbit.util.TimeSeriesJobResults getTimeSeriesValues_private(final VCDataI
 			}else{
 				double[][][] valuesOverTime = null;
 				if(timeSeriesJobSpec.isCalcSpaceStats() && !bHasFunctionVars){
-					valuesOverTime = simData.getSimDataTimeSeries(new String[] {varName},new int[][]{indices},wantsTheseTimes,spatialStatsInfo,progressListener);
+					valuesOverTime = vcData.getSimDataTimeSeries(new String[] {varName},new int[][]{indices},wantsTheseTimes,spatialStatsInfo,progressListener);
 				}else{
-					valuesOverTime = simData.getSimDataTimeSeries(new String[] {varName},new int[][]{indices},wantsTheseTimes,progressListener);
+					valuesOverTime = vcData.getSimDataTimeSeries(new String[] {varName},new int[][]{indices},wantsTheseTimes,progressListener);
 				}
 				for (int i=0;i<desiredTimeValues.length;i++){
 					fireDataJobEventIfNecessary(

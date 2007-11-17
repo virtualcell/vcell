@@ -141,7 +141,7 @@ public void onControlTopicMessage(javax.jms.Message message0) throws javax.jms.J
 
 		} else if(msgType.equals(MessageConstants.MESSAGE_TYPE_EXPORT_EVENT_VALUE)) {			
 			ExportEvent event = (ExportEvent)((javax.jms.ObjectMessage)message).getObject();
-			log.print("---onTopicMessage[ExportEvent[" + event.getVCSimulationIdentifier().getID() + "," + event.getProgress() + "]]");
+			log.print("---onTopicMessage[ExportEvent[" + event.getVCDataIdentifier().getID() + "," + event.getProgress() + "]]");
 			fireExportEvent(event);
 		} else if(msgType.equals(MessageConstants.MESSAGE_TYPE_DATA_EVENT_VALUE)){
 			DataJobEvent event = (DataJobEvent)message.getObject();
