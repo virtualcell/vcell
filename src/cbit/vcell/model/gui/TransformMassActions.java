@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Vector;
 
 import cbit.util.BeanUtils;
+import cbit.vcell.mapping.MappingException;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.KineticsDescription;
@@ -13,6 +14,7 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.stoch.FluxSolver;
 import cbit.vcell.solver.stoch.MassActionSolver;
 
@@ -30,7 +32,7 @@ public class TransformMassActions
 		public final static String Label_Ok = "Ok";
 		public final static String Label_Transformed = "Able to transform";
 		public final static String Label_FailedReac = "Failed. Looking for the reactin rate according to the form of Kf*(reactant1^n1)*(reactant2^n2)*...-Kr*(product1^m1)*(product2^m2)*...";
-		public final static String Label_FailedFlux = "Failed. Looking for the flux function according to the form of p1*SpeciesOutside-p2*SpeciesInside";
+		public final static String Label_FailedFlux = "Failed. Looking for the flux density function according to the form of p1*SpeciesOutside-p2*SpeciesInside";
 		
 		private String[] transformRemark = new String[]{Label_Ok, Label_Transformed, Label_FailedReac, Label_FailedFlux};
 		private int transformType = 0;
@@ -99,6 +101,7 @@ public class TransformMassActions
 			{
 				Expression rateExp = origRS.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
 				try{
+					rateExp = substitueKineticPara(rateExp, origRS, false);
 					MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(rateExp, origRS);
 					//put all kinetic parameters together into array newKps
 					Vector<Kinetics.KineticsParameter> newKps = new Vector<Kinetics.KineticsParameter>();
@@ -114,11 +117,6 @@ public class TransformMassActions
 					}
 					//create mass action kinetics for the cloned reaction				
 					MassActionKinetics maKinetics= new MassActionKinetics(clonedRS);
-					//do we need the following check....?
-//					if(origRS.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_CurrentDensity) != null  && origRS.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_CurrentDensity).getExpression() != null)
-//					{
-//						maKinetics.getKineticsParameterFromRole(Kinetics.ROLE_CurrentDensity).setExpression(origRS.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_CurrentDensity).getExpression());
-//					}
 					maKinetics.getKineticsParameterFromRole(Kinetics.ROLE_KForward).setExpression(maFunc.getForwardRate());
 					maKinetics.getKineticsParameterFromRole(Kinetics.ROLE_KReverse).setExpression(maFunc.getReverseRate());
 					//copy rate, currentdensity, Kf and Kr to the new Kinetic Parameter list first(to make sure that paramters are in the correct order in the newly created Mass Action Kinetics)
@@ -159,8 +157,9 @@ public class TransformMassActions
 				{
 					Expression rateExp = origRS.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
 					try{
+						rateExp = substitueKineticPara(rateExp, origRS, false);
 						FluxSolver.FluxFunction fluxFunc = FluxSolver.solveFlux(rateExp, origRS);
-//						change flux to simple Mass Action reaction and save it as transformed mass action, use this simple reaction to store forward
+						//change flux to simple Mass Action reaction and save it as transformed mass action, use this simple reaction to store forward
 						//and reverse rate so that these can be displayed in the table. Flux itself won't be physically changed.
 						SimpleReaction simpleRxn = new SimpleReaction(origRS.getStructure(), origRS.getName());
 						// Set the kinetics
@@ -175,7 +174,7 @@ public class TransformMassActions
 					{
 //						Flux Solver failed to parse the rate expression
 						transformedRS.setTransformedReaction(origRS);
-						transformedRS.setTransformType(TransformedReaction.NOTRANSFORMABLEREAC);
+						transformedRS.setTransformType(TransformedReaction.NOTRANSFORMABLEFLUX);
 //						throw new MathException("Failed to transform flux " + origRS.getName() + ". Looking for the flux density function according to the form of p1*SpeciesOutside-p2*SpeciesInside.");
 					}
 				}
@@ -193,5 +192,35 @@ public class TransformMassActions
 	}
 	public boolean[] getIsTransformable() {
 		return isTransformable;
+	}
+	
+	private Expression substitueKineticPara(Expression exp, ReactionStep rs, boolean substituteConst) throws MappingException, ExpressionException
+	{
+		Expression result = new Expression(exp);
+		boolean bSubstituted = true;
+		while(bSubstituted)
+		{
+			bSubstituted = false;
+			String symbols[] = result.getSymbols();
+			for (int k = 0;symbols!=null && k < symbols.length; k++){
+				Kinetics.KineticsParameter kp = rs.getKinetics().getKineticsParameter(symbols[k]);
+				if (kp != null)
+				{
+					try{
+						Expression expKP = substitueKineticPara(kp.getExpression(), rs, true);
+						if(!expKP.flatten().isNumeric()||substituteConst)
+						{
+							result.substituteInPlace(new Expression(symbols[k]), new Expression(kp.getExpression()));
+							bSubstituted = true;
+						}
+					}catch(ExpressionException e1){
+						e1.printStackTrace();
+						throw new ExpressionException(e1.getMessage());
+					}
+				}
+			}
+			
+		}
+		return result;
 	}
 }

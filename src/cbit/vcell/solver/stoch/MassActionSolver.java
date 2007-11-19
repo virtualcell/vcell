@@ -9,6 +9,7 @@ import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionUtils;
@@ -49,41 +50,51 @@ public class MassActionSolver {
 		}
 	}
 	
-	public static MassActionFunction solveMassAction(Expression orgExp, ReactionStep rs /*, SimulationContext simContext*/) throws ExpressionException, MathException{
+	public static MassActionFunction solveMassAction(Expression orgExp, ReactionStep rs ) throws ExpressionException, MathException{
 		MassActionFunction maFunc = new MassActionFunction();
 		//get reactants, products, overlaps, non-overlap reactants and non-overlap products
-		Vector<String> reactants = new Vector<String>();
-		Vector<String> products = new Vector<String>();
-		Vector<String> overlaps = new Vector<String>();
-		Vector<String> nonOverlapReacts = new Vector<String>(); 
-		Vector<String> nonOverlapProds = new Vector<String>();
+		Vector<ReactionParticipant> reactants = new Vector<ReactionParticipant>();
+		Vector<ReactionParticipant> products = new Vector<ReactionParticipant>();
+		Vector<ReactionParticipant> overlaps = new Vector<ReactionParticipant>();
+		Vector<ReactionParticipant> nonOverlapReacts = new Vector<ReactionParticipant>(); 
+		Vector<ReactionParticipant> nonOverlapProds = new Vector<ReactionParticipant>();
 		ReactionParticipant[] rp = rs.getReactionParticipants();
 		Expression duplicatedExp = new Expression(orgExp);
 		Expression forwardExp = null;
 		Expression reverseExp = null;
+		//separate the reactants and products
 		for(int i=0; i<rp.length; i++)
 		{
-			if((rp[i] instanceof Reactant) && (rp[i] instanceof Product))
+			if(rp[i] instanceof Reactant)
 			{
-				overlaps.add(rp[i].getName());
-				reactants.add(rp[i].getName());
-				products.add(rp[i].getName());
+				reactants.add(rp[i]);
+			}
+			else if(rp[i] instanceof Product)
+			{
+				products.add(rp[i]);
+			}
+		}
+		//get the overlaps, nonOverlapReactants 
+		for(int i=0; i<reactants.size(); i++)
+		{
+			if(isProduct(products, reactants.elementAt(i).getSpeciesContext()))
+			{
+				overlaps.add(reactants.elementAt(i));
 			}
 			else
 			{
-				if(rp[i] instanceof Reactant)
-				{
-					nonOverlapReacts.add(rp[i].getName());
-					reactants.add(rp[i].getName());
-				}
-				else if(rp[i] instanceof Product)
-				{
-					nonOverlapProds.add(rp[i].getName());
-					products.add(rp[i].getName());
-				}
+				nonOverlapReacts.add(reactants.elementAt(i));
 			}
 		}
-		
+		//get nonOverlapProducts
+		for(int i=0; i<products.size(); i++)
+		{
+			if(!isReactant(reactants, products.elementAt(i).getSpeciesContext()))
+			{
+				nonOverlapProds.add(products.elementAt(i));
+			}
+		}
+		//reaction with membrane current can not be transformed to mass action
 		if(rs.getKinetics().getKineticsDescription().isElectrical())
 		{
 			throw new MathException("Kinetics of reaction " + rs.getName() + " has membrane current. It can not be automatically transformed to Mass Action kinetics.");
@@ -93,33 +104,39 @@ public class MassActionSolver {
 			//reaction in which reactants and products are not overlaping
 			if(overlaps.size() == 0)
 			{
-				//get forward rate by substitute reactants to 1 and products to 0.
+				//get forward rate by substituting reactants to 1 and products to 0.
 				for(int i=0; i<reactants.size(); i++)
 				{
-					duplicatedExp = duplicatedExp.getSubstitutedExpression(new Expression(reactants.elementAt(i)), new Expression(1)).flatten();
+					duplicatedExp = duplicatedExp.getSubstitutedExpression(new Expression(reactants.elementAt(i).getName()), new Expression(1)).flatten();
 				}
 				for(int i=0; i<products.size(); i++)
 				{
-					duplicatedExp = duplicatedExp.getSubstitutedExpression(new Expression(products.elementAt(i)), new Expression(0)).flatten();
+					duplicatedExp = duplicatedExp.getSubstitutedExpression(new Expression(products.elementAt(i).getName()), new Expression(0)).flatten();
 				}
 				forwardExp = duplicatedExp;
 				duplicatedExp = new Expression(orgExp);
-				//get reverse rate by substitute reactants to 0 and products to 1.
+				//get reverse rate by substituting reactants to 0 and products to 1.
 				for(int i=0; i<reactants.size(); i++)
 				{
-					duplicatedExp = duplicatedExp.getSubstitutedExpression(new Expression(reactants.elementAt(i)), new Expression(0)).flatten();
+					duplicatedExp = duplicatedExp.getSubstitutedExpression(new Expression(reactants.elementAt(i).getName()), new Expression(0)).flatten();
 				}
 				for(int i=0; i<products.size(); i++)
 				{
-					duplicatedExp = duplicatedExp.getSubstitutedExpression(new Expression(products.elementAt(i)), new Expression(1)).flatten();
+					duplicatedExp = duplicatedExp.getSubstitutedExpression(new Expression(products.elementAt(i).getName()), new Expression(1)).flatten();
 				}
 				//If the general kinetics is in form of mass action, the reverse rate constant should be a negtive value. We store the absolute value for reverse rate constant.
 				reverseExp = Expression.mult(duplicatedExp, new Expression(-1)).flatten();
+				//Reconstruct the rate based on the extracted forward rate and reverse rate. If the reconstructed rate is not equivalent to the original rate, 
+				//it means the original rate is not in the form of Kf*r1^n1*r2^n2-Kr*p1^m1*p2^m2.
 				Expression constructedExp = reconstructedRate(forwardExp, reverseExp, rs);
 				if(ExpressionUtils.functionallyEquivalent(orgExp, constructedExp, false, 1e-8, 1e-8))
 				{
 					maFunc.setForwardRate(forwardExp);
 					maFunc.setReverseRate(reverseExp);
+				}
+				else
+				{
+					throw new MathException("Failed to transform to Mass Action kinetics for reaction " + rs.getName() + ". Reconstruced rate from Mass Action is not equivalent to the original rate.");
 				}
 			}
 			else
@@ -130,37 +147,44 @@ public class MassActionSolver {
 					//substitute the overlapping reatants/products with "1" to simplify the rate expression
 					for(int i=0; i< overlaps.size(); i++)
 					{
-						duplicatedExp = duplicatedExp.getSubstitutedExpression(new Expression(overlaps.elementAt(i)), new Expression(1));
+						duplicatedExp = duplicatedExp.getSubstitutedExpression(new Expression(overlaps.elementAt(i).getName()), new Expression(1));
 					}
 					Expression simplifiedExp = new Expression(duplicatedExp);
 					
-					//get forward rate by substitute non-overlap reactants to 1 and non-overlap products to 0.
+					//get forward rate by substituting non-overlap reactants to 1 and non-overlap products to 0.
 					for(int i=0; i<nonOverlapReacts.size(); i++)
 					{
-						duplicatedExp = duplicatedExp.getSubstitutedExpression(new Expression(nonOverlapReacts.elementAt(i)), new Expression(1)).flatten();
+						duplicatedExp = duplicatedExp.getSubstitutedExpression(new Expression(nonOverlapReacts.elementAt(i).getName()), new Expression(1)).flatten();
 					}
 					for(int i=0; i<nonOverlapProds.size(); i++)
 					{
-						duplicatedExp = duplicatedExp.getSubstitutedExpression(new Expression(nonOverlapProds.elementAt(i)), new Expression(0)).flatten();
+						duplicatedExp = duplicatedExp.getSubstitutedExpression(new Expression(nonOverlapProds.elementAt(i).getName()), new Expression(0)).flatten();
 					}
 					forwardExp = duplicatedExp;
 									
-					//get reverse rate by substitute reactants to 0 and products to 1.
+					//get reverse rate by substituting reactants to 0 and products to 1.
 					duplicatedExp = new Expression(simplifiedExp);
 					for(int i=0; i<nonOverlapReacts.size(); i++)
 					{
-						duplicatedExp = duplicatedExp.getSubstitutedExpression(new Expression(nonOverlapReacts.elementAt(i)), new Expression(0)).flatten();
+						duplicatedExp = duplicatedExp.getSubstitutedExpression(new Expression(nonOverlapReacts.elementAt(i).getName()), new Expression(0)).flatten();
 					}
 					for(int i=0; i<nonOverlapProds.size(); i++)
 					{
-						duplicatedExp = duplicatedExp.getSubstitutedExpression(new Expression(nonOverlapProds.elementAt(i)), new Expression(1)).flatten();
+						duplicatedExp = duplicatedExp.getSubstitutedExpression(new Expression(nonOverlapProds.elementAt(i).getName()), new Expression(1)).flatten();
 					}
+					//If the general kinetics is in form of mass action, the reverse rate constant should be a negtive value. We store the absolute value for reverse rate constant.
 					reverseExp = Expression.mult(duplicatedExp, new Expression(-1)).flatten();
+					//Reconstruct the rate based on the extracted forward rate and reverse rate. If the reconstructed rate is not equivalent to the original rate, 
+					//it means the original rate is not in the form of Kf*r1^n1*r2^n2-Kr*p1^m1*p2^m2.
 					Expression constructedExp = reconstructedRate(forwardExp, reverseExp, rs);
 					if(ExpressionUtils.functionallyEquivalent(orgExp, constructedExp, false, 1e-8, 1e-8))
 					{
 						maFunc.setForwardRate(forwardExp);
 						maFunc.setReverseRate(reverseExp);
+					}
+					else
+					{
+						throw new MathException("Failed to transform to Mass Action kinetics for reaction " + rs.getName() + ". Reconstruced rate from Mass Action is not equivalent to the original rate.");
 					}
 				}
 				//reaction in which reactants and products are totally overlaping, throw exception
@@ -195,6 +219,51 @@ public class MassActionSolver {
 		}
 		
 		result = new Expression(reacString + "-" + prodString);
-		return result.flatten();
-	}
+		if(result != null)
+		{
+			return result.flatten();
+		}
+		else
+		{
+			throw new ExpressionException("Cannot reconstruct rate based on extracted forward and reverse rate constants.");
+		}
+	}// end of method reconstructedRate()
+	
+	/**
+	 * Check if a species described by speceisContext is a reactant in a specific reaction
+	 * We need the function to separate the pure reactants, pure products, and speceis are both reactants and products.
+	 * @param rp
+	 * @param sc
+	 * @return boolean
+	 */
+	private static boolean isReactant(Vector<ReactionParticipant> reacts, SpeciesContext sc)
+	{
+		for(int i=0; i<reacts.size(); i++)
+		{
+			if((reacts.elementAt(i) instanceof Reactant) && (reacts.elementAt(i).getSpeciesContext().compareEqual(sc)))
+			{
+				return true;
+			}
+		}
+		return false;
+	}// end of method isReactant()
+	
+	/**
+	 * Check if a species described by speceisContext is a product in a specific reaction
+	 * We need the function to separate the pure reactants, pure products, and speceis are both reactants and products.
+	 * @param rp
+	 * @param sc
+	 * @return boolean
+	 */
+	private static boolean isProduct(Vector<ReactionParticipant> prods, SpeciesContext sc)
+	{
+		for(int i=0; i<prods.size(); i++)
+		{
+			if((prods.elementAt(i) instanceof Product) && (prods.elementAt(i).getSpeciesContext().compareEqual(sc)))
+			{
+				return true;
+			}
+		}
+		return false;
+	}// end of method isReactant()
 }
