@@ -104,9 +104,9 @@ public class FluxSolver {
 		Expression p1 = null;//permeability for Sout
 		Expression p2 = null;//permeability for Sin
 		
-		if(rs.getKinetics().getKineticsDescription().isElectrical())
+		if(rs.getPhysicsOptions() != ReactionStep.PHYSICS_MOLECULAR_ONLY)
 		{
-			throw new MathException("Kinetics of flux " + rs.getName() + " has membrane current. It can not be automatically transformed to Mass Action kinetics.");
+			throw new MathException("Kinetics of flux " + rs.getName() + " has membrane current. Can not run stochastic simulation, looking for the flux density function according to the form of p1*SpeciesOutside-p2*SpeciesInside .");
 		}
 		else
 		{
@@ -130,14 +130,7 @@ public class FluxSolver {
 			}
 			else
 			{
-				if(err.equals("t"))
-				{
-					throw new MathFormatException("Cannot generate stochastic math mapping for the flux: "+rs.getName()+". Unexpected symbol \'t\' in flux density function.");
-				}
-				else
-				{	
-					throw new MathException("Cannot generate stochastic math mapping for the flux: "+rs.getName()+". Looking for the flux density function according to the form of p1*SpeciesOutside-p2*SpeciesInside.");
-				}	
+				throw new MathException("Cannot generate stochastic math mapping for the flux: "+rs.getName()+". Looking for the flux density function according to the form of p1*SpeciesOutside-p2*SpeciesInside.");
 			}
 			//get p2 after partially differentiating speciesInside
 			fluxExp = new Expression(orgExp);
@@ -195,11 +188,6 @@ public class FluxSolver {
 				if(syms[i].equals(spOutside) || syms[i].equals(spInside))
 				{
 					errString = syms[i];
-					break;
-				}
-				else if(syms[i].equals("t"))
-				{
-					errString = "t";
 					break;
 				}
 			}

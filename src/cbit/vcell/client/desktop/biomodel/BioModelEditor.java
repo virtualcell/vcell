@@ -1027,7 +1027,7 @@ private void newApplication(java.awt.event.ActionEvent event) {
 	{
 		isStoch = true;
 		String message = getBioModel().isValidForStochApp();
-		if(message.compareTo("ok") != 0)
+		if(!message.equals(""))
 		{
 			PopupGenerator.showErrorDialog(message);
 			return;

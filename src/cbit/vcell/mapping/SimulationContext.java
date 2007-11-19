@@ -226,7 +226,7 @@ public SimulationContext(SimulationContext simulationContext, boolean arg_isStoc
 	if(arg_isStoch)
 	{
 		String msg = simulationContext.getBioModel().isValidForStochApp();
-		if(!msg.equals("ok"))
+		if(!msg.equals(""))
 		{
 			throw new RuntimeException(msg); //no need to show popup here, the exception passes to upper level.
 		}

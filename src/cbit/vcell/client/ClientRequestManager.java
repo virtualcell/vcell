@@ -1632,7 +1632,7 @@ public void runSimulations(final ClientSimManager clientSimManager, final Simula
 			{
 				if(simulations[i].getMathDescription().isStoch())
 				{
-					if(!(stochChkMsg.equals("ok")))
+					if(!(stochChkMsg.equals("")))
 					{
 						DialogUtils.showErrorDialog("Problem in simulation: "+simulations[i].getName()+".\n"+stochChkMsg);
 						throw new RuntimeException("Problem in simulation: "+simulations[i].getName()+"\n"+stochChkMsg);

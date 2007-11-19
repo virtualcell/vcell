@@ -198,8 +198,8 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 		}
 		
 		
-		//complete the probability expression by the reactants' stoichiometries if it is not General rate law
-		if(!kinetics.getKineticsDescription().equals(KineticsDescription.General))
+		//complete the probability expression by the reactants' stoichiometries if it is Mass Action rate law
+		if(kinetics.getKineticsDescription().equals(KineticsDescription.MassAction))
 		{
 			ReactionParticipant[] reacPart = reactionStep.getReactionParticipants();
 			
@@ -280,7 +280,7 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 				
 			
 		//complete the rest part of the probability expression by the products' stoichiometries.
-		if(!kinetics.getKineticsDescription().equals(KineticsDescription.General))
+		if(kinetics.getKineticsDescription().equals(KineticsDescription.MassAction))
 		{
 			ReactionParticipant[] reacPart = reactionStep.getReactionParticipants();
 			
@@ -400,7 +400,7 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 	{
 		//We have to check if all the reactions are able to tranform to stochastic jump processes before generating the math.
 		String stochChkMsg =getSimulationContext().getBioModel().isValidForStochApp();
-		if(!(stochChkMsg.equals("ok")))
+		if(!(stochChkMsg.equals("")))
 		{
 			throw new ModelException("Problem in application: "+ getSimulationContext().getName()+"\n"+stochChkMsg);
 		}
@@ -1203,11 +1203,6 @@ private void refreshVariables() throws MappingException
 //	return result;
 //}
 
-
-
-
-
-
 private Expression substitueKineticPara(Expression exp, ReactionStep rs, boolean substituteConst) throws MappingException, ExpressionException
 {
 	Expression result = new Expression(exp);
@@ -1237,9 +1232,5 @@ private Expression substitueKineticPara(Expression exp, ReactionStep rs, boolean
 	}
 	return result;
 }
-
-
-
-
 
 }
