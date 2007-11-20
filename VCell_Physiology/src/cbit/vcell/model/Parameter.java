@@ -13,7 +13,7 @@ import org.vcell.expression.NameScope;
 import org.vcell.expression.SymbolTableEntry;
 import org.vcell.util.*;
 
-import cbit.vcell.units.VCUnitDefinition;
+import org.vcell.units.VCUnitDefinition;
 import edu.uchc.vcell.expression.internal.*;
 
 public abstract class Parameter implements SymbolTableEntry, Serializable, Matchable
@@ -158,7 +158,7 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
  * Creation date: (3/31/2004 12:10:47 PM)
  * @return cbit.vcell.units.VCUnitDefinition
  */
-public abstract cbit.vcell.units.VCUnitDefinition getUnitDefinition();
+public abstract VCUnitDefinition getUnitDefinition();
 /**
  * Accessor for the vetoPropertyChange field.
  */

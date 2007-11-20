@@ -8,6 +8,8 @@ import java.beans.*;
 
 import org.vcell.expression.ExpressionBindingException;
 import org.vcell.expression.IExpression;
+import org.vcell.units.VCUnitDefinition;
+import org.vcell.units.VCUnitException;
 import org.vcell.util.*;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.Version;
@@ -73,9 +75,9 @@ public class Model implements org.vcell.util.document.Versionable, Matchable, Pr
 		private String fieldParameterName = null;
 		private org.vcell.expression.IExpression fieldParameterExpression = null;
 		private int fieldParameterRole = -1;
-		private cbit.vcell.units.VCUnitDefinition fieldUnitDefinition = null;
+		private VCUnitDefinition fieldUnitDefinition = null;
 		
-		protected ModelParameter(String argName, org.vcell.expression.IExpression expression, int argRole, cbit.vcell.units.VCUnitDefinition argUnitDefinition) {
+		protected ModelParameter(String argName, org.vcell.expression.IExpression expression, int argRole, VCUnitDefinition argUnitDefinition) {
 			if (argName == null){
 				throw new IllegalArgumentException("parameter name is null");
 			}
@@ -149,12 +151,12 @@ public class Model implements org.vcell.util.document.Versionable, Matchable, Pr
 			return this.fieldParameterRole;
 		}
 
-		public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
+		public VCUnitDefinition getUnitDefinition() {
 			return fieldUnitDefinition;
 		}
 
-		public void setUnitDefinition(cbit.vcell.units.VCUnitDefinition unitDefinition) throws java.beans.PropertyVetoException {
-			cbit.vcell.units.VCUnitDefinition oldValue = fieldUnitDefinition;
+		public void setUnitDefinition(VCUnitDefinition unitDefinition) throws java.beans.PropertyVetoException {
+			VCUnitDefinition oldValue = fieldUnitDefinition;
 			super.fireVetoableChange("unitDefinition", oldValue, unitDefinition);
 			fieldUnitDefinition = unitDefinition;
 			super.firePropertyChange("unitDefinition", oldValue, unitDefinition);
@@ -580,7 +582,7 @@ public void gatherIssues(Vector issueList) {
 	try {
 		for (int i=0;i<fieldModelParameters.length;i++){
 			if (fieldModelParameters[i].getUnitDefinition()==null){
-			}else if (fieldModelParameters[i].getUnitDefinition().compareEqual(cbit.vcell.units.VCUnitDefinition.UNIT_TBD)){
+			}else if (fieldModelParameters[i].getUnitDefinition().compareEqual(VCUnitDefinition.UNIT_TBD)){
 				issueList.add(new Issue(fieldModelParameters[i], "Units","unit is undefined (TBD) for parameter '"+fieldModelParameters[i].getName()+"'",Issue.SEVERITY_WARNING));
 			}
 		}
@@ -589,8 +591,8 @@ public void gatherIssues(Vector issueList) {
 		//
 		for (int i = 0; i < fieldModelParameters.length; i++){
 			try {
-				cbit.vcell.units.VCUnitDefinition paramUnitDef = fieldModelParameters[i].getUnitDefinition();
-				cbit.vcell.units.VCUnitDefinition expUnitDef = org.vcell.expression.VCUnitEvaluator.getUnitDefinition(fieldModelParameters[i].getExpression());
+				VCUnitDefinition paramUnitDef = fieldModelParameters[i].getUnitDefinition();
+				VCUnitDefinition expUnitDef = org.vcell.expression.VCUnitEvaluator.getUnitDefinition(fieldModelParameters[i].getExpression());
 				if (paramUnitDef == null){
 					issueList.add(new Issue(fieldModelParameters[i], "Units","defined unit is null for parameter '"+fieldModelParameters[i].getName()+"'",Issue.SEVERITY_WARNING));
 				}else if (expUnitDef == null){
@@ -598,7 +600,7 @@ public void gatherIssues(Vector issueList) {
 				}else if (paramUnitDef.isTBD() || (!paramUnitDef.compareEqual(expUnitDef) && !expUnitDef.isTBD())){
 					issueList.add(new Issue(fieldModelParameters[i], "Units","unit mismatch for parameter '"+fieldModelParameters[i].getName()+"' computed = ["+expUnitDef.getSymbol()+"]",Issue.SEVERITY_WARNING));
 				}
-			}catch (cbit.vcell.units.VCUnitException e){
+			}catch (VCUnitException e){
 				issueList.add(new Issue(fieldModelParameters[i],"Units","units inconsistent for parameter '"+fieldModelParameters[i].getName()+"': "+e.getMessage(),Issue.SEVERITY_WARNING));
 			}catch (org.vcell.expression.ExpressionException e){
 				issueList.add(new Issue(fieldModelParameters[i],"Units","units inconsistent for parameter '"+fieldModelParameters[i].getName()+"': "+e.getMessage(),Issue.SEVERITY_WARNING));

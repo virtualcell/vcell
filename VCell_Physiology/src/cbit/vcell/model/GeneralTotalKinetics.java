@@ -5,6 +5,7 @@ import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 
 import org.vcell.expression.IExpression;
+import org.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
  * Creation date: (8/9/2006 5:45:48 PM)
@@ -96,24 +97,24 @@ protected void refreshUnits() {
 		
 		if (getReactionStep().getStructure() instanceof Membrane){
 			if (rateParm!=null){
-				rateParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_molecules_per_um2_per_s);
+				rateParm.setUnitDefinition(VCUnitDefinition.UNIT_molecules_per_um2_per_s);
 			}
 			if (currentParm!=null){
-				currentParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_pA_per_um2);
+				currentParm.setUnitDefinition(VCUnitDefinition.UNIT_pA_per_um2);
 			}
 			if (compartmentSizeParm!=null){
-				compartmentSizeParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_um2);
+				compartmentSizeParm.setUnitDefinition(VCUnitDefinition.UNIT_um2);
 			}
 			if (totalRateParm!=null){
-				cbit.vcell.units.VCUnitDefinition totalRateUnitDefn = rateParm.getUnitDefinition().multiplyBy(compartmentSizeParm.getUnitDefinition());
+				VCUnitDefinition totalRateUnitDefn = rateParm.getUnitDefinition().multiplyBy(compartmentSizeParm.getUnitDefinition());
 				totalRateParm.setUnitDefinition(totalRateUnitDefn);
 			}
 		}else{
 			if (rateParm!=null){
-				rateParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_uM_per_s);
+				rateParm.setUnitDefinition(VCUnitDefinition.UNIT_uM_per_s);
 			}
 			if (compartmentSizeParm!=null){
-				compartmentSizeParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_um3);
+				compartmentSizeParm.setUnitDefinition(VCUnitDefinition.UNIT_um3);
 			}
 			if (totalRateParm!=null){
 				// the units for the total rate parameter will be molecules/sec, but it is more understandable to

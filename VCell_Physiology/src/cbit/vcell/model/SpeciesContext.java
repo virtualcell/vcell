@@ -10,6 +10,7 @@ import org.vcell.expression.ExpressionException;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.NameScope;
 import org.vcell.expression.SymbolTableEntry;
+import org.vcell.units.VCUnitDefinition;
 import org.vcell.util.Cacheable;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
@@ -256,13 +257,13 @@ public static String getTerm() {
 /**
  * Insert the method's description here.
  * Creation date: (3/31/2004 3:06:22 PM)
- * @return cbit.vcell.units.VCUnitDefinition
+ * @return VCUnitDefinition
  */
-public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
+public VCUnitDefinition getUnitDefinition() {
 	if (structure instanceof Feature){
-		return cbit.vcell.units.VCUnitDefinition.UNIT_uM;
+		return VCUnitDefinition.UNIT_uM;
 	}else if (structure instanceof Membrane){
-		return cbit.vcell.units.VCUnitDefinition.UNIT_molecules_per_um2;
+		return VCUnitDefinition.UNIT_molecules_per_um2;
 	}else{
 		System.out.println("SpeciesContext ... don't know what units are for SpeciesContext "+fieldName);
 		return null;

@@ -11,6 +11,7 @@ import javax.swing.*;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.units.VCUnitDefinition;
 import org.vcell.util.*;
 
 import edu.uchc.vcell.expression.internal.*;
@@ -180,16 +181,16 @@ protected void refreshUnits() {
 		Kinetics.KineticsParameter vmaxRevParm = getVmaxRevParameter();
 		if (getReactionStep().getStructure() instanceof Membrane){
 			if (rateParm!=null){
-				rateParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_molecules_per_um2_per_s);
+				rateParm.setUnitDefinition(VCUnitDefinition.UNIT_molecules_per_um2_per_s);
 			}
 			if (currentParm!=null){
-				currentParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_pA_per_um2);
+				currentParm.setUnitDefinition(VCUnitDefinition.UNIT_pA_per_um2);
 			}
 			if (vmaxFwdParm!=null){
-				vmaxFwdParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_molecules_per_um2_per_s);
+				vmaxFwdParm.setUnitDefinition(VCUnitDefinition.UNIT_molecules_per_um2_per_s);
 			}
 			if (vmaxRevParm!=null){
-				vmaxRevParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_molecules_per_um2_per_s);
+				vmaxRevParm.setUnitDefinition(VCUnitDefinition.UNIT_molecules_per_um2_per_s);
 			}
 			if (kmFwdParm!=null){
 				kmFwdParm.setUnitDefinition(R0.getSpeciesContext().getUnitDefinition());
@@ -199,13 +200,13 @@ protected void refreshUnits() {
 			}
 		}else{
 			if (rateParm!=null){
-				rateParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_uM_per_s);
+				rateParm.setUnitDefinition(VCUnitDefinition.UNIT_uM_per_s);
 			}
 			if (vmaxFwdParm!=null){
-				vmaxFwdParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_uM_per_s);
+				vmaxFwdParm.setUnitDefinition(VCUnitDefinition.UNIT_uM_per_s);
 			}
 			if (vmaxRevParm!=null){
-				vmaxRevParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_uM_per_s);
+				vmaxRevParm.setUnitDefinition(VCUnitDefinition.UNIT_uM_per_s);
 			}
 			if (kmFwdParm!=null){
 				kmFwdParm.setUnitDefinition(R0.getSpeciesContext().getUnitDefinition());
@@ -280,7 +281,6 @@ protected void updateGeneratedExpressions() throws org.vcell.expression.Expressi
 		}
 		tempCurrentExpression.bindExpression(getReactionStep());
 		if (currentParm == null){
-			addKineticsParameter(new KineticsParameter(getDefaultParameterName(ROLE_Current),tempCurrentExpression,ROLE_Current,cbit.vcell.units.VCUnitDefinition.UNIT_pA_per_um2));
 		}else{
 			currentParm.setExpression(tempCurrentExpression);
 		}

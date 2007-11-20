@@ -10,6 +10,7 @@ import java.util.*;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.units.VCUnitDefinition;
 import org.vcell.util.*;
 
 import edu.uchc.vcell.expression.internal.*;
@@ -93,14 +94,14 @@ protected void refreshUnits() {
 		Kinetics.KineticsParameter rateParm = getRateParameter();
 		if (getReactionStep() instanceof FluxReaction){
 			if (rateParm != null){
-				rateParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_uM_um_per_s);
+				rateParm.setUnitDefinition(VCUnitDefinition.UNIT_uM_um_per_s);
 			}
 		}else if (getReactionStep() instanceof SimpleReaction){
 			throw new RuntimeException("General Current Kinetics not expected within a flux reaction only");
 		}
 		Kinetics.KineticsParameter currentParm = getCurrentParameter();
 		if (currentParm != null){
-			currentParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_pA_per_um2);
+			currentParm.setUnitDefinition(VCUnitDefinition.UNIT_pA_per_um2);
 		}
 	}finally {
 		bRefreshingUnits = false;
@@ -131,7 +132,7 @@ protected void updateGeneratedExpressions() throws ExpressionException, Property
 		}
 		tempRateExpression.bindExpression(getReactionStep());
 		if (rateParm == null){
-			addKineticsParameter(new KineticsParameter(getDefaultParameterName(ROLE_Rate),tempRateExpression,ROLE_Rate,cbit.vcell.units.VCUnitDefinition.UNIT_molecules_per_um2_per_s));
+			addKineticsParameter(new KineticsParameter(getDefaultParameterName(ROLE_Rate),tempRateExpression,ROLE_Rate,VCUnitDefinition.UNIT_molecules_per_um2_per_s));
 		}else{
 			rateParm.setExpression(tempRateExpression);
 		}

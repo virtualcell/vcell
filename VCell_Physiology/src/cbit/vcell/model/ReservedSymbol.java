@@ -12,7 +12,7 @@ import org.vcell.expression.IExpression;
 import org.vcell.expression.NameScope;
 import org.vcell.expression.SymbolTableEntry;
 
-import cbit.vcell.units.VCUnitDefinition;
+import org.vcell.units.VCUnitDefinition;
 import edu.uchc.vcell.expression.internal.*;
 
 public class ReservedSymbol implements SymbolTableEntry, Serializable
@@ -32,7 +32,7 @@ public class ReservedSymbol implements SymbolTableEntry, Serializable
    private String name = null;
    private Double constantValue = null;
    private String description = null;
-   private cbit.vcell.units.VCUnitDefinition unitDefinition = null;
+   private VCUnitDefinition unitDefinition = null;
 
    private static NameScope nameScope = new ReservedSymbol.ReservedSymbolNameScope();
 
@@ -56,7 +56,7 @@ public class ReservedSymbol implements SymbolTableEntry, Serializable
 		}
 	}
 
-private ReservedSymbol(String argName, String argDescription, cbit.vcell.units.VCUnitDefinition argUnitDefinition, Double argConstantValue){
+private ReservedSymbol(String argName, String argDescription, VCUnitDefinition argUnitDefinition, Double argConstantValue){
 	this.name = argName;
 	this.unitDefinition = argUnitDefinition;
 	this.constantValue = argConstantValue;
@@ -176,9 +176,9 @@ public NameScope getNameScope() {
 /**
  * Insert the method's description here.
  * Creation date: (3/31/2004 2:11:57 PM)
- * @return cbit.vcell.units.VCUnitDefinition
+ * @return VCUnitDefinition
  */
-public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
+public VCUnitDefinition getUnitDefinition() {
 	return unitDefinition;
 }
 

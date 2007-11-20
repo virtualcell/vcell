@@ -17,6 +17,8 @@ import org.vcell.expression.NameScope;
 import org.vcell.expression.SymbolTable;
 import org.vcell.expression.SymbolTableEntry;
 import org.vcell.expression.VCUnitEvaluator;
+import org.vcell.units.VCUnitDefinition;
+import org.vcell.units.VCUnitException;
 import org.vcell.util.*;
 
 import edu.uchc.vcell.expression.internal.*;
@@ -139,9 +141,9 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 		private String fieldParameterName = null;
 		private org.vcell.expression.IExpression fieldParameterExpression = null;
 		private int fieldParameterRole = ROLE_UserDefined;
-		private cbit.vcell.units.VCUnitDefinition fieldUnitDefinition = null;
+		private VCUnitDefinition fieldUnitDefinition = null;
 
-		protected KineticsParameter(String argName, IExpression expression, int argRole, cbit.vcell.units.VCUnitDefinition unitDefinition) {
+		protected KineticsParameter(String argName, IExpression expression, int argRole, VCUnitDefinition unitDefinition) {
 			if (argName == null){
 				throw new IllegalArgumentException("parameter name is null");
 			}
@@ -244,12 +246,12 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 			return this.fieldParameterRole;
 		}
 
-		public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
+		public VCUnitDefinition getUnitDefinition() {
 			return fieldUnitDefinition;
 		}
 
-		public void setUnitDefinition(cbit.vcell.units.VCUnitDefinition unitDefinition) {
-			cbit.vcell.units.VCUnitDefinition oldValue = fieldUnitDefinition;
+		public void setUnitDefinition(VCUnitDefinition unitDefinition) {
+			VCUnitDefinition oldValue = fieldUnitDefinition;
 			fieldUnitDefinition = unitDefinition;
 			if (oldValue==unitDefinition){
 				return;
@@ -329,8 +331,8 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 			return this.fieldParameterName; 
 		}
 
-		public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
-			return cbit.vcell.units.VCUnitDefinition.UNIT_TBD;
+		public VCUnitDefinition getUnitDefinition() {
+			return VCUnitDefinition.UNIT_TBD;
 		}
 
 		public NameScope getNameScope() {
@@ -461,7 +463,7 @@ public void addUnresolvedParameter(String parameterName) {
  * Creation date: (9/22/2003 9:51:49 AM)
  * @param parameterName java.lang.String
  */
-public KineticsParameter addUserDefinedKineticsParameter(String parameterName, IExpression expression, cbit.vcell.units.VCUnitDefinition unit) throws PropertyVetoException {
+public KineticsParameter addUserDefinedKineticsParameter(String parameterName, IExpression expression, VCUnitDefinition unit) throws PropertyVetoException {
 	if (getParameter(parameterName)!=null){
 		throw new RuntimeException("parameter '"+parameterName+"' already exists");
 	}
@@ -669,7 +671,7 @@ public final void fromTokens(org.vcell.util.CommentStringTokenizer tokens) throw
 				exp.bindExpression(reactionStep);
 				Parameter parm = getParameter(token);
 				String unitsString = tokens.nextToken();
-				cbit.vcell.units.VCUnitDefinition unitDef = cbit.vcell.units.VCUnitDefinition.UNIT_TBD;
+				VCUnitDefinition unitDef = VCUnitDefinition.UNIT_TBD;
 				if (unitsString.startsWith("[")){
 					while (!unitsString.endsWith("]")){
 						String tempToken = tokens.nextToken();
@@ -678,7 +680,7 @@ public final void fromTokens(org.vcell.util.CommentStringTokenizer tokens) throw
 					//
 					// now string starts with '[' and ends with ']'
 					//
-					unitDef = cbit.vcell.units.VCUnitDefinition.getInstance(unitsString.substring(1,unitsString.length()-1));
+					unitDef = VCUnitDefinition.getInstance(unitsString.substring(1,unitsString.length()-1));
 				}else{
 					tokens.pushToken(unitsString);
 				}
@@ -735,7 +737,7 @@ public final void fromTokens(org.vcell.util.CommentStringTokenizer tokens) throw
 							}
 						}
 						String unitsString = tokens.nextToken();
-						cbit.vcell.units.VCUnitDefinition unitDef = cbit.vcell.units.VCUnitDefinition.UNIT_TBD;
+						VCUnitDefinition unitDef = VCUnitDefinition.UNIT_TBD;
 						if (unitsString.startsWith("[")){
 							while (!unitsString.endsWith("]")){
 								String tempToken = tokens.nextToken();
@@ -744,7 +746,7 @@ public final void fromTokens(org.vcell.util.CommentStringTokenizer tokens) throw
 							//
 							// now string starts with '[' and ends with ']'
 							//
-							unitDef = cbit.vcell.units.VCUnitDefinition.getInstance(unitsString.substring(1,unitsString.length()-1));
+							unitDef = VCUnitDefinition.getInstance(unitsString.substring(1,unitsString.length()-1));
 						}else{
 							tokens.pushToken(unitsString);
 						}
@@ -930,8 +932,8 @@ public void gatherIssues(Vector issueList) {
 		for (int i = 0; i < fieldKineticsParameters.length; i++){
 			String parmName = reactionStep.getNameScope().getName()+"."+fieldKineticsParameters[i].getName();
 			try {
-				cbit.vcell.units.VCUnitDefinition paramUnitDef = fieldKineticsParameters[i].getUnitDefinition();
-				cbit.vcell.units.VCUnitDefinition expUnitDef = VCUnitEvaluator.getUnitDefinition(fieldKineticsParameters[i].getExpression());
+				VCUnitDefinition paramUnitDef = fieldKineticsParameters[i].getUnitDefinition();
+				VCUnitDefinition expUnitDef = VCUnitEvaluator.getUnitDefinition(fieldKineticsParameters[i].getExpression());
 				if (paramUnitDef == null){
 					issueList.add(new Issue(fieldKineticsParameters[i], "Units","parameter "+parmName+": defined unit is null",Issue.SEVERITY_WARNING));
 				}else if (paramUnitDef.isTBD()){
@@ -941,7 +943,7 @@ public void gatherIssues(Vector issueList) {
 				}else if (paramUnitDef.isTBD() || (!paramUnitDef.compareEqual(expUnitDef) && !expUnitDef.isTBD())){
 					issueList.add(new Issue(fieldKineticsParameters[i], "Units","parameter "+parmName+": defined=["+fieldKineticsParameters[i].getUnitDefinition().getSymbol()+"], computed=["+expUnitDef.getSymbol()+"]",Issue.SEVERITY_WARNING));
 				}
-			}catch (cbit.vcell.units.VCUnitException e){
+			}catch (VCUnitException e){
 				issueList.add(new Issue(fieldKineticsParameters[i],"Units","parameter "+parmName+": "+e.getMessage(),Issue.SEVERITY_WARNING));
 			}catch (ExpressionException e){
 				issueList.add(new Issue(fieldKineticsParameters[i],"Units","parameter "+parmName+": "+e.getMessage(),Issue.SEVERITY_WARNING));
@@ -1641,7 +1643,7 @@ public void resolveUndefinedUnits() {
 			for (int i=0;i<fieldKineticsParameters.length;i++){
 				if (fieldKineticsParameters[i].getUnitDefinition()==null){
 					return; // not ready to resolve units yet
-				}else if (fieldKineticsParameters[i].getUnitDefinition().compareEqual(cbit.vcell.units.VCUnitDefinition.UNIT_TBD)){
+				}else if (fieldKineticsParameters[i].getUnitDefinition().compareEqual(VCUnitDefinition.UNIT_TBD)){
 					bAnyTBDUnits = true;
 				}
 			}
@@ -1649,7 +1651,7 @@ public void resolveUndefinedUnits() {
 			// try to resolve TBD units (will fail if units are inconsistent) ... but these errors are collected in Kinetics.getIssues().
 			//
 			if (bAnyTBDUnits){
-				cbit.vcell.units.VCUnitDefinition vcUnitDefinitions[] = VCUnitEvaluator.suggestUnitDefinitions(fieldKineticsParameters);
+				VCUnitDefinition vcUnitDefinitions[] = VCUnitEvaluator.suggestUnitDefinitions(fieldKineticsParameters);
 				for (int i = 0; i < fieldKineticsParameters.length; i++){
 					if (!fieldKineticsParameters[i].getUnitDefinition().compareEqual(vcUnitDefinitions[i])){
 						fieldKineticsParameters[i].setUnitDefinition(vcUnitDefinitions[i]);
@@ -1728,7 +1730,7 @@ public void setParameterValue(KineticsParameter parm, IExpression exp) throws Ex
 			}
 		}
 		for (int i = 0; i < symbolsToAdd.size(); i++){
-			newKineticsParameters = (KineticsParameter[])BeanUtils.addElement(newKineticsParameters,new KineticsParameter((String)symbolsToAdd.elementAt(i),ExpressionFactory.createExpression(0.0),ROLE_UserDefined,cbit.vcell.units.VCUnitDefinition.UNIT_TBD));
+			newKineticsParameters = (KineticsParameter[])BeanUtils.addElement(newKineticsParameters,new KineticsParameter((String)symbolsToAdd.elementAt(i),ExpressionFactory.createExpression(0.0),ROLE_UserDefined,VCUnitDefinition.UNIT_TBD));
 		}
 		parm.setExpression(exp);
 		setKineticsParameters(newKineticsParameters);
@@ -1854,7 +1856,7 @@ public final void writeTokens(java.io.PrintWriter pw) {
 	if (parameters!=null){
 		for (int i=0;i<parameters.length;i++){
 			KineticsParameter parm = parameters[i];
-			cbit.vcell.units.VCUnitDefinition unit = parm.getUnitDefinition();
+			VCUnitDefinition unit = parm.getUnitDefinition();
 			if (unit == null) {
 				pw.println("\t\t\t"+VCMODL.Parameter+" "+parm.getName()+" "+parm.getExpression().infix() + ";" );
 			} else {

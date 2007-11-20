@@ -5,6 +5,7 @@ import java.beans.PropertyVetoException;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.units.VCUnitDefinition;
 import org.vcell.util.*;
 /**
  * Insert the type's description here.
@@ -119,15 +120,15 @@ protected void refreshUnits() {
 		bRefreshingUnits=true;
 		Kinetics.KineticsParameter rateParm = getRateParameter();
 		if (rateParm != null){
-			rateParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_uM_um_per_s);
+			rateParm.setUnitDefinition(VCUnitDefinition.UNIT_uM_um_per_s);
 		}
 		Kinetics.KineticsParameter currentParm = getCurrentParameter();
 		if (currentParm != null){
-			currentParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_pA_per_um2);
+			currentParm.setUnitDefinition(VCUnitDefinition.UNIT_pA_per_um2);
 		}
 		Kinetics.KineticsParameter permeabilityParm = getPermeabilityParameter();
 		if (permeabilityParm != null){
-			permeabilityParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_um_per_s);
+			permeabilityParm.setUnitDefinition(VCUnitDefinition.UNIT_um_per_s);
 		}
 	}finally{
 		bRefreshingUnits=false;
@@ -185,7 +186,7 @@ protected void updateGeneratedExpressions() throws org.vcell.expression.Expressi
 			}
 			tempRateExpression.bindExpression(getReactionStep());
 			if (rateParm == null){
-				addKineticsParameter(new KineticsParameter(getDefaultParameterName(ROLE_Rate),tempRateExpression,ROLE_Rate,cbit.vcell.units.VCUnitDefinition.UNIT_molecules_per_um2_per_s));
+				addKineticsParameter(new KineticsParameter(getDefaultParameterName(ROLE_Rate),tempRateExpression,ROLE_Rate,VCUnitDefinition.UNIT_molecules_per_um2_per_s));
 			}else{
 				rateParm.setExpression(tempRateExpression);
 			}

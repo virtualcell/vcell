@@ -4,6 +4,7 @@ import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.NameScope;
 import org.vcell.expression.SymbolTableEntry;
+import org.vcell.units.VCUnitDefinition;
 
 import edu.uchc.vcell.expression.internal.*;
 /**
@@ -116,10 +117,10 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 /**
  * Insert the method's description here.
  * Creation date: (3/31/2004 10:35:33 AM)
- * @return cbit.vcell.units.VCUnitDefinition
+ * @return VCUnitDefinition
  */
-public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
-	return cbit.vcell.units.VCUnitDefinition.UNIT_DIMENSIONLESS;
+public VCUnitDefinition getUnitDefinition() {
+	return VCUnitDefinition.UNIT_DIMENSIONLESS;
 }
 /**
  * Accessor for the vetoPropertyChange field.

@@ -4,6 +4,7 @@ import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.SymbolTable;
+import org.vcell.units.VCUnitDefinition;
 import org.vcell.util.*;
 
 /**
@@ -120,15 +121,15 @@ protected void refreshUnits() {
 		
 		Kinetics.KineticsParameter rateParm = getRateParameter();
 		if (rateParm != null){
-			rateParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_uM_um_per_s);
+			rateParm.setUnitDefinition(VCUnitDefinition.UNIT_uM_um_per_s);
 		}
 		Kinetics.KineticsParameter currentParm = getCurrentParameter();
 		if (currentParm != null){
-			currentParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_pA_per_um2);
+			currentParm.setUnitDefinition(VCUnitDefinition.UNIT_pA_per_um2);
 		}
 		Kinetics.KineticsParameter conductivityParm = getConductivityParameter();
 		if (conductivityParm != null){
-			conductivityParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_nS_per_um2);
+			conductivityParm.setUnitDefinition(VCUnitDefinition.UNIT_nS_per_um2);
 		}
 	}finally{
 		bRefreshingUnits=false;

@@ -1,6 +1,7 @@
 package cbit.vcell.model;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.NameScope;
+import org.vcell.units.VCUnitDefinition;
 
 /**
  * Insert the type's description here.
@@ -151,10 +152,10 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
 /**
  * Insert the method's description here.
  * Creation date: (3/31/2004 12:09:04 PM)
- * @return cbit.vcell.units.VCUnitDefinition
+ * @return VCUnitDefinition
  */
-public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
-	return cbit.vcell.units.VCUnitDefinition.UNIT_mV;
+public VCUnitDefinition getUnitDefinition() {
+	return VCUnitDefinition.UNIT_mV;
 }
 
 

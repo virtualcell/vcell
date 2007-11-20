@@ -10,6 +10,7 @@ import java.util.*;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.units.VCUnitDefinition;
 import org.vcell.util.*;
 
 import edu.uchc.vcell.expression.internal.*;
@@ -82,16 +83,16 @@ protected void refreshUnits() {
 		Kinetics.KineticsParameter rateParm = getRateParameter();
 		if (getReactionStep().getStructure() instanceof Feature){
 			if (rateParm != null){
-				rateParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_uM_per_s);
+				rateParm.setUnitDefinition(VCUnitDefinition.UNIT_uM_per_s);
 			}
 		}else if (getReactionStep().getStructure() instanceof Membrane){
 			if (getReactionStep() instanceof FluxReaction){
 				if (rateParm != null){
-					rateParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_uM_um_per_s);
+					rateParm.setUnitDefinition(VCUnitDefinition.UNIT_uM_um_per_s);
 				}
 			}else{
 				if (rateParm != null){
-					rateParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_molecules_per_um2_per_s);
+					rateParm.setUnitDefinition(VCUnitDefinition.UNIT_molecules_per_um2_per_s);
 				}
 			}
 		}else{
@@ -99,7 +100,7 @@ protected void refreshUnits() {
 		}
 		Kinetics.KineticsParameter currentParm = getCurrentParameter();
 		if (currentParm != null){
-			currentParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.UNIT_pA_per_um2);
+			currentParm.setUnitDefinition(VCUnitDefinition.UNIT_pA_per_um2);
 		}
 	}finally{
 		bRefreshingUnits=false;
@@ -130,7 +131,7 @@ protected void updateGeneratedExpressions() throws org.vcell.expression.Expressi
 		}
 		tempCurrentExpression.bindExpression(getReactionStep());
 		if (currentParm == null){
-			addKineticsParameter(new KineticsParameter(getDefaultParameterName(ROLE_Current),tempCurrentExpression,ROLE_Current,cbit.vcell.units.VCUnitDefinition.UNIT_pA_per_um2));
+			addKineticsParameter(new KineticsParameter(getDefaultParameterName(ROLE_Current),tempCurrentExpression,ROLE_Current,VCUnitDefinition.UNIT_pA_per_um2));
 		}else{
 			currentParm.setExpression(tempCurrentExpression);
 		}
