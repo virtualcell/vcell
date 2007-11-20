@@ -17,7 +17,7 @@ import cbit.vcell.model.Membrane;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.VCMODL;
-import cbit.vcell.units.VCUnitDefinition;
+import org.vcell.units.VCUnitDefinition;;
 
 public class SpeciesContextSpec implements org.vcell.util.Matchable, org.vcell.expression.ScopedSymbolTable, Serializable {
 
@@ -51,9 +51,9 @@ public class SpeciesContextSpec implements org.vcell.util.Matchable, org.vcell.e
 		private IExpression fieldParameterExpression = null;
 		private String fieldParameterName = null;
  		private int fieldParameterRole = -1;
- 		private cbit.vcell.units.VCUnitDefinition fieldUnitDefinition = null;
+ 		private VCUnitDefinition fieldUnitDefinition = null;
 
-		public SpeciesContextSpecParameter(String parmName, org.vcell.expression.IExpression argExpression, int argRole, cbit.vcell.units.VCUnitDefinition argUnitDefinition, String argDescription) {
+		public SpeciesContextSpecParameter(String parmName, org.vcell.expression.IExpression argExpression, int argRole, VCUnitDefinition argUnitDefinition, String argDescription) {
 			super();
 			fieldParameterName = parmName;
 			fieldParameterExpression = argExpression;
@@ -97,7 +97,7 @@ public class SpeciesContextSpec implements org.vcell.util.Matchable, org.vcell.e
 			return false;
 		}
 
-		public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
+		public VCUnitDefinition getUnitDefinition() {
 			return fieldUnitDefinition;
 		}
 		

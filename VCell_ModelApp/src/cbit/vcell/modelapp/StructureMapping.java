@@ -15,7 +15,7 @@ import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.SimpleBoundsIssue;
 import cbit.vcell.model.Structure;
-import cbit.vcell.units.VCUnitDefinition;
+import org.vcell.units.VCUnitDefinition;
 
 public abstract class StructureMapping implements Matchable, org.vcell.expression.ScopedSymbolTable, java.io.Serializable {
 	static {

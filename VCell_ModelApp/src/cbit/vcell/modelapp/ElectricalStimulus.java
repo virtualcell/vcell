@@ -14,7 +14,7 @@ import org.vcell.util.BeanUtils;
 import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.VCMODL;
-import cbit.vcell.units.VCUnitDefinition;
+import org.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
  * Creation date: (4/8/2002 11:14:58 AM)
@@ -118,7 +118,7 @@ public abstract class ElectricalStimulus implements org.vcell.util.Matchable, or
 			return -1;
 		}
 
-		public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
+		public VCUnitDefinition getUnitDefinition() {
 			return fieldVCUnitDefinition;
 		}
 
@@ -134,8 +134,8 @@ public abstract class ElectricalStimulus implements org.vcell.util.Matchable, or
 			return ElectricalStimulus.this.getNameScope();
 		}
 
-		public void setUnitDefinition(cbit.vcell.units.VCUnitDefinition unitDefinition) {
-			cbit.vcell.units.VCUnitDefinition oldValue = fieldVCUnitDefinition;
+		public void setUnitDefinition(VCUnitDefinition unitDefinition) {
+			VCUnitDefinition oldValue = fieldVCUnitDefinition;
 			fieldVCUnitDefinition = unitDefinition;
 			if (oldValue==unitDefinition){
 				return;
@@ -220,8 +220,8 @@ public abstract class ElectricalStimulus implements org.vcell.util.Matchable, or
 			return this.fieldParameterName; 
 		}
 
-		public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
-			return cbit.vcell.units.VCUnitDefinition.UNIT_TBD;
+		public VCUnitDefinition getUnitDefinition() {
+			return VCUnitDefinition.UNIT_TBD;
 		}
 
 		public NameScope getNameScope() {
@@ -335,7 +335,7 @@ public void addUnresolvedParameter(String parameterName) {
  * Creation date: (9/22/2003 9:51:49 AM)
  * @param parameterName java.lang.String
  */
-public ElectricalStimulusParameter addUserDefinedKineticsParameter(String parameterName, IExpression expression, cbit.vcell.units.VCUnitDefinition unit) throws PropertyVetoException {
+public ElectricalStimulusParameter addUserDefinedKineticsParameter(String parameterName, IExpression expression, VCUnitDefinition unit) throws PropertyVetoException {
 	if (getParameter(parameterName)!=null){
 		throw new RuntimeException("parameter '"+parameterName+"' already exists");
 	}
@@ -858,7 +858,7 @@ public final void parameterVCMLSet(org.vcell.util.CommentStringTokenizer tokens)
 			IExpression exp = ExpressionFactory.createExpression(tokens);
 			
 			String unitsString = tokens.nextToken();
-			cbit.vcell.units.VCUnitDefinition unitDef = cbit.vcell.units.VCUnitDefinition.UNIT_TBD;
+			VCUnitDefinition unitDef = VCUnitDefinition.UNIT_TBD;
 			if (unitsString.startsWith("[")){
 				while (!unitsString.endsWith("]")){
 					String tempToken = tokens.nextToken();
@@ -867,7 +867,7 @@ public final void parameterVCMLSet(org.vcell.util.CommentStringTokenizer tokens)
 				//
 				// now string starts with '[' and ends with ']'
 				//
-				unitDef = cbit.vcell.units.VCUnitDefinition.getInstance(unitsString.substring(1,unitsString.length()-1));
+				unitDef = VCUnitDefinition.getInstance(unitsString.substring(1,unitsString.length()-1));
 			}else{
 				tokens.pushToken(unitsString);
 			}
@@ -912,7 +912,7 @@ public final void parameterVCMLWrite(java.io.PrintWriter pw) {
 		for (int i=0;i<parameters.length;i++){
 			ElectricalStimulusParameter parm = parameters[i];
 			String roleName = RoleTags[parm.getRole()];
-			cbit.vcell.units.VCUnitDefinition unit = parm.getUnitDefinition();
+			VCUnitDefinition unit = parm.getUnitDefinition();
 			pw.println("\t\t\t"+
 				VCMODL.Parameter+" "+
 				roleName + " " +
@@ -1185,7 +1185,7 @@ public void resolveUndefinedUnits() {
 			for (int i=0;i<fieldElectricalStimulusParameters.length;i++){
 				if (fieldElectricalStimulusParameters[i].getUnitDefinition()==null){
 					return; // not ready to resolve units yet
-				}else if (fieldElectricalStimulusParameters[i].getUnitDefinition().compareEqual(cbit.vcell.units.VCUnitDefinition.UNIT_TBD)){
+				}else if (fieldElectricalStimulusParameters[i].getUnitDefinition().compareEqual(VCUnitDefinition.UNIT_TBD)){
 					bAnyTBDUnits = true;
 				}
 			}
@@ -1193,7 +1193,7 @@ public void resolveUndefinedUnits() {
 			// try to resolve TBD units (will fail if units are inconsistent) ... but these errors are collected in Kinetics.getIssues().
 			//
 			if (bAnyTBDUnits){
-				cbit.vcell.units.VCUnitDefinition vcUnitDefinitions[] = org.vcell.expression.VCUnitEvaluator.suggestUnitDefinitions(fieldElectricalStimulusParameters);
+				VCUnitDefinition vcUnitDefinitions[] = org.vcell.expression.VCUnitEvaluator.suggestUnitDefinitions(fieldElectricalStimulusParameters);
 				for (int i = 0; i < fieldElectricalStimulusParameters.length; i++){
 					if (!fieldElectricalStimulusParameters[i].getUnitDefinition().compareEqual(vcUnitDefinitions[i])){
 						fieldElectricalStimulusParameters[i].setUnitDefinition(vcUnitDefinitions[i]);
@@ -1289,7 +1289,7 @@ public void setParameterValue(ElectricalStimulusParameter parm, IExpression exp)
 		}
 		for (int i = 0; i < symbolsToAdd.size(); i++){
 			newElectricalStimulusParameters = (ElectricalStimulusParameter[])BeanUtils.addElement(newElectricalStimulusParameters,
-				new ElectricalStimulusParameter((String)symbolsToAdd.elementAt(i),ExpressionFactory.createExpression(0.0),ROLE_UserDefined,cbit.vcell.units.VCUnitDefinition.UNIT_TBD));
+				new ElectricalStimulusParameter((String)symbolsToAdd.elementAt(i),ExpressionFactory.createExpression(0.0),ROLE_UserDefined,VCUnitDefinition.UNIT_TBD));
 		}
 		parm.setExpression(exp);
 		setElectricalStimulusParameters(newElectricalStimulusParameters);

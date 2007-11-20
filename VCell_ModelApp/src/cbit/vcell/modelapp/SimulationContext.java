@@ -10,6 +10,7 @@ import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.NameScope;
 import org.vcell.modelapp.analysis.IAnalysisTask;
+import org.vcell.units.VCUnitDefinition;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
@@ -79,9 +80,9 @@ public class SimulationContext implements org.vcell.util.document.Versionable, M
 		private String fieldParameterName = null;
 		private org.vcell.expression.IExpression fieldParameterExpression = null;
 		private int fieldParameterRole = -1;
-		private cbit.vcell.units.VCUnitDefinition fieldUnitDefinition = null;
+		private VCUnitDefinition fieldUnitDefinition = null;
 		
-		protected SimulationContextParameter(String argName, org.vcell.expression.IExpression expression, int argRole, cbit.vcell.units.VCUnitDefinition argUnitDefinition) {
+		protected SimulationContextParameter(String argName, org.vcell.expression.IExpression expression, int argRole, VCUnitDefinition argUnitDefinition) {
 			if (argName == null){
 				throw new IllegalArgumentException("parameter name is null");
 			}
@@ -155,12 +156,12 @@ public class SimulationContext implements org.vcell.util.document.Versionable, M
 			return this.fieldParameterRole;
 		}
 
-		public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
+		public VCUnitDefinition getUnitDefinition() {
 			return fieldUnitDefinition;
 		}
 
-		public void setUnitDefinition(cbit.vcell.units.VCUnitDefinition unitDefinition) throws java.beans.PropertyVetoException {
-			cbit.vcell.units.VCUnitDefinition oldValue = fieldUnitDefinition;
+		public void setUnitDefinition(VCUnitDefinition unitDefinition) throws java.beans.PropertyVetoException {
+			VCUnitDefinition oldValue = fieldUnitDefinition;
 			super.fireVetoableChange("unitDefinition", oldValue, unitDefinition);
 			fieldUnitDefinition = unitDefinition;
 			super.firePropertyChange("unitDefinition", oldValue, unitDefinition);

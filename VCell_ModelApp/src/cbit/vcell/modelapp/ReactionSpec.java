@@ -19,7 +19,7 @@ import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.ReservedSymbol;
-import cbit.vcell.units.VCUnitDefinition;
+import org.vcell.units.VCUnitDefinition;
 
 public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable, java.beans.VetoableChangeListener {
 	private ReactionStep reactionStep = null;
@@ -81,9 +81,9 @@ public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable,
 		private IExpression fieldParameterExpression = null;
 		private String fieldParameterName = null;
  		private int fieldParameterRole = -1;
- 		private cbit.vcell.units.VCUnitDefinition fieldUnitDefinition = null;
+ 		private VCUnitDefinition fieldUnitDefinition = null;
 
-		public ReactionSpecParameter(String parmName, org.vcell.expression.IExpression argExpression, int argRole, cbit.vcell.units.VCUnitDefinition argUnitDefinition, String argDescription) {
+		public ReactionSpecParameter(String parmName, org.vcell.expression.IExpression argExpression, int argRole, VCUnitDefinition argUnitDefinition, String argDescription) {
 			super();
 			fieldParameterName = parmName;
 			fieldParameterExpression = argExpression;
@@ -127,7 +127,7 @@ public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable,
 			return false;
 		}
 
-		public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
+		public VCUnitDefinition getUnitDefinition() {
 			return fieldUnitDefinition;
 		}
 		
