@@ -1,5 +1,6 @@
 package cbit.vcell.modeldb;
 
+import org.vcell.units.VCUnitDefinition;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.SessionLog;
 import org.vcell.util.document.KeyValue;
@@ -113,7 +114,7 @@ public SurfaceGeometricRegion getSurfaceRegion(java.sql.ResultSet rset, VolumeGe
 	String _name = rset.getString(this.name.toString());
 	double _size = rset.getBigDecimal(this.size.toString()).doubleValue();
 	String _sizeUnitSymbol = rset.getString(this.sizeUnit.toString());
-	cbit.vcell.units.VCUnitDefinition _sizeUnit = cbit.vcell.units.VCUnitDefinition.getInstance(_sizeUnitSymbol);
+	VCUnitDefinition _sizeUnit = VCUnitDefinition.getInstance(_sizeUnitSymbol);
 
 	//
 	// get neighboring regions
@@ -151,7 +152,7 @@ public VolumeGeometricRegion getVolumeRegion(java.sql.ResultSet rset, cbit.vcell
 	String _name = rset.getString(this.name.toString());
 	double _size = rset.getBigDecimal(this.size.toString()).doubleValue();
 	String _sizeUnitSymbol = rset.getString(this.sizeUnit.toString());
-	cbit.vcell.units.VCUnitDefinition _sizeUnit = cbit.vcell.units.VCUnitDefinition.getInstance(_sizeUnitSymbol);
+	VCUnitDefinition _sizeUnit = VCUnitDefinition.getInstance(_sizeUnitSymbol);
 
 	int _regionID = rset.getInt(this.regionID.toString());
 	KeyValue _subvolumeKey = new KeyValue(rset.getBigDecimal(this.subVolumeRef.toString()));
