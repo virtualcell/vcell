@@ -5,8 +5,6 @@ import org.vcell.spatial.SurfaceCollection;
 import org.vcell.spatial.Triangle;
 import org.vcell.spatial.Vect3d;
 
-import cbit.render.*;
-
 /**
  * Insert the type's description here.
  * Creation date: (7/19/2004 10:52:10 AM)

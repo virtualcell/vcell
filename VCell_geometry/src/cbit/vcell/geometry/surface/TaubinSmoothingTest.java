@@ -3,8 +3,6 @@ import org.vcell.expression.ExpressionFactory;
 import org.vcell.spatial.Surface;
 import org.vcell.spatial.SurfaceCollection;
 
-import cbit.render.*;
-
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 1:02:07 AM)

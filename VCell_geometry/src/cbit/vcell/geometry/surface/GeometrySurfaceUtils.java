@@ -6,8 +6,6 @@ import org.vcell.spatial.TaubinSmoothingSpecification;
 import org.vcell.spatial.TaubinSmoothingWrong;
 import org.vcell.units.VCUnitDefinition;
 import org.vcell.util.StdoutSessionLog;
-
-import cbit.render.*;
 /**
  * Insert the type's description here.
  * Creation date: (6/28/2004 2:52:23 PM)

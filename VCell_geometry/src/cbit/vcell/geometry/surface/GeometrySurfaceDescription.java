@@ -1,12 +1,16 @@
 package cbit.vcell.geometry.surface;
+import java.beans.PropertyVetoException;
+
 import org.vcell.expression.IExpression;
 import org.vcell.spatial.SurfaceCollection;
 import org.vcell.util.Compare;
 
-import cbit.image.VCImage;
+import cbit.vcell.geometry.AnalyticSubVolume;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryException;
+import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.RegionImage;
-import cbit.render.*;
-import cbit.vcell.geometry.*;
+import cbit.vcell.geometry.SubVolume;
 /**
  * Insert the type's description here.
  * Creation date: (5/26/2004 9:58:01 AM)

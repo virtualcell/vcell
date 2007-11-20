@@ -9,10 +9,9 @@ import org.vcell.spatial.Surface;
 import org.vcell.spatial.SurfaceCollection;
 import org.vcell.util.SessionLog;
 
-import cbit.vcell.geometry.RegionImage;
 import cbit.image.VCImage;
 import cbit.vcell.geometry.Geometry;
-import cbit.render.*;
+import cbit.vcell.geometry.RegionImage;
 /**
  * Insert the type's description here.
  * Creation date: (6/27/2003 10:34:49 PM)

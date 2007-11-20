@@ -12,7 +12,6 @@ import org.vcell.spatial.Vect3d;
 import org.vcell.util.ISize;
 
 import cbit.vcell.geometry.Geometry;
-import cbit.render.*;
 /**
  * Insert the type's description here.
  * Creation date: (7/19/2004 10:52:10 AM)

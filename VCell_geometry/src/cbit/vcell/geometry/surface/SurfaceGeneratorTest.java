@@ -6,8 +6,9 @@ import org.vcell.spatial.TaubinSmoothingSpecification;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.StdoutSessionLog;
 
-import cbit.render.*;
-import cbit.image.*;
+import cbit.image.ImageFile;
+import cbit.image.VCImage;
+import cbit.image.VCImageUncompressed;
 /**
  * Insert the type's description here.
  * Creation date: (3/11/2002 12:45:46 PM)

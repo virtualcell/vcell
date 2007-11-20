@@ -4,8 +4,6 @@ import org.vcell.spatial.Polygon;
 import org.vcell.spatial.Surface;
 import org.vcell.spatial.SurfaceCollection;
 
-import cbit.render.*;
-
 /**
  * Insert the type's description here.
  * Creation date: (7/19/2004 10:52:10 AM)
