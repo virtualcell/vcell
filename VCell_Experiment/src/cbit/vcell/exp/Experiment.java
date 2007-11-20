@@ -92,9 +92,9 @@ public class Experiment implements org.vcell.util.Matchable, java.io.Serializabl
 		private String fieldParameterName = null;
 		private org.vcell.expression.IExpression fieldParameterExpression = null;
 		private int fieldParameterRole = -1;
-		private cbit.vcell.units.VCUnitDefinition fieldUnitDefinition = null;
+		private org.vcell.units.VCUnitDefinition fieldUnitDefinition = null;
 		
-		protected ExperimentParameter(String argName, org.vcell.expression.IExpression expression, int argRole, cbit.vcell.units.VCUnitDefinition argUnitDefinition) {
+		protected ExperimentParameter(String argName, org.vcell.expression.IExpression expression, int argRole, org.vcell.units.VCUnitDefinition argUnitDefinition) {
 			if (argName == null){
 				throw new IllegalArgumentException("parameter name is null");
 			}
@@ -168,12 +168,12 @@ public class Experiment implements org.vcell.util.Matchable, java.io.Serializabl
 			return this.fieldParameterRole;
 		}
 
-		public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
+		public org.vcell.units.VCUnitDefinition getUnitDefinition() {
 			return fieldUnitDefinition;
 		}
 
-		public void setUnitDefinition(cbit.vcell.units.VCUnitDefinition unitDefinition) throws java.beans.PropertyVetoException {
-			cbit.vcell.units.VCUnitDefinition oldValue = fieldUnitDefinition;
+		public void setUnitDefinition(org.vcell.units.VCUnitDefinition unitDefinition) throws java.beans.PropertyVetoException {
+			org.vcell.units.VCUnitDefinition oldValue = fieldUnitDefinition;
 			super.fireVetoableChange("unitDefinition", oldValue, unitDefinition);
 			fieldUnitDefinition = unitDefinition;
 			super.firePropertyChange("unitDefinition", oldValue, unitDefinition);

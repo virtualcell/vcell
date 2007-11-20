@@ -11,9 +11,9 @@ import org.vcell.expression.ExpressionException;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.NameScope;
 import org.vcell.expression.SymbolTableEntry;
+import org.vcell.units.VCUnitDefinition;
 import org.vcell.util.*;
 
-	import cbit.vcell.units.VCUnitDefinition;
 import edu.uchc.vcell.expression.internal.*;
 
 	public abstract class Parameter implements SymbolTableEntry, Serializable, Matchable
@@ -158,7 +158,7 @@ import edu.uchc.vcell.expression.internal.*;
 	 * Creation date: (3/31/2004 12:10:47 PM)
 	 * @return cbit.vcell.units.VCUnitDefinition
 	 */
-	public abstract cbit.vcell.units.VCUnitDefinition getUnitDefinition();
+	public abstract org.vcell.units.VCUnitDefinition getUnitDefinition();
 	/**
 	 * Accessor for the vetoPropertyChange field.
 	 */
