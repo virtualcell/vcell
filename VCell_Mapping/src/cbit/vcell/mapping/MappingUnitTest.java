@@ -3,8 +3,8 @@ import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.SimpleSymbolTable;
 import org.vcell.expression.VCUnitEvaluator;
+import org.vcell.units.VCUnitDefinition;
 
-import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
  * Creation date: (11/5/2004 5:49:02 PM)

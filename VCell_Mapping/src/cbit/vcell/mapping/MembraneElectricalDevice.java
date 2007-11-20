@@ -24,13 +24,13 @@ public MembraneElectricalDevice(MembraneMapping argMembraneMapping, cbit.vcell.m
 							DefaultNames[ROLE_TotalCurrentDensity],
 							null, // (need to calculate)
 							ROLE_TotalCurrentDensity,
-							cbit.vcell.units.VCUnitDefinition.UNIT_pA_per_um2);
+							org.vcell.units.VCUnitDefinition.UNIT_pA_per_um2);
 
     parameters[1] = new ElectricalDeviceParameter(
 						    DefaultNames[ROLE_TransmembraneCurrentDensity],
 							null, // given
 							ROLE_TransmembraneCurrentDensity,
-							cbit.vcell.units.VCUnitDefinition.UNIT_pA_per_um2);
+							org.vcell.units.VCUnitDefinition.UNIT_pA_per_um2);
 
 	setParameters(parameters);
 }

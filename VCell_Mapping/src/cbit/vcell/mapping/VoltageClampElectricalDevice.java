@@ -27,13 +27,13 @@ public VoltageClampElectricalDevice(cbit.vcell.modelapp.VoltageClampStimulus arg
 							DefaultNames[ROLE_TotalCurrentDensity],
 							ExpressionFactory.createExpression(DefaultNames[ROLE_TransmembraneCurrentDensity]),
 							ROLE_TotalCurrentDensity,
-							cbit.vcell.units.VCUnitDefinition.UNIT_pA_per_um2);
+							org.vcell.units.VCUnitDefinition.UNIT_pA_per_um2);
 	
 	parameters[1] = new ElectricalDeviceParameter(
 							DefaultNames[ROLE_TransmembraneCurrentDensity],
 							null,
 							ROLE_TransmembraneCurrentDensity,
-							cbit.vcell.units.VCUnitDefinition.UNIT_pA_per_um2);
+							org.vcell.units.VCUnitDefinition.UNIT_pA_per_um2);
 
 	ElectricalStimulus.ElectricalStimulusParameter voltageParm = voltageClampStimulus.getVoltageParameter();
 	parameters[2] = new ElectricalDeviceParameter(

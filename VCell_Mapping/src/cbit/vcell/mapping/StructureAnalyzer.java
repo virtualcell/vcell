@@ -365,7 +365,7 @@ private void refreshTotalDependancies() throws Exception {
 		//
 		// store totalMass parameter (e.g. K_xyz_total = xyz_init + wzy_init) 
 		//
-		MathMapping.MathMappingParameter totalMassParameter = mathMapping.addMathMappingParameter(constantName,constantExp.flatten(),MathMapping.PARAMETER_ROLE_TOTALMASS,cbit.vcell.units.VCUnitDefinition.UNIT_uM);
+		MathMapping.MathMappingParameter totalMassParameter = mathMapping.addMathMappingParameter(constantName,constantExp.flatten(),MathMapping.PARAMETER_ROLE_TOTALMASS,org.vcell.units.VCUnitDefinition.UNIT_uM);
 		//
 		// store dependency parameter (e.g. xyz = K_xyz_total - wzy)
 		//

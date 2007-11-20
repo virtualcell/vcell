@@ -1,5 +1,4 @@
 package cbit.vcell.mapping;
-import cbit.vcell.units.VCUnitException;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -27,9 +26,10 @@ import org.vcell.expression.NameScope;
 import org.vcell.expression.ScopedSymbolTable;
 import org.vcell.expression.SymbolTableEntry;
 import org.vcell.expression.VCUnitEvaluator;
+import org.vcell.units.VCUnitDefinition;
+import org.vcell.units.VCUnitException;
 
 
-import cbit.vcell.units.VCUnitDefinition;
 /**
  * The MathMapping class performs the Biological to Mathematical transformation once upon calling getMathDescription().
  * This is not a "live" transformation, so that an updated SimulationContext must be given to a new MathMapping object
@@ -160,7 +160,7 @@ public class MathMapping implements ScopedSymbolTable, MathFactory {
 			return -1;
 		}
 
-		public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
+		public org.vcell.units.VCUnitDefinition getUnitDefinition() {
 			return fieldVCUnitDefinition;
 		}
 
@@ -1217,7 +1217,7 @@ private void refreshMathDescription() throws MappingException, MathException, Ex
 	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.FARADAY_CONSTANT,null),getIdentifierSubstitutions(ReservedSymbol.FARADAY_CONSTANT.getExpression(),ReservedSymbol.FARADAY_CONSTANT.getUnitDefinition(),null)));
 	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.FARADAY_CONSTANT_NMOLE,null),getIdentifierSubstitutions(ReservedSymbol.FARADAY_CONSTANT_NMOLE.getExpression(),ReservedSymbol.FARADAY_CONSTANT_NMOLE.getUnitDefinition(),null)));
 	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.GAS_CONSTANT,null),getIdentifierSubstitutions(ReservedSymbol.GAS_CONSTANT.getExpression(),ReservedSymbol.GAS_CONSTANT.getUnitDefinition(),null)));
-	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.TEMPERATURE,null),getIdentifierSubstitutions(ExpressionFactory.createExpression(simContext.getTemperatureKelvin()),cbit.vcell.units.VCUnitDefinition.UNIT_K,null)));
+	varHash.addVariable(new Constant(getMathSymbol(ReservedSymbol.TEMPERATURE,null),getIdentifierSubstitutions(ExpressionFactory.createExpression(simContext.getTemperatureKelvin()),org.vcell.units.VCUnitDefinition.UNIT_K,null)));
 
 	//
 	// only calculate potential if at least one MembraneMapping has CalculateVoltage == true

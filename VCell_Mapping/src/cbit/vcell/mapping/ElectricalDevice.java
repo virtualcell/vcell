@@ -5,10 +5,10 @@ import org.vcell.expression.IExpression;
 import org.vcell.expression.NameScope;
 import org.vcell.expression.ScopedSymbolTable;
 import org.vcell.expression.SymbolTableEntry;
+import org.vcell.units.VCUnitDefinition;
 
 import cbit.vcell.math.Function;
 import cbit.vcell.math.VolVariable;
-import cbit.vcell.units.VCUnitDefinition;
 import edu.uchc.vcell.expression.internal.*;
 /**
  * Insert the type's description here.
