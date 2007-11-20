@@ -3,9 +3,9 @@ package cbit.vcell.mesh;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import org.vcell.spatial.Vect3d;
 import org.vcell.util.Coordinate;
 
-import cbit.render.objects.Vect3d;
 import cbit.vcell.math.*;
 /**
  * This type was created in VisualAge.
@@ -165,8 +165,8 @@ public int[] getMembraneNeighborIndexes() {
  * Creation date: (2/15/2006 1:54:50 PM)
  * @return cbit.vcell.render.Vect3d
  */
-public cbit.render.objects.Vect3d getNormal() {
-	return (area == AREA_UNDEFINED?null:new cbit.render.objects.Vect3d(normalX,normalY,normalZ));
+public org.vcell.spatial.Vect3d getNormal() {
+	return (area == AREA_UNDEFINED?null:new org.vcell.spatial.Vect3d(normalX,normalY,normalZ));
 }
 
 

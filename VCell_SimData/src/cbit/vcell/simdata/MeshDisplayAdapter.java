@@ -3,12 +3,12 @@ package cbit.vcell.simdata;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.render.objects.Quadrilateral;
-import cbit.render.objects.Surface;
-import cbit.render.objects.SurfaceCollection;
 import cbit.vcell.geometry.*;
 import java.util.*;
 
+import org.vcell.spatial.Quadrilateral;
+import org.vcell.spatial.Surface;
+import org.vcell.spatial.SurfaceCollection;
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
 import org.vcell.util.NullSessionLog;

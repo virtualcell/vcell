@@ -4,10 +4,10 @@ package cbit.vcell.simdata;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.render.objects.Vect3d;
 import cbit.vcell.geometry.*;
 import java.util.Vector;
 
+import org.vcell.spatial.Vect3d;
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
 
