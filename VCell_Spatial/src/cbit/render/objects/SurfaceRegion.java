@@ -1,5 +1,5 @@
 package cbit.render.objects;
-import cbit.vcell.units.VCUnitDefinition;
+import org.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
  * Creation date: (5/27/2004 11:38:09 AM)
