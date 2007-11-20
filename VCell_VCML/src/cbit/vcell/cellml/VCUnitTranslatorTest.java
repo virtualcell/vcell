@@ -4,8 +4,8 @@ import java.util.ArrayList;
 
 import org.jdom.Element;
 import org.jdom.Namespace;
+import org.vcell.units.VCUnitDefinition;
 
-import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
  * Creation date: (9/8/2004 3:59:09 PM)

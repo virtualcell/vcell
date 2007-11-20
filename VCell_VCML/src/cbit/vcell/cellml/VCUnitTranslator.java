@@ -4,6 +4,7 @@ import java.util.TreeMap;
 
 import org.jdom.Element;
 import org.jdom.Namespace;
+import org.vcell.units.VCUnitDefinition;
 
 import ucar.units.BaseUnit;
 import ucar.units.DerivedUnitImpl;
@@ -16,7 +17,6 @@ import ucar.units.Unit;
 import ucar.units.UnitException;
 import ucar.units.UnitImpl;
 import ucar.units.UnitName;
-import cbit.vcell.units.VCUnitDefinition;
 
 /**
 This class provides unit translation support for the  VCML translations with SBML and CellML. Its placed here to preserve the 
@@ -330,7 +330,7 @@ private VCUnitTranslator() { super(); }
 			}
 		} catch (UnitException e) {
 			e.printStackTrace();
-			throw new cbit.vcell.units.VCUnitException("Unable to set unit value: "+e.getMessage());
+			throw new org.vcell.units.VCUnitException("Unable to set unit value: "+e.getMessage());
 		}
 
 		return unit;

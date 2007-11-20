@@ -23,11 +23,11 @@ import org.sbml.libsbml.Unit;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.units.VCUnitDefinition;
 import org.vcell.util.TokenMangler;
 
 import cbit.vcell.vcml.Translator;
 
-import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.xml.XMLTags;
 import cbit.util.xml.XmlParseException;
 

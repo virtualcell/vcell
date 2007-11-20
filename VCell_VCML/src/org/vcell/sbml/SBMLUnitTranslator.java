@@ -1,6 +1,6 @@
 package org.vcell.sbml;
 
-import cbit.vcell.units.VCUnitDefinition;
+import org.vcell.units.VCUnitDefinition;
 
 /**
  * Insert the type's description here.
@@ -24,7 +24,7 @@ public class SBMLUnitTranslator {
 		SbmlDefaultUnits.put("substance", VCUnitDefinition.getInstance("mole"));
 		SbmlDefaultUnits.put("volume", VCUnitDefinition.UNIT_L);
 		SbmlDefaultUnits.put("area", VCUnitDefinition.getInstance("metre2"));
-		SbmlDefaultUnits.put("length", cbit.vcell.units.VCUnitDefinition.getInstance("metre"));
+		SbmlDefaultUnits.put("length", org.vcell.units.VCUnitDefinition.getInstance("metre"));
 		SbmlDefaultUnits.put("time", VCUnitDefinition.UNIT_s);
 	}
 
@@ -200,7 +200,7 @@ public static org.sbml.libsbml.UnitDefinition getSBMLUnitDefinition(VCUnitDefini
 			}
 		} catch (ucar.units.UnitException e) {
 			e.printStackTrace();
-			throw new cbit.vcell.units.VCUnitException("Unable to set unit value: "+e.getMessage());
+			throw new org.vcell.units.VCUnitException("Unable to set unit value: "+e.getMessage());
 		}
 
 		return vcUnit;

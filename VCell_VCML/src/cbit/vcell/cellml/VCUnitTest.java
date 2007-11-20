@@ -3,11 +3,12 @@ package cbit.vcell.cellml;
 import java.io.PrintStream;
 import java.util.Enumeration;
 
+import org.vcell.units.VCUnitDefinition;
+
 import junit.framework.TestCase;
 import junit.framework.TestFailure;
 import junit.framework.TestResult;
 import junit.framework.TestSuite;
-import cbit.vcell.units.VCUnitDefinition;
 
 /**
  * Simple test for the cbit.vcell.units package.

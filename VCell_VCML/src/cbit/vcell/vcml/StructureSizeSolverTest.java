@@ -75,7 +75,7 @@ public static void main(java.lang.String[] args) {
 		}
 
 
-		structSizeSolver.updateAbsoluteStructureSizes(simContext,ec,1.0,cbit.vcell.units.VCUnitDefinition.UNIT_um3);
+		structSizeSolver.updateAbsoluteStructureSizes(simContext,ec,1.0,org.vcell.units.VCUnitDefinition.UNIT_um3);
 		System.out.println("\n\nsolution:\n");
 		for (int i = 0; i < structureMappings.length; i++){
 			System.out.println("\""+structureMappings[i].getStructure().getName()+"\" size = "+ 

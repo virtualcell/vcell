@@ -31,7 +31,6 @@ import cbit.vcell.modelapp.ReactionSpec;
 import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.modelapp.SpeciesContextSpec;
 import cbit.vcell.modelapp.StructureMapping;
-import cbit.vcell.units.VCUnitDefinition;
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.vcml.StructureSizeSolver;
@@ -41,6 +40,7 @@ import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlHelper;
 
 import org.vcell.expression.ExpressionUtilities;
+import org.vcell.units.VCUnitDefinition;
 import org.vcell.util.BeanUtils;
 
 public class SBMLImporter {

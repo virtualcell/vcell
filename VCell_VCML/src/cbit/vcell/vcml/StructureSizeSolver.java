@@ -33,7 +33,7 @@ public StructureSizeSolver() {
  * @param structName java.lang.String
  * @param structSize double
  */
-public void updateAbsoluteStructureSizes(cbit.vcell.modelapp.SimulationContext simContext, cbit.vcell.model.Structure struct, double structSize, cbit.vcell.units.VCUnitDefinition structSizeUnit) {
+public void updateAbsoluteStructureSizes(cbit.vcell.modelapp.SimulationContext simContext, cbit.vcell.model.Structure struct, double structSize, org.vcell.units.VCUnitDefinition structSizeUnit) {
 	cbit.vcell.modelapp.StructureMapping[] structMappings = simContext.getGeometryContext().getStructureMappings();
 	try {
 		ConstraintContainerImpl ccImpl = new ConstraintContainerImpl();

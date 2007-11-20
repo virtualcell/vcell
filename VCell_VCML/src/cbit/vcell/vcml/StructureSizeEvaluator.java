@@ -1,7 +1,8 @@
 package cbit.vcell.vcml;
 
+import org.vcell.units.VCUnitDefinition;
+
 import cbit.vcell.modelapp.SimulationContext;
-import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
  * Creation date: (5/12/2006 10:21:14 AM)

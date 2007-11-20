@@ -12,13 +12,13 @@ import org.jdom.filter.ElementFilter;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.units.VCUnitDefinition;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.TokenMangler;
 
 import cbit.util.xml.JDOMTreeWalker;
 import cbit.util.xml.MathMLTags;
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.vcml.Translator;
 import cbit.vcell.xml.NameList;
 import cbit.vcell.xml.NameManager;
