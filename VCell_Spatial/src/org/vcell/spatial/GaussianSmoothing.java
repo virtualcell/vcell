@@ -1,5 +1,4 @@
 package org.vcell.spatial;
-import cbit.render.*;
 /**
  * Insert the type's description here.
  * Creation date: (10/3/2003 1:55:05 PM)
