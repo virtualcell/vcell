@@ -5,18 +5,18 @@ import java.awt.event.WindowEvent;
 
 import javax.swing.JFrame;
 
+import org.vcell.spatial.ByteImage;
+import org.vcell.spatial.ByteImageTest;
+import org.vcell.spatial.RegionImage;
+import org.vcell.spatial.SurfaceCollection;
+import org.vcell.spatial.SurfaceGenerator;
+import org.vcell.spatial.TaubinSmoothing;
+import org.vcell.spatial.TaubinSmoothingSpecification;
+import org.vcell.spatial.TaubinSmoothingWrong;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
 
-import cbit.render.objects.ByteImage;
-import cbit.render.objects.ByteImageTest;
-import cbit.render.objects.RegionImage;
-import cbit.render.objects.SurfaceCollection;
-import cbit.render.objects.SurfaceGenerator;
-import cbit.render.objects.TaubinSmoothing;
-import cbit.render.objects.TaubinSmoothingSpecification;
-import cbit.render.objects.TaubinSmoothingWrong;
 
 public class RenderTests {
 

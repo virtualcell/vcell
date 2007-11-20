@@ -5,7 +5,8 @@ import java.util.Vector;
 
 import javax.media.opengl.GL;
 
-import cbit.render.objects.BoundingBox;
+import org.vcell.spatial.BoundingBox;
+
 
 public abstract class ModelObject {
 	private Vector<ModelObject> modelObjectList = new Vector<ModelObject>();

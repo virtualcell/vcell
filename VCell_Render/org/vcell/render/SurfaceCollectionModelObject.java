@@ -4,8 +4,9 @@ import java.awt.Color;
 
 import javax.media.opengl.GL;
 
-import cbit.render.objects.BoundingBox;
-import cbit.render.objects.SurfaceCollection;
+import org.vcell.spatial.BoundingBox;
+import org.vcell.spatial.SurfaceCollection;
+
 
 public class SurfaceCollectionModelObject extends ModelObject {
 	private SurfaceModelObject[] childSurfaceModelObjects = null;

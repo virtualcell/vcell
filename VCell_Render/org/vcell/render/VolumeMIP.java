@@ -6,10 +6,11 @@ import java.nio.*;
 import javax.media.opengl.*;
 import javax.media.opengl.glu.GLU;
 
-import cbit.render.objects.BoundingBox;
-import cbit.render.objects.ByteImage;
-import cbit.render.objects.ImageException;
-import cbit.render.objects.Vect3d;
+import org.vcell.spatial.BoundingBox;
+import org.vcell.spatial.ByteImage;
+import org.vcell.spatial.ImageException;
+import org.vcell.spatial.Vect3d;
+
 
 
 

@@ -1,8 +1,8 @@
 package cbit.render.unused;
 
-import cbit.render.objects.Node;
-import cbit.render.objects.OrigSurface;
-import cbit.render.objects.SurfaceCollection;
+import org.vcell.spatial.Node;
+import org.vcell.spatial.OrigSurface;
+import org.vcell.spatial.SurfaceCollection;
 
 public class SurfaceUtils {
 	/**

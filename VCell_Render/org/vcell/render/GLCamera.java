@@ -2,7 +2,8 @@ package org.vcell.render;
 
 import javax.media.opengl.GL;
 
-import cbit.render.objects.Vect3d;
+import org.vcell.spatial.Vect3d;
+
 
 public class GLCamera extends Camera {
 	

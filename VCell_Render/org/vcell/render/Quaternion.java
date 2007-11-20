@@ -1,6 +1,6 @@
 package org.vcell.render;
 
-import cbit.render.objects.Vect3d;
+import org.vcell.spatial.Vect3d;
 
 /**
  * Insert the type's description here.

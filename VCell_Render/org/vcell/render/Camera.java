@@ -2,8 +2,9 @@ package org.vcell.render;
 
 import javax.media.opengl.GL;
 
-import cbit.render.objects.BoundingBox;
-import cbit.render.objects.Vect3d;
+import org.vcell.spatial.BoundingBox;
+import org.vcell.spatial.Vect3d;
+
 
 /**
  * Insert the type's description here.

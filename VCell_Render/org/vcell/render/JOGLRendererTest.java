@@ -6,16 +6,16 @@ import javax.swing.*;
 
 import javax.media.opengl.*;
 
+import org.vcell.spatial.AnalyticField;
+import org.vcell.spatial.BoundingBox;
+import org.vcell.spatial.ByteImage;
+import org.vcell.spatial.ByteImageTest;
+import org.vcell.spatial.SpatialFunction;
+import org.vcell.spatial.SurfaceCollection;
+import org.vcell.spatial.SurfaceCollectionTest;
+import org.vcell.spatial.Vect3d;
 import org.vcell.util.ISize;
 
-import cbit.render.objects.AnalyticField;
-import cbit.render.objects.BoundingBox;
-import cbit.render.objects.ByteImage;
-import cbit.render.objects.ByteImageTest;
-import cbit.render.objects.SpatialFunction;
-import cbit.render.objects.SurfaceCollection;
-import cbit.render.objects.SurfaceCollectionTest;
-import cbit.render.objects.Vect3d;
 
 /**
  * JGears.java <BR>

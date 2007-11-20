@@ -2,10 +2,10 @@ package org.vcell.render;
 
 import javax.media.opengl.GLJPanel;
 
+import org.vcell.spatial.SurfaceCollection;
+import org.vcell.spatial.Vect3d;
 import org.vcell.util.Extent;
 
-import cbit.render.objects.SurfaceCollection;
-import cbit.render.objects.Vect3d;
 
 /**
  * Insert the type's description here.

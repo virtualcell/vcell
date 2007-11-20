@@ -2,10 +2,10 @@ package org.vcell.render;
 
 import javax.media.opengl.GL;
 
+import org.vcell.spatial.BoundingBox;
+import org.vcell.spatial.Vect3d;
 import org.vcell.util.Extent;
 
-import cbit.render.objects.BoundingBox;
-import cbit.render.objects.Vect3d;
 
 import com.sun.opengl.util.GLUT;
 

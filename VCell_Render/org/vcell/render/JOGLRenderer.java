@@ -10,8 +10,9 @@ import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLEventListener;
 import javax.media.opengl.GLJPanel;
 
-import cbit.render.objects.BoundingBox;
-import cbit.render.objects.Vect3d;
+import org.vcell.spatial.BoundingBox;
+import org.vcell.spatial.Vect3d;
+
 
 import com.sun.opengl.util.GLUT;
 

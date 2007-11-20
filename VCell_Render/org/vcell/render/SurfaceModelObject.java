@@ -5,12 +5,13 @@ import java.util.Vector;
 
 import javax.media.opengl.GL;
 
-import cbit.render.objects.BoundingBox;
-import cbit.render.objects.Node;
-import cbit.render.objects.Polygon;
-import cbit.render.objects.Quadrilateral;
-import cbit.render.objects.Surface;
-import cbit.render.objects.Vect3d;
+import org.vcell.spatial.BoundingBox;
+import org.vcell.spatial.Node;
+import org.vcell.spatial.Polygon;
+import org.vcell.spatial.Quadrilateral;
+import org.vcell.spatial.Surface;
+import org.vcell.spatial.Vect3d;
+
 
 public class SurfaceModelObject extends ModelObject {
 	private Surface surface = null;

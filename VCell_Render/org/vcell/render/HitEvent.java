@@ -1,7 +1,7 @@
 package org.vcell.render;
 
-import cbit.render.objects.Polygon;
-import cbit.render.objects.Surface;
+import org.vcell.spatial.Polygon;
+import org.vcell.spatial.Surface;
 
 /**
  * Insert the type's description here.
