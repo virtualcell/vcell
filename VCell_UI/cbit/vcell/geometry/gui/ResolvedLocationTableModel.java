@@ -114,7 +114,7 @@ public Object getValueAt(int row, int col) {
 		}
 		case COLUMN_SIZE:{
 			double size = region.getSize();
-			cbit.vcell.units.VCUnitDefinition sizeUnit = region.getSizeUnit();
+			org.vcell.units.VCUnitDefinition sizeUnit = region.getSizeUnit();
 			return size+" ["+sizeUnit.getSymbol()+"]";
 		}
 		case COLUMN_INSIDE:{

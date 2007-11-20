@@ -4,8 +4,8 @@ package cbit.vcell.model.gui;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.units.VCUnitException;
 
-import cbit.vcell.units.VCUnitException;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -325,7 +325,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 						String newUnitString = (String)aValue;
 						Kinetics.KineticsParameter kineticsParm = (Kinetics.KineticsParameter)parameter;
 						if (!kineticsParm.getUnitDefinition().getSymbol().equals(newUnitString)){
-							kineticsParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.getInstance(newUnitString));
+							kineticsParm.setUnitDefinition(org.vcell.units.VCUnitDefinition.getInstance(newUnitString));
 							fireTableRowsUpdated(rowIndex,rowIndex);
 						}
 					}

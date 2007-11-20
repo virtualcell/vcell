@@ -548,7 +548,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 						if (!parameter.getUnitDefinition().getSymbol().equals(newUnitSymbol)){
 							if (parameter instanceof cbit.vcell.model.Kinetics.KineticsParameter){
 								Kinetics.KineticsParameter kineticsParameter = (Kinetics.KineticsParameter)parameter;
-								kineticsParameter.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.getInstance(newUnitSymbol));
+								kineticsParameter.setUnitDefinition(org.vcell.units.VCUnitDefinition.getInstance(newUnitSymbol));
 								fireTableRowsUpdated(rowIndex,rowIndex);
 							//}else if (parameter instanceof cbit.vcell.model.ModelParameter){
 								//Model model = (Model) parameter.getNameScope().getScopedSymbolTable();
@@ -557,7 +557,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 							}
 						}
 					}
-				}catch (cbit.vcell.units.VCUnitException e){
+				}catch (org.vcell.units.VCUnitException e){
 					e.printStackTrace(System.out);
 					cbit.vcell.client.PopupGenerator.showErrorDialog("Error changing parameter units:\n"+e.getMessage());
 				}
