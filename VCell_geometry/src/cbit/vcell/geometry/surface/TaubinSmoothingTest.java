@@ -1,9 +1,9 @@
 package cbit.vcell.geometry.surface;
 import org.vcell.expression.ExpressionFactory;
+import org.vcell.spatial.Surface;
+import org.vcell.spatial.SurfaceCollection;
 
 import cbit.render.*;
-import cbit.render.objects.Surface;
-import cbit.render.objects.SurfaceCollection;
 
 /**
  * Insert the type's description here.

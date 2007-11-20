@@ -1,12 +1,12 @@
 package cbit.vcell.geometry.surface;
+import org.vcell.spatial.FilterSpecification;
+import org.vcell.spatial.SurfaceCollection;
+import org.vcell.spatial.TaubinSmoothing;
+import org.vcell.spatial.TaubinSmoothingSpecification;
 import org.vcell.util.PropertyLoader;
 import org.vcell.util.StdoutSessionLog;
 
 import cbit.render.*;
-import cbit.render.objects.FilterSpecification;
-import cbit.render.objects.SurfaceCollection;
-import cbit.render.objects.TaubinSmoothing;
-import cbit.render.objects.TaubinSmoothingSpecification;
 import cbit.image.*;
 /**
  * Insert the type's description here.

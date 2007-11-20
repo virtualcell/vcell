@@ -1,10 +1,11 @@
 package cbit.vcell.geometry.surface;
+import org.vcell.spatial.Polygon;
+import org.vcell.spatial.Surface;
+import org.vcell.spatial.SurfaceCollection;
+import org.vcell.spatial.Triangle;
+import org.vcell.spatial.Vect3d;
+
 import cbit.render.*;
-import cbit.render.objects.Polygon;
-import cbit.render.objects.Surface;
-import cbit.render.objects.SurfaceCollection;
-import cbit.render.objects.Triangle;
-import cbit.render.objects.Vect3d;
 
 /**
  * Insert the type's description here.

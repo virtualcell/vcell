@@ -1,11 +1,11 @@
 package cbit.vcell.geometry.surface;
 import org.vcell.expression.IExpression;
+import org.vcell.spatial.SurfaceCollection;
 import org.vcell.util.Compare;
 
 import cbit.image.VCImage;
 import cbit.vcell.geometry.RegionImage;
 import cbit.render.*;
-import cbit.render.objects.SurfaceCollection;
 import cbit.vcell.geometry.*;
 /**
  * Insert the type's description here.

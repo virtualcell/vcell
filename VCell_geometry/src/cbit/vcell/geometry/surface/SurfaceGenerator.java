@@ -1,18 +1,18 @@
 package cbit.vcell.geometry.surface;
+import org.vcell.spatial.BoundingBox;
+import org.vcell.spatial.BoundingIndex;
+import org.vcell.spatial.Node;
+import org.vcell.spatial.OrigSurface;
+import org.vcell.spatial.Polygon;
+import org.vcell.spatial.Quadrilateral;
+import org.vcell.spatial.Surface;
+import org.vcell.spatial.SurfaceCollection;
 import org.vcell.util.SessionLog;
 
 import cbit.vcell.geometry.RegionImage;
 import cbit.image.VCImage;
 import cbit.vcell.geometry.Geometry;
 import cbit.render.*;
-import cbit.render.objects.BoundingBox;
-import cbit.render.objects.BoundingIndex;
-import cbit.render.objects.Node;
-import cbit.render.objects.OrigSurface;
-import cbit.render.objects.Polygon;
-import cbit.render.objects.Quadrilateral;
-import cbit.render.objects.Surface;
-import cbit.render.objects.SurfaceCollection;
 /**
  * Insert the type's description here.
  * Creation date: (6/27/2003 10:34:49 PM)

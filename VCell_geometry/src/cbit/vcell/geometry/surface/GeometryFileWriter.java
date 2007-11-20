@@ -4,15 +4,15 @@ import cbit.vcell.geometry.RegionImage;
 import java.util.zip.DeflaterOutputStream;
 import java.io.ByteArrayOutputStream;
 
+import org.vcell.spatial.Node;
+import org.vcell.spatial.Quadrilateral;
+import org.vcell.spatial.Surface;
+import org.vcell.spatial.SurfaceCollection;
+import org.vcell.spatial.Vect3d;
 import org.vcell.util.ISize;
 
 import cbit.vcell.geometry.Geometry;
 import cbit.render.*;
-import cbit.render.objects.Node;
-import cbit.render.objects.Quadrilateral;
-import cbit.render.objects.Surface;
-import cbit.render.objects.SurfaceCollection;
-import cbit.render.objects.Vect3d;
 /**
  * Insert the type's description here.
  * Creation date: (7/19/2004 10:52:10 AM)

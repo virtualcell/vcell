@@ -1,9 +1,10 @@
 package cbit.vcell.geometry.surface;
+import org.vcell.spatial.Node;
+import org.vcell.spatial.Polygon;
+import org.vcell.spatial.Surface;
+import org.vcell.spatial.SurfaceCollection;
+
 import cbit.render.*;
-import cbit.render.objects.Node;
-import cbit.render.objects.Polygon;
-import cbit.render.objects.Surface;
-import cbit.render.objects.SurfaceCollection;
 
 /**
  * Insert the type's description here.

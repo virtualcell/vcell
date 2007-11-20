@@ -1,13 +1,13 @@
 package cbit.vcell.geometry.surface;
+import org.vcell.spatial.Surface;
+import org.vcell.spatial.SurfaceCollection;
+import org.vcell.spatial.TaubinSmoothing;
+import org.vcell.spatial.TaubinSmoothingSpecification;
+import org.vcell.spatial.TaubinSmoothingWrong;
 import org.vcell.units.VCUnitDefinition;
 import org.vcell.util.StdoutSessionLog;
 
 import cbit.render.*;
-import cbit.render.objects.Surface;
-import cbit.render.objects.SurfaceCollection;
-import cbit.render.objects.TaubinSmoothing;
-import cbit.render.objects.TaubinSmoothingSpecification;
-import cbit.render.objects.TaubinSmoothingWrong;
 /**
  * Insert the type's description here.
  * Creation date: (6/28/2004 2:52:23 PM)
