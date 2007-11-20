@@ -5,6 +5,7 @@ package cbit.vcell.constraints;
 ©*/
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
+import org.vcell.units.VCUnitDefinition;
 
 import net.sourceforge.interval.ia_math.RealInterval;
 
@@ -41,7 +42,7 @@ public class ConstraintSolver implements org.vcell.expression.SymbolTable, java.
 				return false;
 			}
 		}
-		public cbit.vcell.units.VCUnitDefinition getUnitDefinition() { 
+		public VCUnitDefinition getUnitDefinition() { 
 			return null; 
 		}
 		public int getIndex() { 
