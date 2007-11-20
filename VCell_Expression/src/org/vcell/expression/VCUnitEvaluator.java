@@ -1,8 +1,9 @@
 package org.vcell.expression;
 import java.util.ArrayList;
 
-import cbit.vcell.units.VCUnitDefinition;
-import cbit.vcell.units.VCUnitException;
+import org.vcell.units.VCUnitDefinition;
+import org.vcell.units.VCUnitException;
+
 import edu.uchc.vcell.expression.internal.ASTAddNode;
 import edu.uchc.vcell.expression.internal.ASTAndNode;
 import edu.uchc.vcell.expression.internal.ASTExpression;

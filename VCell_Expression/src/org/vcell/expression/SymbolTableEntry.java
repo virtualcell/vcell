@@ -47,7 +47,7 @@ NameScope getNameScope();
  * Creation date: (3/31/2004 10:33:52 AM)
  * @return cbit.vcell.units.VCUnitDefinition
  */
-cbit.vcell.units.VCUnitDefinition getUnitDefinition();
+org.vcell.units.VCUnitDefinition getUnitDefinition();
 /**
  * This method was created by a SmartGuide.
  * @return boolean

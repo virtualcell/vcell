@@ -38,14 +38,14 @@ public class SimpleSymbolTable implements org.vcell.expression.ScopedSymbolTable
 		private String name = null;
 		private int index = -1;
 		private NameScope nameScope = null;
-		private cbit.vcell.units.VCUnitDefinition vcUnitDefinition = null;
+		private org.vcell.units.VCUnitDefinition vcUnitDefinition = null;
 		
 		private SimpleSymbolTableEntry(String argName, int argIndex, NameScope argNameScope){
 			this.name = argName;
 			this.index = argIndex;
 			this.nameScope = argNameScope;
 		}
-		private SimpleSymbolTableEntry(String argName, int argIndex, NameScope argNameScope, cbit.vcell.units.VCUnitDefinition unit){
+		private SimpleSymbolTableEntry(String argName, int argIndex, NameScope argNameScope, org.vcell.units.VCUnitDefinition unit){
 			this.name = argName;
 			this.index = argIndex;
 			this.nameScope = argNameScope;
@@ -63,7 +63,7 @@ public class SimpleSymbolTable implements org.vcell.expression.ScopedSymbolTable
 		public NameScope getNameScope(){
 			return nameScope;
 		}
-		public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
+		public org.vcell.units.VCUnitDefinition getUnitDefinition() {
 			return vcUnitDefinition;
 		}
 		public IExpression getExpression(){
@@ -88,7 +88,7 @@ public SimpleSymbolTable(String symbols[], NameScope argNameScope){
 }
 
 
-public SimpleSymbolTable(String symbols[], NameScope argNameScope, cbit.vcell.units.VCUnitDefinition units[]){
+public SimpleSymbolTable(String symbols[], NameScope argNameScope, org.vcell.units.VCUnitDefinition units[]){
 	this.nameScope = argNameScope;
 	steArray = new SimpleSymbolTableEntry[symbols.length];
 	for (int i=0;i<symbols.length;i++){
