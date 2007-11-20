@@ -4,8 +4,7 @@ Bundle-Name: org.vcell.render
 Bundle-SymbolicName: org.vcell.render
 Bundle-Version: 1.0.0
 Bundle-Localization: plugin
-Export-Package: cbit.render.unused,
- org.vcell.render
+Export-Package: org.vcell.render
 Require-Bundle: org.vcell.util,
  org.vcell.spatial,
  com.sun.opengl
