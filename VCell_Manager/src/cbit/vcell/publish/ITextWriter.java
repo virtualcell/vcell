@@ -19,6 +19,7 @@ import javax.imageio.stream.ImageOutputStream;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.ui.ExpressionPrintFormatter;
+import org.vcell.units.VCUnitDefinition;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
@@ -82,7 +83,6 @@ import cbit.vcell.simulation.OutputTimeSpec;
 import cbit.vcell.simulation.Simulation;
 import cbit.vcell.simulation.SolverTaskDescription;
 import cbit.vcell.simulation.UniformOutputTimeSpec;
-import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.xml.XMLTags;
 
 import com.lowagie.text.Cell;
@@ -1628,9 +1628,9 @@ protected void writeModel(Chapter physioChapter, Model model) throws DocumentExc
 			String speciesName = speciesContSpecs[i].getSpeciesContext().getSpecies().getCommonName();
 			String structName = speciesContSpecs[i].getSpeciesContext().getStructure().getName();
 			String diff = speciesContSpecs[i].getDiffusionParameter().getExpression().infix();
-			cbit.vcell.units.VCUnitDefinition diffUnit = speciesContSpecs[i].getDiffusionParameter().getUnitDefinition();
+			org.vcell.units.VCUnitDefinition diffUnit = speciesContSpecs[i].getDiffusionParameter().getUnitDefinition();
 			String initConc = speciesContSpecs[i].getInitialConditionParameter().getExpression().infix();
-			cbit.vcell.units.VCUnitDefinition initConcUnit = speciesContSpecs[i].getInitialConditionParameter().getUnitDefinition();
+			org.vcell.units.VCUnitDefinition initConcUnit = speciesContSpecs[i].getInitialConditionParameter().getUnitDefinition();
 			speciesSpecTable.addCell(createCell(speciesName, getFont()));
 			speciesSpecTable.addCell(createCell(structName, getFont()));
 			speciesSpecTable.addCell(createCell(initConc + (initConcUnit == null ? "": "   " + initConcUnit.getSymbol()), getFont()));
