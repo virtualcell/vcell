@@ -3,13 +3,13 @@ package cbit.vcell.geometry.gui;
 import org.vcell.expression.IExpression;
 import org.vcell.render.SurfaceCanvas;
 import org.vcell.render.SurfaceViewerTool;
+import org.vcell.spatial.Node;
+import org.vcell.spatial.Quadrilateral;
+import org.vcell.spatial.Surface;
+import org.vcell.spatial.SurfaceCollection;
+import org.vcell.spatial.Vect3d;
 import org.vcell.util.Coordinate;
 
-import cbit.render.objects.Node;
-import cbit.render.objects.Quadrilateral;
-import cbit.render.objects.Surface;
-import cbit.render.objects.SurfaceCollection;
-import cbit.render.objects.Vect3d;
 
 /**
  * Insert the type's description here. Creation date: (9/20/2005 9:13:34 AM)

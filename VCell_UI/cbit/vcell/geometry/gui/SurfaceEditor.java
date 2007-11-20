@@ -1,8 +1,8 @@
 package cbit.vcell.geometry.gui;
 import org.vcell.render.*;
+import org.vcell.spatial.SurfaceCollection;
 import org.vcell.util.UserCancelException;
 
-import cbit.render.objects.SurfaceCollection;
 import cbit.vcell.desktop.controls.AsynchClientTask;
 import cbit.vcell.desktop.controls.ClientTask;
 import cbit.vcell.simdata.DisplayAdapterService;

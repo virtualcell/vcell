@@ -1,11 +1,11 @@
 package cbit.vcell.geometry.gui;
 
 import org.vcell.render.*;
+import org.vcell.spatial.FilterSpecification;
+import org.vcell.spatial.SurfaceCollection;
+import org.vcell.spatial.TaubinSmoothingSpecification;
 import org.vcell.util.StdoutSessionLog;
 
-import cbit.render.objects.FilterSpecification;
-import cbit.render.objects.SurfaceCollection;
-import cbit.render.objects.TaubinSmoothingSpecification;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.surface.SurfaceGenerator;
 /**
@@ -41,7 +41,7 @@ public static void main(java.lang.String[] args) {
 			//double d = i/100.0;
 			SurfaceCollection surfaceCollection = surfaceGenerator.generateSurface(geometry);
 			System.out.println("smoothing");
-			cbit.render.objects.TaubinSmoothing taubin = new cbit.render.objects.TaubinSmoothing();
+			org.vcell.spatial.TaubinSmoothing taubin = new org.vcell.spatial.TaubinSmoothing();
 			FilterSpecification filterSpec = new FilterSpecification(0.3,0.7,0.2,0.2);
 			TaubinSmoothingSpecification taubinSpec = TaubinSmoothingSpecification.fromFilterSpecification(filterSpec);
 			taubin.smooth(surfaceCollection, taubinSpec);

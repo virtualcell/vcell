@@ -1,12 +1,12 @@
 package cbit.vcell.client.data;
-import cbit.render.objects.Surface;
-import cbit.render.objects.SurfaceCollection;
-import cbit.render.objects.Vect3d;
 import cbit.vcell.math.DataIdentifier;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.*;
 import javax.swing.*;
 
+import org.vcell.spatial.Surface;
+import org.vcell.spatial.SurfaceCollection;
+import org.vcell.spatial.Vect3d;
 import org.vcell.util.*;
 import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.GlassPane;
@@ -1032,8 +1032,8 @@ private cbit.vcell.geometry.gui.DataValueSurfaceViewer getDataValueSurfaceViewer
 
 		cbit.vcell.geometry.gui.DataValueSurfaceViewer fieldDataValueSurfaceViewer0 = new cbit.vcell.geometry.gui.DataValueSurfaceViewer();
 
-		cbit.render.objects.TaubinSmoothing taubinSmoothing = new cbit.render.objects.TaubinSmoothingWrong();
-		cbit.render.objects.TaubinSmoothingSpecification taubinSpec = cbit.render.objects.TaubinSmoothingSpecification.getInstance(.3);
+		org.vcell.spatial.TaubinSmoothing taubinSmoothing = new org.vcell.spatial.TaubinSmoothingWrong();
+		org.vcell.spatial.TaubinSmoothingSpecification taubinSpec = org.vcell.spatial.TaubinSmoothingSpecification.getInstance(.3);
 		taubinSmoothing.smooth(surfaceCollection,taubinSpec);
 		fieldDataValueSurfaceViewer0.init(
 			meshRegionSurfaces.getSurfaceCollection(),

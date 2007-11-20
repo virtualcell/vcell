@@ -1,15 +1,15 @@
 package cbit.vcell.geometry.gui;
-import cbit.render.objects.Node;
-import cbit.render.objects.Polygon;
-import cbit.render.objects.Surface;
-import cbit.render.objects.SurfaceCollection;
-import cbit.render.objects.Triangle;
-import cbit.render.objects.Vect3d;
 
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 
 import org.vcell.render.*;
+import org.vcell.spatial.Node;
+import org.vcell.spatial.Polygon;
+import org.vcell.spatial.Surface;
+import org.vcell.spatial.SurfaceCollection;
+import org.vcell.spatial.Triangle;
+import org.vcell.spatial.Vect3d;
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
 /**

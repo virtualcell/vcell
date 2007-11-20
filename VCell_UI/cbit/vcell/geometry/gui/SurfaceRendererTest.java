@@ -1,8 +1,8 @@
 package cbit.vcell.geometry.gui;
 import org.vcell.expression.ExpressionFactory;
 import org.vcell.render.*;
+import org.vcell.spatial.SurfaceCollection;
 
-import cbit.render.objects.SurfaceCollection;
 /**
  * Insert the type's description here.
  * Creation date: (7/20/2004 5:32:11 PM)

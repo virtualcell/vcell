@@ -5,8 +5,6 @@ import java.awt.Dimension;
 import javax.media.opengl.GLJPanel;
 
 import cbit.image.VCImage;
-import cbit.render.objects.BoundingBox;
-import cbit.render.objects.ByteImage;
 
 import javax.swing.JPanel;
 import java.awt.GridBagLayout;
@@ -24,6 +22,8 @@ import org.vcell.render.AxisModelObject;
 import org.vcell.render.JOGLRenderer;
 import org.vcell.render.SurfaceCollectionModelObject;
 import org.vcell.render.VolumeMIP;
+import org.vcell.spatial.BoundingBox;
+import org.vcell.spatial.ByteImage;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 

@@ -1,8 +1,8 @@
 package cbit.vcell.geometry.gui;
 import org.vcell.render.*;
+import org.vcell.spatial.SurfaceCollection;
+import org.vcell.spatial.Vect3d;
 
-import cbit.render.objects.SurfaceCollection;
-import cbit.render.objects.Vect3d;
 
 /**
  * Insert the type's description here.

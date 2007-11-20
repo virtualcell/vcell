@@ -1,6 +1,6 @@
 package cbit.vcell.geometry.gui;
-import cbit.render.objects.Polygon;
-import cbit.render.objects.Surface;
+import org.vcell.spatial.Polygon;
+import org.vcell.spatial.Surface;
 /**
  * Insert the type's description here.
  * Creation date: (7/20/2004 12:08:18 PM)

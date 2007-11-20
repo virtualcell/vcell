@@ -1,10 +1,10 @@
 package cbit.vcell.geometry.gui;
-import cbit.render.objects.Vect3d;
 
 import java.awt.event.MouseEvent;
 import java.awt.event.KeyEvent;
 
 import org.vcell.render.*;
+import org.vcell.spatial.Vect3d;
 /**
  * Insert the type's description here.
  * Creation date: (11/30/2003 9:33:58 PM)

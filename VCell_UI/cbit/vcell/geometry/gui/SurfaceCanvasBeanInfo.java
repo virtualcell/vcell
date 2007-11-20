@@ -620,7 +620,7 @@ public java.beans.PropertyDescriptor surfaceCollectionPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.render.objects.SurfaceCollection.class
+					org.vcell.spatial.SurfaceCollection.class
 				};
 				aSetMethod = getBeanClass().getMethod("setSurfaceCollection", aSetMethodParameterTypes);
 			} catch (Throwable exception) {

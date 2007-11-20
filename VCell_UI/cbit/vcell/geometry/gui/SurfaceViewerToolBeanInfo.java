@@ -350,7 +350,7 @@ public java.beans.PropertyDescriptor viewAngleRadiansPropertyDescriptor() {
 			try {
 				/* Attempt to find the method using getMethod with parameter types. */
 				java.lang.Class aSetMethodParameterTypes[] = {
-					cbit.render.objects.Vect3d.class
+					org.vcell.spatial.Vect3d.class
 				};
 				aSetMethod = getBeanClass().getMethod("setViewAngleRadians", aSetMethodParameterTypes);
 			} catch (Throwable exception) {
