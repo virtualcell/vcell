@@ -43,7 +43,7 @@ public abstract class ElectricalDevice implements SymbolTable {
 		public NameScope getNameScope() { 
 			return null; 
 		}
-		public cbit.vcell.units.VCUnitDefinition getUnitDefinition(){
+		public org.vcell.units.VCUnitDefinition getUnitDefinition(){
 			return null;
 		}
 		public double getConstantValue() throws org.vcell.expression.ExpressionException { 

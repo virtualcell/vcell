@@ -1,6 +1,6 @@
 package org.vcell.ncbc.physics.component;
 
-import cbit.vcell.units.VCUnitDefinition;
+import org.vcell.units.VCUnitDefinition;
 
 /**
  * Insert the type's description here.

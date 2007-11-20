@@ -19,6 +19,7 @@ import org.vcell.ncbc.physics.component.VolumeElectricalMaterial;
 import org.vcell.ncbc.physics.component.VolumeLocation;
 import org.vcell.ncbc.physics.component.VolumeReaction;
 import org.vcell.ncbc.physics.component.VolumeSpecies;
+import org.vcell.units.VCUnitDefinition;
 
 import cbit.image.ImageException;
 import cbit.vcell.geometry.GeometryException;
@@ -33,7 +34,6 @@ import cbit.vcell.modelapp.FeatureMapping;
 import cbit.vcell.modelapp.MembraneMapping;
 import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.modelapp.StructureMapping;
-import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
  * Creation date: (1/12/2004 1:35:08 AM)
