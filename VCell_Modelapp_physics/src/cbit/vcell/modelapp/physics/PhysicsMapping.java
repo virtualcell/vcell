@@ -22,6 +22,7 @@ import org.vcell.physics.component.OOModel;
 import org.vcell.physics.component.OnePortElectricalDevice;
 import org.vcell.physics.component.TwoPortElectricalComponent;
 import org.vcell.physics.component.VoltageSource;
+import org.vcell.units.VCUnitDefinition;
 import org.vcell.util.TokenMangler;
 
 import cbit.vcell.model.Feature;
@@ -33,7 +34,6 @@ import cbit.vcell.modelapp.FeatureMapping;
 import cbit.vcell.modelapp.MembraneMapping;
 import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.modelapp.StructureMapping;
-import cbit.vcell.units.VCUnitDefinition;
 
 public class PhysicsMapping {
 	/**
@@ -75,7 +75,7 @@ public class PhysicsMapping {
 			}else{
 				throw new RuntimeException("unexpected compartment type "+structureMappings[i].getStructure().getClass().getName());
 			}
-			LumpedLocation lumpedLocation = new LumpedLocation(structureMappings[i].getStructure().getName(),dim);
+			LumpedLocation lumpedLocation = new LumpedLocation(TokenMangler.fixTokenStrict(structureMappings[i].getStructure().getName()),dim);
 			oOModel.addModelComponent(lumpedLocation);
 		}
 		//
@@ -288,7 +288,7 @@ public class PhysicsMapping {
 					//
 					// add a ground if the outermost compartment
 					//
-					if (model.getTopFeature().getName().equals(lumpedLocation.getName())){
+					if (TokenMangler.fixTokenStrict(model.getTopFeature().getName()).equals(lumpedLocation.getName())){
 						Ground ground = new Ground("gnd_"+lumpedLocation.getName());
 						physicalModel.addModelComponent(ground);
 						physicalModel.addConnection(new Connection(new Connector[] { infiniteConductor.getConnectors(0), ground.getConnectors(0) } ));
@@ -440,6 +440,7 @@ public class PhysicsMapping {
 		//
 		// add a ground device to the outermost volumetric compartment.
 		//
+		
 	}
 
 }
