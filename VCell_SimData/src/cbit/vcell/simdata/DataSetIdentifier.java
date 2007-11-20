@@ -113,7 +113,7 @@ public NameScope getNameScope() {
  * Creation date: (3/31/2004 12:07:46 PM)
  * @return cbit.vcell.units.VCUnitDefinition
  */
-public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
+public org.vcell.units.VCUnitDefinition getUnitDefinition() {
 	return null;
 }
 
