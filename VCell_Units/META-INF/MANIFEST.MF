@@ -6,6 +6,6 @@ Bundle-Version: 1.0.0
 Bundle-Activator: org.vcell.units.Activator
 Bundle-Localization: plugin
 Import-Package: org.osgi.framework;version="1.3.0"
-Export-Package: cbit.vcell.units
+Export-Package: org.vcell.units
 Require-Bundle: ucar.units,
  org.eclipse.osgi

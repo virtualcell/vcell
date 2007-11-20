@@ -1,4 +1,4 @@
-package cbit.vcell.units;
+package org.vcell.units;
 import ucar.units.*;
 
 import ucar.units.DerivedUnitImpl;

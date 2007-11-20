@@ -1,4 +1,4 @@
-package cbit.vcell.units;
+package org.vcell.units;
 /**
  Generic wrapper around all the exceptions thrown by the ucar.units package. It extends RuntimeException for convenience.
  
