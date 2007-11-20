@@ -3,8 +3,8 @@ import jscl.plugin.Expression;
 import jscl.plugin.ParseException;
 
 import org.jdom.Element;
+import org.vcell.units.VCUnitDefinition;
 
-import cbit.vcell.units.VCUnitDefinition;
 
 /**
  * Insert the type's description here.

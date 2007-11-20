@@ -11,11 +11,11 @@ import jscl.plugin.Variable;
 
 import org.vcell.physics.component.PhysicalSymbol;
 import org.vcell.physics.math.BipartiteMatchings.Matching;
+import org.vcell.units.VCUnitDefinition;
 
 import cbit.util.graph.Edge;
 import cbit.util.graph.Graph;
 import cbit.util.graph.Node;
-import cbit.vcell.units.VCUnitDefinition;
 
 import com.mhhe.clrs2e.WeightedAdjacencyListGraph;
 

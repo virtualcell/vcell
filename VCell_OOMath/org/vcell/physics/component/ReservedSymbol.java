@@ -11,8 +11,8 @@ import org.vcell.expression.ExpressionFactory;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.NameScope;
 import org.vcell.expression.SymbolTableEntry;
+import org.vcell.units.VCUnitDefinition;
 
-import cbit.vcell.units.VCUnitDefinition;
 import edu.uchc.vcell.expression.internal.*;
 
 public class ReservedSymbol extends PhysicalSymbol {
@@ -32,7 +32,7 @@ public class ReservedSymbol extends PhysicalSymbol {
    private String description = null;
 
 
-private ReservedSymbol(String argName, String argDescription, cbit.vcell.units.VCUnitDefinition argUnitDefinition, Double argConstantValue){
+private ReservedSymbol(String argName, String argDescription, org.vcell.units.VCUnitDefinition argUnitDefinition, Double argConstantValue){
 	super(argName, argUnitDefinition);
 	this.constantValue = argConstantValue;
 	this.description = argDescription;

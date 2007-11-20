@@ -3,8 +3,8 @@ import java.util.HashSet;
 
 import org.vcell.expression.ExpressionUtilities;
 import org.vcell.physics.math.MathSystem;
+import org.vcell.units.VCUnitDefinition;
 
-import cbit.vcell.units.VCUnitDefinition;
 
 import jscl.plugin.Expression;
 import jscl.plugin.ParseException;

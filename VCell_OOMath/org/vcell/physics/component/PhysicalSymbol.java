@@ -2,8 +2,8 @@ package org.vcell.physics.component;
 
 import org.vcell.expression.IExpression;
 import org.vcell.expression.NameScope;
+import org.vcell.units.VCUnitDefinition;
 
-import cbit.vcell.units.VCUnitDefinition;
 
 /**
  * Insert the type's description here.
@@ -22,7 +22,7 @@ public abstract class PhysicalSymbol {
 	public String getName() {
 		return name;
 	}
-	public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
+	public org.vcell.units.VCUnitDefinition getUnitDefinition() {
 		return unit;
 	}
 	public String toString() {

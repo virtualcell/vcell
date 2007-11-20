@@ -1,10 +1,11 @@
 package org.vcell.physics.component;
+import org.vcell.units.VCUnitDefinition;
+
 import jscl.plugin.Expression;
 import jscl.plugin.ParseException;
 
 
 import cbit.util.xml.XmlUtil;
-import cbit.vcell.units.VCUnitDefinition;
 
 /**
  * Insert the type's description here.

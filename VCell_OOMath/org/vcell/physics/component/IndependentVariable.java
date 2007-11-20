@@ -1,6 +1,6 @@
 package org.vcell.physics.component;
 
-import cbit.vcell.units.VCUnitDefinition;
+import org.vcell.units.VCUnitDefinition;
 
 /**
  * This is designed to hold quantities such as x,y,z,t

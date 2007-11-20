@@ -17,9 +17,9 @@ import org.vcell.physics.component.ModelComponent;
 import org.vcell.physics.component.OOModel;
 import org.vcell.physics.component.PhysicalSymbol;
 import org.vcell.physics.modelica.ModelicaModelWriter;
+import org.vcell.units.VCUnitDefinition;
 
 import cbit.vcell.math.MathException;
-import cbit.vcell.units.VCUnitDefinition;
 
 /**
  * Insert the type's description here.

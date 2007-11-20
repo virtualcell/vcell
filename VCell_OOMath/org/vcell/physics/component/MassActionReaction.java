@@ -1,7 +1,7 @@
 package org.vcell.physics.component;
 import org.vcell.expression.ExpressionUtilities;
+import org.vcell.units.VCUnitDefinition;
 
-import cbit.vcell.units.VCUnitDefinition;
 
 import jscl.plugin.Expression;
 import jscl.plugin.ParseException;

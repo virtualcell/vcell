@@ -10,8 +10,8 @@ import org.vcell.physics.component.Variable;
 import org.vcell.physics.math.IndexReduction;
 import org.vcell.physics.math.MathSystem;
 import org.vcell.physics.math.OOMathSymbol;
+import org.vcell.units.VCUnitDefinition;
 
-import cbit.vcell.units.VCUnitDefinition;
 
 /**
  * Insert the type's description here.
