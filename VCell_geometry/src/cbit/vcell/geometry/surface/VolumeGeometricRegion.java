@@ -1,5 +1,5 @@
 package cbit.vcell.geometry.surface;
-import cbit.vcell.units.VCUnitDefinition;
+import org.vcell.units.VCUnitDefinition;
 import cbit.vcell.geometry.SubVolume;
 /**
  * Insert the type's description here.

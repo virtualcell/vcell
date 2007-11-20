@@ -8,6 +8,7 @@ import org.vcell.expression.ExpressionException;
 import org.vcell.expression.IExpression;
 import org.vcell.expression.NameScope;
 import org.vcell.expression.SymbolTableEntry;
+import org.vcell.units.VCUnitDefinition;
 
 import edu.uchc.vcell.expression.internal.*;
 
@@ -82,9 +83,9 @@ public static ReservedParameterSymbol getU() {
 /**
  * Insert the method's description here.
  * Creation date: (3/31/2004 2:07:23 PM)
- * @return cbit.vcell.units.VCUnitDefinition
+ * @return VCUnitDefinition
  */
-public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
+public VCUnitDefinition getUnitDefinition() {
 	return null;
 }
 /**

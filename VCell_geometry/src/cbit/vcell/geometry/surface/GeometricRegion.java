@@ -1,5 +1,5 @@
 package cbit.vcell.geometry.surface;
-import cbit.vcell.units.VCUnitDefinition;
+import org.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
  * Creation date: (5/27/2004 11:31:42 AM)
@@ -100,7 +100,7 @@ public double getSize() {
  * @return The sizeUnit property value.
  * @see #setSizeUnit
  */
-public cbit.vcell.units.VCUnitDefinition getSizeUnit() {
+public VCUnitDefinition getSizeUnit() {
 	return fieldSizeUnit;
 }
 

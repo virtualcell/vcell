@@ -1,4 +1,5 @@
 package cbit.vcell.geometry.surface;
+import org.vcell.units.VCUnitDefinition;
 import org.vcell.util.StdoutSessionLog;
 
 import cbit.render.*;
@@ -25,31 +26,31 @@ static GeometricRegion[] getUpdatedGeometricRegions(GeometrySurfaceDescription g
 	// parse regionImage into ResolvedVolumeLocations
 	//
 	double sizeOfPixel = 0;
-	cbit.vcell.units.VCUnitDefinition volumeUnit = null;
-	cbit.vcell.units.VCUnitDefinition surfaceUnit = null;
+	VCUnitDefinition volumeUnit = null;
+	VCUnitDefinition surfaceUnit = null;
 	cbit.vcell.geometry.GeometrySpec geometrySpec = geoSurfaceDescription.getGeometry().getGeometrySpec();
 	switch (geometrySpec.getDimension()){
 		case 1: {
 			sizeOfPixel = geometrySpec.getExtent().getX()/(regionImage.getNumX()-1);
 			//sizeOfPixel /= 9.0;  // to account for the padding from 1D to 3D
-			volumeUnit = cbit.vcell.units.VCUnitDefinition.UNIT_um;
-			surfaceUnit = cbit.vcell.units.VCUnitDefinition.UNIT_DIMENSIONLESS;
+			volumeUnit = VCUnitDefinition.UNIT_um;
+			surfaceUnit = VCUnitDefinition.UNIT_DIMENSIONLESS;
 			break;
 		}
 		case 2: {
 			sizeOfPixel= geometrySpec.getExtent().getX()/(regionImage.getNumX()-1) *
 						 geometrySpec.getExtent().getY()/(regionImage.getNumY()-1);
 			//sizeOfPixel /= 3.0;  // to account for the padding from 2D to 3D
-			volumeUnit = cbit.vcell.units.VCUnitDefinition.UNIT_um2;
-			surfaceUnit = cbit.vcell.units.VCUnitDefinition.UNIT_um;
+			volumeUnit = VCUnitDefinition.UNIT_um2;
+			surfaceUnit = VCUnitDefinition.UNIT_um;
 			break;
 		}
 		case 3: {
 			sizeOfPixel= geometrySpec.getExtent().getX()/(regionImage.getNumX()-1) *
 						 geometrySpec.getExtent().getY()/(regionImage.getNumY()-1) *
 						 geometrySpec.getExtent().getZ()/(regionImage.getNumZ()-1);
-			volumeUnit = cbit.vcell.units.VCUnitDefinition.UNIT_um3;
-			surfaceUnit = cbit.vcell.units.VCUnitDefinition.UNIT_um2;
+			volumeUnit = VCUnitDefinition.UNIT_um3;
+			surfaceUnit = VCUnitDefinition.UNIT_um2;
 			break;
 		}
 	}
