@@ -169,40 +169,7 @@ public static org.jdom.Element print(OOModel oOModel) {
 	Element physicalModelElement = new Element("physicalModel");
 	ModelComponent[] modelComponents = oOModel.getModelComponents();
 	for (int i = 0; i < modelComponents.length; i++){
-		Element classElement = new Element("class");
-		classElement.setAttribute("name",modelComponents[i].getName());
-		PhysicalSymbol[] symbols = modelComponents[i].getSymbols();
-		for (int j = 0; j < symbols.length; j++){
-			if (symbols[j] instanceof Parameter){
-				Parameter parameter = (Parameter)symbols[j];
-				Element parameterElement = new Element("parameter");
-				parameterElement.setAttribute("name",parameter.getName());
-				classElement.addContent(parameterElement);
-			}else if (symbols[j] instanceof Variable){
-				Variable variable = (Variable)symbols[j];
-				Element variableElement = new Element("variable");
-				variableElement.setAttribute("name",variable.getName());
-				classElement.addContent(variableElement);
-			}
-		}
-		Expression[] equations = modelComponents[i].getEquations();
-		for (int j = 0; j < equations.length; j++){
-			Element equationElement = new Element("equation");
-			equationElement.setAttribute("exp",equations[j].infix());
-			classElement.addContent(equationElement);
-		}
-		Connector[] connectors = modelComponents[i].getConnectors();
-		for (int j = 0; j < connectors.length; j++){
-			Element connectorElement = new Element("connector");
-			connectorElement.setAttribute("name",connectors[j].getName());
-			if (connectors[j].getEffortVariable()!=null){
-				connectorElement.setAttribute("effort",connectors[j].getEffortVariable().getName());
-			}
-			if (connectors[j].getFlowVariable()!=null){
-				connectorElement.setAttribute("flow",connectors[j].getFlowVariable().getName());
-			}
-			classElement.addContent(connectorElement);
-		}
+		Element classElement = print(modelComponents[i]);
 		physicalModelElement.addContent(classElement);
 	}
 	Connection[] connections = oOModel.getConnections();
@@ -220,4 +187,44 @@ public static org.jdom.Element print(OOModel oOModel) {
 	vcmlElement.addContent(physicalModelElement);
 	return vcmlElement;
 }
+
+
+public static Element print(ModelComponent modelComponent){
+	Element classElement = new Element("class");
+	classElement.setAttribute("name",modelComponent.getName());
+	PhysicalSymbol[] symbols = modelComponent.getSymbols();
+	for (int j = 0; j < symbols.length; j++){
+		if (symbols[j] instanceof Parameter){
+			Parameter parameter = (Parameter)symbols[j];
+			Element parameterElement = new Element("parameter");
+			parameterElement.setAttribute("name",parameter.getName());
+			classElement.addContent(parameterElement);
+		}else if (symbols[j] instanceof Variable){
+			Variable variable = (Variable)symbols[j];
+			Element variableElement = new Element("variable");
+			variableElement.setAttribute("name",variable.getName());
+			classElement.addContent(variableElement);
+		}
+	}
+	Expression[] equations = modelComponent.getEquations();
+	for (int j = 0; j < equations.length; j++){
+		Element equationElement = new Element("equation");
+		equationElement.setAttribute("exp",equations[j].infix());
+		classElement.addContent(equationElement);
+	}
+	Connector[] connectors = modelComponent.getConnectors();
+	for (int j = 0; j < connectors.length; j++){
+		Element connectorElement = new Element("connector");
+		connectorElement.setAttribute("name",connectors[j].getName());
+		if (connectors[j].getEffortVariable()!=null){
+			connectorElement.setAttribute("effort",connectors[j].getEffortVariable().getName());
+		}
+		if (connectors[j].getFlowVariable()!=null){
+			connectorElement.setAttribute("flow",connectors[j].getFlowVariable().getName());
+		}
+		classElement.addContent(connectorElement);
+	}
+	return classElement;
+}
+
 }

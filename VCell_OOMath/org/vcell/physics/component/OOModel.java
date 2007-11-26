@@ -1,5 +1,10 @@
 package org.vcell.physics.component;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+
 
 /**
  * Insert the type's description here.
@@ -8,8 +13,8 @@ package org.vcell.physics.component;
  */
 public class OOModel {
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private org.vcell.physics.component.ModelComponent[] fieldModelComponents = new ModelComponent[0];
-	private org.vcell.physics.component.Connection[] fieldConnections = new Connection[0];
+	private ArrayList<ModelComponent> fieldModelComponents = new ArrayList<ModelComponent>();
+	private ArrayList<Connection> fieldConnections = new ArrayList<Connection>();
 	private String name = "unnamed";
 
 /**
@@ -26,7 +31,10 @@ public OOModel() {
  * @param connection ncbc.physics2.component.Connection
  */
 public void addConnection(Connection connection) {
-	setConnections((Connection[])org.vcell.util.BeanUtils.addElement(fieldConnections,connection));
+	if (fieldConnections.contains(connection)){
+		throw new RuntimeException("Model already contains connection "+connection.toString());
+	}
+	fieldConnections.add(connection);
 }
 
 
@@ -36,7 +44,22 @@ public void addConnection(Connection connection) {
  * @param modelComponent ncbc.physics2.component.ModelComponent
  */
 public void addModelComponent(ModelComponent modelComponent) {
-	setModelComponents((ModelComponent[])org.vcell.util.BeanUtils.addElement(fieldModelComponents,modelComponent));
+	if (fieldModelComponents.contains(modelComponent)){
+		throw new RuntimeException("Model already contains modelComponent "+modelComponent);
+	}
+	fieldModelComponents.add(modelComponent);
+}
+
+/**
+ * Insert the method's description here.
+ * Creation date: (1/16/2006 11:34:52 PM)
+ * @param modelComponent ncbc.physics2.component.ModelComponent
+ */
+public void removeModelComponent(ModelComponent modelComponent) {
+	if (!fieldModelComponents.contains(modelComponent)){
+		throw new RuntimeException("can't remove component "+modelComponent.toString()+" from model, component not found");
+	}
+	fieldModelComponents.remove(modelComponent);
 }
 
 
@@ -94,7 +117,7 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
  * @see #setConnections
  */
 public org.vcell.physics.component.Connection[] getConnections() {
-	return fieldConnections;
+	return fieldConnections.toArray(new Connection[fieldConnections.size()]);
 }
 
 
@@ -123,9 +146,9 @@ public Connection getConnection(Connector connector){
  * @see #setModelComponents
  */
 public ModelComponent getModelComponent(String name) {
-	for (int i = 0;fieldModelComponents!=null && i < fieldModelComponents.length; i++){
-		if (fieldModelComponents[i].getName().equals(name)){
-			return fieldModelComponents[i];
+	for (ModelComponent modelComponent : fieldModelComponents){
+		if (modelComponent.getName().equals(name)){
+			return modelComponent;
 		}
 	}
 	return null;
@@ -138,7 +161,7 @@ public ModelComponent getModelComponent(String name) {
  * @see #setModelComponents
  */
 public org.vcell.physics.component.ModelComponent[] getModelComponents() {
-	return fieldModelComponents;
+	return fieldModelComponents.toArray(new ModelComponent[fieldModelComponents.size()]);
 }
 
 
@@ -178,8 +201,8 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * @param connection ncbc.physics2.component.Connection
  */
 public void joinConnection(Connector connector1, Connector connector2) {
-	for (int i = 0; i < fieldConnections.length; i++){
-		Connector[] connectors = fieldConnections[i].getConnectors();
+	for (Connection connection : fieldConnections){
+		Connector[] connectors = connection.getConnectors();
 		Connector foundConnector = null;
 		boolean connector1Present = false;
 		boolean connector2Present = false;
@@ -196,11 +219,11 @@ public void joinConnection(Connector connector1, Connector connector2) {
 		}
 		if (connector1Present){
 			// connector1 found connector2 not found
-			fieldConnections[i].addConnector(connector2);
+			connection.addConnector(connector2);
 			return;
 		}else if (connector2Present){
 			// connector2 found connector1 not found
-			fieldConnections[i].addConnector(connector1);
+			connection.addConnector(connector1);
 			return;
 		}
 	}
@@ -233,9 +256,10 @@ public synchronized void removePropertyChangeListener(java.lang.String propertyN
  * @see #getConnections
  */
 public void setConnections(org.vcell.physics.component.Connection[] connections) {
-	org.vcell.physics.component.Connection[] oldValue = fieldConnections;
-	fieldConnections = connections;
-	firePropertyChange("connections", oldValue, connections);
+	org.vcell.physics.component.Connection[] oldValue = getConnections();
+	fieldConnections.clear();
+	Collections.addAll(fieldConnections, connections);
+	firePropertyChange("connections", oldValue, getConnections());
 }
 
 
@@ -246,10 +270,10 @@ public void setConnections(org.vcell.physics.component.Connection[] connections)
  * @see #getConnections
  */
 public void setConnections(int index, Connection connections) {
-	Connection oldValue = fieldConnections[index];
-	fieldConnections[index] = connections;
+	Connection oldValue = fieldConnections.get(index);
+	fieldConnections.set(index, connections);
 	if (oldValue != null && !oldValue.equals(connections)) {
-		firePropertyChange("connections", null, fieldConnections);
+		firePropertyChange("connections", null, getConnections());
 	};
 }
 
@@ -260,9 +284,10 @@ public void setConnections(int index, Connection connections) {
  * @see #getModelComponents
  */
 public void setModelComponents(org.vcell.physics.component.ModelComponent[] modelComponents) {
-	org.vcell.physics.component.ModelComponent[] oldValue = fieldModelComponents;
-	fieldModelComponents = modelComponents;
-	firePropertyChange("modelComponents", oldValue, modelComponents);
+	org.vcell.physics.component.ModelComponent[] oldValue = getModelComponents();
+	fieldModelComponents.clear();
+	Collections.addAll(fieldModelComponents, modelComponents);
+	firePropertyChange("modelComponents", oldValue, getModelComponents());
 }
 
 
