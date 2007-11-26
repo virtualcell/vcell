@@ -1096,7 +1096,8 @@ private void enableOutputOptionPanel() {
 		cbit.util.BeanUtils.enableComponents(getDefaultOutputPanel(), true);
 		cbit.util.BeanUtils.enableComponents(getUniformOutputPanel(), false);
 		cbit.util.BeanUtils.enableComponents(getExplicitOutputPanel(), false);
-		if (solverTaskDescription.getSolverDescription().equals(SolverDescription.FiniteVolume)) {
+		if (solverTaskDescription.getSolverDescription().equals(SolverDescription.FiniteVolume)
+			|| solverTaskDescription.getSolverDescription().equals(SolverDescription.FiniteVolumeStandalone)) {
 			getKeepAtMostLabel().setEnabled(false);
 			getPointsLabel().setEnabled(false);
 			getKeepAtMostTextField().setEnabled(false);
@@ -2561,7 +2562,8 @@ public void setOutputOptionFields(cbit.vcell.solver.OutputTimeSpec arg1) {
 		// Also, disable its radiobutton and fields.
 		getDefaultOutputRadioButton().setSelected(true);
 		getKeepEveryTextField().setText(((DefaultOutputTimeSpec)arg1).getKeepEvery() + "");
-		if (getTornOffSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolume)) {
+		if (getTornOffSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolume) 
+				|| getTornOffSolverTaskDescription().getSolverDescription().equals(SolverDescription.FiniteVolumeStandalone)) {
 			getKeepAtMostTextField().setText("");
 		} else {
 			getKeepAtMostTextField().setText(((DefaultOutputTimeSpec)arg1).getKeepAtMost() + "");
