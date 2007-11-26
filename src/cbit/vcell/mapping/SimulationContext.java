@@ -228,7 +228,7 @@ public SimulationContext(SimulationContext simulationContext, boolean arg_isStoc
 		String msg = simulationContext.getBioModel().isValidForStochApp();
 		if(!msg.equals(""))
 		{
-			throw new RuntimeException(msg); //no need to show popup here, the exception passes to upper level.
+			throw new RuntimeException("Error constructing a new simulation context:\n" + msg); //no need to show popup here, the exception passes to upper level.
 		}
 		if(simulationContext.getGeometry().getDimension() > 0)
 		{

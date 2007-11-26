@@ -11,6 +11,7 @@ import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.parser.Expression;
@@ -27,14 +28,15 @@ public class TransformMassActions
 	{
 		public final static int TRANSFORMED_WITH_NOCHANGE = 0;
 		public final static int TRANSFORMED = 1;
-		public final static int NOTRANSFORMABLEREAC = 2;
-		public final static int NOTRANSFORMABLEFLUX = 3;
+		public final static int NOTRANSFORMABLE = 2;
+		//public final static int NOTRANSFORMABLEFLUX = 3;
 		public final static String Label_Ok = "Ok";
 		public final static String Label_Transformed = "Able to transform";
-		public final static String Label_FailedReac = "Failed. Looking for the reactin rate according to the form of Kf*(reactant1^n1)*(reactant2^n2)*...-Kr*(product1^m1)*(product2^m2)*...";
-		public final static String Label_FailedFlux = "Failed. Looking for the flux density function according to the form of p1*SpeciesOutside-p2*SpeciesInside";
+		public final static String Label_Failed = "Failed.";
+		public final static String Label_FailedOtherReacLaw = "Failed. Looking for the reactin rate according to the form of Kf*(reactant1^n1)*(reactant2^n2)*...-Kr*(product1^m1)*(product2^m2)*...";
+		public final static String Label_FailedOtherFluxLaw = "Failed. Looking for the flux density function according to the form of p1*SpeciesOutside-p2*SpeciesInside";
 		
-		private String[] transformRemark = new String[]{Label_Ok, Label_Transformed, Label_FailedReac, Label_FailedFlux};
+		private String transformRemark = "";
 		private int transformType = 0;
 		private ReactionStep transformedRS = null;
 		public TransformedReaction()
@@ -50,7 +52,7 @@ public class TransformMassActions
 		}
 		public String getTransformRemark()
 		{
-			return transformRemark[getTransformType()];
+			return transformRemark;
 		}
 		public ReactionStep getTransformedReaction()
 		{
@@ -59,6 +61,9 @@ public class TransformMassActions
 		public void setTransformedReaction(ReactionStep rs)
 		{
 			transformedRS = rs;
+		}
+		public void setTransformRemark(String transformRemark) {
+			this.transformRemark = transformRemark;
 		}
 	}// end of static class TransformedReaction
 	
@@ -74,7 +79,7 @@ public class TransformMassActions
 		for(int i=0; i< origReactions.length; i++)
 		{
 			transReactionSteps[i] = transformOne(origReactions[i]);
-			if(transReactionSteps[i].getTransformType() == TransformedReaction.NOTRANSFORMABLEREAC || transReactionSteps[i].getTransformType() == TransformedReaction.NOTRANSFORMABLEFLUX)
+			if(transReactionSteps[i].getTransformType() == TransformedReaction.NOTRANSFORMABLE)
 			{
 				isTransformable[i] = false;
 			}
@@ -95,7 +100,19 @@ public class TransformMassActions
 			if(origRS.getKinetics().getKineticsDescription().equals(KineticsDescription.MassAction))
 			{
 				transformedRS.setTransformedReaction(origRS);
-				transformedRS.setTransformType(TransformedReaction.TRANSFORMED_WITH_NOCHANGE);
+				Expression forwardRate = origRS.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KForward).getExpression();
+				Expression reverseRate = origRS.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KReverse).getExpression();
+				if((forwardRate != null && forwardRate.hasSymbol(ReservedSymbol.TIME.getName())) ||
+					(reverseRate != null && reverseRate.hasSymbol(ReservedSymbol.TIME.getName())))
+				{
+					transformedRS.setTransformType(TransformedReaction.NOTRANSFORMABLE);
+					transformedRS.setTransformRemark(TransformedReaction.Label_Failed + " Reaction: " + origRS.getName() + " has symbol \'t\' in rate constant. Propensity of a stochastic jump process should not be a functon of time.");
+				}
+				else
+				{
+					transformedRS.setTransformType(TransformedReaction.TRANSFORMED_WITH_NOCHANGE);
+					transformedRS.setTransformRemark(TransformedReaction.Label_Ok);
+				}
 			}
 			else if(origRS.getKinetics().getKineticsDescription().equals(KineticsDescription.General))
 			{
@@ -136,17 +153,20 @@ public class TransformMassActions
 					//set transformed reactin step					
 					transformedRS.setTransformedReaction(clonedRS);
 					transformedRS.setTransformType(TransformedReaction.TRANSFORMED);
+					transformedRS.setTransformRemark(TransformedReaction.Label_Transformed);
 				}catch(Exception e)
 				{
 					//Mass Action Solver failed to parse the rate expression
 					transformedRS.setTransformedReaction(origRS);
-					transformedRS.setTransformType(TransformedReaction.NOTRANSFORMABLEREAC);
+					transformedRS.setTransformType(TransformedReaction.NOTRANSFORMABLE);
+					transformedRS.setTransformRemark(TransformedReaction.Label_Failed + " " + e.getMessage());
 				}
 			}
 			else // other kinetic rate laws other than MassAction and General
 			{
 				transformedRS.setTransformedReaction(origRS);
-				transformedRS.setTransformType(TransformedReaction.NOTRANSFORMABLEREAC);
+				transformedRS.setTransformType(TransformedReaction.NOTRANSFORMABLE);
+				transformedRS.setTransformRemark(TransformedReaction.Label_FailedOtherReacLaw);
 			}
 		}
 		else //flux
@@ -170,18 +190,20 @@ public class TransformMassActions
 						transformedRS.setTransformedReaction(simpleRxn);
 						//we won't phsically change it now, it will be properly parsed in stoch math mapping.
 						transformedRS.setTransformType(TransformedReaction.TRANSFORMED_WITH_NOCHANGE);
+						transformedRS.setTransformRemark(TransformedReaction.Label_Ok);
 					}catch(Exception e)
 					{
 //						Flux Solver failed to parse the rate expression
 						transformedRS.setTransformedReaction(origRS);
-						transformedRS.setTransformType(TransformedReaction.NOTRANSFORMABLEFLUX);
-//						throw new MathException("Failed to transform flux " + origRS.getName() + ". Looking for the flux density function according to the form of p1*SpeciesOutside-p2*SpeciesInside.");
+						transformedRS.setTransformType(TransformedReaction.NOTRANSFORMABLE);
+						transformedRS.setTransformRemark(TransformedReaction.Label_Failed + " " + e.getMessage());
 					}
 				}
 				else //other fluxex which are not described by general density function
 				{
 					transformedRS.setTransformedReaction(origRS);
-					transformedRS.setTransformType(TransformedReaction.NOTRANSFORMABLEFLUX);
+					transformedRS.setTransformType(TransformedReaction.NOTRANSFORMABLE);
+					transformedRS.setTransformRemark(TransformedReaction.Label_FailedOtherFluxLaw);
 				}
 			}
 		}

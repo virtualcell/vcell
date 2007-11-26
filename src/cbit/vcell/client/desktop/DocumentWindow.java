@@ -3287,6 +3287,15 @@ private void showMIRIAMWindow(final BioModel bioModel) {
 }
 public void showTransMADialog() 
 {
+	String disclaimer = "Transforming reactions to stochastic capable cannot be undone. You may want to make a copy of the model.\nAlso some existing applications may need to be recreated in order to maintain consistency.\nLast but not least, stochastic transfomation may not be mathematically equivalent to the orignal model. \nDo you wish to proceed?";
+	JTextArea ta = new JTextArea(disclaimer);
+	ta.setEditable(false);
+	int userChoice = PopupGenerator.showComponentOKCancelDialog(this, ta, "Model Transformation Warning");
+	if(userChoice != JOptionPane.OK_OPTION)
+	{
+		return;
+	}
+	
 	BioModel biomodel = null;
 	if (getWindowManager().getVCDocument() instanceof BioModel)
 		biomodel = (BioModel)getWindowManager().getVCDocument();

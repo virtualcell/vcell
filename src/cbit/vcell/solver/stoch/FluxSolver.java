@@ -10,6 +10,7 @@ import cbit.vcell.model.Feature;
 import cbit.vcell.model.FluxReaction;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
@@ -118,7 +119,7 @@ public class FluxSolver {
 		    fluxExp = fluxExp.getSubstitutedExpression(new Expression(sc_outside.getName()), new Expression(0)).flatten();
 			fluxExp = fluxExp.getSubstitutedExpression(new Expression(sc_inside.getName()), new Expression(0)).flatten();
 			if (!ExpressionUtils.functionallyEquivalent(fluxExp, new Expression(0.0), false, 1e-8, 1e-8)){
-				throw new MathException("Cannot generate stochastic math mapping for the flux: "+rs.getName()+". Looking for the flux density function according to the form of p1*SpeciesOutside-p2*SpeciesInside.");
+				throw new MathException("Cannot generate stochastic math mapping for the flux: " + rs.getName() + ". Looking for the flux density function according to the form of p1*SpeciesOutside-p2*SpeciesInside.");
 			}
 			//get p1 after partially differentiating speciesOutside
 			fluxExp = new Expression(orgExp);
@@ -143,18 +144,16 @@ public class FluxSolver {
 			}
 			else
 			{
-				if(err.equals("t"))
-				{
-					throw new MathFormatException("Cannot generate stochastic math mapping for the flux: "+rs.getName()+". Unexpected symbol \'t\' in flux density function.");
-				}
-				else
-				{
-					throw new MathException("Cannot generate stochastic math mapping for the flux: "+rs.getName()+". Looking for the flux density function according to the form of p1*SpeciesOutside-p2*SpeciesInside.");
-				}
+				throw new MathException("Cannot generate stochastic math mapping for the flux: "+rs.getName()+". Looking for the flux density function according to the form of p1*SpeciesOutside-p2*SpeciesInside.");
 			}
-			
+			//check if permeabilities have symbol 't'
+			if(p1.hasSymbol(ReservedSymbol.TIME.getName()) || p2.hasSymbol(ReservedSymbol.TIME.getName()))
+			{
+				throw new MathFormatException("Flux: "+rs.getName()+" has symbol \'t\' in flux density function. Propensity of a stochastic jump process should not be a functon of time.");
+			}
 			ff.setRateToInside(p1);
 			ff.setRateToOutside(p2);
+					
 			//Below is for debuging purpose
 	//		if(p1 != null) 
 	//		{
@@ -176,22 +175,21 @@ public class FluxSolver {
 	}
 	
 	// permeability is the expression in front of the variable. e.g. p1, p2 in p1*speciesOutside-p2*speciesInside
-	// after partially differentiating the variable, the permeability function shouldn't contain any variable(speciesOutside, speciesInside and t)
+	// after partially differentiating the variable, the permeability function shouldn't contain any variable(speciesOutside, speciesInside)
 	public static String checkPermeabilityValidity(Expression exp, String spOutside, String spInside)
 	{
-		String errString = "";
 		String[] syms = exp.getSymbols();
 		if(syms != null)
 		{
+			//If the permeability contains species name, then flux is not in the form that we expected. 
 			for(int i=0; i<syms.length; i++)
 			{
 				if(syms[i].equals(spOutside) || syms[i].equals(spInside))
 				{
-					errString = syms[i];
-					break;
+					return syms[i];
 				}
 			}
 		}
-		return errString;
+		return "";
 	}
 }

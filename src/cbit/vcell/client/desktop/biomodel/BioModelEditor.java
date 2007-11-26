@@ -384,28 +384,69 @@ private void copyApplication(ActionEvent evt) {
 	}	
 	try {
 		String newApplicationName = null;
-		try{
-			newApplicationName = PopupGenerator.showInputDialog(getBioModelWindowManager(), "Name for the application copy:");
-		}catch(cbit.vcell.client.task.UserCancelException e){
-			return;
-		}
-		if (newApplicationName != null) {
-			if (newApplicationName.equals("")) {
-				PopupGenerator.showErrorDialog(this, "Blank name not allowed");
-			} else {
-				if (selection instanceof SimulationContext) {
-					if(evt.getActionCommand().equals("Copy"))
+		
+		if (selection instanceof SimulationContext) {
+			if(evt.getActionCommand().equals("Copy"))
+			{
+				//check validity if selected application is a stochastic application
+				if(((SimulationContext)selection).isStoch())
+				{
+					String message = getBioModel().isValidForStochApp();
+					if(!message.equals(""))
 					{
+						throw new Exception(message);
+					}
+				}
+				//get valid application name
+				try{
+					newApplicationName = PopupGenerator.showInputDialog(getBioModelWindowManager(), "Name for the application copy:");
+				}catch(cbit.vcell.client.task.UserCancelException e){
+					return;
+				}
+				if (newApplicationName != null) {
+					if (newApplicationName.equals("")) {
+						PopupGenerator.showErrorDialog(this, "Blank name not allowed");
+					} else {
 						SimulationContext newSimulationContext = getBioModel().copySimulationContext((SimulationContext)selection, newApplicationName, ((SimulationContext)selection).isStoch());
 						getBioModelWindowManager().showApplicationFrame(newSimulationContext);
 					}
-					else if(evt.getActionCommand().equals("Copy To Stochastic Application"))
-					{
+				}
+			}
+			else if(evt.getActionCommand().equals("Copy To Stochastic Application"))
+			{
+				//check validity if copy to stochastic application
+				String message = getBioModel().isValidForStochApp();
+				if(!message.equals(""))
+				{
+					throw new Exception(message);
+				}
+				//get valid application name
+				try{
+					newApplicationName = PopupGenerator.showInputDialog(getBioModelWindowManager(), "Name for the application copy:");
+				}catch(cbit.vcell.client.task.UserCancelException e){
+					return;
+				}
+				if (newApplicationName != null) {
+					if (newApplicationName.equals("")) {
+						PopupGenerator.showErrorDialog(this, "Blank name not allowed");
+					} else {
 						SimulationContext newSimulationContext = getBioModel().copySimulationContext((SimulationContext)selection, newApplicationName, true);
 						getBioModelWindowManager().showApplicationFrame(newSimulationContext);
 					}
-					else if (evt.getActionCommand().equals("Copy To Non-stochastic Application"))
-					{
+				}
+			}
+			else if (evt.getActionCommand().equals("Copy To Non-stochastic Application"))
+			{
+				//get valid application name
+				try{
+					newApplicationName = PopupGenerator.showInputDialog(getBioModelWindowManager(), "Name for the application copy:");
+				}catch(cbit.vcell.client.task.UserCancelException e){
+					return;
+				}
+				if (newApplicationName != null) {
+					if (newApplicationName.equals("")) {
+						PopupGenerator.showErrorDialog(this, "Blank name not allowed");
+					} else {
 						SimulationContext newSimulationContext = getBioModel().copySimulationContext((SimulationContext)selection, newApplicationName, false);
 						getBioModelWindowManager().showApplicationFrame(newSimulationContext);
 					}
@@ -1029,7 +1070,7 @@ private void newApplication(java.awt.event.ActionEvent event) {
 		String message = getBioModel().isValidForStochApp();
 		if(!message.equals(""))
 		{
-			PopupGenerator.showErrorDialog(message);
+			PopupGenerator.showErrorDialog("Error creating stochastic application:\n" + message);
 			return;
 		}
 	}
