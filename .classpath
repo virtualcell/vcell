@@ -13,5 +13,7 @@
 	<classpathentry kind="lib" path="NetCDF2_2_20_VCell.jar"/>
 	<classpathentry kind="lib" path="WinService.jar"/>
 	<classpathentry kind="lib" path="JLink.jar"/>
+	<classpathentry kind="lib" path="ome-java.jar"/>
+	<classpathentry kind="lib" path="xml-apis.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -6,6 +6,7 @@ package cbit.vcell.modeldb;
 import java.sql.*;
 import java.util.*;
 import java.beans.*;
+
 import cbit.sql.*;
 import java.sql.Statement;
 import cbit.vcell.geometry.*;
@@ -883,6 +884,15 @@ private void insertGeometry(InsertHashtable hash, Connection con, User user, Geo
 	//
 	insertGeometrySQL(con, geom, updatedImageKey, extentKey, newVersion,user);
 	hash.put(geom,newVersion.getVersionKey());
+	if (updatedImageKey != null && !updatedImageKey.equals(geom.getGeometrySpec().getImage().getKey())){
+		VCImage resavedImage = getVCImage(con, user, updatedImageKey, true);
+		try {
+			geom.getGeometrySpec().setImage(resavedImage);
+		} catch (PropertyVetoException e) {
+			e.printStackTrace();
+			throw new DataAccessException(e.getMessage());
+		}
+	}
 	
 	insertSubVolumeSQL(hash, con, geom, newVersion.getVersionKey());
 
