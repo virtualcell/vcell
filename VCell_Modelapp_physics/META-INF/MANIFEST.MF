@@ -18,4 +18,4 @@ Require-Bundle: org.vcell.expression,
  org.eclipse.osgi,
  org.vcell.geometry,
  org.vcell.units,
- jscl2
+ jscl23
