@@ -9,6 +9,7 @@ import cbit.vcell.model.Product;
 import cbit.vcell.model.Reactant;
 import cbit.vcell.model.ReactionParticipant;
 import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -126,6 +127,11 @@ public class MassActionSolver {
 				}
 				//If the general kinetics is in form of mass action, the reverse rate constant should be a negtive value. We store the absolute value for reverse rate constant.
 				reverseExp = Expression.mult(duplicatedExp, new Expression(-1)).flatten();
+				//check if "t" is in forward or reverse rate. Probability can not be a function of time.
+				if(forwardExp.hasSymbol(ReservedSymbol.TIME.getName())||reverseExp.hasSymbol(ReservedSymbol.TIME.getName()) )
+				{
+					throw new MathException("Reaction: "+rs.getName()+" has symbol \'t\' in reaction rate. Propensity of a stochastic jump process should not be a functon of time.");
+				}
 				//Reconstruct the rate based on the extracted forward rate and reverse rate. If the reconstructed rate is not equivalent to the original rate, 
 				//it means the original rate is not in the form of Kf*r1^n1*r2^n2-Kr*p1^m1*p2^m2.
 				Expression constructedExp = reconstructedRate(forwardExp, reverseExp, rs);
@@ -174,6 +180,11 @@ public class MassActionSolver {
 					}
 					//If the general kinetics is in form of mass action, the reverse rate constant should be a negtive value. We store the absolute value for reverse rate constant.
 					reverseExp = Expression.mult(duplicatedExp, new Expression(-1)).flatten();
+					//check if "t" is in forward or reverse rate. Probability can not be a function of time.
+					if(forwardExp.hasSymbol(ReservedSymbol.TIME.getName())||reverseExp.hasSymbol(ReservedSymbol.TIME.getName()) )
+					{
+						throw new MathException("Reaction: "+rs.getName()+" has symbol \'t\' in reafction rate. Propensity of a stochastic jump process should not be a functon of time.");
+					}
 					//Reconstruct the rate based on the extracted forward rate and reverse rate. If the reconstructed rate is not equivalent to the original rate, 
 					//it means the original rate is not in the form of Kf*r1^n1*r2^n2-Kr*p1^m1*p2^m2.
 					Expression constructedExp = reconstructedRate(forwardExp, reverseExp, rs);

@@ -332,6 +332,8 @@ public class TransformMassActionTableModel extends AbstractTableModel implements
 				{
 					reacSteps[i] = getModel().getReactionSteps()[i];
 					reacSteps[i].setKinetics(trs[i].getTransformedReaction().getKinetics());
+//					reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KForward).getExpression().bindExpression(reacSteps[i]);
+//					reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KReverse).getExpression().bindExpression(reacSteps[i]);
 				}
 				else // for flux, we set the flux reaction back, coz we will parse it again in stoch math mapping.
 				{

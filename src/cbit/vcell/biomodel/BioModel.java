@@ -1,4 +1,5 @@
 package cbit.vcell.biomodel;
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.geometry.Geometry;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -6,8 +7,11 @@ import cbit.vcell.geometry.Geometry;
 ©*/
 import cbit.sql.Version;
 import cbit.vcell.model.FluxReaction;
+import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.KineticsDescription;
 import cbit.vcell.model.Model;
+import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.server.ObjectNotFoundException;
 import cbit.vcell.math.MathDescription;
@@ -17,12 +21,17 @@ import java.util.Vector;
 import org.jdom.Element;
 
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.stoch.FluxSolver;
+import cbit.vcell.solver.stoch.MassActionSolver;
 import cbit.vcell.xml.MIRIAMAnnotatable;
 import cbit.vcell.xml.MIRIAMAnnotation;
+import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.util.BeanUtils;
 import cbit.util.Compare;
 import cbit.vcell.model.gui.VCellNames;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 /**
  * Insert the type's description here.
  * Creation date: (10/17/00 3:12:16 PM)
@@ -997,29 +1006,143 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 	}
 }
 /**
- * Insert the method's description here.
+ * This method is modified on Nov 20, 2007. We got to go through the MassActionSolver and FluxSolver here to make sure that everything
+ * is being checked before processing further. However, this makes the function become heavy.
+ * The function is being referened in four different places, which are ClientRequestManager.runSimulations(), BioModelEditor.newApplication(),
+ * SimulationContext.SimulationContext(SimulationContext, boolean) and StochMathMapping.refreshMathDescription().
  * Creation date: (11/16/2006 4:55:16 PM)
  * @return java.lang.String
  */
-public String isValidForStochApp() 
+public String isValidForStochApp()
 {
-	String returnStr = "";
+	String returnStr = ""; //sum of all the issues
+	String exceptionGenStr = ""; //exception msg from MassActionSolver when parsing general kinetics for reactions
+	String exceptionFluxStr = ""; //exception msg from FluxSolver when parsing general density function for fluxes 
+	String unTransformableStr = ""; //all untransformable reactions/fluxes, which have kinetic laws rather than General and MassAction.
+	String tStr = ""; //untransformable reactions/fluxes with time 't' in parsed forward and reverse rate constants
+	String genReacts = "";//To count reactions with general rate law. We have to force user to tansform general to mass action before proceeding further.
 	cbit.vcell.model.ReactionStep[] reacSteps = getModel().getReactionSteps();
 	// Mass Action and centain form of general Flux can be automatically transformed.
 	for (int i = 0; (reacSteps != null) && (i < reacSteps.length); i++)
 	{
-		if(((reacSteps[i] instanceof SimpleReaction) && (!(reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.MassAction)))) ||
+		if(((reacSteps[i] instanceof SimpleReaction) && (!(reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.MassAction)) && !(reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General)))) ||
 		  ((reacSteps[i] instanceof FluxReaction) && (!reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General))))
 		{
-			returnStr = returnStr + " " + reacSteps[i].getName() + ",";
+			unTransformableStr = unTransformableStr + " " + reacSteps[i].getName() + ",";
+		}
+		else
+		{
+			if(reacSteps[i] instanceof SimpleReaction)
+			{
+				if(reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.MassAction))
+				{
+					Expression forwardRate = reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KForward).getExpression();
+					Expression reverseRate = reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_KReverse).getExpression();
+					if(forwardRate != null && forwardRate.hasSymbol(ReservedSymbol.TIME.getName()))
+					{
+						tStr = tStr + " " + reacSteps[i].getName() + ",";
+					}
+					if(reverseRate != null && reverseRate.hasSymbol(ReservedSymbol.TIME.getName()))
+					{
+						tStr = tStr + " " + reacSteps[i].getName() + ",";
+					}
+				}
+				else if(reacSteps[i].getKinetics().getKineticsDescription().equals(KineticsDescription.General))
+				{
+					genReacts = genReacts + " " + reacSteps[i].getName() + ","; 
+					Expression rateExp = reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
+					try{
+						rateExp = substitueKineticPara(rateExp, reacSteps[i], false);
+						MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(rateExp, reacSteps[i]);
+						if(maFunc.getForwardRate() != null && maFunc.getForwardRate().hasSymbol(ReservedSymbol.TIME.getName()))
+						{
+							tStr = tStr + " " + reacSteps[i].getName() + ",";
+						}
+						if(maFunc.getReverseRate() != null && maFunc.getReverseRate().hasSymbol(ReservedSymbol.TIME.getName()))
+						{
+							tStr = tStr + " " + reacSteps[i].getName() + ",";
+						}
+					}catch(Exception e)
+					{
+						exceptionGenStr = exceptionGenStr + " " + reacSteps[i].getName() + " error: " + e.getMessage() + "\n";
+					}
+				}
+			}
+			else // flux described by General density function
+			{
+				Expression rateExp = reacSteps[i].getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
+				try{
+					rateExp = substitueKineticPara(rateExp, reacSteps[i], false);
+					FluxSolver.FluxFunction fluxFunc = FluxSolver.solveFlux(rateExp,reacSteps[i]);
+					if(fluxFunc.getRateToInside() != null && fluxFunc.getRateToInside().hasSymbol(ReservedSymbol.TIME.getName()))
+					{
+						tStr = tStr + " " + reacSteps[i].getName() + ",";
+					}
+					if(fluxFunc.getRateToOutside() != null && fluxFunc.getRateToOutside().hasSymbol(ReservedSymbol.TIME.getName()))
+					{
+						tStr = tStr + " " + reacSteps[i].getName() + ",";
+					}
+				}catch(Exception e)
+				{
+					exceptionFluxStr = exceptionFluxStr + " " + reacSteps[i].getName() + " error: " + e.getMessage() + "\n";
+				}
+			}
 		}
 	}
-	int len = returnStr.length();
-	if(len > 0)
+	
+	if(unTransformableStr.length() > 0)
 	{
-		returnStr = returnStr.substring(0,(len-1)) + " are unable to transform to stochastic formulation.\n Reactions described by mass action(all) or fluxes described by general flux desity(certain forms) can be automatically transfromed.\n" +
-		            "Please use \'tool\' -> \'Transform to stochastic capable\' menu in the main window to transform possible reacions(General Kinetics in certain forms) to Mass Action kinetics. ";
+		returnStr = returnStr + unTransformableStr.substring(0,(unTransformableStr.length()-1)) + " are unable to transform to stochastic formulation.\n Reactions described by mass action law(all) or General law(certain forms), or fluxes described by general desity function(certain forms) can be automatically transfromed.\n" ;
+	}
+	if(exceptionGenStr.length() > 0)
+	{
+		returnStr = returnStr + exceptionGenStr;
+	}
+	if(exceptionFluxStr.length() > 0)
+	{
+		returnStr = returnStr + exceptionFluxStr;
+	}
+	if(tStr.length() > 0)
+	{
+		returnStr = returnStr + tStr.substring(0,(tStr.length()-1)) + " have symbol \'t\' in propensity. Propensity of a stochastic jump process should not be a functon of time.";
+	}
+	//If the a stochastic application can be set and there are general law reactions, we force user to transform the general laws to mass action laws first.
+	if(returnStr.equals("") && !genReacts.equals(""))
+	{
+		returnStr = returnStr + "The system is able to set up stochastic application. However reactions " + genReacts + " are described by general kinetic law.\n" + 
+		            "Please use menu \'Tool -> Transform to Stochastic Capable\' in main window to transform these reactions before proceeding further.";
 	}
 	return returnStr;
 }
+
+private Expression substitueKineticPara(Expression exp, ReactionStep rs, boolean substituteConst) throws MappingException, ExpressionException
+{
+	Expression result = new Expression(exp);
+	boolean bSubstituted = true;
+	while(bSubstituted)
+	{
+		bSubstituted = false;
+		String symbols[] = result.getSymbols();
+		for (int k = 0;symbols!=null && k < symbols.length; k++){
+			Kinetics.KineticsParameter kp = rs.getKinetics().getKineticsParameter(symbols[k]);
+			if (kp != null)
+			{
+				try{
+					Expression expKP = substitueKineticPara(kp.getExpression(), rs, true);
+					if(!expKP.flatten().isNumeric()||substituteConst)
+					{
+						result.substituteInPlace(new Expression(symbols[k]), new Expression(kp.getExpression()));
+						bSubstituted = true;
+					}
+				}catch(ExpressionException e1){
+					e1.printStackTrace();
+					throw new ExpressionException(e1.getMessage());
+				}
+			}
+		}
+		
+	}
+	return result;
+}
+
 }

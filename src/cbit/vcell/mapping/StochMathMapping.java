@@ -402,7 +402,7 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 		String stochChkMsg =getSimulationContext().getBioModel().isValidForStochApp();
 		if(!(stochChkMsg.equals("")))
 		{
-			throw new ModelException("Problem in application: "+ getSimulationContext().getName()+"\n"+stochChkMsg);
+			throw new ModelException("Problem updating math description: "+ getSimulationContext().getName()+"\n"+stochChkMsg);
 		}
 		//All sizes must be set for new ODE models and ratios must be set for old ones.
 		getSimulationContext().checkValidity();
@@ -731,6 +731,7 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 				else if (kinetics.getKineticsDescription().equals(KineticsDescription.General))
 				{
 					Expression rateExp = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
+					rateExp = substitueKineticPara(rateExp, reactionStep, false);
 					MassActionSolver.MassActionFunction maFunc = MassActionSolver.solveMassAction(rateExp, reactionStep);
 					if(maFunc.getForwardRate() == null && maFunc.getReverseRate() == null)
 					{

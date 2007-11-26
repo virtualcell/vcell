@@ -7,6 +7,8 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 
+import cbit.vcell.model.gui.TransformMassActions.TransformedReaction;
+
 /**
  * This table cell renderer is created for TransformMassActionTable
  * Which basically wants to show the checkbox for column 4 (tranformed or not)
@@ -39,8 +41,8 @@ public class TransformMassActionTableRenderer extends DefaultTableCellRenderer
 			tcr = this;
 		}
 		//  set row color to pink if the reaction on the row is not able to be transformed.
-		if (table.getValueAt(row, TransformMassActionTableModel.COLUMN_REMARK).equals(TransformMassActions.TransformedReaction.Label_FailedReac) ||
-				table.getValueAt(row, TransformMassActionTableModel.COLUMN_REMARK).equals(TransformMassActions.TransformedReaction.Label_FailedFlux))
+		if (!table.getValueAt(row, TransformMassActionTableModel.COLUMN_REMARK).equals("") && !table.getValueAt(row, TransformMassActionTableModel.COLUMN_REMARK).equals(TransformedReaction.Label_Ok) &&
+			!table.getValueAt(row, TransformMassActionTableModel.COLUMN_REMARK).equals(TransformedReaction.Label_Transformed))
 		{
 			tcr.setBackground( new Color(255,200,200));
 			tcr.setForeground(Color.BLACK);
