@@ -16,7 +16,7 @@ import cbit.vcell.math.SubDomain;
 public class SolverDescription implements java.io.Serializable, cbit.util.Matchable {
 	private int type;
 
-	private static final int NUM_SOLVERS = 12;
+	private static final int NUM_SOLVERS = 13;
 	private static final int TYPE_FORWARD_EULER = 0;
 	private static final int TYPE_RUNGE_KUTTA2 = 1;
 	private static final int TYPE_RUNGE_KUTTA4 = 2;
@@ -29,6 +29,7 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 	private static final int TYPE_HYBRID_MIL = 9;
 	private static final int TYPE_HYBRID_MIL_Adaptive = 10; //added adaptive milstein solver on July 12, 2007
 	private static final int TYPE_CVODE = 11;
+	private static final int TYPE_FINITE_VOLUME_STANDALONE = 12;
 	
 	private static final String ALTERNATE_CVODE_Description = "LSODA (Variable Order, Variable Time Step)"; // backward compatibility
 	
@@ -44,7 +45,8 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		"Hybrid (Gibson + Euler-Maruyama Method)",
 		"Hybrid (Gibson + Milstein Method)",
 		"Hybrid (Adaptive Gibson + Milstein Method)",
-		"CVODE (Variable Order, Variable Time Step)"
+		"CVODE (Variable Order, Variable Time Step)",
+		"Finite Volume Standalone, Regular Grid",
 	};
 	private static final String[] FULL_DESCRIPTIONS = {
 		// Forward Euler (First Order, Fixed Time Step)
@@ -171,7 +173,15 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 	     "Maximum TIME STEP: the maxmum time stepsize that the CVODE should attempt to use.\n"+
 	     "ABSOLUTE TOLERANCE: CVODE adjusts the stepsize in such a way as to keep the absolute error in a step less than absolute tolerance.\n"+
 	     "RELATIVE TOLERANCE: CVODE adjusts the stepsize in such a way as to keep the fractional error in a step less than relative tolerance.\n\n"+
-	     "Output options: use keep every number of samples among maximum number of time samples or output time interval or specified output time points."		
+	     "Output options: use keep every number of samples among maximum number of time samples or output time interval or specified output time points.",
+	     // Finite Volume Standalone, Regular Grid
+	     "This is our interpreted standalone version of the finite volume method. It is a little slower but gives better error messages.\n" +
+	     "The finite volume method is a method for representing and evaluating partial differential equations as algebraic discretization equations which exactly preserves conservation laws. Similar to the finite difference method, values are calculated at discrete places on a meshed geometry.\n\n"+
+	     "Parameters to be set for the method are,\n"+
+         "STARTING TIME: the time when simulation starts.\n"+
+		 "ENDING TIME: the time when simulation ends.\n"+
+	     "Default TIME STEP: the time step to numerically solve PDEs.\n\n"+
+	     "Output options: use keep every number of samples.",
 	};
 	private static final boolean[] SOLVES_FASTSYSTEM = {
 		true,   // TYPE_FORWARD_EULER
@@ -185,7 +195,8 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		false,	// TYPE_Hybrid_Euler
 		false,	// TYPE_Hybrid_Milstein
 		false,	// TYPE_HYBRID_MIL_Adaptive
-		false	// TYPE_CVODE
+		false,	// TYPE_CVODE
+		true	// TYPE_FINITE_VOLUME_STANDALONE
 	};
 	private static final boolean[] IS_ODE = {
 		true,   // TYPE_FORWARD_EULER
@@ -199,7 +210,8 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		false,	// TYPE_Hybrid_Euler
 		false,	// TYPE_Hybrid_Milstein
 		false,	// TYPE_HYBRID_MIL_Adaptive
-		true	// TYPE_CVODE
+		true,	// TYPE_CVODE
+		false	// TYPE_FINITE_VOLUME_STANDALONE
 	};
 	private static final boolean[] IS_STOCH = {
 		false,  // TYPE_FORWARD_EULER
@@ -213,7 +225,8 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		true,	// TYPE_Hybrid_Euler
 		true,	// TYPE_Hybrid_Milstein
 		true,	// TYPE_HYBRID_MIL_Adaptive
-		false	// TYPE_CVODE
+		false,	// TYPE_CVODE
+		false	// TYPE_FINITE_VOLUME_STANDALONE
 	};
 	private static final boolean[] IS_INTERPRETED = {
 		true,   // TYPE_FORWARD_EULER
@@ -227,7 +240,8 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 		false, 	// TYPE_Hybrid_Euler
 		false, 	// TYPE_Hybrid_Milstein
 		false,  // TYPE_HYBRID_MIL_Adaptive
-		false	// TYPE_CVODE
+		false,	// TYPE_CVODE
+		false	// TYPE_FINITE_VOLUME_STANDALONE
 	};
 		
 			
@@ -243,29 +257,31 @@ public class SolverDescription implements java.io.Serializable, cbit.util.Matcha
 	public static final SolverDescription HybridMilstein		= new SolverDescription(TYPE_HYBRID_MIL);
 	public static final SolverDescription HybridMilAdaptive     = new SolverDescription(TYPE_HYBRID_MIL_Adaptive);
 	public static final SolverDescription CVODE					= new SolverDescription(TYPE_CVODE);
+	public static final SolverDescription FiniteVolumeStandalone = new SolverDescription(TYPE_FINITE_VOLUME_STANDALONE);
 
 	private static String[] fieldODESolverDescriptions = new String[] {
-		SolverDescription.ForwardEuler.getName(),
-		SolverDescription.RungeKutta2.getName(),
-		SolverDescription.RungeKutta4.getName(),
-		SolverDescription.AdamsMoulton.getName(),
-		SolverDescription.RungeKuttaFehlberg.getName(),
-		SolverDescription.IDA.getName(),
-		SolverDescription.CVODE.getName()
+		ForwardEuler.getName(),
+		RungeKutta2.getName(),
+		RungeKutta4.getName(),
+		AdamsMoulton.getName(),
+		RungeKuttaFehlberg.getName(),
+		IDA.getName(),
+		CVODE.getName()
 	};
 	private static String[] fieldODEWithFastSolverDescriptions = new String[] {
-		SolverDescription.ForwardEuler.getName(),
-		SolverDescription.IDA.getName()
+		ForwardEuler.getName(),
+		IDA.getName()
 	};
 	private static String[] fieldPDESolverDescriptions = new String[] {
-		SolverDescription.FiniteVolume.getName()
+		FiniteVolume.getName(),
+		FiniteVolumeStandalone.getName()
 	};
 	//Amended again June 2nd, 2007
 	private static String[] fieldStochSolverDescriptions = new String[] {
-		SolverDescription.StochGibson.getName(),
-		SolverDescription.HybridEuler.getName(),
-		SolverDescription.HybridMilstein.getName(),
-		SolverDescription.HybridMilAdaptive.getName() //added July 12, 2007
+		StochGibson.getName(),
+		HybridEuler.getName(),
+		HybridMilstein.getName(),
+		HybridMilAdaptive.getName() //added July 12, 2007
 	};	
 /**
  * SolverDescription constructor comment.
@@ -368,84 +384,6 @@ public static SolverDescription fromName(String solverName) {
 		}
 	}
 	throw new IllegalArgumentException("unexpected solver name '"+solverName+"'");
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (7/6/01 5:27:13 PM)
- * @return double
- * @param simulation cbit.vcell.solver.Simulation
- */
-public double getEstimatedMemoryMB(Simulation simulation) {
-	if (type == TYPE_FINITE_VOLUME){
-		//
-		// calculate number of PDE variables and total number of spatial variables
-		//
-		int pdeVarCount=0;
-		int odeVarCount=0;
-		java.util.Enumeration<SubDomain> enumSD = simulation.getMathDescription().getSubDomains();
-		while (enumSD.hasMoreElements()){
-			SubDomain sd = enumSD.nextElement();
-			if (sd instanceof cbit.vcell.math.CompartmentSubDomain){
-				java.util.Enumeration<Equation> enumEQ = sd.getEquations();
-				while (enumEQ.hasMoreElements()){
-					Equation eq = enumEQ.nextElement();
-					if (eq instanceof cbit.vcell.math.PdeEquation){
-						pdeVarCount++;
-					}else if (eq instanceof cbit.vcell.math.OdeEquation){
-						odeVarCount++;
-					}
-				}
-				break;
-			}
-		}
-		cbit.util.ISize samplingSize = simulation.getMeshSpecification().getSamplingSize();
-		long numMeshPoints = samplingSize.getX()*samplingSize.getY()*samplingSize.getZ();
-		//
-		// calculated assuming PCG on Digital DS20 running Tru64 (cxx)
-		//
-		int dim = simulation.getMathDescription().getGeometry().getDimension();
-		switch (dim){
-			case 1: {
-				//
-				// underestimate, but who cares ... it's small
-				//
-				double memoryMB = (double)((pdeVarCount+odeVarCount)*numMeshPoints*16)/1e6 + 16;
-				
-				return memoryMB;
-			}
-			case 2: {
-				//
-				// contribution of PDE stuff
-				//
-				double memoryMB = (4e-4 + 1.85e-4*pdeVarCount + 1.8e-6*pdeVarCount*pdeVarCount)*numMeshPoints + 17;
-				//
-				// contribution of ODE stuff
-				//
-				memoryMB += (double)(odeVarCount*numMeshPoints*16)/1e6;
-				
-				return memoryMB;
-			}
-			case 3: {
-				//
-				// contribution of PDE stuff
-				//
-				double memoryMB = (3e-4 + 2.33e-4*pdeVarCount + 4e-7*pdeVarCount*pdeVarCount)*numMeshPoints + 16;
-				//
-				// contribution of ODE stuff
-				//
-				memoryMB += (double)(odeVarCount*numMeshPoints*16)/1e6;;
-				
-				return memoryMB;
-			}
-			default: {
-				throw new RuntimeException("unexpected dimension "+dim);
-			}
-		}
-	}else{
-		throw new RuntimeException("SolverDescription.getEstimatedMemoryMB(), not yet implemented for Solver "+getName());
-	}
 }
 
 

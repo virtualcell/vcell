@@ -42,12 +42,9 @@ public static cbit.vcell.solver.Solver createSolver(SessionLog sessionLog, File 
 	} else if (solverDescription.equals(SolverDescription.CVODE)) {
 		solver = new CVodeSolverStandalone(simJob, directory, sessionLog);
 	} else if (solverDescription.equals(SolverDescription.FiniteVolume)) {
-		String fvstandaloneExe = PropertyLoader.getProperty(PropertyLoader.finiteVolumeExecutableProperty, null);
-		if (fvstandaloneExe == null) {
-			solver = new FVSolver(simJob, directory, sessionLog);
-		} else {
-			solver = new FVSolverStandalone(simJob, directory, sessionLog);
-		}
+		solver = new FVSolver(simJob, directory, sessionLog);
+	} else if (solverDescription.equals(SolverDescription.FiniteVolumeStandalone)) {
+		solver = new FVSolverStandalone(simJob, directory, sessionLog);
 	} else if (solverDescription.equals(SolverDescription.StochGibson)) {
 		solver = new cbit.vcell.solver.stoch.GibsonSolver(simJob, directory, sessionLog);
 	} else if (solverDescription.equals(SolverDescription.HybridEuler)) {
