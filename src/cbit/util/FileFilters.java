@@ -16,12 +16,14 @@ public interface FileFilters {
 	public static final FileFilter FILE_FILTER_GIF 		= new ExtensionFilter(".gif",	"GIF Files (*.gif)");
 	public static final FileFilter FILE_FILTER_NRRD 	= new ExtensionFilter(".nrrd", 	"NRRD Files (*.nrrd)");
 	public static final FileFilter FILE_FILTER_ZIP 		= new ExtensionFilter(".zip", 	"ZIP Files (*.zip)");
-	public static final FileFilter FILE_FILTER_XML 		= new ExtensionFilter(".xml", 	"XML Files (*.xml)");
-	public static final FileFilter FILE_FILTER_VCML		= new ExtensionFilter(".xml", 	"VCML format (*.xml)");
-	public static final FileFilter FILE_FILTER_SBML		= new ExtensionFilter(".xml", 	"SBML format <Level1,Version2>  (*.xml)");
-	public static final FileFilter FILE_FILTER_SBML_2	= new ExtensionFilter(".xml", 	"SBML format <Level2,Version3>  (*.xml)");
-	public static final FileFilter FILE_FILTER_CELLML	= new ExtensionFilter(".xml", 	"CELLML format (*.xml)");
+	public static final FileFilter FILE_FILTER_XML 		= new ExtensionFilter(new String[] {".xml",".vcml",".sbml"}, "XML Files (.xml .vcml .sbml)");
+	public static final FileFilter FILE_FILTER_VCML		= new ExtensionFilter(new String[] {".xml",".vcml"},"VCML format (.xml .vcml)");
+	public static final FileFilter FILE_FILTER_SBML		= new ExtensionFilter(new String[] {".xml",".sbml"},"SBML format <Level1,Version2>  (.xml .sbml)");
+	public static final FileFilter FILE_FILTER_SBML_2	= new ExtensionFilter(new String[] {".xml",".sbml"},"SBML format <Level2,Version3>  (.xml .sbml)");
+	public static final FileFilter FILE_FILTER_CELLML	= new ExtensionFilter(new String[] {".xml",".cml"},	"CELLML format (*.xml .cml)");
 	public static final FileFilter FILE_FILTER_AVS		= new ExtensionFilter(".avs", 	"AVS Unstructured Cell Data (*.avs)");
 	public static final FileFilter FILE_FILTER_STL		= new ExtensionFilter(".stl", 	"Stereolithography (STL) file (*.stl)");
 	public static final FileFilter FILE_FILTER_BNGL		= new ExtensionFilter(".bngl", 	"BioNetGen (BNGL) file (*.bngl)");
+	public static final FileFilter FILE_FILTER_GEOMIMAGES = new ExtensionFilter(new String[] {".gif", ".tif", ".tiff", ".zip"},"images (.gif .tif .tiff .zip)");
+	public static final FileFilter FILE_FILTER_FIELDIMAGES = new ExtensionFilter(new String[] {".gif", ".tif", ".tiff", ".zip", ".lsm"},"images/datasets (.gif .tif .tiff .zip .lsm)");
 }

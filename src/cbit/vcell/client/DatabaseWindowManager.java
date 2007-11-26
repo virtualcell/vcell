@@ -1167,7 +1167,7 @@ public VCDocumentInfo selectDocument(int documentType, TopLevelWindowManager req
 		}
 		case VCDocument.XML_DOC: {
 			// Get XML FIle, read the chars into a stringBuffer and create new XMLInfo.
-			File xmlFile = showFileChooserDialog(true);
+			File xmlFile = showFileChooserDialog(FileFilters.FILE_FILTER_XML);
 			char[] array = new char[1000];
 			StringBuffer xmlString = new StringBuffer();
 			int n;
@@ -1262,7 +1262,7 @@ public VCImage selectImageFromFile(AsynchProgressPopup pp)
 	VCImage vcImage = null;
 	
 	// Choose image from File
-	File imageFile = showFileChooserDialog(false);
+	File imageFile = showFileChooserDialog(FileFilters.FILE_FILTER_GEOMIMAGES);
 	long fileSize = imageFile.length();
 	pp.setMessage("Reading file "+imageFile.getName()+" size="+fileSize);
 	if(fileSize > GeometrySpec.IMAGE_SIZE_LIMIT){
@@ -1422,9 +1422,9 @@ private Object showAccessPermissionDialog(JComponent aclEditor, Component reques
  * Insert the method's description here.
  * Creation date: (5/14/2004 6:11:35 PM)
  */
-private File showFileChooserDialog(boolean isXMLNotImage) throws UserCancelException {
+private File showFileChooserDialog(FileFilter fileFilter) throws UserCancelException {
 
-	return showFileChooserDialog(isXMLNotImage,getUserPreferences());
+	return showFileChooserDialog(fileFilter,getUserPreferences());
 }
 
 
@@ -1432,7 +1432,7 @@ private File showFileChooserDialog(boolean isXMLNotImage) throws UserCancelExcep
  * Insert the method's description here.
  * Creation date: (5/14/2004 6:11:35 PM)
  */
-public static File showFileChooserDialog(boolean isXMLNotImage,UserPreferences currentUserPreferences) throws UserCancelException {
+public static File showFileChooserDialog(FileFilter fileFilter, UserPreferences currentUserPreferences) throws UserCancelException {
 	// the boolean isXMLNotImage is true if we are trying to choose an XML file
 	// It is false if we are trying to choose an image file
 	// This is used to set the appropriate File filters.
@@ -1441,38 +1441,8 @@ public static File showFileChooserDialog(boolean isXMLNotImage,UserPreferences c
 	cbit.gui.VCFileChooser fileChooser = new cbit.gui.VCFileChooser(defaultPath);
 	fileChooser.setFileSelectionMode(javax.swing.JFileChooser.FILES_ONLY);
 
-	if (isXMLNotImage) {
-		// setting fileFilter for xml files
-		fileChooser.setFileFilter(FileFilters.FILE_FILTER_XML);
-	} else {
-		// File filter for images.
-		FileFilter filter = new FileFilter() {
-			public String getDescription() {
-				return "image (.gif .tif .tiff .zip)";
-			}
-			public boolean accept(java.io.File file) {
-				return accept(file.getParentFile(), file.getName());
-			}
-			public boolean accept(java.io.File dir, String name) {
-				if (dir != null && name != null) {
-					java.io.File file = new java.io.File(dir, name);
-					if (file.isDirectory()) {
-						return true;
-					} else if (name.toLowerCase().endsWith(".gif") ||
-						name.toLowerCase().endsWith(".tif") ||
-						name.toLowerCase().endsWith(".tiff") ||
-						name.toLowerCase().endsWith(".zip")){
-						return true;
-					} else{
-						return false;
-					}
-				} else {
-					return false;
-				}
-			}
-		};
-		fileChooser.setFileFilter(filter);
-	}
+	// setting fileFilter for xml files
+	fileChooser.setFileFilter(fileFilter);
 	
     int returnval = fileChooser.showOpenDialog(null);
     if (returnval == JFileChooser.APPROVE_OPTION) {

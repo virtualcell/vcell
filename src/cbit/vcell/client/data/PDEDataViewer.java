@@ -1840,8 +1840,11 @@ private void showKymograph() {
 				}
 	
 				KymographPanel  kymographPanel = new KymographPanel();
-				showComponentInFrame(kymographPanel, "Kymograph: "+getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName());
-
+				String title = "Kymograph: ";
+				if (getSimulationModelInfo()!=null){
+					title += getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName();
+				}
+				showComponentInFrame(kymographPanel, title);
 				SymbolTable symbolTable;
 				if(getSimulation() != null && getSimulation().getMathDescription() != null){
 					symbolTable = getSimulation().getMathDescription();
@@ -1941,7 +1944,11 @@ private void showSpatialPlot() {
 											symbolTableEntries,
 											new String[] { varName },new PlotData[] { plotData },
 											new String[] {"Values along curve", "Distance (\u00b5m)", "[" + varName + "]"}));
-								showComponentInFrame(plotPane, "Line Plot: ("+varName+") "+getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName());
+								String title = "Line Plot: ("+varName+")";
+								if (getSimulationModelInfo()!=null){
+									title += " "+getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName();
+								}
+								showComponentInFrame(plotPane, title);
 							}catch(Exception e){
 								pp.stop();
 								PopupGenerator.showErrorDialog("Show Spatial Plot error:\n"+e.getMessage());
@@ -2050,7 +2057,11 @@ private void showTimePlot() {
 												plotNames,
 												tsJobResultsNoStats.getTimesAndValuesForVariable(tsJobResultsNoStats.getVariableNames()[0]),
 												new String[] {"Time series for " + getPdeDataContext().getVariableName(), "Time (s)", "[" + tsJobResultsNoStats.getVariableNames()[0] + "]"}));
-								showComponentInFrame(plotPane, "Timeplot: ("+tsJobResultsNoStats.getVariableNames()[0]+")  "+getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName());							
+								String title = "Timeplot: ("+tsJobResultsNoStats.getVariableNames()[0]+")";
+								if (getSimulationModelInfo()!=null){
+									title += " "+getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName();
+								}
+								showComponentInFrame(plotPane, title);							
 							}
 						}
 					},false);

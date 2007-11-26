@@ -9,24 +9,40 @@ package cbit.util;
  * @author: 
  */
 public class ExtensionFilter extends javax.swing.filechooser.FileFilter implements java.io.Serializable {
-	private String extension;
+	private String[] extensions;
 	private String description;
 
-/**
- * ExtensionFilter constructor comment.
- */
-public ExtensionFilter(String ext, String descr) {
-	extension = ext.toLowerCase();
-	description = descr;
-}
+	/**
+	 * ExtensionFilter constructor comment.
+	 */
+	public ExtensionFilter(String arg_extension, String descr) {
+		extensions = new String[1];
+		extensions[0] = arg_extension.toLowerCase();
+		description = descr;
+	}
+
+	/**
+	 * ExtensionFilter constructor comment.
+	 */
+	public ExtensionFilter(String[] arg_extensions, String descr) {
+		extensions = arg_extensions.clone();
+		description = descr;
+	}
 
 
 /**
  * accept method comment.
  */
 public boolean accept(java.io.File file) {
-	
-	return (file.isDirectory() || file.getName().toLowerCase().endsWith(extension));
+	if (file.isDirectory()){
+		return true;
+	}
+	for (int i = 0; i < extensions.length; i++) {
+		if (file.getName().toLowerCase().endsWith(extensions[i])){
+			return true;
+		}
+	}
+	return false;
 }
 
 
@@ -49,16 +65,6 @@ public boolean equals(Object param) {
  */
 public String getDescription() {
 	return description;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (9/21/2004 1:21:59 PM)
- * @return java.lang.String
- */
-public java.lang.String getExtension() {
-	return extension;
 }
 
 

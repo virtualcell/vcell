@@ -1069,8 +1069,8 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 				if (fieldDataFileOperationSpec.shortSpecData!=null){
 					convertedData[i][j] = new double[fieldDataFileOperationSpec.shortSpecData[i][j].length];
 					for (int k = 0; k < fieldDataFileOperationSpec.shortSpecData[i][j].length; k += 1) {
-//						convertedData[i][j][k] = (double) ((int) (fieldDataFileOperationSpec.shortSpecData[i][j][k] & 0x0000FFFF));
-						convertedData[i][j][k] = fieldDataFileOperationSpec.shortSpecData[i][j][k];
+						convertedData[i][j][k] = (double) (((int)fieldDataFileOperationSpec.shortSpecData[i][j][k]) & 0x0000FFFF);
+//						convertedData[i][j][k] = fieldDataFileOperationSpec.shortSpecData[i][j][k];
 					}
 				}else{
 					throw new RuntimeException("no pixel data found");

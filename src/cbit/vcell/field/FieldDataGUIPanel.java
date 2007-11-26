@@ -39,6 +39,7 @@ import cbit.sql.KeyValue;
 import cbit.util.AsynchProgressPopup;
 import cbit.util.BeanUtils;
 import cbit.util.Extent;
+import cbit.util.FileFilters;
 import cbit.util.ISize;
 import cbit.util.Origin;
 import cbit.util.TokenMangler;
@@ -1052,7 +1053,7 @@ private void jButtonFDFromFile_ActionPerformed(java.awt.event.ActionEvent action
 	
 	try{
 		final File imageFile = 
-			DatabaseWindowManager.showFileChooserDialog(false, clientRequestManager.getUserPreferences());
+			DatabaseWindowManager.showFileChooserDialog(FileFilters.FILE_FILTER_FIELDIMAGES, clientRequestManager.getUserPreferences());
 	
 		AsynchClientTask importImageTask = new AsynchClientTask() {
 		public String getTaskName() { return "Import image"; }
@@ -1087,8 +1088,14 @@ private void jButtonFDFromFile_ActionPerformed(java.awt.event.ActionEvent action
 					try{
 						try{
 							imagedataSet = ImageDatasetReader.readImageDataset(imageFile.getAbsolutePath());
+							if (imagedataSet!=null){
+								System.out.println("FieldDataGUIPanel.jButtonFDFromFile_ActionPerformed(): BEFORE CROPPING, size="+imagedataSet.getISize().toString());
+								imagedataSet = imagedataSet.crop(imagedataSet.getNonzeroBoundingRectangle());
+								System.out.println("FieldDataGUIPanel.jButtonFDFromFile_ActionPerformed(): AFTER CROPPING, size="+imagedataSet.getISize().toString());
+							}
 						}catch (Exception e){
-							throw new DataFormatException();
+							e.printStackTrace(System.out);
+							throw new DataFormatException(e.getMessage());
 						}
 						//[time][var][data]
 						boolean bCropOutBlack = true;
@@ -1105,19 +1112,9 @@ private void jButtonFDFromFile_ActionPerformed(java.awt.event.ActionEvent action
 							fdos.variableTypes[c] = VariableType.VOLUME;
 							fdos.varNames[c] = "Channel"+c;
 							for(int t=0;t<imagedataSet.getSizeT();t+=1){
-	//							int index=0;
 								for(int z=0;z<imagedataSet.getSizeZ();z+=1){
 									UShortImage ushortImage = imagedataSet.getImage(z,c,t);
 									shortData[t][c] = ushortImage.getPixels();
-									for(int i=0;i<shortData[t][c].length;i+= 1){
-										if(shortData[t][c][i] > 255){
-											System.out.println(i+" "+shortData[t][c][i]);
-										}
-									}
-	//								System.arraycopy(
-	//										ushortImage.getPixels(), 0, 
-	//										shortData[t][c], index, numXY);
-	//								index+= numXY;
 								}
 							}
 						}
@@ -1148,6 +1145,7 @@ private void jButtonFDFromFile_ActionPerformed(java.awt.event.ActionEvent action
 					return;
 				}
 			}catch(Throwable e){
+				e.printStackTrace(System.out);
 				hash.put(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR,e);
 			}
 		}
