@@ -37,5 +37,6 @@ String getSimulationName();
  * @return java.lang.String
  * @param subVolumeID int
  */
-String getVolumeName(int subVolumeID);
+String getVolumeNamePhysiology(int subVolumeID);
+String getVolumeNameGeometry(int subVolumeID);
 }

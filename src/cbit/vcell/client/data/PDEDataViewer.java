@@ -178,6 +178,18 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 				connEtoC9(e);
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
+			if (evt.getSource() == PDEDataViewer.this &&
+				(evt.getPropertyName().equals(DataViewer.PROP_SIM_MODEL_INFO)
+					||
+					evt.getPropertyName().equals("pdeDataContext"))
+			){
+				if(getPdeDataContext() != null && getSimulationModelInfo() != null){
+					getPDEDataContextPanel1().setDataInfoProvider(
+							new DataViewer.DataInfoProvider(getPdeDataContext().getCartesianMesh(),getSimulationModelInfo()));
+				}else{
+					getPDEDataContextPanel1().setDataInfoProvider(null);
+				}
+			}
 			if (evt.getSource() == PDEDataViewer.this && (evt.getPropertyName().equals("pdeDataContext"))) 
 				connPtoP1SetTarget();
 			if (evt.getSource() == PDEDataViewer.this.getPDEDataContextPanel1() && (evt.getPropertyName().equals("pdeDataContext"))) 
