@@ -1,4 +1,8 @@
 package cbit.vcell.client.data;
+
+import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.model.Feature;
+
 /**
  * Insert the type's description here.
  * Creation date: (9/19/2005 1:30:44 PM)
@@ -98,7 +102,27 @@ public java.lang.String getSimulationName() {
  * @return java.lang.String
  * @param subVolumeID int
  */
-public String getVolumeName(int subVolumeID) {
+public String getVolumeNamePhysiology(int subVolumeID) {
+	String results = null;
+	if(simulationOwner instanceof cbit.vcell.mathmodel.MathModel){
+		cbit.vcell.mathmodel.MathModel mathModel = (cbit.vcell.mathmodel.MathModel)simulationOwner;
+		if(mathModel.getMathDescription().getGeometry().getGeometrySpec().getSubVolume(subVolumeID) != null){
+			results = mathModel.getMathDescription().getGeometry().getGeometrySpec().getSubVolume(subVolumeID).getName();
+		}
+	}else if(simulationOwner instanceof cbit.vcell.mapping.SimulationContext){
+		cbit.vcell.mapping.SimulationContext simContext = (cbit.vcell.mapping.SimulationContext)simulationOwner;
+		SubVolume sv = simContext.getGeometry().getGeometrySpec().getSubVolume(subVolumeID);
+		if(sv != null){
+			Feature volFeature = simContext.getGeometryContext().getResolvedFeature(sv);
+			if(volFeature != null){
+				results = volFeature.getName();
+			}
+		}
+	}
+	
+	return results;
+}
+public String getVolumeNameGeometry(int subVolumeID) {
 	String results = null;
 	if(simulationOwner instanceof cbit.vcell.mathmodel.MathModel){
 		cbit.vcell.mathmodel.MathModel mathModel = (cbit.vcell.mathmodel.MathModel)simulationOwner;
@@ -114,4 +138,5 @@ public String getVolumeName(int subVolumeID) {
 	
 	return results;
 }
+
 }

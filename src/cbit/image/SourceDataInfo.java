@@ -4,6 +4,7 @@ package cbit.image;
  * All rights reserved.
 ©*/
 import cbit.vcell.geometry.Coordinate;
+import cbit.vcell.math.CoordinateIndex;
 import cbit.util.Extent;
 import cbit.util.Origin;
 import java.lang.reflect.Array;
@@ -79,6 +80,9 @@ private int calculateDataIndex(int x, int y, int z) {
     return startIndex + (x * xIncrement) + (y * yIncrement) + (z * zIncrement);
 }
 
+public int calculateWorldIndex(CoordinateIndex ci){
+	return ci.x+(ci.y*xSize) + (ci.z*xSize*ySize);
+}
 
 /**
  * Insert the method's description here.
