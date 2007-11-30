@@ -100,7 +100,7 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
 				if (fileFilter.equals(FileFilters.FILE_FILTER_SBML)) {
 					resultString = XmlHelper.exportSBML(bioModel, 1, 2, applicationName);
 				} else if (fileFilter.equals(FileFilters.FILE_FILTER_SBML_2)){
-					resultString = XmlHelper.exportSBML(bioModel, 2, 3, applicationName);
+					resultString = XmlHelper.exportSBML(bioModel, 2, 1, applicationName);
 				} else if (fileFilter.equals(FileFilters.FILE_FILTER_CELLML)) {
 					resultString = XmlHelper.exportCellML(bioModel, applicationName);
 				}

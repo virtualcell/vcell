@@ -1,38 +1,46 @@
 package org.vcell.sbml.vcell;
-import cbit.vcell.model.FluxReaction;
-import org.jdom.*;
-
-import cbit.vcell.xml.MIRIAMHelper;
-import cbit.vcell.xml.XmlParseException;
-import cbit.vcell.mapping.StructureMapping;
-import cbit.vcell.model.Structure;
-import cbit.vcell.mapping.SimulationContext;
-import org.sbml.libsbml.*;
+import java.util.ArrayList;
 import java.util.Vector;
 
+import org.jdom.Element;
+import org.jdom.Namespace;
+import org.sbml.libsbml.ASTNode;
+import org.sbml.libsbml.AssignmentRule;
+import org.sbml.libsbml.Compartment;
+import org.sbml.libsbml.InitialAssignment;
+import org.sbml.libsbml.Model;
+import org.sbml.libsbml.ModifierSpeciesReference;
+import org.sbml.libsbml.OStringStream;
+import org.sbml.libsbml.SBMLDocument;
+import org.sbml.libsbml.SBMLError;
+import org.sbml.libsbml.SBMLWriter;
+import org.sbml.libsbml.SpeciesReference;
+import org.sbml.libsbml.UnitDefinition;
+import org.sbml.libsbml.XMLError;
+import org.sbml.libsbml.libsbml;
+import org.vcell.sbml.SBMLUtils;
+import org.vcell.sbml.SBMLUtils.SBMLUnitParameter;
+
+import cbit.util.TokenMangler;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.model.DistributedKinetics;
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.FluxReaction;
+import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.LumpedKinetics;
+import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.Kinetics;
-import java.util.ArrayList;
-import org.sbml.libsbml.UnitDefinition;
-import org.sbml.libsbml.Compartment;
 import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Membrane;
-import cbit.vcell.model.Feature;
-import cbit.vcell.biomodel.BioModel;
-import org.sbml.libsbml.SBMLDocument;
-import cbit.vcell.units.SBMLUnitTranslator;
-import org.sbml.libsbml.Unit;
-import org.vcell.sbml.SBMLUtils;
-
-import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.units.SBMLUnitTranslator;
+import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.xml.XMLTags;
-import cbit.util.TokenMangler;
-import cbit.util.xml.XmlUtil;
+import cbit.vcell.xml.XmlParseException;
 
 /**
  * Insert the type's description here.
@@ -47,6 +55,65 @@ public class SBMLExporter {
 	private String vcPreferredSimContextName = null;
 	private java.util.Hashtable<String, String> globalParamNamesHash = new java.util.Hashtable<String, String>();
 	private org.vcell.sbml.vcell.SBMLExporter.SBMLExportErrorReport fieldErrorReport = null;
+	private SBMLExportSpec sbmlExportSpec = new SBMLExportSpec(VCUnitDefinition.UNIT_molecules, VCUnitDefinition.UNIT_um3, VCUnitDefinition.UNIT_um2, VCUnitDefinition.UNIT_um, VCUnitDefinition.UNIT_s);
+	
+	public static class SBMLExportSpec {
+		private VCUnitDefinition substanceUnits = null;
+		private VCUnitDefinition volUnits = null;
+		private VCUnitDefinition areaUnits = null;
+		private VCUnitDefinition lengthUnits = null;
+		private VCUnitDefinition timeUnits = null;
+		
+		public SBMLExportSpec(VCUnitDefinition argSunits, VCUnitDefinition argVUnits, VCUnitDefinition argAUnits, VCUnitDefinition argLUnits, VCUnitDefinition argTUnits) {
+			if (!argSunits.isCompatible(VCUnitDefinition.UNIT_molecules) && !argSunits.isCompatible(VCUnitDefinition.UNIT_mol)) {
+				throw new RuntimeException("Substance units not compatible with molecules or moles");
+			}
+			if (!argVUnits.isCompatible(VCUnitDefinition.UNIT_um3)) {
+				throw new RuntimeException("Volume units not compatible with m3 (eg., um3 or litre)");
+			}
+			if (!argAUnits.isCompatible(VCUnitDefinition.UNIT_um2)) {
+				throw new RuntimeException("Area units not compatible with m2");
+			}
+			if (!argLUnits.isCompatible(VCUnitDefinition.UNIT_um)) {
+				throw new RuntimeException("Length units not compatible with m");
+			}
+			if (!argTUnits.isCompatible(VCUnitDefinition.UNIT_s)) {
+				throw new RuntimeException("Time units not compatible with sec");
+			}
+			this.substanceUnits = argSunits;
+			this.volUnits = argVUnits;
+			this.areaUnits = argAUnits;
+			this.lengthUnits = argLUnits;
+			this.timeUnits = argTUnits;
+		}
+		public VCUnitDefinition getSubstanceUnits() {
+			return substanceUnits;			
+		}
+		public VCUnitDefinition getVolumeUnits() {
+			return volUnits;		
+		}
+		public VCUnitDefinition getAreaUnits() {
+			return areaUnits;			
+		}
+		public VCUnitDefinition getLengthUnits() {
+			return lengthUnits;		
+		}
+		public VCUnitDefinition getTimeUnits() {
+			return timeUnits;			
+		}
+		public VCUnitDefinition getConcentrationUnit(int dimension) {
+			switch (dimension) {
+			case 1 : 
+				return getSubstanceUnits().divideBy(getLengthUnits());
+			case 2 :
+				return getSubstanceUnits().divideBy(getAreaUnits());
+			case 3 : 
+				return getSubstanceUnits().divideBy(getVolumeUnits());
+			default :
+				throw new RuntimeException("Unsupported dimension of compartment; unable to compute concentration units");
+			}
+		}
+	}
 
 	public class SBMLExportErrorReport {
 		StringBuffer reportBuffer = null;
@@ -70,7 +137,7 @@ public class SBMLExporter {
 	}
 
 	/**
-	 * VC_to_SB_Translator constructor comment.
+	 * SBMLExporter constructor comment.
 	 */
 	public SBMLExporter(BioModel argBioModel, int argSbmlLevel, int argSbmlVersion) {
 		super();
@@ -78,15 +145,14 @@ public class SBMLExporter {
 		sbmlLevel = argSbmlLevel;
 		sbmlVersion = argSbmlVersion;
 	}
-
+	
 	/**
-	 * VC_to_SB_Translator constructor comment.
+	 * SBMLExporter constructor comment.
 	 */
 	public SBMLExporter(BioModel argBioModel) {
 		super();
 		vcBioModel = argBioModel;
 	}
-
 
 /**
  * addCompartments comment.
@@ -111,21 +177,19 @@ protected void addCompartments() {
 					sbmlCompartment.setOutside(outside);
 				}
 			}
-			sbmlSizeUnit = VCUnitDefinition.UNIT_L;
-			sbmlCompartment.setUnits(cbit.util.TokenMangler.mangleToSName(sbmlSizeUnit.getSymbol()));
+			sbmlSizeUnit = sbmlExportSpec.getVolumeUnits();
 		} else if (vcStructures[i] instanceof Membrane) {
 			Membrane vcMembrane = (Membrane)vcStructures[i];
 			sbmlCompartment.setSpatialDimensions(2);
 			sbmlCompartment.setOutside(TokenMangler.mangleToSName(vcMembrane.getOutsideFeature().getName()));
-			sbmlSizeUnit = VCUnitDefinition.UNIT_um2;
+			sbmlSizeUnit = sbmlExportSpec.getAreaUnits();
 			sbmlCompartment.setUnits(cbit.util.TokenMangler.mangleToSName(sbmlSizeUnit.getSymbol()));
 		}
 
 		StructureMapping vcStructMapping = getMatchingSimContext().getGeometryContext().getStructureMapping(vcStructures[i]);
 		try {
-			// The unit for 3D compartment size in VCell is um3, we are going to write it out in litres while exporting to SBML
-			// (we have set the units for compartment size as L above). Hence multiplying the size expression with the conversion factor
-			// between VC and SBML units for the compartment size. 
+			// The unit for 3D compartment size in VCell is um3, we are going to write it out in um3 in the SBML document.
+			// Hence multiplying the size expression with the conversion factor between VC and SBML units for the compartment size. 
 			
 			Expression sizeExpr = null;
 			VCUnitDefinition vcSizeUnit = vcStructMapping.getSizeParameter().getUnitDefinition();
@@ -148,6 +212,8 @@ protected void addCompartments() {
 				sbmlModel.addRule(assignRule);
 			}
 		}
+
+		sbmlModel.addCompartment(sbmlCompartment);
 		
 //		Element annotationElement = null;
 //		String sbmlAnnotationString = sbmlCompartment.getAnnotationString();
@@ -163,7 +229,6 @@ protected void addCompartments() {
 //			System.out.flush();
 //			sbmlCompartment.setAnnotation(new String(annotationString));
 //		}
-		sbmlModel.addCompartment(sbmlCompartment);
 	}
 }
 
@@ -223,6 +288,12 @@ private void addKineticParameterUnits(ArrayList<String> unitsList) {
  * At present, the Virtual cell doesn't support global parameters
  */
 protected void addParameters() {
+	org.sbml.libsbml.Parameter sbmlParam = sbmlModel.createParameter();
+	String paramUnits = TokenMangler.mangleToSName(VCUnitDefinition.UNIT_uM_um3_per_molecules.getSymbol());
+	sbmlParam.setId("KMOLE");
+	sbmlParam.setValue(1.0/602.0);
+	sbmlParam.setUnits(paramUnits);
+	sbmlParam.setConstant(true);
 }
 
 
@@ -242,17 +313,16 @@ protected void addReactions() {
 		org.sbml.libsbml.Reaction sbmlReaction = new org.sbml.libsbml.Reaction(cbit.util.TokenMangler.mangleToSName(vcReactionStep.getName()));
 		sbmlReaction.setName(rxnName);
 			
-
 		// If the reactionStep is a flux reaction, add the details to the annotation (structure, carrier valence, flux carrier, fluxOption, etc.)
 		// If reactionStep is a simple reaction, add annotation to indicate the structure of reaction.
 		// Useful when roundtripping ...
-		Element annotationElement = null;
-		try {
-			annotationElement = getAnnotationElement(vcReactionStep);
-		} catch (cbit.vcell.xml.XmlParseException e) {
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Could not get JDOM element for annotation : " + e.getMessage());
-		}
+//		Element annotationElement = null;
+//		try {
+//			annotationElement = getAnnotationElement(vcReactionStep);
+//		} catch (cbit.vcell.xml.XmlParseException e) {
+//			e.printStackTrace(System.out);
+//			throw new RuntimeException("Could not get JDOM element for annotation : " + e.getMessage());
+//		}
 //		MIRIAMHelper.addToSBML(annotationElement, vcReactionSpecs[i].getReactionStep().getMIRIAMAnnotation(),false);
 //		sbmlReaction.setAnnotation(cbit.util.xml.XmlUtil.xmlToString(annotationElement));
 		
@@ -266,27 +336,22 @@ protected void addReactions() {
 			// for example logical and inequalities are not handled gracefully by libSBMl if expression.infix is used.
 			Expression correctedRateExpr = null; 
 			if (vcRxnKinetics instanceof DistributedKinetics) {
+				// If DistributedKinetics, multiply by compartmentSize & divide by KMOLE to convert to molecules/sec for feature reaction and membrane flux
+				// for membrane reaction, we just need to multiply by compartmentSize to convert units to molecules/sec. 
 				Compartment sbmlCompartment = sbmlModel.getCompartment(cbit.util.TokenMangler.mangleToSName(vcReactionStep.getStructure().getName()));
 				correctedRateExpr = Expression.mult(((DistributedKinetics)vcRxnKinetics).getReactionRateParameter().getExpression(), new Expression(sbmlCompartment.getId()));
-	
-				// If the reaction is not in a feature, but in a membrane, use/set subtanceUnits for the kinetic law.
-				if (!isInFeature(vcReactionStep.getStructure().getName())) {
-					if (vcReactionStep instanceof cbit.vcell.model.SimpleReaction) {
-						sbmlKLaw.setSubstanceUnits(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_molecules.getSymbol()));
-					} else if (vcReactionStep instanceof cbit.vcell.model.FluxReaction) {
-						sbmlKLaw.setSubstanceUnits(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_umol_L_per_um3.getSymbol()));
-						// correctedRateExpr = Expression.mult(correctedRateExpr, new Expression(1e-15));
-					} else {
-						throw new RuntimeException("Unknown reaction type - cannot handle at this time");
-					}
+				if ( (vcReactionStep.getStructure() instanceof Feature) || ((vcReactionStep.getStructure() instanceof Membrane) && (vcReactionStep instanceof FluxReaction)) ) {
+					correctedRateExpr = Expression.mult(correctedRateExpr, Expression.invert(new Expression("KMOLE")));
 				}
 			} else if (vcRxnKinetics instanceof LumpedKinetics) {
+				// LumpedKinetics is already in molecules/sec, no need to do anything?
 				correctedRateExpr = ((LumpedKinetics)vcRxnKinetics).getLumpedReactionRateParameter().getExpression();
-				sbmlKLaw.setSubstanceUnits(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_molecules.getSymbol()));
 			} else {
 				throw new RuntimeException("Unknown kinetics type for reaction : " + vcReactionStep.getName());
 			}
-
+			
+			// Adjust for species concentration - from SBML molecules/um3 -> VC uM
+			correctedRateExpr = adjustSpeciesConcUnitsInRateExpr(correctedRateExpr, vcRxnKinetics);
 
 			// Add parameters, if any, to the kineticLaw
 			Kinetics.KineticsParameter[] vcKineticsParams = vcRxnKinetics.getKineticsParameters();
@@ -392,8 +457,17 @@ protected void addReactions() {
 					}	// end for - k
 				} 
 			}	// end for (j)  - third pass
+			
+			// In the fourth pass thro' the kinetic params, the non-numeric params are checked to see if they have any species in their
+			// expressions - if so, they have to be adjusted for concentration units : from SBML molecules/um3 -> VC uM
+			for (int j = 0; j < kinParamExprs.length; j++) {
+				if (kinParamExprs[j] != null) {
+					kinParamExprs[j] = adjustSpeciesConcUnitsInRateExpr(kinParamExprs[j], vcRxnKinetics);
+				}
+			}	// end for (j)  - third pass
+
 					
-			// In the fourth pass thro' the kinetic params, the non-numeric params are added to the global params of the model
+			// In the fifth pass thro' the kinetic params, the non-numeric params are added to the global params of the model
 			for (int j = 0; j < vcKineticsParams.length; j++){
 				if (((vcKineticsParams[j].getRole() != Kinetics.ROLE_ReactionRate) && (vcKineticsParams[j].getRole() != Kinetics.ROLE_LumpedReactionRate)) && !(vcKineticsParams[j].getExpression().isNumeric())) {
 					// Now, add this param to the globalParamNamesHash and add a global parameter to the sbmlModel
@@ -467,6 +541,53 @@ protected void addReactions() {
 	}
 }
 
+/**
+ * adjustSpeciesConcUnitsInRateExpr
+ * @param origRateExpr
+ * @return
+ */
+private Expression adjustSpeciesConcUnitsInRateExpr(Expression origRateExpr, Kinetics rxnKinetics) throws ExpressionException {
+	// The expr for speciesConcentration from VCell is in terms of VCell units (uM); we have converted species units to SBML conc units
+	// to export to SBML. We need to translate them back to VCell units within the expr; then we translate the VCell rate units into SBML units.
+
+	String[] symbols = origRateExpr.getSymbols();
+	SpeciesContext[] vcSpeciesContexts = vcBioModel.getModel().getSpeciesContexts();
+	if (symbols != null) {
+		for (int i = 0; i < symbols.length; i++) {
+			for (int j = 0; j < vcSpeciesContexts.length; j++) {
+				if ( vcSpeciesContexts[j].getName().equals(symbols[i])) {
+					// this change is applicable only to species in volumes, not on membranes, since the 
+					// concentration units for species on membranes is already in molecules (/um2).
+					org.sbml.libsbml.Species species = sbmlModel.getSpecies(vcSpeciesContexts[j].getName());
+					/* Check if species name is used as a kinetic parameter. If so, the parameter in the local namespace 
+					   takes precedence. So ignore unit conversion for the species with the same name. */
+					boolean bSpeciesNameFoundInLocalParamList = false;
+					Kinetics.KineticsParameter[] kinParams = rxnKinetics.getKineticsParameters();
+					for (int k = 0; k < kinParams.length; k++) {
+						if ( (kinParams[k].getRole() != Kinetics.ROLE_ReactionRate) && (kinParams[k].getRole() != Kinetics.ROLE_LumpedReactionRate) ) {
+							if (kinParams[k].getName().equals(species.getId())) {
+								bSpeciesNameFoundInLocalParamList = true;
+								break; 		// break out of kinParams loop
+							}
+						}
+					}
+					if (bSpeciesNameFoundInLocalParamList) {
+						break;			// break out of speciesContexts loop
+					}
+					// Get the VC and SBML concentration units (from sbmlExportSpec) and get the conversion factor ('factor').
+					// Replace the occurance of species in the rate expression with the new expr : species*factor.
+					cbit.vcell.mapping.SpeciesContextSpec vcSpeciesContextsSpec = getMatchingSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContexts[j]);
+					VCUnitDefinition vcConcUnit = vcSpeciesContextsSpec.getInitialConditionParameter().getUnitDefinition();
+					VCUnitDefinition sbmlConcUnits = sbmlExportSpec.getConcentrationUnit(vcSpeciesContexts[j].getStructure().getDimension());
+					SBMLUnitParameter sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", sbmlConcUnits, vcConcUnit);
+					Expression modifiedSpExpr = Expression.mult(new Expression(species.getId()), sbmlUnitParam.getExpression()).flatten();
+					origRateExpr.substituteInPlace(new Expression(species.getId()), modifiedSpExpr);
+				}
+			} 	// end for (j) - speciesContext
+		}	// end for (i) - symbols
+	}	// end if (symbols != null)
+	return origRateExpr;
+}
 
 /**
  * addSpecies comment.
@@ -475,7 +596,8 @@ protected void addSpecies() {
 	SpeciesContext[] vcSpeciesContexts = vcBioModel.getModel().getSpeciesContexts();
 
 	for (int i = 0; i < vcSpeciesContexts.length; i++){
-		org.sbml.libsbml.Species sbmlSpecies = new org.sbml.libsbml.Species(vcSpeciesContexts[i].getName());
+		org.sbml.libsbml.Species sbmlSpecies = sbmlModel.createSpecies();
+		sbmlSpecies.setId(vcSpeciesContexts[i].getName());
 		// Assuming that at this point, the compartment(s) for the model are already filled in.
 		Compartment compartment = sbmlModel.getCompartment(TokenMangler.mangleToSName(vcSpeciesContexts[i].getStructure().getName()));
 		if (compartment != null) {
@@ -491,18 +613,33 @@ protected void addSpecies() {
 		if (simContext == null) {
 			throw new RuntimeException("No simcontext (application) specified; Cannot proceed.");
 		}
-		
+
 		// Get the speciesContextSpec in the simContext corresponding to the 'speciesContext'; and extract its initial concentration value.
-		cbit.vcell.mapping.SpeciesContextSpec vcSpeciesContextsSpec = simContext.getReactionContext().getSpeciesContextSpec(vcSpeciesContexts[i]);
+		SpeciesContextSpec vcSpeciesContextsSpec = simContext.getReactionContext().getSpeciesContextSpec(vcSpeciesContexts[i]);
+		// since we are setting the substance units for species to 'molecule' or 'item', a unit that is originally in uM (or molecules/um2),
+		// we need to convert concentration from uM -> molecules/um3; this can be achieved by dividing by KMOLE.
+		VCUnitDefinition vcConcUnit = vcSpeciesContextsSpec.getInitialConditionParameter().getUnitDefinition();
+		VCUnitDefinition sbmlConcUnits = sbmlExportSpec.getConcentrationUnit(vcSpeciesContexts[i].getStructure().getDimension());
+		SBMLUnitParameter sbmlUnitParam = null;
 		try {
-			sbmlSpecies.setInitialConcentration(vcSpeciesContextsSpec.getInitialConditionParameter().getConstantValue());
+			sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", vcConcUnit, sbmlConcUnits);
+			Expression initConcExpr = Expression.mult(vcSpeciesContextsSpec.getInitialConditionParameter().getExpression(), sbmlUnitParam.getExpression()).flatten();
+			sbmlSpecies.setInitialConcentration(initConcExpr.evaluateConstant());
 		} catch (cbit.vcell.parser.ExpressionException e) {
 			// If it is in the catch block, it means that the initial concentration of the species was not a double, but an assignment, probably.
 			// Check if the expression for the species is not null and add it as an assignment rule.
 			if (vcSpeciesContextsSpec.getInitialConditionParameter().getExpression() != null) {
-				ASTNode ruleFormulaNode = getFormulaFromExpression(vcSpeciesContextsSpec.getInitialConditionParameter().getExpression());
-				AssignmentRule assignRule = new AssignmentRule(vcSpeciesContextsSpec.getSpeciesContext().getName(), ruleFormulaNode);
-				sbmlModel.addRule(assignRule);
+				try {
+					sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", vcConcUnit, sbmlConcUnits);
+					Expression initConcExpr = Expression.mult(vcSpeciesContextsSpec.getInitialConditionParameter().getExpression(), sbmlUnitParam.getExpression());
+					ASTNode assignmentMathNode = getFormulaFromExpression(initConcExpr);
+					InitialAssignment initAssignment = sbmlModel.createInitialAssignment();
+					initAssignment.setSymbol(vcSpeciesContexts[i].getName());
+					initAssignment.setMath(assignmentMathNode);
+				} catch (ExpressionException e1) {
+					e.printStackTrace(System.out);
+					throw new RuntimeException("Could not add concentration as Initial assignment for species : " + vcSpeciesContexts[i].getName());
+				}
 			}
 		}
 
@@ -510,14 +647,8 @@ protected void addSpecies() {
 		boolean bBoundaryCondition = getBoundaryCondition(vcSpeciesContexts[i]);
 		sbmlSpecies.setBoundaryCondition(bBoundaryCondition); 
 
-		// If species is in membrane, the units should be in molecules/um2; hence set the spatialSize and substance units
-		if (!isInFeature(vcSpeciesContexts[i].getStructure().getName())) {
-			sbmlSpecies.setSpatialSizeUnits(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_um2.getSymbol()));
-			sbmlSpecies.setSubstanceUnits(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_molecules.getSymbol()));
-		}
-
-		// Convert from VC -> SBML units, i.e., from uM -> ??		
-		//sbmlSpecies.setUnits();
+		// set species substance units as 'molecules' - same as defined in the model; irrespective of it is in surface or volume.
+		sbmlSpecies.setSubstanceUnits(sbmlExportSpec.getSubstanceUnits().getSymbol());
 
 		// Add the common name of species to annotation, and add an annotation element to the species.
 		// This is required later while trying to read in fluxes ...
@@ -530,9 +661,6 @@ protected void addSpecies() {
 		annotationElement.addContent(vcellInfoTag);
 //		MIRIAMHelper.addToSBML(annotationElement, vcSpeciesContexts[i].getSpecies().getMIRIAMAnnotation(),false);
 //		sbmlSpecies.setAnnotation(cbit.util.xml.XmlUtil.xmlToString(annotationElement,true));
-
-		// Add the species to the sbmlModel
-		sbmlModel.addSpecies(sbmlSpecies);
 	}
 }
 
@@ -541,46 +669,41 @@ protected void addSpecies() {
  * Add unit definitions to the model.
  */
 protected void addUnitDefinitions() {
-	// Define mole - SUBSTANCE
-	UnitDefinition unitDefn = new UnitDefinition(SBMLUnitTranslator.SUBSTANCE);
-	Unit moleUnit = new Unit("mole", 1, -6);
-	unitDefn.addUnit(moleUnit);
+	// Define molecule - SUBSTANCE
+	UnitDefinition unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(sbmlExportSpec.getSubstanceUnits());
+	unitDefn.setId(SBMLUnitTranslator.SUBSTANCE);
 	sbmlModel.addUnitDefinition(unitDefn);
 
-	// Define litre - VOLUME
-	unitDefn = new UnitDefinition(SBMLUnitTranslator.VOLUME);
-	Unit litreUnit = new Unit("litre", 1, 0);
-	unitDefn.addUnit(litreUnit);
+	// Define um3 - VOLUME
+	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(sbmlExportSpec.getVolumeUnits());
+	unitDefn.setId(SBMLUnitTranslator.VOLUME);
 	sbmlModel.addUnitDefinition(unitDefn);
 
 	// Define um2 - AREA
-	unitDefn = new UnitDefinition(SBMLUnitTranslator.AREA);
-	Unit um2Unit = new Unit("metre", 2, -6);
-	unitDefn.addUnit(um2Unit);
+	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(sbmlExportSpec.getAreaUnits());
+	unitDefn.setId(SBMLUnitTranslator.AREA);
 	sbmlModel.addUnitDefinition(unitDefn);
 
-	// Redefine 'item' as molecules
-	unitDefn = new UnitDefinition(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_molecules.getSymbol()));
-	Unit itemUnit = new Unit("item");
-	unitDefn.addUnit(itemUnit);
+	// Redefine molecules as 'item' 
+	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(VCUnitDefinition.UNIT_molecules);
 	sbmlModel.addUnitDefinition(unitDefn);
 
-	// Define umol.L.um-3 - VCell (actual units of concentration, but with a multiplication factor.  Value = 1e-15 umol).
-	unitDefn = new UnitDefinition(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_umol_L_per_um3.getSymbol()));
-	org.sbml.libsbml.Unit umol_unit = new Unit("mole", 1, -21);
-	unitDefn.addUnit(umol_unit);
+	// Define umol.um3.L-1 - VCell (actual units of concentration, but with a multiplication factor.  Value = 1e-15 umol).
+	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(VCUnitDefinition.UNIT_umol_um3_per_L);
 	sbmlModel.addUnitDefinition(unitDefn);
 
 	// Define um2 - VCell
-	unitDefn = new UnitDefinition(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_um2.getSymbol()));
-	org.sbml.libsbml.Unit um2_unit = new Unit("metre", 2, -6);
-	unitDefn.addUnit(um2_unit);
+	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(VCUnitDefinition.UNIT_um2);
+	sbmlModel.addUnitDefinition(unitDefn);
+
+	// Define KMOLE units : uM.um3/molecules - VCell (required in exported SBML for other tools).
+	unitDefn = SBMLUnitTranslator.getSBMLUnitDefinition(VCUnitDefinition.UNIT_uM_um3_per_molecules);
 	sbmlModel.addUnitDefinition(unitDefn);
 
 	// Add units from paramater list in kinetics
 	ArrayList<String> unitList = new ArrayList<String>();
 	unitList.add(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_molecules.getSymbol()));
-	unitList.add(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_umol_L_per_um3.getSymbol()));
+	unitList.add(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_umol_um3_per_L.getSymbol()));
 	unitList.add(cbit.util.TokenMangler.mangleToSName(VCUnitDefinition.UNIT_um2.getSymbol()));
 	addKineticParameterUnits(unitList);
 }
@@ -696,7 +819,6 @@ private boolean getBoundaryCondition(SpeciesContext speciesContext) {
 	}
 	
 	// Get the speciesContextSpec in the simContext corresponding to the 'speciesContext'; and extract its boundary condition value.
-	
 	cbit.vcell.mapping.SpeciesContextSpec[] vcSpeciesContextsSpecs = simContext.getReactionContext().getSpeciesContextSpecs();
 	for (int i = 0; i < vcSpeciesContextsSpecs.length; i++){
 		if (speciesContext.compareEqual(vcSpeciesContextsSpecs[i].getSpeciesContext())) {
@@ -781,24 +903,20 @@ private SimulationContext getMatchingSimContext() {
 	return simContext;
 }
 
-
-/**
- * VC_to_SB_Translator constructor comment.
- */
 public String getSBMLFile() {
 
 	// Create the sbmlModel, so that other details can be added to it in translateBioModel()
-	sbmlModel = new org.sbml.libsbml.Model(TokenMangler.mangleToSName(vcBioModel.getName()));
+	sbmlModel = new Model(TokenMangler.mangleToSName(vcBioModel.getName()));
 	sbmlModel.setName(vcBioModel.getName());
 	translateBioModel();
 
-	Element annotationElement = null;
-	String sbmlAnnotationString = sbmlModel.getAnnotationString();
-	if(sbmlAnnotationString == null || sbmlAnnotationString.length() == 0){
-		annotationElement = new Element(XMLTags.SbmlAnnotationTag, "");
-	}else{
-		annotationElement = XmlUtil.stringToXML(sbmlAnnotationString, null);
-	}
+//	Element annotationElement = null;
+//	String sbmlAnnotationString = sbmlModel.getAnnotationString();
+//	if(sbmlAnnotationString == null || sbmlAnnotationString.length() == 0){
+//		annotationElement = new Element(XMLTags.SbmlAnnotationTag, "");
+//	}else{
+//		annotationElement = XmlUtil.stringToXML(sbmlAnnotationString, null);
+//	}
 //	MIRIAMHelper.addToSBML(annotationElement, vcBioModel.getMIRIAMAnnotation(), false);
 //	sbmlModel.setAnnotation(XmlUtil.xmlToString(annotationElement, true));
 
@@ -807,13 +925,17 @@ public String getSBMLFile() {
 	//
 	// ***** Can use a different constructor to set level and version *****
 	//
-	SBMLDocument sbmlDocument = new org.sbml.libsbml.SBMLDocument(sbmlLevel,sbmlVersion);
+	SBMLDocument sbmlDocument = new SBMLDocument(sbmlLevel,sbmlVersion);
 	sbmlDocument.setModel(sbmlModel);
 
-	org.sbml.libsbml.SBMLWriter sbmlWriter = new org.sbml.libsbml.SBMLWriter();
+	SBMLWriter sbmlWriter = new SBMLWriter();
 	String sbmlStr = sbmlWriter.writeToString(sbmlDocument);
 
 	generateErrorReport(sbmlDocument);
+	System.out.println("\n\nSBML Export Error Report");
+	OStringStream oStrStream = new OStringStream();
+	sbmlDocument.printErrors(oStrStream);
+	System.out.println(oStrStream.str());
 
 	sbmlModel.delete();
 	sbmlDocument.delete();
@@ -830,24 +952,6 @@ public String getSBMLFile() {
  */
 public java.lang.String getVcPreferredSimContextName() {
 	return vcPreferredSimContextName;
-}
-
-
-/**
- * 	isInFeature : 
- *	Check if the speciesStructure is a Feature or membrane, 
- *	Return 'true' if the species is in a feature; 'false' if species is in a membrane
- **/
-private boolean isInFeature(String speciesStructureName) {
-	Structure[] vcStructures = vcBioModel.getModel().getStructures();
-	for (int i = 0; i < vcStructures.length; i++){
-		if (vcStructures[i] instanceof Feature && speciesStructureName.equals(vcStructures[i].getName())) {
-			return true;
-		} else if (vcStructures[i] instanceof Membrane && speciesStructureName.equals(vcStructures[i].getName())) {
-			return false;
-		}
-	}
-	return false;
 }
 
 

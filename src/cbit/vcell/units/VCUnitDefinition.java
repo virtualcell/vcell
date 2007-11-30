@@ -1,19 +1,26 @@
 package cbit.vcell.units;
-import ucar.units.*;
-import ucar.units.TimeScaleUnit;
-import ucar.units.OffsetUnit;
-import cbit.util.Matchable;
-
-import ucar.units.DerivedUnitImpl;
-import ucar.units.ScaledUnit;
-import ucar.units.StandardUnitFormat;
-import ucar.units.SI;
-import ucar.units.Unit;
-import ucar.units.UnitException;
-import ucar.units.UnitName;
-
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
+
+import ucar.units.Base;
+import ucar.units.BaseQuantity;
+import ucar.units.BaseUnit;
+import ucar.units.DerivedUnitImpl;
+import ucar.units.Dimension;
+import ucar.units.Factor;
+import ucar.units.OffsetUnit;
+import ucar.units.ParseException;
+import ucar.units.QuantityDimension;
+import ucar.units.RationalNumber;
+import ucar.units.ScaledUnit;
+import ucar.units.StandardUnitFormat;
+import ucar.units.TimeScaleUnit;
+import ucar.units.Unit;
+import ucar.units.UnitDimension;
+import ucar.units.UnitException;
+import ucar.units.UnitName;
+import cbit.util.Matchable;
 
 /**
  The wrapper around a ucar unit.
@@ -58,6 +65,7 @@ public class VCUnitDefinition implements Matchable, Serializable {
     public static final VCUnitDefinition UNIT_molecules;
     public static final VCUnitDefinition UNIT_molecules_per_s;
     public static final VCUnitDefinition UNIT_molecules_per_um2;
+    public static final VCUnitDefinition UNIT_molecules_per_um3;
     public static final VCUnitDefinition UNIT_um2_per_molecules_per_s;
     public static final VCUnitDefinition UNIT_um3_per_molecules_per_s;
     public static final VCUnitDefinition UNIT_molecules_per_um2_per_s;
@@ -80,9 +88,10 @@ public class VCUnitDefinition implements Matchable, Serializable {
     public static final VCUnitDefinition UNIT_L;
     public static final VCUnitDefinition UNIT_mol;
     public static final VCUnitDefinition UNIT_umol;
-    public static final VCUnitDefinition UNIT_umol_L_per_um3;
+    public static final VCUnitDefinition UNIT_umol_um3_per_L;
+    
 
-    private static ArrayList defs;
+    private static ArrayList<VCUnitDefinition> defs;
     private final Unit ucarUnit;
     private final String forcedSymbol;
 
@@ -91,7 +100,7 @@ public class VCUnitDefinition implements Matchable, Serializable {
     static {
         numberFormatForRounding.setMaximumFractionDigits(12);
 
-        defs = new ArrayList();
+        defs = new ArrayList<VCUnitDefinition>();
 
         VCUnitDefinition unit_s = null;
         VCUnitDefinition unit_M = null;
@@ -123,6 +132,7 @@ public class VCUnitDefinition implements Matchable, Serializable {
         VCUnitDefinition unit_molecules = null;
         VCUnitDefinition unit_molecules_per_s = null;
         VCUnitDefinition unit_molecules_per_um2 = null;
+        VCUnitDefinition unit_molecules_per_um3 = null;
         VCUnitDefinition unit_um2_per_molecules_per_s = null;
         VCUnitDefinition unit_um3_per_molecules_per_s = null;
         VCUnitDefinition unit_molecules_per_um2_per_s = null;
@@ -145,7 +155,8 @@ public class VCUnitDefinition implements Matchable, Serializable {
         VCUnitDefinition unit_L = null;
         VCUnitDefinition unit_mol = null;
         VCUnitDefinition unit_umol = null;
-        VCUnitDefinition unit_umol_L_per_um3 = null;
+        VCUnitDefinition unit_umol_um3_per_L = null;
+   
         try {
             //prefixDB = ucar.units.PrefixDBManager.instance();
             ucar.units.UnitDB unitDB = ucar.units.UnitSystemManager.instance().getUnitDB();
@@ -184,6 +195,7 @@ public class VCUnitDefinition implements Matchable, Serializable {
             unit_molecules = new VCUnitDefinition("molecules");
             unit_molecules_per_s = new VCUnitDefinition("molecules.s-1");
             unit_molecules_per_um2 = new VCUnitDefinition("molecules.um-2");
+            unit_molecules_per_um3 = new VCUnitDefinition("molecules.um-3");
             unit_um2_per_molecules_per_s = new VCUnitDefinition("um2.molecules-1.s-1");
             unit_um3_per_molecules_per_s = new VCUnitDefinition("um3.molecules-1.s-1");
             unit_molecules_per_um2_per_s = new VCUnitDefinition("molecules.um-2.s-1");
@@ -206,7 +218,7 @@ public class VCUnitDefinition implements Matchable, Serializable {
             unit_L = new VCUnitDefinition("litre");
             unit_mol = new VCUnitDefinition("mol");
             unit_umol = new VCUnitDefinition("umol");
-            unit_umol_L_per_um3 = new VCUnitDefinition("umol.litre.um-3");
+            unit_umol_um3_per_L = new VCUnitDefinition("umol.um3.litre-1");
         } catch (Throwable e) {
             e.printStackTrace(System.out);
         }
@@ -240,6 +252,7 @@ public class VCUnitDefinition implements Matchable, Serializable {
         UNIT_molecules = unit_molecules;
         UNIT_molecules_per_s = unit_molecules_per_s;
         UNIT_molecules_per_um2 = unit_molecules_per_um2;
+        UNIT_molecules_per_um3 = unit_molecules_per_um3;
         UNIT_um2_per_molecules_per_s = unit_um2_per_molecules_per_s;
         UNIT_um3_per_molecules_per_s = unit_um3_per_molecules_per_s;
         UNIT_molecules_per_um2_per_s = unit_molecules_per_um2_per_s;
@@ -262,7 +275,7 @@ public class VCUnitDefinition implements Matchable, Serializable {
         UNIT_L = unit_L;
         UNIT_mol = unit_mol;
         UNIT_umol = unit_umol;
-        UNIT_umol_L_per_um3 = unit_umol_L_per_um3;
+        UNIT_umol_um3_per_L = unit_umol_um3_per_L;
     }
 
 //
@@ -310,7 +323,10 @@ private VCUnitDefinition(String argSymbol) {
 		this.forcedSymbol = null;
 	}
 
-
+	public static Iterator<VCUnitDefinition> getKnownUnits() {
+		return defs.iterator();
+	}
+	
 	public boolean compareEqual(Matchable matchUnitDef) {
 
 		if (this == matchUnitDef){

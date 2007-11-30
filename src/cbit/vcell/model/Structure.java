@@ -176,6 +176,9 @@ public cbit.vcell.parser.SymbolTableEntry getLocalEntry(java.lang.String identif
 Model getModel() {
 	return fieldModel;
 }
+
+public abstract int getDimension();
+
 /**
  * Gets the name property (java.lang.String) value.
  * @return The name property value.

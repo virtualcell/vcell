@@ -22,6 +22,8 @@ import java.util.Vector;
 import org.sbml.libsbml.*;
 import org.sbml.libsbml.Parameter;
 import org.sbml.libsbml.Species;
+import org.vcell.sbml.SBMLUtils;
+import org.vcell.sbml.SBMLUtils.SBMLUnitParameter;
 
 import cbit.util.BeanUtils;
 import cbit.util.TokenMangler;
@@ -617,13 +619,13 @@ protected void addReactions() {
 				   the 'dimensionless' scale factor (see next step below) */
 				if (kLawSubstanceUnit.isCompatible(VCUnitDefinition.UNIT_mol)) {
 					if (reactionStructure instanceof Membrane) {
-						VC_RateUnit = VC_RateUnit.multiplyBy(KmoleUnits);
-						vcRateExpression = Expression.mult(vcRateExpression, new Expression(ReservedSymbol.KMOLE.getName()));
+						SBML_RateUnit = SBML_RateUnit.divideBy(KmoleUnits);
+						vcRateExpression = Expression.mult(vcRateExpression, Expression.invert(new Expression(ReservedSymbol.KMOLE.getName())));
 					} 
 				} else if (kLawSubstanceUnit.isCompatible(VCUnitDefinition.UNIT_molecules)) {
-					if (reactionStructure instanceof Feature) {
-						VC_RateUnit = VC_RateUnit.divideBy(KmoleUnits);
-						vcRateExpression = Expression.mult(vcRateExpression, Expression.invert(new Expression(ReservedSymbol.KMOLE.getName())));
+					if ( (reactionStructure instanceof Feature) || (reactionStructure instanceof Membrane && vcReactions[i] instanceof FluxReaction) ) {
+						SBML_RateUnit = SBML_RateUnit.multiplyBy(KmoleUnits);
+						vcRateExpression = Expression.mult(vcRateExpression, new Expression(ReservedSymbol.KMOLE.getName()));
 					} 
 				}
 
@@ -704,7 +706,7 @@ protected void addReactions() {
 					kinetics.getKineticsParameter(SBMLFACTOR_PARAMETER).setUnitDefinition(rateFactorUnit);
 				}
 			} else {
-				logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.UNIT_ERROR, "Unable to scale the unit for kinetic rate: " + VC_RateUnit.getSymbol() + " " + SBML_RateUnit.getSymbol());
+				logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.UNIT_ERROR, "Unable to scale the unit for kinetic rate: " + VC_RateUnit.getSymbol() + " -> " + SBML_RateUnit.getSymbol());
 			}
 			
 			//  ************ <<<< Scale units of SPECIES in all expressions to VC concentration units ************
@@ -757,29 +759,37 @@ protected void addReactions() {
 									VC_conc_unit = VCUnitDefinition.UNIT_molecules_per_um2;
 								}
 
-								double concScaleFactor = 1.0;
 								/* the expr from SBML is in terms of SBML units; VC interprets concs in uM, but we have to translate them back to SBML units 
 								   within the expr; then we translate the SBML rate units into VCell units.
 								   we convert concs into SBML (using 'sp_conc_factor'); so that the SBML expression is consistent; then we translate the SBML expression 
 								   into VCell units (using 'sbmlRateFactor') */
-								if (VC_conc_unit.isCompatible(SBML_conc_unit)) {
-									concScaleFactor = VC_conc_unit.convertTo(concScaleFactor, SBML_conc_unit);
-									VCUnitDefinition concScaleFactorUnit = SBML_conc_unit.divideBy(VC_conc_unit);
-									if (concScaleFactor == 1.0 && concScaleFactorUnit.equals(VCUnitDefinition.UNIT_DIMENSIONLESS)) {
-										// If the factor is 1 and unit conversion evaluates to 1 ( => No conversion is required), we don't need to include that factor
+								SBMLUnitParameter concScaleFactor = SBMLUtils.getConcUnitFactor("spConcUnit", VC_conc_unit, SBML_conc_unit);
+								if ((concScaleFactor.getExpression().evaluateConstant() == 1.0 && concScaleFactor.getUnitDefinition().compareEqual(VCUnitDefinition.UNIT_DIMENSIONLESS)) ) {
+									// if VC unit IS compatible with SBML unit and factor is 1 and unit conversion is 1
+									// No conversion is required, and we don't need to include a concentration scale factor for the species.
+								} else {
+									// Substitute any occurance of speciesName in rate expression for kinetics with 'speciesName*concScaleFactor'
+									// * Get current rate expression from kinetics, substitute corresponding values, re-set kinetics expression *
+									String CONCFACTOR_PARAMETER = species.getId() + "_ConcFactor";
+									// Check if this parameter is in the local param list of kLaw
+									Parameter localParam = kLaw.getParameter(CONCFACTOR_PARAMETER);
+									if (localParam != null) {
+										// the concentration factor for this species already exists; multiply species with the 
+										// new concentration factor value and substitute it in rate expression. For eg., if the concFactor 
+										// for species 's1' has a value 'V1' and si_ConcFactor exists in local params, substitute
+										// 's1*V1' in place of 's1' in rate expression, and leave s1_ConcFactor as is.
+										Expression newRateExpr = kinetics.getAuthoritativeParameter().getExpression();
+										Expression modifiedSpeciesExpression = Expression.mult(new Expression(species.getId()), concScaleFactor.getExpression());
+										newRateExpr.substituteInPlace(new Expression(species.getId()), modifiedSpeciesExpression);
+										kinetics.setParameterValue(kinetics.getAuthoritativeParameter(), newRateExpr);
 									} else {
-										// Substitute any occurance of speciesName in rate expression for kinetics with 'speciesName*concScaleFactor'
-										// * Get current rate expression from kinetics, substitute corresponding values, re-set kinetics expression *
-										String CONCFACTOR_PARAMETER = species.getId() + "_ConcFactor";
 										Expression newRateExpr = kinetics.getAuthoritativeParameter().getExpression();
 										newRateExpr.substituteInPlace(new Expression(species.getId()), new Expression(species.getId()+"*"+CONCFACTOR_PARAMETER));
 										kinetics.setParameterValue(kinetics.getAuthoritativeParameter(), newRateExpr);
 										// Add the concentration factor as a parameter
-										kinetics.setParameterValue(kinetics.getKineticsParameter(CONCFACTOR_PARAMETER), new Expression(concScaleFactor));
-										kinetics.getKineticsParameter(CONCFACTOR_PARAMETER).setUnitDefinition(concScaleFactorUnit);
+										kinetics.setParameterValue(kinetics.getKineticsParameter(CONCFACTOR_PARAMETER), concScaleFactor.getExpression());
+										kinetics.getKineticsParameter(CONCFACTOR_PARAMETER).setUnitDefinition(concScaleFactor.getUnitDefinition());
 									}
-								} else {
-									logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.UNIT_ERROR, "Unable to scale the unit for species concentration: " + VC_conc_unit.getSymbol() + " " + SBML_conc_unit.getSymbol());
 								}
 							}
 						}
@@ -797,12 +807,12 @@ protected void addReactions() {
 				if (kinetics.getKineticsParameter(paramName) != null) {
 					double value = param.getValue();
 					
-					// Check if param is defined by a rule. If so, that value overrides the value existing in the param element.
+					// Check if param is defined by a rule. If so, that expression overrides the value existing in the param element.
 					Expression valueExpr = getValueFromRule(paramName);
 					if (valueExpr == null) {
 						valueExpr = new Expression(value);
 					}
-					
+
 					// Check if expression for parameter (if from rule) has species in its symbols. If so, we need to
 					// consider the unit conversion factor for those species.
 				    HashSet<String> refSpeciesNameHash = new HashSet<String>(); 
@@ -812,29 +822,47 @@ protected void addReactions() {
 					while (refSpIterator.hasNext()) {
 				    	String spName = refSpIterator.next();
 				    	Species sp = sbmlModel.getSpecies(spName);
-						double concScaleFactor_1 = 1.0;
 						SBVCConcentrationUnits sbvcSubstUnits = speciesUnitsHash.get(sp.getId());
 						VCUnitDefinition vcUnit = sbvcSubstUnits.getVCConcentrationUnits();
 						VCUnitDefinition sbUnit = sbvcSubstUnits.getSBConcentrationUnits();
-						if (vcUnit.isCompatible(sbUnit)) {
-							concScaleFactor_1 = vcUnit.convertTo(concScaleFactor_1, sbUnit);
-							VCUnitDefinition concScaleFactorUnit_1 = sbUnit.divideBy(vcUnit);
-							if (concScaleFactor_1 == 1.0 && concScaleFactorUnit_1.getSymbol().equals("1")) {
-								// If the factor is 1 and unit conversion evaluates to 1 ( => No conversion is required), we don't need to include that factor
-							} else {
-								// Substitute any occurance of speciesName in rate expression for kinetics with 'speciesName*concScaleFactor'
-								// * Get current rate expression from kinetics, substitute corresponding values, re-set kinetics expression *
-								String CONCFACTOR_PARAMETER = sp.getId() + "_ConcFactor";
-								valueExpr.substituteInPlace(new Expression(sp.getId()), new Expression(sp.getId()+"*"+CONCFACTOR_PARAMETER));
-								kinetics.setParameterValue(paramName,valueExpr.infix());
-								// Add the concentration factor as a parameter
-								kinetics.setParameterValue(kinetics.getKineticsParameter(CONCFACTOR_PARAMETER), new Expression(concScaleFactor_1));
-								kinetics.getKineticsParameter(CONCFACTOR_PARAMETER).setUnitDefinition(concScaleFactorUnit_1);
-								spCount++;
-							}
+						
+						/* the expr from SBML is in terms of SBML units; VC interprets concs in uM, but we have to translate them back to SBML units 
+						   within the expr; then we translate the SBML rate units into VCell units.
+						   we convert concs into SBML (using 'sp_conc_factor'); so that the SBML expression is consistent; then we translate the SBML expression 
+						   into VCell units (using 'sbmlRateFactor') */
+						SBMLUnitParameter concScaleFactor_1 = SBMLUtils.getConcUnitFactor("spConcFactor", vcUnit, sbUnit);
+						if ((concScaleFactor_1.getExpression().evaluateConstant() == 1.0 && concScaleFactor_1.getUnitDefinition().compareEqual(VCUnitDefinition.UNIT_DIMENSIONLESS)) ) {
+							// if VC unit IS compatible with SBML unit and factor is 1 and unit conversion is 1
+							// No conversion is required, and we don't need to include a concentration scale factor for the species.
 						} else {
-							logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.UNIT_ERROR, "Unable to scale the unit for species concentration: " + vcUnit.getSymbol() + " " + sbUnit.getSymbol());
+							// Substitute any occurance of speciesName in rate expression for kinetics with 'speciesName*concScaleFactor'
+							// * Get current rate expression from kinetics, substitute corresponding values, re-set kinetics expression *
+							String CONCFACTOR_PARAMETER = sp.getId() + "_ConcFactor";
+							// Check if this parameter is in the local param list of kLaw
+							Parameter localParam = kLaw.getParameter(CONCFACTOR_PARAMETER);
+							Parameter globalParam = sbmlModel.getParameter(CONCFACTOR_PARAMETER + "_" + rxnName);
+							if (localParam != null || globalParam != null) {
+								// the concentration factor for this species already exists; multiply species with the 
+								// new concentration factor value and substitute it in param expression. For eg., if the concFactor 
+								// for species 's1' has a value 'V1' and si_ConcFactor exists , substitute
+								// 's1*V1' in place of 's1' in param expression; leaving s1_ConcFactor as is.
+								Expression modifiedSpeciesExpression = Expression.mult(new Expression(sp.getId()), concScaleFactor_1.getExpression());
+								valueExpr.substituteInPlace(new Expression(sp.getId()), modifiedSpeciesExpression);
+								kinetics.setParameterValue(paramName,valueExpr.infix());
+								spCount++;
+							} else {
+								// Check if valueExpr has the species, if so, add the species conc factor, else, do nothing.
+								if (valueExpr.hasSymbol(spName)) {
+									valueExpr.substituteInPlace(new Expression(sp.getId()), new Expression(sp.getId()+"*"+CONCFACTOR_PARAMETER));
+									kinetics.setParameterValue(paramName,valueExpr.infix());
+									// Add the concentration factor as a parameter
+									kinetics.setParameterValue(kinetics.getKineticsParameter(CONCFACTOR_PARAMETER), concScaleFactor_1.getExpression());
+									kinetics.getKineticsParameter(CONCFACTOR_PARAMETER).setUnitDefinition(concScaleFactor_1.getUnitDefinition());
+									spCount++;
+								}
+							}
 						}
+
 						// If this species is not already a reactant or product or modifier for the reaction, but 
 						// occurs in an assignment rule of a parameter, add it as a catalyst.
 						if (vcReactions[i].getReactionParticipantFromSymbol(sp.getId()) == null) {
@@ -863,6 +891,7 @@ protected void addReactions() {
 							kinetics.getKineticsParameter(exprSymbols[kk]).setUnitDefinition(getSBMLUnit(sbmlModel.getParameter(exprSymbols[kk]).getUnits(), null));
 						}
 					}
+					
 					// finally, set the units for the parameter.
 					VCUnitDefinition paramUnit = getSBMLUnit(param.getUnits(),null);
 					kinetics.getKineticsParameter(paramName).setUnitDefinition(paramUnit);
@@ -1054,26 +1083,26 @@ public static double getSpeciesConcUnitFactor(VCUnitDefinition fromUnit, VCUnitD
 				
 				Expression initExpr = null;
 				if (sbmlSpecies.isSetInitialConcentration()) { 		// If initial Concentration is set
-					double initConcentration = sbmlSpecies.getInitialConcentration();
-					double factor = getSpeciesConcUnitFactor(SBConcUnit, vcUnit);
-					initConcentration = initConcentration * factor;
+					Expression initConcentration = new Expression(sbmlSpecies.getInitialConcentration());
+					SBMLUnitParameter unitFactor = SBMLUtils.getConcUnitFactor("spConcUnitFactor", SBConcUnit, vcUnit);
+					initConcentration = Expression.mult(initConcentration, unitFactor.getExpression());
 					initExpr = getValueFromRule(speciesName);
 					if (initExpr == null) {
 						initExpr = new Expression(initConcentration);
 					} else {
-						initExpr = Expression.mult(initExpr, new Expression(factor));
+						initExpr = Expression.mult(initExpr, unitFactor.getExpression());
 					}
 				} else if (sbmlSpecies.isSetInitialAmount()) {		// If initial amount is set
 					double initAmount = sbmlSpecies.getInitialAmount();
 
 					if (compartment.isSetSize()) {
 						double compartmentSize = compartment.getSize();
-						double initConcentration = 0.0;
-						double factor = 1.0;
+						Expression initConcentration = new Expression(0.0);
+						SBMLUnitParameter factor = null;
 						if (compartmentSize != 0.0) {
-							initConcentration = initAmount / compartmentSize;
-							factor = getSpeciesConcUnitFactor(SBConcUnit, vcUnit);
-							initConcentration = initConcentration * factor;
+							initConcentration = new Expression(initAmount / compartmentSize);
+							factor = SBMLUtils.getConcUnitFactor("spConcUnitParam", SBConcUnit, vcUnit);
+							initConcentration = Expression.mult(initConcentration, factor.getExpression());
 						} else {
 							logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.UNIT_ERROR, "compartment "+compartment.getId()+" has zero size, unable to determine initial concentration for species "+speciesName);
 						}
@@ -1081,7 +1110,7 @@ public static double getSpeciesConcUnitFactor(VCUnitDefinition fromUnit, VCUnitD
 						if (initExpr == null) {
 							initExpr = new Expression(initConcentration);
 						} else {
-							initExpr = Expression.mult(initExpr, new Expression(factor));
+							initExpr = Expression.mult(initExpr, factor.getExpression());
 						}
 					} else {
 						logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.SPECIES_ERROR, " Compartment " + compartment.getId() + " size not set or is defined by a rule; cannot calculate initConc.");
@@ -1095,18 +1124,20 @@ public static double getSpeciesConcUnitFactor(VCUnitDefinition fromUnit, VCUnitD
 					}
 
 					// Units for initial conc or amt if it is specified by an assignment rule
-					double factor = 1.0;
+					SBMLUnitParameter factor = null;
+					Expression adjustedFactorExpr = null;
 					if (dimension != 0 && !sbmlSpecies.getHasOnlySubstanceUnits()) {
 						// Init conc : 'hasOnlySubstanceUnits' should be false and spatial dimension of compartment should be non-zero.
-						factor = getSpeciesConcUnitFactor(SBConcUnit, vcUnit);
+						factor = SBMLUtils.getConcUnitFactor("spConcFactor", SBConcUnit, vcUnit);
+						adjustedFactorExpr = factor.getExpression();
 					} else if (dimension == 0 || sbmlSpecies.getHasOnlySubstanceUnits()) {
 						// Init Amount : 'hasOnlySubstanceUnits' should be true or spatial dimension of compartment should zero.
 						if (compartment.isSetSize()) {
 							double compartmentSize = compartment.getSize();
 							if (compartmentSize != 0.0) {
 								// initConcentration := initAmount / compartmentSize
-								factor = getSpeciesConcUnitFactor(SBConcUnit, vcUnit);
-								factor /= compartmentSize;
+								factor = SBMLUtils.getConcUnitFactor("spConcFactor", SBConcUnit, vcUnit);
+								adjustedFactorExpr = Expression.mult(factor.getExpression(), Expression.invert(new Expression(compartmentSize)));
 							} else {
 								logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.UNIT_ERROR, "compartment "+compartment.getId()+" has zero size, unable to determine initial concentration for species "+speciesName);
 							}
@@ -1114,7 +1145,7 @@ public static double getSpeciesConcUnitFactor(VCUnitDefinition fromUnit, VCUnitD
 							logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.SPECIES_ERROR, " Compartment " + compartment.getId() + " size not set or is defined by a rule; cannot calculate initConc.");
 						}
 					} // else, there is nothing else to happen.
-					initExpr = Expression.mult(initExpr, new Expression(factor));
+					initExpr = Expression.mult(initExpr, adjustedFactorExpr);
 				}
 
 				// If any of the symbols in the expression for speciesConc is a rule, expand it.
@@ -1194,44 +1225,6 @@ private Expression removeCompartmentScaleFactorInRxnRateExpr(Expression rateExpr
 	return expr1;
 }
 
-
-/**
- *  checkSpeciesHasSubstanceOnly :
- *		Check if reactant or product species has the 'hasOnlySubstanceUnits' flag set. Get reactants, products in the sbml reaction,
- *		check for the corresponding species in sbmlModel, and check if that flag is set. (checking only reactants and products, since
- *		if a species occurs in a reaction not as a reactant or a product, it is added as a modifier/catalyst; in which case, it doesn't 
- *		actually participate in the reaction).  
- **/
-private boolean checkSpeciesHasSubstanceOnly(Reaction sbmlRxn) throws ExpressionException {
-	// Check if any reactant species has 'hasOnlySubstanceUnits' set
-	for (int i = 0; i < (int)sbmlRxn.getNumReactants(); i++){
-		SpeciesReference reactRef = sbmlRxn.getReactant(i);
-		org.sbml.libsbml.Species sp = sbmlModel.getSpecies(reactRef.getSpecies());
-		if (sp.getHasOnlySubstanceUnits()) {
-			return true;
-		}
-	}
-	// Check if any product species has 'hasOnlySubstanceUnits' set
-	for (int i = 0; i < (int)sbmlRxn.getNumProducts(); i++){
-		SpeciesReference pdtRef = sbmlRxn.getProduct(i);
-		org.sbml.libsbml.Species sp = sbmlModel.getSpecies(pdtRef.getSpecies());
-		if (sp.getHasOnlySubstanceUnits()) {
-			return true;
-		}
-	}
-	// Check if reaction rate has any species that has 'hasOnlySubstanceUnits' set
-	Expression rateExpression = getExpressionFromFormula(sbmlRxn.getKineticLaw().getMath());
-	SpeciesContext[] vcSpContexts = simContext.getModel().getSpeciesContexts();
-	for (int i = 0; i < vcSpContexts.length; i++){
-		if (rateExpression.hasSymbol(vcSpContexts[i].getName())) {
-			org.sbml.libsbml.Species sp = sbmlModel.getSpecies(vcSpContexts[i].getName());
-			if (sp.getHasOnlySubstanceUnits()) {
-				return true;
-			}
-		}
-	}
-	return false;
-}
 
 /**
  * resolveRxnParameterNameConflicts :
@@ -1374,6 +1367,9 @@ public BioModel getBioModel() {
 	// Read SBML model into libSBML SBMLDocument and create an SBML model
 	SBMLReader reader = new SBMLReader();
 	SBMLDocument document = reader.readSBMLFromString(sbmlString);
+	
+	long numProblems = document.checkConsistency();
+	System.out.println("\n Num problems in original SBML document : " + numProblems + "\n");
 
 	sbmlModel = document.getModel();
 	

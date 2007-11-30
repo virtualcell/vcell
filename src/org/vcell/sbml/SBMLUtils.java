@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -18,11 +17,64 @@ import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
 
+import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.NameScope;
+import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.units.VCUnitDefinition;
+
 public abstract class SBMLUtils {
 
 	public static final String SBML_NS_1 = "http://www.sbml.org/sbml/level1";
 	public static final String SBML_NS_2 = "http://www.sbml.org/sbml/level2";
 	public static final String SBML_VCML_NS = "http://www.sbml.org/2001/ns/vcell";
+	
+	public static class SBMLUnitParameter implements SymbolTableEntry {
+		private String paramName = null;
+		private cbit.vcell.parser.Expression paramExpression = null;
+		private cbit.vcell.parser.NameScope paramNameScope = null;
+		private cbit.vcell.units.VCUnitDefinition paramUnitDefinition = null;
+		
+		public SBMLUnitParameter(String argName, Expression argExpr,  VCUnitDefinition argUnitDefn, NameScope argNameScope) {
+			if (argName == null){
+				throw new IllegalArgumentException("parameter name is null");
+			}
+			if (argName.length()<1){
+				throw new IllegalArgumentException("parameter name is zero length");
+			}
+			this.paramName = argName;
+			this.paramExpression = argExpr;
+			this.paramUnitDefinition = argUnitDefn;
+			this.paramNameScope = argNameScope;
+		}
+		public SBMLUnitParameter(String argName, Expression argExpr,  VCUnitDefinition argUnitDefn) {
+			this(argName, argExpr, argUnitDefn, null);
+		}
+		
+		public cbit.vcell.parser.Expression getExpression() {
+			return this.paramExpression;
+		}
+		public int getIndex() {
+			return -1;
+		}
+		public String getName(){ 
+			return this.paramName; 
+		}   
+		public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
+			return paramUnitDefinition;
+		}
+		public cbit.vcell.parser.NameScope getNameScope() {
+			return paramNameScope;
+		}
+		public double getConstantValue() throws ExpressionException {
+			return 0;
+		}
+		public boolean isConstant() throws ExpressionException {
+			return false;
+		}
+	}
+	
 	public static void writeStringToFile(String xmlString, String filename) throws IOException {
 		File outputFile = new File(filename);
 		java.io.FileWriter fileWriter = new java.io.FileWriter(outputFile);
@@ -266,5 +318,40 @@ public abstract class SBMLUtils {
 	    return factorial;
 	}
 
+/**
+ * 	getConcUnitFactor : 
+ * 		Calculates species concentration unit conversion from 'fromUnit' to 'toUnit'. 
+ * 		If they are directly compatible, it computes the non-dimensional conversion factor/
+ * 		If the 'fromUnit' is in item and 'toUnit' is in moles, it checks compatibility of fromUnit/KMOLE with toUnit.
+ * 		Note : KMOLE is the Virtual VCell-defined reserved work (constant) = 1/602.
+ * 		If the 'toUnit' is in item and 'fromUnit' is in moles, it checks compatibility of fromUnit*KMOLE with toUnit.
+ * 		 
+ * @param fromUnit
+ * @param toUnit
+ * @return	non-dimensional (numerical) conversion factor
+ * @throws ExpressionException
+ */
+public static SBMLUnitParameter getConcUnitFactor(String name, VCUnitDefinition fromUnit, VCUnitDefinition toUnit) throws ExpressionException {
+	SBMLUnitParameter sbmlUnitsParam = null;
+	if (fromUnit.isCompatible(toUnit)) {
+		Expression factorExpr = new Expression(fromUnit.convertTo(1.0, toUnit));
+		sbmlUnitsParam = new SBMLUnitParameter(name, factorExpr, toUnit.divideBy(fromUnit));
+	} else if (fromUnit.divideBy(ReservedSymbol.KMOLE.getUnitDefinition()).isCompatible(toUnit)) {
+		// if SBML substance unit is 'item'; VC substance unit is 'moles'
+		fromUnit = fromUnit.divideBy(ReservedSymbol.KMOLE.getUnitDefinition());
+		Expression factorExpr = new Expression(fromUnit.convertTo(1.0, toUnit));
+		factorExpr = Expression.mult(factorExpr, Expression.invert(ReservedSymbol.KMOLE.getExpression()));
+		sbmlUnitsParam = new SBMLUnitParameter(name, factorExpr, toUnit.divideBy(fromUnit));
+	} else if (fromUnit.multiplyBy(ReservedSymbol.KMOLE.getUnitDefinition()).isCompatible(toUnit)) {
+		// if VC substance unit is 'item'; SBML substance unit is 'moles' 
+		fromUnit = fromUnit.multiplyBy(ReservedSymbol.KMOLE.getUnitDefinition());
+		Expression factorExpr = new Expression(fromUnit.convertTo(1.0, toUnit));
+		factorExpr = Expression.mult(factorExpr, ReservedSymbol.KMOLE.getExpression());
+		sbmlUnitsParam = new SBMLUnitParameter(name, factorExpr, toUnit.divideBy(fromUnit));
+	}  else {
+		throw new RuntimeException("Unable to scale the species unit from: " + fromUnit + " -> " + toUnit.getSymbol());
+	}
+	return sbmlUnitsParam;
+}	
 
 }
