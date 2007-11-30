@@ -373,7 +373,7 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 	if (fieldFuncArgs != null && fieldFuncArgs.length > 0) {
 		out.println();
 		for (int i = 0; i < fieldFuncArgs.length; i ++) {
-			out.println("FieldData* " + FieldDataIdentifierSpec.getGlobalVariableName_C(fieldFuncArgs[i]) + " = 0;");
+			out.println("FieldData* " + TokenMangler.getEscapedGlobalFieldVariableName_C(fieldFuncArgs[i]) + " = 0;");
 		}
 	}
 
@@ -391,7 +391,7 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 		out.println();
 		out.println("\tdelete SimulationMessaging::getInstVar();");	
 		for (int i = 0; i < fieldFuncArgs.length; i ++) {
-			out.println("\tdelete " + FieldDataIdentifierSpec.getGlobalVariableName_C(fieldFuncArgs[i]) + ";");
+			out.println("\tdelete " +  TokenMangler.getEscapedGlobalFieldVariableName_C(fieldFuncArgs[i]) + ";");
 		}
 		out.println();
 	}
@@ -460,15 +460,17 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 
 	if (fieldFuncArgs != null && fieldFuncArgs.length > 0) {
 		out.println();
+		out.println("\t\tchar tempString[1024];");
+			
 		for (int i = 0; i < fieldFuncArgs.length; i ++) {
 			String fieldName = fieldFuncArgs[i].getFieldName();
 			String varName = fieldFuncArgs[i].getVariableName();
 			File fieldFile = new File(baseDataName + FieldDataIdentifierSpec.getDefaultFieldDataFileNameForSimulation(fieldFuncArgs[i]));
 			String fieldDataID = "_VCell_FieldData_" + i;
-			String constructorArg = i + ",\"" + fieldDataID + "\",\"" + fieldName + "\",\"" + varName + "\"," + fieldFuncArgs[i].getTime().infix() + ",\"" + TokenMangler.getEscapedString_C(fieldFile.toString()) + "\"";		
-			out.println("\t\t" + FieldDataIdentifierSpec.getGlobalVariableName_C(fieldFuncArgs[i]) + " = new FieldData(" + constructorArg + ");");
-		}
-		out.println();
+			out.println("\t\tsprintf(tempString, \"%s%c" + fieldFile.getName() + "\\0\", outputPath, DIRECTORY_SEPARATOR);");
+			String constructorArg = i + ",\"" + fieldDataID + "\",\"" + fieldName + "\",\"" + varName + "\"," + fieldFuncArgs[i].getTime().infix() + ", tempString";		
+			out.println("\t\t" +  TokenMangler.getEscapedGlobalFieldVariableName_C(fieldFuncArgs[i]) + " = new FieldData(" + constructorArg + ");");
+		}		
 	}
 	
 	out.println();

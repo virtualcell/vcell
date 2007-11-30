@@ -3,7 +3,8 @@ package cbit.vcell.solvers;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.util.*;
+
+import cbit.util.TokenMangler;
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
 import cbit.vcell.solver.*;
@@ -74,26 +75,20 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 		Expression ic = getEquation().getInitialExpression();
 		ic.bindExpression(getSimulation());
 		double value = ic.evaluateConstant();
-		out.println("   initialValue = new double;");
-		out.println("   *initialValue = "+value+";");
+		out.println("\tinitialValue = new double;");
+		out.println("\t*initialValue = " + value + ";");
 	}catch (ExpressionException e){
-		out.println("   initialValue = NULL;");
+		out.println("\tinitialValue = NULL;");
 	}	
-	out.println("");
+	out.println();
 	Variable requiredVariables[] = getRequiredVariables();
 	for (int i = 0; i < requiredVariables.length; i++){
 		Variable var = requiredVariables[i];
-		if (var instanceof VolVariable){
-			out.println("   var_"+var.getName()+" = NULL;");
-		}
-		if (var instanceof MemVariable){
-			out.println("   var_"+var.getName()+" = NULL;");
-		}
-		if (var instanceof VolumeRegionVariable){
-			out.println("   var_"+var.getName()+" = NULL;");
-		}
-		if (var instanceof MembraneRegionVariable){
-			out.println("   var_"+var.getName()+" = NULL;");
+		if (var instanceof VolVariable 
+				|| var instanceof MemVariable
+				|| var instanceof VolumeRegionVariable
+				|| var instanceof MembraneRegionVariable) {
+			out.println("\t" + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + " = NULL;");
 		}
 	}		  	
 	out.println("}");
@@ -115,34 +110,34 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 	out.println("\t"+getClassName() + "(Feature *feature, string& speciesName);");
 	out.println("\tvirtual bool resolveReferences(Simulation *sim);");
 
-	BoundaryConditionType bc = null;
 	try {
 		Expression ic = getEquation().getInitialExpression();
 		ic.bindExpression(getSimulation());
 		double value = ic.evaluateConstant();
 	}catch (Exception e){
-		out.println("    virtual double getInitialValue(MembraneElement *memElement);");
+		out.println("\tvirtual double getInitialValue(MembraneElement *memElement);");
 	}
-	out.println("    virtual double getMembraneReactionRate(MembraneElement *memElement);");
-	out.println("    virtual double getUniformRate(MembraneRegion *memElement);");
-	out.println("    virtual void getFlux(MembraneElement *memElement, double *inFlux, double *outFlux);");
-	out.println(" private:");
+	out.println("\tvirtual double getMembraneReactionRate(MembraneElement *memElement);");
+	out.println("\tvirtual double getUniformRate(MembraneRegion *memElement);");
+	out.println("\tvirtual void getFlux(MembraneElement *memElement, double *inFlux, double *outFlux);");
+	out.println("private:");
 	Variable requiredVariables[] = getRequiredVariables();
 	for (int i = 0; i < requiredVariables.length; i++){
 		Variable var = requiredVariables[i];
+		String mangledVarName = TokenMangler.getEscapedFieldVariableName_C(var.getName());
 		if (var instanceof VolVariable){
-			out.println("    VolumeVariable      *var_"+var.getName()+";");
+			out.println("\tVolumeVariable *" + mangledVarName + ";");
 		}else if (var instanceof MemVariable){
-			out.println("    MembraneVariable    *var_"+var.getName()+";");
+			out.println("\tMembraneVariable *" + mangledVarName + ";");
 		}else if (var instanceof MembraneRegionVariable){
-			out.println("    MembraneRegionVariable    *var_"+var.getName()+";");
+			out.println("\tMembraneRegionVariable *" + mangledVarName + ";");
 		}else if (var instanceof VolumeRegionVariable){
-			out.println("    VolumeRegionVariable    *var_"+var.getName()+";");
+			out.println("\tVolumeRegionVariable *" + mangledVarName + ";");
 		}else if (var instanceof ReservedVariable){
 		}else if (var instanceof Constant){
 		}else if (var instanceof Function){
 		}else{
-			throw new Exception("unknown identifier type '"+var.getClass().getName()+"' for identifier: "+var.getName());
+			throw new Exception("unknown identifier type '" + var.getClass().getName()+"' for identifier: " + var.getName());
 		}	
 	}		  	
 	out.println("};");

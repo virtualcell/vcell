@@ -6,7 +6,6 @@ package cbit.vcell.parser;
 /* JJT: 0.2.2 */
 import java.util.Hashtable;
 
-import cbit.sql.Field;
 import cbit.util.TokenMangler;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.simdata.ExternalDataIdentifier;
@@ -2111,7 +2110,7 @@ public Node flatten() throws ExpressionException {
 	}
 	ASTFuncNode funcNode = new ASTFuncNode();
 	funcNode.funcType = funcType;
-	java.util.Vector tempChildren = new java.util.Vector();
+	java.util.Vector<Node> tempChildren = new java.util.Vector<Node>();
 
 	for (int i=0;i<jjtGetNumChildren();i++){
 		tempChildren.addElement(jjtGetChild(i).flatten());
@@ -2568,12 +2567,11 @@ public String infixString(int lang, NameScope nameScope) {
 		}
 	 	case FIELD: {
 		 	if (lang == LANGUAGE_C){
-			 	buffer.append(jjtGetChild(0).infixString(lang,nameScope));
-			 	buffer.append("_");
-			 	buffer.append(jjtGetChild(1).infixString(lang,nameScope));
-			 	buffer.append("_");
-			 	buffer.append(jjtGetChild(2).infixString(lang,nameScope));
-			 	return TokenMangler.fixTokenStrict(buffer.toString());
+			 	return TokenMangler.getEscapedLocalFieldVariableName_C(			 			
+			 				jjtGetChild(0).infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT),
+			 				jjtGetChild(1).infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT),
+			 				jjtGetChild(2).infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)			 				
+			 			);
 		 	} else {
 				buffer.append(getName() + "(");
 				for (int i=0;i<jjtGetNumChildren();i++){
@@ -2610,7 +2608,6 @@ public String infixString(int lang, NameScope nameScope) {
  *
  */
 public boolean narrow(RealInterval intervals[]) throws ExpressionBindingException{
-	boolean retcode = true;
 	switch (funcType){
 	case EXP: {
 		if (jjtGetNumChildren()!=1) throw new Error("exp() expects 1 argument");

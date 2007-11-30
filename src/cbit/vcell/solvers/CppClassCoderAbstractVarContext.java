@@ -5,7 +5,7 @@ package cbit.vcell.solvers;
 ©*/
 import java.util.*;
 
-import cbit.vcell.field.FieldDataIdentifierSpec;
+import cbit.util.TokenMangler;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
@@ -58,11 +58,11 @@ protected Variable[] getRequiredVariables() throws Exception {
 	//
 	// default implementation (need to override in VolumeVarContext)
 	//
-	Enumeration enum1 = equation.getRequiredVariables(simulation);
+	Enumeration<Variable> enum1 = equation.getRequiredVariables(simulation);
 
 	Vector<Variable> uniqueVarList = new Vector<Variable>();
 	while (enum1.hasMoreElements()) {
-		Variable var = (Variable)enum1.nextElement();
+		Variable var = enum1.nextElement();
 		if (var instanceof InsideVariable){
 			InsideVariable insideVar = (InsideVariable)var;
 			VolVariable volVar = (VolVariable)getSimulation().getVariable(insideVar.getVolVariableName());
@@ -163,54 +163,48 @@ protected void writeContourFunction(java.io.PrintWriter out, String functionName
 protected void writeContourFunctionDeclarations(java.io.PrintWriter out, String contourElementString, Expression exp) throws Exception {
 
 	boolean wc_defined = false;
-	Enumeration enum1 = simulation.getRequiredVariables(exp);
+	Enumeration<Variable> enum1 = simulation.getRequiredVariables(exp);
+	
+	String compute_wc =	
+		  "\tWorldCoord wc_begin = " + contourElementString + "->wc_begin;\n"	
+		+ "\tWorldCoord wc_end = " + contourElementString + "->wc_end;\n"	
+		+ "\tWorldCoord wc;\n"
+		+ "\twc.x = (wc_begin.x+wc_end.x)/2.0;\n"
+		+ "\twc.y = (wc_begin.y+wc_end.y)/2.0;\n"
+		+ "\twc.x = (wc_begin.z+wc_end.z)/2.0;";
 	
 	while (enum1.hasMoreElements()){
-		Variable var = (Variable)enum1.nextElement();
+		Variable var = enum1.nextElement();
 		if (var instanceof VolVariable){
-			out.println("   double "+var.getName()+" = var_"+var.getName()+"->getOld("+contourElementString+"->volumeIndex);");
+			out.println("\tdouble "+TokenMangler.getEscapedLocalVariableName_C(var.getName()) + " = " + TokenMangler.getEscapedFieldVariableName_C(var.getName())+"->getOld("+contourElementString+"->volumeIndex);");
 		}else if (var instanceof FilamentVariable){
-			out.println("   double "+var.getName()+" = var_"+var.getName()+"->getOld("+contourElementString+"->index);");
+			out.println("\tdouble "+TokenMangler.getEscapedLocalVariableName_C(var.getName()) + " = " + TokenMangler.getEscapedFieldVariableName_C(var.getName())+"->getOld("+contourElementString+"->index);");
 		}else if (var instanceof ReservedVariable){
 			//
 			// define reserved symbols (x,y,z,t)
 			//
 			ReservedVariable rv = (ReservedVariable)var;
+			String mangledVarName = TokenMangler.getEscapedLocalVariableName_C(rv.getName());
 			if (rv.isTIME()){
-				out.println("   double t = sim->getTime_sec();");
+				out.println("\tdouble " + mangledVarName + " = sim->getTime_sec();");
 			}else if (rv.isX()){
 				if (!wc_defined){
-					out.println("   WorldCoord wc_begin = "+contourElementString+"->wc_begin;");
-					out.println("   WorldCoord wc_end = "+contourElementString+"->wc_end;");
-					out.println("   WorldCoord wc;");
-					out.println("	wc.x = (wc_begin.x+wc_end.x)/2.0;");
-					out.println("	wc.y = (wc_begin.y+wc_end.y)/2.0;");
-					out.println("	wc.x = (wc_begin.z+wc_end.z)/2.0;");
+					out.println(compute_wc);
 					wc_defined = true;
 				}	
-				out.println("   double x = wc.x;");
+				out.println("\tdouble " + mangledVarName + " = wc.x;");
 			}else if (rv.isY()){
 				if (!wc_defined){
-					out.println("   WorldCoord wc_begin = "+contourElementString+"->wc_begin;");
-					out.println("   WorldCoord wc_end = "+contourElementString+"->wc_end;");
-					out.println("   WorldCoord wc;");
-					out.println("	wc.x = (wc_begin.x+wc_end.x)/2.0;");
-					out.println("	wc.y = (wc_begin.y+wc_end.y)/2.0;");
-					out.println("	wc.x = (wc_begin.z+wc_end.z)/2.0;");
+					out.println(compute_wc);
 					wc_defined = true;
 				}	
-				out.println("   double y = wc.y;");
+				out.println("\tdouble " + mangledVarName + " = wc.y;");
 			}else if (rv.isZ()){
 				if (!wc_defined){
-					out.println("   WorldCoord wc_begin = "+contourElementString+"->wc_begin;");
-					out.println("   WorldCoord wc_end = "+contourElementString+"->wc_end;");
-					out.println("   WorldCoord wc;");
-					out.println("	wc.x = (wc_begin.x+wc_end.x)/2.0;");
-					out.println("	wc.y = (wc_begin.y+wc_end.y)/2.0;");
-					out.println("	wc.x = (wc_begin.z+wc_end.z)/2.0;");
+					out.println(compute_wc);
 					wc_defined = true;
 				}	
-				out.println("   double z = wc.z;");
+				out.println("\tdouble " + mangledVarName + " = wc.z;");
 			}		
 		}		
 	}
@@ -232,8 +226,8 @@ private final void writeFieldFunctionDeclarations(java.io.PrintWriter out, Expre
 	FieldFunctionArguments[] fieldFuncArgs = exp.getFieldFunctionArguments();
 
 	for (int i = 0; fieldFuncArgs != null && i < fieldFuncArgs.length; i ++) {
-		String localvarname = FieldDataIdentifierSpec.getLocalVariableName_C(fieldFuncArgs[i]);
-		String globalvarname = FieldDataIdentifierSpec.getGlobalVariableName_C(fieldFuncArgs[i]);
+		String localvarname = TokenMangler.getEscapedLocalFieldVariableName_C(fieldFuncArgs[i]);
+		String globalvarname = TokenMangler.getEscapedGlobalFieldVariableName_C(fieldFuncArgs[i]);
 		out.println("\tdouble " + localvarname + " = " + globalvarname + "->getData()[" + indexString + "];");	
 	}
 }
@@ -255,10 +249,10 @@ protected final void writeMembraneFunction(java.io.PrintWriter out, String funct
 	Expression exp2 = simulation.substituteFunctions(exp).flatten();
 	writeMembraneFunctionDeclarations(out,"memElement",exp2,bFlipInsideOutside,"   ");
 
-	out.println("   return "+exp2.infix_C()+";");
+	out.println("\treturn "+exp2.infix_C()+";");
 		
 	out.println("}");
-	out.println("");
+	out.println();
 }
 
 
@@ -269,30 +263,30 @@ protected final void writeMembraneFunction(java.io.PrintWriter out, String funct
 protected final void writeMembraneFunctionDeclarations(java.io.PrintWriter out, String membraneElementString, Expression exp, boolean bFlipInsideOutside, String pad) throws Exception {
 
 	boolean wc_defined = false;
-	Enumeration enum1 = simulation.getRequiredVariables(exp);
+	Enumeration<Variable> enum1 = simulation.getRequiredVariables(exp);
 
 	while (enum1.hasMoreElements()){
-		Variable var = (Variable)enum1.nextElement();
+		Variable var = enum1.nextElement();
 		if (var instanceof OutsideVariable){
-			String outsideVarName = var.getName();
-			String volVar = ((OutsideVariable)var).getVolVariableName();
+			String outsideVarName = TokenMangler.getEscapedLocalVariableName_C(var.getName());
+			String volVarName = TokenMangler.getEscapedFieldVariableName_C(((OutsideVariable)var).getVolVariableName());
 			if (bFlipInsideOutside){
-				out.println(pad+"double "+outsideVarName+" = mesh->getInsideOld(var_"+volVar+","+membraneElementString+"); // ***** definition reversed");
+				out.println(pad+"double "+outsideVarName+" = mesh->getInsideOld(" + volVarName + ","+membraneElementString+"); // ***** definition reversed");
 			}else{
-				out.println(pad+"double "+outsideVarName+" = mesh->getOutsideOld(var_"+volVar+","+membraneElementString+");");
+				out.println(pad+"double "+outsideVarName+" = mesh->getOutsideOld(" + volVarName + ","+membraneElementString+");");
 			}
 		}if (var instanceof InsideVariable){
-			String insideVarName = var.getName();
-			String volVar = ((InsideVariable)var).getVolVariableName();
+			String insideVarName = TokenMangler.getEscapedLocalVariableName_C(var.getName());
+			String volVarName = TokenMangler.getEscapedFieldVariableName_C(((InsideVariable)var).getVolVariableName());
 			if (bFlipInsideOutside){
-				out.println(pad+"double "+insideVarName+" = mesh->getOutsideOld(var_"+volVar+","+membraneElementString+"); // ***** definition reversed");
+				out.println(pad+"double "+insideVarName+" = mesh->getOutsideOld(" + volVarName + "," + membraneElementString+"); // ***** definition reversed");
 			}else{
-				out.println(pad+"double "+insideVarName+" = mesh->getInsideOld(var_"+volVar+","+membraneElementString+");");
+				out.println(pad+"double "+insideVarName+" = mesh->getInsideOld(" + volVarName + "," + membraneElementString+");");
 			}
 		}else if (var instanceof MemVariable){
-			out.println(pad+"double "+var.getName()+" = var_"+var.getName()+"->getOld("+membraneElementString+"->index);");
+			out.println(pad+"double "+TokenMangler.getEscapedLocalVariableName_C(var.getName())+" = " + TokenMangler.getEscapedFieldVariableName_C(var.getName())+"->getOld("+membraneElementString+"->index);");
 		}else if (var instanceof MembraneRegionVariable){
-			out.println(pad+"double "+var.getName()+" = var_"+var.getName()+"->getOld("+membraneElementString+"->region->getId());");
+			out.println(pad+"double "+TokenMangler.getEscapedLocalVariableName_C(var.getName())+" = " + TokenMangler.getEscapedFieldVariableName_C(var.getName())+"->getOld("+membraneElementString+"->region->getId());");
 		}else if (var instanceof VolumeRegionVariable){
 			throw new RuntimeException("can't deal with VolumeRegionVariable in MembraneFunctionDeclaration(), no Inside/Outside specifications");
 		}else if (var instanceof ReservedVariable){
@@ -300,26 +294,27 @@ protected final void writeMembraneFunctionDeclarations(java.io.PrintWriter out, 
 			// define reserved symbols (x,y,z,t)
 			//
 			ReservedVariable rv = (ReservedVariable)var;
+			String mangledVarName = TokenMangler.getEscapedLocalVariableName_C(rv.getName());
 			if (rv.isTIME()){
-				out.println(pad+"double t = sim->getTime_sec();");
+				out.println(pad+"double " + mangledVarName + " = sim->getTime_sec();");
 			}else if (rv.isX()){
 				if (!wc_defined){
 					out.println(pad+"WorldCoord wc = mesh->getMembraneWorldCoord("+membraneElementString+");");
 					wc_defined = true;
 				}	
-				out.println(pad+"double x = wc.x;");
+				out.println(pad+"double " + mangledVarName + " = wc.x;");
 			}else if (rv.isY()){
 				if (!wc_defined){
 					out.println(pad+"WorldCoord wc = mesh->getMembraneWorldCoord("+membraneElementString+");");
 					wc_defined = true;
 				}	
-				out.println(pad+"double y = wc.y;");
+				out.println(pad+"double " + mangledVarName + " = wc.y;");
 			}else if (rv.isZ()){
 				if (!wc_defined){
 					out.println(pad+"WorldCoord wc = mesh->getMembraneWorldCoord("+membraneElementString+");");
 					wc_defined = true;
 				}	
-				out.println(pad+"double z = wc.z;");
+				out.println(pad+"double " + mangledVarName + " = wc.z;");
 			}		
 		}		
 	}
@@ -344,7 +339,7 @@ protected final void writeMembraneRegionFunction(java.io.PrintWriter out, String
 	Expression exp2 = simulation.substituteFunctions(exp).flatten();
 	writeMembraneRegionFunctionDeclarations(out,"memRegion",exp2);
 
-	out.println("   return "+exp2.infix_C()+";");
+	out.println("\treturn "+exp2.infix_C()+";");
 		
 	out.println("}");
 	out.println("");
@@ -357,28 +352,29 @@ protected final void writeMembraneRegionFunction(java.io.PrintWriter out, String
  */
 protected final void writeMembraneRegionFunctionDeclarations(java.io.PrintWriter out, String membraneRegionString, Expression exp) throws Exception {
 
-	Enumeration enum1 = simulation.getRequiredVariables(exp);
+	Enumeration<Variable> enum1 = simulation.getRequiredVariables(exp);
 	
 	while (enum1.hasMoreElements()){
-		Variable var = (Variable)enum1.nextElement();
+		Variable var = enum1.nextElement();
 		if (var instanceof VolumeRegionVariable){
-			throw new ExpressionException("cannot use variable '"+var.getName()+"' of type "+var.getClass().getName()+" within a membraneRegion rate (until region enumeration is implemented)");
+			throw new ExpressionException("cannot use variable '" + var.getName() + "' of type " + var.getClass().getName() + " within a membraneRegion rate (until region enumeration is implemented)");
 		}else if (var instanceof MembraneRegionVariable){
-			out.println("   double "+var.getName()+" = var_"+var.getName()+"->getOld("+membraneRegionString+"->getId());");
+			out.println("\tdouble "+TokenMangler.getEscapedLocalVariableName_C(var.getName())+" = " + TokenMangler.getEscapedFieldVariableName_C(var.getName())+"->getOld("+membraneRegionString+"->getId());");
 		}else if ((var instanceof MemVariable) ||
 				(var instanceof VolVariable) ||
 				(var instanceof OutsideVariable) ||
 				(var instanceof InsideVariable)){
-			throw new ExpressionException("cannot use variable '"+var.getName()+"' of type "+var.getClass().getName()+" within a membraneRegion rate");
+			throw new ExpressionException("cannot use variable '" + var.getName() + "' of type " + var.getClass().getName() + " within a membraneRegion rate");
 		}else if (var instanceof ReservedVariable){
 			//
 			// define reserved symbols (x,y,z,t)
 			//
 			ReservedVariable rv = (ReservedVariable)var;
+			String mangledVarName = TokenMangler.getEscapedLocalVariableName_C(rv.getName());
 			if (rv.isTIME()){
-				out.println("   double t = sim->getTime_sec();");
+				out.println("\tdouble " + mangledVarName + " = sim->getTime_sec();");
 			}else if (rv.isX() || rv.isY() || rv.isZ()){
-				throw new ExpressionException("cannot use coordinate '"+var.getName()+"' of type "+var.getClass().getName()+" within a membraneRegion rate");
+				throw new ExpressionException("cannot use coordinate '" + var.getName() + "' of type " + var.getClass().getName() + " within a membraneRegion rate");
 			}		
 		}		
 	}
@@ -402,29 +398,29 @@ protected final void writeResolveReferences(java.io.PrintWriter out) throws Exce
 	for (int i = 0; i < requiredVariables.length; i++){
 		Variable var = requiredVariables[i];
 		if (var instanceof VolVariable){
-			out.println("\tvar_"+var.getName()+" = (VolumeVariable*)sim->getVariableFromName(\""+var.getName()+"\");");
-			out.println("\tif (var_"+var.getName()+"==NULL){");
+			out.println("\t"+TokenMangler.getEscapedFieldVariableName_C(var.getName())+" = (VolumeVariable*)sim->getVariableFromName(\""+var.getName()+"\");");
+			out.println("\tif (" + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + "==NULL){");
 			out.println("\t\tprintf(\"could not resolve '"+var.getName()+"'\\n\");");
 			out.println("\t\treturn false;");
 			out.println("\t}");
 			out.println("");
 		}else if (var instanceof MemVariable){
-			out.println("\tvar_"+var.getName()+" = (MembraneVariable*)sim->getVariableFromName(\""+var.getName()+"\");");
-			out.println("\t if (var_"+var.getName()+"==NULL){");
+			out.println("\t"+TokenMangler.getEscapedFieldVariableName_C(var.getName())+" = (MembraneVariable*)sim->getVariableFromName(\""+var.getName()+"\");");
+			out.println("\t if ("+TokenMangler.getEscapedFieldVariableName_C(var.getName())+"==NULL){");
 			out.println("\t\tprintf(\"could not resolve '"+var.getName()+"'\\n\");");
 			out.println("\t\treturn false;");
 			out.println("\t}");
 			out.println("");
 		}else if (var instanceof MembraneRegionVariable){
-			out.println("\tvar_"+var.getName()+" = (MembraneRegionVariable*)sim->getVariableFromName(\""+var.getName()+"\");");
-			out.println("\tif (var_"+var.getName()+"==NULL){");
+			out.println("\t"+TokenMangler.getEscapedFieldVariableName_C(var.getName())+" = (MembraneRegionVariable*)sim->getVariableFromName(\""+var.getName()+"\");");
+			out.println("\tif ("+TokenMangler.getEscapedFieldVariableName_C(var.getName())+"==NULL){");
 			out.println("\t\tprintf(\"could not resolve '"+var.getName()+"'\\n\");");
 			out.println("\t\treturn false;");
 			out.println("\t}");
 			out.println("");
 		}else if (var instanceof VolumeRegionVariable){
-			out.println("\tvar_"+var.getName()+" = (VolumeRegionVariable*)sim->getVariableFromName(\""+var.getName()+"\");");
-			out.println("\t if (var_"+var.getName()+"==NULL){");
+			out.println("\t"+TokenMangler.getEscapedFieldVariableName_C(var.getName())+" = (VolumeRegionVariable*)sim->getVariableFromName(\""+var.getName()+"\");");
+			out.println("\t if ("+TokenMangler.getEscapedFieldVariableName_C(var.getName())+"==NULL){");
 			out.println("\t\tprintf(\"could not resolve '"+var.getName()+"'\\n\");");
 			out.println("\t\treturn false;");
 			out.println("\t}");
@@ -481,7 +477,7 @@ protected final void writeVolumeFunction(java.io.PrintWriter out, String functio
 	Expression exp2 = simulation.substituteFunctions(exp).flatten();
 	writeVolumeFunctionDeclarations(out,exp2,"volumeIndex");
 
-	out.println("   return "+exp2.infix_C()+";");
+	out.println("\treturn "+exp2.infix_C()+";");
 		
 	out.println("}");
 	out.println("");
@@ -499,12 +495,12 @@ private final void writeVolumeFunctionDeclarations(java.io.PrintWriter out, Expr
 	}	
 
 	boolean wc_defined = false;
-	Enumeration enum1 = simulation.getRequiredVariables(exp);
+	Enumeration<Variable> enum1 = simulation.getRequiredVariables(exp);
 
 	while (enum1.hasMoreElements()){
-		Variable var = (Variable)enum1.nextElement();
+		Variable var = enum1.nextElement();
 		if (var instanceof VolVariable){
-			out.println("   double "+var.getName()+" = var_"+var.getName()+"->getOld("+volumeIndexString+");");
+			out.println("\tdouble "+TokenMangler.getEscapedLocalVariableName_C(var.getName()) + " = " + TokenMangler.getEscapedFieldVariableName_C(var.getName())+"->getOld("+volumeIndexString+");");
 		//}else if (var instanceof VolumeRegionVariable){
 			//out.println("   double "+var.getName()+" = var_"+var.getName()+"->getOld("+volumeElementString+"->region->getIndex("+volumeElementString+"->index));");
 		}else if (var instanceof MemVariable){
@@ -514,26 +510,27 @@ private final void writeVolumeFunctionDeclarations(java.io.PrintWriter out, Expr
 			// define reserved symbols (x,y,z,t)
 			//
 			ReservedVariable rv = (ReservedVariable)var;
+			String mangledVarName = TokenMangler.getEscapedLocalVariableName_C(rv.getName());
 			if (rv.isTIME()){
-				out.println("   double t = sim->getTime_sec();");
+				out.println("\tdouble " +  mangledVarName + " = sim->getTime_sec();");
 			}else if (rv.isX()){
 				if (!wc_defined){
-					out.println("   WorldCoord wc = mesh->getVolumeWorldCoord("+volumeIndexString+");");
+					out.println("\tWorldCoord wc = mesh->getVolumeWorldCoord("+volumeIndexString+");");
 					wc_defined = true;
 				}	
-				out.println("   double x = wc.x;");
+				out.println("\tdouble " +  mangledVarName + " = wc.x;");
 			}else if (rv.isY()){
 				if (!wc_defined){
-					out.println("   WorldCoord wc = mesh->getVolumeWorldCoord("+volumeIndexString+");");
+					out.println("\tWorldCoord wc = mesh->getVolumeWorldCoord("+volumeIndexString+");");
 					wc_defined = true;
 				}	
-				out.println("   double y = wc.y;");
+				out.println("\tdouble " +  mangledVarName + " = wc.y;");
 			}else if (rv.isZ()){
 				if (!wc_defined){
-					out.println("   WorldCoord wc = mesh->getVolumeWorldCoord("+volumeIndexString+");");
+					out.println("\tWorldCoord wc = mesh->getVolumeWorldCoord("+volumeIndexString+");");
 					wc_defined = true;
 				}	
-				out.println("   double z = wc.z;");
+				out.println("\tdouble " +  mangledVarName + " = wc.z;");
 			}		
 		}		
 	}
@@ -559,7 +556,7 @@ protected final void writeVolumeRegionFunction(java.io.PrintWriter out, String f
 	Expression exp2 = getSimulation().substituteFunctions(exp).flatten();
 	writeVolumeRegionFunctionDeclarations(out,exp2,"volumeRegion");
 
-	out.println("   return "+exp2.infix_C()+";");
+	out.println("\treturn "+exp2.infix_C()+";");
 		
 	out.println("}");
 	out.println("");
@@ -577,13 +574,13 @@ protected final void writeVolumeRegionFunctionDeclarations(java.io.PrintWriter o
 	}	
 
 	String regionIndexString = "regionIndex";
-	out.println("	long "+regionIndexString+" = "+volumeRegionString+"->getId();");
-	Enumeration enum1 = getSimulation().getRequiredVariables(exp);
+	out.println("\tlong "+regionIndexString+" = "+volumeRegionString+"->getId();");
+	Enumeration<Variable> enum1 = getSimulation().getRequiredVariables(exp);
 
 	while (enum1.hasMoreElements()){
-		Variable var = (Variable)enum1.nextElement();
+		Variable var = enum1.nextElement();
 		if (var instanceof VolVariable){
-			out.println("   double "+var.getName()+" = var_"+var.getName()+"->getOld("+regionIndexString+");");
+			out.println("\tdouble "+TokenMangler.getEscapedLocalVariableName_C(var.getName())+" = " + TokenMangler.getEscapedFieldVariableName_C(var.getName())+"->getOld("+regionIndexString+");");
 		}else if (var instanceof MemVariable){
 			throw new Exception("membrane variable not defined at a boundary condition");
 		}else if (var instanceof ReservedVariable){
@@ -591,8 +588,9 @@ protected final void writeVolumeRegionFunctionDeclarations(java.io.PrintWriter o
 			// define reserved symbols (x,y,z,t)
 			//
 			ReservedVariable rv = (ReservedVariable)var;
+			String mangledVarName = TokenMangler.getEscapedLocalVariableName_C(rv.getName());
 			if (rv.isTIME()){
-				out.println("   double t = sim->getTime_sec();");
+				out.println("\tdouble " + mangledVarName + " = sim->getTime_sec();");
 			}else{
 				throw new RuntimeException("unexpected spatial reserved variable "+rv.getName()+" in UniformRate Expression");
 			}

@@ -1,7 +1,5 @@
 package cbit.vcell.field;
 
-import cbit.util.TokenMangler;
-import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 
@@ -13,7 +11,7 @@ import cbit.vcell.simdata.ExternalDataIdentifier;
 public class FieldDataIdentifierSpec implements java.io.Serializable  {
 	private FieldFunctionArguments fieldFuncArgs;
 	private ExternalDataIdentifier extDataID;
-
+	private static String FIELDDATA_FILEEXT = ".fdat";
 
 /**
  * FieldDataIdentifier constructor comment.
@@ -32,17 +30,6 @@ public String toString(){
 	return "[FFA=" + fieldFuncArgs.toCSVString()+", EDI="+extDataID.toCSVString() + "]";
 
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (9/21/2006 2:51:03 PM)
- * @return java.lang.String
- */
-public String getGlobalVariableName_C() {
-	return getGlobalVariableName_C(fieldFuncArgs.getFieldName(), fieldFuncArgs.getVariableName(), fieldFuncArgs.getTime());
-}
-
 
 /**
  * Insert the method's description here.
@@ -69,36 +56,6 @@ public String toCSVString() {
 	return fieldFuncArgs.toCSVString()+","+extDataID.toCSVString();
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (9/21/2006 2:51:03 PM)
- * @return java.lang.String
- */
-public static String getGlobalVariableName_C(FieldFunctionArguments fieldFuncArgs){
-	return getGlobalVariableName_C(fieldFuncArgs.getFieldName(), fieldFuncArgs.getVariableName(), fieldFuncArgs.getTime());
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (9/21/2006 2:51:03 PM)
- * @return java.lang.String
- */
-private static String getGlobalVariableName_C(String fieldname, String varname, Expression timeExp) {
-	return TokenMangler.fixTokenStrict("field_" + fieldname + "_" + varname + "_" + timeExp.infix());
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (9/21/2006 2:51:03 PM)
- * @return java.lang.String
- */
-public static String getLocalVariableName_C(FieldFunctionArguments fieldFuncArgs) {
-	return TokenMangler.fixTokenStrict(fieldFuncArgs.getFieldName() + "_" + fieldFuncArgs.getVariableName()+"_"+fieldFuncArgs.getTime().infix());
-}
-
 public FieldFunctionArguments getFieldFuncArgs() {
 	return fieldFuncArgs;
 }
@@ -108,8 +65,8 @@ public FieldFunctionArguments getFieldFuncArgs() {
  * Creation date: (9/21/2006 2:51:03 PM)
  * @return java.lang.String
  */
-public static String getDefaultFieldDataFileNameForSimulation(FieldFunctionArguments ffa) {
-	return getLocalVariableName_C(ffa) + ".fdat";
+public static String getDefaultFieldDataFileNameForSimulation(FieldFunctionArguments fieldFuncArgs) {
+	return fieldFuncArgs.getUniqueID() + FIELDDATA_FILEEXT;
 }
 
 @Override

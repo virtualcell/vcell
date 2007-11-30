@@ -4,6 +4,8 @@ package cbit.vcell.solvers;
  * All rights reserved.
 ©*/
 import java.util.*;
+
+import cbit.util.TokenMangler;
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
 import cbit.vcell.solver.*;
@@ -26,7 +28,7 @@ protected CppClassCoderVolumeRegionVarContext(CppCoderVCell argCppCoderVCell,
 {
 	super(argCppCoderVCell,argEquation,argVolumeSubDomain,argSimulation,argParentClass);
 	
-	Vector membraneSubDomainOwnedList = new Vector();
+	Vector<MembraneSubDomain> membraneSubDomainOwnedList = new Vector<MembraneSubDomain>();
 	MembraneSubDomain membranes[] = argSimulation.getMathDescription().getMembraneSubDomains(argVolumeSubDomain);
 	for (int i = 0; i < membranes.length; i++){
 		//
@@ -73,11 +75,11 @@ protected Variable[] getRequiredVariables() throws Exception {
 	if (getEquation() instanceof PdeEquation){
 		for (int i = 0;membraneSubDomainsOwned!=null && i < membraneSubDomainsOwned.length; i++){
 			JumpCondition jumpCondition = membraneSubDomainsOwned[i].getJumpCondition((VolVariable)getEquation().getVariable());
-			Enumeration enumJC = jumpCondition.getRequiredVariables(getSimulation());
+			Enumeration<Variable> enumJC = jumpCondition.getRequiredVariables(getSimulation());
 			requiredVariables = (Variable[])cbit.util.BeanUtils.addElements(requiredVariables,(Variable[])cbit.util.BeanUtils.getArray(enumJC,Variable.class));
 		}
 	}
-	Vector uniqueVarList = new Vector();
+	Vector<Variable> uniqueVarList = new Vector<Variable>();
 	for (int i = 0; i < requiredVariables.length; i++){
 		Variable var = requiredVariables[i];
 		if (var instanceof InsideVariable){
@@ -115,18 +117,18 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 		Expression ic = getEquation().getInitialExpression();
 		ic.bindExpression(getSimulation());
 		double value = ic.evaluateConstant();
-		out.println("   initialValue = new double;");
-		out.println("   *initialValue = "+value+";");
+		out.println("\tinitialValue = new double;");
+		out.println("\t*initialValue = "+value+";");
 	}catch (Exception e){
-		out.println("   initialValue = NULL;");
+		out.println("\tinitialValue = NULL;");
 	}	
-	out.println("");
+	out.println();
 	Variable requiredVariables[] = getRequiredVariables();
 	for (int i = 0; i < requiredVariables.length; i++){
 		Variable var = requiredVariables[i];
 		if (var instanceof VolVariable || var instanceof MemVariable ||
 			var instanceof VolumeRegionVariable || var instanceof MembraneRegionVariable){
-			out.println("   var_"+var.getName()+" = NULL;");
+			out.println("\t" + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + " = NULL;");
 		}
 	}		  	
 	out.println("}");
@@ -144,7 +146,7 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 
 	out.println("class " + getClassName() + " : public " + getParentClassName());
 	out.println("{");
-	out.println(" public:");
+	out.println("public:");
 	out.println("\t"+getClassName() + "(Feature *feature, string& speciesName);");
 	out.println("\tvirtual bool resolveReferences(Simulation *sim);");
 
@@ -153,28 +155,30 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 		ic.bindExpression(getSimulation());
 		double value = ic.evaluateConstant();
 	}catch (Exception e){
-		out.println("    virtual double getInitialValue(long volumeIndex);");
+		out.println("\tvirtual double getInitialValue(long volumeIndex);");
 	}
-	out.println("    virtual double getUniformRate(VolumeRegion *region);");
-	out.println("    virtual double getReactionRate(long volumeIndex);");
-	out.println("    virtual void getFlux(MembraneElement *element,double *inFlux, double *outFlux);");
-	out.println(" private:");
+	out.println("\tvirtual double getUniformRate(VolumeRegion *region);");
+	out.println("\tvirtual double getReactionRate(long volumeIndex);");
+	out.println("\tvirtual void getFlux(MembraneElement *element,double *inFlux, double *outFlux);");
+	out.println();
+	out.println("\tprivate:");
 	Variable requiredVariables[] = getRequiredVariables();
 	for (int i = 0; i < requiredVariables.length; i++){
 		Variable var = requiredVariables[i];
+		String mangledVarName = TokenMangler.getEscapedFieldVariableName_C(var.getName());
 		if (var instanceof VolVariable){
-			out.println("    VolumeVariable      *var_"+var.getName()+";");
+			out.println("\tVolumeVariable *" + mangledVarName + ";");
 		}else if (var instanceof MemVariable){
-			out.println("    MembraneVariable    *var_"+var.getName()+";");
+			out.println("\tMembraneVariable *" + mangledVarName + ";");
 		}else if (var instanceof MembraneRegionVariable){
-			out.println("    MembraneRegionVariable    *var_"+var.getName()+";");
+			out.println("\tMembraneRegionVariable *" + mangledVarName + ";");
 		}else if (var instanceof VolumeRegionVariable){
-			out.println("    VolumeRegionVariable    *var_"+var.getName()+";");
+			out.println("\tVolumeRegionVariable *" + mangledVarName + ";");
 		}else if (var instanceof ReservedVariable){
 		}else if (var instanceof Constant){
 		}else if (var instanceof Function){
 		}else{
-			throw new Exception("unknown identifier type '"+var.getClass().getName()+"' for identifier: "+var.getName());
+			throw new Exception("unknown identifier type '" + var.getClass().getName() + "' for identifier: " + var.getName());
 		}	
 	}		  	
 	out.println("};");
@@ -216,19 +220,19 @@ protected void writeGetFlux(java.io.PrintWriter out, String functionName) throws
 		// if zero or one membranes, write out single inFlux/outFlux expression
 		//
 		if (membraneSubDomainsOwned.length==0){
-			out.println("   *inFlux = 0.0;");
-			out.println("   *outFlux = 0.0;");
+			out.println("\t*inFlux = 0.0;");
+			out.println("\t*outFlux = 0.0;");
 		}else if (membraneSubDomainsOwned.length==1){
 			boolean bFlipInsideOutside = (membraneSubDomainsOwned[0].getOutsideCompartment() == getCompartmentSubDomain());
-			out.println("   // for this membrane, MathDescription defines inside='"+membraneSubDomainsOwned[0].getInsideCompartment().getName()+"', outside='"+membraneSubDomainsOwned[0].getOutsideCompartment().getName()+"'");
-			out.println("   // '"+membraneSubDomainsOwned[0].getInsideCompartment().getName()+"' has priority="+membraneSubDomainsOwned[0].getInsideCompartment().getPriority()+", "+
+			out.println("\t// for this membrane, MathDescription defines inside='"+membraneSubDomainsOwned[0].getInsideCompartment().getName()+"', outside='"+membraneSubDomainsOwned[0].getOutsideCompartment().getName()+"'");
+			out.println("\t// '"+membraneSubDomainsOwned[0].getInsideCompartment().getName()+"' has priority="+membraneSubDomainsOwned[0].getInsideCompartment().getPriority()+", "+
 			                  "'"+membraneSubDomainsOwned[0].getOutsideCompartment().getName()+"' has priority="+membraneSubDomainsOwned[0].getOutsideCompartment().getPriority());
 			if (bFlipInsideOutside){
-				out.println("   // **** relative priorities CONTRADICT MathDescription convension (insidePriority < outsidePriority) ... must flip definitions");
+				out.println("\t// **** relative priorities CONTRADICT MathDescription convension (insidePriority < outsidePriority) ... must flip definitions");
 			}else{
-				out.println("   // :-)  Priorities are consistent (insidePriority > outsidePriority)");
+				out.println("\t// :-)  Priorities are consistent (insidePriority > outsidePriority)");
 			}
-			out.println("");
+			out.println();
 			
 			JumpCondition jumpCondition = membraneSubDomainsOwned[0].getJumpCondition((VolVariable)getVariable());
 			Expression inFluxExp = jumpCondition.getInFluxExpression();
@@ -242,22 +246,22 @@ protected void writeGetFlux(java.io.PrintWriter out, String functionName) throws
 			Expression totalExpression = Expression.add(inFluxExp_substituted,outFluxExp_substituted);
 			writeMembraneFunctionDeclarations(out,"element",totalExpression,bFlipInsideOutside,"   ");
 			if (bFlipInsideOutside){
-				out.println("   *inFlux = "+outFluxExp_substituted.infix_C()+";  // *****  flux convension reversed, uses 'outFlux' from MathDescription");
-				out.println("   *outFlux = "+inFluxExp_substituted.infix_C()+";  // *****  flux convension reversed, uses 'inFlux' from MathDescription");
+				out.println("\t*inFlux = "+outFluxExp_substituted.infix_C()+";  // *****  flux convension reversed, uses 'outFlux' from MathDescription");
+				out.println("\t*outFlux = "+inFluxExp_substituted.infix_C()+";  // *****  flux convension reversed, uses 'inFlux' from MathDescription");
 			}else{
-				out.println("   *inFlux = "+inFluxExp_substituted.infix_C()+";");
-				out.println("   *outFlux = "+outFluxExp_substituted.infix_C()+";");
+				out.println("\t*inFlux = "+inFluxExp_substituted.infix_C()+";");
+				out.println("\t*outFlux = "+outFluxExp_substituted.infix_C()+";");
 			}
 		}else if (membraneSubDomainsOwned.length>1){
 			//
 			// must choose which membrane at runtime
 			//
-			out.println("   Feature *outsideFeature = element->region->getRegionOutside()->getFeature();");
-			out.println("   int outsideHandle = outsideFeature->getHandle();");
-			out.println("   Feature *insideFeature = element->region->getRegionInside()->getFeature();");
-			out.println("   int insideHandle = insideFeature->getHandle();");
+			out.println("\tFeature *outsideFeature = element->region->getRegionOutside()->getFeature();");
+			out.println("\tint outsideHandle = outsideFeature->getHandle();");
+			out.println("\tFeature *insideFeature = element->region->getRegionInside()->getFeature();");
+			out.println("\tint insideHandle = insideFeature->getHandle();");
 			//out.println("   printf(\"getFlux(index=%ld, insideHandle=%d, outsideHandle=%ld), MembraneElement outside feature = '%s'\\n\",element->index,insideHandle,outsideHandle,outsideFeature->getName());");
-			out.println("   switch(outsideHandle){");
+			out.println("\tswitch(outsideHandle){");
 			for (int i = 0; i < membraneSubDomainsOwned.length; i++){
 				cbit.vcell.geometry.GeometrySpec geoSpec = getSimulation().getMathDescription().getGeometry().getGeometrySpec();
 				boolean bFlipInsideOutside = (membraneSubDomainsOwned[i].getOutsideCompartment() == getCompartmentSubDomain());
@@ -267,16 +271,16 @@ protected void writeGetFlux(java.io.PrintWriter out, String functionName) throws
 				}else{
 					outsideSubVolume = geoSpec.getSubVolume(membraneSubDomainsOwned[i].getOutsideCompartment().getName());
 				}
-				out.println("      case "+outsideSubVolume.getHandle()+": {  // for outside subVolume '"+outsideSubVolume.getName()+"'");
-				out.println("         // for this membrane, MathDescription defines inside='"+membraneSubDomainsOwned[i].getInsideCompartment().getName()+"', outside='"+membraneSubDomainsOwned[i].getOutsideCompartment().getName()+"'");
-				out.println("         // '"+membraneSubDomainsOwned[i].getInsideCompartment().getName()+"' has priority="+membraneSubDomainsOwned[i].getInsideCompartment().getPriority()+", "+
+				out.println("\t\tcase "+outsideSubVolume.getHandle()+": {  // for outside subVolume '"+outsideSubVolume.getName()+"'");
+				out.println("\t\t\t// for this membrane, MathDescription defines inside='"+membraneSubDomainsOwned[i].getInsideCompartment().getName()+"', outside='"+membraneSubDomainsOwned[i].getOutsideCompartment().getName()+"'");
+				out.println("\t\t\t// '"+membraneSubDomainsOwned[i].getInsideCompartment().getName()+"' has priority="+membraneSubDomainsOwned[i].getInsideCompartment().getPriority()+", "+
 				                        "'"+membraneSubDomainsOwned[i].getOutsideCompartment().getName()+"' has priority="+membraneSubDomainsOwned[i].getOutsideCompartment().getPriority());
 				if (bFlipInsideOutside){
-					out.println("         // **** relative priorities CONTRADICT MathDescription convension (insidePriority < outsidePriority) ... must flip definitions");
+					out.println("\t\t\t// **** relative priorities CONTRADICT MathDescription convension (insidePriority < outsidePriority) ... must flip definitions");
 				}else{
-					out.println("         // :-)  Priorities are consistent (insidePriority > outsidePriority)");
+					out.println("\t\t\t// :-)  Priorities are consistent (insidePriority > outsidePriority)");
 				}
-				out.println("");
+				out.println();
 				
 				JumpCondition jumpCondition = membraneSubDomainsOwned[i].getJumpCondition((VolVariable)getVariable());
 				Expression inFluxExp = jumpCondition.getInFluxExpression();
@@ -291,24 +295,24 @@ protected void writeGetFlux(java.io.PrintWriter out, String functionName) throws
 				Expression totalExpression = Expression.add(inFluxExp_substituted,outFluxExp_substituted);
 				writeMembraneFunctionDeclarations(out,"element",totalExpression,bFlipInsideOutside,"         ");
 				if (bFlipInsideOutside){
-					out.println("         *inFlux = "+outFluxExp_substituted.infix_C()+";  // *****  flux convension reversed, uses 'outFlux' from MathDescription");
-					out.println("         *outFlux = "+inFluxExp_substituted.infix_C()+";  // *****  flux convension reversed, uses 'inFlux' from MathDescription");
+					out.println("\t\t\t*inFlux = "+outFluxExp_substituted.infix_C()+";  // *****  flux convension reversed, uses 'outFlux' from MathDescription");
+					out.println("\t\t\t*outFlux = "+inFluxExp_substituted.infix_C()+";  // *****  flux convension reversed, uses 'inFlux' from MathDescription");
 				}else{
-					out.println("         *inFlux = "+inFluxExp_substituted.infix_C()+";");
-					out.println("         *outFlux = "+outFluxExp_substituted.infix_C()+";");
+					out.println("\t\t\t*inFlux = "+inFluxExp_substituted.infix_C()+";");
+					out.println("\t\t\t*outFlux = "+outFluxExp_substituted.infix_C()+";");
 				}
-				out.println("         break;");
-				out.println("      }");
+				out.println("\t\t\tbreak;");
+				out.println("\t\t}");
 			}
-			out.println("      default: {");
-			out.println("         printf(\"getFlux(index=%ld, insideHandle=%d, outsideHandle=%ld), MembraneElement outside feature = '%s'\\n\",element->index,insideHandle,outsideHandle,outsideFeature->getName());");
-			out.println("         throw \"failed to match feature handle in "+getClassName()+"::"+functionName+"\";");
-			out.println("      }");
-			out.println("    }");
+			out.println("\t\tdefault: {");
+			out.println("\t\t\tprintf(\"getFlux(index=%ld, insideHandle=%d, outsideHandle=%ld), MembraneElement outside feature = '%s'\\n\",element->index,insideHandle,outsideHandle,outsideFeature->getName());");
+			out.println("\t\t\tthrow \"failed to match feature handle in "+getClassName()+"::"+functionName+"\";");
+			out.println("\t\t}");
+			out.println("\t}");
 		}
 	}else{
-		out.println("   *inFlux = 0.0;");
-		out.println("   *outFlux = 0.0;");
+		out.println("\t*inFlux = 0.0;");
+		out.println("\t*outFlux = 0.0;");
 	}
 	out.println("}");
 }

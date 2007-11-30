@@ -5,6 +5,7 @@ package cbit.vcell.parser;
  * All rights reserved.
 ©*/
 /* JJT: 0.2.2 */
+import cbit.util.TokenMangler;
 import net.sourceforge.interval.ia_math.*;
 
 public class ASTIdNode extends SimpleNode {
@@ -265,9 +266,11 @@ public String infixString(int lang, NameScope nameScope) {
 			idName = nameScope.getUnboundSymbolName(name);
 		}
 	}
-	if (lang == LANGUAGE_DEFAULT || lang == LANGUAGE_C){
+	if (lang == LANGUAGE_DEFAULT) {
 		return idName;
-	}else if (lang == LANGUAGE_MATLAB){
+	} else if (lang == LANGUAGE_C){
+		return TokenMangler.getEscapedLocalVariableName_C(idName);
+	} else if (lang == LANGUAGE_MATLAB){	
 		return cbit.util.TokenMangler.getEscapedTokenMatlab(idName);
 	}else if (lang == LANGUAGE_JSCL) {
 		return cbit.util.TokenMangler.getEscapedTokenJSCL(idName);

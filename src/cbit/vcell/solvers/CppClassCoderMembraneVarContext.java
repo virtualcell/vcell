@@ -3,7 +3,8 @@ package cbit.vcell.solvers;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.util.*;
+
+import cbit.util.TokenMangler;
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
 import cbit.vcell.solver.*;
@@ -78,34 +79,15 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	}catch (Exception e){
 		out.println("\tinitialValue = NULL;");
 	}	
-	//if (getEquation() instanceof PdeEquation){
-		//try {
-			//Expression Dexp = ((PdeEquation)getEquation()).getDiffusionExpression();
-			//Dexp.bindExpression(getSimulation());
-			//double value = Dexp.evaluateConstant();
-			//out.println("   diffusionRate = new double;");
-			//out.println("   *diffusionRate = "+value+";");
-		//}catch (Exception e){
-			//out.println("   diffusionRate = NULL;");
-		//}
-	//}else{	
-		//out.println("   diffusionRate = NULL;");
-	//}	
-	out.println("");
+	out.println();
 	Variable requiredVariables[] = getRequiredVariables();
 	for (int i = 0; i < requiredVariables.length; i++){
 		Variable var = requiredVariables[i];
-		if (var instanceof VolVariable){
-			out.println("\tvar_"+var.getName()+" = NULL;");
-		}
-		if (var instanceof MemVariable){
-			out.println("\tvar_"+var.getName()+" = NULL;");
-		}
-		if (var instanceof VolumeRegionVariable){
-			out.println("\tvar_"+var.getName()+" = NULL;");
-		}
-		if (var instanceof MembraneRegionVariable){
-			out.println("\tvar_"+var.getName()+" = NULL;");
+		if (var instanceof VolVariable
+				|| var instanceof MemVariable
+				|| var instanceof VolumeRegionVariable
+				|| var instanceof MembraneRegionVariable){
+			out.println("\t" + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + " = NULL;");
 		}
 	}		  	
 	out.println("}");
@@ -203,23 +185,25 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 	out.println("protected:");
 	out.println("\tvirtual double getMembraneReactionRate(MembraneElement *memElement);");
 	out.println("\tvirtual double getMembraneDiffusionRate(MembraneElement *memElement);");
+	out.println();
 	out.println("private:");
 	Variable requiredVariables[] = getRequiredVariables();
 	for (int i = 0; i < requiredVariables.length; i++){
 		Variable var = requiredVariables[i];
+		String mangledVarName = TokenMangler.getEscapedFieldVariableName_C(var.getName());
 		if (var instanceof VolVariable){
-			out.println("\tVolumeVariable      *var_"+var.getName()+";");
+			out.println("\tVolumeVariable *" + mangledVarName + ";");
 		}else if (var instanceof MemVariable){
-			out.println("\tMembraneVariable    *var_"+var.getName()+";");
+			out.println("\tMembraneVariable *" + mangledVarName + ";");
 		}else if (var instanceof MembraneRegionVariable){
-			out.println("\tMembraneRegionVariable    *var_"+var.getName()+";");
+			out.println("\tMembraneRegionVariable *" + mangledVarName + ";");
 		}else if (var instanceof VolumeRegionVariable){
-			out.println("\tVolumeRegionVariable    *var_"+var.getName()+";");
+			out.println("\tVolumeRegionVariable *" + mangledVarName + ";");
 		}else if (var instanceof ReservedVariable){
 		}else if (var instanceof Constant){
 		}else if (var instanceof Function){
 		}else{
-			throw new Exception("unknown identifier type '"+var.getClass().getName()+"' for identifier: "+var.getName());
+			throw new Exception("unknown identifier type '" + var.getClass().getName() + "' for identifier: " + var.getName());
 		}	
 	}		  	
 	out.println("};");

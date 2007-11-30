@@ -6,7 +6,7 @@ package cbit.vcell.solvers;
 ©*/
 import java.util.*;
 
-import cbit.vcell.field.FieldDataIdentifierSpec;
+import cbit.util.TokenMangler;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
@@ -57,10 +57,10 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	out.println();
 
 	int varCount=0;
-	Enumeration enum_vars = getFastSystem().getIndependentVariables();
+	Enumeration<Variable> enum_vars = getFastSystem().getIndependentVariables();
 	while (enum_vars.hasMoreElements()){
-		Variable var = (Variable)enum_vars.nextElement();
-		out.println("\tpVars["+varCount+"] = var_"+var.getName()+" = NULL;");
+		Variable var = enum_vars.nextElement();
+		out.println("\tpVars[" + varCount + "] = " + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + " = NULL;");
 		varCount++;
 	}
 	out.println("");
@@ -69,15 +69,15 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	enum_vars = getFastSystem().getDependentVariables();
 	while (enum_vars.hasMoreElements()){
 		Variable var = (Variable)enum_vars.nextElement();
-		out.println("\tpDependentVars["+varCount+"] = var_"+var.getName()+" = NULL;");
+		out.println("\tpDependentVars[" + varCount + "] = " + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + " = NULL;");
 		varCount++;
 	}
 	out.println("");
 	
-	Enumeration enum_pc = getFastSystem().getPseudoConstants();
+	Enumeration<PseudoConstant> enum_pc = getFastSystem().getPseudoConstants();
 	while (enum_pc.hasMoreElements()){
-		PseudoConstant pc = (PseudoConstant)enum_pc.nextElement();
-		out.println("\t"+pc.getName()+" = 0.0;");
+		PseudoConstant pc = enum_pc.nextElement();
+		out.println("\t" + TokenMangler.getEscapedFieldVariableName_C(pc.getName()) + " = 0.0;");
 	}
 	out.println("}");
 }
@@ -93,7 +93,7 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 	out.println("class " + getClassName() + " : public " + getParentClassName());
 	out.println("{");
 	out.println("public:");
-	out.println("\t "+getClassName() + "();");
+	out.println("\t " + getClassName() + "();");
 	out.println("\tvirtual bool resolveReferences(Simulation *sim);");
 	out.println("\tvoid initVars();");
 	out.println("\tvoid updateDependentVars();");
@@ -103,22 +103,22 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 	out.println("\tMesh *mesh;");
 	out.println("\tSimulation *simulation;");
 
-	Enumeration enum_vars = getFastSystem().getIndependentVariables();
+	Enumeration<Variable> enum_vars = getFastSystem().getIndependentVariables();
 	while (enum_vars.hasMoreElements()){
-		Variable var = (Variable)enum_vars.nextElement();
-		out.println("   Variable    *var_"+var.getName()+";");
+		Variable var = enum_vars.nextElement();
+		out.println("\tVariable *" + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + ";");
 	}
 	enum_vars = getFastSystem().getDependentVariables();
 	while (enum_vars.hasMoreElements()){
-		Variable var = (Variable)enum_vars.nextElement();
-		out.println("\tVariable *var_"+var.getName()+";");
+		Variable var = enum_vars.nextElement();
+		out.println("\tVariable *" + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + ";");
 	}
 	out.println("");
 
-	Enumeration enum_pc = getFastSystem().getPseudoConstants();
+	Enumeration<PseudoConstant> enum_pc = getFastSystem().getPseudoConstants();
 	while (enum_pc.hasMoreElements()){
-		PseudoConstant pc = (PseudoConstant)enum_pc.nextElement();
-		out.println("\tdouble "+pc.getName()+";");
+		PseudoConstant pc = enum_pc.nextElement();
+		out.println("\tdouble " + TokenMangler.getEscapedFieldVariableName_C(pc.getName()) + ";");
 	}
 	out.println("};");
 }
@@ -133,35 +133,36 @@ protected void writeFastFunctionDeclarations(java.io.PrintWriter out, Expression
 	}	
 
 	boolean wc_defined = false;
-	Enumeration enum1 = simulation.getRequiredVariables(exp);
+	Enumeration<Variable> enum1 = simulation.getRequiredVariables(exp);
 
 	while (enum1.hasMoreElements()){
-		Variable var = (Variable)enum1.nextElement();
+		Variable var = enum1.nextElement();
 		if (var instanceof ReservedVariable){
 			//
 			// define reserved symbols (x,y,z,t)
 			//
 			ReservedVariable rv = (ReservedVariable)var;
+			String mangledVarName = TokenMangler.getEscapedLocalVariableName_C(rv.getName());
 			if (rv.isTIME()){
-				out.println("\tdouble t = simulation->getTime_sec();");
+				out.println("\tdouble " + mangledVarName + " = simulation->getTime_sec();");
 			}else if (rv.isX()){
 				if (!wc_defined){
 					out.println("\tWorldCoord wc = mesh->getVolumeWorldCoord("+volumeIndexString+");");
 					wc_defined = true;
 				}	
-				out.println("\tdouble x = wc.x;");
+				out.println("\tdouble " + mangledVarName + " = wc.x;");
 			}else if (rv.isY()){
 				if (!wc_defined){
 					out.println("\tWorldCoord wc = mesh->getVolumeWorldCoord("+volumeIndexString+");");
 					wc_defined = true;
 				}	
-				out.println("\tdouble y = wc.y;");
+				out.println("\tdouble " + mangledVarName + " = wc.y;");
 			}else if (rv.isZ()){
 				if (!wc_defined){
 					out.println("\tWorldCoord wc = mesh->getVolumeWorldCoord("+volumeIndexString+");");
 					wc_defined = true;
 				}	
-				out.println("\tdouble z = wc.z;");
+				out.println("\tdouble " + mangledVarName + " = wc.z;");
 			}		
 		}		
 	}	
@@ -196,26 +197,24 @@ protected void writeInitVars(java.io.PrintWriter out, String functionName) throw
 	out.println("{");
 
 	int varCount=0;
-	Enumeration enum1 = getFastSystem().getIndependentVariables();
+	Enumeration<Variable> enum1 = getFastSystem().getIndependentVariables();
 
-//out.println("  Variable *ip3 = theApplication->getSimulation()->getVariableFromName(\"IP3\");");
-//out.println("  if (ip3) printf(\"initVars(), ip3[%d] = %lg\\n\",currIndex,ip3->getCurr(currIndex));");
 	while (enum1.hasMoreElements()){
-		Variable var = (Variable)enum1.nextElement();
-		out.println("\tdouble "+var.getName()+" = var_"+var.getName()+"->getCurr(currIndex);");
-		out.println("\tsetX("+varCount+","+var.getName()+");");
+		Variable var = enum1.nextElement();
+		out.println("\tdouble " + TokenMangler.getEscapedLocalVariableName_C(var.getName()) + " = " + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + "->getCurr(currIndex);");
+		out.println("\tsetX(" + varCount + "," + TokenMangler.getEscapedLocalVariableName_C(var.getName()) + ");");
 		varCount++;
 	}
 	enum1 = getFastSystem().getDependentVariables();
 	while (enum1.hasMoreElements()){
 		Variable var = (Variable)enum1.nextElement();
-		out.println("\tdouble "+var.getName()+" = var_"+var.getName()+"->getCurr(currIndex);");
+		out.println("\tdouble " + TokenMangler.getEscapedLocalVariableName_C(var.getName()) + " = " + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + "->getCurr(currIndex);");
 	}
 	int invariantCount=0;
-	enum1 = getFastSystem().getPseudoConstants();
-	while (enum1.hasMoreElements()){
-		PseudoConstant pc = (PseudoConstant)enum1.nextElement();
-		out.println("\t"+pc.getName()+" = "+simulation.substituteFunctions(pc.getPseudoExpression()).flatten().infix_C()+";");
+	Enumeration<PseudoConstant> enum2 = getFastSystem().getPseudoConstants();
+	while (enum2.hasMoreElements()){
+		PseudoConstant pc = (PseudoConstant)enum2.nextElement();
+		out.println("\t" + TokenMangler.getEscapedFieldVariableName_C(pc.getName()) + " = " + simulation.substituteFunctions(pc.getPseudoExpression()).flatten().infix_C()+";");
 		invariantCount++;
 	}
 		
@@ -233,29 +232,29 @@ protected void writeResolveReferences(java.io.PrintWriter out) throws Exception 
 	out.println("\tthis->mesh = sim->getMesh();");
 	out.println("\tthis->simulation = sim;");
 	out.println("");
-	Enumeration enum1 = getFastSystem().getIndependentVariables();
+	Enumeration<Variable> enum1 = getFastSystem().getIndependentVariables();
 	int varCount=0;
 	while (enum1.hasMoreElements()){
-		Variable var = (Variable)enum1.nextElement();
-		out.println("\tvar_"+var.getName()+" = sim->getVariableFromName(\""+var.getName()+"\");");
-		out.println("\tif (var_"+var.getName()+"==NULL){");
-		out.println("\t\tprintf(\"could not resolve '"+var.getName()+"'\\n\");");
+		Variable var = enum1.nextElement();
+		out.println("\t" + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + " = sim->getVariableFromName(\"" + var.getName() + "\");");
+		out.println("\tif (" + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + "==NULL){");
+		out.println("\t\tprintf(\"could not resolve '" + var.getName() + "'\\n\");");
 		out.println("\t\treturn false;");
 		out.println("\t}");
-		out.println("\tpVars["+varCount+"] = var_"+var.getName()+";");
+		out.println("\tpVars[" + varCount + "] = " + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + ";");
 		out.println("");
 		varCount++;
 	}		  	
 	enum1 = getFastSystem().getDependentVariables();
 	varCount=0;
 	while (enum1.hasMoreElements()){
-		Variable var = (Variable)enum1.nextElement();
-		out.println("\tvar_"+var.getName()+" = sim->getVariableFromName(\""+var.getName()+"\");");
-		out.println("\tif (var_"+var.getName()+"==NULL){");
-		out.println("\t\tprintf(\"could not resolve '"+var.getName()+"'\\n\");");
+		Variable var = enum1.nextElement();
+		out.println("\t" + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + " = sim->getVariableFromName(\"" + var.getName() + "\");");
+		out.println("\tif (" + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + "==NULL){");
+		out.println("\t\tprintf(\"could not resolve '" + var.getName() + "'\\n\");");
 		out.println("\t\treturn false;");
 		out.println("\t}");
-		out.println("\tpDependentVars["+varCount+"] = var_"+var.getName()+";");
+		out.println("\tpDependentVars[" + varCount + "] = " + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + ";");
 		out.println("");
 		varCount++;
 	}		  	
@@ -273,23 +272,28 @@ protected void writeUpdateDependentVars(java.io.PrintWriter out, String function
 	out.println("{");
 
 	int varCount=0;
-	Enumeration enum1 = getFastSystem().getIndependentVariables();
+	Enumeration<Variable> enum1 = getFastSystem().getIndependentVariables();
 	while (enum1.hasMoreElements()){
 		Variable var = (Variable)enum1.nextElement();
-		out.println("\tdouble "+var.getName()+" = getX("+varCount+");");
+		out.println("\tdouble " + TokenMangler.getEscapedLocalVariableName_C(var.getName()) + " = getX(" + varCount + ");");
 		varCount++;
 	}
+	Enumeration<PseudoConstant> enum_pc = getFastSystem().getPseudoConstants();
+	while (enum_pc.hasMoreElements()){
+		PseudoConstant pc = enum_pc.nextElement();
+		out.println("\tdouble " + TokenMangler.getEscapedLocalVariableName_C(pc.getName()) + " = " + TokenMangler.getEscapedFieldVariableName_C(pc.getName()) + ";");
+	}	
 
-	Enumeration enum_exp = getFastSystem().getDependencyExps();
-	Enumeration enum_var = getFastSystem().getDependentVariables();
+	Enumeration<Expression> enum_exp = getFastSystem().getDependencyExps();
+	Enumeration<Variable> enum_var = getFastSystem().getDependentVariables();
 	while (enum_exp.hasMoreElements()){
-		Expression exp = (Expression)enum_exp.nextElement();
-		Variable depVar = (Variable)enum_var.nextElement();
-		out.println("\tvar_"+depVar.getName()+"->setCurr(currIndex,"+exp.infix_C()+");");
+		Expression exp = enum_exp.nextElement();
+		Variable depVar = enum_var.nextElement();
+		out.println("\t" + TokenMangler.getEscapedFieldVariableName_C(depVar.getName()) + "->setCurr(currIndex," + exp.infix_C() + ");");
 	}
 	
 	out.println("}");
-	out.println("");
+	out.println();
 }
 /**
  * This method was created by a SmartGuide.
@@ -304,26 +308,32 @@ protected void writeUpdateMatrix(java.io.PrintWriter out, String functionName) t
 	// collect all expressions into one and declare x,y,z,t if necessary
 	//
 	Expression expTemp = new Expression("0.0;");
-	Enumeration enum_fre = getFastSystem().getFastRateExpressions();
+	Enumeration<Expression> enum_fre = getFastSystem().getFastRateExpressions();
 	while (enum_fre.hasMoreElements()){
-		Expression fre = (Expression)enum_fre.nextElement();
+		Expression fre = enum_fre.nextElement();
 		expTemp = Expression.add(expTemp,fre);
 	}
 	writeFastFunctionDeclarations(out,expTemp,"currIndex");	
 	
 	int varCount=0;
-	Enumeration enum1 = getFastSystem().getIndependentVariables();
+	Enumeration<Variable> enum1 = getFastSystem().getIndependentVariables();
 	while (enum1.hasMoreElements()){
-		Variable var = (Variable)enum1.nextElement();
-		out.println("\tdouble "+var.getName()+" = getX("+varCount+");");
+		Variable var = enum1.nextElement();
+		out.println("\tdouble " + TokenMangler.getEscapedLocalVariableName_C(var.getName()) + " = getX(" + varCount + ");");
 		varCount++;
 	}
 
+	Enumeration<PseudoConstant> enum_pc = getFastSystem().getPseudoConstants();
+	while (enum_pc.hasMoreElements()){
+		PseudoConstant pc = enum_pc.nextElement();
+		out.println("\tdouble " + TokenMangler.getEscapedLocalVariableName_C(pc.getName()) + " = " + TokenMangler.getEscapedFieldVariableName_C(pc.getName()) + ";");
+	}
+	
 	FieldFunctionArguments[] fieldFuncArgs = simulation.getMathDescription().getFieldFunctionArguments();
 
 	for (int i = 0; fieldFuncArgs != null && i < fieldFuncArgs.length; i ++) {
-		String localvarname = FieldDataIdentifierSpec.getLocalVariableName_C(fieldFuncArgs[i]);
-		String globalvarname = FieldDataIdentifierSpec.getGlobalVariableName_C(fieldFuncArgs[i]);
+		String localvarname = TokenMangler.getEscapedLocalFieldVariableName_C(fieldFuncArgs[i]);
+		String globalvarname = TokenMangler.getEscapedGlobalFieldVariableName_C(fieldFuncArgs[i]);
 		out.println("\tdouble " + localvarname + " = " + globalvarname + "->getData()[currIndex];");	
 	}
 	
@@ -332,9 +342,9 @@ protected void writeUpdateMatrix(java.io.PrintWriter out, String functionName) t
 	while (enum_fre.hasMoreElements()){
 		Expression fre = (Expression)enum_fre.nextElement();
 		varCount=0;
-		Enumeration enum_var = getFastSystem().getIndependentVariables();
+		Enumeration<Variable> enum_var = getFastSystem().getIndependentVariables();
 		while (enum_var.hasMoreElements()){
-			Variable var = (Variable)enum_var.nextElement();
+			Variable var = enum_var.nextElement();
 			Expression exp = simulation.substituteFunctions(fre).flatten();
 			Expression differential = exp.differentiate(var.getName());
 			differential.bindExpression(simulation);
@@ -345,9 +355,9 @@ protected void writeUpdateMatrix(java.io.PrintWriter out, String functionName) t
 		exp = simulation.substituteFunctions(exp);
 		out.println("\tsetMatrix("+frCount+", "+varCount+", "+exp.flatten().infix_C()+");");
 		frCount++;
-		out.println("");
+		out.println();
 	}
 	out.println("}");
-	out.println("");
+	out.println();
 }
 }
