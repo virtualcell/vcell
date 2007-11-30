@@ -4,6 +4,8 @@ package cbit.vcell.solvers;
  * All rights reserved.
 ©*/
 import java.util.*;
+
+import cbit.util.TokenMangler;
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
 import cbit.vcell.solver.*;
@@ -25,7 +27,7 @@ protected CppClassCoderVolumeVarContext(CppCoderVCell argCppCoderVCell,
 												String argParentClass) throws Exception
 {
 	super(argCppCoderVCell, argEquation, argVolumeSubDomain, argSimulation, argParentClass);
-	Vector membraneSubDomainOwnedList = new Vector();
+	Vector<MembraneSubDomain> membraneSubDomainOwnedList = new Vector<MembraneSubDomain>();
 	MembraneSubDomain membranes[] = argSimulation.getMathDescription().getMembraneSubDomains(argVolumeSubDomain);
 	for (int i = 0; i < membranes.length; i++){
 		//
@@ -73,11 +75,11 @@ protected Variable[] getRequiredVariables() throws Exception {
 	if (getEquation() instanceof PdeEquation){
 		for (int i = 0;membraneSubDomainsOwned!=null && i < membraneSubDomainsOwned.length; i++){
 			JumpCondition jumpCondition = membraneSubDomainsOwned[i].getJumpCondition((VolVariable)getEquation().getVariable());
-			Enumeration enumJC = jumpCondition.getRequiredVariables(getSimulation());
+			Enumeration<Variable> enumJC = jumpCondition.getRequiredVariables(getSimulation());
 			requiredVariables = (Variable[])cbit.util.BeanUtils.addElements(requiredVariables,(Variable[])cbit.util.BeanUtils.getArray(enumJC,Variable.class));
 		}
 	}
-	Vector uniqueVarList = new Vector();
+	Vector<Variable> uniqueVarList = new Vector<Variable>();
 	for (int i = 0; i < requiredVariables.length; i++){
 		Variable var = requiredVariables[i];
 		if (var instanceof InsideVariable){
@@ -115,44 +117,41 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 		Expression ic = getEquation().getInitialExpression();
 		ic.bindExpression(getSimulation());
 		double value = ic.evaluateConstant();
-		out.println("   initialValue = new double;");
-		out.println("   *initialValue = "+value+";");
+		out.println("\tinitialValue = new double;");
+		out.println("\t*initialValue = "+value+";");
 	}catch (Exception e){
-		out.println("   initialValue = NULL;");
+		out.println("\tinitialValue = NULL;");
 	}	
 	if (getEquation() instanceof PdeEquation){
 		try {
 			Expression Dexp = ((PdeEquation)getEquation()).getDiffusionExpression();
 			Dexp.bindExpression(getSimulation());
 			double value = Dexp.evaluateConstant();
-			out.println("   diffusionRate = new double;");
-			out.println("   *diffusionRate = "+value+";");
+			out.println("\tdiffusionRate = new double;");
+			out.println("\t*diffusionRate = "+value+";");
 		}catch (Exception e){
-			out.println("   diffusionRate = NULL;");
+			out.println("\tdiffusionRate = NULL;");
 		}
 	}else{	
-		out.println("   diffusionRate = NULL;");
+		out.println("\tdiffusionRate = NULL;");
 	}	
-	out.println("");
+	out.println();
 
 	Variable requiredVariables[] = getRequiredVariables();
 	for (int i = 0; i < requiredVariables.length; i++){
 		Variable var = requiredVariables[i];
-		if (var instanceof VolVariable){
-			out.println("    var_"+var.getName()+" = NULL;");
-		}else if (var instanceof MemVariable){
-			out.println("    var_"+var.getName()+" = NULL;");
-		}else if (var instanceof MembraneRegionVariable){
-			out.println("    var_"+var.getName()+" = NULL;");
-		}else if (var instanceof VolumeRegionVariable){
-			out.println("    var_"+var.getName()+" = NULL;");
+		if (var instanceof VolVariable 
+				|| var instanceof MemVariable 
+				|| var instanceof MembraneRegionVariable 
+				|| var instanceof VolumeRegionVariable){
+			out.println("\t" + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + " = NULL;");
 		}else if (var instanceof InsideVariable){
 		}else if (var instanceof OutsideVariable){
 		}else if (var instanceof ReservedVariable){
 		}else if (var instanceof Constant){
 		}else if (var instanceof Function){
 		}else{
-			throw new Exception("unknown identifier type for identifier: "+var.getName());
+			throw new Exception("unknown identifier type for identifier: " + var.getName());
 		}	
 	}		  	
 	out.println("}");
@@ -171,8 +170,8 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 	out.println("class " + getClassName() + " : public " + getParentClassName());
 	out.println("{");
 	out.println(" public:");
-	out.println("    "+getClassName() + "(Feature *feature, string& speciesName);");
-	out.println("    virtual bool resolveReferences(Simulation *sim);");
+	out.println("\t" + getClassName() + "(Feature *feature, string& speciesName);");
+	out.println("\tvirtual bool resolveReferences(Simulation *sim);");
 
 	BoundaryConditionType bc = null;
 	int dimension = getSimulation().getMathDescription().getGeometry().getDimension();
@@ -181,19 +180,19 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 		if (pdeEqu.getBoundaryXm()!=null){
 			bc = getCompartmentSubDomain().getBoundaryConditionXm();
 			if (bc.isDIRICHLET()){
-				out.println("    virtual double getXmBoundaryValue(long volumeIndex);");
+				out.println("\tvirtual double getXmBoundaryValue(long volumeIndex);");
 			}else if (bc.isNEUMANN()){
-				out.println("    virtual double getXmBoundaryFlux(long volumeIndex);");
+				out.println("\tvirtual double getXmBoundaryFlux(long volumeIndex);");
 			} else if (bc.isPERIODIC()){
-				out.println("    virtual double getXBoundaryPeriodicConstant();");
+				out.println("\tvirtual double getXBoundaryPeriodicConstant();");
 			}
 		}
 		if (pdeEqu.getBoundaryXp()!=null){			
 			bc = getCompartmentSubDomain().getBoundaryConditionXp();
 			if (bc.isDIRICHLET()){
-				out.println("    virtual double getXpBoundaryValue(long volumeIndex);");
+				out.println("\tvirtual double getXpBoundaryValue(long volumeIndex);");
 			}else if (bc.isNEUMANN()){
-				out.println("    virtual double getXpBoundaryFlux(long volumeIndex);");
+				out.println("\tvirtual double getXpBoundaryFlux(long volumeIndex);");
 			}
 		}
 		if (pdeEqu.getVelocityX() != null) {
@@ -203,19 +202,19 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 			if (pdeEqu.getBoundaryYm()!=null){
 				bc = getCompartmentSubDomain().getBoundaryConditionYm();
 				if (bc.isDIRICHLET()){
-					out.println("    virtual double getYmBoundaryValue(long volumeIndex);");
+					out.println("\tvirtual double getYmBoundaryValue(long volumeIndex);");
 				}else if (bc.isNEUMANN()){
-					out.println("    virtual double getYmBoundaryFlux(long volumeIndex);");
+					out.println("\tvirtual double getYmBoundaryFlux(long volumeIndex);");
 				}else if (bc.isPERIODIC()){
-					out.println("    virtual double getYBoundaryPeriodicConstant();");
+					out.println("\tvirtual double getYBoundaryPeriodicConstant();");
 				}
 			}	
 			if (pdeEqu.getBoundaryYp()!=null){
 				bc = getCompartmentSubDomain().getBoundaryConditionYp();
 				if (bc.isDIRICHLET()){
-					out.println("    virtual double getYpBoundaryValue(long volumeIndex);");
+					out.println("\tvirtual double getYpBoundaryValue(long volumeIndex);");
 				}else if (bc.isNEUMANN()){
-					out.println("    virtual double getYpBoundaryFlux(long volumeIndex);");
+					out.println("\tvirtual double getYpBoundaryFlux(long volumeIndex);");
 				}
 			}
 			if (pdeEqu.getVelocityY() != null) {
@@ -226,19 +225,19 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 			if (pdeEqu.getBoundaryZm()!=null){
 				bc = getCompartmentSubDomain().getBoundaryConditionZm();
 				if (bc.isDIRICHLET()){
-					out.println("    virtual double getZmBoundaryValue(long volumeIndex);");
+					out.println("\tvirtual double getZmBoundaryValue(long volumeIndex);");
 				}else if (bc.isNEUMANN()){
-					out.println("    virtual double getZmBoundaryFlux(long volumeIndex);");
+					out.println("\tvirtual double getZmBoundaryFlux(long volumeIndex);");
 				} else if (bc.isPERIODIC()){
-				out.println("    virtual double getZBoundaryPeriodicConstant();");
+				out.println("\tvirtual double getZBoundaryPeriodicConstant();");
 				}
 			}	
 			if (pdeEqu.getBoundaryZp()!=null){
 				bc = getCompartmentSubDomain().getBoundaryConditionZp();
 				if (bc.isDIRICHLET()){
-					out.println("    virtual double getZpBoundaryValue(long volumeIndex);");
+					out.println("\tvirtual double getZpBoundaryValue(long volumeIndex);");
 				}else if (bc.isNEUMANN()){
-					out.println("    virtual double getZpBoundaryFlux(long volumeIndex);");
+					out.println("\tvirtual double getZpBoundaryFlux(long volumeIndex);");
 				}
 			}
 			if (pdeEqu.getVelocityZ() != null) {
@@ -251,7 +250,7 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 		ic.bindExpression(getSimulation());
 		double value = ic.evaluateConstant();
 	}catch (Exception e){
-		out.println("    virtual double getInitialValue(long volumeIndex);");
+		out.println("\tvirtual double getInitialValue(long volumeIndex);");
 	}
 	if (getEquation() instanceof PdeEquation){
 		try {
@@ -259,29 +258,31 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 			Dexp.bindExpression(getSimulation());
 			double value = Dexp.evaluateConstant();
 		}catch (Exception e){
-			out.println("    virtual double getDiffusionRate(long volumeIndex);");
+			out.println("\tvirtual double getDiffusionRate(long volumeIndex);");
 		}
 	}
-	out.println(" protected:");
-	out.println("    virtual double getReactionRate(long volumeIndex);");
-	out.println("    virtual void getFlux(MembraneElement *element,double *inFlux, double *outFlux);");
-	out.println(" private:");
+	out.println("protected:");
+	out.println("\tvirtual double getReactionRate(long volumeIndex);");
+	out.println("\tvirtual void getFlux(MembraneElement *element,double *inFlux, double *outFlux);");
+	out.println();
+	out.println("private:");
 	Variable requiredVariables[] = getRequiredVariables();
 	for (int i = 0; i < requiredVariables.length; i++){
 		Variable var = requiredVariables[i];
+		String mangledVarName = TokenMangler.getEscapedFieldVariableName_C(var.getName());
 		if (var instanceof VolVariable){
-			out.println("    VolumeVariable      *var_"+var.getName()+";");
+			out.println("\tVolumeVariable *" + mangledVarName + ";");
 		}else if (var instanceof MemVariable){
-			out.println("    MembraneVariable    *var_"+var.getName()+";");
+			out.println("\tMembraneVariable *" + mangledVarName + ";");
 		}else if (var instanceof MembraneRegionVariable){
-			out.println("    MembraneRegionVariable    *var_"+var.getName()+";");
+			out.println("\tMembraneRegionVariable *" + mangledVarName + ";");
 		}else if (var instanceof VolumeRegionVariable){
-			out.println("    VolumeRegionVariable    *var_"+var.getName()+";");
+			out.println("\tVolumeRegionVariable *" + mangledVarName + ";");
 		}else if (var instanceof ReservedVariable){
 		}else if (var instanceof Constant){
 		}else if (var instanceof Function){
 		}else{
-			throw new Exception("unknown identifier type '"+var.getClass().getName()+"' for identifier: "+var.getName());
+			throw new Exception("unknown identifier type '" + var.getClass().getName() + "' for identifier: " + var.getName());
 		}	
 	}		  	
 	out.println("};");
@@ -347,7 +348,7 @@ protected void writeGetFlux(java.io.PrintWriter out, String functionName) throws
 			// then write out dependencies
 			//
 			Expression totalExpression = Expression.add(inFluxExp_substituted,outFluxExp_substituted);
-			writeMembraneFunctionDeclarations(out,"element",totalExpression,bFlipInsideOutside,"   ");
+			writeMembraneFunctionDeclarations(out,"element",totalExpression,bFlipInsideOutside,"\t");
 			if (bFlipInsideOutside){
 				out.println("\t*inFlux = "+outFluxExp_substituted.infix_C()+";  // *****  flux convension reversed, uses 'outFlux' from MathDescription");
 				out.println("\t*outFlux = "+inFluxExp_substituted.infix_C()+";  // *****  flux convension reversed, uses 'inFlux' from MathDescription");
@@ -396,7 +397,7 @@ protected void writeGetFlux(java.io.PrintWriter out, String functionName) throws
 				// then write out dependencies
 				//
 				Expression totalExpression = Expression.add(inFluxExp_substituted,outFluxExp_substituted);
-				writeMembraneFunctionDeclarations(out,"element",totalExpression,bFlipInsideOutside,"         ");
+				writeMembraneFunctionDeclarations(out,"element",totalExpression,bFlipInsideOutside,"\t\t");
 				if (bFlipInsideOutside){
 					out.println("\t\t\t*inFlux = "+outFluxExp_substituted.infix_C()+";  // *****  flux convension reversed, uses 'outFlux' from MathDescription");
 					out.println("\t\t\t*outFlux = "+inFluxExp_substituted.infix_C()+";  // *****  flux convension reversed, uses 'inFlux' from MathDescription");

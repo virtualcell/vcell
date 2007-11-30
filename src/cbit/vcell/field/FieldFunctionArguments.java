@@ -1,10 +1,13 @@
 package cbit.vcell.field;
 
+import java.io.Serializable;
 import java.util.StringTokenizer;
+
+import cbit.util.TokenMangler;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 
-public class FieldFunctionArguments {
+public class FieldFunctionArguments implements Serializable {
 
 	private String fieldName;
 	private String variableName;
@@ -35,6 +38,13 @@ public class FieldFunctionArguments {
 	public String getVariableName() {
 		return variableName;
 	}
+	public static String getUniqueID(String fieldname, String varname, Expression timeExp) {
+		return TokenMangler.fixTokenStrict(fieldname + "_" + varname + "_" + timeExp.infix());
+	}
+
+	public String getUniqueID() {
+		return getUniqueID(fieldName, variableName, time);
+	}	
 	@Override
 	public int hashCode() {
 		final int PRIME = 31;

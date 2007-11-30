@@ -83,6 +83,7 @@ protected String[] getCodeIncludes()
 	 };
 }                     
 
+ /*
 protected String[] getHeaderConstants() {
 	
 	java.util.Vector<Constant> constantVector = new java.util.Vector<Constant>();
@@ -108,7 +109,7 @@ protected String[] getHeaderConstants() {
 	}	
 	return constantString;
 }            
-
+*/
 
  protected String[] getHeaderIncludes()
  {

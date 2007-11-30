@@ -67,7 +67,7 @@ public Enumeration getCppClassCoders() {
 	return cppClassCoderList.elements();
 }
    protected abstract String[] getHeaderClassDefines();      
-   protected abstract String[] getHeaderConstants();      
+   //protected abstract String[] getHeaderConstants();      
    protected abstract String[] getHeaderIncludes();      
 /**
  * This method was created by a SmartGuide.
@@ -141,14 +141,14 @@ protected void writeCppHeaderBegin(PrintWriter out) throws Exception {
 		out.println("");
 	}	
 
-	String constants[] = getHeaderConstants();
-	if (constants!=null){
-		for (int i=0;i<constants.length;i++){
-			out.println("const " + constants[i] + ";");
-		}
-		out.println("");
-		out.println("");
-	}  
+//	String constants[] = getHeaderConstants();
+//	if (constants!=null){
+//		for (int i=0;i<constants.length;i++){
+//			out.println("const " + constants[i] + ";");
+//		}
+//		out.println("");
+//		out.println("");
+//	}  
 }	                   
 protected void writeCppHeaderEnd(PrintWriter out) throws Exception {
 	out.println("");

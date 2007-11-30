@@ -1,9 +1,5 @@
 package cbit.vcell.solvers;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import java.util.*;
+import cbit.util.TokenMangler;
 import cbit.vcell.math.*;
 import cbit.vcell.parser.*;
 import cbit.vcell.solver.*;
@@ -57,20 +53,17 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	out.println("{");
 	try {
 		double value = getEquation().getInitialExpression().evaluateConstant();
-		out.println("   initialValue = new double;");
-		out.println("   *initialValue = "+value+";");
+		out.println("\tinitialValue = new double;");
+		out.println("\t*initialValue = "+value+";");
 	}catch (Exception e){
-		out.println("   initialValue = NULL;");
+		out.println("\tinitialValue = NULL;");
 	}	
-	out.println("");
+	out.println();
 	Variable requiredVariables[] = getRequiredVariables();
 	for (int i = 0; i < requiredVariables.length; i++){
 		Variable var = requiredVariables[i];
-		if (var instanceof VolVariable){
-			out.println("   var_"+var.getName()+" = NULL;");
-		}
-		if (var instanceof FilamentVariable){
-			out.println("   var_"+var.getName()+" = NULL;");
+		if (var instanceof VolVariable || var instanceof FilamentVariable){
+			out.println("\t" + TokenMangler.getEscapedFieldVariableName_C(var.getName())+" = NULL;");
 		}
 	}		  	
 	out.println("}");
@@ -88,28 +81,28 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 
 	out.println("class " + getClassName() + " : public " + getParentClassName());
 	out.println("{");
-	out.println(" public:");
-	out.println("    "+getClassName() + "(Contour *contour, Feature *feature, CString speciesName);");
-	out.println("    virtual boolean resolveReferences(Simulation *sim);");
+	out.println("public:");
+	out.println("\t" + getClassName() + "(Contour *contour, Feature *feature, CString speciesName);");
+	out.println("\tvirtual boolean resolveReferences(Simulation *sim);");
 
-	BoundaryConditionType bc = null;
-//	int dimension = simulation.getMathDescription().getGeometry().getDimension();
 	try {
 		double value = getEquation().getInitialExpression().evaluateConstant();
 	}catch (Exception e){
-		out.println("    virtual double getInitialValue(ContourElement *contourElement);");
+		out.println("\tvirtual double getInitialValue(ContourElement *contourElement);");
 	}
-	out.println(" protected:");
-	out.println("    virtual double getContourReactionRate(ContourElement *memElement);");
-	out.println("    virtual double getContourDiffusionRate(ContourElement *memElement);");
-	out.println(" private:");
+	out.println("protected:");
+	out.println("\tvirtual double getContourReactionRate(ContourElement *memElement);");
+	out.println("\tvirtual double getContourDiffusionRate(ContourElement *memElement);");
+	out.println();
+	out.println("private:");
 	Variable requiredVariables[] = getRequiredVariables();
 	for (int i = 0; i < requiredVariables.length; i++){
 		Variable var = requiredVariables[i];
+		String mangledVarName = TokenMangler.getEscapedFieldVariableName_C(var.getName());
 		if (var instanceof FilamentVariable){
-			out.println("    ContourVariable    *var_"+var.getName()+";");
+			out.println("\tContourVariable *" + mangledVarName + ";");
 		}else if (var instanceof VolVariable){
-			out.println("    VolumeVariable      *var_"+var.getName()+";");
+			out.println("\tVolumeVariable *" + mangledVarName + ";");
 		}else if (var instanceof ReservedVariable){
 		}else if (var instanceof Constant){
 		}else if (var instanceof Function){
