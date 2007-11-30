@@ -272,4 +272,10 @@ public void writeTokens(java.io.PrintWriter pw, Model model) {
 	pw.println(VCMODL.EndBlock);
 	
 }
+
+
+@Override
+public int getDimension() {
+	return 3;
+}
 }

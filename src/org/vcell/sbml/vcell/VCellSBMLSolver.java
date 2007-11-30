@@ -9,6 +9,7 @@ import org.vcell.sbml.SBMLUtils;
 import org.vcell.sbml.SbmlException;
 import org.vcell.sbml.SimSpec;
 import org.vcell.sbml.SolverException;
+import org.vcell.sbml.SBMLUtils.SBMLUnitParameter;
 
 import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;
@@ -73,7 +74,7 @@ public class VCellSBMLSolver implements SBMLSolver {
 			    SBMLUtils.writeStringToFile(vcml_1, new File(outDir,filePrefix+".vcml").getAbsolutePath());
 			    
 			    // export bioModel as sbml and save
-			    String vcml_sbml = cbit.vcell.xml.XmlHelper.exportSBML(bioModel, 2, 3, bioModel.getSimulationContexts(0).getName());
+			    String vcml_sbml = cbit.vcell.xml.XmlHelper.exportSBML(bioModel, 2, 1, bioModel.getSimulationContexts(0).getName());
 			    SBMLUtils.writeStringToFile(vcml_sbml, new File(outDir,filePrefix+".vcml.sbml").getAbsolutePath());
 			    
 			    // re-import bioModel from exported sbml
@@ -259,8 +260,8 @@ public class VCellSBMLSolver implements SBMLSolver {
 		            	if (spConcUnits != null) {
 		            		VCUnitDefinition sbunits = spConcUnits.getSBConcentrationUnits();
 		            		VCUnitDefinition vcunits = spConcUnits.getVCConcentrationUnits();
-		            		double unitFactor = SBMLImporter.getSpeciesConcUnitFactor(vcunits, sbunits);
-		                	outputStream.print("," + data[j + 1][index] * unitFactor); 		//earlier, hack unitfactor = 0.000001
+		            		SBMLUnitParameter unitFactor = SBMLUtils.getConcUnitFactor("spConcParam", vcunits, sbunits);
+		                	outputStream.print("," + data[j + 1][index] * unitFactor.getExpression().evaluateConstant()); 		//earlier, hack unitfactor = 0.000001
 		            	}
 		            }
 		            // System.out.println("No interpolation needed!");
@@ -280,12 +281,12 @@ public class VCellSBMLSolver implements SBMLSolver {
 		                double[] times = null;
 		                
 		                //Get the unit factor (VC->SBML units)
-		                double unitFactor;
+		                SBMLUnitParameter unitFactor = null;
 		            	SBMLImporter.SBVCConcentrationUnits spConcUnits = speciesUnitsHash.get(testSpec.getVarsList()[j]);
 		            	if (spConcUnits != null) {
 		            		VCUnitDefinition sbunits = spConcUnits.getSBConcentrationUnits();
 		            		VCUnitDefinition vcunits = spConcUnits.getVCConcentrationUnits();
-		            		unitFactor = SBMLImporter.getSpeciesConcUnitFactor(vcunits, sbunits);
+		            		unitFactor = SBMLUtils.getConcUnitFactor("spConcFactor", vcunits, sbunits);
 		            	} else {
 		            		throw new RuntimeException("Could not convert units from VC - SBML, insufficient information");
 		            	}
@@ -336,7 +337,7 @@ public class VCellSBMLSolver implements SBMLSolver {
 		                //speciesVals = new double[] { data[j+1][index], data[j+1][index+1] };
 		                //interpolatedValue = taylorInterpolation(sampleTimes[i], times, speciesVals);
 	
-		                interpolatedValue = interpolatedValue * unitFactor; 		//earlier, hack unitfactor = 0.000001 
+		                interpolatedValue = interpolatedValue * unitFactor.getExpression().evaluateConstant(); 		//earlier, hack unitfactor = 0.000001 
 		                // System.out.println("Sample time: " + sampleTimes[i] + ", between time[" + index + "]=" + data[0][index]+" and time["+(index+1)+"]="+(data[0][index+1])+", interpolated = "+interpolatedValue);
 		                outputStream.print("," + interpolatedValue);
 		            }

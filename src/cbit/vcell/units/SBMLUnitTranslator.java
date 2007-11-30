@@ -61,6 +61,7 @@ public class SBMLUnitTranslator {
 		SbmlBaseUnits.add("watt");
 		SbmlBaseUnits.add("weber");	
     }	
+    
 	
 /*
  *  convertVCUnitsToSbmlUnits :
@@ -87,7 +88,7 @@ private static java.util.ArrayList convertVCUnitsToSbmlUnits(double unitMultipli
 					sbmlUnit = new org.sbml.libsbml.Unit(baseName, exponent.intValue(), unitScale, 1.0);
 					allSbmlUnitsList.add(sbmlUnit);
 				} else {
-					sbmlUnit = new org.sbml.libsbml.Unit(baseName, exponent.intValue(), unitScale, unitMultiplier);
+					sbmlUnit = new org.sbml.libsbml.Unit(baseName, exponent.intValue(), unitScale, Math.pow(unitMultiplier, exponent.inverse().doubleValue()));
 					allSbmlUnitsList.add(sbmlUnit);
 				}
 			}
@@ -195,10 +196,8 @@ public static VCUnitDefinition getVCUnitDefinition(org.sbml.libsbml.UnitDefiniti
 			vcUnitDefn = vcUnitDefn.multiplyBy(vcUnit);        //?
 		}
 	}
-	System.out.println("sbmlUnit : " + sbmlUnitDefn.toString() + ";\t VC Unit : " + vcUnitDefn.toString());
 	return vcUnitDefn;
 }
-
 
 public static boolean isSbmlBaseUnit(String symbol) {
 	return SbmlBaseUnits.contains(symbol);
