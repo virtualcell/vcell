@@ -523,7 +523,7 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 			//
 			// after repairing aspects of MathDescription, now see if same
 			//
-			if (oldMathDesc.compareEqual(newMathDesc)){
+			if (oldMathDesc.compareInvariantAttributes(newMathDesc)){
 				reasonForDecision.append(MATHS_ARE_NUMERICALLY_EQUIVALENT);
 				return true;
 			}else{
@@ -620,8 +620,10 @@ public boolean compareInvariantAttributes(MathDescription newMathDesc) {
 	//
 	// compare geometry
 	//
-	if (!Compare.isEqualOrNull(geometry, newMathDesc.geometry)) {
-		System.out.println("DIFFERENT INVARIANTS: Geometry different");
+	if (!Compare.isEqualOrNull(
+			(geometry != null?geometry.getGeometrySpec():null),
+			(newMathDesc.geometry != null?newMathDesc.geometry.getGeometrySpec():null))) {
+		System.out.println("DIFFERENT INVARIANTS: GeometrySpec different");
 		return false;
 	}
 
