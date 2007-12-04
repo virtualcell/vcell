@@ -117,7 +117,8 @@ public class PDEDataViewer extends DataViewer {
 					"[" + tsjrss.getVariableNames()[0] + "]"}));
 
 
-			showComponentInFrame(plotPane,"Statistics: ("+tsjrss.getVariableNames()[0]+") "+getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName());
+			showComponentInFrame(plotPane,"Statistics: ("+tsjrss.getVariableNames()[0]+") "+
+					(getSimulationModelInfo() != null?getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName():""));
 		}
 	};
 	//
@@ -1121,11 +1122,15 @@ private cbit.vcell.geometry.gui.DataValueSurfaceViewer getDataValueSurfaceViewer
 		for (int i = 0; i < meshRegionSurfaces.getSurfaceCollection().getSurfaceCount(); i++){
 			cbit.vcell.solvers.MembraneElement me = //Get the first element, any will do, all have same inside/outside volumeIndex
 				getPdeDataContext().getCartesianMesh().getMembraneElements()[meshRegionSurfaces.getMembraneIndexForPolygon(i,0)];
-			surfaceNames[i] =
+			if(getSimulationModelInfo() != null){
+				surfaceNames[i] =
 				getSimulationModelInfo().getMembraneName(
 					getPdeDataContext().getCartesianMesh().getSubVolumeFromVolumeIndex(me.getInsideVolumeIndex()),
 					getPdeDataContext().getCartesianMesh().getSubVolumeFromVolumeIndex(me.getOutsideVolumeIndex())
-				);		
+				);
+			}else{
+				surfaceNames[i] = i+"";
+			}
 		}
 
 		//SurfaceAreas
@@ -2208,8 +2213,7 @@ private void updateDataValueSurfaceViewer() {
 	getDataValueSurfaceViewer().setSurfaceCollectionDataInfoProvider(svdp);
 	
 	dataValueSurfaceViewerJIF.setTitle(
-		getSimulationModelInfo().getContextName()+"::"+
-		"SIM("+getSimulationModelInfo().getSimulationName()+")::"+
+		(getSimulationModelInfo() != null?getSimulationModelInfo().getContextName()+"::"+"SIM("+getSimulationModelInfo().getSimulationName()+")::":"")+
 		"VAR("+getPdeDataContext().getVariableName()+")::"+
 		"TIME("+getPdeDataContext().getTimePoint()+")");
 
