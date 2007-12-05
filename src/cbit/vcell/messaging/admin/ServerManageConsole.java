@@ -121,6 +121,7 @@ public class ServerManageConsole extends JFrame implements ControlTopicListener 
 	private JButton ivjModifyServiceButton = null;
 	private JButton ivjRefreshServerManagerButton = null;
 	private JProgressBar ivjProgressBar = null;
+	private JLabel ivjNumSelectedLabel = null;
 	
 	class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.awt.event.MouseListener, javax.swing.event.ChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -827,7 +828,12 @@ private javax.swing.JSplitPane getJSplitPane1() {
 			panel7.setLayout(new java.awt.BorderLayout());			
 			JPanel panel8 = new javax.swing.JPanel();
 			panel8.setLayout(new java.awt.BorderLayout());
-			panel8.add(getNumResultsLabel(), "West");
+			JPanel textPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+			textPanel.add(getNumResultsLabel());
+			textPanel.add(new JLabel(" returned    "));
+			textPanel.add(getNumSelectedLabel());
+			textPanel.add(new JLabel(" selected "));
+			panel8.add(textPanel, "West");
 			panel8.add(getRemoveFromListButton(), "East");			
 			panel7.add(panel8, "North");			
 			JScrollPane scrollPane2 = new javax.swing.JScrollPane();
@@ -891,9 +897,9 @@ private javax.swing.JLabel getNumResultsLabel() {
 	if (ivjNumResultsLabel == null) {
 		try {
 			ivjNumResultsLabel = new javax.swing.JLabel();
-			ivjNumResultsLabel.setName("NumResultsLabel");
-			ivjNumResultsLabel.setText("  Query Results");
+			ivjNumResultsLabel.setText("0");
 			ivjNumResultsLabel.setForeground(java.awt.Color.red);
+			ivjNumResultsLabel.setFont(new Font(ivjNumResultsLabel.getFont().getName(), Font.BOLD, ivjNumResultsLabel.getFont().getSize()));
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -903,6 +909,25 @@ private javax.swing.JLabel getNumResultsLabel() {
 		}
 	}
 	return ivjNumResultsLabel;
+}
+
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private javax.swing.JLabel getNumSelectedLabel() {
+	if (ivjNumSelectedLabel == null) {
+		try {
+			ivjNumSelectedLabel = new javax.swing.JLabel();
+			ivjNumSelectedLabel.setText("0");
+			ivjNumSelectedLabel.setForeground(java.awt.Color.blue);
+			ivjNumSelectedLabel.setFont(new Font(ivjNumSelectedLabel.getFont().getName(), Font.BOLD, ivjNumSelectedLabel.getFont().getSize()));
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjNumSelectedLabel;
 }
 
 /**
@@ -2391,7 +2416,7 @@ private void query() {
 	
 	try {
 		List<SimpleJobStatus> resultList = adminDbTop.getSimulationJobStatus(conditions.toString(), true);
-		getNumResultsLabel().setText("  " + resultList.size() + " result(s) returned");
+		getNumResultsLabel().setText("  " + resultList.size());
 		((JobTableModel)getQueryResultTable().getModel()).setData(resultList);
 	} catch (Exception ex) {
 		getNumResultsLabel().setText("Query failed, please try again!");
@@ -2500,6 +2525,7 @@ public void queryResultTable_MouseClicked(java.awt.event.MouseEvent mouseEvent) 
 	}
 	if (mouseEvent.getClickCount() == 1) {
 		getRemoveFromListButton().setEnabled(true);
+		getNumSelectedLabel().setText("" + getQueryResultTable().getSelectedRowCount());
 	} else if (mouseEvent.getClickCount() == 2) {
 		SimulationJobStatusDetailDialog dialog = new SimulationJobStatusDetailDialog(this, getQueryResultTable().getRowCount(), srow);
 		dialog.setLocationRelativeTo(this);
@@ -2714,7 +2740,7 @@ public void removeFromListButton_ActionPerformed(java.awt.event.ActionEvent acti
 	for (int i = 0; i < indexes.length; i ++) {
 		((JobTableModel)getQueryResultTable().getModel()).remove(indexes[i] - i);
 	}
-	getNumResultsLabel().setText("  " + getQueryResultTable().getRowCount() + " result(s) returned");
+	getNumResultsLabel().setText("  " + getQueryResultTable().getRowCount());
 	return;
 }
 
