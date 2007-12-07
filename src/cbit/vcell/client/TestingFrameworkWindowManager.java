@@ -89,6 +89,20 @@ import cbit.util.AsynchProgressPopup;
  * @author: Anuradha Lakshminarayana
  */
 public class TestingFrameworkWindowManager extends TopLevelWindowManager implements DataViewerManager {
+	
+	
+	public static final int COPY_REGRREF = 0;
+	public static final int ASSIGNORIGINAL_REGRREF = 1;
+	public static final int ASSIGNNEW_REGRREF = 2;
+
+	public static class NewTestSuiteUserInformation{
+		public TestSuiteInfoNew testSuiteInfoNew;
+		public int regrRefFlag;
+		public NewTestSuiteUserInformation(TestSuiteInfoNew argTestSuiteInfoNew,int argRegrRefFlag){
+			testSuiteInfoNew = argTestSuiteInfoNew;
+			regrRefFlag = argRegrRefFlag;
+		}
+	};
 	private TestingFrameworkWindowPanel testingFrameworkWindowPanel;
 	private EditTestCriteriaPanel editTestCriteriaPanel =
 		new EditTestCriteriaPanel();
@@ -141,36 +155,9 @@ public void addDataListener(cbit.vcell.desktop.controls.DataListener newListener
 
 public void addNewTestSuiteToTF() throws Exception {
 
-	getAddTestSuitePanel().resetTextFields(null);
-	Object choice = showAddTestSuiteDialog(getAddTestSuitePanel(), null);
-
-	if (choice != null && choice.equals("OK")) {
-		// set the newly defined TestSuite in the newTestSuite object.
-		TestSuiteInfoNew newTestSuiteInfo = getAddTestSuitePanel().getTestSuiteInfo();
-		if (newTestSuiteInfo != null) {
-			saveNewTestSuiteInfo(newTestSuiteInfo);
-//			// check if the newly defined testSuite already exists.
-//			TestSuiteInfoNew[] testSuiteInfos = null;
-//			
-//			testSuiteInfos = getRequestManager().getDocumentManager().getTestSuiteInfos();
-//			
-//			for (int i = 0; i < testSuiteInfos.length; i++) {
-//				if (newTestSuiteInfo.getTSID().equals(testSuiteInfos[i].getTSID())) {
-//					PopupGenerator.showErrorDialog("TestSuite Version "+newTestSuiteInfo.getTSID()+" already exists, Choose another version no. for new TestSuite");
-//					return;
-//				}
-//			}
-//			//addTestSuite(newTestSuiteInfo);
-//			AddTestSuiteOP testSuiteOP =
-//				new AddTestSuiteOP(
-//					newTestSuiteInfo.getTSID(),
-//					newTestSuiteInfo.getTSVCellBuild(),
-//					newTestSuiteInfo.getTSNumericsBuild(),
-//					null);
-//			getRequestManager().getDocumentManager().doTestSuiteOP(testSuiteOP);
-		}
-	} else if (choice.equals("Cancel")) {
-		throw UserCancelException.CANCEL_DB_SELECTION;
+	NewTestSuiteUserInformation newTestSuiteUserInformation = getNewTestSuiteInfoFromUser(null,null);
+	if (newTestSuiteUserInformation != null && newTestSuiteUserInformation.testSuiteInfoNew != null) {
+		saveNewTestSuiteInfo(newTestSuiteUserInformation.testSuiteInfoNew);
 	}
 }
 
@@ -180,7 +167,7 @@ public void addNewTestSuiteToTF() throws Exception {
  * Creation date: (4/10/2003 11:27:32 AM)
  * @param testCase cbit.vcell.numericstestingframework.TestCase
  */
-public String addTestCases(final TestSuiteInfoNew tsInfo, final TestCaseNew[] testCases,AsynchProgressPopup pp){
+public String addTestCases(final TestSuiteInfoNew tsInfo, final TestCaseNew[] testCases,int regrRefFlag,AsynchProgressPopup pp){
 		
 	if (testCases == null || testCases.length == 0 || tsInfo == null) {
 		throw new IllegalArgumentException("TestCases and TestSuiteInfo cannot be null");
@@ -324,14 +311,30 @@ public String addTestCases(final TestSuiteInfoNew tsInfo, final TestCaseNew[] te
 							}
 						}
 						
+						KeyValue regressionBioModelKey = null;
+						KeyValue regressionBioModelSimKey = null;
+						if(bioTestCase.getType().equals(TestCaseNew.REGRESSION)){
+							if(regrRefFlag == TestingFrameworkWindowManager.COPY_REGRREF){
+								regressionBioModelKey = (tcritOrigForSimName != null && tcritOrigForSimName.getRegressionBioModelInfo() != null?tcritOrigForSimName.getRegressionBioModelInfo().getVersion().getVersionKey():null);
+								regressionBioModelSimKey = (tcritOrigForSimName != null && tcritOrigForSimName.getRegressionSimInfo() != null?tcritOrigForSimName.getRegressionSimInfo().getVersion().getVersionKey():null);							
+							}else if(regrRefFlag == TestingFrameworkWindowManager.ASSIGNORIGINAL_REGRREF){
+								regressionBioModelKey = (tcritOrigForSimName != null?bioTestCase.getBioModelInfo().getVersion().getVersionKey():null);
+								regressionBioModelSimKey = (tcritOrigForSimName != null?tcritOrigForSimName.getSimInfo().getVersion().getVersionKey():null);								
+							}else if(regrRefFlag == TestingFrameworkWindowManager.ASSIGNNEW_REGRREF){
+								regressionBioModelKey = newBioModel.getVersion().getVersionKey();
+								regressionBioModelSimKey = newSimulations[j].getVersion().getVersionKey();						
+							}else{
+								throw new IllegalArgumentException(this.getClass().getName()+".addTestCases(...) BIOMODEL Unknown Regression Operation Flag");
+							}
+						}
 						testCriteriaOPs[j] =
 							new AddTestCriteriaOPBioModel(testCases[i].getTCKey(),
 								newSimulations[j].getVersion().getVersionKey(),
-								(tcritOrigForSimName != null && tcritOrigForSimName.getRegressionBioModelInfo() != null?tcritOrigForSimName.getRegressionBioModelInfo().getVersion().getVersionKey():null),
-								(tcritOrigForSimName != null && tcritOrigForSimName.getRegressionSimInfo() != null?tcritOrigForSimName.getRegressionSimInfo().getVersion().getVersionKey():null),
+								regressionBioModelKey,regressionBioModelSimKey,
 								(tcritOrigForSimName != null?tcritOrigForSimName.getMaxAbsError():new Double(0)),
 								(tcritOrigForSimName != null?tcritOrigForSimName.getMaxRelError():new Double(0)),
 								null);
+						
 					}
 
 					testCaseOP =
@@ -386,12 +389,27 @@ public String addTestCases(final TestSuiteInfoNew tsInfo, final TestCaseNew[] te
 							}
 						}
 						
+						KeyValue regressionMathModelKey = null;
+						KeyValue regressionMathModelSimKey = null;
+						if(mathTestCase.getType().equals(TestCaseNew.REGRESSION)){
+							if(regrRefFlag == TestingFrameworkWindowManager.COPY_REGRREF){
+								regressionMathModelKey = (tcritOrigForSimName != null && tcritOrigForSimName.getRegressionMathModelInfo() != null?tcritOrigForSimName.getRegressionMathModelInfo().getVersion().getVersionKey():null);
+								regressionMathModelSimKey = (tcritOrigForSimName != null && tcritOrigForSimName.getRegressionSimInfo() != null?tcritOrigForSimName.getRegressionSimInfo().getVersion().getVersionKey():null);							
+							}else if(regrRefFlag == TestingFrameworkWindowManager.ASSIGNORIGINAL_REGRREF){
+								regressionMathModelKey = (tcritOrigForSimName != null?mathTestCase.getMathModelInfo().getVersion().getVersionKey():null);
+								regressionMathModelSimKey = (tcritOrigForSimName != null?tcritOrigForSimName.getSimInfo().getVersion().getVersionKey():null);								
+							}else if(regrRefFlag == TestingFrameworkWindowManager.ASSIGNNEW_REGRREF){
+								regressionMathModelKey = newMathModel.getVersion().getVersionKey();
+								regressionMathModelSimKey = newSimulations[j].getVersion().getVersionKey();							
+							}else{
+								throw new IllegalArgumentException(this.getClass().getName()+".addTestCases(...) MATHMODEL Unknown Regression Operation Flag");
+							}
+						}
 						testCriteriaOPs[j] =
 						new AddTestCriteriaOPMathModel(
 							testCases[i].getTCKey(),
 							newSimulations[j].getVersion().getVersionKey(),
-							(tcritOrigForSimName != null && tcritOrigForSimName.getRegressionMathModelInfo() != null?tcritOrigForSimName.getRegressionMathModelInfo().getVersion().getVersionKey():null),
-							(tcritOrigForSimName != null && tcritOrigForSimName.getRegressionSimInfo() != null?tcritOrigForSimName.getRegressionSimInfo().getVersion().getVersionKey():null),
+							regressionMathModelKey,regressionMathModelSimKey,
 							(tcritOrigForSimName != null?tcritOrigForSimName.getMaxAbsError():new Double(0)),
 							(tcritOrigForSimName != null?tcritOrigForSimName.getMaxRelError():new Double(0)),
 							null);
@@ -598,6 +616,7 @@ public void dataJobMessage(cbit.rmi.event.DataJobEvent event) {
 public String duplicateTestSuite(
 		final TestSuiteInfoNew testSuiteInfo_Original,
 		final TestSuiteInfoNew newTestSuiteInfo,
+		int regrRefFlag,
 		AsynchProgressPopup pp) throws DataAccessException{
 	
 	if (testSuiteInfo_Original == null || newTestSuiteInfo == null) {
@@ -706,7 +725,7 @@ public String duplicateTestSuite(
 	
 	//Add the new TestCases
 	if(newTestCases != null && newTestCases.length > 0){
-		 return addTestCases(tsin,newTestCases,pp);
+		 return addTestCases(tsin,newTestCases,regrRefFlag,pp);
 	}else{
 		return null;
 	}
@@ -1389,7 +1408,27 @@ public TestCriteriaNew getNewTestCriteriaFromUser(String solutionType, TestCrite
 		Object choice = showEditTestCriteriaDialog(getEditTestCriteriaPanel(), null);
 	
 		if (choice != null && choice.equals("OK")) {
-			return getEditTestCriteriaPanel().getNewTestCriteria();
+			TestCriteriaNew tcritNew = getEditTestCriteriaPanel().getNewTestCriteria();
+			if(tcritNew instanceof TestCriteriaNewMathModel){
+				TestCriteriaNewMathModel tcritNewMM = (TestCriteriaNewMathModel)tcritNew;
+				if((tcritNewMM.getRegressionMathModelInfo() == null && tcritNewMM.getRegressionSimInfo() != null)
+						||
+					(tcritNewMM.getRegressionMathModelInfo() != null && tcritNewMM.getRegressionSimInfo() == null)){
+					PopupGenerator.showErrorDialog("Must specify both Reference MathModel and Simulation");
+					continue;
+				}
+			}else if(tcritNew instanceof TestCriteriaNewBioModel){
+				TestCriteriaNewBioModel tcritNewBM = (TestCriteriaNewBioModel)tcritNew;
+				if((tcritNewBM.getRegressionBioModelInfo() == null && tcritNewBM.getRegressionSimInfo() != null)
+						||
+					(tcritNewBM.getRegressionBioModelInfo() != null && tcritNewBM.getRegressionSimInfo() == null)){
+					PopupGenerator.showErrorDialog("Must specify both Reference BioModel App and Simulation");
+					continue;
+				}
+			}else{
+				
+			}
+			return tcritNew;
 		}
 	
 		throw UserCancelException.CANCEL_GENERIC;
@@ -1403,11 +1442,11 @@ public TestCriteriaNew getNewTestCriteriaFromUser(String solutionType, TestCrite
  * @param testCase cbit.vcell.numericstestingframework.TestCase
  */
 
-public TestSuiteInfoNew getNewTestSuiteInfoFromUser(String tsAnnotation) throws Exception{
+public NewTestSuiteUserInformation getNewTestSuiteInfoFromUser(String tsAnnotation,String duplicateTestSuiteName) throws Exception{
 
-	getAddTestSuitePanel().resetTextFields(tsAnnotation);
+	getAddTestSuitePanel().resetTextFields(tsAnnotation,duplicateTestSuiteName != null);
 	while(true){
-		Object choice = showAddTestSuiteDialog(getAddTestSuitePanel(), null);
+		Object choice = showAddTestSuiteDialog(getAddTestSuitePanel(), null,duplicateTestSuiteName);
 	
 		if (choice != null && choice.equals("OK")) {
 			return getAddTestSuitePanel().getTestSuiteInfo();
@@ -2287,13 +2326,13 @@ private Object showAddTestCaseDialog(JComponent addTCPanel, Component requester)
  * Insert the method's description here.
  * Creation date: (5/14/2004 6:11:35 PM)
  */
-private Object showAddTestSuiteDialog(JComponent addTSPanel, Component requester) {
+private Object showAddTestSuiteDialog(JComponent addTSPanel, Component requester,String duplicateTestSuiteName) {
 
-	addTSPanel.setPreferredSize(new java.awt.Dimension(350, 175));
+	addTSPanel.setPreferredSize(new java.awt.Dimension(350, 250));
 	getAddTestSuiteDialog().setMessage("");
 	getAddTestSuiteDialog().setMessage(addTSPanel);
 	getAddTestSuiteDialog().setValue(null);
-	JDialog d = getAddTestSuiteDialog().createDialog(requester, "Add New TestSuite:");
+	JDialog d = getAddTestSuiteDialog().createDialog(requester, (duplicateTestSuiteName != null?"Duplicate TestSuite '"+duplicateTestSuiteName+"'":"Add New TestSuite"));
 	d.setResizable(true);
 	d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 	cbit.gui.ZEnforcer.showModalDialogOnTop(d);

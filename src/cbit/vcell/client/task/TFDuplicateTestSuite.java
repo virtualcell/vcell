@@ -18,15 +18,17 @@ public class TFDuplicateTestSuite extends AsynchClientTask {
 	private TestingFrameworkWindowManager tfwm;
 	private TestSuiteInfoNew newTSInfo;
 	private TestSuiteInfoNew origTSInfo;
+	private int regrRefFlag;
 /**
  * Insert the method's description here.
  * Creation date: (11/17/2004 3:06:56 PM)
  */
-public TFDuplicateTestSuite(TestingFrameworkWindowManager argtfwm,TestSuiteInfoNew argOrigTSInfo,TestSuiteInfoNew argNewTSInfo) {
+public TFDuplicateTestSuite(TestingFrameworkWindowManager argtfwm,TestSuiteInfoNew argOrigTSInfo,TestSuiteInfoNew argNewTSInfo,int argRegrRefFlag) {
 	
 	tfwm = argtfwm;
 	newTSInfo = argNewTSInfo;
 	origTSInfo = argOrigTSInfo;
+	regrRefFlag = argRegrRefFlag;
 }
 /**
  * Insert the method's description here.
@@ -55,7 +57,7 @@ public void run(java.util.Hashtable hashTable) throws DataAccessException{
 	AsynchProgressPopup pp = (AsynchProgressPopup)hashTable.get(ClientTaskDispatcher.PROGRESS_POPUP);
 
 	String errors = null;
-	errors = tfwm.duplicateTestSuite(origTSInfo,newTSInfo,pp);
+	errors = tfwm.duplicateTestSuite(origTSInfo,newTSInfo,regrRefFlag,pp);
 
 	if(errors != null){
 		hashTable.put(TFRefresh.TF_ERRORS,errors);

@@ -3176,6 +3176,11 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 			if(tcritKey == null){
 				throw new DataAccessException(tsop.getClass().getName()+" had no TestCriteria keys");
 			}
+			if((edittcrit_tsop.getMathModelRegressionRef() == null && edittcrit_tsop.getMathModelRegressionSimRef() != null)
+					||
+					(edittcrit_tsop.getMathModelRegressionRef() != null && edittcrit_tsop.getMathModelRegressionSimRef() == null)){
+					throw new DataAccessException(tsop.getClass().getName()+" MathRef and SimRef must both be null or both not null");
+			}
 			Double maxAbsError = edittcrit_tsop.getNewMaxAbsError();
 			Double maxRelError = edittcrit_tsop.getNewMaxRelError();
 			KeyValue regrSimRef = edittcrit_tsop.getMathModelRegressionSimRef();
@@ -3223,6 +3228,11 @@ public static cbit.vcell.numericstest.TestSuiteOPResults testSuiteOP(cbit.vcell.
 			BigDecimal tcritKey = edittcrit_tsop.getTestCriteriaKey();
 			if(tcritKey == null){
 				throw new DataAccessException(tsop.getClass().getName()+" had no TestCriteria keys");
+			}
+			if((edittcrit_tsop.getBioModelRegressionRef() == null && edittcrit_tsop.getBioModelRegressionSimRef() != null)
+				||
+				(edittcrit_tsop.getBioModelRegressionRef() != null && edittcrit_tsop.getBioModelRegressionSimRef() == null)){
+				throw new DataAccessException(tsop.getClass().getName()+" ApplicationRef and SimRef must both be null or both not null");
 			}
 			Double maxAbsError = edittcrit_tsop.getNewMaxAbsError();
 			Double maxRelError = edittcrit_tsop.getNewMaxRelError();

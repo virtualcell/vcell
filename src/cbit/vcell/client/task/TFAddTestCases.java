@@ -1,15 +1,10 @@
 package cbit.vcell.client.task;
 
-//import cbit.vcell.numericstest.TestSuiteInfoNew;
-//import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.server.DataAccessException;
-//import cbit.vcell.numericstest.AddTestSuiteOP;
 import cbit.vcell.client.TestingFrameworkWindowManager;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
-//import cbit.vcell.client.RequestManager;
 import cbit.util.AsynchProgressPopup;
 import cbit.vcell.numericstest.TestCaseNew;
-import cbit.vcell.numericstest.TestCriteriaNew;
 /**
  * Insert the type's description here.
  * Creation date: (11/17/2004 2:08:09 PM)
@@ -18,7 +13,6 @@ import cbit.vcell.numericstest.TestCriteriaNew;
 public class TFAddTestCases extends AsynchClientTask {
 
 	private TestingFrameworkWindowManager tfwm;
-	private TestCriteriaNew tcrit;
 	private TestCaseNew[] tcns;
 	private TestSuiteInfoNew tsin;
 /**
@@ -58,8 +52,8 @@ public void run(java.util.Hashtable hashTable) throws DataAccessException {
 
 	AsynchProgressPopup pp = (AsynchProgressPopup)hashTable.get(ClientTaskDispatcher.PROGRESS_POPUP);
 	String errors = null;
-	
-	errors = tfwm.addTestCases(tsin,tcns,pp);
+
+	errors = tfwm.addTestCases(tsin,tcns,TestingFrameworkWindowManager.COPY_REGRREF,pp);
 	
 	if(errors != null){
 		hashTable.put(TFRefresh.TF_ERRORS,errors);
