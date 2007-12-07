@@ -3,6 +3,7 @@ import cbit.gui.UtilCancelException;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestCaseNew;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.TestingFrameworkWindowManager;
 import cbit.vcell.client.desktop.testingframework.TestingFrameworkPanel;
 import cbit.vcell.client.desktop.testingframework.TestingFrmwkTreeModel;
 import cbit.vcell.numericstest.TestCriteriaNew;
@@ -54,8 +55,10 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 				connEtoC1(e);
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == TestingFrameworkWindowPanel.this && (evt.getPropertyName().equals("documentManager"))) 
+			if (evt.getSource() == TestingFrameworkWindowPanel.this && (evt.getPropertyName().equals("documentManager"))){
 				connPtoP1SetTarget();
+				getJSplitPane1().setDividerLocation(500);
+			}
 			if (evt.getSource() == TestingFrameworkWindowPanel.this.gettestingFrameworkPanel() && (evt.getPropertyName().equals("documentManager"))) 
 				connPtoP1SetSource();
 			if (evt.getSource() == TestingFrameworkWindowPanel.this && (evt.getPropertyName().equals("testingFrameworkWindowManager"))) 
@@ -578,9 +581,10 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 				throw new Exception("Selected Object is not a TestCase! Cannot Toggle SteadyState");
 			}
 		}else if (e.getActionCommand().equals(TestingFrameworkPanel.ADD_TESTSUITE)) {
-			TestSuiteInfoNew tsin = getTestingFrameworkWindowManager().getNewTestSuiteInfoFromUser(null);
-			tasksV.add(new TFAddTestSuite(getTestingFrameworkWindowManager(),tsin));
-			tfRefreshTreeTask = new TFRefresh(getTestingFrameworkWindowManager(),tsin);
+			TestingFrameworkWindowManager.NewTestSuiteUserInformation newTestSuiteUserInfo =
+				getTestingFrameworkWindowManager().getNewTestSuiteInfoFromUser(null,null);
+			tasksV.add(new TFAddTestSuite(getTestingFrameworkWindowManager(),newTestSuiteUserInfo.testSuiteInfoNew));
+			tfRefreshTreeTask = new TFRefresh(getTestingFrameworkWindowManager(),newTestSuiteUserInfo.testSuiteInfoNew);
 			tasksV.add(tfRefreshTreeTask);
 		}else if (e.getActionCommand().equals(TestingFrameworkPanel.REFRESH_TESTSUITE)) {
 			TestSuiteInfoNew tsin = null;
@@ -699,9 +703,10 @@ private void testingFrameworkPanel_actionPerformed(final ActionEvent e) {
 		else if (e.getActionCommand().equals(TestingFrameworkPanel.DUPLICATE_TESTSUITE)) {
 			if (selectedObj instanceof TestSuiteInfoNew) {
 				TestSuiteInfoNew tsInfoOriginal = (TestSuiteInfoNew)selectedObj;
-				TestSuiteInfoNew tsInfoNew = getTestingFrameworkWindowManager().getNewTestSuiteInfoFromUser(tsInfoOriginal.getTSAnnotation());
-				tasksV.add(new TFDuplicateTestSuite(getTestingFrameworkWindowManager(),tsInfoOriginal,tsInfoNew));
-				tfRefreshTreeTask = new TFRefresh(getTestingFrameworkWindowManager(),tsInfoNew);
+				TestingFrameworkWindowManager.NewTestSuiteUserInformation newTestSuiteUserInfo =
+					getTestingFrameworkWindowManager().getNewTestSuiteInfoFromUser(tsInfoOriginal.getTSAnnotation(),tsInfoOriginal.getTSID());
+				tasksV.add(new TFDuplicateTestSuite(getTestingFrameworkWindowManager(),tsInfoOriginal,newTestSuiteUserInfo.testSuiteInfoNew,newTestSuiteUserInfo.regrRefFlag));
+				tfRefreshTreeTask = new TFRefresh(getTestingFrameworkWindowManager(),newTestSuiteUserInfo.testSuiteInfoNew);
 				tasksV.add(tfRefreshTreeTask);
 				//getTestingFrameworkWindowManager().duplicateTestSuite(tsInfo);			
 			} else {

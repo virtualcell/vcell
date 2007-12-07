@@ -3,7 +3,13 @@ package cbit.vcell.solver.ode.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.*;
+
+import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.math.*;
 import cbit.vcell.solver.*;
 import javax.swing.*;
@@ -13,6 +19,7 @@ import javax.swing.*;
  * @author: Ion Moraru
  */
 public class SimulationSummaryPanel extends JPanel {
+	private static final String SIM_SUMMARY_LABEL = "SIMULATION SUMMARY:";
 	private cbit.vcell.solver.Simulation fieldSimulation = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private JLabel ivjJLabel1 = null;
@@ -373,7 +380,43 @@ private javax.swing.JLabel getJLabel1() {
 		try {
 			ivjJLabel1 = new javax.swing.JLabel();
 			ivjJLabel1.setName("JLabel1");
-			ivjJLabel1.setText("SIMULATION SUMMARY:");
+			ivjJLabel1.setText(SIM_SUMMARY_LABEL);
+			ivjJLabel1.addMouseListener(
+					new MouseAdapter(){				
+						JPopupMenu jPopup;
+						ActionListener copyAction =
+							new ActionListener(){
+								public void actionPerformed(ActionEvent e) {
+									if(getSimulation() != null && getSimulation().getKey() != null){
+										VCellTransferable.sendToClipboard(getSimulation().getKey().toString());
+									}
+								}
+							};
+						public void mouseClicked(MouseEvent e) {
+							super.mouseClicked(e);
+							checkMenu(e);
+						}
+						public void mousePressed(MouseEvent e) {
+							super.mousePressed(e);
+							checkMenu(e);
+						}
+						public void mouseReleased(MouseEvent e) {
+							super.mouseReleased(e);
+							checkMenu(e);
+						}
+						private void checkMenu(MouseEvent e){
+							if(getSimulation() != null && e.isPopupTrigger()){
+								if(jPopup == null){
+									jPopup = new JPopupMenu();
+									JMenuItem jMenu = new JMenuItem("Copy SimID");
+									jMenu.addActionListener(copyAction);
+									jPopup.add(jMenu);
+								}
+								jPopup.show(e.getComponent(), e.getX(), e.getY());
+							}
+						}
+					}
+			);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1265,10 +1308,12 @@ public void newSimulation(cbit.vcell.solver.Simulation simulation) {
 	if (simulation==null){
 		getJTextAreaDescription().setBackground(getBackground());
 		getJTextAreaDescription().setEditable(false);
+		getJLabel1().setText(SIM_SUMMARY_LABEL);
 		return;
 	}else{
 		getJTextAreaDescription().setBackground(java.awt.Color.white);
 		getJTextAreaDescription().setEditable(true);
+		getJLabel1().setText(SIM_SUMMARY_LABEL+"(SimID="+(simulation.getKey() == null?"unknown":simulation.getKey())+")");
 	}
 	// also set up a listener that will refresh when simulation is edited in place
 	PropertyChangeListener listener = new PropertyChangeListener() {
