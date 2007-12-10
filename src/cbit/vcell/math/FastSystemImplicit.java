@@ -38,17 +38,17 @@ public FastSystemImplicit(MathDescription mathDesc) {
  * @exception java.lang.Exception The exception description.
  */
 private void checkLinearity() throws MathException, ExpressionException {
-	Enumeration enum1 = fastVarList.elements();
+	Enumeration<Variable> enum1 = fastVarList.elements();
 	while (enum1.hasMoreElements()){
-		Variable var = (Variable)enum1.nextElement();
+		Variable var = enum1.nextElement();
 		//
 		//                               d invariant
 		// for each variable, make sure ------------- = constant;
 		//                                  d Var
 		//
-		Enumeration enum_fi = getFastInvariants();
+		Enumeration<FastInvariant> enum_fi = getFastInvariants();
 		while (enum_fi.hasMoreElements()){
-			FastInvariant fi = (FastInvariant)enum_fi.nextElement();
+			FastInvariant fi = enum_fi.nextElement();
 			Expression exp = fi.getFunction().differentiate(var.getName());
 			exp.bindExpression(mathDesc);
 			try {
@@ -103,15 +103,15 @@ public String getVCML() {
 	StringBuffer buffer = new StringBuffer();
 	buffer.append("\t"+VCML.FastSystem+" {\n");
 
-	Enumeration enum_fi = getFastInvariants();
+	Enumeration<FastInvariant> enum_fi = getFastInvariants();
 	while (enum_fi.hasMoreElements()){
-		FastInvariant fi = (FastInvariant)enum_fi.nextElement();
+		FastInvariant fi = enum_fi.nextElement();
 		buffer.append("\t\t"+VCML.FastInvariant+"\t"+fi.getFunction().infix()+";\n");
 	}	
 		
-	Enumeration enum_fr = fastRateList.elements();
+	Enumeration<FastRate> enum_fr = fastRateList.elements();
 	while (enum_fr.hasMoreElements()){
-		FastRate fr = (FastRate)enum_fr.nextElement();
+		FastRate fr = enum_fr.nextElement();
 		buffer.append("\t\t"+VCML.FastRate+"\t"+fr.getFunction().infix()+";\n");
 	}	
 		
@@ -181,9 +181,9 @@ private void refreshFastVarList() throws MathException, ExpressionException {
 	for (int i = 0; i < fastRateList.size(); i++) {
 		FastRate fr = (FastRate) fastRateList.elementAt(i);
 		Expression exp = fr.getFunction();
-		Enumeration enum1 = MathUtilities.getRequiredVariables(exp,mathDesc);
+		Enumeration<Variable> enum1 = MathUtilities.getRequiredVariables(exp,mathDesc);
 		while (enum1.hasMoreElements()) {
-			Variable var = (Variable) enum1.nextElement();
+			Variable var = enum1.nextElement();
 			if (var instanceof VolVariable || var instanceof MemVariable) {
 				if (!fastVarList.contains(var)) {
 					fastVarList.addElement(var);
@@ -194,65 +194,22 @@ private void refreshFastVarList() throws MathException, ExpressionException {
 	}
 	//
 	// get list of all variables used in invariant expressions that are not used in fast rates
-	// these variables may be eligible for elimination from the fastSystem.
 	//
-	// make a list of the fastInvariants that reference each of these variables,
-	//
-	Hashtable<Variable, Vector<FastInvariant>> hashtable = new Hashtable<Variable, Vector<FastInvariant>>();
 	for (int i = 0; i < fastInvariantList.size(); i++) {
 		FastInvariant fi = (FastInvariant) fastInvariantList.elementAt(i);
 		Expression exp = fi.getFunction();
 //System.out.println("FastSystemImplicit.refreshFastVarList(), ORIGINAL FAST INVARIANT: "+exp);
-		Enumeration enum1 = MathUtilities.getRequiredVariables(exp,mathDesc);
+		Enumeration<Variable> enum1 = MathUtilities.getRequiredVariables(exp,mathDesc);
 		while (enum1.hasMoreElements()) {
-			Variable var = (Variable) enum1.nextElement();
+			Variable var = enum1.nextElement();
 			if (var instanceof VolVariable || var instanceof MemVariable) {
 				if (!fastVarList.contains(var)) {
-					Vector<FastInvariant> fiList = null;
-					if (hashtable.containsKey(var)) {
-						fiList = hashtable.get(var);
-					}else{
-						fiList = new Vector<FastInvariant>();
-					}
-					fiList.addElement(fi);
-					hashtable.put(var, fiList);
+					fastVarList.addElement(var);
 				}
 			}
 		}
 	}
-
-	//
-	// go through the list of potentially extraneous variables
-	//
-	// delete those fastInvariants that are the only reference to one of these variables
-	//
-	Enumeration hashEnum = hashtable.keys();
-	while (hashEnum.hasMoreElements()){
-		Variable var = (Variable)hashEnum.nextElement();
-		Vector fiList = (Vector)hashtable.get(var);
-		//
-		// if there is only one reference, then delete this fast Invariant
-		//
-		if (fiList.size()==1){
-			FastInvariant fi = (FastInvariant)fiList.elementAt(0);
-			if (fastInvariantList.contains(fi)){
-				fastInvariantList.removeElement(fi);
-//System.out.println("FastSystemImplicit.refreshFastVarList(), variable("+var.getName()+") not referenced, removing fast invariant: exp = "+fi.getFunction());
-//if (!fastVarList.contains(var)){
-//fastVarList.addElement(var);
-//}
-			}
-		//
-		// if there is more than one reference, then add to the fastVariable list 
-		//
-		}else if (fiList.size()>1){
-			if (!fastVarList.contains(var)){
-				fastVarList.addElement(var);
-//System.out.println("FastSystemImplicit.refreshFastVarList(), variable("+var.getName()+") referenced in multiple fast invariants, adding to fast variables: var = "+var.getName());
-			}
-		}
-	}
-
+	
 	//
 	// verify that there are N equations (rates+invariants) and N unknowns (fastVariables)
 	//
