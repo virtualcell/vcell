@@ -89,6 +89,8 @@ public class SBMLImporter {
 	static
 	{
 		try {
+			System.loadLibrary("expat");
+			System.loadLibrary("sbml");
 			System.loadLibrary("sbmlj");
 		}catch (Exception e){
 			e.printStackTrace(System.out);

@@ -133,7 +133,13 @@ public class SBMLExporter {
 
 	static
 	{
-		System.loadLibrary("sbmlj");
+		try {
+			System.loadLibrary("expat");
+			System.loadLibrary("sbml");
+			System.loadLibrary("sbmlj");
+		}catch (Exception e){
+			e.printStackTrace(System.out);
+		}
 	}
 
 	/**
@@ -719,12 +725,12 @@ private void generateErrorReport(SBMLDocument sbmlDoc) {
 	StringBuffer errorReportBuffer = new StringBuffer();
 	errorReportBuffer.append("\n\nBIOMODEL : " + vcBioModel.getName() + " : Num Of Failed Checks = " + numFailedChecks + "\n");
 	long numSBMLErrors = sbmlDoc.getNumErrors();
-	errorReportBuffer.append("\nWARNINGS : " + sbmlDoc.getErrorLog().getNumFailsWithSeverity(XMLError.Warning));
+	//errorReportBuffer.append("\nWARNINGS : " + sbmlDoc.getErrorLog().getNumFailsWithSeverity(XMLError.Warning));
 	for (long i = 0; i < numSBMLErrors; i++){
 		SBMLError sbmlError = sbmlDoc.getError(i);
-		if (sbmlError.getSeverity()==XMLError.Warning){
+		//if (sbmlError.getSeverity()==XMLError.Warning){
 			errorReportBuffer.append("\n\tlibSBML issue: severity=" + sbmlError.getSeverity()+ ", message=" + sbmlError.getMessage());
-		}
+		//}
 	}
 	errorReportBuffer.append("\n------- END REPORT-------");
 

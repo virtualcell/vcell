@@ -1,4 +1,5 @@
 package cbit.vcell.server.bionetgen;
+import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.bionetgen.BNGOutput;
 import cbit.vcell.server.bionetgen.BNGInput;
 import java.io.*;
@@ -9,14 +10,12 @@ import java.io.*;
  * @author: Fei Gao
  */
 public class BNGUtils {
-	private final static boolean bWindows = System.getProperty("os.name").indexOf("Windows") >= 0 ? true : false;
-	private final static String EXE_SUFFIX = bWindows ? ".exe" : "";
-	private final static String EXE_BNG = "BNG2" + EXE_SUFFIX;
-	private final static String RES_EXE_BNG = "/cbit/vcell/client/bionetgen/BNG2" + EXE_SUFFIX;
+	private final static String EXE_BNG = "BNG2" + ResourceUtil.EXE_SUFFIX;
+	private final static String RES_EXE_BNG = ResourceUtil.RES_PACKAGE + "/" + EXE_BNG;
 	private final static String DLL_CYGWIN = "cygwin1.dll";
-	private final static String RES_DLL_CYGWIN = "/cbit/vcell/client/bionetgen/cygwin1.dll";
-	private final static String EXE_RUN_NETWORK = "run_network" + EXE_SUFFIX;
-	private final static String RES_EXE_RUN_NETWORK = "/cbit/vcell/client/bionetgen/run_network" + EXE_SUFFIX;
+	private final static String RES_DLL_CYGWIN = ResourceUtil.RES_PACKAGE + "/" + DLL_CYGWIN;
+	private final static String EXE_RUN_NETWORK = "run_network" + ResourceUtil.EXE_SUFFIX;
+	private final static String RES_EXE_RUN_NETWORK = ResourceUtil.RES_PACKAGE + "/" + EXE_RUN_NETWORK;
 
 	private final static String suffix_input = ".bngl";
 	private final static String prefix = "vcell_bng_";
@@ -63,7 +62,7 @@ private static File createTempDirectory(String prefix, File parentDir) {
  * @param str java.lang.String
  */
 private static String escapeSpace(String str) {
-	if (bWindows) {
+	if (ResourceUtil.bWindows) {
 		return "\"" + str + "\"";
 	}
 
@@ -165,11 +164,7 @@ public static BNGOutput executeBNG(BNGInput bngRules) throws Exception {
  * Creation date: (9/19/2006 11:36:49 AM)
  */
 private static void initialize() throws Exception {
-	File userHome = new File(System.getProperty("user.home"));
-	if (!userHome.exists()) {
-		userHome = new File(".");		
-	}
-	File bngHome = new File(userHome, ".BioNetGen");
+	File bngHome = new File(ResourceUtil.vcellHome, "BioNetGen");
 	if (!bngHome.exists()) {
 		bngHome.mkdirs();
 	}
@@ -181,31 +176,21 @@ private static void initialize() throws Exception {
 	file_dll_cygwin = new java.io.File(bngHome, DLL_CYGWIN);
 	file_exe_run_network = new java.io.File(bngHome, EXE_RUN_NETWORK);
 	if (bFirstTime) {
-		try {
-			file_exe_bng.delete();
-			if (bWindows) {
-				file_dll_cygwin.delete();
-			}
-			file_exe_run_network.delete();
-
-			writeFileFromResource(RES_EXE_BNG, file_exe_bng);
-			if (bWindows) {
-				writeFileFromResource(RES_DLL_CYGWIN, file_dll_cygwin);
-			}
-			writeFileFromResource(RES_EXE_RUN_NETWORK, file_exe_run_network);
-		} catch (IOException ex) {
-			ex.printStackTrace(System.out);
+		ResourceUtil.writeFileFromResource(RES_EXE_BNG, file_exe_bng);
+		if (ResourceUtil.bWindows) {
+			ResourceUtil.writeFileFromResource(RES_DLL_CYGWIN, file_dll_cygwin);
 		}
+		ResourceUtil.writeFileFromResource(RES_EXE_RUN_NETWORK, file_exe_run_network);
 		bFirstTime = false;		
 	} else {			
 		if (!file_exe_bng.exists()) {
-			writeFileFromResource(RES_EXE_BNG, file_exe_bng);
+			ResourceUtil.writeFileFromResource(RES_EXE_BNG, file_exe_bng);
 		}
-		if (bWindows && !file_dll_cygwin.exists()) {
-			writeFileFromResource(RES_DLL_CYGWIN, file_dll_cygwin);
+		if (ResourceUtil.bWindows && !file_dll_cygwin.exists()) {
+			ResourceUtil.writeFileFromResource(RES_DLL_CYGWIN, file_dll_cygwin);
 		}
 		if (!file_exe_run_network.exists()) {	
-			writeFileFromResource(RES_EXE_RUN_NETWORK, file_exe_run_network);
+			ResourceUtil.writeFileFromResource(RES_EXE_RUN_NETWORK, file_exe_run_network);
 		}
 	}	
 }
@@ -251,49 +236,5 @@ public static void stopBNG() throws Exception {
 	if (executable != null) {
 		executable.stop();
 	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (9/8/2006 2:57:35 PM)
- * @param resname java.lang.String
- * @param filename java.lang.String
- */
-private static void writeFileFromResource(String resname, File file) throws Exception {
-	java.net.URL url = BNGUtils.class.getResource(resname);
-	if (url == null) {
-		throw new RuntimeException("Can't get resource for " + resname);
-	}
-	
-	BufferedInputStream bis = null;
-	BufferedOutputStream bos = null;
-
-	try {
-		bis = new BufferedInputStream(url.openConnection().getInputStream());
-		bos = new BufferedOutputStream(new FileOutputStream(file));
-		byte byteArray[] = new byte[10000];
-		while (true) {
-			int numRead = bis.read(byteArray, 0, byteArray.length);
-			if (numRead == -1) {
-				break;
-			}
-			
-			bos.write(byteArray, 0, numRead);
-		}
-		if (!bWindows) {
-			System.out.println("Make " + file + " executable");
-			cbit.util.Executable exe = new cbit.util.Executable("chmod 755 " + file);
-			exe.start();
-		}
-	} finally {
-		if (bis != null) {
-			bis.close();
-		}
-		if (bos != null) {
-			bos.close();
-		}
-	}
-		
 }
 }
