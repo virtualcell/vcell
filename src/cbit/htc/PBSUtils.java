@@ -80,7 +80,7 @@ public static int getJobExitCode(String jobid) {
 		final String exitStatus = "Exit_status=";
 		int idx = output.indexOf(exitStatus);
 		if (idx < 0) {
-			throw new RuntimeException("Job [" + jobid + "] is still running"); 
+			throw new RuntimeException("Job [" + jobid + "] : unknown status"); 
 		}
 		output = output.substring(idx);
 		StringTokenizer st = new StringTokenizer(output, " =");
