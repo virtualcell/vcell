@@ -1679,7 +1679,7 @@ private void replaceFunction(AnnotatedFunction function) throws ExpressionExcept
 //	function.getExpression().flatten();
 	Vector<String> targetUserDefinedFunctionSymbols = new Vector<String>();
 	String[] newfuncSymbols = function.getExpression().getSymbols();
-	for (int i = 0; i < newfuncSymbols.length; i++) {
+	for (int i = 0; newfuncSymbols != null && i < newfuncSymbols.length; i++) {
 		for (int j=0;j<annotatedFunctionList.size();j++){
 			if (annotatedFunctionList.elementAt(j).getName().equals(newfuncSymbols[i])){
 				if(!targetUserDefinedFunctionSymbols.contains(newfuncSymbols[i])){

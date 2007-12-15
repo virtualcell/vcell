@@ -794,9 +794,9 @@ public DisplayAdapterServicePanel getDisplayAdapterServicePanel() {
 		try {
 			ivjDisplayAdapterServicePanel = new cbit.image.DisplayAdapterServicePanel();
 			ivjDisplayAdapterServicePanel.setName("DisplayAdapterServicePanel");
-			ivjDisplayAdapterServicePanel.setPreferredSize(new java.awt.Dimension(185, 280));
-			ivjDisplayAdapterServicePanel.setMinimumSize(new java.awt.Dimension(185, 280));
-			ivjDisplayAdapterServicePanel.setMaximumSize(new java.awt.Dimension(185, 280));
+			ivjDisplayAdapterServicePanel.setPreferredSize(new java.awt.Dimension(200, 280));
+			ivjDisplayAdapterServicePanel.setMinimumSize(new java.awt.Dimension(200, 280));
+			ivjDisplayAdapterServicePanel.setMaximumSize(new java.awt.Dimension(200, 280));
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
