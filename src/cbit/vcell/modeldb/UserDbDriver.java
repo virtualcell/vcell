@@ -6,8 +6,6 @@ package cbit.vcell.modeldb;
 ©*/
 import java.sql.*;
 import cbit.sql.*;
-import cbit.vcell.model.*;
-import cbit.vcell.mapping.*;
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.server.ObjectNotFoundException;
 import cbit.vcell.server.DataAccessException;
@@ -130,7 +128,7 @@ public UserInfo[] getUserInfos(Connection con) throws SQLException, DataAccessEx
 
 	//Connection con = conFact.getConnection();
 	Statement stmt = con.createStatement();
-	java.util.Vector userList = null;
+	java.util.Vector<UserInfo> userList = null;
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
 
@@ -138,7 +136,7 @@ public UserInfo[] getUserInfos(Connection con) throws SQLException, DataAccessEx
 		//  	for (int i=1;i<=metaData.getColumnCount();i++){
 		//	  	System.out.println("column("+i+") = "+metaData.getColumnName(i));
 		//  	}
-		userList = new java.util.Vector();
+		userList = new java.util.Vector<UserInfo>();
 		UserInfo userInfo;
 		while (rset.next()){
 			userInfo = userTable.getUserInfo(rset);
@@ -184,7 +182,7 @@ private void insertUserInfoSQL(Connection con, KeyValue key, UserInfo userInfo) 
 			userTable.getSQLColumnList() + " VALUES " +
 			userTable.getSQLValueList(key, userInfo);
 
-System.out.println(sql);
+//System.out.println(sql);
 			
 	DbDriver.updateCleanSQL(con,sql);
 }

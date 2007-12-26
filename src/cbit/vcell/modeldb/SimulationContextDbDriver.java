@@ -11,15 +11,12 @@ import java.beans.*;
 import cbit.vcell.math.BoundaryConditionType;
 import java.sql.*;
 import java.sql.Statement;
-import java.util.*;
 import cbit.sql.*;
 import cbit.vcell.parser.*;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.server.*;
 import cbit.vcell.mapping.*;
-import cbit.vcell.geometry.Geometry;
 import cbit.vcell.model.Model;
-import cbit.vcell.math.MathDescription;
 /**
  * This type was created in VisualAge.
  */
@@ -146,7 +143,7 @@ private void assignSpeciesContextSpecsSQL(Connection con,KeyValue simContextKey,
 			//KeyValue simContextRef = new KeyValue(rset.getBigDecimal(speciesContextSpecTable.simContextRef.toString()));
 			boolean bEnableDiffusing = rset.getBoolean(speciesContextSpecTable.bEnableDif.toString());
 			boolean bForceConstant = rset.getBoolean(speciesContextSpecTable.bForceConst.toString());
-			boolean bForceIndep = rset.getBoolean(speciesContextSpecTable.bForceIndep.toString());
+			//boolean bForceIndep = rset.getBoolean(speciesContextSpecTable.bForceIndep.toString());
 			String initCondString = rset.getString(speciesContextSpecTable.initCondExp.toString());
 			String diffRateString = rset.getString(speciesContextSpecTable.diffRateExp.toString());
 			String boundaryXmString = rset.getString(speciesContextSpecTable.boundaryXmExp.toString());
@@ -246,9 +243,9 @@ private void assignStimuliSQL(Connection con,KeyValue simContextKey, SimulationC
 		ResultSet rset = stmt.executeQuery(sql);
 		while (rset.next()) {
 			try {
-				KeyValue key = new KeyValue(rset.getBigDecimal(stimulusTable.id.toString()));			
+				//KeyValue key = new KeyValue(rset.getBigDecimal(stimulusTable.id.toString()));			
 				KeyValue structureRef = new KeyValue(rset.getBigDecimal(stimulusTable.structRef.toString()));			
-				KeyValue simContextRef = new KeyValue(rset.getBigDecimal(stimulusTable.simContextRef.toString()));			
+				//KeyValue simContextRef = new KeyValue(rset.getBigDecimal(stimulusTable.simContextRef.toString()));			
 				//
 				// lookup structure from SimulationContext by its key
 				//
@@ -698,7 +695,7 @@ private void insertReactionSpecsSQL(Connection con, KeyValue simContextKey, Simu
 		//
 		sql = 	"INSERT INTO " + reactionSpecTable.getTableName() + " " + reactionSpecTable.getSQLColumnList() +
 				" VALUES " + reactionSpecTable.getSQLValueList(newReactionSpecKey, simContextKey, reactionSpecs[i], reactionStepKey);
-System.out.println("SimulationContextDbDriver.insertReactionSpecsSQL(), sql = "+sql);
+//System.out.println("SimulationContextDbDriver.insertReactionSpecsSQL(), sql = "+sql);
 		updateCleanSQL(con, sql);
 	}
 }
@@ -844,7 +841,7 @@ private void insertStimuliSQL(InsertHashtable hash, Connection con, KeyValue sim
 		//
 		String sql = "INSERT INTO " + stimulusTable.getTableName() + " " + stimulusTable.getSQLColumnList() +
 					" VALUES " + stimulusTable.getSQLValueList(hash, newStimuliKey, simContextKey, stimulus);
-System.out.println(sql);
+//System.out.println(sql);
 		updateCleanSQL(con, sql);
 	}
 	//
@@ -856,7 +853,7 @@ System.out.println(sql);
 		//
 		String sql = "INSERT INTO " + stimulusTable.getTableName() + " " + stimulusTable.getSQLColumnList() +
 					" VALUES " + stimulusTable.getSQLValueList(hash, newStimuliKey, simContextKey, groundElectrode);
-System.out.println(sql);
+//System.out.println(sql);
 		updateCleanSQL(con, sql);
 	}
 }
@@ -892,7 +889,7 @@ private void insertStructureMappingsSQL(InsertHashtable hash, Connection con, Ke
 			//
 			sql = 	"INSERT INTO " + structureMappingTable.getTableName() + " " + structureMappingTable.getSQLColumnList() +
 					" VALUES " + structureMappingTable.getSQLValueList(hash, newStuctureMappingKey, simContextKey, structureMapping, mappedSubVolume, isResolved);
-System.out.println(sql);
+//System.out.println(sql);
 			updateCleanSQL(con, sql);
 		}
 	}

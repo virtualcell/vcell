@@ -6,13 +6,10 @@ package cbit.vcell.modeldb;
 import java.util.*;
 import java.beans.*;
 import cbit.vcell.solver.*;
-import cbit.vcell.math.*;
 import cbit.vcell.server.*;
 import cbit.sql.*;
 import java.sql.*;
 import java.sql.Statement;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.solver.MeshSpecification;
 /**
  * This type was created in VisualAge.
  */
@@ -73,14 +70,14 @@ void deleteResultSetExport(Connection con, User user,KeyValue eleKey) throws SQL
  */
 void deleteResultSetInfoSQL(Connection con, User user, KeyValue simKey) throws SQLException, DataAccessException, PermissionException, ObjectNotFoundException {
 
-	Vector versionInfoVector = getVersionableInfos(con,log,user,VersionableType.Simulation,false,simKey,false);
+	Vector<VersionInfo> versionInfoVector = getVersionableInfos(con,log,user,VersionableType.Simulation,false,simKey,false);
 	if(versionInfoVector.size() == 0){
 		throw new ObjectNotFoundException("SimulationDbDriver:deleteResultSetInfo() key="+simKey+" not found for user="+user);
 	}
 	else if (versionInfoVector.size() > 1){
 		throw new DataAccessException("SimulationDbDriver:deleteResultSetInfo() key="+simKey+" found more than one entry  DB ERROR,BAD!!!!!MUST CHECK");
 	}
-	VersionInfo versionInfo = (VersionInfo)versionInfoVector.firstElement();
+	VersionInfo versionInfo = versionInfoVector.firstElement();
 	//
 	// if not owner then getVersionableInfo failed (returned record)
 	//
@@ -90,7 +87,7 @@ void deleteResultSetInfoSQL(Connection con, User user, KeyValue simKey) throws S
 	
 	String sql;
 	sql = "DELETE FROM " + rsetInfoTable.getTableName() + " WHERE " + rsetInfoTable.simRef + " = " + simKey;
-System.out.println(sql);
+//System.out.println(sql);
 	updateCleanSQL(con,sql);
 }
 
@@ -185,7 +182,7 @@ private KeyValue getParentSimulation(Connection con,User user,KeyValue simKey) t
 cbit.vcell.export.server.ExportLog getResultSetExport(Connection con,User user,KeyValue simKey) throws SQLException, DataAccessException {
 
 	cbit.vcell.export.server.ExportLog[] exportLogs = null;
-	String sql = ResultSetExportsTable.table.getSQLInfo(user,simKey);
+	String sql = ResultSetExportsTable.getSQLInfo(user,simKey);
 	Statement stmt = con.createStatement();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
@@ -205,7 +202,7 @@ cbit.vcell.export.server.ExportLog getResultSetExport(Connection con,User user,K
 cbit.vcell.export.server.ExportLog[] getResultSetExports(Connection con,User user, boolean bAll) throws SQLException, DataAccessException {
 
 	cbit.vcell.export.server.ExportLog[] exportLogs = null;
-	String sql = ResultSetExportsTable.table.getSQLInfo(user,bAll);
+	String sql = ResultSetExportsTable.getSQLInfo(user,bAll);
 	Statement stmt = con.createStatement();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
@@ -227,7 +224,7 @@ cbit.vcell.export.server.ExportLog[] getResultSetExports(Connection con,User use
 SolverResultSetInfo getResultSetInfo(Connection con, User user, KeyValue simKey, int jobIndex)
 				throws ObjectNotFoundException, SQLException, DataAccessException {
 					
-	Vector simInfoList = getVersionableInfos(con,log,user,VersionableType.Simulation,true,simKey, false);
+	Vector<VersionInfo> simInfoList = getVersionableInfos(con,log,user,VersionableType.Simulation,true,simKey, false);
 	if (simInfoList.size()==0){
 		throw new ObjectNotFoundException("simulation("+simKey+") not found for user '"+user+"'");
 	}
@@ -291,7 +288,7 @@ SolverResultSetInfo[] getResultSetInfos(Connection con, SessionLog log, User use
 	
 	//System.out.println(sql);
 	SolverResultSetInfo rsInfo;
-	java.util.Vector rsInfoList = new java.util.Vector();
+	java.util.Vector<SolverResultSetInfo> rsInfoList = new java.util.Vector<SolverResultSetInfo>();
 	//Connection con = conFact.getConnection();
 	Statement stmt = con.createStatement();
 	try {
@@ -326,7 +323,7 @@ SolverResultSetInfo[] getResultSetInfos(Connection con, SessionLog log, User use
 SolverResultSetInfo[] getResultSetInfos(Connection con, User user, KeyValue simKey)
 				throws ObjectNotFoundException, SQLException, DataAccessException {
 					
-	Vector simInfoList = getVersionableInfos(con,log,user,VersionableType.Simulation,true,simKey, false);
+	Vector<VersionInfo> simInfoList = getVersionableInfos(con,log,user,VersionableType.Simulation,true,simKey, false);
 	if (simInfoList.size()==0){
 		throw new ObjectNotFoundException("simulation("+simKey+") not found for user '"+user+"'");
 	}
@@ -337,7 +334,7 @@ SolverResultSetInfo[] getResultSetInfos(Connection con, User user, KeyValue simK
 				 " WHERE "+ rsetInfoTable.simRef+" = "+simKey;
 
 	Statement stmt = con.createStatement();
-	Vector rsetInfos = new Vector();
+	Vector<SolverResultSetInfo> rsetInfos = new Vector<SolverResultSetInfo>();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
 
@@ -425,7 +422,7 @@ public void insertResultSetExport(Connection con, User user,KeyValue simulationR
 
 	String sql =
 		"INSERT INTO " + ResultSetExportsTable.table.getTableName() +
-		" VALUES "+ResultSetExportsTable.table.getSQLValueList(simulationRef,exportFormat,exportURL);
+		" VALUES "+ResultSetExportsTable.getSQLValueList(simulationRef,exportFormat,exportURL);
 
 	updateCleanSQL(con,sql);
 }
@@ -438,14 +435,14 @@ public void insertResultSetExport(Connection con, User user,KeyValue simulationR
  * @exception java.rmi.RemoteException The exception description.
  */
 void insertResultSetInfoSQL(Connection con, User user, KeyValue simKey, SolverResultSetInfo rsetInfo) throws SQLException, DataAccessException, PermissionException {
-	Vector versionInfoVector = getVersionableInfos(con,log,user,VersionableType.Simulation,false,simKey,false);
+	Vector<VersionInfo> versionInfoVector = getVersionableInfos(con,log,user,VersionableType.Simulation,false,simKey,false);
 	if(versionInfoVector.size() == 0){
 		throw new ObjectNotFoundException("SimulationDbDriver:insertResultSetInfo() key="+simKey+" not found for user="+user);
 	}
 	else if (versionInfoVector.size() > 1){
 		throw new DataAccessException("SimulationDbDriver:insertResultSetInfo() key="+simKey+" found more than one entry  DB ERROR,BAD!!!!!MUST CHECK");
 	}
-	VersionInfo versionInfo = (VersionInfo)versionInfoVector.firstElement();
+	VersionInfo versionInfo = versionInfoVector.firstElement();
 	//
 	// if not owner then getVersionableInfo failed (returned record)
 	//
@@ -456,7 +453,7 @@ void insertResultSetInfoSQL(Connection con, User user, KeyValue simKey, SolverRe
 	String sql;
 	sql = "INSERT INTO " + rsetInfoTable.getTableName() + " " + rsetInfoTable.getSQLColumnList() + " VALUES " + 
 		rsetInfoTable.getSQLValueList(getNewKey(con), simKey, rsetInfo);
-System.out.println(sql);
+//System.out.println(sql);
 	updateCleanSQL(con,sql);
 }
 
@@ -558,14 +555,14 @@ protected SimulationVersion insertVersionableInit(InsertHashtable hash, Connecti
  * @exception java.rmi.RemoteException The exception description.
  */
 void updateResultSetInfoSQL(Connection con, User user, KeyValue simKey, SolverResultSetInfo rsetInfo) throws SQLException, DataAccessException, PermissionException {
-	Vector versionInfoVector = getVersionableInfos(con,log,user,VersionableType.Simulation,false,simKey,false);
+	Vector<VersionInfo> versionInfoVector = getVersionableInfos(con,log,user,VersionableType.Simulation,false,simKey,false);
 	if(versionInfoVector.size() == 0){
 		throw new ObjectNotFoundException("SimulationDbDriver:updateResultSetInfo() key="+simKey+" not found for user="+user);
 	}
 	else if (versionInfoVector.size() > 1){
 		throw new DataAccessException("SimulationDbDriver:updateResultSetInfo() key="+simKey+" found more than one entry  DB ERROR,BAD!!!!!MUST CHECK");
 	}
-	VersionInfo versionInfo = (VersionInfo)versionInfoVector.firstElement();
+	VersionInfo versionInfo = versionInfoVector.firstElement();
 	//
 	// if not owner then getVersionableInfo failed (returned record)
 	//
@@ -577,7 +574,7 @@ void updateResultSetInfoSQL(Connection con, User user, KeyValue simKey, SolverRe
 	sb.append("UPDATE " + rsetInfoTable.getTableName());
 	sb.append(" SET " + rsetInfoTable.getSQLUpdateList(simKey,rsetInfo));
 	sb.append(" WHERE " + rsetInfoTable.simRef + " = " + simKey);
-System.out.println(sb.toString());
+//System.out.println(sb.toString());
 	int numRecordsChanged = updateCleanSQL(con,sb.toString());
 	if (numRecordsChanged!=1){
 		throw new ObjectNotFoundException("SolverResultSetInfo(simRef="+simKey+")");

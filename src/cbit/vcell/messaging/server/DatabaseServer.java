@@ -3,6 +3,7 @@ import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.PropertyLoader;
 import static cbit.vcell.messaging.MessageConstants.*;
 import cbit.vcell.messaging.JmsUtils;
+import cbit.vcell.modeldb.DatabasePolicySQL;
 
 /**
  * Insert the type's description here.
@@ -54,6 +55,7 @@ public static void main(java.lang.String[] args) {
 	
 	try {
 		PropertyLoader.loadProperties();
+		DatabasePolicySQL.bSilent = true;
 		
 		int serviceOrdinal = Integer.parseInt(args[0]);
 		String logdir = null;
