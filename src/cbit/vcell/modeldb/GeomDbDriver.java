@@ -64,7 +64,7 @@ private void deleteGeometrySQL(Connection con, User user,KeyValue geomKey) throw
 	
 	//Delete Geometry, all APPROPRIATE children go ON DELETE CASCADE
 
-	sql = DatabasePolicySQL.enforceOwnershipDelete(user,geomTable,geomTable.table.id + " = " + geomKey);
+	sql = DatabasePolicySQL.enforceOwnershipDelete(user,geomTable,GeometryTable.table.id + " = " + geomKey);
 	
 //System.out.println(sql);
 
@@ -75,7 +75,7 @@ private void deleteGeometrySQL(Connection con, User user,KeyValue geomKey) throw
 	//Don't have to check if other Geometries are using because Geometries never share sizetable
 	if (imageRefKey == null) {
 		sql = "DELETE FROM " + extentTable.getTableName() + " WHERE " + extentTable.id + " = " + extentKey;
-		System.out.println(sql);
+		//System.out.println(sql);
 		updateCleanSQL(con,sql);
 	}
 }
@@ -101,7 +101,7 @@ private void deleteVCImageSQL(Connection con, User user, KeyValue imageKey) thro
 	
 	//Delete SizeTable entry because we know there can't be any more refs to it.  Do Last because it is parent of image
 	sql = "DELETE FROM " + extentTable.getTableName() + " WHERE " + extentTable.id + " = " + extentKey;
-	System.out.println(sql);
+	//System.out.println(sql);
 	updateCleanSQL(con,sql);
 }
 
@@ -216,7 +216,6 @@ private void getFilaments(Connection con, Geometry geom) throws SQLException, Da
 	Statement stmt = con.createStatement();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
-		java.util.Hashtable filamentHash = new java.util.Hashtable();
 		while(rset.next()){
 			String filColName = filamentTable.filamentName.toString();
 			String filamentType = rset.getString(filColName);
@@ -398,7 +397,7 @@ private void getImageRegionsForVCImage(Connection con, VCImage vcImage) throws S
 		//
 		// get vcPixelClass objects and give them to vcImage
 		//
-		Vector vcpcVector = new Vector();
+		Vector<VCPixelClass> vcpcVector = new Vector<VCPixelClass>();
 		while (rset.next()) {
 			KeyValue vcpcKey = new KeyValue(rset.getBigDecimal(imageRegionTable.id.toString()));
 			//
@@ -564,7 +563,7 @@ private cbit.vcell.geometry.SubVolume[] getSubVolumesFromGeometry(Connection con
 //System.out.println(sql);
 	
 	Statement stmt = con.createStatement();
-	Vector subVolumeList = new Vector();
+	Vector<SubVolume> subVolumeList = new Vector<SubVolume>();
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
 	
@@ -630,10 +629,10 @@ System.out.println(sql);
 							geoRegionTable.regionID.getQualifiedColName() +
 				" FROM " + 	geoRegionTable.getTableName() +
 				" WHERE " + geoRegionTable.geometryRef.getQualifiedColName() + " = " + geom.getVersion().getVersionKey() +
-				" AND " + geoRegionTable.type + " = " + geoRegionTable.TYPE_VOLUME;
+				" AND " + geoRegionTable.type + " = " + GeometricRegionTable.TYPE_VOLUME;
 System.out.println(sql);
 		rset = stmt.executeQuery(sql);
-		Vector regionList = new Vector();
+		Vector<GeometricRegion> regionList = new Vector<GeometricRegion>();
 		while (rset.next()){
 			VolumeGeometricRegion volumeRegion = geoRegionTable.getVolumeRegion(rset,geom,log);
 			regionList.add(volumeRegion);
@@ -643,18 +642,18 @@ System.out.println(sql);
 		//
 		// read surface regions from GeometricRegionTable
 		//
-		sql = 	" SELECT " + "surfTable."+geoRegionTable.name.getUnqualifiedColName() + ", " +
-							"surfTable."+geoRegionTable.size.getUnqualifiedColName() + ", " +
-							"surfTable."+geoRegionTable.sizeUnit.getUnqualifiedColName() + ", " +
-							"vol1Table.name as "+geoRegionTable.VOLUME1_NAME_COLUMN + ", " +
-							"vol2Table.name as "+geoRegionTable.VOLUME2_NAME_COLUMN + " " +
+		sql = 	" SELECT " + "surfTable." + geoRegionTable.name.getUnqualifiedColName() + ", " +
+							"surfTable." + geoRegionTable.size.getUnqualifiedColName() + ", " +
+							"surfTable." + geoRegionTable.sizeUnit.getUnqualifiedColName() + ", " +
+							"vol1Table.name as " + GeometricRegionTable.VOLUME1_NAME_COLUMN + ", " +
+							"vol2Table.name as " + GeometricRegionTable.VOLUME2_NAME_COLUMN + " " +
 				" FROM " + 	geoRegionTable.getTableName() + " surfTable, " + 
 							geoRegionTable.getTableName() + " vol1Table, "+
 							geoRegionTable.getTableName() + " vol2Table "+
 				" WHERE surfTable." + geoRegionTable.geometryRef.getUnqualifiedColName() + " = " + geom.getVersion().getVersionKey() +
-				" AND vol1Table.id = surfTable."+geoRegionTable.volRegion1.getUnqualifiedColName() +
-				" AND vol2Table.id = surfTable."+geoRegionTable.volRegion2.getUnqualifiedColName() +
-				" AND surfTable." + geoRegionTable.type.getUnqualifiedColName() + " = " + geoRegionTable.TYPE_SURFACE;
+				" AND vol1Table.id = surfTable." + geoRegionTable.volRegion1.getUnqualifiedColName() +
+				" AND vol2Table.id = surfTable." + geoRegionTable.volRegion2.getUnqualifiedColName() +
+				" AND surfTable." + geoRegionTable.type.getUnqualifiedColName() + " = " + GeometricRegionTable.TYPE_SURFACE;
 System.out.println(sql);
 		rset = stmt.executeQuery(sql);
 		while (rset.next()){
@@ -934,7 +933,7 @@ private void insertGeometrySQL(Connection con, Geometry geom, KeyValue imageKey,
 	KeyValue newGeomSurfDescKey = getNewKey(con);
 	sql = "INSERT INTO " + geoSurfaceTable.getTableName() + " " + geoSurfaceTable.getSQLColumnList() +
 		" VALUES " + geoSurfaceTable.getSQLValueList(newGeomSurfDescKey,geoSurfaceDescription,geomKey);
-System.out.println(sql);
+//System.out.println(sql);
 	updateCleanSQL(con,sql);
 
 	//
@@ -965,7 +964,7 @@ System.out.println(sql);
 				KeyValue subvolumeKey = hash.getDatabaseKey(volumeRegion.getSubVolume());
 				sql = "INSERT INTO " + geoRegionTable.getTableName() + " " + geoRegionTable.getSQLColumnList() + 
 					" VALUES " + geoRegionTable.getSQLValueList(newVolumeRegionKey,volumeRegion,subvolumeKey,geomKey);
-		System.out.println(sql);
+		//System.out.println(sql);
 				updateCleanSQL(con,sql);
 				hash.put(volumeRegion,newVolumeRegionKey);
 			}
@@ -983,7 +982,7 @@ System.out.println(sql);
 				KeyValue volumeRegion2Key = hash.getDatabaseKey((VolumeGeometricRegion)surfaceRegion.getAdjacentGeometricRegions()[1]);
 				sql = "INSERT INTO " + geoRegionTable.getTableName() + " " + geoRegionTable.getSQLColumnList() + 
 					" VALUES " + geoRegionTable.getSQLValueList(newSurfaceRegionKey,surfaceRegion,volumeRegion1Key,volumeRegion2Key,geomKey);
-		System.out.println(sql);
+		//System.out.println(sql);
 				updateCleanSQL(con,sql);
 				hash.put(surfaceRegion,newSurfaceRegionKey);
 			}

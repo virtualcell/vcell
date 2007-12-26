@@ -2417,6 +2417,7 @@ private void query() {
 	try {
 		List<SimpleJobStatus> resultList = adminDbTop.getSimulationJobStatus(conditions.toString(), true);
 		getNumResultsLabel().setText("  " + resultList.size());
+		getNumSelectedLabel().setText("0");
 		((JobTableModel)getQueryResultTable().getModel()).setData(resultList);
 	} catch (Exception ex) {
 		getNumResultsLabel().setText("Query failed, please try again!");

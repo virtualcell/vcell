@@ -1,6 +1,6 @@
 package cbit.vcell.modeldb;
 import cbit.vcell.dictionary.*;
-import cbit.vcell.dictionary.DBSpecies;
+import cbit.vcell.model.ReactionStepInfo;
 import cbit.vcell.server.User;
 import java.util.Vector;
 /*©
@@ -11,8 +11,6 @@ import java.util.Vector;
 import java.sql.*;
 import cbit.sql.*;
 import cbit.vcell.server.SessionLog;
-import cbit.vcell.server.ObjectNotFoundException;
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.dictionary.CompoundTable;
 import cbit.vcell.dictionary.EnzymeTable;
 import cbit.vcell.dictionary.CompoundAliasTable;
@@ -148,13 +146,13 @@ public String[] getCompoundAliases(Connection con, String likeString)
     throws SQLException {
 
 	likeString = likeString.toUpperCase();
-	boolean hasDigit = false;
-	for(int i = 0;i < likeString.length();i+= 1){
-		if(Character.isDigit(likeString.charAt(i))){
-			hasDigit = true;
-			break;
-		}
-	}
+//	boolean hasDigit = false;
+//	for(int i = 0;i < likeString.length();i+= 1){
+//		if(Character.isDigit(likeString.charAt(i))){
+//			hasDigit = true;
+//			break;
+//		}
+//	}
 					
 	String sql;
     sql =
@@ -176,7 +174,7 @@ public String[] getCompoundAliases(Connection con, String likeString)
             + ")";
 
     Statement stmt = con.createStatement();
-    java.util.Vector nameList = new java.util.Vector();
+    java.util.Vector<String> nameList = new java.util.Vector<String>();
     try {
         ResultSet rset = stmt.executeQuery(sql);
         while (rset.next()) {
@@ -333,7 +331,7 @@ public DBFormalSpecies[] getDatabaseSpecies(Connection con, cbit.vcell.server.Us
 		 	ProteinTable.table.id.getQualifiedColName()+"="+ProteinAliasTable.table.proteinRef.getQualifiedColName() : "");
 
 	
-	java.util.Vector likeConditions = new java.util.Vector();
+	java.util.Vector<String> likeConditions = new java.util.Vector<String>();
 	
 	if(speciesType.equals(FormalSpeciesType.compound)){
 		
@@ -381,11 +379,11 @@ public DBFormalSpecies[] getDatabaseSpecies(Connection con, cbit.vcell.server.Us
 	if(isBound){
 		condition = condition + " AND " +
 			(speciesType.equals(FormalSpeciesType.compound) ?
-				CompoundTable.table.id.getQualifiedColName()+"="+dbSpeciesTable.table.compoundRef.getQualifiedColName(): "") +
+				CompoundTable.table.id.getQualifiedColName()+"=" + DBSpeciesTable.table.compoundRef.getQualifiedColName(): "") +
 			(speciesType.equals(FormalSpeciesType.enzyme) ?
-				EnzymeTable.table.id.getQualifiedColName()+"="+dbSpeciesTable.table.enzymeRef.getQualifiedColName(): "") +
+				EnzymeTable.table.id.getQualifiedColName()+"=" + DBSpeciesTable.table.enzymeRef.getQualifiedColName(): "") +
 			(speciesType.equals(FormalSpeciesType.protein) ?
-			 	ProteinTable.table.id.getQualifiedColName()+"="+dbSpeciesTable.table.proteinRef.getQualifiedColName(): "");
+			 	ProteinTable.table.id.getQualifiedColName()+"=" + DBSpeciesTable.table.proteinRef.getQualifiedColName(): "");
 			
 		
 		if(bOnlyUser){
@@ -515,13 +513,13 @@ public String[] getEnzymeAliases(Connection con, String likeString)
     throws SQLException {
 
 	likeString = likeString.toUpperCase();
-	boolean hasDigit = false;
-	for(int i = 0;i < likeString.length();i+= 1){
-		if(Character.isDigit(likeString.charAt(i))){
-			hasDigit = true;
-			break;
-		}
-	}
+//	boolean hasDigit = false;
+//	for(int i = 0;i < likeString.length();i+= 1){
+//		if(Character.isDigit(likeString.charAt(i))){
+//			hasDigit = true;
+//			break;
+//		}
+//	}
 
 	String sql;
     sql =
@@ -543,7 +541,7 @@ public String[] getEnzymeAliases(Connection con, String likeString)
             + ")";
 
     Statement stmt = con.createStatement();
-    java.util.Vector nameList = new java.util.Vector();
+    java.util.Vector<String> nameList = new java.util.Vector<String>();
     try {
         ResultSet rset = stmt.executeQuery(sql);
         while (rset.next()) {
@@ -592,13 +590,13 @@ public String[] getProteinAliases(Connection con, String likeString)
     throws SQLException {
 
 	likeString = likeString.toUpperCase();
-	boolean hasDigit = false;
-	for(int i = 0;i < likeString.length();i+= 1){
-		if(Character.isDigit(likeString.charAt(i))){
-			hasDigit = true;
-			break;
-		}
-	}
+//	boolean hasDigit = false;
+//	for(int i = 0;i < likeString.length();i+= 1){
+//		if(Character.isDigit(likeString.charAt(i))){
+//			hasDigit = true;
+//			break;
+//		}
+//	}
 					
 	String sql;
     sql =
@@ -620,7 +618,7 @@ public String[] getProteinAliases(Connection con, String likeString)
             + ")";
 
     Statement stmt = con.createStatement();
-    java.util.Vector nameList = new java.util.Vector();
+    java.util.Vector<String> nameList = new java.util.Vector<String>();
     try {
         ResultSet rset = stmt.executeQuery(sql);
         while (rset.next()) {
@@ -717,9 +715,8 @@ public String[] getProteinKeyWords(Connection con, String likeString) throws SQL
  */
 public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(Connection con,cbit.vcell.server.User user,KeyValue reactionStepKeys[]) throws SQLException{
 	String sql = ReactStepTable.table.getSQLReactionStepInfosQuery(reactionStepKeys,user);
-	java.util.Hashtable rxIdToDescrNames = new java.util.Hashtable();
 	Statement stmt = con.createStatement();
-	Vector reactionStepInfoList = new Vector();
+	Vector<ReactionStepInfo> reactionStepInfoList = new Vector<ReactionStepInfo>();
     try {
         ResultSet rset = stmt.executeQuery(sql);
         while(rset.next()){
@@ -731,7 +728,7 @@ public cbit.vcell.model.ReactionStepInfo[] getReactionStepInfos(Connection con,c
 	       String bioModelName = rset.getString(ReactStepTable.RXIDDN_BIOMODEL_NAME_INDEX);
 	       String rxName = rset.getString(ReactStepTable.RXIDDN_REACTSTEP_NAME_INDEX);
 	       java.sql.Date bioModelDate = rset.getDate(BioModelTable.table.versionDate.toString());
-	       cbit.vcell.model.ReactionStepInfo reactionStepInfo = new cbit.vcell.model.ReactionStepInfo(rxKey,owner,bioModelName,rxName,bioModelDate);
+	       ReactionStepInfo reactionStepInfo = new cbit.vcell.model.ReactionStepInfo(rxKey,owner,bioModelName,rxName,bioModelDate);
 	       reactionStepInfoList.add(reactionStepInfo);
         }
     } finally {
@@ -803,7 +800,7 @@ private void insertCompoundSQL(Connection con, KeyValue key, CompoundInfo compou
             + " VALUES "
             + compoundTable.getSQLValueList(key, compound);
 
-    System.out.println(sql);
+    //System.out.println(sql);
 
     cbit.vcell.modeldb.DbDriver.updateCleanSQL(con, sql);
 
@@ -824,7 +821,7 @@ private void insertCompoundSQL(Connection con, KeyValue key, CompoundInfo compou
                     key,
                     cbit.util.TokenMangler.getSQLEscapedString(names[i]),
                     (i == 0));
-        System.out.println(sql);
+        //System.out.println(sql);
         cbit.vcell.modeldb.DbDriver.updateCleanSQL(con, sql);
     }
 }
@@ -866,7 +863,7 @@ private void insertEnzymeSQL(Connection con, KeyValue key, EnzymeInfo enzyme)
             + " VALUES "
             + enzymeTable.getSQLValueList(key, enzyme);
 
-    System.out.println(sql);
+    //System.out.println(sql);
 
     cbit.vcell.modeldb.DbDriver.updateCleanSQL(con, sql);
 
@@ -887,7 +884,7 @@ private void insertEnzymeSQL(Connection con, KeyValue key, EnzymeInfo enzyme)
                     key,
                     cbit.util.TokenMangler.getSQLEscapedString(names[i]),
                     (i == 0));
-        System.out.println(sql);
+        //System.out.println(sql);
         cbit.vcell.modeldb.DbDriver.updateCleanSQL(con, sql);
     }
 }
@@ -1215,7 +1212,7 @@ private void removeEnzymeAliasesSQL(Connection con) throws SQLException {
     //Delete all names for an enzyme based on the Enzymes ECnumber
     String sql;
     sql = "DELETE FROM " + enzymeAliasTable.getTableName();
-    System.out.println("removeEnzymeAliasesSQL sql=" + sql);
+    //System.out.println("removeEnzymeAliasesSQL sql=" + sql);
     DbDriver.updateCleanSQL(con, sql);
 }
 
@@ -1296,7 +1293,7 @@ private void removeEnzymesSQL(Connection con) throws SQLException {
     String sql;
     sql = "DELETE FROM " + enzymeTable.getTableName();
 
-    System.out.println("removeEnzymeSQL sql=" + sql);
+    //System.out.println("removeEnzymeSQL sql=" + sql);
 
     DbDriver.updateCleanSQL(con, sql);
 }
@@ -1368,7 +1365,7 @@ private void removeProteinAliasesSQL(Connection con) throws SQLException {
     //+ (char) ch2
     //+ "%"
     //+ "'";
-    System.out.println("removeProteinAliasesSQL sql=" + sql);
+    //System.out.println("removeProteinAliasesSQL sql=" + sql);
     DbDriver.updateCleanSQL(con, sql);
     //} // end for
     //} // end for
@@ -1449,7 +1446,7 @@ private void removeProteinsSQL(Connection con) throws SQLException {
 
     String sql;
     sql = "DELETE FROM " + proteinTable.getTableName();
-    System.out.println("removeProteinsSQL sql=" + sql);
+    //System.out.println("removeProteinsSQL sql=" + sql);
     DbDriver.updateCleanSQL(con, sql);
 }
 
