@@ -14,6 +14,7 @@ import cbit.vcell.model.BioNameScope;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.util.Matchable;
 import cbit.util.Compare;
+import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.VCMODL;
@@ -51,7 +52,7 @@ public class SpeciesContextSpec implements cbit.util.Matchable, cbit.vcell.parse
 		}
 	}
 
-	public class SpeciesContextSpecParameter extends cbit.vcell.model.Parameter {
+	public class SpeciesContextSpecParameter extends cbit.vcell.model.Parameter implements ExpressionContainer {
 		private Expression fieldParameterExpression = null;
 		private String fieldParameterName = null;
  		private int fieldParameterRole = -1;

@@ -1,4 +1,4 @@
-package org.vcell.sbml.test;
+package org.vcell.sbml.gui;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Structure;

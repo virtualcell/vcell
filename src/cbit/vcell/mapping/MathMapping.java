@@ -89,7 +89,7 @@ public class MathMapping implements ScopedSymbolTable {
 		}
 	}
 
-	public class MathMappingParameter extends Parameter {
+	public class MathMappingParameter extends Parameter implements ExpressionContainer {
 		
 		private String fieldParameterName = null;
 		private Expression fieldExpression = null;

@@ -3,11 +3,13 @@ import cbit.image.VCImage;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.document.VCDocument;
 import cbit.vcell.geometry.Geometry;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationJob;
 import cbit.util.Extent;
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlUtil;
@@ -119,14 +121,16 @@ public static cbit.xml.merge.XmlTreeDiff compareMerge(String xmlBaseString, Stri
  * Creation date: (4/8/2003 12:30:27 PM)
  * @return java.lang.String
  */
-public static String exportSBML(VCDocument vcDoc, int level, int version, String appName) throws XmlParseException {
+public static String exportSBML(VCDocument vcDoc, int level, int version, SimulationContext simContext, SimulationJob simJob) throws XmlParseException {
 
 	if (vcDoc == null) {
         throw new XmlParseException("Invalid arguments for exporting SBML.");
     } 
 	if (vcDoc instanceof BioModel) {
 	    SBMLExporter sbmlExporter = new SBMLExporter((BioModel)vcDoc, level, version);
-	    sbmlExporter.setVcPreferredSimContextName(appName);
+//	    sbmlExporter.setVcPreferredSimContextName(appName);
+	    sbmlExporter.setSelectedSimContext(simContext);
+	    sbmlExporter.setSelectedSimulationJob(simJob);
 	    return sbmlExporter.getSBMLFile();
 	} else if (vcDoc instanceof MathModel) {
 		try {

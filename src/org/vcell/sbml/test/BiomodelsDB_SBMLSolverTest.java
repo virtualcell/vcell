@@ -161,9 +161,9 @@ public class BiomodelsDB_SBMLSolverTest {
 							//
 							// compare results from COPASI and VCELL
 							//
-							if (copasiResults!=null && vcellResults!=null){
+							if (copasiResults!=null && vcellResults_RT!=null){
 								try {
-									SimulationComparisonSummary summary = MathTestingUtilities.compareUnEqualResultSets(copasiResults, vcellResults, varsToTest, 1e-5, 1e-5);
+									SimulationComparisonSummary summary = MathTestingUtilities.compareUnEqualResultSets(copasiResults, vcellResults_RT, varsToTest, 1e-5, 1e-5);
 									double maxRelError = summary.getMaxRelativeError();
 									if (maxRelError<1){
 										passedString = "%Y%";
@@ -242,7 +242,7 @@ public class BiomodelsDB_SBMLSolverTest {
 									double maxRelError = summary.getMaxRelativeError();
 									if (maxRelError<1){
 										relErrorCopasiMathSBMLString = NumberUtils.formatNumber(maxRelError,3);
-//										passedString = "%Y%";
+										passedString = "%Y%";
 									}else{
 										relErrorCopasiMathSBMLString = "*"+NumberUtils.formatNumber(maxRelError,3)+"*";
 										VariableComparisonSummary[] vcSummaries = summary.getVariableComparisonSummaries();
@@ -262,6 +262,7 @@ public class BiomodelsDB_SBMLSolverTest {
 							e.printStackTrace(printWriter);
 							combinedErrorBuffer.append(" *UNKNOWN* _"+e.getMessage()+"_ ");
 						}
+//						printWriter.println(" | "+sbmlLink+" | "+sbmlModelName+" | "+passedString+" | ("+relErrorVCCopasiString+") | "+combinedErrorBuffer.toString()+" | |");
 						printWriter.println(" | "+sbmlLink+" | "+sbmlModelName+" | "+passedString+" "+rt_passedString+" | ("+relErrorVCRoundtripString+")("+relErrorVCCopasiString+")("+relErrorVCMathSBMLString+")("+relErrorCopasiMathSBMLString+") | "+combinedErrorBuffer.toString()+" | |");
 						printWriter.flush();
 					}finally{

@@ -21,6 +21,7 @@ import org.sbml.libsbml.libsbml;
 import org.vcell.sbml.SBMLUtils;
 import org.vcell.sbml.SBMLUtils.SBMLUnitParameter;
 
+import cbit.util.BeanUtils;
 import cbit.util.TokenMangler;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.SimulationContext;
@@ -37,6 +38,8 @@ import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.units.SBMLUnitTranslator;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.xml.XMLTags;
@@ -52,7 +55,12 @@ public class SBMLExporter {
 	private int sbmlVersion = 3;
 	private org.sbml.libsbml.Model sbmlModel = null;
 	private cbit.vcell.biomodel.BioModel vcBioModel = null;
-	private String vcPreferredSimContextName = null;
+//	private String vcPreferredSimContextName = null;
+
+	private SimulationContext vcSelectedSimContext = null;
+	private SimulationContext vcOverridenSimContext = null;
+	private SimulationJob vcSelectedSimJob = null;
+
 	private java.util.Hashtable<String, String> globalParamNamesHash = new java.util.Hashtable<String, String>();
 	private org.vcell.sbml.vcell.SBMLExporter.SBMLExportErrorReport fieldErrorReport = null;
 	private SBMLExportSpec sbmlExportSpec = new SBMLExportSpec(VCUnitDefinition.UNIT_molecules, VCUnitDefinition.UNIT_um3, VCUnitDefinition.UNIT_um2, VCUnitDefinition.UNIT_um, VCUnitDefinition.UNIT_s);
@@ -192,7 +200,7 @@ protected void addCompartments() {
 			sbmlCompartment.setUnits(cbit.util.TokenMangler.mangleToSName(sbmlSizeUnit.getSymbol()));
 		}
 
-		StructureMapping vcStructMapping = getMatchingSimContext().getGeometryContext().getStructureMapping(vcStructures[i]);
+		StructureMapping vcStructMapping = getOverriddenSimContext().getGeometryContext().getStructureMapping(vcStructures[i]);
 		try {
 			// The unit for 3D compartment size in VCell is um3, we are going to write it out in um3 in the SBML document.
 			// Hence multiplying the size expression with the conversion factor between VC and SBML units for the compartment size. 
@@ -307,7 +315,7 @@ protected void addParameters() {
  * addReactions comment.
  */
 protected void addReactions() {
-	cbit.vcell.mapping.ReactionSpec[] vcReactionSpecs = getMatchingSimContext().getReactionContext().getReactionSpecs();
+	cbit.vcell.mapping.ReactionSpec[] vcReactionSpecs = getOverriddenSimContext().getReactionContext().getReactionSpecs();
 
 	for (int i = 0; i < vcReactionSpecs.length; i++){
 		if (vcReactionSpecs[i].isExcluded()) {
@@ -582,7 +590,7 @@ private Expression adjustSpeciesConcUnitsInRateExpr(Expression origRateExpr, Kin
 					}
 					// Get the VC and SBML concentration units (from sbmlExportSpec) and get the conversion factor ('factor').
 					// Replace the occurance of species in the rate expression with the new expr : species*factor.
-					cbit.vcell.mapping.SpeciesContextSpec vcSpeciesContextsSpec = getMatchingSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContexts[j]);
+					cbit.vcell.mapping.SpeciesContextSpec vcSpeciesContextsSpec = getOverriddenSimContext().getReactionContext().getSpeciesContextSpec(vcSpeciesContexts[j]);
 					VCUnitDefinition vcConcUnit = vcSpeciesContextsSpec.getInitialConditionParameter().getUnitDefinition();
 					VCUnitDefinition sbmlConcUnits = sbmlExportSpec.getConcentrationUnit(vcSpeciesContexts[j].getStructure().getDimension());
 					SBMLUnitParameter sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", sbmlConcUnits, vcConcUnit);
@@ -615,7 +623,7 @@ protected void addSpecies() {
 
 		// Get (and set) the initial concentration value
 		// Get the simulationContext (application) that matches the 'vcPreferredSimContextName' field.
-		cbit.vcell.mapping.SimulationContext simContext = getMatchingSimContext();
+		cbit.vcell.mapping.SimulationContext simContext = getOverriddenSimContext();
 		if (simContext == null) {
 			throw new RuntimeException("No simcontext (application) specified; Cannot proceed.");
 		}
@@ -723,7 +731,7 @@ protected void addUnitDefinitions() {
 private void generateErrorReport(SBMLDocument sbmlDoc) {
 	long numFailedChecks = sbmlDoc.checkConsistency();
 	StringBuffer errorReportBuffer = new StringBuffer();
-	errorReportBuffer.append("\n\nBIOMODEL : " + vcBioModel.getName() + " : Num Of Failed Checks = " + numFailedChecks + "\n");
+	errorReportBuffer.append("\n\nBIOMODEL : " + vcBioModel.getName() + "_" + getOverriddenSimContext().getName() + " : Num Of Failed Checks = " + numFailedChecks + "\n");
 	long numSBMLErrors = sbmlDoc.getNumErrors();
 	//errorReportBuffer.append("\nWARNINGS : " + sbmlDoc.getErrorLog().getNumFailsWithSeverity(XMLError.Warning));
 	for (long i = 0; i < numSBMLErrors; i++){
@@ -819,7 +827,7 @@ private Element getAnnotationElement(ReactionStep reactionStep) throws cbit.vcel
 private boolean getBoundaryCondition(SpeciesContext speciesContext) {
 
 	// Get the simulationContext (application) that matches the 'vcPreferredSimContextName' field.
-	cbit.vcell.mapping.SimulationContext simContext = getMatchingSimContext();
+	cbit.vcell.mapping.SimulationContext simContext = getOverriddenSimContext();
 	if (simContext == null) {
 		return false;
 	}
@@ -866,19 +874,16 @@ public static ASTNode getFormulaFromExpression(Expression expression) {
 	return mathNode.deepCopy();
 }
 
-
+/*
 /**
  * 	getMatchingSimContext :
  	Policy : If requested application (simContext) does not exist, behave as if none exist.
     If it exists, but it is 1/2/3 dimensional (level 2), let it go through.
     If no application specified, return the first one that is not 1/2/3 dimensional.
     If none exist, return null.
-
- */
+ 
 private SimulationContext getMatchingSimContext() {
-
 	// Get the simulationContext (application) that matches the 'vcPreferredSimContextName' field.
-
 	SimulationContext simContext = null;
 
 	SimulationContext[] vcSimContexts = vcBioModel.getSimulationContexts();
@@ -908,12 +913,96 @@ private SimulationContext getMatchingSimContext() {
 	
 	return simContext;
 }
+*/
+
+private SimulationContext getOverriddenSimContext() {
+	return vcOverridenSimContext;
+}
+
+public SimulationContext getSelectedSimContext() {
+	return vcSelectedSimContext;
+}
+
+private SimulationJob getSelectedSimulationJob() {
+	return vcSelectedSimJob;
+}
+
+private Simulation getSelectedSimulation() {
+	if (vcSelectedSimJob == null) {
+		return null;
+	}
+	return vcSelectedSimJob.getWorkingSim();
+}
 
 public String getSBMLFile() {
 
+	//
+	// If a simulation with math overrides has been selected, the overrides should be applied to the exported model
+	// First clone the simContext, so that the original doesn't get overridden.
+	// Obtain the overrides from simulation, check which type of parameter and set the expression from mathOverrides object
+	//
+	try {
+		SimulationContext clonedSimContext = (SimulationContext)cbit.util.BeanUtils.cloneSerializable(getSelectedSimContext());
+		if (getSelectedSimulation() != null && getSelectedSimulation().getMathOverrides().hasOverrides()) {
+			// need to clone simContext and apply overrides before proceeding.
+			clonedSimContext.refreshDependencies();
+			clonedSimContext.getModel().refreshDependencies();
+			cbit.vcell.mapping.MathMapping mathMapping = new cbit.vcell.mapping.MathMapping(clonedSimContext);
+			cbit.vcell.mapping.MathSymbolMapping msm = mathMapping.getMathSymbolMapping();
+
+			cbit.vcell.solver.MathOverrides mathOverrides = getSelectedSimulation().getMathOverrides();
+			String[] moConstNames = mathOverrides.getOverridenConstantNames();
+			for (int i = 0; i < moConstNames.length; i++){
+				cbit.vcell.math.Constant overriddenConstant = mathOverrides.getConstant(moConstNames[i]);
+				// Expression overriddenExpr = mathOverrides.getActualExpression(moConstNames[i], 0);
+				Expression overriddenExpr = mathOverrides.getActualExpression(moConstNames[i], getSelectedSimulationJob().getJobIndex());
+				// The above constant (from mathoverride) is not the same instance as the one in the MathSymbolMapping hash.
+				// Hence retreive the correct instance from mathSymbolMapping (mathMapping -> mathDescription) and use it to
+				// retrieve its value (symbolTableEntry) from hash.
+				cbit.vcell.math.Variable overriddenVar = msm.findVariableByName(overriddenConstant.getName());
+				cbit.vcell.parser.SymbolTableEntry[] stes = msm.getBiologicalSymbol(overriddenVar);
+				if (stes == null) {
+					throw new NullPointerException("No matching biological symbol for : " + overriddenConstant.getName());
+				}
+				if (stes.length > 1) {
+					throw new RuntimeException("Cannot have more than one mapping entry for constant : " + overriddenConstant.getName());
+				}
+				if (stes[0] instanceof Parameter) {
+					Parameter param = (Parameter)stes[0];
+					if (param.isExpressionEditable()) {
+						if (param instanceof Kinetics.KineticsParameter) {
+							// Kinetics param has to be set separately for the integrity of the kinetics object
+							Kinetics.KineticsParameter kinParam = (Kinetics.KineticsParameter)param;
+							ReactionStep[] rs = clonedSimContext.getModel().getReactionSteps();
+							for (int j = 0; j < rs.length; j++){
+								if (rs[j].getNameScope().getName().equals(kinParam.getNameScope().getName())) {
+									rs[j].getKinetics().setParameterValue(kinParam, overriddenExpr);
+								}
+							}
+						} else if (param instanceof cbit.vcell.model.ExpressionContainer) {
+							// If it is any other editable param, set its expression with the 
+							((cbit.vcell.model.ExpressionContainer)param).setExpression(overriddenExpr);
+						}
+					}
+				}
+			}
+		}
+		// After setting the overrides, set the vcOverriddenSimContext to the clonedSimContext
+		setOverriddenSimContext(clonedSimContext);
+	} catch (Exception e) {
+		e.printStackTrace(System.out);
+		throw new RuntimeException("Could not apply overrides from simulation to application parameters : " + e.getMessage());
+	}
+
+
 	// Create the sbmlModel, so that other details can be added to it in translateBioModel()
-	sbmlModel = new Model(TokenMangler.mangleToSName(vcBioModel.getName()));
-	sbmlModel.setName(vcBioModel.getName());
+	// If the chosen simulation is not null, the exported model's name should reflect it
+	String modelName = vcBioModel.getName() + "_" + getSelectedSimContext().getName();  
+	if (getSelectedSimulation() != null) {
+		modelName += "_" + getSelectedSimulation().getName();
+	}
+	sbmlModel = new Model(TokenMangler.mangleToSName(modelName));
+	sbmlModel.setName(modelName);
 	translateBioModel();
 
 //	Element annotationElement = null;
@@ -937,7 +1026,7 @@ public String getSBMLFile() {
 	SBMLWriter sbmlWriter = new SBMLWriter();
 	String sbmlStr = sbmlWriter.writeToString(sbmlDocument);
 
-	generateErrorReport(sbmlDocument);
+//	generateErrorReport(sbmlDocument);
 	System.out.println("\n\nSBML Export Error Report");
 	OStringStream oStrStream = new OStringStream();
 	sbmlDocument.printErrors(oStrStream);
@@ -950,16 +1039,16 @@ public String getSBMLFile() {
 	return sbmlStr;
 }
 
-
+/*
 /**
  * Insert the method's description here.
  * Creation date: (4/12/2006 5:09:09 PM)
  * @return java.lang.String
- */
+ 
 public java.lang.String getVcPreferredSimContextName() {
 	return vcPreferredSimContextName;
 }
-
+*/
 
 /**
  * Insert the method's description here.
@@ -986,10 +1075,24 @@ private void setErrorReport(org.vcell.sbml.vcell.SBMLExporter.SBMLExportErrorRep
  * Creation date: (4/12/2006 5:09:09 PM)
  * @param newVcPreferredSimContextName java.lang.String
  */
+/*
+ * 
 public void setVcPreferredSimContextName(java.lang.String newVcPreferredSimContextName) {
 	vcPreferredSimContextName = newVcPreferredSimContextName;
 }
+*/
 
+public void setOverriddenSimContext(SimulationContext newVcOverriddenSimContext) {
+	vcOverridenSimContext = newVcOverriddenSimContext;
+}
+
+public void setSelectedSimContext(SimulationContext newVcSelectedSimContext) {
+	vcSelectedSimContext = newVcSelectedSimContext;
+}
+
+public void setSelectedSimulationJob(SimulationJob newVcSelectedSimJob) {
+	vcSelectedSimJob = newVcSelectedSimJob;
+}
 
 /**
  * VC_to_SB_Translator constructor comment.

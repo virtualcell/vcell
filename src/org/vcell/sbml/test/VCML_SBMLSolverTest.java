@@ -57,7 +57,8 @@ public class VCML_SBMLSolverTest {
 									structureSizeSolver.updateAbsoluteStructureSizes(simContext, topStructure, 1000.0, VCUnitDefinition.UNIT_um3);
 								}
 								SBMLExporter sbmlExporter = new SBMLExporter(bioModel);
-								sbmlExporter.setVcPreferredSimContextName(simContext.getName());
+//								sbmlExporter.setVcPreferredSimContextName(simContext.getName());
+								sbmlExporter.setSelectedSimContext(simContext);
 								String sbmlText = sbmlExporter.getSBMLFile();
 								CopasiSBMLSolver copasiSBMLSolver = new CopasiSBMLSolver();
 								String columnDelimiter = copasiSBMLSolver.getResultsFileColumnDelimiter();

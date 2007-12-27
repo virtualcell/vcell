@@ -4,6 +4,11 @@ import cbit.util.*;
 import java.util.*;
 import java.io.*;
 import javax.swing.*;
+
+import org.vcell.sbml.gui.ApplnSelectionAndStructureSizeInputPanel;
+import org.vcell.sbml.gui.SimulationSelectionPanel;
+import org.vcell.sbml.vcell.StructureSizeSolver;
+
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.client.desktop.*;
@@ -170,7 +175,9 @@ private File showBioModelXMLFileChooser(java.util.Hashtable hashTable) throws ja
 			SimulationContext chosenSimContext = null;
 			if (applicableAppNameList.size() == 1){
 				chosenSimContextName = (String)applicableAppNameList.get(0);
-			} else if (!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_PDF.getDescription())) {
+			} else if (!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_PDF.getDescription()) && 
+					   !fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML.getDescription()) &&
+					   !fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_2.getDescription()) ) {
 				String[] applicationNames = (String[])cbit.util.BeanUtils.getArray(applicableAppNameList,String.class);
 				Object choice = PopupGenerator.showListDialog(topLevelWindowManager, applicationNames, "Please select Application");
 				if (choice == null) {
@@ -179,64 +186,103 @@ private File showBioModelXMLFileChooser(java.util.Hashtable hashTable) throws ja
 				}
 				chosenSimContextName = (String)choice;
 			}
-			// identify it and store index in the hash for next task
-			for (int i=0;i<simContexts.length;i++){
-				if (simContexts[i].getName().equals(chosenSimContextName)){
-					hashTable.put("chosenSimContextIndex", new Integer(i));
-					chosenSimContext = simContexts[i];
+			// identify it and store index in the hash for next task (for non-SBML formats)
+			if (!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML.getDescription()) && !fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_2.getDescription()) ) {
+				for (int i=0;i<simContexts.length;i++){
+					if (simContexts[i].getName().equals(chosenSimContextName)){
+						hashTable.put("chosenSimContextIndex", new Integer(i));
+						chosenSimContext = simContexts[i];
+					}
 				}
 			}
 
 			// Select a structure and set its size only for SBML models
 			if (fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML.getDescription()) || fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_2.getDescription())) {
-				if(chosenSimContext.getGeometryContext().isAllSizeSpecifiedPositive()){} //export
-				else if(chosenSimContext.getGeometryContext().isAllSizeSpecifiedNull() && chosenSimContext.getGeometryContext().isAllVolFracAndSurfVolSpecified())//popup size dialog and export
-				{
-					// get user choice of structure and its size and computes absolute sizes of compartments using the StructureSizeSolver.
-					cbit.vcell.model.Structure[] structures = bioModel.getModel().getStructures();
-					
-					String strucName = null;
-					double structSize = 1.0;
-					int structSelection = -1;
-					int option = JOptionPane.CANCEL_OPTION;
-	
-					org.vcell.sbml.test.StructureSizeInputPanel structureSizeInputPanel = null;
-					while (structSelection < 0) {
-						structureSizeInputPanel = new org.vcell.sbml.test.StructureSizeInputPanel();
-						structureSizeInputPanel.setStructures(structures);
-						structureSizeInputPanel.setPreferredSize(new java.awt.Dimension(325, 325));
-						structureSizeInputPanel.setMaximumSize(new java.awt.Dimension(325, 325));
-						option = cbit.gui.DialogUtils.showComponentOKCancelDialog(null, structureSizeInputPanel, "Choose Structure and specify size");
-						structSelection = structureSizeInputPanel.getStructSelectionIndex();
-						if (option == JOptionPane.CANCEL_OPTION || option == JOptionPane.CLOSED_OPTION) {
-							break;
-						} else if (option == JOptionPane.OK_OPTION && structSelection < 0) {
-							cbit.gui.DialogUtils.showErrorDialog("Please select a structure and set its size");
+				// get user choice of structure and its size and computes absolute sizes of compartments using the StructureSizeSolver.
+				cbit.vcell.model.Structure[] structures = bioModel.getModel().getStructures();
+				// get the nonspatial simulationContexts corresponding to names in applicableAppNameList 
+				// This is needed in ApplnSelectionAndStructureSizeInputPanel
+				SimulationContext[] nonSpatialSimContexts = new SimulationContext[applicableAppNameList.size()];
+				for (int jj = 0; jj < applicableAppNameList.size(); jj++) {
+					String applnName = (String)applicableAppNameList.elementAt(jj); 
+					for (int ii = 0; ii < simContexts.length; ii++) {
+						if (simContexts[ii].getName().equals(applnName)) {
+							nonSpatialSimContexts[jj] = simContexts[ii];
 						}
 					}
-					if (option == JOptionPane.OK_OPTION) {
-						structureSizeInputPanel.applyStructureNameAndSizeValues();
-						strucName = structureSizeInputPanel.getSelectedStructureName();
-						structSize = structureSizeInputPanel.getStructureSize();
-	
-						// Invoke StructureSizeEvaluator to compute absolute sizes of compartments
-						org.vcell.sbml.vcell.StructureSizeSolver ssEvaluator = new org.vcell.sbml.vcell.StructureSizeSolver();
-						cbit.vcell.model.Structure chosenStructure = chosenSimContext.getModel().getStructure(strucName);
-						StructureMapping chosenStructMapping = chosenSimContext.getGeometryContext().getStructureMapping(chosenStructure);
-						ssEvaluator.updateAbsoluteStructureSizes(chosenSimContext, chosenStructure, structSize, chosenStructMapping.getSizeParameter().getUnitDefinition());
-					} else if (option == JOptionPane.CANCEL_OPTION || option == JOptionPane.CLOSED_OPTION) {
-						// User did not choose to set size for any structure.
+				}
+				
+				String strucName = null;
+				double structSize = 1.0;
+				int structSelection = -1;
+				int option = JOptionPane.CANCEL_OPTION;
+				cbit.vcell.solver.Simulation chosenSimulation = null;
+
+				ApplnSelectionAndStructureSizeInputPanel applnStructInputPanel = null;
+				while (structSelection < 0) {
+					applnStructInputPanel = new ApplnSelectionAndStructureSizeInputPanel();
+					applnStructInputPanel.setSimContexts(nonSpatialSimContexts);
+					applnStructInputPanel.setStructures(structures);
+					applnStructInputPanel.setPreferredSize(new java.awt.Dimension(350, 400));
+					applnStructInputPanel.setMaximumSize(new java.awt.Dimension(350, 400));
+					option = cbit.gui.DialogUtils.showComponentOKCancelDialog(null, applnStructInputPanel, "Select Application and Specify Structure Size to Export:");
+					structSelection = applnStructInputPanel.getStructSelectionIndex();
+					if (option == JOptionPane.CANCEL_OPTION || option == JOptionPane.CLOSED_OPTION) {
+						break;
+					} else if (option == JOptionPane.OK_OPTION && structSelection < 0) {
+						cbit.gui.DialogUtils.showErrorDialog("Please select a structure and set its size");
+					}
+				}
+				if (option == JOptionPane.OK_OPTION) {
+					applnStructInputPanel.applyStructureNameAndSizeValues();
+					strucName = applnStructInputPanel.getSelectedStructureName();
+					structSize = applnStructInputPanel.getStructureSize();
+					chosenSimContext = applnStructInputPanel.getSelectedSimContext();
+		
+					hashTable.put("selectedSimContext", chosenSimContext);
+
+					// Invoke StructureSizeEvaluator to compute absolute sizes of compartments
+					StructureSizeSolver ssEvaluator = new StructureSizeSolver();
+					cbit.vcell.model.Structure chosenStructure = chosenSimContext.getModel().getStructure(strucName);
+					StructureMapping chosenStructMapping = chosenSimContext.getGeometryContext().getStructureMapping(chosenStructure);
+					ssEvaluator.updateAbsoluteStructureSizes(chosenSimContext, chosenStructure, structSize, chosenStructMapping.getSizeParameter().getUnitDefinition());
+
+					// Select simulation whose overrides need to be exported
+					SimulationSelectionPanel simSelectionPanel = new SimulationSelectionPanel();
+					simSelectionPanel.setPreferredSize(new java.awt.Dimension(600, 400));
+					simSelectionPanel.setMaximumSize(new java.awt.Dimension(600, 400));
+					simSelectionPanel.setSimulations(bioModel.getSimulations(chosenSimContext));
+					int simOption = cbit.gui.DialogUtils.showComponentOKCancelDialog(null, simSelectionPanel, "Select Simulation whose overrides should be exported:");
+					if (simOption == JOptionPane.OK_OPTION) {
+						chosenSimulation = simSelectionPanel.getSelectedSimulation();
+						if (chosenSimulation != null) {
+							hashTable.put("selectedSimulation", chosenSimulation);
+						}
+					} else if (simOption == JOptionPane.CANCEL_OPTION || simOption == JOptionPane.CLOSED_OPTION) {
+						// User did not choose a simulation whose overrides are required to be exported.
 						// Without that information, cannot export successfully into SBML, 
 						// Hence cancelling the entire export to SBML operation.
 						throw UserCancelException.CANCEL_XML_TRANSLATION;
 					}
-				}
-				else //Cancel export and show error message
-				{
-					cbit.gui.DialogUtils.showErrorDialog("Error Exporting Appllication '"+chosenSimContextName+"':\nAll structure sizes must be assigned positive values.\nPlease go to StructureMapping tab to check the sizes.");
+				} else if (option == JOptionPane.CANCEL_OPTION || option == JOptionPane.CLOSED_OPTION) {
+					// User did not choose to set size for any structure.
+					// Without that information, cannot export successfully into SBML, 
+					// Hence cancelling the entire export to SBML operation.
 					throw UserCancelException.CANCEL_XML_TRANSLATION;
 				}
+
+				// rename file to contain exported simulation.
+				int index = selectedFile.getName().indexOf(".xml");
+				String newFileName = selectedFile.getName().substring(0, index);
+				if (chosenSimulation != null) {
+					newFileName = newFileName +  "_" + TokenMangler.mangleToSName(chosenSimulation.getName());
+				}
+				selectedFile.renameTo(new File(newFileName + ".xml"));
+				System.err.println(selectedFile.getName());
+				resetPreferredFilePath(selectedFile, userPreferences);
+				return selectedFile;
 			}
+				
 			resetPreferredFilePath(selectedFile, userPreferences);
 			return selectedFile;
 		}

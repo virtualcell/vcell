@@ -411,6 +411,17 @@ public String getVCML() {
 	return buffer.toString();
 }
 
+/**
+ * MathOverrides has overrides if the overridesHash is not empty.
+ * Returns <true> if overridesHash is not empty (has overrides) and <false> is overridesHash is empty (no overrides)
+ */
+public boolean hasOverrides() {
+	if (getOverridesHash().isEmpty()) {
+		return false;
+	} else {
+		return true;
+	}
+}
 
 /**
  * Insert the method's description here.

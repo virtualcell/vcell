@@ -90,7 +90,8 @@ public static void main(String[] args) {
 //					ssEvaluator.updateAbsoluteStructureSizes(simContext, structure, structureSize, structMapping.getSizeParameter().getUnitDefinition());
 //				}
 				
-				String sbmlString = XmlHelper.exportSBML(bioModel, 2, 3, simContext.getName());
+//				String sbmlString = XmlHelper.exportSBML(bioModel, 2, 3, simContext.getName());
+				String sbmlString = XmlHelper.exportSBML(bioModel, 2, 3, simContext, null);
 				String outputFileName = pathName + ".sbml"; 
 				File outputFile = new File(outputFileName);
 				java.io.FileWriter fileWriter = new java.io.FileWriter(outputFile);
