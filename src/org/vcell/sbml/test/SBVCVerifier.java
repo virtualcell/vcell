@@ -3,8 +3,11 @@ import java.beans.PropertyVetoException;
 import java.io.PrintStream;
 import java.util.Calendar;
 
+import org.vcell.sbml.SBMLUtils;
+
 import cbit.sql.KeyValue;
 import cbit.sql.SimulationVersion;
+import cbit.util.xml.VCLogger;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.geometry.Geometry;
@@ -13,6 +16,7 @@ import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.modeldb.VCDatabaseVisitor;
@@ -207,7 +211,20 @@ public boolean filterBioModel(BioModelInfo bioModelInfo) {
 	Calendar calendar = Calendar.getInstance();
 	int month = calendar.get(Calendar.MONTH);
 	calendar.set(Calendar.MONTH, month-6);
-	if (bioModelInfo.getVersion().getDate().after(calendar.getTime())){
+//	if (bioModelInfo.getVersion().getDate().after(calendar.getTime())){
+//		System.err.println("BM date : " + bioModelInfo.getVersion().getDate().toString() + ";\t cutoff date : " + calendar.getTime().toString());
+	boolean bAllowedUsers = false;
+	if (bioModelInfo.getVersion().getOwner().getName().equals("anu")) {
+//			|| bioModelInfo.getVersion().getOwner().getName().equals("schaff") ||
+//			bioModelInfo.getVersion().getOwner().getName().equals("ion") ||
+//			bioModelInfo.getVersion().getOwner().getName().equals("fgao") ||
+//			bioModelInfo.getVersion().getOwner().getName().equals("frm") ||
+//			bioModelInfo.getVersion().getOwner().getName().equals("liye") ||
+//			bioModelInfo.getVersion().getOwner().getName().equals("boris") ) {
+		bAllowedUsers = true;
+	}
+	if (bAllowedUsers && (bioModelInfo.getVersion().getDate().after(calendar.getTime()))) {
+		System.err.println("BM name : " + bioModelInfo.getVersion().getName() + "\tdate : " + bioModelInfo.getVersion().getDate().toString());
 		return true;
 	}
 	return false;
@@ -227,25 +244,28 @@ public void visitBioModel(BioModel bioModel_1, PrintStream logFilePrintStream) {
 		//
 
 		// inline a VCLogger - to be used later while importing an exported biomodel.
-        cbit.util.xml.VCLogger logger = new cbit.util.xml.VCLogger() {
-            private StringBuffer buffer = new StringBuffer();
-            public void sendMessage(int messageLevel, int messageType) {
-                // String message = cbit.vcell.vcml.TranslationMessage.getDefaultMessage(messageType);
-                // sendMessage(messageLevel, messageType, message);	
-            }
-            public void sendMessage(int messageLevel, int messageType, String message) {
-                // System.out.println("LOGGER: msgLevel="+messageLevel+", msgType="+messageType+", "+message);
-            }
-            public void sendAllMessages() {
-            }
-            public boolean hasMessages() {
-                return false;
-            }
-        };
+	    cbit.util.xml.VCLogger logger = new cbit.util.xml.VCLogger() {
+	        private StringBuffer buffer = new StringBuffer();
+	        public void sendMessage(int messageLevel, int messageType) {
+	            String message = cbit.util.xml.VCLogger.getDefaultMessage(messageType);
+	            sendMessage(messageLevel, messageType, message);	
+	        }
+	        public void sendMessage(int messageLevel, int messageType, String message) {
+	            System.out.println("LOGGER: msgLevel="+messageLevel+", msgType="+messageType+", "+message);
+	            if (messageLevel==VCLogger.HIGH_PRIORITY){
+	            	throw new RuntimeException("SBML Import Error: "+message);
+	            }
+	        }
+	        public void sendAllMessages() {
+	        }
+	        public boolean hasMessages() {
+	            return false;
+	        }
+	    };
 		
 		SimulationContext simContexts[] = bioModel_1.getSimulationContexts();
 		for (int k = 0; k < simContexts.length; k++){
-			if (simContexts[k].getGeometry().getDimension() > 0) {
+			if (simContexts[k].getGeometry().getDimension() > 0 || simContexts[k].isStoch()) {
 				continue;
 			} else {
 
@@ -262,12 +282,14 @@ public void visitBioModel(BioModel bioModel_1, PrintStream logFilePrintStream) {
 				ssEvaluator.updateAbsoluteStructureSizes(simContexts[k], structure, structureSize, structMapping.getSizeParameter().getUnitDefinition());
 
 				// now export to SBML
-				String exportedSBMLStr = cbit.vcell.xml.XmlHelper.exportSBML(bioModel_1, 2, 3, simContexts[k].getName());
+				logFilePrintStream.println("User : " + bioModel_1.getVersion().getOwner().getName() + ";\tBiomodel : " + bioModel_1.getName() + ";\tDate : " + bioModel_1.getVersion().getDate().toString() + ";\tAppln : " + simContexts[k].getName());
+//				String exportedSBMLStr = cbit.vcell.xml.XmlHelper.exportSBML(bioModel_1, 2, 1, simContexts[k].getName());
+				String exportedSBMLStr = cbit.vcell.xml.XmlHelper.exportSBML(bioModel_1, 2, 1, simContexts[k], null);
+				SBMLUtils.writeStringToFile(exportedSBMLStr, "C:\\VCell\\SBML_Testing\\SBMLValidationSuiteTests\\"+bioModel_1.getName()+".xml");
 
 				// Import the exported model
 				BioModel bioModel_2 = (BioModel) cbit.vcell.xml.XmlHelper.importSBML(logger, exportedSBMLStr);
 
-				String bioModelXML_2 = cbit.vcell.xml.XmlHelper.bioModelToXML(bioModel_2);
 				//
 		        // Generate math and create a single simulation for the original simContext and for the model that was exported to SBML
 		        // and imported back into the VCell. If there is a fast system in the application, use the RungeKatta-Fehlberg solver,
@@ -331,9 +353,15 @@ public void visitBioModel(BioModel bioModel_1, PrintStream logFilePrintStream) {
 				}
 
 				// Get the variable names to compare in the 2 result sets - needed for MathTestingUtilities.compareResultSets()
-				String[] varsToCompare = new String[odeSolverResultSet_1.getColumnDescriptionsCount()];
-				for (int j = 0; j < odeSolverResultSet_1.getColumnDescriptionsCount(); j++){
-					varsToCompare[j] = odeSolverResultSet_1.getColumnDescriptions(j).getName();
+//				SpeciesContext[] spContexts = simContexts[k].getModel().getSpeciesContexts();
+//				String[] varsToCompare = new String[spContexts.length];
+//				for (int j = 0; j < spContexts.length; j++){
+//					varsToCompare[j] = spContexts[j].getName();
+//				}
+
+				String[] varsToCompare = new String[odeSolverResultSet_1.getDataColumnCount()];
+				for (int j = 0; j < odeSolverResultSet_1.getDataColumnCount(); j++){
+					varsToCompare[j] = odeSolverResultSet_1.getDataColumnDescriptions()[j].getName();
 				}
 
 				double absErr = 1e-8;
@@ -343,7 +371,7 @@ public void visitBioModel(BioModel bioModel_1, PrintStream logFilePrintStream) {
 
 				// Get comparison report ...
 				String comparisonReport = printComparisonReport(simComparisonSummary, absErr, relErr);
-				logFilePrintStream.println("Comparison Report : \n\n\t\t" + comparisonReport);
+				logFilePrintStream.println("Comparison Report : \n\n\t" + comparisonReport);
 			} // else
 		} // for - simcontexts - k
 	}catch (Throwable e){

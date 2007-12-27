@@ -47,7 +47,7 @@ public abstract class StructureMapping implements Matchable, cbit.vcell.parser.S
 		}
 	}
 
-	public class StructureMappingParameter extends cbit.vcell.model.Parameter {
+	public class StructureMappingParameter extends cbit.vcell.model.Parameter implements ExpressionContainer {
 
 		private int fieldParameterRole = -1;
 		private String fieldParameterName = null;

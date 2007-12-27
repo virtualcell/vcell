@@ -68,7 +68,7 @@ public class Model implements cbit.sql.Versionable, Matchable, PropertyChangeLis
 	public static final int NUM_ROLES		= 1;
 
 	
-	public class ModelParameter extends Parameter {
+	public class ModelParameter extends Parameter implements ExpressionContainer {
 		
 		private String fieldParameterName = null;
 		private cbit.vcell.parser.Expression fieldParameterExpression = null;

@@ -1,6 +1,8 @@
 package cbit.vcell.client.task;
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.xml.*;
 import cbit.vcell.clientdb.*;
 import java.io.*;
@@ -95,14 +97,46 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
 			// convert it if other format
 			if (!fileFilter.equals(FileFilters.FILE_FILTER_VCML)) {
 				// SBML or CellML; get application name
-				Integer chosenSimContextIndex = (Integer)hashTable.get("chosenSimContextIndex");
-				String applicationName = bioModel.getSimulationContexts(chosenSimContextIndex.intValue()).getName();
+//				Integer chosenSimContextIndex = (Integer)hashTable.get("chosenSimContextIndex");
+//				String applicationName = bioModel.getSimulationContexts(chosenSimContextIndex.intValue()).getName();
+				SimulationContext selectedSimContext = (SimulationContext)hashTable.get("selectedSimContext");
+				Simulation selectedSim = (Simulation)hashTable.get("selectedSimulation");
 				if (fileFilter.equals(FileFilters.FILE_FILTER_SBML)) {
-					resultString = XmlHelper.exportSBML(bioModel, 1, 2, applicationName);
+					if (selectedSim == null) {
+						resultString = XmlHelper.exportSBML(bioModel, 1, 2, selectedSimContext, null);
+					} else {
+						for (int sc = 0; sc < selectedSim.getScanCount(); sc++) {
+							SimulationJob simJob = new SimulationJob(selectedSim, null, sc);
+							resultString = XmlHelper.exportSBML(bioModel, 1, 2, selectedSimContext, simJob);
+							// Need to export each parameter scan into a separate file 
+							String newExportFileName = exportFile.getPath().substring(0, exportFile.getPath().indexOf(".xml")) + "_" + sc + ".xml";
+							exportFile.renameTo(new File(newExportFileName));
+							java.io.FileWriter fileWriter = new java.io.FileWriter(exportFile);
+							fileWriter.write(resultString);
+							fileWriter.flush();
+							fileWriter.close();
+						}
+					}
+					return;
 				} else if (fileFilter.equals(FileFilters.FILE_FILTER_SBML_2)){
-					resultString = XmlHelper.exportSBML(bioModel, 2, 1, applicationName);
+					if (selectedSim == null) {
+						resultString = XmlHelper.exportSBML(bioModel, 2, 1, selectedSimContext, null);
+					} else {
+						for (int sc = 0; sc < selectedSim.getScanCount(); sc++) {
+							SimulationJob simJob = new SimulationJob(selectedSim, null, sc);
+							resultString = XmlHelper.exportSBML(bioModel, 2, 1, selectedSimContext, simJob);
+							// Need to export each parameter scan into a separate file 
+							String newExportFileName = exportFile.getPath().substring(0, exportFile.getPath().indexOf(".xml")) + "_" + sc + ".xml";
+							exportFile.renameTo(new File(newExportFileName));
+							java.io.FileWriter fileWriter = new java.io.FileWriter(exportFile);
+							fileWriter.write(resultString);
+							fileWriter.flush();
+							fileWriter.close();
+						}
+						return;
+					}
 				} else if (fileFilter.equals(FileFilters.FILE_FILTER_CELLML)) {
-					resultString = XmlHelper.exportCellML(bioModel, applicationName);
+					resultString = XmlHelper.exportCellML(bioModel, selectedSimContext.getName());
 				}
 			} else {
 				// if format is VCML, get it from biomodel.
@@ -124,7 +158,7 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
 		} else if (fileFilter.equals(FileFilters.FILE_FILTER_CELLML)) {
 			resultString = XmlHelper.exportCellML(mathModel, null);
 		} else if (fileFilter.equals(FileFilters.FILE_FILTER_SBML_2)) {
-			resultString = XmlHelper.exportSBML(mathModel, 2, 3, null);
+			resultString = XmlHelper.exportSBML(mathModel, 2, 3, null, null);
 		}
 	} else if (documentToExport instanceof Geometry){
 		Geometry geom = (Geometry)documentToExport;

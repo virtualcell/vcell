@@ -4,6 +4,7 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Structure;
@@ -84,7 +85,7 @@ public class SimulationContext
 		}
 	}
 
-	public class SimulationContextParameter extends Parameter {
+	public class SimulationContextParameter extends Parameter implements ExpressionContainer {
 		
 		private String fieldParameterName = null;
 		private cbit.vcell.parser.Expression fieldParameterExpression = null;

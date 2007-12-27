@@ -71,7 +71,7 @@ public class ReactionSpec implements ScopedSymbolTable, Matchable, Serializable,
 		}
 	}
 
-	public class ReactionSpecParameter extends cbit.vcell.model.Parameter {
+	public class ReactionSpecParameter extends cbit.vcell.model.Parameter implements ExpressionContainer {
 		private Expression fieldParameterExpression = null;
 		private String fieldParameterName = null;
  		private int fieldParameterRole = -1;

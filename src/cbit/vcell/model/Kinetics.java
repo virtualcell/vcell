@@ -133,7 +133,7 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 	};
 
 
-	public class KineticsParameter extends Parameter {
+	public class KineticsParameter extends Parameter implements ExpressionContainer {
 		
 		private String fieldParameterName = null;
 		private cbit.vcell.parser.Expression fieldParameterExpression = null;

@@ -1370,7 +1370,7 @@ public BioModel getBioModel() {
 	SBMLReader reader = new SBMLReader();
 	SBMLDocument document = reader.readSBMLFromString(sbmlString);
 	
-	long numProblems = document.checkConsistency();
+	long numProblems = document.getNumErrors();
 	System.out.println("\n Num problems in original SBML document : " + numProblems + "\n");
 
 	sbmlModel = document.getModel();
