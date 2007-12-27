@@ -1,4 +1,6 @@
 package cbit.vcell.anonymizer;
+import cbit.sql.KeyValue;
+import cbit.sql.UserInfo;
 import cbit.vcell.server.WatchdogMonitor;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -245,5 +247,16 @@ public static void main(java.lang.String[] args) {
 		System.out.println("LocalVCellBootstrap err: " + e.getMessage());
 		e.printStackTrace();
 	}
+}
+
+
+public UserInfo insertUserInfo(UserInfo newUserInfo) throws RemoteException,DataAccessException {
+	throw new RuntimeException("Not Yet Implemented");
+}
+public UserInfo updateUserInfo(UserInfo newUserInfo) throws RemoteException,DataAccessException {
+	throw new RuntimeException("Not Yet Implemented");
+}
+public UserInfo getUserInfo(KeyValue userKey) throws RemoteException,DataAccessException {
+	throw new RuntimeException("Not Yet Implemented");
 }
 }

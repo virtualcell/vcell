@@ -14,6 +14,7 @@ import javax.swing.*;
 import cbit.vcell.desktop.*;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.gui.TransformMassActionPanel;
+import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.xml.MIRIAMAnnotatable;
 import cbit.vcell.xml.MIRIAMAnnotationEditor;
 import cbit.vcell.xml.MIRIAMHelper;
@@ -87,6 +88,7 @@ public class DocumentWindow extends JFrame implements TopLevelWindow {
 	private JMenuItem ivjAbout_BoxMenuItem = null;
 	private JMenuItem ivjCascadeMenuItem = null;
 	private JMenuItem ivjChange_UserMenuItem = null;
+	private JMenuItem ivjUpdate_UserMenuItem = null;
 	private JMenuItem ivjCloseMenuItem = null;
 	private JMenuBar ivjDocumentWindowJMenuBar = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
@@ -233,6 +235,9 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				showTransMADialog();
 			if (e.getSource() == DocumentWindow.this.getJMenuItemFieldData()) 
 				connEtoC38(e);
+			if (e.getSource() == DocumentWindow.this.getUpdate_UserMenuItem()){
+				getWindowManager().getRequestManager().updateUserRegistration();
+			}
 		};
 		public void itemStateChanged(java.awt.event.ItemEvent e) {
 			if (e.getSource() == DocumentWindow.this.getStatusbarMenuItem()) 
@@ -1177,7 +1182,7 @@ private javax.swing.JMenuItem getChange_UserMenuItem() {
 		try {
 			ivjChange_UserMenuItem = new javax.swing.JMenuItem();
 			ivjChange_UserMenuItem.setName("Change_UserMenuItem");
-			ivjChange_UserMenuItem.setText("Change User");
+			ivjChange_UserMenuItem.setText("Change User...");
 			ivjChange_UserMenuItem.setEnabled(true);
 			// user code begin {1}
 			// user code end
@@ -1188,6 +1193,24 @@ private javax.swing.JMenuItem getChange_UserMenuItem() {
 		}
 	}
 	return ivjChange_UserMenuItem;
+}
+
+private javax.swing.JMenuItem getUpdate_UserMenuItem() {
+	if (ivjUpdate_UserMenuItem == null) {
+		try {
+			ivjUpdate_UserMenuItem = new javax.swing.JMenuItem();
+			ivjUpdate_UserMenuItem.setName("Update_UserMenuItem");
+			ivjUpdate_UserMenuItem.setText("Update Registration Info...");
+			ivjUpdate_UserMenuItem.setEnabled(false);
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjUpdate_UserMenuItem;
 }
 
 /**
@@ -2123,13 +2146,16 @@ private javax.swing.JMenuItem getLocalMenuItem() {
  */
 private JDialog getLoginDialog() {
 	if (loginDialog == null) {
-		loginDialog = new LoginDialog(this, true,getTopLevelWindowManager().isApplet());
+		loginDialog = new LoginDialog(this);
+		loginDialog.setLoggedInUser(getWindowManager().getUser());
 		loginDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		loginDialog.pack();
 		loginDialog.setResizable(false);
 		ActionListener listener = new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				getWindowManager().connectAs(loginDialog.getUser(), loginDialog.getPassword());
+				if(evt.getActionCommand().equals(LoginDialog.USERACTION_LOGIN)){
+					getWindowManager().connectAs(loginDialog.getUser(), loginDialog.getPassword());
+				}
 			}
 		};
 		loginDialog.addActionListener(listener);
@@ -2433,6 +2459,7 @@ private javax.swing.JMenu getServerMenu() {
 			ivjServerMenu.setName("ServerMenu");
 			ivjServerMenu.setText("Server");
 			ivjServerMenu.add(getChange_UserMenuItem());
+			ivjServerMenu.add(getUpdate_UserMenuItem());
 			ivjServerMenu.add(getReconnectMenuItem());
 			ivjServerMenu.add(getJSeparator4());
 			ivjServerMenu.add(getJMenuItemServer());
@@ -2746,6 +2773,7 @@ private void initConnections() throws java.lang.Exception {
 	getJMenuItemImport().addActionListener(ivjEventHandler);
 	getSave_VersionMenuItem().addActionListener(ivjEventHandler);
 	getChange_UserMenuItem().addActionListener(ivjEventHandler);
+	getUpdate_UserMenuItem().addActionListener(ivjEventHandler);
 	getReconnectMenuItem().addActionListener(ivjEventHandler);
 	getLocalMenuItem().addActionListener(ivjEventHandler);
 	getTile_HorizontallyMenuItem().addActionListener(ivjEventHandler);
@@ -3078,6 +3106,7 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 			getJProgressBarConnection().setString("NOT CONNECTED");
 			getJProgressBarConnection().setValue(0);
 			getChange_UserMenuItem().setEnabled(true);
+			getUpdate_UserMenuItem().setEnabled(false);
 			getReconnectMenuItem().setEnabled(false);
 			getOpenMenuItem().setEnabled(false);
 			getSaveMenuItem().setEnabled(false);
@@ -3097,6 +3126,7 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 			getJProgressBarConnection().setString("CONNECTED");
 			getJProgressBarConnection().setValue(100);
 			getChange_UserMenuItem().setEnabled(true);
+			getUpdate_UserMenuItem().setEnabled(true);
 			getReconnectMenuItem().setEnabled(true);
 			getOpenMenuItem().setEnabled(true);
 			getSaveMenuItem().setEnabled(
@@ -3135,6 +3165,7 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 			getJProgressBarConnection().setString("INITIALIZING...");
 			getJProgressBarConnection().setValue(0);
 			getChange_UserMenuItem().setEnabled(false);
+			getUpdate_UserMenuItem().setEnabled(false);
 			getReconnectMenuItem().setEnabled(false);
 			getOpenMenuItem().setEnabled(false);
 			getSaveMenuItem().setEnabled(false);
@@ -3154,6 +3185,7 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 			getJProgressBarConnection().setString("DISCONNECTED");
 			getJProgressBarConnection().setValue(0);
 			getChange_UserMenuItem().setEnabled(true);
+			getUpdate_UserMenuItem().setEnabled(false);
 			getReconnectMenuItem().setEnabled(true);
 			getOpenMenuItem().setEnabled(false);
 			getSaveMenuItem().setEnabled(false);

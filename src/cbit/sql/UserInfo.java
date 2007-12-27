@@ -9,7 +9,7 @@ import cbit.sql.KeyValue;
 /**
  * This type was created in VisualAge.
  */
-public class UserInfo implements java.io.Serializable,java.lang.Cloneable {
+public class UserInfo implements java.io.Serializable,java.lang.Cloneable {	
 	public KeyValue id = null;
 	public String userid = null;
 	public String password = null;
@@ -25,7 +25,7 @@ public class UserInfo implements java.io.Serializable,java.lang.Cloneable {
 	public String state = null;
 	public String country = null;
 	public String zip = null;
-	public String notify = null;
+	public boolean notify = false;
 	public java.util.Date insertDate = null;
 
 	public static int FIELDLENGTH_USERID = 255;
@@ -100,7 +100,7 @@ public static UserInfo getExample1() {
 	userInfo.state = "CT";
 	userInfo.country = "USA";
 	userInfo.zip = "06030";
-	userInfo.notify = "yes";
+//	userInfo.notify = "yes";
 
 	return userInfo;
 }

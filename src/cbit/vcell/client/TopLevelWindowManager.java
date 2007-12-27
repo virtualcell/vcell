@@ -172,7 +172,7 @@ public abstract String getManagerID();
  * Creation date: (5/21/2004 2:45:48 AM)
  * @return cbit.vcell.client.RequestManager
  */
-protected cbit.vcell.client.RequestManager getRequestManager() {
+public cbit.vcell.client.RequestManager getRequestManager() {
 	return requestManager;
 }
 

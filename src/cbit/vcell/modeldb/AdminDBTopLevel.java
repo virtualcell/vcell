@@ -482,6 +482,9 @@ KeyValue insertUserInfo(UserInfo newUserInfo, boolean bEnableRetry) throws SQLEx
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
+		if(userDB.getUserFromUserid(con,newUserInfo.userid) != null){
+			throw new SQLException("Insert new user failed: username '"+newUserInfo.userid+"' already exists");
+		}
 		KeyValue key = userDB.insertUserInfo(con,newUserInfo);
 		con.commit();
 		return key;

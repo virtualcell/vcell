@@ -10,7 +10,7 @@ import java.rmi.*;
  */
 public class RMIVCellConnectionFactory implements VCellConnectionFactory {
 
-	private static final String SERVICE_NAME = "VCellBootstrapServer";
+	public static final String SERVICE_NAME = "VCellBootstrapServer";
 
 	private String connectString = null;
 	private String userid = null;

@@ -4,6 +4,8 @@ import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.ObjectNotFoundException;
 import cbit.vcell.server.SessionLog;
+import cbit.vcell.server.UserRegistrationOP;
+import cbit.vcell.server.UserRegistrationResults;
 import cbit.vcell.simdata.ExternalDataIdentifier;;
 /**
  * Insert the type's description here.
@@ -29,6 +31,10 @@ protected AnonymizerUserMetaDbServer(AnonymizerVCellConnection arg_anonymizerVCe
  */
 public cbit.vcell.document.VCDocumentInfo curate(cbit.vcell.server.CurateSpec curateSpec) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException {
 	return (cbit.vcell.document.VCDocumentInfo)remoteCall("curate", new Class[] {cbit.vcell.server.CurateSpec.class}, new Object[] {curateSpec});	
+}
+
+public UserRegistrationResults userRegistrationOP(UserRegistrationOP userRegistrationOP) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException {
+	return (UserRegistrationResults)remoteCall("userRegistrationOP", new Class[] {UserRegistrationOP.class}, new Object[] {userRegistrationOP});	
 }
 
 
