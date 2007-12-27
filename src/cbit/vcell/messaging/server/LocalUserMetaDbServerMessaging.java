@@ -18,6 +18,8 @@ import cbit.sql.*;
 import cbit.vcell.server.User;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.ObjectNotFoundException;
+import cbit.vcell.server.UserRegistrationOP;
+import cbit.vcell.server.UserRegistrationResults;
 import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.FormalSpeciesType;
@@ -73,6 +75,18 @@ public cbit.vcell.document.VCDocumentInfo curate(cbit.vcell.server.CurateSpec cu
 	}
 }
 
+public UserRegistrationResults userRegistrationOP(UserRegistrationOP userRegistrationOP) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException {
+	try {
+		log.print("LocalUserMetaDbServerMessaging.userRegistrationOP(...)");
+		return dbServerProxy.userRegistrationOP(userRegistrationOP);
+	} catch (DataAccessException e) {
+		log.exception(e);
+		throw e;
+	} catch (Throwable e) {
+		log.exception(e);
+		throw new DataAccessException(e.getMessage());
+	}
+}
 
 /**
  * Insert the method's description here.

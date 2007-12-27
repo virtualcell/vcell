@@ -180,6 +180,56 @@ void deleteVersionable(User user, VersionableType versionableType, KeyValue key,
 }
 
 
+UserRegistrationResults userRegistrationOP(User user, UserRegistrationOP userRegistrationOP, boolean bEnableRetry) 
+throws java.sql.SQLException, DataAccessException, DependencyException, PermissionException  {
+
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		KeyValue userKey = null;
+//		if(userRegistrationOP.getOperationType().equals(UserRegistrationOP.USERREGOP_NEWREGISTER)){
+//			userKey = userDB.insertUserInfo(con, userRegistrationOP.getUserInfo());
+//		}
+		if(userRegistrationOP.getOperationType().equals(UserRegistrationOP.USERREGOP_GETINFO)){
+			userKey = userRegistrationOP.getUserKey();
+//			UserInfo userInfo = null;
+//			if(userRegistrationOP.getUserKey() != null){
+//				userInfo = userDB.getUserInfo(con, userRegistrationOP.getUserKey());
+//			}
+//			else{
+//				User validatedUser = userDB.getUserFromUseridAndPassword(con, userRegistrationOP.getUserid(), userRegistrationOP.getPassword());				
+//				userInfo = userDB.getUserInfo(con, validatedUser.getID());
+//			}
+//			return new UserRegistrationResults(userInfo);
+		}else if(userRegistrationOP.getOperationType().equals(UserRegistrationOP.USERREGOP_UPDATE)){
+			userKey = userRegistrationOP.getUserKey();
+			userDB.updateUserInfo(con, userRegistrationOP.getUserInfo());
+			con.commit();
+		}else{
+			throw new IllegalArgumentException(this.getClass().getName()+".userRegistrationOP Unknown operationType="+userRegistrationOP.getOperationType());
+		}
+		return new UserRegistrationResults(userDB.getUserInfo(con, userKey));
+	} catch (Throwable e) {
+		log.exception(e);
+		try {
+			con.rollback();
+		}catch (Throwable rbe){
+			log.exception(rbe);
+			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+		}
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			return userRegistrationOP(user,userRegistrationOP,false);
+		}else{
+			handle_DataAccessException_SQLException(e);
+			return null;
+		}
+	}finally{
+		conFactory.release(con,lock);
+	}
+}
+
+
 /**
  * This method was created in VisualAge.
  * @return cbit.sql.Versionable

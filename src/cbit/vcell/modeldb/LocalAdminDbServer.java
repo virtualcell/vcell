@@ -191,7 +191,7 @@ public cbit.sql.UserInfo insertUserInfo(UserInfo newUserInfo) throws DataAccessE
 		return adminDbTop.getUserInfo(key,true);
 	}catch (Throwable e){
 		log.exception(e);
-		throw new DataAccessException("failure inserting user "+newUserInfo);
+		throw new DataAccessException("failure inserting user '"+newUserInfo.userid+"'\n"+e.getMessage());
 	}
 }
 

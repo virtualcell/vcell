@@ -4,6 +4,8 @@ package cbit.vcell.server;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.sql.KeyValue;
+import cbit.sql.UserInfo;
 import cbit.vcell.model.*;
 import java.rmi.*;
 /**
@@ -29,4 +31,8 @@ public VCellServer getVCellServer(User user,String password) throws RemoteExcept
  * @return java.lang.String
  */
 String getVCellSoftwareVersion() throws RemoteException;
+
+public UserInfo insertUserInfo(UserInfo newUserInfo)throws RemoteException, DataAccessException;
+public UserInfo updateUserInfo(UserInfo newUserInfo)throws RemoteException, DataAccessException;
+public UserInfo getUserInfo(KeyValue userKey)throws RemoteException, DataAccessException;
 }

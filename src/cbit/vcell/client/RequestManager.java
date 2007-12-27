@@ -89,6 +89,7 @@ void createMathModelFromApplication(String name, SimulationContext simContext);
  */
 void curateDocument(VCDocumentInfo vcDocInfo, int curateType, final TopLevelWindowManager requester);
 
+void updateUserRegistration();
 
 /**
  * Insert the method's description here.

@@ -19,6 +19,8 @@ import cbit.sql.*;
 import cbit.vcell.server.User;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.ObjectNotFoundException;
+import cbit.vcell.server.UserRegistrationOP;
+import cbit.vcell.server.UserRegistrationResults;
 import cbit.vcell.dictionary.DBSpecies;
 import cbit.vcell.dictionary.DBFormalSpecies;
 import cbit.vcell.dictionary.FormalSpeciesType;
@@ -112,6 +114,22 @@ void delete(User user, cbit.sql.VersionableType vType, cbit.sql.KeyValue key) th
 	try {
 		log.print("DatabaseServerImpl.delete(vType="+vType.getTypeName()+", Key="+key+")");
 		dbTop.deleteVersionable(user, vType, key, true);
+	} catch (SQLException e) {
+		log.exception(e);
+		throw new DataAccessException(e.getMessage());
+	} catch (ObjectNotFoundException e) {
+		log.exception(e);
+		throw new ObjectNotFoundException(e.getMessage());
+	} catch (Throwable e) {
+		log.exception(e);
+		throw new DataAccessException(e.getMessage());
+	}
+}
+
+public UserRegistrationResults userRegistrationOP(User user, UserRegistrationOP userRegistrationOP) throws DataAccessException, ObjectNotFoundException {
+	try {
+		log.print("DatabaseServerImpl.userRegistrationOP(...)");
+		return dbTop.userRegistrationOP(user,userRegistrationOP,true);
 	} catch (SQLException e) {
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());

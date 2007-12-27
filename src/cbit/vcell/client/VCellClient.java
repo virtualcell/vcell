@@ -1,17 +1,34 @@
 package cbit.vcell.client;
 import java.awt.event.*;
+
+import cbit.gui.DialogUtils;
+import cbit.gui.ZEnforcer;
+import cbit.sql.ConnectionFactory;
+import cbit.sql.KeyFactory;
+import cbit.sql.KeyValue;
+import cbit.sql.UserInfo;
+import cbit.util.AsynchProgressPopup;
+import cbit.util.BeanUtils;
 import cbit.vcell.desktop.*;
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
+import cbit.vcell.modeldb.LocalAdminDbServer;
 import cbit.vcell.server.*;
 import cbit.vcell.clientdb.*;
 import swingthreads.*;
 import cbit.vcell.client.server.*;
+import cbit.vcell.client.task.UserCancelException;
+import cbit.vcell.client.test.ClientTester;
 import cbit.vcell.document.*;
 import cbit.vcell.client.desktop.*;
 import java.awt.*;
 import javax.swing.*;
 import cbit.vcell.biomodel.*;
+
+import java.net.MalformedURLException;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.sql.SQLException;
 import java.util.*;
 /**
  * Insert the type's description here.
@@ -199,24 +216,42 @@ public static VCellClient startClient(VCDocument startupDoc, final ClientServerI
     // try server connection
     if (clientServerInfo.getUsername() == null) {
 	    // we were not supplied login credentials; pop-up dialog
-		final LoginDialog loginDialog = new LoginDialog(null, true,false);
+		final LoginDialog loginDialog = new LoginDialog(null);
+		loginDialog.setLoggedInUser(null);
 		loginDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		loginDialog.pack();
 		loginDialog.setResizable(false);
+		BeanUtils.centerOnScreen(loginDialog);
 		ActionListener listener = new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				ClientServerInfo newClientServerInfo = null;
-				switch (clientServerInfo.getServerType()) {
-					case ClientServerInfo.SERVER_LOCAL: {
-						newClientServerInfo = ClientServerInfo.createLocalServerInfo(loginDialog.getUser(), loginDialog.getPassword());
-						break;
-					}
-					case ClientServerInfo.SERVER_REMOTE: {
-						newClientServerInfo = ClientServerInfo.createRemoteServerInfo(clientServerInfo.getHost(), loginDialog.getUser(), loginDialog.getPassword());
-						break;
-					}
+				if (evt.getActionCommand().equals(LoginDialog.USERACTION_LOGIN)) {
+					ClientServerInfo newClientServerInfo =
+						createClientServerInfo(clientServerInfo,loginDialog.getUser(),loginDialog.getPassword());
+					vcellClient.getRequestManager().connectToServer(newClientServerInfo);
+//					loginDialog.setBLoggedIn(true);
+				}else if(evt.getActionCommand().equals(LoginDialog.USERACTION_REGISTER)){
+					new Thread(new Runnable() {
+						public void run() {
+							try {
+								UserInfo registeredUserInfo =
+									UserRegistrationOP.registrationOperationGUI(
+											clientServerInfo, LoginDialog.USERACTION_REGISTER,null);
+								ZEnforcer.removeFromStack(loginDialog);
+								ClientServerInfo newClientServerInfo =
+									createClientServerInfo(
+											clientServerInfo,
+											registeredUserInfo.userid,
+											registeredUserInfo.password);
+								vcellClient.getRequestManager().connectToServer(newClientServerInfo);
+							} catch (UserCancelException e) {
+								//do nothing
+							} catch (Exception e) {
+								e.printStackTrace();
+								PopupGenerator.showErrorDialog("New user Registration error:\n"+e.getMessage());
+							}
+						}
+					}).start();
 				}
-				vcellClient.getRequestManager().connectToServer(newClientServerInfo);
 			}
 		};
 		loginDialog.addActionListener(listener);
@@ -226,7 +261,18 @@ public static VCellClient startClient(VCDocument startupDoc, final ClientServerI
     }
 	return vcellClient;
 }
-	
+
+private static ClientServerInfo createClientServerInfo(ClientServerInfo clientServerInfo,String userid,String password){
+	switch (clientServerInfo.getServerType()) {
+		case ClientServerInfo.SERVER_LOCAL: {
+			return ClientServerInfo.createLocalServerInfo(userid,password);
+		}
+		case ClientServerInfo.SERVER_REMOTE: {
+			return ClientServerInfo.createRemoteServerInfo(clientServerInfo.getHost(),userid,password);
+		}
+	};
+	return null;
+}
 /**
  * Insert the method's description here.
  * Creation date: (5/5/2004 3:51:06 PM)

@@ -34,6 +34,8 @@ public interface UserMetaDbServer extends java.rmi.Remote {
 cbit.vcell.document.VCDocumentInfo curate(CurateSpec curateSpec) throws DataAccessException, ObjectNotFoundException, java.rmi.RemoteException;
 
 
+UserRegistrationResults userRegistrationOP(UserRegistrationOP userRegistrationOP) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException;
+
 /**
  * Insert the method's description here.
  * Creation date: (4/29/2004 1:03:11 PM)

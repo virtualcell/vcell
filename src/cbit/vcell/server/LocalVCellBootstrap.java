@@ -7,6 +7,7 @@ package cbit.vcell.server;
 import cbit.vcell.modeldb.ResultSetCrawler;
 import cbit.vcell.modeldb.ResultSetDBTopLevel;
 import cbit.sql.*;
+
 import java.io.*;
 import java.rmi.*;
 import java.rmi.server.*;
@@ -195,4 +196,14 @@ public static void main(java.lang.String[] args) {
 		e.printStackTrace();
 	}
 }
+public UserInfo insertUserInfo(UserInfo newUserInfo) throws RemoteException,DataAccessException {
+	return adminDbServer.insertUserInfo(newUserInfo);
+}
+public UserInfo updateUserInfo(UserInfo newUserInfo) throws RemoteException,DataAccessException {
+	return adminDbServer.updateUserInfo(newUserInfo);
+}
+public UserInfo getUserInfo(KeyValue userKey) throws RemoteException,DataAccessException {
+	return adminDbServer.getUserInfo(userKey);
+}
+
 }

@@ -9,6 +9,8 @@ import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.server.ObjectNotFoundException;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.User;
+import cbit.vcell.server.UserRegistrationOP;
+import cbit.vcell.server.UserRegistrationResults;
 import cbit.vcell.messaging.JmsClientMessaging;
 import cbit.vcell.modeldb.*;
 import cbit.vcell.messaging.JmsUtils;
@@ -41,6 +43,10 @@ public cbit.vcell.document.VCDocumentInfo curate(cbit.vcell.server.CurateSpec cu
 	return (cbit.vcell.document.VCDocumentInfo)rpc("curate",new Object[]{user,curateSpec});
 }
 
+
+public UserRegistrationResults userRegistrationOP(UserRegistrationOP userRegistrationOP) throws cbit.vcell.server.DataAccessException, cbit.vcell.server.ObjectNotFoundException, java.rmi.RemoteException {
+	return (UserRegistrationResults)rpc("userRegistrationOP",new Object[]{user,userRegistrationOP});
+}
 
 /**
  * Insert the method's description here.
