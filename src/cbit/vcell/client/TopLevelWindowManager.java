@@ -2,6 +2,7 @@ package cbit.vcell.client;
 import cbit.vcell.desktop.controls.DataListener;
 import cbit.rmi.event.ExportListener;
 import cbit.vcell.desktop.controls.DataEvent;
+import cbit.vcell.document.VCDocument;
 
 import java.io.*;
 import java.net.*;
@@ -232,5 +233,13 @@ public void removeExportListener(ExportListener newListener) {
 	if (aExportListener != null) {
 		aExportListener.removeElement(newListener);
 	};
+}
+
+
+/**
+ * Comment
+ */
+public void newDocument(VCDocument.DocumentCreationInfo documentCreationInfo) {
+	getRequestManager().newDocument(documentCreationInfo);
 }
 }

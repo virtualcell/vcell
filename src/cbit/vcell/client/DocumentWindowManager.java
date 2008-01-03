@@ -296,14 +296,6 @@ abstract cbit.vcell.client.desktop.simulation.SimulationWindow haveSimulationWin
 
 
 /**
- * Comment
- */
-public void newDocument(int documentType, int option) {
-	getRequestManager().newDocument(documentType, option);
-}
-
-
-/**
  * Insert the method's description here.
  * Creation date: (6/1/2004 9:58:46 PM)
  */
