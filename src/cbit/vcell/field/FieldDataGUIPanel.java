@@ -11,6 +11,8 @@ import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.Vector;
 import java.util.Map.Entry;
 import java.util.zip.DataFormatException;
 
@@ -62,6 +64,7 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.desktop.VCellCopyPasteHelper;
 import cbit.vcell.desktop.VCellTransferable;
+import cbit.vcell.document.VCDocument;
 import cbit.vcell.exp.FieldMeasurement;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.parser.ASTFuncNode;
@@ -73,6 +76,7 @@ import cbit.vcell.server.ServerInfo;
 import cbit.vcell.server.VCDataIdentifier;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.ExternalDataIdentifier;
+import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.VCSimulationIdentifier;
@@ -221,7 +225,7 @@ public class FieldDataGUIPanel extends JPanel{
 	private javax.swing.JButton ivjJButtonFDCopyRef = null;
 	private JButton jButtonFindRefModel = null;
 	private JPanel jPanel = null;
-	private JButton jButtonCopyInfo = null;
+	private JButton jButtonCreateGeom = null;
 	private JPanel jPanel1 = null;
 	private JButton jButtonViewAnnot = null;
 	class IvjEventHandler implements ActionListener,TreeExpansionListener, javax.swing.event.TreeSelectionListener {
@@ -874,7 +878,7 @@ private void initialize() {
 		// user code end
 		setName("FieldDataGUIPanel");
 		setLayout(new java.awt.GridBagLayout());
-		setSize(586, 429);
+		setSize(614, 429);
 
 		java.awt.GridBagConstraints constraintsJPanel2 = new java.awt.GridBagConstraints();
 		constraintsJPanel2.gridx = 0; constraintsJPanel2.gridy = 0;
@@ -916,6 +920,7 @@ private void jTree1_ValueChanged(javax.swing.event.TreeSelectionEvent treeSelect
 	getJButtonFDCopyRef().setEnabled(false);
 	getJButtonFindRefModel().setEnabled(false);
 	getJButtonViewAnnot().setEnabled(false);
+	getJButtonCreateGeom().setEnabled(false);
 	javax.swing.tree.TreePath selPath = getJTree1().getSelectionPath();
 	if(selPath != null){
 		javax.swing.tree.DefaultMutableTreeNode lastPathComponent = (javax.swing.tree.DefaultMutableTreeNode)selPath.getLastPathComponent();
@@ -927,6 +932,7 @@ private void jTree1_ValueChanged(javax.swing.event.TreeSelectionEvent treeSelect
 			getJButtonViewAnnot().setEnabled(true);
 		}else if (lastPathComponent.getUserObject() instanceof FieldDataVarList){
 			getJButtonFDCopyRef().setEnabled(true);
+			getJButtonCreateGeom().setEnabled(true);
 		}
 	}
 }
@@ -1335,7 +1341,6 @@ private void jButtonFDCopyRef_ActionPerformed(java.awt.event.ActionEvent actionE
 	}
 
 	int begIndex = 0;
-//	int endIndex = 0;
 	if(times != null && times.length > 1){
 		String[] timesStr = new String[times.length];
 		for(int i=0;i<times.length;i+= 1){
@@ -1344,32 +1349,65 @@ private void jButtonFDCopyRef_ActionPerformed(java.awt.event.ActionEvent actionE
 		JPanel jp = new JPanel();
 		BoxLayout bl = new BoxLayout(jp,BoxLayout.X_AXIS);
 		jp.setLayout(bl);
-//		jp.add(new JLabel("Begin"));
 		JComboBox jcBeg = new JComboBox(Arrays.asList(timesStr).toArray(new String[0]));
 		jp.add(jcBeg);
-//		jp.add(new JLabel("End"));
-//		JComboBox jcEnd = new JComboBox(Arrays.asList(times).toArray());
-//		jp.add(jcEnd);
-//		while(true){
-			if(PopupGenerator.showComponentOKCancelDialog(this, jp, "Select Field Data time for function") ==
-				JOptionPane.OK_OPTION){
-				begIndex = jcBeg.getSelectedIndex();
-//				endIndex = jcEnd.getSelectedIndex();
-//				if(endIndex < begIndex){
-//					PopupGenerator.showErrorDialog("Begin="+times[begIndex]+" and End="+times[endIndex]+" is Illegal, Try again.");
-//					continue;
-//				}
-			}
-//			return;
-//		}
+		if(PopupGenerator.showComponentOKCancelDialog(this, jp,
+				(actionEvent.getSource() == getJButtonFDCopyRef()?
+					"Select Field Data time for function":
+					"Select Field Data time for New Geometry"
+				)
+				) ==JOptionPane.OK_OPTION){
+			begIndex = jcBeg.getSelectedIndex();
+		}
 	}
-	String fieldFunctionReference =
-		ExternalDataIdentifier.createCanonicalFieldFunctionSyntax(
-				((FieldDataMainList)mainNode.getUserObject()).externalDataIdentifier,
-				((FieldDataVarList)varNode.getUserObject()).dataIdentifier.getName(),
-				times[begIndex],-1);
-
-	VCellTransferable.sendToClipboard(fieldFunctionReference);
+	if(actionEvent.getSource() == getJButtonFDCopyRef()){
+		String fieldFunctionReference =
+			ExternalDataIdentifier.createCanonicalFieldFunctionSyntax(
+					((FieldDataMainList)mainNode.getUserObject()).externalDataIdentifier,
+					((FieldDataVarList)varNode.getUserObject()).dataIdentifier.getName(),
+					times[begIndex],-1);
+	
+		VCellTransferable.sendToClipboard(fieldFunctionReference);
+	}else if(actionEvent.getSource() == getJButtonCreateGeom()){
+		try {
+			PDEDataContext pdeDataContext =
+				fieldDataWindowManager.getPDEDataContext(((FieldDataMainList)mainNode.getUserObject()).externalDataIdentifier);
+			pdeDataContext.setVariableName(((FieldDataVarList)varNode.getUserObject()).dataIdentifier.getName());
+			pdeDataContext.setTimePoint(pdeDataContext.getTimePoints()[begIndex]);
+			double[] data = pdeDataContext.getDataValues();
+			byte[] segmentedData = new byte[data.length];
+			Vector<Double> distinctValues = new Vector<Double>();
+			int index = -1;
+			for (int i = 0; i < data.length; i++) {
+				if((index = distinctValues.indexOf(data[i])) == -1){
+					index = distinctValues.size();
+					distinctValues.add(data[i]);
+					if(distinctValues.size() > 256){
+						throw new Exception("FieldData "+
+								((FieldDataMainList)mainNode.getUserObject()).externalDataIdentifier.getName()+
+								" has more than 256 distinct values.");
+					}
+				}
+				segmentedData[i] = (byte)index;
+			}
+			VCImageUncompressed vcImageUncompressed =
+				new VCImageUncompressed(null,segmentedData,
+					pdeDataContext.getCartesianMesh().getExtent(),
+					pdeDataContext.getCartesianMesh().getSizeX(),
+					pdeDataContext.getCartesianMesh().getSizeY(),
+					pdeDataContext.getCartesianMesh().getSizeZ());
+			vcImageUncompressed.setDescription("Created from Field Data "+
+					((FieldDataMainList)mainNode.getUserObject()).externalDataIdentifier.getName()+":\n"+
+					"Variable="+pdeDataContext.getVariableName()+" Time="+pdeDataContext.getTimePoint());
+			fieldDataWindowManager.newDocument(
+				new VCDocument.GeomFromFieldDataCreationInfo(
+					VCDocument.GEOMETRY_DOC,VCDocument.GEOM_OPTION_FIELDDATA,
+					vcImageUncompressed));
+		} catch (Exception e) {
+			e.printStackTrace();
+			PopupGenerator.showErrorDialog("Error creating Geometry\n"+e.getMessage());
+		}
+	}
 	
 }
 
@@ -1740,7 +1778,7 @@ private JPanel getJPanel() {
 		gridBagConstraints2.gridy = 0;
 		jPanel = new JPanel();
 		jPanel.setLayout(new GridBagLayout());
-		jPanel.add(getJButtonCopyInfo(), gridBagConstraints2);
+		jPanel.add(getJButtonCreateGeom(), gridBagConstraints2);
 		jPanel.add(getJButtonFindRefModel(), gridBagConstraints);
 	}
 	return jPanel;
@@ -1751,72 +1789,75 @@ private JPanel getJPanel() {
  * 	
  * @return javax.swing.JButton	
  */
-private JButton getJButtonCopyInfo() {
-	if (jButtonCopyInfo == null) {
-		jButtonCopyInfo = new JButton();
-		jButtonCopyInfo.setText("Copy Info");
-		jButtonCopyInfo.addActionListener(new java.awt.event.ActionListener() {
+private JButton getJButtonCreateGeom() {
+	if (jButtonCreateGeom == null) {
+		jButtonCreateGeom = new JButton();
+		jButtonCreateGeom.setEnabled(false);
+		jButtonCreateGeom.setText("Create Geom");
+		jButtonCreateGeom.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent e) {
-				copyMethod(COPY_CRNL);
-//				javax.swing.tree.TreePath selPath = getJTree1().getSelectionPath();
-//				if(selPath != null){
-//					javax.swing.tree.DefaultMutableTreeNode lastPathComponent = (javax.swing.tree.DefaultMutableTreeNode)selPath.getLastPathComponent();
-//					copyMethod(lastPathComponent, copyMode);
-//				}
-//					String copyString = "";
-//					javax.swing.tree.DefaultMutableTreeNode lastPathComponent = (javax.swing.tree.DefaultMutableTreeNode)selPath.getLastPathComponent();
-//					if(lastPathComponent.equals(getJTree1().getModel().getRoot())){
-//						int childCount = lastPathComponent.getChildCount();
-//						for(int i=0;i<childCount;i+= 1){
-//							if(i != 0){
-//								copyString+="\n";
-//							}
-//							copyString+=
-//								((FieldDataMainList)((DefaultMutableTreeNode)lastPathComponent.getChildAt(i)).getUserObject()).externalDataIdentifier.getName();
-//						}					
-//					}else if(lastPathComponent.getUserObject() instanceof FieldDataOriginList){
-//						Origin origin = ((FieldDataOriginList)lastPathComponent.getUserObject()).origin;
-//						copyString = origin.getX()+","+origin.getY()+","+origin.getZ();
-//					}else if(lastPathComponent.getUserObject() instanceof FieldDataExtentList){
-//						Extent extent = ((FieldDataExtentList)lastPathComponent.getUserObject()).extent;
-//						copyString = extent.getX()+","+extent.getY()+","+extent.getZ();
-//					}else if(lastPathComponent.getUserObject() instanceof FieldDataISizeList){
-//						ISize isize = ((FieldDataISizeList)lastPathComponent.getUserObject()).isize;
-//						copyString = isize.getX()+","+isize.getY()+","+isize.getZ();
-//					}else if(lastPathComponent.getUserObject() instanceof FieldDataTimeList){
-//						double[] times = ((FieldDataTimeList)lastPathComponent.getUserObject()).times;
-//						for(int i=0;i<times.length;i+= 1){
-//							if(i != 0){
-//								copyString+="\n";
-//							}
-//							copyString+= times[i]+"";
-//						}
-//					}else if(lastPathComponent.getUserObject() instanceof FieldDataMainList){
-//						ExternalDataIdentifier extDataID =
-//							((FieldDataMainList)lastPathComponent.getUserObject()).externalDataIdentifier;
-//						copyString = extDataID.getName();
-//					}else if(lastPathComponent.getUserObject() instanceof FieldDataVarList){
-//						DataIdentifier dataIdentifier =
-//							((FieldDataVarList)lastPathComponent.getUserObject()).dataIdentifier;
-//						copyString = dataIdentifier.getName();
-//					}else if(lastPathComponent.getUserObject() instanceof FieldDataVarMainList){
-//						int childCount = lastPathComponent.getChildCount();
-//						for(int i=0;i<childCount;i+= 1){
-//							if(i != 0){
-//								copyString+="\n";
-//							}
-//							copyString+=
-//								((FieldDataVarList)((DefaultMutableTreeNode)lastPathComponent.getChildAt(i)).getUserObject()).dataIdentifier.getName();
-//						}
-//					}
-//					if(copyString.length() > 0 ){
-//						VCellTransferable.sendToClipboard(copyString);
-//					}
-//				}
+				jButtonFDCopyRef_ActionPerformed(e);
+				//fieldDataWindowManager.newDocument(VCDocument.GEOMETRY_DOC, option);
+//				copyMethod(COPY_CRNL);
+////				javax.swing.tree.TreePath selPath = getJTree1().getSelectionPath();
+////				if(selPath != null){
+////					javax.swing.tree.DefaultMutableTreeNode lastPathComponent = (javax.swing.tree.DefaultMutableTreeNode)selPath.getLastPathComponent();
+////					copyMethod(lastPathComponent, copyMode);
+////				}
+////					String copyString = "";
+////					javax.swing.tree.DefaultMutableTreeNode lastPathComponent = (javax.swing.tree.DefaultMutableTreeNode)selPath.getLastPathComponent();
+////					if(lastPathComponent.equals(getJTree1().getModel().getRoot())){
+////						int childCount = lastPathComponent.getChildCount();
+////						for(int i=0;i<childCount;i+= 1){
+////							if(i != 0){
+////								copyString+="\n";
+////							}
+////							copyString+=
+////								((FieldDataMainList)((DefaultMutableTreeNode)lastPathComponent.getChildAt(i)).getUserObject()).externalDataIdentifier.getName();
+////						}					
+////					}else if(lastPathComponent.getUserObject() instanceof FieldDataOriginList){
+////						Origin origin = ((FieldDataOriginList)lastPathComponent.getUserObject()).origin;
+////						copyString = origin.getX()+","+origin.getY()+","+origin.getZ();
+////					}else if(lastPathComponent.getUserObject() instanceof FieldDataExtentList){
+////						Extent extent = ((FieldDataExtentList)lastPathComponent.getUserObject()).extent;
+////						copyString = extent.getX()+","+extent.getY()+","+extent.getZ();
+////					}else if(lastPathComponent.getUserObject() instanceof FieldDataISizeList){
+////						ISize isize = ((FieldDataISizeList)lastPathComponent.getUserObject()).isize;
+////						copyString = isize.getX()+","+isize.getY()+","+isize.getZ();
+////					}else if(lastPathComponent.getUserObject() instanceof FieldDataTimeList){
+////						double[] times = ((FieldDataTimeList)lastPathComponent.getUserObject()).times;
+////						for(int i=0;i<times.length;i+= 1){
+////							if(i != 0){
+////								copyString+="\n";
+////							}
+////							copyString+= times[i]+"";
+////						}
+////					}else if(lastPathComponent.getUserObject() instanceof FieldDataMainList){
+////						ExternalDataIdentifier extDataID =
+////							((FieldDataMainList)lastPathComponent.getUserObject()).externalDataIdentifier;
+////						copyString = extDataID.getName();
+////					}else if(lastPathComponent.getUserObject() instanceof FieldDataVarList){
+////						DataIdentifier dataIdentifier =
+////							((FieldDataVarList)lastPathComponent.getUserObject()).dataIdentifier;
+////						copyString = dataIdentifier.getName();
+////					}else if(lastPathComponent.getUserObject() instanceof FieldDataVarMainList){
+////						int childCount = lastPathComponent.getChildCount();
+////						for(int i=0;i<childCount;i+= 1){
+////							if(i != 0){
+////								copyString+="\n";
+////							}
+////							copyString+=
+////								((FieldDataVarList)((DefaultMutableTreeNode)lastPathComponent.getChildAt(i)).getUserObject()).dataIdentifier.getName();
+////						}
+////					}
+////					if(copyString.length() > 0 ){
+////						VCellTransferable.sendToClipboard(copyString);
+////					}
+////				}
 			}
 		});
 	}
-	return jButtonCopyInfo;
+	return jButtonCreateGeom;
 }
 
 /**

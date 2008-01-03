@@ -189,7 +189,7 @@ void managerIDchanged(String oldID, String newID);
  * Creation date: (5/21/2004 2:37:55 AM)
  * @param documentType int
  */
-void newDocument(int documentType, int option);
+void newDocument(VCDocument.DocumentCreationInfo documentCreationInfo);
 
 
 /**

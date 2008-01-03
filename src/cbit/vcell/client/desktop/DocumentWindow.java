@@ -2874,23 +2874,23 @@ public static void main(java.lang.String[] args) {
  */
 private void newDocument(java.awt.event.ActionEvent actionEvent) {
 	if (actionEvent.getActionCommand().equals("BioModel")) {
-		getWindowManager().newDocument(VCDocument.BIOMODEL_DOC, 0);
+		getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.BIOMODEL_DOC, VCDocument.BIO_OPTION_DEFAULT));
 	} else if (actionEvent.getActionCommand().equals("Non-Spatial")) {
-		getWindowManager().newDocument(VCDocument.MATHMODEL_DOC, 0);
+		getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.MATHMODEL_DOC, VCDocument.MATH_OPTION_NONSPATIAL));
 	} else if (actionEvent.getActionCommand().equals("Spatial")) {
-		getWindowManager().newDocument(VCDocument.MATHMODEL_DOC, 1);
+		getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.MATHMODEL_DOC, VCDocument.MATH_OPTION_SPATIAL));
 	} else if (actionEvent.getActionCommand().equals("From BioModel")) {
-		getWindowManager().newDocument(VCDocument.MATHMODEL_DOC, 2);
+		getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.MATHMODEL_DOC, VCDocument.MATH_OPTION_FROMBIOMODELAPP));
 	} else if (actionEvent.getActionCommand().equals("1-D")) {
-		getWindowManager().newDocument(VCDocument.GEOMETRY_DOC, 1);
+		getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_1D));
 	} else if (actionEvent.getActionCommand().equals("2-D")) {
-		getWindowManager().newDocument(VCDocument.GEOMETRY_DOC, 2);
+		getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_2D));
 	} else if (actionEvent.getActionCommand().equals("3-D")) {
-		getWindowManager().newDocument(VCDocument.GEOMETRY_DOC, 3);
+		getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_3D));
 	} else if (actionEvent.getActionCommand().equals("Existing Image ...")) {
-		getWindowManager().newDocument(VCDocument.GEOMETRY_DOC, 4);
+		getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_DBIMAGE));
 	} else if (actionEvent.getActionCommand().equals("Choose Image from File ...")) {
-		getWindowManager().newDocument(VCDocument.GEOMETRY_DOC, 5);
+		getWindowManager().newDocument(new VCDocument.DocumentCreationInfo(VCDocument.GEOMETRY_DOC, VCDocument.GEOM_OPTION_FILE));
 	}
 }
 

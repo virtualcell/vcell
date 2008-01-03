@@ -176,6 +176,10 @@ public class FieldDataWindowManager
 		throw UserCancelException.CANCEL_GENERIC;
 	}
 	
+	public PDEDataContext getPDEDataContext(ExternalDataIdentifier eDI) throws DataAccessException{
+		return 
+			((PDEDataManager)getRequestManager().getDataManager(eDI, true)).getPDEDataContext();
+	}
 public void viewData(final ExternalDataIdentifier eDI){
 	
 	if(eDI != null && eDI.equals(currentlyViewedEDI)){
@@ -202,9 +206,10 @@ public void viewData(final ExternalDataIdentifier eDI){
 			final JDesktopPane jdp = new JDesktopPane();
 		
 			currentlyViewedPDEDV = new PDEDataViewer();
-			PDEDataManager pdeDatamanager =
-				(PDEDataManager)getRequestManager().getDataManager(eDI, true);
-			PDEDataContext newPDEDataContext = pdeDatamanager.getPDEDataContext();
+//			PDEDataManager pdeDatamanager =
+//				(PDEDataManager)getRequestManager().getDataManager(eDI, true);
+//			PDEDataContext newPDEDataContext = pdeDatamanager.getPDEDataContext();
+			PDEDataContext newPDEDataContext = getPDEDataContext(eDI);
 			currentlyViewedPDEDV.setPdeDataContext(newPDEDataContext);
 			newPDEDataContext.addPropertyChangeListener(this);
 			getLocalRequestManager().getAsynchMessageManager().addDataJobListener(currentlyViewedPDEDV);

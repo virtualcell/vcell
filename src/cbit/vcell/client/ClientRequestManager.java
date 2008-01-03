@@ -426,7 +426,7 @@ public void connectAs(final String user,  final String password, TopLevelWindowM
 			// asynch & nothing to do on Swing queue (updates handled by events)
 			Thread worker = new Thread(new Runnable() {
 				public void run() {
-					newDocument(VCDocument.BIOMODEL_DOC, 0);
+					newDocument(new VCDocument.DocumentCreationInfo(VCDocument.BIOMODEL_DOC, 0));
 					getClientServerManager().connectAs(user, password);
 					getMdiManager().refreshRecyclableWindows();
 				}
@@ -463,7 +463,7 @@ VCDocument createDefaultDocument(int docType) {
 	}
 	VCDocument defaultDocument = null;
 	try {
-		defaultDocument = createNewDocument(docType, 0,null);
+		defaultDocument = createNewDocument(new VCDocument.DocumentCreationInfo(docType, 0),null);
 	} catch (Exception e) {
 		// ignore, does not happen on defaults
 	}
@@ -603,8 +603,8 @@ public void createMathModelFromApplication(final String name, final SimulationCo
  * Insert the method's description here.
  * Creation date: (5/10/2004 3:48:16 PM)
  */
-private VCDocument createNewDocument(int docType, int option,AsynchProgressPopup pp) throws UserCancelException, DataAccessException, java.io.FileNotFoundException, java.io.IOException, ImageException {
-	switch (docType) {
+private VCDocument createNewDocument(VCDocument.DocumentCreationInfo documentCreationInfo,AsynchProgressPopup pp) throws UserCancelException, DataAccessException, java.io.FileNotFoundException, java.io.IOException, ImageException {
+	switch (documentCreationInfo.getDocumentType()) {
 		case VCDocument.BIOMODEL_DOC: {
 			// blank
 			BioModel bioModel = new BioModel(null);
@@ -618,9 +618,10 @@ private VCDocument createNewDocument(int docType, int option,AsynchProgressPopup
 			return bioModel;
 		}
 		case VCDocument.MATHMODEL_DOC: {
-			if ((option == 0) || (option == 1)) {
+			if ((documentCreationInfo.getOption() == VCDocument.MATH_OPTION_NONSPATIAL) ||
+				(documentCreationInfo.getOption() == VCDocument.MATH_OPTION_SPATIAL)) {
 				// spatial or non-spatial
-				Geometry geometry = getMathModelGeometry(option);
+				Geometry geometry = getMathModelGeometry(documentCreationInfo.getOption());
 				MathModel mathModel = createMathModel("Untitled", geometry);
 				try {
 					mathModel.setName("MathModel" + (getMdiManager().getNewlyCreatedDesktops() + 1));
@@ -629,18 +630,22 @@ private VCDocument createNewDocument(int docType, int option,AsynchProgressPopup
 					exc.printStackTrace(System.out);
 				}
 				return mathModel;
-			} else {
+			} else if(documentCreationInfo.getOption() == VCDocument.MATH_OPTION_FROMBIOMODELAPP){
 				// from BioModel MathDescription  
 				MathModel mathFromBioModel = getMdiManager().getDatabaseWindowManager().selectMathFromBio();
 				return mathFromBioModel;
+			}else{
+				throw new RuntimeException("Unknown MathModel Document creation option value="+documentCreationInfo.getOption());
 			}
 		}
 		case VCDocument.GEOMETRY_DOC: {
 			Geometry geometry = null;
-			if (option < 4) {
+			if (documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_1D ||
+				documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_2D ||
+				documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_3D) {
 				// analytic
 				try {
-					geometry = new Geometry("Geometry" + (getMdiManager().getNewlyCreatedDesktops() + 1), option);
+					geometry = new Geometry("Geometry" + (getMdiManager().getNewlyCreatedDesktops() + 1), documentCreationInfo.getOption());
 					geometry.getGeometrySpec().addSubVolume(new AnalyticSubVolume("subVolume1",new cbit.vcell.parser.Expression(1.0)));					
 				} catch (Exception exc) {
 					System.out.println("This exception should not happen - brand new Geometry!");
@@ -650,21 +655,32 @@ private VCDocument createNewDocument(int docType, int option,AsynchProgressPopup
 			} else  {
 				// image-based
 				VCImage image = null;
-				if (option == 4) {
+				if (documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_DBIMAGE) {
 					// Get image from database
 					image = getMdiManager().getDatabaseWindowManager().selectImageFromDatabase();
-				} else {
+				} else if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FILE) {
 					// Get image from file --- INCOMPLETE
 					image = getMdiManager().getDatabaseWindowManager().selectImageFromFile(pp);
+				}else if (documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIELDDATA){
+					VCImage initImage = ((VCDocument.GeomFromFieldDataCreationInfo)documentCreationInfo).getVCImage();
+					image = DatabaseWindowManager.editImageAttributes(initImage, pp, this);
+				}else{
+					throw new RuntimeException("Unknown Geometry Document creation option value="+documentCreationInfo.getOption());
 				}
 				if (image == null){
 					throw new RuntimeException("failed to create new Geometry, no image");
 				}
-				return new Geometry("Untitled", image);
+				Geometry newGeom = new Geometry("Untitled", image);
+				try {
+					newGeom.setDescription(image.getDescription());
+				} catch (PropertyVetoException e) {
+					//ignore
+				}
+				return newGeom;
 			}
 		}
 		default:
-			throw new RuntimeException("Unknown default document type: " + docType);
+			throw new RuntimeException("Unknown default document type: " + documentCreationInfo.getDocumentType());
 	}
 }
 
@@ -1189,7 +1205,7 @@ public void managerIDchanged(java.lang.String oldID, java.lang.String newID) {
  * Creation date: (5/21/2004 4:20:47 AM)
  * @param documentType int
  */
-public void newDocument(final int documentType, final int option) {
+public void newDocument(final VCDocument.DocumentCreationInfo documentCreationInfo) {
 	/* asynchronous and not blocking any window */
 		
 	// start a thread that makes it and updates the GUI by creating a new document desktop
@@ -1201,7 +1217,7 @@ public void newDocument(final int documentType, final int option) {
 		public Object construct() {
 			pp.start();
 			try {
-				VCDocument doc = createNewDocument(documentType, option,pp);
+				VCDocument doc = createNewDocument(documentCreationInfo,pp);
 				switch (doc.getDocumentType()) {
 					case VCDocument.BIOMODEL_DOC: {
 						windowManager = new BioModelWindowManager(new JPanel(), ClientRequestManager.this, (BioModel)doc, getMdiManager().getNewlyCreatedDesktops());

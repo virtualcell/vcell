@@ -8,6 +8,7 @@ import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
 import cbit.vcell.client.desktop.*;
 import cbit.vcell.geometry.*;
+import cbit.vcell.geometry.gui.ImageAttributePanel;
 import cbit.vcell.mathmodel.*;
 import cbit.vcell.client.server.*;
 import cbit.vcell.server.*;
@@ -68,7 +69,6 @@ public class DatabaseWindowManager extends TopLevelWindowManager{
 	private BioModelDbTreePanel bioModelDbTreePanel = new BioModelDbTreePanel();
 	private ACLEditor aclEditor = new ACLEditor();
 	private ImageBrowser imageBrowser = new ImageBrowser();
-	private cbit.vcell.geometry.gui.ImageAttributePanel imageAttributePanel = new cbit.vcell.geometry.gui.ImageAttributePanel();
 	private GeometryTreePanel geometryTreePanel = new GeometryTreePanel();
 	private MathModelDbTreePanel MathModelDbTreePanel = new MathModelDbTreePanel();
 
@@ -675,7 +675,7 @@ public void deleteSelected() {
  * Insert the method's description here.
  * Creation date: (5/14/2004 5:35:55 PM)
  */
-private VCImage editImageAttributes(VCImage image,AsynchProgressPopup pp) throws UserCancelException,cbit.image.ImageException,DataAccessException{
+public static VCImage editImageAttributes(VCImage image,AsynchProgressPopup pp,RequestManager theRequestManager) throws UserCancelException,cbit.image.ImageException,DataAccessException{
 
 	VCImage editedImage = null;
 	if (image == null) {
@@ -684,19 +684,21 @@ private VCImage editImageAttributes(VCImage image,AsynchProgressPopup pp) throws
 	}
 
 	//Set image on panel and see if there are any error before proceeding
+	ImageAttributePanel imageAttributePanel = new cbit.vcell.geometry.gui.ImageAttributePanel();
+
 	try{
 		imageAttributePanel.setImage(image);
 	}catch(Throwable e){
 		throw new cbit.image.ImageException("Failed to setup ImageAttributes\n"+(e.getMessage() != null?e.getMessage():null));
 	}
 
-	Object choice = showImagePropertiesDialog();
+	Object choice = showImagePropertiesDialog(imageAttributePanel);
 	
 	if (choice != null && choice.equals("Import")) {
 		VCImageInfo imageInfos[] = null;
 		pp.setMessage("Getting existing Image names");
 		try {
-			imageInfos = getRequestManager().getDocumentManager().getImageInfos();
+			imageInfos = theRequestManager.getDocumentManager().getImageInfos();
 		}catch (DataAccessException e){
 			e.printStackTrace(System.out);
 		}
@@ -704,7 +706,7 @@ private VCImage editImageAttributes(VCImage image,AsynchProgressPopup pp) throws
 		String newName = null;
 		boolean bNameIsGood = false;
 		while (!bNameIsGood){
-			newName = PopupGenerator.showInputDialog(this,
+			newName = PopupGenerator.showInputDialog((Component)null,
 					"type a name for this IMAGE and proceed to view/edit GEOMETRY",image.getName());
 			if (newName == null || newName.length() == 0){
 				bNameIsGood = false;
@@ -729,7 +731,7 @@ private VCImage editImageAttributes(VCImage image,AsynchProgressPopup pp) throws
 		}
 		pp.setMessage("Saving new Image "+newName);
 		try {
-			editedImage = getRequestManager().getDocumentManager().saveAsNew(image,newName);
+			editedImage = theRequestManager.getDocumentManager().saveAsNew(image,newName);
 		} catch (DataAccessException e) {
 			throw new DataAccessException((e.getMessage() != null?e.getMessage():null));
 		}
@@ -1309,7 +1311,7 @@ public VCImage selectImageFromFile(AsynchProgressPopup pp)
 					"If this is unexpected, process the IMAGE to remove noise or unwanted values and re-load");
 	}
     //Edit image and save , 
-	return editImageAttributes(vcImage,pp);
+	return editImageAttributes(vcImage,pp,getRequestManager());
 }
 
 
@@ -1466,7 +1468,7 @@ public static File showFileChooserDialog(FileFilter fileFilter, UserPreferences 
  * Insert the method's description here.
  * Creation date: (5/14/2004 6:11:35 PM)
  */
-private Object showImagePropertiesDialog() {
+private static Object showImagePropertiesDialog(ImageAttributePanel imageAttributePanel) {
 
 	// Cannot use JOptionPane because it will not allow some children to resize
 	JDialog d = new JDialog();
