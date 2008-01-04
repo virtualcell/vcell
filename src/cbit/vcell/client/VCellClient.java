@@ -251,6 +251,22 @@ public static VCellClient startClient(VCDocument startupDoc, final ClientServerI
 							}
 						}
 					}).start();
+				}else if(evt.getActionCommand().equals(LoginDialog.USERACTION_LOSTPASSWORD)){
+					new Thread(new Runnable() {
+						public void run() {
+							try {
+								ClientServerInfo newClientServerInfo =
+									createClientServerInfo(clientServerInfo,loginDialog.getUser(),null);
+								UserRegistrationOP.registrationOperationGUI(
+											newClientServerInfo, LoginDialog.USERACTION_LOSTPASSWORD,null);
+							} catch (UserCancelException e) {
+								//do nothing
+							} catch (Exception e) {
+								e.printStackTrace();
+								PopupGenerator.showErrorDialog("New user Registration error:\n"+e.getMessage());
+							}
+						}
+					}).start();
 				}
 			}
 		};
@@ -262,7 +278,7 @@ public static VCellClient startClient(VCDocument startupDoc, final ClientServerI
 	return vcellClient;
 }
 
-private static ClientServerInfo createClientServerInfo(ClientServerInfo clientServerInfo,String userid,String password){
+public static ClientServerInfo createClientServerInfo(ClientServerInfo clientServerInfo,String userid,String password){
 	switch (clientServerInfo.getServerType()) {
 		case ClientServerInfo.SERVER_LOCAL: {
 			return ClientServerInfo.createLocalServerInfo(userid,password);

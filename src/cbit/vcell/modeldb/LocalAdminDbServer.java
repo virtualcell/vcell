@@ -4,6 +4,7 @@ package cbit.vcell.modeldb;
  * All rights reserved.
 ©*/
 import java.rmi.*;
+
 import cbit.sql.*;
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.server.DataAccessException;
@@ -224,7 +225,17 @@ public UserInfo updateUserInfo(UserInfo newUserInfo) throws DataAccessException 
 		return adminDbTop.getUserInfo(key,true);
 	}catch (Throwable e){
 		log.exception(e);
-		throw new DataAccessException("failure updating user "+newUserInfo);
+		throw new DataAccessException("failure updating user '"+newUserInfo.userid+"'\n"+e.getMessage());
 	}
 }
+
+public void sendLostPassword(String userid) throws DataAccessException {
+	try {
+		adminDbTop.sendLostPassword(userid,true);
+	}catch (Throwable e){
+		log.exception(e);
+		throw new DataAccessException("failure sending password for user '"+userid+"'\n"+e.getMessage());
+	}
+}
+
 }

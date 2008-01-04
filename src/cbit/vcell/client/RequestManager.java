@@ -89,7 +89,8 @@ void createMathModelFromApplication(String name, SimulationContext simContext);
  */
 void curateDocument(VCDocumentInfo vcDocInfo, int curateType, final TopLevelWindowManager requester);
 
-void updateUserRegistration();
+void updateUserRegistration(boolean bNewUser);
+void sendLostPassword(String userid);
 
 /**
  * Insert the method's description here.
