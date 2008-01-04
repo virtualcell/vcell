@@ -4,6 +4,7 @@ import java.awt.event.*;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.server.*;
+import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.client.*;
 
 import java.text.*;
@@ -20,6 +21,7 @@ import cbit.vcell.xml.MIRIAMAnnotationEditor;
 import cbit.vcell.xml.MIRIAMHelper;
 import cbit.gui.DialogUtils;
 import cbit.gui.ZEnforcer;
+import cbit.sql.UserInfo;
 import cbit.util.*;
 import javax.swing.JMenuItem;
 /**
@@ -236,7 +238,7 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 			if (e.getSource() == DocumentWindow.this.getJMenuItemFieldData()) 
 				connEtoC38(e);
 			if (e.getSource() == DocumentWindow.this.getUpdate_UserMenuItem()){
-				getWindowManager().getRequestManager().updateUserRegistration();
+				getWindowManager().getRequestManager().updateUserRegistration(false);
 			}
 		};
 		public void itemStateChanged(java.awt.event.ItemEvent e) {
@@ -2155,6 +2157,10 @@ private JDialog getLoginDialog() {
 			public void actionPerformed(ActionEvent evt) {
 				if(evt.getActionCommand().equals(LoginDialog.USERACTION_LOGIN)){
 					getWindowManager().connectAs(loginDialog.getUser(), loginDialog.getPassword());
+				}else if(evt.getActionCommand().equals(LoginDialog.USERACTION_REGISTER)){
+					getWindowManager().getRequestManager().updateUserRegistration(true);
+				}else if(evt.getActionCommand().equals(LoginDialog.USERACTION_LOSTPASSWORD)){
+					getWindowManager().getRequestManager().sendLostPassword(loginDialog.getUser());
 				}
 			}
 		};

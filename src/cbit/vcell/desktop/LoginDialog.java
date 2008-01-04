@@ -7,7 +7,10 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.*;
+import javax.swing.JButton;
 
 import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
 
@@ -26,11 +29,13 @@ import cbit.vcell.server.UserRegistrationOP;
  */
 public class LoginDialog extends JDialog {
 	
+	private JButton lostPasswordJButton;
 	private static final String DIALOG_TITLE = "Virtual Cell Login";
 	
 	public static final String USERACTION_LOGIN = "USERACTION_LOGIN";
 	public static final String USERACTION_REGISTER = "USERACTION_REGISTER";
 	public static final String USERACTION_EDITINFO = "USERACTION_EDITINFO";
+	public static final String USERACTION_LOSTPASSWORD = "USERACTION_LOSTPASSWORD";
 	//
 	//
 	private static final String USER_CANCEL = "User canceled login";
@@ -62,6 +67,10 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.W
 				connEtoM2(e);
 			if (e.getSource() == LoginDialog.this.getJButtonRegister()) 
 				connEtoC1(e);
+			if (e.getSource() == LoginDialog.this.getLostPasswordJButton()){
+				updateFields();
+				fireActionPerformed(new ActionEvent(this, e.getID(), e.getActionCommand(), e.getModifiers()));
+			}
 		};
 		public void windowActivated(java.awt.event.WindowEvent e) {};
 		public void windowClosed(java.awt.event.WindowEvent e) {};
@@ -353,7 +362,9 @@ private javax.swing.JPanel getJDialogContentPane() {
 		try {
 			ivjJDialogContentPane = new javax.swing.JPanel();
 			ivjJDialogContentPane.setName("JDialogContentPane");
-			ivjJDialogContentPane.setLayout(new java.awt.GridBagLayout());
+			final java.awt.GridBagLayout gridBagLayout = new java.awt.GridBagLayout();
+			gridBagLayout.rowHeights = new int[] {0,0,0,7,0};
+			ivjJDialogContentPane.setLayout(gridBagLayout);
 
 			java.awt.GridBagConstraints constraintsJLabelUser = new java.awt.GridBagConstraints();
 			constraintsJLabelUser.gridx = 0; constraintsJLabelUser.gridy = 0;
@@ -389,9 +400,16 @@ private javax.swing.JPanel getJDialogContentPane() {
 
 			java.awt.GridBagConstraints constraintsJButtonRegister = new java.awt.GridBagConstraints();
 			constraintsJButtonRegister.fill = GridBagConstraints.HORIZONTAL;
-			constraintsJButtonRegister.gridx = 0; constraintsJButtonRegister.gridy = 3;
+			constraintsJButtonRegister.gridx = 0; constraintsJButtonRegister.gridy = 4;
 			constraintsJButtonRegister.gridwidth = 2;
-			constraintsJButtonRegister.insets = new java.awt.Insets(2, 10, 4, 10);
+			constraintsJButtonRegister.insets = new java.awt.Insets(2, 10, 2, 10);
+			final GridBagConstraints gridBagConstraints = new GridBagConstraints();
+			gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+			gridBagConstraints.insets = new Insets(4, 10, 4, 10);
+			gridBagConstraints.gridwidth = 2;
+			gridBagConstraints.gridy = 3;
+			gridBagConstraints.gridx = 0;
+			ivjJDialogContentPane.add(getLostPasswordJButton(), gridBagConstraints);
 			getJDialogContentPane().add(getJButtonRegister(), constraintsJButtonRegister);
 			// user code begin {1}
 			// user code end
@@ -583,6 +601,7 @@ private void initConnections() throws java.lang.Exception {
 	this.addWindowListener(ivjEventHandler);
 	getJButtonOK().addActionListener(ivjEventHandler);
 	getJButtonRegister().addActionListener(ivjEventHandler);
+	getLostPasswordJButton().addActionListener(ivjEventHandler);
 }
 
 /**
@@ -595,7 +614,7 @@ private void initialize() {
 		// user code end
 		setName("LoginDialog");
 		setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-		setSize(315, 183);
+		setSize(315, 226);
 		setModal(true);
 		setContentPane(getJDialogContentPane());
 		initConnections();
@@ -667,7 +686,23 @@ private void updateFields() {
 		
 	public void setLoggedInUser(User loggedInUser){
 		getJButtonRegister().setEnabled(loggedInUser == null);
+//		getLostPasswordJButton().setEnabled(loggedInUser == null);
 		setTitle(DIALOG_TITLE+(loggedInUser == null?"":" ("+loggedInUser.getName()+")"));
+	}
+	/**
+	 * @return
+	 */
+	protected JButton getLostPasswordJButton() {
+		if (lostPasswordJButton == null) {
+			lostPasswordJButton = new JButton();
+			lostPasswordJButton.addActionListener(new ActionListener() {
+				public void actionPerformed(final ActionEvent e) {
+				}
+			});
+			lostPasswordJButton.setText("Forgot Login Password...");
+			lostPasswordJButton.setActionCommand(USERACTION_LOSTPASSWORD);
+		}
+		return lostPasswordJButton;
 	}
 	
 }

@@ -205,5 +205,8 @@ public UserInfo updateUserInfo(UserInfo newUserInfo) throws RemoteException,Data
 public UserInfo getUserInfo(KeyValue userKey) throws RemoteException,DataAccessException {
 	return adminDbServer.getUserInfo(userKey);
 }
+public void sendLostPassword(String userid) throws RemoteException,DataAccessException {
+	adminDbServer.sendLostPassword(userid);
+}
 
 }

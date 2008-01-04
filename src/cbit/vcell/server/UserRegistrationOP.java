@@ -1,5 +1,6 @@
 package cbit.vcell.server;
 
+import java.awt.Component;
 import java.io.Serializable;
 import java.rmi.RemoteException;
 import java.util.Vector;
@@ -15,6 +16,7 @@ import cbit.sql.UserInfo;
 import cbit.util.AsynchProgressPopup;
 import cbit.util.Compare;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.client.task.UserCancelException;
@@ -27,6 +29,7 @@ public class UserRegistrationOP implements Serializable{
 //	public static final String USERREGOP_NEWREGISTER = "USERREGOP_NEWREGISTER";
 	public static final String USERREGOP_UPDATE = "USERREGOP_UPDATE";
 	public static final String USERREGOP_GETINFO = "USERREGOP_GETINFO";
+	public static final String USERREGOP_LOSTPASSWORD = "USERREGOP_LOSTPASSWORD";
 	
 	private UserInfo userInfo;
 	private String operationType;
@@ -41,6 +44,13 @@ public class UserRegistrationOP implements Serializable{
 		userRegistrationOP.userKey = user.getID();
 		return userRegistrationOP;
 	}
+	public static UserRegistrationOP createGetUserInfoOP(String userid){
+		UserRegistrationOP userRegistrationOP = new UserRegistrationOP();
+		userRegistrationOP.operationType = USERREGOP_LOSTPASSWORD;
+		userRegistrationOP.userid  = userid;
+		return userRegistrationOP;
+	}
+
 //	public static UserRegistrationOP createGetUserInfoOP(String userID,String password){
 //		UserRegistrationOP userRegistrationOP = new UserRegistrationOP();
 //		userRegistrationOP.operationType = USERREGOP_GETINFO;
@@ -64,23 +74,18 @@ public class UserRegistrationOP implements Serializable{
 	}
 
 	public static UserInfo registrationOperationGUI(ClientServerInfo currentClientServerInfo,String userAction,ClientServerManager clientServerManager) throws UserCancelException,Exception{
-		if(!(userAction.equals(LoginDialog.USERACTION_REGISTER) || userAction.equals(LoginDialog.USERACTION_EDITINFO))){
-			throw new IllegalArgumentException(UserRegistrationOP.class.getName()+".registrationOperationGUI:  Only New registration and Edit UserInfo allowed.");
+		if(!(	userAction.equals(LoginDialog.USERACTION_REGISTER) ||
+				userAction.equals(LoginDialog.USERACTION_EDITINFO) ||
+				userAction.equals(LoginDialog.USERACTION_LOSTPASSWORD))){
+			throw new IllegalArgumentException(UserRegistrationOP.class.getName()+".registrationOperationGUI:  Only New registration, Edit UserInfo or Lost Password allowed.");
 		}
-		if(userAction.equals(LoginDialog.USERACTION_REGISTER) && clientServerManager != null){
-			throw new IllegalArgumentException(UserRegistrationOP.class.getName()+".registrationOperationGUI:  Edit User Info requires clientServerManager null.");			
+		if((userAction.equals(LoginDialog.USERACTION_REGISTER) || userAction.equals(LoginDialog.USERACTION_LOSTPASSWORD)) && clientServerManager != null){
+			throw new IllegalArgumentException(UserRegistrationOP.class.getName()+".registrationOperationGUI:  Register New User Info requires clientServerManager null.");			
 		}
 		if(userAction.equals(LoginDialog.USERACTION_EDITINFO) && clientServerManager == null){
 			throw new IllegalArgumentException(UserRegistrationOP.class.getName()+".registrationOperationGUI:  Edit User Info requires clientServerManager not null.");			
 		}
-//		new Thread(new Runnable() {
-//			public void run() {
-//				try {
-					PropertyLoader.loadProperties();
-//				} catch (Exception e) {
-//					PopupGenerator.showErrorDialog("New Registration: Couldn't load VCell properties.\n"+ e.getMessage());
-//					return;
-//				}
+
 				RegistrationPanel registrationPanel = new RegistrationPanel();
 //				LocalAdminDbServer adminDbServer = null;
 //				VCellBootstrap vcellBootstrap = null;
@@ -137,6 +142,16 @@ public class UserRegistrationOP implements Serializable{
 									UserRegistrationOP.createGetUserInfoOP(clientServerManager.getUser())).getUserInfo();
 						}
 					}					
+					public void sendLostPassword(String userid) throws DataAccessException,RemoteException{
+						if(localAdminDbServer != null){
+							localAdminDbServer.sendLostPassword(userid);
+						}else if(vcellBootstrap != null){
+							vcellBootstrap.sendLostPassword(userid);
+						}else{
+							clientServerManager.getUserMetaDbServer().userRegistrationOP(
+								UserRegistrationOP.createGetUserInfoOP(clientServerManager.getUser())).getUserInfo();
+						}
+					}					
 				}
 				RegistrationProvider registrationProvider = null;
 				if(clientServerManager != null){
@@ -145,6 +160,7 @@ public class UserRegistrationOP implements Serializable{
 //				do {
 						if (registrationProvider == null) {
 							if (currentClientServerInfo.getServerType() == ClientServerInfo.SERVER_LOCAL) {
+								PropertyLoader.loadProperties();
 								SessionLog log = new cbit.vcell.server.StdoutSessionLog("Local");
 								ConnectionFactory conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
 								KeyFactory keyFactory = new cbit.sql.OracleKeyFactory();
@@ -167,8 +183,24 @@ public class UserRegistrationOP implements Serializable{
 	
 							}
 						}
+				if(userAction.equals(LoginDialog.USERACTION_LOSTPASSWORD)){
+					if(currentClientServerInfo.getUsername() == null || currentClientServerInfo.getUsername().length() == 0){
+						throw new IllegalArgumentException("Lost Password requires a VCell User Name.");
+					}
+					String result = PopupGenerator.showWarningDialog((Component)null, null,
+							new UserMessage(
+								"Sending Password via email for user '"+currentClientServerInfo.getUsername()+
+								"'\nusing currently registered email address.",
+								new String[] {"OK","Cancel"},"OK"),
+							null);
+					if(!result.equals("OK")){
+						throw UserCancelException.CANCEL_GENERIC;
+					}
+					registrationProvider.sendLostPassword(currentClientServerInfo.getUsername());
+					return null;
+				}
 				AsynchProgressPopup pp = null;
-				pp = new AsynchProgressPopup(null/*loginDialog*/,"Registration...",null,false,false);
+				pp = new AsynchProgressPopup(null,"Registration Info...",null,false,false);
 				UserInfo originalUserInfo = null;
 				if(userAction.equals(LoginDialog.USERACTION_EDITINFO)){
 					pp.setMessage("Gathering '"+clientServerManager.getUser().getName()+"' information...");

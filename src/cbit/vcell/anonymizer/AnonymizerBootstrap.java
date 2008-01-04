@@ -173,5 +173,8 @@ public UserInfo updateUserInfo(UserInfo newUserInfo) throws RemoteException,Data
 public UserInfo getUserInfo(KeyValue userKey) throws RemoteException,DataAccessException {
 	throw new RuntimeException("Not Yet Implemented");
 }
+public void sendLostPassword(String userid) throws RemoteException,DataAccessException {
+	throw new RuntimeException("Not Yet Implemented");
+}
 
 }

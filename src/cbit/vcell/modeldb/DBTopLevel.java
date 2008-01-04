@@ -190,7 +190,10 @@ throws java.sql.SQLException, DataAccessException, DependencyException, Permissi
 //		if(userRegistrationOP.getOperationType().equals(UserRegistrationOP.USERREGOP_NEWREGISTER)){
 //			userKey = userDB.insertUserInfo(con, userRegistrationOP.getUserInfo());
 //		}
-		if(userRegistrationOP.getOperationType().equals(UserRegistrationOP.USERREGOP_GETINFO)){
+		if(userRegistrationOP.getOperationType().equals(UserRegistrationOP.USERREGOP_LOSTPASSWORD)){
+			userDB.sendLostPassword(con, userRegistrationOP.getUserid());
+			return null;
+		}else if(userRegistrationOP.getOperationType().equals(UserRegistrationOP.USERREGOP_GETINFO)){
 			userKey = userRegistrationOP.getUserKey();
 //			UserInfo userInfo = null;
 //			if(userRegistrationOP.getUserKey() != null){

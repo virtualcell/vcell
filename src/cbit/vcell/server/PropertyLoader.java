@@ -144,6 +144,10 @@ public class PropertyLoader {
 	
 	public static final String limitJobMemoryMB="vcell.limit.jobMemoryMB";
 	
+	public static final String vcellSMTPHostName = "vcell.smtp.hostName";
+	public static final String vcellSMTPPort = "vcell.smtp.port";
+	public static final String vcellSMTPEmailAddress = "vcell.smtp.emailAddress";
+
 	private static final String ALL_PROPERTIES[] = {
 		vcellServerIDProperty,
 		tempDirProperty,
@@ -269,7 +273,11 @@ public class PropertyLoader {
 		htcPartitionShareServerIDs,		
 		pbsHomeDir,
 		
-		limitJobMemoryMB
+		limitJobMemoryMB,
+		
+		vcellSMTPHostName,
+		vcellSMTPPort,
+		vcellSMTPEmailAddress
 	};
 
 /**

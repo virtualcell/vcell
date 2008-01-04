@@ -749,13 +749,15 @@ public void curateDocument(final VCDocumentInfo documentInfo, final int curateTy
 }
 
 
-public void updateUserRegistration(){
+public void updateUserRegistration(final boolean bNewUser){
 	new Thread(new Runnable() {
 		public void run() {
 			try {
 				UserInfo registeredUserInfo =
 					UserRegistrationOP.registrationOperationGUI(
-							getClientServerManager().getClientServerInfo(), LoginDialog.USERACTION_EDITINFO,getClientServerManager());
+							getClientServerManager().getClientServerInfo(),
+							(bNewUser?LoginDialog.USERACTION_REGISTER:LoginDialog.USERACTION_EDITINFO),
+							(bNewUser?null:getClientServerManager()));
 			} catch (UserCancelException e) {
 				//do nothing
 			} catch (Exception e) {
@@ -766,6 +768,25 @@ public void updateUserRegistration(){
 	}).start();
 }
 
+public void sendLostPassword(final String userid){
+	new Thread(new Runnable() {
+		public void run() {
+			try {
+				UserInfo registeredUserInfo =
+					UserRegistrationOP.registrationOperationGUI(
+							VCellClient.createClientServerInfo(
+								getClientServerManager().getClientServerInfo(), userid, null),
+							LoginDialog.USERACTION_LOSTPASSWORD,
+							null);
+			} catch (UserCancelException e) {
+				//do nothing
+			} catch (Exception e) {
+				e.printStackTrace();
+				PopupGenerator.showErrorDialog("Update user Registration error:\n"+e.getMessage());
+			}
+		}
+	}).start();	
+}
 /**
  * Insert the method's description here.
  * Creation date: (6/22/2004 10:50:34 PM)
@@ -1186,7 +1207,6 @@ private VCellClient getVcellClient() {
 public boolean isApplet() {
 	return getVcellClient().isApplet();
 }
-
 
 /**
  * Insert the method's description here.
