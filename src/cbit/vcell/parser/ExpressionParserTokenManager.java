@@ -445,14 +445,12 @@ protected SimpleCharStream input_stream;
 private final int[] jjrounds = new int[45];
 private final int[] jjstateSet = new int[90];
 protected char curChar;
-public ExpressionParserTokenManager(SimpleCharStream stream)
-{
+public ExpressionParserTokenManager(SimpleCharStream stream){
    if (SimpleCharStream.staticFlag)
       throw new Error("ERROR: Cannot use a static CharStream class with a non-static lexical analyzer.");
    input_stream = stream;
 }
-public ExpressionParserTokenManager(SimpleCharStream stream, int lexState)
-{
+public ExpressionParserTokenManager(SimpleCharStream stream, int lexState){
    this(stream);
    SwitchTo(lexState);
 }

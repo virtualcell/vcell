@@ -2326,6 +2326,16 @@ private void pingAll(int waitingTimeSec) {
  * Creation date: (9/3/2003 8:00:07 AM)
  */
 private void query() {
+	if (getQueryCompletedCheck().isSelected() && !getQuerySubmitDateCheck().isSelected() && !getQueryStartDateCheck().isSelected() && !getQueryEndDateCheck().isSelected()) {
+		int n = javax.swing.JOptionPane.showConfirmDialog(this, "You are gonna get all the completed simulation jobs in the database, which is gonna be huge . Continue?", "Confirm", javax.swing.JOptionPane.YES_NO_OPTION);
+		if (n == javax.swing.JOptionPane.NO_OPTION) {
+			getNumResultsLabel().setText("0");
+			getNumSelectedLabel().setText("0");
+			((JobTableModel)getQueryResultTable().getModel()).setData(null);			
+			return;
+		}
+
+	}
 	getRemoveFromListButton().setEnabled(false);	
 	StringBuffer conditions = new StringBuffer();
 	String text = getQuerySimField().getText();
