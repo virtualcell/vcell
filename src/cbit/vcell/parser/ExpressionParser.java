@@ -650,7 +650,10 @@ public class ExpressionParser/*@bgen(jjtree)*/implements ExpressionParserTreeCon
   private int jj_gc = 0;
 
   public ExpressionParser(java.io.InputStream stream) {
-    jj_input_stream = new SimpleCharStream(stream, 1, 1);
+     this(stream, null);
+  }
+  public ExpressionParser(java.io.InputStream stream, String encoding) {
+    try { jj_input_stream = new SimpleCharStream(stream, encoding, 1, 1); } catch(java.io.UnsupportedEncodingException e) { throw new RuntimeException(e); }
     token_source = new ExpressionParserTokenManager(jj_input_stream);
     token = new Token();
     jj_ntk = -1;
@@ -660,7 +663,10 @@ public class ExpressionParser/*@bgen(jjtree)*/implements ExpressionParserTreeCon
   }
 
   public void ReInit(java.io.InputStream stream) {
-    jj_input_stream.ReInit(stream, 1, 1);
+     ReInit(stream, null);
+  }
+  public void ReInit(java.io.InputStream stream, String encoding) {
+    try { jj_input_stream.ReInit(stream, encoding, 1, 1); } catch(java.io.UnsupportedEncodingException e) { throw new RuntimeException(e); }
     token_source.ReInit(jj_input_stream);
     token = new Token();
     jj_ntk = -1;
@@ -860,6 +866,7 @@ public class ExpressionParser/*@bgen(jjtree)*/implements ExpressionParserTreeCon
   final private void jj_rescan_token() {
     jj_rescan = true;
     for (int i = 0; i < 4; i++) {
+    try {
       JJCalls p = jj_2_rtns[i];
       do {
         if (p.gen > jj_gen) {
@@ -873,6 +880,7 @@ public class ExpressionParser/*@bgen(jjtree)*/implements ExpressionParserTreeCon
         }
         p = p.next;
       } while (p != null);
+      } catch(LookaheadSuccess ls) { }
     }
     jj_rescan = false;
   }
