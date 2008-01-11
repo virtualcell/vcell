@@ -149,7 +149,7 @@ public static ASTNode getFormulaFromExpression(Expression expression) {
 	String expMathMLStr = null;
 
 	try {
-		expMathMLStr = cbit.vcell.parser.ExpressionMathMLPrinter.getMathML(expression);
+		expMathMLStr = cbit.vcell.parser.ExpressionMathMLPrinter.getMathML(expression, false);
 	} catch (java.io.IOException e) {
 		e.printStackTrace(System.out);
 		throw new RuntimeException("Error converting expression to MathML string :" + e.getMessage());

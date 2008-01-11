@@ -8,9 +8,14 @@ public class SBMLUnitTranslatorTest {
 
 	static
 	{
-		System.loadLibrary("sbmlj");
+		try {
+			System.loadLibrary("expat");
+			System.loadLibrary("sbml");
+			System.loadLibrary("sbmlj");
+		}catch (Exception e){
+			e.printStackTrace(System.out);
+		}
 	}
-
 
 	public static void main(String[] args) {
 		SBVCUnitConversionTest();

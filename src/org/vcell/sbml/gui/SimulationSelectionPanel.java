@@ -2,6 +2,8 @@ package org.vcell.sbml.gui;
 
 import javax.swing.JPanel;
 
+import cbit.vcell.solver.Simulation;
+
 /**
  * Insert the type's description here.
  * Creation date: (11/15/2006 5:05:26 PM)
@@ -73,17 +75,10 @@ public SimulationSelectionPanel(boolean isDoubleBuffered) {
  * connEtoC1:  (SimulationSelectionPanel.simulations --> SimulationSelectionPanel.fillSimulationList()V)
  * @param arg1 java.beans.PropertyChangeEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC1(java.beans.PropertyChangeEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.fillSimulationList();
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -93,17 +88,10 @@ private void connEtoC1(java.beans.PropertyChangeEvent arg1) {
  * connEtoC2:  (simListSelectionModel.listSelection.valueChanged(javax.swing.event.ListSelectionEvent) --> SimulationSelectionPanel.displaySimSummary()V)
  * @param arg1 javax.swing.event.ListSelectionEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC2(javax.swing.event.ListSelectionEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		this.displaySelectedSimSummary();
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -111,16 +99,11 @@ private void connEtoC2(javax.swing.event.ListSelectionEvent arg1) {
 /**
  * connPtoP1SetTarget:  (defaultListModel.this <--> SimList.model)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connPtoP1SetTarget() {
 	/* Set the target from the source */
 	try {
 		getSimList().setModel(getdefaultListModel());
-		// user code begin {1}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -129,25 +112,18 @@ private void connPtoP1SetTarget() {
 /**
  * connPtoP2SetSource:  (SimList.selectionModel <--> simListSelectionModel.this)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connPtoP2SetSource() {
 	/* Set the source from the target */
 	try {
 		if (ivjConnPtoP2Aligning == false) {
-			// user code begin {1}
-			// user code end
 			ivjConnPtoP2Aligning = true;
 			if ((getsimListSelectionModel() != null)) {
 				getSimList().setSelectionModel(getsimListSelectionModel());
 			}
-			// user code begin {2}
-			// user code end
 			ivjConnPtoP2Aligning = false;
 		}
 	} catch (java.lang.Throwable ivjExc) {
 		ivjConnPtoP2Aligning = false;
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -161,18 +137,12 @@ private void connPtoP2SetTarget() {
 	/* Set the target from the source */
 	try {
 		if (ivjConnPtoP2Aligning == false) {
-			// user code begin {1}
-			// user code end
 			ivjConnPtoP2Aligning = true;
 			setsimListSelectionModel(getSimList().getSelectionModel());
-			// user code begin {2}
-			// user code end
 			ivjConnPtoP2Aligning = false;
 		}
 	} catch (java.lang.Throwable ivjExc) {
 		ivjConnPtoP2Aligning = false;
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -184,8 +154,13 @@ private void connPtoP2SetTarget() {
 private void displaySelectedSimSummary() {
 	int index = getSimList().getSelectedIndex();
 
-	cbit.vcell.solver.Simulation sim = getSimulations(index);
-	getsimSummaryPanel().setSimulation(sim);
+	Simulation sim = null;
+	if (index >= 0) {
+		sim = getSimulations(index);
+		getsimSummaryPanel().setSimulation(sim);
+	} else {
+		getsimSummaryPanel().setSimulation(null);
+	}
 
 	setSelectedSimulation(sim);
 }
@@ -211,16 +186,11 @@ private void fillSimulationList() {
  * Return the defaultListModel property value.
  * @return javax.swing.DefaultListModel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.DefaultListModel getdefaultListModel() {
 	if (ivjdefaultListModel == null) {
 		try {
 			ivjdefaultListModel = new javax.swing.DefaultListModel();
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -242,7 +212,6 @@ public cbit.vcell.solver.Simulation getSelectedSimulation() {
  * Return the SimList property value.
  * @return javax.swing.JList
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JList getSimList() {
 	if (ivjSimList == null) {
 		try {
@@ -250,11 +219,8 @@ private javax.swing.JList getSimList() {
 			ivjSimList.setName("SimList");
 			ivjSimList.setPreferredSize(new java.awt.Dimension(250, 125));
 			ivjSimList.setBounds(0, 0, 160, 120);
-			// user code begin {1}
-			// user code end
+			ivjSimList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -266,18 +232,13 @@ private javax.swing.JList getSimList() {
  * Return the SimListScrollPane property value.
  * @return javax.swing.JScrollPane
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JScrollPane getSimListScrollPane() {
 	if (ivjSimListScrollPane == null) {
 		try {
 			ivjSimListScrollPane = new javax.swing.JScrollPane();
 			ivjSimListScrollPane.setName("SimListScrollPane");
 			getSimListScrollPane().setViewportView(getSimList());
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -289,10 +250,7 @@ private javax.swing.JScrollPane getSimListScrollPane() {
  * Return the simListSelectionModel property value.
  * @return javax.swing.ListSelectionModel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.ListSelectionModel getsimListSelectionModel() {
-	// user code begin {1}
-	// user code end
 	return ivjsimListSelectionModel;
 }
 
@@ -301,17 +259,12 @@ private javax.swing.ListSelectionModel getsimListSelectionModel() {
  * Return the simSummaryPanel property value.
  * @return cbit.vcell.solver.ode.gui.SimulationSummaryPanel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private cbit.vcell.solver.ode.gui.SimulationSummaryPanel getsimSummaryPanel() {
 	if (ivjsimSummaryPanel == null) {
 		try {
 			ivjsimSummaryPanel = new cbit.vcell.solver.ode.gui.SimulationSummaryPanel();
 			ivjsimSummaryPanel.setName("simSummaryPanel");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -344,7 +297,6 @@ public cbit.vcell.solver.Simulation getSimulations(int index) {
  * Return the SimulationsListPanel property value.
  * @return javax.swing.JPanel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JPanel getSimulationsListPanel() {
 	if (ivjSimulationsListPanel == null) {
 		try {
@@ -369,11 +321,7 @@ private javax.swing.JPanel getSimulationsListPanel() {
 			constraintsSimListScrollPane.weighty = 1.0;
 			constraintsSimListScrollPane.insets = new java.awt.Insets(4, 4, 4, 4);
 			getSimulationsListPanel().add(getSimListScrollPane(), constraintsSimListScrollPane);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -384,7 +332,6 @@ private javax.swing.JPanel getSimulationsListPanel() {
  * Return the SimulationSummaryPanel property value.
  * @return javax.swing.JPanel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JPanel getSimulationSummaryPanel() {
 	if (ivjSimulationSummaryPanel == null) {
 		try {
@@ -409,11 +356,7 @@ private javax.swing.JPanel getSimulationSummaryPanel() {
 			constraintssimSummaryPanel.weighty = 1.0;
 			constraintssimSummaryPanel.insets = new java.awt.Insets(4, 4, 4, 4);
 			getSimulationSummaryPanel().add(getsimSummaryPanel(), constraintssimSummaryPanel);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -425,10 +368,9 @@ private javax.swing.JPanel getSimulationSummaryPanel() {
  * @param exception java.lang.Throwable
  */
 private void handleException(java.lang.Throwable exception) {
-
 	/* Uncomment the following lines to print uncaught exceptions to stdout */
-	// System.out.println("--------- UNCAUGHT EXCEPTION ---------");
-	// exception.printStackTrace(System.out);
+	 System.out.println("--------- UNCAUGHT EXCEPTION ---------");
+	 exception.printStackTrace(System.out);
 }
 
 
@@ -436,10 +378,7 @@ private void handleException(java.lang.Throwable exception) {
  * Initializes connections
  * @exception java.lang.Exception The exception description.
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initConnections() throws java.lang.Exception {
-	// user code begin {1}
-	// user code end
 	getSimList().addPropertyChangeListener(ivjEventHandler);
 	this.addPropertyChangeListener(ivjEventHandler);
 	connPtoP1SetTarget();
@@ -450,11 +389,8 @@ private void initConnections() throws java.lang.Exception {
 /**
  * Initialize the class.
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initialize() {
 	try {
-		// user code begin {1}
-		// user code end
 		setName("SimulationSelectionPanel");
 		setLayout(new java.awt.GridBagLayout());
 		setSize(607, 433);
@@ -479,8 +415,6 @@ private void initialize() {
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
-	// user code begin {2}
-	// user code end
 }
 
 /**
@@ -526,7 +460,6 @@ public void setSelectedSimulation(cbit.vcell.solver.Simulation selectedSimulatio
  * Set the simListSelectionModel to a new value.
  * @param newValue javax.swing.ListSelectionModel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void setsimListSelectionModel(javax.swing.ListSelectionModel newValue) {
 	if (ivjsimListSelectionModel != newValue) {
 		try {
@@ -541,16 +474,10 @@ private void setsimListSelectionModel(javax.swing.ListSelectionModel newValue) {
 				ivjsimListSelectionModel.addListSelectionListener(ivjEventHandler);
 			}
 			connPtoP2SetSource();
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	};
-	// user code begin {3}
-	// user code end
 }
 
 /**

@@ -915,7 +915,7 @@ protected void addReactions() {
 			// set the reaction kinetics, and add reaction to the vcell model.					
 			vcReactions[i].setKinetics(kinetics);
 			simContext.getModel().addReactionStep(vcReactions[i]);
-			System.out.println("ADDED SBML REACTION : \"" + rxnName + "\" to VCModel");
+			// System.out.println("ADDED SBML REACTION : \"" + rxnName + "\" to VCModel");
 			if (sbmlRxn.isSetFast() && sbmlRxn.getFast()) {
 				simContext.getReactionContext().getReactionSpec(vcReactions[i]).setReactionMapping(cbit.vcell.mapping.ReactionSpec.FAST);
 			}
@@ -1040,7 +1040,7 @@ public static double getSpeciesConcUnitFactor(VCUnitDefinition fromUnit, VCUnitD
 				vcSpeciesContexts[i] = simContext.getModel().getSpeciesContext(vcSpecies, structure);
 				vcSpeciesContexts[i].setHasOverride(true);
 				vcSpeciesContexts[i].setName(speciesName);
-				System.out.println("ADDED SBML SPECIES : \"" + speciesName + "\" to VCModel");
+				// System.out.println("ADDED SBML SPECIES : \"" + speciesName + "\" to VCModel");
 			}
 
 			// Second pass - fill in SpeciesContextSpec for each speciesContext
@@ -1164,7 +1164,7 @@ public static double getSpeciesConcUnitFactor(VCUnitDefinition fromUnit, VCUnitD
 
 				speciesContextSpec.getInitialConditionParameter().setExpression(initExpr);
 				speciesContextSpec.setConstant(sbmlSpecies.getBoundaryCondition() || sbmlSpecies.getConstant());
-				System.out.println("Completed SpeciesContextSpec for Species : \"" + speciesName + "\"");
+				// System.out.println("Completed SpeciesContextSpec for Species : \"" + speciesName + "\"");
 
 				// Add the speciesContext names and sbmlSpecies names into SbmlVcSpeciesHash, so that it can be used while determining the structure
 				// in which each reaction takes place.

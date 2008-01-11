@@ -7,6 +7,7 @@ package cbit.vcell.parser;
 import java.awt.*;
 import java.util.*;
 
+import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
 /**
@@ -28,11 +29,14 @@ ExpressionMathMLPrinter (SimpleNode rootNode) {
  * Creation date: (2/8/2002 5:51:09 PM)
  * @return java.lang.String
  */
-String getMathML() throws ExpressionException, java.io.IOException {
+String getMathML(boolean bOnlyMathMLFragment) throws ExpressionException, java.io.IOException {
 	org.jdom.output.XMLOutputter xmlwriter = new org.jdom.output.XMLOutputter();
-//	"<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 	Element mathElement = new Element("math",Namespace.getNamespace("http://www.w3.org/1998/Math/MathML"));
 	mathElement.addContent(getMathML(rootNode, MathType.REAL));
+	if (!bOnlyMathMLFragment) {
+		Document mathDoc = new Document(mathElement);
+		return xmlwriter.outputString(mathDoc);
+	}
 	return xmlwriter.outputString(mathElement);
 }
 
@@ -131,9 +135,9 @@ private Element castChild(Element element, MathType outputType, MathType inputTy
  * Creation date: (2/8/2002 5:53:06 PM)
  * @return java.lang.String
  */
-public static String getMathML(Expression exp) throws ExpressionException, java.io.IOException {
+public static String getMathML(Expression exp, boolean bOnlyMathMLFragment) throws ExpressionException, java.io.IOException {
 	ExpressionMathMLPrinter mathMLPrinter = new ExpressionMathMLPrinter(exp.getRootNode());
-	return mathMLPrinter.getMathML();
+	return mathMLPrinter.getMathML(bOnlyMathMLFragment);
 }
 /**
  * draw the expression with y at the center and x at the left

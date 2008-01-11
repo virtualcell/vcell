@@ -75,9 +75,9 @@ public class VCellSBMLSolver implements SBMLSolver {
 			    SBMLUtils.writeStringToFile(vcml_1, new File(outDir,filePrefix+".vcml").getAbsolutePath());
 			    
 			    // export bioModel as sbml and save
-//			    String vcml_sbml = cbit.vcell.xml.XmlHelper.exportSBML(bioModel, 2, 1, bioModel.getSimulationContexts(0).getName());
-			    SimulationJob simJob = new SimulationJob(bioModel.getSimulations(bioModel.getSimulationContexts(0))[0], null, 0);
-			    String vcml_sbml = cbit.vcell.xml.XmlHelper.exportSBML(bioModel, 2, 1, bioModel.getSimulationContexts(0), simJob);
+			    // String vcml_sbml = cbit.vcell.xml.XmlHelper.exportSBML(bioModel, 2, 1, bioModel.getSimulationContexts(0).getName());
+			    // SimulationJob simJob = new SimulationJob(bioModel.getSimulations(bioModel.getSimulationContexts(0))[0], null, 0);
+			    String vcml_sbml = cbit.vcell.xml.XmlHelper.exportSBML(bioModel, 2, 1, bioModel.getSimulationContexts(0), null);
 			    SBMLUtils.writeStringToFile(vcml_sbml, new File(outDir,filePrefix+".vcml.sbml").getAbsolutePath());
 			    
 			    // re-import bioModel from exported sbml

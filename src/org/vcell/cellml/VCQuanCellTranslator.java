@@ -108,7 +108,7 @@ public class VCQuanCellTranslator extends Translator {
 		try {
 			String expression = TokenMangler.getRestoredString(formStr);
 			Expression mathexpr = new Expression(expression);
-			String xmlStr = ExpressionMathMLPrinter.getMathML(mathexpr);
+			String xmlStr = ExpressionMathMLPrinter.getMathML(mathexpr, true);
 			Element root = XmlUtil.stringToXML(xmlStr, null);            //no validation for the mathml.
       		JDOMTreeWalker walker = new JDOMTreeWalker(root, new ContentFilter(ContentFilter.ELEMENT));
       		root.setNamespace(mathns);

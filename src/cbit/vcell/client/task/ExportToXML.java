@@ -101,30 +101,22 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
 //				String applicationName = bioModel.getSimulationContexts(chosenSimContextIndex.intValue()).getName();
 				SimulationContext selectedSimContext = (SimulationContext)hashTable.get("selectedSimContext");
 				Simulation selectedSim = (Simulation)hashTable.get("selectedSimulation");
-				if (fileFilter.equals(FileFilters.FILE_FILTER_SBML)) {
-					if (selectedSim == null) {
-						resultString = XmlHelper.exportSBML(bioModel, 1, 2, selectedSimContext, null);
-					} else {
-						for (int sc = 0; sc < selectedSim.getScanCount(); sc++) {
-							SimulationJob simJob = new SimulationJob(selectedSim, null, sc);
-							resultString = XmlHelper.exportSBML(bioModel, 1, 2, selectedSimContext, simJob);
-							// Need to export each parameter scan into a separate file 
-							String newExportFileName = exportFile.getPath().substring(0, exportFile.getPath().indexOf(".xml")) + "_" + sc + ".xml";
-							exportFile.renameTo(new File(newExportFileName));
-							java.io.FileWriter fileWriter = new java.io.FileWriter(exportFile);
-							fileWriter.write(resultString);
-							fileWriter.flush();
-							fileWriter.close();
-						}
+				if ((fileFilter.equals(FileFilters.FILE_FILTER_SBML)) || (fileFilter.equals(FileFilters.FILE_FILTER_SBML_2))) {
+					int sbmlLevel = 0;
+					int sbmlVersion = 0;
+					if ((fileFilter.equals(FileFilters.FILE_FILTER_SBML))) {
+						sbmlLevel = 1;
+						sbmlVersion = 2;
+					} else if (fileFilter.equals(FileFilters.FILE_FILTER_SBML_2)) {
+						sbmlLevel = 2;
+						sbmlVersion = 1;
 					}
-					return;
-				} else if (fileFilter.equals(FileFilters.FILE_FILTER_SBML_2)){
 					if (selectedSim == null) {
-						resultString = XmlHelper.exportSBML(bioModel, 2, 1, selectedSimContext, null);
+						resultString = XmlHelper.exportSBML(bioModel, sbmlLevel, sbmlVersion, selectedSimContext, null);
 					} else {
 						for (int sc = 0; sc < selectedSim.getScanCount(); sc++) {
 							SimulationJob simJob = new SimulationJob(selectedSim, null, sc);
-							resultString = XmlHelper.exportSBML(bioModel, 2, 1, selectedSimContext, simJob);
+							resultString = XmlHelper.exportSBML(bioModel, sbmlLevel, sbmlVersion, selectedSimContext, simJob);
 							// Need to export each parameter scan into a separate file 
 							String newExportFileName = exportFile.getPath().substring(0, exportFile.getPath().indexOf(".xml")) + "_" + sc + ".xml";
 							exportFile.renameTo(new File(newExportFileName));
