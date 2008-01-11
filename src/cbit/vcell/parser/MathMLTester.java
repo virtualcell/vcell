@@ -39,7 +39,7 @@ public static void testMathML(Expression[] expressions) {
 			if ( (exp.infix().indexOf("atan") >= 0) ) {
 				continue;
 			}
-			String expMathMLStr = cbit.vcell.parser.ExpressionMathMLPrinter.getMathML(exp);
+			String expMathMLStr = cbit.vcell.parser.ExpressionMathMLPrinter.getMathML(exp, true);
 //				System.out.println(i+". " + expMathMLStr);
 			cbit.vcell.parser.Expression newExp = null;
 			cbit.vcell.parser.Expression tempExp = cbit.vcell.parser.Expression.mult(new cbit.vcell.parser.Expression(0.5), exp);

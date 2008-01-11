@@ -579,7 +579,7 @@ public class VCQualCellTranslator extends Translator {
 		try {
 			String expression = TokenMangler.getRestoredString(formStr);
 			Expression mathexpr = new Expression(expression);
-			String xmlStr = ExpressionMathMLPrinter.getMathML(mathexpr);
+			String xmlStr = ExpressionMathMLPrinter.getMathML(mathexpr, true);
 			Element root = XmlUtil.stringToXML(xmlStr, null);            //no validation for the mathml.
       		root.setNamespace(mathns);
       		JDOMTreeWalker walker = new JDOMTreeWalker(root, new ContentFilter(ContentFilter.ELEMENT));

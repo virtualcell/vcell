@@ -278,7 +278,6 @@ private File showBioModelXMLFileChooser(java.util.Hashtable hashTable) throws ja
 					newFileName = newFileName +  "_" + TokenMangler.mangleToSName(chosenSimulation.getName());
 				}
 				selectedFile.renameTo(new File(newFileName + ".xml"));
-				System.err.println(selectedFile.getName());
 				resetPreferredFilePath(selectedFile, userPreferences);
 				return selectedFile;
 			}
