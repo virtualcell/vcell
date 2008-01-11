@@ -164,7 +164,7 @@ public static BNGOutput executeBNG(BNGInput bngRules) throws Exception {
  * Creation date: (9/19/2006 11:36:49 AM)
  */
 private static void initialize() throws Exception {
-	File bngHome = new File(ResourceUtil.vcellHome, "BioNetGen");
+	File bngHome = new File(ResourceUtil.getVcellHome(), "BioNetGen");
 	if (!bngHome.exists()) {
 		bngHome.mkdirs();
 	}

@@ -13,7 +13,7 @@ public class ResourceUtil {
 	public final static boolean bWindows = System.getProperty("os.name").indexOf("Windows") >= 0 ? true : false;
 	public final static boolean bMac = System.getProperty("os.name").indexOf("Mac") >= 0 ? true : false;
 	public final static boolean bLinux = System.getProperty("os.name").indexOf("Linux") >= 0 ? true : false;
-	public static String osname = null;
+	private static String osname = null;
 	static {
 		if (bWindows) {
 			osname = "windows";
@@ -28,11 +28,11 @@ public class ResourceUtil {
 	public final static String EXE_SUFFIX = bWindows ? ".exe" : "";
 	public final static String RES_PACKAGE = "/cbit/vcell/resource/" + osname;
 	
-	public static File userHome = null;
-	public static File vcellHome = null;
+	private static File userHome = null;
+	private static File vcellHome = null;
 	private static File libDir = null;
 	
-	private static List<String> libList = Collections.synchronizedList(new ArrayList<String>());
+	private static List<String> libList = null;
 
 	static {
 		userHome = new File(System.getProperty("user.home"));
@@ -44,17 +44,12 @@ public class ResourceUtil {
 		if (!vcellHome.exists()) {
 			vcellHome.mkdirs();
 		}
-		
-		libDir = new File(vcellHome, "lib");
-		if (!libDir.exists()) {
-			libDir.mkdirs();
-		}	
 	}
 	
 	public static void writeFileFromResource(String resname, File file) throws IOException {
 		java.net.URL url = ResourceUtil.class.getResource(resname);
 		if (url == null) {
-			throw new RuntimeException("Can't get resource for " + resname);
+			throw new RuntimeException("ResourceUtil::writeFileFromResource() : Can't get resource for " + resname);
 		}
 		
 		BufferedInputStream bis = null;
@@ -91,6 +86,14 @@ public class ResourceUtil {
 	}
 	
 	public static void loadLibrary(String libname) {
+		if (libDir == null) {
+			libDir = new File(vcellHome, "lib");
+			if (!libDir.exists()) {
+				libDir.mkdirs();
+			}
+			libList = Collections.synchronizedList(new ArrayList<String>());
+		}
+		
 		if (libList.contains(libname)) {
 			return;
 		}
@@ -102,7 +105,11 @@ public class ResourceUtil {
 			System.load(libfile.getAbsolutePath());
 			libList.add(libname);
 		} catch (IOException ex) {
-			throw new RuntimeException("writing library " + libname + " failed. Please try again.");
+			throw new RuntimeException("ResourceUtil::loadLibrary() : failed to write library " + libname + " (" + ex.getMessage() + "). Please try again.");
 		}		
+	}
+
+	public static File getVcellHome() {
+		return vcellHome;
 	}
 }
