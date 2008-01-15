@@ -912,7 +912,8 @@ protected void addReactions() {
 				}
 			}
 
-			// set the reaction kinetics, and add reaction to the vcell model.					
+			// set the reaction kinetics, and add reaction to the vcell model.
+			kinetics.resolveUndefinedUnits();
 			vcReactions[i].setKinetics(kinetics);
 			simContext.getModel().addReactionStep(vcReactions[i]);
 			// System.out.println("ADDED SBML REACTION : \"" + rxnName + "\" to VCModel");
