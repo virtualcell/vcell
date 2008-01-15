@@ -311,6 +311,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 						String newExpressionString = (String)aValue;
 						getKinetics().setParameterValue(parameter,new Expression(newExpressionString));
 					}
+					getKinetics().resolveUndefinedUnits();
 					fireTableRowsUpdated(rowIndex,rowIndex);
 				}catch (java.beans.PropertyVetoException e){
 					e.printStackTrace(System.out);
@@ -328,6 +329,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 						Kinetics.KineticsParameter kineticsParm = (Kinetics.KineticsParameter)parameter;
 						if (!kineticsParm.getUnitDefinition().getSymbol().equals(newUnitString)){
 							kineticsParm.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.getInstance(newUnitString));
+							getKinetics().resolveUndefinedUnits();
 							fireTableRowsUpdated(rowIndex,rowIndex);
 						}
 					}

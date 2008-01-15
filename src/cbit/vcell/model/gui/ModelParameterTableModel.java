@@ -551,6 +551,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 						if (parameter instanceof cbit.vcell.model.Kinetics.KineticsParameter){
 							cbit.vcell.model.Kinetics kinetics = ((ReactionStep) parameter.getNameScope().getScopedSymbolTable()).getKinetics();
 							kinetics.setParameterValue((cbit.vcell.model.Kinetics.KineticsParameter)parameter,exp);
+							kinetics.resolveUndefinedUnits();
 							fireTableRowsUpdated(rowIndex,rowIndex);
 						}
 					}else if (aValue instanceof String) {
@@ -558,6 +559,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 						if (parameter instanceof cbit.vcell.model.Kinetics.KineticsParameter){
 							cbit.vcell.model.Kinetics kinetics = ((ReactionStep) parameter.getNameScope().getScopedSymbolTable()).getKinetics();
 							kinetics.setParameterValue((cbit.vcell.model.Kinetics.KineticsParameter)parameter,new Expression(newExpressionString));
+							kinetics.resolveUndefinedUnits();
 							fireTableRowsUpdated(rowIndex,rowIndex);
 						}
 					}
@@ -578,6 +580,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 							if (parameter instanceof cbit.vcell.model.Kinetics.KineticsParameter){
 								Kinetics.KineticsParameter kineticsParameter = (Kinetics.KineticsParameter)parameter;
 								kineticsParameter.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.getInstance(newUnitSymbol));
+								kineticsParameter.getKinetics().resolveUndefinedUnits();
 								fireTableRowsUpdated(rowIndex,rowIndex);
 							//}else if (parameter instanceof cbit.vcell.model.ModelParameter){
 								//Model model = (Model) parameter.getNameScope().getScopedSymbolTable();
