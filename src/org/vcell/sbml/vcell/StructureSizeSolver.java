@@ -56,24 +56,35 @@ public void updateAbsoluteStructureSizes(cbit.vcell.mapping.SimulationContext si
 				ccImpl.addSimpleBound(new SimpleBounds(svRatioName,new RealInterval(svRatioValue,svRatioValue),AbstractConstraint.MODELING_ASSUMPTION,"from model"));
 
 				//
-				// "er_size * er_svRatio - erMem_size == 0"
+				// EC eclosing cyt, which contains er and golgi
+				// "(cyt_size+ er_size + golgi_size) * cyt_svRatio - PM_size == 0"
 				//
-				String insideFeatureSizeName = TokenMangler.mangleToSName(membraneMapping.getMembrane().getInsideFeature().getName()+"_size");
-				ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression(insideFeatureSizeName+"*"+svRatioName+"-"+membraneSizeName+"==0"),AbstractConstraint.MODELING_ASSUMPTION,"svRatio definition"));
-
-				//
-				// (cyt_size + er_size) * er_vfRatio - er_size == 0
-				//
-				Feature outsideFeature = membraneMapping.getMembrane().getOutsideFeature();
-				Expression sumOfVolumeExp = new Expression(TokenMangler.mangleToSName(outsideFeature.getName()+"_size"));
+				Feature insideFeature = membraneMapping.getMembrane().getInsideFeature();
+				Expression sumOfInsideVolumeExp = new Expression(0.0);
 				for (int j = 0; j < structMappings.length; j++){
-					if (structMappings[j] instanceof MembraneMapping && ((MembraneMapping)structMappings[j]).getMembrane().getOutsideFeature().equals(outsideFeature)){
-						Feature childFeatureOfParent = ((MembraneMapping)structMappings[j]).getMembrane().getInsideFeature();
-						sumOfVolumeExp = Expression.add(sumOfVolumeExp,new Expression(TokenMangler.mangleToSName(childFeatureOfParent.getName()+"_size")));
+					if (structMappings[j] instanceof FeatureMapping && ((FeatureMapping)structMappings[j]).getFeature().enclosedBy(insideFeature)) {
+						Feature childFeatureOfInside = ((FeatureMapping)structMappings[j]).getFeature();
+						sumOfInsideVolumeExp = Expression.add(sumOfInsideVolumeExp,new Expression(TokenMangler.mangleToSName(childFeatureOfInside.getName()+"_size")));
 					}
 				}
-				Expression exp = Expression.mult(sumOfVolumeExp,new Expression(volFractName));
-				exp = Expression.add(exp, new Expression("-"+insideFeatureSizeName));
+				Expression tempExpr = Expression.mult(sumOfInsideVolumeExp, new Expression(svRatioName));
+				tempExpr = Expression.add(tempExpr, new Expression("-"+membraneSizeName));
+				ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression(tempExpr.infix()+"==0"),AbstractConstraint.MODELING_ASSUMPTION,"svRatio definition"));
+
+				//
+				// EC eclosing cyt, which contains er and golgi
+				// (EC_size + cyt_size + er_size + golgi_size) * cyt_vfRatio - (cyt_size + er_size + golgi_size) == 0
+				//
+				Feature outsideFeature = membraneMapping.getMembrane().getOutsideFeature();
+				Expression sumOfParentVolumeExp = new Expression(0.0);
+				for (int j = 0; j < structMappings.length; j++){
+					if (structMappings[j] instanceof FeatureMapping && ((FeatureMapping)structMappings[j]).getFeature().enclosedBy(outsideFeature)){
+						Feature childFeatureOfParent = ((FeatureMapping)structMappings[j]).getFeature();
+						sumOfParentVolumeExp = Expression.add(sumOfParentVolumeExp,new Expression(TokenMangler.mangleToSName(childFeatureOfParent.getName()+"_size")));
+					}
+				}
+				Expression exp = Expression.mult(sumOfParentVolumeExp,new Expression(volFractName));
+				exp = Expression.add(exp, Expression.negate(sumOfInsideVolumeExp));
 				ccImpl.addGeneralConstraint(new GeneralConstraint(new Expression(exp.infix()+"==0.0"),AbstractConstraint.MODELING_ASSUMPTION,"volFract definition"));
 			}else if (structMappings[i] instanceof FeatureMapping){
 				FeatureMapping featureMapping = (FeatureMapping)structMappings[i];
@@ -83,7 +94,6 @@ public void updateAbsoluteStructureSizes(cbit.vcell.mapping.SimulationContext si
 		}
 		
 		ccImpl.addSimpleBound(new SimpleBounds(struct.getName()+"_size",new RealInterval(structSize,structSize),AbstractConstraint.OBSERVED_CONSTRAINT,"user input"));
-		
 		cbit.vcell.constraints.ConstraintSolver constraintSolver = new cbit.vcell.constraints.ConstraintSolver(ccImpl);
 		
 //try {
