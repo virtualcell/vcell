@@ -19,7 +19,9 @@ import org.vcell.sbml.SBMLUtils;
 import org.vcell.sbml.SBMLUtils.SBMLUnitParameter;
 
 import cbit.util.TokenMangler;
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.StructureMapping;
@@ -31,14 +33,17 @@ import cbit.vcell.model.LumpedKinetics;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.ReservedSymbolTable;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionMathMLParser;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.units.SBMLUnitTranslator;
 import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.xml.MIRIAMHelper;
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlParseException;
 
@@ -210,20 +215,20 @@ protected void addCompartments() {
 			}
 		}
 		
-//		Element annotationElement = null;
-//		String sbmlAnnotationString = sbmlCompartment.getAnnotationString();
-//		if(sbmlAnnotationString == null || sbmlAnnotationString.length() == 0){
-//			annotationElement = new Element(XMLTags.SbmlAnnotationTag, "");
-//		}else{
-//			annotationElement = XmlUtil.stringToXML(sbmlAnnotationString, null);
-//		}
-//		MIRIAMHelper.addToSBML(annotationElement, vcStructures[i].getMIRIAMAnnotation(), false);
-//		if (annotationElement.getChildren().size()>0){
-//			String annotationString = XmlUtil.xmlToString(annotationElement, true);
-//			System.out.println("compartment annotation string:\n"+annotationString);
-//			System.out.flush();
-//			sbmlCompartment.setAnnotation(new String(annotationString));
-//		}
+		Element annotationElement = null;
+		String sbmlAnnotationString = sbmlCompartment.getAnnotationString();
+		if(sbmlAnnotationString == null || sbmlAnnotationString.length() == 0){
+			annotationElement = new Element(XMLTags.SbmlAnnotationTag, "");
+		}else{
+			annotationElement = XmlUtil.stringToXML(sbmlAnnotationString, null);
+		}
+		MIRIAMHelper.addToSBML(annotationElement, vcStructures[i].getMIRIAMAnnotation(), false);
+		if (annotationElement.getChildren().size()>0){
+			String annotationString = XmlUtil.xmlToString(annotationElement, true);
+			System.out.println("compartment annotation string:\n"+annotationString);
+			System.out.flush();
+			sbmlCompartment.setAnnotation(new String(annotationString));
+		}
 	}
 }
 
@@ -296,8 +301,24 @@ protected void addParameters() {
  * addReactions comment.
  */
 protected void addReactions() {
-	cbit.vcell.mapping.ReactionSpec[] vcReactionSpecs = getOverriddenSimContext().getReactionContext().getReactionSpecs();
 
+	// Check if any reaction has electrical mapping
+	boolean bCalculatePotential = false;
+	StructureMapping structureMappings[] = getOverriddenSimContext().getGeometryContext().getStructureMappings();
+	for (int i = 0; i < structureMappings.length; i++){
+		if (structureMappings[i] instanceof MembraneMapping){
+			if (((MembraneMapping)structureMappings[i]).getCalculateVoltage()){
+				bCalculatePotential = true;
+			}
+		}
+		
+	}
+	// If it does, VCell doesn't export it to SBML (no representation).
+	if (bCalculatePotential) {
+		throw new RuntimeException("This VCell model has Electrical mapping; cannot be exported to SBML at this time");
+	}
+
+	cbit.vcell.mapping.ReactionSpec[] vcReactionSpecs = getOverriddenSimContext().getReactionContext().getReactionSpecs();
 	for (int i = 0; i < vcReactionSpecs.length; i++){
 		if (vcReactionSpecs[i].isExcluded()) {
 			continue;
@@ -312,15 +333,15 @@ protected void addReactions() {
 		// If the reactionStep is a flux reaction, add the details to the annotation (structure, carrier valence, flux carrier, fluxOption, etc.)
 		// If reactionStep is a simple reaction, add annotation to indicate the structure of reaction.
 		// Useful when roundtripping ...
-//		Element annotationElement = null;
-//		try {
-//			annotationElement = getAnnotationElement(vcReactionStep);
-//		} catch (cbit.vcell.xml.XmlParseException e) {
-//			e.printStackTrace(System.out);
-//			throw new RuntimeException("Could not get JDOM element for annotation : " + e.getMessage());
-//		}
-//		MIRIAMHelper.addToSBML(annotationElement, vcReactionSpecs[i].getReactionStep().getMIRIAMAnnotation(),false);
-//		sbmlReaction.setAnnotation(cbit.util.xml.XmlUtil.xmlToString(annotationElement));
+		Element annotationElement = null;
+		try {
+			annotationElement = getAnnotationElement(vcReactionStep);
+		} catch (cbit.vcell.xml.XmlParseException e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException("Could not get JDOM element for annotation : " + e.getMessage());
+		}
+		MIRIAMHelper.addToSBML(annotationElement, vcReactionSpecs[i].getReactionStep().getMIRIAMAnnotation(),false);
+		sbmlReaction.setAnnotation(cbit.util.xml.XmlUtil.xmlToString(annotationElement));
 		
 		// Get reaction kineticLaw
 		Kinetics vcRxnKinetics = vcReactionStep.getKinetics();
@@ -626,16 +647,31 @@ protected void addSpecies() {
 			Expression initConcExpr = Expression.mult(vcSpeciesContextsSpec.getInitialConditionParameter().getExpression(), sbmlUnitParam.getExpression()).flatten();
 			sbmlSpecies.setInitialConcentration(initConcExpr.evaluateConstant());
 		} catch (cbit.vcell.parser.ExpressionException e) {
-			// If it is in the catch block, it means that the initial concentration of the species was not a double, but an assignment, probably.
-			// Check if the expression for the species is not null and add it as an assignment rule.
+			// If it is in the catch block, it means that the initial concentration of the species was not a double, but an expression, probably.
+			// Check if the expression for the species is not null. If exporting to L2V1, and species is 'fixed', and if expr is not in terms of
+			// x, y, z, or other species then create an assignment rule for species concentration; else throw exception.
+			// If exporting to L2V3, if species concentration is not an expr with x, y, z or other species, add as InitialAssignment, else complain.
 			if (vcSpeciesContextsSpec.getInitialConditionParameter().getExpression() != null) {
 				try {
 					sbmlUnitParam = SBMLUtils.getConcUnitFactor("spConcUnit", vcConcUnit, sbmlConcUnits);
 					Expression initConcExpr = Expression.mult(vcSpeciesContextsSpec.getInitialConditionParameter().getExpression(), sbmlUnitParam.getExpression());
-					ASTNode assignmentMathNode = getFormulaFromExpression(initConcExpr);
-					InitialAssignment initAssignment = sbmlModel.createInitialAssignment();
-					initAssignment.setSymbol(vcSpeciesContexts[i].getName());
-					initAssignment.setMath(assignmentMathNode);
+					if (sbmlLevel == 2 && sbmlVersion == 3) {
+						// L2V3 - add expression as init assignment
+						ASTNode initAssgnMathNode = getFormulaFromExpression(initConcExpr);
+						InitialAssignment initAssignment = sbmlModel.createInitialAssignment();
+						initAssignment.setSymbol(vcSpeciesContexts[i].getName());
+						initAssignment.setMath(initAssgnMathNode);
+					} else { 	// L2V1 (or L1V2 also??)
+						// L2V1 (and L1V2?) and species is 'fixed' (constant), and not fn of x,y,z, other sp, add expr as assgn rule 
+						if (getBoundaryCondition(vcSpeciesContexts[i])) {
+							ASTNode assgnRuleMathNode = getFormulaFromExpression(initConcExpr);
+							AssignmentRule assgnRule = sbmlModel.createAssignmentRule();
+							assgnRule.setId(vcSpeciesContexts[i].getName());
+							assgnRule.setMath(assgnRuleMathNode);
+						} else {
+							throw new RuntimeException("Failed to export : Unable to add species " + vcSpeciesContexts[i].getName() + " to SBML model since its initial expression \'" + initConcExpr.infix() + "\'  is a function of x, y, z or contains another species in its expression.");
+						}
+					}
 				} catch (ExpressionException e1) {
 					e.printStackTrace(System.out);
 					throw new RuntimeException("Could not add concentration as Initial assignment for species : " + vcSpeciesContexts[i].getName());
@@ -652,7 +688,7 @@ protected void addSpecies() {
 
 		// Add the common name of species to annotation, and add an annotation element to the species.
 		// This is required later while trying to read in fluxes ...
-/*		Namespace ns = Namespace.getNamespace(SBMLUtils.SBML_VCML_NS);
+		Namespace ns = Namespace.getNamespace(SBMLUtils.SBML_VCML_NS);
 		Element annotationElement = new Element(XMLTags.SbmlAnnotationTag, "");
 		Element vcellInfoTag = new Element(XMLTags.VCellInfoTag, ns);
 		Element speciesElement = new Element(XMLTags.SpeciesTag, ns);
@@ -661,10 +697,34 @@ protected void addSpecies() {
 		annotationElement.addContent(vcellInfoTag);
 		MIRIAMHelper.addToSBML(annotationElement, vcSpeciesContexts[i].getSpecies().getMIRIAMAnnotation(),false);
 		sbmlSpecies.setAnnotation(cbit.util.xml.XmlUtil.xmlToString(annotationElement,true));
-*/
 	}
 }
 
+/**
+ * checkSpeciesInitExprValidity :
+ * 		Checks if spInitExpr (speciesContext initial expression) is valid : no reserved symbols x, y, z, no other speciesContexts
+ * in expression. 
+ * @param spInitExpr
+ * @return
+ */
+private boolean checkSpeciesInitExprValidity(Expression spInitExpr) {
+	SpeciesContext[] vcSpeciesContexts = vcBioModel.getModel().getSpeciesContexts();
+	for (int sp = 0; sp < vcSpeciesContexts.length; sp++) {
+		if (spInitExpr.hasSymbol(vcSpeciesContexts[sp].getName())) {
+			return false;
+		}
+	}
+	cbit.vcell.parser.SymbolTable reservedSymbolTable= new ReservedSymbolTable(true);
+	try {
+		spInitExpr.bindExpression(reservedSymbolTable);
+	} catch (ExpressionBindingException e) {
+		// reserved sybmol found, return false
+		return false;
+	}
+
+	// no reserved symbol or model species in expression, return true.
+	return true;
+}
 
 /**
  * Add unit definitions to the model.
@@ -968,15 +1028,15 @@ public String getSBMLFile() {
 
 	translateBioModel();
 
-//	Element annotationElement = null;
-//	String sbmlAnnotationString = sbmlModel.getAnnotationString();
-//	if(sbmlAnnotationString == null || sbmlAnnotationString.length() == 0){
-//		annotationElement = new Element(XMLTags.SbmlAnnotationTag, "");
-//	}else{
-//		annotationElement = XmlUtil.stringToXML(sbmlAnnotationString, null);
-//	}
-//	MIRIAMHelper.addToSBML(annotationElement, vcBioModel.getMIRIAMAnnotation(), false);
-//	sbmlModel.setAnnotation(XmlUtil.xmlToString(annotationElement, true));
+	Element annotationElement = null;
+	String sbmlAnnotationString = sbmlModel.getAnnotationString();
+	if(sbmlAnnotationString == null || sbmlAnnotationString.length() == 0){
+		annotationElement = new Element(XMLTags.SbmlAnnotationTag, "");
+	}else{
+		annotationElement = XmlUtil.stringToXML(sbmlAnnotationString, null);
+	}
+	MIRIAMHelper.addToSBML(annotationElement, vcBioModel.getMIRIAMAnnotation(), false);
+	sbmlModel.setAnnotation(XmlUtil.xmlToString(annotationElement, true));
 
 	SBMLWriter sbmlWriter = new SBMLWriter();
 	String sbmlStr = sbmlWriter.writeToString(sbmlDocument);

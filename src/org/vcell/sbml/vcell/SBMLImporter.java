@@ -19,6 +19,7 @@ import java.util.Hashtable;
 import java.util.TreeMap;
 import java.util.Vector;
 
+import org.jdom.Element;
 import org.sbml.libsbml.*;
 import org.sbml.libsbml.Parameter;
 import org.sbml.libsbml.Species;
@@ -277,6 +278,29 @@ protected void addEvents() {
 	}
 }
 
+protected void addCompartmentTypes() {
+	if (sbmlModel.getNumCompartmentTypes() > 0) {
+		throw new RuntimeException("VCell doesn't support CompartmentTypes at this time");
+	}
+}
+
+protected void addSpeciesTypes() {
+	if (sbmlModel.getNumSpeciesTypes() > 0) {
+		throw new RuntimeException("VCell doesn't support SpeciesTypes at this time");
+	}
+}
+
+protected void addConstraints() {
+	if (sbmlModel.getNumConstraints() > 0) {
+		throw new RuntimeException("VCell doesn't support Constraints at this time");
+	}
+}
+
+protected void addInitialAssignments() {
+	if (sbmlModel.getNumInitialAssignments() > 0) {
+		throw new RuntimeException("VCell doesn't support InitialAssignments at this time");
+	}
+}
 
 protected void addFunctionDefinitions() {
 	if (sbmlModel == null) {
@@ -1153,15 +1177,16 @@ public static double getSpeciesConcUnitFactor(VCUnitDefinition fromUnit, VCUnitD
 
 				// If any of the symbols in the expression for speciesConc is a rule, expand it.
 				substituteGlobalParamRulesInPlace(initExpr, true);
-				cbit.vcell.parser.SymbolTable reservedSymbolTable= new ReservedSymbolTable(true);
-				try {
-					initExpr.bindExpression(reservedSymbolTable);
-					initExpr = initExpr.flatten();
-				} catch (ExpressionBindingException e) {
-					// logger.sendMessage(VCLogger.HIGH_PRIORITY, TranslationMessage.SPECIES_ERROR, " Species " + speciesName + " could not be added; the initial condition expression is a function of variables other than 'time'; this is not allowed for a non-spatial model.");
-					throw new RuntimeException("Species " + speciesName + " could not be added : it could have an assignment rule which is a function of other species or reserved spatial symbols (x, y z); this is not allowed for a non-spatial model in VCell.");
-				}
 
+				// PROBABLY DON't NEED THIS PART - WILL DELETE AFTER TESTING FURTHER.
+//				cbit.vcell.parser.SymbolTable reservedSymbolTable= new ReservedSymbolTable(true);
+//				try {
+//					initExpr.bindExpression(reservedSymbolTable);
+//					initExpr = initExpr.flatten();
+//				} catch (ExpressionBindingException e) {
+//					// logger.sendMessage(VCLogger.HIGH_PRIORITY, TranslationMessage.SPECIES_ERROR, " Species " + speciesName + " could not be added; the initial condition expression is a function of variables other than 'time'; this is not allowed for a non-spatial model.");
+//					throw new RuntimeException("Species " + speciesName + " could not be added : it could have an assignment rule which is a function of other species or reserved spatial symbols (x, y z); this is not allowed for a non-spatial model in VCell.");
+//				}
 
 				speciesContextSpec.getInitialConditionParameter().setExpression(initExpr);
 				speciesContextSpec.setConstant(sbmlSpecies.getBoundaryCondition() || sbmlSpecies.getConstant());
@@ -1409,7 +1434,7 @@ public BioModel getBioModel() {
 		e.printStackTrace(System.out);
 		throw new RuntimeException("Could not create Biomodel");
 	}
-
+	
 	MIRIAMHelper.setFromSBMLAnnotation(bioModel,sbmlModel.getAnnotationString());
 	bioModel.refreshDependencies();
 	return bioModel;
@@ -1710,7 +1735,9 @@ private void checkForUnsupportedVCellFeatures() throws Exception {
 							} else {
 								if (assignRuleMathExpr.hasSymbol(sp.getId())) {
 									logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.SPECIES_ERROR, "An assignment rule for species " + ruleSpecies.getId() + " contains another species in the model, this is not allowed for a non-spatial model in VCell");
-								} else if (assignRuleMathExpr.hasSymbol("x") || assignRuleMathExpr.hasSymbol("y") || assignRuleMathExpr.hasSymbol("z")) {
+								} else if (assignRuleMathExpr.hasSymbol(ReservedSymbol.X.getName()) || 
+										   assignRuleMathExpr.hasSymbol(ReservedSymbol.Y.getName()) || 
+										   assignRuleMathExpr.hasSymbol(ReservedSymbol.Z.getName())) {
 									logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.SPECIES_ERROR, "An assignment rule for species " + ruleSpecies.getId() + " contains reserved spatial variable(s) (x,y,z), this is not allowed for a non-spatial model in VCell");
 								}
 							}
@@ -1754,6 +1781,10 @@ public void translateSBMLModel() {
 	addFunctionDefinitions();
 	// Add Unit definitions
 	addUnitDefinitions();
+	// Add compartmentTypes (not handled in VCell)
+	addCompartmentTypes();
+	// Add spciesTypes (not handled in VCell)
+	addSpeciesTypes();
 	// Add Rules
 	try {
 		addRules();
@@ -1767,6 +1798,10 @@ public void translateSBMLModel() {
 	addSpecies(); 
 	// Add Parameters
 	addParameters();
+	// Add InitialAssignments 
+	addInitialAssignments();
+	// Add constraints (not handled in VCell)
+	addConstraints();
 	// Add Reactions
 	addReactions();
 	// Add Events

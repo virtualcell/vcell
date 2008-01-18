@@ -16,6 +16,7 @@ import cbit.vcell.client.*;
 import java.beans.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.math.*;
+import cbit.vcell.solver.Simulation;
 import cbit.vcell.biomodel.*;
 import cbit.vcell.desktop.controls.*;
 import cbit.vcell.document.*;
@@ -93,7 +94,8 @@ private File showBioModelXMLFileChooser(java.util.Hashtable hashTable) throws ja
 	fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 	fileChooser.setMultiSelectionEnabled(false);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML);
-	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_2);
+	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_21);
+	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_23);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_CELLML);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_VCML);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MATLABV5);
@@ -127,7 +129,9 @@ private File showBioModelXMLFileChooser(java.util.Hashtable hashTable) throws ja
 			String n = selectedFile.getPath().toLowerCase();
 			if (fileFilter == FileFilters.FILE_FILTER_SBML && !n.endsWith(".xml")) {
 				selectedFile = new File(selectedFile.getPath() + ".xml");
-			} else if (fileFilter == FileFilters.FILE_FILTER_SBML_2 && !n.endsWith(".xml")) {
+			} else if (fileFilter == FileFilters.FILE_FILTER_SBML_21 && !n.endsWith(".xml")) {
+				selectedFile = new File(selectedFile.getPath() + ".xml");
+			} else if (fileFilter == FileFilters.FILE_FILTER_SBML_23 && !n.endsWith(".xml")) {
 				selectedFile = new File(selectedFile.getPath() + ".xml");
 			} else if (fileFilter == FileFilters.FILE_FILTER_CELLML && !n.endsWith(".xml")) {
 				selectedFile = new File(selectedFile.getPath() + ".xml");
@@ -152,9 +156,10 @@ private File showBioModelXMLFileChooser(java.util.Hashtable hashTable) throws ja
 			if (simContexts.length == 0 && !fileFilter.equals(FileFilters.FILE_FILTER_PDF)) {
 				throw new Exception("At least one application must be created in order to export to this format");
 			}				
-			Vector applicableAppNameList = new Vector();
+			Vector<String> applicableAppNameList = new Vector<String>();
 			if (fileFilter.getDescription().equals(FileFilters.FILE_FILTER_MATLABV5.getDescription()) || fileFilter.getDescription().equals(FileFilters.FILE_FILTER_MATLABV6.getDescription()) || 
-				fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML.getDescription()) || fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_2.getDescription())) {
+				fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML.getDescription()) || fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_21.getDescription()) ||
+				fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_23.getDescription())) {
 				// only non-spatial apps
 				for (int i=0;i<simContexts.length;i++){
 					if (simContexts[i].getGeometryContext().getGeometry().getDimension()==0 && !simContexts[i].isStoch()){
@@ -177,7 +182,8 @@ private File showBioModelXMLFileChooser(java.util.Hashtable hashTable) throws ja
 				chosenSimContextName = (String)applicableAppNameList.get(0);
 			} else if (!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_PDF.getDescription()) && 
 					   !fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML.getDescription()) &&
-					   !fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_2.getDescription()) ) {
+					   !fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_21.getDescription()) &&
+					   !fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_23.getDescription())) {
 				String[] applicationNames = (String[])cbit.util.BeanUtils.getArray(applicableAppNameList,String.class);
 				Object choice = PopupGenerator.showListDialog(topLevelWindowManager, applicationNames, "Please select Application");
 				if (choice == null) {
@@ -187,7 +193,9 @@ private File showBioModelXMLFileChooser(java.util.Hashtable hashTable) throws ja
 				chosenSimContextName = (String)choice;
 			}
 			// identify it and store index in the hash for next task (for non-SBML formats)
-			if (!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML.getDescription()) && !fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_2.getDescription()) ) {
+			if (!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML.getDescription()) && 
+				!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_21.getDescription()) &&
+				!fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_23.getDescription())) {
 				for (int i=0;i<simContexts.length;i++){
 					if (simContexts[i].getName().equals(chosenSimContextName)){
 						hashTable.put("chosenSimContextIndex", new Integer(i));
@@ -197,7 +205,9 @@ private File showBioModelXMLFileChooser(java.util.Hashtable hashTable) throws ja
 			}
 
 			// Select a structure and set its size only for SBML models
-			if (fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML.getDescription()) || fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_2.getDescription())) {
+			if (fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML.getDescription()) || 
+				fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_21.getDescription()) || 
+				fileFilter.getDescription().equals(FileFilters.FILE_FILTER_SBML_23.getDescription()) ) {
 				// get user choice of structure and its size and computes absolute sizes of compartments using the StructureSizeSolver.
 				cbit.vcell.model.Structure[] structures = bioModel.getModel().getStructures();
 				// get the nonspatial simulationContexts corresponding to names in applicableAppNameList 
@@ -242,28 +252,44 @@ private File showBioModelXMLFileChooser(java.util.Hashtable hashTable) throws ja
 					hashTable.put("selectedSimContext", chosenSimContext);
 
 					// Invoke StructureSizeEvaluator to compute absolute sizes of compartments
-					StructureSizeSolver ssEvaluator = new StructureSizeSolver();
-					cbit.vcell.model.Structure chosenStructure = chosenSimContext.getModel().getStructure(strucName);
-					StructureMapping chosenStructMapping = chosenSimContext.getGeometryContext().getStructureMapping(chosenStructure);
-					ssEvaluator.updateAbsoluteStructureSizes(chosenSimContext, chosenStructure, structSize, chosenStructMapping.getSizeParameter().getUnitDefinition());
+					if (chosenSimContext.getGeometryContext().isAllVolFracAndSurfVolSpecified()) {
+						StructureSizeSolver ssEvaluator = new StructureSizeSolver();
+						cbit.vcell.model.Structure chosenStructure = chosenSimContext.getModel().getStructure(strucName);
+						StructureMapping chosenStructMapping = chosenSimContext.getGeometryContext().getStructureMapping(chosenStructure);
+						ssEvaluator.updateAbsoluteStructureSizes(chosenSimContext, chosenStructure, structSize, chosenStructMapping.getSizeParameter().getUnitDefinition());
+					} else {
+						throw new RuntimeException("The volume fractions and surface-to-volume ratios are not set for all compartments, cannot compute the absolute compartment sizes. Please return to the model and explicitly set the sizes of all the compartments before exporting to SBML");
+					}
 
 					// Select simulation whose overrides need to be exported
-					SimulationSelectionPanel simSelectionPanel = new SimulationSelectionPanel();
-					simSelectionPanel.setPreferredSize(new java.awt.Dimension(600, 400));
-					simSelectionPanel.setMaximumSize(new java.awt.Dimension(600, 400));
-					simSelectionPanel.setSimulations(bioModel.getSimulations(chosenSimContext));
-					int simOption = cbit.gui.DialogUtils.showComponentOKCancelDialog(null, simSelectionPanel, "Select Simulation whose overrides should be exported:");
-					if (simOption == JOptionPane.OK_OPTION) {
-						chosenSimulation = simSelectionPanel.getSelectedSimulation();
-						if (chosenSimulation != null) {
-							hashTable.put("selectedSimulation", chosenSimulation);
+					// If simContext doesn't have simulations, don't pop up simulationSelectionPanel
+					Simulation[] sims = bioModel.getSimulations(chosenSimContext);
+					// display only those simulations that have overrides in the simulationSelectionPanel.
+					Vector<Simulation> orSims = new Vector<Simulation>();
+					for (int s = 0; (sims != null) && (s < sims.length); s++) {
+						if (sims[s].getMathOverrides().hasOverrides()) {
+							orSims.addElement(sims[s]);
 						}
-					} else if (simOption == JOptionPane.CANCEL_OPTION || simOption == JOptionPane.CLOSED_OPTION) {
-						// User did not choose a simulation whose overrides are required to be exported.
-						// Without that information, cannot export successfully into SBML, 
-						// Hence cancelling the entire export to SBML operation.
-						throw UserCancelException.CANCEL_XML_TRANSLATION;
 					}
+					Simulation[] overriddenSims = (Simulation[])BeanUtils.getArray(orSims, Simulation.class);
+					if (overriddenSims.length > 0) {
+						SimulationSelectionPanel simSelectionPanel = new SimulationSelectionPanel();
+						simSelectionPanel.setPreferredSize(new java.awt.Dimension(600, 400));
+						simSelectionPanel.setMaximumSize(new java.awt.Dimension(600, 400));
+						simSelectionPanel.setSimulations(overriddenSims);
+						int simOption = cbit.gui.DialogUtils.showComponentOKCancelDialog(null, simSelectionPanel, "Select Simulation whose overrides should be exported:");
+						if (simOption == JOptionPane.OK_OPTION) {
+							chosenSimulation = simSelectionPanel.getSelectedSimulation();
+							if (chosenSimulation != null) {
+								hashTable.put("selectedSimulation", chosenSimulation);
+							}
+						} else if (simOption == JOptionPane.CANCEL_OPTION || simOption == JOptionPane.CLOSED_OPTION) {
+							// User did not choose a simulation whose overrides are required to be exported.
+							// Without that information, cannot export successfully into SBML, 
+							// Hence cancelling the entire export to SBML operation.
+							throw UserCancelException.CANCEL_XML_TRANSLATION;
+						}
+					} 
 				} else if (option == JOptionPane.CANCEL_OPTION || option == JOptionPane.CLOSED_OPTION) {
 					// User did not choose to set size for any structure.
 					// Without that information, cannot export successfully into SBML, 
@@ -368,7 +394,8 @@ private File showMathModelXMLFileChooser(java.util.Hashtable hashTable) throws j
 	cbit.gui.VCFileChooser fileChooser = new cbit.gui.VCFileChooser(defaultPath);
 	fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 	fileChooser.setMultiSelectionEnabled(false);
-	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_2);
+	// fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_21);		// Can export Mathmodel to L2V1 ??
+	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_23);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_CELLML);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MATLABV5);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MATLABV6);
