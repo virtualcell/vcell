@@ -4,11 +4,14 @@ package cbit.vcell.mapping.gui;
  * All rights reserved.
 ©*/
 import cbit.gui.ZEnforcer;
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.*;
 import cbit.vcell.mapping.*; 
-import java.beans.PropertyChangeListener;
-
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 import javax.swing.SwingUtilities;
+
+
 /**
  * This type was created in VisualAge.
  */
@@ -99,26 +102,6 @@ private void connEtoC1(java.awt.event.MouseEvent arg1) {
 		// user code begin {1}
 		// user code end
 		this.showCustomEditor(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC2:  ( (JButtonOK,action.actionPerformed(java.awt.event.ActionEvent) --> ScrollPaneTable,setValueAt(Ljava.lang.Object;II)V).exceptionOccurred --> InitialConditionsPanel.connEtoM5_ExceptionOccurred(Ljava.lang.Throwable;)V)
- * @param exception java.lang.Throwable
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC2(java.lang.Throwable exception) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.connEtoM5_ExceptionOccurred(exception);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -329,27 +312,22 @@ private void connEtoM4(java.awt.event.ActionEvent arg1) {
  * connEtoM5:  (JButtonOK.action.actionPerformed(java.awt.event.ActionEvent) --> ScrollPaneTable.setValueAt(Ljava.lang.Object;II)V)
  * @param arg1 java.awt.event.ActionEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM5(java.awt.event.ActionEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
+		// For a non-spatial application, species init condn expr cannot be in terms of x, y, z.
+		if (getSimulationContext().getGeometry().getDimension() == 0) {
+			Expression expr = new Expression(getJTextArea1().getText());
+			if (expr.hasSymbol(ReservedSymbol.X.getName()) || 
+				expr.hasSymbol(ReservedSymbol.Y.getName()) || 
+				expr.hasSymbol(ReservedSymbol.Z.getName())) {
+				throw new ExpressionException("Reserved spatial variable(s) (x,y,z), this is not allowed for species initial condition in a non-spatial model in VCell");
+			}
+		}
 		getScrollPaneTable().setValueAt(getJTextArea1().getText(), getScrollPaneTable().getSelectedRow(), getScrollPaneTable().getSelectedColumn());
 		connEtoM1();
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		connEtoC2(ivjExc);
+		PopupGenerator.showErrorDialog("Error in Initial Condition :\n" + ivjExc.getMessage());
 	}
-}
-
-/**
- * Comment
- */
-private void connEtoM5_ExceptionOccurred(java.lang.Throwable arg1) {
-	javax.swing.JOptionPane.showMessageDialog(getJDialog1(),arg1.getMessage(),"Error setting new expression",javax.swing.JOptionPane.ERROR_MESSAGE);
 }
 
 

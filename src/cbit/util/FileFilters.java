@@ -19,7 +19,8 @@ public interface FileFilters {
 	public static final FileFilter FILE_FILTER_XML 		= new ExtensionFilter(new String[] {".xml",".vcml",".sbml"}, "XML Files (.xml .vcml .sbml)");
 	public static final FileFilter FILE_FILTER_VCML		= new ExtensionFilter(new String[] {".xml",".vcml"},"VCML format (.xml .vcml)");
 	public static final FileFilter FILE_FILTER_SBML		= new ExtensionFilter(new String[] {".xml",".sbml"},"SBML format <Level1,Version2>  (.xml .sbml)");
-	public static final FileFilter FILE_FILTER_SBML_2	= new ExtensionFilter(new String[] {".xml",".sbml"},"SBML format <Level2,Version1>  (.xml .sbml)");
+	public static final FileFilter FILE_FILTER_SBML_21	= new ExtensionFilter(new String[] {".xml",".sbml"},"SBML format <Level2,Version1>  (.xml .sbml)");
+	public static final FileFilter FILE_FILTER_SBML_23	= new ExtensionFilter(new String[] {".xml",".sbml"},"SBML format <Level2,Version3>  (.xml .sbml)");
 	public static final FileFilter FILE_FILTER_CELLML	= new ExtensionFilter(new String[] {".xml",".cml"},	"CELLML format (*.xml .cml)");
 	public static final FileFilter FILE_FILTER_AVS		= new ExtensionFilter(".avs", 	"AVS Unstructured Cell Data (*.avs)");
 	public static final FileFilter FILE_FILTER_STL		= new ExtensionFilter(".stl", 	"Stereolithography (STL) file (*.stl)");

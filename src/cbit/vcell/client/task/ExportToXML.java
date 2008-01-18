@@ -101,15 +101,18 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
 //				String applicationName = bioModel.getSimulationContexts(chosenSimContextIndex.intValue()).getName();
 				SimulationContext selectedSimContext = (SimulationContext)hashTable.get("selectedSimContext");
 				Simulation selectedSim = (Simulation)hashTable.get("selectedSimulation");
-				if ((fileFilter.equals(FileFilters.FILE_FILTER_SBML)) || (fileFilter.equals(FileFilters.FILE_FILTER_SBML_2))) {
+				if ((fileFilter.equals(FileFilters.FILE_FILTER_SBML)) || (fileFilter.equals(FileFilters.FILE_FILTER_SBML_21)) || (fileFilter.equals(FileFilters.FILE_FILTER_SBML_23)) ) {
 					int sbmlLevel = 0;
 					int sbmlVersion = 0;
 					if ((fileFilter.equals(FileFilters.FILE_FILTER_SBML))) {
 						sbmlLevel = 1;
 						sbmlVersion = 2;
-					} else if (fileFilter.equals(FileFilters.FILE_FILTER_SBML_2)) {
+					} else if (fileFilter.equals(FileFilters.FILE_FILTER_SBML_21)) {
 						sbmlLevel = 2;
 						sbmlVersion = 1;
+					} else if (fileFilter.equals(FileFilters.FILE_FILTER_SBML_23)) {
+						sbmlLevel = 2;
+						sbmlVersion = 3;
 					}
 					if (selectedSim == null) {
 						resultString = XmlHelper.exportSBML(bioModel, sbmlLevel, sbmlVersion, selectedSimContext, null);
@@ -149,7 +152,7 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
 			resultString = XmlHelper.mathModelToXML(mathModel);
 		} else if (fileFilter.equals(FileFilters.FILE_FILTER_CELLML)) {
 			resultString = XmlHelper.exportCellML(mathModel, null);
-		} else if (fileFilter.equals(FileFilters.FILE_FILTER_SBML_2)) {
+		} else if (fileFilter.equals(FileFilters.FILE_FILTER_SBML_23)) {
 			resultString = XmlHelper.exportSBML(mathModel, 2, 3, null, null);
 		}
 	} else if (documentToExport instanceof Geometry){
