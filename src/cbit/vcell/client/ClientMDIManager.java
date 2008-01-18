@@ -147,7 +147,8 @@ private DocumentWindow createDocumentWindow() {
 	// stagger 90% screen size windows
 	Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
 	documentWindow.setSize((int)(screenSize.getWidth()*0.9), (int)(screenSize.getHeight()*0.9));
-	documentWindow.setLocation(25 * getNewlyCreatedDesktops(), 25 * getNewlyCreatedDesktops());
+	int location = (25 * getNewlyCreatedDesktops())%(screenSize.width/2);
+	documentWindow.setLocation(location,location);
 	if (getNewlyCreatedDesktops() == 0) {
 		// first window
 		// cbit.util.BeanUtils.attemptMaximize(documentWindow);	
