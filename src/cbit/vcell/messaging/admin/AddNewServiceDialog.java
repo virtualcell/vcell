@@ -111,9 +111,16 @@ public AddNewServiceDialog(java.awt.Frame owner, boolean modal) {
  */
 public void newButton_ActionPerformed(java.awt.event.ActionEvent actionEvent) {	
 	if (getTypeCombo().getSelectedIndex() < 0 
-			|| getOrdinalCombo().getSelectedIndex() < 0 || getStartupCombo().getSelectedIndex() < 0
+			|| getOrdinalCombo().getSelectedItem() == null || getStartupCombo().getSelectedIndex() < 0
 			|| getMemoryMBField().getText().length() == 0) {
 		javax.swing.JOptionPane.showMessageDialog(this, "Some fields are missing!", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+		return;
+	}
+	
+	try {
+		int ordinal = Integer.parseInt("" + getOrdinalCombo().getSelectedItem());
+	} catch (NumberFormatException ex) {
+		javax.swing.JOptionPane.showMessageDialog(this, "Ordinal must be a number!", "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
 		return;
 	}
 	
@@ -241,6 +248,9 @@ private javax.swing.JComboBox getOrdinalCombo() {
 			for (int i = 0; i < 20; i ++) {
 				ivjOrdinalCombo.addItem(i);
 			}
+			ivjOrdinalCombo.setSelectedIndex(-1);
+			ivjOrdinalCombo.setEditable(true);
+			
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -375,7 +385,12 @@ private javax.swing.JPanel getMainPanel() {
 public ServiceSpec getServiceSpec() {
 	String site = getSiteField().getText();
 	String stype = (String)getTypeCombo().getSelectedItem();
-	int ordinal = getOrdinalCombo().getSelectedIndex();
+	int ordinal = 0;
+	try {
+		ordinal = Integer.parseInt("" + getOrdinalCombo().getSelectedItem());
+	} catch (NumberFormatException ex) {
+		throw new RuntimeException("Ordinal must be a number!");		
+	}
 	int startup = getStartupCombo().getSelectedIndex();
 	int memoryMB = Integer.parseInt(getMemoryMBField().getText());
 

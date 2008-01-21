@@ -1,14 +1,10 @@
 package cbit.vcell.messaging.admin;
 import static cbit.htc.PBSConstants.PBS_MEM_OVERHEAD_MB;
 import static cbit.vcell.messaging.admin.ManageConstants.*;
-import static cbit.vcell.messaging.MessageConstants.*;
-
 import java.io.*;
 import java.sql.SQLException;
 import java.util.*;
-
 import javax.jms.*;
-
 import cbit.htc.HTCUtils;
 import cbit.htc.PBSConstants;
 import cbit.htc.PBSUtils;
@@ -19,10 +15,6 @@ import cbit.vcell.server.*;
 import cbit.vcell.messaging.*;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.messaging.db.VCellServerID;
-import cbit.vcell.messaging.server.DatabaseServer;
-import cbit.vcell.messaging.server.SimDataServer;
-import cbit.vcell.messaging.server.SimulationDispatcher;
-import cbit.vcell.messaging.server.SimulationWorker;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DbDriver;
 
@@ -54,7 +46,7 @@ public class ServerManagerDaemon implements ControlTopicListener {
 public ServerManagerDaemon() throws IOException, SQLException, javax.jms.JMSException {
 	super();	
 	
-	serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID().toString(), ManageConstants.SERVICE_TYPE_SERVERMANAGER, 0, ManageUtils.getHostName(), new Date(), true); 
+	serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID().toString(), SERVICE_TYPE_SERVERMANAGER, 0, ManageUtils.getHostName(), new Date(), true); 
 	log = new StdoutSessionLog(serviceInstanceStatus.getID());
 	try {
 		conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
@@ -92,14 +84,14 @@ private void reconnect() throws JMSException {
 
 private void startAllServices() throws JMSException, SQLException, DataAccessException {
 	log.print("Starting all the services");
-	serviceList = adminDbTop.getAllServiceStatus(true);	
+	serviceList = Collections.synchronizedList(adminDbTop.getAllServiceStatus(true));	
 	
 	pingAll();	
 
 	Iterator<ServiceStatus> iter = serviceList.iterator();
 	while (iter.hasNext()) {
 		ServiceStatus service = iter.next();		
-		if (service.getServiceSpec().getStartupType() == ManageConstants.SERVICE_STARTUPTYPE_AUTOMATIC) {			
+		if (service.getServiceSpec().getStartupType() == SERVICE_STARTUPTYPE_AUTOMATIC) {			
 			boolean alive = false;
 			ServiceInstanceStatus foundSis = null; 
 			Iterator<ServiceInstanceStatus> aliveIter = serviceAliveList.iterator();
@@ -135,8 +127,8 @@ private void stopService(ServiceInstanceStatus sis) {
 	try {			
 		Message msg = topicSession.createMessage();
 			
-		msg.setStringProperty(ManageConstants.MESSAGE_TYPE_PROPERTY, ManageConstants.MESSAGE_TYPE_STOPSERVICE_VALUE);
-		msg.setStringProperty(ManageConstants.SERVICE_ID_PROPERTY, sis.getID());
+		msg.setStringProperty(MESSAGE_TYPE_PROPERTY, MESSAGE_TYPE_STOPSERVICE_VALUE);
+		msg.setStringProperty(SERVICE_ID_PROPERTY, sis.getID());
 		
 		log.print("sending stop service message [" + JmsUtils.toString(msg) + "]");		
 		topicSession.publishMessage(JmsUtils.getTopicDaemonControl(), msg);		
@@ -241,8 +233,8 @@ private String submit2PBS(ServiceStatus service) throws IOException, ExecutableE
  * @return int
  */
 private java.lang.String getMessageFilter() {
-	return ManageConstants.MESSAGE_TYPE_PROPERTY + " NOT IN (" 
-		+ "'" + ManageConstants.MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE + "'" 
+	return MESSAGE_TYPE_PROPERTY + " NOT IN (" 
+		+ "'" + MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE + "'" 
 		+ ")";
 //		+ " OR (" + ManageConstants.MESSAGE_TYPE_PROPERTY + "='" + ManageConstants.MESSAGE_TYPE_IAMALIVE_VALUE + "'"
 //		+ " AND " + ManageConstants.SERVER_NAME_PROPERTY + " IS NOT NULL"
@@ -256,11 +248,11 @@ public void onControlTopicMessage(Message message) {
 	try {		
 		log.print("onMessage [" + JmsUtils.toString(message) + "]");		
 			
-		String msgType = (String)JmsUtils.parseProperty(message, ManageConstants.MESSAGE_TYPE_PROPERTY, String.class);
+		String msgType = (String)JmsUtils.parseProperty(message, MESSAGE_TYPE_PROPERTY, String.class);
 		
 		if (msgType.equals(MESSAGE_TYPE_ASKPERFORMANCESTATUS_VALUE)) {
 			Message reply = topicSession.createObjectMessage(serviceInstanceStatus);
-			reply.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE);
+			reply.setStringProperty(MESSAGE_TYPE_PROPERTY, MESSAGE_TYPE_REPLYPERFORMANCESTATUS_VALUE);
 			reply.setStringProperty(SERVICE_ID_PROPERTY, serviceInstanceStatus.getID());
 			topicSession.publishMessage(JmsUtils.getTopicDaemonControl(), reply);			
 			log.print("sending reply [" + JmsUtils.toString(reply) + "]");			
@@ -328,7 +320,7 @@ private void on_iamalive(Message message) throws JMSException  {
 */
 private void on_stopservice(Message message) throws JMSException {
 	try {
-		String serviceID = (String)JmsUtils.parseProperty(message, ManageConstants.SERVICE_ID_PROPERTY, String.class);
+		String serviceID = (String)JmsUtils.parseProperty(message, SERVICE_ID_PROPERTY, String.class);
 		
 		if (serviceID != null) {
 			if (serviceID.equals(serviceInstanceStatus.getID())) { // stop myself
@@ -365,8 +357,8 @@ private void on_stopservice(Message message) throws JMSException {
 private boolean ping(ServiceSpec service) throws JMSException {
 	Message msg = topicSession.createMessage();
 		
-	msg.setStringProperty(ManageConstants.MESSAGE_TYPE_PROPERTY, ManageConstants.MESSAGE_TYPE_ISSERVICEALIVE_VALUE);
-	msg.setStringProperty(ManageConstants.SERVICE_ID_PROPERTY, service.getID());
+	msg.setStringProperty(MESSAGE_TYPE_PROPERTY, MESSAGE_TYPE_ISSERVICEALIVE_VALUE);
+	msg.setStringProperty(SERVICE_ID_PROPERTY, service.getID());
 
 	log.print("sending ping message [" + JmsUtils.toString(msg) + "]");
 	
@@ -378,8 +370,8 @@ private boolean ping(ServiceSpec service) throws JMSException {
 		return false;
 	} else {
 		try {
-			String msgType = (String)JmsUtils.parseProperty(reply, ManageConstants.MESSAGE_TYPE_PROPERTY, String.class);
-			if (!msgType.equals(ManageConstants.MESSAGE_TYPE_IAMALIVE_VALUE)) {
+			String msgType = (String)JmsUtils.parseProperty(reply, MESSAGE_TYPE_PROPERTY, String.class);
+			if (!msgType.equals(MESSAGE_TYPE_IAMALIVE_VALUE)) {
 				return false;
 			}
 		} catch (MessagePropertyNotFoundException ex) {
@@ -401,14 +393,14 @@ private void pingAll() throws JMSException {
 	
 	Message msg = topicSession.createMessage();
 		
-	msg.setStringProperty(ManageConstants.MESSAGE_TYPE_PROPERTY, ManageConstants.MESSAGE_TYPE_ISSERVICEALIVE_VALUE);
+	msg.setStringProperty(MESSAGE_TYPE_PROPERTY, MESSAGE_TYPE_ISSERVICEALIVE_VALUE);
 
 	log.print("sending ping message [" + JmsUtils.toString(msg) + "]");
 	
 	topicSession.publishMessage(JmsUtils.getTopicDaemonControl(), msg);
 
 	try {
-		Thread.sleep(10 * ManageConstants.SECOND);
+		Thread.sleep(INTERVAL_PING_RESPONSE);
 	} catch (InterruptedException ex) {
 		ex.printStackTrace();
 	}
@@ -432,7 +424,7 @@ public void start() {
 		}		
 		try {
 			synchronized (this) {			
-				wait(ManageConstants.INTERVAL_PING_SERVICE);
+				wait(INTERVAL_PING_SERVICE);
 			}
 		} catch (InterruptedException exc) {
 		}			

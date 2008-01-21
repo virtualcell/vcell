@@ -2311,7 +2311,7 @@ private void pingAll(int waitingTimeSec) {
 		log.print("sending ping message [" + JmsUtils.toString(msg) + "]");		
 		topicSession.publishMessage(JmsUtils.getTopicDaemonControl(), msg);			
 		try {
-			Thread.sleep(waitingTimeSec * ManageConstants.SECOND);
+			Thread.sleep(waitingTimeSec * MessageConstants.SECOND);
 		} catch (InterruptedException ex) {
 			log.exception(ex);
 		}		
@@ -2325,22 +2325,15 @@ private void pingAll(int waitingTimeSec) {
  * Insert the method's description here.
  * Creation date: (9/3/2003 8:00:07 AM)
  */
-private void query() {
-	if (getQueryCompletedCheck().isSelected() && !getQuerySubmitDateCheck().isSelected() && !getQueryStartDateCheck().isSelected() && !getQueryEndDateCheck().isSelected()) {
-		int n = javax.swing.JOptionPane.showConfirmDialog(this, "You are gonna get all the completed simulation jobs in the database, which is gonna be huge . Continue?", "Confirm", javax.swing.JOptionPane.YES_NO_OPTION);
-		if (n == javax.swing.JOptionPane.NO_OPTION) {
-			getNumResultsLabel().setText("0");
-			getNumSelectedLabel().setText("0");
-			((JobTableModel)getQueryResultTable().getModel()).setData(null);			
-			return;
-		}
-
-	}
+private void query() {	
+	boolean bOtherConditions = false;
+	
 	getRemoveFromListButton().setEnabled(false);	
 	StringBuffer conditions = new StringBuffer();
 	String text = getQuerySimField().getText();
 	if (text != null && text.trim().length() > 0) {
 		try {
+			bOtherConditions = true;
 			int simID = Integer.parseInt(text);
 			conditions.append(SimulationJobTable.table.simRef.getQualifiedColName() + "=" + simID);
 		} catch (NumberFormatException ex) {
@@ -2349,6 +2342,7 @@ private void query() {
 
 	text = getQueryHostField().getText();
 	if (text != null && text.trim().length() > 0) {
+		bOtherConditions = true;
 		if (conditions.length() > 0) {
 			conditions.append(" AND ");
 		}
@@ -2357,6 +2351,7 @@ private void query() {
 
 	text = getQueryServerIDField().getText();
 	if (text != null && text.trim().length() > 0) {
+		bOtherConditions = true;
 		if (conditions.length() > 0) {
 			conditions.append(" AND ");
 		}
@@ -2365,6 +2360,7 @@ private void query() {
 		
 	text = getQueryUserField().getText();
 	if (text != null && text.trim().length() > 0) {
+		bOtherConditions = true;
 		if (conditions.length() > 0) {
 			conditions.append(" AND ");
 		}
@@ -2380,8 +2376,7 @@ private void query() {
 			if (box.isSelected()) {
 				if (status.length() > 0) {
 					status.append(" OR ");
-				}
-					
+				}					
 				status.append(SimulationJobTable.table.schedulerStatus.getQualifiedColName() + "=" + index);		
 			}
 		}			
@@ -2395,6 +2390,7 @@ private void query() {
 	}
 
 	if (getQuerySubmitDateCheck().isSelected()) {
+		bOtherConditions = true;
 		String d1 = getQuerySubmitFromDate().getDate();
 		String d2 = getQuerySubmitToDate().getDate();
 		if (conditions.length() > 0) {
@@ -2405,6 +2401,7 @@ private void query() {
 	}
 	
 	if (getQueryStartDateCheck().isSelected()) {
+		bOtherConditions = true;
 		String d1 = getQueryStartFromDate().getDate();
 		String d2 = getQueryStartToDate().getDate();
 		if (conditions.length() > 0) {
@@ -2415,6 +2412,7 @@ private void query() {
 	}
 		
 	if (getQueryEndDateCheck().isSelected()) {
+		bOtherConditions = true;
 		String d1 = getQueryEndFromDate().getDate();
 		String d2 = getQueryEndToDate().getDate();
 		if (conditions.length() > 0) {
@@ -2424,9 +2422,19 @@ private void query() {
 			+ " BETWEEN to_date('" + d1 + "00:00:00', 'mm/dd/yyyy HH24:MI:SS') AND to_date('" + d2 + " 23:59:59', 'mm/dd/yyyy HH24:MI:SS'))");		
 	}
 	
+	if (getQueryCompletedCheck().isSelected() && !bOtherConditions) {
+		int n = javax.swing.JOptionPane.showConfirmDialog(this, "You are gonna get all the completed simulation jobs in the database, which is gonna be huge . Continue?", "Confirm", javax.swing.JOptionPane.YES_NO_OPTION);
+		if (n == javax.swing.JOptionPane.NO_OPTION) {
+			getNumResultsLabel().setText("0");
+			getNumSelectedLabel().setText("0");
+			((JobTableModel)getQueryResultTable().getModel()).setData(null);			
+			return;
+		}
+	}
+	
 	try {
 		List<SimpleJobStatus> resultList = adminDbTop.getSimulationJobStatus(conditions.toString(), true);
-		getNumResultsLabel().setText("  " + resultList.size());
+		getNumResultsLabel().setText("" + resultList.size());
 		getNumSelectedLabel().setText("0");
 		((JobTableModel)getQueryResultTable().getModel()).setData(resultList);
 	} catch (Exception ex) {
@@ -2751,7 +2759,8 @@ public void removeFromListButton_ActionPerformed(java.awt.event.ActionEvent acti
 	for (int i = 0; i < indexes.length; i ++) {
 		((JobTableModel)getQueryResultTable().getModel()).remove(indexes[i] - i);
 	}
-	getNumResultsLabel().setText("  " + getQueryResultTable().getRowCount());
+	getNumResultsLabel().setText("" + getQueryResultTable().getRowCount());
+	getNumSelectedLabel().setText("0");
 	return;
 }
 
