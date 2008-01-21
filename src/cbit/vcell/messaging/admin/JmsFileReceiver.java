@@ -169,7 +169,7 @@ public void onQueueMessage(javax.jms.Message msg) throws javax.jms.JMSException 
 			rfc = (progress.message.jclient.channel.RecoverableFileChannel) channel;
 
 			rfc.setChannelListener(new LMSChannelListener());
-			rfc.setTimeout(30 * ManageConstants.SECOND);
+			rfc.setTimeout(30 * MessageConstants.SECOND);
 
 			// Save record channelID=filename in our property file before 
 			// completeConnect().

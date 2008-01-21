@@ -227,7 +227,7 @@ private void sendNewMsg(File file) {
 
 		//set Timeout to a channel, so if during 30sec the channel is not established,
 		//ChannelListener will cancel it
-		rfc.setTimeout(20 * ManageConstants.SECOND);
+		rfc.setTimeout(20 * MessageConstants.SECOND);
 
 		//set a channel to a message
 		 ((progress.message.jclient.Message) msg).setChannel(rfc);
