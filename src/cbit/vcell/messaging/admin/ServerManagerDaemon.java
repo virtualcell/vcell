@@ -1,12 +1,10 @@
 package cbit.vcell.messaging.admin;
-import static cbit.htc.PBSConstants.PBS_MEM_OVERHEAD_MB;
 import static cbit.vcell.messaging.admin.ManageConstants.*;
 import java.io.*;
 import java.sql.SQLException;
 import java.util.*;
 import javax.jms.*;
-import cbit.htc.HTCUtils;
-import cbit.htc.PBSConstants;
+import static cbit.htc.PBSConstants.*;
 import cbit.htc.PBSUtils;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
@@ -156,15 +154,10 @@ private void startAService(ServiceStatus service) throws UpdateSynchronizationEx
 					}
 					
 					status = PBSUtils.getJobStatus(jobid);
-					if (status == PBSConstants.PBS_STATUS_EXITING){
-						int exitCode = PBSUtils.getJobExitCode(jobid);
-						if (exitCode < 0) {
+					if (PBSUtils.isJobExisting(status)){						
+						if (!PBSUtils.isJobExecOK(jobid)) {
 							newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, SERVICE_STATUS_FAILED, 
-									"Job [" + jobid + "] exited unexpectedly: [" + exitCode + ":" + PBSConstants.PBS_JOB_EXEC_STATUS[-exitCode] + "]",
-									jobid);
-						} else if (exitCode > 0) {
-							newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, SERVICE_STATUS_FAILED, 
-									"Job [" + jobid + "] was killed with system signal " + exitCode, 
+									"Job [" + jobid + "] exited unexpectedly: " + PBSUtils.getJobExecStatus(jobid),
 									jobid);
 						} else {
 							// should never happen
@@ -173,10 +166,8 @@ private void startAService(ServiceStatus service) throws UpdateSynchronizationEx
 									jobid);	
 						}
 						break;
-					} else if (status == PBSConstants.PBS_STATUS_RUNNING) {						
-						newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, SERVICE_STATUS_RUNNING, 
-								"running",
-								jobid);	
+					} else if (PBSUtils.isJobRunning(status)) {						
+						newServiceStatus = new ServiceStatus(oldStatus.getServiceSpec(), null, SERVICE_STATUS_RUNNING, "running", jobid);	
 						break;
 					} else if (System.currentTimeMillis() - t > 30 * MessageConstants.SECOND) {
 						String pendingReason = PBSUtils.getPendingReason(jobid);
@@ -205,28 +196,9 @@ private String submit2PBS(ServiceStatus service) throws IOException, ExecutableE
 	String cmdArguments = VCellServerID.getSystemServerID().toString().toLowerCase() + " " 
 		+ type + " " + ordinal + " " + service.getServiceSpec().getMemoryMB(); // site, type, ordinal, memory
 	
-	File sub_file = File.createTempFile("service", ".pbs.sub");	
-	PrintWriter pw = new PrintWriter(sub_file);
-	BufferedReader br = new BufferedReader(new FileReader(HTCUtils.getJobSubmitTemplate(null)));
-	pw.println("#PBS -N " + service.getServiceSpec().getID()); // job name
-	pw.println("#PBS -l select=1:ncpus=1:mem=" + (service.getServiceSpec().getMemoryMB() + PBS_MEM_OVERHEAD_MB) + "mb"); // resource
-	
-	while (true) {
-		String line = br.readLine();
-		if (line == null) {
-			break;
-		}
-		pw.println(line);
-	}
-	
-	pw.println(executable + " " + cmdArguments);
-	pw.println();
-	pw.close();
-	br.close();	
-	
+	File sub_file = File.createTempFile("service", ".pbs.sub");
 	log.print("PBS sub file  for service " + service.getServiceSpec() + " is " + sub_file.getAbsolutePath());
-	String jobid = PBSUtils.submitJob(sub_file.getAbsolutePath());
-	return jobid;
+	return PBSUtils.submitJob((String)null, service.getServiceSpec().getID(), sub_file.getAbsolutePath(), executable, cmdArguments, 1, service.getServiceSpec().getMemoryMB());
 }
 /**
  * This method was created in VisualAge.
@@ -331,13 +303,13 @@ private void on_stopservice(Message message) throws JMSException {
 				ServiceStatus service = iter.next();		
 				if (service.getServiceSpec().getID().equals(serviceID)) {
 					String pbsJobId = service.getPbsJobId();
-					if (pbsJobId != null && PBSUtils.getJobStatus(pbsJobId) == PBSConstants.PBS_STATUS_RUNNING) {
+					if (pbsJobId != null && PBSUtils.isJobRunning(pbsJobId)) {
 						try {
 							Thread.sleep(5 * MessageConstants.SECOND); // wait 5 seconds
 						} catch (InterruptedException ex) {							
 						}					
 						// if the service is not stopped, kill it from PBS
-						if (PBSUtils.getJobStatus(pbsJobId) == PBSConstants.PBS_STATUS_RUNNING) {
+						if (PBSUtils.isJobRunning(pbsJobId)) {
 							PBSUtils.killJob(pbsJobId);
 						}
 					}
@@ -429,4 +401,5 @@ public void start() {
 		} catch (InterruptedException exc) {
 		}			
 	}
-}}
+}
+}
