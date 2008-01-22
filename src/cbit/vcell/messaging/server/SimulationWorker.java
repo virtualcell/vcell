@@ -313,27 +313,21 @@ private void doPBSJob(File userdir) throws XmlParseException, SolverException, J
 			}
 			
 			status = PBSUtils.getJobStatus(jobid);
-			if (status == PBSConstants.PBS_STATUS_EXITING){
-				int exitCode = PBSUtils.getJobExitCode(jobid);
-				if (exitCode < 0) {
-					workerMessaging.sendFailed("Job [" + jobid + "] exited unexpectedly: [" + exitCode + ":" + PBSConstants.PBS_JOB_EXEC_STATUS[-exitCode] + "]");			
-				} else if (exitCode > 0) {
-					workerMessaging.sendFailed("Job [" + jobid + "] was killed with system signal " + exitCode);
+			if (PBSUtils.isJobExisting(status)){
+				if (!PBSUtils.isJobExecOK(jobid)) {
+					workerMessaging.sendFailed("Job [" + jobid + "] exited unexpectedly: [" + PBSUtils.getJobExecStatus(jobid));			
 				}
 				break;
-			} else if (status == PBSConstants.PBS_STATUS_RUNNING) {
+			} else if (PBSUtils.isJobRunning(status)) {
 				//check to see if it exits soon after it runs
 				try {
 					Thread.sleep(5000);
 				} catch (InterruptedException ex) {
 				}
 				status = PBSUtils.getJobStatus(jobid);
-				if (status == PBSConstants.PBS_STATUS_EXITING) {
-					int exitCode = PBSUtils.getJobExitCode(jobid);
-					if (exitCode < 0) {
-						workerMessaging.sendFailed("Job [" + jobid + "] exited unexpectedly: [" + exitCode + ":" + PBSConstants.PBS_JOB_EXEC_STATUS[-exitCode] + "]");			
-					} else if (exitCode > 0) {
-						workerMessaging.sendFailed("Job [" + jobid + "] was killed with system signal " + exitCode);
+				if (PBSUtils.isJobExisting(status)) {
+					if (!PBSUtils.isJobExecOK(jobid)) {
+						workerMessaging.sendFailed("Job [" + jobid + "] exited unexpectedly: " + PBSUtils.getJobExecStatus(jobid));			
 					}				
 				}
 				break;
@@ -344,7 +338,7 @@ private void doPBSJob(File userdir) throws XmlParseException, SolverException, J
 				break;
 			}
 		}
-		System.out.println("It took " + (System.currentTimeMillis() - t) + " ms to verify pbs job status=" + PBSConstants.PBS_JOB_STATUS[status]);
+		System.out.println("It took " + (System.currentTimeMillis() - t) + " ms to verify pbs job status" + PBSUtils.getJobStatusDescription(status));
 	}
 }
 

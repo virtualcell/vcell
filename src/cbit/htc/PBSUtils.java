@@ -42,7 +42,7 @@ public static String checkServerStatus() throws ExecutableException {
 	return pbsServer;
 }
 
-public static int getJobExitCode(String jobid) {
+static int getJobExitCode(String jobid) {
 	/*
 	Job: 67.dll-2-1-1
 
@@ -221,11 +221,32 @@ public static String submitJob(String computeResource, String jobName, String su
 	return jobid;
 }
 
-public static String submitJob(String sub_file) throws ExecutableException {	
-	String completeCommand =  JOB_CMD_SUBMIT + " " + sub_file;
-	Executable exe = new Executable(completeCommand);
-	exe.start();
-	String jobid = exe.getStdoutString().trim();
-	return jobid;
+public static boolean isJobExisting(int status) {
+	return status == PBS_STATUS_EXITING;
+}
+
+public static boolean isJobRunning(int status) {
+	return status == PBS_STATUS_RUNNING;
+}
+
+public static boolean isJobRunning(String jobid) {
+	return isJobRunning(getJobStatus(jobid));
+}
+
+public static boolean isJobExecOK(String jobid) {
+	return getJobExitCode(jobid) == JOB_EXEC_OK;
+}
+
+public static String getJobStatusDescription(int status) {
+	return PBSConstants.PBS_JOB_STATUS[status];
+}
+
+public static String getJobExecStatus(String jobid) {
+	int exitCode = getJobExitCode(jobid);
+	if (exitCode <= 0) {
+		return PBS_JOB_EXEC_STATUS[-exitCode];
+	} else {
+		return "job was killed with system signal " + exitCode;
+	}	
 }
 }
