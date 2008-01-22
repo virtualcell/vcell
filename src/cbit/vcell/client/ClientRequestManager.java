@@ -985,23 +985,6 @@ public cbit.vcell.client.server.AsynchMessageManager getAsynchMessageManager() {
 
 /**
  * Insert the method's description here.
- * Creation date: (6/9/2004 4:45:51 PM)
- * @return cbit.vcell.client.AsynchMessageManager
- */
-public cbit.vcell.server.bionetgen.BNGService getBNGService() {
-	BNGService bngService = null;
-	try {
-		bngService = getClientServerManager().getBNGSerivce();
-	} catch (DataAccessException e) {
-		e.printStackTrace(System.out);
-		throw new RuntimeException("Could not launch BNGService : " + e.getMessage());
-	}
-	return bngService;
-}
-
-
-/**
- * Insert the method's description here.
  * Creation date: (5/21/2004 4:21:50 AM)
  */
 private ClientServerManager getClientServerManager() {
