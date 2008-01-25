@@ -18,6 +18,7 @@ import javax.swing.table.DefaultTableModel;
 
 import cbit.gui.DialogUtils;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.xml.MIRIAMHelper.DescriptiveHeirarchy;
 
@@ -30,6 +31,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.VetoableChangeListener;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.text.FieldPosition;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -44,6 +46,8 @@ import javax.swing.JTextField;
 import javax.swing.BorderFactory;
 
 import org.jdom.Element;
+
+import uk.ac.ebi.miriam.lib.MiriamLink;
 
 import java.awt.SystemColor;
 
@@ -161,6 +165,8 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 	private JTextField jTextFieldFamily = null;
 	private JTextField jTextFieldEmail = null;
 	private JTextField jTextFieldOrganization = null;
+	private JButton jButtonDetails = null;
+	private MiriamLink miriamLink = null;
 	/**
 	 * This method initializes 
 	 * 
@@ -239,6 +245,7 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 						jButtonAdd.setEnabled(false);
 						jButtonDelete.setEnabled(false);
 						jButtonEditAnnotation.setEnabled(false);
+						jButtonDetails.setEnabled(false);
 						if(getSelectedDescriptionHeirarchy() == null){
 						//if(jTableMIRIAM.getSelectedRow() != -1 && rowData != null && rowData.get(rowMapV.get(jTableMIRIAM.getSelectedRow())).descriptiveHeirarchy == null){
 							jButtonAdd.setEnabled(true);
@@ -247,6 +254,7 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 						//if(jTableMIRIAM.getSelectedRow() != -1 && rowData != null && rowData.get(rowMapV.get(jTableMIRIAM.getSelectedRow())).descriptiveHeirarchy != null){
 							jButtonDelete.setEnabled(true);
 							jButtonEditAnnotation.setEnabled(true);
+							jButtonDetails.setEnabled(getSelectedURI() != null);
 						}
 					}
 				}
@@ -293,12 +301,19 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 			gridBagConstraints.gridx = 0;
 			gridBagConstraints.gridy = 0;
 			jPanel = new JPanel();
-			jPanel.setLayout(new GridBagLayout());
+			final GridBagLayout gridBagLayout = new GridBagLayout();
+			gridBagLayout.columnWidths = new int[] {0,0,0,0,0,7};
+			jPanel.setLayout(gridBagLayout);
 			jPanel.add(getJButtonOK(), gridBagConstraints);
 			jPanel.add(getJButtonAdd(), gridBagConstraints2);
 			jPanel.add(getJButtonDelete(), gridBagConstraints4);
 			jPanel.add(getJButtonEditAnnotation(), gridBagConstraints11);
 			jPanel.add(getJButtonCopy(), gridBagConstraints21);
+
+			final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
+			gridBagConstraints_1.gridy = 0;
+			gridBagConstraints_1.gridx = 5;
+			jPanel.add(getJButtonDetails(), gridBagConstraints_1);
 		}
 		return jPanel;
 	}
@@ -463,6 +478,48 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 		return jButtonCopy;
 	}
 
+	private JButton getJButtonDetails() {
+		if (jButtonDetails == null) {
+			jButtonDetails = new JButton();
+			jButtonDetails.setText("Details...");
+			jButtonDetails.addActionListener(new java.awt.event.ActionListener() {
+				public void actionPerformed(java.awt.event.ActionEvent e) {
+					detailAction();
+				}
+			});
+		}
+		return jButtonDetails;
+	}
+
+	private void detailAction(){
+		URI detailURI = getSelectedURI();
+		if (detailURI != null) {
+			if (miriamLink == null) {
+				miriamLink = new MiriamLink();
+			}
+			String[] urlArr = miriamLink.getDataEntries(detailURI.toString());
+			if (urlArr != null && urlArr.length > 0) {
+				for (int i = 0; i < urlArr.length; i++) {
+					System.out.println(urlArr[i]);
+				}
+				PopupGenerator.browserLauncher(urlArr[0],urlArr[0],false);
+			}
+		}
+	}
+	private URI getSelectedURI(){
+		String detailInfo = (String)getJTableMIRIAM().getValueAt(jTableMIRIAM.getSelectedRow(), 4);
+		if (detailInfo != null) {
+			System.out.println(detailInfo);
+			URL detailURL = null;
+			try {
+				detailURL = new URL(detailInfo);
+				return new URI(detailURL.toString());
+			} catch (Exception e) {
+				return null;
+			}
+		}
+		return null;
+	}
 	/**
 	 * This method initializes jPanelNewIdentifier	
 	 * 	
