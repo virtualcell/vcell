@@ -1,36 +1,30 @@
 package cbit.vcell.xml;
+import java.beans.PropertyVetoException;
+import java.io.IOException;
+
+import org.jdom.Comment;
+import org.jdom.Document;
+import org.jdom.Element;
+import org.jdom.Namespace;
+import org.vcell.sbml.vcell.MathModel_SBMLExporter;
+import org.vcell.sbml.vcell.SBMLExporter;
+
 import cbit.image.VCImage;
+import cbit.util.Extent;
+import cbit.util.xml.VCLogger;
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.document.VCDocument;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
-import cbit.util.Extent;
-import cbit.util.xml.VCLogger;
-import cbit.util.xml.XmlUtil;
 import cbit.xml.merge.NodeInfo;
 import cbit.xml.merge.TMLPanel;
 import cbit.xml.merge.XmlTreeDiff;
-
-import java.beans.PropertyVetoException;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.util.Enumeration;
-
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.Namespace;
-import org.vcell.cellml.VCQualCellTranslator;
-import org.vcell.sbml.vcell.MathModel_SBMLExporter;
-import org.vcell.sbml.vcell.SBMLExporter;
 
 /**
 This class represents the 'API' of the XML framework for all VC classes, outside that framework. Most of the methods of
@@ -70,10 +64,26 @@ public class XmlHelper {
 			if (bioModel == null){
 				throw new IllegalArgumentException("Invalid input for BioModel: " + bioModel);
 			}
+			// NEW WAY, with XML declaration, vcml element, namespace, version #, etc.
+			String vcmlVersion = "0.4";
+			// create root vcml element 
+			Element vcmlElement = new Element(XMLTags.VcmlRootNodeTag, Namespace.getNamespace(XMLTags.VCML_NS));
+			vcmlElement.setAttribute(XMLTags.VersionTag, vcmlVersion);
+			// get biomodel element from xmlProducer and add it to vcml root element
 			Xmlproducer xmlProducer = new Xmlproducer(printkeys);
-			Element element = xmlProducer.getXML(bioModel);
-			element = XmlUtil.setDefaultNamespace(element, Namespace.getNamespace(XMLTags.VCML_NS));		
-			xmlString = XmlUtil.xmlToString(element);
+			Element biomodelElement = xmlProducer.getXML(bioModel);
+			vcmlElement.addContent(biomodelElement);
+			// create xml doc with vcml root element and convert to string
+			Document bioDoc = new Document();
+			Comment docComment = new Comment("This biomodel was generated in VCML Version 0.4"); 
+			bioDoc.addContent(docComment);
+			bioDoc.setRootElement(vcmlElement);
+			xmlString = XmlUtil.xmlToString(bioDoc, false);
+
+//			// OLD WAY
+//			Element element = xmlProducer.getXML(bioModel);
+//			element = XmlUtil.setDefaultNamespace(element, Namespace.getNamespace(XMLTags.VCML_NS));		
+//			xmlString = XmlUtil.xmlToString(element);
 		} catch (ExpressionException e) {
 			e.printStackTrace();
 			throw new XmlParseException("Unable to generate Biomodel XML: " + e.getMessage());
@@ -171,10 +181,28 @@ public static String exportCellML(VCDocument vcDoc, String appName) throws XmlPa
 		if (geometry == null){
 			throw new XmlParseException("Invalid input for Geometry: " + geometry);
 		}
+
+		// NEW WAY, with XML declaration, vcml element, namespace, version #, etc.
+		String vcmlVersion = "0.4";
+		// create the root vcml element
+		Element vcmlElement = new Element(XMLTags.VcmlRootNodeTag, Namespace.getNamespace(XMLTags.VCML_NS));
+		vcmlElement.setAttribute(XMLTags.VersionTag, vcmlVersion);
+		// get the geometry element from xmlProducer
 		Xmlproducer xmlProducer = new Xmlproducer(printkeys);
-		Element element = xmlProducer.getXML(geometry);
-		element = XmlUtil.setDefaultNamespace(element, Namespace.getNamespace(XMLTags.VCML_NS));		
-		geometryString = XmlUtil.xmlToString(element);
+		Element geometryElement = xmlProducer.getXML(geometry);
+		// add it to root vcml element
+		vcmlElement.addContent(geometryElement);
+		// create xml doc using vcml root element and convert to string
+		Document geoDoc = new Document();
+		Comment docComment = new Comment("This geometry was generated in VCML Version 0.4"); 
+		geoDoc.addContent(docComment);
+		geoDoc.setRootElement(vcmlElement);
+		geometryString = XmlUtil.xmlToString(geoDoc, false);
+
+//		// OLD WAY
+//		Element element = xmlProducer.getXML(geometry);
+//		element = XmlUtil.setDefaultNamespace(element, Namespace.getNamespace(XMLTags.VCML_NS));		
+//		geometryString = XmlUtil.xmlToString(element);
 		
 		return geometryString;
 	}
@@ -243,10 +271,26 @@ public static VCDocument importMathCellML(VCLogger vcLogger, String xmlString) t
 		if (mathModel == null){
 			throw new XmlParseException("Invalid input for BioModel: " + mathModel);
 		}
+		// NEW WAY, with XML declaration, vcml element, namespace, version #, etc.
+		String vcmlVersion = "0.4";
+		// create root vcml element 
+		Element vcmlElement = new Element(XMLTags.VcmlRootNodeTag, Namespace.getNamespace(XMLTags.VCML_NS));
+		vcmlElement.setAttribute(XMLTags.VersionTag, vcmlVersion);
+		// get biomodel element from xmlProducer and add it to vcml root element
 		Xmlproducer xmlProducer = new Xmlproducer(printkeys);
-		Element element = xmlProducer.getXML(mathModel);
-		element = XmlUtil.setDefaultNamespace(element, Namespace.getNamespace(XMLTags.VCML_NS));		
-		xmlString = XmlUtil.xmlToString(element);
+		Element mathElement = xmlProducer.getXML(mathModel);
+		vcmlElement.addContent(mathElement);
+		// create xml doc with vcml root element and convert to string
+		Document mathDoc = new Document();
+		Comment docComment = new Comment("This mathmodel was generated in VCML Version 0.4"); 
+		mathDoc.addContent(docComment);
+		mathDoc.setRootElement(vcmlElement);
+		xmlString = XmlUtil.xmlToString(mathDoc, false);
+
+//		// OLD WAY
+//		Element element = xmlProducer.getXML(mathModel);
+//		element = XmlUtil.setDefaultNamespace(element, Namespace.getNamespace(XMLTags.VCML_NS_ALT));		
+//		xmlString = XmlUtil.xmlToString(element);
 		
 		return xmlString;
 	}
@@ -273,7 +317,7 @@ public static VCDocument importMathCellML(VCLogger vcLogger, String xmlString) t
 		} 
 		container.addContent(mathElement);
 		container.addContent(simElement);
-		container = XmlUtil.setDefaultNamespace(container, Namespace.getNamespace(XMLTags.VCML_NS));		
+		container = XmlUtil.setDefaultNamespace(container, Namespace.getNamespace(XMLTags.VCML_NS_ALT));		
 		simString = XmlUtil.xmlToString(container);
 		
 		return simString;
@@ -295,7 +339,14 @@ long l0 = System.currentTimeMillis();
 		if (xmlString == null || xmlString.length() == 0){
 			throw new XmlParseException("Invalid xml for BioModel: " + xmlString);
 		}
+
 		Element root = XmlUtil.stringToXML(xmlString, null);      //default parser and no validation
+		if (root.getName().equals(XMLTags.VcmlRootNodeTag)) {
+			// NEW WAY - with xml string containing xml declaration, vcml element, namespace, etc ...
+			root = root.getChild(XMLTags.BioModelTag);
+		} 
+
+		// common for both new way (with xml declaration, vcml element, etc) and existing way (biomodel is root)
 		XmlReader reader = new XmlReader(printkeys);
 		bioModel = reader.getBioModel(root);
 
@@ -356,7 +407,14 @@ public static Geometry XMLToGeometry(String xmlString) throws XmlParseException 
 		if (xmlString == null || xmlString.length() == 0){
 			throw new XmlParseException("Invalid xml for Geometry: " + xmlString);
 		}
-		Element root = XmlUtil.stringToXML(xmlString, null);      //default parser and no validation
+
+		Element root = XmlUtil.stringToXML(xmlString, null);
+		if (root.getName().equals(XMLTags.VcmlRootNodeTag)) {
+			// NEW WAY - with xml string containing xml declaration, vcml element, namespace, etc ...
+			root = root.getChild(XMLTags.GeometryTag);
+		} 
+
+		// common for both new way (with xml declaration, vcml element, etc) and existing way (biomodel is root)
 		XmlReader reader = new XmlReader(printkeys);
 		geometry = reader.getGeometry(root);
 
@@ -407,7 +465,14 @@ public static Geometry XMLToGeometry(String xmlString) throws XmlParseException 
 		if (xmlString == null || xmlString.length() == 0){
 			throw new XmlParseException("Invalid xml for MathModel: " + xmlString);
 		}
-		Element root = XmlUtil.stringToXML(xmlString, null);      //default parser and no validation
+
+		Element root = XmlUtil.stringToXML(xmlString, null);
+		if (root.getName().equals(XMLTags.VcmlRootNodeTag)) {
+			// NEW WAY - with xml string containing xml declaration, vcml element, namespace, etc ...
+			root = root.getChild(XMLTags.MathModelTag);
+		} 
+
+		// common for both new way (with xml declaration, vcml element, etc) and existing way (biomodel is root)
 		XmlReader reader = new XmlReader(printkeys);
 		mathModel = reader.getMathModel(root);
 
@@ -420,7 +485,7 @@ public static Geometry XMLToGeometry(String xmlString) throws XmlParseException 
 	public static Simulation XMLToSim(String xmlString) throws XmlParseException {
 
 		Simulation sim = null;
-		Namespace ns = Namespace.getNamespace(XMLTags.VCML_NS);
+		Namespace ns = Namespace.getNamespace(XMLTags.VCML_NS_ALT);
 		
 		try {
 			if (xmlString == null || xmlString.length() == 0) {

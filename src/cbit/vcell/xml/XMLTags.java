@@ -17,8 +17,10 @@ public class XMLTags {
 	public final static String SbmlNotesTag				 = "notes";
 	public final static String VCellInfoTag				 = "VCellInfo";
 
-	//public static final String VCML_NS = "http://www.vcell.org/vcml/0.4";
-	public static final String VCML_NS = "";
+	// VCML tags
+	public final static String VcmlRootNodeTag			 = "vcml";
+	public static final String VCML_NS = "http://sourceforge.net/projects/vcell/vcml";
+	public static final String VCML_NS_ALT = "";
 
 	//Tags related to MIRIAM
 	public static final String HTML_XHTML_ATTR_TAG			= "xhtml";

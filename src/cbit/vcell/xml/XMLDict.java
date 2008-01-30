@@ -192,6 +192,10 @@ public XMLDict() {
 		} else {               //XMLTags.ReactionSpecTag, XMLTags.SpeciesContextRefTag, XMLTags.FeatureMappingTag
 			                   //XMLTags.MembraneMappingTag, XMLTags.VolumeRegion
 			root = e.getDocument().getRootElement();
+			if (root.getName().equals(XMLTags.VcmlRootNodeTag)) {
+				java.util.List childElementList = root.getChildren();
+				root = (Element)childElementList.get(0);	// assuming first child is the biomodel, mathmodel or geometry.
+			}
 		}
 		Element temp = getMatchingElement(root, reName, attName, attValue);
 		

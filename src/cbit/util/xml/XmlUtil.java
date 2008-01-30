@@ -165,4 +165,11 @@ public static org.jdom.Element setDefaultNamespace(org.jdom.Element rootNode, or
 		return xmlOut.outputString(root);		        
 	}
 
+	public static String xmlToString(Document xmlDoc, boolean bTrimAllWhiteSpace) {
+		XMLOutputter xmlOut = new XMLOutputter("   ");
+	    xmlOut.setNewlines(true);
+		xmlOut.setTrimAllWhite(bTrimAllWhiteSpace);		
+		return xmlOut.outputString(xmlDoc);		        
+	}
+
 }

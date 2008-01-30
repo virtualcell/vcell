@@ -14,6 +14,8 @@ import org.sbml.libsbml.SBMLDocument;
 import org.sbml.libsbml.SBMLWriter;
 import org.sbml.libsbml.SpeciesReference;
 import org.sbml.libsbml.UnitDefinition;
+import org.sbml.libsbml.XMLNamespaces;
+import org.sbml.libsbml.XMLNode;
 import org.sbml.libsbml.libsbml;
 import org.vcell.sbml.SBMLUtils;
 import org.vcell.sbml.SBMLUtils.SBMLUnitParameter;
@@ -57,11 +59,14 @@ public class SBMLExporter {
 	private int sbmlVersion = 3;
 	private org.sbml.libsbml.Model sbmlModel = null;
 	private cbit.vcell.biomodel.BioModel vcBioModel = null;
-//	private String vcPreferredSimContextName = null;
 
 	private SimulationContext vcSelectedSimContext = null;
 	private SimulationContext vcOverridenSimContext = null;
 	private SimulationJob vcSelectedSimJob = null;
+	
+	// used for exporting vcell-related annotations.
+	Namespace sbml_vcml_ns = Namespace.getNamespace(SBMLUtils.SBML_VCML_NS);
+
 
 	private java.util.Hashtable<String, String> globalParamNamesHash = new java.util.Hashtable<String, String>();
 	private SBMLExportSpec sbmlExportSpec = new SBMLExportSpec(VCUnitDefinition.UNIT_molecules, VCUnitDefinition.UNIT_um3, VCUnitDefinition.UNIT_um2, VCUnitDefinition.UNIT_um, VCUnitDefinition.UNIT_s);
@@ -688,10 +693,9 @@ protected void addSpecies() {
 
 		// Add the common name of species to annotation, and add an annotation element to the species.
 		// This is required later while trying to read in fluxes ...
-		Namespace ns = Namespace.getNamespace(SBMLUtils.SBML_VCML_NS);
 		Element annotationElement = new Element(XMLTags.SbmlAnnotationTag, "");
-		Element vcellInfoTag = new Element(XMLTags.VCellInfoTag, ns);
-		Element speciesElement = new Element(XMLTags.SpeciesTag, ns);
+		Element vcellInfoTag = new Element(XMLTags.VCellInfoTag, sbml_vcml_ns);
+		Element speciesElement = new Element(XMLTags.SpeciesTag, sbml_vcml_ns);
 		speciesElement.setAttribute(XMLTags.NameAttrTag, cbit.util.TokenMangler.mangleToSName(vcSpeciesContexts[i].getSpecies().getCommonName()));
 		vcellInfoTag.addContent(speciesElement);
 		annotationElement.addContent(vcellInfoTag);
@@ -778,16 +782,16 @@ protected void addUnitDefinitions() {
  *
  **/
 private Element getAnnotationElement(ReactionStep reactionStep) throws cbit.vcell.xml.XmlParseException {
-	Namespace vcNamespace = Namespace.getNamespace(SBMLUtils.SBML_VCML_NS);  		//"http://www.vcell.org/vcell";
+	  		//"http://www.vcell.org/vcell";
 	Element annotationElement = new Element(XMLTags.SbmlAnnotationTag, "");
 
-	Element vcellInfoElement = new Element(XMLTags.VCellInfoTag, vcNamespace);
+	Element vcellInfoElement = new Element(XMLTags.VCellInfoTag, sbml_vcml_ns);
 	Element rxnElement = null;
 	
 	if (reactionStep instanceof FluxReaction) {
 		FluxReaction fluxRxn = (FluxReaction)reactionStep;
 		// Element for flux reaction. Write out the structure and flux carrier name.
-		rxnElement = new Element(XMLTags.FluxStepTag, vcNamespace);
+		rxnElement = new Element(XMLTags.FluxStepTag, sbml_vcml_ns);
 		rxnElement.setAttribute(XMLTags.StructureAttrTag, fluxRxn.getStructure().getName());
 		rxnElement.setAttribute(XMLTags.FluxCarrierAttrTag, TokenMangler.mangleToSName(fluxRxn.getFluxCarrier().getCommonName()));
 
@@ -820,13 +824,13 @@ private Element getAnnotationElement(ReactionStep reactionStep) throws cbit.vcel
 	} else if (reactionStep instanceof cbit.vcell.model.SimpleReaction) {
 		// Element for a simple reaction - just store structure name - will be useful while importing.
 		cbit.vcell.model.SimpleReaction simpleRxn = (cbit.vcell.model.SimpleReaction)reactionStep;
-		rxnElement = new org.jdom.Element(cbit.vcell.xml.XMLTags.SimpleReactionTag, vcNamespace);
+		rxnElement = new org.jdom.Element(cbit.vcell.xml.XMLTags.SimpleReactionTag, sbml_vcml_ns);
 		rxnElement.setAttribute(cbit.vcell.xml.XMLTags.StructureAttrTag, simpleRxn.getStructure().getName());
 	}
 
 	// Add rate name as an element of annotation - this is especially useful when roundtripping VCell models, when the reaction
 	// rate parameters have been renamed by user.
-	Element rateElement = new Element(XMLTags.ReactionRateTag, vcNamespace);
+	Element rateElement = new Element(XMLTags.ReactionRateTag, sbml_vcml_ns);
 	if (reactionStep.getKinetics() instanceof DistributedKinetics){
 		rateElement.setAttribute(XMLTags.NameAttrTag, ((DistributedKinetics)reactionStep.getKinetics()).getReactionRateParameter().getName());
 	}else if (reactionStep.getKinetics() instanceof LumpedKinetics){
@@ -955,6 +959,24 @@ private Simulation getSelectedSimulation() {
 	return vcSelectedSimJob.getWorkingSim();
 }
 
+/**
+ * getVCellAnnotation : Culls VCell user annotations/notes from biomodel, selectedSimContext, simulation
+ * 						and returns the annotation string to be set in the sbml model. 
+ * @return
+ */
+private String getVCellAnnotation() {
+	StringBuffer annotBuffer = new StringBuffer();
+	if (vcBioModel.getVersion().getAnnot() != null && !vcBioModel.getVersion().getAnnot().equals("")) {
+		annotBuffer.append("Biomodel : \n\t" + vcBioModel.getVersion().getAnnot());
+	}
+	if (getSelectedSimContext().getVersion().getAnnot() != null && !getSelectedSimContext().getVersion().getAnnot().equals("")) {
+		annotBuffer.append("\nSimulationContext : \n\t" + getSelectedSimContext().getVersion().getAnnot());
+	}
+	if (getSelectedSimulation() != null && getSelectedSimulation().getVersion().getAnnot() != null && !getSelectedSimulation().getVersion().getAnnot().equals("")) {
+		annotBuffer.append("\nSimulation : \n\t" + getSelectedSimulation().getVersion().getAnnot());
+	}
+	return annotBuffer.toString();
+}
 public String getSBMLFile() {
 
 	//
@@ -1024,28 +1046,65 @@ public String getSBMLFile() {
 	}
 	sbmlModel = sbmlDocument.createModel(TokenMangler.mangleToSName(modelName));
 	sbmlModel.setName(modelName);
-//	sbmlDocument.setModel(sbmlModel);
 
 	translateBioModel();
 
+	// add annotations
 	Element annotationElement = null;
 	String sbmlAnnotationString = sbmlModel.getAnnotationString();
 	if(sbmlAnnotationString == null || sbmlAnnotationString.length() == 0){
+		// If there was no annotation in the sbmlmodel, we are exporting a fresh VCell biomodel. Add biomodel info to <annotation>
 		annotationElement = new Element(XMLTags.SbmlAnnotationTag, "");
+		Element vcellInfoElement = new Element(XMLTags.VCellInfoTag, sbml_vcml_ns);
+		Element biomodelElement = new Element(XMLTags.BioModelTag, sbml_vcml_ns);
+		biomodelElement.setAttribute(XMLTags.NameAttrTag, cbit.util.TokenMangler.mangleToSName(vcBioModel.getName())); 
+		if (vcBioModel.getVersion() != null) {
+			biomodelElement.setAttribute(XMLTags.KeyValueAttrTag, vcBioModel.getVersion().getVersionKey().toString());
+		}
+		vcellInfoElement.addContent(biomodelElement);
+		Element simSpecElement = new Element(XMLTags.SimulationSpecTag, sbml_vcml_ns);
+		simSpecElement.setAttribute(XMLTags.NameAttrTag, cbit.util.TokenMangler.mangleToSName(getSelectedSimContext().getName()));
+		if (getSelectedSimContext().getVersion() != null) {
+			simSpecElement.setAttribute(XMLTags.KeyValueAttrTag, getSelectedSimContext().getVersion().getVersionKey().toString());
+		}
+		vcellInfoElement.addContent(simSpecElement);
+		if (getSelectedSimulation() != null) {
+			Element simElement = new Element(XMLTags.SimulationTag, sbml_vcml_ns);
+			simElement.setAttribute(XMLTags.NameAttrTag, cbit.util.TokenMangler.mangleToSName(getSelectedSimulation().getName()));
+			if (getSelectedSimulation().getVersion() != null) {
+				simElement.setAttribute(XMLTags.KeyValueAttrTag, getSelectedSimulation().getVersion().getVersionKey().toString());
+			}
+			vcellInfoElement.addContent(simElement);
+		}
+		annotationElement.addContent(vcellInfoElement);
+
 	}else{
+		// if sbmlmodel had annotations, it probably is an original sbml model, or a roundtripped model, so export existing annotations.
 		annotationElement = XmlUtil.stringToXML(sbmlAnnotationString, null);
 	}
 	MIRIAMHelper.addToSBML(annotationElement, vcBioModel.getMIRIAMAnnotation(), false);
 	sbmlModel.setAnnotation(XmlUtil.xmlToString(annotationElement, true));
 
+	// Add the user annotations in the biomodel, simContext and simulation as <notes> in the sbml model.
+//	String vcAnnotStr = getVCellAnnotation();
+//	if (vcAnnotStr != null &&!vcAnnotStr.equals("")) {
+//		XMLNamespaces xmlNs = new XMLNamespaces();
+//		xmlNs.add("http://www.w3.org/1999/xhtml");
+//		XMLNode vcAnnotNode = XMLNode.convertStringToXMLNode(vcAnnotStr, xmlNs);
+//		sbmlModel.appendNotes(vcAnnotNode);
+//	}
+	
+	// write sbml document into sbml writer, so that the sbml str can be retrieved
 	SBMLWriter sbmlWriter = new SBMLWriter();
 	String sbmlStr = sbmlWriter.writeToString(sbmlDocument);
 
+	// Error check - use libSBML's document.printError to print to outputstream
 	System.out.println("\n\nSBML Export Error Report");
 	OStringStream oStrStream = new OStringStream();
 	sbmlDocument.printErrors(oStrStream);
 	System.out.println(oStrStream.str());
 
+	// cleanup
 	sbmlModel.delete();
 	sbmlDocument.delete();
 	sbmlWriter.delete();	

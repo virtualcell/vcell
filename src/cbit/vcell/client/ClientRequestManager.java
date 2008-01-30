@@ -24,6 +24,8 @@ import cbit.sql.VersionableType;
 import cbit.util.*;
 import swingthreads.*;
 import java.awt.*;
+import java.awt.List;
+
 import cbit.vcell.client.server.*;
 import cbit.vcell.server.*;
 import cbit.vcell.geometry.*;
@@ -33,7 +35,11 @@ import cbit.vcell.biomodel.*;
 import cbit.vcell.document.*;
 import cbit.vcell.client.FieldDataWindowManager.SimInfoHolder;
 import java.util.*;
+
 import javax.swing.*;
+
+import org.jdom.Element;
+
 import cbit.vcell.xml.XMLTags;
 /**
  * Insert the type's description here.
@@ -1346,11 +1352,19 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 				try {
 					org.jdom.Element rootElement = cbit.util.xml.XmlUtil.stringToXML(xmlStr, null);         //some overhead.
 					String xmlType = rootElement.getName();
-					if (xmlType.equals(XMLTags.BioModelTag)) {
+					String modelXmlType = null;
+					if (xmlType.equals(XMLTags.VcmlRootNodeTag)) {
+						// For now, assuming that <vcml> element has only one child (biomodel, mathmodel or geometry). 
+						// Will deal with multiple children of <vcml> Element when we get to model composition.
+						java.util.List childElementList = rootElement.getChildren();
+						Element modelElement = (Element)childElementList.get(0);	// assuming first child is the biomodel, mathmodel or geometry.
+						modelXmlType = modelElement.getName();
+					}
+					if (xmlType.equals(XMLTags.BioModelTag) || (xmlType.equals(XMLTags.VcmlRootNodeTag) && modelXmlType.equals(XMLTags.BioModelTag))) {
 						doc = XmlHelper.XMLToBioModel(xmlStr);
 						windowManager = new BioModelWindowManager(new JPanel(), ClientRequestManager.this, (BioModel)doc, getMdiManager().getNewlyCreatedDesktops());
 						((BioModelWindowManager)windowManager).preloadApps();
-					} else if (xmlType.equals(XMLTags.MathModelTag)) {
+					} else if (xmlType.equals(XMLTags.MathModelTag) || (xmlType.equals(XMLTags.VcmlRootNodeTag) && modelXmlType.equals(XMLTags.MathModelTag))) {
 						doc = XmlHelper.XMLToMathModel(xmlStr);
 						MathModel mathModel = (MathModel)doc;
 						Geometry geometry = mathModel.getMathDescription().getGeometry();
@@ -1358,7 +1372,7 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 							geometry.getGeometrySurfaceDescription().updateAll();
 						}
 						windowManager = new MathModelWindowManager(new JPanel(), ClientRequestManager.this, (MathModel)doc, getMdiManager().getNewlyCreatedDesktops());
-					} else if (xmlType.equals(XMLTags.GeometryTag)) {
+					} else if (xmlType.equals(XMLTags.GeometryTag) || (xmlType.equals(XMLTags.VcmlRootNodeTag) && modelXmlType.equals(XMLTags.GeometryTag))) {
 						doc = XmlHelper.XMLToGeometry(xmlStr);
 						Geometry geometry = (Geometry)doc;
 						if (geometry.getDimension()>0){

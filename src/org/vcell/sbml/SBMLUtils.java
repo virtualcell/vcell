@@ -28,8 +28,8 @@ public abstract class SBMLUtils {
 
 	public static final String SBML_NS_1 = "http://www.sbml.org/sbml/level1";
 	public static final String SBML_NS_2 = "http://www.sbml.org/sbml/level2";
-	public static final String SBML_VCML_NS = "http://www.sbml.org/2001/ns/vcell";
-	
+	public static final String SBML_VCML_NS = "http://sourceforge.net/projects/vcell";
+
 	public static class SBMLUnitParameter implements SymbolTableEntry {
 		private String paramName = null;
 		private cbit.vcell.parser.Expression paramExpression = null;
