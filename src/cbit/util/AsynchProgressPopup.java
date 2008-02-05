@@ -1,5 +1,7 @@
 package cbit.util;
 import java.awt.*;
+
+import cbit.gui.ZEnforcer;
 /**
  * Insert the type's description here.
  * Creation date: (5/19/2004 3:08:59 PM)
@@ -133,14 +135,25 @@ public void setProgress(int progress) {
  * Insert the method's description here.
  * Creation date: (5/19/2004 3:28:39 PM)
  */
-public void start() {
-	dialog.show();
+private void startPrivate(boolean bKeepOnTop) {
+	if(bKeepOnTop){
+		ZEnforcer.showModalDialogOnTop(dialog);
+	}else{
+		dialog.show();
+	}
 	// start timer for auto progress
 	if (! knowsProgress) {
 		super.start();
 	}
 }
 
+public void start() {
+	startPrivate(false);
+}
+
+public void startKeepOnTop() {
+	startPrivate(true);
+}
 
 /**
  * Insert the method's description here.
