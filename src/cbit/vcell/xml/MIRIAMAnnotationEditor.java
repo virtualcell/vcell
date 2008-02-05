@@ -10,6 +10,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JButton;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -17,7 +18,9 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 
 import cbit.gui.DialogUtils;
+import cbit.util.AsynchProgressPopup;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.data.PDEDataViewer;
 import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.xml.MIRIAMHelper.DescriptiveHeirarchy;
@@ -492,18 +495,44 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 	}
 
 	private void detailAction(){
-		URI detailURI = getSelectedURI();
+		final URI detailURI = getSelectedURI();
 		if (detailURI != null) {
 			if (miriamLink == null) {
 				miriamLink = new MiriamLink();
 			}
-			String[] urlArr = miriamLink.getDataEntries(detailURI.toString());
-			if (urlArr != null && urlArr.length > 0) {
-				for (int i = 0; i < urlArr.length; i++) {
-					System.out.println(urlArr[i]);
+			new Thread(
+				new Runnable(){
+					public void run() {
+						final AsynchProgressPopup pp = new AsynchProgressPopup(MIRIAMAnnotationEditor.this,
+								"Displaying MIRIAM Information in Web Browser","Gathering Website Info...",
+								true,false);
+						SwingUtilities.invokeLater(
+								new Runnable(){
+									public void run() {
+										pp.startKeepOnTop();
+									}
+								}
+							);
+						try {
+							String[] urlArr = miriamLink.getDataEntries(detailURI.toString());
+							if (urlArr != null && urlArr.length > 0) {
+//								for (int i = 0; i < urlArr.length; i++) {
+//									System.out.println(urlArr[i]);
+//								}
+								pp.setMessage("Displaying Details in Local Web Browser...");
+								PopupGenerator.browserLauncher(urlArr[0],urlArr[0],false);
+							}
+							Thread.sleep(2000);//keep progress for a little while because browser takes time
+						} catch (Exception e) {
+							pp.stop();
+							e.printStackTrace();
+							PopupGenerator.showErrorDialog("Error displaying MIRIAM Web Information.\n"+e.getMessage());
+						}finally{
+							pp.stop();
+						}
+					}
 				}
-				PopupGenerator.browserLauncher(urlArr[0],urlArr[0],false);
-			}
+			).start();
 		}
 	}
 	private URI getSelectedURI(){
