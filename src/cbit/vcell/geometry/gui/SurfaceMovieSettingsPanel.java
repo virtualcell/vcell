@@ -10,16 +10,20 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import cbit.util.NumberUtils;
+import cbit.vcell.client.PopupGenerator;
 
 public class SurfaceMovieSettingsPanel extends JPanel implements ActionListener{
+
 	private final JLabel movieWidthValLabel = new JLabel();
 	private final JLabel movieHeightValLabel = new JLabel();
 	private final JComboBox fpsComboBox = new JComboBox();
 	private final JComboBox formatComboBox = new JComboBox();
 	private final JComboBox beginTimeComboBox = new JComboBox();
 	private final JComboBox endTimeComboBox = new JComboBox();
+	private final JComboBox skipComboBox = new JComboBox();
 	private final JLabel totalFramesValLabel = new JLabel();
 	private final JLabel totalDurationValLabel = new JLabel();
+	private int totalFrames = 0;
 	
 	public SurfaceMovieSettingsPanel() {
 		super();
@@ -130,12 +134,28 @@ public class SurfaceMovieSettingsPanel extends JPanel implements ActionListener{
 		add(endTimeComboBox, gridBagConstraints_11);
 		endTimeComboBox.addActionListener(this);
 
+		final JLabel skipLabel = new JLabel();
+		skipLabel.setText("Skip:");
+		final GridBagConstraints gridBagConstraints_16 = new GridBagConstraints();
+		gridBagConstraints_16.insets = new Insets(0, 0, 0, 4);
+		gridBagConstraints_16.anchor = GridBagConstraints.EAST;
+		gridBagConstraints_16.gridy = 6;
+		gridBagConstraints_16.gridx = 0;
+		add(skipLabel, gridBagConstraints_16);
+
+		skipComboBox.setActionCommand("skipComboBox");
+		final GridBagConstraints gridBagConstraints_17 = new GridBagConstraints();
+		gridBagConstraints_17.fill = GridBagConstraints.HORIZONTAL;
+		gridBagConstraints_17.gridy = 6;
+		gridBagConstraints_17.gridx = 1;
+		add(skipComboBox, gridBagConstraints_17);
+
 		final JLabel totalFramesLabel = new JLabel();
 		totalFramesLabel.setText("Total Frames:");
 		final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
 		gridBagConstraints_5.insets = new Insets(0, 0, 0, 4);
 		gridBagConstraints_5.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_5.gridy = 6;
+		gridBagConstraints_5.gridy = 7;
 		gridBagConstraints_5.gridx = 0;
 		add(totalFramesLabel, gridBagConstraints_5);
 
@@ -143,7 +163,7 @@ public class SurfaceMovieSettingsPanel extends JPanel implements ActionListener{
 		final GridBagConstraints gridBagConstraints_12 = new GridBagConstraints();
 		gridBagConstraints_12.anchor = GridBagConstraints.WEST;
 		gridBagConstraints_12.weightx = 1;
-		gridBagConstraints_12.gridy = 6;
+		gridBagConstraints_12.gridy = 7;
 		gridBagConstraints_12.gridx = 1;
 		add(totalFramesValLabel, gridBagConstraints_12);
 
@@ -152,7 +172,7 @@ public class SurfaceMovieSettingsPanel extends JPanel implements ActionListener{
 		final GridBagConstraints gridBagConstraints_6 = new GridBagConstraints();
 		gridBagConstraints_6.insets = new Insets(0, 0, 0, 4);
 		gridBagConstraints_6.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_6.gridy = 7;
+		gridBagConstraints_6.gridy = 8;
 		gridBagConstraints_6.gridx = 0;
 		add(totalDurationLabel, gridBagConstraints_6);
 
@@ -160,7 +180,7 @@ public class SurfaceMovieSettingsPanel extends JPanel implements ActionListener{
 		final GridBagConstraints gridBagConstraints_13 = new GridBagConstraints();
 		gridBagConstraints_13.anchor = GridBagConstraints.WEST;
 		gridBagConstraints_13.weightx = 1;
-		gridBagConstraints_13.gridy = 7;
+		gridBagConstraints_13.gridy = 8;
 		gridBagConstraints_13.gridx = 1;
 		add(totalDurationValLabel, gridBagConstraints_13);
 	}
@@ -189,10 +209,17 @@ public class SurfaceMovieSettingsPanel extends JPanel implements ActionListener{
 			}
 			beginTimeComboBox.setSelectedIndex(0);
 			endTimeComboBox.setSelectedIndex(allTimes.length-1);
+			
+			skipComboBox.removeActionListener(this);
+			skipComboBox.removeAllItems();
+			for (int i = 0; i < 100; i++) {
+				skipComboBox.addItem(i+"");
+			}
 		}finally{
 			fpsComboBox.addActionListener(this);
 			beginTimeComboBox.addActionListener(this);
 			endTimeComboBox.addActionListener(this);
+			skipComboBox.addActionListener(this);
 		}
 		updateGUI();
 	}
@@ -210,10 +237,38 @@ public class SurfaceMovieSettingsPanel extends JPanel implements ActionListener{
 			updateGUI();
 		}else if(e.getSource() == fpsComboBox){
 			updateGUI();
+		}else if(e.getSource() == skipComboBox){
+			updateGUI();
 		}
 	}
-	private void updateGUI(){
-		int totalFrames = (endTimeComboBox.getSelectedIndex()- beginTimeComboBox.getSelectedIndex()+1);
+	private void updateGUI(){		
+		boolean bSkipOK = false;
+		String nearLow = null;
+		String nearHi = null;
+		int skipParameter = getSkipParameter()+1;
+		totalFrames = 0;
+		for (int i = beginTimeComboBox.getSelectedIndex(); i < endTimeComboBox.getModel().getSize(); i+= skipParameter) {
+			totalFrames+= 1;
+			if(i < endTimeComboBox.getSelectedIndex()){
+				nearLow = (String)beginTimeComboBox.getModel().getElementAt(i);
+			}else if(i > endTimeComboBox.getSelectedIndex()){
+				nearHi = (String)endTimeComboBox.getModel().getElementAt(i);
+				break;
+			}
+			if(i == endTimeComboBox.getSelectedIndex()){
+				bSkipOK = true;
+				break;
+			}
+		}
+		if(!bSkipOK){
+			PopupGenerator.showErrorDialog(
+				"Current combination of begin and skip does not include end time.\n"+
+				"Closest compatible end time(s) "+nearLow+(nearHi != null?" and "+nearHi:"")+".\nResetting skip to 0");
+			skipComboBox.setSelectedIndex(0);
+			updateGUI();
+			return;
+		}
+		
 		totalFramesValLabel.setText(totalFrames+"");
 		totalDurationValLabel.setText(NumberUtils.formatNumber((double)totalFrames/(double)(fpsComboBox.getSelectedIndex()+1),3)+" seconds");
 	}
@@ -226,4 +281,11 @@ public class SurfaceMovieSettingsPanel extends JPanel implements ActionListener{
 	public int getEndTimeIndex(){
 		return endTimeComboBox.getSelectedIndex();
 	}
+	public int getSkipParameter(){
+		return new Integer((String)skipComboBox.getSelectedItem()).intValue();
+	}
+	public int getTotalFrames(){
+		return totalFrames;
+	}
+
 }

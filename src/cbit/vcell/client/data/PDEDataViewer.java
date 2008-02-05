@@ -17,10 +17,12 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.util.*;
 
 import cbit.vcell.client.*;
+import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.export.quicktime.MediaMethods;
 import cbit.vcell.export.quicktime.MediaMovie;
 import cbit.vcell.export.quicktime.MediaSample;
@@ -1074,13 +1076,15 @@ private synchronized void dataJobFailed(VCDataJobID vcDataJobID,final Exception 
 			new Thread(threadSafeDataJobInfo.timeSeriesJobResultsAction).start();
 		}
 	}
-	new Thread(new Runnable(){
-		public void run() {
-			PopupGenerator.showErrorDialog(
-					"Error executing Data Job:\n"+
-					(failException != null?failException.getMessage():"Unknown Reason"));
-		}
-	}).start();
+	if(!(failException instanceof UserCancelException)){
+		new Thread(new Runnable(){
+			public void run() {
+				PopupGenerator.showErrorDialog(
+						"Error executing Data Job:\n"+
+						(failException != null?failException.getMessage():"Unknown Reason"));
+			}
+		}).start();
+	}
 
 }
 public void dataJobMessage(final DataJobEvent dje) {
@@ -1704,7 +1708,14 @@ private void startTimeSeriesJob(final TimeSeriesJobSpec tsjs,TimeSeriesJobResult
 		pp = new AsynchProgressPopup(PDEDataViewer.this,
 			"Retrieving Data for '"+tsjs.getVariableNames()[0]+"' jobID("+tsjs.getVcDataJobID().getJobID()+")",
 			"Sending request to data server...",
-			bInputBlocking,false);
+			bInputBlocking,false,
+			true,
+			new ProgressDialogListener(){
+				public void cancelButton_actionPerformed(EventObject newEvent) {
+					dataJobFailed(tsjs.getVcDataJobID(), UserCancelException.CANCEL_GENERIC);
+				}
+			}
+		);
 	
 		jobIDProgressHash.put(tsjs.getVcDataJobID(),pp);
 		if(resultsAction != null){
@@ -2226,12 +2237,27 @@ private void makeSurfaceMovie(
 
 	final SurfaceMovieSettingsPanel smsp = new SurfaceMovieSettingsPanel();
 	smsp.init(surfaceCanvas.getWidth(), surfaceCanvas.getHeight(), getPdeDataContext().getTimePoints());
-	if(PopupGenerator.showComponentOKCancelDialog(dataValueSurfaceViewerJIF, smsp, "Movie Settings for var "+movieDataVarName) != JOptionPane.OK_OPTION){
-		return;
+	while(true){
+		if(PopupGenerator.showComponentOKCancelDialog(dataValueSurfaceViewerJIF, smsp, "Movie Settings for var "+movieDataVarName) != JOptionPane.OK_OPTION){
+			return;
+		}
+		long movieSize =(smsp.getTotalFrames()*surfaceCanvas.getWidth()*surfaceCanvas.getHeight()*3);
+		long rawDataSize = (smsp.getTotalFrames()*varTotalNumIndices*8);//raw data size;
+		if(movieSize+rawDataSize > 50000000){
+			final String YES_RESULT = "Yes";
+			String result = PopupGenerator.showWarningDialog(this,
+				"Movie processing will require at least "+(movieSize+rawDataSize)/1000000+" mega-bytes of memory.\nMovie size will be "+(movieSize >= 1000000?movieSize/1000000+" mega-bytes.":movieSize/1000.0+" kilo-bytes.")+" Continue?", new String[] {YES_RESULT,"No"}, YES_RESULT);
+			if(result != null && result.equals(YES_RESULT)){
+				break;
+			}
+		}else{
+			break;
+		}
 	}
 	final int beginTimeIndex = smsp.getBeginTimeIndex();
 	final int endTimeIndex = smsp.getEndTimeIndex();
-
+	final int step = smsp.getSkipParameter()+1;
+	
 	new Thread(new Runnable(){public void run(){
 	try {
 		final String[] varNames = new String[] {movieDataVarName};
@@ -2244,7 +2270,7 @@ private void makeSurfaceMovie(
 				varNames,
 				new int[][] {allIndices},null,
 				getPdeDataContext().getTimePoints()[beginTimeIndex],
-				1,
+				step,
 				getPdeDataContext().getTimePoints()[endTimeIndex],
 				VCDataJobID.createVCDataJobID(
 						getDataViewerManager().getUser(),
@@ -2263,10 +2289,27 @@ private void makeSurfaceMovie(
 					if(timeSeriesJobFailed != null){
 						return;//Do Nothing Special
 					}
+					JFileChooser jfChooser = new JFileChooser();
+					while(true){
+						if(jfChooser.showSaveDialog(PDEDataViewer.this) != JFileChooser.APPROVE_OPTION){
+							return;
+						}
+						if(jfChooser.getSelectedFile().exists()){
+							final String YES_RESULT = "Yes";
+							String result = PopupGenerator.showWarningDialog(PDEDataViewer.this, "Overwrite exisitng file:\n"+jfChooser.getSelectedFile().getAbsolutePath()+"?", new String[] {YES_RESULT,"No"}, YES_RESULT);
+							if(result != null && result.equals(YES_RESULT)){
+								break;
+							}
+						}else{
+							break;
+						}
+					}
+					
 
 					final AsynchProgressPopup pp = new AsynchProgressPopup(PDEDataViewer.this,
 							"Creating Movie...","Creating Movie...",
 							true,false);
+
 					try{
 						SwingUtilities.invokeLater(new Runnable(){public void run(){pp.start();}});
 						double[][] timeSeries = ((TSJobResultsNoStats)timeSeriesJobResults).getTimesAndValuesForVariable(movieDataVarName);
@@ -2274,22 +2317,23 @@ private void makeSurfaceMovie(
 						int[] singleFrame = new int[surfaceCanvas.getWidth()*surfaceCanvas.getHeight()];
 						BufferedImage bufferedImage = new BufferedImage(surfaceCanvas.getWidth(), surfaceCanvas.getHeight(),BufferedImage.TYPE_3BYTE_BGR);
 						Graphics2D g2D = bufferedImage.createGraphics();
-						VideoMediaChunk[] chunks = new VideoMediaChunk[endTimeIndex - beginTimeIndex + 1];	
+						VideoMediaChunk[] chunks = new VideoMediaChunk[timeSeriesJobResults.getTimes().length];	
 						VideoMediaSampleRaw sample;
 						int sampleDuration = 0;
 //						int timeScale = 1000;
 						int timeScale = smsp.getFramesPerSecond();
 						int bitsPerPixel = 32;
 						boolean isGrayscale = false;
-						final double[] allTimes = new double[endTimeIndex-beginTimeIndex+1];
+//						final double[] allTimes = new double[endTimeIndex-beginTimeIndex+1];
 //						double interval = allTimes[endTimeIndex] - allTimes[beginTimeIndex];
 //						double duration = interval*100;
 						DisplayAdapterService das = new DisplayAdapterService(movieDAS);
 						int[][] origSurfacesColors = surfaceCanvas.getSurfacesColors();
 						try {
-							for (int t = 0; t < allTimes.length; t++) {
+							for (int t = 0; t < timeSeriesJobResults.getTimes().length; t++) {
+//								if(bCancelFlag[0]){System.out.println("Cancelled...");return;}
 								final int finalT = t;
-								SwingUtilities.invokeLater(new Runnable(){public void run(){pp.setMessage("Creating Movie... Progress "+NumberUtils.formatNumber(100.0*((double)finalT/(double)allTimes.length),3)+"%");}});
+								SwingUtilities.invokeLater(new Runnable(){public void run(){pp.setMessage("Creating Movie... Progress "+NumberUtils.formatNumber(100.0*((double)finalT/(double)timeSeriesJobResults.getTimes().length),3)+"%");}});
 								
 								double min = Double.POSITIVE_INFINITY;
 								double max = Double.NEGATIVE_INFINITY;
@@ -2364,17 +2408,15 @@ private void makeSurfaceMovie(
 						}
 	//					ByteArrayOutputStream bytesOut = new ByteArrayOutputStream();
 	//					byte[] data = bytesOut.toByteArray();
-						JFileChooser jfChooser = new JFileChooser();
-						int result = jfChooser.showSaveDialog(PDEDataViewer.this);
-						if(result == JFileChooser.APPROVE_OPTION){
-							pp.setMessage("Writing Movie to disk...");
-							FileOutputStream fos = new FileOutputStream(jfChooser.getSelectedFile());
-							DataOutputStream movieOutput = new DataOutputStream(new BufferedOutputStream(fos));
-							MediaMethods.writeMovie(movieOutput, newMovie);
-							movieOutput.close();
-	//						fos.write(data);
-							fos.close();
-						}
+
+						pp.setMessage("Writing Movie to disk...");
+						FileOutputStream fos = new FileOutputStream(jfChooser.getSelectedFile());
+						DataOutputStream movieOutput = new DataOutputStream(new BufferedOutputStream(fos));
+						MediaMethods.writeMovie(movieOutput, newMovie);
+						movieOutput.close();
+//						fos.write(data);
+						fos.close();
+
 					} catch (Exception e) {
 						e.printStackTrace();
 						PopupGenerator.showErrorDialog("Error getting movie data\n"+e.getMessage());
