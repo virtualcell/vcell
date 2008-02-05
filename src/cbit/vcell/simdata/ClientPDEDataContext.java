@@ -4,7 +4,6 @@ import cbit.vcell.server.VCDataIdentifier;
 import cbit.vcell.desktop.controls.DataListener;
 import cbit.vcell.desktop.controls.DataManager;
 import cbit.vcell.server.DataAccessException;
-import cbit.util.BeanUtils;
 
 /**
  * Insert the type's description here.
@@ -231,6 +230,7 @@ public void setDataManager(cbit.vcell.desktop.controls.DataManager newDataManage
 		((VCSimulationDataIdentifier)oldid).getVcSimID().equals(((VCSimulationDataIdentifier)newid).getVcSimID())
 	) {	
 		dataManager = newDataManager;
+		setTimePoints(getDataManager().getDataSetTimes());
 		externalRefresh();
 	} else {
 		throw new RuntimeException("DataManager change not allowed: oldID = "+oldid+" newID = "+newid);
