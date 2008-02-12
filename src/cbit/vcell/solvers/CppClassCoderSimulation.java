@@ -41,25 +41,21 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	out.println(getClassName()+"::"+getClassName()+"(CartesianMesh *mesh)");
 	out.println(": Simulation(mesh)");
 	out.println("{");
-	out.println("\tVolumeRegionVariable		*volumeRegionVar;");
-	out.println("\tMembraneRegionVariable		*membraneRegionVar;");
-	out.println("\tVolumeVariable    *volumeVar;");
-	out.println("\tMembraneVariable  *membraneVar;");
-	out.println("\tContourVariable   *contourVar;");
-	out.println("#ifdef USE_PDESOLVERDIANA");
-	out.println("\tPdeSolverDiana    *pdeSolver;");
-	out.println("#endif");
-	out.println("\tODESolver         *odeSolver;");
-	out.println("\tSparseLinearSolver    *slSolver;");
-	out.println("\tEqnBuilder        *builder;");
-	out.println("\tSparseMatrixEqnBuilder        *smbuilder;");
+	out.println("\tVolumeRegionVariable *volumeRegionVar = 0;");
+	out.println("\tMembraneRegionVariable *membraneRegionVar = 0;");
+	out.println("\tVolumeVariable *volumeVar = 0;");
+	out.println("\tMembraneVariable *membraneVar = 0;");
+	out.println("\tContourVariable *contourVar = 0;");
+	out.println("\tODESolver *odeSolver = 0;");
+	out.println("\tSparseLinearSolver *slSolver = 0;");
+	out.println("\tEqnBuilder *builder = 0;");
+	out.println("\tSparseMatrixEqnBuilder  *smbuilder = 0;");
 	out.println("\tlong sizeX = mesh->getNumVolumeX();");
 	out.println("\tlong sizeY = mesh->getNumVolumeY();");
 	out.println("\tlong sizeZ = mesh->getNumVolumeZ();");
-	out.println("\tint numSolveRegions;");
-	out.println("\tint *solveRegions;");
+	out.println("\tint numSolveRegions = 0;");
+	out.println("\tint *solveRegions = 0;");
 	out.println("\tint numVolumeRegions = mesh->getNumVolumeRegions();");
-	out.println("\tint regionCount;");
 	out.println("\tstring varname, units;");
 	out.println("");	
 
@@ -83,7 +79,7 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	  		Vector<SubDomain> listOfSubDomains = new Vector<SubDomain>();
 	  		int totalNumCompartments = 0;
 	  		StringBuffer compartmentNames = new StringBuffer();
-	  		Enumeration subDomainEnum = simulation.getMathDescription().getSubDomains();
+	  		Enumeration<SubDomain> subDomainEnum = simulation.getMathDescription().getSubDomains();
 	  		while (subDomainEnum.hasMoreElements()){
 		  		SubDomain subDomain = (SubDomain)subDomainEnum.nextElement();
 		  		if (subDomain instanceof CompartmentSubDomain){
@@ -113,41 +109,23 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 		  		//
 		  		//  build list of regions belonging to the required SubDomains
 		  		//
-				out.println("\tregionCount = 0;");
+				out.println("\tnumSolveRegions = 0;");
 		  		out.println("\tfor (int i = 0; i < numVolumeRegions; i++){");
 		  		out.println("\t\tVolumeRegion *volRegion = mesh->getVolumeRegion(i);");
 			  	for (int j = 0; j < listOfSubDomains.size(); j++){
 					CompartmentSubDomain compartmentSubDomain = (CompartmentSubDomain)listOfSubDomains.elementAt(j);
 				  	int handle = simulation.getMathDescription().getHandle(compartmentSubDomain);
 					out.println("\t\tif (volRegion->getFeature()->getHandle() == (FeatureHandle)(0xff & "+handle+")){  // test if this region is same as '"+compartmentSubDomain.getName()+"'");
-					out.println("\t\t\tsolveRegions[regionCount ++] = volRegion->getId();");
+					out.println("\t\t\tsolveRegions[numSolveRegions ++] = volRegion->getId();");
 					out.println("\t\t}");
 				}
-				out.println("\t\t}");
-		  		out.println("\tnumSolveRegions = regionCount;");
+				out.println("\t}");
 	  		}
 	  		
 	  		if (simulation.getMathDescription().isPDE(volVar)){
-		  		if (simulation.getMathDescription().hasVelocity(volVar)) { // Convection
-					out.println("#ifdef USE_PDESOLVERDIANA");		  			
-		  			out.println("\tsymmflg = 0;    // define symmflg = 0 (general) or 1 (symmetric)");
-		  			out.println("\tpdeSolver = new PdeSolverDiana(volumeVar,mesh,symmflg,numSolveRegions,solveRegions,"+simulation.hasTimeVaryingDiffusionOrAdvection(volVar)+");");
-		  			out.println("\tbuilder = new EqnBuilderReactionDiffusionConvection(volumeVar,mesh,pdeSolver);");
-		  			out.println("\tpdeSolver->setEqnBuilder(builder);");
-		  			out.println("\taddSolver(pdeSolver);");
-	  			} else {
-					out.println("#ifdef USE_PDESOLVERDIANA");		  			
-		  			out.println("\tsymmflg = 1;    // define symmflg = 0 (general) or 1 (symmetric)");
-		  			out.println("\tpdeSolver = new PdeSolverDiana(volumeVar,mesh,symmflg,numSolveRegions,solveRegions,"+simulation.hasTimeVaryingDiffusionOrAdvection(volVar)+");");
-		  			out.println("\tbuilder = new EqnBuilderReactionDiffusion(volumeVar,mesh,pdeSolver);");	  			
-		  			out.println("\tpdeSolver->setEqnBuilder(builder);");
-		  			out.println("\taddSolver(pdeSolver);");
-	  			}
-		  		out.println("#else");
 	  			out.println("\tsmbuilder = new SparseVolumeEqnBuilder(volumeVar,mesh," + (simulation.getMathDescription().hasVelocity(volVar) ? "false" : "true") + ", numSolveRegions, solveRegions);");
 	  			out.println("\tslSolver = new SparseLinearSolver(volumeVar,smbuilder,"+simulation.hasTimeVaryingDiffusionOrAdvection(volVar)+");");
 	  			out.println("\taddSolver(slSolver);");
-	  			out.println("#endif");
 	  		}else{
 	  			out.println("\t//odeSolver = new ODESolver(volumeVar,mesh);");
 	  			out.println("\todeSolver = new ODESolver(volumeVar,mesh,numSolveRegions,solveRegions);");
@@ -156,7 +134,7 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	  			out.println("\taddSolver(odeSolver);");
 	  		}		
 	  		out.println("\taddVariable(volumeVar);");
-	  		out.println("");
+	  		out.println();
 	  	}else if (var instanceof MemVariable) { // membraneVariable
 		  	units = "molecules/squm";
 	  		MemVariable memVar = (MemVariable)var;
@@ -384,7 +362,9 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 	out.println("\t\tif (returnCode != 0) {");
 	out.println("\t\t\tSimulationMessaging::getInstVar()->setWorkerEvent(new WorkerEvent(JOB_FAILURE, returnMsg));");
 	out.println("\t\t}");
+	out.println("#ifdef USE_MESSAGING");
 	out.println("\t\tSimulationMessaging::getInstVar()->waitUntilFinished();");
+	out.println("#endif");
 	out.println("\t}");
 
 	if (fieldFuncArgs != null && fieldFuncArgs.length > 0) {
@@ -413,7 +393,7 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 	out.println("\tstring returnMsg;");
 	// Fei Changes Begin
 	out.println("\ttry {");
-	out.println("\t\tjint taskID = -1;");
+	out.println("\t\tint taskID = -1;");
 	out.println("\t\tbool bSimZip = true;");
 	out.println("\t\tfor (int i = 1; i < argc; i ++) {");
 	out.println("\t\t\tif (!strcmp(argv[i], \"-nz\")) {");
@@ -446,6 +426,7 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 	out.println("\t\tif (taskID == -1) { // no messaging");
 	out.println("\t\t\tSimulationMessaging::create();");
 	out.println("\t\t} else {");
+	out.println("#ifdef USE_MESSAGING");
 	out.println("\t\t\tchar* broker = \"" + JmsUtils.getJmsUrl() + "\";");
     out.println("\t\t\tchar *smqusername = \"" + JmsUtils.getJmsUserID() + "\";");
     out.println("\t\t\tchar *password = \"" + JmsUtils.getJmsPassword() + "\";");
@@ -455,8 +436,11 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 	out.println("\t\t\tjint simKey = " + simulation.getVersion().getVersionKey() + ";");
 	out.println("\t\t\tjint jobIndex = " + simulationJob.getJobIndex() + ";");
 	out.println("\t\t\tSimulationMessaging::create(broker, smqusername, password, qname, tname, vcusername, simKey, jobIndex, taskID);");
+	out.println("#endif");
 	out.println("\t\t}");
+	out.println("#ifdef USE_MESSAGING");
 	out.println("\t\tSimulationMessaging::getInstVar()->start(); // start the thread");
+	out.println("#endif");
 
 	if (fieldFuncArgs != null && fieldFuncArgs.length > 0) {
 		out.println();
