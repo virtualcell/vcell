@@ -1,5 +1,8 @@
 package org.vcell.sbml.vcell;
+import java.util.Enumeration;
+
 import cbit.vcell.model.Feature;
+import cbit.vcell.model.Membrane;
 import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.parser.Expression;
@@ -195,7 +198,8 @@ public void updateRelativeStructureSizes(cbit.vcell.mapping.SimulationContext si
 	
 	cbit.vcell.mapping.StructureMapping[] structureMappings = simContext.getGeometryContext().getStructureMappings();
 	try {
-		for (int i = 0; i < structureMappings.length; i++){
+		/*
+		     for (int i = 0; i < structureMappings.length; i++){
 			if (structureMappings[i] instanceof MembraneMapping){
 				MembraneMapping membraneMapping = (MembraneMapping)structureMappings[i];
 				Expression membraneSizeExp = membraneMapping.getSizeParameter().getExpression();
@@ -207,6 +211,7 @@ public void updateRelativeStructureSizes(cbit.vcell.mapping.SimulationContext si
 				// sum up entire volume of parent feature and all sibling features (including self)
 				// volume fraction will be size of enclosed volume divided by total size of surrounding volume.
 				//
+				
 				Expression outsideFeatureSizeExp = simContext.getGeometryContext().getStructureMapping(membraneMapping.getMembrane().getOutsideFeature()).getSizeParameter().getExpression();
 				double sumOfParentAndSiblingVolumes = outsideFeatureSizeExp.evaluateConstant();
 
@@ -221,8 +226,39 @@ public void updateRelativeStructureSizes(cbit.vcell.mapping.SimulationContext si
 				}
 				// set volume fraction
 				membraneMapping.getVolumeFractionParameter().setExpression(new Expression(insideFeatureSizeExp.evaluateConstant()/sumOfParentAndSiblingVolumes));
+			}*/
+			// This is rewritten in Feb 2008. Siblings and children are correctly taken into account when calculating the volume fractions.
+			for(int i =0; i< structureMappings.length; i++)
+			{
+				if(structureMappings[i] instanceof MembraneMapping)
+				{
+					//calculate the sum of features' sizes inside this membrane, this is used for calculating both surface volume ratio and volume fraction.
+					double sumOfSubFeatures = 0;
+					Enumeration<Feature> subFeatures = ((MembraneMapping)structureMappings[i]).getMembrane().getSubFeatures();
+					while(subFeatures.hasMoreElements())
+					{
+						Feature feature = subFeatures.nextElement();
+						sumOfSubFeatures = sumOfSubFeatures + simContext.getGeometryContext().getStructureMapping(feature).getSizeParameter().getExpression().evaluateConstant();
+					}
+					//calculate the sum of features's sizes inside the membrance's parent feature, this is used for calculating the volume fraction.
+					double sumOfParentMemSubFeatures = 0;
+					Feature parentFeature = ((MembraneMapping)structureMappings[i]).getMembrane().getOutsideFeature();
+					if(parentFeature != null)
+					{
+						Enumeration<Feature> parentSubFeatures = parentFeature.getSubFeatures();
+						while(parentSubFeatures.hasMoreElements())
+						{
+							Feature feature = parentSubFeatures.nextElement();
+							sumOfParentMemSubFeatures = sumOfParentMemSubFeatures + simContext.getGeometryContext().getStructureMapping(feature).getSizeParameter().getExpression().evaluateConstant();
+						}
+						//set surface volume ratio
+						((MembraneMapping)structureMappings[i]).getSurfaceToVolumeParameter().setExpression(new Expression(((MembraneMapping)structureMappings[i]).getSizeParameter().getExpression().evaluateConstant()/sumOfSubFeatures));
+						//set volume fraction
+						((MembraneMapping)structureMappings[i]).getVolumeFractionParameter().setExpression(new Expression(sumOfSubFeatures/sumOfParentMemSubFeatures));
+					}
+				}
 			}
-		}
+		
 	}catch (NullPointerException e){
 		e.printStackTrace(System.out);
 		DialogUtils.showErrorDialog("structure sizes must all be specified");
