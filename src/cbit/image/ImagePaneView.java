@@ -5,8 +5,15 @@ package cbit.image;
  * All rights reserved.
 ©*/
 import java.awt.event.*;
-import java.awt.event.KeyEvent;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.KeyboardFocusManager;
 import java.awt.Point;
+import java.awt.Window;
+
+import javax.swing.SwingUtilities;
+
+import cbit.util.BeanUtils;
 /**
  * Insert the type's description here.
  * Creation date: (9/3/00 1:57:50 PM)
@@ -122,7 +129,28 @@ private void connEtoC3(java.awt.event.MouseEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		this.requestFocus();
+		Component focusOwner = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+		if(focusOwner != null){
+			Component focusOwnerTopComponent = null;
+			for (Container p = focusOwner.getParent(); p != null; p = p.getParent()) {
+				if(p.getParent() == null) {
+					focusOwnerTopComponent = p;
+					break;
+				}
+			}
+			Component thisTopComponent = null;
+			for (Container p = this.getParent(); p != null; p = p.getParent()) {
+				if(p.getParent() == null) {
+					thisTopComponent = p;
+					break;
+				}
+			}
+			if(focusOwnerTopComponent == thisTopComponent){
+				this.requestFocus();
+			}
+		}else{
+			this.requestFocus();
+		}
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
