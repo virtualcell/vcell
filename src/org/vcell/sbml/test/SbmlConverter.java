@@ -4,7 +4,6 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -12,52 +11,38 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Hashtable;
 
 import org.vcell.sbml.SBMLUtils;
 import org.vcell.sbml.SimSpec;
-import org.vcell.sbml.SolverException;
 import org.vcell.sbml.SBMLUtils.SBMLUnitParameter;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.vcell.sbml.vcell.StructureSizeSolver;
 
 import cbit.sql.KeyValue;
-import cbit.sql.SimulationVersion;
 import cbit.util.Executable;
 import cbit.util.TokenMangler;
 import cbit.util.xml.VCLogger;
-import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
-import cbit.vcell.math.Constant;
-import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.MathException;
 import cbit.vcell.math.Variable;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.server.PropertyLoader;
-import cbit.vcell.server.StdoutSessionLog;
 import cbit.vcell.solver.ErrorTolerance;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.TimeStep;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.ode.CVodeFileWriter;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.IDAFileWriter;
-import cbit.vcell.solver.ode.IDASolverStandalone;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
-import cbit.vcell.solver.ode.StateVariable;
 import cbit.vcell.solvers.AbstractSolver;
-import cbit.vcell.solvers.MathExecutable;
 import cbit.vcell.units.VCUnitDefinition;
-import cbit.vcell.util.RowColumnResultSet;
 import cbit.vcell.xml.XmlHelper;
 
 public class SbmlConverter {
@@ -332,6 +317,10 @@ private static void solveSimulation(Simulation sim, String filePathName, Hashtab
 			// for each time, print row
 		    int index = 0;
 			double[] sampleTimes = new double[numTimeSteps + 1];
+			for (int i = 0; i <= numTimeSteps; i++) {
+				sampleTimes[i] = endTime * i / numTimeSteps;
+			}
+
 			for (int i = 0; i < sampleTimes.length; i++) {
 		        // find largest index whose time is not past sample time
 		        while (true) {
@@ -352,6 +341,7 @@ private static void solveSimulation(Simulation sim, String filePathName, Hashtab
 		        }
 		
 		        // if data[0][index] == sampleTime no need to interpolate
+			    // if (data[0][index] == sampleTimes[i]) {
 		        if (Math.abs(data[0][index]-sampleTimes[i]) < 1e-12) {
 		        	// if timeFactor is not 1.0, time is not in seconds (mins or hrs); if timeFactor is 60, divide sampleTime/60; if it is 3600, divide sampleTime/3600.
 		        	if (argTimeFactor != 1.0) {
