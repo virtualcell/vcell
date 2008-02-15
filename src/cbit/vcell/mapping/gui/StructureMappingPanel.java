@@ -11,6 +11,7 @@ import java.beans.PropertyChangeListener;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.TableColumn;
 
@@ -31,7 +32,7 @@ public class StructureMappingPanel extends javax.swing.JPanel implements Propert
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
 	private javax.swing.ListSelectionModel ivjselectionModel1 = null;
 	private Component ivjComponent1 = null;
-	private javax.swing.DefaultCellEditor ivjDefaultCellEditor1 = null;
+	private javax.swing.DefaultCellEditor ivjDefaultCellEditor1 = null;  //  @jve:decl-index=0:
 	private cbit.gui.JTableFixed ivjScrollPaneTable1 = null;
 	private StructureMappingTableModel ivjStructureMappingTableModel1 = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
@@ -711,6 +712,15 @@ private void initialize() {
 		constraintsJScrollPane1.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJScrollPane1(), constraintsJScrollPane1);
 
+		//Added in Feb, 2008. This is a warning message for users to understand what the size of a volume is in virtual cell.
+		//It is located below the structure mapping table.
+		java.awt.GridBagConstraints constraintsJLabel = new java.awt.GridBagConstraints();
+		constraintsJLabel.gridx = 0; constraintsJLabel.gridy = 1;
+		constraintsJLabel.fill = java.awt.GridBagConstraints.BOTH;
+		constraintsJLabel.insets = new java.awt.Insets(0, 0, 0, 0);
+		JLabel warning = new JLabel(" Note: The volume of a compartment does NOT include the volumes of any other compartments residing within that compartment.");
+		add(warning, constraintsJLabel);
+		
  		initConnections();
 		connEtoC1();
 	} catch (java.lang.Throwable ivjExc) {
