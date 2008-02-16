@@ -528,9 +528,12 @@ protected void addReactions() {
 				vcReactions[i] = new cbit.vcell.model.SimpleReaction(reactionStructure, rxnName);
 			}
 			
+			// Now add the reactants, products, modifiers as specified by the sbmlRxn
+			addReactionParticipants(sbmlRxn, vcReactions[i]);
+			
 			KineticLaw kLaw = sbmlRxn.getKineticLaw();
 			Kinetics kinetics = null;
-			
+			if (kLaw != null) {
 			// Convert the formula from kineticLaw into MathML and then to an expression (infix) to be used in VCell kinetics
 			ASTNode sbmlRateMath = kLaw.getMath();
 			Expression kLawRateExpr = getExpressionFromFormula(sbmlRateMath);
@@ -552,8 +555,6 @@ protected void addReactions() {
 				}
 			}
 
-			// Now add the reactants, products, modifiers as specified by the sbmlRxn
-			addReactionParticipants(sbmlRxn, vcReactions[i]);
 
 			// Retrieve the compartment in which the reaction takes place
 			Compartment compartment = sbmlModel.getCompartment(reactionStructure.getName());
@@ -748,9 +749,9 @@ protected void addReactions() {
 					for (int k = 0; k < vcSpeciesContexts.length; k++){
 						if (vcSpeciesContexts[k].getName().equals(symbols[j])) {
 							org.sbml.libsbml.Species species = sbmlModel.getSpecies(vcSpeciesContexts[k].getName());
-							if (species.getHasOnlySubstanceUnits() || sbmlModel.getCompartment(species.getCompartment()).getSpatialDimensions() == 0) {
-								logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.UNIT_ERROR, "Species with substance units only or compartments with spatial dimension of 0 is not handled at this time.");
-							} else {
+					//		if (species.getHasOnlySubstanceUnits() || sbmlModel.getCompartment(species.getCompartment()).getSpatialDimensions() == 0) {
+					//			logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.UNIT_ERROR, "Species with substance units only or compartments with spatial dimension of 0 is not handled at this time.");
+					//		} else {
 								/* Check if species name is used as a local parameter in the klaw. If so, the parameter in the local namespace 
 								   takes precedence. So ignore unit conversion for the species with the same name. */
 								boolean bSpeciesNameFoundInLocalParamList = false;
@@ -816,8 +817,8 @@ protected void addReactions() {
 										kinetics.setParameterValue(kinetics.getKineticsParameter(CONCFACTOR_PARAMETER), concScaleFactor.getExpression());
 										kinetics.getKineticsParameter(CONCFACTOR_PARAMETER).setUnitDefinition(concScaleFactor.getUnitDefinition());
 									}
-								}
-							}
+								}	// end - if concScaleFactor
+					//		}	// end - sp hasOnlySubsUnits
 						}
 					}		// end for - k (vcSpeciesContext)
 				}		// end for - j (symbols)
@@ -896,7 +897,7 @@ protected void addReactions() {
 							vcReactions[i].addCatalyst(simContext.getModel().getSpeciesContext(sp.getId()));
 						}
 					}	// end - while
-					
+				
 					// if there is no species in the expression for paramater, set the expression in the kinetics
 					// to what it is. If there were species, the expression for the parameter would have been 
 					// already written above.
@@ -906,17 +907,18 @@ protected void addReactions() {
 					// Check if the expression for the global parameter contains other global parameters that 
 					// have already been passed in the 'for' loop. If so, add them from the globalParamsHash as
 					// params to the kinetics
-					String[] exprSymbols = valueExpr.getSymbols();
-					for (int kk = 0; exprSymbols != null && kk < exprSymbols.length; kk++) {
-						Expression expr = globalParamsHash.get(exprSymbols[kk]);
-						if (expr != null) {
-							Expression newExpr = new Expression(expr);
-							substituteGlobalParamRulesInPlace(newExpr, false);
-							// param has constant value, add it as a kinetic parameter if it is not already in the kinetics
-							kinetics.setParameterValue(exprSymbols[kk], newExpr.infix());
-							kinetics.getKineticsParameter(exprSymbols[kk]).setUnitDefinition(getSBMLUnit(sbmlModel.getParameter(exprSymbols[kk]).getUnits(), null));
-						}
-					}
+					substituteOtherGlobalParams(kinetics, valueExpr);
+//						String[] exprSymbols = valueExpr.getSymbols();
+//						for (int kk = 0; exprSymbols != null && kk < exprSymbols.length; kk++) {
+//							Expression expr = globalParamsHash.get(exprSymbols[kk]);
+//							if (expr != null) {
+//								Expression newExpr = new Expression(expr);
+//								substituteGlobalParamRulesInPlace(newExpr, false);
+//								// param has constant value, add it as a kinetic parameter if it is not already in the kinetics
+//								kinetics.setParameterValue(exprSymbols[kk], newExpr.infix());
+//								kinetics.getKineticsParameter(exprSymbols[kk]).setUnitDefinition(getSBMLUnit(sbmlModel.getParameter(exprSymbols[kk]).getUnits(), null));
+//							}
+//						}
 					
 					// finally, set the units for the parameter.
 					VCUnitDefinition paramUnit = getSBMLUnit(param.getUnits(),null);
@@ -935,6 +937,10 @@ protected void addReactions() {
 					kinetics.getKineticsParameter(paramName).setUnitDefinition(paramUnit);
 				}
 			}
+			} else {
+				// sbmlKLaw was null, so creating a GeneralKinetics with 0.0 as rate.
+				kinetics = new GeneralKinetics(vcReactions[i]); 
+			} // end - if-else  KLaw != null
 
 			// set the reaction kinetics, and add reaction to the vcell model.
 			kinetics.resolveUndefinedUnits();
@@ -1302,16 +1308,18 @@ private void resolveRxnParameterNameConflicts(Reaction sbmlRxn, Kinetics vcKinet
 	}
 
 	KineticLaw kLaw = sbmlRxn.getKineticLaw();
-	ListOf listofLocalParams = kLaw.getListOfParameters();
-	for (int j = 0; j < kLaw.getNumParameters(); j++) {
-		org.sbml.libsbml.Parameter param = (org.sbml.libsbml.Parameter)listofLocalParams.get(j);
-		String paramName = param.getId();
-		// Check if reaction rate param clashes with an existing (pre-defined) kinetic parameter - eg., reaction rate param 'J'
-		// If so, change the name of the kinetic param (say, by adding reaction name to it).
-		if (paramName.equals(origRateParamName)) {
-			vcKinetics.getAuthoritativeParameter().setName(origRateParamName+"_"+cbit.util.TokenMangler.mangleToSName(sbmlRxn.getId()));
+	if (kLaw != null) {
+		ListOf listofLocalParams = kLaw.getListOfParameters();
+		for (int j = 0; j < kLaw.getNumParameters(); j++) {
+			org.sbml.libsbml.Parameter param = (org.sbml.libsbml.Parameter)listofLocalParams.get(j);
+			String paramName = param.getId();
+			// Check if reaction rate param clashes with an existing (pre-defined) kinetic parameter - eg., reaction rate param 'J'
+			// If so, change the name of the kinetic param (say, by adding reaction name to it).
+			if (paramName.equals(origRateParamName)) {
+				vcKinetics.getAuthoritativeParameter().setName(origRateParamName+"_"+cbit.util.TokenMangler.mangleToSName(sbmlRxn.getId()));
+			}
 		}
-	}
+	} 
 }
 
 /**
@@ -1334,8 +1342,10 @@ private void getReferencedSpecies(Reaction sbmlRxn, HashSet<String> refSpeciesNa
 		refSpeciesNameHash.add(pdtRef.getSpecies());
 	}
 	// get all species referenced in reaction rate law
-	Expression rateExpression = getExpressionFromFormula(sbmlRxn.getKineticLaw().getMath());
-	getReferencedSpeciesInExpr(rateExpression, refSpeciesNameHash);
+	if (sbmlRxn.getKineticLaw() != null) {
+		Expression rateExpression = getExpressionFromFormula(sbmlRxn.getKineticLaw().getMath());
+		getReferencedSpeciesInExpr(rateExpression, refSpeciesNameHash);
+	} 
 }
 
 /**
@@ -1390,6 +1400,31 @@ private void substituteGlobalParamRulesInPlace(Expression sbmlExpr, boolean bRep
 	}
 }
 
+/**
+ * 	@ TODO: This method doesn't take care of adjusting species in nested parameter rules with the species_concetration_factor.
+ * @param kinetics
+ * @param paramExpr
+ * @throws ExpressionException
+ */
+private void substituteOtherGlobalParams(Kinetics kinetics, Expression paramExpr) throws ExpressionException, PropertyVetoException {
+	String[] exprSymbols = paramExpr.getSymbols();
+	if (exprSymbols == null || exprSymbols.length == 0) {
+		return;
+	}
+	for (int kk = 0; kk < exprSymbols.length; kk++) {
+		Expression expr = globalParamsHash.get(exprSymbols[kk]);
+		if (expr != null) {
+			Expression newExpr = new Expression(expr);
+			substituteGlobalParamRulesInPlace(newExpr, false);
+			// param has constant value, add it as a kinetic parameter if it is not already in the kinetics
+			kinetics.setParameterValue(exprSymbols[kk], newExpr.infix());
+			kinetics.getKineticsParameter(exprSymbols[kk]).setUnitDefinition(getSBMLUnit(sbmlModel.getParameter(exprSymbols[kk]).getUnits(), null));
+			if (newExpr.getSymbols() != null) {
+				substituteOtherGlobalParams(kinetics, newExpr);
+			}
+		}
+	}
+}
 
 public BioModel getBioModel() {
 	// Read SBML model into libSBML SBMLDocument and create an SBML model
@@ -1631,9 +1666,13 @@ private VCUnitDefinition getSBMLUnit(String unitSymbol, String builtInName) {
 			SbmlUnit = VCUnitDefinition.getInstance(unitSymbol);
 		} else if (org.sbml.libsbml.Unit.isBuiltIn(unitSymbol,level)) {
 			//check if its a built-in unit that was explicitly specified
-			SbmlUnit = (VCUnitDefinition)vcUnitsHash.get(builtInName);
-			if (SbmlUnit == null) { 
-				SbmlUnit = cbit.vcell.units.SBMLUnitTranslator.getDefaultSBMLUnit(builtInName);
+			if (builtInName != null) {
+				SbmlUnit = (VCUnitDefinition)vcUnitsHash.get(builtInName);
+				if (SbmlUnit == null) { 
+					SbmlUnit = cbit.vcell.units.SBMLUnitTranslator.getDefaultSBMLUnit(builtInName);
+				}
+			} else {
+				SbmlUnit = (VCUnitDefinition)vcUnitsHash.get(unitSymbol);
 			}
 		} else {
 			SbmlUnit = (VCUnitDefinition)vcUnitsHash.get(unitSymbol);
@@ -1707,9 +1746,11 @@ private void checkForUnsupportedVCellFeatures() throws Exception {
 	if (sbmlModel.getNumRules() > 0) {
 		for (int i = 0; i < sbmlModel.getNumRules(); i++){
 			Rule rule = (org.sbml.libsbml.Rule)sbmlModel.getRule((long)i);
-			if (!(rule instanceof AssignmentRule)) {
-				logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.UNSUPPORED_ELEMENTS_OR_ATTS, "Algebraic or Rate rules are not handled in the Virtual Cell at this time");
-			} 
+			if (rule instanceof AlgebraicRule) {
+				logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.UNSUPPORED_ELEMENTS_OR_ATTS, "Algebraic rules are not handled in the Virtual Cell at this time");
+			}  else if (rule instanceof RateRule) {
+				logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.UNSUPPORED_ELEMENTS_OR_ATTS, "Rate rules are not handled in the Virtual Cell at this time");
+			}
 		}
 	}
 	// Check if events are present.
@@ -1748,12 +1789,12 @@ private void checkForUnsupportedVCellFeatures() throws Exception {
 		}
 	}
 	// Check if any of the species have 'hasOnlySubstanceUnits set:
-	for (int j = 0; j < (int)sbmlModel.getNumSpecies(); j++) {
-		Species sp = (Species)sbmlModel.getSpecies(j);
-		if (sp.getHasOnlySubstanceUnits()) {
-			logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.SPECIES_ERROR, "Species " + sp.getId() + " has 'hasOnlySubstanceUnits' set to true, this is not supported in VCell");
-		}
-	}
+//	for (int j = 0; j < (int)sbmlModel.getNumSpecies(); j++) {
+//		Species sp = (Species)sbmlModel.getSpecies(j);
+//		if (sp.getHasOnlySubstanceUnits()) {
+//			logger.sendMessage(VCLogger.HIGH_PRIORITY, VCLogger.SPECIES_ERROR, "Species " + sp.getId() + " has 'hasOnlySubstanceUnits' set to true, this is not supported in VCell");
+//		}
+//	}
 	// Check if any of the compartments have spatial dimension 0
 	for (int i = 0; i < (int)sbmlModel.getNumCompartments(); i++) {
 		Compartment comp = (Compartment)sbmlModel.getCompartment(i);
