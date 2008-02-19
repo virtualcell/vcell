@@ -3,18 +3,13 @@ package cbit.vcell.mapping.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import javax.swing.JComboBox;
-
 import org.vcell.sbml.vcell.StructureSizeSolver;
 
 import cbit.vcell.parser.*;
 import cbit.vcell.units.VCUnitDefinition;
-import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.mapping.*;
 import cbit.vcell.math.BoundaryConditionType;
-import cbit.gui.DialogUtils;
-import cbit.util.BeanUtils;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)
@@ -49,6 +44,22 @@ public class StructureMappingTableModel extends javax.swing.table.AbstractTableM
 	public final String LABEL_Y_PLUS = "Y+";
 	public final String LABEL_Z_MINUS = "Z-";
 	public final String LABEL_Z_PLUS = "Z+";
+	
+	public final static String[] COLUMN_TOOLTIPS = {
+			null, // 0
+			null, // 1
+			null, // 2
+			"ratio of membrane area to total enclosed volume", // 3
+			"ratio of total enclosed volume to parent's total enclosed volume", // 4
+			"<html>The volume of a compartment does <b>NOT</b> include the volumes of <br> any other compartments residing within that compartment.</html>", // 5
+			"membrane surface area", // 6
+			"<html>boundary condition type for X- boundary <ul><li>flux: specify flux at boundary</li><li>value: specify concentration at boundary</li></ul><html>", // 7
+			"<html>boundary condition type for X+ boundary <ul><li>flux: specify flux at boundary</li><li>value: specify concentration at boundary</li></ul><html>", // 8
+			"<html>boundary condition type for Y- boundary <ul><li>flux: specify flux at boundary</li><li>value: specify concentration at boundary</li></ul><html>", // 9
+			"<html>boundary condition type for Y+ boundary <ul><li>flux: specify flux at boundary</li><li>value: specify concentration at boundary</li></ul><html>", // 10
+			"<html>boundary condition type for Z- boundary <ul><li>flux: specify flux at boundary</li><li>value: specify concentration at boundary</li></ul><html>", // 11
+			"<html>boundary condition type for Z+ boundary <ul><li>flux: specify flux at boundary</li><li>value: specify concentration at boundary</li></ul><html>" // 12
+	};
 		
 	private final String LABELS[] = { LABEL_STRUCTURE, LABEL_SUBDOMAIN, LABEL_RESOLVED, LABEL_SURFVOL, LABEL_VOLFRACT, LABEL_VOLUME, LABEL_SURFACE, LABEL_X_MINUS, LABEL_X_PLUS, LABEL_Y_MINUS, LABEL_Y_PLUS, LABEL_Z_MINUS, LABEL_Z_PLUS };
 	

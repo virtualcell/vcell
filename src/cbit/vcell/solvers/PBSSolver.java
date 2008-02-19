@@ -1,4 +1,5 @@
 package cbit.vcell.solvers;
+import cbit.htc.PBSConstants;
 import cbit.htc.PBSUtils;
 import cbit.vcell.server.PropertyLoader;
 import java.io.File;
@@ -39,7 +40,7 @@ public String submit2PBS() {
 		String subFile = new File(getBaseName()).getPath() + PBS_SUBMIT_FILE_EXT;
 		String jobname = "S_" + simulationTask.getSimKey() + "_" + simulationTask.getSimulationJob().getJobIndex();
 		
-		jobid = PBSUtils.submitJob(simulationTask.getComputeResource(), jobname, subFile, cmd, cmdArguments, 1, simulationTask.getEstimatedMemorySizeMB());
+		jobid = PBSUtils.submitJob(simulationTask.getComputeResource(), jobname, subFile, cmd, cmdArguments, 1, simulationTask.getEstimatedMemorySizeMB(), PBSConstants.PBS_ARCH_LINUX);
 		if (jobid == null) {
 			fireSolverAborted("Failed. (error message: submitting to job scheduler failed).");
 		}

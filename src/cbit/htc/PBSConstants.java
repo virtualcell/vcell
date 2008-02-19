@@ -76,4 +76,7 @@ public class PBSConstants {
 	final static String JOB_CMD_HISTORY = "tracejob -p " + PropertyLoader.getRequiredProperty(PropertyLoader.pbsHomeDir);
 	final static String SERVER_CMD_STATUS = "qstat -B";
 	final static int PBS_MEM_OVERHEAD_MB = 70;
+	
+	public final static String PBS_ARCH_LINUX = "linux"; // rocks
+	public final static String PBS_ARCH_ALTIX = "altix"; // SGI
 }
