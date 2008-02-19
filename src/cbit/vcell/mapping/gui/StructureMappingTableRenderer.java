@@ -21,6 +21,8 @@ public class StructureMappingTableRenderer extends DefaultTableCellRenderer
 			setBackground(table.getBackground());
 			setForeground(table.getForeground());
 		}
+		
+		setToolTipText(StructureMappingTableModel.COLUMN_TOOLTIPS[column]);
 		return this;
 	}
 }

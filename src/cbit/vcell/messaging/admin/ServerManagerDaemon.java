@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.*;
 import javax.jms.*;
 import static cbit.htc.PBSConstants.*;
+import cbit.htc.PBSConstants;
 import cbit.htc.PBSUtils;
 import cbit.sql.ConnectionFactory;
 import cbit.sql.KeyFactory;
@@ -198,7 +199,7 @@ private String submit2PBS(ServiceStatus service) throws IOException, ExecutableE
 	
 	File sub_file = File.createTempFile("service", ".pbs.sub");
 	log.print("PBS sub file  for service " + service.getServiceSpec() + " is " + sub_file.getAbsolutePath());
-	return PBSUtils.submitJob((String)null, service.getServiceSpec().getID(), sub_file.getAbsolutePath(), executable, cmdArguments, 1, service.getServiceSpec().getMemoryMB());
+	return PBSUtils.submitJob((String)null, service.getServiceSpec().getID(), sub_file.getAbsolutePath(), executable, cmdArguments, 1, service.getServiceSpec().getMemoryMB(), PBSConstants.PBS_ARCH_LINUX);
 }
 /**
  * This method was created in VisualAge.
