@@ -945,7 +945,7 @@ private void jButtonFDFromSim_ActionPerformed(java.awt.event.ActionEvent actionE
 			fieldDataWindowManager.selectSimulationFromDesktop();
 		if(simInfoHolder == null){
 			PopupGenerator.showErrorDialog(
-					"Please open a Bio or Math model containing the\nsimulation you wish to use to create a new Field Data");
+					"Please open a Bio or Math model containing the spatial (non-compartmental)\nsimulation you wish to use to create a new Field Data");
 			return;
 		}
 		//Check that the sim is in a state that can be copied
