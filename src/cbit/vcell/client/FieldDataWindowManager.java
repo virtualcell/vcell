@@ -6,6 +6,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.Hashtable;
+import java.util.Vector;
 
 import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
@@ -48,14 +49,17 @@ public class FieldDataWindowManager
 		public final SimulationInfo simInfo;
 		public final int jobIndex;
 		public final boolean isTimeUniform;
+		public final boolean isCompartmental;
 		protected SimInfoHolder(
 				SimulationInfo argSimInfo,
 				int argJobIndex,
-				boolean argistu
+				boolean argistu,
+				boolean argisc
 				){
 			simInfo = argSimInfo;
 			jobIndex = argJobIndex;
 			isTimeUniform = argistu;
+			isCompartmental = argisc;
 			
 		}
 	}
@@ -65,9 +69,10 @@ public class FieldDataWindowManager
 				KeyValue mmK,
 				SimulationInfo argSI,
 				int jobIndex,
-				boolean argistu
+				boolean argistu,
+				boolean argisc
 				){
-			super(argSI,jobIndex,/*argorigin,argextent,argISize,argvariableNames,argtimebounds,argdts,*/argistu);
+			super(argSI,jobIndex,/*argorigin,argextent,argISize,argvariableNames,argtimebounds,argdts,*/argistu,argisc);
 			mathModelKey = mmK;
 		}
 		public KeyValue getMathModelKey(){
@@ -81,9 +86,10 @@ public class FieldDataWindowManager
 				KeyValue bmK,String scName,
 				SimulationInfo argSI,
 				int jobIndex,
-				boolean argistu
+				boolean argistu,
+				boolean argisc
 			){
-			super(argSI,jobIndex,/*argorigin,argextent,argISize,argvariableNames,argtimebounds,argdts,*/argistu);
+			super(argSI,jobIndex,/*argorigin,argextent,argISize,argvariableNames,argtimebounds,argdts,*/argistu,argisc);
 			bioModelKey = bmK;
 			simulationContextName = scName;
 		}
@@ -139,39 +145,50 @@ public class FieldDataWindowManager
 			return null;
 		}
 		String[] colNames = new String[] {"Simulation","Scan Index","Model","Type","Application","Owner","Date"};
-		String[][] rows = new String[simInfoHolders.length][colNames.length];
+		Vector<String[]> rowsV = new Vector<String[]>();
+		Vector<SimInfoHolder> simInfoHolderV = new Vector<SimInfoHolder>();
 		for(int i=0;i<simInfoHolders.length;i+= 1){
+			if(simInfoHolders[i].isCompartmental){
+				continue;//skip, only spatial simInfos are used for Field Data
+			}
+			String[] rows = new String[colNames.length];
 			if(simInfoHolders[i] instanceof FDSimMathModelInfo){
 				MathModelInfo mmInfo =
 					getRequestManager().getDocumentManager().getMathModelInfo(
 							((FDSimMathModelInfo)simInfoHolders[i]).getMathModelKey());
-				rows[i][0] = simInfoHolders[i].simInfo.getName();
-				rows[i][1] = simInfoHolders[i].jobIndex+"";
-				rows[i][2] = mmInfo.getVersion().getName();
-				rows[i][3] = "MathModel";
-				rows[i][4] = "";
-				rows[i][5] = simInfoHolders[i].simInfo.getOwner().getName();
-				rows[i][6] = mmInfo.getVersion().getDate().toString();
+				rows[0] = simInfoHolders[i].simInfo.getName();
+				rows[1] = simInfoHolders[i].jobIndex+"";
+				rows[2] = mmInfo.getVersion().getName();
+				rows[3] = "MathModel";
+				rows[4] = "";
+				rows[5] = simInfoHolders[i].simInfo.getOwner().getName();
+				rows[6] = mmInfo.getVersion().getDate().toString();
 				
 			}else if(simInfoHolders[i] instanceof FDSimBioModelInfo){
 				BioModelInfo bmInfo =
 					getRequestManager().getDocumentManager().getBioModelInfo(
 							((FDSimBioModelInfo)simInfoHolders[i]).getBioModelKey());					
-				rows[i][0] = simInfoHolders[i].simInfo.getName();
-				rows[i][1] = simInfoHolders[i].jobIndex+"";
-				rows[i][2] = bmInfo.getVersion().getName();
-				rows[i][3] = "BioModel";
-				rows[i][4] = ((FDSimBioModelInfo)simInfoHolders[i]).getSimulationContextName();
-				rows[i][5] = simInfoHolders[i].simInfo.getOwner().getName();
-				rows[i][6] = bmInfo.getVersion().getDate().toString();
+				rows[0] = simInfoHolders[i].simInfo.getName();
+				rows[1] = simInfoHolders[i].jobIndex+"";
+				rows[2] = bmInfo.getVersion().getName();
+				rows[3] = "BioModel";
+				rows[4] = ((FDSimBioModelInfo)simInfoHolders[i]).getSimulationContextName();
+				rows[5] = simInfoHolders[i].simInfo.getOwner().getName();
+				rows[6] = bmInfo.getVersion().getDate().toString();
 			}
+			rowsV.add(rows);
+			simInfoHolderV.add(simInfoHolders[i]);
 		}
-		
+		if(rowsV.size() == 0){
+			return null;
+		}
+		String[][] rows = new String[rowsV.size()][];
+		rowsV.copyInto(rows);
 		int[] selectionIndexArr =  PopupGenerator.showComponentOKCancelTableList(
 				getComponent(), "Select Simulation for Field Data",
 				colNames, rows, ListSelectionModel.SINGLE_SELECTION);
 		if(selectionIndexArr != null && selectionIndexArr.length > 0){
-			return simInfoHolders[selectionIndexArr[0]];
+			return simInfoHolderV.elementAt(selectionIndexArr[0]);//simInfoHolders[selectionIndexArr[0]];
 		}
 		throw UserCancelException.CANCEL_GENERIC;
 	}

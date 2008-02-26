@@ -2091,6 +2091,9 @@ public SimInfoHolder[] getOpenDesktopDocumentInfos() throws DataAccessException{
 						getDocumentManager().getBioModel(vcDoc.getVersion().getVersionKey());
 					SimulationContext[] simContexts = bioModel.getSimulationContexts();
 					for(int i=0;i<simContexts.length;i+= 1){
+						if(simContexts[i].getGeometry() == null){
+							throw new DataAccessException("Error gathering document info (isCompartmental check failed):\nOpen BioModel document "+bioModel.getName()+" has no Geometry");
+						}
 						Simulation[] sims = simContexts[i].getSimulations();
 						for(int j=0;j<sims.length;j+= 1){
 							for(int k=0;k<sims[j].getScanCount();k+= 1){
@@ -2099,7 +2102,8 @@ public SimInfoHolder[] getOpenDesktopDocumentInfos() throws DataAccessException{
 											bioModel.getVersion().getVersionKey(),
 											simContexts[i].getName(),sims[j].getSimulationInfo(),
 											k,
-											!sims[j].getSolverTaskDescription().getSolverDescription().hasVariableTimestep()
+											!sims[j].getSolverTaskDescription().getSolverDescription().hasVariableTimestep(),
+											simContexts[i].getGeometry().getDimension() == 0
 									);
 								simInfoHolderV.add(simInfoHolder);
 							}
@@ -2108,6 +2112,9 @@ public SimInfoHolder[] getOpenDesktopDocumentInfos() throws DataAccessException{
 				}else if(vcDoc.getDocumentType() == VCDocument.MATHMODEL_DOC	){
 					MathModel mathModel =
 						getDocumentManager().getMathModel(vcDoc.getVersion().getVersionKey());
+					if(mathModel.getMathDescription() == null || mathModel.getMathDescription().getGeometry() == null){
+						throw new DataAccessException("Error gathering document info (isCompartmental check failed):\nOpen MathModel document "+mathModel.getName()+" has either no MathDescription or no Geometry");
+					}
 					Simulation[] sims = mathModel.getSimulations();
 					for(int i=0;i<sims.length;i+= 1){
 						for(int k=0;k<sims[i].getScanCount();k+= 1){
@@ -2116,7 +2123,8 @@ public SimInfoHolder[] getOpenDesktopDocumentInfos() throws DataAccessException{
 										mathModel.getVersion().getVersionKey(),
 										sims[i].getSimulationInfo(),
 										k,
-										!sims[i].getSolverTaskDescription().getSolverDescription().hasVariableTimestep()
+										!sims[i].getSolverTaskDescription().getSolverDescription().hasVariableTimestep(),
+										mathModel.getMathDescription().getGeometry().getDimension() == 0
 								);
 							simInfoHolderV.add(simInfoHolder);
 						}
