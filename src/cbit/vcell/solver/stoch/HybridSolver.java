@@ -344,7 +344,7 @@ protected void initialize() throws cbit.vcell.solver.SolverException
 	{
 		executableName = cbit.vcell.server.PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.hybridMilAdaptiveExecutableProperty);
 	}
-	setMathExecutable(new cbit.vcell.solvers.MathExecutable(executableName + " " +getBaseName() + ".nc" + paraString +randomNumber + " -OV"));
+	setMathExecutable(new cbit.vcell.solvers.MathExecutable(executableName + " " +getBaseName() + ".nc" + paraString.toLowerCase() +randomNumber + " -OV"));
 }
 
 
