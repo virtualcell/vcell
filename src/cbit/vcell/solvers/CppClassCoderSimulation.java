@@ -122,10 +122,14 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 				out.println("\t}");
 	  		}
 	  		
-	  		if (simulation.getMathDescription().isPDE(volVar)){
-	  			out.println("\tsmbuilder = new SparseVolumeEqnBuilder(volumeVar,mesh," + (simulation.getMathDescription().hasVelocity(volVar) ? "false" : "true") + ", numSolveRegions, solveRegions);");
-	  			out.println("\tslSolver = new SparseLinearSolver(volumeVar,smbuilder,"+simulation.hasTimeVaryingDiffusionOrAdvection(volVar)+");");
-	  			out.println("\taddSolver(slSolver);");
+	  		if (simulation.getMathDescription().isPDE(volVar)) {
+	  			if (simulation.getMathDescription().isPdeSteady(volVar)) {
+	  				out.println("\tsmbuilder = new EllipticVolumeEqnBuilder(volumeVar,mesh, numSolveRegions, solveRegions);");
+	  			} else {
+	  				out.println("\tsmbuilder = new SparseVolumeEqnBuilder(volumeVar,mesh," + (simulation.getMathDescription().hasVelocity(volVar) ? "false" : "true") + ", numSolveRegions, solveRegions);");
+	  			}
+  				out.println("\tslSolver = new SparseLinearSolver(volumeVar,smbuilder,"+simulation.hasTimeVaryingDiffusionOrAdvection(volVar)+");");
+  				out.println("\taddSolver(slSolver);");
 	  		}else{
 	  			out.println("\t//odeSolver = new ODESolver(volumeVar,mesh);");
 	  			out.println("\todeSolver = new ODESolver(volumeVar,mesh,numSolveRegions,solveRegions);");

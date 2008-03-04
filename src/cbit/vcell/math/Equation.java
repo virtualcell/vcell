@@ -125,7 +125,7 @@ public Expression getExactSolution() {
  * This method was created by a SmartGuide.
  * @return java.util.Vector
  */
-protected abstract Vector getExpressions(MathDescription mathDesc);
+protected abstract Vector<Expression> getExpressions(MathDescription mathDesc);
 /**
  * Insert the method's description here.
  * Creation date: (10/10/2002 10:31:03 AM)

@@ -67,6 +67,7 @@ protected String[] getCodeIncludes()
 			  "<VCELL/MembraneEqnBuilderDiffusion.h>",
 			  "<VCELL/SparseLinearSolver.h>",
 			  "<VCELL/SparseVolumeEqnBuilder.h>",
+			  "<VCELL/EllipticVolumeEqnBuilder.h>",
 			  "<VCELL/SimulationMessaging.h>",
 			  "<VCELL/FieldData.h>"
 			 };
