@@ -17,11 +17,8 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 
-import cbit.gui.DialogUtils;
 import cbit.util.AsynchProgressPopup;
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.data.PDEDataViewer;
-import cbit.vcell.client.server.ClientServerManager;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.xml.MIRIAMHelper.DescriptiveHeirarchy;
 
@@ -29,15 +26,10 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.VetoableChangeListener;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.text.FieldPosition;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -448,7 +440,7 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 	private JButton getJButtonEditAnnotation() {
 		if (jButtonEditAnnotation == null) {
 			jButtonEditAnnotation = new JButton();
-			jButtonEditAnnotation.setText("Edit Annotation...");
+			jButtonEditAnnotation.setText(ACTION_EDIT);
 			jButtonEditAnnotation.addActionListener(this);
 		}
 		return jButtonEditAnnotation;
@@ -497,30 +489,24 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 	private void detailAction(){
 		final URI detailURI = getSelectedURI();
 		if (detailURI != null) {
+			final AsynchProgressPopup pp =
+				new AsynchProgressPopup(this,"Displaying MIRIAM Information in Web Browser","",true,false);
+			SwingUtilities.invokeLater(new Runnable(){public void run() {pp.startKeepOnTop();}});
 			if (miriamLink == null) {
+				pp.setMessage("Creating MiriamLink...");
 				miriamLink = new MiriamLink();
 			}
-			new Thread(
+			final Thread miriamThread = new Thread(
 				new Runnable(){
 					public void run() {
-						final AsynchProgressPopup pp = new AsynchProgressPopup(MIRIAMAnnotationEditor.this,
-								"Displaying MIRIAM Information in Web Browser","Gathering Website Info...",
-								true,false);
-						SwingUtilities.invokeLater(
-								new Runnable(){
-									public void run() {
-										pp.startKeepOnTop();
-									}
-								}
-							);
 						try {
+							pp.setMessage("Gathering Website Info...");
 							String[] urlArr = miriamLink.getDataEntries(detailURI.toString());
 							if (urlArr != null && urlArr.length > 0) {
-//								for (int i = 0; i < urlArr.length; i++) {
-//									System.out.println(urlArr[i]);
-//								}
 								pp.setMessage("Displaying Details in Local Web Browser...");
 								PopupGenerator.browserLauncher(urlArr[0],urlArr[0],false);
+							}else{
+								throw new Exception("MiriamLink network query returned null");
 							}
 							Thread.sleep(2000);//keep progress for a little while because browser takes time
 						} catch (Exception e) {
@@ -532,7 +518,38 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 						}
 					}
 				}
-			).start();
+			);
+			miriamThread.start();
+
+			//Create Timer thread to kill MiriamLink thread if taking too long (hang)
+			final long MAX_WAIT_TIME_MILLISEC = 45000;
+			final long MAX_WARNING_TIME_MILLISEC = 15000;
+			final javax.swing.Timer miriamBlockTimer = new javax.swing.Timer(1000,null);
+			miriamBlockTimer.addActionListener(
+				new java.awt.event.ActionListener(){
+					long startTime = System.currentTimeMillis();
+					public void actionPerformed(java.awt.event.ActionEvent e){
+						if(!miriamThread.isAlive()){
+							miriamBlockTimer.stop();
+							return;
+						}
+						long elapsedTime = System.currentTimeMillis()-startTime;
+//						System.out.println(elapsedTime);
+						if(elapsedTime < MAX_WAIT_TIME_MILLISEC){
+							if(elapsedTime > MAX_WARNING_TIME_MILLISEC){
+								pp.setMessage("Waiting for MIRIAM details... "+((MAX_WAIT_TIME_MILLISEC-elapsedTime)/1000));
+							}
+							miriamBlockTimer.restart();
+						}else{
+							miriamBlockTimer.stop();
+							pp.stop();
+							miriamThread.interrupt();
+						}
+					}
+				}
+			);
+			miriamBlockTimer.restart();
+			
 		}
 	}
 	private URI getSelectedURI(){
