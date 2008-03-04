@@ -4,19 +4,14 @@ import cbit.vcell.field.FieldFunctionContainer;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.GeometricRegion;
-import cbit.image.ImageException;
 import cbit.vcell.mapping.MappingException;
-import cbit.vcell.mapping.MathSystemHash.VariableInitial;
-
 import javax.swing.event.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
 import java.util.*;
-import java.util.Map.Entry;
 import java.io.*;
-import java.rmi.RemoteException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
@@ -24,11 +19,8 @@ import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.SubVolume;
-import cbit.vcell.server.DataAccessException;
 import cbit.vcell.simdata.ExternalDataIdentifier;
-import cbit.vcell.geometry.GeometryException;
 import cbit.sql.Version;
-import cbit.sql.Versionable;
 import cbit.util.*;
 import cbit.sql.KeyValue;
 /**
@@ -36,10 +28,10 @@ import cbit.sql.KeyValue;
  * 
  */
 public class MathDescription implements cbit.sql.Versionable, Matchable, SymbolTable, Serializable,FieldFunctionContainer {
-	protected transient java.util.Vector aChangeListener = null;
+	protected transient java.util.Vector<ChangeListener> aChangeListener = null;
 	private Version version = null;
-	private Vector subDomainList = new Vector();
-	private Vector variableList = new Vector();
+	private Vector subDomainList = new Vector<SubDomain>();
+	private Vector variableList = new Vector<Variable>();
 	private Geometry geometry = null;
 	private transient Jacobian jacobian = null;
 	private transient RateSensitivity rateSensitivity = null;
@@ -97,9 +89,9 @@ public MathDescription(String name) {
 /**
  * Add a javax.swing.event.ChangeListener.
  */
-public void addChangeListener(javax.swing.event.ChangeListener newListener) {
+public void addChangeListener(ChangeListener newListener) {
 	if (aChangeListener == null) {
-		aChangeListener = new java.util.Vector();
+		aChangeListener = new java.util.Vector<ChangeListener>();
 	};
 	if (! aChangeListener.contains(newListener)) {
 		aChangeListener.addElement(newListener);
@@ -215,8 +207,8 @@ public synchronized void addVetoableChangeListener(java.lang.String propertyName
  * This method was created by a SmartGuide.
  */
 private void clearAll() {
-	subDomainList = new Vector();
-	variableList = new Vector();
+	subDomainList = new Vector<SubDomain>();
+	variableList = new Vector<Variable>();
 //	geometry = null;
 }
 
@@ -297,7 +289,6 @@ public boolean compareEquivalent(MathDescription newMathDesc, StringBuffer reaso
 	final String UNKNOWN_DIFFERENCE_IN_MATH =		" MathsDifferent:Unknown ";
 	try {
 		MathDescription oldMathDesc = this;
-		boolean bRoundCoefficients = false;
 	    if (oldMathDesc.compareEqual(newMathDesc)){
 		    reasonForDecision.append(NATIVE_MATHS_ARE_SAME);
 		    return true;
@@ -572,8 +563,8 @@ public boolean compareInvariantAttributes(MathDescription newMathDesc) {
 	//
 	// compare state variables (make sure number of state variables are equal).
 	//
-	HashSet thisStateVarHash = getStateVariableNames();
-	HashSet otherStateVarHash = newMathDesc.getStateVariableNames();
+	HashSet<String> thisStateVarHash = getStateVariableNames();
+	HashSet<String> otherStateVarHash = newMathDesc.getStateVariableNames();
 	if (thisStateVarHash.size() != otherStateVarHash.size()){
 		System.out.println("DIFFERENT INVARIANTS: number of StateVars different");
 		return false;
@@ -581,7 +572,7 @@ public boolean compareInvariantAttributes(MathDescription newMathDesc) {
 	//
 	// disregard vars present in both sets (for efficiency).
 	//
-	HashSet intersectionStateVarHash = new HashSet(thisStateVarHash);
+	HashSet<String> intersectionStateVarHash = new HashSet<String>(thisStateVarHash);
 	intersectionStateVarHash.retainAll(otherStateVarHash);
 	//
 	// if intersection of state variables is smaller than entire set, 
@@ -594,9 +585,9 @@ public boolean compareInvariantAttributes(MathDescription newMathDesc) {
 		//
 		// check this MathDescription's (extra) state variables are present in other MathDescription (as Function).
 		//
-		Iterator iter = thisStateVarHash.iterator();
+		Iterator<String> iter = thisStateVarHash.iterator();
 		while (iter.hasNext()){
-			String varName = (String)iter.next();
+			String varName = iter.next();
 			Variable var = newMathDesc.getVariable(varName);
 			if (var==null || !(var instanceof Function)){
 				System.out.println("DIFFERENT INVARIANTS: StateVar not found as Function");
@@ -608,7 +599,7 @@ public boolean compareInvariantAttributes(MathDescription newMathDesc) {
 		//
 		iter = otherStateVarHash.iterator();
 		while (iter.hasNext()){
-			String varName = (String)iter.next();
+			String varName = iter.next();
 			Variable var = getVariable(varName);
 			if (var==null || !(var instanceof Function)){
 				System.out.println("DIFFERENT INVARIANTS: StateVar not found as Function");
@@ -653,16 +644,11 @@ public static MathDescription createCanonicalMathDescription(MathDescription ori
  * Creation date: (10/9/2002 10:54:06 PM)
  * @return cbit.vcell.math.MathDescription
  */
-public static MathDescription createMathWithExpandedEquations(MathDescription originalMathDescription, HashSet varNamesToKeep) throws MathException, ExpressionException, MappingException {
+public static MathDescription createMathWithExpandedEquations(MathDescription originalMathDescription, HashSet<String> varNamesToKeep) throws MathException, ExpressionException, MappingException {
 	//
 	// clone current mathdescription
 	//
 	MathDescription newMath = new MathDescription(originalMathDescription);
-
-	//
-	// make a "identity" simulation (no overrides), this will help to substitute/flatten expressions.
-	//
-	cbit.vcell.solver.Simulation tempSimulation = new cbit.vcell.solver.Simulation(newMath);
 
 	//
 	// for any dependent variables in the "varNamesToKeep" list, create appropriate Variable/Equation
@@ -671,7 +657,7 @@ public static MathDescription createMathWithExpandedEquations(MathDescription or
 	//  e.g. Function depVar = K0 + K1*indepVar1 + K2*indepVar2 + ... + Kn*indepVarN
 	// if it doesn't fit this form, then math's are not equivalent.
 	//
-	HashSet stateVarSet = newMath.getStateVariableNames();
+	HashSet<String> stateVarSet = newMath.getStateVariableNames();
 	for (int i = 0; i < newMath.variableList.size(); i++){
 		Variable tmp_var = (Variable)newMath.variableList.elementAt(i);
 		if (varNamesToKeep.contains(tmp_var.getName()) && tmp_var instanceof Function){
@@ -679,8 +665,8 @@ public static MathDescription createMathWithExpandedEquations(MathDescription or
 			//
 			// get list of symbols that are state variables
 			//
-			Vector indepVarList = new Vector();         // holds the "indepVar's"
-			Vector coefficientList = new Vector();      // holds the "K's"
+			Vector<Variable> indepVarList = new Vector<Variable>();         // holds the "indepVar's"
+			Vector<Expression> coefficientList = new Vector<Expression>();      // holds the "K's"
 			Expression exp = function.getExpression();
 			exp.bindExpression(null);
 			Expression K0 = new Expression(exp);
@@ -745,7 +731,7 @@ public static MathDescription createMathWithExpandedEquations(MathDescription or
 						Expression initExp = new Expression(K0);
 						Expression rateExp = new Expression(0.0);
 						for (int k = 0; k < indepVarList.size(); k++){
-							Variable indepVar = (Variable)indepVarList.elementAt(k);
+							Variable indepVar = indepVarList.elementAt(k);
 							Equation indepVarEqu = subDomain.getEquation(indepVar);
 							Expression coefficient = (Expression)coefficientList.elementAt(k);
 							initExp = Expression.add(initExp,Expression.mult(new Expression(coefficient),new Expression(indepVarEqu.getInitialExpression())));
@@ -776,9 +762,9 @@ public static MathDescription createMathWithExpandedEquations(MathDescription or
 						Expression initExp = new Expression(K0);
 						Expression rateExp = new Expression(0.0);
 						for (int k = 0; k < indepVarList.size(); k++){
-							Variable indepVar = (Variable)indepVarList.elementAt(k);
+							Variable indepVar = indepVarList.elementAt(k);
 							Equation indepVarEqu = subDomain.getEquation(indepVar);
-							Expression coefficient = (Expression)coefficientList.elementAt(k);
+							Expression coefficient = coefficientList.elementAt(k);
 							initExp = Expression.add(initExp,Expression.mult(new Expression(coefficient),new Expression(indepVarEqu.getInitialExpression())));
 							rateExp = Expression.add(rateExp,Expression.mult(new Expression(coefficient),new Expression(indepVarEqu.getRateExpression())));
 						}
@@ -845,9 +831,9 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
 protected void fireStateChanged() {
 	if (aChangeListener != null) {
 		ChangeEvent e = new ChangeEvent(this);
-		Enumeration en = aChangeListener.elements();
+		Enumeration<ChangeListener> en = aChangeListener.elements();
 		while (en.hasMoreElements()) {
-			ChangeListener listener = (ChangeListener)en.nextElement();
+			ChangeListener listener = en.nextElement();
 			listener.stateChanged(e);
 		}
 	}
@@ -900,10 +886,8 @@ public static MathDescription fromEditor(MathDescription oldMathDesc, String vcm
 	
 	try {
 		String token = null;
-		boolean bBlockStyle = false;
 		token = tokens.nextToken();
 		if (token.equalsIgnoreCase(VCML.MathDescription)){
-			bBlockStyle = true;
 			//token = tokens.nextToken();
 			//setName(token);
 			//CHECK THIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1056,9 +1040,9 @@ public static MathDescription fromEditor(MathDescription oldMathDesc, String vcm
  * @param handle int
  */
 public CompartmentSubDomain getCompartmentSubDomain(String name) {
-	Enumeration enum1 = getSubDomains();
+	Enumeration<SubDomain> enum1 = getSubDomains();
 	while (enum1.hasMoreElements()){
-		SubDomain subDomain = (SubDomain)enum1.nextElement();
+		SubDomain subDomain = enum1.nextElement();
 		if (subDomain instanceof CompartmentSubDomain){
 			CompartmentSubDomain compartment = (CompartmentSubDomain)subDomain;
 			if (compartment.getName().equals(name)){
@@ -1075,8 +1059,8 @@ public CompartmentSubDomain getCompartmentSubDomain(String name) {
  * Creation date: (8/21/00 1:14:56 PM)
  * @return java.util.Enumeration
  */
-public Enumeration getConstants() {
-	return new Enumeration() {
+public Enumeration<Constant> getConstants() {
+	return new Enumeration<Constant>() {
 	    int count = 0;
 
 	    public boolean hasMoreElements() {
@@ -1088,12 +1072,12 @@ public Enumeration getConstants() {
 		    return false;
 	    }
 
-	    public Object nextElement() {
+	    public Constant nextElement() {
 			synchronized (variableList) {
 			    for (int i=count;i<variableList.size();i++){
 				    if (variableList.elementAt(i) instanceof Constant){
 					    count = i+1;
-					    return variableList.elementAt(i);
+					    return (Constant)variableList.elementAt(i);
 				    }
 			    }
 			}
@@ -1170,7 +1154,7 @@ private Hashtable<FieldFunctionArguments, Vector<Expression>> collectFieldFuncAn
 	// make sure each field only added once
 	Hashtable<FieldFunctionArguments, Vector<Expression>> fieldFuncArgsExpHash =
 		new Hashtable<FieldFunctionArguments, Vector<Expression>>();
-	Enumeration enum1 = getSubDomains();
+	Enumeration<SubDomain> enum1 = getSubDomains();
 	
 	for(int i=0;i<variableList.size();i+=1){
 		if(variableList.elementAt(i) instanceof Function){
@@ -1182,10 +1166,10 @@ private Hashtable<FieldFunctionArguments, Vector<Expression>> collectFieldFuncAn
 	while (enum1.hasMoreElements()){
 		SubDomain subDomain = (SubDomain)enum1.nextElement();
 		// go through each equation
-		Enumeration enum_equ = subDomain.getEquations();
+		Enumeration<Equation> enum_equ = subDomain.getEquations();
 		while (enum_equ.hasMoreElements()){
 			Equation equation = (Equation)enum_equ.nextElement();
-			Vector exs = equation.getExpressions(this);
+			Vector<Expression> exs = equation.getExpressions(this);
 
 			// go through each expresson
 			for (int i = 0; i < exs.size(); i ++) {
@@ -1304,8 +1288,8 @@ public FieldFunctionArguments[] getFieldFunctionArguments() throws MathException
  * Creation date: (8/21/00 1:14:56 PM)
  * @return java.util.Enumeration
  */
-public Enumeration getFilamentVariables() {
-	return new Enumeration() {
+public Enumeration<FilamentVariable> getFilamentVariables() {
+	return new Enumeration<FilamentVariable>() {
 	    int count = 0;
 
 	    public boolean hasMoreElements() {
@@ -1317,12 +1301,12 @@ public Enumeration getFilamentVariables() {
 		    return false;
 	    }
 
-	    public Object nextElement() {
+	    public FilamentVariable nextElement() {
 			synchronized (variableList) {
 			    for (int i=count;i<variableList.size();i++){
 				    if (variableList.elementAt(i) instanceof FilamentVariable){
 					    count = i+1;
-					    return variableList.elementAt(i);
+					    return (FilamentVariable)variableList.elementAt(i);
 				    }
 			    }
 			}
@@ -1375,8 +1359,8 @@ public static Function[] getFlattenedFunctions(MathDescription originalMathDescr
  * Creation date: (8/21/00 1:14:56 PM)
  * @return java.util.Enumeration
  */
-public Enumeration getFunctions() {
-	return new Enumeration() {
+public Enumeration<Function> getFunctions() {
+	return new Enumeration<Function>() {
 	    int count = 0;
 
 	    public boolean hasMoreElements() {
@@ -1388,12 +1372,12 @@ public Enumeration getFunctions() {
 		    return false;
 	    }
 
-	    public Object nextElement() {
+	    public Function nextElement() {
 			synchronized (variableList) {
 			    for (int i=count;i<variableList.size();i++){
 				    if (variableList.elementAt(i) instanceof Function){
 					    count = i+1;
-					    return variableList.elementAt(i);
+					    return (Function)variableList.elementAt(i);
 				    }
 			    }
 			}
@@ -1455,9 +1439,9 @@ public KeyValue getKey() {
  * @exception java.lang.Exception The exception description.
  */
 public MembraneSubDomain getMembraneSubDomain(CompartmentSubDomain compartment1, CompartmentSubDomain compartment2) {
-	Enumeration enum1 = getSubDomains();
+	Enumeration<SubDomain> enum1 = getSubDomains();
 	while (enum1.hasMoreElements()){
-		SubDomain subDomain = (SubDomain)enum1.nextElement();
+		SubDomain subDomain = enum1.nextElement();
 		if (subDomain instanceof MembraneSubDomain){
 			MembraneSubDomain membraneSubDomain = (MembraneSubDomain)subDomain;
 			if ((membraneSubDomain.getInsideCompartment()==compartment1 && membraneSubDomain.getOutsideCompartment()==compartment2) ||
@@ -1477,9 +1461,9 @@ public MembraneSubDomain getMembraneSubDomain(CompartmentSubDomain compartment1,
  * @exception java.lang.Exception The exception description.
  */
 private MembraneSubDomain getMembraneSubDomain(String membraneName) {
-	Enumeration enum1 = getSubDomains();
+	Enumeration<SubDomain> enum1 = getSubDomains();
 	while (enum1.hasMoreElements()){
-		SubDomain subDomain = (SubDomain)enum1.nextElement();
+		SubDomain subDomain = enum1.nextElement();
 		if (subDomain instanceof MembraneSubDomain){
 			MembraneSubDomain membrane = (MembraneSubDomain)subDomain;
 			if (membrane.getName().equalsIgnoreCase(membraneName)){
@@ -1498,10 +1482,10 @@ private MembraneSubDomain getMembraneSubDomain(String membraneName) {
  * @exception java.lang.Exception The exception description.
  */
 public MembraneSubDomain[] getMembraneSubDomains(CompartmentSubDomain compartment) {
-	Vector membraneSubDomainList = new Vector();
-	Enumeration enum1 = getSubDomains();
+	Vector<MembraneSubDomain> membraneSubDomainList = new Vector<MembraneSubDomain>();
+	Enumeration<SubDomain> enum1 = getSubDomains();
 	while (enum1.hasMoreElements()){
-		SubDomain subDomain = (SubDomain)enum1.nextElement();
+		SubDomain subDomain = enum1.nextElement();
 		if (subDomain instanceof MembraneSubDomain){
 			MembraneSubDomain membraneSubDomain = (MembraneSubDomain)subDomain;
 			if ((membraneSubDomain.getInsideCompartment() == compartment) || (membraneSubDomain.getOutsideCompartment() == compartment)){
@@ -1562,8 +1546,8 @@ public RateSensitivity getRateSensitivity() throws MathException {
  * Creation date: (11/24/2004 7:20:17 AM)
  * @return cbit.vcell.math.Variable[]
  */
-public HashSet getStateVariableNames() {
-	HashSet stateVarNameSet = new HashSet();
+public HashSet<String> getStateVariableNames() {
+	HashSet<String> stateVarNameSet = new HashSet<String>();
 	for (int i = 0; i < variableList.size(); i++){
 		Variable var = (Variable)variableList.elementAt(i);
 		if (var instanceof VolVariable || var instanceof MemVariable || var instanceof FilamentVariable ||
@@ -1582,9 +1566,9 @@ public HashSet getStateVariableNames() {
  * @exception java.lang.Exception The exception description.
  */
 public SubDomain getSubDomain(String name) {
-	Enumeration enum1 = getSubDomains();
+	Enumeration<SubDomain> enum1 = getSubDomains();
 	while (enum1.hasMoreElements()){
-		SubDomain subDomain = (SubDomain)enum1.nextElement();
+		SubDomain subDomain = enum1.nextElement();
 		if (subDomain.getName().equals(name)){
 			return subDomain;
 		}	
@@ -1597,7 +1581,7 @@ public SubDomain getSubDomain(String name) {
  * This method was created by a SmartGuide.
  * @return java.util.Enumeration
  */
-public Enumeration getSubDomains() {
+public Enumeration<SubDomain> getSubDomains() {
 	return subDomainList.elements();
 }
 
@@ -1608,9 +1592,9 @@ public Enumeration getSubDomains() {
  * @param name java.lang.String
  */
 public Variable getVariable(String name) {
-	Enumeration enum1 = getVariables();
+	Enumeration<Variable> enum1 = getVariables();
 	while (enum1.hasMoreElements()){
-		Variable var = (Variable)enum1.nextElement();
+		Variable var = enum1.nextElement();
 		if (var.getName().equals(name)){
 			return var;
 		}
@@ -1623,7 +1607,7 @@ public Variable getVariable(String name) {
  * This method was created by a SmartGuide.
  * @return java.util.Enumeration
  */
-public Enumeration getVariables() {
+public Enumeration<Variable> getVariables() {
 	return variableList.elements();
 }
 
@@ -1651,9 +1635,9 @@ public String getVCML_database() throws MathException {
 	buffer.append(VCML.MathDescription+" {\n");
 	buffer.append("\n");
 	boolean bSpaceNeeded = false;
-	Enumeration enum1 = getVariables();
+	Enumeration<Variable> enum1 = getVariables();
 	while (enum1.hasMoreElements()){
-		Variable var = (Variable)enum1.nextElement();
+		Variable var = enum1.nextElement();
 		if (var instanceof ParameterVariable){
 			buffer.append(var.getVCML()+"\n");
 			bSpaceNeeded = true;
@@ -1665,7 +1649,7 @@ public String getVCML_database() throws MathException {
 	}
 	enum1 = getVariables();
 	while (enum1.hasMoreElements()){
-		Variable var = (Variable)enum1.nextElement();
+		Variable var = enum1.nextElement();
 		if (var instanceof Constant){
 			buffer.append(var.getVCML()+"\n");
 			bSpaceNeeded = true;
@@ -1677,7 +1661,7 @@ public String getVCML_database() throws MathException {
 	}
 	enum1 = getVariables();
 	while (enum1.hasMoreElements()){
-		Variable var = (Variable)enum1.nextElement();
+		Variable var = enum1.nextElement();
 		if (var instanceof VolVariable){
 			buffer.append(var.getVCML()+"\n");
 			bSpaceNeeded = true;
@@ -1689,7 +1673,7 @@ public String getVCML_database() throws MathException {
 	}
 	enum1 = getVariables();
 	while (enum1.hasMoreElements()){
-		Variable var = (Variable)enum1.nextElement();
+		Variable var = enum1.nextElement();
 		if (var instanceof MemVariable){
 			buffer.append(var.getVCML()+"\n");
 			bSpaceNeeded = true;
@@ -1701,7 +1685,7 @@ public String getVCML_database() throws MathException {
 	}
 	enum1 = getVariables();
 	while (enum1.hasMoreElements()){
-		Variable var = (Variable)enum1.nextElement();
+		Variable var = enum1.nextElement();
 		if (var instanceof FilamentVariable){
 			buffer.append(var.getVCML()+"\n");
 			bSpaceNeeded = true;
@@ -1713,7 +1697,7 @@ public String getVCML_database() throws MathException {
 	}
 	enum1 = getVariables();
 	while (enum1.hasMoreElements()){
-		Variable var = (Variable)enum1.nextElement();
+		Variable var = enum1.nextElement();
 		if (var instanceof VolumeRegionVariable){
 			buffer.append(var.getVCML()+"\n");
 			bSpaceNeeded = true;
@@ -1725,7 +1709,7 @@ public String getVCML_database() throws MathException {
 	}
 	enum1 = getVariables();
 	while (enum1.hasMoreElements()){
-		Variable var = (Variable)enum1.nextElement();
+		Variable var = enum1.nextElement();
 		if (var instanceof MembraneRegionVariable){
 			buffer.append(var.getVCML()+"\n");
 			bSpaceNeeded = true;
@@ -1737,7 +1721,7 @@ public String getVCML_database() throws MathException {
 	}
 	enum1 = getVariables();
 	while (enum1.hasMoreElements()){
-		Variable var = (Variable)enum1.nextElement();
+		Variable var = enum1.nextElement();
 		if (var instanceof FilamentRegionVariable){
 			buffer.append(var.getVCML()+"\n");
 			bSpaceNeeded = true;
@@ -1750,7 +1734,7 @@ public String getVCML_database() throws MathException {
 	//Stochastic variables
 	enum1 = getVariables();
 	while (enum1.hasMoreElements()){
-		Variable var = (Variable)enum1.nextElement();
+		Variable var = enum1.nextElement();
 		if (var instanceof StochVolVariable)
 		{
 			buffer.append(var.getVCML());
@@ -1763,7 +1747,7 @@ public String getVCML_database() throws MathException {
 	}
 	enum1 = getVariables();
 	while (enum1.hasMoreElements()){
-		Variable var = (Variable)enum1.nextElement();
+		Variable var = enum1.nextElement();
 		if (var instanceof Function){
 			buffer.append(var.getVCML()+"\n");
 			bSpaceNeeded = true;
@@ -1773,9 +1757,9 @@ public String getVCML_database() throws MathException {
 		buffer.append("\n");
 		bSpaceNeeded = false;
 	}
-	enum1 = getSubDomains();
-	while (enum1.hasMoreElements()){
-		SubDomain subDomain = (SubDomain)enum1.nextElement();
+	Enumeration<SubDomain> enum2 = getSubDomains();
+	while (enum2.hasMoreElements()){
+		SubDomain subDomain = enum2.nextElement();
 		buffer.append(subDomain.getVCML(getGeometry().getDimension())+"\n");
 	}
 	buffer.append("}\n");
@@ -1791,9 +1775,9 @@ public String getVCML_file() throws MathException {
 	StringBuffer buffer = new StringBuffer();
 	buffer.append(VCML.MathDescription+" "+version.getName()+" {\n");
 	buffer.append("\n");
-	Enumeration enum1 = getVariables();
+	Enumeration<Variable> enum1 = getVariables();
 	while (enum1.hasMoreElements()){
-		Variable var = (Variable)enum1.nextElement();
+		Variable var = enum1.nextElement();
 		if (var instanceof Constant){
 			buffer.append(var.getVCML()+"\n");
 		}
@@ -1801,7 +1785,7 @@ public String getVCML_file() throws MathException {
 	buffer.append("\n");
 	enum1 = getVariables();
 	while (enum1.hasMoreElements()){
-		Variable var = (Variable)enum1.nextElement();
+		Variable var = enum1.nextElement();
 		if (var instanceof VolVariable){
 			buffer.append(var.getVCML()+"\n");
 		}
@@ -1809,7 +1793,7 @@ public String getVCML_file() throws MathException {
 	buffer.append("\n");
 	enum1 = getVariables();
 	while (enum1.hasMoreElements()){
-		Variable var = (Variable)enum1.nextElement();
+		Variable var = enum1.nextElement();
 		if (var instanceof MemVariable){
 			buffer.append(var.getVCML()+"\n");
 		}
@@ -1817,7 +1801,7 @@ public String getVCML_file() throws MathException {
 	buffer.append("\n");
 	enum1 = getVariables();
 	while (enum1.hasMoreElements()){
-		Variable var = (Variable)enum1.nextElement();
+		Variable var = enum1.nextElement();
 		if (var instanceof FilamentVariable){
 			buffer.append(var.getVCML()+"\n");
 		}
@@ -1825,7 +1809,7 @@ public String getVCML_file() throws MathException {
 	buffer.append("\n");
 	enum1 = getVariables();
 	while (enum1.hasMoreElements()){
-		Variable var = (Variable)enum1.nextElement();
+		Variable var = enum1.nextElement();
 		if (var instanceof Function){
 			buffer.append(var.getVCML()+"\n");
 		}
@@ -1843,9 +1827,9 @@ public String getVCML_file() throws MathException {
 		buffer.append(geometry.getVCML());
 	}	
 	buffer.append("\n");
-	enum1 = getSubDomains();
-	while (enum1.hasMoreElements()){
-		SubDomain subDomain = (SubDomain)enum1.nextElement();
+	Enumeration<SubDomain> enum2 = getSubDomains();
+	while (enum2.hasMoreElements()){
+		SubDomain subDomain = enum2.nextElement();
 		buffer.append(subDomain.getVCML(getGeometry().getDimension())+"\n");
 	}
 	buffer.append("}\n");
@@ -1866,10 +1850,8 @@ public static String getVCML_withReorderedVariables(Version version, String oldV
 	cbit.vcell.mapping.VariableHash varHash = new cbit.vcell.mapping.VariableHash();
 	try {
 		String token = null;
-		boolean bBlockStyle = false;
 		token = tokens.nextToken();
 		if (token.equalsIgnoreCase(VCML.MathDescription)){
-			bBlockStyle = true;
 			//token = tokens.nextToken();
 			//setName(token);
 			//CHECK THIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -2104,9 +2086,9 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
  * @param volVariable cbit.vcell.math.VolVariable
  */
 public boolean hasVelocity(VolVariable volVariable) throws Exception {
-	Enumeration enum1 = getSubDomains();
+	Enumeration<SubDomain> enum1 = getSubDomains();
 	while (enum1.hasMoreElements()){
-		SubDomain subDomain = (SubDomain)enum1.nextElement();
+		SubDomain subDomain = enum1.nextElement();
 		if (subDomain instanceof CompartmentSubDomain){
 			Equation equation = subDomain.getEquation(volVariable);
 			if (equation instanceof PdeEquation){
@@ -2120,41 +2102,15 @@ public boolean hasVelocity(VolVariable volVariable) throws Exception {
 	return false;		
 }
 
-
-/**
- * This method was created by a SmartGuide.
- * @return boolean
- */
-private boolean isPDE() throws Exception {
-	Enumeration enum1 = getVariables();
-	while (enum1.hasMoreElements()){
-		Variable var = (Variable)enum1.nextElement();
-		if (var instanceof VolVariable){
-			if (isPDE((VolVariable)var)){
-				return true;
-			}
-		}else if (var instanceof Constant ||
-					 var instanceof InsideVariable || 
-					 var instanceof OutsideVariable){
-			continue;
-		}else{	
-			System.out.println("VARIABLE "+var.getName()+" is of type "+var.getClass().toString());
-			return true;
-		}	
-	}			
-	return false;
-}
-
-
 /**
  * This method was created by a SmartGuide.
  * @return boolean
  * @param volVariable cbit.vcell.math.VolVariable
  */
 public boolean isPDE(MemVariable memVariable) {
-	Enumeration enum1 = getSubDomains();
+	Enumeration<SubDomain> enum1 = getSubDomains();
 	while (enum1.hasMoreElements()){
-		SubDomain subDomain = (SubDomain)enum1.nextElement();
+		SubDomain subDomain = enum1.nextElement();
 		if (subDomain instanceof MembraneSubDomain){
 			Equation equation = subDomain.getEquation(memVariable);
 			if (equation instanceof PdeEquation){
@@ -2172,9 +2128,9 @@ public boolean isPDE(MemVariable memVariable) {
  * @param volVariable cbit.vcell.math.VolVariable
  */
 public boolean isPDE(VolVariable volVariable) {
-	Enumeration enum1 = getSubDomains();
+	Enumeration<SubDomain> enum1 = getSubDomains();
 	while (enum1.hasMoreElements()){
-		SubDomain subDomain = (SubDomain)enum1.nextElement();
+		SubDomain subDomain = enum1.nextElement();
 		if (subDomain instanceof CompartmentSubDomain){
 			Equation equation = subDomain.getEquation(volVariable);
 			if (equation instanceof PdeEquation){
@@ -2185,6 +2141,26 @@ public boolean isPDE(VolVariable volVariable) {
 	return false;		
 }
 
+/**
+ * This method was created by a SmartGuide.
+ * @return boolean
+ * @param volVariable cbit.vcell.math.VolVariable
+ */
+public boolean isPdeSteady(VolVariable volVariable) {	
+	Enumeration<SubDomain> enum1 = getSubDomains();
+	while (enum1.hasMoreElements()){
+		SubDomain subDomain = enum1.nextElement();
+		if (subDomain instanceof CompartmentSubDomain){
+			Equation equation = subDomain.getEquation(volVariable);
+			if (equation instanceof PdeEquation){
+				if (((PdeEquation)equation).isSteady()) {
+					return true;
+				}
+			}	
+		}
+	}
+	return false;		
+}
 
 /**
  * This method was created in VisualAge.
@@ -2205,10 +2181,10 @@ public boolean isSpatial() {
  * @return boolean
  */
 public boolean isStoch() {
-	Enumeration enum1 = getVariables();
+	Enumeration<Variable> enum1 = getVariables();
 	while (enum1.hasMoreElements())
 	{
-		Variable var = (Variable)enum1.nextElement();
+		Variable var = enum1.nextElement();
 		if (var instanceof StochVolVariable) {
 			return true;
 		} 
@@ -2261,21 +2237,21 @@ public boolean isValid() {
 	try {
 		for (int i = 0; i < subDomainList.size(); i++){
 			SubDomain subDomain = (SubDomain)subDomainList.elementAt(i);
-			Enumeration equEnum = subDomain.getEquations();
+			Enumeration<Equation> equEnum = subDomain.getEquations();
 			while (equEnum.hasMoreElements()){
-				Equation equ = (Equation)equEnum.nextElement();
+				Equation equ = equEnum.nextElement();
 				equ.bind(this);
 			}
 			FastSystem fastSystem = subDomain.getFastSystem();
 			if (fastSystem!=null){
-				Enumeration frEnum = fastSystem.getFastRates();
+				Enumeration<FastRate> frEnum = fastSystem.getFastRates();
 				while (frEnum.hasMoreElements()){
-					FastRate fr = (FastRate)frEnum.nextElement();
+					FastRate fr = frEnum.nextElement();
 					fr.getFunction().bindExpression(this);
 				}
-				Enumeration fiEnum = fastSystem.getFastInvariants();
+				Enumeration<FastInvariant> fiEnum = fastSystem.getFastInvariants();
 				while (fiEnum.hasMoreElements()){
-					FastInvariant fi = (FastInvariant)fiEnum.nextElement();
+					FastInvariant fi = fiEnum.nextElement();
 					fi.getFunction().bindExpression(this);
 				}
 			}
@@ -2313,9 +2289,9 @@ public boolean isValid() {
 			// Check that all equations are ODEs 
 			//
 			int odeCount = 0;
-			Enumeration enum_equ = subDomain.getEquations();
+			Enumeration<Equation> enum_equ = subDomain.getEquations();
 			while (enum_equ.hasMoreElements()){
-				Equation equ = (Equation)enum_equ.nextElement();
+				Equation equ = enum_equ.nextElement();
 				if (!(equ instanceof OdeEquation)){
 					setWarning("Compartmental Model, unexpected equation of type "+VCML.PdeEquation+", must include only "+VCML.OdeEquation+"'s");
 					return false;
@@ -2561,12 +2537,17 @@ public boolean isValid() {
 			Variable var = (Variable)variableList.elementAt(i);
 			int pdeRefCount = 0;
 			int odeRefCount = 0;
+			int steadyPdeCount = 0;
 			if (var instanceof VolVariable){
 				for (int j=0;j<subDomainList.size();j++){
 					SubDomain subDomain = (SubDomain)subDomainList.elementAt(j);
 					Equation equ = subDomain.getEquation(var);
 					if (equ instanceof PdeEquation){
-						pdeRefCount++;
+						if (((PdeEquation)equ).isSteady()) {
+							steadyPdeCount ++;
+						} else {
+							pdeRefCount++;
+						}
 						//
 						// for each PDE, make sure that a jump condition all membranes that border this compartment
 						//
@@ -2622,7 +2603,11 @@ public boolean isValid() {
 					setWarning("Spatial Model, cannot mix "+VCML.OdeEquation+"'s and "+VCML.PdeEquation+"'s for variable "+var.getName());
 					return false;
 				}
-				if (odeRefCount==0 && pdeRefCount==0){
+				if (steadyPdeCount>0 && pdeRefCount>0){
+					setWarning("Spatial Model, cannot mix " + VCML.Steady + " and " + VCML.Unsteady + " " + VCML.PdeEquation + "'s for variable " + var.getName());
+					return false;
+				}
+				if (odeRefCount==0 && pdeRefCount==0 && steadyPdeCount == 0){
 					setWarning("Spatial Model, there are neither "+VCML.PdeEquation+"'s, nor "+VCML.OdeEquation+"'s for variable "+var.getName());
 					return false;
 				}
@@ -2635,12 +2620,17 @@ public boolean isValid() {
 			Variable var = (Variable)variableList.elementAt(i);
 			int pdeRefCount = 0;
 			int odeRefCount = 0;
+			int steadyPdeCount = 0;
 			if (var instanceof MemVariable){
 				for (int j=0;j<subDomainList.size();j++){
 					SubDomain subDomain = (SubDomain)subDomainList.elementAt(j);
 					Equation equ = subDomain.getEquation(var);
 					if (equ instanceof PdeEquation){
-						pdeRefCount++;
+						if (((PdeEquation)equ).isSteady()) {
+							steadyPdeCount ++;
+						} else {
+							pdeRefCount++;
+						}
 					}else if (equ instanceof OdeEquation){
 						odeRefCount++;
 					}
@@ -2649,7 +2639,11 @@ public boolean isValid() {
 					setWarning("Spatial Model, cannot mix "+VCML.OdeEquation+"'s and "+VCML.PdeEquation+"'s for variable "+var.getName());
 					return false;
 				}
-				if (odeRefCount==0 && pdeRefCount==0){
+				if (steadyPdeCount>0 && pdeRefCount>0){
+					setWarning("Spatial Model, cannot mix " + VCML.Steady + " and " + VCML.Unsteady + " " + VCML.PdeEquation + "'s for variable " + var.getName());
+					return false;
+				}
+				if (odeRefCount==0 && pdeRefCount==0 && steadyPdeCount == 0){
 					setWarning("Spatial Model, there are neither "+VCML.PdeEquation+"'s, nor "+VCML.OdeEquation+"'s for variable "+var.getName());
 					return false;
 				}
@@ -2758,15 +2752,15 @@ private void makeCanonical() throws MathException, ExpressionException, MappingE
 	//
 	for (int i = 0; i < newMath.subDomainList.size(); i++){
 		SubDomain subDomain = (SubDomain)newMath.subDomainList.elementAt(i);
-		Enumeration equEnum = subDomain.getEquations();
+		Enumeration<Equation> equEnum = subDomain.getEquations();
 		while (equEnum.hasMoreElements()){
-			Equation equ = (Equation)equEnum.nextElement();
+			Equation equ = equEnum.nextElement();
 			equ.flatten(tempSimulation,bRoundCoefficients);
 		}
 		if (subDomain instanceof MembraneSubDomain){
-			Enumeration jcEnum = ((MembraneSubDomain)subDomain).getJumpConditions();
+			Enumeration<JumpCondition> jcEnum = ((MembraneSubDomain)subDomain).getJumpConditions();
 			while (jcEnum.hasMoreElements()){
-				JumpCondition jc = (JumpCondition)jcEnum.nextElement();
+				JumpCondition jc = jcEnum.nextElement();
 				jc.flatten(tempSimulation,bRoundCoefficients);
 			}
 		}
@@ -2799,10 +2793,10 @@ private void makeCanonical() throws MathException, ExpressionException, MappingE
 	//
 	// get rid of all non-variables (functions, constants).
 	//
-	Vector newVarList = new Vector(newMath.variableList);
-	Iterator newVarListIter = newVarList.iterator();
+	Vector<Variable> newVarList = new Vector<Variable>(newMath.variableList);
+	Iterator<Variable> newVarListIter = newVarList.iterator();
 	while (newVarListIter.hasNext()){
-		Variable var = (Variable)newVarListIter.next();
+		Variable var = newVarListIter.next();
 		if (var instanceof Constant || var instanceof Function || var instanceof InsideVariable || var instanceof OutsideVariable){
 			newVarListIter.remove();
 		}
@@ -2819,15 +2813,15 @@ private void makeCanonical() throws MathException, ExpressionException, MappingE
 		if (fastSystem != null){
 			fastSystem.rebind();
 		}
-		Enumeration equEnum = subDomain.getEquations();
+		Enumeration<Equation> equEnum = subDomain.getEquations();
 		while (equEnum.hasMoreElements()){
-			Equation equ = (Equation)equEnum.nextElement();
+			Equation equ = equEnum.nextElement();
 			equ.bind(tempSimulation);
 		}
 		if (subDomain instanceof MembraneSubDomain){
-			Enumeration jcEnum = ((MembraneSubDomain)subDomain).getJumpConditions();
+			Enumeration<JumpCondition> jcEnum = ((MembraneSubDomain)subDomain).getJumpConditions();
 			while (jcEnum.hasMoreElements()){
-				JumpCondition jc = (JumpCondition)jcEnum.nextElement();
+				JumpCondition jc = jcEnum.nextElement();
 				jc.bind(tempSimulation);
 			}
 		}
@@ -2846,10 +2840,8 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
 	
 	try {
 		String token = null;
-		boolean bBlockStyle = false;
 		token = tokens.nextToken();
 		if (token.equalsIgnoreCase(VCML.MathDescription)){
-			bBlockStyle = true;
 			//token = tokens.nextToken();
 			//setName(token);
 			//CHECK THIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -3207,15 +3199,15 @@ private void substituteInPlace(Function functionsToSubstitute[]) throws MathExce
 		if (fastSystem != null){
 			fastSystem.flatten(tempSimulation,bRoundCoefficients);
 		}
-		Enumeration equEnum = subDomain.getEquations();
+		Enumeration<Equation> equEnum = subDomain.getEquations();
 		while (equEnum.hasMoreElements()){
-			Equation equ = (Equation)equEnum.nextElement();
+			Equation equ = equEnum.nextElement();
 			equ.flatten(tempSimulation,bRoundCoefficients);
 		}
 		if (subDomain instanceof MembraneSubDomain){
-			Enumeration jcEnum = ((MembraneSubDomain)subDomain).getJumpConditions();
+			Enumeration<JumpCondition> jcEnum = ((MembraneSubDomain)subDomain).getJumpConditions();
 			while (jcEnum.hasMoreElements()){
-				JumpCondition jc = (JumpCondition)jcEnum.nextElement();
+				JumpCondition jc = jcEnum.nextElement();
 				jc.flatten(tempSimulation,bRoundCoefficients);
 			}
 		}
@@ -3230,15 +3222,15 @@ private void substituteInPlace(Function functionsToSubstitute[]) throws MathExce
 		if (fastSystem != null){
 			fastSystem.rebind();
 		}
-		Enumeration equEnum = subDomain.getEquations();
+		Enumeration<Equation> equEnum = subDomain.getEquations();
 		while (equEnum.hasMoreElements()){
-			Equation equ = (Equation)equEnum.nextElement();
+			Equation equ = equEnum.nextElement();
 			equ.bind(tempSimulation);
 		}
 		if (subDomain instanceof MembraneSubDomain){
-			Enumeration jcEnum = ((MembraneSubDomain)subDomain).getJumpConditions();
+			Enumeration<JumpCondition> jcEnum = ((MembraneSubDomain)subDomain).getJumpConditions();
 			while (jcEnum.hasMoreElements()){
-				JumpCondition jc = (JumpCondition)jcEnum.nextElement();
+				JumpCondition jc = jcEnum.nextElement();
 				jc.bind(tempSimulation);
 			}
 		}
@@ -3271,15 +3263,15 @@ public static String testEquivalency(MathDescription mathDescription1, MathDescr
 			//
 			// must test for equivalence
 			//
-			HashSet indepVars1 = mathDescription1.getStateVariableNames();
-			HashSet indepVars2 = mathDescription2.getStateVariableNames();
-			HashSet union = new HashSet(indepVars1);
+			HashSet<String> indepVars1 = mathDescription1.getStateVariableNames();
+			HashSet<String> indepVars2 = mathDescription2.getStateVariableNames();
+			HashSet<String> union = new HashSet<String>(indepVars1);
 			union.addAll(indepVars2);
 			
 			MathDescription canonicalMath1 = MathDescription.createCanonicalMathDescription(createMathWithExpandedEquations(mathDescription1,union));
 			MathDescription canonicalMath2 = MathDescription.createCanonicalMathDescription(createMathWithExpandedEquations(mathDescription2,union));
 
-			HashSet depVarsToSubstitute = new HashSet(union);
+			HashSet<String> depVarsToSubstitute = new HashSet<String>(union);
 			depVarsToSubstitute.removeAll(indepVars1);
 			if (depVarsToSubstitute.size()>0){
 				String depVarNames[] = (String[])depVarsToSubstitute.toArray(new String[depVarsToSubstitute.size()]);

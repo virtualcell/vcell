@@ -266,6 +266,11 @@ private void read(MathDescription mathDesc, CommentStringTokenizer tokens) throw
 		}			
 		if (token.equalsIgnoreCase(VCML.PdeEquation)){
 			token = tokens.nextToken();
+			boolean bSteady = false;
+			if (token.equals(VCML.Steady)) {
+				bSteady = true;
+				token = tokens.nextToken();
+			}
 			Variable var = mathDesc.getVariable(token);
 			if (var == null){
 				throw new MathFormatException("variable "+token+" not defined");
@@ -273,7 +278,7 @@ private void read(MathDescription mathDesc, CommentStringTokenizer tokens) throw
 			if (!(var instanceof VolVariable)){
 				throw new MathFormatException("variable "+token+" not a VolumeVariable");
 			}	
-			PdeEquation pde = new PdeEquation((VolVariable)var);
+			PdeEquation pde = new PdeEquation((VolVariable)var, bSteady);
 			pde.read(tokens);
 			addEquation(pde);
 			continue;

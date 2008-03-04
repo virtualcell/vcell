@@ -2873,6 +2873,11 @@ public OutsideVariable getOutsideVariable(Element param) {
 public PdeEquation getPdeEquation(Element param) throws XmlParseException {
     //Retrieve the variable reference
     String name = this.unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
+    boolean bSteady = false;
+    String bSteadyAttr = param.getAttributeValue(XMLTags.SteadyTag);
+    if (bSteadyAttr != null && bSteadyAttr.equals("1")) {
+    	bSteady = true;
+    }
     //try to get a MemVariable from the dictionnary
     String temp = "cbit.vcell.math.MemVariable:" + name;
     Element re = XMLDict.getResolvedElement(param, XMLTags.MembraneVariableTag, XMLTags.NameAttrTag, name);
@@ -2914,7 +2919,7 @@ public PdeEquation getPdeEquation(Element param) throws XmlParseException {
         }
         
         //*** Create new PdeEquation object ****
-        pdeEquation =  new PdeEquation(varref, initialExp, rateExp, difExp);
+        pdeEquation =  new PdeEquation(varref, bSteady, initialExp, rateExp, difExp);
         //***** *****
 
 		//add specific solutions expressions

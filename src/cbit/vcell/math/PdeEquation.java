@@ -1,5 +1,5 @@
 package cbit.vcell.math;
-import cbit.vcell.solver.Simulation;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -12,6 +12,7 @@ import java.util.*;
  */
 public class PdeEquation extends Equation {
 	private Expression diffusionExp = null;
+	private boolean bSteady = false;
 //	private boolean bFixedDiffusion = false;
 	
 	private Expression boundaryXm = null;
@@ -42,20 +43,24 @@ public PdeEquation (MemVariable memVar) {
  * @param rateExp cbit.vcell.parser.Expression
  * @param diffusionRate cbit.vcell.parser.Expression
  */
-public PdeEquation(Variable var, Expression initialExp,
-					Expression rateExp, Expression diffusionRate) {
+public PdeEquation(Variable var, boolean steady, Expression initialExp,	Expression rateExp, Expression diffusionRate) {
 	super(var, initialExp, rateExp);
 	diffusionExp = diffusionRate;
+	bSteady = steady;
 }
 
+
+public PdeEquation(Variable var, Expression initialExp, Expression rateExp, Expression diffusionRate) {
+	this(var, false, initialExp, rateExp, diffusionRate);
+}
 
 /**
  * This method was created by a SmartGuide.
  * @param volVar cbit.vcell.math.VolVariable
  */
-public PdeEquation (VolVariable volVar) {
+public PdeEquation (VolVariable volVar, boolean steady) {
 	super(volVar);
-	
+	bSteady = steady;
 }
 
 
@@ -71,6 +76,9 @@ public boolean compareEqual(cbit.util.Matchable object) {
 		return false;
 	}else{
 		equ = (PdeEquation)object;
+	}
+	if (bSteady != equ.bSteady) {
+		return false;
 	}
 	if (!compareEqual0(equ)){
 		return false;
@@ -197,8 +205,8 @@ public Expression getDiffusionExpression() {
  * This method was created by a SmartGuide.
  * @return java.util.Vector
  */
-protected Vector getExpressions(MathDescription mathDesc) {
-	Vector list = new Vector();
+protected Vector<Expression> getExpressions(MathDescription mathDesc) {
+	Vector<Expression> list = new Vector<Expression>();
 	
 	if (getBoundaryXm()!=null)		list.addElement(getBoundaryXm());
 	if (getBoundaryXp()!=null)		list.addElement(getBoundaryXp());
@@ -221,9 +229,9 @@ protected Vector getExpressions(MathDescription mathDesc) {
 	// get Parent Subdomain
 	//
 	SubDomain parentSubDomain = null;
-	Enumeration enum1 = mathDesc.getSubDomains();
+	Enumeration<SubDomain> enum1 = mathDesc.getSubDomains();
 	while (enum1.hasMoreElements()){
-		SubDomain subDomain = (SubDomain)enum1.nextElement();
+		SubDomain subDomain = enum1.nextElement();
 		if (subDomain.getEquation(getVariable()) == this){
 			parentSubDomain = subDomain;
 		}
@@ -253,8 +261,8 @@ protected Vector getExpressions(MathDescription mathDesc) {
  * This method was created by a SmartGuide.
  * @return java.util.Enumeration
  */
-public Enumeration getTotalExpressions() throws ExpressionException {
-	Vector vector = new Vector();
+public Enumeration<Expression> getTotalExpressions() throws ExpressionException {
+	Vector<Expression> vector = new Vector<Expression>();
 	vector.addElement(getTotalRateExpression());
 	vector.addElement(getTotalInitialExpression());
 	Expression solutionExp = getTotalSolutionExpression();
@@ -288,7 +296,7 @@ private Expression getTotalRateExpression() throws ExpressionException {
  */
 public String getVCML() {
 	StringBuffer buffer = new StringBuffer();
-	buffer.append("\t"+VCML.PdeEquation+" "+getVariable().getName()+" {\n");
+	buffer.append("\t"+VCML.PdeEquation + (bSteady ? " " + VCML.Steady : "") + " " + getVariable().getName() + " {\n");
 	if (boundaryXm != null){
 		buffer.append("\t\t"+VCML.BoundaryXm+" "+boundaryXm.infix()+";\n");
 	}	
@@ -553,5 +561,9 @@ public void setVelocityZ(cbit.vcell.parser.Expression newVelocityZ) {
 		throw new RuntimeException("only Volume Variables can have advection term in PdeEquation");
 	}
 	velocityZ = newVelocityZ;
+}
+
+public boolean isSteady() {
+	return bSteady;
 }
 }

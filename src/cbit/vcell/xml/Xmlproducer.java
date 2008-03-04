@@ -1837,6 +1837,9 @@ public org.jdom.Element getXML(PdeEquation param) throws XmlParseException {
 
 	//Add Atribute
 	pde.setAttribute(XMLTags.NameAttrTag, this.mangle(param.getVariable().getName()));
+	if (param.isSteady()) {
+		pde.setAttribute(XMLTags.SteadyTag, "1");
+	}
 	//Add Boundary subelements
 	org.jdom.Element boundaries = new org.jdom.Element(XMLTags.BoundariesTag);
 	//Xm
