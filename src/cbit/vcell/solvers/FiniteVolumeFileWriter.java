@@ -683,7 +683,11 @@ private void writeVariables() throws Exception {
 			units = "uM";
 			VolVariable volVar = (VolVariable)vars[i];
 			if (mathDesc.isPDE(volVar)) {
-				writer.print("VOLUME_PDE " + volVar.getName() + " " + units + " " +	simulation.hasTimeVaryingDiffusionOrAdvection(volVar) + " " + mathDesc.hasVelocity(volVar));
+				if (mathDesc.isPdeSteady(volVar)) {
+					writer.print("VOLUME_PDE_STEADY " + volVar.getName() + " " + units + " " +	simulation.hasTimeVaryingDiffusionOrAdvection(volVar) + " " + mathDesc.hasVelocity(volVar));
+				} else {
+					writer.print("VOLUME_PDE " + volVar.getName() + " " + units + " " +	simulation.hasTimeVaryingDiffusionOrAdvection(volVar) + " " + mathDesc.hasVelocity(volVar));
+				}
 			} else {
 				writer.print("VOLUME_ODE " + volVar.getName() + " " + units);
 			}

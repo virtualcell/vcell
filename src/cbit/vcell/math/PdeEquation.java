@@ -534,6 +534,9 @@ public void setVelocityX(cbit.vcell.parser.Expression newVelocityX) {
 	if (!(getVariable() instanceof VolVariable)){
 		throw new RuntimeException("only Volume Variables can have advection term in PdeEquation");
 	}
+	if (bSteady) {
+		throw new RuntimeException("advection in steady state pde equation is not supported");
+	}
 	velocityX = newVelocityX;
 }
 
@@ -547,6 +550,9 @@ public void setVelocityY(cbit.vcell.parser.Expression newVelocityY) {
 	if (!(getVariable() instanceof VolVariable)){
 		throw new RuntimeException("only Volume Variables can have advection term in PdeEquation");
 	}
+	if (bSteady) {
+		throw new RuntimeException("advection in steady state pde equation is not supported");
+	}
 	velocityY = newVelocityY;
 }
 
@@ -559,6 +565,9 @@ public void setVelocityY(cbit.vcell.parser.Expression newVelocityY) {
 public void setVelocityZ(cbit.vcell.parser.Expression newVelocityZ) {
 	if (!(getVariable() instanceof VolVariable)){
 		throw new RuntimeException("only Volume Variables can have advection term in PdeEquation");
+	}
+	if (bSteady) {
+		throw new RuntimeException("advection in steady state pde equation is not supported");
 	}
 	velocityZ = newVelocityZ;
 }
