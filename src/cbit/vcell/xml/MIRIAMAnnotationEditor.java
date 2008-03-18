@@ -18,6 +18,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 
 import cbit.util.AsynchProgressPopup;
+import cbit.util.ProgressDialogListener;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.xml.MIRIAMHelper.DescriptiveHeirarchy;
@@ -31,6 +32,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.TreeMap;
@@ -489,66 +491,82 @@ public class MIRIAMAnnotationEditor extends JPanel implements ActionListener{
 	private void detailAction(){
 		final URI detailURI = getSelectedURI();
 		if (detailURI != null) {
-			final AsynchProgressPopup pp =
-				new AsynchProgressPopup(this,"Displaying MIRIAM Information in Web Browser","",true,false);
-			SwingUtilities.invokeLater(new Runnable(){public void run() {pp.startKeepOnTop();}});
+			final Thread[] miriamThread = new Thread[1];
+			final AsynchProgressPopup[] pp = new AsynchProgressPopup[1];
+			pp[0] =
+				new AsynchProgressPopup(this,"Displaying MIRIAM Information in Web Browser","",true,false,
+						true,
+						new ProgressDialogListener(){
+							public void cancelButton_actionPerformed(EventObject newEvent) {
+								pp[0].stop();
+								miriamThread[0].interrupt();
+							}
+						}						
+				);
+			SwingUtilities.invokeLater(new Runnable(){public void run() {pp[0].startKeepOnTop();}});
 			if (miriamLink == null) {
-				pp.setMessage("Creating MiriamLink...");
+				pp[0].setMessage("Creating MiriamLink...");
 				miriamLink = new MiriamLink();
 			}
-			final Thread miriamThread = new Thread(
+			miriamThread[0] = new Thread(
 				new Runnable(){
 					public void run() {
 						try {
-							pp.setMessage("Gathering Website Info...");
+							pp[0].setMessage("Gathering Website Info...");
 							String[] urlArr = miriamLink.getDataEntries(detailURI.toString());
+							if(Thread.interrupted()){
+								pp[0].stop();
+								return;
+							}
 							if (urlArr != null && urlArr.length > 0) {
-								pp.setMessage("Displaying Details in Local Web Browser...");
+								pp[0].setMessage("Displaying Details in Local Web Browser...");
 								PopupGenerator.browserLauncher(urlArr[0],urlArr[0],false);
 							}else{
 								throw new Exception("MiriamLink network query returned null");
 							}
 							Thread.sleep(2000);//keep progress for a little while because browser takes time
 						} catch (Exception e) {
-							pp.stop();
+							pp[0].stop();
 							e.printStackTrace();
-							PopupGenerator.showErrorDialog("Error displaying MIRIAM Web Information.\n"+e.getMessage());
-						}finally{
-							pp.stop();
-						}
-					}
-				}
-			);
-			miriamThread.start();
-
-			//Create Timer thread to kill MiriamLink thread if taking too long (hang)
-			final long MAX_WAIT_TIME_MILLISEC = 45000;
-			final long MAX_WARNING_TIME_MILLISEC = 15000;
-			final javax.swing.Timer miriamBlockTimer = new javax.swing.Timer(1000,null);
-			miriamBlockTimer.addActionListener(
-				new java.awt.event.ActionListener(){
-					long startTime = System.currentTimeMillis();
-					public void actionPerformed(java.awt.event.ActionEvent e){
-						if(!miriamThread.isAlive()){
-							miriamBlockTimer.stop();
-							return;
-						}
-						long elapsedTime = System.currentTimeMillis()-startTime;
-//						System.out.println(elapsedTime);
-						if(elapsedTime < MAX_WAIT_TIME_MILLISEC){
-							if(elapsedTime > MAX_WARNING_TIME_MILLISEC){
-								pp.setMessage("Waiting for MIRIAM details... "+((MAX_WAIT_TIME_MILLISEC-elapsedTime)/1000));
+							if(!(e instanceof InterruptedException)){
+								PopupGenerator.showErrorDialog("Error displaying MIRIAM Web Information.\n"+e.getMessage());
 							}
-							miriamBlockTimer.restart();
-						}else{
-							miriamBlockTimer.stop();
-							pp.stop();
-							miriamThread.interrupt();
+						}finally{
+							pp[0].stop();
 						}
 					}
 				}
 			);
-			miriamBlockTimer.restart();
+			miriamThread[0].start();
+
+//			//Create Timer thread to kill MiriamLink thread if taking too long (hang)
+//			final long MAX_WAIT_TIME_MILLISEC = 45000;
+//			final long MAX_WARNING_TIME_MILLISEC = 15000;
+//			final javax.swing.Timer miriamBlockTimer = new javax.swing.Timer(1000,null);
+//			miriamBlockTimer.addActionListener(
+//				new java.awt.event.ActionListener(){
+//					long startTime = System.currentTimeMillis();
+//					public void actionPerformed(java.awt.event.ActionEvent e){
+//						if(!miriamThread.isAlive()){
+//							miriamBlockTimer.stop();
+//							return;
+//						}
+//						long elapsedTime = System.currentTimeMillis()-startTime;
+////						System.out.println(elapsedTime);
+//						if(elapsedTime < MAX_WAIT_TIME_MILLISEC){
+//							if(elapsedTime > MAX_WARNING_TIME_MILLISEC){
+//								pp.setMessage("Waiting for MIRIAM details... "+((MAX_WAIT_TIME_MILLISEC-elapsedTime)/1000));
+//							}
+//							miriamBlockTimer.restart();
+//						}else{
+//							miriamBlockTimer.stop();
+//							pp.stop();
+//							miriamThread.interrupt();
+//						}
+//					}
+//				}
+//			);
+//			miriamBlockTimer.restart();
 			
 		}
 	}
