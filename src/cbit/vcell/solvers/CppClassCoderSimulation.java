@@ -85,10 +85,13 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 		  		if (subDomain instanceof CompartmentSubDomain){
 			  		CompartmentSubDomain compartmentSubDomain = (CompartmentSubDomain)subDomain;
 			  		totalNumCompartments++;
-			  		if (subDomain.getEquation(var) != null){
-				  		listOfSubDomains.add(compartmentSubDomain);
-				  		int handle = simulation.getMathDescription().getHandle(compartmentSubDomain);
-				  		compartmentNames.append(compartmentSubDomain.getName()+"("+handle+") ");
+			  		Equation varEquation = subDomain.getEquation(var);
+			  		if (varEquation != null) {
+			  			if (!(varEquation instanceof PdeEquation) || !((PdeEquation)varEquation).isDummy(simulation, compartmentSubDomain)){
+				  			listOfSubDomains.add(compartmentSubDomain);
+				  			int handle = simulation.getMathDescription().getHandle(compartmentSubDomain);
+				  			compartmentNames.append(compartmentSubDomain.getName()+"("+handle+") ");
+				  		}
 			  		}
 		  		}
 	  		}

@@ -4,6 +4,8 @@ package cbit.vcell.solvers;
  * All rights reserved.
 ©*/
 import java.util.Enumeration;
+
+import cbit.vcell.parser.Expression;
 import cbit.vcell.solver.*;
 import cbit.vcell.math.*;
 
@@ -158,15 +160,21 @@ public void initialize() throws Exception {
 			//
 			// add VolumeVarContext coders
 			//
-			Enumeration enum_equ = volSubDomain.getEquations();
-			while (enum_equ.hasMoreElements()){
-				Equation equation = (Equation)enum_equ.nextElement();
-				if (equation instanceof VolumeRegionEquation){
+			Variable[] vars = simulation.getVariables();
+			for (int i = 0; i < vars.length; i ++) {
+				Equation equation = volSubDomain.getEquation(vars[i]);
+				if (equation != null && equation instanceof VolumeRegionEquation) {
 					addCppClassCoder(new CppClassCoderVolumeRegionVarContext(this,equation,volSubDomain,simulation,"VolumeRegionVarContext"));
-				}else{
-					addCppClassCoder(new CppClassCoderVolumeVarContext(this,equation,volSubDomain,simulation,"VolumeVarContext"));
-				}	
-			}	
+				} else {					
+					if (equation == null && (vars[i] instanceof VolVariable) && simulation.getMathDescription().isPDE((VolVariable)vars[i])) {
+						boolean bSteady = simulation.getMathDescription().isPdeSteady((VolVariable)vars[i]); 
+						equation = new PdeEquation(vars[i], bSteady, new Expression(0.0), new Expression(0.0), new Expression(0.0));
+					} 
+					if (equation != null) {
+						addCppClassCoder(new CppClassCoderVolumeVarContext(this,equation,volSubDomain,simulation,"VolumeVarContext"));
+					}
+				}
+			}
 		}else if (subDomain instanceof MembraneSubDomain){
 			MembraneSubDomain memSubDomain = (MembraneSubDomain)subDomain;
 			
