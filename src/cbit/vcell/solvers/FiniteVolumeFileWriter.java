@@ -251,16 +251,16 @@ private void writeCompartment_VarContext(CompartmentSubDomain volSubDomain) thro
 		}
 	}
 
-	Enumeration enum_equ = volSubDomain.getEquations();
+	Enumeration<Equation> enum_equ = volSubDomain.getEquations();
 	while (enum_equ.hasMoreElements()){
-		Equation equation = (Equation)enum_equ.nextElement();
+		Equation equation = enum_equ.nextElement();
 		if (equation instanceof VolumeRegionEquation){
 			writeCompartmentRegion_VarContext_Equation(volSubDomain, (VolumeRegionEquation)equation);
 		} else {
 			writeCompartment_VarContext_Equation(volSubDomain, equation);
 		}
 		
-		if (equation instanceof cbit.vcell.math.PdeEquation){
+		if (equation instanceof PdeEquation){
 			pdeVolVariableList.remove(equation.getVariable());
 		}	
 	}
@@ -270,8 +270,9 @@ private void writeCompartment_VarContext(CompartmentSubDomain volSubDomain) thro
 	//    THIS WILL BE NO LONGER NEEDED WHEN JUMP CONDITIONS ARE STORED WITH MEMBRANES (OR WITH THE VOLUME VAR CONTEXT THAT DEFINES THE PDE).
 	//
 	for (int i = 0; i < pdeVolVariableList.size(); i++){
-		Variable volVar = (Variable)pdeVolVariableList.elementAt(i);
-		PdeEquation dummyPdeEquation = new PdeEquation(volVar,new Expression(0.0),new Expression(0.0),new Expression(0.0));
+		VolVariable volVar = pdeVolVariableList.elementAt(i);
+		boolean bSteady = simulation.getMathDescription().isPdeSteady(volVar);
+		PdeEquation dummyPdeEquation = new PdeEquation(volVar, bSteady, new Expression(0.0), new Expression(0.0), new Expression(0.0));
 		writeCompartment_VarContext_Equation(volSubDomain, dummyPdeEquation);
 	}
 }
@@ -672,12 +673,15 @@ private void writeVariables() throws Exception {
 		 		if (subDomain instanceof CompartmentSubDomain){
 			  		CompartmentSubDomain compartmentSubDomain = (CompartmentSubDomain)subDomain;
 			  		totalNumCompartments++;
-			  		if (subDomain.getEquation(vars[i]) != null){
-				  		listOfSubDomains.add(compartmentSubDomain);
-			  			int handle = simulation.getMathDescription().getHandle(compartmentSubDomain);
-			 	 		compartmentNames.append(compartmentSubDomain.getName()+"("+handle+") ");
+			  		Equation varEquation = subDomain.getEquation(vars[i]);
+			  		if (varEquation != null) {
+				  		if (!(varEquation instanceof PdeEquation) || !((PdeEquation)varEquation).isDummy(simulation, compartmentSubDomain)){
+							listOfSubDomains.add(compartmentSubDomain);
+							int handle = simulation.getMathDescription().getHandle(compartmentSubDomain);
+							compartmentNames.append(compartmentSubDomain.getName()+"("+handle+") ");					
+				  		}
 			  		}
-			  	}
+		 		}
 		  	}
 			
 			units = "uM";
