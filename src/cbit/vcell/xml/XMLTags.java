@@ -19,7 +19,7 @@ public class XMLTags {
 
 	// VCML tags
 	public final static String VcmlRootNodeTag			 = "vcml";
-	public static final String VCML_NS = "";//"http://sourceforge.net/projects/vcell/vcml";
+	public static final String VCML_NS = "http://sourceforge.net/projects/vcell/vcml";
 	public static final String VCML_NS_ALT = "";
 
 	//Tags related to MIRIAM

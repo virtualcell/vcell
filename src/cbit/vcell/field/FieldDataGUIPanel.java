@@ -5,12 +5,13 @@ import java.awt.Cursor;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Enumeration;
-import java.util.EventObject;
 import java.util.Iterator;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.Vector;
 import java.util.Map.Entry;
 import java.util.zip.DataFormatException;
@@ -21,56 +22,75 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
-import cbit.image.ImageException;
+import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
+
+import net.sourceforge.interval.ia_math.RealInterval;
+
+import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
+import cbit.sql.KeyValue;
 import cbit.util.AsynchProgressPopup;
 import cbit.util.BeanUtils;
 import cbit.util.Extent;
 import cbit.util.FileFilters;
 import cbit.util.ISize;
 import cbit.util.Origin;
-import cbit.util.ProgressDialogListener;
 import cbit.util.TokenMangler;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
+import cbit.vcell.applets.ServerMonitorInfo;
+import cbit.vcell.applets.ServerTableModel;
+import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.FieldDataWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.RequestManager;
+import cbit.vcell.client.data.PDEDataViewer;
+import cbit.vcell.client.server.ClientExportController;
+import cbit.vcell.client.server.PDEDataManager;
+import cbit.vcell.client.server.VCDataManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.UserCancelException;
+import cbit.vcell.desktop.VCellCopyPasteHelper;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.document.VCDocument;
+import cbit.vcell.exp.FieldMeasurement;
 import cbit.vcell.geometry.RegionImage;
+import cbit.vcell.parser.ASTFuncNode;
+import cbit.vcell.parser.MathMLTags;
+import cbit.vcell.server.ComputeHost;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.ObjectNotFoundException;
+import cbit.vcell.server.ServerInfo;
+import cbit.vcell.server.VCDataIdentifier;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.VariableType;
+import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.xml.XMLTags;
 import javax.swing.JButton;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
 import java.awt.GridBagLayout;
 import java.awt.Dimension;
 import javax.swing.JMenuItem;
 
 public class FieldDataGUIPanel extends JPanel{
-
-	final int modePslidExperimentalData = 0;
-	final int modePslidGeneratedModel = 1;
 
 	//
 	public static final String LIST_NODE_VAR_LABEL = "Variables";
@@ -412,7 +432,7 @@ private void connEtoC9(java.awt.event.ActionEvent arg1) {
 	try {
 		// user code begin {1}
 		// user code end
-		this.jButtonFDFromFile_ActionPerformed(arg1,null,null);
+		this.jButtonFDFromFile_ActionPerformed(arg1);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -685,9 +705,7 @@ private javax.swing.JPanel getJPanel1() {
 			ivjJPanel1 = new javax.swing.JPanel();
 			ivjJPanel1.setName("JPanel1");
 			ivjJPanel1.setBorder(ivjLocalBorder);
-			final java.awt.GridBagLayout gridBagLayout = new java.awt.GridBagLayout();
-			gridBagLayout.rowHeights = new int[] {0,0,7};
-			ivjJPanel1.setLayout(gridBagLayout);
+			ivjJPanel1.setLayout(new java.awt.GridBagLayout());
 
 			java.awt.GridBagConstraints constraintsJButtonFDFromFile = new java.awt.GridBagConstraints();
 			constraintsJButtonFDFromFile.gridx = 1; constraintsJButtonFDFromFile.gridy = 1;
@@ -702,33 +720,6 @@ private javax.swing.JPanel getJPanel1() {
 			constraintsJButtonFDFromSim.weightx = 1.0;
 			constraintsJButtonFDFromSim.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJPanel1().add(getJButtonFDFromSim(), constraintsJButtonFDFromSim);
-
-			final JButton fromPslidExperimentalButton = new JButton();
-			fromPslidExperimentalButton.addActionListener(new ActionListener() {
-				public void actionPerformed(final ActionEvent e) {
-					getPslidSelections(modePslidExperimentalData);
-				}
-			});
-			fromPslidExperimentalButton.setText("PSLID Experimental");
-			final GridBagConstraints gridBagConstraintsE = new GridBagConstraints();
-			gridBagConstraintsE.insets = new Insets(4, 4, 4, 4);
-			gridBagConstraintsE.gridy = 2;
-			gridBagConstraintsE.gridx = 1;
-			ivjJPanel1.add(fromPslidExperimentalButton, gridBagConstraintsE);
-			
-			final JButton fromPslidGeneratedButton = new JButton();
-			fromPslidGeneratedButton.addActionListener(new ActionListener() {
-				public void actionPerformed(final ActionEvent e) {
-					getPslidSelections(modePslidGeneratedModel);
-				}
-			});
-			fromPslidGeneratedButton.setText("PSLID Generated Model");
-			final GridBagConstraints gridBagConstraintsG = new GridBagConstraints();
-			gridBagConstraintsG.insets = new Insets(4, 4, 4, 4);
-			gridBagConstraintsG.gridy = 2;
-			gridBagConstraintsG.gridx = 2;
-			ivjJPanel1.add(fromPslidGeneratedButton, gridBagConstraintsG);
-			
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1058,124 +1049,103 @@ private void jButtonFDView_ActionPerformed(java.awt.event.ActionEvent actionEven
 }
 
 
-public static FieldDataFileOperationSpec createFDOSFromImageFile(File imageFile,boolean bCropOutBlack) throws DataFormatException,ImageException{
-	ImageDataset imagedataSet = null;
-	final FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
-	try{
-		imagedataSet = ImageDatasetReader.readImageDataset(imageFile.getAbsolutePath());
-		if (imagedataSet!=null && bCropOutBlack){
-//			System.out.println("FieldDataGUIPanel.jButtonFDFromFile_ActionPerformed(): BEFORE CROPPING, size="+imagedataSet.getISize().toString());
-			imagedataSet = imagedataSet.crop(imagedataSet.getNonzeroBoundingRectangle());
-//			System.out.println("FieldDataGUIPanel.jButtonFDFromFile_ActionPerformed(): AFTER CROPPING, size="+imagedataSet.getISize().toString());
-		}
-	}catch (Exception e){
-		e.printStackTrace(System.out);
-		throw new DataFormatException(e.getMessage());
-	}
-	//[time][var][data]
-	int numXY = imagedataSet.getISize().getX()*imagedataSet.getISize().getY();
-	int numXYZ = imagedataSet.getSizeZ()*numXY;
-	fdos.variableTypes = new VariableType[imagedataSet.getSizeC()];
-	fdos.varNames = new String[imagedataSet.getSizeC()];
-	short[][][] shortData =
-		new short[imagedataSet.getSizeT()][imagedataSet.getSizeC()][numXYZ];
-	for(int c=0;c<imagedataSet.getSizeC();c+= 1){
-		fdos.variableTypes[c] = VariableType.VOLUME;
-		fdos.varNames[c] = "Channel"+c;
-		for(int t=0;t<imagedataSet.getSizeT();t+=1){
-			for(int z=0;z<imagedataSet.getSizeZ();z+=1){
-				UShortImage ushortImage = imagedataSet.getImage(z,c,t);
-				shortData[t][c] = ushortImage.getPixels();
-			}
-		}
-	}
-	fdos.shortSpecData = shortData;
-	fdos.times = imagedataSet.getImageTimeStamps();
-	if(fdos.times == null){
-		fdos.times = new double[imagedataSet.getSizeT()];
-		for(int i=0;i<fdos.times.length;i+= 1){
-			fdos.times[i] = i;
-		}
-	}
-
-	fdos.origin = new Origin(0,0,0);
-	fdos.extent = (imagedataSet.getExtent()!=null)?(imagedataSet.getExtent()):(new Extent(1,1,1));
-	fdos.isize = imagedataSet.getISize();
-	
-	return fdos;
-}
-
-
-private void jButtonFDFromFile_ActionPerformed(java.awt.event.ActionEvent actionEvent,final FieldDataFileOperationSpec argfdos,final String arginitFDName) {
+private void jButtonFDFromFile_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
 	
 	final RequestManager clientRequestManager = fieldDataWindowManager.getLocalRequestManager();
-		
+	
+	final FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
+	fdos.owner = clientRequestManager.getDocumentManager().getUser();
+	fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
+	
 	try{
+		final File imageFile = 
+			DatabaseWindowManager.showFileChooserDialog(FileFilters.FILE_FILTER_FIELDIMAGES, clientRequestManager.getUserPreferences());
 	
 		AsynchClientTask importImageTask = new AsynchClientTask() {
 		public String getTaskName() { return "Import image"; }
 		public int getTaskType() { return AsynchClientTask.TASKTYPE_NONSWING_BLOCKING; }
 		public void run(java.util.Hashtable hash){
 			try{
-				FieldDataFileOperationSpec fdos = null;
-				String initFDName = null;
-				
-				if (argfdos == null) {
-					File imageFile = 
-						DatabaseWindowManager.showFileChooserDialog(FileFilters.FILE_FILTER_FIELDIMAGES, clientRequestManager.getUserPreferences());
-					initFDName = imageFile.getName();
-					//read VCell Special
-					DatabaseWindowManager.ImageHelper imageHelper = null;
-					//				if(imagedataSet == null){
-					try {
-						fdos = new FieldDataFileOperationSpec();
-						AsynchProgressPopup pp = new AsynchProgressPopup(
-								FieldDataGUIPanel.this, "Import Field Data",
-								"Start", false, false);
-						imageHelper = DatabaseWindowManager.readFromImageFile(
-								pp, imageFile);
-						fdos.times = new double[] { 0 };
-						fdos.varNames = new String[] { "variableName" };
-						fdos.origin = new Origin(0, 0, 0);
-						fdos.extent = new Extent(1, 1, 1);
-						fdos.isize = new ISize(imageHelper.xsize,
-								imageHelper.ysize, imageHelper.zsize);
+				//read VCell Special
+				DatabaseWindowManager.ImageHelper imageHelper = null;
+//				if(imagedataSet == null){
+					try{
+						AsynchProgressPopup pp = new AsynchProgressPopup(FieldDataGUIPanel.this,"Import Field Data","Start",false,false);
+						imageHelper = DatabaseWindowManager.readFromImageFile(pp,imageFile);
+				    	fdos.times = new double[] {0};
+				    	fdos.varNames = new String[] {"variableName"};
+				    	fdos.origin = new Origin(0,0,0);
+				    	fdos.extent = new Extent(1,1,1);
+						fdos.isize = new ISize(imageHelper.xsize,imageHelper.ysize,imageHelper.zsize);
 						short[] shortPixels = new short[imageHelper.imageData.length];
-						for (int i = 0; i < shortPixels.length; i += 1) {
-							shortPixels[i] = (short) (0x000000FF & imageHelper.imageData[i]);
+						for(int i=0;i<shortPixels.length;i+= 1){
+							shortPixels[i] = (short)(0x000000FF & imageHelper.imageData[i]);
 						}
-						fdos.shortSpecData = new short[][][] { { shortPixels } };
-						fdos.variableTypes = new VariableType[] { VariableType.VOLUME };
-					} catch (Exception e) {
-						System.out
-								.println("VCell simple image import couldn't read "
-										+ e.getMessage());
-						fdos = null;
+						fdos.shortSpecData = new short[][][] {{shortPixels}};
+				    	fdos.variableTypes = new VariableType[] {VariableType.VOLUME};
+					}catch(Exception e){
+						System.out.println("VCell simple image import couldn't read "+e.getMessage());
+						imageHelper = null;
 					}
-					//				}
-					//read BioFormat
-					ImageDataset imagedataSet = null;
-					if (fdos == null) {
-						try {
-							fdos = createFDOSFromImageFile(imageFile,true);
-						} catch (DataFormatException e) {
-							System.out.println("BioFormat couldn't read "
-									+ e.getMessage());
-							fdos = null;
+//				}
+				//read BioFormat
+				ImageDataset imagedataSet = null;
+				if(imageHelper == null){
+					try{
+						try{
+							imagedataSet = ImageDatasetReader.readImageDataset(imageFile.getAbsolutePath());
+							if (imagedataSet!=null){
+								System.out.println("FieldDataGUIPanel.jButtonFDFromFile_ActionPerformed(): BEFORE CROPPING, size="+imagedataSet.getISize().toString());
+								imagedataSet = imagedataSet.crop(imagedataSet.getNonzeroBoundingRectangle());
+								System.out.println("FieldDataGUIPanel.jButtonFDFromFile_ActionPerformed(): AFTER CROPPING, size="+imagedataSet.getISize().toString());
+							}
+						}catch (Exception e){
+							e.printStackTrace(System.out);
+							throw new DataFormatException(e.getMessage());
 						}
+						//[time][var][data]
+						boolean bCropOutBlack = true;
+						if (bCropOutBlack){
+							imagedataSet = imagedataSet.crop(imagedataSet.getNonzeroBoundingRectangle());
+						}
+						int numXY = imagedataSet.getISize().getX()*imagedataSet.getISize().getY();
+						int numXYZ = imagedataSet.getSizeZ()*numXY;
+				    	fdos.variableTypes = new VariableType[imagedataSet.getSizeC()];
+				    	fdos.varNames = new String[imagedataSet.getSizeC()];
+						short[][][] shortData =
+							new short[imagedataSet.getSizeT()][imagedataSet.getSizeC()][numXYZ];
+						for(int c=0;c<imagedataSet.getSizeC();c+= 1){
+							fdos.variableTypes[c] = VariableType.VOLUME;
+							fdos.varNames[c] = "Channel"+c;
+							for(int t=0;t<imagedataSet.getSizeT();t+=1){
+								for(int z=0;z<imagedataSet.getSizeZ();z+=1){
+									UShortImage ushortImage = imagedataSet.getImage(z,c,t);
+									shortData[t][c] = ushortImage.getPixels();
+								}
+							}
+						}
+						fdos.shortSpecData = shortData;
+						fdos.times = imagedataSet.getImageTimeStamps();
+						if(fdos.times == null){
+							fdos.times = new double[imagedataSet.getSizeT()];
+							for(int i=0;i<fdos.times.length;i+= 1){
+								fdos.times[i] = i;
+							}
+						}
+				    	fdos.origin = new Origin(0,0,0);
+				    	fdos.extent = (imagedataSet.getExtent()!=null)?(imagedataSet.getExtent()):(new Extent(1,1,1));
+						fdos.isize = imagedataSet.getISize();
+					}catch(DataFormatException e){
+						System.out.println("BioFormat couldn't read "+e.getMessage());
+						imagedataSet = null;
 					}
-					if(fdos == null){
-						throw new Exception("Neither BioFormats or VCell can read image "+imageFile.getAbsolutePath());
-					}
-				}else{
-					fdos = argfdos;
-					initFDName = arginitFDName;
+				}
+				if(imagedataSet == null && imageHelper == null){
+					throw new Exception("Neither BioFormats or VCell can read image "+imageFile.getAbsolutePath());
 				}
 				
-				fdos.owner = clientRequestManager.getDocumentManager().getUser();
-				fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
 				try{
-					addNewExternalData(clientRequestManager, fdos, initFDName, false);
+					addNewExternalData(clientRequestManager, fdos, imageFile.getName(), false);
 				}catch(UserCancelException e){
 					hash.put(ClientTaskDispatcher.TASK_ABORTED_BY_USER,e);
 					return;
@@ -1381,7 +1351,6 @@ private void jButtonFDCopyRef_ActionPerformed(java.awt.event.ActionEvent actionE
 		jp.setLayout(bl);
 		JComboBox jcBeg = new JComboBox(Arrays.asList(timesStr).toArray(new String[0]));
 		jp.add(jcBeg);
-		
 		if(PopupGenerator.showComponentOKCancelDialog(this, jp,
 				(actionEvent.getSource() == getJButtonFDCopyRef()?
 					"Select Field Data time for function":
@@ -1640,7 +1609,6 @@ private void addNewExternalData(
 	fdip.initIExtent(fdos.extent);
 	fdip.initTimes(fdos.times);
 	fdip.initNames(TokenMangler.fixTokenStrict(initialExtDataName), fdos.varNames);
-	fdip.setAnnotation(fdos.annotation);
 	
 	while(true){
 		try{
@@ -1943,112 +1911,6 @@ private JButton getJButtonViewAnnot() {
 		});
 	}
 	return jButtonViewAnnot;
-}
-
-private void getPslidSelections(final int mode) {
-	final PSLIDPanel pslidPanel = new PSLIDPanel();
-	pslidPanel.setPreferredSize(new Dimension(550,600));
-
-	final Thread[] pslidThread = new Thread[1];
-	final AsynchProgressPopup[] pp = new AsynchProgressPopup[1];
-	pp[0] =
-		new AsynchProgressPopup(
-			FieldDataGUIPanel.this,"Accessing PSLID Information","",true,false,
-			true,
-			new ProgressDialogListener(){
-				public void cancelButton_actionPerformed(EventObject newEvent) {
-					pp[0].stop();
-					pslidThread[0].interrupt();
-				}
-			}
-		);
-	SwingUtilities.invokeLater(new Runnable(){public void run() {pp[0].startKeepOnTop();}});
-	pslidThread[0] = new Thread(
-		new Runnable(){
-			public void run() {
-//								FileOutputStream fos = null;
-				try {
-					pslidPanel.initCellProteinList(pp[0], mode);
-					pp[0].stop();
-					if(PopupGenerator.showComponentOKCancelDialog(FieldDataGUIPanel.this, pslidPanel,"PSLID Browser") == JOptionPane.OK_OPTION){
-						PSLIDPanel.PSLIDSelectionInfo pslidSelInfo =
-							pslidPanel.getPSLIDSelectionInfo();
-						String initFDName = pslidSelInfo.cellName+"_"+pslidSelInfo.proteinName+"_"+pslidSelInfo.imageSetID;
-						System.out.println(initFDName);
-						System.out.println(pslidSelInfo.proteinImageURL);
-						System.out.println(pslidSelInfo.compartmentImageURL);
-						jButtonFDFromFile_ActionPerformed(null, pslidSelInfo.fdos, initFDName);
-						
-//										File proteinImageFile = File.createTempFile("pslidProt",null);
-//										proteinImageFile.deleteOnExit();
-//										fos = new FileOutputStream(proteinImageFile);
-//										fos.write(pslidSelInfo.proteinImage);
-//										fos.close();
-//										
-//										File compartmentImageFile = File.createTempFile("pslidComp",null);
-//										compartmentImageFile.deleteOnExit();
-//										fos = new FileOutputStream(compartmentImageFile);
-//										fos.write(pslidSelInfo.compartmentImage);
-//										fos.close();
-//
-//										FieldDataFileOperationSpec fdos_protein = createFDOSFromImageFile(proteinImageFile);
-//										FieldDataFileOperationSpec fdos_compartment = createFDOSFromImageFile(compartmentImageFile);
-//										FieldDataFileOperationSpec fdos_composite = new FieldDataFileOperationSpec();
-//										fdos_composite.variableTypes =
-//											new VariableType[] {fdos_protein.variableTypes[0],fdos_compartment.variableTypes[0]};
-//										fdos_composite.varNames =
-//											new String[] {fdos_protein.varNames[0],fdos_compartment.varNames[0]};
-//										fdos_composite.shortSpecData =
-//											new short[][][] {{fdos_protein.shortSpecData[0][0],fdos_compartment.shortSpecData[0][0]}};
-//										fdos_composite.times = new double[] {0};
-//										fdos_composite.origin = pslidSelInfo.origin;
-//										fdos_composite.extent = pslidSelInfo.extent;
-//										fdos_composite.isize = pslidSelInfo.isize;
-						
-						//jButtonFDFromFile_ActionPerformed(null, fdos_composite,initFDName);
-					}
-				} catch (Exception e) {
-					pp[0].stop();
-					e.printStackTrace();
-					if(!(e instanceof InterruptedException)){
-						PopupGenerator.showErrorDialog("Error displaying PSLID Information.\n"+e.getMessage());
-					}
-				}finally{
-//									if(fos != null){try{fos.close();}catch(Exception e){}}
-					pp[0].stop();
-				}
-			}
-		}
-	);
-	pslidThread[0].start();
-
-//					//Create Timer thread to kill PSLID thread if taking too long (hang)
-//					final long MAX_WAIT_TIME_MILLISEC = 45000;
-//					final long MAX_WARNING_TIME_MILLISEC = 15000;
-//					final javax.swing.Timer pslidBlockTimer = new javax.swing.Timer(1000,null);
-//					pslidBlockTimer.addActionListener(
-//						new java.awt.event.ActionListener(){
-//							long startTime = System.currentTimeMillis();
-//							public void actionPerformed(java.awt.event.ActionEvent e){
-//								if(!pslidThread.isAlive()){
-//									pslidBlockTimer.stop();
-//									return;
-//								}
-//								long elapsedTime = System.currentTimeMillis()-startTime;
-//								if(elapsedTime < MAX_WAIT_TIME_MILLISEC){
-//									if(elapsedTime > MAX_WARNING_TIME_MILLISEC){
-//										pp.setMessage("Waiting for PSLID information... "+((MAX_WAIT_TIME_MILLISEC-elapsedTime)/1000));
-//									}
-//									pslidBlockTimer.restart();
-//								}else{
-//									pslidBlockTimer.stop();
-//									pp.stop();
-//									pslidThread.interrupt();
-//								}
-//							}
-//						}
-//					);
-//					pslidBlockTimer.restart();
 }
 
 }  //  @jve:decl-index=0:visual-constraint="10,10"
