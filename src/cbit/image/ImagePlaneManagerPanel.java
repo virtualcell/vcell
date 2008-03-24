@@ -1492,6 +1492,7 @@ private void updateInfo(java.awt.event.MouseEvent mouseEvent) {
 						if(getDataInfoProvider() != null){
 							DataViewer.VolumeDataInfo volumeDataInfo =
 								getDataInfoProvider().getVolumeDataInfo(volumeIndex);
+							infoS+= "          ";
 							infoS+= " \""+volumeDataInfo.volumeNamePhysiology+"\""+" (\""+volumeDataInfo.volumeNameGeometry+"\")";
 							infoS+= " svID="+volumeDataInfo.subvolumeID;
 							infoS+= " vrID="+volumeDataInfo.volumeRegionID;
