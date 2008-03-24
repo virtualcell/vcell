@@ -388,6 +388,25 @@ UserInfo getUserInfo(KeyValue key, boolean bEnableRetry)
 	}
 }
 
+void sendLostPassword(String userid, boolean bEnableRetry) throws DataAccessException, java.sql.SQLException, ObjectNotFoundException {
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		userDB.sendLostPassword(con,userid);
+	} catch (Throwable e) {
+		log.exception(e);
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			sendLostPassword(userid, false);
+		}else{
+			handle_DataAccessException_SQLException(e);
+		}
+	} finally {
+		conFactory.release(con,lock);
+	}
+	
+}
+
 
 /**
  * This method was created in VisualAge.
@@ -482,6 +501,9 @@ KeyValue insertUserInfo(UserInfo newUserInfo, boolean bEnableRetry) throws SQLEx
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
+		if(userDB.getUserFromUserid(con,newUserInfo.userid) != null){
+			throw new SQLException("Insert new user failed: username '"+newUserInfo.userid+"' already exists");
+		}
 		KeyValue key = userDB.insertUserInfo(con,newUserInfo);
 		con.commit();
 		return key;

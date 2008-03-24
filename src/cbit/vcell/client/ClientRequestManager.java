@@ -13,12 +13,14 @@ import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.solver.ode.gui.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.client.task.*;
+import cbit.vcell.desktop.LoginDialog;
 import cbit.vcell.desktop.controls.*;
 import cbit.vcell.math.*;
 import cbit.vcell.mapping.*;
 
 import java.beans.*;
 
+import cbit.sql.UserInfo;
 import cbit.sql.VersionableType;
 import cbit.util.*;
 import swingthreads.*;
@@ -732,6 +734,44 @@ public void curateDocument(final VCDocumentInfo documentInfo, final int curateTy
 }
 
 
+public void updateUserRegistration(final boolean bNewUser){
+	new Thread(new Runnable() {
+		public void run() {
+			try {
+				UserInfo registeredUserInfo =
+					UserRegistrationOP.registrationOperationGUI(
+							getClientServerManager().getClientServerInfo(),
+							(bNewUser?LoginDialog.USERACTION_REGISTER:LoginDialog.USERACTION_EDITINFO),
+							(bNewUser?null:getClientServerManager()));
+			} catch (UserCancelException e) {
+				//do nothing
+			} catch (Exception e) {
+				e.printStackTrace();
+				PopupGenerator.showErrorDialog("Update user Registration error:\n"+e.getMessage());
+			}
+		}
+	}).start();
+}
+
+public void sendLostPassword(final String userid){
+	new Thread(new Runnable() {
+		public void run() {
+			try {
+				UserInfo registeredUserInfo =
+					UserRegistrationOP.registrationOperationGUI(
+							VCellClient.createClientServerInfo(
+								getClientServerManager().getClientServerInfo(), userid, null),
+							LoginDialog.USERACTION_LOSTPASSWORD,
+							null);
+			} catch (UserCancelException e) {
+				//do nothing
+			} catch (Exception e) {
+				e.printStackTrace();
+				PopupGenerator.showErrorDialog("Update user Registration error:\n"+e.getMessage());
+			}
+		}
+	}).start();	
+}
 /**
  * Insert the method's description here.
  * Creation date: (6/22/2004 10:50:34 PM)
@@ -1152,7 +1192,6 @@ private VCellClient getVcellClient() {
 public boolean isApplet() {
 	return getVcellClient().isApplet();
 }
-
 
 /**
  * Insert the method's description here.

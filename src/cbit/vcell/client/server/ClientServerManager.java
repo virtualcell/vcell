@@ -365,7 +365,7 @@ public AsynchMessageManager getAsynchMessageManager() {
  * Creation date: (5/12/2004 4:45:19 PM)
  * @return cbit.vcell.client.server.ClientServerInfo
  */
-private ClientServerInfo getClientServerInfo() {
+public ClientServerInfo getClientServerInfo() {
 	return clientServerInfo;
 }
 
