@@ -117,7 +117,7 @@ private void addFunction() {
 	jd.setModal(true);
 	jd.getContentPane().add(fsp);
 //	jd.pack();
-	jd.setSize(400,225);
+	jd.setSize(450,250);
 	BeanUtils.centerOnComponent(jd, this);
 	
 	fsp.addActionListener(
