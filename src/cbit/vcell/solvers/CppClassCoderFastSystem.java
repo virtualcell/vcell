@@ -289,6 +289,8 @@ protected void writeUpdateDependentVars(java.io.PrintWriter out, String function
 	while (enum_exp.hasMoreElements()){
 		Expression exp = enum_exp.nextElement();
 		Variable depVar = enum_var.nextElement();
+		exp.bindExpression(simulation);
+		exp = simulation.substituteFunctions(exp).flatten();
 		out.println("\t" + TokenMangler.getEscapedFieldVariableName_C(depVar.getName()) + "->setCurr(currIndex," + exp.infix_C() + ");");
 	}
 	

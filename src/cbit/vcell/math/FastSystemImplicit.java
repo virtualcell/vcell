@@ -247,7 +247,9 @@ private void refreshInvarianceMatrix() throws MathException, ExpressionException
 		Expression function = ((FastInvariant)fastInvariantList.elementAt(i)).getFunction();
 		for (int j=0;j<numVars;j++){
 			Variable var = (Variable)fastVarList.elementAt(j);
-			Expression exp = function.differentiate(var.getName()).flatten();
+			Expression exp = function.differentiate(var.getName());
+			exp.bindExpression(null);
+			exp = exp.flatten();
 			RationalExp coeffRationalExp = RationalExpUtils.getRationalExp(exp);
 			matrix.set_elem(i,j,coeffRationalExp);
 		}
@@ -403,6 +405,7 @@ private void refreshSubstitutedRateExps() throws MathException, ExpressionExcept
 				exp = Expression.add(exp, new Expression(coefExp.infixString()+"*"+pc.getName()));
 			}
 		}
+		exp.bindExpression(null);
 		exp = exp.flatten();
 //System.out.println("FastSystem.refreshSubstitutedRateExps() "+((Variable)dependentVarList.elementAt(row)).getName()+" = "+exp.toString()+";");
 		dependencyExpList.addElement(exp);
