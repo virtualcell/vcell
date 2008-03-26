@@ -631,7 +631,7 @@ public boolean isDummy(Simulation sim, CompartmentSubDomain thisCompartment) {
 	// in any case the initial conditions will be respected.
 	if (testZero(sim, getRateExpression()) && testZero(sim, velocityX) && testZero(sim, velocityY) && testZero(sim, velocityZ)) {			
 		if (testZero(sim, diffusionExp)) {
-			return true;		
+			return true; // zero rate, velocity and diffusion
 		} else {
 			// for non-zero diffusion, look for non zero fluxes or non-uniform initial conditions.
 			if (testConstant(sim, getInitialExpression())
@@ -650,20 +650,43 @@ public boolean isDummy(Simulation sim, CompartmentSubDomain thisCompartment) {
 				  		if (memSubDomain.getInsideCompartment() == thisCompartment) {
 				  			JumpCondition jump = memSubDomain.getJumpCondition(volVar);
 				  			if (!testZero(sim, jump.getInFluxExpression())) {
-				  				return false;
+				  				return false; // non zero jump condition
 				  			}
 				  		} else 	if (memSubDomain.getOutsideCompartment() == thisCompartment) {
 				  			JumpCondition jump = memSubDomain.getJumpCondition(volVar);
 				  			if (!testZero(sim, jump.getOutFluxExpression())) {
-				  				return false;
+				  				return false; // non zero jump condition
 				  			}
 				  		}
 			  		}
 		  		}
-		  		return true;
+		  		// check fast system if jump conditions are all zero
+		  		FastSystem fastSystem = thisCompartment.getFastSystem();
+		  		if (fastSystem != null) {
+		  			Enumeration<FastInvariant> fastInvariants = fastSystem.getFastInvariants();
+		  			while (fastInvariants.hasMoreElements()) {
+		  				FastInvariant fi = fastInvariants.nextElement();
+		  				try {			  			
+		  					// look for fast invariants that involve only this variable
+		  					// which means this variable is not affected by fast system		
+		  					Expression exp = new Expression(fi.getFunction());
+		  					exp.bindExpression(sim);
+		  					exp = exp.flatten();
+		  					SymbolTableEntry ste = exp.getSymbolBinding(volVar.getName());
+		  					if (ste != null && exp.getSymbols().length == 1) {
+		  						return true;			  						
+		  					}
+		  				} catch (ExpressionException ex) {
+		  					ex.printStackTrace(System.out);
+		  					throw new RuntimeException("PdeEquation::isDummy(), not expected: " + ex.getMessage());
+		  				}
+		  			}
+		  			return false; // the variable is not found to be invariant in this fast system, might be changed by fast system
+		  		}
+		  		return true; // not changed by jump conditions, boundary conditions and fast system even if diffusion rate is non zero
 			}
 		}
 	}
-	return false;
+	return false; // non zero rate or velocity
 }
 }

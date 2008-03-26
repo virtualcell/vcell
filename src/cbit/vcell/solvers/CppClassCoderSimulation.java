@@ -57,9 +57,7 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 	out.println("\tint *solveRegions = 0;");
 	out.println("\tint numVolumeRegions = mesh->getNumVolumeRegions();");
 	out.println("\tstring varname, units;");
-	out.println("");	
-
-	out.println("\tint symmflg = 1;    // define symmflg = 0 (general) or 1 (symmetric)");
+	out.println("");
 
 	Simulation simulation = simulationJob.getWorkingSim();
 	Variable variables[] = simulation.getVariables();
@@ -102,7 +100,7 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 		  		out.println("\t// solving for all regions");
 		  		out.println("\tnumSolveRegions = 0;  // flag specifying to solve for all regions");
 		  		out.println("\tsolveRegions = NULL;");
-	  		}else{
+	  		} else if (listOfSubDomains.size() > 0){
 		  		//
 		  		// only solve for some compartments
 		  		//
@@ -125,21 +123,22 @@ protected void writeConstructor(java.io.PrintWriter out) throws Exception {
 				out.println("\t}");
 	  		}
 	  		
-	  		if (simulation.getMathDescription().isPDE(volVar)) {
-	  			if (simulation.getMathDescription().isPdeSteady(volVar)) {
-	  				out.println("\tsmbuilder = new EllipticVolumeEqnBuilder(volumeVar,mesh, numSolveRegions, solveRegions);");
-	  			} else {
-	  				out.println("\tsmbuilder = new SparseVolumeEqnBuilder(volumeVar,mesh," + (simulation.getMathDescription().hasVelocity(volVar) ? "false" : "true") + ", numSolveRegions, solveRegions);");
-	  			}
-  				out.println("\tslSolver = new SparseLinearSolver(volumeVar,smbuilder,"+simulation.hasTimeVaryingDiffusionOrAdvection(volVar)+");");
-  				out.println("\taddSolver(slSolver);");
-	  		}else{
-	  			out.println("\t//odeSolver = new ODESolver(volumeVar,mesh);");
-	  			out.println("\todeSolver = new ODESolver(volumeVar,mesh,numSolveRegions,solveRegions);");
-	  			out.println("\tbuilder = new EqnBuilderReactionForward(volumeVar,mesh,odeSolver);");
-	  			out.println("\todeSolver->setEqnBuilder(builder);");
-	  			out.println("\taddSolver(odeSolver);");
-	  		}		
+	  		if (listOfSubDomains.size() > 0) {
+		  		if (simulation.getMathDescription().isPDE(volVar)) {
+		  			if (simulation.getMathDescription().isPdeSteady(volVar)) {
+		  				out.println("\tsmbuilder = new EllipticVolumeEqnBuilder(volumeVar,mesh, numSolveRegions, solveRegions);");
+		  			} else {
+		  				out.println("\tsmbuilder = new SparseVolumeEqnBuilder(volumeVar,mesh," + (simulation.getMathDescription().hasVelocity(volVar) ? "false" : "true") + ", numSolveRegions, solveRegions);");
+		  			}
+	  				out.println("\tslSolver = new SparseLinearSolver(volumeVar,smbuilder,"+simulation.hasTimeVaryingDiffusionOrAdvection(volVar)+");");
+	  				out.println("\taddSolver(slSolver);");
+		  		}else{
+		  			out.println("\todeSolver = new ODESolver(volumeVar,mesh,numSolveRegions,solveRegions);");
+		  			out.println("\tbuilder = new EqnBuilderReactionForward(volumeVar,mesh,odeSolver);");
+		  			out.println("\todeSolver->setEqnBuilder(builder);");
+		  			out.println("\taddSolver(odeSolver);");
+		  		}
+	  		}
 	  		out.println("\taddVariable(volumeVar);");
 	  		out.println();
 	  	}else if (var instanceof MemVariable) { // membraneVariable

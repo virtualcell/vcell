@@ -10,7 +10,7 @@ public class RationalExp implements java.io.Serializable {
 	private Vector<Term> numTermList = new Vector<Term>();
 	private Vector<Term> denTermList = new Vector<Term>();
 
-	private class Term implements java.io.Serializable {
+	private static class Term implements java.io.Serializable {
 		private long coefficient = 1;
 		private Vector<String> symbolList = new Vector<String>();
 
@@ -320,29 +320,32 @@ public RationalNumber getConstant() {
  * @return java.lang.String
  */
 public String infixString() {
+	String numStr = infixString(numTermList);
+	String denStr = infixString(denTermList);
 	if (denTermList.size()==1 && ((Term)denTermList.elementAt(0)).getCoefficient()==1 && ((Term)denTermList.elementAt(0)).getSymbols().length==0){
 		// numerator only
 		if (numTermList.size()>1){
-			return '(' + infixString(numTermList) + ')';
+			return '(' + numStr + ')';
 		}else{
-			return infixString(numTermList);
+			return numStr;
 		}
 	}else{
 		StringBuffer buffer = new StringBuffer();
 		if (numTermList.size()>1){
 			buffer.append('(');
-			buffer.append(infixString(numTermList));
+			buffer.append(numStr);
 			buffer.append(")/");
 		}else{
-			buffer.append(infixString(numTermList));
+			buffer.append(numStr);
 			buffer.append('/');
 		}
-		if (denTermList.size()>1){
+		
+		if (denStr.indexOf("*") >= 0 || denTermList.size() > 1) {
 			buffer.append('(');
-			buffer.append(infixString(denTermList));
-			buffer.append(')');
-		}else{
-			buffer.append(infixString(denTermList));
+			buffer.append(denStr);
+			buffer.append(')');			
+		} else {
+			buffer.append(denStr);
 		}
 		return buffer.toString();
 	}
