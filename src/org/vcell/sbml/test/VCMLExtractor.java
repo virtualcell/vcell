@@ -25,6 +25,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.CommentStringTokenizer;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.modeldb.VCDatabaseVisitor;
 import cbit.vcell.modeldb.VersionableTypeVersion;
@@ -123,5 +124,10 @@ public class VCMLExtractor implements VCDatabaseVisitor {
 	public void visitGeometry(Geometry geometry, PrintStream arg_p) {
 	}
 
+	public boolean filterMathModel(MathModelInfo mathModelInfo) {
+		return false;
+	}
+	public void visitMathModel(MathModel mathModel, PrintStream logFilePrintStream) {
+	}
 
 }

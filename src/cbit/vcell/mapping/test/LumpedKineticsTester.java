@@ -20,6 +20,8 @@ import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathDescriptionTest;
 import cbit.vcell.math.MathException;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.model.DistributedKinetics;
 import cbit.vcell.model.Kinetics;
@@ -169,5 +171,12 @@ public class LumpedKineticsTester implements VCDatabaseVisitor {
 	public void visitGeometry(Geometry geometry, PrintStream arg_p) {
 	}
 
+	public boolean filterMathModel(MathModelInfo mathModelInfo) {
+		return false;
+	}
+
+	public void visitMathModel(MathModel mathModel, PrintStream logFilePrintStream) {
+	}
+	
 
 }

@@ -6,6 +6,7 @@ import java.util.Iterator;
 
 import org.jdom.Document;
 import org.jdom.Element;
+import org.jdom.Namespace;
 import org.jdom.filter.ElementFilter;
 import org.jdom.input.SAXBuilder;
 /**
@@ -103,14 +104,15 @@ public XMLDict() {
 				break;
 			}
 	   }
+	   Namespace ns = root.getNamespace();
 	   for (int i = 0; i < tokenizer.countTokens() - 1; i++) {            //break when reaching the direct parent.
 			String elementName = tokenizer.nextToken();
 			//System.out.println("Current Token: " + elementName);
-			root = root.getChild(elementName);
+			root = root.getChild(elementName, ns);
 	   }
 	   String resElementName = tokenizer.nextToken();
 	   //System.out.println(resElementName);
-	   Iterator iterator = root.getChildren(resElementName).iterator();              //last 2 tokens (direct parent, and element to resolve)
+	   Iterator iterator = root.getChildren(resElementName, ns).iterator();              //last 2 tokens (direct parent, and element to resolve)
 	   Element temp = null;
 	   while (iterator.hasNext()) {
 	   		temp = (Element)iterator.next();
