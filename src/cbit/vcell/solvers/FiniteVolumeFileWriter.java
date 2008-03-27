@@ -647,7 +647,7 @@ private void writeJMSParamters() {
 
 
 /**
-# Variables : type name unit time_dependent_flag advection_flag solve_regions
+# Variables : type name unit time_dependent_flag advection_flag solve_whole_mesh_flag solve_regions
 VARIABLE_BEGIN
 VOLUME_ODE rB uM
 VOLUME_PDE rf uM false false
@@ -658,7 +658,7 @@ VARIABLE_END
 private void writeVariables() throws Exception {	  			
 	String units;
 	
-	writer.println("# Variables : type name unit time_dependent_flag advection_flag solve_regions");
+	writer.println("# Variables : type name unit time_dependent_flag advection_flag solve_whole_mesh_flag solve_regions");
 	writer.println("VARIABLE_BEGIN");
 	cbit.vcell.math.MathDescription mathDesc = simulation.getMathDescription();
 	Variable[] vars = simulation.getVariables();
@@ -696,7 +696,10 @@ private void writeVariables() throws Exception {
 				writer.print("VOLUME_ODE " + volVar.getName() + " " + units);
 			}
 
-			if (totalNumCompartments != listOfSubDomains.size()){
+			if (totalNumCompartments == listOfSubDomains.size()) {
+				writer.print(" true");
+			} else {
+				writer.print(" false");
 			  	for (int j = 0; j < listOfSubDomains.size(); j++){
 					CompartmentSubDomain compartmentSubDomain = (CompartmentSubDomain)listOfSubDomains.elementAt(j);				  	
 				  	writer.print(" " + compartmentSubDomain.getName());
@@ -704,7 +707,6 @@ private void writeVariables() throws Exception {
 				
 			}
 			writer.println();
-			
 		} else if (vars[i] instanceof VolumeRegionVariable) {
 			units = "uM";
 			writer.println("VOLUME_REGION " + vars[i].getName() + " " + units);
