@@ -12,6 +12,8 @@ import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.xml.Xmlproducer;
@@ -105,4 +107,12 @@ public class StochasticBioModelScanner implements VCDatabaseVisitor {
 	public void visitGeometry(Geometry geometry, PrintStream arg_p) {
 	}
 
+	public boolean filterMathModel(MathModelInfo mathModelInfo) {
+		return false;
+	}
+
+	public void visitMathModel(MathModel mathModel, PrintStream logFilePrintStream) {
+	}
+
+	
 }

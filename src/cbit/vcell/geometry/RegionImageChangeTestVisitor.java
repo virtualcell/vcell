@@ -27,6 +27,8 @@ import cbit.vcell.geometry.surface.TaubinSmoothing;
 import cbit.vcell.geometry.surface.TaubinSmoothingSpecification;
 import cbit.vcell.geometry.surface.TaubinSmoothingWrong;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.modeldb.VCDatabaseVisitor;
 import cbit.vcell.parser.ExpressionException;
@@ -596,7 +598,6 @@ private void test2(Geometry geometry, PrintStream logFilePrintStream){
 		}
 	}
 
-
 	//
 	// not used for geometries
 	//
@@ -609,6 +610,17 @@ private void test2(Geometry geometry, PrintStream logFilePrintStream){
 	public void visitBioModel(BioModel bioModel, PrintStream logFilePrintStream) {
 	}
 
+	//
+	// not used for geometries
+	//
+	public boolean filterMathModel(MathModelInfo mathModelInfo) {
+		return false;
+	}
+	//
+	// not used for geometries
+	//
+	public void visitMathModel(MathModel mathModel, PrintStream logFilePrintStream) {
+	}
 
 
 }

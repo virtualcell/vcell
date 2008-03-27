@@ -6,6 +6,8 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.mathmodel.MathModelInfo;
 
 public class SimpleGeometryVisitor implements VCDatabaseVisitor {
 
@@ -44,6 +46,17 @@ public class SimpleGeometryVisitor implements VCDatabaseVisitor {
 	public void visitBioModel(BioModel bioModel, PrintStream logFilePrintStream) {
 	}
 
+	//
+	// not used for geometries
+	//
+	public boolean filterMathModel(MathModelInfo mathModelInfo) {
+		return false;
+	}
+	//
+	// not used for geometries
+	//
+	public void visitMathModel(MathModel mathModel, PrintStream logFilePrintStream) {
+	}
 
 
 }

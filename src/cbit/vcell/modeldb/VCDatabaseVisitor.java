@@ -20,8 +20,8 @@ public interface VCDatabaseVisitor {
 	public boolean filterGeometry(GeometryInfo geometryInfo);
 	public void visitGeometry(Geometry geometry, PrintStream logFilePrintStream);
 
-//	public boolean filterMathModel(MathModelInfo mathModelInfo);
-//	public void visitMathModel(MathModel mathModel, PrintStream logFilePrintStream);
+	public boolean filterMathModel(MathModelInfo mathModelInfo);
+	public void visitMathModel(MathModel mathModel, PrintStream logFilePrintStream);
 	
 //	public boolean filterSimulation(SimulationInfo simInfo);
 //	public void visitSimulation(Simulation simulation, PrintStream logFilePrintStream);

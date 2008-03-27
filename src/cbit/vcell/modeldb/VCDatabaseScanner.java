@@ -18,6 +18,8 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.biomodel.BioModelInfo;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.PropertyLoader;
@@ -188,12 +190,67 @@ public void scanGeometries(VCDatabaseVisitor databaseVisitor, PrintStream logFil
 	}
 }
 
+public void scanMathModels(VCDatabaseVisitor databaseVisitor, PrintStream logFilePrintStream, User users[], KeyValue singleMathmodelKey, HashSet<KeyValue> includeHash, HashSet<KeyValue> excludeHash, boolean bAbortOnDataAccessException) throws DataAccessException, XmlParseException {
+	if (users==null){
+		users = getAllUsers();
+	}
+	try
+	{
+		//start visiting models and writing log
+		logFilePrintStream.println("Start scanning mathmodels ......");
+		logFilePrintStream.println("\n");
+		
+		for (int i=0;i<users.length;i++)
+		{
+			User user = users[i];
+			MathModelInfo mathInfos[] = dbServerImpl.getMathModelInfos(user,false);
+			for (int j = 0; j < mathInfos.length; j++){
+				if (singleMathmodelKey!=null && !mathInfos[j].getVersion().getVersionKey().compareEqual(singleMathmodelKey)){
+					System.out.println("skipping geometry, not the single one that we wanted");
+					continue;
+				}
+				if (excludeHash!=null && excludeHash.contains(mathInfos[j].getVersion().getVersionKey())){
+					System.out.println("skipping geometry with key '"+mathInfos[j].getVersion().getVersionKey()+"'");
+					continue;
+				}
+				if (includeHash!=null && !includeHash.contains(mathInfos[j].getVersion().getVersionKey())){
+					System.out.println("not including geometry with key '"+mathInfos[j].getVersion().getVersionKey()+"'");
+					continue;
+				}
+				if (!databaseVisitor.filterMathModel(mathInfos[j])){
+					continue;
+				}
+				try {
+					BigString mathModelXML = dbServerImpl.getMathModelXML(user, mathInfos[j].getVersion().getVersionKey());
+					MathModel mathModel = cbit.vcell.xml.XmlHelper.XMLToMathModel(mathModelXML.toString());
+					mathModel.refreshDependencies();
+					databaseVisitor.visitMathModel(mathModel,logFilePrintStream);
+				}catch (Exception e2){
+					log.exception(e2);
+					if (bAbortOnDataAccessException){
+						throw e2;
+					}
+				}
+			}
+		}
+		
+		logFilePrintStream.close();
+	}catch(Exception e)
+	{
+		System.err.println("error writing to log file.");
+	}
+}
+
 public static void scanGeometries(final java.lang.String[] args, final VCDatabaseVisitor visitor, final boolean bAbortOnDataAccessException) {
 	scanDbObjects(VersionableType.Geometry, args, visitor, bAbortOnDataAccessException);
 }
 
 public static void scanBioModels(final java.lang.String[] args, final VCDatabaseVisitor visitor, final boolean bAbortOnDataAccessException) {
 	scanDbObjects(VersionableType.BioModelMetaData, args, visitor, bAbortOnDataAccessException);
+}
+
+public static void scanMathModels(final java.lang.String[] args, final VCDatabaseVisitor visitor, final boolean bAbortOnDataAccessException) {
+	scanDbObjects(VersionableType.MathModelMetaData, args, visitor, bAbortOnDataAccessException);
 }
 
 private static void scanDbObjects(VersionableType versionableType, final java.lang.String[] args, final VCDatabaseVisitor visitor, final boolean bAbortOnDataAccessException) {
@@ -260,9 +317,11 @@ private static void scanDbObjects(VersionableType versionableType, final java.la
 		}
 		if (versionableType.equals(VersionableType.BioModelMetaData)){
 			databaseScanner.scanBioModels(visitor, logFilePrintStream, users, singleKey, includeHash, excludeHash, bAbortOnDataAccessException);
-		}else if (versionableType.equals(VersionableType.Geometry)){
+		} else if (versionableType.equals(VersionableType.Geometry)){
 			databaseScanner.scanGeometries(visitor, logFilePrintStream, users, singleKey, includeHash, excludeHash, bAbortOnDataAccessException);
-		}else{
+		} else if (versionableType.equals(VersionableType.MathModelMetaData)){
+			databaseScanner.scanMathModels(visitor, logFilePrintStream, users, singleKey, includeHash, excludeHash, bAbortOnDataAccessException);
+		} else{
 			throw new RuntimeException("versionableType "+versionableType.toString()+" not yet supported");
 		}
 

@@ -15,6 +15,8 @@ import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.model.Structure;
 import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.modeldb.VCDatabaseVisitor;
@@ -382,6 +384,13 @@ public void visitGeometry(Geometry geometry, PrintStream logFilePrintStream) {
 	
 }
 
+// required for interface implementation
+
+public boolean filterMathModel(MathModelInfo mathModelInfo) {
+	return false;
+}
+public void visitMathModel(MathModel mathModel, PrintStream logFilePrintStream) {
+}
 
 
 }

@@ -16,6 +16,8 @@ import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.modeldb.VCDatabaseScanner;
@@ -383,6 +385,14 @@ public void visitBioModel(BioModel bioModel_1, PrintStream logFilePrintStream) {
 public void visitGeometry(Geometry geometry, PrintStream logFilePrintStream) {
 	// TODO Auto-generated method stub
 	
+}
+
+// required for interface implementation
+public boolean filterMathModel(MathModelInfo mathModelInfo) {
+	return false;
+}
+
+public void visitMathModel(MathModel mathModel, PrintStream logFilePrintStream) {
 }
 
 

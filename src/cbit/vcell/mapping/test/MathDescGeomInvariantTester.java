@@ -15,6 +15,8 @@ import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.mathmodel.MathModelInfo;
 import cbit.vcell.modeldb.VCDatabaseScanner;
 import cbit.vcell.modeldb.VCDatabaseVisitor;
 
@@ -113,6 +115,13 @@ public class MathDescGeomInvariantTester implements VCDatabaseVisitor {
 
 	}
 
+	// required for interface implementation
+	public boolean filterMathModel(MathModelInfo mathModelInfo) {
+		return false;
+	}
+	public void visitMathModel(MathModel mathModel, PrintStream logFilePrintStream) {
+	}
+	
 	/**
 	 * @param args
 	 */
