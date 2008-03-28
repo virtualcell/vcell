@@ -300,7 +300,7 @@ long l4 = System.currentTimeMillis();
 			throw new XmlParseException("An error occurred while trying to add the SimContext "+ simContext.getName() +" to the BioModel Object!"+" : "+e.getMessage());
 		}
 		//process the simulations within this Simspec
-		Iterator simIterator = tempElement.getChildren(XMLTags.SimulationTag).iterator();
+		Iterator simIterator = tempElement.getChildren(XMLTags.SimulationTag, vcNamespace).iterator();
 long l5 = System.currentTimeMillis();
 System.out.println("simcontext-------- "+((double)(l5-l4))/1000);
 		while (simIterator.hasNext()) {
