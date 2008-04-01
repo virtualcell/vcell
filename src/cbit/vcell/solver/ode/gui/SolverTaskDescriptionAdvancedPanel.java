@@ -1,5 +1,6 @@
 package cbit.vcell.solver.ode.gui;
 import cbit.gui.DialogUtils;
+import cbit.util.graph.Trail;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.stoch.StochHybridOptions;
 import cbit.vcell.solver.stoch.StochSimOptions;
@@ -8,7 +9,15 @@ import cbit.vcell.solver.stoch.StochSimOptions;
  * All rights reserved.
 ©*/
 import cbit.vcell.client.PopupGenerator;
+
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridLayout;
+
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 /**
@@ -55,13 +64,18 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel imple
 	private javax.swing.JTextField ivjOutputTimeStepTextField = null;
 	private javax.swing.JLabel ivjJLabel4 = null;
 	private javax.swing.JLabel ivjJLabelTitle = null;
+	private javax.swing.JRadioButton trajectoryRadioButton = null;
+	private javax.swing.JRadioButton histogramRadioButton = null;
+	private javax.swing.ButtonGroup buttonGroupTrials = null;
+	private javax.swing.JLabel numOfTrialsLabel = null;
+	private javax.swing.JTextField ivjJTextFieldNumOfTrials = null;
 	private javax.swing.JRadioButton ivjCustomizedSeed = null;
-	private javax.swing.JLabel ivjNumOfTrials = null;
 	private javax.swing.JRadioButton ivjRandomSeed = null;
 	private javax.swing.ButtonGroup ivjButtonGroupSeed = null;
 	private javax.swing.JTextField ivjJTextFieldCustomSeed = null;
-	private javax.swing.JTextField ivjJTextFieldNumOfTrials = null;
+	
 	private javax.swing.JPanel ivjJPanelStoch = null;
+	
 	private javax.swing.JLabel ivjEpsilonLabel = null;
 	private javax.swing.JTextField ivjEpsilonTextField = null;
 	private javax.swing.JLabel ivjLambdaLabel = null;
@@ -116,18 +130,16 @@ public void actionPerformed(java.awt.event.ActionEvent e) {
 	// user code end
 	if (e.getSource() == getCustomizedSeed()){
 		connEtoC23(e);
-		//updateStochOptions();
 	}
 	if (e.getSource() == getRandomSeed()) {
 		connEtoC24(e);
-		//updateStochOptions();
 	}
-	//Stoch Options
-//	if (e.getSource() == this && (e.getSource() == getRandomSeed()) && getRandomSeed().isSelected()) 
-//		updateStochOptions();
-//	if (e.getSource() == this && (e.getSource() == getCustomizedSeed()) && getCustomizedSeed().isSelected())
-//		updateStochOptions();
-	
+	if (e.getSource() == getTrajectoryButton()){
+		trajectoryButton_ActionPerformed(e);
+	}
+	if (e.getSource() == getHistogramButton()){
+		histogramButton_ActionPerformed(e);
+	}
 	if(e.getSource() == getQuestionButton())
 	{
 		displayHelpInfo();
@@ -1011,9 +1023,34 @@ private javax.swing.DefaultComboBoxModel createSolverComboBoxModel(SolverTaskDes
  */
 private void customizedSeed_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
 	getJTextFieldCustomSeed().setEnabled(true);
+	if(getSolverTaskDescription() != null && getSolverTaskDescription().getStochOpt() != null)
+	{
+		getJTextFieldCustomSeed().setText(getSolverTaskDescription().getStochOpt().getCustomSeed()+"");
+	}
+	updateStochOptions();
 }
 
+private void trajectoryButton_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
+	getJTextFieldNumOfTrials().setText("1");
+	getJTextFieldNumOfTrials().setEnabled(false);
+	updateStochOptions();
+}
 
+private void histogramButton_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
+	getJTextFieldNumOfTrials().setEnabled(true);
+	if(getSolverTaskDescription() != null && getSolverTaskDescription().getStochOpt() != null)
+	{
+		if(getSolverTaskDescription().getStochOpt().getNumOfTrials() >1)
+		{
+			getJTextFieldNumOfTrials().setText(getSolverTaskDescription().getStochOpt().getNumOfTrials()+"");
+		}
+		else
+		{
+			getJTextFieldNumOfTrials().setText("100");
+		}
+	}
+	updateStochOptions();
+}
 /**
  * Comment
  */
@@ -1198,6 +1235,70 @@ private javax.swing.ButtonGroup getbuttonGroup1() {
 		}
 	}
 	return ivjbuttonGroup1;
+}
+
+/**
+ * Return the ButtonGroupSeed property value.
+ * @return javax.swing.ButtonGroup
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private javax.swing.ButtonGroup getButtonGroupTrials() {
+	if (buttonGroupTrials == null) {
+		try {
+			buttonGroupTrials = new javax.swing.ButtonGroup();
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return buttonGroupTrials;
+}
+
+/**
+ * Return the CustomizedSeed property value.
+ * @return javax.swing.JRadioButton
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private javax.swing.JRadioButton getTrajectoryButton() {
+	if (trajectoryRadioButton == null) {
+		try {
+			trajectoryRadioButton = new javax.swing.JRadioButton();
+			trajectoryRadioButton.setName("Trajectory");
+			trajectoryRadioButton.setText("Single Trajectory");
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return trajectoryRadioButton;
+}
+
+/**
+ * Return the CustomizedSeed property value.
+ * @return javax.swing.JRadioButton
+ */
+/* WARNING: THIS METHOD WILL BE REGENERATED. */
+private javax.swing.JRadioButton getHistogramButton() {
+	if (histogramRadioButton == null) {
+		try {
+			histogramRadioButton = new javax.swing.JRadioButton();
+			histogramRadioButton.setName("Histogram");
+			histogramRadioButton.setText("Histogram");
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return histogramRadioButton;
 }
 
 
@@ -1602,85 +1703,56 @@ private javax.swing.JPanel getJPanelStoch() {
 		try {
 			ivjJPanelStoch = new javax.swing.JPanel();
 			ivjJPanelStoch.setName("JPanelStoch");
-			ivjJPanelStoch.setLayout(new java.awt.GridBagLayout());
-
-			java.awt.GridBagConstraints constraintsRandomSeed = new java.awt.GridBagConstraints();
-			constraintsRandomSeed.gridx = 0; constraintsRandomSeed.gridy = 0;
-			constraintsRandomSeed.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanelStoch().add(getRandomSeed(), constraintsRandomSeed);
-
-			java.awt.GridBagConstraints constraintsCustomizedSeed = new java.awt.GridBagConstraints();
-			constraintsCustomizedSeed.gridx = 1; constraintsCustomizedSeed.gridy = 0;
-			constraintsCustomizedSeed.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanelStoch().add(getCustomizedSeed(), constraintsCustomizedSeed);
-
-			java.awt.GridBagConstraints constraintsJTextFieldCustomSeed = new java.awt.GridBagConstraints();
-			constraintsJTextFieldCustomSeed.gridx = 2; constraintsJTextFieldCustomSeed.gridy = 0;
-			constraintsJTextFieldCustomSeed.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsJTextFieldCustomSeed.weightx = 1.0;
-			constraintsJTextFieldCustomSeed.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanelStoch().add(getJTextFieldCustomSeed(), constraintsJTextFieldCustomSeed);
-
-			java.awt.GridBagConstraints constraintsNumOfTrials = new java.awt.GridBagConstraints();
-			constraintsNumOfTrials.gridx = 3; constraintsNumOfTrials.gridy = 0;
-			constraintsNumOfTrials.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanelStoch().add(getNumOfTrials(), constraintsNumOfTrials);
-
-			java.awt.GridBagConstraints constraintsJTextFieldNumOfTrials = new java.awt.GridBagConstraints();
-			constraintsJTextFieldNumOfTrials.gridx = 4; constraintsJTextFieldNumOfTrials.gridy = 0;
-			constraintsJTextFieldNumOfTrials.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsJTextFieldNumOfTrials.weightx = 1.0;
-			constraintsJTextFieldNumOfTrials.insets = new java.awt.Insets(4, 4, 4, 4);
+			ivjJPanelStoch.setLayout(new java.awt.GridLayout(0,1));
 			
-			java.awt.GridBagConstraints constraintsEpsilon = new java.awt.GridBagConstraints();
-			constraintsEpsilon.gridx = 0; constraintsEpsilon.gridy = 1;
-			constraintsEpsilon.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanelStoch().add(getEpsilonLabel(), constraintsEpsilon);
-
-			java.awt.GridBagConstraints constraintsJTextFieldEpsilon = new java.awt.GridBagConstraints();
-			constraintsJTextFieldEpsilon.gridx = 1; constraintsJTextFieldEpsilon.gridy = 1;
-			constraintsJTextFieldEpsilon.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsJTextFieldEpsilon.weightx = 1.0;
-			constraintsJTextFieldEpsilon.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanelStoch().add(getEpsilonTextField(), constraintsJTextFieldEpsilon);
+			// 1
+			JPanel trialPanel = new JPanel(new GridLayout(0,1));
+			trialPanel.add(getTrajectoryButton());
+			trialPanel.add(getHistogramButton());	
+			JPanel panela = new JPanel(new FlowLayout(FlowLayout.LEFT));
+			panela.add(getNumOfTrialsLabel());
+			panela.add(getJTextFieldNumOfTrials());
+			trialPanel.add(panela);
+			trialPanel.setBorder(new EtchedBorder());
 			
-			java.awt.GridBagConstraints constraintsLambda = new java.awt.GridBagConstraints();
-			constraintsLambda.gridx = 2; constraintsLambda.gridy = 1;
-			constraintsLambda.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanelStoch().add(getLambdaLabel(), constraintsLambda);
-
-			java.awt.GridBagConstraints constraintsJTextFieldLambda = new java.awt.GridBagConstraints();
-			constraintsJTextFieldLambda.gridx = 3; constraintsJTextFieldLambda.gridy = 1;
-			constraintsJTextFieldLambda.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsJTextFieldLambda.weightx = 1.0;
-			constraintsJTextFieldLambda.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanelStoch().add(getLambdaTextField(), constraintsJTextFieldLambda);
+			// 2
+			JPanel seedPanel = new JPanel(new GridLayout(0,1));
+			JPanel panelb = new JPanel(new FlowLayout(FlowLayout.LEFT));
+			panelb.add(getRandomSeed());
+			seedPanel.add(panelb);
+			panelb = new JPanel(new FlowLayout(FlowLayout.LEFT));
+			panelb.add(getCustomizedSeed());
+			panelb.add(getJTextFieldCustomSeed());
+			seedPanel.add(panelb);
+			seedPanel.setBorder(new EtchedBorder());
 			
-			java.awt.GridBagConstraints constraintsMSR = new java.awt.GridBagConstraints();
-			constraintsMSR.gridx = 0; constraintsMSR.gridy = 2;
-			constraintsMSR.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanelStoch().add(getMSRToleranceLabel(), constraintsMSR);
-
-			java.awt.GridBagConstraints constraintsJTextFieldMSR = new java.awt.GridBagConstraints();
-			constraintsJTextFieldMSR.gridx = 1; constraintsJTextFieldMSR.gridy = 2;
-			constraintsJTextFieldMSR.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsJTextFieldMSR.weightx = 1.0;
-			constraintsJTextFieldMSR.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanelStoch().add(getMSRToleranceTextField(), constraintsJTextFieldMSR);
+			//combine 1 and 2
+			JPanel paneld=new JPanel(new GridLayout(0,2));
+			paneld.add(trialPanel);
+			paneld.add(seedPanel);
+			getJPanelStoch().add(paneld);			
+			// 3
+			JPanel panelc = new JPanel(new GridLayout(0,2));
+			JPanel panel1 = new JPanel(new FlowLayout(FlowLayout.LEFT));			
+			panel1.add(getEpsilonLabel());
+			panel1.add(getEpsilonTextField());
+			panelc.add(panel1);
+			panel1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
+			panel1.add(getLambdaLabel());
+			panel1.add(getLambdaTextField());
+			panelc.add(panel1);
 			
-			java.awt.GridBagConstraints constraintsSDE = new java.awt.GridBagConstraints();
-			constraintsSDE.gridx = 2; constraintsSDE.gridy = 2;
-			constraintsSDE.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanelStoch().add(getSDEToleranceLabel(), constraintsSDE);
-
-			java.awt.GridBagConstraints constraintsJTextFieldSDE = new java.awt.GridBagConstraints();
-			constraintsJTextFieldSDE.gridx = 3; constraintsJTextFieldSDE.gridy = 2;
-			constraintsJTextFieldSDE.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			constraintsJTextFieldSDE.weightx = 1.0;
-			constraintsJTextFieldSDE.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanelStoch().add(getSDEToleranceTextField(), constraintsJTextFieldSDE);
-			
-			getJPanelStoch().add(getJTextFieldNumOfTrials(), constraintsJTextFieldNumOfTrials);
+			panel1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
+			panel1.add(getMSRToleranceLabel());
+			panel1.add(getMSRToleranceTextField());
+			panelc.add(panel1);
+			panel1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
+			panel1.add(getSDEToleranceLabel());
+			panel1.add(getSDEToleranceTextField());
+			panelc.add(panel1);
+			panelc.setBorder(new EtchedBorder());
+			getJPanelStoch().add(panelc);
+		
 			TitledBorder tb=new TitledBorder(new EtchedBorder(),"Stochastic Options", TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION, new Font("Tahoma", Font.PLAIN, 11));
 		    getJPanelStoch().setBorder(tb);
 						
@@ -1706,8 +1778,7 @@ private javax.swing.JTextField getJTextFieldCustomSeed() {
 			ivjJTextFieldCustomSeed = new javax.swing.JTextField();
 			ivjJTextFieldCustomSeed.setName("JTextFieldCustomSeed");
 			ivjJTextFieldCustomSeed.setEnabled(false);
-			ivjJTextFieldCustomSeed.setPreferredSize(new java.awt.Dimension(60, 20));
-			ivjJTextFieldCustomSeed.setColumns(10);
+			ivjJTextFieldCustomSeed.setColumns(9);
 			
 		} catch (java.lang.Throwable ivjExc) {
 			// user code begin {2}
@@ -1728,6 +1799,7 @@ private javax.swing.JTextField getJTextFieldNumOfTrials() {
 		try {
 			ivjJTextFieldNumOfTrials = new javax.swing.JTextField();
 			ivjJTextFieldNumOfTrials.setName("JTextFieldNumOfTrials");
+			ivjJTextFieldNumOfTrials.setColumns(9);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1836,12 +1908,12 @@ private javax.swing.JTextField getKeepEveryTextField() {
  * @return javax.swing.JLabel
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getNumOfTrials() {
-	if (ivjNumOfTrials == null) {
+private javax.swing.JLabel getNumOfTrialsLabel() {
+	if (numOfTrialsLabel == null) {
 		try {
-			ivjNumOfTrials = new javax.swing.JLabel();
-			ivjNumOfTrials.setName("NumOfTrials");
-			ivjNumOfTrials.setText("Num. Of Trials");
+			numOfTrialsLabel = new javax.swing.JLabel();
+			numOfTrialsLabel.setName("NumOfTrials");
+			numOfTrialsLabel.setText("Num. Of Trials");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1850,7 +1922,7 @@ private javax.swing.JLabel getNumOfTrials() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjNumOfTrials;
+	return numOfTrialsLabel;
 }
 
 
@@ -2253,6 +2325,8 @@ private void initConnections() throws java.lang.Exception {
 	getTimeBoundsPanel().addPropertyChangeListener(this);
 	getCustomizedSeed().addActionListener(this);
 	getRandomSeed().addActionListener(this);
+	getTrajectoryButton().addActionListener(this);
+	getHistogramButton().addActionListener(this);
 	getJTextFieldCustomSeed().addFocusListener(this);
 	getJTextFieldNumOfTrials().addFocusListener(this);
 	getEpsilonTextField().addFocusListener(this);
@@ -2447,7 +2521,7 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 
 /**
  * Update parameters for stochastic simulations,
- * including using custermized seed or not, custermized seed, number of trials (for all, and below four paras for hybrid only)
+ * including using custermized seed or not, custermized seed, using tractory or histogram, number of trials (for all, and below four paras for hybrid only)
  * Epsilon : minimum number of molecus required for approximation as a continuous Markow process,
  * Lambda : minimum rate of reaction required for approximation to a continuous Markov process,
  * MSR Tolerance : Maximum allowed effect of slow reactions per numerical integration of the SDEs,
@@ -2458,20 +2532,42 @@ private void updateStochOptions(){
 		return;
 	}
 	try{
+		StochSimOptions sso = getSolverTaskDescription().getStochOpt();
 		if(getSolverTaskDescription().getSolverDescription().equals(SolverDescription.StochGibson))
 		{
-			StochSimOptions sso = new StochSimOptions();
+			if(sso == null)
+			{
+				sso = new StochSimOptions();
+			}
 			sso.setUseCustomSeed(getCustomizedSeed().isSelected());
-			sso.setNumOfTrials(Integer.parseInt(getJTextFieldNumOfTrials().getText()));
+			int trials = Integer.parseInt(getJTextFieldNumOfTrials().getText());
+			if(getHistogramButton().isSelected() && (trials <= 1))
+			{
+				throw new Exception("Number of trials should be greater than 1 for histogram.");
+			}
+			sso.setNumOfTrials(trials);
 			if(getCustomizedSeed().isSelected())
 				sso.setCustomSeed(Integer.parseInt(getJTextFieldCustomSeed().getText()));
 			getSolverTaskDescription().setStochOpt(sso);
 		}
 		else
 		{
-			StochHybridOptions sho = new StochHybridOptions();
+			StochHybridOptions sho = null;
+			if(sso == null || !(sso instanceof StochHybridOptions))
+			{
+				sho = new StochHybridOptions();
+			}
+			else
+			{
+				sho = (StochHybridOptions)sso;
+			}
 			sho.setUseCustomSeed(getCustomizedSeed().isSelected());
-			sho.setNumOfTrials(Integer.parseInt(getJTextFieldNumOfTrials().getText()));
+			int trials = Integer.parseInt(getJTextFieldNumOfTrials().getText());
+			if(getHistogramButton().isSelected() && (trials <= 1))
+			{
+				throw new Exception("Number of trials should be greater than 1 for histogram.");
+			}
+			sho.setNumOfTrials(trials);
 			if(getCustomizedSeed().isSelected())
 				sho.setCustomSeed(Integer.parseInt(getJTextFieldCustomSeed().getText()));
 			if(getEpsilonTextField().isEnabled() && !getEpsilonTextField().getText().equals(""))
@@ -2494,6 +2590,7 @@ private void updateStochOptions(){
  */
 private void randomSeed_ActionPerformed(java.awt.event.ActionEvent actionEvent) {
 	getJTextFieldCustomSeed().setEnabled(false);
+	updateStochOptions();
 }
 
 
@@ -2671,11 +2768,15 @@ private void setTornOffSolverTaskDescription(cbit.vcell.solver.SolverTaskDescrip
  * Comment
  */
 private void solverTaskDescriptionAdvancedPanel_Initialize() {
+	//seed radio button group
 	getButtonGroupSeed().add(getRandomSeed());
 	getButtonGroupSeed().add(getCustomizedSeed());
+//	cbit.util.BeanUtils.enableComponents(getJPanelStoch(),false);
+	//trial radio button group
+	getButtonGroupTrials().add(getTrajectoryButton());
+	getButtonGroupTrials().add(getHistogramButton());
 	cbit.util.BeanUtils.enableComponents(getJPanelStoch(),false);
 }
-
 
 /**
  * Comment
@@ -2685,47 +2786,7 @@ private void solverTaskDescriptionAdvancedPanel_SolverTaskDescription() {
 		boolean isStoch = getSolverTaskDescription().getSolverDescription().isSTOCHSolver();
 		if(isStoch)
 		{
-			cbit.util.BeanUtils.enableComponents(getJPanelStoch(),true);
-			StochSimOptions sso = this.getSolverTaskDescription().getStochOpt();
-			//to keep the values from an existing StochOption. It may be used for HybridOption.
-			//HybridOption doesn't have four more paras in previous version.
-			long NumTrials = sso.getNumOfTrials(); 
-			boolean isUseCustomSeed = sso.isUseCustomSeed();
-			int customSeed = -1;
-			getJTextFieldNumOfTrials().setText(sso.getNumOfTrials()+"");
-			getJTextFieldCustomSeed().setEnabled(sso.isUseCustomSeed());
-			if(sso.isUseCustomSeed()){
-				getCustomizedSeed().doClick();
-				customSeed = sso.getCustomSeed();
-				getJTextFieldCustomSeed().setText(sso.getCustomSeed()+"");
-			}else{
-				getRandomSeed().doClick();
-			}
-			if(getSolverTaskDescription().getSolverDescription().equals(SolverDescription.StochGibson))
-				setHybridOptions(false);
-			else
-			{
-				setHybridOptions(true);
-				if(!getTornOffSolverTaskDescription().getSolverDescription().equals(SolverDescription.HybridMilAdaptive))
-				{
-					getSDEToleranceTextField().setEnabled(false);
-				}
-				StochHybridOptions sho = null;
-				if(this.getSolverTaskDescription().getStochOpt() instanceof StochHybridOptions)
-					sho = (StochHybridOptions)this.getSolverTaskDescription().getStochOpt();
-				else
-				{
-					sho = new StochHybridOptions();
-					sho.setNumOfTrials(NumTrials);
-					sho.setUseCustomSeed(isUseCustomSeed);
-					if(isUseCustomSeed)
-						sho.setCustomSeed(customSeed);
-				}
-				getEpsilonTextField().setText(sho.getEpsilon()+"");
-				getLambdaTextField().setText(sho.getLambda()+"");
-				getMSRToleranceTextField().setText(sho.getMSRTolerance()+"");
-				getSDEToleranceTextField().setText(sho.getSDETolerance()+"");
-			}
+			updateStochOptionsDisplay();
 		}
 		else
 		{
@@ -2786,8 +2847,9 @@ private javax.swing.JLabel getEpsilonLabel() {
 			ivjEpsilonLabel = new javax.swing.JLabel();
 			ivjEpsilonLabel.setName("EpsilonLabel");
 			ivjEpsilonLabel.setText("Epsilon");
-			ivjEpsilonLabel.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
-			ivjEpsilonLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+			ivjEpsilonLabel.setPreferredSize(new Dimension(75, 20));
+			//ivjEpsilonLabel.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+			//ivjEpsilonLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
 			
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -2801,7 +2863,7 @@ private javax.swing.JTextField getEpsilonTextField() {
 		try {
 			ivjEpsilonTextField = new javax.swing.JTextField();
 			ivjEpsilonTextField.setName("JTextFieldEpsilon");
-			ivjEpsilonTextField.setPreferredSize(new java.awt.Dimension(60, 20));
+			//ivjEpsilonTextField.setPreferredSize(new java.awt.Dimension(70, 20));
 			ivjEpsilonTextField.setColumns(10);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -2816,8 +2878,9 @@ private javax.swing.JLabel getLambdaLabel() {
 			ivjLambdaLabel = new javax.swing.JLabel();
 			ivjLambdaLabel.setName("LambdaLabel");
 			ivjLambdaLabel.setText("Lambda");
-			ivjLambdaLabel.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
-			ivjLambdaLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+			ivjLambdaLabel.setPreferredSize(new java.awt.Dimension(75, 20));
+			//ivjLambdaLabel.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+			//ivjLambdaLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
 			
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -2831,7 +2894,7 @@ private javax.swing.JTextField getLambdaTextField() {
 		try {
 			ivjLambdaTextField = new javax.swing.JTextField();
 			ivjLambdaTextField.setName("JTextFieldLambda");
-			ivjLambdaTextField.setPreferredSize(new java.awt.Dimension(60, 20));
+			//ivjLambdaTextField.setPreferredSize(new java.awt.Dimension(60, 20));
 			ivjLambdaTextField.setColumns(10);
 			
 		} catch (java.lang.Throwable ivjExc) {
@@ -2847,8 +2910,9 @@ private javax.swing.JLabel getMSRToleranceLabel() {
 			ivjMSRToleranceLabel = new javax.swing.JLabel();
 			ivjMSRToleranceLabel.setName("MSRLabel");
 			ivjMSRToleranceLabel.setText("MSR Tolerance");
-			ivjMSRToleranceLabel.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
-			ivjMSRToleranceLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+			ivjMSRToleranceLabel.setPreferredSize(new java.awt.Dimension(75, 20));
+			//ivjMSRToleranceLabel.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+			//ivjMSRToleranceLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
 			
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -2862,7 +2926,7 @@ private javax.swing.JTextField getMSRToleranceTextField() {
 		try {
 			ivjMSRToleranceTextField = new javax.swing.JTextField();
 			ivjMSRToleranceTextField.setName("JTextFieldMSRTolerance");
-			ivjMSRToleranceTextField.setPreferredSize(new java.awt.Dimension(60, 20));
+			//ivjMSRToleranceTextField.setPreferredSize(new java.awt.Dimension(60, 20));
 			ivjMSRToleranceTextField.setColumns(10);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -2877,8 +2941,9 @@ private javax.swing.JLabel getSDEToleranceLabel() {
 			ivjSDEToleranceLabel = new javax.swing.JLabel();
 			ivjSDEToleranceLabel.setName("SDELabel");
 			ivjSDEToleranceLabel.setText("SDE Tolerance");
-			ivjSDEToleranceLabel.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
-			ivjSDEToleranceLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+			ivjSDEToleranceLabel.setPreferredSize(new java.awt.Dimension(75, 20));
+			//ivjSDEToleranceLabel.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+			//ivjSDEToleranceLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
 			
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -2892,7 +2957,7 @@ private javax.swing.JTextField getSDEToleranceTextField() {
 		try {
 			ivjSDEToleranceTextField = new javax.swing.JTextField();
 			ivjSDEToleranceTextField.setName("JTextFieldSDETolerance");
-			ivjSDEToleranceTextField.setPreferredSize(new java.awt.Dimension(60, 20));
+			//ivjSDEToleranceTextField.setPreferredSize(new java.awt.Dimension(60, 20));
 			ivjSDEToleranceTextField.setColumns(10);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -2937,46 +3002,73 @@ private void setHybridOptions(boolean b)
  */
 private void updateStochOptionsDisplay()
 {
-		cbit.util.BeanUtils.enableComponents(getJPanelStoch(),true);
-		if(getTornOffSolverTaskDescription().getSolverDescription().equals(SolverDescription.StochGibson))
+	//cbit.util.BeanUtils.enableComponents(getJPanelStoch(),true);
+	StochSimOptions sso = getSolverTaskDescription().getStochOpt();
+	if(getTornOffSolverTaskDescription().getSolverDescription().equals(SolverDescription.StochGibson))
+	{
+		if(sso == null)
 		{
-			getSolverTaskDescription().setStochOpt(new StochSimOptions());
-			setHybridOptions(false);
-			StochSimOptions sso = getSolverTaskDescription().getStochOpt();
-			getJTextFieldNumOfTrials().setText(sso.getNumOfTrials()+"");
-			getJTextFieldCustomSeed().setEnabled(true);
-			getJTextFieldCustomSeed().setText(sso.getCustomSeed()+"");
-			if(sso.isUseCustomSeed()){
-				getCustomizedSeed().doClick();
-			}else{
-				getRandomSeed().doClick();
-				getJTextFieldCustomSeed().setEnabled(false);
-			}
+			sso = new StochSimOptions();
 		}
-		else
+		else if(sso instanceof StochHybridOptions)
 		{
-			getSolverTaskDescription().setStochOpt(new StochHybridOptions());
-			setHybridOptions(true);
-			if(!getTornOffSolverTaskDescription().getSolverDescription().equals(SolverDescription.HybridMilAdaptive))
-			{
-				getSDEToleranceTextField().setEnabled(false);
-			}
-			StochHybridOptions sho = (StochHybridOptions)getSolverTaskDescription().getStochOpt();
-			getJTextFieldNumOfTrials().setText(sho.getNumOfTrials()+"");
-			getJTextFieldCustomSeed().setEnabled(true);
-			getJTextFieldCustomSeed().setText(sho.getCustomSeed()+"");
-			if(sho.isUseCustomSeed()){
-				getCustomizedSeed().doClick();
-			}else{
-				getRandomSeed().doClick();
-				getJTextFieldCustomSeed().setEnabled(false);
-			}
-			getEpsilonTextField().setText(sho.getEpsilon()+"");
-			getLambdaTextField().setText(sho.getLambda()+"");
-			getMSRToleranceTextField().setText(sho.getMSRTolerance()+"");
-			getSDEToleranceTextField().setText(sho.getSDETolerance()+"");
+			sso = new StochSimOptions(sso.isUseCustomSeed(), sso.getCustomSeed(), sso.getNumOfTrials());
 		}
-		
+ 	}
+	else
+	{		
+		if(sso == null)
+		{
+			sso = new StochHybridOptions();
+		}
+		else if(!(sso instanceof StochHybridOptions))
+		{
+			sso = new StochHybridOptions(sso.isUseCustomSeed(), sso.getCustomSeed(), sso.getNumOfTrials());
+		}
+	}
+	getSolverTaskDescription().setStochOpt(sso);
+	displayStochPanel();
 }
 
+private void displayStochPanel() {
+	cbit.util.BeanUtils.enableComponents(getJPanelStoch(),true);
+	StochSimOptions sso = getSolverTaskDescription().getStochOpt();	
+	
+	long numTrials = sso.getNumOfTrials();
+	getJTextFieldNumOfTrials().setText(numTrials+"");
+	if(numTrials == 1){ // 1 trial
+		getJTextFieldNumOfTrials().setEnabled(false);
+		getTrajectoryButton().setSelected(true);
+	}else{//more than 1 trial
+		getJTextFieldNumOfTrials().setEnabled(true);
+		getHistogramButton().setSelected(true);
+	}
+	boolean isUseCustomSeed = sso.isUseCustomSeed();
+	int customSeed = sso.getCustomSeed();
+	
+	getJTextFieldCustomSeed().setEnabled(isUseCustomSeed);
+	if(isUseCustomSeed){
+		getCustomizedSeed().setSelected(true);
+		getJTextFieldCustomSeed().setEnabled(true);		
+	}else{
+		getRandomSeed().setSelected(true);
+		getJTextFieldCustomSeed().setEnabled(false);
+	}
+	getJTextFieldCustomSeed().setText(customSeed+"");
+
+	boolean bHybrid = sso instanceof StochHybridOptions;
+	setHybridOptions(bHybrid);
+	if (bHybrid)
+	{
+		StochHybridOptions sho = (StochHybridOptions)sso;
+		if(!getTornOffSolverTaskDescription().getSolverDescription().equals(SolverDescription.HybridMilAdaptive))
+		{
+			getSDEToleranceTextField().setEnabled(false);
+		}
+		getEpsilonTextField().setText(sho.getEpsilon()+"");
+		getLambdaTextField().setText(sho.getLambda()+"");
+		getMSRToleranceTextField().setText(sho.getMSRTolerance()+"");
+		getSDEToleranceTextField().setText(sho.getSDETolerance()+"");
+	}
+}
 }

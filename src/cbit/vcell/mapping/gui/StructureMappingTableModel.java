@@ -583,7 +583,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 				//if the input volumn is null, leave it as it was.
 				if(exp != null)
 				{
-					//for old model, once one size is input, solve the rest.                                                                                                          if it is unnamed compartment(the only one), we don't need to solve anything
+					//for old ode model, once one size is input, solve the rest.                                                                                                          if it is unnamed compartment(the only one), we don't need to solve anything
 					if(!getGeometryContext().getSimulationContext().isStoch() && getGeometryContext().isAllSizeSpecifiedNull() && getGeometryContext().isAllVolFracAndSurfVolSpecified() && getGeometryContext().getStructureMappings().length > 1) 
 					{
 						featureMapping.getSizeParameter().setExpression(exp);
@@ -603,7 +603,8 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 						featureMapping.getSizeParameter().setExpression(exp);
 						//solve relative structure sizes(surface volume ratio, volume fraction) for non-stochastic applications
 						//amended Sept. 27th, 2007
-						if(getGeometryContext().isAllSizeSpecifiedPositive()&& !getGeometryContext().getSimulationContext().isStoch())
+						//set fraction in stoch math description, because these might be used when copy from stoch app to ode app.
+						if(getGeometryContext().isAllSizeSpecifiedPositive()/*&& !getGeometryContext().getSimulationContext().isStoch()*/) 
 						{
 							StructureSizeSolver sizeSolver = new StructureSizeSolver();
 							sizeSolver.updateRelativeStructureSizes(getGeometryContext().getSimulationContext());
@@ -656,7 +657,8 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex){
 							membraneMapping.getSizeParameter().setExpression(exp);
 							//solve relative structure sizes(surface volume ratio, volume fraction) for non-stochastic applications
 							//amended Sept. 27th, 2007
-							if(getGeometryContext().isAllSizeSpecifiedPositive() && !getGeometryContext().getSimulationContext().isStoch())
+							//set ratio in stoch math description, because these might be used when copy from stoch app to ode app.
+							if(getGeometryContext().isAllSizeSpecifiedPositive() /*&& !getGeometryContext().getSimulationContext().isStoch()*/)
 							{
 								StructureSizeSolver sizeSolver = new StructureSizeSolver();
 								sizeSolver.updateRelativeStructureSizes(getGeometryContext().getSimulationContext());

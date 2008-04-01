@@ -11,6 +11,7 @@ import cbit.vcell.document.*;
  * @author: Ion Moraru
  */
 public class ApplicationEditor extends JPanel {
+	public static final int TAB_IDX_ANALYSIS = 6;
 	private boolean ivjConnPtoP1Aligning = false;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private boolean ivjConnPtoP2Aligning = false;
@@ -88,20 +89,32 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 				connPtoP2SetSource();
 			if (evt.getSource() == ApplicationEditor.this.getsimulationWorkspace1() && (evt.getPropertyName().equals("simulationOwner"))) 
 				connPtoP3SetTarget();
-			if (evt.getSource() == ApplicationEditor.this.getStaticCartoonPanel() && (evt.getPropertyName().equals("simulationContext"))) 
+			if (evt.getSource() == ApplicationEditor.this.getStaticCartoonPanel() && (evt.getPropertyName().equals("simulationContext")))
+			{	
 				connPtoP3SetSource();
+				refreshAnalysisTab();
+			}
 			if (evt.getSource() == ApplicationEditor.this.getsimulationWorkspace1() && (evt.getPropertyName().equals("simulationOwner"))) 
 				connPtoP4SetTarget();
 			if (evt.getSource() == ApplicationEditor.this.getInitialConditionsPanel() && (evt.getPropertyName().equals("simulationContext"))) 
+			{
 				connPtoP4SetSource();
+				refreshAnalysisTab();
+			}
 			if (evt.getSource() == ApplicationEditor.this.getsimulationWorkspace1() && (evt.getPropertyName().equals("simulationOwner"))) 
 				connPtoP5SetTarget();
 			if (evt.getSource() == ApplicationEditor.this.getReactionSpecsPanel() && (evt.getPropertyName().equals("simulationContext"))) 
+			{
 				connPtoP5SetSource();
+				refreshAnalysisTab();
+			}
 			if (evt.getSource() == ApplicationEditor.this.getsimulationWorkspace1() && (evt.getPropertyName().equals("simulationOwner"))) 
 				connPtoP6SetTarget();
-			if (evt.getSource() == ApplicationEditor.this.getElectricalMembraneMappingPanel() && (evt.getPropertyName().equals("simulationContext"))) 
+			if (evt.getSource() == ApplicationEditor.this.getElectricalMembraneMappingPanel() && (evt.getPropertyName().equals("simulationContext")))
+			{
 				connPtoP6SetSource();
+				refreshAnalysisTab();
+			}
 			if (evt.getSource() == ApplicationEditor.this.getsimulationWorkspace1() && (evt.getPropertyName().equals("simulationOwner"))) 
 				connEtoM1(evt);
 			if (evt.getSource() == ApplicationEditor.this.getsimulationContext() && (evt.getPropertyName().equals("mathDescription"))) 
@@ -1918,6 +1931,28 @@ private void initialize() {
 	// user code end
 }
 
+//added in March 2008, to disable or enable the analysis tab
+private void refreshAnalysisTab()
+{
+	if(getJTabbedPane1() != null)
+	{
+		if(getSimulationContext().isStoch()) //stochastic
+		{
+			ivjJTabbedPane1.setEnabledAt(ApplicationEditor.TAB_IDX_ANALYSIS, false);
+		}
+		else
+		{
+			if(getSimulationContext().getGeometryContext().getGeometry().getDimension() != 0)//pde
+			{
+				ivjJTabbedPane1.setEnabledAt(ApplicationEditor.TAB_IDX_ANALYSIS, false);
+			}
+			else //ode
+			{
+				ivjJTabbedPane1.setEnabledAt(ApplicationEditor.TAB_IDX_ANALYSIS, true);
+			}
+		}
+	}
+}
 /**
  * Comment
  */

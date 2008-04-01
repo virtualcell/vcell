@@ -116,7 +116,12 @@ System.out.println("DISPATCHING: finished() called at "+ new Date(System.current
 			if (hash.containsKey(TASK_ABORTED_BY_ERROR)) {
 				// something went wrong
 				Throwable e = (Throwable)hash.get(TASK_ABORTED_BY_ERROR);
-				PopupGenerator.showErrorDialog(requester, ((Throwable)hash.get(TASK_ABORTED_BY_ERROR)).getMessage());
+				String msg = e.getMessage();
+				if(msg == null || msg.length() == 0)
+				{
+					msg = "Exception: "+e.toString();
+				}
+				PopupGenerator.showErrorDialog(requester, msg);
 			} else if (hash.containsKey(TASK_ABORTED_BY_USER)) {
 				// depending on where user canceled we might want to automatically start a new job
 				dispatchFollowUp(hash);

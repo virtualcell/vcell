@@ -12,13 +12,9 @@ public class StochHybridOptions extends StochSimOptions {
 	private double SDETolerance = 1e-4;
 	public StochHybridOptions() {
 		super();
-		epsilon = 100;
-		lambda = 10;
-		MSRTolerance = 1/epsilon;
-		SDETolerance = 1e-4;
 	}
 
-	public StochHybridOptions(boolean arg_useCustomSeed, int arg_customSeed, int arg_numOfTrials,
+	public StochHybridOptions(boolean arg_useCustomSeed, int arg_customSeed, long arg_numOfTrials,
 			double arg_epsilon, double arg_lambda, double arg_MSRTolerance, double arg_SDETolerance)
 	{
 		super(arg_useCustomSeed, arg_customSeed, arg_numOfTrials);
@@ -28,6 +24,12 @@ public class StochHybridOptions extends StochSimOptions {
 		SDETolerance = arg_SDETolerance;
 	}
 
+	public StochHybridOptions(boolean arg_useCustomSeed, int arg_customSeed, long arg_numOfTrials)
+	{
+		super(arg_useCustomSeed, arg_customSeed, arg_numOfTrials);
+	}
+
+	
 	public double getEpsilon() {
 		return epsilon;
 	}

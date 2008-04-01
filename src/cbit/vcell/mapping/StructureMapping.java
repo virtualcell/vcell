@@ -17,10 +17,7 @@ import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.units.VCUnitDefinition;
 
 public abstract class StructureMapping implements Matchable, cbit.vcell.parser.ScopedSymbolTable, java.io.Serializable {
-	static {
-		System.out.println("StructureMapping.StructureMappingParameter.setName() not protected for uniqueness, etc");
-	}
-
+	
 	public class StructureMappingNameScope extends BioNameScope {
 		private final NameScope children[] = new NameScope[0]; // always empty
 		public StructureMappingNameScope(){
