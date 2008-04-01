@@ -501,7 +501,7 @@ private javax.swing.JComboBox getJComboBox1() {
 								if (kineticsDescription.equals(KineticsDescription.General)){
 									setText("General ["+MICROMOLAR+"/s]");
 								}else if (kineticsDescription.equals(KineticsDescription.MassAction)){
-									setText("Mass Action ["+MICROMOLAR+"/s]");
+									setText("Mass Action ["+MICROMOLAR+"/s] (recommended for stochastic application)");
 								}else if (kineticsDescription.equals(KineticsDescription.GeneralLumped)){
 									setText("General [molecules/s]");
 								}else if (kineticsDescription.equals(KineticsDescription.HMM_irreversible)){

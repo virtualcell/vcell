@@ -33,7 +33,7 @@ public StochSimOptions()
  * @param status int
  * @param message java.lang.String
  */
-public StochSimOptions(boolean arg_useCustomSeed, int arg_customSeed, int arg_numOfTrials) 
+public StochSimOptions(boolean arg_useCustomSeed, int arg_customSeed, long arg_numOfTrials) 
 {
 	useCustomSeed = arg_useCustomSeed;
 	customSeed = arg_customSeed;
