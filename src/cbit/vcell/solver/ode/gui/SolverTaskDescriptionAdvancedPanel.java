@@ -1289,7 +1289,7 @@ private javax.swing.JRadioButton getHistogramButton() {
 		try {
 			histogramRadioButton = new javax.swing.JRadioButton();
 			histogramRadioButton.setName("Histogram");
-			histogramRadioButton.setText("Histogram");
+			histogramRadioButton.setText("Histogram (last time point only)");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
