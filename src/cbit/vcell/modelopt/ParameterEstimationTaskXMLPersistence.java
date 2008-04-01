@@ -1,5 +1,6 @@
 package cbit.vcell.modelopt;
 import org.jdom.Element;
+import org.jdom.Namespace;
 /**
  * Insert the type's description here.
  * Creation date: (5/5/2006 9:00:56 AM)
@@ -42,10 +43,11 @@ public class ParameterEstimationTaskXMLPersistence {
 public static ParameterEstimationTask getParameterEstimationTask(Element parameterEstimationTaskElement, cbit.vcell.mapping.SimulationContext simContext) 
 throws cbit.vcell.parser.ExpressionException, cbit.vcell.mapping.MappingException, cbit.vcell.math.MathException, java.beans.PropertyVetoException {
 		
+	Namespace ns = parameterEstimationTaskElement.getNamespace();
 	ParameterEstimationTask parameterEstimationTask = new ParameterEstimationTask(simContext);
 	String name = parameterEstimationTaskElement.getAttributeValue(NameAttribute);
 	parameterEstimationTask.setName(name);
-	Element annotationElement = parameterEstimationTaskElement.getChild(AnnotationTag);
+	Element annotationElement = parameterEstimationTaskElement.getChild(AnnotationTag, ns);
 	if (annotationElement!=null){
 		String annotationText = annotationElement.getText();
 		parameterEstimationTask.setAnnotation(annotationText);
@@ -54,8 +56,8 @@ throws cbit.vcell.parser.ExpressionException, cbit.vcell.mapping.MappingExceptio
 	//
 	// read ParameterMappingSpecs
 	//
-	Element parameterMappingSpecListElement = parameterEstimationTaskElement.getChild(ParameterMappingSpecListTag);
-	java.util.List parameterMappingSpecElementList = parameterMappingSpecListElement.getChildren(ParameterMappingSpecTag);
+	Element parameterMappingSpecListElement = parameterEstimationTaskElement.getChild(ParameterMappingSpecListTag, ns);
+	java.util.List parameterMappingSpecElementList = parameterMappingSpecListElement.getChildren(ParameterMappingSpecTag, ns);
 	for (int i = 0; i < parameterMappingSpecElementList.size(); i++){
 		Element parameterMappingSpecElement = (Element)parameterMappingSpecElementList.get(i);
 		String parameterName = parameterMappingSpecElement.getAttributeValue(ParameterReferenceAttribute);
@@ -89,7 +91,7 @@ throws cbit.vcell.parser.ExpressionException, cbit.vcell.mapping.MappingExceptio
 	//
 	// read ReferenceData
 	//
-	Element referenceDataElement = parameterEstimationTaskElement.getChild(ReferenceDataTag);
+	Element referenceDataElement = parameterEstimationTaskElement.getChild(ReferenceDataTag, ns);
 	if (referenceDataElement!=null){
 		String numRowsText = referenceDataElement.getAttributeValue(NumRowsAttribute);
 		String numColsText = referenceDataElement.getAttributeValue(NumColumnsAttribute);
@@ -102,8 +104,8 @@ throws cbit.vcell.parser.ExpressionException, cbit.vcell.mapping.MappingExceptio
 		String[] columnNames = new String[numCols];
 		double[] columnWeights = new double[numCols];
 
-		Element dataColumnListElement = referenceDataElement.getChild(DataColumnListTag);
-		java.util.List dataColumnList = dataColumnListElement.getChildren(DataColumnTag);
+		Element dataColumnListElement = referenceDataElement.getChild(DataColumnListTag, ns);
+		java.util.List dataColumnList = dataColumnListElement.getChildren(DataColumnTag, ns);
 		for (int i = 0; i < dataColumnList.size(); i++){
 			Element dataColumnElement = (Element)dataColumnList.get(i);
 			columnNames[i] = dataColumnElement.getAttributeValue(NameAttribute);
@@ -114,8 +116,8 @@ throws cbit.vcell.parser.ExpressionException, cbit.vcell.mapping.MappingExceptio
 		// read rows
 		//
 		java.util.Vector rowDataVector = new java.util.Vector();
-		Element dataRowListElement = referenceDataElement.getChild(DataRowListTag);
-		java.util.List dataRowList = dataRowListElement.getChildren(DataRowTag);
+		Element dataRowListElement = referenceDataElement.getChild(DataRowListTag, ns);
+		java.util.List dataRowList = dataRowListElement.getChildren(DataRowTag, ns);
 		for (int i = 0; i < dataRowList.size(); i++){
 			Element dataRowElement = (Element)dataRowList.get(i);
 			String rowText = dataRowElement.getText();
@@ -141,9 +143,9 @@ throws cbit.vcell.parser.ExpressionException, cbit.vcell.mapping.MappingExceptio
 	//
 	// read ReferenceDataMappingSpecs
 	//
-	Element referenceDataMappingSpecListElement = parameterEstimationTaskElement.getChild(ReferenceDataMappingSpecListTag);
+	Element referenceDataMappingSpecListElement = parameterEstimationTaskElement.getChild(ReferenceDataMappingSpecListTag, ns);
 	if (referenceDataMappingSpecListElement!=null){
-		java.util.List referenceDataMappingSpecList = referenceDataMappingSpecListElement.getChildren(ReferenceDataMappingSpecTag);
+		java.util.List referenceDataMappingSpecList = referenceDataMappingSpecListElement.getChildren(ReferenceDataMappingSpecTag, ns);
 		for (int i = 0; i < referenceDataMappingSpecList.size(); i++){
 			Element referenceDataMappingSpecElement = (Element)referenceDataMappingSpecList.get(i);
 			String referenceDataColumnName = referenceDataMappingSpecElement.getAttributeValue(ReferenceDataColumnNameAttribute);
@@ -163,7 +165,7 @@ throws cbit.vcell.parser.ExpressionException, cbit.vcell.mapping.MappingExceptio
 	//
 	// read OptimizationSolverSpec
 	//
-	Element optimizationSolverSpecElement = parameterEstimationTaskElement.getChild(OptimizationSolverSpecTag);
+	Element optimizationSolverSpecElement = parameterEstimationTaskElement.getChild(OptimizationSolverSpecTag, ns);
 	if (optimizationSolverSpecElement!=null){
 		String optimizationSolverType = optimizationSolverSpecElement.getAttributeValue(OptimizationSolverTypeAttribute);
 		cbit.vcell.opt.OptimizationSolverSpec optSolverSpec = new cbit.vcell.opt.OptimizationSolverSpec(optimizationSolverType);

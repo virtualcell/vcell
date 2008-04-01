@@ -400,6 +400,13 @@ public static VCDocument XMLToDocument(VCLogger vcLogger, String xmlString) thro
 	VCDocument doc = null;
 	org.jdom.Element rootElement = cbit.util.xml.XmlUtil.stringToXML(xmlString, null);         //some overhead.
 	String xmlType = rootElement.getName();
+	if (xmlType.equals(XMLTags.VcmlRootNodeTag)) {
+		// For now, assuming that <vcml> element has only one child (biomodel, mathmodel or geometry). 
+		// Will deal with multiple children of <vcml> Element when we get to model composition.
+		java.util.List childElementList = rootElement.getChildren();
+		Element modelElement = (Element)childElementList.get(0);	// assuming first child is the biomodel, mathmodel or geometry.
+		xmlType = modelElement.getName();
+	}
 	if (xmlType.equals(XMLTags.BioModelTag)) {
 		doc = XmlHelper.XMLToBioModel(xmlString);
 	} else if (xmlType.equals(XMLTags.MathModelTag)) {
