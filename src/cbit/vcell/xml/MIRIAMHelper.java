@@ -771,8 +771,9 @@ private static void addToSBMLAnnotation(Element parent,MIRIAMAnnotation miriamAn
 			if(annotationElement == null){
 				return;
 			}
+				Namespace ns = annotationElement.getNamespace();
 				if(!annotationElement.getName().equalsIgnoreCase(XMLTags.SbmlAnnotationTag)){
-					annotationElement = annotationElement.getChild(XMLTags.SbmlAnnotationTag);
+					annotationElement = annotationElement.getChild(XMLTags.SbmlAnnotationTag, ns);
 					if(annotationElement == null){
 						return;
 					}
@@ -798,8 +799,9 @@ private static void addToSBMLAnnotation(Element parent,MIRIAMAnnotation miriamAn
 			if(notesElement == null){
 				return;
 			}
+				Namespace ns = notesElement.getNamespace();
 				if(!notesElement.getName().equalsIgnoreCase(XMLTags.SbmlNotesTag)){
-					notesElement = notesElement.getChild(XMLTags.SbmlNotesTag);
+					notesElement = notesElement.getChild(XMLTags.SbmlNotesTag, ns);
 					if(notesElement == null){
 						return;
 					}
