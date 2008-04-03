@@ -566,7 +566,7 @@ public ODEDataBlock getODEDataBlock() throws DataAccessException {
 
 	// Populating new dataset
 	for (int i = 0; i < times.length; i++) {
-		double[] newRow = new double[combinedODESolverRSet.getColumnDescriptionsCount()];
+		double[] newRow = new double[combinedODESolverRSet.getDataColumnCount()];
 		int indx = 0;
 		for (int j = 0; j < resultSetList.length; j++) {
 			ODESolverResultSet resultSet = resultSetList[j];

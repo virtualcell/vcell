@@ -53,7 +53,7 @@ public void addDataValues(double ref, double test, double time, int index,double
     	fieldTimeAtMaxAbsoluteError = time;
     	fieldIndexAtMaxAbsoluteError = index;
     }
-    double denominator = (Math.abs(test)*relErrorThreshold + absErrorThreshold);
+    double denominator = (Math.abs(ref)*relErrorThreshold + absErrorThreshold);
     if(denominator != 0){
         double relError = Math.abs(absError / denominator);
         relSumSquaredError += relError * relError;
