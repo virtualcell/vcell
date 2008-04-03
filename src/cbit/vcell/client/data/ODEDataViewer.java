@@ -632,7 +632,7 @@ public void iniHistogramDisplay()
 	{
 		getPlotPane1().setIsHistogram(false);
 		getPlotPane1().getJCheckBox_stepLike().setEnabled(true);
-		if(getSimulation().getSolverTaskDescription().getSolverDescription().isSTOCHSolver())
+		if(getSimulation() != null && getSimulation().getSolverTaskDescription().getSolverDescription().isSTOCHSolver())
 		{
 			getPlotPane1().getJCheckBox_stepLike().doClick();
 		}
