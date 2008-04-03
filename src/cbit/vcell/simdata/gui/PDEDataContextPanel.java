@@ -771,6 +771,7 @@ public String getCurveValue(cbit.vcell.geometry.CurveSelectionInfo csi) {
 							if(getDataInfoProvider() != null){
 								DataViewer.MembraneDataInfo membraneDataInfo =
 									getDataInfoProvider().getMembraneDataInfo(membraneIndexes[csi.getSegment()]);
+								infoS+= "          ";
 								infoS+= " \""+membraneDataInfo.membraneName+"\"";
 								infoS+= " mrID="+membraneDataInfo.membraneRegionID;
 							}
