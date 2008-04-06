@@ -449,13 +449,13 @@ public void connectAs(final String user,  final String password, TopLevelWindowM
  * @param clientServerInfo cbit.vcell.client.server.ClientServerInfo
  */
 public void connectToServer(final ClientServerInfo clientServerInfo) {
-	// asynch & nothing to do on Swing queue (updates handled by events)
-	Thread worker = new Thread(new Runnable() {
-		public void run() {
+//	// asynch & nothing to do on Swing queue (updates handled by events)
+//	Thread worker = new Thread(new Runnable() {
+//		public void run() {
 			getClientServerManager().connect(clientServerInfo);
-		}
-	});
-	worker.start();
+//		}
+//	});
+//	worker.start();
 }
 
 
@@ -758,18 +758,39 @@ public void curateDocument(final VCDocumentInfo documentInfo, final int curateTy
 public void updateUserRegistration(final boolean bNewUser){
 	new Thread(new Runnable() {
 		public void run() {
+			UserInfo registeredUserInfo = null;
 			try {
-				UserInfo registeredUserInfo =
+				registeredUserInfo =
 					UserRegistrationOP.registrationOperationGUI(
 							getClientServerManager().getClientServerInfo(),
 							(bNewUser?LoginDialog.USERACTION_REGISTER:LoginDialog.USERACTION_EDITINFO),
 							(bNewUser?null:getClientServerManager()));
 			} catch (UserCancelException e) {
-				//do nothing
+				return;
 			} catch (Exception e) {
 				e.printStackTrace();
-				PopupGenerator.showErrorDialog("Update user Registration error:\n"+e.getMessage());
+				PopupGenerator.showErrorDialog((bNewUser?"Create new":"Update")+" user Registration error:\n"+e.getMessage());
+				return;
 			}
+			if (bNewUser) {
+				try{
+					ClientServerInfo newClientServerInfo = VCellClient
+						.createClientServerInfo(getClientServerManager()
+								.getClientServerInfo(),
+								registeredUserInfo.userid,
+								registeredUserInfo.password);
+					connectToServer(newClientServerInfo);
+				}finally{
+					ConnectionStatus connectionStatus = getConnectionStatus();
+					if(connectionStatus.getStatus() != ConnectionStatus.CONNECTED){
+						PopupGenerator.showInfoDialog(
+							"Automatic login of New user '"+registeredUserInfo.userid+"' failed.\n"+
+							"Restart VCell and login as '"+registeredUserInfo.userid+"' to use new VCell account."
+						);
+					}
+				}
+			}
+
 		}
 	}).start();
 }
@@ -1053,7 +1074,9 @@ private ClientServerManager getClientServerManager() {
 	return getVcellClient().getClientServerManager();
 }
 
-
+public ConnectionStatus getConnectionStatus(){
+	return getClientServerManager().getConnectionStatus();
+}
 /**
  * Insert the method's description here.
  * Creation date: (6/11/2004 10:53:47 AM)

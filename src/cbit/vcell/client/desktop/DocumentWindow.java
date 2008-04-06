@@ -12,6 +12,7 @@ import java.util.TreeMap;
 import java.util.Vector;
 import java.awt.*;
 import javax.swing.*;
+
 import cbit.vcell.desktop.*;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.gui.TransformMassActionPanel;
@@ -2158,6 +2159,7 @@ private JDialog getLoginDialog() {
 				if(evt.getActionCommand().equals(LoginDialog.USERACTION_LOGIN)){
 					getWindowManager().connectAs(loginDialog.getUser(), loginDialog.getPassword());
 				}else if(evt.getActionCommand().equals(LoginDialog.USERACTION_REGISTER)){
+					SwingUtilities.invokeLater(new Runnable(){public void run() {loginDialog.dispose();}});
 					getWindowManager().getRequestManager().updateUserRegistration(true);
 				}else if(evt.getActionCommand().equals(LoginDialog.USERACTION_LOSTPASSWORD)){
 					getWindowManager().getRequestManager().sendLostPassword(loginDialog.getUser());
