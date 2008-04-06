@@ -216,67 +216,96 @@ public static VCellClient startClient(VCDocument startupDoc, final ClientServerI
     // try server connection
     if (clientServerInfo.getUsername() == null) {
 	    // we were not supplied login credentials; pop-up dialog
-		final LoginDialog loginDialog = new LoginDialog(null);
-		loginDialog.setLoggedInUser(null);
-		loginDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		loginDialog.pack();
-		loginDialog.setResizable(false);
-		BeanUtils.centerOnScreen(loginDialog);
-		ActionListener listener = new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				if (evt.getActionCommand().equals(LoginDialog.USERACTION_LOGIN)) {
-					ClientServerInfo newClientServerInfo =
-						createClientServerInfo(clientServerInfo,loginDialog.getUser(),loginDialog.getPassword());
-					vcellClient.getRequestManager().connectToServer(newClientServerInfo);
-//					loginDialog.setBLoggedIn(true);
-				}else if(evt.getActionCommand().equals(LoginDialog.USERACTION_REGISTER)){
-					new Thread(new Runnable() {
-						public void run() {
-							try {
-								UserInfo registeredUserInfo =
-									UserRegistrationOP.registrationOperationGUI(
-											clientServerInfo, LoginDialog.USERACTION_REGISTER,null);
-								ZEnforcer.removeFromStack(loginDialog);
-								ClientServerInfo newClientServerInfo =
-									createClientServerInfo(
-											clientServerInfo,
-											registeredUserInfo.userid,
-											registeredUserInfo.password);
-								vcellClient.getRequestManager().connectToServer(newClientServerInfo);
-							} catch (UserCancelException e) {
-								//do nothing
-							} catch (Exception e) {
-								e.printStackTrace();
-								PopupGenerator.showErrorDialog("New user Registration error:\n"+e.getMessage());
-							}
-						}
-					}).start();
-				}else if(evt.getActionCommand().equals(LoginDialog.USERACTION_LOSTPASSWORD)){
-					new Thread(new Runnable() {
-						public void run() {
-							try {
-								ClientServerInfo newClientServerInfo =
-									createClientServerInfo(clientServerInfo,loginDialog.getUser(),null);
-								UserRegistrationOP.registrationOperationGUI(
-											newClientServerInfo, LoginDialog.USERACTION_LOSTPASSWORD,null);
-							} catch (UserCancelException e) {
-								//do nothing
-							} catch (Exception e) {
-								e.printStackTrace();
-								PopupGenerator.showErrorDialog("New user Registration error:\n"+e.getMessage());
-							}
-						}
-					}).start();
-				}
-			}
-		};
-		loginDialog.addActionListener(listener);
-		cbit.gui.ZEnforcer.showModalDialogOnTop(loginDialog);
+    	VCellClient.login(vcellClient.getRequestManager(), clientServerInfo);
     } else {
-		vcellClient.getRequestManager().connectToServer(clientServerInfo);
+		new Thread(new Runnable(){public void run(){vcellClient.getRequestManager().connectToServer(clientServerInfo);}}).start();
     }
 	return vcellClient;
 }
+
+
+public static void login(final RequestManager requestManager,final ClientServerInfo clientServerInfo){
+
+	final LoginDialog loginDialog = new LoginDialog(null);
+	loginDialog.setLoggedInUser(null);
+	loginDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+	loginDialog.pack();
+	loginDialog.setResizable(false);
+	BeanUtils.centerOnScreen(loginDialog);
+	ActionListener listener = new ActionListener() {
+		public void actionPerformed(ActionEvent evt) {
+			if (evt.getActionCommand().equals(LoginDialog.USERACTION_LOGIN)) {
+				new Thread(new Runnable() {
+					public void run() {
+						try {
+							ClientServerInfo newClientServerInfo = createClientServerInfo(
+									clientServerInfo, loginDialog.getUser(),
+									loginDialog.getPassword());
+							requestManager.connectToServer(newClientServerInfo);
+						} catch (RuntimeException e) {
+							e.printStackTrace();
+							PopupGenerator.showErrorDialog("Login error:\n"+e.getMessage());
+						}finally{
+							ConnectionStatus connectionStatus = requestManager.getConnectionStatus();
+							if(connectionStatus.getStatus() != ConnectionStatus.CONNECTED){
+								new Thread(new Runnable(){public void run(){VCellClient.login(requestManager,clientServerInfo);}}).start();
+							}
+						}
+					}
+				}).start();
+			}else if(evt.getActionCommand().equals(LoginDialog.USERACTION_REGISTER)){
+				SwingUtilities.invokeLater(new Runnable(){public void run() {loginDialog.dispose();}});
+				new Thread(new Runnable() {
+					public void run() {
+						try {
+							UserInfo registeredUserInfo =
+								UserRegistrationOP.registrationOperationGUI(
+										clientServerInfo, LoginDialog.USERACTION_REGISTER,null);
+							ClientServerInfo newClientServerInfo =
+								createClientServerInfo(
+										clientServerInfo,
+										registeredUserInfo.userid,
+										registeredUserInfo.password);
+							requestManager.connectToServer(newClientServerInfo);
+						} catch (UserCancelException e) {
+							//do nothing
+						} catch (Exception e) {
+							e.printStackTrace();
+							PopupGenerator.showErrorDialog("New user Registration error:\n"+e.getMessage());
+						}finally{
+							ConnectionStatus connectionStatus = requestManager.getConnectionStatus();
+							if(connectionStatus.getStatus() != ConnectionStatus.CONNECTED){
+								new Thread(new Runnable() {public void run(){VCellClient.login(requestManager,clientServerInfo);}}).start();
+							}
+						}
+					}
+				}).start();
+			}else if(evt.getActionCommand().equals(LoginDialog.USERACTION_LOSTPASSWORD)){
+				new Thread(new Runnable() {
+					public void run() {
+						try {
+							ClientServerInfo newClientServerInfo =
+								createClientServerInfo(clientServerInfo,loginDialog.getUser(),null);
+							UserRegistrationOP.registrationOperationGUI(
+										newClientServerInfo, LoginDialog.USERACTION_LOSTPASSWORD,null);
+						} catch (UserCancelException e) {
+							//do nothing
+						} catch (Exception e) {
+							e.printStackTrace();
+							PopupGenerator.showErrorDialog("New user Registration error:\n"+e.getMessage());
+						}
+					}
+				}).start();
+			}else if(evt.getActionCommand().equals(LoginDialog.USERACTION_CANCEL)){
+				PopupGenerator.showInfoDialog(
+					"Note:  The Login dialog can be accessed any time under the 'Server' main menu as 'Change User...'");
+			}
+		}
+	};
+	loginDialog.addActionListener(listener);
+	cbit.gui.ZEnforcer.showModalDialogOnTop(loginDialog);
+}
+
 
 public static ClientServerInfo createClientServerInfo(ClientServerInfo clientServerInfo,String userid,String password){
 	switch (clientServerInfo.getServerType()) {
@@ -322,12 +351,12 @@ public static void startClientFromApplet(VCellClientApplet vcellClientApplet) {
 	vcellClientApplet.showStatus("VCell client application running");
 	vcellClientApplet.getSplashWindow().dispose();
     // try server connection
-    ClientServerInfo clientServerInfo = ClientServerInfo.createRemoteServerInfo(
+    final ClientServerInfo clientServerInfo = ClientServerInfo.createRemoteServerInfo(
 	    vcellClientApplet.getParameter("HOST")+":"+vcellClientApplet.getParameter("PORT"),
 	    vcellClientApplet.getParameter("USERID"),
 	    vcellClientApplet.getParameter("PASSWORD")
 	    );
-	vcellClient.getRequestManager().connectToServer(clientServerInfo);
+	new Thread(new Runnable(){public void run(){vcellClient.getRequestManager().connectToServer(clientServerInfo);}}).start();
 }
 	
 /**

@@ -36,6 +36,7 @@ public class LoginDialog extends JDialog {
 	public static final String USERACTION_REGISTER = "USERACTION_REGISTER";
 	public static final String USERACTION_EDITINFO = "USERACTION_EDITINFO";
 	public static final String USERACTION_LOSTPASSWORD = "USERACTION_LOSTPASSWORD";
+	public static final String USERACTION_CANCEL = "USERACTION_CANCEL";
 	//
 	//
 	private static final String USER_CANCEL = "User canceled login";
@@ -161,6 +162,7 @@ private void connEtoM1(java.awt.event.ActionEvent arg1) {
 		// user code begin {1}
 		// user code end
 		this.dispose();
+		fireActionPerformed(arg1);
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -291,6 +293,7 @@ private javax.swing.JButton getJButtonCancel() {
 	if (ivjJButtonCancel == null) {
 		try {
 			ivjJButtonCancel = new javax.swing.JButton();
+			ivjJButtonCancel.setActionCommand(USERACTION_CANCEL);
 			ivjJButtonCancel.setName("JButtonCancel");
 			ivjJButtonCancel.setText("Cancel");
 			// user code begin {1}
