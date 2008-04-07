@@ -1463,6 +1463,7 @@ public BioModel getBioModel() {
 	cbit.vcell.biomodel.BioModel bioModel = null;
 	try {
 		bioModel = new BioModel(null);
+		bioModel.setName(modelName);
 		bioModel.setModel(simContext.getModel());
 		bioModel.setSimulationContexts(new SimulationContext[] {simContext});			
 	} catch (Exception e) {
