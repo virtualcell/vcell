@@ -166,6 +166,23 @@ public static void main(String[] args) {
 				solveSimulation(sim1, vcmlFile.getPath(), speciesUnitsHash, timeFactor, simSpec);
 	        } catch (Exception e) {
 	        	e.printStackTrace(System.err);
+	        	// create a 'blank' vcml file with only a Biomodel element with name of model 
+	        	// and an annotation saying why it failed.
+	        	try {
+					String dummyVcmlFileName = pathName.replace(".xml", ".vcml");
+					File dummyVcmlFile = new File(dummyVcmlFileName);
+		        	BioModel dummy_biomodel = new BioModel(null);
+		        	String dummyName = dummyVcmlFile.getName().substring(0, dummyVcmlFile.getName().indexOf(".vcml"));
+		        	dummy_biomodel.setName(dummyName);
+		        	dummy_biomodel.setDescription("SBML Model could not be automatically converted to VCML : " + e.getMessage());
+					String vcmlString = XmlHelper.bioModelToXML(dummy_biomodel);
+					java.io.FileWriter fileWriter = new java.io.FileWriter(dummyVcmlFile);
+					fileWriter.write(vcmlString);
+					fileWriter.flush();
+					fileWriter.close();
+	        	} catch (Exception e1) {
+	        		e.printStackTrace(System.err);
+	        	}
 	        }
 		} else if (args[0].equals("-export")) {
 	        try {
