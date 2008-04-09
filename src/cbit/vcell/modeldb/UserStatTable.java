@@ -35,4 +35,22 @@ private UserStatTable() {
 	super(TABLE_NAME);
 	addFields(fields);
 }
+
+public String getSQLValueList(KeyValue key) {
+	StringBuffer buffer = new StringBuffer();
+	buffer.append("(");
+	buffer.append(Table.NewSEQ+",");
+	buffer.append(key.toString()+",");
+	buffer.append("0,");
+	buffer.append("NULL,");
+	buffer.append("'true',");
+	buffer.append("'false',");
+	buffer.append("NULL,");
+	buffer.append("0,");
+	buffer.append("0,");
+	buffer.append("0");
+	buffer.append(")");
+	return buffer.toString();
+}
+
 }
