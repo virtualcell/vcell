@@ -119,6 +119,7 @@ void exportDocument(TopLevelWindowManager manager);
  */
 AsynchMessageManager getAsynchMessageManager();
 
+ConnectionStatus getConnectionStatus();
 
 /**
  * Insert the method's description here.

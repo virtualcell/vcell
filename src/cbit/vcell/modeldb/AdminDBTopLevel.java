@@ -611,6 +611,33 @@ KeyValue updateUserInfo(UserInfo newUserInfo, boolean bEnableRetry) throws SQLEx
 	}
 }
 
+void updateUserStat(String userID, boolean bEnableRetry) throws SQLException {
+
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		userDB.updateUserStat(con,userID);
+		con.commit();
+	} catch (Throwable e) {
+		log.exception(e);
+		try {
+			con.rollback();
+		}catch (Throwable rbe){
+			log.exception(rbe);
+			log.alert("exception during rollback, bEnableRetry = "+bEnableRetry);
+		}
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			updateUserStat(userID,false);
+		}else{
+			handle_SQLException(e);
+		}
+	}finally{
+		conFactory.release(con,lock);
+	}
+}
+
+
 public interface TransactionalServiceOperation {
 	public ServiceStatus doOperation(ServiceStatus oldStatus) throws Exception;
 }

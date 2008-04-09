@@ -103,4 +103,5 @@ SimulationJobStatus updateSimulationJobStatus(SimulationJobStatus oldSimulationJ
 cbit.sql.UserInfo updateUserInfo(cbit.sql.UserInfo newUserInfo) throws RemoteException, DataAccessException;
 
 void sendLostPassword(String userid) throws RemoteException,DataAccessException;
+void updateUserStat(String userID) throws RemoteException,DataAccessException;
 }
