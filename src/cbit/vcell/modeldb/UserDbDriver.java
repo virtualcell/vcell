@@ -236,9 +236,11 @@ private void insertUserInfoSQL(Connection con, KeyValue key, UserInfo userInfo) 
 	sql = "INSERT INTO " + userTable.getTableName() + " " +
 			userTable.getSQLColumnList() + " VALUES " +
 			userTable.getSQLValueList(key, userInfo);
-
-//System.out.println(sql);
-			
+	DbDriver.updateCleanSQL(con,sql);
+	
+	sql = "INSERT INTO " + UserStatTable.table.getTableName() + " " +
+		UserStatTable.table.getSQLColumnList() + " VALUES " +
+		UserStatTable.table.getSQLValueList(key);
 	DbDriver.updateCleanSQL(con,sql);
 }
 /**
@@ -300,4 +302,21 @@ private void updateUserInfoSQL(Connection con, UserInfo userInfo) throws SQLExce
 			
 	DbDriver.updateCleanSQL(con,sql);
 }
+
+public void updateUserStat(Connection con, String userID) throws SQLException {
+	if (userID == null){
+		throw new SQLException("Improper parameters for insertModel");
+	}
+	User user = getUserFromUserid(con, userID);
+	String sql;
+	sql =	"UPDATE " + UserStatTable.table.getTableName() +
+			" SET "   +
+				UserStatTable.table.loginCount +" = "+
+				UserStatTable.table.loginCount+" + 1"+","+
+				UserStatTable.table.lastLogin + " = SYSDATE"+
+			" WHERE " + UserStatTable.table.userRef + " = " + user.getID();
+	DbDriver.updateCleanSQL(con,sql);
+
+}
+
 }

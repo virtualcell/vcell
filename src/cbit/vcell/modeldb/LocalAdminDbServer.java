@@ -229,6 +229,16 @@ public UserInfo updateUserInfo(UserInfo newUserInfo) throws DataAccessException 
 	}
 }
 
+public void updateUserStat(String userID) throws DataAccessException {
+	try {
+		adminDbTop.updateUserStat(userID,true);
+	}catch (Throwable e){
+		log.exception(e);
+		throw new DataAccessException("failure updating user stat '"+userID+"'\n"+e.getMessage());
+	}
+}
+
+
 public void sendLostPassword(String userid) throws DataAccessException {
 	try {
 		adminDbTop.sendLostPassword(userid,true);

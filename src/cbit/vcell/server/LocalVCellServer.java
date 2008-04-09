@@ -482,6 +482,15 @@ VCellConnection getVCellConnection(String userid, String password) throws Remote
 	} else {
 		sessionLog.print("getVCellConnection(" + user.getName() + "), returning local copy of VCellConnection");
 	}
+	//
+	//Update UserStat.  Do not fail login if UserStat fails.
+	//
+	try{
+		getAdminDatabaseServer().updateUserStat(user.getName());
+	}catch(Exception e){
+		e.printStackTrace();
+		//Ignore
+	}
 	return localConnection;
 }
 
