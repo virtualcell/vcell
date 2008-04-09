@@ -12,7 +12,7 @@ public class UserStatTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_userstat";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
-	public final Field userRef				= new Field("userRef",				"integer",		"NOT NULL "+UserTable.REF_TYPE+" ON DELETE CASCADE");
+	public final Field userRef				= new Field("userRef",				"integer",		"UNIQUE NOT NULL "+UserTable.REF_TYPE+" ON DELETE CASCADE");
 	public final Field loginCount			= new Field("loginCount",			"number",		"");
 	public final Field lastLogin			= new Field("lastLogin",			"date",			"");
 	public final Field emailLostPasswordOK	= new Field("emailLostPasswordOK",	"varchar2(5)",	"");
