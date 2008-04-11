@@ -1,10 +1,12 @@
 package cbit.vcell.simdata;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+
+import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.solver.VCSimulationDataIdentifierOldStyle;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.math.*;
 import java.io.*;
@@ -221,6 +223,15 @@ private void checkLogFile() throws FileNotFoundException {
 	}
 }
 
+private void checkSelfReference(AnnotatedFunction function) throws ExpressionException{
+	String[] existingUserDefFunctionSymbols = function.getExpression().getSymbols();
+	for (int j = 0; existingUserDefFunctionSymbols != null && j< existingUserDefFunctionSymbols.length; j++) {
+		if (existingUserDefFunctionSymbols[j].equals(function.getName())){
+			throw new ExpressionException("Error adding function '"+function.getName() + "', cannot refer to self");
+		}				
+	}
+}
+
 public static VCDataIdentifier createScanFriendlyVCDataID(VCDataIdentifier inVCDID){
 	VCDataIdentifier outVCDID = inVCDID;
 	if (inVCDID instanceof VCSimulationDataIdentifier) {
@@ -283,6 +294,8 @@ private synchronized void addFunctionToList(AnnotatedFunction function) throws E
 		
 	}
 	
+	checkSelfReference(function);
+
 	functionBindAndSubstitute(function);
 	
 	addFunctionToListInternal(function);
@@ -851,7 +864,7 @@ private synchronized File getPDEDataZipFile(double time) throws DataAccessExcept
 
 
 
-private AnnotatedFunction[] getReferringUserFunctions(String symbolName) throws DataAccessException{
+private AnnotatedFunction[] getReferringUserFunctions(String symbolName){
 	//Check for other userdefined functions using the function we want to delete
 	Vector<AnnotatedFunction> referringFunctionV = new Vector<AnnotatedFunction>();
 	for (int i=0;i<annotatedFunctionList.size();i++){
@@ -1664,6 +1677,9 @@ public synchronized void removeFunction(AnnotatedFunction function) throws DataA
 	throw new RuntimeException("Error remove function "+function.getName()+", not found");
 }
 private void replaceFunction(AnnotatedFunction function) throws ExpressionException,DataAccessException{
+	
+	checkSelfReference(function);
+	
 	boolean bFuncNameExists = false;
 	for (int i=0;i<annotatedFunctionList.size();i++){
 		if (annotatedFunctionList.elementAt(i).getName().equals(function.getName())){
