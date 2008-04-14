@@ -1,8 +1,9 @@
 package cbit.vcell.client.data;
+import java.util.Hashtable;
+
 import cbit.rmi.event.DataJobEvent;
 import cbit.vcell.simdata.ClientPDEDataContext;
 import cbit.vcell.math.Constant;
-import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.client.server.PDEDataManager;
 import cbit.vcell.client.server.ODEDataManager;
 import cbit.vcell.server.VCDataIdentifier;
@@ -24,7 +25,7 @@ public class SimDataViewer extends DataViewer {
 	private ODEDataViewer odeDataViewer = null;
 	private PDEDataViewer pdeDataViewer = null;
 	private boolean isODEData;
-	private java.util.Hashtable choicesHash = new java.util.Hashtable();
+	private Hashtable<String, JTable> choicesHash = new Hashtable<String, JTable>();
 
 /**
  * Insert the method's description here.
@@ -291,7 +292,7 @@ private void updateScanParamChoices(){
 	int[] indices = new int[scanConstantNames.length];
 	int[] bounds = new int[scanConstantNames.length];
 	for (int i = 0; i < indices.length; i++){
-		indices[i] = ((JTable)choicesHash.get(scanConstantNames[i])).getSelectedRow();
+		indices[i] = choicesHash.get(scanConstantNames[i]).getSelectedRow();
 		bounds[i] = getSimulation().getMathOverrides().getConstantArraySpec(scanConstantNames[i]).getNumValues() - 1;
 	}
 	int jobIndex = -1;
@@ -327,15 +328,16 @@ private void updateScanParamChoices(){
 		} else {
 			try{
 				currentContext.setDataManager(pdeDatamanager);
-			}catch(Exception e){
+			} catch (Exception e){
 				e.printStackTrace();
+				cbit.gui.DialogUtils.showErrorDialog(pdeDataViewer, e.getMessage());
 			}
 		}
 		if (pdeDataViewer.getPdeDataContext().getDataValues() == null) {
 			JInternalFrame frame = (JInternalFrame)cbit.util.BeanUtils.findTypeParentOfComponent(this, JInternalFrame.class);
 			frame.setSize(frame.getWidth(), frame.getHeight() - 1);
 			frame.setSize(frame.getWidth(), frame.getHeight() + 1);
-			cbit.gui.DialogUtils.showErrorDialog(odeDataViewer, "Could not fetch data for requested parameter choices\nJob may have failed or not yet started\n");
+			cbit.gui.DialogUtils.showErrorDialog(pdeDataViewer, "Could not fetch data for requested parameter choices\nJob may have failed or not yet started\n");
 		}
 	}
 }
