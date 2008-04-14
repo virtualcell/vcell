@@ -555,7 +555,13 @@ public AnnotatedFunction[] getFunctions() {
  * @param simID java.lang.String
  */
 private synchronized File getFunctionsFile() throws FileNotFoundException {
-	File functionsFile = new File(userDirectory,info.getID()+".functions");
+	File functionsFile = null;
+	if (info instanceof VCSimulationDataIdentifier && ((VCSimulationDataIdentifier)info).isParameterScanType()) { 
+		// always use the functions file from the first simulation in the scan 
+		functionsFile = new File(userDirectory, ExternalDataIdentifier.createCanonicalFunctionsFileName(((VCSimulationDataIdentifier)info).getSimulationKey(), 0, false));
+	} else {
+		functionsFile = new File(userDirectory,info.getID()+".functions");
+	}
 	if (functionsFile.exists()){
 		return functionsFile;
 	}else{
