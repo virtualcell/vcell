@@ -852,7 +852,12 @@ public cbit.vcell.geometry.CurveSelectionInfo getInitalCurveSelection(int tool, 
 						if (tool == cbit.vcell.geometry.gui.CurveEditorTool.TOOL_LINE) {
 							newCurveSelection = new CurveSelectionInfo(new CurveSelectionCurve((SampledCurve)(closeCSI[i].getCurve())));
 						}else if(tool == cbit.vcell.geometry.gui.CurveEditorTool.TOOL_POINT) {
-							newCurveSelection = new CurveSelectionInfo(new SinglePoint());
+							newCurveSelection = new CurveSelectionInfo(new CurveSelectionCurve((SampledCurve)(closeCSI[i].getCurve())));
+							double dist = closeCSI[i].getCurve().getDistanceTo(wc);
+							int segmentIndex = closeCSI[i].getCurve().pickSegment(wc, dist*1.1);
+							Coordinate[] coordArr = closeCSI[i].getCurve().getSampledCurve().getControlPointsForSegment(segmentIndex);
+							Coordinate middleCoord = new Coordinate((coordArr[0].getX()+coordArr[1].getX())/2,(coordArr[0].getY()+coordArr[1].getY())/2,(coordArr[0].getZ()+coordArr[1].getZ())/2);
+							newCurveSelection = new CurveSelectionInfo(new SinglePoint(middleCoord));
 						}
 						break;
 					}
@@ -1254,6 +1259,9 @@ public void setPdeDataContext(cbit.vcell.simdata.PDEDataContext pdeDataContext) 
 	cbit.vcell.simdata.PDEDataContext oldValue = fieldPdeDataContext;
 	fieldPdeDataContext = pdeDataContext;
 	firePropertyChange("pdeDataContext", oldValue, pdeDataContext);
+	if(ivjImagePlaneManagerPanel != null && ivjImagePlaneManagerPanel.getCurveRenderer() != null && getPdeDataContext() != null){
+		ivjImagePlaneManagerPanel.getCurveRenderer().setCartesianMesh(getPdeDataContext().getCartesianMesh());
+	}
 }
 /**
  * Set the pdeDataContext1 to a new value.

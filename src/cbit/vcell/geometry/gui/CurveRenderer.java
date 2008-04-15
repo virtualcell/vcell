@@ -4,23 +4,21 @@ package cbit.vcell.geometry.gui;
  * All rights reserved.
 ©*/
 import java.util.*;
-import java.util.Vector;
-import java.awt.Point;
-import cbit.vcell.parser.*;
+import cbit.vcell.solvers.CartesianMesh;
+
+import java.awt.BasicStroke;
 import java.awt.Color;
 import cbit.vcell.geometry.*;
 import java.awt.geom.*;
 import java.util.Hashtable;
 import cbit.util.*;
-/**
- * This type was created in VisualAge.
- */
+
 public class CurveRenderer implements DrawPaneModel {
 	//
 	java.awt.TexturePaint highlightTexture = null;
 	java.awt.TexturePaint nonHighlightTexture = null;
 	//
-	protected Hashtable curveTable = new Hashtable();
+	protected Hashtable<Curve, CurveRendererCurveInfo> curveTable = new Hashtable<Curve, CurveRendererCurveInfo>();
 	//
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private int fieldNormalAxis;
@@ -39,6 +37,13 @@ public class CurveRenderer implements DrawPaneModel {
 	//
 	private double fieldDefaultLineWidthMultiplier;
 	private boolean fieldAntialias = true;
+	
+	private CartesianMesh cartesianMesh = null;
+	
+	public void setCartesianMesh(CartesianMesh cartmesh){
+		cartesianMesh = cartmesh;
+	}
+
 
 /**
  * CurvePainter constructor comment.
@@ -154,14 +159,16 @@ private double distanceToProjectedCurve(java.awt.geom.Point2D.Double pickPoint, 
 		double magnitudeSquared = v2XLength * v2XLength + v2YLength * v2YLength;
 		double u = dotProduct / magnitudeSquared;
 		//double u = calculateUOfV1AlongV2(p0.getX(), p0.getY(), 0, pickPoint.getX(), pickPoint.getY(), 0, p1.getX(), p1.getY(), 0);
+		double distance = shortestDistance;
 		if (u >= 0.0 && u <= 1.0) {
 			double uX = p0.getX() + ((p1.getX() - p0.getX()) * u);
 			double uY = p0.getY() + ((p1.getY() - p0.getY()) * u);
-			double distance = pickPoint.distance(uX, uY);
-			if (distance < shortestDistance) {
-				shortestDistance = distance;
-				/*minDistanceXY.setLocation(Math.abs(uX-pickPoint.getX()), Math.abs(uY-pickPoint.getY()));*/
-			}
+			distance = pickPoint.distance(uX, uY);
+		}else{
+			distance = Math.min(pickPoint.distance(p0.getX(), p0.getY()),pickPoint.distance(p1.getX(), p1.getY()));
+		}
+		if (distance < shortestDistance) {
+			shortestDistance = distance;
 		}
 	}
 	return shortestDistance;
@@ -205,9 +212,9 @@ public void draw(java.awt.Graphics g) {
 		//Draw in order so curves aren't hidden by other curves
 		//
 		for(int i = 0;i < 4;i+= 1){
-			java.util.Enumeration curveEnum = curveTable.elements();
+			java.util.Enumeration<CurveRendererCurveInfo> curveEnum = curveTable.elements();
 			while (curveEnum.hasMoreElements()) {
-				CurveRendererCurveInfo crci = (CurveRendererCurveInfo) curveEnum.nextElement();
+				CurveRendererCurveInfo crci = curveEnum.nextElement();
 				if (!crci.isVisible() ||
 					//Selection above everything
 					(i == 3 && (getSelection() == null || getSelection().getCurve() != crci.getCurve())) ||
@@ -224,7 +231,7 @@ public void draw(java.awt.Graphics g) {
 				}
 				if (basicStroke == null || basicStroke.getLineWidth() != getLineWidthMultiplier(crci.getCurve())) {
 					//Set LineWidth
-					basicStroke = new java.awt.BasicStroke((float) getLineWidthMultiplier(crci.getCurve()),java.awt.BasicStroke.CAP_BUTT,basicStroke.JOIN_MITER);
+					basicStroke = new BasicStroke((float) getLineWidthMultiplier(crci.getCurve()),BasicStroke.CAP_BUTT,BasicStroke.JOIN_MITER);
 					//basicStroke = new java.awt.BasicStroke((float) getLineWidthMultiplier(crci.getCurve()));
 					g2D.setStroke(basicStroke);
 				}
@@ -255,7 +262,7 @@ private void drawControlPoints(java.awt.Graphics2D g2D, CurveRendererCurveInfo c
 			int controlPointCount = cpCurve.getControlPointCount();
 			double mpd = getLineWidthMultiplier(crci.getCurve()) / 2;
 			for (int j = 0; j < controlPointCount; j += 1) {
-				Point2D.Double p2d = crci.projectAndScale3DPoint(cpCurve.getControlPoint(j),getNormalAxis(),getScaling2D());
+				Point2D.Double p2d = CurveRendererCurveInfo.projectAndScale3DPoint(cpCurve.getControlPoint(j),getNormalAxis(),getScaling2D());
 				double p2dXS = p2d.getX();
 				double p2dYS = p2d.getY();
 				//
@@ -413,42 +420,14 @@ public void firePropertyChange(java.lang.String propertyName, boolean oldValue, 
 	getPropertyChange().firePropertyChange(propertyName, oldValue, newValue);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (7/31/00 2:35:33 PM)
- * @return java.awt.Shape
- */
-private java.awt.Shape get2DShape(CurveRendererCurveInfo crci) {
-	Point2D.Double[] p2d = crci.fetchProjectedCurvePoints(getScaling2D(),getNormalAxis());
-	if (crci.getCurve() instanceof SinglePoint) {
-		return new java.awt.geom.Ellipse2D.Double(p2d[0].getX() - getLineWidthMultiplier(crci.getCurve()), p2d[0].getY() - getLineWidthMultiplier(crci.getCurve()), 2 * getLineWidthMultiplier(crci.getCurve()), 3 * getLineWidthMultiplier(crci.getCurve()));
-	}
-	java.awt.geom.GeneralPath gp = new java.awt.geom.GeneralPath();
-	for (int c = 0; c < p2d.length; c += 1) {
-		double p2dXS = p2d[c].getX()*getScaling2D().getX();
-		double p2dYS = p2d[c].getY()*getScaling2D().getY();
-		if (c == 0) {
-			gp.moveTo((float) p2dXS, (float) p2dYS);
-		} else {
-			gp.lineTo((float) p2dXS, (float) p2dYS);
-		}
-	}
-	if (crci.getCurve().isClosed()) {
-		gp.closePath();
-	}
-	return gp;
-}
-
-
 /**
  * Insert the method's description here.
  * Creation date: (4/26/2001 3:13:10 PM)
  * @return cbit.vcell.geometry.Curve[]
  */
 public Curve[] getAllCurves() {
-	Enumeration en = curveTable.keys();
-	Vector v = new Vector();
+	Enumeration<Curve> en = curveTable.keys();
+	Vector<Curve> v = new Vector<Curve>();
 	while (en.hasMoreElements()) {
 		v.add(en.nextElement());
 	}
@@ -462,8 +441,8 @@ public Curve[] getAllCurves() {
  * @return cbit.vcell.geometry.Curve[]
  */
 public Curve[] getAllUserCurves() {
-	Enumeration en = curveTable.keys();
-	Vector v = new Vector();
+	Enumeration<Curve> en = curveTable.keys();
+	Vector<Curve> v = new Vector<Curve>();
 	while (en.hasMoreElements()) {
 		Curve curve = (Curve)en.nextElement();
 		CurveRendererCurveInfo crci = (CurveRendererCurveInfo)curveTable.get(curve);
@@ -496,12 +475,12 @@ public CurveSelectionInfo[] getCloseCurveSelectionInfos(Coordinate pickPoint) {
 		return null;
 	}
 	//
-	Vector closestCSIV = new Vector();
-	Vector closestDistanceV = new Vector();
+	Vector<CurveSelectionInfo> closestCSIV = new Vector<CurveSelectionInfo>();
+	Vector<Double> closestDistanceV = new Vector<Double>();
 	//
 	Point2D.Double pickPoint2D = CurveRendererCurveInfo.projectAndScale3DPoint(pickPoint,getNormalAxis(),getScaling2D());
 	//
-	java.util.Enumeration curveEnum = curveTable.elements();
+	java.util.Enumeration<CurveRendererCurveInfo> curveEnum = curveTable.elements();
 	//Get all curves within minPickDistance and sort from closest to farthest
 	while (curveEnum.hasMoreElements()) {
 		CurveRendererCurveInfo crci = (CurveRendererCurveInfo) curveEnum.nextElement();
@@ -510,7 +489,7 @@ public CurveSelectionInfo[] getCloseCurveSelectionInfos(Coordinate pickPoint) {
 			continue;
 		}
 		double distance = distanceToProjectedCurve(pickPoint2D, crci);
-		double minPickDistance = getLineWidthMultiplier(curve)/2;
+		double minPickDistance = getMinPickDistance(curve);//
 		if (distance <= minPickDistance) {
 			if(closestCSIV.size() == 0){
 				closestCSIV.add(new CurveSelectionInfo(curve));
@@ -662,6 +641,15 @@ private double getLineWidthMultiplier(Curve curve) {
 	return lwm;
 }
 
+private double getMinPickDistance(Curve curve){
+//	return getLineWidthMultiplier(curve)/2;
+	return
+		Math.max(3.0,
+		(cartesianMesh == null || getWorldDelta() == null?
+			getLineWidthMultiplier(curve)/2:
+			cartesianMesh.getExtent().getX()/cartesianMesh.getSizeX()/getWorldDelta().getX()/2));
+
+}
 
 /**
  * Sets the normalAxis property (int) value.
@@ -905,13 +893,12 @@ private CurveSelectionInfo pickControlPoint(Coordinate pickPoint, ControlPointCu
  */
 private int pickControlPointProjected(Coordinate pickPoint3D, ControlPointCurve pickCurve) {
 	Point2D.Double pickPoint2D = CurveRendererCurveInfo.projectAndScale3DPoint(pickPoint3D, getNormalAxis(), getScaling2D());
-	CurveRendererCurveInfo crci = (CurveRendererCurveInfo) curveTable.get(pickCurve);
-	double minPickDistance = getLineWidthMultiplier(pickCurve) / 2;
+	double minPickDistance = getMinPickDistance(pickCurve);
 	double shortestDistance = Double.MAX_VALUE;
 	int controlPointIndex = Curve.NONE_SELECTED;
 	int cpCount = pickCurve.getControlPointCount();
 	for (int i = 0; i < cpCount; i++) {
-		Point2D.Double p2d = crci.projectAndScale3DPoint(pickCurve.getControlPoint(i),getNormalAxis(),getScaling2D());
+		Point2D.Double p2d = CurveRendererCurveInfo.projectAndScale3DPoint(pickCurve.getControlPoint(i),getNormalAxis(),getScaling2D());
 		double distance = pickPoint2D.distance(p2d);
 		if (distance <= minPickDistance && distance < shortestDistance) {
 			controlPointIndex = i;
@@ -935,7 +922,7 @@ private int pickSegmentProjected(Coordinate pickPoint3D, Curve pickCurve) {
 	Point2D.Double pickPoint2D = CurveRendererCurveInfo.projectAndScale3DPoint(pickPoint3D, getNormalAxis(), getScaling2D());
 	CurveRendererCurveInfo crci = (CurveRendererCurveInfo) curveTable.get(pickCurve);
 	//double minPickDistance = getLineWidthMultiplier(pickCurve) / 2;
-	double minPickDistanceSqr = Math.pow(getLineWidthMultiplier(pickCurve) / 2,2);
+	double minPickDistanceSqr = Math.pow(getMinPickDistance(pickCurve),2);
 	Point2D.Double[] p2d = crci.fetchProjectedCurvePoints(getScaling2D(), getNormalAxis());
 	//
 	int segmentCount = pickCurve.getSegmentCount();

@@ -391,24 +391,29 @@ public void mousePressed(MouseEvent event) {
 		}
 		//
 		if(	selectedCSI != null && selectedCSI.getCurve() instanceof ControlPointCurve &&
-			(getCurveValueProvider() == null ||
-			!getCurveValueProvider().providesInitalCurve(getTool(),getWorldCoordinateValue(event.getPoint())) ||
-			getCurveValueProvider().isAddControlPointOK(getTool(),getWorldCoordinateValue(event.getPoint()),selectedCSI.getCurve()))){
-				//if(getCurveValueProvider().isAddControlPointOK(getTool(),getWorldCoordinateCalculator().snapWorldCoordinateFace(getWorldCoordinateValue(event.getPoint())),selectedCSI.getCurve())){
-					//((ControlPointCurve)(selectedCSI.getCurve())).appendControlPoint(getWorldCoordinateCalculator().snapWorldCoordinateFace(getWorldCoordinateValue(event.getPoint())));
-				//}else{
-					//((ControlPointCurve)(selectedCSI.getCurve())).appendControlPoint(getWorldCoordinateCalculator().snapWorldCoordinate(getWorldCoordinateValue(event.getPoint())));
-				//}
-				if(getCurveValueProvider().isAddControlPointOK(getTool(),getWorldCoordinateCalculator().snapWorldCoordinate(getWorldCoordinateValue(event.getPoint())),selectedCSI.getCurve())){
-					((ControlPointCurve)(selectedCSI.getCurve())).appendControlPoint(getWorldCoordinateCalculator().snapWorldCoordinate(getWorldCoordinateValue(event.getPoint())));
-				}else if(getCurveValueProvider().isAddControlPointOK(getTool(),getWorldCoordinateCalculator().snapWorldCoordinateFace(getWorldCoordinateValue(event.getPoint())),selectedCSI.getCurve())){
-					((ControlPointCurve)(selectedCSI.getCurve())).appendControlPoint(getWorldCoordinateCalculator().snapWorldCoordinateFace(getWorldCoordinateValue(event.getPoint())));
-				}
-			if(getCurveValueProvider() != null && selectedCSI.getCurve().isValid()){
-				getCurveValueProvider().curveAdded(selectedCSI.getCurve());
+				(getCurveValueProvider() == null ||
+				!getCurveValueProvider().providesInitalCurve(getTool(),getWorldCoordinateValue(event.getPoint())) ||
+				getCurveValueProvider().isAddControlPointOK(getTool(),getWorldCoordinateValue(event.getPoint()),selectedCSI.getCurve()))){
+					if((!(selectedCSI.getCurve() instanceof CurveSelectionCurve)) && getCurveValueProvider().isAddControlPointOK(getTool(),getWorldCoordinateCalculator().snapWorldCoordinate(getWorldCoordinateValue(event.getPoint())),selectedCSI.getCurve())){
+						((ControlPointCurve)(selectedCSI.getCurve())).appendControlPoint(getWorldCoordinateCalculator().snapWorldCoordinate(getWorldCoordinateValue(event.getPoint())));
+					}else if(getCurveValueProvider().isAddControlPointOK(getTool(),getWorldCoordinateValue(event.getPoint()),selectedCSI.getCurve())){
+						try{
+							if(selectedCSI.getCurve() instanceof CurveSelectionCurve){
+								ControlPointCurve targetCurve =
+									(ControlPointCurve)(((CurveSelectionCurve)selectedCSI.getCurve()).
+											getSourceCurveSelectionInfo().getCurve());
+								double dist = targetCurve.getDistanceTo(getWorldCoordinateValue(event.getPoint()));
+								int segmentIndex = targetCurve.pickSegment(getWorldCoordinateValue(event.getPoint()), dist*1.1);
+								Coordinate[] coordArr = targetCurve.getSampledCurve().getControlPointsForSegment(segmentIndex);
+								Coordinate middleCoord = new Coordinate((coordArr[0].getX()+coordArr[1].getX())/2,(coordArr[0].getY()+coordArr[1].getY())/2,(coordArr[0].getZ()+coordArr[1].getZ())/2);
+								((ControlPointCurve)(selectedCSI.getCurve())).appendControlPoint(getWorldCoordinateCalculator().snapWorldCoordinateFace(middleCoord/*getWorldCoordinateValue(event.getPoint())*/));
+							}
+						}catch(Exception e){
+							e.printStackTrace();
+						}
+					}
 			}
-		}
-		//
+
 		if(selectedCSI != null && !selectedCSI.getCurve().isValid()){
 			int subSel =getCurveRenderer().getRenderPropertySubSelectionType(selectedCSI.getCurve());
 			boolean bEdit = getCurveRenderer().getRenderPropertyEditable(selectedCSI.getCurve());
@@ -418,6 +423,9 @@ public void mousePressed(MouseEvent event) {
 			getCurveRenderer().renderPropertySubSelectionType(selectedCSI.getCurve(),subSel);
 		}
 		getCurveRenderer().setSelection(selectedCSI);
+		if(getCurveValueProvider() != null && selectedCSI != null && selectedCSI.getCurve().isValid()){
+			getCurveValueProvider().curveAdded(selectedCSI.getCurve());
+		}
 		getVcellDrawable().repaint();
 	} else if (getTool() == TOOL_SELECT) {
 		CurveSelectionInfo invalidCSI = null;
