@@ -1,5 +1,6 @@
 package cbit.vcell.client.desktop;
 import cbit.vcell.document.*;
+
 import java.awt.event.*;
 
 import cbit.vcell.biomodel.BioModel;
@@ -11,6 +12,11 @@ import java.text.*;
 import java.util.TreeMap;
 import java.util.Vector;
 import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
+
 import javax.swing.*;
 
 import cbit.vcell.desktop.*;
@@ -86,6 +92,8 @@ public class DocumentWindow extends JFrame implements TopLevelWindow {
 	////
 	////
 	
+	private JMenuItem bioModelsNetMenuItem;
+	private JMenu resourcesMenu;
 	private JDialog compareDialog = null;
 	private LoginDialog loginDialog = null;
 	private JMenuItem ivjAbout_BoxMenuItem = null;
@@ -1367,6 +1375,7 @@ private javax.swing.JMenuBar getDocumentWindowJMenuBar() {
 			ivjDocumentWindowJMenuBar.add(getWindowMenu());
 			ivjDocumentWindowJMenuBar.add(getBNGMenu());
 			ivjDocumentWindowJMenuBar.add(getToolMenu());
+			ivjDocumentWindowJMenuBar.add(getResourcesMenu());
 			ivjDocumentWindowJMenuBar.add(getHelpMenu());
 			// user code begin {1}
 			// user code end
@@ -3158,9 +3167,7 @@ public void updateConnectionStatus(ConnectionStatus connStatus) {
 			getTestingFrameworkMenuItem().setVisible(isTestUser);
 			getTestingFrameworkMenuItem().setEnabled(true);
 			getJMenuItemFieldData().setEnabled(true);
-			if(getWindowManager() != null && getWindowManager() instanceof BioModelWindowManager){
-				getJMenuItemMIRIAM().setEnabled(true);
-			}
+			getJMenuItemMIRIAM().setEnabled(true);
 			getTransMAMenuItem().setEnabled(
 					getWindowManager() != null && 
 					getWindowManager().getVCDocument() != null &&
@@ -3253,78 +3260,17 @@ private JMenuItem getJMenuItemMIRIAM() {
 		jMenuItemMIRIAM.setText("MIRIAM...");
 		jMenuItemMIRIAM.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent e) {
-				if(getWindowManager() != null && getWindowManager() instanceof BioModelWindowManager){
-					showMIRIAMWindow(((BioModel)((BioModelWindowManager)getWindowManager()).getVCDocument()));
+				if(getTopLevelWindowManager() instanceof BioModelWindowManager){
+					((BioModelWindowManager)getTopLevelWindowManager()).showMIRIAMWindow();
+				}else{
+					PopupGenerator.showInfoDialog("Sorry, Currently only BioModels have a MIRIAM editor.");
 				}
 			}
 		});
 	}
 	return jMenuItemMIRIAM;
 }
-private void showMIRIAMWindow(final BioModel bioModel) {
 
-	TreeMap<MIRIAMAnnotatable, Vector<MIRIAMHelper.DescriptiveHeirarchy>> mirimaDescrHeir =
-		MIRIAMHelper.showList(bioModel);
-	final MIRIAMAnnotationEditor miriamAnnotationEditor =
-		new MIRIAMAnnotationEditor();
-	miriamAnnotationEditor.setMIRIAMAnnotation(mirimaDescrHeir);
-	final javax.swing.JDialog jd = new javax.swing.JDialog();
-	jd.setTitle("View/Add/Delete/Edit MIRIAM Annotation");
-	jd.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-	jd.setModal(true);
-	jd.getContentPane().add(miriamAnnotationEditor);
-//	jd.pack();
-	jd.setSize(700,400);
-	BeanUtils.centerOnComponent(jd, this);
-	
-	miriamAnnotationEditor.addActionListener(
-		new ActionListener(){
-			public void actionPerformed(ActionEvent e) {
-				try{
-					if(e.getActionCommand().equals(MIRIAMAnnotationEditor.ACTION_OK)){
-						jd.dispose();
-					}else if(e.getActionCommand().equals(MIRIAMAnnotationEditor.ACTION_DELETE)){
-						MIRIAMAnnotatable miriamAnnotatable = miriamAnnotationEditor.getSelectedMIRIAMAnnotatable();
-						if(miriamAnnotatable == null || miriamAnnotatable.getMIRIAMAnnotation() == null){
-							return;
-						}
-						MIRIAMHelper.deleteDescriptiveHeirarchy(miriamAnnotationEditor.getSelectedDescriptionHeirarchy());
-						if(miriamAnnotatable.getMIRIAMAnnotation().getAnnotation().getChildren().size() == 0){
-							miriamAnnotatable.setMIRIAMAnnotation(null);
-						}
-						TreeMap<MIRIAMAnnotatable, Vector<MIRIAMHelper.DescriptiveHeirarchy>> mirimaDescrHeir =
-							MIRIAMHelper.showList(bioModel);
-						miriamAnnotationEditor.setMIRIAMAnnotation(mirimaDescrHeir);
-					}else if(e.getActionCommand().equals(MIRIAMAnnotationEditor.ACTION_ADD)){
-						final String ID_CHOICE = "Identifier";
-						final String DATE_CHOICE = "Date";
-						final String CREATOR_CHOICE = "Creator";
-						String choice =
-							(String)DialogUtils.showListDialog(DocumentWindow.this, new String[] {CREATOR_CHOICE,ID_CHOICE,DATE_CHOICE/*,"Creator","Date"*/}, "Choose Annotation Type");
-						if(choice != null){
-							if(choice.equals(ID_CHOICE)){
-								miriamAnnotationEditor.addIdentifierDialog();
-							}else if(choice.equals(DATE_CHOICE)){
-								miriamAnnotationEditor.addTimeUTCDialog();
-							}else if(choice.equals(CREATOR_CHOICE)){
-								miriamAnnotationEditor.addCreatorDialog();
-							}
-							TreeMap<MIRIAMAnnotatable, Vector<MIRIAMHelper.DescriptiveHeirarchy>> mirimaDescrHeir =
-								MIRIAMHelper.showList(bioModel);
-							miriamAnnotationEditor.setMIRIAMAnnotation(mirimaDescrHeir);
-						}
-					}
-				}catch(Exception e2){
-					DialogUtils.showErrorDialog("Error during Edit action\n"+e2.getMessage());
-				}
-			}
-		}
-	);
-
-	ZEnforcer.showModalDialogOnTop(jd, this);
-//	jd.setVisible(true);
-//	MIRIAMHelper.showList(getBioModel());
-}
 public void showTransMADialog() 
 {
 	String disclaimer = "Transforming reactions to stochastic capable cannot be undone. You may want to make a copy of the model.\nAlso some existing applications may need to be recreated in order to maintain consistency.\nLast but not least, stochastic transfomation may not be mathematically equivalent to the orignal model. \nDo you wish to proceed?";
@@ -3354,4 +3300,35 @@ public void showTransMADialog()
 		}
 	}
 }
+	/**
+	 * @return
+	 */
+	protected JMenu getResourcesMenu() {
+		if (resourcesMenu == null) {
+			resourcesMenu = new JMenu();
+			resourcesMenu.setText("Resources");
+			resourcesMenu.add(getBioModelsNetMenuItem());
+		}
+		return resourcesMenu;
+	}
+	/**
+	 * @return
+	 */
+	protected JMenuItem getBioModelsNetMenuItem() {
+		if (bioModelsNetMenuItem == null) {
+			bioModelsNetMenuItem = new JMenuItem();
+			bioModelsNetMenuItem.addActionListener(new ActionListener() {
+				public void actionPerformed(final ActionEvent e) {
+					BioModelsNetJPanel bioModelsNetJPanel = new BioModelsNetJPanel();
+					bioModelsNetJPanel.setDocumentWindow(DocumentWindow.this);
+					PopupGenerator.showComponentCloseDialog(
+							DocumentWindow.this,
+							bioModelsNetJPanel,
+							"VCell Collaboration -- BioModels.net Resource");
+				}
+			});
+			bioModelsNetMenuItem.setText("BioModels.net...");
+		}
+		return bioModelsNetMenuItem;
+	}
 }
