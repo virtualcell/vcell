@@ -23,6 +23,8 @@ public abstract class Curve implements cbit.util.Matchable, java.io.Serializable
 	private transient int fieldNumSamplePoints = DEFAULT_NUM_SAMPLES_FLAG;
 	private transient SampledCurve sampledCurve = null;
 	private transient int sampledCurveID = 0;
+	private String description = null;
+
 /**
  * Curve constructor comment.
  */
@@ -414,4 +416,12 @@ protected void setNumSamplePoints(int numSamplePoints) {
         sampledCurveDirty();
     }
 }
+
+public String getDescription() {
+	return description;
+}
+public void setDescription(String description) {
+	this.description = description;
+}
+
 }

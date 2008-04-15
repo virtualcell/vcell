@@ -3,6 +3,7 @@ package cbit.image;
 import java.awt.*;
 
 import cbit.vcell.client.data.DataViewer;
+import cbit.vcell.geometry.gui.CurveRenderer;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -1497,6 +1498,8 @@ private void updateInfo(java.awt.event.MouseEvent mouseEvent) {
 							infoS+= " svID="+volumeDataInfo.subvolumeID;
 							infoS+= " vrID="+volumeDataInfo.volumeRegionID;
 						}
+						String curveDescr = CurveRenderer.getROIDescriptions(wc,getCurveRenderer());
+						if(curveDescr != null){infoS+= "     "+curveDescr;}
 					}
 					if(infoS == null){
 						infoS = "Unknown";

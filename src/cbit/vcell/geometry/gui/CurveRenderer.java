@@ -90,6 +90,26 @@ public CurveRenderer() {
 }
 
 
+public static String getROIDescriptions(Coordinate pointOfInterest,CurveRenderer curveRenderer){
+	CurveSelectionInfo[] curveCSIArr =
+		curveRenderer.getCloseCurveSelectionInfos(pointOfInterest);
+	String infoS = "";
+	boolean bMultiple = false;
+	if(curveCSIArr != null){
+		for(int i = 0;i < curveCSIArr.length;i+= 1){
+			if(!curveRenderer.getRenderPropertySelectable(curveCSIArr[i].getCurve())){
+				continue;
+			}
+			if(infoS.length()> 0 && curveCSIArr[i].getCurve().getDescription() != null){
+				bMultiple = true;
+				infoS+=",";
+			}
+			infoS+= (curveCSIArr[i].getCurve().getDescription() != null?curveCSIArr[i].getCurve().getDescription():"");
+		}
+	}
+	return (infoS.length() == 0?null:"roi"+(bMultiple?"s":"")+"("+infoS+")");
+}
+
 /**
  * This method was created in VisualAge.
  * @param curve cbit.vcell.geometry.Curve

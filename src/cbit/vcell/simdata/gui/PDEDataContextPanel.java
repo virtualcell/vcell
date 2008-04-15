@@ -6,6 +6,7 @@ import cbit.vcell.simdata.*;
 import cbit.image.*;
 import cbit.vcell.client.data.DataViewer;
 import cbit.vcell.geometry.*;
+import cbit.vcell.geometry.gui.CurveRenderer;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -775,6 +776,8 @@ public String getCurveValue(cbit.vcell.geometry.CurveSelectionInfo csi) {
 								infoS+= " \""+membraneDataInfo.membraneName+"\"";
 								infoS+= " mrID="+membraneDataInfo.membraneRegionID;
 							}
+							String curveDescr = CurveRenderer.getROIDescriptions(segmentWC,getImagePlaneManagerPanel().getCurveRenderer());
+							if(curveDescr != null){infoS+= "     "+curveDescr;}
 							break;
 						}
 					}
@@ -1137,6 +1140,9 @@ private ControlPointCurve projectCurveOntoSlice(ControlPointCurve curve) {
 		}else if(curve instanceof SampledCurve){
 			cpCurve = new PolyLine(cpArr);
 		}
+	}
+	if(cpCurve != null){
+		cpCurve.setDescription(curve.getDescription());
 	}
 	return cpCurve;
 }
