@@ -2,9 +2,16 @@ package cbit.vcell.client;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.TreeMap;
 import java.util.Vector;
 
 import javax.swing.JDesktopPane;
@@ -27,6 +34,9 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
+import cbit.vcell.xml.MIRIAMAnnotatable;
+import cbit.vcell.xml.MIRIAMAnnotationEditor;
+import cbit.vcell.xml.MIRIAMHelper;
 /**
  * Insert the type's description here.
  * Creation date: (5/5/2004 1:17:07 PM)
@@ -40,6 +50,19 @@ public class BioModelWindowManager extends DocumentWindowManager implements java
 	private Vector<JInternalFrame> dataViewerPlotsFramesVector = new Vector<JInternalFrame>();
 
 	private cbit.vcell.opt.solvers.LocalOptimizationService localOptService = null;
+	
+	private JInternalFrame mIRIAMAnnotationEditorFrame = null;
+	private PropertyChangeListener miriamPropertyChangeListener =
+		new PropertyChangeListener(){
+			public void propertyChange(PropertyChangeEvent evt) {
+				closeMIRIAMWindow();
+			}};
+	private VetoableChangeListener miriamVetoableChangeListener =
+		new VetoableChangeListener(){
+			public void vetoableChange(PropertyChangeEvent evt) throws PropertyVetoException {
+				closeMIRIAMWindow();
+			}};
+
 
 /**
  * Insert the method's description here.
@@ -444,6 +467,7 @@ public void resetDocument(cbit.vcell.document.VCDocument newDocument) {
  * @param newBioModel cbit.vcell.biomodel.BioModel
  */
 private void setBioModel(cbit.vcell.biomodel.BioModel newBioModel) {
+	refreshMIRIAMDependencies(getBioModel(), newBioModel);
 	if (getBioModel() != null) {
 		getBioModel().removePropertyChangeListener(this);
 	}
@@ -643,4 +667,169 @@ public void simStatusChanged(SimStatusEvent simStatusEvent) {
 		fireNewData(new DataEvent(this, new cbit.vcell.solver.VCSimulationDataIdentifier(simulation.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), simStatusEvent.getJobIndex())));
 	}
 }
+
+
+private void closeMIRIAMWindow(){
+	try{
+		if(mIRIAMAnnotationEditorFrame != null && getJDesktopPane() != null){
+			close(mIRIAMAnnotationEditorFrame,getJDesktopPane());
+		}
+	}catch(Exception e){
+		//ignore
+	}
+}
+
+protected void refreshMIRIAMDependencies(BioModel oldBioModel,BioModel newBioModel){
+	try {
+		if (oldBioModel != null) {
+			oldBioModel
+					.removePropertyChangeListener(miriamPropertyChangeListener);
+			oldBioModel
+					.removeVetoableChangeListener(miriamVetoableChangeListener);
+			if (oldBioModel.getModel() != null) {
+				oldBioModel.getModel().removePropertyChangeListener(
+						miriamPropertyChangeListener);
+				oldBioModel.getModel().removeVetoableChangeListener(
+						miriamVetoableChangeListener);
+				for (int i = 0; i < oldBioModel.getModel().getStructures().length; i++) {
+					oldBioModel.getModel().getStructures()[i]
+							.removePropertyChangeListener(miriamPropertyChangeListener);
+					oldBioModel.getModel().getStructures()[i]
+							.removeVetoableChangeListener(miriamVetoableChangeListener);
+				}
+				for (int i = 0; i < oldBioModel.getModel()
+						.getReactionSteps().length; i++) {
+					oldBioModel.getModel().getReactionSteps()[i]
+							.removePropertyChangeListener(miriamPropertyChangeListener);
+					oldBioModel.getModel().getReactionSteps()[i]
+							.removeVetoableChangeListener(miriamVetoableChangeListener);
+				}
+				for (int i = 0; i < oldBioModel.getModel()
+						.getSpeciesContexts().length; i++) {
+					oldBioModel.getModel().getSpeciesContexts()[i]
+							.removePropertyChangeListener(miriamPropertyChangeListener);
+					oldBioModel.getModel().getSpeciesContexts()[i]
+							.removeVetoableChangeListener(miriamVetoableChangeListener);
+				}
+				for (int i = 0; i < oldBioModel.getModel().getSpecies().length; i++) {
+					oldBioModel.getModel().getSpecies()[i]
+							.removePropertyChangeListener(miriamPropertyChangeListener);
+					oldBioModel.getModel().getSpecies()[i]
+							.removeVetoableChangeListener(miriamVetoableChangeListener);
+				}
+			}
+		}
+		if (newBioModel != null) {
+			newBioModel
+					.addPropertyChangeListener(miriamPropertyChangeListener);
+			newBioModel
+					.addVetoableChangeListener(miriamVetoableChangeListener);
+			if (newBioModel.getModel() != null) {
+				newBioModel.getModel().addPropertyChangeListener(
+						miriamPropertyChangeListener);
+				newBioModel.getModel().addVetoableChangeListener(
+						miriamVetoableChangeListener);
+				for (int i = 0; i < newBioModel.getModel().getStructures().length; i++) {
+					newBioModel.getModel().getStructures()[i]
+							.addPropertyChangeListener(miriamPropertyChangeListener);
+					newBioModel.getModel().getStructures()[i]
+							.addVetoableChangeListener(miriamVetoableChangeListener);
+				}
+				for (int i = 0; i < newBioModel.getModel()
+						.getReactionSteps().length; i++) {
+					newBioModel.getModel().getReactionSteps()[i]
+							.addPropertyChangeListener(miriamPropertyChangeListener);
+					newBioModel.getModel().getReactionSteps()[i]
+							.addVetoableChangeListener(miriamVetoableChangeListener);
+				}
+				for (int i = 0; i < newBioModel.getModel()
+						.getSpeciesContexts().length; i++) {
+					newBioModel.getModel().getSpeciesContexts()[i]
+							.addPropertyChangeListener(miriamPropertyChangeListener);
+					newBioModel.getModel().getSpeciesContexts()[i]
+							.addVetoableChangeListener(miriamVetoableChangeListener);
+				}
+				for (int i = 0; i < newBioModel.getModel().getSpecies().length; i++) {
+					newBioModel.getModel().getSpecies()[i]
+							.addPropertyChangeListener(miriamPropertyChangeListener);
+					newBioModel.getModel().getSpecies()[i]
+							.addVetoableChangeListener(miriamVetoableChangeListener);
+				}
+			}
+		}
+	} catch (Exception e) {
+		e.printStackTrace();
+		//ignore
+	}
+
+}
+
+public void showMIRIAMWindow() {
+
+	if(mIRIAMAnnotationEditorFrame == null){
+		final MIRIAMAnnotationEditor miriamAnnotationEditor =
+			new MIRIAMAnnotationEditor();
+		miriamAnnotationEditor.addActionListener(
+				new ActionListener(){
+					public void actionPerformed(ActionEvent e) {
+						try{
+							if(e.getActionCommand().equals(MIRIAMAnnotationEditor.ACTION_OK)){
+								close(mIRIAMAnnotationEditorFrame,getJDesktopPane());
+							}else if(e.getActionCommand().equals(MIRIAMAnnotationEditor.ACTION_DELETE)){
+								MIRIAMAnnotatable miriamAnnotatable = miriamAnnotationEditor.getSelectedMIRIAMAnnotatable();
+								if(miriamAnnotatable == null || miriamAnnotatable.getMIRIAMAnnotation() == null){
+									return;
+								}
+								MIRIAMHelper.deleteDescriptiveHeirarchy(miriamAnnotationEditor.getSelectedDescriptionHeirarchy());
+								if(miriamAnnotatable.getMIRIAMAnnotation().getAnnotation().getChildren().size() == 0){
+									miriamAnnotatable.setMIRIAMAnnotation(null);
+								}
+								TreeMap<MIRIAMAnnotatable, Vector<MIRIAMHelper.DescriptiveHeirarchy>> mirimaDescrHeir =
+									MIRIAMHelper.showList(getBioModel());
+								miriamAnnotationEditor.setMIRIAMAnnotation(mirimaDescrHeir);
+							}else if(e.getActionCommand().equals(MIRIAMAnnotationEditor.ACTION_ADD)){
+								final String ID_CHOICE = "Identifier";
+								final String DATE_CHOICE = "Date";
+								final String CREATOR_CHOICE = "Creator";
+								String choice =
+									(String)DialogUtils.showListDialog(getJDesktopPane(), new String[] {CREATOR_CHOICE,ID_CHOICE,DATE_CHOICE/*,"Creator","Date"*/}, "Choose Annotation Type");
+								if(choice != null){
+									if(choice.equals(ID_CHOICE)){
+										miriamAnnotationEditor.addIdentifierDialog();
+									}else if(choice.equals(DATE_CHOICE)){
+										miriamAnnotationEditor.addTimeUTCDialog();
+									}else if(choice.equals(CREATOR_CHOICE)){
+										miriamAnnotationEditor.addCreatorDialog();
+									}
+									TreeMap<MIRIAMAnnotatable, Vector<MIRIAMHelper.DescriptiveHeirarchy>> mirimaDescrHeir =
+										MIRIAMHelper.showList(getBioModel());
+									miriamAnnotationEditor.setMIRIAMAnnotation(mirimaDescrHeir);
+								}
+							}
+						}catch(Exception e2){
+							DialogUtils.showErrorDialog("Error during Edit action\n"+e2.getMessage());
+						}
+					}
+				}
+			);
+
+		mIRIAMAnnotationEditorFrame = new JInternalFrame();
+		mIRIAMAnnotationEditorFrame.setTitle("View/Add/Delete/Edit MIRIAM Annotation");
+		mIRIAMAnnotationEditorFrame.getContentPane().add(miriamAnnotationEditor);
+		mIRIAMAnnotationEditorFrame.setSize(600,400);
+		mIRIAMAnnotationEditorFrame.setClosable(true);
+		mIRIAMAnnotationEditorFrame.setResizable(true);
+
+	}
+
+	if(!mIRIAMAnnotationEditorFrame.isShowing()){
+		TreeMap<MIRIAMAnnotatable, Vector<MIRIAMHelper.DescriptiveHeirarchy>> mirimaDescrHeir =
+			MIRIAMHelper.showList(getBioModel());
+		((MIRIAMAnnotationEditor)mIRIAMAnnotationEditorFrame.getContentPane().getComponent(0)).setMIRIAMAnnotation(mirimaDescrHeir);
+	}
+
+//	showDataViewerPlotsFrame(mIRIAMAnnotationEditorFrame);
+	showFrame(mIRIAMAnnotationEditorFrame);
+}
+
 }
