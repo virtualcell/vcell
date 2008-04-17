@@ -1,10 +1,19 @@
 package cbit.vcell.client.data;
 import cbit.vcell.math.VolVariable;
+import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTable;
 import cbit.vcell.simdata.*;
 
 import javax.swing.*;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 
 import cbit.image.DisplayAdapterService;
 import cbit.plot.*;
@@ -12,14 +21,17 @@ import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.MessageEvent;
 import cbit.vcell.server.*;
 import cbit.vcell.simdata.gui.*;
+
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.util.*;
+import java.util.Map.Entry;
 
 import cbit.vcell.client.*;
 import cbit.vcell.client.task.UserCancelException;
@@ -130,7 +142,7 @@ public class PDEDataViewer extends DataViewer {
 		new HashMap<VCDataJobID, TimeSeriesJobResultsAction>();
 	//
 	private class StatsJobInfo{
-		public String variableName;
+		public DataIdentifier dataIdentifier;
 		public Double beginTime;
 		public Double endTime;
 	};
@@ -166,6 +178,13 @@ public class PDEDataViewer extends DataViewer {
 	private JButton ivjJButtonSurfaces = null;
 	private boolean ivjConnPtoP10Aligning = false;
 	private PDEDataContext ivjpdeDataContext1 = null;
+	private JButton ivjJButtonSnapshotROI = null;
+	private JPanel ivjJPanelSnapshotROI = null;
+	private JCheckBox ivjJCheckBoxSnapshotROI = null;
+	private BitSet volumeSnapshotROI;
+	private String volumeSnapshotROIDescription;
+	private BitSet membraneSnapshotROI;
+	private String membraneSnapshotROIDescription;
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
@@ -239,100 +258,81 @@ public PDEDataViewer() {
 	initialize();
 }
 
-private StatsJobInfo calcStatsGetUserInfo(){
+private StatsJobInfo calcStatsGetUserInfo() throws UserCancelException{
 	
 	StatsJobInfo statsJobInfo = null;
-	//get Volume variable names
-	TreeSet<String> volVarNamesTreeSet =
-		new TreeSet<String>(new Comparator<String>(){
-			public int compare(String o1, String o2) {
-				return o1.compareToIgnoreCase(o2);
+	//Get all variable names and sort by name
+	TreeSet<DataIdentifier> dataIdentifierTreeSet =
+		new TreeSet<DataIdentifier>(new Comparator<DataIdentifier>(){
+			public int compare(DataIdentifier o1, DataIdentifier o2) {
+				return o1.getName().compareToIgnoreCase(o2.getName());
 			}});
-	DataIdentifier[] dids = getPdeDataContext().getDataIdentifiers();
-	for(int i=0;i<dids.length;i+= 1){
-		if(	dids[i].getVariableType().equals(VariableType.VOLUME) ||
-			dids[i].getVariableType().equals(VariableType.VOLUME_REGION)){
-			if(!dids[i].equals(getPdeDataContext().getDataIdentifier())){
-				volVarNamesTreeSet.add(dids[i].getName());
-			}
-		}
-	}
-	if(volVarNamesTreeSet.size() > 0){
-		String[] volVarnamesArr = volVarNamesTreeSet.toArray(new String[0]);
-//		volVarnamesV.copyInto(volVarnamesArr);
-		double[] timePoints = getPdeDataContext().getTimePoints();
-		Double[] timePointsD = new Double[timePoints.length];
-		for(int i=0;i<timePoints.length;i+= 1){
-			timePointsD[i] = new Double(timePoints[i]);
-		}
-		//
-		//Show GUI
-		//
-		JPanel jPanel = new JPanel();
-		BoxLayout mainBL = new BoxLayout(jPanel,BoxLayout.Y_AXIS);
-		jPanel.setLayout(mainBL);
-		JList varList = new JList(volVarnamesArr);
-		varList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		JScrollPane jsp = new JScrollPane(varList);
-		jPanel.add(jsp);
-		JComboBox jcb_time_begin = new JComboBox(timePointsD);
-		jcb_time_begin.setMaximumSize(new Dimension(100, 25));
-		JComboBox jcb_time_end = new JComboBox(timePointsD);
-		jcb_time_end.setSelectedIndex(timePointsD.length-1);
-		jcb_time_end.setMaximumSize(new Dimension(100, 25));
-		JPanel beginTimePanel = new JPanel();
-		beginTimePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-		BoxLayout btBL = new BoxLayout(beginTimePanel,BoxLayout.X_AXIS);
-		beginTimePanel.setLayout(btBL);
-		JLabel beginLabel = new JLabel("begin Time");
-//		beginLabel.setMinimumSize(new Dimension(40,25));
-		beginTimePanel.add(jcb_time_begin);
-		beginTimePanel.add(beginLabel);
-		JPanel endTimePanel = new JPanel();
-		endTimePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
-		BoxLayout etBL = new BoxLayout(endTimePanel,BoxLayout.X_AXIS);
-		endTimePanel.setLayout(etBL);
-		JLabel endLabel = new JLabel("end Time");
-//		endLabel.setMinimumSize(new Dimension(40,25));
-		endTimePanel.add(jcb_time_end);
-		endTimePanel.add(endLabel);
-		jPanel.add(beginTimePanel);
-		jPanel.add(endTimePanel);
+	DataIdentifier[] dataIdentifierArr = getPdeDataContext().getDataIdentifiers();
+	dataIdentifierTreeSet.addAll(Arrays.asList(dataIdentifierArr));
 
-		while(true){
-			int okCancel =
-				PopupGenerator.showComponentOKCancelDialog(this, jPanel, "Choose Volume Variable and times");
-			if(okCancel == JOptionPane.OK_OPTION){
-				statsJobInfo = new StatsJobInfo();//User created Info
-				statsJobInfo.variableName = (String)varList.getSelectedValue();
-				statsJobInfo.beginTime = (Double)jcb_time_begin.getSelectedItem();
-				statsJobInfo.endTime = (Double)jcb_time_end.getSelectedItem();
-				if(statsJobInfo.variableName == null){//User Info Error
-					statsJobInfo = null;
-					PopupGenerator.showErrorDialog("Volume variable name must be selected from list");					
-				}else if(statsJobInfo.beginTime > statsJobInfo.endTime){//User Info Error
-					statsJobInfo = null;
-					PopupGenerator.showErrorDialog("Desired begintime must be less than or equal to endtime");
-				}else{
-					break;//User Info OK
-				}
+	DataIdentifier[] sortedDataIdentiferArr = dataIdentifierTreeSet.toArray(new DataIdentifier[0]);
+	String[] volVarnamesArr = new String[sortedDataIdentiferArr.length];
+	for (int i = 0; i < volVarnamesArr.length; i++) {
+		volVarnamesArr[i] = sortedDataIdentiferArr[i].getName()+"  ("+sortedDataIdentiferArr[i].getVariableType().getTypeName()+")";
+	}
+	double[] timePoints = getPdeDataContext().getTimePoints();
+	Double[] timePointsD = new Double[timePoints.length];
+	for(int i=0;i<timePoints.length;i+= 1){
+		timePointsD[i] = new Double(timePoints[i]);
+	}
+	//
+	//Show GUI
+	//
+	JPanel jPanel = new JPanel();
+	BoxLayout mainBL = new BoxLayout(jPanel,BoxLayout.Y_AXIS);
+	jPanel.setLayout(mainBL);
+	JList varList = new JList(volVarnamesArr);
+	varList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+	JScrollPane jsp = new JScrollPane(varList);
+	jPanel.add(jsp);
+	JComboBox jcb_time_begin = new JComboBox(timePointsD);
+	jcb_time_begin.setMaximumSize(new Dimension(100, 25));
+	JComboBox jcb_time_end = new JComboBox(timePointsD);
+	jcb_time_end.setSelectedIndex(timePointsD.length-1);
+	jcb_time_end.setMaximumSize(new Dimension(100, 25));
+	JPanel beginTimePanel = new JPanel();
+	beginTimePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+	BoxLayout btBL = new BoxLayout(beginTimePanel,BoxLayout.X_AXIS);
+	beginTimePanel.setLayout(btBL);
+	JLabel beginLabel = new JLabel("begin Time");
+	beginTimePanel.add(jcb_time_begin);
+	beginTimePanel.add(beginLabel);
+	JPanel endTimePanel = new JPanel();
+	endTimePanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+	BoxLayout etBL = new BoxLayout(endTimePanel,BoxLayout.X_AXIS);
+	endTimePanel.setLayout(etBL);
+	JLabel endLabel = new JLabel("end Time");
+	endTimePanel.add(jcb_time_end);
+	endTimePanel.add(endLabel);
+	jPanel.add(beginTimePanel);
+	jPanel.add(endTimePanel);
+	jPanel.setPreferredSize(new Dimension(350,200));
+
+	while(true){
+		int okCancel =
+			PopupGenerator.showComponentOKCancelDialog(this, jPanel, "Calculate Statistics for: (Choose Variable and Times)");
+		if(okCancel == JOptionPane.OK_OPTION){
+			statsJobInfo = new StatsJobInfo();//User created Info
+			statsJobInfo.dataIdentifier = (varList.getSelectedIndex() < 0?null:sortedDataIdentiferArr[varList.getSelectedIndex()]);
+			statsJobInfo.beginTime = (Double)jcb_time_begin.getSelectedItem();
+			statsJobInfo.endTime = (Double)jcb_time_end.getSelectedItem();
+			if(statsJobInfo.dataIdentifier == null){//User Info Error
+				statsJobInfo = null;
+				PopupGenerator.showErrorDialog("Variable name must be selected from list");					
+			}else if(statsJobInfo.beginTime > statsJobInfo.endTime){//User Info Error
+				statsJobInfo = null;
+				PopupGenerator.showErrorDialog("Desired begintime must be less than or equal to endtime");
 			}else{
-				statsJobInfo = null;//User cancelled
-				break;
+				break;//User Info OK
 			}
+		}else{
+			throw UserCancelException.CANCEL_GENERIC;
 		}
-//		if(PopupGenerator.showComponentOKCancelDialog(
-//			this, jPanel, "Choose Variables and times") ==
-//				JOptionPane.OK_OPTION){
-//			statsJobInfo = new StatsJobInfo();//User created Info
-//			statsJobInfo.variableName = (String)varList.getSelectedValue();
-//			statsJobInfo.beginTime = (Double)jcb_time_begin.getSelectedItem();
-//			statsJobInfo.endTime = (Double)jcb_time_end.getSelectedItem();
-//		}else{
-//			statsJobInfo = null;//User cancelled
-//		}
-	}else{
-		statsJobInfo = new StatsJobInfo();//No Volume variables available
 	}
 	return statsJobInfo;
 }
@@ -345,7 +345,8 @@ private void calcStatistics(final java.awt.event.ActionEvent actionEvent) {
 		new Runnable(){
 			public void run(){
 				try{
-					calcStatistics2();
+//					calcStatistics2();
+					showTableList();
 				}catch(Throwable e){
 					PopupGenerator.showErrorDialog("Error calculating statistics\n"+e.getMessage());
 				}
@@ -355,122 +356,454 @@ private void calcStatistics(final java.awt.event.ActionEvent actionEvent) {
 	
 }
 
+private void showTableList(){
+	
+	final String[] ROI_COLUMN_NAMES = new String[] {"ROI source","ROI source name","ROI Description"};
+	final int AUX_INFO_INDEX = ROI_COLUMN_NAMES.length;
+	final Vector<Object> auxInfoV = new Vector<Object>();
+	
+	final boolean isVolume =
+		getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.VOLUME) ||
+		getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.VOLUME_REGION);
+	
+	DefaultTableModel tableModel = new DefaultTableModel(){
+	    public boolean isCellEditable(int row, int column) {
+	        return false;
+	    }
+	};
+	final JTable roiTable = new JTable(tableModel);
+	roiTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+	for (int i = 0; i < ROI_COLUMN_NAMES.length; i++) {
+		tableModel.addColumn(ROI_COLUMN_NAMES[i]);
+	}
+	//Add Snapshot ROI
+	if((isVolume?volumeSnapshotROI:membraneSnapshotROI) != null){
+		((DefaultTableModel)roiTable.getModel()).addRow(
+				new Object[] {
+					(isVolume?"Volume":"Membrane")+" Variables and Functions",
+					"Snapshot",
+					(isVolume?volumeSnapshotROIDescription:membraneSnapshotROIDescription)+
+					", (values = 1.0)"
+				}
+		);
+		auxInfoV.add((isVolume?volumeSnapshotROI:membraneSnapshotROI));
+	}
+	//Add user ROIs
+	SpatialSelection[] userROIArr =
+		getPDEDataContextPanel1().fetchSpatialSelections(getPDEDataContextPanel1().isSpatialSampling2D(),true,false);
+	for (int i = 0; userROIArr != null && i < userROIArr.length; i += 1) {
+		((DefaultTableModel)roiTable.getModel()).addRow(
+				new Object[] {
+					"User Defined",
+					(isVolume
+						?(userROIArr[i] instanceof SpatialSelectionVolume
+							?((SpatialSelectionVolume)userROIArr[i]).getCurveSelectionInfo().getCurve().getDescription():null)
+						:(userROIArr[i] instanceof SpatialSelectionMembrane
+							?((SpatialSelectionMembrane)userROIArr[i]).getSelectionSource().getDescription():null)),
+					(isVolume?"Volume ROI":"Membrane ROI")
+				}
+		);
+		auxInfoV.add(userROIArr[i]);
+	}
+	//Add sorted Geometry ROI
+	HashMap<Integer,?> regionMapSubvolumesHashMap =
+		(isVolume
+			?getPdeDataContext().getCartesianMesh().getVolumeRegionMapSubvolume()
+			:getPdeDataContext().getCartesianMesh().getMembraneRegionMapSubvolumesInOut());
+	Set<?> regionMapSubvolumesEntrySet = regionMapSubvolumesHashMap.entrySet();
+	Iterator<?> regionMapSubvolumesEntryIter = regionMapSubvolumesEntrySet.iterator();
+	TreeSet<Object[]> sortedGeomROITreeSet =
+		new TreeSet<Object[]>(
+			new Comparator<Object[]>(){
+				public int compare(Object[] o1, Object[] o2) {
+					int result =
+						((String)((Object[])o1[0])[1]).compareToIgnoreCase((String)((Object[])o2[0])[1]);
+					if(result == 0){
+						result =
+							((Integer)((Entry<Integer, ?>)o1[1]).getKey()).compareTo(
+								(Integer)((Entry<Integer, ?>)o2[1]).getKey());
+					}
+					return result;
+				}
+			}
+		);
+	while(regionMapSubvolumesEntryIter.hasNext()){
+		Entry<Integer,?> regionMapSubvolumesEntry = (Entry<Integer, ?>) regionMapSubvolumesEntryIter.next();
+//		((DefaultTableModel)roiTable.getModel()).addRow(
+		sortedGeomROITreeSet.add(
+				new Object[] {new Object[] {
+					"Geometry",
+					(isVolume
+						?getSimulationModelInfo().getVolumeNamePhysiology(((Integer)regionMapSubvolumesEntry.getValue()))
+						:getSimulationModelInfo().getMembraneName(
+							((int[])regionMapSubvolumesEntry.getValue())[0],
+							((int[])regionMapSubvolumesEntry.getValue())[1])
+					),
+					"(Region ID="+regionMapSubvolumesEntry.getKey()+") Predefined "+(isVolume?"volume":"membrane")+" region"
+				},
+				regionMapSubvolumesEntry}
+		);
+//		auxInfoV.add(regionMapSubvolumesEntry);
+	}
+	Iterator<Object[]> sortedGeomROIIter = sortedGeomROITreeSet.iterator();
+	while(sortedGeomROIIter.hasNext()){
+		Object[] sortedGeomROIObjArr = (Object[])sortedGeomROIIter.next();
+		((DefaultTableModel)roiTable.getModel()).addRow((Object[])sortedGeomROIObjArr[0]);
+		auxInfoV.add(sortedGeomROIObjArr[1]);
+	}
+	ScopedExpressionTableCellRenderer.formatTableCellSizes(roiTable, null, null);
+	
+	JScrollPane scrollPane = new JScrollPane(roiTable);
+	roiTable.setPreferredScrollableViewportSize(new Dimension(500, 250));
 
+	final JPanel mainJPanel = new JPanel();
+	BoxLayout mainBL = new BoxLayout(mainJPanel,BoxLayout.Y_AXIS);
+	mainJPanel.setLayout(mainBL);
+	
+	JPanel timeJPanel = new JPanel();
+	BoxLayout timeBL = new BoxLayout(timeJPanel,BoxLayout.X_AXIS);
+	timeJPanel.setLayout(timeBL);
+	double[] timePoints = getPdeDataContext().getTimePoints();
+	Double[] timePointsD = new Double[timePoints.length];
+	for(int i=0;i<timePoints.length;i+= 1){
+		timePointsD[i] = new Double(timePoints[i]);
+	}
+	final JComboBox jcb_time_begin = new JComboBox(timePointsD);
+	jcb_time_begin.setMaximumSize(new Dimension(100, 25));
+	final JComboBox jcb_time_end = new JComboBox(timePointsD);
+	jcb_time_end.setSelectedIndex(timePointsD.length-1);
+	jcb_time_end.setMaximumSize(new Dimension(100, 25));
+	timeJPanel.add(new JLabel("Begin Time:"));
+	timeJPanel.add(jcb_time_begin);
+	timeJPanel.add(new JLabel("End Time:"));
+	timeJPanel.add(jcb_time_end);
+	timeJPanel.setBorder(new EmptyBorder(4,4,4,4));
+	
+	JPanel okCancelJPanel = new JPanel();
+	BoxLayout okCancelBL = new BoxLayout(okCancelJPanel,BoxLayout.X_AXIS);
+	okCancelJPanel.setLayout(okCancelBL);
+	final JButton okButton = new JButton("OK");
+	okButton.setEnabled(false);
+	okButton.addActionListener(new ActionListener(){
+		public void actionPerformed(ActionEvent e) {
+			if(((Double)jcb_time_begin.getSelectedItem()).compareTo((Double)jcb_time_end.getSelectedItem()) > 0){
+				PopupGenerator.showErrorDialog("Selected 'Begin Time' must be less than or equal to 'End Time'");
+				return;
+			}
+			int[] selectedRows = roiTable.getSelectedRows();
+			if(selectedRows != null){
+				try {
+					BitSet dataBitSet = new BitSet(getPdeDataContext().getDataValues().length);
+					int SNAPSHOT_INDEX = 0;
+					for (int i = 0; i < selectedRows.length; i++) {
+						Object auxInfo = auxInfoV.elementAt(selectedRows[i]);
+						if(auxInfo instanceof BitSet){
+							dataBitSet.or((BitSet)auxInfo);
+						}else if(auxInfo instanceof SpatialSelectionMembrane){
+							int[] roiIndexes =
+								((SpatialSelectionMembrane)auxInfo).getIndexSamples().getSampledIndexes();
+							for (int j = 0; j < roiIndexes.length; j += 1) {
+								dataBitSet.set(roiIndexes[j], true);
+							}
+						}else if(auxInfo instanceof SpatialSelectionVolume){
+							int[] roiIndexes =
+								((SpatialSelectionVolume)auxInfo).getIndexSamples(0,1).getSampledIndexes();
+							for (int j = 0; j < roiIndexes.length; j += 1) {
+								dataBitSet.set(roiIndexes[j], true);
+							}
+						}else if (auxInfo instanceof Entry){
+							if(isVolume){
+								int volumeRegionID = (Integer)((Entry<Integer, Integer>)auxInfo).getKey();
+								dataBitSet.or(getPdeDataContext().getCartesianMesh().getVolumeROIFromVolumeRegionID(volumeRegionID));
+							}else{
+								int membraneRegionID = (Integer)((Entry<Integer, int[]>)auxInfo).getKey();
+								dataBitSet.or(getPdeDataContext().getCartesianMesh().getMembraneROIFromMembraneRegionID(membraneRegionID));
+							}
+						}else{
+							throw new Exception("ROI table, Unknown data type: "+auxInfo.getClass().getName());
+						}
+					}
+					cbit.util.TimeSeriesJobSpec timeSeriesJobSpec =
+						new cbit.util.TimeSeriesJobSpec(
+							new String[] {getPdeDataContext().getDataIdentifier().getName()},
+							new BitSet[] {dataBitSet},
+							((Double)jcb_time_begin.getSelectedItem()).doubleValue(),
+							1,
+							((Double)jcb_time_end.getSelectedItem()).doubleValue(),
+							true,false,
+							VCDataJobID.createVCDataJobID(
+									getDataViewerManager().getUser(),
+									true));
+
+					startTimeSeriesJob(timeSeriesJobSpec,new PlotSpaceStats(),false);
+				} catch (Exception e1) {
+					e1.printStackTrace();
+					PopupGenerator.showErrorDialog("ROI Error.\n"+e1.getMessage());
+				}
+			}
+			JInternalFrame jif =
+				(JInternalFrame)BeanUtils.findTypeParentOfComponent(mainJPanel, JInternalFrame.class);
+			if(jif != null){
+				jif.dispose();
+			}
+		}});
+	okCancelJPanel.add(okButton);
+	roiTable.getSelectionModel().addListSelectionListener(
+			new ListSelectionListener(){
+				public void valueChanged(ListSelectionEvent e) {
+					if(roiTable.getSelectedRows() != null && roiTable.getSelectedRows().length > 0){
+						okButton.setEnabled(true);
+					}else{
+						okButton.setEnabled(false);
+					}
+				}
+			}
+	);
+	
+	JButton cancelButton = new JButton("Cancel");
+	cancelButton.addActionListener(new ActionListener(){
+		public void actionPerformed(ActionEvent e) {
+			JInternalFrame jif =
+				(JInternalFrame)BeanUtils.findTypeParentOfComponent(mainJPanel, JInternalFrame.class);
+			if(jif != null){
+				jif.dispose();
+			}
+		}});
+	okCancelJPanel.add(cancelButton);
+	okCancelJPanel.setBorder(new EmptyBorder(4,4,4,4));
+	
+//	JPanel descriptionJPanel = new JPanel();
+//	BoxLayout descriptionBL = new BoxLayout(descriptionJPanel,BoxLayout.Y_AXIS);
+//	descriptionJPanel.setLayout(descriptionBL);
+//	descriptionJPanel.add(new JLabel("Statistics will be calculated for all time points selected below."));
+//	descriptionJPanel.add(new JLabel("Select 1 or more Regions of Interest (ROI) below."));
+//	descriptionJPanel.add(new JLabel("Multiple ROI selections will be merged into 1 composite ROI."));
+//	mainJPanel.add(descriptionJPanel);
+
+	mainJPanel.add(timeJPanel);
+	mainJPanel.add(scrollPane);
+	mainJPanel.add(okCancelJPanel);
+
+	showComponentInFrame(mainJPanel,
+		"Calculate "+(isVolume?"volume":"membrane")+" statistics for '"+getPdeDataContext().getVariableName()+"'."+
+		"  Choose times and 1 or more ROI(s).");
+
+//	int result = DialogUtils.showComponentOKCancelDialog(requester, scrollPane, title);
+//	if(result != JOptionPane.OK_OPTION){
+//		throw UserCancelException.CANCEL_GENERIC;
+//	}
+
+}
 /**
  * Comment
  */
-private void calcStatistics2() {
-
-	BitSet dataBitSet = null;
-	String variableName = null;
-	double finalBeginTime = getPdeDataContext().getTimePoints()[0];
-	double finalEndtime = getPdeDataContext().getTimePoints()[getPdeDataContext().getTimePoints().length-1];
-	if(getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.VOLUME) ||
-		getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.VOLUME_REGION)){
-
-		if(
-			PopupGenerator.showComponentOKCancelDialog(this,new JLabel("Confirm -- Values of 1.0 for var '"+getPdeDataContext().getVariableName()+"' will define volume ROI for Statistics"),"Volume ROI")
-			== JOptionPane.CANCEL_OPTION){
-				return;
-		}
-		//Count how many indexes are in the ROI
-		int vaoiCount=0;
-		double[] data = getPdeDataContext().getDataValues();
-		for(int i=0;i<data.length;i+= 1){
-			if(data[i] == 1.0){
-				vaoiCount+= 1;
-			}
-		}
-		if(vaoiCount == 0){
-			PopupGenerator.showErrorDialog("No values of 1.0 found in ROI variable "+getPdeDataContext().getVariableName());
-			return;
-		}
-		//Get Time and variable data desired for statistics calculation
-		StatsJobInfo statsJobInfo = calcStatsGetUserInfo();
-		if(statsJobInfo == null){return;}//User cancelled
-		
-		//Create dataIndexes array
-		if(statsJobInfo.variableName != null){//User selected volume variable
-			variableName = statsJobInfo.variableName;
-			finalBeginTime = statsJobInfo.beginTime;
-			finalEndtime = statsJobInfo.endTime;
-			
-//			int[] vaoiIndexes = new int[vaoiCount];
-//			vaoiCount = 0;
-			dataBitSet = new BitSet(data.length);
-			for(int i=0;i<data.length;i+= 1){
-				if(data[i] == 1.0){
-//					vaoiIndexes[vaoiCount] = i;
-					dataBitSet.set(i, true);
-//					vaoiCount+= 1;
-				}else{
-					dataBitSet.set(i, false);
-				}
-			}
-
-//			dataIndexes = vaoiIndexes;
-		}else{
-			PopupGenerator.showErrorDialog("No other volume variables found");
-			return;
-		}
-
-	}else if(getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.MEMBRANE) ||
-		getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.MEMBRANE_REGION)){
-			if(getPdeDataContext().getCartesianMesh().getGeometryDimension() < 3){
-				variableName = getPdeDataContext().getVariableName();
-				SpatialSelection[] sl = getPDEDataContextPanel1().fetchSpatialSelections(getPDEDataContextPanel1().isSpatialSampling2D(),false,true);
-				if(sl == null || sl.length == 0){
-					PopupGenerator.showErrorDialog("Spatial Selections (line or points) are required to calculate Statistics on a membrane");
-					return;
-				}
-				
-				int maoiCount = 0;
-				for(int i=0;i<sl.length;i+= 1){
-					if(sl[i] instanceof SpatialSelectionMembrane){
-						maoiCount+= ((SpatialSelectionMembrane)sl[i]).getIndexSamples().getSampledIndexes().length;
-					}
-				}
-				if(maoiCount != 0){
-					dataBitSet = new BitSet(getPdeDataContext().getDataValues().length);
-//					int[] maoiIndexes = new int[maoiCount];
-//					maoiCount = 0;
-					for(int i=0;i<sl.length;i+= 1){
-						if(sl[i] instanceof SpatialSelectionMembrane){
-							int[] indexes = ((SpatialSelectionMembrane)sl[i]).getIndexSamples().getSampledIndexes();
-							for(int j=0;j<indexes.length;j+= 1){
-									dataBitSet.set(indexes[j], true);
-//								maoiIndexes[maoiCount] = indexes[j];
-//								maoiCount+= 1;
-							}
-						}
-					}
-
-//					dataIndexes = maoiIndexes;
-				}
-			}else{
-				PopupGenerator.showInfoDialog("Use the Membrane Surface Viewer to calculate statistics for 3D membranes");
-				return;
-			}
-	}
-
-	if(dataBitSet != null){
-		cbit.util.TimeSeriesJobSpec timeSeriesJobSpec =
-			new cbit.util.TimeSeriesJobSpec(
-				new String[] {variableName},
-				new BitSet[] {dataBitSet},
-				finalBeginTime,1,finalEndtime,
-				true,false,
-				VCDataJobID.createVCDataJobID(
-						getDataViewerManager().getUser(),
-						true));
-
-			startTimeSeriesJob(timeSeriesJobSpec,new PlotSpaceStats(),false);
-	}else{
-		PopupGenerator.showErrorDialog("Error: Couldn't find indexes to calculate statistics on");
-	}
-	
-	
-}
+//private void calcStatistics2() {
+//
+//	final String[] ROI_COLUMN_NAMES = new String[] {"ROI source","ROI source name","ROI Description"};
+//	BitSet dataBitSet = null;
+//	StatsJobInfo statsJobInfo = null;
+//	
+//	//Get Time and variable data desired for statistics calculation
+//	try {
+//		statsJobInfo = calcStatsGetUserInfo();
+//	}catch (UserCancelException e) {
+//		return;
+//	}
+//
+//	if(statsJobInfo.dataIdentifier.getVariableType().equals(VariableType.VOLUME) ||
+//		statsJobInfo.dataIdentifier.getVariableType().equals(VariableType.VOLUME_REGION)){
+//
+////		final int DATA_DEFINED_ROI_INDEX = 0;
+////		HashMap<Integer, Integer> volRegionMapSubVolHashMap =
+////			getPdeDataContext().getCartesianMesh().getVolumeRegionMapSubvolume();
+////		Object[][] roiS = new Object[volRegionMapSubVolHashMap.size()+1][ROI_COLUMN_NAMES.length];
+////		roiS[DATA_DEFINED_ROI_INDEX][0] = "Volume Variables and Functions";
+////		roiS[DATA_DEFINED_ROI_INDEX][1] = "Snapshot";
+////		roiS[DATA_DEFINED_ROI_INDEX][2] = volumeSnapshotROIDescription;
+////		Set<Entry<Integer, Integer>> volRegMapSubvolEntrySet = volRegionMapSubVolHashMap.entrySet();
+////		Iterator<Entry<Integer, Integer>> iter = volRegMapSubvolEntrySet.iterator();
+////		int geomVolROICount = 0;
+////		int[] tableIndexMapVolRegionID = new int[roiS.length];
+////		while(iter.hasNext()){
+////			Entry<Integer, Integer> volRegMapSubvolEntry = iter.next();
+////			roiS[geomVolROICount+1][0] = "Geometry";
+////			roiS[geomVolROICount+1][1] = getSimulationModelInfo().getVolumeNamePhysiology(volRegMapSubvolEntry.getValue());//+"  (region ID="+volRegionMapSubVolArr[i].volumeRegionID+")";
+////			roiS[geomVolROICount+1][2] = "Predefined volume region - (Region ID="+volRegMapSubvolEntry.getKey()+")";
+////			tableIndexMapVolRegionID[geomVolROICount+1] = volRegMapSubvolEntry.getKey();
+////			geomVolROICount+= 1;
+////		}
+//		//----------------------
+////		roiS[0][1] = new String[] {"var1","var2","var3","var4"};
+////		showTableList(this, "test",ROI_COLUMN_NAMES, roiS,ListSelectionModel.MULTIPLE_INTERVAL_SELECTION,tableIndexMapVolRegionID);
+//		showTableList();
+//		//----------------------
+////		int[] selArr = null;
+////		try {
+////			selArr = PopupGenerator.showComponentOKCancelTableList(this,
+////					"Statistics Region Of Interest (Select 1 or more)",
+////					ROI_COLUMN_NAMES, roiS,
+////					ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+////		} catch (UserCancelException e) {
+////			return;
+////		}
+////		
+////		boolean hasDataDefinedROI = false;
+////		if (selArr != null && selArr.length > 0) {
+////			for (int i = 0; i < selArr.length; i++) {
+////				if(selArr[i] == DATA_DEFINED_ROI_INDEX){
+////					hasDataDefinedROI = true;
+////					break;
+////				}
+////			}
+////		}else{
+////			PopupGenerator.showErrorDialog("No ROI selection defined");
+////			return;
+////		}
+////		if (hasDataDefinedROI) {
+////			//Count how many indexes are in the ROI
+////			int vaoiCount = 0;
+////			double[] data = getPdeDataContext().getDataValues();
+////			for (int i = 0; i < data.length; i += 1) {
+////				if (data[i] == 1.0) {
+////					vaoiCount += 1;
+////				}
+////			}
+////			if (vaoiCount == 0) {
+////				PopupGenerator.showErrorDialog("No values of 1.0 found in Data defined ROI for variable "+ getPdeDataContext().getVariableName());
+////				return;
+////			}
+////		}
+////		//
+////		//Data ROI
+////		//
+////		if(hasDataDefinedROI){
+////			dataBitSet = new BitSet(getPdeDataContext().getDataValues().length);
+////			for(int i=0;i<getPdeDataContext().getDataValues().length;i+= 1){
+////				if(getPdeDataContext().getDataValues()[i] == 1.0){
+////					dataBitSet.set(i, true);
+////				}else{
+////					dataBitSet.set(i, false);
+////				}
+////			}
+////
+////		}
+////		//
+////		//Geometric ROI
+////		//
+////		for (int i = 0; i < selArr.length; i++) {
+////			if(selArr[i] != DATA_DEFINED_ROI_INDEX){
+////				if(dataBitSet == null){
+////					dataBitSet = new BitSet(getPdeDataContext().getDataValues().length);
+////				}
+////				int volumeRegionID = tableIndexMapVolRegionID[selArr[i]];
+////				dataBitSet.or(getPdeDataContext().getCartesianMesh().getVolumeROIFromVolumeRegionID(volumeRegionID));
+////			}
+////		}
+//
+//	}else if(statsJobInfo.dataIdentifier.getVariableType().equals(VariableType.MEMBRANE) ||
+//		statsJobInfo.dataIdentifier.getVariableType().equals(VariableType.MEMBRANE_REGION)){
+//		if(getPdeDataContext().getCartesianMesh().getGeometryDimension() < 3){
+//
+//			SpatialSelection[] tempSelArr = getPDEDataContextPanel1().fetchSpatialSelections(getPDEDataContextPanel1().isSpatialSampling2D(),true,false);
+//			int MEMBR_SPATIAL_SELECT_COUNT = 0;
+//			Vector<SpatialSelectionMembrane> membrSpatialSelV = new Vector<SpatialSelectionMembrane>();
+//			for (int i = 0; tempSelArr != null && i < tempSelArr.length; i += 1) {
+//				if (tempSelArr[i] instanceof SpatialSelectionMembrane) {
+//					membrSpatialSelV.add((SpatialSelectionMembrane)tempSelArr[i]);
+//					MEMBR_SPATIAL_SELECT_COUNT+= 1;
+//				}
+//			}
+//			
+////			HashMap<Integer, int[]> membrRegionMapSubvolumesHashMap =
+////				getPdeDataContext().getCartesianMesh().getMembraneRegionMapSubvolumesInOut();
+////			Object[][] roiS = new Object[membrRegionMapSubvolumesHashMap.size()+MEMBR_SPATIAL_SELECT_COUNT][ROI_COLUMN_NAMES.length];
+////			for (int i = 0; i < MEMBR_SPATIAL_SELECT_COUNT; i++) {
+//////				CurveSelectionInfo csi = membrSpatialSelV.elementAt(i).getCurveSelectionInfo();
+//////				Curve samplecurve = csi.getCurve();
+//////				Coordinate beginCoord = samplecurve.getCoordinate(csi.getCurveUfromSelectionU(0.0));
+////				roiS[i][0] = "User Defined";
+////				roiS[i][1] = membrSpatialSelV.elementAt(i).getSelectionSource().getDescription();
+////				roiS[i][2] = "Membrane ROI";			
+////			}
+////			Set<Entry<Integer, int[]>> membrRegionMapSubvolumesEntrySet = membrRegionMapSubvolumesHashMap.entrySet();
+////			Iterator<Entry<Integer, int[]>> iter = membrRegionMapSubvolumesEntrySet.iterator();
+////			int geomMembrROICount = 0;
+////			int[] tableIndexMapMembRegionID = new int[roiS.length];
+////			while(iter.hasNext()){
+////				Entry<Integer, int[]> membrRegionMapSubvolumesEntry = iter.next();
+////				roiS[geomMembrROICount+MEMBR_SPATIAL_SELECT_COUNT][0] = "Geometry";
+////				roiS[geomMembrROICount+MEMBR_SPATIAL_SELECT_COUNT][1] = getSimulationModelInfo().getMembraneName(membrRegionMapSubvolumesEntry.getValue()[0], membrRegionMapSubvolumesEntry.getValue()[1]);
+////				roiS[geomMembrROICount+MEMBR_SPATIAL_SELECT_COUNT][2] = "Predefined membrane region - (Region ID="+membrRegionMapSubvolumesEntry.getKey()+")";
+////				tableIndexMapMembRegionID[geomMembrROICount+MEMBR_SPATIAL_SELECT_COUNT] = membrRegionMapSubvolumesEntry.getKey();
+////				geomMembrROICount+= 1;
+////			}
+//			
+//			showTableList();
+////			showTableList(this, "test",ROI_COLUMN_NAMES, roiS,ListSelectionModel.MULTIPLE_INTERVAL_SELECTION,tableIndexMapMembRegionID);
+//
+////			int[] selArr = null;
+////			try {
+////				selArr = PopupGenerator.showComponentOKCancelTableList(this,
+////						"Statistics Region Of Interest (Select 1 or more)",
+////						ROI_COLUMN_NAMES, roiS,
+////						ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+////			} catch (UserCancelException e) {
+////				return;
+////			}
+////
+//////			if (MEMBR_SPATIAL_SELECT_COUNT > 0) {
+//////				dataBitSet = new BitSet(getPdeDataContext().getDataValues().length);
+//////				for (int i = 0; i < membrSpatialSelV.size(); i += 1) {
+//////					int[] indexes = membrSpatialSelV.elementAt(i).getIndexSamples().getSampledIndexes();
+//////					for (int j = 0; j < indexes.length; j += 1) {
+//////						dataBitSet.set(indexes[j], true);
+//////					}
+//////				}
+//////			}
+////			//
+////			//Geometric ROI
+////			//
+////			dataBitSet = new BitSet(getPdeDataContext().getDataValues().length);
+////			for (int i = 0; i < selArr.length; i++) {
+////				if(selArr[i] >= MEMBR_SPATIAL_SELECT_COUNT){
+//////					if(dataBitSet == null){
+//////						dataBitSet = new BitSet(getPdeDataContext().getDataValues().length);
+//////					}
+////					int membrRegionID = tableIndexMapMembRegionID[selArr[i]];
+////					dataBitSet.or(getPdeDataContext().getCartesianMesh().getMembraneROIFromMembraneRegionID(membrRegionID));
+////				}else{
+////					int[] indexes = membrSpatialSelV.elementAt(selArr[i]).getIndexSamples().getSampledIndexes();
+////					for (int j = 0; j < indexes.length; j += 1) {
+////						dataBitSet.set(indexes[j], true);
+////					}
+////
+////				}
+////			}
+//
+//		}else{
+//			PopupGenerator.showInfoDialog("Use the Membrane Surface Viewer to calculate statistics for 3D membranes");
+//			return;
+//		}
+//	}
+//
+//	if(dataBitSet != null){
+//		cbit.util.TimeSeriesJobSpec timeSeriesJobSpec =
+//			new cbit.util.TimeSeriesJobSpec(
+//				new String[] {statsJobInfo.dataIdentifier.getName()},
+//				new BitSet[] {dataBitSet},
+//				statsJobInfo.beginTime,1,statsJobInfo.endTime,
+//				true,false,
+//				VCDataJobID.createVCDataJobID(
+//						getDataViewerManager().getUser(),
+//						true));
+//
+//			startTimeSeriesJob(timeSeriesJobSpec,new PlotSpaceStats(),false);
+//	}else{
+//		PopupGenerator.showErrorDialog("Error: Couldn't find indexes to calculate statistics on");
+//	}
+//	
+//	
+//}
 
 
 /**
@@ -1286,6 +1619,99 @@ private javax.swing.JButton getJButtonStatistics() {
 }
 
 
+//private JPanel getJPanelSnapshotROI(){
+//	if(ivjJPanelSnapshotROI == null){
+//		try{
+//			ivjJPanelSnapshotROI = new JPanel();
+//			BoxLayout mainBL = new BoxLayout(ivjJPanelSnapshotROI,BoxLayout.X_AXIS);
+//			ivjJPanelSnapshotROI.setLayout(mainBL);
+//			ivjJPanelSnapshotROI.add(getJButtonSnapshotROI());
+////			ivjJCheckBoxSnapshotROI = new JCheckBox("showROI");
+////			ivjJCheckBoxSnapshotROI.setEnabled(false);
+////			ivjJCheckBoxSnapshotROI.addActionListener(new ActionListener(){
+////				public void actionPerformed(ActionEvent e) {
+////				}});
+////			ivjJPanelSnapshotROI.add(ivjJCheckBoxSnapshotROI);
+//			ivjJPanelSnapshotROI.setBorder(new CompoundBorder(new LineBorder(getForeground(),1),new EmptyBorder(1,1,1,1)));
+//		}catch (java.lang.Throwable ivjExc) {
+//				handleException(ivjExc);
+//		}
+//	}
+//	return ivjJPanelSnapshotROI;
+//}
+
+private javax.swing.JButton getJButtonSnapshotROI() {
+	if (ivjJButtonSnapshotROI == null) {
+		try {
+			ivjJButtonSnapshotROI = new javax.swing.JButton();
+			ivjJButtonSnapshotROI.setName("JButtonSnapshotROI");
+			ivjJButtonSnapshotROI.setText("Snapshot ROI");
+			ivjJButtonSnapshotROI.addActionListener(new ActionListener(){
+				public void actionPerformed(ActionEvent e) {
+					double[] dataValues = getPdeDataContext().getDataValues();
+//					CartesianMesh cartMesh = getPdeDataContext().getCartesianMesh();
+					boolean isVolumeType = 
+						(getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.VOLUME) ||
+						getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.VOLUME_REGION));
+//					double sum = 0;
+//					double wsum = 0;
+//					double min = dataValues[0];
+//					double max = min;
+//					double spaceSum = 0;
+					BitSet snapshotROI = new BitSet(dataValues.length);
+					for (int i = 0; i < dataValues.length; i++) {
+						snapshotROI.set(i,(dataValues[i] == 1.0));
+//						if(snapshotROI.get(i)){
+//							sum+= dataValues[i];
+//							if(isVolumeType){
+//								spaceSum+= cartMesh.calculateMeshElementVolumeFromVolumeIndex(i);
+//								wsum+= dataValues[i]*cartMesh.calculateMeshElementVolumeFromVolumeIndex(i);
+//							}else{
+//								spaceSum+= cartMesh.getMembraneElements()[i].getArea();
+//								wsum+= dataValues[i]*cartMesh.getRegionMembraneSurfaceAreaFromMembraneIndex(i);
+//							}
+//							min = Math.min(min, dataValues[i]);
+//							max = Math.max(max, dataValues[i]);
+//						}
+					}
+					if(snapshotROI.cardinality() == 0){
+						PopupGenerator.showInfoDialog((isVolumeType?"Volume":"Membrane")+" snapshot ROI cannot be updated.\n"+
+								"No data values for variable '"+getPdeDataContext().getVariableName()+"'\n"+
+								"at time '"+getPdeDataContext().getTimePoint()+"' have values equal to 1.0");
+					}else{
+						PopupGenerator.showInfoDialog((isVolumeType?"Volume":"Membrane")+" snapshot ROI updated.\n"+
+								"Variable '"+getPdeDataContext().getVariableName()+"' "+
+								"Time '"+getPdeDataContext().getTimePoint()+"'\n"+
+								"Current Snapshot ROI:\n"+
+								"Count = "+snapshotROI.cardinality()+" of "+dataValues.length+"\n"
+//								(cartMesh.getGeometryDimension()<3?(cartMesh.getGeometryDimension()<2?"length":(isVolumeType?"area":"length")):(isVolumeType?"volume":"area"))+" = "+spaceSum+"\n"
+//								"Minimum = "+min+"\n"+
+//								"Maximum = "+max+"\n"+
+//								"Mean = "+sum/snapshotROI.cardinality()+"\n"+
+//								"Weighted Mean = "+wsum/spaceSum
+								);						
+					}
+					if(isVolumeType){
+						volumeSnapshotROI = snapshotROI;
+						volumeSnapshotROIDescription =
+							"Variable='"+getPdeDataContext().getVariableName()+"', Timepoint= "+getPdeDataContext().getTimePoint();
+					}else{
+						membraneSnapshotROI = snapshotROI;
+						membraneSnapshotROIDescription =
+							"Variable='"+getPdeDataContext().getVariableName()+"', Timepoint= "+getPdeDataContext().getTimePoint();
+					}
+				}});
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return ivjJButtonSnapshotROI;
+}
+
 /**
  * Return the JButtonSurfaces property value.
  * @return javax.swing.JButton
@@ -1345,7 +1771,7 @@ private javax.swing.JPanel getJPanelButtons() {
 			ivjJPanelButtons.setLayout(new java.awt.GridBagLayout());
 
 			java.awt.GridBagConstraints constraintsJButtonSpatial = new java.awt.GridBagConstraints();
-			constraintsJButtonSpatial.gridx = -1; constraintsJButtonSpatial.gridy = -1;
+			constraintsJButtonSpatial.gridx = 0; constraintsJButtonSpatial.gridy = 0;
 			constraintsJButtonSpatial.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJPanelButtons().add(getJButtonSpatial(), constraintsJButtonSpatial);
 
@@ -1368,6 +1794,12 @@ private javax.swing.JPanel getJPanelButtons() {
 			constraintsJButtonStatistics.gridx = 4; constraintsJButtonStatistics.gridy = 0;
 			constraintsJButtonStatistics.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJPanelButtons().add(getJButtonStatistics(), constraintsJButtonStatistics);
+			
+			java.awt.GridBagConstraints constraintsJButtonSnapshotROI = new java.awt.GridBagConstraints();
+			constraintsJButtonSnapshotROI.gridx = 5; constraintsJButtonSnapshotROI.gridy = 0;
+			constraintsJButtonSnapshotROI.insets = new java.awt.Insets(4, 4, 4, 4);
+			getJPanelButtons().add(getJButtonSnapshotROI()/*getJPanelSnapshotROI()*/, constraintsJButtonSnapshotROI);
+			
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
