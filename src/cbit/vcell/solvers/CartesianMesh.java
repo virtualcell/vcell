@@ -673,6 +673,34 @@ private MeshRegionInfo getMeshRegionInfo() {
 	return meshRegionInfo;
 }
 
+public BitSet getVolumeROIFromVolumeRegionID(int volumeRegionID){
+	return getMeshRegionInfo().getVolumeROIFromVolumeRegionID(volumeRegionID);
+	
+}
+public BitSet getMembraneROIFromMembraneRegionID(int membraneRegionID){
+	return getMeshRegionInfo().getMembraneROIFromMembraneRegionID(membraneRegionID);
+}
+public HashMap<Integer, Integer> getVolumeRegionMapSubvolume(){
+	Vector<MeshRegionInfo.VolumeRegionMapSubvolume> volRegionMapSubVolV = getMeshRegionInfo().getVolumeRegionMapSubvolume();
+	HashMap<Integer, Integer> volregMapSubVHashMap = new HashMap<Integer, Integer>();
+	for (int i = 0; i < volRegionMapSubVolV.size(); i++) {
+		volregMapSubVHashMap.put(volRegionMapSubVolV.elementAt(i).volumeRegionID, volRegionMapSubVolV.elementAt(i).subvolumeID);
+	}
+	return volregMapSubVHashMap;
+}
+public HashMap<Integer, int[]> getMembraneRegionMapSubvolumesInOut(){
+	Vector<MeshRegionInfo.MembraneRegionMapVolumeRegion> membraneRegionMapVolumeRegionV = getMeshRegionInfo().getMembraneRegionMapVolumeRegion();
+	HashMap<Integer, int[]> membrRegMapVolRegionsHashMap = new HashMap<Integer, int[]>();
+	for (int i = 0; i < membraneRegionMapVolumeRegionV.size(); i++) {
+		membrRegMapVolRegionsHashMap.put(
+			membraneRegionMapVolumeRegionV.elementAt(i).membraneRegionID,
+			new int[] {
+				getMeshRegionInfo().getSubVolumeIDfromVolRegion(membraneRegionMapVolumeRegionV.elementAt(i).volumeRegionInsideID),
+				getMeshRegionInfo().getSubVolumeIDfromVolRegion(membraneRegionMapVolumeRegionV.elementAt(i).volumeRegionOutsideID)}
+			);
+	}
+	return membrRegMapVolRegionsHashMap;
+}
 
 /**
  * Insert the method's description here.

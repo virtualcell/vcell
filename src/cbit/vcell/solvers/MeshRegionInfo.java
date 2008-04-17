@@ -3,6 +3,7 @@ package cbit.vcell.solvers;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.util.BitSet;
 import java.util.Vector;
 /**
  * Insert the type's description here.
@@ -19,9 +20,9 @@ public class MeshRegionInfo implements cbit.util.Matchable, java.io.Serializable
 	private int numVolumeElements;
 	//
 	class VolumeRegionMapSubvolume implements java.io.Serializable {
-		public int volumeRegionID;
-		public int subvolumeID;
-		public double volumeRegionVolume;
+		public final int volumeRegionID;
+		public final int subvolumeID;
+		public final double volumeRegionVolume;
 		
 		public VolumeRegionMapSubvolume(int argvolumeRegionID,int argsubvolumeID,double argvolumeRegionVolume){
 			volumeRegionID = argvolumeRegionID;
@@ -31,10 +32,10 @@ public class MeshRegionInfo implements cbit.util.Matchable, java.io.Serializable
 	}
 
 	class MembraneRegionMapVolumeRegion implements java.io.Serializable {
-		public int membraneRegionID;
-		public int volumeRegionInsideID;
-		public int volumeRegionOutsideID;
-		public double membraneRegionSurface;
+		public final int membraneRegionID;
+		public final int volumeRegionInsideID;
+		public final int volumeRegionOutsideID;
+		public final double membraneRegionSurface;
 		public MembraneRegionMapVolumeRegion(int argmembraneRegionID,int argvolumeRegionInsideID,int argvolumeRegionOutsideID,double argmembraneRegionSurface){
 			membraneRegionID = 		argmembraneRegionID;
 			volumeRegionInsideID = 	argvolumeRegionInsideID;
@@ -122,7 +123,35 @@ java.util.Vector<MembraneRegionMapVolumeRegion> getMembraneRegionMapVolumeRegion
 	return membraneRegionMapVolumeRegion;
 }
 
+public BitSet getVolumeROIFromVolumeRegionID(int volumeRegionID){
+	BitSet roiVolumeRegionID = new BitSet(numVolumeElements);
+    if (isUnsignedShortDataType()) {
+    	// unsigned short
+    	for (int i = 0; i < numVolumeElements; i++) {
+    		if(((int)((0x000000ff & fieldVolumeElementMapVolumeRegion[2 * i]) | ((0x000000ff & fieldVolumeElementMapVolumeRegion[2 * i + 1]) << 8))) == volumeRegionID){
+    			roiVolumeRegionID.set(i);
+    		}
+    	}
+    } else {
+    	// byte
+    	for (int i = 0; i < numVolumeElements; i++) {
+    		if((int)(0x000000ff & fieldVolumeElementMapVolumeRegion[i]) == volumeRegionID){
+    			roiVolumeRegionID.set(i);
+    		}
+    	}
+    }
+	return roiVolumeRegionID;
+}
 
+public BitSet getMembraneROIFromMembraneRegionID(int membraneRegionID){
+	BitSet roiMembraneRegionID = new BitSet(fieldMembraneElementMapMembraneRegion.length);
+	for (int i = 0; i < fieldMembraneElementMapMembraneRegion.length; i++) {
+		if(fieldMembraneElementMapMembraneRegion[i] == membraneRegionID){
+			roiMembraneRegionID.set(i);
+		}
+	}
+	return roiMembraneRegionID;
+}
 /**
  * Insert the method's description here.
  * Creation date: (3/3/2002 11:35:24 PM)
@@ -238,7 +267,7 @@ public int getVolumeElementMapVolumeRegion(int index) {
 	        throw new RuntimeException("MeshRegionInfo no compressed volume element map volume region data");
         }
     }
-    if (fieldVolumeElementMapVolumeRegion.length == 2 * numVolumeElements) {
+    if (isUnsignedShortDataType()) {
     	// unsigned short
     	return (int)((0x000000ff & fieldVolumeElementMapVolumeRegion[2 * index]) | ((0x000000ff & fieldVolumeElementMapVolumeRegion[2 * index + 1]) << 8));
     } else {
@@ -261,7 +290,9 @@ java.util.Vector<VolumeRegionMapSubvolume> getVolumeRegionMapSubvolume() {
 	return volumeRegionMapSubvolume;
 }
 
-
+private boolean isUnsignedShortDataType(){
+	return fieldVolumeElementMapVolumeRegion.length == 2 * numVolumeElements;
+}
 /**
  * Insert the method's description here.
  * Creation date: (7/5/2001 11:03:19 AM)

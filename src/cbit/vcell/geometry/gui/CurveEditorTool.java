@@ -40,7 +40,6 @@ public class CurveEditorTool implements KeyListener, MouseListener, MouseMotionL
 	private boolean fieldSelectionOnly = false;
 	private cbit.vcell.simdata.gui.CurveValueProvider fieldCurveValueProvider = null;
 	private boolean fieldEnableDrawingTools = true;
-	private static int curveID = 0;
 
 /**
  * CurveEditorTool constructor comment.
@@ -386,7 +385,9 @@ public void mousePressed(MouseEvent event) {
 				selectedCSI = new CurveSelectionInfo(new SinglePoint());
 			}
 			if(selectedCSI != null){
-				selectedCSI.getCurve().setDescription(""+curveID++);
+				if(getCurveValueProvider() != null){
+					getCurveValueProvider().setDescription(selectedCSI.getCurve());
+				}
 				getCurveRenderer().addCurve(selectedCSI.getCurve());
 				getCurveRenderer().renderPropertySubSelectionType(selectedCSI.getCurve(), CurveRenderer.SUBSELECTION_CONTROL_POINT);
 				getCurveRenderer().renderPropertyEditable(selectedCSI.getCurve(),(!wasFromCVP?true:false));

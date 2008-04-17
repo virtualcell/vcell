@@ -40,6 +40,7 @@ public class PDEDataContextPanel extends javax.swing.JPanel implements CurveValu
 	private boolean ivjConnPtoP4Aligning = false;
 	private boolean ivjConnPtoP5Aligning = false;
 	private DisplayAdapterService ivjdisplayAdapterService1 = null;
+	private static int uniquCurveID = 0;
 
 class IvjEventHandler implements java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -599,15 +600,20 @@ private SpatialSelection[] fetchSpatialSelections(Curve curveOfInterest,boolean 
 				if(	(vt.equals(VariableType.VOLUME) || vt.equals(VariableType.VOLUME_REGION)) &&
 					curves[i] instanceof ControlPointCurve &&
 					!(curves[i] instanceof CurveSelectionCurve) &&
+					(	
+						curves[i].getDescription() == null ||
+						curves[i].getDescription().startsWith(CurveValueProvider.DESCRIPTION_VOLUME)
+					) &&
 					(membranesAndIndexes == null || !membranesAndIndexes.containsKey(curves[i]))){	//Volume
 					//
 					Curve samplerCurve = null;
 					if(isSpatial2D){
-					samplerCurve = projectCurveOntoSlice(curves[i].getSampledCurve());
+						samplerCurve = projectCurveOntoSlice(curves[i].getSampledCurve());
 					}else{
 						samplerCurve = curves[i];
 					}
 					if(samplerCurve != null){
+						samplerCurve.setDescription(curves[i].getDescription());
 						spatialSelection.add(new SpatialSelectionVolume(new CurveSelectionInfo(samplerCurve),vt,cm));
 					}
 
@@ -655,7 +661,11 @@ private SpatialSelection[] fetchSpatialSelections(Curve curveOfInterest,boolean 
 								}
 							}
 						}
-					}else if(curves[i] instanceof SinglePoint){
+					}else if(curves[i] instanceof SinglePoint &&
+							(	
+								curves[i].getDescription() == null ||
+								curves[i].getDescription().startsWith(CurveValueProvider.DESCRIPTION_MEMBRANE)
+							)){
 						CurveSelectionInfo[] csiArr = getImagePlaneManagerPanel().getCurveRenderer().getCloseCurveSelectionInfos(curves[i].getBeginningCoordinate());
 						if(csiArr != null && csiArr.length > 0){
 							for(int j =0;j<csiArr.length;j+= 1){
@@ -1141,9 +1151,6 @@ private ControlPointCurve projectCurveOntoSlice(ControlPointCurve curve) {
 			cpCurve = new PolyLine(cpArr);
 		}
 	}
-	if(cpCurve != null){
-		cpCurve.setDescription(curve.getDescription());
-	}
 	return cpCurve;
 }
 /**
@@ -1502,4 +1509,21 @@ public void setDataInfoProvider(DataViewer.DataInfoProvider dataInfoProvider) {
 	this.dataInfoProvider = dataInfoProvider;
 	getImagePlaneManagerPanel().setDataInfoProvider(getDataInfoProvider());
 }
+
+public void setDescription(Curve curve){
+	boolean isVolume = 
+		getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.VOLUME) ||
+		getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.VOLUME_REGION);
+	
+	curve.setDescription(
+			(isVolume?CurveValueProvider.DESCRIPTION_VOLUME:CurveValueProvider.DESCRIPTION_MEMBRANE)+
+			(curve instanceof SinglePoint
+				?"p"
+				:(curve instanceof PolyLine?"l":
+				(curve instanceof Spline?"s":
+				(curve instanceof CurveSelectionCurve?"l":"?"))))+
+				uniquCurveID++
+	);
+}
+
 }
