@@ -390,7 +390,7 @@ private void showTableList(){
 	}
 	//Add user ROIs
 	SpatialSelection[] userROIArr =
-		getPDEDataContextPanel1().fetchSpatialSelections(getPDEDataContextPanel1().isSpatialSampling2D(),true,false);
+		getPDEDataContextPanel1().fetchSpatialSelections(true,false);
 	for (int i = 0; userROIArr != null && i < userROIArr.length; i += 1) {
 		((DefaultTableModel)roiTable.getModel()).addRow(
 				new Object[] {
@@ -2260,7 +2260,7 @@ private void showComponentInFrame(Component comp,String title) {
  */
 private void showKymograph() {
 	//Collect all sample curves created by user
-	SpatialSelection[] spatialSelectionArr = getPDEDataContextPanel1().fetchSpatialSelections(getPDEDataContextPanel1().isSpatialSampling2D(),false,true);
+	SpatialSelection[] spatialSelectionArr = getPDEDataContextPanel1().fetchSpatialSelections(false,true);
 	final Vector<SpatialSelection> lineSSOnly = new Vector<SpatialSelection>();
 	if (spatialSelectionArr != null && spatialSelectionArr.length > 0) {
 		//
@@ -2358,7 +2358,7 @@ private void showMembraneSurfaces(java.awt.event.ActionEvent actionEvent){
  */
 private void showSpatialPlot() {
 	// check selections
-	final SpatialSelection[] sl = getPDEDataContextPanel1().fetchSpatialSelections(getPDEDataContextPanel1().isSpatialSampling2D(),false,true);
+	final SpatialSelection[] sl = getPDEDataContextPanel1().fetchSpatialSelections(false,true);
 	if (sl == null) {
 		PopupGenerator.showErrorDialog(this, "Nothing selected!");
 		return;
@@ -2432,7 +2432,7 @@ private void showSpatialPlot() {
  */
 private void showTimePlot() {
 	//Collect all sample curves created by user
-	SpatialSelection[] spatialSelectionArr = getPDEDataContextPanel1().fetchSpatialSelections(true,true,true);
+	SpatialSelection[] spatialSelectionArr = getPDEDataContextPanel1().fetchSpatialSelections(true,true);
 	final Vector<SpatialSelection> singlePointSSOnly = new Vector<SpatialSelection>();
 	if (spatialSelectionArr != null && spatialSelectionArr.length > 0) {
 		//
