@@ -44,7 +44,6 @@ public class ImagePlaneManagerPanel extends javax.swing.JPanel {
 	private javax.swing.JToolBar ivjJToolBar1 = null;
 	private ImagePlanePanel ivjImagePlanePanel1 = null;
 	private Boolean ivjBZeroView = null;
-	private javax.swing.JCheckBox ivjSpatialProjectionJCheckBox = null;
 
 class IvjEventHandler implements java.awt.event.MouseListener, java.awt.event.MouseMotionListener, java.beans.PropertyChangeListener {
 		public void mouseClicked(java.awt.event.MouseEvent e) {};
@@ -683,8 +682,6 @@ private void curveRenderer_This(cbit.vcell.geometry.gui.CurveRenderer arg1) {
  */
 public void enableDrawingTools(boolean enable) {
 	getCurveEditorTool().setEnableDrawingTools(enable);
-	boolean is3D = (getSourceDataInfo() != null?getSourceDataInfo().getZSize() > 1:false);
-	getSpatialProjectionJCheckBox().setVisible(enable && is3D);
 }
 /**
  * Return the NormalAxisChangeInProgress property value.
@@ -993,7 +990,7 @@ private javax.swing.JPanel getJPanel3() {
 			getJPanel3().add(getCurveEditorToolPanel1(), constraintsCurveEditorToolPanel1);
 
 			java.awt.GridBagConstraints constraintsJPanel1 = new java.awt.GridBagConstraints();
-			constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 3;
+			constraintsJPanel1.gridx = 0; constraintsJPanel1.gridy = 2;
 			constraintsJPanel1.fill = java.awt.GridBagConstraints.BOTH;
 			constraintsJPanel1.weightx = 1.0;
 			constraintsJPanel1.weighty = 1.0;
@@ -1006,12 +1003,6 @@ private javax.swing.JPanel getJPanel3() {
 			constraintsImagePlanePanel1.weightx = 1.0;
 			constraintsImagePlanePanel1.insets = new java.awt.Insets(4, 4, 4, 4);
 			getJPanel3().add(getImagePlanePanel1(), constraintsImagePlanePanel1);
-
-			java.awt.GridBagConstraints constraintsSpatialProjectionJCheckBox = new java.awt.GridBagConstraints();
-			constraintsSpatialProjectionJCheckBox.gridx = 0; constraintsSpatialProjectionJCheckBox.gridy = 2;
-			constraintsSpatialProjectionJCheckBox.anchor = java.awt.GridBagConstraints.WEST;
-			constraintsSpatialProjectionJCheckBox.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel3().add(getSpatialProjectionJCheckBox(), constraintsSpatialProjectionJCheckBox);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1059,27 +1050,7 @@ public int getMode() {
 public SourceDataInfo getSourceDataInfo() {
 	return fieldSourceDataInfo;
 }
-/**
- * Return the SpatialProjectionJCheckBox property value.
- * @return javax.swing.JCheckBox
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-public javax.swing.JCheckBox getSpatialProjectionJCheckBox() {
-	if (ivjSpatialProjectionJCheckBox == null) {
-		try {
-			ivjSpatialProjectionJCheckBox = new javax.swing.JCheckBox();
-			ivjSpatialProjectionJCheckBox.setName("SpatialProjectionJCheckBox");
-			ivjSpatialProjectionJCheckBox.setText("Use 3D Sampling");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjSpatialProjectionJCheckBox;
-}
+
 /**
  * Called whenever the part throws an exception.
  * @param exception java.lang.Throwable
@@ -1432,10 +1403,8 @@ private void sourceDataInfo_set() {
 	getdisplayAdapterService1().setValueDomain(sdi != null?sdi.getMinMax():null);
 	getImagePlaneManager().setSourceDataInfo(sdi);
 	if(sdi == null || sdi.getZSize() <= 1){
-		getSpatialProjectionJCheckBox().setVisible(false);
 		getImagePlanePanel1().setVisible(false);
 	}else{
-		getSpatialProjectionJCheckBox().setVisible(true && getCurveEditorTool().getEnableDrawingTools());
 		getImagePlanePanel1().setVisible(true);
 	}
 }

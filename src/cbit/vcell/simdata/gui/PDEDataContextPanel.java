@@ -236,24 +236,7 @@ private void connEtoC6(java.beans.PropertyChangeEvent arg1) {
 		handleException(ivjExc);
 	}
 }
-/**
- * connEtoC7:  (pdeDataContext1.this --> PDEDataContextPanel.slice2dEnable()V)
- * @param value cbit.vcell.simdata.PDEDataContext
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC7(cbit.vcell.simdata.PDEDataContext value) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.slice2dEnable();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
+
 /**
  * connEtoM1:  (PDEDataContextPanel.initialize() --> ImagePlaneManagerPanel.curveValueProvider)
  */
@@ -527,32 +510,17 @@ private void createSpatialSample(java.beans.PropertyChangeEvent propertyChangeEv
 	//PDEResultsPanel and PDEDatacontextPanel should be merged into one
 	//this was put here to allow spatialsamples to know when to be 2D projections
 	if(propertyChangeEvent.getPropertyName().equals("curveRendererSelection")){
-		CurveSelectionInfo csi = (CurveSelectionInfo)propertyChangeEvent.getNewValue();
-		createSpatialSelection((csi == null || !(csi.getCurve() instanceof CurveSelectionCurve)) && isSpatialSampling2D());
-		boolean bSpatProj =
-			getpdeDataContext1() != null &&
-			getpdeDataContext1().getSourceDataInfo() != null &&
-			getpdeDataContext1().getSourceDataInfo().getZSize() > 1;
-		boolean always2D =
-			csi != null && 
-			(csi.getCurve() instanceof CurveSelectionCurve || csi.getCurve() instanceof SinglePoint);
-		getImagePlaneManagerPanel().getSpatialProjectionJCheckBox().setEnabled(!always2D && csi != null && bSpatProj);
-		//getImagePlaneManagerPanel().getSpatialProjectionJCheckBox().setSelected(((csi != null && always2D) || userPrefer2D) || !bSpatProj);
+		SpatialSelection sl[] = null;
+		if(	getImagePlaneManagerPanel() != null &&
+			getImagePlaneManagerPanel().getCurveRenderer() != null &&
+			getImagePlaneManagerPanel().getCurveRenderer().getSelection() != null &&
+			getImagePlaneManagerPanel().getCurveRenderer().getSelection().getCurve().isValid()){
+			sl = fetchSpatialSelections(getImagePlaneManagerPanel().getCurveRenderer().getSelection().getCurve(),false);
+		}
+		setSpatialSelection((sl!=null?sl[0]:null));
 	}
 }
-/**
- * Comment
- */
-public void createSpatialSelection(boolean isSpatialSampling2D) {
-	SpatialSelection sl[] = null;
-	if(	getImagePlaneManagerPanel() != null &&
-		getImagePlaneManagerPanel().getCurveRenderer() != null &&
-		getImagePlaneManagerPanel().getCurveRenderer().getSelection() != null &&
-		getImagePlaneManagerPanel().getCurveRenderer().getSelection().getCurve().isValid()){
-		sl = fetchSpatialSelections(getImagePlaneManagerPanel().getCurveRenderer().getSelection().getCurve(),isSpatialSampling2D,false);
-	}
-	setSpatialSelection((sl!=null?sl[0]:null));
-}
+
 /**
  * Insert the method's description here.
  * Creation date: (7/6/2003 8:40:06 PM)
@@ -576,7 +544,7 @@ public void curveRemoved(cbit.vcell.geometry.Curve curve) {
  * Creation date: (6/28/2003 4:57:18 PM)
  * @return cbit.vcell.simdata.gui.SpatialSelection[]
  */
-private SpatialSelection[] fetchSpatialSelections(Curve curveOfInterest,boolean isSpatial2D,boolean bFetchOnlyVisible) {
+private SpatialSelection[] fetchSpatialSelections(Curve curveOfInterest,boolean bFetchOnlyVisible) {
 	//
 	java.util.Vector<SpatialSelection> spatialSelection = new java.util.Vector<SpatialSelection>();
 	//
@@ -607,11 +575,11 @@ private SpatialSelection[] fetchSpatialSelections(Curve curveOfInterest,boolean 
 					(membranesAndIndexes == null || !membranesAndIndexes.containsKey(curves[i]))){	//Volume
 					//
 					Curve samplerCurve = null;
-					if(isSpatial2D){
+//					if(isSpatial2D){
 						samplerCurve = projectCurveOntoSlice(curves[i].getSampledCurve());
-					}else{
-						samplerCurve = curves[i];
-					}
+//					}else{
+//						samplerCurve = curves[i];
+//					}
 					if(samplerCurve != null){
 						samplerCurve.setDescription(curves[i].getDescription());
 						spatialSelection.add(new SpatialSelectionVolume(new CurveSelectionInfo(samplerCurve),vt,cm));
@@ -696,7 +664,7 @@ private SpatialSelection[] fetchSpatialSelections(Curve curveOfInterest,boolean 
  * Creation date: (6/28/2003 4:57:18 PM)
  * @return cbit.vcell.simdata.gui.SpatialSelection[]
  */
-public SpatialSelection[] fetchSpatialSelections(boolean isSpatial2D,boolean bIgnoreSelection,boolean bFetchOnlyVisible) {
+public SpatialSelection[] fetchSpatialSelections(boolean bIgnoreSelection,boolean bFetchOnlyVisible) {
 	if(	getImagePlaneManagerPanel() != null &&
 		getImagePlaneManagerPanel().getCurveRenderer() != null){
 		return fetchSpatialSelections(
@@ -706,7 +674,7 @@ public SpatialSelection[] fetchSpatialSelections(boolean isSpatial2D,boolean bIg
 			:
 			getImagePlaneManagerPanel().getCurveRenderer().getSelection().getCurve()
 			)
-			,isSpatial2D,bFetchOnlyVisible);
+			,bFetchOnlyVisible);
 	}
 	return null;
 }
@@ -1047,14 +1015,7 @@ public boolean isAddControlPointOK(int tool, cbit.vcell.geometry.Coordinate wc,C
 	}
 	return false;
 }
-/**
- * Insert the method's description here.
- * Creation date: (7/17/2003 8:32:10 AM)
- * @return boolean
- */
-public boolean isSpatialSampling2D() {
-	return !getImagePlaneManagerPanel().getSpatialProjectionJCheckBox().isSelected();
-}
+
 /**
  * Insert the method's description here.
  * Creation date: (7/6/2003 7:44:14 PM)
@@ -1071,11 +1032,24 @@ private boolean isValidDataSampler(Curve curve) {
 	if (vt.equals(cbit.vcell.simdata.VariableType.VOLUME) || vt.equals(cbit.vcell.simdata.VariableType.VOLUME_REGION)) {
 			//
 			if(membraneSamplerCurves != null && membraneSamplerCurves.contains(curve)){isCurveVisible = false;}
-			else{isCurveVisible = true;}
+			else{
+				isCurveVisible = true;
+				if(!(curve instanceof SinglePoint)){
+					double zeroZ = Coordinate.convertAxisFromStandardXYZToNormal(
+							curve.getSampledCurve().getControlPoint(0), Coordinate.Z_AXIS, getNormalAxis());
+					for (int i = 1; i < curve.getSampledCurve().getControlPointCount(); i++) {
+						double indexZ =Coordinate.convertAxisFromStandardXYZToNormal(
+								curve.getSampledCurve().getControlPoint(i), Coordinate.Z_AXIS, getNormalAxis());
+						if(zeroZ != indexZ){
+							isCurveVisible = false;
+						}
+					}
+				}
+			}
 			//
 	} else if (vt.equals(cbit.vcell.simdata.VariableType.MEMBRANE) || vt.equals(cbit.vcell.simdata.VariableType.MEMBRANE_REGION)) {
 			//
-			if(membraneSamplerCurves != null && membraneSamplerCurves.contains(curve)){isCurveVisible = (fetchSpatialSelections(curve,false,false) != null);}
+			if(membraneSamplerCurves != null && membraneSamplerCurves.contains(curve)){isCurveVisible = (fetchSpatialSelections(curve,false) != null);}
 			else{isCurveVisible = false;}
 			//
 	}
@@ -1297,7 +1271,6 @@ private void setpdeDataContext1(cbit.vcell.simdata.PDEDataContext newValue) {
 			}
 			connPtoP1SetSource();
 			connEtoM2(ivjpdeDataContext1);
-			connEtoC7(ivjpdeDataContext1);
 			firePropertyChange("pdeDataContext", oldValue, newValue);
 			// user code begin {1}
 			// user code end
@@ -1330,18 +1303,7 @@ private void setSpatialSelection(SpatialSelection spatialSelection) {
 	fieldSpatialSelection = spatialSelection;
 	firePropertyChange("spatialSelection", oldValue, spatialSelection);
 }
-/**
- * Comment
- */
-private void slice2dEnable() {
-	boolean bSpatProj =
-		getpdeDataContext1() != null &&
-		getpdeDataContext1().getSourceDataInfo() != null &&
-		getpdeDataContext1().getSourceDataInfo().getZSize() > 1;
 
-	//getImagePlaneManagerPanel().getSpatialProjectionJCheckBox().setSelected(!bSpatProj);
-	getImagePlaneManagerPanel().getSpatialProjectionJCheckBox().setEnabled(bSpatProj);
-}
 /**
  * Insert the method's description here.
  * Creation date: (11/9/2000 4:14:39 PM)
