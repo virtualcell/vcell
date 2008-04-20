@@ -143,7 +143,13 @@ public SSHelper getIndexSamples(double begin,double end) {
 	// continuous(touch at least at corner) set of mesh indexes.
 	//
 
-
+	if(getCurveSelectionInfo().getCurve() instanceof SinglePoint){
+		return new SSHelper(
+			new Coordinate[] {getCurveSelectionInfo().getCurve().getCoordinate(0)},
+			new int[] {getConvertedIndexFromWC(getCurveSelectionInfo().getCurve().getCoordinate(0))},
+			getVariableType(),
+			new int[] {-1});
+	}
 	//Try simple sampling
 	SSHelper ssvHelper = null;
 	if(begin == 0.0 && end == 1.0){

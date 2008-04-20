@@ -1,4 +1,5 @@
 package cbit.vcell.client.data;
+import cbit.vcell.math.CoordinateIndex;
 import cbit.vcell.math.VolVariable;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 import cbit.vcell.parser.SimpleSymbolTable;
@@ -16,11 +17,13 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import cbit.image.DisplayAdapterService;
+import cbit.image.SourceDataInfo;
 import cbit.plot.*;
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.MessageEvent;
 import cbit.vcell.server.*;
 import cbit.vcell.simdata.gui.*;
+import cbit.vcell.simdata.gui.SpatialSelection.SSHelper;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -42,6 +45,8 @@ import cbit.vcell.export.quicktime.MediaTrack;
 import cbit.vcell.export.quicktime.VideoMediaChunk;
 import cbit.vcell.export.quicktime.VideoMediaSampleRaw;
 import cbit.vcell.export.quicktime.atoms.UserDataEntry;
+import cbit.vcell.geometry.Coordinate;
+import cbit.vcell.geometry.SinglePoint;
 import cbit.vcell.geometry.gui.SurfaceCanvas;
 import cbit.vcell.geometry.gui.SurfaceMovieSettingsPanel;
 import cbit.util.*;
@@ -346,7 +351,7 @@ private void calcStatistics(final java.awt.event.ActionEvent actionEvent) {
 			public void run(){
 				try{
 //					calcStatistics2();
-					showTableList();
+					roiAction();
 				}catch(Throwable e){
 					PopupGenerator.showErrorDialog("Error calculating statistics\n"+e.getMessage());
 				}
@@ -356,8 +361,241 @@ private void calcStatistics(final java.awt.event.ActionEvent actionEvent) {
 	
 }
 
-private void showTableList(){
-	
+
+private BitSet getFillROI(SpatialSelectionVolume spatialSelectionVolume){
+	if(spatialSelectionVolume.getCurveSelectionInfo().getCurve()instanceof SinglePoint){
+		return null;
+	}
+	BitSet fillROI = null;
+	SSHelper ssHelper = spatialSelectionVolume.getIndexSamples(0, 1);
+	if(ssHelper != null &&
+		ssHelper.getSampledIndexes()[0] ==
+		ssHelper.getSampledIndexes()[ssHelper.getSampledIndexes().length-1]){
+		Point projMin = null;
+		Point projMax = null;
+		Point[] projVolCI = new Point[ssHelper.getSampledIndexes().length];
+		for (int i = 0; i < ssHelper.getSampledIndexes().length; i++) {
+			CoordinateIndex vCI =
+				getPdeDataContext().
+				getCartesianMesh().getCoordinateIndexFromVolumeIndex(
+					ssHelper.getSampledIndexes()[i]);
+			int normalAxis = getPDEDataContextPanel1().getNormalAxis();
+			projVolCI[i] =
+				new Point(
+					(int)Coordinate.convertAxisFromStandardXYZToNormal(
+						vCI.x, vCI.y,vCI.z, Coordinate.X_AXIS, normalAxis),
+					(int)Coordinate.convertAxisFromStandardXYZToNormal(
+						vCI.x, vCI.y,vCI.z, Coordinate.Y_AXIS, normalAxis)
+				);
+			if(i==0){
+				projMin = new Point(projVolCI[i]);
+				projMax = new Point(projMin);
+			}else{
+				if(projVolCI[i].x < projMin.x){
+					projMin.x = projVolCI[i].x;
+				}
+				if(projVolCI[i].y < projMin.y){
+					projMin.y = projVolCI[i].y;
+				}
+				if(projVolCI[i].x > projMax.x){
+					projMax.x = projVolCI[i].x;
+				}
+				if(projVolCI[i].y > projMax.y){
+					projMax.y = projVolCI[i].y;
+				}
+			}
+		}
+//		System.out.println(projMin+" "+projMax);
+		int UNMARKED = 0;
+		int BOUNDARY_MARK = 1;
+		//Create work area
+		int[][] markers = new int[projMax.y-projMin.y+1][projMax.x-projMin.x+1];
+		Vector<Vector<Point>> allSeedsV = new Vector<Vector<Point>>();
+		allSeedsV.add(null);
+		allSeedsV.add(null);
+		//Mark boundary
+		for (int i = 0; i < projVolCI.length; i++) {
+			markers[projVolCI[i].y-projMin.y][projVolCI[i].x-projMin.x] = BOUNDARY_MARK;
+		}
+		//Create seeds around boundary
+		for (int i = 0; i < projVolCI.length; i++) {
+			if(projVolCI[i].x-1 >= projMin.x){
+				int currentMark = markers[projVolCI[i].y-projMin.y][projVolCI[i].x-projMin.x-1];
+				if(currentMark == UNMARKED){
+					Vector<Point> newSeedV = new Vector<Point>();
+					newSeedV.add(new Point(projVolCI[i].x-1,projVolCI[i].y));
+					markers[projVolCI[i].y-projMin.y][projVolCI[i].x-projMin.x-1] = allSeedsV.size();
+					allSeedsV.add(newSeedV);
+				}
+			}
+			if(projVolCI[i].x+1 <= projMax.x){
+				int currentMark = markers[projVolCI[i].y-projMin.y][projVolCI[i].x-projMin.x+1];
+				if(currentMark == UNMARKED){
+					Vector<Point> newSeedV = new Vector<Point>();
+					newSeedV.add(new Point(projVolCI[i].x+1,projVolCI[i].y));
+					markers[projVolCI[i].y-projMin.y][projVolCI[i].x-projMin.x+1] = allSeedsV.size();
+					allSeedsV.add(newSeedV);
+				}
+			}
+			if(projVolCI[i].y-1 >= projMin.y){
+				int currentMark = markers[projVolCI[i].y-projMin.y-1][projVolCI[i].x-projMin.x];
+				if(currentMark == UNMARKED){
+					Vector<Point> newSeedV = new Vector<Point>();
+					newSeedV.add(new Point(projVolCI[i].x,projVolCI[i].y-1));
+					markers[projVolCI[i].y-projMin.y-1][projVolCI[i].x-projMin.x] = allSeedsV.size();
+					allSeedsV.add(newSeedV);
+				}
+			}
+			if(projVolCI[i].y+1 <= projMax.y){
+				int currentMark = markers[projVolCI[i].y-projMin.y+1][projVolCI[i].x-projMin.x];
+				if(currentMark == UNMARKED){
+					Vector<Point> newSeedV = new Vector<Point>();
+					newSeedV.add(new Point(projVolCI[i].x,projVolCI[i].y+1));
+					markers[projVolCI[i].y-projMin.y+1][projVolCI[i].x-projMin.x] = allSeedsV.size();
+					allSeedsV.add(newSeedV);
+				}
+			}
+		}
+		
+//		System.out.println("Seeds");
+//		for (int i = 0; i < markers.length; i++) {
+//			for (int j = 0; j < markers[i].length; j++) {
+//				System.out.print((markers[i][j] < 10?"0":"")+markers[i][j]+" ");
+//			}
+//			System.out.println();
+//		}
+		
+		//Grow seeds
+		for (int i = 2; i < allSeedsV.size(); i++) {
+			while(allSeedsV.elementAt(i) != null && allSeedsV.elementAt(i).size()>0){
+				Point currentPoint = allSeedsV.elementAt(i).remove(0);
+				if(currentPoint.x-1 >= projMin.x){
+					int currentMark = markers[currentPoint.y-projMin.y][currentPoint.x-projMin.x-1];
+					if(currentMark == UNMARKED){
+						allSeedsV.elementAt(i).add(new Point(currentPoint.x-1,currentPoint.y));
+						markers[currentPoint.y-projMin.y][currentPoint.x-projMin.x-1] = i;
+					}else if(currentMark != BOUNDARY_MARK && currentMark != i){
+						for (int j = 0; j < allSeedsV.elementAt(currentMark).size(); j++) {
+							if(!allSeedsV.elementAt(i).contains(allSeedsV.elementAt(currentMark).elementAt(j))){
+								allSeedsV.elementAt(i).add(allSeedsV.elementAt(currentMark).elementAt(j));
+								markers
+								[allSeedsV.elementAt(currentMark).elementAt(j).y-projMin.y]
+								[allSeedsV.elementAt(currentMark).elementAt(j).x-projMin.x] = i;
+							}
+						}
+						allSeedsV.setElementAt(null, currentMark);
+					}
+				}
+				if(currentPoint.x+1 <= projMax.x){
+					int currentMark = markers[currentPoint.y-projMin.y][currentPoint.x-projMin.x+1];
+					if(currentMark == UNMARKED){
+						allSeedsV.elementAt(i).add(new Point(currentPoint.x+1,currentPoint.y));
+						markers[currentPoint.y-projMin.y][currentPoint.x-projMin.x+1] = i;
+					}else if(currentMark != BOUNDARY_MARK && currentMark != i){
+						for (int j = 0; j < allSeedsV.elementAt(currentMark).size(); j++) {
+							if(!allSeedsV.elementAt(i).contains(allSeedsV.elementAt(currentMark).elementAt(j))){
+								allSeedsV.elementAt(i).add(allSeedsV.elementAt(currentMark).elementAt(j));
+								markers
+								[allSeedsV.elementAt(currentMark).elementAt(j).y-projMin.y]
+								[allSeedsV.elementAt(currentMark).elementAt(j).x-projMin.x] = i;
+							}
+						}
+						allSeedsV.setElementAt(null, currentMark);
+					}
+				}
+				if(currentPoint.y-1 >= projMin.y){
+					int currentMark = markers[currentPoint.y-projMin.y-1][currentPoint.x-projMin.x];
+					if(currentMark == UNMARKED){
+						allSeedsV.elementAt(i).add(new Point(currentPoint.x,currentPoint.y-1));
+						markers[currentPoint.y-projMin.y-1][currentPoint.x-projMin.x] = i;
+					}else if(currentMark != BOUNDARY_MARK && currentMark != i){
+						for (int j = 0; j < allSeedsV.elementAt(currentMark).size(); j++) {
+							if(!allSeedsV.elementAt(i).contains(allSeedsV.elementAt(currentMark).elementAt(j))){
+								allSeedsV.elementAt(i).add(allSeedsV.elementAt(currentMark).elementAt(j));
+								markers
+								[allSeedsV.elementAt(currentMark).elementAt(j).y-projMin.y]
+								[allSeedsV.elementAt(currentMark).elementAt(j).x-projMin.x] = i;
+							}
+						}
+						allSeedsV.setElementAt(null, currentMark);
+					}
+				}
+				if(currentPoint.y+1 <= projMax.y){
+					int currentMark = markers[currentPoint.y-projMin.y+1][currentPoint.x-projMin.x];
+					if(currentMark == UNMARKED){
+						allSeedsV.elementAt(i).add(new Point(currentPoint.x,currentPoint.y+1));
+						markers[currentPoint.y-projMin.y+1][currentPoint.x-projMin.x] = i;
+					}else if(currentMark != BOUNDARY_MARK && currentMark != i){
+						for (int j = 0; j < allSeedsV.elementAt(currentMark).size(); j++) {
+							if(!allSeedsV.elementAt(i).contains(allSeedsV.elementAt(currentMark).elementAt(j))){
+								allSeedsV.elementAt(i).add(allSeedsV.elementAt(currentMark).elementAt(j));
+								markers
+								[allSeedsV.elementAt(currentMark).elementAt(j).y-projMin.y]
+								[allSeedsV.elementAt(currentMark).elementAt(j).x-projMin.x] = i;
+							}
+						}
+						allSeedsV.setElementAt(null, currentMark);
+					}
+				}				
+			}
+			allSeedsV.setElementAt(null, i);
+		}
+
+		int[] encodeEdge = new int[allSeedsV.size()];
+		for (int i = 0; i < encodeEdge.length; i++) {
+			encodeEdge[i] = i;
+		}
+		int c= 0;
+		while(true){
+			if(c<markers.length){
+				encodeEdge[markers[c][0]] = UNMARKED;
+				encodeEdge[markers[c][markers[0].length-1]] = UNMARKED;
+			}
+			if(c<markers[0].length){
+				encodeEdge[markers[0][c]] = UNMARKED;
+				encodeEdge[markers[markers.length-1][c]] = UNMARKED;
+			}
+			c++;
+			if(c>=markers.length && c>=markers[0].length){
+				break;
+			}
+		}
+		encodeEdge[1] = 1;//boundary
+		
+//		System.out.println("Distinct Areas");
+//		for (int i = 0; i < markers.length; i++) {
+//			for (int j = 0; j < markers[i].length; j++) {
+//				System.out.print((encodeEdge[markers[i][j]] < 10?"0":"")+encodeEdge[markers[i][j]]+" ");
+//			}
+//			System.out.println();
+//		}
+		
+		//Make BitSet
+		fillROI = new BitSet(getPdeDataContext().getDataValues().length);
+		CoordinateIndex coordinateIndex = new CoordinateIndex();
+		for (int y = 0; y < markers.length; y++) {
+			for (int x = 0; x < markers[y].length; x++) {
+				if(encodeEdge[markers[y][x]] != UNMARKED){
+					coordinateIndex.x = projMin.x+x;
+					coordinateIndex.y = projMin.y+y;
+					coordinateIndex.z = getPDEDataContextPanel1().getSlice();
+					Coordinate.convertCoordinateIndexFromNormalToStandardXYZ(
+						coordinateIndex, getPDEDataContextPanel1().getNormalAxis());
+//					System.out.println(coordinateIndex);
+					int volIndex =
+						getPdeDataContext().getCartesianMesh().getVolumeIndex(coordinateIndex);
+					fillROI.set(volIndex);
+				}
+			}
+		}
+
+	}
+	return fillROI;
+}
+
+private void roiAction(){
+	BeanUtils.setCursorThroughout(this, Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+	try{
 	final String[] ROI_COLUMN_NAMES = new String[] {"ROI source","ROI source name","ROI Description"};
 	final int AUX_INFO_INDEX = ROI_COLUMN_NAMES.length;
 	final Vector<Object> auxInfoV = new Vector<Object>();
@@ -392,18 +630,40 @@ private void showTableList(){
 	SpatialSelection[] userROIArr =
 		getPDEDataContextPanel1().fetchSpatialSelections(true,false);
 	for (int i = 0; userROIArr != null && i < userROIArr.length; i += 1) {
-		((DefaultTableModel)roiTable.getModel()).addRow(
-				new Object[] {
-					"User Defined",
-					(isVolume
-						?(userROIArr[i] instanceof SpatialSelectionVolume
-							?((SpatialSelectionVolume)userROIArr[i]).getCurveSelectionInfo().getCurve().getDescription():null)
-						:(userROIArr[i] instanceof SpatialSelectionMembrane
-							?((SpatialSelectionMembrane)userROIArr[i]).getSelectionSource().getDescription():null)),
-					(isVolume?"Volume ROI":"Membrane ROI")
-				}
-		);
-		auxInfoV.add(userROIArr[i]);
+		String descr =
+			(isVolume
+				?(userROIArr[i] instanceof SpatialSelectionVolume
+					?((SpatialSelectionVolume)userROIArr[i]).getCurveSelectionInfo().getCurve().getDescription():null)
+				:(userROIArr[i] instanceof SpatialSelectionMembrane
+					?((SpatialSelectionMembrane)userROIArr[i]).getSelectionSource().getDescription():null));
+		//Add Area User ROI
+		BitSet fillBitSet = null;
+		if(userROIArr[i] instanceof SpatialSelectionVolume){
+			fillBitSet = getFillROI((SpatialSelectionVolume)userROIArr[i]);
+			if(fillBitSet != null){
+				((DefaultTableModel)roiTable.getModel()).addRow(
+						new Object[] {
+							"User Defined",
+							descr,
+							"Area Enclosed Volume ROI"
+						}
+				);
+				auxInfoV.add(fillBitSet);
+			}
+		}
+		//Add Point and Line User ROI
+		if(fillBitSet == null){
+			((DefaultTableModel)roiTable.getModel()).addRow(
+					new Object[] {
+						"User Defined",
+						descr,
+						(userROIArr[i].getCurveSelectionInfo().getCurve() instanceof SinglePoint?"Point":"Line")+
+						(isVolume?" Volume ROI ":" Membrane ROI ")
+							
+					}
+			);
+			auxInfoV.add(userROIArr[i]);
+		}
 	}
 	//Add sorted Geometry ROI
 	HashMap<Integer,?> regionMapSubvolumesHashMap =
@@ -439,7 +699,8 @@ private void showTableList(){
 							((int[])regionMapSubvolumesEntry.getValue())[0],
 							((int[])regionMapSubvolumesEntry.getValue())[1])
 					),
-					"(Region ID="+regionMapSubvolumesEntry.getKey()+") Predefined "+(isVolume?"volume":"membrane")+" region"
+					(isVolume?"(svID="+regionMapSubvolumesEntry.getValue()+" ":"(")+
+					"vrID="+regionMapSubvolumesEntry.getKey()+") Predefined "+(isVolume?"volume":"membrane")+" region"
 				},
 				regionMapSubvolumesEntry}
 		);
@@ -519,6 +780,8 @@ private void showTableList(){
 								int membraneRegionID = (Integer)((Entry<Integer, int[]>)auxInfo).getKey();
 								dataBitSet.or(getPdeDataContext().getCartesianMesh().getMembraneROIFromMembraneRegionID(membraneRegionID));
 							}
+						}else if(auxInfo instanceof BitSet){
+							dataBitSet.or((BitSet)auxInfo);
 						}else{
 							throw new Exception("ROI table, Unknown data type: "+auxInfo.getClass().getName());
 						}
@@ -592,6 +855,9 @@ private void showTableList(){
 //	if(result != JOptionPane.OK_OPTION){
 //		throw UserCancelException.CANCEL_GENERIC;
 //	}
+	}finally{
+		BeanUtils.setCursorThroughout(this, Cursor.getDefaultCursor());
+	}
 
 }
 /**
