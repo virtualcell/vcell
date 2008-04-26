@@ -2509,7 +2509,7 @@ public void setSimulation(cbit.vcell.solver.Simulation simulation) {
  * Insert the method's description here.
  * Creation date: (2/26/2006 2:24:21 PM)
  */
-private void showComponentInFrame(Component comp,String title) {
+protected void showComponentInFrame(Component comp,String title) {
 	
 	final JInternalFrame frame =
 		new JInternalFrame(title, true, true, true, true);
