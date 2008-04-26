@@ -44,4 +44,16 @@ public boolean isClosed() {
 public void setClosed(boolean arg_bClosed) {
 	//Do nothing, we should be false by default
 }
+@Override
+public boolean isValid() {
+	if(super.isValid()){
+		for (int i = 1; i < getControlPointCount(); i++) {
+			if(!getControlPoint(0).equals(getControlPoint(i))){
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
 }

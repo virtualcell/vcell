@@ -69,7 +69,13 @@ public Coordinate coordinateFromNormalizedU(double normalizedU) {
 	//
 	for (int i = 0; i < segmentCount; i += 1) {
 		if (targetLength >= accumLength[i] && targetLength <= (accumLength[i] + segmentLength[i])) {
-			double segmentU = (targetLength-accumLength[i])/segmentLength[i];
+			double segmentU = -1.0;
+			if(segmentLength[i] == 0 && (i+1) == segmentCount){
+				//Fix problem with duplicate points at end have 0 segment length and create NaN
+				segmentU = 1.0;
+			}else{
+				segmentU = (targetLength-accumLength[i])/segmentLength[i];
+			}
 			p0 = getControlPoint(i);
 			p1 = getControlPoint((i + 1) % controlPointCount);
 			double uX = p0.getX() + ((p1.getX() - p0.getX()) * segmentU);
