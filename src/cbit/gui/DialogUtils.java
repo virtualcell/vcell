@@ -3,6 +3,7 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
 import cbit.vcell.client.task.UserCancelException;
+import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 
 import java.awt.*;
 import java.util.*;
@@ -278,16 +279,18 @@ public static int[] showComponentOKCancelTableList(final Component requester,Str
 		String[] columnNames,Object[][] rowData,int listSelectionModel_SelectMode)
 			throws UserCancelException{
 	
-	DefaultTableModel tableMode = new DefaultTableModel(){
+	DefaultTableModel tableModel = new DefaultTableModel(){
 	    public boolean isCellEditable(int row, int column) {
 	        return false;
 	    }
 	};
-	tableMode.setDataVector(rowData, columnNames);
-	JTable table = new JTable(tableMode);
+	tableModel.setDataVector(rowData, columnNames);
+	JTable table = new JTable(tableModel);
 	table.setSelectionMode(listSelectionModel_SelectMode);
 	JScrollPane scrollPane = new JScrollPane(table);
 	table.setPreferredScrollableViewportSize(new Dimension(500, 250));
+	
+	ScopedExpressionTableCellRenderer.formatTableCellSizes(table, null, null);
 	
 	int result = showComponentOKCancelDialog(requester, scrollPane, title);
 	if(result != JOptionPane.OK_OPTION){
@@ -337,7 +340,7 @@ private static String showDialog(final Component requester, final SimpleUserMess
 		if(selectedValue == null || selectedValue.equals(JOptionPane.UNINITIALIZED_VALUE)) {
 			return SimpleUserMessage.OPTION_CANCEL;
 		} else {
-			return (String)selectedValue;
+			return selectedValue.toString();
 		}
 	}
 }
