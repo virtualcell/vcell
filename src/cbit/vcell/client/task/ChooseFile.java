@@ -96,7 +96,7 @@ private File showBioModelXMLFileChooser(java.util.Hashtable hashTable) throws ja
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_21);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_23);
-	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_CELLML);
+//	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_CELLML);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_VCML);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MATLABV5);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MATLABV6);
@@ -396,7 +396,7 @@ private File showMathModelXMLFileChooser(java.util.Hashtable hashTable) throws j
 	fileChooser.setMultiSelectionEnabled(false);
 	// fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_21);		// Can export Mathmodel to L2V1 ??
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_SBML_23);
-	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_CELLML);
+//	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_CELLML);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MATLABV5);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_MATLABV6);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_PDF);

@@ -97,11 +97,9 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
 			// convert it if other format
 			if (!fileFilter.equals(FileFilters.FILE_FILTER_VCML)) {
 				// SBML or CellML; get application name
-//				Integer chosenSimContextIndex = (Integer)hashTable.get("chosenSimContextIndex");
-//				String applicationName = bioModel.getSimulationContexts(chosenSimContextIndex.intValue()).getName();
-				SimulationContext selectedSimContext = (SimulationContext)hashTable.get("selectedSimContext");
-				Simulation selectedSim = (Simulation)hashTable.get("selectedSimulation");
 				if ((fileFilter.equals(FileFilters.FILE_FILTER_SBML)) || (fileFilter.equals(FileFilters.FILE_FILTER_SBML_21)) || (fileFilter.equals(FileFilters.FILE_FILTER_SBML_23)) ) {
+					SimulationContext selectedSimContext = (SimulationContext)hashTable.get("selectedSimContext");
+					Simulation selectedSim = (Simulation)hashTable.get("selectedSimulation");
 					int sbmlLevel = 0;
 					int sbmlVersion = 0;
 					if ((fileFilter.equals(FileFilters.FILE_FILTER_SBML))) {
@@ -131,7 +129,9 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
 						return;
 					}
 				} else if (fileFilter.equals(FileFilters.FILE_FILTER_CELLML)) {
-					resultString = XmlHelper.exportCellML(bioModel, selectedSimContext.getName());
+					Integer chosenSimContextIndex = (Integer)hashTable.get("chosenSimContextIndex");
+					String applicationName = bioModel.getSimulationContexts(chosenSimContextIndex.intValue()).getName();
+					resultString = XmlHelper.exportCellML(bioModel, applicationName);
 				}
 			} else {
 				// if format is VCML, get it from biomodel.
