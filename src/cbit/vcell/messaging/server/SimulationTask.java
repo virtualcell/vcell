@@ -52,11 +52,18 @@ public double getEstimatedMemorySizeMB() {
 	Simulation simulation = getSimulationJob().getWorkingSim();
 	Variable variables[] = simulation.getVariables();
 	for (int i=0;i<variables.length;i++){
-	  	if ((variables[i] instanceof VolVariable && simulation.getMathDescription().isPDE((VolVariable)variables[i]))
-	  			|| (variables[i] instanceof MemVariable && simulation.getMathDescription().isPDE((MemVariable)variables[i]))) {
-	  		pdeVarCount ++;
-	  	} else {
-	  		odeVarCount ++;
+	  	if (variables[i] instanceof VolVariable) {
+	  		if (simulation.getMathDescription().isPDE((VolVariable)variables[i])) {
+	  			pdeVarCount ++;
+	  		} else {
+	  			odeVarCount ++;
+	  		}
+	  	} else if (variables[i] instanceof MemVariable) {
+	  		if (simulation.getMathDescription().isPDE((MemVariable)variables[i])) {	  	
+	  			pdeVarCount ++;
+	  		} else {
+	  			odeVarCount ++;
+	  		}
 	  	}
 	}	
 	long numMeshPoints = 1;
