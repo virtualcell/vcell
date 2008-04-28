@@ -191,8 +191,7 @@ public synchronized void addPropertyChangeListener(java.lang.String propertyName
 private void changeConnection(VCellConnection newVCellConnection, boolean reconnect) {
 	VCellConnection lastVCellConnection = getVcellConnection();
 	setVcellConnection(newVCellConnection);
-	if (getVcellConnection() != null) {
-		setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getHost(), ConnectionStatus.INITIALIZING));
+	if (getVcellConnection() != null) {		
 		try {
 			// hook up the message manager
 			getAsynchMessageManager().connect(getRemoteMessageHandler());
@@ -296,6 +295,7 @@ private VCellConnection connectToServer() {
 				break;
 			}
 		}
+		setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getHost(), ConnectionStatus.INITIALIZING));
 		newVCellConnection = vcConnFactory.createVCellConnection();
 	} catch (AuthenticationException aexc) {
 		aexc.printStackTrace(System.out);
