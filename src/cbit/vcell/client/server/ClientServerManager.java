@@ -191,7 +191,6 @@ private void changeConnection(VCellConnection newVCellConnection, boolean reconn
 	VCellConnection lastVCellConnection = getVcellConnection();
 	setVcellConnection(newVCellConnection);
 	if (getVcellConnection() != null) {
-		setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getHost(), ConnectionStatus.INITIALIZING));
 		try {
 			// hook up the message manager
 			getAsynchMessageManager().connect(getRemoteMessageHandler());
@@ -295,6 +294,7 @@ private VCellConnection connectToServer() {
 				break;
 			}
 		}
+		setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getHost(), ConnectionStatus.INITIALIZING));
 		newVCellConnection = vcConnFactory.createVCellConnection();
 	} catch (AuthenticationException aexc) {
 		aexc.printStackTrace(System.out);
