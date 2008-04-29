@@ -197,33 +197,18 @@ public static void centerOnComponent(Component c, Component reference) {
 			centerOnScreen(c);
 			return;
 		}
-		Point p = null;
-		try {
-			p = reference.getLocationOnScreen();
-		} catch (Exception exc) {
-			// reference probably not visible, center on screen
-			centerOnScreen(c);
-			return;
-		}
-		// translate reference component's coordinates to the coordinate system
-		// of the parent of the component to be centered (if it has a valid one)
-		try {
-			Component cParent = c.getParent();
-			if(cParent != null){
-				Point p1 = cParent.getLocationOnScreen();
-				if(p1 != null){
-					p.x -= p1.x;
-					p.y -= p1.y;
-				}
+		try{
+			Point pR = reference.getLocationOnScreen();
+			if(findTypeParentOfComponent(reference, JInternalFrame.class) != null){
+				Component rootComponent = SwingUtilities.getRoot(reference);
+				SwingUtilities.convertPointFromScreen(pR,rootComponent);
 			}
-		} catch (Exception exc) {
-			// probably no valid parent (null, or hidden, etc.) - ignore
+			pR.x += Math.max((reference.getWidth() - c.getWidth()) / 2, 0);
+			pR.y += Math.max((reference.getHeight() - c.getHeight()) / 2, 0);
+			c.setLocation(pR);
+		}catch(Exception e){
+			centerOnScreen(c);
 		}
-		// now we try to center, but we do respect top/left bounds of reference
-		// (protection useful if one centers onto parents, esp. for inner windows)
-		p.x += Math.max((reference.getWidth() - c.getWidth()) / 2, 0);
-		p.y += Math.max((reference.getHeight() - c.getHeight()) / 2, 0);
-		c.setLocation(p);
 	}
 }
 

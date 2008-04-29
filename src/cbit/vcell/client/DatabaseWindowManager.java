@@ -110,7 +110,7 @@ public void accessPermissions()  {
 	getAclEditor().setACLState(new ACLEditor.ACLState(groupAccess));
 	DocumentManager docManager = getRequestManager().getDocumentManager();
 	
-	Object choice = showAccessPermissionDialog(getAclEditor(), null);
+	Object choice = showAccessPermissionDialog(getAclEditor(), getDatabaseWindowPanel());
 
 	if (choice != null && choice.equals("OK")) {
 		ACLEditor.ACLState aclState = getAclEditor().getACLState();
