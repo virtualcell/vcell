@@ -2,12 +2,14 @@
 <classpath>
 	<classpathentry kind="src" path="src">
 		<attributes>
-			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell/nativelibs/Win32"/>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="VCell 4.4/nativelibs/Win32"/>
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="resources"/>
 	<classpathentry kind="var" path="JRE_LIB" sourcepath="JRE_SRC"/>
+	<classpathentry kind="lib" path="JLink.jar"/>
 	<classpathentry kind="lib" path="idetool.jar"/>
+	<classpathentry kind="lib" path="sbmlj.jar"/>
 	<classpathentry kind="lib" path="thirdParty_1.51.jar"/>
 	<classpathentry kind="lib" path="bio-formats.jar"/>
 	<classpathentry kind="lib" path="ome-java.jar"/>
@@ -15,5 +17,6 @@
 	<classpathentry kind="lib" path="NetCDF2_2_20_VCell.jar"/>
 	<classpathentry kind="lib" path="new_activation.jar"/>
 	<classpathentry kind="lib" path="new_mail.jar"/>
+	<classpathentry kind="lib" path="MiriamJavaLib-standalone-20070625.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

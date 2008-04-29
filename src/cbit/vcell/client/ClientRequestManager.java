@@ -1385,20 +1385,17 @@ private void openAfterChecking(final VCDocumentInfo documentInfo, final TopLevel
 						}
 						windowManager = new GeometryWindowManager(new JPanel(), ClientRequestManager.this, (Geometry)doc, getMdiManager().getNewlyCreatedDesktops());
 					} else if (xmlType.equals(XMLTags.SbmlRootNodeTag)) {
-						cbit.vcell.xml.XmlDialect fromDialect = cbit.vcell.xml.XmlDialect.getTargetDialect(rootElement.getName(), rootElement.getNamespaceURI(), XMLTags.BioModelTag);
 						TranslationLogger transLogger = new TranslationLogger(requester);
-						doc = XmlHelper.importXMLVerbose(transLogger, xmlStr, fromDialect);
+						doc = XmlHelper.importSBML(transLogger, xmlStr);
 						windowManager = new BioModelWindowManager(new JPanel(), ClientRequestManager.this, (BioModel)doc, getMdiManager().getNewlyCreatedDesktops());
 					} else if (xmlType.equals(XMLTags.CellmlRootNodeTag)) {
 						if (requester instanceof BioModelWindowManager){
-							cbit.vcell.xml.XmlDialect fromDialect = cbit.vcell.xml.XmlDialect.getTargetDialect(rootElement.getName(), rootElement.getNamespaceURI(), XMLTags.BioModelTag);
 							TranslationLogger transLogger = new TranslationLogger(requester);
-							doc = XmlHelper.importXMLVerbose(transLogger, xmlStr, fromDialect);
+							doc = XmlHelper.importBioCellML(transLogger, xmlStr);
 							windowManager = new BioModelWindowManager(new JPanel(), ClientRequestManager.this, (BioModel)doc, getMdiManager().getNewlyCreatedDesktops());
 						}else{
-							cbit.vcell.xml.XmlDialect fromDialect = cbit.vcell.xml.XmlDialect.getTargetDialect(rootElement.getName(), rootElement.getNamespaceURI(), XMLTags.MathModelTag);
 							TranslationLogger transLogger = new TranslationLogger(requester);
-							doc = XmlHelper.importXMLVerbose(transLogger, xmlStr, fromDialect);
+							doc = XmlHelper.importMathCellML(transLogger, xmlStr);
 							windowManager = new MathModelWindowManager(new JPanel(), ClientRequestManager.this, (MathModel)doc, getMdiManager().getNewlyCreatedDesktops());
 						}
 					} else { // unknown XML format

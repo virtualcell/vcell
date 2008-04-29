@@ -12,8 +12,6 @@ public class XMLTags {
     public final static String CELLML_NAMESPACE_URI		 = "http://www.cellml.org/cellml/1.0#";
     public final static String CELLML_NAMESPACE_PREFIX	 = "cellml";
     public final static String CellmlRootNodeTag		 = "model";
-    public final static String SBML_L1_V1_NAMESPACE_URI  = "http://www.sbml.org/sbml/level1";
-    public final static String SBML_L2_V1_NAMESPACE_URI  = "http://www.sbml.org/sbml/level2";
 	public final static String SbmlRootNodeTag			 = "sbml";
 	public final static String SbmlAnnotationTag		 = "annotation";
 	public final static String SbmlNotesTag				 = "notes";

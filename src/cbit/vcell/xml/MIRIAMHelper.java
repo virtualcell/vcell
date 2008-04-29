@@ -128,20 +128,26 @@ public class MIRIAMHelper {
 	public static final String[] MIRIAM_ANNOT_COLUMNS = new String[] {"Model Component","Component Name","Annotation Scheme","Annotation Qualifier","Authoritative Identifier"};
 	
 	public static void addToSBML(Element parent,MIRIAMAnnotation miriamAnnotation,boolean bAdd){
-		addToSBMLAnnotation(parent, miriamAnnotation);
-		addToSBMLNotes(parent, miriamAnnotation);
+		try {
+			addToSBMLAnnotation(parent, miriamAnnotation);
+			addToSBMLNotes(parent, miriamAnnotation);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
-	private static void addToSBMLAnnotation(Element parent,MIRIAMAnnotation miriamAnnotation){
-		if(parent == null || miriamAnnotation == null || miriamAnnotation.getAnnotation() == null){
-			return;
-		}
-		if(parent.getName().equalsIgnoreCase(XMLTags.SbmlAnnotationTag)){
-			Element rdfElement = recurseForElement(miriamAnnotation.getAnnotation(),XMLTags.RDF_RDF_NAME_TAG);
-			parent.addContent(((Element)rdfElement.clone()).detach());
-		}else{
+
+private static void addToSBMLAnnotation(Element parent,MIRIAMAnnotation miriamAnnotation){
+		try {
+			if(parent == null || miriamAnnotation == null || miriamAnnotation.getAnnotation() == null){
+				return;
+			}
+			if(parent.getName().equalsIgnoreCase(XMLTags.SbmlAnnotationTag)){
+				Element rdfElement = recurseForElement(miriamAnnotation.getAnnotation(),XMLTags.RDF_RDF_NAME_TAG);
+				parent.addContent(((Element)rdfElement.clone()).detach());
+			}else{
 //			parent.addContent(miriamAnnotation.getAnnotation().detach());
-			parent.addContent(((Element)miriamAnnotation.getAnnotation().clone()).detach());
-		}
+				parent.addContent(((Element)miriamAnnotation.getAnnotation().clone()).detach());
+			}
 //		Element annotationElement = null;
 //		if(parent.getName().equalsIgnoreCase(XMLTags.SbmlAnnotationTag)){
 //			if(bAddAnnotation){
@@ -162,18 +168,22 @@ public class MIRIAMHelper {
 //			}
 //		}
 //		annotationElement.addContent(miriamAnnotation.getAnnotation().detach());
-	}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+}
 	
 	private static void addToSBMLNotes(Element parent,MIRIAMAnnotation miriamAnnotation){
-		if(parent == null || miriamAnnotation == null || miriamAnnotation.getUserNotes() == null){
-			return;
-		}
-		if(parent.getName().equalsIgnoreCase(XMLTags.SbmlNotesTag)){
-			Element htmlElement = recurseForElement(miriamAnnotation.getUserNotes(),HTML.Tag.HTML.toString());
-			parent.addContent(((Element)htmlElement.clone()).detach());
-		}else{
-			parent.addContent(((Element)miriamAnnotation.getUserNotes().clone()).detach());
-		}
+		try {
+			if(parent == null || miriamAnnotation == null || miriamAnnotation.getUserNotes() == null){
+				return;
+			}
+			if(parent.getName().equalsIgnoreCase(XMLTags.SbmlNotesTag)){
+				Element htmlElement = recurseForElement(miriamAnnotation.getUserNotes(),HTML.Tag.HTML.toString());
+				parent.addContent(((Element)htmlElement.clone()).detach());
+			}else{
+				parent.addContent(((Element)miriamAnnotation.getUserNotes().clone()).detach());
+			}
 //		Element userNotesElement = null;
 //		if(parent.getName().equalsIgnoreCase(XMLTags.SbmlNotesTag)){
 //			if(bAddNotes){
@@ -194,6 +204,9 @@ public class MIRIAMHelper {
 //			}
 //		}
 //		userNotesElement.addContent(miriamAnnotation.getUserNotes().detach());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	public static void addIdentifierToAnnotation(Element identiferElement,MIRIAMAnnotatable miriamAnnotatable,String qualifier,URI qualNamespace){
 		if(miriamAnnotatable.getMIRIAMAnnotation() == null){
@@ -754,54 +767,62 @@ public class MIRIAMHelper {
 		return null;
 	}
 	public static void setFromSBMLAnnotation(MIRIAMAnnotatable miriamAnnotatable,Element annotationElement){
-		if(annotationElement == null){
-			return;
-		}
-			Namespace ns = annotationElement.getNamespace();
-			if(!annotationElement.getName().equalsIgnoreCase(XMLTags.SbmlAnnotationTag)){
-				annotationElement = annotationElement.getChild(XMLTags.SbmlAnnotationTag, ns);
-				if(annotationElement == null){
-					return;
-				}
+		try {
+			if(annotationElement == null){
+				return;
 			}
+				Namespace ns = annotationElement.getNamespace();
+				if(!annotationElement.getName().equalsIgnoreCase(XMLTags.SbmlAnnotationTag)){
+					annotationElement = annotationElement.getChild(XMLTags.SbmlAnnotationTag, ns);
+					if(annotationElement == null){
+						return;
+					}
+				}
 				MIRIAMAnnotation miriamAnnotation = miriamAnnotatable.getMIRIAMAnnotation();
 				if(miriamAnnotatable.getMIRIAMAnnotation() == null){
 					miriamAnnotation = new MIRIAMAnnotation();
 					miriamAnnotatable.setMIRIAMAnnotation(miriamAnnotation);
 				}
 				miriamAnnotation.setAnnotation((Element)annotationElement.clone());
-	//----------------------------------
-	Element vcInfoElement = recurseForElement(annotationElement, XMLTags.VCellInfoTag);
-	if(vcInfoElement != null){
-		System.out.println(XmlUtil.xmlToString(vcInfoElement));
-	}
-	//----------------------------------
+				//----------------------------------
+				Element vcInfoElement = recurseForElement(annotationElement, XMLTags.VCellInfoTag);
+				if(vcInfoElement != null){
+							System.out.println(XmlUtil.xmlToString(vcInfoElement));
+				}
+				//----------------------------------
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 }
 	public static void setFromSBMLNotes(MIRIAMAnnotatable miriamAnnotatable,Element notesElement){
-		if(notesElement == null){
-			return;
-		}
-		Namespace ns = notesElement.getNamespace();
-			if(!notesElement.getName().equalsIgnoreCase(XMLTags.SbmlNotesTag)){
-				notesElement = notesElement.getChild(XMLTags.SbmlNotesTag, ns);
-				if(notesElement == null){
-					return;
-				}
+		try {
+			if(notesElement == null){
+				return;
 			}
-				MIRIAMAnnotation miriamAnnotation = miriamAnnotatable.getMIRIAMAnnotation();
-				if(miriamAnnotatable.getMIRIAMAnnotation() == null){
-					miriamAnnotation = new MIRIAMAnnotation();
-					miriamAnnotatable.setMIRIAMAnnotation(miriamAnnotation);
+				Namespace ns = notesElement.getNamespace();
+				if(!notesElement.getName().equalsIgnoreCase(XMLTags.SbmlNotesTag)){
+					notesElement = notesElement.getChild(XMLTags.SbmlNotesTag, ns);
+					if(notesElement == null){
+						return;
+					}
 				}
-				if(recurseForElement(notesElement, HTML.Tag.HTML.toString()) != null){
-					miriamAnnotation.setUserNotes((Element)notesElement.clone());
-				}else{
-					Element newNotesElement = new Element(XMLTags.SbmlNotesTag);
-					newNotesElement.addContent((Element)extractHTMLFromElement(notesElement).clone());
-				}
+					MIRIAMAnnotation miriamAnnotation = miriamAnnotatable.getMIRIAMAnnotation();
+					if(miriamAnnotatable.getMIRIAMAnnotation() == null){
+						miriamAnnotation = new MIRIAMAnnotation();
+						miriamAnnotatable.setMIRIAMAnnotation(miriamAnnotation);
+					}
+					if(recurseForElement(notesElement, HTML.Tag.HTML.toString()) != null){
+						miriamAnnotation.setUserNotes((Element)notesElement.clone());
+					}else{
+						Element newNotesElement = new Element(XMLTags.SbmlNotesTag);
+						newNotesElement.addContent((Element)extractHTMLFromElement(notesElement).clone());
+					}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 }
 	
-	//	public static MIRIAMAnnotation getMIRIAMAnnotation(String annotationStr){
+//	public static MIRIAMAnnotation getMIRIAMAnnotation(String annotationStr){
 //		Element annotationElement = cbit.util.xml.XmlUtil.stringToXML(annotationStr, null);
 //		Element rdfElement = annotationElement.getChild(XMLTags.RDF_TAG,rdfNameSpace);
 //		if(rdfElement == null){
@@ -832,18 +853,26 @@ public class MIRIAMHelper {
 //		getMIRIAMAnnotation(annotationStr);
 //	}
 	public static void setFromSBMLAnnotation(MIRIAMAnnotatable miriamAnnotatable,String annotationStr){
-		if(annotationStr == null || annotationStr.length() == 0){
-			return;
+		try {
+			if(annotationStr == null || annotationStr.length() == 0){
+				return;
+			}
+			Element annotationElement = cbit.util.xml.XmlUtil.stringToXML(annotationStr, null);
+			setFromSBMLAnnotation(miriamAnnotatable, annotationElement);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		Element annotationElement = cbit.util.xml.XmlUtil.stringToXML(annotationStr, null);
-		setFromSBMLAnnotation(miriamAnnotatable, annotationElement);
 	}
 	public static void setFromSBMLNotes(MIRIAMAnnotatable miriamAnnotatable,String notesStr){
-		if(notesStr == null || notesStr.length() == 0){
-			return;
+		try {
+			if(notesStr == null || notesStr.length() == 0){
+				return;
+			}
+			Element notesElement = cbit.util.xml.XmlUtil.stringToXML(notesStr, null);
+			setFromSBMLNotes(miriamAnnotatable, notesElement);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		Element notesElement = cbit.util.xml.XmlUtil.stringToXML(notesStr, null);
-		setFromSBMLNotes(miriamAnnotatable, notesElement);
 	}
 
 	public static void showMIRIAMAnnotationDialog(MIRIAMAnnotatable miriamAnnotatable){

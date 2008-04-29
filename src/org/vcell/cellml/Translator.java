@@ -1,4 +1,4 @@
-package cbit.vcell.vcml;
+package org.vcell.cellml;
 import cbit.vcell.xml.XmlParseException;
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlUtil;
@@ -16,30 +16,25 @@ import java.io.Writer;
 public abstract class Translator {
 
 	//supported translations
-	public static final String VCSB_1 = "VCSB_1";
-	public static final String VCSB_2 = "VCSB_2";
-	public static final String SBVC_1 = "SBVC_1";
-	public static final String SBVC_2 = "SBVC_2";
-	public static final String VC_QUAL_CELL = "VCQualCell";
-	public static final String VC_QUAN_CELL = "VCQuanCell";
-	public static final String CELL_QUAL_VC = "CellQualVC";
-	public static final String CELL_QUAN_VC = "CellQuanVC";
+//	public static final String VCSB_1 = "VCSB_1";
+//	public static final String VCSB_2 = "VCSB_2";
+//	public static final String SBVC_1 = "SBVC_1";
+//	public static final String SBVC_2 = "SBVC_2";
+//	public static final String VC_QUAL_CELL = "VCQualCell";
+//	public static final String VC_QUAN_CELL = "VCQuanCell";
+//	public static final String CELL_QUAL_VC = "CellQualVC";
+//	public static final String CELL_QUAN_VC = "CellQuanVC";
 	
-	//namespaces
-	public static final String SBML_NS_1 = "http://www.sbml.org/sbml/level1";
-	public static final String SBML_NS_2 = "http://www.sbml.org/sbml/level2";
 	public static final String MATHML_NS = "http://www.w3.org/1998/Math/MathML";
 	public static final String XHTML_NS = "http://www.w3.org/1999/xhtml";
-	public static final String SBML_VCML_NS = "http://sourceforge.net/projects/vcell";
-	public static final String VCML_NS = "";
 	//public static final String CELLML_NS = "http://www.cellml.org/cellml/1.0#";
 	public static final String CELLML_NS_PREFIX = "cellml";
 	//schema instance
 	protected static final String XML_SCHEMA_INSTANCE = "http://www.w3.org/2001/XMLSchema-instance";
 
 	//default schema Locations
-	protected static final String DEF_SBML1_SL = "http://www.nrcam.uchc.edu/xml/sbml1.xsd";
-	protected static final String DEF_SBML2_SL = "http://www.nrcam.uchc.edu/xml/sbml2.xsd";
+//	protected static final String DEF_SBML1_SL = "http://www.nrcam.uchc.edu/xml/sbml1.xsd";
+//	protected static final String DEF_SBML2_SL = "http://www.nrcam.uchc.edu/xml/sbml2.xsd";
 	protected static final String DEF_VCML_SL = "http://www.nrcam.uchc.edu/xml/biomodel.xsd";
 	protected static final String DEF_CELLML_SL = "http://www.nrcam.uchc.edu/xml/cellml.xsd";   		//for the future.
 	//SBML stuff
@@ -55,21 +50,6 @@ public abstract class Translator {
 
 		return new Document((Element)sRoot.clone()); //return a copy of it  	
   	}
-
-
-	public static Translator getTranslator(String transType) throws IllegalArgumentException {
-
-		if (VC_QUAN_CELL.equals(transType)) {
-			return new VCQuanCellTranslator();
-		} else if (VC_QUAL_CELL.equals(transType)) {
-			return new VCQualCellTranslator();
-		} else if (CELL_QUAN_VC.equals(transType)) {
-			return new CellQuanVCTranslator();
-		} else if (CELL_QUAL_VC.equals(transType)) {
-			return new CellQualVCTranslator();
-		} else
-			throw new IllegalArgumentException("Invalid translation request: " + transType);
-	}
 
 
 	public VCLogger getVCLogger() {
@@ -131,7 +111,7 @@ public abstract class Translator {
       		if (errorLog.length() > 0) {
 				System.err.println(errorLog);
 				if (vcLogger != null) {
-					vcLogger.sendMessage(VCLogger.LOW_PRIORITY, TranslationMessage.SCHEMA_VALIDATION_ERROR);
+					vcLogger.sendMessage(VCLogger.LOW_PRIORITY, VCLogger.SCHEMA_VALIDATION_ERROR);
 					//vcLogger.sendMessage(VCLogger.LOW_PRIORITY, TranslationMessage.SCHEMA_VALIDATION_ERROR, 
 					//                          "The source model has invalid elements/attributes:\n" + errorLog)
 				}

@@ -3,17 +3,17 @@ package cbit.vcell.mapping.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import javax.swing.JComboBox;
+import org.vcell.sbml.vcell.StructureSizeSolver;
 
-import cbit.vcell.parser.*;
-import cbit.vcell.units.VCUnitDefinition;
-import cbit.vcell.vcml.StructureSizeSolver;
-import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.model.Membrane;
-import cbit.vcell.mapping.*;
+import cbit.vcell.mapping.FeatureMapping;
+import cbit.vcell.mapping.GeometryContext;
+import cbit.vcell.mapping.MembraneMapping;
+import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.math.BoundaryConditionType;
-import cbit.gui.DialogUtils;
-import cbit.util.BeanUtils;
+import cbit.vcell.model.Membrane;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.units.VCUnitDefinition;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)
