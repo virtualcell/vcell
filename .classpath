@@ -16,7 +16,7 @@
 	<classpathentry kind="lib" path="xml-apis.jar"/>
 	<classpathentry kind="lib" path="new_activation.jar"/>
 	<classpathentry kind="lib" path="new_mail.jar"/>
-	<classpathentry kind="lib" path="thirdParty_1.51.jar"/>
 	<classpathentry kind="lib" path="MiriamJavaLib-standalone-20070625.jar"/>
+	<classpathentry kind="lib" path="thirdParty.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
