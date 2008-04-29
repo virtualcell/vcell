@@ -57,11 +57,13 @@ public class PropertyLoader {
 	public static final String exportBaseDirProperty		= "vcell.export.baseDir";
 	public static final String exportUseLocalDataServer		= "vcell.export.useLocalDataServer";
 	public static final String userGuideURLProperty			= "vcell.help.userGuideURL";	
-	public static final String tutorialURLProperty			= "vcell.help.tutorialURL";	
+	public static final String tutorialURLProperty			= "vcell.help.tutorialURL";
+	
 	public static final String dbDriverName					= "vcell.server.dbDriverName";
 	public static final String dbConnectURL					= "vcell.server.dbConnectURL";
 	public static final String dbUserid						= "vcell.server.dbUserid";
 	public static final String dbPassword					= "vcell.server.dbPassword";
+	public static final String dbPoolTimeoutSec				= "vcell.server.dbPoolTimeoutSec";
 
 	public static final String vcmlSchemaUrlProperty		= "vcell.xml.vcmlSchemaUrl";
 	public static final String sbml1SchemaUrlProperty		= "vcell.xml.sbml1SchemaUrl";
@@ -199,6 +201,7 @@ public class PropertyLoader {
 		dbConnectURL,
 		dbUserid,
 		dbPassword,
+		dbPoolTimeoutSec,
 		
 		vcmlSchemaUrlProperty,
 		sbml1SchemaUrlProperty,
