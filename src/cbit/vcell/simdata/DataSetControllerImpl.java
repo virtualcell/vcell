@@ -2886,8 +2886,8 @@ private void adjustMembraneAdjacentVolumeValues(
 					}
 				}
 				Vector<DataSetIdentifier> dependencyList = identifyDataDependencies(sourceFunction);
-				insideExp = new Expression(sourceFunction.getExpression());
-				outsideExp = new Expression(sourceFunction.getExpression());
+				insideExp = new Expression(sourceFunction.getSimplifiedExpression());
+				outsideExp = new Expression(sourceFunction.getSimplifiedExpression());
 				for (int j = 0; j < dependencyList.size(); j++) {
 					insideExp.substituteInPlace(
 							new Expression(dependencyList.elementAt(j).getName()),
