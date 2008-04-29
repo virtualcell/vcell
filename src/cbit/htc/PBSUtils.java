@@ -108,6 +108,12 @@ public static int getJobStatus(String jobid) {
 		exe.start();
 		
 		String output = exe.getStdoutString();
+		int index = output.indexOf("Job id");
+		if (index < 0) {
+			return iStatus;
+		}		
+		output = output.substring(index);
+		
 		/*
 		Job id            Name             User              Time Use S Queue
 		----------------  ---------------- ----------------  -------- - -----
