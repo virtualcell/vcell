@@ -3,6 +3,9 @@ package pool;
 import java.sql.*;
 import java.util.*;
 
+import cbit.sql.UserInfo;
+import cbit.vcell.modeldb.UserTable;
+
 public class JDCConnection implements Connection {
 
 	private JDCConnectionPool pool;
@@ -275,8 +278,42 @@ public class JDCConnection implements Connection {
 
 	public boolean validate() {
 		try {
-			conn.getMetaData();
+			System.out.println("testing metadata...");
+			DatabaseMetaData dmd = conn.getMetaData();
+			System.out.println("testing metadata...OK");
 		} catch (Exception e) {
+			System.out.println("testing metadata...failed");
+			e.printStackTrace(System.out);
+			return false;
+		}			
+		try {
+			System.out.println("testing autocommit...");
+			conn.getAutoCommit();
+			System.out.println("testing autocommit...OK");
+		} catch (Exception e) {
+			System.out.println("testing autocommit...failed");
+			e.printStackTrace(System.out);
+			return false;
+		}			
+			
+		try {
+			System.out.println("query user table...");
+			String sql = "SELECT * from " + UserTable.table.getTableName() + 
+					" WHERE " + UserTable.table.id + "=0";
+
+			Statement stmt = conn.createStatement();
+			try {
+				ResultSet rset = stmt.executeQuery(sql);
+				if (rset.next()){
+					UserInfo userInfo = UserTable.table.getUserInfo(rset);
+				}
+			} finally {
+				stmt.close();
+			}
+					
+			System.out.println("query user table...OK");
+		} catch (Exception e) {
+			System.out.println("query user table...failed");
 			e.printStackTrace(System.out);
 			return false;
 		}
