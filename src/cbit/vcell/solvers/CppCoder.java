@@ -31,7 +31,7 @@ public void code(OutputStream headerStream,OutputStream codeStream) throws Excep
 	Enumeration enum1 = getCppClassCoders();
 	while (enum1.hasMoreElements()){
 		CppClassCoder cppClassCoder = (CppClassCoder)enum1.nextElement();
-System.out.println("generating C++ header for class " + cppClassCoder.getClassName());
+//System.out.println("generating C++ header for class " + cppClassCoder.getClassName());
 		cppClassCoder.writeDeclaration(headerFile);
 		headerFile.println("");
 	}	
@@ -43,7 +43,7 @@ System.out.println("generating C++ header for class " + cppClassCoder.getClassNa
 	enum1 = getCppClassCoders();
 	while (enum1.hasMoreElements()){
 		CppClassCoder cppClassCoder = (CppClassCoder)enum1.nextElement();
-System.out.println("generating C++ implementation for class " + cppClassCoder.getClassName());
+//System.out.println("generating C++ implementation for class " + cppClassCoder.getClassName());
 		cppClassCoder.writeImplementation(codeFile);
 		headerFile.println("");
 	}	
