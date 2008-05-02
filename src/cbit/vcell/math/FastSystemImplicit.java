@@ -8,6 +8,7 @@ import java.util.*;
 import cbit.vcell.parser.*;
 import cbit.vcell.matrix.RationalExpMatrix;
 import cbit.vcell.matrix.RationalExp;
+import cbit.vcell.model.ReservedSymbol;
 /**
  * This type was created in VisualAge.
  */
@@ -49,12 +50,20 @@ private void checkLinearity() throws MathException, ExpressionException {
 		Enumeration<FastInvariant> enum_fi = getFastInvariants();
 		while (enum_fi.hasMoreElements()){
 			FastInvariant fi = enum_fi.nextElement();
-			Expression exp = fi.getFunction().differentiate(var.getName());
+			Expression exp = fi.getFunction().differentiate(var.getName()).flatten();
 			exp.bindExpression(mathDesc);
-			try {
-				exp.evaluateConstant();
-			}catch (Exception e){
-				throw new MathException("FastInvariant "+fi.getFunction().toString()+" isn't linear, d/d("+var.getName()+") = "+exp.toString());
+			
+			if (!exp.isNumeric()) {
+				// If expression is in terms of 'x','y','z' - then its ok - relax the constant requirement.
+				String[] symbols = exp.getSymbols();
+				for (int i = 0;  i < symbols.length; i++) {
+					if (!symbols[i].equals(ReservedSymbol.X.getName()) && 
+						!symbols[i].equals(ReservedSymbol.Y.getName()) && 
+						!symbols[i].equals(ReservedSymbol.Z.getName()) && 
+						!symbols[i].equals(ReservedSymbol.TIME.getName()) ) {
+						throw new MathException("FastInvariant "+fi.getFunction().toString()+" isn't linear, d/d("+var.getName()+") = "+exp.toString());
+					}
+				}
 			}
 		}
 	}

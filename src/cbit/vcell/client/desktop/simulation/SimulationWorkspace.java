@@ -1,6 +1,8 @@
 package cbit.vcell.client.desktop.simulation;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.solver.ode.gui.*;
+
+import java.awt.Dimension;
 import java.util.*;
 import cbit.vcell.client.*;
 import javax.swing.*;
@@ -310,12 +312,18 @@ void editSimulation(Simulation simulation) {
 	
 	SimulationEditor simEditor = new SimulationEditor();
 	simEditor.prepareToEdit(simulation);
+	
+	JScrollPane scrollPane = new JScrollPane(simEditor);
+    Dimension panesize = simEditor.getPreferredSize();
+    scrollPane.setPreferredSize(new Dimension(panesize.width + 20, panesize.height + 20));
+
+
 	boolean acceptable = false;
 	String errors = null;
 	try{
 		do {
 			//int ok = JOptionPane.showOptionDialog(null, simEditor, "Edit: " + simulation.getName(), 0, JOptionPane.PLAIN_MESSAGE, null, new String[] {"OK", "Cancel"}, null);
-			int ok = PopupGenerator.showComponentOKCancelDialog(null,simEditor,"Edit: " + simulation.getName());
+			int ok = PopupGenerator.showComponentOKCancelDialog(null,scrollPane,"Edit: " + simulation.getName());
 			if (ok != javax.swing.JOptionPane.OK_OPTION) {
 				return; // user cancels, we discard
 			} else {

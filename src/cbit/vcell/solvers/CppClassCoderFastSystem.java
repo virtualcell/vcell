@@ -210,6 +210,19 @@ protected void writeInitVars(java.io.PrintWriter out, String functionName) throw
 		Variable var = (Variable)enum1.nextElement();
 		out.println("\tdouble " + TokenMangler.getEscapedLocalVariableName_C(var.getName()) + " = " + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + "->getCurr(currIndex);");
 	}
+	
+	// Write out the reserved variables, (x,y,z,t) in case they are used in the fast invariants 
+	String mangledVarXName = TokenMangler.getEscapedLocalVariableName_C(ReservedVariable.X.getName());
+	String mangledVarYName = TokenMangler.getEscapedLocalVariableName_C(ReservedVariable.Y.getName());
+	String mangledVarZName = TokenMangler.getEscapedLocalVariableName_C(ReservedVariable.Z.getName());
+	String mangledVarTName = TokenMangler.getEscapedLocalVariableName_C(ReservedVariable.TIME.getName());
+
+	out.println("\tdouble " +  mangledVarTName + " = simulation->getTime_sec();");
+	out.println("\tWorldCoord wc = mesh->getVolumeWorldCoord(currIndex);");
+	out.println("\tdouble " +  mangledVarXName + " = wc.x;");
+	out.println("\tdouble " +  mangledVarYName + " = wc.y;");
+	out.println("\tdouble " +  mangledVarZName + " = wc.z;");
+	
 	int invariantCount=0;
 	Enumeration<PseudoConstant> enum2 = getFastSystem().getPseudoConstants();
 	while (enum2.hasMoreElements()){
@@ -278,6 +291,19 @@ protected void writeUpdateDependentVars(java.io.PrintWriter out, String function
 		out.println("\tdouble " + TokenMangler.getEscapedLocalVariableName_C(var.getName()) + " = getX(" + varCount + ");");
 		varCount++;
 	}
+
+	// --- Write out the reserved variables, (x,y,z,t) in case they are used in the fast invariants 
+	String mangledVarXName = TokenMangler.getEscapedLocalVariableName_C(ReservedVariable.X.getName());
+	String mangledVarYName = TokenMangler.getEscapedLocalVariableName_C(ReservedVariable.Y.getName());
+	String mangledVarZName = TokenMangler.getEscapedLocalVariableName_C(ReservedVariable.Z.getName());
+	String mangledVarTName = TokenMangler.getEscapedLocalVariableName_C(ReservedVariable.TIME.getName());
+
+	out.println("\tdouble " +  mangledVarTName + " = simulation->getTime_sec();");
+	out.println("\tWorldCoord wc = mesh->getVolumeWorldCoord(currIndex);");
+	out.println("\tdouble " +  mangledVarXName + " = wc.x;");
+	out.println("\tdouble " +  mangledVarYName + " = wc.y;");
+	out.println("\tdouble " +  mangledVarZName + " = wc.z;");
+
 	Enumeration<PseudoConstant> enum_pc = getFastSystem().getPseudoConstants();
 	while (enum_pc.hasMoreElements()){
 		PseudoConstant pc = enum_pc.nextElement();
