@@ -1354,9 +1354,9 @@ private void initialize() {
 		// user code begin {1}
 		// user code end
 		setName("EditSpeciesDialog");
-		setSize(384, 193);
 		setContentPane(getJInternalFrameEnhancedContentPane());
 		initConnections();
+		pack();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
