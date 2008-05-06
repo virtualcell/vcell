@@ -716,9 +716,9 @@ private void initialize() {
 		setName("FeatureDialog");
 		setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 		setClosable(true);
-		setSize(344, 143);
 		setContentPane(getPanel1());
 		initConnections();
+		pack();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
