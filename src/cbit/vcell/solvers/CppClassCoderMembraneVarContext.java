@@ -107,7 +107,7 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 	out.println("{");
 	out.println("public:");
 	out.println("\t"+getClassName() + "(Feature *feature, string& speciesName);");
-	out.println("\tvirtual bool resolveReferences(Simulation *sim);");
+	out.println("\tvirtual void resolveReferences(Simulation *sim);");
 
 	BoundaryConditionType bc = null;
 	int dimension = getSimulation().getMathDescription().getGeometry().getDimension();

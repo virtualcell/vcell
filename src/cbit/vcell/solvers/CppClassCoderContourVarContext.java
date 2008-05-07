@@ -83,7 +83,7 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 	out.println("{");
 	out.println("public:");
 	out.println("\t" + getClassName() + "(Contour *contour, Feature *feature, CString speciesName);");
-	out.println("\tvirtual boolean resolveReferences(Simulation *sim);");
+	out.println("\tvirtual void resolveReferences(Simulation *sim);");
 
 	try {
 		double value = getEquation().getInitialExpression().evaluateConstant();

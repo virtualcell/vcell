@@ -108,7 +108,7 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 	out.println("{");
 	out.println(" public:");
 	out.println("\t"+getClassName() + "(Feature *feature, string& speciesName);");
-	out.println("\tvirtual bool resolveReferences(Simulation *sim);");
+	out.println("\tvoid resolveReferences(Simulation *sim);");
 
 	try {
 		Expression ic = getEquation().getInitialExpression();
@@ -117,9 +117,9 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 	}catch (Exception e){
 		out.println("\tvirtual double getInitialValue(MembraneElement *memElement);");
 	}
-	out.println("\tvirtual double getMembraneReactionRate(MembraneElement *memElement);");
-	out.println("\tvirtual double getUniformRate(MembraneRegion *memElement);");
-	out.println("\tvirtual void getFlux(MembraneElement *memElement, double *inFlux, double *outFlux);");
+	out.println("\tdouble getMembraneReactionRate(MembraneElement *memElement);");
+	out.println("\tdouble getUniformRate(MembraneRegion *memElement);");
+
 	out.println("private:");
 	Variable requiredVariables[] = getRequiredVariables();
 	for (int i = 0; i < requiredVariables.length; i++){
@@ -160,17 +160,12 @@ public void writeImplementation(java.io.PrintWriter out) throws Exception {
 	out.println("");
 	boolean bFlippedInsideOutside = isFlippedInsideOutside(getMembraneSubDomain());
 	writeMembraneFunction(out,"getMembraneReactionRate", ((MembraneRegionEquation)getEquation()).getMembraneRateExpression(),bFlippedInsideOutside);
-	out.println("");
-	out.println("void "+getClassName()+"::getFlux(MembraneElement *element,double *inFlux, double *outFlux){");
-	out.println("\t*inFlux = 0.0;");
-	out.println("\t*outFlux = 0.0;");			
-	out.println("}");
-	out.println("");
+	out.println();
 	try {
 		double value = getEquation().getInitialExpression().evaluateConstant();
 	}catch (Exception e){
 		writeMembraneFunction(out,"getInitialValue", getEquation().getInitialExpression(),bFlippedInsideOutside);
 	}
-	out.println("");
+	out.println();
 }
 }
