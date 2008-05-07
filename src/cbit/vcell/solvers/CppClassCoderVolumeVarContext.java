@@ -171,7 +171,7 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 	out.println("{");
 	out.println(" public:");
 	out.println("\t" + getClassName() + "(Feature *feature, string& speciesName);");
-	out.println("\tvirtual bool resolveReferences(Simulation *sim);");
+	out.println("\tvoid resolveReferences(Simulation *sim);");
 
 	BoundaryConditionType bc = null;
 	int dimension = getSimulation().getMathDescription().getGeometry().getDimension();
@@ -180,68 +180,68 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 		if (pdeEqu.getBoundaryXm()!=null){
 			bc = getCompartmentSubDomain().getBoundaryConditionXm();
 			if (bc.isDIRICHLET()){
-				out.println("\tvirtual double getXmBoundaryValue(long volumeIndex);");
+				out.println("\tdouble getXmBoundaryValue(long volumeIndex);");
 			}else if (bc.isNEUMANN()){
-				out.println("\tvirtual double getXmBoundaryFlux(long volumeIndex);");
+				out.println("\tdouble getXmBoundaryFlux(long volumeIndex);");
 			} else if (bc.isPERIODIC()){
-				out.println("\tvirtual double getXBoundaryPeriodicConstant();");
+				out.println("\tdouble getXBoundaryPeriodicConstant();");
 			}
 		}
 		if (pdeEqu.getBoundaryXp()!=null){			
 			bc = getCompartmentSubDomain().getBoundaryConditionXp();
 			if (bc.isDIRICHLET()){
-				out.println("\tvirtual double getXpBoundaryValue(long volumeIndex);");
+				out.println("\tdouble getXpBoundaryValue(long volumeIndex);");
 			}else if (bc.isNEUMANN()){
-				out.println("\tvirtual double getXpBoundaryFlux(long volumeIndex);");
+				out.println("\tdouble getXpBoundaryFlux(long volumeIndex);");
 			}
 		}
 		if (pdeEqu.getVelocityX() != null) {
-			out.println("\tvirtual double getConvectionVelocity_X(long index);");
+			out.println("\tdouble getConvectionVelocity_X(long index);");
 		}
 		if (dimension>1){
 			if (pdeEqu.getBoundaryYm()!=null){
 				bc = getCompartmentSubDomain().getBoundaryConditionYm();
 				if (bc.isDIRICHLET()){
-					out.println("\tvirtual double getYmBoundaryValue(long volumeIndex);");
+					out.println("\tdouble getYmBoundaryValue(long volumeIndex);");
 				}else if (bc.isNEUMANN()){
-					out.println("\tvirtual double getYmBoundaryFlux(long volumeIndex);");
+					out.println("\tdouble getYmBoundaryFlux(long volumeIndex);");
 				}else if (bc.isPERIODIC()){
-					out.println("\tvirtual double getYBoundaryPeriodicConstant();");
+					out.println("\tdouble getYBoundaryPeriodicConstant();");
 				}
 			}	
 			if (pdeEqu.getBoundaryYp()!=null){
 				bc = getCompartmentSubDomain().getBoundaryConditionYp();
 				if (bc.isDIRICHLET()){
-					out.println("\tvirtual double getYpBoundaryValue(long volumeIndex);");
+					out.println("\tdouble getYpBoundaryValue(long volumeIndex);");
 				}else if (bc.isNEUMANN()){
-					out.println("\tvirtual double getYpBoundaryFlux(long volumeIndex);");
+					out.println("\tdouble getYpBoundaryFlux(long volumeIndex);");
 				}
 			}
 			if (pdeEqu.getVelocityY() != null) {
-				out.println("\tvirtual double getConvectionVelocity_Y(long index);");
+				out.println("\tdouble getConvectionVelocity_Y(long index);");
 			}			
 		}
 		if (dimension==3){	
 			if (pdeEqu.getBoundaryZm()!=null){
 				bc = getCompartmentSubDomain().getBoundaryConditionZm();
 				if (bc.isDIRICHLET()){
-					out.println("\tvirtual double getZmBoundaryValue(long volumeIndex);");
+					out.println("\tdouble getZmBoundaryValue(long volumeIndex);");
 				}else if (bc.isNEUMANN()){
-					out.println("\tvirtual double getZmBoundaryFlux(long volumeIndex);");
+					out.println("\tdouble getZmBoundaryFlux(long volumeIndex);");
 				} else if (bc.isPERIODIC()){
-				out.println("\tvirtual double getZBoundaryPeriodicConstant();");
+				out.println("\tdouble getZBoundaryPeriodicConstant();");
 				}
 			}	
 			if (pdeEqu.getBoundaryZp()!=null){
 				bc = getCompartmentSubDomain().getBoundaryConditionZp();
 				if (bc.isDIRICHLET()){
-					out.println("\tvirtual double getZpBoundaryValue(long volumeIndex);");
+					out.println("\tdouble getZpBoundaryValue(long volumeIndex);");
 				}else if (bc.isNEUMANN()){
-					out.println("\tvirtual double getZpBoundaryFlux(long volumeIndex);");
+					out.println("\tdouble getZpBoundaryFlux(long volumeIndex);");
 				}
 			}
 			if (pdeEqu.getVelocityZ() != null) {
-				out.println("\tvirtual double getConvectionVelocity_Z(long index);");
+				out.println("\tdouble getConvectionVelocity_Z(long index);");
 			}			
 		}	
 	}		
@@ -250,7 +250,7 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 		ic.bindExpression(getSimulation());
 		double value = ic.evaluateConstant();
 	}catch (Exception e){
-		out.println("\tvirtual double getInitialValue(long volumeIndex);");
+		out.println("\tdouble getInitialValue(long volumeIndex);");
 	}
 	if (getEquation() instanceof PdeEquation){
 		try {
@@ -258,12 +258,12 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 			Dexp.bindExpression(getSimulation());
 			double value = Dexp.evaluateConstant();
 		}catch (Exception e){
-			out.println("\tvirtual double getDiffusionRate(long volumeIndex);");
+			out.println("\tdouble getDiffusionRate(long volumeIndex);");
 		}
 	}
 	out.println("protected:");
-	out.println("\tvirtual double getReactionRate(long volumeIndex);");
-	out.println("\tvirtual void getFlux(MembraneElement *element,double *inFlux, double *outFlux);");
+	out.println("\tdouble getReactionRate(long volumeIndex);");
+	out.println("\tvoid getFlux(MembraneElement *element,double *inFlux, double *outFlux);");
 	out.println();
 	out.println("private:");
 	Variable requiredVariables[] = getRequiredVariables();

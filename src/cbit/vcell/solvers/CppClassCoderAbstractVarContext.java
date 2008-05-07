@@ -387,11 +387,9 @@ protected final void writeMembraneRegionFunctionDeclarations(java.io.PrintWriter
  * @param out java.io.PrintWriter
  */
 protected final void writeResolveReferences(java.io.PrintWriter out) throws Exception {
-	out.println("bool "+getClassName()+"::resolveReferences(Simulation *sim)");
+	out.println("void "+getClassName()+"::resolveReferences(Simulation *sim)");
 	out.println("{");
-	out.println("\tif (!"+getParentClassName()+"::resolveReferences(sim)){");
-	out.println("\t\treturn false;");
-	out.println("\t}");
+	out.println("\t"+getParentClassName()+"::resolveReferences(sim);");
 	out.println("\tASSERTION(sim);");
 	out.println();
 	Variable[] requiredVariables = getRequiredVariables();
@@ -400,36 +398,26 @@ protected final void writeResolveReferences(java.io.PrintWriter out) throws Exce
 		if (var instanceof VolVariable){
 			out.println("\t"+TokenMangler.getEscapedFieldVariableName_C(var.getName())+" = (VolumeVariable*)sim->getVariableFromName(\""+var.getName()+"\");");
 			out.println("\tif (" + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + "==NULL){");
-			out.println("\t\tprintf(\"could not resolve '"+var.getName()+"'\\n\");");
-			out.println("\t\treturn false;");
+			out.println("\t\tthrow \""  + getClassName() + "::resolveReferences() : could not resolve '"+var.getName()+"'\\n\";");
 			out.println("\t}");
-			out.println("");
 		}else if (var instanceof MemVariable){
 			out.println("\t"+TokenMangler.getEscapedFieldVariableName_C(var.getName())+" = (MembraneVariable*)sim->getVariableFromName(\""+var.getName()+"\");");
 			out.println("\t if ("+TokenMangler.getEscapedFieldVariableName_C(var.getName())+"==NULL){");
-			out.println("\t\tprintf(\"could not resolve '"+var.getName()+"'\\n\");");
-			out.println("\t\treturn false;");
+			out.println("\t\tthrow \"" +getClassName()+"::resolveReferences() : could not resolve '"+var.getName()+"'\\n\";");
 			out.println("\t}");
-			out.println("");
 		}else if (var instanceof MembraneRegionVariable){
 			out.println("\t"+TokenMangler.getEscapedFieldVariableName_C(var.getName())+" = (MembraneRegionVariable*)sim->getVariableFromName(\""+var.getName()+"\");");
 			out.println("\tif ("+TokenMangler.getEscapedFieldVariableName_C(var.getName())+"==NULL){");
-			out.println("\t\tprintf(\"could not resolve '"+var.getName()+"'\\n\");");
-			out.println("\t\treturn false;");
+			out.println("\t\tthrow \"" +getClassName()+"::resolveReferences() : could not resolve '"+var.getName()+"'\\n\";");
 			out.println("\t}");
-			out.println("");
 		}else if (var instanceof VolumeRegionVariable){
 			out.println("\t"+TokenMangler.getEscapedFieldVariableName_C(var.getName())+" = (VolumeRegionVariable*)sim->getVariableFromName(\""+var.getName()+"\");");
 			out.println("\t if ("+TokenMangler.getEscapedFieldVariableName_C(var.getName())+"==NULL){");
-			out.println("\t\tprintf(\"could not resolve '"+var.getName()+"'\\n\");");
-			out.println("\t\treturn false;");
+			out.println("\t\tthrow \"" +getClassName()+"::resolveReferences() : could not resolve '"+var.getName()+"'\\n\";");
 			out.println("\t}");
-			out.println("");
 		}	
 	}		  	
-	out.println("\treturn true;");
-	out.println("}");
-	out.println("");
+	out.println("}\n");
 }
 
 
