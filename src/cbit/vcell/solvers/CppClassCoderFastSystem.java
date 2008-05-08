@@ -94,7 +94,7 @@ public void writeDeclaration(java.io.PrintWriter out) throws Exception {
 	out.println("{");
 	out.println("public:");
 	out.println("\t " + getClassName() + "();");
-	out.println("\tvirtual bool resolveReferences(Simulation *sim);");
+	out.println("\tvoid resolveReferences(Simulation *sim);");
 	out.println("\tvoid initVars();");
 	out.println("\tvoid updateDependentVars();");
 	out.println("protected:");
@@ -239,7 +239,7 @@ protected void writeInitVars(java.io.PrintWriter out, String functionName) throw
  * @param out java.io.PrintWriter
  */
 protected void writeResolveReferences(java.io.PrintWriter out) throws Exception {
-	out.println("bool "+getClassName()+"::resolveReferences(Simulation *sim)");
+	out.println("void "+getClassName()+"::resolveReferences(Simulation *sim)");
 	out.println("{");
 	out.println("\tASSERTION(sim);");
 	out.println("\tthis->mesh = sim->getMesh();");
@@ -251,11 +251,10 @@ protected void writeResolveReferences(java.io.PrintWriter out) throws Exception 
 		Variable var = enum1.nextElement();
 		out.println("\t" + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + " = sim->getVariableFromName(\"" + var.getName() + "\");");
 		out.println("\tif (" + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + "==NULL){");
-		out.println("\t\tprintf(\"could not resolve '" + var.getName() + "'\\n\");");
-		out.println("\t\treturn false;");
+		out.println("\t\tthrow(\"could not resolve '" + var.getName() + "'\\n\");");
 		out.println("\t}");
 		out.println("\tpVars[" + varCount + "] = " + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + ";");
-		out.println("");
+		out.println();
 		varCount++;
 	}		  	
 	enum1 = getFastSystem().getDependentVariables();
@@ -264,16 +263,14 @@ protected void writeResolveReferences(java.io.PrintWriter out) throws Exception 
 		Variable var = enum1.nextElement();
 		out.println("\t" + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + " = sim->getVariableFromName(\"" + var.getName() + "\");");
 		out.println("\tif (" + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + "==NULL){");
-		out.println("\t\tprintf(\"could not resolve '" + var.getName() + "'\\n\");");
-		out.println("\t\treturn false;");
+		out.println("\t\tthrow(\"could not resolve '" + var.getName() + "'\\n\");");
 		out.println("\t}");
 		out.println("\tpDependentVars[" + varCount + "] = " + TokenMangler.getEscapedFieldVariableName_C(var.getName()) + ";");
 		out.println("");
 		varCount++;
 	}		  	
-	out.println("\treturn true;");
 	out.println("}");
-	out.println("");
+	out.println();
 }
 /**
  * This method was created by a SmartGuide.
