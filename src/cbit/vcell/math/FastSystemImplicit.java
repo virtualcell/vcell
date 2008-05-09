@@ -50,8 +50,8 @@ private void checkLinearity() throws MathException, ExpressionException {
 		Enumeration<FastInvariant> enum_fi = getFastInvariants();
 		while (enum_fi.hasMoreElements()){
 			FastInvariant fi = enum_fi.nextElement();
-			Expression exp = fi.getFunction().differentiate(var.getName()).flatten();
-			exp.bindExpression(mathDesc);
+			Expression exp = fi.getFunction().differentiate(var.getName());
+			exp = MathUtilities.substituteFunctions(exp, mathDesc).flatten();
 			
 			if (!exp.isNumeric()) {
 				// If expression is in terms of 'x','y','z' - then its ok - relax the constant requirement.
@@ -61,6 +61,7 @@ private void checkLinearity() throws MathException, ExpressionException {
 						!symbols[i].equals(ReservedSymbol.Y.getName()) && 
 						!symbols[i].equals(ReservedSymbol.Z.getName()) && 
 						!symbols[i].equals(ReservedSymbol.TIME.getName()) ) {
+						bNeedsRefresh = true;
 						throw new MathException("FastInvariant "+fi.getFunction().toString()+" isn't linear, d/d("+var.getName()+") = "+exp.toString());
 					}
 				}
