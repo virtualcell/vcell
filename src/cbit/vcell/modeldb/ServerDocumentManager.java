@@ -295,6 +295,7 @@ public BioModel getBioModelUnresolved(User user, KeyValue bioModelKey) throws Da
 	//
 	BioModel newBioModel = new BioModel(bioModelMetaData.getVersion());
 	try {
+		newBioModel.setMIRIAMAnnotation(bioModelMetaData.getMIRIAMAnnotation());
 		newBioModel.setModel(model);
 		newBioModel.setSimulationContexts(scArray);
 		//
