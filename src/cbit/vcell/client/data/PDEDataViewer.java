@@ -804,11 +804,7 @@ private void roiAction(){
 					PopupGenerator.showErrorDialog("ROI Error.\n"+e1.getMessage());
 				}
 			}
-			JInternalFrame jif =
-				(JInternalFrame)BeanUtils.findTypeParentOfComponent(mainJPanel, JInternalFrame.class);
-			if(jif != null){
-				jif.dispose();
-			}
+			BeanUtils.dispose(mainJPanel);
 		}});
 	okCancelJPanel.add(okButton);
 	roiTable.getSelectionModel().addListSelectionListener(
@@ -826,11 +822,7 @@ private void roiAction(){
 	JButton cancelButton = new JButton("Cancel");
 	cancelButton.addActionListener(new ActionListener(){
 		public void actionPerformed(ActionEvent e) {
-			JInternalFrame jif =
-				(JInternalFrame)BeanUtils.findTypeParentOfComponent(mainJPanel, JInternalFrame.class);
-			if(jif != null){
-				jif.dispose();
-			}
+			BeanUtils.dispose(mainJPanel);
 		}});
 	okCancelJPanel.add(cancelButton);
 	okCancelJPanel.setBorder(new EmptyBorder(4,4,4,4));
