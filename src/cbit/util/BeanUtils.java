@@ -416,6 +416,15 @@ public final static int coordinateToIndex(int[] coordinates, int[] bounds) {
 	return index;
 }
 
+public static void dispose(Component disposableChild){
+	if(BeanUtils.findTypeParentOfComponent(disposableChild, JInternalFrame.class) != null){
+		((JInternalFrame)BeanUtils.findTypeParentOfComponent(disposableChild, JInternalFrame.class)).dispose();
+	}else if(BeanUtils.findTypeParentOfComponent(disposableChild, JFrame.class) != null){
+		((JFrame)BeanUtils.findTypeParentOfComponent(disposableChild, JFrame.class)).dispose();
+	}else{
+		throw new IllegalArgumentException(BeanUtils.class.getName()+".dispose(...) only handles JInternalFrame and JFrame parents");
+	}
+}
 
 /**
  * Comment
