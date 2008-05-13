@@ -228,7 +228,7 @@ private final void writeFieldFunctionDeclarations(java.io.PrintWriter out, Expre
 	for (int i = 0; fieldFuncArgs != null && i < fieldFuncArgs.length; i ++) {
 		String localvarname = TokenMangler.getEscapedLocalFieldVariableName_C(fieldFuncArgs[i]);
 		String globalvarname = TokenMangler.getEscapedGlobalFieldVariableName_C(fieldFuncArgs[i]);
-		out.println("\tdouble " + localvarname + " = " + globalvarname + "->getData()[" + indexString + "];");	
+		out.println("\tdouble " + localvarname + " = " + globalvarname + "->getData()[" + indexString + (indexString.equals("memElement") ? "->index" : "") + "];");	
 	}
 }
 
