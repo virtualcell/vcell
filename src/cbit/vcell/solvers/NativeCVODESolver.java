@@ -6,7 +6,7 @@ package cbit.vcell.solvers;
  */
 public class NativeCVODESolver {
 	static {
-        System.loadLibrary("JavaBinding");
+        System.loadLibrary("NativeSolvers");
     }
 
 	private boolean bStopRequested = false;

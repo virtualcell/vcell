@@ -1,20 +1,9 @@
 package cbit.vcell.opt.solvers;
-import cbit.vcell.solver.Simulation;
+
 import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.opt.OptimizationResultSet;
-import cbit.vcell.opt.Parameter;
-import cbit.vcell.opt.Constraint;
-import cbit.vcell.opt.ConstraintType;
-import cbit.vcell.opt.OptimizationStatus;
 import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.OptimizationSolverSpec;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import java.util.*;
-import cbit.vcell.math.*;
-import java.rmi.*;
 import cbit.vcell.parser.*;
 import java.io.*;
 /**
@@ -41,11 +30,9 @@ public OptimizationResultSet solve(OptimizationSpec optSpec, OptimizationSolverS
 		optSolver = new PowellOptimizationSolver();
 	//}else if (optSolverSpec.getSolverType().equals(OptimizationSolverSpec.SOLVERTYPE_CONJUGATE_GRADIENT)){
 		//optSolver = new ConjugateGradientOptimizationSolver();
-	}else if (optSolverSpec.getSolverType().equals(OptimizationSolverSpec.SOLVERTYPE_CFSQP) 
-	//			|| optSolverSpec.getSolverType().equals(OptimizationSolverSpec.SOLVERTYPE_SIMULTANEOUS)
-	) {
-		optSolver = new NativeOptSolver();
-	}else {
+	} else if (optSolverSpec.getSolverType().equals(OptimizationSolverSpec.SOLVERTYPE_CFSQP)) { 
+			optSolver = new NewOptimizationSolver();
+	} else {
 		throw new RuntimeException("unsupported solver type '"+optSolverSpec.getSolverType()+"'");
 	}
 	cbit.vcell.opt.OptimizationResultSet optResultSet = null;
