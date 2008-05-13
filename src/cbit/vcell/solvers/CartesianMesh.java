@@ -116,37 +116,10 @@ public boolean compareEqual(Matchable object) {
  * Creation date: (8/4/2005 8:25:37 AM)
  */
 public static boolean compareMesh(CartesianMesh mesh1, CartesianMesh mesh2, PrintWriter pw) {
-	try {		
-		int dimension = mesh1.getGeometryDimension();
-		
-		if (dimension != mesh2.getGeometryDimension()) {
+	try {
+		if(!CartesianMesh.isSpatialDomainSame(mesh1, mesh2)){
 			return false;
-		}
-
-		// Size
-		if (mesh1.getSizeX() != mesh2.getSizeX() || dimension > 1 && mesh1.getSizeY() != mesh2.getSizeY()
-			|| dimension > 2 && mesh1.getSizeZ() != mesh2.getSizeZ()) {
-			pw.println("Size is differnt!");
-			System.out.println("Size is differnt!");
-			return false;
-		}
-
-		// Extent
-		if (mesh1.getExtent().getX() != mesh2.getExtent().getX() || dimension > 1 && mesh1.getExtent().getY() != mesh2.getExtent().getY()
-			|| dimension > 2 && mesh1.getExtent().getZ() != mesh2.getExtent().getZ()) {
-			pw.println("Extent is differnt!");
-			System.out.println("Extent is differnt!");
-			return false;
-		}
-
-		// Origin
-		if (mesh1.getOrigin().getX() != mesh2.getOrigin().getX() || dimension > 1 && mesh1.getOrigin().getY() != mesh2.getOrigin().getY()
-			|| dimension > 2 && mesh1.getOrigin().getZ() != mesh2.getOrigin().getZ()) {
-			pw.println("Origin is different!");
-			System.out.println("Origin is different!");
-			return false;
-		}
-		
+		}		
 		if (!Compare.isEqualOrNullStrict(mesh1.getContourElements(),mesh2.getContourElements())){
 			pw.println("ContourElemment is different!");
 			System.out.println("ContourElemment is different!");
@@ -332,6 +305,39 @@ public static CartesianMesh createSimpleCartesianMesh(Origin orig, Extent extent
 	return mesh;
 }
 
+
+public static boolean isSpatialDomainSame(CartesianMesh mesh1,CartesianMesh mesh2){
+	if(mesh1.getGeometryDimension() < 1 || mesh1.getGeometryDimension() > 3 ||
+		mesh2.getGeometryDimension() < 1 || mesh2.getGeometryDimension() > 3){
+		throw new IllegalArgumentException("CartesianMesh.isSpatialDomain:  expecting dimension 1, 2 or 3");
+	}
+	if(mesh1.getGeometryDimension() != mesh2.getGeometryDimension()){
+		return false;
+	}
+	if(mesh1.getGeometryDimension() >= 1){
+		if((mesh1.getSizeX() != mesh2.getSizeX()) ||
+			(mesh1.getOrigin().getX() != mesh2.getOrigin().getX()) ||
+			(mesh1.getExtent().getX() != mesh2.getExtent().getX())){
+			return false;
+		}
+	}
+	if(mesh1.getGeometryDimension() >= 2){
+		if((mesh1.getSizeY() != mesh2.getSizeY()) ||
+				(mesh1.getOrigin().getY() != mesh2.getOrigin().getY()) ||
+				(mesh1.getExtent().getY() != mesh2.getExtent().getY())){
+				return false;
+			}		
+	}
+	if(mesh1.getGeometryDimension() == 3){
+		if((mesh1.getSizeZ() != mesh2.getSizeZ()) ||
+				(mesh1.getOrigin().getZ() != mesh2.getOrigin().getZ()) ||
+				(mesh1.getExtent().getZ() != mesh2.getExtent().getZ())){
+				return false;
+			}	
+	}
+	
+	return true;
+}
 
 /**
  * This method was created by a SmartGuide.

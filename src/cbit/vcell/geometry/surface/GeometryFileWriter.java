@@ -16,7 +16,7 @@ public class GeometryFileWriter {
  * Creation date: (7/19/2004 10:54:30 AM)
  * @param geometrySurfaceDescription cbit.vcell.geometry.surface.GeometrySurfaceDescription
  */
-public static void write(Geometry geometry, ISize newSize, java.io.Writer writer) throws Exception {
+public static int write(Geometry geometry, ISize newSize, java.io.Writer writer) throws Exception {
 
 	long tm = System.currentTimeMillis();
 
@@ -92,7 +92,7 @@ public static void write(Geometry geometry, ISize newSize, java.io.Writer writer
 	System.out.println("Geometry updateAll takes " + (System.currentTimeMillis() - tm)/1000.0 + " sec");
 	*/
 
-	write(writer, newGeometry, newSize, regionImage, surfaceCollection, geometricRegions);
+	return write(writer, newGeometry, newSize, regionImage, surfaceCollection, geometricRegions);
 }
 
 
@@ -101,7 +101,7 @@ public static void write(Geometry geometry, ISize newSize, java.io.Writer writer
  * Creation date: (7/19/2004 10:54:30 AM)
  * @param geometrySurfaceDescription cbit.vcell.geometry.surface.GeometrySurfaceDescription
  */
-private static void write(Writer writer, Geometry geometry, ISize volumeSampleSize, RegionImage regionImage, SurfaceCollection surfaceCollection, GeometricRegion[] geometricRegions) throws Exception {
+private static int write(Writer writer, Geometry geometry, ISize volumeSampleSize, RegionImage regionImage, SurfaceCollection surfaceCollection, GeometricRegion[] geometricRegions) throws Exception {
 	//
 	// "name" name
 	// "dimension" dimension
@@ -344,6 +344,7 @@ private static void write(Writer writer, Geometry geometry, ISize volumeSampleSi
 				throw new RuntimeException("Volume neighbor regions not consistent: [total, inside, outside]=" + surface.getPolygonCount() + "," + region1Inside + "," + region1Outside + "]");
 			}
 		}
-	}	
+	}
+	return numCells;
 }
 }

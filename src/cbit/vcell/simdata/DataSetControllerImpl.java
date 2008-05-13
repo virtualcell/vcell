@@ -1567,6 +1567,7 @@ private Expression fieldFunctionSubstitution(final VCDataIdentifier vcdID,Annota
 				getPrimaryUserDir(simResampleInfoProvider.getOwner(), true),
 				getMesh(simResampleInfoProvider),
 				simResampleInfoProvider,
+				getMesh(simResampleInfoProvider).getNumMembraneElements(),
 				FVSolver.HESM_KEEP_AND_CONTINUE);
 		}catch(SolverException e){
 			throw new DataAccessException("Error while resampling Field Data");
