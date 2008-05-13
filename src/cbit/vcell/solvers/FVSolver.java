@@ -2,6 +2,8 @@ package cbit.vcell.solvers;
 import cbit.util.ISize;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.SimResampleInfoProvider;
+import cbit.vcell.geometry.surface.GeometryFileWriter;
+import cbit.vcell.geometry.surface.SurfaceCollection;
 import cbit.vcell.math.OutsideVariable;
 import cbit.vcell.math.InsideVariable;
 import cbit.vcell.math.FilamentVariable;
@@ -545,7 +547,8 @@ protected void initStep1() throws SolverException {
 	try {	
 		cbit.vcell.geometry.Geometry geo = getSimulation().getMathDescription().getGeometry();
 		PrintWriter pw = new PrintWriter(new FileWriter(new File(getSaveDirectory(), cppCoderVCell.getBaseFilename()+".vcg")));
-		cbit.vcell.geometry.surface.GeometryFileWriter.write(geo, getSimulation().getMeshSpecification().getSamplingSize(),pw);
+		int numMembraneElements =
+			GeometryFileWriter.write(geo, getSimulation().getMeshSpecification().getSamplingSize(),pw);
 		pw.close();
 
 
@@ -563,7 +566,8 @@ protected void initStep1() throws SolverException {
 						getSimulation().getMathDescription().getGeometry().getExtent(),
 						getSimulation().getMeshSpecification().getSamplingSize(),
 						getSimulation().getMathDescription().getGeometry().getGeometrySurfaceDescription().getRegionImage()),
-					simResampleInfoProvider,	
+					simResampleInfoProvider,
+					numMembraneElements,
 					HESM_OVERWRITE_AND_CONTINUE
 				);
 		}
@@ -603,6 +607,7 @@ public static void resampleFieldData(
 		File userDirectory,
 		CartesianMesh newMesh,
 		SimResampleInfoProvider simResampleInfoProvider,
+		int simResampleMembraneDataLength,
 		int handleExistingResampleMode)throws SolverException {
 	
 	if(	handleExistingResampleMode != HESM_KEEP_AND_CONTINUE &&
@@ -645,24 +650,35 @@ public static void resampleFieldData(
 			}
 			DataSetControllerImpl dsci = new DataSetControllerImpl(new NullSessionLog(),null,userDirectory.getParentFile(),null);
 			CartesianMesh origMesh = dsci.getMesh(resampleEntry.getKey().getExternalDataIdentifier());
-			boolean bSame = false;
-			if (origMesh.getOrigin().compareEqual(newMesh.getOrigin())
-				&& origMesh.getExtent().compareEqual(newMesh.getExtent())
-				&& origMesh.getSizeX() == newMesh.getSizeX()
-				&& origMesh.getSizeY() == newMesh.getSizeY()
-				&& origMesh.getSizeZ() == newMesh.getSizeZ()
-				) {
-				bSame = true;
-			}
 			SimDataBlock simDataBlock = dsci.getSimDataBlock(resampleEntry.getKey().getExternalDataIdentifier(),resampleEntry.getKey().getFieldFuncArgs().getVariableName(), resampleEntry.getKey().getFieldFuncArgs().getTime().evaluateConstant());
-			if(!simDataBlock.getVariableType().compareEqual(VariableType.VOLUME)){
-				throw new Exception("Variable "+resampleEntry.getKey().getFieldFuncArgs().getVariableName()+" is not Volume type");
-			}
 			double[] origData = simDataBlock.getData();
 			double[] newData = null;
-			if(bSame){
+			if(CartesianMesh.isSpatialDomainSame(origMesh, newMesh)){
 				newData = origData;
+				if(simDataBlock.getVariableType().equals(VariableType.MEMBRANE)){
+					if(origData.length != simResampleMembraneDataLength){
+						throw new Exception(
+							"FieldData variable \""+resampleEntry.getKey().getFieldFuncArgs().getVariableName()+
+							"\" ("+simDataBlock.getVariableType().getTypeName()+") "+
+							"resampling failed: Membrane Data lengths must be equal"
+						);
+					}
+				}else if(!simDataBlock.getVariableType().equals(VariableType.VOLUME)){
+					throw new Exception(
+							"FieldData variable \""+resampleEntry.getKey().getFieldFuncArgs().getVariableName()+
+							"\" ("+simDataBlock.getVariableType().getTypeName()+") "+
+							"resampling failed: Only Volume and Membrane variable types are supported"
+						);
+				}
 			}else{
+				if(!simDataBlock.getVariableType().compareEqual(VariableType.VOLUME)){
+					throw new Exception("FieldData variable \""+resampleEntry.getKey().getFieldFuncArgs().getVariableName()+
+							"\" ("+simDataBlock.getVariableType().getTypeName()+") "+
+							"resampling failed: Only VOLUME FieldData variable type allowed when\n"+
+							"FieldData spatial domain does not match Simulation spatial domain.\n"+
+							"Check dimension, xsize, ysize, zsize, origin and extent are equal."
+					);
+				}
 				if(origMesh.getSizeY() == 1 && origMesh.getSizeZ() == 1){
 					newData = cbit.vcell.solver.test.MathTestingUtilities.resample1DSpatialSimple(origData, origMesh, newMesh);						
 				}else if(origMesh.getSizeZ() == 1){
@@ -674,7 +690,7 @@ public static void resampleFieldData(
 			cbit.vcell.simdata.DataSet.writeNew(
 					resampleEntry.getValue(),
 					new String[] {resampleEntry.getKey().getFieldFuncArgs().getVariableName()},
-					new VariableType[]{VariableType.getVariableTypeFromLength(newMesh, newData.length)},
+					new VariableType[]{simDataBlock.getVariableType()},
 					new ISize(newMesh.getSizeX(),newMesh.getSizeY(),newMesh.getSizeZ()),
 					new double[][]{newData});
 		}
