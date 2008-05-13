@@ -29,7 +29,7 @@ public static void main(String[] args) {
 
 		cbit.vcell.opt.OptimizationSpec optSpec = null;
 		if (args.length==0){
-			optSpec = cbit.vcell.opt.OptimizationSpecTest.getExample();
+			optSpec = cbit.vcell.opt.OptimizationSpecTest.getOdeExample();
 		}else{
 			//
 			// read optSpec from a file
