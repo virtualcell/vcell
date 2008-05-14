@@ -711,6 +711,7 @@ private SimDataBlock evaluateFunction(
 					}
 			};
 			dataSetList.addElement(newSimDataHolder);
+			dependencyList.add(new DataSetIdentifier(ste.getName(), newVariableType));
 			if(variableType == null){
 				variableType = newVariableType;
 				dataLength = newSimDataHolder.getData().length;
@@ -1570,7 +1571,7 @@ private Expression fieldFunctionSubstitution(final VCDataIdentifier vcdID,Annota
 				getMesh(simResampleInfoProvider).getNumMembraneElements(),
 				FVSolver.HESM_KEEP_AND_CONTINUE);
 		}catch(SolverException e){
-			throw new DataAccessException("Error while resampling Field Data");
+			throw new DataAccessException("Error while resampling Field Data \n" + e.getMessage());
 		}
 		resampledFieldDatas = new double[fieldfuncArgumentsArr.length][];
 		for(int i=0;i<fieldfuncArgumentsArr.length;i+= 1){
