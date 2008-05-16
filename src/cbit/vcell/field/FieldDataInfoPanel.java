@@ -161,6 +161,10 @@ private javax.swing.JTextArea getAnnotationJTextArea() {
 public String getAnnotation(){
 	return getAnnotationJTextArea().getText();
 }
+public void setAnnotation(String newAnnotation){
+	getAnnotationJTextArea().setText(newAnnotation);
+	}
+
 
 public Extent getExtent(){
 	return 	new cbit.util.Extent(
