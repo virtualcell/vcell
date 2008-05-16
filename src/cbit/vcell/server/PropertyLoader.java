@@ -149,6 +149,15 @@ public class PropertyLoader {
 	public static final String vcellSMTPHostName = "vcell.smtp.hostName";
 	public static final String vcellSMTPPort = "vcell.smtp.port";
 	public static final String vcellSMTPEmailAddress = "vcell.smtp.emailAddress";
+	
+	public static final String pslidAllProteinListURL = "vcell.pslid.allProteinListURL";
+	public static final String pslidCellProteinListExpURL = "vcell.pslid.cellProteinListExpURL";
+	public static final String pslidCellProteinListGenURL = "vcell.pslid.cellProteinListGenURL";
+	public static final String pslidCellProteinImageInfoExpURL = "vcell.pslid.cellProteinImageInfoExpURL";
+	public static final String pslidCellProteinImageInfoGenURL = "vcell.pslid.cellProteinImageInfoGenURL";
+	public static final String pslidCellProteinImageExpURL = "vcell.pslid.cellProteinImageExpURL";
+	public static final String pslidCellProteinImageGenURL_1 = "vcell.pslid.cellProteinImageGenURL_1";
+	public static final String pslidCellProteinImageGenURL_2 = "vcell.pslid.cellProteinImageGenURL_2";
 
 	private static final String ALL_PROPERTIES[] = {
 		vcellServerIDProperty,
@@ -280,7 +289,16 @@ public class PropertyLoader {
 		
 		vcellSMTPHostName,
 		vcellSMTPPort,
-		vcellSMTPEmailAddress
+		vcellSMTPEmailAddress,
+				
+		pslidAllProteinListURL,
+		pslidCellProteinListExpURL,	
+		pslidCellProteinListGenURL,
+		pslidCellProteinImageInfoExpURL,
+		pslidCellProteinImageInfoGenURL,
+		pslidCellProteinImageExpURL,
+		pslidCellProteinImageGenURL_1,
+		pslidCellProteinImageGenURL_2
 	};
 
 /**

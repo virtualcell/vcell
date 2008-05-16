@@ -126,7 +126,22 @@ public void setMessage(String newMessage) {
 public void setProgress(int progress) {
 	// ignore if in auto mode
 	if (knowsProgress) {
+		if (progress > 100) {
+			progress = 100;
+		}
 		updateNow(new Integer(progress));
+		this.progress = progress;
+	}
+}
+/**
+ * Insert the method's description here.
+ * Creation date: (5/01/2008 5:46:18 PM)
+ */
+public int getProgress( ) {
+	if (knowsProgress) {
+		return progress;
+	} else {
+		return 0;
 	}
 }
 
