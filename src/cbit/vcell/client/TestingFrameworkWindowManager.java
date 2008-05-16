@@ -331,8 +331,8 @@ public String addTestCases(final TestSuiteInfoNew tsInfo, final TestCaseNew[] te
 							new AddTestCriteriaOPBioModel(testCases[i].getTCKey(),
 								newSimulations[j].getVersion().getVersionKey(),
 								regressionBioModelKey,regressionBioModelSimKey,
-								(tcritOrigForSimName != null?tcritOrigForSimName.getMaxAbsError():new Double(0)),
-								(tcritOrigForSimName != null?tcritOrigForSimName.getMaxRelError():new Double(0)),
+								(tcritOrigForSimName != null?tcritOrigForSimName.getMaxAbsError():new Double(1e-16)),
+								(tcritOrigForSimName != null?tcritOrigForSimName.getMaxRelError():new Double(1e-9)),
 								null);
 						
 					}
@@ -410,8 +410,8 @@ public String addTestCases(final TestSuiteInfoNew tsInfo, final TestCaseNew[] te
 							testCases[i].getTCKey(),
 							newSimulations[j].getVersion().getVersionKey(),
 							regressionMathModelKey,regressionMathModelSimKey,
-							(tcritOrigForSimName != null?tcritOrigForSimName.getMaxAbsError():new Double(0)),
-							(tcritOrigForSimName != null?tcritOrigForSimName.getMaxRelError():new Double(0)),
+							(tcritOrigForSimName != null?tcritOrigForSimName.getMaxAbsError():new Double(1e-16)),
+							(tcritOrigForSimName != null?tcritOrigForSimName.getMaxRelError():new Double(1e-9)),
 							null);
 					}
 

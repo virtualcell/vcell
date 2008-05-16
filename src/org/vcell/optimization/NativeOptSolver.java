@@ -1,5 +1,7 @@
 package org.vcell.optimization;
 
+import cbit.vcell.resource.ResourceUtil;
+
 /**
  * Insert the type's description here.
  * Creation date: (4/10/2006 10:25:33 AM)
@@ -7,7 +9,7 @@ package org.vcell.optimization;
  */
 public class NativeOptSolver {
 	static {
-		System.loadLibrary("NativeSolvers");
+		ResourceUtil.loadNativeSolverLibrary();
 	}
 
 	
