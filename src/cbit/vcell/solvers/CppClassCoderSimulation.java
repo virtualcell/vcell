@@ -277,7 +277,15 @@ protected void writeGetSimTool(java.io.PrintWriter out) throws Exception {
 	
 	out.println("\tSimulationMessaging::getInstVar()->setWorkerEvent(new WorkerEvent(JOB_STARTING, \"initializing mesh...\"));");
 	out.println("\tsprintf(tempString, \"%s%c" + simulationJob.getSimulationJobID() + ".vcg\\0\", outputPath, DIRECTORY_SEPARATOR);");
-	out.println("\tCartesianMesh* mesh = new CartesianMesh(tempString);");
+	out.println("\tCartesianMesh* mesh = new CartesianMesh();");
+	out.println("\tifstream ifs(tempString);");
+	out.println("\tif (!ifs.is_open()){");
+	out.println("\t\tstringstream ss;");
+	out.println("\t\tss << \"Can't open geometry file '\" <<  tempString << \"'\";");
+	out.println("\t\tthrow ss.str();");
+	out.println("\t}");
+	out.println("\tcout << \"Reading mesh from file '\" << tempString << \"'\" << endl;");
+	out.println("\tmesh->initialize(ifs);");
 	out.println("\tSimulationMessaging::getInstVar()->setWorkerEvent(new WorkerEvent(JOB_STARTING, \"mesh initialized\"));");
 	out.println();
 	
@@ -325,6 +333,9 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 	}	
 	
 	out.println("#include <sys/stat.h>");
+	out.println("#include <sstream>");
+	out.println("using namespace std;");
+	out.println();
 	
 	out.println("#ifdef WIN32");
 	out.println("#define DIRECTORY_SEPARATOR '\\\\'");
