@@ -116,11 +116,11 @@ public class ResourceUtil {
 	public static void loadNativeSolverLibrary () {
 		try {
 	        System.loadLibrary("NativeSolvers");
-	    } catch (Exception ex1) {
+	    } catch (Throwable ex1) {
 	    	if (bMac) {
 				try {
 					System.loadLibrary("NativeSolversG5");
-				}catch (Exception ex2){					
+				} catch (Throwable ex2){					
 					throw new RuntimeException("ResourceUtil::loadNativeSolverLibrary() : failed to load native solver library " + ex2.getMessage());					
 				}
 	    	} else {
@@ -134,13 +134,13 @@ public class ResourceUtil {
 			System.loadLibrary("expat");
 			System.loadLibrary("sbml");
 			System.loadLibrary("sbmlj");
-		}catch (Exception ex1){
+		} catch (Throwable ex1){
 			if (bMac) { // try again if Mac has power PC
 				try {
 					System.loadLibrary("expatG5");
 					System.loadLibrary("sbmlG5");
 					System.loadLibrary("sbmljG5");
-				}catch (Exception ex2){					
+				} catch (Throwable ex2){					
 					throw new RuntimeException("ResourceUtil::loadlibSbmlLibray() : failed to load libsbml library " + ex2.getMessage());					
 				}				
 			} else {
