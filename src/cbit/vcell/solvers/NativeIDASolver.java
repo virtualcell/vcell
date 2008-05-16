@@ -1,4 +1,7 @@
 package cbit.vcell.solvers;
+
+import cbit.vcell.resource.ResourceUtil;
+
 /**
  * Insert the type's description here.
  * Creation date: (12/7/2005 2:11:23 PM)
@@ -6,7 +9,7 @@ package cbit.vcell.solvers;
  */
 public class NativeIDASolver {
 	static {
-        System.loadLibrary("NativeSolvers");
+		ResourceUtil.loadNativeSolverLibrary();
     }
 
 	private boolean bStopRequested = false;

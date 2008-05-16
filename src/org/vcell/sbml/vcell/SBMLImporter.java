@@ -37,6 +37,7 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.LambdaFunction;
+import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.units.SBMLUnitTranslator;
 import cbit.util.xml.VCLogger;
@@ -89,13 +90,7 @@ public class SBMLImporter {
 	}
 	static
 	{
-		try {
-			System.loadLibrary("expat");
-			System.loadLibrary("sbml");
-			System.loadLibrary("sbmlj");
-		}catch (Exception e){
-			e.printStackTrace(System.out);
-		}
+		ResourceUtil.loadlibSbmlLibray();
 	}
 
 	public SBMLImporter(String argSbmlString, cbit.util.xml.VCLogger argVCLogger) {

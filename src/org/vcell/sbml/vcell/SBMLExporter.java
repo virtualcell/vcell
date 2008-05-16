@@ -41,6 +41,7 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionMathMLParser;
+import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.units.SBMLUnitTranslator;
@@ -131,13 +132,7 @@ public class SBMLExporter {
 
 	static
 	{
-		try {
-			System.loadLibrary("expat");
-			System.loadLibrary("sbml");
-			System.loadLibrary("sbmlj");
-		}catch (Exception e){
-			e.printStackTrace(System.out);
-		}
+		ResourceUtil.loadlibSbmlLibray();
 	}
 
 	/**
