@@ -1,20 +1,14 @@
 package cbit.vcell.pslid;
 
-import javax.swing.*;
-
 import swingthreads.SwingWorker;
-
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-
 import cbit.util.AsynchProgressPopup;
+import cbit.util.Preference;
+import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.field.PSLIDPanel;
-import cbit.vcell.server.PropertyLoader;
 
 public class WebClientInterface {
 
@@ -33,20 +27,13 @@ public class WebClientInterface {
 	// automated testing possible with pp = null
 	public AsynchProgressPopup pp;
 	private PSLIDPanel panel;
+	private UserPreferences userPreferences;
 
-	public WebClientInterface () {
-		pp = null;
-		panel = null;
-	}
-	public WebClientInterface (AsynchProgressPopup app) {
-		panel = null;
-		if(app != null) {
-			pp = app;
-		} else {
-			pp = null;
+	public WebClientInterface (PSLIDPanel pslidPanel, UserPreferences userPreferences,AsynchProgressPopup app) {
+		if(userPreferences == null){
+			throw new RuntimeException("UserPreferences can't be null");
 		}
-	}
-	public WebClientInterface (PSLIDPanel pslidPanel, AsynchProgressPopup app) {
+		this.userPreferences = userPreferences;
 		if(pslidPanel != null) {
 			panel = pslidPanel;
 		} else {
@@ -62,25 +49,25 @@ public class WebClientInterface {
 	// high lvl API - specific to PSLID
 	public void requestAllProteinList() {					// returns list of all proteins
 		System.out.println("request list of all proteins");
-		final String pslidURL = new String(PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.pslidAllProteinListURL));
+		final String pslidURL = userPreferences.getSystemClientProperty(Preference.SYSCLIENT_pslidAllProteinListURL);
 		//  "http://pslid.cbi.cmu.edu/develop/return_xml_list.jsp?listtype=target";
  		execute(pslidURL, modeReturnText);
 	}
 	public void requestCellProteinListExperimental() {		// returns list of all proteins separated by cell type (exp results)
         System.out.println("request list of all proteins separated by cell type (exp)");
-        final String pslidURL = new String(PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.pslidCellProteinListExpURL));
+        final String pslidURL = userPreferences.getSystemClientProperty(Preference.SYSCLIENT_pslidCellProteinListExpURL);
 //		final String pslidURL = "http://pslid.cbi.cmu.edu/develop/return_xml_list.jsp?listtype=target_cell_name";
 		execute(pslidURL, modeReturnText);
 	}
 	public void requestCellProteinListGenerated() {			// returns list of all proteins separated by cell type (generatd model)
         System.out.println("request list of all proteins separated by cell type (gen)");
-        final String pslidURL = new String(PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.pslidCellProteinListGenURL));
+        final String pslidURL = userPreferences.getSystemClientProperty(Preference.SYSCLIENT_pslidCellProteinListGenURL);
 //		final String pslidURL = "http://pslid.cbi.cmu.edu/develop/return_xml_list.jsp?listtype=gen_model";
 		execute(pslidURL, modeReturnText);
 	}
 	public void requestProteinCellDetails(String protein, String cell) {	// returns info about a protein/cell pair
 		//   ex:  http://pslid.cbi.cmu.edu/develop/searchreturnxml.jsp?target=LAMP2&cell_name=HeLa
-		final String baseURL1 = new String(PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.pslidCellProteinImageInfoExpURL));
+		final String baseURL1 = userPreferences.getSystemClientProperty(Preference.SYSCLIENT_pslidCellProteinImageInfoExpURL);
 		final String baseURL2 = "&cell_name=";
 		String builtURL = baseURL1 + protein + baseURL2 + cell;
 //		String builtURL = baseURL1 + protein;		// simplified call for now - we only specify protein (target); full call above

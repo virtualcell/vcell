@@ -1,8 +1,7 @@
 package cbit.vcell.client.server;
-import cbit.vcell.server.*;
+
 import cbit.util.*;
 import java.util.*;
-import cbit.vcell.client.UserMessage;
 
 /**
 User preferences, for now, fall under two different categories: warning messages and general preferences. 
@@ -76,8 +75,9 @@ public class UserPreferences {
 	};
 	
 	// user choices
-	private Hashtable warningHash = new Hashtable(); 			// keyed by "WARN"+number
-	private Hashtable genericHash = new Hashtable();  			// keyed by "GEN_PREF"+number
+	private Hashtable<String, Preference> warningHash = new Hashtable<String, Preference>();// keyed by "WARN"+number
+	private Hashtable<String, Preference> genericHash = new Hashtable<String, Preference>();// keyed by "GEN_PREF"+number
+	private Hashtable<String, Preference> sysClientHash =  new Hashtable<String, Preference>();// keyed by Preference.XXX
 
 /**
  * Insert the method's description here.
@@ -98,7 +98,9 @@ private ClientServerManager getClientServerManager() {
 	return clientServerManager;
 }
 
-
+public String getSystemClientProperty(String systemClientPropertyName){
+	return sysClientHash.get(systemClientPropertyName).getValue();
+}
 	public String getGenPref(int prefType) {
 
 		if (prefType < 0 || prefType > (NUM_GENERAL_PREFERENCES - 1)) {
@@ -202,11 +204,14 @@ protected void resetFromSaved(Preference[] savedPreferences) {
 	/* look in getUserChoices() for keys and values strings encoding of the preferences */
 	// reset to defaults
 	warningHash.clear();
+	sysClientHash.clear();
 	// apply saved choices
 	for (int i = 0; i < savedPreferences.length; i++){
 		String key = savedPreferences[i].getKey();
-		// parse warning preferences
-		if (key.startsWith(UserPreferences.WARN)) {
+		if (savedPreferences[i].isSystemClientProperty()) {
+			sysClientHash.put(savedPreferences[i].getKey(),savedPreferences[i]);
+		}else if (key.startsWith(UserPreferences.WARN)) {
+			// parse warning preferences
 			int warningType = Integer.parseInt(key.substring(UserPreferences.WARN.length()));
 			boolean choice = Boolean.valueOf(savedPreferences[i].getValue()).booleanValue();
 			warningHash.put(UserPreferences.WARN+warningType, new Preference(UserPreferences.WARN +warningType, String.valueOf(choice)));

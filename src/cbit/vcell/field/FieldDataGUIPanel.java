@@ -2007,7 +2007,7 @@ private void getPslidSelections(final int mode) {
 //								FileOutputStream fos = null;
 				try {
 					threadState = Thread.currentThread();
-					pslidPanel.initCellProteinList(pp[0], mode);
+					pslidPanel.initCellProteinList( fieldDataWindowManager.getUserPreferences(),pp[0],mode);
 					if(threadState != Thread.currentThread()) {
 						return;
 					}

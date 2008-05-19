@@ -49,8 +49,10 @@ import cbit.util.BeanUtils;
 import cbit.util.Extent;
 import cbit.util.ISize;
 import cbit.util.Origin;
+import cbit.util.Preference;
 import cbit.util.ProgressDialogListener;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.geometry.Coordinate;
 import cbit.vcell.pslid.WebClientInterface;
 import cbit.vcell.server.DataAccessException;
@@ -128,6 +130,8 @@ public class PSLIDPanel extends JPanel{
 	private static final int CELL_INDEX = 0;
 	private static final int PROTEIN_INDEX = 1;
 	private static final int KIND_INDEX = 2;
+	
+	private UserPreferences userPreferences;
 	
 	public PSLIDPanel() {
 		super();
@@ -331,7 +335,8 @@ public class PSLIDPanel extends JPanel{
 
 	// reads cell - protein data sets for either experimental data or generative models
 	// populates combobox with pairs
-	public void initCellProteinList(AsynchProgressPopup pp, int mode) throws Exception{
+	public void initCellProteinList(UserPreferences userPreferences,AsynchProgressPopup pp, int mode) throws Exception{
+		this.userPreferences = userPreferences;
 		if(proteinCellcomboBox.getModel().getSize() > 0){
 			return;
 		}
@@ -372,7 +377,7 @@ public class PSLIDPanel extends JPanel{
 		
 		  WebClientInterface wci;
 		  threadState = Thread.currentThread();
-		  wci = new WebClientInterface(thisPanel, pp);
+		  wci = new WebClientInterface(thisPanel, userPreferences,pp);
 		  wci.requestCellProteinListExperimental();
 		  wci.handshake();
 		  if(wci.isExpired()) {
@@ -418,7 +423,7 @@ public class PSLIDPanel extends JPanel{
 
 		WebClientInterface wci;
 		threadState = Thread.currentThread();
-		wci = new WebClientInterface(thisPanel, pp);
+		wci = new WebClientInterface(thisPanel, userPreferences,pp);
 		wci.requestCellProteinListGenerated();
 		wci.handshake();
 		if(wci.isExpired()) {
@@ -525,7 +530,7 @@ public class PSLIDPanel extends JPanel{
 							    
 								WebClientInterface wci;
 								threadState = Thread.currentThread();
-								wci = new WebClientInterface(thisPanel, pp[0]);
+								wci = new WebClientInterface(thisPanel, userPreferences,pp[0]);
 								wci.requestProteinCellDetails(cell_proteinArr[PROTEIN_INDEX], cell_proteinArr[CELL_INDEX]);
 								wci.handshake();
 								if(wci.isExpired()) {
@@ -660,8 +665,8 @@ public class PSLIDPanel extends JPanel{
 						try{
 						    imageID_ProteinImageURL_Hash = new TreeMap<Integer, String>();
 						    imageID_CompartmentImageURL_Hash = new TreeMap<Integer, String>();
-							final String baseURL1 = new String(PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.pslidCellProteinImageGenURL_1));
-							final String baseURL2 = new String(PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.pslidCellProteinImageGenURL_2));
+							final String baseURL1 = userPreferences.getSystemClientProperty(Preference.SYSCLIENT_pslidCellProteinImageGenURL_1);
+							final String baseURL2 = userPreferences.getSystemClientProperty(Preference.SYSCLIENT_pslidCellProteinImageGenURL_2);
 
 							URL generatedCellProteinImageURL =
 								new URL( baseURL1 + 	// "http://pslid.cbi.cmu.edu/tcnp/genmodel_TCNP.jsp?protset1="+
@@ -671,7 +676,7 @@ public class PSLIDPanel extends JPanel{
 							imageID_ProteinImageURL_Hash.put(new Integer(0), generatedCellProteinImageURL.toString());
 							imageID_CompartmentImageURL_Hash.put(new Integer(0),generatedCellProteinImageURL.toString());
 
-							WebClientInterface wci = new WebClientInterface(thisPanel, pp[0]);
+							WebClientInterface wci = new WebClientInterface(thisPanel, userPreferences,pp[0]);
 							threadState = Thread.currentThread();
 							wci.requestImage(generatedCellProteinImageURL.toString());
 							wci.handshake();
@@ -891,7 +896,7 @@ try {
 
 			InputStream is = null;		
 			try {
-				WebClientInterface wci = new WebClientInterface(thisPanel, pp[0]);
+				WebClientInterface wci = new WebClientInterface(thisPanel, userPreferences,pp[0]);
 				threadState = Thread.currentThread();
 				wci.requestImage(imageID_ProteinImageURL_Hash.get(selectedImageSet));
 				wci.handshake();
@@ -902,7 +907,7 @@ try {
 		        File fileP = new File(wci.getDoc().toString());
 		        byte[] selectedProteinImage = WebClientInterface.getBytesFromFile(fileP);
 		        
-				wci = new WebClientInterface(thisPanel, pp[0]);
+				wci = new WebClientInterface(thisPanel, userPreferences,pp[0]);
 				threadState = Thread.currentThread();
 				wci.requestImage(imageID_CompartmentImageURL_Hash.get(selectedImageSet));
 				wci.handshake();
