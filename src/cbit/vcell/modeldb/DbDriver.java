@@ -6,6 +6,7 @@ package cbit.vcell.modeldb;
 import java.math.BigDecimal;
 import java.sql.*;
 import cbit.sql.*;
+import cbit.util.Preference;
 import cbit.vcell.field.FieldDataDBOperationDriver;
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
@@ -17,6 +18,7 @@ import cbit.vcell.numericstest.TestCriteriaNew;
 import cbit.vcell.server.*;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 
+import java.util.Arrays;
 import java.util.Vector;
 import java.util.Hashtable;
 
@@ -960,7 +962,7 @@ public static cbit.util.Preference[] getPreferences(Connection con, User user) t
 				
 			
 	Statement stmt = null;
-	cbit.util.Preference[] preferences = null;
+	Preference[] preferences = null;
 	try {
 		stmt = con.createStatement();
 		ResultSet rset = stmt.executeQuery(sql);
@@ -969,6 +971,33 @@ public static cbit.util.Preference[] getPreferences(Connection con, User user) t
 		if(stmt != null){
 			stmt.close();
 		}
+	}
+	preferences = DbDriver.includeSystemClientPreferences(preferences);
+	return preferences;
+}
+
+private static Preference[] includeSystemClientPreferences(Preference[] preferences){
+	final String[] SYSTEM_CLIENT_PROPERTIES_NAMES = Preference.getAllDefinedSystemClientPropertyNames();
+	try{
+		PropertyLoader.loadProperties();
+		Vector<Preference> preferenceV =
+			new Vector<Preference>(Arrays.asList((preferences != null?preferences:new Preference[0])));
+		for (int i = 0; i < SYSTEM_CLIENT_PROPERTIES_NAMES.length; i++) {
+			preferenceV.add(
+				new Preference(
+					SYSTEM_CLIENT_PROPERTIES_NAMES[i],
+					PropertyLoader.getRequiredProperty(SYSTEM_CLIENT_PROPERTIES_NAMES[i]),
+					true
+				)
+			);
+		}
+		if(preferenceV.size() > 0){
+			Preference[] mergedPreferences = new Preference[preferenceV.size()];
+			preferenceV.copyInto(mergedPreferences);
+			return mergedPreferences;
+		}
+	}catch(Exception e){
+		e.printStackTrace();
 	}
 	return preferences;
 }

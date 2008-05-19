@@ -3,10 +3,16 @@ package cbit.vcell.modeldb;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.sql.*;
-import cbit.image.*;
-import cbit.vcell.server.*;
-import java.sql.*;
+
+import cbit.sql.Field;
+import cbit.sql.Table;
+import cbit.util.BeanUtils;
+import cbit.util.Preference;
+import cbit.util.TokenMangler;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Vector;
 
 /**
  * This type was created in VisualAge.
@@ -16,8 +22,8 @@ public class UserPreferenceTable extends cbit.sql.Table {
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
 	public final Field userRef 			= new Field("userRef",				"integer",			"NOT NULL "+UserTable.REF_TYPE+" ON DELETE CASCADE");
-	public final Field userPrefKey 		= new Field("userPrefKey",			"varchar(32)",	"NOT NULL");
-	public final Field userPrefValue	= new Field("userPrefValue",		"varchar(4000)", "NOT NULL");
+	public final Field userPrefKey 		= new Field("userPrefKey",			"varchar("+Preference.MAX_KEY_LENGTH+")",	"NOT NULL");
+	public final Field userPrefValue	= new Field("userPrefValue",		"varchar("+Preference.MAX_VALUE_LENGTH+")", "NOT NULL");
 	
 
 	private final Field fields[] = {userRef,userPrefKey,userPrefValue};
@@ -39,15 +45,17 @@ private UserPreferenceTable() {
  * @return java.util.Dictionary
  * @param rset java.sql.ResultSet
  */
-public cbit.util.Preference[] getUserPreferences(ResultSet rset) throws SQLException{
+public Preference[] getUserPreferences(ResultSet rset) throws SQLException{
 
-	java.util.Vector preferenceList = new java.util.Vector();
+	Vector<Preference> preferenceList = new Vector<Preference>();
 	while (rset.next()){
 		String propKey = rset.getString(UserPreferenceTable.table.userPrefKey.getUnqualifiedColName());
 		String propValue = rset.getString(UserPreferenceTable.table.userPrefValue.getUnqualifiedColName());
-		preferenceList.add(new cbit.util.Preference(cbit.util.TokenMangler.getSQLRestoredString(propKey),cbit.util.TokenMangler.getSQLRestoredString(propValue)));
+		preferenceList.add(
+			new Preference(
+				TokenMangler.getSQLRestoredString(propKey),TokenMangler.getSQLRestoredString(propValue)));
 	}
 
-	return (cbit.util.Preference[])cbit.util.BeanUtils.getArray(preferenceList,cbit.util.Preference.class);
+	return (Preference[])BeanUtils.getArray(preferenceList,Preference.class);
 }
 }

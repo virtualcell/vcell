@@ -1,5 +1,11 @@
 package cbit.vcell.server;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Vector;
+
+import cbit.util.Preference;
+
 
 
 /*©
@@ -150,16 +156,7 @@ public class PropertyLoader {
 	public static final String vcellSMTPPort = "vcell.smtp.port";
 	public static final String vcellSMTPEmailAddress = "vcell.smtp.emailAddress";
 	
-	public static final String pslidAllProteinListURL = "vcell.pslid.allProteinListURL";
-	public static final String pslidCellProteinListExpURL = "vcell.pslid.cellProteinListExpURL";
-	public static final String pslidCellProteinListGenURL = "vcell.pslid.cellProteinListGenURL";
-	public static final String pslidCellProteinImageInfoExpURL = "vcell.pslid.cellProteinImageInfoExpURL";
-	public static final String pslidCellProteinImageInfoGenURL = "vcell.pslid.cellProteinImageInfoGenURL";
-	public static final String pslidCellProteinImageExpURL = "vcell.pslid.cellProteinImageExpURL";
-	public static final String pslidCellProteinImageGenURL_1 = "vcell.pslid.cellProteinImageGenURL_1";
-	public static final String pslidCellProteinImageGenURL_2 = "vcell.pslid.cellProteinImageGenURL_2";
-
-	private static final String ALL_PROPERTIES[] = {
+	private static final String SYSTEM_SERVER_PROPERTY_NAMES[] = {
 		vcellServerIDProperty,
 		tempDirProperty,
 		primarySimDataDirProperty,
@@ -290,15 +287,6 @@ public class PropertyLoader {
 		vcellSMTPHostName,
 		vcellSMTPPort,
 		vcellSMTPEmailAddress,
-				
-		pslidAllProteinListURL,
-		pslidCellProteinListExpURL,	
-		pslidCellProteinListGenURL,
-		pslidCellProteinImageInfoExpURL,
-		pslidCellProteinImageInfoGenURL,
-		pslidCellProteinImageExpURL,
-		pslidCellProteinImageGenURL_1,
-		pslidCellProteinImageGenURL_2
 	};
 
 /**
@@ -506,6 +494,11 @@ private static final void verifyPropertyFile(String propertyFileName) {
 		java.io.FileInputStream propFile = new java.io.FileInputStream(propertyFileName);
 		p.load(propFile);
 		propFile.close();
+
+		//Merge System Server and System Client Property Lists
+		Vector<String> allListV = new Vector<String>(Arrays.asList(PropertyLoader.SYSTEM_SERVER_PROPERTY_NAMES));
+		allListV.addAll(Arrays.asList(Preference.getAllDefinedSystemClientPropertyNames()));
+		String[] ALL_PROPERTIES = allListV.toArray(new String[0]);
 
 		//
 		// complain if property file has an unknown property
