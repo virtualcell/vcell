@@ -3,10 +3,6 @@ package cbit.vcell.opt.solvers;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.util.*;
-import cbit.vcell.server.*;
-import cbit.vcell.solvers.*;
-import java.io.*;
 import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationException;

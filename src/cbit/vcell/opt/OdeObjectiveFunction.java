@@ -1,4 +1,5 @@
 package cbit.vcell.opt;
+import cbit.util.Issue;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.util.RowColumnResultSet;
@@ -73,7 +74,7 @@ public static OdeObjectiveFunction fromVCML(cbit.vcell.math.CommentStringTokeniz
  * Creation date: (8/22/2005 2:30:24 PM)
  * @param issueList java.util.Vector
  */
-public void gatherIssues(java.util.Vector issueList) {
+public void gatherIssues(java.util.Vector<Issue> issueList) {
 	//
 	// check for a data column named "t"
 	//

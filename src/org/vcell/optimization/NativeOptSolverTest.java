@@ -4,6 +4,10 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
+import cbit.vcell.resource.ResourceUtil;
+
+import sun.security.action.LoadLibraryAction;
+
 public class NativeOptSolverTest {
 	
 	/**
@@ -11,7 +15,8 @@ public class NativeOptSolverTest {
 	 */
 	public static void main(String[] args) {
 		try {
-			String optProblemXML = getXMLString("D:\\developer\\eclipse\\workspace\\numerics\\OptStandalone2\\test7.xml");
+			ResourceUtil.loadNativeSolverLibrary();
+			String optProblemXML = getXMLString("..\\numerics\\OptStandalone2\\test9.xml");
 			OptSolverCallbacks optSolverCallbacks = new SimpleOptSolverCallbacks();
 			NativeOptSolver nativeOptSolver = new NativeOptSolver();
 			
