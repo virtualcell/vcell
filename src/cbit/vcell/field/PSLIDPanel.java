@@ -229,8 +229,9 @@ public class PSLIDPanel extends JPanel{
 //			FieldDataFileOperationSpec fdos_compartment = FieldDataGUIPanel.createFDOSFromImageFile(compartmentImageFile,false);
 			loci.formats.ImageReader compartmentImageReader = new loci.formats.ImageReader();
 			loci.formats.IFormatReader compartmentFormatReader = compartmentImageReader.getReader(compartmentImageFile.getAbsolutePath());
-			compartmentFormatReader.setColorTableIgnored(true);
-			byte[] compartmentBytes = compartmentFormatReader.openBytes(compartmentImageFile.getAbsolutePath(), 0);
+			compartmentFormatReader.setId(compartmentImageFile.getAbsolutePath());
+//			compartmentFormatReader.setColorTableIgnored(true);
+			byte[] compartmentBytes = compartmentFormatReader.openBytes(0);
 			short[] compartmentShorts = new short[compartmentBytes.length];
 			for (int i = 0; i < compartmentShorts.length; i++) {
 				compartmentShorts[i] = compartmentBytes[i];
@@ -238,15 +239,16 @@ public class PSLIDPanel extends JPanel{
 //			FieldDataFileOperationSpec fdos_protein = FieldDataGUIPanel.createFDOSFromImageFile(proteinImageFile,false);
 			loci.formats.ImageReader proteinImageReader = new loci.formats.ImageReader();
 			loci.formats.IFormatReader proteinFormatReader = proteinImageReader.getReader(proteinImageFile.getAbsolutePath());
+			proteinFormatReader.setId(proteinImageFile.getAbsolutePath());
 //			byte[] proteinBytes = proteinFormatReader.openBytes(proteinImageFile.getAbsolutePath(), 0);
 //			short[] proteinShorts = new short[proteinBytes.length];
 //			for (int i = 0; i < compartmentShorts.length; i++) {
 //				proteinShorts[i] = proteinBytes[i];
 //			}
-			short[] proteinShorts = ImageTools.getShorts(proteinFormatReader.openImage(proteinImageFile.getAbsolutePath(), 0))[0];
+			short[] proteinShorts = ImageTools.getShorts(proteinFormatReader.openImage(0))[0];
 
-			int xsize_uncrop = compartmentFormatReader.getSizeX(compartmentImageFile.getAbsolutePath());
-			int ysize_uncrop = compartmentFormatReader.getSizeY(compartmentImageFile.getAbsolutePath());
+			int xsize_uncrop = compartmentFormatReader.getSizeX();
+			int ysize_uncrop = compartmentFormatReader.getSizeY();
 //			if(
 //					compartmentFormatReader.getSizeX(compartmentImageFile.getAbsolutePath()) != isize.getX() ||
 //					compartmentFormatReader.getSizeY(compartmentImageFile.getAbsolutePath()) != isize.getY() ||
@@ -694,7 +696,8 @@ public class PSLIDPanel extends JPanel{
 							fos.close();
 							loci.formats.ImageReader generatedImageReader = new loci.formats.ImageReader();
 							loci.formats.IFormatReader generatedFormatReader = generatedImageReader.getReader(generatedImageFile.getAbsolutePath());
-							short[][] generatedChannels = ImageTools.getShorts(generatedFormatReader.openImage(generatedImageFile.getAbsolutePath(), 0));
+							generatedFormatReader.setId(generatedImageFile.getAbsolutePath());
+							short[][] generatedChannels = ImageTools.getShorts(generatedFormatReader.openImage(0));
 							final int PROTEIN_CHANNEL = 1;
 							final int CELL_CHANNEL = 2;
 							final int NUCLEUS_CHANNEL = 0;
@@ -707,8 +710,8 @@ public class PSLIDPanel extends JPanel{
 								compartmentShorts[i] =
 									(generatedChannels[NUCLEUS_CHANNEL][i] != 0?(short)NUCLEUS_PIXEL_VAL:(generatedChannels[CELL_CHANNEL][i] != 0?(short)CELL_PIXEL_VAL:(short)0) );
 							}
-							int xsize_uncrop = generatedFormatReader.getSizeX(generatedImageFile.getAbsolutePath());
-							int ysize_uncrop = generatedFormatReader.getSizeY(generatedImageFile.getAbsolutePath());
+							int xsize_uncrop = generatedFormatReader.getSizeX();
+							int ysize_uncrop = generatedFormatReader.getSizeY();
 
 							//Fill
 							int MASTER_INDEX = 0;

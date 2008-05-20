@@ -7,9 +7,8 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="resources"/>
+	<classpathentry exported="true" kind="lib" path="bio-formats_2008May20.jar" sourcepath="D:/developer/eclipse/workspace"/>
 	<classpathentry kind="lib" path="sbmlj.jar"/>
-	<classpathentry kind="lib" path="bio-formats.jar"/>
-	<classpathentry kind="lib" path="NetCDF2_2_20_VCell.jar"/>
 	<classpathentry kind="lib" path="WinService.jar"/>
 	<classpathentry kind="lib" path="JLink.jar"/>
 	<classpathentry kind="lib" path="ome-java.jar"/>
@@ -18,5 +17,6 @@
 	<classpathentry kind="lib" path="new_mail.jar"/>
 	<classpathentry kind="lib" path="MiriamJavaLib-standalone-20070625.jar"/>
 	<classpathentry exported="true" kind="lib" path="thirdParty.jar"/>
+	<classpathentry exported="true" kind="lib" path="netcdf-4.0_2008Apr17.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

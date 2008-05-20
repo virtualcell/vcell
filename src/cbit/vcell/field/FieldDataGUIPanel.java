@@ -1097,7 +1097,7 @@ public static FieldDataFileOperationSpec createFDOSFromImageFile(File imageFile,
 	ImageDataset imagedataSet = null;
 	final FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
 	try{
-		imagedataSet = ImageDatasetReader.readImageDataset(imageFile.getAbsolutePath());
+		imagedataSet = ImageDatasetReader.readImageDataset(imageFile.getAbsolutePath(),null);
 		if (imagedataSet!=null && bCropOutBlack){
 //			System.out.println("FieldDataGUIPanel.jButtonFDFromFile_ActionPerformed(): BEFORE CROPPING, size="+imagedataSet.getISize().toString());
 			imagedataSet = imagedataSet.crop(imagedataSet.getNonzeroBoundingRectangle());
