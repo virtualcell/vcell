@@ -134,6 +134,9 @@ public static OptimizationSpec getOdeExample() throws ExpressionException, Excep
 		public boolean compareEqual(cbit.util.Matchable obj){
 			return equals(obj);
 		}
+		public int getDataSize() {			
+			return 1;
+		}
 	};
 	os.setObjectiveFunction(new OdeObjectiveFunction(mathDesc,constraintData));
 	os.addConstraint(new Constraint(ConstraintType.NonlinearInequality,new Expression("25 - x1*x2*x3*x4")));

@@ -1,4 +1,6 @@
 package cbit.vcell.opt;
+
+import cbit.util.Issue;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -24,7 +26,7 @@ public ObjectiveFunction() {
  * Creation date: (8/22/2005 2:30:00 PM)
  * @param issueList java.util.Vector
  */
-public abstract void gatherIssues(java.util.Vector issueList);
+public abstract void gatherIssues(java.util.Vector<Issue> issueList);
 
 
 /**

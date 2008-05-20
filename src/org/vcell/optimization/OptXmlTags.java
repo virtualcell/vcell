@@ -7,12 +7,14 @@ public class OptXmlTags {
 	public static final String ObjectiveFunction_Tag = "objectiveFunction";
 	public static final String ObjectiveFunctionType_Attr = "type";
 	public static final String ObjectiveFunctionType_Attr_Explicit = "explicit";
+	public static final String ObjectiveFunctionType_Attr_ExplicitFit = "explicitFit";
 	public static final String ObjectiveFunctionType_Attr_ODE = "ode";
 	public static final String ObjectiveFunctionType_Attr_PDE = "pde";
 	public static final String Model_Tag = "model";
 	public static final String ModelType_Attr = "modelType";
 	public static final String ModelType_Attr_IDA = "ida";
 	public static final String ModelType_Attr_CVODE = "cvode";
+	public static final String ModelType_Attr_FVSOLVER = "fvSolver";
 	public static final String Data_Tag = "data";
 	public static final String Variable_Tag = "variable";
 	public static final String VariableType_Attr = "type";
@@ -24,6 +26,7 @@ public class OptXmlTags {
 	public static final String ModelMapping_Tag = "modelMapping";
 	public static final String ModelMappingDataColumn_Attr = "dataColumn";
 	public static final String ModelMappingWeight_Attr = "weight";
+	public static final String Expression_Tag = "expression";
 
 	public static final String ParameterDescription_Tag = "parameterDescription";
 	public static final String Parameter_Tag = "parameter";

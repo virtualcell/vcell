@@ -54,6 +54,7 @@ int getNumColumns();
  */
 int getNumRows();
 
+int getDataSize();
 
 /**
  * Insert the method's description here.

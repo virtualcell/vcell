@@ -6,15 +6,19 @@ import cbit.vcell.parser.Expression;
 import java.util.Enumeration;
 import java.io.File;
 import java.io.PrintWriter;
-
+import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.ExternalDataIdentifier;
+import cbit.vcell.simdata.SimDataBlock;
+import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.geometry.surface.GeometryFileWriter;
 import cbit.vcell.messaging.JmsUtils;
+import cbit.vcell.modeldb.NullSessionLog;
 import cbit.vcell.math.*;
 
 /**
@@ -27,6 +31,8 @@ public class FiniteVolumeFileWriter {
 	Simulation simulation = null;
 	File userDirectory = null;
 	PrintWriter writer = null;
+	boolean bInlineVCG = false;
+	String[] parameterNames = null;
 	
 	Set<FieldDataNumerics> uniqueFieldDataNSet = null;	
 	
@@ -58,6 +64,12 @@ public FiniteVolumeFileWriter(SimulationJob simJob, File dir, PrintWriter pw) {
 	writer = pw;
 }
 
+public FiniteVolumeFileWriter(SimulationJob simJob, String[] paramNames, PrintWriter pw) {	
+	simulationJob = simJob;
+	simulation = simulationJob.getWorkingSim();
+	parameterNames = paramNames;
+	bInlineVCG = true;	
+}
 
 /**
  * Insert the method's description here.
@@ -93,11 +105,16 @@ public void write() throws Exception {
 	writeModelDescription();
 	writer.println();
 	
-	writeMeshFileName();
+	writeMeshFile();
 	writer.println();
 	
 	writeVariables();
 	writer.println();
+	
+	if (parameterNames != null) {
+		writeParameters();
+		writer.println();		
+	}
 	
 	writeFieldData();
 	
@@ -159,9 +176,9 @@ private void writeCompartment_FastSystem(CompartmentSubDomain volSubDomain) thro
 		writer.println("FAST_SYSTEM_BEGIN " + numIndep + " "  + numDep);
 		if (numIndep != 0) {
 			writer.print("INDEPENDENT_VARIALBES ");
-			Enumeration enum1 = fastSystem.getIndependentVariables();
+			Enumeration<Variable> enum1 = fastSystem.getIndependentVariables();
 			while (enum1.hasMoreElements()) {
-				Variable var = (Variable)enum1.nextElement();
+				Variable var = enum1.nextElement();
 				writer.print(var.getName() + " ");
 			}
 			writer.println();
@@ -169,9 +186,9 @@ private void writeCompartment_FastSystem(CompartmentSubDomain volSubDomain) thro
 		}
 		if (numDep != 0) {
 			writer.print("DEPENDENT_VARIALBES ");
-			Enumeration enum1 = fastSystem.getDependentVariables();
+			Enumeration<Variable> enum1 = fastSystem.getDependentVariables();
 			while (enum1.hasMoreElements()) {
-				Variable var = (Variable)enum1.nextElement();
+				Variable var = enum1.nextElement();
 				writer.print(var.getName() + " ");
 			}
 			writer.println();
@@ -180,9 +197,9 @@ private void writeCompartment_FastSystem(CompartmentSubDomain volSubDomain) thro
 					
 		if (numPseudo != 0) {
 			writer.println("PSEUDO_CONSTANT_BEGIN");
-			Enumeration enum1 = fastSystem.getPseudoConstants();
+			Enumeration<PseudoConstant> enum1 = fastSystem.getPseudoConstants();
 			while (enum1.hasMoreElements()) {
-				PseudoConstant pc = (PseudoConstant)enum1.nextElement();
+				PseudoConstant pc = enum1.nextElement();
 				writer.println(pc.getName() + " " + subsituteExpression(pc.getPseudoExpression()).infix() + ";");
 			}
 			writer.println("PSEUDO_CONSTANT_END");
@@ -191,9 +208,9 @@ private void writeCompartment_FastSystem(CompartmentSubDomain volSubDomain) thro
 		
 		if (numIndep != 0) {
 			writer.println("FAST_RATE_BEGIN" );
-			Enumeration enum1 = fastSystem.getFastRateExpressions();
+			Enumeration<Expression> enum1 = fastSystem.getFastRateExpressions();
 			while (enum1.hasMoreElements()) {
-				Expression exp = (Expression)enum1.nextElement();	
+				Expression exp = enum1.nextElement();	
 				writer.println(subsituteExpression(exp).infix() + ";");
 			}
 			writer.println("FAST_RATE_END");
@@ -202,11 +219,11 @@ private void writeCompartment_FastSystem(CompartmentSubDomain volSubDomain) thro
 
 		if (numDep != 0) {
 			writer.println("FAST_DEPENDENCY_BEGIN" );
-			Enumeration enum_exp = fastSystem.getDependencyExps();
-			Enumeration enum_var = fastSystem.getDependentVariables();
+			Enumeration<Expression> enum_exp = fastSystem.getDependencyExps();
+			Enumeration<Variable> enum_var = fastSystem.getDependentVariables();
 			while (enum_exp.hasMoreElements()){
-				Expression exp = (Expression)enum_exp.nextElement();
-				Variable depVar = (Variable)enum_var.nextElement();
+				Expression exp = enum_exp.nextElement();
+				Variable depVar = enum_var.nextElement();
 				writer.println(depVar.getName() + " " + subsituteExpression(exp).infix() + ";");
 			}
 			writer.println("FAST_DEPENDENCY_END");
@@ -215,12 +232,12 @@ private void writeCompartment_FastSystem(CompartmentSubDomain volSubDomain) thro
 		
 		if (numIndep != 0) {
 			writer.println("JACOBIAN_BEGIN" );
-			Enumeration enum_fre = fastSystem.getFastRateExpressions();
+			Enumeration<Expression> enum_fre = fastSystem.getFastRateExpressions();
 			while (enum_fre.hasMoreElements()){
-				Expression fre = (Expression)enum_fre.nextElement();
-				Enumeration enum_var = fastSystem.getIndependentVariables();
+				Expression fre = enum_fre.nextElement();
+				Enumeration<Variable> enum_var = fastSystem.getIndependentVariables();
 				while (enum_var.hasMoreElements()){
-					Variable var = (Variable)enum_var.nextElement();
+					Variable var = enum_var.nextElement();
 					Expression exp = simulation.substituteFunctions(fre).flatten();
 					Expression differential = exp.differentiate(var.getName());
 					writer.println(subsituteExpression(differential).infix() + ";");					
@@ -352,9 +369,9 @@ COMPARTMENT_END
 */
 private void writeCompartments() throws Exception {
 	cbit.vcell.math.MathDescription mathDesc = simulation.getMathDescription();
-	java.util.Enumeration enum1 = mathDesc.getSubDomains();
+	Enumeration<SubDomain> enum1 = mathDesc.getSubDomains();
 	while (enum1.hasMoreElements()) {		
-		SubDomain sd = (SubDomain)enum1.nextElement();
+		SubDomain sd = enum1.nextElement();
 		if (sd instanceof cbit.vcell.math.CompartmentSubDomain) {
 			CompartmentSubDomain csd = (CompartmentSubDomain)sd;
 			writer.println("COMPARTMENT_BEGIN " + csd.getName());
@@ -431,9 +448,9 @@ OUTFLUX 0.0;
 JUMP_CONDITION_END
 */
 private void writeMembrane_jumpConditions(MembraneSubDomain msd) throws Exception {
-	Enumeration enum1 = msd.getJumpConditions();
+	Enumeration<JumpCondition> enum1 = msd.getJumpConditions();
 	while (enum1.hasMoreElements()) {
-		JumpCondition jc = (JumpCondition)enum1.nextElement();
+		JumpCondition jc = enum1.nextElement();
 		writer.println("JUMP_CONDITION_BEGIN " + jc.getVariable().getName());
 		writer.println("INFLUX " + subsituteExpression(jc.getInFluxExpression()).infix() + ";");
 		writer.println("OUTFLUX " + subsituteExpression(jc.getOutFluxExpression()).infix() + ";");
@@ -451,9 +468,9 @@ private void writeMembrane_VarContext(MembraneSubDomain memSubDomain) throws Exc
 	//
 	// add MembraneVarContext coders
 	//
-	Enumeration enum_equ = memSubDomain.getEquations();
+	Enumeration<Equation> enum_equ = memSubDomain.getEquations();
 	while (enum_equ.hasMoreElements()){
-		Equation equation = (Equation)enum_equ.nextElement();
+		Equation equation = enum_equ.nextElement();
 		if (equation instanceof MembraneRegionEquation) {
 			writeMembraneRegion_VarContext_Equation(memSubDomain, (MembraneRegionEquation)equation);
 		} else{
@@ -542,9 +559,9 @@ MEMBRANE_END
  */
 private void writeMembranes() throws Exception {
 	cbit.vcell.math.MathDescription mathDesc = simulation.getMathDescription();
-	java.util.Enumeration enum1 = mathDesc.getSubDomains();
+	java.util.Enumeration<SubDomain> enum1 = mathDesc.getSubDomains();
 	while (enum1.hasMoreElements()) {		
-		SubDomain sd = (SubDomain)enum1.nextElement();
+		SubDomain sd = enum1.nextElement();
 		if (sd instanceof MembraneSubDomain) {
 			MembraneSubDomain msd = (MembraneSubDomain)sd;
 			writer.println("MEMBRANE_BEGIN " + msd.getName() + " " + msd.getInsideCompartment().getName() + " " + msd.getOutsideCompartment().getName());
@@ -572,9 +589,9 @@ private void writeModelDescription() throws Exception {
 	writer.println("# Model description: FEATURE name handle priority boundary_conditions");
 	writer.println("MODEL_BEGIN");
 	cbit.vcell.math.MathDescription mathDesc = simulation.getMathDescription();
-	java.util.Enumeration enum1 = mathDesc.getSubDomains();
+	java.util.Enumeration<SubDomain> enum1 = mathDesc.getSubDomains();
 	while (enum1.hasMoreElements()) {
-		SubDomain sd = (SubDomain)enum1.nextElement();
+		SubDomain sd = enum1.nextElement();
 		if (sd instanceof cbit.vcell.math.CompartmentSubDomain) {
 			CompartmentSubDomain csd = (CompartmentSubDomain)sd;
 			writer.print("FEATURE " + csd.getName() + " " + mathDesc.getHandle(csd) + " " + csd.getPriority() + " ");
@@ -613,10 +630,20 @@ MESH_BEGIN
 VCG_FILE \\\\SAN2\\raid\\Vcell\\users\\fgao\\SimID_22489731_0_.vcg
 MESH_END
 */
-private void writeMeshFileName() {
+private void writeMeshFile() {
 	writer.println("# Mesh file");
 	writer.println("MESH_BEGIN");
-	writer.println("VCG_FILE " + new File(userDirectory, simulationJob.getSimulationJobID() + ".vcg").getAbsolutePath());
+	if (bInlineVCG) {
+		cbit.vcell.geometry.Geometry geo = simulation.getMathDescription().getGeometry();
+		try {
+			GeometryFileWriter.write(geo, simulation.getMeshSpecification().getSamplingSize(),writer);
+		} catch (Exception e) {			 
+			e.printStackTrace();
+			throw new RuntimeException(e.getMessage());
+		}
+	} else {
+		writer.println("VCG_FILE " + new File(userDirectory, simulationJob.getSimulationJobID() + ".vcg").getAbsolutePath());
+	}	
 	writer.println("MESH_END");
 }
 
@@ -667,9 +694,9 @@ private void writeVariables() throws Exception {
 			Vector<SubDomain> listOfSubDomains = new Vector<SubDomain>();
 			int totalNumCompartments = 0;
 			StringBuffer compartmentNames = new StringBuffer();
-			Enumeration subDomainEnum = simulation.getMathDescription().getSubDomains();
+			Enumeration<SubDomain> subDomainEnum = simulation.getMathDescription().getSubDomains();
 			while (subDomainEnum.hasMoreElements()){
-		  		SubDomain subDomain = (SubDomain)subDomainEnum.nextElement();
+		  		SubDomain subDomain = subDomainEnum.nextElement();
 		 		if (subDomain instanceof CompartmentSubDomain){
 			  		CompartmentSubDomain compartmentSubDomain = (CompartmentSubDomain)subDomain;
 			  		totalNumCompartments++;
@@ -731,6 +758,22 @@ private void writeVariables() throws Exception {
 }
 
 /**
+ * PARAMETER_BEGIN 3
+ * D
+ * U0
+ * U1
+ * PARAMETER_END
+ * @throws Exception
+ */
+private void writeParameters() throws Exception {
+	writer.println("# Parameters");
+	writer.println("PARAMETER_BEGIN " + parameterNames.length);
+	for (int i = 0; i < parameterNames.length; i ++) {
+		writer.println(parameterNames[i]);
+	}
+	writer.println("PARAMETER_END");
+}
+/**
  * # Field Data
  * FIELD_DATA_BEGIN
  * #id, name, varname, time filename
@@ -743,10 +786,12 @@ private void writeFieldData() throws Exception {
 	if (fieldDataIDSpecs == null || fieldDataIDSpecs.length == 0) {
 		return;
 	}	
+	
+	DataSetControllerImpl dsci = new DataSetControllerImpl(new NullSessionLog(),null,userDirectory.getParentFile(),null);
 
 	writer.println("# Field Data");
 	writer.println("FIELD_DATA_BEGIN");
-	writer.println("#id, new name, name, varname, time, filename");
+	writer.println("#id, type, new name, name, varname, time, filename");
 	
 	int index = 0;
 	HashSet<FieldDataIdentifierSpec> uniqueFieldDataIDSpecs = new HashSet<FieldDataIdentifierSpec>();
@@ -758,9 +803,11 @@ private void writeFieldData() throws Exception {
 					ExternalDataIdentifier.createCanonicalResampleFileName((VCSimulationDataIdentifier)simulationJob.getVCDataIdentifier(),
 							fieldDataIDSpecs[i].getFieldFuncArgs())
 				);
-			uniqueFieldDataIDSpecs.add(fieldDataIDSpecs[i]);			
+			uniqueFieldDataIDSpecs.add(fieldDataIDSpecs[i]);
+			SimDataBlock simDataBlock = dsci.getSimDataBlock(fieldDataIDSpecs[i].getExternalDataIdentifier(),fieldDataIDSpecs[i].getFieldFuncArgs().getVariableName(), fieldDataIDSpecs[i].getFieldFuncArgs().getTime().evaluateConstant());
+			VariableType varType = simDataBlock.getVariableType();
 			String fieldDataID = "_VCell_FieldData_" + index;
-			writer.println(index + " " + fieldDataID + " " + ffa.getFieldName() + " " + ffa.getVariableName() + " " + ffa.getTime().infix() + " " + newResampledFieldDataFile);
+			writer.println(index + " " + varType.getTypeName() + " " + fieldDataID + " " + ffa.getFieldName() + " " + ffa.getVariableName() + " " + ffa.getTime().infix() + " " + newResampledFieldDataFile);
 			uniqueFieldDataNSet.add(new FieldDataNumerics("field(" + ffa.getFieldName() + "," + ffa.getVariableName() + "," + ffa.getTime().infix() + ")", fieldDataID));
 			index ++;
 		}

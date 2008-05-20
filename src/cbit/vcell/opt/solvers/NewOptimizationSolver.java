@@ -15,6 +15,7 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.model.ReservedSymbol;
 import cbit.vcell.opt.Constraint;
 import cbit.vcell.opt.ConstraintType;
+import cbit.vcell.opt.ExplicitFitObjectiveFunction;
 import cbit.vcell.opt.ExplicitObjectiveFunction;
 import cbit.vcell.opt.ObjectiveFunction;
 import cbit.vcell.opt.OdeObjectiveFunction;
@@ -23,16 +24,20 @@ import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSolverSpec;
 import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.opt.Parameter;
+import cbit.vcell.opt.PdeObjectiveFunction;
 import cbit.vcell.opt.ReferenceData;
+import cbit.vcell.opt.SpatialReferenceData;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ExplicitOutputTimeSpec;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.ODESolverResultSet;
+import cbit.vcell.solvers.FiniteVolumeFileWriter;
 import cbit.vcell.solvers.NativeCVODESolver;
 import cbit.vcell.solvers.NativeIDASolver;
 import cbit.vcell.util.RowColumnResultSet;
@@ -40,9 +45,8 @@ import cbit.vcell.util.RowColumnResultSet;
 
 public class NewOptimizationSolver implements OptimizationSolver {
 
-public OptimizationResultSet solve(OptimizationSpec os,	OptimizationSolverSpec optSolverSpec, final OptSolverCallbacks optSolverCallbacks) 
-	throws IOException, ExpressionException, cbit.vcell.opt.OptimizationException 
-{
+public OptimizationResultSet solve(OptimizationSpec os,	OptimizationSolverSpec optSolverSpec, final cbit.vcell.opt.solvers.OptSolverCallbacks optSolverCallbacks) 
+	throws IOException, ExpressionException, cbit.vcell.opt.OptimizationException {
 	Element optProblemXML = getOptProblemDescriptionXML(os);
 	org.vcell.optimization.OptSolverCallbacks callbacks = new org.vcell.optimization.OptSolverCallbacks(){
 		
@@ -166,7 +170,7 @@ public String getOptProblemXMLString(OptimizationSpec optimizationSpec){
 	return XmlUtil.xmlToString(getOptProblemDescriptionXML(optimizationSpec));
 }
 	
-public Element getOptProblemDescriptionXML(OptimizationSpec optimizationSpec){
+public static Element getOptProblemDescriptionXML(OptimizationSpec optimizationSpec){
 	Element optProblemDescriptionElement = new Element(OptXmlTags.OptProblemDescription_Tag);
 	optProblemDescriptionElement.addContent(getParameterDescriptionXML(optimizationSpec));
 	optProblemDescriptionElement.addContent(getConstraintDescriptionXML(optimizationSpec));
@@ -174,7 +178,7 @@ public Element getOptProblemDescriptionXML(OptimizationSpec optimizationSpec){
 	return optProblemDescriptionElement;
 }
 
-public Element getParameterDescriptionXML(OptimizationSpec optimizationSpec){
+public static Element getParameterDescriptionXML(OptimizationSpec optimizationSpec){
 	Element parameterDescriptionElement = new Element(OptXmlTags.ParameterDescription_Tag);
 	Parameter[] parameters = optimizationSpec.getParameters();
 	for (int i = 0; i < parameters.length; i++) {
@@ -190,7 +194,7 @@ public Element getParameterDescriptionXML(OptimizationSpec optimizationSpec){
 }
 
 
-public Element getConstraintDescriptionXML(OptimizationSpec optimizationSpec){
+public static Element getConstraintDescriptionXML(OptimizationSpec optimizationSpec){
 	Element constraintDescriptionElement = new Element(OptXmlTags.ConstraintDescription_Tag);
 	Constraint[] constraints = optimizationSpec.getConstraints();
 	for (int i = 0; i < constraints.length; i++) {
@@ -212,7 +216,7 @@ public Element getConstraintDescriptionXML(OptimizationSpec optimizationSpec){
 	return constraintDescriptionElement;
 }
 
-public Element getObjectiveFunctionXML(OptimizationSpec optimizationSpec) {
+public static Element getObjectiveFunctionXML(OptimizationSpec optimizationSpec) {
 	Element objectiveFunctionElement = new Element(OptXmlTags.ObjectiveFunction_Tag);
 	ObjectiveFunction objectiveFunction = optimizationSpec.getObjectiveFunction();
 	
@@ -220,8 +224,20 @@ public Element getObjectiveFunctionXML(OptimizationSpec optimizationSpec) {
 		
 		ExplicitObjectiveFunction explicitObjectiveFunction = (ExplicitObjectiveFunction)objectiveFunction;
 		objectiveFunctionElement.setAttribute(OptXmlTags.ObjectiveFunctionType_Attr,OptXmlTags.ObjectiveFunctionType_Attr_Explicit);
-		objectiveFunctionElement.addContent(explicitObjectiveFunction.getExpression().infix());
+		Element expressionElement = new Element(OptXmlTags.Expression_Tag);
+		expressionElement.addContent(explicitObjectiveFunction.getExpression().infix());		
+		objectiveFunctionElement.addContent(expressionElement);
 		
+	}else if (objectiveFunction instanceof ExplicitFitObjectiveFunction){
+		
+		ExplicitFitObjectiveFunction explicitFitObjectiveFunction = (ExplicitFitObjectiveFunction)objectiveFunction;
+		objectiveFunctionElement.setAttribute(OptXmlTags.ObjectiveFunctionType_Attr,OptXmlTags.ObjectiveFunctionType_Attr_ExplicitFit);
+		Element expressionElement = new Element(OptXmlTags.Expression_Tag);
+		expressionElement.addContent(explicitFitObjectiveFunction.getFunctionExpression().infix());
+		objectiveFunctionElement.addContent(expressionElement);
+		Element dataElement = getDataXML(explicitFitObjectiveFunction.getReferenceData());
+		objectiveFunctionElement.addContent(dataElement);
+
 	}else if (objectiveFunction instanceof OdeObjectiveFunction){
 		
 		OdeObjectiveFunction odeObjectiveFunction = (OdeObjectiveFunction)objectiveFunction;
@@ -260,13 +276,51 @@ public Element getObjectiveFunctionXML(OptimizationSpec optimizationSpec) {
 			}
 			modelMappingElement.addContent(mappingExpression.infix());
 			objectiveFunctionElement.addContent(modelMappingElement);
+		}	
+	} else if (objectiveFunction instanceof PdeObjectiveFunction){
+		
+		PdeObjectiveFunction pdeObjectiveFunction = (PdeObjectiveFunction)objectiveFunction;
+		objectiveFunctionElement.setAttribute(OptXmlTags.ObjectiveFunctionType_Attr,OptXmlTags.ObjectiveFunctionType_Attr_PDE);
+		SpatialReferenceData refData = pdeObjectiveFunction.getReferenceData();
+
+		Element dataElement = getDataXML(refData);
+		objectiveFunctionElement.addContent(dataElement);
+
+		Element modelElement = getModelXML(pdeObjectiveFunction, optimizationSpec.getParameterNames());
+		objectiveFunctionElement.addContent(modelElement);
+		
+		Simulation tempSim = new Simulation(pdeObjectiveFunction.getMathDescription());
+		//
+		// write data/model variable mappings
+		//
+		for (int i = 1; i < refData.getNumVariables(); i ++) {
+			Element modelMappingElement = new Element(OptXmlTags.ModelMapping_Tag);
+			modelMappingElement.setAttribute(OptXmlTags.ModelMappingDataColumn_Attr,refData.getVariableNames()[i]);
+			modelMappingElement.setAttribute(OptXmlTags.ModelMappingWeight_Attr,String.valueOf(refData.getVariableWeights()[i]));
+
+			Expression mappingExpression = null;
+			try {
+				cbit.vcell.math.Variable var = pdeObjectiveFunction.getMathDescription().getVariable(refData.getVariableNames()[i]);
+				if (var instanceof cbit.vcell.math.Function) {
+					Expression exp = new Expression(var.getExpression());
+					exp.bindExpression(tempSim);
+					exp = cbit.vcell.math.MathUtilities.substituteFunctions(exp, tempSim);
+					mappingExpression = exp.flatten();
+				} else {
+					mappingExpression = new Expression(var.getName());
+				}
+			} catch (ExpressionException e) {
+				e.printStackTrace();
+				throw new OptimizationException(e.getMessage());
+			}
+			modelMappingElement.addContent(mappingExpression.infix());
+			objectiveFunctionElement.addContent(modelMappingElement);
 		}
-	
 	}
 	return objectiveFunctionElement;
 }
 
-public Element getDataXML(ReferenceData refData){
+public static Element getDataXML(ReferenceData refData){	
 	Element dataElement = new Element(OptXmlTags.Data_Tag);
 
 	//
@@ -277,14 +331,17 @@ public Element getDataXML(ReferenceData refData){
 	timeVarElement.setAttribute(OptXmlTags.VariableName_Attr,ReservedSymbol.TIME.getName());
 	timeVarElement.setAttribute(OptXmlTags.VariableDimension_Attr,"1");
 	dataElement.addContent(timeVarElement);
-	for (int i = 0; i < refData.getNumColumns(); i++) {
-		if (!refData.getColumnNames()[i].equals("t")){
-			Element variableElement = new Element(OptXmlTags.Variable_Tag);
-			variableElement.setAttribute(OptXmlTags.VariableType_Attr,OptXmlTags.VariableType_Attr_Dependent);
-			variableElement.setAttribute(OptXmlTags.VariableName_Attr,refData.getColumnNames()[i]);
-			variableElement.setAttribute(OptXmlTags.VariableDimension_Attr,"1");
-			dataElement.addContent(variableElement);
-		}
+	
+	int timeIndex = refData.findColumn(ReservedSymbol.TIME.getName());
+	if (timeIndex != 0) {
+		throw new RuntimeException("t must be the first column");
+	}
+	for (int i = 1; i < refData.getNumColumns(); i++) {
+		Element variableElement = new Element(OptXmlTags.Variable_Tag);
+		variableElement.setAttribute(OptXmlTags.VariableType_Attr,OptXmlTags.VariableType_Attr_Dependent);
+		variableElement.setAttribute(OptXmlTags.VariableName_Attr,refData.getColumnNames()[i]);
+		variableElement.setAttribute(OptXmlTags.VariableDimension_Attr,refData.getDataSize() + "");
+		dataElement.addContent(variableElement);
 	}
 	//
 	// write data
@@ -303,8 +360,7 @@ public Element getDataXML(ReferenceData refData){
 	return dataElement;
 }
 
-
-public Element getModelXML(OdeObjectiveFunction odeObjectiveFunction, String[] parameterNames){
+public static Element getModelXML(OdeObjectiveFunction odeObjectiveFunction, String[] parameterNames){
 	Element modelElement = new Element(OptXmlTags.Model_Tag);
 
 	ReferenceData refData = odeObjectiveFunction.getReferenceData();
@@ -375,6 +431,45 @@ public Element getModelXML(OdeObjectiveFunction odeObjectiveFunction, String[] p
 			e.printStackTrace(System.out);
 			throw new OptimizationException("failed to create CVODE input file: "+e.getMessage());
 		}
+	}
+	return modelElement;
+}
+
+public static Element getModelXML(PdeObjectiveFunction pdeObjectiveFunction, String[] parameterNames){
+	Element modelElement = new Element(OptXmlTags.Model_Tag);
+
+	SpatialReferenceData refData = pdeObjectiveFunction.getReferenceData();
+	double refDataEndTime = refData.getRowData(refData.getNumRows()-1)[0];
+
+	//
+	// post the problem either as an IDA or CVODE model
+	//
+	cbit.sql.SimulationVersion simVersion = new cbit.sql.SimulationVersion(
+			new KeyValue("12345"),
+			"name",
+			new cbit.vcell.server.User("user",new KeyValue("123")),
+			new cbit.vcell.server.GroupAccessNone(),
+			null, // versionBranchPointRef
+			new java.math.BigDecimal(1.0), // branchID
+			new java.util.Date(),
+			cbit.sql.VersionFlag.Archived,
+			"",
+			null);
+	Simulation simulation = new Simulation(simVersion,pdeObjectiveFunction.getMathDescription());
+
+	try {
+		simulation.getSolverTaskDescription().setTimeBounds(new cbit.vcell.solver.TimeBounds(0.0, refDataEndTime));
+		simulation.getSolverTaskDescription().setSolverDescription(SolverDescription.FiniteVolume);
+		java.io.StringWriter simulationInputStringWriter = new java.io.StringWriter();
+		FiniteVolumeFileWriter fvFileWriter = new FiniteVolumeFileWriter(new SimulationJob(simulation, null, 0), parameterNames, new java.io.PrintWriter(simulationInputStringWriter,true));		
+		fvFileWriter.write();
+		simulationInputStringWriter.close();
+		modelElement.setAttribute(OptXmlTags.ModelType_Attr,OptXmlTags.ModelType_Attr_FVSOLVER);
+		CDATA simulationInputText = new CDATA(simulationInputStringWriter.getBuffer().toString());
+		modelElement.addContent(simulationInputText);
+	}catch (Exception e){
+		e.printStackTrace(System.out);
+		throw new OptimizationException("failed to create fv input file: "+e.getMessage());
 	}
 	return modelElement;
 }

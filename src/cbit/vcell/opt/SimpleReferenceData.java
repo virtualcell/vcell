@@ -376,4 +376,8 @@ public String getVCML() {
 	
 	return buffer.toString();	
 }
+
+public int getDataSize() {	
+	return 1;
+}
 }
