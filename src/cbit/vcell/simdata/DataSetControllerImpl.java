@@ -1553,7 +1553,8 @@ private Expression fieldFunctionSubstitution(final VCDataIdentifier vcdID,Annota
 							(ExternalDataIdentifier)fieldDataIdentifierSpecArr[j].getExternalDataIdentifier(),
 							fieldfuncArgumentsArr[i].getVariableName(),
 							fieldfuncArgumentsArr[i].getTime().evaluateConstant(),
-							fieldfuncArgumentsArr[i].getTime().evaluateConstant());
+							fieldfuncArgumentsArr[i].getTime().evaluateConstant(),
+							fieldfuncArgumentsArr[i].getVariableType());
 					exp.substituteInPlace(new Expression(fieldFuncString), new Expression(substFieldName));
 					substSymbolIndexH.put(substFieldName,i);
 					break;
@@ -1677,7 +1678,14 @@ public DataIdentifier[] getDataIdentifiers(VCDataIdentifier vcdID) throws DataAc
 	Vector<DataIdentifier> v = new Vector<DataIdentifier>();
 	for (int i = 0; i < dataIdentifiersIncludingOutsideAndInside.length; i++){
 		DataIdentifier di = dataIdentifiersIncludingOutsideAndInside[i];
-		if (!di.getName().endsWith("_INSIDE") && !di.getName().endsWith("_OUTSIDE")) {
+		if (!di.getName().endsWith("_INSIDE") && !di.getName().endsWith("_OUTSIDE")) {		
+			if (di.getVariableType() == null || di.getVariableType().equals(VariableType.UNKNOWN)) {
+				if (di.isFunction()) {
+					AnnotatedFunction f = simData.getFunction(di.getName());
+					VariableType varType = getVariableTypeForFieldFunction(vcdID, f);
+					di = new DataIdentifier(di.getName(), varType, di.isFunction());
+				}
+			}		
 			v.addElement(di);
 		}
 	}
@@ -1862,6 +1870,20 @@ public AnnotatedFunction[] getFunctions(VCDataIdentifier vcdID) throws DataAcces
 	}
 }
 
+private VariableType getVariableTypeForFieldFunction(VCDataIdentifier vcdID, AnnotatedFunction function) throws DataAccessException {
+	VariableType funcType = function.getFunctionType(); 
+	if (funcType == null || funcType.equals(VariableType.UNKNOWN)) {
+		FieldFunctionArguments[] ffas  = function.getExpression().getFieldFunctionArguments();
+		if (ffas == null || ffas.length == 0) {
+			throw new DataAccessException("Unknown function type for function " + function.getName());
+		}
+		// use the type from the first field function
+		FieldDataIdentifierSpec[] fdiss = getFieldDataIdentifierSpecs(ffas, vcdID);
+		SimDataBlock dataBlock = getSimDataBlock(fdiss[0].getExternalDataIdentifier(), ffas[0].getVariableName(), 0.0);
+		funcType = dataBlock.getVariableType();		
+	}
+	return funcType;
+}
 
 /**
  * This method was created by a SmartGuide.
@@ -2837,7 +2859,6 @@ public VCData getVCData(VCDataIdentifier vcdID) throws DataAccessException, IOEx
 		} else {  // assume vcdID instanceof cbit.vcell.solver.SimulationInfo or a test adapter
 			vcData = new SimulationData(vcdID, getPrimaryUserDir(vcdID.getOwner(), false), getSecondaryUserDir(vcdID.getOwner()));
 		}
-//		cacheTable.put(vcdID,vcData);
 		if(cacheTable0 != null){
 			cacheTable0.put(vcdID,vcData);
 		}

@@ -1431,7 +1431,7 @@ private void jButtonFDCopyRef_ActionPerformed(java.awt.event.ActionEvent actionE
 			ExternalDataIdentifier.createCanonicalFieldFunctionSyntax(
 					((FieldDataMainList)mainNode.getUserObject()).externalDataIdentifier,
 					((FieldDataVarList)varNode.getUserObject()).dataIdentifier.getName(),
-					times[begIndex],-1);
+					times[begIndex],-1,((FieldDataVarList)varNode.getUserObject()).dataIdentifier.getVariableType());
 	
 		VCellTransferable.sendToClipboard(fieldFunctionReference);
 	}else if(actionEvent.getSource() == getJButtonCreateGeom()){

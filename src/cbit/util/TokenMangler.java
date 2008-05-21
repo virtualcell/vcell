@@ -226,12 +226,12 @@ public static String getEscapedLocalFieldVariableName_C(FieldFunctionArguments f
 	return C_LOCALFIELD_PREFIX + fieldFuncArgs.getUniqueID();
 }
 
-public static String getEscapedLocalFieldVariableName_C(String fieldname, String varname, String timeExp) {	
+public static String getEscapedLocalFieldVariableName_C(String fieldname, String varname, String timeExp, String varType) {	
 	if (fieldname == null || varname == null || timeExp == null) {
 		throw new IllegalArgumentException("TokenMangler::getEscapedLocalFieldVariableName_C() : input args can't be null");
 	}
 	try {
-		return C_LOCALFIELD_PREFIX + FieldFunctionArguments.getUniqueID(fieldname, varname, new Expression(timeExp));
+		return C_LOCALFIELD_PREFIX + FieldFunctionArguments.getUniqueID(fieldname, varname, new Expression(timeExp), varType);
 	} catch (ExpressionException e) {		
 		e.printStackTrace(System.out);
 		throw new IllegalArgumentException("TokenMangler::getEscapedLocalFieldVariableName_C() : time expression is not correctly formatted");
