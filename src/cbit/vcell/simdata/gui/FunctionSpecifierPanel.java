@@ -209,8 +209,10 @@ public class FunctionSpecifierPanel extends JPanel implements ActionListener,Und
 			dataIdNames[i] = allIdentifiers[i].getName();
 			dataIdVarTypes[i] = allIdentifiers[i].getVariableType();
 		}
-		VariableType funcType =
-			FVSolver.getFunctionVariableType(func, dataIdNames, dataIdVarTypes,isSpatial);
+		VariableType funcType = FVSolver.getFunctionVariableType(func, dataIdNames, dataIdVarTypes,isSpatial);
+		if (funcType.equals(VariableType.UNKNOWN)) {
+			throw new IllegalArgumentException("Must specify variable type for field function");
+		}
 		
 		return
 			new AnnotatedFunction(

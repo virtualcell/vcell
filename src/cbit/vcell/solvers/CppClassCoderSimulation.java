@@ -7,6 +7,7 @@ import cbit.util.*;
 import java.util.*;
 import java.io.*;
 
+import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.*;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
@@ -469,7 +470,15 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 			File fieldFile = new File(baseDataName + FieldDataIdentifierSpec.getDefaultFieldDataFileNameForSimulation(fieldFuncArgs[i]));
 			String fieldDataID = "_VCell_FieldData_" + i;
 			out.println("\t\tsprintf(tempString, \"%s%c" + fieldFile.getName() + "\\0\", outputPath, DIRECTORY_SEPARATOR);");
-			String constructorArg = i + ",\"" + fieldDataID + "\",\"" + fieldName + "\",\"" + varName + "\"," + fieldFuncArgs[i].getTime().infix() + ", tempString";		
+			String varType = "";
+			if (fieldFuncArgs[i].getVariableType().equals(VariableType.VOLUME)) {
+				varType = "VAR_VOLUME";
+			} else if (fieldFuncArgs[i].getVariableType().equals(VariableType.MEMBRANE)) {
+				varType = "VAR_MEMBRANE";
+			} else {
+				varType = "VAR_UNKNOWN";
+			}
+			String constructorArg = i + "," + varType + ",\"" + fieldDataID + "\",\"" + fieldName + "\",\"" + varName + "\"," + fieldFuncArgs[i].getTime().infix() + ", tempString";		
 			out.println("\t\t" +  TokenMangler.getEscapedGlobalFieldVariableName_C(fieldFuncArgs[i]) + " = new FieldData(" + constructorArg + ");");
 		}		
 	}

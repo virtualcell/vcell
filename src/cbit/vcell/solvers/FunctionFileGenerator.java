@@ -177,6 +177,8 @@ public static synchronized Vector<AnnotatedFunction> readFunctionsFile(File func
 					funcVarType = VariableType.CONTOUR_REGION;
 				} else if (varType.equals("Nonspatial")) {
 					funcVarType = VariableType.NONSPATIAL;
+				} else if (varType.equals("Unknown")) {
+					funcVarType = VariableType.UNKNOWN;
 				} 
 			} else if (i == 4) {
 				funcIsUserDefined = Boolean.valueOf(token2).booleanValue();

@@ -1,6 +1,7 @@
 package cbit.vcell.solvers;
 import cbit.util.ISize;
 import cbit.vcell.field.FieldDataIdentifierSpec;
+import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.SimResampleInfoProvider;
 import cbit.vcell.geometry.surface.GeometryFileWriter;
 import cbit.vcell.geometry.surface.SurfaceCollection;
@@ -457,7 +458,11 @@ public static VariableType getFunctionVariableType(Function function, String[] v
 		//
 		if (!isSpatial) {
 			funcType = VariableType.NONSPATIAL;
-		} else {
+		} else {	
+			FieldFunctionArguments[] fieldFuncArgs = function.getExpression().getFieldFunctionArguments();
+			if (fieldFuncArgs != null && fieldFuncArgs.length > 0) {
+				return fieldFuncArgs[0].getVariableType();
+			}			
 			funcType = VariableType.VOLUME;
 		}
 	}else{
@@ -651,6 +656,11 @@ public static void resampleFieldData(
 			DataSetControllerImpl dsci = new DataSetControllerImpl(new NullSessionLog(),null,userDirectory.getParentFile(),null);
 			CartesianMesh origMesh = dsci.getMesh(resampleEntry.getKey().getExternalDataIdentifier());
 			SimDataBlock simDataBlock = dsci.getSimDataBlock(resampleEntry.getKey().getExternalDataIdentifier(),resampleEntry.getKey().getFieldFuncArgs().getVariableName(), resampleEntry.getKey().getFieldFuncArgs().getTime().evaluateConstant());
+			VariableType varType = resampleEntry.getKey().getFieldFuncArgs().getVariableType();
+			VariableType dataVarType = simDataBlock.getVariableType();
+			if (!varType.equals(VariableType.UNKNOWN) && !varType.equals(dataVarType)) {
+				throw new IllegalArgumentException("field function variable type (" + varType.getTypeName() + ") doesn't match real variable type (" + dataVarType.getTypeName() + ")");
+			}
 			double[] origData = simDataBlock.getData();
 			double[] newData = null;
 			if(CartesianMesh.isSpatialDomainSame(origMesh, newMesh)){

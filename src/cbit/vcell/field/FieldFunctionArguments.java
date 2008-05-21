@@ -6,17 +6,22 @@ import java.util.StringTokenizer;
 import cbit.util.TokenMangler;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.MathMLTags;
+import cbit.vcell.simdata.VariableType;
 
 public class FieldFunctionArguments implements Serializable {
 
 	private String fieldName;
 	private String variableName;
 	private Expression time;
-	public FieldFunctionArguments(String fieldName, String variableName, Expression time) {
+	private VariableType variableType;
+	
+	public FieldFunctionArguments(String fieldName, String variableName, Expression time, VariableType vt) {
 		super();
 		this.fieldName = fieldName;
 		this.variableName = variableName;
 		this.time = time;
+		variableType = vt;
 	}
 	
 	public static FieldFunctionArguments fromTokens(StringTokenizer st) throws ExpressionException{
@@ -24,10 +29,12 @@ public class FieldFunctionArguments implements Serializable {
 			new FieldFunctionArguments(
 					st.nextToken(),
 					st.nextToken(),
-					new Expression(st.nextToken()));
+					new Expression(st.nextToken()),
+					VariableType.getVariableTypeFromString(st.nextToken()));
 	}
+	
 	public String toCSVString(){
-		return fieldName+","+variableName+","+time.infix();
+		return fieldName+","+variableName  + "," + time.infix()+"," + variableType.getTypeName();
 	}
 	public String getFieldName() {
 		return fieldName;
@@ -38,12 +45,12 @@ public class FieldFunctionArguments implements Serializable {
 	public String getVariableName() {
 		return variableName;
 	}
-	public static String getUniqueID(String fieldname, String varname, Expression timeExp) {
-		return TokenMangler.fixTokenStrict(fieldname + "_" + varname + "_" + timeExp.infix());
+	public static String getUniqueID(String fieldname, String varname, Expression timeExp, String varType) {
+		return TokenMangler.fixTokenStrict(fieldname + "_" + varname + "_" + timeExp.infix() + "_" + varType);
 	}
 
 	public String getUniqueID() {
-		return getUniqueID(fieldName, variableName, time);
+		return getUniqueID(fieldName, variableName, time, variableType.getTypeName());
 	}	
 	@Override
 	public int hashCode() {
@@ -80,4 +87,8 @@ public class FieldFunctionArguments implements Serializable {
 			return false;
 		return true;
 	}
+
+	public VariableType getVariableType() {
+		return variableType;
+	}	
 }

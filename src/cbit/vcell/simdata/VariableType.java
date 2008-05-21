@@ -16,6 +16,7 @@ public class VariableType implements java.io.Serializable, cbit.util.Matchable {
 	private static final int MIN_PDE_TYPE = 1;
 	private static final int MAX_PDE_TYPE = 6;
 	
+	private static final int UNKNOWN_TYPE = 0;
 	private static final int VOLUME_TYPE = 1;
 	private static final int MEMBRANE_TYPE = 2;
 	private static final int CONTOUR_TYPE = 3;
@@ -28,6 +29,7 @@ public class VariableType implements java.io.Serializable, cbit.util.Matchable {
 	private static final String[] LABEL = {"Unknown","Conc","Density","Density","Conc","Density","Density","Conc"};
 	private static final String[] UNITS = {"Unknown","uM","molecules/um^2","molecules/um","uM","molecules/um^2","molecules/um","uM"};
 	
+	public static final VariableType UNKNOWN = new VariableType(UNKNOWN_TYPE);
 	public static final VariableType VOLUME = new VariableType(VOLUME_TYPE);
 	public static final VariableType MEMBRANE = new VariableType(MEMBRANE_TYPE);
 	public static final VariableType CONTOUR = new VariableType(CONTOUR_TYPE);
@@ -180,6 +182,17 @@ public static final VariableType getVariableTypeFromInteger(int varType) {
 		throw new IllegalArgumentException("varType="+varType+" is undefined");
 	}
 }
+
+public static final VariableType getVariableTypeFromString(String type) {	
+	for (int i = 0; i < NAMES.length; i ++) {
+		if (type.equals(NAMES[i])) {
+			return new VariableType(i);
+		}		
+	}
+	
+	throw new IllegalArgumentException("varType="+type+" is undefined");	
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (10/3/00 2:48:55 PM)

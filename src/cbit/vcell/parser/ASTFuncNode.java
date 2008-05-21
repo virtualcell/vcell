@@ -9,6 +9,7 @@ import java.util.Hashtable;
 import cbit.util.TokenMangler;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.simdata.ExternalDataIdentifier;
+import cbit.vcell.simdata.VariableType;
 import net.sourceforge.interval.ia_math.*;
 
 public class ASTFuncNode extends SimpleNode {
@@ -1996,7 +1997,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		break;
 	}
 	case FIELD: {
-		throw new FunctionDomainException("field(A, B, time) can't be evaluated in regular way");
+		throw new FunctionDomainException("field(A, B, time, variableType) can't be evaluated in regular way");
 	}	
 	case GRAD: {
 		//
@@ -2314,7 +2315,7 @@ public Node flatten() throws ExpressionException {
 		break;
 	}
 	case FIELD: {
-		if (tempChildren.size()!=3) throw new ExpressionException("field() expects 3 argument");
+		if (tempChildren.size()!=3 && tempChildren.size()!=4) throw new ExpressionException("field() expects 3 or 4 arguments");
 		break;
 	}
 	case GRAD: {
@@ -2357,9 +2358,14 @@ void getFieldFunctionArguments(java.util.Vector<FieldFunctionArguments> v) {
 		} catch (ExpressionException e) {
 			e.printStackTrace();
 			throw new RuntimeException("Unexpected time expression for FieldData\n"+e.getMessage());
+		}		
+		FieldFunctionArguments fieldFuncArgs = null;
+		if (jjtGetNumChildren() == 4) {
+			ASTIdNode vartype = (ASTIdNode)jjtGetChild(3);
+			fieldFuncArgs = new FieldFunctionArguments(fieldname.name, variablename.name,time,VariableType.getVariableTypeFromString(vartype.name));
+		} else {
+			fieldFuncArgs =	new FieldFunctionArguments(fieldname.name, variablename.name,time, VariableType.UNKNOWN);
 		}
-		FieldFunctionArguments fieldFuncArgs =
-			new FieldFunctionArguments(fieldname.name, variablename.name,time);
 		if(!v.contains(fieldFuncArgs)){
 			v.add(fieldFuncArgs);
 		}
@@ -2570,7 +2576,8 @@ public String infixString(int lang, NameScope nameScope) {
 			 	return TokenMangler.getEscapedLocalFieldVariableName_C(			 			
 			 				jjtGetChild(0).infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT),
 			 				jjtGetChild(1).infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT),
-			 				jjtGetChild(2).infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT)			 				
+			 				jjtGetChild(2).infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT),
+			 				jjtGetNumChildren()==4?jjtGetChild(3).infixString(LANGUAGE_DEFAULT,NAMESCOPE_DEFAULT):VariableType.UNKNOWN.getTypeName()
 			 			);
 		 	} else {
 				buffer.append(getName() + "(");

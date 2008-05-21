@@ -3,6 +3,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.MathMLTags;
+
 import java.util.Enumeration;
 import java.io.File;
 import java.io.PrintWriter;
@@ -781,14 +783,22 @@ private void writeParameters() throws Exception {
  * FIELD_DATA_END
 */
 
+public String getFieldFunctionSyntax(FieldFunctionArguments ffa){
+	if (ffa.getVariableType().equals(VariableType.UNKNOWN)) {
+		return MathMLTags.FIELD+"("+ffa.getFieldName()+","+ffa.getVariableName()+","+ffa.getTime().infix() +")";
+	} else {
+		return MathMLTags.FIELD+"("+ffa.getFieldName()+","+ffa.getVariableName()+","+ffa.getTime().infix() +","+ffa.getVariableType().getTypeName()+")";
+	}
+}
+
 private void writeFieldData() throws Exception {
 	FieldDataIdentifierSpec[] fieldDataIDSpecs = simulationJob.getFieldDataIdentifierSpecs();
 	if (fieldDataIDSpecs == null || fieldDataIDSpecs.length == 0) {
 		return;
-	}	
-	
-	DataSetControllerImpl dsci = new DataSetControllerImpl(new NullSessionLog(),null,userDirectory.getParentFile(),null);
+	}
 
+	DataSetControllerImpl dsci = new DataSetControllerImpl(new NullSessionLog(),null,userDirectory.getParentFile(),null);
+	
 	writer.println("# Field Data");
 	writer.println("FIELD_DATA_BEGIN");
 	writer.println("#id, type, new name, name, varname, time, filename");
@@ -804,11 +814,17 @@ private void writeFieldData() throws Exception {
 							fieldDataIDSpecs[i].getFieldFuncArgs())
 				);
 			uniqueFieldDataIDSpecs.add(fieldDataIDSpecs[i]);
+			VariableType varType = fieldDataIDSpecs[i].getFieldFuncArgs().getVariableType();
 			SimDataBlock simDataBlock = dsci.getSimDataBlock(fieldDataIDSpecs[i].getExternalDataIdentifier(),fieldDataIDSpecs[i].getFieldFuncArgs().getVariableName(), fieldDataIDSpecs[i].getFieldFuncArgs().getTime().evaluateConstant());
-			VariableType varType = simDataBlock.getVariableType();
+			VariableType dataVarType = simDataBlock.getVariableType();			
+			if (varType.equals(VariableType.UNKNOWN)) {
+				varType = dataVarType;
+			} else if (!varType.equals(dataVarType)) {
+				throw new IllegalArgumentException("field function variable type (" + varType.getTypeName() + ") doesn't match real variable type (" + dataVarType.getTypeName() + ")");
+			}
 			String fieldDataID = "_VCell_FieldData_" + index;
 			writer.println(index + " " + varType.getTypeName() + " " + fieldDataID + " " + ffa.getFieldName() + " " + ffa.getVariableName() + " " + ffa.getTime().infix() + " " + newResampledFieldDataFile);
-			uniqueFieldDataNSet.add(new FieldDataNumerics("field(" + ffa.getFieldName() + "," + ffa.getVariableName() + "," + ffa.getTime().infix() + ")", fieldDataID));
+			uniqueFieldDataNSet.add(new FieldDataNumerics(getFieldFunctionSyntax(ffa), fieldDataID));
 			index ++;
 		}
 	}	
