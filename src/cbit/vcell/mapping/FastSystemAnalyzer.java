@@ -1,18 +1,37 @@
-package cbit.vcell.math;
+package cbit.vcell.mapping;
 
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
 import java.util.*;
+
+import cbit.util.BeanUtils;
 import cbit.vcell.parser.*;
+import cbit.vcell.solver.ode.SensVariable;
+import cbit.vcell.math.Constant;
+import cbit.vcell.math.FastInvariant;
+import cbit.vcell.math.FastRate;
+import cbit.vcell.math.FastSystem;
+import cbit.vcell.math.Function;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.MathUtilities;
+import cbit.vcell.math.MemVariable;
+import cbit.vcell.math.ParameterVariable;
+import cbit.vcell.math.PseudoConstant;
+import cbit.vcell.math.ReservedVariable;
+import cbit.vcell.math.SubDomain;
+import cbit.vcell.math.VCML;
+import cbit.vcell.math.Variable;
+import cbit.vcell.math.VolVariable;
 import cbit.vcell.matrix.RationalExpMatrix;
 import cbit.vcell.matrix.RationalExp;
+import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.ReservedSymbol;
 /**
- * This type was created in VisualAge.
  */
-public class FastSystemImplicit extends FastSystem {
+public class FastSystemAnalyzer implements SymbolTable {
 	//
 	// the first r variables are the dependent ones
 	// the last N-r variables are the independent ones
@@ -24,18 +43,39 @@ public class FastSystemImplicit extends FastSystem {
 	//   |iiiccccc|         r   = 5 dependent vars
 	//   |iiiccccc|         N-r = 3 independent vars 
 	//
+	private FastSystem fastSystem = null;
 	protected RationalExpMatrix dependencyMatrix = null;
+
+	protected Vector<Expression> dependencyExpList = new Vector<Expression>();
+	protected Vector<Variable> dependentVarList = new Vector<Variable>();
+	protected Vector<Variable> fastVarList = new Vector<Variable>();
+	protected Vector<Variable> independentVarList = new Vector<Variable>();
+	protected Vector<PseudoConstant> pseudoConstantList = new Vector<PseudoConstant>();
+	protected Vector<Expression> fastRateExpList = new Vector<Expression>();
 
 /**
  * FastSystem constructor comment.
  */
-public FastSystemImplicit(MathDescription mathDesc) {
-	super(mathDesc);
+public FastSystemAnalyzer(FastSystem argFastSystem) throws MathException, ExpressionException {
+	super();
+	this.fastSystem = argFastSystem;
+	refreshAll();
 }
 
+public SymbolTableEntry getEntry(String id) throws ExpressionBindingException {
+	// combines mathDesc symbolTable and pseudoconstants from fastSysAnalyzer.
+	try {
+		SymbolTableEntry ste = fastSystem.getMathDesc().getEntry(id);
+		if (ste == null){
+			ste = getPseudoConstant(id);
+		}
+		return ste;
+	} catch (ExpressionException e){
+		throw new RuntimeException("ExpressionException: "+e.getMessage());
+	}
+}
 
 /**
- * This method was created in VisualAge.
  * @exception java.lang.Exception The exception description.
  */
 private void checkLinearity() throws MathException, ExpressionException {
@@ -47,11 +87,11 @@ private void checkLinearity() throws MathException, ExpressionException {
 		// for each variable, make sure ------------- = constant;
 		//                                  d Var
 		//
-		Enumeration<FastInvariant> enum_fi = getFastInvariants();
+		Enumeration<FastInvariant> enum_fi = fastSystem.getFastInvariants();
 		while (enum_fi.hasMoreElements()){
 			FastInvariant fi = enum_fi.nextElement();
 			Expression exp = fi.getFunction().differentiate(var.getName());
-			exp = MathUtilities.substituteFunctions(exp, mathDesc).flatten();
+			exp = MathUtilities.substituteFunctions(exp, fastSystem.getMathDesc()).flatten();
 			
 			if (!exp.isNumeric()) {
 				// If expression is in terms of 'x','y','z' - then its ok - relax the constant requirement.
@@ -61,7 +101,6 @@ private void checkLinearity() throws MathException, ExpressionException {
 						!symbols[i].equals(ReservedSymbol.Y.getName()) && 
 						!symbols[i].equals(ReservedSymbol.Z.getName()) && 
 						!symbols[i].equals(ReservedSymbol.TIME.getName()) ) {
-						bNeedsRefresh = true;
 						throw new MathException("FastInvariant "+fi.getFunction().toString()+" isn't linear, d/d("+var.getName()+") = "+exp.toString());
 					}
 				}
@@ -72,114 +111,16 @@ private void checkLinearity() throws MathException, ExpressionException {
 
 
 /**
- * Insert the method's description here.
- * Creation date: (10/10/2002 11:15:31 AM)
- * @param sim cbit.vcell.solver.Simulation
  */
-void flatten(cbit.vcell.solver.Simulation sim, boolean bRoundCoefficients) throws ExpressionException, MathException {
-	//
-	// replace fastRates with flattended and substituted fastRates
-	//
-	for (int i = 0; i < this.fastRateList.size(); i++){
-		Expression oldExp = ((FastRate)fastRateList.elementAt(i)).getFunction();
-		fastRateList.setElementAt(new FastRate(getFlattenedExpression(sim,oldExp,bRoundCoefficients)),i);
-	}
-	
-	//
-	// replace fastInvariants with flattended and substituted fastInvariants
-	//
-	for (int i = 0; i < this.fastInvariantList.size(); i++){
-		Expression oldExp = ((FastInvariant)fastInvariantList.elementAt(i)).getFunction();
-		fastInvariantList.setElementAt(new FastInvariant(getFlattenedExpression(sim,oldExp,bRoundCoefficients)),i);
-	}
-
-	//
-	// flag that all needs to be recalculated
-	//
-	bNeedsRefresh = true;
+private void refreshAll() throws MathException, ExpressionException {
+	refreshFastVarList();
+	checkLinearity();
+	refreshInvarianceMatrix();
+	refreshSubstitutedRateExps();
 }
 
 
 /**
- * This method was created by a SmartGuide.
- * @return java.lang.String
- */
-public String getVCML() {
-//	try {
-//		refreshAll();
-//	}catch (Exception e){
-//		e.printStackTrace(System.out);
-//	}
-	StringBuffer buffer = new StringBuffer();
-	buffer.append("\t"+VCML.FastSystem+" {\n");
-
-	Enumeration<FastInvariant> enum_fi = getFastInvariants();
-	while (enum_fi.hasMoreElements()){
-		FastInvariant fi = enum_fi.nextElement();
-		buffer.append("\t\t"+VCML.FastInvariant+"\t"+fi.getFunction().infix()+";\n");
-	}	
-		
-	Enumeration<FastRate> enum_fr = fastRateList.elements();
-	while (enum_fr.hasMoreElements()){
-		FastRate fr = enum_fr.nextElement();
-		buffer.append("\t\t"+VCML.FastRate+"\t"+fr.getFunction().infix()+";\n");
-	}	
-		
-	buffer.append("\t}\n");
-	return buffer.toString();		
-}
-
-
-/**
- * This method was created by a SmartGuide.
- * @param tokens java.util.StringTokenizer
- * @exception java.lang.Exception The exception description.
- */
-public void read(CommentStringTokenizer tokens) throws MathException, ExpressionException {
-	String token = null;
-	token = tokens.nextToken();
-	if (!token.equalsIgnoreCase(VCML.BeginBlock)){
-		throw new MathFormatException("unexpected token "+token+" expecting "+VCML.BeginBlock);
-	}			
-	while (tokens.hasMoreTokens()){
-		token = tokens.nextToken();
-		if (token.equalsIgnoreCase(VCML.EndBlock)){
-			break;
-		}			
-		if (token.equalsIgnoreCase(VCML.FastRate)){
-			Expression rate = new Expression(tokens);
-			FastRate fr = new FastRate(rate);
-			addFastRate(fr);
-			continue;
-		}			
-		if (token.equalsIgnoreCase(VCML.FastInvariant)){
-			Expression invariant = new Expression(tokens);
-			FastInvariant fi = new FastInvariant(invariant);
-			addFastInvariant(fi);
-			continue;
-		}			
-		throw new MathFormatException("unexpected identifier "+token);
-	}
-	bNeedsRefresh = true;
-}
-
-
-/**
- * This method was created in VisualAge.
- */
-protected void refreshAll() throws MathException, ExpressionException {
-	if (bNeedsRefresh){
-		bNeedsRefresh = false;
-		refreshFastVarList();
-		checkLinearity();
-		refreshInvarianceMatrix();
-		refreshSubstitutedRateExps();
-	}
-}
-
-
-/**
- * This method was created in VisualAge.
  * @return java.util.Vector
  */
 private void refreshFastVarList() throws MathException, ExpressionException {
@@ -188,28 +129,30 @@ private void refreshFastVarList() throws MathException, ExpressionException {
 	//
 	// get list of unique (VolVariables and MemVariables) in fastRate expressions
 	//
-	for (int i = 0; i < fastRateList.size(); i++) {
-		FastRate fr = (FastRate) fastRateList.elementAt(i);
+	Enumeration<FastRate> fastRatesEnum = fastSystem.getFastRates(); 
+	while (fastRatesEnum.hasMoreElements()){
+		FastRate fr  = fastRatesEnum.nextElement();
 		Expression exp = fr.getFunction();
-		Enumeration<Variable> enum1 = MathUtilities.getRequiredVariables(exp,mathDesc);
+		Enumeration<Variable> enum1 = MathUtilities.getRequiredVariables(exp, getFastSystem().getMathDesc());
 		while (enum1.hasMoreElements()) {
 			Variable var = enum1.nextElement();
 			if (var instanceof VolVariable || var instanceof MemVariable) {
 				if (!fastVarList.contains(var)) {
 					fastVarList.addElement(var);
-//System.out.println("FastSystemImplicit.refreshFastVarList(), FAST RATE VARIABLE: "+var.getName());
+					//System.out.println("FastSystemImplicit.refreshFastVarList(), FAST RATE VARIABLE: "+var.getName());
 				}
 			}
 		}
-	}
+	}	
 	//
 	// get list of all variables used in invariant expressions that are not used in fast rates
 	//
-	for (int i = 0; i < fastInvariantList.size(); i++) {
-		FastInvariant fi = (FastInvariant) fastInvariantList.elementAt(i);
+	Enumeration<FastInvariant> fastInvariantsEnum = fastSystem.getFastInvariants(); 
+	while (fastInvariantsEnum.hasMoreElements()) {
+		FastInvariant fi = (FastInvariant) fastInvariantsEnum.nextElement();
 		Expression exp = fi.getFunction();
-//System.out.println("FastSystemImplicit.refreshFastVarList(), ORIGINAL FAST INVARIANT: "+exp);
-		Enumeration<Variable> enum1 = MathUtilities.getRequiredVariables(exp,mathDesc);
+		//System.out.println("FastSystemImplicit.refreshFastVarList(), ORIGINAL FAST INVARIANT: "+exp);
+		Enumeration<Variable> enum1 = MathUtilities.getRequiredVariables(exp, getFastSystem().getMathDesc());
 		while (enum1.hasMoreElements()) {
 			Variable var = enum1.nextElement();
 			if (var instanceof VolVariable || var instanceof MemVariable) {
@@ -223,7 +166,7 @@ private void refreshFastVarList() throws MathException, ExpressionException {
 	//
 	// verify that there are N equations (rates+invariants) and N unknowns (fastVariables)
 	//
-	int numBoundFunctions = fastInvariantList.size() + fastRateList.size();
+	int numBoundFunctions = fastSystem.getNumFastInvariants() + fastSystem.getNumFastRates();
 	if (fastVarList.size() != numBoundFunctions) {
 		throw new MathException("FastSystem.checkDimension(), there are " + fastVarList.size() + " variables and " + numBoundFunctions + " FastInvariant's & FastRates");
 	}
@@ -231,7 +174,6 @@ private void refreshFastVarList() throws MathException, ExpressionException {
 
 
 /**
- * This method was created in VisualAge.
  */
 private void refreshInvarianceMatrix() throws MathException, ExpressionException {
 	//
@@ -249,24 +191,29 @@ private void refreshInvarianceMatrix() throws MathException, ExpressionException
 	Variable vars[] = new Variable[fastVarList.size()];
 	fastVarList.copyInto(vars);
 	int numVars = fastVarList.size();
-	int rows = fastInvariantList.size();
-	int cols = numVars + fastInvariantList.size();
+	int rows = fastSystem.getNumFastInvariants();
+	int cols = numVars + fastSystem.getNumFastInvariants();
 	cbit.vcell.matrix.RationalExpMatrix matrix = new cbit.vcell.matrix.RationalExpMatrix(rows,cols);
 
-	for (int i=0;i<rows;i++){
-		Expression function = ((FastInvariant)fastInvariantList.elementAt(i)).getFunction();
-		for (int j=0;j<numVars;j++){
+	Enumeration<FastInvariant> fastInvariantsEnum = fastSystem.getFastInvariants(); 
+	for (int i = 0; i < rows && fastInvariantsEnum.hasMoreElements(); i++){
+		FastInvariant fi = (FastInvariant) fastInvariantsEnum.nextElement();
+		Expression function = fi.getFunction();
+		for (int j = 0; j < numVars; j++){
 			Variable var = (Variable)fastVarList.elementAt(j);
 			Expression exp = function.differentiate(var.getName());
 			exp.bindExpression(null);
 			exp = exp.flatten();
 			RationalExp coeffRationalExp = RationalExpUtils.getRationalExp(exp);
-			matrix.set_elem(i,j,coeffRationalExp);
+			matrix.set_elem(i, j, coeffRationalExp);
 		}
 		matrix.set_elem(i,numVars+i,-1);
 	}
-System.out.println("origMatrix");
-matrix.show();
+	
+	// Print
+	System.out.println("origMatrix");
+	matrix.show();
+	
 	//
 	// gaussian elimination on the matrix give the following representation
 	// note that some column pivoting (variable re-ordering) is sometimes required to 
@@ -276,7 +223,8 @@ matrix.show();
 	//   |01i0iccc|  where (c)'s are the coefficients for constants of invariances
 	//   |00i1iccc|        (i)'s are the coefficients for dependent vars in terms of independent vars
 	//
-System.out.println("reducedMatrix");
+	// Print
+	System.out.println("reducedMatrix");
 	if (rows > 0){
 		try {
 			matrix.gaussianElimination(new cbit.vcell.matrix.RationalExpMatrix(rows,rows));
@@ -285,11 +233,11 @@ System.out.println("reducedMatrix");
 			throw new MathException(e.getMessage());
 		}
 	}
-matrix.show();
-for (int i=0;i<vars.length;i++){
-System.out.print(vars[i].getName()+"  ");
-}
-System.out.println("");
+	matrix.show();
+	for (int i=0;i<vars.length;i++){
+		System.out.print(vars[i].getName()+"  ");
+	}
+	System.out.println("");
 
 	//
 	// re-ordering of columns (to get N-r x N-r identity matrix at left)
@@ -324,13 +272,13 @@ System.out.println("");
 			}
 		}
 	}
-
+	// Print
+	for (int i=0;i<vars.length;i++){
+		System.out.print(vars[i].getName()+"  ");
+	}
+	System.out.println("");
+	matrix.show();
 	
-for (int i=0;i<vars.length;i++){
-System.out.print(vars[i].getName()+"  ");
-}
-System.out.println("");
-matrix.show();
 	//
 	// separate into dependent and indepent variables, and chop off identity matrix (left N-r columns)
 	//
@@ -339,7 +287,7 @@ matrix.show();
 	//                    |iiccc|
 	//
 	//
-	int numInvariants = fastInvariantList.size();
+	int numInvariants = fastSystem.getNumFastInvariants();
 	dependentVarList.removeAllElements();
 	for (int i=0;i<numInvariants;i++){
 		dependentVarList.addElement(vars[i]);
@@ -357,35 +305,37 @@ matrix.show();
 		}
 	}
 
-System.out.println("\n\nDEPENDENCY MATRIX");
-dependencyMatrix.show();
-System.out.print("dependent vars: ");
-for (int i=0;i<dependentVarList.size();i++){
-System.out.print(((Variable)dependentVarList.elementAt(i)).getName()+"  ");
-}
-System.out.println("");			
-System.out.print("independent vars: ");
-for (int i=0;i<independentVarList.size();i++){
-System.out.print(((Variable)independentVarList.elementAt(i)).getName()+"  ");
-}
-System.out.println("");			
+	// Print
+	System.out.println("\n\nDEPENDENCY MATRIX");
+	dependencyMatrix.show();
+	System.out.print("dependent vars: ");
+	for (int i=0;i<dependentVarList.size();i++){
+		System.out.print(((Variable)dependentVarList.elementAt(i)).getName()+"  ");
+	}
+	System.out.println("");			
+	System.out.print("independent vars: ");
+	for (int i=0;i<independentVarList.size();i++){
+		System.out.print(((Variable)independentVarList.elementAt(i)).getName()+"  ");
+	}
+	System.out.println("");			
 
 }
 
 
 /**
- * This method was created in VisualAge.
+ * 
  */
 private void refreshSubstitutedRateExps() throws MathException, ExpressionException {
 	//
 	// refresh PseudoConstants (temp constants involved with fastInvariants)
 	//
 	pseudoConstantList.removeAllElements();
-	for (int i=0;i<fastInvariantList.size();i++){
-		FastInvariant fi = (FastInvariant)fastInvariantList.elementAt(i);
+	Enumeration<FastInvariant> enum_fi = fastSystem.getFastInvariants();
+	while (enum_fi.hasMoreElements()) {
+		FastInvariant fi = enum_fi.nextElement();
 		PseudoConstant pc = new PseudoConstant(getAvailablePseudoConstantName(),fi.getFunction());
 		pseudoConstantList.addElement(pc);
-//System.out.println("FastSystem.refreshSubstitutedRateExps() __C"+i+" = "+fi.getFunction());
+		//System.out.println("FastSystem.refreshSubstitutedRateExps() __C"+i+" = "+fi.getFunction());
 	}
 
 	//
@@ -415,9 +365,10 @@ private void refreshSubstitutedRateExps() throws MathException, ExpressionExcept
 				exp = Expression.add(exp, new Expression(coefExp.infixString()+"*"+pc.getName()));
 			}
 		}
-		exp.bindExpression(null);
-		exp = exp.flatten();
-//System.out.println("FastSystem.refreshSubstitutedRateExps() "+((Variable)dependentVarList.elementAt(row)).getName()+" = "+exp.toString()+";");
+		//exp.bindExpression(null);
+		// exp = exp.flatten();
+		exp.bindExpression(this);
+		//System.out.println("FastSystem.refreshSubstitutedRateExps() "+((Variable)dependentVarList.elementAt(row)).getName()+" = "+exp.toString()+";");
 		dependencyExpList.addElement(exp);
 	}
 	
@@ -425,20 +376,134 @@ private void refreshSubstitutedRateExps() throws MathException, ExpressionExcept
 	// flatten functions, then substitute expressions for dependent vars into rate expressions
 	//
 	fastRateExpList.removeAllElements();
-	for (int i=0;i<fastRateList.size();i++){
-		FastRate fr = (FastRate)fastRateList.elementAt(i);
-		Expression exp = new Expression(MathUtilities.substituteFunctions(new Expression(fr.getFunction()),mathDesc));
-//System.out.println("FastSystem.refreshSubstitutedRateExps() fast rate before substitution = "+exp.toString());
+	// VariableSymbolTable combinedSymbolTable = getCombinedSymbolTable();
+	Enumeration<FastRate> enum_fr = fastSystem.getFastRates();	
+	while (enum_fr.hasMoreElements()) {
+		FastRate fr = enum_fr.nextElement();
+		Expression exp = new Expression(MathUtilities.substituteFunctions(new Expression(fr.getFunction()), this));
+		//System.out.println("FastSystem.refreshSubstitutedRateExps() fast rate before substitution = "+exp.toString());
 		for (int j=0;j<dependentVarList.size();j++){
 			Variable depVar = (Variable)dependentVarList.elementAt(j);
 			Expression subExp = new Expression((Expression)dependencyExpList.elementAt(j));
 			exp.substituteInPlace(new Expression(depVar.getName()),subExp);
 		}
-		exp.bindExpression(null);
-		exp = exp.flatten();
-//System.out.println("FastSystem.refreshSubstitutedRateExps() fast rate after substitution  = "+exp.toString());
-		exp.bindExpression(mathDesc);
+		//exp.bindExpression(null);
+		// exp = exp.flatten();
+		//System.out.println("FastSystem.refreshSubstitutedRateExps() fast rate after substitution  = "+exp.toString());
+		exp.bindExpression(this);
 		fastRateExpList.addElement(exp);
 	}	
+}
+
+/**
+ * Insert the method's description here.
+ * Creation date: (1/29/2002 4:24:21 PM)
+ * @return java.lang.String
+ */
+protected String getAvailablePseudoConstantName() throws ExpressionBindingException {
+	String base = "__C";
+	int i = 0;
+	while (true){
+		if (this.getEntry(base+i)==null){
+			return base+i;
+		}
+		i++;
+	}
+}
+
+
+/**
+ * @return java.util.Enumeration
+ */
+public Enumeration<Expression> getDependencyExps() {
+//	refreshAll();
+	return dependencyExpList.elements();
+}
+
+
+/**
+ * @return java.util.Enumeration
+ */
+public final Enumeration<Variable> getDependentVariables() {
+//	refreshAll();
+	return dependentVarList.elements();
+}
+
+
+/**
+ * @return java.util.Enumeration
+ */
+public final Enumeration<Variable> getIndependentVariables() {
+//	refreshAll();
+	return independentVarList.elements();
+}
+
+public final Variable getIndependentVariable(int indx) {
+//	refreshAll();
+	return independentVarList.elementAt(indx);
+}
+
+/**
+ * @return int
+ */
+public int getNumDependentVariables() {
+//	refreshAll();
+	return dependentVarList.size();
+}
+
+
+/**
+ * @return int
+ */
+public int getNumIndependentVariables() {
+//	refreshAll();
+	return independentVarList.size();
+}
+
+
+/**
+ * @return int
+ */
+public int getNumPseudoConstants() {
+//	refreshAll();
+	return pseudoConstantList.size();
+}
+
+
+/**
+ * @return cbit.vcell.math.PseudoConstant
+ * @param id java.lang.String
+ */
+public PseudoConstant getPseudoConstant(String id) {
+//	refreshAll();
+	for (int i=0;i<pseudoConstantList.size();i++){
+		PseudoConstant pc = (PseudoConstant)pseudoConstantList.elementAt(i);
+		if (pc.getName().equals(id)){
+			return pc;
+		}
+	}
+	return null;
+}
+
+
+/**
+ * @return java.util.Enumeration
+ */
+public Enumeration<PseudoConstant> getPseudoConstants() {
+//	refreshAll();
+	return pseudoConstantList.elements();
+}
+
+
+private FastSystem getFastSystem() {
+	return fastSystem;
+}
+
+
+/**
+ * @return java.util.Enumeration
+ */
+public Enumeration<Expression> getFastRateExpressions() {
+	return fastRateExpList.elements();
 }
 }

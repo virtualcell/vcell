@@ -1806,7 +1806,7 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 		SpeciesContextMapping fastSpeciesContextMappings[] = structureAnalyzer.getFastSpeciesContextMappings();
 		VCUnitDefinition subDomainUnit = VCUnitDefinition.UNIT_uM;
 		if (fastSpeciesContextMappings!=null){
-			FastSystem fastSystem = new FastSystemImplicit(mathDesc);
+			FastSystem fastSystem = new FastSystem(mathDesc);
 			for (int i=0;i<fastSpeciesContextMappings.length;i++){
 				SpeciesContextMapping scm = fastSpeciesContextMappings[i];
 				if (scm.getFastInvariant()==null){
@@ -1826,7 +1826,8 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 				}
 			}
 			subDomain.setFastSystem(fastSystem);
-			fastSystem.checkValidity();
+			// constructor calls the 'refresh' method which constructs depemdency matrix, dependent/independent vars and pseudoconstants, etc. 
+			FastSystemAnalyzer fs_analyzer = new FastSystemAnalyzer(fastSystem);
 		}
 		//
 		// create ode's for voltages to be calculated on unresolved membranes mapped to this subVolume
@@ -2023,7 +2024,7 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 		//
 		SpeciesContextMapping fastSpeciesContextMappings[] = membraneStructureAnalyzer.getFastSpeciesContextMappings();
 		if (fastSpeciesContextMappings!=null){
-			FastSystem fastSystem = new FastSystemImplicit(mathDesc);
+			FastSystem fastSystem = new FastSystem(mathDesc);
 			for (int i=0;i<fastSpeciesContextMappings.length;i++){
 				SpeciesContextMapping scm = fastSpeciesContextMappings[i];
 				if (scm.getFastInvariant()==null){
@@ -2045,7 +2046,8 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 				}
 			}
 			memSubDomain.setFastSystem(fastSystem);
-			fastSystem.checkValidity();
+			// constructor calls the 'refresh' method which constructs depemdency matrix, dependent/independent vars and pseudoconstants, etc. 
+			FastSystemAnalyzer fs_analyzer = new FastSystemAnalyzer(fastSystem);
 		}
 		//
 		// create Membrane-region equations for potential of this resolved membrane

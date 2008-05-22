@@ -8,31 +8,19 @@ import java.util.*;
 import java.io.*;
 import cbit.vcell.parser.*;
 import cbit.util.*;
-/**
- * This type was created in VisualAge.
- */
-public abstract class FastSystem implements MathObject, Serializable, Matchable {
+
+public class FastSystem implements MathObject, Serializable, Matchable {
 	protected MathDescription mathDesc = null;
 	protected Vector<FastInvariant> fastInvariantList = new Vector<FastInvariant>();
 	protected Vector<FastRate> fastRateList = new Vector<FastRate>();
-	protected Vector<Variable> fastVarList = new Vector<Variable>();
-	
-	protected Vector<Variable> independentVarList = new Vector<Variable>();
-	protected Vector<Variable> dependentVarList = new Vector<Variable>();
-	protected Vector<Expression> dependencyExpList = new Vector<Expression>();
-	protected Vector<Expression> fastRateExpList = new Vector<Expression>();
-	protected Vector<PseudoConstant> pseudoConstantList = new Vector<PseudoConstant>();
-
-	protected boolean bNeedsRefresh = false;
-/**
+	/**
  * FastSystem constructor comment.
  */
-protected FastSystem(MathDescription mathDesc) {
+public FastSystem(MathDescription mathDesc) {
 	super();
 	this.mathDesc = mathDesc;
 }
 /**
- * This method was created in VisualAge.
  * @param fastInvariant cbit.vcell.math.FastInvariant
  */
 public void addFastInvariant(FastInvariant fastInvariant) throws MathException {
@@ -40,11 +28,8 @@ public void addFastInvariant(FastInvariant fastInvariant) throws MathException {
 		throw new MathException("fastInvariant "+fastInvariant+" already exists");
 	}
 	fastInvariantList.addElement(fastInvariant);
-
-	bNeedsRefresh = true;
 }
 /**
- * This method was created in VisualAge.
  * @param fastInvariant cbit.vcell.math.FastRate
  */
 public void addFastRate(FastRate fastRate) throws MathException {
@@ -52,17 +37,8 @@ public void addFastRate(FastRate fastRate) throws MathException {
 		throw new MathException("fastRate "+fastRate+" already exists");
 	}
 	fastRateList.addElement(fastRate);
-
-	bNeedsRefresh = true;
 }
 /**
- * This method was created in VisualAge.
- */
-public void checkValidity() throws MathException, ExpressionException {
-	refreshAll();
-}
-/**
- * This method was created in VisualAge.
  * @return boolean
  * @param object java.lang.Object
  */
@@ -101,73 +77,10 @@ public boolean compareEqual(Matchable object) {
 	return true;
 }
 /**
- * Insert the method's description here.
- * Creation date: (10/10/2002 11:15:14 AM)
- * @param sim cbit.vcell.solver.Simulation
- */
-abstract void flatten(cbit.vcell.solver.Simulation sim, boolean bRoundCoefficients) throws ExpressionException, MathException;
-/**
- * Insert the method's description here.
- * Creation date: (1/29/2002 4:24:21 PM)
- * @return java.lang.String
- */
-protected String getAvailablePseudoConstantName() throws ExpressionBindingException {
-	String base = "__C";
-	int i = 0;
-	while (true){
-		if (mathDesc.getEntry(base+i)==null){
-			return base+i;
-		}
-		i++;
-	}
-}
-/**
- * This method was created in VisualAge.
- * @return java.util.Enumeration
- */
-public Enumeration<Expression> getDependencyExps() throws MathException, ExpressionException {
-	refreshAll();
-	return dependencyExpList.elements();
-}
-/**
- * This method was created by a SmartGuide.
- * @return java.util.Enumeration
- */
-public final Enumeration<Variable> getDependentVariables() throws MathException, ExpressionException {
-	refreshAll();
-	return dependentVarList.elements();
-}
-/**
- * Insert the method's description here.
- * Creation date: (10/17/2002 1:58:28 AM)
- * @return cbit.vcell.parser.Expression[]
- */
-final Expression[] getExpressions() {
-	Vector<Expression> expList = new Vector<Expression>();
-	for (int i = 0; i < fastInvariantList.size(); i++){
-		FastInvariant fi = (FastInvariant)fastInvariantList.elementAt(i);
-		expList.add(fi.getFunction());
-	}
-	for (int i = 0; i < fastRateList.size(); i++){
-		FastRate fr = (FastRate)fastRateList.elementAt(i);
-		expList.add(fr.getFunction());
-	}
-	return (Expression[])BeanUtils.getArray(expList,Expression.class);
-}
-/**
- * This method was created in VisualAge.
  * @return java.util.Enumeration
  */
 public Enumeration<FastInvariant> getFastInvariants() {
 	return fastInvariantList.elements();
-}
-/**
- * This method was created in VisualAge.
- * @return java.util.Enumeration
- */
-public Enumeration<Expression> getFastRateExpressions() throws MathException, ExpressionException {
-	refreshAll();
-	return fastRateExpList.elements();
 }
 /**
  * This method returns the FastRates list.
@@ -178,11 +91,99 @@ public Enumeration<FastRate> getFastRates() {
 	return fastRateList.elements();
 }
 /**
+ * @return int
+ */
+public int getNumFastRates() throws MathException, ExpressionException {
+	return fastRateList.size();
+}
+
+public int getNumFastInvariants() throws MathException, ExpressionException {
+	return fastInvariantList.size();
+}
+/**
+ * @return java.lang.String
+ */
+public String getVCML() {
+	StringBuffer buffer = new StringBuffer();
+	buffer.append("\t"+VCML.FastSystem+" {\n");
+
+	Enumeration<FastInvariant> enum_fi = getFastInvariants();
+	while (enum_fi.hasMoreElements()){
+		FastInvariant fi = enum_fi.nextElement();
+		buffer.append("\t\t"+VCML.FastInvariant+"\t"+fi.getFunction().infix()+";\n");
+	}	
+		
+	Enumeration<FastRate> enum_fr = fastRateList.elements();
+	while (enum_fr.hasMoreElements()){
+		FastRate fr = enum_fr.nextElement();
+		buffer.append("\t\t"+VCML.FastRate+"\t"+fr.getFunction().infix()+";\n");
+	}	
+		
+	buffer.append("\t}\n");
+	return buffer.toString();		
+}
+/**
+ * This method was created by a SmartGuide.
+ * @param tokens java.util.StringTokenizer
+ * @exception java.lang.Exception The exception description.
+ */
+public void read(CommentStringTokenizer tokens) throws MathException, ExpressionException {
+	String token = null;
+	token = tokens.nextToken();
+	if (!token.equalsIgnoreCase(VCML.BeginBlock)){
+		throw new MathFormatException("unexpected token "+token+" expecting "+VCML.BeginBlock);
+	}			
+	while (tokens.hasMoreTokens()){
+		token = tokens.nextToken();
+		if (token.equalsIgnoreCase(VCML.EndBlock)){
+			break;
+		}			
+		if (token.equalsIgnoreCase(VCML.FastRate)){
+			Expression rate = new Expression(tokens);
+			FastRate fr = new FastRate(rate);
+			addFastRate(fr);
+			continue;
+		}			
+		if (token.equalsIgnoreCase(VCML.FastInvariant)){
+			Expression invariant = new Expression(tokens);
+			FastInvariant fi = new FastInvariant(invariant);
+			addFastInvariant(fi);
+			continue;
+		}			
+		throw new MathFormatException("unexpected identifier "+token);
+	}
+}
+public MathDescription getMathDesc() {
+	return mathDesc;
+}
+/**
+ * Insert the method's description here.
+ * Creation date: (10/10/2002 11:15:31 AM)
+ * @param sim cbit.vcell.solver.Simulation
+ */
+void flatten(cbit.vcell.solver.Simulation sim, boolean bRoundCoefficients) throws ExpressionException, MathException {
+	//
+	// replace fastRates with flattended and substituted fastRates
+	//
+	for (int i = 0; i < fastRateList.size(); i++) {
+		Expression oldExp = fastRateList.elementAt(i).getFunction();
+		fastRateList.setElementAt(new FastRate(getFlattenedExpression(sim,oldExp,bRoundCoefficients)),i);
+	}
+	
+	//
+	// replace fastInvariants with flattended and substituted fastInvariants
+	//
+	for (int i = 0; i < fastInvariantList.size(); i++) {
+		Expression oldExp = fastInvariantList.elementAt(i).getFunction();
+		fastInvariantList.setElementAt(new FastInvariant(getFlattenedExpression(sim,oldExp,bRoundCoefficients)),i);
+	}
+}
+/**
  * Insert the method's description here.
  * Creation date: (10/10/2002 10:31:03 AM)
  * @param sim cbit.vcell.solver.Simulation
  */
-Expression getFlattenedExpression(cbit.vcell.solver.Simulation sim, Expression exp, boolean bRoundCoefficients) throws ExpressionException, MathException {
+private Expression getFlattenedExpression(cbit.vcell.solver.Simulation sim, Expression exp, boolean bRoundCoefficients) throws ExpressionException, MathException {
 
 	if (exp == null){
 		return null;
@@ -198,95 +199,35 @@ Expression getFlattenedExpression(cbit.vcell.solver.Simulation sim, Expression e
 	return exp;
 }
 /**
- * This method was created by a SmartGuide.
- * @return java.util.Enumeration
+ * Insert the method's description here.
+ * Creation date: (10/17/2002 1:58:28 AM)
+ * @return cbit.vcell.parser.Expression[]
  */
-public final Enumeration<Variable> getIndependentVariables() throws MathException, ExpressionException {
-	refreshAll();
-	return independentVarList.elements();
-}
-/**
- * This method was created in VisualAge.
- * @return int
- */
-public int getNumDependentVariables() throws MathException, ExpressionException {
-	refreshAll();
-	return dependentVarList.size();
-}
-/**
- * This method was created in VisualAge.
- * @return int
- */
-public int getNumFastRates() throws MathException, ExpressionException {
-	refreshAll();
-	return fastRateList.size();
-}
-/**
- * This method was created in VisualAge.
- * @return int
- */
-public int getNumIndependentVariables() throws MathException, ExpressionException {
-	refreshAll();
-	return independentVarList.size();
-}
-/**
- * This method was created in VisualAge.
- * @return int
- */
-public int getNumPseudoConstants() throws MathException, ExpressionException {
-	refreshAll();
-	return pseudoConstantList.size();
-}
-/**
- * This method was created in VisualAge.
- * @return cbit.vcell.math.PseudoConstant
- * @param id java.lang.String
- */
-protected PseudoConstant getPseudoConstant(String id) throws MathException, ExpressionException {
-	refreshAll();
-	for (int i=0;i<pseudoConstantList.size();i++){
-		PseudoConstant pc = (PseudoConstant)pseudoConstantList.elementAt(i);
-		if (pc.getName().equals(id)){
-			return pc;
-		}
+final Expression[] getExpressions() {
+	Vector<Expression> expList = new Vector<Expression>();
+	for (int i = 0; i < fastInvariantList.size(); i++) {
+		FastInvariant fi = fastInvariantList.elementAt(i);
+		expList.add(fi.getFunction());
 	}
-	return null;
+	for (int i = 0; i < fastRateList.size(); i++) {
+		FastRate fr = fastRateList.elementAt(i);
+		expList.add(fr.getFunction());
+	}
+	
+	return (Expression[])BeanUtils.getArray(expList,Expression.class);
 }
-/**
- * This method was created in VisualAge.
- * @return java.util.Enumeration
- */
-public Enumeration<PseudoConstant> getPseudoConstants() throws MathException, ExpressionException {
-	refreshAll();
-	return pseudoConstantList.elements();
-}
-/**
- * This method was created by a SmartGuide.
- * @return java.lang.String
- */
-public abstract String getVCML();
-/**
- * This method was created by a SmartGuide.
- * @param tokens java.util.StringTokenizer
- * @exception java.lang.Exception The exception description.
- */
-public abstract void read(CommentStringTokenizer tokens) throws MathException, ExpressionException;
 /**
  * Insert the method's description here.
  * Creation date: (10/10/2002 12:46:51 PM)
  */
 public void rebind() throws ExpressionBindingException {
-	for (int i = 0; i < fastInvariantList.size(); i++){
-		Expression fastInvariant = ((FastInvariant)fastInvariantList.elementAt(i)).getFunction();
-		fastInvariant.bindExpression(mathDesc);
+	for (int i = 0; i < fastInvariantList.size(); i++) {
+		Expression fastInvariant = fastInvariantList.elementAt(i).getFunction();
+		fastInvariant.bindExpression(getMathDesc());
 	}
-	for (int i = 0; i < fastRateList.size(); i++){
-		Expression fastRate = ((FastRate)fastRateList.elementAt(i)).getFunction();
-		fastRate.bindExpression(mathDesc);
+	for (int i = 0; i < fastRateList.size(); i++) {
+		Expression fastRate = fastRateList.elementAt(i).getFunction();
+		fastRate.bindExpression(getMathDesc());
 	}
 }
-/**
- * This method was created in VisualAge.
- */
-protected abstract void refreshAll() throws MathException, ExpressionException;
 }

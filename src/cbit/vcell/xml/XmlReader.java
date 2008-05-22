@@ -54,7 +54,7 @@ import cbit.vcell.math.CompartmentSubDomain;
 import cbit.vcell.math.Constant;
 import cbit.vcell.math.FastInvariant;
 import cbit.vcell.math.FastRate;
-import cbit.vcell.math.FastSystemImplicit;
+import cbit.vcell.math.FastSystem;
 import cbit.vcell.math.FilamentRegionVariable;
 import cbit.vcell.math.FilamentSubDomain;
 import cbit.vcell.math.FilamentVariable;
@@ -470,7 +470,7 @@ public CompartmentSubDomain getCompartmentSubDomain(Element param, MathDescripti
 	//Process the FastSystem (if thre is)
 	Element tempelement = param.getChild(XMLTags.FastSystemTag, vcNamespace);
 	if ( tempelement != null){
-		subDomain.setFastSystem( getFastSystemImplicit(tempelement, mathDesc));
+		subDomain.setFastSystem( getFastSystem(tempelement, mathDesc));
 	}
 	//****** Add the compartmentSubDomain to the dictionnary ****
 	temp = subDomain.getClass().getName() + ":" + subDomain.getName();
@@ -891,12 +891,12 @@ public Extent getExtent(Element parsed) {
  * @param param org.jdom.Element
  * @exception cbit.vcell.xml.XmlParseException The exception description.
  */
-public FastSystemImplicit getFastSystemImplicit(
+public FastSystem getFastSystem(
     Element param,
     MathDescription mathDesc)
     throws XmlParseException {
     //Create a new FastSystem
-    FastSystemImplicit fastSystem = new FastSystemImplicit(mathDesc);
+    FastSystem fastSystem = new FastSystem(mathDesc);
 
     //Process the FastInvariants
     Iterator iterator = param.getChildren(XMLTags.FastInvariantTag, vcNamespace).iterator();
@@ -1121,7 +1121,7 @@ public FilamentSubDomain getFilamentSubDomain(Element param, MathDescription mat
 		}
 	}
 	//Add the FastSytem
-	filDomain.setFastSystem( getFastSystemImplicit(param.getChild(XMLTags.FastSystemTag, vcNamespace), mathDesc) );
+	filDomain.setFastSystem( getFastSystem(param.getChild(XMLTags.FastSystemTag, vcNamespace), mathDesc) );
 
 	return filDomain;
 }
@@ -2636,7 +2636,7 @@ public MembraneSubDomain getMembraneSubDomain(Element param, MathDescription mat
 	//Add the FastSystem (if any)
 	Element tempElement = param.getChild(XMLTags.FastSystemTag, vcNamespace);
 	if (tempElement != null) {
-		subDomain.setFastSystem( getFastSystemImplicit(tempElement, mathDesc) );
+		subDomain.setFastSystem( getFastSystem(tempElement, mathDesc) );
 	}
 
 	//add MembraneRegionEquation

@@ -4,6 +4,7 @@ import cbit.vcell.field.FieldFunctionContainer;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.GeometricRegion;
+import cbit.vcell.mapping.FastSystemAnalyzer;
 import cbit.vcell.mapping.MappingException;
 import javax.swing.event.*;
 /*©
@@ -1125,27 +1126,28 @@ public SymbolTableEntry getEntry(String id) throws ExpressionBindingException {
 		}	
 	}
 
-	//
-	// look for pseudoConstants stored in individual FastSystems.
-	//
-	for (int i = 0; i < subDomainList.size(); i++){
-		SubDomain subDomain = (SubDomain)subDomainList.elementAt(i);
-		FastSystem fs = subDomain.getFastSystem();
-		if (fs!=null){
-			try {
-				SymbolTableEntry ste = fs.getPseudoConstant(id);
-				if (ste!=null){
-					return ste;
-				}
-			}catch (MathException e){
-				throw new RuntimeException("MathException: "+e.getMessage());
-			}catch (ExpressionBindingException e){
-				throw e;
-			}catch (ExpressionException e){
-				throw new RuntimeException("ExpressionException: "+e.getMessage());
-			}
-		}
-	}
+//	//
+//	// look for pseudoConstants stored in individual FastSystems.
+//	//
+//	for (int i = 0; i < subDomainList.size(); i++){
+//		SubDomain subDomain = (SubDomain)subDomainList.elementAt(i);
+//		FastSystem fs = subDomain.getFastSystem();
+//		FastSystemAnalyzer fs_analyzer = new FastSystemAnalyzer(fs);
+//		if (fs!=null){
+//			try {
+//				SymbolTableEntry ste = fs_analyzer.getPseudoConstant(id);
+//				if (ste!=null){
+//					return ste;
+//				}
+//			}catch (MathException e){
+//				throw new RuntimeException("MathException: "+e.getMessage());
+//			}catch (ExpressionBindingException e){
+//				throw e;
+//			}catch (ExpressionException e){
+//				throw new RuntimeException("ExpressionException: "+e.getMessage());
+//			}
+//		}
+//	}
 	
 	return null;
 }
