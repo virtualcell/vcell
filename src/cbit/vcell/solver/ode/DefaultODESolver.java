@@ -6,6 +6,8 @@ import java.io.*;
  * All rights reserved.
 ©*/
 import java.util.*;
+
+import cbit.vcell.mapping.FastSystemAnalyzer;
 import cbit.vcell.math.*;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -104,7 +106,7 @@ private Vector<Variable> createIdentifiers() throws MathException, ExpressionExc
 	}
 	//  Add pseudoConstants for fast system (if necessary)...
 	if (getFastAlgebraicSystem() != null) {
-		Enumeration<PseudoConstant> enum1 = getSubDomain().getFastSystem().getPseudoConstants();
+		Enumeration<PseudoConstant> enum1 = fieldFastAlgebraicSystem.getPseudoConstants();
 		while (enum1.hasMoreElements()) {
 			identifiers.addElement(enum1.nextElement());
 		}
@@ -431,7 +433,7 @@ protected void initialize() throws SolverException {
 			if (!getSimulation().getSolverTaskDescription().getSolverDescription().solvesFastSystem()) {
 				throw new SolverException(getSimulation().getSolverTaskDescription().getSolverDescription().getName() + " doesn't support models containing fast system (algebraic constraints). Please change the solver.");
 			}
-			fieldFastAlgebraicSystem = new FastAlgebraicSystem(getSimulation(), getSubDomain().getFastSystem());
+			fieldFastAlgebraicSystem = new FastAlgebraicSystem(new FastSystemAnalyzer(getSubDomain().getFastSystem()));
 		}
 		//refreshIdentifiers();
 		fieldIdentifiers = createIdentifiers();

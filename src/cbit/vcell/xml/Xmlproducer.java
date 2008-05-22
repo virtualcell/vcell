@@ -1310,31 +1310,15 @@ public org.jdom.Element getXML(Equation param) throws XmlParseException{
 	}
 }
 
-
-/**
- * This methosd returns a XML representation of a FastSystem object.
- * Creation date: (3/2/2001 4:00:22 PM)
- * @return org.jdom.Element
- * @param param cbit.vcell.math.FastSystem
- */
-public org.jdom.Element getXML(FastSystem param) throws XmlParseException{
-	if (param instanceof FastSystemImplicit) {
-		return getXML((FastSystemImplicit)param);
-	} else {
-		throw new XmlParseException("Unknown FastSystem type "+ param.getClass().getName());
-	}
-}
-
-
 /**
  * This method returns a XML representation of a FastSystemImplicit object.
  * Creation date: (3/2/2001 4:05:28 PM)
  * @return org.jdom.Element
  * @param param cbit.vcell.math.FastSystemImplicit
  */
-public org.jdom.Element getXML(FastSystemImplicit param) {
+public org.jdom.Element getXML(FastSystem param) {
 	try {
-		System.out.println("XMLproducer.getXML(FastSystemImplicit); Removed refresh all!!!!!");
+		System.out.println("XMLproducer.getXML(FastSystem); Removed refresh all!!!!!");
 		//param.refreshAll();
 	}catch (Exception e){
 		e.printStackTrace(System.out);

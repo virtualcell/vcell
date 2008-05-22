@@ -17,39 +17,24 @@ public class MathUtilities {
  * @return java.util.Enumeration
  * @param exp cbit.vcell.parser.Expression
  */
-public static Enumeration getRequiredVariables(Expression exp, MathDescription mathDesc) throws MathException, ExpressionException {
+public static Enumeration<Variable> getRequiredVariables(Expression exp, SymbolTable symbolTable) throws MathException, ExpressionException {
 	if (exp != null){
-		Expression exp2 = substituteFunctions(exp,mathDesc);
-		return getRequiredVariablesExplicit(exp2,mathDesc);
+		Expression exp2 = substituteFunctions(exp,symbolTable);
+		return getRequiredVariablesExplicit(exp2,symbolTable);
 	}else{
 		//
 		// return an empty enumerator
 		//
-		return (new Vector()).elements();
+		return (new Vector<Variable>()).elements();
 	}
 }
+
 /**
  * This method was created by a SmartGuide.
  * @return java.util.Enumeration
  * @param exp cbit.vcell.parser.Expression
  */
-public static Enumeration getRequiredVariables(Expression exp, cbit.vcell.solver.Simulation simulation) throws MathException, ExpressionException {
-	if (exp != null){
-		Expression exp2 = substituteFunctions(exp,simulation);
-		return getRequiredVariablesExplicit(exp2,simulation);
-	}else{
-		//
-		// return an empty enumerator
-		//
-		return (new Vector()).elements();
-	}
-}
-/**
- * This method was created by a SmartGuide.
- * @return java.util.Enumeration
- * @param exp cbit.vcell.parser.Expression
- */
-private static Enumeration getRequiredVariablesExplicit(Expression exp, SymbolTable symbolTable) throws ExpressionException {
+private static Enumeration<Variable> getRequiredVariablesExplicit(Expression exp, SymbolTable symbolTable) throws ExpressionException {
 	Vector requiredVarList = new Vector();
 	if (exp != null){
 		String identifiers[] = exp.getSymbols();

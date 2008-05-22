@@ -6,6 +6,8 @@ package cbit.vcell.solver.ode;
 import cbit.vcell.parser.*;
 import java.util.*;
 import java.io.*;
+
+import cbit.vcell.mapping.FastSystemAnalyzer;
 import cbit.vcell.math.*;
 import cbit.vcell.matrix.MatrixException;
 import cbit.vcell.matrix.RationalExp;
@@ -38,7 +40,8 @@ protected void writeEquations(java.io.PrintWriter pw) throws MathException, Expr
 		//
 		CompartmentSubDomain subDomain = (CompartmentSubDomain)getSimulation().getMathDescription().getSubDomains().nextElement();
 		FastSystem fastSystem = subDomain.getFastSystem();
-		int numIndependent = fastSystem.getNumIndependentVariables();
+		FastSystemAnalyzer fs_Analyzer = new FastSystemAnalyzer(fastSystem);
+		int numIndependent = fs_Analyzer.getNumIndependentVariables();
 		int systemDim = getSimulation().getMathDescription().getStateVariableNames().size();
 		int numDependent = systemDim - numIndependent;
 		
@@ -46,11 +49,11 @@ protected void writeEquations(java.io.PrintWriter pw) throws MathException, Expr
 		// get all variables from fast system (dependent and independent)
 		//
 		HashSet<String> fastSystemVarHash = new HashSet<String>();
-		Enumeration<Variable> dependentfastSystemVarEnum = fastSystem.getDependentVariables();
+		Enumeration<Variable> dependentfastSystemVarEnum = fs_Analyzer.getDependentVariables();
 		while (dependentfastSystemVarEnum.hasMoreElements()){
 			fastSystemVarHash.add(dependentfastSystemVarEnum.nextElement().getName());
 		}
-		Enumeration<Variable> independentfastSystemVarEnum = fastSystem.getIndependentVariables();
+		Enumeration<Variable> independentfastSystemVarEnum = fs_Analyzer.getIndependentVariables();
 		while (independentfastSystemVarEnum.hasMoreElements()){
 			fastSystemVarHash.add(independentfastSystemVarEnum.nextElement().getName());
 		}
