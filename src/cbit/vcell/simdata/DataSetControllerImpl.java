@@ -1208,7 +1208,65 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 		}
 		
 	}else if(fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_DELETE){
-
+		//
+		//Check for references to FieldData from from users User Defined Functions
+		//
+		HashSet<File> allFuncFiles = new HashSet<File>();
+		FileFilter fileFilter = new FileFilter(){
+			public boolean accept(File pathname) {
+				return pathname.isFile() && pathname.getName().endsWith(SimDataConstants.FUNCTIONFILE_EXTENSION);
+		}};
+		File primaryFuncDir = getUserDirectoryName(primaryRootDirectory, fieldDataFileOperationSpec.specEDI.getOwner());
+		File secondaryFuncDir = getUserDirectoryName(secondaryRootDirectory, fieldDataFileOperationSpec.specEDI.getOwner());
+		if(primaryFuncDir.exists()){
+			allFuncFiles.addAll(Arrays.asList(primaryFuncDir.listFiles(fileFilter)));
+		}
+		if(secondaryFuncDir != null && !secondaryFuncDir.equals(primaryFuncDir) && secondaryFuncDir.exists()){
+			allFuncFiles.addAll(Arrays.asList(primaryFuncDir.listFiles(fileFilter)));
+		}
+		Iterator<File> iter = allFuncFiles.iterator();
+		String regex = "^.*"+MathMLTags.FIELD+"\\s*\\(\\s*"+fieldDataFileOperationSpec.specEDI.getName()+"\\s*,.*$";
+		java.util.regex.Pattern pattern =
+			java.util.regex.Pattern.compile(regex,java.util.regex.Pattern.MULTILINE|java.util.regex.Pattern.DOTALL);
+		while(iter.hasNext()){
+			File currentfile = iter.next();
+			FileInputStream fis = null;
+			try{
+				byte[] fileBytes = new byte[(int)currentfile.length()];
+				int numBytesRead = 0;
+				fis = new FileInputStream(currentfile);
+				while((numBytesRead+= fis.read(fileBytes, numBytesRead, fileBytes.length-numBytesRead)) != fileBytes.length){
+				}
+				fis.close();
+				String fileBytesString = new String(fileBytes);
+				System.out.println(currentfile.getAbsolutePath()+"\n"+regex+"\n"+fileBytesString+"\n");
+				if(pattern.matcher(fileBytesString).matches()){
+					throw new RuntimeException("reference to FieldData '"+fieldDataFileOperationSpec.specEDI.getName()+"' found in file "+currentfile.getName());
+				}
+			}catch(Exception e){
+				e.printStackTrace();
+				throw new RuntimeException(e.getMessage(),e);
+			}finally{
+				if(fis != null){try{fis.close();}catch(Exception e){e.printStackTrace();}}
+			}
+		}
+		//Remove FieldData from caches
+		if(cacheTable0 != null){
+			VCSimulationIdentifier vcSimID =
+				new VCSimulationIdentifier(
+					fieldDataFileOperationSpec.specEDI.getKey(),
+					fieldDataFileOperationSpec.specEDI.getOwner());
+			VCSimulationDataIdentifier simDataID =
+				new VCSimulationDataIdentifier(
+						vcSimID,
+						FieldDataFileOperationSpec.JOBINDEX_DEFAULT);
+			cacheTable0.removeAll(simDataID);
+			cacheTable0.removeAll(fieldDataFileOperationSpec.specEDI);
+		}
+		if(userExtDataIDH != null){
+			userExtDataIDH.remove(fieldDataFileOperationSpec.specEDI.getOwner());
+		}
+		
 		File userDir = null;
 		try{
 			userDir = getPrimaryUserDir(fieldDataFileOperationSpec.specEDI.getOwner(), true);
@@ -1535,7 +1593,7 @@ private Expression fieldFunctionSubstitution(final VCDataIdentifier vcdID,Annota
 		new HashMap<String, Integer>();
 //	if(fieldfuncArgumentsArr != null && fieldfuncArgumentsArr.length > 0){
 		FieldDataIdentifierSpec[] fieldDataIdentifierSpecArr =
-			getFieldDataIdentifierSpecs(fieldfuncArgumentsArr,simResampleInfoProvider);
+			getFieldDataIdentifierSpecs(fieldfuncArgumentsArr,simResampleInfoProvider.getOwner());
 		//Substitute Field Data Functions for simple symbols for lookup-------
 		for(int i=0;i<fieldfuncArgumentsArr.length;i+= 1){
 			for (int j = 0; j < fieldDataIdentifierSpecArr.length; j++) {
@@ -1550,11 +1608,10 @@ private Expression fieldFunctionSubstitution(final VCDataIdentifier vcdID,Annota
 					}
 					String fieldFuncString =
 						ExternalDataIdentifier.createCanonicalFieldFunctionSyntax(
-							(ExternalDataIdentifier)fieldDataIdentifierSpecArr[j].getExternalDataIdentifier(),
+							fieldDataIdentifierSpecArr[j].getExternalDataIdentifier().getName(),
 							fieldfuncArgumentsArr[i].getVariableName(),
 							fieldfuncArgumentsArr[i].getTime().evaluateConstant(),
-							fieldfuncArgumentsArr[i].getTime().evaluateConstant(),
-							fieldfuncArgumentsArr[i].getVariableType());
+							fieldfuncArgumentsArr[i].getVariableType().getTypeName());
 					exp.substituteInPlace(new Expression(fieldFuncString), new Expression(substFieldName));
 					substSymbolIndexH.put(substFieldName,i);
 					break;
@@ -1681,7 +1738,7 @@ public DataIdentifier[] getDataIdentifiers(VCDataIdentifier vcdID) throws DataAc
 		if (!di.getName().endsWith("_INSIDE") && !di.getName().endsWith("_OUTSIDE")) {		
 			if (di.getVariableType() == null || di.getVariableType().equals(VariableType.UNKNOWN)) {
 				if (di.isFunction()) {
-					AnnotatedFunction f = simData.getFunction(di.getName());
+					AnnotatedFunction f = getFunction(vcdID,di.getName());
 					VariableType varType = getVariableTypeForFieldFunction(vcdID, f);
 					di = new DataIdentifier(di.getName(), varType, di.isFunction());
 				}
@@ -1719,29 +1776,30 @@ public double[] getDataSetTimes(VCDataIdentifier vcdID) throws DataAccessExcepti
 }
 
 private FieldDataIdentifierSpec[] getFieldDataIdentifierSpecs(
-		FieldFunctionArguments[] fieldFuncArgumentsArr,VCDataIdentifier vcdID) throws DataAccessException{
+		FieldFunctionArguments[] fieldFuncArgumentsArr,User user) throws DataAccessException{
 
 	FieldDataIdentifierSpec[] fieldDataIdentifierSpecs = null;
 	try{//Try without refreshing from the database
 		fieldDataIdentifierSpecs =
-			getFieldDataIdentifierSpecs_private(fieldFuncArgumentsArr,vcdID);
+			getFieldDataIdentifierSpecs_private(fieldFuncArgumentsArr,user,false);
 	}catch(ObjectNotFoundException onfe){
 		//Refresh from database and try once more
-		refreshExternalDataIdentifiers();
 		fieldDataIdentifierSpecs =
-			getFieldDataIdentifierSpecs_private(fieldFuncArgumentsArr,vcdID);
+			getFieldDataIdentifierSpecs_private(fieldFuncArgumentsArr,user,true);
 	}
 	return fieldDataIdentifierSpecs;
 }
 
 private FieldDataIdentifierSpec[] getFieldDataIdentifierSpecs_private(
-FieldFunctionArguments[] fieldFuncArgumentsArr,VCDataIdentifier vcdID) throws DataAccessException{
+FieldFunctionArguments[] fieldFuncArgumentsArr,User user,boolean bForceUpdate) throws DataAccessException{
 
-	Vector<ExternalDataIdentifier> userExtDataIdentifiersV = userExtDataIDH.get(vcdID.getOwner());
-	if(userExtDataIdentifiersV == null  || userExtDataIdentifiersV.size() < fieldFuncArgumentsArr.length){
+	Vector<ExternalDataIdentifier> userExtDataIdentifiersV = userExtDataIDH.get(user);
+	if(	userExtDataIdentifiersV == null  ||
+		userExtDataIdentifiersV.size() < fieldFuncArgumentsArr.length ||
+		bForceUpdate){
 		//must refresh
 		refreshExternalDataIdentifiers();
-		userExtDataIdentifiersV = userExtDataIDH.get(vcdID.getOwner());
+		userExtDataIdentifiersV = userExtDataIDH.get(user);
 	}
 	FieldDataIdentifierSpec[] fieldDataIdentifierSpecs =
 	new FieldDataIdentifierSpec[fieldFuncArgumentsArr.length];
@@ -1756,7 +1814,7 @@ FieldFunctionArguments[] fieldFuncArgumentsArr,VCDataIdentifier vcdID) throws Da
 		}
 		if(fieldDataIdentifierSpecs[i] == null){
 			throw new ObjectNotFoundException(
-				"The data locator for Field Function '"+fieldFuncArgumentsArr[i].getFieldName()+"' could not be found.");
+				"The data locator for FieldData Function '"+fieldFuncArgumentsArr[i].getFieldName()+"' could not be found.");
 		}
 	}
 	return fieldDataIdentifierSpecs;
@@ -1856,17 +1914,38 @@ private void refreshExternalDataIdentifiers() throws DataAccessException{
 //}
 
 
+public AnnotatedFunction getFunction(VCDataIdentifier vcdID,String variableName) throws DataAccessException{
+	try {
+		VCData vcData = getVCData(vcdID);
+		AnnotatedFunction annotatedFunction = vcData.getFunction(variableName);
+		checkFieldDataExists(annotatedFunction,vcdID.getOwner());
+		return annotatedFunction;
+	}catch (IOException e){
+		log.exception(e);
+		throw new DataAccessException(e.getMessage());
+	}
+}
 /**
  * This method was created by a SmartGuide.
  * @return double[]
  */
-public AnnotatedFunction[] getFunctions(VCDataIdentifier vcdID) throws DataAccessException, ExpressionBindingException {
+public AnnotatedFunction[] getFunctions(VCDataIdentifier vcdID) throws DataAccessException,ExpressionBindingException {
 	try {
 		VCData simData = getVCData(vcdID);
 		return simData.getFunctions();
 	}catch (IOException e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());
+	}
+}
+
+private void checkFieldDataExists(AnnotatedFunction annotatedFunction,User user) throws DataAccessException{
+	if(annotatedFunction == null){
+		return;
+	}
+	FieldFunctionArguments[] fieldfuncArgs = annotatedFunction.getExpression().getFieldFunctionArguments();
+	if(fieldfuncArgs != null && fieldfuncArgs.length > 0){
+		FieldDataIdentifierSpec[] fieldDataIdentifierSpecs = getFieldDataIdentifierSpecs(fieldfuncArgs, user);
 	}
 }
 
@@ -1878,7 +1957,7 @@ private VariableType getVariableTypeForFieldFunction(VCDataIdentifier vcdID, Ann
 			throw new DataAccessException("Unknown function type for function " + function.getName());
 		}
 		// use the type from the first field function
-		FieldDataIdentifierSpec[] fdiss = getFieldDataIdentifierSpecs(ffas, vcdID);
+		FieldDataIdentifierSpec[] fdiss = getFieldDataIdentifierSpecs(ffas, vcdID.getOwner());
 		SimDataBlock dataBlock = getSimDataBlock(fdiss[0].getExternalDataIdentifier(), ffas[0].getVariableName(), 0.0);
 		funcType = dataBlock.getVariableType();		
 	}
@@ -2286,7 +2365,7 @@ public SimDataBlock getSimDataBlock(VCDataIdentifier vcdID, String varName, doub
 		VCData simData = getVCData(vcdID);
 		PDEDataInfo pdeDataInfo = new PDEDataInfo(vcdID.getOwner(),vcdID.getID(),varName,time,simData.getDataBlockTimeStamp(PDE_DATA, time));
 		SimDataBlock simDataBlock = null;
-		AnnotatedFunction function = simData.getFunction(varName);
+		AnnotatedFunction function = getFunction(vcdID,varName);
 		if (function == null){
 			simDataBlock = (cacheTable0 != null?cacheTable0.get(pdeDataInfo):null);
 			if (simDataBlock == null) {
@@ -2420,7 +2499,7 @@ private TimeSeriesJobResults getSpecialTimeSeriesValues(VCDataIdentifier vcdID,
 				break;
 			}
 		}
-		AnnotatedFunction functionFromVarName = simData.getFunction(variableNames[i]);
+		AnnotatedFunction functionFromVarName = getFunction(vcdID,variableNames[i]);
 		if(functionFromVarName != null){
 			FieldFunctionArguments[] fieldFunctionArgumentsArr =
 				functionFromVarName.getExpression().getFieldFunctionArguments();
@@ -2594,7 +2673,7 @@ private cbit.util.TimeSeriesJobResults getTimeSeriesValues_private(final VCDataI
 		long memUsage = 0;
 		boolean bHasFunctionVars = false;//efficient function stats are not yet implemented so check to adjust calculation
 		for(int i=0;i<timeSeriesJobSpec.getVariableNames().length;i+= 1){
-			bHasFunctionVars = bHasFunctionVars || (vcData.getFunction(timeSeriesJobSpec.getVariableNames()[i]) != null);
+			bHasFunctionVars = bHasFunctionVars || (getFunction(vcdID,timeSeriesJobSpec.getVariableNames()[i]) != null);
 		}
 		for(int i=0;i<timeSeriesJobSpec.getIndices().length;i+= 1){
 			memUsage+= (timeSeriesJobSpec.isCalcSpaceStats() && !bHasFunctionVars ? NUM_STATS : timeSeriesJobSpec.getIndices()[i].length);
@@ -2633,8 +2712,8 @@ private cbit.util.TimeSeriesJobResults getTimeSeriesValues_private(final VCDataI
 						);
 				}
 			};
-			if(vcData.getFunction(varName) != null){
-				AnnotatedFunction function = vcData.getFunction(varName);
+			if(getFunction(vcdID,varName) != null){
+				AnnotatedFunction function = getFunction(vcdID,varName);
 				MultiFunctionIndexes mfi = new MultiFunctionIndexes(vcdID,function,indices,wantsTheseTimes, progressListener);
 				for (int i=0;i<desiredTimeValues.length;i++){
 					fireDataJobEventIfNecessary(
@@ -2798,13 +2877,16 @@ public cbit.util.TimeSeriesJobResults getTimeSeriesValues(final VCDataIdentifier
 	}
 }
 
+private static File getUserDirectoryName(File userParentDirectory,User user){
+	return new File(userParentDirectory, user.getName());
+}
 /**
  * This method was created in VisualAge.
  * @return java.io.File
  * @param user cbit.vcell.server.User
  */
 private File getPrimaryUserDir(User user, boolean bVerify) throws FileNotFoundException {
-	File userDir = new File(primaryRootDirectory, user.getName());
+	File userDir = getUserDirectoryName(primaryRootDirectory, user);
 	if (userDir.exists()){
 		if (userDir.isDirectory()){
 			return userDir;
@@ -2822,7 +2904,7 @@ private File getPrimaryUserDir(User user, boolean bVerify) throws FileNotFoundEx
 }
 
 private File getSecondaryUserDir(User user) throws FileNotFoundException {
-	File userDir = new File(secondaryRootDirectory, user.getName());
+	File userDir = getUserDirectoryName(secondaryRootDirectory, user);
 	if (userDir.exists()){
 		if (userDir.isDirectory()){
 			return userDir;
