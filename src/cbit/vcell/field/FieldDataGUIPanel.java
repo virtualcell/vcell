@@ -5,47 +5,34 @@ import java.awt.Cursor;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.EventObject;
 import java.util.Iterator;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.Vector;
 import java.util.Map.Entry;
 import java.util.zip.DataFormatException;
-
 import javax.swing.BoxLayout;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
-
-import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
-
-import net.sourceforge.interval.ia_math.RealInterval;
-
+import cbit.gui.DialogUtils;
 import cbit.image.ImageException;
-import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
-import cbit.sql.KeyValue;
 import cbit.util.AsynchProgressPopup;
 import cbit.util.BeanUtils;
 import cbit.util.Extent;
 import cbit.util.FileFilters;
-import cbit.util.FileUtils;
 import cbit.util.ISize;
 import cbit.util.Origin;
 import cbit.util.ProgressDialogListener;
@@ -53,41 +40,24 @@ import cbit.util.TokenMangler;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
-import cbit.vcell.applets.ServerMonitorInfo;
-import cbit.vcell.applets.ServerTableModel;
-import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.DatabaseWindowManager;
 import cbit.vcell.client.FieldDataWindowManager;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.RequestManager;
-import cbit.vcell.client.data.PDEDataViewer;
-import cbit.vcell.client.server.ClientExportController;
-import cbit.vcell.client.server.PDEDataManager;
-import cbit.vcell.client.server.VCDataManager;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.UserCancelException;
-import cbit.vcell.desktop.VCellCopyPasteHelper;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.document.VCDocument;
-import cbit.vcell.exp.FieldMeasurement;
 import cbit.vcell.geometry.RegionImage;
-import cbit.vcell.parser.ASTFuncNode;
-import cbit.vcell.parser.MathMLTags;
-import cbit.vcell.server.ComputeHost;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.ObjectNotFoundException;
-import cbit.vcell.server.ServerInfo;
-import cbit.vcell.server.VCDataIdentifier;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.VariableType;
-import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.gui.SimulationStatus;
 import cbit.vcell.solvers.CartesianMesh;
-import cbit.vcell.xml.XMLTags;
 import javax.swing.JButton;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
@@ -95,8 +65,6 @@ import java.awt.event.ActionEvent;
 import java.awt.GridBagLayout;
 import java.awt.Dimension;
 import javax.swing.JMenuItem;
-
-import sun.net.ProgressListener;
 
 public class FieldDataGUIPanel extends JPanel{
 
@@ -1209,12 +1177,10 @@ private void jButtonFDFromFile_ActionPerformed(java.awt.event.ActionEvent action
 				
 				fdos.owner = clientRequestManager.getDocumentManager().getUser();
 				fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
-				try{
-					addNewExternalData(clientRequestManager, fdos, initFDName, false);
-				}catch(UserCancelException e){
-					hash.put(ClientTaskDispatcher.TASK_ABORTED_BY_USER,e);
-					return;
-				}
+				addNewExternalData(clientRequestManager, fdos, initFDName, false);
+			}catch(UserCancelException e){
+				hash.put(ClientTaskDispatcher.TASK_ABORTED_BY_USER,e);
+				return;
 			}catch(Throwable e){
 				e.printStackTrace(System.out);
 				hash.put(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR,e);
@@ -1310,13 +1276,18 @@ private void jButtonFDDelete_ActionPerformed(java.awt.event.ActionEvent actionEv
 		(javax.swing.tree.DefaultMutableTreeNode)selPath.getLastPathComponent();
 	final FieldDataMainList fieldDataMainList = (FieldDataMainList)mainNode.getUserObject();
 	
+	if(!fieldDataMainList.externalDataIdentifier.getOwner().equals(
+		clientRequestManager.getDocumentManager().getUser())){
+		DialogUtils.showErrorDialog("Delete failed: User "+clientRequestManager.getDocumentManager().getUser().getName()+
+				"does not own FieldData '"+fieldDataMainList.externalDataIdentifier.getName()+"'");
+	}
 	if(PopupGenerator.showComponentOKCancelDialog(
 			this, new JLabel("Delete "+fieldDataMainList.externalDataIdentifier.getName()+"?"),
 			"Confirm Delete") != JOptionPane.OK_OPTION){
 		return;
 		
 	}
-	AsynchClientTask RemoveFromDBTask = new AsynchClientTask() {
+	AsynchClientTask CheckRemoveFromDBTask = new AsynchClientTask() {
 		public String getTaskName() { return "remove Field Data from DB"; }
 		public int getTaskType() { return AsynchClientTask.TASKTYPE_NONSWING_BLOCKING; }
 		public void run(java.util.Hashtable hash){
@@ -1325,8 +1296,6 @@ private void jButtonFDDelete_ActionPerformed(java.awt.event.ActionEvent actionEv
 					throw new Exception("Cannot delete Field Data '"+fieldDataMainList.externalDataIdentifier.getName()+
 							"' because it is referenced in a Model(s).");
 				}
-				//Remove from DB
-				fieldDataWindowManager.deleteExternalDataIdentifier(fieldDataMainList.externalDataIdentifier);
 			}catch(Throwable e){
 				hash.put(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR,e);
 			}
@@ -1358,18 +1327,20 @@ private void jButtonFDDelete_ActionPerformed(java.awt.event.ActionEvent actionEv
 			return true;
 		}
 	};
-	AsynchClientTask RemoveFromDiskTask = new AsynchClientTask() {
+	AsynchClientTask RemoveFromDiskAndDBTask = new AsynchClientTask() {
 		public String getTaskName() { return "remove Field Data from disk"; }
 		public int getTaskType() { return AsynchClientTask.TASKTYPE_NONSWING_BLOCKING; }
 		public void run(java.util.Hashtable hash){
 			try{
 				//Remove from Disk
 				FieldDataMainList fieldDataMainList = (FieldDataMainList)mainNode.getUserObject();
-				FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
-				fdos.opType = FieldDataFileOperationSpec.FDOS_DELETE;
-				fdos.specEDI = fieldDataMainList.externalDataIdentifier;
-				fdos.owner = clientRequestManager.getDocumentManager().getUser();
+				FieldDataFileOperationSpec fdos = 
+					FieldDataFileOperationSpec.createDeleteFieldDataFileOperationSpec(
+						fieldDataMainList.externalDataIdentifier);
 				clientRequestManager.getDocumentManager().fieldDataFileOperation(fdos);
+				//Remove from DB
+				fieldDataWindowManager.deleteExternalDataIdentifier(fieldDataMainList.externalDataIdentifier);
+
 			}catch(Throwable e){
 				hash.put(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR,e);
 			}
@@ -1384,7 +1355,7 @@ private void jButtonFDDelete_ActionPerformed(java.awt.event.ActionEvent actionEv
 	//
 	//Execute Field Data Info - JTree tasks
 	//
-	AsynchClientTask tasks[] = new AsynchClientTask[] { RemoveFromDBTask,RemoveNodeTreeTask ,RemoveFromDiskTask};
+	AsynchClientTask tasks[] = new AsynchClientTask[] { CheckRemoveFromDBTask,RemoveFromDiskAndDBTask,RemoveNodeTreeTask};
 	java.util.Hashtable hash = new java.util.Hashtable();
 	ClientTaskDispatcher.dispatch(this,hash,tasks,false);
 
@@ -1429,9 +1400,9 @@ private void jButtonFDCopyRef_ActionPerformed(java.awt.event.ActionEvent actionE
 	if(actionEvent.getSource() == getJButtonFDCopyRef()){
 		String fieldFunctionReference =
 			ExternalDataIdentifier.createCanonicalFieldFunctionSyntax(
-					((FieldDataMainList)mainNode.getUserObject()).externalDataIdentifier,
+					((FieldDataMainList)mainNode.getUserObject()).externalDataIdentifier.getName(),
 					((FieldDataVarList)varNode.getUserObject()).dataIdentifier.getName(),
-					times[begIndex],-1,((FieldDataVarList)varNode.getUserObject()).dataIdentifier.getVariableType());
+					times[begIndex],((FieldDataVarList)varNode.getUserObject()).dataIdentifier.getVariableType().getTypeName());
 	
 		VCellTransferable.sendToClipboard(fieldFunctionReference);
 	}else if(actionEvent.getSource() == getJButtonCreateGeom()){

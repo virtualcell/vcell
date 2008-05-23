@@ -2,10 +2,9 @@ package cbit.vcell.solvers;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.MathMLTags;
-import cbit.vcell.parser.SymbolTable;
 
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.SymbolTable;
 import java.util.Enumeration;
 import java.io.File;
 import java.io.PrintWriter;
@@ -789,14 +788,6 @@ private void writeParameters() throws Exception {
  * FIELD_DATA_END
 */
 
-public String getFieldFunctionSyntax(FieldFunctionArguments ffa){
-	if (ffa.getVariableType().equals(VariableType.UNKNOWN)) {
-		return MathMLTags.FIELD+"("+ffa.getFieldName()+","+ffa.getVariableName()+","+ffa.getTime().infix() +")";
-	} else {
-		return MathMLTags.FIELD+"("+ffa.getFieldName()+","+ffa.getVariableName()+","+ffa.getTime().infix() +","+ffa.getVariableType().getTypeName()+")";
-	}
-}
-
 private void writeFieldData() throws Exception {
 	FieldDataIdentifierSpec[] fieldDataIDSpecs = simulationJob.getFieldDataIdentifierSpecs();
 	if (fieldDataIDSpecs == null || fieldDataIDSpecs.length == 0) {
@@ -830,7 +821,14 @@ private void writeFieldData() throws Exception {
 			}
 			String fieldDataID = "_VCell_FieldData_" + index;
 			writer.println(index + " " + varType.getTypeName() + " " + fieldDataID + " " + ffa.getFieldName() + " " + ffa.getVariableName() + " " + ffa.getTime().infix() + " " + newResampledFieldDataFile);
-			uniqueFieldDataNSet.add(new FieldDataNumerics(getFieldFunctionSyntax(ffa), fieldDataID));
+			uniqueFieldDataNSet.add(
+				new FieldDataNumerics(
+					ExternalDataIdentifier.createCanonicalFieldFunctionSyntax(
+						ffa.getFieldName(),
+						ffa.getVariableName(),
+						ffa.getTime().evaluateConstant(),
+						ffa.getVariableType().getTypeName()),
+					fieldDataID));
 			index ++;
 		}
 	}	

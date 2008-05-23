@@ -30,7 +30,7 @@ public class FieldFunctionArguments implements Serializable {
 					st.nextToken(),
 					st.nextToken(),
 					new Expression(st.nextToken()),
-					VariableType.getVariableTypeFromString(st.nextToken()));
+					VariableType.getVariableTypeFromVariableTypeName(st.nextToken()));
 	}
 	
 	public String toCSVString(){

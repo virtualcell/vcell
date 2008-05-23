@@ -121,6 +121,9 @@ System.out.println("DISPATCHING: finished() called at "+ new Date(System.current
 				{
 					msg = "Exception: "+e.toString();
 				}
+				if(e.getCause() != null && e.getCause().getMessage() != null && e.getCause().getMessage().length()>0){
+					msg+="\n"+e.getCause().getMessage();
+				}
 				PopupGenerator.showErrorDialog(requester, msg);
 			} else if (hash.containsKey(TASK_ABORTED_BY_USER)) {
 				// depending on where user canceled we might want to automatically start a new job

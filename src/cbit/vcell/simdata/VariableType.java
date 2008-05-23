@@ -183,7 +183,7 @@ public static final VariableType getVariableTypeFromInteger(int varType) {
 	}
 }
 
-public static final VariableType getVariableTypeFromString(String type) {	
+public static final VariableType getVariableTypeFromVariableTypeName(String type) {	
 	for (int i = 0; i < NAMES.length; i ++) {
 		if (type.equals(NAMES[i])) {
 			return new VariableType(i);

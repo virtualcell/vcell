@@ -90,8 +90,11 @@ public static String createCanonicalFieldDataLogFileName(KeyValue fieldDataKey){
 	SimDataConstants.LOGFILE_EXTENSION;
 }
 
-public static String createCanonicalFieldFunctionSyntax(ExternalDataIdentifier edi,String varName,double beginTime,double endtime, VariableType vt){	
-	return MathMLTags.FIELD+"("+edi.getName()+","+varName+","+beginTime+ (vt.equals(VariableType.UNKNOWN)?"": ","+vt.getTypeName())+")";
+public static String createCanonicalFieldFunctionSyntax(String externalDataIdentifierName,String varName,double beginTime,String extDataIdVariableTypeName){	
+	VariableType vt = VariableType.getVariableTypeFromVariableTypeName(extDataIdVariableTypeName);
+	return MathMLTags.FIELD+"("+
+		externalDataIdentifierName+","+varName+","+beginTime+
+		(vt.equals(VariableType.UNKNOWN)?"": ","+vt.getTypeName())+")";
 }
 
 public static String createCanonicalSimZipFileName(KeyValue fieldDataKey,int zipIndex,int jobIndex,boolean isOldStyle){

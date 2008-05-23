@@ -4,12 +4,9 @@ import cbit.sql.KeyValue;
 import cbit.util.Extent;
 import cbit.util.ISize;
 import cbit.util.Origin;
-import cbit.vcell.client.FieldDataWindowManager;
 import cbit.vcell.server.User;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.VariableType;
-import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solvers.CartesianMesh;
 
 /**

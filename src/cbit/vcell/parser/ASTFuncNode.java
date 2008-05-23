@@ -2362,7 +2362,7 @@ void getFieldFunctionArguments(java.util.Vector<FieldFunctionArguments> v) {
 		FieldFunctionArguments fieldFuncArgs = null;
 		if (jjtGetNumChildren() == 4) {
 			ASTIdNode vartype = (ASTIdNode)jjtGetChild(3);
-			fieldFuncArgs = new FieldFunctionArguments(fieldname.name, variablename.name,time,VariableType.getVariableTypeFromString(vartype.name));
+			fieldFuncArgs = new FieldFunctionArguments(fieldname.name, variablename.name,time,VariableType.getVariableTypeFromVariableTypeName(vartype.name));
 		} else {
 			fieldFuncArgs =	new FieldFunctionArguments(fieldname.name, variablename.name,time, VariableType.UNKNOWN);
 		}
