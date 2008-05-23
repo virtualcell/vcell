@@ -4,6 +4,7 @@ import java.util.Set;
 import java.util.Vector;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.MathMLTags;
+import cbit.vcell.parser.SymbolTable;
 
 import java.util.Enumeration;
 import java.io.File;
@@ -74,13 +75,15 @@ public FiniteVolumeFileWriter(SimulationJob simJob, String[] paramNames, PrintWr
 	bInlineVCG = true;	
 }
 
+private Expression subsituteExpression(Expression exp) throws Exception {
+	return subsituteExpression(exp, simulation);
+}
 /**
  * Insert the method's description here.
  * Creation date: (5/9/2005 2:52:48 PM)
  */
-private Expression subsituteExpression(Expression exp) throws Exception {
-	exp.bindExpression(simulation);
-	Expression exp2 = simulation.substituteFunctions(exp).flatten();
+private Expression subsituteExpression(Expression exp, SymbolTable symbolTable) throws Exception {
+	Expression exp2 = MathUtilities.substituteFunctions(exp, symbolTable).flatten();
 	if (exp2.getFieldFunctionArguments() != null && exp2.getFieldFunctionArguments().length > 0) {
 		if (uniqueFieldDataNSet != null && uniqueFieldDataNSet.size() > 0) {	
 			for (FieldDataNumerics fdn: uniqueFieldDataNSet) {
@@ -171,88 +174,89 @@ FAST_SYSTEM_END
 */
 private void writeCompartment_FastSystem(CompartmentSubDomain volSubDomain) throws Exception {
 	FastSystem fastSystem = volSubDomain.getFastSystem();
+	if (fastSystem == null) {
+		return;
+	}
 	FastSystemAnalyzer fs_analyzer = new FastSystemAnalyzer(fastSystem);
-	if (fastSystem != null){
-		int numIndep = fs_analyzer.getNumIndependentVariables();
-		int numDep = fs_analyzer.getNumDependentVariables();
-		int numPseudo = fs_analyzer.getNumPseudoConstants();	
-		writer.println("# fast system dimension num_dependents");
-		writer.println("FAST_SYSTEM_BEGIN " + numIndep + " "  + numDep);
-		if (numIndep != 0) {
-			writer.print("INDEPENDENT_VARIALBES ");
-			Enumeration<Variable> enum1 = fs_analyzer.getIndependentVariables();
-			while (enum1.hasMoreElements()) {
-				Variable var = enum1.nextElement();
-				writer.print(var.getName() + " ");
-			}
-			writer.println();
+	int numIndep = fs_analyzer.getNumIndependentVariables();
+	int numDep = fs_analyzer.getNumDependentVariables();
+	int numPseudo = fs_analyzer.getNumPseudoConstants();	
+	writer.println("# fast system dimension num_dependents");
+	writer.println("FAST_SYSTEM_BEGIN " + numIndep + " "  + numDep);
+	if (numIndep != 0) {
+		writer.print("INDEPENDENT_VARIALBES ");
+		Enumeration<Variable> enum1 = fs_analyzer.getIndependentVariables();
+		while (enum1.hasMoreElements()) {
+			Variable var = enum1.nextElement();
+			writer.print(var.getName() + " ");
+		}
+		writer.println();
+			
+	}
+	if (numDep != 0) {
+		writer.print("DEPENDENT_VARIALBES ");
+		Enumeration<Variable> enum1 = fs_analyzer.getDependentVariables();
+		while (enum1.hasMoreElements()) {
+			Variable var = enum1.nextElement();
+			writer.print(var.getName() + " ");
+		}
+		writer.println();
+	}
+	writer.println();
 				
+	if (numPseudo != 0) {
+		writer.println("PSEUDO_CONSTANT_BEGIN");
+		Enumeration<PseudoConstant> enum1 = fs_analyzer.getPseudoConstants();
+		while (enum1.hasMoreElements()) {
+			PseudoConstant pc = enum1.nextElement();
+			writer.println(pc.getName() + " " + subsituteExpression(pc.getPseudoExpression(), fs_analyzer).infix() + ";");
 		}
-		if (numDep != 0) {
-			writer.print("DEPENDENT_VARIALBES ");
-			Enumeration<Variable> enum1 = fs_analyzer.getDependentVariables();
-			while (enum1.hasMoreElements()) {
-				Variable var = enum1.nextElement();
-				writer.print(var.getName() + " ");
-			}
-			writer.println();
+		writer.println("PSEUDO_CONSTANT_END");
+		writer.println();			
+	}
+	
+	if (numIndep != 0) {
+		writer.println("FAST_RATE_BEGIN" );
+		Enumeration<Expression> enum1 = fs_analyzer.getFastRateExpressions();
+		while (enum1.hasMoreElements()) {
+			Expression exp = enum1.nextElement();	
+			writer.println(subsituteExpression(exp, fs_analyzer).infix() + ";");
 		}
-		writer.println();
-					
-		if (numPseudo != 0) {
-			writer.println("PSEUDO_CONSTANT_BEGIN");
-			Enumeration<PseudoConstant> enum1 = fs_analyzer.getPseudoConstants();
-			while (enum1.hasMoreElements()) {
-				PseudoConstant pc = enum1.nextElement();
-				writer.println(pc.getName() + " " + subsituteExpression(pc.getPseudoExpression()).infix() + ";");
-			}
-			writer.println("PSEUDO_CONSTANT_END");
-			writer.println();			
-		}
-		
-		if (numIndep != 0) {
-			writer.println("FAST_RATE_BEGIN" );
-			Enumeration<Expression> enum1 = fs_analyzer.getFastRateExpressions();
-			while (enum1.hasMoreElements()) {
-				Expression exp = enum1.nextElement();	
-				writer.println(subsituteExpression(exp).infix() + ";");
-			}
-			writer.println("FAST_RATE_END");
-			writer.println();				
-		}	
-
-		if (numDep != 0) {
-			writer.println("FAST_DEPENDENCY_BEGIN" );
-			Enumeration<Expression> enum_exp = fs_analyzer.getDependencyExps();
-			Enumeration<Variable> enum_var = fs_analyzer.getDependentVariables();
-			while (enum_exp.hasMoreElements()){
-				Expression exp = enum_exp.nextElement();
-				Variable depVar = enum_var.nextElement();
-				writer.println(depVar.getName() + " " + subsituteExpression(exp).infix() + ";");
-			}
-			writer.println("FAST_DEPENDENCY_END");
-			writer.println();
-		}
-		
-		if (numIndep != 0) {
-			writer.println("JACOBIAN_BEGIN" );
-			Enumeration<Expression> enum_fre = fs_analyzer.getFastRateExpressions();
-			while (enum_fre.hasMoreElements()){
-				Expression fre = enum_fre.nextElement();
-				Enumeration<Variable> enum_var = fs_analyzer.getIndependentVariables();
-				while (enum_var.hasMoreElements()){
-					Variable var = enum_var.nextElement();
-					Expression exp = simulation.substituteFunctions(fre).flatten();
-					Expression differential = exp.differentiate(var.getName());
-					writer.println(subsituteExpression(differential).infix() + ";");					
-				}
-			}
-			writer.println("JACOBIAN_END");
-			writer.println();				
-		}
-		writer.println("FAST_SYSTEM_END");
-		writer.println();
+		writer.println("FAST_RATE_END");
+		writer.println();				
 	}	
+
+	if (numDep != 0) {
+		writer.println("FAST_DEPENDENCY_BEGIN" );
+		Enumeration<Expression> enum_exp = fs_analyzer.getDependencyExps();
+		Enumeration<Variable> enum_var = fs_analyzer.getDependentVariables();
+		while (enum_exp.hasMoreElements()){
+			Expression exp = enum_exp.nextElement();
+			Variable depVar = enum_var.nextElement();
+			writer.println(depVar.getName() + " " + subsituteExpression(exp, fs_analyzer).infix() + ";");
+		}
+		writer.println("FAST_DEPENDENCY_END");
+		writer.println();
+	}
+	
+	if (numIndep != 0) {
+		writer.println("JACOBIAN_BEGIN" );
+		Enumeration<Expression> enum_fre = fs_analyzer.getFastRateExpressions();
+		while (enum_fre.hasMoreElements()){
+			Expression fre = enum_fre.nextElement();
+			Enumeration<Variable> enum_var = fs_analyzer.getIndependentVariables();
+			while (enum_var.hasMoreElements()){
+				Variable var = enum_var.nextElement();
+				Expression exp = subsituteExpression(fre, fs_analyzer).flatten();
+				Expression differential = exp.differentiate(var.getName());
+				writer.println(subsituteExpression(differential, fs_analyzer).infix() + ";");
+			}
+		}
+		writer.println("JACOBIAN_END");
+		writer.println();				
+	}
+	writer.println("FAST_SYSTEM_END");
+	writer.println();
 }
 
 
@@ -264,7 +268,7 @@ private void writeCompartment_VarContext(CompartmentSubDomain volSubDomain) thro
 	//
 	// get list of volVariables participating in PDEs (anywhere).
 	//
-	java.util.Vector<VolVariable> pdeVolVariableList = new java.util.Vector<VolVariable>();
+	Vector<VolVariable> pdeVolVariableList = new Vector<VolVariable>();
 	Variable[] variables = simulation.getVariables();
 	for (int i = 0; i < variables.length; i++){
 		if (variables[i] instanceof VolVariable && simulation.getMathDescription().isPDE((VolVariable)variables[i])){
@@ -373,7 +377,7 @@ COMPARTMENT_END
 */
 private void writeCompartments() throws Exception {
 	cbit.vcell.math.MathDescription mathDesc = simulation.getMathDescription();
-	java.util.Enumeration<SubDomain> enum1 = mathDesc.getSubDomains();
+	Enumeration<SubDomain> enum1 = mathDesc.getSubDomains();
 	while (enum1.hasMoreElements()) {		
 		SubDomain sd = enum1.nextElement();
 		if (sd instanceof cbit.vcell.math.CompartmentSubDomain) {
@@ -563,7 +567,7 @@ MEMBRANE_END
  */
 private void writeMembranes() throws Exception {
 	cbit.vcell.math.MathDescription mathDesc = simulation.getMathDescription();
-	java.util.Enumeration<SubDomain> enum1 = mathDesc.getSubDomains();
+	Enumeration<SubDomain> enum1 = mathDesc.getSubDomains();
 	while (enum1.hasMoreElements()) {		
 		SubDomain sd = enum1.nextElement();
 		if (sd instanceof MembraneSubDomain) {
@@ -593,7 +597,7 @@ private void writeModelDescription() throws Exception {
 	writer.println("# Model description: FEATURE name handle priority boundary_conditions");
 	writer.println("MODEL_BEGIN");
 	cbit.vcell.math.MathDescription mathDesc = simulation.getMathDescription();
-	java.util.Enumeration<SubDomain> enum1 = mathDesc.getSubDomains();
+	Enumeration<SubDomain> enum1 = mathDesc.getSubDomains();
 	while (enum1.hasMoreElements()) {
 		SubDomain sd = enum1.nextElement();
 		if (sd instanceof cbit.vcell.math.CompartmentSubDomain) {
