@@ -177,7 +177,7 @@ private void writeCompartment_FastSystem(CompartmentSubDomain volSubDomain) thro
 	if (fastSystem == null) {
 		return;
 	}
-	FastSystemAnalyzer fs_analyzer = new FastSystemAnalyzer(fastSystem);
+	FastSystemAnalyzer fs_analyzer = new FastSystemAnalyzer(fastSystem, simulation);
 	int numIndep = fs_analyzer.getNumIndependentVariables();
 	int numDep = fs_analyzer.getNumDependentVariables();
 	int numPseudo = fs_analyzer.getNumPseudoConstants();	

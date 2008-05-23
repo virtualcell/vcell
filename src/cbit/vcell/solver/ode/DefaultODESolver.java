@@ -433,7 +433,7 @@ protected void initialize() throws SolverException {
 			if (!getSimulation().getSolverTaskDescription().getSolverDescription().solvesFastSystem()) {
 				throw new SolverException(getSimulation().getSolverTaskDescription().getSolverDescription().getName() + " doesn't support models containing fast system (algebraic constraints). Please change the solver.");
 			}
-			fieldFastAlgebraicSystem = new FastAlgebraicSystem(new FastSystemAnalyzer(getSubDomain().getFastSystem()));
+			fieldFastAlgebraicSystem = new FastAlgebraicSystem(new FastSystemAnalyzer(getSubDomain().getFastSystem(), getSimulation()));
 		}
 		//refreshIdentifiers();
 		fieldIdentifiers = createIdentifiers();

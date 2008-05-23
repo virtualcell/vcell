@@ -19,7 +19,6 @@ import cbit.vcell.solver.*;
 public class CppClassCoderFastSystem extends CppClassCoder {
 	private Simulation simulation = null;
 	private SubDomain subDomain = null;
-	private FastSystem fastSystem = null;
 	private FastSystemAnalyzer fs_analyzer = null;
 /**
  * VarContextCppCoder constructor comment.
@@ -29,10 +28,9 @@ protected CppClassCoderFastSystem(CppCoderVCell cppCoderVCell, FastSystem fastSy
 								SubDomain subDomain,Simulation argSimulation,String parentClass) throws Exception
 {
 	super(cppCoderVCell,parentClass+subDomain.getName(), parentClass);
-	this.fastSystem = fastSystem;
 	this.simulation = argSimulation;
 	this.subDomain = subDomain;
-	this.fs_analyzer = new FastSystemAnalyzer(this.fastSystem);
+	this.fs_analyzer = new FastSystemAnalyzer(fastSystem, simulation);
 }
 /**
  * This method was created by a SmartGuide.
@@ -40,13 +38,6 @@ protected CppClassCoderFastSystem(CppCoderVCell cppCoderVCell, FastSystem fastSy
  */
 public SubDomain getCompartment() {
 	return subDomain;
-}
-/**
- * This method was created by a SmartGuide.
- * @return cbit.vcell.math.Variable
- */
-public FastSystem getFastSystem() {
-	return fastSystem;
 }
 /**
  * This method was created by a SmartGuide.
