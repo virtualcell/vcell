@@ -44,6 +44,7 @@ public class FastSystemAnalyzer implements SymbolTable {
 	//   |iiiccccc|         N-r = 3 independent vars 
 	//
 	private FastSystem fastSystem = null;
+	private SymbolTable symbolTable = null;
 	protected RationalExpMatrix dependencyMatrix = null;
 
 	protected Vector<Expression> dependencyExpList = new Vector<Expression>();
@@ -56,16 +57,17 @@ public class FastSystemAnalyzer implements SymbolTable {
 /**
  * FastSystem constructor comment.
  */
-public FastSystemAnalyzer(FastSystem argFastSystem) throws MathException, ExpressionException {
+public FastSystemAnalyzer(FastSystem argFastSystem, SymbolTable argSymbolTable) throws MathException, ExpressionException {
 	super();
 	this.fastSystem = argFastSystem;
+	this.symbolTable = argSymbolTable;
 	refreshAll();
 }
 
 public SymbolTableEntry getEntry(String id) throws ExpressionBindingException {
 	// combines mathDesc symbolTable and pseudoconstants from fastSysAnalyzer.
 	try {
-		SymbolTableEntry ste = fastSystem.getMathDesc().getEntry(id);
+		SymbolTableEntry ste = symbolTable.getEntry(id);
 		if (ste == null){
 			ste = getPseudoConstant(id);
 		}
@@ -91,7 +93,7 @@ private void checkLinearity() throws MathException, ExpressionException {
 		while (enum_fi.hasMoreElements()){
 			FastInvariant fi = enum_fi.nextElement();
 			Expression exp = fi.getFunction().differentiate(var.getName());
-			exp = MathUtilities.substituteFunctions(exp, fastSystem.getMathDesc()).flatten();
+			exp = MathUtilities.substituteFunctions(exp, this).flatten();
 			
 			if (!exp.isNumeric()) {
 				// If expression is in terms of 'x','y','z' - then its ok - relax the constant requirement.
@@ -133,7 +135,7 @@ private void refreshFastVarList() throws MathException, ExpressionException {
 	while (fastRatesEnum.hasMoreElements()){
 		FastRate fr  = fastRatesEnum.nextElement();
 		Expression exp = fr.getFunction();
-		Enumeration<Variable> enum1 = MathUtilities.getRequiredVariables(exp, getFastSystem().getMathDesc());
+		Enumeration<Variable> enum1 = MathUtilities.getRequiredVariables(exp, this);
 		while (enum1.hasMoreElements()) {
 			Variable var = enum1.nextElement();
 			if (var instanceof VolVariable || var instanceof MemVariable) {
@@ -152,7 +154,7 @@ private void refreshFastVarList() throws MathException, ExpressionException {
 		FastInvariant fi = (FastInvariant) fastInvariantsEnum.nextElement();
 		Expression exp = fi.getFunction();
 		//System.out.println("FastSystemImplicit.refreshFastVarList(), ORIGINAL FAST INVARIANT: "+exp);
-		Enumeration<Variable> enum1 = MathUtilities.getRequiredVariables(exp, getFastSystem().getMathDesc());
+		Enumeration<Variable> enum1 = MathUtilities.getRequiredVariables(exp, this);
 		while (enum1.hasMoreElements()) {
 			Variable var = enum1.nextElement();
 			if (var instanceof VolVariable || var instanceof MemVariable) {
@@ -365,8 +367,8 @@ private void refreshSubstitutedRateExps() throws MathException, ExpressionExcept
 				exp = Expression.add(exp, new Expression(coefExp.infixString()+"*"+pc.getName()));
 			}
 		}
-		//exp.bindExpression(null);
-		// exp = exp.flatten();
+		exp.bindExpression(null);
+		exp = exp.flatten();
 		exp.bindExpression(this);
 		//System.out.println("FastSystem.refreshSubstitutedRateExps() "+((Variable)dependentVarList.elementAt(row)).getName()+" = "+exp.toString()+";");
 		dependencyExpList.addElement(exp);
@@ -387,8 +389,8 @@ private void refreshSubstitutedRateExps() throws MathException, ExpressionExcept
 			Expression subExp = new Expression((Expression)dependencyExpList.elementAt(j));
 			exp.substituteInPlace(new Expression(depVar.getName()),subExp);
 		}
-		//exp.bindExpression(null);
-		// exp = exp.flatten();
+		exp.bindExpression(null);
+		exp = exp.flatten();
 		//System.out.println("FastSystem.refreshSubstitutedRateExps() fast rate after substitution  = "+exp.toString());
 		exp.bindExpression(this);
 		fastRateExpList.addElement(exp);

@@ -1827,7 +1827,7 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 			}
 			subDomain.setFastSystem(fastSystem);
 			// constructor calls the 'refresh' method which constructs depemdency matrix, dependent/independent vars and pseudoconstants, etc. 
-			FastSystemAnalyzer fs_analyzer = new FastSystemAnalyzer(fastSystem);
+			FastSystemAnalyzer fs_analyzer = new FastSystemAnalyzer(fastSystem, mathDesc);
 		}
 		//
 		// create ode's for voltages to be calculated on unresolved membranes mapped to this subVolume
@@ -2047,7 +2047,7 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 			}
 			memSubDomain.setFastSystem(fastSystem);
 			// constructor calls the 'refresh' method which constructs depemdency matrix, dependent/independent vars and pseudoconstants, etc. 
-			FastSystemAnalyzer fs_analyzer = new FastSystemAnalyzer(fastSystem);
+			FastSystemAnalyzer fs_analyzer = new FastSystemAnalyzer(fastSystem, mathDesc);
 		}
 		//
 		// create Membrane-region equations for potential of this resolved membrane

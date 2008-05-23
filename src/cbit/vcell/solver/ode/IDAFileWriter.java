@@ -40,7 +40,7 @@ protected void writeEquations(java.io.PrintWriter pw) throws MathException, Expr
 		//
 		CompartmentSubDomain subDomain = (CompartmentSubDomain)getSimulation().getMathDescription().getSubDomains().nextElement();
 		FastSystem fastSystem = subDomain.getFastSystem();
-		FastSystemAnalyzer fs_Analyzer = new FastSystemAnalyzer(fastSystem);
+		FastSystemAnalyzer fs_Analyzer = new FastSystemAnalyzer(fastSystem, getSimulation());
 		int numIndependent = fs_Analyzer.getNumIndependentVariables();
 		int systemDim = getSimulation().getMathDescription().getStateVariableNames().size();
 		int numDependent = systemDim - numIndependent;
