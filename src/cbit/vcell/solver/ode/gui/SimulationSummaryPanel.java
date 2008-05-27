@@ -1313,7 +1313,14 @@ public void newSimulation(cbit.vcell.solver.Simulation simulation) {
 	}else{
 		getJTextAreaDescription().setBackground(java.awt.Color.white);
 		getJTextAreaDescription().setEditable(true);
-		getJLabel1().setText(SIM_SUMMARY_LABEL+"(SimID="+(simulation.getKey() == null?"unknown":simulation.getKey())+")");
+		getJLabel1().setText(
+			SIM_SUMMARY_LABEL+
+			"(SimID="+(simulation.getKey() == null?"unknown":simulation.getKey())+
+			(simulation.getSimulationVersion() != null &&
+				simulation.getSimulationVersion().getParentSimulationReference() != null
+				?", parentSimRef="+simulation.getSimulationVersion().getParentSimulationReference()
+				:"")+
+			")");
 	}
 	// also set up a listener that will refresh when simulation is edited in place
 	PropertyChangeListener listener = new PropertyChangeListener() {

@@ -1,10 +1,10 @@
 package cbit.vcell.field;
 
+import cbit.sql.KeyValue;
 import cbit.util.Extent;
 import cbit.util.ISize;
 import cbit.util.Origin;
 import cbit.vcell.simdata.DataIdentifier;
-import cbit.vcell.simdata.DataSetIdentifier;
 
 /**
  * Insert the type's description here.
@@ -15,12 +15,24 @@ public class FieldDataFileOperationResults implements java.io.Serializable{
 /**
  * FieldDataStorageResults constructor comment.
  */
+	public static class FieldDataReferenceInfo{
+		public static final String FIELDDATATYPENAME = "FieldData";
+		public String referenceSourceType;
+		public String referenceSourceName;
+		public String applicationName;
+		public String simulationName;
+		public String refSourceVersionDate;
+		public String[] funcNames;
+		public KeyValue refSourceVersionKey;
+	};
+
 	
 	public DataIdentifier[] dataIdentifierArr;
 	public ISize iSize;
 	public Origin origin;
 	public Extent extent;
 	public double[] times;
+	public FieldDataFileOperationResults.FieldDataReferenceInfo[] dependantFunctionInfo;
 	
 public FieldDataFileOperationResults() {
 	super();

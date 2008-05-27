@@ -277,7 +277,7 @@ void createRecyclableWindows() {
 		FieldDataWindow fieldDataWindow = new FieldDataWindow();
 		FieldDataGUIPanel fieldDataGUIPanel = new FieldDataGUIPanel();
 		fieldDataWindow.setWorkArea(fieldDataGUIPanel);
-		fieldDataWindow.setSize(600,400);
+		fieldDataWindow.pack();
 		BeanUtils.centerOnScreen(fieldDataWindow);
 		// make the manager
 		FieldDataWindowManager fieldDataWindowManager =
