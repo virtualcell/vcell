@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import cbit.vcell.math.AnnotatedFunction;
 import java.io.File;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import cbit.vcell.math.Function;
@@ -20,6 +21,17 @@ import cbit.util.TokenMangler;
 public class FunctionFileGenerator {
 	private AnnotatedFunction[] annotatedFunctionList;
 	private java.lang.String basefileName;
+	
+	private static final String SEMICOLON_DELIMITERS = ";";
+	public static class FuncFileLineInfo{
+		public String functionName;
+		public String functionExpr;
+		public String functionSimplifiedExpr;
+		public String errorString;
+		public VariableType funcVarType;
+		public boolean funcIsUserDefined = false;
+	};
+
 
 /**
  * FuntionFileGenerator constructor comment.
@@ -115,8 +127,6 @@ public static synchronized Vector<AnnotatedFunction> readFunctionsFile(File func
 	StringTokenizer lineTokenizer = new StringTokenizer(stringBuffer.toString(),newLineDelimiters);
 	
 	String token1 = new String("");
-	String token2 = new String("");
-	String semicolonDelimiters = ";";
 	int j=0;
 
 	//
@@ -125,83 +135,108 @@ public static synchronized Vector<AnnotatedFunction> readFunctionsFile(File func
 	// 
 	while (lineTokenizer.hasMoreTokens()) {
 		token1 = lineTokenizer.nextToken();
-		if (token1.startsWith("#")) {
-			continue;
-		}		
-		StringTokenizer nextLine = new StringTokenizer(token1, semicolonDelimiters);
-		int i=0;
-		String functionName = null;
-		Expression functionExpr = null;
-		Expression functionSimplifiedExpr = null;
-		String errorString = null;
-		VariableType funcVarType = null;
-		boolean funcIsUserDefined = false;
-		//
-		// The first token in each line is the function name 
-		// the second token is the function expression.
-		//
-		while (nextLine.hasMoreTokens()) {
-			token2 = nextLine.nextToken();
-			if (token2 != null) {
-				token2 = token2.trim();
+		FunctionFileGenerator.FuncFileLineInfo funcFileLineInfo = readFunctionLine(token1);
+		if (funcFileLineInfo != null && 
+				funcFileLineInfo.functionName != null && 
+				funcFileLineInfo.functionExpr != null && funcFileLineInfo.funcVarType != null) {
+			
+			Expression functionExpr = null;
+			try {
+				functionExpr = new Expression(funcFileLineInfo.functionExpr);
+			} catch (cbit.vcell.parser.ExpressionException e) {
+				throw new RuntimeException("Error in reading expression '"+
+					funcFileLineInfo.functionExpr+"' for function \""+
+					funcFileLineInfo.functionName+"\"");
 			}
-			if (i == 0) {
-				// If there is a 'blank' or 'space' in the function name, throw an exception - it is not allowed, since the name
-				// might be used in expressions later and such usage does not allow spaces.
-				if  (token2.indexOf(" ") > 0) {
-					throw new java.io.IOException("Blank spaces are not allowed in function names.");
-				}
-				functionName = token2;
-			} else if (i == 1) {
+			Expression functionSimplifiedExpr = null;
+			if(funcFileLineInfo.functionSimplifiedExpr != null){
 				try {
-					functionExpr = new Expression(token2);
+					functionSimplifiedExpr = new Expression(funcFileLineInfo.functionSimplifiedExpr);
 				} catch (cbit.vcell.parser.ExpressionException e) {
-					throw new RuntimeException("Error in reading expression for function \""+functionName+"\"");
-				}
-			} else if (i == 2) {
-				errorString = token2;
-			} else if (i == 3) {
-				String varType = TokenMangler.fixTokenStrict(token2);
-				varType = varType.substring(0, varType.indexOf("_VariableType"));
-				if (varType.equals("Volume")) {
-					funcVarType = VariableType.VOLUME;
-				} else if (varType.equals("Membrane")) {
-					funcVarType = VariableType.MEMBRANE;
-				} else if (varType.equals("Contour")) {
-					funcVarType = VariableType.CONTOUR;
-				} else if (varType.equals("Volume_Region")) {
-					funcVarType = VariableType.VOLUME_REGION;
-				} else if (varType.equals("Membrane_Region")) {
-					funcVarType = VariableType.MEMBRANE_REGION;
-				} else if (varType.equals("Contour_Region")) {
-					funcVarType = VariableType.CONTOUR_REGION;
-				} else if (varType.equals("Nonspatial")) {
-					funcVarType = VariableType.NONSPATIAL;
-				} else if (varType.equals("Unknown")) {
-					funcVarType = VariableType.UNKNOWN;
-				} 
-			} else if (i == 4) {
-				funcIsUserDefined = Boolean.valueOf(token2).booleanValue();
-			} else if (i == 5) {
-				try {
-					functionSimplifiedExpr = new Expression(token2);
-				} catch (cbit.vcell.parser.ExpressionException e) {
-					System.out.println("Error in reading simplified expression for function \""+functionName+"\"");
+					System.out.println("Error in reading simplified expression '"+
+						funcFileLineInfo.functionSimplifiedExpr+"' for function \""+
+						funcFileLineInfo.functionName+"\"");
 				}
 			}
-			i++;
-		}
-		if (functionName != null && functionExpr != null && funcVarType != null) {
-			AnnotatedFunction annotatedFunc = new AnnotatedFunction(functionName, functionExpr, errorString, funcVarType, funcIsUserDefined);
-			annotatedFunc.setSimplifiedExpression(functionSimplifiedExpr);
+			AnnotatedFunction annotatedFunc =
+				new AnnotatedFunction(
+						funcFileLineInfo.functionName,
+						functionExpr,
+						funcFileLineInfo.errorString,
+						funcFileLineInfo.funcVarType,
+						funcFileLineInfo.funcIsUserDefined);
+			if(functionSimplifiedExpr != null){
+				annotatedFunc.setSimplifiedExpression(functionSimplifiedExpr);
+			}
 			annotatedFunctionsVector.addElement(annotatedFunc);
-		}		
+		}
+
 		j++;
 	}
 
 	return annotatedFunctionsVector;
 }
 
+public static FunctionFileGenerator.FuncFileLineInfo readFunctionLine(String functionFileLine) throws IOException{
+	if (functionFileLine.startsWith("#")) {
+		return null;
+	}
+	FunctionFileGenerator.FuncFileLineInfo funcFileInfo =
+		new FunctionFileGenerator.FuncFileLineInfo();
+	
+	String token2 = new String("");
+	StringTokenizer nextLine = new StringTokenizer(functionFileLine, SEMICOLON_DELIMITERS);
+	int i=0;
+	//
+	// The first token in each line is the function name 
+	// the second token is the function expression.
+	//
+	while (nextLine.hasMoreTokens()) {
+		token2 = nextLine.nextToken();
+		if (token2 != null) {
+			token2 = token2.trim();
+		}
+		if (i == 0) {
+			// If there is a 'blank' or 'space' in the function name, throw an exception - it is not allowed, since the name
+			// might be used in expressions later and such usage does not allow spaces.
+			if  (token2.indexOf(" ") > 0) {
+				throw new java.io.IOException("Blank spaces are not allowed in function names.");
+			}
+			funcFileInfo.functionName = token2;
+		} else if (i == 1) {
+			funcFileInfo.functionExpr = token2;
+		} else if (i == 2) {
+			funcFileInfo.errorString = token2;
+		} else if (i == 3) {
+			String varType = TokenMangler.fixTokenStrict(token2);
+			varType = varType.substring(0, varType.indexOf("_VariableType"));
+			if (varType.equals("Volume")) {
+				funcFileInfo.funcVarType = VariableType.VOLUME;
+			} else if (varType.equals("Membrane")) {
+				funcFileInfo.funcVarType = VariableType.MEMBRANE;
+			} else if (varType.equals("Contour")) {
+				funcFileInfo.funcVarType = VariableType.CONTOUR;
+			} else if (varType.equals("Volume_Region")) {
+				funcFileInfo.funcVarType = VariableType.VOLUME_REGION;
+			} else if (varType.equals("Membrane_Region")) {
+				funcFileInfo.funcVarType = VariableType.MEMBRANE_REGION;
+			} else if (varType.equals("Contour_Region")) {
+				funcFileInfo.funcVarType = VariableType.CONTOUR_REGION;
+			} else if (varType.equals("Nonspatial")) {
+				funcFileInfo.funcVarType = VariableType.NONSPATIAL;
+			} else if (varType.equals("Unknown")) {
+				funcFileInfo.funcVarType = VariableType.UNKNOWN;
+			} 
+		} else if (i == 4) {
+			funcFileInfo.funcIsUserDefined = Boolean.valueOf(token2).booleanValue();
+		} else if (i == 5) {
+			funcFileInfo.functionSimplifiedExpr = token2;
+		}
+		i++;
+	}
+	return funcFileInfo;
+
+}
 
 /**
  * Insert the method's description here.

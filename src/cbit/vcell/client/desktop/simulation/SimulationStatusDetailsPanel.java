@@ -523,7 +523,12 @@ public void simulationStatusDetailsPanel_SimulationStatusDetails(cbit.vcell.clie
 	
 	cbit.vcell.solver.Simulation sim = simStatusDetails.getSimulation();
 	getNameTextField().setText(sim.getName());
-	getIDTextField().setText("" + (sim.getKey() != null ? sim.getKey().toString() : ""));
+	getIDTextField().setText("" + (sim.getKey() != null ? sim.getKey().toString() : "")+
+			(sim.getSimulationVersion() != null &&
+				sim.getSimulationVersion().getParentSimulationReference() != null
+				?" (parentSimRef="+sim.getSimulationVersion().getParentSimulationReference().toString()+")"
+				:"")
+	);
 	getSolverTextField().setText("" + sim.getSolverTaskDescription().getSolverDescription().getName());
 	return;
 }

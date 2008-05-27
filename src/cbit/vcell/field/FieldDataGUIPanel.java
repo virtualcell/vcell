@@ -890,7 +890,7 @@ private void initialize() {
 		// user code end
 		setName("FieldDataGUIPanel");
 		setLayout(new java.awt.GridBagLayout());
-		setSize(614, 429);
+		setSize(676, 430);
 
 		java.awt.GridBagConstraints constraintsJPanel2 = new java.awt.GridBagConstraints();
 		constraintsJPanel2.gridx = 0; constraintsJPanel2.gridy = 0;
@@ -1288,13 +1288,13 @@ private void jButtonFDDelete_ActionPerformed(java.awt.event.ActionEvent actionEv
 		
 	}
 	AsynchClientTask CheckRemoveFromDBTask = new AsynchClientTask() {
-		public String getTaskName() { return "remove Field Data from DB"; }
+		public String getTaskName() { return "Check Field Data references in DB"; }
 		public int getTaskType() { return AsynchClientTask.TASKTYPE_NONSWING_BLOCKING; }
 		public void run(java.util.Hashtable hash){
 			try{
 				if(fieldDataWindowManager.findReferencingModels(fieldDataMainList.externalDataIdentifier, false)){
 					throw new Exception("Cannot delete Field Data '"+fieldDataMainList.externalDataIdentifier.getName()+
-							"' because it is referenced in a Model(s).");
+							"' because it is referenced in a Model(s) or Function(s) file.");
 				}
 			}catch(Throwable e){
 				hash.put(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR,e);
@@ -1308,7 +1308,7 @@ private void jButtonFDDelete_ActionPerformed(java.awt.event.ActionEvent actionEv
 		}
 	};
 	AsynchClientTask RemoveNodeTreeTask = new AsynchClientTask() {
-		public String getTaskName() { return "remove node"; }
+		public String getTaskName() { return "remove FieldData tree node"; }
 		public int getTaskType() { return AsynchClientTask.TASKTYPE_SWING_BLOCKING; }
 		public void run(java.util.Hashtable hash){
 			try{
@@ -1328,7 +1328,7 @@ private void jButtonFDDelete_ActionPerformed(java.awt.event.ActionEvent actionEv
 		}
 	};
 	AsynchClientTask RemoveFromDiskAndDBTask = new AsynchClientTask() {
-		public String getTaskName() { return "remove Field Data from disk"; }
+		public String getTaskName() { return "remove Field Data from Disk and DB"; }
 		public int getTaskType() { return AsynchClientTask.TASKTYPE_NONSWING_BLOCKING; }
 		public void run(java.util.Hashtable hash){
 			try{

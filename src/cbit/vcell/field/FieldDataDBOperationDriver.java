@@ -1,34 +1,98 @@
 package cbit.vcell.field;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Vector;
-
+import javax.swing.Timer;
 import cbit.sql.KeyValue;
+import cbit.sql.VersionableType;
 import cbit.util.TokenMangler;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.messaging.db.SimulationJobTable;
+import cbit.vcell.modeldb.BioModelSimContextLinkTable;
+import cbit.vcell.modeldb.BioModelSimulationLinkTable;
+import cbit.vcell.modeldb.BioModelTable;
 import cbit.vcell.modeldb.DbDriver;
 import cbit.vcell.modeldb.ExternalDataTable;
 import cbit.vcell.modeldb.MathDescExternalDataLinkTable;
 import cbit.vcell.modeldb.MathDescTable;
+import cbit.vcell.modeldb.MathModelSimulationLinkTable;
+import cbit.vcell.modeldb.MathModelTable;
+import cbit.vcell.modeldb.SimContextTable;
 import cbit.vcell.modeldb.SimulationTable;
 import cbit.vcell.modeldb.UserTable;
 import cbit.vcell.server.DataAccessException;
+import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.server.User;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 
-public class FieldDataDBOperationDriver {
+public class FieldDataDBOperationDriver{
+	
+	private static String DATE_FORMAT_STRING = "'DD-MON-YYYY HH24:MI:SS'";
 
+	private static Connection liveConnection = null;
+	private static Timer liveConnectionTimer = null;
+	
+	private static synchronized void restartLiveConnectionTimer(){
+		if(liveConnectionTimer == null){
+			liveConnectionTimer =
+				new Timer(5*60*1000,
+					new ActionListener(){
+						public void actionPerformed(ActionEvent e) {
+							closeConnection();
+						}}
+				);
+			liveConnectionTimer.setRepeats(false);
+		}
+		liveConnectionTimer.restart();
+	}
+	private static synchronized void closeConnection(){
+//		System.err.println("connection Closed");
+		if(liveConnection != null){
+			try{liveConnection.close();}catch(Exception e){e.printStackTrace();}
+			liveConnection = null;
+		}
+	}
+	private static synchronized Connection getConnection() throws Exception{
+
+		restartLiveConnectionTimer();
+		
+		if(liveConnection != null){
+//			System.err.println("connection Re-used");
+			return liveConnection;
+		}
+//		System.err.println("connection Created");
+		String dbDriverName = PropertyLoader.getProperty(PropertyLoader.dbDriverName, null);
+		String dbConnectURL = PropertyLoader.getProperty(PropertyLoader.dbConnectURL, null);
+		String dbSchemaUser = PropertyLoader.getProperty(PropertyLoader.dbUserid, null);
+		String dbPassword = PropertyLoader.getProperty(PropertyLoader.dbPassword, null);
+		try{
+			Class.forName(dbDriverName);
+			liveConnection = java.sql.DriverManager.getConnection(dbConnectURL,dbSchemaUser,dbPassword);
+			liveConnection.setReadOnly(true);
+			return liveConnection;
+		}catch(Exception e){
+			throw new Exception("FieldDataDBOperationDriver: Couldn't get database connection",e);
+		}
+
+	}
 	public static FieldDataDBOperationResults fieldDataDBOperation(Connection con, User user,
 			FieldDataDBOperationSpec fieldDataDBOperationSpec) throws SQLException, DataAccessException {
 		
 		if(fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_COPY_NO_CONFLICT){
 			//get all current ExtDataIDs
 			ExternalDataIdentifier[] existingExtDataIDArr =
-				FieldDataDBOperationDriver.getExternaldataIdentifiers(con, user);
+				FieldDataDBOperationDriver.fieldDataDBOperation(
+					con, user,FieldDataDBOperationSpec.createGetExtDataIDsSpec(user)).extDataIDArr;
 			//Rename FieldFunc names if necessary
 			Hashtable<String,String> newNameOrigNameHash = new Hashtable<String, String>();
 			for(int i=0;i<fieldDataDBOperationSpec.sourceNames.length;i+= 1){
@@ -204,7 +268,8 @@ public class FieldDataDBOperationDriver {
 		
 			DbDriver.updateCleanSQL(con,sql);
 			ExternalDataIdentifier[] fdiArr =
-				FieldDataDBOperationDriver.getExternaldataIdentifiers(con, user);
+				FieldDataDBOperationDriver.fieldDataDBOperation(
+					con, user,FieldDataDBOperationSpec.createGetExtDataIDsSpec(user)).extDataIDArr;
 			for (int i = 0; i < fdiArr.length; i++) {
 				if(fdiArr[i].getName().equals(fieldDataDBOperationSpec.newExtDataIDName)){
 					FieldDataDBOperationResults fieldDataDBOperationResults = new FieldDataDBOperationResults();
@@ -233,28 +298,7 @@ public class FieldDataDBOperationDriver {
 		throw new DataAccessException("Unknown FieldDataDBOperation "+fieldDataDBOperationSpec.opType);
 	}
 	
-	public static ExternalDataIdentifier[] getExternaldataIdentifiers(Connection con,User owner)
-		throws SQLException,DataAccessException{
-		return
-			FieldDataDBOperationDriver.fieldDataDBOperation(
-					con, owner,
-					FieldDataDBOperationSpec.createGetExtDataIDsSpec(owner)
-			).extDataIDArr;
-	}
-	
-	public static HashMap<ExternalDataIdentifier,Vector<KeyValue>> getExtDataIDsAndSimRefs(Connection con,User owner)
-		throws SQLException,DataAccessException{
-		
-		return
-		FieldDataDBOperationDriver.fieldDataDBOperation(
-				con, owner,
-				FieldDataDBOperationSpec.createGetExtDataIDsSpecWithSimRefs(owner)
-		).extdataIDAndSimRefH;
-		
-	}
-	
-	public static HashMap<User, Vector<ExternalDataIdentifier>> getAllExternalDataIdentifiers(Connection con)
-		throws SQLException{
+	public static synchronized HashMap<User, Vector<ExternalDataIdentifier>> getAllExternalDataIdentifiers() throws DataAccessException{
 		
 		String sql =
 			"SELECT "+
@@ -266,11 +310,11 @@ public class FieldDataDBOperationDriver {
 			" WHERE " +
 				UserTable.table.id.getQualifiedColName() + " = " +
 					ExternalDataTable.table.ownerRef.getQualifiedColName();
-				
-		Statement stmt = con.createStatement();
+		Statement stmt = null;
 		HashMap<User, Vector<ExternalDataIdentifier>> allUserExtDataIDH =
 			new HashMap<User, Vector<ExternalDataIdentifier>>();
 		try {
+			stmt = 	getConnection().createStatement();
 			ResultSet rset = stmt.executeQuery(sql);
 			while (rset.next()) {
 				ExternalDataIdentifier extDataID =
@@ -283,10 +327,222 @@ public class FieldDataDBOperationDriver {
 				}
 				userExtDataIDV.add(extDataID);
 			}
-		} finally {
-			stmt.close();
+		}catch(Exception e){
+			e.printStackTrace();
+			throw new DataAccessException("Error: getAllExternalDataIdentifiers",e);
+		}finally {
+			if(stmt != null){try{stmt.close();}catch(Exception e){e.printStackTrace();}}
 		}
 		return allUserExtDataIDH;
 	}
 
+	public static synchronized HashMap<String, KeyValue> getFunctionFileNamesAndSimKeys(User user)
+	throws DataAccessException{
+	
+	String sql =
+		"SELECT "+
+			SimulationJobTable.table.simRef.getQualifiedColName()+","+
+			SimulationJobTable.table.jobIndex.getQualifiedColName()+
+		" FROM " +
+			SimulationJobTable.table.getTableName()+","+
+			SimulationTable.table.getTableName()+
+		" WHERE " +
+			SimulationTable.table.ownerRef.getQualifiedColName() +" = " + user.getID() +
+		" AND "+
+		SimulationTable.table.id.getQualifiedColName()+ " = " +SimulationJobTable.table.simRef.getQualifiedColName()+
+		" UNION " +
+		" SELECT " +
+			SimulationTable.table.id.getQualifiedColName()+","+
+			"TO_NUMBER(NULL) "+//SimulationJobTable.table.jobIndex.getUnqualifiedColName()+
+		" FROM " +
+			SimulationTable.table.getTableName()+
+		" WHERE " +
+			SimulationTable.table.ownerRef.getQualifiedColName()+ "=" +user.getID()+
+		" AND " +
+			SimulationTable.table.id.getQualifiedColName()+
+			" NOT IN (SELECT " +SimulationJobTable.table.simRef.getQualifiedColName()+
+					" FROM " +SimulationJobTable.table.getTableName()+" )"+
+		" UNION " +
+		" SELECT " +
+			ExternalDataTable.table.id.getQualifiedColName()+","+
+			"TO_NUMBER(0) "+
+		" FROM " +
+			ExternalDataTable.table.getTableName()+
+		" WHERE " +
+			ExternalDataTable.table.ownerRef.getQualifiedColName()+ "=" +user.getID();
+
+
+	Statement stmt = null;
+	HashMap<String, KeyValue> functionNamesH = new HashMap<String, KeyValue>();
+	try {
+		stmt = 	getConnection().createStatement();
+		ResultSet rset = stmt.executeQuery(sql);
+		while (rset.next()) {
+			KeyValue simKey = new KeyValue(rset.getBigDecimal(1));
+			BigDecimal jobIndex = rset.getBigDecimal(2);
+			boolean isOldStyle = rset.wasNull();
+			functionNamesH.put(
+				ExternalDataIdentifier.createCanonicalFunctionsFileName(
+					simKey, (isOldStyle?0:jobIndex.intValue()), isOldStyle),
+				simKey
+			);
+		}
+	}catch(Exception e){
+		e.printStackTrace();
+		throw new DataAccessException("Error: getFunctionFileNamesAndSimKeys",e);
+	}finally {
+		if(stmt != null){try{stmt.close();}catch(Exception e){e.printStackTrace();}}
+	}
+	return functionNamesH;
+}
+
+	public static synchronized FieldDataFileOperationResults.FieldDataReferenceInfo getModelDescriptionForSimulation(User user,KeyValue simulationKey)
+	throws DataAccessException{
+	
+	String sqlMathModel =
+		"SELECT "+
+			MathModelTable.table.name.getQualifiedColName()+","+
+			SimulationTable.table.name.getQualifiedColName() +","+
+			"TO_CHAR("+MathModelTable.table.versionDate.getQualifiedColName()+","+DATE_FORMAT_STRING+")"+","+
+			MathModelTable.table.id.getQualifiedColName()+
+		" FROM " +
+			SimulationTable.table.getTableName()+","+
+			MathModelSimulationLinkTable.table.getTableName()+","+
+			MathModelTable.table.getTableName() +
+		" WHERE " +
+			SimulationTable.table.ownerRef.getQualifiedColName() +" = " + user.getID() +
+		" AND ("+
+			SimulationTable.table.id.getQualifiedColName()+ " = " +simulationKey.toString()+
+		" AND "+
+			SimulationTable.table.id.getQualifiedColName()+ " = " +
+				MathModelSimulationLinkTable.table.simRef.getQualifiedColName()+
+		" AND "+
+			MathModelSimulationLinkTable.table.mathModelRef.getQualifiedColName()+" = "+
+				MathModelTable.table.id.getQualifiedColName()+
+		") OR ("+
+			SimulationTable.table.versionParentSimRef.getQualifiedColName()+" IS NOT NULL"+
+		" AND "+
+			SimulationTable.table.versionParentSimRef.getQualifiedColName()+" = "+simulationKey.toString()+
+		" AND "+
+			SimulationTable.table.id.getQualifiedColName()+ " = " +
+				MathModelSimulationLinkTable.table.simRef.getQualifiedColName()+
+		" AND "+
+			MathModelSimulationLinkTable.table.mathModelRef.getQualifiedColName()+" = "+
+				MathModelTable.table.id.getQualifiedColName()+
+		")";
+
+	String sqlBioModel =
+		"SELECT "+
+			BioModelTable.table.name.getQualifiedColName()+","+
+			SimContextTable.table.name.getQualifiedColName()+","+
+			SimulationTable.table.name.getQualifiedColName() +","+
+			"TO_CHAR("+BioModelTable.table.versionDate.getQualifiedColName()+","+DATE_FORMAT_STRING+")"+","+
+			BioModelTable.table.id.getQualifiedColName()+
+		" FROM " +
+			SimulationTable.table.getTableName()+","+
+			BioModelSimulationLinkTable.table.getTableName()+","+
+			SimContextTable.table.getTableName()+","+
+			BioModelSimContextLinkTable.table.getTableName()+","+
+			BioModelTable.table.getTableName() +
+		" WHERE " +
+			SimulationTable.table.ownerRef.getQualifiedColName() +" = " + user.getID() +
+		" AND ("+
+			SimulationTable.table.id.getQualifiedColName()+ " = " +simulationKey.toString()+
+		" AND "+
+			SimulationTable.table.id.getQualifiedColName()+ " = " +
+				BioModelSimulationLinkTable.table.simRef.getQualifiedColName()+
+		" AND "+
+			BioModelSimulationLinkTable.table.bioModelRef.getQualifiedColName()+" = "+
+				BioModelTable.table.id.getQualifiedColName()+
+		" AND "+
+			BioModelSimContextLinkTable.table.bioModelRef.getQualifiedColName()+" = "+
+				BioModelTable.table.id.getQualifiedColName() +
+		" AND "+
+			SimContextTable.table.id.getQualifiedColName()+ " = " +
+				BioModelSimContextLinkTable.table.simContextRef.getQualifiedColName()+
+		" AND "+
+			SimContextTable.table.mathRef.getQualifiedColName()+" = "+
+				SimulationTable.table.mathRef.getQualifiedColName()+
+		") OR ("+
+			SimulationTable.table.versionParentSimRef.getQualifiedColName()+" IS NOT NULL"+
+		" AND "+
+			SimulationTable.table.versionParentSimRef.getQualifiedColName()+" = "+simulationKey.toString()+
+		" AND "+
+			SimulationTable.table.id.getQualifiedColName()+ " = " +
+				BioModelSimulationLinkTable.table.simRef.getQualifiedColName()+
+		" AND "+
+			BioModelSimulationLinkTable.table.bioModelRef.getQualifiedColName()+" = "+
+				BioModelTable.table.id.getQualifiedColName()+
+		" AND "+
+			BioModelSimContextLinkTable.table.bioModelRef.getQualifiedColName()+" = "+
+				BioModelTable.table.id.getQualifiedColName() +
+		" AND "+
+			SimContextTable.table.id.getQualifiedColName()+ " = " +
+				BioModelSimContextLinkTable.table.simContextRef.getQualifiedColName()+
+		" AND "+
+			SimContextTable.table.mathRef.getQualifiedColName()+" = "+
+				SimulationTable.table.mathRef.getQualifiedColName()+
+		")";
+
+//	   OR
+//	   (vc_simulation.parentsimref is not null
+//	   AND vc_simulation.parentsimref = 27339386
+//	   AND vc_simulation.ID = vc_biomodelsim.simref
+//	   AND vc_biomodelsim.biomodelref = vc_biomodel.ID
+//	   AND vc_biomodelsimcontext.biomodelref = vc_biomodel.ID
+//	   AND vc_simcontext.ID = vc_biomodelsimcontext.simcontextref
+//	   AND vc_simcontext.mathref = vc_simulation.mathref
+//	   )
+
+	String sqlFieldData =
+		"SELECT "+
+			ExternalDataTable.table.externalDataName.getQualifiedColName()+
+		" FROM " +
+			ExternalDataTable.table.getTableName()+
+		" WHERE " +
+			ExternalDataTable.table.ownerRef.getQualifiedColName() +" = " + user.getID() +
+		" AND "+
+			ExternalDataTable.table.id.getQualifiedColName()+ " = " +simulationKey.toString();	
+
+	Statement stmt = null;
+	FieldDataFileOperationResults.FieldDataReferenceInfo fieldDataRefInfo = null;
+	try {
+		stmt = 	getConnection().createStatement();
+		ResultSet rset = stmt.executeQuery(sqlMathModel);
+		if(rset.next()){
+			fieldDataRefInfo = new FieldDataFileOperationResults.FieldDataReferenceInfo();
+			fieldDataRefInfo.referenceSourceType = VersionableType.MathModelMetaData.getTypeName();
+			fieldDataRefInfo.referenceSourceName = rset.getString(1);
+			fieldDataRefInfo.simulationName = rset.getString(2);
+			fieldDataRefInfo.refSourceVersionDate = rset.getString(3);
+			fieldDataRefInfo.refSourceVersionKey = new KeyValue(rset.getBigDecimal(4));
+		}else{
+			rset.close();
+			rset = stmt.executeQuery(sqlBioModel);
+			if(rset.next()){
+				fieldDataRefInfo = new FieldDataFileOperationResults.FieldDataReferenceInfo();
+				fieldDataRefInfo.referenceSourceType = VersionableType.BioModelMetaData.getTypeName();
+				fieldDataRefInfo.referenceSourceName = rset.getString(1);
+				fieldDataRefInfo.applicationName = rset.getString(2);
+				fieldDataRefInfo.simulationName = rset.getString(3);
+				fieldDataRefInfo.refSourceVersionDate = rset.getString(4);
+				fieldDataRefInfo.refSourceVersionKey = new KeyValue(rset.getBigDecimal(5));
+			}else{
+				rset.close();
+				rset = stmt.executeQuery(sqlFieldData);
+				if(rset.next()){
+					fieldDataRefInfo = new FieldDataFileOperationResults.FieldDataReferenceInfo();
+					fieldDataRefInfo.referenceSourceType = FieldDataFileOperationResults.FieldDataReferenceInfo.FIELDDATATYPENAME;
+					fieldDataRefInfo.referenceSourceName = rset.getString(1);
+				}				
+			}
+		}
+	}catch(Exception e){
+		e.printStackTrace();
+		throw new DataAccessException("Error: getModelDescriptionForSimulation",e);
+	}finally {
+		if(stmt != null){try{stmt.close();}catch(Exception e){e.printStackTrace();}}
+	}
+	return fieldDataRefInfo;
+}
 }

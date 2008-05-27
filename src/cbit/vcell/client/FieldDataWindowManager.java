@@ -12,6 +12,7 @@ import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
 import javax.swing.ListSelectionModel;
 
+import cbit.gui.DialogUtils;
 import cbit.gui.JInternalFrameEnhanced;
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
@@ -27,13 +28,17 @@ import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.field.FieldDataDBEvent;
 import cbit.vcell.field.FieldDataDBEventListener;
 import cbit.vcell.field.FieldDataDBOperationSpec;
+import cbit.vcell.field.FieldDataFileOperationResults;
+import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.field.FieldDataGUIPanel;
 import cbit.vcell.mathmodel.MathModelInfo;
+import cbit.vcell.model.ModelInfo;
 import cbit.vcell.modeldb.VersionableTypeVersion;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.User;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.PDEDataContext;
+import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.SimulationInfo;
 
 public class FieldDataWindowManager 
@@ -336,9 +341,9 @@ public boolean findReferencingModels(final ExternalDataIdentifier targetExtDataI
 										choices.put(dependants[i],
 												new String[] {
 												dependants[i].getVersion().getName(),
-												(isBioModel?"BioModel":"MathModel"),
+												(isBioModel?VersionableType.BioModelMetaData.getTypeName():VersionableType.MathModelMetaData.getTypeName()),
 												(isBioModel?vrArr2[k].from().getVersion().getName():""),
-												dependants[i].getVersion().getDate().toString()
+												dependants[i].getVersion().getVersionKey().toString()
 												}
 										);
 								}
@@ -353,29 +358,76 @@ public boolean findReferencingModels(final ExternalDataIdentifier targetExtDataI
 		}
 	}
 			
-			
-			
-//	}
+	FieldDataFileOperationResults fdfor =
+		getRequestManager().getDocumentManager().fieldDataFileOperation(
+			FieldDataFileOperationSpec.createDependantFuncsFieldDataFileOperationSpec(targetExtDataID)
+		);
+	
 	boolean bHasReferences = false;
-	if(choices.size() > 0){
+	if(choices.size() > 0 || fdfor != null){
 		bHasReferences = true;
 		if(bShowReferencingModelsList){
-			String[] columnNames = new String[] {"Model","Type","Application","Date"};
-			VersionableTypeVersion[] vtvArr = choices.keySet().toArray(new VersionableTypeVersion[0]);
+			String[] columnNames = new String[] {"Model","Type","Description"};
+			Vector<VersionableType> varTypeV = new Vector<VersionableType>();
+			Vector<KeyValue> keyValV = new Vector<KeyValue>();
+			Vector<String[]> choicesV= new Vector<String[]>();
 			String[][] modelListData = choices.values().toArray(new String[0][0]);
+			for (int i = 0; i < modelListData.length; i++) {
+				choicesV.add(new String[]{
+						modelListData[i][0],
+						modelListData[i][1],
+						"Model Variable - "+(modelListData[i][2].length() == 0?"":"App='"+modelListData[i][2]+"'")+" version["+modelListData[i][3]+"]"
+					}
+				);
+				varTypeV.add((modelListData[i][1].equals(VersionableType.BioModelMetaData.getTypeName())?VersionableType.BioModelMetaData:VersionableType.MathModelMetaData));
+				keyValV.add(new KeyValue(modelListData[i][3]));
+			}
+			for (int i = 0; fdfor != null && i < fdfor.dependantFunctionInfo.length; i++) {
+				String functionNames = "";
+				for (int j = 0; j < fdfor.dependantFunctionInfo[i].funcNames.length; j++) {
+					functionNames+=(j>0?",":"")+fdfor.dependantFunctionInfo[i].funcNames[j];
+				}
+				choicesV.add(new String[] {
+						fdfor.dependantFunctionInfo[i].referenceSourceName,
+						fdfor.dependantFunctionInfo[i].referenceSourceType,
+						"Data Viewer Function(s) '"+functionNames+"' - "+
+							(fdfor.dependantFunctionInfo[i].applicationName == null?"":"App='"+fdfor.dependantFunctionInfo[i].applicationName+"' ")+
+							(fdfor.dependantFunctionInfo[i].simulationName == null?"":"Sim='"+fdfor.dependantFunctionInfo[i].simulationName+"' ")+
+							"version["+fdfor.dependantFunctionInfo[i].refSourceVersionDate+"]"
+					}
+				);				
+				if(fdfor.dependantFunctionInfo[i].referenceSourceType.equals(FieldDataFileOperationResults.FieldDataReferenceInfo.FIELDDATATYPENAME)){
+					varTypeV.add(null);
+				}else if(fdfor.dependantFunctionInfo[i].referenceSourceType.equals(VersionableType.BioModelMetaData.getTypeName())){
+					varTypeV.add(VersionableType.BioModelMetaData);
+				}else if(fdfor.dependantFunctionInfo[i].referenceSourceType.equals(VersionableType.MathModelMetaData.getTypeName())){
+					varTypeV.add(VersionableType.MathModelMetaData);
+				}else{
+					throw new IllegalArgumentException("Unknown reference source type "+fdfor.dependantFunctionInfo[i].referenceSourceType);
+				}
+				keyValV.add(fdfor.dependantFunctionInfo[i].refSourceVersionKey);
+			}
 			int[] selectionArr =
 				PopupGenerator.showComponentOKCancelTableList(
-					getComponent(), "Models Referencing Field Data (Select To Open) "+targetExtDataID.getName(),
-					columnNames, modelListData, ListSelectionModel.SINGLE_SELECTION);
+					getComponent(), "References to Field Data (Select To Open) "+targetExtDataID.getName(),
+					columnNames, choicesV.toArray(new String[0][0]), ListSelectionModel.SINGLE_SELECTION);
 			if(selectionArr != null && selectionArr.length > 0){
-				cbit.vcell.modeldb.VersionableTypeVersion v = vtvArr[selectionArr[0]];
-				//System.out.println(v);
-				if(v.getVType().equals(VersionableType.BioModelMetaData)){
-					BioModelInfo bmi = getRequestManager().getDocumentManager().getBioModelInfo(v.getVersion().getVersionKey());
-					getRequestManager().openDocument(bmi,FieldDataWindowManager.this,true);
-				}else if(v.getVType().equals(VersionableType.MathModelMetaData)){
-					MathModelInfo mmi = getRequestManager().getDocumentManager().getMathModelInfo(v.getVersion().getVersionKey());
-					getRequestManager().openDocument(mmi,FieldDataWindowManager.this,true);
+				if(varTypeV.elementAt(selectionArr[0]) != null){
+//					VersionableTypeVersion[] vtvArr = choices.keySet().toArray(new VersionableTypeVersion[0]);
+//					cbit.vcell.modeldb.VersionableTypeVersion v = vtvArr[selectionArr[0]];
+					//System.out.println(v);
+					if(varTypeV.elementAt(selectionArr[0]).equals(VersionableType.BioModelMetaData)){
+						BioModelInfo bmi = getRequestManager().getDocumentManager().getBioModelInfo(keyValV.elementAt(selectionArr[0]));
+						getRequestManager().openDocument(bmi,FieldDataWindowManager.this,true);
+					}else if(varTypeV.elementAt(selectionArr[0]).equals(VersionableType.MathModelMetaData)){
+						MathModelInfo mmi = getRequestManager().getDocumentManager().getMathModelInfo(keyValV.elementAt(selectionArr[0]));
+						getRequestManager().openDocument(mmi,FieldDataWindowManager.this,true);
+					}else{
+						throw new IllegalArgumentException("Not expecting varType "+varTypeV.elementAt(selectionArr[0]));
+					}
+				}else{
+					DialogUtils.showInfoDialog("use FiledDataManager to view FieldData '"+
+							choicesV.elementAt(selectionArr[0])[0]+"'");
 				}
 			}
 		}
