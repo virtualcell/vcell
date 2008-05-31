@@ -4,8 +4,10 @@ import java.awt.Rectangle;
 import java.util.Arrays;
 
 import cbit.image.ImageException;
+import cbit.util.Compare;
 import cbit.util.Extent;
 import cbit.util.ISize;
+import cbit.util.Matchable;
 
 /**
  * Insert the type's description here.
@@ -18,7 +20,7 @@ import cbit.util.ISize;
  * 
  */
 
-public class ImageDataset {
+public class ImageDataset implements Matchable{
 	private UShortImage[] images = null;
 	private double[] imageTimeStamps = null;
 	int numZ = -1;
@@ -212,6 +214,23 @@ public void showAll(){
 	for (int i = 0; i < images.length; i++) {
 		images[i].showPixelsAsMatrix();
 	}
+}
+
+public boolean compareEqual(Matchable obj) {
+	if(this == obj){
+		return true;
+	}
+	if(obj instanceof ImageDataset){
+		ImageDataset compareToImageDataset = (ImageDataset)obj;
+		if(numZ == compareToImageDataset.numZ){
+			if(Compare.isEqualOrNull(imageTimeStamps, compareToImageDataset.imageTimeStamps)){
+				if(Compare.isEqualOrNull(images, compareToImageDataset.images)){
+					return true;
+				}
+			}
+		}
+	}
+	return false;
 }
 
 }
