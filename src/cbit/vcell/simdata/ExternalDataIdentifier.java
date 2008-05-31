@@ -1,6 +1,7 @@
 package cbit.vcell.simdata;
 import java.util.StringTokenizer;
 
+import cbit.util.Matchable;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.SimResampleInfoProvider;
@@ -15,7 +16,7 @@ import cbit.sql.KeyValue;
  * Creation date: (9/18/2006 12:55:46 PM)
  * @author: Jim Schaff
  */
-public class ExternalDataIdentifier implements java.io.Serializable,VCDataIdentifier{
+public class ExternalDataIdentifier implements java.io.Serializable,VCDataIdentifier,Matchable{
 	private cbit.sql.KeyValue key;
 	private cbit.vcell.server.User owner;
 	private String name;
@@ -162,5 +163,22 @@ public boolean equals(Object obj) {
 @Override
 public int hashCode() {
 	return getKey().hashCode();
+}
+
+public boolean compareEqual(Matchable obj) {
+	if(this == obj){
+		return true;
+	}
+	if(obj instanceof ExternalDataIdentifier){
+		ExternalDataIdentifier compareToExtDataID = (ExternalDataIdentifier)obj;
+		if(key.compareEqual(compareToExtDataID.key)){
+			if(owner.compareEqual(compareToExtDataID.owner)){
+				if(name.equals(compareToExtDataID.name)){
+					return true;
+				}
+			}
+		}
+	}
+	return false;
 }
 }
