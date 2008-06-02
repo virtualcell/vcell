@@ -1,8 +1,10 @@
 package cbit.vcell.opt;
+import java.io.File;
 import java.util.Vector;
 
 import cbit.util.Issue;
 import cbit.vcell.server.DataAccessException;
+import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.util.RowColumnResultSet;
 /**
@@ -13,24 +15,22 @@ import cbit.vcell.util.RowColumnResultSet;
 public class PdeObjectiveFunction extends ObjectiveFunction {
 	private MathDescription mathDescription = null;
 	private SpatialReferenceData referenceData = null;
-
-/**
- * Insert the method's description here.
- * Creation date: (8/3/2005 2:39:38 PM)
- */
-private PdeObjectiveFunction() {}
+	private FieldDataIdentifierSpec[] fieldDataIDSs = null;
+	private File workingDirectory = null;
 
 
 /**
  * OdeObjectiveFunction constructor comment.
  */
-public PdeObjectiveFunction(MathDescription argMathDescription, SpatialReferenceData argReferenceData) {
+public PdeObjectiveFunction(MathDescription argMathDescription, SpatialReferenceData argReferenceData, File workDir, FieldDataIdentifierSpec[] argFieldDataIDSs) {
 	super();
 	if ((argMathDescription == null) || !argMathDescription.isSpatial()) {
 		throw new RuntimeException("MathDescription should be non-null and non-spatial.");
 	}
 	this.mathDescription = argMathDescription;
 	this.referenceData = argReferenceData;
+	workingDirectory = workDir;
+	fieldDataIDSs = argFieldDataIDSs;
 }
 
 /**
@@ -106,5 +106,14 @@ public String getVCML() {
 	
 	buffer.append("}\n");
 	return buffer.toString();
+}
+
+
+public FieldDataIdentifierSpec[] getFieldDataIDSs() {
+	return fieldDataIDSs;
+}
+
+public File getWorkingDirectory() {
+	return workingDirectory;
 }
 }

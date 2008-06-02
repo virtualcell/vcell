@@ -67,11 +67,12 @@ public FiniteVolumeFileWriter(SimulationJob simJob, File dir, PrintWriter pw) {
 	writer = pw;
 }
 
-public FiniteVolumeFileWriter(SimulationJob simJob, String[] paramNames, PrintWriter pw) {	
+public FiniteVolumeFileWriter(SimulationJob simJob, File dir, String[] paramNames, PrintWriter pw) {	
 	simulationJob = simJob;
 	simulation = simulationJob.getWorkingSim();
 	parameterNames = paramNames;
-	bInlineVCG = true;	
+	userDirectory = dir;
+	writer = pw;
 }
 
 private Expression subsituteExpression(Expression exp) throws Exception {
@@ -89,7 +90,7 @@ private Expression subsituteExpression(Expression exp, SymbolTable symbolTable) 
 				exp2.substituteInPlace(new Expression(fdn.getFieldFunction()), new Expression(fdn.getNumericsSubsitute()));
 			}
 		} else {
-			throw new RuntimeException("Didn't find field functions in simulation when preprocessing, but expression [" + exp.infix() + "] has field function in it");
+			throw new RuntimeException("Didn't find field functions in simulation when preprocessing, but expression [" + exp.infix() + "] has field function " + exp2.infix() + " in it");
 		}
 	}
 	return exp2;

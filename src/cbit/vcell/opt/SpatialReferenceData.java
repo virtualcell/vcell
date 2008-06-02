@@ -14,7 +14,7 @@ public class SpatialReferenceData implements ReferenceData, java.io.Serializable
 
 		for (int i = 0; i < argRowData.size(); i++){
 			double[] rowData = argRowData.elementAt(i);
-			if (rowData.length != 1 +  variableNames.length * dataSize) {
+			if (rowData.length != 1 +  (variableNames.length-1) * dataSize) {
 				throw new IllegalArgumentException("rowData not same size as number of variableSize * dataSize + 1 (for t)");
 			}
 		}
@@ -184,7 +184,7 @@ public int findColumn(String colName) {
 
 
 public double[] getColumnData(int columnIndex) {
-	throw new RuntimeException("SpatialReferenceData doesn't support getColumeData(int columnIndex");
+	throw new RuntimeException("SpatialReferenceData doesn't support getColumeData(int columnIndex)");
 }
 
 
