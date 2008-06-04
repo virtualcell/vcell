@@ -1321,7 +1321,9 @@ public String toString() {
 public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans.PropertyVetoException {
 	if (evt.getSource() == this && evt.getPropertyName().equals("name")){
 		if (evt.getNewValue() == null || ((String)evt.getNewValue()).trim().length()==0){
-			throw new PropertyVetoException("Simulation name '"+evt.getNewValue()+"' invalid",evt);
+			throw new PropertyVetoException("blank name is not allowed in simulation name",evt);
+		} else if (((String)evt.getNewValue()).contains("'")){
+			throw new PropertyVetoException("Apostrophe is not allowed in simulation name",evt);
 		}
 	}
 }

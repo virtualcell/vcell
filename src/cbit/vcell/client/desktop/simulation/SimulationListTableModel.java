@@ -180,7 +180,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 				}
 			}catch (java.beans.PropertyVetoException e){
 				e.printStackTrace(System.out);
-				cbit.vcell.client.PopupGenerator.showErrorDialog("error changing simulation name\n"+e.getMessage());
+				cbit.vcell.client.PopupGenerator.showErrorDialog(e.getMessage());
 			}
 			break;
 		}
