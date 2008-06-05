@@ -1018,6 +1018,7 @@ public static MathDescription fromEditor(MathDescription oldMathDesc, String vcm
 			throw new MathFormatException("unexpected identifier "+token);
 		}
 	}catch (Throwable e){
+		e.printStackTrace(System.out);
 		throw new MathFormatException("line #"+(tokens.lineIndex()+1)+" Exception: "+e.getMessage(),(tokens.lineIndex()+1));
 	}
 
@@ -2203,6 +2204,20 @@ public boolean isValid() {
 	if (geometry==null){
 		setWarning("no geometry defined");
 		return false;
+	}
+	
+	// check Constant are really constants
+	for (int i=0;i<variableList.size();i++){
+		Variable var = (Variable)variableList.elementAt(i);
+		if (var instanceof Constant){
+			try {
+				((Constant)var).getExpression().evaluateConstant();
+			} catch (Exception ex) {
+				ex.printStackTrace(System.out);
+				setWarning("Constant '" + var.getName() + "' can't be evaluated to a number, see expression : " + var.getExpression().infix());
+				return false;
+			}
+		}
 	}
 	
 	//

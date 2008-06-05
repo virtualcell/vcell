@@ -316,7 +316,11 @@ protected final void writeMembraneFunctionDeclarations(java.io.PrintWriter out, 
 				}	
 				out.println(pad+"double " + mangledVarName + " = wc.z;");
 			}		
-		}		
+		} else if (var instanceof VolVariable) {
+			throw new RuntimeException("Equation for membrane variable \"" + equation.getVariable().getName() + "\" in \"" +  subDomain.getName() + "\" references volume variable \"" 
+				+ var.getName()	+ "\" which is not defined on membrane, consider using " + var.getName() + "_INSIDE or " + var.getName() 
+				+ "_OUTSIDE, see expression : "	+ exp.infix());
+		}
 	}
 
 	writeFieldFunctionDeclarations(out, exp, membraneElementString);
@@ -492,7 +496,8 @@ private final void writeVolumeFunctionDeclarations(java.io.PrintWriter out, Expr
 		//}else if (var instanceof VolumeRegionVariable){
 			//out.println("   double "+var.getName()+" = var_"+var.getName()+"->getOld("+volumeElementString+"->region->getIndex("+volumeElementString+"->index));");
 		}else if (var instanceof MemVariable){
-			throw new Exception("membrane variable not defined at a boundary condition");
+			throw new Exception("Equation for volume variable \"" + equation.getVariable().getName() + "\" in \"" +  subDomain.getName() + "\" references membrane variable \"" 
+					+ var.getName()	+ "\" which is not defined in volume, consider using jump conditions, see expression : "	+ exp.infix());
 		}else if (var instanceof ReservedVariable){
 			//
 			// define reserved symbols (x,y,z,t)
