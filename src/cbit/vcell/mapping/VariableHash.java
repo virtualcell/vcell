@@ -200,7 +200,7 @@ private Variable[] reorderVariables(Variable[] variables) throws VariableHash.Un
 				}else if (variableGraph.getNode(symbols[j])!=null){
 					throw new RuntimeException("Constant "+constant.getName()+" references variable '"+symbols[j]+"'");
 				}else{
-					throw new RuntimeException("Constant "+constant.getName()+" references unknown or symbol '"+symbols[j]+"'");
+					throw new RuntimeException("Constant "+constant.getName()+" references unknown symbol '"+symbols[j]+"'");
 				}
 			} 
 			Edge dependency = new Edge(constantNodes[i],symbolNode,constant.getName()+"->"+((Variable)symbolNode.getData()).getName());

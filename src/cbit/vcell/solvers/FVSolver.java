@@ -119,9 +119,9 @@ private void autoCode(boolean bNoCompile) throws SolverException {
 		osCode.close();
 		osHeader.close();
 	}catch (Exception e){
-		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, "autocode coding exception: "+e.getMessage()));
+		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, e.getMessage()));
 		e.printStackTrace(System.out);
-		throw new SolverException("autocode coding exception: "+e.getMessage());
+		throw new SolverException(e.getMessage());
 	}	
 	
 	if (bNoCompile){
