@@ -30,12 +30,13 @@ import cbit.vcell.math.*;
  * @author: Fei Gao
  */
 public class FiniteVolumeFileWriter {
-	SimulationJob simulationJob = null;
-	Simulation simulation = null;
-	File userDirectory = null;
-	PrintWriter writer = null;
-	boolean bInlineVCG = false;
-	String[] parameterNames = null;
+	private SimulationJob simulationJob = null;
+	private Simulation simulation = null;
+	private File userDirectory = null;
+	private PrintWriter writer = null;
+	private boolean bInlineVCG = false;
+	private String[] parameterNames = null;
+	private boolean bMessaging = true;
 	
 	Set<FieldDataNumerics> uniqueFieldDataNSet = null;	
 	
@@ -55,24 +56,23 @@ public class FiniteVolumeFileWriter {
 		public String getNumericsSubsitute() {
 			return numericsSubsitute;
 		}
-	};
+	};	
+
+public FiniteVolumeFileWriter(SimulationJob simJob, File dir, String[] paramNames, PrintWriter pw) {	
+	this (simJob, dir, pw, false);
+	parameterNames = paramNames;
+}
+
 /**
  * FiniteVolumeFileWriter constructor comment.
  */
-public FiniteVolumeFileWriter(SimulationJob simJob, File dir, PrintWriter pw) {
+public FiniteVolumeFileWriter(SimulationJob simJob, File dir, PrintWriter pw, boolean arg_bMessaging) {
 	super();
 	simulationJob = simJob;
 	simulation = simulationJob.getWorkingSim();
 	userDirectory = dir;
 	writer = pw;
-}
-
-public FiniteVolumeFileWriter(SimulationJob simJob, File dir, String[] paramNames, PrintWriter pw) {	
-	simulationJob = simJob;
-	simulation = simulationJob.getWorkingSim();
-	parameterNames = paramNames;
-	userDirectory = dir;
-	writer = pw;
+	bMessaging = arg_bMessaging;
 }
 
 private Expression subsituteExpression(Expression exp) throws Exception {
@@ -101,9 +101,11 @@ private Expression subsituteExpression(Expression exp, SymbolTable symbolTable) 
  * Insert the method's description here.
  * Creation date: (5/9/2005 2:52:48 PM)
  */
-public void write() throws Exception {	
-	writeJMSParamters();
-	writer.println();
+public void write() throws Exception {
+	if (bMessaging) {
+		writeJMSParamters();
+		writer.println();
+	}
 	
 	writeSimulationParamters();
 	writer.println();
