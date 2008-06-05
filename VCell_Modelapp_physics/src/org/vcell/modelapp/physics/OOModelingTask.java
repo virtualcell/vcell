@@ -73,7 +73,6 @@ public class OOModelingTask implements IAnalysisTask {
 
 	public void removePropertyChangeListener(PropertyChangeListener listener) {
 		// TODO Auto-generated method stub
-
 	}
 
 	public void setAnnotation(String annotation) throws PropertyVetoException {
@@ -99,12 +98,17 @@ public class OOModelingTask implements IAnalysisTask {
 		this.name = name;
 		this.modelAnalysisResults = new ModelAnalysisResults();
 		OOModel ooModel = PhysicsMapping.createFromSimulationContext(simContext);
+		System.out.println(org.vcell.physics.component.ModelReader.print(ooModel));
 		try {
 			MathSystem mathSystem = MappingUtilities.getMathSystem(ooModel);
 			this.modelAnalysisResults = MappingUtilities.analyzeMathSystem(mathSystem);
 			this.modelAnalysisResults.oOModel = ooModel;
-			this.modelAnalysisResults.modelicaModelText = "not yet implemented: see OOModelingTask.OOModelingTask()";  // new ModelicaModelWriter().write(ooModel);
-			System.out.println("OOModelingTask.OOModelingTask() ... modelica not yet implemented");
+			try {
+				this.modelAnalysisResults.modelicaModelText = new ModelicaModelWriter().write(ooModel);
+			}catch (Exception e){
+				System.out.println("OOModelingTask.OOModelingTask() ... modelica generation failed");
+				e.printStackTrace(System.out);
+			}
 		}catch (ParseException e){
 			e.printStackTrace(System.out);
 			throw new RuntimeException(e.getMessage());
