@@ -310,7 +310,7 @@ private void initializeInternalFrames() {
 	vcmlEditor.setMathModel(getMathModel());
 	VCMLEditorFrame = new JInternalFrameEnhanced(vcmlEditorTitle, true, true, true, true);
 	VCMLEditorFrame.setContentPane(vcmlEditor);
-	VCMLEditorFrame.setSize(400, 400);
+	VCMLEditorFrame.setSize(550, 550);
 	VCMLEditorFrame.setLocation(10, 10);
 	VCMLEditorFrame.setMinimumSize(new Dimension(250, 250));
 	VCMLEditorFrame.addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
