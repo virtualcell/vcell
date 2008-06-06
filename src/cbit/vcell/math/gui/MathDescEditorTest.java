@@ -132,10 +132,10 @@ public static void main(java.lang.String[] args) {
 			};
 		});
 
-		aMathDescEditor.setMakeCanonicalVisibility(true);
-		aMathDescEditor.setFlattenVisibility(true);
-		aMathDescEditor.setApproxSensSolnButtonVisibility(true);
-		aMathDescEditor.setConstructedSolnButtonVisibility(true);
+//		aMathDescEditor.setMakeCanonicalVisibility(true);
+//		aMathDescEditor.setFlattenVisibility(true);
+//		aMathDescEditor.setApproxSensSolnButtonVisibility(true);
+//		aMathDescEditor.setConstructedSolnButtonVisibility(true);
 		frame.setVisible(true);
 		//cbit.vcell.mapping.SimulationContext simContext = cbit.vcell.mapping.SimulationContextTest.getExample(0);
 		//cbit.vcell.mapping.MathMapping mathMapping = new cbit.vcell.mapping.MathMapping(simContext);
