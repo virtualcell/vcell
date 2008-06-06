@@ -9,6 +9,7 @@ package cbit.vcell.xml;
 public class XMLTags {
     //
     //CELLML-TAGS and SBML-TAGS
+	public final static String VCMLTag = "vcml";
     public final static String CELLML_NAMESPACE_URI		 = "http://www.cellml.org/cellml/1.0#";
     public final static String CELLML_NAMESPACE_PREFIX	 = "cellml";
     public final static String CellmlRootNodeTag		 = "model";

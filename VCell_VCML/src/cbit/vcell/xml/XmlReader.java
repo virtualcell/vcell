@@ -258,6 +258,10 @@ public AnalyticSubVolume getAnalyticSubVolume(Element param) throws XmlParseExce
  * @param param org.jdom.Element
  */
 public cbit.vcell.biomodel.BioModel getBioModel(Element param) throws XmlParseException{
+	if (param.getName().equals("vcml")){
+		param.setNamespace(null);
+		param = param.getChild(XMLTags.BioModelTag);
+	}
 long l1 = System.currentTimeMillis();
 	//Get metadata information Version (if available)
 	Version version = getVersion(param.getChild(XMLTags.VersionTag));
@@ -289,6 +293,7 @@ System.out.println("biomodel-------- "+((double)(l2-l1))/1000);
 	//***Add biomodel to the dictionnary***
 	//dictionnary.put(simcontext.getClass().getName()+":"+simcontext.getName(), simcontext);
 	//Set model
+	Element modelElement = param.getChild(XMLTags.ModelTag);
 	cbit.vcell.model.Model newmodel = getModel(param.getChild(XMLTags.ModelTag));
 	biomodel.setModel( newmodel );
 	//Set simulation contexts
