@@ -70,30 +70,35 @@ private SimulationWorkspace getSimulationWorkspace() {
  * getValueAt method comment.
  */
 public Object getValueAt(int row, int column) {
-	Simulation simulation = getSimulationWorkspace().getSimulations(row);
-	if (row >= 0 && row < getRowCount()) {
-		switch (column) {
-			case COLUMN_NAME: {
-				return simulation.getName();
-			} 
-			case COLUMN_LASTSAVED: {
-				if (!simulation.getIsDirty() && simulation.getVersion() != null) {
-					return simulation.getVersion().getDate().toString();
-				} else {
-					return "not yet saved";
+	try {
+		Simulation simulation = getSimulationWorkspace().getSimulations(row);
+		if (row >= 0 && row < getRowCount()) {
+			switch (column) {
+				case COLUMN_NAME: {
+					return simulation.getName();
+				} 
+				case COLUMN_LASTSAVED: {
+					if (!simulation.getIsDirty() && simulation.getVersion() != null) {
+						return simulation.getVersion().getDate().toString();
+					} else {
+						return "not yet saved";
+					}
+				} 
+				case COLUMN_STATUS: {
+					return getSimulationWorkspace().getSimulationStatusDisplay(simulation);
+				} 
+				case COLUMN_RESULTS: {
+					return getSimulationWorkspace().getSimulationStatus(simulation).getHasData() ? "yes" : "no";
+				} 
+				default: {
+					return null;
 				}
-			} 
-			case COLUMN_STATUS: {
-				return getSimulationWorkspace().getSimulationStatusDisplay(simulation);
-			} 
-			case COLUMN_RESULTS: {
-				return getSimulationWorkspace().getSimulationStatus(simulation).getHasData() ? "yes" : "no";
-			} 
-			default: {
-				return null;
 			}
+		} else {
+			return null;
 		}
-	} else {
+	}catch (Exception e){
+		e.printStackTrace(System.out);
 		return null;
 	}
 }

@@ -36,7 +36,8 @@ Require-Bundle: org.eclipse.osgi,
  com.sun.opengl,
  org.jdom,
  edu.rpi.graphdrawing,
- com.genlogic.graphlayout
+ com.genlogic.graphlayout,
+ org.apache.regexp
 Export-Package: cbit.image.gui,
  cbit.vcell.client,
  cbit.vcell.client.bionetgen,
