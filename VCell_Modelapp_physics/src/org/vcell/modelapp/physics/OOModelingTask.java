@@ -98,7 +98,7 @@ public class OOModelingTask implements IAnalysisTask {
 		this.name = name;
 		this.modelAnalysisResults = new ModelAnalysisResults();
 		OOModel ooModel = PhysicsMapping.createFromSimulationContext(simContext);
-		System.out.println(org.vcell.physics.component.ModelReader.print(ooModel));
+		System.out.println(new org.vcell.physics.component.ModelWriter().print(ooModel));
 		try {
 			MathSystem mathSystem = MappingUtilities.getMathSystem(ooModel);
 			this.modelAnalysisResults = MappingUtilities.analyzeMathSystem(mathSystem);
