@@ -9,7 +9,7 @@ import java.awt.Point;
 import javax.swing.JViewport;
 
 import org.vcell.physics.component.ModelComponent;
-import org.vcell.physics.component.ModelReader;
+import org.vcell.physics.component.ModelWriter;
 import org.vcell.physics.component.OOModel;
 import org.vcell.util.gui.DialogUtils;
 
@@ -334,7 +334,7 @@ protected void menuAction(Shape shape, String menuAction) {
 			if (shapes!=null && shapes.length==1){
 				if (shapes[0].getModelObject() instanceof ModelComponent){
 					ModelComponent modelComponent = (ModelComponent)shapes[0].getModelObject();
-					org.jdom.Element modelComponentElement = ModelReader.print(modelComponent);
+					org.jdom.Element modelComponentElement = new ModelWriter().print(modelComponent);
 					String xmlString = XmlUtil.xmlToString(modelComponentElement);
 					DialogUtils.showInfoDialog(xmlString);
 				}

@@ -9,7 +9,7 @@ import jscl.plugin.ParseException;
 import jscl.plugin.Variable;
 
 import org.vcell.physics.component.ModelComponent;
-import org.vcell.physics.component.ModelReader;
+import org.vcell.physics.component.ModelWriter;
 import org.vcell.physics.component.OOModel;
 import org.vcell.physics.component.OOModelTest;
 import org.vcell.physics.component.Parameter;
@@ -23,7 +23,7 @@ public class ModelicaModelWriter {
 	public static void main(String[] args){
 		try {
 			OOModel model = OOModelTest.getPlanarPendulumExample();
-			System.out.println(XmlUtil.xmlToString(ModelReader.print(model)));
+			System.out.println(XmlUtil.xmlToString(new ModelWriter().print(model)));
 			System.out.println("----------");
 			ModelicaModelWriter modelicaWriter = new ModelicaModelWriter();
 			System.out.println(modelicaWriter.write(model));

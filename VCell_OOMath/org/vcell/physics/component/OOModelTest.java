@@ -504,7 +504,7 @@ public static void main(java.lang.String[] args) {
 		//Model model = ModelReader.parse(null);
 		//Model model = getExampleTriangle_h_a();
 		OOModel oOModel = getExample3();
-		System.out.println(XmlUtil.xmlToString(ModelReader.print(oOModel)));
+		System.out.println(XmlUtil.xmlToString(new ModelWriter().print(oOModel)));
 
 	} catch (Throwable e) {
 		e.printStackTrace(System.out);
