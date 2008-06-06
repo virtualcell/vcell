@@ -1,0 +1,44 @@
+String xmlString =
+ "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>" + "\n" + 
+	 "<vcml xmlns=\"http://www.vcell.org/vcml/level1\" level=\"1\" version=\"1\">" + "\n" +
+	 "<vcml>" + "\n" +
+	 "\t<physicalModel>" + "\n" +
+	 "\t\t<class name=\"triangle\">" + "\n" +
+	 "\t\t\t<variable name=\"a\" unit=\"m\"/>" + "\n" +
+	 "\t\t\t<variable name=\"b\" unit=\"m\"/>" + "\n" +
+	 "\t\t\t<variable name=\"h\" unit=\"m\"/>" + "\n" +
+	 "\t\t\t<variable name=\"area\" unit=\"m2\"/>" + "\n" +
+	 "\t\t\t<equation exp=\"a*a+b*b-h*h\"/>" + "\n" +
+	 "\t\t\t<equation exp=\"area - a*b/2\"/>" + "\n" +
+	 "\t\t\t<connector name=\"pin_a\" effort=\"a\"/>" + "\n" +
+	 "\t\t\t<connector name=\"pin_b\" effort=\"b\"/>" + "\n" +
+	 "\t\t\t<connector name=\"pin_h\" effort=\"h\"/>" + "\n" +
+	 "\t\t\t<connector name=\"pin_area\" effort=\"area\"/>" + "\n" +
+	 "\t\t</class>" + "\n" +
+	 "\t\t<class name=\"source_a\">" + "\n" +
+	 "\t\t\t<parameter name=\"value\" unit=\"m\"/>" + "\n" +
+	 "\t\t\t<variable name=\"a\" unit=\"m\"/>" + "\n" +
+	 "\t\t\t<equation exp=\"value - 3\"/>" + "\n" +
+	 "\t\t\t<equation exp=\"a - value\"/>" + "\n" +
+	 "\t\t\t<connector name=\"pin\" effort=\"a\"/>" + "\n" +
+	 "\t\t</class>" + "\n" +
+	 "\t\t<class name=\"source_b\">" + "\n" +
+	 "\t\t\t<parameter name=\"value\" unit=\"m\"/>" + "\n" +
+	 "\t\t\t<variable name=\"b\" unit=\"m\"/>" + "\n" +
+	 "\t\t\t<equation exp=\"value - 4\"/>" + "\n" +
+	 "\t\t\t<equation exp=\"b - value\"/>" + "\n" +
+	 "\t\t\t<connector name=\"pin\" effort=\"b\"/>" + "\n" +
+	 "\t\t</class>" + "\n" +
+	 "\t\t<connection>" + "\n" +
+	 "\t\t\t<connectorRef device=\"triangle\" name=\"pin_a\"/>" + "\n" +
+	 "\t\t\t<connectorRef device=\"source_a\" name=\"pin\"/>" + "\n" +
+	 "\t\t</connection>" + "\n" +
+	 "\t\t<connection>" + "\n" +
+	 "\t\t\t<connectorRef device=\"triangle\" name=\"pin_b\"/>" + "\n" +
+	 "\t\t\t<connectorRef device=\"source_b\" name=\"pin\"/>" + "\n" +
+	 "\t\t</connection>" + "\n" +
+	 "\t</physicalModel>" + "\n" +
+	 "</vcml>";
+
+
+	 System.out.println(xmlString);

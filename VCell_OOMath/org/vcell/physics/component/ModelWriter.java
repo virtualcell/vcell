@@ -18,65 +18,86 @@ public class ModelWriter {
  * @return org.jdom.Element
  * @param oOModel ncbc.physics2.component.Model
  */
-public org.jdom.Element print(OOModel oOModel) {
-	Element vcmlElement = new Element("vcml");
-	Element physicalModelElement = new Element("physicalModel");
+public org.jdom.Element getXML(OOModel oOModel) {
+	Element vcmlElement = new Element(PhysicsXMLTags.VCML_TAG);
+	Element physicalModelElement = new Element(PhysicsXMLTags.PHYSICALMODEL_TAG);
 	ModelComponent[] modelComponents = oOModel.getModelComponents();
 	for (int i = 0; i < modelComponents.length; i++){
-		Element classElement = print(modelComponents[i]);
+		Element classElement = getXML(modelComponents[i]);
 		physicalModelElement.addContent(classElement);
 	}
 	Connection[] connections = oOModel.getConnections();
 	for (int i = 0; i < connections.length; i++){
-		Element connectionElement = new Element("connection");
-		Connector[] connectors = connections[i].getConnectors();
-		for (int j = 0; j < connectors.length; j++){
-			Element connectorRefElement = new Element("connectorRef");
-			connectorRefElement.setAttribute("device",connectors[j].getParent().getName());
-			connectorRefElement.setAttribute("name",connectors[j].getName());
-			connectionElement.addContent(connectorRefElement);
-		}
-		physicalModelElement.addContent(connectionElement);
+		physicalModelElement.addContent(getXML(connections[i]));
 	}
 	vcmlElement.addContent(physicalModelElement);
 	return vcmlElement;
 }
 
+public Element getXML(Connection connection){
+	Element connectionElement = new Element(PhysicsXMLTags.CONNECTION_TAG);
+	Connector[] connectors = connection.getConnectors();
+	for (int j = 0; j < connectors.length; j++){
+		Element connectorRefElement = new Element(PhysicsXMLTags.CONNECTORREF_TAG);
+		connectorRefElement.setAttribute(PhysicsXMLTags.CONNECTORREF_DEVICE_ATTR,connectors[j].getParent().getName());
+		connectorRefElement.setAttribute(PhysicsXMLTags.CONNECTORREF_NAME_ATTR,connectors[j].getName());
+		connectionElement.addContent(connectorRefElement);
+	}
+	return connectionElement;
+}
 
-public Element print(ModelComponent modelComponent){
-	Element classElement = new Element("class");
-	classElement.setAttribute("name",modelComponent.getName());
+public Element getXML(Parameter parameter){
+	Element parameterElement = new Element(PhysicsXMLTags.PARAMETER_TAG);
+	parameterElement.setAttribute(PhysicsXMLTags.PARAMETER_NAME_ATTR,parameter.getName());
+	parameterElement.setAttribute(PhysicsXMLTags.PARAMETER_UNIT_ATTR,parameter.getUnitDefinition().getSymbol());
+	return parameterElement;
+}
+
+public Element getXML(Variable variable){
+	Element variableElement = new Element(PhysicsXMLTags.VARIABLE_TAG);
+	variableElement.setAttribute(PhysicsXMLTags.VARIABLE_NAME_ATTR,variable.getName());
+	variableElement.setAttribute(PhysicsXMLTags.VARIABLE_UNIT_ATTR,variable.getUnitDefinition().getSymbol());
+	return variableElement;
+}
+
+public Element getEquationXML(Expression equation){
+	Element equationElement = new Element(PhysicsXMLTags.EQUATION_TAG);
+	equationElement.setAttribute(PhysicsXMLTags.EQUATION_EXP_ATTR,equation.infix());
+	return equationElement;
+}
+
+public Element getXML(Connector connector){
+	Element connectorElement = new Element(PhysicsXMLTags.CONNECTOR_TAG);
+	connectorElement.setAttribute(PhysicsXMLTags.CONNECTOR_NAME_ATTR,connector.getName());
+	if (connector.getEffortVariable()!=null){
+		connectorElement.setAttribute(PhysicsXMLTags.CONNECTOR_EFFORT_ATTR,connector.getEffortVariable().getName());
+	}
+	if (connector.getFlowVariable()!=null){
+		connectorElement.setAttribute(PhysicsXMLTags.CONNECTOR_FLOW_ATTR,connector.getFlowVariable().getName());
+	}
+	return connectorElement;
+}
+
+public Element getXML(ModelComponent modelComponent){
+	Element classElement = new Element(PhysicsXMLTags.CLASS_TAG);
+	classElement.setAttribute(PhysicsXMLTags.CLASS_NAME_ATTR,modelComponent.getName());
 	PhysicalSymbol[] symbols = modelComponent.getSymbols();
 	for (int j = 0; j < symbols.length; j++){
 		if (symbols[j] instanceof Parameter){
 			Parameter parameter = (Parameter)symbols[j];
-			Element parameterElement = new Element("parameter");
-			parameterElement.setAttribute("name",parameter.getName());
-			classElement.addContent(parameterElement);
+			classElement.addContent(getXML(parameter));
 		}else if (symbols[j] instanceof Variable){
 			Variable variable = (Variable)symbols[j];
-			Element variableElement = new Element("variable");
-			variableElement.setAttribute("name",variable.getName());
-			classElement.addContent(variableElement);
+			classElement.addContent(getXML(variable));
 		}
 	}
 	Expression[] equations = modelComponent.getEquations();
 	for (int j = 0; j < equations.length; j++){
-		Element equationElement = new Element("equation");
-		equationElement.setAttribute("exp",equations[j].infix());
-		classElement.addContent(equationElement);
+		classElement.addContent(getEquationXML(equations[j]));
 	}
 	Connector[] connectors = modelComponent.getConnectors();
 	for (int j = 0; j < connectors.length; j++){
-		Element connectorElement = new Element("connector");
-		connectorElement.setAttribute("name",connectors[j].getName());
-		if (connectors[j].getEffortVariable()!=null){
-			connectorElement.setAttribute("effort",connectors[j].getEffortVariable().getName());
-		}
-		if (connectors[j].getFlowVariable()!=null){
-			connectorElement.setAttribute("flow",connectors[j].getFlowVariable().getName());
-		}
-		classElement.addContent(connectorElement);
+		classElement.addContent(getXML(connectors[j]));
 	}
 	return classElement;
 }

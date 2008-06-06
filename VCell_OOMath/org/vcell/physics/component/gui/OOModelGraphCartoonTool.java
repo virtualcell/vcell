@@ -334,7 +334,8 @@ protected void menuAction(Shape shape, String menuAction) {
 			if (shapes!=null && shapes.length==1){
 				if (shapes[0].getModelObject() instanceof ModelComponent){
 					ModelComponent modelComponent = (ModelComponent)shapes[0].getModelObject();
-					org.jdom.Element modelComponentElement = new ModelWriter().print(modelComponent);
+					ModelWriter modelWriter = new ModelWriter();
+					org.jdom.Element modelComponentElement = modelWriter.getXML(modelComponent);
 					String xmlString = XmlUtil.xmlToString(modelComponentElement);
 					DialogUtils.showInfoDialog(xmlString);
 				}

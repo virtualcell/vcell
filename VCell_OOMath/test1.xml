@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<vcml xmlns="http://www.vcell.org/vcml/level1" level="1" version="1">
+<vcml>
+	<physicalModel>
+		<class name="triangle">
+			<variable name="a" unit="m"/>
+			<variable name="b" unit="m"/>
+			<variable name="h" unit="m"/>
+			<variable name="area" unit="m2"/>
+			<equation exp="a*a+b*b-h*h"/>
+			<equation exp="area - a*b/2"/>
+			<connector name="pin_a" effort="a"/>
+			<connector name="pin_b" effort="b"/>
+			<connector name="pin_h" effort="h"/>
+			<connector name="pin_area" effort="area"/>
+		</class>
+		<class name="source_a">
+			<parameter name="value" unit="m"/>
+			<variable name="a" unit="m"/>
+			<equation exp="value - 3"/>
+			<equation exp="a - value"/>
+			<connector name="pin" effort="a"/>
+		</class>
+		<class name="source_b">
+			<parameter name="value" unit="m"/>
+			<variable name="b" unit="m"/>
+			<equation exp="value - 4"/>
+			<equation exp="b - value"/>
+			<connector name="pin" effort="b"/>
+		</class>
+		<connection>
+			<connectorRef device="triangle" name="pin_a"/>
+			<connectorRef device="source_a" name="pin"/>
+		</connection>
+		<connection>
+			<connectorRef device="triangle" name="pin_b"/>
+			<connectorRef device="source_b" name="pin"/>
+		</connection>
+	</physicalModel>
+</vcml>

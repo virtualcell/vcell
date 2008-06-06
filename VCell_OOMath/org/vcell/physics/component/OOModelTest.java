@@ -1,4 +1,5 @@
 package org.vcell.physics.component;
+import org.jdom.Element;
 import org.vcell.units.VCUnitDefinition;
 
 import jscl.plugin.Expression;
@@ -501,10 +502,19 @@ public static OOModel getExampleTriangle_h_a() throws ParseException {
  */
 public static void main(java.lang.String[] args) {
 	try {
-		//Model model = ModelReader.parse(null);
-		//Model model = getExampleTriangle_h_a();
-		OOModel oOModel = getExample3();
-		System.out.println(XmlUtil.xmlToString(new ModelWriter().print(oOModel)));
+		OOModel ooModel = null;
+		if (args.length>0){
+			String xmlString = XmlUtil.getXMLString(args[0]);
+			ModelReader modelReader = new ModelReader();
+			Element root = XmlUtil.stringToXML(xmlString,null);
+			ooModel = modelReader.getOOModel(root);
+		}else{
+			//ooModel = ModelReader.parse(null);
+			//ooModel = getExampleTriangle_h_a();
+			ooModel = getExample3();
+		}
+		ModelWriter modelWriter = new ModelWriter();
+		System.out.println(XmlUtil.xmlToString(modelWriter.getXML(ooModel)));
 
 	} catch (Throwable e) {
 		e.printStackTrace(System.out);

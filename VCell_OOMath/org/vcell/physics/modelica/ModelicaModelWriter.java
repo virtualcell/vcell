@@ -23,7 +23,8 @@ public class ModelicaModelWriter {
 	public static void main(String[] args){
 		try {
 			OOModel model = OOModelTest.getPlanarPendulumExample();
-			System.out.println(XmlUtil.xmlToString(new ModelWriter().print(model)));
+			ModelWriter modelWriter = new ModelWriter();
+			System.out.println(XmlUtil.xmlToString(modelWriter.getXML(model)));
 			System.out.println("----------");
 			ModelicaModelWriter modelicaWriter = new ModelicaModelWriter();
 			System.out.println(modelicaWriter.write(model));
