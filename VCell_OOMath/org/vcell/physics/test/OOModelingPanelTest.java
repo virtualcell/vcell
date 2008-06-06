@@ -34,7 +34,8 @@ public static void main(java.lang.String[] args) {
 		frame.setSize(frame.getWidth() + insets.left + insets.right, frame.getHeight() + insets.top + insets.bottom);
 		ExpressionUtilities.setDefaultSymbolicProcessor(new jscl.plugin.JSCLSymbolicProcessorImpl());
 		//PhysicalModel physicalModel = PhysicalModelTest.getExample();
-		org.vcell.physics.component.OOModel physicalModel = org.vcell.physics.component.OOModelTest.getCircuit_INDEX_REDUCTION(); //PlanarPendulumExample_Simple();
+	//	org.vcell.physics.component.OOModel physicalModel = org.vcell.physics.component.OOModelTest.getCircuit_INDEX_REDUCTION(); //PlanarPendulumExample_Simple();
+		org.vcell.physics.component.OOModel physicalModel = org.vcell.physics.component.OOModelTest.getExample(); // PlanarPendulumExample_Simple();
 		MathSystem mathSystem = MappingUtilities.getMathSystem(physicalModel);
 		ModelAnalysisResults modelAnalysisResults = MappingUtilities.analyzeMathSystem(mathSystem);
 		modelAnalysisResults.oOModel = physicalModel;
