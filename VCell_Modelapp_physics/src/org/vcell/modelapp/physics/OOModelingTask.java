@@ -10,6 +10,7 @@ import org.jdom.Element;
 import org.vcell.expression.ExpressionException;
 import org.vcell.modelapp.analysis.IAnalysisTask;
 import org.vcell.modelapp.analysis.IAnalysisTaskFactory;
+import org.vcell.physics.component.ModelWriter;
 import org.vcell.physics.component.OOModel;
 import org.vcell.physics.math.MappingUtilities;
 import org.vcell.physics.math.MathSystem;
@@ -17,6 +18,7 @@ import org.vcell.physics.math.ModelAnalysisResults;
 import org.vcell.physics.modelica.ModelicaModelWriter;
 import org.vcell.util.Matchable;
 
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.model.ModelInfo;
 import cbit.vcell.modelapp.SimulationContext;
 import cbit.vcell.modelapp.physics.PhysicsMapping;
@@ -98,7 +100,8 @@ public class OOModelingTask implements IAnalysisTask {
 		this.name = name;
 		this.modelAnalysisResults = new ModelAnalysisResults();
 		OOModel ooModel = PhysicsMapping.createFromSimulationContext(simContext);
-		System.out.println(new org.vcell.physics.component.ModelWriter().print(ooModel));
+		ModelWriter modelWriter = new ModelWriter();
+		System.out.println(XmlUtil.xmlToString(modelWriter.getXML(ooModel)));
 		try {
 			MathSystem mathSystem = MappingUtilities.getMathSystem(ooModel);
 			this.modelAnalysisResults = MappingUtilities.analyzeMathSystem(mathSystem);
