@@ -306,7 +306,9 @@ public class PhysicsMapping {
 			if (locations[i] instanceof LumpedLocation){
 				LumpedLocation lumpedLocation = (LumpedLocation)locations[i];
 				if (lumpedLocation.getDimension()==2){
-					Capacitor membraneCapacitance = new Capacitor("cap_"+lumpedLocation.getName(),1);
+					double initialVoltage = 1; // TODO: get this from the SimulationContext
+					System.out.println("assuming initial voltage of 1 mV in PhysicsMapping.addElectricalDevices()");
+					Capacitor membraneCapacitance = new Capacitor("cap_"+lumpedLocation.getName(),1,initialVoltage);
 					physicalModel.addModelComponent(membraneCapacitance);
 					Location[] adjacentLocations = lumpedLocation.getAdjacentLocations();
 					if (adjacentLocations.length!=2 || adjacentLocations[0].getDimension()!=3 || adjacentLocations[1].getDimension()!=3){
