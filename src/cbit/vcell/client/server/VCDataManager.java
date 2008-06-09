@@ -15,15 +15,15 @@ import cbit.vcell.server.*;
  * @author: Ion Moraru
  */
 public class VCDataManager {
-	private ClientServerManager clientServerManager = null;
+	private DataSetControllerProvider dataSetControllerProvider;
 
 /**
  * Insert the method's description here.
  * Creation date: (6/11/2004 5:57:21 AM)
  * @param clientServerManager cbit.vcell.client.server.ClientServerManager
  */
-public VCDataManager(ClientServerManager clientServerManager) {
-	this.clientServerManager = clientServerManager;
+public VCDataManager(DataSetControllerProvider dataSetControllerProvider) {
+	this.dataSetControllerProvider = dataSetControllerProvider;
 }
 
 
@@ -68,8 +68,8 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
  * Creation date: (6/11/2004 5:56:57 AM)
  * @return cbit.vcell.client.server.ClientServerManager
  */
-private ClientServerManager getClientServerManager() {
-	return clientServerManager;
+private DataSetControllerProvider getDataSetControllerProvider() {
+	return dataSetControllerProvider;
 }
 
 
@@ -105,7 +105,7 @@ public cbit.vcell.simdata.DataIdentifier[] getDataIdentifiers(cbit.vcell.server.
  */
 private DataSetController getDataSetController() throws DataAccessException {
 	// convenience method
-	return getClientServerManager().getDataSetController();
+	return getDataSetControllerProvider().getDataSetController();
 }
 
 

@@ -15,7 +15,7 @@ import cbit.vcell.desktop.controls.*;
  * Creation date: (5/12/2004 4:31:18 PM)
  * @author: Ion Moraru
  */
-public class ClientServerManager implements SessionManager {
+public class ClientServerManager implements SessionManager,DataSetControllerProvider {
 
 
 	public static final String ONLINEHELP_URL_STRING = "http://www.vcell.org/onlinehelp";
@@ -384,7 +384,7 @@ public ConnectionStatus getConnectionStatus() {
  * Creation date: (5/13/2004 1:54:04 PM)
  * @return UserMetaDbServer
  */
-DataSetController getDataSetController() throws DataAccessException {
+public DataSetController getDataSetController() throws DataAccessException {
 	if (dataSetController!=null){
 		return dataSetController;
 	}else if (getVcellConnection()==null){
