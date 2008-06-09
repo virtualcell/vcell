@@ -127,12 +127,12 @@ public class OOModelTest {
 
 		//
 		//
-		//                 R1
+		//              +   R1
 		//         c1____/\/\/\____c2
 		//         |                |
 		//         |                |
-		//         |                |
-		//         |              _____
+		//         |                |+
+		//        +|              _____
 		//       [ Vs ]           _____ C1
 		//         |                |
 		//         |                |
@@ -152,9 +152,9 @@ public class OOModelTest {
 		Resistor r = new Resistor("R1",1);
 		Capacitor c = new Capacitor("C1",1,1);
 		Ground gnd = new Ground("gnd");
-		Connection c1 = new Connection(new Connector[] { vs.getConnectors(0), r.getConnectors(1) });
-		Connection c2 = new Connection(new Connector[] { r.getConnectors(0), c.getConnectors(1) });
-		Connection c3 = new Connection(new Connector[] { vs.getConnectors(1), c.getConnectors(0), gnd.getConnectors(0) });
+		Connection c1 = new Connection(new Connector[] { vs.getConnectors(0), r.getConnectors(0) });
+		Connection c2 = new Connection(new Connector[] { r.getConnectors(1), c.getConnectors(0) });
+		Connection c3 = new Connection(new Connector[] { vs.getConnectors(1), c.getConnectors(1), gnd.getConnectors(0) });
 
 		oOModel.addModelComponent(vs);
 		oOModel.addModelComponent(r);
@@ -163,6 +163,77 @@ public class OOModelTest {
 		oOModel.addConnection(c1);
 		oOModel.addConnection(c2);
 		oOModel.addConnection(c3);
+		
+		return oOModel;
+	}
+
+
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (1/16/2006 11:34:20 PM)
+	 * @return ncbc.physics2.component.Model
+	 */
+	public static OOModel getSherryExample() {
+
+		//
+		//
+		//                         R_spine_proxD
+		//         _________spine______/\/\/\_+_____________proxD___/\/\/\_+_____________distD
+		//         |          |                    |          |                   |        |
+		//         |          |                    |          |                   |        |
+		//         |+         |+                   |+         |+                 +|        |+
+		//         |        _____                  |       _____                  |      _____
+		//       [I_spine]  _____ C_spine       [I_proxD]  _____ C_proxD      [I_distD]  _____ C_distD
+		//         |          |                    |          |                   |        |
+		//         |          |                    |          |                   |        |
+		//         |          |                    |          |                   |        |
+		//         |__________|____________________|__________|___________________|________|
+		//              |
+		//              O ec
+		//              |
+		//           ______
+		//            ____   
+		//             __
+		//
+		//
+		//
+		OOModel oOModel = new OOModel();
+		CurrentSource IS_spine = new CurrentSource("IS_spine",10);
+		Capacitor C_spine = new Capacitor("C_spine",1,1);
+		
+		Resistor R_spine_proxD = new Resistor("R_spine_proxD",1);
+
+		CurrentSource IS_proxD = new CurrentSource("IS_proxD",10);
+		Capacitor C_proxD = new Capacitor("C_proxD",1,1);
+		
+		Resistor R_proxD_distD = new Resistor("R_proxD_distD",1);
+
+		CurrentSource IS_distD = new CurrentSource("IS_distD",10);
+		Capacitor C_distD = new Capacitor("C_distD",1,1);
+		
+		Ground GND_ec = new Ground("GND_ec");
+		
+		Connection conn_spine = new Connection(new Connector[] { IS_spine.getConnectors(0), C_spine.getConnectors(0), R_spine_proxD.getConnectors(1) });
+		Connection conn_proxD = new Connection(new Connector[] { IS_proxD.getConnectors(0), C_proxD.getConnectors(0), R_spine_proxD.getConnectors(0), R_proxD_distD.getConnectors(1) });
+		Connection conn_distD = new Connection(new Connector[] { IS_distD.getConnectors(0), C_distD.getConnectors(0), R_proxD_distD.getConnectors(0) });
+		Connection conn_ec = new Connection(new Connector[] { IS_spine.getConnectors(1), C_spine.getConnectors(1), 
+															  IS_proxD.getConnectors(1), C_proxD.getConnectors(1), 
+															  IS_distD.getConnectors(1), C_distD.getConnectors(1), 
+															  GND_ec.getConnectors(0) });
+
+		oOModel.addModelComponent(IS_spine);
+		oOModel.addModelComponent(C_spine);
+		oOModel.addModelComponent(R_spine_proxD);
+		oOModel.addModelComponent(IS_proxD);
+		oOModel.addModelComponent(C_proxD);
+		oOModel.addModelComponent(R_proxD_distD);
+		oOModel.addModelComponent(IS_distD);
+		oOModel.addModelComponent(C_distD);
+		oOModel.addModelComponent(GND_ec);
+		oOModel.addConnection(conn_spine);
+		oOModel.addConnection(conn_proxD);
+		oOModel.addConnection(conn_distD);
+		oOModel.addConnection(conn_ec);
 		
 		return oOModel;
 	}
