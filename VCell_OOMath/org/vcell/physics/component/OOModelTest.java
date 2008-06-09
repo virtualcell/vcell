@@ -150,7 +150,7 @@ public class OOModelTest {
 		OOModel oOModel = new OOModel();
 		VoltageSource vs = new VoltageSource("VS",10);
 		Resistor r = new Resistor("R1",1);
-		Capacitor c = new Capacitor("C1",1);
+		Capacitor c = new Capacitor("C1",1,1);
 		Ground gnd = new Ground("gnd");
 		Connection c1 = new Connection(new Connector[] { vs.getConnectors(0), r.getConnectors(1) });
 		Connection c2 = new Connection(new Connector[] { r.getConnectors(0), c.getConnectors(1) });
@@ -200,7 +200,7 @@ public static OOModel getExample2() {
 	OOModel oOModel = new OOModel();
 	VoltageSource vs = new VoltageSource("VS",10);
 	Resistor R = new Resistor("R1",1);
-	Capacitor C = new Capacitor("C1",1);
+	Capacitor C = new Capacitor("C1",1,1);
 	Inductor L = new Inductor("L1",1);
 	Ground gnd = new Ground("gnd");
 	Connection c1 = new Connection(new Connector[] { vs.getConnectors(0), R.getConnectors(1) });
@@ -254,7 +254,7 @@ public static OOModel getExample3() {
 	OOModel oOModel = new OOModel();
 	VoltageSource vs = new VoltageSource("VS",10);
 	Resistor R = new Resistor("R1",1);
-	Capacitor C = new Capacitor("C1",1);
+	Capacitor C = new Capacitor("C1",1,1);
 	Ground gnd = new Ground("gnd");
 	Connection c1 = new Connection(new Connector[] { vs.getConnectors(1), R.getConnectors(1), C.getConnectors(1) });
 	Connection c2 = new Connection(new Connector[] { vs.getConnectors(0), R.getConnectors(0), C.getConnectors(0), gnd.getConnectors(0) });

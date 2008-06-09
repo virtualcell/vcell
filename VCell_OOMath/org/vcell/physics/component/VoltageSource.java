@@ -18,7 +18,7 @@ public VoltageSource(String argName, double voltage) {
 	Parameter VConstant = new Parameter("VCC",VCUnitDefinition.UNIT_mV);
 	addSymbol(VConstant);
 	try {
-		addEquation(Expression.valueOf("VCC - V"));
+		addEquation(Expression.valueOf("VCC - V(t)"));
 		addEquation(Expression.valueOf("VCC - "+voltage));
 	}catch (ParseException e){
 		e.printStackTrace(System.out);
