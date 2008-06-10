@@ -34,7 +34,7 @@ public java.lang.Object getModelObject() {
  * @return int
  */
 int getRadius() {
-	return 2;
+	return 3;
 }
 /**
  * This method was created by a SmartGuide.
