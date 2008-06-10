@@ -172,8 +172,135 @@ public class OOModelTest {
 	 * Insert the method's description here.
 	 * Creation date: (1/16/2006 11:34:20 PM)
 	 * @return ncbc.physics2.component.Model
+	 * @throws ParseException 
 	 */
-	public static OOModel getSherryExample() {
+	public static OOModel getExampleSpine() throws ParseException {
+
+		//
+		//
+		//                                      R_spine_proxD                 R_proxD_distD
+		//      ________________________spine______/\/\/\_+_____________proxD___/\/\/\_+_____________distD
+		//      |        |       |        |                    |          |                   |        |
+		//      |        |       |        |                    |          |                   |        |
+		//      |+       |+      |+       |+                   |+         |+                 +|        |+
+		//      |        |       |      _____                  |       _____                  |      _____
+		//  [NaChan]  [KChan]  [Leak]   _____ C_spine       [I_proxD]  _____ C_proxD      [I_distD]  _____ C_distD
+		//      |        |       |        |                    |          |                   |        |
+		//      |        |       |        |                    |          |                   |        |
+		//      |        |       |        |                    |          |                   |        |
+		//      |________|_______|________|____________________|__________|___________________|________|
+		//                   |
+		//                   O ec
+		//                   |
+		//                ______
+		//                 ____   
+		//                  __
+		//
+		//
+		//
+		OOModel oOModel = new OOModel();
+		NaChannel NaChannelSpine = new NaChannel("NaChannelSpine");
+		KChannel KChannelSpine = new KChannel("KChannelSpine");
+		LeakChannel LeakSpine = new LeakChannel("LeakSpine");
+		Capacitor C_spine = new Capacitor("C_spine",0.01,-62.897633102);
+		Species Na_spine = new Species("Na_spine",Expression.valueOf("50000"));
+		Species K_spine = new Species("K_spine",Expression.valueOf("397000"));
+		
+		Resistor R_spine_proxD = new Resistor("R_spine_proxD",1*1e6);
+
+		CurrentSource IS_proxD = new CurrentSource("IS_proxD",0);
+		Capacitor C_proxD = new Capacitor("C_proxD",0.01,-62.897633102);
+		Species Na_proxD = new Species("Na_proxD",Expression.valueOf("50000"));
+		Species K_proxD = new Species("K_proxD",Expression.valueOf("397000"));
+		
+		Resistor R_proxD_distD = new Resistor("R_proxD_distD",1*1e6);
+
+		CurrentSource IS_distD = new CurrentSource("IS_distD",0);
+		Capacitor C_distD = new Capacitor("C_distD",0.01,-62.897633102);
+		Species Na_distD = new Species("Na_distD",Expression.valueOf("50000"));
+		Species K_distD = new Species("K_distD",Expression.valueOf("397000"));
+		
+		Ground GND_ec = new Ground("GND_ec");
+		Species Na_ec = new Species("Na_ec",Expression.valueOf("437000"));
+		Species K_ec = new Species("K_ec",Expression.valueOf("20000"));
+
+		oOModel.addModelComponent(NaChannelSpine);
+		oOModel.addModelComponent(KChannelSpine);
+		oOModel.addModelComponent(LeakSpine);
+		oOModel.addModelComponent(C_spine);
+		oOModel.addModelComponent(Na_spine);
+		oOModel.addModelComponent(K_spine);
+		oOModel.addModelComponent(R_spine_proxD);
+		oOModel.addModelComponent(IS_proxD);
+		oOModel.addModelComponent(C_proxD);
+		oOModel.addModelComponent(Na_proxD);
+		oOModel.addModelComponent(K_proxD);
+		oOModel.addModelComponent(R_proxD_distD);
+		oOModel.addModelComponent(IS_distD);
+		oOModel.addModelComponent(C_distD);
+		oOModel.addModelComponent(Na_distD);
+		oOModel.addModelComponent(K_distD);
+		oOModel.addModelComponent(GND_ec);
+		oOModel.addModelComponent(Na_ec);
+		oOModel.addModelComponent(K_ec);
+
+		Connection conn_elect_spine = new Connection(new Connector[] { KChannelSpine.getConnectors(0), 
+																 NaChannelSpine.getConnectors(0), 
+																LeakSpine.getConnectors(0),
+																C_spine.getConnectors(0), 
+																R_spine_proxD.getConnectors(1) });
+		Connection conn_elect_proxD = new Connection(new Connector[] { IS_proxD.getConnectors(0), 
+																C_proxD.getConnectors(0), 
+																R_spine_proxD.getConnectors(0), 
+																R_proxD_distD.getConnectors(1) });
+		Connection conn_elect_distD = new Connection(new Connector[] { IS_distD.getConnectors(0), 
+																C_distD.getConnectors(0), 
+																R_proxD_distD.getConnectors(0) });
+		Connection conn_elect_ec = new Connection(new Connector[] { KChannelSpine.getConnectors(1), 
+																NaChannelSpine.getConnectors(1), 
+																LeakSpine.getConnectors(1),
+																C_spine.getConnectors(1),  
+																IS_proxD.getConnectors(1),
+																C_proxD.getConnectors(1),
+																IS_distD.getConnectors(1), 
+																C_distD.getConnectors(1), 
+																GND_ec.getConnectors(0) });
+		
+		Connection conn_Na_spine = new Connection(new Connector[] {
+				Na_spine.getConnectors(0),
+				NaChannelSpine.getConnectors(3) } );
+		Connection conn_K_spine = new Connection(new Connector[] {
+				K_spine.getConnectors(0),
+				KChannelSpine.getConnectors(3) } );
+		
+		Connection conn_Na_ec = new Connection(new Connector[] {
+				Na_ec.getConnectors(0),
+				NaChannelSpine.getConnectors(2) } );
+		Connection conn_K_ec = new Connection(new Connector[] {
+				K_ec.getConnectors(0),
+				KChannelSpine.getConnectors(2) } );
+		
+
+		oOModel.addConnection(conn_elect_spine);
+		oOModel.addConnection(conn_elect_proxD);
+		oOModel.addConnection(conn_elect_distD);
+		oOModel.addConnection(conn_elect_ec);
+		
+		oOModel.addConnection(conn_Na_spine);
+		oOModel.addConnection(conn_K_spine);
+		oOModel.addConnection(conn_Na_ec);
+		oOModel.addConnection(conn_K_ec);
+		
+		return oOModel;
+	}
+
+
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (1/16/2006 11:34:20 PM)
+	 * @return ncbc.physics2.component.Model
+	 */
+	public static OOModel getExampleSpineSimple() {
 
 		//
 		//

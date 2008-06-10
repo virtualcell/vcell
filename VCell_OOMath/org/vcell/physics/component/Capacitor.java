@@ -18,13 +18,12 @@ public Capacitor(String argName, double capacitance_pF, double initialVoltage) {
 	super(argName);
 	Parameter C = new Parameter("C",VCUnitDefinition.getInstance("nF"));
 	addSymbol(C);
-//	Parameter Vinit = new Parameter("Vinit",VCUnitDefinition.getInstance("mV"));
-//	addSymbol(Vinit);
+	Variable Vinit = new Variable("V(0)",VCUnitDefinition.UNIT_mV);
+	addSymbol(Vinit);
 	try {
 		addEquation(Expression.valueOf("C*d(V(t),t) - Ip(t)"));
-//		addEquation(Expression.valueOf("V(0) - Vinit"));
+		addEquation(Expression.valueOf("V(0) - ("+initialVoltage+")"));
 		addEquation(Expression.valueOf("C - "+capacitance_pF));
-//		addEquation(Expression.valueOf("Vinit - "+initialVoltage));
 	}catch (ParseException e){
 		e.printStackTrace(System.out);
 		throw new RuntimeException(e.getMessage());

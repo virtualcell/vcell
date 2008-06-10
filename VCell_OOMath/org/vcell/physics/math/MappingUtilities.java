@@ -133,7 +133,9 @@ public static org.vcell.physics.math.MathSystem getMathSystem(OOModel oOModel) t
 		PhysicalSymbol[] symbols = modelComponents[i].getSymbols();
 		for (int j = 0; j < symbols.length; j++){
 			if (!(symbols[j] instanceof IndependentVariable)){
-				mathSystem.addSymbol(new OOMathSymbol(ExpressionUtilities.getEscapedTokenJSCL(modelComponents[i].getName()+"."+symbols[j].getName()),symbols[j]));
+				String varName = ExpressionUtilities.getEscapedTokenJSCL(modelComponents[i].getName()+"."+symbols[j].getName());
+				System.out.println("defining variable \""+varName+"\"");
+				mathSystem.addSymbol(new OOMathSymbol(varName,symbols[j]));
 			}
 		}
 		Expression[] equations = modelComponents[i].getEquations();
