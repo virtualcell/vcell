@@ -7,6 +7,7 @@ import jscl.plugin.Expression;
 import jscl.plugin.ParseException;
 import jscl.plugin.Variable;
 
+import org.vcell.expression.DivideByZeroException;
 import org.vcell.expression.ExpressionException;
 import org.vcell.expression.ExpressionUtilities;
 import org.vcell.expression.IExpression;
@@ -75,7 +76,16 @@ public class PhysicsMapping {
 			}else{
 				throw new RuntimeException("unexpected compartment type "+structureMappings[i].getStructure().getClass().getName());
 			}
-			LumpedLocation lumpedLocation = new LumpedLocation(TokenMangler.fixTokenStrict(structureMappings[i].getStructure().getName()),dim);
+			LumpedLocation lumpedLocation;
+			try {
+				lumpedLocation = new LumpedLocation(
+						TokenMangler.fixTokenStrict(structureMappings[i].getStructure().getName()),
+						dim,
+						structureMappings[i].getSizeParameter().getExpression().evaluateConstant());
+			} catch (ExpressionException e) {
+				e.printStackTrace();
+				throw new RuntimeException(e.getMessage());
+			}
 			oOModel.addModelComponent(lumpedLocation);
 		}
 		//
