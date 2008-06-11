@@ -40,8 +40,15 @@ public class ImageDatasetReader {
 				}
 				ZipEntry entry = enumZipEntry.nextElement();
 				String entryName = entry.getName();
+				String imageFileSuffix = null;
+				int dotIndex = entryName.indexOf(".");
+				if(dotIndex != -1){
+					imageFileSuffix = entryName.substring(dotIndex);
+				}
 				InputStream inputStream = zipFile.getInputStream(entry);
-				FileOutputStream fos = new FileOutputStream(entryName,false);
+				File tempImageFile = File.createTempFile("ImgDataSetReader", imageFileSuffix);
+				tempImageFile.deleteOnExit();
+				FileOutputStream fos = new FileOutputStream(tempImageFile,false);
 				byte[] buffer = new byte[50000];
 				while (true){
 					int bytesRead = inputStream.read(buffer);
@@ -51,7 +58,8 @@ public class ImageDatasetReader {
 					fos.write(buffer, 0, bytesRead);
 				}
 				fos.close();
-				ImageDataset imageDataset = readImageDataset(entryName, status);
+				ImageDataset imageDataset = readImageDataset(tempImageFile.getAbsolutePath(), status);
+				tempImageFile.delete();
 				imageDatasetList.add(imageDataset);
 				noOfZipEntry ++;//added Jan 2008
 			}
