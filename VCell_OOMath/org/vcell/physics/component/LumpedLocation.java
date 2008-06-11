@@ -16,11 +16,28 @@ public class LumpedLocation extends Location {
  * UnresolvedMembrane constructor comment.
  * @param argName java.lang.String
  */
-public LumpedLocation(String argName, int dimension) {
+public LumpedLocation(String argName, int dimension, double sizeValue) {
 	super(argName,dimension);
-	addSymbol(new Parameter("size",VCUnitDefinition.UNIT_um3));
+	Variable size = null;
+	switch(dimension){
+	case 1: {
+		size = new Variable("size",VCUnitDefinition.UNIT_um);
+		break;
+	}
+	case 2: {
+		size = new Variable("size",VCUnitDefinition.UNIT_um2);
+		break;
+	}
+	case 3: {
+		size = new Variable("size",VCUnitDefinition.UNIT_um3);
+		break;
+	}
+	}
+	addSymbol(size);
+	Connector conn = new Connector(this,"conn_size",size,null);
+	addConnector(conn);
 	try {
-		addEquation(Expression.valueOf("size-1"));
+		addEquation(Expression.valueOf("size - ("+sizeValue+")"));
 	} catch (ParseException e) {
 		e.printStackTrace();
 		throw new RuntimeException(e.getMessage());

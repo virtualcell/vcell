@@ -78,7 +78,8 @@ public void refreshLabel() {
 		if (i>0){
 			buffer.append(", ");
 		}
-		buffer.append(connection.getConnectors()[i].getParent().getName()+"."+connection.getConnectors()[i].getEffortVariable().getName());
+		String effortVarName = (connection.getConnectors()[i].getEffortVariable()!=null)?(connection.getConnectors()[i].getEffortVariable().getName()):("null");
+		buffer.append(connection.getConnectors()[i].getParent().getName()+"."+effortVarName);
 	}
 	buffer.append(")");
 	setLabel(buffer.toString());

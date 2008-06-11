@@ -10,6 +10,9 @@ import jscl.plugin.ParseException;
  * @author: Jim Schaff
  */
 public class TwoPortElectricalComponent extends ModelComponent {
+	public static final String CONNECTOR_POS = "pos";
+	public static final String CONNECTOR_NEG = "neg";
+	
 /**
  * TwoPortElectricalComponent constructor comment.
  */
@@ -25,8 +28,8 @@ public TwoPortElectricalComponent(String argName) {
 	addSymbol(Ip);
 	addSymbol(In);
 	addSymbol(V);
-	Connector conPos = new Connector(this,"pos",Vp,Ip);
-	Connector conNeg = new Connector(this,"neg",Vn,In);
+	Connector conPos = new Connector(this,CONNECTOR_POS,Vp,Ip);
+	Connector conNeg = new Connector(this,CONNECTOR_NEG,Vn,In);
 	setConnectors(new Connector[] {conPos, conNeg});
 	try {
 		addEquation(Expression.valueOf("(Vp(t)-Vn(t)) - V(t)"));

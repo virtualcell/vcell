@@ -21,7 +21,7 @@ public Capacitor(String argName, double capacitance_pF, double initialVoltage) {
 	Variable Vinit = new Variable("V(0)",VCUnitDefinition.UNIT_mV);
 	addSymbol(Vinit);
 	try {
-		addEquation(Expression.valueOf("C*d(V(t),t) - Ip(t)"));
+		addEquation(Expression.valueOf("C*d(V(t),t) - 1000*Ip(t)"));
 		addEquation(Expression.valueOf("V(0) - ("+initialVoltage+")"));
 		addEquation(Expression.valueOf("C - "+capacitance_pF));
 	}catch (ParseException e){

@@ -198,7 +198,9 @@ public static org.vcell.physics.math.MathSystem getMathSystem(OOModel oOModel) t
 				//
 				// need n-1 equations to indicate that all efforts are equal
 				//
-				mathSystem.addEquation(Expression.valueOf(effortBuffer.toString()+"-"+ExpressionUtilities.getEscapedTokenJSCL(parent.getName()+"."+connectors[j].getEffortVariable().getName())));
+				if (connectors[j].getEffortVariable()!=null){
+					mathSystem.addEquation(Expression.valueOf(effortBuffer.toString()+"-"+ExpressionUtilities.getEscapedTokenJSCL(parent.getName()+"."+connectors[j].getEffortVariable().getName())));
+				}
 				//
 				// sum up mass flux
 				//

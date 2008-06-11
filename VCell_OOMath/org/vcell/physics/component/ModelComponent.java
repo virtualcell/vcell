@@ -109,6 +109,15 @@ public Connector getConnectors(int index) {
 	return getConnectors()[index];
 }
 
+public Connector getConnectors(String connectorName) {
+	for (int i = 0; i < fieldConnectors.length; i++) {
+		if (fieldConnectors[i].getName().equals(connectorName)){
+			return fieldConnectors[i];
+		}
+	}
+	return null;
+}
+
 
 /**
  * Gets the equations property (cbit.vcell.parser.Expression[]) value.

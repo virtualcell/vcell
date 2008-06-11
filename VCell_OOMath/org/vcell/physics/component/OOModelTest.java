@@ -198,98 +198,161 @@ public class OOModelTest {
 		//
 		//
 		//
+		double KMOLE = 1.0/602.0;
+		double spineVolume = 1.0;
+		double spineArea = 1.0;
+		double ecVolume = 100;
+		double NaSpineConcInit = 50000;
+		double NaSpineNumInit = NaSpineConcInit*spineVolume/KMOLE;
+		double KSpineConcInit = 397000;
+		double KSpineNumInit = KSpineConcInit*spineVolume/KMOLE;
+		double NaEcConcInit = 437000;
+		double NaEcNumInit = NaEcConcInit*ecVolume/KMOLE;
+		double KEcConcInit = 20000;
+		double KEcNumInit = KEcConcInit*ecVolume/KMOLE;
+		
 		OOModel oOModel = new OOModel();
 		NaChannel NaChannelSpine = new NaChannel("NaChannelSpine");
 		KChannel KChannelSpine = new KChannel("KChannelSpine");
 		LeakChannel LeakSpine = new LeakChannel("LeakSpine");
-		Capacitor C_spine = new Capacitor("C_spine",0.01,-62.897633102);
-		Species Na_spine = new Species("Na_spine",Expression.valueOf("50000"));
-		Species K_spine = new Species("K_spine",Expression.valueOf("397000"));
+		Capacitor C_spine = new Capacitor("C_spine",0.01*spineArea,-62.897633102);
+		Species Na_spine = new Species("Na_spine",Expression.valueOf(""+NaSpineNumInit));
+		Species K_spine = new Species("K_spine",Expression.valueOf(""+KSpineNumInit));
 		
-		Resistor R_spine_proxD = new Resistor("R_spine_proxD",1*1e6);
-
-		CurrentSource IS_proxD = new CurrentSource("IS_proxD",0);
-		Capacitor C_proxD = new Capacitor("C_proxD",0.01,-62.897633102);
-		Species Na_proxD = new Species("Na_proxD",Expression.valueOf("50000"));
-		Species K_proxD = new Species("K_proxD",Expression.valueOf("397000"));
-		
-		Resistor R_proxD_distD = new Resistor("R_proxD_distD",1*1e6);
-
-		CurrentSource IS_distD = new CurrentSource("IS_distD",0);
-		Capacitor C_distD = new Capacitor("C_distD",0.01,-62.897633102);
-		Species Na_distD = new Species("Na_distD",Expression.valueOf("50000"));
-		Species K_distD = new Species("K_distD",Expression.valueOf("397000"));
+//		Resistor R_spine_proxD = new Resistor("R_spine_proxD",1*1e6);
+//
+//		CurrentSource IS_proxD = new CurrentSource("IS_proxD",0);
+//		Capacitor C_proxD = new Capacitor("C_proxD",0.01,-62.897633102);
+//		Species Na_proxD = new Species("Na_proxD",Expression.valueOf("50000"));
+//		Species K_proxD = new Species("K_proxD",Expression.valueOf("397000"));
+//		
+//		Resistor R_proxD_distD = new Resistor("R_proxD_distD",1*1e6);
+//
+//		CurrentSource IS_distD = new CurrentSource("IS_distD",0);
+//		Capacitor C_distD = new Capacitor("C_distD",0.01,-62.897633102);
+//		Species Na_distD = new Species("Na_distD",Expression.valueOf("50000"));
+//		Species K_distD = new Species("K_distD",Expression.valueOf("397000"));
 		
 		Ground GND_ec = new Ground("GND_ec");
-		Species Na_ec = new Species("Na_ec",Expression.valueOf("437000"));
-		Species K_ec = new Species("K_ec",Expression.valueOf("20000"));
+		Species Na_ec = new Species("Na_ec",Expression.valueOf(""+NaEcNumInit));
+		Species K_ec = new Species("K_ec",Expression.valueOf(""+KEcNumInit));
+		
+		LumpedLocation spine = new LumpedLocation("spine",3,spineVolume);
+		LumpedLocation spineMem = new LumpedLocation("spineMem",2,spineArea);
+		LumpedLocation ec = new LumpedLocation("ec",3,ecVolume);
+//		LumpedLocation proxDendrite = new LumpedLocation("proxDendrite",3,1.0);
+//		LumpedLocation proxDendriteMem = new LumpedLocation("proxDendriteMem",2,1.0);
+//		LumpedLocation distDendrite = new LumpedLocation("distDendrite",3,1.0);
+//		LumpedLocation distDendriteMem = new LumpedLocation("distDendrite",2,1.0);
 
+		spineMem.addAdjacentLocation(spine);
+		spineMem.addAdjacentLocation(ec);
+		
+		
 		oOModel.addModelComponent(NaChannelSpine);
 		oOModel.addModelComponent(KChannelSpine);
 		oOModel.addModelComponent(LeakSpine);
 		oOModel.addModelComponent(C_spine);
 		oOModel.addModelComponent(Na_spine);
 		oOModel.addModelComponent(K_spine);
-		oOModel.addModelComponent(R_spine_proxD);
-		oOModel.addModelComponent(IS_proxD);
-		oOModel.addModelComponent(C_proxD);
-		oOModel.addModelComponent(Na_proxD);
-		oOModel.addModelComponent(K_proxD);
-		oOModel.addModelComponent(R_proxD_distD);
-		oOModel.addModelComponent(IS_distD);
-		oOModel.addModelComponent(C_distD);
-		oOModel.addModelComponent(Na_distD);
-		oOModel.addModelComponent(K_distD);
+//		oOModel.addModelComponent(R_spine_proxD);
+//		oOModel.addModelComponent(IS_proxD);
+//		oOModel.addModelComponent(C_proxD);
+//		oOModel.addModelComponent(Na_proxD);
+//		oOModel.addModelComponent(K_proxD);
+//		oOModel.addModelComponent(R_proxD_distD);
+//		oOModel.addModelComponent(IS_distD);
+//		oOModel.addModelComponent(C_distD);
+//		oOModel.addModelComponent(Na_distD);
+//		oOModel.addModelComponent(K_distD);
 		oOModel.addModelComponent(GND_ec);
 		oOModel.addModelComponent(Na_ec);
 		oOModel.addModelComponent(K_ec);
+		oOModel.addModelComponent(spine);
+		oOModel.addModelComponent(spineMem);
+		oOModel.addModelComponent(ec);
+		
 
-		Connection conn_elect_spine = new Connection(new Connector[] { KChannelSpine.getConnectors(0), 
-																 NaChannelSpine.getConnectors(0), 
-																LeakSpine.getConnectors(0),
-																C_spine.getConnectors(0), 
-																R_spine_proxD.getConnectors(1) });
-		Connection conn_elect_proxD = new Connection(new Connector[] { IS_proxD.getConnectors(0), 
-																C_proxD.getConnectors(0), 
-																R_spine_proxD.getConnectors(0), 
-																R_proxD_distD.getConnectors(1) });
-		Connection conn_elect_distD = new Connection(new Connector[] { IS_distD.getConnectors(0), 
-																C_distD.getConnectors(0), 
-																R_proxD_distD.getConnectors(0) });
-		Connection conn_elect_ec = new Connection(new Connector[] { KChannelSpine.getConnectors(1), 
-																NaChannelSpine.getConnectors(1), 
-																LeakSpine.getConnectors(1),
-																C_spine.getConnectors(1),  
-																IS_proxD.getConnectors(1),
-																C_proxD.getConnectors(1),
-																IS_distD.getConnectors(1), 
-																C_distD.getConnectors(1), 
+		Connection conn_elect_spine = new Connection(new Connector[] { KChannelSpine.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS), 
+																 NaChannelSpine.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS), 
+																LeakSpine.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS),
+																C_spine.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS), 
+																//R_spine_proxD.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG)
+																});
+//		Connection conn_elect_proxD = new Connection(new Connector[] { IS_proxD.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS), 
+//																C_proxD.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS), 
+//																R_spine_proxD.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS), 
+//																R_proxD_distD.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG) });
+//		Connection conn_elect_distD = new Connection(new Connector[] { IS_distD.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS), 
+//																C_distD.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS), 
+//																R_proxD_distD.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS) });
+		Connection conn_elect_ec = new Connection(new Connector[] { KChannelSpine.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG), 
+																NaChannelSpine.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG), 
+																LeakSpine.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG),
+																C_spine.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG),  
+																//IS_proxD.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG),
+																//C_proxD.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG),
+																//IS_distD.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG), 
+																//C_distD.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG), 
 																GND_ec.getConnectors(0) });
 		
-		Connection conn_Na_spine = new Connection(new Connector[] {
-				Na_spine.getConnectors(0),
-				NaChannelSpine.getConnectors(3) } );
-		Connection conn_K_spine = new Connection(new Connector[] {
-				K_spine.getConnectors(0),
-				KChannelSpine.getConnectors(3) } );
+		Connection conn_Na_spine_conc = new Connection(new Connector[] {
+				Na_spine.getConnectors(Species.CONNECTOR_CONC),
+				NaChannelSpine.getConnectors(IonChannelHH.CONNECTOR_ION_INSIDE_CONC) } );
+		Connection conn_Na_spine_amount = new Connection(new Connector[] {
+				Na_spine.getConnectors(Species.CONNECTOR_NUM),
+				NaChannelSpine.getConnectors(IonChannelHH.CONNECTOR_ION_INSIDE_AMOUNT) } );
+		Connection conn_K_spine_conc = new Connection(new Connector[] {
+				K_spine.getConnectors(Species.CONNECTOR_CONC),
+				KChannelSpine.getConnectors(IonChannelHH.CONNECTOR_ION_INSIDE_CONC) } );
+		Connection conn_K_spine_amount = new Connection(new Connector[] {
+				K_spine.getConnectors(Species.CONNECTOR_NUM),
+				KChannelSpine.getConnectors(IonChannelHH.CONNECTOR_ION_INSIDE_AMOUNT) } );
 		
-		Connection conn_Na_ec = new Connection(new Connector[] {
-				Na_ec.getConnectors(0),
-				NaChannelSpine.getConnectors(2) } );
-		Connection conn_K_ec = new Connection(new Connector[] {
-				K_ec.getConnectors(0),
-				KChannelSpine.getConnectors(2) } );
+		Connection conn_Na_ec_conc = new Connection(new Connector[] {
+				Na_ec.getConnectors(Species.CONNECTOR_CONC),
+				NaChannelSpine.getConnectors(IonChannelHH.CONNECTOR_ION_OUTSIDE_CONC) } );
+		Connection conn_K_ec_conc = new Connection(new Connector[] {
+				K_ec.getConnectors(Species.CONNECTOR_CONC),
+				KChannelSpine.getConnectors(IonChannelHH.CONNECTOR_ION_OUTSIDE_CONC) } );
+		Connection conn_Na_ec_amount = new Connection(new Connector[] {
+				Na_ec.getConnectors(Species.CONNECTOR_NUM),
+				NaChannelSpine.getConnectors(IonChannelHH.CONNECTOR_ION_OUTSIDE_AMOUNT) } );
+		Connection conn_K_ec_amount = new Connection(new Connector[] {
+				K_ec.getConnectors(Species.CONNECTOR_NUM),
+				KChannelSpine.getConnectors(IonChannelHH.CONNECTOR_ION_OUTSIDE_AMOUNT) } );
 		
-
+		Connection conn_spine_K = new Connection(new Connector[]{
+				K_spine.getConnector(Species.CONNECTOR_SIZE),
+				spine.getConnectors(0) });
+		Connection conn_spine_Na = new Connection(new Connector[]{
+				Na_spine.getConnector(Species.CONNECTOR_SIZE),
+				spine.getConnectors(0) });
+		Connection conn_ec_K = new Connection(new Connector[]{
+				K_ec.getConnector(Species.CONNECTOR_SIZE),
+				ec.getConnectors(0) });
+		Connection conn_ec_Na = new Connection(new Connector[]{
+				Na_ec.getConnector(Species.CONNECTOR_SIZE),
+				ec.getConnectors(0) });
+		
 		oOModel.addConnection(conn_elect_spine);
-		oOModel.addConnection(conn_elect_proxD);
-		oOModel.addConnection(conn_elect_distD);
+//		oOModel.addConnection(conn_elect_proxD);
+//		oOModel.addConnection(conn_elect_distD);
 		oOModel.addConnection(conn_elect_ec);
 		
-		oOModel.addConnection(conn_Na_spine);
-		oOModel.addConnection(conn_K_spine);
-		oOModel.addConnection(conn_Na_ec);
-		oOModel.addConnection(conn_K_ec);
+		oOModel.addConnection(conn_Na_spine_conc);
+		oOModel.addConnection(conn_K_spine_conc);
+		oOModel.addConnection(conn_Na_ec_conc);
+		oOModel.addConnection(conn_K_ec_conc);
+		oOModel.addConnection(conn_Na_spine_amount);
+		oOModel.addConnection(conn_K_spine_amount);
+		oOModel.addConnection(conn_Na_ec_amount);
+		oOModel.addConnection(conn_K_ec_amount);
+		
+		oOModel.addConnection(conn_spine_K);
+		oOModel.addConnection(conn_spine_Na);
+		oOModel.addConnection(conn_ec_K);
+		oOModel.addConnection(conn_ec_Na);
 		
 		return oOModel;
 	}
