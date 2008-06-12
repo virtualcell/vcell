@@ -1070,7 +1070,8 @@ private void imagePlaneManagerPanel_Initialize() {
 	getCurveEditorTool().setVcellDrawable(getImagePaneScroller1().getImagePaneView());
 	getCurveEditorTool().setKeyboardAndMouseEvents(getImagePaneScroller1().getImagePaneView());
 	getImagePaneScroller1().getImagePaneModel().setDisplayAdapterService(getDisplayAdapterServicePanel().getDisplayAdapterService());
-	setCurveRenderer(new cbit.vcell.geometry.gui.CurveRenderer());
+	setCurveRenderer(
+		new cbit.vcell.geometry.gui.CurveRenderer(getDisplayAdapterServicePanel().getDisplayAdapterService()));
 	getImagePaneScroller1().setImagePlaneManager(getImagePlanePanel1().getImagePlaneMananager());
 }
 /**
