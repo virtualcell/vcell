@@ -66,6 +66,7 @@ public static cbit.vcell.math.MathDescription getMathDescription(VarEquationAssi
 			// if it has a symbol, then make it a function
 			//
 			}else{
+				String solutionInfix = varEqnAssign[i].getSolution().infixVCell();
 				cbit.vcell.math.Function function = new cbit.vcell.math.Function(Expression.valueOf(varEqnAssign[i].getSymbol().getJsclVariable().infix()).infixVCell(),ExpressionFactory.createExpression(varEqnAssign[i].getSolution().infixVCell()));
 				varArray[i] = function;
 			}
@@ -155,7 +156,7 @@ public static org.vcell.physics.math.MathSystem getMathSystem(OOModel oOModel) t
 				}
 			}
 			mathSystem.addEquation(clonedExp);
-			System.out.println("adding equation for "+modelComponents[i].getName()+": "+clonedExp.toString());
+			System.out.println("adding equation for "+modelComponents[i].getName()+": "+clonedExp.infixVCell());
 		}
 	}
 	//
@@ -445,7 +446,7 @@ public static ModelAnalysisResults analyzeMathSystem(MathSystem mathSystem) thro
 			for (int j = 0; j < sortedPartitionNodes.length; j++){
 				if (scc.contains(sortedPartitionNodes[j].index)){
 					VarEquationAssignment varEqnAssignment = (VarEquationAssignment)sortedPartitionNodes[j].getData();
-					System.out.println("\t\t"+varEqnAssignment.getSymbol().getName()+" || "+varEqnAssignment.getEquation().toString());
+					System.out.println("\t\t"+varEqnAssignment.getSymbol().getName()+" || "+varEqnAssignment.getEquation().infixVCell());
 				}
 			}
 		}
@@ -480,12 +481,12 @@ public static ModelAnalysisResults analyzeMathSystem(MathSystem mathSystem) thro
 					VarEquationAssignment varEqnAssignment = (VarEquationAssignment)sortedPartitionNodes[j].getData();
 					if (varEqnAssignment.getSolution()!=null){
 						if (varEqnAssignment.isStateVariable()){
-							System.out.println("\t\t\td("+varEqnAssignment.getSymbol().getName()+",t) = "+varEqnAssignment.getSolution().toString());
+							System.out.println("\t\t\td("+varEqnAssignment.getSymbol().getName()+",t) = "+varEqnAssignment.getSolution().infixVCell());
 						}else{
-							System.out.println("\t\t\t"+varEqnAssignment.getSymbol().getName()+" = "+varEqnAssignment.getSolution().toString());
+							System.out.println("\t\t\t"+varEqnAssignment.getSymbol().getName()+" = "+varEqnAssignment.getSolution().infixVCell());
 						}
 					}else{
-						System.out.println("\t\t\tNOT SOLVED\t\t"+varEqnAssignment.getSymbol().getName()+" || "+varEqnAssignment.getEquation().toString());
+						System.out.println("\t\t\tNOT SOLVED\t\t"+varEqnAssignment.getSymbol().getName()+" || "+varEqnAssignment.getEquation().infixVCell());
 					}	
 				}
 			}

@@ -138,7 +138,7 @@ public Graph getDependencyGraph(int baseWeight, boolean bIgnoreParameters) {
 	//
 	Expression[] equations = getEquations();
 	for (int i = 0; i < equations.length; i++){
-		Node equationNode = new Node(equations[i].infix(),equations[i]);
+		Node equationNode = new Node(equations[i].infixVCell(),equations[i]);
 		graph.addNode(equationNode);
 		//
 		// add edge from each referenced symbol to this equation
@@ -209,7 +209,7 @@ public void show() {
 	}
 	Expression[] expressions = (Expression[])org.vcell.util.BeanUtils.getArray(equationList,Expression.class);
 	for (int i = 0; i < expressions.length; i++){
-		System.out.println(i+") "+expressions[i].infix()+" == 0.0");
+		System.out.println(i+") "+expressions[i].infixVCell()+" == 0.0");
 	}
 }
 

@@ -69,7 +69,7 @@ public class NaChannel extends IonChannelHH {
 			addEquation(Expression.valueOf("h_o(0) - ("+h_o_init_value+")"));
 			addEquation(Expression.valueOf("alpha_h(t) - ((0.07 * exp(alpha_h_exp_arg(t))))"));
 			addEquation(Expression.valueOf("alpha_h_exp_arg(t) - (- (0.05 * V_h(t)))"));
-			addEquation(Expression.valueOf("beta_h(t) - ((1.0 / (1.0 + exp(beta_h_exp_arg(t)))))"));
+			addEquation(Expression.valueOf("beta_h(t) - (gt(1000*abs(beta_h_exp_arg(t)),1)*((1.0 / (1.0 + exp(beta_h_exp_arg(t))))))"));
 			addEquation(Expression.valueOf("beta_h_exp_arg(t) - ((0.1 * (30.0 - V_h(t))))"));
 			addEquation(Expression.valueOf("V_h(t) - (V(t) - Vrest_h)"));
 			addEquation(Expression.valueOf("Vrest_h - (-62)"));

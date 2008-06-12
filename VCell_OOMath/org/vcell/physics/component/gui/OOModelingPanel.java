@@ -270,12 +270,12 @@ private void displaySCC() {
 				VarEquationAssignment varEqnAssignment = (VarEquationAssignment)sortedPartitionNodes[j].getData();
 				if (varEqnAssignment.getSolution()!=null){
 					if (varEqnAssignment.isStateVariable()){
-						buffer.append(scc.getName()+":\td("+varEqnAssignment.getSymbol().getName()+",t) = "+varEqnAssignment.getSolution().infix()+"\n");
+						buffer.append(scc.getName()+":\td("+varEqnAssignment.getSymbol().getName()+",t) = "+varEqnAssignment.getSolution().infixVCell()+"\n");
 					}else{
-						buffer.append(scc.getName()+":\t"+varEqnAssignment.getSymbol().getName()+" = "+varEqnAssignment.getSolution().infix()+"\n");
+						buffer.append(scc.getName()+":\t"+varEqnAssignment.getSymbol().getName()+" = "+varEqnAssignment.getSolution().infixVCell()+"\n");
 					}
 				}else{
-					buffer.append(scc.getName()+":\tNOT SOLVED\t"+varEqnAssignment.getSymbol().getName()+" || "+varEqnAssignment.getEquation().infix()+"\n");
+					buffer.append(scc.getName()+":\tNOT SOLVED\t"+varEqnAssignment.getSymbol().getName()+" || "+varEqnAssignment.getEquation().infixVCell()+"\n");
 				}	
 			}
 		}

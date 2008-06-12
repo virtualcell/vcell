@@ -134,12 +134,12 @@ public void setStateVariable(boolean newStateVariable) {
 public String toString() {
 	if (solution!=null){
 		if (stateVariable){
-			return "d("+mathSymbol.getName()+",t) = "+solution.toString();
+			return "d("+mathSymbol.getName()+",t) = "+solution.infixVCell();
 		}else{
-			return mathSymbol.getName()+" = "+solution.toString();
+			return mathSymbol.getName()+" = "+solution.infixVCell();
 		}
 	}else{
-		return mathSymbol.getName()+"|"+equation.toString();
+		return mathSymbol.getName()+"|"+equation.infixVCell();
 	}
 }
 }
