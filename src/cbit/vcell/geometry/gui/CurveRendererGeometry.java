@@ -4,6 +4,8 @@ package cbit.vcell.geometry.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.awt.Color;
+
 import cbit.vcell.geometry.*;
 /**
  * Insert the type's description here.
@@ -19,7 +21,7 @@ public class CurveRendererGeometry extends CurveRenderer implements java.beans.P
  * CurveRendererGeometry constructor comment.
  */
 public CurveRendererGeometry() {
-	super();
+	super(null);
 }
 /**
  * This method was created in VisualAge.

@@ -11,12 +11,14 @@ import java.awt.Color;
 import cbit.vcell.geometry.*;
 import java.awt.geom.*;
 import java.util.Hashtable;
+
+import cbit.image.DisplayAdapterService;
 import cbit.util.*;
 
 public class CurveRenderer implements DrawPaneModel {
 	//
+	DisplayAdapterService displayAdapterService;
 	java.awt.TexturePaint highlightTexture = null;
-	java.awt.TexturePaint nonHighlightTexture = null;
 	//
 	protected Hashtable<Curve, CurveRendererCurveInfo> curveTable = new Hashtable<Curve, CurveRendererCurveInfo>();
 	//
@@ -48,8 +50,9 @@ public class CurveRenderer implements DrawPaneModel {
 /**
  * CurvePainter constructor comment.
  */
-public CurveRenderer() {
+public CurveRenderer(DisplayAdapterService displayAdapterService) {
 	super();
+	this.displayAdapterService = displayAdapterService;
 	setNormalAxis(Coordinate.Z_AXIS);
 	setWorldDelta(new Coordinate(1,1,1));
 	setWorldOrigin(new Coordinate(0,0,0));
@@ -75,7 +78,7 @@ public CurveRenderer() {
 				Color.lightGray.getRGB(),Color.lightGray.getRGB(),Color.gray.getRGB(),Color.gray.getRGB()
 			},
 		0,4);
-	nonHighlightTexture = new java.awt.TexturePaint(pattern2,new java.awt.Rectangle(0,0,4,4));
+//	nonHighlightTexture = new java.awt.TexturePaint(pattern2,new java.awt.Rectangle(0,0,4,4));
 	////pattern for nonHighlightTexture
 	//java.awt.image.BufferedImage pattern2 = new java.awt.image.BufferedImage(4,4,java.awt.image.BufferedImage.TYPE_INT_ARGB);
 	//pattern2.setRGB(0,0,4,4,
@@ -332,6 +335,11 @@ private void drawCurve(
 						g2D.setColor(Color.white);
 						g2D.fill(new java.awt.geom.Ellipse2D.Double(p2d[0].getX() - (mpd / 2)+1, p2d[0].getY() - (mpd / 2)+1, mpd-1, mpd-1));
 		} else { //Draw all other SampledCurve as line segments
+			Color nonHighlightColor = null;
+			if(displayAdapterService != null && displayAdapterService.getSpecialColors() != null){
+				nonHighlightColor =
+					new Color(displayAdapterService.getSpecialColors()[DisplayAdapterService.FOREGROUND_NONHIGHLIGHT_COLOR_OFFSET]);				
+			}
 			int segmentCount = sampledCurve.getSegmentCount();
 			for (int c = 0; c < segmentCount; c += 1) {
 				//Set color
@@ -340,8 +348,11 @@ private void drawCurve(
 				} else {
 					int[] segmentColors = crci.getSegmentColors();
 					if (segmentColors == null) {
-						//g2D.setColor(Color.darkGray);
-						g2D.setPaint(nonHighlightTexture);
+						if(nonHighlightColor != null){
+							g2D.setPaint(nonHighlightColor);
+						}else{
+							g2D.setPaint(Color.LIGHT_GRAY);
+						}
 					} else {
 						g2D.setColor(new Color(segmentColors[c % segmentCount]));
 					}

@@ -122,7 +122,8 @@ public int[] getPixelsRGB() {
 		// apply curve renderer
 		//
 		if (!bHideMembraneOutline){
-			cbit.vcell.geometry.gui.CurveRenderer curveRenderer = new cbit.vcell.geometry.gui.CurveRenderer();
+			cbit.vcell.geometry.gui.CurveRenderer curveRenderer =
+				new cbit.vcell.geometry.gui.CurveRenderer(getDisplayAdapterService());
 			curveRenderer.setNormalAxis(getNormalAxis());
 
 			cbit.util.Origin origin = mesh.getOrigin();
@@ -145,7 +146,7 @@ public int[] getPixelsRGB() {
 					curveRenderer.renderPropertyLineWidthMultiplier(curves[i],1);
 				}
 				Graphics2D g = (Graphics2D)bufferedImage.getGraphics();
-				curveRenderer.setAntialias(true);
+				curveRenderer.setAntialias(false);//must be false or could get more than 256 colors
 				curveRenderer.draw(g);
 			}
 		}
@@ -169,7 +170,8 @@ public int[] getPixelsRGB() {
 		//
 		// apply curve renderer
 		//
-		cbit.vcell.geometry.gui.CurveRenderer curveRenderer = new cbit.vcell.geometry.gui.CurveRenderer();
+		cbit.vcell.geometry.gui.CurveRenderer curveRenderer =
+			new cbit.vcell.geometry.gui.CurveRenderer(getDisplayAdapterService());
 		curveRenderer.setNormalAxis(getNormalAxis());
 
 		cbit.util.Origin origin = mesh.getOrigin();
