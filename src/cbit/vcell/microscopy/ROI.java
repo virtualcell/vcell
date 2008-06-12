@@ -1,0 +1,328 @@
+package cbit.vcell.microscopy;
+
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
+import java.util.Arrays;
+import java.util.Vector;
+
+import loci.formats.ImageTools;
+
+import cbit.image.ImageException;
+import cbit.util.Extent;
+import cbit.util.ISize;
+import cbit.util.Matchable;
+import cbit.vcell.VirtualMicroscopy.UShortImage;
+
+// This represents the ROI - Region Of Interest in a given image : NOTE : subject to change!!
+/**
+ */
+public class ROI implements Matchable {
+	// This specifies the region of interest in an image/stack - contains all the images in the stack
+	// Hence storing it in FloatImage. The extent/numX, numY, numZ will be smaller than the original image.
+	// UShortImage used as 2D here, with Z slices in the array. (not related to T, which imageDataset has to store)
+	private UShortImage[] roiImages = null;
+	/**
+	 */
+	public enum RoiType {
+		ROI_BLEACHED,
+		ROI_BACKGROUND,
+		ROI_CELL,
+		ROI_BLEACHED_RING1,
+		ROI_BLEACHED_RING2,
+		ROI_BLEACHED_RING3,
+		ROI_BLEACHED_RING4,
+		ROI_BLEACHED_RING5,
+		ROI_BLEACHED_RING6,
+		ROI_BLEACHED_RING7,
+		ROI_BLEACHED_RING8
+//		ROI_NUCLEUS,
+//		ROI_EXTRACELLULAR
+	}
+	private RoiType roiType = null;
+
+	public ROI(ROI origROI) throws ImageException{
+		super();
+		this.roiType = origROI.roiType;
+		this.roiImages = new UShortImage[(origROI.roiImages != null?origROI.roiImages.length:0)];
+		for (int i = 0; i < this.roiImages.length; i++) {
+			this.roiImages[i] = new UShortImage(origROI.roiImages[i]);
+		}
+	}
+	/**
+	 * Constructor for 2D or 3D ROI.  for 3D, each sub-image must be same dimension
+	 * and numZ should be 1.
+	 * @param numX int
+	 * @param numY int
+	 * @param numZ int
+	 * @param extent Extent
+	 * @param argROIType
+	 * @throws ImageException 
+	 */
+	public ROI(int numX, int numY, int numZ, Extent extent, RoiType argROIType) throws ImageException {
+		super();
+		roiImages = new UShortImage[numZ];
+		for (int i = 1; i < numZ; i++) {
+			roiImages[i] = new UShortImage(new short[numX*numY],extent,numX,numY,1);
+		}
+		this.roiType = argROIType;
+	}	
+
+	/**
+	 * Constructor for 2D or 3D ROI.  for 3D, each sub-image must be same dimension
+	 * and numZ should be 1.
+	 * @param argRoiImages
+	 * @param argROIType
+	 */
+	public ROI(UShortImage[] argRoiImages, RoiType argROIType) {
+		super();
+		int numX = argRoiImages[0].getNumX();
+		int numY = argRoiImages[0].getNumY();
+		int numZ = argRoiImages[0].getNumZ();
+		if (numZ!=1){
+			throw new RuntimeException("ROI sub-images must be 2D");
+		}
+		for (int i = 1; i < argRoiImages.length; i++) {
+			UShortImage img = argRoiImages[i];
+			if (img.getNumX()!=numX || img.getNumY()!=numY || img.getNumZ()!=numZ){
+				throw new RuntimeException("ROI sub-images not same dimension");
+			}
+		}
+		this.roiImages = argRoiImages;
+		this.roiType = argROIType;
+	}	
+
+	/**
+	 * Constructor for 2D ROI
+	 * @param argRoiImage
+	 * @param argROIType
+	 */
+	public ROI(UShortImage argRoiImage, RoiType argROIType) {
+		super();	
+		if (argRoiImage.getNumZ()!=1){
+			throw new RuntimeException("ROI sub-images must be 2D");
+		}
+		this.roiImages = new UShortImage[] { argRoiImage };
+		this.roiType = argROIType;
+	}	
+	/**
+	 * @return the roiImage
+	 */
+	public UShortImage[] getRoiImages() {
+		return roiImages;
+	}
+	
+	/**
+	 * Method getISize.
+	 * @return ISize
+	 */
+	public ISize getISize(){
+		return new ISize(roiImages[0].getNumX(),roiImages[0].getNumY(),roiImages.length);
+	}
+	
+	/**
+	 * Method getBinaryPixelsXYZ.
+	 * @param threshold int
+	 * @return short[]
+	 */
+	public short[] getBinaryPixelsXYZ(int threshold){
+		// note changing in place data returned by getPixelsXYZ()
+		short[] pixels = new short[getISize().getXYZ()];
+		for (int zIndex = 0; zIndex < roiImages.length; zIndex++) {
+			short[] slicePixels = roiImages[zIndex].getBinaryPixels(threshold);
+			System.arraycopy(slicePixels, 0, pixels, zIndex*slicePixels.length, slicePixels.length);
+		}
+		return pixels;
+	}
+
+	/**
+	 * Method getPixelsXYZ.
+	 * @return short[]
+	 */
+	public short[] getPixelsXYZ(){
+		// always returns a copy
+		short[] pixels = new short[getISize().getXYZ()];
+		for (int zIndex = 0; zIndex < roiImages.length; zIndex++) {
+			short[] slicePixels = roiImages[zIndex].getPixels();
+			System.arraycopy(slicePixels, 0, pixels, zIndex*slicePixels.length, slicePixels.length);
+		}
+		return pixels;
+	}
+	
+	/**
+	 * Method getROIType.
+	 * @return RoiType
+	 */
+	public RoiType getROIType(){
+		return roiType;
+	}
+	/**
+	 * Method crop.
+	 * @param rect Rectangle
+	 * @return ROI
+	 * @throws ImageException
+	 */
+	public ROI crop(Rectangle rect) throws ImageException {
+		UShortImage[] croppedImages = new UShortImage[roiImages.length];
+		for (int i = 0; i < croppedImages.length; i++) {
+			croppedImages[i] = roiImages[i].crop(rect);
+		}
+		return new ROI(croppedImages,roiType);
+	}
+	
+	/**
+	 * Method clear.
+	 * @param value short
+	 */
+	public void clear(short value) {
+		for (int i = 0; i < roiImages.length; i++) {
+			Arrays.fill(roiImages[i].getPixels(),value);
+		}
+	}
+	
+	public boolean isAllPixelsZero()
+	{
+		UShortImage[] images = getRoiImages();
+		for(int i=0; i<images.length; i++)
+		{
+			if(images[i].getNonzeroIndices().length >0 )
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public static void fillAtPoint(int startX, int startY,BufferedImage roiImage,int boundaryColor){
+			if(startX <0 ||startX>=roiImage.getWidth() || startY <0 ||startY>=roiImage.getHeight() ){
+				return;
+			}
+			int TARGET_COLOR = roiImage.getRGB(startX,startY);
+			if(TARGET_COLOR == boundaryColor){
+				return;
+			}
+			int XINDEX = 0;
+			int YINDEX = 1;
+			Vector<int[]> pendingChecks = new Vector<int[]>();
+			pendingChecks.add(new int[] {startX,startY});
+			roiImage.setRGB(startX, startY, boundaryColor);
+			while(pendingChecks.size() > 0){
+				int[] data = pendingChecks.remove(0);
+					if(data[XINDEX]-1 >= 0 && roiImage.getRGB(data[XINDEX]-1, data[YINDEX]) == TARGET_COLOR){
+						pendingChecks.add(new int[] {data[XINDEX]-1,data[YINDEX]});
+						roiImage.setRGB(data[XINDEX]-1, data[YINDEX], boundaryColor);
+					}
+					if(data[YINDEX]-1 >= 0 && roiImage.getRGB(data[XINDEX], data[YINDEX]-1) == TARGET_COLOR){
+						pendingChecks.add(new int[] {data[XINDEX],data[YINDEX]-1});
+						roiImage.setRGB(data[XINDEX], data[YINDEX]-1, boundaryColor);
+					}
+					if(data[XINDEX]+1 < roiImage.getWidth() && roiImage.getRGB(data[XINDEX]+1, data[YINDEX]) == TARGET_COLOR){
+						pendingChecks.add(new int[] {data[XINDEX]+1,data[YINDEX]});
+						roiImage.setRGB(data[XINDEX]+1, data[YINDEX], boundaryColor);
+					}
+					if(data[YINDEX]+1 < roiImage.getHeight() && roiImage.getRGB(data[XINDEX], data[YINDEX]+1) == TARGET_COLOR){
+						pendingChecks.add(new int[] {data[XINDEX],data[YINDEX]+1});
+						roiImage.setRGB(data[XINDEX], data[YINDEX]+1, boundaryColor);
+					}
+			}
+	
+	}
+
+	public static Point findInternalVoid(ROI roi){
+		if(roi.getISize().getZ() > 1){
+			throw new IllegalArgumentException(ROI.class.getName()+".findInternalVoid: Only 2D ROIs allowed");
+		}
+		int xSize = roi.getISize().getX();
+		int ySize = roi.getISize().getY();
+		BufferedImage roiImage = ImageTools.makeImage(roi.getPixelsXYZ(),xSize,ySize);
+		Integer boundaryColor = null;
+		for (int y = 0; y < ySize; y++) {
+			for (int x = 0; x < xSize; x++) {
+				if((0x00FFFFFF&roiImage.getRGB(x, y)) != 0){
+					boundaryColor = new Integer(roiImage.getRGB(x, y));
+					break;
+				}
+			}
+			if(boundaryColor != null){
+				break;
+			}
+		}
+		if(boundaryColor == null){
+			return null;
+		}
+		//fill inward from edges
+		for (int x = 0; x < xSize; x++) {
+			ROI.fillAtPoint(x, 0, roiImage, boundaryColor);
+			ROI.fillAtPoint(x, ySize-1, roiImage, boundaryColor);
+		}
+		for (int y = 0; y < ySize; y++) {
+			ROI.fillAtPoint(0, y, roiImage, boundaryColor);
+			ROI.fillAtPoint(xSize-1,y, roiImage, boundaryColor);		
+		}
+		//Any non-zero now is an internal void
+		for (int y = 0; y < ySize; y++) {
+			for (int x = 0; x < xSize; x++) {
+				if((0x00FFFFFF&roiImage.getRGB(x, y)) == 0){
+					return new Point(x,y);
+				}
+			}
+		}
+		return null;
+	}
+	
+	public static Point[] checkContinuity(ROI roi){
+		if(roi.getISize().getZ() > 1){
+			throw new IllegalArgumentException(ROI.class.getName()+".findDistinctAreas: Only 2D ROIs allowed");
+		}
+		int xSize = roi.getISize().getX();
+		int ySize = roi.getISize().getY();
+		BufferedImage roiImage = ImageTools.makeImage(roi.getPixelsXYZ(),xSize,ySize);
+		Integer boundaryColor = null;
+		for (int y = 0; y < ySize; y++) {
+			for (int x = 0; x < xSize; x++) {
+				if((0x00FFFFFF&roiImage.getRGB(x, y)) == 0){
+					boundaryColor = new Integer(roiImage.getRGB(x, y));
+					break;
+				}
+			}
+			if(boundaryColor != null){
+				break;
+			}
+		}
+		if(boundaryColor == null){
+			return null;
+		}
+		Point firstLocation = null;
+		for (int y = 0; y < ySize; y++) {
+			for (int x = 0; x < xSize; x++) {
+				if(roiImage.getRGB(x, y) != boundaryColor.intValue()){
+					if(firstLocation != null){
+						return new Point[] {firstLocation,new Point(x,y)};
+					}
+					firstLocation = new Point(x,y);
+					ROI.fillAtPoint(x, y, roiImage, boundaryColor.intValue());
+				}
+			}
+		}
+		return null;
+	}
+
+	public boolean compareEqual(Matchable obj) 
+	{
+		if (this == obj) {
+			return true;
+		}
+		if (obj != null && obj instanceof ROI) 
+		{
+			ROI roi = (ROI) obj;
+			if (!cbit.util.Compare.isEqualOrNull(getRoiImages(), roi.getRoiImages())){
+				return false;
+			}
+			if (!getROIType().equals(roi.getROIType())){
+				return false;
+			}
+			return true;
+		}
+		return false;
+	}
+}
