@@ -7,14 +7,12 @@ import javax.swing.JFileChooser;
 import javax.swing.UIManager;
 
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.server.PropertyLoader;
 
 public class VirtualFrapLoader 
 {
 	//get paths
-	public static final String appPath = System.getProperty("user.home") + System.getProperty("file.separator") + ".vcell" + System.getProperty("file.separator");
+	public static final String appPath = System.getProperty("user.home") + System.getProperty("file.separator") + "VirtualMicroscopy" + System.getProperty("file.separator");
 	//get current working directory
-//	public static final String workSpacePath = System.getProperty("user.dir") + System.getProperty("file.separator"); 
 	//filefilters for VFrap
 	public final static  VirtualFrapMainFrame.AFileFilter filter_lsm = new VirtualFrapMainFrame.AFileFilter("lsm","Zeiss Lsm Images");
 	public final static  VirtualFrapMainFrame.AFileFilter filter_tif = new VirtualFrapMainFrame.AFileFilter("tif", "TIFF Images");

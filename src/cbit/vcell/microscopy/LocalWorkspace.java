@@ -24,7 +24,6 @@ public class LocalWorkspace {
 	private User owner = null;
 	private String mostRecentFilename = null;
 	private DataSetControllerImpl dataSetControllerImpl = null;
-//	private KeyValue simKey = null;
 	private VCDataManager vcDataManager = null;
 	private UserPreferences userPreferences = null;
 	
@@ -152,22 +151,6 @@ public class LocalWorkspace {
 		}
 		return dataSetControllerImpl;
 	}
-
-//	public void regenerateSimKey(){
-//		Random random = new Random();
-//		simKey = new KeyValue(Integer.toString(Math.abs(random.nextInt())));
-//	}
-//	
-//	/**
-//	 * Method getSimKey.
-//	 * @return KeyValue
-//	 */
-//	public KeyValue getSimKey() {
-//		if (simKey==null){
-//			regenerateSimKey();
-//		}
-//		return simKey;
-//	}
 	
 	/**
 	 * Method getVCDataManager.

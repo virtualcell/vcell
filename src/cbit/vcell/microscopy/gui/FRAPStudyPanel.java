@@ -30,7 +30,6 @@ import java.util.Hashtable;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultSingleSelectionModel;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -44,17 +43,12 @@ import javax.swing.JTextPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
-
-import sun.net.ProgressListener;
-
-
 import cbit.gui.DialogUtils;
 import cbit.gui.graph.GraphPane;
 import cbit.image.ImageException;
 import cbit.sql.KeyValue;
 import cbit.util.BeanUtils;
 import cbit.util.Compare;
-import cbit.util.FileUtils;
 import cbit.util.NumberUtils;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
@@ -73,7 +67,6 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.desktop.controls.DataManager;
-import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.math.AnnotatedFunction;
@@ -98,7 +91,6 @@ import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.server.StdoutSessionLog;
 import cbit.vcell.server.VCDataIdentifier;
 import cbit.vcell.simdata.DataIdentifier;
@@ -111,11 +103,9 @@ import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
-import cbit.vcell.solvers.FVSolverStandalone;
 //comments added Jan 2008, this is the bottom panel contains all other
 //panels in a tabbedPane.
 public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
@@ -147,9 +137,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 	private JSplitPane detailsPane = null;//Added ,2008
 	private MultisourcePlotPane multisourcePlotPane = null;
 	private JScrollPane fitRecoveryControlPane = null;
-	private JButton updateFitRecoveryCurveButton = null;
 	private JPanel jPanel = null;
-	private JButton LoadButton = null;
 	private GraphPane geometryGraphPane = null;
 	private JPanel modelSpecPanel = null;
 	private JLabel mobilePhase = null;
@@ -257,6 +245,53 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 				}
 			}
 		};
+		
+	private class CurrentSimulationDataState{
+		private final FrapChangeInfo frapChangeInfo;
+		private final Boolean areSimeFilesOK;
+		public CurrentSimulationDataState() throws Exception{
+			if(savedFrapModelInfoNew != null){
+				frapChangeInfo = getChangesSinceLastSave();
+				areSimeFilesOK = areSimulationFilesOKForSavedModel();
+			}else{
+				frapChangeInfo = null;
+				areSimeFilesOK = null;
+			}
+		}
+		public boolean isDataInvalidBecauseModelNotSaved(){
+			return frapChangeInfo == null;
+		}
+		public Boolean isDataInvalidBecauseModelChanged(){
+			if(frapChangeInfo == null){
+				return null;
+			}
+			return frapChangeInfo.hasAnyChanges();
+		}
+		public Boolean isDataInvalidBecauseMissingOrCorrupt(){
+			if(areSimeFilesOK == null){
+				return null;
+			}
+			return !areSimeFilesOK;
+		}
+		public boolean isDataValid(){
+			if(frapChangeInfo != null && !frapChangeInfo.hasAnyChanges() && areSimeFilesOK != null && areSimeFilesOK){
+				return true;
+			}
+			return false;
+		}
+		public String getDescription(){
+			if(isDataValid()){
+				return "Simulation Data are valid.";
+			}else if(isDataInvalidBecauseModelNotSaved()){
+				return "Sim Data invalid because Model is not saved";
+			}else if(isDataInvalidBecauseModelChanged()){
+				return "Sim Data invalid because Model has changed";
+			}else if(isDataInvalidBecauseMissingOrCorrupt()){
+				return "Sim Data are missing or corrupt";
+			}
+			throw new RuntimeException("Unknown description");
+		}
+	};
 
 	private	DataSetControllerImpl.ProgressListener progressListenerNew =
 		new DataSetControllerImpl.ProgressListener(){
@@ -375,42 +410,56 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 				case FRAPStudyPanel.INDEX_TAB_IMAGES:
 				break;
 				case FRAPStudyPanel.INDEX_TAB_FITCURVE:
-					FRAPStudyPanel.this.fitBleaching();
+					fitBleaching();
 				break;
 				case FRAPStudyPanel.INDEX_TAB_SPATIALMODEL:
-					FRAPStudyPanel.this.fitBleaching();
-					FRAPStudyPanel.this.refreshBiomodel();
+					fitBleaching();
+					refreshBiomodel();
 				break;
 				case FRAPStudyPanel.INDEX_TAB_FITSPATIALMODEL:
-					int EXPECTED_SIM_FILE_COUNT = 9;//prebleach.fdat,postbleach.fdat,.vcg,.meshmetrics,.,mesh,.log,.fvinput,.functions,.zip
-					FRAPStudyPanel.this.fitBleaching();
-					FrapChangeInfo frapChangeInfo = FRAPStudyPanel.this.refreshBiomodel();
-					boolean bSimNeedsRun = false;
-					if(frapChangeInfo == null || frapChangeInfo.hasAnyChanges()){
-						FRAPStudyPanel.this.clearFitSpatialModelPanel();
-						bSimNeedsRun = true;//throw new Exception("Simulation needs to run beacuse model has changed.");
-					}
-					if(savedFrapModelInfoNew == null){
-						bSimNeedsRun = true;
-					}else{
-						File[] simFiles = getSimulationFileNames(
-							new File(getLocalWorkspace().getSimDataDirectory(),getLocalWorkspace().getOwner().getName()),
-							savedFrapModelInfoNew.savedSimKeyValue);
-						if(simFiles == null || simFiles.length != EXPECTED_SIM_FILE_COUNT){
-							bSimNeedsRun = true;
+					{
+						fitBleaching();
+						refreshBiomodel();
+						CurrentSimulationDataState currentSimulationDataState =
+							new CurrentSimulationDataState();
+						if(!currentSimulationDataState.isDataValid()){
+							if(currentSimulationDataState.isDataInvalidBecauseMissingOrCorrupt() != null &&
+								currentSimulationDataState.isDataInvalidBecauseMissingOrCorrupt()){
+								final String RUN_SIM = "Run Simulation...";
+								String expectedSimFileLocation =
+									getLocalWorkspace().getSimDataDirectory()+
+									getLocalWorkspace().getOwner().getName();
+								String result = DialogUtils.showWarningDialog(this,
+									"Couldn't find simulation files in directory:\n"+expectedSimFileLocation+"\n"+
+									"Simulation needs to Run before viewing results, Run Simulation now?" ,
+									new String[] {RUN_SIM,UserMessage.OPTION_CANCEL}, RUN_SIM);
+								if(result == null || !result.equals(RUN_SIM)){
+									return false;
+								}
+							}
+							clearFitSpatialModelPanel();
+							runSimulation();
+							return false;
+						}else{
+							refreshPDEDisplay(DisplayChoice.PDE);
+							refreshPDEDisplay(DisplayChoice.EXTTIMEDATA);
 						}
-					}
-					if(bSimNeedsRun){
-						runSimulation();
-						return false;
-					}else{
-						refreshPDEDisplay(DisplayChoice.PDE);
-						refreshPDEDisplay(DisplayChoice.EXTTIMEDATA);
 					}
 				break;
 				case FRAPStudyPanel.INDEX_TAB_REPORT:
-					getReportPanel().removeAll();
-					spatialAnalysis();
+					{
+						fitBleaching();
+						refreshBiomodel();
+						CurrentSimulationDataState currentSimulationDataState =
+							new CurrentSimulationDataState();
+						if(currentSimulationDataState.isDataValid()){
+							getReportPanel().removeAll();
+							spatialAnalysis();
+						}else{
+							throw new Exception("Simulation Data are not valid.\n"+
+								currentSimulationDataState.getDescription());
+						}
+					}
 				break;
 				default:
 				break;
@@ -421,6 +470,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 		}
 		
 	}
+
 	/**
 	 * Changed in Feb, 2008. GridBagLayout to BorderLayout.
 	 * Set splitPane and put MultisourcePlotPane on top and the scrollText, equation and radio button at bottom	
@@ -522,7 +572,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 	//refresh the report panel when spatial analysis is done.
 	private void refreshReportPanel()
 	{
-//		getScrollReportPane().setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		getReportPanel().removeAll();
 		if(spatialAnalysisList != null && spatialAnalysisList.length > 0)
 		{
@@ -555,7 +604,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 		});
 		((JScrollPane)getJTabbedPane().getComponentAt(INDEX_TAB_REPORT)).setViewportView(getReportBasePanel());
 		getShowReportListButton().setSelected(true); //show plot list by default
-//		getJTabbedPane().setSelectedIndex(INDEX_TAB_REPORT);
 	}
 	
 	/**
@@ -641,11 +689,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 			bg.add(getHalfCellRadioButton());
 			
 			JPanel panel = new JPanel(new GridBagLayout());
-//			fitRecoveryControlPanel.add(getCircularDiskRadioButton(), gridBagConstraints1);
 			panel.add(getExpressionPanel1(), gridBagConstraints1);
-//			fitRecoveryControlPanel.add(getMethod2RadioButton(), gridBagConstraints3);
 			panel.add(getExpressionPanel2(), gridBagConstraints2);
-//			fitRecoveryControlPanel.add(getMethod3RadioButton(), gridBagConstraints5);
 			panel.add(getExpressionPanel3(), gridBagConstraints3);
 			
 			fitRecoveryControlPane = new JScrollPane(panel);
@@ -841,8 +886,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 	}
 	
 	private void saveProcedure(File xmlFrapFileName,FrapChangeInfo frapChangeInfo,boolean bSaveAsNew) throws Exception{
-//		boolean bForceImageDatasetSave = bSaveAs || (frapChangeInfo == null?false:frapChangeInfo.bImagaeDataChanged);
-//		boolean bForceROISave = bSaveAs || (frapChangeInfo == null?false:frapChangeInfo.bROIChanged);
 		VirtualFrapMainFrame.statusBar.showStatus("Saving file " + xmlFrapFileName.getAbsolutePath()+" ...");
 
 		BioModel newBioModel = null;
@@ -947,16 +990,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 			public String getTaskName() { return "Loading XML file."; }
 			public int getTaskType() { return cbit.vcell.desktop.controls.ClientTask.TASKTYPE_SWING_NONBLOCKING; }
 			public void run(java.util.Hashtable hash) throws Exception{
-				FRAPStudyPanel.this.refreshUI();
-//				if(FRAPStudyPanel.this.getFrapStudy().getFrapDataExternalDataInfo() != null && 
-//					FRAPStudyPanel.this.getFrapStudy().getRoiExternalDataInfo() != null){	
-//					if(FRAPStudyPanel.this.getSimulationLogFile(
-//						FRAPStudyPanel.this.getFrapStudy().getBioModel().getSimulations()[0].getVersion().getVersionKey()).exists()){
-//						DialogUtils.showInfoDialog(
-//							"Couldn't find simulation log file. The simualtion has never run before or log file has been lost.");
-//						}
-//					}
-				
+				FRAPStudyPanel.this.refreshUI();				
 				//give information after successfully loading the data
 	            VirtualFrapMainFrame.statusBar.showStatus("File " + inFile.getAbsolutePath()+" has been loaded.");
 	            VirtualFrapLoader.mf.setMainFrameTitle(inFile.getName());
@@ -1206,7 +1240,42 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 		getFRAPDataPanel().clearROI();
 	}
 
-	private boolean areSimulationFilesOK(){
+	private Boolean areSimulationFilesOKForSavedModel(){
+		if(savedFrapModelInfoNew == null){
+			return null;
+		}
+		String[] EXPECTED_SIM_EXTENSIONS =
+			new String[] {
+				SimDataConstants.ZIPFILE_EXTENSION,//may be more than 1 for big files
+				SimDataConstants.FUNCTIONFILE_EXTENSION,
+				".fvinput",
+				SimDataConstants.LOGFILE_EXTENSION,
+				SimDataConstants.MESHFILE_EXTENSION,
+				".meshmetrics",
+				".vcg",
+				".fdat",//prebleach avg
+				".fdat"//postbleach avg
+			};
+		File[] simFiles = getSimulationFileNames(
+			new File(getLocalWorkspace().getSimDataDirectory(),getLocalWorkspace().getOwner().getName()),
+				savedFrapModelInfoNew.savedSimKeyValue);
+		//prebleach.fdat,postbleach.fdat,.vcg,.meshmetrics,.mesh,.log,.fvinput,.functions,.zip
+		if(simFiles == null || simFiles.length < EXPECTED_SIM_EXTENSIONS.length){
+			return false;
+		}
+		for (int i = 0; i < EXPECTED_SIM_EXTENSIONS.length; i++) {
+			boolean bFound = false;
+			for (int j = 0; j < simFiles.length; j++) {
+				if(simFiles[j] != null && simFiles[j].getName().endsWith(EXPECTED_SIM_EXTENSIONS[i])){
+					simFiles[j] = null;
+					bFound = true;
+					break;
+				}
+			}
+			if(!bFound){
+				return false;
+			}
+		}
 		return true;
 	}
 	private boolean areExternalDataOK(){
@@ -1365,10 +1434,9 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 			public String getTaskName() { return "Displaying original data."; }
 			public int getTaskType() { return cbit.vcell.desktop.controls.ClientTask.TASKTYPE_SWING_NONBLOCKING; }
 			public void run(java.util.Hashtable hash) throws Exception{
-				getJTabbedPane().setSelectedIndex(FRAPStudyPanel.INDEX_TAB_FITSPATIALMODEL);
 				VirtualFrapMainFrame.statusBar.showStatus("Simulation is done.");
 				VirtualFrapMainFrame.statusBar.showProgress(0);
-				//leave save status as it was. it should be disabled, since we run save() before starting the simulation.
+				getJTabbedPane().setSelectedIndex(FRAPStudyPanel.INDEX_TAB_FITSPATIALMODEL);
 			}
 			public boolean skipIfAbort() {
 				return true;
@@ -1600,36 +1668,34 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 				throw new Exception("Base Diffusion Rate must be positive. ("+baseDiffusionRate.doubleValue()+")");			
 			}
 
-//			if(frapChangeInfo.hasROIChanged()){
-				if(getFrapStudy().getFrapData().getRoi(RoiType.ROI_BLEACHED).isAllPixelsZero()){
-						throw new Exception(VirtualFrapMainFrame.ROIErrorString);
-				}
-				if(getFrapStudy().getFrapData().getRoi(RoiType.ROI_BACKGROUND).isAllPixelsZero()){
-						throw new Exception(VirtualFrapMainFrame.ROIErrorString);
-				}
-				if(getFrapStudy().getFrapData().getRoi(RoiType.ROI_CELL).isAllPixelsZero()){
+			if(getFrapStudy().getFrapData().getRoi(RoiType.ROI_BLEACHED).isAllPixelsZero()){
 					throw new Exception(VirtualFrapMainFrame.ROIErrorString);
-				}
-				Point internalVoidLocation =
-					ROI.findInternalVoid(getFrapStudy().getFrapData().getRoi(RoiType.ROI_CELL));
-				if(internalVoidLocation != null){
-					throw new Exception("CELL ROI has unfilled internal void area at image location "+
-							"x="+internalVoidLocation.x+",y="+internalVoidLocation.y+"\n"+
-							"Use ROI editing tools to completely define the CELL ROI");
-				}
-				Point[] distinctCellAreaLocations =
-					ROI.checkContinuity(getFrapStudy().getFrapData().getRoi(RoiType.ROI_CELL));
-				if(distinctCellAreaLocations != null){
-					throw new Exception("CELL ROI has at least 2 discontinuous areas at image locations \n"+
-							"x="+distinctCellAreaLocations[0].x+",y="+distinctCellAreaLocations[0].y+
-							" and "+
-							"x="+distinctCellAreaLocations[1].x+",y="+distinctCellAreaLocations[1].y+"\n"+
-					"Use ROI editing tools to define a single continuous CELL ROI");				
-				}
-				getFRAPDataPanel().refreshDependentROIs_later();
-//			}
-			boolean bModelChanged = frapChangeInfo.hasAnyChanges() || getFrapStudy().getBioModel() == null;
-			if(bModelChanged){
+			}
+			if(getFrapStudy().getFrapData().getRoi(RoiType.ROI_BACKGROUND).isAllPixelsZero()){
+					throw new Exception(VirtualFrapMainFrame.ROIErrorString);
+			}
+			if(getFrapStudy().getFrapData().getRoi(RoiType.ROI_CELL).isAllPixelsZero()){
+				throw new Exception(VirtualFrapMainFrame.ROIErrorString);
+			}
+			Point internalVoidLocation =
+				ROI.findInternalVoid(getFrapStudy().getFrapData().getRoi(RoiType.ROI_CELL));
+			if(internalVoidLocation != null){
+				throw new Exception("CELL ROI has unfilled internal void area at image location "+
+						"x="+internalVoidLocation.x+",y="+internalVoidLocation.y+"\n"+
+						"Use ROI editing tools to completely define the CELL ROI");
+			}
+			Point[] distinctCellAreaLocations =
+				ROI.checkContinuity(getFrapStudy().getFrapData().getRoi(RoiType.ROI_CELL));
+			if(distinctCellAreaLocations != null){
+				throw new Exception("CELL ROI has at least 2 discontinuous areas at image locations \n"+
+						"x="+distinctCellAreaLocations[0].x+",y="+distinctCellAreaLocations[0].y+
+						" and "+
+						"x="+distinctCellAreaLocations[1].x+",y="+distinctCellAreaLocations[1].y+"\n"+
+				"Use ROI editing tools to define a single continuous CELL ROI");				
+			}
+			getFRAPDataPanel().refreshDependentROIs_later();
+//			boolean bModelChanged = frapChangeInfo.hasAnyChanges() || getFrapStudy().getBioModel() == null;
+//			if(bModelChanged){
 				BioModel bioModel = FRAPStudy.createNewBioModel(
 					getFrapStudy(),
 					baseDiffusionRate,
@@ -1638,11 +1704,11 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 					getLocalWorkspace().getOwner());
 				getFrapStudy().setBioModel(bioModel);
 				VirtualFrapMainFrame.statusBar.showStatus("New Frap Model created.");
-			}
-			if(bModelChanged || ((StructureMappingCartoon)(getGeometryGraphPane().getGraphModel())).getGeometryContext() == null){
+//			}
+//			if(bModelChanged || ((StructureMappingCartoon)(getGeometryGraphPane().getGraphModel())).getGeometryContext() == null){
 				((StructureMappingCartoon)getGeometryGraphPane().getGraphModel()).
 				setSimulationContext(getFrapStudy().getBioModel().getSimulationContexts()[0]);			
-			}
+//			}
 			return frapChangeInfo;
 
 		}catch(Exception e){
@@ -1834,10 +1900,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 		}
 		return mobileFractionLabel;
 	}
-
-//	public void setMobileFractionLabel(String fractionString) {
-//		getMobileFractionLabel().setText(fractionString);
-//	}
 
 	public JLabel getImmobileFractionLabel() {
 		if(immobileFractionLabel == null)
