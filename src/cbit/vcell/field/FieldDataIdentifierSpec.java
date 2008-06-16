@@ -2,6 +2,7 @@ package cbit.vcell.field;
 
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.ExternalDataIdentifier;
+import cbit.vcell.simdata.SimDataConstants;
 
 /**
  * Insert the type's description here.
@@ -11,7 +12,6 @@ import cbit.vcell.simdata.ExternalDataIdentifier;
 public class FieldDataIdentifierSpec implements java.io.Serializable  {
 	private FieldFunctionArguments fieldFuncArgs;
 	private ExternalDataIdentifier extDataID;
-	private static String FIELDDATA_FILEEXT = ".fdat";
 
 /**
  * FieldDataIdentifier constructor comment.
@@ -66,7 +66,7 @@ public FieldFunctionArguments getFieldFuncArgs() {
  * @return java.lang.String
  */
 public static String getDefaultFieldDataFileNameForSimulation(FieldFunctionArguments fieldFuncArgs) {
-	return fieldFuncArgs.getUniqueID() + FIELDDATA_FILEEXT;
+	return fieldFuncArgs.getUniqueID() + SimDataConstants.FIELDDATARESAMP_EXTENSION;
 }
 
 @Override

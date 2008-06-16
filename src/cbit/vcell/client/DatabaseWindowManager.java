@@ -13,6 +13,7 @@ import cbit.vcell.mathmodel.*;
 import cbit.vcell.client.server.*;
 import cbit.vcell.server.*;
 import cbit.util.*;
+import cbit.util.xml.XmlUtil;
 import cbit.sql.*;
 import cbit.vcell.clientdb.*;
 import java.awt.*;
@@ -1170,20 +1171,7 @@ public VCDocumentInfo selectDocument(int documentType, TopLevelWindowManager req
 		case VCDocument.XML_DOC: {
 			// Get XML FIle, read the chars into a stringBuffer and create new XMLInfo.
 			File xmlFile = showFileChooserDialog(FileFilters.FILE_FILTER_XML);
-			char[] array = new char[1000];
-			StringBuffer xmlString = new StringBuffer();
-			int n;
-			FileReader fileReader =  new FileReader(xmlFile);
-			try{
-				BufferedReader reader = new BufferedReader(fileReader);
-				while((n = reader.read(array)) != -1){
-					xmlString.append(array,0,n);
-				}
-				reader.close();
-			}finally{
-				if(fileReader != null){fileReader.close();}
-			}
-			return new cbit.vcell.xml.XMLInfo(xmlString.toString());
+			return new cbit.vcell.xml.XMLInfo(XmlUtil.getXMLString(xmlFile.getAbsolutePath()));
 		}		
 		default: {
 			throw new RuntimeException("ERROR: Unknown document type: " + documentType);
