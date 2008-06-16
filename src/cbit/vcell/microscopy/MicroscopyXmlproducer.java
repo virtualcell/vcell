@@ -159,13 +159,10 @@ private static org.jdom.Element getXML(ImageDataset param,Xmlproducer vcellXMLPr
 	//added in Feb 2008, for counting saving progress
 	int imageSize = images.length;
 	int imageCount = 0;
-	//Added Feb, 2008. The varaibles added below are used for calculating the time used.
-	//we want to update the saving progress every 1 seconds.
-	//When saving xml file, we roughly assume the image saving takes 95% of the total progress and other 5% is from saving ROI rings.
 	for (int i = 0; i < images.length; i++) {
 		imageDatasetNode.addContent( getXML(images[i],vcellXMLProducer,bSaveCompressed) );
 		imageCount++;
-		if(progressListener != null){progressListener.updateProgress(((int)(imageCount/imageSize)));}	
+		if(progressListener != null){progressListener.updateProgress((double)imageCount/(double)imageSize);}	
 	}
 	if (param.getImageTimeStamps()!=null){
 		Element timeStampListNode = new Element(MicroscopyXMLTags.TimeStampListTag);
@@ -271,6 +268,9 @@ private static org.jdom.Element getXML(FrapDataAnalysisResults param) throws Xml
 	}
 	if (param.getFitExpression()!=null){
 		dataAnalysisResultsNode.setAttribute(MicroscopyXMLTags.FitExpressionAttrTag, param.getFitExpression().infix());
+	}
+	if (param.getSlowerRate()!=null){
+		dataAnalysisResultsNode.setAttribute(MicroscopyXMLTags.SlowerRateAttrTag, param.getSlowerRate().toString());
 	}
 	return dataAnalysisResultsNode;
 }

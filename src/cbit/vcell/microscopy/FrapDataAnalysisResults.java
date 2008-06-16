@@ -25,6 +25,8 @@ public class FrapDataAnalysisResults implements Matchable {
 	private Expression fitExpression = null;
 	private double[] bleachRegionData = null;
 
+	private Double slowerRate = null;
+	
 	public FrapDataAnalysisResults() {
 	}
 
@@ -241,6 +243,14 @@ public class FrapDataAnalysisResults implements Matchable {
 			return true;
 		}
 		return false;	
+	}
+
+	public Double getSlowerRate() {
+		return slowerRate;
+	}
+
+	public void setSlowerRate(Double slowerRate) {
+		this.slowerRate = slowerRate;
 	}
 
 }

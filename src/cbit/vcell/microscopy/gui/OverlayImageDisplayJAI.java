@@ -199,6 +199,9 @@ public class OverlayImageDisplayJAI extends DisplayJAI {
 	}
 		
 	public void drawHighlight(int x, int y, int radius, boolean erase,Color highlightColor,Point lastHighlightPoint){
+		if(lastHighlightPoint == null){
+			lastHighlightPoint = new Point(x,y);
+		}
 		Color drawingColor = highlightColor;
 		if (erase){
 			drawingColor = Color.black;
@@ -207,22 +210,12 @@ public class OverlayImageDisplayJAI extends DisplayJAI {
 		if (getHighlightImage()!=null){
 			Graphics graphicsUnscaled = getHighlightImage().getGraphics();
 			graphicsUnscaled.setColor(drawingColor);
-//			System.out.println(source.getClass().getName());
-//			System.out.println(((RenderedOp)source).getRendering().getClass().toString());
-//			System.out.println((((RenderedOp)source).getRendering().getClass().getSuperclass().toString()));
-//			System.out.println((((RenderedOp)source).getCurrentRendering().getClass().getSuperclass().toString()));
-//			Point[] tilePoints = source.getTileIndices(null);
-//			for (int i = 0; tilePoints != null &&  i < tilePoints.length; i++) {
-//				System.out.println(tilePoints[i]);
-//			}
-//			Graphics graphicsScaled = ((BufferedImage)source.getSourceImage(0).getSourceObject(1)).getGraphics();
-//			graphicsScaled.setColor(drawingColor);
 			int size = (int)(radius/zoom/*+radius/zoom*/+1);
 			//-----Interpolate between paint points for continuous lines
-			double currentX = (lastHighlightPoint == null?x:lastHighlightPoint.x);
-			double currentY = (lastHighlightPoint == null?y:lastHighlightPoint.y);
-			int dx = (lastHighlightPoint == null?0:x-lastHighlightPoint.x);
-			int dy = (lastHighlightPoint == null?0:y-lastHighlightPoint.y);
+			double currentX = lastHighlightPoint.x;
+			double currentY = lastHighlightPoint.y;
+			int dx = x-lastHighlightPoint.x;
+			int dy = y-lastHighlightPoint.y;
 			double delta = 1.0/(dx==0 && dy==0?1.0:Math.max(Math.abs(dx), Math.abs(dy)));
 			int lastX = (int)currentX;
 			int lastY = (int)currentY;

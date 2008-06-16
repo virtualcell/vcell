@@ -38,6 +38,9 @@ public class MicroscopyXMLTags {
     public final static String OriginalGlobalScaleInfoMaxTag = "OriginalGlobalScaleInfoMax";
     public final static String OriginalGlobalScaleInfoScaleTag = "OriginalGlobalScaleInfoScale";
     public final static String OriginalGlobalScaleInfoOffsetTag = "OriginalGlobalScaleInfoOffset";
+    
+	public static final String SlowerRateAttrTag = "SlowerRate";
+
 
 /**
  * XMLTags default constructor.

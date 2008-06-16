@@ -154,7 +154,7 @@ public class VirtualFrapWindowManager implements DataViewerManager {
 					System.out.println(event.toString());
 				}
 			});
-			exportServiceImpl.makeRemoteFile(localWorkSpace.getOwner(), dataServerImpl, exportSpecs);
+			exportServiceImpl.makeRemoteFile(LocalWorkspace.getDefaultOwner(), dataServerImpl, exportSpecs);
 		}catch (DataAccessException e){
 			e.printStackTrace(System.out);
 		} catch (FileNotFoundException e) {
@@ -165,7 +165,7 @@ public class VirtualFrapWindowManager implements DataViewerManager {
 	public void simStatusChanged(SimStatusEvent simStatusEvent) {
 	}
 	public User getUser() {
-		return localWorkSpace.getOwner();
+		return LocalWorkspace.getDefaultOwner();
 	}
 
 

@@ -7,11 +7,11 @@ import javax.swing.JFileChooser;
 import javax.swing.UIManager;
 
 import cbit.vcell.microscopy.FRAPStudy;
+import cbit.vcell.microscopy.LocalWorkspace;
 
 public class VirtualFrapLoader 
 {
 	//get paths
-	public static final String appPath = System.getProperty("user.home") + System.getProperty("file.separator") + "VirtualMicroscopy" + System.getProperty("file.separator");
 	//get current working directory
 	//filefilters for VFrap
 	public final static  VirtualFrapMainFrame.AFileFilter filter_lsm = new VirtualFrapMainFrame.AFileFilter("lsm","Zeiss Lsm Images");
@@ -30,6 +30,12 @@ public class VirtualFrapLoader
 	public static void main(String[] args)
 	{
 		try { 
+			if(args.length != 1){
+				System.out.println("Usage: progName workingDirectory");
+				System.exit(1);
+			}
+			File workingDirectory = new File(args[0]);
+			LocalWorkspace localWorkspcae = new LocalWorkspace(workingDirectory);
 		    FRAPStudy frapStudy = null; 
 		    frapStudy = new FRAPStudy(); 
 		
@@ -43,15 +49,15 @@ public class VirtualFrapLoader
 		    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); 
 		    //set up file choosers 
 		    openFileChooser = new JFileChooser(); 
-		    openFileChooser.setCurrentDirectory(new File(appPath)); 
+		    openFileChooser.setCurrentDirectory(new File(localWorkspcae.getDefaultWorkspaceDirectory())); 
 		    openFileChooser.addChoosableFileFilter(filter_lsm); 
 		    openFileChooser.addChoosableFileFilter(filter_tif); 
 		    openFileChooser.addChoosableFileFilter(filter_xml); 
 		    saveFileChooser = new JFileChooser();
 		    saveFileChooser.addChoosableFileFilter(filter_xml); 
-		    saveFileChooser.setCurrentDirectory(new File(appPath));
+		    saveFileChooser.setCurrentDirectory(new File(localWorkspcae.getDefaultWorkspaceDirectory()));
 		    multiOpenFileChooser = new JFileChooser(); 
-		    multiOpenFileChooser.setCurrentDirectory(new File(appPath));
+		    multiOpenFileChooser.setCurrentDirectory(new File(localWorkspcae.getDefaultWorkspaceDirectory()));
 		    multiOpenFileChooser.setMultiSelectionEnabled(true);
 
             
@@ -75,7 +81,7 @@ public class VirtualFrapLoader
 	        UIManager.put ("OptionPane.font",defaultFont);
 	        UIManager.put ("FileChooser.font", defaultFont);
 						
-			mf = new VirtualFrapMainFrame();
+			mf = new VirtualFrapMainFrame(localWorkspcae);
 			mf.setMainFrameTitle("");
 			mf.setVisible(true);
 			

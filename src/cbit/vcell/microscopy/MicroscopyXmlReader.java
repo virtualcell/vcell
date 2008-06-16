@@ -68,8 +68,12 @@ private FrapDataAnalysisResults getFrapDataAnalysisResults(Element param) throws
 	String bleachTypeStr = param.getAttributeValue(MicroscopyXMLTags.BleachTypeAttrTag);
 	String fitExpressionStr = param.getAttributeValue(MicroscopyXMLTags.FitExpressionAttrTag);
 	String startingIndexForRecoveryStr = param.getAttributeValue(MicroscopyXMLTags.StartingIndexForRecoveryAttrTag);
+	String slowerRateStr = param.getAttributeValue(MicroscopyXMLTags.SlowerRateAttrTag);
 	
 	FrapDataAnalysisResults fdar = new FrapDataAnalysisResults();
+	if(slowerRateStr!=null){
+		fdar.setSlowerRate(new Double(slowerRateStr));
+	}
 	if (recoveryTauStr!=null){
 		fdar.setRecoveryTau(new Double(recoveryTauStr));
 	}
@@ -178,16 +182,10 @@ private ImageDataset getImageDataset(Element param,DataSetControllerImpl.Progres
 	//added in Feb 2008, for counting loading progress
 	int imageSize = ushortImageElementList.size();
 	int imageCount = 0;
-	int imageIndex = 0;
-	//Added Feb, 2008. The varaibles added below are used for calculating the time used.
-	//we want to update the loading progress every 1 seconds.
-	//When loading xml file, we roughly assume the image loading takes 95% of the total progress and other 5% is from loading ROI rings.
 	while (imageElementIter.hasNext()){
-		images[imageIndex++] = getUShortImage(imageElementIter.next());
-		imageCount++;
-		if(progressListener != null){progressListener.updateProgress(((int)(imageCount/imageSize)));}
+		images[imageCount++] = getUShortImage(imageElementIter.next());
+		if(progressListener != null){progressListener.updateProgress((double)imageCount/(double)imageSize);}
 	}
-	if(progressListener != null){progressListener.updateProgress(.95);}
 	Element timeStampListElement = param.getChild(MicroscopyXMLTags.TimeStampListTag);
 	double[] timestamps = null;
 	if (timeStampListElement!=null){

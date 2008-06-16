@@ -11,7 +11,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 
 import javax.swing.ImageIcon;
@@ -22,26 +21,18 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
 import javax.swing.WindowConstants;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 
 import cbit.gui.DialogUtils;
 import cbit.sql.KeyValue;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.task.UserCancelException;
-import cbit.vcell.geometry.GeometryException;
-import cbit.vcell.math.MathException;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.LocalWorkspace;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.server.ObjectNotFoundException;
 import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.server.User;
-import cbit.vcell.solver.SolverException;
 
 
 /**
@@ -54,6 +45,8 @@ import cbit.vcell.solver.SolverException;
 /** The main frame of the application. */
 public class VirtualFrapMainFrame extends JFrame
 {
+	private LocalWorkspace localWorkspace;
+	
 	public static final String ROIErrorString = 
 		"'Cell','Bleach' and 'Background' ROIs are required for FRAP model.  "+
 		"Create all ROIs under '"+FRAPStudyPanel.FRAPDATAPANEL_TABNAME+"' tab";
@@ -81,13 +74,11 @@ public class VirtualFrapMainFrame extends JFrame
   
   private Container c;
 
-  private JMenuItem mRun, mAnalysis;
   private static final JMenuItem msave = new JMenuItem("Save",'S');
   private static final JMenuItem msaveas = new JMenuItem("Save As...");
 
   private MultiFileInputDialog multiFileDialog = null;
   
-  private int tabbedPaneIndex = FRAPStudyPanel.INDEX_TAB_IMAGES;
   //Inner class AFileFilter
   //This class implements both ava.io.FileFilter and javax.swing.filechooser.FileFilter.
   public static class AFileFilter extends FileFilter  implements java.io.FileFilter {
@@ -252,7 +243,7 @@ public class VirtualFrapMainFrame extends JFrame
 		      // Help menu
 		      else if(arg.endsWith("About Virtual Frap"))
 		      {
-		    	  AboutDialog aboutDialog = new AboutDialog(getClass().getResource("/images/splash.jpg"), VirtualFrapMainFrame.this);
+		    	  new AboutDialog(getClass().getResource("/images/splash.jpg"), VirtualFrapMainFrame.this);
 		      }
 		  }
 	  }
@@ -309,19 +300,20 @@ public class VirtualFrapMainFrame extends JFrame
   
   
   // constructor
-  public VirtualFrapMainFrame()
+  public VirtualFrapMainFrame(LocalWorkspace localWorkspace)
   {
     super();
+    this.localWorkspace = localWorkspace;
     //showing the splash window for VirtualFrap
     final URL splashImage = getClass().getResource("/images/splash.jpg");
-    SplashWindow mySplash = new SplashWindow(splashImage,this,3500);
+    new SplashWindow(splashImage,this,3500);
     //get image file
     setIconImage(new ImageIcon(getClass().getResource("/images/logo.gif")).getImage());
     //initiate variables
     initiateComponents();
     SetupMenus();
     enableSave(false);
-    System.out.println("current directory is:"+ LocalWorkspace.workSpacePath);
+    System.out.println("current directory is:"+ localWorkspace.getDefaultWorkspaceDirectory());
         
     //set window size
     setSize(INIT_WINDOW_SIZE);
@@ -353,11 +345,9 @@ public class VirtualFrapMainFrame extends JFrame
       mb = new JMenuBar();
 
       frapStudyPanel = new FRAPStudyPanel();
-      User owner = new User("userData",new KeyValue("17"));
-	  System.setProperty(PropertyLoader.localSimDataDirProperty, LocalWorkspace.workSpacePath);
-	  System.setProperty(PropertyLoader.secondarySimDataDirProperty, LocalWorkspace.workSpacePath);
-	  String simDataDir = PropertyLoader.getRequiredProperty(PropertyLoader.localSimDataDirProperty);
-	  frapStudyPanel.setLocalWorkspace(new LocalWorkspace(LocalWorkspace.workSpacePath,owner,simDataDir));
+	  System.setProperty(PropertyLoader.localSimDataDirProperty, localWorkspace.getDefaultWorkspaceDirectory());
+	  System.setProperty(PropertyLoader.secondarySimDataDirProperty, localWorkspace.getDefaultWorkspaceDirectory());
+	  frapStudyPanel.setLocalWorkspace(localWorkspace);
 
       //add components to the main frame
       c = getContentPane();
@@ -376,7 +366,7 @@ public class VirtualFrapMainFrame extends JFrame
     JMenu fileMenu =new JMenu("File");
     fileMenu.setMnemonic('F');
     mb.add(fileMenu);
-    JMenuItem mfileSeries,mprint,mexit;
+    JMenuItem mfileSeries,mprint;
 
     menuOpen.addActionListener(menuHandler);
     fileMenu.add(menuOpen);

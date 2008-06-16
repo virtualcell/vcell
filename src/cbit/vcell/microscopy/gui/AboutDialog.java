@@ -29,11 +29,11 @@ public class AboutDialog extends JWindow
                     screenSize.height/2 - (labelSize.height/2));
         addMouseListener(new MouseAdapter()
             {
-                public void mousePressed(MouseEvent e)
-                {
-                    setVisible(false);
-                    dispose();
-                }
+        	@Override
+        	public void mouseClicked(MouseEvent e) {
+        		super.mouseClicked(e);
+        		dispose();
+        	}
             });
         setVisible(true);
     }

@@ -11,6 +11,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -42,6 +44,7 @@ import cbit.util.NumberUtils;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.microscopy.FRAPData;
+import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.ROI;
 //comments added Jan 2008, this is the panel that displayed at the top of the FRAPDataPanel which deals with serials of images.
 /**
@@ -120,7 +123,26 @@ public class OverlayEditorPanelJAI extends JPanel {
 		BeanUtils.setCursorThroughout(
 			BeanUtils.findTypeParentOfComponent(
 				OverlayEditorPanelJAI.this, VirtualFrapMainFrame.class),
-				Cursor.getPredefinedCursor((bOn?Cursor.WAIT_CURSOR:Cursor.DEFAULT_CURSOR)));
+				(bOn?Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR):Cursor.getDefaultCursor()));
+		if(!bOn){
+			updateROICursor();
+		}
+	}
+	public void updateROICursor(){
+		getImagePane().setCursor(getROICursor());
+	}
+	private Cursor getROICursor(){
+		if(roi == null){
+			return Cursor.getDefaultCursor();
+		}
+		if(roi.getROIType().equals(ROI.RoiType.ROI_CELL)){
+			return FRAPStudyPanel.ROI_CURSORS[FRAPStudyPanel.CURSOR_CELLROI];
+		}else if(roi.getROIType().equals(ROI.RoiType.ROI_BLEACHED)){
+			return FRAPStudyPanel.ROI_CURSORS[FRAPStudyPanel.CURSOR_BLEACHROI];
+		}else if(roi.getROIType().equals(ROI.RoiType.ROI_BACKGROUND)){
+			return FRAPStudyPanel.ROI_CURSORS[FRAPStudyPanel.CURSOR_BACKGROUNDROI];
+		}
+		throw new RuntimeException("Unknown ROI type "+roi.getROIType()+" while getting cursor");
 	}
 	/**
 	 * This method initializes this
@@ -511,6 +533,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 				backgroundRadioButton.setSelected(true);
 			}
 		}
+		updateROICursor();
 	}
 		
 	

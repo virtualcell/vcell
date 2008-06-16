@@ -6,8 +6,11 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Date;
+import java.util.Enumeration;
+import java.util.Hashtable;
 import java.util.Vector;
 
 import javax.media.jai.BorderExtender;
@@ -42,6 +45,8 @@ import cbit.util.TokenMangler;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.server.PDEDataManager;
+import cbit.vcell.desktop.controls.DataManager;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
@@ -52,7 +57,10 @@ import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.math.Equation;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.PdeEquation;
+import cbit.vcell.math.SubDomain;
 import cbit.vcell.microscopy.ROI.RoiType;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.MassActionKinetics;
@@ -61,12 +69,18 @@ import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.opt.ReferenceData;
+import cbit.vcell.opt.SimpleReferenceData;
+import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.server.GroupAccessNone;
 import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.server.User;
+import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.ExternalDataIdentifier;
+import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.simdata.DataSetControllerImpl.ProgressListener;
@@ -75,6 +89,8 @@ import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverStatus;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
+import cbit.vcell.solver.ode.ODESolverResultSet;
+import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.FVSolverStandalone;
 
@@ -92,12 +108,237 @@ public class FRAPStudy implements Matchable{
 	
 	PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 	
+	public static final String EXTRACELLULAR_NAME = "extracellular";
+	public static final String CYTOSOL_NAME = "cytosol";
+
+	public static class CurveInfo {
+		Double diffusionRate;
+		RoiType roiType = null;
+		
+		public CurveInfo(Double diffRate, RoiType roi){
+			this.diffusionRate = diffRate;
+			this.roiType = roi;
+		}
+		
+		public boolean equals(Object obj){
+			if (obj instanceof CurveInfo){
+				CurveInfo ci = (CurveInfo)obj;
+				if (ci.diffusionRate==null && diffusionRate==null){
+					// ok
+				}else if (ci.diffusionRate==null || diffusionRate==null){
+					return false;
+				}else if (!ci.diffusionRate.equals(diffusionRate)){
+					return false;
+				}
+				if (ci.roiType!=roiType){
+					return false;
+				}
+				return true;
+			}
+			return false;
+		}
+		
+		public int hashCode(){
+			return ((diffusionRate!=null)?(diffusionRate.hashCode()):(0)) + roiType.toString().hashCode();
+		}
+		public String getDisplayName(){
+			if (diffusionRate==null){
+				return "exp::"+roiType.toString();
+			}else{
+				return "sim_D_"+diffusionRate+"::"+roiType.toString();
+			}
+		}
+	}
+
+	public static class SpatialAnalysisResults{
+		public final Double[] diffusionRates;
+		public final String[] varNames;
+		public final double[] shiftedSimTimes;
+		public final Hashtable<CurveInfo, double[]> curveHash;
+		public static RoiType[] ORDERED_ROITYPES =
+			new RoiType[] {
+				RoiType.ROI_BLEACHED,	
+				RoiType.ROI_BLEACHED_RING1,	
+				RoiType.ROI_BLEACHED_RING2,	
+				RoiType.ROI_BLEACHED_RING3,	
+				RoiType.ROI_BLEACHED_RING4,	
+				RoiType.ROI_BLEACHED_RING5,
+				RoiType.ROI_BLEACHED_RING6,
+				RoiType.ROI_BLEACHED_RING7,
+				RoiType.ROI_BLEACHED_RING8
+			};
+		public SpatialAnalysisResults(
+				Double[] diffusionRates,String[] varNames,double[] shiftedSimTimes,
+				Hashtable<CurveInfo, double[]> curveHash){
+			this.diffusionRates = diffusionRates;
+			this.varNames = varNames;
+			this.shiftedSimTimes = shiftedSimTimes;
+			this.curveHash = curveHash;
+		}
+	
+		public ReferenceData[] createReferenceDataForAllDiffusionRates(double[] frapDataTimeStamps){
+			ReferenceData[] referenceDataArr = new ReferenceData[diffusionRates.length];
+			for (int i = 0; i < diffusionRates.length; i++) {
+				String[] expRefDataLabels = new String[FRAPStudy.SpatialAnalysisResults.ORDERED_ROITYPES.length+1];
+				double[] expRefDataWeights = new double[FRAPStudy.SpatialAnalysisResults.ORDERED_ROITYPES.length+1];
+				double[][] expRefDataColumns = new double[FRAPStudy.SpatialAnalysisResults.ORDERED_ROITYPES.length+1][];
+				expRefDataLabels[0] = "t";
+				expRefDataWeights[0] = 1.0;
+				expRefDataColumns[0] = frapDataTimeStamps;
+				for (int j = 0; j < FRAPStudy.SpatialAnalysisResults.ORDERED_ROITYPES.length; j++) {
+					expRefDataLabels[j+1] = "exp::"+FRAPStudy.SpatialAnalysisResults.ORDERED_ROITYPES[j].toString();
+					expRefDataWeights[j+1] = 1.0;
+					expRefDataColumns[j+1] = curveHash.get(new FRAPStudy.CurveInfo(null,FRAPStudy.SpatialAnalysisResults.ORDERED_ROITYPES[j])); // get experimental data for this ROI
+				}
+				referenceDataArr[i] = new SimpleReferenceData(expRefDataLabels, expRefDataWeights, expRefDataColumns);
+			}
+			return referenceDataArr;
+		}
+		public ODESolverResultSet[] createODESolverResultSetForAllDiffusionRates(){
+			ODESolverResultSet[] odeSolverResultSetArr = new ODESolverResultSet[diffusionRates.length];
+			for (int i = 0; i < diffusionRates.length; i++) {
+				ODESolverResultSet fitOdeSolverResultSet = new ODESolverResultSet();
+				fitOdeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription("t"));
+				for (int j = 0; j < varNames.length; j++) {
+					String name = "sim D="+diffusionRates[j]+"::"+FRAPStudy.SpatialAnalysisResults.ORDERED_ROITYPES[j].toString();
+					fitOdeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription(name));
+				}
+				//
+				// populate time
+				//
+				for (int j = 0; j < shiftedSimTimes.length; j++) {
+					double[] row = new double[varNames.length+1];
+					row[0] = shiftedSimTimes[j];
+					fitOdeSolverResultSet.addRow(row);
+				}
+				//
+				// populate values
+				//
+				for (int j = 0; j < FRAPStudy.SpatialAnalysisResults.ORDERED_ROITYPES.length; j++) {
+					double[] values = curveHash.get(new FRAPStudy.CurveInfo(diffusionRates[i],FRAPStudy.SpatialAnalysisResults.ORDERED_ROITYPES[j])); // get simulated data for this ROI
+					for (int k = 0; k < values.length; k++) {
+						fitOdeSolverResultSet.setValue(k, j+1, values[k]);
+					}
+				}
+				odeSolverResultSetArr[i] = fitOdeSolverResultSet;
+			}
+			return odeSolverResultSetArr;
+		}
+	}
+	
 	//
 	// store the external data identifiers as annotation within a MathModel.
 	//
 	
 	public ExternalDataInfo getFrapDataExternalDataInfo() {
 		return frapDataExternalDataInfo;
+	}
+	
+	
+	public static FRAPStudy.SpatialAnalysisResults spatialAnalysis(
+		DataManager simulationDataManager,
+		int startingIndexForRecovery,
+		double startingIndexForRecoveryExperimentalTimePoint,
+		SubDomain subDomain,
+		FRAPData frapData,
+		DataSetControllerImpl.ProgressListener progressListener) throws Exception{
+		
+		//
+		// get List of variable names
+		//
+		ArrayList<Double> diffList = new ArrayList<Double>();
+		ArrayList<String> pdeVarNameList = new ArrayList<String>();
+		Enumeration<Equation> equEnum = subDomain.getEquations();
+		while (equEnum.hasMoreElements()){
+			Equation equ = equEnum.nextElement();
+			if (equ instanceof PdeEquation){
+				PdeEquation pde = (PdeEquation)equ;
+				pdeVarNameList.add(pde.getVariable().getName());
+				try {
+					diffList.add(pde.getDiffusionExpression().evaluateConstant());
+				} catch (DivideByZeroException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (ExpressionException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+		String[] varNames = pdeVarNameList.toArray(new String[pdeVarNameList.size()]);
+		Double[] diffusionRates = diffList.toArray(new Double[diffList.size()]);		
+		//
+		// get timing to compare experimental data with simulated results.
+		//
+		double[] simTimes = simulationDataManager.getDataSetTimes();
+		double[] shiftedSimTimes = simTimes.clone();
+		for (int j = 0; j < simTimes.length; j++) {
+			shiftedSimTimes[j] = simTimes[j] + startingIndexForRecoveryExperimentalTimePoint;//timeStamps[startingIndexOfRecovery];
+		}
+		//
+		// for each simulation time step, get the data under each ROI <indexed by ROI, then diffusion
+		//
+		// preallocate arrays for all data first
+		Hashtable<CurveInfo, double[]> curveHash = new Hashtable<CurveInfo, double[]>();
+		ArrayList<int[]> nonZeroIndicesForROI = new ArrayList<int[]>();
+		for (int i = 0; i < SpatialAnalysisResults.ORDERED_ROITYPES.length; i++) {
+			for (int j = 0; j < diffusionRates.length; j++) {
+				curveHash.put(new CurveInfo(diffusionRates[j],SpatialAnalysisResults.ORDERED_ROITYPES[i]), new double[simTimes.length]);
+			}
+			ROI roi_2D = frapData.getRoi(SpatialAnalysisResults.ORDERED_ROITYPES[i]);
+			nonZeroIndicesForROI.add(roi_2D.getRoiImages()[0].getNonzeroIndices());
+		}
+		//
+		// collect data for experiment (over all ROIs)
+		//
+		for (int i = 0; i < SpatialAnalysisResults.ORDERED_ROITYPES.length; i++) {
+//			ROI roi_2D = frapData.getRoi(roiTypes[i]);
+//			int[] roiIndices = roi_2D.getRoiImages()[0].getNonzeroIndices();
+			double[] averageFluor = FRAPDataAnalysis.getAverageROIIntensity(frapData, SpatialAnalysisResults.ORDERED_ROITYPES[i]);
+			double weight = 1.0/averageFluor[0];
+			for (int j = 0; j < averageFluor.length; j++) {
+				averageFluor[j] = averageFluor[j]*weight;
+			}
+			curveHash.put(new CurveInfo(null,SpatialAnalysisResults.ORDERED_ROITYPES[i]), averageFluor);
+		}
+		
+		//
+		// get Simulation Data
+		//
+		// we want to update the loading progress every 2 seconds.
+		long start = System.currentTimeMillis();
+		long end;
+		int totalLen = simTimes.length*varNames.length*SpatialAnalysisResults.ORDERED_ROITYPES.length;
+		if(progressListener != null){progressListener.updateProgress(0);}
+		for (int i = 0; i < simTimes.length; i++) {
+			for (int j = 0; j < varNames.length; j++) {
+				SimDataBlock simDataBlock = simulationDataManager.getSimDataBlock(varNames[j], simTimes[i]);
+				double[] data = simDataBlock.getData();
+				for (int k = 0; k < SpatialAnalysisResults.ORDERED_ROITYPES.length; k++) {
+					int[] roiIndices = nonZeroIndicesForROI.get(k);
+					double accum = 0.0;
+					for (int index = 0; index < roiIndices.length; index++) {
+						accum += data[roiIndices[index]];
+					}
+					double[] values = curveHash.get(new CurveInfo(diffusionRates[j],SpatialAnalysisResults.ORDERED_ROITYPES[k]));
+					values[i] = accum/roiIndices.length;
+					
+					// calculate the progress after 2 seconds
+					end = System.currentTimeMillis();
+					if((end - start) >= 2000)
+					{
+						double currentLen = i*varNames.length*SpatialAnalysisResults.ORDERED_ROITYPES.length + j*SpatialAnalysisResults.ORDERED_ROITYPES.length + k;
+						if(progressListener != null){progressListener.updateProgress(currentLen/totalLen);}
+//						VirtualFrapMainFrame.statusBar.showProgress((int)Math.round((currentLen/totalLen) * 100));
+						start = end; 
+					}
+				}
+			}
+		}
+
+		SpatialAnalysisResults spatialAnalysisResults = 
+			new SpatialAnalysisResults(diffusionRates,varNames,shiftedSimTimes,curveHash);
+		return spatialAnalysisResults;
 	}
 	
 	public static void runFVSolverStandalone(
@@ -129,7 +370,10 @@ public class FRAPStudy implements Matchable{
 		System.setProperty(PropertyLoader.jmsSimJobQueue, "abc");
 		System.setProperty(PropertyLoader.jmsWorkerEventQueue, "abc");
 		System.setProperty(PropertyLoader.jmsServiceControlTopic, "abc");
-//		ResourceUtils.writeFVExecutable();
+		//
+		//FVSolverStandalone class expects the PropertyLoader.finiteVolumeExecutableProperty to exist
+		System.setProperty(PropertyLoader.finiteVolumeExecutableProperty, LocalWorkspace.getFinitVolumeExecutableFullPathname());
+		//
 		FVSolverStandalone fvSolver = new FVSolverStandalone(simJob,simulationDataDir,sessionLog,false);
 		fvSolver.startSolver();
 		
@@ -168,10 +412,10 @@ public class FRAPStudy implements Matchable{
 	}
 
 	public static ExternalDataInfo createNewExternalDataInfo(LocalWorkspace localWorkspace,String extDataIDName){
-		File targetDir = new File(localWorkspace.getSimDataDirectory(),localWorkspace.getOwner().getName());
+		File targetDir = new File(localWorkspace.getDefaultSimDataDirectory());
 		ExternalDataIdentifier newImageDataExtDataID =
 			new ExternalDataIdentifier(LocalWorkspace.createNewKeyValue(),
-					localWorkspace.getOwner(),extDataIDName);
+					LocalWorkspace.getDefaultOwner(),extDataIDName);
 		ExternalDataInfo newImageDataExtDataInfo =
 			new ExternalDataInfo(newImageDataExtDataID,
 				new File(targetDir,newImageDataExtDataID.getID()+SimDataConstants.LOGFILE_EXTENSION).getAbsolutePath());
@@ -270,8 +514,6 @@ public class FRAPStudy implements Matchable{
 		byte[] bytePixels = new byte[numX*numY*numZ];
 		final byte EXTRACELLULAR_PIXVAL = 0;
 		final byte CYTOSOL_PIXVAL = 1;
-		final String EXTRACELLULAR_NAME = "extracellular";
-		final String CYTOSOL_NAME = "cytosol";
 		for (int i = 0; i < bytePixels.length; i++) {
 			if (shortPixels[i]!=0){
 				bytePixels[i] = CYTOSOL_PIXVAL;
@@ -773,43 +1015,24 @@ public class FRAPStudy implements Matchable{
 	    	//changed in March 2008. Though biomodel is not created, we still let user save to xml file.
 	    	Origin origin = new Origin(0,0,0);
 	    	CartesianMesh cartesianMesh  = getCartesianMesh();
-//	    	CartesianMesh cartesianMesh  = null;
-//	    	if (getBioModel()==null){
-//	    		//throw new RuntimeException("can't save External Data, must generate BioModel first (to create corresponding mesh)");
-//	    		cartesianMesh = CartesianMesh.createSimpleCartesianMesh(origin, extent, isize, 
-//	    						new RegionImage( new VCImageUncompressed(null, new byte[isize.getXYZ()], extent, isize.getX(),isize.getY(),isize.getZ()),
-//	    						0,null,null,RegionImage.NO_SMOOTHING));
-//	    	}
-//	    	else
-//	    	{
-//		    	RegionImage regionImage = getBioModel().getSimulationContexts()[0].getGeometry().getGeometrySurfaceDescription().getRegionImage();
-//		    	if(regionImage == null){
-//		    		getBioModel().getSimulationContexts()[0].getGeometry().getGeometrySurfaceDescription().updateAll();
-//		    		regionImage = getBioModel().getSimulationContexts()[0].getGeometry().getGeometrySurfaceDescription().getRegionImage();
-//		    	}
-//		    	cartesianMesh = CartesianMesh.createSimpleCartesianMesh(origin, extent, isize, regionImage);
-//	    	}
 	    	FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
 	    	fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
 	    	fdos.cartesianMesh = cartesianMesh;
 	    	fdos.shortSpecData =  pixData;
 	    	fdos.specEDI = newImageExtDataID;
 	    	fdos.varNames = new String[] {"fluor"};
-	    	fdos.owner = localWorkspace.getOwner();
+	    	fdos.owner = LocalWorkspace.getDefaultOwner();
 	    	fdos.times = timesArray;
 	    	fdos.variableTypes = new VariableType[] {VariableType.VOLUME};
 	    	fdos.origin = origin;
 	    	fdos.extent = extent;
 	    	fdos.isize = isize;
 			localWorkspace.getDataSetControllerImpl().fieldDataFileOperation(fdos);
-//			setFrapDataExternalDataInfo(new ExternalDataInfo(externalDataID,new File(rootDir,externalDataID.getID()+".log").getAbsolutePath()));
-//			deleteExternalData(localWorkspace, originalExtDataID);
-//		}
 	}
 	
 	public static File[] getCanonicalExternalDataFiles(LocalWorkspace localWorkspace,ExternalDataIdentifier originalExtDataID){
 		if(originalExtDataID != null){
-			File userDir = new File(localWorkspace.getSimDataDirectory(),localWorkspace.getOwner().getName());
+			File userDir = new File(localWorkspace.getDefaultSimDataDirectory());
 			File fdLogFile =
 				new File(userDir,
 						ExternalDataIdentifier.createCanonicalSimLogFileName(originalExtDataID.getKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT,false));
@@ -970,7 +1193,7 @@ public class FRAPStudy implements Matchable{
 	    			"ring6_mask",
 	    			"ring7_mask",
 	    			"ring8_mask"};
-	    	fdos.owner = localWorkspace.getOwner();
+	    	fdos.owner = LocalWorkspace.getDefaultOwner();
 	    	fdos.times = new double[] { 0.0 };
 	    	fdos.variableTypes = new VariableType[] {
 	    			VariableType.VOLUME,

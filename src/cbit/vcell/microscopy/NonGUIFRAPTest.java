@@ -5,6 +5,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -18,10 +19,20 @@ import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.server.PDEDataManager;
+import cbit.vcell.desktop.controls.DataManager;
+import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.microscopy.ROI.RoiType;
+import cbit.vcell.modelopt.gui.DataReference;
+import cbit.vcell.modelopt.gui.DataSource;
+import cbit.vcell.modelopt.gui.MultisourcePlotListModel;
+import cbit.vcell.modelopt.gui.MultisourcePlotPane;
+import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.server.StdoutSessionLog;
 import cbit.vcell.server.User;
 import cbit.vcell.simdata.DataSetControllerImpl;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.solver.ode.ODESolverResultSet;
 
 public class NonGUIFRAPTest {
 
@@ -219,8 +230,6 @@ public class NonGUIFRAPTest {
 				FrapDataAnalysisResults.BLEACH_TYPE_NAMES[frapStudy.getFrapDataAnalysisResults().getBleachType()],
 				(bleachWhileMonitoringRate == null?"-":bleachWhileMonitoringRate.toString()),
 				testDirectoryPath,
-				new File(testDirectoryPath).getParent(),
-				new File(testDirectoryPath).getName(),
 				imageDataSetZipFile.getAbsolutePath(),
 				cellROIFile.getAbsolutePath(),
 				bleachROIFile.getAbsolutePath(),
@@ -260,20 +269,17 @@ public class NonGUIFRAPTest {
 	public static void runSolver(String[] args) throws Exception{
 		String recoveryDiffusionRateString = args[0];
 		String bleachWhileMonitoringRateString = args[1];
-		String workSpaceDirectoryPath = args[2];
-		String simRootDirectoryPath = args[3];
-		String simUserSubDirectoryName = args[4];
-		String inputFRAPDataFileName = args[5];
-		String inputCellROIFileName = args[6];
-		String inputBleachROIFileName = args[7];
-		String inputBackgroundROIFileName = args[8];
-		String outputXMLFileName = args[9];
-		String commaSepTimeStamps = args[10];
-		String commaSepExtentXYZ = args[11];
+		String workingDirectoryPath = args[2];
+		String inputFRAPDataFileName = args[3];
+		String inputCellROIFileName = args[4];
+		String inputBleachROIFileName = args[5];
+		String inputBackgroundROIFileName = args[6];
+		String outputXMLFileName = args[7];
+		String commaSepTimeStamps = args[8];
+		String commaSepExtentXYZ = args[9];
 		
 		LocalWorkspace localWorkspace =
-			new LocalWorkspace(workSpaceDirectoryPath,
-					new User(simUserSubDirectoryName,new KeyValue("0")),simRootDirectoryPath);
+			new LocalWorkspace(new File(workingDirectoryPath));
 		
 		ExternalDataFileContents extDataFileContents =
 			readExternalDataContents(
@@ -343,7 +349,7 @@ public class NonGUIFRAPTest {
 				fdar.getRecoveryDiffusionRate(),
 				bleachWhileMonitoringRate,
 				LocalWorkspace.createNewKeyValue(),
-				localWorkspace.getOwner());
+				LocalWorkspace.getDefaultOwner());
 		frapStudy.setBioModel(bioModel);
 		DataSetControllerImpl.ProgressListener progressListener =
 			new DataSetControllerImpl.ProgressListener(){
@@ -353,11 +359,75 @@ public class NonGUIFRAPTest {
 			};
 		MicroscopyXmlproducer.writeXMLFile(frapStudy, new File(outputXMLFileName), true,progressListener,false);
 		FRAPStudy.runFVSolverStandalone(
-			new File(simRootDirectoryPath,localWorkspace.getOwner().getName()),
-			new StdoutSessionLog(localWorkspace.getOwner().getName()),
+			new File(localWorkspace.getDefaultSimDataDirectory()),
+			new StdoutSessionLog(LocalWorkspace.getDefaultOwner().getName()),
 			bioModel.getSimulations(0),
 			imageDatasetExternalDataInfo.getExternalDataIdentifier(),
 			roiExternalDataInfo.getExternalDataIdentifier(),
 			progressListener);
+		
+		VCSimulationDataIdentifier vcSimulationDataIdentifier =
+			new VCSimulationDataIdentifier(
+				bioModel.getSimulations()[0].getSimulationInfo().getAuthoritativeVCSimulationIdentifier(),
+				FieldDataFileOperationSpec.JOBINDEX_DEFAULT);
+		DataManager simulationDataManager =
+			new PDEDataManager(localWorkspace.getVCDataManager(),vcSimulationDataIdentifier);
+		double[] frapDataTimeStamps = frapData.getImageDataset().getImageTimeStamps();
+		FRAPStudy.SpatialAnalysisResults spatialAnalysisResults =
+			FRAPStudy.spatialAnalysis(
+				simulationDataManager,
+				fdar.getStartingIndexForRecovery(),
+				frapDataTimeStamps[fdar.getStartingIndexForRecovery()],
+				bioModel.getSimulations()[0].getMathDescription().getSubDomain(FRAPStudy.CYTOSOL_NAME),
+				frapData,
+				progressListener);
+		dumpSpatialResults(spatialAnalysisResults, frapDataTimeStamps, new File(workingDirectoryPath,"nonguiSpatialResults.txt"));
+		
+	}
+	public static void dumpSpatialResults(
+			FRAPStudy.SpatialAnalysisResults spatialAnalysisResults,
+			double[] frapDataTimeStamps,
+			File outputFile) throws Exception{
+		
+		FileWriter fw = new FileWriter(outputFile);
+//		FileOutputStream fos = new FileOutputStream(outputFile);
+//		BufferedOutputStream bos = new BufferedOutputStream(fos);
+		ReferenceData[] referenceDataArr =
+			spatialAnalysisResults.createReferenceDataForAllDiffusionRates(frapDataTimeStamps);
+		ODESolverResultSet[] odeSolverResultSetArr =
+			spatialAnalysisResults.createODESolverResultSetForAllDiffusionRates();
+		for (int i = 0; i < spatialAnalysisResults.diffusionRates.length; i++) {
+			DataSource expDataSource = new DataSource(referenceDataArr[i],"experiment");
+			DataSource fitDataSource = new DataSource(odeSolverResultSetArr[i], "fit");
+			MultisourcePlotListModel multisourcePlotListModel =
+				new MultisourcePlotListModel();
+			multisourcePlotListModel.setDataSources(new DataSource[] {expDataSource,fitDataSource});
+			System.out.println("Diffusion Rate = "+spatialAnalysisResults.diffusionRates[i]);
+			for (int j = 0; j < multisourcePlotListModel.getSize(); j++) {
+				DataReference dataReference = (DataReference)multisourcePlotListModel.getElementAt(j);
+				if(dataReference.getDataSource().getSource() instanceof ReferenceData){
+					ReferenceData refData = (ReferenceData)dataReference.getDataSource().getSource();
+					for (int k = 0; k < refData.getNumRows(); k++) {
+						for (int k2 = 0; k2 < refData.getNumColumns(); k2++) {
+							System.out.print(refData.getRowData(k)[k2]+" ");
+							fw.write(refData.getRowData(k)[k2]+" ");
+						}
+						System.out.println();
+						fw.write("\n");
+					}
+				}else{
+					ODESolverResultSet odeRS = (ODESolverResultSet)dataReference.getDataSource().getSource();
+					for (int k = 0; k < odeRS.getRowCount(); k++) {
+						for (int k2 = 0; k2 < odeRS.getDataColumnCount(); k2++) {
+							System.out.print(odeRS.getRow(k)[k2]+" ");
+							fw.write(odeRS.getRow(k)[k2]+" ");
+						}
+						System.out.println();
+						fw.write("\n");
+					}
+				}
+			}
+		}
+		fw.close();
 	}
 }
