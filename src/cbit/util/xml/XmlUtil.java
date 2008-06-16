@@ -9,8 +9,10 @@ import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.XMLOutputter;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -51,15 +53,24 @@ private XmlUtil() {
 
 	public static String getXMLString(String fileName) throws IOException {
 
-		BufferedReader br = new BufferedReader(new FileReader(fileName));
-		String temp;
-		StringBuffer buf = new StringBuffer();
-		while ((temp = br.readLine()) != null) {
-			buf.append(temp);
-			buf.append("\n");
+		FileInputStream fis = null;
+		BufferedInputStream bis = null;
+		try{
+			File inFile = new File(fileName);
+			byte[] stringBytes = new byte[(int)inFile.length()];
+			fis = new FileInputStream(inFile);
+			bis = new BufferedInputStream(fis);
+			int readCount = 0;
+			while((readCount+= bis.read(stringBytes, readCount, stringBytes.length-readCount)) != stringBytes.length){}
+			return new String(stringBytes);
+		}finally{
+			try{
+				if(bis != null){bis.close();}
+			}catch(Exception e){
+				e.printStackTrace();
+				//ignore so any original Exception is passed
+			}
 		}
-		
-		return buf.toString();
 	}
 	
 	public static void writeXMLString(String xmlString, String filename) throws IOException {
