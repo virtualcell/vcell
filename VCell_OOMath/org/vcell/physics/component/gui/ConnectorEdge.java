@@ -6,6 +6,7 @@ package org.vcell.physics.component.gui;
 import java.awt.Graphics2D;
 
 import org.vcell.physics.component.Connector;
+import org.vcell.units.VCUnitDefinition;
 
 import cbit.gui.graph.GraphModel;
 /**
@@ -22,6 +23,15 @@ public class ConnectorEdge extends cbit.gui.graph.EdgeShape {
 public ConnectorEdge(DeviceNode argDeviceNode, ConnectionNode argConnectionNode, org.vcell.physics.component.Connection argConnection, GraphModel graphModel) {
 	super(argDeviceNode, argConnectionNode, graphModel);
 	this.connection = argConnection;
+	if (argConnection.getConnectors()[0].getEffortVariable()!=null){
+		if (argConnection.getConnectors()[0].getEffortVariable().getUnitDefinition().isCompatible(VCUnitDefinition.UNIT_mV)){
+			defaultFG = java.awt.Color.pink;
+			forgroundColor = java.awt.Color.pink;
+		}else if (argConnection.getConnectors()[0].getEffortVariable().getUnitDefinition().isCompatible(VCUnitDefinition.UNIT_uM)){
+			defaultFG = java.awt.Color.green;
+			forgroundColor = java.awt.Color.green;
+		}
+	}
 	refreshLabel();
 }
 

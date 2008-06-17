@@ -11,6 +11,8 @@ import jscl.plugin.ParseException;
  * @author: Jim Schaff
  */
 public class LumpedLocation extends Location {
+	public final static String CONNECTOR_ELECTRICAL = "conn_elect";
+	public final static String CONNECTOR_SIZE = "conn_size";
 
 /**
  * UnresolvedMembrane constructor comment.
@@ -18,24 +20,14 @@ public class LumpedLocation extends Location {
  */
 public LumpedLocation(String argName, int dimension, double sizeValue) {
 	super(argName,dimension);
-	Variable size = null;
-	switch(dimension){
-	case 1: {
-		size = new Variable("size",VCUnitDefinition.UNIT_um);
-		break;
-	}
-	case 2: {
-		size = new Variable("size",VCUnitDefinition.UNIT_um2);
-		break;
-	}
-	case 3: {
-		size = new Variable("size",VCUnitDefinition.UNIT_um3);
-		break;
-	}
-	}
+	Variable size = new Variable("size",getSizeUnit(dimension));
 	addSymbol(size);
-	Connector conn = new Connector(this,"conn_size",size,null);
-	addConnector(conn);
+	addConnector(new Connector(this,CONNECTOR_SIZE,size,null));
+	if (dimension==3){
+		Variable V = new Variable("V(t)",VCUnitDefinition.UNIT_mV);
+		addSymbol(V);
+		addConnector(new Connector(this,CONNECTOR_ELECTRICAL,V,null));
+	}
 	try {
 		addEquation(Expression.valueOf("size - ("+sizeValue+")"));
 	} catch (ParseException e) {
@@ -43,5 +35,6 @@ public LumpedLocation(String argName, int dimension, double sizeValue) {
 		throw new RuntimeException(e.getMessage());
 	}
 }
+
 
 }

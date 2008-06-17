@@ -1,4 +1,6 @@
 package org.vcell.physics.component.gui;
+import org.vcell.physics.component.IonChannelHH;
+
 import cbit.gui.graph.GraphModel;
 /**
  * Insert the type's description here.
@@ -147,7 +149,7 @@ public void paint(java.awt.Graphics2D g, int parentOriginX, int parentOriginY) {
 		g.fillOval(diameter*2/3,diameter*3/5,diameter/6,diameter/6);
 		g.fillOval(diameter/4,diameter/2,diameter/6,diameter/6);
 		g.fillOval(diameter/6,diameter*5/8,diameter/6,diameter/6);
-	}else if (getDevice() instanceof org.vcell.physics.component.Reaction){
+	}else if (getDevice() instanceof org.vcell.physics.component.Reaction || getDevice() instanceof IonChannelHH){
 		java.awt.Polygon arrow = new java.awt.Polygon(	new int[] {diameter/4,   diameter*5/9, diameter*5/9, diameter*3/4, diameter*5/9, diameter*5/9, diameter/4},
 														new int[] {diameter*10/21, diameter*10/21, diameter*5/12,   diameter/2,   diameter*8/12, diameter*12/21, diameter*12/21}, 
 														7);

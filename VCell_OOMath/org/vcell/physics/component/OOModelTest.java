@@ -277,6 +277,7 @@ public class OOModelTest {
 																 NaChannelSpine.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS), 
 																LeakSpine.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS),
 																C_spine.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS), 
+																spine.getConnectors(LumpedLocation.CONNECTOR_ELECTRICAL)
 																//R_spine_proxD.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG)
 																});
 //		Connection conn_elect_proxD = new Connection(new Connector[] { IS_proxD.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS), 
@@ -290,6 +291,7 @@ public class OOModelTest {
 																NaChannelSpine.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG), 
 																LeakSpine.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG),
 																C_spine.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG),  
+																ec.getConnectors(LumpedLocation.CONNECTOR_ELECTRICAL),
 																//IS_proxD.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG),
 																//C_proxD.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG),
 																//IS_distD.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG), 
@@ -299,15 +301,9 @@ public class OOModelTest {
 		Connection conn_Na_spine_conc = new Connection(new Connector[] {
 				Na_spine.getConnectors(Species.CONNECTOR_CONC),
 				NaChannelSpine.getConnectors(IonChannelHH.CONNECTOR_ION_INSIDE_CONC) } );
-		Connection conn_Na_spine_amount = new Connection(new Connector[] {
-				Na_spine.getConnectors(Species.CONNECTOR_NUM),
-				NaChannelSpine.getConnectors(IonChannelHH.CONNECTOR_ION_INSIDE_AMOUNT) } );
 		Connection conn_K_spine_conc = new Connection(new Connector[] {
 				K_spine.getConnectors(Species.CONNECTOR_CONC),
 				KChannelSpine.getConnectors(IonChannelHH.CONNECTOR_ION_INSIDE_CONC) } );
-		Connection conn_K_spine_amount = new Connection(new Connector[] {
-				K_spine.getConnectors(Species.CONNECTOR_NUM),
-				KChannelSpine.getConnectors(IonChannelHH.CONNECTOR_ION_INSIDE_AMOUNT) } );
 		
 		Connection conn_Na_ec_conc = new Connection(new Connector[] {
 				Na_ec.getConnectors(Species.CONNECTOR_CONC),
@@ -315,25 +311,15 @@ public class OOModelTest {
 		Connection conn_K_ec_conc = new Connection(new Connector[] {
 				K_ec.getConnectors(Species.CONNECTOR_CONC),
 				KChannelSpine.getConnectors(IonChannelHH.CONNECTOR_ION_OUTSIDE_CONC) } );
-		Connection conn_Na_ec_amount = new Connection(new Connector[] {
-				Na_ec.getConnectors(Species.CONNECTOR_NUM),
-				NaChannelSpine.getConnectors(IonChannelHH.CONNECTOR_ION_OUTSIDE_AMOUNT) } );
-		Connection conn_K_ec_amount = new Connection(new Connector[] {
-				K_ec.getConnectors(Species.CONNECTOR_NUM),
-				KChannelSpine.getConnectors(IonChannelHH.CONNECTOR_ION_OUTSIDE_AMOUNT) } );
 		
-		Connection conn_spine_K = new Connection(new Connector[]{
+		Connection conn_spine_size = new Connection(new Connector[]{
 				K_spine.getConnector(Species.CONNECTOR_SIZE),
-				spine.getConnectors(0) });
-		Connection conn_spine_Na = new Connection(new Connector[]{
 				Na_spine.getConnector(Species.CONNECTOR_SIZE),
-				spine.getConnectors(0) });
-		Connection conn_ec_K = new Connection(new Connector[]{
+				spine.getConnectors(LumpedLocation.CONNECTOR_SIZE) });
+		Connection conn_ec_size = new Connection(new Connector[]{
 				K_ec.getConnector(Species.CONNECTOR_SIZE),
-				ec.getConnectors(0) });
-		Connection conn_ec_Na = new Connection(new Connector[]{
 				Na_ec.getConnector(Species.CONNECTOR_SIZE),
-				ec.getConnectors(0) });
+				ec.getConnectors(LumpedLocation.CONNECTOR_SIZE) });
 		
 		oOModel.addConnection(conn_elect_spine);
 //		oOModel.addConnection(conn_elect_proxD);
@@ -344,15 +330,9 @@ public class OOModelTest {
 		oOModel.addConnection(conn_K_spine_conc);
 		oOModel.addConnection(conn_Na_ec_conc);
 		oOModel.addConnection(conn_K_ec_conc);
-		oOModel.addConnection(conn_Na_spine_amount);
-		oOModel.addConnection(conn_K_spine_amount);
-		oOModel.addConnection(conn_Na_ec_amount);
-		oOModel.addConnection(conn_K_ec_amount);
 		
-		oOModel.addConnection(conn_spine_K);
-		oOModel.addConnection(conn_spine_Na);
-		oOModel.addConnection(conn_ec_K);
-		oOModel.addConnection(conn_ec_Na);
+		oOModel.addConnection(conn_spine_size);
+		oOModel.addConnection(conn_ec_size);
 		
 		return oOModel;
 	}

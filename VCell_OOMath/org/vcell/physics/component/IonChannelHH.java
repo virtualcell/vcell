@@ -8,8 +8,6 @@ import jscl.plugin.ParseException;
 public abstract class IonChannelHH extends TwoPortElectricalComponent {
 	public static final String CONNECTOR_ION_OUTSIDE_CONC = "conn_IonOutside_conc";
 	public static final String CONNECTOR_ION_INSIDE_CONC = "conn_IonInside_conc";
-	public static final String CONNECTOR_ION_OUTSIDE_AMOUNT = "conn_IonOutside_amount";
-	public static final String CONNECTOR_ION_INSIDE_AMOUNT = "conn_IonInside_amount";
 
 	public IonChannelHH(String argName, int valenceValue) {
 		super(argName);
@@ -33,14 +31,10 @@ public abstract class IonChannelHH extends TwoPortElectricalComponent {
 		addSymbol(F);
 		addSymbol(F_nmol);
 		addSymbol(conductivity);
-		Connector conIinConc = new Connector(this,CONNECTOR_ION_INSIDE_CONC,Iin_conc,null);
-		Connector conIinAmount = new Connector(this,CONNECTOR_ION_INSIDE_AMOUNT,null,Iin_rate);
-		Connector conIoutConc = new Connector(this,CONNECTOR_ION_OUTSIDE_CONC,Iout_conc,null);
-		Connector conIoutAmount = new Connector(this,CONNECTOR_ION_OUTSIDE_AMOUNT,null,Iout_rate);
+		Connector conIinConc = new Connector(this,CONNECTOR_ION_INSIDE_CONC,Iin_conc,Iin_rate);
+		Connector conIoutConc = new Connector(this,CONNECTOR_ION_OUTSIDE_CONC,Iout_conc,Iout_rate);
 		addConnector(conIinConc);
 		addConnector(conIoutConc);
-		addConnector(conIinAmount);
-		addConnector(conIoutAmount);
 		try {
 			addEquation(Expression.valueOf("z - "+valenceValue));
 			addEquation(Expression.valueOf("R - 8314.0"));

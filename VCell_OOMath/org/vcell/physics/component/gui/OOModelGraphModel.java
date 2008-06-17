@@ -1,6 +1,8 @@
 package org.vcell.physics.component.gui;
 import java.util.Enumeration;
 
+import org.vcell.physics.component.Location;
+
 import cbit.gui.graph.ContainerShape;
 import cbit.gui.graph.GraphEvent;
 import cbit.gui.graph.Shape;
@@ -154,8 +156,13 @@ public void refreshAll() {
 	for (int i = 0; i < components.length; i++){
 		Shape deviceShape = getShapeFromModelObject(components[i]);
 		if (deviceShape == null){
-			if (components[i] instanceof org.vcell.physics.component.ModelComponent){ // duh... check for other types for specific graphical representations
-				deviceShape = new DeviceNode(components[i],this);
+			if (components[i] instanceof org.vcell.physics.component.ModelComponent){ 
+				if (components[i] instanceof Location){
+					deviceShape = new LocationNode((Location)components[i],this);
+				}else{
+					// duh... check for other types for specific graphical representations
+					deviceShape = new DeviceNode(components[i],this);
+				}
 			}
 			containerShape.addChildShape(deviceShape);
 			addShape(deviceShape);

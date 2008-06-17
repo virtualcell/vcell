@@ -13,7 +13,7 @@ import jscl.plugin.ParseException;
  * @author: Jim Schaff
  */
 public class Species extends ModelComponent {
-	public final static String CONNECTOR_NUM = "numConn";
+//	public final static String CONNECTOR_NUM = "numConn";
 	public final static String CONNECTOR_CONC = "concConn";
 	public final static String CONNECTOR_SIZE = "sizeConn";
 /**
@@ -40,9 +40,8 @@ public Species(String argName, Expression initialAmount) throws ParseException {
 	addEquation(Expression.valueOf("conc(t) - KMOLE*num(t)/compartmentSize(t)"));
 	addEquation(Expression.valueOf("KMOLE - "+(1.0/602.0)));
 	addEquation(Expression.valueOf("d(num(t),t) + numRate(t)"));
-	Connector numConn = new Connector(this,CONNECTOR_NUM,num,numRate);
-	Connector concConn = new Connector(this,CONNECTOR_CONC,concentration,null);
+	Connector concConn = new Connector(this,CONNECTOR_CONC,concentration,numRate);
 	Connector sizeConn = new Connector(this,CONNECTOR_SIZE,compartmentSize,null);
-	setConnectors(new Connector[] { numConn, concConn, sizeConn });
+	setConnectors(new Connector[] { concConn, sizeConn });
 }
 }

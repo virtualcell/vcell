@@ -1,5 +1,7 @@
 package org.vcell.physics.component;
 
+import org.vcell.units.VCUnitDefinition;
+
 /**
  * Insert the type's description here.
  * Creation date: (1/7/2004 6:56:14 AM)
@@ -52,4 +54,26 @@ public String toString() {
 public int getDimension() {
 	return dimension;
 }
+
+protected static VCUnitDefinition getSizeUnit(int dimension){
+	switch(dimension){
+	case 1: {
+		return VCUnitDefinition.UNIT_um;
+		//break;
+	}
+	case 2: {
+		return VCUnitDefinition.UNIT_um2;
+		//break;
+	}
+	case 3: {
+		return VCUnitDefinition.UNIT_um3;
+		//break;
+	}default:{
+		throw new RuntimeException("expecting dimension of 1,2 or 3");
+	}
+	}
+
+}
+
+
 }
