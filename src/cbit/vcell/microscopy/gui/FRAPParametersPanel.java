@@ -7,10 +7,12 @@ import cbit.gui.DialogUtils;
 import cbit.util.Compare;
 import cbit.util.NumberUtils;
 import cbit.vcell.math.gui.ExpressionCanvas;
+import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPDataAnalysis;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FrapDataAnalysisResults;
 import cbit.vcell.microscopy.ROI.RoiType;
+import cbit.vcell.microscopy.gui.FRAPStudyPanel.FrapChangeInfo;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 import cbit.vcell.opt.ReferenceData;
@@ -38,9 +40,12 @@ import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 
 public class FRAPParametersPanel extends JPanel {
+	private JComboBox frapDataTimesComboBox;
 	private JTextField slowerTextField;
-	private FRAPStudyPanel.SavedFrapModelInfo savedFrapModelInfo;
-	private FRAPStudy frapStudy;
+	private JLabel startTimeRecoveryEstimateLabel;
+//	private FRAPStudyPanel.SavedFrapModelInfo savedFrapModelInfo;
+	private FRAPData initFRAPData;
+//	private FRAPStudy frapStudy;
 	private JLabel plotOfAverageLabel;
 	private JLabel frapModelParameterLabel;
 	private JLabel diffusionRateEstimateLabel;
@@ -77,7 +82,7 @@ public class FRAPParametersPanel extends JPanel {
 		panel.setBorder(new LineBorder(Color.black, 1, false));
 		final GridBagLayout gridBagLayout_1 = new GridBagLayout();
 		gridBagLayout_1.columnWidths = new int[] {7,0,0,7,0,7};
-		gridBagLayout_1.rowHeights = new int[] {0,7,7,7,7,0,7};
+		gridBagLayout_1.rowHeights = new int[] {0,7,7,7,7,0,7,7};
 		panel.setLayout(gridBagLayout_1);
 		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.anchor = GridBagConstraints.NORTH;
@@ -185,7 +190,7 @@ public class FRAPParametersPanel extends JPanel {
 		panel.add(estimatedDiffusionRateLabel, gridBagConstraints_7);
 
 		diffusionRateEstimateLabel = new JLabel();
-		diffusionRateEstimateLabel.setText("1.000");
+		diffusionRateEstimateLabel.setText("1.0");
 		final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
 		gridBagConstraints_4.anchor = GridBagConstraints.EAST;
 		gridBagConstraints_4.insets = new Insets(4, 4, 4, 4);
@@ -249,7 +254,7 @@ public class FRAPParametersPanel extends JPanel {
 		panel.add(estimatedMobileFractionLabel, gridBagConstraints_11);
 
 		mobileFractionEstimateLabel = new JLabel();
-		mobileFractionEstimateLabel.setText("1.000");
+		mobileFractionEstimateLabel.setText("1.0");
 		final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
 		gridBagConstraints_5.anchor = GridBagConstraints.EAST;
 		gridBagConstraints_5.insets = new Insets(4, 4, 4, 4);
@@ -287,7 +292,7 @@ public class FRAPParametersPanel extends JPanel {
 		mobileFractionTextField = new JTextField();
 		mobileFractionTextField.getDocument().addUndoableEditListener(new UndoableEditListener() {
 			public void undoableEditHappened(final UndoableEditEvent e) {
-				setImmobileFractionText();
+				updateImmobileFractionModelText();
 			}
 		});
 		final GridBagConstraints gridBagConstraints_13 = new GridBagConstraints();
@@ -318,7 +323,7 @@ public class FRAPParametersPanel extends JPanel {
 		panel.add(estimatedImmobileFractionLabel, gridBagConstraints_16);
 
 		immobileFractionEstimateLabel = new JLabel();
-		immobileFractionEstimateLabel.setText("1.000");
+		immobileFractionEstimateLabel.setText("0.0");
 		final GridBagConstraints gridBagConstraints_6 = new GridBagConstraints();
 		gridBagConstraints_6.anchor = GridBagConstraints.EAST;
 		gridBagConstraints_6.insets = new Insets(4, 4, 4, 4);
@@ -409,6 +414,71 @@ public class FRAPParametersPanel extends JPanel {
 		gridBagConstraints_37.gridx = 5;
 		panel.add(um2sLabel_1, gridBagConstraints_37);
 
+		final JLabel estimatedStartIndexLabel = new JLabel();
+		estimatedStartIndexLabel.setHorizontalAlignment(SwingConstants.TRAILING);
+		estimatedStartIndexLabel.setBorder(new LineBorder(Color.black, 1, false));
+		estimatedStartIndexLabel.setText("Estimated Start Time Recovery:");
+		final GridBagConstraints gridBagConstraints_38 = new GridBagConstraints();
+		gridBagConstraints_38.fill = GridBagConstraints.BOTH;
+		gridBagConstraints_38.insets = new Insets(4, 4, 4, 4);
+		gridBagConstraints_38.gridy = 7;
+		gridBagConstraints_38.gridx = 0;
+		panel.add(estimatedStartIndexLabel, gridBagConstraints_38);
+
+		startTimeRecoveryEstimateLabel = new JLabel();
+		startTimeRecoveryEstimateLabel.setText("0.0");
+		final GridBagConstraints gridBagConstraints_39 = new GridBagConstraints();
+		gridBagConstraints_39.insets = new Insets(4, 4, 4, 4);
+		gridBagConstraints_39.anchor = GridBagConstraints.EAST;
+		gridBagConstraints_39.gridy = 7;
+		gridBagConstraints_39.gridx = 1;
+		panel.add(startTimeRecoveryEstimateLabel, gridBagConstraints_39);
+
+		final JButton copyStartIndexRecoveryUseButton = new JButton();
+		copyStartIndexRecoveryUseButton.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				for (int i = 0; i < frapDataTimesComboBox.getItemCount(); i++) {
+					if(frapDataTimesComboBox.getItemAt(i).toString().equals(startTimeRecoveryEstimateLabel.getText())){
+						frapDataTimesComboBox.setSelectedIndex(i);
+						break;
+					}
+				}
+			}
+		});
+		copyStartIndexRecoveryUseButton.setMargin(new Insets(2, 2, 2, 2));
+		copyStartIndexRecoveryUseButton.setText("Use");
+		final GridBagConstraints gridBagConstraints_40 = new GridBagConstraints();
+		gridBagConstraints_40.insets = new Insets(4, 0, 4, 10);
+		gridBagConstraints_40.gridy = 7;
+		gridBagConstraints_40.gridx = 2;
+		panel.add(copyStartIndexRecoveryUseButton, gridBagConstraints_40);
+
+		final JLabel startIndexRecoveryLabel = new JLabel();
+		startIndexRecoveryLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		startIndexRecoveryLabel.setBorder(new LineBorder(Color.black, 2, false));
+		startIndexRecoveryLabel.setText("Start Time Recovery");
+		final GridBagConstraints gridBagConstraints_41 = new GridBagConstraints();
+		gridBagConstraints_41.insets = new Insets(4, 4, 4, 4);
+		gridBagConstraints_41.fill = GridBagConstraints.BOTH;
+		gridBagConstraints_41.gridy = 7;
+		gridBagConstraints_41.gridx = 3;
+		panel.add(startIndexRecoveryLabel, gridBagConstraints_41);
+
+		frapDataTimesComboBox = new JComboBox();
+		final GridBagConstraints gridBagConstraints_42 = new GridBagConstraints();
+		gridBagConstraints_42.fill = GridBagConstraints.BOTH;
+		gridBagConstraints_42.insets = new Insets(4, 4, 4, 4);
+		gridBagConstraints_42.gridy = 7;
+		gridBagConstraints_42.gridx = 4;
+		panel.add(frapDataTimesComboBox, gridBagConstraints_42);
+
+		final JLabel sLabel = new JLabel();
+		sLabel.setText("s");
+		final GridBagConstraints gridBagConstraints_43 = new GridBagConstraints();
+		gridBagConstraints_43.gridy = 7;
+		gridBagConstraints_43.gridx = 5;
+		panel.add(sLabel, gridBagConstraints_43);
+
 		final JPanel panel_2 = new JPanel();
 		final GridBagConstraints gridBagConstraints_28 = new GridBagConstraints();
 		gridBagConstraints_28.fill = GridBagConstraints.BOTH;
@@ -416,7 +486,7 @@ public class FRAPParametersPanel extends JPanel {
 		gridBagConstraints_28.weightx = 1;
 		gridBagConstraints_28.weighty = 1;
 		gridBagConstraints_28.gridwidth = 3;
-		gridBagConstraints_28.gridy = 7;
+		gridBagConstraints_28.gridy = 8;
 		gridBagConstraints_28.gridx = 0;
 		panel.add(panel_2, gridBagConstraints_28);
 
@@ -526,9 +596,9 @@ public class FRAPParametersPanel extends JPanel {
 					PLOT_TITLE_STRING+"  ('"+
 					FrapDataAnalysisResults.BLEACH_TYPE_NAMES[bleachEstimationComboBox.getSelectedIndex()]+"')");
 				try{
-					updateFrapDataAnalysis();
+					refreshFRAPModelParameterEstimates(initFRAPData);
 				}catch (Exception e2){
-					DialogUtils.showErrorDialog("error calulating fit\n"+e2.getMessage());
+					//ignore
 				}
 			}
 		});
@@ -537,11 +607,30 @@ public class FRAPParametersPanel extends JPanel {
 	private int getBleachTypeMethod(){
 		return bleachEstimationComboBox.getSelectedIndex();
 	}
-	public void setFRAPStudy(FRAPStudy frapStudy){
-		this.frapStudy = frapStudy;
+//	public void setFRAPStudy(FRAPStudy frapStudy){
+//		this.frapStudy = frapStudy;
+//		multisourcePlotPane.setDataSources(null);
+//	}
+	public FrapChangeInfo createCompleteFRAPChangeInfo(FRAPStudyPanel.SavedFrapModelInfo savedFrapModelInfo,
+			boolean bCellROISame,boolean bBleachROISame,boolean bBackgroundROISame,boolean bROISameSize){
+		return new FrapChangeInfo(
+				!bCellROISame || !bBleachROISame || !bBackgroundROISame,
+				!bROISameSize,
+				isUserDiffusionRateChanged(savedFrapModelInfo),
+				getUserDiffusionRateString(),
+				isUserMonitorBleachRateChanged(savedFrapModelInfo),
+				getUserMonitorBleachRateString(),
+				isUserMobileFractionChanged(savedFrapModelInfo),
+				getUserMobileFractionString(),
+				isUserSlowerRateChanged(savedFrapModelInfo),
+				getUserSlowerRateString(),
+				isUserStartIndexForRecoveryChanged(savedFrapModelInfo),
+				getUserStartIndexForRecoveryString());
+
 	}
-	public void setSavedFrapModelInfo(FRAPStudyPanel.SavedFrapModelInfo savedFrapModelInfo){
-		this.savedFrapModelInfo = savedFrapModelInfo;
+	public void initializeSavedFrapModelInfo(FRAPStudyPanel.SavedFrapModelInfo savedFrapModelInfo,FRAPData initFRAPData){
+//		this.savedFrapModelInfo = savedFrapModelInfo;
+		this.initFRAPData = initFRAPData;
 		diffusionRateTextField.setText((savedFrapModelInfo == null
 				?""
 				:(savedFrapModelInfo.lastBaseDiffusionrate == null
@@ -557,14 +646,26 @@ public class FRAPParametersPanel extends JPanel {
 				:(savedFrapModelInfo.lastMobileFraction == null
 					?""
 					:savedFrapModelInfo.lastMobileFraction.toString())));
-		setImmobileFractionText();
+		updateImmobileFractionModelText();
 		slowerTextField.setText((savedFrapModelInfo == null
 				?""
 				:(savedFrapModelInfo.lastSlowerRate == null
 					?""
 					:savedFrapModelInfo.lastSlowerRate.toString())));
+
+		frapDataTimesComboBox.removeAllItems();
+		double[] frapDataTimeStamps = initFRAPData.getImageDataset().getImageTimeStamps();
+		for (int i = 0; i < frapDataTimeStamps.length; i++) {
+			frapDataTimesComboBox.insertItemAt(frapDataTimeStamps[i]+"", i);
+		}
+		frapDataTimesComboBox.setSelectedIndex(0);
+		if(savedFrapModelInfo != null && savedFrapModelInfo.startingIndexForRecovery != null){
+			frapDataTimesComboBox.setSelectedIndex(new Integer(savedFrapModelInfo.startingIndexForRecovery));
+		}
+		repaint();
+
 	}
-	private void setImmobileFractionText(){
+	private void updateImmobileFractionModelText(){
 		try{
 			double mobileFractionIntermediate = Double.parseDouble(mobileFractionTextField.getText());
 			if(mobileFractionIntermediate <= 1.0){
@@ -578,11 +679,14 @@ public class FRAPParametersPanel extends JPanel {
 		}
 
 	}
-	private void displayFit(){
-		if (frapStudy == null || frapStudy.getFrapData() == null || frapStudy.getFrapDataAnalysisResults() == null){
-			return;//multisourcePlotPane.setDataSources(null);
+	private void displayFit(FrapDataAnalysisResults frapDataAnalysisResults,double[] frapDataTimeStamps){
+		if (frapDataAnalysisResults == null){
+			diffusionRateEstimateLabel.setText("");
+			mobileFractionEstimateLabel.setText("");
+			immobileFractionEstimateLabel.setText("");
+			multisourcePlotPane.setDataSources(null);
 		}else{
-			FrapDataAnalysisResults frapDataAnalysisResults = frapStudy.getFrapDataAnalysisResults();
+//			FrapDataAnalysisResults frapDataAnalysisResults = frapStudy.getFrapDataAnalysisResults();
 			diffusionRateEstimateLabel.setText(
 				(frapDataAnalysisResults.getRecoveryDiffusionRate() == null
 					?""
@@ -591,8 +695,10 @@ public class FRAPParametersPanel extends JPanel {
 					(frapDataAnalysisResults.getMobilefraction() == null
 						?""
 						:frapDataAnalysisResults.getMobilefraction().toString()));
-			setImmobileFractionText();
-			double[] frapDataTimeStamps = frapStudy.getFrapData().getImageDataset().getImageTimeStamps();
+			if(mobileFractionEstimateLabel.getText().length() > 0){
+				immobileFractionEstimateLabel.setText(""+(1.0-new Double(mobileFractionEstimateLabel.getText()).doubleValue()));
+			}
+//			double[] frapDataTimeStamps = frapStudy.getFrapData().getImageDataset().getImageTimeStamps();
 			double[] bleachRegionData = frapDataAnalysisResults.getBleachRegionData();
 			int startIndexForRecovery = frapDataAnalysisResults.getStartingIndexForRecovery();
 			Expression fittedCurve = frapDataAnalysisResults.getFitExpression();
@@ -627,109 +733,161 @@ public class FRAPParametersPanel extends JPanel {
 		}
 	}
 	
-	public void updateFrapDataAnalysis() throws Exception {
-		if(frapStudy != null){
-			frapStudy.setFrapDataAnalysisResults(null);
-			if(frapStudy.getFrapData() != null){
-				if(frapStudy.getFrapData().getRoi(RoiType.ROI_BLEACHED).isAllPixelsZero()){
-					throw new Exception(
-						OverlayEditorPanelJAI.INITIAL_BLEACH_AREA_TEXT+" ROI not defined.\n"+
-						"Use ROI tools under '"+FRAPStudyPanel.FRAPDATAPANEL_TABNAME+"' tab to define.");
-				}
-				FrapDataAnalysisResults fdar =
-					FRAPDataAnalysis.fitRecovery2(frapStudy.getFrapData(), getBleachTypeMethod());
-				frapStudy.setFrapDataAnalysisResults(fdar);
+	public void refreshFRAPModelParameterEstimates(FRAPData frapData) throws Exception {
+		FrapDataAnalysisResults frapDataAnalysisResults = null;
+		double[] frapDataTimeStamps = null;
+		bleachEstimationComboBox.setEnabled(false);
+		if(frapData != null){
+			if(frapData.getRoi(RoiType.ROI_BLEACHED).isAllPixelsZero()){
+				displayFit(null,null);
+				throw new Exception(
+					OverlayEditorPanelJAI.INITIAL_BLEACH_AREA_TEXT+" ROI not defined.\n"+
+					"Use ROI tools under '"+FRAPStudyPanel.FRAPDATAPANEL_TABNAME+"' tab to define.");
 			}
+			frapDataTimeStamps = frapData.getImageDataset().getImageTimeStamps();
+			frapDataAnalysisResults =
+				FRAPDataAnalysis.fitRecovery2(frapData, getBleachTypeMethod());
+			startTimeRecoveryEstimateLabel.setText(frapDataTimeStamps[frapDataAnalysisResults.getStartingIndexForRecovery()]+"");
+			bleachEstimationComboBox.setEnabled(true);
 		}
-		displayFit();
-		replaceFrapDataAnalysiResultsWithUserVAlues();
+
+		displayFit(frapDataAnalysisResults,frapDataTimeStamps);
 	}
 
-	private void replaceFrapDataAnalysiResultsWithUserVAlues() throws Exception{
-		if(frapStudy != null && frapStudy.getFrapDataAnalysisResults() != null){
-			FrapDataAnalysisResults frapDataAnalysisResults = frapStudy.getFrapDataAnalysisResults();
-			
-			frapDataAnalysisResults.setBleachType(getBleachTypeMethod());
-			
+	public void insertFRAPModelParametersIntoFRAPStudy(FRAPStudy frapStudy) throws Exception{
+		if(frapStudy != null){
+			frapStudy.setFrapModelParameters(null);
 			try{
-				String monitorBleachRateText = monitorBleachRateTextField.getText();
+				String monitorBleachRateText =getUserMonitorBleachRateString();
 				Double monitorBleachRate = (monitorBleachRateText != null && monitorBleachRateText.length()>0?new Double(monitorBleachRateText):null);
-				frapDataAnalysisResults.setBleachWhileMonitoringTau(monitorBleachRate);
 			}catch(Exception e){
 				throw new Exception("Error parsing 'Monitor Bleach Rate', "+e.getMessage());
 			}
 			try{
-				String mobileFractionText = mobileFractionTextField.getText();
+				String mobileFractionText = getUserMobileFractionString();
 				Double mobileFraction = (mobileFractionText != null && mobileFractionText.length()>0?new Double(mobileFractionText):null);
-				frapDataAnalysisResults.setMobilefraction(mobileFraction);
 			}catch(Exception e){
 				throw new Exception("Error parsing 'Mobile Fraction', "+e.getMessage());
 			}
 			try{
-				String diffusionRateText = diffusionRateTextField.getText();
+				String diffusionRateText = getUserDiffusionRateString();
 				Double diffusionRate = (diffusionRateText != null && diffusionRateText.length()>0?new Double(diffusionRateText):null);
-				frapDataAnalysisResults.setRecoveryDiffusionRate(diffusionRate);
 			}catch(Exception e){
 				throw new Exception("Error parsing 'Diffusion Rate', "+e.getMessage());
 			}
 			try{
-				String slowerRateText = slowerTextField.getText();
+				String slowerRateText = getUserSlowerRateString();
 				Double slowerRate = (slowerRateText != null && slowerRateText.length()>0?new Double(slowerRateText):null);
-				frapDataAnalysisResults.setSlowerRate(slowerRate);
 			}catch(Exception e){
 				throw new Exception("Error parsing 'Slower Rate', "+e.getMessage());
 			}
-
+			FRAPStudy.FRAPModelParameters frapModelParameters =
+					new FRAPStudy.FRAPModelParameters(
+							getUserStartIndexForRecoveryString(),
+							getUserDiffusionRateString(),
+							getUserMonitorBleachRateString(),
+							getUserMobileFractionString(),
+							getUserSlowerRateString()
+					);
+			frapStudy.setFrapModelParameters(frapModelParameters);
 		}
 	}
+//	private void replaceFrapDataAnalysiResultsWithUserVAlues() throws Exception{
+//		if(frapStudy != null && frapStudy.getFrapDataAnalysisResults() != null){
+//			FrapDataAnalysisResults frapDataAnalysisResults = frapStudy.getFrapDataAnalysisResults();
+//			
+//			frapDataAnalysisResults.setBleachType(getBleachTypeMethod());
+//			
+//			try{
+//				String monitorBleachRateText = monitorBleachRateTextField.getText();
+//				Double monitorBleachRate = (monitorBleachRateText != null && monitorBleachRateText.length()>0?new Double(monitorBleachRateText):null);
+//				frapDataAnalysisResults.setBleachWhileMonitoringTau(monitorBleachRate);
+//			}catch(Exception e){
+//				throw new Exception("Error parsing 'Monitor Bleach Rate', "+e.getMessage());
+//			}
+//			try{
+//				String mobileFractionText = mobileFractionTextField.getText();
+//				Double mobileFraction = (mobileFractionText != null && mobileFractionText.length()>0?new Double(mobileFractionText):null);
+//				frapDataAnalysisResults.setMobilefraction(mobileFraction);
+//			}catch(Exception e){
+//				throw new Exception("Error parsing 'Mobile Fraction', "+e.getMessage());
+//			}
+//			try{
+//				String diffusionRateText = diffusionRateTextField.getText();
+//				Double diffusionRate = (diffusionRateText != null && diffusionRateText.length()>0?new Double(diffusionRateText):null);
+//				frapDataAnalysisResults.setRecoveryDiffusionRate(diffusionRate);
+//			}catch(Exception e){
+//				throw new Exception("Error parsing 'Diffusion Rate', "+e.getMessage());
+//			}
+//			try{
+//				String slowerRateText = slowerTextField.getText();
+//				Double slowerRate = (slowerRateText != null && slowerRateText.length()>0?new Double(slowerRateText):null);
+//				frapDataAnalysisResults.setSlowerRate(slowerRate);
+//			}catch(Exception e){
+//				throw new Exception("Error parsing 'Slower Rate', "+e.getMessage());
+//			}
+//
+//		}
+//	}
 
-	public String getUserDiffusionRateString(){
+	private String getUserDiffusionRateString(){
 		return
 			(diffusionRateTextField.getText() == null || diffusionRateTextField.getText().length() == 0
 				?null
 				:diffusionRateTextField.getText());
 	}
-	public boolean isUserDiffusionRateChanged(){
-		return !isValueSameAsString(savedFrapModelInfo.lastBaseDiffusionrate, getUserDiffusionRateString());
+	private boolean isUserDiffusionRateChanged(FRAPStudyPanel.SavedFrapModelInfo savedFrapModelInfo){
+		return !Compare.isEqualOrNull((savedFrapModelInfo==null?null:savedFrapModelInfo.lastBaseDiffusionrate), getUserDiffusionRateString());
 	}
 	
-	public String getUserMonitorBleachRateString(){
+	private String getUserMonitorBleachRateString(){
 		return
 			(monitorBleachRateTextField.getText() == null || monitorBleachRateTextField.getText().length() == 0
 				?null
 				:monitorBleachRateTextField.getText());
 	}
-	public boolean isUserMonitorBleachRateChanged(){
-		return !isValueSameAsString(savedFrapModelInfo.lastBleachWhileMonitoringRate, getUserMonitorBleachRateString());
+	private boolean isUserMonitorBleachRateChanged(FRAPStudyPanel.SavedFrapModelInfo savedFrapModelInfo){
+		return !Compare.isEqualOrNull((savedFrapModelInfo==null?null:savedFrapModelInfo.lastBleachWhileMonitoringRate), getUserMonitorBleachRateString());
 	}
 
-	public String getUserMobileFractionString(){
+	private String getUserMobileFractionString(){
 		return
 			(mobileFractionTextField.getText() == null || mobileFractionTextField.getText().length() == 0
 				?null
 				:mobileFractionTextField.getText());
 	}
-	public boolean isUserMobileFractionChanged(){
-		return !isValueSameAsString(savedFrapModelInfo.lastMobileFraction, getUserMobileFractionString());
+	private boolean isUserMobileFractionChanged(FRAPStudyPanel.SavedFrapModelInfo savedFrapModelInfo){
+		return !Compare.isEqualOrNull((savedFrapModelInfo==null?null:savedFrapModelInfo.lastMobileFraction), getUserMobileFractionString());
 	}
 
-	public String getUserSlowerRateString(){
+	private String getUserSlowerRateString(){
 		return
 			(slowerTextField.getText() == null || slowerTextField.getText().length() == 0
 				?null
 				:slowerTextField.getText());
 	}
-	public boolean isUserSlowerRateChanged(){
-		return !isValueSameAsString(savedFrapModelInfo.lastSlowerRate, getUserSlowerRateString());
+	private boolean isUserSlowerRateChanged(FRAPStudyPanel.SavedFrapModelInfo savedFrapModelInfo){
+		return !Compare.isEqualOrNull((savedFrapModelInfo==null?null:savedFrapModelInfo.lastSlowerRate), getUserSlowerRateString());
 	}
 
-	private boolean isValueSameAsString(Double doubleVal, String stringVal){
-		try{
-			Double stringToDouble = (stringVal == null?null:new Double(stringVal));
-			return Compare.isEqualOrNull(doubleVal, stringToDouble);
-		}catch(Exception e){
-			return Compare.isEqualOrNull((doubleVal == null?null:doubleVal.toString()), stringVal);
+	private String getUserStartIndexForRecoveryString(){
+		if(frapDataTimesComboBox.getItemCount() == 0){
+			return null;
 		}
+		return frapDataTimesComboBox.getSelectedIndex()+"";
 	}
+	private boolean isUserStartIndexForRecoveryChanged(FRAPStudyPanel.SavedFrapModelInfo savedFrapModelInfo){
+		return !Compare.isEqualOrNull((savedFrapModelInfo==null?null:savedFrapModelInfo.startingIndexForRecovery),getUserStartIndexForRecoveryString());
+	}
+
+	
+//	private boolean isValueSameAsString(Double doubleVal, String stringVal){
+//		try{
+//			Double stringToDouble = (stringVal == null?null:new Double(stringVal));
+//			return Compare.isEqualOrNull(doubleVal, stringToDouble);
+//		}catch(Exception e){
+//			return Compare.isEqualOrNull((doubleVal == null?null:doubleVal.toString()), stringVal);
+//		}
+//	}
 
 }

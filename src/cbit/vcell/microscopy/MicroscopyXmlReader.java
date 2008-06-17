@@ -55,58 +55,21 @@ public MicroscopyXmlReader(boolean readKeys) {
  * @return VCImage
  * @throws XmlParseException
  */
-private FrapDataAnalysisResults getFrapDataAnalysisResults(Element param) throws XmlParseException{
-//	public static final String RecoveryTauAttrTag = "RecoveryTau";
-//	public static final String BleachWidthAttrTag = "BleachWidth";
-//	public static final String BleachWhileMonitoringTauAttrTag = "BleachWhileMonitoringTau";
-//	public static final String RecoveryDiffusionRateAttrTag = "RecoveryDiffusionRate";
-	String recoveryTauStr = param.getAttributeValue(MicroscopyXMLTags.RecoveryTauAttrTag);
-	String bleachWidthStr = param.getAttributeValue(MicroscopyXMLTags.BleachWidthAttrTag);
+private FRAPStudy.FRAPModelParameters getFRAPModelParameters(Element param) throws XmlParseException{
 	String bleachWhileMonitoringStr = param.getAttributeValue(MicroscopyXMLTags.BleachWhileMonitoringTauAttrTag);
 	String recoveryDiffusionRateStr = param.getAttributeValue(MicroscopyXMLTags.RecoveryDiffusionRateAttrTag);
 	String mobileFractionStr = param.getAttributeValue(MicroscopyXMLTags.MobileFractionAttrTag);
-	String bleachTypeStr = param.getAttributeValue(MicroscopyXMLTags.BleachTypeAttrTag);
-	String fitExpressionStr = param.getAttributeValue(MicroscopyXMLTags.FitExpressionAttrTag);
 	String startingIndexForRecoveryStr = param.getAttributeValue(MicroscopyXMLTags.StartingIndexForRecoveryAttrTag);
 	String slowerRateStr = param.getAttributeValue(MicroscopyXMLTags.SlowerRateAttrTag);
-	
-	FrapDataAnalysisResults fdar = new FrapDataAnalysisResults();
-	if(slowerRateStr!=null){
-		fdar.setSlowerRate(new Double(slowerRateStr));
-	}
-	if (recoveryTauStr!=null){
-		fdar.setRecoveryTau(new Double(recoveryTauStr));
-	}
-	if (bleachWidthStr!=null){
-		fdar.setBleachWidth(new Double(bleachWidthStr));
-	}
-	if (bleachWhileMonitoringStr!=null){
-		fdar.setBleachWhileMonitoringTau(new Double(bleachWhileMonitoringStr));
-	}
-	if (recoveryDiffusionRateStr!=null){
-		fdar.setRecoveryDiffusionRate(new Double(recoveryDiffusionRateStr));
-	}
-	if (mobileFractionStr != null){
-		fdar.setMobilefraction(new Double(mobileFractionStr));
-	}
-	if (bleachTypeStr != null){
-		try{
-			fdar.setBleachType(new Integer(bleachTypeStr)-1);//old file format
-		}catch(Exception e){
-			fdar.setBleachType(FrapDataAnalysisResults.getBleachTypeFromBleachTypeName(bleachTypeStr));
-		}
-	}
-	if (fitExpressionStr!=null){
-		try {
-			fdar.setFitExpression(new Expression(fitExpressionStr));
-		} catch (ExpressionException e) {
-			e.printStackTrace();
-		}
-	}
-	if (startingIndexForRecoveryStr!=null){
-		fdar.setStartingIndexForRecovery(new Integer(startingIndexForRecoveryStr));
-	}
-	return fdar;
+
+	return
+		new FRAPStudy.FRAPModelParameters(
+				startingIndexForRecoveryStr,
+				recoveryDiffusionRateStr,
+				bleachWhileMonitoringStr,
+				mobileFractionStr,
+				slowerRateStr
+			);
 }
 
 
@@ -314,9 +277,9 @@ public FRAPStudy getFrapStudy(Element param,DataSetControllerImpl.ProgressListen
 	if (frapDataElement!=null){
 		frapStudy.setFrapData(getFrapData(frapDataElement,progressListener));
 	}
-	Element frapDataAnalysisResultsElement = param.getChild(MicroscopyXMLTags.FRAPDataAnalysisResultsTag);
-	if (frapDataAnalysisResultsElement!=null){
-		frapStudy.setFrapDataAnalysisResults(getFrapDataAnalysisResults(frapDataAnalysisResultsElement));
+	Element frapModelParametersElement = param.getChild(MicroscopyXMLTags.FRAPModelParametersTag);
+	if (frapModelParametersElement!=null){
+		frapStudy.setFrapModelParameters(getFRAPModelParameters(frapModelParametersElement));
 	}
 	Element timeSeriesExternalDataElement = param.getChild(MicroscopyXMLTags.ImageDatasetExternalDataInfoTag);
 	if (timeSeriesExternalDataElement!=null){

@@ -16,7 +16,7 @@ public class MicroscopyXMLTags {
 	public static final String TimeStampListTag = "TimeStampList";
 	public static final String ROITag = "ROI";
 	public static final String ROITypeAttrTag = "ROIType";
-	public static final String FRAPDataAnalysisResultsTag = "FrapDataAnalysisResults";
+	public static final String FRAPModelParametersTag = "FrapModelParameters";
 	public static final String RecoveryTauAttrTag = "RecoveryTau";
 	public static final String BleachWidthAttrTag = "BleachWidth";
 	public static final String BleachWhileMonitoringTauAttrTag = "BleachWhileMonitoringTau";

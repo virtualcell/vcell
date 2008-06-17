@@ -234,45 +234,37 @@ private static org.jdom.Element getXML(FRAPData param,Xmlproducer vcellXMLProduc
  * @throws XmlParseException
  * @throws cbit.vcell.parser.ExpressionException
  */
-private static org.jdom.Element getXML(FrapDataAnalysisResults param) throws XmlParseException, cbit.vcell.parser.ExpressionException {
-//	private Double recoveryTau = null;
-//	private Double bleachWidth = null;
-//	private Double bleachWhileMonitoringRate = null;
-//	private Double recoveryDiffusionRate = null;
-//  private Double mobileFraction = null;
-//	private Integer startingIndexForRecovery = null;
-//	private Expression fitExpression = null;
-// .....	private double[] bleachRegionData = null;
+private static org.jdom.Element getXML(FRAPStudy.FRAPModelParameters param) throws XmlParseException, cbit.vcell.parser.ExpressionException {
 
-	org.jdom.Element dataAnalysisResultsNode = new org.jdom.Element(MicroscopyXMLTags.FRAPDataAnalysisResultsTag);
-	if (param.getRecoveryTau()!=null){
-		dataAnalysisResultsNode.setAttribute(MicroscopyXMLTags.RecoveryTauAttrTag, param.getRecoveryTau().toString());
+	org.jdom.Element frapModelParametersNode = new org.jdom.Element(MicroscopyXMLTags.FRAPModelParametersTag);
+//	if (param.getRecoveryTau()!=null){
+//		dataAnalysisResultsNode.setAttribute(MicroscopyXMLTags.RecoveryTauAttrTag, param.getRecoveryTau().toString());
+//	}
+//	if (param.getBleachWidth()!=null){
+//		dataAnalysisResultsNode.setAttribute(MicroscopyXMLTags.BleachWidthAttrTag, param.getBleachWidth().toString());
+//	}
+	if (param.monitorBleachRate!=null){
+		frapModelParametersNode.setAttribute(MicroscopyXMLTags.BleachWhileMonitoringTauAttrTag, param.monitorBleachRate.toString());
 	}
-	if (param.getBleachWidth()!=null){
-		dataAnalysisResultsNode.setAttribute(MicroscopyXMLTags.BleachWidthAttrTag, param.getBleachWidth().toString());
+	if (param.diffusionRate!=null){
+		frapModelParametersNode.setAttribute(MicroscopyXMLTags.RecoveryDiffusionRateAttrTag, param.diffusionRate.toString());
 	}
-	if (param.getBleachWhileMonitoringTau()!=null){
-		dataAnalysisResultsNode.setAttribute(MicroscopyXMLTags.BleachWhileMonitoringTauAttrTag, param.getBleachWhileMonitoringTau().toString());
+	if (param.mobileFraction!=null){
+		frapModelParametersNode.setAttribute(MicroscopyXMLTags.MobileFractionAttrTag, param.mobileFraction.toString());
 	}
-	if (param.getRecoveryDiffusionRate()!=null){
-		dataAnalysisResultsNode.setAttribute(MicroscopyXMLTags.RecoveryDiffusionRateAttrTag, param.getRecoveryDiffusionRate().toString());
+//	if (param.getBleachType()!=null){
+//		dataAnalysisResultsNode.setAttribute(MicroscopyXMLTags.BleachTypeAttrTag, FrapDataAnalysisResults.BLEACH_TYPE_NAMES[param.getBleachType()]);
+//	}
+	if (param.startIndexForRecovery!=null){
+		frapModelParametersNode.setAttribute(MicroscopyXMLTags.StartingIndexForRecoveryAttrTag, param.startIndexForRecovery.toString());
 	}
-	if (param.getMobilefraction()!=null){
-		dataAnalysisResultsNode.setAttribute(MicroscopyXMLTags.MobileFractionAttrTag, param.getMobilefraction().toString());
+//	if (param.getFitExpression()!=null){
+//		dataAnalysisResultsNode.setAttribute(MicroscopyXMLTags.FitExpressionAttrTag, param.getFitExpression().infix());
+//	}
+	if (param.slowerRate!=null){
+		frapModelParametersNode.setAttribute(MicroscopyXMLTags.SlowerRateAttrTag, param.slowerRate.toString());
 	}
-	if (param.getBleachType()!=null){
-		dataAnalysisResultsNode.setAttribute(MicroscopyXMLTags.BleachTypeAttrTag, FrapDataAnalysisResults.BLEACH_TYPE_NAMES[param.getBleachType()]);
-	}
-	if (param.getStartingIndexForRecovery()!=null){
-		dataAnalysisResultsNode.setAttribute(MicroscopyXMLTags.StartingIndexForRecoveryAttrTag, param.getStartingIndexForRecovery().toString());
-	}
-	if (param.getFitExpression()!=null){
-		dataAnalysisResultsNode.setAttribute(MicroscopyXMLTags.FitExpressionAttrTag, param.getFitExpression().infix());
-	}
-	if (param.getSlowerRate()!=null){
-		dataAnalysisResultsNode.setAttribute(MicroscopyXMLTags.SlowerRateAttrTag, param.getSlowerRate().toString());
-	}
-	return dataAnalysisResultsNode;
+	return frapModelParametersNode;
 }
 
 /**
@@ -315,8 +307,8 @@ private static org.jdom.Element getXML(FRAPStudy param,Xmlproducer vcellXMLProdu
 	}
 	
 	//Get AnalysisResults
-	if ( param.getFrapDataAnalysisResults()!=null ){
-		frapStudyNode.addContent( getXML(param.getFrapDataAnalysisResults()) );
+	if ( param.getFrapModelParameters()!=null ){
+		frapStudyNode.addContent( getXML(param.getFrapModelParameters()) );
 	}
 	//Get ExternalDataIdentifier (for timeseries)
 	if (param.getFrapDataExternalDataInfo()!=null){

@@ -149,8 +149,6 @@ public class NonGUIFRAPTest {
 		//System.out.println(xmlString);
 		MicroscopyXmlReader xmlReader = new MicroscopyXmlReader(true);
 		FRAPStudy frapStudy = xmlReader.getFrapStudy(XmlUtil.stringToXML(xmlString, null),null);
-		Double bleachWhileMonitoringRate =
-			frapStudy.getFrapDataAnalysisResults().getBleachWhileMonitoringTau();
 		
 		if(frapStudy == null || frapStudy.getFrapData() == null){
 			throw new Exception("no FrapData in file "+xmlFileName);
@@ -227,8 +225,11 @@ public class NonGUIFRAPTest {
 		
 		String[] args =
 			new String[]{
-				FrapDataAnalysisResults.BLEACH_TYPE_NAMES[frapStudy.getFrapDataAnalysisResults().getBleachType()],
-				(bleachWhileMonitoringRate == null?"-":bleachWhileMonitoringRate.toString()),
+				frapStudy.getFrapModelParameters().startIndexForRecovery,
+				frapStudy.getFrapModelParameters().diffusionRate,
+				frapStudy.getFrapModelParameters().monitorBleachRate,
+				frapStudy.getFrapModelParameters().mobileFraction,
+				frapStudy.getFrapModelParameters().slowerRate,
 				testDirectoryPath,
 				imageDataSetZipFile.getAbsolutePath(),
 				cellROIFile.getAbsolutePath(),
@@ -267,16 +268,19 @@ public class NonGUIFRAPTest {
 	 * @param args
 	 */
 	public static void runSolver(String[] args) throws Exception{
-		String recoveryDiffusionRateString = args[0];
-		String bleachWhileMonitoringRateString = args[1];
-		String workingDirectoryPath = args[2];
-		String inputFRAPDataFileName = args[3];
-		String inputCellROIFileName = args[4];
-		String inputBleachROIFileName = args[5];
-		String inputBackgroundROIFileName = args[6];
-		String outputXMLFileName = args[7];
-		String commaSepTimeStamps = args[8];
-		String commaSepExtentXYZ = args[9];
+		String startingIndexForRecovery = args[0];
+		String recoveryDiffusionRateString = args[1];
+		String bleachWhileMonitoringRateString = args[2];
+		String mobileFractionString = args[3];
+		String slowerRateString = args[4];
+		String workingDirectoryPath = args[5];
+		String inputFRAPDataFileName = args[6];
+		String inputCellROIFileName = args[7];
+		String inputBleachROIFileName = args[8];
+		String inputBackgroundROIFileName = args[9];
+		String outputXMLFileName = args[10];
+		String commaSepTimeStamps = args[11];
+		String commaSepExtentXYZ = args[12];
 		
 		LocalWorkspace localWorkspace =
 			new LocalWorkspace(new File(workingDirectoryPath));
@@ -316,19 +320,17 @@ public class NonGUIFRAPTest {
 		frapData.addReplaceRoi(cellROI);
 		frapData.addReplaceRoi(backgroundROI);	
 
-		FrapDataAnalysisResults fdar = null;
-		try{
-			int bleachType = 
-				FrapDataAnalysisResults.getBleachTypeFromBleachTypeName(recoveryDiffusionRateString);
-			fdar = FRAPDataAnalysis.fitRecovery2(frapData,bleachType);
-		}catch(Exception e){
-			fdar = new FrapDataAnalysisResults();
-			fdar.setRecoveryDiffusionRate(Double.parseDouble(recoveryDiffusionRateString));
-		}
-
 		FRAPStudy frapStudy = new FRAPStudy();
 		frapStudy.setFrapData(frapData);
-		frapStudy.setFrapDataAnalysisResults(fdar);
+		FRAPStudy.FRAPModelParameters frapModelParameters =
+			new FRAPStudy.FRAPModelParameters(
+					startingIndexForRecovery,
+					recoveryDiffusionRateString,
+					bleachWhileMonitoringRateString,
+					mobileFractionString,
+					slowerRateString
+				);
+		frapStudy.setFrapModelParameters(frapModelParameters);
 		frapStudy.refreshDependentROIs();
 		
 		ExternalDataInfo imageDatasetExternalDataInfo = FRAPStudy.createNewExternalDataInfo(localWorkspace, FRAPStudy.IMAGE_EXTDATA_NAME);
@@ -336,20 +338,25 @@ public class NonGUIFRAPTest {
 		frapStudy.setFrapDataExternalDataInfo(imageDatasetExternalDataInfo);
 		frapStudy.setRoiExternalDataInfo(roiExternalDataInfo);
 		
-		frapStudy.saveImageDatasetAsExternalData(localWorkspace,frapStudy.getFrapDataExternalDataInfo().getExternalDataIdentifier());
-		frapStudy.saveROIsAsExternalData(localWorkspace, frapStudy.getRoiExternalDataInfo().getExternalDataIdentifier());
+		frapStudy.saveImageDatasetAsExternalData(
+				localWorkspace,frapStudy.getFrapDataExternalDataInfo().getExternalDataIdentifier(),
+				new Integer(frapModelParameters.startIndexForRecovery));
+		frapStudy.saveROIsAsExternalData(
+				localWorkspace, frapStudy.getRoiExternalDataInfo().getExternalDataIdentifier(),
+				new Integer(frapModelParameters.startIndexForRecovery));
 
-		Double bleachWhileMonitoringRate =
-			(!bleachWhileMonitoringRateString.equals("-")
-				?Double.parseDouble(bleachWhileMonitoringRateString)
-				:null);
+//		Double bleachWhileMonitoringRate =
+//			(!bleachWhileMonitoringRateString.equals("-")
+//				?Double.parseDouble(bleachWhileMonitoringRateString)
+//				:null);
 		BioModel bioModel =
 			FRAPStudy.createNewBioModel(
 				frapStudy,
-				fdar.getRecoveryDiffusionRate(),
-				bleachWhileMonitoringRate,
+				new Double(recoveryDiffusionRateString),
+				bleachWhileMonitoringRateString,
 				LocalWorkspace.createNewKeyValue(),
-				LocalWorkspace.getDefaultOwner());
+				LocalWorkspace.getDefaultOwner(),
+				new Integer(frapModelParameters.startIndexForRecovery));
 		frapStudy.setBioModel(bioModel);
 		DataSetControllerImpl.ProgressListener progressListener =
 			new DataSetControllerImpl.ProgressListener(){
@@ -376,8 +383,8 @@ public class NonGUIFRAPTest {
 		FRAPStudy.SpatialAnalysisResults spatialAnalysisResults =
 			FRAPStudy.spatialAnalysis(
 				simulationDataManager,
-				fdar.getStartingIndexForRecovery(),
-				frapDataTimeStamps[fdar.getStartingIndexForRecovery()],
+				new Integer(frapModelParameters.startIndexForRecovery),
+				frapDataTimeStamps[new Integer(frapModelParameters.startIndexForRecovery)],
 				bioModel.getSimulations()[0].getMathDescription().getSubDomain(FRAPStudy.CYTOSOL_NAME),
 				frapData,
 				progressListener);

@@ -102,11 +102,33 @@ public class FRAPStudy implements Matchable{
 	private String originalImageFilePath = null;
 	private FRAPData frapData = null;
 	private BioModel bioModel = null;
-	private FrapDataAnalysisResults frapDataAnalysisResults = null;
+//	private FrapDataAnalysisResults frapDataAnalysisResults = null;
 	private ExternalDataInfo frapDataExternalDataInfo = null;
 	private ExternalDataInfo roiExternalDataInfo = null;
 	
 	PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+	
+	public static class FRAPModelParameters {
+		public final String startIndexForRecovery;
+		public final String diffusionRate;
+		public final String monitorBleachRate;
+		public final String mobileFraction;
+		public final String slowerRate;
+		
+		public FRAPModelParameters(
+				String startingIndexForRecovery,
+				String diffusionRate,
+				String monitorBleachRate,
+				String mobileFraction,
+				String slowerRate){
+			this.startIndexForRecovery = startingIndexForRecovery;
+			this.diffusionRate = diffusionRate;
+			this.monitorBleachRate = monitorBleachRate;
+			this.mobileFraction = mobileFraction;
+			this.slowerRate = slowerRate;
+		}
+	}
+	private FRAPModelParameters frapModelParameters;
 	
 	public static final String EXTRACELLULAR_NAME = "extracellular";
 	public static final String CYTOSOL_NAME = "cytosol";
@@ -466,9 +488,10 @@ public class FRAPStudy implements Matchable{
 	public static BioModel createNewBioModel(
 			FRAPStudy sourceFrapStudy,
 			Double baseDiffusionRate,
-			Double bleachWhileMonitoringRate,
+			String bleachWhileMonitoringRateString,
 			KeyValue simKey,
-			User owner) throws Exception {
+			User owner,
+			int startingIndexForRecovery) throws Exception {
 
 		if (sourceFrapStudy==null){
 			throw new Exception("No FrapStudy is defined");
@@ -479,10 +502,10 @@ public class FRAPStudy implements Matchable{
 		if (sourceFrapStudy.getFrapData().getImageDataset()==null){
 			throw new Exception("No ImageDataSet is defined");
 		}
-		if(sourceFrapStudy.getFrapDataAnalysisResults() == null ||
-				sourceFrapStudy.getFrapDataAnalysisResults().getStartingIndexForRecovery() == null){
-			throw new Exception("No Starting Index for Recovery is defined");
-		}
+//		if(sourceFrapStudy.getFrapDataAnalysisResults() == null ||
+//				sourceFrapStudy.getFrapDataAnalysisResults().getStartingIndexForRecovery() == null){
+//			throw new Exception("No Starting Index for Recovery is defined");
+//		}
 		ROI cellROI_2D = sourceFrapStudy.getFrapData().getRoi(RoiType.ROI_CELL);
 		if (cellROI_2D==null){
 			throw new Exception("No Cell ROI is defined");
@@ -500,8 +523,8 @@ public class FRAPStudy implements Matchable{
 		Extent extent = sourceFrapStudy.getFrapData().getImageDataset().getExtent();
 
 		double[] timeStamps = sourceFrapStudy.getFrapData().getImageDataset().getImageTimeStamps();
-		int startingIndexForRecovery = 
-			sourceFrapStudy.getFrapDataAnalysisResults().getStartingIndexForRecovery().intValue();
+//		int startingIndexForRecovery = 
+//			sourceFrapStudy.getFrapDataAnalysisResults().getStartingIndexForRecovery().intValue();
 		TimeBounds timeBounds = new TimeBounds(0.0,timeStamps[timeStamps.length-1]-timeStamps[startingIndexForRecovery]);
 		double timeStepVal = timeStamps[timeStamps.length-1] - timeStamps[timeStamps.length-2];
 		TimeStep timeStep = new TimeStep(timeStepVal, timeStepVal, timeStepVal);
@@ -628,13 +651,13 @@ public class FRAPStudy implements Matchable{
 		for (int i = 0; i < initialConditions.length; i++) {
 			model.addSpecies(species[i]);
 			model.addSpeciesContext(speciesContexts[i]);
-			if (bleachWhileMonitoringRate != null){
+			if (bleachWhileMonitoringRateString != null){
 				SimpleReaction simpleReaction = new SimpleReaction(cytosol,speciesContexts[i].getName()+"_bleach");
 				simpleReaction.addReactant(speciesContexts[i], 1);
 				MassActionKinetics massActionKinetics = new MassActionKinetics(simpleReaction);
 				simpleReaction.setKinetics(massActionKinetics);
 				KineticsParameter kforward = massActionKinetics.getForwardRateParameter();
-				simpleReaction.getKinetics().setParameterValue(kforward, new Expression(bleachWhileMonitoringRate));
+				simpleReaction.getKinetics().setParameterValue(kforward, new Expression(new Double(bleachWhileMonitoringRateString)));
 				model.addReactionStep(simpleReaction);
 				//we save bleachWhileMonitoringRate during generating the bio model, this was saved to nowhere previously.
 			}
@@ -976,7 +999,7 @@ public class FRAPStudy implements Matchable{
 		}
 	}
 	public static final String IMAGE_EXTDATA_NAME = "timeData";
-	public void  saveImageDatasetAsExternalData(LocalWorkspace localWorkspace,ExternalDataIdentifier newImageExtDataID) throws Exception{
+	public void  saveImageDatasetAsExternalData(LocalWorkspace localWorkspace,ExternalDataIdentifier newImageExtDataID,int startingIndexForRecovery) throws Exception{
 			ImageDataset imageDataset = getFrapData().getImageDataset();
 			if (imageDataset.getSizeC()>1){
 				throw new RuntimeException("FRAPStudy.saveImageDatasetAsExternalData(): multiple channels not yet supported");
@@ -984,11 +1007,11 @@ public class FRAPStudy implements Matchable{
 			Extent extent = imageDataset.getExtent();
 			ISize isize = imageDataset.getISize();
 			//Changed in March 2008.
-			int startingIndexForRecovery = 0;
-			if(getFrapDataAnalysisResults()!= null && getFrapDataAnalysisResults().getStartingIndexForRecovery() != null)
-			{
-				startingIndexForRecovery = getFrapDataAnalysisResults().getStartingIndexForRecovery();
-			}
+//			int startingIndexForRecovery = 0;
+//			if(getFrapDataAnalysisResults()!= null && getFrapDataAnalysisResults().getStartingIndexForRecovery() != null)
+//			{
+//				startingIndexForRecovery = getFrapDataAnalysisResults().getStartingIndexForRecovery();
+//			}
 			int numImageToStore = imageDataset.getSizeT()-startingIndexForRecovery; //not include the prebleach 
 	    	short[][][] pixData = new short[numImageToStore][1][]; //original fluor data only
 	    	double[] timesArray = new double[numImageToStore];
@@ -1078,7 +1101,7 @@ public class FRAPStudy implements Matchable{
     	return cartesianMesh;
 	}
 	public static final String ROI_EXTDATA_NAME = "roiData";
-	public void saveROIsAsExternalData(LocalWorkspace localWorkspace,ExternalDataIdentifier newROIExtDataID) throws Exception{
+	public void saveROIsAsExternalData(LocalWorkspace localWorkspace,ExternalDataIdentifier newROIExtDataID,int startingIndexForRecovery) throws Exception{
 			System.out.println("Saving ROIs (and statistics images) as External Data");
 			ImageDataset imageDataset = getFrapData().getImageDataset();
 			Extent extent = imageDataset.getExtent();
@@ -1089,11 +1112,11 @@ public class FRAPStudy implements Matchable{
 	    	
 	    	// take average of prebleach images 
 	    	// changed in March, 2008.
-	    	int startingIndexForRecovery = 0;
-	    	if(getFrapDataAnalysisResults() != null )
-	    	{
-	    		startingIndexForRecovery = getFrapDataAnalysisResults().getStartingIndexForRecovery();//starting index for recovery is the first postbleaching index.
-	    	}
+//	    	int startingIndexForRecovery = 0;
+//	    	if(getFrapDataAnalysisResults() != null )
+//	    	{
+//	    		startingIndexForRecovery = getFrapDataAnalysisResults().getStartingIndexForRecovery();//starting index for recovery is the first postbleaching index.
+//	    	}
 	    	float[] accumPrebleachImage = new float[imageDataset.getISize().getXYZ()];//ISize: Image size including x, y, z. getXYZ()=x*y*z
 			for (int timeIndex = 0; timeIndex < startingIndexForRecovery; timeIndex++) {
 				short[] pixels = getFrapData().getImageDataset().getPixelsZ(0, timeIndex);//channel index is 0. it is not supported yet. get image size X*Y*Z stored by time index. image store by UShortImage[Z*T]
@@ -1263,15 +1286,15 @@ public class FRAPStudy implements Matchable{
 		propertyChangeSupport.firePropertyChange("description", oldValue, description);
 	}
 
-	public FrapDataAnalysisResults getFrapDataAnalysisResults() {
-		return frapDataAnalysisResults;
-	}
-	//changed to be public in March 2008
-	public void setFrapDataAnalysisResults(FrapDataAnalysisResults frapDataAnalysisResults) {
-		FrapDataAnalysisResults oldValue = this.frapDataAnalysisResults;
-		this.frapDataAnalysisResults = frapDataAnalysisResults;
-		propertyChangeSupport.firePropertyChange("frapDataAnalysisResults", oldValue, frapDataAnalysisResults);
-	}
+//	public FrapDataAnalysisResults getFrapDataAnalysisResults() {
+//		return frapDataAnalysisResults;
+//	}
+//	//changed to be public in March 2008
+//	public void setFrapDataAnalysisResults(FrapDataAnalysisResults frapDataAnalysisResults) {
+//		FrapDataAnalysisResults oldValue = this.frapDataAnalysisResults;
+//		this.frapDataAnalysisResults = frapDataAnalysisResults;
+//		propertyChangeSupport.firePropertyChange("frapDataAnalysisResults", oldValue, frapDataAnalysisResults);
+//	}
 
 	public String getOriginalImageFilePath() {
 		return originalImageFilePath;
@@ -1351,10 +1374,10 @@ public class FRAPStudy implements Matchable{
 			{
 				return false;
 			}
-			if(!cbit.util.Compare.isEqualOrNull(getFrapDataAnalysisResults(), fStudy.getFrapDataAnalysisResults()))
-			{
-				return false;
-			}
+//			if(!cbit.util.Compare.isEqualOrNull(getFrapDataAnalysisResults(), fStudy.getFrapDataAnalysisResults()))
+//			{
+//				return false;
+//			}
 			if(!cbit.util.Compare.isEqualOrNull(getFrapDataExternalDataInfo(),fStudy.getFrapDataExternalDataInfo()))
 			{
 				return false;
@@ -1367,6 +1390,16 @@ public class FRAPStudy implements Matchable{
 		}
 
 		return false;
+	}
+
+
+	public FRAPModelParameters getFrapModelParameters() {
+		return frapModelParameters;
+	}
+
+
+	public void setFrapModelParameters(FRAPModelParameters frapModelParameters) {
+		this.frapModelParameters = frapModelParameters;
 	}
 
 }

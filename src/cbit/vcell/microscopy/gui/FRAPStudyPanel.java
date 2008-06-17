@@ -13,8 +13,6 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.image.BufferedImage;
@@ -36,8 +34,6 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTextField;
-import javax.swing.JTextPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
@@ -45,9 +41,9 @@ import cbit.gui.DialogUtils;
 import cbit.gui.graph.GraphPane;
 import cbit.image.ImageException;
 import cbit.sql.KeyValue;
+import cbit.sql.Version;
 import cbit.util.BeanUtils;
 import cbit.util.Compare;
-import cbit.util.NumberUtils;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
@@ -71,11 +67,12 @@ import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.microscopy.ExternalDataInfo;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FrapDataAnalysisResults;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.MicroscopyXmlReader;
 import cbit.vcell.microscopy.MicroscopyXmlproducer;
+import cbit.vcell.microscopy.NonGUIFRAPTest;
 import cbit.vcell.microscopy.ROI;
+import cbit.vcell.microscopy.FRAPStudy.FRAPModelParameters;
 import cbit.vcell.microscopy.ROI.RoiType;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
@@ -118,19 +115,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 	private JCheckBox showReportListCheckBox = null;
 	private JScrollPane scrollReportPane = null;
 	private MultisourcePlotPane[] spatialAnalysisList = null;
-	private JTextPane statusTextPane = null;
-	private MultisourcePlotPane multisourcePlotPane = null;
 	private JPanel jPanel = null;
 	private GraphPane geometryGraphPane = null;
-//	private JPanel modelSpecPanel = null;
-	private JLabel mobilePhase = null;
-	private JLabel immobilePhase = null;
-	private JLabel mobileFractionLabel = null;
-	private JLabel immobileFractionLabel = null; 
-	private JCheckBox slowFractionCheckBox = null;
-	private JTextField slowDiffRateTextField = null;
-//	private JLabel slowDiffusionUnitsLabel = null;
-	private JCheckBox bleachWhileMonitoringCheckBox = null;
 	private JRadioButton spatial_twoAndHalfDimRadioButton = null;
 	private JRadioButton spatial_threeDimRadioButton = null;
 	private JRadioButton spatial_twoDimRadioButton = null;
@@ -138,15 +124,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 	
 	private PDEDataViewer pdeDataViewer = null;
 	private PDEDataViewer flourDataViewer = null;
-	private JPanel fitCurveOptionPanel = null;
-	private JRadioButton circularDiskRadioButton = null;
-	private JRadioButton method2RadioButton = null;
-	private JRadioButton method3RadioButton = null;
-	private JTextField diffusionRateTextFieldNew = null;
-//	private JLabel diffusionUnitsLabel = null;
-//	private JLabel diffusionRateTitleLabel = null;
-	private JTextField bleachWhileMonitoringTextField = null;
-//	private JLabel bleachWhileMonitoringUnitsLabel = null;
 	
 	enum DisplayChoice { PDE,EXTTIMEDATA};
 
@@ -163,11 +140,14 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 		public final String mobileFractionString;
 		public final boolean bSlowerChanged;
 		public final String slowerString;
+		public final boolean bStartIndexForRecoveryChanged;
+		public final String startIndexForRecoveryString;
 		public FrapChangeInfo(boolean bROIValuesChanged,boolean bROISizeChanged,
 				boolean bDiffusionRateChanged,String diffusionRateString,
 				boolean bBleachWhileMonitorChanged,String bleachWhileMonitorRateString,
 				boolean bMobileFractionChanged,String mobileFractionString,
-				boolean bSlowerChanged, String slowerString){
+				boolean bSlowerChanged, String slowerString,
+				boolean bStartIndexForRecoveryChanged,String startIndexForRecoveryString){
 			this.bROIValuesChanged = bROIValuesChanged;
 			this.bROISizeChanged = bROISizeChanged;
 			this.bDiffusionRateChanged = bDiffusionRateChanged;
@@ -178,10 +158,14 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 			this.mobileFractionString = mobileFractionString;
 			this.bSlowerChanged = bSlowerChanged;
 			this.slowerString = slowerString;
+			this.bStartIndexForRecoveryChanged = bStartIndexForRecoveryChanged;
+			this.startIndexForRecoveryString = startIndexForRecoveryString;
+			//Don't forget to change 'hasAnyChanges' if adding new parameters
 		}
 		public boolean hasAnyChanges(){
 			return bROIValuesChanged || bROISizeChanged ||
-				bDiffusionRateChanged || bBleachWhileMonitorChanged || bMobileFractionChanged || bSlowerChanged;
+				bDiffusionRateChanged || bBleachWhileMonitorChanged ||
+				bMobileFractionChanged || bSlowerChanged || bStartIndexForRecoveryChanged;
 		}
 		public boolean hasROIChanged(){
 			return bROISizeChanged || bROIValuesChanged;
@@ -193,7 +177,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 			(bDiffusionRateChanged?"(Diffusion Rate)":" ")+
 			(bBleachWhileMonitorChanged?"(BleachWhileMonitoring Rate)":" ")+
 			(bMobileFractionChanged?"(Mobile Fraction)":" ")+
-			(bSlowerChanged?"(Slower Rate)":" ");
+			(bSlowerChanged?"(Slower Rate)":" ")+
+			(bStartIndexForRecoveryChanged?"(Start Index Recovery Rate)":" ");
 
 		}
 	};
@@ -202,19 +187,21 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 		public final ROI lastCellROI;
 		public final ROI lastBleachROI;
 		public final ROI lastBackgroundROI;
-		public final Double lastBaseDiffusionrate;
-		public final Double lastBleachWhileMonitoringRate;
-		public final Double lastMobileFraction;
-		public final Double lastSlowerRate;
+		public final String lastBaseDiffusionrate;
+		public final String lastBleachWhileMonitoringRate;
+		public final String lastMobileFraction;
+		public final String lastSlowerRate;
+		public final String startingIndexForRecovery;
 		public SavedFrapModelInfo(
 			KeyValue savedSimKeyValue,
 			ROI lastCellROI,
 			ROI lastBleachROI,
 			ROI lastBackgroundROI,
-			Double lastBaseDiffusionrate,
-			Double lastBleachWhileMonitoringRate,
-			Double lastMobileFraction,
-			Double lastSlowerRate){
+			String lastBaseDiffusionrate,
+			String lastBleachWhileMonitoringRate,
+			String lastMobileFraction,
+			String lastSlowerRate,
+			String startingIndexForRecovery){
 			if(savedSimKeyValue == null){
 				throw new IllegalArgumentException("SimKey cannot be null for a saved FrapModel.");
 			}
@@ -226,6 +213,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 			this.lastBleachWhileMonitoringRate = lastBleachWhileMonitoringRate;
 			this.lastMobileFraction = lastMobileFraction;
 			this.lastSlowerRate = lastSlowerRate;
+			this.startingIndexForRecovery = startingIndexForRecovery;
 		}
 
 	};
@@ -323,9 +311,10 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 		loadROICursors();
 	}
 	
-	private void setSavedFrapModelInfo(SavedFrapModelInfo savedFrapModelInfo){
+	private void setSavedFrapModelInfo(SavedFrapModelInfo savedFrapModelInfo) throws Exception{
 		savedFrapModelInfoNew2 = savedFrapModelInfo;
-		getFRAPParametersPanel().setSavedFrapModelInfo(getSavedFrapModelInfo());
+		getFRAPParametersPanel().initializeSavedFrapModelInfo(getSavedFrapModelInfo(),getFrapStudy().getFrapData());
+		getFRAPParametersPanel().insertFRAPModelParametersIntoFRAPStudy(getFrapStudy());
 	}
 	private SavedFrapModelInfo getSavedFrapModelInfo(){
 		return savedFrapModelInfoNew2;
@@ -379,32 +368,36 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 		}
 	}
 	public static SavedFrapModelInfo createSavedFrapModelInfo(FRAPStudy frapStudy) throws Exception{
-		KeyValue savedSimKey = null;
-		if(frapStudy.getBioModel() != null &&
-			frapStudy.getBioModel().getSimulations() != null &&
-			frapStudy.getBioModel().getSimulations().length > 0){
-			savedSimKey = frapStudy.getBioModel().getSimulations()[0].getKey();
-		}
+
+		KeyValue savedSimKey =
+			(frapStudy.getBioModel() == null
+				?LocalWorkspace.createNewKeyValue()
+				:frapStudy.getBioModel().getSimulations()[0].getSimulationVersion().getVersionKey());
+		FRAPData frapData = frapStudy.getFrapData();
+		FRAPModelParameters frapModelParameters = frapStudy.getFrapModelParameters();
+		
 		ROI savedCellROI = null;
 		ROI savedBleachROI = null;
 		ROI savedBackgroundROI = null;
-		if(frapStudy.getFrapData() != null){
-			savedCellROI = frapStudy.getFrapData().getRoi(RoiType.ROI_CELL);
+		if(frapData != null){
+			savedCellROI = frapData.getRoi(RoiType.ROI_CELL);
 			savedCellROI = (savedCellROI == null?null:new ROI(savedCellROI));
-			savedBleachROI = frapStudy.getFrapData().getRoi(RoiType.ROI_BLEACHED);
+			savedBleachROI = frapData.getRoi(RoiType.ROI_BLEACHED);
 			savedBleachROI = (savedBleachROI == null?null:new ROI(savedBleachROI));
-			savedBackgroundROI = frapStudy.getFrapData().getRoi(RoiType.ROI_BACKGROUND);
+			savedBackgroundROI = frapData.getRoi(RoiType.ROI_BACKGROUND);
 			savedBackgroundROI = (savedBackgroundROI == null?null:new ROI(savedBackgroundROI));
 		}
-		Double savedDiffusionRate = null;
-		Double savedBleachWhileMonitoringRate = null;
-		Double savedMobileFraction = null;
-		Double savedSlowerRate = null;
-		if(frapStudy.getFrapDataAnalysisResults() != null){
-			savedDiffusionRate = frapStudy.getFrapDataAnalysisResults().getRecoveryDiffusionRate();
-			savedBleachWhileMonitoringRate = frapStudy.getFrapDataAnalysisResults().getBleachWhileMonitoringTau();
-			savedMobileFraction = frapStudy.getFrapDataAnalysisResults().getMobilefraction();
-			savedSlowerRate = frapStudy.getFrapDataAnalysisResults().getSlowerRate();
+		String savedDiffusionRate = null;
+		String savedBleachWhileMonitoringRate = null;
+		String savedMobileFraction = null;
+		String savedSlowerRate = null;
+		String startingIndexForRecovery = null;
+		if(frapModelParameters != null){
+			savedDiffusionRate = frapModelParameters.diffusionRate;
+			savedBleachWhileMonitoringRate = frapModelParameters.monitorBleachRate;
+			savedMobileFraction = frapModelParameters.mobileFraction;
+			savedSlowerRate = frapModelParameters.slowerRate;
+			startingIndexForRecovery = frapModelParameters.startIndexForRecovery;
 		}
 		return new SavedFrapModelInfo(
 				savedSimKey,
@@ -412,7 +405,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 				savedDiffusionRate,
 				savedBleachWhileMonitoringRate,
 				savedMobileFraction,
-				savedSlowerRate
+				savedSlowerRate,
+				startingIndexForRecovery
 			);
 	}
 
@@ -460,7 +454,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 					@Override
 					public void setSelectedIndex(int index) {
 						try{
-							if(updateTabbedView(index)){
+							if(updateTabbedView(getSelectedIndex(),index)){
 								super.setSelectedIndex(index);
 							}
 						}catch(Exception e){
@@ -479,67 +473,124 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 		return jTabbedPane;
 	}
 
-	private boolean updateTabbedView(int tabIndex) throws Exception{
-		if(tabIndex != FRAPStudyPanel.INDEX_TAB_IMAGES && (getFrapStudy() == null || getFrapStudy().getFrapData() == null)){
+	private boolean updateTabbedView(int exitTab,int enterTab) throws Exception{
+		if(enterTab != FRAPStudyPanel.INDEX_TAB_IMAGES && (getFrapStudy() == null || getFrapStudy().getFrapData() == null)){
 			throw new Exception("No document open.  Use 'File->Open' menu to open a new document");
 		}
 		try{
 			BeanUtils.setCursorThroughout(FRAPStudyPanel.this, Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-			switch (tabIndex){
-				case FRAPStudyPanel.INDEX_TAB_IMAGES:
-				break;
-				case FRAPStudyPanel.INDEX_TAB_FITCURVE:
-					getFRAPParametersPanel().updateFrapDataAnalysis();
-				break;
-				case FRAPStudyPanel.INDEX_TAB_SPATIALMODEL:
-					refreshBiomodel();
-				break;
-				case FRAPStudyPanel.INDEX_TAB_FITSPATIALMODEL:
-					{
-						refreshBiomodel();
-						CurrentSimulationDataState currentSimulationDataState =
-							new CurrentSimulationDataState();
-						if(!currentSimulationDataState.isDataValid()){
-							if(currentSimulationDataState.isDataInvalidBecauseMissingOrCorrupt() != null &&
-								currentSimulationDataState.isDataInvalidBecauseMissingOrCorrupt()){
-								final String RUN_SIM = "Run Simulation...";
-								String expectedSimFileLocation =
-									getLocalWorkspace().getDefaultSimDataDirectory();;
-								String result = DialogUtils.showWarningDialog(this,
-									"Couldn't find all simulation data in directory:\n"+expectedSimFileLocation+"\n"+
-									"Simulation needs to Run before viewing results, Run Simulation now?" ,
-									new String[] {RUN_SIM,UserMessage.OPTION_CANCEL}, RUN_SIM);
-								if(result == null || !result.equals(RUN_SIM)){
-									return false;
-								}
-							}
-							clearFitSpatialModelPanel();
-							runSimulation();
+			if(exitTab == FRAPStudyPanel.INDEX_TAB_IMAGES){
+				getFRAPDataPanel().saveROI();
+			}else if(exitTab == FRAPStudyPanel.INDEX_TAB_FITCURVE){
+				getFRAPParametersPanel().insertFRAPModelParametersIntoFRAPStudy(getFrapStudy());
+			}
+			
+			if(enterTab == FRAPStudyPanel.INDEX_TAB_FITCURVE){
+				try{
+					getFRAPParametersPanel().refreshFRAPModelParameterEstimates(getFrapStudy().getFrapData());
+				}catch(Exception e){
+					DialogUtils.showWarningDialog(this, 
+							"Some FRAP Model Parameter Estimation help won't be available because:\n"+e.getMessage(),
+							new String[] {UserMessage.OPTION_OK}, UserMessage.OPTION_OK);
+				}
+			}else if(enterTab == FRAPStudyPanel.INDEX_TAB_SPATIALMODEL){
+				refreshBiomodel();
+			}else if(enterTab == FRAPStudyPanel.INDEX_TAB_FITSPATIALMODEL){
+				refreshBiomodel();
+				CurrentSimulationDataState currentSimulationDataState = new CurrentSimulationDataState();
+				if(!currentSimulationDataState.isDataValid()){
+					if(currentSimulationDataState.isDataInvalidBecauseMissingOrCorrupt() != null &&
+						currentSimulationDataState.isDataInvalidBecauseMissingOrCorrupt()){
+						final String RUN_SIM = "Run Simulation...";
+						String expectedSimFileLocation =
+							getLocalWorkspace().getDefaultSimDataDirectory();
+						String result = DialogUtils.showWarningDialog(this,
+							"Couldn't find all simulation data in directory:\n"+expectedSimFileLocation+"\n"+
+							"Simulation needs to Run before viewing results, Run Simulation now?" ,
+							new String[] {RUN_SIM,UserMessage.OPTION_CANCEL}, RUN_SIM);
+						if(result == null || !result.equals(RUN_SIM)){
 							return false;
-						}else{
-							refreshPDEDisplay(DisplayChoice.PDE);
-							refreshPDEDisplay(DisplayChoice.EXTTIMEDATA);
 						}
 					}
-				break;
-				case FRAPStudyPanel.INDEX_TAB_REPORT:
-					{
-						refreshBiomodel();
-						CurrentSimulationDataState currentSimulationDataState =
-							new CurrentSimulationDataState();
-						if(currentSimulationDataState.isDataValid()){
-							getReportPanel().removeAll();
-							spatialAnalysis();
-						}else{
-							throw new Exception("Simulation Data are not valid. Simulation needs to be run.\n"+
-								currentSimulationDataState.getDescription());
-						}
-					}
-				break;
-				default:
-				break;
+					clearFitSpatialModelPanel();
+					runSimulation();
+					return false;
+				}else{
+					refreshPDEDisplay(DisplayChoice.PDE);
+					refreshPDEDisplay(DisplayChoice.EXTTIMEDATA);
+				}
+			}else if(enterTab == FRAPStudyPanel.INDEX_TAB_REPORT){
+				refreshBiomodel();
+				CurrentSimulationDataState currentSimulationDataState = new CurrentSimulationDataState();
+				if(currentSimulationDataState.isDataValid()){
+					getReportPanel().removeAll();
+					spatialAnalysis();
+				}else{
+					throw new Exception("Simulation Data are not valid. Simulation needs to be run.\n"+
+						currentSimulationDataState.getDescription());
+				}
 			}
 			return true;
+//			switch (tabIndex){
+//				case FRAPStudyPanel.INDEX_TAB_IMAGES:
+//				break;
+//				case FRAPStudyPanel.INDEX_TAB_FITCURVE:
+//					try{
+//						getFRAPDataPanel().saveROI();
+//						getFRAPParametersPanel().updateFrapDataAnalysis();
+//					}catch(Exception e){
+//						//ignore, show tab anyway
+//					}
+//				break;
+//				case FRAPStudyPanel.INDEX_TAB_SPATIALMODEL:
+//					refreshBiomodel();
+//				break;
+//				case FRAPStudyPanel.INDEX_TAB_FITSPATIALMODEL:
+//					{
+//						refreshBiomodel();
+//						CurrentSimulationDataState currentSimulationDataState =
+//							new CurrentSimulationDataState();
+//						if(!currentSimulationDataState.isDataValid()){
+//							if(currentSimulationDataState.isDataInvalidBecauseMissingOrCorrupt() != null &&
+//								currentSimulationDataState.isDataInvalidBecauseMissingOrCorrupt()){
+//								final String RUN_SIM = "Run Simulation...";
+//								String expectedSimFileLocation =
+//									getLocalWorkspace().getDefaultSimDataDirectory();;
+//								String result = DialogUtils.showWarningDialog(this,
+//									"Couldn't find all simulation data in directory:\n"+expectedSimFileLocation+"\n"+
+//									"Simulation needs to Run before viewing results, Run Simulation now?" ,
+//									new String[] {RUN_SIM,UserMessage.OPTION_CANCEL}, RUN_SIM);
+//								if(result == null || !result.equals(RUN_SIM)){
+//									return false;
+//								}
+//							}
+//							clearFitSpatialModelPanel();
+//							runSimulation();
+//							return false;
+//						}else{
+//							refreshPDEDisplay(DisplayChoice.PDE);
+//							refreshPDEDisplay(DisplayChoice.EXTTIMEDATA);
+//						}
+//					}
+//				break;
+//				case FRAPStudyPanel.INDEX_TAB_REPORT:
+//					{
+//						refreshBiomodel();
+//						CurrentSimulationDataState currentSimulationDataState =
+//							new CurrentSimulationDataState();
+//						if(currentSimulationDataState.isDataValid()){
+//							getReportPanel().removeAll();
+//							spatialAnalysis();
+//						}else{
+//							throw new Exception("Simulation Data are not valid. Simulation needs to be run.\n"+
+//								currentSimulationDataState.getDescription());
+//						}
+//					}
+//				break;
+//				default:
+//				break;
+//			}
+//			return true;
 		}finally{
 			BeanUtils.setCursorThroughout(FRAPStudyPanel.this, Cursor.getDefaultCursor());
 			getFRAPDataPanel().getOverlayEditorPanelJAI().updateROICursor();
@@ -677,36 +728,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 		getShowReportListButton().setSelected(true); //show plot list by default
 	}
 	
-	/**
-	 * This method initializes statusTextPane	
-	 * 	
-	 * @return javax.swing.JTextPane	
-	 */
-	private JTextPane getStatusTextPane() {
-		if (statusTextPane == null) {
-			statusTextPane = new JTextPane();
-			statusTextPane.setMinimumSize(new Dimension(6, 50));
-			statusTextPane.setPreferredSize(new Dimension(6, 50));
-			statusTextPane.setBackground(new Color(233,233,233));
-			statusTextPane.setEditable(false);
-		}
-		return statusTextPane;
-	}
-
-	/**
-	 * This method initializes multisourcePlotPane	
-	 * 	
-	 * @return cbit.plot.PlotPane	
-	 */
-	private MultisourcePlotPane getMultisourcePlotPane() {
-		if (multisourcePlotPane == null) {
-			multisourcePlotPane = new MultisourcePlotPane();
-			multisourcePlotPane.setListVisible(false);
-			multisourcePlotPane.add(getFitCurveOptionPanel(), BorderLayout.EAST);
-		}
-		return multisourcePlotPane;
-	}
-
 	private FRAPStudy getFrapStudy() {
 		return frapStudy;
 	}
@@ -715,7 +736,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 		this.frapStudy = frapStudy;
 		frapStudy.addPropertyChangeListener(this);
 		getFRAPDataPanel().setFrapStudyNew(frapStudy,bNew);
-		getFRAPParametersPanel().setFRAPStudy(frapStudy);
 	}
 	
 	protected void crop(Rectangle cropRectangle) throws ImageException {
@@ -790,6 +810,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 	}
 	private void saveAsInternal(String saveToFileName) throws Exception {
 
+		getFRAPParametersPanel().insertFRAPModelParametersIntoFRAPStudy(frapStudy);
 		boolean bSaveAs = saveToFileName == null;
 		File outputFile = null;
 		if(bSaveAs){
@@ -822,20 +843,22 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 	
 	private void saveProcedure(File xmlFrapFileName,boolean bSaveAsNew) throws Exception{
 		VirtualFrapMainFrame.statusBar.showStatus("Saving file " + xmlFrapFileName.getAbsolutePath()+" ...");
-
+		
 		BioModel newBioModel = null;
 		try{
 			newBioModel = FRAPStudy.createNewBioModel(getFrapStudy(),
-				getFrapStudy().getFrapDataAnalysisResults().getRecoveryDiffusionRate(),
-				getFrapStudy().getFrapDataAnalysisResults().getBleachWhileMonitoringTau(),
-				(bSaveAsNew || getSavedFrapModelInfo() == null
-					?LocalWorkspace.createNewKeyValue()
-					:getSavedFrapModelInfo().savedSimKeyValue),
-				LocalWorkspace.getDefaultOwner());
+				new Double(getFrapStudy().getFrapModelParameters().diffusionRate),
+				getFrapStudy().getFrapModelParameters().monitorBleachRate,
+				(bSaveAsNew || getSavedFrapModelInfo() == null || getSavedFrapModelInfo().savedSimKeyValue == null
+						?LocalWorkspace.createNewKeyValue()
+						:getSavedFrapModelInfo().savedSimKeyValue),
+				LocalWorkspace.getDefaultOwner(),
+				new Integer(getFrapStudy().getFrapModelParameters().startIndexForRecovery));
 			getFrapStudy().setBioModel(newBioModel);
 		}catch(Exception e){
 			getFrapStudy().setBioModel(null);
 		}
+		
 
 		boolean originalSimFilesAreInvalid = cleanupSimDataFilesIfNotOK();
 		if(originalSimFilesAreInvalid || bSaveAsNew){
@@ -847,7 +870,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 		
 		MicroscopyXmlproducer.writeXMLFile(getFrapStudy(), xmlFrapFileName, true,progressListenerNew,VirtualFrapMainFrame.SAVE_COMPRESSED);
 		getFrapStudy().setXmlFilename(xmlFrapFileName.getAbsolutePath());
-		setSavedFrapModelInfo(FRAPStudyPanel.createSavedFrapModelInfo(frapStudy));
+		setSavedFrapModelInfo(FRAPStudyPanel.createSavedFrapModelInfo(getFrapStudy()));
 		VirtualFrapMainFrame.statusBar.showStatus("File " + xmlFrapFileName.getAbsolutePath()+" has been saved.");
         VirtualFrapLoader.mf.setMainFrameTitle(xmlFrapFileName.getName());
         VirtualFrapMainFrame.statusBar.showProgress(0);
@@ -900,8 +923,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 						frapStudy.setRoiExternalDataInfo(null);
 					}
 					frapStudy.setXmlFilename(inFile.getAbsolutePath());
-					setSavedFrapModelInfo(FRAPStudyPanel.createSavedFrapModelInfo(frapStudy));
 					setFrapStudy(frapStudy,true);
+					setSavedFrapModelInfo(FRAPStudyPanel.createSavedFrapModelInfo(frapStudy));
 				} catch (Exception e) {
 					VirtualFrapMainFrame.statusBar.showStatus("Failed loading file " + inFile.getAbsolutePath()+".");
 					hash.put(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR,
@@ -1014,8 +1037,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 	private void importDataSetup(FRAPData frapData) throws Exception{
 		FRAPStudy newFrapStudy = new FRAPStudy();
 		newFrapStudy.setFrapData(frapData);
-		setSavedFrapModelInfo(null);
 		setFrapStudy(newFrapStudy, true);
+		setSavedFrapModelInfo(null);
         frapStudy.setXmlFilename(null); //in case an xml file was loaded before this.
 	}
 
@@ -1096,11 +1119,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 
 	}
 	private AsynchClientTask createSaveTask(final boolean bSaveAs,final boolean bRefreshUI) throws Exception{
-		try{
-			getFRAPParametersPanel().updateFrapDataAnalysis();
-		}catch(Exception e){
-			throw new Exception("Can't save until problem is fixed:\n"+e.getMessage());
-		}
 		return new AsynchClientTask() {
 			public String getTaskName() { return "Saving Current Workspace"; }
 			public int getTaskType() { return cbit.vcell.desktop.controls.ClientTask.TASKTYPE_NONSWING_BLOCKING; }
@@ -1312,9 +1330,9 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 			public void run(java.util.Hashtable hash) throws Exception{
 				if(cleanupSimDataFilesIfNotOK()){
 					getFrapStudy().saveROIsAsExternalData(localWorkspace,
-						getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier());
+						getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(),new Integer(getFrapStudy().getFrapModelParameters().startIndexForRecovery));
 					getFrapStudy().saveImageDatasetAsExternalData(localWorkspace,
-						getFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier());
+						getFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier(),new Integer(getFrapStudy().getFrapModelParameters().startIndexForRecovery));
 				}
 			}
 			public boolean skipIfAbort() {
@@ -1530,7 +1548,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 			throw new Exception("Missing Frap Data Unexpected while refreshing BioModel");
 		}
 		getFRAPDataPanel().saveROI();
-		getFRAPParametersPanel().updateFrapDataAnalysis();
 		
 		ROI lastCellROI = null;
 		ROI lastBleachROI = null;
@@ -1552,17 +1569,21 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 		boolean bBackgroundROISame =
 			Compare.isEqualOrNull(lastBackgroundROI,getFrapStudy().getFrapData().getRoi(RoiType.ROI_BACKGROUND));
 		
-		return new FrapChangeInfo(
-				!bCellROISame || !bBleachROISame || !bBackgroundROISame,
-				!bROISameSize,
-				getFRAPParametersPanel().isUserDiffusionRateChanged(),
-				getFRAPParametersPanel().getUserDiffusionRateString(),
-				getFRAPParametersPanel().isUserMonitorBleachRateChanged(),
-				getFRAPParametersPanel().getUserMonitorBleachRateString(),
-				getFRAPParametersPanel().isUserMobileFractionChanged(),
-				getFRAPParametersPanel().getUserMobileFractionString(),
-				getFRAPParametersPanel().isUserSlowerRateChanged(),
-				getFRAPParametersPanel().getUserSlowerRateString());
+		return getFRAPParametersPanel().createCompleteFRAPChangeInfo(getSavedFrapModelInfo(),
+				bCellROISame,bBleachROISame,bBackgroundROISame,bROISameSize);
+//		return new FrapChangeInfo(
+//				!bCellROISame || !bBleachROISame || !bBackgroundROISame,
+//				!bROISameSize,
+//				getFRAPParametersPanel().isUserDiffusionRateChanged(),
+//				getFRAPParametersPanel().getUserDiffusionRateString(),
+//				getFRAPParametersPanel().isUserMonitorBleachRateChanged(),
+//				getFRAPParametersPanel().getUserMonitorBleachRateString(),
+//				getFRAPParametersPanel().isUserMobileFractionChanged(),
+//				getFRAPParametersPanel().getUserMobileFractionString(),
+//				getFRAPParametersPanel().isUserSlowerRateChanged(),
+//				getFRAPParametersPanel().getUserSlowerRateString(),
+//				getFRAPParametersPanel().isUserStartingIndexForRecoveryChanged(),
+//				getFRAPParametersPanel().getUserStartingIndexForRecoveryString());
 	}
 	
 	protected FrapChangeInfo refreshBiomodel() throws Exception{
@@ -1588,6 +1609,9 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 			}
 
 			Double baseDiffusionRate = null;
+			if(frapChangeInfo.diffusionRateString == null){
+				throw new Exception("Diffusion Rate must be set to a value greater than 0.");
+			}
 			try{
 				baseDiffusionRate =
 					(frapChangeInfo.diffusionRateString == null?null:new Double(frapChangeInfo.diffusionRateString));
@@ -1627,9 +1651,10 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 			BioModel bioModel = FRAPStudy.createNewBioModel(
 				getFrapStudy(),
 				baseDiffusionRate,
-				bleachWhileMonitoringRate,
+				frapChangeInfo.bleachWhileMonitorRateString,
 				(getSavedFrapModelInfo() == null?null:getSavedFrapModelInfo().savedSimKeyValue),
-				LocalWorkspace.getDefaultOwner());
+				LocalWorkspace.getDefaultOwner(),
+				new Integer(frapChangeInfo.startIndexForRecoveryString));
 			getFrapStudy().setBioModel(bioModel);
 			VirtualFrapMainFrame.statusBar.showStatus("New Frap Model created.");
 			((StructureMappingCartoon)getGeometryGraphPane().getGraphModel()).
@@ -1655,185 +1680,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 		}
 		return geometryGraphPane;
 	}
-
-//	/**
-//	 * This method initializes modelSpecPanel	
-//	 * 	
-//	 * @return javax.swing.JPanel	
-//	 */
-//	private JPanel getModelSpecPanel() {
-//		if (modelSpecPanel == null) {
-//			GridBagConstraints gridBagConstraints1 = new GridBagConstraints();//mobile fraction label
-//			gridBagConstraints1.gridx = 0;
-//			gridBagConstraints1.anchor = GridBagConstraints.EAST;
-//			gridBagConstraints1.fill = GridBagConstraints.HORIZONTAL;
-//			gridBagConstraints1.gridy = 0;
-//			
-//			GridBagConstraints gridBagConstraints2 = new GridBagConstraints();//mobile fraction percentage label
-//			gridBagConstraints2.fill = GridBagConstraints.HORIZONTAL;
-//			gridBagConstraints2.anchor = GridBagConstraints.EAST;
-//			gridBagConstraints2.gridy = 0;
-//			gridBagConstraints2.weightx = 1.0;
-//			gridBagConstraints2.gridx = 1;
-//			
-//			GridBagConstraints gridBagConstraints3 = new GridBagConstraints();//immobile fraction label
-//			gridBagConstraints3.gridx = 0;
-//			gridBagConstraints3.fill = GridBagConstraints.HORIZONTAL;
-//			gridBagConstraints3.anchor = GridBagConstraints.EAST;
-//			gridBagConstraints3.gridy = 1;
-//			
-//			GridBagConstraints gridBagConstraints4 = new GridBagConstraints();//immobile fration percentage label
-//			gridBagConstraints4.gridx = 1;
-//			gridBagConstraints4.fill = GridBagConstraints.HORIZONTAL;
-//			gridBagConstraints4.anchor = GridBagConstraints.EAST;
-//			gridBagConstraints4.gridy = 1;
-//			
-//			GridBagConstraints gridBagConstraints5 = new GridBagConstraints();//diffusion rate label
-//			gridBagConstraints5.gridx = 0;
-//			gridBagConstraints5.fill = GridBagConstraints.HORIZONTAL;
-//			gridBagConstraints5.anchor = GridBagConstraints.EAST;
-//			gridBagConstraints5.gridy = 2;
-//			
-//			GridBagConstraints gridBagConstraints6 = new GridBagConstraints();//diffusion rate text field
-//			gridBagConstraints6.fill = GridBagConstraints.HORIZONTAL;
-//			gridBagConstraints6.gridy = 2;
-//			gridBagConstraints6.weightx = 1.0;
-//			gridBagConstraints6.anchor = GridBagConstraints.EAST;
-//			gridBagConstraints6.gridx = 1;
-//			
-//			GridBagConstraints gridBagConstraints65 = new GridBagConstraints();//diffusion rate unit label
-//			gridBagConstraints65.gridx = 2;
-//			gridBagConstraints65.fill = GridBagConstraints.HORIZONTAL;
-//			gridBagConstraints65.anchor = GridBagConstraints.EAST;
-//			gridBagConstraints65.gridy = 2;
-//						
-//			GridBagConstraints gridBagConstraints7 = new GridBagConstraints();//bleaching while monitoring check box
-//			gridBagConstraints7.weightx = 2.0;
-//			gridBagConstraints7.gridx = 0;
-//			gridBagConstraints7.fill = GridBagConstraints.HORIZONTAL;
-//			gridBagConstraints7.anchor = GridBagConstraints.EAST;
-//			gridBagConstraints7.gridy = 3;
-//			
-//			GridBagConstraints gridBagConstraints8 = new GridBagConstraints();//bleaching while monitoring rate text field
-//			gridBagConstraints8.fill = GridBagConstraints.HORIZONTAL;
-//			gridBagConstraints8.gridy = 3;
-//			gridBagConstraints8.weightx = 1.0;
-//			gridBagConstraints8.anchor = GridBagConstraints.EAST;
-//			gridBagConstraints8.gridx = 1;
-//			
-//			GridBagConstraints gridBagConstraints9 = new GridBagConstraints();//bleaching while monitoring rate unit label
-//			gridBagConstraints9.gridx = 2;
-//			gridBagConstraints9.fill = GridBagConstraints.HORIZONTAL;
-//			gridBagConstraints9.anchor = GridBagConstraints.EAST;
-//			gridBagConstraints9.gridy = 3;
-//			
-//			GridBagConstraints gridBagConstraints10 = new GridBagConstraints();//slower mobile fraction check box
-//			gridBagConstraints10.weightx = 2.0;
-//			gridBagConstraints10.gridx = 0;
-//			gridBagConstraints10.anchor = GridBagConstraints.EAST;
-//			gridBagConstraints10.gridy = 4;
-//			
-//			GridBagConstraints gridBagConstraints11 = new GridBagConstraints();//slower mobile fraction text field
-//			gridBagConstraints11.fill = GridBagConstraints.HORIZONTAL;
-//			gridBagConstraints11.gridy = 4;
-//			gridBagConstraints11.weightx = 1.0;
-//			gridBagConstraints11.anchor = GridBagConstraints.EAST;
-//			gridBagConstraints11.gridx = 1;
-//			
-//			GridBagConstraints gridBagConstraints12 = new GridBagConstraints();//slower mobile fraction unit label
-//			gridBagConstraints12.gridx = 2;
-//			gridBagConstraints12.fill = GridBagConstraints.HORIZONTAL;
-//			gridBagConstraints12.anchor = GridBagConstraints.EAST;
-//			gridBagConstraints12.gridy = 4;
-//			
-//			bleachWhileMonitoringUnitsLabel = new JLabel();
-//			bleachWhileMonitoringUnitsLabel.setText(" [s-1]   Please regenerate the spatial model once the bleaching rate has been changed.");
-//			
-//			diffusionRateTitleLabel = new JLabel();
-//			diffusionRateTitleLabel.setText("  Diffusion Rate");
-//			
-//			diffusionUnitsLabel = new JLabel();
-//			diffusionUnitsLabel.setText(" [um2.s-1]   Please regenerate the spatial model once the diffusion rate has been changed.");
-//			
-//			slowDiffusionUnitsLabel = new JLabel();
-//			slowDiffusionUnitsLabel.setText(" [um2.s-1]   Please regenerate the spatial model once the slower diffusion rate has been changed.");
-//			
-//			modelSpecPanel = new JPanel();
-//			modelSpecPanel.setLayout(new GridBagLayout());
-//			modelSpecPanel.add(getMobilePhase(), gridBagConstraints1);
-//			modelSpecPanel.add(getMobileFractionLabel(), gridBagConstraints2);
-//			
-//			modelSpecPanel.add(getImmobilePhase(), gridBagConstraints3);
-//			modelSpecPanel.add(getImmobileFractionLabel(), gridBagConstraints4);
-//			
-//			modelSpecPanel.add(diffusionRateTitleLabel, gridBagConstraints5);
-//			modelSpecPanel.add(getDiffusionRateTextFieldNew(), gridBagConstraints6);
-//			modelSpecPanel.add(diffusionUnitsLabel, gridBagConstraints65);
-//			
-//			modelSpecPanel.add(getBleachWhileMonitoringCheckBox(), gridBagConstraints7);
-//			modelSpecPanel.add(getBleachWhileMonitoringTextField(), gridBagConstraints8);
-//			modelSpecPanel.add(bleachWhileMonitoringUnitsLabel, gridBagConstraints9);
-//			
-//			modelSpecPanel.add(getSlowFractionCheckBox(), gridBagConstraints10);
-//			modelSpecPanel.add(getSlowDiffRateTextField(), gridBagConstraints11);
-//			modelSpecPanel.add(slowDiffusionUnitsLabel, gridBagConstraints12);
-//		}
-//		return modelSpecPanel;
-//	}
-
-//	/**
-//	 * This method initializes bleachWhileMonitoringCheckBox	
-//	 * 	
-//	 * @return javax.swing.JCheckBox	
-//	 */
-//	private JCheckBox getBleachWhileMonitoringCheckBox() {
-//		if (bleachWhileMonitoringCheckBox == null) {
-//			bleachWhileMonitoringCheckBox = new JCheckBox();
-//			bleachWhileMonitoringCheckBox.setText("Bleaching While Monitoring: bleaching rate");
-//			bleachWhileMonitoringCheckBox.addActionListener(new ActionListener(){
-//				public void actionPerformed(ActionEvent e){
-//					if(e.getSource().equals(bleachWhileMonitoringCheckBox)){
-//						if(bleachWhileMonitoringCheckBox.isSelected()){
-//							getBleachWhileMonitoringTextField().setEnabled(true);
-//						}
-//						else{
-//							getBleachWhileMonitoringTextField().setEnabled(false);
-//						}
-//					}
-//				}
-//			});
-//		}
-//		return bleachWhileMonitoringCheckBox;
-//	}
-
-//	/**
-//	 * This method initializes immoblePhaseCheckBox	
-//	 * 	
-//	 * @return javax.swing.JCheckBox	
-//	 */
-//	private JLabel getImmobilePhase() {
-//		if (immobilePhase == null) {
-//			immobilePhase = new JLabel("  Immobile Fraction");
-//		}
-//		return immobilePhase;
-//	}
-//	//the following four functions are added to show mobile and immobile fractions in spatial model panel 
-//	public JLabel getMobileFractionLabel() {
-//		if(mobileFractionLabel == null)
-//		{
-//			mobileFractionLabel = new JLabel("");
-//		}
-//		return mobileFractionLabel;
-//	}
-//
-//	public JLabel getImmobileFractionLabel() {
-//		if(immobileFractionLabel == null)
-//		{
-//			immobileFractionLabel = new JLabel("");
-//		}
-//		return immobileFractionLabel;
-//	}
-
 	
 	/**
 	 * This method initializes spatial_twoAndHalfDimRadioButton	
@@ -1894,40 +1740,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 		}
 		return geometryControlsPanel;
 	}
-
-//	/**
-//	 * This method initializes slowFractionCheckBox	
-//	 * 	
-//	 * @return javax.swing.JCheckBox	
-//	 */
-//	private JCheckBox getSlowFractionCheckBox() {
-//		if (slowFractionCheckBox == null) {
-//			slowFractionCheckBox = new JCheckBox();
-//			slowFractionCheckBox.setEnabled(false);
-//			slowFractionCheckBox.setText("Slower Mobile Fraction: slower diffucion rate");
-//		}
-//		return slowFractionCheckBox;
-//	}
-
-//	private JTextField getSlowDiffRateTextField() {
-//		if (slowDiffRateTextField == null) {
-//			slowDiffRateTextField = new JTextField();
-//			slowDiffRateTextField.setEnabled(false);
-//		}
-//		return slowDiffRateTextField;
-//	}
-	
-//	/**
-//	 * This method initializes mobileFractionCheckBox	
-//	 * 	
-//	 * @return javax.swing.JCheckBox	
-//	 */
-//	private JLabel getMobilePhase() {
-//		if (mobilePhase == null) {
-//			mobilePhase = new JLabel("  Mobile Fraction");
-//		}
-//		return mobilePhase;
-//	}
 
 	public LocalWorkspace getLocalWorkspace() {
 		return localWorkspace;
@@ -2018,64 +1830,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 	    return split;
 	}
 	
-	/**
-	 * This method initializes fitCurveOptionPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
-	 */
-	private JPanel getFitCurveOptionPanel() {
-		if (fitCurveOptionPanel == null) {
-			fitCurveOptionPanel = new JPanel();
-			fitCurveOptionPanel.setLayout(new GridBagLayout());
-		}
-		return fitCurveOptionPanel;
-	}	
-	
-//	/**
-//	 * This method initializes circularDiskRadioButton	
-//	 * 	
-//	 * @return javax.swing.JRadioButton	
-//	 */
-//	private JRadioButton getCircularDiskRadioButton() {
-//		if (circularDiskRadioButton == null) {
-//			circularDiskRadioButton = new JRadioButton();
-//			circularDiskRadioButton.setText(FrapDataAnalysisResults.BLEACH_TYPE_NAMES[FrapDataAnalysisResults.BleachType_CirularDisk]);
-//			circularDiskRadioButton.setSelected(true);
-//		}
-//		return circularDiskRadioButton;
-//	}
-//
-//	private JRadioButton getGaussianSpotRadioButton() {
-//		if (method2RadioButton == null) {
-//			method2RadioButton = new JRadioButton();
-//			method2RadioButton.setText(FrapDataAnalysisResults.BLEACH_TYPE_NAMES[FrapDataAnalysisResults.BleachType_GaussianSpot]);
-//			method2RadioButton.setSelected(false);
-//		}
-//		return method2RadioButton;
-//	}
-//	
-//	private JRadioButton getHalfCellRadioButton() {
-//		if (method3RadioButton == null) {
-//			method3RadioButton = new JRadioButton();
-//			method3RadioButton.setText(FrapDataAnalysisResults.BLEACH_TYPE_NAMES[FrapDataAnalysisResults.BleachType_HalfCell]);
-//			method3RadioButton.setSelected(false);
-//		}
-//		return method3RadioButton;
-//	}
-	
-//	/**
-//	 * This method initializes diffusionRateTextField	
-//	 * 	
-//	 * @return javax.swing.JTextField	
-//	 */
-//	private JTextField getDiffusionRateTextFieldNew() {
-//		if (diffusionRateTextFieldNew == null) {
-//			diffusionRateTextFieldNew = new JTextField();
-//			diffusionRateTextFieldNew.setPreferredSize(new Dimension(120, 20));
-//		}
-//		return diffusionRateTextFieldNew;
-//	}
-
 	private DataManager getDataManager(Simulation sim) throws Exception{
 		FieldFunctionArguments[] fieldFunctionArgs = sim.getMathDescription().getFieldFunctionArguments();
 		FieldDataIdentifierSpec[] fieldDataIdentifierSpecs = new FieldDataIdentifierSpec[fieldFunctionArgs.length];
@@ -2104,9 +1858,9 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 		{
 			throw new Exception("Spatial model and simulation have to be created/recreated due to changes are made. Please go to \'Generate Spatial Model\' tab to create/recreate spatial model.");
 		}
-		if(getFrapStudy().getFrapDataAnalysisResults() == null)
+		if(getFrapStudy().getFrapModelParameters() == null)
 		{
-			throw new Exception("Fitting recovery curve is required before running spatial analysis. Please go to \'Fit Recovery Curve\' tab to run curve fitting.");
+			throw new Exception("Model parameters are required before running spatial analysis. Please go to \'Fit Recovery Curve\' tab to run curve fitting.");
 		}
 		
        	VirtualFrapMainFrame.statusBar.showStatus("Running spatial analysis ...");
@@ -2127,7 +1881,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 					};
 				Simulation frapSimulation = frapStudy.getBioModel().getSimulations()[0];
 				DataManager simulationDataManager = getDataManager(frapSimulation);
-				int startIndexForRecovery = getFrapStudy().getFrapDataAnalysisResults().getStartingIndexForRecovery();
+				int startIndexForRecovery = new Integer(getFrapStudy().getFrapModelParameters().startIndexForRecovery);
 				double[] frapDataTimeStamps = getFrapStudy().getFrapData().getImageDataset().getImageTimeStamps();
 				FRAPStudy.SpatialAnalysisResults spatialAnalysisResults =
 					FRAPStudy.spatialAnalysis(
@@ -2192,19 +1946,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 		ClientTaskDispatcher.dispatch(VirtualFrapLoader.mf,hash, tasks, false); 
 	}
 
-//	/**
-//	 * This method initializes bleachWhileMonitoringTextField	
-//	 * 	
-//	 * @return javax.swing.JTextField	
-//	 */
-//	private JTextField getBleachWhileMonitoringTextField() {
-//		if (bleachWhileMonitoringTextField == null) {
-//			bleachWhileMonitoringTextField = new JTextField();
-//			bleachWhileMonitoringTextField.setEnabled(false);
-//		}
-//		return bleachWhileMonitoringTextField;
-//	}
-
 	public void propertyChange(PropertyChangeEvent evt) {
 		if(evt.getSource() == getFRAPDataPanel().getOverlayEditorPanelJAI() && 
 			evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CROP_PROPERTY)){
@@ -2216,54 +1957,10 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 		}
 	}
 
-//	private void updateFrapDataAnalysisGUI(FrapDataAnalysisResults frapDataAnalysisResults){
-//		//
-//		//FrapDataAnalysis
-//		//
-//		getCircularDiskRadioButton().removeActionListener(bleachMethodChangeActionListener);
-//		getGaussianSpotRadioButton().removeActionListener(bleachMethodChangeActionListener);
-//		getHalfCellRadioButton().removeActionListener(bleachMethodChangeActionListener);
-//		try{
-//			final String DEFAULT_DIFFUSION_STRING = "";
-//			if(frapDataAnalysisResults != null){
-//				Double modelDiffusionRate = frapDataAnalysisResults.getRecoveryDiffusionRate();
-//				Double bleachWhileMonitorTau = frapDataAnalysisResults.getBleachWhileMonitoringTau();
-//				Double mobileFraction = frapDataAnalysisResults.getMobilefraction();
-//				getDiffusionRateTextFieldNew().setText((modelDiffusionRate == null?DEFAULT_DIFFUSION_STRING:modelDiffusionRate+""));
-//				getBleachWhileMonitoringCheckBox().setSelected(bleachWhileMonitorTau != null);
-//				getBleachWhileMonitoringTextField().setEnabled(bleachWhileMonitorTau != null);
-//				getBleachWhileMonitoringTextField().setText((bleachWhileMonitorTau != null?bleachWhileMonitorTau+"":""));
-//				getMobileFractionLabel().setText((mobileFraction!=null?NumberUtils.formatNumber(mobileFraction*100,4)+"%":""));
-//				getImmobileFractionLabel().setText((mobileFraction!=null?NumberUtils.formatNumber((1.0-mobileFraction)*100,4)+"%":""));			
-//				if(frapDataAnalysisResults.getBleachType() == FrapDataAnalysisResults.BleachType_CirularDisk){
-//					getCircularDiskRadioButton().setSelected(true);
-//				}else if(frapDataAnalysisResults.getBleachType() == FrapDataAnalysisResults.BleachType_GaussianSpot){
-//					getGaussianSpotRadioButton().setSelected(true);
-//				}else if(frapDataAnalysisResults.getBleachType() == FrapDataAnalysisResults.BleachType_HalfCell){
-//					getHalfCellRadioButton().setSelected(true);
-//				}
-//			}else{
-//				getMultisourcePlotPane().setDataSources(null);
-////				getMultisourcePlotPane().clearPane();
-//				getDiffusionRateTextFieldNew().setText(DEFAULT_DIFFUSION_STRING);
-//				getBleachWhileMonitoringCheckBox().setSelected(false);
-//				getBleachWhileMonitoringTextField().setText("");
-//				getBleachWhileMonitoringTextField().setEnabled(false);
-//				getMobileFractionLabel().setText("");
-//				getImmobileFractionLabel().setText("");
-//				getCircularDiskRadioButton().setSelected(true);
-//			}
-//		}finally{
-//			getCircularDiskRadioButton().addActionListener(bleachMethodChangeActionListener);
-//			getGaussianSpotRadioButton().addActionListener(bleachMethodChangeActionListener);
-//			getHalfCellRadioButton().addActionListener(bleachMethodChangeActionListener);
-//		}
-//	}
 	private void refreshUI()
 	{
 		VirtualFrapMainFrame.enableSave(true);
 
-//		updateFrapDataAnalysisGUI(getFrapStudy().getFrapDataAnalysisResults());
 		try{
 			refreshBiomodel();
 		}catch(Exception e){
