@@ -1007,6 +1007,7 @@ private cbit.gui.LineNumberedTextPanel getlineNumberedTextArea1() {
 		try {
 			ivjlineNumberedTextArea1 = new cbit.gui.LineNumberedTextPanel();
 			ivjlineNumberedTextArea1.setName("lineNumberedTextArea1");
+			ivjlineNumberedTextArea1.getTextArea().setHighlighter(getHighligher());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1168,9 +1169,9 @@ private void initialize() {
 		label.setFont(label.getFont().deriveFont(Font.BOLD));
 		panel.add(label);
 		panel.add(getSearchTextField());
-		label = new JLabel("(press Esc to cancel search)");
-		label.setFont(label.getFont().deriveFont(label.getFont().getSize2D() - 1));
-		panel.add(label);
+		//label = new JLabel("(press Esc to cancel search)");
+		//label.setFont(label.getFont().deriveFont(label.getFont().getSize2D() - 1));
+		//panel.add(label);
 
 		GridBagConstraints constraints = new java.awt.GridBagConstraints();
 		constraints.gridx = 2; constraints.gridy = 1;
@@ -1507,9 +1508,7 @@ private JTextField getSearchTextField() {
 	if (searchTextField == null) {
 		try {
 			searchTextField = new JTextField();
-			searchTextField.setColumns(15);			
-			
-	        getlineNumberedTextArea1().getTextArea().setHighlighter(getHighligher());	
+			searchTextField.setColumns(15);
 
 	        searchTextFieldBackground = searchTextField.getBackground();
 	        searchTextField.getDocument().addDocumentListener(this);
