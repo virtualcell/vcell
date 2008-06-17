@@ -1,11 +1,14 @@
 package cbit.vcell.xml;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
+import java.io.StringReader;
 
 import org.jdom.Comment;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.Namespace;
+import org.vcell.cellml.CellQuanVCTranslator;
+import org.vcell.cellml.Translator;
 import org.vcell.sbml.vcell.MathModel_SBMLExporter;
 import org.vcell.sbml.vcell.SBMLExporter;
 
@@ -254,19 +257,25 @@ public static VCDocument importSBML(VCLogger vcLogger, String xmlString) throws 
 }
 
 public static VCDocument importBioCellML(VCLogger vcLogger, String xmlString) throws Exception {
-	throw new Exception("CellML support has been disabled.");
+	throw new Exception("CellML import to a Biomodel has been disabled.");
 }
 
 public static VCDocument importMathCellML(VCLogger vcLogger, String xmlString) throws Exception {
-	throw new Exception("CellML support has been disabled.");
+	// throw new Exception("CellML support has been disabled.");
+
+	//checks that the string is not empty
+    if (xmlString == null || xmlString.length() == 0 || vcLogger == null) {
+        throw new XmlParseException("Invalid params for importing sbml.");
+    }
+	Translator cellmlTranslator = new CellQuanVCTranslator();
+	VCDocument vcDoc = cellmlTranslator.translate(new StringReader(xmlString), false);
+	vcDoc.refreshDependencies();
+    return vcDoc;
 }
 
-
-	public static String mathModelToXML(MathModel mathModel) throws XmlParseException {
-
-		return mathModelToXML(mathModel, true);
-	}
-
+public static String mathModelToXML(MathModel mathModel) throws XmlParseException {
+	return mathModelToXML(mathModel, true);
+}
 
 	static String mathModelToXML(MathModel mathModel, boolean printkeys) throws XmlParseException {
 

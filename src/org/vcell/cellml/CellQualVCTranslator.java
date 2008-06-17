@@ -1,4 +1,5 @@
 package org.vcell.cellml;
+import cbit.vcell.document.VCDocument;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionMathMLParser;
@@ -1089,9 +1090,10 @@ BioModel.SimulationSpec.ReactionContext.LocalizedCompoundSpec.Diffusion.text = d
 	}
 
 
-	protected void translate() {
-
-		addBioModel();	
+	protected VCDocument translate() {
+		// TODO
+		addBioModel();
+		return null;
 	}
 
 

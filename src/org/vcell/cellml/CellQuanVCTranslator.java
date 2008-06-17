@@ -1,5 +1,24 @@
 package org.vcell.cellml;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.dictionary.MolMassTable;
+import cbit.vcell.document.VCDocument;
+import cbit.vcell.geometry.AnalyticSubVolume;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryTest;
+import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.VariableHash;
+import cbit.vcell.math.BoundaryConditionType;
+import cbit.vcell.math.CompartmentSubDomain;
+import cbit.vcell.math.Constant;
+import cbit.vcell.math.Function;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathException;
+import cbit.vcell.math.OdeEquation;
+import cbit.vcell.math.VolVariable;
+import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionMathMLParser;
 import cbit.vcell.parser.MathMLTags;
@@ -21,6 +40,8 @@ import org.jdom.filter.ElementFilter;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Vector;
 
 /**
  * Implementation of the translation from a CellML Quantitative model to a VCML math model. The actual mapping is (ignoring possible mangling):
@@ -49,14 +70,60 @@ public class CellQuanVCTranslator extends Translator {
 
 	protected NameManager nm;
 	protected NameList nl;
-	protected Namespace sNamespace, tNamespace, sAttNamespace, mathns;
+	protected Namespace sNamespace = null;
+	protected Namespace sAttNamespace = null;
+	protected Namespace mathns = null;
+	protected MathDescription mathDescription = null;
+	private VariableHash varsHash = new VariableHash();
+	private Vector<CellmlConnection> connectionsVector = new Vector<CellmlConnection>();
+	
+	//Internal class to store connection information
+	public class CellmlConnection {
+		public String component_1;				// component_1 name
+		public String component_2;				// component_2 name
+		public Vector<String> vars1_vector;		// vector of variable_1s of each connection
+		public Vector<String> vars2_vector;		// vector of variable_2s of each connection
 
-	protected CellQuanVCTranslator() { 
+		public CellmlConnection(String comp1, String comp2, Vector<String> varV1, Vector<String> varV2){
+			component_1 = comp1;
+			component_2 = comp2;
+			vars1_vector = varV1;
+			vars2_vector = varV2;
+		}
 
-		//sNamespace = Namespace.getNamespace(CELLML_NS_PREFIX, CELLML_NS);
+		public String getComponent_1() {
+			return component_1;
+		}
+		public String getComponent_2() {
+			return component_2;
+		}
+		public Vector<String> getVariables_1() {
+			return vars1_vector;
+		}
+		public Vector<String> getVariables_2() {
+			return vars2_vector;
+		}
+		// Does variable 'varName' in component 'comp' exist in this connection?
+		public boolean isComponentVarPresent(String compName, String varName) {
+			if (compName.equals(component_1) || compName.equals(component_2)) {
+				// component is part of connection, now check if this connection has 'varName' in its list of vars
+				// enough to check any one vars vector, since the var name has to be same in both var_1 and var_2 
+				for (int i = 0; i < vars1_vector.size(); i++) {
+					if (varName.equals(vars1_vector.get(i))) {
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+	};
+
+	
+	public CellQuanVCTranslator() { 
+//		sNamespace = Namespace.getNamespace(CELLML_NS_PREFIX, CELLML_NS);
+//		tNamespace = Namespace.getNamespace(XMLTags.VCML_NS);
 		sNamespace = Namespace.getNamespace(CELLMLTags.CELLML_NS);
 		sAttNamespace = Namespace.getNamespace("");                   //dummy NS  
-		tNamespace = Namespace.getNamespace(XMLTags.VCML_NS);
 		mathns = Namespace.getNamespace(MATHML_NS);
 		nm = new NameManager();
 		nl = new NameList();
@@ -64,43 +131,30 @@ public class CellQuanVCTranslator extends Translator {
 		schemaLocationPropName = XmlUtil.NS_SCHEMA_LOC_PROP_NAME;
     } 
 
+/**
+ * 	addCompartmentSubDomain : we pick the variable name by reading through the mathML. 
+ * 	Redundancy in variable name with the volume variable?
+ */
+    
+	protected void addCompartmentSubDomain() throws Exception {
+	    String csdName = sRoot.getAttributeValue(CELLMLTags.name, sAttNamespace);
+	    CompartmentSubDomain csd = new CompartmentSubDomain(csdName, CompartmentSubDomain.NON_SPATIAL_PRIORITY);
 
-    //defaults?
-    protected void addBoundaryTypes(Element csd) {
-
-		Element bt = new Element(XMLTags.BoundaryTypeTag, tNamespace);
-		String boundTypes [] = {XMLTags.BoundaryAttrValueXm, XMLTags.BoundaryAttrValueXp, XMLTags.BoundaryAttrValueYm, 
-								XMLTags.BoundaryAttrValueYp, XMLTags.BoundaryAttrValueZm, XMLTags.BoundaryAttrValueZp};
-		String temp = "Value";
-		for (int i = 0; i < boundTypes.length; i++) {
-			bt.setAttribute(XMLTags.BoundaryAttrTag, boundTypes[i]);
-			bt.setAttribute(XMLTags.BoundaryTypeAttrTag, temp);
-			csd.addContent((Element)bt.clone());
-		}
-	}
-
-
-//we pick the variable name by reading through the math ml. 
-//redundancy in picking up the variable name with the volume variable?
-	protected void addCompartmentSubDomain(Element mathDesc) {
-
-	    Element csd = new Element(XMLTags.CompartmentSubDomainTag, tNamespace);
-	    csd.setAttribute(XMLTags.NameTag, sRoot.getAttributeValue(CELLMLTags.name, sAttNamespace));
-	    addBoundaryTypes(csd);
-		JDOMTreeWalker walker = new JDOMTreeWalker(sRoot, new ElementFilter(CELLMLTags.COMPONENT));
+		Iterator compElementIter = sRoot.getChildren(CELLMLTags.COMPONENT, sNamespace).iterator();
+		// JDOMTreeWalker walker = new JDOMTreeWalker(sRoot, new ElementFilter(CELLMLTags.COMPONENT));
 	    Element comp, math;
 	    String compName, varName, mangledName;
-	    while (walker.hasNext()) {
-			comp = (Element)walker.next();
+	    while (compElementIter.hasNext()) {
+			comp = (Element)compElementIter.next();
 			compName = comp.getAttributeValue(CELLMLTags.name, sAttNamespace);
-			Iterator i = comp.getChildren(CELLMLTags.MATH, mathns).iterator();
-			while (i.hasNext()) {
-				math = (Element)i.next();
+			Iterator mathIter = comp.getChildren(CELLMLTags.MATH, mathns).iterator();
+			while (mathIter.hasNext()) {
+				math = (Element)mathIter.next();
 				Element apply, apply2, apply3, diff, ci;
 				//allow multiple 'apply' children.
-				Iterator j = math.getChildren(MathMLTags.APPLY, mathns).iterator();
-				while (j.hasNext()) { 
-					apply = (Element)j.next();
+				Iterator applyIter = math.getChildren(MathMLTags.APPLY, mathns).iterator();
+				while (applyIter.hasNext()) { 
+					apply = (Element)applyIter.next();
 					ArrayList list = new ArrayList(apply.getChildren());
 					if (list.size() < 3)
 						continue;
@@ -119,48 +173,37 @@ public class CellQuanVCTranslator extends Translator {
 					apply3 = (Element)list.get(2);       //can be a constant
 					
 					mangledName = nm.getMangledName(compName, varName);
-					Element ode = new Element(XMLTags.OdeEquationTag, tNamespace);
-					ode.setAttribute(XMLTags.NameTag, mangledName);
-					ode.setAttribute(XMLTags.SolutionTypeTag, XMLTags.UnknownTypeTag);           
-					Element rate = new Element(XMLTags.RateTag, tNamespace);
 					Element trimmedMath = new Element(CELLMLTags.MATH, mathns).addContent((Element)apply3.detach());
 					fixMathMLBug(trimmedMath);
-					Expression exp = null;
+					Expression rateExp = null;
 					try {
-						exp = (new ExpressionMathMLParser(null)).fromMathML(trimmedMath);
-						exp = processMathExp(comp, exp);
-						exp = exp.flatten();
-						nl.mangleString(exp.infix());
-						rate.setText(exp.infix());
+						rateExp = (new ExpressionMathMLParser(null)).fromMathML(trimmedMath);
+						rateExp = processMathExp(comp, rateExp);
+						rateExp = rateExp.flatten();
+						nl.mangleString(rateExp.infix());
 					} catch (ExpressionException e) {
 						e.printStackTrace(System.out);
 						throw new RuntimeException(e.getMessage());
 					}
-
-					Element initial = new Element(XMLTags.InitialTag, tNamespace);
-					initial.setText(getInitial(comp, varName));     //the same var name
-
-					ode.addContent(rate);
-					ode.addContent(initial);
-					csd.addContent(ode);
+					Expression initExp = new Expression(getInitial(comp, varName));
+					OdeEquation ode = new OdeEquation(new VolVariable(mangledName), initExp, rateExp);
+					csd.addEquation(ode);
 				}
 			}
 	    }
-	    mathDesc.addContent(csd);
+	    mathDescription.addSubDomain(csd);
     }
 
 
-    private void addFunction(Element mathDesc, Element temp, Element comp, String mangledName) {
- 
-	    String expStr = null;                                               //force an exception 
-	    Element function = new Element(XMLTags.FunctionTag, tNamespace);
-		function.setAttribute(XMLTags.NameTag, mangledName);
+    private Function addFunction(Element temp, Element comp, String mangledName) {
+ 	    String expStr = null;
+		Expression exp = null;
 		Element parent = temp.getParent();
 		Element sibling = parent.getChild(MathMLTags.APPLY, mathns);   
 		if (sibling == null) {                          //check if its value is assigned to another variable (i.e. A = B)
-			ArrayList list = new ArrayList(parent.getChildren(MathMLTags.IDENTIFIER, mathns));
+			ArrayList<Element> list = new ArrayList<Element>(parent.getChildren(MathMLTags.IDENTIFIER, mathns));
 			if (list.size() == 2) {
-				expStr = ((Element)list.get(1)).getTextTrim();
+				expStr = (list.get(1)).getTextTrim();
 			}
 			if (expStr == null || expStr.length() == 0) {
 				expStr = parent.getChildText(MathMLTags.CONSTANT, mathns);
@@ -168,11 +211,20 @@ public class CellQuanVCTranslator extends Translator {
 			if (expStr == null || expStr.length() == 0) {                         //check if 'piecewise'
 				sibling = parent.getChild(MathMLTags.PIECEWISE, mathns);
 			}
-		} 
+			if (expStr != null) {
+				try {
+					exp = new Expression(expStr);
+					exp = processMathExp(comp, exp);
+					nl.mangleString(expStr);
+				} catch (ExpressionException e) {
+					e.printStackTrace(System.out);
+					throw new RuntimeException(e.getMessage());
+				} 
+			}
+		}
 		if (sibling != null) { 
 			Element trimmedMath = new Element(CELLMLTags.MATH, mathns).addContent((Element)sibling.detach());
 			fixMathMLBug(trimmedMath); 
-			Expression exp = null;
 			try {
 				exp = (new ExpressionMathMLParser(null)).fromMathML(trimmedMath);
 			} catch (ExpressionException e) {
@@ -183,66 +235,54 @@ public class CellQuanVCTranslator extends Translator {
 			expStr = exp.infix();
 			nl.mangleString(expStr);
 		}
-		function.setText(expStr);
-		mathDesc.addContent(function);
+		return new Function(mangledName, exp);
     }
 
 
 	//use a dummy compartmental geometry
 	protected void addGeometry() {
-
-		Element geom = new Element(XMLTags.GeometryTag, tNamespace);
-		geom.setAttribute(XMLTags.NameTag, GEOM_NAME);
-		geom.setAttribute(XMLTags.DimensionAttrTag, "0");
-		
-		Element extent = new Element(XMLTags.ExtentTag, tNamespace);
-		String temp = "10.0";
-		extent.setAttribute(XMLTags.XAttrTag, temp);
-		extent.setAttribute(XMLTags.YAttrTag, temp);
-		extent.setAttribute(XMLTags.ZAttrTag, temp);
-		geom.addContent(extent);
-		
-		Element origin = new Element(XMLTags.OriginTag, tNamespace);
-		temp = "0.0";
-		origin.setAttribute(XMLTags.XAttrTag, temp);
-		origin.setAttribute(XMLTags.YAttrTag, temp);
-		origin.setAttribute(XMLTags.ZAttrTag, temp);
-		geom.addContent(origin);
-
-		Element subVol = new Element(XMLTags.SubVolumeAttrTag, tNamespace);
-		subVol.setAttribute(XMLTags.NameTag, sRoot.getAttributeValue(CELLMLTags.name, sAttNamespace));
-		subVol.setAttribute(XMLTags.HandleAttrTag, "0");
-		subVol.setAttribute(XMLTags.TypeAttrTag, SUBVOL_NAME);
-		geom.addContent(subVol);
-		
-		tRoot.addContent(geom);
+		try {
+			// Create dummy compartmental geometry for now ?
+			Geometry geometry = new Geometry("Default", 0);
+			geometry.getGeometrySpec().setExtent(new cbit.util.Extent(10.0, 10.0, 10.0));
+			geometry.getGeometrySpec().setOrigin(new cbit.util.Origin(0.0, 0.0, 0.0));
+			mathDescription.setGeometry(geometry);
+		} catch (Exception e) {
+			e.printStackTrace(System.out);
+			throw new RuntimeException("Error creating geometry for model : " + e.getMessage());
+		}
 	}
 
-
-    protected void addMathDescription() {
-
-	    Element mathDesc = new Element(XMLTags.MathDescriptionTag, tNamespace);
-	    mathDesc.setAttribute(XMLTags.NameTag, sRoot.getAttributeValue(CELLMLTags.name, sAttNamespace));
-	    processVariables(mathDesc);
-	  	addCompartmentSubDomain(mathDesc);
-	  	tRoot.addContent(mathDesc);
-    }
-
-
-	protected void addMathModel() {
+	protected MathModel addMathModel() {
 
 		trimAndMangleSource();                                         
-		Comment comment = new Comment("VCML math model created from a CELLML Quantitative model");
-		tRoot = new Element(XMLTags.MathModelTag, tNamespace);
-		tRoot.addContent(comment);
-		tRoot.setAttribute(XMLTags.NameTag, sRoot.getAttributeValue(CELLMLTags.name, sAttNamespace));
+		// Create the Mathmodel and return
+		String modelName = sRoot.getAttributeValue(CELLMLTags.name, sAttNamespace);
+		MathModel mathModel = new MathModel(null);
+		mathDescription = new MathDescription(modelName);
+		// Read in variables and connections into NameManager
 		addVarsAndConns();
+		// process of adding mathDescription - consts, functions, VolVariables, etc.
+	    processVariables();
+		// create dummy compartmental geometry for now
 		addGeometry();
-		addMathDescription();
+	    try {
+	    	// add subdomains, equations, etc.
+	    	addCompartmentSubDomain();
+	    	//set mathmodel name - doing it here, since a try-catch block is required.
+			mathModel.setName(modelName);
+	    } catch (Exception e) {
+	    	e.printStackTrace(System.out);
+	    	throw new RuntimeException("Error adding compartment subdomain : " + e.getMessage());
+	    }
+	    mathModel.setMathDescription(mathDescription);
+	  	// refresh mathmodel
+	  	mathModel.refreshDependencies();
+	  	return mathModel;
 	}
 
 
-	private void addRateFunction (Element mathDesc, Element varRef, String compName, String mangledName) {
+	private Function addRateFunction (Element varRef, String compName, String mangledName) {
 
 	    Element role;  
 		String stoich = null, roleAtt = null;
@@ -257,13 +297,11 @@ public class CellQuanVCTranslator extends Translator {
 				break;
 		}
 		if (stoich != null) {
-		//Can only imply the function if a variable_ref with a role of "rate" exists
+			//Can only imply the function if a variable_ref with a role of "rate" exists
 			JDOMTreeWalker reactionWalker = new JDOMTreeWalker(varRef.getParent(), new ElementFilter(CELLMLTags.ROLE));
 			Element rateRole = reactionWalker.getMatchingElement(CELLMLTags.role, sAttNamespace, CELLMLTags.rateRole);
 			if (rateRole != null) {
 				String rateVarName = rateRole.getParent().getAttributeValue(CELLMLTags.variable, sAttNamespace);
-				Element function = new Element(XMLTags.FunctionTag, tNamespace);
-				function.setAttribute(XMLTags.NameTag, mangledName);   
 				StringBuffer formula = new StringBuffer("(");
 				if (roleAtt.equals(CELLMLTags.productRole))
 					formula.append("-(");
@@ -271,10 +309,17 @@ public class CellQuanVCTranslator extends Translator {
 				if (roleAtt.equals(CELLMLTags.productRole))
 					formula.append(")");
 				formula.append(")");
-				function.setText(formula.toString());
-				mathDesc.addContent(function);
+				try {
+					return new Function(mangledName, new Expression(formula.toString()));
+					// fnsVector.add(function);
+					// mathDescription.addVariable(function);
+				} catch (Exception e) {
+					e.printStackTrace(System.out);
+					throw new RuntimeException("Error adding function (" + mangledName + ") to mathDexcription : " + e.getMessage());
+				}
 			}
 		}
+		return null;
     }
 
 
@@ -298,6 +343,8 @@ public class CellQuanVCTranslator extends Translator {
 
 		while (walker.hasNext()) {
 	    	temp = (Element)walker.next();
+	    	Vector<String> vars1_vect = new Vector<String>();
+	    	Vector<String> vars2_vect = new Vector<String>();
 	    	mapComp = temp.getChild(CELLMLTags.MAP_COMP, sNamespace);
 	    	comp1 = mapComp.getAttributeValue(CELLMLTags.comp1, sAttNamespace);
 	    	comp2 = mapComp.getAttributeValue(CELLMLTags.comp2, sAttNamespace);
@@ -323,12 +370,18 @@ public class CellQuanVCTranslator extends Translator {
 						}
 					}
 				}
-				if (!connected)
+				if (!connected) {
 					System.err.println("Error: Unable to connect variables: " + comp1 + " " + var1 + ", " + comp2 + " " + var2);
+				} 
+				else {	// they are connected; add vars to vars_vectors
+					vars1_vect.add(var1);
+					vars2_vect.add(var2);
+				}
 	    	}
+	    	CellmlConnection newConnection = new CellmlConnection(comp1, comp2, vars1_vect, vars2_vect);
+	    	connectionsVector.add(newConnection);
 		}
 		nm.generateMangledNames();
-		//System.out.println(nm.dumpNames());
     }
 
 
@@ -347,9 +400,9 @@ public class CellQuanVCTranslator extends Translator {
 				org.jdom.Attribute att;
 				for (int j = 0; j < atts.size(); j++) {
 					att = (org.jdom.Attribute)atts.get(j);
-					temp.removeAttribute(att.getName(), sNamespace);
+					temp.removeAttribute(att.getName(), mathns);
 				}
-				temp.removeNamespaceDeclaration(sNamespace);
+				temp.removeNamespaceDeclaration(mathns);
 	      	} 
       	}
 	}
@@ -382,14 +435,16 @@ public class CellQuanVCTranslator extends Translator {
 			return null;
 		}
     } 
-
  
 	private Element getMathElementIdentifier(Element comp, String varName, String elementName) {
  
-		JDOMTreeWalker i = new JDOMTreeWalker(comp, new ElementFilter(CELLMLTags.MATH));
+//		JDOMTreeWalker i = new JDOMTreeWalker(comp, new ElementFilter(CELLMLTags.MATH, Namespace.getNamespace(MATHML_NS)));
+		List mathElementList = comp.getChildren(CELLMLTags.MATH, mathns);
+		Iterator mathElementIterator = mathElementList.iterator();
+		
 		Element math, apply, eq, apply2, diff, target = null;
-		while (i.hasNext()) {
-			math = (Element)i.next();
+		while (mathElementIterator.hasNext()) {
+			math = (Element)mathElementIterator.next();
 			//this first 'apply' loop because some components define all the vars under one 'math' element.
 			Iterator m = math.getChildren(MathMLTags.APPLY, mathns).iterator();
 			while (m.hasNext()) {
@@ -432,10 +487,8 @@ public class CellQuanVCTranslator extends Translator {
 		return target;
     }
 
-
 	//Used to ensure that when reaction parameters are used more than once they have unique identifers
 	private String getUniqueParamName(String name) {
- 
 		String newName = new String(name);
 		String temp = nl.getMangledName(name, "dummy");
 		while (temp.length() > 0) {
@@ -451,7 +504,6 @@ public class CellQuanVCTranslator extends Translator {
 
 
 	private boolean isMiddleComp(String comp, String var) {
- 
 		boolean flag = false;
 		String privateInterface; 
 
@@ -466,7 +518,6 @@ public class CellQuanVCTranslator extends Translator {
 					flag = true;
 			}
 		}
-
 		return flag;
 	}
 
@@ -517,7 +568,6 @@ public class CellQuanVCTranslator extends Translator {
 
    	//post-process a mathematical expression string to handle the variable mapping
 	private Expression processMathExp(Element comp, Expression exp) {
-
 		try {
 			String [] symbols = exp.getSymbols();
 			String mName;
@@ -547,18 +597,20 @@ public class CellQuanVCTranslator extends Translator {
 		return exp;
 	}
 
-
-    protected void processVariables(Element mathDesc) { 
-
-	    JDOMTreeWalker walker = new JDOMTreeWalker(sRoot, new ElementFilter(CELLMLTags.COMPONENT));
+    protected void processVariables() { 
+		List compElementList = sRoot.getChildren(CELLMLTags.COMPONENT, sNamespace);
+		Iterator compElementIterator = compElementList.iterator();
+	    
 	    Element comp, var, varRef, temp;
 	    String compName, varName, publicIn, privateIn, mangledName; 
-	    while (walker.hasNext()) {
-			comp = (Element)walker.next();
+	    while (compElementIterator.hasNext()) {
+			comp = (Element)compElementIterator.next();
 			compName = comp.getAttributeValue(CELLMLTags.name, sAttNamespace);
-			JDOMTreeWalker varWalker = new JDOMTreeWalker(comp, new ElementFilter(CELLMLTags.VARIABLE));
-			while (varWalker.hasNext()) {
-				var = (Element)varWalker.next();
+			List varElementList = comp.getChildren(CELLMLTags.VARIABLE, sNamespace);
+			Iterator varElementIterator = varElementList.iterator();
+			// clear const and volVars vectors for each component
+			while (varElementIterator.hasNext()) {
+				var = (Element)varElementIterator.next();
 				publicIn = var.getAttributeValue(CELLMLTags.public_interface, sAttNamespace);
 				privateIn = var.getAttributeValue(CELLMLTags.private_interface, sAttNamespace);
 				if ( (publicIn != null && publicIn.equals(CELLMLTags.inInterface)) ||
@@ -570,48 +622,62 @@ public class CellQuanVCTranslator extends Translator {
 				System.out.println("Vars: " + compName + "." + varName + " " + mangledName + " " + uniqueVarName);
 			    //declare any differential free variables as VolumeVariable's
 			    temp = getMathElementIdentifier(comp, varName, MathMLTags.DIFFERENTIAL);
-			    if (temp != null) {                                        //formula ignored at this point
-					Element volVar = new Element(XMLTags.VolumeVariableTag, tNamespace);
-					volVar.setAttribute(XMLTags.NameTag, mangledName);
-					mathDesc.addContent(volVar);
-					continue;
+			    try {
+				    if (temp != null) {                                   //formula ignored at this point
+				    	VolVariable volVar = new VolVariable(mangledName);
+				    	varsHash.addVariable(volVar);
+						continue;
+				    }
+				    //any LHS variables of an eq operator are functions
+				    temp = getMathElementIdentifier(comp, varName, MathMLTags.IDENTIFIER);
+					if (temp != null) {
+						Function fn = addFunction(temp, comp, mangledName);
+						varsHash.addVariable(fn);
+						continue;
+					}
+					//Handle delta variables as a special case function
+					varRef = getMatchingVarRef(comp, varName);
+					if (varRef != null) {
+						Function rateFn = addRateFunction(varRef, compName, uniqueVarName);    //2 functions with same name?
+						varsHash.addVariable(rateFn);
+						continue;
+					}
+					//check if it is the time variable, if not add as a constant. No handling for a specific value for the time var.
+					if (!isTimeVar(varName)) {
+						Constant constant = new Constant(uniqueVarName, new Expression(getInitial(comp, varName)));
+						varsHash.addVariable(constant);
+					}
+			    } catch (Exception e) {
+			    	e.printStackTrace(System.out);
+			    	throw new RuntimeException("Error adding variable to variablesHash : " + e.getMessage());
 			    }
-			      //any LHS variables of an eq operator are functions
-			    temp = getMathElementIdentifier(comp, varName, MathMLTags.IDENTIFIER);
-				if (temp != null) {
-					addFunction(mathDesc, temp, comp, mangledName);
-					continue;
-				}
-				//Handle delta variables as a special case function
-				varRef = getMatchingVarRef(comp, varName);
-				if (varRef != null) {
-					addRateFunction(mathDesc, varRef, compName, uniqueVarName);    //2 functions with same name?
-					continue;
-				}
-				//check if its the time variable, if not add as a constant.
-				//no handling for a specific value for the time var.
-				if (!isTimeVar(varName)) {
-					Element constant = new Element(XMLTags.ConstantTag, tNamespace);
-					constant.setAttribute(XMLTags.NameTag, uniqueVarName);
-					constant.setText(getInitial(comp, varName));                 //some redundancy in this call
-					mathDesc.addContent(constant);
-				}
-			}
-	    }
+			}	// end iteration for VARIABLES
+	    }	// end iteration for COMPONENTS
+	    // add the variables from varsHash to mathDescription
+	    try {
+		    mathDescription.setAllVariables(varsHash.getReorderedVariables());
+		} catch (Exception e) {
+	    	e.printStackTrace(System.out);
+	    	throw new RuntimeException("Error adding variables to mathDescription : " + e.getMessage());
+		}
     }
-
-
-	protected void translate() {
-
-		addMathModel();	
+    
+	protected VCDocument translate() {
+		return (addMathModel());	
 	}
 
 
 	private void trimAndMangleSource() {
 
 		String elements [] = { CELLMLTags.MODEL, CELLMLTags.COMPONENT, CELLMLTags.VARIABLE, CELLMLTags.REACTION, 
-							   CELLMLTags.VAR_REF, CELLMLTags.ROLE, CELLMLTags.CONNECTION, CELLMLTags.MAP_COMP, 
-							   CELLMLTags.MAP_VAR, CELLMLTags.UNITS, CELLMLTags.UNIT};
+							   CELLMLTags.VAR_REF, CELLMLTags.MATH, CELLMLTags.ROLE, CELLMLTags.CONNECTION, CELLMLTags.MAP_COMP, 
+							   CELLMLTags.MAP_VAR, CELLMLTags.UNITS, CELLMLTags.UNIT, MathMLTags.APPLY, MathMLTags.EQUAL,
+							   MathMLTags.NOT_EQUAL, MathMLTags.GREATER, MathMLTags.LESS, MathMLTags.GREATER_OR_EQUAL, 
+							   MathMLTags.LESS_OR_EQUAL, MathMLTags.AND, MathMLTags.OR, MathMLTags.NOT, MathMLTags.DIFFERENTIAL, 
+							   MathMLTags.IDENTIFIER, MathMLTags.CONSTANT, MathMLTags.PIECEWISE, MathMLTags.PIECE, MathMLTags.OTHERWISE, 
+							   MathMLTags.BVAR, MathMLTags.TIMES, MathMLTags.DIVIDE, MathMLTags.MINUS, MathMLTags.PLUS, 
+							   MathMLTags.POWER, MathMLTags.EXP, MathMLTags.LN, MathMLTags.LOG_10, MathMLTags.LOGBASE, 
+							   MathMLTags.ROOT, MathMLTags.ABS, MathMLTags.FALSE, MathMLTags.TRUE, MathMLTags.FACTORIAL, MathMLTags.CSYMBOL};
 		TransFilter ts = new TransFilter(elements, null, TransFilter.QUANCELLVC_MANGLE);
 		ts.filter(sRoot);
 	}

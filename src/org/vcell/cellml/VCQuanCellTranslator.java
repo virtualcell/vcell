@@ -1,4 +1,5 @@
 package org.vcell.cellml;
+import cbit.vcell.document.VCDocument;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionMathMLPrinter;
@@ -232,10 +233,12 @@ public class VCQuanCellTranslator extends Translator {
 	}
 
 
-	protected void translate() {
-
+	protected VCDocument translate() {
+		// TODO
 		trimAndMangleSource();
-		addMathModel();	
+		addMathModel();
+		// TODO : REMOVE THIS
+		return null;
 	}
 
 
