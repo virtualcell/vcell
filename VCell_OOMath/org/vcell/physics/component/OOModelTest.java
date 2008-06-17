@@ -174,6 +174,264 @@ public class OOModelTest {
 	 * @return ncbc.physics2.component.Model
 	 * @throws ParseException 
 	 */
+	public static OOModel getExampleSpineDendrite() throws ParseException {
+
+		//
+		//
+		//                                      R_spine_proxD                 R_proxD_distD
+		//      ________________________spine______/\/\/\_+_____________proxD___/\/\/\_+_____________distD
+		//      |        |       |        |                    |          |                   |        |
+		//      |        |       |        |                    |          |                   |        |
+		//      |+       |+      |+       |+                   |+         |+                 +|        |+
+		//      |        |       |      _____                  |       _____                  |      _____
+		//  [NaChan]  [KChan]  [Leak]   _____ C_spine       [I_proxD]  _____ C_proxD      [I_distD]  _____ C_distD
+		//      |        |       |        |                    |          |                   |        |
+		//      |        |       |        |                    |          |                   |        |
+		//      |        |       |        |                    |          |                   |        |
+		//      |________|_______|________|____________________|__________|___________________|________|
+		//                   |
+		//                   O ec
+		//                   |
+		//                ______
+		//                 ____   
+		//                  __
+		//
+		//
+		//
+		double KMOLE = 1.0/602.0;
+		double spineVolume = 1.0;
+		double spineArea = 1.0;
+		double ecVolume = 100;
+		double proxDendriteVolume = 20.0;
+		double proxDendriteArea = 10.0;
+		double distDendriteVolume = 20.0;
+		double distDendriteArea = 10.0;
+		double NaSpineConcInit = 50000;
+		double NaSpineNumInit = NaSpineConcInit*spineVolume/KMOLE;
+		double KSpineConcInit = 397000;
+		double KSpineNumInit = KSpineConcInit*spineVolume/KMOLE;
+		double NaEcConcInit = 437000;
+		double NaEcNumInit = NaEcConcInit*ecVolume/KMOLE;
+		double KEcConcInit = 20000;
+		double KEcNumInit = KEcConcInit*ecVolume/KMOLE;
+		double NaProxDendriteConcInit = 50000;
+		double NaProxDendriteNumInit = NaProxDendriteConcInit*proxDendriteVolume/KMOLE;
+		double KProxDendriteConcInit = 397000;
+		double KProxDendriteNumInit = KProxDendriteConcInit*proxDendriteVolume/KMOLE;
+		double NaDistDendriteConcInit = 50000;
+		double NaDistDendriteNumInit = NaDistDendriteConcInit*distDendriteVolume/KMOLE;
+		double KDistDendriteConcInit = 397000;
+		double KDistDendriteNumInit = KDistDendriteConcInit*distDendriteVolume/KMOLE;
+		
+		OOModel oOModel = new OOModel();
+		NaChannel NaChannelSpine = new NaChannel("NaChannelSpine");
+		KChannel KChannelSpine = new KChannel("KChannelSpine");
+		LeakChannel LeakSpine = new LeakChannel("LeakSpine");
+		Capacitor C_spine = new Capacitor("C_spine",0.01*spineArea,-62.897633102);
+		Species Na_spine = new Species("Na_spine",Expression.valueOf(""+NaSpineNumInit));
+		Species K_spine = new Species("K_spine",Expression.valueOf(""+KSpineNumInit));
+
+		Resistor R_spine_proxD = new Resistor("R_spine_proxD",1*1e6);
+
+		NaChannel NaChannelProxD = new NaChannel("NaChannelProxD");
+		KChannel KChannelProxD = new KChannel("KChannelProxD");
+		LeakChannel LeakProxD = new LeakChannel("LeakProxD");
+		Capacitor C_ProxD = new Capacitor("C_ProxD",0.01*proxDendriteArea,-62.897633102);
+		Species Na_ProxD = new Species("Na_ProxD",Expression.valueOf(""+NaProxDendriteNumInit));
+		Species K_ProxD = new Species("K_ProxD",Expression.valueOf(""+KProxDendriteNumInit));
+		
+		Resistor R_proxD_distD = new Resistor("R_proxD_distD",1*1e6);
+
+		NaChannel NaChannelDistD = new NaChannel("NaChannelDistD");
+		KChannel KChannelDistD = new KChannel("KChannelDistD");
+		LeakChannel LeakDistD = new LeakChannel("LeakDistD");
+		Capacitor C_DistD = new Capacitor("C_DistD",0.01*distDendriteArea,-62.897633102);
+		Species Na_DistD = new Species("Na_DistD",Expression.valueOf(""+NaDistDendriteNumInit));
+		Species K_DistD = new Species("K_DistD",Expression.valueOf(""+KDistDendriteNumInit));
+
+		Ground GND_ec = new Ground("GND_ec");
+		Species Na_ec = new Species("Na_ec",Expression.valueOf(""+NaEcNumInit));
+		Species K_ec = new Species("K_ec",Expression.valueOf(""+KEcNumInit));
+		
+		LumpedLocation spine = new LumpedLocation("spine",3,spineVolume);
+//		LumpedLocation spineMem = new LumpedLocation("spineMem",2,spineArea);
+		LumpedLocation ec = new LumpedLocation("ec",3,ecVolume);
+		LumpedLocation proxDendrite = new LumpedLocation("proxDendrite",3,proxDendriteVolume);
+//		LumpedLocation proxDendriteMem = new LumpedLocation("proxDendriteMem",2,proxDendriteArea);
+		LumpedLocation distDendrite = new LumpedLocation("distDendrite",3,distDendriteVolume);
+//		LumpedLocation distDendriteMem = new LumpedLocation("distDendrite",2,distDendriteArea);
+
+//		spineMem.addAdjacentLocation(spine);
+//		spineMem.addAdjacentLocation(ec);
+		
+		
+		oOModel.addModelComponent(NaChannelSpine);
+		oOModel.addModelComponent(KChannelSpine);
+		oOModel.addModelComponent(LeakSpine);
+		oOModel.addModelComponent(C_spine);
+		oOModel.addModelComponent(Na_spine);
+		oOModel.addModelComponent(K_spine);
+
+		oOModel.addModelComponent(R_spine_proxD);
+
+		oOModel.addModelComponent(NaChannelProxD);
+		oOModel.addModelComponent(KChannelProxD);
+		oOModel.addModelComponent(LeakProxD);
+		oOModel.addModelComponent(C_ProxD);
+		oOModel.addModelComponent(Na_ProxD);
+		oOModel.addModelComponent(K_ProxD);
+
+		oOModel.addModelComponent(R_proxD_distD);
+
+		oOModel.addModelComponent(NaChannelDistD);
+		oOModel.addModelComponent(KChannelDistD);
+		oOModel.addModelComponent(LeakDistD);
+		oOModel.addModelComponent(C_DistD);
+		oOModel.addModelComponent(Na_DistD);
+		oOModel.addModelComponent(K_DistD);
+
+		oOModel.addModelComponent(GND_ec);
+		oOModel.addModelComponent(Na_ec);
+		oOModel.addModelComponent(K_ec);
+		oOModel.addModelComponent(spine);
+		//oOModel.addModelComponent(spineMem);
+		oOModel.addModelComponent(ec);
+		oOModel.addModelComponent(proxDendrite);
+		//oOModel.addModelComponent(proxDendriteMem);
+		oOModel.addModelComponent(distDendrite);
+		//oOModel.addModelComponent(distDendriteMem);
+		
+
+		Connection conn_elect_spine = new Connection(new Connector[] { 
+				KChannelSpine.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS), 
+				 NaChannelSpine.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS), 
+				LeakSpine.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS),
+				C_spine.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS), 
+				spine.getConnectors(LumpedLocation.CONNECTOR_ELECTRICAL),
+				R_spine_proxD.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG),
+				});
+		Connection conn_elect_proxD = new Connection(new Connector[] { 
+				KChannelProxD.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS), 
+				NaChannelProxD.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS), 
+				LeakProxD.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS),
+				C_ProxD.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS), 
+				proxDendrite.getConnectors(LumpedLocation.CONNECTOR_ELECTRICAL),
+				R_spine_proxD.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS),
+				R_proxD_distD.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG),
+				});
+		Connection conn_elect_distD = new Connection(new Connector[] { 
+				KChannelDistD.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS), 
+				NaChannelDistD.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS), 
+				LeakDistD.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS),
+				C_DistD.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS), 
+				distDendrite.getConnectors(LumpedLocation.CONNECTOR_ELECTRICAL),
+				R_proxD_distD.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS),
+				});
+		Connection conn_elect_ec = new Connection(new Connector[] { 
+				KChannelSpine.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG), 
+				NaChannelSpine.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG), 
+				LeakSpine.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG),
+				C_spine.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG),  
+				ec.getConnectors(LumpedLocation.CONNECTOR_ELECTRICAL),
+				KChannelProxD.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG), 
+				NaChannelProxD.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG), 
+				LeakProxD.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG),
+				C_ProxD.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG),  
+				KChannelDistD.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG), 
+				NaChannelDistD.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG), 
+				LeakDistD.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG),
+				C_DistD.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG),  
+				GND_ec.getConnectors(0) });
+		
+		Connection conn_Na_spine_conc = new Connection(new Connector[] {
+				Na_spine.getConnectors(Species.CONNECTOR_CONC),
+				NaChannelSpine.getConnectors(IonChannelHH.CONNECTOR_ION_INSIDE_CONC),
+				});
+		Connection conn_K_spine_conc = new Connection(new Connector[] {
+				K_spine.getConnectors(Species.CONNECTOR_CONC),
+				KChannelSpine.getConnectors(IonChannelHH.CONNECTOR_ION_INSIDE_CONC),
+				});
+		
+		Connection conn_Na_proxD_conc = new Connection(new Connector[] {
+				Na_ProxD.getConnectors(Species.CONNECTOR_CONC),
+				NaChannelProxD.getConnectors(IonChannelHH.CONNECTOR_ION_INSIDE_CONC),
+				});
+		Connection conn_K_proxD_conc = new Connection(new Connector[] {
+				K_ProxD.getConnectors(Species.CONNECTOR_CONC),
+				KChannelProxD.getConnectors(IonChannelHH.CONNECTOR_ION_INSIDE_CONC),
+				});
+		
+		Connection conn_Na_distD_conc = new Connection(new Connector[] {
+				Na_DistD.getConnectors(Species.CONNECTOR_CONC),
+				NaChannelDistD.getConnectors(IonChannelHH.CONNECTOR_ION_INSIDE_CONC),
+				});
+		Connection conn_K_distD_conc = new Connection(new Connector[] {
+				K_DistD.getConnectors(Species.CONNECTOR_CONC),
+				KChannelDistD.getConnectors(IonChannelHH.CONNECTOR_ION_INSIDE_CONC),
+				});
+		
+		Connection conn_Na_ec_conc = new Connection(new Connector[] {
+				Na_ec.getConnectors(Species.CONNECTOR_CONC),
+				NaChannelSpine.getConnectors(IonChannelHH.CONNECTOR_ION_OUTSIDE_CONC), 
+				NaChannelProxD.getConnectors(IonChannelHH.CONNECTOR_ION_OUTSIDE_CONC), 
+				NaChannelDistD.getConnectors(IonChannelHH.CONNECTOR_ION_OUTSIDE_CONC), 
+				});
+		Connection conn_K_ec_conc = new Connection(new Connector[] {
+				K_ec.getConnectors(Species.CONNECTOR_CONC),
+				KChannelSpine.getConnectors(IonChannelHH.CONNECTOR_ION_OUTSIDE_CONC), 
+				KChannelProxD.getConnectors(IonChannelHH.CONNECTOR_ION_OUTSIDE_CONC), 
+				KChannelDistD.getConnectors(IonChannelHH.CONNECTOR_ION_OUTSIDE_CONC), 
+				});
+		
+		Connection conn_spine_size = new Connection(new Connector[]{
+				K_spine.getConnector(Species.CONNECTOR_SIZE),
+				Na_spine.getConnector(Species.CONNECTOR_SIZE),
+				spine.getConnectors(LumpedLocation.CONNECTOR_SIZE),
+				});
+		Connection conn_ec_size = new Connection(new Connector[]{
+				K_ec.getConnector(Species.CONNECTOR_SIZE),
+				Na_ec.getConnector(Species.CONNECTOR_SIZE),
+				ec.getConnectors(LumpedLocation.CONNECTOR_SIZE),
+				});
+		Connection conn_proxD_size = new Connection(new Connector[]{
+				K_ProxD.getConnector(Species.CONNECTOR_SIZE),
+				Na_ProxD.getConnector(Species.CONNECTOR_SIZE),
+				proxDendrite.getConnectors(LumpedLocation.CONNECTOR_SIZE),
+				});
+		Connection conn_distD_size = new Connection(new Connector[]{
+				K_DistD.getConnector(Species.CONNECTOR_SIZE),
+				Na_DistD.getConnector(Species.CONNECTOR_SIZE),
+				distDendrite.getConnectors(LumpedLocation.CONNECTOR_SIZE),
+				});
+		
+		oOModel.addConnection(conn_elect_spine);
+		oOModel.addConnection(conn_elect_proxD);
+		oOModel.addConnection(conn_elect_distD);
+		oOModel.addConnection(conn_elect_ec);
+		
+		oOModel.addConnection(conn_Na_spine_conc);
+		oOModel.addConnection(conn_K_spine_conc);
+		oOModel.addConnection(conn_Na_ec_conc);
+		oOModel.addConnection(conn_K_ec_conc);
+		oOModel.addConnection(conn_Na_proxD_conc);
+		oOModel.addConnection(conn_K_proxD_conc);
+		oOModel.addConnection(conn_Na_distD_conc);
+		oOModel.addConnection(conn_K_distD_conc);
+		
+		oOModel.addConnection(conn_spine_size);
+		oOModel.addConnection(conn_ec_size);
+		oOModel.addConnection(conn_proxD_size);
+		oOModel.addConnection(conn_distD_size);
+		
+		return oOModel;
+	}
+
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (1/16/2006 11:34:20 PM)
+	 * @return ncbc.physics2.component.Model
+	 * @throws ParseException 
+	 */
 	public static OOModel getExampleSpine() throws ParseException {
 
 		//

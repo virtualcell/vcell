@@ -36,7 +36,7 @@ public static void main(java.lang.String[] args) {
 		//PhysicalModel physicalModel = PhysicalModelTest.getExample();
 	//	org.vcell.physics.component.OOModel physicalModel = org.vcell.physics.component.OOModelTest.getCircuit_INDEX_REDUCTION(); //PlanarPendulumExample_Simple();
 //		org.vcell.physics.component.OOModel physicalModel = org.vcell.physics.component.OOModelTest.getExample(); // PlanarPendulumExample_Simple();
-		org.vcell.physics.component.OOModel physicalModel = org.vcell.physics.component.OOModelTest.getExampleSpine(); // PlanarPendulumExample_Simple();
+		org.vcell.physics.component.OOModel physicalModel = org.vcell.physics.component.OOModelTest.getExampleSpineDendrite(); // PlanarPendulumExample_Simple();
 		MathSystem mathSystem = MappingUtilities.getMathSystem(physicalModel);
 		ModelAnalysisResults modelAnalysisResults = MappingUtilities.analyzeMathSystem(mathSystem);
 		modelAnalysisResults.oOModel = physicalModel;
