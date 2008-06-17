@@ -2,9 +2,16 @@ package cbit.vcell.client.desktop.biomodel;
 
 import cbit.vcell.solver.*;
 import cbit.vcell.mapping.*;
+
 import java.awt.*;
 import java.awt.event.*;
+
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultHighlighter;
+import javax.swing.text.Highlighter;
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 3:16:22 PM)
@@ -58,8 +65,22 @@ public class ApplicationEditor extends JPanel {
 	private boolean ivjConnPtoP8Aligning = false;
 	private ComboBoxModel ivjmodel1 = null;
 	private JButton ivjCopyButton = null;
+	private JLabel searchLabel = null;
+	private JTextField searchTextField = null;
+	private Color searchTextFieldBackground = null;
+	private Highlighter hilit =  null;
+    private Highlighter.HighlightPainter painter = null;
+    private final static String CANCEL_ACTION = "cancel-search";	
 
-class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener {
+    class CancelSearchAction extends AbstractAction {
+        public void actionPerformed(ActionEvent ev) {
+            hilit.removeAllHighlights();
+            searchTextField.setText("");
+            searchTextField.setBackground(searchTextFieldBackground);
+        }
+    }
+    
+class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener, DocumentListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == ApplicationEditor.this.getViewModifyGeometryButton()) 
 				connEtoC3(e);
@@ -122,7 +143,17 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.I
 			}
 			if (evt.getSource() == ApplicationEditor.this.getAnalysisTaskComboBox() && (evt.getPropertyName().equals("model"))) 
 				connPtoP8SetTarget();
-		};
+		}
+		public void changedUpdate(DocumentEvent e) {
+			search();			
+		}
+		public void insertUpdate(DocumentEvent e) {
+			search();
+			
+		}
+		public void removeUpdate(DocumentEvent e) {
+			search();			
+		}
 	};
 
 public ApplicationEditor() {
@@ -1110,6 +1141,8 @@ private javax.swing.JPanel getButtonsPanel() {
 			ivjButtonsPanel.setLayout(new java.awt.FlowLayout());
 			getButtonsPanel().add(getViewEqunsRadioButton(), getViewEqunsRadioButton().getName());
 			getButtonsPanel().add(getViewVCMDLRadioButton(), getViewVCMDLRadioButton().getName());
+			getButtonsPanel().add(getSearchLabel(), getCreateMathModelButton().getName());
+			getButtonsPanel().add(getSearchTextField(), getRefreshMathButton().getName());
 			getButtonsPanel().add(getCreateMathModelButton(), getCreateMathModelButton().getName());
 			getButtonsPanel().add(getRefreshMathButton(), getRefreshMathButton().getName());
 			// user code begin {1}
@@ -1696,6 +1729,7 @@ private javax.swing.JEditorPane getVCMLEditorPane() {
 			ivjVCMLEditorPane.setName("VCMLEditorPane");
 			ivjVCMLEditorPane.setBounds(0, 0, 160, 120);
 			ivjVCMLEditorPane.setEditable(false);
+			ivjVCMLEditorPane.setHighlighter(getHighligher());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -2354,14 +2388,107 @@ private void viewMath_ItemStateChanged(java.awt.event.ItemEvent itemEvent) {
 	if (itemEvent.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
 		if (itemEvent.getSource() == getViewEqunsRadioButton()) {
 			JRadioButton source = (JRadioButton)getViewEqunsRadioButton();
+			getSearchLabel().setEnabled(false);
+			getSearchTextField().setEnabled(false);
 			getcardLayout().show(getMathViewerPanel(), source.getActionCommand());
 			return;
 		}else if (itemEvent.getSource() == getViewVCMDLRadioButton()) {
 			JRadioButton source = (JRadioButton)getViewVCMDLRadioButton();
+			getSearchLabel().setEnabled(true);
+			getSearchTextField().setEnabled(true);
 			getcardLayout().show(getMathViewerPanel(), source.getActionCommand());
 			return;			
 		}
 	}
+}
+
+private JLabel getSearchLabel() {
+	if (searchLabel == null) {
+		searchLabel = new JLabel("Search");
+		searchLabel.setFont(searchLabel.getFont().deriveFont(Font.BOLD));
+		searchLabel.setEnabled(false);
+	}
+	return searchLabel;
+}
+
+private JTextField getSearchTextField() {
+	if (searchTextField == null) {
+		try {
+			searchTextField = new JTextField();
+			searchTextField.setColumns(15);
+
+	        searchTextFieldBackground = searchTextField.getBackground();
+	        searchTextField.getDocument().addDocumentListener(ivjEventHandler);
+	        
+	        InputMap im = searchTextField.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+	        ActionMap am = searchTextField.getActionMap();
+	        im.put(KeyStroke.getKeyStroke("ESCAPE"), CANCEL_ACTION);
+	        am.put(CANCEL_ACTION, new CancelSearchAction());
+	        
+	        searchTextField.setEnabled(false);
+	        
+			// user code begin {1}
+			// user code end
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return searchTextField;
+}
+
+private Highlighter getHighligher() {
+	if (hilit == null) {
+		try {
+			hilit = new DefaultHighlighter();
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return hilit;
+}
+
+private Highlighter.HighlightPainter getHighlighterPainter() {
+	if (painter == null) {
+		try {
+			painter = new DefaultHighlighter.DefaultHighlightPainter(Color.YELLOW);
+		} catch (java.lang.Throwable ivjExc) {
+			// user code begin {2}
+			// user code end
+			handleException(ivjExc);
+		}
+	}
+	return painter;
+}
+
+public void search() {
+    hilit.removeAllHighlights();
+    searchTextField.setBackground(searchTextFieldBackground);
+    
+    String s = searchTextField.getText();
+    if (s.length() <= 0) {
+        return;
+    }
+    
+    String content = getVCMLEditorPane().getText();
+    int index = content.indexOf(s, 0);
+    if (index >= 0) {   // match found                
+        //getlineNumberedTextArea1().setCaretPosition(end);
+    	while (index >= 0) {
+	        try {
+	        	int end = index + s.length();
+	            getHighligher().addHighlight(index, end, getHighlighterPainter());	            
+		        index = content.indexOf(s, end);
+	        } catch (BadLocationException e) {
+	            e.printStackTrace();
+	        }	        
+    	}
+    } else {
+    	searchTextField.setBackground(Color.PINK);
+    }
 }
 
 }
