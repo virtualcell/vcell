@@ -291,8 +291,10 @@ public abstract void setParentStructure(Structure structure) throws ModelExcepti
  */
 public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException {
 	if (e.getPropertyName().equals("name")){
-		if (e.getNewValue()==null || ((String)(e.getNewValue())).trim().length()==0){
-			throw new PropertyVetoException("structure name is not specified (null)",e);
+		if (e.getNewValue() == null || ((String)e.getNewValue()).trim().length()==0){
+			throw new PropertyVetoException("blank name is not allowed in structure name",e);
+		} else if (((String)e.getNewValue()).contains("'")){
+			throw new PropertyVetoException("Apostrophe is not allowed in structure name",e);
 		}
 	}
 }
