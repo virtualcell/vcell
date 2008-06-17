@@ -10,7 +10,7 @@ public class NameManager {
 	//the first field is for the unique name, and the second field is to store the component in the Cell->VCML translation
 	private java.util.HashMap uniqueNameMap = null;
 	
-	//Internal class to store the requiered information
+	//Internal class to store the required information
 	public class MyStructure {
 		public String mangledName;
 		public String compName;
@@ -175,7 +175,8 @@ public void generateMangledNames() {
 				}
 				//initialize	
 				int i =0;
-				String temp = secondKey;
+				// String temp = secondKey;
+				String temp = firstKey + "." + secondKey;
 				
 				while (uniqueNameMap.containsKey(temp)) {
 					//if the previous name already exists, try to find a unique name

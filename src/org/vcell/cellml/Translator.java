@@ -1,4 +1,5 @@
 package org.vcell.cellml;
+import cbit.vcell.document.VCDocument;
 import cbit.vcell.xml.XmlParseException;
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.XmlUtil;
@@ -16,10 +17,6 @@ import java.io.Writer;
 public abstract class Translator {
 
 	//supported translations
-//	public static final String VCSB_1 = "VCSB_1";
-//	public static final String VCSB_2 = "VCSB_2";
-//	public static final String SBVC_1 = "SBVC_1";
-//	public static final String SBVC_2 = "SBVC_2";
 //	public static final String VC_QUAL_CELL = "VCQualCell";
 //	public static final String VC_QUAN_CELL = "VCQuanCell";
 //	public static final String CELL_QUAL_VC = "CellQualVC";
@@ -33,17 +30,14 @@ public abstract class Translator {
 	protected static final String XML_SCHEMA_INSTANCE = "http://www.w3.org/2001/XMLSchema-instance";
 
 	//default schema Locations
-//	protected static final String DEF_SBML1_SL = "http://www.nrcam.uchc.edu/xml/sbml1.xsd";
-//	protected static final String DEF_SBML2_SL = "http://www.nrcam.uchc.edu/xml/sbml2.xsd";
 	protected static final String DEF_VCML_SL = "http://www.nrcam.uchc.edu/xml/biomodel.xsd";
 	protected static final String DEF_CELLML_SL = "http://www.nrcam.uchc.edu/xml/cellml.xsd";   		//for the future.
-	//SBML stuff
-	public static final String SBML_VERSION = "1";
 	
-	protected Element sRoot, tRoot;
-	protected String schemaLocation;
-	protected String schemaLocationPropName;
-	protected VCLogger vcLogger;
+	protected String schemaLocation = null;
+	protected String schemaLocationPropName = null;
+	protected VCLogger vcLogger = null;
+	protected Element sRoot = null;
+	protected Element tRoot = null;
 	
   	//needed for the test suite
   	protected Document getSource() throws IllegalStateException {
@@ -100,10 +94,10 @@ public abstract class Translator {
 	}
 
 
-	protected abstract void translate() throws Exception;
+	protected abstract VCDocument translate() throws Exception;
 
 
-  	public Document translate (Reader reader, boolean validationOn) throws Exception {
+  	public VCDocument translate (Reader reader, boolean validationOn) throws Exception {
 
 		if (validationOn) {
       		this.sRoot = XmlUtil.readXML(reader, schemaLocation, null, schemaLocationPropName);
@@ -119,34 +113,10 @@ public abstract class Translator {
 		} else {
 			this.sRoot = XmlUtil.readXML(reader, null, null, null);
 		} 
-  		translate();
+  		VCDocument vcDoc = translate();
 		if (vcLogger != null && vcLogger.hasMessages()) {
 			vcLogger.sendAllMessages();
 		}
-  		return new Document(tRoot);
+  		return vcDoc;
     }
-
-
-  	//twisted approach, if requesting to validate an existing JDOM tree	
-  	public Document translate (Document sDoc, boolean validationOn) throws Exception {
-	
-		if (sDoc == null)
-	  		throw new IllegalArgumentException ("Invalid source document.");
-	  	if (!validationOn) {
-	  		this.sRoot = sDoc.getRootElement();
-	  		translate();
-	  		return new Document(tRoot);
-	  	} else {
-			XMLOutputter xmlOut = new XMLOutputter("   ", true);
-			StringWriter sw = new StringWriter();
-			try {
-				xmlOut.output(sDoc, sw);
-				sw.flush();
-				return translate(new StringReader(sw.toString()), validationOn);
-			} catch (IOException e) {
-				e.printStackTrace(System.out);
-				throw new XmlParseException("Unable to parse translate document."+" : "+e.getMessage());
-			} 				
-	  	}
-  	}
 }
