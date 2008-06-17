@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE toc
+  PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp TOC Version 1.0//EN"
+         "http://java.sun.com/products/javahelp/toc_1_0.dtd">
+
+<toc version="1.0">
+  <tocitem image="toplevelfolder" text="Virtual Frap Help">
+    
+    <tocitem target="intro" text="Introduction">
+        <tocitem target="intro" text="introduction"/>
+    </tocitem>
+
+    <tocitem target="gettingStarted" text="Getting Started">
+        <tocitem target="requirements" text="System Requirements"/>
+        <tocitem target="installation" text="Installation Instruction"/>
+    </tocitem>
+
+    <tocitem target="quickTour" text="Quick Tour of Virtual Frap">
+        <tocitem target="manipulatingData" text="Manipulating FRAP Experimental Data">
+	      <tocitem target="loading" text="Loading FRAP Experimental Data"/>
+	      <tocitem target="adjusting" text="Adjusting FRAP Experimental Data"/>
+	      <tocitem target="definingROI" text="Defining ROIs on FRAP Experimental Data"/>
+        </tocitem>
+        <tocitem target="fitRecovery" text="Fitting Recovery Curve"/>
+        <tocitem target="generateModel" text="Generating Spatial Model"/>
+	  <tocitem target="fitModel" text="Fitting Spatial Model"/>
+        <tocitem target="spatialAnalysis" text="Spatial Analysis"/>
+    </tocitem>
+  </tocitem>
+</toc>

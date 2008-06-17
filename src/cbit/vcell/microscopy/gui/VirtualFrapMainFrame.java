@@ -59,9 +59,22 @@ public class VirtualFrapMainFrame extends JFrame
 
 	private MenuHandler menuHandler = new MenuHandler();
 	private static final String OPEN_ACTION_COMMAND = "Open";
+	private static final String SAVE_ACTION_COMMAND = "Save";
+	private static final String SAVEAS_ACTION_COMMAND = "Save As...";
+	private static final String IMPORTFILESERIES_ACTION_COMMAND = "Import file series ...";
+	private static final String PRINT_ACTION_COMMAND = "Print";
 	private static final String EXIT_ACTION_COMMAND = "Exit";
-	private JMenuItem menuOpen= new JMenuItem(OPEN_ACTION_COMMAND,'O');
-	private JMenuItem menuExit= new JMenuItem(EXIT_ACTION_COMMAND,'X');
+	private static final String HELPTOPICS_ACTION_COMMAND = "Help Topics";
+	private static final String ABOUT_ACTION_COMMAND = "About Virtual Frap";
+	
+	private static final JMenuItem menuOpen= new JMenuItem(OPEN_ACTION_COMMAND,'O');
+	private static final JMenuItem menuExit= new JMenuItem(EXIT_ACTION_COMMAND,'X');
+	private static final JMenuItem msave = new JMenuItem(SAVE_ACTION_COMMAND,'S');
+	private static final JMenuItem msaveas = new JMenuItem(SAVEAS_ACTION_COMMAND);
+	private static final JMenuItem mfileSeries = new JMenuItem(IMPORTFILESERIES_ACTION_COMMAND);
+	private static final JMenuItem mprint = new JMenuItem(PRINT_ACTION_COMMAND);
+	private static final JMenuItem mHelpTopics = new JMenuItem(HELPTOPICS_ACTION_COMMAND);
+	private static final JMenuItem mabout = new JMenuItem(ABOUT_ACTION_COMMAND);
 
   public static JMenuBar mb = null;
   public static StatusBar statusBar = null;
@@ -74,8 +87,7 @@ public class VirtualFrapMainFrame extends JFrame
   
   private Container c;
 
-  private static final JMenuItem msave = new JMenuItem("Save",'S');
-  private static final JMenuItem msaveas = new JMenuItem("Save As...");
+  
 
   private MultiFileInputDialog multiFileDialog = null;
   
@@ -196,7 +208,7 @@ public class VirtualFrapMainFrame extends JFrame
 	  					"error loading file:\n"+inputFile.getAbsolutePath()+"\n"+e2.getMessage());
 	  			  }
 		      }
-			  else if(arg.equals("Save"))
+			  else if(arg.equals(SAVE_ACTION_COMMAND))
 		      {
 		    	  try {
 				      frapStudyPanel.save();
@@ -208,7 +220,7 @@ public class VirtualFrapMainFrame extends JFrame
 					  statusBar.showStatus("Exception: " + e5.getMessage());
 				  }
 		      }
-		      else if(arg.equals("Save As..."))
+		      else if(arg.equals(SAVEAS_ACTION_COMMAND))
 		      {
 		    	  try {
 		    		  frapStudyPanel.saveAs();
@@ -219,7 +231,7 @@ public class VirtualFrapMainFrame extends JFrame
 					  statusBar.showStatus("Exception: " + e5.getMessage());
 				  }
 		      }
-		      else if(arg.equals("Load file series ..."))
+		      else if(arg.equals(IMPORTFILESERIES_ACTION_COMMAND))
 		      {
 				  if (multiFileDialog != null)
 				  {
@@ -241,7 +253,11 @@ public class VirtualFrapMainFrame extends JFrame
 	    	      }
 			  }
 		      // Help menu
-		      else if(arg.endsWith("About Virtual Frap"))
+		      else if(arg.equals(HELPTOPICS_ACTION_COMMAND))
+		      {
+		    	  HelpViewer hviewer = new HelpViewer();
+		      }
+		      else if(arg.equals(ABOUT_ACTION_COMMAND))
 		      {
 		    	  new AboutDialog(getClass().getResource("/images/splash.jpg"), VirtualFrapMainFrame.this);
 		      }
@@ -264,7 +280,7 @@ public class VirtualFrapMainFrame extends JFrame
 	  	   			break;
 	  	   			case ToolBar.BUT_SAVE:
 	  	   				try {
-					        frapStudyPanel.save();
+					        menuHandler.actionPerformed(new ActionEvent(msave,0,SAVE_ACTION_COMMAND));
 	  	   				}catch(Exception e5){
 						    DialogUtils.showErrorDialog("Exception: " + e5.getMessage());
 							statusBar.showStatus("Exception: " + e5.getMessage());
@@ -290,6 +306,7 @@ public class VirtualFrapMainFrame extends JFrame
 //		  	                statusBar.showStatus("This is not printable from VFrap!");
 	  	   			break;
 	  	   			case ToolBar.BUT_HELP:
+	  	   				menuHandler.actionPerformed(new ActionEvent(mHelpTopics,0,HELPTOPICS_ACTION_COMMAND));
 	  	   			break;
 	  	   			default:
 	                break;
@@ -366,7 +383,6 @@ public class VirtualFrapMainFrame extends JFrame
     JMenu fileMenu =new JMenu("File");
     fileMenu.setMnemonic('F');
     mb.add(fileMenu);
-    JMenuItem mfileSeries,mprint;
 
     menuOpen.addActionListener(menuHandler);
     fileMenu.add(menuOpen);
@@ -381,13 +397,11 @@ public class VirtualFrapMainFrame extends JFrame
 
     fileMenu.addSeparator();
     
-    mfileSeries= new JMenuItem("Load file series ...");
     mfileSeries.addActionListener(menuHandler);
     fileMenu.add(mfileSeries);
     
     fileMenu.addSeparator();
 
-    mprint= new JMenuItem("Print",'P');
     mprint.addActionListener(menuHandler);
     mprint.setEnabled(false);
     fileMenu.add(mprint);
@@ -404,14 +418,12 @@ public class VirtualFrapMainFrame extends JFrame
     helpMenu.setMnemonic('H');
     mb.add(helpMenu);
 
-    JMenuItem mHelpTopics, mabout;
-    mHelpTopics = new JMenuItem("Help Topics");
+
     mHelpTopics.addActionListener(menuHandler);
     helpMenu.add(mHelpTopics);
     
     helpMenu.addSeparator();
     
-    mabout= new JMenuItem("About Virtual Frap");
     mabout.addActionListener(menuHandler);
     helpMenu.add(mabout);
     setJMenuBar(mb);

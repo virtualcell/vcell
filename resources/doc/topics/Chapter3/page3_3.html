@@ -1,0 +1,57 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<title>3.3 Generating Spatial Model</title>
+<link rel="stylesheet" type="text/css" href="../content.css">
+</head>
+
+
+<body>
+<a name="top"></a>
+
+<table width="65%"  border="0" cellpadding="0" cellspacing="3">
+    <tr>
+  <td background="topbanner_backgrd.jpg" colspan="2"><img src="vfrap.gif" width="497" height="102"></td>
+  </tr>
+  <tr>
+    <td width="2%" rowspan="2" background="bak.jpg">&nbsp;</td>
+    <td width="98%" class="subHeader">3.3 Generating Spatial Model </td>
+  </tr>
+  <tr>
+    <td class="content" valign="top">
+	
+	<font size="3">It is important to evaluate whether the estimated diffusion rate and mobile fraction fits well or not. In Virtual Frap, a Vitual Cell 2D bioModel can be created based on whole cell area ROI, diffusion rate and bleaching while monitoring rate (Figure 3-5 shows the generated spatial model). <br>
+	</font>
+	<p></p>
+	<font size="3">To generate spatial model, users just need to click on the &#8220;Generate Spatial Model&#8221; tab. When all the required data are ready, the model will be generated automatically.
+	</font>
+	<p></p>
+      <font size="3">2D geometry - It is defined to have two volumes which are cytosol and extra cellular. Cytosol is based on the whole cell area. The rest area in the image belongs to extra cellular.<br>
+    </font>
+    <p></p>
+      <font size="3">Species - Nine species are created with diffusion rates derived from the base estimated diffusion rate to perform comparison. Those derived diffusion rates are well distributed around the base estimated diffusion rate.<br>
+    </font>
+    <p></p>
+      <font size="3">Initial Condition - The initial value for species is calculated as intensity of first post bleach under bleached area divided by the intensity of average of prebleach under bleached area.<br>   
+    </font>   
+    <p></p>  
+      <font size="3">Reactions - If the bleaching while monitoring rate is available, the species will set to be a reactant in a Mass Action reaction with forward rate equals to the bleaching while monitoring rate. Otherwise, there is not reactions.<br>
+    </font>
+    <p></p>
+      <font size="3">Simulation - One simulation has been generated to simulate how the species diffuse (and react if there are reactions) in the cell.</font><br>
+    <p></p>
+    
+      <div align="center">
+      <img src="figure3_5.jpg"><br><p></p>
+	  <span class="caption"><font size="3">Figure 3-5: Generating Spatial Model in Virtual Frap</font></span>
+	  </div>
+	  
+	  <div id="toplink"><a href="#top"><font size="3">Back to top</font></a></div>
+     </div>
+    </td>
+  </tr>
+</table>
+</body>
+</html>
