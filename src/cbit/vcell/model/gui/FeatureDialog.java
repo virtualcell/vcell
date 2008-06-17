@@ -79,7 +79,7 @@ private void apply() {
 		}
 		dispose();
 	}catch(Exception e){
-		cbit.vcell.client.PopupGenerator.showErrorDialog(this,"Error Editing Feature:\n"+e.getClass().getName()+"\n"+e.getMessage());
+		cbit.vcell.client.PopupGenerator.showErrorDialog(this, e.getMessage());
 	}
 }
 /**
