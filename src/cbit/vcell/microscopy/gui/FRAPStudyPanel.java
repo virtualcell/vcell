@@ -41,7 +41,6 @@ import cbit.gui.DialogUtils;
 import cbit.gui.graph.GraphPane;
 import cbit.image.ImageException;
 import cbit.sql.KeyValue;
-import cbit.sql.Version;
 import cbit.util.BeanUtils;
 import cbit.util.Compare;
 import cbit.util.xml.XmlUtil;
@@ -70,7 +69,6 @@ import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.MicroscopyXmlReader;
 import cbit.vcell.microscopy.MicroscopyXmlproducer;
-import cbit.vcell.microscopy.NonGUIFRAPTest;
 import cbit.vcell.microscopy.ROI;
 import cbit.vcell.microscopy.FRAPStudy.FRAPModelParameters;
 import cbit.vcell.microscopy.ROI.RoiType;
@@ -531,66 +529,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 				}
 			}
 			return true;
-//			switch (tabIndex){
-//				case FRAPStudyPanel.INDEX_TAB_IMAGES:
-//				break;
-//				case FRAPStudyPanel.INDEX_TAB_FITCURVE:
-//					try{
-//						getFRAPDataPanel().saveROI();
-//						getFRAPParametersPanel().updateFrapDataAnalysis();
-//					}catch(Exception e){
-//						//ignore, show tab anyway
-//					}
-//				break;
-//				case FRAPStudyPanel.INDEX_TAB_SPATIALMODEL:
-//					refreshBiomodel();
-//				break;
-//				case FRAPStudyPanel.INDEX_TAB_FITSPATIALMODEL:
-//					{
-//						refreshBiomodel();
-//						CurrentSimulationDataState currentSimulationDataState =
-//							new CurrentSimulationDataState();
-//						if(!currentSimulationDataState.isDataValid()){
-//							if(currentSimulationDataState.isDataInvalidBecauseMissingOrCorrupt() != null &&
-//								currentSimulationDataState.isDataInvalidBecauseMissingOrCorrupt()){
-//								final String RUN_SIM = "Run Simulation...";
-//								String expectedSimFileLocation =
-//									getLocalWorkspace().getDefaultSimDataDirectory();;
-//								String result = DialogUtils.showWarningDialog(this,
-//									"Couldn't find all simulation data in directory:\n"+expectedSimFileLocation+"\n"+
-//									"Simulation needs to Run before viewing results, Run Simulation now?" ,
-//									new String[] {RUN_SIM,UserMessage.OPTION_CANCEL}, RUN_SIM);
-//								if(result == null || !result.equals(RUN_SIM)){
-//									return false;
-//								}
-//							}
-//							clearFitSpatialModelPanel();
-//							runSimulation();
-//							return false;
-//						}else{
-//							refreshPDEDisplay(DisplayChoice.PDE);
-//							refreshPDEDisplay(DisplayChoice.EXTTIMEDATA);
-//						}
-//					}
-//				break;
-//				case FRAPStudyPanel.INDEX_TAB_REPORT:
-//					{
-//						refreshBiomodel();
-//						CurrentSimulationDataState currentSimulationDataState =
-//							new CurrentSimulationDataState();
-//						if(currentSimulationDataState.isDataValid()){
-//							getReportPanel().removeAll();
-//							spatialAnalysis();
-//						}else{
-//							throw new Exception("Simulation Data are not valid. Simulation needs to be run.\n"+
-//								currentSimulationDataState.getDescription());
-//						}
-//					}
-//				break;
-//				default:
-//				break;
-//			}
-//			return true;
 		}finally{
 			BeanUtils.setCursorThroughout(FRAPStudyPanel.this, Cursor.getDefaultCursor());
 			getFRAPDataPanel().getOverlayEditorPanelJAI().updateROICursor();
@@ -811,6 +749,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 	private void saveAsInternal(String saveToFileName) throws Exception {
 
 		getFRAPParametersPanel().insertFRAPModelParametersIntoFRAPStudy(frapStudy);
+		getFRAPDataPanel().saveROI();
 		boolean bSaveAs = saveToFileName == null;
 		File outputFile = null;
 		if(bSaveAs){
