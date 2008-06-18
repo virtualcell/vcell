@@ -43,6 +43,7 @@ import cbit.util.ISize;
 import cbit.util.NumberUtils;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
+import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.ROI;
@@ -560,28 +561,13 @@ public class OverlayEditorPanelJAI extends JPanel {
 	private BufferedImage createUnderlyingImage(UShortImage image){
 		int width = image.getNumX();
 		int height = image.getNumY();
+		ImageStatistics imageStats = image.getImageStatistics();
 		short[] pixels = image.getPixels();
 		byte[][] byteData = new byte[3][width*height];
-		if(originalGlobalScaleInfo == null){
-			for (int i = 0; i < byteData[0].length; i++) {
-				byteData[0][i] = (byte)(pixels[i]);///256);
-				byteData[1][i] = (byte)(pixels[i]);///256);
-				byteData[2][i] = (byte)(pixels[i]);///256);
-			}
-		}else{
-			double scaleFactor = 1.0;
-			double offsetFactor = 0;
-			boolean IS_SCALEABLE = originalGlobalScaleInfo.originalGlobalScaledMax != originalGlobalScaleInfo.originalGlobalScaledMin;
-			double SCALE_MAX = Math.pow(2,8)-1;//Scale to 8 bits
-			if(IS_SCALEABLE){
-				scaleFactor = SCALE_MAX/(originalGlobalScaleInfo.originalGlobalScaledMax-originalGlobalScaleInfo.originalGlobalScaledMin);
-				offsetFactor = (SCALE_MAX*originalGlobalScaleInfo.originalGlobalScaledMin)/(originalGlobalScaleInfo.originalGlobalScaledMin-originalGlobalScaleInfo.originalGlobalScaledMax);
-			}
-			for (int i = 0; i < byteData[0].length; i++) {
-				byteData[0][i] = (byte)(((int)(pixels[i]*scaleFactor+offsetFactor)) & 0x000000FF);
-				byteData[1][i] = byteData[0][i];
-				byteData[2][i] = byteData[0][i];
-			}
+		for (int i = 0; i < byteData[0].length; i++) {
+			byteData[0][i] = (imageStats.maxValue < 256?(byte)pixels[i]:(byte)(((int)(pixels[i]&0x0000FFFF))/256));
+			byteData[1][i] = byteData[0][i];
+			byteData[2][i] = byteData[0][i];
 		}
 		return ImageTools.makeImage(byteData, width, height);
 	}
