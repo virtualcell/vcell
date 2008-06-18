@@ -51,7 +51,7 @@ public class VirtualFrapMainFrame extends JFrame
 		"'Cell','Bleach' and 'Background' ROIs are required for FRAP model.  "+
 		"Create all ROIs under '"+FRAPStudyPanel.FRAPDATAPANEL_TABNAME+"' tab";
 
-	public static final boolean SAVE_COMPRESSED = false;
+	public static final boolean SAVE_COMPRESSED = true;
 	
 	public static Dimension INIT_WINDOW_SIZE = new Dimension(
 		  (int)(Toolkit.getDefaultToolkit().getScreenSize().width*.8),

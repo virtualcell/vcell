@@ -1,9 +1,9 @@
 package cbit.vcell.microscopy;
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.util.zip.DeflaterOutputStream;
 import org.jdom.Element;
 import cbit.util.xml.XmlUtil;
@@ -72,11 +72,12 @@ private static org.jdom.Element getXML(UShortImage param,Xmlproducer vcellXMLPro
 			image.addContent(vcellXMLProducer.getXML(param.getExtent()));
 		}
 
+		final int BYTES_PER_SHORT = 2;
 		int aNumX = param.getNumX();
 		int aNumY = param.getNumY();
 		int aNumZ = param.getNumZ();
 		//Add Imagedata subelement
-		int UNCOMPRESSED_SIZE_BYTES = aNumX*aNumY*aNumZ*2;
+		int UNCOMPRESSED_SIZE_BYTES = aNumX*aNumY*aNumZ*BYTES_PER_SHORT;
 		short[] pixelsShort = param.getPixels();
 		byte[] compressedPixels = null;
 		boolean bForceUncompressed = false;
@@ -86,15 +87,17 @@ private static org.jdom.Element getXML(UShortImage param,Xmlproducer vcellXMLPro
 			if(bSaveCompressed && !bForceUncompressed){
 				dos = new DeflaterOutputStream(bos);
 			}
-			DataOutputStream dataOS = new DataOutputStream(dos);
+			ByteBuffer byteBuffer = ByteBuffer.allocate(UNCOMPRESSED_SIZE_BYTES);
+			for (int i = 0; i < pixelsShort.length; i++) {
+				byteBuffer.putShort(pixelsShort[i]);
+			}
 			try {
-				for (int i = 0; i < pixelsShort.length; i++) {
-					dataOS.writeShort(pixelsShort[i]);
-				}
-				dataOS.close();
+				dos.write(byteBuffer.array());
 			}catch (IOException e){
 				e.printStackTrace(System.out);
 				throw new XmlParseException("failed to create compressed pixel data");
+			}finally{
+				if(dos != null){try{dos.close();}catch(Exception e2){e2.printStackTrace();}}
 			}
 			compressedPixels = bos.toByteArray();
 			if(!bSaveCompressed || bForceUncompressed){

@@ -3,7 +3,6 @@ package cbit.vcell.microscopy.gui;
 import java.awt.Color;
 import java.awt.Dimension;
 
-import cbit.gui.DialogUtils;
 import cbit.util.Compare;
 import cbit.util.NumberUtils;
 import cbit.vcell.math.gui.ExpressionCanvas;
@@ -43,9 +42,7 @@ public class FRAPParametersPanel extends JPanel {
 	private JComboBox frapDataTimesComboBox;
 	private JTextField slowerTextField;
 	private JLabel startTimeRecoveryEstimateLabel;
-//	private FRAPStudyPanel.SavedFrapModelInfo savedFrapModelInfo;
 	private FRAPData initFRAPData;
-//	private FRAPStudy frapStudy;
 	private JLabel plotOfAverageLabel;
 	private JLabel frapModelParameterLabel;
 	private JLabel diffusionRateEstimateLabel;
@@ -759,25 +756,37 @@ public class FRAPParametersPanel extends JPanel {
 			frapStudy.setFrapModelParameters(null);
 			try{
 				String monitorBleachRateText =getUserMonitorBleachRateString();
-				Double monitorBleachRate = (monitorBleachRateText != null && monitorBleachRateText.length()>0?new Double(monitorBleachRateText):null);
+				if(monitorBleachRateText != null && monitorBleachRateText.length()>0){
+					//check validity
+					Double.parseDouble(monitorBleachRateText);
+				}
 			}catch(Exception e){
 				throw new Exception("Error parsing 'Monitor Bleach Rate', "+e.getMessage());
 			}
 			try{
 				String mobileFractionText = getUserMobileFractionString();
-				Double mobileFraction = (mobileFractionText != null && mobileFractionText.length()>0?new Double(mobileFractionText):null);
+				if(mobileFractionText != null && mobileFractionText.length()>0){
+					//check validity
+					Double.parseDouble(mobileFractionText);
+				}
 			}catch(Exception e){
 				throw new Exception("Error parsing 'Mobile Fraction', "+e.getMessage());
 			}
 			try{
 				String diffusionRateText = getUserDiffusionRateString();
-				Double diffusionRate = (diffusionRateText != null && diffusionRateText.length()>0?new Double(diffusionRateText):null);
+				if(diffusionRateText != null && diffusionRateText.length()>0){
+					//check validity
+					Double.parseDouble(diffusionRateText);
+				}
 			}catch(Exception e){
 				throw new Exception("Error parsing 'Diffusion Rate', "+e.getMessage());
 			}
 			try{
 				String slowerRateText = getUserSlowerRateString();
-				Double slowerRate = (slowerRateText != null && slowerRateText.length()>0?new Double(slowerRateText):null);
+				if(slowerRateText != null && slowerRateText.length()>0){
+					//check validity
+					Double.parseDouble(slowerRateText);
+				}
 			}catch(Exception e){
 				throw new Exception("Error parsing 'Slower Rate', "+e.getMessage());
 			}
@@ -792,44 +801,6 @@ public class FRAPParametersPanel extends JPanel {
 			frapStudy.setFrapModelParameters(frapModelParameters);
 		}
 	}
-//	private void replaceFrapDataAnalysiResultsWithUserVAlues() throws Exception{
-//		if(frapStudy != null && frapStudy.getFrapDataAnalysisResults() != null){
-//			FrapDataAnalysisResults frapDataAnalysisResults = frapStudy.getFrapDataAnalysisResults();
-//			
-//			frapDataAnalysisResults.setBleachType(getBleachTypeMethod());
-//			
-//			try{
-//				String monitorBleachRateText = monitorBleachRateTextField.getText();
-//				Double monitorBleachRate = (monitorBleachRateText != null && monitorBleachRateText.length()>0?new Double(monitorBleachRateText):null);
-//				frapDataAnalysisResults.setBleachWhileMonitoringTau(monitorBleachRate);
-//			}catch(Exception e){
-//				throw new Exception("Error parsing 'Monitor Bleach Rate', "+e.getMessage());
-//			}
-//			try{
-//				String mobileFractionText = mobileFractionTextField.getText();
-//				Double mobileFraction = (mobileFractionText != null && mobileFractionText.length()>0?new Double(mobileFractionText):null);
-//				frapDataAnalysisResults.setMobilefraction(mobileFraction);
-//			}catch(Exception e){
-//				throw new Exception("Error parsing 'Mobile Fraction', "+e.getMessage());
-//			}
-//			try{
-//				String diffusionRateText = diffusionRateTextField.getText();
-//				Double diffusionRate = (diffusionRateText != null && diffusionRateText.length()>0?new Double(diffusionRateText):null);
-//				frapDataAnalysisResults.setRecoveryDiffusionRate(diffusionRate);
-//			}catch(Exception e){
-//				throw new Exception("Error parsing 'Diffusion Rate', "+e.getMessage());
-//			}
-//			try{
-//				String slowerRateText = slowerTextField.getText();
-//				Double slowerRate = (slowerRateText != null && slowerRateText.length()>0?new Double(slowerRateText):null);
-//				frapDataAnalysisResults.setSlowerRate(slowerRate);
-//			}catch(Exception e){
-//				throw new Exception("Error parsing 'Slower Rate', "+e.getMessage());
-//			}
-//
-//		}
-//	}
-
 	private String getUserDiffusionRateString(){
 		return
 			(diffusionRateTextField.getText() == null || diffusionRateTextField.getText().length() == 0
@@ -879,15 +850,4 @@ public class FRAPParametersPanel extends JPanel {
 	private boolean isUserStartIndexForRecoveryChanged(FRAPStudyPanel.SavedFrapModelInfo savedFrapModelInfo){
 		return !Compare.isEqualOrNull((savedFrapModelInfo==null?null:savedFrapModelInfo.startingIndexForRecovery),getUserStartIndexForRecoveryString());
 	}
-
-	
-//	private boolean isValueSameAsString(Double doubleVal, String stringVal){
-//		try{
-//			Double stringToDouble = (stringVal == null?null:new Double(stringVal));
-//			return Compare.isEqualOrNull(doubleVal, stringToDouble);
-//		}catch(Exception e){
-//			return Compare.isEqualOrNull((doubleVal == null?null:doubleVal.toString()), stringVal);
-//		}
-//	}
-
 }

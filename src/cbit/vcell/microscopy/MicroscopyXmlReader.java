@@ -1,8 +1,7 @@
 package cbit.vcell.microscopy;
 import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
-import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -17,8 +16,6 @@ import cbit.util.Extent;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.microscopy.ROI.RoiType;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.server.User;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.ExternalDataIdentifier;
@@ -88,39 +85,45 @@ private UShortImage getUShortImage(Element param) throws XmlParseException{
 	int aNumZ = Integer.parseInt( tempelement.getAttributeValue(XMLTags.ZAttrTag) );
 	int compressSize =
 		Integer.parseInt( tempelement.getAttributeValue(XMLTags.CompressedSizeTag) );
-	int UNCOMPRESSED_SIZE_BYTES = aNumX*aNumY*aNumZ*2;
+	final int BYTES_PER_SHORT = 2;
+	int UNCOMPRESSED_SIZE_BYTES = aNumX*aNumY*aNumZ*BYTES_PER_SHORT;
 	//getpixels
-	String temp = tempelement.getText();
-	byte[] data = cbit.util.Hex.toBytes(temp); //decode
-	ByteArrayInputStream bis = new ByteArrayInputStream(data);
-	InputStream iis = bis;
+	String hexEncodedBytes = tempelement.getText();
+	byte[] rawBytes = cbit.util.Hex.toBytes(hexEncodedBytes);
+	ByteArrayInputStream rawByteArrayInputStream = new ByteArrayInputStream(rawBytes);
+	InputStream rawInputStream = rawByteArrayInputStream;
 	if(compressSize != UNCOMPRESSED_SIZE_BYTES){
-		iis  = new InflaterInputStream(bis);
+		rawInputStream  = new InflaterInputStream(rawByteArrayInputStream);
 	}
-	DataInputStream dis = new DataInputStream(iis);
-	short[] pixels = new short[aNumX*aNumY*aNumZ];
-	for (int i = 0; i < pixels.length; i++) {
-		try {
-			pixels[i] = dis.readShort();
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw new XmlParseException("error reading image pixels: "+e.getMessage());
-		}
+	byte[] shortsAsBytes = new byte[UNCOMPRESSED_SIZE_BYTES];
+	int readCount = 0;
+	try{
+		while((readCount+= rawInputStream.read(shortsAsBytes, readCount, shortsAsBytes.length-readCount)) != shortsAsBytes.length){}
+	}catch(Exception e){
+		e.printStackTrace();
+		throw new XmlParseException("error reading image pixels: "+e.getMessage());
+	}finally{
+		if(rawInputStream != null){try{rawInputStream.close();}catch(Exception e2){e2.printStackTrace();}}
 	}
-	
+
+	ByteBuffer byteBuffer = ByteBuffer.wrap(shortsAsBytes);
+	short[] shortPixels = new short[aNumX*aNumY*aNumZ];
+	for (int i = 0; i < shortPixels.length; i++) {
+		shortPixels[i] = byteBuffer.getShort();
+	}	
 	Element extentElement = param.getChild(XMLTags.ExtentTag);
 	Extent extent = null;
 	if (extentElement!=null){
 		extent = vcellXMLReader.getExtent(extentElement);
 	}
 	
-	//set attributes
-	String name = this.unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
-	String annotation = param.getChildText(XMLTags.AnnotationTag);
+//	//set attributes
+//	String name = this.unMangle( param.getAttributeValue(XMLTags.NameAttrTag) );
+//	String annotation = param.getChildText(XMLTags.AnnotationTag);
 
 	UShortImage newimage;
 	try {
-		newimage = new UShortImage(pixels,extent,aNumX,aNumY,aNumZ);
+		newimage = new UShortImage(shortPixels,extent,aNumX,aNumY,aNumZ);
 	} catch (ImageException e) {
 		e.printStackTrace();
 		throw new XmlParseException("error reading image: "+e.getMessage());
