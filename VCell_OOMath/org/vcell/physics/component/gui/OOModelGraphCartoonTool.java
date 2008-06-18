@@ -92,11 +92,11 @@ public void layout(String layoutName) throws Exception {
 			ElipseShape node1Shape = iShape.getFirstPartnerShape();
 			ElipseShape node2Shape = iShape.getSecondPartnerShape();
 			newEdge = bb.addEdge(node1Shape.getLabel(),node2Shape.getLabel());
-		} else if (shape instanceof ConnectorAnchorEdgeShape){
-			ConnectorAnchorEdgeShape bShape = (ConnectorAnchorEdgeShape)shape;
-			ElipseShape node1Shape = bShape.getConnectorNode();
-			ElipseShape node2Shape = bShape.getDeviceShape();
-			newEdge = bb.addEdge(node1Shape.getLabel(),node2Shape.getLabel());
+//		} else if (shape instanceof ConnectorAnchorEdgeShape){
+//			ConnectorAnchorEdgeShape bShape = (ConnectorAnchorEdgeShape)shape;
+//			ElipseShape node1Shape = bShape.getConnectorNode();
+//			ElipseShape node2Shape = bShape.getDeviceShape();
+//			newEdge = bb.addEdge(node1Shape.getLabel(),node2Shape.getLabel());
 		//} else if (shape instanceof DeviceLocationEdge){
 			//DeviceLocationEdge bShape = (DeviceLocationEdge)shape;
 			//ElipseShape node1Shape = bShape.getLocationNode();
@@ -224,10 +224,10 @@ public void layoutGlg() {
 			ConnectorEdge iShape = (ConnectorEdge)shape;
 			graph.AddEdge((com.genlogic.GraphLayout.GlgGraphNode)nodeMap.get(iShape.getFirstPartnerShape()),
 							(com.genlogic.GraphLayout.GlgGraphNode)nodeMap.get(iShape.getSecondPartnerShape()),null, 0 ,null);
-		}else if (shape instanceof ConnectorAnchorEdgeShape) {
-			ConnectorAnchorEdgeShape aShape = (ConnectorAnchorEdgeShape)shape;
-			graph.AddEdge((com.genlogic.GraphLayout.GlgGraphNode)nodeMap.get(aShape.getConnectorNode()),
-							(com.genlogic.GraphLayout.GlgGraphNode)nodeMap.get(aShape.getDeviceShape()),null, 0 ,null);
+//		}else if (shape instanceof ConnectorAnchorEdgeShape) {
+//			ConnectorAnchorEdgeShape aShape = (ConnectorAnchorEdgeShape)shape;
+//			graph.AddEdge((com.genlogic.GraphLayout.GlgGraphNode)nodeMap.get(aShape.getConnectorNode()),
+//							(com.genlogic.GraphLayout.GlgGraphNode)nodeMap.get(aShape.getDeviceShape()),null, 0 ,null);
 		//} else if (shape instanceof DeviceLocationEdge){
 			//DeviceLocationEdge aShape = (DeviceLocationEdge)shape;
 			//graph.AddEdge((com.genlogic.GraphLayout.GlgGraphNode)nodeMap.get(aShape.getLocationNode()),
