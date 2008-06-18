@@ -113,7 +113,7 @@ public synchronized boolean hasListeners(java.lang.String propertyName) {
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() == this && evt.getPropertyName().equals("dataSources")){
 		refreshAll();
-		fireIntervalAdded(this,0,getSize()-1);
+		fireIntervalAdded(this,0,(getSize() == 0?0:getSize()-1));
 	}
 }
 
@@ -126,7 +126,7 @@ private void refreshAll() {
 	//
 	// get list of objects (data names)
 	//
-	java.util.Vector dataReferenceList = new java.util.Vector();
+	java.util.Vector<DataReference> dataReferenceList = new java.util.Vector<DataReference>();
 	for (int i = 0; getDataSources()!=null && i < getDataSources().length; i++){
 		DataSource dataSource = getDataSources(i);
 		if (dataSource.getSource() instanceof cbit.vcell.solver.ode.ODESolverResultSet){
@@ -150,7 +150,7 @@ private void refreshAll() {
 			}
 		}
 	}
-	setContents(cbit.util.BeanUtils.getArray(dataReferenceList,DataReference.class));
+	setContents((dataReferenceList.size() > 0?cbit.util.BeanUtils.getArray(dataReferenceList,DataReference.class):null));
 }
 
 
