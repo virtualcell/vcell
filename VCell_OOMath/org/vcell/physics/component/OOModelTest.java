@@ -308,7 +308,7 @@ public class OOModelTest {
 				LeakSpine.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS),
 				C_spine.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS), 
 				spine.getConnectors(LumpedLocation.CONNECTOR_ELECTRICAL),
-//				R_spine_proxD.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG),
+				R_spine_proxD.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG),
 				});
 		Connection conn_elect_proxD = new Connection(new Connector[] { 
 				KChannelProxD.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS), 
@@ -316,16 +316,16 @@ public class OOModelTest {
 				LeakProxD.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS),
 				C_ProxD.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS), 
 				proxDendrite.getConnectors(LumpedLocation.CONNECTOR_ELECTRICAL),
-//				R_spine_proxD.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS),
+				R_spine_proxD.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS),
 				R_proxD_distD.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG),
 				});
 
 //oOModel.addConnection(new Connection(new Connector[] { 
 //		R_spine_proxD.getConnectors(TwoPortElectricalComponent.CONNECTOR_NEG),
 //}));
-oOModel.addConnection(new Connection(new Connector[] { 
-		R_spine_proxD.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS),
-}));
+//oOModel.addConnection(new Connection(new Connector[] { 
+//		R_spine_proxD.getConnectors(TwoPortElectricalComponent.CONNECTOR_POS),
+//}));
 		
 		
 		Connection conn_elect_distD = new Connection(new Connector[] { 
