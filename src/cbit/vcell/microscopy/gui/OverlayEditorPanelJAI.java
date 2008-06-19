@@ -508,11 +508,13 @@ public class OverlayEditorPanelJAI extends JPanel {
 		}
 	}
 	
-	public void refreshROI(){
+	private void refreshROI(){
 		if (roi!=null){
-			BufferedImage highlightImage = createHighlightImageFromROI();
-			short[] highlightImageWritebackBuffer = roi.getRoiImages()[getRoiImageIndex()].getPixels();
-			getImagePane().setHighlightImageAndWritebackBuffer(createHighlightImageFromROI(),highlightImageWritebackBuffer);
+//			BufferedImage highlightImage = createHighlightImageFromROI();
+//			short[] highlightImageWritebackBuffer = roi.getRoiImages()[getRoiImageIndex()].getPixels();
+			getImagePane().setHighlightImageAndWritebackBuffer(
+				createHighlightImageFromROI(),
+				roi.getRoiImages()[getRoiImageIndex()].getPixels());
 		}else{
 			getImagePane().setHighlightImageAndWritebackBuffer(null,null);
 		}
@@ -659,7 +661,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 
 	/** Gets the currently displayed image. * @return BufferedImage
 	 */
-	public BufferedImage getImage() {
+	private BufferedImage getImage() {
 		int ndx = getImageIndex();
 		if (imageDataset == null || ndx >= imageDataset.getAllImages().length){
 			return null;
@@ -668,17 +670,17 @@ public class OverlayEditorPanelJAI extends JPanel {
 		return createUnderlyingImage(image);
 	}
 	
-	/** Gets the currently displayed image. * @return BufferedImage
-	 */
-	public BufferedImage getROIImage() {
-		int ndx = getRoiImageIndex();
-		if (roi == null || ndx >= roi.getRoiImages().length){
-			System.out.println("OverlayEditorPanel.getROIImage(): roi index > num roi slices, none used");
-			return null;
-		}
-		UShortImage image = imageDataset.getAllImages()[ndx];
-		return createUnderlyingImage(image);
-	}
+//	/** Gets the currently displayed image. * @return BufferedImage
+//	 */
+//	public BufferedImage getROIImage() {
+//		int ndx = getRoiImageIndex();
+//		if (roi == null || ndx >= roi.getRoiImages().length){
+//			System.out.println("OverlayEditorPanel.getROIImage(): roi index > num roi slices, none used");
+//			return null;
+//		}
+//		UShortImage image = imageDataset.getAllImages()[ndx];
+//		return createUnderlyingImage(image);
+//	}
 
 	/**
 	 * Method getImagePane.
@@ -833,19 +835,19 @@ public class OverlayEditorPanelJAI extends JPanel {
 	}
 	/** Gets the index of the currently displayed image. * @return int
 	 */
-	public int getImageIndex() { return imageDataset.getIndexFromZCT(getZ(),0,getT()); }
+	private int getImageIndex() { return imageDataset.getIndexFromZCT(getZ(),0,getT()); }
 	
 	/** Gets the index of the currently displayed image. * @return int
 	 */
-	public int getRoiImageIndex() { return getZ(); }
+	private int getRoiImageIndex() { return getZ(); }
 	
 	/** Gets the T value of the currently displayed image. * @return int
 	 */
-	public int getT() { return Math.max(0,Math.min(imageDataset.getSizeT(),timeSlider.getValue())) - 1; }
+	private int getT() { return Math.max(0,Math.min(imageDataset.getSizeT(),timeSlider.getValue())) - 1; }
 
 	/** Gets the Z value of the currently displayed image. * @return int
 	 */
-	public int getZ() { return Math.max(0,Math.min(imageDataset.getSizeZ(),zSlider.getValue())) - 1; }
+	private int getZ() { return Math.max(0,Math.min(imageDataset.getSizeZ(),zSlider.getValue())) - 1; }
 
 
 	/** Updates cursor probe label. * @param x int

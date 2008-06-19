@@ -22,6 +22,7 @@ public abstract class AnnotatedImageDataset {
 	private transient ROI currentlyDisplayedROI = null;
 	private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
+	public static final String PROPERTY_NAME_CURRENTLY_DISPLAYED_ROI = "currentlyDisplayedROI";
 	/**
 	 * Constructor for AnnotatedImageDataset.
 	 * @param argImageDataset ImageDataset
@@ -251,7 +252,7 @@ public abstract class AnnotatedImageDataset {
 	public void setCurrentlyDisplayedROI(ROI argCurrentlyDisplayedROI) {
 		ROI oldDisplayedROI = this.currentlyDisplayedROI;
 		this.currentlyDisplayedROI = argCurrentlyDisplayedROI;
-		propertyChangeSupport.firePropertyChange("currentlyDisplayedROI", oldDisplayedROI, currentlyDisplayedROI);
+		propertyChangeSupport.firePropertyChange(PROPERTY_NAME_CURRENTLY_DISPLAYED_ROI, oldDisplayedROI, currentlyDisplayedROI);
 	}
 
 }

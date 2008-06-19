@@ -4,59 +4,24 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.event.WindowListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.Hashtable;
-import java.util.Vector;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.ListSelectionModel;
-import org.jdom.Element;
-import loci.formats.FormatException;
-import cbit.gui.DialogUtils;
-import cbit.image.ImageException;
 import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
 import cbit.plot.PlotPane;
-import cbit.sql.KeyValue;
-import cbit.util.TSJobResultsSpaceStats;
-import cbit.util.TimeSeriesJobSpec;
-import cbit.util.VCDataJobID;
-import cbit.util.xml.XmlUtil;
-import cbit.vcell.VirtualMicroscopy.ImageDataset;
-import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.VirtualMicroscopy.ImageLoadingProgress;
-import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.client.task.UserCancelException;
+import cbit.vcell.microscopy.AnnotatedImageDataset;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPDataAnalysis;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.LocalWorkspace;
-import cbit.vcell.microscopy.MicroscopyXmlproducer;
 import cbit.vcell.microscopy.ROI;
 import cbit.vcell.microscopy.ROI.RoiType;
-import cbit.vcell.modeldb.NullSessionLog;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.server.User;
-import cbit.vcell.simdata.Cachetable;
-import cbit.vcell.simdata.DataIdentifier;
-import cbit.vcell.simdata.DataSetControllerImpl;
-import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.simdata.VariableType;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.solvers.CartesianMesh;
+
 //comments added in Jan, 2008. This panel is with the first tab that users can see when VFrap is just started.
 //This panel displays the images base on time serials or Z serials. In addtion, Users can mark ROIs and manipulate
 //ROIs in this panel.
@@ -73,8 +38,10 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (frapStudy!=null){
 				if (evt.getSource()==frapStudy.getFrapData()){
-					if (evt.getPropertyName().equals("currentlyDisplayedROI")){
+					if (evt.getPropertyName().equals(AnnotatedImageDataset.PROPERTY_NAME_CURRENTLY_DISPLAYED_ROI)){
+						//Save user changes from viewer to ROI
 						getOverlayEditorPanelJAI().saveROItoWritebackBuffer();
+						//Set new ROI on viewer
 						getOverlayEditorPanelJAI().setROI(frapStudy.getFrapData().getCurrentlyDisplayedROI());
 					}
 				}
@@ -177,12 +144,13 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 //		overlayEditorPanel.setROI((frapData==null)?null:frapData.getCurrentlyDisplayedROI());
 	}
 
-	protected void reloadROI(){
-		if(frapStudy.getFrapData() != null && frapStudy.getFrapData().getCurrentlyDisplayedROI() != null)
-		{
-			getOverlayEditorPanelJAI().setROI(frapStudy.getFrapData().getCurrentlyDisplayedROI());
-		}
-	}
+//	protected void reloadROI(){
+//		if(frapStudy.getFrapData() != null && frapStudy.getFrapData().getCurrentlyDisplayedROI() != null)
+//		{
+//			getOverlayEditorPanelJAI().setROI(frapStudy.getFrapData().getCurrentlyDisplayedROI());
+//		}
+//	}
+	
 	protected void clearROI(){
 		getOverlayEditorPanelJAI().clearROI();
 	}
@@ -191,7 +159,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 		if (getFrapStudy() == null || getFrapStudy().getFrapData() == null){
 			return;
 		}
-		getOverlayEditorPanelJAI().saveROItoWritebackBuffer();
+		saveROI();
 		RoiType roiType = RoiType.ROI_BLEACHED;
 		if (getFrapStudy().getFrapData().getCurrentlyDisplayedROI()!=null){
 			roiType = getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getROIType();
@@ -204,12 +172,12 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 		getOverlayEditorPanelJAI().saveROItoWritebackBuffer();
 	}
 
-	public void refreshDependentROIs_later(){
-		//Generates Rings
-		saveROI();
-		frapStudy.refreshDependentROIs();
-		reloadROI();
-	}
+//	public void refreshDependentROIs_later(){
+//		//Generates Rings
+//		saveROI();
+//		frapStudy.refreshDependentROIs();
+//		reloadROI();
+//	}
 
 		
 	public void main(String args[]){
