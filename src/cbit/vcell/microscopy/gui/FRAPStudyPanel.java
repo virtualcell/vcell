@@ -924,7 +924,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 						if(selectedIndexArr != null && selectedIndexArr.length > 0){
 							frapData = 
 								FRAPData.importFRAPDataFromVCellSimulationData(inFile,
-									dataIdentifiers[selectedIndexArr[0]].getName());
+									dataIdentifiers[selectedIndexArr[0]].getName(),
+									new DataSetControllerImpl.ProgressListener(){public void updateProgress(double progress){VirtualFrapMainFrame.statusBar.showProgress((int)progress);}});
 						}else{
 							throw UserCancelException.CANCEL_GENERIC;
 						}

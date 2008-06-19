@@ -5,6 +5,8 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.BitSet;
 import cbit.image.ImageException;
+import cbit.rmi.event.DataJobEvent;
+import cbit.rmi.event.DataJobListener;
 import cbit.sql.KeyValue;
 import cbit.util.Matchable;
 import cbit.util.TSJobResultsSpaceStats;
@@ -90,7 +92,8 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable{
 		return new VCSimulationIdentifier(simulationKey,getDotUser());
 
 	}
-	public static FRAPData importFRAPDataFromVCellSimulationData(File vcellSimLogFile,String variableName) throws Exception{
+	public static FRAPData importFRAPDataFromVCellSimulationData(File vcellSimLogFile,String variableName,
+			final DataSetControllerImpl.ProgressListener progressListener) throws Exception{
 		if(!vcellSimLogFile.getName().endsWith(SimDataConstants.LOGFILE_EXTENSION)){
 			throw new IllegalArgumentException("VCell simulation logfile with extension "+SimDataConstants.LOGFILE_EXTENSION+" expected.");
 		}
@@ -101,6 +104,19 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable{
 		
 		DataSetControllerImpl dataSetControllerImpl =
 			getDataSetControllerImplFromVCellSimulationData(vcellSimLogFile);
+
+		final DataJobEvent[] bStatus = new DataJobEvent[] {null};
+		DataJobListener dataJobListener =
+			new DataJobListener(){
+				public void dataJobMessage(DataJobEvent event) {
+					bStatus[0] = event;
+					if(progressListener != null){
+						progressListener.updateProgress(event.getProgress()*.75);
+					}
+				}
+			};
+		dataSetControllerImpl.addDataJobListener(dataJobListener);
+		
 		DataIdentifier[] dataIdentifiers =
 			getDataIdentiferListFromVCellSimulationData(vcellSimLogFile, 0);
 		DataIdentifier variableNameDataIdentifier = null;
@@ -125,26 +141,27 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable{
 					new String[]{variableName},
 					new BitSet[] {allBitset},
 					times[0],1,times[times.length-1],
-					true,false,VCDataJobID.createVCDataJobID(getDotUser(), false)
+					true,false,VCDataJobID.createVCDataJobID(getDotUser(), true)
 					);
 		TSJobResultsSpaceStats tsJobResultsSpaceStats =
 			(TSJobResultsSpaceStats)dataSetControllerImpl.getTimeSeriesValues(
 				vcSimulationDataIdentifier, timeSeriesJobSpec);
+		//wait for job to finish
+		while(bStatus[0] == null || bStatus[0].getEventTypeID() != DataJobEvent.DATA_COMPLETE){
+			Thread.sleep(100);
+			if(bStatus[0].getEventTypeID() == DataJobEvent.DATA_FAILURE){
+				throw bStatus[0].getFailedJobException();
+			}
+		}
 		double allTimesMin = tsJobResultsSpaceStats.getMinimums()[0][0];
 		double allTimesMax = allTimesMin;
 		for (int i = 0; i < times.length; i++) {
 			allTimesMin = Math.min(allTimesMin, tsJobResultsSpaceStats.getMinimums()[0][i]);
 			allTimesMax = Math.max(allTimesMax, tsJobResultsSpaceStats.getMaximums()[0][i]);
 		}
-		double scaleFactor = 1.0;
-		double offsetFactor = 0;
-		boolean IS_SCALEABLE = allTimesMax != allTimesMin;
 		double SCALE_MAX = Math.pow(2,16)-1;//Scale to 16 bits
-		if(IS_SCALEABLE){
-			scaleFactor = SCALE_MAX/(allTimesMax-allTimesMin);
-			offsetFactor = (SCALE_MAX*allTimesMin)/(allTimesMin-allTimesMax);
-		}
-		System.out.println("min="+allTimesMin+" max="+allTimesMax+" scale="+scaleFactor+" offset="+offsetFactor);
+		double linearaScaleFactor = SCALE_MAX/allTimesMax;
+		System.out.println("alltimesMin="+allTimesMin+" allTimesMax="+allTimesMax);
 		UShortImage[] scaledDataImages = new UShortImage[times.length];
 		for (int i = 0; i < times.length; i++) {
 			double[] rawData =
@@ -153,31 +170,29 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable{
 						variableName,
 						times[i]).getData();
 			short[] scaledDataShort = new short[rawData.length];
-			if(IS_SCALEABLE){
-				for (int j = 0; j < scaledDataShort.length; j++) {
-					int scaledValue = (int)(rawData[j]*scaleFactor + offsetFactor);
-					scaledDataShort[j]&= 0x0000;
-					scaledDataShort[j]|= 0x0000FFFF & scaledValue;
-						
-				}
-			}else{
-				Arrays.fill(scaledDataShort,(short)0);
+//			if(allTimesMax> SCALE_MAX){
+			for (int j = 0; j < scaledDataShort.length; j++) {
+				int scaledValue = (int)(rawData[j]*linearaScaleFactor);
+				scaledDataShort[j]&= 0x0000;
+				scaledDataShort[j]|= 0x0000FFFF & scaledValue;
+					
 			}
+//			}
 			scaledDataImages[i] =
 				new UShortImage(
 					scaledDataShort,
 					cartesianMesh.getExtent(),
 					cartesianMesh.getSizeX(),cartesianMesh.getSizeY(),cartesianMesh.getSizeZ());
+			if(progressListener != null){progressListener.updateProgress(75+(25*(double)(i+1)/times.length));}
 		}
 		ImageDataset imageDataSet = new ImageDataset(scaledDataImages,times,cartesianMesh.getSizeZ());
 		FRAPData frapData = new FRAPData(imageDataSet, new ROI.RoiType[] { RoiType.ROI_BLEACHED,RoiType.ROI_CELL,RoiType.ROI_BACKGROUND});
 		frapData.setOriginalGlobalScaleInfo(
 			new FRAPData.OriginalGlobalScaleInfo(
-				(int)(allTimesMin*scaleFactor + offsetFactor),
-				(int)(allTimesMax*scaleFactor + offsetFactor),
-				scaleFactor,offsetFactor
-			)
-		);
+				(int)(allTimesMin*linearaScaleFactor),
+				(int)(allTimesMax*linearaScaleFactor),
+				linearaScaleFactor,0));
+		
 		return frapData;
 	}
 	/**
