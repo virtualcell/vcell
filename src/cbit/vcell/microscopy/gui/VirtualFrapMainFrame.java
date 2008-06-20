@@ -193,8 +193,9 @@ public class VirtualFrapMainFrame extends JFrame
 	  			  }else{
 	  				  return;
 	  			  }
+	  			  boolean bOpenedAsVFRAP = true;
 	  			  try{
-		  			  if(VirtualFrapLoader.openFileChooser.getFileFilter().equals(VirtualFrapLoader.filter_xml)){
+		  			  if(VirtualFrapLoader.openFileChooser.getFileFilter().equals(VirtualFrapLoader.filter_vfrap)){
 		  				  frapStudyPanel.load(inputFile);
 		  			  }
 		  			  else{
@@ -205,7 +206,7 @@ public class VirtualFrapMainFrame extends JFrame
 	  			  }catch(Exception e2){
 	  				  e2.printStackTrace();
 	  				  PopupGenerator.showErrorDialog(
-	  					"error loading file:\n"+inputFile.getAbsolutePath()+"\n"+e2.getMessage());
+	  					"Error opening "+(bOpenedAsVFRAP?"(as vfrap)":"(as raw)")+" file:\n"+inputFile.getAbsolutePath()+"\n"+e2.getMessage());
 	  			  }
 		      }
 			  else if(arg.equals(SAVE_ACTION_COMMAND))

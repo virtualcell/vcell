@@ -16,8 +16,7 @@ public class VirtualFrapLoader
 	//filefilters for VFrap
 	public final static  VirtualFrapMainFrame.AFileFilter filter_lsm = new VirtualFrapMainFrame.AFileFilter("lsm","Zeiss Lsm Images");
 	public final static  VirtualFrapMainFrame.AFileFilter filter_tif = new VirtualFrapMainFrame.AFileFilter("tif", "TIFF Images");
-    
-	public final static  VirtualFrapMainFrame.AFileFilter filter_xml = new VirtualFrapMainFrame.AFileFilter("xml","XML Files");
+	public final static  VirtualFrapMainFrame.AFileFilter filter_vfrap = new VirtualFrapMainFrame.AFileFilter("vfrap","Virtual FRAP Files");
     //create one instance of each kind of filechooser, so that it remembers the last time visited path. 
     public static JFileChooser openFileChooser; 
     public static JFileChooser saveFileChooser; 
@@ -52,9 +51,9 @@ public class VirtualFrapLoader
 		    openFileChooser.setCurrentDirectory(new File(localWorkspcae.getDefaultWorkspaceDirectory())); 
 		    openFileChooser.addChoosableFileFilter(filter_lsm); 
 		    openFileChooser.addChoosableFileFilter(filter_tif); 
-		    openFileChooser.addChoosableFileFilter(filter_xml); 
+		    openFileChooser.addChoosableFileFilter(filter_vfrap); 
 		    saveFileChooser = new JFileChooser();
-		    saveFileChooser.addChoosableFileFilter(filter_xml); 
+		    saveFileChooser.addChoosableFileFilter(filter_vfrap); 
 		    saveFileChooser.setCurrentDirectory(new File(localWorkspcae.getDefaultWorkspaceDirectory()));
 		    multiOpenFileChooser = new JFileChooser(); 
 		    multiOpenFileChooser.setCurrentDirectory(new File(localWorkspcae.getDefaultWorkspaceDirectory()));
