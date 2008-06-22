@@ -3,7 +3,6 @@ package cbit.vcell.microscopy.gui;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -11,12 +10,9 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.util.Hashtable;
 
 import javax.swing.ButtonGroup;
@@ -32,21 +28,26 @@ import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JToggleButton;
 import javax.swing.border.LineBorder;
+import javax.swing.undo.AbstractUndoableEdit;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoableEditSupport;
 
 import loci.formats.IFormatReader;
 import loci.formats.ImageReader;
 import loci.formats.ImageTools;
 import cbit.gui.DialogUtils;
-import cbit.image.ImageException;
 import cbit.util.BeanUtils;
 import cbit.util.ISize;
 import cbit.util.NumberUtils;
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.FRAPStudy;
+import cbit.vcell.microscopy.MicroscopyXmlReader;
 import cbit.vcell.microscopy.ROI;
+import cbit.vcell.simdata.DataSetControllerImpl;
 //comments added Jan 2008, this is the panel that displayed at the top of the FRAPDataPanel which deals with serials of images.
 /**
  */
@@ -84,6 +85,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 	public static final String FRAP_DATA_TIMEPLOTROI_PROPERTY = "FRAP_DATA_TIMEPLOTROI_PROPERTY";
 	private ISize originalISize;
 	public static final String FRAP_DATA_CURRENTROI_PROPERTY = "FRAP_DATA_CURRENTROI_PROPERTY";
+	public static final String FRAP_DATA_UNDOROI_PROPERTY = "FRAP_DATA_UNDOROI_PROPERTY";
 	private JRadioButton cellBodyRadioButton;
 	private JRadioButton bleachRadioButton;
 	private JRadioButton backgroundRadioButton;
@@ -91,7 +93,8 @@ public class OverlayEditorPanelJAI extends JPanel {
 	private JLabel viewZLabel;
 	private FRAPData.OriginalGlobalScaleInfo originalGlobalScaleInfo;
 	
-
+	UndoableEditSupport undoableEditSupport;
+	ROI undoableROI;
 	
 	/**
 	 * This is the default constructor
@@ -101,6 +104,10 @@ public class OverlayEditorPanelJAI extends JPanel {
 		initialize();
 	}
 
+	public void setUndoableEditSupport(UndoableEditSupport undoableEditSupport){
+		this.undoableEditSupport = undoableEditSupport;
+	}
+	
 	private boolean isAutoCroppable(){
 		try {
 			Rectangle cropRectangle = null;
@@ -255,44 +262,79 @@ public class OverlayEditorPanelJAI extends JPanel {
 		final JButton importROIMaskButton = new JButton();
 		importROIMaskButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				File inputFile = null;
-				JFileChooser openJFileChooser = new JFileChooser();
-				int option = openJFileChooser.showOpenDialog(OverlayEditorPanelJAI.this);
-				if (option == JFileChooser.APPROVE_OPTION){
-					inputFile = openJFileChooser.getSelectedFile();
-				}else{
-					return;
-				}
-				IFormatReader iFormatReader = null;
-				try{
-					ImageReader imageReader = new ImageReader();
-					iFormatReader = imageReader.getReader(inputFile.getAbsolutePath());
-					iFormatReader.setId(inputFile.getAbsolutePath());
-					if(iFormatReader.getSizeX() * iFormatReader.getSizeY() != 
-						getImagePane().getHighlightImage().getWidth()*getImagePane().getHighlightImage().getHeight()){
-						throw new Exception(
-							"Imported ROI mask size ("+
-							iFormatReader.getSizeX()+","+iFormatReader.getSizeY()+")"+
-							" does not match current Frap DataSet size ("+
-							getImagePane().getHighlightImage().getWidth()+","+
-							getImagePane().getHighlightImage().getHeight()+")");
+				try {
+					File inputFile = null;
+//					JFileChooser openJFileChooser = new JFileChooser();
+					int option = VirtualFrapLoader.openFileChooser.showOpenDialog(OverlayEditorPanelJAI.this);
+					if (option == JFileChooser.APPROVE_OPTION){
+						inputFile = VirtualFrapLoader.openFileChooser.getSelectedFile();
+					}else{
+						return;
 					}
-					BufferedImage roiMaskImage = iFormatReader.openImage(0);
-					int maskColor = highlightColor.getRGB();
-					for (int y = 0; y < iFormatReader.getSizeY(); y++) {
-						for (int x = 0; x < iFormatReader.getSizeX(); x++) {
-							if((roiMaskImage.getRGB(x, y)&0x00FFFFFF) != 0){
-								getImagePane().getHighlightImage().setRGB(x,y,maskColor);
+					if(VirtualFrapLoader.filter_vfrap.accept(inputFile)){
+						String xmlString = XmlUtil.getXMLString(inputFile.getAbsolutePath());
+						MicroscopyXmlReader xmlReader = new MicroscopyXmlReader(true);
+						DataSetControllerImpl.ProgressListener progressListener =
+							new DataSetControllerImpl.ProgressListener(){
+								public void updateProgress(double progress) {
+									VirtualFrapMainFrame.statusBar.showProgress((int)(progress*100));
+								}
+							};
+						FRAPStudy importedFrapStudy = xmlReader.getFrapStudy(XmlUtil.stringToXML(xmlString, null),progressListener);
+						VirtualFrapMainFrame.statusBar.showProgress(0);
+						if(importedFrapStudy.getFrapData() != null && importedFrapStudy.getFrapData().getRois() != null){
+							if(!importedFrapStudy.getFrapData().getRois()[0].getISize().compareEqual(roi.getISize())){
+								throw new Exception(
+										"Imported ROI mask size ("+
+										importedFrapStudy.getFrapData().getRois()[0].getISize().getX()+","+
+										importedFrapStudy.getFrapData().getRois()[0].getISize().getY()+","+
+										importedFrapStudy.getFrapData().getRois()[0].getISize().getZ()+")"+
+										" does not match current Frap DataSet size ("+
+										roi.getISize().getX()+","+
+										roi.getISize().getY()+","+
+										roi.getISize().getZ()+
+										")");
+							}
+							for (int i = 0; i < importedFrapStudy.getFrapData().getRois().length; i++) {
+								firePropertyChange(FRAP_DATA_UNDOROI_PROPERTY, null,importedFrapStudy.getFrapData().getRois()[i]);								
 							}
 						}
+					}else{
+						IFormatReader iFormatReader = null;
+						try{
+							ImageReader imageReader = new ImageReader();
+							iFormatReader = imageReader.getReader(inputFile.getAbsolutePath());
+							iFormatReader.setId(inputFile.getAbsolutePath());
+							if(iFormatReader.getSizeX() * iFormatReader.getSizeY() != 
+								getImagePane().getHighlightImage().getWidth()*getImagePane().getHighlightImage().getHeight()){
+								throw new Exception(
+									"Imported ROI mask size ("+
+									iFormatReader.getSizeX()+","+iFormatReader.getSizeY()+")"+
+									" does not match current Frap DataSet size ("+
+									getImagePane().getHighlightImage().getWidth()+","+
+									getImagePane().getHighlightImage().getHeight()+")");
+							}
+							BufferedImage roiMaskImage = iFormatReader.openImage(0);
+							int maskColor = highlightColor.getRGB();
+							for (int y = 0; y < iFormatReader.getSizeY(); y++) {
+								for (int x = 0; x < iFormatReader.getSizeX(); x++) {
+									if((roiMaskImage.getRGB(x, y)&0x00FFFFFF) != 0){
+										getImagePane().getHighlightImage().setRGB(x,y,maskColor);
+									}
+								}
+							}
+							getImagePane().refreshImage();
+						}catch(Exception e1){
+							e1.printStackTrace();
+							DialogUtils.showErrorDialog("error importing ROI mask from file:\n"+
+									inputFile.getAbsolutePath()+"\n"+e1.getMessage());
+						}finally{
+							if(iFormatReader != null){try{iFormatReader.close();}catch(Exception e2){e2.printStackTrace();}}
+						}
 					}
-					getImagePane().refreshImage();
-				}catch(Exception e1){
+				} catch (Exception e1) {
 					e1.printStackTrace();
-					DialogUtils.showErrorDialog("error importing ROI mask from file:\n"+
-							inputFile.getAbsolutePath()+"\n"+e1.getMessage());
-				}finally{
-					if(iFormatReader != null){try{iFormatReader.close();}catch(Exception e2){e2.printStackTrace();}}
+					DialogUtils.showErrorDialog("Error importing ROI"+e1.getMessage());
 				}
 			}
 		});
@@ -306,14 +348,6 @@ public class OverlayEditorPanelJAI extends JPanel {
 		clearROIbutton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				clearROI();
-//				if(getImagePane() != null && getImagePane().getHighlightImage() != null){
-//					Graphics g = getImagePane().getHighlightImage().getGraphics();
-//					g.setColor(Color.BLACK);
-//					g.clearRect(0, 0,
-//						getImagePane().getHighlightImage().getWidth(),
-//						getImagePane().getHighlightImage().getHeight());
-//					getImagePane().refreshImage();
-//				}
 			}
 		});
 		clearROIbutton.setText("Clear ROI");
@@ -498,7 +532,8 @@ public class OverlayEditorPanelJAI extends JPanel {
 		BeanUtils.enableComponents(editROIPanel, false);
 	}
 	
-	public void clearROI(){
+	private void clearROI(){
+		saveUndoableROI();
 		if (roi!=null){
 			short[] roiPixels = roi.getRoiImages()[getRoiImageIndex()].getPixels();
 			for (int i = 0; i < roiPixels.length; i++) {
@@ -506,6 +541,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 			}
 			refreshROI();
 		}
+		fireUndoableEditROI(EDITTYPE_CLEAR);
 	}
 	
 	private void refreshROI(){
@@ -540,7 +576,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 	}
 		
 	
-	public void saveROItoWritebackBuffer(){
+	public void saveUserChangesToROI(){
 		short[] roiPixels = getImagePane().getHighlightImageWritebackImageBuffer();
 		if (roiPixels!=null){
 			BufferedImage highlightImage = imagePane.getHighlightImage();
@@ -669,19 +705,43 @@ public class OverlayEditorPanelJAI extends JPanel {
 		UShortImage image = imageDataset.getAllImages()[ndx];
 		return createUnderlyingImage(image);
 	}
-	
-//	/** Gets the currently displayed image. * @return BufferedImage
-//	 */
-//	public BufferedImage getROIImage() {
-//		int ndx = getRoiImageIndex();
-//		if (roi == null || ndx >= roi.getRoiImages().length){
-//			System.out.println("OverlayEditorPanel.getROIImage(): roi index > num roi slices, none used");
-//			return null;
-//		}
-//		UShortImage image = imageDataset.getAllImages()[ndx];
-//		return createUnderlyingImage(image);
-//	}
 
+	private void saveUndoableROI(){
+		saveUserChangesToROI();
+		try{
+			undoableROI = new ROI(roi);
+		}catch(Exception e2){
+			e2.printStackTrace();
+			//can't happen
+		}
+	}
+	private static final String EDITTYPE_FILL = "fill";
+	private static final String EDITTYPE_PAINT = "paint";
+	private static final String EDITTYPE_ERASE = "erase";
+	private static final String EDITTYPE_CLEAR = "clear";
+	private void fireUndoableEditROI(final String editType){
+		final ROI originalROI = undoableROI;
+		undoableROI = null;
+		if(editType != null){
+			undoableEditSupport.postEdit(
+				new AbstractUndoableEdit(){
+					public boolean canUndo() {
+						return true;
+					}
+					public String getUndoPresentationName() {
+						return editType+" "+originalROI.getROIType().name();
+					}
+					public void undo() throws CannotUndoException {
+						super.undo();
+						firePropertyChange(FRAP_DATA_UNDOROI_PROPERTY, null,originalROI);
+					}
+				}
+			);			
+		}else{
+			undoableEditSupport.postEdit(FRAPStudyPanel.CLEAR_UNDOABLE_EDIT);
+		}
+		
+	}
 	/**
 	 * Method getImagePane.
 	 * @return OverlayImageDisplayJAI
@@ -697,12 +757,23 @@ public class OverlayEditorPanelJAI extends JPanel {
 				public void mousePressed(MouseEvent e){
 					updateLabel(e.getX(), e.getY());
 					lastHighlightPoint = e.getPoint();
+					saveUndoableROI();
 					if(paintButton.isSelected() || eraseButton.isSelected()){
 						drawHighlight(e.getX(), e.getY(), 10, eraseButton.isSelected());
-//						VirtualFrapLoader.mf.setSaveStatus(true);
 					}
 				}
 				public void mouseReleased(MouseEvent e){
+
+					if(paintButton.isSelected()){
+						fireUndoableEditROI(EDITTYPE_PAINT);
+					}else if(eraseButton.isSelected()){
+						fireUndoableEditROI(EDITTYPE_ERASE);
+					}else if(fillButton.isSelected()){
+						//done later in 'click'
+					}else{
+						fireUndoableEditROI(null);//remove any pending undoableEdit
+					}
+					
 					if(cropButton.isSelected()){
 						Rectangle cropRect =
 							(imagePane.getHighlightImage() == null
@@ -746,6 +817,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 				@Override
 				public void mouseClicked(MouseEvent e) {
 					if(fillButton.isSelected()){
+						fireUndoableEditROI(EDITTYPE_FILL);
 						try{
 							waitCursor(true);
 							ROI.fillAtPoint(
@@ -1159,7 +1231,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 			zSlider.setPaintLabels(true);
 			zSlider.addChangeListener(new javax.swing.event.ChangeListener() {
 				public void stateChanged(javax.swing.event.ChangeEvent e) {
-					saveROItoWritebackBuffer();
+					saveUserChangesToROI();
 					updateLabel(-1, -1);
 					BufferedImage image = getImage();
 					if (image != null){

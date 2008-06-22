@@ -40,7 +40,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 				if (evt.getSource()==frapStudy.getFrapData()){
 					if (evt.getPropertyName().equals(AnnotatedImageDataset.PROPERTY_NAME_CURRENTLY_DISPLAYED_ROI)){
 						//Save user changes from viewer to ROI
-						getOverlayEditorPanelJAI().saveROItoWritebackBuffer();
+						getOverlayEditorPanelJAI().saveUserChangesToROI();
 						//Set new ROI on viewer
 						getOverlayEditorPanelJAI().setROI(frapStudy.getFrapData().getCurrentlyDisplayedROI());
 					}
@@ -95,8 +95,17 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 					}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CURRENTROI_PROPERTY)){
 						try {
 							ROI.RoiType roiType = (ROI.RoiType)evt.getNewValue();
+							saveROI();
 							getFrapStudy().getFrapData().setCurrentlyDisplayedROI(
 									getFrapStudy().getFrapData().getRoi(roiType));
+						} catch (Exception e) {
+							PopupGenerator.showErrorDialog("Error Setting Current ROI:\n"+e.getMessage());
+						}						
+					}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_UNDOROI_PROPERTY)){
+						try {
+							ROI undoableROI = (ROI)evt.getNewValue();
+							getFrapStudy().getFrapData().addReplaceRoi(undoableROI);
+//							getFrapStudy().getFrapData().setCurrentlyDisplayedROI(getFrapStudy().getFrapData().getCurrentlyDisplayedROI());
 						} catch (Exception e) {
 							PopupGenerator.showErrorDialog("Error Setting Current ROI:\n"+e.getMessage());
 						}						
@@ -151,9 +160,9 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 //		}
 //	}
 	
-	protected void clearROI(){
-		getOverlayEditorPanelJAI().clearROI();
-	}
+//	protected void clearROI(){
+//		getOverlayEditorPanelJAI().clearROI();
+//	}
 
 	protected void plotROI(){
 		if (getFrapStudy() == null || getFrapStudy().getFrapData() == null){
@@ -169,7 +178,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 	}
 	
 	public void saveROI(){
-		getOverlayEditorPanelJAI().saveROItoWritebackBuffer();
+		getOverlayEditorPanelJAI().saveUserChangesToROI();
 	}
 
 //	public void refreshDependentROIs_later(){

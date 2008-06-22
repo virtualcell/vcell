@@ -159,13 +159,21 @@ public abstract class AnnotatedImageDataset {
 	public void addReplaceRoi(ROI roi) {
 		ROI[] oldROIs = getRois();
 		rois = new ArrayList<ROI>();
+		boolean isCurrentlyDisplayed = false;
 		for (int i = 0; i < oldROIs.length; i++) {
 			if(!oldROIs[i].getROIType().equals(roi.getROIType())){
 				rois.add(oldROIs[i]);
+			}else{
+				if(currentlyDisplayedROI == oldROIs[i]){
+					isCurrentlyDisplayed = true;
+				}
 			}
 		}
 		rois.add(roi);
 		ROI[] newROIs = getRois();
+		if(isCurrentlyDisplayed){
+			setCurrentlyDisplayedROI(roi);
+		}
 		propertyChangeSupport.firePropertyChange("rois", oldROIs, newROIs);
 
 //		if (!rois.contains(roi)){

@@ -1,7 +1,6 @@
 package cbit.vcell.microscopy.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -23,16 +22,17 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
 import javax.swing.WindowConstants;
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.event.UndoableEditListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.undo.UndoableEdit;
 
 import cbit.gui.DialogUtils;
-import cbit.sql.KeyValue;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.server.PropertyLoader;
-import cbit.vcell.server.User;
 
 
 /**
@@ -66,6 +66,7 @@ public class VirtualFrapMainFrame extends JFrame
 	private static final String EXIT_ACTION_COMMAND = "Exit";
 	private static final String HELPTOPICS_ACTION_COMMAND = "Help Topics";
 	private static final String ABOUT_ACTION_COMMAND = "About Virtual Frap";
+	private static final String UNDO_ACTION_COMMAND = "Undo";
 	
 	private static final JMenuItem menuOpen= new JMenuItem(OPEN_ACTION_COMMAND,'O');
 	private static final JMenuItem menuExit= new JMenuItem(EXIT_ACTION_COMMAND,'X');
@@ -75,19 +76,13 @@ public class VirtualFrapMainFrame extends JFrame
 	private static final JMenuItem mprint = new JMenuItem(PRINT_ACTION_COMMAND);
 	private static final JMenuItem mHelpTopics = new JMenuItem(HELPTOPICS_ACTION_COMMAND);
 	private static final JMenuItem mabout = new JMenuItem(ABOUT_ACTION_COMMAND);
+	private static final JMenuItem mUndo = new JMenuItem(UNDO_ACTION_COMMAND);
 
   public static JMenuBar mb = null;
   public static StatusBar statusBar = null;
   public static ToolBar toolBar = null;
   public static FRAPStudyPanel frapStudyPanel = null;
-  public final static int INDEX_MENU_FILE = 0;
-  public final static int INDEX_MENU_MODEL = 1;
-  public final static int INDEX_MENU_SIMULATION = 2;
-  public final static int INDEX_MENU_HELP = 3;
-  
-  private Container c;
-
-  
+  private UndoableEdit lastUndoableEdit;
 
   private MultiFileInputDialog multiFileDialog = null;
   
@@ -261,6 +256,10 @@ public class VirtualFrapMainFrame extends JFrame
 		      else if(arg.equals(ABOUT_ACTION_COMMAND))
 		      {
 		    	  new AboutDialog(getClass().getResource("/images/splash.jpg"), VirtualFrapMainFrame.this);
+		      }else if(arg.equals(UNDO_ACTION_COMMAND)){
+		    	  mUndo.setEnabled(false);
+		    	  lastUndoableEdit.undo();
+		    	  lastUndoableEdit = null;
 		      }
 		  }
 	  }
@@ -363,16 +362,30 @@ public class VirtualFrapMainFrame extends JFrame
       mb = new JMenuBar();
 
       frapStudyPanel = new FRAPStudyPanel();
+      frapStudyPanel.addUndoableEditListener(
+    	new UndoableEditListener(){
+    		public void undoableEditHappened(UndoableEditEvent e) {
+    			if(e.getEdit().canUndo()){
+        			lastUndoableEdit = e.getEdit();
+        			mUndo.setText(UNDO_ACTION_COMMAND+" "+e.getEdit().getUndoPresentationName());
+        			mUndo.setEnabled(true);
+    			}else{
+        			lastUndoableEdit = null;
+        			mUndo.setText(UNDO_ACTION_COMMAND);
+        			mUndo.setEnabled(false);
+    			}
+			}
+    	}
+      );
 	  System.setProperty(PropertyLoader.localSimDataDirProperty, localWorkspace.getDefaultWorkspaceDirectory());
 	  System.setProperty(PropertyLoader.secondarySimDataDirProperty, localWorkspace.getDefaultWorkspaceDirectory());
 	  frapStudyPanel.setLocalWorkspace(localWorkspace);
 
       //add components to the main frame
-      c = getContentPane();
-      c.setLayout(new BorderLayout());
-      c.add(toolBar, BorderLayout.NORTH);
-      c.add(statusBar, BorderLayout.SOUTH);
-      c.add(frapStudyPanel);
+      getContentPane().setLayout(new BorderLayout());
+      getContentPane().add(toolBar, BorderLayout.NORTH);
+      getContentPane().add(statusBar, BorderLayout.SOUTH);
+      getContentPane().add(frapStudyPanel);
   }
 
   /**
@@ -413,6 +426,17 @@ public class VirtualFrapMainFrame extends JFrame
     menuExit.addActionListener(menuHandler);
     fileMenu.add(menuExit);
 
+    //Edit menu
+    JMenu editMenu =new JMenu("Edit");
+    editMenu.setMnemonic('E');
+    mb.add(editMenu);
+   
+    mUndo.setActionCommand(UNDO_ACTION_COMMAND);
+    mUndo.addActionListener(menuHandler);
+    mUndo.setAccelerator(KeyStroke.getKeyStroke(
+            KeyEvent.VK_Z, ActionEvent.CTRL_MASK));
+    mUndo.setEnabled(false);
+    editMenu.add(mUndo);
     
     //Help Menu
     JMenu helpMenu =new JMenu("Help");

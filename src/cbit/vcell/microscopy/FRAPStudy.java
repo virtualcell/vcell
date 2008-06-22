@@ -550,6 +550,9 @@ public class FRAPStudy implements Matchable{
 			throw new RuntimeException("failed to create mask image for geometry");
 		}
 		Geometry geometry = new Geometry("geometry",maskImage);
+		if(geometry.getGeometrySpec().getNumSubVolumes() != 2){
+			throw new Exception("Cell ROI has no ExtraCellular.");
+		}
 		int subVolume0PixVal = ((ImageSubVolume)geometry.getGeometrySpec().getSubVolume(0)).getPixelValue();
 		geometry.getGeometrySpec().getSubVolume(0).setName((subVolume0PixVal == EXTRACELLULAR_PIXVAL?EXTRACELLULAR_NAME:CYTOSOL_NAME));
 		int subVolume1PixVal = ((ImageSubVolume)geometry.getGeometrySpec().getSubVolume(1)).getPixelValue();

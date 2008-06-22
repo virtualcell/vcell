@@ -16,7 +16,8 @@ public class VirtualFrapLoader
 	//filefilters for VFrap
 	public final static  VirtualFrapMainFrame.AFileFilter filter_lsm = new VirtualFrapMainFrame.AFileFilter("lsm","Zeiss Lsm Images");
 	public final static  VirtualFrapMainFrame.AFileFilter filter_tif = new VirtualFrapMainFrame.AFileFilter("tif", "TIFF Images");
-	public final static  VirtualFrapMainFrame.AFileFilter filter_vfrap = new VirtualFrapMainFrame.AFileFilter("vfrap","Virtual FRAP Files");
+	public static final String VFRAP_EXTENSION = "vfrap";
+	public final static  VirtualFrapMainFrame.AFileFilter filter_vfrap = new VirtualFrapMainFrame.AFileFilter(VFRAP_EXTENSION,"Virtual FRAP Files");
     //create one instance of each kind of filechooser, so that it remembers the last time visited path. 
     public static JFileChooser openFileChooser; 
     public static JFileChooser saveFileChooser; 

@@ -3,6 +3,7 @@ package cbit.vcell.microscopy.gui;
 import java.awt.Color;
 import java.awt.Dimension;
 
+import cbit.gui.DialogUtils;
 import cbit.util.Compare;
 import cbit.util.NumberUtils;
 import cbit.vcell.math.gui.ExpressionCanvas;
@@ -595,7 +596,11 @@ public class FRAPParametersPanel extends JPanel {
 				try{
 					refreshFRAPModelParameterEstimates(initFRAPData);
 				}catch (Exception e2){
-					//ignore
+					e2.printStackTrace();
+					DialogUtils.showErrorDialog(
+						"Error setting estimation method "+
+						FrapDataAnalysisResults.BLEACH_TYPE_NAMES[bleachEstimationComboBox.getSelectedIndex()]+
+						"\n"+e2.getMessage());
 				}
 			}
 		});
@@ -625,9 +630,8 @@ public class FRAPParametersPanel extends JPanel {
 				getUserStartIndexForRecoveryString());
 
 	}
-	public void initializeSavedFrapModelInfo(FRAPStudyPanel.SavedFrapModelInfo savedFrapModelInfo,FRAPData initFRAPData){
-//		this.savedFrapModelInfo = savedFrapModelInfo;
-		this.initFRAPData = initFRAPData;
+	public void initializeSavedFrapModelInfo(FRAPStudyPanel.SavedFrapModelInfo savedFrapModelInfo,double[] frapDataTimeStamps){
+
 		diffusionRateTextField.setText((savedFrapModelInfo == null
 				?""
 				:(savedFrapModelInfo.lastBaseDiffusionrate == null
@@ -651,7 +655,6 @@ public class FRAPParametersPanel extends JPanel {
 					:savedFrapModelInfo.lastSlowerRate.toString())));
 
 		frapDataTimesComboBox.removeAllItems();
-		double[] frapDataTimeStamps = initFRAPData.getImageDataset().getImageTimeStamps();
 		for (int i = 0; i < frapDataTimeStamps.length; i++) {
 			frapDataTimesComboBox.insertItemAt(frapDataTimeStamps[i]+"", i);
 		}
@@ -667,7 +670,7 @@ public class FRAPParametersPanel extends JPanel {
 			double mobileFractionIntermediate = Double.parseDouble(mobileFractionTextField.getText());
 			if(mobileFractionIntermediate <= 1.0){
 				double immobileFractionIntermediate = 1.0-mobileFractionIntermediate;
-				immobileFractionValueJLabel.setText(""+Double.parseDouble(NumberUtils.formatNumber(immobileFractionIntermediate, 5)));
+				immobileFractionValueJLabel.setText(""+immobileFractionIntermediate/*Double.parseDouble(NumberUtils.formatNumber(immobileFractionIntermediate, 5))*/);
 			}else{
 				immobileFractionValueJLabel.setText("");
 			}
@@ -731,6 +734,7 @@ public class FRAPParametersPanel extends JPanel {
 	}
 	
 	public void refreshFRAPModelParameterEstimates(FRAPData frapData) throws Exception {
+		this.initFRAPData = frapData;
 		FrapDataAnalysisResults frapDataAnalysisResults = null;
 		double[] frapDataTimeStamps = null;
 		bleachEstimationComboBox.setEnabled(false);

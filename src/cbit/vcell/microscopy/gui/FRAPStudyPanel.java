@@ -37,6 +37,12 @@ import javax.swing.JTabbedPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.UndoableEditListener;
+import javax.swing.undo.AbstractUndoableEdit;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoableEdit;
+import javax.swing.undo.UndoableEditSupport;
+
 import cbit.gui.DialogUtils;
 import cbit.gui.graph.GraphPane;
 import cbit.image.ImageException;
@@ -89,7 +95,7 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 
-public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
+public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	//Following final static variables are added in Jan 2008.
 	public final static int INDEX_TAB_IMAGES = 0;
 	public final static int INDEX_TAB_FITCURVE = 1;
@@ -253,7 +259,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 			if(isDataValid()){
 				return "Simulation Data are valid.";
 			}else if(isDataInvalidBecauseModelChanged()){
-				return "Sim Data invalid because Model has changed";
+				return "Sim Data invalid because Model has changes including:\n"+frapChangeInfo.getChangeDescription();
 			}else if(isDataInvalidBecauseMissingOrCorrupt()){
 				return "Sim Data are missing or corrupt";
 			}
@@ -277,6 +283,23 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 		Cursor.getDefaultCursor()
 	};
 	
+	private UndoableEditSupport undoableEditSupport =
+		new UndoableEditSupport();
+	
+	public static final UndoableEdit CLEAR_UNDOABLE_EDIT =
+		new AbstractUndoableEdit(){
+					public boolean canUndo() {
+						return false;
+					}
+					public String getUndoPresentationName() {
+						return null;
+					}
+					public void undo() throws CannotUndoException {
+						super.undo();
+					}
+				};
+
+	
 	/**
 	 * This method initializes 
 	 * 
@@ -287,9 +310,19 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 		loadROICursors();
 	}
 	
+	public void addUndoableEditListener(UndoableEditListener undoableEditListener){
+		undoableEditSupport.addUndoableEditListener(undoableEditListener);
+		getFRAPDataPanel().getOverlayEditorPanelJAI().setUndoableEditSupport(undoableEditSupport);
+	}	
+	
 	private void setSavedFrapModelInfo(SavedFrapModelInfo savedFrapModelInfo) throws Exception{
+		try{
+			undoableEditSupport.postEdit(FRAPStudyPanel.CLEAR_UNDOABLE_EDIT);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 		savedFrapModelInfoNew2 = savedFrapModelInfo;
-		getFRAPParametersPanel().initializeSavedFrapModelInfo(getSavedFrapModelInfo(),getFrapStudy().getFrapData());
+		getFRAPParametersPanel().initializeSavedFrapModelInfo(getSavedFrapModelInfo(),getFrapStudy().getFrapData().getImageDataset().getImageTimeStamps());
 		applyUserChangesToCurrentFRAPStudy(USER_CHANGES_FLAG_MODEL_PARAMS);
 	}
 	private SavedFrapModelInfo getSavedFrapModelInfo(){
@@ -478,8 +511,17 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 					currentSimulationDataState = new CurrentSimulationDataState();
 				}
 				if(currentSimulationDataState == null || !currentSimulationDataState.isDataValid()){
-					if(currentSimulationDataState != null && currentSimulationDataState.isDataInvalidBecauseMissingOrCorrupt()){
-						final String RUN_SIM = "Run Simulation...";
+					final String RUN_SIM = "Run Simulation...";
+					if(currentSimulationDataState != null && currentSimulationDataState.isDataInvalidBecauseModelChanged()){
+						String result = DialogUtils.showWarningDialog(this,
+							currentSimulationDataState.getDescription()+"\n"+
+							"Simulation needs to be Run before viewing results, Run Simulation now?" ,
+							new String[] {RUN_SIM,UserMessage.OPTION_CANCEL}, RUN_SIM);
+						if(result == null || !result.equals(RUN_SIM)){
+							return false;
+						}
+					
+					}else if(currentSimulationDataState != null && currentSimulationDataState.isDataInvalidBecauseMissingOrCorrupt()){
 						String expectedSimFileLocation =
 							getLocalWorkspace().getDefaultSimDataDirectory();
 						String result = DialogUtils.showWarningDialog(this,
@@ -651,6 +693,15 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 	}
 
 	public void setFrapStudy(FRAPStudy frapStudy,boolean bNew) {
+		try{
+			undoableEditSupport.postEdit(FRAPStudyPanel.CLEAR_UNDOABLE_EDIT);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		FRAPStudy oldFrapStudy = this.frapStudy;
+		if(oldFrapStudy != null){
+			oldFrapStudy.removePropertyChangeListener(this);
+		}
 		this.frapStudy = frapStudy;
 		frapStudy.addPropertyChangeListener(this);
 		getFRAPDataPanel().setFrapStudyNew(frapStudy,bNew);
@@ -660,11 +711,14 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 		if (getFrapStudy() == null || getFrapStudy().getFrapData()==null){
 			return;
 		}
-		getFRAPDataPanel().getOverlayEditorPanelJAI().saveROItoWritebackBuffer();
+		getFRAPDataPanel().getOverlayEditorPanelJAI().saveUserChangesToROI();
 		FRAPData frapData = getFrapStudy().getFrapData();
 		FRAPData newFrapData = frapData.crop(cropRectangle);
 		FRAPStudy newFrapStudy = new FRAPStudy();
 		newFrapStudy.setFrapData(newFrapData);
+		newFrapStudy.setXmlFilename(getFrapStudy().getXmlFilename());
+		newFrapStudy.setFrapDataExternalDataInfo(getFrapStudy().getFrapDataExternalDataInfo());
+		newFrapStudy.setRoiExternalDataInfo(getFrapStudy().getRoiExternalDataInfo());
 		setFrapStudy(newFrapStudy,false);
 	}
 
@@ -743,11 +797,14 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 			int retval = VirtualFrapLoader.saveFileChooser.showSaveDialog(this);
 			if (retval == JFileChooser.APPROVE_OPTION){
 				String outputFileName = VirtualFrapLoader.saveFileChooser.getSelectedFile().getPath();
-				if((outputFileName.length() < 5) || (outputFileName.substring(outputFileName.length()-4).compareTo(".xml") != 0))
-	            {
-					outputFileName=VirtualFrapLoader.saveFileChooser.getSelectedFile().getPath()+".xml";
-	            }
 				outputFile = new File(outputFileName);
+				if(!VirtualFrapLoader.filter_vfrap.accept(outputFile)){
+					if(outputFile.getName().indexOf(".") == -1){
+						outputFile = new File(outputFile.getParentFile(),outputFile.getName()+"."+VirtualFrapLoader.VFRAP_EXTENSION);
+					}else{
+						throw new Exception("Virtual FRAP document names must have an extension of ."+VirtualFrapLoader.VFRAP_EXTENSION);
+					}
+				}
 			}else{
 				throw UserCancelException.CANCEL_GENERIC;
 			}
@@ -803,7 +860,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 	private boolean cleanupSavedSimDataFilesIfNotOK() throws Exception{
 		CurrentSimulationDataState currentSimulationDataState =
 			new CurrentSimulationDataState();
-		if(currentSimulationDataState.isDataInvalidBecauseMissingOrCorrupt()){
+		if(!currentSimulationDataState.isDataValid()){
 			//remove saved simulation files (they no longer apply to this model)
 			ExternalDataInfo origImageDataExtDataInfo = getFrapStudy().getFrapDataExternalDataInfo();
 			if(origImageDataExtDataInfo != null){
@@ -1118,10 +1175,10 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
     	return saveTask;
 	}
 	
-	protected void clearROI()
-	{
-		getFRAPDataPanel().clearROI();
-	}
+//	protected void clearROI()
+//	{
+//		getFRAPDataPanel().clearROI();
+//	}
 
 	private Boolean areSimulationFilesOKForSavedModel(){
 		if(getSavedFrapModelInfo() == null){
@@ -1247,7 +1304,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener {
 				saveTask = createSaveTask(bSaveAsNew,true);
 			}
 		}catch(Exception e){
-			throw new Exception("Error running simulation:\n"+e.getMessage());
+			throw new Exception("Error checking save before running simulation:\n"+e.getMessage());
 		}
 
 		// show status
