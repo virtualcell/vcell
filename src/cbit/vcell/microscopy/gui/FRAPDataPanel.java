@@ -55,7 +55,7 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 		if (e.getSource() instanceof  ImageLoadingProgress && e.getPropertyName().equals("ImageLoadingProgress"))
 		{
 			int prog = ((Integer)e.getNewValue()).intValue();
-			VirtualFrapMainFrame.statusBar.showProgress(prog);
+			VirtualFrapMainFrame.updateProgress(prog);
 		}
 	}
 	/**

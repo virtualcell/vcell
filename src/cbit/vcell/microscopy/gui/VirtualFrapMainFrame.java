@@ -21,6 +21,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
@@ -79,7 +80,7 @@ public class VirtualFrapMainFrame extends JFrame
 	private static final JMenuItem mUndo = new JMenuItem(UNDO_ACTION_COMMAND);
 
   public static JMenuBar mb = null;
-  public static StatusBar statusBar = null;
+  private static StatusBar statusBarNew = new StatusBar();
   public static ToolBar toolBar = null;
   public static FRAPStudyPanel frapStudyPanel = null;
   private UndoableEdit lastUndoableEdit;
@@ -188,20 +189,14 @@ public class VirtualFrapMainFrame extends JFrame
 	  			  }else{
 	  				  return;
 	  			  }
-	  			  boolean bOpenedAsVFRAP = true;
 	  			  try{
-		  			  if(VirtualFrapLoader.openFileChooser.getFileFilter().equals(VirtualFrapLoader.filter_vfrap)){
-		  				  frapStudyPanel.load(inputFile);
-		  			  }
-		  			  else{
-		  				  frapStudyPanel.importFile(inputFile);
-		  			  }
+	  	  			frapStudyPanel.load(new File[] {inputFile},null);
 	  			  }catch(UserCancelException e2){
 	  				  //ignore
 	  			  }catch(Exception e2){
 	  				  e2.printStackTrace();
 	  				  PopupGenerator.showErrorDialog(
-	  					"Error opening "+(bOpenedAsVFRAP?"(as vfrap)":"(as raw)")+" file:\n"+inputFile.getAbsolutePath()+"\n"+e2.getMessage());
+	  					"Error opening file:\n"+inputFile.getAbsolutePath()+"\n"+e2.getMessage());
 	  			  }
 		      }
 			  else if(arg.equals(SAVE_ACTION_COMMAND))
@@ -213,7 +208,7 @@ public class VirtualFrapMainFrame extends JFrame
 					  //ignore
 				  }catch(Exception e5){
 					  DialogUtils.showErrorDialog("Exception: " + e5.getMessage());
-					  statusBar.showStatus("Exception: " + e5.getMessage());
+					  updateStatus("Exception: " + e5.getMessage());
 				  }
 		      }
 		      else if(arg.equals(SAVEAS_ACTION_COMMAND))
@@ -224,7 +219,7 @@ public class VirtualFrapMainFrame extends JFrame
 					  //ignore
 				  }catch(Exception e5){
 					  DialogUtils.showErrorDialog("Exception: " + e5.getMessage());
-					  statusBar.showStatus("Exception: " + e5.getMessage());
+					  updateStatus("Exception: " + e5.getMessage());
 				  }
 		      }
 		      else if(arg.equals(IMPORTFILESERIES_ACTION_COMMAND))
@@ -283,7 +278,7 @@ public class VirtualFrapMainFrame extends JFrame
 					        menuHandler.actionPerformed(new ActionEvent(msave,0,SAVE_ACTION_COMMAND));
 	  	   				}catch(Exception e5){
 						    DialogUtils.showErrorDialog("Exception: " + e5.getMessage());
-							statusBar.showStatus("Exception: " + e5.getMessage());
+						    updateStatus("Exception: " + e5.getMessage());
 						}
 	  	   			break;
 	  	   			case ToolBar.BUT_PRINT:
@@ -337,7 +332,7 @@ public class VirtualFrapMainFrame extends JFrame
     setLocation(
     	(Toolkit.getDefaultToolkit().getScreenSize().width-getSize().width)/2,
     	(Toolkit.getDefaultToolkit().getScreenSize().height-getSize().height)/2);
-    statusBar.showStatus("This is the main frame of Virtual Frap.");
+    updateStatus("This is the main frame of Virtual Frap.");
 	
     //to handle the close button of the frame
     setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -346,6 +341,13 @@ public class VirtualFrapMainFrame extends JFrame
     setVisible(true);
   }// end of constructor
 
+  public static void updateStatus(final String newStatusMessage){
+	  SwingUtilities.invokeLater(new Runnable(){public void run(){statusBarNew.showStatus(newStatusMessage);}});
+  }
+  public static void updateProgress(final int percentProgress){
+	  SwingUtilities.invokeLater(new Runnable(){public void run(){statusBarNew.showProgress(percentProgress);}});	  
+  }
+  
   public static void enableSave(boolean bEnable){
 	  msave.setEnabled(bEnable);
 	  msaveas.setEnabled(bEnable);
@@ -355,7 +357,7 @@ public class VirtualFrapMainFrame extends JFrame
    */
   protected void initiateComponents()
   {
-      statusBar = new StatusBar();
+//      statusBar = new StatusBar();
       toolBar = new ToolBar();
       ToolBarHandler th = new ToolBarHandler();
       toolBar.addToolBarHandler(th);
@@ -384,7 +386,7 @@ public class VirtualFrapMainFrame extends JFrame
       //add components to the main frame
       getContentPane().setLayout(new BorderLayout());
       getContentPane().add(toolBar, BorderLayout.NORTH);
-      getContentPane().add(statusBar, BorderLayout.SOUTH);
+      getContentPane().add(statusBarNew, BorderLayout.SOUTH);
       getContentPane().add(frapStudyPanel);
   }
 

@@ -277,11 +277,11 @@ public class OverlayEditorPanelJAI extends JPanel {
 						DataSetControllerImpl.ProgressListener progressListener =
 							new DataSetControllerImpl.ProgressListener(){
 								public void updateProgress(double progress) {
-									VirtualFrapMainFrame.statusBar.showProgress((int)(progress*100));
+									VirtualFrapMainFrame.updateProgress((int)(progress*100));
 								}
 							};
 						FRAPStudy importedFrapStudy = xmlReader.getFrapStudy(XmlUtil.stringToXML(xmlString, null),progressListener);
-						VirtualFrapMainFrame.statusBar.showProgress(0);
+						VirtualFrapMainFrame.updateProgress(0);
 						if(importedFrapStudy.getFrapData() != null && importedFrapStudy.getFrapData().getRois() != null){
 							if(!importedFrapStudy.getFrapData().getRois()[0].getISize().compareEqual(roi.getISize())){
 								throw new Exception(
@@ -686,6 +686,8 @@ public class OverlayEditorPanelJAI extends JPanel {
 			BeanUtils.enableComponents(leftJPanel, false);
 			BeanUtils.enableComponents(topJPanel, false);
 			BeanUtils.enableComponents(editROIPanel, false);
+			underlyingImage = null;
+			setROI(null);
 		}
 
 		updateLabel(-1, -1);
@@ -707,6 +709,9 @@ public class OverlayEditorPanelJAI extends JPanel {
 	}
 
 	private void saveUndoableROI(){
+		if(roi == null){
+			return;
+		}
 		saveUserChangesToROI();
 		try{
 			undoableROI = new ROI(roi);
@@ -720,6 +725,9 @@ public class OverlayEditorPanelJAI extends JPanel {
 	private static final String EDITTYPE_ERASE = "erase";
 	private static final String EDITTYPE_CLEAR = "clear";
 	private void fireUndoableEditROI(final String editType){
+		if(undoableROI == null){
+			return;
+		}
 		final ROI originalROI = undoableROI;
 		undoableROI = null;
 		if(editType != null){
@@ -895,9 +903,11 @@ public class OverlayEditorPanelJAI extends JPanel {
 			timeSlider.addChangeListener(new javax.swing.event.ChangeListener() {
 				public void stateChanged(javax.swing.event.ChangeEvent e) {
 					updateLabel(-1, -1);
-					BufferedImage image = getImage();
-					if (image != null){
-						imagePane.setUnderlyingImage(image,false);
+					if(imageDataset != null){
+						BufferedImage image = getImage();
+						if (image != null){
+							imagePane.setUnderlyingImage(image,false);
+						}
 					}
 					imagePane.repaint();
 				}

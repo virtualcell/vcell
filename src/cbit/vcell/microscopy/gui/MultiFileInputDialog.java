@@ -164,7 +164,7 @@ public class MultiFileInputDialog extends JDialog implements ActionListener
 				if(files != null && files.length > 0)
 				{
 					try{
-					VirtualFrapMainFrame.frapStudyPanel.importFileSeries(files, tSeries_radioButton.isSelected(), tInterval, zInterval);
+					VirtualFrapMainFrame.frapStudyPanel.load(files, new FRAPStudyPanel.MultiFileImportInfo(tSeries_radioButton.isSelected(), tInterval, zInterval));
 					}catch(Exception e){
 						PopupGenerator.showErrorDialog(e.getMessage());
 					}

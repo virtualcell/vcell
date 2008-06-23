@@ -111,7 +111,7 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable{
 				public void dataJobMessage(DataJobEvent event) {
 					bStatus[0] = event;
 					if(progressListener != null){
-						progressListener.updateProgress(event.getProgress()*.75);
+						progressListener.updateProgress(event.getProgress()/100.0*.75);
 					}
 				}
 			};
@@ -183,7 +183,7 @@ public class FRAPData extends AnnotatedImageDataset implements Matchable{
 					scaledDataShort,
 					cartesianMesh.getExtent(),
 					cartesianMesh.getSizeX(),cartesianMesh.getSizeY(),cartesianMesh.getSizeZ());
-			if(progressListener != null){progressListener.updateProgress(75+(25*(double)(i+1)/times.length));}
+			if(progressListener != null){progressListener.updateProgress(.75+(.25*(double)(i+1)/times.length));}
 		}
 		ImageDataset imageDataSet = new ImageDataset(scaledDataImages,times,cartesianMesh.getSizeZ());
 		FRAPData frapData = new FRAPData(imageDataSet, new ROI.RoiType[] { RoiType.ROI_BLEACHED,RoiType.ROI_CELL,RoiType.ROI_BACKGROUND});

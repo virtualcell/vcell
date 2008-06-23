@@ -195,6 +195,8 @@ public class OverlayImageDisplayJAI extends DisplayJAI {
 					Interpolation.getInstance(Interpolation.INTERP_NEAREST),null);
 //			source = JAI.create("scale",params2);
 			set(source, 0, 0);
+		}else{
+			set(new BufferedImage(10,10,BufferedImage.TYPE_INT_ARGB),0,0);
 		}
 	}
 		
