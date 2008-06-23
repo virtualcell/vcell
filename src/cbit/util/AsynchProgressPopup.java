@@ -1,6 +1,8 @@
 package cbit.util;
 import java.awt.*;
 
+import javax.swing.SwingUtilities;
+
 import cbit.gui.ZEnforcer;
 /**
  * Insert the type's description here.
@@ -152,9 +154,9 @@ public int getProgress( ) {
  */
 private void startPrivate(boolean bKeepOnTop) {
 	if(bKeepOnTop){
-		ZEnforcer.showModalDialogOnTop(dialog);
+		SwingUtilities.invokeLater(new Runnable(){public void run(){ZEnforcer.showModalDialogOnTop(dialog);}});
 	}else{
-		dialog.show();
+		SwingUtilities.invokeLater(new Runnable(){public void run(){dialog.setVisible(true);}});
 	}
 	// start timer for auto progress
 	if (! knowsProgress) {
