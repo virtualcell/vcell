@@ -103,10 +103,6 @@ public class ImageDatasetReader {
 //				throw new RuntimeException("multi-channel images not yet supported");
 			}
 			UShortImage[] images = new UShortImage[numImages];
-			//Added Feb, 2008. The varaibles added below are used for calculating the time used.
-			//we want to update the loading progress every 2 seconds.
-			long start = System.currentTimeMillis();
-			long end;
 			//Added Feb, 2008. Calculate the progress only when loading data to Virtual Microscopy
 			if(status != null)
 			{
@@ -159,12 +155,7 @@ public class ImageDatasetReader {
 				//added Jan 2008, calculate the progress only when loading data to Virtual Microscopy
 				if(status != null)
 				{
-					end = System.currentTimeMillis();
-					if((end - start) >= 2000)
-					{
-						status.setSubProgress(((double)i/numImages));
-						start = end; 
-					}
+					status.setSubProgress(((double)i/numImages));
 				}
 			}
 			//added Jan 2008, calculate the progress only when loading data to Virtual Microscopy
