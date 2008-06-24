@@ -1,6 +1,7 @@
 package cbit.vcell.microscopy;
 
 
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.microscopy.ROI.RoiType;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -168,22 +169,30 @@ public class FRAPDataAnalysis {
 			Expression fittedCurve = CurveFitting.fitRecovery(time, fluor, FrapDataAnalysisResults.BleachType_CirularDisk, inputParamValues, outputParamValues);
 			double fittedRecoveryTau = outputParamValues[2];
 			double fittedDiffusionRate = bleachRadius*bleachRadius/(4.0*fittedRecoveryTau);
-			// get pre bleach average under bleach ROI region
-			double preBleachAvg = 0;
-			for(int i=0; i<startIndexForRecovery; i++)
-			{
-				preBleachAvg = preBleachAvg + temp_fluor[i];
-			}
-			preBleachAvg = preBleachAvg/startIndexForRecovery;
-			// get unnormalized Ii and A
-			double intensityFinal = outputParamValues[3]; // Ii+A
-			// calculate mobile fraction
-			double mobileFrac = intensityFinal/preBleachAvg;
-					
 			frapDataAnalysisResults.setFitExpression(fittedCurve.flatten());
 			frapDataAnalysisResults.setRecoveryTau(fittedRecoveryTau);
 			frapDataAnalysisResults.setRecoveryDiffusionRate(fittedDiffusionRate);
-			frapDataAnalysisResults.setMobilefraction(mobileFrac);
+			//calculate mobile fraction
+			// get pre bleach average under bleach ROI region
+			if(startIndexForRecovery > 0)
+			{
+				double preBleachAvg = 0;
+				for(int i=0; i<startIndexForRecovery; i++)
+				{
+					preBleachAvg = preBleachAvg + temp_fluor[i];
+				}
+				preBleachAvg = preBleachAvg/startIndexForRecovery;
+	            // get unnormalized Ii and A
+				double intensityFinal = outputParamValues[3]; // Ii+A
+				// calculate mobile fraction
+				double mobileFrac = intensityFinal/preBleachAvg;
+				frapDataAnalysisResults.setMobilefraction(mobileFrac);
+			}
+			else //starting index for recovery = 0.
+			{
+				frapDataAnalysisResults.setMobilefraction(null);
+				PopupGenerator.showInfoDialog("Can not estimate mobile fraction when applying circular disk bleaching type, because there is no pre bleach images to calculate pre-bleach average.");
+			}
 		}
 		else if(arg_bleachType == FrapDataAnalysisResults.BleachType_GaussianSpot)
 		{

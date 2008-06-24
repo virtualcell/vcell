@@ -108,8 +108,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	
 	public static final String FRAPDATAPANEL_TABNAME = "Images";
 	
-	public static final double Epsilon = 1e-8; // used to avoid dividing by 0
-		
 	private FRAPStudy frapStudy = null; 
 	private FRAPDataPanel frapDataPanel = null;
 	private LocalWorkspace localWorkspace = null;
@@ -760,39 +758,47 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 
 	
 	public void save() throws Exception {
-		try{
-			refreshBiomodel();
-		}catch(Exception e){
-			//save whatever we have
+		if(getFrapStudy().getFrapData() != null){
+			try{
+				refreshBiomodel();
+			}catch(Exception e){
+				//save whatever we have
+			}
+			AsynchClientTask saveTask = createSaveTask(false,true);
+			ClientTaskDispatcher.dispatch(
+				this, new Hashtable<String, Object>(),
+				new AsynchClientTask[] {saveTask}, false);
+		}else{
+			DialogUtils.showErrorDialog("No FRAP Data exists to save");
 		}
-		AsynchClientTask saveTask = createSaveTask(false,true);
-		ClientTaskDispatcher.dispatch(
-			this, new Hashtable<String, Object>(),
-			new AsynchClientTask[] {saveTask}, false);
 	}
 	
 	public void saveAs() throws Exception{
-		if(getJTabbedPane().getSelectedIndex() == INDEX_TAB_FITSPATIALMODEL ||
-				getJTabbedPane().getSelectedIndex() == INDEX_TAB_REPORT){
-			//SaveASNew has empty sim data so can't be viewing these tabs after save
-			final String CONTINUE_SAVING = "Switch and continue SaveAsNew";
-			String result = DialogUtils.showWarningDialog(this,
-					"Simulation Data will be empty for the new document.  Switch to '"+FRAPDATAPANEL_TABNAME+"' tab before saving?" ,
-					new String[] {CONTINUE_SAVING,UserMessage.OPTION_CANCEL}, CONTINUE_SAVING);
-			if(result == null || !result.equals(CONTINUE_SAVING)){
-				return;
+		if(getFrapStudy().getFrapData() != null){
+			if(getJTabbedPane().getSelectedIndex() == INDEX_TAB_FITSPATIALMODEL ||
+					getJTabbedPane().getSelectedIndex() == INDEX_TAB_REPORT){
+				//SaveASNew has empty sim data so can't be viewing these tabs after save
+				final String CONTINUE_SAVING = "Switch and continue SaveAsNew";
+				String result = DialogUtils.showWarningDialog(this,
+						"Simulation Data will be empty for the new document.  Switch to '"+FRAPDATAPANEL_TABNAME+"' tab before saving?" ,
+						new String[] {CONTINUE_SAVING,UserMessage.OPTION_CANCEL}, CONTINUE_SAVING);
+				if(result == null || !result.equals(CONTINUE_SAVING)){
+					return;
+				}
+				getJTabbedPane().setSelectedIndex(INDEX_TAB_IMAGES);
 			}
-			getJTabbedPane().setSelectedIndex(INDEX_TAB_IMAGES);
+			try{
+				refreshBiomodel();
+			}catch(Exception e){
+				//Save whatever we have
+			}
+			AsynchClientTask saveTask = createSaveTask(true,true);
+			ClientTaskDispatcher.dispatch(
+				this, new Hashtable<String, Object>(),
+				new AsynchClientTask[] {saveTask}, false);
+		}else{
+			DialogUtils.showErrorDialog("No FRAP Data exists to saveAs");
 		}
-		try{
-			refreshBiomodel();
-		}catch(Exception e){
-			//Save whatever we have
-		}
-		AsynchClientTask saveTask = createSaveTask(true,true);
-		ClientTaskDispatcher.dispatch(
-			this, new Hashtable<String, Object>(),
-			new AsynchClientTask[] {saveTask}, false);
 	}
 	private void applyUserChangesToCurrentFRAPStudy(int applyUserChangeFlags) throws Exception{
 		if((applyUserChangeFlags&USER_CHANGES_FLAG_ROI) != 0){
@@ -914,7 +920,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		final AsynchProgressPopup pp =
 			new AsynchProgressPopup(
 				FRAPStudyPanel.this,
-				"Running FRAP Model Simulation",
+				"Loading FRAP data...",
 				"Working...",true,true
 		);
 		pp.start();
@@ -1720,7 +1726,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			dataManager = new MergedDataManager(getLocalWorkspace().getVCDataManager(),vcDataId);
 			PDEDataContext pdeDataContext = new NewClientPDEDataContext(dataManager);
 			// add function to display normalized fluorence data 
-			Expression norm_fluor = new Expression("((Data2.cell_mask*(Data1.fluor/(Data2.prebleach_avg + 1e-8)))*(Data2.cell_mask > 0))");
+			Expression norm_fluor = new Expression("((Data2.cell_mask*(Data1.fluor/Data2.prebleach_avg))*(Data2.cell_mask > 0))");
 			AnnotatedFunction[] func = {new AnnotatedFunction("norm_fluor", norm_fluor, null, VariableType.VOLUME, false)};
 			boolean isExisted = false;
 			for(int i=0; i < pdeDataContext.getFunctions().length; i++)
@@ -2157,7 +2163,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	private void refreshUI()
 	{
 		VirtualFrapMainFrame.enableSave(true);
-
+		
 		try{
 			refreshBiomodel();
 		}catch(Exception e){

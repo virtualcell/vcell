@@ -102,7 +102,6 @@ public class FRAPStudy implements Matchable{
 	private String originalImageFilePath = null;
 	private FRAPData frapData = null;
 	private BioModel bioModel = null;
-//	private FrapDataAnalysisResults frapDataAnalysisResults = null;
 	private ExternalDataInfo frapDataExternalDataInfo = null;
 	private ExternalDataInfo roiExternalDataInfo = null;
 	
@@ -132,6 +131,7 @@ public class FRAPStudy implements Matchable{
 	
 	public static final String EXTRACELLULAR_NAME = "extracellular";
 	public static final String CYTOSOL_NAME = "cytosol";
+	public static final short Epsilon = 1; // to aoid divided by zero error.
 
 	public static class CurveInfo {
 		Double diffusionRate;
@@ -1109,39 +1109,45 @@ public class FRAPStudy implements Matchable{
 			ImageDataset imageDataset = getFrapData().getImageDataset();
 			Extent extent = imageDataset.getExtent();
 			ISize isize = imageDataset.getISize();
-			int NumTimePoints = 1;
+			int NumTimePoints = 1; 
 			int NumChannels = 13;//actually it is total number of ROIs(cell,bleached + 8 rings)+prebleach+firstPostBleach+lastPostBleach
 	    	short[][][] pixData = new short[NumTimePoints][NumChannels][]; // dimensions: time points, channels, whole image ordered by z slices. 
 	    	
-	    	// take average of prebleach images 
-	    	// changed in March, 2008.
-//	    	int startingIndexForRecovery = 0;
-//	    	if(getFrapDataAnalysisResults() != null )
-//	    	{
-//	    		startingIndexForRecovery = getFrapDataAnalysisResults().getStartingIndexForRecovery();//starting index for recovery is the first postbleaching index.
-//	    	}
-	    	float[] accumPrebleachImage = new float[imageDataset.getISize().getXYZ()];//ISize: Image size including x, y, z. getXYZ()=x*y*z
-			for (int timeIndex = 0; timeIndex < startingIndexForRecovery; timeIndex++) {
-				short[] pixels = getFrapData().getImageDataset().getPixelsZ(0, timeIndex);//channel index is 0. it is not supported yet. get image size X*Y*Z stored by time index. image store by UShortImage[Z*T]
-				for (int i = 0; i < accumPrebleachImage.length; i++) {
-					float pixelValue = 0xffff&((int)pixels[i]);
-					if (pixelValue<0){
-						System.out.println("pixelValue = "+pixelValue);
-					}
-					accumPrebleachImage[i] += pixelValue;
-				}
-			}
-			short[] avgPrebleach = new short[accumPrebleachImage.length];
-			//changed in March, 2008
+
+	    	long[] accumPrebleachImage = new long[imageDataset.getISize().getXYZ()];//ISize: Image size including x, y, z. getXYZ()=x*y*z
+	    	short[] avgPrebleach = new short[accumPrebleachImage.length];
+	    	// changed in June, 2008 average prebleach depends on if there is prebleach images. 
+	    	// Since the initial condition is normalized by prebleach avg, we have to take care the divided by zero error.
 			if(startingIndexForRecovery > 0)
 			{
+				for (int timeIndex = 0; timeIndex < startingIndexForRecovery; timeIndex++) {
+					short[] pixels = getFrapData().getImageDataset().getPixelsZ(0, timeIndex);//channel index is 0. it is not supported yet. get image size X*Y*Z stored by time index. image store by UShortImage[Z*T]
+					for (int i = 0; i < accumPrebleachImage.length; i++) {
+						int pixelValue = 0x0000ffff&pixels[i];
+						if (pixelValue<0){
+							System.out.println("pixelValue = "+pixelValue);
+						}
+						accumPrebleachImage[i] += pixelValue;
+					}
+				}
 				for (int i = 0; i < avgPrebleach.length; i++) {
-					avgPrebleach[i] = (short)Math.round(accumPrebleachImage[i]/startingIndexForRecovery);
-//					since prebleach will be used to normalize image data, we have to eliminate the 0
-//					if(avgPrebleach[i] <= 0)
-//					{
-//						avgPrebleach[i] = Epsilon;
-//					}
+					int tempInt = (int)(0x0000FFFF&accumPrebleachImage[i]/startingIndexForRecovery);
+					short tempShort = (short)(0x0000FFFF&tempInt);
+					avgPrebleach[i] = tempShort;
+					if(tempInt != 0){
+						System.out.println();
+					}
+					// since prebleach will be used to normalize image data, we have to eliminate the 0
+					if(avgPrebleach[i] == 0)
+					{
+						avgPrebleach[i] = FRAPStudy.Epsilon;
+					}
+				}
+			}
+			else //startingIndexForRecovery = 0
+			{
+				for (int i = 0; i < avgPrebleach.length; i++) {
+					avgPrebleach[i] = 1;//if no starting index for recovery , then don't perform normalization for species' ini condition.
 				}
 			}
     		pixData[0][0] = avgPrebleach; // average of prebleach

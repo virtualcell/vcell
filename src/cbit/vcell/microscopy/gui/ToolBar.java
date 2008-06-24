@@ -47,6 +47,9 @@ public class ToolBar extends JToolBar {
             if (i == BUT_PRINT) buttons[i].setEnabled(false);
             if (i == BUT_HELP) addSeparator();
             add(buttons[i]);
+            if(i == BUT_SAVE){
+            	buttons[i].setEnabled(false);
+            }
         }
     }// end of constructor
     

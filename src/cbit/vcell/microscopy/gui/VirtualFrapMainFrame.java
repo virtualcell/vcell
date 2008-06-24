@@ -351,6 +351,7 @@ public class VirtualFrapMainFrame extends JFrame
   public static void enableSave(boolean bEnable){
 	  msave.setEnabled(bEnable);
 	  msaveas.setEnabled(bEnable);
+	  toolBar.getButtons()[ToolBar.BUT_SAVE].setEnabled(bEnable);
   }
   /**
    * Initiation of the UI components that is shown in the main window
