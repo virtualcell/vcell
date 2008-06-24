@@ -1124,9 +1124,9 @@ public class FRAPStudy implements Matchable{
 					short[] pixels = getFrapData().getImageDataset().getPixelsZ(0, timeIndex);//channel index is 0. it is not supported yet. get image size X*Y*Z stored by time index. image store by UShortImage[Z*T]
 					for (int i = 0; i < accumPrebleachImage.length; i++) {
 						int pixelValue = 0x0000ffff&pixels[i];
-						if (pixelValue<0){
-							System.out.println("pixelValue = "+pixelValue);
-						}
+//						if (pixelValue<0){
+//							System.out.println("pixelValue = "+pixelValue);
+//						}
 						accumPrebleachImage[i] += pixelValue;
 					}
 				}
@@ -1134,9 +1134,9 @@ public class FRAPStudy implements Matchable{
 					int tempInt = (int)(0x0000FFFF&accumPrebleachImage[i]/startingIndexForRecovery);
 					short tempShort = (short)(0x0000FFFF&tempInt);
 					avgPrebleach[i] = tempShort;
-					if(tempInt != 0){
-						System.out.println();
-					}
+//					if(tempInt != 0){
+//						System.out.println();
+//					}
 					// since prebleach will be used to normalize image data, we have to eliminate the 0
 					if(avgPrebleach[i] == 0)
 					{

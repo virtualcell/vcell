@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -704,7 +703,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		return frapStudy;
 	}
 
-	public void setFrapStudy(FRAPStudy frapStudy,boolean bNew) {
+	public void setFrapStudy(final FRAPStudy argFrapStudy,boolean bNew) {
+		VirtualFrapMainFrame.enableSave(!(argFrapStudy == null || argFrapStudy.getFrapData() == null));
 		try{
 			undoableEditSupport.postEdit(FRAPStudyPanel.CLEAR_UNDOABLE_EDIT);
 		}catch(Exception e){
@@ -714,7 +714,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		if(oldFrapStudy != null){
 			oldFrapStudy.removePropertyChangeListener(this);
 		}
-		this.frapStudy = frapStudy;
+		this.frapStudy = argFrapStudy;
 		frapStudy.addPropertyChangeListener(this);
 		getFRAPDataPanel().setFrapStudyNew(frapStudy,bNew);
 	}
@@ -758,22 +758,31 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 
 	
 	public void save() throws Exception {
+		if(SwingUtilities.isEventDispatchThread()){
+			throw new Exception("Save not EventDispatchThread");
+		}
 		if(getFrapStudy().getFrapData() != null){
-			try{
-				refreshBiomodel();
-			}catch(Exception e){
-				//save whatever we have
-			}
-			AsynchClientTask saveTask = createSaveTask(false,true);
-			ClientTaskDispatcher.dispatch(
-				this, new Hashtable<String, Object>(),
-				new AsynchClientTask[] {saveTask}, false);
+			saveAsInternal(getFrapStudy().getXmlFilename());
+//			try{
+//				refreshBiomodel();
+//			}catch(Exception e){
+//				//save whatever we have
+//			}
+//			AsynchClientTask saveTask = createSaveTask(false,true);
+//			ClientTaskDispatcher.dispatch(
+//				this, new Hashtable<String, Object>(),
+//				new AsynchClientTask[] {saveTask}, false);
 		}else{
-			DialogUtils.showErrorDialog("No FRAP Data exists to save");
+			SwingUtilities.invokeAndWait(new Runnable(){public void run(){
+				DialogUtils.showErrorDialog("No FRAP Data exists to save");
+			}});
 		}
 	}
 	
 	public void saveAs() throws Exception{
+		if(SwingUtilities.isEventDispatchThread()){
+			throw new Exception("SaveAs not EventDispatchThread");
+		}
 		if(getFrapStudy().getFrapData() != null){
 			if(getJTabbedPane().getSelectedIndex() == INDEX_TAB_FITSPATIALMODEL ||
 					getJTabbedPane().getSelectedIndex() == INDEX_TAB_REPORT){
@@ -785,19 +794,22 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				if(result == null || !result.equals(CONTINUE_SAVING)){
 					return;
 				}
-				getJTabbedPane().setSelectedIndex(INDEX_TAB_IMAGES);
+				SwingUtilities.invokeAndWait(new Runnable(){public void run(){getJTabbedPane().setSelectedIndex(INDEX_TAB_IMAGES);}});
 			}
-			try{
-				refreshBiomodel();
-			}catch(Exception e){
-				//Save whatever we have
-			}
-			AsynchClientTask saveTask = createSaveTask(true,true);
-			ClientTaskDispatcher.dispatch(
-				this, new Hashtable<String, Object>(),
-				new AsynchClientTask[] {saveTask}, false);
+			saveAsInternal(null);
+//			try{
+//				refreshBiomodel();
+//			}catch(Exception e){
+//				//Save whatever we have
+//			}
+//			AsynchClientTask saveTask = createSaveTask(true,true);
+//			ClientTaskDispatcher.dispatch(
+//				this, new Hashtable<String, Object>(),
+//				new AsynchClientTask[] {saveTask}, false);
 		}else{
-			DialogUtils.showErrorDialog("No FRAP Data exists to saveAs");
+			SwingUtilities.invokeAndWait(new Runnable(){public void run(){
+				DialogUtils.showErrorDialog("No FRAP Data exists to save");
+			}});
 		}
 	}
 	private void applyUserChangesToCurrentFRAPStudy(int applyUserChangeFlags) throws Exception{
@@ -814,8 +826,11 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		boolean bSaveAs = saveToFileName == null;
 		File outputFile = null;
 		if(bSaveAs){
-			int retval = VirtualFrapLoader.saveFileChooser.showSaveDialog(this);
-			if (retval == JFileChooser.APPROVE_OPTION){
+			final int[] retvalArr = new int[1];
+			SwingUtilities.invokeAndWait(new Runnable(){public void run(){
+				retvalArr[0] = VirtualFrapLoader.saveFileChooser.showSaveDialog(FRAPStudyPanel.this);
+			}});
+			if (retvalArr[0] == JFileChooser.APPROVE_OPTION){
 				String outputFileName = VirtualFrapLoader.saveFileChooser.getSelectedFile().getPath();
 				outputFile = new File(outputFileName);
 				if(!VirtualFrapLoader.filter_vfrap.accept(outputFile)){
@@ -836,8 +851,13 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				throw new Exception("File name is same.  Use 'Save' to update current document file.");
 			}
 			final String OK_OPTION = "OK";
-			if(!DialogUtils.showWarningDialog(this, "OverWrite file\n"+outputFile.getAbsolutePath(),
-			new String[] {OK_OPTION,"Cancel"}, "Cancel").equals(OK_OPTION)){
+			final String[] resultArr = new String[1];
+			final File outputFileFinal = outputFile;
+			SwingUtilities.invokeAndWait(new Runnable(){public void run(){
+				resultArr[0] = DialogUtils.showWarningDialog(FRAPStudyPanel.this, "OverWrite file\n"+outputFileFinal.getAbsolutePath(),
+						new String[] {OK_OPTION,"Cancel"}, "Cancel");
+			}});
+			if(!resultArr[0].equals(OK_OPTION)){
 				throw UserCancelException.CANCEL_GENERIC;
 			}
 		}
@@ -872,7 +892,13 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		
 		MicroscopyXmlproducer.writeXMLFile(getFrapStudy(), xmlFrapFileName, true,progressListenerZeroToOne,VirtualFrapMainFrame.SAVE_COMPRESSED);
 		getFrapStudy().setXmlFilename(xmlFrapFileName.getAbsolutePath());
-		setSavedFrapModelInfo(FRAPStudyPanel.createSavedFrapModelInfo(getFrapStudy()));
+		SwingUtilities.invokeAndWait(new Runnable(){public void run(){
+			try{
+			setSavedFrapModelInfo(FRAPStudyPanel.createSavedFrapModelInfo(getFrapStudy()));	
+			}catch(Exception e){
+				throw new RuntimeException(e.getMessage(),e);
+			}
+		}});
 		VirtualFrapMainFrame.updateStatus("File " + xmlFrapFileName.getAbsolutePath()+" has been saved.");
         VirtualFrapLoader.mf.setMainFrameTitle(xmlFrapFileName.getName());
         VirtualFrapMainFrame.updateProgress(0);
@@ -915,8 +941,11 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	}
 	protected void load(final File[] inFileArr,final MultiFileImportInfo multiFileImportInfo) throws Exception{
 				
-		final AsynchClientTask saveTask = getSaveIfNeededTask();
-		
+		final String inFileDescription =
+			(inFileArr.length == 1
+				?"file "+inFileArr[0].getAbsolutePath()
+				:"files from "+inFileArr[0].getParentFile().getAbsolutePath());
+
 		final AsynchProgressPopup pp =
 			new AsynchProgressPopup(
 				FRAPStudyPanel.this,
@@ -928,21 +957,24 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 //		bTest[0] = true;
 		new Thread(new Runnable(){
 			public void run(){
-				final String inFileDescription =
-					(inFileArr.length == 1
-						?"file "+inFileArr[0].getAbsolutePath()
-						:"files from "+inFileArr[0].getParentFile().getAbsolutePath());
+//				try{
+//					
+//				}catch(UserCancelException e){
+//					return;
+//				}catch(Exception e){
+//					//Shouldn't happen
+//					DialogUtils.showErrorDialog("Error saving before run simulation\n"+e.getMessage());
+//					return;
+//				}
+
 				try {
-					if(saveTask != null){
-						pp.setMessage("Saving current document before loading new...");
-						saveTask.run(null);
-					}
+					saveIfNeeded();
 //					SwingUtilities.invokeAndWait(new Runnable(){public void run(){
 //						setFrapStudy(new FRAPStudy(), true);						
 //			            VirtualFrapLoader.mf.setMainFrameTitle("");
 //			            getJTabbedPane().setSelectedIndex(FRAPStudyPanel.INDEX_TAB_IMAGES);
 //					}});
-		            
+
 					
 					final DataSetControllerImpl.ProgressListener loadFileProgressListener =
 						new DataSetControllerImpl.ProgressListener(){
@@ -1049,7 +1081,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 
 				}catch(UserCancelException uce){
 					//ignore
-				}catch(Exception e){
+				}catch(final Exception e){
 					pp.stop();
 					try{
 						SwingUtilities.invokeAndWait(new Runnable(){public void run(){
@@ -1062,7 +1094,13 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 					VirtualFrapMainFrame.updateProgress(0);
 					VirtualFrapMainFrame.updateStatus("Failed loading " + inFileDescription+".");
 					e.printStackTrace();
-					DialogUtils.showErrorDialog("Failed loading " + inFileDescription+":\n"+e.getMessage());					
+					try{
+						SwingUtilities.invokeAndWait(new Runnable(){public void run(){
+							DialogUtils.showErrorDialog("Failed loading " + inFileDescription+":\n"+e.getMessage());
+						}});
+						}catch(Exception e2){
+							e2.printStackTrace();
+						}				
 				}finally{
 					pp.stop();
 				}
@@ -1224,33 +1262,32 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 //
 //	}
 	
-	private AsynchClientTask createSaveTask(final boolean bSaveAs,final boolean bRefreshUI) throws Exception{
-		return new AsynchClientTask() {
-			public String getTaskName() { return "Saving Current Workspace"; }
-			public int getTaskType() { return cbit.vcell.desktop.controls.ClientTask.TASKTYPE_NONSWING_BLOCKING; }
-			public void run(java.util.Hashtable hash) throws Exception{
-				if(bSaveAs){
-					saveAsInternal(null);
-				}else{
-					saveAsInternal(getFrapStudy().getXmlFilename());
-				}
-				if(bRefreshUI){
-					refreshUI();
-				}
-			}
-			public boolean skipIfAbort() {
-				return true;
-			}
-			public boolean skipIfCancel(UserCancelException e) {
-				return true;
-			}
-		};	
-	}
-	private AsynchClientTask getSaveIfNeededTask() throws Exception{
+//	private AsynchClientTask createSaveTask(final boolean bSaveAs,final boolean bRefreshUI) throws Exception{
+//		return new AsynchClientTask() {
+//			public String getTaskName() { return "Saving Current Workspace"; }
+//			public int getTaskType() { return cbit.vcell.desktop.controls.ClientTask.TASKTYPE_NONSWING_BLOCKING; }
+//			public void run(java.util.Hashtable hash) throws Exception{
+//				if(bSaveAs){
+//					saveAsInternal(null);
+//				}else{
+//					saveAsInternal(getFrapStudy().getXmlFilename());
+//				}
+//				if(bRefreshUI){
+//					refreshUI();
+//				}
+//			}
+//			public boolean skipIfAbort() {
+//				return true;
+//			}
+//			public boolean skipIfCancel(UserCancelException e) {
+//				return true;
+//			}
+//		};	
+//	}
+	private void saveIfNeeded() throws Exception{
 		if(getFrapStudy() == null || getFrapStudy().getFrapData() == null){
-			return null;
+			return;
 		}
-		AsynchClientTask saveTask =  null;
 		boolean bNeedsSave = false;
 		FrapChangeInfo frapChangeInfo = null;
 		final String DONT_SAVE_CONTINUE = "Don't Save, Continue";
@@ -1258,44 +1295,43 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			frapChangeInfo = getChangesSinceLastSave();//refreshBiomodel();
 			bNeedsSave = frapChangeInfo != null && frapChangeInfo.hasAnyChanges();
 		}catch(Exception e){
-			if(true){
-				String errorDecision = PopupGenerator.showWarningDialog(this, null,
-						new UserMessage(
-							"Current document will be overwritten and can't be saved because:\n"+e.getMessage(),
-							new String[] {DONT_SAVE_CONTINUE,UserMessage.OPTION_CANCEL},DONT_SAVE_CONTINUE),
-						null);
-				if(errorDecision.equals(UserMessage.OPTION_CANCEL)){
-					throw UserCancelException.CANCEL_GENERIC;
-				}else{
-					return null;
-				}
+			String errorDecision = PopupGenerator.showWarningDialog(this, null,
+				new UserMessage(
+					"Current document will be overwritten and can't be saved because:\n"+e.getMessage(),
+					new String[] {DONT_SAVE_CONTINUE,UserMessage.OPTION_CANCEL},DONT_SAVE_CONTINUE),
+				null);
+			if(errorDecision.equals(UserMessage.OPTION_CANCEL)){
+				throw UserCancelException.CANCEL_GENERIC;
 			}else{
-				throw e;
+				return;
 			}
 		}
     	if(bNeedsSave){
-    		String saveMessage = null;
+    		final String[] saveMessageArr = new String[1];
     		if(getSavedFrapModelInfo() != null){
-    			saveMessage = "Changes in current document will be overwritten, Save current document?\n"+
+    			saveMessageArr[0] = "Changes in current document will be overwritten, Save current document?\n"+
     				"Changes include "+frapChangeInfo.getChangeDescription();
     		}else{
-    			saveMessage = "Current unsaved document will be overwritten,  Save current document?";
+    			saveMessageArr[0] = "Current unsaved document will be overwritten,  Save current document?";
     		}
-			final String result = PopupGenerator.showWarningDialog(this, null,
-					new UserMessage(saveMessage,
-						new String[] {SAVE_FILE_OPTION,UserMessage.OPTION_SAVE_AS_NEW,DONT_SAVE_CONTINUE,UserMessage.OPTION_CANCEL},SAVE_FILE_OPTION),
-					null);
-			if(result.equals(SAVE_FILE_OPTION) || result.equals(UserMessage.OPTION_SAVE_AS_NEW)){
-				saveTask = createSaveTask(result.equals(UserMessage.OPTION_SAVE_AS_NEW),false);
-			}else if(result.equals(DONT_SAVE_CONTINUE)){
-				saveTask = null;
-			}else if(result.equals(UserMessage.OPTION_CANCEL)){
+			final String[] resultArr = new String[1];
+			SwingUtilities.invokeAndWait(new Runnable(){public void run(){
+				resultArr[0] = PopupGenerator.showWarningDialog(FRAPStudyPanel.this, null,
+						new UserMessage(saveMessageArr[0],
+							new String[] {SAVE_FILE_OPTION,UserMessage.OPTION_SAVE_AS_NEW,DONT_SAVE_CONTINUE,UserMessage.OPTION_CANCEL},SAVE_FILE_OPTION),
+						null);
+			}});
+			if(resultArr[0].equals(SAVE_FILE_OPTION)){
+				save();
+			}else if(resultArr[0].equals(UserMessage.OPTION_SAVE_AS_NEW)){
+				saveAs();
+			}else if(resultArr[0].equals(DONT_SAVE_CONTINUE)){
+			}else if(resultArr[0].equals(UserMessage.OPTION_CANCEL)){
 				throw UserCancelException.CANCEL_GENERIC;
 			}else{
-				throw new Exception("Unknown option in saveIfNeeded '"+result+"'");
+				throw new Exception("Unknown option in saveIfNeeded '"+resultArr[0]+"'");
 			}
     	}
-    	return saveTask;
 	}
 	
 //	protected void clearROI()
@@ -1421,15 +1457,14 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			}
 		}
 		//save if the Model has changed
-//		AsynchClientTask saveTask = null;
-		final Boolean[] bSaveAsNewFlag = new Boolean[1];
+		final Boolean[] bSaveAsNew = new Boolean[] {null};
 		try{
 			FrapChangeInfo frapChangeInfo = refreshBiomodel();
 			boolean bNeedsExtData =
 				!areExternalDataOK(getLocalWorkspace(),
 					frapStudy.getFrapDataExternalDataInfo(),frapStudy.getRoiExternalDataInfo());
 			if(frapChangeInfo.hasAnyChanges() || bNeedsExtData){
-				bSaveAsNewFlag[0] = new Boolean(false);
+				bSaveAsNew[0] = new Boolean(false);
 				if(frapChangeInfo.hasAnyChanges()){
 		    		String saveMessage = null;
 		    		if(getSavedFrapModelInfo() != null){
@@ -1448,14 +1483,13 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						
 						,UserMessage.OPTION_OK);
 					if(result.equals(SAVE_FILE_OPTION)){
-						bSaveAsNewFlag[0] = new Boolean(false);
+						bSaveAsNew[0] = new Boolean(false);
 					}else if(result.equals(UserMessage.OPTION_SAVE_AS_NEW)){
-						bSaveAsNewFlag[0] = new Boolean(true);
+						bSaveAsNew[0] = new Boolean(true);
 					}else{
 						return;
 					}
 				}
-//				saveTask = createSaveTask(bSaveAsNew,true);
 			}
 		}catch(Exception e){
 			throw new Exception("Error checking save before running simulation:\n"+e.getMessage());
@@ -1470,13 +1504,20 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				"Working...",true,true
 		);
 		pp.start();
+		
 		new Thread(new Runnable(){
 			public void run(){
 				try {
-					if(bSaveAsNewFlag[0] != null){
-						saveAsInternal((bSaveAsNewFlag[0]?null:getFrapStudy().getXmlFilename()));
+					if(bSaveAsNew[0] != null){
+						final String SAVING_BEFORE_RUN_MESSAGE = "Saving before simulation runs...";
+						VirtualFrapMainFrame.updateStatus(SAVING_BEFORE_RUN_MESSAGE);
+						pp.setMessage(SAVING_BEFORE_RUN_MESSAGE);
+						if(bSaveAsNew[0]){
+							saveAs();
+						}else {
+							save();
+						}
 					}
-					
 					final String SAVING_EXT_DATA_MESSAGE = "Saving ROI and initial conditions...";
 					VirtualFrapMainFrame.updateStatus(SAVING_EXT_DATA_MESSAGE);
 					pp.setMessage(SAVING_EXT_DATA_MESSAGE);
@@ -1522,19 +1563,25 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 					pp.setMessage(FINISHED_MESSAGE);
 					VirtualFrapMainFrame.updateProgress(100);
 					pp.setProgress(100);
-					SwingUtilities.invokeLater(new Runnable(){public void run(){
+					SwingUtilities.invokeAndWait(new Runnable(){public void run(){
 						getJTabbedPane().setSelectedIndex(FRAPStudyPanel.INDEX_TAB_FITSPATIALMODEL);
 						VirtualFrapMainFrame.updateProgress(0);
 						VirtualFrapMainFrame.updateStatus("");
 					}});
 					
-				} catch (Exception e) {
+				} catch (final Exception e) {
 					pp.stop();
 //					genericProgressStopSignal[0] = true;
 					VirtualFrapMainFrame.updateProgress(0);
 					VirtualFrapMainFrame.updateStatus("Error running simulation: "+e.getMessage());
 					e.printStackTrace();
-					DialogUtils.showErrorDialog("Error running simulation:\n"+e.getMessage());
+					try{
+					SwingUtilities.invokeAndWait(new Runnable(){public void run(){
+						DialogUtils.showErrorDialog("Error running simulation:\n"+e.getMessage());
+					}});
+					}catch(Exception e2){
+						e2.printStackTrace();
+					}
 				}finally{
 					pp.stop();
 				}
@@ -1731,7 +1778,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			boolean isExisted = false;
 			for(int i=0; i < pdeDataContext.getFunctions().length; i++)
 			{
-				if(func[0].compareEqual(pdeDataContext.getFunctions()[i]))
+				if(func[0].getName().equals(pdeDataContext.getFunctions()[i].getName()))
 				{
 					isExisted = true;
 					break;
@@ -1740,7 +1787,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			if(!isExisted)
 			{
 				pdeDataContext.addFunctions(func, new boolean[] {false});
-				pdeDataContext.refreshIdentifiers();
+//				pdeDataContext.refreshIdentifiers();
 			}
 			getFlourDataViewer().setSimulation(sim);
 			getFlourDataViewer().setPdeDataContext(pdeDataContext);

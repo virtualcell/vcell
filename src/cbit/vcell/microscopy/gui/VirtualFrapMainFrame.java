@@ -29,6 +29,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.undo.UndoableEdit;
 
 import cbit.gui.DialogUtils;
+import cbit.util.AsynchProgressPopup;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.microscopy.FRAPStudy;
@@ -175,6 +176,39 @@ public class VirtualFrapMainFrame extends JFrame
   //Inner class MenuHandler
   public class MenuHandler implements ActionListener
   {
+	  private void saveAndSaveAs(final boolean bSaveAs){
+			final AsynchProgressPopup pp =
+				new AsynchProgressPopup(
+					VirtualFrapMainFrame.this,
+					"Saving "+(bSaveAs?"New":"Current")+" FRAP document",
+					"Working...",true,false
+			);
+			pp.start();
+			new Thread(new Runnable(){public void run(){
+		    	  try {
+		    		  if(bSaveAs){
+		    			  frapStudyPanel.saveAs();
+		    		  }else{
+		    			  frapStudyPanel.save();
+		    		  }
+				  }catch(UserCancelException e1){
+					  //ignore
+				  }catch(final Exception e){
+					  pp.stop();
+					  updateStatus((bSaveAs?"SaveAs":"Save")+" Error: " + e.getMessage());
+					  try{
+						  SwingUtilities.invokeAndWait(new Runnable(){public void run(){
+							  DialogUtils.showErrorDialog((bSaveAs?"SaveAs":"Save")+" Error: " + e.getMessage());
+						  }});
+					  }catch(Exception e2){
+						  e2.printStackTrace();
+					  }
+				  }	finally{
+					  pp.stop();
+				  }
+			}}).start();
+
+	  }
  		public void actionPerformed(ActionEvent e) {
 			if(e.getSource() instanceof JMenuItem)
 		    {
@@ -201,26 +235,51 @@ public class VirtualFrapMainFrame extends JFrame
 		      }
 			  else if(arg.equals(SAVE_ACTION_COMMAND))
 		      {
-		    	  try {
-				      frapStudyPanel.save();
-				      
-				  }catch(UserCancelException e1){
-					  //ignore
-				  }catch(Exception e5){
-					  DialogUtils.showErrorDialog("Exception: " + e5.getMessage());
-					  updateStatus("Exception: " + e5.getMessage());
-				  }
+				  saveAndSaveAs(false);
+//					final AsynchProgressPopup pp =
+//						new AsynchProgressPopup(
+//							VirtualFrapMainFrame.this,
+//							"Saving current FRAP document",
+//							"Working...",true,false
+//					);
+//					pp.start();
+//					new Thread(new Runnable(){public void run(){
+//				    	  try {
+//						      frapStudyPanel.save();
+//						  }catch(UserCancelException e1){
+//							  //ignore
+//						  }catch(Exception e){
+//							  pp.stop();
+//							  DialogUtils.showErrorDialog("Save Error: " + e.getMessage());
+//							  updateStatus("Save Error: " + e.getMessage());
+//						  }	finally{
+//							  pp.stop();
+//						  }
+//					}}).start();
 		      }
 		      else if(arg.equals(SAVEAS_ACTION_COMMAND))
 		      {
-		    	  try {
-		    		  frapStudyPanel.saveAs();
-		    	  }catch(UserCancelException e1){
-					  //ignore
-				  }catch(Exception e5){
-					  DialogUtils.showErrorDialog("Exception: " + e5.getMessage());
-					  updateStatus("Exception: " + e5.getMessage());
-				  }
+		    	  saveAndSaveAs(true);
+//					final AsynchProgressPopup pp =
+//						new AsynchProgressPopup(
+//							VirtualFrapMainFrame.this,
+//							"Saving New FRAP document",
+//							"Working...",true,false
+//					);
+//					pp.start();
+//					new Thread(new Runnable(){public void run(){
+//				    	  try {
+//						      frapStudyPanel.saveAs();
+//						  }catch(UserCancelException e1){
+//							  //ignore
+//						  }catch(Exception e){
+//							  pp.stop();
+//							  DialogUtils.showErrorDialog("SaveAs Error: " + e.getMessage());
+//							  updateStatus("SaveAs Error: " + e.getMessage());
+//						  }	finally{
+//							  pp.stop();
+//						  }
+//					}}).start();
 		      }
 		      else if(arg.equals(IMPORTFILESERIES_ACTION_COMMAND))
 		      {
