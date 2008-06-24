@@ -603,24 +603,25 @@ private void connEtoM2() {
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM3(cbit.vcell.simdata.PDEDataContext value) {
 	try {
-		// amended on April 23rd, to remove Data2 series from display
-		if ((getpdeDataContext1() != null)) {
-			ArrayList<String> displayVarNames = new ArrayList<String>(); 
-			if(getpdeDataContext1().getVariableNames() != null && getpdeDataContext1().getVariableNames().length > 0)
-			{
-				String[] varNames = getpdeDataContext1().getVariableNames();
-				for(int i=0; i < varNames.length; i++)
-				{
-					if(varNames[i].indexOf("Data2.") == -1  || varNames[i].indexOf(".ring") >= 0)
-					{
-						displayVarNames.add(varNames[i]);
-					}
-				}
-			}
-			String[] displayNames = displayVarNames.toArray(new String[displayVarNames.size()]);
-			
-			getDefaultListModelCivilized1().setContents(displayNames);
-		}
+		filterVariableNames();
+//		// amended on April 23rd, to remove Data2 series from display
+//		if ((getpdeDataContext1() != null)) {
+//			ArrayList<String> displayVarNames = new ArrayList<String>(); 
+//			if(getpdeDataContext1().getVariableNames() != null && getpdeDataContext1().getVariableNames().length > 0)
+//			{
+//				String[] varNames = getpdeDataContext1().getVariableNames();
+//				for(int i=0; i < varNames.length; i++)
+//				{
+//					if(varNames[i].indexOf("Data2.") == -1  || varNames[i].indexOf(".ring") >= 0)
+//					{
+//						displayVarNames.add(varNames[i]);
+//					}
+//				}
+//			}
+//			String[] displayNames = displayVarNames.toArray(new String[displayVarNames.size()]);
+//			
+//			getDefaultListModelCivilized1().setContents(displayNames);
+//		}
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -696,28 +697,29 @@ private void connEtoM7(cbit.vcell.simdata.PDEDataContext value) {
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM8(java.beans.PropertyChangeEvent arg1) {
 	try {
+		filterVariableNames();
 		// old part
 //		if ((getpdeDataContext1() != null)) {
 //			getDefaultListModelCivilized1().setContents(getpdeDataContext1().getVariableNames());
 //		}
 		// amended on April 23rd, to remove Data2 series from display		
-		if ((getpdeDataContext1() != null)) {
-			ArrayList<String> displayVarNames = new ArrayList<String>(); 
-			if(getpdeDataContext1().getVariableNames() != null && getpdeDataContext1().getVariableNames().length > 0)
-			{
-				String[] varNames = getpdeDataContext1().getVariableNames();
-				for(int i=0; i < varNames.length; i++)
-				{
-					if(varNames[i].indexOf("Data2.") == -1)
-					{
-						displayVarNames.add(varNames[i]);
-					}
-				}
-			}
-			String[] displayNames = displayVarNames.toArray(new String[displayVarNames.size()]);
-			
-			getDefaultListModelCivilized1().setContents(displayNames);
-		}
+//		if ((getpdeDataContext1() != null)) {
+//			ArrayList<String> displayVarNames = new ArrayList<String>(); 
+//			if(getpdeDataContext1().getVariableNames() != null && getpdeDataContext1().getVariableNames().length > 0)
+//			{
+//				String[] varNames = getpdeDataContext1().getVariableNames();
+//				for(int i=0; i < varNames.length; i++)
+//				{
+//					if(varNames[i].indexOf("Data2.") == -1)
+//					{
+//						displayVarNames.add(varNames[i]);
+//					}
+//				}
+//			}
+//			String[] displayNames = displayVarNames.toArray(new String[displayVarNames.size()]);
+//			
+//			getDefaultListModelCivilized1().setContents(displayNames);
+//		}
 	} catch (java.lang.Throwable ivjExc) {
 		// user code begin {3}
 		// user code end
@@ -725,6 +727,25 @@ private void connEtoM8(java.beans.PropertyChangeEvent arg1) {
 	}
 }
 
+private void filterVariableNames(){
+	if ((getpdeDataContext1() != null)) {
+		ArrayList<String> displayVarNames = new ArrayList<String>(); 
+		if(getpdeDataContext1().getVariableNames() != null && getpdeDataContext1().getVariableNames().length > 0)
+		{
+			String[] varNames = getpdeDataContext1().getVariableNames();
+			for(int i=0; i < varNames.length; i++)
+			{
+				if(varNames[i].indexOf("Data2") == -1 || varNames[i].indexOf("Data2.ring") != -1)
+				{
+					displayVarNames.add(varNames[i]);
+				}
+			}
+		}
+		String[] displayNames = displayVarNames.toArray(new String[displayVarNames.size()]);
+		
+		getDefaultListModelCivilized1().setContents(displayNames);
+	}
+}
 
 /**
  * connPtoP1SetSource:  (PDEPlotControlPanel.pdeDataContext <--> pdeDataContext1.this)

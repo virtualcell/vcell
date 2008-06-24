@@ -1787,8 +1787,9 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			if(!isExisted)
 			{
 				pdeDataContext.addFunctions(func, new boolean[] {false});
-//				pdeDataContext.refreshIdentifiers();
+				pdeDataContext.refreshIdentifiers();
 			}
+			
 			getFlourDataViewer().setSimulation(sim);
 			getFlourDataViewer().setPdeDataContext(pdeDataContext);
 			SimulationModelInfo simModelInfo =
