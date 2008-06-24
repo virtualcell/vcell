@@ -22,7 +22,6 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
-import java.util.Hashtable;
 
 import javax.swing.DefaultSingleSelectionModel;
 import javax.swing.ImageIcon;
@@ -43,7 +42,6 @@ import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.UndoableEditSupport;
-
 import cbit.gui.DialogUtils;
 import cbit.gui.graph.GraphPane;
 import cbit.image.ImageException;
@@ -64,8 +62,6 @@ import cbit.vcell.client.data.SimulationModelInfo;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
 import cbit.vcell.client.server.MergedDataManager;
 import cbit.vcell.client.server.PDEDataManager;
-import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.desktop.controls.DataManager;
 import cbit.vcell.field.FieldDataIdentifierSpec;
@@ -554,8 +550,10 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				refreshBiomodel();
 				CurrentSimulationDataState currentSimulationDataState = new CurrentSimulationDataState();
 				if(currentSimulationDataState.isDataValid()){
-					getReportPanel().removeAll();
-					spatialAnalysis();
+					if(spatialAnalysisList == null){
+						getReportPanel().removeAll();
+						spatialAnalysis();
+					}
 				}else{
 					throw new Exception("Simulation Data are not valid. Simulation needs to be run.\n"+
 						currentSimulationDataState.getDescription());
@@ -704,6 +702,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	}
 
 	public void setFrapStudy(final FRAPStudy argFrapStudy,boolean bNew) {
+		spatialAnalysisList = null;
 		VirtualFrapMainFrame.enableSave(!(argFrapStudy == null || argFrapStudy.getFrapData() == null));
 		try{
 			undoableEditSupport.postEdit(FRAPStudyPanel.CLEAR_UNDOABLE_EDIT);
@@ -1518,6 +1517,9 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							save();
 						}
 					}
+					// Reset spatial analysis
+					spatialAnalysisList = null;
+					
 					final String SAVING_EXT_DATA_MESSAGE = "Saving ROI and initial conditions...";
 					VirtualFrapMainFrame.updateStatus(SAVING_EXT_DATA_MESSAGE);
 					pp.setMessage(SAVING_EXT_DATA_MESSAGE);
@@ -1569,7 +1571,9 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						VirtualFrapMainFrame.updateStatus("");
 					}});
 					
-				} catch (final Exception e) {
+				}catch(UserCancelException uce){
+					//ignore
+				}catch (final Exception e) {
 					pp.stop();
 //					genericProgressStopSignal[0] = true;
 					VirtualFrapMainFrame.updateProgress(0);
@@ -2094,42 +2098,25 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	}
 	
 	public void spatialAnalysis() throws Exception{
-		//check if all the data are ready for spatial analysis.
-		if (getFrapStudy() == null || getFrapStudy().getFrapData() == null || 
-			getFrapStudy().getFrapData().getImageDataset().getISize().getXYZ() <=0 || 
-			getFrapStudy().getFrapData().getImageDataset().getImageTimeStamps().length <1) 
-		{
-			throw new Exception("Data have to be loaded before running spatial analysis.");
-		}
-		if(getFrapStudy().getFrapData().getRois().length <= 3)
-		{
-			throw new Exception("ROIs and ROI rings have to be created before running spatial analysis. Please go to \'Images\' tab to create ROIs and ROI rings."); 
-		}
-		if(getFrapStudy().getBioModel() == null || getFrapStudy().getBioModel().getSimulations() == null)
-		{
-			throw new Exception("Spatial model and simulation have to be created/recreated due to changes are made. Please go to \'Generate Spatial Model\' tab to create/recreate spatial model.");
-		}
-		if(getFrapStudy().getFrapModelParameters() == null)
-		{
-			throw new Exception("Model parameters are required before running spatial analysis. Please go to \'Fit Recovery Curve\' tab to run curve fitting.");
-		}
 		
-       	VirtualFrapMainFrame.updateStatus("Running spatial analysis ...");
-       	// prepare hashtable for tasks
-		Hashtable<String, Object> hash = new Hashtable<String, Object>();
-        
-		// create tasks
-		AsynchClientTask spatialAnalysisTask = new AsynchClientTask() {
-			public String getTaskName() { return "Running spatial analysis."; }
-			public int getTaskType() { return cbit.vcell.desktop.controls.ClientTask.TASKTYPE_NONSWING_BLOCKING; }
-			public void run(java.util.Hashtable hash) throws Exception{
-				
-				DataSetControllerImpl.ProgressListener progressListener =
+		final AsynchProgressPopup pp =
+			new AsynchProgressPopup(
+				FRAPStudyPanel.this,
+				"Running FRAP Spatial Analysis",
+				"Working...",true,true
+		);
+		pp.start();
+
+		new Thread(new Runnable(){public void run(){
+			try{
+				DataSetControllerImpl.ProgressListener runspatialAnalysisProgressListener =
 					new DataSetControllerImpl.ProgressListener(){
 						public void updateProgress(double progress) {
-							VirtualFrapMainFrame.updateProgress((int)Math.round((progress) * 100));
+							int percentProgress = (int)(progress*100);
+							VirtualFrapMainFrame.updateProgress(percentProgress);
+							pp.setProgress(percentProgress);
 						}
-					};
+				};
 				Simulation frapSimulation = frapStudy.getBioModel().getSimulations()[0];
 				DataManager simulationDataManager = getDataManager(frapSimulation);
 				int startIndexForRecovery = new Integer(getFrapStudy().getFrapModelParameters().startIndexForRecovery);
@@ -2141,10 +2128,10 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						frapDataTimeStamps[startIndexForRecovery],
 						frapSimulation.getMathDescription().getSubDomain(FRAPStudy.CYTOSOL_NAME),
 						getFrapStudy().getFrapData(),
-						progressListener);
+						runspatialAnalysisProgressListener);
 				
-//				NonGUIFRAPTest.dumpSpatialResults(spatialAnalysisResults, frapDataTimeStamps,
-//						new File("C:\\temp\\guiSpatialResults.txt"));
+		//		NonGUIFRAPTest.dumpSpatialResults(spatialAnalysisResults, frapDataTimeStamps,
+		//				new File("C:\\temp\\guiSpatialResults.txt"));
 				//
 				// display diffusion-centric plots
 				//
@@ -2152,49 +2139,146 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 					spatialAnalysisResults.createReferenceDataForAllDiffusionRates(frapDataTimeStamps);
 				ODESolverResultSet[] odeSolverResultSetArr =
 					spatialAnalysisResults.createODESolverResultSetForAllDiffusionRates();
-				spatialAnalysisList = new MultisourcePlotPane[spatialAnalysisResults.diffusionRates.length];
+				final MultisourcePlotPane[] spatialAnalysisListFinal = new MultisourcePlotPane[spatialAnalysisResults.diffusionRates.length];
 				for (int i = 0; i < spatialAnalysisResults.diffusionRates.length; i++) {
-					String title = "Experimental vs. Diffusion Rate "+spatialAnalysisResults.diffusionRates[i];
-					DataSource expDataSource = new DataSource(referenceDataArr[i],"experiment");
-					DataSource fitDataSource = new DataSource(odeSolverResultSetArr[i], "fit");
-					MultisourcePlotPane multisourcePlotPane = new MultisourcePlotPane();
-					multisourcePlotPane.setDataSources(new DataSource[] {  expDataSource, fitDataSource } );
-					multisourcePlotPane.selectAll();
-					multisourcePlotPane.setBorder(new TitledBorder(new LineBorder(new Color(168,168,255)),title, TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION, new Font("Tahoma", Font.PLAIN, 12)));
-					spatialAnalysisList[i]=multisourcePlotPane;
-
+					final String title = "Experimental vs. Diffusion Rate "+spatialAnalysisResults.diffusionRates[i];
+					final DataSource expDataSource = new DataSource(referenceDataArr[i],"experiment");
+					final DataSource fitDataSource = new DataSource(odeSolverResultSetArr[i], "fit");
+					final int diffusionRateIndex = i;
+					SwingUtilities.invokeAndWait(new Runnable(){public void run(){
+						MultisourcePlotPane multisourcePlotPane = new MultisourcePlotPane();
+						multisourcePlotPane.setDataSources(new DataSource[] {  expDataSource, fitDataSource } );
+						multisourcePlotPane.selectAll();
+						multisourcePlotPane.setBorder(new TitledBorder(new LineBorder(new Color(168,168,255)),title, TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION, new Font("Tahoma", Font.PLAIN, 12)));						
+						spatialAnalysisListFinal[diffusionRateIndex]=multisourcePlotPane;		
+					}});
 				}
+				spatialAnalysisList = spatialAnalysisListFinal;
 				VirtualFrapMainFrame.updateProgress(100);
-			}
-			public boolean skipIfAbort() {
-				return false;
-			}
-			public boolean skipIfCancel(UserCancelException e) {
-				return false;
-			}
-		};
-		
-		AsynchClientTask afterAnalysisTask = new AsynchClientTask() {
-			public String getTaskName() { return "Refreshing report panel."; }
-			public int getTaskType() { return cbit.vcell.desktop.controls.ClientTask.TASKTYPE_SWING_BLOCKING; }
-			public void run(java.util.Hashtable hash) throws Exception{
-				// show plot list by default 
-				refreshReportPanel();
-				// leave save status as it was
-				// show message after running spatial analysis
+				// show plot list by default
+				SwingUtilities.invokeAndWait(new Runnable(){public void run(){
+					refreshReportPanel();					
+				}});
 				VirtualFrapMainFrame.updateProgress(0);
-				VirtualFrapMainFrame.updateStatus("Spatial analysis is done.");
+				VirtualFrapMainFrame.updateStatus("Finished Spatial analysis.");
+			}catch(final Exception e){
+				pp.stop();
+				VirtualFrapMainFrame.updateProgress(0);
+				VirtualFrapMainFrame.updateStatus("Error running spatial analysis: "+e.getMessage());
+				e.printStackTrace();
+				try{
+				SwingUtilities.invokeAndWait(new Runnable(){public void run(){
+					DialogUtils.showErrorDialog("Error running spatial analysis:\n"+e.getMessage());
+				}});
+				}catch(Exception e2){
+					e2.printStackTrace();
+				}
+		}finally{
+				pp.stop();
 			}
-			public boolean skipIfAbort() {
-				return false;
-			}
-			public boolean skipIfCancel(UserCancelException e) {
-				return false;
-			}
-		};
+		}}).start();
 		
-		AsynchClientTask[] tasks = new AsynchClientTask[] { spatialAnalysisTask, afterAnalysisTask};
-		ClientTaskDispatcher.dispatch(VirtualFrapLoader.mf,hash, tasks, false); 
+//		//check if all the data are ready for spatial analysis.
+//		if (getFrapStudy() == null || getFrapStudy().getFrapData() == null || 
+//			getFrapStudy().getFrapData().getImageDataset().getISize().getXYZ() <=0 || 
+//			getFrapStudy().getFrapData().getImageDataset().getImageTimeStamps().length <1) 
+//		{
+//			throw new Exception("Data have to be loaded before running spatial analysis.");
+//		}
+//		if(getFrapStudy().getFrapData().getRois().length <= 3)
+//		{
+//			throw new Exception("ROIs and ROI rings have to be created before running spatial analysis. Please go to \'Images\' tab to create ROIs and ROI rings."); 
+//		}
+//		if(getFrapStudy().getBioModel() == null || getFrapStudy().getBioModel().getSimulations() == null)
+//		{
+//			throw new Exception("Spatial model and simulation have to be created/recreated due to changes are made. Please go to \'Generate Spatial Model\' tab to create/recreate spatial model.");
+//		}
+//		if(getFrapStudy().getFrapModelParameters() == null)
+//		{
+//			throw new Exception("Model parameters are required before running spatial analysis. Please go to \'Fit Recovery Curve\' tab to run curve fitting.");
+//		}
+//		
+//       	VirtualFrapMainFrame.updateStatus("Running spatial analysis ...");
+//       	// prepare hashtable for tasks
+//		Hashtable<String, Object> hash = new Hashtable<String, Object>();
+//        
+//		// create tasks
+//		AsynchClientTask spatialAnalysisTask = new AsynchClientTask() {
+//			public String getTaskName() { return "Running spatial analysis."; }
+//			public int getTaskType() { return cbit.vcell.desktop.controls.ClientTask.TASKTYPE_NONSWING_BLOCKING; }
+//			public void run(java.util.Hashtable hash) throws Exception{
+//				
+//				DataSetControllerImpl.ProgressListener progressListener =
+//					new DataSetControllerImpl.ProgressListener(){
+//						public void updateProgress(double progress) {
+//							VirtualFrapMainFrame.updateProgress((int)Math.round((progress) * 100));
+//						}
+//					};
+//				Simulation frapSimulation = frapStudy.getBioModel().getSimulations()[0];
+//				DataManager simulationDataManager = getDataManager(frapSimulation);
+//				int startIndexForRecovery = new Integer(getFrapStudy().getFrapModelParameters().startIndexForRecovery);
+//				double[] frapDataTimeStamps = getFrapStudy().getFrapData().getImageDataset().getImageTimeStamps();
+//				FRAPStudy.SpatialAnalysisResults spatialAnalysisResults =
+//					FRAPStudy.spatialAnalysis(
+//						simulationDataManager,
+//						startIndexForRecovery,
+//						frapDataTimeStamps[startIndexForRecovery],
+//						frapSimulation.getMathDescription().getSubDomain(FRAPStudy.CYTOSOL_NAME),
+//						getFrapStudy().getFrapData(),
+//						progressListener);
+//				
+////				NonGUIFRAPTest.dumpSpatialResults(spatialAnalysisResults, frapDataTimeStamps,
+////						new File("C:\\temp\\guiSpatialResults.txt"));
+//				//
+//				// display diffusion-centric plots
+//				//
+//				ReferenceData[] referenceDataArr =
+//					spatialAnalysisResults.createReferenceDataForAllDiffusionRates(frapDataTimeStamps);
+//				ODESolverResultSet[] odeSolverResultSetArr =
+//					spatialAnalysisResults.createODESolverResultSetForAllDiffusionRates();
+//				spatialAnalysisList = new MultisourcePlotPane[spatialAnalysisResults.diffusionRates.length];
+//				for (int i = 0; i < spatialAnalysisResults.diffusionRates.length; i++) {
+//					String title = "Experimental vs. Diffusion Rate "+spatialAnalysisResults.diffusionRates[i];
+//					DataSource expDataSource = new DataSource(referenceDataArr[i],"experiment");
+//					DataSource fitDataSource = new DataSource(odeSolverResultSetArr[i], "fit");
+//					MultisourcePlotPane multisourcePlotPane = new MultisourcePlotPane();
+//					multisourcePlotPane.setDataSources(new DataSource[] {  expDataSource, fitDataSource } );
+//					multisourcePlotPane.selectAll();
+//					multisourcePlotPane.setBorder(new TitledBorder(new LineBorder(new Color(168,168,255)),title, TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION, new Font("Tahoma", Font.PLAIN, 12)));
+//					spatialAnalysisList[i]=multisourcePlotPane;
+//
+//				}
+//				VirtualFrapMainFrame.updateProgress(100);
+//			}
+//			public boolean skipIfAbort() {
+//				return false;
+//			}
+//			public boolean skipIfCancel(UserCancelException e) {
+//				return false;
+//			}
+//		};
+//		
+//		AsynchClientTask afterAnalysisTask = new AsynchClientTask() {
+//			public String getTaskName() { return "Refreshing report panel."; }
+//			public int getTaskType() { return cbit.vcell.desktop.controls.ClientTask.TASKTYPE_SWING_BLOCKING; }
+//			public void run(java.util.Hashtable hash) throws Exception{
+//				// show plot list by default 
+//				refreshReportPanel();
+//				// leave save status as it was
+//				// show message after running spatial analysis
+//				VirtualFrapMainFrame.updateProgress(0);
+//				VirtualFrapMainFrame.updateStatus("Spatial analysis is done.");
+//			}
+//			public boolean skipIfAbort() {
+//				return false;
+//			}
+//			public boolean skipIfCancel(UserCancelException e) {
+//				return false;
+//			}
+//		};
+//		
+//		AsynchClientTask[] tasks = new AsynchClientTask[] { spatialAnalysisTask, afterAnalysisTask};
+//		ClientTaskDispatcher.dispatch(VirtualFrapLoader.mf,hash, tasks, false); 
 	}
 
 	public void propertyChange(PropertyChangeEvent evt) {
