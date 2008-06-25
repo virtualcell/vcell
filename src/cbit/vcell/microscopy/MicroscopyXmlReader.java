@@ -1,5 +1,6 @@
 package cbit.vcell.microscopy;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -13,8 +14,10 @@ import org.jdom.Element;
 import cbit.image.ImageException;
 import cbit.sql.KeyValue;
 import cbit.util.Extent;
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
+import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.microscopy.ROI.RoiType;
 import cbit.vcell.server.User;
 import cbit.vcell.simdata.DataSetControllerImpl;
@@ -32,6 +35,20 @@ import cbit.vcell.xml.XmlParseException;
 public class MicroscopyXmlReader {
 	
 	private cbit.vcell.xml.XmlReader vcellXMLReader = null;
+	
+	public static class ExternalDataAndSimulationInfo{
+		public final ExternalDataInfo frapDataExtDataInfo;
+		public final ExternalDataInfo roiExtDataInfo;
+		public final KeyValue simulationKey;
+		public ExternalDataAndSimulationInfo(
+				KeyValue simulationKey,
+				ExternalDataInfo frapDataExtDataInfo,
+				ExternalDataInfo roiExtDataInfo){
+			this.simulationKey = simulationKey;
+			this.frapDataExtDataInfo = frapDataExtDataInfo;
+			this.roiExtDataInfo = roiExtDataInfo;
+		}
+	};
     	
 /**
  * This constructor takes a parameter to specify if the KeyValue should be ignored
@@ -43,7 +60,33 @@ public MicroscopyXmlReader(boolean readKeys) {
 	this.vcellXMLReader = new cbit.vcell.xml.XmlReader(readKeys);
 }
 
+public static ExternalDataAndSimulationInfo getExternalDataAndSimulationInfo(File vfrapDocument) throws Exception{
+	String xmlString = XmlUtil.getXMLString(vfrapDocument.getAbsolutePath());
+	Element param  = XmlUtil.stringToXML(xmlString, null);
+	MicroscopyXmlReader xmlReader = new MicroscopyXmlReader(true);
+	
+	KeyValue simulationKeyValue = null;
+	ExternalDataInfo frapDataExtDatInfo = null;
+	ExternalDataInfo roiExtDataInfo = null;
+	Element bioModelElement = param.getChild(XMLTags.BioModelTag);
+	if (bioModelElement!=null){
+		BioModel bioModel  = xmlReader.vcellXMLReader.getBioModel(bioModelElement);
+		if(bioModel != null){
+			simulationKeyValue = bioModel.getSimulations()[0].getKey();
+		}
+	}
+	Element timeSeriesExternalDataElement = param.getChild(MicroscopyXMLTags.ImageDatasetExternalDataInfoTag);
+	if (timeSeriesExternalDataElement!=null){
+		frapDataExtDatInfo = getExternalDataInfo(timeSeriesExternalDataElement);
+	}
+	Element roiExternalDataElement = param.getChild(MicroscopyXMLTags.ROIExternalDataInfoTag);
+	if (roiExternalDataElement!=null){
+		roiExtDataInfo = getExternalDataInfo(roiExternalDataElement);
+	}
 
+	return new ExternalDataAndSimulationInfo(simulationKeyValue,frapDataExtDatInfo,roiExtDataInfo);
+
+}
 
 /**
  * This method returns a VCIMage object from a XML representation.
@@ -248,7 +291,7 @@ private FRAPData getFrapData(Element param,DataSetControllerImpl.ProgressListene
  * @param externalDataIDElement Element
  * @return ExternalDataIdentifier
  */
-private ExternalDataIdentifier getExternalDataIdentifier(Element externalDataIDElement){
+private static ExternalDataIdentifier getExternalDataIdentifier(Element externalDataIDElement){
 	String name = externalDataIDElement.getAttributeValue(XMLTags.NameAttrTag);
 	String keyValueStr = externalDataIDElement.getAttributeValue(XMLTags.KeyValueAttrTag);
 	String ownerName = externalDataIDElement.getAttributeValue(MicroscopyXMLTags.OwnerNameAttrTag);
@@ -286,23 +329,23 @@ public FRAPStudy getFrapStudy(Element param,DataSetControllerImpl.ProgressListen
 	}
 	Element timeSeriesExternalDataElement = param.getChild(MicroscopyXMLTags.ImageDatasetExternalDataInfoTag);
 	if (timeSeriesExternalDataElement!=null){
-		String filename = timeSeriesExternalDataElement.getAttributeValue(MicroscopyXMLTags.FilenameAttrTag);
-		Element externalDataIDElement = timeSeriesExternalDataElement.getChild(MicroscopyXMLTags.ExternalDataIdentifierTag);
-		ExternalDataIdentifier externalDataID = getExternalDataIdentifier(externalDataIDElement);
-		ExternalDataInfo timeSeriesExternalDataInfo = new ExternalDataInfo(externalDataID, filename);
-		frapStudy.setFrapDataExternalDataInfo(timeSeriesExternalDataInfo);
+		frapStudy.setFrapDataExternalDataInfo(getExternalDataInfo(timeSeriesExternalDataElement));
 	}
 	Element roiExternalDataElement = param.getChild(MicroscopyXMLTags.ROIExternalDataInfoTag);
 	if (roiExternalDataElement!=null){
-		String filename = roiExternalDataElement.getAttributeValue(MicroscopyXMLTags.FilenameAttrTag);
-		Element externalDataIDElement = roiExternalDataElement.getChild(MicroscopyXMLTags.ExternalDataIdentifierTag);
-		ExternalDataIdentifier externalDataID = getExternalDataIdentifier(externalDataIDElement);
-		ExternalDataInfo roiExternalDataInfo = new ExternalDataInfo(externalDataID, filename);
-		frapStudy.setRoiExternalDataInfo(roiExternalDataInfo);
+		frapStudy.setRoiExternalDataInfo(getExternalDataInfo(roiExternalDataElement));
 	}
 	return frapStudy;
 }
 
+private static ExternalDataInfo getExternalDataInfo(Element extDataInfoElement){
+	String filename = extDataInfoElement.getAttributeValue(MicroscopyXMLTags.FilenameAttrTag);
+	Element externalDataIDElement = extDataInfoElement.getChild(MicroscopyXMLTags.ExternalDataIdentifierTag);
+	ExternalDataIdentifier externalDataID = getExternalDataIdentifier(externalDataIDElement);
+	ExternalDataInfo externalDataInfo = new ExternalDataInfo(externalDataID, filename);
+	return externalDataInfo;
+
+}
 /**
  * Method unMangle.
  * @param str String

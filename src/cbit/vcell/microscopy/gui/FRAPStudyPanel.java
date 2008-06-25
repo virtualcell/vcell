@@ -859,6 +859,23 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			if(!resultArr[0].equals(OK_OPTION)){
 				throw UserCancelException.CANCEL_GENERIC;
 			}
+			//Remove overwritten vfrap document external and simulation files
+			try{
+				MicroscopyXmlReader.ExternalDataAndSimulationInfo externalDataAndSimulationInfo =
+					MicroscopyXmlReader.getExternalDataAndSimulationInfo(outputFileFinal);
+				removeExternalDataAndSimulationFiles(
+						externalDataAndSimulationInfo.simulationKey,
+						(externalDataAndSimulationInfo.frapDataExtDataInfo != null
+							?externalDataAndSimulationInfo.frapDataExtDataInfo.getExternalDataIdentifier():null),
+						(externalDataAndSimulationInfo.roiExtDataInfo != null
+							?externalDataAndSimulationInfo.roiExtDataInfo.getExternalDataIdentifier():null),
+						getLocalWorkspace());
+			}catch(Exception e){
+				System.out.println(
+					"Error deleting externalData and simulation files for overwritten vfrap document "+
+					outputFileFinal.getAbsolutePath()+"  "+e.getMessage());
+				e.printStackTrace();
+			}
 		}
 		saveProcedure(outputFile,bSaveAs);
 	}
@@ -907,28 +924,44 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			new CurrentSimulationDataState();
 		if(!currentSimulationDataState.isDataValid()){
 			//remove saved simulation files (they no longer apply to this model)
-			ExternalDataInfo origImageDataExtDataInfo = getFrapStudy().getFrapDataExternalDataInfo();
-			if(origImageDataExtDataInfo != null){
-				FRAPStudy.deleteCanonicalExternalData(getLocalWorkspace(),
-					getFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier());
-			}
-			ExternalDataInfo origROIDataExtDataInfo = getFrapStudy().getRoiExternalDataInfo();
-			if(origROIDataExtDataInfo != null){
-				FRAPStudy.deleteCanonicalExternalData(getLocalWorkspace(),
-					getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier());
-			}
-			File mergedFunctionFile = getMergedFunctionFile();
-			if(mergedFunctionFile != null){
-				mergedFunctionFile.delete();
-			}
-			if(getSavedFrapModelInfo() != null){
-				File userDir =
-					new File(getLocalWorkspace().getDefaultSimDataDirectory());
-				deleteSimulationFiles(userDir, getSavedFrapModelInfo().savedSimKeyValue);
-			}
+			ExternalDataIdentifier frapDataExtDataId =
+				(getFrapStudy() != null && getFrapStudy().getFrapDataExternalDataInfo() != null
+					?getFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier():null);
+			ExternalDataIdentifier roiExtDataId =
+				(getFrapStudy() != null && getFrapStudy().getRoiExternalDataInfo() != null
+					?getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier():null);
+			KeyValue simulationKeyValue =
+				(getSavedFrapModelInfo() != null?getSavedFrapModelInfo().savedSimKeyValue:null);
+			removeExternalDataAndSimulationFiles(simulationKeyValue,frapDataExtDataId,roiExtDataId,getLocalWorkspace());
 			return true;
 		}
 		return false;
+	}
+	
+	private static void removeExternalDataAndSimulationFiles(
+			KeyValue simulationKeyValue,
+			ExternalDataIdentifier frapDataExtDataId,ExternalDataIdentifier roiExtDataId,
+			LocalWorkspace localWorkspace) throws Exception{
+		
+		if(frapDataExtDataId != null){
+			FRAPStudy.deleteCanonicalExternalData(localWorkspace,frapDataExtDataId);
+		}
+		if(roiExtDataId != null){
+			FRAPStudy.deleteCanonicalExternalData(localWorkspace,roiExtDataId);
+		}
+		if(frapDataExtDataId != null && roiExtDataId != null){
+			File mergedFunctionFile = 
+				getMergedFunctionFile(frapDataExtDataId,roiExtDataId,
+						new File(localWorkspace.getDefaultSimDataDirectory()));
+			if(mergedFunctionFile != null){
+				mergedFunctionFile.delete();
+			}
+		}
+		if(simulationKeyValue != null){
+			File userDir =
+				new File(localWorkspace.getDefaultSimDataDirectory());
+			deleteSimulationFiles(userDir, simulationKeyValue);
+		}
 	}
 	
 	private void clearCurrentLoadState() throws Exception{
@@ -1106,183 +1139,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		}}).start();
 	}
 	
-//	//the following functions are written for VirtualFrapMainFrame to call
-//	//since it can not access FRAPDataPanel.
-//	protected void importFile(File inFile) throws Exception{
-//		importFileInternal(inFile,getSaveIfNeededTask(),createAfterImportTask(inFile));
-//	}
-//
-//	protected void importFileInternal(final File inFile,AsynchClientTask saveTask,AsynchClientTask afterImportTask){
-//		Hashtable<String, Object> hash = new Hashtable<String, Object>();    		   		
-//		AsynchClientTask importImgTask = new AsynchClientTask() {
-//			public String getTaskName() { return "Importing images from external data source."; }
-//			public int getTaskType() { return cbit.vcell.desktop.controls.ClientTask.TASKTYPE_NONSWING_BLOCKING; }
-//			public void run(java.util.Hashtable hash) throws Exception{
-//				try {
-//					FRAPData frapData = null;
-//					if(inFile.getName().endsWith(SimDataConstants.LOGFILE_EXTENSION)){
-//						DataIdentifier[] dataIdentifiers =
-//							FRAPData.getDataIdentiferListFromVCellSimulationData(inFile, 0);
-//						String[][] rowData = new String[dataIdentifiers.length][1];
-//						for (int i = 0; i < dataIdentifiers.length; i++) {
-//							if(dataIdentifiers[i].getVariableType().equals(VariableType.VOLUME)){
-//								rowData[i][0] = dataIdentifiers[i].getName();
-//							}
-//						}
-//						int[] selectedIndexArr =
-//							DialogUtils.showComponentOKCancelTableList(
-//								getFRAPDataPanel(),
-//								"Select Volume Variable",
-//								new String[] {"Volume Variable Name"},
-//								rowData, ListSelectionModel.SINGLE_SELECTION);
-//						if(selectedIndexArr != null && selectedIndexArr.length > 0){
-//							frapData = 
-//								FRAPData.importFRAPDataFromVCellSimulationData(inFile,
-//									dataIdentifiers[selectedIndexArr[0]].getName(),
-//									new DataSetControllerImpl.ProgressListener(){public void updateProgress(double progress){VirtualFrapMainFrame.updateProgress((int)progress);}});
-//						}else{
-//							throw UserCancelException.CANCEL_GENERIC;
-//						}
-//					}else{
-//        				ImageLoadingProgress imgProgress = new ImageLoadingProgress();
-//        				imgProgress.addPropertyChangeListener(getFRAPDataPanel());
-//            			ImageDataset imageDataset = ImageDatasetReader.readImageDataset(inFile.getAbsolutePath(), imgProgress);
-//            			frapData = FRAPData.importFRAPDataFromImageDataSet(imageDataset);
-//					}
-//					importDataSetup(frapData);
-//				}catch(UserCancelException e1){
-//					throw e1;
-//				}catch (Exception e2) {
-//					VirtualFrapMainFrame.updateStatus("Failed loading file " + inFile.getAbsolutePath()+".");
-//                	e2.printStackTrace(System.out);
-//                	DialogUtils.showErrorDialog(getFRAPDataPanel(),e2.getMessage());
-//                }
-//			}
-//			public boolean skipIfAbort() {
-//				return false;
-//			}
-//			public boolean skipIfCancel(UserCancelException e) {
-//				return false;
-//			}
-//		};	
-//        	
-//		AsynchClientTask[] tasks = null;
-//		if(saveTask != null){
-//			tasks = new AsynchClientTask[] {saveTask, importImgTask, afterImportTask};
-//		}else{
-//			tasks = new AsynchClientTask[] {importImgTask, afterImportTask};
-//		}
-//		ClientTaskDispatcher.dispatch(VirtualFrapLoader.mf,hash, tasks, false);           	
-//	}
-
-	
-//	private void importDataSetup(FRAPData frapData) throws Exception{
-//		FRAPStudy newFrapStudy = new FRAPStudy();
-//		newFrapStudy.setFrapData(frapData);
-//		setFrapStudy(newFrapStudy, true);
-//		setSavedFrapModelInfo(null);
-//        frapStudy.setXmlFilename(null); //in case an xml file was loaded before this.
-//	}
-
-//	protected void importFileSeries(File[] inFiles, boolean isTimeSeries, double timeInterval, double zInterval) throws Exception{
-//		importFileSeriesInternal(
-//			inFiles, isTimeSeries, timeInterval, zInterval,getSaveIfNeededTask(),createAfterImportTask(inFiles[0]));
-//	}
-//	
-//	
-//	protected void importFileSeriesInternal(
-//			File[] files, boolean arg_isTimeSeries, double arg_timeInterval, double arg_zInterval,
-//			AsynchClientTask saveTask,AsynchClientTask afterImportTask){
-//			
-//			final File[] inputFiles = files;
-//			final boolean isTimeSeries = arg_isTimeSeries;
-//			final double tInterval = arg_timeInterval;
-//			final double zInterval = arg_zInterval;
-//			
-//	       	VirtualFrapMainFrame.updateStatus("Loading file series from directory" + inputFiles[0].getParent()+" ...");
-//	       	// prepare hashtable for tasks
-//			Hashtable<String, Object> hash = new Hashtable<String, Object>();
-//	        		    		
-//			// create tasks
-//			AsynchClientTask importImgTask = new AsynchClientTask() {
-//				public String getTaskName() { return "Importing images from external data source."; }
-//				public int getTaskType() { return cbit.vcell.desktop.controls.ClientTask.TASKTYPE_NONSWING_BLOCKING; }
-//				public void run(java.util.Hashtable hash) throws Exception{
-//					try {
-//	    				ImageLoadingProgress imgProgress = new ImageLoadingProgress();
-//	        			imgProgress.addPropertyChangeListener(getFRAPDataPanel());
-//	        			ImageDataset imageDataset = ImageDatasetReader.readImageDatasetFromMultiFiles(inputFiles, imgProgress, isTimeSeries, tInterval, zInterval);
-//	        			FRAPData frapData = new FRAPData(imageDataset, new ROI.RoiType[] { RoiType.ROI_BLEACHED,RoiType.ROI_CELL,RoiType.ROI_BACKGROUND });
-//	        			frapData.setOriginalGlobalScaleInfo(null);
-//	        			importDataSetup(frapData);
-//	                } catch (Exception e2) {
-//	                	VirtualFrapMainFrame.updateStatus("Failed loading file series from directory " + inputFiles[0].getParent()+".");
-//	                	e2.printStackTrace(System.out);
-//	                	DialogUtils.showErrorDialog(getFRAPDataPanel(),e2.getMessage());
-//	                }
-//				}
-//				public boolean skipIfAbort() {
-//					return false;
-//				}
-//				public boolean skipIfCancel(UserCancelException e) {
-//					return false;
-//				}
-//			};	
-//	        	
-//			AsynchClientTask[] tasks = null;
-//	        if(saveTask != null){
-//	        	tasks = new AsynchClientTask[] {saveTask, importImgTask, afterImportTask};
-//	        }
-//	        else{
-//	        	tasks = new AsynchClientTask[] {importImgTask, afterImportTask};
-//	        }
-//			ClientTaskDispatcher.dispatch(VirtualFrapLoader.mf,hash, tasks, false);           	
-//		}
-
-	
-//	private AsynchClientTask createAfterImportTask(final File inFile){
-//		return new AsynchClientTask() {
-//			public String getTaskName() { return "Import Done."; }
-//			public int getTaskType() { return cbit.vcell.desktop.controls.ClientTask.TASKTYPE_SWING_NONBLOCKING; }
-//			public void run(java.util.Hashtable hash) throws Exception{
-//                VirtualFrapMainFrame.updateStatus("File " + inFile.getAbsolutePath()+" has been loaded.");
-//                VirtualFrapLoader.mf.setMainFrameTitle(inFile.getName());
-//                VirtualFrapMainFrame.updateProgress(0);
-//                VirtualFrapMainFrame.frapStudyPanel.getJTabbedPane().setSelectedIndex(FRAPStudyPanel.INDEX_TAB_IMAGES);
-//                refreshUI();
-//			}
-//			public boolean skipIfAbort() {
-//				return false;
-//			}
-//			public boolean skipIfCancel(UserCancelException e) {
-//				return false;
-//			}
-//		};	
-//
-//	}
-	
-//	private AsynchClientTask createSaveTask(final boolean bSaveAs,final boolean bRefreshUI) throws Exception{
-//		return new AsynchClientTask() {
-//			public String getTaskName() { return "Saving Current Workspace"; }
-//			public int getTaskType() { return cbit.vcell.desktop.controls.ClientTask.TASKTYPE_NONSWING_BLOCKING; }
-//			public void run(java.util.Hashtable hash) throws Exception{
-//				if(bSaveAs){
-//					saveAsInternal(null);
-//				}else{
-//					saveAsInternal(getFrapStudy().getXmlFilename());
-//				}
-//				if(bRefreshUI){
-//					refreshUI();
-//				}
-//			}
-//			public boolean skipIfAbort() {
-//				return true;
-//			}
-//			public boolean skipIfCancel(UserCancelException e) {
-//				return true;
-//			}
-//		};	
-//	}
 	private void saveIfNeeded() throws Exception{
 		if(getFrapStudy() == null || getFrapStudy().getFrapData() == null){
 			return;
@@ -1332,11 +1188,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			}
     	}
 	}
-	
-//	protected void clearROI()
-//	{
-//		getFRAPDataPanel().clearROI();
-//	}
 
 	private Boolean areSimulationFilesOKForSavedModel(){
 		if(getSavedFrapModelInfo() == null){
@@ -1592,105 +1443,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 
 			}
 		}).start();
-
-//		// show status
-//		VirtualFrapMainFrame.statusBar.showStatus("Simulation starting...");
-//		
-//		AsynchClientTask saveExternalDataTask = new AsynchClientTask() {
-//			public String getTaskName() { return "Saving External Data and ROI..."; }
-//			public int getTaskType() { return cbit.vcell.desktop.controls.ClientTask.TASKTYPE_NONSWING_BLOCKING; }
-//			public void run(java.util.Hashtable hash) throws Exception{
-//				if(getSavedFrapModelInfo() == null || cleanupSavedSimDataFilesIfNotOK()){
-//					getFrapStudy().saveROIsAsExternalData(localWorkspace,
-//						getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(),new Integer(getFrapStudy().getFrapModelParameters().startIndexForRecovery));
-//					getFrapStudy().saveImageDatasetAsExternalData(localWorkspace,
-//						getFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier(),new Integer(getFrapStudy().getFrapModelParameters().startIndexForRecovery));
-//				}
-//			}
-//			public boolean skipIfAbort() {
-//				return true;
-//			}
-//			public boolean skipIfCancel(UserCancelException e) {
-//				return true;
-//			}
-//		};
-//
-//		AsynchClientTask runSolverTask = new AsynchClientTask() {
-//			public String getTaskName() { return "Running simulation."; }
-//			public int getTaskType() { return cbit.vcell.desktop.controls.ClientTask.TASKTYPE_NONSWING_BLOCKING; }
-//			public void run(java.util.Hashtable hash) throws Exception{
-//
-//				Simulation simulation =
-//					getFrapStudy().getBioModel().getSimulations()[0];
-//				FRAPStudy.runFVSolverStandalone(
-//					simulationDataDir,
-//					new StdoutSessionLog(LocalWorkspace.getDefaultOwner().getName()),
-//					simulation,
-//					getFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier(),
-//					getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(),
-//					progressListenerNew);
-//				VirtualFrapMainFrame.statusBar.showProgress(100);
-//			}
-//			public boolean skipIfAbort() {
-//				return true;
-//			}
-//			public boolean skipIfCancel(UserCancelException e) {
-//				return true;
-//			}
-//		};
-//		
-//		AsynchClientTask displaySimulatedDataTask = new AsynchClientTask() {
-//			public String getTaskName() { return "Displaying simulated data."; }
-//			public int getTaskType() { return cbit.vcell.desktop.controls.ClientTask.TASKTYPE_SWING_BLOCKING; }
-//			public void run(java.util.Hashtable hash) throws Exception{
-//				refreshPDEDisplay(DisplayChoice.PDE);//upper data viewer has simulated data and masks
-//			}
-//			public boolean skipIfAbort() {
-//				return true;
-//			}
-//			public boolean skipIfCancel(UserCancelException e) {
-//				return true;
-//			}
-//		};
-//		
-//		AsynchClientTask displayOriginalDataTask = new AsynchClientTask() {
-//			public String getTaskName() { return "Displaying original data."; }
-//			public int getTaskType() { return cbit.vcell.desktop.controls.ClientTask.TASKTYPE_SWING_BLOCKING; }
-//			public void run(java.util.Hashtable hash) throws Exception{
-//				refreshPDEDisplay(DisplayChoice.EXTTIMEDATA);//lower data viewer has original data and masks
-//			}
-//			public boolean skipIfAbort() {
-//				return true;
-//			}
-//			public boolean skipIfCancel(UserCancelException e) {
-//				return true;
-//			}
-//		};
-//		
-//		AsynchClientTask afterRunTask = new AsynchClientTask() {
-//			public String getTaskName() { return "Displaying original data."; }
-//			public int getTaskType() { return cbit.vcell.desktop.controls.ClientTask.TASKTYPE_SWING_NONBLOCKING; }
-//			public void run(java.util.Hashtable hash) throws Exception{
-//				VirtualFrapMainFrame.statusBar.showStatus("Simulation is done.");
-//				VirtualFrapMainFrame.statusBar.showProgress(0);
-//				getJTabbedPane().setSelectedIndex(FRAPStudyPanel.INDEX_TAB_FITSPATIALMODEL);
-//			}
-//			public boolean skipIfAbort() {
-//				return true;
-//			}
-//			public boolean skipIfCancel(UserCancelException e) {
-//				return true;
-//			}
-//		};
-//		
-//		Hashtable<String, Object> hash = new Hashtable<String, Object>();
-//		AsynchClientTask[] tasks = null;
-//		if(saveTask != null){
-//			tasks = new AsynchClientTask[] {saveTask, saveExternalDataTask, runSolverTask, displaySimulatedDataTask, displayOriginalDataTask, afterRunTask};
-//		}else{
-//			tasks = new AsynchClientTask[] {saveExternalDataTask, runSolverTask, displaySimulatedDataTask, displayOriginalDataTask, afterRunTask};
-//		}
-//		ClientTaskDispatcher.dispatch(VirtualFrapLoader.mf, hash, tasks, false);
 	}
 	
 	private static File[] getSimulationFileNames(File rootDir,KeyValue simKey){
@@ -1713,21 +1465,15 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			System.out.println("delete "+oldSimFilesToDelete[i].delete()+"  "+oldSimFilesToDelete[i].getAbsolutePath());
 		}
 	}
-	private File getMergedFunctionFile(){
-		//Delete merged function file
-		if(getFrapStudy().getFrapDataExternalDataInfo() != null &&
-			getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier() != null){
-			MergedDataInfo mergedDataInfo =
-				new MergedDataInfo(LocalWorkspace.getDefaultOwner(),
-					new VCDataIdentifier[]{
-						getFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier(),
-						getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier()});
-			return
-				new File(
-					new File(getLocalWorkspace().getDefaultSimDataDirectory()),
-					mergedDataInfo.getID()+SimDataConstants.FUNCTIONFILE_EXTENSION);
-		}		
-		return null;
+	private static File getMergedFunctionFile(
+		ExternalDataIdentifier frapDataExtDataId,ExternalDataIdentifier roiExtDataId,
+		File simDataDirectory){
+		MergedDataInfo mergedDataInfo =
+			new MergedDataInfo(LocalWorkspace.getDefaultOwner(),
+				new VCDataIdentifier[]{frapDataExtDataId,roiExtDataId});
+		return
+			new File(simDataDirectory,
+				mergedDataInfo.getID()+SimDataConstants.FUNCTIONFILE_EXTENSION);
 	}
 	
 	
@@ -2177,108 +1923,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				pp.stop();
 			}
 		}}).start();
-		
-//		//check if all the data are ready for spatial analysis.
-//		if (getFrapStudy() == null || getFrapStudy().getFrapData() == null || 
-//			getFrapStudy().getFrapData().getImageDataset().getISize().getXYZ() <=0 || 
-//			getFrapStudy().getFrapData().getImageDataset().getImageTimeStamps().length <1) 
-//		{
-//			throw new Exception("Data have to be loaded before running spatial analysis.");
-//		}
-//		if(getFrapStudy().getFrapData().getRois().length <= 3)
-//		{
-//			throw new Exception("ROIs and ROI rings have to be created before running spatial analysis. Please go to \'Images\' tab to create ROIs and ROI rings."); 
-//		}
-//		if(getFrapStudy().getBioModel() == null || getFrapStudy().getBioModel().getSimulations() == null)
-//		{
-//			throw new Exception("Spatial model and simulation have to be created/recreated due to changes are made. Please go to \'Generate Spatial Model\' tab to create/recreate spatial model.");
-//		}
-//		if(getFrapStudy().getFrapModelParameters() == null)
-//		{
-//			throw new Exception("Model parameters are required before running spatial analysis. Please go to \'Fit Recovery Curve\' tab to run curve fitting.");
-//		}
-//		
-//       	VirtualFrapMainFrame.updateStatus("Running spatial analysis ...");
-//       	// prepare hashtable for tasks
-//		Hashtable<String, Object> hash = new Hashtable<String, Object>();
-//        
-//		// create tasks
-//		AsynchClientTask spatialAnalysisTask = new AsynchClientTask() {
-//			public String getTaskName() { return "Running spatial analysis."; }
-//			public int getTaskType() { return cbit.vcell.desktop.controls.ClientTask.TASKTYPE_NONSWING_BLOCKING; }
-//			public void run(java.util.Hashtable hash) throws Exception{
-//				
-//				DataSetControllerImpl.ProgressListener progressListener =
-//					new DataSetControllerImpl.ProgressListener(){
-//						public void updateProgress(double progress) {
-//							VirtualFrapMainFrame.updateProgress((int)Math.round((progress) * 100));
-//						}
-//					};
-//				Simulation frapSimulation = frapStudy.getBioModel().getSimulations()[0];
-//				DataManager simulationDataManager = getDataManager(frapSimulation);
-//				int startIndexForRecovery = new Integer(getFrapStudy().getFrapModelParameters().startIndexForRecovery);
-//				double[] frapDataTimeStamps = getFrapStudy().getFrapData().getImageDataset().getImageTimeStamps();
-//				FRAPStudy.SpatialAnalysisResults spatialAnalysisResults =
-//					FRAPStudy.spatialAnalysis(
-//						simulationDataManager,
-//						startIndexForRecovery,
-//						frapDataTimeStamps[startIndexForRecovery],
-//						frapSimulation.getMathDescription().getSubDomain(FRAPStudy.CYTOSOL_NAME),
-//						getFrapStudy().getFrapData(),
-//						progressListener);
-//				
-////				NonGUIFRAPTest.dumpSpatialResults(spatialAnalysisResults, frapDataTimeStamps,
-////						new File("C:\\temp\\guiSpatialResults.txt"));
-//				//
-//				// display diffusion-centric plots
-//				//
-//				ReferenceData[] referenceDataArr =
-//					spatialAnalysisResults.createReferenceDataForAllDiffusionRates(frapDataTimeStamps);
-//				ODESolverResultSet[] odeSolverResultSetArr =
-//					spatialAnalysisResults.createODESolverResultSetForAllDiffusionRates();
-//				spatialAnalysisList = new MultisourcePlotPane[spatialAnalysisResults.diffusionRates.length];
-//				for (int i = 0; i < spatialAnalysisResults.diffusionRates.length; i++) {
-//					String title = "Experimental vs. Diffusion Rate "+spatialAnalysisResults.diffusionRates[i];
-//					DataSource expDataSource = new DataSource(referenceDataArr[i],"experiment");
-//					DataSource fitDataSource = new DataSource(odeSolverResultSetArr[i], "fit");
-//					MultisourcePlotPane multisourcePlotPane = new MultisourcePlotPane();
-//					multisourcePlotPane.setDataSources(new DataSource[] {  expDataSource, fitDataSource } );
-//					multisourcePlotPane.selectAll();
-//					multisourcePlotPane.setBorder(new TitledBorder(new LineBorder(new Color(168,168,255)),title, TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION, new Font("Tahoma", Font.PLAIN, 12)));
-//					spatialAnalysisList[i]=multisourcePlotPane;
-//
-//				}
-//				VirtualFrapMainFrame.updateProgress(100);
-//			}
-//			public boolean skipIfAbort() {
-//				return false;
-//			}
-//			public boolean skipIfCancel(UserCancelException e) {
-//				return false;
-//			}
-//		};
-//		
-//		AsynchClientTask afterAnalysisTask = new AsynchClientTask() {
-//			public String getTaskName() { return "Refreshing report panel."; }
-//			public int getTaskType() { return cbit.vcell.desktop.controls.ClientTask.TASKTYPE_SWING_BLOCKING; }
-//			public void run(java.util.Hashtable hash) throws Exception{
-//				// show plot list by default 
-//				refreshReportPanel();
-//				// leave save status as it was
-//				// show message after running spatial analysis
-//				VirtualFrapMainFrame.updateProgress(0);
-//				VirtualFrapMainFrame.updateStatus("Spatial analysis is done.");
-//			}
-//			public boolean skipIfAbort() {
-//				return false;
-//			}
-//			public boolean skipIfCancel(UserCancelException e) {
-//				return false;
-//			}
-//		};
-//		
-//		AsynchClientTask[] tasks = new AsynchClientTask[] { spatialAnalysisTask, afterAnalysisTask};
-//		ClientTaskDispatcher.dispatch(VirtualFrapLoader.mf,hash, tasks, false); 
 	}
 
 	public void propertyChange(PropertyChangeEvent evt) {
@@ -2303,19 +1947,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		}
 
 	}
-	
-//	public void clearFitSpatialModelPanel()
-//	{
-//		getFitSpatialModelPanel().removeAll();
-//		pdeDataViewer = null;
-//		flourDataViewer = null;
-//		getFitSpatialModelPanel().add(getSplitDataViewers(), "Center");
-//		if(getLocalWorkspace() != null)
-//		{
-//			//reset relations between the dataviewers and dataviewermanagers 
-//			setLocalWorkspace(getLocalWorkspace());
-//		}
-//	}
 	
 	//Added March 2008.
 	public JCheckBox getShowReportListButton() {
