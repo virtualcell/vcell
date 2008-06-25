@@ -222,7 +222,7 @@ public class FRAPStudy implements Matchable{
 				ODESolverResultSet fitOdeSolverResultSet = new ODESolverResultSet();
 				fitOdeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription("t"));
 				for (int j = 0; j < varNames.length; j++) {
-					String name = "sim D="+diffusionRates[j]+"::"+FRAPStudy.SpatialAnalysisResults.ORDERED_ROITYPES[j].toString();
+					String name = "sim D="+diffusionRates[i]+"::"+FRAPStudy.SpatialAnalysisResults.ORDERED_ROITYPES[j].toString();
 					fitOdeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription(name));
 				}
 				//
