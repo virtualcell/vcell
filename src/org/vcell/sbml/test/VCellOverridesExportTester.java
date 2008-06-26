@@ -306,7 +306,7 @@ public void visitBioModel(BioModel bioModel_1, PrintStream logFilePrintStream) {
 							SimulationJob simJob = new SimulationJob(sims[i], null, j);
 							exportedSBMLStr = cbit.vcell.xml.XmlHelper.exportSBML(bioModel_1, 2, 1, simContexts[k], simJob);
 							//exportedSBMLStr = cbit.vcell.xml.XmlHelper.exportSBML(bioModel_1, 2, 1, simContexts[k].getName());
-							XmlUtil.writeXMLString(exportedSBMLStr, "C:\\VCell\\SBML_Testing\\SBMLValidationSuiteTests\\SBMLOverridesExportTests\\" + bioModel_1.getName()+"_"+simContexts[k].getName()+"_"+sims[i].getName()+"_"+j+".xml");
+							XmlUtil.writeXMLString(exportedSBMLStr, "C:\\SBMLRelated\\SBML_Testing\\SBMLValidationSuiteTests\\SBMLOverridesExportTests\\Alpha_Results_4_22_08\\" + bioModel_1.getName()+"_"+simContexts[k].getName()+"_"+sims[i].getName()+"_"+j+".xml");
 							// Import the exported model
 							bioModel_2 = (BioModel) cbit.vcell.xml.XmlHelper.importSBML(logger, exportedSBMLStr);
 							

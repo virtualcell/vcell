@@ -139,7 +139,27 @@ public class VCellSBMLSolver implements SBMLSolver {
 				e.printStackTrace(System.out);
 				throw new RuntimeException("NativeIDASolver: "+e.getMessage());
 			}
+		    
+		    
+/*			// solve simulation - USING NativeCVOdeSolver ....
+			cbit.vcell.solver.ode.CVodeFileWriter cvodeFileWriter = new cbit.vcell.solver.ode.CVodeFileWriter(sim);
+			cvodeFileWriter.initialize();
+			java.io.StringWriter stringWriter = new java.io.StringWriter();
+			cvodeFileWriter.writeInputFile(new java.io.PrintWriter(stringWriter,true));
+			stringWriter.close();
+			StringBuffer buffer = stringWriter.getBuffer();
+			String cvodeInputString = buffer.toString();
 	
+			final cbit.vcell.solvers.NativeCVODESolver nativeCVOdeSolver = new cbit.vcell.solvers.NativeCVODESolver();
+			// System.out.println(idaInputString);
+			cbit.vcell.util.RowColumnResultSet rcResultSet = null;
+			try {
+				rcResultSet = nativeCVOdeSolver.solve(cvodeInputString);
+			}catch (Exception e){
+				e.printStackTrace(System.out);
+				throw new RuntimeException("NativeCVOdeSolver: "+e.getMessage());
+			}
+*/	
 			//
 			// get simulation results - copy from RowColumnResultSet into OdeSolverResultSet
 			//

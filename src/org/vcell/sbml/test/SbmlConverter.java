@@ -273,19 +273,25 @@ private static void solveSimulation(Simulation sim, String filePathName, Hashtab
 		PrintWriter idaPW = new java.io.PrintWriter(idaInputFile);
 		idaFileWriter.writeInputFile(idaPW);
 		idaPW.close();
-		
+
+		// use the idastandalone solver
+		File idaOutputFile = new File(filePathName.replace(".vcml", ".ida"));
+		Executable executable = new Executable("IDAStandalone " + idaInputFile + " " + idaOutputFile);
+		executable.start();
+
 		// Generate .cvodeInput string
-		CVodeFileWriter cvodeFileWriter = new CVodeFileWriter(sim);
+/*		CVodeFileWriter cvodeFileWriter = new CVodeFileWriter(sim);
 		cvodeFileWriter.initialize();
 		File cvodeFile = new File(filePathName.replace(".vcml", ".cvodeInput"));
 		PrintWriter cvodePW = new java.io.PrintWriter(cvodeFile);
 		cvodeFileWriter.writeInputFile(cvodePW);
 		cvodePW.close();
 
-		// use the idastandalone solver
-		File idaOutputFile = new File(filePathName.replace(".vcml", ".ida"));
-		Executable executable = new Executable("IDAStandalone " + idaInputFile + " " + idaOutputFile);
+		// use the cvodeStandalone solver
+		File cvodeOutputFile = new File(filePathName.replace(".vcml", ".ida"));
+		Executable executable = new Executable("CVOdeStandalone " + cvodeFile + " " + cvodeOutputFile);
 		executable.start();
+*/
 
 		// get the result 
 		odeSolverResultSet = getODESolverResultSet(sim, idaOutputFile.getPath());
