@@ -886,6 +886,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		BioModel newBioModel = null;
 		try{
 			newBioModel = FRAPStudy.createNewBioModel(getFrapStudy(),
+				FRAPStudy.DEFAULT_SPECIES_COUNT,
 				new Double(getFrapStudy().getFrapModelParameters().diffusionRate),
 				getFrapStudy().getFrapModelParameters().monitorBleachRate,
 				(bSaveAsNew || getSavedFrapModelInfo() == null || getSavedFrapModelInfo().savedSimKeyValue == null
@@ -1653,6 +1654,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			getFrapStudy().refreshDependentROIs();
 			BioModel bioModel = FRAPStudy.createNewBioModel(
 				getFrapStudy(),
+				FRAPStudy.DEFAULT_SPECIES_COUNT,
 				baseDiffusionRate,
 				frapChangeInfo.bleachWhileMonitorRateString,
 				(getSavedFrapModelInfo() == null?null:getSavedFrapModelInfo().savedSimKeyValue),

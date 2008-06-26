@@ -352,6 +352,7 @@ public class NonGUIFRAPTest {
 		BioModel bioModel =
 			FRAPStudy.createNewBioModel(
 				frapStudy,
+				FRAPStudy.DEFAULT_SPECIES_COUNT,
 				new Double(recoveryDiffusionRateString),
 				bleachWhileMonitoringRateString,
 				LocalWorkspace.createNewKeyValue(),

@@ -97,6 +97,7 @@ import cbit.vcell.solvers.FVSolverStandalone;
 public class FRAPStudy implements Matchable{
 	private transient String xmlFilename = null;
 	private transient String directory = null;
+	public static final int DEFAULT_SPECIES_COUNT = 9;
 	private String name = null;
 	private String description = null;
 	private String originalImageFilePath = null;
@@ -174,7 +175,7 @@ public class FRAPStudy implements Matchable{
 
 	public static class SpatialAnalysisResults{
 		public final Double[] diffusionRates;
-		public final String[] varNames;
+//		public final String[] varNames;
 		public final double[] shiftedSimTimes;
 		public final Hashtable<CurveInfo, double[]> curveHash;
 		public static RoiType[] ORDERED_ROITYPES =
@@ -190,10 +191,10 @@ public class FRAPStudy implements Matchable{
 				RoiType.ROI_BLEACHED_RING8
 			};
 		public SpatialAnalysisResults(
-				Double[] diffusionRates,String[] varNames,double[] shiftedSimTimes,
+				Double[] diffusionRates,/*String[] varNames,*/double[] shiftedSimTimes,
 				Hashtable<CurveInfo, double[]> curveHash){
 			this.diffusionRates = diffusionRates;
-			this.varNames = varNames;
+//			this.varNames = varNames;
 			this.shiftedSimTimes = shiftedSimTimes;
 			this.curveHash = curveHash;
 		}
@@ -221,7 +222,7 @@ public class FRAPStudy implements Matchable{
 			for (int i = 0; i < diffusionRates.length; i++) {
 				ODESolverResultSet fitOdeSolverResultSet = new ODESolverResultSet();
 				fitOdeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription("t"));
-				for (int j = 0; j < varNames.length; j++) {
+				for (int j = 0; j < FRAPStudy.SpatialAnalysisResults.ORDERED_ROITYPES.length; j++) {
 					String name = "sim D="+diffusionRates[i]+"::"+FRAPStudy.SpatialAnalysisResults.ORDERED_ROITYPES[j].toString();
 					fitOdeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription(name));
 				}
@@ -229,7 +230,7 @@ public class FRAPStudy implements Matchable{
 				// populate time
 				//
 				for (int j = 0; j < shiftedSimTimes.length; j++) {
-					double[] row = new double[varNames.length+1];
+					double[] row = new double[FRAPStudy.SpatialAnalysisResults.ORDERED_ROITYPES.length+1];
 					row[0] = shiftedSimTimes[j];
 					fitOdeSolverResultSet.addRow(row);
 				}
@@ -363,7 +364,7 @@ public class FRAPStudy implements Matchable{
 		}
 
 		SpatialAnalysisResults spatialAnalysisResults = 
-			new SpatialAnalysisResults(diffusionRates,varNames,shiftedSimTimes,curveHash);
+			new SpatialAnalysisResults(diffusionRates,/*varNames,*/shiftedSimTimes,curveHash);
 		return spatialAnalysisResults;
 	}
 	
@@ -491,6 +492,7 @@ public class FRAPStudy implements Matchable{
 	
 	public static BioModel createNewBioModel(
 			FRAPStudy sourceFrapStudy,
+			int numSpecies,
 			Double baseDiffusionRate,
 			String bleachWhileMonitoringRateString,
 			KeyValue simKey,
@@ -572,87 +574,108 @@ public class FRAPStudy implements Matchable{
 		model.addFeature(CYTOSOL_NAME, extracellular, "plasmaMembrane");
 		Feature cytosol = (Feature)model.getStructure(CYTOSOL_NAME);
 		double factor = Math.pow(10,.25);
-		Expression[] diffusionConstants = new Expression[] {
-				new Expression(NumberUtils.formatNumber(baseDiffusionRate*Math.pow(factor, -4),3)),
-				new Expression(NumberUtils.formatNumber(baseDiffusionRate*Math.pow(factor, -3),3)),
-				new Expression(NumberUtils.formatNumber(baseDiffusionRate*Math.pow(factor, -2),3)),
-				new Expression(NumberUtils.formatNumber(baseDiffusionRate*Math.pow(factor, -1),3)),
-				new Expression(NumberUtils.formatNumber(baseDiffusionRate*Math.pow(factor, 0),3)),
-				new Expression(NumberUtils.formatNumber(baseDiffusionRate*Math.pow(factor, 1),3)),
-				new Expression(NumberUtils.formatNumber(baseDiffusionRate*Math.pow(factor, 2),3)),
-				new Expression(NumberUtils.formatNumber(baseDiffusionRate*Math.pow(factor, 3),3)),
-				new Expression(NumberUtils.formatNumber(baseDiffusionRate*Math.pow(factor, 4),3)),
-//					new Expression("(t>1000)"), // so that it creates a PDE equation
-//					new Expression("(t>1000)"), // so that it creates a PDE equation
-//					new Expression("(t>1000)"), // so that it creates a PDE equation
-//					new Expression("(t>1000)"), // so that it creates a PDE equation
-//					new Expression("(t>1000)"), // so that it creates a PDE equation
-//					new Expression("(t>1000)"), // so that it creates a PDE equation
-//					new Expression("(t>1000)"), // so that it creates a PDE equation
-//					new Expression("(t>1000)"), // so that it creates a PDE equation
-//					new Expression("(t>1000)"), // so that it creates a PDE equation
-		};
-		Species[] species = new Species[] {
-				new Species("fluor_D_"+TokenMangler.fixTokenStrict(diffusionConstants[0].infix()), "fluorescent molecule1"),
-				new Species("fluor_D_"+TokenMangler.fixTokenStrict(diffusionConstants[1].infix()), "fluorescent molecule2"),
-				new Species("fluor_D_"+TokenMangler.fixTokenStrict(diffusionConstants[2].infix()), "fluorescent molecule3"),
-				new Species("fluor_D_"+TokenMangler.fixTokenStrict(diffusionConstants[3].infix()), "fluorescent molecule4"),
-				new Species("fluor_D_"+TokenMangler.fixTokenStrict(diffusionConstants[4].infix()), "fluorescent molecule5"),
-				new Species("fluor_D_"+TokenMangler.fixTokenStrict(diffusionConstants[5].infix()), "fluorescent molecule6"),
-				new Species("fluor_D_"+TokenMangler.fixTokenStrict(diffusionConstants[6].infix()), "fluorescent molecule7"),
-				new Species("fluor_D_"+TokenMangler.fixTokenStrict(diffusionConstants[7].infix()), "fluorescent molecule8"),
-				new Species("fluor_D_"+TokenMangler.fixTokenStrict(diffusionConstants[8].infix()), "fluorescent molecule9"),
-//					new Species("prebleach_avg", "prebleach_avg"),
-//					new Species("postbleach_first", "postbleach_first"),
-//					new Species("postbleach_last", "postbleach_last"),
-//					new Species("bleached_mask", "bleached_mask"),
-//					new Species("ring1_mask", "ring1_mask"),
-//					new Species("ring2_mask", "ring2_mask"),
-//					new Species("ring3_mask", "ring3_mask"),
-//					new Species("ring4_mask", "ring4_mask"),
-//					new Species("ring5_mask", "ring5_mask"),
-		};
-		SpeciesContext[] speciesContexts = new SpeciesContext[] {
-				new SpeciesContext(null,species[0].getCommonName(),species[0],cytosol,true),
-				new SpeciesContext(null,species[1].getCommonName(),species[1],cytosol,true),
-				new SpeciesContext(null,species[2].getCommonName(),species[2],cytosol,true),
-				new SpeciesContext(null,species[3].getCommonName(),species[3],cytosol,true),
-				new SpeciesContext(null,species[4].getCommonName(),species[4],cytosol,true),
-				new SpeciesContext(null,species[5].getCommonName(),species[5],cytosol,true),
-				new SpeciesContext(null,species[6].getCommonName(),species[6],cytosol,true),
-				new SpeciesContext(null,species[7].getCommonName(),species[7],cytosol,true),
-				new SpeciesContext(null,species[8].getCommonName(),species[8],cytosol,true),
-//					new SpeciesContext(null,species[9].getCommonName(),species[9],cytosol,true),
-//					new SpeciesContext(null,species[10].getCommonName(),species[10],cytosol,true),
-//					new SpeciesContext(null,species[11].getCommonName(),species[11],cytosol,true),
-//					new SpeciesContext(null,species[12].getCommonName(),species[12],cytosol,true),
-//					new SpeciesContext(null,species[13].getCommonName(),species[13],cytosol,true),
-//					new SpeciesContext(null,species[14].getCommonName(),species[14],cytosol,true),
-//					new SpeciesContext(null,species[15].getCommonName(),species[15],cytosol,true),
-//					new SpeciesContext(null,species[16].getCommonName(),species[16],cytosol,true),
-//					new SpeciesContext(null,species[17].getCommonName(),species[17],cytosol,true)
-		};
 		String roiDataName = "roiData";
-		Expression[] initialConditions = new Expression[] {
-				new Expression("field("+roiDataName+",postbleach_first,0) / field("+roiDataName+",prebleach_avg,0)"),
-				new Expression("field("+roiDataName+",postbleach_first,0) / field("+roiDataName+",prebleach_avg,0)"),
-				new Expression("field("+roiDataName+",postbleach_first,0) / field("+roiDataName+",prebleach_avg,0)"),
-				new Expression("field("+roiDataName+",postbleach_first,0) / field("+roiDataName+",prebleach_avg,0)"),
-				new Expression("field("+roiDataName+",postbleach_first,0) / field("+roiDataName+",prebleach_avg,0)"),
-				new Expression("field("+roiDataName+",postbleach_first,0) / field("+roiDataName+",prebleach_avg,0)"),
-				new Expression("field("+roiDataName+",postbleach_first,0) / field("+roiDataName+",prebleach_avg,0)"),
-				new Expression("field("+roiDataName+",postbleach_first,0) / field("+roiDataName+",prebleach_avg,0)"),
-				new Expression("field("+roiDataName+",postbleach_first,0) / field("+roiDataName+",prebleach_avg,0)"),
-//					new Expression("field("+roiDataName+","+species[9].getCommonName()+",0)"),
-//					new Expression("field("+roiDataName+","+species[10].getCommonName()+",0)"),
-//					new Expression("field("+roiDataName+","+species[11].getCommonName()+",0)"),
-//					new Expression("field("+roiDataName+","+species[12].getCommonName()+",0)"),
-//					new Expression("field("+roiDataName+","+species[13].getCommonName()+",0)"),
-//					new Expression("field("+roiDataName+","+species[14].getCommonName()+",0)"),
-//					new Expression("field("+roiDataName+","+species[15].getCommonName()+",0)"),
-//					new Expression("field("+roiDataName+","+species[16].getCommonName()+",0)"),
-//					new Expression("field("+roiDataName+","+species[17].getCommonName()+",0)"),
-		};
+		
+		Expression[] diffusionConstants = new Expression[numSpecies];
+		Species[] species = new Species[numSpecies];
+		SpeciesContext[] speciesContexts = new SpeciesContext[numSpecies];
+		Expression[] initialConditions = new Expression[numSpecies];
+		for(int i=0; i<numSpecies; i++)
+		{
+			int power = ((i+1)/2);
+			power = power * ( (i%2)==0? 1 : -1);
+			diffusionConstants[i] = 
+				new Expression(NumberUtils.formatNumber(baseDiffusionRate*Math.pow(factor, power),3));
+			species[i] =
+					new Species("fluor_D_"+TokenMangler.fixTokenStrict(diffusionConstants[i].infix()), "fluorescent molecule"+(i+1));
+			speciesContexts[i] = 
+					new SpeciesContext(null,species[i].getCommonName(),species[i],cytosol,true);
+			initialConditions[i] =
+					new Expression("field("+roiDataName+",postbleach_first,0) / field("+roiDataName+",prebleach_avg,0)");
+			
+		}
+//			Expression[] diffusionConstants = new Expression[] {
+//					new Expression(NumberUtils.formatNumber(baseDiffusionRate*Math.pow(factor, -4),3)),
+//					new Expression(NumberUtils.formatNumber(baseDiffusionRate*Math.pow(factor, -3),3)),
+//					new Expression(NumberUtils.formatNumber(baseDiffusionRate*Math.pow(factor, -2),3)),
+//					new Expression(NumberUtils.formatNumber(baseDiffusionRate*Math.pow(factor, -1),3)),
+//					new Expression(NumberUtils.formatNumber(baseDiffusionRate*Math.pow(factor, 0),3)),
+//					new Expression(NumberUtils.formatNumber(baseDiffusionRate*Math.pow(factor, 1),3)),
+//					new Expression(NumberUtils.formatNumber(baseDiffusionRate*Math.pow(factor, 2),3)),
+//					new Expression(NumberUtils.formatNumber(baseDiffusionRate*Math.pow(factor, 3),3)),
+//					new Expression(NumberUtils.formatNumber(baseDiffusionRate*Math.pow(factor, 4),3)),
+//	//					new Expression("(t>1000)"), // so that it creates a PDE equation
+	//					new Expression("(t>1000)"), // so that it creates a PDE equation
+	//					new Expression("(t>1000)"), // so that it creates a PDE equation
+	//					new Expression("(t>1000)"), // so that it creates a PDE equation
+	//					new Expression("(t>1000)"), // so that it creates a PDE equation
+	//					new Expression("(t>1000)"), // so that it creates a PDE equation
+	//					new Expression("(t>1000)"), // so that it creates a PDE equation
+	//					new Expression("(t>1000)"), // so that it creates a PDE equation
+	//					new Expression("(t>1000)"), // so that it creates a PDE equation
+//			};
+//			Species[] species = new Species[] {
+//					new Species("fluor_D_"+TokenMangler.fixTokenStrict(diffusionConstants[0].infix()), "fluorescent molecule1"),
+//					new Species("fluor_D_"+TokenMangler.fixTokenStrict(diffusionConstants[1].infix()), "fluorescent molecule2"),
+//					new Species("fluor_D_"+TokenMangler.fixTokenStrict(diffusionConstants[2].infix()), "fluorescent molecule3"),
+//					new Species("fluor_D_"+TokenMangler.fixTokenStrict(diffusionConstants[3].infix()), "fluorescent molecule4"),
+//					new Species("fluor_D_"+TokenMangler.fixTokenStrict(diffusionConstants[4].infix()), "fluorescent molecule5"),
+//					new Species("fluor_D_"+TokenMangler.fixTokenStrict(diffusionConstants[5].infix()), "fluorescent molecule6"),
+//					new Species("fluor_D_"+TokenMangler.fixTokenStrict(diffusionConstants[6].infix()), "fluorescent molecule7"),
+//					new Species("fluor_D_"+TokenMangler.fixTokenStrict(diffusionConstants[7].infix()), "fluorescent molecule8"),
+//					new Species("fluor_D_"+TokenMangler.fixTokenStrict(diffusionConstants[8].infix()), "fluorescent molecule9"),
+	//					new Species("prebleach_avg", "prebleach_avg"),
+	//					new Species("postbleach_first", "postbleach_first"),
+	//					new Species("postbleach_last", "postbleach_last"),
+	//					new Species("bleached_mask", "bleached_mask"),
+	//					new Species("ring1_mask", "ring1_mask"),
+	//					new Species("ring2_mask", "ring2_mask"),
+	//					new Species("ring3_mask", "ring3_mask"),
+	//					new Species("ring4_mask", "ring4_mask"),
+	//					new Species("ring5_mask", "ring5_mask"),
+//			};
+//			SpeciesContext[] speciesContexts = new SpeciesContext[] {
+//					new SpeciesContext(null,species[0].getCommonName(),species[0],cytosol,true),
+//					new SpeciesContext(null,species[1].getCommonName(),species[1],cytosol,true),
+//					new SpeciesContext(null,species[2].getCommonName(),species[2],cytosol,true),
+//					new SpeciesContext(null,species[3].getCommonName(),species[3],cytosol,true),
+//					new SpeciesContext(null,species[4].getCommonName(),species[4],cytosol,true),
+//					new SpeciesContext(null,species[5].getCommonName(),species[5],cytosol,true),
+//					new SpeciesContext(null,species[6].getCommonName(),species[6],cytosol,true),
+//					new SpeciesContext(null,species[7].getCommonName(),species[7],cytosol,true),
+//					new SpeciesContext(null,species[8].getCommonName(),species[8],cytosol,true),
+	//					new SpeciesContext(null,species[9].getCommonName(),species[9],cytosol,true),
+	//					new SpeciesContext(null,species[10].getCommonName(),species[10],cytosol,true),
+	//					new SpeciesContext(null,species[11].getCommonName(),species[11],cytosol,true),
+	//					new SpeciesContext(null,species[12].getCommonName(),species[12],cytosol,true),
+	//					new SpeciesContext(null,species[13].getCommonName(),species[13],cytosol,true),
+	//					new SpeciesContext(null,species[14].getCommonName(),species[14],cytosol,true),
+	//					new SpeciesContext(null,species[15].getCommonName(),species[15],cytosol,true),
+	//					new SpeciesContext(null,species[16].getCommonName(),species[16],cytosol,true),
+	//					new SpeciesContext(null,species[17].getCommonName(),species[17],cytosol,true)
+//			};
+			
+//			Expression[] initialConditions = new Expression[] {
+//					new Expression("field("+roiDataName+",postbleach_first,0) / field("+roiDataName+",prebleach_avg,0)"),
+//					new Expression("field("+roiDataName+",postbleach_first,0) / field("+roiDataName+",prebleach_avg,0)"),
+//					new Expression("field("+roiDataName+",postbleach_first,0) / field("+roiDataName+",prebleach_avg,0)"),
+//					new Expression("field("+roiDataName+",postbleach_first,0) / field("+roiDataName+",prebleach_avg,0)"),
+//					new Expression("field("+roiDataName+",postbleach_first,0) / field("+roiDataName+",prebleach_avg,0)"),
+//					new Expression("field("+roiDataName+",postbleach_first,0) / field("+roiDataName+",prebleach_avg,0)"),
+//					new Expression("field("+roiDataName+",postbleach_first,0) / field("+roiDataName+",prebleach_avg,0)"),
+//					new Expression("field("+roiDataName+",postbleach_first,0) / field("+roiDataName+",prebleach_avg,0)"),
+//					new Expression("field("+roiDataName+",postbleach_first,0) / field("+roiDataName+",prebleach_avg,0)"),
+	//					new Expression("field("+roiDataName+","+species[9].getCommonName()+",0)"),
+	//					new Expression("field("+roiDataName+","+species[10].getCommonName()+",0)"),
+	//					new Expression("field("+roiDataName+","+species[11].getCommonName()+",0)"),
+	//					new Expression("field("+roiDataName+","+species[12].getCommonName()+",0)"),
+	//					new Expression("field("+roiDataName+","+species[13].getCommonName()+",0)"),
+	//					new Expression("field("+roiDataName+","+species[14].getCommonName()+",0)"),
+	//					new Expression("field("+roiDataName+","+species[15].getCommonName()+",0)"),
+	//					new Expression("field("+roiDataName+","+species[16].getCommonName()+",0)"),
+	//					new Expression("field("+roiDataName+","+species[17].getCommonName()+",0)"),
+//			};
+		
 		// for parameter scans, use cube root of 10 (3 per decade) = factor of 2.154434690030230132025595313452
 		// add reactions to species if there is bleachWhileMonitoring rate.
 		for (int i = 0; i < initialConditions.length; i++) {
