@@ -317,6 +317,10 @@ public class FRAPStudy implements Matchable{
 //			ROI roi_2D = frapData.getRoi(roiTypes[i]);
 //			int[] roiIndices = roi_2D.getRoiImages()[0].getNonzeroIndices();
 			double[] averageFluor = FRAPDataAnalysis.getAverageROIIntensity(frapData, SpatialAnalysisResults.ORDERED_ROITYPES[i]);
+			if(averageFluor[0] == 0)
+			{
+				throw new Exception("Error generating report: 0 average flourence intensity found at time 0");
+			}
 			double weight = 1.0/averageFluor[0];
 			for (int j = 0; j < averageFluor.length; j++) {
 				averageFluor[j] = averageFluor[j]*weight;
@@ -1144,10 +1148,16 @@ public class FRAPStudy implements Matchable{
 					}
 				}
 			}
-			else //startingIndexForRecovery = 0
+			else //if no prebleach image, use the last recovery image intensity as prebleach average.
 			{
-				for (int i = 0; i < avgPrebleach.length; i++) {
-					avgPrebleach[i] = 1;//if no starting index for recovery , then don't perform normalization for species' ini condition.
+				System.err.println("need to determine factor for prebleach average if no pre bleach images.");
+				short[] pixels = getFrapData().getImageDataset().getPixelsZ(0, (imageDataset.getSizeT() - 1));
+				for (int i = 0; i < pixels.length; i++) {
+					avgPrebleach[i] = pixels[i];
+					if(avgPrebleach[i] == 0)
+					{
+						avgPrebleach[i] = FRAPStudy.Epsilon;
+					}
 				}
 			}
     		pixData[0][0] = avgPrebleach; // average of prebleach

@@ -559,7 +559,7 @@ public class FRAPParametersPanel extends JPanel {
 					//expression on canvas
 					try{
 						String[] prefixes = new String[] { "I(t) = ", "D = " };
-						Expression[] expressions = new Expression[] { new Expression("If-(If-Io)*exp(-t/tau)"), new Expression("w^2/(4*tau)") };
+						Expression[] expressions = new Expression[] { new Expression(FRAPDataAnalysis.circularDisk_IntensityFunc_display), new Expression(FRAPDataAnalysis.circularDisk_DiffFunc) };
 						String[] suffixes = new String[] { "", "[um2.s-1]" };
 						expressionCanvas.setExpressions(expressions,prefixes,suffixes);
 					}catch (ExpressionException e2){
@@ -569,7 +569,7 @@ public class FRAPParametersPanel extends JPanel {
 					//expression on canvas
 					try{
 						String[] prefixes = new String[] { "I(t) = ", "u(t)= ","D = " };
-						Expression[] expressions = new Expression[] { new Expression("If*(1-fB)-(If*(1-fB)-Io)*(R*u+1-R)"), new Expression("(1+t/tau)^-1"), new Expression("w^2/(4*tau)") };
+						Expression[] expressions = new Expression[] { new Expression(FRAPDataAnalysis.gaussianSpot_IntensityFunc), new Expression(FRAPDataAnalysis.gaussianSpot_MuFunc), new Expression(FRAPDataAnalysis.gaussianSpot_DiffFunc) };
 						String[] suffixes = new String[] { "", "", "[um2.s-1]" };
 						expressionCanvas.setExpressions(expressions,prefixes,suffixes);
 					}catch (ExpressionException e2){
@@ -580,7 +580,7 @@ public class FRAPParametersPanel extends JPanel {
 					//expression on canvas
 					try{
 						String[] prefixes = new String[] { "I(t) = ", "u(t)= ","D = " };
-						Expression[] expressions = new Expression[] { new Expression("If*(1-fB)-(If*(1-fB)-Io)*(R*u+1-R)"), new Expression("exp(-t/tau)"), new Expression("tau*Pai^2/r^2") };
+						Expression[] expressions = new Expression[] { new Expression(FRAPDataAnalysis.halfCell_IntensityFunc), new Expression(FRAPDataAnalysis.halfCell_MuFunc), new Expression(FRAPDataAnalysis.halfCell_DiffFunc) };
 						String[] suffixes = new String[] { "", "", "[um2.s-1]" };
 						expressionCanvas.setExpressions(expressions,prefixes,suffixes);
 					}catch (ExpressionException e2){

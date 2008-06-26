@@ -226,12 +226,16 @@ public static void main(String[] args) {
 public static Expression fitRecovery(double[] time, double[] fluor, int bleachType, double[] inputparam, double[] outputParam) throws ExpressionException 
 {
 	//max and min of the average intensities under bleached region after bleach
-	double max_x = -Double.MAX_VALUE;
-	double min_x = Double.MAX_VALUE;
+//	double max_x = -Double.MAX_VALUE;
+//	double min_x = Double.MAX_VALUE;
+	double max_x = fluor[0];
+    double min_x = fluor[0];
 	for (int i = 0; i < fluor.length; i++){
 		max_x = Math.max(max_x, fluor[i]);
 		min_x = Math.min(min_x, fluor[i]);
 	}
+	System.out.println("min:"+min_x+"       max:"+max_x);
+	
 	if (time.length!=fluor.length){
 		throw new RuntimeException("Fluorecence and time arrays must be the same length");
 	}
@@ -250,13 +254,10 @@ public static Expression fitRecovery(double[] time, double[] fluor, int bleachTy
 	String[] paramNames = null;
 	double[] paramValues = null;
 	if(bleachType == FrapDataAnalysisResults.BleachType_CirularDisk){
-		modelExp = new Expression("Ii + A*(1-exp(-t/Tau))");//Ii=Io, A=If-Io comparing with formula showing in software
+		modelExp = new Expression(FRAPDataAnalysis.circularDisk_IntensityFunc);//Ii=Io, A=If-Io comparing with formula showing in software
 		// initialize starting guess, arguments in Parameter are name, Lower Bound, Upper Bound, Scale, Initial Guess
 		cbit.vcell.opt.Parameter parameters[] = new cbit.vcell.opt.Parameter[] {
-				new cbit.vcell.opt.Parameter("Ii", -1,1, 1.0, 0.0), 
-				new cbit.vcell.opt.Parameter("A", 0.1, 4.0, 1.0, 1.0), 
-				new cbit.vcell.opt.Parameter("Tau",0.1, 50.0, 1.0, 1.0)
-		};
+				FRAPDataAnalysis.para_Ii, FRAPDataAnalysis.para_A, FRAPDataAnalysis.para_tau};
 		
 		try {
 			optResultSet = solve(modelExp.flatten(),parameters,normalized_time,normalized_fluor);
@@ -279,20 +280,20 @@ public static Expression fitRecovery(double[] time, double[] fluor, int bleachTy
 	else if(bleachType == FrapDataAnalysisResults.BleachType_GaussianSpot || bleachType == FrapDataAnalysisResults.BleachType_HalfCell){
 		if(bleachType == FrapDataAnalysisResults.BleachType_GaussianSpot)
 		{
-			modelExp = new Expression("If*(1-fB)-(If*(1-fB)-I0)*(R*pow((1+t/tau),-1)+1-R)");
+			Expression muExp = new Expression(FRAPDataAnalysis.gaussianSpot_MuFunc);
+			modelExp = new Expression(FRAPDataAnalysis.gaussianSpot_IntensityFunc);
+			modelExp.substituteInPlace(new Expression(FRAPDataAnalysis.symbol_u), muExp);
 		}
 		else
 		{
-			modelExp = new Expression("If*(1-fB)-(If*(1-fB)-I0)*(R*exp(-t/tau)+1-R)");
+			Expression muExp = new Expression(FRAPDataAnalysis.halfCell_MuFunc);
+			modelExp = new Expression(FRAPDataAnalysis.halfCell_IntensityFunc);
+			modelExp.substituteInPlace(new Expression(FRAPDataAnalysis.symbol_u), muExp);
 		}
-		double fB = inputparam[0]; //fraction of the cell area bleached.
-		modelExp = modelExp.getSubstitutedExpression(new Expression("fB"), new Expression(fB));
+		//inputparam[0] is the fraction of the cell area bleached.
+		modelExp = modelExp.getSubstitutedExpression(new Expression(FRAPDataAnalysis.symbol_fB), new Expression(inputparam[0]));
 		cbit.vcell.opt.Parameter parameters[] = new cbit.vcell.opt.Parameter[] {
-				new cbit.vcell.opt.Parameter("If", -1, 3.0, 1.0, 0.0), //final intensity
-				new cbit.vcell.opt.Parameter("I0", -1, 3.0, 1.0, 0.0), //original intensity(first postbleach)
-				new cbit.vcell.opt.Parameter("tau", 0.1, 50.0, 1.0, 1.0),//tau
-				new cbit.vcell.opt.Parameter("R", 0, 1.0, 1.0, 0.01) //mobile fraction
-		};
+				FRAPDataAnalysis.para_If, FRAPDataAnalysis.para_I0, FRAPDataAnalysis.para_tau, FRAPDataAnalysis.para_R};
 		
 		try {
 			optResultSet = solve(modelExp.flatten(),parameters,normalized_time,normalized_fluor);
@@ -326,6 +327,8 @@ public static Expression fitRecovery(double[] time, double[] fluor, int bleachTy
 	// construct final equation
 	// 
 	Expression fit = new Expression(modelExp);
+	
+	System.out.println("fit before subsituting parameters:"+fit.infix());
 	//
 	// substitute parameter values
 	//
@@ -339,8 +342,9 @@ public static Expression fitRecovery(double[] time, double[] fluor, int bleachTy
 	//
 	// undo fluorescence normalization
 	//
+	System.out.println("fit equation before unnorm:" + fit.infix());
 	fit = new Expression(min_x+" + "+(max_x-min_x)+" * ("+fit.infix()+")");
-	
+	System.out.println("fit equation after unnorm:" + fit.infix());
 	return fit;
 }
 
