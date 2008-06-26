@@ -18,6 +18,7 @@ import org.sbml.libsbml.libsbml;
 import cbit.util.TokenMangler;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.PropertyLoader;
 /**
  * Insert the type's description here.
@@ -27,7 +28,7 @@ import cbit.vcell.server.PropertyLoader;
 public class MathModel_SBMLExporter {
 	static
 	{
-		System.loadLibrary("sbmlj");
+		ResourceUtil.loadlibSbmlLibray();
 	}
 
 /**

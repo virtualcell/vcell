@@ -14,8 +14,6 @@ import org.sbml.libsbml.SBMLDocument;
 import org.sbml.libsbml.SBMLWriter;
 import org.sbml.libsbml.SpeciesReference;
 import org.sbml.libsbml.UnitDefinition;
-import org.sbml.libsbml.XMLNamespaces;
-import org.sbml.libsbml.XMLNode;
 import org.sbml.libsbml.libsbml;
 import org.vcell.sbml.SBMLUtils;
 import org.vcell.sbml.SBMLUtils.SBMLUnitParameter;
@@ -40,7 +38,6 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.ExpressionMathMLParser;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
@@ -229,6 +226,11 @@ protected void addCompartments() {
 			System.out.flush();
 			sbmlCompartment.setAnnotation(new String(annotationString));
 		}
+		if (vcStructures[i].getMIRIAMAnnotation() != null && vcStructures[i].getMIRIAMAnnotation().getUserNotes() != null) {
+			Element notesElement = new Element(XMLTags.SbmlNotesTag, "");
+			MIRIAMHelper.addToSBML(notesElement, vcStructures[i].getMIRIAMAnnotation(), false);
+			sbmlCompartment.setNotes(XmlUtil.xmlToString(notesElement, true));
+		}
 	}
 }
 
@@ -340,8 +342,14 @@ protected void addReactions() {
 			e.printStackTrace(System.out);
 			throw new RuntimeException("Could not get JDOM element for annotation : " + e.getMessage());
 		}
-		MIRIAMHelper.addToSBML(annotationElement, vcReactionSpecs[i].getReactionStep().getMIRIAMAnnotation(),false);
+		MIRIAMHelper.addToSBML(annotationElement, vcReactionStep.getMIRIAMAnnotation(),false);
 		sbmlReaction.setAnnotation(cbit.util.xml.XmlUtil.xmlToString(annotationElement));
+		
+		if (vcReactionStep.getMIRIAMAnnotation() != null && vcReactionStep.getMIRIAMAnnotation().getUserNotes() != null) {
+			Element notesElement = new Element(XMLTags.SbmlNotesTag, "");
+			MIRIAMHelper.addToSBML(notesElement, vcReactionStep.getMIRIAMAnnotation(), false);
+			sbmlReaction.setNotes(XmlUtil.xmlToString(notesElement, true));
+		}
 		
 		// Get reaction kineticLaw
 		Kinetics vcRxnKinetics = vcReactionStep.getKinetics();
@@ -696,6 +704,12 @@ protected void addSpecies() {
 		annotationElement.addContent(vcellInfoTag);
 		MIRIAMHelper.addToSBML(annotationElement, vcSpeciesContexts[i].getSpecies().getMIRIAMAnnotation(),false);
 		sbmlSpecies.setAnnotation(cbit.util.xml.XmlUtil.xmlToString(annotationElement,true));
+		
+		if (vcSpeciesContexts[i].getSpecies().getMIRIAMAnnotation() != null && vcSpeciesContexts[i].getSpecies().getMIRIAMAnnotation().getUserNotes() != null) {
+			Element notesElement = new Element(XMLTags.SbmlNotesTag, "");
+			MIRIAMHelper.addToSBML(notesElement, vcSpeciesContexts[i].getSpecies().getMIRIAMAnnotation(), false);
+			sbmlSpecies.setNotes(XmlUtil.xmlToString(notesElement, true));
+		}
 	}
 }
 
@@ -1080,14 +1094,14 @@ public String getSBMLFile() {
 	MIRIAMHelper.addToSBML(annotationElement, vcBioModel.getMIRIAMAnnotation(), false);
 	sbmlModel.setAnnotation(XmlUtil.xmlToString(annotationElement, true));
 
+	if (vcBioModel.getMIRIAMAnnotation() != null && vcBioModel.getMIRIAMAnnotation().getUserNotes() != null) {
+		Element notesElement = new Element(XMLTags.SbmlNotesTag, "");
+		MIRIAMHelper.addToSBML(notesElement, vcBioModel.getMIRIAMAnnotation(), false);
+		sbmlModel.setNotes(XmlUtil.xmlToString(notesElement, true));
+	}
+
 	// Add the user annotations in the biomodel, simContext and simulation as <notes> in the sbml model.
-//	String vcAnnotStr = getVCellAnnotation();
-//	if (vcAnnotStr != null &&!vcAnnotStr.equals("")) {
-//		XMLNamespaces xmlNs = new XMLNamespaces();
-//		xmlNs.add("http://www.w3.org/1999/xhtml");
-//		XMLNode vcAnnotNode = XMLNode.convertStringToXMLNode(vcAnnotStr, xmlNs);
-//		sbmlModel.appendNotes(vcAnnotNode);
-//	}
+	// ---- TODO ----
 	
 	// write sbml document into sbml writer, so that the sbml str can be retrieved
 	SBMLWriter sbmlWriter = new SBMLWriter();

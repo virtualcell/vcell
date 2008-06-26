@@ -130,6 +130,7 @@ protected void addCompartments() {
 				throw new RuntimeException("Cannot deal with spatial dimension : " + compartment.getSpatialDimensions() + " for compartments at this time");
 			}
 			MIRIAMHelper.setFromSBMLAnnotation(structVector.get(i), XMLNode.convertXMLNodeToString(compartment.getAnnotation()));
+			MIRIAMHelper.setFromSBMLNotes(structVector.get(i),XMLNode.convertXMLNodeToString(compartment.getNotes()));
 		}
 
 		// Second pass - connect the structures - add membranes if needed.
@@ -519,6 +520,7 @@ protected void addReactions() {
 					vcReactions[i] = new cbit.vcell.model.SimpleReaction(reactionStructure, rxnName);
 				}
 				MIRIAMHelper.setFromSBMLAnnotation(vcReactions[i], XMLNode.convertXMLNodeToString(rxnAnnotation));
+				MIRIAMHelper.setFromSBMLNotes(vcReactions[i], XMLNode.convertXMLNodeToString(sbmlRxn.getNotes()));
 			} else {
 				vcReactions[i] = new cbit.vcell.model.SimpleReaction(reactionStructure, rxnName);
 			}
@@ -803,13 +805,13 @@ protected void addReactions() {
 										Expression newRateExpr = kinetics.getAuthoritativeParameter().getExpression();
 										Expression modifiedSpeciesExpression = Expression.mult(new Expression(species.getId()), concScaleFactor.getExpression());
 										newRateExpr.substituteInPlace(new Expression(species.getId()), modifiedSpeciesExpression);
-										kinetics.setParameterValue(kinetics.getAuthoritativeParameter(), newRateExpr);
+										kinetics.setParameterValue(kinetics.getAuthoritativeParameter(), newRateExpr.flatten());
 									} else {
 										Expression newRateExpr = kinetics.getAuthoritativeParameter().getExpression();
 										newRateExpr.substituteInPlace(new Expression(species.getId()), new Expression(species.getId()+"*"+CONCFACTOR_PARAMETER));
-										kinetics.setParameterValue(kinetics.getAuthoritativeParameter(), newRateExpr);
+										kinetics.setParameterValue(kinetics.getAuthoritativeParameter(), newRateExpr.flatten());
 										// Add the concentration factor as a parameter
-										kinetics.setParameterValue(kinetics.getKineticsParameter(CONCFACTOR_PARAMETER), concScaleFactor.getExpression());
+										kinetics.setParameterValue(kinetics.getKineticsParameter(CONCFACTOR_PARAMETER), concScaleFactor.getExpression().flatten());
 										kinetics.getKineticsParameter(CONCFACTOR_PARAMETER).setUnitDefinition(concScaleFactor.getUnitDefinition());
 									}
 								}	// end - if concScaleFactor
@@ -870,15 +872,15 @@ protected void addReactions() {
 								// 's1*V1' in place of 's1' in param expression; leaving s1_ConcFactor as is.
 								Expression modifiedSpeciesExpression = Expression.mult(new Expression(sp.getId()), concScaleFactor_1.getExpression());
 								valueExpr.substituteInPlace(new Expression(sp.getId()), modifiedSpeciesExpression);
-								kinetics.setParameterValue(paramName,valueExpr.infix());
+								kinetics.setParameterValue(paramName,valueExpr.flatten().infix());
 								spCount++;
 							} else {
 								// Check if valueExpr has the species, if so, add the species conc factor, else, do nothing.
 								if (valueExpr.hasSymbol(spName)) {
 									valueExpr.substituteInPlace(new Expression(sp.getId()), new Expression(sp.getId()+"*"+CONCFACTOR_PARAMETER));
-									kinetics.setParameterValue(paramName,valueExpr.infix());
+									kinetics.setParameterValue(paramName,valueExpr.flatten().infix());
 									// Add the concentration factor as a parameter
-									kinetics.setParameterValue(kinetics.getKineticsParameter(CONCFACTOR_PARAMETER), concScaleFactor_1.getExpression());
+									kinetics.setParameterValue(kinetics.getKineticsParameter(CONCFACTOR_PARAMETER), concScaleFactor_1.getExpression().flatten());
 									kinetics.getKineticsParameter(CONCFACTOR_PARAMETER).setUnitDefinition(concScaleFactor_1.getUnitDefinition());
 									spCount++;
 								}
@@ -1054,9 +1056,13 @@ public static double getSpeciesConcUnitFactor(VCUnitDefinition fromUnit, VCUnitD
 						vcSpecies = simContext.getModel().getSpecies(speciesName);
 					}
 					MIRIAMHelper.setFromSBMLAnnotation(vcSpecies,XMLNode.convertXMLNodeToString(speciesAnnotation));
+					
 				} else {
 					simContext.getModel().addSpecies(new cbit.vcell.model.Species(speciesName, speciesName));
 					vcSpecies = simContext.getModel().getSpecies(speciesName);
+				}
+				if (sbmlSpecies.getNotes() != null) {
+					MIRIAMHelper.setFromSBMLNotes(vcSpecies, XMLNode.convertXMLNodeToString(sbmlSpecies.getNotes()));
 				}
 				
 				// Get matching compartment name (of sbmlSpecies[i]) from feature list
@@ -1428,7 +1434,7 @@ public BioModel getBioModel() {
 	
 	long numProblems = document.getNumErrors();
 	System.out.println("\n Num problems in original SBML document : " + numProblems + "\n");
-
+	
 	sbmlModel = document.getModel();
 	
 	// Convert SBML Model to VCell model
@@ -1438,12 +1444,12 @@ public BioModel getBioModel() {
 	if (modelName == null || modelName.trim().equals("")) {
 		modelName = sbmlModel.getName();
 	} 
-	cbit.vcell.model.Model vcModel = null;
-	if (modelName != null) {
-		vcModel = new cbit.vcell.model.Model(modelName);
-	} else {
-		vcModel = new cbit.vcell.model.Model("newModel");
-	}
+	// if sbml 'model' didn't have either id or name set, use a default name, say 'newModel'
+	if (modelName == null || modelName.trim().equals("")) {
+		modelName = "newModel";
+	} 
+	cbit.vcell.model.Model vcModel = new cbit.vcell.model.Model(modelName);
+
 	Geometry geometry = new Geometry("Compartmental", 0);
 	try {
 		simContext = new SimulationContext(vcModel, geometry);
@@ -1467,6 +1473,8 @@ public BioModel getBioModel() {
 	}
 	
 	MIRIAMHelper.setFromSBMLAnnotation(bioModel,sbmlModel.getAnnotationString());
+	MIRIAMHelper.setFromSBMLNotes(bioModel,sbmlModel.getNotesString());
+
 	bioModel.refreshDependencies();
 	return bioModel;
 }
@@ -1722,10 +1730,10 @@ private Expression getValueFromRule(String paramName)  {
 	for (int i = 0; i < assignmentRulesHash.size(); i++) {
 		valueExpr = (Expression)assignmentRulesHash.get(paramName);
 		if (valueExpr != null) {
-			return valueExpr;
+			return new Expression(valueExpr);
 		}
 	}
-	return valueExpr;
+	return null;
 }
 
 /**

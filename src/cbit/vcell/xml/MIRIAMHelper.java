@@ -129,8 +129,11 @@ public class MIRIAMHelper {
 	
 	public static void addToSBML(Element parent,MIRIAMAnnotation miriamAnnotation,boolean bAdd){
 		try {
-			addToSBMLAnnotation(parent, miriamAnnotation);
-			addToSBMLNotes(parent, miriamAnnotation);
+			if (parent.getName().equalsIgnoreCase(XMLTags.SbmlAnnotationTag)) {
+				addToSBMLAnnotation(parent, miriamAnnotation);
+			} else if (parent.getName().equalsIgnoreCase(XMLTags.SbmlNotesTag)) {
+				addToSBMLNotes(parent, miriamAnnotation);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -794,32 +797,35 @@ private static void addToSBMLAnnotation(Element parent,MIRIAMAnnotation miriamAn
 			e.printStackTrace();
 		}
 }
-	public static void setFromSBMLNotes(MIRIAMAnnotatable miriamAnnotatable,Element notesElement){
-		try {
+
+public static void setFromSBMLNotes(MIRIAMAnnotatable miriamAnnotatable,Element notesElement){
+	try {
+		if(notesElement == null){
+			return;
+		}
+		Namespace ns = notesElement.getNamespace();
+		if(!notesElement.getName().equalsIgnoreCase(XMLTags.SbmlNotesTag)){
+			notesElement = notesElement.getChild(XMLTags.SbmlNotesTag, ns);
 			if(notesElement == null){
 				return;
 			}
-				Namespace ns = notesElement.getNamespace();
-				if(!notesElement.getName().equalsIgnoreCase(XMLTags.SbmlNotesTag)){
-					notesElement = notesElement.getChild(XMLTags.SbmlNotesTag, ns);
-					if(notesElement == null){
-						return;
-					}
-				}
-					MIRIAMAnnotation miriamAnnotation = miriamAnnotatable.getMIRIAMAnnotation();
-					if(miriamAnnotatable.getMIRIAMAnnotation() == null){
-						miriamAnnotation = new MIRIAMAnnotation();
-						miriamAnnotatable.setMIRIAMAnnotation(miriamAnnotation);
-					}
-					if(recurseForElement(notesElement, HTML.Tag.HTML.toString()) != null){
-						miriamAnnotation.setUserNotes((Element)notesElement.clone());
-					}else{
-						Element newNotesElement = new Element(XMLTags.SbmlNotesTag);
-						newNotesElement.addContent((Element)extractHTMLFromElement(notesElement).clone());
-					}
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
+		MIRIAMAnnotation miriamAnnotation = miriamAnnotatable.getMIRIAMAnnotation();
+		if(miriamAnnotatable.getMIRIAMAnnotation() == null){
+			miriamAnnotation = new MIRIAMAnnotation();
+			miriamAnnotatable.setMIRIAMAnnotation(miriamAnnotation);
+		}
+		Element newNotesElement = null;
+		if(recurseForElement(notesElement, HTML.Tag.HTML.toString()) != null) {
+			newNotesElement = (Element)notesElement.clone();
+		} else {
+			newNotesElement = new Element(XMLTags.SbmlNotesTag);
+			newNotesElement.addContent((Element)extractHTMLFromElement(notesElement).clone());
+		}
+		miriamAnnotation.setUserNotes((Element)newNotesElement.clone());
+	} catch (Exception e) {
+		e.printStackTrace();
+	}
 }
 	
 //	public static MIRIAMAnnotation getMIRIAMAnnotation(String annotationStr){
