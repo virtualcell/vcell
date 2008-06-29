@@ -242,7 +242,7 @@ public final void setName(java.lang.String name) throws java.beans.PropertyVetoE
  * @return java.lang.String
  */
 public String toString() {
-	return "VCImage@"+Integer.toHexString(hashCode())+"("+getName()+")";
+	return getClass().getName()+"@"+Integer.toHexString(hashCode())+"("+getName()+")";
 }
 
 }
