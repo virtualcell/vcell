@@ -104,9 +104,9 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	//Following final static variables are added in Jan 2008.
 	public final static int INDEX_TAB_IMAGES = 0;
 	public final static int INDEX_TAB_FITCURVE = 1;
-	public final static int INDEX_TAB_SPATIALMODEL = 2;
-	public final static int INDEX_TAB_FITSPATIALMODEL = 3;
-	public final static int INDEX_TAB_REPORT = 4;
+//	public final static int INDEX_TAB_SPATIALMODEL = 2;
+	public final static int INDEX_TAB_FITSPATIALMODEL = 2;
+	public final static int INDEX_TAB_REPORT = 3;
 	
 	public static final String FRAPDATAPANEL_TABNAME = "Images";
 	
@@ -468,7 +468,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			jTabbedPane = new JTabbedPane();
 			jTabbedPane.addTab(FRAPDATAPANEL_TABNAME, null, getFRAPDataPanel(), null);
 			jTabbedPane.addTab("Fit Recovery Curve", null, getFRAPParametersPanel(), null);
-			jTabbedPane.addTab("Generate Spatial Model", null, getModelPanel(), null);
+//			jTabbedPane.addTab("Generate Spatial Model", null, getModelPanel(), null);
 			jTabbedPane.addTab("Fit Spatial Model", null, getFitSpatialModelPanel(), null);
 			jTabbedPane.addTab("Report", null, getScrollReportPane(), null);
 			jTabbedPane.setModel(
@@ -566,9 +566,11 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							"Some FRAP Model Parameter Estimation help won't be available because:\n"+e.getMessage(),
 							new String[] {UserMessage.OPTION_OK}, UserMessage.OPTION_OK);
 				}
-			}else if(enterTab == FRAPStudyPanel.INDEX_TAB_SPATIALMODEL){
-				refreshBiomodel();
-			}else if(enterTab == FRAPStudyPanel.INDEX_TAB_FITSPATIALMODEL){
+			}
+//			else if(enterTab == FRAPStudyPanel.INDEX_TAB_SPATIALMODEL){
+//				refreshBiomodel();
+//			}
+			else if(enterTab == FRAPStudyPanel.INDEX_TAB_FITSPATIALMODEL){
 				refreshBiomodel();
 				CurrentSimulationDataState currentSimulationDataState = null;
 				if(getSavedFrapModelInfo() != null){
@@ -637,46 +639,46 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		return frapParametersPanel;
 	}
 
-	/**
-	 * This method initializes modelPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
-	 */
-	private JPanel getModelPanel() {
-		if (modelPanel == null) {
-			GridBagConstraints gridBagConstraints10 = new GridBagConstraints();
-			gridBagConstraints10.gridx = 0;
-			gridBagConstraints10.insets = new Insets(5, 5, 5, 5);
-			gridBagConstraints10.gridy = 0;
-			GridBagConstraints gridBagConstraints4 = new GridBagConstraints();
-			gridBagConstraints4.gridx = 0;
-			gridBagConstraints4.gridheight = 1;
-			gridBagConstraints4.weightx = 0.0D;
-			gridBagConstraints4.weighty = 0.0D;
-			gridBagConstraints4.gridy = 2;
-			GridBagConstraints gridBagConstraints5 = new GridBagConstraints();
-			gridBagConstraints5.gridx = 0;
-			gridBagConstraints5.weightx = 1.0D;
-			gridBagConstraints5.weighty = 1.0D;
-			gridBagConstraints5.fill = GridBagConstraints.BOTH;
-			gridBagConstraints5.insets = new Insets(10, 10, 10, 10);
-			gridBagConstraints5.gridwidth = 2;
-			gridBagConstraints5.gridy = 1;
-			GridBagConstraints gridBagConstraints3 = new GridBagConstraints();
-			gridBagConstraints3.gridx = 1;
-			gridBagConstraints3.gridwidth = 1;
-			gridBagConstraints3.insets = new Insets(5, 5, 5, 5);
-			gridBagConstraints3.gridy = 2;
-			modelPanel = new JPanel();
-			modelPanel.setLayout(new GridBagLayout());
-			modelPanel.add(getGeometryControlsPanel(), gridBagConstraints10);
-			modelPanel.add(getGeometryGraphPane(), gridBagConstraints5);
-//			modelPanel.add(getModelSpecPanel(), gridBagConstraints4);
-			//Commentted in Feb 2008. It can be found in menu and toolbar
-//			modelPanel.add(getRefreshModelButton(), gridBagConstraints3);
-		}
-		return modelPanel;
-	}
+//	/**
+//	 * This method initializes modelPanel	
+//	 * 	
+//	 * @return javax.swing.JPanel	
+//	 */
+//	private JPanel getModelPanel() {
+//		if (modelPanel == null) {
+//			GridBagConstraints gridBagConstraints10 = new GridBagConstraints();
+//			gridBagConstraints10.gridx = 0;
+//			gridBagConstraints10.insets = new Insets(5, 5, 5, 5);
+//			gridBagConstraints10.gridy = 0;
+//			GridBagConstraints gridBagConstraints4 = new GridBagConstraints();
+//			gridBagConstraints4.gridx = 0;
+//			gridBagConstraints4.gridheight = 1;
+//			gridBagConstraints4.weightx = 0.0D;
+//			gridBagConstraints4.weighty = 0.0D;
+//			gridBagConstraints4.gridy = 2;
+//			GridBagConstraints gridBagConstraints5 = new GridBagConstraints();
+//			gridBagConstraints5.gridx = 0;
+//			gridBagConstraints5.weightx = 1.0D;
+//			gridBagConstraints5.weighty = 1.0D;
+//			gridBagConstraints5.fill = GridBagConstraints.BOTH;
+//			gridBagConstraints5.insets = new Insets(10, 10, 10, 10);
+//			gridBagConstraints5.gridwidth = 2;
+//			gridBagConstraints5.gridy = 1;
+//			GridBagConstraints gridBagConstraints3 = new GridBagConstraints();
+//			gridBagConstraints3.gridx = 1;
+//			gridBagConstraints3.gridwidth = 1;
+//			gridBagConstraints3.insets = new Insets(5, 5, 5, 5);
+//			gridBagConstraints3.gridy = 2;
+//			modelPanel = new JPanel();
+//			modelPanel.setLayout(new GridBagLayout());
+//			modelPanel.add(getGeometryControlsPanel(), gridBagConstraints10);
+//			modelPanel.add(getGeometryGraphPane(), gridBagConstraints5);
+////			modelPanel.add(getModelSpecPanel(), gridBagConstraints4);
+//			//Commentted in Feb 2008. It can be found in menu and toolbar
+////			modelPanel.add(getRefreshModelButton(), gridBagConstraints3);
+//		}
+//		return modelPanel;
+//	}
 
 	/**
 	 * This method initializes fitSpatialModelPanel	
@@ -1719,8 +1721,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				LocalWorkspace.getDefaultOwner(),
 				new Integer(frapChangeInfo.startIndexForRecoveryString));
 			getFrapStudy().setBioModel(bioModel);
-			((StructureMappingCartoon)getGeometryGraphPane().getGraphModel()).
-			setSimulationContext(getFrapStudy().getBioModel().getSimulationContexts()[0]);			
+//			((StructureMappingCartoon)getGeometryGraphPane().getGraphModel()).
+//			setSimulationContext(getFrapStudy().getBioModel().getSimulationContexts()[0]);			
 			return frapChangeInfo;
 
 		}catch(Exception e){
@@ -1729,18 +1731,18 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	}	
 
 	
-	/**
-	 * This method initializes geometryGraphPane	
-	 * 	
-	 * @return cbit.gui.graph.GraphPane	
-	 */
-	private GraphPane getGeometryGraphPane() {
-		if (geometryGraphPane == null) {
-			geometryGraphPane = new GraphPane();
-			geometryGraphPane.setGraphModel(new StructureMappingCartoon());
-		}
-		return geometryGraphPane;
-	}
+//	/**
+//	 * This method initializes geometryGraphPane	
+//	 * 	
+//	 * @return cbit.gui.graph.GraphPane	
+//	 */
+//	private GraphPane getGeometryGraphPane() {
+//		if (geometryGraphPane == null) {
+//			geometryGraphPane = new GraphPane();
+//			geometryGraphPane.setGraphModel(new StructureMappingCartoon());
+//		}
+//		return geometryGraphPane;
+//	}
 	
 	/**
 	 * This method initializes spatial_twoAndHalfDimRadioButton	
@@ -1782,25 +1784,25 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		return spatial_twoDimRadioButton;
 	}
 
-	/**
-	 * This method initializes geometryControlsPanel	
-	 * 	
-	 * @return javax.swing.JPanel	
-	 */
-	private JPanel getGeometryControlsPanel() {
-		if (geometryControlsPanel == null) {
-			GridBagConstraints gridBagConstraints8 = new GridBagConstraints();
-			gridBagConstraints8.anchor = GridBagConstraints.WEST;
-			gridBagConstraints8.gridy = -1;
-			gridBagConstraints8.gridx = -1;
-			geometryControlsPanel = new JPanel();
-			geometryControlsPanel.setLayout(new GridBagLayout());
-			geometryControlsPanel.add(getSpatial_twoDimRadioButton(), new GridBagConstraints());
-			geometryControlsPanel.add(getSpatial_twoAndHalfDimRadioButton(), new GridBagConstraints());
-			geometryControlsPanel.add(getSpatial_threeDimRadioButton(), gridBagConstraints8);
-		}
-		return geometryControlsPanel;
-	}
+//	/**
+//	 * This method initializes geometryControlsPanel	
+//	 * 	
+//	 * @return javax.swing.JPanel	
+//	 */
+//	private JPanel getGeometryControlsPanel() {
+//		if (geometryControlsPanel == null) {
+//			GridBagConstraints gridBagConstraints8 = new GridBagConstraints();
+//			gridBagConstraints8.anchor = GridBagConstraints.WEST;
+//			gridBagConstraints8.gridy = -1;
+//			gridBagConstraints8.gridx = -1;
+//			geometryControlsPanel = new JPanel();
+//			geometryControlsPanel.setLayout(new GridBagLayout());
+//			geometryControlsPanel.add(getSpatial_twoDimRadioButton(), new GridBagConstraints());
+//			geometryControlsPanel.add(getSpatial_twoAndHalfDimRadioButton(), new GridBagConstraints());
+//			geometryControlsPanel.add(getSpatial_threeDimRadioButton(), gridBagConstraints8);
+//		}
+//		return geometryControlsPanel;
+//	}
 
 	public LocalWorkspace getLocalWorkspace() {
 		return localWorkspace;

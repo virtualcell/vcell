@@ -8,12 +8,11 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
-import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeMap;
@@ -21,7 +20,6 @@ import java.util.Vector;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -36,12 +34,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
-import com.sun.java_cup.internal.emit;
-import com.sun.org.apache.xml.internal.utils.StopParseException;
-
 import cbit.gui.DialogUtils;
-import cbit.gui.ZEnforcer;
-
 import cbit.image.VCImageUncompressed;
 import cbit.util.AsynchProgressPopup;
 import cbit.util.BeanUtils;
@@ -52,8 +45,6 @@ import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.RegionImage.RegionInfo;
 import cbit.vcell.microscopy.FRAPData;
-import cbit.vcell.microscopy.FRAPDataAnalysis;
-import cbit.vcell.microscopy.FrapDataAnalysisResults;
 import cbit.vcell.microscopy.ROI;
 import cbit.vcell.microscopy.ROI.RoiType;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
@@ -777,7 +768,6 @@ public class ROIAssistPanel extends JPanel {
 //		);
 //		pp.startKeepOnTop();
 
-		Thread.dumpStack();
 		new Thread(new Runnable(){public void run(){
 		try{			
 			
@@ -1212,21 +1202,29 @@ public class ROIAssistPanel extends JPanel {
 			throw new Exception("No regionInfo to resolve");
 		}
 //			try{
-				final Vector<RegionInfo> roiRegionInfoV = new Vector<RegionInfo>();
+				final Vector<RegionInfo> roiRegionInfoV2 = new Vector<RegionInfo>();
 				for (int i = 0; i < lastRegionInfos.length; i++) {
 					if(lastRegionInfos[i].getPixelValue() == 1){
-						roiRegionInfoV.add(lastRegionInfos[i]);
+						roiRegionInfoV2.add(lastRegionInfos[i]);
 					}
 				}
-				if(roiRegionInfoV.size() <= 1){
+				if(roiRegionInfoV2.size() <= 1){
 					throw new Exception("No regionInfo to resolve");
 				}
 
-				final Object[][] rowData = new Object[roiRegionInfoV.size()][1];
-				for (int i = 0; i < roiRegionInfoV.size(); i++) {
-					rowData[i][0] = roiRegionInfoV.elementAt(i).getNumPixels()+" pixels";
+				final RegionInfo[] regionInfoArr = roiRegionInfoV2.toArray(new RegionInfo[0]);
+				Arrays.sort(regionInfoArr,
+						new Comparator<RegionInfo>(){
+							public int compare(RegionInfo o1, RegionInfo o2) {
+								return o2.getNumPixels() - o1.getNumPixels();
+							}}
+				);
+				final Object[][] rowData = new Object[regionInfoArr.length][1];
+				for (int i = 0; i < regionInfoArr.length; i++) {
+					rowData[i][0] = regionInfoArr[i].getNumPixels()+" pixels";
 				}
 				
+				final ROI beforeROI = new ROI(frapData.getCurrentlyDisplayedROI());
 				final int[][] resultArr = new int[1][];
 				SwingUtilities.invokeAndWait(new Runnable(){public void run(){//}});
 					try{
@@ -1234,15 +1232,15 @@ public class ROIAssistPanel extends JPanel {
 //							new String[] {"ROI Size (pixel count)"}, rowData, ListSelectionModel.SINGLE_SELECTION);
 					resultArr[0] = /*DialogUtils.*/showComponentOKCancelTableList(null, "Select ROI to Keep",
 							new String[] {"ROI Size (pixel count)"}, rowData, ListSelectionModel.SINGLE_SELECTION,
-							roiRegionInfoV,frapData.getCurrentlyDisplayedROI().getPixelsXYZ());
+							regionInfoArr,beforeROI.getPixelsXYZ());
 					}catch(UserCancelException e){
 						resultArr[0] = null;
 					}
 				}});
 				if(resultArr[0] != null && resultArr[0].length > 0){
 					pp.startKeepOnTop();
-					RegionInfo keepRegion = roiRegionInfoV.elementAt(resultArr[0][0]);
-					short[] removePixels = frapData.getCurrentlyDisplayedROI().getPixelsXYZ();
+					RegionInfo keepRegion = regionInfoArr[resultArr[0][0]];
+					short[] removePixels = beforeROI.getPixelsXYZ();
 					for (int i = 0; i < removePixels.length; i++) {
 						if(!keepRegion.isIndexInRegion(i)){
 							removePixels[i] = 0;
@@ -1263,15 +1261,23 @@ public class ROIAssistPanel extends JPanel {
 						resolveROIButton.setEnabled(false);
 						fillVoidsButton.setEnabled(hasInternalVoids);
 					}});
+				}else{
+					SwingUtilities.invokeAndWait(new Runnable(){public void run(){//}});
+						frapData.addReplaceRoi(beforeROI);
+						applyROIButton.setEnabled(false);
+						resolveROIButton.setEnabled(true);
+						fillVoidsButton.setEnabled(false);
+					}});
+
 				}
 //			}catch(UserCancelException e){
 //				//ignore
 //			}
 	}
-	
+		
 	public int[] showComponentOKCancelTableList(final Component requester,String title,
 			String[] columnNames,Object[][] rowData,int listSelectionModel_SelectMode,
-			final Vector<RegionInfo> roiRegionInfoV,final short[] multiObjectROIPixels)
+			final RegionInfo[] regionInfoArr,final short[] multiObjectROIPixels)
 				throws UserCancelException{
 		
 		DefaultTableModel tableModel = new DefaultTableModel(){
@@ -1292,7 +1298,7 @@ public class ROIAssistPanel extends JPanel {
 							try{
 								int index = table.getSelectedRow();
 //								System.out.println("list index="+index);
-								RegionInfo keepRegion = roiRegionInfoV.elementAt(index);
+								RegionInfo keepRegion = regionInfoArr[index];
 								short[] removePixels = multiObjectROIPixels.clone();
 								for (int i = 0; i < removePixels.length; i++) {
 									if(!keepRegion.isIndexInRegion(i)){
