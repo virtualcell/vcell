@@ -44,6 +44,7 @@ import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
 import cbit.vcell.microscopy.FRAPData;
+import cbit.vcell.microscopy.FRAPDataAnalysis;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.MicroscopyXmlReader;
 import cbit.vcell.microscopy.ROI;
@@ -81,6 +82,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 	private JPanel editROIPanel = null;
 	private JButton autoCropButton = null;
 	private JButton roiTimePlotButton = null;
+	public static final String FRAP_DATA_AUTOROI_PROPERTY = "FRAP_DATA_AUTOROI_PROPERTY";
 	public static final String FRAP_DATA_CROP_PROPERTY = "FRAP_DATA_CROP_PROPERTY";
 	public static final String FRAP_DATA_TIMEPLOTROI_PROPERTY = "FRAP_DATA_TIMEPLOTROI_PROPERTY";
 	private ISize originalISize;
@@ -95,6 +97,9 @@ public class OverlayEditorPanelJAI extends JPanel {
 	
 	UndoableEditSupport undoableEditSupport;
 	ROI undoableROI;
+	
+	public static final String WHOLE_CELL_AREA_TEXT = "Whole Cell Area";
+	public static final String ROI_ASSIST_TEXT = "ROI Assist";
 	
 	/**
 	 * This is the default constructor
@@ -169,7 +174,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 		gridBagConstraints12.gridx = 1;
 		gridBagConstraints12.gridy = 1;
 		gridBagConstraints12.weightx = 1.0;
-		this.setSize(734, 407);
+		this.setSize(734, 471);
 		final GridBagLayout gridBagLayout_1 = new GridBagLayout();
 		gridBagLayout_1.rowHeights = new int[] {0,7,0};
 		this.setLayout(gridBagLayout_1);
@@ -213,7 +218,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 		gridBagConstraints.gridx = 1;
 		editROIPanel.add(topJPanel, gridBagConstraints);
 		final GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.columnWidths = new int[] {0,7,7};
+		gridBagLayout.columnWidths = new int[] {0,7,7,0,7};
 		topJPanel.setLayout(gridBagLayout);
 
 		autoCropButton = new JButton();
@@ -340,6 +345,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 		});
 		importROIMaskButton.setText("Import ROI Mask...");
 		final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
+		gridBagConstraints_5.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints_5.gridy = 0;
 		gridBagConstraints_5.gridx = 1;
 		topJPanel.add(importROIMaskButton, gridBagConstraints_5);
@@ -389,9 +395,22 @@ public class OverlayEditorPanelJAI extends JPanel {
 		gridBagConstraints_3.anchor = GridBagConstraints.WEST;
 		gridBagConstraints_3.gridx = 3;
 		gridBagConstraints_3.gridy = 0;
-		gridBagConstraints_3.insets = new Insets(2, 2, 2, 0);
+		gridBagConstraints_3.insets = new Insets(2, 2, 2, 2);
 		topJPanel.add(roiTimePlotButton, gridBagConstraints_3);
 		BeanUtils.enableComponents(topJPanel, false);
+
+		final JButton roiAssistButton = new JButton();
+		roiAssistButton.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				firePropertyChange(FRAP_DATA_AUTOROI_PROPERTY, null,new Object());						
+			}
+		});
+		roiAssistButton.setText(ROI_ASSIST_TEXT);
+		final GridBagConstraints gridBagConstraints_16 = new GridBagConstraints();
+		gridBagConstraints_16.insets = new Insets(2, 2, 2, 0);
+		gridBagConstraints_16.gridy = 0;
+		gridBagConstraints_16.gridx = 4;
+		topJPanel.add(roiAssistButton, gridBagConstraints_16);
 
 		viewZLabel = new JLabel();
 		viewZLabel.setText("View Z:");
@@ -480,7 +499,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 			}
 		});
 		cellBodyRadioButton.setSelected(true);
-		cellBodyRadioButton.setText("Whole Cell Area");
+		cellBodyRadioButton.setText(WHOLE_CELL_AREA_TEXT);
 		final GridBagConstraints gridBagConstraints_9 = new GridBagConstraints();
 		gridBagConstraints_9.insets = new Insets(2, 2, 2, 2);
 		gridBagConstraints_9.gridy = 0;
@@ -575,6 +594,9 @@ public class OverlayEditorPanelJAI extends JPanel {
 		updateROICursor();
 	}
 		
+	public void setTimeIndex(int timeIndex){
+		timeSlider.setValue(timeIndex);
+	}
 	
 	public void saveUserChangesToROI(){
 		short[] roiPixels = getImagePane().getHighlightImageWritebackImageBuffer();
@@ -925,7 +947,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 	
 	/** Gets the T value of the currently displayed image. * @return int
 	 */
-	private int getT() { return Math.max(0,Math.min(imageDataset.getSizeT(),timeSlider.getValue())) - 1; }
+	public int getT() { return Math.max(0,Math.min(imageDataset.getSizeT(),timeSlider.getValue())) - 1; }
 
 	/** Gets the Z value of the currently displayed image. * @return int
 	 */

@@ -76,6 +76,10 @@ public class ROI implements Matchable {
 	 */
 	public ROI(UShortImage[] argRoiImages, RoiType argROIType) {
 		super();
+		init(argRoiImages,argROIType);
+	}	
+
+	private void init(UShortImage[] argRoiImages, RoiType argROIType){
 		int numX = argRoiImages[0].getNumX();
 		int numY = argRoiImages[0].getNumY();
 		int numZ = argRoiImages[0].getNumZ();
@@ -90,20 +94,41 @@ public class ROI implements Matchable {
 		}
 		this.roiImages = argRoiImages;
 		this.roiType = argROIType;
-	}	
 
+	}
 	/**
 	 * Constructor for 2D ROI
 	 * @param argRoiImage
 	 * @param argROIType
 	 */
-	public ROI(UShortImage argRoiImage, RoiType argROIType) {
-		super();	
-		if (argRoiImage.getNumZ()!=1){
-			throw new RuntimeException("ROI sub-images must be 2D");
+	public ROI(UShortImage argRoiImage, RoiType argROIType){
+		super();
+		UShortImage[] roiSubImages = new UShortImage[] { argRoiImage };
+		if(argRoiImage.getNumZ() > 1){
+			try{
+				roiSubImages = new UShortImage[argRoiImage.getNumZ()];
+				Extent newExtent =
+					new Extent(argRoiImage.getExtent().getX(),
+						argRoiImage.getExtent().getY(),
+						argRoiImage.getExtent().getZ()/argRoiImage.getNumZ());
+				for (int z = 0; z < argRoiImage.getNumZ(); z++) {
+					short[] slicePixels = new short[argRoiImage.getNumX()*argRoiImage.getNumY()];
+					System.arraycopy(argRoiImage.getPixels(), z*slicePixels.length, slicePixels, 0, slicePixels.length);
+					UShortImage uShortImage =
+						new UShortImage(slicePixels,newExtent,argRoiImage.getNumX(),argRoiImage.getNumY(),1);
+					roiSubImages[z] = uShortImage;
+				}
+			}catch(Exception e){
+				e.printStackTrace();
+				throw new RuntimeException("Error ROI constructor. "+e.getMessage(),e);
+			}
 		}
-		this.roiImages = new UShortImage[] { argRoiImage };
-		this.roiType = argROIType;
+		init(roiSubImages,argROIType);
+//		if (argRoiImage.getNumZ()!=1){
+//			throw new RuntimeException("ROI sub-images must be 2D");
+//		}
+//		this.roiImages = new UShortImage[] { argRoiImage };
+//		this.roiType = argROIType;
 	}	
 	/**
 	 * @return the roiImage

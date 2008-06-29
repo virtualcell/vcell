@@ -26,8 +26,11 @@ import java.io.FileNotFoundException;
 import javax.swing.DefaultSingleSelectionModel;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
@@ -43,6 +46,7 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.UndoableEditSupport;
 import cbit.gui.DialogUtils;
+import cbit.gui.ZEnforcer;
 import cbit.gui.graph.GraphPane;
 import cbit.image.ImageException;
 import cbit.sql.KeyValue;
@@ -53,6 +57,7 @@ import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.VirtualMicroscopy.ImageLoadingProgress;
+import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
@@ -69,7 +74,9 @@ import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.microscopy.ExternalDataInfo;
 import cbit.vcell.microscopy.FRAPData;
+import cbit.vcell.microscopy.FRAPDataAnalysis;
 import cbit.vcell.microscopy.FRAPStudy;
+import cbit.vcell.microscopy.FrapDataAnalysisResults;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.MicroscopyXmlReader;
 import cbit.vcell.microscopy.MicroscopyXmlproducer;
@@ -488,6 +495,54 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		return jTabbedPane;
 	}
 
+	private boolean checkROIConstraints() throws Exception{
+		short[] cellPixels = getFrapStudy().getFrapData().getRoi(RoiType.ROI_CELL).getPixelsXYZ();
+		short[] bleachPixels = getFrapStudy().getFrapData().getRoi(RoiType.ROI_BLEACHED).getPixelsXYZ();
+		short[] backgroundPixels = getFrapStudy().getFrapData().getRoi(RoiType.ROI_BACKGROUND).getPixelsXYZ();
+		boolean bFixedBleach = false;
+		boolean bFixedBackground = false;
+		for (int i = 0; i < cellPixels.length; i++) {
+			if(cellPixels[i] == 0 && bleachPixels[i] != 0){
+				bFixedBleach = true;
+				bleachPixels[i] = 0;
+			}
+			if(cellPixels[i] != 0 && backgroundPixels[i] != 0){
+				bFixedBackground = true;
+				backgroundPixels[i] = 0;
+			}
+		}
+		if(bFixedBackground || bFixedBleach){
+			final String FIX_AUTO = "Fix Automatically";
+			String result = DialogUtils.showWarningDialog(this,
+					(bFixedBleach?"Bleach ROI extends beyond Cell ROI":"")+
+					(bFixedBackground &&bFixedBleach?" and" :"")+
+					(bFixedBackground?"Background ROI overlaps Cell ROI":"")+
+					".  Ensure that the Bleach ROI is completely inside the Cell ROI and the Background ROI is completely outside the Cell ROI.",
+					new String[] {FIX_AUTO,UserMessage.OPTION_CANCEL}, FIX_AUTO);
+			if(result != null && result.equals(FIX_AUTO)){
+				if(bFixedBleach){
+					UShortImage ushortImage =
+						new UShortImage(bleachPixels,getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getRoiImages()[0].getExtent(),
+							getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getISize().getX(),
+							getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getISize().getY(),
+							getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getISize().getZ());
+					ROI newBleachROI = new ROI(ushortImage,RoiType.ROI_BLEACHED);
+					getFrapStudy().getFrapData().addReplaceRoi(newBleachROI);
+				}
+				if(bFixedBackground){
+					UShortImage ushortImage =
+						new UShortImage(backgroundPixels,getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getRoiImages()[0].getExtent(),
+							getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getISize().getX(),
+							getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getISize().getY(),
+							getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getISize().getZ());
+					ROI newBackgroundROI = new ROI(ushortImage,RoiType.ROI_BACKGROUND);
+					getFrapStudy().getFrapData().addReplaceRoi(newBackgroundROI);
+				}
+			}
+			return true;
+		}
+		return false;
+	}
 	private boolean updateTabbedView(int exitTab,int enterTab) throws Exception{
 		if(enterTab != FRAPStudyPanel.INDEX_TAB_IMAGES && (getFrapStudy() == null || getFrapStudy().getFrapData() == null)){
 			throw new Exception("No document open.  Use 'File->Open' menu to open a new document");
@@ -496,6 +551,9 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			BeanUtils.setCursorThroughout(FRAPStudyPanel.this, Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			if(exitTab == FRAPStudyPanel.INDEX_TAB_IMAGES){
 				applyUserChangesToCurrentFRAPStudy(USER_CHANGES_FLAG_ROI);
+				if(getFrapStudy() != null && getFrapStudy().getFrapData() != null && checkROIConstraints()){
+					return false;
+				}
 			}else if(exitTab == FRAPStudyPanel.INDEX_TAB_FITCURVE){
 				applyUserChangesToCurrentFRAPStudy(USER_CHANGES_FLAG_MODEL_PARAMS);
 			}
@@ -1928,12 +1986,104 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	}
 
 	public void propertyChange(PropertyChangeEvent evt) {
-		if(evt.getSource() == getFRAPDataPanel().getOverlayEditorPanelJAI() && 
-			evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CROP_PROPERTY)){
-			try {
-				crop((Rectangle) evt.getNewValue());
-			} catch (Exception e) {
-				PopupGenerator.showErrorDialog("Error Cropping:\n"+e.getMessage());
+		if(evt.getSource() == getFRAPDataPanel().getOverlayEditorPanelJAI()){
+			if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CROP_PROPERTY)){
+				try {
+					crop((Rectangle) evt.getNewValue());
+				} catch (Exception e) {
+					PopupGenerator.showErrorDialog("Error Cropping:\n"+e.getMessage());
+				}
+			}else if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_AUTOROI_PROPERTY)){
+				if(!getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getROIType().equals(RoiType.ROI_CELL) &&
+					getFrapStudy().getFrapData().getRoi(RoiType.ROI_CELL).isAllPixelsZero()
+					){
+					DialogUtils.showInfoDialog("Define '"+OverlayEditorPanelJAI.WHOLE_CELL_AREA_TEXT+"'"+
+							" ROI using ROI Tools or '"+OverlayEditorPanelJAI.ROI_ASSIST_TEXT+"'"+
+							" before using '"+OverlayEditorPanelJAI.ROI_ASSIST_TEXT+"' to define Bleach or Backgroun ROIs");
+					return;
+				}
+				JDialog roiDialog = new JDialog();
+				roiDialog.setTitle("Create Region of Interest (ROI) using intensity thresholding");
+				roiDialog.setModal(true);
+				ROIAssistPanel roiAssistPanel = new ROIAssistPanel();
+				ROI originalROI = null;
+				try{
+					originalROI = new ROI(getFrapStudy().getFrapData().getCurrentlyDisplayedROI());
+				}catch(Exception e){
+					e.printStackTrace();
+					//can't happen
+				}
+				roiAssistPanel.init(roiDialog,originalROI,
+						getFrapStudy().getFrapData(),getFRAPDataPanel().getOverlayEditorPanelJAI());
+				roiDialog.setContentPane(roiAssistPanel);
+				roiDialog.pack();
+//				roiDialog.setPreferredSize(new Dimension(300,400));
+//				roiDialog.setMinimumSize(new Dimension(300,400));
+				roiDialog.setSize(400,300);
+//				BeanUtils.centerOnComponent(roiDialog, this);
+				ZEnforcer.showModalDialogOnTop(roiDialog, this);
+//				roiDialog.setVisible(true);
+				
+				if(!originalROI.compareEqual(getFrapStudy().getFrapData().getCurrentlyDisplayedROI())){
+					final ROI finalOriginalROI = originalROI;
+					undoableEditSupport.postEdit(
+						new AbstractUndoableEdit(){
+							public boolean canUndo() {
+								return true;
+							}
+							public String getUndoPresentationName() {
+								return "ROI Threshold "+finalOriginalROI.getROIType().name();
+							}
+							public void undo() throws CannotUndoException {
+								super.undo();
+								getFrapStudy().getFrapData().addReplaceRoi(finalOriginalROI);
+							}
+						}
+					);					
+				}else{
+					undoableEditSupport.postEdit(CLEAR_UNDOABLE_EDIT);
+				}
+
+				
+//				try{
+//					FrapDataAnalysisResults frapDataAnalysisResults =
+//						FRAPDataAnalysis.fitRecovery2(getFrapStudy().getFrapData(),FrapDataAnalysisResults.BleachType_CirularDisk);
+//					int startingIndexForRecovery = frapDataAnalysisResults.getStartingIndexForRecovery();
+//					System.out.println("Starting index for recoverty="+startingIndexForRecovery);
+//					int numTimes = getFrapStudy().getFrapData().getImageDataset().getSizeT();
+//					long[] timeAvg = new long[getFrapStudy().getFrapData().getImageDataset().getISize().getXYZ()];
+//					for (int t = 0; t < numTimes; t++) {
+//						int pixelIndex = 0;
+//						for (int z = 0; z < getFrapStudy().getFrapData().getImageDataset().getSizeZ(); z++) {
+//							UShortImage timePointDataImage = getFrapStudy().getFrapData().getImageDataset().getImage(z, 0, t);
+//							for (int y = 0; y < timePointDataImage.getNumY(); y++) {
+//								for (int x = 0; x < timePointDataImage.getNumX(); x++) {
+//									timeAvg[pixelIndex]+= timePointDataImage.getPixel(x,y,0)&0x0000FFFF;
+//									pixelIndex++;  
+//								}
+//							}
+//						}
+//					}
+//					int[] bins = new int[65536];
+//					for (int i = 0; i < timeAvg.length; i++) {
+//						bins[(int)(timeAvg[i]/numTimes)]++;
+//					}
+//					for (int i = 0; i < bins.length; i++) {
+//						if(bins[i] != 0){
+//							System.out.print(i+" ");
+//							for (int j = 0; j < bins[i]; j++) {
+//								if(j%1 == 0){
+//									System.out.print("*");
+//								}
+//							}
+//							System.out.println();
+//						}
+//					}
+//					System.out.println("Total pixels ="+getFrapStudy().getFrapData().getImageDataset().getISize()+" t="+getFrapStudy().getFrapData().getImageDataset().getSizeT());
+//				}catch(Exception e){
+//					e.printStackTrace();
+//					DialogUtils.showErrorDialog("Auto ROI error:"+e.getMessage());
+//				}
 			}
 		}
 	}
