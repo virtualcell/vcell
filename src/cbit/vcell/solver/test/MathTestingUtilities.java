@@ -1167,64 +1167,6 @@ public static MathDescription constructOdesForSensitivity(MathDescription mathDe
 
 /**
  * Insert the method's description here.
- * Creation date: (1/17/2003 3:48:36 PM)
- * @param testResultSet cbit.vcell.solver.ode.ODESolverResultSet
- * @param referenceResultSet cbit.vcell.solver.ode.ODESolverResultSet
- */
-public static double findSumOfSquaredErrors(ODESolverResultSet testResultSet, ReferenceData referenceData)  {
-	try {
-		double[] testRSTimes = testResultSet.extractColumn(testResultSet.findColumn("t"));
-		double[] refRSTimes = referenceData.getColumnData(referenceData.findColumn("t"));
-		
-		double L2Error = 0.0;
-		
-		String[] varsToTest = (String[])cbit.util.BeanUtils.removeElement(referenceData.getColumnNames(),"t");
-		for (int i = 0; i < varsToTest.length; i++){
-			double weight = referenceData.getColumnWeights()[i];
-			int refRSIndex = referenceData.findColumn(varsToTest[i]);
-			if (refRSIndex==-1){
-				throw new RuntimeException("variable '"+varsToTest[i]+"' not found in reference dataset");
-			}
-			double refData[] = referenceData.getColumnData(refRSIndex);
-			
-			int testRSIndex = testResultSet.findColumn(varsToTest[i]);
-			if (testRSIndex==-1){
-				throw new RuntimeException("variable '"+varsToTest[i]+"' not found in test dataset");
-			}
-			double testData[] = testResultSet.extractColumn(testRSIndex);
-
-			// Resampling test data
-			int k = 0; 	
-			for (int j = 0; j < refRSTimes.length; j++) {
-				//
-				// choose two points (testData[k] and testData[k+1]) in test data for interpolation (or extrapolation if outside the data)
-				//
-				// a)  extrapolate backward (in time) for points which are before testData
-				// b)  interpolate the values that fall within the test dataset.
-				// c)  extrapolate forward (in time) for points which are after testData
-				//
-				while ((k < testData.length-2) && (refRSTimes[j] > testRSTimes[k+1])) {
-					k++;
-				}
-				//
-				// apply first order linear basis for reference data interpolation.
-				//
-				double resampledTestData = testData[k] + (testData[k+1]-testData[k])*(refRSTimes[j] - testRSTimes[k])/(testRSTimes[k+1] - testRSTimes[k]);
-				double diff = (resampledTestData-refData[j]);
-				L2Error += weight*diff*diff;
-			}
-		}
-
-		return L2Error;
-	}catch (ExpressionException e){
-		e.printStackTrace(System.out);
-		throw new RuntimeException(e.getMessage());
-	}
-}
-
-
-/**
- * Insert the method's description here.
  * Creation date: (1/17/2003 3:47:43 PM)
  * @return cbit.vcell.solver.ode.ODESolverResultSet
  * @param sim cbit.vcell.solver.Simulation
