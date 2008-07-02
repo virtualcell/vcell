@@ -20,6 +20,8 @@ import cbit.vcell.math.*;
 import cbit.vcell.mapping.*;
 import cbit.vcell.geometry.*;
 import cbit.vcell.model.*;
+import cbit.vcell.model.Model.ModelParameter;
+
 import java.util.Enumeration;
 import cbit.util.*;
 
@@ -2362,6 +2364,35 @@ public org.jdom.Element getXML(Membrane param/*, Model model*/) {
 	return membrane;
 }
 
+public org.jdom.Element getXML(ModelParameter[] modelParams) {
+	Element globalsElement = new Element(XMLTags.GlobalModelParametersTag);
+	for (int i = 0; i < modelParams.length; i++) {
+		Element glParamElement = new Element(XMLTags.ParameterTag);
+		//Get parameter attributes - name, role and unit definition
+		glParamElement.setAttribute(XMLTags.NameAttrTag, this.mangle(modelParams[i].getName()));
+		if (modelParams[i].getRole() == Model.ROLE_UserDefined) {
+			glParamElement.setAttribute(XMLTags.ParamRoleAttrTag, Model.RoleDesc);
+		} else {
+			throw new RuntimeException("Unknown model parameter role/type");
+		}
+		VCUnitDefinition unit = modelParams[i].getUnitDefinition();
+		if (unit != null) {
+			glParamElement.setAttribute(XMLTags.VCUnitDefinitionAttrTag, unit.getSymbol());
+		}
+		// add expression as content
+		glParamElement.addContent( this.mangleExpression(modelParams[i].getExpression()) );
+		//add annotation (if there is any)
+		if (modelParams[i].getDescription() != null && modelParams[i].getDescription().length() > 0) {
+			Element annotationElement = new Element(XMLTags.AnnotationTag);
+			annotationElement.setText(this.mangle(modelParams[i].getDescription()));
+			glParamElement.addContent(annotationElement);
+		}
+		globalsElement.addContent(glParamElement);
+	}
+
+	return globalsElement;
+}
+
 
 /**
  * Outputs a XML version of a Model object
@@ -2381,7 +2412,14 @@ public org.jdom.Element getXML(cbit.vcell.model.Model param) throws XmlParseExce
 		annotationElem.setText(this.mangle(param.getDescription()));
 		modelnode.addContent(annotationElem);
 	}
+
+	// get global parameters
+	ModelParameter[] modelGlobals = param.getModelParameters();
+	if (modelGlobals != null || modelGlobals.length > 0) {
+		modelnode.addContent(getXML(modelGlobals));
+	}
 	
+
 	//Get Species
 	Species[] array = param.getSpecies();
 	for (int i=0 ; i<array.length ; i++){
