@@ -22,6 +22,7 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
+import java.net.URL;
 
 import javax.swing.DefaultSingleSelectionModel;
 import javax.swing.ImageIcon;
@@ -345,15 +346,15 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	}
 	public static void loadROICursors(){
 		for (int i = 0; i < ROI_CURSORS.length; i++) {
-			String cursorFileName = null;
+			URL cursorImageURL = null;
 			if(i == CURSOR_CELLROI){
-				cursorFileName = FRAPStudyPanel.class.getResource("/images/cursorCellROI.gif").getFile();
+				cursorImageURL = FRAPStudyPanel.class.getResource("/images/cursorCellROI.gif");
 			}else if(i == CURSOR_BLEACHROI){
-				cursorFileName = FRAPStudyPanel.class.getResource("/images/cursorBleachROI.gif").getFile();
+				cursorImageURL = FRAPStudyPanel.class.getResource("/images/cursorBleachROI.gif");
 			}else if(i == CURSOR_BACKGROUNDROI){
-				cursorFileName = FRAPStudyPanel.class.getResource("/images/cursorBackgroundROI.gif").getFile();
+				cursorImageURL = FRAPStudyPanel.class.getResource("/images/cursorBackgroundROI.gif");
 			}
-			ImageIcon imageIcon = new ImageIcon(cursorFileName);
+			ImageIcon imageIcon = new ImageIcon(cursorImageURL);
 			Image cellCursorImage = imageIcon.getImage();
 			BufferedImage tempImage =
 				new BufferedImage(cellCursorImage.getWidth(null),cellCursorImage.getHeight(null),BufferedImage.TYPE_INT_ARGB);
@@ -362,7 +363,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			//outline with black
 			for (int y = 0; y < tempImage.getHeight(); y++) {
 				for (int x = 0; x < tempImage.getWidth(); x++) {
-//					System.out.print(Integer.toHexString(tempImage.getRGB(x, y))+" ");
+//						System.out.print(Integer.toHexString(tempImage.getRGB(x, y))+" ");
 					if((tempImage.getRGB(x, y)&0x00FFFFFF) == 0){
 						tempImage.setRGB(x, y, 0x00000000);
 						int xoff = x-1;
@@ -386,10 +387,10 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						tempImage.setRGB(x, y, 0xFFFFFFFF);
 					}
 				}
-//				System.out.println();
+//					System.out.println();
 			}
 			ROI_CURSORS[i] = Toolkit.getDefaultToolkit().createCustomCursor(tempImage, new Point(0,0), "cellCursor");
-		}
+		}			
 	}
 	public static SavedFrapModelInfo createSavedFrapModelInfo(FRAPStudy frapStudy) throws Exception{
 
