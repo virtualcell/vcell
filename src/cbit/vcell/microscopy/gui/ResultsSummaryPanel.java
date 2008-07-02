@@ -26,6 +26,7 @@ import javax.swing.table.TableModel;
 
 import cbit.gui.DialogUtils;
 import cbit.util.NumberUtils;
+import cbit.util.Range;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.FRAPStudy.CurveInfo;
 import cbit.vcell.microscopy.FRAPStudy.SpatialAnalysisResults;
@@ -58,7 +59,7 @@ public class ResultsSummaryPanel extends JPanel {
 
 		final JLabel diffusionRateAndLabel = new JLabel();
 		diffusionRateAndLabel.setFont(new Font("", Font.BOLD, 14));
-		diffusionRateAndLabel.setText("Standard Error- ROI Average over Time (Experimental vs. Simulation Data)");
+		diffusionRateAndLabel.setText("Standard Error (including all Times) of Normalized ROI Average  (Experimental vs. Simulation Data)");
 		final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
 		gridBagConstraints_3.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_3.gridy = 0;
@@ -111,7 +112,7 @@ public class ResultsSummaryPanel extends JPanel {
 
 		final JLabel standardErrorRoiLabel = new JLabel();
 		standardErrorRoiLabel.setFont(new Font("", Font.BOLD, 14));
-		standardErrorRoiLabel.setText("Plot - Normalized ROI Average over Time Data");
+		standardErrorRoiLabel.setText("Plot -  ROI Average Normalized (by first non-zero ROI Avg. in time)  vs. Time");
 		final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
 		gridBagConstraints_4.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_4.gridy = 2;
@@ -132,6 +133,7 @@ public class ResultsSummaryPanel extends JPanel {
 		multisourcePlotPane = new MultisourcePlotPane();
 		multisourcePlotPane.setRefDataLabelPrefix("exp:");
 		multisourcePlotPane.setModelDataLabelPrefix("sim:");
+		
 		final GridBagConstraints gridBagConstraints_2 = new GridBagConstraints();
 		gridBagConstraints_2.gridy = 0;
 		gridBagConstraints_2.gridx = 0;
@@ -253,7 +255,7 @@ public class ResultsSummaryPanel extends JPanel {
 		return columnNames;
 	}
 	public void setData(FRAPStudy.SpatialAnalysisResults spatialAnalysisResults,
-			double[] frapDataTimeStamps,int startIndexForRecovery,final Double modelDiffusionRate) throws Exception{
+			final double[] frapDataTimeStamps,int startIndexForRecovery,final Double modelDiffusionRate) throws Exception{
 		allDataHash = new Hashtable<Double, DataSource[]>();
 		
 		Double[] diffusionRates = spatialAnalysisResults.diffusionRates;
@@ -315,6 +317,7 @@ public class ResultsSummaryPanel extends JPanel {
 			try{
 				table.setModel(getTableModel(columnNames,tableData));
 				sortColumn(COLUMN_INDEX_DIFFUSION_RATE,false);
+				multisourcePlotPane.forceXYRange(new Range(frapDataTimeStamps[0],frapDataTimeStamps[frapDataTimeStamps.length-1]), new Range(0,1));
 				if(modelDiffusionRate != null){
 					int matchingRow = -1;
 					for (int i = 0; i < summaryData.length; i++) {

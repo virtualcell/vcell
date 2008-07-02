@@ -361,11 +361,18 @@ public class FRAPStudy implements Matchable{
 		//
 		for (int i = 0; i < SpatialAnalysisResults.ORDERED_ROITYPES.length; i++) {
 			double[] averageFluor = FRAPDataAnalysis.getAverageROIIntensity(frapData, SpatialAnalysisResults.ORDERED_ROITYPES[i]);
-			if(averageFluor[0] == 0)
-			{
-				throw new Exception("Error generating report: 0 average flourence intensity found at time 0");
+			int normalizingTimePoint = -1;
+			for (int j = 0; j < averageFluor.length; j++) {
+				if(averageFluor[j] != 0){
+					normalizingTimePoint = i;
+				}
 			}
-			double weight = 1.0/averageFluor[0];
+//			if(averageFluor[0] == 0)
+//			{
+//				throw new Exception("Error generating report: 0 average flourence intensity found at time 0");
+//			}
+			//If normalizingTimePoint  == -1 all the data are zero so we divide by 1
+			double weight = 1.0/(normalizingTimePoint == -1?1:averageFluor[normalizingTimePoint]);
 			for (int j = 0; j < averageFluor.length; j++) {
 				averageFluor[j] = averageFluor[j]*weight;
 			}
@@ -375,7 +382,6 @@ public class FRAPStudy implements Matchable{
 		//
 		// get Simulation Data
 		//
-//		// we want to update the loading progress every 2 seconds.
 		int totalLen = simTimes.length*varNames.length*SpatialAnalysisResults.ORDERED_ROITYPES.length;
 		if(progressListener != null){progressListener.updateProgress(0);}
 		for (int i = 0; i < simTimes.length; i++) {
@@ -384,13 +390,14 @@ public class FRAPStudy implements Matchable{
 				double[] data = simDataBlock.getData();
 				for (int k = 0; k < SpatialAnalysisResults.ORDERED_ROITYPES.length; k++) {
 					int[] roiIndices = nonZeroIndicesForROI.get(k);
-					double accum = 0.0;
-					for (int index = 0; index < roiIndices.length; index++) {
-						accum += data[roiIndices[index]];
+					if(roiIndices != null && roiIndices.length > 0){
+						double accum = 0.0;
+						for (int index = 0; index < roiIndices.length; index++) {
+							accum += data[roiIndices[index]];
+						}
+						double[] values = curveHash.get(new CurveInfo(diffusionRates[j],SpatialAnalysisResults.ORDERED_ROITYPES[k]));
+						values[i] = accum/roiIndices.length;
 					}
-					double[] values = curveHash.get(new CurveInfo(diffusionRates[j],SpatialAnalysisResults.ORDERED_ROITYPES[k]));
-					values[i] = accum/roiIndices.length;
-					
 					double currentLen = i*varNames.length*SpatialAnalysisResults.ORDERED_ROITYPES.length + j*SpatialAnalysisResults.ORDERED_ROITYPES.length + k;
 					if(progressListener != null){progressListener.updateProgress(currentLen/totalLen);}
 				}
