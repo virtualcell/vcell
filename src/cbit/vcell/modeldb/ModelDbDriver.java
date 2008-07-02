@@ -10,10 +10,12 @@ import cbit.sql.*;
 import java.sql.Statement;
 import cbit.vcell.model.*;
 import cbit.vcell.mapping.*;
+//import cbit.vcell.parser.Expression;
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.server.ObjectNotFoundException;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.User;
+//import cbit.vcell.units.VCUnitDefinition;
 /**
  * This type was created in VisualAge.
  */
@@ -162,7 +164,6 @@ private cbit.vcell.model.Model getModel(Connection con,User user, KeyValue model
 
 		//showMetaData(rset);
 
-		java.util.Vector modelInfoList = new java.util.Vector();
 		if (rset.next()) {
 			model = getModel(rset,con,user);
 		} else {
@@ -171,6 +172,7 @@ private cbit.vcell.model.Model getModel(Connection con,User user, KeyValue model
 	} finally {
 		stmt.close(); // Release resources include resultset
 	}
+	GlobalModelParameterTable.table.setModelParameters(con, model);
 	return model;
 }
 
@@ -536,6 +538,19 @@ private void insertModel(InsertHashtable hash, Connection con,User user ,Model m
 			log.alert("ModelDbDriver.insertModel(),  diagram "+diagram.toString()+" is orphaned, check Model logic");
 		}
 	}
+	//
+	//insert GlobalModelParameters
+	//
+//	//-----------------testing remove
+//	try{
+//		Model.ModelParameter testParam = model.new ModelParameter("test",new Expression("1.0"),Model.ROLE_UserDefined,VCUnitDefinition.UNIT_molecules);
+//		model.setModelParameters(new Model.ModelParameter[] {testParam});
+//	}catch(Exception e){
+//		e.printStackTrace();
+//	}
+//	//-----------------
+	
+	GlobalModelParameterTable.table.insertModelParameters(con, model.getModelParameters(),newVersion.getVersionKey());
 }
 
 
