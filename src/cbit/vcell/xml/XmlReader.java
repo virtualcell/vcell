@@ -105,6 +105,7 @@ import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.VCMODL;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence;
 import cbit.vcell.parser.Expression;
@@ -2705,6 +2706,7 @@ public cbit.vcell.solver.MeshSpecification getMeshSpecification(Element param, G
 }
 
 
+
 /**
  * This method creates a Model object from a XML element.
  * Creation date: (3/14/2001 6:14:37 PM)
@@ -2737,6 +2739,15 @@ public cbit.vcell.model.Model getModel(Element param) throws XmlParseException {
 		dictionary.put(param, 
 			newmodel.getClass().getName() + ":" + newmodel.getName(),
 			newmodel);
+		
+		// Add global parameters
+		Element globalParamsElement = param.getChild(XMLTags.GlobalModelParametersTag, vcNamespace);
+		if (globalParamsElement != null) {
+			ModelParameter[] modelParams = getModelParams(globalParamsElement, newmodel); 
+			// add global/model param to model - done inside getModelParam by passing newModel
+			newmodel.setModelParameters(modelParams);
+		}
+
 		//Add Species (Compounds)
 		Iterator iterator = param.getChildren(XMLTags.SpeciesTag, vcNamespace).iterator();
 		while (iterator.hasNext()) {
@@ -3880,6 +3891,48 @@ public cbit.vcell.solver.SolverTaskDescription getSolverTaskDescription(Element 
 		
 	return solverTaskDesc;
 }
+
+public ModelParameter[] getModelParams(Element globalParams, Model model) throws XmlParseException {
+	Iterator<Element> globalsIterator = globalParams.getChildren(XMLTags.ParameterTag, vcNamespace).iterator();
+	Vector<ModelParameter> modelParamsVector = new Vector<ModelParameter>();
+	while (globalsIterator.hasNext()) {
+		org.jdom.Element paramElement = (Element) globalsIterator.next();
+		//get its attributes : name, role and unit definition
+		String glParamName = this.unMangle( paramElement.getAttributeValue(XMLTags.NameAttrTag) );
+		String role = paramElement.getAttributeValue(XMLTags.ParamRoleAttrTag);
+		int glParamRole = -1;
+		if (role.equals(XMLTags.ParamRoleUserDefinedTag)) {
+			glParamRole = Model.ROLE_UserDefined;
+		} else {
+			throw new RuntimeException("unknown type of model parameter (not user-defined)");
+		}
+		String unitSymbol = paramElement.getAttributeValue(XMLTags.VCUnitDefinitionAttrTag);
+		VCUnitDefinition glParamUnit = null;
+		if (unitSymbol != null) {
+			glParamUnit = VCUnitDefinition.getInstance(unitSymbol);
+		}
+		//get parameter contents : expression; annotation, if any.
+		String glParamExpStr = paramElement.getText();
+		Expression glParamExp = unMangleExpression(glParamExpStr);
+		String glParamAnnotation = null;
+		String annotationText = paramElement.getChildText(XMLTags.AnnotationTag, vcNamespace);
+		if (annotationText != null && annotationText.length() > 0) {
+			glParamAnnotation = this.unMangle(annotationText);
+		}
+		
+		//create new global parameter
+		ModelParameter newGlParam = model.new ModelParameter(glParamName, glParamExp, glParamRole, glParamUnit);
+		newGlParam.setDescription(glParamAnnotation);
+		modelParamsVector.add(newGlParam);
+
+//		//***Add the global parameter to the dictionnary ****
+//		String hashname = newGlParam.getClass().getName() + ":" + glParamName;
+//		this.dictionary.put(param, hashname, newGlParam);
+	}
+	
+	return ((ModelParameter[])BeanUtils.getArray(modelParamsVector, ModelParameter.class));
+}
+
 
 
 /**

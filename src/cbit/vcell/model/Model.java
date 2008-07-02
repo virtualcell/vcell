@@ -1,5 +1,6 @@
 package cbit.vcell.model;
 import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ExpressionException;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -9,6 +10,7 @@ import java.beans.*;
 import cbit.util.*;
 import cbit.sql.KeyValue;
 import cbit.vcell.server.User;
+import cbit.vcell.units.VCUnitDefinition;
 import cbit.sql.Versionable;
 import cbit.sql.Version;
 import cbit.vcell.model.Feature;
@@ -66,7 +68,7 @@ public class Model implements cbit.sql.Versionable, Matchable, PropertyChangeLis
 	public static final int ROLE_UserDefined	= 0;
 
 	public static final int NUM_ROLES		= 1;
-
+	public static final String RoleDesc = "user defined";
 	
 	public class ModelParameter extends Parameter implements ExpressionContainer {
 		
@@ -75,7 +77,7 @@ public class Model implements cbit.sql.Versionable, Matchable, PropertyChangeLis
 		private int fieldParameterRole = -1;
 		private cbit.vcell.units.VCUnitDefinition fieldUnitDefinition = null;
 		
-		protected ModelParameter(String argName, cbit.vcell.parser.Expression expression, int argRole, cbit.vcell.units.VCUnitDefinition argUnitDefinition) {
+		public ModelParameter(String argName, cbit.vcell.parser.Expression expression, int argRole, VCUnitDefinition argUnitDefinition) {
 			if (argName == null){
 				throw new IllegalArgumentException("parameter name is null");
 			}
@@ -121,7 +123,7 @@ public class Model implements cbit.sql.Versionable, Matchable, PropertyChangeLis
 			return true;
 		}
 
-		public double getConstantValue() throws cbit.vcell.parser.ExpressionException {
+		public double getConstantValue() throws ExpressionException {
 			return this.fieldParameterExpression.evaluateConstant();
 		}      
 
@@ -153,9 +155,8 @@ public class Model implements cbit.sql.Versionable, Matchable, PropertyChangeLis
 			return fieldUnitDefinition;
 		}
 
-		public void setUnitDefinition(cbit.vcell.units.VCUnitDefinition unitDefinition) throws java.beans.PropertyVetoException {
+		public void setUnitDefinition(cbit.vcell.units.VCUnitDefinition unitDefinition) {
 			cbit.vcell.units.VCUnitDefinition oldValue = fieldUnitDefinition;
-			super.fireVetoableChange("unitDefinition", oldValue, unitDefinition);
 			fieldUnitDefinition = unitDefinition;
 			super.firePropertyChange("unitDefinition", oldValue, unitDefinition);
 		}
