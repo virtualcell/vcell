@@ -360,11 +360,12 @@ public class FRAPStudy implements Matchable{
 		// collect data for experiment (over all ROIs)
 		//
 		for (int i = 0; i < SpatialAnalysisResults.ORDERED_ROITYPES.length; i++) {
-			double[] averageFluor = FRAPDataAnalysis.getAverageROIIntensity(frapData, SpatialAnalysisResults.ORDERED_ROITYPES[i]);
+			double[] averageFluorAtEachTimeUnderROI = FRAPDataAnalysis.getAverageROIIntensity(frapData, SpatialAnalysisResults.ORDERED_ROITYPES[i]);
 			int normalizingTimePoint = -1;
-			for (int j = 0; j < averageFluor.length; j++) {
-				if(averageFluor[j] != 0){
-					normalizingTimePoint = i;
+			for (int j = 0; j < averageFluorAtEachTimeUnderROI.length; j++) {
+				if(averageFluorAtEachTimeUnderROI[j] != 0){
+					normalizingTimePoint = j;
+					break;
 				}
 			}
 //			if(averageFluor[0] == 0)
@@ -372,11 +373,11 @@ public class FRAPStudy implements Matchable{
 //				throw new Exception("Error generating report: 0 average flourence intensity found at time 0");
 //			}
 			//If normalizingTimePoint  == -1 all the data are zero so we divide by 1
-			double weight = 1.0/(normalizingTimePoint == -1?1:averageFluor[normalizingTimePoint]);
-			for (int j = 0; j < averageFluor.length; j++) {
-				averageFluor[j] = averageFluor[j]*weight;
+			double weight = 1.0/(normalizingTimePoint == -1?1:averageFluorAtEachTimeUnderROI[normalizingTimePoint]);
+			for (int j = 0; j < averageFluorAtEachTimeUnderROI.length; j++) {
+				averageFluorAtEachTimeUnderROI[j] = averageFluorAtEachTimeUnderROI[j]*weight;
 			}
-			curveHash.put(new CurveInfo(null,SpatialAnalysisResults.ORDERED_ROITYPES[i]), averageFluor);
+			curveHash.put(new CurveInfo(null,SpatialAnalysisResults.ORDERED_ROITYPES[i]), averageFluorAtEachTimeUnderROI);
 		}
 		
 		//
