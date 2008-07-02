@@ -532,4 +532,7 @@ public String getModelDataLabelPrefix() {
 public void setModelDataLabelPrefix(String modelDataLabelPrefix) {
 	this.modelDataLabelPrefix = modelDataLabelPrefix;
 }
+public void forceXYRange(cbit.util.Range xRange,cbit.util.Range yRange) {
+	getplotPane().forceXYRange(xRange, yRange);
+}
 }
