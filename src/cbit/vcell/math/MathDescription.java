@@ -6,6 +6,8 @@ import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.mapping.FastSystemAnalyzer;
 import cbit.vcell.mapping.MappingException;
+import cbit.vcell.mapping.VariableHash;
+
 import javax.swing.event.*;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -173,7 +175,7 @@ private void addVariable0(Variable var) throws MathException, ExpressionBindingE
 		throw new MathException("variable "+var.getName()+" already exists");
 	}
 	variableList.addElement(var);
-	var.bind(this);
+	//var.bind(this);
 	if (var instanceof VolVariable){
 		//
 		// for Volume Variables, also create an InsideVariable and an OutsideVariable for use in JumpConditions
@@ -884,143 +886,144 @@ public static MathDescription fromEditor(MathDescription oldMathDesc, String vcm
 	MathDescription mathDesc = new MathDescription(oldMathDesc.getVersion());
 	mathDesc.clearAll();
 	mathDesc.setGeometry0(oldMathDesc.getGeometry());
+	mathDesc.read_database(tokens);
 	
-	try {
-		String token = null;
-		token = tokens.nextToken();
-		if (token.equalsIgnoreCase(VCML.MathDescription)){
-			//token = tokens.nextToken();
-			//setName(token);
-			//CHECK THIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			//if(!token.equals(argName)){
-			//	throw new DataAccessException("MathDescription Version Name and Token Name Don't match");
-			//}
-			token = tokens.nextToken();
-			if (!token.equalsIgnoreCase(VCML.BeginBlock)){
-				throw new MathException("unexpected token "+token+" expecting "+VCML.BeginBlock);
-			}
-		}	
-		while (tokens.hasMoreTokens()){
-			token = tokens.nextToken();
-			if (token.equalsIgnoreCase(VCML.EndBlock)){
-				break;
-			}			
-			if (token.equalsIgnoreCase(VCML.VolumeVariable)){
-				token = tokens.nextToken();
-				VolVariable var = new VolVariable(token);
-				mathDesc.addVariable0(var);
-//
-// done in addVariable0()
-//
-//			InsideVariable inside = new InsideVariable(token+"_INSIDE", token);
-//			addVariable0(inside);
-//			OutsideVariable outside = new OutsideVariable(token+"_OUTSIDE", token);
-//			addVariable0(outside);
-				continue;
-			}
-			if (token.equalsIgnoreCase(VCML.MembraneVariable)){
-				token = tokens.nextToken();
-				MemVariable var = new MemVariable(token);
-				mathDesc.addVariable0(var);
-				continue;
-			}
-			if (token.equalsIgnoreCase(VCML.FilamentVariable)){
-				token = tokens.nextToken();
-				FilamentVariable var = new FilamentVariable(token);
-				mathDesc.addVariable0(var);
-				continue;
-			}
-			if (token.equalsIgnoreCase(VCML.VolumeRegionVariable)){
-				token = tokens.nextToken();
-				VolumeRegionVariable var = new VolumeRegionVariable(token);
-				mathDesc.addVariable0(var);
-				continue;
-			}
-			if (token.equalsIgnoreCase(VCML.MembraneRegionVariable)){
-				token = tokens.nextToken();
-				MembraneRegionVariable var = new MembraneRegionVariable(token);
-				mathDesc.addVariable0(var);
-				continue;
-			}
-			if (token.equalsIgnoreCase(VCML.FilamentRegionVariable)){
-				token = tokens.nextToken();
-				FilamentRegionVariable var = new FilamentRegionVariable(token);
-				mathDesc.addVariable0(var);
-				continue;
-			}
-			if (token.equalsIgnoreCase(VCML.Constant)){
-				token = tokens.nextToken();
-				Expression exp = new Expression(tokens);
-				exp.bindExpression(mathDesc);
-				Constant constant = new Constant(token,exp);
-				mathDesc.addVariable0(constant);
-				continue;
-			}
-//			stochastic variable
-			if (token.equalsIgnoreCase(VCML.StochVolVariable))
-			{
-				token = tokens.nextToken();
-				StochVolVariable var = new StochVolVariable(token);
-				mathDesc.addVariable0(var);
-				continue;
-			}			
-			if (token.equalsIgnoreCase(VCML.Function)){
-				token = tokens.nextToken();
-				Expression exp = new Expression(tokens);
-				exp.bindExpression(mathDesc);
-				Function function = new Function(token,exp);
-				mathDesc.addVariable0(function);
-				continue;
-			}
-/*
-		if (token.equalsIgnoreCase(VCML.CartesianDomain)){
-			CartesianDomain domain = new CartesianDomain(this);
-			domain.read(tokens);
-			setDomain(domain);
-			continue;
-		}
-*/
-			if (token.equalsIgnoreCase(VCML.CompartmentSubDomain)){
-				token = tokens.nextToken();
-				CompartmentSubDomain subDomain = new CompartmentSubDomain(token,mathDesc,tokens);
-				mathDesc.addSubDomain0(subDomain);
-				continue;
-			}			
-			if (token.equalsIgnoreCase(VCML.MembraneSubDomain)){
-				token = tokens.nextToken();
-				CompartmentSubDomain insideCompartment = mathDesc.getCompartmentSubDomain(token);
-				if (insideCompartment == null){
-					throw new MathFormatException("defined membrane subdomain without a corresponding inside volume subdomain first");
-				}	
-				token = tokens.nextToken();
-				CompartmentSubDomain outsideCompartment = mathDesc.getCompartmentSubDomain(token);
-				if (outsideCompartment == null){
-					throw new MathFormatException("defined membrane subdomain without a corresponding outside volume subdomain first");
-				}	
-				MembraneSubDomain subDomain = new MembraneSubDomain(insideCompartment,outsideCompartment);
-				subDomain.read(mathDesc,tokens);
-				mathDesc.addSubDomain0(subDomain);
-				continue;
-			}			
-			if (token.equalsIgnoreCase(VCML.FilamentSubDomain)){
-				token = tokens.nextToken();
-				String subDomainName = token;
-				token = tokens.nextToken();
-				CompartmentSubDomain outsideCompartment = mathDesc.getCompartmentSubDomain(token);
-				if (outsideCompartment == null){
-					throw new MathFormatException("defined membrane subdomain without a corresponding outside volume subdomain first");
-				}	
-				FilamentSubDomain subDomain = new FilamentSubDomain(subDomainName,outsideCompartment);
-				subDomain.read(mathDesc,tokens);
-				mathDesc.addSubDomain0(subDomain);
-				continue;
-			}			
-			throw new MathFormatException("unexpected identifier "+token);
-		}
-	}catch (Throwable e){
-		e.printStackTrace(System.out);
-		throw new MathFormatException("line #"+(tokens.lineIndex()+1)+" Exception: "+e.getMessage(),(tokens.lineIndex()+1));
-	}
+//	try {
+//		String token = null;
+//		token = tokens.nextToken();
+//		if (token.equalsIgnoreCase(VCML.MathDescription)){
+//			//token = tokens.nextToken();
+//			//setName(token);
+//			//CHECK THIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//			//if(!token.equals(argName)){
+//			//	throw new DataAccessException("MathDescription Version Name and Token Name Don't match");
+//			//}
+//			token = tokens.nextToken();
+//			if (!token.equalsIgnoreCase(VCML.BeginBlock)){
+//				throw new MathException("unexpected token "+token+" expecting "+VCML.BeginBlock);
+//			}
+//		}	
+//		while (tokens.hasMoreTokens()){
+//			token = tokens.nextToken();
+//			if (token.equalsIgnoreCase(VCML.EndBlock)){
+//				break;
+//			}			
+//			if (token.equalsIgnoreCase(VCML.VolumeVariable)){
+//				token = tokens.nextToken();
+//				VolVariable var = new VolVariable(token);
+//				mathDesc.addVariable0(var);
+////
+//// done in addVariable0()
+////
+////			InsideVariable inside = new InsideVariable(token+"_INSIDE", token);
+////			addVariable0(inside);
+////			OutsideVariable outside = new OutsideVariable(token+"_OUTSIDE", token);
+////			addVariable0(outside);
+//				continue;
+//			}
+//			if (token.equalsIgnoreCase(VCML.MembraneVariable)){
+//				token = tokens.nextToken();
+//				MemVariable var = new MemVariable(token);
+//				mathDesc.addVariable0(var);
+//				continue;
+//			}
+//			if (token.equalsIgnoreCase(VCML.FilamentVariable)){
+//				token = tokens.nextToken();
+//				FilamentVariable var = new FilamentVariable(token);
+//				mathDesc.addVariable0(var);
+//				continue;
+//			}
+//			if (token.equalsIgnoreCase(VCML.VolumeRegionVariable)){
+//				token = tokens.nextToken();
+//				VolumeRegionVariable var = new VolumeRegionVariable(token);
+//				mathDesc.addVariable0(var);
+//				continue;
+//			}
+//			if (token.equalsIgnoreCase(VCML.MembraneRegionVariable)){
+//				token = tokens.nextToken();
+//				MembraneRegionVariable var = new MembraneRegionVariable(token);
+//				mathDesc.addVariable0(var);
+//				continue;
+//			}
+//			if (token.equalsIgnoreCase(VCML.FilamentRegionVariable)){
+//				token = tokens.nextToken();
+//				FilamentRegionVariable var = new FilamentRegionVariable(token);
+//				mathDesc.addVariable0(var);
+//				continue;
+//			}
+//			if (token.equalsIgnoreCase(VCML.Constant)){
+//				token = tokens.nextToken();
+//				Expression exp = new Expression(tokens);
+//				exp.bindExpression(mathDesc);
+//				Constant constant = new Constant(token,exp);
+//				mathDesc.addVariable0(constant);
+//				continue;
+//			}
+////			stochastic variable
+//			if (token.equalsIgnoreCase(VCML.StochVolVariable))
+//			{
+//				token = tokens.nextToken();
+//				StochVolVariable var = new StochVolVariable(token);
+//				mathDesc.addVariable0(var);
+//				continue;
+//			}			
+//			if (token.equalsIgnoreCase(VCML.Function)){
+//				token = tokens.nextToken();
+//				Expression exp = new Expression(tokens);
+//				exp.bindExpression(mathDesc);
+//				Function function = new Function(token,exp);
+//				mathDesc.addVariable0(function);
+//				continue;
+//			}
+///*
+//		if (token.equalsIgnoreCase(VCML.CartesianDomain)){
+//			CartesianDomain domain = new CartesianDomain(this);
+//			domain.read(tokens);
+//			setDomain(domain);
+//			continue;
+//		}
+//*/
+//			if (token.equalsIgnoreCase(VCML.CompartmentSubDomain)){
+//				token = tokens.nextToken();
+//				CompartmentSubDomain subDomain = new CompartmentSubDomain(token,mathDesc,tokens);
+//				mathDesc.addSubDomain0(subDomain);
+//				continue;
+//			}			
+//			if (token.equalsIgnoreCase(VCML.MembraneSubDomain)){
+//				token = tokens.nextToken();
+//				CompartmentSubDomain insideCompartment = mathDesc.getCompartmentSubDomain(token);
+//				if (insideCompartment == null){
+//					throw new MathFormatException("defined membrane subdomain without a corresponding inside volume subdomain first");
+//				}	
+//				token = tokens.nextToken();
+//				CompartmentSubDomain outsideCompartment = mathDesc.getCompartmentSubDomain(token);
+//				if (outsideCompartment == null){
+//					throw new MathFormatException("defined membrane subdomain without a corresponding outside volume subdomain first");
+//				}	
+//				MembraneSubDomain subDomain = new MembraneSubDomain(insideCompartment,outsideCompartment);
+//				subDomain.read(mathDesc,tokens);
+//				mathDesc.addSubDomain0(subDomain);
+//				continue;
+//			}			
+//			if (token.equalsIgnoreCase(VCML.FilamentSubDomain)){
+//				token = tokens.nextToken();
+//				String subDomainName = token;
+//				token = tokens.nextToken();
+//				CompartmentSubDomain outsideCompartment = mathDesc.getCompartmentSubDomain(token);
+//				if (outsideCompartment == null){
+//					throw new MathFormatException("defined membrane subdomain without a corresponding outside volume subdomain first");
+//				}	
+//				FilamentSubDomain subDomain = new FilamentSubDomain(subDomainName,outsideCompartment);
+//				subDomain.read(mathDesc,tokens);
+//				mathDesc.addSubDomain0(subDomain);
+//				continue;
+//			}			
+//			throw new MathFormatException("unexpected identifier "+token);
+//		}
+//	}catch (Throwable e){
+//		e.printStackTrace(System.out);
+//		throw new MathFormatException("line #"+(tokens.lineIndex()+1)+" Exception: "+e.getMessage(),(tokens.lineIndex()+1));
+//	}
 
 	//
 	// compute warning string (if necessary)
@@ -1845,185 +1848,185 @@ public String getVCML_file() throws MathException {
  * @param tokens java.util.StringTokenizer
  * @exception java.lang.Exception The exception description.
  */
-public static String getVCML_withReorderedVariables(Version version, String oldVCML) throws MathException {
-	
-	MathDescription mathDesc = new MathDescription(version);
-	mathDesc.clearAll();
-	CommentStringTokenizer tokens = new CommentStringTokenizer(oldVCML);
-	cbit.vcell.mapping.VariableHash varHash = new cbit.vcell.mapping.VariableHash();
-	try {
-		String token = null;
-		token = tokens.nextToken();
-		if (token.equalsIgnoreCase(VCML.MathDescription)){
-			//token = tokens.nextToken();
-			//setName(token);
-			//CHECK THIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-			//if(!token.equals(argName)){
-			//	throw new DataAccessException("MathDescription Version Name and Token Name Don't match");
-			//}
-			token = tokens.nextToken();
-			if (!token.equalsIgnoreCase(VCML.BeginBlock)){
-				throw new MathException("unexpected token "+token+" expecting "+VCML.BeginBlock);
-			}
-		}	
-		while (tokens.hasMoreTokens()){
-			token = tokens.nextToken();
-			if (token.equalsIgnoreCase(VCML.EndBlock)){
-				break;
-			}			
-			if (token.equalsIgnoreCase(VCML.VolumeVariable)){
-				token = tokens.nextToken();
-				VolVariable var = new VolVariable(token);
-				varHash.addVariable(var);
+//public static String getVCML_withReorderedVariables(Version version, String oldVCML) throws MathException {
+//	
+//	MathDescription mathDesc = new MathDescription(version);
+//	mathDesc.clearAll();
+//	CommentStringTokenizer tokens = new CommentStringTokenizer(oldVCML);
+//	cbit.vcell.mapping.VariableHash varHash = new cbit.vcell.mapping.VariableHash();
+//	try {
+//		String token = null;
+//		token = tokens.nextToken();
+//		if (token.equalsIgnoreCase(VCML.MathDescription)){
+//			//token = tokens.nextToken();
+//			//setName(token);
+//			//CHECK THIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//			//if(!token.equals(argName)){
+//			//	throw new DataAccessException("MathDescription Version Name and Token Name Don't match");
+//			//}
+//			token = tokens.nextToken();
+//			if (!token.equalsIgnoreCase(VCML.BeginBlock)){
+//				throw new MathException("unexpected token "+token+" expecting "+VCML.BeginBlock);
+//			}
+//		}	
+//		while (tokens.hasMoreTokens()){
+//			token = tokens.nextToken();
+//			if (token.equalsIgnoreCase(VCML.EndBlock)){
+//				break;
+//			}			
+//			if (token.equalsIgnoreCase(VCML.VolumeVariable)){
+//				token = tokens.nextToken();
+//				VolVariable var = new VolVariable(token);
+//				varHash.addVariable(var);
+////
+//// done in addVariable0()
+////
+////			InsideVariable inside = new InsideVariable(token+"_INSIDE", token);
+////			addVariable0(inside);
+////			OutsideVariable outside = new OutsideVariable(token+"_OUTSIDE", token);
+////			addVariable0(outside);
+//				continue;
+//			}
+//			//
+//			// this is still here to gracefully read old mathDescriptions
+//			//
+//			if (token.equalsIgnoreCase(VCML.Task)){
+//				while (tokens.hasMoreTokens()){
+//					token = tokens.nextToken(); // toss away until end of block
+//					if (token.equalsIgnoreCase(VCML.EndBlock)){
+//						break;
+//					}			
+//				}
+//				continue;
+//			}			
+//			if (token.equalsIgnoreCase(VCML.MembraneVariable)){
+//				token = tokens.nextToken();
+//				MemVariable var = new MemVariable(token);
+//				varHash.addVariable(var);
+//				continue;
+//			}
+//			if (token.equalsIgnoreCase(VCML.FilamentVariable)){
+//				token = tokens.nextToken();
+//				FilamentVariable var = new FilamentVariable(token);
+//				varHash.addVariable(var);
+//				continue;
+//			}
+//			if (token.equalsIgnoreCase(VCML.VolumeRegionVariable)){
+//				token = tokens.nextToken();
+//				VolumeRegionVariable var = new VolumeRegionVariable(token);
+//				varHash.addVariable(var);
+//				continue;
+//			}
+//			if (token.equalsIgnoreCase(VCML.MembraneRegionVariable)){
+//				token = tokens.nextToken();
+//				MembraneRegionVariable var = new MembraneRegionVariable(token);
+//				varHash.addVariable(var);
+//				continue;
+//			}
+//			if (token.equalsIgnoreCase(VCML.FilamentRegionVariable)){
+//				token = tokens.nextToken();
+//				FilamentRegionVariable var = new FilamentRegionVariable(token);
+//				varHash.addVariable(var);
+//				continue;
+//			}
+//			//stochastic variable
+//			if (token.equalsIgnoreCase(VCML.StochVolVariable))
+//			{
+//				token = tokens.nextToken();
+//				StochVolVariable var = new StochVolVariable(token);
+//				varHash.addVariable(var);
+//				continue;
+//			}
+//			if (token.equalsIgnoreCase(VCML.Constant)){
+//				token = tokens.nextToken();
+//				Expression exp = new Expression(tokens);
+//				Constant constant = new Constant(token,exp);
+//				varHash.addVariable(constant);
+//				continue;
+//			}
+//			if (token.equalsIgnoreCase(VCML.Function)){
+//				token = tokens.nextToken();
+//				Expression exp = new Expression(tokens);
+//				Function function = new Function(token,exp);
+//				varHash.addVariable(function);
+//				continue;
+//			}
+//			if (token.equalsIgnoreCase(VCML.CompartmentSubDomain)){
+//				//
+//				// before reading first compartment (assuming no more variables) add all "Variables" from the varHash to the mathDesc.
+//				//
+//				if (varHash!=null){
+//					Variable reorderedVariables[] = varHash.getReorderedVariables();
+//					for (int i = 0; i < reorderedVariables.length; i++){
+//						if (reorderedVariables[i] instanceof Constant){
+//							((Constant)reorderedVariables[i]).getExpression().bindExpression(mathDesc);
+//						}else if (reorderedVariables[i] instanceof Function){
+//							((Function)reorderedVariables[i]).getExpression().bindExpression(mathDesc);
+//						}
+//						mathDesc.addVariable0(reorderedVariables[i]);
+//					}
+//					varHash = null; // should be no more variables after first Compartment definition.
+//				}
+//				
 //
-// done in addVariable0()
-//
-//			InsideVariable inside = new InsideVariable(token+"_INSIDE", token);
-//			addVariable0(inside);
-//			OutsideVariable outside = new OutsideVariable(token+"_OUTSIDE", token);
-//			addVariable0(outside);
-				continue;
-			}
-			//
-			// this is still here to gracefully read old mathDescriptions
-			//
-			if (token.equalsIgnoreCase(VCML.Task)){
-				while (tokens.hasMoreTokens()){
-					token = tokens.nextToken(); // toss away until end of block
-					if (token.equalsIgnoreCase(VCML.EndBlock)){
-						break;
-					}			
-				}
-				continue;
-			}			
-			if (token.equalsIgnoreCase(VCML.MembraneVariable)){
-				token = tokens.nextToken();
-				MemVariable var = new MemVariable(token);
-				varHash.addVariable(var);
-				continue;
-			}
-			if (token.equalsIgnoreCase(VCML.FilamentVariable)){
-				token = tokens.nextToken();
-				FilamentVariable var = new FilamentVariable(token);
-				varHash.addVariable(var);
-				continue;
-			}
-			if (token.equalsIgnoreCase(VCML.VolumeRegionVariable)){
-				token = tokens.nextToken();
-				VolumeRegionVariable var = new VolumeRegionVariable(token);
-				varHash.addVariable(var);
-				continue;
-			}
-			if (token.equalsIgnoreCase(VCML.MembraneRegionVariable)){
-				token = tokens.nextToken();
-				MembraneRegionVariable var = new MembraneRegionVariable(token);
-				varHash.addVariable(var);
-				continue;
-			}
-			if (token.equalsIgnoreCase(VCML.FilamentRegionVariable)){
-				token = tokens.nextToken();
-				FilamentRegionVariable var = new FilamentRegionVariable(token);
-				varHash.addVariable(var);
-				continue;
-			}
-			//stochastic variable
-			if (token.equalsIgnoreCase(VCML.StochVolVariable))
-			{
-				token = tokens.nextToken();
-				StochVolVariable var = new StochVolVariable(token);
-				varHash.addVariable(var);
-				continue;
-			}
-			if (token.equalsIgnoreCase(VCML.Constant)){
-				token = tokens.nextToken();
-				Expression exp = new Expression(tokens);
-				Constant constant = new Constant(token,exp);
-				varHash.addVariable(constant);
-				continue;
-			}
-			if (token.equalsIgnoreCase(VCML.Function)){
-				token = tokens.nextToken();
-				Expression exp = new Expression(tokens);
-				Function function = new Function(token,exp);
-				varHash.addVariable(function);
-				continue;
-			}
-			if (token.equalsIgnoreCase(VCML.CompartmentSubDomain)){
-				//
-				// before reading first compartment (assuming no more variables) add all "Variables" from the varHash to the mathDesc.
-				//
-				if (varHash!=null){
-					Variable reorderedVariables[] = varHash.getReorderedVariables();
-					for (int i = 0; i < reorderedVariables.length; i++){
-						if (reorderedVariables[i] instanceof Constant){
-							((Constant)reorderedVariables[i]).getExpression().bindExpression(mathDesc);
-						}else if (reorderedVariables[i] instanceof Function){
-							((Function)reorderedVariables[i]).getExpression().bindExpression(mathDesc);
-						}
-						mathDesc.addVariable0(reorderedVariables[i]);
-					}
-					varHash = null; // should be no more variables after first Compartment definition.
-				}
-				
-
-				//
-				// now continue reading compartment subdomain
-				//
-				token = tokens.nextToken();
-				CompartmentSubDomain subDomain = new CompartmentSubDomain(token,mathDesc,tokens);
-				mathDesc.addSubDomain0(subDomain);
-				continue;
-			}			
-			if (token.equalsIgnoreCase(VCML.MembraneSubDomain)){
-				token = tokens.nextToken();
-				CompartmentSubDomain insideCompartment = mathDesc.getCompartmentSubDomain(token);
-				if (insideCompartment == null){
-					throw new MathFormatException("defined membrane subdomain without a corresponding inside volume subdomain first");
-				}	
-				token = tokens.nextToken();
-				CompartmentSubDomain outsideCompartment = mathDesc.getCompartmentSubDomain(token);
-				if (outsideCompartment == null){
-					throw new MathFormatException("defined membrane subdomain without a corresponding outside volume subdomain first");
-				}	
-				MembraneSubDomain subDomain = new MembraneSubDomain(insideCompartment,outsideCompartment);
-				subDomain.read(mathDesc,tokens);
-				mathDesc.addSubDomain0(subDomain);
-				continue;
-			}			
-			if (token.equalsIgnoreCase(VCML.FilamentSubDomain)){
-				token = tokens.nextToken();
-				String subDomainName = token;
-				token = tokens.nextToken();
-				CompartmentSubDomain outsideCompartment = mathDesc.getCompartmentSubDomain(token);
-				if (outsideCompartment == null){
-					throw new MathFormatException("defined membrane subdomain without a corresponding outside volume subdomain first");
-				}	
-				FilamentSubDomain subDomain = new FilamentSubDomain(subDomainName,outsideCompartment);
-				subDomain.read(mathDesc,tokens);
-				mathDesc.addSubDomain0(subDomain);
-				continue;
-			}
-			//
-			// this is here so that old mathDescriptions are read gracefully.
-			//
-			if (token.equalsIgnoreCase(VCML.Mesh)){
-				while (tokens.hasMoreTokens()){
-					token = tokens.nextToken(); // toss away until end of block
-					if (token.equalsIgnoreCase(VCML.EndBlock)){
-						break;
-					}			
-				}
-				continue;
-			}			
-			throw new MathFormatException("unexpected identifier "+token);
-		}
-	}catch (Throwable e){
-		e.printStackTrace(System.out);
-		throw new MathException("line #"+(tokens.lineIndex()+1)+" Exception: "+e.getMessage());
-	}
-	mathDesc.setGeometry0(new Geometry("dummy",3));
-	return mathDesc.getVCML();
-}
+//				//
+//				// now continue reading compartment subdomain
+//				//
+//				token = tokens.nextToken();
+//				CompartmentSubDomain subDomain = new CompartmentSubDomain(token,mathDesc,tokens);
+//				mathDesc.addSubDomain0(subDomain);
+//				continue;
+//			}			
+//			if (token.equalsIgnoreCase(VCML.MembraneSubDomain)){
+//				token = tokens.nextToken();
+//				CompartmentSubDomain insideCompartment = mathDesc.getCompartmentSubDomain(token);
+//				if (insideCompartment == null){
+//					throw new MathFormatException("defined membrane subdomain without a corresponding inside volume subdomain first");
+//				}	
+//				token = tokens.nextToken();
+//				CompartmentSubDomain outsideCompartment = mathDesc.getCompartmentSubDomain(token);
+//				if (outsideCompartment == null){
+//					throw new MathFormatException("defined membrane subdomain without a corresponding outside volume subdomain first");
+//				}	
+//				MembraneSubDomain subDomain = new MembraneSubDomain(insideCompartment,outsideCompartment);
+//				subDomain.read(mathDesc,tokens);
+//				mathDesc.addSubDomain0(subDomain);
+//				continue;
+//			}			
+//			if (token.equalsIgnoreCase(VCML.FilamentSubDomain)){
+//				token = tokens.nextToken();
+//				String subDomainName = token;
+//				token = tokens.nextToken();
+//				CompartmentSubDomain outsideCompartment = mathDesc.getCompartmentSubDomain(token);
+//				if (outsideCompartment == null){
+//					throw new MathFormatException("defined membrane subdomain without a corresponding outside volume subdomain first");
+//				}	
+//				FilamentSubDomain subDomain = new FilamentSubDomain(subDomainName,outsideCompartment);
+//				subDomain.read(mathDesc,tokens);
+//				mathDesc.addSubDomain0(subDomain);
+//				continue;
+//			}
+//			//
+//			// this is here so that old mathDescriptions are read gracefully.
+//			//
+//			if (token.equalsIgnoreCase(VCML.Mesh)){
+//				while (tokens.hasMoreTokens()){
+//					token = tokens.nextToken(); // toss away until end of block
+//					if (token.equalsIgnoreCase(VCML.EndBlock)){
+//						break;
+//					}			
+//				}
+//				continue;
+//			}			
+//			throw new MathFormatException("unexpected identifier "+token);
+//		}
+//	}catch (Throwable e){
+//		e.printStackTrace(System.out);
+//		throw new MathException("line #"+(tokens.lineIndex()+1)+" Exception: "+e.getMessage());
+//	}
+//	mathDesc.setGeometry0(new Geometry("dummy",3));
+//	return mathDesc.getVCML();
+//}
 
 
 /**
@@ -2855,6 +2858,7 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
 							
 	clearAll();
 	
+	VariableHash varHash = new VariableHash();	
 	try {
 		String token = null;
 		token = tokens.nextToken();
@@ -2878,7 +2882,7 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
 			if (token.equalsIgnoreCase(VCML.VolumeVariable)){
 				token = tokens.nextToken();
 				VolVariable var = new VolVariable(token);
-				addVariable0(var);
+				varHash.addVariable(var);
 //
 // done in addVariable0()
 //
@@ -2903,45 +2907,45 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
 			if (token.equalsIgnoreCase(VCML.MembraneVariable)){
 				token = tokens.nextToken();
 				MemVariable var = new MemVariable(token);
-				addVariable0(var);
+				varHash.addVariable(var);
 				continue;
 			}
 			if (token.equalsIgnoreCase(VCML.FilamentVariable)){
 				token = tokens.nextToken();
 				FilamentVariable var = new FilamentVariable(token);
-				addVariable0(var);
+				varHash.addVariable(var);
 				continue;
 			}
 			if (token.equalsIgnoreCase(VCML.VolumeRegionVariable)){
 				token = tokens.nextToken();
 				VolumeRegionVariable var = new VolumeRegionVariable(token);
-				addVariable0(var);
+				varHash.addVariable(var);
 				continue;
 			}
 			if (token.equalsIgnoreCase(VCML.MembraneRegionVariable)){
 				token = tokens.nextToken();
 				MembraneRegionVariable var = new MembraneRegionVariable(token);
-				addVariable0(var);
+				varHash.addVariable(var);
 				continue;
 			}
 			if (token.equalsIgnoreCase(VCML.FilamentRegionVariable)){
 				token = tokens.nextToken();
 				FilamentRegionVariable var = new FilamentRegionVariable(token);
-				addVariable0(var);
+				varHash.addVariable(var);
 				continue;
 			}
 			if (token.equalsIgnoreCase(VCML.Constant)){
 				token = tokens.nextToken();
 				Expression exp = new Expression(tokens);
-				exp.bindExpression(this);
+				//exp.bindExpression(this);
 				Constant constant = new Constant(token,exp);
-				addVariable0(constant);
+				varHash.addVariable(constant);
 				continue;
 			}
 			if (token.equalsIgnoreCase("Parameter")){
 				token = tokens.nextToken();
 				ParameterVariable pv = new ParameterVariable(token);
-				addVariable0(pv);
+				varHash.addVariable(pv);
 				continue;
 			}
 			//stochastic variable
@@ -2949,18 +2953,21 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
 			{
 				token = tokens.nextToken();
 				StochVolVariable var = new StochVolVariable(token);
-				addVariable0(var);
+				varHash.addVariable(var);
 				continue;
 			}
 			if (token.equalsIgnoreCase(VCML.Function)){
 				token = tokens.nextToken();
 				Expression exp = new Expression(tokens);
-				exp.bindExpression(this);
+				//exp.bindExpression(this);
 				Function function = new Function(token,exp);
-				addVariable0(function);
+				varHash.addVariable(function);
 				continue;
 			}
 			if (token.equalsIgnoreCase(VCML.CompartmentSubDomain)){
+				if (variableList.size() == 0) {
+					setAllVariables(varHash.getAlphabeticallyOrderedVariables());
+				}
 				token = tokens.nextToken();
 				CompartmentSubDomain subDomain = new CompartmentSubDomain(token,this,tokens);
 				addSubDomain0(subDomain);
@@ -3008,11 +3015,11 @@ public void read_database(CommentStringTokenizer tokens) throws MathException {
 				continue;
 			}			
 			throw new MathFormatException("unexpected identifier "+token);
-		}
+		}		
 	}catch (Throwable e){
 		e.printStackTrace(System.out);
 		throw new MathException("line #"+(tokens.lineIndex()+1)+" Exception: "+e.getMessage());
-	}
+	}	
 	fireStateChanged();
 }
 
@@ -3103,21 +3110,40 @@ public synchronized void removeVetoableChangeListener(java.lang.String propertyN
 	getVetoPropertyChange().removeVetoableChangeListener(propertyName, listener);
 }
 
-
 /**
  * This method was created by a SmartGuide.
  * @param var cbit.vcell.math.Variable
  */
 public void setAllVariables(Variable vars[]) throws MathException, ExpressionBindingException, MappingException {
-	variableList.clear();
+	// make sure it's OK
 	cbit.vcell.mapping.VariableHash hash = new cbit.vcell.mapping.VariableHash();
 	for (int i = 0; i < vars.length; i++){
 		hash.addVariable(vars[i]);
+	}	
+	hash.getTopologicallyReorderedVariables();
+	
+	variableList.clear();
+	// adding without binding
+	for (Variable var : vars){
+		if (getVariable(var.getName()) != null){
+			throw new MathException("variable "+var.getName()+" already exists");
+		}
+		variableList.addElement(var);		
+		if (var instanceof VolVariable){
+			//
+			// for Volume Variables, also create an InsideVariable and an OutsideVariable for use in JumpConditions
+			//
+			InsideVariable inVar = new InsideVariable(var.getName()+"_INSIDE", var.getName());
+			variableList.addElement(inVar);
+			OutsideVariable outVar = new OutsideVariable(var.getName()+"_OUTSIDE", var.getName());
+			variableList.addElement(outVar);
+		}
 	}
-	Variable reorderedVariables[] = hash.getReorderedVariables();
-	for (int i = 0; i < reorderedVariables.length; i++){
-		addVariable0(reorderedVariables[i]);
-	}
+	// bind each variable
+	Iterator<Variable> iter = variableList.iterator();
+	while (iter.hasNext()) {
+		iter.next().bind(this);
+	}	
 	fireStateChanged();
 }
 

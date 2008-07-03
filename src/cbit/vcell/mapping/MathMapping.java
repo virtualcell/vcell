@@ -1665,7 +1665,7 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 	//
 	// set Variables to MathDescription all at once with the order resolved by "VariableHash"
 	//
-	mathDesc.setAllVariables(varHash.getReorderedVariables());
+	mathDesc.setAllVariables(varHash.getAlphabeticallyOrderedVariables());
 	
 	//
 	// geometry

@@ -655,7 +655,7 @@ public class CellQuanVCTranslator extends Translator {
 	    }	// end iteration for COMPONENTS
 	    // add the variables from varsHash to mathDescription
 	    try {
-		    mathDescription.setAllVariables(varsHash.getReorderedVariables());
+		    mathDescription.setAllVariables(varsHash.getAlphabeticallyOrderedVariables());
 		} catch (Exception e) {
 	    	e.printStackTrace(System.out);
 	    	throw new RuntimeException("Error adding variables to mathDescription : " + e.getMessage());

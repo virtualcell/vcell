@@ -890,7 +890,7 @@ public static MathDescription constructExactMath(MathDescription mathDesc, java.
 			}
 		}
 	}
-	exactMath.setAllVariables(varHash.getReorderedVariables());
+	exactMath.setAllVariables(varHash.getAlphabeticallyOrderedVariables());
 
 	if (!exactMath.isValid()){
 		throw new RuntimeException("generated Math is not valid: "+exactMath.getWarning());
@@ -1155,7 +1155,7 @@ public static MathDescription constructOdesForSensitivity(MathDescription mathDe
 	}
 
 	// Reset all variables in mathDesc.
-	mathDesc.setAllVariables(varHash.getReorderedVariables());
+	mathDesc.setAllVariables(varHash.getAlphabeticallyOrderedVariables());
 
 	// REMOVE PRINTS AFTER CHECKING
 	System.out.println(" \n\n------------  New Math Description -----------------");
@@ -1339,7 +1339,7 @@ public static Function[] getOutwardNormal(Expression analyticSubVolume, String b
 	varHash.addVariable(new Function(baseName+"_Nz",new Expression(normalBufferZ.toString())));
 
 	
-	Variable vars[] = varHash.getReorderedVariables();
+	Variable vars[] = varHash.getAlphabeticallyOrderedVariables();
 	java.util.Vector varList = new java.util.Vector(java.util.Arrays.asList(vars));
 	return (Function[])cbit.util.BeanUtils.getArray(varList,Function.class);
 }

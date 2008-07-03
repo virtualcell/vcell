@@ -794,7 +794,7 @@ public ElectricalStimulus getElectricalStimulus(Element param, SimulationContext
 			unresolvedSymbol = varHash.getFirstUnresolvedSymbol();
 		}
 		
-		Variable sortedVariables[] = varHash.getReorderedVariables();
+		Variable sortedVariables[] = varHash.getTopologicallyReorderedVariables();
 		for (int i = sortedVariables.length-1; i >= 0 ; i--){
 			if (sortedVariables[i] instanceof Function){
 				Function paramFunction = (Function)sortedVariables[i];
@@ -1911,7 +1911,7 @@ public cbit.vcell.model.Kinetics getKinetics(Element param, ReactionStep reactio
 			unresolvedSymbol = varHash.getFirstUnresolvedSymbol();
 		}
 		
-		Variable sortedVariables[] = varHash.getReorderedVariables();
+		Variable sortedVariables[] = varHash.getTopologicallyReorderedVariables();
 		for (int i = sortedVariables.length-1; i >= 0 ; i--){
 			if (sortedVariables[i] instanceof Function){
 				Function paramFunction = (Function)sortedVariables[i];
@@ -2119,7 +2119,7 @@ public MathDescription getMathDescription(Element param) throws XmlParseExceptio
 	// add all variables at once
 	//
 	try {
-		mathdes.setAllVariables(varHash.getReorderedVariables());
+		mathdes.setAllVariables(varHash.getAlphabeticallyOrderedVariables());
 	} catch (MappingException e) {
 		e.printStackTrace();
 		throw new XmlParseException("A MappingException was fired when adding the Function variables to the MathDescription " + name+" : "+e.getMessage());
