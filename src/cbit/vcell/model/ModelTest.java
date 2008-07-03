@@ -6,7 +6,11 @@ import cbit.vcell.dictionary.*;
  * All rights reserved.
 ©*/
 import java.util.*;
+
+import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.model.gui.ModelParameterPanel;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.units.VCUnitDefinition;
 /**
  * This type was created in VisualAge.
  */
@@ -1344,6 +1348,103 @@ public static Model getExampleWithCurrent() throws Exception {
 						//"} ";
 	//cbit.vcell.math.CommentStringTokenizer st = new cbit.vcell.math.CommentStringTokenizer(diagramFile);
 	//diagram.fromTokens(st);
+			
+	return model;
+}
+/**
+ * This method was created by a SmartGuide.
+ */
+public static Model getExample_GlobalParams() throws Exception {
+
+	double A_init = 10.0;
+	double B_init = 20.0;
+	double C_init = 30.0;
+	double D_init = 40.0;
+	double A_diff = 11.0;
+	double B_diff = 22.0;
+	double C_diff = 33.0;
+	double D_diff = 44.0;
+	
+	Model model = new Model("model1");
+
+	model.addSpecies(new Species("A","A"));
+	Species A = model.getSpecies("A");
+	model.addSpecies(new Species("B","B"));
+	Species B = model.getSpecies("B");
+	model.addSpecies(new Species("C","C"));
+	Species C = model.getSpecies("C");
+	model.addSpecies(new Species("D","D"));
+	Species D = model.getSpecies("D");
+	
+	model.addFeature("Cytosol",null,null);
+	Feature cytosol = (Feature)model.getStructure("Cytosol");
+	
+	
+	model.addSpeciesContext(A,cytosol);
+	SpeciesContext A_cyt = model.getSpeciesContext(A,cytosol);
+
+	model.addSpeciesContext(B,cytosol);
+	SpeciesContext B_cyt = model.getSpeciesContext(B,cytosol);
+
+	model.addSpeciesContext(C,cytosol);
+	SpeciesContext C_cyt = model.getSpeciesContext(C,cytosol);
+
+	model.addSpeciesContext(D,cytosol);
+	SpeciesContext D_cyt = model.getSpeciesContext(D,cytosol);
+
+	// add global parameters to the model
+	ModelParameter gp1 = model.new ModelParameter("Kon_1", new Expression(3.0), Model.ROLE_UserDefined, VCUnitDefinition.UNIT_uM_per_s);
+	gp1.setDescription("first global parameter");
+	model.addModelParameter(gp1);
+	ModelParameter gp2 = model.new ModelParameter("Koff_1", new Expression(4.0), Model.ROLE_UserDefined, VCUnitDefinition.UNIT_uM_per_s);
+	gp2.setDescription("second global parameter");
+	model.addModelParameter(gp2);
+	
+	SimpleReaction sr;
+	
+	//
+	// CYTOSOL REACTIONS
+	//
+	double K1 = 1.0;
+	double K2 = 2.0;
+	double K3 = 3.0;
+	double K4 = 4.0;
+
+	sr = new SimpleReaction(cytosol,"SIMPLE_REACTION_ABC");
+	sr.addReactant(A_cyt,1);
+	sr.addReactant(B_cyt,1);
+	sr.addProduct(C_cyt,1);
+	MassActionKinetics massAct = new MassActionKinetics(sr);
+	massAct.setParameterValue(massAct.getForwardRateParameter(),new Expression(K1));
+	massAct.setParameterValue(massAct.getReverseRateParameter(),new Expression(K2));
+	massAct.renameParameter(massAct.getForwardRateParameter().getName(),"K1");
+	massAct.renameParameter(massAct.getReverseRateParameter().getName(),"K2");
+	sr.setKinetics(massAct);
+	model.addReactionStep(sr);
+
+	sr = new SimpleReaction(cytosol,"SIMPLE_REACION_CDA");
+	sr.addReactant(C_cyt,1);
+	sr.addReactant(D_cyt,1);
+	sr.addProduct(A_cyt,1);
+	massAct = new MassActionKinetics(sr);
+	massAct.setParameterValue(massAct.getForwardRateParameter(),new Expression(K3));
+	massAct.setParameterValue(massAct.getReverseRateParameter(),new Expression(K4));
+	massAct.renameParameter(massAct.getForwardRateParameter().getName(),"K3");
+	massAct.renameParameter(massAct.getReverseRateParameter().getName(),"K4");
+	sr.setKinetics(massAct);
+	model.addReactionStep(sr);
+
+	Diagram diagram = model.getDiagram(cytosol);
+	String diagramFile =" { " +
+						"   SpeciesContextSpec A_cyt 100 100 " +
+						"   SpeciesContextSpec B_cyt 50 200 " +
+						"   SpeciesContextSpec C_cyt 200 200 " +
+						"   SpeciesContextSpec D_cyt 200 50 " +
+						"   SimpleReaction SIMPLE_REACTION_ABC 75 150 " +
+						"   SimpleReaction SIMPLE_REACION_CDA 200 125 " +
+						"} ";
+	cbit.vcell.math.CommentStringTokenizer st = new cbit.vcell.math.CommentStringTokenizer(diagramFile);
+	diagram.fromTokens(st);
 			
 	return model;
 }

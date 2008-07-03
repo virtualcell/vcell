@@ -1,4 +1,5 @@
 package cbit.vcell.xml;
+import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -731,7 +732,8 @@ public ElectricalStimulus getElectricalStimulus(Element param, SimulationContext
 		List list = param.getChildren(XMLTags.ParameterTag, vcNamespace);
 
 		// add constants that may be used in the electrical stimulus.
-		VariableHash varHash = getVariablesHash();
+		VariableHash varHash = new VariableHash();
+		addResevedSymbolsAndGlobalParamsToHash(varHash, currentSimulationContext.getModel());
 		ArrayList reserved = getReservedVars();
 
 		//
@@ -1154,7 +1156,7 @@ public FilamentVariable getFilamentVariable(Element param) {
  * @return cbit.vcell.model.FluxReaction
  * @param param org.jdom.Element
  */
-public cbit.vcell.model.FluxReaction getFluxReaction( Element param, Model model) throws XmlParseException, java.beans.PropertyVetoException {
+public cbit.vcell.model.FluxReaction getFluxReaction( Element param, Model model, VariableHash varsHash) throws XmlParseException, java.beans.PropertyVetoException {
 	//retrieve the key if there is one
 	KeyValue key = null;
 	String keystring = param.getAttributeValue(XMLTags.KeyValueAttrTag);
@@ -1192,6 +1194,7 @@ public cbit.vcell.model.FluxReaction getFluxReaction( Element param, Model model
 	String name = this.unMangle(param.getAttributeValue(XMLTags.NameAttrTag));
 	try {
 		fluxreaction = new cbit.vcell.model.FluxReaction(structureref, specieref, model, key, name);
+		fluxreaction.setModel(model);
 	} catch (Exception e) {
 		e.printStackTrace();
 		throw new XmlParseException( "An exception occurred while trying to create the FluxReaction " + name+" : "+e.getMessage());
@@ -1245,7 +1248,7 @@ public cbit.vcell.model.FluxReaction getFluxReaction( Element param, Model model
 		fluxreaction.addReactionParticipant( getCatalyst(temp, fluxreaction) );
 	}
 	//Add Kinetics
-	fluxreaction.setKinetics(getKinetics(param.getChild(XMLTags.KineticsTag, vcNamespace), fluxreaction));
+	fluxreaction.setKinetics(getKinetics(param.getChild(XMLTags.KineticsTag, vcNamespace), fluxreaction, varsHash));
 
 	//*** Add FluxReaction to he dictionnary ***
 	String temp = fluxreaction.getClass().getName() + ":"+ fluxreaction.getName();
@@ -1772,7 +1775,7 @@ public JumpProcess getJumpProcess(Element param, MathDescription md) throws XmlP
  * @return cbit.vcell.model.Kinetics
  * @param param org.jdom.Element
  */
-public cbit.vcell.model.Kinetics getKinetics(Element param, ReactionStep reaction) throws XmlParseException{
+public cbit.vcell.model.Kinetics getKinetics(Element param, ReactionStep reaction, VariableHash varHash) throws XmlParseException{
 
 	String type = param.getAttributeValue(XMLTags.KineticsTypeAttrTag);
 	Kinetics newKinetics = null;
@@ -1822,7 +1825,7 @@ public cbit.vcell.model.Kinetics getKinetics(Element param, ReactionStep reactio
 		List list = param.getChildren(XMLTags.ParameterTag, vcNamespace);
 
 		// add constants that may be used in kinetics.
-		VariableHash varHash = getVariablesHash();
+		// VariableHash varHash = getVariablesHash();
 		ArrayList reserved = getReservedVars();
 
 		try {
@@ -2724,11 +2727,6 @@ public cbit.vcell.model.Model getModel(Element param) throws XmlParseException {
 	try {
 		//Set attributes
 		newmodel.setName( this.unMangle(param.getAttributeValue(XMLTags.NameAttrTag)) );
-		//String annotation = param.getAttributeValue(XMLTags.AnnotationAttrTag);
-
-		//if (annotation!=null) {
-			//newmodel.setDescription(this.unMangle(annotation));
-		//}
 		//Add annotation
 		String annotationText = param.getChildText(XMLTags.AnnotationTag, vcNamespace);
 		if (annotationText!=null && annotationText.length()>0) {
@@ -2736,18 +2734,16 @@ public cbit.vcell.model.Model getModel(Element param) throws XmlParseException {
 		}
 
 		//***Add Model to the dictionnary***
-		dictionary.put(param, 
-			newmodel.getClass().getName() + ":" + newmodel.getName(),
-			newmodel);
-		
+		dictionary.put(param, newmodel.getClass().getName() + ":" + newmodel.getName(),	newmodel);
+
 		// Add global parameters
-		Element globalParamsElement = param.getChild(XMLTags.GlobalModelParametersTag, vcNamespace);
+		Element globalParamsElement = param.getChild(XMLTags.ModelParametersTag, vcNamespace);
 		if (globalParamsElement != null) {
 			ModelParameter[] modelParams = getModelParams(globalParamsElement, newmodel); 
 			// add global/model param to model - done inside getModelParam by passing newModel
 			newmodel.setModelParameters(modelParams);
 		}
-
+		
 		//Add Species (Compounds)
 		Iterator iterator = param.getChildren(XMLTags.SpeciesTag, vcNamespace).iterator();
 		while (iterator.hasNext()) {
@@ -2781,17 +2777,25 @@ public cbit.vcell.model.Model getModel(Element param) throws XmlParseException {
 		}
 		newmodel.setSpeciesContexts(newspeccon);
 		//Add Reaction steps (if available)
+		
 		//(Simplereaction)
+		// Create a varHash with reserved symbols and global parameters, if any, to pass on to Kinetics
+		// must create new hash for each reaction and flux, since each kinetics uses new variables hash
+		VariableHash varHash;
 		iterator = param.getChildren(XMLTags.SimpleReactionTag, vcNamespace).iterator();
 		while (iterator.hasNext()) {
+			varHash = new VariableHash();
+			addResevedSymbolsAndGlobalParamsToHash(varHash, newmodel);
 			org.jdom.Element temp = (Element) iterator.next();
-			newmodel.addReactionStep(getSimpleReaction(temp));
+			newmodel.addReactionStep(getSimpleReaction(temp, newmodel, varHash));
 		}
 		//(fluxStep)
 		iterator = param.getChildren(XMLTags.FluxStepTag, vcNamespace).iterator();
 		while (iterator.hasNext()) {
+			varHash = new VariableHash();
+			addResevedSymbolsAndGlobalParamsToHash(varHash, newmodel);
 			org.jdom.Element temp = (Element) iterator.next();
-			newmodel.addReactionStep(getFluxReaction(temp, newmodel));
+			newmodel.addReactionStep(getFluxReaction(temp, newmodel, varHash));
 		}
 		//Add Diagrams
 		children = param.getChildren(XMLTags.DiagramTag, vcNamespace);
@@ -3308,7 +3312,7 @@ private ArrayList getReservedVars() {
  * @return cbit.vcell.model.SimpleReaction
  * @param param org.jdom.Element
  */
-public cbit.vcell.model.SimpleReaction getSimpleReaction(Element param) throws XmlParseException {
+public cbit.vcell.model.SimpleReaction getSimpleReaction(Element param, Model model, VariableHash varsHash) throws XmlParseException {
     //resolve reference to the  structure that it belongs to.
     String tempname = "cbit.vcell.model.Feature:" + this.unMangle(param.getAttributeValue(XMLTags.StructureAttrTag));
     Element re = XMLDict.getResolvedElement(param, XMLTags.FeatureTag, XMLTags.NameAttrTag, 
@@ -3339,6 +3343,7 @@ public cbit.vcell.model.SimpleReaction getSimpleReaction(Element param) throws X
     
     try {
         simplereaction = new cbit.vcell.model.SimpleReaction(structureref, key, name);
+        simplereaction.setModel(model);
     } catch (java.beans.PropertyVetoException e) {
         e.printStackTrace();
         throw new XmlParseException("An error occurred while trying to create the simpleReaction " + name+" : "+e.getMessage());
@@ -3430,7 +3435,7 @@ public cbit.vcell.model.SimpleReaction getSimpleReaction(Element param) throws X
 	Element tempKinet = param.getChild(XMLTags.KineticsTag, vcNamespace);
 
 	if (tempKinet!= null) {
-		simplereaction.setKinetics(getKinetics(tempKinet, simplereaction));
+		simplereaction.setKinetics(getKinetics(tempKinet, simplereaction, varsHash));
 	}
 
     //**** Add the SimpleReaction to the dictionnary ****
@@ -3933,8 +3938,6 @@ public ModelParameter[] getModelParams(Element globalParams, Model model) throws
 	return ((ModelParameter[])BeanUtils.getArray(modelParamsVector, ModelParameter.class));
 }
 
-
-
 /**
  * This method creates a Specie (Compound) object from an XML Element.
  * Creation date: (3/15/2001 12:57:43 PM)
@@ -4293,20 +4296,19 @@ public User getUser(Element param) {
 	return newuser;
 }
 
-
 /**
  * This method returns a Kinetics object from a XML Element based on the value of the kinetics type attribute.
  * Creation date: (3/19/2001 4:42:04 PM)
  * @return cbit.vcell.model.Kinetics
  * @param param org.jdom.Element
  */
-private VariableHash getVariablesHash() throws XmlParseException {
+private void addResevedSymbolsAndGlobalParamsToHash(VariableHash varHash, Model model) throws XmlParseException {
 
-	VariableHash varHash = new VariableHash();
 	//
 	// add constants that may be used in kinetics.
 	//
 	try {
+		// add reserved symbols
 		varHash.addVariable(new Constant(ReservedSymbol.FARADAY_CONSTANT.getName(), new Expression(0.0)));
 		varHash.addVariable(new Constant(ReservedSymbol.FARADAY_CONSTANT_NMOLE.getName(), new Expression(0.0)));
 		varHash.addVariable(new Constant(ReservedSymbol.GAS_CONSTANT.getName(), new Expression(0.0)));
@@ -4316,14 +4318,21 @@ private VariableHash getVariablesHash() throws XmlParseException {
 		varHash.addVariable(new Constant(ReservedSymbol.TEMPERATURE.getName(), new Expression(0.0)));
 		varHash.addVariable(new Constant(ReservedSymbol.K_GHK.getName(), new Expression(0.0)));
 		varHash.addVariable(new Constant(ReservedSymbol.TIME.getName(), new Expression(0.0)));
+		// add global parameters, if any - as constants, since variableHash needs a variable?
+		ModelParameter[] mps = model.getModelParameters();
+		if (mps == null || mps.length == 0) {
+			System.out.println("No global parameters in model");
+			return;
+		}
+		
+		for (int i = 0; i < mps.length; i++) {
+			varHash.addVariable(new Constant(mps[i].getName(), mps[i].getExpression()));
+		}
 	} catch (MappingException e){
 		e.printStackTrace(System.out);
 		throw new XmlParseException("error reordering parameters according to dependencies: "+e.getMessage());
 	}
-
-	return varHash;
 }
-
 
 /**
  * This method return a VarIniCondition object from a XML element.

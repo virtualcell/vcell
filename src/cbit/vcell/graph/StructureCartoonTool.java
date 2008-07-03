@@ -143,6 +143,11 @@ protected void menuAction(Shape shape, String menuAction) {
 			showParametersDialog();
 		}
 			
+	}else if (menuAction.equals(ADD_GLOBAL_PARAM_MENU_ACTION)){
+		if (shape instanceof FeatureShape || shape instanceof MembraneShape){
+			showCreateGlobalParamDialog(getGraphPane(), getStructureCartoon().getModel(), shape.getLocationOnScreen(getGraphPane().getLocationOnScreen()));
+		}
+			
 	}else if(menuAction.equals(ADD_SPECIES_MENU_ACTION)){
 		if(shape instanceof StructureShape){
 			showCreateSpeciesContextDialog(getGraphPane(),getStructureCartoon().getModel(),((StructureShape)shape).getStructure(),shape.getLocationOnScreen(getGraphPane().getLocationOnScreen()),null);
@@ -572,6 +577,7 @@ protected boolean shapeHasMenuAction(Shape shape, java.lang.String menuAction) {
 			menuAction.equals(PASTE_MENU_ACTION) ||
 			menuAction.equals(PASTE_NEW_MENU_ACTION) ||
 			menuAction.equals(ADD_SPECIES_MENU_ACTION) ||
+			menuAction.equals(ADD_GLOBAL_PARAM_MENU_ACTION) ||
 			menuAction.equals(SHOW_PARAMETERS_MENU_ACTION) ||
 			menuAction.equals(HIGH_RES_MENU_ACTION) || 
 			menuAction.equals(MED_RES_MENU_ACTION) ||
@@ -750,7 +756,7 @@ private void showMoveDialog(FeatureShape featureShape) {
 
 
 /**
- * This method was created in VisualAge.
+ * showParametersDialog : displays all the parameters used in the model (mainly reaction parameters)
  * @param frame java.awt.Frame
  */
 public void showParametersDialog() {
@@ -819,9 +825,72 @@ public void showParametersDialog() {
 	internalFrame.show();
 }
 
+/**
+ * showParametersDialog : displays all the parameters used in the model (mainly reaction parameters)
+ * @param frame java.awt.Frame
+ */
+/* public void showGlobalParametersDialog() {
+	if(getGraphModel() == null || getDocumentManager() == null || getJDesktopPane() == null){
+		return;
+	}
+	final GlobalParameterPanel globalParameterPanel = new GlobalParameterPanel();
+	final cbit.vcell.model.Model model = (((StructureCartoon)getGraphModel()).getModel());
+	globalParameterPanel.setModel(model);
+
+	JPanel problemPanel = new JPanel();
+	final JTextArea textArea = new JTextArea();
+	JScrollPane scrollPane = new JScrollPane(textArea);
+	JButton refreshButton = new JButton("Refresh");
+	refreshButton.addActionListener(
+		new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				java.util.Vector issueList = new java.util.Vector();
+				model.gatherIssues(issueList);
+				StringBuffer buffer = new StringBuffer();
+				for (int i=0;i<issueList.size();i++){
+					buffer.append(issueList.elementAt(i)+"\n");
+				}
+				textArea.setText(buffer.toString());
+			}
+		}
+	);
+	BorderLayout borderLayout = new BorderLayout();
+	problemPanel.setLayout(borderLayout);
+	problemPanel.add(refreshButton,BorderLayout.NORTH);
+	problemPanel.add(scrollPane,BorderLayout.CENTER);
+
+	JTabbedPane tabbedPane = new JTabbedPane();
+	tabbedPane.setName("JTabbedPane1");
+	tabbedPane.insertTab("Global Parameters", null, globalParameterPanel, null, 0);
+	tabbedPane.insertTab("Problems", null, problemPanel, null, 1);
+	
+	JInternalFrameEnhanced internalFrame = new JInternalFrameEnhanced("Global Parameters",true,true,true,true);
+	internalFrame.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+	internalFrame.setClosable(true);
+	internalFrame.setSize(542, 495);
+	internalFrame.setResizable(true);
+	JPanel contentsPane = new javax.swing.JPanel();
+	contentsPane.setName("ContentsPane");
+	contentsPane.setLayout(new java.awt.BorderLayout());
+	contentsPane.add(tabbedPane, "Center");
+	internalFrame.setContentPane(contentsPane);
+
+	//cleanup listeners after window closed for GC
+	internalFrame.addInternalFrameListener(
+		new javax.swing.event.InternalFrameAdapter(){
+			public void internalFrameClosed(InternalFrameEvent e) {
+				globalParameterPanel.cleanupOnClose();
+			}
+		}
+	);
+	
+	getJDesktopPane().add(internalFrame);
+	cbit.util.BeanUtils.centerOnComponent(internalFrame,getJDesktopPane());
+	internalFrame.show();
+}
+*/
 
 /**
- * This method was created in VisualAge.
  * @param frame java.awt.Frame
  */
 public void showReactionCartoonEditorPanel(final StructureShape structureShape) {

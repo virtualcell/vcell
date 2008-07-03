@@ -319,6 +319,27 @@ protected void showEditSpeciesDialog(GraphPane myGraphPane,SpeciesContext specie
 /**
  * This method was created by a SmartGuide.
  */
+protected void showCreateGlobalParamDialog(GraphPane myGraphPane, final Model model, java.awt.Point location) {
+	if(getDialogOwner(myGraphPane) == null){
+		return;
+	}
+	//
+	AddModelParamDialog createGlobalParamDialog = new AddModelParamDialog();
+	createGlobalParamDialog.initAddModelParam(model);
+	if(location != null){
+		createGlobalParamDialog.setLocation(location);
+	}
+	//
+	getDialogOwner(myGraphPane).remove(createGlobalParamDialog);
+	getDialogOwner(myGraphPane).add(createGlobalParamDialog, JDesktopPane.MODAL_LAYER);
+	cbit.util.BeanUtils.centerOnComponent(createGlobalParamDialog, getDialogOwner(myGraphPane));
+	createGlobalParamDialog.setVisible(true);
+}
+
+
+/**
+ * This method was created by a SmartGuide.
+ */
 public static final void showFeaturePropertiesDialog(GraphPane myGraphPane,Model model,Feature parentFeature,Feature childFeature, java.awt.Point location) {
 	//
 	// showFeaturePropertyDialog is invoked in two modes:

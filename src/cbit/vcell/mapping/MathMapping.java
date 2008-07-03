@@ -14,6 +14,7 @@ import cbit.gui.DialogUtils;
 import cbit.util.ISize;
 import cbit.vcell.math.*;
 import cbit.vcell.model.*;
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.geometry.*;
 import cbit.vcell.parser.*;
 import java.util.*;
@@ -1473,7 +1474,22 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 			}
 		}
 	}
-	
+
+	//
+	// global parameters from model (that presently are constants)
+	//
+	ModelParameter[] modelParameters = simContext.getModel().getModelParameters();
+	for (int j=0;j<modelParameters.length;j++){
+		try {
+			double value = modelParameters[j].getExpression().evaluateConstant();
+			Constant constant = new Constant(getMathSymbol(modelParameters[j],null),new Expression(value));
+			varHash.addVariable(constant);
+		}catch (ExpressionException e){
+			e.printStackTrace(System.out);
+			throw new RuntimeException("Error adding model parameter \'" + modelParameters[j].getName() + "\' to math");
+		}
+	}
+
 	
 	//
 	// kinetic constants that evaluate to constants
