@@ -1,8 +1,16 @@
 package cbit.vcell.model.gui;
 
+import java.awt.Container;
+import java.awt.event.ActionEvent;
+
+import javax.swing.JDesktopPane;
+
+import cbit.gui.DialogUtils;
+import cbit.util.BeanUtils;
 import cbit.vcell.client.PopupGenerator;
-import cbit.vcell.graph.SimpleReactionShape;
+import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.Model.ModelParameter;
 
 /**
  * Insert the type's description here.
@@ -17,6 +25,8 @@ public class ModelParameterPanel extends javax.swing.JPanel {
 	private cbit.vcell.model.Model fieldModel = null;
 	private boolean ivjConnPtoP3Aligning = false;
 	private cbit.vcell.model.Model ivjmodel1 = null;
+	private javax.swing.JMenuItem ivjJMenuItemAdd = null;
+	private javax.swing.JMenuItem ivjJMenuItemDelete = null;
 	private javax.swing.JMenuItem ivjJMenuItemCopy = null;
 	private javax.swing.JMenuItem ivjJMenuItemCopyAll = null;
 	private javax.swing.JMenuItem ivjJMenuItemPaste = null;
@@ -26,14 +36,22 @@ public class ModelParameterPanel extends javax.swing.JPanel {
 
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.MouseListener, java.beans.PropertyChangeListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
-			if (e.getSource() == ModelParameterPanel.this.getJMenuItemCopy()) 
-				connEtoC1(e);
-			if (e.getSource() == ModelParameterPanel.this.getJMenuItemCopyAll()) 
-				connEtoC2(e);
-			if (e.getSource() == ModelParameterPanel.this.getJMenuItemPaste()) 
-				connEtoC3(e);
-			if (e.getSource() == ModelParameterPanel.this.getJMenuItemPasteAll()) 
-				connEtoC4(e);
+			try {
+				if (e.getSource() == ModelParameterPanel.this.getJMenuItemAdd()) 
+					jMenuItemAdd_ActionPerformed(e);
+				if (e.getSource() == ModelParameterPanel.this.getJMenuItemDelete()) 
+					jMenuItemDelete_ActionPerformed(e);
+				if (e.getSource() == ModelParameterPanel.this.getJMenuItemCopy()) 
+					jMenuItemCopy_ActionPerformed(e);
+				if (e.getSource() == ModelParameterPanel.this.getJMenuItemCopyAll()) 
+					jMenuItemCopy_ActionPerformed(e);
+				if (e.getSource() == ModelParameterPanel.this.getJMenuItemPaste()) 
+					jMenuItemPaste_ActionPerformed(e);
+				if (e.getSource() == ModelParameterPanel.this.getJMenuItemPasteAll()) 
+					jMenuItemPaste_ActionPerformed(e);
+			} catch (Throwable te) {
+				handleException(te);
+			}
 		};
 		public void mouseClicked(java.awt.event.MouseEvent e) {
 			showAnnotationDialog(e);
@@ -41,12 +59,12 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.M
 		public void mouseEntered(java.awt.event.MouseEvent e) {};
 		public void mouseExited(java.awt.event.MouseEvent e) {};
 		public void mousePressed(java.awt.event.MouseEvent e) {
-			if (e.getSource() == ModelParameterPanel.this.getthis12()) 
-				connEtoC5(e);
+			if (e.getSource() == ModelParameterPanel.this.getthis12() || e.getSource() == ModelParameterPanel.this.getJScrollPane1()) 
+				popupCopyPaste(e);
 		};
 		public void mouseReleased(java.awt.event.MouseEvent e) {
-			if (e.getSource() == ModelParameterPanel.this.getthis12()) 
-				connEtoC6(e);
+			if (e.getSource() == ModelParameterPanel.this.getthis12() || e.getSource() == ModelParameterPanel.this.getJScrollPane1()) 
+				popupCopyPaste(e);
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == ModelParameterPanel.this && (evt.getPropertyName().equals("model"))) 
@@ -98,219 +116,14 @@ public void cleanupOnClose() {
 	getmodelParameterTableModel().setModel(null);
 }
 
-
-/**
- * connEtoC1:  (JMenuItemCopy.action.actionPerformed(java.awt.event.ActionEvent) --> ModelParameterPanel.jMenuItemCopy_ActionPerformed(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC1(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.jMenuItemCopy_ActionPerformed(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC2:  (JMenuItemCopyAll.action.actionPerformed(java.awt.event.ActionEvent) --> ModelParameterPanel.jMenuItemCopy_ActionPerformed(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC2(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.jMenuItemCopy_ActionPerformed(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC3:  (JMenuItemPaste.action.actionPerformed(java.awt.event.ActionEvent) --> ModelParameterPanel.jMenuItemPaste_ActionPerformed(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC3(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.jMenuItemPaste_ActionPerformed(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC4:  (JMenuItemPasteAll.action.actionPerformed(java.awt.event.ActionEvent) --> ModelParameterPanel.jMenuItemPaste_ActionPerformed(Ljava.awt.event.ActionEvent;)V)
- * @param arg1 java.awt.event.ActionEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC4(java.awt.event.ActionEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.jMenuItemPaste_ActionPerformed(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC5:  (this12.mouse.mousePressed(java.awt.event.MouseEvent) --> ModelParameterPanel.popupCopyPaste(Ljava.awt.event.MouseEvent;)V)
- * @param arg1 java.awt.event.MouseEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC5(java.awt.event.MouseEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.popupCopyPaste(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC6:  (this12.mouse.mouseReleased(java.awt.event.MouseEvent) --> ModelParameterPanel.popupCopyPaste(Ljava.awt.event.MouseEvent;)V)
- * @param arg1 java.awt.event.MouseEvent
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC6(java.awt.event.MouseEvent arg1) {
-	try {
-		// user code begin {1}
-		// user code end
-		this.popupCopyPaste(arg1);
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoC7:  (ModelParameterPanel.initialize() --> ModelParameterPanel.modelParameterPanel_Initialize()V)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoC7() {
-	try {
-		// user code begin {1}
-		// user code end
-		this.modelParameterPanel_Initialize();
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM5:  (model1.this --> modelParameterTableModel.model)
- * @param value cbit.vcell.model.Model
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM5(cbit.vcell.model.Model value) {
-	try {
-		// user code begin {1}
-		// user code end
-		getmodelParameterTableModel().setModel(getmodel1());
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connEtoM6:  (ModelParameterPanel.initialize() --> modelParameterTableModel.model)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connEtoM6() {
-	try {
-		// user code begin {1}
-		// user code end
-		if ((getmodel1() != null)) {
-			getmodelParameterTableModel().setModel(getmodel1());
-		}
-		// user code begin {2}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
-/**
- * connPtoP1SetTarget:  (modelParameterTableModel.this <--> ScrollPaneTable.model)
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private void connPtoP1SetTarget() {
-	/* Set the target from the source */
-	try {
-		getScrollPaneTable().setModel(getmodelParameterTableModel());
-		getScrollPaneTable().createDefaultColumnsFromModel();
-		// user code begin {1}
-		// user code end
-	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
-		handleException(ivjExc);
-	}
-}
-
-
 /**
  * connPtoP2SetTarget:  (ScrollPaneTable.this <--> this12.this)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connPtoP2SetTarget() {
 	/* Set the target from the source */
 	try {
 		setthis12(getScrollPaneTable());
-		// user code begin {1}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -319,25 +132,18 @@ private void connPtoP2SetTarget() {
 /**
  * connPtoP3SetSource:  (ModelParameterPanel.model <--> model1.this)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connPtoP3SetSource() {
 	/* Set the source from the target */
 	try {
 		if (ivjConnPtoP3Aligning == false) {
-			// user code begin {1}
-			// user code end
 			ivjConnPtoP3Aligning = true;
 			if ((getmodel1() != null)) {
 				this.setModel(getmodel1());
 			}
-			// user code begin {2}
-			// user code end
 			ivjConnPtoP3Aligning = false;
 		}
 	} catch (java.lang.Throwable ivjExc) {
 		ivjConnPtoP3Aligning = false;
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -346,44 +152,57 @@ private void connPtoP3SetSource() {
 /**
  * connPtoP3SetTarget:  (ModelParameterPanel.model <--> model1.this)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connPtoP3SetTarget() {
 	/* Set the target from the source */
 	try {
 		if (ivjConnPtoP3Aligning == false) {
-			// user code begin {1}
-			// user code end
 			ivjConnPtoP3Aligning = true;
 			setmodel1(this.getModel());
-			// user code begin {2}
-			// user code end
 			ivjConnPtoP3Aligning = false;
 		}
 	} catch (java.lang.Throwable ivjExc) {
 		ivjConnPtoP3Aligning = false;
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
 
+private javax.swing.JMenuItem getJMenuItemAdd() {
+	if (ivjJMenuItemAdd == null) {
+		try {
+			ivjJMenuItemAdd = new javax.swing.JMenuItem();
+			ivjJMenuItemAdd.setName("JMenuItemAdd");
+			ivjJMenuItemAdd.setText("Add Parameter");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return ivjJMenuItemAdd;
+}
+
+private javax.swing.JMenuItem getJMenuItemDelete() {
+	if (ivjJMenuItemDelete == null) {
+		try {
+			ivjJMenuItemDelete = new javax.swing.JMenuItem();
+			ivjJMenuItemDelete.setName("JMenuItemDelete");
+			ivjJMenuItemDelete.setText("Delete Parameter");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return ivjJMenuItemDelete;
+}
 
 /**
  * Return the JMenuItemCopy property value.
  * @return javax.swing.JMenuItem
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JMenuItem getJMenuItemCopy() {
 	if (ivjJMenuItemCopy == null) {
 		try {
 			ivjJMenuItemCopy = new javax.swing.JMenuItem();
 			ivjJMenuItemCopy.setName("JMenuItemCopy");
 			ivjJMenuItemCopy.setText("Copy");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -395,18 +214,13 @@ private javax.swing.JMenuItem getJMenuItemCopy() {
  * Return the JMenuItemCopyAll property value.
  * @return javax.swing.JMenuItem
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JMenuItem getJMenuItemCopyAll() {
 	if (ivjJMenuItemCopyAll == null) {
 		try {
 			ivjJMenuItemCopyAll = new javax.swing.JMenuItem();
 			ivjJMenuItemCopyAll.setName("JMenuItemCopyAll");
 			ivjJMenuItemCopyAll.setText("Copy All");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -418,18 +232,13 @@ private javax.swing.JMenuItem getJMenuItemCopyAll() {
  * Return the JMenuItemPaste property value.
  * @return javax.swing.JMenuItem
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JMenuItem getJMenuItemPaste() {
 	if (ivjJMenuItemPaste == null) {
 		try {
 			ivjJMenuItemPaste = new javax.swing.JMenuItem();
 			ivjJMenuItemPaste.setName("JMenuItemPaste");
 			ivjJMenuItemPaste.setText("Paste");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -441,18 +250,13 @@ private javax.swing.JMenuItem getJMenuItemPaste() {
  * Return the JMenuItemPasteAll property value.
  * @return javax.swing.JMenuItem
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JMenuItem getJMenuItemPasteAll() {
 	if (ivjJMenuItemPasteAll == null) {
 		try {
 			ivjJMenuItemPasteAll = new javax.swing.JMenuItem();
 			ivjJMenuItemPasteAll.setName("JMenuItemPasteAll");
 			ivjJMenuItemPasteAll.setText("Paste All");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -464,22 +268,19 @@ private javax.swing.JMenuItem getJMenuItemPasteAll() {
  * Return the JPopupMenuICP property value.
  * @return javax.swing.JPopupMenu
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JPopupMenu getJPopupMenuICP() {
 	if (ivjJPopupMenuICP == null) {
 		try {
 			ivjJPopupMenuICP = new javax.swing.JPopupMenu();
 			ivjJPopupMenuICP.setName("JPopupMenuICP");
-			ivjJPopupMenuICP.setLabel("Initial Conditions");
+			ivjJPopupMenuICP.setLabel("Add/Delete/Copy/Paste Menu");
+			ivjJPopupMenuICP.add(getJMenuItemAdd());
+			ivjJPopupMenuICP.add(getJMenuItemDelete());
 			ivjJPopupMenuICP.add(getJMenuItemCopy());
 			ivjJPopupMenuICP.add(getJMenuItemCopyAll());
 			ivjJPopupMenuICP.add(getJMenuItemPaste());
 			ivjJPopupMenuICP.add(getJMenuItemPasteAll());
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -491,7 +292,6 @@ private javax.swing.JPopupMenu getJPopupMenuICP() {
  * Return the JScrollPane1 property value.
  * @return javax.swing.JScrollPane
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JScrollPane getJScrollPane1() {
 	if (ivjJScrollPane1 == null) {
 		try {
@@ -499,12 +299,12 @@ private javax.swing.JScrollPane getJScrollPane1() {
 			ivjJScrollPane1.setName("JScrollPane1");
 			ivjJScrollPane1.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 			ivjJScrollPane1.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+			if (ivjJScrollPane1 != null) {
+				ivjJScrollPane1.removeMouseListener(ivjEventHandler);
+				ivjJScrollPane1.addMouseListener(ivjEventHandler);
+			}
 			getJScrollPane1().setViewportView(getScrollPaneTable());
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -526,10 +326,7 @@ public cbit.vcell.model.Model getModel() {
  * Return the model1 property value.
  * @return cbit.vcell.model.Model
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private cbit.vcell.model.Model getmodel1() {
-	// user code begin {1}
-	// user code end
 	return ivjmodel1;
 }
 
@@ -538,16 +335,11 @@ private cbit.vcell.model.Model getmodel1() {
  * Return the modelParameterTableModel property value.
  * @return cbit.vcell.model.gui.ModelParameterTableModel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private ModelParameterTableModel getmodelParameterTableModel() {
 	if (ivjmodelParameterTableModel == null) {
 		try {
 			ivjmodelParameterTableModel = new cbit.vcell.model.gui.ModelParameterTableModel();
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -559,7 +351,6 @@ private ModelParameterTableModel getmodelParameterTableModel() {
  * Return the ScrollPaneTable property value.
  * @return cbit.vcell.messaging.admin.sorttable.JSortTable
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private cbit.vcell.messaging.admin.sorttable.JSortTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
@@ -569,11 +360,7 @@ private cbit.vcell.messaging.admin.sorttable.JSortTable getScrollPaneTable() {
 			getJScrollPane1().getViewport().setBackingStoreEnabled(true);
 			ivjScrollPaneTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
 			ivjScrollPaneTable.setBounds(0, 0, 200, 200);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -584,10 +371,8 @@ private cbit.vcell.messaging.admin.sorttable.JSortTable getScrollPaneTable() {
  * Return the this12 property value.
  * @return cbit.vcell.messaging.admin.sorttable.JSortTable
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
+ 
 private cbit.vcell.messaging.admin.sorttable.JSortTable getthis12() {
-	// user code begin {1}
-	// user code end
 	return ivjthis12;
 }
 
@@ -608,16 +393,19 @@ private void handleException(java.lang.Throwable exception) {
  * Initializes connections
  * @exception java.lang.Exception The exception description.
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initConnections() throws java.lang.Exception {
-	// user code begin {1}
-	// user code end
 	this.addPropertyChangeListener(ivjEventHandler);
+	getJMenuItemAdd().addActionListener(ivjEventHandler);
+	getJMenuItemDelete().addActionListener(ivjEventHandler);
 	getJMenuItemCopy().addActionListener(ivjEventHandler);
 	getJMenuItemCopyAll().addActionListener(ivjEventHandler);
 	getJMenuItemPaste().addActionListener(ivjEventHandler);
 	getJMenuItemPasteAll().addActionListener(ivjEventHandler);
-	connPtoP1SetTarget();
+	
+	// for scrollPaneTable, set tableModel and create default columns
+	getScrollPaneTable().setModel(getmodelParameterTableModel());
+	getScrollPaneTable().createDefaultColumnsFromModel();
+
 	connPtoP3SetTarget();
 	connPtoP2SetTarget();
 }
@@ -625,29 +413,61 @@ private void initConnections() throws java.lang.Exception {
 /**
  * Initialize the class.
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initialize() {
 	try {
-		// user code begin {1}
-		// user code end
 		setName("ModelParameterPanel");
 		setLayout(new java.awt.BorderLayout());
 		setSize(655, 226);
 		add(getJScrollPane1(), "Center");
 		initConnections();
-		connEtoM6();
-		connEtoC7();
+		if ((getmodel1() != null)) {
+			getmodelParameterTableModel().setModel(getmodel1());
+		}
+		this.modelParameterPanel_Initialize();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
-	// user code begin {2}
-	// user code end
+}
+
+private void jMenuItemAdd_ActionPerformed(ActionEvent actionEvent) throws Exception {
+	if(actionEvent.getSource() == getJMenuItemAdd()){
+		AddModelParamDialog createGlobalParamDialog = new AddModelParamDialog();
+		createGlobalParamDialog.initAddModelParam(fieldModel);
+		createGlobalParamDialog.setLocation(getJScrollPane1().getLocation());
+		Container container = (Container)BeanUtils.findTypeParentOfComponent(getJScrollPane1(), JDesktopPane.class);
+		container.remove(createGlobalParamDialog);
+		container.add(createGlobalParamDialog, JDesktopPane.MODAL_LAYER);
+		cbit.util.BeanUtils.centerOnComponent(createGlobalParamDialog, this);
+		createGlobalParamDialog.setVisible(true);
+	}
+}
+
+private void jMenuItemDelete_ActionPerformed(ActionEvent actionEvent) throws Exception {
+	if(actionEvent.getSource() == getJMenuItemDelete()){
+		int[] rows = getScrollPaneTable().getSelectedRows();
+		if (rows.length < 1) {
+			PopupGenerator.showErrorDialog("No Global parameter selected for deletion.");
+			return;
+		} else if (rows.length > 1) {
+			PopupGenerator.showErrorDialog("Cannot delete more than one global parameter at a time!");
+			return;
+		}
+		// TODO : Check if Global/model parameter selected to be deleted is being used anywhere in the model.
+		// delete the parameter and update the tablemodel.
+		Parameter param = (Parameter)getmodelParameterTableModel().getData().get(rows[0]);
+		if (param instanceof ModelParameter) {
+			ModelParameter mp = (ModelParameter)param;
+			if (getModel().contains(mp)) {
+				getModel().removeModelParameter(mp);
+			}
+		}
+	}
 }
 
 /**
  * Comment
  */
-private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEvent) throws Exception{
+private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEvent) throws Exception {
 	if(actionEvent.getSource() == getJMenuItemCopy() || actionEvent.getSource() == getJMenuItemCopyAll()){
 		try{
 			//
@@ -843,13 +663,7 @@ private void modelParameterPanel_Initialize() {
 	getmodelParameterTableModel().addTableModelListener(
 		new javax.swing.event.TableModelListener(){
 			public void tableChanged(javax.swing.event.TableModelEvent e){
-				//System.out.println((
-					//e.getType() == javax.swing.event.TableModelEvent.INSERT?"INSERT":"")+
-					//(e.getType() == javax.swing.event.TableModelEvent.UPDATE?"UPDATE":"")+
-					//(e.getType() == javax.swing.event.TableModelEvent.DELETE?"DELETE":""));
-				//if(e.getType() == javax.swing.event.TableModelEvent.UPDATE){
 					ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(),null,null);
-				//}
 			}
 		}
 	);
@@ -860,23 +674,28 @@ private void modelParameterPanel_Initialize() {
  * Comment
  */
 private void popupCopyPaste(java.awt.event.MouseEvent mouseEvent) {
-
-	//if(mouseEvent.getID() == java.awt.event.MouseEvent.MOUSE_PRESSED){
-		//int selectRow = getScrollPaneTable().rowAtPoint(mouseEvent.getPoint());
-	//}
 	if(mouseEvent.isPopupTrigger()){
 		Object obj = cbit.vcell.desktop.VCellTransferable.getFromClipboard(cbit.vcell.desktop.VCellTransferable.OBJECT_FLAVOR);
-		boolean bPastable =
-			obj instanceof cbit.gui.SimpleTransferable.ResolvedValuesSelection;
-
-		boolean bSomethingSelected =
-			getScrollPaneTable().getSelectedRowCount() > 0;
-		
+		boolean bPastable = obj instanceof cbit.gui.SimpleTransferable.ResolvedValuesSelection;
+		boolean bSomethingSelected = getScrollPaneTable().getSelectedRowCount() > 0;
 		getJMenuItemPaste().setEnabled(bPastable && bSomethingSelected);
 		getJMenuItemPasteAll().setEnabled(bPastable);
 		getJMenuItemCopy().setEnabled(bSomethingSelected);
 		//getJMenuItemCopyAll().setEnabled(bSomethingSelected);
-		getJPopupMenuICP().show(getScrollPaneTable(),mouseEvent.getX(),mouseEvent.getY());
+
+		// to enable 'Delete' button - only if all selections are Global parameters
+		boolean bIsModelParam = true;
+//		int numSelectedRows = getScrollPaneTable().getSelectedRowCount();
+		int[] rows = getScrollPaneTable().getSelectedRows();
+		for (int i = 0; i < rows.length; i++) {
+			if (getmodelParameterTableModel().getData().get(rows[i]) instanceof ModelParameter) {
+				bIsModelParam = bIsModelParam && true; 
+			} else {
+				bIsModelParam = bIsModelParam && false;
+			}
+		}
+		getJMenuItemDelete().setEnabled(bIsModelParam);
+		getJPopupMenuICP().show(getJScrollPane1(),mouseEvent.getX(),mouseEvent.getY());
 	}
 }
 
@@ -897,25 +716,18 @@ public void setModel(cbit.vcell.model.Model model) {
  * Set the model1 to a new value.
  * @param newValue cbit.vcell.model.Model
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void setmodel1(cbit.vcell.model.Model newValue) {
 	if (ivjmodel1 != newValue) {
 		try {
 			cbit.vcell.model.Model oldValue = getmodel1();
 			ivjmodel1 = newValue;
 			connPtoP3SetSource();
-			connEtoM5(ivjmodel1);
+			getmodelParameterTableModel().setModel(getmodel1());
 			firePropertyChange("model", oldValue, newValue);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	};
-	// user code begin {3}
-	// user code end
 }
 
 
@@ -923,7 +735,6 @@ private void setmodel1(cbit.vcell.model.Model newValue) {
  * Set the this12 to a new value.
  * @param newValue cbit.vcell.messaging.admin.sorttable.JSortTable
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void setthis12(cbit.vcell.messaging.admin.sorttable.JSortTable newValue) {
 	if (ivjthis12 != newValue) {
 		try {
@@ -937,16 +748,10 @@ private void setthis12(cbit.vcell.messaging.admin.sorttable.JSortTable newValue)
 			if (ivjthis12 != null) {
 				ivjthis12.addMouseListener(ivjEventHandler);
 			}
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	};
-	// user code begin {3}
-	// user code end
 }
 
 private void showAnnotationDialog(java.awt.event.MouseEvent me){
@@ -959,14 +764,26 @@ private void showAnnotationDialog(java.awt.event.MouseEvent me){
 		if(modelSelectedColIndex != ModelParameterTableModel.COLUMN_ANNOTATION){
 			return;
 		}
-		ReactionStep rs =
-			getmodelParameterTableModel().getEditableAnnotationReactionStep(getScrollPaneTable().getSelectedRow());
+		
+		// if it is a reaction parameter (authoritative parameter, i.e., reaction rate), it is editable
+		ReactionStep rs = getmodelParameterTableModel().getEditableAnnotationReactionStep(getScrollPaneTable().getSelectedRow());
 		if(rs != null){
 			String newAnnotation = cbit.gui.DialogUtils.showAnnotationDialog(this, rs.getAnnotation());
 			if(newAnnotation != null && newAnnotation.length() == 0){
 				newAnnotation = null;
 			}
 			rs.setAnnotation(newAnnotation);
+			getmodelParameterTableModel().fireTableRowsUpdated(getScrollPaneTable().getSelectedRow(), getScrollPaneTable().getSelectedRow());
+		}
+		// if it is a model (global) parameter - annotation is editable
+		Parameter param = (Parameter)getmodelParameterTableModel().getData().get(getScrollPaneTable().getSelectedRow());
+		if (param != null && param instanceof ModelParameter) {
+			ModelParameter modelParameter = (ModelParameter)param;
+			String newAnnotation = DialogUtils.showAnnotationDialog(this, modelParameter.getDescription());
+			if(newAnnotation != null && newAnnotation.length() == 0){
+				newAnnotation = null;
+			}
+			modelParameter.setDescription(newAnnotation);
 			getmodelParameterTableModel().fireTableRowsUpdated(getScrollPaneTable().getSelectedRow(), getScrollPaneTable().getSelectedRow());
 		}
 	}catch(cbit.gui.UtilCancelException e){

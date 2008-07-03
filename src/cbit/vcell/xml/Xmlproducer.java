@@ -2365,7 +2365,7 @@ public org.jdom.Element getXML(Membrane param/*, Model model*/) {
 }
 
 public org.jdom.Element getXML(ModelParameter[] modelParams) {
-	Element globalsElement = new Element(XMLTags.GlobalModelParametersTag);
+	Element globalsElement = new Element(XMLTags.ModelParametersTag);
 	for (int i = 0; i < modelParams.length; i++) {
 		Element glParamElement = new Element(XMLTags.ParameterTag);
 		//Get parameter attributes - name, role and unit definition
@@ -2418,7 +2418,7 @@ public org.jdom.Element getXML(cbit.vcell.model.Model param) throws XmlParseExce
 	if (modelGlobals != null || modelGlobals.length > 0) {
 		modelnode.addContent(getXML(modelGlobals));
 	}
-	
+
 
 	//Get Species
 	Species[] array = param.getSpecies();

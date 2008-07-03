@@ -1,20 +1,22 @@
 package cbit.vcell.model.gui;
-import java.util.*;
-import cbit.vcell.model.Model;
-/*©
- * (C) Copyright University of Connecticut Health Center 2001.
- * All rights reserved.
-©*/
-import cbit.vcell.parser.Expression;
-import cbit.vcell.geometry.*;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.FluxReaction;
-import cbit.vcell.model.VCMODL;
-import cbit.vcell.mapping.ReactionSpec;
-import cbit.vcell.parser.ExpressionException;
-import cbit.util.BeanUtils;
+import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Model;
+import cbit.vcell.model.Parameter;
+import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.model.Model.ModelParameter;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.ScopedExpression;
+import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.units.VCUnitException;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)
@@ -95,7 +97,7 @@ public class ModelParameterTableModel extends cbit.vcell.messaging.admin.ManageT
 	private final int COLUMN_VALUE = 3;
 	private final int COLUMN_UNIT = 4;
 	public static final int COLUMN_ANNOTATION = 5;
-	private String LABELS[] = { "Reaction", "Description", "Name", "Expression", "Units" , "Annotation" };
+	private String LABELS[] = { "Context", "Description", "Name", "Expression", "Units" , "Annotation" };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private final int indexes[] = new int[0];
 	private cbit.vcell.model.Model fieldModel = null;
@@ -241,6 +243,9 @@ private cbit.vcell.model.Parameter getParameter(int row) {
 	if (index<count){
 		return getModel().getModelParameters()[index];
 	}
+	
+	// need to include ReservedSymbols as well ...
+	
 	index -= count;	// not in ModelParameters, subtract offset and move on
 	ReactionStep[] reactionSteps = getModel().getReactionSteps();
 	for (int i = 0; index>=0 && i < reactionSteps.length; i++){
@@ -283,7 +288,7 @@ public int getRowCount() {
  * @return cbit.vcell.model.Parameter
  * @param row int
  */
-private List getUnsortedParameters() {
+private List<Parameter> getUnsortedParameters() {
 
 	if (getModel()==null){
 		return null;
@@ -296,7 +301,7 @@ private List getUnsortedParameters() {
 		count += reactionSteps[i].getKinetics().getKineticsParameters().length;
 	}
 
-	java.util.ArrayList list = new java.util.ArrayList();
+	ArrayList<Parameter> list = new ArrayList<Parameter>();
 	for (int i = 0; i < count; i++){
 		list.add(getParameter(i));
 	}
@@ -314,7 +319,7 @@ public Object getValueAt(int row, int col) {
 	if (row<0 || row>=getRowCount()){
 		throw new RuntimeException("ParameterTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
 	}
-	cbit.vcell.model.Parameter parameter = (cbit.vcell.model.Parameter)getData().get(row);
+	Parameter parameter = (Parameter)getData().get(row);
 	switch (col){
 		case COLUMN_NAME:{
 			//return getBioModel().getModel().getNameScope().getSymbolName(parameter);
@@ -326,7 +331,13 @@ public Object getValueAt(int row, int col) {
 			}else if (parameter.getNameScope()==null){
 				return "null";
 			}else{
-				return parameter.getNameScope().getName();
+				if (parameter instanceof ModelParameter) {
+					return "Model";
+				} else if (parameter instanceof KineticsParameter) {
+					return "Reaction : " + parameter.getNameScope().getName();
+				} else {
+					return parameter.getNameScope().getName();
+				}
 			}
 		}
 		case COLUMN_UNIT:{
@@ -337,20 +348,29 @@ public Object getValueAt(int row, int col) {
 			}
 		}
 		case COLUMN_DESCRIPTION:{
-			return parameter.getDescription();
+			if (parameter instanceof ModelParameter) {
+				return "Global Parameter";
+			} else {
+				return parameter.getDescription();
+			}
 		}
 		case COLUMN_VALUE:{
 			//return new cbit.vcell.parser.ScopedExpression(parameter.getExpression(),getBioModel().getModel().getNameScope());
-			return new cbit.vcell.parser.ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
+			return new ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
 		}
 		case COLUMN_ANNOTATION:{
-			ReactionStep rxStep = getEditableAnnotationReactionStep(row);
-			if(rxStep != null && parameter instanceof Kinetics.KineticsParameter){
-				KineticsParameter param = (KineticsParameter)parameter;
-				if (param.getKinetics().getAuthoritativeParameter() == param){
-					return (rxStep.getAnnotation() != null?rxStep.getAnnotation():"");
+			if (parameter instanceof ModelParameter) {
+				return ((parameter.getDescription() != null) ? parameter.getDescription() : "");
+			} else {
+				ReactionStep rxStep = getEditableAnnotationReactionStep(row);
+				if(rxStep != null && parameter instanceof Kinetics.KineticsParameter){
+					KineticsParameter param = (KineticsParameter)parameter;
+					if (param.getKinetics().getAuthoritativeParameter() == param){
+						return (rxStep.getAnnotation() != null?rxStep.getAnnotation():"");
+					}
 				}
 			}
+			// TODO need to add ReservedSymbols
 			return null;
 			//return (parameter instanceof Kinetics.KineticsParameter?parameter.getDescription():"");
 		}
@@ -524,14 +544,14 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					if (aValue instanceof String){
 						String newName = (String)aValue;
 						if (!parameter.getName().equals(newName)){
-							if (parameter instanceof cbit.vcell.model.Kinetics.KineticsParameter){
+							if (parameter instanceof KineticsParameter){
 								cbit.vcell.model.Kinetics kinetics = ((ReactionStep) parameter.getNameScope().getScopedSymbolTable()).getKinetics();
 								kinetics.renameParameter(parameter.getName(),newName);
 								fireTableRowsUpdated(rowIndex,rowIndex);
-							//}else if (parameter instanceof cbit.vcell.model.ModelParameter){
-								//Model model = (Model) parameter.getNameScope().getScopedSymbolTable();
-								//parameter.setName(newName);
-								//fireTableRowsUpdated(rowIndex,rowIndex);
+							} else if (parameter instanceof ModelParameter){
+								// Model model = (Model) parameter.getNameScope().getScopedSymbolTable();
+								((ModelParameter)parameter).setName(newName);
+								fireTableRowsUpdated(rowIndex,rowIndex);
 							}
 						}
 					}
@@ -548,27 +568,34 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 				try {
 					if (aValue instanceof cbit.vcell.parser.ScopedExpression){
 						Expression exp = ((cbit.vcell.parser.ScopedExpression)aValue).getExpression();
-						if (parameter instanceof cbit.vcell.model.Kinetics.KineticsParameter){
+						if (parameter instanceof KineticsParameter){
 							cbit.vcell.model.Kinetics kinetics = ((ReactionStep) parameter.getNameScope().getScopedSymbolTable()).getKinetics();
-							kinetics.setParameterValue((cbit.vcell.model.Kinetics.KineticsParameter)parameter,exp);
+							kinetics.setParameterValue((KineticsParameter)parameter,exp);
 							kinetics.resolveUndefinedUnits();
 							fireTableRowsUpdated(rowIndex,rowIndex);
+						} else if (parameter instanceof ModelParameter){
+							((ModelParameter)parameter).setExpression(exp);
+							fireTableRowsUpdated(rowIndex,rowIndex);
 						}
+
 					}else if (aValue instanceof String) {
 						String newExpressionString = (String)aValue;
-						if (parameter instanceof cbit.vcell.model.Kinetics.KineticsParameter){
+						if (parameter instanceof KineticsParameter){
 							cbit.vcell.model.Kinetics kinetics = ((ReactionStep) parameter.getNameScope().getScopedSymbolTable()).getKinetics();
-							kinetics.setParameterValue((cbit.vcell.model.Kinetics.KineticsParameter)parameter,new Expression(newExpressionString));
+							kinetics.setParameterValue((KineticsParameter)parameter,new Expression(newExpressionString));
 							kinetics.resolveUndefinedUnits();
+							fireTableRowsUpdated(rowIndex,rowIndex);
+						} else if (parameter instanceof ModelParameter){
+							((ModelParameter)parameter).setExpression(new Expression(newExpressionString));
 							fireTableRowsUpdated(rowIndex,rowIndex);
 						}
 					}
 				}catch (java.beans.PropertyVetoException e){
 					e.printStackTrace(System.out);
-					cbit.vcell.client.PopupGenerator.showErrorDialog("Error:\n"+e.getMessage());
+					PopupGenerator.showErrorDialog("Error:\n"+e.getMessage());
 				}catch (ExpressionException e){
 					e.printStackTrace(System.out);
-					cbit.vcell.client.PopupGenerator.showErrorDialog("Expression error:\n"+e.getMessage());
+					PopupGenerator.showErrorDialog("Expression error:\n"+e.getMessage());
 				}
 				break;
 			}
@@ -577,39 +604,38 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					if (aValue instanceof String){
 						String newUnitSymbol = (String)aValue;
 						if (!parameter.getUnitDefinition().getSymbol().equals(newUnitSymbol)){
-							if (parameter instanceof cbit.vcell.model.Kinetics.KineticsParameter){
+							if (parameter instanceof KineticsParameter){
 								Kinetics.KineticsParameter kineticsParameter = (Kinetics.KineticsParameter)parameter;
 								kineticsParameter.setUnitDefinition(cbit.vcell.units.VCUnitDefinition.getInstance(newUnitSymbol));
 								kineticsParameter.getKinetics().resolveUndefinedUnits();
 								fireTableRowsUpdated(rowIndex,rowIndex);
-							//}else if (parameter instanceof cbit.vcell.model.ModelParameter){
-								//Model model = (Model) parameter.getNameScope().getScopedSymbolTable();
-								//parameter.setName(newName);
-								//fireTableRowsUpdated(rowIndex,rowIndex);
-							}
-						}
-					}
-				}catch (cbit.vcell.units.VCUnitException e){
-					e.printStackTrace(System.out);
-					cbit.vcell.client.PopupGenerator.showErrorDialog("Error changing parameter units:\n"+e.getMessage());
-				}
-				break;
-			}
-			case COLUMN_ANNOTATION:{
-				try {
-					if (aValue instanceof String){
-						String rxStepAnnotation = (String)aValue;
-						if (parameter instanceof cbit.vcell.model.Kinetics.KineticsParameter){
-							ReactionStep rxStep = getEditableAnnotationReactionStep(rowIndex);
-							if(rxStep != null){
-								rxStep.setAnnotation(rxStepAnnotation);
+							} else if (parameter instanceof ModelParameter){
+//								Model model = (Model) parameter.getNameScope().getScopedSymbolTable();
+								((ModelParameter)parameter).setUnitDefinition(VCUnitDefinition.getInstance(newUnitSymbol));
 								fireTableRowsUpdated(rowIndex,rowIndex);
 							}
 						}
 					}
-				}catch (cbit.vcell.units.VCUnitException e){
+				}catch (VCUnitException e){
 					e.printStackTrace(System.out);
-					cbit.vcell.client.PopupGenerator.showErrorDialog("Error changing parameter units:\n"+e.getMessage());
+					PopupGenerator.showErrorDialog("Error changing parameter units:\n"+e.getMessage());
+				}
+				break;
+			}
+			case COLUMN_ANNOTATION:{
+				if (aValue instanceof String){
+					String annotation = (String)aValue;
+					if (parameter instanceof cbit.vcell.model.Kinetics.KineticsParameter){
+						ReactionStep rxStep = getEditableAnnotationReactionStep(rowIndex);
+						if(rxStep != null){
+							rxStep.setAnnotation(annotation);
+							fireTableRowsUpdated(rowIndex,rowIndex);
+						}
+					} else if (parameter instanceof ModelParameter){
+						parameter.setDescription(annotation);
+						fireTableRowsUpdated(rowIndex,rowIndex);
+					}
+
 				}
 				break;
 			}
@@ -622,8 +648,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 
   public void sortColumn(int col, boolean ascending)
   {
-    Collections.sort(rows,
-      new ParameterColumnComparator(col, ascending));
+    Collections.sort(rows, new ParameterColumnComparator(col, ascending));
     fireTableRowsUpdated(0,rows.size()-1);//Added to make sure formatted table cells display with enough space
   }
 }

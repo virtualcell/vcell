@@ -7,6 +7,7 @@ import cbit.vcell.parser.ExpressionException;
 ©*/
 import java.util.*;
 import java.beans.*;
+
 import cbit.util.*;
 import cbit.sql.KeyValue;
 import cbit.vcell.server.User;
@@ -66,7 +67,6 @@ public class Model implements cbit.sql.Versionable, Matchable, PropertyChangeLis
 	}
 
 	public static final int ROLE_UserDefined	= 0;
-
 	public static final int NUM_ROLES		= 1;
 	public static final String RoleDesc = "user defined";
 	
@@ -259,12 +259,16 @@ public void addFeature(String featureName, cbit.vcell.model.Feature parent, Stri
 	setStructures(newStructures);
 }
 
+//public ModelParameter createModelParameter(String name, cbit.vcell.parser.Expression expr, int role, VCUnitDefinition units) {
+//	ModelParameter modelParameter = new ModelParameter(name, expr, role, units);
+//	return modelParameter;
+//}   
 
 public void addModelParameter(Model.ModelParameter modelParameter) throws PropertyVetoException {
-	if (!contains(modelParameter)){
+//	if (!contains(modelParameter)){
 		Model.ModelParameter newModelParameters[] = (Model.ModelParameter[])BeanUtils.addElement(fieldModelParameters,modelParameter);
 		setModelParameters(newModelParameters);
-	}	
+//	}	
 }   
 
 
@@ -404,6 +408,9 @@ public boolean compareEqual(Matchable object) {
 	if (!Compare.isEqual(fieldDiagrams, model.fieldDiagrams)){
 		return false;
 	}
+	if (!Compare.isEqual(fieldModelParameters, model.fieldModelParameters)){
+		return false;
+	}
 	
 	return true;
 }
@@ -439,7 +446,6 @@ public boolean contains(ModelParameter modelParameter) {
 	}
 	return false;
 }
-
 
 /**
  * Insert the method's description here.
@@ -743,7 +749,6 @@ public String getFreeMembraneName() {
 
 
 /**
- * This method was created in VisualAge.
  * @return java.lang.String
  */
 public String getFreeReactionStepName() {
@@ -757,7 +762,6 @@ public String getFreeReactionStepName() {
 
 
 /**
- * This method was created in VisualAge.
  * @return java.lang.String
  */
 public String getFreeSpeciesName() {
@@ -769,9 +773,16 @@ public String getFreeSpeciesName() {
 	return speciesName+count;
 }
 
+public String getFreeModelParamName() {
+	String globalParamName = "global";
+	int count=0;
+	while (getModelParameter(globalParamName+count)!=null){
+		count++;
+	}
+	return globalParamName+count;
+}
 
 /**
- * This method was created in VisualAge.
  * @return cbit.sql.KeyValue
  */
 public KeyValue getKey() {
@@ -812,6 +823,13 @@ public cbit.vcell.parser.SymbolTableEntry getLocalEntry(java.lang.String identif
 		return rs;
 	}	
 
+	// look through the global/model parameters
+	for (int i = 0; i < fieldModelParameters.length; i++) {
+		if (fieldModelParameters[i].getName().equals(identifier)) {
+			return getModelParameter(identifier);
+		}
+	}
+	
 	//
 	// get Voltages from structures
 	//
@@ -1001,6 +1019,18 @@ public Species getSpecies(String speciesName)
 	return null;
 }      
 
+public ModelParameter getModelParameter(String glParamName)
+{
+	if (glParamName == null){
+		return null;
+	}	
+	for (int i=0;i<fieldModelParameters.length;i++){
+		if (glParamName.equals(fieldModelParameters[i].getName())){
+			return fieldModelParameters[i];
+		}
+	}
+	return null;
+}      
 
 /**
  * This method was created by a SmartGuide.
@@ -1691,7 +1721,6 @@ public void removeModelParameter(Model.ModelParameter modelParameter) throws Pro
 	}
 }         
 
-
 /**
  * The removePropertyChangeListener method was generated to support the propertyChange field.
  */
@@ -2302,6 +2331,23 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 			if (!bFound){
 				throw new PropertyVetoException("species[] missing '"+sc.getSpecies().getCommonName()+"' referenced in SpeciesContext '"+sc.getName()+"'",e);
 			}
+		}
+	}
+
+	if (e.getSource() == this && e.getPropertyName().equals("modelParameters")){
+		ModelParameter[] newModelParams = (ModelParameter[])e.getNewValue();
+		//
+		// check that names are not duplicated and that no common names are ReservedSymbols
+		//
+		HashSet namesSet = new HashSet();
+		for (int i=0;i<newModelParams.length;i++){
+			if (namesSet.contains(newModelParams[i].getName())){
+				throw new PropertyVetoException("Multiple model/global parameters with same name '"+newModelParams[i].getName()+"' defined",e);
+			}
+			if (ReservedSymbol.fromString(newModelParams[i].getName())!=null){
+				throw new PropertyVetoException("cannot use a reserved symbol ('x','y','z','t') as a Model/Global parameter name",e);
+			}
+			namesSet.add(newModelParams[i].getName());
 		}
 	}
 
