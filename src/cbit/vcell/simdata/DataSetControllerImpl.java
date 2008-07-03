@@ -1101,7 +1101,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 					ExternalDataIdentifier.createCanonicalSimFilePathName(
 							dataset.getKey(), i,0,false);
 				simFileNamesV.add(simFilename);
-				ps.println(i+"\t"+simFilename+"\t"+zipFile.getAbsolutePath()+"\t"+times[i]+"");
+				ps.println(i+"\t"+simFilename+"\t"+zipFile.getName()+"\t"+times[i]+"");
 			}
 			ps.flush();
 		}catch(Exception e){

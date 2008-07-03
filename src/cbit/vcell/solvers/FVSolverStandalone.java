@@ -52,7 +52,7 @@ protected void initialize() throws SolverException {
 	
 		String executableName = PropertyLoader.getRequiredProperty(PropertyLoader.finiteVolumeExecutableProperty);
 	
-		String cmdline = executableName + " " + fvinputFile.getAbsolutePath();// + cmdArguments;
+		String cmdline = executableName + " \"" + fvinputFile.getAbsolutePath() + "\"";// + cmdArguments;
 		setMathExecutable(new MathExecutable(cmdline));
 	} catch (Exception ex) {
 		ex.printStackTrace(System.out);
