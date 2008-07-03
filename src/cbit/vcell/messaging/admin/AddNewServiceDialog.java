@@ -224,7 +224,7 @@ private javax.swing.JTextField getMemoryMBField() {
 	if (ivjMemoryMBField == null) {
 		try {
 			ivjMemoryMBField = new javax.swing.JTextField();
-			ivjMemoryMBField.setText("500");
+			ivjMemoryMBField.setText("100");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {

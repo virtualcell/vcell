@@ -132,7 +132,7 @@ public void cleanupConnections() {
 					}
 
 				}
-			} catch (RemoteException ex) {
+			} catch (Throwable ex) {
 				sessionLog.exception(ex);
 			}
 		}

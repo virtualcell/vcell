@@ -44,7 +44,6 @@ public class ServerManageConsole extends JFrame implements ControlTopicListener 
 	private VCellBootstrap vcellBootstrap = null;
 	private VCellServer vcellServer = null;
 	private cbit.vcell.server.SessionLog log = null;
-	private JmsFileReceiver fileChannelReceiver = null;
 	private List<SimpleUserConnection> userList = Collections.synchronizedList(new LinkedList<SimpleUserConnection>());
 	private List<ServiceStatus> serviceConfigList = Collections.synchronizedList(new LinkedList<ServiceStatus>());
 	private List<ServiceInstanceStatus> serviceInstanceStatusList = Collections.synchronizedList(new LinkedList<ServiceInstanceStatus>());
@@ -2626,8 +2625,6 @@ private void reconnect() throws JMSException {
 	jmsConnFactory = new JmsConnectionFactoryImpl();
 	
 	queueConn = jmsConnFactory.createQueueConnection();
-	fileChannelReceiver = new JmsFileReceiver(queueConn, log);		
-	fileChannelReceiver.toReceive();
 	queueConn.startConnection();
 	
 	topicConn = jmsConnFactory.createTopicConnection();
