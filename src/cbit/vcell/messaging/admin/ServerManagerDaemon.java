@@ -4,7 +4,6 @@ import java.io.*;
 import java.sql.SQLException;
 import java.util.*;
 import javax.jms.*;
-import static cbit.htc.PBSConstants.*;
 import cbit.htc.PBSConstants;
 import cbit.htc.PBSUtils;
 import cbit.sql.ConnectionFactory;
@@ -70,7 +69,6 @@ private void reconnect() throws JMSException {
 	jmsConnFactory = new JmsConnectionFactoryImpl();
 	
 	queueConn = jmsConnFactory.createQueueConnection();
-	new JmsFileSender(queueConn, log);
 	queueConn.startConnection();
 	
 	topicConn = jmsConnFactory.createTopicConnection();

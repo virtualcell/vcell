@@ -107,12 +107,6 @@ public static final String getQueueDbReq() {
 	return PropertyLoader.getRequiredProperty(PropertyLoader.jmsDbRequestQueue);
 }
 
-
-public static final String getQueueFileChannel() {
-	return PropertyLoader.getRequiredProperty(PropertyLoader.jmsFileChannelQueue);
-}
-
-
 public static final String getQueueSimDataReq() {
 	return PropertyLoader.getRequiredProperty(PropertyLoader.jmsDataRequestQueue);
 }

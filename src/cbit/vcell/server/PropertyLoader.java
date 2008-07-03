@@ -92,7 +92,6 @@ public class PropertyLoader {
 	public static final String jmsURL					= "vcell.jms.url";
 	public static final String jmsUser					= "vcell.jms.user";
 	public static final String jmsPassword				= "vcell.jms.password";
-	public static final String jmsFileChannelQueue		= "vcell.jms.queue.fileChannel";
 	public static final String jmsSimReqQueue			= "vcell.jms.queue.simReq";
 	public static final String jmsDataRequestQueue		= "vcell.jms.queue.dataReq";
 	public static final String jmsDbRequestQueue		= "vcell.jms.queue.dbReq";
@@ -227,7 +226,6 @@ public class PropertyLoader {
 		jmsURL,
 		jmsUser,
 		jmsPassword,
-		jmsFileChannelQueue,
 		jmsSimReqQueue,
 		jmsDataRequestQueue,
 		jmsDbRequestQueue,
