@@ -12,6 +12,7 @@ import org.vcell.optimization.OptXmlReader;
 import org.vcell.optimization.OptXmlTags;
 
 import cbit.sql.KeyValue;
+import cbit.util.ISize;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.geometry.surface.GeometryFileWriter;
 import cbit.vcell.math.Constant;
@@ -39,6 +40,7 @@ import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.solver.TimeStep;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.ode.FunctionColumnDescription;
 import cbit.vcell.solver.ode.ODESolverResultSet;
@@ -79,8 +81,12 @@ public OptimizationResultSet solve(OptimizationSpec os,	OptimizationSolverSpec o
 		
 	};
 	org.vcell.optimization.NativeOptSolver newNativeOptSolver = new org.vcell.optimization.NativeOptSolver();
-	try {
-		String optResultsXML = newNativeOptSolver.nativeSolve_CFSQP(XmlUtil.xmlToString(optProblemXML), callbacks);
+	try {		
+		String inputXML = XmlUtil.xmlToString(optProblemXML);
+//		PrintWriter pw = new PrintWriter("c:\\test11.xml");
+//		pw.println(inputXML);
+//		pw.close();
+		String optResultsXML = newNativeOptSolver.nativeSolve_CFSQP(inputXML, callbacks);		
 		OptXmlReader optXMLReader = new OptXmlReader();
 		org.vcell.optimization.OptimizationResultSet newOptResultSet = optXMLReader.getOptimizationResultSet(optResultsXML);
 		cbit.vcell.opt.OptimizationStatus optimizationStatus = new cbit.vcell.opt.OptimizationStatus(
@@ -443,49 +449,55 @@ public static Element getModelXML(OdeObjectiveFunction odeObjectiveFunction, Str
 
 public static Element getModelXML(PdeObjectiveFunction pdeObjectiveFunction, String[] parameterNames){
 	Element modelElement = new Element(OptXmlTags.Model_Tag);
-
-	SpatialReferenceData refData = pdeObjectiveFunction.getReferenceData();
-	double refDataEndTime = refData.getRowData(refData.getNumRows()-1)[0];
-
-	//
-	// post the problem either as an IDA or CVODE model
-	//
-	cbit.sql.SimulationVersion simVersion = new cbit.sql.SimulationVersion(
-			new KeyValue("12345"),
-			"name",
-			new cbit.vcell.server.User("user",new KeyValue("123")),
-			new cbit.vcell.server.GroupAccessNone(),
-			null, // versionBranchPointRef
-			new java.math.BigDecimal(1.0), // branchID
-			new java.util.Date(),
-			cbit.sql.VersionFlag.Archived,
-			"",
-			null);
-	Simulation simulation = new Simulation(simVersion,pdeObjectiveFunction.getMathDescription());
-	SimulationJob simJob = new SimulationJob(simulation, pdeObjectiveFunction.getFieldDataIDSs(), 0);
-
 	try {
+		SpatialReferenceData refData = pdeObjectiveFunction.getReferenceData();
+		double refDataEndTime = refData.getRowData(refData.getNumRows()-1)[0];
+
+		//
+		// post the problem either as an IDA or CVODE model
+		//
+		cbit.sql.SimulationVersion simVersion = new cbit.sql.SimulationVersion(
+				new KeyValue("12345"),
+				"name",
+				new cbit.vcell.server.User("user",new KeyValue("123")),
+				new cbit.vcell.server.GroupAccessNone(),
+				null, // versionBranchPointRef
+				new java.math.BigDecimal(1.0), // branchID
+				new java.util.Date(),
+				cbit.sql.VersionFlag.Archived,
+				"",
+				null);
+		Simulation simulation = new Simulation(simVersion,pdeObjectiveFunction.getMathDescription());
+		simulation.getMeshSpecification().setSamplingSize(refData.getDataISize());	
+
+		double[] times = refData.getColumnData(0);
+		double minDt = Double.POSITIVE_INFINITY;
+		for (int i = 1; i < times.length; i ++) {
+			minDt = Math.min(minDt, times[i] - times[i-1]);
+		}
 		simulation.getSolverTaskDescription().setTimeBounds(new cbit.vcell.solver.TimeBounds(0.0, refDataEndTime));
 		simulation.getSolverTaskDescription().setSolverDescription(SolverDescription.FiniteVolume);
+		simulation.getSolverTaskDescription().setTimeStep(new TimeStep(minDt/5, minDt/5, minDt/5));
 		
 		// write vcg file
-		cbit.vcell.geometry.Geometry geo = simulation.getMathDescription().getGeometry();
-		PrintWriter pw = new PrintWriter(new FileWriter(new File(pdeObjectiveFunction.getWorkingDirectory(), simJob.getSimulationJobID()+".vcg")));
-		int numMembraneElements = GeometryFileWriter.write(geo, simulation.getMeshSpecification().getSamplingSize(),pw);
-		pw.close();
+//		cbit.vcell.geometry.Geometry geo = simulation.getMathDescription().getGeometry();
+//		PrintWriter pw = new PrintWriter(new FileWriter(new File(pdeObjectiveFunction.getWorkingDirectory(), simJob.getSimulationJobID()+".vcg")));
+//		int numMembraneElements = GeometryFileWriter.write(geo, simulation.getMeshSpecification().getSamplingSize(),pw);
+//		pw.close();
 		
-		FVSolver.resampleFieldData(
-				pdeObjectiveFunction.getFieldDataIDSs(),
-				pdeObjectiveFunction.getWorkingDirectory(),
-				CartesianMesh.createSimpleCartesianMesh(
-					simulation.getMathDescription().getGeometry().getOrigin(), 
-					simulation.getMathDescription().getGeometry().getExtent(),
-					simulation.getMeshSpecification().getSamplingSize(),
-					simulation.getMathDescription().getGeometry().getGeometrySurfaceDescription().getRegionImage()),
-					(VCSimulationDataIdentifier)simJob.getVCDataIdentifier(),
-				numMembraneElements,
-				FVSolver.HESM_OVERWRITE_AND_CONTINUE
-			);
+//		FVSolver.resampleFieldData(
+//				pdeObjectiveFunction.getFieldDataIDSs(),
+//				pdeObjectiveFunction.getWorkingDirectory(),
+//				CartesianMesh.createSimpleCartesianMesh(
+//					simulation.getMathDescription().getGeometry().getOrigin(), 
+//					simulation.getMathDescription().getGeometry().getExtent(),
+//					simulation.getMeshSpecification().getSamplingSize(),
+//					simulation.getMathDescription().getGeometry().getGeometrySurfaceDescription().getRegionImage()),
+//					(VCSimulationDataIdentifier)simJob.getVCDataIdentifier(),
+//				numMembraneElements,
+//				FVSolver.HESM_OVERWRITE_AND_CONTINUE
+//			);
+		SimulationJob simJob = new SimulationJob(simulation, pdeObjectiveFunction.getFieldDataIDSs(), 0);
 		
 		java.io.StringWriter simulationInputStringWriter = new java.io.StringWriter();
 		FiniteVolumeFileWriter fvFileWriter = new FiniteVolumeFileWriter(simJob, pdeObjectiveFunction.getWorkingDirectory(), parameterNames, new java.io.PrintWriter(simulationInputStringWriter,true));		

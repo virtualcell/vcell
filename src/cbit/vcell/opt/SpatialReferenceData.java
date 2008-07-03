@@ -1,12 +1,14 @@
 package cbit.vcell.opt;
 
+import cbit.util.ISize;
+
 public class SpatialReferenceData implements ReferenceData, java.io.Serializable {
 	private String variableNames[] = null;
-	private int dataSize;
+	private ISize dataSize;
 	private double[] variableWeights = null;
 	private java.util.Vector<double[]> rowData = new java.util.Vector<double[]>();
 
-	public SpatialReferenceData(String[] argVariableNames, double[] argVariableWeights, int argDataSize, java.util.Vector<double[]> argRowData) {
+	public SpatialReferenceData(String[] argVariableNames, double[] argVariableWeights, ISize argDataSize, java.util.Vector<double[]> argRowData) {
 		super();
 		this.variableNames = argVariableNames;
 		dataSize = argDataSize;
@@ -14,7 +16,7 @@ public class SpatialReferenceData implements ReferenceData, java.io.Serializable
 
 		for (int i = 0; i < argRowData.size(); i++){
 			double[] rowData = argRowData.elementAt(i);
-			if (rowData.length != 1 +  (variableNames.length-1) * dataSize) {
+			if (rowData.length != 1 +  (variableNames.length - 1) * getDataSize()) {
 				throw new IllegalArgumentException("rowData not same size as number of variableSize * dataSize + 1 (for t)");
 			}
 		}
@@ -174,7 +176,7 @@ public String getVCML() {
 
 
 public int getDataSize() {
-	return dataSize;
+	return dataSize.getXYZ();
 }
 
 
@@ -184,7 +186,15 @@ public int findColumn(String colName) {
 
 
 public double[] getColumnData(int columnIndex) {
-	throw new RuntimeException("SpatialReferenceData doesn't support getColumeData(int columnIndex)");
+	if (columnIndex != 0) {
+		throw new RuntimeException("SpatialReferenceData only supports getColumeData(int columnIndex) for time");
+	}
+	int count = 0;
+	double[] times = new double[rowData.size()];
+	for (double[] data : rowData) {
+		times[count ++] = data[0];
+	}
+	return times;
 }
 
 
@@ -200,6 +210,10 @@ public double[] getColumnWeights() {
 
 public int getNumColumns() {
 	return variableNames.length;
+}
+
+public ISize getDataISize() {
+	return dataSize;
 }
 
 }

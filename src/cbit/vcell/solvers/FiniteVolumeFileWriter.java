@@ -61,6 +61,7 @@ public class FiniteVolumeFileWriter {
 public FiniteVolumeFileWriter(SimulationJob simJob, File dir, String[] paramNames, PrintWriter pw) {	
 	this (simJob, dir, pw, false);
 	parameterNames = paramNames;
+	bInlineVCG = true;
 }
 
 /**
