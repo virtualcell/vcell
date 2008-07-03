@@ -991,7 +991,7 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 		//
 		// set Variables to MathDescription all at once with the order resolved by "VariableHash"
 		//
-		mathDesc.setAllVariables(varHash.getReorderedVariables());
+		mathDesc.setAllVariables(varHash.getAlphabeticallyOrderedVariables());
 		
 		// set up variable initial conditions in subDomain
 		SpeciesContextSpec scSpecs[] = getSimulationContext().getReactionContext().getSpeciesContextSpecs();

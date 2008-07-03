@@ -139,7 +139,8 @@ public MathDescription getMathDescription(ResultSet rset, Connection con,Session
 		//
 		log.print("MathException '"+e.getMessage()+"' while reading VCML for MathDescription, trying to reorder variables in VCML and reread VCML");
 		try {
-			String newVCML = MathDescription.getVCML_withReorderedVariables(version,mathDescriptionDataString);
+			//String newVCML = MathDescription.getVCML_withReorderedVariables(version,mathDescriptionDataString);
+			String newVCML = mathDescriptionDataString;
 			tokens = new cbit.vcell.math.CommentStringTokenizer(newVCML);
 			mathDescription = new MathDescription(version);
 			mathDescription.read_database(tokens);

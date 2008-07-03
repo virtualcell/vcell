@@ -40,9 +40,16 @@ public static void main(java.lang.String[] args) {
 		}
 		
 		//
-		// sorted list
+		// Topologically sorted list
 		//
-		Variable sortedVars[] = hash.getReorderedVariables();
+		Variable sortedVars[] = hash.getTopologicallyReorderedVariables();
+		for (int i = 0; i < sortedVars.length; i++){
+			System.out.println(sortedVars[i]);
+		}
+		//
+		// Alphabetically sorted list
+		//
+		sortedVars = hash.getAlphabeticallyOrderedVariables();
 		for (int i = 0; i < sortedVars.length; i++){
 			System.out.println(sortedVars[i]);
 		}

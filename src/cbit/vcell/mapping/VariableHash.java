@@ -1,6 +1,18 @@
 package cbit.vcell.mapping;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Vector;
+
+import cbit.vcell.math.Constant;
+import cbit.vcell.math.Function;
+import cbit.vcell.math.InsideVariable;
+import cbit.vcell.math.OutsideVariable;
+import cbit.vcell.math.ParameterVariable;
+import cbit.vcell.math.VCML;
 import cbit.vcell.math.Variable;
 import cbit.util.graph.Graph;
 import cbit.util.graph.Node;
@@ -15,7 +27,8 @@ import cbit.vcell.math.ReservedVariable;
 // temporarily place all variables in a hashtable (before binding) and discarding duplicates (check for equality)
 //
 public class VariableHash {
-	private Hashtable hash = new Hashtable();
+	private Vector<Variable> variableList = new Vector<Variable>();
+	private Hashtable<String, Variable> hash = new Hashtable<String, Variable>();
 
 	private class UnresolvedException extends RuntimeException {
 		private String name = null;
@@ -65,6 +78,9 @@ public void addVariable(Variable var) throws MappingException {
 		}
 	}else{
 		hash.put(var.getName(),var);
+		if (!(var instanceof InsideVariable) && !(var instanceof OutsideVariable)) {
+			variableList.add(var);
+		}
 		if (var instanceof cbit.vcell.math.VolVariable){
 			//
 			// for Volume Variables, also create an InsideVariable and an OutsideVariable for use in JumpConditions
@@ -96,11 +112,56 @@ public String getFirstUnresolvedSymbol(){
  * Insert the method's description here.
  * Creation date: (2/24/2002 9:18:38 AM)
  */
-public Variable[] getReorderedVariables(){
-	return reorderVariables(getVariables());
+//public Variable[] getReorderedVariables(){
+//	return getTopologicallyReorderedVariables();
+//}
+
+public Variable[] getTopologicallyReorderedVariables(){
+	Vector<Variable> vlist = new Vector<Variable>();
+	vlist.addAll(hash.values());
+	Variable[] vars = new Variable[vlist.size()];
+	vlist.copyInto(vars);	
+	return reorderVariables(vars);
 }
 
 
+public Variable[] getAlphabeticallyOrderedVariables() {
+	Comparator<Variable> comparator = new java.util.Comparator<Variable>() {
+		public int compare(Variable obj1, Variable obj2){
+			return obj1.getName().compareToIgnoreCase(obj2.getName());
+		}
+		public boolean equals(Object obj){
+			return this==obj;
+		}
+	};
+	
+	List<Variable> pvList = new ArrayList<Variable>();
+	List<Variable> constList = new ArrayList<Variable>();
+	List<Variable> varList = new ArrayList<Variable>();
+	List<Variable> funcList = new ArrayList<Variable>();
+	
+	for (Variable var : variableList) {
+		if (var instanceof ParameterVariable){
+			pvList.add(var);
+		} else if (var instanceof Constant) {
+			constList.add(var);
+		} else if (var instanceof Function) {
+			funcList.add(var);
+		} else {
+			varList.add(var);
+		}
+	}
+	Collections.sort(pvList, comparator);
+	Collections.sort(constList, comparator);
+	Collections.sort(varList, comparator);
+	Collections.sort(funcList, comparator);	
+	Vector<Variable> orderedVars = new Vector<Variable>();
+	orderedVars.addAll(pvList);
+	orderedVars.addAll(constList);
+	orderedVars.addAll(varList);
+	orderedVars.addAll(funcList);
+	return orderedVars.toArray(new Variable[orderedVars.size()]);
+}
 /**
  * Insert the method's description here.
  * Creation date: (2/24/2002 9:18:38 AM)
@@ -114,11 +175,11 @@ public Variable getVariable(String varName){
  * Insert the method's description here.
  * Creation date: (2/24/2002 9:18:38 AM)
  */
-public Variable[] getVariables(){
-	Vector varList = new Vector();
-	varList.addAll(hash.values());
-	Variable variables[] = new Variable[varList.size()];
-	varList.copyInto(variables);
+Variable[] getVariables(){
+//	Vector varList = new Vector();
+//	varList.addAll(hash.values());
+	Variable variables[] = new Variable[variableList.size()];
+	variableList.copyInto(variables);
 	return variables;
 }
 
@@ -129,6 +190,7 @@ public Variable[] getVariables(){
 			throw new IllegalArgumentException("Invalid argument: null Variable");
 		}
 		hash.remove(var.getName());
+		variableList.remove(var);
 	}
 
 
@@ -137,7 +199,8 @@ public Variable[] getVariables(){
 		if (variableName == null || variableName.length() == 0) {
 			throw new IllegalArgumentException("Invalid variable name: " + variableName);
 		}
-		hash.remove(variableName);
+		variableList.remove(getVariable(variableName));
+		hash.remove(variableName);		
 	}
 
 
