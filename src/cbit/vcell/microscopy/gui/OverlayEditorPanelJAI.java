@@ -44,7 +44,6 @@ import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.VirtualMicroscopy.Image.ImageStatistics;
 import cbit.vcell.microscopy.FRAPData;
-import cbit.vcell.microscopy.FRAPDataAnalysis;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.MicroscopyXmlReader;
 import cbit.vcell.microscopy.ROI;
@@ -595,7 +594,11 @@ public class OverlayEditorPanelJAI extends JPanel {
 	}
 		
 	public void setTimeIndex(int timeIndex){
-		timeSlider.setValue(timeIndex);
+		if(timeSlider.getValue() == timeIndex){
+			forceImage();
+		}else{
+			timeSlider.setValue(timeIndex);
+		}
 	}
 	
 	public void saveUserChangesToROI(){
@@ -632,6 +635,15 @@ public class OverlayEditorPanelJAI extends JPanel {
 		return ImageTools.makeImage(byteData, width, height);
 	}
 	
+	public void displaySpecialData(short[] specialData,int width, int height) throws Exception{
+		if(specialData == null){
+			forceImage();
+			return;
+		}
+		UShortImage specialUShortImage = new UShortImage(specialData,null,width,height,1);
+		BufferedImage specialBufferedImage = createUnderlyingImage(specialUShortImage);
+		imagePane.setUnderlyingImage(specialBufferedImage, false);
+	}
 	/**
 	 * Method createHighlightImageFromROI.
 	 * @return BufferedImage
@@ -924,18 +936,30 @@ public class OverlayEditorPanelJAI extends JPanel {
 			timeSlider.setMajorTickSpacing(100);
 			timeSlider.addChangeListener(new javax.swing.event.ChangeListener() {
 				public void stateChanged(javax.swing.event.ChangeEvent e) {
-					updateLabel(-1, -1);
-					if(imageDataset != null){
-						BufferedImage image = getImage();
-						if (image != null){
-							imagePane.setUnderlyingImage(image,false);
-						}
-					}
-					imagePane.repaint();
+					forceImage();
+//					updateLabel(-1, -1);
+//					if(imageDataset != null){
+//						BufferedImage image = getImage();
+//						if (image != null){
+//							imagePane.setUnderlyingImage(image,false);
+//						}
+//					}
+//					imagePane.repaint();
 				}
 			});
 		}
 		return timeSlider;
+	}
+	private void forceImage(){
+		updateLabel(-1, -1);
+		if(imageDataset != null){
+			BufferedImage image = getImage();
+			if (image != null){
+				imagePane.setUnderlyingImage(image,false);
+			}
+		}
+		imagePane.repaint();
+
 	}
 	/** Gets the index of the currently displayed image. * @return int
 	 */

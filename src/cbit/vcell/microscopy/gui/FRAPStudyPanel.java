@@ -4,17 +4,11 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Image;
-import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -26,14 +20,11 @@ import java.net.URL;
 
 import javax.swing.DefaultSingleSelectionModel;
 import javax.swing.ImageIcon;
-import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
@@ -48,7 +39,6 @@ import javax.swing.undo.UndoableEdit;
 import javax.swing.undo.UndoableEditSupport;
 import cbit.gui.DialogUtils;
 import cbit.gui.ZEnforcer;
-import cbit.gui.graph.GraphPane;
 import cbit.image.ImageException;
 import cbit.sql.KeyValue;
 import cbit.util.AsynchProgressPopup;
@@ -68,6 +58,7 @@ import cbit.vcell.client.data.SimulationModelInfo;
 import cbit.vcell.client.data.SimulationWorkspaceModelInfo;
 import cbit.vcell.client.server.MergedDataManager;
 import cbit.vcell.client.server.PDEDataManager;
+import cbit.vcell.client.server.VCDataManager;
 import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.desktop.controls.DataManager;
 import cbit.vcell.field.FieldDataIdentifierSpec;
@@ -75,18 +66,13 @@ import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.microscopy.ExternalDataInfo;
 import cbit.vcell.microscopy.FRAPData;
-import cbit.vcell.microscopy.FRAPDataAnalysis;
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FrapDataAnalysisResults;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.MicroscopyXmlReader;
 import cbit.vcell.microscopy.MicroscopyXmlproducer;
 import cbit.vcell.microscopy.ROI;
 import cbit.vcell.microscopy.FRAPStudy.FRAPModelParameters;
 import cbit.vcell.microscopy.ROI.RoiType;
-import cbit.vcell.modelopt.gui.DataSource;
-import cbit.vcell.modelopt.gui.MultisourcePlotPane;
-import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.server.StdoutSessionLog;
 import cbit.vcell.server.VCDataIdentifier;
@@ -95,11 +81,11 @@ import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simdata.PDEDataContext;
+import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
-import cbit.vcell.solver.ode.ODESolverResultSet;
 
 public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	//Following final static variables are added in Jan 2008.
@@ -116,19 +102,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	private LocalWorkspace localWorkspace = null;
 	private JTabbedPane jTabbedPane = null;
 	private FRAPParametersPanel frapParametersPanel = null;
-//	private JPanel modelPanel = null;
 	private JPanel fitSpatialModelPanel = null;
-//	private JPanel reportPanel = null;
-//	private JPanel reportBasePanel = null;
-//	private JCheckBox showReportListCheckBox = null;
-//	private JScrollPane scrollReportPane = null;
-//	private MultisourcePlotPane[] spatialAnalysisList = null;
-	private JPanel jPanel = null;
-//	private GraphPane geometryGraphPane = null;
-//	private JRadioButton spatial_twoAndHalfDimRadioButton = null;
-//	private JRadioButton spatial_threeDimRadioButton = null;
-//	private JRadioButton spatial_twoDimRadioButton = null;
-//	private JPanel geometryControlsPanel = null;
 	
 	private PDEDataViewer pdeDataViewer = null;
 	private PDEDataViewer flourDataViewer = null;
@@ -643,47 +617,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		return frapParametersPanel;
 	}
 
-//	/**
-//	 * This method initializes modelPanel	
-//	 * 	
-//	 * @return javax.swing.JPanel	
-//	 */
-//	private JPanel getModelPanel() {
-//		if (modelPanel == null) {
-//			GridBagConstraints gridBagConstraints10 = new GridBagConstraints();
-//			gridBagConstraints10.gridx = 0;
-//			gridBagConstraints10.insets = new Insets(5, 5, 5, 5);
-//			gridBagConstraints10.gridy = 0;
-//			GridBagConstraints gridBagConstraints4 = new GridBagConstraints();
-//			gridBagConstraints4.gridx = 0;
-//			gridBagConstraints4.gridheight = 1;
-//			gridBagConstraints4.weightx = 0.0D;
-//			gridBagConstraints4.weighty = 0.0D;
-//			gridBagConstraints4.gridy = 2;
-//			GridBagConstraints gridBagConstraints5 = new GridBagConstraints();
-//			gridBagConstraints5.gridx = 0;
-//			gridBagConstraints5.weightx = 1.0D;
-//			gridBagConstraints5.weighty = 1.0D;
-//			gridBagConstraints5.fill = GridBagConstraints.BOTH;
-//			gridBagConstraints5.insets = new Insets(10, 10, 10, 10);
-//			gridBagConstraints5.gridwidth = 2;
-//			gridBagConstraints5.gridy = 1;
-//			GridBagConstraints gridBagConstraints3 = new GridBagConstraints();
-//			gridBagConstraints3.gridx = 1;
-//			gridBagConstraints3.gridwidth = 1;
-//			gridBagConstraints3.insets = new Insets(5, 5, 5, 5);
-//			gridBagConstraints3.gridy = 2;
-//			modelPanel = new JPanel();
-//			modelPanel.setLayout(new GridBagLayout());
-//			modelPanel.add(getGeometryControlsPanel(), gridBagConstraints10);
-//			modelPanel.add(getGeometryGraphPane(), gridBagConstraints5);
-////			modelPanel.add(getModelSpecPanel(), gridBagConstraints4);
-//			//Commentted in Feb 2008. It can be found in menu and toolbar
-////			modelPanel.add(getRefreshModelButton(), gridBagConstraints3);
-//		}
-//		return modelPanel;
-//	}
-
 	/**
 	 * This method initializes fitSpatialModelPanel	
 	 * 	
@@ -697,33 +630,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		}
 		return fitSpatialModelPanel;
 	}
-
-//	/**
-//	 * This method initializes reportPanel	
-//	 * 	
-//	 * @return javax.swing.JPanel	
-//	 */
-//	private JPanel getReportPanel() {
-//		if (reportPanel == null) {
-//			reportPanel = new JPanel();
-//			reportPanel.setLayout(new FlowLayout());
-//			reportPanel.setMaximumSize(new Dimension((int)(Toolkit.getDefaultToolkit().getScreenSize().getWidth()*0.8), 5000));
-//			reportPanel.setPreferredSize(new Dimension((int)(Toolkit.getDefaultToolkit().getScreenSize().getWidth()*0.8), 5000));
-//		}
-//		return reportPanel;
-//	}
-
-//	private JScrollPane getScrollReportPane()
-//	{
-//		if (scrollReportPane == null) {
-//			scrollReportPane = new JScrollPane();
-//			scrollReportPane.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
-//			scrollReportPane.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-//			scrollReportPane.setMinimumSize(new Dimension(30, 75));
-//			scrollReportPane.setViewportView(getReportPanel());
-//		}
-//		return scrollReportPane;
-//	}
 	
 	private ResultsSummaryPanel getResultsSummaryPanel(){
 		if(resultsSummaryPanel == null){
@@ -731,43 +637,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		}
 		return resultsSummaryPanel;
 	}
-//	//refresh the report panel when spatial analysis is done.
-//	private void refreshReportPanel()
-//	{
-//		getReportPanel().removeAll();
-//		if(spatialAnalysisList != null && spatialAnalysisList.length > 0)
-//		{
-//			for(int i = 0; i< spatialAnalysisList.length; i++)
-//			{
-//				spatialAnalysisList[i].setPreferredSize(new Dimension(650,500));
-//				getReportPanel().add(spatialAnalysisList[i]/*, gbConstraints[i]*/);
-//			}
-//		}
-//		getReportBasePanel().removeAll();
-//		getReportBasePanel().add(getShowReportListButton(), BorderLayout.NORTH);
-//		getReportBasePanel().add(getReportPanel(), BorderLayout.CENTER);
-//		getReportBasePanel().add(getResultsSummaryPanel(), BorderLayout.SOUTH);
-//		JScrollPane baseScrollPane = ((JScrollPane)getJTabbedPane().getComponentAt(INDEX_TAB_REPORT));
-//		baseScrollPane.setAutoscrolls(true);
-//		//adjust report panel's width to scroll pane's width.
-//		baseScrollPane.addComponentListener(new ComponentListener(){
-//			public void componentHidden(ComponentEvent arg0) {
-//				// TODO Auto-generated method stub
-//			}
-//			public void componentMoved(ComponentEvent arg0) {
-//				// TODO Auto-generated method stub
-//			}
-//			public void componentResized(ComponentEvent arg0) {
-//				getReportBasePanel().setMaximumSize(new Dimension(((int)(arg0.getComponent().getSize().getWidth()*0.8)), 5000));
-//				getReportBasePanel().setPreferredSize(new Dimension(((int)(arg0.getComponent().getSize().getWidth()*0.8)), 5000));
-//			}
-//			public void componentShown(ComponentEvent arg0) {
-//				// TODO Auto-generated method stub
-//			}
-//		});
-//		((JScrollPane)getJTabbedPane().getComponentAt(INDEX_TAB_REPORT)).setViewportView(getReportBasePanel());
-//		getShowReportListButton().setSelected(true); //show plot list by default
-//	}
 	
 	private FRAPStudy getFrapStudy() {
 		return frapStudy;
@@ -806,29 +675,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		newFrapStudy.setRoiExternalDataInfo(getFrapStudy().getRoiExternalDataInfo());
 		setFrapStudy(newFrapStudy,false);
 	}
-
-	
-//	/**
-//	 * This method initializes jPanel	
-//	 * 	
-//	 * @return javax.swing.JPanel	
-//	 */
-//	private JPanel getJPanel() {
-//		if (jPanel == null) {
-//			GridBagConstraints gridBagConstraints2 = new GridBagConstraints();
-//			gridBagConstraints2.insets = new Insets(5, 5, 5, 5);
-//			gridBagConstraints2.gridx = 2;
-//			gridBagConstraints2.gridy = 0;
-//			GridBagConstraints gridBagConstraints1 = new GridBagConstraints();
-//			gridBagConstraints1.gridx = 1;
-//			gridBagConstraints1.insets = new Insets(5, 5, 5, 5);
-//			gridBagConstraints1.gridy = 0;
-//			jPanel = new JPanel();
-//			jPanel.setLayout(new GridBagLayout());
-//		}
-//		return jPanel;
-//	}
-
 	
 	public void save() throws Exception {
 		if(SwingUtilities.isEventDispatchThread()){
@@ -1745,80 +1591,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		}
 	}	
 
-	
-//	/**
-//	 * This method initializes geometryGraphPane	
-//	 * 	
-//	 * @return cbit.gui.graph.GraphPane	
-//	 */
-//	private GraphPane getGeometryGraphPane() {
-//		if (geometryGraphPane == null) {
-//			geometryGraphPane = new GraphPane();
-//			geometryGraphPane.setGraphModel(new StructureMappingCartoon());
-//		}
-//		return geometryGraphPane;
-//	}
-	
-//	/**
-//	 * This method initializes spatial_twoAndHalfDimRadioButton	
-//	 * 	
-//	 * @return javax.swing.JRadioButton	
-//	 */
-//	private JRadioButton getSpatial_twoAndHalfDimRadioButton() {
-//		if (spatial_twoAndHalfDimRadioButton == null) {
-//			spatial_twoAndHalfDimRadioButton = new JRadioButton();
-//			spatial_twoAndHalfDimRadioButton.setText("2 1/2 D");
-//		}
-//		return spatial_twoAndHalfDimRadioButton;
-//	}
-//
-//	/**
-//	 * This method initializes spatial_threeDimRadioButton	
-//	 * 	
-//	 * @return javax.swing.JRadioButton	
-//	 */
-//	private JRadioButton getSpatial_threeDimRadioButton() {
-//		if (spatial_threeDimRadioButton == null) {
-//			spatial_threeDimRadioButton = new JRadioButton();
-//			spatial_threeDimRadioButton.setText("3D");
-//		}
-//		return spatial_threeDimRadioButton;
-//	}
-//
-//	/**
-//	 * This method initializes spatial_twoDimRadioButton	
-//	 * 	
-//	 * @return javax.swing.JRadioButton	
-//	 */
-//	private JRadioButton getSpatial_twoDimRadioButton() {
-//		if (spatial_twoDimRadioButton == null) {
-//			spatial_twoDimRadioButton = new JRadioButton();
-//			spatial_twoDimRadioButton.setText("2D");
-//			spatial_twoDimRadioButton.setSelected(true);
-//		}
-//		return spatial_twoDimRadioButton;
-//	}
-
-//	/**
-//	 * This method initializes geometryControlsPanel	
-//	 * 	
-//	 * @return javax.swing.JPanel	
-//	 */
-//	private JPanel getGeometryControlsPanel() {
-//		if (geometryControlsPanel == null) {
-//			GridBagConstraints gridBagConstraints8 = new GridBagConstraints();
-//			gridBagConstraints8.anchor = GridBagConstraints.WEST;
-//			gridBagConstraints8.gridy = -1;
-//			gridBagConstraints8.gridx = -1;
-//			geometryControlsPanel = new JPanel();
-//			geometryControlsPanel.setLayout(new GridBagLayout());
-//			geometryControlsPanel.add(getSpatial_twoDimRadioButton(), new GridBagConstraints());
-//			geometryControlsPanel.add(getSpatial_twoAndHalfDimRadioButton(), new GridBagConstraints());
-//			geometryControlsPanel.add(getSpatial_threeDimRadioButton(), gridBagConstraints8);
-//		}
-//		return geometryControlsPanel;
-//	}
-
 	public LocalWorkspace getLocalWorkspace() {
 		return localWorkspace;
 	}
@@ -1963,35 +1735,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				
 		//		NonGUIFRAPTest.dumpSpatialResults(spatialAnalysisResults, frapDataTimeStamps,
 		//				new File("C:\\temp\\guiSpatialResults.txt"));
-//				//
-//				// display diffusion-centric plots
-//				//
-//				final ReferenceData[] referenceDataArr =
-//					spatialAnalysisResults.createReferenceDataForAllDiffusionRates(frapDataTimeStamps);
-//				final ODESolverResultSet[] odeSolverResultSetArr =
-//					spatialAnalysisResults.createODESolverResultSetForAllDiffusionRates();
-//				
-//				
-//				final MultisourcePlotPane[] spatialAnalysisListFinal = new MultisourcePlotPane[spatialAnalysisResults.diffusionRates.length];
-//				for (int i = 0; i < spatialAnalysisResults.diffusionRates.length; i++) {
-//					final String title = "Experimental vs. Diffusion Rate "+spatialAnalysisResults.diffusionRates[i];
-//					final DataSource expDataSource = new DataSource(referenceDataArr[i],"experiment");
-//					final DataSource fitDataSource = new DataSource(odeSolverResultSetArr[i], "fit");
-//					final int diffusionRateIndex = i;
-//					SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-//						MultisourcePlotPane multisourcePlotPane = new MultisourcePlotPane();
-//						multisourcePlotPane.setDataSources(new DataSource[] {  expDataSource, fitDataSource } );
-//						multisourcePlotPane.selectAll();
-//						multisourcePlotPane.setBorder(new TitledBorder(new LineBorder(new Color(168,168,255)),title, TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION, new Font("Tahoma", Font.PLAIN, 12)));						
-//						spatialAnalysisListFinal[diffusionRateIndex]=multisourcePlotPane;		
-//					}});
-//				}
-//				spatialAnalysisList = spatialAnalysisListFinal;
-//				VirtualFrapMainFrame.updateProgress(100);
-//				// show plot list by default
-//				SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-//					refreshReportPanel();					
-//				}});
 				VirtualFrapMainFrame.updateProgress(0);
 				VirtualFrapMainFrame.updateStatus("Finished Spatial analysis.");
 			}catch(final Exception e){
@@ -2029,7 +1772,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							" before using '"+OverlayEditorPanelJAI.ROI_ASSIST_TEXT+"' to define Bleach or Backgroun ROIs");
 					return;
 				}
-				JDialog roiDialog = new JDialog();
+				JDialog roiDialog = new JDialog((JFrame)BeanUtils.findTypeParentOfComponent(this, JFrame.class));
 				roiDialog.setTitle("Create Region of Interest (ROI) using intensity thresholding");
 				roiDialog.setModal(true);
 				ROIAssistPanel roiAssistPanel = new ROIAssistPanel();
@@ -2044,12 +1787,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						getFrapStudy().getFrapData(),getFRAPDataPanel().getOverlayEditorPanelJAI());
 				roiDialog.setContentPane(roiAssistPanel);
 				roiDialog.pack();
-//				roiDialog.setPreferredSize(new Dimension(300,400));
-//				roiDialog.setMinimumSize(new Dimension(300,400));
-				roiDialog.setSize(400,300);
-//				BeanUtils.centerOnComponent(roiDialog, this);
+				roiDialog.setSize(400,200);
 				ZEnforcer.showModalDialogOnTop(roiDialog, this);
-//				roiDialog.setVisible(true);
 				
 				if(!originalROI.compareEqual(getFrapStudy().getFrapData().getCurrentlyDisplayedROI())){
 					final ROI finalOriginalROI = originalROI;
@@ -2070,47 +1809,6 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				}else{
 					undoableEditSupport.postEdit(CLEAR_UNDOABLE_EDIT);
 				}
-
-				
-//				try{
-//					FrapDataAnalysisResults frapDataAnalysisResults =
-//						FRAPDataAnalysis.fitRecovery2(getFrapStudy().getFrapData(),FrapDataAnalysisResults.BleachType_CirularDisk);
-//					int startingIndexForRecovery = frapDataAnalysisResults.getStartingIndexForRecovery();
-//					System.out.println("Starting index for recoverty="+startingIndexForRecovery);
-//					int numTimes = getFrapStudy().getFrapData().getImageDataset().getSizeT();
-//					long[] timeAvg = new long[getFrapStudy().getFrapData().getImageDataset().getISize().getXYZ()];
-//					for (int t = 0; t < numTimes; t++) {
-//						int pixelIndex = 0;
-//						for (int z = 0; z < getFrapStudy().getFrapData().getImageDataset().getSizeZ(); z++) {
-//							UShortImage timePointDataImage = getFrapStudy().getFrapData().getImageDataset().getImage(z, 0, t);
-//							for (int y = 0; y < timePointDataImage.getNumY(); y++) {
-//								for (int x = 0; x < timePointDataImage.getNumX(); x++) {
-//									timeAvg[pixelIndex]+= timePointDataImage.getPixel(x,y,0)&0x0000FFFF;
-//									pixelIndex++;  
-//								}
-//							}
-//						}
-//					}
-//					int[] bins = new int[65536];
-//					for (int i = 0; i < timeAvg.length; i++) {
-//						bins[(int)(timeAvg[i]/numTimes)]++;
-//					}
-//					for (int i = 0; i < bins.length; i++) {
-//						if(bins[i] != 0){
-//							System.out.print(i+" ");
-//							for (int j = 0; j < bins[i]; j++) {
-//								if(j%1 == 0){
-//									System.out.print("*");
-//								}
-//							}
-//							System.out.println();
-//						}
-//					}
-//					System.out.println("Total pixels ="+getFrapStudy().getFrapData().getImageDataset().getISize()+" t="+getFrapStudy().getFrapData().getImageDataset().getSizeT());
-//				}catch(Exception e){
-//					e.printStackTrace();
-//					DialogUtils.showErrorDialog("Auto ROI error:"+e.getMessage());
-//				}
 			}
 		}
 	}
@@ -2127,57 +1825,4 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 
 	}
 	
-//	//Added March 2008.
-//	public JCheckBox getShowReportListButton() {
-//		if(showReportListCheckBox == null){
-//			showReportListCheckBox = new JCheckBox("Show Plot List", true);
-//			showReportListCheckBox.setFont(new Font("Tahoma", Font.BOLD, 12));
-//			int len = showReportListCheckBox.getActionListeners().length;
-//			if(len > 0)
-//			{
-//				for(int i=(len-1); i<0; i--)
-//				{
-//					showReportListCheckBox.removeActionListener(showReportListCheckBox.getActionListeners()[i]);
-//				}
-//			}
-//			showReportListCheckBox.addActionListener(new java.awt.event.ActionListener() {
-//				public void actionPerformed(java.awt.event.ActionEvent e) {
-//					if(spatialAnalysisList != null && spatialAnalysisList.length >0 )
-//					{
-//						if(showReportListCheckBox.isSelected())
-//						{
-//							for(int i=0; i<spatialAnalysisList.length; i++)
-//							{
-//								spatialAnalysisList[i].setListVisible(true);
-//								spatialAnalysisList[i].setPreferredSize(new Dimension(650,500));
-//								spatialAnalysisList[i].invalidate();
-//							}
-//						}
-//						else
-//						{
-//							for(int i=0; i<spatialAnalysisList.length; i++)
-//							{
-//								spatialAnalysisList[i].setListVisible(false);
-//								spatialAnalysisList[i].setPreferredSize(new Dimension(450,300));
-//								spatialAnalysisList[i].invalidate();
-//							}
-//						}
-//						
-//						getReportPanel().invalidate();
-//						getReportBasePanel().invalidate();
-//						getScrollReportPane().revalidate();
-//					}
-//				}
-//			});
-//		}
-//		return showReportListCheckBox;
-//	}
-//	//Added March 2008
-//	public JPanel getReportBasePanel() {
-//		if (reportBasePanel == null) {
-//			reportBasePanel = new JPanel();
-//			reportBasePanel.setLayout(new BorderLayout());
-//		}
-//		return reportBasePanel;
-//	}
 }
