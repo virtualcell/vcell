@@ -47,6 +47,7 @@ public class MergedData extends VCData implements SymbolTable {
  */
 public MergedData(User argUser, File argPrimaryUserDir, File argSecondaryUserDir, DataSetControllerImpl argDatasetContrlrImpl, VCDataIdentifier[] argDatasetIDs) throws DataAccessException, IOException  {
 	dataSetControllerImpl = argDatasetContrlrImpl;
+	dataSetControllerImpl.setAllowOptimizedTimeDataRetrieval(false);
 	if (argDatasetIDs.length < 2) {
 		throw new RuntimeException("\nLess than 2 datasets, no comparison!!\n");
 	} 
@@ -768,6 +769,66 @@ synchronized double[][][] getSimDataTimeSeries0(
 		DataSetControllerImpl.SpatialStatsInfo spatialStatsInfo,
 		ProgressListener progressListener) throws DataAccessException,IOException{
 
+//	int wantedTimecount = 0;
+//	for (int i = 0; i < wantsThisTime.length; i++) {
+//		if(wantsThisTime[i]){
+//			wantedTimecount++;
+//		}
+//	}
+//	double[][][] results = new double[wantedTimecount][varNames.length][];
+//	for (int i = 0; i < wantedTimecount; i++) {
+//		for (int j = 0; j < varNames.length; j++) {
+//			results[i][j] = new double[indexes[j].length];
+//		}
+//	}
+//	wantedTimecount = 0;
+//	for (int i = 0; i < wantsThisTime.length; i++) {
+//		if(wantsThisTime[i]){
+//			for (int j = 0; j < varNames.length; j++) {
+//				SimDataBlock simDataBlock = getSimDataBlock(varNames[j], getDataTimes()[i]);
+//				double[] data = simDataBlock.getData();
+//				for (int k = 0; k < indexes[j].length; k++) {
+//					results[wantedTimecount][j][k] = data[indexes[j][k]];
+//				}
+//			}
+//			wantedTimecount++;
+//		}
+//	}
+//	return results;
+	
+	
+//	boolean bAllTimesSame = true;
+//	double[] lastTimes = null;
+//	for (int i = 0; i < varNames.length; i++) {
+//		VCDataIdentifier tempVCDataIdentifier = getVCDataIdentifierFromDataId(varNames[i]);
+//		VCData vcData = dataSetControllerImpl.getVCData(tempVCDataIdentifier);
+//		double[] tempTimes = vcData.getDataTimes();
+//		if(lastTimes == null){
+//			lastTimes = tempTimes;
+//			continue;
+//		}
+//		if(tempTimes.length != lastTimes.length){
+//			bAllTimesSame = false;
+//			break;
+//		}
+//		for (int j = 0; j < tempTimes.length; j++) {
+//			if(tempTimes[j] != lastTimes[j]){
+//				bAllTimesSame = false;
+//				break;
+//			}
+//		}
+//		if(!bAllTimesSame){
+//			break;
+//		}
+//	}
+//	if(bAllTimesSame){
+//		for (int i = 0; i < varNames.length; i++) {
+//			getSimDataBlock(varName, time)			
+//		}
+//	}
+	
+	
+	
 	//
 	// gather list of where to find each variable
 	//
