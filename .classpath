@@ -7,11 +7,11 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="resources"/>
+	<classpathentry exported="true" kind="lib" path="ome-java_2008Apr17.jar"/>
 	<classpathentry exported="true" kind="lib" path="bio-formats_2008May20.jar" sourcepath="D:/developer/eclipse/workspace"/>
 	<classpathentry kind="lib" path="sbmlj.jar"/>
 	<classpathentry kind="lib" path="WinService.jar"/>
 	<classpathentry kind="lib" path="JLink.jar"/>
-	<classpathentry kind="lib" path="ome-java.jar"/>
 	<classpathentry kind="lib" path="xml-apis.jar"/>
 	<classpathentry kind="lib" path="new_activation.jar"/>
 	<classpathentry kind="lib" path="new_mail.jar"/>
