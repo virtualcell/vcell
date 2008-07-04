@@ -1086,9 +1086,12 @@ public static FieldDataFileOperationSpec createFDOSFromImageFile(File imageFile,
 		fdos.variableTypes[c] = VariableType.VOLUME;
 		fdos.varNames[c] = "Channel"+c;
 		for(int t=0;t<imagedataSet.getSizeT();t+=1){
+			int zOffset = 0;
 			for(int z=0;z<imagedataSet.getSizeZ();z+=1){
 				UShortImage ushortImage = imagedataSet.getImage(z,c,t);
-				shortData[t][c] = ushortImage.getPixels();
+				System.arraycopy(ushortImage.getPixels(), 0, shortData[t][c], zOffset, numXY);
+//				shortData[t][c] = ushortImage.getPixels();
+				zOffset+= numXY;
 			}
 		}
 	}

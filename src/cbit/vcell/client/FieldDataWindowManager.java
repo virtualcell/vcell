@@ -212,8 +212,12 @@ public void viewData(final ExternalDataIdentifier eDI){
 		currentlyViewedJFrame.setVisible(true);
 	}else{
 		if(currentlyViewedPDEDV != null){
-			getLocalRequestManager().getAsynchMessageManager().removeDataJobListener(currentlyViewedPDEDV);
-			currentlyViewedPDEDV.getPdeDataContext().removePropertyChangeListener(this);
+			if(getLocalRequestManager() != null && getLocalRequestManager().getAsynchMessageManager() != null){
+				getLocalRequestManager().getAsynchMessageManager().removeDataJobListener(currentlyViewedPDEDV);
+			}
+			if(currentlyViewedPDEDV.getPdeDataContext() != null){
+				currentlyViewedPDEDV.getPdeDataContext().removePropertyChangeListener(this);
+			}
 		}
 		if(currentlyViewedJFrame != null){
 			currentlyViewedJFrame.dispose();
@@ -287,8 +291,12 @@ public void viewData(final ExternalDataIdentifier eDI){
 			currentlyViewedEDI = eDI;
 		}catch(Throwable e){
 			if(currentlyViewedPDEDV != null){
-				getLocalRequestManager().getAsynchMessageManager().removeDataJobListener(currentlyViewedPDEDV);
-				currentlyViewedPDEDV.getPdeDataContext().removePropertyChangeListener(this);
+				if(getLocalRequestManager() != null && getLocalRequestManager().getAsynchMessageManager() != null){
+					getLocalRequestManager().getAsynchMessageManager().removeDataJobListener(currentlyViewedPDEDV);
+				}
+				if(currentlyViewedPDEDV.getPdeDataContext() != null){
+					currentlyViewedPDEDV.getPdeDataContext().removePropertyChangeListener(this);
+				}
 			}
 			PopupGenerator.showErrorDialog("Error showing Field Data Viewer\n"+e.getMessage());
 		}
