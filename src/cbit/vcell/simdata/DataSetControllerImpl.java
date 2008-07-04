@@ -2985,13 +2985,14 @@ private void adjustMembraneAdjacentVolumeValues(
 				outsideExp = new Expression(varName+"_OUTSIDE");
 			}
 			if(insideExp != null && outsideExp != null){
-				insideExp.bindExpression((SimulationData)getVCData(vcdID));
-				outsideExp.bindExpression((SimulationData)getVCData(vcdID));
+				insideExp.bindExpression(getVCData(vcdID));
+				outsideExp.bindExpression(getVCData(vcdID));
 				insideFunction = new AnnotatedFunction("",insideExp,"",VariableType.MEMBRANE,true);
 				outsideFunction = new AnnotatedFunction("",outsideExp,"",VariableType.MEMBRANE,true);
 				insideFunction.setSimplifiedExpression(insideExp.flatten());
 				outsideFunction.setSimplifiedExpression(outsideExp.flatten());				
 				bIsSpecial =
+					!isAllowOptimizedTimeDataRetrieval() || 
 					insideExp.hasGradient() || outsideExp.hasGradient() ||
 					(insideExp.getFieldFunctionArguments() != null && insideExp.getFieldFunctionArguments().length > 0) ||
 					(outsideExp.getFieldFunctionArguments() != null && outsideExp.getFieldFunctionArguments().length > 0);
