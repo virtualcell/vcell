@@ -51,6 +51,8 @@ import cbit.vcell.solvers.FunctionFileGenerator;
 
 public class DataSetControllerImpl implements SimDataConstants {
 	
+	private boolean bAllowOptimizedTimeDataRetrieval = true;
+	
 	private static final int TXYZ_OFFSET = 4;
 	
 	public interface ProgressListener{
@@ -301,6 +303,13 @@ public class DataSetControllerImpl implements SimDataConstants {
 					functionArgs[i+TXYZ_OFFSET] = VolumeIndexNearFar.interpolate(argValues[i], argValues[funcVarNames.length+i]);			
 				}
 			}
+//			if(time ==0){
+//				System.out.print("multi-func evalFunction ");
+//				for (int i = 0; i < functionArgs.length; i++) {
+//					System.out.print(functionArgs[i]);
+//				}
+//				System.out.println(" "+(functionArgs[functionArgs.length-2]/functionArgs[functionArgs.length-1]));
+//			}
 			return function.getSimplifiedExpression().evaluateVector(functionArgs);
 		}
 		public FunctionIndexes(AnnotatedFunction argAF,Coordinate argXYZ,
@@ -533,6 +542,9 @@ private cbit.util.TimeSeriesJobResults calculateStatisticsFromWhole(
 			    double wsum = 0;
 			    for(int j=1;j<timeSeriesFormatedValuesArr[i].length;j+= 1){//index
 				    val = timeSeriesFormatedValuesArr[i][j][k];
+//			    	if(k == 0 ){
+//System.out.println("varIndex="+i+" pixelIndex="+(j-1)+" pixelIndexVal="+timeSeriesJobSpec.getIndices()[i][j-1]+" timeIndex="+k+" val="+val);
+//			    	}
 				    if(val < min){min=val;}
 				    if(val > max){max=val;}
 				    sum+= val;
@@ -834,6 +846,13 @@ private SimDataBlock evaluateFunction(
 		}
 		try {
 			data[i] = exp.evaluateVector(args);
+//			if(time ==0){
+//				System.out.print("non-multi evalFunction ");
+//				for (int m = 0; m < args.length; m++) {
+//					System.out.print(args[m]);
+//				}
+//				System.out.println(" "+(args[args.length-2]/args[args.length-1]));
+//			}
 		}catch (DivideByZeroException e){
 			System.out.println("DataSetControllerImpl.evaluateFunction(): DivideByZero "+e.getMessage());
 			data[i] = Double.POSITIVE_INFINITY;
@@ -2429,67 +2448,70 @@ private TimeSeriesJobResults getSpecialTimeSeriesValues(VCDataIdentifier vcdID,
 		TimeSeriesJobSpec timeSeriesJobSpec,TimeInfo timeInfo) throws Exception{
 	
 	String[] variableNames = timeSeriesJobSpec.getVariableNames();
-	boolean bIsSpecial = false;
 	CartesianMesh mesh = getMesh(vcdID);
-	VCData simData = getVCData(vcdID);
-	//
-	//Gradient and FieldData functions are special.
-	//They have to be evaluated using the 'full data' method using evaluateFunction(...).
-	//They cannot be evaluated using the fast findFunctionIndexes(...) method.
-	//Also if the 'roi' is a significant fraction of the whole dataset then
-	//the 'full data' method of evaluation is more efficient
-	final double SIGNIFICANT_ROI_FRACTION = .2;//a guess for best efficiency
-	final int ABSOLUTE_SIZE_LIMIT = 10000;
-	for(int i=0;i<variableNames.length;i+= 1){
-		DataSetIdentifier dsi = (DataSetIdentifier)simData.getEntry(variableNames[i]);
-		if(dsi.getVariableType().equals(VariableType.VOLUME)){
-			if(timeSeriesJobSpec.getIndices()[i].length >
-			mesh.getNumVolumeElements()*SIGNIFICANT_ROI_FRACTION){
-				bIsSpecial = true;
-				break;
-			}
-		}else if(dsi.getVariableType().equals(VariableType.MEMBRANE)){
-			if(timeSeriesJobSpec.getIndices()[i].length >
-			mesh.getNumMembraneElements()*SIGNIFICANT_ROI_FRACTION){
-				bIsSpecial = true;
-				break;
-			}
-		}
-		AnnotatedFunction functionFromVarName = getFunction(vcdID,variableNames[i]);
-		if(functionFromVarName != null){
-			FieldFunctionArguments[] fieldFunctionArgumentsArr =
-				functionFromVarName.getExpression().getFieldFunctionArguments();
-			if(functionFromVarName.getExpression().hasGradient() ||
-				(fieldFunctionArgumentsArr != null && fieldFunctionArgumentsArr.length > 0)){
-				bIsSpecial = true;
-				break;
-			}
-			//check function absolute size limit
-			Expression exp = functionFromVarName.getSimplifiedExpression();
-			String[] funcSymbols = exp.getSymbols();
-			int varCount = 0;
-			if(funcSymbols != null){
-				for (int j = 0; j < funcSymbols.length; j++) {
-					SymbolTableEntry ste = exp.getSymbolBinding(funcSymbols[j]);
-					if (ste instanceof DataSetIdentifier) {
-						varCount+= 1;
-					}
+	//Automatically 'special' (non-optimized timedata retrieval) if isAllowOptimizedTimeDataRetrieval() == false
+	boolean bIsSpecial = !isAllowOptimizedTimeDataRetrieval();
+	if(!bIsSpecial){
+		VCData simData = getVCData(vcdID);
+		//
+		//Gradient and FieldData functions are special.
+		//They have to be evaluated using the 'full data' method using evaluateFunction(...).
+		//They cannot be evaluated using the fast findFunctionIndexes(...) method.
+		//Also if the 'roi' is a significant fraction of the whole dataset then
+		//the 'full data' method of evaluation is more efficient
+		final double SIGNIFICANT_ROI_FRACTION = .2;//a guess for best efficiency
+		final int ABSOLUTE_SIZE_LIMIT = 10000;
+		for(int i=0;i<variableNames.length;i+= 1){
+			DataSetIdentifier dsi = (DataSetIdentifier)simData.getEntry(variableNames[i]);
+			if(dsi.getVariableType().equals(VariableType.VOLUME)){
+				if(timeSeriesJobSpec.getIndices()[i].length >
+				mesh.getNumVolumeElements()*SIGNIFICANT_ROI_FRACTION){
+					bIsSpecial = true;
+					break;
+				}
+			}else if(dsi.getVariableType().equals(VariableType.MEMBRANE)){
+				if(timeSeriesJobSpec.getIndices()[i].length >
+				mesh.getNumMembraneElements()*SIGNIFICANT_ROI_FRACTION){
+					bIsSpecial = true;
+					break;
 				}
 			}
-			varCount = Math.max(varCount, 1);
-			if(varCount*timeSeriesJobSpec.getIndices()[i].length > ABSOLUTE_SIZE_LIMIT){
+			AnnotatedFunction functionFromVarName = getFunction(vcdID,variableNames[i]);
+			if(functionFromVarName != null){
+				FieldFunctionArguments[] fieldFunctionArgumentsArr =
+					functionFromVarName.getExpression().getFieldFunctionArguments();
+				if(functionFromVarName.getExpression().hasGradient() ||
+					(fieldFunctionArgumentsArr != null && fieldFunctionArgumentsArr.length > 0)){
+					bIsSpecial = true;
+					break;
+				}
+				//check function absolute size limit
+				Expression exp = functionFromVarName.getSimplifiedExpression();
+				String[] funcSymbols = exp.getSymbols();
+				int varCount = 0;
+				if(funcSymbols != null){
+					for (int j = 0; j < funcSymbols.length; j++) {
+						SymbolTableEntry ste = exp.getSymbolBinding(funcSymbols[j]);
+						if (ste instanceof DataSetIdentifier) {
+							varCount+= 1;
+						}
+					}
+				}
+				varCount = Math.max(varCount, 1);
+				if(varCount*timeSeriesJobSpec.getIndices()[i].length > ABSOLUTE_SIZE_LIMIT){
+					bIsSpecial = true;
+					break;
+				}
+			}else if(timeSeriesJobSpec.getIndices()[i].length > ABSOLUTE_SIZE_LIMIT){
 				bIsSpecial = true;
 				break;
 			}
-		}else if(timeSeriesJobSpec.getIndices()[i].length > ABSOLUTE_SIZE_LIMIT){
-			bIsSpecial = true;
-			break;
 		}
 	}
-
 	if(!bIsSpecial){
 		return null;
 	}
+	
 	
 	if(timeSeriesJobSpec.isCalcTimeStats()){
 		throw new RuntimeException("Time Stats Not yet implemented for 'special' data");
@@ -3073,4 +3095,12 @@ public void removeFunction(VCDataIdentifier vcdID, AnnotatedFunction function) t
 		throw new DataAccessException(e.getMessage());
 	}
 }
+
+public void setAllowOptimizedTimeDataRetrieval(boolean bAllowOptimizedTimeDataRetrieval){
+	this.bAllowOptimizedTimeDataRetrieval = bAllowOptimizedTimeDataRetrieval;
+}
+public boolean isAllowOptimizedTimeDataRetrieval(){
+	return bAllowOptimizedTimeDataRetrieval;
+}
+
 }
