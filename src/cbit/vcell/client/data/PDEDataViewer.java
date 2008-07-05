@@ -4,6 +4,7 @@ import cbit.vcell.math.VolVariable;
 import cbit.vcell.model.gui.ScopedExpressionTableCellRenderer;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTable;
+import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.*;
 
 import javax.swing.*;
@@ -85,7 +86,7 @@ public class PDEDataViewer extends DataViewer {
 			if(timeSeriesJobFailed != null){
 				return;//Do Nothing Special
 			}
-			TSJobResultsSpaceStats tsjrss = (TSJobResultsSpaceStats)timeSeriesJobResults;
+			final TSJobResultsSpaceStats tsjrss = (TSJobResultsSpaceStats)timeSeriesJobResults;
 			//Determine if Volume or Membrane
 			DataIdentifier[] diArr = getPdeDataContext().getDataIdentifiers();
 			boolean bVolume = true;
@@ -116,9 +117,12 @@ public class PDEDataViewer extends DataViewer {
 				}
 			//}
 			}
+			final SymbolTableEntry[] finalSymbolTableEntries = symbolTableEntries;
+			final boolean finalBVolume = bVolume;
+			SwingUtilities.invokeLater(new Runnable(){public void run(){
 			cbit.plot.PlotPane plotPane = new cbit.plot.PlotPane();
 			plotPane.setPlot2D(
-				new cbit.plot.SingleXPlot2D(symbolTableEntries,"Time",
+				new cbit.plot.SingleXPlot2D(finalSymbolTableEntries,"Time",
 				new String[] {
 						"Max",
 						(tsjrss.getWeightedMean() != null?"WeightedMean":"UnweightedMean"),
@@ -131,13 +135,14 @@ public class PDEDataViewer extends DataViewer {
 						tsjrss.getMinimums()[0]/*,
 						(tsjrss.getWeightedSum() != null?tsjrss.getWeightedSum()[0]:tsjrss.getUnweightedSum()[0])*/},
 				new String[] {
-					"Statistics Plot for "+tsjrss.getVariableNames()[0]+(tsjrss.getTotalSpace() != null?" (ROI "+(bVolume?"volume":"area")+"="+tsjrss.getTotalSpace()[0]+")":""),
+					"Statistics Plot for "+tsjrss.getVariableNames()[0]+(tsjrss.getTotalSpace() != null?" (ROI "+(finalBVolume?"volume":"area")+"="+tsjrss.getTotalSpace()[0]+")":""),
 					"Time (s)",
 					"[" + tsjrss.getVariableNames()[0] + "]"}));
 
 
 			showComponentInFrame(plotPane,"Statistics: ("+tsjrss.getVariableNames()[0]+") "+
 					(getSimulationModelInfo() != null?getSimulationModelInfo().getContextName()+" "+getSimulationModelInfo().getSimulationName():""));
+			}});
 		}
 	};
 	//
@@ -604,19 +609,17 @@ private void roiAction(){
 		getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.VOLUME) ||
 		getPdeDataContext().getDataIdentifier().getVariableType().equals(VariableType.VOLUME_REGION);
 	
-	DefaultTableModel tableModel = new DefaultTableModel(){
+	final DefaultTableModel tableModel = new DefaultTableModel(){
 	    public boolean isCellEditable(int row, int column) {
 	        return false;
 	    }
 	};
-	final JTable roiTable = new JTable(tableModel);
-	roiTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 	for (int i = 0; i < ROI_COLUMN_NAMES.length; i++) {
 		tableModel.addColumn(ROI_COLUMN_NAMES[i]);
 	}
 	//Add Snapshot ROI
 	if((isVolume?volumeSnapshotROI:membraneSnapshotROI) != null){
-		((DefaultTableModel)roiTable.getModel()).addRow(
+		tableModel.addRow(
 				new Object[] {
 					(isVolume?"Volume":"Membrane")+" Variables and Functions",
 					"Snapshot",
@@ -641,7 +644,7 @@ private void roiAction(){
 		if(userROIArr[i] instanceof SpatialSelectionVolume){
 			fillBitSet = getFillROI((SpatialSelectionVolume)userROIArr[i]);
 			if(fillBitSet != null){
-				((DefaultTableModel)roiTable.getModel()).addRow(
+				tableModel.addRow(
 						new Object[] {
 							"User Defined",
 							descr,
@@ -653,7 +656,7 @@ private void roiAction(){
 		}
 		//Add Point and Line User ROI
 		if(fillBitSet == null){
-			((DefaultTableModel)roiTable.getModel()).addRow(
+			tableModel.addRow(
 					new Object[] {
 						"User Defined",
 						descr,
@@ -709,9 +712,13 @@ private void roiAction(){
 	Iterator<Object[]> sortedGeomROIIter = sortedGeomROITreeSet.iterator();
 	while(sortedGeomROIIter.hasNext()){
 		Object[] sortedGeomROIObjArr = (Object[])sortedGeomROIIter.next();
-		((DefaultTableModel)roiTable.getModel()).addRow((Object[])sortedGeomROIObjArr[0]);
+		tableModel.addRow((Object[])sortedGeomROIObjArr[0]);
 		auxInfoV.add(sortedGeomROIObjArr[1]);
 	}
+	SwingUtilities.invokeLater(new Runnable(){public void run(){
+	final JTable roiTable = new JTable(tableModel);
+	roiTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+
 	ScopedExpressionTableCellRenderer.formatTableCellSizes(roiTable, null, null);
 	
 	JScrollPane scrollPane = new JScrollPane(roiTable);
@@ -847,6 +854,7 @@ private void roiAction(){
 //	if(result != JOptionPane.OK_OPTION){
 //		throw UserCancelException.CANCEL_GENERIC;
 //	}
+	}});
 	}finally{
 		BeanUtils.setCursorThroughout(this, Cursor.getDefaultCursor());
 	}
@@ -1680,6 +1688,7 @@ private synchronized void dataJobFailed(VCDataJobID vcDataJobID,final Exception 
 }
 public void dataJobMessage(final DataJobEvent dje) {
 
+	new Thread(new Runnable(){public void run(){
 	final ThreadSafeDataJobInfo threadSafeDataJobInfo = getThreadSafeDataJobInfo(dje.getVcDataJobID());
 	if(threadSafeDataJobInfo == null){
 		return;
@@ -1696,6 +1705,7 @@ public void dataJobMessage(final DataJobEvent dje) {
 		threadSafeDataJobInfo.timeSeriesJobResultsAction.setTimeSeriesJobResults(dje.getTimeSeriesJobResults());
 		new Thread(threadSafeDataJobInfo.timeSeriesJobResultsAction).start();
 	}
+	}}).start();
 }
 	
 
