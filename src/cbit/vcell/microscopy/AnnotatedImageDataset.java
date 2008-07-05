@@ -120,21 +120,37 @@ public abstract class AnnotatedImageDataset {
 	 * @param roi ROI
 	 * @return double
 	 */
-	public double getAverageUnderROI(int channelIndex, int timeIndex, ROI roi){
+	public double getAverageUnderROI(int channelIndex, int timeIndex, ROI roi,double[] normalizeFactorXYZ){
 		double averageROIIntensity = 0;
 		double intensityVal = 0.0;
 		long numPixelsInMask = 0;
+		int normalizeIndex = 0;
 		for (int z = 0; z < imageDataset.getSizeZ(); z++) {
 			short[] bleachedRegionPixels = roi.getRoiImages()[z].getPixels();
 			short[] imagePixels = getImageDataset().getImage(z, channelIndex, timeIndex).getPixels();
 			for (int i = 0; i < imagePixels.length; i++) {
 				int bleachedPixel = (bleachedRegionPixels[i])&0xffff;
 				int imagePixel = (imagePixels[i])&0xffff;
-				if (bleachedPixel > 0){
-					intensityVal += imagePixel;
+				if (bleachedPixel != 0){
+					if(normalizeFactorXYZ == null){
+						intensityVal += imagePixel;
+					}else{
+						intensityVal += ((double)imagePixel)/normalizeFactorXYZ[normalizeIndex];
+//						if(timeIndex == 12 && roi.getROIType().equals(RoiType.ROI_BLEACHED)){
+//							System.out.println(
+//							"ROI="+roi.getROIType()+
+//							"imagePixle="+imagePixel+
+//							" denom="+normalizeFactorXYZ[normalizeIndex] +
+//							" x="+(normalizeIndex%imageDataset.getISize().getX())+
+//							" y="+(normalizeIndex/imageDataset.getISize().getX())+
+//							" normval="+(((double)imagePixel)/normalizeFactorXYZ[normalizeIndex]));
+//						}
+					}
 					numPixelsInMask++;
 				}
+				normalizeIndex++;
 			}
+//			System.out.println("numpixels in mask="+numPixelsInMask);
 			if (numPixelsInMask==0){
 				averageROIIntensity = 0.0;
 			}else{

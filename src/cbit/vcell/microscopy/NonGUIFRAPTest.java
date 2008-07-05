@@ -20,6 +20,7 @@ import cbit.vcell.VirtualMicroscopy.ImageDatasetReader;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.server.PDEDataManager;
+import cbit.vcell.client.server.VCDataManager;
 import cbit.vcell.desktop.controls.DataManager;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.microscopy.ROI.RoiType;
@@ -381,6 +382,12 @@ public class NonGUIFRAPTest {
 		DataManager simulationDataManager =
 			new PDEDataManager(localWorkspace.getVCDataManager(),vcSimulationDataIdentifier);
 		double[] frapDataTimeStamps = frapData.getImageDataset().getImageTimeStamps();
+		//
+		VCDataManager testVCDataManager = localWorkspace.getVCDataManager();
+		double[] prebleachAverage = testVCDataManager.getSimDataBlock(
+				frapStudy.getRoiExternalDataInfo().getExternalDataIdentifier(), "prebleach_avg", 0).getData();
+		//
+
 		FRAPStudy.SpatialAnalysisResults spatialAnalysisResults =
 			FRAPStudy.spatialAnalysis(
 				simulationDataManager,
@@ -388,8 +395,15 @@ public class NonGUIFRAPTest {
 				frapDataTimeStamps[new Integer(frapModelParameters.startIndexForRecovery)],
 				bioModel.getSimulations()[0].getMathDescription().getSubDomain(FRAPStudy.CYTOSOL_NAME),
 				frapData,
+				prebleachAverage,
 				progressListener);
 		dumpSpatialResults(spatialAnalysisResults, frapDataTimeStamps, new File(workingDirectoryPath,"nonguiSpatialResults.txt"));
+		
+	}
+	public static void dumpSummaryReport(
+			FRAPStudy.SpatialAnalysisResults spatialAnalysisResults,
+			double[] frapDataTimeStamps,
+			File outputFile) throws Exception{
 		
 	}
 	public static void dumpSpatialResults(
