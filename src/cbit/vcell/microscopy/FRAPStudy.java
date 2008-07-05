@@ -309,6 +309,7 @@ public class FRAPStudy implements Matchable{
 		double startingIndexForRecoveryExperimentalTimePoint,
 		SubDomain subDomain,
 		FRAPData frapData,
+		double[] preBleachAverageXYZ,
 		DataSetControllerImpl.ProgressListener progressListener) throws Exception{
 		
 		//
@@ -357,27 +358,16 @@ public class FRAPStudy implements Matchable{
 			nonZeroIndicesForROI.add(roi_2D.getRoiImages()[0].getNonzeroIndices());
 		}
 		//
-		// collect data for experiment (over all ROIs)
+		// collect data for experiment (over all ROIs), normalize with pre-bleach average
 		//
 		for (int i = 0; i < SpatialAnalysisResults.ORDERED_ROITYPES.length; i++) {
-			double[] averageFluorAtEachTimeUnderROI = FRAPDataAnalysis.getAverageROIIntensity(frapData, SpatialAnalysisResults.ORDERED_ROITYPES[i]);
-			int normalizingTimePoint = -1;
-			for (int j = 0; j < averageFluorAtEachTimeUnderROI.length; j++) {
-				if(averageFluorAtEachTimeUnderROI[j] != 0){
-					normalizingTimePoint = j;
-					break;
-				}
+			double[] normalizedAverageFluorAtEachTimeUnderROI = new double[frapData.getImageDataset().getImageTimeStamps().length];
+			for (int j = 0; j < normalizedAverageFluorAtEachTimeUnderROI.length; j++) {
+				normalizedAverageFluorAtEachTimeUnderROI[j] =
+					frapData.getAverageUnderROI(0, j,
+						frapData.getRoi(SpatialAnalysisResults.ORDERED_ROITYPES[i]), preBleachAverageXYZ);				
 			}
-//			if(averageFluor[0] == 0)
-//			{
-//				throw new Exception("Error generating report: 0 average flourence intensity found at time 0");
-//			}
-			//If normalizingTimePoint  == -1 all the data are zero so we divide by 1
-			double weight = 1.0/(normalizingTimePoint == -1?1:averageFluorAtEachTimeUnderROI[normalizingTimePoint]);
-			for (int j = 0; j < averageFluorAtEachTimeUnderROI.length; j++) {
-				averageFluorAtEachTimeUnderROI[j] = averageFluorAtEachTimeUnderROI[j]*weight;
-			}
-			curveHash.put(new CurveInfo(null,SpatialAnalysisResults.ORDERED_ROITYPES[i]), averageFluorAtEachTimeUnderROI);
+			curveHash.put(new CurveInfo(null,SpatialAnalysisResults.ORDERED_ROITYPES[i]), normalizedAverageFluorAtEachTimeUnderROI);
 		}
 		
 		//

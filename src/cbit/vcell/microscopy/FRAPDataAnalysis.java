@@ -66,7 +66,7 @@ public class FRAPDataAnalysis {
 		
 		ROI bleachingROI = frapData.getRoi(roiType);
 		for (int tIndex = 0; tIndex < averageROIIntensity.length; tIndex++) {
-			averageROIIntensity[tIndex] = frapData.getAverageUnderROI(0, tIndex, bleachingROI);
+			averageROIIntensity[tIndex] = frapData.getAverageUnderROI(0, tIndex, bleachingROI,null);
 		}
 
 		return averageROIIntensity;

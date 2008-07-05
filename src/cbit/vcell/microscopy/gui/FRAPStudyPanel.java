@@ -1712,6 +1712,11 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							pp.setProgress(percentProgress);
 						}
 				};
+				//
+				VCDataManager testVCDataManager = getLocalWorkspace().getVCDataManager();
+				double[] prebleachAverage = testVCDataManager.getSimDataBlock(
+						getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(), "prebleach_avg", 0).getData();
+				//
 				Simulation frapSimulation = frapStudy.getBioModel().getSimulations()[0];
 				DataManager simulationDataManager = getDataManager(frapSimulation);
 				final int startIndexForRecovery = new Integer(getFrapStudy().getFrapModelParameters().startIndexForRecovery);
@@ -1723,6 +1728,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						frapDataTimeStamps[startIndexForRecovery],
 						frapSimulation.getMathDescription().getSubDomain(FRAPStudy.CYTOSOL_NAME),
 						getFrapStudy().getFrapData(),
+						prebleachAverage,
 						runspatialAnalysisProgressListener);
 				
 				getResultsSummaryPanel().setData(
