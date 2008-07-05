@@ -1,10 +1,13 @@
 package cbit.vcell.microscopy.gui;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
@@ -14,7 +17,9 @@ import java.util.Iterator;
 import java.util.Set;
 import javax.swing.JLabel;
 
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -25,6 +30,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 
 import cbit.gui.DialogUtils;
+import cbit.gui.SimpleTransferable;
 import cbit.util.NumberUtils;
 import cbit.util.Range;
 import cbit.vcell.microscopy.FRAPStudy;
@@ -43,6 +49,13 @@ public class ResultsSummaryPanel extends JPanel {
 	private Hashtable<Double, DataSource[]> allDataHash;
 	private Object[][] summaryData;
 	
+	private JPopupMenu jPopupMenu = new JPopupMenu();
+	private JMenuItem copyValueJMenuItem;
+	private JMenuItem copyTimeDataJMenuItem;
+	private static final String ENDOFLINE = "\r\n";
+	private static final String SEPCHAR = "\t";
+
+	
 	private static final int COLUMN_INDEX_DIFFUSION_RATE = 0;
 	private static final int COLUMN_INDEX_BLEACHROI = 1;
 	
@@ -52,6 +65,82 @@ public class ResultsSummaryPanel extends JPanel {
 	
 	public ResultsSummaryPanel() {
 		super();
+		JMenuItem copyReportJMenuItem = new JMenuItem("Copy Summary Report");
+		copyReportJMenuItem.addActionListener(
+			new ActionListener(){
+				public void actionPerformed(ActionEvent e) {
+					StringBuffer reportSB = new StringBuffer();
+					String[] columnNames = getColumnNames();
+					for (int i = 0; i < columnNames.length; i++) {
+						reportSB.append((i != 0?SEPCHAR:"")+columnNames[i]);
+					}
+					reportSB.append(ENDOFLINE);
+					for (int j = 0; j < summaryData.length; j++) {
+						for (int k = 0; k < columnNames.length; k++) {
+							reportSB.append((k != 0?SEPCHAR:"")+summaryData[j][k].toString());
+						}
+						reportSB.append(ENDOFLINE);
+					}
+					SimpleTransferable.sendToClipboard(reportSB.toString());
+				}
+			}
+		);
+		copyValueJMenuItem = new JMenuItem("Copy Value");
+		copyValueJMenuItem.addActionListener(
+			new ActionListener(){
+				public void actionPerformed(ActionEvent e) {
+					SimpleTransferable.sendToClipboard(""+table.getValueAt(table.getSelectedRow(), table.getSelectedColumn()));
+				}
+			}
+		);
+		
+		copyTimeDataJMenuItem = new JMenuItem("Copy Time Data");
+		copyTimeDataJMenuItem.addActionListener(
+			new ActionListener(){
+				public void actionPerformed(ActionEvent e) {
+					try{
+						Double selectedDiffusionRate = (Double)table.getValueAt(table.getSelectedRow(), COLUMN_INDEX_DIFFUSION_RATE);
+						DataSource[] selectedRowDataSourceArr = allDataHash.get(selectedDiffusionRate);
+						ReferenceData expDataSource = (ReferenceData)selectedRowDataSourceArr[ARRAY_INDEX_EXPDATASOURCE].getSource();
+						ODESolverResultSet simDataSource = (ODESolverResultSet)selectedRowDataSourceArr[ARRAY_INDEX_SIMDATASOURCE].getSource();
+						double[] expTimes = expDataSource.getColumnData(0);
+						double[] expColumnData = expDataSource.getColumnData(table.getSelectedColumn());
+						double[] simTimes = simDataSource.extractColumn(0);
+						double[] simColumnData = simDataSource.extractColumn(table.getSelectedColumn());
+						
+						String[] columnNames = getColumnNames();
+						StringBuffer dataSB = new StringBuffer();
+						dataSB.append("Exp Time"+SEPCHAR+" Exp Data (norm):"+columnNames[table.getSelectedColumn()]+SEPCHAR+
+								"Sim Time"+SEPCHAR+" Sim Data (norm):"+columnNames[table.getSelectedColumn()]);
+						dataSB.append(ENDOFLINE);
+						for (int j = 0; j < Math.max(expTimes.length, simTimes.length); j++) {
+							if(j <expTimes.length){
+								dataSB.append(expTimes[j]+SEPCHAR+expColumnData[j]);
+							}else{
+								dataSB.append("NULL"+SEPCHAR+"NULL");
+							}
+							dataSB.append(SEPCHAR);
+							if(j <simTimes.length){
+								dataSB.append(simTimes[j]+SEPCHAR+simColumnData[j]);
+							}else{
+								dataSB.append("NULL"+SEPCHAR+"NULL");
+							}
+							dataSB.append(ENDOFLINE);
+						}
+						SimpleTransferable.sendToClipboard(dataSB.toString());
+					}catch(Exception e2){
+						e2.printStackTrace();
+						DialogUtils.showErrorDialog(
+							"Erro copying Time Data for row="+table.getSelectedRow()+", col="+table.getSelectedColumn()+".  "+e2.getMessage());
+					}
+				}
+			}
+		);
+
+		jPopupMenu.add(copyValueJMenuItem);
+		jPopupMenu.add(copyReportJMenuItem);
+		jPopupMenu.add(copyTimeDataJMenuItem);
+		
 		final GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.rowHeights = new int[] {0,7};
 		gridBagLayout.columnWidths = new int[] {0,7};
@@ -78,11 +167,38 @@ public class ResultsSummaryPanel extends JPanel {
 		add(scrollPane, gridBagConstraints);
 
 		table = new JTable();
+		table.addMouseListener(
+				new MouseAdapter(){
+					@Override
+					public void mousePressed(MouseEvent e) {
+						super.mousePressed(e);
+						showPopupMenu(e);
+					}
+					@Override
+					public void mouseReleased(MouseEvent e) {
+						super.mouseReleased(e);
+						showPopupMenu(e);
+					}
+				}
+		);
 		table.setCellSelectionEnabled(true);
 		table.getTableHeader().addMouseListener(
 				new MouseAdapter(){
+					@Override
+					public void mousePressed(MouseEvent e) {
+						super.mousePressed(e);
+						showPopupMenu(e);
+					}
+
+					@Override
+					public void mouseReleased(MouseEvent e) {
+						super.mouseReleased(e);
+						showPopupMenu(e);
+					}
+					@Override
 					public void mouseClicked(MouseEvent e) {
-						System.out.println(e);
+						super.mouseClicked(e);
+//						System.out.println(e);
 						final int columnIndex = table.getTableHeader().columnAtPoint(e.getPoint());
 						sortColumn(columnIndex,true);
 					}
@@ -112,7 +228,7 @@ public class ResultsSummaryPanel extends JPanel {
 
 		final JLabel standardErrorRoiLabel = new JLabel();
 		standardErrorRoiLabel.setFont(new Font("", Font.BOLD, 14));
-		standardErrorRoiLabel.setText("Plot -  ROI Average Normalized (by first non-zero ROI Avg. in time)  vs. Time");
+		standardErrorRoiLabel.setText("Plot -  ROI Average Normalized (using Pre-Bleach Average) vs. Time");
 		final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
 		gridBagConstraints_4.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_4.gridy = 2;
@@ -143,6 +259,23 @@ public class ResultsSummaryPanel extends JPanel {
 		panel.add(multisourcePlotPane, gridBagConstraints_2);
 	}
 
+	private void showPopupMenu(MouseEvent e){
+		if(e.isPopupTrigger()){
+			if(table.getSelectedRow() < 0 || table.getSelectedRow() >= getColumnNames().length||
+				table.getSelectedColumn() < 0 || table.getSelectedColumn() >= getColumnNames().length){
+				copyValueJMenuItem.setEnabled(false);
+				copyTimeDataJMenuItem.setEnabled(false);
+			}else{
+				copyValueJMenuItem.setEnabled(true);
+				copyTimeDataJMenuItem.setEnabled(true);				
+			}
+			if(copyTimeDataJMenuItem.isEnabled() && table.getSelectedColumn() == 0){
+				copyTimeDataJMenuItem.setEnabled(false);
+			}
+			jPopupMenu.show((Component)e.getSource(), e.getX(), e.getY());
+		}
+
+	}
 	private void sortColumn(final int columnIndex,boolean bAutoReverse){
 		if(summaryData != null){
 			int selectedRow = table.getSelectedRow();
