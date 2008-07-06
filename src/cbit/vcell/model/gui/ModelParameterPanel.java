@@ -2,12 +2,15 @@ package cbit.vcell.model.gui;
 
 import java.awt.Container;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 import javax.swing.JDesktopPane;
 
 import cbit.gui.DialogUtils;
 import cbit.util.BeanUtils;
 import cbit.vcell.client.PopupGenerator;
+import cbit.vcell.model.Model;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.Model.ModelParameter;
@@ -71,6 +74,20 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.M
 				connPtoP3SetTarget();
 		};
 	};
+	
+	PropertyChangeListener ModelParametersPropertyChangeListener =
+		new PropertyChangeListener(){
+			public void propertyChange(PropertyChangeEvent evt) {
+				if (evt.getSource() instanceof Model && evt.getPropertyName().equals(Model.MODEL_PARAMETERS_PROPERTY_NAME)) {
+					ModelParameterTableModel modelparamTableModel = (ModelParameterTableModel)getScrollPaneTable().getModel();
+					modelparamTableModel.setData(modelparamTableModel.getUnsortedParameters());
+					ScopedExpressionTableCellRenderer.formatTableCellSizes(getScrollPaneTable(), null, null);
+					getScrollPaneTable().invalidate();
+					getJScrollPane1().repaint();
+				}
+			}
+		};
+
 
 /**
  * ModelParameterPanel constructor comment.
@@ -707,6 +724,9 @@ private void popupCopyPaste(java.awt.event.MouseEvent mouseEvent) {
  */
 public void setModel(cbit.vcell.model.Model model) {
 	cbit.vcell.model.Model oldValue = fieldModel;
+	if(oldValue != null){
+		oldValue.removePropertyChangeListener(ModelParametersPropertyChangeListener);
+	}
 	fieldModel = model;
 	firePropertyChange("model", oldValue, model);
 }
@@ -723,6 +743,7 @@ private void setmodel1(cbit.vcell.model.Model newValue) {
 			ivjmodel1 = newValue;
 			connPtoP3SetSource();
 			getmodelParameterTableModel().setModel(getmodel1());
+			getmodel1().addPropertyChangeListener(ModelParametersPropertyChangeListener);
 			firePropertyChange("model", oldValue, newValue);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -779,11 +800,11 @@ private void showAnnotationDialog(java.awt.event.MouseEvent me){
 		Parameter param = (Parameter)getmodelParameterTableModel().getData().get(getScrollPaneTable().getSelectedRow());
 		if (param != null && param instanceof ModelParameter) {
 			ModelParameter modelParameter = (ModelParameter)param;
-			String newAnnotation = DialogUtils.showAnnotationDialog(this, modelParameter.getDescription());
+			String newAnnotation = DialogUtils.showAnnotationDialog(this, modelParameter.getModelParameterAnnotation());
 			if(newAnnotation != null && newAnnotation.length() == 0){
 				newAnnotation = null;
 			}
-			modelParameter.setDescription(newAnnotation);
+			modelParameter.setModelParameterAnnotation(newAnnotation);
 			getmodelParameterTableModel().fireTableRowsUpdated(getScrollPaneTable().getSelectedRow(), getScrollPaneTable().getSelectedRow());
 		}
 	}catch(cbit.gui.UtilCancelException e){

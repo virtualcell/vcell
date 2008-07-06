@@ -1,5 +1,5 @@
 package cbit.vcell.model.gui;
-import java.beans.PropertyVetoException;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -99,7 +99,6 @@ public class ModelParameterTableModel extends cbit.vcell.messaging.admin.ManageT
 	public static final int COLUMN_ANNOTATION = 5;
 	private String LABELS[] = { "Context", "Description", "Name", "Expression", "Units" , "Annotation" };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
-	private final int indexes[] = new int[0];
 	private cbit.vcell.model.Model fieldModel = null;
 
 /**
@@ -288,7 +287,7 @@ public int getRowCount() {
  * @return cbit.vcell.model.Parameter
  * @param row int
  */
-private List<Parameter> getUnsortedParameters() {
+public List<Parameter> getUnsortedParameters() {
 
 	if (getModel()==null){
 		return null;
@@ -348,11 +347,7 @@ public Object getValueAt(int row, int col) {
 			}
 		}
 		case COLUMN_DESCRIPTION:{
-			if (parameter instanceof ModelParameter) {
-				return "Global Parameter";
-			} else {
-				return parameter.getDescription();
-			}
+			return parameter.getDescription();
 		}
 		case COLUMN_VALUE:{
 			//return new cbit.vcell.parser.ScopedExpression(parameter.getExpression(),getBioModel().getModel().getNameScope());
@@ -360,7 +355,10 @@ public Object getValueAt(int row, int col) {
 		}
 		case COLUMN_ANNOTATION:{
 			if (parameter instanceof ModelParameter) {
-				return ((parameter.getDescription() != null) ? parameter.getDescription() : "");
+				return
+				(((ModelParameter)parameter).getModelParameterAnnotation() != null
+					? ((ModelParameter)parameter).getModelParameterAnnotation()
+					: "");
 			} else {
 				ReactionStep rxStep = getEditableAnnotationReactionStep(row);
 				if(rxStep != null && parameter instanceof Kinetics.KineticsParameter){
@@ -463,10 +461,6 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 		setData(getUnsortedParameters());
 		fireTableDataChanged();
 	}
-	if (evt.getSource() instanceof Model && evt.getPropertyName().equals("modelParameters")) {
-		setData(getUnsortedParameters());
-		fireTableDataChanged();
-	}
 	if (evt.getSource() instanceof Model && evt.getPropertyName().equals("reactionSteps")) {
 		ReactionStep[] oldRS = (ReactionStep[])evt.getOldValue();
 		for (int i = 0; oldRS!=null && i < oldRS.length; i++){
@@ -495,11 +489,13 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	}
 	if (evt.getSource() instanceof cbit.vcell.model.Kinetics && evt.getPropertyName().equals("kineticsParameters")) {
 		setData(getUnsortedParameters());
-		fireTableDataChanged();
+		fireTableRowsUpdated(0, getRowCount()-1);
+//		fireTableDataChanged();
 	}
 	if (evt.getSource() instanceof cbit.vcell.model.Kinetics && evt.getPropertyName().equals("unresolvedParameters")) {
 		setData(getUnsortedParameters());
-		fireTableDataChanged();
+		fireTableRowsUpdated(0, getRowCount()-1);
+//		fireTableDataChanged();
 	}
 }
 
@@ -632,7 +628,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 							fireTableRowsUpdated(rowIndex,rowIndex);
 						}
 					} else if (parameter instanceof ModelParameter){
-						parameter.setDescription(annotation);
+						((ModelParameter)parameter).setModelParameterAnnotation(annotation);
 						fireTableRowsUpdated(rowIndex,rowIndex);
 					}
 

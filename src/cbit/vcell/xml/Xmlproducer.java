@@ -2382,9 +2382,10 @@ public org.jdom.Element getXML(ModelParameter[] modelParams) {
 		// add expression as content
 		glParamElement.addContent( this.mangleExpression(modelParams[i].getExpression()) );
 		//add annotation (if there is any)
-		if (modelParams[i].getDescription() != null && modelParams[i].getDescription().length() > 0) {
+		if (modelParams[i].getModelParameterAnnotation() != null &&
+				modelParams[i].getModelParameterAnnotation().length() > 0) {
 			Element annotationElement = new Element(XMLTags.AnnotationTag);
-			annotationElement.setText(this.mangle(modelParams[i].getDescription()));
+			annotationElement.setText(this.mangle(modelParams[i].getModelParameterAnnotation()));
 			glParamElement.addContent(annotationElement);
 		}
 		globalsElement.addContent(glParamElement);

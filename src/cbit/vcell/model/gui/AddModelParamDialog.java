@@ -694,7 +694,7 @@ private void oK(java.awt.event.ActionEvent actionEvent) {
 		}
 		getModelParameter().setExpression(new Expression(getExpressionValueTextField().getText()));
 		getModelParameter().setUnitDefinition(VCUnitDefinition.getInstance((String)getUnitsJComboBox().getSelectedItem()));
-		getModelParameter().setDescription(getAnnotationString());
+		getModelParameter().setModelParameterAnnotation(getAnnotationString());
 
 		getModel().addModelParameter(getModelParameter());
 		dispose();
