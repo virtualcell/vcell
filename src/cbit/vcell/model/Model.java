@@ -70,12 +70,17 @@ public class Model implements cbit.sql.Versionable, Matchable, PropertyChangeLis
 	public static final int NUM_ROLES		= 1;
 	public static final String RoleDesc = "user defined";
 	
+	public static final String MODEL_PARAMETERS_PROPERTY_NAME = "modelParameters";
+	
 	public class ModelParameter extends Parameter implements ExpressionContainer {
 		
 		private String fieldParameterName = null;
 		private cbit.vcell.parser.Expression fieldParameterExpression = null;
 		private int fieldParameterRole = -1;
 		private cbit.vcell.units.VCUnitDefinition fieldUnitDefinition = null;
+		private String modelParameterAnnotation;
+		
+		private static final String MODEL_PARAMETER_DESCRIPTION = "Model Parameter";
 		
 		public ModelParameter(String argName, cbit.vcell.parser.Expression expression, int argRole, VCUnitDefinition argUnitDefinition) {
 			if (argName == null){
@@ -92,6 +97,15 @@ public class Model implements cbit.sql.Versionable, Matchable, PropertyChangeLis
 			}else{
 				throw new IllegalArgumentException("parameter 'role' = "+argRole+" is out of range");
 			}
+			super.setDescription(MODEL_PARAMETER_DESCRIPTION);
+		}
+
+
+		public String getModelParameterAnnotation() {
+			return modelParameterAnnotation;
+		}
+		public void setModelParameterAnnotation(String modelParameterAnnotation) {
+			this.modelParameterAnnotation = modelParameterAnnotation;
 		}
 
 
@@ -1835,9 +1849,9 @@ public void setDiagrams(int index, Diagram diagrams) {
  */
 public void setModelParameters(Model.ModelParameter[] modelParameters) throws java.beans.PropertyVetoException {
 	Model.ModelParameter[] oldValue = fieldModelParameters;
-	fireVetoableChange("modelParameters", oldValue, modelParameters);
+	fireVetoableChange(Model.MODEL_PARAMETERS_PROPERTY_NAME, oldValue, modelParameters);
 	fieldModelParameters = modelParameters;
-	firePropertyChange("modelParameters", oldValue, modelParameters);
+	firePropertyChange(Model.MODEL_PARAMETERS_PROPERTY_NAME, oldValue, modelParameters);
 	
 	//ModelParameter newValue[] = modelParameters;
 	//for (int i=0;i<oldValue.length;i++){	
@@ -1861,7 +1875,7 @@ public void setModelParameters(int index, ModelParameter modelParameters) {
 	ModelParameter oldValue = fieldModelParameters[index];
 	fieldModelParameters[index] = modelParameters;
 	if (oldValue != null && !oldValue.equals(modelParameters)) {
-		firePropertyChange("modelParameters", null, fieldModelParameters);
+		firePropertyChange(Model.MODEL_PARAMETERS_PROPERTY_NAME, null, fieldModelParameters);
 	};
 }
 
@@ -2334,7 +2348,7 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 		}
 	}
 
-	if (e.getSource() == this && e.getPropertyName().equals("modelParameters")){
+	if (e.getSource() == this && e.getPropertyName().equals(Model.MODEL_PARAMETERS_PROPERTY_NAME)){
 		ModelParameter[] newModelParams = (ModelParameter[])e.getNewValue();
 		//
 		// check that names are not duplicated and that no common names are ReservedSymbols

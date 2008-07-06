@@ -3927,7 +3927,7 @@ public ModelParameter[] getModelParams(Element globalParams, Model model) throws
 		
 		//create new global parameter
 		ModelParameter newGlParam = model.new ModelParameter(glParamName, glParamExp, glParamRole, glParamUnit);
-		newGlParam.setDescription(glParamAnnotation);
+		newGlParam.setModelParameterAnnotation(glParamAnnotation);
 		modelParamsVector.add(newGlParam);
 
 //		//***Add the global parameter to the dictionnary ****
