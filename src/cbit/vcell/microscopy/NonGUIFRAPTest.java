@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.StringTokenizer;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -397,13 +399,39 @@ public class NonGUIFRAPTest {
 				frapData,
 				prebleachAverage,
 				progressListener);
-		dumpSpatialResults(spatialAnalysisResults, frapDataTimeStamps, new File(workingDirectoryPath,"nonguiSpatialResults.txt"));
+		dumpSummaryReport(spatialAnalysisResults, frapDataTimeStamps,
+				new Integer(startingIndexForRecovery).intValue(),
+				new File(workingDirectoryPath,"nonguiSpatialResults.txt"));
+//		dumpSpatialResults(spatialAnalysisResults, frapDataTimeStamps, new File(workingDirectoryPath,"nonguiSpatialResults.txt"));
 		
 	}
 	public static void dumpSummaryReport(
 			FRAPStudy.SpatialAnalysisResults spatialAnalysisResults,
 			double[] frapDataTimeStamps,
+			int startingIndexForRecovery,
 			File outputFile) throws Exception{
+		
+		Object[][] summaryData =
+			spatialAnalysisResults.createSummaryReportTableData(frapDataTimeStamps,startingIndexForRecovery);
+
+		//Sort by diffusion
+		Arrays.sort(summaryData,
+				new Comparator<Object[]>(){
+					public int compare(Object[] o1, Object[] o2) {
+						return (int)Math.signum((Double)o1[0]-(Double)o2[0]);
+					}
+				}
+		);
+		String summaryReportS =
+			FRAPStudy.SpatialAnalysisResults.createCSVSummaryReport(
+					FRAPStudy.SpatialAnalysisResults.getSummaryReportColumnNames(), summaryData);
+		FileWriter fw = null;
+		try{
+			fw = new FileWriter(outputFile);
+			fw.write(summaryReportS);
+		}finally{
+			try{if(fw !=null){fw.close();}}catch(Exception e){e.printStackTrace();}
+		}
 		
 	}
 	public static void dumpSpatialResults(
