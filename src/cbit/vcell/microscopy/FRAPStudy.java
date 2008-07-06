@@ -11,6 +11,8 @@ import java.util.BitSet;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.Vector;
 
 import javax.media.jai.BorderExtender;
@@ -68,6 +70,7 @@ import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.parser.DivideByZeroException;
@@ -90,6 +93,7 @@ import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.TimeStep;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
+import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.FVSolverStandalone;
 
@@ -190,6 +194,17 @@ public class FRAPStudy implements Matchable{
 				RoiType.ROI_BLEACHED_RING7,
 				RoiType.ROI_BLEACHED_RING8
 			};
+		
+		public static final int COLUMN_INDEX_DIFFUSION_RATE = 0;
+		public static final int COLUMN_INDEX_BLEACHROI = 1;
+		
+		public static final int ARRAY_INDEX_EXPDATASOURCE = 0;
+		public static final int ARRAY_INDEX_SIMDATASOURCE = 1;
+		
+		private static final String ENDOFLINE = "\r\n";
+		private static final String SEPCHAR = "\t";
+
+
 		public SpatialAnalysisResults(
 				Double[] diffusionRates,/*String[] varNames,*/double[] shiftedSimTimes,
 				Hashtable<CurveInfo, double[]> curveHash){
@@ -198,6 +213,127 @@ public class FRAPStudy implements Matchable{
 			this.curveHash = curveHash;
 		}
 	
+		public Hashtable<Double, DataSource[]> createSummaryReportSourceData(
+				final double[] frapDataTimeStamps,int startIndexForRecovery,final Double modelDiffusionRate) throws Exception{
+			
+			Hashtable<Double, DataSource[]> allDataHash = new Hashtable<Double, DataSource[]>();
+			
+			Hashtable<CurveInfo, double[]> ROIInfoHash = curveHash;
+			Set<CurveInfo> roiInfoSet = ROIInfoHash.keySet();
+			Iterator<CurveInfo> roiInfoIter = roiInfoSet.iterator();
+			Hashtable<RoiType, double[]> expROIData = new Hashtable<RoiType, double[]>();
+			Hashtable<Double, Hashtable<RoiType, double[]>> simROIData = new Hashtable<Double, Hashtable<RoiType,double[]>>();
+			int roiCount = 0;
+			int diffusionRateCount = 0;
+			while(roiInfoIter.hasNext()){
+				CurveInfo roiCurveInfo = roiInfoIter.next();
+				if(roiCurveInfo.isExperimentInfo()){
+					expROIData.put(roiCurveInfo.getROIType(), ROIInfoHash.get(roiCurveInfo));
+					roiCount++;
+				}else{
+					Hashtable<RoiType,double[]> simROIDataHash = simROIData.get(roiCurveInfo.getDiffusionRate());
+					if(simROIDataHash == null){
+						simROIDataHash  = new Hashtable<RoiType, double[]>();
+						simROIData.put(roiCurveInfo.getDiffusionRate(), simROIDataHash);
+						diffusionRateCount++;
+					}
+					simROIDataHash.put(roiCurveInfo.getROIType(), ROIInfoHash.get(roiCurveInfo));
+				}
+			}
+
+			ReferenceData referenceData = 
+				createReferenceData(frapDataTimeStamps,null,startIndexForRecovery,"");
+			
+			for (int diffusionRow = 0; diffusionRow < diffusionRateCount; diffusionRow++) {
+				Double currentDiffusionRate = diffusionRates[diffusionRow];
+				
+				ODESolverResultSet odeSolverResultSet =
+					createODESolverResultSet(currentDiffusionRate,null,"D="+NumberUtils.formatNumber(currentDiffusionRate, 3)+"_");
+				final DataSource expDataSource = new DataSource(referenceData,"exp");
+				final DataSource simDataSource = new DataSource(odeSolverResultSet, "sim");
+				DataSource[] newDataSourceArr = new DataSource[2];
+				newDataSourceArr[ARRAY_INDEX_EXPDATASOURCE] = expDataSource;
+				newDataSourceArr[ARRAY_INDEX_SIMDATASOURCE] = simDataSource;
+				allDataHash.put(currentDiffusionRate,newDataSourceArr);
+			}
+			return allDataHash;
+		}
+
+		public Object[][] createSummaryReportTableData(double[] frapDataTimeStamps,int startTimeIndex){
+			final int DIFFUSION_COLUMN_COMPENSATE = 1;
+			String[] summaryReportColumnNames = SpatialAnalysisResults.getSummaryReportColumnNames();
+			final Object[][] tableData = new Object[diffusionRates.length][summaryReportColumnNames.length];
+			for (int diffusionRow = 0; diffusionRow < diffusionRates.length; diffusionRow++) {
+				Double currentDiffusionRate = diffusionRates[diffusionRow];
+				tableData[diffusionRow][COLUMN_INDEX_DIFFUSION_RATE] = currentDiffusionRate;
+				
+				for (int roiColumn = 0; roiColumn < SpatialAnalysisResults.ORDERED_ROITYPES.length; roiColumn++) {
+					ODESolverResultSet simDataSource =
+						createODESolverResultSet(currentDiffusionRate,SpatialAnalysisResults.ORDERED_ROITYPES[roiColumn],"");
+					ReferenceData expDataSource =
+						createReferenceData(frapDataTimeStamps,SpatialAnalysisResults.ORDERED_ROITYPES[roiColumn],startTimeIndex,"");
+
+					int numSamples = expDataSource.getNumRows();
+					double sumSquaredError = MathTestingUtilities.calcWeightedSquaredError(simDataSource, expDataSource);
+					tableData[diffusionRow][roiColumn+DIFFUSION_COLUMN_COMPENSATE] =
+						Math.sqrt(sumSquaredError)/(numSamples-1);//unbiased estimator is numsamples-1
+				}
+			}
+			return tableData;
+		}
+		
+		public static String createCSVSummaryReport(String[] summaryReportColumnNames,Object[][] summaryData){
+			StringBuffer reportSB = new StringBuffer();
+			for (int i = 0; i < summaryReportColumnNames.length; i++) {
+				reportSB.append((i != 0?SEPCHAR:"")+summaryReportColumnNames[i]);
+			}
+			reportSB.append(ENDOFLINE);
+			for (int j = 0; j < summaryData.length; j++) {
+				for (int k = 0; k < summaryReportColumnNames.length; k++) {
+					reportSB.append((k != 0?SEPCHAR:"")+summaryData[j][k].toString());
+				}
+				reportSB.append(ENDOFLINE);
+			}
+			return reportSB.toString();
+		}
+
+		public static String createCSVTimeData(
+				String[] summaryReportColumnNames,int selectedColumn,
+				double[] expTimes,double[] expColumnData,
+				double[] simTimes,double[] simColumnData){
+			StringBuffer dataSB = new StringBuffer();
+			dataSB.append("Exp Time"+SEPCHAR+" Exp Data (norm):"+summaryReportColumnNames[selectedColumn]+SEPCHAR+
+					"Sim Time"+SEPCHAR+" Sim Data (norm):"+summaryReportColumnNames[selectedColumn]);
+			dataSB.append(ENDOFLINE);
+			for (int j = 0; j < Math.max(expTimes.length, simTimes.length); j++) {
+				if(j <expTimes.length){
+					dataSB.append(expTimes[j]+SEPCHAR+expColumnData[j]);
+				}else{
+					dataSB.append("NULL"+SEPCHAR+"NULL");
+				}
+				dataSB.append(SEPCHAR);
+				if(j <simTimes.length){
+					dataSB.append(simTimes[j]+SEPCHAR+simColumnData[j]);
+				}else{
+					dataSB.append("NULL"+SEPCHAR+"NULL");
+				}
+				dataSB.append(ENDOFLINE);
+			}
+			return dataSB.toString();
+		}
+		public static String[] getSummaryReportColumnNames(){
+			String[] columnNames = new String[SpatialAnalysisResults.ORDERED_ROITYPES.length+1];
+			for (int i = 0; i < columnNames.length; i++) {
+				if(i==0){
+					columnNames[i] = "Sim diffusion Rate";
+				}else{
+					columnNames[i] = "SE "+SpatialAnalysisResults.ORDERED_ROITYPES[i-1].name();
+				}
+			}
+			return columnNames;
+		}
+
+
 		public ReferenceData[] createReferenceDataForAllDiffusionRates(double[] frapDataTimeStamps){
 			ReferenceData[] referenceDataArr = new ReferenceData[diffusionRates.length];
 			for (int i = 0; i < diffusionRates.length; i++) {

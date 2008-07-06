@@ -13,8 +13,8 @@ import java.awt.event.MouseEvent;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.Vector;
+
 import javax.swing.JLabel;
 
 import javax.swing.JMenuItem;
@@ -31,15 +31,10 @@ import javax.swing.table.TableModel;
 
 import cbit.gui.DialogUtils;
 import cbit.gui.SimpleTransferable;
-import cbit.util.NumberUtils;
 import cbit.util.Range;
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPStudy.CurveInfo;
-import cbit.vcell.microscopy.FRAPStudy.SpatialAnalysisResults;
-import cbit.vcell.microscopy.ROI.RoiType;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.solver.ode.ODESolverResultSet;
-import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.modelopt.gui.DataSource;
 import cbit.vcell.modelopt.gui.MultisourcePlotPane;
 
@@ -52,16 +47,9 @@ public class ResultsSummaryPanel extends JPanel {
 	private JPopupMenu jPopupMenu = new JPopupMenu();
 	private JMenuItem copyValueJMenuItem;
 	private JMenuItem copyTimeDataJMenuItem;
-	private static final String ENDOFLINE = "\r\n";
-	private static final String SEPCHAR = "\t";
-
 	
-	private static final int COLUMN_INDEX_DIFFUSION_RATE = 0;
-	private static final int COLUMN_INDEX_BLEACHROI = 1;
-	
-	private static final int ARRAY_INDEX_EXPDATASOURCE = 0;
-	private static final int ARRAY_INDEX_SIMDATASOURCE = 1;
-
+	private static String[] summaryReportColumnNames =
+		FRAPStudy.SpatialAnalysisResults.getSummaryReportColumnNames();
 	
 	public ResultsSummaryPanel() {
 		super();
@@ -69,19 +57,9 @@ public class ResultsSummaryPanel extends JPanel {
 		copyReportJMenuItem.addActionListener(
 			new ActionListener(){
 				public void actionPerformed(ActionEvent e) {
-					StringBuffer reportSB = new StringBuffer();
-					String[] columnNames = getColumnNames();
-					for (int i = 0; i < columnNames.length; i++) {
-						reportSB.append((i != 0?SEPCHAR:"")+columnNames[i]);
-					}
-					reportSB.append(ENDOFLINE);
-					for (int j = 0; j < summaryData.length; j++) {
-						for (int k = 0; k < columnNames.length; k++) {
-							reportSB.append((k != 0?SEPCHAR:"")+summaryData[j][k].toString());
-						}
-						reportSB.append(ENDOFLINE);
-					}
-					SimpleTransferable.sendToClipboard(reportSB.toString());
+					SimpleTransferable.sendToClipboard(
+						FRAPStudy.SpatialAnalysisResults.createCSVSummaryReport(
+							summaryReportColumnNames, summaryData));
 				}
 			}
 		);
@@ -99,35 +77,24 @@ public class ResultsSummaryPanel extends JPanel {
 			new ActionListener(){
 				public void actionPerformed(ActionEvent e) {
 					try{
-						Double selectedDiffusionRate = (Double)table.getValueAt(table.getSelectedRow(), COLUMN_INDEX_DIFFUSION_RATE);
+						Double selectedDiffusionRate =
+							(Double)table.getValueAt(table.getSelectedRow(),
+							FRAPStudy.SpatialAnalysisResults.COLUMN_INDEX_DIFFUSION_RATE);
 						DataSource[] selectedRowDataSourceArr = allDataHash.get(selectedDiffusionRate);
-						ReferenceData expDataSource = (ReferenceData)selectedRowDataSourceArr[ARRAY_INDEX_EXPDATASOURCE].getSource();
-						ODESolverResultSet simDataSource = (ODESolverResultSet)selectedRowDataSourceArr[ARRAY_INDEX_SIMDATASOURCE].getSource();
+						ReferenceData expDataSource =
+							(ReferenceData)selectedRowDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_EXPDATASOURCE].getSource();
+						ODESolverResultSet simDataSource =
+							(ODESolverResultSet)selectedRowDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_SIMDATASOURCE].getSource();
 						double[] expTimes = expDataSource.getColumnData(0);
 						double[] expColumnData = expDataSource.getColumnData(table.getSelectedColumn());
 						double[] simTimes = simDataSource.extractColumn(0);
 						double[] simColumnData = simDataSource.extractColumn(table.getSelectedColumn());
 						
-						String[] columnNames = getColumnNames();
-						StringBuffer dataSB = new StringBuffer();
-						dataSB.append("Exp Time"+SEPCHAR+" Exp Data (norm):"+columnNames[table.getSelectedColumn()]+SEPCHAR+
-								"Sim Time"+SEPCHAR+" Sim Data (norm):"+columnNames[table.getSelectedColumn()]);
-						dataSB.append(ENDOFLINE);
-						for (int j = 0; j < Math.max(expTimes.length, simTimes.length); j++) {
-							if(j <expTimes.length){
-								dataSB.append(expTimes[j]+SEPCHAR+expColumnData[j]);
-							}else{
-								dataSB.append("NULL"+SEPCHAR+"NULL");
-							}
-							dataSB.append(SEPCHAR);
-							if(j <simTimes.length){
-								dataSB.append(simTimes[j]+SEPCHAR+simColumnData[j]);
-							}else{
-								dataSB.append("NULL"+SEPCHAR+"NULL");
-							}
-							dataSB.append(ENDOFLINE);
-						}
-						SimpleTransferable.sendToClipboard(dataSB.toString());
+						SimpleTransferable.sendToClipboard(
+								FRAPStudy.SpatialAnalysisResults.createCSVTimeData(
+									summaryReportColumnNames,table.getSelectedColumn(),
+									expTimes,expColumnData,simTimes,simColumnData
+						));
 					}catch(Exception e2){
 						e2.printStackTrace();
 						DialogUtils.showErrorDialog(
@@ -213,6 +180,7 @@ public class ResultsSummaryPanel extends JPanel {
 				}
 		);
 		table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+//		table.getColumnModel().getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		table.getSelectionModel().addListSelectionListener(
 				new ListSelectionListener(){
 					public void valueChanged(ListSelectionEvent e) {
@@ -224,7 +192,7 @@ public class ResultsSummaryPanel extends JPanel {
 		);
 		scrollPane.setViewportView(table);
 		
-		table.setModel(getTableModel(getColumnNames(),new Object[][] {{"diffTest","summaryTest"}}));
+		table.setModel(getTableModel(summaryReportColumnNames,new Object[][] {{"diffTest","summaryTest"}}));
 
 		final JLabel standardErrorRoiLabel = new JLabel();
 		standardErrorRoiLabel.setFont(new Font("", Font.BOLD, 14));
@@ -261,8 +229,8 @@ public class ResultsSummaryPanel extends JPanel {
 
 	private void showPopupMenu(MouseEvent e){
 		if(e.isPopupTrigger()){
-			if(table.getSelectedRow() < 0 || table.getSelectedRow() >= getColumnNames().length||
-				table.getSelectedColumn() < 0 || table.getSelectedColumn() >= getColumnNames().length){
+			if(table.getSelectedRow() < 0 || table.getSelectedRow() >= summaryData.length||
+				table.getSelectedColumn() < 0 || table.getSelectedColumn() >= summaryReportColumnNames.length){
 				copyValueJMenuItem.setEnabled(false);
 				copyTimeDataJMenuItem.setEnabled(false);
 			}else{
@@ -279,7 +247,7 @@ public class ResultsSummaryPanel extends JPanel {
 	private void sortColumn(final int columnIndex,boolean bAutoReverse){
 		if(summaryData != null){
 			int selectedRow = table.getSelectedRow();
-			int selectedColumn = table.getSelectedColumn();
+			int[] selectedColumns = table.getSelectedColumns();
 			Object[][] sortedObjects = new Object[summaryData.length][];
 			for (int i = 0; i < sortedObjects.length; i++) {
 				sortedObjects[i] = new Object[] {new Integer(i),(Double)summaryData[i][columnIndex]};
@@ -311,7 +279,7 @@ public class ResultsSummaryPanel extends JPanel {
 			for (int i = 0; i < sortedObjects.length; i++) {
 				summaryCopy[i] = summaryData[(Integer)(((Object[])sortedObjects[i])[0])];
 			}
-			table.setModel(getTableModel(getColumnNames(),summaryCopy));
+			table.setModel(getTableModel(summaryReportColumnNames,summaryCopy));
 			if(selectedRow != -1){
 				for (int i = 0; i < sortedObjects.length; i++) {
 					if((Integer)(((Object[])sortedObjects[i])[0]) == selectedRow){
@@ -321,7 +289,9 @@ public class ResultsSummaryPanel extends JPanel {
 				}
 
 			}
-			setTableCellSelection(selectedRow, selectedColumn);
+			if(selectedColumns != null && selectedColumns.length > 0){
+				setTableCellSelection(selectedRow, selectedColumns);
+			}
 		}
 	}
 	private void processTableSelection(){
@@ -329,20 +299,33 @@ public class ResultsSummaryPanel extends JPanel {
 			return;
 		}
 		int selectedRow = table.getSelectedRow();
-		int selectedColumn = table.getSelectedColumn();
-		if(selectedRow != -1 && selectedColumn != -1){
-			Double selectedDiffusionRate = (Double)table.getValueAt(selectedRow, COLUMN_INDEX_DIFFUSION_RATE);
+		int[] selectedColumns = table.getSelectedColumns();
+		if(selectedRow != -1 && selectedColumns != null && selectedColumns.length > 0){
+			Double selectedDiffusionRate =
+				(Double)table.getValueAt(selectedRow,
+				FRAPStudy.SpatialAnalysisResults.COLUMN_INDEX_DIFFUSION_RATE);
 			DataSource[] selectedRowDataSourceArr = allDataHash.get(selectedDiffusionRate);
 			multisourcePlotPane.setDataSources(selectedRowDataSourceArr);
 			multisourcePlotPane.clearSelection();
-			if(selectedColumn == COLUMN_INDEX_DIFFUSION_RATE){
-				multisourcePlotPane.selectAll();
-			}else{
-				String expColName =
-					((ReferenceData)selectedRowDataSourceArr[ARRAY_INDEX_EXPDATASOURCE].getSource()).getColumnNames()[selectedColumn];
-				String simColName =
-					((ODESolverResultSet)selectedRowDataSourceArr[ARRAY_INDEX_SIMDATASOURCE].getSource()).getColumnDescriptions()[selectedColumn].getName();
-				multisourcePlotPane.select(new String[] {expColName,simColName});
+			Vector<String> dataSourceColumnNamesV = new Vector<String>();
+			for (int i = 0; i < selectedColumns.length; i++) {
+				int selectedColumn = selectedColumns[i];
+				if(selectedColumn == FRAPStudy.SpatialAnalysisResults.COLUMN_INDEX_DIFFUSION_RATE){
+					multisourcePlotPane.selectAll();
+					dataSourceColumnNamesV = null;
+					break;
+				}else{
+					String expColName =
+						((ReferenceData)selectedRowDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_EXPDATASOURCE].getSource()).getColumnNames()[selectedColumn];
+					String simColName =
+						((ODESolverResultSet)selectedRowDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_SIMDATASOURCE].getSource()).getColumnDescriptions()[selectedColumn].getName();
+					dataSourceColumnNamesV.add(expColName);
+					dataSourceColumnNamesV.add(simColName);
+				}
+			}
+			if(dataSourceColumnNamesV != null && dataSourceColumnNamesV.size() > 0){
+				String[] dataSourceColumnNamesArr = dataSourceColumnNamesV.toArray(new String[0]);
+				multisourcePlotPane.select(dataSourceColumnNamesArr);				
 			}
 		}else{
 			multisourcePlotPane.setDataSources(null);
@@ -376,91 +359,30 @@ public class ResultsSummaryPanel extends JPanel {
 		return tableModel;
 	}
 	
-	private static String[] getColumnNames(){
-		String[] columnNames = new String[SpatialAnalysisResults.ORDERED_ROITYPES.length+1];
-		for (int i = 0; i < columnNames.length; i++) {
-			if(i==0){
-				columnNames[i] = "diffusion Rate";
-			}else{
-				columnNames[i] = SpatialAnalysisResults.ORDERED_ROITYPES[i-1].name();
-			}
-		}
-		return columnNames;
-	}
 	public void setData(FRAPStudy.SpatialAnalysisResults spatialAnalysisResults,
 			final double[] frapDataTimeStamps,int startIndexForRecovery,final Double modelDiffusionRate) throws Exception{
-		allDataHash = new Hashtable<Double, DataSource[]>();
-		
-		Double[] diffusionRates = spatialAnalysisResults.diffusionRates;
-		Hashtable<CurveInfo, double[]> ROIInfoHash = spatialAnalysisResults.curveHash;
-		Set<CurveInfo> roiInfoSet = ROIInfoHash.keySet();
-		Iterator<CurveInfo> roiInfoIter = roiInfoSet.iterator();
-		Hashtable<RoiType, double[]> expROIData = new Hashtable<RoiType, double[]>();
-		Hashtable<Double, Hashtable<RoiType, double[]>> simROIData = new Hashtable<Double, Hashtable<RoiType,double[]>>();
-		int roiCount = 0;
-		int diffusionRateCount = 0;
-		while(roiInfoIter.hasNext()){
-			CurveInfo roiCurveInfo = roiInfoIter.next();
-			if(roiCurveInfo.isExperimentInfo()){
-				expROIData.put(roiCurveInfo.getROIType(), ROIInfoHash.get(roiCurveInfo));
-				roiCount++;
-			}else{
-				Hashtable<RoiType,double[]> simROIDataHash = simROIData.get(roiCurveInfo.getDiffusionRate());
-				if(simROIDataHash == null){
-					simROIDataHash  = new Hashtable<RoiType, double[]>();
-					simROIData.put(roiCurveInfo.getDiffusionRate(), simROIDataHash);
-					diffusionRateCount++;
-				}
-				simROIDataHash.put(roiCurveInfo.getROIType(), ROIInfoHash.get(roiCurveInfo));
-			}
-		}
-		
-		final int DIFFUSION_COLUMN_COMPENSATE = 1;
-		final String[] columnNames = getColumnNames();
 
-		ReferenceData referenceData = 
-			spatialAnalysisResults.createReferenceData(frapDataTimeStamps,null,startIndexForRecovery,"");
-		
-		final Object[][] tableData = new Object[diffusionRateCount][columnNames.length];
-		for (int diffusionRow = 0; diffusionRow < tableData.length; diffusionRow++) {
-			Double currentDiffusionRate = diffusionRates[diffusionRow];
-			tableData[diffusionRow][COLUMN_INDEX_DIFFUSION_RATE] = currentDiffusionRate;
-			
-			ODESolverResultSet odeSolverResultSet =
-				spatialAnalysisResults.createODESolverResultSet(currentDiffusionRate,null,"D="+NumberUtils.formatNumber(currentDiffusionRate, 3));
-			final DataSource expDataSource = new DataSource(referenceData,"exp");
-			final DataSource simDataSource = new DataSource(odeSolverResultSet, "sim");
-			DataSource[] newDataSourceArr = new DataSource[2];
-			newDataSourceArr[ARRAY_INDEX_EXPDATASOURCE] = expDataSource;
-			newDataSourceArr[ARRAY_INDEX_SIMDATASOURCE] = simDataSource;
-			allDataHash.put(currentDiffusionRate,newDataSourceArr);
-			
-			for (int roiColumn = 0; roiColumn < SpatialAnalysisResults.ORDERED_ROITYPES.length; roiColumn++) {
-				RoiType currentROIType = SpatialAnalysisResults.ORDERED_ROITYPES[roiColumn];
-				double standardError = 
-					calulateStandardError(
-						spatialAnalysisResults,currentDiffusionRate,
-						frapDataTimeStamps,currentROIType,startIndexForRecovery);
-				tableData[diffusionRow][roiColumn+DIFFUSION_COLUMN_COMPENSATE] =
-					new Double(NumberUtils.formatNumber(standardError, 5));//NumberUtils.formatNumber(standardError, 5);
-			}
-		}
+		allDataHash =
+			spatialAnalysisResults.createSummaryReportSourceData(
+				frapDataTimeStamps, startIndexForRecovery, modelDiffusionRate);
+		final Object[][] tableData =
+			spatialAnalysisResults.createSummaryReportTableData(frapDataTimeStamps,startIndexForRecovery);
 
 		SwingUtilities.invokeAndWait(new Runnable(){public void run(){
 			try{
-				table.setModel(getTableModel(columnNames,tableData));
-				sortColumn(COLUMN_INDEX_DIFFUSION_RATE,false);
+				table.setModel(getTableModel(summaryReportColumnNames,tableData));
+				sortColumn(FRAPStudy.SpatialAnalysisResults.COLUMN_INDEX_DIFFUSION_RATE,false);
 				multisourcePlotPane.forceXYRange(new Range(frapDataTimeStamps[0],frapDataTimeStamps[frapDataTimeStamps.length-1]), new Range(0,1));
 				if(modelDiffusionRate != null){
 					int matchingRow = -1;
 					for (int i = 0; i < summaryData.length; i++) {
-						if(summaryData[i][COLUMN_INDEX_DIFFUSION_RATE].equals(modelDiffusionRate)){
+						if(summaryData[i][FRAPStudy.SpatialAnalysisResults.COLUMN_INDEX_DIFFUSION_RATE].equals(modelDiffusionRate)){
 							matchingRow = i;
 							break;
 						}
 					}
 					if(matchingRow != -1){
-						setTableCellSelection(matchingRow, COLUMN_INDEX_BLEACHROI);
+						setTableCellSelection(matchingRow, new int[] {FRAPStudy.SpatialAnalysisResults.COLUMN_INDEX_BLEACHROI});
 					}else{
 						DialogUtils.showErrorDialog("Summary Table couldn't find model diffusion rate "+modelDiffusionRate);
 					}
@@ -471,21 +393,14 @@ public class ResultsSummaryPanel extends JPanel {
 		}});
 	}
 	
-	private void setTableCellSelection(int selectedRow, int selectedColumn){
+	private void setTableCellSelection(int selectedRow, int[] selectedColumns){
 		table.getSelectionModel().setSelectionInterval(selectedRow, selectedRow);
-		table.getColumnModel().getSelectionModel().setSelectionInterval(selectedColumn, selectedColumn);
+		table.getColumnModel().getSelectionModel().setSelectionInterval(selectedColumns[0], selectedColumns[0]);
+		for (int i = 1; i < selectedColumns.length; i++) {
+			table.getColumnModel().getSelectionModel().addSelectionInterval(selectedColumns[i], selectedColumns[i]);
+		}
 	}
 	
-	private double calulateStandardError(FRAPStudy.SpatialAnalysisResults spatialAnalysisResults,
-			Double diffusionRate,double[] frapDataTimeStamps,RoiType roiType,int startTimeIndex){
-		ODESolverResultSet odeSolverResultSet =
-			spatialAnalysisResults.createODESolverResultSet(diffusionRate,roiType,"");
-		ReferenceData referenceData = spatialAnalysisResults.createReferenceData(frapDataTimeStamps,roiType,startTimeIndex,"");
-		
-		int numSamples = referenceData.getNumRows();
-		double sumSquaredError = MathTestingUtilities.calcWeightedSquaredError(odeSolverResultSet, referenceData);
-		return Math.sqrt(sumSquaredError)/(numSamples-1);//unbiased estimator is numsamples-1
-	}
 	public void clearData(){
 		allDataHash = null;
 	}
