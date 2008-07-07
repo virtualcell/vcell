@@ -1044,7 +1044,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 				try{
 					pix = new short[imageDataset.getSizeC()];
 					for (int i = 0; i < pix.length; i++) {
-						pix[i] = imageDataset.getImage(getZ(), i, getT()).getPixel(x, y, getZ());						
+						pix[i] = imageDataset.getImage(getZ(), i, getT()).getPixel(x, y, 0);						
 					}
 				}catch(Exception e){
 					pix = null;
