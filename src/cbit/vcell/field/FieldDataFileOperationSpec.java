@@ -20,6 +20,7 @@ public class FieldDataFileOperationSpec implements java.io.Serializable{
 	
 	public int opType = -1;
 	public short[][][] shortSpecData;  //[time][var][data]
+	public double[][][] doubleSpecData;  //[time][var][data]
 	public CartesianMesh cartesianMesh;
 	public ExternalDataIdentifier specEDI;
 	public String[] varNames;
