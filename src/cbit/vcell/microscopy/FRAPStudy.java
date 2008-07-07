@@ -1149,77 +1149,71 @@ public class FRAPStudy implements Matchable{
 	}
 	public static final String ROI_EXTDATA_NAME = "roiData";
 	public void saveROIsAsExternalData(LocalWorkspace localWorkspace,ExternalDataIdentifier newROIExtDataID,int startingIndexForRecovery) throws Exception{
-			System.out.println("Saving ROIs (and statistics images) as External Data");
 			ImageDataset imageDataset = getFrapData().getImageDataset();
 			Extent extent = imageDataset.getExtent();
 			ISize isize = imageDataset.getISize();
 			int NumTimePoints = 1; 
 			int NumChannels = 13;//actually it is total number of ROIs(cell,bleached + 8 rings)+prebleach+firstPostBleach+lastPostBleach
-	    	short[][][] pixData = new short[NumTimePoints][NumChannels][]; // dimensions: time points, channels, whole image ordered by z slices. 
+	    	double[][][] pixData = new double[NumTimePoints][NumChannels][]; // dimensions: time points, channels, whole image ordered by z slices. 
 	    	
 
 	    	long[] accumPrebleachImage = new long[imageDataset.getISize().getXYZ()];//ISize: Image size including x, y, z. getXYZ()=x*y*z
-	    	short[] avgPrebleach = new short[accumPrebleachImage.length];
+	    	double[] avgPrebleachDouble = new double[accumPrebleachImage.length];
 	    	// changed in June, 2008 average prebleach depends on if there is prebleach images. 
 	    	// Since the initial condition is normalized by prebleach avg, we have to take care the divided by zero error.
-			if(startingIndexForRecovery > 0)
-			{
+			if(startingIndexForRecovery > 0){
 				for (int timeIndex = 0; timeIndex < startingIndexForRecovery; timeIndex++) {
 					short[] pixels = getFrapData().getImageDataset().getPixelsZ(0, timeIndex);//channel index is 0. it is not supported yet. get image size X*Y*Z stored by time index. image store by UShortImage[Z*T]
 					for (int i = 0; i < accumPrebleachImage.length; i++) {
-						int pixelValue = 0x0000ffff&pixels[i];
-						accumPrebleachImage[i] += pixelValue;
+						accumPrebleachImage[i] += 0x0000ffff&pixels[i];
 					}
 				}
-				for (int i = 0; i < avgPrebleach.length; i++) {
-					int tempInt = (int)(0x0000FFFF&accumPrebleachImage[i]/startingIndexForRecovery);
-					short tempShort = (short)(0x0000FFFF&tempInt);
-					avgPrebleach[i] = tempShort;
-					// since prebleach will be used to normalize image data, we have to eliminate the 0
-					if(avgPrebleach[i] == 0)
-					{
-						avgPrebleach[i] = FRAPStudy.Epsilon;
-					}
+				for (int i = 0; i < avgPrebleachDouble.length; i++) {
+					avgPrebleachDouble[i] = (double)accumPrebleachImage[i]/(double)startingIndexForRecovery;
 				}
 			}
-			else //if no prebleach image, use the last recovery image intensity as prebleach average.
-			{
+			else{
+				//if no prebleach image, use the last recovery image intensity as prebleach average.
 				System.err.println("need to determine factor for prebleach average if no pre bleach images.");
 				short[] pixels = getFrapData().getImageDataset().getPixelsZ(0, (imageDataset.getSizeT() - 1));
 				for (int i = 0; i < pixels.length; i++) {
-					avgPrebleach[i] = pixels[i];
-					if(avgPrebleach[i] == 0)
-					{
-						avgPrebleach[i] = FRAPStudy.Epsilon;
-					}
+					avgPrebleachDouble[i] = 0x0000ffff&pixels[i];
 				}
 			}
-    		pixData[0][0] = avgPrebleach; // average of prebleach
-    		pixData[0][1] = getFrapData().getImageDataset().getPixelsZ(0, startingIndexForRecovery); // first post-bleach
-    		pixData[0][2] = getFrapData().getImageDataset().getPixelsZ(0, imageDataset.getSizeT()-1); // last post-bleach image, actually at last time point
-    		pixData[0][3] = getFrapData().getRoi(RoiType.ROI_BLEACHED).getBinaryPixelsXYZ(1);
-    		pixData[0][4] = getFrapData().getRoi(RoiType.ROI_CELL).getBinaryPixelsXYZ(1);
+			
+			// since prebleach will be used to normalize image data, we have to eliminate the 0?
+			//or maybe we should leave as 0 and check later for zero when its used and deal with it.
+			for (int i = 0; i < avgPrebleachDouble.length; i++) {
+				if(avgPrebleachDouble[i] == 0){
+					avgPrebleachDouble[i] = FRAPStudy.Epsilon;
+				}
+
+			}
+    		pixData[0][0] = avgPrebleachDouble; // average of prebleach
+    		pixData[0][1] = createDoubleArray(getFrapData().getImageDataset().getPixelsZ(0, startingIndexForRecovery)); // first post-bleach
+    		pixData[0][2] = createDoubleArray(getFrapData().getImageDataset().getPixelsZ(0, imageDataset.getSizeT()-1)); // last post-bleach image, actually at last time point
+    		pixData[0][3] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED).getBinaryPixelsXYZ(1));
+    		pixData[0][4] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_CELL).getBinaryPixelsXYZ(1));
     		if (getFrapData().getRoi(RoiType.ROI_BLEACHED_RING1) == null){
     			//throw new RuntimeException("must first generate \"derived masks\"");
-    			pixData[0][5] = new short[imageDataset.getISize().getXYZ()];
-	    		pixData[0][6] = new short[imageDataset.getISize().getXYZ()];
-	    		pixData[0][7] = new short[imageDataset.getISize().getXYZ()];
-	    		pixData[0][8] = new short[imageDataset.getISize().getXYZ()];
-	    		pixData[0][9] = new short[imageDataset.getISize().getXYZ()];
-	    		pixData[0][10] = new short[imageDataset.getISize().getXYZ()];
-	    		pixData[0][11] = new short[imageDataset.getISize().getXYZ()];
-	    		pixData[0][12] = new short[imageDataset.getISize().getXYZ()];
+    			pixData[0][5] = new double[imageDataset.getISize().getXYZ()];
+	    		pixData[0][6] = new double[imageDataset.getISize().getXYZ()];
+	    		pixData[0][7] = new double[imageDataset.getISize().getXYZ()];
+	    		pixData[0][8] = new double[imageDataset.getISize().getXYZ()];
+	    		pixData[0][9] = new double[imageDataset.getISize().getXYZ()];
+	    		pixData[0][10] = new double[imageDataset.getISize().getXYZ()];
+	    		pixData[0][11] = new double[imageDataset.getISize().getXYZ()];
+	    		pixData[0][12] = new double[imageDataset.getISize().getXYZ()];
     		}
-    		else
-    		{
-	    		pixData[0][5] = getFrapData().getRoi(RoiType.ROI_BLEACHED_RING1).getBinaryPixelsXYZ(1);
-	    		pixData[0][6] = getFrapData().getRoi(RoiType.ROI_BLEACHED_RING2).getBinaryPixelsXYZ(1);
-	    		pixData[0][7] = getFrapData().getRoi(RoiType.ROI_BLEACHED_RING3).getBinaryPixelsXYZ(1);
-	    		pixData[0][8] = getFrapData().getRoi(RoiType.ROI_BLEACHED_RING4).getBinaryPixelsXYZ(1);
-	    		pixData[0][9] = getFrapData().getRoi(RoiType.ROI_BLEACHED_RING5).getBinaryPixelsXYZ(1);
-	    		pixData[0][10] = getFrapData().getRoi(RoiType.ROI_BLEACHED_RING6).getBinaryPixelsXYZ(1);
-	    		pixData[0][11] = getFrapData().getRoi(RoiType.ROI_BLEACHED_RING7).getBinaryPixelsXYZ(1);
-	    		pixData[0][12] = getFrapData().getRoi(RoiType.ROI_BLEACHED_RING8).getBinaryPixelsXYZ(1);
+    		else{
+	    		pixData[0][5] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED_RING1).getBinaryPixelsXYZ(1));
+	    		pixData[0][6] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED_RING2).getBinaryPixelsXYZ(1));
+	    		pixData[0][7] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED_RING3).getBinaryPixelsXYZ(1));
+	    		pixData[0][8] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED_RING4).getBinaryPixelsXYZ(1));
+	    		pixData[0][9] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED_RING5).getBinaryPixelsXYZ(1));
+	    		pixData[0][10] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED_RING6).getBinaryPixelsXYZ(1));
+	    		pixData[0][11] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED_RING7).getBinaryPixelsXYZ(1));
+	    		pixData[0][12] = createDoubleArray(getFrapData().getRoi(RoiType.ROI_BLEACHED_RING8).getBinaryPixelsXYZ(1));
     		}
     		CartesianMesh cartesianMesh = getCartesianMesh();
     		Origin origin = new Origin(0,0,0);
@@ -1227,7 +1221,7 @@ public class FRAPStudy implements Matchable{
 	    	FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
 	    	fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
 	    	fdos.cartesianMesh = cartesianMesh;
-	    	fdos.shortSpecData =  pixData;
+	    	fdos.doubleSpecData =  pixData;
 	    	fdos.specEDI = newROIExtDataID;
 	    	fdos.varNames = new String[] {
 	    			"prebleach_avg",
@@ -1265,6 +1259,13 @@ public class FRAPStudy implements Matchable{
 	    	localWorkspace.getDataSetControllerImpl().fieldDataFileOperation(fdos);
 	}
 	
+	private double[] createDoubleArray(short[] shortData){
+		double[] doubleData = new double[shortData.length];
+		for (int i = 0; i < doubleData.length; i++) {
+			doubleData[i] = 0x0000FFFF&shortData[i];
+		}
+		return doubleData;
+	}
 	//get external image dataset file name or ROI file name
 	public File getExternalDataFile(ExternalDataInfo arg_extDataInfo)
 	{
