@@ -1056,12 +1056,24 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 		if(fieldDataFileOperationSpec.varNames == null || fieldDataFileOperationSpec.varNames.length == 0){
 			throw new RuntimeException("Field Data Operation 'ADD' variable names cannot be null");
 		}
-		if(fieldDataFileOperationSpec.shortSpecData == null ||
+		if((fieldDataFileOperationSpec.shortSpecData != null && fieldDataFileOperationSpec.doubleSpecData != null) ||
+			(fieldDataFileOperationSpec.shortSpecData == null && fieldDataFileOperationSpec.doubleSpecData == null)){
+			throw new RuntimeException("Field Data Operation 'ADD' must have ONLY 1 data specifier, short or double");			
+		}
+		if(fieldDataFileOperationSpec.shortSpecData != null && (
 				fieldDataFileOperationSpec.shortSpecData.length != fieldDataFileOperationSpec.times.length ||
 				fieldDataFileOperationSpec.shortSpecData[0].length != fieldDataFileOperationSpec.varNames.length
-				){
+				)){
 			throw new RuntimeException(
-					"Field Data Operation 'ADD' data dimension does not match\n"+
+					"Field Data Operation 'ADD' 'short' data dimension does not match\n"+
+					"times and variable names array lengths");
+		}
+		if(fieldDataFileOperationSpec.doubleSpecData != null && (
+				fieldDataFileOperationSpec.doubleSpecData.length != fieldDataFileOperationSpec.times.length ||
+				fieldDataFileOperationSpec.doubleSpecData[0].length != fieldDataFileOperationSpec.varNames.length
+				)){
+			throw new RuntimeException(
+					"Field Data Operation 'ADD' 'double' data dimension does not match\n"+
 					"times and variable names array lengths");
 		}
 		if(fieldDataFileOperationSpec.variableTypes == null || fieldDataFileOperationSpec.variableTypes.length == 0){
@@ -1083,18 +1095,22 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 			throw new RuntimeException("Couldn't create new user directory on server");
 		}
 		
-		//convert short to double
-		double[][][] convertedData = new double[times.length][vars.length][];
-		for(int i=0;i<times.length;i+= 1){
-			for(int j=0;j<vars.length;j+= 1){
-				if (fieldDataFileOperationSpec.shortSpecData!=null){
-					convertedData[i][j] = new double[fieldDataFileOperationSpec.shortSpecData[i][j].length];
-					for (int k = 0; k < fieldDataFileOperationSpec.shortSpecData[i][j].length; k += 1) {
-						convertedData[i][j][k] = (double) (((int)fieldDataFileOperationSpec.shortSpecData[i][j][k]) & 0x0000FFFF);
-//						convertedData[i][j][k] = fieldDataFileOperationSpec.shortSpecData[i][j][k];
+		double[][][] convertedData = null;
+		if(fieldDataFileOperationSpec.doubleSpecData != null){
+			convertedData = fieldDataFileOperationSpec.doubleSpecData;
+		}else{
+			//convert short to double
+			convertedData = new double[times.length][vars.length][];
+			for(int i=0;i<times.length;i+= 1){
+				for(int j=0;j<vars.length;j+= 1){
+					if (fieldDataFileOperationSpec.shortSpecData!=null){
+						convertedData[i][j] = new double[fieldDataFileOperationSpec.shortSpecData[i][j].length];
+						for (int k = 0; k < fieldDataFileOperationSpec.shortSpecData[i][j].length; k += 1) {
+							convertedData[i][j][k] = (double) (((int)fieldDataFileOperationSpec.shortSpecData[i][j][k]) & 0x0000FFFF);
+						}
+					}else{
+						throw new RuntimeException("no pixel data found");
 					}
-				}else{
-					throw new RuntimeException("no pixel data found");
 				}
 			}
 		}
