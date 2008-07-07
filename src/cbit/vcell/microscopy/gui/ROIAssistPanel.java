@@ -457,7 +457,8 @@ public class ROIAssistPanel extends JPanel {
 			roiSourceData = enhacedBytes;
 		}
 		
-		final short[] finalROISourceData = roiSourceData;
+		final short[] finalROISourceData = new short[oldROI.getISize().getX()*oldROI.getISize().getY()];
+		System.arraycopy(roiSourceData, finalROISourceData.length*overlayEditorPanelJAI.getZ(), finalROISourceData, 0, finalROISourceData.length);
 		SwingUtilities.invokeAndWait(new Runnable(){public void run(){//}});
 			try{
 			overlayEditorPanelJAI.displaySpecialData(

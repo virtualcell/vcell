@@ -563,7 +563,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 	}
 	
 	private void refreshROI(){
-		if (roi!=null){
+		if (roi!=null && imageDataset != null){
 //			BufferedImage highlightImage = createHighlightImageFromROI();
 //			short[] highlightImageWritebackBuffer = roi.getRoiImages()[getRoiImageIndex()].getPixels();
 			getImagePane().setHighlightImageAndWritebackBuffer(
@@ -734,6 +734,9 @@ public class OverlayEditorPanelJAI extends JPanel {
 	/** Gets the currently displayed image. * @return BufferedImage
 	 */
 	private BufferedImage getImage() {
+		if(imageDataset == null){
+			return null;
+		}
 		int ndx = getImageIndex();
 		if (imageDataset == null || ndx >= imageDataset.getAllImages().length){
 			return null;
@@ -975,7 +978,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 
 	/** Gets the Z value of the currently displayed image. * @return int
 	 */
-	private int getZ() { return Math.max(0,Math.min(imageDataset.getSizeZ(),zSlider.getValue())) - 1; }
+	public int getZ() { return Math.max(0,Math.min(imageDataset.getSizeZ(),zSlider.getValue())) - 1; }
 
 
 	/** Updates cursor probe label. * @param x int
