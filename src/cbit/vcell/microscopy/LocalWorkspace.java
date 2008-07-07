@@ -2,6 +2,7 @@ package cbit.vcell.microscopy;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.net.URLDecoder;
 
 import cbit.sql.KeyValue;
 import cbit.vcell.client.server.DataSetControllerProvider;
@@ -69,7 +70,7 @@ public class LocalWorkspace {
 	}
 
 	public static String getFinitVolumeExecutableFullPathname(){
-		return LocalWorkspace.class.getResource(FINITE_VOLUME_EXECUTABLE_CLASSPATH).getFile();
+		return URLDecoder.decode(LocalWorkspace.class.getResource(FINITE_VOLUME_EXECUTABLE_CLASSPATH).getFile());
 
 	}
 	/**
