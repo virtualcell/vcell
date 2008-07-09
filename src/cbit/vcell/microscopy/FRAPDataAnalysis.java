@@ -72,6 +72,23 @@ public class FRAPDataAnalysis {
 		return averageROIIntensity;
 	}
 	
+	public static double[] getAverageROIIntensity(FRAPData frapData, ROI roi, double[] normFactor) {
+		if(frapData == null)
+		{
+			throw new RuntimeException("FRAP data is null. Image data set must be loaded before conducting any analysis.");
+		}
+		if (frapData.getImageDataset().getSizeC()>1){
+			throw new RuntimeException("FRAPDataAnalysis.getAverageROIIntensity(): multiple image channels not supported");
+		}
+		double[] averageROIIntensity = new double[frapData.getImageDataset().getSizeT()];
+		
+		for (int tIndex = 0; tIndex < averageROIIntensity.length; tIndex++) {
+			averageROIIntensity[tIndex] = frapData.getAverageUnderROI(0, tIndex, roi, normFactor);
+		}
+
+		return averageROIIntensity;
+	}
+	
 	/**
 	 * Method fitRecovery.
 	 * @param frapData FRAPData
