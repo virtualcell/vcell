@@ -276,7 +276,7 @@ public abstract class AnnotatedImageDataset {
 	public void setCurrentlyDisplayedROI(ROI argCurrentlyDisplayedROI) {
 		ROI oldDisplayedROI = this.currentlyDisplayedROI;
 		this.currentlyDisplayedROI = argCurrentlyDisplayedROI;
-		propertyChangeSupport.firePropertyChange(PROPERTY_NAME_CURRENTLY_DISPLAYED_ROI, oldDisplayedROI, currentlyDisplayedROI);
+		propertyChangeSupport.firePropertyChange(PROPERTY_NAME_CURRENTLY_DISPLAYED_ROI, null, currentlyDisplayedROI);
 	}
 
 }
