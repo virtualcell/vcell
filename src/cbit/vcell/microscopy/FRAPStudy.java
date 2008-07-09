@@ -101,6 +101,7 @@ public class FRAPStudy implements Matchable{
 	private transient String xmlFilename = null;
 	private transient String directory = null;
 	public static final int DEFAULT_SPECIES_COUNT = 9;
+	public static final String species_Prefix = "fluor_D_"; 
 	private String name = null;
 	private String description = null;
 	private String originalImageFilePath = null;
@@ -723,7 +724,7 @@ public class FRAPStudy implements Matchable{
 			diffusionConstants[i] = 
 				new Expression((i==0?baseDiffusionRate:baseDiffusionRate*Math.pow(factor, power)));
 			species[i] =
-					new Species("fluor_D_"+
+					new Species(species_Prefix+
 							TokenMangler.fixTokenStrict(NumberUtils.formatNumber(diffusionConstants[i].evaluateConstant(),3)),
 							"fluorescent molecule"+(i+1));
 			speciesContexts[i] = 
