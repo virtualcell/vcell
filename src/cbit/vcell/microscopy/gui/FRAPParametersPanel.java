@@ -29,6 +29,9 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -38,21 +41,14 @@ import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
+import cbit.vcell.microscopy.gui.FRAPEstimationPanel;
 
 public class FRAPParametersPanel extends JPanel {
+	private FRAPEstimationPanel estimationPanel;
 	private JComboBox frapDataTimesComboBox;
 	private JTextField slowerTextField;
-	private JLabel startTimeRecoveryEstimateLabel;
 	private FRAPData initFRAPData;
-	private JLabel plotOfAverageLabel;
-	private JLabel frapModelParameterLabel;
-	private JLabel diffusionRateEstimateLabel;
-	private JLabel mobileFractionEstimateLabel;
-	private JLabel immobileFractionEstimateLabel;
 	private JLabel immobileFractionValueJLabel;
-	private MultisourcePlotPane multisourcePlotPane;
-	private ExpressionCanvas expressionCanvas;
-	private JComboBox bleachEstimationComboBox;
 	private JTextField monitorBleachRateTextField;
 	private JTextField mobileFractionTextField;
 	private JTextField diffusionRateTextField;
@@ -66,16 +62,6 @@ public class FRAPParametersPanel extends JPanel {
 		gridBagLayout.columnWidths = new int[] {7,0,7};
 		setLayout(gridBagLayout);
 
-		final JLabel enterValuesUnderLabel = new JLabel();
-		enterValuesUnderLabel.setFont(new Font("", Font.BOLD, 14));
-		enterValuesUnderLabel.setText("Enter values manually under 'Initial FRAP Model Parameters' or 'Use' estimated parameter values");
-		final GridBagConstraints gridBagConstraints_30 = new GridBagConstraints();
-		gridBagConstraints_30.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_30.gridy = 0;
-		gridBagConstraints_30.gridx = 0;
-		gridBagConstraints_30.gridwidth = 2;
-		add(enterValuesUnderLabel, gridBagConstraints_30);
-
 		final JPanel panel = new JPanel();
 		panel.setBorder(new LineBorder(Color.black, 1, false));
 		final GridBagLayout gridBagLayout_1 = new GridBagLayout();
@@ -85,24 +71,51 @@ public class FRAPParametersPanel extends JPanel {
 		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.anchor = GridBagConstraints.NORTH;
 		gridBagConstraints.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints.fill = GridBagConstraints.BOTH;
 		gridBagConstraints.weightx = 1;
-		gridBagConstraints.gridy = 1;
+		gridBagConstraints.gridy = 0;
 		gridBagConstraints.gridx = 1;
-		add(panel, gridBagConstraints);
 
-		final JLabel frapParameterEstimatesLabel = new JLabel();
-		frapParameterEstimatesLabel.setBorder(new LineBorder(Color.black, 1, false));
-		frapParameterEstimatesLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		frapParameterEstimatesLabel.setText("FRAP Model Parameter Estimation");
+		estimationPanel = new FRAPEstimationPanel();
+		estimationPanel.addPropertyChangeListener(
+			new PropertyChangeListener(){
+				public void propertyChange(PropertyChangeEvent evt) {
+					if(evt.getPropertyName().equals(FRAPEstimationPanel.FRAP_PARAMETER_ESTIMATE_VALUES_PROPERTY)){
+						FRAPEstimationPanel.FRAPParameterEstimateValues frapParamEstVals =
+							(FRAPEstimationPanel.FRAPParameterEstimateValues)evt.getNewValue();
+						
+						if(frapParamEstVals.startTimeRecovery != null){
+							boolean bFound = false;
+							for (int i = 0; i < frapDataTimesComboBox.getItemCount(); i++) {
+								if(frapDataTimesComboBox.getItemAt(i).equals(frapParamEstVals.startTimeRecovery.toString())){
+									bFound = true;
+									frapDataTimesComboBox.setSelectedIndex(i);
+									break;
+								}
+							}
+							if(!bFound){
+								throw new IllegalArgumentException("couldn't find time "+frapParamEstVals.startTimeRecovery.toString()+" in FRAP data while setting");
+							}
+						}
+						if(frapParamEstVals.diffusionRate != null){
+							diffusionRateTextField.setText(""+frapParamEstVals.diffusionRate);
+						}
+						if(frapParamEstVals.mobileFraction != null){
+							mobileFractionTextField.setText(""+frapParamEstVals.mobileFraction);
+							immobileFractionValueJLabel.setText(""+(1.0-frapParamEstVals.mobileFraction));
+						}
+						
+					}
+				}
+			}
+		);
+		estimationPanel.setBorder(new LineBorder(Color.black, 2, false));
 		final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
-		gridBagConstraints_1.gridwidth = 2;
-		gridBagConstraints_1.insets = new Insets(4, 4, 4, 4);
+		gridBagConstraints_1.weighty = 1;
 		gridBagConstraints_1.fill = GridBagConstraints.BOTH;
-		gridBagConstraints_1.weightx = 1;
 		gridBagConstraints_1.gridy = 0;
 		gridBagConstraints_1.gridx = 0;
-		panel.add(frapParameterEstimatesLabel, gridBagConstraints_1);
+		add(estimationPanel, gridBagConstraints_1);
+		add(panel, gridBagConstraints);
 
 		final JLabel frapModelParametersLabel = new JLabel();
 		frapModelParametersLabel.setBorder(new LineBorder(Color.black, 1, false));
@@ -114,32 +127,9 @@ public class FRAPParametersPanel extends JPanel {
 		gridBagConstraints_3.gridwidth = 3;
 		gridBagConstraints_3.weightx = 1;
 		gridBagConstraints_3.gridy = 0;
-		gridBagConstraints_3.gridx = 3;
+		gridBagConstraints_3.gridx = 0;
 		panel.add(frapModelParametersLabel, gridBagConstraints_3);
 		frapModelParametersLabel.setText("Initial FRAP Model Parameters");
-
-		bleachEstimationComboBox = new JComboBox();
-		final GridBagConstraints gridBagConstraints_2 = new GridBagConstraints();
-		gridBagConstraints_2.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_2.weightx = 0;
-		gridBagConstraints_2.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints_2.gridy = 1;
-		gridBagConstraints_2.gridx = 0;
-		panel.add(bleachEstimationComboBox, gridBagConstraints_2);
-
-		final JLabel frapParameterLabel = new JLabel();
-		frapParameterLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		frapParameterLabel.setBorder(new LineBorder(Color.black, 1, false));
-		frapParameterLabel.setText("Estimate Value");
-		final GridBagConstraints gridBagConstraints_17 = new GridBagConstraints();
-		gridBagConstraints_17.weightx = 1;
-		gridBagConstraints_17.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_17.ipadx = 8;
-		gridBagConstraints_17.fill = GridBagConstraints.BOTH;
-		gridBagConstraints_17.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_17.gridy = 1;
-		gridBagConstraints_17.gridx = 1;
-		panel.add(frapParameterLabel, gridBagConstraints_17);
 
 		final JLabel parameterLabel = new JLabel();
 		parameterLabel.setBorder(new LineBorder(Color.black, 1, false));
@@ -149,7 +139,7 @@ public class FRAPParametersPanel extends JPanel {
 		gridBagConstraints_19.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_19.fill = GridBagConstraints.BOTH;
 		gridBagConstraints_19.gridy = 1;
-		gridBagConstraints_19.gridx = 3;
+		gridBagConstraints_19.gridx = 0;
 		panel.add(parameterLabel, gridBagConstraints_19);
 
 		final JLabel valueLabel = new JLabel();
@@ -161,7 +151,7 @@ public class FRAPParametersPanel extends JPanel {
 		gridBagConstraints_20.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_20.fill = GridBagConstraints.BOTH;
 		gridBagConstraints_20.gridy = 1;
-		gridBagConstraints_20.gridx = 4;
+		gridBagConstraints_20.gridx = 1;
 		panel.add(valueLabel, gridBagConstraints_20);
 
 		final JLabel unitsLabel = new JLabel();
@@ -172,44 +162,8 @@ public class FRAPParametersPanel extends JPanel {
 		gridBagConstraints_31.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_31.fill = GridBagConstraints.BOTH;
 		gridBagConstraints_31.gridy = 1;
-		gridBagConstraints_31.gridx = 5;
+		gridBagConstraints_31.gridx = 2;
 		panel.add(unitsLabel, gridBagConstraints_31);
-
-		final JLabel estimatedDiffusionRateLabel = new JLabel();
-		estimatedDiffusionRateLabel.setHorizontalAlignment(SwingConstants.RIGHT);
-		estimatedDiffusionRateLabel.setBorder(new LineBorder(Color.black, 1, false));
-		estimatedDiffusionRateLabel.setText("Estimated Diffusion Rate:");
-		final GridBagConstraints gridBagConstraints_7 = new GridBagConstraints();
-		gridBagConstraints_7.fill = GridBagConstraints.BOTH;
-		gridBagConstraints_7.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_7.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_7.gridy = 2;
-		gridBagConstraints_7.gridx = 0;
-		panel.add(estimatedDiffusionRateLabel, gridBagConstraints_7);
-
-		diffusionRateEstimateLabel = new JLabel();
-		diffusionRateEstimateLabel.setText("1.0");
-		final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
-		gridBagConstraints_4.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_4.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_4.gridy = 2;
-		gridBagConstraints_4.gridx = 1;
-		panel.add(diffusionRateEstimateLabel, gridBagConstraints_4);
-
-		final JButton diffusionRateUseButton = new JButton();
-		diffusionRateUseButton.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				diffusionRateTextField.setText(diffusionRateEstimateLabel.getText());
-			}
-		});
-		diffusionRateUseButton.setMargin(new Insets(2, 2, 2, 2));
-		diffusionRateUseButton.setText("Use");
-		final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
-		gridBagConstraints_8.insets = new Insets(4, 0, 4, 10);
-		gridBagConstraints_8.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints_8.gridy = 2;
-		gridBagConstraints_8.gridx = 2;
-		panel.add(diffusionRateUseButton, gridBagConstraints_8);
 
 		final JLabel diffusionRateLabel = new JLabel();
 		diffusionRateLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -219,7 +173,7 @@ public class FRAPParametersPanel extends JPanel {
 		gridBagConstraints_18.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_18.fill = GridBagConstraints.BOTH;
 		gridBagConstraints_18.gridy = 2;
-		gridBagConstraints_18.gridx = 3;
+		gridBagConstraints_18.gridx = 0;
 		panel.add(diffusionRateLabel, gridBagConstraints_18);
 
 		diffusionRateTextField = new JTextField();
@@ -228,7 +182,7 @@ public class FRAPParametersPanel extends JPanel {
 		gridBagConstraints_12.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_12.weightx = 0;
 		gridBagConstraints_12.gridy = 2;
-		gridBagConstraints_12.gridx = 4;
+		gridBagConstraints_12.gridx = 1;
 		panel.add(diffusionRateTextField, gridBagConstraints_12);
 
 		final JLabel umsecLabel = new JLabel();
@@ -236,45 +190,8 @@ public class FRAPParametersPanel extends JPanel {
 		final GridBagConstraints gridBagConstraints_14 = new GridBagConstraints();
 		gridBagConstraints_14.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_14.gridy = 2;
-		gridBagConstraints_14.gridx = 5;
+		gridBagConstraints_14.gridx = 2;
 		panel.add(umsecLabel, gridBagConstraints_14);
-
-		final JLabel estimatedMobileFractionLabel = new JLabel();
-		estimatedMobileFractionLabel.setHorizontalAlignment(SwingConstants.RIGHT);
-		estimatedMobileFractionLabel.setBorder(new LineBorder(Color.black, 1, false));
-		estimatedMobileFractionLabel.setText("Estimated Mobile Fraction:");
-		final GridBagConstraints gridBagConstraints_11 = new GridBagConstraints();
-		gridBagConstraints_11.fill = GridBagConstraints.BOTH;
-		gridBagConstraints_11.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_11.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_11.gridy = 3;
-		gridBagConstraints_11.gridx = 0;
-		panel.add(estimatedMobileFractionLabel, gridBagConstraints_11);
-
-		mobileFractionEstimateLabel = new JLabel();
-		mobileFractionEstimateLabel.setText("1.0");
-		final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
-		gridBagConstraints_5.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_5.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_5.gridy = 3;
-		gridBagConstraints_5.gridx = 1;
-		panel.add(mobileFractionEstimateLabel, gridBagConstraints_5);
-
-		final JButton copyMobileFractionUseButton = new JButton();
-		copyMobileFractionUseButton.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				mobileFractionTextField.setText(mobileFractionEstimateLabel.getText());
-				immobileFractionValueJLabel.setText(immobileFractionEstimateLabel.getText());
-			}
-		});
-		copyMobileFractionUseButton.setMargin(new Insets(2, 2, 2, 2));
-		copyMobileFractionUseButton.setText("Use");
-		final GridBagConstraints gridBagConstraints_9 = new GridBagConstraints();
-		gridBagConstraints_9.insets = new Insets(4, 0, 4, 10);
-		gridBagConstraints_9.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints_9.gridy = 3;
-		gridBagConstraints_9.gridx = 2;
-		panel.add(copyMobileFractionUseButton, gridBagConstraints_9);
 
 		final JLabel mobileFractionLabel = new JLabel();
 		mobileFractionLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -284,7 +201,7 @@ public class FRAPParametersPanel extends JPanel {
 		gridBagConstraints_21.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_21.fill = GridBagConstraints.BOTH;
 		gridBagConstraints_21.gridy = 3;
-		gridBagConstraints_21.gridx = 3;
+		gridBagConstraints_21.gridx = 0;
 		panel.add(mobileFractionLabel, gridBagConstraints_21);
 
 		mobileFractionTextField = new JTextField();
@@ -297,7 +214,7 @@ public class FRAPParametersPanel extends JPanel {
 		gridBagConstraints_13.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_13.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_13.gridy = 3;
-		gridBagConstraints_13.gridx = 4;
+		gridBagConstraints_13.gridx = 1;
 		panel.add(mobileFractionTextField, gridBagConstraints_13);
 
 		final JLabel label = new JLabel();
@@ -305,29 +222,8 @@ public class FRAPParametersPanel extends JPanel {
 		final GridBagConstraints gridBagConstraints_32 = new GridBagConstraints();
 		gridBagConstraints_32.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_32.gridy = 3;
-		gridBagConstraints_32.gridx = 5;
+		gridBagConstraints_32.gridx = 2;
 		panel.add(label, gridBagConstraints_32);
-
-		final JLabel estimatedImmobileFractionLabel = new JLabel();
-		estimatedImmobileFractionLabel.setHorizontalAlignment(SwingConstants.RIGHT);
-		estimatedImmobileFractionLabel.setBorder(new LineBorder(Color.black, 1, false));
-		estimatedImmobileFractionLabel.setText("Estimated Immobile Fraction:");
-		final GridBagConstraints gridBagConstraints_16 = new GridBagConstraints();
-		gridBagConstraints_16.fill = GridBagConstraints.BOTH;
-		gridBagConstraints_16.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_16.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_16.gridy = 4;
-		gridBagConstraints_16.gridx = 0;
-		panel.add(estimatedImmobileFractionLabel, gridBagConstraints_16);
-
-		immobileFractionEstimateLabel = new JLabel();
-		immobileFractionEstimateLabel.setText("0.0");
-		final GridBagConstraints gridBagConstraints_6 = new GridBagConstraints();
-		gridBagConstraints_6.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_6.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_6.gridy = 4;
-		gridBagConstraints_6.gridx = 1;
-		panel.add(immobileFractionEstimateLabel, gridBagConstraints_6);
 
 		final JLabel immobileFractionLabel = new JLabel();
 		immobileFractionLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -337,7 +233,7 @@ public class FRAPParametersPanel extends JPanel {
 		gridBagConstraints_22.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_22.fill = GridBagConstraints.BOTH;
 		gridBagConstraints_22.gridy = 4;
-		gridBagConstraints_22.gridx = 3;
+		gridBagConstraints_22.gridx = 0;
 		panel.add(immobileFractionLabel, gridBagConstraints_22);
 
 		immobileFractionValueJLabel = new JLabel();
@@ -346,7 +242,7 @@ public class FRAPParametersPanel extends JPanel {
 		gridBagConstraints_10.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_10.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_10.gridy = 4;
-		gridBagConstraints_10.gridx = 4;
+		gridBagConstraints_10.gridx = 1;
 		panel.add(immobileFractionValueJLabel, gridBagConstraints_10);
 
 		final JLabel label_1 = new JLabel();
@@ -354,7 +250,7 @@ public class FRAPParametersPanel extends JPanel {
 		final GridBagConstraints gridBagConstraints_33 = new GridBagConstraints();
 		gridBagConstraints_33.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_33.gridy = 4;
-		gridBagConstraints_33.gridx = 5;
+		gridBagConstraints_33.gridx = 2;
 		panel.add(label_1, gridBagConstraints_33);
 
 		final JLabel monitorBleachRateLabel = new JLabel();
@@ -366,7 +262,7 @@ public class FRAPParametersPanel extends JPanel {
 		gridBagConstraints_23.fill = GridBagConstraints.BOTH;
 		gridBagConstraints_23.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_23.gridy = 5;
-		gridBagConstraints_23.gridx = 3;
+		gridBagConstraints_23.gridx = 0;
 		panel.add(monitorBleachRateLabel, gridBagConstraints_23);
 
 		monitorBleachRateTextField = new JTextField();
@@ -374,7 +270,7 @@ public class FRAPParametersPanel extends JPanel {
 		gridBagConstraints_15.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_15.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_15.gridy = 5;
-		gridBagConstraints_15.gridx = 4;
+		gridBagConstraints_15.gridx = 1;
 		panel.add(monitorBleachRateTextField, gridBagConstraints_15);
 
 		final JLabel um2sLabel = new JLabel();
@@ -382,7 +278,7 @@ public class FRAPParametersPanel extends JPanel {
 		final GridBagConstraints gridBagConstraints_34 = new GridBagConstraints();
 		gridBagConstraints_34.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_34.gridy = 5;
-		gridBagConstraints_34.gridx = 5;
+		gridBagConstraints_34.gridx = 2;
 		panel.add(um2sLabel, gridBagConstraints_34);
 
 		final JLabel slowerDiffMobileLabel = new JLabel();
@@ -393,7 +289,7 @@ public class FRAPParametersPanel extends JPanel {
 		gridBagConstraints_35.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_35.fill = GridBagConstraints.BOTH;
 		gridBagConstraints_35.gridy = 6;
-		gridBagConstraints_35.gridx = 3;
+		gridBagConstraints_35.gridx = 0;
 		panel.add(slowerDiffMobileLabel, gridBagConstraints_35);
 
 		slowerTextField = new JTextField();
@@ -401,7 +297,7 @@ public class FRAPParametersPanel extends JPanel {
 		gridBagConstraints_36.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_36.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_36.gridy = 6;
-		gridBagConstraints_36.gridx = 4;
+		gridBagConstraints_36.gridx = 1;
 		panel.add(slowerTextField, gridBagConstraints_36);
 
 		final JLabel um2sLabel_1 = new JLabel();
@@ -409,47 +305,8 @@ public class FRAPParametersPanel extends JPanel {
 		final GridBagConstraints gridBagConstraints_37 = new GridBagConstraints();
 		gridBagConstraints_37.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_37.gridy = 6;
-		gridBagConstraints_37.gridx = 5;
+		gridBagConstraints_37.gridx = 2;
 		panel.add(um2sLabel_1, gridBagConstraints_37);
-
-		final JLabel estimatedStartIndexLabel = new JLabel();
-		estimatedStartIndexLabel.setHorizontalAlignment(SwingConstants.TRAILING);
-		estimatedStartIndexLabel.setBorder(new LineBorder(Color.black, 1, false));
-		estimatedStartIndexLabel.setText("Estimated Start Time Recovery:");
-		final GridBagConstraints gridBagConstraints_38 = new GridBagConstraints();
-		gridBagConstraints_38.fill = GridBagConstraints.BOTH;
-		gridBagConstraints_38.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_38.gridy = 7;
-		gridBagConstraints_38.gridx = 0;
-		panel.add(estimatedStartIndexLabel, gridBagConstraints_38);
-
-		startTimeRecoveryEstimateLabel = new JLabel();
-		startTimeRecoveryEstimateLabel.setText("0.0");
-		final GridBagConstraints gridBagConstraints_39 = new GridBagConstraints();
-		gridBagConstraints_39.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_39.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_39.gridy = 7;
-		gridBagConstraints_39.gridx = 1;
-		panel.add(startTimeRecoveryEstimateLabel, gridBagConstraints_39);
-
-		final JButton copyStartIndexRecoveryUseButton = new JButton();
-		copyStartIndexRecoveryUseButton.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				for (int i = 0; i < frapDataTimesComboBox.getItemCount(); i++) {
-					if(frapDataTimesComboBox.getItemAt(i).toString().equals(startTimeRecoveryEstimateLabel.getText())){
-						frapDataTimesComboBox.setSelectedIndex(i);
-						break;
-					}
-				}
-			}
-		});
-		copyStartIndexRecoveryUseButton.setMargin(new Insets(2, 2, 2, 2));
-		copyStartIndexRecoveryUseButton.setText("Use");
-		final GridBagConstraints gridBagConstraints_40 = new GridBagConstraints();
-		gridBagConstraints_40.insets = new Insets(4, 0, 4, 10);
-		gridBagConstraints_40.gridy = 7;
-		gridBagConstraints_40.gridx = 2;
-		panel.add(copyStartIndexRecoveryUseButton, gridBagConstraints_40);
 
 		final JLabel startIndexRecoveryLabel = new JLabel();
 		startIndexRecoveryLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -459,7 +316,7 @@ public class FRAPParametersPanel extends JPanel {
 		gridBagConstraints_41.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_41.fill = GridBagConstraints.BOTH;
 		gridBagConstraints_41.gridy = 7;
-		gridBagConstraints_41.gridx = 3;
+		gridBagConstraints_41.gridx = 0;
 		panel.add(startIndexRecoveryLabel, gridBagConstraints_41);
 
 		frapDataTimesComboBox = new JComboBox();
@@ -467,152 +324,18 @@ public class FRAPParametersPanel extends JPanel {
 		gridBagConstraints_42.fill = GridBagConstraints.BOTH;
 		gridBagConstraints_42.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_42.gridy = 7;
-		gridBagConstraints_42.gridx = 4;
+		gridBagConstraints_42.gridx = 1;
 		panel.add(frapDataTimesComboBox, gridBagConstraints_42);
 
 		final JLabel sLabel = new JLabel();
 		sLabel.setText("s");
 		final GridBagConstraints gridBagConstraints_43 = new GridBagConstraints();
 		gridBagConstraints_43.gridy = 7;
-		gridBagConstraints_43.gridx = 5;
+		gridBagConstraints_43.gridx = 2;
 		panel.add(sLabel, gridBagConstraints_43);
-
-		final JPanel panel_2 = new JPanel();
-		final GridBagConstraints gridBagConstraints_28 = new GridBagConstraints();
-		gridBagConstraints_28.fill = GridBagConstraints.BOTH;
-		gridBagConstraints_28.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_28.weightx = 1;
-		gridBagConstraints_28.weighty = 1;
-		gridBagConstraints_28.gridwidth = 3;
-		gridBagConstraints_28.gridy = 8;
-		gridBagConstraints_28.gridx = 0;
-		panel.add(panel_2, gridBagConstraints_28);
-
-		final JPanel panel_1 = new JPanel();
-		panel_1.setBorder(new LineBorder(Color.black, 1, false));
-		panel_1.setPreferredSize(new Dimension(450, 250));
-		panel_1.setMinimumSize(new Dimension(450, 250));
-		final GridBagLayout gridBagLayout_2 = new GridBagLayout();
-		gridBagLayout_2.rowHeights = new int[] {0,7};
-		panel_1.setLayout(gridBagLayout_2);
-		final GridBagConstraints gridBagConstraints_24 = new GridBagConstraints();
-		gridBagConstraints_24.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_24.gridy = 1;
-		gridBagConstraints_24.gridx = 0;
-		add(panel_1, gridBagConstraints_24);
-
-		frapModelParameterLabel = new JLabel();
-		frapModelParameterLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		frapModelParameterLabel.setBorder(new LineBorder(Color.black, 1, false));
-		frapModelParameterLabel.setText(PARAM_EST_EQUATION_STRING);
-		final GridBagConstraints gridBagConstraints_25 = new GridBagConstraints();
-		gridBagConstraints_25.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_25.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints_25.weighty = 0;
-		gridBagConstraints_25.gridy = 0;
-		gridBagConstraints_25.gridx = 0;
-		panel_1.add(frapModelParameterLabel, gridBagConstraints_25);
-
-		expressionCanvas = new ExpressionCanvas();
-		final GridBagConstraints gridBagConstraints_26 = new GridBagConstraints();
-		gridBagConstraints_26.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_26.fill = GridBagConstraints.BOTH;
-		gridBagConstraints_26.weighty = 1;
-		gridBagConstraints_26.weightx = 1;
-		gridBagConstraints_26.gridy = 1;
-		gridBagConstraints_26.gridx = 0;
-		panel_1.add(expressionCanvas, gridBagConstraints_26);
-
-		plotOfAverageLabel = new JLabel();
-		plotOfAverageLabel.setFont(new Font("", Font.BOLD, 14));
-		plotOfAverageLabel.setText(PLOT_TITLE_STRING);
-		final GridBagConstraints gridBagConstraints_29 = new GridBagConstraints();
-		gridBagConstraints_29.insets = new Insets(20, 4, 4, 4);
-		gridBagConstraints_29.gridwidth = 2;
-		gridBagConstraints_29.gridy = 2;
-		gridBagConstraints_29.gridx = 0;
-		add(plotOfAverageLabel, gridBagConstraints_29);
-
-		multisourcePlotPane = new MultisourcePlotPane();
-		multisourcePlotPane.setBorder(new LineBorder(Color.black, 1, false));
-		multisourcePlotPane.setListVisible(false);
-		final GridBagConstraints gridBagConstraints_27 = new GridBagConstraints();
-		gridBagConstraints_27.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_27.fill = GridBagConstraints.BOTH;
-		gridBagConstraints_27.weighty = 1;
-		gridBagConstraints_27.weightx = 1;
-		gridBagConstraints_27.gridwidth = 2;
-		gridBagConstraints_27.gridy = 3;
-		gridBagConstraints_27.gridx = 0;
-		add(multisourcePlotPane, gridBagConstraints_27);
 		
-		initialize();
 	}
 
-	private void initialize(){
-		for (int i = 0; i < FrapDataAnalysisResults.BLEACH_TYPE_NAMES.length; i++) {
-			bleachEstimationComboBox.insertItemAt("Estimation method '"+FrapDataAnalysisResults.BLEACH_TYPE_NAMES[i]+"'", i);
-		}
-		bleachEstimationComboBox.addActionListener(new ActionListener() {
-			public void actionPerformed(final ActionEvent e) {
-				if(bleachEstimationComboBox.getSelectedIndex() == FrapDataAnalysisResults.BleachType_CirularDisk){
-					//expression on canvas
-					try{
-						String[] prefixes = new String[] { "I(t) = ", "D = " };
-						Expression[] expressions = new Expression[] { new Expression(FRAPDataAnalysis.circularDisk_IntensityFunc_display), new Expression(FRAPDataAnalysis.circularDisk_DiffFunc) };
-						String[] suffixes = new String[] { "", "[um2.s-1]" };
-						expressionCanvas.setExpressions(expressions,prefixes,suffixes);
-					}catch (ExpressionException e2){
-						e2.printStackTrace(System.out);
-					}					
-				}else if(bleachEstimationComboBox.getSelectedIndex() == FrapDataAnalysisResults.BleachType_GaussianSpot){
-					//expression on canvas
-					try{
-						String[] prefixes = new String[] { "I(t) = ", "u(t)= ","D = " };
-						Expression[] expressions = new Expression[] { new Expression(FRAPDataAnalysis.gaussianSpot_IntensityFunc), new Expression(FRAPDataAnalysis.gaussianSpot_MuFunc), new Expression(FRAPDataAnalysis.gaussianSpot_DiffFunc) };
-						String[] suffixes = new String[] { "", "", "[um2.s-1]" };
-						expressionCanvas.setExpressions(expressions,prefixes,suffixes);
-					}catch (ExpressionException e2){
-						e2.printStackTrace(System.out);
-					}
-					
-				}else if(bleachEstimationComboBox.getSelectedIndex() == FrapDataAnalysisResults.BleachType_HalfCell){
-					//expression on canvas
-					try{
-						String[] prefixes = new String[] { "I(t) = ", "u(t)= ","D = " };
-						Expression[] expressions = new Expression[] { new Expression(FRAPDataAnalysis.halfCell_IntensityFunc), new Expression(FRAPDataAnalysis.halfCell_MuFunc), new Expression(FRAPDataAnalysis.halfCell_DiffFunc) };
-						String[] suffixes = new String[] { "", "", "[um2.s-1]" };
-						expressionCanvas.setExpressions(expressions,prefixes,suffixes);
-					}catch (ExpressionException e2){
-						e2.printStackTrace(System.out);
-					}
-				}
-				frapModelParameterLabel.setText(
-					PARAM_EST_EQUATION_STRING+"  ('"+
-					FrapDataAnalysisResults.BLEACH_TYPE_NAMES[bleachEstimationComboBox.getSelectedIndex()]+"')");
-				plotOfAverageLabel.setText(
-					PLOT_TITLE_STRING+"  ('"+
-					FrapDataAnalysisResults.BLEACH_TYPE_NAMES[bleachEstimationComboBox.getSelectedIndex()]+"')");
-				try{
-					refreshFRAPModelParameterEstimates(initFRAPData);
-				}catch (Exception e2){
-					e2.printStackTrace();
-					DialogUtils.showErrorDialog(
-						"Error setting estimation method "+
-						FrapDataAnalysisResults.BLEACH_TYPE_NAMES[bleachEstimationComboBox.getSelectedIndex()]+
-						"\n"+e2.getMessage());
-				}
-			}
-		});
-		bleachEstimationComboBox.setSelectedIndex(FrapDataAnalysisResults.BleachType_CirularDisk);
-	}
-	private int getBleachTypeMethod(){
-		return bleachEstimationComboBox.getSelectedIndex();
-	}
-//	public void setFRAPStudy(FRAPStudy frapStudy){
-//		this.frapStudy = frapStudy;
-//		multisourcePlotPane.setDataSources(null);
-//	}
 	public FrapChangeInfo createCompleteFRAPChangeInfo(FRAPStudyPanel.SavedFrapModelInfo savedFrapModelInfo,
 			boolean bCellROISame,boolean bBleachROISame,boolean bBackgroundROISame,boolean bROISameSize){
 		return new FrapChangeInfo(
@@ -679,80 +402,9 @@ public class FRAPParametersPanel extends JPanel {
 		}
 
 	}
-	private void displayFit(FrapDataAnalysisResults frapDataAnalysisResults,double[] frapDataTimeStamps){
-		if (frapDataAnalysisResults == null){
-			diffusionRateEstimateLabel.setText("");
-			mobileFractionEstimateLabel.setText("");
-			immobileFractionEstimateLabel.setText("");
-			multisourcePlotPane.setDataSources(null);
-		}else{
-//			FrapDataAnalysisResults frapDataAnalysisResults = frapStudy.getFrapDataAnalysisResults();
-			diffusionRateEstimateLabel.setText(
-				(frapDataAnalysisResults.getRecoveryDiffusionRate() == null
-					?""
-					:frapDataAnalysisResults.getRecoveryDiffusionRate().toString()));
-			mobileFractionEstimateLabel.setText(
-					(frapDataAnalysisResults.getMobilefraction() == null
-						?""
-						:frapDataAnalysisResults.getMobilefraction().toString()));
-			if(mobileFractionEstimateLabel.getText().length() > 0){
-				immobileFractionEstimateLabel.setText(""+(1.0-new Double(mobileFractionEstimateLabel.getText()).doubleValue()));
-			}
-//			double[] frapDataTimeStamps = frapStudy.getFrapData().getImageDataset().getImageTimeStamps();
-			double[] bleachRegionData = frapDataAnalysisResults.getBleachRegionData();
-			int startIndexForRecovery = frapDataAnalysisResults.getStartingIndexForRecovery();
-			Expression fittedCurve = frapDataAnalysisResults.getFitExpression();
-			ReferenceData expRefData = new SimpleReferenceData(new String[] { "t", "UserDataBleachROIAvg" }, new double[] { 1.0, 1.0 }, new double[][] { frapDataTimeStamps, bleachRegionData });
-			DataSource expDataSource = new DataSource(expRefData,"experiment");
-			ODESolverResultSet fitOdeSolverResultSet = new ODESolverResultSet();
-			fitOdeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription("t"));
-			try {
-				fitOdeSolverResultSet.addFunctionColumn(
-					new FunctionColumnDescription(
-						fittedCurve,
-						"fit ('"+FrapDataAnalysisResults.BLEACH_TYPE_NAMES[bleachEstimationComboBox.getSelectedIndex()]+"')",
-						null,"recoveryFit",true));
-			} catch (ExpressionException e) {
-				e.printStackTrace();
-			}
-			for (int i = startIndexForRecovery; i < frapDataTimeStamps.length; i++) {
-				fitOdeSolverResultSet.addRow(new double[] { frapDataTimeStamps[i] });
-			}
-			//
-			// extend if necessary to plot theoretical curve to 4*tau
-			//
-			double T = frapDataTimeStamps[frapDataTimeStamps.length-1];
-			double deltaT = frapDataTimeStamps[frapDataTimeStamps.length-1]-frapDataTimeStamps[frapDataTimeStamps.length-2];
-			while (T+deltaT < 6*frapDataAnalysisResults.getRecoveryTau()){
-				fitOdeSolverResultSet.addRow(new double[] { T } );
-				T += deltaT;
-			}
-			DataSource fitDataSource = new DataSource(fitOdeSolverResultSet, "fit");
-			multisourcePlotPane.setDataSources(new DataSource[] {  expDataSource, fitDataSource } );
-			multisourcePlotPane.selectAll();		
-		}
-	}
 	
 	public void refreshFRAPModelParameterEstimates(FRAPData frapData) throws Exception {
-		this.initFRAPData = frapData;
-		FrapDataAnalysisResults frapDataAnalysisResults = null;
-		double[] frapDataTimeStamps = null;
-		bleachEstimationComboBox.setEnabled(false);
-		if(frapData != null){
-			if(frapData.getRoi(RoiType.ROI_BLEACHED).isAllPixelsZero()){
-				displayFit(null,null);
-				throw new Exception(
-					OverlayEditorPanelJAI.INITIAL_BLEACH_AREA_TEXT+" ROI not defined.\n"+
-					"Use ROI tools under '"+FRAPStudyPanel.FRAPDATAPANEL_TABNAME+"' tab to define.");
-			}
-			frapDataTimeStamps = frapData.getImageDataset().getImageTimeStamps();
-			frapDataAnalysisResults =
-				FRAPDataAnalysis.fitRecovery2(frapData, getBleachTypeMethod());
-			startTimeRecoveryEstimateLabel.setText(frapDataTimeStamps[frapDataAnalysisResults.getStartingIndexForRecovery()]+"");
-			bleachEstimationComboBox.setEnabled(true);
-		}
-
-		displayFit(frapDataAnalysisResults,frapDataTimeStamps);
+		estimationPanel.refreshFRAPModelParameterEstimates(frapData);
 	}
 
 	public void insertFRAPModelParametersIntoFRAPStudy(FRAPStudy frapStudy) throws Exception{
