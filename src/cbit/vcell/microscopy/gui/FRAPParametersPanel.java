@@ -38,7 +38,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import cbit.vcell.microscopy.gui.FRAPEstimationPanel;
@@ -58,17 +60,18 @@ public class FRAPParametersPanel extends JPanel {
 	public FRAPParametersPanel() {
 		super();
 		final GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.rowHeights = new int[] {0,7,7};
-		gridBagLayout.columnWidths = new int[] {7,0,7};
+		gridBagLayout.rowHeights = new int[] {0};
+		gridBagLayout.columnWidths = new int[] {7,7};
 		setLayout(gridBagLayout);
 
 		final JPanel panel = new JPanel();
-		panel.setBorder(new LineBorder(Color.black, 1, false));
+		panel.setBorder(new TitledBorder(new LineBorder(Color.black, 2, false), "Initial FRAP Model Parameters", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, new Font("", Font.BOLD, 16), null));
 		final GridBagLayout gridBagLayout_1 = new GridBagLayout();
-		gridBagLayout_1.columnWidths = new int[] {7,0,0,7,0,7};
+		gridBagLayout_1.columnWidths = new int[] {7,0,0};
 		gridBagLayout_1.rowHeights = new int[] {0,7,7,7,7,0,7,7};
 		panel.setLayout(gridBagLayout_1);
 		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints.anchor = GridBagConstraints.NORTH;
 		gridBagConstraints.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints.weightx = 1;
@@ -76,6 +79,7 @@ public class FRAPParametersPanel extends JPanel {
 		gridBagConstraints.gridx = 1;
 
 		estimationPanel = new FRAPEstimationPanel();
+		estimationPanel.setBorder(new TitledBorder(new LineBorder(Color.black, 2, false), "FRAP Model Parameter Assistant (Select 'Estimation Method')", TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, new Font("", Font.BOLD, 16), null));
 		estimationPanel.addPropertyChangeListener(
 			new PropertyChangeListener(){
 				public void propertyChange(PropertyChangeEvent evt) {
@@ -108,28 +112,14 @@ public class FRAPParametersPanel extends JPanel {
 				}
 			}
 		);
-		estimationPanel.setBorder(new LineBorder(Color.black, 2, false));
 		final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
+		gridBagConstraints_1.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_1.weighty = 1;
 		gridBagConstraints_1.fill = GridBagConstraints.BOTH;
 		gridBagConstraints_1.gridy = 0;
 		gridBagConstraints_1.gridx = 0;
 		add(estimationPanel, gridBagConstraints_1);
 		add(panel, gridBagConstraints);
-
-		final JLabel frapModelParametersLabel = new JLabel();
-		frapModelParametersLabel.setBorder(new LineBorder(Color.black, 1, false));
-		frapModelParametersLabel.setFont(new Font("", Font.BOLD, 18));
-		frapModelParametersLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
-		gridBagConstraints_3.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_3.fill = GridBagConstraints.BOTH;
-		gridBagConstraints_3.gridwidth = 3;
-		gridBagConstraints_3.weightx = 1;
-		gridBagConstraints_3.gridy = 0;
-		gridBagConstraints_3.gridx = 0;
-		panel.add(frapModelParametersLabel, gridBagConstraints_3);
-		frapModelParametersLabel.setText("Initial FRAP Model Parameters");
 
 		final JLabel parameterLabel = new JLabel();
 		parameterLabel.setBorder(new LineBorder(Color.black, 1, false));
@@ -138,7 +128,7 @@ public class FRAPParametersPanel extends JPanel {
 		final GridBagConstraints gridBagConstraints_19 = new GridBagConstraints();
 		gridBagConstraints_19.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_19.fill = GridBagConstraints.BOTH;
-		gridBagConstraints_19.gridy = 1;
+		gridBagConstraints_19.gridy = 0;
 		gridBagConstraints_19.gridx = 0;
 		panel.add(parameterLabel, gridBagConstraints_19);
 
@@ -150,7 +140,7 @@ public class FRAPParametersPanel extends JPanel {
 		gridBagConstraints_20.weightx = 1;
 		gridBagConstraints_20.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_20.fill = GridBagConstraints.BOTH;
-		gridBagConstraints_20.gridy = 1;
+		gridBagConstraints_20.gridy = 0;
 		gridBagConstraints_20.gridx = 1;
 		panel.add(valueLabel, gridBagConstraints_20);
 
@@ -161,18 +151,17 @@ public class FRAPParametersPanel extends JPanel {
 		final GridBagConstraints gridBagConstraints_31 = new GridBagConstraints();
 		gridBagConstraints_31.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_31.fill = GridBagConstraints.BOTH;
-		gridBagConstraints_31.gridy = 1;
+		gridBagConstraints_31.gridy = 0;
 		gridBagConstraints_31.gridx = 2;
 		panel.add(unitsLabel, gridBagConstraints_31);
 
 		final JLabel diffusionRateLabel = new JLabel();
 		diffusionRateLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		diffusionRateLabel.setBorder(new LineBorder(Color.black, 2, false));
 		diffusionRateLabel.setText("Diffusion Rate");
 		final GridBagConstraints gridBagConstraints_18 = new GridBagConstraints();
 		gridBagConstraints_18.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_18.fill = GridBagConstraints.BOTH;
-		gridBagConstraints_18.gridy = 2;
+		gridBagConstraints_18.gridy = 1;
 		gridBagConstraints_18.gridx = 0;
 		panel.add(diffusionRateLabel, gridBagConstraints_18);
 
@@ -181,7 +170,7 @@ public class FRAPParametersPanel extends JPanel {
 		gridBagConstraints_12.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_12.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_12.weightx = 0;
-		gridBagConstraints_12.gridy = 2;
+		gridBagConstraints_12.gridy = 1;
 		gridBagConstraints_12.gridx = 1;
 		panel.add(diffusionRateTextField, gridBagConstraints_12);
 
@@ -189,18 +178,17 @@ public class FRAPParametersPanel extends JPanel {
 		umsecLabel.setText("um2/s");
 		final GridBagConstraints gridBagConstraints_14 = new GridBagConstraints();
 		gridBagConstraints_14.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_14.gridy = 2;
+		gridBagConstraints_14.gridy = 1;
 		gridBagConstraints_14.gridx = 2;
 		panel.add(umsecLabel, gridBagConstraints_14);
 
 		final JLabel mobileFractionLabel = new JLabel();
 		mobileFractionLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		mobileFractionLabel.setBorder(new LineBorder(Color.black, 2, false));
 		mobileFractionLabel.setText("Mobile Fraction");
 		final GridBagConstraints gridBagConstraints_21 = new GridBagConstraints();
 		gridBagConstraints_21.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_21.fill = GridBagConstraints.BOTH;
-		gridBagConstraints_21.gridy = 3;
+		gridBagConstraints_21.gridy = 2;
 		gridBagConstraints_21.gridx = 0;
 		panel.add(mobileFractionLabel, gridBagConstraints_21);
 
@@ -213,7 +201,7 @@ public class FRAPParametersPanel extends JPanel {
 		final GridBagConstraints gridBagConstraints_13 = new GridBagConstraints();
 		gridBagConstraints_13.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_13.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints_13.gridy = 3;
+		gridBagConstraints_13.gridy = 2;
 		gridBagConstraints_13.gridx = 1;
 		panel.add(mobileFractionTextField, gridBagConstraints_13);
 
@@ -221,18 +209,17 @@ public class FRAPParametersPanel extends JPanel {
 		label.setText("1/s");
 		final GridBagConstraints gridBagConstraints_32 = new GridBagConstraints();
 		gridBagConstraints_32.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_32.gridy = 3;
+		gridBagConstraints_32.gridy = 2;
 		gridBagConstraints_32.gridx = 2;
 		panel.add(label, gridBagConstraints_32);
 
 		final JLabel immobileFractionLabel = new JLabel();
 		immobileFractionLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		immobileFractionLabel.setBorder(new LineBorder(Color.black, 2, false));
 		immobileFractionLabel.setText("Immobile Fraction");
 		final GridBagConstraints gridBagConstraints_22 = new GridBagConstraints();
 		gridBagConstraints_22.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_22.fill = GridBagConstraints.BOTH;
-		gridBagConstraints_22.gridy = 4;
+		gridBagConstraints_22.gridy = 3;
 		gridBagConstraints_22.gridx = 0;
 		panel.add(immobileFractionLabel, gridBagConstraints_22);
 
@@ -241,7 +228,7 @@ public class FRAPParametersPanel extends JPanel {
 		final GridBagConstraints gridBagConstraints_10 = new GridBagConstraints();
 		gridBagConstraints_10.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_10.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_10.gridy = 4;
+		gridBagConstraints_10.gridy = 3;
 		gridBagConstraints_10.gridx = 1;
 		panel.add(immobileFractionValueJLabel, gridBagConstraints_10);
 
@@ -249,19 +236,18 @@ public class FRAPParametersPanel extends JPanel {
 		label_1.setText("1/s");
 		final GridBagConstraints gridBagConstraints_33 = new GridBagConstraints();
 		gridBagConstraints_33.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_33.gridy = 4;
+		gridBagConstraints_33.gridy = 3;
 		gridBagConstraints_33.gridx = 2;
 		panel.add(label_1, gridBagConstraints_33);
 
 		final JLabel monitorBleachRateLabel = new JLabel();
 		monitorBleachRateLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		monitorBleachRateLabel.setBorder(new LineBorder(Color.black, 2, false));
 		monitorBleachRateLabel.setText("Monitor Bleach Rate");
 		final GridBagConstraints gridBagConstraints_23 = new GridBagConstraints();
 		gridBagConstraints_23.ipadx = 8;
 		gridBagConstraints_23.fill = GridBagConstraints.BOTH;
 		gridBagConstraints_23.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_23.gridy = 5;
+		gridBagConstraints_23.gridy = 4;
 		gridBagConstraints_23.gridx = 0;
 		panel.add(monitorBleachRateLabel, gridBagConstraints_23);
 
@@ -269,7 +255,7 @@ public class FRAPParametersPanel extends JPanel {
 		final GridBagConstraints gridBagConstraints_15 = new GridBagConstraints();
 		gridBagConstraints_15.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_15.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints_15.gridy = 5;
+		gridBagConstraints_15.gridy = 4;
 		gridBagConstraints_15.gridx = 1;
 		panel.add(monitorBleachRateTextField, gridBagConstraints_15);
 
@@ -277,18 +263,17 @@ public class FRAPParametersPanel extends JPanel {
 		um2sLabel.setText("um2/s");
 		final GridBagConstraints gridBagConstraints_34 = new GridBagConstraints();
 		gridBagConstraints_34.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_34.gridy = 5;
+		gridBagConstraints_34.gridy = 4;
 		gridBagConstraints_34.gridx = 2;
 		panel.add(um2sLabel, gridBagConstraints_34);
 
 		final JLabel slowerDiffMobileLabel = new JLabel();
 		slowerDiffMobileLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		slowerDiffMobileLabel.setBorder(new LineBorder(Color.black, 2, false));
 		slowerDiffMobileLabel.setText("Slower Diff, Mobile");
 		final GridBagConstraints gridBagConstraints_35 = new GridBagConstraints();
 		gridBagConstraints_35.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_35.fill = GridBagConstraints.BOTH;
-		gridBagConstraints_35.gridy = 6;
+		gridBagConstraints_35.gridy = 5;
 		gridBagConstraints_35.gridx = 0;
 		panel.add(slowerDiffMobileLabel, gridBagConstraints_35);
 
@@ -296,7 +281,7 @@ public class FRAPParametersPanel extends JPanel {
 		final GridBagConstraints gridBagConstraints_36 = new GridBagConstraints();
 		gridBagConstraints_36.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_36.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints_36.gridy = 6;
+		gridBagConstraints_36.gridy = 5;
 		gridBagConstraints_36.gridx = 1;
 		panel.add(slowerTextField, gridBagConstraints_36);
 
@@ -304,18 +289,17 @@ public class FRAPParametersPanel extends JPanel {
 		um2sLabel_1.setText("um2/s");
 		final GridBagConstraints gridBagConstraints_37 = new GridBagConstraints();
 		gridBagConstraints_37.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_37.gridy = 6;
+		gridBagConstraints_37.gridy = 5;
 		gridBagConstraints_37.gridx = 2;
 		panel.add(um2sLabel_1, gridBagConstraints_37);
 
 		final JLabel startIndexRecoveryLabel = new JLabel();
 		startIndexRecoveryLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		startIndexRecoveryLabel.setBorder(new LineBorder(Color.black, 2, false));
 		startIndexRecoveryLabel.setText("Start Time Recovery");
 		final GridBagConstraints gridBagConstraints_41 = new GridBagConstraints();
 		gridBagConstraints_41.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_41.fill = GridBagConstraints.BOTH;
-		gridBagConstraints_41.gridy = 7;
+		gridBagConstraints_41.gridy = 6;
 		gridBagConstraints_41.gridx = 0;
 		panel.add(startIndexRecoveryLabel, gridBagConstraints_41);
 
@@ -323,14 +307,14 @@ public class FRAPParametersPanel extends JPanel {
 		final GridBagConstraints gridBagConstraints_42 = new GridBagConstraints();
 		gridBagConstraints_42.fill = GridBagConstraints.BOTH;
 		gridBagConstraints_42.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_42.gridy = 7;
+		gridBagConstraints_42.gridy = 6;
 		gridBagConstraints_42.gridx = 1;
 		panel.add(frapDataTimesComboBox, gridBagConstraints_42);
 
 		final JLabel sLabel = new JLabel();
 		sLabel.setText("s");
 		final GridBagConstraints gridBagConstraints_43 = new GridBagConstraints();
-		gridBagConstraints_43.gridy = 7;
+		gridBagConstraints_43.gridy = 6;
 		gridBagConstraints_43.gridx = 2;
 		panel.add(sLabel, gridBagConstraints_43);
 		

@@ -51,7 +51,7 @@ public class FRAPEstimationPanel extends JPanel {
 	public static final String FRAP_PARAMETER_ESTIMATE_VALUES_PROPERTY = "FRAP_PARAMETER_ESTIMATE_VALUES_PROPERTY";
 	
 	private enum FRAPParameterEstimateEnum {
-		DIFFUSION_RATE("Diffusion Rate","um^2/s"),
+		DIFFUSION_RATE("Diffusion Rate","um2/s"),
 		MOBILE_FRACTION("Mobile Fraction","1/s"),
 		IMMOBILE_FRATION("Immobile Fraction","1/s"),
 		START_TIME_RECOVERY("Start Time Recovery","s"),;
@@ -92,16 +92,6 @@ public class FRAPEstimationPanel extends JPanel {
 		gridBagLayout.columnWidths = new int[] {7,0};
 		setLayout(gridBagLayout);
 
-		final JLabel enterValuesUnderLabel = new JLabel();
-		enterValuesUnderLabel.setFont(new Font("", Font.BOLD, 14));
-		enterValuesUnderLabel.setText("Choose 'Estimation method' to calculate FRAP Model Paramter estimated values");
-		final GridBagConstraints gridBagConstraints_30 = new GridBagConstraints();
-		gridBagConstraints_30.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_30.gridy = 0;
-		gridBagConstraints_30.gridx = 0;
-		gridBagConstraints_30.gridwidth = 2;
-		add(enterValuesUnderLabel, gridBagConstraints_30);
-
 		final JPanel panel = new JPanel();
 		panel.setBorder(new LineBorder(Color.black, 1, false));
 		final GridBagLayout gridBagLayout_1 = new GridBagLayout();
@@ -113,11 +103,12 @@ public class FRAPEstimationPanel extends JPanel {
 		gridBagConstraints.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints.fill = GridBagConstraints.BOTH;
 		gridBagConstraints.weightx = 1;
-		gridBagConstraints.gridy = 1;
+		gridBagConstraints.gridy = 0;
 		gridBagConstraints.gridx = 1;
 		add(panel, gridBagConstraints);
 
 		final JLabel frapModelParameterLabel_1 = new JLabel();
+		frapModelParameterLabel_1.setFont(new Font("", Font.BOLD, 14));
 		frapModelParameterLabel_1.setText("FRAP Model Parameter Estimates");
 		final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
 		gridBagConstraints_3.gridwidth = 2;
@@ -126,8 +117,9 @@ public class FRAPEstimationPanel extends JPanel {
 		panel.add(frapModelParameterLabel_1, gridBagConstraints_3);
 
 		final JLabel frapParameterEstimatesLabel = new JLabel();
+		frapParameterEstimatesLabel.setFont(new Font("", Font.BOLD, 14));
 		frapParameterEstimatesLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		frapParameterEstimatesLabel.setText("Estimation method");
+		frapParameterEstimatesLabel.setText("Estimation Method");
 		final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
 		gridBagConstraints_1.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_1.fill = GridBagConstraints.BOTH;
@@ -163,6 +155,7 @@ public class FRAPEstimationPanel extends JPanel {
 		scrollPane.setViewportView(table);
 
 		final JButton applyEstimatedValuesButton = new JButton();
+		applyEstimatedValuesButton.setFont(new Font("", Font.BOLD, 16));
 		applyEstimatedValuesButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
 				Object[][] rowData = new Object[3][FRAP_ESTIMATE_COLUMN_NAMES.length];
@@ -173,7 +166,14 @@ public class FRAPEstimationPanel extends JPanel {
 					FRAPParameterEstimateEnum.MOBILE_FRACTION.parameterTypeName;
 				rowData[2][0] =
 					FRAPParameterEstimateEnum.START_TIME_RECOVERY.parameterTypeName;
-				
+
+				rowData[0][2] =
+					FRAPParameterEstimateEnum.DIFFUSION_RATE.unit;
+				rowData[1][2] =
+					FRAPParameterEstimateEnum.MOBILE_FRACTION.unit;
+				rowData[2][2] =
+					FRAPParameterEstimateEnum.START_TIME_RECOVERY.unit;
+
 				rowData[0][1] =
 					FRAPParameterEstimateEnum.DIFFUSION_RATE.value;
 				rowData[1][1] =
@@ -182,7 +182,7 @@ public class FRAPEstimationPanel extends JPanel {
 					FRAPParameterEstimateEnum.START_TIME_RECOVERY.value;
 
 				try{
-					int[] result = DialogUtils.showComponentOKCancelTableList(FRAPEstimationPanel.this, "Choose Estimated values to Apply FRAP Model Parameters",
+					int[] result = DialogUtils.showComponentOKCancelTableList(FRAPEstimationPanel.this, "Apply selected 'Estimated Values' to 'Initial FRAP Model Parameters'",
 							FRAP_ESTIMATE_COLUMN_NAMES, rowData, ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 					if(result != null && result.length > 0){
 						Double selectedDiffusionRate = null;
@@ -217,7 +217,7 @@ public class FRAPEstimationPanel extends JPanel {
 				}
 			}
 		});
-		applyEstimatedValuesButton.setText("Apply Estimated values to Initial FRAP Model Parameters...");
+		applyEstimatedValuesButton.setText("Apply Estimated Values...");
 		final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
 		gridBagConstraints_5.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_5.fill = GridBagConstraints.HORIZONTAL;
@@ -235,7 +235,7 @@ public class FRAPEstimationPanel extends JPanel {
 		panel_1.setLayout(gridBagLayout_2);
 		final GridBagConstraints gridBagConstraints_24 = new GridBagConstraints();
 		gridBagConstraints_24.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_24.gridy = 1;
+		gridBagConstraints_24.gridy = 0;
 		gridBagConstraints_24.gridx = 0;
 		add(panel_1, gridBagConstraints_24);
 
@@ -266,13 +266,13 @@ public class FRAPEstimationPanel extends JPanel {
 		final GridBagConstraints gridBagConstraints_29 = new GridBagConstraints();
 		gridBagConstraints_29.insets = new Insets(20, 4, 4, 4);
 		gridBagConstraints_29.gridwidth = 2;
-		gridBagConstraints_29.gridy = 2;
+		gridBagConstraints_29.gridy = 1;
 		gridBagConstraints_29.gridx = 0;
 		add(plotOfAverageLabel, gridBagConstraints_29);
 
 		multisourcePlotPane = new MultisourcePlotPane();
 		multisourcePlotPane.setModelDataLabelPrefix("Estimated_");
-		multisourcePlotPane.setRefDataLabelPrefix("Data_");
+		multisourcePlotPane.setRefDataLabelPrefix("Eperiment_");
 		multisourcePlotPane.setBorder(new LineBorder(Color.black, 1, false));
 		multisourcePlotPane.setListVisible(false);
 		final GridBagConstraints gridBagConstraints_27 = new GridBagConstraints();
@@ -281,7 +281,7 @@ public class FRAPEstimationPanel extends JPanel {
 		gridBagConstraints_27.weighty = 1;
 		gridBagConstraints_27.weightx = 1;
 		gridBagConstraints_27.gridwidth = 2;
-		gridBagConstraints_27.gridy = 3;
+		gridBagConstraints_27.gridy = 2;
 		gridBagConstraints_27.gridx = 0;
 		add(multisourcePlotPane, gridBagConstraints_27);
 		
