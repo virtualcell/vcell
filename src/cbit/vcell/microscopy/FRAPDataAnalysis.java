@@ -199,6 +199,28 @@ public class FRAPDataAnalysis {
 		//curve fitting according to different bleach types
 		double[] inputParamValues = null;
 		double[] outputParamValues = null;
+		
+		//
+		//Bleach while monitoring fit
+		//
+		double[] tempCellROIAverage = getAverageROIIntensity(frapData,RoiType.ROI_CELL);
+		for (int i = 0; i < temp_fluor.length; i++) {
+			tempCellROIAverage[i] -= averageBackground;
+		}
+		double[] cellROIAverage = new double[tempCellROIAverage.length-startIndexForRecovery];
+		//Cell Avg. points start from the first post bleach
+		System.arraycopy(tempCellROIAverage, startIndexForRecovery, cellROIAverage, 0, cellROIAverage.length);
+
+		outputParamValues = new double[3];
+		Expression bleachWhileMonitorFitExpression =
+			CurveFitting.fitBleachWhileMonitoring(time, cellROIAverage, outputParamValues);
+		frapDataAnalysisResults.setBleachWhileMonitoringTau(outputParamValues[2]);
+		frapDataAnalysisResults.setFitBleachWhileMonitorExpression(bleachWhileMonitorFitExpression.flatten());
+		frapDataAnalysisResults.setCellRegionData(tempCellROIAverage);
+		
+		//
+		//Recovery after Bleach fit
+		//
 		if(arg_bleachType == FrapDataAnalysisResults.BleachType_CirularDisk)
 		{
 			outputParamValues = new double[4];// the array is used to get Ii, A, fitRecoveryTau back, unnormalized Ii + A. (Note: Ii=Io, A=If-Io, Ii+A = If)

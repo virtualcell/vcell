@@ -24,7 +24,9 @@ public class FrapDataAnalysisResults implements Matchable {
 	private Integer bleachType = null;
 	private Expression fitExpression = null;
 	private double[] bleachRegionData = null;
-
+	private Expression fitBleachWhileMonitorExpression = null;
+	private double[] cellRegionData = null;
+	
 	private Double slowerRate = null;
 	
 	public FrapDataAnalysisResults() {
@@ -239,7 +241,13 @@ public class FrapDataAnalysisResults implements Matchable {
 			{
 				return false;
 			}
-			
+			if(!cbit.util.Compare.isEqualOrNull(getFitBleachWhileMonitorExpression(), fdar.getFitBleachWhileMonitorExpression())){
+				return false;
+			}
+			if(!cbit.util.Compare.isEqualOrNull(getCellRegionData(), fdar.getCellRegionData())){
+				return false;
+			}
+
 			return true;
 		}
 		return false;	
@@ -251,6 +259,23 @@ public class FrapDataAnalysisResults implements Matchable {
 
 	public void setSlowerRate(Double slowerRate) {
 		this.slowerRate = slowerRate;
+	}
+
+	public Expression getFitBleachWhileMonitorExpression() {
+		return fitBleachWhileMonitorExpression;
+	}
+
+	public void setFitBleachWhileMonitorExpression(
+			Expression fitBleachWhileMonitorExpression) {
+		this.fitBleachWhileMonitorExpression = fitBleachWhileMonitorExpression;
+	}
+
+	public double[] getCellRegionData() {
+		return cellRegionData;
+	}
+
+	public void setCellRegionData(double[] cellRegionData) {
+		this.cellRegionData = cellRegionData;
 	}
 
 }

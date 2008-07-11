@@ -107,7 +107,9 @@ public class FRAPParametersPanel extends JPanel {
 							mobileFractionTextField.setText(""+frapParamEstVals.mobileFraction);
 							immobileFractionValueJLabel.setText(""+(1.0-frapParamEstVals.mobileFraction));
 						}
-						
+						if(frapParamEstVals.bleachWhileMonitorRate != null){
+							monitorBleachRateTextField.setText(""+frapParamEstVals.bleachWhileMonitorRate);
+						}
 					}
 				}
 			}
