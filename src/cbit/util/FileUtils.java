@@ -85,4 +85,36 @@ public static File createTempFile(String prefix, String suffix, File parentDir) 
     }
     return result;
 }
+
+/**
+ * Insert the method's description here.
+ * Creation date: (6/30/2005 5:22:16 PM)
+ * @return cbit.util.BigString
+ */
+public static String readFileToString(File file) throws IOException {
+		
+	// Read characters from input file into character array and transfer into string buffer.
+	BufferedReader br = null;
+	StringBuffer stringBuffer = new StringBuffer();
+	try {
+		br = new BufferedReader(new FileReader(file));
+		char charArray[] = new char[10000];
+		while (true) {
+			int numRead = br.read(charArray, 0, charArray.length);
+			if (numRead == -1) {
+				break;
+			}
+			if (numRead > 0) {
+				stringBuffer.append(charArray,0,numRead);
+			}
+		}
+	} finally {
+		if (br != null) {
+			br.close();
+		}
+	}
+
+	return stringBuffer.toString();
+}
+
 }

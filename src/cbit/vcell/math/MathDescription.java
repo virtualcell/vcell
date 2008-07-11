@@ -32,8 +32,8 @@ import cbit.sql.KeyValue;
 public class MathDescription implements cbit.sql.Versionable, Matchable, SymbolTable, Serializable,FieldFunctionContainer {
 	protected transient java.util.Vector<ChangeListener> aChangeListener = null;
 	private Version version = null;
-	private Vector subDomainList = new Vector<SubDomain>();
-	private Vector variableList = new Vector<Variable>();
+	private Vector<SubDomain> subDomainList = new Vector<SubDomain>();
+	private Vector<Variable> variableList = new Vector<Variable>();
 	private Geometry geometry = null;
 	private transient Jacobian jacobian = null;
 	private transient RateSensitivity rateSensitivity = null;

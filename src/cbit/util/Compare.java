@@ -259,7 +259,7 @@ public static boolean isEqual(java.util.Date obj1, java.util.Date obj2) {
  * @param v1 java.util.Vector
  * @param v2 java.util.Vector
  */
-public static boolean isEqual(Vector<Matchable> v1, Vector<Matchable> v2) {
+public static boolean isEqual(Vector<? extends Matchable> v1, Vector<? extends Matchable> v2) {
 	if (v1.size() != v2.size()){
 		return false;
 	}

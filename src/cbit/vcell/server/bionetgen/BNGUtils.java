@@ -1,4 +1,5 @@
 package cbit.vcell.server.bionetgen;
+import cbit.util.FileUtils;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.server.bionetgen.BNGOutput;
 import cbit.vcell.server.bionetgen.BNGInput;
@@ -128,7 +129,7 @@ public static BNGOutput executeBNG(BNGInput bngRules) throws Exception {
 		
 		for (int i = 0; i < files.length; i ++) {
 			filenames[i] = files[i].getName();
-			filecontents[i] = readFileToString(files[i]);
+			filecontents[i] = FileUtils.readFileToString(files[i]);
 			files[i].delete();
 		}		
 		workingDir.delete();
@@ -194,39 +195,6 @@ private static void initialize() throws Exception {
 		}
 	}	
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (6/30/2005 5:22:16 PM)
- * @return cbit.util.BigString
- */
-private static String readFileToString(File file) throws IOException {
-		
-	// Read characters from input file into character array and transfer into string buffer.
-	BufferedReader br = null;
-	StringBuffer stringBuffer = new StringBuffer();
-	try {
-		br = new BufferedReader(new FileReader(file));
-		char charArray[] = new char[10000];
-		while (true) {
-			int numRead = br.read(charArray, 0, charArray.length);
-			if (numRead == -1) {
-				break;
-			}
-			if (numRead > 0) {
-				stringBuffer.append(charArray,0,numRead);
-			}
-		}
-	} finally {
-		if (br != null) {
-			br.close();
-		}
-	}
-
-	return stringBuffer.toString();
-}
-
 
 /**
  * Insert the method's description here.
