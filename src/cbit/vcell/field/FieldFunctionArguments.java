@@ -85,6 +85,11 @@ public class FieldFunctionArguments implements Serializable {
 				return false;
 		} else if (!variableName.equals(other.variableName))
 			return false;
+		if (variableType == null) {
+			if (other.variableType != null)
+				return false;
+		} else if (!variableType.equals(other.variableType))
+			return false;
 		return true;
 	}
 

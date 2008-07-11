@@ -916,20 +916,9 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 			FileUtils.copyFile(funcFile_orig, funcFile_new, false, false, 8*1024);
 			
 			//Copy Log file and replace original simID with ExternalDataIdentifier id
-	        BufferedReader reader = null;
 	        BufferedWriter writer = null;
 	        try{
-		        StringBuffer fileData = new StringBuffer(1000);
-		        reader = new BufferedReader(new FileReader(fdLogFile_orig));
-		        char[] buf = new char[1024];
-		        int numRead=0;
-		        while((numRead=reader.read(buf)) != -1){
-		            String readData = String.valueOf(buf, 0, numRead);
-		            fileData.append(readData);
-		            buf = new char[1024];
-		        }
-		        reader.close();
-		        String origLog = fileData.toString();
+		        String origLog = FileUtils.readFileToString(fdLogFile_orig);
 		        String newLogStr;
 	        	String replace_new =
 	        		ExternalDataIdentifier.createSimIDWithJobIndex(
@@ -950,7 +939,6 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 		        writer.write(newLogStr);
 		        writer.close();
 	        }finally{
-	        	try{if(reader != null){reader.close();}}catch(Exception e){/*ignore*/};
 		        try{if(writer != null){writer.close();}}catch(Exception e){/*ignore*/};
 	        }
 	        

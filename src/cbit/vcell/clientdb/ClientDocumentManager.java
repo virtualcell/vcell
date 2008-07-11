@@ -3018,19 +3018,19 @@ public void substituteFieldFuncNames(VCDocument vcDocument,VersionableTypeVersio
 		}
 		//Get original Field names
 		Vector<String> origFieldFuncNamesV = new Vector<String>();
-		HashSet<FieldFunctionArguments> fieldFuncArgsHashSet =
-			new HashSet<FieldFunctionArguments>();
+//		HashSet<FieldFunctionArguments> fieldFuncArgsHashSet =
+//			new HashSet<FieldFunctionArguments>();
 		for(int i=0;i<fieldFunctionContainerV.size();i+= 1){
 			FieldFunctionArguments[] fieldFuncArgsArr =
 				fieldFunctionContainerV.elementAt(i).getFieldFunctionArguments();
 			for(int j=0;j<fieldFuncArgsArr.length;j+= 1){
-				fieldFuncArgsHashSet.add(fieldFuncArgsArr[j]);
+//				fieldFuncArgsHashSet.add(fieldFuncArgsArr[j]);
 				if(!origFieldFuncNamesV.contains(fieldFuncArgsArr[j].getFieldName())){
 					origFieldFuncNamesV.add(fieldFuncArgsArr[j].getFieldName());
 				}
 			}
 		}
-		if(fieldFuncArgsHashSet.size() == 0){//No FieldFunctions to substitute
+		if(origFieldFuncNamesV.size() == 0){//No FieldFunctions to substitute
 			return;
 		}
 		
@@ -3045,17 +3045,17 @@ public void substituteFieldFuncNames(VCDocument vcDocument,VersionableTypeVersio
 		errorCleanupExtDataIDV.addAll(copyNamesFieldDataOpResults.oldNameNewIDHash.values());
 		
 		//Copy Field Data on Data Server FileSystem
-		FieldFunctionArguments[] allFieldFunctionArguments =
-			fieldFuncArgsHashSet.toArray(new FieldFunctionArguments[0]);
-		for(int i=0;i<allFieldFunctionArguments.length;i+= 1){
+//		FieldFunctionArguments[] allFieldFunctionArguments =
+//			fieldFuncArgsHashSet.toArray(new FieldFunctionArguments[0]);
+		for(String fieldname : origFieldFuncNamesV){
 			KeyValue sourceSimDataKey =
-				copyNamesFieldDataOpResults.oldNameOldExtDataIDKeyHash.get(
-						allFieldFunctionArguments[i].getFieldName());
+				copyNamesFieldDataOpResults.oldNameOldExtDataIDKeyHash.get(fieldname);
+						//allFieldFunctionArguments[i].getFieldName());
 			if(sourceSimDataKey == null){
-				throw new DataAccessException("Couldn't find original data key for FieldFunc "+allFieldFunctionArguments[i].getFieldName());
+				throw new DataAccessException("Couldn't find original data key for FieldFunc "+fieldname);
 			}
 			ExternalDataIdentifier newExtDataID =
-				copyNamesFieldDataOpResults.oldNameNewIDHash.get(allFieldFunctionArguments[i].getFieldName());
+				copyNamesFieldDataOpResults.oldNameNewIDHash.get(fieldname);
 			getSessionManager().
 					fieldDataFileOperation(
 							FieldDataFileOperationSpec.createCopySimFieldDataFileOperationSpec(
@@ -3073,6 +3073,7 @@ public void substituteFieldFuncNames(VCDocument vcDocument,VersionableTypeVersio
 		}
 		fireFieldDataDB(new FieldDataDBEvent(this));
 	}catch(Exception e){
+		e.printStackTrace();
 		//Cleanup
 		for(int i=0;i<errorCleanupExtDataIDV.size();i+= 1){
 			try{
