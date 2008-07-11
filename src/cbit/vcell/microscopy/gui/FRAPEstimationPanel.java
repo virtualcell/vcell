@@ -54,7 +54,8 @@ public class FRAPEstimationPanel extends JPanel {
 		DIFFUSION_RATE("Diffusion Rate","um2/s"),
 		MOBILE_FRACTION("Mobile Fraction","1/s"),
 		IMMOBILE_FRATION("Immobile Fraction","1/s"),
-		START_TIME_RECOVERY("Start Time Recovery","s"),;
+		START_TIME_RECOVERY("Start Time Recovery","s"),
+		BLEACH_RATE_MONITOR("Bleach while Monitor rate","1/s");
 		
 	    private final String parameterTypeName;
 	    private Double value;
@@ -70,10 +71,13 @@ public class FRAPEstimationPanel extends JPanel {
 		public final Double diffusionRate;
 		public final Double mobileFraction;
 		public final Double startTimeRecovery;
-		public FRAPParameterEstimateValues(Double diffusionRate,Double mobileFraction,Double startTimeRecovery){
+		public final Double bleachWhileMonitorRate;
+		public FRAPParameterEstimateValues(
+			Double diffusionRate,Double mobileFraction,Double startTimeRecovery,Double bleachWhileMonitorRate){
 			this.diffusionRate = diffusionRate;
 			this.mobileFraction = mobileFraction;
 			this.startTimeRecovery = startTimeRecovery;
+			this.bleachWhileMonitorRate = bleachWhileMonitorRate;
 		}
 	};
 
@@ -158,7 +162,7 @@ public class FRAPEstimationPanel extends JPanel {
 		applyEstimatedValuesButton.setFont(new Font("", Font.BOLD, 16));
 		applyEstimatedValuesButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				Object[][] rowData = new Object[3][FRAP_ESTIMATE_COLUMN_NAMES.length];
+				Object[][] rowData = new Object[4][FRAP_ESTIMATE_COLUMN_NAMES.length];
 				
 				rowData[0][0] =
 					FRAPParameterEstimateEnum.DIFFUSION_RATE.parameterTypeName;
@@ -166,6 +170,8 @@ public class FRAPEstimationPanel extends JPanel {
 					FRAPParameterEstimateEnum.MOBILE_FRACTION.parameterTypeName;
 				rowData[2][0] =
 					FRAPParameterEstimateEnum.START_TIME_RECOVERY.parameterTypeName;
+				rowData[3][0] =
+					FRAPParameterEstimateEnum.BLEACH_RATE_MONITOR.parameterTypeName;
 
 				rowData[0][2] =
 					FRAPParameterEstimateEnum.DIFFUSION_RATE.unit;
@@ -173,6 +179,8 @@ public class FRAPEstimationPanel extends JPanel {
 					FRAPParameterEstimateEnum.MOBILE_FRACTION.unit;
 				rowData[2][2] =
 					FRAPParameterEstimateEnum.START_TIME_RECOVERY.unit;
+				rowData[3][2] =
+					FRAPParameterEstimateEnum.BLEACH_RATE_MONITOR.unit;
 
 				rowData[0][1] =
 					FRAPParameterEstimateEnum.DIFFUSION_RATE.value;
@@ -180,6 +188,8 @@ public class FRAPEstimationPanel extends JPanel {
 					FRAPParameterEstimateEnum.MOBILE_FRACTION.value;
 				rowData[2][1] =
 					FRAPParameterEstimateEnum.START_TIME_RECOVERY.value;
+				rowData[3][1] =
+					FRAPParameterEstimateEnum.BLEACH_RATE_MONITOR.value;
 
 				try{
 					int[] result = DialogUtils.showComponentOKCancelTableList(FRAPEstimationPanel.this, "Apply selected 'Estimated Values' to 'Initial FRAP Model Parameters'",
@@ -188,6 +198,7 @@ public class FRAPEstimationPanel extends JPanel {
 						Double selectedDiffusionRate = null;
 						Double selectedMobileFraction = null;
 						Double selectedStartTimeRecovery = null;
+						Double bleachWhileMonitoringRate = null;
 						
 						for (int j = 0; j < result.length; j++) {
 							switch (result[j]) {
@@ -200,6 +211,9 @@ public class FRAPEstimationPanel extends JPanel {
 							case 2:
 								selectedStartTimeRecovery = FRAPParameterEstimateEnum.START_TIME_RECOVERY.value;
 								break;
+							case 3:
+								bleachWhileMonitoringRate = FRAPParameterEstimateEnum.BLEACH_RATE_MONITOR.value;
+								break;
 							default:
 								break;
 							}
@@ -208,7 +222,8 @@ public class FRAPEstimationPanel extends JPanel {
 							new FRAPParameterEstimateValues(
 								selectedDiffusionRate,
 								selectedMobileFraction,
-								selectedStartTimeRecovery
+								selectedStartTimeRecovery,
+								bleachWhileMonitoringRate
 							);
 						firePropertyChange(FRAP_PARAMETER_ESTIMATE_VALUES_PROPERTY, null, frapParameterEstimateValues);
 					}
@@ -272,7 +287,7 @@ public class FRAPEstimationPanel extends JPanel {
 
 		multisourcePlotPane = new MultisourcePlotPane();
 		multisourcePlotPane.setModelDataLabelPrefix("Estimated_");
-		multisourcePlotPane.setRefDataLabelPrefix("Eperiment_");
+		multisourcePlotPane.setRefDataLabelPrefix("Experiment_");
 		multisourcePlotPane.setBorder(new LineBorder(Color.black, 1, false));
 		multisourcePlotPane.setListVisible(false);
 		final GridBagConstraints gridBagConstraints_27 = new GridBagConstraints();
@@ -318,6 +333,8 @@ public class FRAPEstimationPanel extends JPanel {
 			    }
 			};
 		table.setModel(tableModel);
+		table.getTableHeader().getColumnModel().getColumn(UNIT_COLUMN).setMaxWidth(50);
+
 	}
 	private void initialize(){
 		initTable();
@@ -388,6 +405,7 @@ public class FRAPEstimationPanel extends JPanel {
 			FRAPParameterEstimateEnum.MOBILE_FRACTION.value = null;
 			FRAPParameterEstimateEnum.IMMOBILE_FRATION.value = null;
 			FRAPParameterEstimateEnum.START_TIME_RECOVERY.value = null;
+			FRAPParameterEstimateEnum.BLEACH_RATE_MONITOR.value = null;
 			multisourcePlotPane.setDataSources(null);
 		}else{
 			FRAPParameterEstimateEnum.DIFFUSION_RATE.value =
@@ -402,9 +420,62 @@ public class FRAPEstimationPanel extends JPanel {
 				(FRAPParameterEstimateEnum.MOBILE_FRACTION.value == null
 					?null
 					:1.0 - FRAPParameterEstimateEnum.MOBILE_FRACTION.value);
-
-			double[] bleachRegionData = frapDataAnalysisResults.getBleachRegionData();
+			FRAPParameterEstimateEnum.BLEACH_RATE_MONITOR.value =
+				(frapDataAnalysisResults.getBleachWhileMonitoringTau() == null
+					?null
+					:frapDataAnalysisResults.getBleachWhileMonitoringTau());
+			
+			
+			
 			int startIndexForRecovery = frapDataAnalysisResults.getStartingIndexForRecovery();
+			//
+			//Experiment - Cell ROI Average
+			//
+			double[] cellRegionData = frapDataAnalysisResults.getCellRegionData();
+			Expression bleachWhileMonitorCurve = frapDataAnalysisResults.getFitBleachWhileMonitorExpression();
+			ReferenceData expCellAvgData =
+				new SimpleReferenceData(new String[] { "t", "CellROIAvg" }, new double[] { 1.0, 1.0 }, new double[][] { frapDataTimeStamps, cellRegionData });
+			DataSource expCellAvgDataSource = new DataSource(expCellAvgData,"expCellAvg");
+			//
+			//Analytic - Cell ROI Average with Bleach while monitor
+			//
+			ODESolverResultSet bleachWhileMonitorOdeSolverResultSet = new ODESolverResultSet();
+			bleachWhileMonitorOdeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription("t"));
+			try {
+				bleachWhileMonitorOdeSolverResultSet.addFunctionColumn(
+					new FunctionColumnDescription(
+						frapDataAnalysisResults.getFitBleachWhileMonitorExpression(),
+						"CellROI_BleachWhileMonitor",
+						null,"bleachWhileMonitorFit",true));
+			} catch (ExpressionException e) {
+				e.printStackTrace();
+			}
+			for (int i = startIndexForRecovery; i < frapDataTimeStamps.length; i++) {
+				bleachWhileMonitorOdeSolverResultSet.addRow(new double[] { frapDataTimeStamps[i] });
+			}
+			//
+			// extend if necessary to plot theoretical curve to 4*tau
+			//
+			{
+			double T = frapDataTimeStamps[frapDataTimeStamps.length-1];
+			double deltaT = frapDataTimeStamps[frapDataTimeStamps.length-1]-frapDataTimeStamps[frapDataTimeStamps.length-2];
+			while (T+deltaT < 6*frapDataAnalysisResults.getRecoveryTau()){
+				bleachWhileMonitorOdeSolverResultSet.addRow(new double[] { T } );
+				T += deltaT;
+			}
+			}
+			DataSource bleachWhileMonitorDataSource = new DataSource(bleachWhileMonitorOdeSolverResultSet, "bleachwm");
+
+
+			
+			
+			
+			
+			
+			//
+			//Recovery curve
+			//
+			double[] bleachRegionData = frapDataAnalysisResults.getBleachRegionData();
 			Expression fittedCurve = frapDataAnalysisResults.getFitExpression();
 			ReferenceData expRefData = new SimpleReferenceData(new String[] { "t", "BleachROIAvg" }, new double[] { 1.0, 1.0 }, new double[][] { frapDataTimeStamps, bleachRegionData });
 			DataSource expDataSource = new DataSource(expRefData,"experiment");
@@ -414,7 +485,7 @@ public class FRAPEstimationPanel extends JPanel {
 				fitOdeSolverResultSet.addFunctionColumn(
 					new FunctionColumnDescription(
 						fittedCurve,
-						"('"+FrapDataAnalysisResults.BLEACH_TYPE_NAMES[bleachEstimationComboBox.getSelectedIndex()]+"')",
+						"BleachROI_Recovery",//"('"+FrapDataAnalysisResults.BLEACH_TYPE_NAMES[bleachEstimationComboBox.getSelectedIndex()]+"')",
 						null,"recoveryFit",true));
 			} catch (ExpressionException e) {
 				e.printStackTrace();
@@ -427,12 +498,13 @@ public class FRAPEstimationPanel extends JPanel {
 			//
 			double T = frapDataTimeStamps[frapDataTimeStamps.length-1];
 			double deltaT = frapDataTimeStamps[frapDataTimeStamps.length-1]-frapDataTimeStamps[frapDataTimeStamps.length-2];
+
 			while (T+deltaT < 6*frapDataAnalysisResults.getRecoveryTau()){
 				fitOdeSolverResultSet.addRow(new double[] { T } );
 				T += deltaT;
 			}
 			DataSource fitDataSource = new DataSource(fitOdeSolverResultSet, "fit");
-			multisourcePlotPane.setDataSources(new DataSource[] {  expDataSource, fitDataSource } );
+			multisourcePlotPane.setDataSources(new DataSource[] {  expDataSource, fitDataSource , expCellAvgDataSource , bleachWhileMonitorDataSource} );
 			multisourcePlotPane.selectAll();		
 		}
 		table.repaint();

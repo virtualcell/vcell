@@ -223,6 +223,96 @@ public static void main(String[] args) {
  * @para: flour, average intensities under bleached region according to time points since the first post bleach
  * @para: parameterValues, the array which will pass results back 
 */
+public static Expression fitBleachWhileMonitoring(double[] time, double[] fluor, double[] outputParam) throws ExpressionException 
+{
+	double max_x = fluor[0];
+    double min_x = fluor[0];
+	for (int i = 0; i < fluor.length; i++){
+		max_x = Math.max(max_x, fluor[i]);
+		min_x = Math.min(min_x, fluor[i]);
+	}
+	System.out.println("min:"+min_x+"       max:"+max_x);
+	
+	if (time.length!=fluor.length){
+		throw new RuntimeException("Fluorecence and time arrays must be the same length");
+	}
+	//normalization for the average intensties by subtracting the min average intenstiy and divided by the range of max and min intensities.
+	double[] normalized_fluor = new double[fluor.length];
+	for (int i = 0; i < fluor.length; i++){
+		normalized_fluor[i] = (fluor[i]-min_x)/(max_x-min_x);
+	}
+	//normaliztion for time by subtracting the starting time: time[0]
+	double[] normalized_time = new double[time.length];
+	for (int i = 0; i < time.length; i++){
+		normalized_time[i] = time[i]-time[0];
+	}
+	Expression modelExp = null;
+	OptimizationResultSet optResultSet = null;
+	String[] paramNames = null;
+	double[] paramValues = null;
+
+	modelExp = new Expression("Ii + A*exp(-bleachRate*t)");//Ii=Io, A=If-Io comparing with formula showing in software
+	// initialize starting guess, arguments in Parameter are name, Lower Bound, Upper Bound, Scale, Initial Guess
+	cbit.vcell.opt.Parameter parameters[] = new cbit.vcell.opt.Parameter[] {
+			new Parameter("Ii",-1,1,1,0),
+			new Parameter("A",.1,4,1,1),
+			new Parameter("bleachRate",0,0.1,1,0.01)
+	};
+	
+	try {
+		optResultSet = solve(modelExp.flatten(),parameters,normalized_time,normalized_fluor);
+	} catch (OptimizationException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	} catch (IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+	paramNames = optResultSet.getParameterNames();
+	paramValues = optResultSet.getParameterValues();
+	// copy into "output" buffer for parameter values.
+	for (int i = 0; i < paramValues.length; i++) {
+		outputParam[i] = paramValues[i]; 
+	}
+	
+	System.out.println(optResultSet.getOptimizationStatus().toString());
+	for (int i = 0; i < paramNames.length; i++) {
+		System.out.println("finally:   "+paramNames[i]+" = "+paramValues[i]);
+	}
+	if (optResultSet.getOptimizationStatus().isFailed()){
+		//throw new OptimizationException("optimization failed",paramValues);
+	}
+	
+	//
+	// construct final equation
+	// 
+	Expression fit = new Expression(modelExp);
+	
+	System.out.println("bleach while monitoring fit before subsituting parameters:"+fit.infix());
+	//
+	// substitute parameter values
+	//
+	for (int i = 0; i < paramValues.length; i++) {
+		fit.substituteInPlace(new Expression(paramNames[i]), new Expression(paramValues[i]));
+	}
+	//
+	// undo time shift
+	//
+	fit.substituteInPlace(new Expression("t"), new Expression("t-"+time[0]));
+	//
+	// undo fluorescence normalization
+	//
+	System.out.println("bleach while monitoring fit equation before unnorm:" + fit.infix());
+	fit = new Expression(min_x+" + "+(max_x-min_x)+" * ("+fit.infix()+")");
+	System.out.println("bleach while monitoring fit equation after unnorm:" + fit.infix());
+	return fit;
+}
+
+/*
+ * @para: time, time points since the first post bleach
+ * @para: flour, average intensities under bleached region according to time points since the first post bleach
+ * @para: parameterValues, the array which will pass results back 
+*/
 public static Expression fitRecovery(double[] time, double[] fluor, int bleachType, double[] inputparam, double[] outputParam) throws ExpressionException 
 {
 	//max and min of the average intensities under bleached region after bleach
