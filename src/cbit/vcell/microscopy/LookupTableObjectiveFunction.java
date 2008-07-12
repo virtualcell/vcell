@@ -4,23 +4,22 @@ import cbit.function.DefaultScalarFunction;
 
 public class LookupTableObjectiveFunction extends DefaultScalarFunction {
 
-	private FRAPOptData refData = null;
-	public LookupTableObjectiveFunction(FRAPOptData argRefData)
+	private FRAPOptData optData = null;
+	public LookupTableObjectiveFunction(FRAPOptData argOptData)
 	{
 		super();
-		refData = argRefData;
+		optData = argOptData;
 	}
 	@Override
 	public double f(double[] x) {
 		// 
-		double diffRate = x[0];
 		try{
-		    double error = refData.computeError(diffRate);
+		    double error = optData.computeError(x);
 		    return error;
 		}catch(Exception e)
 		{
 			e.printStackTrace(System.out);
-			return FRAPOptimization.bigValue;
+			throw new RuntimeException(e.getMessage(),e);
 		}
 		// TODO Auto-generated method stub
 	}
