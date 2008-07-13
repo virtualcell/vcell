@@ -89,12 +89,12 @@ public class FRAPOptimization {
 		double bleachWhileMonitoringRate = 0;
 		if(newParams != null && newParams.length > 0)
 		{
-			diffRate = newParams[FRAPOptData.idxDiffRate];
-			mobileFrac = Math.min(newParams[FRAPOptData.idxMobileFrac], 1);
-			bleachWhileMonitoringRate = newParams[FRAPOptData.idxBleachWhileMonitoringRate];
+			diffRate = newParams[FRAPOptData.DIFFUSION_RATE_INDEX];
+			mobileFrac = Math.min(newParams[FRAPOptData.MOBILE_FRACTION_INDEX], 1);
+			bleachWhileMonitoringRate = newParams[FRAPOptData.BLEACH_WHILE_MONITOR_INDEX];
 			double imMobileFrac = Math.max((1 - mobileFrac), 0);
 			
-			diffData = FRAPOptimization.getValueByDiffRate(FRAPOptData.refDiffRate,
+			diffData = FRAPOptimization.getValueByDiffRate(refDiffRate,
                     diffRate,
                     refData,
                     expData,

@@ -73,7 +73,9 @@ import cbit.vcell.microscopy.MicroscopyXmlproducer;
 import cbit.vcell.microscopy.ROI;
 import cbit.vcell.microscopy.FRAPStudy.FRAPModelParameters;
 import cbit.vcell.microscopy.ROI.RoiType;
+import cbit.vcell.model.Species;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.server.StdoutSessionLog;
 import cbit.vcell.server.VCDataIdentifier;
 import cbit.vcell.simdata.DataIdentifier;
@@ -806,9 +808,9 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		BioModel newBioModel = null;
 		try{
 			newBioModel = FRAPStudy.createNewBioModel(getFrapStudy(),
-				FRAPStudy.DEFAULT_SPECIES_COUNT,
 				new Double(getFrapStudy().getFrapModelParameters().diffusionRate),
 				getFrapStudy().getFrapModelParameters().monitorBleachRate,
+				getFrapStudy().getFrapModelParameters().mobileFraction,
 				(bSaveAsNew || getSavedFrapModelInfo() == null || getSavedFrapModelInfo().savedSimKeyValue == null
 						?LocalWorkspace.createNewKeyValue()
 						:getSavedFrapModelInfo().savedSimKeyValue),
@@ -1575,9 +1577,9 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			getFrapStudy().refreshDependentROIs();
 			BioModel bioModel = FRAPStudy.createNewBioModel(
 				getFrapStudy(),
-				FRAPStudy.DEFAULT_SPECIES_COUNT,
 				baseDiffusionRate,
 				frapChangeInfo.bleachWhileMonitorRateString,
+				frapChangeInfo.mobileFractionString,
 				(getSavedFrapModelInfo() == null?null:getSavedFrapModelInfo().savedSimKeyValue),
 				LocalWorkspace.getDefaultOwner(),
 				new Integer(frapChangeInfo.startIndexForRecoveryString));
@@ -1726,7 +1728,10 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						simulationDataManager,
 						startIndexForRecovery,
 						frapDataTimeStamps[startIndexForRecovery],
-						frapSimulation.getMathDescription().getSubDomain(FRAPStudy.CYTOSOL_NAME),
+						getFrapStudy().getFrapModelParameters().diffusionRate,
+						getFrapStudy().getFrapModelParameters().mobileFraction,
+						getFrapStudy().getFrapModelParameters().monitorBleachRate,
+						/*frapSimulation.getMathDescription().getSubDomain(FRAPStudy.CYTOSOL_NAME),*/
 						getFrapStudy().getFrapData(),
 						prebleachAverage,
 						runspatialAnalysisProgressListener);
