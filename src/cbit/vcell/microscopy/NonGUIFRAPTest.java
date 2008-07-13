@@ -355,9 +355,9 @@ public class NonGUIFRAPTest {
 		BioModel bioModel =
 			FRAPStudy.createNewBioModel(
 				frapStudy,
-				FRAPStudy.DEFAULT_SPECIES_COUNT,
 				new Double(recoveryDiffusionRateString),
 				bleachWhileMonitoringRateString,
+				mobileFractionString,
 				LocalWorkspace.createNewKeyValue(),
 				LocalWorkspace.getDefaultOwner(),
 				new Integer(frapModelParameters.startIndexForRecovery));
@@ -395,7 +395,10 @@ public class NonGUIFRAPTest {
 				simulationDataManager,
 				new Integer(frapModelParameters.startIndexForRecovery),
 				frapDataTimeStamps[new Integer(frapModelParameters.startIndexForRecovery)],
-				bioModel.getSimulations()[0].getMathDescription().getSubDomain(FRAPStudy.CYTOSOL_NAME),
+				recoveryDiffusionRateString,
+				mobileFractionString,
+				bleachWhileMonitoringRateString,
+				/*bioModel.getSimulations()[0].getMathDescription().getSubDomain(FRAPStudy.CYTOSOL_NAME),*/
 				frapData,
 				prebleachAverage,
 				progressListener);
@@ -446,13 +449,13 @@ public class NonGUIFRAPTest {
 			spatialAnalysisResults.createReferenceDataForAllDiffusionRates(frapDataTimeStamps);
 		ODESolverResultSet[] odeSolverResultSetArr =
 			spatialAnalysisResults.createODESolverResultSetForAllDiffusionRates();
-		for (int i = 0; i < spatialAnalysisResults.diffusionRates.length; i++) {
+		for (int i = 0; i < spatialAnalysisResults.analysisParameters.length; i++) {
 			DataSource expDataSource = new DataSource(referenceDataArr[i],"experiment");
 			DataSource fitDataSource = new DataSource(odeSolverResultSetArr[i], "fit");
 			MultisourcePlotListModel multisourcePlotListModel =
 				new MultisourcePlotListModel();
 			multisourcePlotListModel.setDataSources(new DataSource[] {expDataSource,fitDataSource});
-			System.out.println("Diffusion Rate = "+spatialAnalysisResults.diffusionRates[i]);
+			System.out.println("AnalysisParameters = "+spatialAnalysisResults.analysisParameters[i]);
 			for (int j = 0; j < multisourcePlotListModel.getSize(); j++) {
 				DataReference dataReference = (DataReference)multisourcePlotListModel.getElementAt(j);
 				if(dataReference.getDataSource().getSource() instanceof ReferenceData){

@@ -58,7 +58,9 @@ import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.math.Constant;
 import cbit.vcell.math.Equation;
+import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.PdeEquation;
 import cbit.vcell.math.SubDomain;
@@ -100,8 +102,9 @@ import cbit.vcell.solvers.FVSolverStandalone;
 public class FRAPStudy implements Matchable{
 	private transient String xmlFilename = null;
 	private transient String directory = null;
-	public static final int DEFAULT_SPECIES_COUNT = 9;
-	public static final String species_Prefix = "fluor_D_"; 
+	public static final String SPECIES_NAME_PREFIX_MOBILE = "fluor_mobile"; 
+	public static final String SPECIES_NAME_PREFIX_IMMOBILE = "fluor_immobile"; 
+	public static final String SPECIES_NAME_PREFIX_COMBINED = "fluor_combined"; 
 	private String name = null;
 	private String description = null;
 	private String originalImageFilePath = null;
@@ -138,49 +141,81 @@ public class FRAPStudy implements Matchable{
 	public static final String CYTOSOL_NAME = "cytosol";
 	public static final short Epsilon = 1; // to aoid divided by zero error.
 
-	public static class CurveInfo {
-		Double diffusionRate;
-		RoiType roiType = null;
+	public static class AnalysisParameters{
+		public final Double diffusionRate;
+		public final Double mobileFraction;
+		public final Double bleachWhileMonitorRate;
 		
-		public CurveInfo(Double diffRate, RoiType roi){
-			this.diffusionRate = diffRate;
+		public AnalysisParameters(Double diffusionRate,Double mobileFraction,Double bleachWhileMonitorRate){
+			if(diffusionRate == null || mobileFraction == null || bleachWhileMonitorRate == null){
+				throw new IllegalArgumentException("AnalysisParameters cannot be null");
+			}
+			this.diffusionRate = diffusionRate;
+			this.mobileFraction = mobileFraction;
+			this.bleachWhileMonitorRate = bleachWhileMonitorRate;
+		}
+		public boolean equals(Object obj){
+			if(!(obj instanceof AnalysisParameters)){
+				return false;
+			}
+			AnalysisParameters analysisParameters = (AnalysisParameters)obj;
+			return
+				diffusionRate.equals(analysisParameters.diffusionRate) &&
+				mobileFraction.equals(analysisParameters.mobileFraction) &&
+				bleachWhileMonitorRate.equals(analysisParameters.bleachWhileMonitorRate);
+		}
+		public int hashCode(){
+			return ((diffusionRate!=null)?(diffusionRate.hashCode()):(0)) +
+			((mobileFraction!=null)?(mobileFraction.hashCode()):(0)) +
+			((bleachWhileMonitorRate!=null)?(bleachWhileMonitorRate.hashCode()):(0));
+		}
+		public String toString(){
+			return "diffusion="+diffusionRate+", mobileFraction="+mobileFraction+", monitorBleachRate="+bleachWhileMonitorRate;
+		}
+	};
+
+	public static class CurveInfo {
+		AnalysisParameters analysisParameters;
+		RoiType roiType = null;
+
+		public CurveInfo(AnalysisParameters analysisParameters,RoiType roi){
+			this.analysisParameters = analysisParameters;
 			this.roiType = roi;
 		}
-		
+
 		public boolean equals(Object obj){
-			if (obj instanceof CurveInfo){
-				CurveInfo ci = (CurveInfo)obj;
-				if (ci.diffusionRate==null && diffusionRate==null){
-					// ok
-				}else if (ci.diffusionRate==null || diffusionRate==null){
-					return false;
-				}else if (!ci.diffusionRate.equals(diffusionRate)){
-					return false;
-				}
-				if (ci.roiType!=roiType){
-					return false;
-				}
-				return true;
+			if (!(obj instanceof CurveInfo)){
+				return false;
+			}
+			CurveInfo ci = (CurveInfo)obj;
+			if(analysisParameters == null && ci.analysisParameters == null){
+				return ci.roiType==roiType;
+			}
+			if(ci.analysisParameters != null && analysisParameters != null){
+				return
+				ci.analysisParameters.equals(analysisParameters) &&
+				(ci.roiType==roiType);			
 			}
 			return false;
 		}
 		
 		public int hashCode(){
-			return ((diffusionRate!=null)?(diffusionRate.hashCode()):(0)) + roiType.toString().hashCode();
+			return (analysisParameters != null?analysisParameters.hashCode():0)+roiType.toString().hashCode();
 		}
 		public boolean isExperimentInfo(){
-			return diffusionRate == null;
+			return analysisParameters == null;
 		}
-		public Double getDiffusionRate(){
-			return diffusionRate;
+		public AnalysisParameters getAnalysisParameters(){
+			return analysisParameters;
 		}
 		public RoiType getROIType(){
 			return roiType;
 		}
 	}
 
+	
 	public static class SpatialAnalysisResults{
-		public final Double[] diffusionRates;
+		public final AnalysisParameters[] analysisParameters;
 		public final double[] shiftedSimTimes;
 		public final Hashtable<CurveInfo, double[]> curveHash;
 		public static RoiType[] ORDERED_ROITYPES =
@@ -196,8 +231,10 @@ public class FRAPStudy implements Matchable{
 				RoiType.ROI_BLEACHED_RING8
 			};
 		
+		public static final int ANALYSISPARAMETERS_COLUMNS_COUNT = 3;
 		public static final int COLUMN_INDEX_DIFFUSION_RATE = 0;
-		public static final int COLUMN_INDEX_BLEACHROI = 1;
+		public static final int COLUMN_INDEX_MOBILE_FRACTION = 1;
+		public static final int COLUMN_INDEX_MONITOR_BLEACH_RATE = 2;
 		
 		public static final int ARRAY_INDEX_EXPDATASOURCE = 0;
 		public static final int ARRAY_INDEX_SIMDATASOURCE = 1;
@@ -207,9 +244,9 @@ public class FRAPStudy implements Matchable{
 
 
 		public SpatialAnalysisResults(
-				Double[] diffusionRates,/*String[] varNames,*/double[] shiftedSimTimes,
+				AnalysisParameters[] analysisParameters,double[] shiftedSimTimes,
 				Hashtable<CurveInfo, double[]> curveHash){
-			this.diffusionRates = diffusionRates;
+			this.analysisParameters = analysisParameters;
 			this.shiftedSimTimes = shiftedSimTimes;
 			this.curveHash = curveHash;
 		}
@@ -223,20 +260,20 @@ public class FRAPStudy implements Matchable{
 			Set<CurveInfo> roiInfoSet = ROIInfoHash.keySet();
 			Iterator<CurveInfo> roiInfoIter = roiInfoSet.iterator();
 			Hashtable<RoiType, double[]> expROIData = new Hashtable<RoiType, double[]>();
-			Hashtable<Double, Hashtable<RoiType, double[]>> simROIData = new Hashtable<Double, Hashtable<RoiType,double[]>>();
+			Hashtable<AnalysisParameters, Hashtable<RoiType, double[]>> simROIData = new Hashtable<AnalysisParameters, Hashtable<RoiType,double[]>>();
 			int roiCount = 0;
-			int diffusionRateCount = 0;
+			int analysisParametersCount = 0;
 			while(roiInfoIter.hasNext()){
 				CurveInfo roiCurveInfo = roiInfoIter.next();
 				if(roiCurveInfo.isExperimentInfo()){
 					expROIData.put(roiCurveInfo.getROIType(), ROIInfoHash.get(roiCurveInfo));
 					roiCount++;
 				}else{
-					Hashtable<RoiType,double[]> simROIDataHash = simROIData.get(roiCurveInfo.getDiffusionRate());
+					Hashtable<RoiType,double[]> simROIDataHash = simROIData.get(roiCurveInfo.getAnalysisParameters());
 					if(simROIDataHash == null){
 						simROIDataHash  = new Hashtable<RoiType, double[]>();
-						simROIData.put(roiCurveInfo.getDiffusionRate(), simROIDataHash);
-						diffusionRateCount++;
+						simROIData.put(roiCurveInfo.getAnalysisParameters(), simROIDataHash);
+						analysisParametersCount++;
 					}
 					simROIDataHash.put(roiCurveInfo.getROIType(), ROIInfoHash.get(roiCurveInfo));
 				}
@@ -245,38 +282,40 @@ public class FRAPStudy implements Matchable{
 			ReferenceData referenceData = 
 				createReferenceData(frapDataTimeStamps,null,startIndexForRecovery,"");
 			
-			for (int diffusionRow = 0; diffusionRow < diffusionRateCount; diffusionRow++) {
-				Double currentDiffusionRate = diffusionRates[diffusionRow];
+			for (int analysisParametersRow = 0; analysisParametersRow < analysisParametersCount; analysisParametersRow++) {
+				AnalysisParameters currentAnalysisParameters = analysisParameters[analysisParametersRow];
 				
 				ODESolverResultSet odeSolverResultSet =
-					createODESolverResultSet(currentDiffusionRate,null,"D="+NumberUtils.formatNumber(currentDiffusionRate, 3)+"_");
+					createODESolverResultSet(currentAnalysisParameters,null,"D="+NumberUtils.formatNumber(currentAnalysisParameters.diffusionRate, 3)+"_");
 				final DataSource expDataSource = new DataSource(referenceData,"exp");
 				final DataSource simDataSource = new DataSource(odeSolverResultSet, "sim");
 				DataSource[] newDataSourceArr = new DataSource[2];
 				newDataSourceArr[ARRAY_INDEX_EXPDATASOURCE] = expDataSource;
 				newDataSourceArr[ARRAY_INDEX_SIMDATASOURCE] = simDataSource;
-				allDataHash.put(currentDiffusionRate,newDataSourceArr);
+				allDataHash.put(currentAnalysisParameters.diffusionRate,newDataSourceArr);
 			}
 			return allDataHash;
 		}
 
+
 		public Object[][] createSummaryReportTableData(double[] frapDataTimeStamps,int startTimeIndex){
-			final int DIFFUSION_COLUMN_COMPENSATE = 1;
 			String[] summaryReportColumnNames = SpatialAnalysisResults.getSummaryReportColumnNames();
-			final Object[][] tableData = new Object[diffusionRates.length][summaryReportColumnNames.length];
-			for (int diffusionRow = 0; diffusionRow < diffusionRates.length; diffusionRow++) {
-				Double currentDiffusionRate = diffusionRates[diffusionRow];
-				tableData[diffusionRow][COLUMN_INDEX_DIFFUSION_RATE] = currentDiffusionRate;
+			final Object[][] tableData = new Object[analysisParameters.length][summaryReportColumnNames.length];
+			for (int analysisParametersRow = 0; analysisParametersRow < analysisParameters.length; analysisParametersRow++) {
+				AnalysisParameters currentAnalysisParameters = analysisParameters[analysisParametersRow];
+				tableData[analysisParametersRow][COLUMN_INDEX_DIFFUSION_RATE] = currentAnalysisParameters.diffusionRate;
+				tableData[analysisParametersRow][COLUMN_INDEX_MOBILE_FRACTION] = currentAnalysisParameters.mobileFraction;
+				tableData[analysisParametersRow][COLUMN_INDEX_MONITOR_BLEACH_RATE] = currentAnalysisParameters.bleachWhileMonitorRate;
 				
 				for (int roiColumn = 0; roiColumn < SpatialAnalysisResults.ORDERED_ROITYPES.length; roiColumn++) {
 					ODESolverResultSet simDataSource =
-						createODESolverResultSet(currentDiffusionRate,SpatialAnalysisResults.ORDERED_ROITYPES[roiColumn],"");
+						createODESolverResultSet(currentAnalysisParameters,SpatialAnalysisResults.ORDERED_ROITYPES[roiColumn],"");
 					ReferenceData expDataSource =
 						createReferenceData(frapDataTimeStamps,SpatialAnalysisResults.ORDERED_ROITYPES[roiColumn],startTimeIndex,"");
 
 					int numSamples = expDataSource.getNumRows();
 					double sumSquaredError = MathTestingUtilities.calcWeightedSquaredError(simDataSource, expDataSource);
-					tableData[diffusionRow][roiColumn+DIFFUSION_COLUMN_COMPENSATE] =
+					tableData[analysisParametersRow][roiColumn+ANALYSISPARAMETERS_COLUMNS_COUNT] =
 						Math.sqrt(sumSquaredError)/(numSamples-1);//unbiased estimator is numsamples-1
 				}
 			}
@@ -323,12 +362,16 @@ public class FRAPStudy implements Matchable{
 			return dataSB.toString();
 		}
 		public static String[] getSummaryReportColumnNames(){
-			String[] columnNames = new String[SpatialAnalysisResults.ORDERED_ROITYPES.length+1];
+			String[] columnNames = new String[SpatialAnalysisResults.ORDERED_ROITYPES.length+ANALYSISPARAMETERS_COLUMNS_COUNT];
 			for (int i = 0; i < columnNames.length; i++) {
-				if(i==0){
-					columnNames[i] = "Sim diffusion Rate";
+				if(i==COLUMN_INDEX_DIFFUSION_RATE){
+					columnNames[i] = "Diffusion Rate";
+				}else if(i==COLUMN_INDEX_MOBILE_FRACTION){
+					columnNames[i] = "Mobile Fraction";
+				}else if(i==COLUMN_INDEX_MONITOR_BLEACH_RATE){
+					columnNames[i] = "Monitor Bleach Rate";
 				}else{
-					columnNames[i] = "SE "+SpatialAnalysisResults.ORDERED_ROITYPES[i-1].name();
+					columnNames[i] = "SE "+SpatialAnalysisResults.ORDERED_ROITYPES[i-ANALYSISPARAMETERS_COLUMNS_COUNT].name();
 				}
 			}
 			return columnNames;
@@ -336,8 +379,8 @@ public class FRAPStudy implements Matchable{
 
 
 		public ReferenceData[] createReferenceDataForAllDiffusionRates(double[] frapDataTimeStamps){
-			ReferenceData[] referenceDataArr = new ReferenceData[diffusionRates.length];
-			for (int i = 0; i < diffusionRates.length; i++) {
+			ReferenceData[] referenceDataArr = new ReferenceData[analysisParameters.length];
+			for (int i = 0; i < analysisParameters.length; i++) {
 				referenceDataArr[i] = createReferenceData(frapDataTimeStamps,null,0,"");//new SimpleReferenceData(expRefDataLabels, expRefDataWeights, expRefDataColumns);
 			}
 			return referenceDataArr;
@@ -379,27 +422,27 @@ public class FRAPStudy implements Matchable{
 			return new SimpleReferenceData(expRefDataLabels, expRefDataWeights, expRefDataColumns);
 		}
 		public ODESolverResultSet[] createODESolverResultSetForAllDiffusionRates(){
-			ODESolverResultSet[] odeSolverResultSetArr = new ODESolverResultSet[diffusionRates.length];
-			for (int i = 0; i < diffusionRates.length; i++) {
-				odeSolverResultSetArr[i] = createODESolverResultSet(diffusionRates[i],null,"D="+diffusionRates[i]);//fitOdeSolverResultSet;
+			ODESolverResultSet[] odeSolverResultSetArr = new ODESolverResultSet[analysisParameters.length];
+			for (int i = 0; i < analysisParameters.length; i++) {
+				odeSolverResultSetArr[i] = createODESolverResultSet(analysisParameters[i],null,"D="+analysisParameters[i].diffusionRate);//fitOdeSolverResultSet;
 			}
 			return odeSolverResultSetArr;
 		}
-		public ODESolverResultSet createODESolverResultSet(Double diffusionRate,RoiType argROIType,String description){
+		public ODESolverResultSet createODESolverResultSet(AnalysisParameters argAnalysisParameters,RoiType argROIType,String description){
 			if(argROIType != null){
 				if(!isROITypeOK(argROIType)){
 					throw new IllegalArgumentException("couldn't find ROIType "+argROIType);
 				}
 			}
-			int diffusionRateIndex = -1;
-			for (int i = 0; i < diffusionRates.length; i++) {
-				if(diffusionRates[i].equals(diffusionRate)){
-					diffusionRateIndex = i;
+			int analysisParametersIndex = -1;
+			for (int i = 0; i < analysisParameters.length; i++) {
+				if(analysisParameters[i].equals(argAnalysisParameters)){
+					analysisParametersIndex = i;
 					break;
 				}
 			}
-			if(diffusionRateIndex == -1){
-				throw new IllegalArgumentException("couldn't find diffusionRate "+diffusionRate);
+			if(analysisParametersIndex == -1){
+				throw new IllegalArgumentException("couldn't find AnalysisParameteers "+analysisParametersIndex);
 			}
 			int numROITypes = (argROIType == null?FRAPStudy.SpatialAnalysisResults.ORDERED_ROITYPES.length:1);
 			ODESolverResultSet fitOdeSolverResultSet = new ODESolverResultSet();
@@ -422,7 +465,7 @@ public class FRAPStudy implements Matchable{
 			//
 			for (int j = 0; j < numROITypes; j++) {
 				RoiType currentROIType = (argROIType == null?FRAPStudy.SpatialAnalysisResults.ORDERED_ROITYPES[j]:argROIType);
-				double[] values = curveHash.get(new FRAPStudy.CurveInfo(diffusionRates[diffusionRateIndex],currentROIType)); // get simulated data for this ROI
+				double[] values = curveHash.get(new FRAPStudy.CurveInfo(analysisParameters[analysisParametersIndex],currentROIType)); // get simulated data for this ROI
 				for (int k = 0; k < values.length; k++) {
 					fitOdeSolverResultSet.setValue(k, j+1, values[k]);
 				}
@@ -444,35 +487,74 @@ public class FRAPStudy implements Matchable{
 		DataManager simulationDataManager,
 		int startingIndexForRecovery,
 		double startingIndexForRecoveryExperimentalTimePoint,
-		SubDomain subDomain,
+		String argMobileDiffusionRate,
+		String argMobileFraction,
+		String argBleachWhileMonitorRate,
+		/*SubDomain subDomain,*/
 		FRAPData frapData,
 		double[] preBleachAverageXYZ,
 		DataSetControllerImpl.ProgressListener progressListener) throws Exception{
 		
-		//
-		// get List of variable names
-		//
-		ArrayList<Double> diffList = new ArrayList<Double>();
-		ArrayList<String> pdeVarNameList = new ArrayList<String>();
-		Enumeration<Equation> equEnum = subDomain.getEquations();
-		while (equEnum.hasMoreElements()){
-			Equation equ = equEnum.nextElement();
-			if (equ instanceof PdeEquation){
-				PdeEquation pde = (PdeEquation)equ;
-				pdeVarNameList.add(pde.getVariable().getName());
-				try {
-					diffList.add(pde.getDiffusionExpression().evaluateConstant());
-				} catch (DivideByZeroException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (ExpressionException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
-		String[] varNames = pdeVarNameList.toArray(new String[pdeVarNameList.size()]);
-		Double[] diffusionRates = diffList.toArray(new Double[diffList.size()]);		
+		
+		Double mobileDiffusionRate = Double.parseDouble(argMobileDiffusionRate);
+		Double mobileFraction = (argMobileFraction != null?Double.parseDouble(argMobileFraction):1.0);
+		Double bleachWhileMonitorRate = (argBleachWhileMonitorRate != null?Double.parseDouble(argBleachWhileMonitorRate):0.0);
+
+//		//
+//		// get List of variable names
+//		//
+//		ArrayList<Double> diffList = new ArrayList<Double>();
+//		ArrayList<String> pdeVarNameList = new ArrayList<String>();
+//		Enumeration<Equation> equEnum = subDomain.getEquations();
+//		while (equEnum.hasMoreElements()){
+//			Equation equ = equEnum.nextElement();
+//			if (equ instanceof PdeEquation){
+//				PdeEquation pde = (PdeEquation)equ;
+//				pdeVarNameList.add(pde.getVariable().getName());
+//				try {
+//					diffList.add(pde.getDiffusionExpression().evaluateConstant());
+//				} catch (DivideByZeroException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				} catch (ExpressionException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//			}
+//		}
+//		String[] varNames = pdeVarNameList.toArray(new String[pdeVarNameList.size()]);
+//		Double[] diffusionRates = diffList.toArray(new Double[diffList.size()]);
+		
+		
+//		Double mobileDiffusionRate = null;
+//		Enumeration<Equation> equEnum = subDomain.getEquations();
+//		while (equEnum.hasMoreElements()){
+//			Equation equ = equEnum.nextElement();
+//			if (equ instanceof PdeEquation){
+//				PdeEquation pde = (PdeEquation)equ;
+////				pdeVarNameList.add(pde.getVariable().getName());
+//				if(pde.getVariable().getName().equals(SPECIES_NAME_PREFIX_MOBILE)){
+//					try {
+////						diffList.add(pde.getDiffusionExpression().evaluateConstant());
+//						mobileDiffusionRate = new Double(pde.getDiffusionExpression().evaluateConstant());
+//					} catch (DivideByZeroException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					} catch (ExpressionException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+//				}
+//			}
+//		}
+		
+		String[] varNames = new String[] {SPECIES_NAME_PREFIX_COMBINED};
+//		Double[] diffusionRates = new Double[] {mobileDiffusionRate};
+		AnalysisParameters analysisParameters =
+			new AnalysisParameters(mobileDiffusionRate,mobileFraction,bleachWhileMonitorRate);
+		
+		
+		
 		//
 		// get timing to compare experimental data with simulated results.
 		//
@@ -488,9 +570,9 @@ public class FRAPStudy implements Matchable{
 		Hashtable<CurveInfo, double[]> curveHash = new Hashtable<CurveInfo, double[]>();
 		ArrayList<int[]> nonZeroIndicesForROI = new ArrayList<int[]>();
 		for (int i = 0; i < SpatialAnalysisResults.ORDERED_ROITYPES.length; i++) {
-			for (int j = 0; j < diffusionRates.length; j++) {
-				curveHash.put(new CurveInfo(diffusionRates[j],SpatialAnalysisResults.ORDERED_ROITYPES[i]), new double[simTimes.length]);
-			}
+//			for (int j = 0; j < diffusionRates.length; j++) {
+				curveHash.put(new CurveInfo(analysisParameters,SpatialAnalysisResults.ORDERED_ROITYPES[i]), new double[simTimes.length]);
+//			}
 			ROI roi_2D = frapData.getRoi(SpatialAnalysisResults.ORDERED_ROITYPES[i]);
 			nonZeroIndicesForROI.add(roi_2D.getRoiImages()[0].getNonzeroIndices());
 		}
@@ -523,7 +605,7 @@ public class FRAPStudy implements Matchable{
 						for (int index = 0; index < roiIndices.length; index++) {
 							accum += data[roiIndices[index]];
 						}
-						double[] values = curveHash.get(new CurveInfo(diffusionRates[j],SpatialAnalysisResults.ORDERED_ROITYPES[k]));
+						double[] values = curveHash.get(new CurveInfo(analysisParameters,SpatialAnalysisResults.ORDERED_ROITYPES[k]));
 						values[i] = accum/roiIndices.length;
 					}
 					double currentLen = i*varNames.length*SpatialAnalysisResults.ORDERED_ROITYPES.length + j*SpatialAnalysisResults.ORDERED_ROITYPES.length + k;
@@ -533,7 +615,7 @@ public class FRAPStudy implements Matchable{
 		}
 
 		SpatialAnalysisResults spatialAnalysisResults = 
-			new SpatialAnalysisResults(diffusionRates,/*varNames,*/shiftedSimTimes,curveHash);
+			new SpatialAnalysisResults(new AnalysisParameters[] {analysisParameters},/*varNames,*/shiftedSimTimes,curveHash);
 		return spatialAnalysisResults;
 	}
 	
@@ -639,9 +721,9 @@ public class FRAPStudy implements Matchable{
 	
 	public static BioModel createNewBioModel(
 			FRAPStudy sourceFrapStudy,
-			int numSpecies,
 			Double baseDiffusionRate,
 			String bleachWhileMonitoringRateString,
+			String mobileFractionString,
 			KeyValue simKey,
 			User owner,
 			int startingIndexForRecovery) throws Exception {
@@ -662,6 +744,10 @@ public class FRAPStudy implements Matchable{
 		if(baseDiffusionRate == null){
 			throw new Exception("Diffusion Rate is not defined");
 		}
+		if(mobileFractionString == null){
+			throw new Exception("Mobile fraction is not defined");
+		}
+
 		if(owner == null){
 			throw new Exception("Owner is not defined");
 		}
@@ -713,26 +799,41 @@ public class FRAPStudy implements Matchable{
 		double factor = Math.pow(10,.25);
 		String roiDataName = "roiData";
 		
-		Expression[] diffusionConstants = new Expression[numSpecies];
-		Species[] species = new Species[numSpecies];
-		SpeciesContext[] speciesContexts = new SpeciesContext[numSpecies];
-		Expression[] initialConditions = new Expression[numSpecies];
-		for(int i=0; i<numSpecies; i++)
-		{
-			int power = ((i+1)/2);
-			power = power * ( (i%2)==0? 1 : -1);
-			diffusionConstants[i] = 
-				new Expression((i==0?baseDiffusionRate:baseDiffusionRate*Math.pow(factor, power)));
-			species[i] =
-					new Species(species_Prefix+
-							TokenMangler.fixTokenStrict(NumberUtils.formatNumber(diffusionConstants[i].evaluateConstant(),3)),
-							"fluorescent molecule"+(i+1));
-			speciesContexts[i] = 
-					new SpeciesContext(null,species[i].getCommonName(),species[i],cytosol,true);
-			initialConditions[i] =
-					new Expression("field("+roiDataName+",postbleach_first,0) / field("+roiDataName+",prebleach_avg,0)");
-			
-		}
+		final int MOBILE_IMMOBILE_SPECIES_COUNT = 2;
+		final int MOBILE_SPECIES_INDEX = 0;
+		final int IMMOBILE_SPECIES_INDEX = 1;
+		
+		Expression[] diffusionConstants = new Expression[MOBILE_IMMOBILE_SPECIES_COUNT];
+		Species[] species = new Species[MOBILE_IMMOBILE_SPECIES_COUNT];
+		SpeciesContext[] speciesContexts = new SpeciesContext[MOBILE_IMMOBILE_SPECIES_COUNT];
+		Expression[] initialConditions = new Expression[MOBILE_IMMOBILE_SPECIES_COUNT];
+		
+		double mobileFraction = (mobileFractionString != null?Double.parseDouble(mobileFractionString):new Double(1.0));
+		//Mobile Species
+		diffusionConstants[MOBILE_SPECIES_INDEX] = new Expression(baseDiffusionRate);
+		species[MOBILE_SPECIES_INDEX] =
+				new Species(SPECIES_NAME_PREFIX_MOBILE,
+//						TokenMangler.fixTokenStrict(SPECIES_NAME_PREFIX_MOBILE+NumberUtils.formatNumber(diffusionConstants[MOBILE_SPECIES_INDEX].evaluateConstant(),3)),
+						"Mobile bleachable species");
+		speciesContexts[MOBILE_SPECIES_INDEX] = 
+				new SpeciesContext(null,species[MOBILE_SPECIES_INDEX].getCommonName(),species[MOBILE_SPECIES_INDEX],cytosol,true);
+		initialConditions[MOBILE_SPECIES_INDEX] =
+				new Expression(mobileFraction+"*(field("+roiDataName+",postbleach_first,0) / field("+roiDataName+",prebleach_avg,0))");
+		
+		//Immobile Species (No diffusion)
+		//Set very small diffusion rate on immobile to force evaluation as state variable (instead of FieldData function)
+		//If left as a function errors occur because functions involving FieldData require a database connection
+		final String IMMOBILE_DIFFUSION_KLUDGE = "1e-14";
+		diffusionConstants[IMMOBILE_SPECIES_INDEX] = new Expression(IMMOBILE_DIFFUSION_KLUDGE);
+		species[IMMOBILE_SPECIES_INDEX] =
+				new Species(SPECIES_NAME_PREFIX_IMMOBILE,
+//						TokenMangler.fixTokenStrict(SPECIES_NAME_PREFIX_IMMOBILE+NumberUtils.formatNumber(diffusionConstants[IMMOBILE_SPECIES_INDEX].evaluateConstant(),3)),
+						"Immobile bleachable species");
+		speciesContexts[IMMOBILE_SPECIES_INDEX] = 
+				new SpeciesContext(null,species[IMMOBILE_SPECIES_INDEX].getCommonName(),species[IMMOBILE_SPECIES_INDEX],cytosol,true);
+		initialConditions[IMMOBILE_SPECIES_INDEX] =
+				new Expression((1.0-mobileFraction)+"*(field("+roiDataName+",postbleach_first,0) / field("+roiDataName+",prebleach_avg,0))");
+
 		
 		// for parameter scans, use cube root of 10 (3 per decade) = factor of 2.154434690030230132025595313452
 		// add reactions to species if there is bleachWhileMonitoring rate.
@@ -768,6 +869,10 @@ public class FRAPStudy implements Matchable{
 
 		MathMapping mathMapping = new MathMapping(simContext);
 		MathDescription mathDesc = mathMapping.getMathDescription();
+		//Add total fluorescence as function of mobile and immobile fractions
+		mathDesc.addVariable(
+			new Function(SPECIES_NAME_PREFIX_COMBINED,
+				new Expression(species[MOBILE_SPECIES_INDEX].getCommonName()+"+"+species[IMMOBILE_SPECIES_INDEX].getCommonName())));
 		simContext.setMathDescription(mathDesc);
 
 		SimulationVersion simVersion = new SimulationVersion(simKey,"sim1",owner,new GroupAccessNone(),new KeyValue("0"),new BigDecimal(0),new Date(),VersionFlag.Current,"",null);
@@ -779,7 +884,6 @@ public class FRAPStudy implements Matchable{
 		
 		return bioModel;
 	}
-	
 	
 	private KernelJAI createCircularBinaryKernel(int radius){
 		int enclosingBoxSideLength = radius*2+1;

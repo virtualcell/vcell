@@ -382,7 +382,7 @@ public class ResultsSummaryPanel extends JPanel {
 						}
 					}
 					if(matchingRow != -1){
-						setTableCellSelection(matchingRow, new int[] {FRAPStudy.SpatialAnalysisResults.COLUMN_INDEX_BLEACHROI});
+						setTableCellSelection(matchingRow, new int[] {FRAPStudy.SpatialAnalysisResults.ANALYSISPARAMETERS_COLUMNS_COUNT});
 					}else{
 						DialogUtils.showErrorDialog("Summary Table couldn't find model diffusion rate "+modelDiffusionRate);
 					}
