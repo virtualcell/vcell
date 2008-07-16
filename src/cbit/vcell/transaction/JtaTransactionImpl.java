@@ -4,6 +4,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import javax.transaction.*;
 import javax.transaction.xa.*;
+
+import oracle.jdbc.xa.OracleXAException;
+
 import java.util.*;
 
 /**
@@ -15,26 +18,21 @@ public class JtaTransactionImpl implements Transaction {
 
 	private JtaXidImpl xid = null;
 
-	private Map branches = Collections.synchronizedMap(new HashMap());
-
-	private Map activeBranches = Collections.synchronizedMap(new HashMap());
-
-	private List enlistedResources = Collections.synchronizedList(new ArrayList());
-	private List nonXAResources = Collections.synchronizedList(new ArrayList());
-
-	private Map suspendedResources = Collections.synchronizedMap(new HashMap());
+	private Map<Xid, XAResource> branches = Collections.synchronizedMap(new HashMap<Xid, XAResource>());
+	private Map<Xid, Integer> prepareResults = Collections.synchronizedMap(new HashMap<Xid, Integer>());
+	
+	private Map<XAResource, Xid> activeBranches = Collections.synchronizedMap(new HashMap<XAResource, Xid>());
+	private List<XAResource> enlistedResources = Collections.synchronizedList(new ArrayList<XAResource>());
+	private List<NonXAResource> nonXAResources = Collections.synchronizedList(new ArrayList<NonXAResource>());
+	private Map<XAResource, Xid> suspendedResources = Collections.synchronizedMap(new HashMap<XAResource, Xid>());
 
 	private int status = Status.STATUS_ACTIVE;
 
-	private List synchronizationObjects = Collections.synchronizedList(new ArrayList());
+	private List<Synchronization> synchronizationObjects = Collections.synchronizedList(new ArrayList<Synchronization>());
 	private int branchCounter = 1;
-
 	private static int globalCreatedTransactions = 0;
-
 	private int currentTransactionNumber = 0;
-
 	private String currentThreadName = null;
-
 	private javax.transaction.TransactionManager transactionManager = null;
 
 /**
@@ -67,9 +65,7 @@ public JtaTransactionImpl(TransactionManager tm) {
  * @exception SystemException Thrown if the transaction manager encounters
  * an unexpected error condition.
  */
-public void commit() throws	RollbackException, HeuristicMixedException, HeuristicRollbackException,	SecurityException, IllegalStateException, SystemException {
-
-	System.out.println(this +"  COMMIT ");
+public void commit() throws	RollbackException, HeuristicMixedException, HeuristicRollbackException,	SecurityException, IllegalStateException, SystemException {	
 
 	if (status == Status.STATUS_MARKED_ROLLBACK) {
 		rollback();
@@ -81,13 +77,11 @@ public void commit() throws	RollbackException, HeuristicMixedException, Heuristi
 		throw new IllegalStateException();
 
 	// Call synchronized objects beforeCompletion
-	Iterator syncIter = synchronizationObjects.iterator();
-	while (syncIter.hasNext()) {
-		Synchronization sync = (Synchronization) syncIter.next();
+	for (Synchronization sync : synchronizationObjects) {
 		sync.beforeCompletion();
 	}
 
-	List exceptions = Collections.synchronizedList(new ArrayList());
+	List<Throwable> exceptions = Collections.synchronizedList(new ArrayList<Throwable>());
 	boolean fail = false;
 
 	switch (enlistedResources.size()) {
@@ -173,7 +167,13 @@ public void commit() throws	RollbackException, HeuristicMixedException, Heuristi
 				try {
 					do_prepare();
 				} catch (XAException ex) {
-					System.out.println("2-Phase commit XAException: " + getXAErrorCode((XAException)ex));
+					ex.printStackTrace(System.out);
+					if (ex instanceof OracleXAException) {						
+						int oraerr = ((OracleXAException)ex).getOracleError();
+						System.out.println("2-Phase commit do_prepare Oracle error " + oraerr); 
+					} else {
+						System.out.println("2-Phase commit XAException: " + getXAErrorCode((XAException)ex));
+					}
 					fail = true;
 					exceptions.add(ex);
 					status = Status.STATUS_MARKED_ROLLBACK;
@@ -200,7 +200,13 @@ public void commit() throws	RollbackException, HeuristicMixedException, Heuristi
 				try {
 					do_commit(false);	
 				} catch (XAException e) {
-					System.out.println("2-Phase commit XAException: " + getXAErrorCode((XAException)e));
+					e.printStackTrace(System.out);
+					if (e instanceof OracleXAException) {						
+						int oraerr = ((OracleXAException)e).getOracleError();
+						System.out.println("2-Phase commit do_commit Oracle error " + oraerr); 
+					} else {
+						System.out.println("2-Phase commit XAException: " + getXAErrorCode((XAException)e));
+					}
 					exceptions.add(e);
 					fail = true;
 				}
@@ -208,7 +214,7 @@ public void commit() throws	RollbackException, HeuristicMixedException, Heuristi
 				//System.out.println("2-Phase commit ended");
 
 			} else {
-				System.out.print("2-Phase commit fail, rollback started....");
+				System.out.println("2-Phase commit fail, rollback started....");
 				//If fail, rollback
 				status = Status.STATUS_ROLLING_BACK;
 				fail = false;
@@ -233,15 +239,13 @@ public void commit() throws	RollbackException, HeuristicMixedException, Heuristi
 	}
 
 	// Call synchronized objects afterCompletion
-	syncIter = synchronizationObjects.iterator();
-	while (syncIter.hasNext()) {
-		Synchronization sync = (Synchronization) syncIter.next();
+	for (Synchronization sync : synchronizationObjects) {
 		sync.afterCompletion(status);
 	}
 
 	// Parsing exception and throwing an appropriate exception
-	Iterator iter = exceptions.iterator();
-	if (iter.hasNext()) {
+	if (exceptions.size() > 0) {
+		System.out.println(this + "  COMMIT... \t\t[ FAILED ]");
 		if (status == Status.STATUS_ROLLEDBACK) {
 			if (!fail) {
 				throw new RollbackException();
@@ -253,7 +257,7 @@ public void commit() throws	RollbackException, HeuristicMixedException, Heuristi
 			throw new HeuristicMixedException();
 		}
 	}
-
+	System.out.println(this + "  COMMIT... \t\t[ OK ]");
 }
 /**
  * Delist the resource specified from the current transaction associated
@@ -317,14 +321,15 @@ public boolean delistResource(XAResource xaRes, int flag) throws IllegalStateExc
  */
 public void do_commit(boolean onePhase) throws	XAException {
 
-	Iterator iter = branches.keySet().iterator();
-	while (iter.hasNext()) {
-		Object key = iter.next();
-		XAResource resourceManager = (XAResource) branches.get(key);
+	for (Xid key : branches.keySet()) {
+		XAResource resourceManager = branches.get(key);
 		if (onePhase) {
-			resourceManager.commit((Xid) key, true);
+			resourceManager.commit(key, true);
 		} else {
-			resourceManager.commit((Xid) key, false);
+			Integer prepareResult = prepareResults.get(key);
+			if (prepareResult != null && prepareResult == XAResource.XA_OK) {
+				resourceManager.commit(key, false);
+			}
 		}
 			
 	}	
@@ -365,12 +370,10 @@ public void do_commitNonXA() throws SystemException {
  * @exception SystemException Thrown if the transaction manager encounters
  * an unexpected error condition.
  */
-public void do_delist() throws SystemException { 
-	Iterator iter = branches.keySet().iterator();
+public void do_delist() throws SystemException {
 	// end each enlisted resource	
-	while (iter.hasNext()) {
-		Object key = iter.next();
-		XAResource resourceManager = (XAResource) branches.get(key);
+	for (Xid key : branches.keySet()) {
+		XAResource resourceManager = branches.get(key);
 		// Preparing the resource manager using its branch xid
 		delistResource(resourceManager, XAResource.TMSUCCESS);
 	}
@@ -388,14 +391,12 @@ public void do_delist() throws SystemException {
  * an unexpected error condition.
  */
 public void do_prepare() throws XAException { 	
-	Iterator iter = branches.keySet().iterator();
-	while (iter.hasNext()) {
-		Object key = iter.next();
+	for (Xid key : branches.keySet()) {
 		XAResource resourceManager = (XAResource) branches.get(key);
 		// Preparing the resource manager using its branch xid
-		resourceManager.prepare((Xid) key);
+		int retval = resourceManager.prepare(key);
+		prepareResults.put(key, new Integer(retval));
 	}
-
 }
 /**
  * Roll back the transaction associated with the current thread. When
@@ -410,13 +411,9 @@ public void do_prepare() throws XAException {
  * an unexpected error condition.
  */
 public void do_rollback() throws XAException {
-
-	Iterator iter = branches.keySet().iterator();
-
 	status = Status.STATUS_ROLLING_BACK;
-	while (iter.hasNext()) {
-		Xid xid = (Xid) iter.next();
-		XAResource resourceManager = (XAResource) branches.get(xid);
+	for (Xid xid : branches.keySet()) {
+		XAResource resourceManager = branches.get(xid);
 		resourceManager.rollback(xid);
 	}
 }
@@ -494,10 +491,10 @@ public boolean enlistResource(XAResource xaRes)	throws RollbackException, Illega
 	Xid branchXid = (Xid) suspendedResources.get(xaRes);
 
 	if (branchXid == null) {
-		Iterator iter = enlistedResources.iterator();
-
-		while (!alreadyEnlisted && iter.hasNext()) {
-			XAResource resourceManager = (XAResource) iter.next();
+		for (XAResource resourceManager : enlistedResources) { 
+			if (alreadyEnlisted) {
+				break;
+			}
 			try {
 				if (resourceManager.isSameRM(xaRes)) {
 					System.out.println("Same Resource: " + xaRes + "," + resourceManager);

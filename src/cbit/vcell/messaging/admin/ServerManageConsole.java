@@ -10,7 +10,6 @@ import cbit.vcell.server.VCellServer;
 import cbit.vcell.messaging.server.RpcDbServerProxy;
 import cbit.util.BigString;
 import cbit.vcell.server.User;
-import java.io.IOException;
 import java.awt.*;
 import java.awt.event.*;
 import java.sql.SQLException;
@@ -25,8 +24,6 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.jms.*;
 import javax.swing.*;
-
-import swingthreads.SwingWorker;
 
 import cbit.vcell.messaging.*;
 import cbit.vcell.messaging.admin.sorttable.JSortTable;
@@ -49,10 +46,9 @@ public class ServerManageConsole extends JFrame implements ControlTopicListener 
 	private List<ServiceInstanceStatus> serviceInstanceStatusList = Collections.synchronizedList(new LinkedList<ServiceInstanceStatus>());
 	private JPanel ivjJFrameContentPane = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private cbit.vcell.messaging.VCellTopicConnection topicConn = null;
-	private cbit.vcell.messaging.VCellQueueConnection queueConn = null;
-	private cbit.vcell.messaging.VCellTopicSession topicSession = null;
-	private cbit.vcell.messaging.JmsConnectionFactory jmsConnFactory = null;
+	private JmsConnection jmsConn = null;
+	private JmsSession topicSession = null;
+	private JmsConnectionFactory jmsConnFactory = null;
 	private JTabbedPane ivjTabbedPane = null;
 	private JPanel ivjServiceStatusPage = null;
 	private JPanel ivjConfigPage = null;
@@ -493,7 +489,7 @@ private cbit.vcell.messaging.server.RpcDbServerProxy getDbProxy(User user) throw
 	RpcDbServerProxy dbProxy = (RpcDbServerProxy)dbProxyHash.get(user);
 
 	if (dbProxy == null) {
-		JmsClientMessaging jmsClientMessaging = new JmsClientMessaging(queueConn, log);		
+		JmsClientMessaging jmsClientMessaging = new JmsClientMessaging(jmsConn, log);		
 		dbProxy = new cbit.vcell.messaging.server.RpcDbServerProxy(user, jmsClientMessaging, log);
 		dbProxyHash.put(user, dbProxy);
 	}
@@ -1838,7 +1834,7 @@ private RpcSimServerProxy getSimProxy(User user) throws JMSException, cbit.vcell
 	RpcSimServerProxy simProxy = (RpcSimServerProxy)simProxyHash.get(user);
 
 	if (simProxy == null) {
-		JmsClientMessaging jmsClientMessaging = new JmsClientMessaging(queueConn, log);		
+		JmsClientMessaging jmsClientMessaging = new JmsClientMessaging(jmsConn, log);		
 		simProxy = new cbit.vcell.messaging.server.RpcSimServerProxy(user, jmsClientMessaging, log);
 		simProxyHash.put(user, simProxy);
 	}
@@ -2248,7 +2244,8 @@ private void onArrivingService(ServiceInstanceStatus arrivingService) {
 		filterService();
 		return;
 	}	
-	
+
+	boolean bDefined = false;
 	List<ServiceInstanceStatus> tempList = new ArrayList<ServiceInstanceStatus>(serviceInstanceStatusList);
 	for (int i = 0; i < tempList.size(); i ++) {
 		ServiceInstanceStatus sis = tempList.get(i);
@@ -2258,10 +2255,13 @@ private void onArrivingService(ServiceInstanceStatus arrivingService) {
 			} else {
 				serviceInstanceStatusList.set(i, arrivingService);				
 			}
+			bDefined = true;
 			break;
-		}
+		} 
 	}
-
+	if (!bDefined) {
+		serviceInstanceStatusList.add(arrivingService);		
+	}
 	filterService();
 }
 
@@ -2624,12 +2624,10 @@ public void queryWaitingCheck_ItemStateChanged(java.awt.event.ItemEvent itemEven
 private void reconnect() throws JMSException {
 	jmsConnFactory = new JmsConnectionFactoryImpl();
 	
-	queueConn = jmsConnFactory.createQueueConnection();
-	queueConn.startConnection();
+	jmsConn = jmsConnFactory.createConnection();
 	
-	topicConn = jmsConnFactory.createTopicConnection();
-	topicSession = topicConn.getAutoSession();
-	VCellTopicSession listenSession = topicConn.getAutoSession();
+	topicSession = jmsConn.getAutoSession();
+	JmsSession listenSession = jmsConn.getAutoSession();
 	String filter = MESSAGE_TYPE_PROPERTY + " NOT IN " 
 		+ "('" + MESSAGE_TYPE_IAMALIVE_VALUE + "'" 
 		+ ",'" + MESSAGE_TYPE_ISSERVICEALIVE_VALUE + "'" 
@@ -2637,8 +2635,8 @@ private void reconnect() throws JMSException {
 		+ ",'" + MESSAGE_TYPE_STARTSERVICE_VALUE + "'"
 		+ ",'" + MESSAGE_TYPE_STOPSERVICE_VALUE + "'"
 		+ ")";
-	listenSession.setupListener(JmsUtils.getTopicDaemonControl(), filter, new ControlMessageCollector(this));
-	topicConn.startConnection();
+	listenSession.setupTopicListener(JmsUtils.getTopicDaemonControl(), filter, new ControlMessageCollector(this));
+	jmsConn.startConnection();
 }
 
 private void refresh () {
@@ -2824,11 +2822,8 @@ public void sendMessageButton_ActionPerformed(java.awt.event.ActionEvent actionE
 public void serverManageConsole_WindowClosed(java.awt.event.WindowEvent windowEvent) {
 	try {
 		dispose();
-		if (topicConn != null) {
-			topicConn.close();
-		}
-		if (queueConn != null) {
-			queueConn.close();
+		if (jmsConn != null) {
+			jmsConn.close();
 		}
 	} catch (JMSException ex) {
 		log.exception(ex);

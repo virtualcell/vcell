@@ -11,11 +11,8 @@ public abstract class AbstractJmsProvider implements JmsProvider {
 	protected String fieldUserid;
 	protected String fieldPassword;	
 
-	protected XATopicConnectionFactory xaTopicConnectionFactory = null;
-	protected XAQueueConnectionFactory xaQueueConnectionFactory = null;
-
-	protected  QueueConnectionFactory queueConnectionFactory = null;
-	protected  TopicConnectionFactory topicConnectionFactory = null;	
+	protected XAConnectionFactory xaConnectionFactory = null;
+	protected ConnectionFactory connectionFactory = null;	
 	
 /**
  * JmsFactory constructor comment.

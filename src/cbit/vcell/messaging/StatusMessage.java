@@ -1,7 +1,6 @@
 package cbit.vcell.messaging;
 import javax.jms.*;
 import cbit.vcell.messaging.db.SimulationJobStatus;
-import cbit.vcell.server.PropertyLoader;
 
 /**
  * Insert the type's description here.
@@ -144,7 +143,7 @@ private void parseMessage(Message message) throws JMSException {
  * @return javax.jms.Message
  * @param session cbit.vcell.messaging.VCellSession
  */
-public void sendToClient(VCellTopicSession session) throws JMSException {
+public void sendToClient(JmsSession session) throws JMSException {
 	Message message = toMessage(session);
 	session.publishMessage(JmsUtils.getTopicClientStatus(), message);
 }
@@ -156,7 +155,7 @@ public void sendToClient(VCellTopicSession session) throws JMSException {
  * @return javax.jms.Message
  * @param session cbit.vcell.messaging.VCellSession
  */
-private Message toMessage(VCellJmsSession session) throws JMSException {
+private Message toMessage(JmsSession session) throws JMSException {
 	Message message = session.createObjectMessage(jobStatus);
 	message.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_SIMSTATUS_VALUE);
 	message.setStringProperty(MessageConstants.USERNAME_PROPERTY, userName);

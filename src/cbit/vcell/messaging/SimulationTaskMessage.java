@@ -103,7 +103,7 @@ private void parse(Message message) throws XmlParseException, JMSException {
  * @return javax.jms.Message
  * @param session cbit.vcell.messaging.VCellSession
  */
-public void sendSimulationTask(VCellQueueSession session) throws javax.jms.JMSException, cbit.vcell.xml.XmlParseException {
+public void sendSimulationTask(JmsSession session) throws javax.jms.JMSException, cbit.vcell.xml.XmlParseException {
 	session.sendMessage(JmsUtils.getQueueSimJob(), toMessage(session), DeliveryMode.PERSISTENT, 0);
 }
 
@@ -125,7 +125,7 @@ private String simulation2XML() throws XmlParseException {
  * @return javax.jms.Message
  * @param session cbit.vcell.messaging.VCellSession
  */
-private javax.jms.Message toMessage(VCellQueueSession session) throws javax.jms.JMSException, cbit.vcell.xml.XmlParseException {
+private javax.jms.Message toMessage(JmsSession session) throws javax.jms.JMSException, cbit.vcell.xml.XmlParseException {
 	javax.jms.Message message = session.createTextMessage(simulation2XML());		
 
 	message.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_SIMULATION_JOB_VALUE); // must have

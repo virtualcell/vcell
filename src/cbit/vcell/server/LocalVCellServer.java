@@ -192,9 +192,7 @@ public CacheStatus getCacheStatus() {
 public User[] getConnectedUsers() {
 	try {
 		Vector<User> userList = new Vector<User>();
-		Enumeration enum1 = vcellConnectionList.elements();
-		while (enum1.hasMoreElements()){
-			VCellConnection vcConn = (VCellConnection)enum1.nextElement();
+		for (VCellConnection vcConn : vcellConnectionList) {
 			if (!userList.contains(vcConn.getUser())){
 				userList.addElement(vcConn.getUser());
 			}
@@ -454,7 +452,7 @@ VCellConnection getVCellConnection(String userid, String password) throws Remote
 		synchronized (adminDbServer) {
 			user = adminDbServer.getUser(userid, password);
 			if (user == null){
-				throw new AuthenticationException("Authentication Failed for user " + userid);
+				throw new AuthenticationException("The userid (" + userid + ") or password you entered is not correct. Please go to Server->Change User... to reenter your userid and password or click \"Forgot Login Password\"");
 			}
 		}
 	}catch(DataAccessException e){
@@ -504,9 +502,7 @@ private synchronized VCellConnection getVCellConnection0(User user) {
 	//
 	// Lookup existing VCellConnections
 	//
-	Enumeration enum1 = vcellConnectionList.elements();
-	while (enum1.hasMoreElements()) {
-		VCellConnection vcc = (VCellConnection) enum1.nextElement();
+	for (VCellConnection vcc : vcellConnectionList) {
 		if (vcc instanceof LocalVCellConnection){
 			LocalVCellConnection lvcc = (LocalVCellConnection)vcc;
 			if (lvcc.getUser().compareEqual(user)) {

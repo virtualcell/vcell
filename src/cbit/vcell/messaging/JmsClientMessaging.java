@@ -10,8 +10,8 @@ import cbit.vcell.messaging.server.RpcRequest;
  */
 public class JmsClientMessaging {
 
-	private VCellQueueSession responseRequestor = null;
-	private VCellQueueConnection queueConn = null;
+	private JmsSession responseRequestor = null;
+	private JmsConnection queueConn = null;
 
 	private SessionLog log = null;
 	private long timeSinceLastMessage = System.currentTimeMillis();
@@ -19,7 +19,7 @@ public class JmsClientMessaging {
 /**
  * Client constructor comment.
  */
-public JmsClientMessaging(VCellQueueConnection queueConn0, SessionLog log0) throws JMSException {
+public JmsClientMessaging(JmsConnection queueConn0, SessionLog log0) throws JMSException {
 	log = log0;
 	queueConn = queueConn0;
 	
@@ -82,7 +82,7 @@ private synchronized Object rpc(RpcRequest request, String queueName, boolean re
 		setTimeSinceLastMessage(System.currentTimeMillis());
 		if (returnRequired) {
 			long clientTimeoutMS = Long.parseLong(cbit.vcell.server.PropertyLoader.getRequiredProperty(cbit.vcell.server.PropertyLoader.vcellClientTimeoutMS)); 
-			Message msg = responseRequestor.request(this, queueName, rpcMessage, DeliveryMode.PERSISTENT, clientTimeoutMS); 
+			Message msg = responseRequestor.queueRequest(this, queueName, rpcMessage, DeliveryMode.PERSISTENT, clientTimeoutMS); 
 		
 			if (msg == null || !(msg instanceof ObjectMessage)) {
 				throw new JMSException("server didn't respond to RPC call (server=" + serviceType + ", method=" + methodName +")");
@@ -112,7 +112,7 @@ private synchronized Object rpc(RpcRequest request, String queueName, boolean re
 			log.print("ClientMessaging.rpc() retrying ");
 			return rpc(request, queueName, returnRequired, specialProperties, specialValues, false);
 		} else {
-			throw new JMSException("ClientMessaging.rpc(" + methodName + "), JMS server failed " + e.getMessage());
+			throw new JMSException("can't connect to JMS server [ rpc(" + methodName + "),  " + e.getMessage() + " ]");
 		}
 	}	
 }

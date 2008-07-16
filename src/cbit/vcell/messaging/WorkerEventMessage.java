@@ -6,7 +6,6 @@ import javax.jms.*;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.Simulation;
 import cbit.rmi.event.WorkerEvent;
-import cbit.vcell.server.PropertyLoader;
 
 /**
  * Insert the type's description here.
@@ -139,7 +138,7 @@ private void parseMessage(SimulationDispatcher dispatcher, Message message) thro
  * Creation date: (12/31/2003 12:53:34 PM)
  * @param param javax.jms.Message
  */
-public static WorkerEventMessage sendAccepted(VCellQueueSession session, Object source, SimulationInfo simInfo, int jobIndex, String hostName, int taskID) throws JMSException {
+public static WorkerEventMessage sendAccepted(JmsSession session, Object source, SimulationInfo simInfo, int jobIndex, String hostName, int taskID) throws JMSException {
 	WorkerEvent workerEvent = new WorkerEvent(source, simInfo.getAuthoritativeVCSimulationIdentifier(), jobIndex, WorkerEvent.JOB_ACCEPTED, hostName, taskID,  null);
 	WorkerEventMessage workerEventMessage = new WorkerEventMessage(workerEvent);
 	workerEventMessage.sendWorkerEvent(session);
@@ -153,7 +152,7 @@ public static WorkerEventMessage sendAccepted(VCellQueueSession session, Object 
  * Creation date: (12/31/2003 12:53:34 PM)
  * @param param javax.jms.Message
  */
-public static WorkerEventMessage sendCompleted(VCellQueueSession session, Object source, SimulationInfo simInfo, int jobIndex, String hostName, int taskID, double progress, double timePoint) throws JMSException {
+public static WorkerEventMessage sendCompleted(JmsSession session, Object source, SimulationInfo simInfo, int jobIndex, String hostName, int taskID, double progress, double timePoint) throws JMSException {
 	WorkerEvent workerEvent = new WorkerEvent(source, simInfo.getAuthoritativeVCSimulationIdentifier(), jobIndex, WorkerEvent.JOB_COMPLETED, hostName, taskID, new Double(progress), new Double(timePoint));		
 	WorkerEventMessage workerEventMessage = new WorkerEventMessage(workerEvent);
 	workerEventMessage.sendWorkerEvent(session);
@@ -167,7 +166,7 @@ public static WorkerEventMessage sendCompleted(VCellQueueSession session, Object
  * Creation date: (12/31/2003 12:53:34 PM)
  * @param param javax.jms.Message
  */
-public static WorkerEventMessage sendFailed(VCellQueueSession session, Object source, SimulationInfo simInfo, int jobIndex, String hostName, int taskID, String failMessage) throws JMSException {
+public static WorkerEventMessage sendFailed(JmsSession session, Object source, SimulationInfo simInfo, int jobIndex, String hostName, int taskID, String failMessage) throws JMSException {
 	String revisedFailMsg = failMessage;
 	if (revisedFailMsg != null) {
 		revisedFailMsg = revisedFailMsg.trim();
@@ -193,7 +192,7 @@ public static WorkerEventMessage sendFailed(VCellQueueSession session, Object so
  * Creation date: (12/31/2003 12:53:34 PM)
  * @param param javax.jms.Message
  */
-public static WorkerEventMessage sendNewData(VCellQueueSession session, Object source, SimulationInfo simInfo, int jobIndex, String hostName, int taskID, double progress, double timePoint) throws JMSException {
+public static WorkerEventMessage sendNewData(JmsSession session, Object source, SimulationInfo simInfo, int jobIndex, String hostName, int taskID, double progress, double timePoint) throws JMSException {
 	WorkerEvent workerEvent = new WorkerEvent(source, simInfo.getAuthoritativeVCSimulationIdentifier(), jobIndex, WorkerEvent.JOB_DATA, hostName, taskID, new Double(progress), new Double(timePoint));		
 	WorkerEventMessage workerEventMessage = new WorkerEventMessage(workerEvent);
 	workerEventMessage.sendWorkerEvent(session);
@@ -207,7 +206,7 @@ public static WorkerEventMessage sendNewData(VCellQueueSession session, Object s
  * Creation date: (12/31/2003 12:53:34 PM)
  * @param param javax.jms.Message
  */
-public static WorkerEventMessage sendProgress(VCellQueueSession session, Object source, SimulationInfo simInfo, int jobIndex, String hostName, int taskID, double progress, double timePoint) throws JMSException {
+public static WorkerEventMessage sendProgress(JmsSession session, Object source, SimulationInfo simInfo, int jobIndex, String hostName, int taskID, double progress, double timePoint) throws JMSException {
 	WorkerEvent workerEvent = new WorkerEvent(source, simInfo.getAuthoritativeVCSimulationIdentifier(), jobIndex, WorkerEvent.JOB_PROGRESS, hostName, taskID, new Double(progress), new Double(timePoint));		
 	WorkerEventMessage workerEventMessage = new WorkerEventMessage(workerEvent);
 	workerEventMessage.sendWorkerEvent(session);
@@ -221,7 +220,7 @@ public static WorkerEventMessage sendProgress(VCellQueueSession session, Object 
  * Creation date: (12/31/2003 12:53:34 PM)
  * @param param javax.jms.Message
  */
-public static WorkerEventMessage sendStarting(VCellQueueSession session, Object source, SimulationInfo simInfo, int jobIndex, String hostName, int taskID, String startMessage) throws JMSException {
+public static WorkerEventMessage sendStarting(JmsSession session, Object source, SimulationInfo simInfo, int jobIndex, String hostName, int taskID, String startMessage) throws JMSException {
 	String revisedStartMsg = startMessage;
 	if (revisedStartMsg != null) {
 		revisedStartMsg = revisedStartMsg.trim();
@@ -247,7 +246,7 @@ public static WorkerEventMessage sendStarting(VCellQueueSession session, Object 
  * Creation date: (12/31/2003 12:53:34 PM)
  * @param param javax.jms.Message
  */
-public static WorkerEventMessage sendWorkerAlive(VCellQueueSession session, Object source, SimulationInfo simInfo, int jobIndex, String hostName, int taskID) throws JMSException {
+public static WorkerEventMessage sendWorkerAlive(JmsSession session, Object source, SimulationInfo simInfo, int jobIndex, String hostName, int taskID) throws JMSException {
 	WorkerEvent workerEvent = new WorkerEvent(source, simInfo.getAuthoritativeVCSimulationIdentifier(), jobIndex, WorkerEvent.JOB_WORKER_ALIVE, hostName, taskID, null);
 	WorkerEventMessage workerEventMessage = new WorkerEventMessage(workerEvent);
 	workerEventMessage.sendWorkerEvent(session);
@@ -260,7 +259,7 @@ public static WorkerEventMessage sendWorkerAlive(VCellQueueSession session, Obje
  * Insert the method's description here.
  * Creation date: (10/22/2001 11:20:37 PM)
  */
-private void sendWorkerEvent(VCellQueueSession session) throws JMSException {
+private void sendWorkerEvent(JmsSession session) throws JMSException {
 	session.sendMessage(JmsUtils.getQueueWorkerEvent(), toMessage(session), DeliveryMode.PERSISTENT, MessageConstants.INTERVAL_SERVER_FAIL);
 }
 
@@ -270,7 +269,7 @@ private void sendWorkerEvent(VCellQueueSession session) throws JMSException {
  * Creation date: (5/20/2003 1:36:36 PM)
  * @return javax.jms.Message
  */
-private Message toMessage(VCellJmsSession session) throws JMSException {		
+private Message toMessage(JmsSession session) throws JMSException {		
 	Message message = session.createObjectMessage(workerEvent);
 	message.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MESSAGE_TYPE_WORKEREVENT_VALUE);
 	

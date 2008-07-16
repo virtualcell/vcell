@@ -3000,8 +3000,7 @@ public void substituteFieldFuncNames(VCDocument vcDocument,VersionableTypeVersio
 
 	Vector<ExternalDataIdentifier> errorCleanupExtDataIDV = new Vector<ExternalDataIdentifier>();
 	try{
-		if(originalOwner == null ||
-			originalOwner.getVersion().getOwner().compareEqual(getUser())){
+		if(originalOwner == null || originalOwner.getVersion().getOwner().compareEqual(getUser())){
 			//Substitution for FieldFunc not needed for new doc or if we own doc
 			return;
 		}
@@ -3010,21 +3009,16 @@ public void substituteFieldFuncNames(VCDocument vcDocument,VersionableTypeVersio
 		if(vcDocument instanceof MathModel){
 			fieldFunctionContainerV.add(((MathModel)vcDocument).getMathDescription());
 		}else if(vcDocument instanceof BioModel){
-			SimulationContext[] simContextArr =
-				((BioModel)vcDocument).getSimulationContexts();
+			SimulationContext[] simContextArr = ((BioModel)vcDocument).getSimulationContexts();
 			for(int i=0;i<simContextArr.length;i+= 1){
 				fieldFunctionContainerV.add(simContextArr[i]);
 			}
 		}
 		//Get original Field names
 		Vector<String> origFieldFuncNamesV = new Vector<String>();
-//		HashSet<FieldFunctionArguments> fieldFuncArgsHashSet =
-//			new HashSet<FieldFunctionArguments>();
 		for(int i=0;i<fieldFunctionContainerV.size();i+= 1){
-			FieldFunctionArguments[] fieldFuncArgsArr =
-				fieldFunctionContainerV.elementAt(i).getFieldFunctionArguments();
+			FieldFunctionArguments[] fieldFuncArgsArr = fieldFunctionContainerV.elementAt(i).getFieldFunctionArguments();
 			for(int j=0;j<fieldFuncArgsArr.length;j+= 1){
-//				fieldFuncArgsHashSet.add(fieldFuncArgsArr[j]);
 				if(!origFieldFuncNamesV.contains(fieldFuncArgsArr[j].getFieldName())){
 					origFieldFuncNamesV.add(fieldFuncArgsArr[j].getFieldName());
 				}
@@ -3034,42 +3028,34 @@ public void substituteFieldFuncNames(VCDocument vcDocument,VersionableTypeVersio
 			return;
 		}
 		
-		FieldDataDBOperationResults copyNamesFieldDataOpResults =
-			fieldDataDBOperation(
-					FieldDataDBOperationSpec.createCopyNoConflictExtDataIDsSpec(
-							getUser(),
-							origFieldFuncNamesV.toArray(new String[0]),
-							originalOwner)
-					);
+		FieldDataDBOperationResults copyNamesFieldDataOpResults = fieldDataDBOperation(
+				FieldDataDBOperationSpec.createCopyNoConflictExtDataIDsSpec(
+				getUser(),
+				origFieldFuncNamesV.toArray(new String[0]),
+				originalOwner)
+		);
 		
 		errorCleanupExtDataIDV.addAll(copyNamesFieldDataOpResults.oldNameNewIDHash.values());
 		
 		//Copy Field Data on Data Server FileSystem
-//		FieldFunctionArguments[] allFieldFunctionArguments =
-//			fieldFuncArgsHashSet.toArray(new FieldFunctionArguments[0]);
 		for(String fieldname : origFieldFuncNamesV){
-			KeyValue sourceSimDataKey =
-				copyNamesFieldDataOpResults.oldNameOldExtDataIDKeyHash.get(fieldname);
-						//allFieldFunctionArguments[i].getFieldName());
+			KeyValue sourceSimDataKey = copyNamesFieldDataOpResults.oldNameOldExtDataIDKeyHash.get(fieldname);
 			if(sourceSimDataKey == null){
 				throw new DataAccessException("Couldn't find original data key for FieldFunc "+fieldname);
 			}
-			ExternalDataIdentifier newExtDataID =
-				copyNamesFieldDataOpResults.oldNameNewIDHash.get(fieldname);
-			getSessionManager().
-					fieldDataFileOperation(
-							FieldDataFileOperationSpec.createCopySimFieldDataFileOperationSpec(
-									newExtDataID, 
-									sourceSimDataKey, 
-									originalOwner.getVersion().getOwner(), 
-									FieldDataFileOperationSpec.JOBINDEX_DEFAULT,
-									getUser())
-							);
+			ExternalDataIdentifier newExtDataID = copyNamesFieldDataOpResults.oldNameNewIDHash.get(fieldname);
+			getSessionManager().fieldDataFileOperation(
+					FieldDataFileOperationSpec.createCopySimFieldDataFileOperationSpec(
+					newExtDataID, 
+					sourceSimDataKey, 
+					originalOwner.getVersion().getOwner(), 
+					FieldDataFileOperationSpec.JOBINDEX_DEFAULT,
+					getUser())
+			);
 		}
 		//Finally substitute new Field names
 		for(int i=0;i<fieldFunctionContainerV.size();i+= 1){
-			fieldFunctionContainerV.elementAt(i).substituteFieldFuncNames(
-					copyNamesFieldDataOpResults.oldNameNewIDHash);
+			fieldFunctionContainerV.elementAt(i).substituteFieldFuncNames(copyNamesFieldDataOpResults.oldNameNewIDHash);
 		}
 		fireFieldDataDB(new FieldDataDBEvent(this));
 	}catch(Exception e){
@@ -3094,7 +3080,7 @@ public void substituteFieldFuncNames(VCDocument vcDocument,VersionableTypeVersio
 			}
 				
 		}
-		throw new RuntimeException("Error substituting Field Data names\n"+e.getMessage());
+		throw new RuntimeException("Error copying Field Data \n"+e.getMessage());
 	}
 }
 

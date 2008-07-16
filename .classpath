@@ -10,7 +10,6 @@
 	<classpathentry exported="true" kind="lib" path="ome-java_2008Apr17.jar"/>
 	<classpathentry exported="true" kind="lib" path="bio-formats_2008May20.jar" sourcepath="D:/developer/eclipse/workspace"/>
 	<classpathentry kind="lib" path="sbmlj.jar"/>
-	<classpathentry kind="lib" path="WinService.jar"/>
 	<classpathentry kind="lib" path="JLink.jar"/>
 	<classpathentry kind="lib" path="xml-apis.jar"/>
 	<classpathentry kind="lib" path="new_activation.jar"/>
@@ -18,5 +17,9 @@
 	<classpathentry kind="lib" path="MiriamJavaLib-standalone-20070625.jar"/>
 	<classpathentry exported="true" kind="lib" path="thirdParty.jar"/>
 	<classpathentry exported="true" kind="lib" path="netcdf-4.0_2008Apr17.jar"/>
+	<classpathentry kind="lib" path="sonic_Client.jar"/>
+	<classpathentry kind="lib" path="sonic_XA.jar"/>
+	<classpathentry kind="lib" path="sonic_Crypto.jar"/>
+	<classpathentry kind="lib" path="sonic_Selector.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

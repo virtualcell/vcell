@@ -12,8 +12,8 @@ import cbit.vcell.server.PropertyLoader;
  * @author: Fei Gao
  */
 public class WorkerMessaging extends JmsServiceProviderMessaging implements ControlTopicListener {
-	private VCellQueueSession jobRetriever = null;
-	private VCellQueueSession workerEventSession = null;
+	private JmsSession jobRetriever = null;
+	private JmsSession workerEventSession = null;
 	private String jobSelector = null;
 	private Worker myWorker = null;
 	private SimulationTask currentTask = null;
@@ -112,8 +112,8 @@ protected void reconnect() throws JMSException {
 	jobSelector = myWorker.getJobSelector();
 	log.print("Job Selector : " + jobSelector);
 	
-	queueConn = jmsConnFactory.createQueueConnection();	
-	jobRetriever = queueConn.getTransactedSession(); // transactional
+	super.reconnect();	
+	jobRetriever = jmsConn.getTransactedSession(); // transactional
 	int workerPrefetchCount = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.jmsWorkerPrefetchCount, "-1"));
 	if (workerPrefetchCount > 0) {
 		log.print("workerPrefetchCount=" + workerPrefetchCount);
@@ -121,12 +121,10 @@ protected void reconnect() throws JMSException {
 		jobRetriever.setPrefetchThreshold(0);
 	}
 	
-	workerEventSession = queueConn.getAutoSession();
-	queueConn.startConnection();
-
-	super.reconnect();
-	listenTopicSession.setupListener(JmsUtils.getTopicServiceControl(), null, new ControlMessageCollector(myWorker));	
-	topicConn.startConnection();	
+	workerEventSession = jmsConn.getAutoSession();
+	JmsSession serviceListenTopicSession = jmsConn.getAutoSession();
+	serviceListenTopicSession.setupTopicListener(JmsUtils.getTopicServiceControl(), null, new ControlMessageCollector(myWorker));
+	jmsConn.startConnection();
 }
 
 
@@ -244,7 +242,7 @@ public void sendStarting(String startingMessage) {
  * Insert the method's description here.
  * Creation date: (10/22/2001 11:20:37 PM)
  */
-public void sendWorkerAlive() {
+void sendWorkerAlive() {
 	if (currentTask == null) {
 		return;
 	}
@@ -266,7 +264,7 @@ public void sendWorkerAlive() {
  * Creation date: (8/19/2004 11:21:59 AM)
  */
 public void startReceiving() throws JMSException {
-	queueConn.startConnection();
+	jmsConn.startConnection();
 }
 
 
@@ -275,6 +273,6 @@ public void startReceiving() throws JMSException {
  * Creation date: (8/19/2004 11:21:59 AM)
  */
 public void stopReceiving() throws JMSException {
-	queueConn.stopConnection();
+	jmsConn.stopConnection();
 }
 }

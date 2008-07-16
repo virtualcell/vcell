@@ -11,10 +11,8 @@ import cbit.vcell.messaging.MessageConstants;
 import cbit.vcell.messaging.WorkerMessaging;
 import cbit.vcell.messaging.admin.ManageUtils;
 import cbit.vcell.messaging.admin.ServiceInstanceStatus;
-import cbit.vcell.messaging.admin.ServiceSpec;
 import cbit.vcell.messaging.db.VCellServerID;
 import static cbit.vcell.messaging.MessageConstants.*;
-import static cbit.vcell.messaging.admin.ManageConstants.*;
 
 /**
  * Insert the type's description here.
@@ -196,7 +194,6 @@ public final void start() {
 		currentSolver = null;
 		
 		try {
-			workerMessaging.startReceiving();
 			currentTask = workerMessaging.getNextTask();
 			
 			if (currentTask == null || !(currentTask instanceof SimulationTask)){
@@ -206,9 +203,7 @@ public final void start() {
 				}
 				continue;				
 			}
-			workerMessaging.stopReceiving();
-			doJob();
-			
+			doJob();			
 		} catch (Exception ex) {			
 			workerMessaging.sendFailed(ex.getMessage());
 		}			

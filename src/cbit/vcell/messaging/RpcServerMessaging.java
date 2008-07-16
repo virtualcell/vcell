@@ -1,6 +1,5 @@
 package cbit.vcell.messaging;
 import javax.jms.*;
-import cbit.vcell.messaging.admin.ManageConstants;
 import java.io.Serializable;
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.server.SessionLog;
@@ -14,7 +13,7 @@ import cbit.vcell.server.PropertyLoader;
  * @author: Fei Gao
  */
 public class RpcServerMessaging extends JmsServiceProviderMessaging implements QueueListener, ControlTopicListener {
-	private VCellQueueSession clientRequestReceiver = null;
+	private JmsSession clientRequestReceiver = null;
 	private String queueName = null;
 	private String msgSelector = null;
 
@@ -74,7 +73,7 @@ public void onQueueMessage(Message message) {
 		}
 
 		if (returnValue != null && returnValue.getClass().isArray()) {
-			Class componentClass = returnValue.getClass().getComponentType();
+			Class<?> componentClass = returnValue.getClass().getComponentType();
 			if (!componentClass.isPrimitive() && !Serializable.class.isAssignableFrom(componentClass)) {
 				returnValue = new ClassCastException("Not serializable:" + componentClass);
 			}
@@ -123,14 +122,14 @@ public void onQueueMessage(Message message) {
  */
 public void publishDataStatus(cbit.rmi.event.DataJobEvent event) throws JMSException  {
 	try {
-		VCellTopicSession dataSession = topicConn.getAutoSession();
+		JmsSession dataSession = jmsConn.getAutoSession();
 		Message rpcMessage = dataSession.createObjectMessage(event);
 		rpcMessage.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_DATA_EVENT_VALUE);
 		rpcMessage.setStringProperty(MessageConstants.USERNAME_PROPERTY, event.getUser().getName());
 		
 		dataSession.publishMessage(JmsUtils.getTopicClientStatus(), rpcMessage);
 		log.print("publishing data status: " + event);		
-		topicConn.closeSession(dataSession);
+		jmsConn.closeSession(dataSession);
 			
 	} catch (Exception e){
 		log.exception(e);
@@ -146,14 +145,14 @@ public void publishDataStatus(cbit.rmi.event.DataJobEvent event) throws JMSExcep
  */
 public void publishExportStatus(ExportEvent event) throws JMSException  {
 	try {
-		VCellTopicSession exportSession = topicConn.getAutoSession();
+		JmsSession exportSession = jmsConn.getAutoSession();
 		Message rpcMessage = exportSession.createObjectMessage(event);
 		rpcMessage.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY, MessageConstants.MESSAGE_TYPE_EXPORT_EVENT_VALUE);
 		rpcMessage.setStringProperty(MessageConstants.USERNAME_PROPERTY, event.getUser().getName());
 		
 		exportSession.publishMessage(JmsUtils.getTopicClientStatus(), rpcMessage);
 		log.print("publishing export status: " + event);		
-		topicConn.closeSession(exportSession);
+		jmsConn.closeSession(exportSession);
 			
 	} catch (Exception e){
 		log.exception(e);
@@ -167,16 +166,16 @@ public void publishExportStatus(ExportEvent event) throws JMSException  {
  * Creation date: (11/19/2001 5:29:47 PM)
  */
 protected void reconnect() throws JMSException {
-	queueConn = jmsConnFactory.createQueueConnection();	
-	clientRequestReceiver = queueConn.getTransactedSession(); // transactional	
+	super.reconnect();
+	
+	clientRequestReceiver = jmsConn.getTransactedSession(); // transactional	
 	int servicePrefetchCount = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.jmsServicePrefetchCount, "-1"));
 	if (servicePrefetchCount > 0) {
 		log.print("servicePrefetchCount=" + servicePrefetchCount);
 		clientRequestReceiver.setPrefetchCount(servicePrefetchCount); // get messages one by one
 	}
-	clientRequestReceiver.setupListener(queueName, msgSelector, new QueueMessageCollector(this));	
-
-	super.reconnect();
+	clientRequestReceiver.setupQueueListener(queueName, msgSelector, new QueueMessageCollector(this));
+	jmsConn.startConnection();
 }
 
 
@@ -186,6 +185,6 @@ protected void reconnect() throws JMSException {
  */
 public void startListening() throws JMSException {
 	log.print("I am starting to take requests!");
-	queueConn.startConnection();
+	jmsConn.startConnection();
 }
 }

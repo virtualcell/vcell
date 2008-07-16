@@ -104,7 +104,7 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
 			// updateStatus
 			clientSimManager.updateStatusFromStartRequest(sim, true, exc.getMessage());
 			// notify user
-			PopupGenerator.showErrorDialog(documentWindowManager, "Failed to dispatch start request for simulation'"+sim.getName()+"'\n"+exc.getMessage());
+			PopupGenerator.showErrorDialog(documentWindowManager, "Failed to start simulation'"+sim.getName()+"'\n"+exc.getMessage());
 		}
 	}
 }

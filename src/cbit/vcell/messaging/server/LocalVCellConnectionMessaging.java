@@ -25,19 +25,10 @@ public class LocalVCellConnectionMessaging extends UnicastRemoteObject implement
 	private LocalUserMetaDbServerMessaging userMetaDbServerMessaging = null;
 	private cbit.vcell.messaging.event.SimpleMessageServiceMessaging messageService = null;
 
-	private VCellTopicConnection topicConn = null;
-	private VCellQueueConnection queueConn = null;
+	private JmsConnection jmsConn = null;
 	
 	private User fieldUser = null;
 	private String fieldPassword = null;
-	
-	//
-	// database resources
-	//
-	private static cbit.sql.ConnectionFactory conFactory = null;
-	private static cbit.sql.KeyFactory keyFactory = null;
-	private static cbit.sql.DBCacheTable dbCacheTable = null;
-
 	
 	private SessionLog fieldSessionLog = null;
 	private LocalVCellServer fieldLocalVCellServer = null;
@@ -46,11 +37,8 @@ public class LocalVCellConnectionMessaging extends UnicastRemoteObject implement
 	private JmsClientMessaging dbClientMessaging = null;
 	private JmsClientMessaging dataClientMessaging = null;
 	private JmsClientMessaging simClientMessaging = null;
-	/**
- * This method was created by a SmartGuide.
- * @exception java.rmi.RemoteException The exception description.
- */
-public LocalVCellConnectionMessaging(User user, String password, String host, 
+
+	public LocalVCellConnectionMessaging(User user, String password, String host, 
 		SessionLog sessionLog, JmsConnectionFactory jmsConnFactory, LocalVCellServer aLocalVCellServer) 
 		throws RemoteException, java.sql.SQLException, FileNotFoundException, javax.jms.JMSException {
 	super(PropertyLoader.getIntProperty(PropertyLoader.rmiPortVCellConnection,0));
@@ -59,10 +47,9 @@ public LocalVCellConnectionMessaging(User user, String password, String host,
 	this.fieldHost = host;
 	this.fieldSessionLog = sessionLog;
 	this.fieldLocalVCellServer = aLocalVCellServer;
-	queueConn = jmsConnFactory.createQueueConnection();
-	topicConn = jmsConnFactory.createTopicConnection();
+	jmsConn = jmsConnFactory.createConnection();
 	
-	messageService = new SimpleMessageServiceMessaging(topicConn, user, sessionLog);	
+	messageService = new SimpleMessageServiceMessaging(jmsConn, user, sessionLog);	
 	sessionLog.print("new LocalVCellConnectionMessaging(" + user.getName() + ")");	
 	fieldLocalVCellServer.getExportServiceImpl().addExportListener(this);
 	fieldLocalVCellServer.getDataSetControllerImpl().addDataJobListener(this);
@@ -80,8 +67,7 @@ public LocalVCellConnectionMessaging(User user, String password, String host,
 public void close() throws java.rmi.RemoteException {
 	messageService.close();
 	try {
-		queueConn.close();
-		topicConn.close();
+		jmsConn.close();
 	} catch (javax.jms.JMSException ex) {
 		fieldSessionLog.exception(ex);
 	}
@@ -122,7 +108,7 @@ public DataSetController getDataSetController() throws RemoteException, DataAcce
 	fieldSessionLog.print("LocalVCellConnectionMessaging.getDataSetController()");
 	if (dataSetControllerMessaging == null) {
 		try {
-			dataClientMessaging = new JmsClientMessaging(queueConn, fieldSessionLog);
+			dataClientMessaging = new JmsClientMessaging(jmsConn, fieldSessionLog);
 			dataSetControllerMessaging = new LocalDataSetControllerMessaging(fieldSessionLog, getUser(), dataClientMessaging);
 			fieldSessionLog.print("new dataClientMessaging=" + dataClientMessaging);
 		} catch (javax.jms.JMSException ex) {
@@ -164,7 +150,7 @@ public cbit.rmi.event.RemoteMessageHandler getRemoteMessageHandler() {
 public SimulationController getSimulationController() throws RemoteException {
 	if (simulationControllerMessaging == null){
 		try {
-			simClientMessaging = new JmsClientMessaging(queueConn, fieldSessionLog);
+			simClientMessaging = new JmsClientMessaging(jmsConn, fieldSessionLog);
 			simulationControllerMessaging = new LocalSimulationControllerMessaging(getUser(), simClientMessaging, fieldSessionLog);
 			fieldSessionLog.print("new simClientMessaging=" + simClientMessaging);
 		} catch (DataAccessException ex) {
@@ -216,7 +202,7 @@ public UserMetaDbServer getUserMetaDbServer() throws RemoteException, DataAccess
 	fieldSessionLog.print("LocalVCellConnectionMessaging.getUserMetaDbServer(" + getUser() + ")");
 	if (userMetaDbServerMessaging == null) {
 		try {
-			dbClientMessaging = new JmsClientMessaging(queueConn, fieldSessionLog);
+			dbClientMessaging = new JmsClientMessaging(jmsConn, fieldSessionLog);
 			userMetaDbServerMessaging = new LocalUserMetaDbServerMessaging(dbClientMessaging, getUser(), fieldSessionLog);
 			fieldSessionLog.print("new dbClientMessaging=" + dbClientMessaging);
 		} catch (javax.jms.JMSException ex) {

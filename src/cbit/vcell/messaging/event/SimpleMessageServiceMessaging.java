@@ -23,7 +23,7 @@ public class SimpleMessageServiceMessaging implements cbit.rmi.event.MessageServ
  * Insert the method's description here.
  * Creation date: (11/14/2000 12:19:31 AM)
  */
-public SimpleMessageServiceMessaging(VCellTopicConnection topicConn, User user, SessionLog log) {
+public SimpleMessageServiceMessaging(JmsConnection topicConn, User user, SessionLog log) {
 	initialize(topicConn, user, log);
 	wireComponents();
 }
@@ -93,7 +93,7 @@ private void handleException(java.lang.Throwable exception) {
  * Insert the method's description here.
  * Creation date: (11/14/2000 12:23:16 AM)
  */
-private void initialize(VCellTopicConnection topicConn, User user, SessionLog log) {
+private void initialize(JmsConnection topicConn, User user, SessionLog log) {
 	simpleMessageCollector = new SimpleMessageCollector();
 	simpleMessageDispatcher = new SimpleMessageDispatcher();
 	try {
