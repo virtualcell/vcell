@@ -7,9 +7,7 @@ package cbit.vcell.transaction;
  */
 public interface JtaDbConnection {
 	public void close() throws java.sql.SQLException;
-public void closeOnFailure() throws java.sql.SQLException;
-	public void commit() throws javax.transaction.SystemException;
+	public void closeOnFailure() throws java.sql.SQLException;
 	public java.sql.Connection getConnection() throws java.sql.SQLException;
 	public boolean joinTransaction(javax.transaction.TransactionManager tm) throws java.sql.SQLException;
-	public void rollback() throws javax.transaction.SystemException;
 }

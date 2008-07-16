@@ -2,7 +2,6 @@ package cbit.vcell.messaging;
 import javax.jms.*;
 import static cbit.vcell.messaging.admin.ManageConstants.*;
 import cbit.vcell.messaging.admin.ServiceInstanceStatus;
-import cbit.vcell.messaging.admin.ServiceSpec;
 import cbit.vcell.messaging.server.ServiceProvider;
 
 /**
@@ -13,9 +12,8 @@ import cbit.vcell.messaging.server.ServiceProvider;
 public abstract class JmsServiceProviderMessaging implements ControlTopicListener {
 	protected JmsConnectionFactory jmsConnFactory = null;
 	protected cbit.vcell.server.SessionLog log = null;
-	protected VCellQueueConnection queueConn = null;
-	protected VCellTopicConnection topicConn = null;
-	protected VCellTopicSession listenTopicSession = null;
+	protected JmsConnection jmsConn = null;
+	protected JmsSession listenTopicSession = null;
 	protected ServiceProvider jmsServiceProvider = null;
 
 /**
@@ -34,11 +32,8 @@ protected JmsServiceProviderMessaging(ServiceProvider serviceProvider0, cbit.vce
  */
 private void closeJmsConnection() {
 	try {
-		if (queueConn != null) {
-			queueConn.close();
-		}
-		if (topicConn != null) {
-			topicConn.close();
+		if (jmsConn != null) {
+			jmsConn.close();
 		}
 	} catch (JMSException ex) {
 		log.exception(ex);
@@ -66,20 +61,9 @@ private final String getDaemonControlFilter() {
  * Creation date: (10/31/2003 11:49:03 AM)
  * @return cbit.vcell.messaging.VCellQueueConnection
  */
-public VCellQueueConnection getQueueConnection() {
-	return queueConn;
+public JmsConnection getJmsConnection() {
+	return jmsConn;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (10/31/2003 11:49:23 AM)
- * @return cbit.vcell.messaging.VCellTopicConnection
- */
-protected VCellTopicConnection getTopicConnection() {
-	return topicConn;
-}
-
 
 /**
  * Insert the method's description here.
@@ -95,7 +79,7 @@ public void onControlTopicMessage(Message message) {
 /**
  * onMessage method comment.
  */
-public final void onDaemonMessage(VCellTopicSession controlSession, javax.jms.Message message, ServiceInstanceStatus serviceInstanceStatus) {
+public final void onDaemonMessage(JmsSession controlSession, javax.jms.Message message, ServiceInstanceStatus serviceInstanceStatus) {
 	try {
 		String msgType = (String)JmsUtils.parseProperty(message, MESSAGE_TYPE_PROPERTY, String.class);
 		String serviceID = null;
@@ -143,10 +127,9 @@ public final void onDaemonMessage(VCellTopicSession controlSession, javax.jms.Me
  * Creation date: (11/19/2001 5:29:47 PM)
  */
 protected void reconnect() throws JMSException {
-	topicConn = jmsConnFactory.createTopicConnection();
-	listenTopicSession = topicConn.getAutoSession();	
-	listenTopicSession.setupListener(JmsUtils.getTopicDaemonControl(), getDaemonControlFilter(), new ControlMessageCollector(this));
-	topicConn.startConnection();
+	jmsConn = jmsConnFactory.createConnection();
+	listenTopicSession = jmsConn.getAutoSession();	
+	listenTopicSession.setupTopicListener(JmsUtils.getTopicDaemonControl(), getDaemonControlFilter(), new ControlMessageCollector(this));
 }
 
 

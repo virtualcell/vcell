@@ -5,9 +5,10 @@ import javax.transaction.TransactionManager;
 
 /**
  * Insert the type's description here.
- * Creation date: (10/8/2003 3:55:01 PM)
+ * Creation date: (10/8/2003 1:13:29 PM)
  * @author: Fei Gao
  */
-public interface VCellXATopicSession extends VCellTopicSession {
+public interface JmsXASession extends JmsSession {
+	void setupXASession() throws JMSException;
 	boolean joinTransaction(TransactionManager tm) throws JMSException;
 }

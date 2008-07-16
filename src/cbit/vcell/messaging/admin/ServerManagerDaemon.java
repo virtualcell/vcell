@@ -23,14 +23,13 @@ import cbit.vcell.modeldb.DbDriver;
  */
 public class ServerManagerDaemon implements ControlTopicListener {
 	private cbit.vcell.server.SessionLog log = null;
-	private VCellTopicConnection topicConn = null;
-	private VCellQueueConnection queueConn = null;
+	private JmsConnection jmsConn = null;
 	private JmsConnectionFactory jmsConnFactory = null;
 	private boolean stopped = false;
 	private List<ServiceInstanceStatus> serviceAliveList = Collections.synchronizedList(new ArrayList<ServiceInstanceStatus>());
 	private List<ServiceStatus> serviceList = Collections.synchronizedList(new ArrayList<ServiceStatus>());
-	private cbit.vcell.messaging.VCellTopicSession topicSession = null;
-	private cbit.vcell.messaging.VCellTopicSession listenSession = null;
+	private JmsSession topicSession = null;
+	private JmsSession listenSession = null;
 	
 	ServiceInstanceStatus serviceInstanceStatus = null;
 	
@@ -68,15 +67,12 @@ public ServerManagerDaemon() throws IOException, SQLException, javax.jms.JMSExce
 private void reconnect() throws JMSException {
 	jmsConnFactory = new JmsConnectionFactoryImpl();
 	
-	queueConn = jmsConnFactory.createQueueConnection();
-	queueConn.startConnection();
+	jmsConn = jmsConnFactory.createConnection();
+	topicSession = jmsConn.getAutoSession();
 	
-	topicConn = jmsConnFactory.createTopicConnection();
-	topicSession = topicConn.getAutoSession();
-	
-	listenSession = topicConn.getAutoSession();
-	listenSession.setupListener(JmsUtils.getTopicDaemonControl(), getMessageFilter(), new ControlMessageCollector(this));
-	topicConn.startConnection();	
+	listenSession = jmsConn.getAutoSession();
+	listenSession.setupTopicListener(JmsUtils.getTopicDaemonControl(), getMessageFilter(), new ControlMessageCollector(this));
+	jmsConn.startConnection();	
 }
 
 private void startAllServices() throws JMSException, SQLException, DataAccessException {
@@ -333,7 +329,7 @@ private boolean ping(ServiceSpec service) throws JMSException {
 
 	log.print("sending ping message [" + JmsUtils.toString(msg) + "]");
 	
-	Message reply = topicSession.request(this, JmsUtils.getTopicDaemonControl(), msg, ManageConstants.INTERVAL_PING_RESPONSE);
+	Message reply = topicSession.topicRequest(this, JmsUtils.getTopicDaemonControl(), msg, ManageConstants.INTERVAL_PING_RESPONSE);
 
 	log.print("got reply message [" + JmsUtils.toString(reply) + "]");
 

@@ -1,13 +1,9 @@
 package cbit.vcell.messaging;
 import cbit.vcell.solver.*;
-import cbit.vcell.solver.ode.gui.SimulationStatus;
-import java.util.EventListener;
 import javax.swing.event.EventListenerList;
-import java.util.*;
 import cbit.vcell.server.User;
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.messaging.db.SimulationJobStatus;
-import cbit.sql.KeyValue;
 import cbit.rmi.event.*;
 
 /**
@@ -18,7 +14,7 @@ import cbit.rmi.event.*;
 public class JmsMessageCollector implements ControlTopicListener, MessageSender {
 	private EventListenerList listenerList = new EventListenerList();	
 	private User user = null;	
-	private VCellTopicConnection topicConn = null;
+	private JmsConnection jmsConn = null;
 	private SessionLog log = null;
 
 	private long timeSinceLastMessage = System.currentTimeMillis();
@@ -29,8 +25,8 @@ public class JmsMessageCollector implements ControlTopicListener, MessageSender 
  * @param serviceName java.lang.String
  * @param queueName java.lang.String
  */
-public JmsMessageCollector(VCellTopicConnection aTopicConn, User user0, SessionLog log0) throws javax.jms.JMSException {
-	topicConn = aTopicConn;
+public JmsMessageCollector(JmsConnection aTopicConn, User user0, SessionLog log0) throws javax.jms.JMSException {
+	jmsConn = aTopicConn;
 	user = user0;
 	log = log0;
 	
@@ -163,13 +159,13 @@ public void onControlTopicMessage(javax.jms.Message message0) throws javax.jms.J
  * onException method comment.
  */
 private void reconnect() throws javax.jms.JMSException {	
-	VCellTopicSession statusReceiver = topicConn.getAutoSession();
+	JmsSession statusReceiver = jmsConn.getAutoSession();
 	String clientMessageFilter = (user == null ? "" : MessageConstants.USERNAME_PROPERTY + "='" + user.getName() + "' OR ");
 	clientMessageFilter += MessageConstants.USERNAME_PROPERTY + "='All'";
 			
-	statusReceiver.setupListener(JmsUtils.getTopicClientStatus(), clientMessageFilter, new ControlMessageCollector(this));
+	statusReceiver.setupTopicListener(JmsUtils.getTopicClientStatus(), clientMessageFilter, new ControlMessageCollector(this));
 	
-	topicConn.startConnection();
+	jmsConn.startConnection();
 }
 
 

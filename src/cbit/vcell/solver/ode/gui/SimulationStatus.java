@@ -143,12 +143,14 @@ public Double getProgress() {
 	if (jobStatuses == null) return null;
 	double progress = 0;
 	for (int i = 0; i < jobStatuses.length; i++){
-		if (jobStatuses[i].isDone()) {
-			progress += 1;
-		} else {
-			Double jobProgress = (Double)progressHash.get(Integer.toString(jobStatuses[i].getJobIndex()));
-			if (jobProgress != null) {
-				progress += jobProgress.doubleValue();
+		if (jobStatuses[i] != null) {
+			if (jobStatuses[i].isDone()) {
+				progress += 1;
+			} else {
+				Double jobProgress = (Double)progressHash.get(Integer.toString(jobStatuses[i].getJobIndex()));
+				if (jobProgress != null) {
+					progress += jobProgress.doubleValue();
+				}
 			}
 		}
 	}

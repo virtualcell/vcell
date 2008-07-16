@@ -4,10 +4,7 @@ package cbit.vcell.server;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import java.rmi.*;
-/**
- * This type was created in VisualAge.
- */
+
 public class RMIVCellConnectionFactory implements VCellConnectionFactory {
 
 	public static final String SERVICE_NAME = "VCellBootstrapServer";
@@ -21,10 +18,10 @@ public class RMIVCellConnectionFactory implements VCellConnectionFactory {
  * RMIVCellConnectionFactory constructor comment.
  */
 public RMIVCellConnectionFactory(String argHost, String argUserid, String argPassword) {
-	this.connectString = "//"+argHost+"/"+SERVICE_NAME;
-	this.userid = argUserid;
-	this.password = argPassword;
 	this.host = argHost;
+	this.userid = argUserid;
+	this.password = argPassword;	
+	this.connectString = "//"+host+"/"+SERVICE_NAME;
 }
 /**
  * Insert the method's description here.
@@ -46,7 +43,7 @@ public VCellConnection createVCellConnection() throws AuthenticationException, C
 	try {
 		vcellBootstrap = (cbit.vcell.server.VCellBootstrap)java.rmi.Naming.lookup(connectString);
 	} catch (Throwable e){
-		throw new ConnectionException("cannot contact server: "+e.getMessage());
+		throw new ConnectionException("Cannot connect to VCell server: Please try again by Server->Reconnect or Change User..., or contact VCell support");
 	}
 	try {
 		vcellConnection = vcellBootstrap.getVCellConnection(userid,password);

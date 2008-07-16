@@ -3,7 +3,6 @@ import cbit.htc.CondorConstants;
 import cbit.htc.CondorUtils;
 import cbit.htc.LsfConstants;
 import cbit.htc.LsfUtils;
-import cbit.htc.PBSConstants;
 import cbit.htc.PBSUtils;
 import cbit.sql.KeyValue;
 import java.io.File;
@@ -211,7 +210,7 @@ public boolean isRunning() {
  */
 public static void main(java.lang.String[] args) {
 	if (args.length < 2 || !args[0].startsWith("-")) {
-		System.out.println("Missing arguments: " + SimulationWorker.class.getName() + " [-lsf|-java|-lsfjava|-nohtc|-pbs|-pbsjava|-condor|-condorjava] serviceOrdinal memorySizeMB [logdir]");
+		System.out.println("Missing arguments: " + SimulationWorker.class.getName() + " [-lsf|-ode|-lsfode|-nohtc|-pbs|-pbsode|-condor|-condorode] serviceOrdinal memorySizeMB [logdir]");
 		System.exit(1);
 	}
  		

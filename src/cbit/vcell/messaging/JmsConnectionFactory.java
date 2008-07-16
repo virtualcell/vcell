@@ -7,13 +7,6 @@ import javax.jms.JMSException;
  * @author: Fei Gao
  */
 public interface JmsConnectionFactory {
-	public VCellXATopicConnection createXATopicConnection() throws JMSException;
-
-	public VCellQueueConnection createQueueConnection() throws JMSException;
-
-
-	public VCellTopicConnection createTopicConnection() throws JMSException;
-
-
-	public VCellXAQueueConnection createXAQueueConnection() throws JMSException;
+	public JmsXAConnection createXAConnection() throws JMSException;
+	public JmsConnection createConnection() throws JMSException;
 }

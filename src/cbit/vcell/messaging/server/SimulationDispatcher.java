@@ -27,16 +27,14 @@ import cbit.sql.DBCacheTable;
 import cbit.vcell.messaging.JmsClientMessaging;
 import cbit.vcell.messaging.SimulationDispatcherMessaging;
 import cbit.vcell.messaging.MessageConstants;
-import cbit.vcell.messaging.admin.ManageConstants;
+import cbit.vcell.messaging.JmsSession;
 import cbit.vcell.messaging.admin.ManageUtils;
 import cbit.vcell.messaging.admin.ServiceInstanceStatus;
-import cbit.vcell.messaging.admin.ServiceSpec;
 import cbit.vcell.messaging.db.SimulationJobStatus;
 import cbit.vcell.messaging.db.VCellServerID;
 import cbit.vcell.server.AdminDatabaseServerXA;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.server.User;
-import cbit.vcell.messaging.VCellTopicSession;
 import cbit.vcell.messaging.WorkerEventMessage;
 import cbit.vcell.messaging.StatusMessage;
 import java.util.HashSet;
@@ -107,7 +105,7 @@ private void dataMoved(VCSimulationDataIdentifier vcSimDataID, User user, double
  */
 private RpcDbServerProxy getDbServerProxy(User user) throws JMSException {
 	if (clientMessaging == null) {
-		clientMessaging = new JmsClientMessaging(dispatcherMessaging.getQueueConnection(), log);
+		clientMessaging = new JmsClientMessaging(dispatcherMessaging.getJmsConnection(), log);
 	}
 
 	if (userDbServerMap == null) {
@@ -301,7 +299,7 @@ public static void main(java.lang.String[] args) {
  * Insert the method's description here.
  * Creation date: (7/15/2003 11:34:15 AM)
  */
-public void onWorkerEventMessage(AdminDatabaseServerXA adminDbXA, java.sql.Connection con, VCellTopicSession statusPublisher, Message receivedMsg) throws JMSException, DataAccessException {
+public void onWorkerEventMessage(AdminDatabaseServerXA adminDbXA, java.sql.Connection con, JmsSession statusPublisher, Message receivedMsg) throws JMSException, DataAccessException {
 	WorkerEventMessage workerEventMessage = null;
 	
 	try {

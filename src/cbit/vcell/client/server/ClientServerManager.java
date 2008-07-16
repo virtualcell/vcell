@@ -298,10 +298,10 @@ private VCellConnection connectToServer() {
 		newVCellConnection = vcConnFactory.createVCellConnection();
 	} catch (AuthenticationException aexc) {
 		aexc.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog("Authentication failed:\n\n" + aexc.getMessage());
+		PopupGenerator.showErrorDialog(aexc.getMessage());
 	} catch (ConnectionException cexc) {
 		cexc.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog("Server connection failed:\n\n" + cexc.getMessage());
+		PopupGenerator.showErrorDialog(cexc.getMessage());
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
 		PopupGenerator.showErrorDialog("Server connection failed:\n\n" + exc.getMessage());		
