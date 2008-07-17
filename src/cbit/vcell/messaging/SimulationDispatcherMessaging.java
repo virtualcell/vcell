@@ -39,7 +39,7 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 	public static final String METHOD_NAME_STARTSIMULATION = "startSimulation";
 	public static final String METHOD_NAME_STOPSIMULATION = "stopSimulation";
 	
-	//private ConnectionFactory conFactory = null;
+	private ConnectionFactory conFactory = null;
 	private KeyFactory keyFactory = null;
 		
 	private JmsXAConnection jmsXAConn = null;
@@ -84,39 +84,37 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 			while (true) { // first while(true);
 				log.print("##MT");
 				while (true) { // second while(true), check one by one
-					java.sql.Connection sqlConn = null;
 					try {	
-						obsoleteJobDbConnection = new JtaXAOracleConnection(); //new JtaOracleConnection(conFactory);
-						sqlConn = obsoleteJobDbConnection.getConnection();
-		
-						jobStatus = jobAdminXA.getNextObsoleteSimulation(sqlConn, MessageConstants.INTERVAL_DATABASE_SERVER_FAIL);								
+						obsoleteJobDbConnection = new JtaOracleConnection(conFactory);
+
+						jobStatus = jobAdminXA.getNextObsoleteSimulation(obsoleteJobDbConnection.getConnection(), MessageConstants.INTERVAL_DATABASE_SERVER_FAIL);								
 						if (jobStatus == null) {
 							log.print("##MT OK");
 							break; // no obsolete simulation, no transaction here. go back to sleep
 						}				
-		
+
 						tm.begin();	
 						join = obsoleteJobDbConnection.joinTransaction(tm);
-		
+
 						if (!join) {
 							throw new RuntimeException("##MT: join failed");
 						} else {
 							join = obsoleteJobDispatcher.joinTransaction(tm);
-		
+
 							if (!join) {
 								throw new RuntimeException("##MT: join failed");
-							} else {						
+							} else {
 								// too many retries
 								if ((jobStatus.getTaskID() & MessageConstants.TASKID_RETRYCOUNTER_MASK) >= MessageConstants.TASKID_MAX_RETRIES) {							
 									log.print("##MT too many retries " + jobStatus);
-		
+
 									// new job status is failed.
 									SimulationJobStatus	newJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(), jobStatus.getVCSimulationIdentifier(), jobStatus.getJobIndex(), jobStatus.getSubmitDate(),
 										SimulationJobStatus.SCHEDULERSTATUS_FAILED, jobStatus.getTaskID(),
 										"Too many retries. Please try again later or contact Virtual Cell Support(VCell_Support@uchc.edu).",
-										jobStatus.getSimulationQueueEntryStatus(), jobStatus.getSimulationExecutionStatus());							
+										jobStatus.getSimulationQueueEntryStatus(), jobStatus.getSimulationExecutionStatus());
 									//update the database
-									jobAdminXA.updateSimulationJobStatus(sqlConn, jobStatus, newJobStatus);							
+									jobAdminXA.updateSimulationJobStatus(obsoleteJobDbConnection.getConnection(), jobStatus, newJobStatus);
 									// tell client
 									StatusMessage statusMsg = new StatusMessage(newJobStatus, jobStatus.getVCSimulationIdentifier().getOwner().getName(), null, null);
 									statusMsg.sendToClient(obsoleteJobDispatcher);
@@ -125,22 +123,22 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 									SimulationTask simTask = simDispatcher.getSimulationTask(jobStatus);
 									
 									log.print("##MT requeued " + simTask);
-		
+
 									// increment taskid, new job status is queued
 									SimulationJobStatus newJobStatus = new SimulationJobStatus(VCellServerID.getSystemServerID(), jobStatus.getVCSimulationIdentifier(), jobStatus.getJobIndex(), jobStatus.getSubmitDate(), 
 										SimulationJobStatus.SCHEDULERSTATUS_QUEUED, jobStatus.getTaskID() + 1, 
 										"Retry automatically upon server failure.", jobStatus.getSimulationQueueEntryStatus(), null);
 									
 									//update the database
-									jobAdminXA.updateSimulationJobStatus(sqlConn, jobStatus, newJobStatus);
+									jobAdminXA.updateSimulationJobStatus(obsoleteJobDbConnection.getConnection(), jobStatus, newJobStatus);
 									// send to simulation queue
 									Simulation sim = simTask.getSimulationJob().getWorkingSim();
 									SimulationTask newSimTask = new SimulationTask(new SimulationJob(sim, simDispatcher.getFieldDataIdentifierSpecs(sim), newJobStatus.getJobIndex()), newJobStatus.getTaskID());
-									SimulationTaskMessage taskMsg = new SimulationTaskMessage(newSimTask);							
-									taskMsg.sendSimulationTask(obsoleteJobDispatcher);							
+									SimulationTaskMessage taskMsg = new SimulationTaskMessage(newSimTask);
+									taskMsg.sendSimulationTask(obsoleteJobDispatcher);
 									// tell client
 									StatusMessage statusMsg = new StatusMessage(newJobStatus, newSimTask.getUserName(), null, null);
-									statusMsg.sendToClient(obsoleteJobDispatcher);	
+									statusMsg.sendToClient(obsoleteJobDispatcher);
 								}
 								tm.commit();
 								
@@ -155,7 +153,16 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 							tm.rollback();
 						} catch (Exception ex) {
 							log.exception(ex);
-						}						
+						}
+
+						try {
+							if (obsoleteJobDbConnection != null && cbit.vcell.modeldb.AbstractDBTopLevel.isBadConnection(obsoleteJobDbConnection.getConnection(), log)) {
+								obsoleteJobDbConnection.closeOnFailure();
+								obsoleteJobDbConnection = null;
+							}
+						} catch (SQLException sqlex) {
+							log.exception(sqlex);
+						}
 					} finally {
 						try {
 							if (obsoleteJobDbConnection != null) {
@@ -216,11 +223,9 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 				foundOne = false;	
 				jobStatus = null;
 				
-				java.sql.Connection sqlConn = null;
 				try {			
-					waitingJobDbConnection = new JtaXAOracleConnection();//new JtaOracleConnection(conFactory);
-					sqlConn = waitingJobDbConnection.getConnection();
-					allActiveJobs = jobAdminXA.getActiveJobs(sqlConn, getHTCPartitionShareServerIDs());
+					waitingJobDbConnection = new JtaOracleConnection(conFactory);
+					allActiveJobs = jobAdminXA.getActiveJobs(waitingJobDbConnection.getConnection(), getHTCPartitionShareServerIDs());
 					
 					if (allActiveJobs != null && allActiveJobs.length > 0) {				
 						SimulationJobStatusInfo firstQualifiedJob = BatchScheduler.schedule(allActiveJobs, getHTCPartitionMaximumJobs(), 
@@ -235,7 +240,16 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 					}
 				} catch (Exception ex) {
 					log.exception(ex);
-					allActiveJobs = null;					
+					allActiveJobs = null;
+					
+					try {
+						if (waitingJobDbConnection != null && cbit.vcell.modeldb.AbstractDBTopLevel.isBadConnection(waitingJobDbConnection.getConnection(), log)) {
+							waitingJobDbConnection.closeOnFailure();
+							waitingJobDbConnection = null;
+						}
+					} catch (java.sql.SQLException sqlex) {
+						log.exception(sqlex);
+					}
 				} finally {
 					try {
 						if (waitingJobDbConnection != null) {
@@ -253,23 +267,22 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 						// A Distributed Transaction for dispatcher change the status of a waiting job in the database and sends it to simulation queue 							
 						tm.begin();
 						
-						waitingJobDbConnection = new JtaXAOracleConnection(); //new JtaOracleConnection(conFactory);
-						sqlConn = waitingJobDbConnection.getConnection();
+						waitingJobDbConnection = new JtaOracleConnection(conFactory);
 						
 						join = waitingJobDbConnection.joinTransaction(tm) && waitingJobDispatcher.joinTransaction(tm);
-		
+
 						if (!join) {
 							throw new RuntimeException("**DT: join failed");
 						} else {
 							double requiredMemMB = simTask.getEstimatedMemorySizeMB();
 							if (requiredMemMB > Double.parseDouble(PropertyLoader.getRequiredProperty(PropertyLoader.limitJobMemoryMB))) {						
-								SimulationJobStatus newJobStatus = simDispatcher.updateEndStatus(jobStatus, jobAdminXA, sqlConn, 
+								SimulationJobStatus newJobStatus = simDispatcher.updateEndStatus(jobStatus, jobAdminXA, waitingJobDbConnection.getConnection(), 
 										jobStatus.getVCSimulationIdentifier(), jobStatus.getJobIndex(), null, SimulationJobStatus.SCHEDULERSTATUS_FAILED, 
 										"Simulation [" + simTask.getSimulationInfo().getName() + ", " + jobStatus.getJobIndex() + "] requires approximately " + requiredMemMB + "mb memory. Exceeds current memory limit.");
 								
 								// tell client
 								StatusMessage message = new StatusMessage(newJobStatus, simTask.getUserName(), null, null);
-								message.sendToClient(waitingJobDispatcher);						
+								message.sendToClient(waitingJobDispatcher);
 							} else {
 								log.print("**DT: queued " + simTask);
 			
@@ -277,17 +290,17 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 								// send the job the job queue
 								taskMsg.sendSimulationTask(waitingJobDispatcher);
 								//update database
-								SimulationJobStatus newJobStatus = simDispatcher.updateQueueStatus(jobStatus, jobAdminXA, sqlConn, 
+								SimulationJobStatus newJobStatus = simDispatcher.updateQueueStatus(jobStatus, jobAdminXA, waitingJobDbConnection.getConnection(), 
 									jobStatus.getVCSimulationIdentifier(), jobStatus.getJobIndex(), MessageConstants.QUEUE_ID_SIMULATIONJOB, simTask.getTaskID(), false);						
 								// tell client
 								StatusMessage statusMsg = new StatusMessage(newJobStatus, simTask.getUserName(), null, null);
 								statusMsg.sendToClient(waitingJobDispatcher);
 							}
 						
-							tm.commit();						
+							tm.commit();
 							yield();
 							continue;
-						}								
+						}
 					} catch (Exception ex) { // transaction exception
 						log.exception(ex);
 						
@@ -296,6 +309,14 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 						} catch (Exception ex1) {
 							log.exception(ex1);
 						}
+						try {
+							if (waitingJobDbConnection != null && cbit.vcell.modeldb.AbstractDBTopLevel.isBadConnection(waitingJobDbConnection.getConnection(), log)) {
+								waitingJobDbConnection.closeOnFailure();
+								waitingJobDbConnection = null;
+							}
+						} catch (SQLException sqlex) {
+							log.exception(sqlex);
+						}						
 					} finally {
 						try {
 							if (waitingJobDbConnection != null) {
@@ -308,7 +329,7 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 					}
 						
 				} // if (foundOne)
-		
+
 				// if there are no messages or no qualified jobs or exceptions, sleep for a while
 				try {
 					if (foundOne) {
@@ -355,18 +376,17 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 			boolean join = true;
 			
 			while (true) {
-				java.sql.Connection sqlConn = null;
 				try {
 					//log.print("--ST");
 					tm.begin();
 					
 					join = statusReceiver.joinTransaction(tm);
-		
+
 					if (!join) {
 						throw new RuntimeException("--ST: join failed");
 					} else {
 						recievedMsg = statusReceiver.receiveMessage(JmsUtils.getQueueWorkerEvent(), 100);
-		
+
 						if (recievedMsg == null) {
 							try {
 								tm.rollback();
@@ -374,29 +394,36 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 								log.exception(ex);
 							}
 						} else {
-							statusDbConnection = new JtaXAOracleConnection(); //new JtaOracleConnection(conFactory);
-							sqlConn = statusDbConnection.getConnection();
-							
+							statusDbConnection = new JtaOracleConnection(conFactory);							
 							join = statusDbConnection.joinTransaction(tm);
 							if (!join) {
 								throw new RuntimeException("--ST: join failed");
 							} else {
-								simDispatcher.onWorkerEventMessage(jobAdminXA, sqlConn, statusReceiver, recievedMsg);
+								simDispatcher.onWorkerEventMessage(jobAdminXA, statusDbConnection.getConnection(), statusReceiver, recievedMsg);
 								tm.commit();
-		
+
 								yield();
 								continue;
 							}
 						}
 					}
-		
+
 				} catch (Exception ex) { // transaction error
 					log.exception(ex);
 					try {
 						tm.rollback();
 					} catch (Exception ex1) {
 						log.exception(ex1);
-					}		
+					}
+
+					try {
+						if (statusDbConnection != null && cbit.vcell.modeldb.AbstractDBTopLevel.isBadConnection(statusDbConnection.getConnection(), log)) {
+							statusDbConnection.closeOnFailure();
+							statusDbConnection = null;
+						}
+					} catch (java.sql.SQLException sqlex) {
+						log.exception(sqlex);
+					}
 				} finally {
 					try {
 						if (statusDbConnection != null) {
@@ -414,9 +441,8 @@ public class SimulationDispatcherMessaging extends JmsServiceProviderMessaging i
 				} catch (InterruptedException ex) {
 					log.exception(ex);
 				}
-			}
-		
-		}		
+			} // while (true)
+		}
 	}
 
 /**
@@ -426,7 +452,7 @@ public SimulationDispatcherMessaging(SimulationDispatcher simDispatcher0, Connec
 	throws java.sql.SQLException, JMSException, cbit.vcell.server.DataAccessException {
 	super(simDispatcher0, log0);
 	simDispatcher = simDispatcher0;
-	//conFactory = conFactory0;
+	conFactory = conFactory0;
 	keyFactory = keyFactory0;
 	jobAdminXA = new cbit.vcell.modeldb.AdminDatabaseServerXAImpl(keyFactory, log);
 		
@@ -537,7 +563,6 @@ public VCSimulationIdentifier processNextRequest() {
 	JtaDbConnection mainJobDbConnection = null;
 	
 	//log.print("++PNR");
-	java.sql.Connection sqlConn = null;
 	
 	try {	
 		tm.begin();
@@ -573,8 +598,7 @@ public VCSimulationIdentifier processNextRequest() {
 
 			log.print("++PNR: " + request);
 
-			mainJobDbConnection = new JtaXAOracleConnection(); //new JtaOracleConnection(conFactory);
-			sqlConn = mainJobDbConnection.getConnection();
+			mainJobDbConnection = new JtaOracleConnection(conFactory);	
 			
 			join = mainJobDbConnection.joinTransaction(tm);
 
@@ -582,9 +606,9 @@ public VCSimulationIdentifier processNextRequest() {
 				throw new RuntimeException("++PNR: join failed");
 			} else {
 				if (request.getMethodName().equals(METHOD_NAME_STARTSIMULATION)) {
-					startSimulation(sqlConn, user, vcSimID);
+					startSimulation(mainJobDbConnection.getConnection(), user, vcSimID);
 				} else if (request.getMethodName().equals(METHOD_NAME_STOPSIMULATION)) {
-					stopSimulation(sqlConn, user, vcSimID);
+					stopSimulation(mainJobDbConnection.getConnection(), user, vcSimID);
 				}	
 
 				tm.commit();
@@ -601,6 +625,15 @@ public VCSimulationIdentifier processNextRequest() {
 		} catch (Exception ex) {
 			log.exception(ex);
 		}
+
+		try {
+			if (mainJobDbConnection != null && cbit.vcell.modeldb.AbstractDBTopLevel.isBadConnection(mainJobDbConnection.getConnection(), log)) {
+				mainJobDbConnection.closeOnFailure();
+				mainJobDbConnection = null;
+			}
+		} catch (java.sql.SQLException sqlex) {
+			log.exception(sqlex);
+		}
 	} finally {
 		try {
 			if (mainJobDbConnection != null) {
@@ -610,7 +643,7 @@ public VCSimulationIdentifier processNextRequest() {
 		} catch (SQLException ex) {
 			log.exception(ex);
 		}
-	}	
+	}
 
 	return null;
 }
