@@ -55,7 +55,7 @@ public class FRAPEstimationPanel extends JPanel {
 		MOBILE_FRACTION("Mobile Fraction","1/s"),
 		IMMOBILE_FRATION("Immobile Fraction","1/s"),
 		START_TIME_RECOVERY("Start Time Recovery","s"),
-		BLEACH_RATE_MONITOR("Bleach while Monitor rate","1/s");
+		BLEACH_RATE_MONITOR("Monitor Bleach Rate","1/s");
 		
 	    private final String parameterTypeName;
 	    private Double value;

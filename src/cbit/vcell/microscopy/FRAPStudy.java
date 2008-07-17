@@ -88,6 +88,8 @@ import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.simdata.DataSetControllerImpl.ProgressListener;
+import cbit.vcell.solver.DefaultOutputTimeSpec;
+import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SolverStatus;
@@ -135,6 +137,7 @@ public class FRAPStudy implements Matchable{
 			this.slowerRate = slowerRate;
 		}
 	}
+	
 	private FRAPModelParameters frapModelParameters;
 	
 	public static final String EXTRACELLULAR_NAME = "extracellular";
@@ -757,6 +760,7 @@ public class FRAPStudy implements Matchable{
 		double[] timeStamps = sourceFrapStudy.getFrapData().getImageDataset().getImageTimeStamps();
 		TimeBounds timeBounds = new TimeBounds(0.0,timeStamps[timeStamps.length-1]-timeStamps[startingIndexForRecovery]);
 		double timeStepVal = timeStamps[timeStamps.length-1] - timeStamps[timeStamps.length-2];
+//		timeStepVal/= 10.0;
 		TimeStep timeStep = new TimeStep(timeStepVal, timeStepVal, timeStepVal);
 
 		int numX = cellROI_2D.getRoiImages()[0].getNumX();
@@ -796,7 +800,7 @@ public class FRAPStudy implements Matchable{
 		Feature extracellular = (Feature)model.getStructure(EXTRACELLULAR_NAME);
 		model.addFeature(CYTOSOL_NAME, extracellular, "plasmaMembrane");
 		Feature cytosol = (Feature)model.getStructure(CYTOSOL_NAME);
-		double factor = Math.pow(10,.25);
+
 		String roiDataName = "roiData";
 		
 		final int MOBILE_IMMOBILE_SPECIES_COUNT = 2;
@@ -881,6 +885,7 @@ public class FRAPStudy implements Matchable{
 		newSimulation.getSolverTaskDescription().setTimeBounds(timeBounds);
 		newSimulation.getMeshSpecification().setSamplingSize(cellROI_2D.getISize());
 		newSimulation.getSolverTaskDescription().setTimeStep(timeStep);
+//		newSimulation.getSolverTaskDescription().setOutputTimeSpec(new DefaultOutputTimeSpec(10));
 		
 		return bioModel;
 	}

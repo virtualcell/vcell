@@ -262,7 +262,7 @@ public class FRAPParametersPanel extends JPanel {
 		panel.add(monitorBleachRateTextField, gridBagConstraints_15);
 
 		final JLabel um2sLabel = new JLabel();
-		um2sLabel.setText("um2/s");
+		um2sLabel.setText("1/s");
 		final GridBagConstraints gridBagConstraints_34 = new GridBagConstraints();
 		gridBagConstraints_34.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_34.gridy = 4;
@@ -270,6 +270,7 @@ public class FRAPParametersPanel extends JPanel {
 		panel.add(um2sLabel, gridBagConstraints_34);
 
 		final JLabel slowerDiffMobileLabel = new JLabel();
+		slowerDiffMobileLabel.setVisible(false);
 		slowerDiffMobileLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		slowerDiffMobileLabel.setText("Slower Diff, Mobile");
 		final GridBagConstraints gridBagConstraints_35 = new GridBagConstraints();
@@ -280,6 +281,7 @@ public class FRAPParametersPanel extends JPanel {
 		panel.add(slowerDiffMobileLabel, gridBagConstraints_35);
 
 		slowerTextField = new JTextField();
+		slowerTextField.setVisible(false);
 		final GridBagConstraints gridBagConstraints_36 = new GridBagConstraints();
 		gridBagConstraints_36.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_36.fill = GridBagConstraints.HORIZONTAL;
@@ -288,6 +290,7 @@ public class FRAPParametersPanel extends JPanel {
 		panel.add(slowerTextField, gridBagConstraints_36);
 
 		final JLabel um2sLabel_1 = new JLabel();
+		um2sLabel_1.setVisible(false);
 		um2sLabel_1.setText("um2/s");
 		final GridBagConstraints gridBagConstraints_37 = new GridBagConstraints();
 		gridBagConstraints_37.insets = new Insets(4, 4, 4, 4);
