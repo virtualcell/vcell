@@ -66,6 +66,7 @@ import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.microscopy.ExternalDataInfo;
 import cbit.vcell.microscopy.FRAPData;
+import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.LocalWorkspace;
 import cbit.vcell.microscopy.MicroscopyXmlReader;
@@ -1416,6 +1417,9 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		
 		DataManager dataManager = null;
 		if (choice == DisplayChoice.PDE){
+			getPDEDataViewer().setSimulation(null);
+			getPDEDataViewer().setPdeDataContext(null);
+			
 			int jobIndex = 0;
 			SimulationJob simJob = new SimulationJob(sim,fieldDataIdentifierSpecs,jobIndex);
 			dataManager = new PDEDataManager(getLocalWorkspace().getVCDataManager(), simJob.getVCDataIdentifier());
@@ -1439,6 +1443,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			getPDEDataViewer().repaint();
 		}
 		else if (choice == DisplayChoice.EXTTIMEDATA){
+			getFlourDataViewer().setSimulation(null);
+			getFlourDataViewer().setPdeDataContext(null);
 			
 			ExternalDataIdentifier timeSeriesExtDataID = getFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier();
 			ExternalDataIdentifier maskExtDataID = getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier();
@@ -1706,10 +1712,11 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 
 		new Thread(new Runnable(){public void run(){
 			try{
+				final double SPATIAL_ANLYSIS_PROGRESS_FRACTION = .5;
 				DataSetControllerImpl.ProgressListener runspatialAnalysisProgressListener =
 					new DataSetControllerImpl.ProgressListener(){
 						public void updateProgress(double progress) {
-							int percentProgress = (int)(progress*100);
+							int percentProgress = (int)(progress*100*SPATIAL_ANLYSIS_PROGRESS_FRACTION);
 							VirtualFrapMainFrame.updateProgress(percentProgress);
 							pp.setProgress(percentProgress);
 						}
@@ -1736,16 +1743,25 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						prebleachAverage,
 						runspatialAnalysisProgressListener);
 				
-				getResultsSummaryPanel().setData(
+				//Optimization
+				DataSetControllerImpl.ProgressListener optimizationProgressListener =
+					new DataSetControllerImpl.ProgressListener(){
+						public void updateProgress(double progress) {
+							int percentProgress = (int)(50+progress*100*(1-SPATIAL_ANLYSIS_PROGRESS_FRACTION));
+							VirtualFrapMainFrame.updateProgress(percentProgress);
+							pp.setProgress(percentProgress);
+						}
+				};
+				FRAPOptData frapOptData = new FRAPOptData(getFrapStudy(), getLocalWorkspace(),optimizationProgressListener);
+				
+				//Report initialization
+				getResultsSummaryPanel().setData(frapOptData,
 						spatialAnalysisResults,frapDataTimeStamps,startIndexForRecovery,
 						new Double(getFrapStudy().getFrapModelParameters().diffusionRate));
 				SwingUtilities.invokeAndWait(new Runnable(){public void run(){
 					getJTabbedPane().setSelectedIndex(INDEX_TAB_REPORT);
 				}});
 				
-				
-		//		NonGUIFRAPTest.dumpSpatialResults(spatialAnalysisResults, frapDataTimeStamps,
-		//				new File("C:\\temp\\guiSpatialResults.txt"));
 				VirtualFrapMainFrame.updateProgress(0);
 				VirtualFrapMainFrame.updateStatus("Finished Spatial analysis.");
 			}catch(final Exception e){
