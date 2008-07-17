@@ -224,12 +224,14 @@ public Object getValueAt(int row, int column) {
 				return fieldKeys[row];
 			} 
 			case COLUMN_DEFAULT: {
+				if(getMathOverrides().getDefaultExpression(fieldKeys[row]) == null){return null;}
 				return getMathOverrides().getDefaultExpression(fieldKeys[row]).infix();
 			} 
 			case COLUMN_ACTUAL: {
 				if (getMathOverrides().isScan(fieldKeys[row])) {
 					return getMathOverrides().getConstantArraySpec(fieldKeys[row]);
 				} else {
+					if(getMathOverrides().getActualExpression(fieldKeys[row], 0) == null){return null;}
 					return getMathOverrides().getActualExpression(fieldKeys[row], 0).infix();
 				}
 			}

@@ -2,6 +2,7 @@ package cbit.vcell.opt.solvers;
 import cbit.vcell.parser.Expression;
 import java.util.Vector;
 import cbit.vcell.opt.Constraint;
+import cbit.vcell.opt.ImplicitObjectiveFunction;
 import cbit.vcell.opt.OdeObjectiveFunction;
 import cbit.vcell.opt.ExplicitObjectiveFunction;
 import cbit.vcell.opt.Parameter;
@@ -275,6 +276,12 @@ public static AugmentedObjectiveFunction getAugmentedObjectiveFunction(Optimizat
 		OdeObjectiveFunction odeObjectiveFunction = (OdeObjectiveFunction)optSpec.getObjectiveFunction();
 		OdeLSFunction odeLSFunction = new OdeLSFunction(odeObjectiveFunction,origSymbols,scaleFactors,optSolverCallbacks);
 		objFunction = odeLSFunction;
+	}else if (optSpec.getObjectiveFunction() instanceof ImplicitObjectiveFunction){
+		ImplicitObjectiveFunction implicitObjectiveFunction = (ImplicitObjectiveFunction)optSpec.getObjectiveFunction();
+		//
+		// build objective function
+		//
+		objFunction = implicitObjectiveFunction.getObjectiveFunction();
 	} else{
 		throw new RuntimeException("unsupported objective function type : "+optSpec.getObjectiveFunction().getClass().getName());
 	}
