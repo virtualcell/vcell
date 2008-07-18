@@ -1,5 +1,6 @@
 package cbit.vcell.messaging.server;
 
+import cbit.vcell.messaging.MessageConstants.ServiceType;
 import cbit.vcell.messaging.admin.ServiceInstanceStatus;
 
 /**
@@ -10,6 +11,6 @@ import cbit.vcell.messaging.admin.ServiceInstanceStatus;
 public interface ServiceProvider {
 public ServiceInstanceStatus getServiceInstanceStatus();
 public String getServiceInstanceID();
-public String getServiceType();
+public ServiceType getServiceType();
 public void stop();
 }

@@ -4,7 +4,7 @@ import cbit.vcell.server.DataAccessException;
 import cbit.vcell.field.FieldDataFileOperationResults;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.messaging.JmsClientMessaging;
-import cbit.vcell.messaging.MessageConstants;
+import cbit.vcell.messaging.MessageConstants.ServiceType;
 import cbit.vcell.server.User;
 import cbit.vcell.server.VCDataIdentifier;
 import cbit.vcell.simdata.*;
@@ -177,7 +177,7 @@ public cbit.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID
 		if(!timeSeriesJobSpec.getVcDataJobID().isBackgroundTask()){
 			return (cbit.util.TimeSeriesJobResults)rpc("getTimeSeriesValues",new Object[]{user, vcdID,timeSeriesJobSpec});
 		}else{
-			rpc(cbit.vcell.messaging.MessageConstants.SERVICETYPE_DATA_VALUE, "getTimeSeriesValues", new Object[]{user, vcdID,timeSeriesJobSpec}, false);
+			rpc(ServiceType.DATA, "getTimeSeriesValues", new Object[]{user, vcdID,timeSeriesJobSpec}, false);
 		}
 	} catch (DataAccessException ex) {
 		log.exception(ex);
@@ -203,7 +203,7 @@ public cbit.util.TimeSeriesJobResults getTimeSeriesValues(VCDataIdentifier vcdID
  */
 public cbit.rmi.event.ExportEvent makeRemoteFile(cbit.vcell.export.server.ExportSpecs exportSpecs) throws cbit.vcell.server.DataAccessException {
 	try {
-		rpc(cbit.vcell.messaging.MessageConstants.SERVICETYPE_DATA_VALUE, "makeRemoteFile", new Object[]{user, exportSpecs}, false, new String[]{MessageConstants.SERVICETYPE_DATAEXPORT_VALUE}, new Object[]{new Boolean(true)});
+		rpc(ServiceType.DATA, "makeRemoteFile", new Object[]{user, exportSpecs}, false, new String[]{ServiceType.DATAEXPORT.getName()}, new Object[]{new Boolean(true)});
 	} catch (DataAccessException ex) {
 		log.exception(ex);
 		throw ex;
@@ -240,7 +240,7 @@ public void removeFunction(cbit.vcell.server.VCDataIdentifier vcdataID, cbit.vce
  */
 private Object rpc(String methodName, Object[] args) throws DataAccessException {
 	try {
-		return rpc(cbit.vcell.messaging.MessageConstants.SERVICETYPE_DATA_VALUE, methodName, args, true);
+		return rpc(ServiceType.DATA, methodName, args, true);
 	} catch (DataAccessException ex) {
 		log.exception(ex);
 		throw ex;

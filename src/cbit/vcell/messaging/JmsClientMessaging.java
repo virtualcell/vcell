@@ -1,6 +1,7 @@
 package cbit.vcell.messaging;
 import javax.jms.*;
 import cbit.vcell.server.SessionLog;
+import cbit.vcell.messaging.MessageConstants.ServiceType;
 import cbit.vcell.messaging.server.RpcRequest;
 
 /**
@@ -65,13 +66,13 @@ public synchronized Object rpc(RpcRequest request, String queueName, boolean ret
  * Since clientMessaging only send messages, we don't consider onException() because that's asynchronized. 
  */
 private synchronized Object rpc(RpcRequest request, String queueName, boolean returnRequired, String[] specialProperties, Object[] specialValues, boolean bEnableRetry) throws Exception {
-	String serviceType = request.getRequestedServiceType();
+	ServiceType serviceType = request.getRequestedServiceType();
 	String methodName = request.getMethodName();
 	
 	try {		
 		ObjectMessage rpcMessage = responseRequestor.createObjectMessage(request);
 		rpcMessage.setStringProperty(MessageConstants.MESSAGE_TYPE_PROPERTY,MessageConstants.MESSAGE_TYPE_RPC_SERVICE_VALUE);
-		rpcMessage.setStringProperty(MessageConstants.SERVICE_TYPE_PROPERTY,serviceType);
+		rpcMessage.setStringProperty(MessageConstants.SERVICE_TYPE_PROPERTY,serviceType.getName());
 		if (specialValues != null) {
 			for (int i = 0; i < specialValues.length; i ++) {
 				rpcMessage.setObjectProperty(specialProperties[i], specialValues[i]);

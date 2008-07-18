@@ -3,15 +3,16 @@ package cbit.vcell.messaging.admin;
 import static cbit.vcell.messaging.admin.ManageConstants.SERVICE_STARTUP_TYPES;
 import java.io.Serializable;
 import cbit.util.Matchable;
+import cbit.vcell.messaging.MessageConstants.ServiceType;
 
 public class ServiceSpec implements Matchable, Serializable, ComparableObject {
 	private String serverID;
-	private String type;
+	private ServiceType type;
 	private int ordinal;
 	private int startupType;
 	private int memoryMB;	
 	
-	public ServiceSpec(String sID, String t, int o, int st, int mm) {
+	public ServiceSpec(String sID, ServiceType t, int o, int st, int mm) {
 		super();
 		this.serverID = sID;
 		this.type = t;
@@ -32,7 +33,7 @@ public class ServiceSpec implements Matchable, Serializable, ComparableObject {
 		return serverID;
 	}
 
-	public String getType() {
+	public ServiceType getType() {
 		return type;
 	}
 	
@@ -47,8 +48,8 @@ public class ServiceSpec implements Matchable, Serializable, ComparableObject {
 	public String getID() {
 		return getServiceID(serverID, type, ordinal);
 	}
-	public static String getServiceID(String serverID, String type, int ordinal) {
-		return serverID.charAt(0) + "_" + type + "_" + ordinal;
+	public static String getServiceID(String serverID, ServiceType type, int ordinal) {
+		return serverID.charAt(0) + "_" + type.getName() + "_" + ordinal;
 	}
 	
 	public Object[] toObjects() {

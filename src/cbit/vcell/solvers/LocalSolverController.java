@@ -77,8 +77,8 @@ public void dataMoved(double timepoint, Double progress) {
 			}
 		}
 		// don't log progress and data events; data events at larger interval, since more expensive on client side
-		if (System.currentTimeMillis() - getTimeOfLastDataMessage() > 4000 * getMessagingInterval()) {
-			fireWorkerEvent(new WorkerEvent(this, vcSimDataID.getVcSimID(), vcSimDataID.getJobIndex(), WorkerEvent.JOB_DATA, vcConn.getHost(), 0, progress, new Double(timepoint)));
+		if (System.currentTimeMillis() - timeOfLastDataMessage > 4000 * getMessagingInterval()) {
+			fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_DATA, this, getSimulationJob(), vcConn.getHost(), progress, new Double(timepoint)));
 			//fireJobDataEvent(new JobDataEvent(this,new MessageSource(this,getSimulationIdentifier()),getSimulation().getSimulationInfo(),timepoint));
 		}
 	}catch (Throwable e){
@@ -177,27 +177,6 @@ public cbit.vcell.solver.SolverStatus getSolverStatus() throws cbit.vcell.server
 	}	
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (10/17/2002 12:49:21 PM)
- * @return long
- */
-private long getTimeOfLastDataMessage() {
-	return timeOfLastDataMessage;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (10/17/2002 12:49:49 PM)
- * @return long
- */
-private long getTimeOfLastProgressMessage() {
-	return timeOfLastProgressMessage;
-}
-
-
 /**
  * removeWorkerEventListener method comment.
  */
@@ -215,27 +194,6 @@ public void setMessagingInterval(int newMessagingInterval) {
 	messagingInterval = newMessagingInterval;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (10/17/2002 12:49:21 PM)
- * @param newTimeOfLastDataMessage long
- */
-private void setTimeOfLastDataMessage(long newTimeOfLastDataMessage) {
-	timeOfLastDataMessage = newTimeOfLastDataMessage;
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (10/17/2002 12:49:49 PM)
- * @param newTimeOfLastProgressMessage long
- */
-private void setTimeOfLastProgressMessage(long newTimeOfLastProgressMessage) {
-	timeOfLastProgressMessage = newTimeOfLastProgressMessage;
-}
-
-
 /**
  * Invoked when the solver aborts a calculation (abnormal termination).
  * @param event indicates the solver and the event type
@@ -246,7 +204,7 @@ public void solverAborted(cbit.vcell.solver.SolverEvent event) {
 		if (dataMover != null) {
 			dataMover.stopRunning();
 		}
-		fireWorkerEvent(new WorkerEvent(this, getSimulationJob().getVCDataIdentifier().getVcSimID(), getSimulationJob().getVCDataIdentifier().getJobIndex(), WorkerEvent.JOB_FAILURE, vcConn.getHost(), 0, event.getMessage()));
+		fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_FAILURE, this, getSimulationJob(), vcConn.getHost(), event.getMessage()));
 	}catch (Throwable e){
 		log.exception(e);
 	}
@@ -263,7 +221,7 @@ public void solverFinished(cbit.vcell.solver.SolverEvent event) {
 		if (dataMover != null) {
 			dataMover.stopRunning();
 		}
-		fireWorkerEvent(new WorkerEvent(this, getSimulationJob().getVCDataIdentifier().getVcSimID(), getSimulationJob().getVCDataIdentifier().getJobIndex(), WorkerEvent.JOB_COMPLETED, vcConn.getHost(), 0, new Double(event.getProgress()), new Double(event.getTimePoint())));
+		fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_COMPLETED, this, getSimulationJob(), vcConn.getHost(), new Double(event.getProgress()), new Double(event.getTimePoint())));
 		//fireJobProgressEvent(new JobProgressEvent(this,new MessageSource(this,getSimulationIdentifier()),sim.getSimulationInfo(),event.getProgress(),event.getTimePoint()));
 		//fireJobCompletedEvent(new JobCompletedEvent(this,new MessageSource(this,getSimulationIdentifier()),sim.getSimulationInfo(),false,event.getProgress(),event.getTimePoint()));
 	}catch (Throwable e){
@@ -291,8 +249,8 @@ public void solverPrinted(cbit.vcell.solver.SolverEvent event) {
 public void solverProgress(cbit.vcell.solver.SolverEvent event) {
 	try {
 		// don't log progress and data events
-		if (System.currentTimeMillis() - getTimeOfLastProgressMessage() > 1000 * getMessagingInterval()) {
-			fireWorkerEvent(new WorkerEvent(this, getSimulationJob().getVCDataIdentifier().getVcSimID(), getSimulationJob().getVCDataIdentifier().getJobIndex(), WorkerEvent.JOB_PROGRESS, vcConn.getHost(), 0, new Double(event.getProgress()), new Double(event.getTimePoint())));
+		if (System.currentTimeMillis() - timeOfLastProgressMessage > 1000 * getMessagingInterval()) {
+			fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_PROGRESS, this, getSimulationJob(), vcConn.getHost(), new Double(event.getProgress()), new Double(event.getTimePoint())));
 			//fireJobProgressEvent(new JobProgressEvent(this,new MessageSource(this,getSimulationIdentifier()),getSimulation().getSimulationInfo(),event.getProgress(),event.getTimePoint()));
 		}
 	}catch (Throwable e){
@@ -308,7 +266,7 @@ public void solverProgress(cbit.vcell.solver.SolverEvent event) {
 public void solverStarting(cbit.vcell.solver.SolverEvent event) {
 	try {
 		log.print("LocalMathController Caught solverStarting("+event.getSource().toString()+")");
-		fireWorkerEvent(new WorkerEvent(this, getSimulationJob().getVCDataIdentifier().getVcSimID(), getSimulationJob().getVCDataIdentifier().getJobIndex(), WorkerEvent.JOB_STARTING, vcConn.getHost(), 0, event.getMessage()));
+		fireWorkerEvent(new WorkerEvent(WorkerEvent.JOB_STARTING, this, getSimulationJob(), vcConn.getHost(), event.getMessage()));
 		//fireJobStartingEvent(new JobStartingEvent(this, new MessageSource(this, getSimulationIdentifier()), getSimulation().getSimulationInfo(), event.getMessage()));
 	}catch (Throwable e){
 		log.exception(e);

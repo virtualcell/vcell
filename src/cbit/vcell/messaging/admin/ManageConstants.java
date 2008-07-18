@@ -42,7 +42,5 @@ public interface ManageConstants {
 	public static final String SERVERID_ALPHA = "ALPHA";
 	public static final String SERVERID_BETA = "BETA";
 	
-	public static final String AllSites[] = {SERVERID_ALPHA, SERVERID_BETA, SERVERID_RELEASE};
-	
-	public static final String SERVICE_TYPE_SERVERMANAGER = "ServerManager";
+	public static final String AllSites[] = {SERVERID_ALPHA, SERVERID_BETA, SERVERID_RELEASE};	
 }

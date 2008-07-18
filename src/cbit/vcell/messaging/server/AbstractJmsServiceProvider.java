@@ -1,8 +1,7 @@
 package cbit.vcell.messaging.server;
 
-import cbit.vcell.messaging.admin.ManageUtils;
+import cbit.vcell.messaging.MessageConstants.ServiceType;
 import cbit.vcell.messaging.admin.ServiceInstanceStatus;
-import cbit.vcell.messaging.admin.ServiceSpec;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
@@ -42,7 +41,7 @@ public String getServiceInstanceID() {
  * Creation date: (7/15/2003 10:42:52 AM)
  * @return java.lang.String
  */
-public String getServiceType() {
+public ServiceType getServiceType() {
 	return serviceInstanceStatus.getType();
 }
 

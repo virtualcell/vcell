@@ -12,35 +12,36 @@ import cbit.vcell.server.PropertyLoader;
  * @author: Fei Gao
  */
 public class WorkerMessaging extends JmsServiceProviderMessaging implements ControlTopicListener {
-	private JmsSession jobRetriever = null;
-	private JmsSession workerEventSession = null;
-	private String jobSelector = null;
+	private JmsSession[] jobRetrievers = null;
+	private JmsSession[] workerEventSessions = null;
+	private String[] jobSelectors = null;
 	private Worker myWorker = null;
-	private SimulationTask currentTask = null;
-	private long lastMsgTimeStamp = 0;
+	private SimulationTask[] currentTasks = null;
+	private long[] lastMsgTimeStamp;
 	
-class KeepAliveThread extends Thread {
-
-public KeepAliveThread() {
-	super();
-	setName("WorkerKeepAliveThread");
-}	
-public void run() {
-	while (true) {
-		try {
-			sleep(MessageConstants.INTERVAL_PING_SERVER);
-		} catch (InterruptedException ex) {
-		}
-
-		long t = System.currentTimeMillis();
-		if (myWorker.isRunning() && lastMsgTimeStamp != 0 && t - lastMsgTimeStamp > MessageConstants.INTERVAL_PING_SERVER) {
-			log.print("@@@@Worker:Sending alive message");
-			sendWorkerAlive();
-		}
-	}
-}	
-}	
-	private boolean bProgress = false;
+	class KeepAliveThread extends Thread {
+		int workerIndex;
+		public KeepAliveThread(int wi) {
+			super();
+			workerIndex = wi;
+			setName("KeepAliveThread_Subworker_" + workerIndex);
+		}	
+		public void run() {
+			while (true) {
+				try {
+					sleep(MessageConstants.INTERVAL_PING_SERVER);
+				} catch (InterruptedException ex) {
+				}
+		
+				long t = System.currentTimeMillis();
+				if (myWorker.isRunning(workerIndex) && lastMsgTimeStamp[workerIndex] != 0 && t - lastMsgTimeStamp[workerIndex] > MessageConstants.INTERVAL_PING_SERVER) {
+					log.print("@@@@Worker:Sending alive message");
+					sendWorkerAlive(workerIndex);
+				}
+			}
+		}	
+	}	
+	private boolean[] bProgresses = null;
 
 /**
  * WorkerMessaging constructor comment.
@@ -49,9 +50,6 @@ public WorkerMessaging(Worker worker0, SessionLog log0) throws JMSException {
 	super(worker0, log0);
 	myWorker = worker0;
 	reconnect();
-
-	log.print("Start keep alive thread");
-	new KeepAliveThread().start();	
 }
 
 
@@ -59,48 +57,48 @@ public WorkerMessaging(Worker worker0, SessionLog log0) throws JMSException {
  * Insert the method's description here.
  * Creation date: (10/22/2001 11:20:37 PM)
  */
-public SimulationTask getNextTask() { 	
+public SimulationTask getNextTask(int workerIndex) { 	
 	//
 	// create a transactional receive/send to get a "task" object (that this worker can handle) 
 	// and send an "accept" status message to the SchedulerControl queue
 	//
 	//log.print("==GNT");
-	currentTask = null;
-	lastMsgTimeStamp = 0;
+	currentTasks[workerIndex] = null;
+	lastMsgTimeStamp[workerIndex] = 0;
 	
 	try {			
 		//log.print("Created receiver with filter = " + jobSelector);		
-		Message message = jobRetriever.receiveMessage(JmsUtils.getQueueSimJob(), jobSelector, 100);
+		Message message = jobRetrievers[workerIndex].receiveMessage(JmsUtils.getQueueSimJob(), jobSelectors[workerIndex], 100);
 		if (message == null) { // no message
 			try {
-				jobRetriever.rollback(); 
+				jobRetrievers[workerIndex].rollback(); 
 			} catch (Exception ex) {
 				log.exception(ex);
 			}
-			currentTask = null;
+			currentTasks[workerIndex] = null;
 			
 		} else { 
 			log.print("received message " + JmsUtils.toString(message));
 			SimulationTaskMessage taskMsg = new SimulationTaskMessage(message);
-			currentTask = taskMsg.getSimulationTask();
+			currentTasks[workerIndex] = taskMsg.getSimulationTask();
 			
-			log.print("Job accepted: " + currentTask);
-			WorkerEventMessage.sendAccepted(jobRetriever, this, currentTask.getSimulationInfo(), currentTask.getSimulationJob().getJobIndex(), ManageUtils.getHostName(), currentTask.getTaskID());
-			jobRetriever.commit();
+			log.print("Job accepted: " + currentTasks[workerIndex]);
+			WorkerEventMessage.sendAccepted(jobRetrievers[workerIndex], this, currentTasks[workerIndex], ManageUtils.getHostName());
+			jobRetrievers[workerIndex].commit();
 			
-			lastMsgTimeStamp = System.currentTimeMillis();
+			lastMsgTimeStamp[workerIndex] = System.currentTimeMillis();
 		}
 		
 	} catch (Exception ex) {
 		try {
-			jobRetriever.rollback(); 
+			jobRetrievers[workerIndex].rollback(); 
 		} catch (Exception e) {
 			log.exception(e);
 		}
-		currentTask = null;
+		currentTasks[workerIndex] = null;
 	}
 	
-	return currentTask;
+	return currentTasks[workerIndex];
 }
 
 
@@ -109,22 +107,34 @@ public SimulationTask getNextTask() {
  * Creation date: (7/2/2003 3:06:25 PM)
  */
 protected void reconnect() throws JMSException {
-	jobSelector = myWorker.getJobSelector();
-	log.print("Job Selector : " + jobSelector);
+	jobSelectors = myWorker.getJobSelectors();	
 	
-	super.reconnect();	
-	jobRetriever = jmsConn.getTransactedSession(); // transactional
-	int workerPrefetchCount = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.jmsWorkerPrefetchCount, "-1"));
-	if (workerPrefetchCount > 0) {
-		log.print("workerPrefetchCount=" + workerPrefetchCount);
-		jobRetriever.setPrefetchCount(workerPrefetchCount); // get messages one by one
-		jobRetriever.setPrefetchThreshold(0);
-	}
+	super.reconnect();
+	int numSubworkers = myWorker.getNumSubworkers();
+	jobRetrievers = new JmsSession[numSubworkers];
+	workerEventSessions = new JmsSession[numSubworkers];
+	for (int i = 0; i < numSubworkers; i ++) {
+		log.print("Job Selector : " + jobSelectors[i]);
+		jobRetrievers[i] = jmsConn.getTransactedSession(); // transactional
+		int workerPrefetchCount = Integer.parseInt(PropertyLoader.getProperty(PropertyLoader.jmsWorkerPrefetchCount, "-1"));
+		if (workerPrefetchCount > 0) {
+			jobRetrievers[i].setPrefetchCount(workerPrefetchCount); // get messages one by one
+			jobRetrievers[i].setPrefetchThreshold(0);
+		}
+		workerEventSessions[i] = jmsConn.getAutoSession();
+	}	
 	
-	workerEventSession = jmsConn.getAutoSession();
 	JmsSession serviceListenTopicSession = jmsConn.getAutoSession();
 	serviceListenTopicSession.setupTopicListener(JmsUtils.getTopicServiceControl(), null, new ControlMessageCollector(myWorker));
 	jmsConn.startConnection();
+	
+	currentTasks = new SimulationTask[numSubworkers];
+	bProgresses = new boolean[numSubworkers];
+	lastMsgTimeStamp =  new long[numSubworkers];
+	log.print("Start keep alive thread");
+	for (int i = 0; i < numSubworkers; i ++) {
+		new KeepAliveThread(i).start();
+	}
 }
 
 
@@ -132,17 +142,17 @@ protected void reconnect() throws JMSException {
  * Insert the method's description here.
  * Creation date: (10/22/2001 11:20:37 PM)
  */
-public void sendCompleted(double progress, double timeSec) {
-	if (currentTask == null) {
+public void sendCompleted(int workerIndex, double progress, double timeSec) {
+	if (currentTasks[workerIndex] == null) {
 		return;
 	}
 
 	// have to keep sending the messages because it's important
 	try {
-		log.print("sendComplete(" + currentTask.getSimulationJobIdentifier() + ")");
-		WorkerEventMessage.sendCompleted(workerEventSession, this, currentTask.getSimulationInfo(), currentTask.getSimulationJob().getJobIndex(), ManageUtils.getHostName(), currentTask.getTaskID(), progress, timeSec);
+		log.print("sendComplete(" + currentTasks[workerIndex].getSimulationJobIdentifier() + ")");
+		WorkerEventMessage.sendCompleted(workerEventSessions[workerIndex], this, currentTasks[workerIndex], ManageUtils.getHostName(),  progress, timeSec);
 		
-		lastMsgTimeStamp = System.currentTimeMillis();
+		lastMsgTimeStamp[workerIndex] = System.currentTimeMillis();
 	} catch (JMSException jmse) {
         log.exception(jmse);
 	}
@@ -153,16 +163,16 @@ public void sendCompleted(double progress, double timeSec) {
  * Insert the method's description here.
  * Creation date: (10/22/2001 11:20:37 PM)
  */
-public void sendFailed(String failureMessage) {
-	if (currentTask == null) {
+public void sendFailed(int workerIndex, String failureMessage) {
+	if (currentTasks[workerIndex] == null) {
 		return;
 	}
 		
 	try {
-		log.print("sendFailure(" + currentTask.getSimulationJobIdentifier() + "," + failureMessage +")");
-		WorkerEventMessage.sendFailed(workerEventSession, this, currentTask.getSimulationInfo(), currentTask.getSimulationJob().getJobIndex(), ManageUtils.getHostName(), currentTask.getTaskID(), failureMessage);
+		log.print("sendFailure(" + currentTasks[workerIndex].getSimulationJobIdentifier() + "," + failureMessage +")");
+		WorkerEventMessage.sendFailed(workerEventSessions[workerIndex], this, currentTasks[workerIndex], ManageUtils.getHostName(), failureMessage);
 		
-		lastMsgTimeStamp = System.currentTimeMillis();
+		lastMsgTimeStamp[workerIndex] = System.currentTimeMillis();
 	} catch (JMSException ex) {
         log.exception(ex);
 	}
@@ -173,19 +183,19 @@ public void sendFailed(String failureMessage) {
  * Insert the method's description here.
  * Creation date: (10/22/2001 11:20:37 PM)
  */
-public void sendNewData(double progress, double timeSec) {
-	if (currentTask == null) {
+public void sendNewData(int workerIndex, double progress, double timeSec) {
+	if (currentTasks[workerIndex] == null) {
 		return;
 	}
 	
 	try {
 		long t = System.currentTimeMillis();
-		if (bProgress || t - lastMsgTimeStamp > MessageConstants.INTERVAL_PROGRESS_MESSAGE) { // don't send data message too frequently
-			log.print("sendNewData(" + currentTask.getSimulationJobIdentifier() + "," + (progress * 100) + "%," + timeSec + ")");		
-			WorkerEventMessage.sendNewData(workerEventSession, this, currentTask.getSimulationInfo(), currentTask.getSimulationJob().getJobIndex(), ManageUtils.getHostName(), currentTask.getTaskID(), progress, timeSec);
+		if (bProgresses[workerIndex] || t - lastMsgTimeStamp[workerIndex] > MessageConstants.INTERVAL_PROGRESS_MESSAGE) { // don't send data message too frequently
+			log.print("sendNewData(" + currentTasks[workerIndex].getSimulationJobIdentifier() + "," + (progress * 100) + "%," + timeSec + ")");		
+			WorkerEventMessage.sendNewData(workerEventSessions[workerIndex], this, currentTasks[workerIndex], ManageUtils.getHostName(), progress, timeSec);
 		
-			lastMsgTimeStamp = System.currentTimeMillis();
-			bProgress = false;
+			lastMsgTimeStamp[workerIndex] = System.currentTimeMillis();
+			bProgresses[workerIndex] = false;
 		}
 	} catch (JMSException e) {
         log.exception(e);
@@ -197,20 +207,20 @@ public void sendNewData(double progress, double timeSec) {
  * Insert the method's description here.
  * Creation date: (10/22/2001 11:20:37 PM)
  */
-public void sendProgress(double progress, double timeSec) {
-	if (currentTask == null) {
+public void sendProgress(int workerIndex, double progress, double timeSec) {
+	if (currentTasks[workerIndex] == null) {
 		return;
 	}
 
 	try {
 		long t = System.currentTimeMillis();
-	if (!bProgress || t - lastMsgTimeStamp > MessageConstants.INTERVAL_PROGRESS_MESSAGE 
+	if (!bProgresses[workerIndex] || t - lastMsgTimeStamp[workerIndex] > MessageConstants.INTERVAL_PROGRESS_MESSAGE 
 		|| ((int)(progress * 100)) % 25 == 0) { // don't send progress message too frequently
-			log.print("sendProgress(" + currentTask.getSimulationJobIdentifier() + "," + (progress * 100) + "%," + timeSec + ")");
-			WorkerEventMessage.sendProgress(workerEventSession, this, currentTask.getSimulationInfo(), currentTask.getSimulationJob().getJobIndex(), ManageUtils.getHostName(), currentTask.getTaskID(), progress, timeSec);
+			log.print("sendProgress(" + currentTasks[workerIndex].getSimulationJobIdentifier() + "," + (progress * 100) + "%," + timeSec + ")");
+			WorkerEventMessage.sendProgress(workerEventSessions[workerIndex], this, currentTasks[workerIndex], ManageUtils.getHostName(), progress, timeSec);
 			
-			lastMsgTimeStamp = System.currentTimeMillis();
-			bProgress = true;
+			lastMsgTimeStamp[workerIndex] = System.currentTimeMillis();
+			bProgresses[workerIndex] = true;
 		}
 	} catch (JMSException e) {
         log.exception(e);
@@ -222,16 +232,16 @@ public void sendProgress(double progress, double timeSec) {
  * Insert the method's description here.
  * Creation date: (10/22/2001 11:20:37 PM)
  */
-public void sendStarting(String startingMessage) {
-	if (currentTask == null) {
+public void sendStarting(int workerIndex, String startingMessage) {
+	if (currentTasks[workerIndex] == null) {
 		return;
 	}
 	
 	try {
-		log.print("sendStarting(" + currentTask.getSimulationJobIdentifier() + ")");
-		WorkerEventMessage.sendStarting(workerEventSession, this, currentTask.getSimulationInfo(), currentTask.getSimulationJob().getJobIndex(), ManageUtils.getHostName(), currentTask.getTaskID(), startingMessage);
+		log.print("sendStarting(" + currentTasks[workerIndex].getSimulationJobIdentifier() + ")");
+		WorkerEventMessage.sendStarting(workerEventSessions[workerIndex], this, currentTasks[workerIndex], ManageUtils.getHostName(), startingMessage);
 	
-		lastMsgTimeStamp = System.currentTimeMillis();
+		lastMsgTimeStamp[workerIndex] = System.currentTimeMillis();
 	} catch (JMSException e) {
         log.exception(e);
 	}
@@ -242,17 +252,17 @@ public void sendStarting(String startingMessage) {
  * Insert the method's description here.
  * Creation date: (10/22/2001 11:20:37 PM)
  */
-void sendWorkerAlive() {
-	if (currentTask == null) {
+void sendWorkerAlive(int workerIndex) {
+	if (currentTasks[workerIndex] == null) {
 		return;
 	}
 
 	// have to keep sending the messages because it's important
 	try {
-		log.print("sendWorkerAlive(" + currentTask.getSimulationJobIdentifier() + ")");
-		WorkerEventMessage.sendWorkerAlive(workerEventSession, this, currentTask.getSimulationInfo(), currentTask.getSimulationJob().getJobIndex(), ManageUtils.getHostName(), currentTask.getTaskID());
+		log.print("sendWorkerAlive(" + currentTasks[workerIndex].getSimulationJobIdentifier() + ")");
+		WorkerEventMessage.sendWorkerAlive(workerEventSessions[workerIndex], this, currentTasks[workerIndex], ManageUtils.getHostName());
 		
-		lastMsgTimeStamp = System.currentTimeMillis();
+		lastMsgTimeStamp[workerIndex] = System.currentTimeMillis();
 	} catch (JMSException jmse) {
         log.exception(jmse);
 	}

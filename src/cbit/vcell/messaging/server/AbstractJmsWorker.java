@@ -4,6 +4,7 @@ import java.io.FileNotFoundException;
 import java.util.Date;
 import java.util.StringTokenizer;
 import cbit.vcell.server.PropertyLoader;
+import cbit.vcell.solver.Solver;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.xml.XmlParseException;
 import cbit.vcell.solver.SolverEvent;
@@ -21,39 +22,66 @@ import static cbit.vcell.messaging.MessageConstants.*;
  */
 public abstract class AbstractJmsWorker extends AbstractJmsServiceProvider implements Worker {
 	protected int maxMemoryMB = 100;
-	protected SimulationTask currentTask = null;
-	protected cbit.vcell.solver.Solver currentSolver = null;
+	protected SimulationTask[] currentTasks = null;
+	protected Solver[] currentSolvers = null;
 	protected boolean bStopped = true;
 	protected WorkerMessaging workerMessaging = null;
-	protected int workerType;
+	protected WorkerType workerType;
+	int numSubWorkers = 1;
+	protected WorkerType[] subworkerTypes = null;
 	
-/**
- * Insert the method's description here.
- * Creation date: (10/19/2001 4:33:08 PM)
- * @param nodeName java.lang.String
- * @param parentNode cbit.vcell.appserver.ComputationalNode
- */
-public AbstractJmsWorker(int wType, int workerOrdinal, int workerMem, String logdir) throws JMSException, FileNotFoundException {
+public AbstractJmsWorker(WorkerType wType, int workerOrdinal, int workerMem, String logdir) throws JMSException, FileNotFoundException {
 	workerType = wType;
 	maxMemoryMB = workerMem;	
-		
-	String servicetype; 
+	numSubWorkers = 1;
+	
+	ServiceType servicetype = ServiceType.LOCALCOMPUTE; 
 	switch (workerType) {
-	case LSF_WORKER:
-	case LSFJAVA_WORKER:
-	case CONDOR_WORKER:
-	case CONDORJAVA_WORKER:
-	case PBS_WORKER:
-	case PBSJAVA_WORKER:
-		servicetype = SERVICETYPE_HTCCOMPUTE_VALUE;
+	case ODE_WORKER:
+		servicetype = ServiceType.ODECOMPUTE;		
 		break;
-	case JAVA_WORKER:
-		servicetype = SERVICETYPE_ODECOMPUTE_VALUE;
+	case PDE_WORKER:
+		servicetype = ServiceType.PDECOMPUTE;		
 		break;
-	default:
-		servicetype = SERVICETYPE_LOCALCOMPUTE_VALUE;
+//	case LSF_WORKER:
+//	case CONDOR_WORKER:	
+	case PBS_WORKER:	
+		servicetype = ServiceType.PBSCOMPUTE;
+		break;
+//	case LSFODE_WORKER:
+//	case CONDORODE_WORKER:
+	case PBSODE_WORKER:
+		numSubWorkers = 2;
+		servicetype = ServiceType.PBSODECOMPUTE;
+		break;
+	case LOCAL_WORKER:
+		numSubWorkers = 2;
+		servicetype = ServiceType.LOCALCOMPUTE;
 		break;
 	}
+	
+	// determine subworkers
+	subworkerTypes = new WorkerType[numSubWorkers];
+	switch (workerType) {
+	case ODE_WORKER:
+	case PDE_WORKER:
+//	case LSF_WORKER:
+//	case CONDOR_WORKER:	
+	case PBS_WORKER:	// only one worker
+		subworkerTypes[0] = workerType;
+		break;
+//	case LSFODE_WORKER:
+//	case CONDORODE_WORKER:
+	case PBSODE_WORKER:
+		subworkerTypes[0] = WorkerType.ODE_WORKER;
+		subworkerTypes[1] = WorkerType.PBS_WORKER; // now we are using PBS
+		break;
+	case LOCAL_WORKER:
+		subworkerTypes[0] = WorkerType.ODE_WORKER;
+		subworkerTypes[1] = WorkerType.PDE_WORKER; // now we are using PBS
+		break;
+	}	
+	
 	serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID().toString(), servicetype, workerOrdinal, ManageUtils.getHostName(), new Date(), true);
 	initLog(logdir);
 	
@@ -61,60 +89,72 @@ public AbstractJmsWorker(int wType, int workerOrdinal, int workerMem, String log
 	workerMessaging = new WorkerMessaging(this, log);
 }
 
+public int getNumSubworkers() {	
+	return numSubWorkers;
+}
+protected abstract void doJob(int workerIndex) throws JMSException, SolverException, XmlParseException;
 
-protected abstract void doJob() throws JMSException, SolverException, XmlParseException;
-
-/**
- * Insert the method's description here.
- * Creation date: (12/9/2003 8:28:40 AM)
- * @return java.lang.String
- */
-public final String getJobSelector() {
-	String jobSelector = "(" + MessageConstants.MESSAGE_TYPE_PROPERTY + "='" + MessageConstants.MESSAGE_TYPE_SIMULATION_JOB_VALUE + "')";
-	String computeResources =  PropertyLoader.getRequiredProperty(PropertyLoader.htcComputeResources);
-	StringTokenizer st = new StringTokenizer(computeResources, " ,");	
-	jobSelector += " AND ((" + MessageConstants.COMPUTE_RESOURCE_PROPERTY + " IS NULL) OR (" + MessageConstants.COMPUTE_RESOURCE_PROPERTY + " IN (";
-	int count = 0;
-	while (st.hasMoreTokens()) {
-		if (count > 0) {
-			jobSelector = ", ";
+public final String[] getJobSelectors() {
+	String[] jobSelectors = new String[numSubWorkers];
+	for (int i = 0; i < numSubWorkers; i ++) {
+		String jobSelector = "(" + MessageConstants.MESSAGE_TYPE_PROPERTY + "='" + MessageConstants.MESSAGE_TYPE_SIMULATION_JOB_VALUE + "')";
+		String computeResources =  PropertyLoader.getRequiredProperty(PropertyLoader.htcComputeResources);
+		StringTokenizer st = new StringTokenizer(computeResources, " ,");	
+		jobSelector += " AND ((" + MessageConstants.COMPUTE_RESOURCE_PROPERTY + " IS NULL) OR (" + MessageConstants.COMPUTE_RESOURCE_PROPERTY + " IN (";
+		int count = 0;
+		while (st.hasMoreTokens()) {
+			if (count > 0) {
+				jobSelector = ", ";
+			}
+			jobSelector += "'" + st.nextToken() + "'";
+			count ++;
 		}
-		jobSelector += "'" + st.nextToken() + "'";
-		count ++;
+		jobSelector += ")))";
+		
+		switch (subworkerTypes[i]) {
+//			case LSF_WORKER: 
+//			case CONDOR_WORKER :
+			case PDE_WORKER :
+			case PBS_WORKER :{
+				jobSelector += " AND (" + MessageConstants.SOLVER_TYPE_PROPERTY + "='" + MessageConstants.SOLVER_TYPE_PDE_PROPERTY + "')";
+				break;
+			}	
+			case ODE_WORKER: {
+				jobSelector += " AND (" + MessageConstants.SOLVER_TYPE_PROPERTY	+ "='" + MessageConstants.SOLVER_TYPE_ODE_PROPERTY + "')" ;
+				break;
+			}
+			case LOCAL_WORKER:
+			case PBSODE_WORKER:
+				throw new RuntimeException("subworker can't be PBSODE or LOCAL");			
+		}
+		jobSelectors[i] = jobSelector;
 	}
-	jobSelector += ")))";
-	
-	switch (workerType) {
-		case LSF_WORKER: 
-		case CONDOR_WORKER : 
-		case PBS_WORKER :{
-			jobSelector += " AND (" + MessageConstants.SOLVER_TYPE_PROPERTY + "='" + MessageConstants.SOLVER_TYPE_HTC_PROPERTY + "')";
-			break;
-		}	
-		case JAVA_WORKER: {
-			jobSelector += " AND (" + MessageConstants.SOLVER_TYPE_PROPERTY	+ "='" + MessageConstants.SOLVER_TYPE_JAVA_PROPERTY + "')" ;
-			break;
-		}
-		case NOHTC_WORKER: {
-			jobSelector += " AND (" + MessageConstants.SIZE_MB_PROPERTY + "<" + maxMemoryMB + ")";			
-			break;
-		}
-	}
-	return jobSelector;
+	return jobSelectors;
 }
 
-
+private int getWorkerIndexFromSolver(Solver s){
+	for (int i = 0; i < numSubWorkers; i ++) {
+		if (s == currentSolvers[i]) {
+			return i;
+		}
+	}
+	return -1;
+}
 /**
  * Invoked when the solver aborts a calculation (abnormal termination).
  * @param event indicates the solver and the event type
  */
-public final void solverAborted(SolverEvent event) {		
+public final void solverAborted(SolverEvent event) {
+	int workerIndex = getWorkerIndexFromSolver((Solver)event.getSource());
+	if (workerIndex == -1) {
+		return;
+	}
 	String failMsg = event.getMessage();
 	if (failMsg == null) {
 		failMsg = "Solver aborted";
 	}
 		
-	workerMessaging.sendFailed(failMsg);
+	workerMessaging.sendFailed(workerIndex, failMsg);
 }
 
 
@@ -123,7 +163,11 @@ public final void solverAborted(SolverEvent event) {
  * @param event indicates the solver and the event type
  */
 public final void solverFinished(SolverEvent event) {
-	workerMessaging.sendCompleted(event.getProgress(), event.getTimePoint());
+	int workerIndex = getWorkerIndexFromSolver((Solver)event.getSource());
+	if (workerIndex == -1) {
+		return;
+	}
+	workerMessaging.sendCompleted(workerIndex, event.getProgress(), event.getTimePoint());
 }
 
 
@@ -132,11 +176,15 @@ public final void solverFinished(SolverEvent event) {
  * @param event indicates the solver and the event type
  */
 public final void solverPrinted(SolverEvent event) {
-	if (!isRunning()) {
+	int workerIndex = getWorkerIndexFromSolver((Solver)event.getSource());
+	if (workerIndex == -1) {
+		return;
+	}
+	if (!isRunning(workerIndex)) {
 		return;
 	}
 
-	workerMessaging.sendNewData(event.getProgress(), event.getTimePoint());
+	workerMessaging.sendNewData(workerIndex, event.getProgress(), event.getTimePoint());
 }
 
 
@@ -145,11 +193,15 @@ public final void solverPrinted(SolverEvent event) {
  * @param event indicates the solver and the event type
  */
 public final void solverProgress(SolverEvent event) {
-	if (!isRunning()) {
+	int workerIndex = getWorkerIndexFromSolver((Solver)event.getSource());
+	if (workerIndex == -1) {
+		return;
+	}
+	if (!isRunning(workerIndex)) {
 		return;
 	}
 		
-	workerMessaging.sendProgress(event.getProgress(), event.getTimePoint());
+	workerMessaging.sendProgress(workerIndex, event.getProgress(), event.getTimePoint());
 }
 
 
@@ -158,12 +210,16 @@ public final void solverProgress(SolverEvent event) {
  * @param event indicates the solver and the event type
  */
 public final void solverStarting(SolverEvent event) {
+	int workerIndex = getWorkerIndexFromSolver((Solver)event.getSource());
+	if (workerIndex == -1) {
+		return;
+	}
 	String startMsg = event.getMessage();
 	if (startMsg == null) {
 		startMsg = "Solver starting";
 	}
 	
-	workerMessaging.sendStarting(startMsg);
+	workerMessaging.sendStarting(workerIndex, startMsg);
 }
 
 
@@ -183,36 +239,49 @@ public final void solverStopped(SolverEvent event) {
  * Insert the method's description here.
  * Creation date: (10/22/2001 11:21:02 PM)
  */
-public final void start() {		
-	bStopped = false;
-	
-	log.print("Start PropertyLoader thread...");
-	new PropertyLoaderThread().start();
-	
+public final void startSubworker(int workerIndex) {		
+	log.print("starting subworker " + workerIndex);
 	while (!bStopped){
-		currentTask = null;
-		currentSolver = null;
+		currentTasks[workerIndex] = null;
+		currentSolvers[workerIndex] = null;
 		
 		try {
-			currentTask = workerMessaging.getNextTask();
+			currentTasks[workerIndex] = workerMessaging.getNextTask(workerIndex);
 			
-			if (currentTask == null || !(currentTask instanceof SimulationTask)){
+			if (currentTasks[workerIndex] == null || !(currentTasks[workerIndex] instanceof SimulationTask)){
 				try {
 					Thread.sleep(MessageConstants.SECOND);
 				} catch (Exception ex) {
 				}
 				continue;				
 			}
-			doJob();			
+			doJob(workerIndex);			
 		} catch (Exception ex) {			
-			workerMessaging.sendFailed(ex.getMessage());
+			workerMessaging.sendFailed(workerIndex, ex.getMessage());
 		}			
-	}
-
-	log.print("Ending");
+	}	
 }
 
+public final void start() {
+	bStopped = false;
+	
+	log.print("Start PropertyLoader thread...");
+	new PropertyLoaderThread().start();
 
+	currentTasks = new SimulationTask[numSubWorkers];
+	currentSolvers = new Solver[numSubWorkers];
+	for (int i = 1; i < numSubWorkers; i ++) {
+		final int workerIndex = i;
+		new Thread() {
+			public void run() {
+				startSubworker(workerIndex);
+			}
+		}.start();		
+	}
+	startSubworker(0);
+	
+	log.print(serviceInstanceStatus.getSpecID() + " stopped");
+}
 /**
  * Insert the method's description here.
  * Creation date: (10/22/2001 11:21:10 PM)

@@ -26,6 +26,7 @@ import javax.jms.*;
 import javax.swing.*;
 
 import cbit.vcell.messaging.*;
+import cbit.vcell.messaging.MessageConstants.ServiceType;
 import cbit.vcell.messaging.admin.sorttable.JSortTable;
 import cbit.vcell.messaging.db.*;
 import cbit.vcell.messaging.server.RpcSimServerProxy;
@@ -2239,7 +2240,7 @@ public void messageResetButton_ActionEvents() {
  * @param service cbit.vcell.messaging.admin.VCellService
  */
 private void onArrivingService(ServiceInstanceStatus arrivingService) {
-	if (arrivingService.getType().equals(SERVICE_TYPE_SERVERMANAGER)) {
+	if (arrivingService.getType().equals(ServiceType.SERVERMANAGER)) {
 		serviceInstanceStatusList.add(0, arrivingService);
 		filterService();
 		return;

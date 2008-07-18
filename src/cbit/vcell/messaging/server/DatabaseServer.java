@@ -13,13 +13,13 @@ import cbit.vcell.modeldb.DatabasePolicySQL;
 public class DatabaseServer extends JmsRpcServer {
 	private RpcDbServerImpl rpcDbServerImpl = null;
 	private static String filter =  "(" + MESSAGE_TYPE_PROPERTY + "='" + MESSAGE_TYPE_RPC_SERVICE_VALUE  + "') AND (" 
-		+ SERVICE_TYPE_PROPERTY + "='" + SERVICETYPE_DB_VALUE + "')";
+		+ SERVICE_TYPE_PROPERTY + "='" + ServiceType.DB.getName() + "')";
 
 /**
  * Scheduler constructor comment.
  */
 public DatabaseServer(int serviceOrdinal, String logdir) throws Exception {	
-	super(SERVICETYPE_DB_VALUE, serviceOrdinal, JmsUtils.getQueueDbReq(), filter, logdir);	
+	super(ServiceType.DB, serviceOrdinal, JmsUtils.getQueueDbReq(), filter, logdir);	
 }
 
 
