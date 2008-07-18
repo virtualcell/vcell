@@ -520,7 +520,7 @@ public class FRAPEstimationPanel extends JPanel {
 				displayFit(null,null);
 				throw new Exception(
 					OverlayEditorPanelJAI.INITIAL_BLEACH_AREA_TEXT+" ROI not defined.\n"+
-					"Use ROI tools under '"+FRAPStudyPanel.FRAPDATAPANEL_TABNAME+"' tab to define.");
+					"Use ROI tools under '"+FRAPStudyPanel.FRAPSTUDYPANEL_TABNAME_IMAGES+"' tab to define.");
 			}
 			frapDataTimeStamps = frapData.getImageDataset().getImageTimeStamps();
 			frapDataAnalysisResults =

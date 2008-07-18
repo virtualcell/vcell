@@ -51,7 +51,7 @@ public class VirtualFrapMainFrame extends JFrame
 	
 	public static final String ROIErrorString = 
 		"'Cell','Bleach' and 'Background' ROIs are required for FRAP model.  "+
-		"Create all ROIs under '"+FRAPStudyPanel.FRAPDATAPANEL_TABNAME+"' tab";
+		"Create all ROIs under '"+FRAPStudyPanel.FRAPSTUDYPANEL_TABNAME_IMAGES+"' tab";
 
 	public static final boolean SAVE_COMPRESSED = true;
 	

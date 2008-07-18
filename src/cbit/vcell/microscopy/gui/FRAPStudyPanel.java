@@ -74,9 +74,8 @@ import cbit.vcell.microscopy.MicroscopyXmlproducer;
 import cbit.vcell.microscopy.ROI;
 import cbit.vcell.microscopy.FRAPStudy.FRAPModelParameters;
 import cbit.vcell.microscopy.ROI.RoiType;
-import cbit.vcell.model.Species;
+import cbit.vcell.opt.Parameter;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.server.StdoutSessionLog;
 import cbit.vcell.server.VCDataIdentifier;
 import cbit.vcell.simdata.DataIdentifier;
@@ -84,21 +83,17 @@ import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simdata.PDEDataContext;
-import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.VariableType;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 
 public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
-	//Following final static variables are added in Jan 2008.
-	public final static int INDEX_TAB_IMAGES = 0;
-	public final static int INDEX_TAB_FITCURVE = 1;
-//	public final static int INDEX_TAB_SPATIALMODEL = 2;
-	public final static int INDEX_TAB_FITSPATIALMODEL = 2;
-	public final static int INDEX_TAB_REPORT = 3;
 	
-	public static final String FRAPDATAPANEL_TABNAME = "Images";
+	public static final String FRAPSTUDYPANEL_TABNAME_IMAGES = "Images";
+	public static final String FRAPSTUDYPANEL_TABNAME_FITRECOVERYCURVE = "Fit Recovery Curve";
+	public static final String FRAPSTUDYPANEL_TABNAME_REPORT = "Report";
+	public static final String FRAPSTUDYPANEL_TABNAME_SPATIALRESULTS = "Spatial Results";
 	
 	private FRAPStudy frapStudy = null; 
 	private FRAPDataPanel frapDataPanel = null;
@@ -111,6 +106,10 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	private PDEDataViewer flourDataViewer = null;
 	
 	private ResultsSummaryPanel resultsSummaryPanel;
+	
+	public interface NewFRAPFromParameters{
+		void create(Parameter[] newParameters);
+	}
 	
 	enum DisplayChoice { PDE,EXTTIMEDATA};
 
@@ -446,17 +445,17 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	protected JTabbedPane getJTabbedPane() {
 		if (jTabbedPane == null) {
 			jTabbedPane = new JTabbedPane();
-			jTabbedPane.addTab(FRAPDATAPANEL_TABNAME, null, getFRAPDataPanel(), null);
-			jTabbedPane.addTab("Fit Recovery Curve", null, getFRAPParametersPanel(), null);
-//			jTabbedPane.addTab("Generate Spatial Model", null, getModelPanel(), null);
-			jTabbedPane.addTab("Fit Spatial Model", null, getFitSpatialModelPanel(), null);
-			jTabbedPane.addTab("Report", null, getResultsSummaryPanel()/*getScrollReportPane()*/, null);
+			jTabbedPane.addTab(FRAPSTUDYPANEL_TABNAME_IMAGES, null, getFRAPDataPanel(), null);
+			jTabbedPane.addTab(FRAPSTUDYPANEL_TABNAME_FITRECOVERYCURVE, null, getFRAPParametersPanel(), null);
+			jTabbedPane.addTab(FRAPSTUDYPANEL_TABNAME_REPORT, null, getResultsSummaryPanel(), null);
+			jTabbedPane.addTab(FRAPSTUDYPANEL_TABNAME_SPATIALRESULTS, null, getFitSpatialModelPanel(), null);
 			jTabbedPane.setModel(
 				new DefaultSingleSelectionModel(){
 					@Override
 					public void setSelectedIndex(int index) {
 						try{
-							if(updateTabbedView(getSelectedIndex(),index)){
+							String exitTabTitle = (getSelectedIndex() == -1?null:getJTabbedPane().getTitleAt(getSelectedIndex()));
+							if(updateTabbedView(exitTabTitle,getJTabbedPane().getTitleAt(index))){
 								super.setSelectedIndex(index);
 							}
 						}catch(Exception e){
@@ -470,7 +469,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 					}
 				}
 			);
-			jTabbedPane.setSelectedIndex(FRAPStudyPanel.INDEX_TAB_IMAGES);
+			jTabbedPane.setSelectedIndex(jTabbedPane.indexOfTab(FRAPSTUDYPANEL_TABNAME_IMAGES));
 		}
 		return jTabbedPane;
 	}
@@ -523,22 +522,23 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		}
 		return false;
 	}
-	private boolean updateTabbedView(int exitTab,int enterTab) throws Exception{
-		if(enterTab != FRAPStudyPanel.INDEX_TAB_IMAGES && (getFrapStudy() == null || getFrapStudy().getFrapData() == null)){
+	private boolean updateTabbedView(String exitTabTitle,String enterTabTitle) throws Exception{
+		if(!enterTabTitle.equals(FRAPSTUDYPANEL_TABNAME_IMAGES) && (getFrapStudy() == null || getFrapStudy().getFrapData() == null)){
 			throw new Exception("No document open.  Use 'File->Open' menu to open a new document");
 		}
 		try{
 			BeanUtils.setCursorThroughout(FRAPStudyPanel.this, Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-			if(exitTab == FRAPStudyPanel.INDEX_TAB_IMAGES){
-				applyUserChangesToCurrentFRAPStudy(USER_CHANGES_FLAG_ROI);
-				if(getFrapStudy() != null && getFrapStudy().getFrapData() != null && checkROIConstraints()){
-					return false;
+			if(exitTabTitle != null){
+				if(exitTabTitle.equals(FRAPSTUDYPANEL_TABNAME_IMAGES)){
+					applyUserChangesToCurrentFRAPStudy(USER_CHANGES_FLAG_ROI);
+					if(getFrapStudy() != null && getFrapStudy().getFrapData() != null && checkROIConstraints()){
+						return false;
+					}
+				}else if(exitTabTitle.equals(FRAPSTUDYPANEL_TABNAME_FITRECOVERYCURVE)){
+					applyUserChangesToCurrentFRAPStudy(USER_CHANGES_FLAG_MODEL_PARAMS);
 				}
-			}else if(exitTab == FRAPStudyPanel.INDEX_TAB_FITCURVE){
-				applyUserChangesToCurrentFRAPStudy(USER_CHANGES_FLAG_MODEL_PARAMS);
 			}
-			
-			if(enterTab == FRAPStudyPanel.INDEX_TAB_FITCURVE){
+			if(enterTabTitle.equals(FRAPSTUDYPANEL_TABNAME_FITRECOVERYCURVE)){
 				try{
 					getFRAPParametersPanel().refreshFRAPModelParameterEstimates(getFrapStudy().getFrapData());
 				}catch(Exception e){
@@ -550,7 +550,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 //			else if(enterTab == FRAPStudyPanel.INDEX_TAB_SPATIALMODEL){
 //				refreshBiomodel();
 //			}
-			else if(enterTab == FRAPStudyPanel.INDEX_TAB_FITSPATIALMODEL){
+			else if(enterTabTitle.equals(FRAPSTUDYPANEL_TABNAME_REPORT)){
 				refreshBiomodel();
 				CurrentSimulationDataState currentSimulationDataState = null;
 				if(getSavedFrapModelInfo() != null){
@@ -578,23 +578,20 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							return false;
 						}
 					}
-					runSimulation();
-//					clearFitSpatialModelPanel();
-					
+					runSimulation();			
 					return false;
 				}else{
-					refreshPDEDisplay(DisplayChoice.PDE);
-					refreshPDEDisplay(DisplayChoice.EXTTIMEDATA);
+					if(!getResultsSummaryPanel().hasData()){
+						spatialAnalysis(null);
+						return false;
+					}
 				}
-			}else if(enterTab == FRAPStudyPanel.INDEX_TAB_REPORT){
+			}else if(enterTabTitle.equals(FRAPSTUDYPANEL_TABNAME_SPATIALRESULTS)){
 				refreshBiomodel();
 				CurrentSimulationDataState currentSimulationDataState = new CurrentSimulationDataState();
 				if(currentSimulationDataState.isDataValid()){
-					if(!getResultsSummaryPanel().hasData()){
-//						getReportPanel().removeAll();
-						spatialAnalysis();
-						return false;
-					}
+					refreshPDEDisplay(DisplayChoice.PDE);
+					refreshPDEDisplay(DisplayChoice.EXTTIMEDATA);
 				}else{
 					throw new Exception("Simulation Data are not valid. Simulation needs to be run.\n"+
 						currentSimulationDataState.getDescription());
@@ -706,17 +703,21 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			throw new Exception("SaveAs not EventDispatchThread");
 		}
 		if(getFrapStudy().getFrapData() != null){
-			if(getJTabbedPane().getSelectedIndex() == INDEX_TAB_FITSPATIALMODEL ||
-					getJTabbedPane().getSelectedIndex() == INDEX_TAB_REPORT){
+			if(getJTabbedPane().getTitleAt(getJTabbedPane().getSelectedIndex()).equals(FRAPSTUDYPANEL_TABNAME_SPATIALRESULTS) ||
+				getJTabbedPane().getTitleAt(getJTabbedPane().getSelectedIndex()).equals(FRAPSTUDYPANEL_TABNAME_REPORT)){
 				//SaveASNew has empty sim data so can't be viewing these tabs after save
 				final String CONTINUE_SAVING = "Switch and continue SaveAsNew";
 				String result = DialogUtils.showWarningDialog(this,
-						"Simulation Data will be empty for the new document.  Switch to '"+FRAPDATAPANEL_TABNAME+"' tab before saving?" ,
+						"Simulation Data will be empty for the new document.  Switch to '"+FRAPSTUDYPANEL_TABNAME_IMAGES+"' tab before saving?" ,
 						new String[] {CONTINUE_SAVING,UserMessage.OPTION_CANCEL}, CONTINUE_SAVING);
 				if(result == null || !result.equals(CONTINUE_SAVING)){
 					return;
 				}
-				SwingUtilities.invokeAndWait(new Runnable(){public void run(){getJTabbedPane().setSelectedIndex(INDEX_TAB_IMAGES);}});
+				SwingUtilities.invokeAndWait(
+					new Runnable(){
+						public void run(){getJTabbedPane().setSelectedIndex(getJTabbedPane().indexOfTab(FRAPSTUDYPANEL_TABNAME_IMAGES));}
+					}
+				);
 			}
 			saveAsInternal(null);
 //			try{
@@ -892,7 +893,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		SwingUtilities.invokeAndWait(new Runnable(){public void run(){
 			setFrapStudy(new FRAPStudy(), true);						
             VirtualFrapLoader.mf.setMainFrameTitle("");
-            getJTabbedPane().setSelectedIndex(FRAPStudyPanel.INDEX_TAB_IMAGES);
+            getJTabbedPane().setSelectedIndex(getJTabbedPane().indexOfTab(FRAPSTUDYPANEL_TABNAME_IMAGES));
 		}});
 	}
 	protected void load(final File[] inFileArr,final MultiFileImportInfo multiFileImportInfo) throws Exception{
@@ -1309,14 +1310,16 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 					}
 //					genericProgressStopSignal[0] = true;
 					
+					final double RUN_SIM_PROGRESS_FRACTION = .2;
 					DataSetControllerImpl.ProgressListener runSimProgressListener =
 						new DataSetControllerImpl.ProgressListener(){
 							public void updateProgress(double progress) {
-								int percentProgress = (int)(progress*100);
+								int percentProgress = (int)(progress*100*RUN_SIM_PROGRESS_FRACTION);
 								VirtualFrapMainFrame.updateProgress(percentProgress);
 								pp.setProgress(percentProgress);
 							}
 					};
+
 					final String RUNNING_SIM_MESSAGE = "Running simulation...";
 					VirtualFrapMainFrame.updateStatus(RUNNING_SIM_MESSAGE);
 					pp.setMessage(RUNNING_SIM_MESSAGE);
@@ -1336,36 +1339,53 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 //					refreshPDEDisplay(DisplayChoice.EXTTIMEDATA);//lower data viewer has original data and masks
 //					genericProgressStopSignal[0] = true;
 					
-					final String FINISHED_MESSAGE = "Finished simulation, updating display...";
+					final String FINISHED_MESSAGE = "Finished simulation, running spatial analysis...";
 					VirtualFrapMainFrame.updateStatus(FINISHED_MESSAGE);
 					pp.setMessage(FINISHED_MESSAGE);
-					VirtualFrapMainFrame.updateProgress(100);
-					pp.setProgress(100);
-					SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-						getJTabbedPane().setSelectedIndex(FRAPStudyPanel.INDEX_TAB_FITSPATIALMODEL);
-						VirtualFrapMainFrame.updateProgress(0);
-						VirtualFrapMainFrame.updateStatus("");
-					}});
+//					VirtualFrapMainFrame.updateProgress(100);
+//					pp.setProgress(100);
 					
+					
+					DataSetControllerImpl.ProgressListener optimizationProgressListener =
+						new DataSetControllerImpl.ProgressListener(){
+							public void updateProgress(double progress) {
+								if(progress == 1.0){
+									VirtualFrapMainFrame.updateProgress(0);
+									pp.stop();
+									return;
+								}
+								int percentProgress = (int)(100*(RUN_SIM_PROGRESS_FRACTION+progress*(1-RUN_SIM_PROGRESS_FRACTION)));
+								VirtualFrapMainFrame.updateProgress(percentProgress);
+								pp.setProgress(percentProgress);
+							}
+					};
+
+					spatialAnalysis(optimizationProgressListener);
+
+//					SwingUtilities.invokeAndWait(new Runnable(){public void run(){
+//						getJTabbedPane().setSelectedIndex(getJTabbedPane().indexOfTab(FRAPSTUDYPANEL_TABNAME_REPORT));
+//						VirtualFrapMainFrame.updateProgress(0);
+//						VirtualFrapMainFrame.updateStatus("");
+//					}});
+
 				}catch(UserCancelException uce){
-					//ignore
+					return;
 				}catch (final Exception e) {
 					pp.stop();
 //					genericProgressStopSignal[0] = true;
 					VirtualFrapMainFrame.updateProgress(0);
-					VirtualFrapMainFrame.updateStatus("Error running simulation: "+e.getMessage());
+					VirtualFrapMainFrame.updateStatus("Error running simulation/spatial analysis: "+e.getMessage());
 					e.printStackTrace();
 					try{
 					SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-						DialogUtils.showErrorDialog("Error running simulation:\n"+e.getMessage());
+						DialogUtils.showErrorDialog("Error running simulation/spatial analysis:\n"+e.getMessage());
 					}});
 					}catch(Exception e2){
 						e2.printStackTrace();
 					}
 				}finally{
-					pp.stop();
+//					pp.stop();
 				}
-
 			}
 		}).start();
 	}
@@ -1700,15 +1720,16 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		return dataManager;
 	}
 	
-	public void spatialAnalysis() throws Exception{
+	public void spatialAnalysis(final DataSetControllerImpl.ProgressListener progressListener) throws Exception{
 		
 		final AsynchProgressPopup pp =
+			(progressListener != null?null:
 			new AsynchProgressPopup(
 				FRAPStudyPanel.this,
 				"Running FRAP Spatial Analysis",
-				"Working...",true,true
-		);
-		pp.start();
+				"Working...",true,true)
+			);
+		if(pp != null){pp.start();}
 
 		new Thread(new Runnable(){public void run(){
 			try{
@@ -1716,9 +1737,14 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				DataSetControllerImpl.ProgressListener runspatialAnalysisProgressListener =
 					new DataSetControllerImpl.ProgressListener(){
 						public void updateProgress(double progress) {
-							int percentProgress = (int)(progress*100*SPATIAL_ANLYSIS_PROGRESS_FRACTION);
-							VirtualFrapMainFrame.updateProgress(percentProgress);
-							pp.setProgress(percentProgress);
+							if(pp != null){
+								int percentProgress = (int)(progress*100*SPATIAL_ANLYSIS_PROGRESS_FRACTION);
+								VirtualFrapMainFrame.updateProgress(percentProgress);
+								pp.setProgress(percentProgress);
+							}
+							if(progressListener != null){
+								progressListener.updateProgress(progress*SPATIAL_ANLYSIS_PROGRESS_FRACTION);
+							}
 						}
 				};
 				//
@@ -1747,25 +1773,42 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				DataSetControllerImpl.ProgressListener optimizationProgressListener =
 					new DataSetControllerImpl.ProgressListener(){
 						public void updateProgress(double progress) {
-							int percentProgress = (int)(50+progress*100*(1-SPATIAL_ANLYSIS_PROGRESS_FRACTION));
-							VirtualFrapMainFrame.updateProgress(percentProgress);
-							pp.setProgress(percentProgress);
+							if(pp != null){
+								int percentProgress = (int)(50+progress*100*(1-SPATIAL_ANLYSIS_PROGRESS_FRACTION));
+								VirtualFrapMainFrame.updateProgress(percentProgress);
+								pp.setProgress(percentProgress);
+							}
+							if(progressListener != null){
+								progressListener.updateProgress(.5+progress*(1-SPATIAL_ANLYSIS_PROGRESS_FRACTION));
+							}
 						}
 				};
 				FRAPOptData frapOptData = new FRAPOptData(getFrapStudy(), getLocalWorkspace(),optimizationProgressListener);
 				
+				if(progressListener != null){
+					progressListener.updateProgress(1.0);
+				}
+
+				NewFRAPFromParameters newFRAPFromParameters =
+					new NewFRAPFromParameters (){
+						public void create(Parameter[] newParameters) {
+							createNewFRAPFromParameters(newParameters);
+						}
+					};
+					
 				//Report initialization
-				getResultsSummaryPanel().setData(frapOptData,
+				getResultsSummaryPanel().setData(newFRAPFromParameters,frapOptData,
 						spatialAnalysisResults,frapDataTimeStamps,startIndexForRecovery,
 						new Double(getFrapStudy().getFrapModelParameters().diffusionRate));
 				SwingUtilities.invokeAndWait(new Runnable(){public void run(){
-					getJTabbedPane().setSelectedIndex(INDEX_TAB_REPORT);
+					getJTabbedPane().setSelectedIndex(getJTabbedPane().indexOfTab(FRAPSTUDYPANEL_TABNAME_REPORT));
 				}});
+				
 				
 				VirtualFrapMainFrame.updateProgress(0);
 				VirtualFrapMainFrame.updateStatus("Finished Spatial analysis.");
 			}catch(final Exception e){
-				pp.stop();
+				if(pp != null){pp.stop();}
 				VirtualFrapMainFrame.updateProgress(0);
 				VirtualFrapMainFrame.updateStatus("Error running spatial analysis: "+e.getMessage());
 				e.printStackTrace();
@@ -1777,11 +1820,40 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 					e2.printStackTrace();
 				}
 		}finally{
-				pp.stop();
+				if(pp != null){pp.stop();}
 			}
 		}}).start();
 	}
 
+	private void createNewFRAPFromParameters(Parameter[] newParameters){
+		String result = DialogUtils.showWarningDialog(this,
+				"The CURRENT FRAP document will be replaced using new parameters:\n"+
+				"Diffusion Rate="+newParameters[FRAPOptData.DIFFUSION_RATE_INDEX].getInitialGuess()+"\n"+
+				"Mobile Fraction="+newParameters[FRAPOptData.MOBILE_FRACTION_INDEX].getInitialGuess()+"\n"+	
+				"Monitor Bleach Rate="+newParameters[FRAPOptData.BLEACH_WHILE_MONITOR_INDEX].getInitialGuess()
+				,new String[] {UserMessage.OPTION_OK,UserMessage.OPTION_CANCEL}, UserMessage.OPTION_OK);
+
+		if(result == null || !result.equals(UserMessage.OPTION_OK)){
+			return;
+		}
+		
+//		FRAPModelParameters origFRAPModelParameters = getFrapStudy().getFrapModelParameters();
+		try {
+			getFRAPParametersPanel().changeCoreFRAPModelParameters( 
+					newParameters[FRAPOptData.DIFFUSION_RATE_INDEX].getInitialGuess()+"",
+					newParameters[FRAPOptData.MOBILE_FRACTION_INDEX].getInitialGuess()+"",
+					newParameters[FRAPOptData.BLEACH_WHILE_MONITOR_INDEX].getInitialGuess()+""
+			);
+			runSimulation();
+		} catch (Exception e) {
+//			getFrapStudy().setFrapModelParameters(origFRAPModelParameters);
+			if(!(e instanceof UserCancelException)){
+				e.printStackTrace();
+				DialogUtils.showErrorDialog("Creating New FRAP failed.  "+e.getMessage());
+			}
+		}
+
+	}
 	public void propertyChange(PropertyChangeEvent evt) {
 		if(evt.getSource() == getFRAPDataPanel().getOverlayEditorPanelJAI()){
 			if(evt.getPropertyName().equals(OverlayEditorPanelJAI.FRAP_DATA_CROP_PROPERTY)){

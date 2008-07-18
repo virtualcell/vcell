@@ -1,61 +1,40 @@
 package cbit.vcell.microscopy.gui;
 
 import java.awt.Color;
-import java.awt.Dimension;
-
-import cbit.gui.DialogUtils;
 import cbit.util.Compare;
-import cbit.util.NumberUtils;
-import cbit.vcell.math.gui.ExpressionCanvas;
 import cbit.vcell.microscopy.FRAPData;
-import cbit.vcell.microscopy.FRAPDataAnalysis;
 import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FrapDataAnalysisResults;
-import cbit.vcell.microscopy.ROI.RoiType;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel.FrapChangeInfo;
-import cbit.vcell.modelopt.gui.DataSource;
-import cbit.vcell.modelopt.gui.MultisourcePlotPane;
-import cbit.vcell.opt.ReferenceData;
-import cbit.vcell.opt.SimpleReferenceData;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.solver.ode.FunctionColumnDescription;
-import cbit.vcell.solver.ode.ODESolverResultSet;
-import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
 
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-import javax.swing.border.EtchedBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import cbit.vcell.microscopy.gui.FRAPEstimationPanel;
+import cbit.vcell.opt.Parameter;
 
 public class FRAPParametersPanel extends JPanel {
 	private FRAPEstimationPanel estimationPanel;
 	private JComboBox frapDataTimesComboBox;
 	private JTextField slowerTextField;
-	private FRAPData initFRAPData;
 	private JLabel immobileFractionValueJLabel;
 	private JTextField monitorBleachRateTextField;
 	private JTextField mobileFractionTextField;
 	private JTextField diffusionRateTextField;
-	private static final String PARAM_EST_EQUATION_STRING = "FRAP Model Parameter Estimation Equation";
-	private static final String PLOT_TITLE_STRING = "Plot of average data intensity at each timepoint within the 'bleach' ROI -and- Plot of estimation fit";
+//	private static final String PARAM_EST_EQUATION_STRING = "FRAP Model Parameter Estimation Equation";
+//	private static final String PLOT_TITLE_STRING = "Plot of average data intensity at each timepoint within the 'bleach' ROI -and- Plot of estimation fit";
 	
 	public FRAPParametersPanel() {
 		super();
@@ -325,6 +304,11 @@ public class FRAPParametersPanel extends JPanel {
 		
 	}
 
+	public void changeCoreFRAPModelParameters(String diffusionRateString,String MobileFractionString,String monitorBeachRateString){
+		diffusionRateTextField.setText(diffusionRateString);
+		monitorBleachRateTextField.setText(monitorBeachRateString);
+		mobileFractionTextField.setText(MobileFractionString);
+	}
 	public FrapChangeInfo createCompleteFRAPChangeInfo(FRAPStudyPanel.SavedFrapModelInfo savedFrapModelInfo,
 			boolean bCellROISame,boolean bBleachROISame,boolean bBackgroundROISame,boolean bROISameSize){
 		return new FrapChangeInfo(
