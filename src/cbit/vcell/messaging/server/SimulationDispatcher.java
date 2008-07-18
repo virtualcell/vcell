@@ -28,6 +28,7 @@ import cbit.vcell.messaging.JmsClientMessaging;
 import cbit.vcell.messaging.SimulationDispatcherMessaging;
 import cbit.vcell.messaging.MessageConstants;
 import cbit.vcell.messaging.JmsSession;
+import cbit.vcell.messaging.MessageConstants.ServiceType;
 import cbit.vcell.messaging.admin.ManageUtils;
 import cbit.vcell.messaging.admin.ServiceInstanceStatus;
 import cbit.vcell.messaging.db.SimulationJobStatus;
@@ -67,7 +68,7 @@ public class SimulationDispatcher extends AbstractJmsServiceProvider {
  */
 public SimulationDispatcher(int serviceOrdinal, String logdir) throws Exception {	
 	serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID().toString(), 
-			MessageConstants.SERVICETYPE_DISPATCH_VALUE, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);	
+			ServiceType.DISPATCH, serviceOrdinal, ManageUtils.getHostName(), new Date(), true);	
 	initLog(logdir);
 
 	log = new cbit.vcell.server.StdoutSessionLog(serviceInstanceStatus.getID());

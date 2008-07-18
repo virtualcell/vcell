@@ -12,14 +12,14 @@ import cbit.vcell.messaging.JmsUtils;
 public class SimDataServer extends JmsRpcServer {
 	private RpcDataServerImpl rpcDataServerImpl = null;
 	private static String filter = "(" + MESSAGE_TYPE_PROPERTY + "='" + MESSAGE_TYPE_RPC_SERVICE_VALUE  + "') AND (" 
-		+ SERVICE_TYPE_PROPERTY + "='" + SERVICETYPE_DATA_VALUE + "')";	
+		+ SERVICE_TYPE_PROPERTY + "='" + ServiceType.DATA.getName() + "')";	
 
 /**
  * Scheduler constructor comment.
  */
 public SimDataServer(int serviceOrdinal, boolean bExportOnly, String logdir) throws Exception {
-	super(bExportOnly ? SERVICETYPE_DATAEXPORT_VALUE : SERVICETYPE_DATA_VALUE, serviceOrdinal, JmsUtils.getQueueSimDataReq(), 
-		filter + " AND (" + SERVICETYPE_DATAEXPORT_VALUE + (bExportOnly ? " is NOT NULL)" : " is NULL)"), logdir);	
+	super(bExportOnly ? ServiceType.DATAEXPORT : ServiceType.DATA, serviceOrdinal, JmsUtils.getQueueSimDataReq(), 
+		filter + " AND (" + ServiceType.DATAEXPORT.getName() + (bExportOnly ? " is NOT NULL)" : " is NULL)"), logdir);	
 }
 
 

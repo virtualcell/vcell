@@ -1,4 +1,6 @@
 package cbit.rmi.event;
+import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.VCSimulationIdentifier;
 
 /**
@@ -18,20 +20,7 @@ public class WorkerEvent extends MessageEvent {
 	private Double timePoint = null;
 	private java.lang.String eventMessage = null;
 
-/**
- * Insert the method's description here.
- * Creation date: (12/31/2003 12:53:34 PM)
- */
-public WorkerEvent(Object source, VCSimulationIdentifier simId0, int jobIndex0, int eventType0, String hostName0, int taskID0, Double progress0, Double timePoint0) {
-	this(source, simId0, jobIndex0, eventType0, hostName0, taskID0, progress0, timePoint0, null);
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (12/31/2003 12:53:34 PM)
- */
-public WorkerEvent(Object source, VCSimulationIdentifier simId0, int jobIndex0, int eventType0, String hostName0, int taskID0, Double progress0, Double timePoint0, String arg_eventMessage) {
+public WorkerEvent(int eventType0, Object source, VCSimulationIdentifier simId0, int jobIndex0, String hostName0, int taskID0, Double progress0, Double timePoint0, String arg_eventMessage) {
 	super(source, new MessageSource(source, cbit.vcell.solver.Simulation.createSimulationID(simId0.getSimulationKey())), new MessageData(new Double[] {progress0, timePoint0}));	
 	eventType = eventType0;
 	vcSimulationIdentifier = simId0;
@@ -43,15 +32,21 @@ public WorkerEvent(Object source, VCSimulationIdentifier simId0, int jobIndex0, 
 	eventMessage = arg_eventMessage;
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (12/31/2003 12:53:34 PM)
- */
-public WorkerEvent(Object source, VCSimulationIdentifier simId0, int jobIndex0, int eventType0, String hostName0, int taskID0, String message) {
-	this(source, simId0, jobIndex0, eventType0, hostName0, taskID0, null, null, message);
+public WorkerEvent(int eventType0, Object source, SimulationJob simJob, String hostName0, String message) {
+	this(eventType0, source, simJob.getVCDataIdentifier().getVcSimID(), simJob.getJobIndex(), hostName0, 0, null, null, message);
 }
 
+public WorkerEvent(int eventType0, Object source, SimulationJob simJob, String hostName0, Double progress0, Double timePoint0) {
+	this(eventType0, source, simJob.getVCDataIdentifier().getVcSimID(), simJob.getJobIndex(), hostName0, 0, progress0, timePoint0, null);
+}
+
+public WorkerEvent(int eventType0, Object source, SimulationTask simTask, String hostName0, Double progress0, Double timePoint0) {
+	this(eventType0, source, simTask.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), simTask.getSimulationJob().getJobIndex(), hostName0, simTask.getTaskID(), progress0, timePoint0, null);
+}
+
+public WorkerEvent(int eventType0, Object source, SimulationTask simTask, String hostName0, String message) {
+	this(eventType0, source, simTask.getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), simTask.getSimulationJob().getJobIndex(), hostName0, simTask.getTaskID(), null, null, message);
+}
 
 /**
  * Insert the method's description here.

@@ -3,7 +3,8 @@ import java.sql.*;
 import cbit.sql.KeyValue;
 import java.util.ArrayList;
 import java.util.List;
-import cbit.vcell.messaging.admin.ManageConstants;
+
+import cbit.vcell.messaging.MessageConstants.ServiceType;
 import cbit.vcell.messaging.admin.ServiceStatus;
 
 /**
@@ -65,10 +66,10 @@ public void deleteServiceStatus(Connection con, ServiceStatus serviceStatus, Key
  * @param user java.lang.String
  * @param imageName java.lang.String
  */
-public ServiceStatus getServiceStatus(Connection con, String serverID, String type, int ordinal, boolean lockRowForUpdate) throws SQLException {
+public ServiceStatus getServiceStatus(Connection con, String serverID, ServiceType type, int ordinal, boolean lockRowForUpdate) throws SQLException {
 	String sql = "select * from " + serviceTable.getTableName() + " where "	
 		+ serviceTable.serverID.getQualifiedColName() + "='" + serverID + "'" 
-		+ " AND " + serviceTable.type.getQualifiedColName() + "='" + type + "'"
+		+ " AND " + serviceTable.type.getQualifiedColName() + "='" + type.getName() + "'"
 		+ " AND " + serviceTable.ordinal.getQualifiedColName() + "=" + ordinal;
 		
 	if (lockRowForUpdate){

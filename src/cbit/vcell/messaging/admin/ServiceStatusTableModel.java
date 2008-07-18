@@ -2,6 +2,8 @@ package cbit.vcell.messaging.admin;
 
 import java.util.*;
 
+import cbit.vcell.messaging.MessageConstants.ServiceType;
+
 /**
  * Insert the type's description here.
  * Creation date: (8/19/2003 2:24:48 PM)
@@ -27,7 +29,9 @@ public Class<?> getColumnClass(int columnIndex) {
 		return Date.class;
 	} else if (columnIndex == 2 || columnIndex == 4) {
 		return Number.class;
-	} else {		
+	} else if (columnIndex == 1) {
+		return ServiceType.class;
+	} else {
 		return String.class;
 	}
 }
@@ -47,10 +51,8 @@ public Object getValueAt(int row, int col) {
  * Creation date: (8/18/2003 8:24:43 AM)
  * @param status cbit.vcell.messaging.admin.PerformanceStatus
  */
-public synchronized void insert(List serviceList) {
-	Iterator iter = serviceList.iterator();
-	while (iter.hasNext()) {
-		Object obj = iter.next();
+public synchronized void insert(List<Object> serviceList) {
+	for (Object obj : serviceList) {
 		if (!rows.contains(obj)) {
 			rows.add(obj);
 		}

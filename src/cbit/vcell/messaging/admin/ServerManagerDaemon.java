@@ -11,6 +11,7 @@ import cbit.sql.KeyFactory;
 import cbit.util.ExecutableException;
 import cbit.vcell.server.*;
 import cbit.vcell.messaging.*;
+import cbit.vcell.messaging.MessageConstants.ServiceType;
 import cbit.vcell.messaging.db.UpdateSynchronizationException;
 import cbit.vcell.messaging.db.VCellServerID;
 import cbit.vcell.modeldb.AdminDBTopLevel;
@@ -43,7 +44,7 @@ public class ServerManagerDaemon implements ControlTopicListener {
 public ServerManagerDaemon() throws IOException, SQLException, javax.jms.JMSException {
 	super();	
 	
-	serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID().toString(), SERVICE_TYPE_SERVERMANAGER, 0, ManageUtils.getHostName(), new Date(), true); 
+	serviceInstanceStatus = new ServiceInstanceStatus(VCellServerID.getSystemServerID().toString(), ServiceType.SERVERMANAGER, 0, ManageUtils.getHostName(), new Date(), true); 
 	log = new StdoutSessionLog(serviceInstanceStatus.getID());
 	try {
 		conFactory = new cbit.sql.OraclePoolingConnectionFactory(log);
@@ -186,10 +187,10 @@ private String submit2PBS(ServiceStatus service) throws IOException, ExecutableE
 	
 	String executable = PropertyLoader.getRequiredProperty(PropertyLoader.serviceSubmitScript);
 	
-	String type = service.getServiceSpec().getType();
+	ServiceType type = service.getServiceSpec().getType();
 	int ordinal = service.getServiceSpec().getOrdinal();
 	String cmdArguments = VCellServerID.getSystemServerID().toString().toLowerCase() + " " 
-		+ type + " " + ordinal + " " + service.getServiceSpec().getMemoryMB(); // site, type, ordinal, memory
+		+ type.getName() + " " + ordinal + " " + service.getServiceSpec().getMemoryMB(); // site, type, ordinal, memory
 	
 	File sub_file = File.createTempFile("service", ".pbs.sub");
 	log.print("PBS sub file  for service " + service.getServiceSpec() + " is " + sub_file.getAbsolutePath());

@@ -1,16 +1,9 @@
 package cbit.vcell.messaging.server;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.solver.ode.gui.*;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.server.PermissionException;
-import cbit.vcell.server.ObjectNotFoundException;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.server.User;
-import cbit.vcell.solvers.SimExecutionException;
-import cbit.vcell.messaging.db.SimulationJobStatus;
+import cbit.vcell.messaging.MessageConstants.ServiceType;
 import cbit.vcell.messaging.JmsClientMessaging;
-import cbit.vcell.messaging.MessageConstants;
 import cbit.vcell.messaging.JmsUtils;
 
 /**
@@ -40,7 +33,7 @@ public RpcSimServerProxy(User argUser, JmsClientMessaging clientMessaging, cbit.
  */
 private Object rpc(String methodName, Object[] args) throws DataAccessException {
 	try {
-		return rpc(cbit.vcell.messaging.MessageConstants.SERVICETYPE_DISPATCH_VALUE, methodName, args, true);
+		return rpc(ServiceType.DISPATCH, methodName, args, true);
 	} catch (DataAccessException ex) {
 		log.exception(ex);
 		throw ex;
@@ -61,7 +54,7 @@ private Object rpc(String methodName, Object[] args) throws DataAccessException 
  */
 private void rpcNoWait(String methodName, Object[] args) throws DataAccessException {
 	try {
-		rpc(cbit.vcell.messaging.MessageConstants.SERVICETYPE_DISPATCH_VALUE, methodName, args, false);
+		rpc(ServiceType.DISPATCH, methodName, args, false);
 	} catch (DataAccessException ex) {
 		log.exception(ex);
 		throw ex;

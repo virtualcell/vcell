@@ -2,6 +2,8 @@ package cbit.vcell.messaging.admin;
 
 import java.util.Date;
 
+import cbit.vcell.messaging.MessageConstants.ServiceType;
+
 /**
  * Insert the type's description here.
  * Creation date: (8/19/2003 10:46:32 AM)
@@ -21,9 +23,12 @@ public synchronized boolean contains(ServiceSpec serviceSpec) {
 
 
 public Class<?> getColumnClass(int columnIndex) {
-	if (columnIndex == 0 || columnIndex == 1 || columnIndex == 3) {
+	if (columnIndex == 0 || columnIndex == 3) {
 		return String.class;
 	}		
+	if (columnIndex == 1) {
+		return ServiceType.class;
+	}
 	if (columnIndex == 5) {
 		return Boolean.class;
 	}

@@ -1,5 +1,6 @@
 package cbit.vcell.messaging.server;
 
+import cbit.vcell.messaging.MessageConstants.ServiceType;
 import cbit.vcell.server.User;
 
 /**
@@ -10,7 +11,7 @@ import cbit.vcell.server.User;
 public class RpcRequest implements java.io.Serializable {
 	private User user = null;
 	private Object[] args = null;
-	private String requestedServiceType = null; // refer to "databaseServer", "dataServer", "***";
+	private ServiceType requestedServiceType = null; // refer to "databaseServer", "dataServer", "***";
 	private String methodName = null;	
 /**
  * SimpleTask constructor comment.
@@ -18,9 +19,9 @@ public class RpcRequest implements java.io.Serializable {
  * @param argEstimatedSizeMB double
  * @param argUserid java.lang.String
  */
-public RpcRequest(User user0, String taskType, String methodName0, Object[] arglist) {
+public RpcRequest(User user0, ServiceType st, String methodName0, Object[] arglist) {
 	user = user0;
-	this.requestedServiceType = taskType;
+	this.requestedServiceType = st;
 	methodName = methodName0;
 	this.args = arglist;	
 }
@@ -45,7 +46,7 @@ public String getMethodName() {
  * Creation date: (12/30/2003 9:16:45 AM)
  * @return java.lang.String
  */
-public java.lang.String getRequestedServiceType() {
+public ServiceType getRequestedServiceType() {
 	return requestedServiceType;
 }
 /**

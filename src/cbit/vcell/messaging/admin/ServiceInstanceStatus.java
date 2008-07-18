@@ -1,20 +1,20 @@
 package cbit.vcell.messaging.admin;
 
-import static cbit.vcell.messaging.admin.ManageConstants.SERVICE_STARTUP_TYPES;
 import java.io.Serializable;
 import java.util.Date;
 
 import cbit.util.Matchable;
+import cbit.vcell.messaging.MessageConstants.ServiceType;
 
 public class ServiceInstanceStatus implements Matchable, Serializable, ComparableObject {
 	private String serverID;
-	private String type;
+	private ServiceType type;
 	private int ordinal;
 	private Date startDate;
 	private String hostname;	
 	private boolean bRunning = false;
 		
-	public ServiceInstanceStatus(String sID, String t, int o, String h, Date d, boolean br) {
+	public ServiceInstanceStatus(String sID, ServiceType t, int o, String h, Date d, boolean br) {
 		super();
 		this.serverID = sID;
 		this.type = t;
@@ -32,7 +32,7 @@ public class ServiceInstanceStatus implements Matchable, Serializable, Comparabl
 		return serverID;
 	}
 
-	public String getType() {
+	public ServiceType getType() {
 		return type;
 	}
 	

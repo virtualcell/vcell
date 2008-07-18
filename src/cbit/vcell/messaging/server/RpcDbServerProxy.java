@@ -14,6 +14,7 @@ import cbit.vcell.server.UserRegistrationResults;
 import cbit.vcell.messaging.JmsClientMessaging;
 import cbit.vcell.modeldb.*;
 import cbit.vcell.messaging.JmsUtils;
+import cbit.vcell.messaging.MessageConstants.ServiceType;
 
 /**
  * Insert the type's description here.
@@ -575,7 +576,7 @@ public void replacePreferences(cbit.util.Preference[] preferences) throws cbit.v
  */
 private Object rpc(String methodName, Object[] args) throws cbit.vcell.server.ObjectNotFoundException, DataAccessException {
 	try {
-		return rpc(cbit.vcell.messaging.MessageConstants.SERVICETYPE_DB_VALUE, methodName, args, true);
+		return rpc(ServiceType.DB, methodName, args, true);
 	} catch (cbit.vcell.server.ObjectNotFoundException ex) {
 		log.exception(ex);
 		throw ex;

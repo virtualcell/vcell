@@ -1,8 +1,6 @@
 package cbit.vcell.messaging.server;
 import cbit.vcell.messaging.JmsClientMessaging;
-import cbit.vcell.server.ObjectNotFoundException;
-import cbit.vcell.server.DataAccessException;
-import java.sql.SQLException;
+import cbit.vcell.messaging.MessageConstants.ServiceType;
 import cbit.vcell.server.User;
 import cbit.vcell.server.SessionLog;
 import javax.jms.JMSException;
@@ -38,7 +36,7 @@ protected AbstractRpcServerProxy(User argUser, JmsClientMessaging clientMessagin
  * @param args java.lang.Object[]
  * @exception java.lang.Exception The exception description.
  */
-public Object rpc(String serviceType, String methodName, Object[] args, boolean returnRequired) throws Exception {
+public Object rpc(ServiceType serviceType, String methodName, Object[] args, boolean returnRequired) throws Exception {
 	return rpc(serviceType, methodName, args, returnRequired, null, null);
 }
 
@@ -51,7 +49,7 @@ public Object rpc(String serviceType, String methodName, Object[] args, boolean 
  * @param args java.lang.Object[]
  * @exception java.lang.Exception The exception description.
  */
-public Object rpc(String serviceType, String methodName, Object[] args, boolean returnRequired, String[] specialProperties, Object[] specialValues) throws Exception {
+public Object rpc(ServiceType serviceType, String methodName, Object[] args, boolean returnRequired, String[] specialProperties, Object[] specialValues) throws Exception {
 	RpcRequest request = new RpcRequest(user, serviceType, methodName, args);
 	return clientMessaging.rpc(request, queueName, returnRequired, specialProperties, specialValues);
 }

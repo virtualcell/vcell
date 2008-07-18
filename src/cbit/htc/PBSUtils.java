@@ -108,7 +108,7 @@ public static int getJobStatus(String jobid) {
 		exe.start();
 		
 		String output = exe.getStdoutString();
-		int index = output.indexOf("Job id");
+		int index = output.indexOf(jobid);
 		if (index < 0) {
 			return iStatus;
 		}		
@@ -119,11 +119,8 @@ public static int getJobStatus(String jobid) {
 		----------------  ---------------- ----------------  -------- - -----
 		65.dll-2-1-1      test1.sub        fgao              00:00:00 E workq
 		*/		
-		StringTokenizer st = new StringTokenizer(output, "\n");
-		st.nextToken();
-		st.nextToken();
-		String token = st.nextToken();
-		st = new StringTokenizer(token, " ");
+		StringTokenizer st = new StringTokenizer(output, " ");
+		String token = "";
 		for (int i = 0; i < 5; i ++) {
 			token = st.nextToken();
 		}
@@ -146,7 +143,47 @@ public static int getJobStatus(String jobid) {
  * @param jobid java.lang.String
  */
 public static String getPendingReason(String jobid) {
-	return "";
+	String pendingReason = "unknown pending reason";
+	Executable exe = null;
+	
+	try {
+		String cmd = JOB_CMD_STATUS + " -s " + jobid;
+		exe = new Executable(cmd);
+		exe.start();
+		
+		String output = exe.getStdoutString();
+		int index = output.indexOf(jobid);
+		if (index < 0) {
+			return pendingReason;
+		}	
+		output = output.substring(index);
+		
+		/*
+		 * old version
+		Job id            Name             User              Time Use S Queue
+		----------------  ---------------- ----------------  -------- - -----
+		65.dll-2-1-1      test1.sub        fgao              00:00:00 E workq
+		*/	
+		
+		/*
+		 * new versrion
+		pbssrv: 
+            														Req'd  Req'd   Elap
+		Job ID          Username Queue    Jobname    SessID NDS TSK Memory Time  S Time
+		--------------- -------- -------- ---------- ------ --- --- ------ ----- - -----
+		20.pbssrv       fgao     workq    STDIN       11835   1   1    --    --  E 00:00
+			--
+		*/
+
+		StringTokenizer st = new StringTokenizer(output, "\n");
+		st.nextToken();
+		while (st.hasMoreTokens()) {		
+			pendingReason += st.nextToken() + "\n";
+		}
+	} catch (ExecutableException ex) {
+		ex.printStackTrace(System.out);
+	}
+	return pendingReason;
 }
 
 
@@ -180,12 +217,13 @@ public static void main(String[] args) {
 	try {		
 		PropertyLoader.loadProperties();
 		
-		String jobid = "166"; //PBSUtils.submitJob(null, "D:\\PBSPro_Jobs\\test3.sub", "dir", "");
+		String jobid = "22.pbssrv"; //PBSUtils.submitJob(null, "D:\\PBSPro_Jobs\\test3.sub", "dir", "");
 		int status = PBSUtils.getJobStatus(jobid);
 		int code = PBSUtils.getJobExitCode(jobid);
 		System.out.println("jobid=" + jobid);
 		System.out.println("status=" + PBS_JOB_STATUS[status]);
 		System.out.println("exitcode=" + code + ":" + PBS_JOB_EXEC_STATUS[-code] + "]");
+		System.out.println("pendingreason=" + getPendingReason(jobid));
 	} catch (Exception ex) {
 		ex.printStackTrace();
 	}

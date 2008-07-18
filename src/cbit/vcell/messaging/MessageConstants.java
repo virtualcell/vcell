@@ -38,31 +38,49 @@ public interface MessageConstants {
 	public static final String COMPUTE_RESOURCE_PROPERTY	= "ComputeResource";	
 	
 	public static final String SOLVER_TYPE_PROPERTY	= "SolverType";
-	public static final String SOLVER_TYPE_JAVA_PROPERTY = "JavaSolver";
-	public static final String SOLVER_TYPE_HTC_PROPERTY	= "HTCSolver";	
+	public static final String SOLVER_TYPE_ODE_PROPERTY = "OdeSolver";
+	public static final String SOLVER_TYPE_PDE_PROPERTY	= "PdeSolver";	
 
-	public static final int LSF_WORKER = 0;
-	public static final int JAVA_WORKER = 1;
-	public static final int LSFJAVA_WORKER = 2;
-	public static final int NOHTC_WORKER = 3;	
-	public static final int PBS_WORKER = 4;	
-	public static final int PBSJAVA_WORKER = 5;
-	public static final int CONDOR_WORKER = 6;
-	public static final int CONDORJAVA_WORKER = 7;
+	public enum WorkerType { ODE_WORKER, PDE_WORKER, PBS_WORKER, /*LSF_WORKER, CONDOR_WORKER,*/ PBSODE_WORKER, /*LSFODE_WORKER, CONDORODE_WORKER,*/ LOCAL_WORKER,  };
 	
 	public static final String HOSTNAME_PROPERTY		= "HostName";
 	public static final String SERVICE_TYPE_PROPERTY	= "ServiceType";
+	
+	public enum ServiceType { 
+		DB ("Db"),	
+		DATA ("Data"),
+		DATAEXPORT ("Exprt"),
+		DISPATCH ("Dsptch"),
+		PBSCOMPUTE ("PbsC"), 	// high throughput computing only, include LSF, PBS, Condor
+		ODECOMPUTE ("OdeC"),  // Ode only
+		PDECOMPUTE ("PdeC"),  // local Pde only
+		PBSODECOMPUTE ("PbsOC"),	// high throughput computing and Ode, include LSF, PBS, Condor
+		LOCALCOMPUTE ("LclC"),   // local pde and ode
+		SERVERMANAGER ("ServerManager");
 		
-	public static final String SERVICETYPE_DB_VALUE	= "Db";
-	public static final String SERVICETYPE_DATA_VALUE = "Data";
-	public static final String SERVICETYPE_DATAEXPORT_VALUE = "Exprt";
-	public static final String SERVICETYPE_DISPATCH_VALUE = "Dsptch";
-	public static final String SERVICETYPE_HTCCOMPUTE_VALUE = "HtcC";	// high throughput computing, include LSF, PBS, Condor
-	public static final String SERVICETYPE_ODECOMPUTE_VALUE = "OdeC";
-	public static final String SERVICETYPE_LOCALCOMPUTE_VALUE = "LclC";
+		private final String typeName;
+		ServiceType(String tn) {
+			typeName = tn;
+		}
+		
+		public String getName() {
+			return typeName;
+		}
 
-	public static final String[] AllServiceTypes = {SERVICETYPE_DB_VALUE, SERVICETYPE_DATA_VALUE, SERVICETYPE_DATAEXPORT_VALUE, 
-		SERVICETYPE_DISPATCH_VALUE,	SERVICETYPE_HTCCOMPUTE_VALUE, SERVICETYPE_ODECOMPUTE_VALUE, SERVICETYPE_LOCALCOMPUTE_VALUE};	
+		@Override
+		public String toString() {
+			return typeName;
+		}
+		
+		public static ServiceType fromName(String name) {
+			for (ServiceType st : ServiceType.values()) {
+				if (st.getName().equals(name)) {
+					return st;
+				}
+			}			
+			throw new RuntimeException(name + " is not a legitiamte service type");
+		}
+	}
 
 	public static final int PRIORITY_LOW = 0;
 	public static final int PRIORITY_DEFAULT = 5;

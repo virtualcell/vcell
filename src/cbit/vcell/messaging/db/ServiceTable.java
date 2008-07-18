@@ -1,4 +1,5 @@
 package cbit.vcell.messaging.db;
+import cbit.vcell.messaging.MessageConstants.ServiceType;
 import cbit.vcell.messaging.admin.ServiceSpec;
 import cbit.vcell.messaging.admin.ServiceStatus;
 import cbit.sql.*;
@@ -74,7 +75,7 @@ public ServiceStatus getServiceStatus(ResultSet rset) throws SQLException {
 	if (rset.wasNull()) {
 		parsedPBSJobId = null;
 	}
-	ServiceStatus serviceStatus = new ServiceStatus(new ServiceSpec(parsedServerID, parsedType, parsedOrdinal, parsedStartupType, parsedMemory), 
+	ServiceStatus serviceStatus = new ServiceStatus(new ServiceSpec(parsedServerID, ServiceType.fromName(parsedType), parsedOrdinal, parsedStartupType, parsedMemory), 
 			parsedDate, parsedStatus, parsedStatusMsg, parsedPBSJobId);
 	
 	return serviceStatus;

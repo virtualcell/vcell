@@ -5,6 +5,7 @@ import java.awt.Color;
 import javax.swing.*;
 
 import cbit.vcell.messaging.MessageConstants;
+import cbit.vcell.messaging.MessageConstants.ServiceType;
 import cbit.vcell.messaging.db.VCellServerID;
 
 /**
@@ -302,8 +303,10 @@ private javax.swing.JComboBox getTypeCombo() {
 	if (ivjTypeCombo == null) {
 		try {
 			ivjTypeCombo = new javax.swing.JComboBox();
-			for (int i = 0; i < MessageConstants.AllServiceTypes.length; i ++) {
-				ivjTypeCombo.addItem(MessageConstants.AllServiceTypes[i]);
+			for (ServiceType st : ServiceType.values()) {
+				if (!st.equals(ServiceType.SERVERMANAGER)) {
+					ivjTypeCombo.addItem(st);
+				}
 			}			
 			ivjTypeCombo.setSelectedIndex(-1);
 			// user code begin {1}
@@ -384,7 +387,7 @@ private javax.swing.JPanel getMainPanel() {
  */
 public ServiceSpec getServiceSpec() {
 	String site = getSiteField().getText();
-	String stype = (String)getTypeCombo().getSelectedItem();
+	ServiceType stype = (ServiceType)getTypeCombo().getSelectedItem();
 	int ordinal = 0;
 	try {
 		ordinal = Integer.parseInt("" + getOrdinalCombo().getSelectedItem());
