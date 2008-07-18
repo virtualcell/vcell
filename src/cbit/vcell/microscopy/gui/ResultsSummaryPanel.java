@@ -53,6 +53,8 @@ import cbit.vcell.microscopy.gui.FRAPInterpolationPanel;
 
 public class ResultsSummaryPanel extends JPanel {
 	
+	private FRAPStudyPanel.NewFRAPFromParameters newFRAPFromParameters;
+	
 	private final JRadioButton plotFRAPSimResultsRadioButton;
 	private final JRadioButton plotDerivedSimResultsRadioButton;
 	private ButtonGroup plotButtonGroup = new ButtonGroup();
@@ -170,6 +172,7 @@ public class ResultsSummaryPanel extends JPanel {
 		add(diffusionRateAndLabel, gridBagConstraints_3);
 
 		final JLabel standardErrorseLabel = new JLabel();
+		standardErrorseLabel.setFont(new Font("", Font.PLAIN, 14));
 		standardErrorseLabel.setText("FRAP Simulation Summary: Standard Error (SE) including all Times of Normalized ROI Average  (Experimental vs. Simulation Data)");
 		final GridBagConstraints gridBagConstraints_9 = new GridBagConstraints();
 		gridBagConstraints_9.gridy = 1;
@@ -266,6 +269,7 @@ public class ResultsSummaryPanel extends JPanel {
 		add(interactiveAnalysisUsingLabel, gridBagConstraints_6);
 
 		final JLabel interactiveAnalysisUsingLabel_1 = new JLabel();
+		interactiveAnalysisUsingLabel_1.setFont(new Font("", Font.PLAIN, 14));
 		interactiveAnalysisUsingLabel_1.setText("Interactive Analysis using FRAP Simulation Results (Enter/Adjust FRAP Model Parameters)");
 		final GridBagConstraints gridBagConstraints_10 = new GridBagConstraints();
 		gridBagConstraints_10.gridy = 4;
@@ -276,65 +280,12 @@ public class ResultsSummaryPanel extends JPanel {
 		interpolationPanel.addPropertyChangeListener(
 				new PropertyChangeListener(){
 					public void propertyChange(PropertyChangeEvent evt) {
-						if(evt.getSource() == interpolationPanel &&
-							(evt.getPropertyName().equals(FRAPInterpolationPanel.PROPERTY_CHANGE_OPTIMIZER_VALUE)/* ||
-							evt.getPropertyName().equals(FRAPInterpolationPanel.PROPERTY_CHANGE_OPTIMIZER_BESTFIT)*/)){
-							
-							plotDerivedSimulationResults(/*evt.getPropertyName().equals(FRAPInterpolationPanel.PROPERTY_CHANGE_OPTIMIZER_BESTFIT)*/);
-//							try{
-//								RoiType argROIType = null;
-//								String description = null;
-//								int numROITypes = (argROIType == null?ROI.RoiType.values().length:1);
-//								ODESolverResultSet fitOdeSolverResultSet = new ODESolverResultSet();
-//								fitOdeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription("t"));
-//								for (int j = 0; j < numROITypes; j++) {
-//									RoiType currentROIType = (argROIType == null?ROI.RoiType.values()[j]:argROIType);
-//									String name = (description == null?/*"sim D="+diffusionRates[diffusionRateIndex]+"::"*/"":description)+currentROIType.toString();
-//									fitOdeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription(name));
-//								}
-//								//
-//								// populate time
-//								//
-//								double[] shiftedSimTimes = frapOptData.getReducedExpTimePoints();
-//								int startIndexRecovery = Integer.parseInt(frapOptData.getExpFrapStudy().getFrapModelParameters().startIndexForRecovery);
-//								for (int j = 0; j < shiftedSimTimes.length; j++) {
-//									double[] row = new double[numROITypes+1];
-//									row[0] = shiftedSimTimes[j]+
-//										frapOptData.getExpFrapStudy().getFrapData().getImageDataset().getImageTimeStamps()[startIndexRecovery];
-//									fitOdeSolverResultSet.addRow(row);
-//								}
-//								//
-//								// populate values
-//								//
-//								double[][] currentOptFitData = null;
-//								if(evt.getPropertyName().equals(FRAPInterpolationPanel.PROPERTY_CHANGE_OPTIMIZER_VALUE)){
-//									currentOptFitData = interpolationPanel.getCurrentFitData();
-//								}else{
-//									currentOptFitData = interpolationPanel.getBestFitData();
-//								}
-//								for (int j = 0; j < numROITypes; j++) {
-////									RoiType currentROIType = (argROIType == null?FRAPStudy.SpatialAnalysisResults.ORDERED_ROITYPES[j]:argROIType);
-//									double[] values = currentOptFitData[j];
-////									double[] values = curveHash.get(new FRAPStudy.CurveInfo(analysisParameters[analysisParametersIndex],currentROIType)); // get simulated data for this ROI
-//									for (int k = 0; k < values.length; k++) {
-//										fitOdeSolverResultSet.setValue(k, j+1, values[k]);
-//									}
-//								}
-//								
-//								DataSource[] selectedRowDataSourceArr = allDataHash.get(summaryData[0][0]);
-//								ReferenceData referenceData =
-//									(ReferenceData)selectedRowDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_EXPDATASOURCE].getSource();
-//								final DataSource expDataSource = new DataSource(referenceData,"exp");
-//								final DataSource simDataSource = new DataSource(fitOdeSolverResultSet, "opt");
-//								DataSource[] newDataSourceArr = new DataSource[2];
-//								newDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_EXPDATASOURCE] = expDataSource;
-//								newDataSourceArr[FRAPStudy.SpatialAnalysisResults.ARRAY_INDEX_SIMDATASOURCE] = simDataSource;
-//								multisourcePlotPane.setDataSources(newDataSourceArr);
-//								multisourcePlotPane.selectAll();
-//							}catch(Exception e2){
-//								e2.printStackTrace();
-//								DialogUtils.showErrorDialog("Error graphing Optimizer data "+e2.getMessage());
-//							}
+						if(evt.getSource() == interpolationPanel){
+							if((evt.getPropertyName().equals(FRAPInterpolationPanel.PROPERTY_CHANGE_OPTIMIZER_VALUE))){
+								plotDerivedSimulationResults();
+							}else if(evt.getPropertyName().equals(FRAPInterpolationPanel.PROPERTY_CHANGE_RUNSIM)){
+								newFRAPFromParameters.create(interpolationPanel.getCurrentParameters());
+							}
 						}
 					}
 				}
@@ -581,11 +532,12 @@ public class ResultsSummaryPanel extends JPanel {
 		return tableModel;
 	}
 	
-	public void setData(
+	public void setData(FRAPStudyPanel.NewFRAPFromParameters newFRAPFromParameters,
 			final FRAPOptData frapOptData,
 			FRAPStudy.SpatialAnalysisResults spatialAnalysisResults,
 			final double[] frapDataTimeStamps,int startIndexForRecovery,final Double modelDiffusionRate) throws Exception{
 
+		this.newFRAPFromParameters = newFRAPFromParameters;
 		this.frapOptData = frapOptData;
 		
 		allDataHash =
@@ -596,6 +548,7 @@ public class ResultsSummaryPanel extends JPanel {
 
 		SwingUtilities.invokeAndWait(new Runnable(){public void run(){
 			try{
+				plotFRAPSimResultsRadioButton.doClick();
 				interpolationPanel.init(frapOptData);
 				table.setModel(getTableModel(summaryReportColumnNames,tableData));
 				sortColumn(FRAPStudy.SpatialAnalysisResults.COLUMN_INDEX_DIFFUSION_RATE,false);
@@ -609,7 +562,8 @@ public class ResultsSummaryPanel extends JPanel {
 						}
 					}
 					if(matchingRow != -1){
-						setTableCellSelection(matchingRow, new int[] {FRAPStudy.SpatialAnalysisResults.ANALYSISPARAMETERS_COLUMNS_COUNT});
+						setTableCellSelection(matchingRow,
+							new int[] {FRAPStudy.SpatialAnalysisResults.COLUMN_INDEX_DIFFUSION_RATE});
 					}else{
 						DialogUtils.showErrorDialog("Summary Table couldn't find model diffusion rate "+modelDiffusionRate);
 					}

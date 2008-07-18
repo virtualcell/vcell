@@ -41,9 +41,8 @@ public class FRAPInterpolationPanel extends JPanel {
 
 	private boolean B_HOLD_FIRE = false;
 	
-//	public static final String PROPERTY_CHANGE_OPTIMIZER_BESTFIT = "PROPERTY_CHANGE_OPTIMIZER_BESTFIT";
-
 	public static final String PROPERTY_CHANGE_OPTIMIZER_VALUE = "PROPERTY_CHANGE_OPTIMIZER_VALUE";
+	public static final String PROPERTY_CHANGE_RUNSIM = "PROPERTY_CHANGE_RUNSIM";
 	
 	private final ActionListener OPTIMIZER_VALUE_ACTION_LISTENER =
 		new ActionListener() {
@@ -195,8 +194,11 @@ public class FRAPInterpolationPanel extends JPanel {
 		setLayout(gridBagLayout);
 
 		final JPanel panel = new JPanel();
-		panel.setLayout(new GridBagLayout());
+		final GridBagLayout gridBagLayout_1 = new GridBagLayout();
+		gridBagLayout_1.columnWidths = new int[] {0,7};
+		panel.setLayout(gridBagLayout_1);
 		final GridBagConstraints gridBagConstraints_15 = new GridBagConstraints();
+		gridBagConstraints_15.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_15.gridwidth = 4;
 		gridBagConstraints_15.gridy = 0;
 		gridBagConstraints_15.gridx = 0;
@@ -216,28 +218,37 @@ public class FRAPInterpolationPanel extends JPanel {
 							bestParameters[FRAPOptData.MOBILE_FRACTION_INDEX].getInitialGuess()+"",
 							bestParameters[FRAPOptData.BLEACH_WHILE_MONITOR_INDEX].getInitialGuess()+"");
 					
-					firePropertyChange(PROPERTY_CHANGE_OPTIMIZER_VALUE/*PROPERTY_CHANGE_OPTIMIZER_BESTFIT*/, null,null);
+					firePropertyChange(PROPERTY_CHANGE_OPTIMIZER_VALUE, null,null);
 				}catch(Exception e2){
 					e2.printStackTrace();
 					DialogUtils.showErrorDialog("Error setting Best Fit Parameters\n"+e2.getMessage());
 				}
 			}
 		});
-		createOptimalButton.setText("Adjust Values for Best Fit with Experimental Data");
+		createOptimalButton.setText("Set Parameters for Best Fit with Experimental Data");
 		final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
+		gridBagConstraints_8.weightx = 1;
+		gridBagConstraints_8.anchor = GridBagConstraints.WEST;
 		gridBagConstraints_8.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_8.gridy = 0;
-		gridBagConstraints_8.gridx = 1;
+		gridBagConstraints_8.gridx = 0;
 		panel.add(createOptimalButton, gridBagConstraints_8);
 
-		final JLabel interactiveAnalysisEnteradjustLabel = new JLabel();
-		interactiveAnalysisEnteradjustLabel.setFont(new Font("", Font.BOLD, 14));
-		interactiveAnalysisEnteradjustLabel.setText("Interactive Analysis:  Enter/Adjust FRAP Model Parameters");
-		final GridBagConstraints gridBagConstraints_16 = new GridBagConstraints();
-		gridBagConstraints_16.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_16.gridy = 0;
-		gridBagConstraints_16.gridx = 0;
-		panel.add(interactiveAnalysisEnteradjustLabel, gridBagConstraints_16);
+		final JButton runSimbutton = new JButton();
+		runSimbutton.setFont(new Font("", Font.BOLD, 14));
+		runSimbutton.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				firePropertyChange(PROPERTY_CHANGE_RUNSIM, null,null);
+			}
+		});
+		runSimbutton.setText("Create New FRAP Document using Current Parameter Settings...");
+		final GridBagConstraints gridBagConstraints_13 = new GridBagConstraints();
+		gridBagConstraints_13.insets = new Insets(4, 4, 4, 4);
+		gridBagConstraints_13.weightx = 1;
+		gridBagConstraints_13.anchor = GridBagConstraints.EAST;
+		gridBagConstraints_13.gridy = 0;
+		gridBagConstraints_13.gridx = 1;
+		panel.add(runSimbutton, gridBagConstraints_13);
 
 		final JLabel diffusionRateLabel = new JLabel();
 		diffusionRateLabel.setFont(new Font("", Font.BOLD, 14));
@@ -374,33 +385,43 @@ public class FRAPInterpolationPanel extends JPanel {
 
 	private void initialize(){
 		
-		Hashtable<Integer, JComponent> diffusionSliderLabelTable = new Hashtable<Integer, JComponent>();
-		diffusionRateSlider.setMinimum(0);
-		diffusionRateSlider.setMaximum(100);
-		diffusionRateSlider.setValue(50);
-		diffusionSliderLabelTable.put(0, new JLabel(FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound()+""));
-		diffusionSliderLabelTable.put(100,new JLabel(FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound()+""));
-		diffusionRateSlider.setLabelTable(null);//Kludge for WindowBuilder otherwise not display correctly
-		diffusionRateSlider.setLabelTable(diffusionSliderLabelTable);
-		
-		Hashtable<Integer, JComponent> mobileFractionSliderLabelTable = new Hashtable<Integer, JComponent>();
-		mobileFractionSlider.setMinimum(0);
-		mobileFractionSlider.setMaximum(100);
-		mobileFractionSlider.setValue(50);
-		mobileFractionSliderLabelTable.put(0, new JLabel(FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound()+""));
-		mobileFractionSliderLabelTable.put(100,new JLabel(FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound()+""));
-		mobileFractionSlider.setLabelTable(null);//Kludge for WindowBuilder otherwise not display correctly
-		mobileFractionSlider.setLabelTable(mobileFractionSliderLabelTable);
-		
-		
-		Hashtable<Integer, JComponent> bleachWhileMonitorSliderLabelTable = new Hashtable<Integer, JComponent>();
-		bleachWhileMonitorSlider.setMinimum(0);
-		bleachWhileMonitorSlider.setMaximum(100);
-		bleachWhileMonitorSlider.setValue(50);
-		bleachWhileMonitorSliderLabelTable.put(0, new JLabel(FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound()+""));
-		bleachWhileMonitorSliderLabelTable.put(100,new JLabel(FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound()+""));
-		bleachWhileMonitorSlider.setLabelTable(null);//Kludge for WindowBuilder otherwise not display correctly
-		bleachWhileMonitorSlider.setLabelTable(bleachWhileMonitorSliderLabelTable);
+		diffusionRateSlider.removeChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
+		mobileFractionSlider.removeChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
+		bleachWhileMonitorSlider.removeChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
+		try{
+			Hashtable<Integer, JComponent> diffusionSliderLabelTable = new Hashtable<Integer, JComponent>();
+			diffusionRateSlider.setMinimum(0);
+			diffusionRateSlider.setMaximum(100);
+			diffusionRateSlider.setValue(50);
+			diffusionSliderLabelTable.put(0, new JLabel(FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound()+""));
+			diffusionSliderLabelTable.put(100,new JLabel(FRAPOptData.REF_DIFFUSION_RATE_PARAM.getUpperBound()+""));
+			diffusionRateSlider.setLabelTable(null);//Kludge for WindowBuilder otherwise not display correctly
+			diffusionRateSlider.setLabelTable(diffusionSliderLabelTable);
+			
+			Hashtable<Integer, JComponent> mobileFractionSliderLabelTable = new Hashtable<Integer, JComponent>();
+			mobileFractionSlider.setMinimum(0);
+			mobileFractionSlider.setMaximum(100);
+			mobileFractionSlider.setValue(50);
+			mobileFractionSliderLabelTable.put(0, new JLabel(FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound()+""));
+			mobileFractionSliderLabelTable.put(100,new JLabel(FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound()+""));
+			mobileFractionSlider.setLabelTable(null);//Kludge for WindowBuilder otherwise not display correctly
+			mobileFractionSlider.setLabelTable(mobileFractionSliderLabelTable);
+			
+			
+			Hashtable<Integer, JComponent> bleachWhileMonitorSliderLabelTable = new Hashtable<Integer, JComponent>();
+			bleachWhileMonitorSlider.setMinimum(0);
+			bleachWhileMonitorSlider.setMaximum(100);
+			bleachWhileMonitorSlider.setValue(50);
+			bleachWhileMonitorSliderLabelTable.put(0, new JLabel(FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound()+""));
+			bleachWhileMonitorSliderLabelTable.put(100,new JLabel(FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound()+""));
+			bleachWhileMonitorSlider.setLabelTable(null);//Kludge for WindowBuilder otherwise not display correctly
+			bleachWhileMonitorSlider.setLabelTable(bleachWhileMonitorSliderLabelTable);
+		}finally{
+			diffusionRateSlider.addChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
+			mobileFractionSlider.addChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
+			bleachWhileMonitorSlider.addChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
+	
+		}
 	}
 	
 	public void init(FRAPOptData frapOptData) throws Exception{
@@ -440,7 +461,7 @@ public class FRAPInterpolationPanel extends JPanel {
 		
 		return new Parameter[]{diff, mobileFrac, bleachWhileMonitoringRate};
 	}
-	private Parameter[] getCurrentParameters(){
+	public Parameter[] getCurrentParameters(){
 		return
 			createParameterArray(
 				Double.parseDouble(diffusionRateTextField.getText()),
