@@ -3,6 +3,7 @@ package cbit.vcell.microscopy;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Vector;
@@ -12,6 +13,7 @@ import cbit.util.Issue;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.microscopy.ROI.RoiType;
+import cbit.vcell.microscopy.gui.ROIAssistPanel;
 
 /**
  */
@@ -113,6 +115,17 @@ public abstract class AnnotatedImageDataset {
 		return null;
 	}
 
+	public static short[] collectAllZAtOneTimepointIntoOneArray(ImageDataset sourceImageDataSet,int timeIndex){
+		short[] collectedPixels = new short[sourceImageDataSet.getISize().getXYZ()];
+		int pixelIndex = 0;
+		for (int z = 0; z < sourceImageDataSet.getSizeZ(); z++) {
+			short[] slicePixels = sourceImageDataSet.getImage(z, 0, timeIndex).getPixels();
+			System.arraycopy(slicePixels, 0, collectedPixels, pixelIndex, slicePixels.length);
+			pixelIndex+= slicePixels.length;
+		}
+		return collectedPixels;
+	}
+
 	/**
 	 * Method getAverageUnderROI.
 	 * @param channelIndex int
@@ -120,46 +133,48 @@ public abstract class AnnotatedImageDataset {
 	 * @param roi ROI
 	 * @return double
 	 */
-	public double getAverageUnderROI(int channelIndex, int timeIndex, ROI roi,double[] normalizeFactorXYZ){
-		double averageROIIntensity = 0;
-		double intensityVal = 0.0;
-		long numPixelsInMask = 0;
-		int normalizeIndex = 0;
-		for (int z = 0; z < imageDataset.getSizeZ(); z++) {
-			short[] bleachedRegionPixels = roi.getRoiImages()[z].getPixels();
-			short[] imagePixels = getImageDataset().getImage(z, channelIndex, timeIndex).getPixels();
-			for (int i = 0; i < imagePixels.length; i++) {
-				int bleachedPixel = (bleachedRegionPixels[i])&0xffff;
-				int imagePixel = (imagePixels[i])&0xffff;
-				if (bleachedPixel != 0){
-					if(normalizeFactorXYZ == null){
-						intensityVal += imagePixel;
-					}else{
-						intensityVal += ((double)imagePixel)/normalizeFactorXYZ[normalizeIndex];
-//						if(timeIndex == 12 && roi.getROIType().equals(RoiType.ROI_BLEACHED)){
-//							System.out.println(
-//							"ROI="+roi.getROIType()+
-//							"imagePixle="+imagePixel+
-//							" denom="+normalizeFactorXYZ[normalizeIndex] +
-//							" x="+(normalizeIndex%imageDataset.getISize().getX())+
-//							" y="+(normalizeIndex/imageDataset.getISize().getX())+
-//							" normval="+(((double)imagePixel)/normalizeFactorXYZ[normalizeIndex]));
-//						}
-					}
-					numPixelsInMask++;
-				}
-				normalizeIndex++;
-			}
-//			System.out.println("numpixels in mask="+numPixelsInMask);
-			if (numPixelsInMask==0){
-				averageROIIntensity = 0.0;
-			}else{
-				averageROIIntensity = intensityVal/numPixelsInMask;
-			}
-		}
-		return averageROIIntensity;
+	public double getAverageUnderROI(int timeIndex, ROI roi,double[] normalizeFactorXYZ){
+		short[] dataArray = AnnotatedImageDataset.collectAllZAtOneTimepointIntoOneArray(imageDataset, timeIndex);
+		short[] roiArray = roi.getPixelsXYZ();
+		return AnnotatedImageDataset.getAverageUnderROI(dataArray,roiArray,normalizeFactorXYZ);
 	}
 	
+	public static double getAverageUnderROI(Object dataArray,short[] roi,double[] normalizeFactorXYZ){
+		
+		if(!(dataArray instanceof short[]) && !(dataArray instanceof double[])){
+			throw new IllegalArgumentException("getAverageUnderROI: Only short[] and double[] implemented");	
+		}
+			
+		int arrayLength = Array.getLength(dataArray);
+		
+		if(normalizeFactorXYZ != null && arrayLength != normalizeFactorXYZ.length){
+			throw new IllegalArgumentException("Data array length and normalize length do not match");	
+		}
+		if(roi != null && roi.length != arrayLength){
+			throw new IllegalArgumentException("Data array length and roi length do not match");	
+		}
+		
+		double intensityVal = 0.0;
+		long numPixelsInMask = 0;
+
+		for (int i = 0; i < arrayLength; i++) {
+			double imagePixel = (dataArray instanceof short[]?(((short[])dataArray)[i]) & 0x0000FFFF:((double[])dataArray)[i]);
+			if (roi == null || roi[i] != 0){
+				if(normalizeFactorXYZ == null){
+					intensityVal += imagePixel;
+				}else{
+					intensityVal += ((double)imagePixel)/normalizeFactorXYZ[i];
+				}
+				numPixelsInMask++;
+			}
+		}
+		if (numPixelsInMask==0){
+			return 0.0;
+		}
+		
+		return intensityVal/numPixelsInMask;
+
+	}
 	/**
 	 * Method getNumRois.
 	 * @return int

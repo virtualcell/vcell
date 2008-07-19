@@ -367,6 +367,9 @@ public class NonGUIFRAPTest {
 				public void updateProgress(double progress){
 					System.out.println((int)Math.round(progress*100));
 				}
+				public void updateMessage(String message) {
+					System.out.println(message);
+				}
 			};
 		MicroscopyXmlproducer.writeXMLFile(frapStudy, new File(outputXMLFileName), true,progressListener,false);
 		FRAPStudy.runFVSolverStandalone(

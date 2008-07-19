@@ -283,6 +283,9 @@ public class OverlayEditorPanelJAI extends JPanel {
 								public void updateProgress(double progress) {
 									VirtualFrapMainFrame.updateProgress((int)(progress*100));
 								}
+								public void updateMessage(String message) {
+									//ignore
+								}
 							};
 						FRAPStudy importedFrapStudy = xmlReader.getFrapStudy(XmlUtil.stringToXML(xmlString, null),progressListener);
 						VirtualFrapMainFrame.updateProgress(0);

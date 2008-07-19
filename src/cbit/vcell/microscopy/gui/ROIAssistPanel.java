@@ -44,6 +44,7 @@ import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.client.task.UserCancelException;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.RegionImage.RegionInfo;
+import cbit.vcell.microscopy.AnnotatedImageDataset;
 import cbit.vcell.microscopy.FRAPData;
 import cbit.vcell.microscopy.ROI;
 import cbit.vcell.microscopy.ROI.RoiType;
@@ -350,16 +351,6 @@ public class ROIAssistPanel extends JPanel {
 		}
 		scaleDataInPlace(roiTimeAverageDataShort);
 	}
-	private static short[] collectAllZAtOneTimepointIntoOneArray(ImageDataset sourceImageDataSet,int timePoint){
-		short[] collectedPixels = new short[sourceImageDataSet.getISize().getXYZ()];
-		int pixelIndex = 0;
-		for (int z = 0; z < sourceImageDataSet.getSizeZ(); z++) {
-			short[] slicePixels = sourceImageDataSet.getImage(z, 0, timePoint).getPixels();
-			System.arraycopy(slicePixels, 0, collectedPixels, pixelIndex, slicePixels.length);
-			pixelIndex+= slicePixels.length;
-		}
-		return collectedPixels;
-	}
 	private void createROISourceData(boolean bNew) throws Exception{
 		final ROI oldROI = frapData.getRoi(ROI.RoiType.ROI_CELL);
 		short[] roiSourceData = null;//new short[oldROI.getISize().getXYZ()];
@@ -374,7 +365,7 @@ public class ROIAssistPanel extends JPanel {
 //				overlayEditorPanelJAI.setTimeIndex(timeIndex+1);//time starts at 1, quirk of overlayeditor (look into)
 //			}});
 			
-			roiSourceData = collectAllZAtOneTimepointIntoOneArray(frapData.getImageDataset(), timeIndex);
+			roiSourceData = AnnotatedImageDataset.collectAllZAtOneTimepointIntoOneArray(frapData.getImageDataset(), timeIndex);
 			
 ////			short[] unScaledShorts = new short[roiSourceData.length];
 ////			int min = 0x000FFFF&frapData.getImageDataset().getImage(0, 0,timeIndex).getPixel(0, 0, 0);
