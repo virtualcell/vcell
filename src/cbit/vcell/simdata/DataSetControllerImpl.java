@@ -57,6 +57,7 @@ public class DataSetControllerImpl implements SimDataConstants {
 	
 	public interface ProgressListener{
 		public void updateProgress(double progress);
+		public void updateMessage(String message);
 	};
 	
 	private class TimeInfo {
@@ -2692,6 +2693,9 @@ private cbit.util.TimeSeriesJobResults getTimeSeriesValues_private(final VCDataI
 							new Double(progress),
 							null,null
 						);
+				}
+				public void updateMessage(String message){
+					//ignore
 				}
 			};
 			if(getFunction(vcdID,varName) != null){
