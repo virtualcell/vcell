@@ -254,6 +254,9 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			public void updateProgress(double progress) {
 				VirtualFrapMainFrame.updateProgress((int)Math.round(progress*100));
 			}
+			public void updateMessage(String message) {
+				//ignore
+			}
 		};
 
 	public static final int CURSOR_CELLROI = 0;
@@ -578,11 +581,11 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							return false;
 						}
 					}
-					runSimulation();			
+					runSimulation(true);
 					return false;
 				}else{
 					if(!getResultsSummaryPanel().hasData()){
-						spatialAnalysis(null);
+						spatialAnalysis(null);//creates progress automatically if null
 						return false;
 					}
 				}
@@ -593,8 +596,14 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 					refreshPDEDisplay(DisplayChoice.PDE);
 					refreshPDEDisplay(DisplayChoice.EXTTIMEDATA);
 				}else{
-					throw new Exception("Simulation Data are not valid. Simulation needs to be run.\n"+
-						currentSimulationDataState.getDescription());
+					final String RUN_SIM = "Run Simulation...";
+					String result = DialogUtils.showWarningDialog(this,
+							"Simulation Data are not valid.\n"+currentSimulationDataState.getDescription()+"\nSimulation needs to be run to view Spatial Results.",
+							new String[] {RUN_SIM,UserMessage.OPTION_CANCEL}, RUN_SIM);
+					if(result != null && result.equals(RUN_SIM)){
+						runSimulation(false);
+					}
+					return false;
 				}
 			}
 			return true;
@@ -787,7 +796,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			try{
 				MicroscopyXmlReader.ExternalDataAndSimulationInfo externalDataAndSimulationInfo =
 					MicroscopyXmlReader.getExternalDataAndSimulationInfo(outputFileFinal);
-				removeExternalDataAndSimulationFiles(
+				FRAPStudy.removeExternalDataAndSimulationFiles(
 						externalDataAndSimulationInfo.simulationKey,
 						(externalDataAndSimulationInfo.frapDataExtDataInfo != null
 							?externalDataAndSimulationInfo.frapDataExtDataInfo.getExternalDataIdentifier():null),
@@ -857,36 +866,10 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 					?getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier():null);
 			KeyValue simulationKeyValue =
 				(getSavedFrapModelInfo() != null?getSavedFrapModelInfo().savedSimKeyValue:null);
-			removeExternalDataAndSimulationFiles(simulationKeyValue,frapDataExtDataId,roiExtDataId,getLocalWorkspace());
+			FRAPStudy.removeExternalDataAndSimulationFiles(simulationKeyValue,frapDataExtDataId,roiExtDataId,getLocalWorkspace());
 			return true;
 		}
 		return false;
-	}
-	
-	private static void removeExternalDataAndSimulationFiles(
-			KeyValue simulationKeyValue,
-			ExternalDataIdentifier frapDataExtDataId,ExternalDataIdentifier roiExtDataId,
-			LocalWorkspace localWorkspace) throws Exception{
-		
-		if(frapDataExtDataId != null){
-			FRAPStudy.deleteCanonicalExternalData(localWorkspace,frapDataExtDataId);
-		}
-		if(roiExtDataId != null){
-			FRAPStudy.deleteCanonicalExternalData(localWorkspace,roiExtDataId);
-		}
-		if(frapDataExtDataId != null && roiExtDataId != null){
-			File mergedFunctionFile = 
-				getMergedFunctionFile(frapDataExtDataId,roiExtDataId,
-						new File(localWorkspace.getDefaultSimDataDirectory()));
-			if(mergedFunctionFile != null){
-				mergedFunctionFile.delete();
-			}
-		}
-		if(simulationKeyValue != null){
-			File userDir =
-				new File(localWorkspace.getDefaultSimDataDirectory());
-			deleteSimulationFiles(userDir, simulationKeyValue);
-		}
 	}
 	
 	private void clearCurrentLoadState() throws Exception{
@@ -939,6 +922,9 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 								int percentProgress = (int)(progress*100);
 								VirtualFrapMainFrame.updateProgress(percentProgress);
 								pp.setProgress(percentProgress);
+							}
+							public void updateMessage(String message) {
+								//ignore
 							}
 					};
 
@@ -1130,7 +1116,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				SimDataConstants.FIELDDATARESAMP_EXTENSION,//prebleach avg
 				SimDataConstants.FIELDDATARESAMP_EXTENSION//postbleach avg
 			};
-		File[] simFiles = getSimulationFileNames(
+		File[] simFiles = FRAPStudy.getSimulationFileNames(
 			new File(getLocalWorkspace().getDefaultSimDataDirectory()),
 			getSavedFrapModelInfo().savedSimKeyValue);
 		//prebleach.fdat,postbleach.fdat,.vcg,.meshmetrics,.mesh,.log,.fvinput,.functions,.zip
@@ -1180,34 +1166,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		return true;
 	}
 	
-	private void genericProgress(final int numSeconds,final boolean[] genericProgressStopSignal){
-		genericProgressStopSignal[0] = false;
-		VirtualFrapMainFrame.updateProgress(0);
-		Thread incrThread = new Thread(new Runnable(){
-			public void run(){
-				int counter = 0;
-				while(true){
-					if(genericProgressStopSignal[0]){
-						VirtualFrapMainFrame.updateProgress(100);
-						return;
-					}
-					counter++;
-					VirtualFrapMainFrame.updateProgress(counter);
-					if(counter == 100){
-						return;
-					}
-					try{
-						Thread.sleep(10*numSeconds);
-					}catch(InterruptedException e){
-						return;
-					}
-				}
-			}
-		});
-		incrThread.start();
-	}
-	
-	protected void runSimulation() throws Exception{
+	protected void runSimulation(final boolean bSpatialAnalysis) throws Exception{
 		
 		
 		
@@ -1310,13 +1269,17 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 					}
 //					genericProgressStopSignal[0] = true;
 					
-					final double RUN_SIM_PROGRESS_FRACTION = .2;
+					final double RUN_SIM_PROGRESS_FRACTION = (bSpatialAnalysis?.2:1.0);
 					DataSetControllerImpl.ProgressListener runSimProgressListener =
 						new DataSetControllerImpl.ProgressListener(){
 							public void updateProgress(double progress) {
 								int percentProgress = (int)(progress*100*RUN_SIM_PROGRESS_FRACTION);
 								VirtualFrapMainFrame.updateProgress(percentProgress);
 								pp.setProgress(percentProgress);
+							}
+							public void updateMessage(String message) {
+								VirtualFrapMainFrame.updateStatus(message);
+								pp.setMessage(message);
 							}
 					};
 
@@ -1333,11 +1296,22 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(),
 						runSimProgressListener);
 					
-//					VirtualFrapMainFrame.updateStatus("Updating Simulation Data display.");
-//					genericProgress(3,genericProgressStopSignal);
-//					refreshPDEDisplay(DisplayChoice.PDE);//upper data viewer has simulated data and masks
-//					refreshPDEDisplay(DisplayChoice.EXTTIMEDATA);//lower data viewer has original data and masks
-//					genericProgressStopSignal[0] = true;
+					if(!bSpatialAnalysis){
+						pp.stop();
+						SwingUtilities.invokeAndWait(new Runnable(){public void run(){
+							try{
+								VirtualFrapMainFrame.updateStatus("Updating Simulation Data display.");
+								refreshPDEDisplay(DisplayChoice.PDE);//upper data viewer has simulated data and masks
+								refreshPDEDisplay(DisplayChoice.EXTTIMEDATA);//lower data viewer has original data and masks
+								getJTabbedPane().setSelectedIndex(getJTabbedPane().indexOfTab(FRAPSTUDYPANEL_TABNAME_SPATIALRESULTS));
+								VirtualFrapMainFrame.updateProgress(0);
+								VirtualFrapMainFrame.updateStatus("");
+							}catch(Exception e){
+								throw new RuntimeException("Error Updating simData display.  "+e.getMessage(),e);
+							}
+						}});
+						return;
+					}
 					
 					final String FINISHED_MESSAGE = "Finished simulation, running spatial analysis...";
 					VirtualFrapMainFrame.updateStatus(FINISHED_MESSAGE);
@@ -1357,6 +1331,10 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 								int percentProgress = (int)(100*(RUN_SIM_PROGRESS_FRACTION+progress*(1-RUN_SIM_PROGRESS_FRACTION)));
 								VirtualFrapMainFrame.updateProgress(percentProgress);
 								pp.setProgress(percentProgress);
+							}
+							public void updateMessage(String message) {
+								VirtualFrapMainFrame.updateStatus(message);
+								pp.setMessage(message);
 							}
 					};
 
@@ -1388,39 +1366,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 				}
 			}
 		}).start();
-	}
-	
-	private static File[] getSimulationFileNames(File rootDir,KeyValue simKey){
-		final String deleteTheseSimID = Simulation.createSimulationID(simKey);
-		return
-			rootDir.listFiles(
-				new FileFilter(){
-					public boolean accept(File pathname) {
-						if (pathname.getName().startsWith(deleteTheseSimID)){
-							return true;
-						}
-						return false;
-					}
-				}
-			);
-	}
-	private static void deleteSimulationFiles(File rootDir,KeyValue simKey){
-		File[] oldSimFilesToDelete = getSimulationFileNames(rootDir,simKey);
-		for (int i = 0; oldSimFilesToDelete != null && i < oldSimFilesToDelete.length; i++) {
-			System.out.println("delete "+oldSimFilesToDelete[i].delete()+"  "+oldSimFilesToDelete[i].getAbsolutePath());
-		}
-	}
-	private static File getMergedFunctionFile(
-		ExternalDataIdentifier frapDataExtDataId,ExternalDataIdentifier roiExtDataId,
-		File simDataDirectory){
-		MergedDataInfo mergedDataInfo =
-			new MergedDataInfo(LocalWorkspace.getDefaultOwner(),
-				new VCDataIdentifier[]{frapDataExtDataId,roiExtDataId});
-		return
-			new File(simDataDirectory,
-				mergedDataInfo.getID()+SimDataConstants.FUNCTIONFILE_EXTENSION);
-	}
-	
+	}	
 	
 	protected void refreshPDEDisplay(DisplayChoice choice) throws Exception {
 		Simulation sim = null;
@@ -1746,6 +1692,15 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 								progressListener.updateProgress(progress*SPATIAL_ANLYSIS_PROGRESS_FRACTION);
 							}
 						}
+						public void updateMessage(String message) {
+							if(pp != null){
+								VirtualFrapMainFrame.updateStatus(message);
+								pp.setMessage(message);
+							}
+							if(progressListener != null){
+								progressListener.updateMessage(message);
+							}
+						}
 				};
 				//
 				VCDataManager testVCDataManager = getLocalWorkspace().getVCDataManager();
@@ -1780,6 +1735,15 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							}
 							if(progressListener != null){
 								progressListener.updateProgress(.5+progress*(1-SPATIAL_ANLYSIS_PROGRESS_FRACTION));
+							}
+						}
+						public void updateMessage(String message) {
+							if(pp != null){
+								VirtualFrapMainFrame.updateStatus(message);
+								pp.setMessage(message);
+							}
+							if(progressListener != null){
+								progressListener.updateMessage(message);
 							}
 						}
 				};
@@ -1844,7 +1808,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 					newParameters[FRAPOptData.MOBILE_FRACTION_INDEX].getInitialGuess()+"",
 					newParameters[FRAPOptData.BLEACH_WHILE_MONITOR_INDEX].getInitialGuess()+""
 			);
-			runSimulation();
+			runSimulation(true);
 		} catch (Exception e) {
 //			getFrapStudy().setFrapModelParameters(origFRAPModelParameters);
 			if(!(e instanceof UserCancelException)){

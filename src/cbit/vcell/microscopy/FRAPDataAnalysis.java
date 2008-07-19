@@ -66,7 +66,7 @@ public class FRAPDataAnalysis {
 		
 		ROI bleachingROI = frapData.getRoi(roiType);
 		for (int tIndex = 0; tIndex < averageROIIntensity.length; tIndex++) {
-			averageROIIntensity[tIndex] = frapData.getAverageUnderROI(0, tIndex, bleachingROI,null);
+			averageROIIntensity[tIndex] = frapData.getAverageUnderROI(tIndex, bleachingROI,null);
 		}
 
 		return averageROIIntensity;
@@ -83,7 +83,7 @@ public class FRAPDataAnalysis {
 		double[] averageROIIntensity = new double[frapData.getImageDataset().getSizeT()];
 		
 		for (int tIndex = 0; tIndex < averageROIIntensity.length; tIndex++) {
-			averageROIIntensity[tIndex] = frapData.getAverageUnderROI(0, tIndex, roi, normFactor);
+			averageROIIntensity[tIndex] = frapData.getAverageUnderROI(tIndex, roi, normFactor);
 		}
 
 		return averageROIIntensity;

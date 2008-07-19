@@ -1,6 +1,9 @@
 package cbit.vcell.microscopy;
 
 import cbit.function.DefaultScalarFunction;
+import cbit.sql.KeyValue;
+import cbit.vcell.client.server.VCDataManager;
+import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.opt.ImplicitObjectiveFunction;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationSolverSpec;
@@ -8,13 +11,16 @@ import cbit.vcell.opt.OptimizationSpec;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.solvers.OptSolverCallbacks;
 import cbit.vcell.opt.solvers.PowellOptimizationSolver;
+import cbit.vcell.simdata.DataSetControllerImpl;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.solver.VCSimulationIdentifier;
 
 public class FRAPOptimization {
 	
 	static double FTOL = 1.0e-6;
 	static double epsilon = 1e-8;
 		
-	public static double[][] dataReduction(FRAPData argFrapData, boolean bRemovePrebleach, double argScaleFactor, int argStartRecoveryIndex, ROI[] expRois, double[] normFactor) 
+	public static double[][] dataReduction(FRAPData argFrapData, boolean bRemovePrebleach,int argStartRecoveryIndex, ROI[] expRois, double[] normFactor) 
 	{ 
 		int roiLen = expRois.length;
 		int numRefTimePoints = argFrapData.getImageDataset().getSizeT();
@@ -34,14 +40,7 @@ public class FRAPOptimization {
 		for(int i = 0; i < roiLen; i++)
 		{
 			baseData[i] = FRAPDataAnalysis.getAverageROIIntensity(argFrapData, expRois[i], normFactor);
-			// unscale the data from vfrap
-			if(argScaleFactor != 1 && argScaleFactor != 0)
-			{
-				for(int j=0; j<baseData[i].length; j++)
-				{
-					baseData[i][j] = baseData[i][j]/argScaleFactor;
-				}
-			}
+
 			//remove prebleach
 			if(bRemovePrebleach)
 			{   
@@ -56,6 +55,32 @@ public class FRAPOptimization {
 				{
 					newData[i][j]  = baseData[i][j];
 				}
+			}
+		}
+		return newData;
+	}
+
+	
+	
+	
+	public static double[][] dataReduction(
+			VCDataManager vcDataManager,VCSimulationDataIdentifier vcSimdataID,int argStartRecoveryIndex,
+			ROI[] expRois, double[] normFactor,DataSetControllerImpl.ProgressListener progressListener) throws Exception{ 
+
+		if(progressListener != null){
+			progressListener.updateMessage("Reading Reference data, generating ROI averages");
+		}
+		int roiLen = expRois.length;
+		double[] simTimes = vcDataManager.getDataSetTimes(vcSimdataID);
+		double[][] newData = new double[roiLen][simTimes.length];
+
+		for (int j = 0; j < simTimes.length; j++) {
+			double[] simData = vcDataManager.getSimDataBlock(vcSimdataID, FRAPStudy.SPECIES_NAME_PREFIX_COMBINED,simTimes[j]).getData();
+			for(int i = 0; i < roiLen; i++){
+				newData[i][j] = AnnotatedImageDataset.getAverageUnderROI(simData, expRois[i].getPixelsXYZ(), normFactor);
+			}
+			if(progressListener != null){
+				progressListener.updateProgress(((double)(j+1))/(double)simTimes.length);
 			}
 		}
 		return newData;

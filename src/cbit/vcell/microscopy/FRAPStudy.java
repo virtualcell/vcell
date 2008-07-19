@@ -5,6 +5,7 @@ import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.io.FileFilter;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -82,8 +83,10 @@ import cbit.vcell.server.GroupAccessNone;
 import cbit.vcell.server.PropertyLoader;
 import cbit.vcell.server.SessionLog;
 import cbit.vcell.server.User;
+import cbit.vcell.server.VCDataIdentifier;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.ExternalDataIdentifier;
+import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.VariableType;
@@ -582,11 +585,12 @@ public class FRAPStudy implements Matchable{
 		//
 		// collect data for experiment (over all ROIs), normalize with pre-bleach average
 		//
+		if(progressListener != null){progressListener.updateMessage("Spatial Analysis - normalize simulation ROI average");}
 		for (int i = 0; i < SpatialAnalysisResults.ORDERED_ROITYPES.length; i++) {
 			double[] normalizedAverageFluorAtEachTimeUnderROI = new double[frapData.getImageDataset().getImageTimeStamps().length];
 			for (int j = 0; j < normalizedAverageFluorAtEachTimeUnderROI.length; j++) {
 				normalizedAverageFluorAtEachTimeUnderROI[j] =
-					frapData.getAverageUnderROI(0, j,
+					frapData.getAverageUnderROI(j,
 						frapData.getRoi(SpatialAnalysisResults.ORDERED_ROITYPES[i]), preBleachAverageXYZ);				
 			}
 			curveHash.put(new CurveInfo(null,SpatialAnalysisResults.ORDERED_ROITYPES[i]), normalizedAverageFluorAtEachTimeUnderROI);
@@ -596,6 +600,7 @@ public class FRAPStudy implements Matchable{
 		// get Simulation Data
 		//
 		int totalLen = simTimes.length*varNames.length*SpatialAnalysisResults.ORDERED_ROITYPES.length;
+		if(progressListener != null){progressListener.updateMessage("Spatial Analysis - normalize simulation data");}
 		if(progressListener != null){progressListener.updateProgress(0);}
 		for (int i = 0; i < simTimes.length; i++) {
 			for (int j = 0; j < varNames.length; j++) {
@@ -722,6 +727,65 @@ public class FRAPStudy implements Matchable{
 		return bioModel;
 	}
 	
+	public static void removeExternalDataAndSimulationFiles(
+			KeyValue simulationKeyValue,
+			ExternalDataIdentifier frapDataExtDataId,ExternalDataIdentifier roiExtDataId,
+			LocalWorkspace localWorkspace) throws Exception{
+		
+		if(frapDataExtDataId != null){
+			FRAPStudy.deleteCanonicalExternalData(localWorkspace,frapDataExtDataId);
+		}
+		if(roiExtDataId != null){
+			FRAPStudy.deleteCanonicalExternalData(localWorkspace,roiExtDataId);
+		}
+		if(frapDataExtDataId != null && roiExtDataId != null){
+			File mergedFunctionFile = 
+				FRAPStudy.getMergedFunctionFile(frapDataExtDataId,roiExtDataId,
+						new File(localWorkspace.getDefaultSimDataDirectory()));
+			if(mergedFunctionFile != null){
+				mergedFunctionFile.delete();
+			}
+		}
+		if(simulationKeyValue != null){
+			File userDir =
+				new File(localWorkspace.getDefaultSimDataDirectory());
+			FRAPStudy.deleteSimulationFiles(userDir, simulationKeyValue);
+		}
+	}
+
+	private static File getMergedFunctionFile(
+			ExternalDataIdentifier frapDataExtDataId,ExternalDataIdentifier roiExtDataId,
+			File simDataDirectory){
+			MergedDataInfo mergedDataInfo =
+				new MergedDataInfo(LocalWorkspace.getDefaultOwner(),
+					new VCDataIdentifier[]{frapDataExtDataId,roiExtDataId});
+			return
+				new File(simDataDirectory,
+					mergedDataInfo.getID()+SimDataConstants.FUNCTIONFILE_EXTENSION);
+	}
+
+	private static void deleteSimulationFiles(File rootDir,KeyValue simKey){
+		File[] oldSimFilesToDelete = FRAPStudy.getSimulationFileNames(rootDir,simKey);
+		for (int i = 0; oldSimFilesToDelete != null && i < oldSimFilesToDelete.length; i++) {
+			System.out.println("delete "+oldSimFilesToDelete[i].delete()+"  "+oldSimFilesToDelete[i].getAbsolutePath());
+		}
+	}
+
+	public static File[] getSimulationFileNames(File rootDir,KeyValue simKey){
+		final String deleteTheseSimID = Simulation.createSimulationID(simKey);
+		return
+			rootDir.listFiles(
+				new FileFilter(){
+					public boolean accept(File pathname) {
+						if (pathname.getName().startsWith(deleteTheseSimID)){
+							return true;
+						}
+						return false;
+					}
+				}
+			);
+	}
+
 	public static BioModel createNewBioModel(
 			FRAPStudy sourceFrapStudy,
 			Double baseDiffusionRate,
