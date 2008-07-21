@@ -207,12 +207,12 @@ public class FRAPInterpolationPanel extends JPanel {
 		final JButton createOptimalButton = new JButton();
 		createOptimalButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				Parameter[] startingParameters = new Parameter[FRAPOptData.PARAMETER_NAMES.length];
-				startingParameters[FRAPOptData.DIFFUSION_RATE_INDEX] = FRAPOptData.REF_DIFFUSION_RATE_PARAM;
-				startingParameters[FRAPOptData.MOBILE_FRACTION_INDEX] = FRAPOptData.REF_MOBILE_FRACTION_PARAM;
-				startingParameters[FRAPOptData.BLEACH_WHILE_MONITOR_INDEX] = FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM;
+//				Parameter[] startingParameters = new Parameter[FRAPOptData.PARAMETER_NAMES.length];
+//				startingParameters[FRAPOptData.DIFFUSION_RATE_INDEX] = FRAPOptData.REF_DIFFUSION_RATE_PARAM;
+//				startingParameters[FRAPOptData.MOBILE_FRACTION_INDEX] = FRAPOptData.REF_MOBILE_FRACTION_PARAM;
+//				startingParameters[FRAPOptData.BLEACH_WHILE_MONITOR_INDEX] = FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM;
 				try{
-					Parameter[] bestParameters = frapOptData.getBestParamters(startingParameters);
+					Parameter[] bestParameters = frapOptData.getBestParamters(getCurrentParameters());
 					setParameterValues(
 							bestParameters[FRAPOptData.DIFFUSION_RATE_INDEX].getInitialGuess()+"",
 							bestParameters[FRAPOptData.MOBILE_FRACTION_INDEX].getInitialGuess()+"",
