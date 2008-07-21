@@ -169,11 +169,13 @@ public class FRAPDataPanel extends JPanel implements PropertyChangeListener{
 			return;
 		}
 		saveROI();
-		RoiType roiType = RoiType.ROI_BLEACHED;
-		if (getFrapStudy().getFrapData().getCurrentlyDisplayedROI()!=null){
-			roiType = getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getROIType();
-		}
-		double[] averageFluor = FRAPDataAnalysis.getAverageROIIntensity(getFrapStudy().getFrapData(), roiType);
+//		RoiType roiType = RoiType.ROI_BLEACHED;
+//		if (getFrapStudy().getFrapData().getCurrentlyDisplayedROI()!=null){
+//			roiType = getFrapStudy().getFrapData().getCurrentlyDisplayedROI().getROIType();
+//		}
+		double[] averageFluor =
+			FRAPDataAnalysis.getAverageROIIntensity(getFrapStudy().getFrapData(),
+				getFrapStudy().getFrapData().getCurrentlyDisplayedROI(),null,null);
 		FRAPDataPanel.showCurve(null, new String[] { "f" }, getFrapStudy().getFrapData().getImageDataset().getImageTimeStamps(),new double[][] { averageFluor });
 	}
 	

@@ -39,7 +39,7 @@ public class FRAPOptimization {
 		}
 		for(int i = 0; i < roiLen; i++)
 		{
-			baseData[i] = FRAPDataAnalysis.getAverageROIIntensity(argFrapData, expRois[i], normFactor);
+			baseData[i] = FRAPDataAnalysis.getAverageROIIntensity(argFrapData, expRois[i], normFactor,null);
 
 			//remove prebleach
 			if(bRemovePrebleach)
@@ -65,7 +65,7 @@ public class FRAPOptimization {
 	
 	public static double[][] dataReduction(
 			VCDataManager vcDataManager,VCSimulationDataIdentifier vcSimdataID,int argStartRecoveryIndex,
-			ROI[] expRois, double[] normFactor,DataSetControllerImpl.ProgressListener progressListener) throws Exception{ 
+			ROI[] expRois,DataSetControllerImpl.ProgressListener progressListener) throws Exception{ 
 
 		if(progressListener != null){
 			progressListener.updateMessage("Reading Reference data, generating ROI averages");
@@ -77,7 +77,7 @@ public class FRAPOptimization {
 		for (int j = 0; j < simTimes.length; j++) {
 			double[] simData = vcDataManager.getSimDataBlock(vcSimdataID, FRAPStudy.SPECIES_NAME_PREFIX_COMBINED,simTimes[j]).getData();
 			for(int i = 0; i < roiLen; i++){
-				newData[i][j] = AnnotatedImageDataset.getAverageUnderROI(simData, expRois[i].getPixelsXYZ(), normFactor);
+				newData[i][j] = AnnotatedImageDataset.getAverageUnderROI(simData, expRois[i].getPixelsXYZ(), null,0.0);
 			}
 			if(progressListener != null){
 				progressListener.updateProgress(((double)(j+1))/(double)simTimes.length);

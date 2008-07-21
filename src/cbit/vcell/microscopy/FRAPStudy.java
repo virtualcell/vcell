@@ -591,7 +591,7 @@ public class FRAPStudy implements Matchable{
 			for (int j = 0; j < normalizedAverageFluorAtEachTimeUnderROI.length; j++) {
 				normalizedAverageFluorAtEachTimeUnderROI[j] =
 					frapData.getAverageUnderROI(j,
-						frapData.getRoi(SpatialAnalysisResults.ORDERED_ROITYPES[i]), preBleachAverageXYZ);				
+						frapData.getRoi(SpatialAnalysisResults.ORDERED_ROITYPES[i]), preBleachAverageXYZ,0.0);				
 			}
 			curveHash.put(new CurveInfo(null,SpatialAnalysisResults.ORDERED_ROITYPES[i]), normalizedAverageFluorAtEachTimeUnderROI);
 		}
@@ -1321,6 +1321,41 @@ public class FRAPStudy implements Matchable{
     	}
     	return cartesianMesh;
 	}
+	public static double[] calculatePreBleachAverageXYZ(FRAPData frapData,int startingIndexForRecovery){
+    	long[] accumPrebleachImage = new long[frapData.getImageDataset().getISize().getXYZ()];//ISize: Image size including x, y, z. getXYZ()=x*y*z
+    	double[] avgPrebleachDouble = new double[accumPrebleachImage.length];
+    	// changed in June, 2008 average prebleach depends on if there is prebleach images. 
+    	// Since the initial condition is normalized by prebleach avg, we have to take care the divided by zero error.
+		if(startingIndexForRecovery > 0){
+			for (int timeIndex = 0; timeIndex < startingIndexForRecovery; timeIndex++) {
+				short[] pixels = frapData.getImageDataset().getPixelsZ(0, timeIndex);//channel index is 0. it is not supported yet. get image size X*Y*Z stored by time index. image store by UShortImage[Z*T]
+				for (int i = 0; i < accumPrebleachImage.length; i++) {
+					accumPrebleachImage[i] += 0x0000ffff&pixels[i];
+				}
+			}
+			for (int i = 0; i < avgPrebleachDouble.length; i++) {
+				avgPrebleachDouble[i] = (double)accumPrebleachImage[i]/(double)startingIndexForRecovery;
+			}
+		}
+		else{
+			//if no prebleach image, use the last recovery image intensity as prebleach average.
+			System.err.println("need to determine factor for prebleach average if no pre bleach images.");
+			short[] pixels = frapData.getImageDataset().getPixelsZ(0, (frapData.getImageDataset().getSizeT() - 1));
+			for (int i = 0; i < pixels.length; i++) {
+				avgPrebleachDouble[i] = 0x0000ffff&pixels[i];
+			}
+		}
+		
+		// since prebleach will be used to normalize image data, we have to eliminate the 0?
+		//or maybe we should leave as 0 and check later for zero when its used and deal with it.
+		for (int i = 0; i < avgPrebleachDouble.length; i++) {
+			if(avgPrebleachDouble[i] == 0){
+				avgPrebleachDouble[i] = FRAPStudy.Epsilon;
+			}
+
+		}
+		return avgPrebleachDouble;
+	}
 	public static final String ROI_EXTDATA_NAME = "roiData";
 	public void saveROIsAsExternalData(LocalWorkspace localWorkspace,ExternalDataIdentifier newROIExtDataID,int startingIndexForRecovery) throws Exception{
 			ImageDataset imageDataset = getFrapData().getImageDataset();
@@ -1331,38 +1366,40 @@ public class FRAPStudy implements Matchable{
 	    	double[][][] pixData = new double[NumTimePoints][NumChannels][]; // dimensions: time points, channels, whole image ordered by z slices. 
 	    	
 
-	    	long[] accumPrebleachImage = new long[imageDataset.getISize().getXYZ()];//ISize: Image size including x, y, z. getXYZ()=x*y*z
-	    	double[] avgPrebleachDouble = new double[accumPrebleachImage.length];
-	    	// changed in June, 2008 average prebleach depends on if there is prebleach images. 
-	    	// Since the initial condition is normalized by prebleach avg, we have to take care the divided by zero error.
-			if(startingIndexForRecovery > 0){
-				for (int timeIndex = 0; timeIndex < startingIndexForRecovery; timeIndex++) {
-					short[] pixels = getFrapData().getImageDataset().getPixelsZ(0, timeIndex);//channel index is 0. it is not supported yet. get image size X*Y*Z stored by time index. image store by UShortImage[Z*T]
-					for (int i = 0; i < accumPrebleachImage.length; i++) {
-						accumPrebleachImage[i] += 0x0000ffff&pixels[i];
-					}
-				}
-				for (int i = 0; i < avgPrebleachDouble.length; i++) {
-					avgPrebleachDouble[i] = (double)accumPrebleachImage[i]/(double)startingIndexForRecovery;
-				}
-			}
-			else{
-				//if no prebleach image, use the last recovery image intensity as prebleach average.
-				System.err.println("need to determine factor for prebleach average if no pre bleach images.");
-				short[] pixels = getFrapData().getImageDataset().getPixelsZ(0, (imageDataset.getSizeT() - 1));
-				for (int i = 0; i < pixels.length; i++) {
-					avgPrebleachDouble[i] = 0x0000ffff&pixels[i];
-				}
-			}
-			
-			// since prebleach will be used to normalize image data, we have to eliminate the 0?
-			//or maybe we should leave as 0 and check later for zero when its used and deal with it.
-			for (int i = 0; i < avgPrebleachDouble.length; i++) {
-				if(avgPrebleachDouble[i] == 0){
-					avgPrebleachDouble[i] = FRAPStudy.Epsilon;
-				}
-
-			}
+	    	double[] avgPrebleachDouble = calculatePreBleachAverageXYZ(getFrapData(),startingIndexForRecovery);
+	    	
+//	    	long[] accumPrebleachImage = new long[imageDataset.getISize().getXYZ()];//ISize: Image size including x, y, z. getXYZ()=x*y*z
+//	    	double[] avgPrebleachDouble = new double[accumPrebleachImage.length];
+//	    	// changed in June, 2008 average prebleach depends on if there is prebleach images. 
+//	    	// Since the initial condition is normalized by prebleach avg, we have to take care the divided by zero error.
+//			if(startingIndexForRecovery > 0){
+//				for (int timeIndex = 0; timeIndex < startingIndexForRecovery; timeIndex++) {
+//					short[] pixels = getFrapData().getImageDataset().getPixelsZ(0, timeIndex);//channel index is 0. it is not supported yet. get image size X*Y*Z stored by time index. image store by UShortImage[Z*T]
+//					for (int i = 0; i < accumPrebleachImage.length; i++) {
+//						accumPrebleachImage[i] += 0x0000ffff&pixels[i];
+//					}
+//				}
+//				for (int i = 0; i < avgPrebleachDouble.length; i++) {
+//					avgPrebleachDouble[i] = (double)accumPrebleachImage[i]/(double)startingIndexForRecovery;
+//				}
+//			}
+//			else{
+//				//if no prebleach image, use the last recovery image intensity as prebleach average.
+//				System.err.println("need to determine factor for prebleach average if no pre bleach images.");
+//				short[] pixels = getFrapData().getImageDataset().getPixelsZ(0, (imageDataset.getSizeT() - 1));
+//				for (int i = 0; i < pixels.length; i++) {
+//					avgPrebleachDouble[i] = 0x0000ffff&pixels[i];
+//				}
+//			}
+//			
+//			// since prebleach will be used to normalize image data, we have to eliminate the 0?
+//			//or maybe we should leave as 0 and check later for zero when its used and deal with it.
+//			for (int i = 0; i < avgPrebleachDouble.length; i++) {
+//				if(avgPrebleachDouble[i] == 0){
+//					avgPrebleachDouble[i] = FRAPStudy.Epsilon;
+//				}
+//
+//			}
     		pixData[0][0] = avgPrebleachDouble; // average of prebleach
     		pixData[0][1] = createDoubleArray(getFrapData().getImageDataset().getPixelsZ(0, startingIndexForRecovery)); // first post-bleach
     		pixData[0][2] = createDoubleArray(getFrapData().getImageDataset().getPixelsZ(0, imageDataset.getSizeT()-1)); // last post-bleach image, actually at last time point
