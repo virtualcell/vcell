@@ -337,12 +337,7 @@ protected void writeMain(java.io.PrintWriter out) throws Exception {
 	out.println("#include <sstream>");
 	out.println("using namespace std;");
 	out.println();
-	
-	out.println("#ifdef WIN32");
-	out.println("#define DIRECTORY_SEPARATOR '\\\\'");
-	out.println("#else");
-	out.println("#define DIRECTORY_SEPARATOR '/'");
-	out.println("#endif");
+		
 	String parentPath = new File(baseDataName).getParent();
 	StringBuffer newParentPath = new StringBuffer();
 	for (int i = 0; i < parentPath.length(); i ++){
