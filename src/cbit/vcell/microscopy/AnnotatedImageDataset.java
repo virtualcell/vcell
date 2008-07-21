@@ -133,18 +133,21 @@ public abstract class AnnotatedImageDataset {
 	 * @param roi ROI
 	 * @return double
 	 */
-	public double getAverageUnderROI(int timeIndex, ROI roi,double[] normalizeFactorXYZ){
+	public double getAverageUnderROI(int timeIndex, ROI roi,double[] normalizeFactorXYZ,double preNormalizeOffset){
 		short[] dataArray = AnnotatedImageDataset.collectAllZAtOneTimepointIntoOneArray(imageDataset, timeIndex);
 		short[] roiArray = roi.getPixelsXYZ();
-		return AnnotatedImageDataset.getAverageUnderROI(dataArray,roiArray,normalizeFactorXYZ);
+		return AnnotatedImageDataset.getAverageUnderROI(dataArray,roiArray,normalizeFactorXYZ,preNormalizeOffset);
 	}
 	
-	public static double getAverageUnderROI(Object dataArray,short[] roi,double[] normalizeFactorXYZ){
+	public static double getAverageUnderROI(Object dataArray,short[] roi,double[] normalizeFactorXYZ,double preNormalizeOffset){
 		
 		if(!(dataArray instanceof short[]) && !(dataArray instanceof double[])){
 			throw new IllegalArgumentException("getAverageUnderROI: Only short[] and double[] implemented");	
 		}
-			
+		if(normalizeFactorXYZ == null && preNormalizeOffset != 0){
+			throw new IllegalArgumentException("preNormalizeOffset must be 0 if normalizeFactorXYZ is null");
+		}
+		
 		int arrayLength = Array.getLength(dataArray);
 		
 		if(normalizeFactorXYZ != null && arrayLength != normalizeFactorXYZ.length){
@@ -157,13 +160,15 @@ public abstract class AnnotatedImageDataset {
 		double intensityVal = 0.0;
 		long numPixelsInMask = 0;
 
+//		System.out.println("prenormalizeoffset="+preNormalizeOffset);
+
 		for (int i = 0; i < arrayLength; i++) {
 			double imagePixel = (dataArray instanceof short[]?(((short[])dataArray)[i]) & 0x0000FFFF:((double[])dataArray)[i]);
 			if (roi == null || roi[i] != 0){
 				if(normalizeFactorXYZ == null){
 					intensityVal += imagePixel;
 				}else{
-					intensityVal += ((double)imagePixel)/normalizeFactorXYZ[i];
+					intensityVal += ((double)imagePixel-preNormalizeOffset)/(normalizeFactorXYZ[i]-preNormalizeOffset);
 				}
 				numPixelsInMask++;
 			}

@@ -66,6 +66,7 @@ import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.microscopy.ExternalDataInfo;
 import cbit.vcell.microscopy.FRAPData;
+import cbit.vcell.microscopy.FRAPDataAnalysis;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.LocalWorkspace;
@@ -91,7 +92,7 @@ import cbit.vcell.solver.SimulationJob;
 public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	
 	public static final String FRAPSTUDYPANEL_TABNAME_IMAGES = "Images";
-	public static final String FRAPSTUDYPANEL_TABNAME_FITRECOVERYCURVE = "Fit Recovery Curve";
+	public static final String FRAPSTUDYPANEL_TABNAME_FITRECOVERYCURVE = "FRAP Parameters";
 	public static final String FRAPSTUDYPANEL_TABNAME_REPORT = "Report";
 	public static final String FRAPSTUDYPANEL_TABNAME_SPATIALRESULTS = "Spatial Results";
 	
@@ -1666,6 +1667,21 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		return dataManager;
 	}
 	
+//	private double[] getPreBleachAverageXYZ(Integer startingIndexForRecovery /*boolean bUserDefined*/) throws Exception{
+////		int startingIndexForRecovery = -1;
+////		if(bUserDefined){
+////			startingIndexForRecovery = Integer.parseInt(getFrapStudy().getFrapModelParameters().startIndexForRecovery);
+////		}else{
+////			startingIndexForRecovery = FRAPDataAnalysis.getRecoveryIndex(getFrapStudy().getFrapData());
+////		}
+//		if(startingIndexForRecovery != null/* && getFrapStudy().getRoiExternalDataInfo() == null*//* || !bUserDefined*/){
+//			return getFrapStudy().calculatePreBleachAverageXYZ(getFrapStudy().getFrapData(),startingIndexForRecovery);
+//		}else{
+//			VCDataManager testVCDataManager = getLocalWorkspace().getVCDataManager();
+//			return testVCDataManager.getSimDataBlock(
+//					getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(), "prebleach_avg", 0).getData();
+//		}
+//	}
 	public void spatialAnalysis(final DataSetControllerImpl.ProgressListener progressListener) throws Exception{
 		
 		final AsynchProgressPopup pp =
@@ -1702,11 +1718,13 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							}
 						}
 				};
-				//
+
 				VCDataManager testVCDataManager = getLocalWorkspace().getVCDataManager();
 				double[] prebleachAverage = testVCDataManager.getSimDataBlock(
 						getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier(), "prebleach_avg", 0).getData();
-				//
+
+//				double[] prebleachAverage = getPreBleachAverageXYZ(null);
+
 				Simulation frapSimulation = frapStudy.getBioModel().getSimulations()[0];
 				DataManager simulationDataManager = getDataManager(frapSimulation);
 				final int startIndexForRecovery = new Integer(getFrapStudy().getFrapModelParameters().startIndexForRecovery);

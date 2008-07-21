@@ -203,7 +203,7 @@ public class FRAPOptData {
 			};
 			dimensionReducedRefData =
 				FRAPOptimization.dataReduction(getLocalWorkspace().getVCDataManager(),vcSimDataID,
-						startRecoveryIndex, getExpFrapStudy().getFrapData().getRois(), null,reducedRefDataProgressListener);
+						startRecoveryIndex, getExpFrapStudy().getFrapData().getRois(),reducedRefDataProgressListener);
 			System.out.println("generating dimension reduced ref data, done ....");
 		}finally{
 			FRAPStudy.removeExternalDataAndSimulationFiles(referenceSimKeyValue, null, null, getLocalWorkspace());
