@@ -2,6 +2,8 @@ package cbit.vcell.simdata.gui;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.math.AnnotatedFunction;
 import cbit.vcell.server.DataAccessException;
+import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.simdata.VariableType;
 
 import javax.swing.*;
 import java.awt.*;
@@ -10,23 +12,27 @@ import java.awt.event.ActionListener;
 
 import cbit.gui.ZEnforcer;
 import cbit.util.*;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.TreeSet;
 import java.util.Vector;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
-import java.awt.Font;
 /**
  * Insert the type's description here.
  * Creation date: (1/21/2001 10:29:53 PM)
  * @author: Ion Moraru
  */
 public class PDEPlotControlPanel extends JPanel {
+	private JComboBox filterComboBox;
 	private JLabel ivjJLabel1 = null;
 	private JTextField ivjJTextField1 = null;
 	private cbit.vcell.simdata.PDEDataContext fieldPdeDataContext = null;
 	private boolean ivjConnPtoP1Aligning = false;
 	private cbit.gui.DefaultListModelCivilized ivjDefaultListModelCivilized1 = null;
-	private JLabel ivjJLabel2 = null;
 	private JList ivjJList1 = null;
 	private JPanel ivjJPanel1 = null;
 	private JPanel ivjJPanel2 = null;
@@ -46,6 +52,59 @@ public class PDEPlotControlPanel extends JPanel {
 	private JButton ivjAddFunctionButton = null;
 	private Vector<AnnotatedFunction> functionsList = new Vector<AnnotatedFunction>();  //  @jve:decl-index=0:
 
+	public static interface DataIdentifierFilter{
+		boolean accept(String filterSetName,DataIdentifier dataidentifier);
+		String[] getFilterSetNames();
+		String getDefaultFilterName();
+		boolean isAcceptAll(String filterSetName);
+	};
+	
+	DataIdentifierFilter DEFAULT_DATAIDENTIFIER_FILTER =
+		new DataIdentifierFilter(){
+			private String ALL = "All Variables";
+			private String VOLUME_FILTER_SET = "Volume Variables";
+			private String MEMBRANE_FILTER_SET = "Membrane Variables";
+			private String USER_DEFINED_FILTER_SET = "User Functions";
+			private String[] FILTER_SET_NAMES = new String[] {ALL,VOLUME_FILTER_SET,MEMBRANE_FILTER_SET,USER_DEFINED_FILTER_SET};
+			public boolean accept(String filterSetName,DataIdentifier dataidentifier) {
+				if(filterSetName.equals(ALL)){
+					return true;
+				}else if(filterSetName.equals(VOLUME_FILTER_SET)){
+					return dataidentifier.getVariableType().equals(VariableType.VOLUME);
+				}else if(filterSetName.equals(MEMBRANE_FILTER_SET)){
+					return dataidentifier.getVariableType().equals(VariableType.MEMBRANE);
+				}else if(filterSetName.equals(USER_DEFINED_FILTER_SET)){
+					if(functionsList != null){
+						for (int i = 0; i < functionsList.size(); i++) {
+							if(functionsList.elementAt(i).isUserDefined() && functionsList.elementAt(i).getName().equals(dataidentifier.getName())){
+								return true;
+							}
+						}
+					}
+					return false;
+				}
+				throw new IllegalArgumentException("PDEPlotControlPanel.DEFAULT_DATAIDENTIFIER_FILTE: Unknown Filter name "+filterSetName);
+			}
+			public String getDefaultFilterName() {
+				return ALL;
+			}
+			public String[] getFilterSetNames() {
+				return FILTER_SET_NAMES;
+			}
+			public boolean isAcceptAll(String filterSetName){
+				return filterSetName.equals(ALL);
+			}
+		};
+	
+	DataIdentifierFilter dataIdentifierFilter;
+	
+	private ActionListener filterChangeActionListener =
+		new ActionListener(){
+			public void actionPerformed(ActionEvent e) {
+				filterVariableNames();
+			}
+	};
+	
 class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.FocusListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener, javax.swing.event.ListDataListener, javax.swing.event.ListSelectionListener {
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == PDEPlotControlPanel.this.getJTextField1()) 
@@ -96,7 +155,27 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 public PDEPlotControlPanel() {
 	super();
 	initialize();
+	setDataIdentifierFilter(DEFAULT_DATAIDENTIFIER_FILTER);
 }
+
+public void setDataIdentifierFilter(DataIdentifierFilter dataIdentifierFilter) {
+	this.dataIdentifierFilter = dataIdentifierFilter;
+	filterComboBox.removeActionListener(filterChangeActionListener);
+	filterComboBox.removeAllItems();
+	if(dataIdentifierFilter != null){
+		String[] filterSetNames = this.dataIdentifierFilter.getFilterSetNames();
+		for (int i = 0; i < filterSetNames.length; i++) {
+			filterComboBox.addItem(filterSetNames[i]);
+		}
+		filterComboBox.setSelectedItem(dataIdentifierFilter.getDefaultFilterName());
+		filterComboBox.addActionListener(filterChangeActionListener);
+	}else{
+		filterComboBox.addItem("All Variables");
+		filterComboBox.setSelectedIndex(0);
+	}
+	filterVariableNames();
+}
+
 
 /**
  * Comment
@@ -601,11 +680,7 @@ private void connEtoM2() {
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM3(cbit.vcell.simdata.PDEDataContext value) {
 	try {
-		// user code begin {1}
-		// user code end
-		if ((getpdeDataContext1() != null)) {
-			getDefaultListModelCivilized1().setContents(getpdeDataContext1().getVariableNames());
-		}
+		filterVariableNames();
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -681,13 +756,7 @@ private void connEtoM7(cbit.vcell.simdata.PDEDataContext value) {
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM8(java.beans.PropertyChangeEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
-		if ((getpdeDataContext1() != null)) {
-			getDefaultListModelCivilized1().setContents(getpdeDataContext1().getVariableNames());
-		}
-		// user code begin {2}
-		// user code end
+		filterVariableNames();
 	} catch (java.lang.Throwable ivjExc) {
 		// user code begin {3}
 		// user code end
@@ -695,6 +764,34 @@ private void connEtoM8(java.beans.PropertyChangeEvent arg1) {
 	}
 }
 
+private void filterVariableNames(){
+	if ((getpdeDataContext1() != null)) {
+		if(dataIdentifierFilter == null || dataIdentifierFilter.isAcceptAll((String)filterComboBox.getSelectedItem())){
+			getDefaultListModelCivilized1().setContents(getpdeDataContext1().getVariableNames());
+		}else{
+			initFunctionsList();
+			ArrayList<String> displayVarNames = new ArrayList<String>(); 
+			if(getpdeDataContext1().getDataIdentifiers() != null && getpdeDataContext1().getDataIdentifiers().length > 0){
+				TreeSet<DataIdentifier> dataIdentifierTreeSet =
+					new TreeSet<DataIdentifier>(new Comparator<DataIdentifier>(){
+						public int compare(DataIdentifier o1, DataIdentifier o2) {
+							return o1.getName().compareToIgnoreCase(o2.getName());
+						}});
+				DataIdentifier[] dataIdentifierArr = getPdeDataContext().getDataIdentifiers();
+				dataIdentifierTreeSet.addAll(Arrays.asList(dataIdentifierArr));
+				DataIdentifier[] sortedDataIdentiferArr = dataIdentifierTreeSet.toArray(new DataIdentifier[0]);
+
+				for(int i=0; i < sortedDataIdentiferArr.length; i++){
+					if(dataIdentifierFilter.accept((String)filterComboBox.getSelectedItem(), sortedDataIdentiferArr[i])){
+						displayVarNames.add(sortedDataIdentiferArr[i].getName());
+					}
+				}
+			}
+			String[] displayNames = displayVarNames.toArray(new String[displayVarNames.size()]);
+			getDefaultListModelCivilized1().setContents((displayNames.length == 0?null:displayNames));
+		}
+	}
+}
 
 /**
  * connPtoP1SetSource:  (PDEPlotControlPanel.pdeDataContext <--> pdeDataContext1.this)
@@ -1013,30 +1110,6 @@ private javax.swing.JLabel getJLabel1() {
 	return ivjJLabel1;
 }
 
-
-/**
- * Return the JLabel2 property value.
- * @return javax.swing.JLabel
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JLabel getJLabel2() {
-	if (ivjJLabel2 == null) {
-		try {
-			ivjJLabel2 = new javax.swing.JLabel();
-			ivjJLabel2.setName("JLabel2");
-			ivjJLabel2.setText("Variable");
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJLabel2;
-}
-
-
 /**
  * Return the JLabelMax property value.
  * @return javax.swing.JLabel
@@ -1162,13 +1235,10 @@ private javax.swing.JPanel getJPanel2() {
 			ivjJPanel2 = new javax.swing.JPanel();
 			ivjJPanel2.setName("JPanel2");
 			ivjJPanel2.setPreferredSize(new java.awt.Dimension(267, 150));
-			ivjJPanel2.setLayout(new java.awt.GridBagLayout());
+			final java.awt.GridBagLayout gridBagLayout = new java.awt.GridBagLayout();
+			gridBagLayout.rowHeights = new int[] {7};
+			ivjJPanel2.setLayout(gridBagLayout);
 			ivjJPanel2.setMinimumSize(new java.awt.Dimension(55, 150));
-
-			java.awt.GridBagConstraints constraintsJLabel2 = new java.awt.GridBagConstraints();
-			constraintsJLabel2.gridx = 0; constraintsJLabel2.gridy = 0;
-			constraintsJLabel2.insets = new java.awt.Insets(4, 4, 4, 4);
-			getJPanel2().add(getJLabel2(), constraintsJLabel2);
 
 			java.awt.GridBagConstraints constraintsJScrollPane1 = new java.awt.GridBagConstraints();
 			constraintsJScrollPane1.gridx = 0; constraintsJScrollPane1.gridy = 1;
@@ -1176,6 +1246,16 @@ private javax.swing.JPanel getJPanel2() {
 			constraintsJScrollPane1.weightx = 1.0;
 			constraintsJScrollPane1.weighty = 1.0;
 			constraintsJScrollPane1.insets = new java.awt.Insets(4, 4, 4, 4);
+
+			filterComboBox = new JComboBox();
+			filterComboBox.insertItemAt("All Variables", 0);
+			filterComboBox.setSelectedIndex(0);
+			final GridBagConstraints gridBagConstraints = new GridBagConstraints();
+			gridBagConstraints.insets = new Insets(4, 4, 0, 4);
+			gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+			gridBagConstraints.gridx = 0;
+			gridBagConstraints.gridy = 0;
+			ivjJPanel2.add(filterComboBox, gridBagConstraints);
 			getJPanel2().add(getJScrollPane1(), constraintsJScrollPane1);
 			// user code begin {1}
 			// user code end
@@ -1776,4 +1856,6 @@ private void variableNameChanged(javax.swing.event.ListSelectionEvent listSelect
 private void updateTimeTextField(double newTime){
 	getJTextField1().setText(Double.toString(newTime));
 }
-}  //  @jve:decl-index=0:visual-constraint="10,10"
+
+
+}

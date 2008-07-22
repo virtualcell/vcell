@@ -268,6 +268,10 @@ public PDEDataViewer() {
 	initialize();
 }
 
+public void setDataIdentifierFilter(PDEPlotControlPanel.DataIdentifierFilter dataIdentifierFilter){
+	getPDEPlotControlPanel1().setDataIdentifierFilter(dataIdentifierFilter);
+}
+
 private StatsJobInfo calcStatsGetUserInfo() throws UserCancelException{
 	
 	StatsJobInfo statsJobInfo = null;
