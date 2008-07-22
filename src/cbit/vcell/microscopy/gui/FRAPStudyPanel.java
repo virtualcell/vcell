@@ -86,6 +86,7 @@ import cbit.vcell.simdata.MergedDataInfo;
 import cbit.vcell.simdata.PDEDataContext;
 import cbit.vcell.simdata.SimDataConstants;
 import cbit.vcell.simdata.VariableType;
+import cbit.vcell.simdata.gui.PDEPlotControlPanel;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationJob;
 
@@ -1387,6 +1388,34 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 			getPDEDataViewer().setSimulation(null);
 			getPDEDataViewer().setPdeDataContext(null);
 			
+			getPDEDataViewer().setDataIdentifierFilter(
+					new PDEPlotControlPanel.DataIdentifierFilter(){
+						private String ALL_DATAIDENTIFIERS = "All";
+						private String NORM_FLUOR = "Normalized Fluor.";
+						private String[] filterSetNames = new String[] {ALL_DATAIDENTIFIERS,NORM_FLUOR};
+						public boolean accept(String filterSetName,DataIdentifier dataidentifier) {
+							if(filterSetName.equals(ALL_DATAIDENTIFIERS)){
+								return true;
+							}else if(filterSetName.equals(NORM_FLUOR)){
+								return
+									dataidentifier.getName().equals(FRAPStudy.SPECIES_NAME_PREFIX_COMBINED) ||
+									dataidentifier.getName().equals(FRAPStudy.SPECIES_NAME_PREFIX_IMMOBILE) ||
+									dataidentifier.getName().equals(FRAPStudy.SPECIES_NAME_PREFIX_MOBILE);
+							}
+							throw new IllegalArgumentException("DataIdentifierFilter: Unknown filterSetName "+filterSetName);
+						}
+						public String getDefaultFilterName() {
+							return NORM_FLUOR;
+						}
+						public String[] getFilterSetNames() {
+							return filterSetNames;
+						}
+						public boolean isAcceptAll(String filterSetName){
+							return filterSetName.equals(ALL_DATAIDENTIFIERS);
+						}
+					}
+				);
+
 			int jobIndex = 0;
 			SimulationJob simJob = new SimulationJob(sim,fieldDataIdentifierSpecs,jobIndex);
 			dataManager = new PDEDataManager(getLocalWorkspace().getVCDataManager(), simJob.getVCDataIdentifier());
@@ -1412,6 +1441,35 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		else if (choice == DisplayChoice.EXTTIMEDATA){
 			getFlourDataViewer().setSimulation(null);
 			getFlourDataViewer().setPdeDataContext(null);
+			
+			final String NORM_FLUOR_VAR = "norm_fluor";
+			getFlourDataViewer().setDataIdentifierFilter(
+				new PDEPlotControlPanel.DataIdentifierFilter(){
+					private String ALL_DATAIDENTIFIERS = "All";
+					private String EXP_NORM_FLUOR = "Exp. Norm. Fluor";
+					private String[] filterSetNames = new String[] {ALL_DATAIDENTIFIERS,EXP_NORM_FLUOR};
+					public boolean accept(String filterSetName,DataIdentifier dataidentifier) {
+						if(filterSetName.equals(ALL_DATAIDENTIFIERS)){
+							return true;
+						}else if(filterSetName.equals(EXP_NORM_FLUOR)){
+							return
+								dataidentifier.getName().indexOf(NORM_FLUOR_VAR) != -1;
+//								dataidentifier.getName().indexOf("Data2.") == -1 ||
+//								dataidentifier.getName().indexOf(".ring") != -1;
+						}
+						throw new IllegalArgumentException("DataIdentifierFilter: Unknown filterSetName "+filterSetName);
+					}
+					public String getDefaultFilterName() {
+						return EXP_NORM_FLUOR;
+					}
+					public String[] getFilterSetNames() {
+						return filterSetNames;
+					}
+					public boolean isAcceptAll(String filterSetName){
+						return filterSetName.equals(ALL_DATAIDENTIFIERS);
+					}
+				}
+			);
 			
 			ExternalDataIdentifier timeSeriesExtDataID = getFrapStudy().getFrapDataExternalDataInfo().getExternalDataIdentifier();
 			ExternalDataIdentifier maskExtDataID = getFrapStudy().getRoiExternalDataInfo().getExternalDataIdentifier();
