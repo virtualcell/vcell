@@ -105,7 +105,7 @@ public class FRAPOptimization {
 		return result;
 	}
 	
-	public static double getErrorByNewParameters(double refDiffRate, double[] newParams, double[][] refData, double[][] expData, double[] refTimePoints, double[] expTimePoints, int roiLen, double refTimeInterval) throws Exception
+	public static double getErrorByNewParameters(double refDiffRate, double[] newParams, double[][] refData, double[][] expData, double[] refTimePoints, double[] expTimePoints, int roiLen, double refTimeInterval, boolean[] errorOfInterest) throws Exception
 	{
 		double error = 0;
 		double diffRate = 0;
@@ -129,27 +129,99 @@ public class FRAPOptimization {
                     refTimeInterval);
 			//get diffusion initial condition for immobile part
 			double[] firstPostBleach = new double[roiLen];
-			for(int i = 0; i < roiLen; i++)
+			if(diffData != null)
 			{
-				firstPostBleach[i] = diffData[i][0];
-			}
-			//compute error against exp data
-			for(int i=0; i<roiLen; i++)
-			{
-				for(int j=0; j<expTimePoints.length; j++)
+				for(int i = 0; i < roiLen; i++)
 				{
-					double difference = expData[i][j] - getValueFromParameters(diffData[i][j], mobileFrac, bleachWhileMonitoringRate, firstPostBleach[i], expTimePoints[j]);
-//					double difference = expData[i][j]- (mobileFrac * diffData[i][j] + imMobileFrac * firstPostBleach[i]) * Math.exp(-(bleachWhileMonitoringRate*expTimePoints[j]));
-
-					error = error + difference * difference;
+					firstPostBleach[i] = diffData[i][0];
 				}
 			}
-			return Math.sqrt(error);
+			//compute error against exp data
+			if(errorOfInterest != null)
+			{
+				for(int i=0; i<roiLen; i++)
+				{
+					if(errorOfInterest[i])
+					{
+						for(int j=0; j<expTimePoints.length; j++)
+						{
+							double difference = expData[i][j] - getValueFromParameters(diffData[i][j], mobileFrac, bleachWhileMonitoringRate, firstPostBleach[i], expTimePoints[j]);
+//							double difference = expData[i][j]- (mobileFrac * diffData[i][j] + imMobileFrac * firstPostBleach[i]) * Math.exp(-(bleachWhileMonitoringRate*expTimePoints[j]));
+							error = error + difference * difference;
+						}
+					}
+				}
+			}
+			return error;
 		}
 		else
 		{
 			throw new Exception("Cannot perform optimization because there is no parameters to be evaluated.");
 		}
+		
+		//trying 5 parameters
+//		double diffFastOffset = newParams[0];
+//		double mFracFast = newParams[1];
+//		double diffSlowRate = newParams[2];
+//		double mFracSlow = newParams[3];
+//		double monitoringRate = newParams[4];
+//		
+//		double[][] fastData = null;
+//		double[][] slowData = null;
+//		
+//		if(newParams != null && newParams.length > 0)
+//		{
+//			double diffFastRate = diffSlowRate + diffFastOffset;
+//			double immobileFrac = 1- mFracFast - mFracSlow;
+//						
+//			fastData = FRAPOptimization.getValueByDiffRate(refDiffRate,
+//                    diffFastRate,
+//                    refData,
+//                    expData,
+//                    refTimePoints,
+//                    expTimePoints,
+//                    roiLen,
+//                    refTimeInterval);
+//			
+//			slowData = FRAPOptimization.getValueByDiffRate(refDiffRate,
+//                    diffSlowRate,
+//                    refData,
+//                    expData,
+//                    refTimePoints,
+//                    expTimePoints,
+//                    roiLen,
+//                    refTimeInterval);
+//			
+//			//get diffusion initial condition for immobile part
+//			double[] firstPostBleach = new double[roiLen];
+//			if(fastData != null)
+//			{
+//				for(int i = 0; i < roiLen; i++)
+//				{
+//					firstPostBleach[i] = fastData[i][0];
+//				}
+//			}
+//			//compute error against exp data
+//			for(int i=0; i<roiLen; i++)
+//			{
+//				if(errorOfInterest != null && errorOfInterest[i])
+//				{
+//					for(int j=0; j<expTimePoints.length; j++)
+//					{
+//											
+//						double newValue = (mFracFast * fastData[i][j] + mFracSlow * slowData[i][j] + immobileFrac * firstPostBleach[i]) * Math.exp(-(monitoringRate * expTimePoints[j]));
+//						double difference = expData[i][j] - newValue;
+//						error = error + difference * difference;
+//					}
+//				}
+//			}
+//			return error;
+//		}
+//		else
+//		{
+//			throw new Exception("Cannot perform optimization because there is no parameters to be evaluated.");
+//		}
+		
 	}
 	
 	public static double[][] getValueByDiffRate(double refDiffRate, double newDiffRate, double[][] refData, double[][] expData, double[] refTimePoints, double[] expTimePoints, int roiLen, double refTimeInterval) throws Exception
@@ -203,7 +275,7 @@ public class FRAPOptimization {
 		return result;
 	}
 	
-	public static void estimate(FRAPOptData argOptData, Parameter[] inParams, String[] outParaNames, double[] outParaVals) throws Exception
+	public static void estimate(FRAPOptData argOptData, Parameter[] inParams, String[] outParaNames, double[] outParaVals, boolean[] eoi) throws Exception
 	{
 		/*PowellSolver  solver = new PowellSolver();
 		LookupTableObjectiveFunction func = new LookupTableObjectiveFunction(argOptData);
@@ -229,7 +301,7 @@ public class FRAPOptimization {
 		PowellOptimizationSolver optSolver = new PowellOptimizationSolver();
 		// create optimization spec
 		OptimizationSpec optSpec = new OptimizationSpec();
-		DefaultScalarFunction scalarFunc = new LookupTableObjectiveFunction(argOptData); 
+		DefaultScalarFunction scalarFunc = new LookupTableObjectiveFunction(argOptData, eoi); 
 		optSpec.setObjectiveFunction(new ImplicitObjectiveFunction(scalarFunc));
 		
 		for (int i = 0; i < inParams.length; i++) {
