@@ -193,46 +193,47 @@ public class FRAPDataAnalysis {
 		//
 		//Recovery after Bleach fit
 		//
-		if(arg_bleachType == FrapDataAnalysisResults.BleachType_CirularDisk)
-		{
-			outputParamValues = new double[4];// the array is used to get Ii, A, fitRecoveryTau back, unnormalized Ii + A. (Note: Ii=Io, A=If-Io, Ii+A = If)
-			Expression fittedCurve = CurveFitting.fitRecovery(time, fluor, FrapDataAnalysisResults.BleachType_CirularDisk, inputParamValues, outputParamValues);
-			double fittedRecoveryTau = outputParamValues[2];
-			Expression diffExp = new Expression(FRAPDataAnalysis.circularDisk_DiffFunc);
-			diffExp.substituteInPlace(new Expression(FRAPDataAnalysis.symbol_w), new Expression(bleachRadius));
-			diffExp.substituteInPlace(new Expression(FRAPDataAnalysis.symbol_tau), new Expression(fittedRecoveryTau));
-			double fittedDiffusionRate =  diffExp.evaluateConstant();
-//			double fittedDiffusionRate = bleachRadius*bleachRadius/(4.0*fittedRecoveryTau);
-			frapDataAnalysisResults.setFitExpression(fittedCurve.flatten());
-			frapDataAnalysisResults.setRecoveryTau(fittedRecoveryTau);
-			frapDataAnalysisResults.setRecoveryDiffusionRate(fittedDiffusionRate);
-//			//calculate mobile fraction
-//			// get pre bleach average under bleach ROI region, if no prebleach available
-//			double preBleachAvg = 0;
-//			if(startIndexForRecovery > 0)
-//			{
-//				for(int i=0; i<startIndexForRecovery; i++)
-//				{
-//					preBleachAvg = preBleachAvg + temp_fluor[i];
-//				}
-//				preBleachAvg = preBleachAvg/startIndexForRecovery;
-//			}
-//			else //if there is not prebleach images, we'll use the last recovery image * 1.2 as prebleach value if user agrees.
-//			{
-//				preBleachAvg = temp_fluor[temp_fluor.length - 1];//* ratio
-//				System.err.println("need to determine factor for prebleach average if no pre bleach images.");
-//			}
-//			// get unnormalized Ii and A
-//			double intensityFinal = outputParamValues[3]; // Ii+A
-//			// calculate mobile fraction
-//			double mobileFrac = intensityFinal/preBleachAvg;
+//		if(arg_bleachType == FrapDataAnalysisResults.BleachType_CirularDisk)
+//		{
+//			outputParamValues = new double[4];// the array is used to get Ii, A, fitRecoveryTau back, unnormalized Ii + A. (Note: Ii=Io, A=If-Io, Ii+A = If)
+//			Expression fittedCurve = CurveFitting.fitRecovery(time, fluor, FrapDataAnalysisResults.BleachType_CirularDisk, inputParamValues, outputParamValues);
+//			double fittedRecoveryTau = outputParamValues[2];
+//			Expression diffExp = new Expression(FRAPDataAnalysis.circularDisk_DiffFunc);
+//			diffExp.substituteInPlace(new Expression(FRAPDataAnalysis.symbol_w), new Expression(bleachRadius));
+//			diffExp.substituteInPlace(new Expression(FRAPDataAnalysis.symbol_tau), new Expression(fittedRecoveryTau));
+//			double fittedDiffusionRate =  diffExp.evaluateConstant();
+////			double fittedDiffusionRate = bleachRadius*bleachRadius/(4.0*fittedRecoveryTau);
+//			frapDataAnalysisResults.setFitExpression(fittedCurve.flatten());
+//			frapDataAnalysisResults.setRecoveryTau(fittedRecoveryTau);
+//			frapDataAnalysisResults.setRecoveryDiffusionRate(fittedDiffusionRate);
+////			//calculate mobile fraction
+////			// get pre bleach average under bleach ROI region, if no prebleach available
+////			double preBleachAvg = 0;
+////			if(startIndexForRecovery > 0)
+////			{
+////				for(int i=0; i<startIndexForRecovery; i++)
+////				{
+////					preBleachAvg = preBleachAvg + temp_fluor[i];
+////				}
+////				preBleachAvg = preBleachAvg/startIndexForRecovery;
+////			}
+////			else //if there is not prebleach images, we'll use the last recovery image * 1.2 as prebleach value if user agrees.
+////			{
+////				preBleachAvg = temp_fluor[temp_fluor.length - 1];//* ratio
+////				System.err.println("need to determine factor for prebleach average if no pre bleach images.");
+////			}
+////			// get unnormalized Ii and A
+////			double intensityFinal = outputParamValues[3]; // Ii+A
+////			// calculate mobile fraction
+////			double mobileFrac = intensityFinal/preBleachAvg;
+////			frapDataAnalysisResults.setMobilefraction(mobileFrac);
+//			double mobileFrac = outputParamValues[3];
 //			frapDataAnalysisResults.setMobilefraction(mobileFrac);
-			double mobileFrac = outputParamValues[3];
-			frapDataAnalysisResults.setMobilefraction(mobileFrac);
-
-			
-		}
-		else if(arg_bleachType == FrapDataAnalysisResults.BleachType_GaussianSpot)
+//
+//			
+//		}
+//		else 
+		if(arg_bleachType == FrapDataAnalysisResults.BleachType_GaussianSpot)
 		{
 			inputParamValues = new double[]{getCellAreaBleachedFraction(frapData)}; // the input parameter is the fraction of the cell area bleached
 			outputParamValues = new double[4];// the array is used get normalized If, normalized Io, tau and R(mobile fraction) back.

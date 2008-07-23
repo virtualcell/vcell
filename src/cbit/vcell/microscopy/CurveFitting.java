@@ -33,184 +33,184 @@ public class CurveFitting {
  * @param args java.lang.String[]
  */
 public static void main(String[] args) {
-	try {
-		final double TIME_STEP = 0.324;
-		final double TIME_OFFSET = 1.62;
-		final double[] fluor_unscaled = new double[] {
-				11552.65882,
-				14380.63529,
-				17219.81176,
-				19456.72941,
-				21508.85882,
-				23357.58824,
-				24638.8,
-				25526.50588,
-				26438.14118,
-				27556.28235,
-				28058.96471,
-				29018.55294,
-				29639.2,
-				30348.07059,
-				30291.31765,
-				31041.47059,
-				31251.67059,
-				31749.76471,
-				32302.08235,
-				32633.09412,
-				32546.72941,
-				32745.67059,
-				33406.18824,
-				33367.82353,
-				33475.75294,
-				33723.85882,
-				33760.27059,
-				33784.67059,
-				34246.34118,
-				34121.54118,
-				34439.02353,
-				34458.61176,
-				34671.17647,
-				34811.91765,
-				34587.48235,
-				34848.22353,
-				34816.62353,
-				35011.38824,
-				34970.81176,
-				35146.96471,
-				35215.71765,
-				35488.35294,
-				35146.27059,
-				35476.6,
-				35895.44706,
-				35682.71765,
-				36044.77647,
-				35601.25882,
-				35943.94118,
-				35693.74118,
-				35713.76471,
-				35850.62353,
-				35734.85882,
-				35655.89412,
-				35846.15294,
-				35831.16471,
-				35590.17647,
-				36178.97647,
-				35916.8,
-				36319.8,
-				35816.22353,
-				35923.18824,
-				35742.48235,
-				36011.63529,
-				35843.18824,
-				35910.81176,
-				35829.72941,
-				35694.65882,
-				36084.75294,
-				35906.32941
-		};
-		final double[] fluor_scaled = new double[] {
-				0,
-				0.11612116,
-				0.232702209,
-				0.324553564,
-				0.408817224,
-				0.48472896,
-				0.537337529,
-				0.573788128,
-				0.611221306,
-				0.657133941,
-				0.677774869,
-				0.71717707,
-				0.742661814,
-				0.771769155,
-				0.76943879,
-				0.800241249,
-				0.808872391,
-				0.829324919,
-				0.85200395,
-				0.865595813,
-				0.862049542,
-				0.87021838,
-				0.897340273,
-				0.895764958,
-				0.900196709,
-				0.910384327,
-				0.911879451,
-				0.912881353,
-				0.931838273,
-				0.926713789,
-				0.939750114,
-				0.940554437,
-				0.949282678,
-				0.955061732,
-				0.945846066,
-				0.956552509,
-				0.955254963,
-				0.963252308,
-				0.961586175,
-				0.968819291,
-				0.971642395,
-				0.982837229,
-				0.96879079,
-				0.982354635,
-				0.999553153,
-				0.990818149,
-				1.005684854,
-				0.987473322,
-				1.001544398,
-				0.991270793,
-				0.99209299,
-				0.997712629,
-				0.992959148,
-				0.989716733,
-				0.99752906,
-				0.996913619,
-				0.987018263,
-				1.011195317,
-				1.000429939,
-				1.016977752,
-				0.996300111,
-				1.00069225,
-				0.993272182,
-				1.004324025,
-				0.997407324,
-				1.000184052,
-				0.996854684,
-				0.991308473,
-				1.007326351,
-				1
-		};
-		double[] fluor = fluor_unscaled;  // fluor_scaled;
-		double[] time = new double[fluor.length];
-		for (int i = 0; i < time.length; i++){
-			time[i] = i*TIME_STEP + TIME_OFFSET;
-		}
-
-//		Random rand = new Random(200);
-//		for (int i = 0; i < fluor.length; i++) {
-//			fluor[i] = 55+ 43*(1-Math.exp(-time[i]/2.5)) + 10*rand.nextDouble();
+//	try {
+//		final double TIME_STEP = 0.324;
+//		final double TIME_OFFSET = 1.62;
+//		final double[] fluor_unscaled = new double[] {
+//				11552.65882,
+//				14380.63529,
+//				17219.81176,
+//				19456.72941,
+//				21508.85882,
+//				23357.58824,
+//				24638.8,
+//				25526.50588,
+//				26438.14118,
+//				27556.28235,
+//				28058.96471,
+//				29018.55294,
+//				29639.2,
+//				30348.07059,
+//				30291.31765,
+//				31041.47059,
+//				31251.67059,
+//				31749.76471,
+//				32302.08235,
+//				32633.09412,
+//				32546.72941,
+//				32745.67059,
+//				33406.18824,
+//				33367.82353,
+//				33475.75294,
+//				33723.85882,
+//				33760.27059,
+//				33784.67059,
+//				34246.34118,
+//				34121.54118,
+//				34439.02353,
+//				34458.61176,
+//				34671.17647,
+//				34811.91765,
+//				34587.48235,
+//				34848.22353,
+//				34816.62353,
+//				35011.38824,
+//				34970.81176,
+//				35146.96471,
+//				35215.71765,
+//				35488.35294,
+//				35146.27059,
+//				35476.6,
+//				35895.44706,
+//				35682.71765,
+//				36044.77647,
+//				35601.25882,
+//				35943.94118,
+//				35693.74118,
+//				35713.76471,
+//				35850.62353,
+//				35734.85882,
+//				35655.89412,
+//				35846.15294,
+//				35831.16471,
+//				35590.17647,
+//				36178.97647,
+//				35916.8,
+//				36319.8,
+//				35816.22353,
+//				35923.18824,
+//				35742.48235,
+//				36011.63529,
+//				35843.18824,
+//				35910.81176,
+//				35829.72941,
+//				35694.65882,
+//				36084.75294,
+//				35906.32941
+//		};
+//		final double[] fluor_scaled = new double[] {
+//				0,
+//				0.11612116,
+//				0.232702209,
+//				0.324553564,
+//				0.408817224,
+//				0.48472896,
+//				0.537337529,
+//				0.573788128,
+//				0.611221306,
+//				0.657133941,
+//				0.677774869,
+//				0.71717707,
+//				0.742661814,
+//				0.771769155,
+//				0.76943879,
+//				0.800241249,
+//				0.808872391,
+//				0.829324919,
+//				0.85200395,
+//				0.865595813,
+//				0.862049542,
+//				0.87021838,
+//				0.897340273,
+//				0.895764958,
+//				0.900196709,
+//				0.910384327,
+//				0.911879451,
+//				0.912881353,
+//				0.931838273,
+//				0.926713789,
+//				0.939750114,
+//				0.940554437,
+//				0.949282678,
+//				0.955061732,
+//				0.945846066,
+//				0.956552509,
+//				0.955254963,
+//				0.963252308,
+//				0.961586175,
+//				0.968819291,
+//				0.971642395,
+//				0.982837229,
+//				0.96879079,
+//				0.982354635,
+//				0.999553153,
+//				0.990818149,
+//				1.005684854,
+//				0.987473322,
+//				1.001544398,
+//				0.991270793,
+//				0.99209299,
+//				0.997712629,
+//				0.992959148,
+//				0.989716733,
+//				0.99752906,
+//				0.996913619,
+//				0.987018263,
+//				1.011195317,
+//				1.000429939,
+//				1.016977752,
+//				0.996300111,
+//				1.00069225,
+//				0.993272182,
+//				1.004324025,
+//				0.997407324,
+//				1.000184052,
+//				0.996854684,
+//				0.991308473,
+//				1.007326351,
+//				1
+//		};
+//		double[] fluor = fluor_unscaled;  // fluor_scaled;
+//		double[] time = new double[fluor.length];
+//		for (int i = 0; i < time.length; i++){
+//			time[i] = i*TIME_STEP + TIME_OFFSET;
 //		}
-		double[] inputParam = null;
-		double[] paramValues = new double[3];
-		Expression fittedCurve_new = CurveFitting.fitRecovery(time,fluor,FrapDataAnalysisResults.BleachType_CirularDisk, inputParam, paramValues);
-
-		SimpleSymbolTable symbolTable = new SimpleSymbolTable(new String[] { "t" });
-		fittedCurve_new.bindExpression(symbolTable);
-		double[] values = new double[1];
-
-		double[] curveValues = new double[fluor.length];
-		double[] asymptote = new double[fluor.length];
-		for (int i = 0; i < curveValues.length; i++) {
-			values[0] = time[i];
-			curveValues[i] = fittedCurve_new.evaluateVector(values);
-			values[0] = 1000000.0;
-			asymptote[i] = fittedCurve_new.evaluateVector(values);
-		}
-//		CurveFitting.showCurve(null, new String[] { "fluor", "fit", "asymptote" }, time, new double[][] { fluor, curveValues, asymptote } );
-	} catch (ExpressionException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	}
+//
+////		Random rand = new Random(200);
+////		for (int i = 0; i < fluor.length; i++) {
+////			fluor[i] = 55+ 43*(1-Math.exp(-time[i]/2.5)) + 10*rand.nextDouble();
+////		}
+//		double[] inputParam = null;
+//		double[] paramValues = new double[3];
+//		Expression fittedCurve_new = CurveFitting.fitRecovery(time,fluor,FrapDataAnalysisResults.BleachType_CirularDisk, inputParam, paramValues);
+//
+//		SimpleSymbolTable symbolTable = new SimpleSymbolTable(new String[] { "t" });
+//		fittedCurve_new.bindExpression(symbolTable);
+//		double[] values = new double[1];
+//
+//		double[] curveValues = new double[fluor.length];
+//		double[] asymptote = new double[fluor.length];
+//		for (int i = 0; i < curveValues.length; i++) {
+//			values[0] = time[i];
+//			curveValues[i] = fittedCurve_new.evaluateVector(values);
+//			values[0] = 1000000.0;
+//			asymptote[i] = fittedCurve_new.evaluateVector(values);
+//		}
+////		CurveFitting.showCurve(null, new String[] { "fluor", "fit", "asymptote" }, time, new double[][] { fluor, curveValues, asymptote } );
+//	} catch (ExpressionException e) {
+//		// TODO Auto-generated catch block
+//		e.printStackTrace();
+//	}
 }
 
 //public static Expression fitRecovery(double[] time, double[] fluor, double[] parameterValues) throws ExpressionException 
@@ -343,31 +343,32 @@ public static Expression fitRecovery(double[] time, double[] fluor, int bleachTy
 	OptimizationResultSet optResultSet = null;
 	String[] paramNames = null;
 	double[] paramValues = null;
-	if(bleachType == FrapDataAnalysisResults.BleachType_CirularDisk){
-		modelExp = new Expression(FRAPDataAnalysis.circularDisk_IntensityFunc);//Ii=Io, A=If-Io comparing with formula showing in software
-		// initialize starting guess, arguments in Parameter are name, Lower Bound, Upper Bound, Scale, Initial Guess
-		cbit.vcell.opt.Parameter parameters[] = new cbit.vcell.opt.Parameter[] {
-				FRAPDataAnalysis.para_Ii, FRAPDataAnalysis.para_A, FRAPDataAnalysis.para_tau};
-		
-		try {
-			optResultSet = solve(modelExp.flatten(),parameters,normalized_time,normalized_fluor);
-		} catch (OptimizationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		paramNames = optResultSet.getParameterNames();
-		paramValues = optResultSet.getParameterValues();
-		// copy into "output" buffer for parameter values.
-		for (int i = 0; i < paramValues.length; i++) {
-			outputParam[i] = paramValues[i]; 
-		}
-		// copy unnormalized (Ii + A) to output buffer
-		outputParam[outputParam.length - 1] = (paramValues[0]+paramValues[1])*(max_x-min_x) + min_x; //unnormalize Ii+A
-	}
-	else if(bleachType == FrapDataAnalysisResults.BleachType_GaussianSpot || bleachType == FrapDataAnalysisResults.BleachType_HalfCell){
+//	if(bleachType == FrapDataAnalysisResults.BleachType_CirularDisk){
+//		modelExp = new Expression(FRAPDataAnalysis.circularDisk_IntensityFunc);//Ii=Io, A=If-Io comparing with formula showing in software
+//		// initialize starting guess, arguments in Parameter are name, Lower Bound, Upper Bound, Scale, Initial Guess
+//		cbit.vcell.opt.Parameter parameters[] = new cbit.vcell.opt.Parameter[] {
+//				FRAPDataAnalysis.para_Ii, FRAPDataAnalysis.para_A, FRAPDataAnalysis.para_tau};
+//		
+//		try {
+//			optResultSet = solve(modelExp.flatten(),parameters,normalized_time,normalized_fluor);
+//		} catch (OptimizationException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		paramNames = optResultSet.getParameterNames();
+//		paramValues = optResultSet.getParameterValues();
+//		// copy into "output" buffer for parameter values.
+//		for (int i = 0; i < paramValues.length; i++) {
+//			outputParam[i] = paramValues[i]; 
+//		}
+//		// copy unnormalized (Ii + A) to output buffer
+//		outputParam[outputParam.length - 1] = (paramValues[0]+paramValues[1])*(max_x-min_x) + min_x; //unnormalize Ii+A
+//	}
+//	else
+	if(bleachType == FrapDataAnalysisResults.BleachType_GaussianSpot || bleachType == FrapDataAnalysisResults.BleachType_HalfCell){
 		if(bleachType == FrapDataAnalysisResults.BleachType_GaussianSpot)
 		{
 			Expression muExp = new Expression(FRAPDataAnalysis.gaussianSpot_MuFunc);
