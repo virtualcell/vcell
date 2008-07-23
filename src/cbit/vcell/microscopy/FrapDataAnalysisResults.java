@@ -9,11 +9,11 @@ import cbit.vcell.parser.Expression;
 /**
  */
 public class FrapDataAnalysisResults implements Matchable {
-	public static int BleachType_CirularDisk = 0;
-	public static int BleachType_GaussianSpot = 1;
-	public static int BleachType_HalfCell = 2;
+//	public static int BleachType_CirularDisk = 0;
+	public static int BleachType_GaussianSpot = 0;
+	public static int BleachType_HalfCell = 1;
 	public static final String[] BLEACH_TYPE_NAMES =
-		new String[] {"Circular Disk","Gaussian Spot","Half Cell"};
+		new String[] {/*"Circular Disk",*/"Gaussian Spot","Half Cell"};
 	
 	private Double recoveryTau = null;
 	private Double bleachWidth = null;

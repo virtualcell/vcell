@@ -338,23 +338,25 @@ public class FRAPEstimationPanel extends JPanel {
 	}
 	private void initialize(){
 		initTable();
-			
+		
 		for (int i = 0; i < FrapDataAnalysisResults.BLEACH_TYPE_NAMES.length; i++) {
-			bleachEstimationComboBox.insertItemAt(/*"Estimation method '"+*/"'"+FrapDataAnalysisResults.BLEACH_TYPE_NAMES[i]+"'", i);
+			bleachEstimationComboBox.addItem(FrapDataAnalysisResults.BLEACH_TYPE_NAMES[i]);
+//			bleachEstimationComboBox.insertItemAt(/*"Estimation method '"+*/"'"+FrapDataAnalysisResults.BLEACH_TYPE_NAMES[i]+"'", i);
 		}
 		bleachEstimationComboBox.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-				if(bleachEstimationComboBox.getSelectedIndex() == FrapDataAnalysisResults.BleachType_CirularDisk){
-					//expression on canvas
-					try{
-						String[] prefixes = new String[] { "I(t) = ", "D = " };
-						Expression[] expressions = new Expression[] { new Expression(FRAPDataAnalysis.circularDisk_IntensityFunc_display), new Expression(FRAPDataAnalysis.circularDisk_DiffFunc) };
-						String[] suffixes = new String[] { "", "[um2.s-1]" };
-						expressionCanvas.setExpressions(expressions,prefixes,suffixes);
-					}catch (ExpressionException e2){
-						e2.printStackTrace(System.out);
-					}					
-				}else if(bleachEstimationComboBox.getSelectedIndex() == FrapDataAnalysisResults.BleachType_GaussianSpot){
+//				if(bleachEstimationComboBox.getSelectedIndex() == FrapDataAnalysisResults.BleachType_CirularDisk){
+//					//expression on canvas
+//					try{
+//						String[] prefixes = new String[] { "I(t) = ", "D = " };
+//						Expression[] expressions = new Expression[] { new Expression(FRAPDataAnalysis.circularDisk_IntensityFunc_display), new Expression(FRAPDataAnalysis.circularDisk_DiffFunc) };
+//						String[] suffixes = new String[] { "", "[um2.s-1]" };
+//						expressionCanvas.setExpressions(expressions,prefixes,suffixes);
+//					}catch (ExpressionException e2){
+//						e2.printStackTrace(System.out);
+//					}					
+//				}else
+				if(bleachEstimationComboBox.getSelectedItem().equals(FrapDataAnalysisResults.BLEACH_TYPE_NAMES[FrapDataAnalysisResults.BleachType_GaussianSpot])){
 					//expression on canvas
 					try{
 						String[] prefixes = new String[] { "I(t) = ", "u(t)= ","D = " };
@@ -365,7 +367,7 @@ public class FRAPEstimationPanel extends JPanel {
 						e2.printStackTrace(System.out);
 					}
 					
-				}else if(bleachEstimationComboBox.getSelectedIndex() == FrapDataAnalysisResults.BleachType_HalfCell){
+				}else if(bleachEstimationComboBox.getSelectedItem().equals(FrapDataAnalysisResults.BLEACH_TYPE_NAMES[FrapDataAnalysisResults.BleachType_HalfCell])){
 					//expression on canvas
 					try{
 						String[] prefixes = new String[] { "I(t) = ", "u(t)= ","D = " };
@@ -378,7 +380,7 @@ public class FRAPEstimationPanel extends JPanel {
 				}
 				frapModelParameterLabel.setText(
 					PARAM_EST_EQUATION_STRING+"  ('"+
-					FrapDataAnalysisResults.BLEACH_TYPE_NAMES[bleachEstimationComboBox.getSelectedIndex()]+"')");
+					bleachEstimationComboBox.getSelectedItem()+"')");
 //				plotOfAverageLabel.setText(
 //					PLOT_TITLE_STRING+"  ('"+
 //					FrapDataAnalysisResults.BLEACH_TYPE_NAMES[bleachEstimationComboBox.getSelectedIndex()]+"')");
@@ -393,10 +395,7 @@ public class FRAPEstimationPanel extends JPanel {
 				}
 			}
 		});
-		bleachEstimationComboBox.setSelectedIndex(FrapDataAnalysisResults.BleachType_CirularDisk);
-	}
-	private int getBleachTypeMethod(){
-		return bleachEstimationComboBox.getSelectedIndex();
+		bleachEstimationComboBox.setSelectedItem(FrapDataAnalysisResults.BLEACH_TYPE_NAMES[FrapDataAnalysisResults.BleachType_GaussianSpot]);
 	}
 
 	private void displayFit(FrapDataAnalysisResults frapDataAnalysisResults,double[] frapDataTimeStamps){
@@ -524,7 +523,8 @@ public class FRAPEstimationPanel extends JPanel {
 			}
 			frapDataTimeStamps = frapData.getImageDataset().getImageTimeStamps();
 			frapDataAnalysisResults =
-				FRAPDataAnalysis.fitRecovery2(frapData, getBleachTypeMethod());
+				FRAPDataAnalysis.fitRecovery2(frapData,
+					FrapDataAnalysisResults.getBleachTypeFromBleachTypeName(bleachEstimationComboBox.getSelectedItem().toString()));
 			FRAPParameterEstimateEnum.START_TIME_RECOVERY.value = frapDataTimeStamps[frapDataAnalysisResults.getStartingIndexForRecovery()];
 			bleachEstimationComboBox.setEnabled(true);
 		}
