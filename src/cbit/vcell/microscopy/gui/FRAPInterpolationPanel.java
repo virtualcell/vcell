@@ -222,10 +222,10 @@ public class FRAPInterpolationPanel extends JPanel {
 						   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING1) ||
 						   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING2) ||
 						   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING3) ||
-//						   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING4) ||
-//						   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING5) ||
-//						   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING6) ||
-//						   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING7) ||
+						   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING4) ||
+						   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING5) ||
+						   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING6) ||
+						   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING7) ||
 						   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING8))
 						{
 							errorOfInterest[i] = true;
@@ -503,10 +503,10 @@ public class FRAPInterpolationPanel extends JPanel {
 			   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING1) ||
 			   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING2) ||
 			   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING3) ||
-//			   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING4) ||
-//			   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING5) ||
-//			   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING6) ||
-//			   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING7) ||
+			   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING4) ||
+			   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING5) ||
+			   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING6) ||
+			   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING7) ||
 			   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING8))
 			{
 				errorOfInterest[i] = true;
