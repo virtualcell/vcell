@@ -52,8 +52,8 @@ public class FRAPEstimationPanel extends JPanel {
 	
 	private enum FRAPParameterEstimateEnum {
 		DIFFUSION_RATE("Diffusion Rate","um2/s"),
-		MOBILE_FRACTION("Mobile Fraction","1/s"),
-		IMMOBILE_FRATION("Immobile Fraction","1/s"),
+		MOBILE_FRACTION("Mobile Fraction",""),
+		IMMOBILE_FRATION("Immobile Fraction",""),
 		START_TIME_RECOVERY("Start Time Recovery","s"),
 		BLEACH_RATE_MONITOR("Monitor Bleach Rate","1/s");
 		
@@ -192,7 +192,7 @@ public class FRAPEstimationPanel extends JPanel {
 					FRAPParameterEstimateEnum.BLEACH_RATE_MONITOR.value;
 
 				try{
-					int[] result = DialogUtils.showComponentOKCancelTableList(FRAPEstimationPanel.this, "Apply selected 'Estimated Values' to 'Initial FRAP Model Parameters'",
+					int[] result = DialogUtils.showComponentOKCancelTableList(FRAPEstimationPanel.this, "Select rows to copy values to 'Initial FRAP Model Parameters'",
 							FRAP_ESTIMATE_COLUMN_NAMES, rowData, ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 					if(result != null && result.length > 0){
 						Double selectedDiffusionRate = null;

@@ -187,7 +187,6 @@ public class FRAPParametersPanel extends JPanel {
 		panel.add(mobileFractionTextField, gridBagConstraints_13);
 
 		final JLabel label = new JLabel();
-		label.setText("1/s");
 		final GridBagConstraints gridBagConstraints_32 = new GridBagConstraints();
 		gridBagConstraints_32.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_32.gridy = 2;
@@ -214,7 +213,6 @@ public class FRAPParametersPanel extends JPanel {
 		panel.add(immobileFractionValueJLabel, gridBagConstraints_10);
 
 		final JLabel label_1 = new JLabel();
-		label_1.setText("1/s");
 		final GridBagConstraints gridBagConstraints_33 = new GridBagConstraints();
 		gridBagConstraints_33.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_33.gridy = 3;
