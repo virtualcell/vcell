@@ -15,12 +15,15 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 
 import cbit.gui.DialogUtils;
+import cbit.util.AsynchProgressPopup;
+import cbit.util.BeanUtils;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.ROI.RoiType;
 import cbit.vcell.opt.Parameter;
@@ -96,7 +99,7 @@ public class FRAPInterpolationPanel extends JPanel {
 					diffusionRateSlider.removeChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
 					mobileFractionSlider.removeChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
 					bleachWhileMonitorSlider.removeChangeListener(OPTIMIZER_SLIDER_CHANGE_LISTENER);
-					if(e.getSource() == diffusionRateSetButton){
+//					if(e.getSource() == diffusionRateSetButton){
 						double value = Double.parseDouble(diffusionRateTextField.getText());
 						if(value < FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound()){
 							value = FRAPOptData.REF_DIFFUSION_RATE_PARAM.getLowerBound();
@@ -116,8 +119,8 @@ public class FRAPInterpolationPanel extends JPanel {
 						}
 						diffusionRateSlider.setValue(sliderValue);
 						diffusionRateSetButton.setEnabled(false);
-					}else if(e.getSource() == mobileFractionSetButton){
-						double value = Double.parseDouble(mobileFractionTextField.getText());
+//					}else if(e.getSource() == mobileFractionSetButton){
+						/*double*/ value = Double.parseDouble(mobileFractionTextField.getText());
 						if(value < FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound()){
 							value = FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound();
 						}
@@ -125,7 +128,7 @@ public class FRAPInterpolationPanel extends JPanel {
 							value = FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound();
 						}
 						mobileFractionTextField.setText(value+"");
-						int sliderValue = (int)
+						/*int*/ sliderValue = (int)
 							(((value-FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound())*(double)mobileFractionSlider.getMaximum())/
 							(FRAPOptData.REF_MOBILE_FRACTION_PARAM.getUpperBound()-FRAPOptData.REF_MOBILE_FRACTION_PARAM.getLowerBound()));
 						if(sliderValue < mobileFractionSlider.getMinimum()){
@@ -136,8 +139,8 @@ public class FRAPInterpolationPanel extends JPanel {
 						}
 						mobileFractionSlider.setValue(sliderValue);
 						mobileFractionSetButton.setEnabled(false);
-					}else if(e.getSource() == bleachWhileMonitorSetButton){
-						double value = Double.parseDouble(bleachWhileMonitorRateTextField.getText());
+//					}else if(e.getSource() == bleachWhileMonitorSetButton){
+						/*double*/ value = Double.parseDouble(bleachWhileMonitorRateTextField.getText());
 						if(value < FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound()){
 							value = FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound();
 						}
@@ -145,7 +148,7 @@ public class FRAPInterpolationPanel extends JPanel {
 							value = FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound();
 						}
 						bleachWhileMonitorRateTextField.setText(value+"");
-						int sliderValue = (int)
+						/*int*/ sliderValue = (int)
 							(((value-FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound())*(double)bleachWhileMonitorSlider.getMaximum())/
 							(FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getUpperBound()-FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM.getLowerBound()));
 						if(sliderValue < bleachWhileMonitorSlider.getMinimum()){
@@ -156,7 +159,7 @@ public class FRAPInterpolationPanel extends JPanel {
 						}
 						bleachWhileMonitorSlider.setValue(sliderValue);
 						bleachWhileMonitorSetButton.setEnabled(false);
-					}
+//					}
 					if(!B_HOLD_FIRE){
 						firePropertyChange(PROPERTY_CHANGE_OPTIMIZER_VALUE, null, null);
 					}
@@ -194,71 +197,78 @@ public class FRAPInterpolationPanel extends JPanel {
 		gridBagLayout.rowHeights = new int[] {7,7,7,7};
 		setLayout(gridBagLayout);
 
-		final JPanel panel = new JPanel();
-		final GridBagLayout gridBagLayout_1 = new GridBagLayout();
-		gridBagLayout_1.columnWidths = new int[] {0,7};
-		panel.setLayout(gridBagLayout_1);
-		final GridBagConstraints gridBagConstraints_15 = new GridBagConstraints();
-		gridBagConstraints_15.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints_15.gridwidth = 4;
-		gridBagConstraints_15.gridy = 0;
-		gridBagConstraints_15.gridx = 0;
-		add(panel, gridBagConstraints_15);
-
 		final JButton createOptimalButton = new JButton();
+		final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
+		gridBagConstraints_8.anchor = GridBagConstraints.WEST;
+		gridBagConstraints_8.insets = new Insets(4, 4, 4, 4);
+		gridBagConstraints_8.fill = GridBagConstraints.BOTH;
+		gridBagConstraints_8.gridwidth = 3;
+		gridBagConstraints_8.gridy = 0;
+		gridBagConstraints_8.gridx = 0;
+		add(createOptimalButton, gridBagConstraints_8);
 		createOptimalButton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
-//				Parameter[] startingParameters = new Parameter[FRAPOptData.PARAMETER_NAMES.length];
-//				startingParameters[FRAPOptData.DIFFUSION_RATE_INDEX] = FRAPOptData.REF_DIFFUSION_RATE_PARAM;
-//				startingParameters[FRAPOptData.MOBILE_FRACTION_INDEX] = FRAPOptData.REF_MOBILE_FRACTION_PARAM;
-//				startingParameters[FRAPOptData.BLEACH_WHILE_MONITOR_INDEX] = FRAPOptData.REF_BLEACH_WHILE_MONITOR_PARAM;
-				try{
-					//temporarily set the error of interest, it should be taken from user interface.
-					boolean[] errorOfInterest = new boolean[RoiType.values().length];
-					
-					for(int i=0; i<RoiType.values().length; i++)
-					{
-						if(RoiType.values()[i].equals(RoiType.ROI_BLEACHED) ||
-						   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING1) ||
-						   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING2) ||
-						   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING3) ||
-						   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING4) ||
-						   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING5) ||
-						   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING6) ||
-						   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING7) ||
-						   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING8))
+				final AsynchProgressPopup pp =
+					new AsynchProgressPopup(
+						FRAPInterpolationPanel.this,
+						"Finding Best Fit Parameters...",
+						"Working...",true,false);
+				pp.start();
+				new Thread(new Runnable(){public void run(){
+					try{
+						//temporarily set the error of interest, it should be taken from user interface.
+						boolean[] errorOfInterest = new boolean[RoiType.values().length];
+						
+						for(int i=0; i<RoiType.values().length; i++)
 						{
-							errorOfInterest[i] = true;
+							if(RoiType.values()[i].equals(RoiType.ROI_BLEACHED) ||
+							   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING1) ||
+							   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING2) ||
+							   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING3) ||
+							   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING4) ||
+							   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING5) ||
+							   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING6) ||
+							   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING7) ||
+							   RoiType.values()[i].equals(RoiType.ROI_BLEACHED_RING8))
+							{
+								errorOfInterest[i] = true;
+							}
+							else
+							{
+								errorOfInterest[i] = false;
+							}
 						}
-						else
-						{
-							errorOfInterest[i] = false;
-						}
+											
+						final Parameter[] bestParameters = frapOptData.getBestParamters(getCurrentParameters(), errorOfInterest);
+						SwingUtilities.invokeLater(new Runnable(){public void run(){//}});
+							setParameterValues(
+								bestParameters[FRAPOptData.DIFFUSION_RATE_INDEX].getInitialGuess()+"",
+								bestParameters[FRAPOptData.MOBILE_FRACTION_INDEX].getInitialGuess()+"",
+								bestParameters[FRAPOptData.BLEACH_WHILE_MONITOR_INDEX].getInitialGuess()+"");
+							firePropertyChange(PROPERTY_CHANGE_OPTIMIZER_VALUE, null,null);
+						}});
+						
+					}catch(final Exception e2){
+						pp.stop();
+						e2.printStackTrace();
+						SwingUtilities.invokeLater(new Runnable(){public void run(){//}});
+							DialogUtils.showErrorDialog("Error setting Best Fit Parameters\n"+e2.getMessage());
+						}});
+					}finally{
+						pp.stop();
 					}
-										
-					Parameter[] bestParameters = frapOptData.getBestParamters(getCurrentParameters(), errorOfInterest);
-					setParameterValues(
-							bestParameters[FRAPOptData.DIFFUSION_RATE_INDEX].getInitialGuess()+"",
-							bestParameters[FRAPOptData.MOBILE_FRACTION_INDEX].getInitialGuess()+"",
-							bestParameters[FRAPOptData.BLEACH_WHILE_MONITOR_INDEX].getInitialGuess()+"");
-					
-					firePropertyChange(PROPERTY_CHANGE_OPTIMIZER_VALUE, null,null);
-				}catch(Exception e2){
-					e2.printStackTrace();
-					DialogUtils.showErrorDialog("Error setting Best Fit Parameters\n"+e2.getMessage());
-				}
+				}}).start();
 			}
 		});
 		createOptimalButton.setText("Set Parameters for Best Fit with Experimental Data");
-		final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
-		gridBagConstraints_8.weightx = 1;
-		gridBagConstraints_8.anchor = GridBagConstraints.WEST;
-		gridBagConstraints_8.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_8.gridy = 0;
-		gridBagConstraints_8.gridx = 0;
-		panel.add(createOptimalButton, gridBagConstraints_8);
 
 		final JButton runSimbutton = new JButton();
+		final GridBagConstraints gridBagConstraints_13 = new GridBagConstraints();
+		gridBagConstraints_13.anchor = GridBagConstraints.EAST;
+		gridBagConstraints_13.insets = new Insets(4, 4, 4, 4);
+		gridBagConstraints_13.gridy = 0;
+		gridBagConstraints_13.gridx = 3;
+		add(runSimbutton, gridBagConstraints_13);
 		runSimbutton.setFont(new Font("", Font.BOLD, 14));
 		runSimbutton.addActionListener(new ActionListener() {
 			public void actionPerformed(final ActionEvent e) {
@@ -266,13 +276,6 @@ public class FRAPInterpolationPanel extends JPanel {
 			}
 		});
 		runSimbutton.setText("Create New FRAP Document using Current Parameter Settings...");
-		final GridBagConstraints gridBagConstraints_13 = new GridBagConstraints();
-		gridBagConstraints_13.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_13.weightx = 1;
-		gridBagConstraints_13.anchor = GridBagConstraints.EAST;
-		gridBagConstraints_13.gridy = 0;
-		gridBagConstraints_13.gridx = 1;
-		panel.add(runSimbutton, gridBagConstraints_13);
 
 		final JLabel diffusionRateLabel = new JLabel();
 		diffusionRateLabel.setFont(new Font("", Font.BOLD, 14));
@@ -534,4 +537,14 @@ public class FRAPInterpolationPanel extends JPanel {
 //
 //		return bestFitData;
 //	}
+
+	public void enableAllButSetButtons(){
+		BeanUtils.enableComponents(this, true);
+		diffusionRateSetButton.setEnabled(false);
+		mobileFractionSetButton.setEnabled(false);
+		bleachWhileMonitorSetButton.setEnabled(false);
+		B_HOLD_FIRE = true;
+		SET_ACTION_LISTENER.actionPerformed(new ActionEvent(this,0,null));
+		B_HOLD_FIRE = false;
+	}
 }
