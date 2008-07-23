@@ -1,5 +1,7 @@
 package cbit.gui;
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
 import cbit.vcell.client.task.UserCancelException;
@@ -13,6 +15,11 @@ import java.util.*;
  * @author: Ion Moraru
  */
 public class DialogUtils {
+	
+	
+	private interface OKEnabler{
+		void setJOptionPane(JOptionPane joptionPane);
+	}
 /**
  * Insert the method's description here.
  * Creation date: (8/26/2005 3:26:35 PM)
@@ -238,6 +245,9 @@ public static void showComponentCloseDialog(final Component requester,Component 
 	}
 }
 
+public static int showComponentOKCancelDialog(final Component requester,Component stayOnTopComponent,String title) {
+	return showComponentOKCancelDialog(requester,stayOnTopComponent,title,null);
+}
 
 /**
  * Insert the method's description here.
@@ -245,12 +255,12 @@ public static void showComponentCloseDialog(final Component requester,Component 
  * @param owner java.awt.Component
  * @param message java.lang.Object
  */
-public static int showComponentOKCancelDialog(final Component requester,Component stayOnTopComponent,String title) {
+private static int showComponentOKCancelDialog(final Component requester,Component stayOnTopComponent,String title,OKEnabler okEnabler) {
 
 	JOptionPane inputDialog = new JOptionPane(stayOnTopComponent, JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
 	final JDialog d = inputDialog.createDialog(requester, title);
 	d.setResizable(true);
-	String id = Long.toString(System.currentTimeMillis());
+	if(okEnabler != null){okEnabler.setJOptionPane(inputDialog);}
 	try {
 		if (SwingUtilities.isEventDispatchThread()) {
 			ZEnforcer.showModalDialogOnTop(d,requester);
@@ -285,14 +295,36 @@ public static int[] showComponentOKCancelTableList(final Component requester,Str
 	    }
 	};
 	tableModel.setDataVector(rowData, columnNames);
-	JTable table = new JTable(tableModel);
+	final JTable table = new JTable(tableModel);
 	table.setSelectionMode(listSelectionModel_SelectMode);
 	JScrollPane scrollPane = new JScrollPane(table);
 	table.setPreferredScrollableViewportSize(new Dimension(500, 250));
 	
 	ScopedExpressionTableCellRenderer.formatTableCellSizes(table, null, null);
 	
-	int result = showComponentOKCancelDialog(requester, scrollPane, title);
+	OKEnabler tableListOKEnabler =
+		new OKEnabler(){
+		private JOptionPane jop;
+			public void setJOptionPane(JOptionPane joptionPane) {
+				jop = joptionPane;
+				setInternalOKEnabled(joptionPane, false);
+				table.getSelectionModel().addListSelectionListener(
+						new ListSelectionListener(){
+							public void valueChanged(ListSelectionEvent e) {
+								if(!e.getValueIsAdjusting()){
+									if(table.getSelectedRowCount() != 0){
+										setInternalOKEnabled(jop, true);
+									}else{
+										setInternalOKEnabled(jop, false);
+									}
+								}
+							}
+						}
+				);
+
+			}
+		};
+	int result = showComponentOKCancelDialog(requester, scrollPane, title,tableListOKEnabler);
 	if(result != JOptionPane.OK_OPTION){
 		throw UserCancelException.CANCEL_GENERIC;
 	}
