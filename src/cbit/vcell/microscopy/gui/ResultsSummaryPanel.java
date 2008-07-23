@@ -33,6 +33,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
 import cbit.gui.DialogUtils;
@@ -79,14 +80,15 @@ public class ResultsSummaryPanel extends JPanel {
 		public void actionPerformed(ActionEvent e) {
 			if(plotFRAPSimResultsRadioButton.isSelected()){
 				BeanUtils.enableComponents(interpolationPanel, false);
-				BeanUtils.enableComponents(scrollPane, true);
-				table.setEnabled(true);
+//				BeanUtils.enableComponents(scrollPane, true);
+//				table.setEnabled(true);
 				processTableSelection();
 			}else if(plotDerivedSimResultsRadioButton.isSelected()){
-				BeanUtils.enableComponents(interpolationPanel, true);
-				BeanUtils.enableComponents(scrollPane, false);
-				table.invalidate();
-				scrollPane.revalidate();
+				interpolationPanel.enableAllButSetButtons();
+//				BeanUtils.enableComponents(interpolationPanel, true);
+//				BeanUtils.enableComponents(scrollPane, false);
+//				table.invalidate();
+//				scrollPane.revalidate();
 				plotDerivedSimulationResults();
 			}
 		}
@@ -154,43 +156,60 @@ public class ResultsSummaryPanel extends JPanel {
 		gridBagLayout.columnWidths = new int[] {7};
 		setLayout(gridBagLayout);
 
-		plotFRAPSimResultsRadioButton = new JRadioButton();
-		plotFRAPSimResultsRadioButton.addActionListener(plotButtonActionListener);
-		final GridBagConstraints gridBagConstraints_7 = new GridBagConstraints();
-		gridBagConstraints_7.gridy = 0;
-		gridBagConstraints_7.gridx = 0;
-		add(plotFRAPSimResultsRadioButton, gridBagConstraints_7);
-
-		final JLabel diffusionRateAndLabel = new JLabel();
-		diffusionRateAndLabel.setFont(new Font("", Font.BOLD, 14));
-		diffusionRateAndLabel.setText("Plot FRAP SImulation Results");
+		final JPanel panel_1 = new JPanel();
+		panel_1.setBorder(new LineBorder(Color.black, 2, false));
+		panel_1.setLayout(new GridBagLayout());
 		final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
-		gridBagConstraints_3.anchor = GridBagConstraints.WEST;
+		gridBagConstraints_3.fill = GridBagConstraints.HORIZONTAL;
 		gridBagConstraints_3.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_3.gridy = 0;
-		gridBagConstraints_3.gridx = 1;
-		add(diffusionRateAndLabel, gridBagConstraints_3);
+		gridBagConstraints_3.gridx = 0;
+		add(panel_1, gridBagConstraints_3);
+
+		plotFRAPSimResultsRadioButton = new JRadioButton();
+		plotFRAPSimResultsRadioButton.setFont(new Font("", Font.BOLD, 14));
+		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.weightx = 1;
+		gridBagConstraints.anchor = GridBagConstraints.WEST;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.gridx = 0;
+		panel_1.add(plotFRAPSimResultsRadioButton, gridBagConstraints);
+		plotFRAPSimResultsRadioButton.setText("Plot FRAP SImulation Results");
+		plotFRAPSimResultsRadioButton.addActionListener(plotButtonActionListener);
 
 		final JLabel standardErrorseLabel = new JLabel();
+		final GridBagConstraints gridBagConstraints_6 = new GridBagConstraints();
+		gridBagConstraints_6.insets = new Insets(4, 4, 0, 0);
+		gridBagConstraints_6.gridy = 1;
+		gridBagConstraints_6.gridx = 0;
+		panel_1.add(standardErrorseLabel, gridBagConstraints_6);
 		standardErrorseLabel.setFont(new Font("", Font.PLAIN, 14));
 		standardErrorseLabel.setText("FRAP Simulation Summary: Standard Error (SE) including all Times of Normalized ROI Average  (Experimental vs. Simulation Data)");
-		final GridBagConstraints gridBagConstraints_9 = new GridBagConstraints();
-		gridBagConstraints_9.gridy = 1;
-		gridBagConstraints_9.gridx = 1;
-		add(standardErrorseLabel, gridBagConstraints_9);
 
 		scrollPane = new JScrollPane();
+		final GridBagConstraints gridBagConstraints_7 = new GridBagConstraints();
+		gridBagConstraints_7.insets = new Insets(4, 4, 4, 4);
+		gridBagConstraints_7.fill = GridBagConstraints.BOTH;
+		gridBagConstraints_7.gridy = 2;
+		gridBagConstraints_7.gridx = 0;
+		panel_1.add(scrollPane, gridBagConstraints_7);
 		scrollPane.setMinimumSize(new Dimension(0, 100));
-		final GridBagConstraints gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints.fill = GridBagConstraints.BOTH;
-		gridBagConstraints.weighty = 0;
-		gridBagConstraints.weightx = 1;
-		gridBagConstraints.gridy = 2;
-		gridBagConstraints.gridx = 1;
-		add(scrollPane, gridBagConstraints);
 
 		table = new JTable();
+//		//Fix disable display bug
+//		   table = new JTable ()
+//		    {
+//		      public Component prepareRenderer (final TableCellRenderer renderer,
+//		        int row, int column)
+//		      {
+//		        Component comp = super.prepareRenderer (renderer, row, column);
+//		        
+//		        comp.setEnabled (isEnabled ());  // Enable/disable renderer same as table.
+//		        
+//		        return comp;
+//		      }
+//		    };
+
 		table.addMouseListener(
 				new MouseAdapter(){
 					@Override
@@ -251,32 +270,41 @@ public class ResultsSummaryPanel extends JPanel {
 		
 		table.setModel(getTableModel(summaryReportColumnNames,new Object[][] {{"diffTest","summaryTest"}}));
 
-		plotDerivedSimResultsRadioButton = new JRadioButton();
-		plotDerivedSimResultsRadioButton.addActionListener(plotButtonActionListener);
-		final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
-		gridBagConstraints_8.gridy = 3;
-		gridBagConstraints_8.gridx = 0;
-		add(plotDerivedSimResultsRadioButton, gridBagConstraints_8);
+		final JPanel panel_2 = new JPanel();
+		panel_2.setBorder(new LineBorder(Color.black, 2, false));
+		panel_2.setLayout(new GridBagLayout());
+		final GridBagConstraints gridBagConstraints_9 = new GridBagConstraints();
+		gridBagConstraints_9.fill = GridBagConstraints.HORIZONTAL;
+		gridBagConstraints_9.insets = new Insets(4, 4, 4, 4);
+		gridBagConstraints_9.gridy = 1;
+		gridBagConstraints_9.gridx = 0;
+		add(panel_2, gridBagConstraints_9);
 
-		final JLabel interactiveAnalysisUsingLabel = new JLabel();
-		interactiveAnalysisUsingLabel.setFont(new Font("", Font.BOLD, 14));
-		interactiveAnalysisUsingLabel.setText("Plot Derived FRAP Simulation Results");
-		final GridBagConstraints gridBagConstraints_6 = new GridBagConstraints();
-		gridBagConstraints_6.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_6.anchor = GridBagConstraints.WEST;
-		gridBagConstraints_6.gridy = 3;
-		gridBagConstraints_6.gridx = 1;
-		add(interactiveAnalysisUsingLabel, gridBagConstraints_6);
+		plotDerivedSimResultsRadioButton = new JRadioButton();
+		plotDerivedSimResultsRadioButton.setFont(new Font("", Font.BOLD, 14));
+		final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
+		gridBagConstraints_5.weightx = 1;
+		gridBagConstraints_5.anchor = GridBagConstraints.WEST;
+		gridBagConstraints_5.gridy = 0;
+		gridBagConstraints_5.gridx = 0;
+		panel_2.add(plotDerivedSimResultsRadioButton, gridBagConstraints_5);
+		plotDerivedSimResultsRadioButton.setText("Plot Derived FRAP Simulation Results");
+		plotDerivedSimResultsRadioButton.addActionListener(plotButtonActionListener);
 
 		final JLabel interactiveAnalysisUsingLabel_1 = new JLabel();
+		final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
+		gridBagConstraints_8.gridy = 1;
+		gridBagConstraints_8.gridx = 0;
+		panel_2.add(interactiveAnalysisUsingLabel_1, gridBagConstraints_8);
 		interactiveAnalysisUsingLabel_1.setFont(new Font("", Font.PLAIN, 14));
 		interactiveAnalysisUsingLabel_1.setText("Interactive Analysis using FRAP Simulation Results (Enter/Adjust FRAP Model Parameters)");
-		final GridBagConstraints gridBagConstraints_10 = new GridBagConstraints();
-		gridBagConstraints_10.gridy = 4;
-		gridBagConstraints_10.gridx = 1;
-		add(interactiveAnalysisUsingLabel_1, gridBagConstraints_10);
 
 		interpolationPanel = new FRAPInterpolationPanel();
+		final GridBagConstraints gridBagConstraints_10 = new GridBagConstraints();
+		gridBagConstraints_10.fill = GridBagConstraints.BOTH;
+		gridBagConstraints_10.gridy = 2;
+		gridBagConstraints_10.gridx = 0;
+		panel_2.add(interpolationPanel, gridBagConstraints_10);
 		interpolationPanel.addPropertyChangeListener(
 				new PropertyChangeListener(){
 					public void propertyChange(PropertyChangeEvent evt) {
@@ -290,33 +318,26 @@ public class ResultsSummaryPanel extends JPanel {
 					}
 				}
 		);
-		interpolationPanel.setBorder(new LineBorder(Color.black, 2, false));
-		final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
-		gridBagConstraints_5.insets = new Insets(4, 4, 4, 4);
-		gridBagConstraints_5.fill = GridBagConstraints.HORIZONTAL;
-		gridBagConstraints_5.weightx = 1;
-		gridBagConstraints_5.gridy = 5;
-		gridBagConstraints_5.gridx = 1;
-		add(interpolationPanel, gridBagConstraints_5);
 
 		final JLabel standardErrorRoiLabel = new JLabel();
 		standardErrorRoiLabel.setFont(new Font("", Font.BOLD, 14));
 		standardErrorRoiLabel.setText("Plot -  ROI Average Normalized (using Pre-Bleach Average) vs. Time");
 		final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
 		gridBagConstraints_4.insets = new Insets(20, 4, 4, 4);
-		gridBagConstraints_4.gridy = 6;
-		gridBagConstraints_4.gridx = 1;
+		gridBagConstraints_4.gridy = 2;
+		gridBagConstraints_4.gridx = 0;
 		add(standardErrorRoiLabel, gridBagConstraints_4);
 
 		final JPanel panel = new JPanel();
+		panel.setBorder(new LineBorder(Color.black, 1, false));
 		panel.setLayout(new GridBagLayout());
 		final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
-		gridBagConstraints_1.gridwidth = 2;
+		gridBagConstraints_1.gridwidth = 0;
 		gridBagConstraints_1.insets = new Insets(4, 4, 4, 4);
 		gridBagConstraints_1.fill = GridBagConstraints.BOTH;
 		gridBagConstraints_1.weighty = 1;
 		gridBagConstraints_1.weightx = 1;
-		gridBagConstraints_1.gridy = 7;
+		gridBagConstraints_1.gridy = 3;
 		gridBagConstraints_1.gridx = 0;
 		add(panel, gridBagConstraints_1);
 
@@ -346,9 +367,16 @@ public class ResultsSummaryPanel extends JPanel {
 			RoiType argROIType = null;
 			String description = null;
 			int numROITypes = (argROIType == null?ROI.RoiType.values().length:1);
+			boolean[] wantsROITypes = new boolean[numROITypes];
+			Arrays.fill(wantsROITypes, true);
+			if(argROIType == null){
+				wantsROITypes[RoiType.ROI_BACKGROUND.ordinal()] = false;
+				wantsROITypes[RoiType.ROI_CELL.ordinal()] = false;
+			}
 			ODESolverResultSet fitOdeSolverResultSet = new ODESolverResultSet();
 			fitOdeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription("t"));
 			for (int j = 0; j < numROITypes; j++) {
+				if(!wantsROITypes[j]){continue;}
 				RoiType currentROIType = (argROIType == null?ROI.RoiType.values()[j]:argROIType);
 				String name = (description == null?/*"sim D="+diffusionRates[diffusionRateIndex]+"::"*/"":description)+currentROIType.toString();
 				fitOdeSolverResultSet.addDataColumn(new ODESolverResultSetColumnDescription(name));
@@ -359,7 +387,7 @@ public class ResultsSummaryPanel extends JPanel {
 			double[] shiftedSimTimes = frapOptData.getReducedExpTimePoints();
 			int startIndexRecovery = Integer.parseInt(frapOptData.getExpFrapStudy().getFrapModelParameters().startIndexForRecovery);
 			for (int j = 0; j < shiftedSimTimes.length; j++) {
-				double[] row = new double[numROITypes+1];
+				double[] row = new double[(argROIType == null?numROITypes-2:1)+1];
 				row[0] = shiftedSimTimes[j]+
 					frapOptData.getExpFrapStudy().getFrapData().getImageDataset().getImageTimeStamps()[startIndexRecovery];
 				fitOdeSolverResultSet.addRow(row);
@@ -375,13 +403,16 @@ public class ResultsSummaryPanel extends JPanel {
 //			}
 			double[][] currentOptFitData = interpolationPanel.getCurrentFitData();
 			
+			int columncounter = 0;
 			for (int j = 0; j < numROITypes; j++) {
+				if(!wantsROITypes[j]){continue;}
 //				RoiType currentROIType = (argROIType == null?FRAPStudy.SpatialAnalysisResults.ORDERED_ROITYPES[j]:argROIType);
 				double[] values = currentOptFitData[j];
 //				double[] values = curveHash.get(new FRAPStudy.CurveInfo(analysisParameters[analysisParametersIndex],currentROIType)); // get simulated data for this ROI
 				for (int k = 0; k < values.length; k++) {
-					fitOdeSolverResultSet.setValue(k, j+1, values[k]);
+					fitOdeSolverResultSet.setValue(k, columncounter/*j*/+1, values[k]);
 				}
+				columncounter++;
 			}
 			
 			DataSource[] selectedRowDataSourceArr = allDataHash.get(summaryData[0][0]);
