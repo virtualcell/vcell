@@ -223,24 +223,25 @@ public static void main(String[] args) {
  * @para: flour, average intensities under bleached region according to time points since the first post bleach
  * @para: parameterValues, the array which will pass results back 
 */
-public static Expression fitBleachWhileMonitoring(double[] time, double[] fluor, double[] outputParam) throws ExpressionException 
+public static Expression fitBleachWhileMonitoring(double[] time, double[] normalized_fluor, double[] outputParam) throws ExpressionException 
 {
-	double max_x = fluor[0];
-    double min_x = fluor[0];
-	for (int i = 0; i < fluor.length; i++){
-		max_x = Math.max(max_x, fluor[i]);
-		min_x = Math.min(min_x, fluor[i]);
-	}
-	System.out.println("min:"+min_x+"       max:"+max_x);
+//	double max_x = fluor[0];
+//    double min_x = fluor[0];
+//	for (int i = 0; i < fluor.length; i++){
+//		max_x = Math.max(max_x, fluor[i]);
+//		min_x = Math.min(min_x, fluor[i]);
+//	}
+//	System.out.println("min:"+min_x+"       max:"+max_x);
 	
-	if (time.length!=fluor.length){
+	if (time.length!=normalized_fluor.length){
 		throw new RuntimeException("Fluorecence and time arrays must be the same length");
 	}
 	//normalization for the average intensties by subtracting the min average intenstiy and divided by the range of max and min intensities.
-	double[] normalized_fluor = new double[fluor.length];
-	for (int i = 0; i < fluor.length; i++){
-		normalized_fluor[i] = (fluor[i]-min_x)/(max_x-min_x);
-	}
+//	double[] normalized_fluor = new double[fluor.length];
+//	for (int i = 0; i < fluor.length; i++){
+//		normalized_fluor[i] = (fluor[i]-min_x)/(max_x-min_x);
+//		normalized_fluor[i] = fluor[i];
+//	}
 	//normaliztion for time by subtracting the starting time: time[0]
 	double[] normalized_time = new double[time.length];
 	for (int i = 0; i < time.length; i++){
@@ -251,12 +252,12 @@ public static Expression fitBleachWhileMonitoring(double[] time, double[] fluor,
 	String[] paramNames = null;
 	double[] paramValues = null;
 
-	modelExp = new Expression("Ii + A*exp(-bleachRate*t)");//Ii=Io, A=If-Io comparing with formula showing in software
+	double cellFirstPostBleach = normalized_fluor[0];
+	modelExp = new Expression("cell_firstPostBleach*exp(-bleachRate*t)");
+	modelExp.substituteInPlace(new Expression("cell_firstPostBleach"), new Expression(cellFirstPostBleach));
 	// initialize starting guess, arguments in Parameter are name, Lower Bound, Upper Bound, Scale, Initial Guess
 	cbit.vcell.opt.Parameter parameters[] = new cbit.vcell.opt.Parameter[] {
-			new Parameter("Ii",-1,1,1,0),
-			new Parameter("A",.1,4,1,1),
-			new Parameter("bleachRate",0,0.1,1,0.01)
+			new Parameter("bleachRate",0,0.1,1,0.001)
 	};
 	
 	try {
@@ -302,8 +303,8 @@ public static Expression fitBleachWhileMonitoring(double[] time, double[] fluor,
 	//
 	// undo fluorescence normalization
 	//
-	System.out.println("bleach while monitoring fit equation before unnorm:" + fit.infix());
-	fit = new Expression(min_x+" + "+(max_x-min_x)+" * ("+fit.infix()+")");
+//	System.out.println("bleach while monitoring fit equation before unnorm:" + fit.infix());
+//	fit = new Expression(min_x+" + "+(max_x-min_x)+" * ("+fit.infix()+")");
 	System.out.println("bleach while monitoring fit equation after unnorm:" + fit.infix());
 	return fit;
 }
@@ -313,27 +314,28 @@ public static Expression fitBleachWhileMonitoring(double[] time, double[] fluor,
  * @para: flour, average intensities under bleached region according to time points since the first post bleach
  * @para: parameterValues, the array which will pass results back 
 */
-public static Expression fitRecovery(double[] time, double[] fluor, int bleachType, double[] inputparam, double[] outputParam) throws ExpressionException 
+public static Expression fitRecovery(double[] time, double[] normalized_fluor, int bleachType, double[] inputparam, double[] outputParam) throws ExpressionException 
 {
 	//max and min of the average intensities under bleached region after bleach
 //	double max_x = -Double.MAX_VALUE;
 //	double min_x = Double.MAX_VALUE;
-	double max_x = fluor[0];
-    double min_x = fluor[0];
-	for (int i = 0; i < fluor.length; i++){
-		max_x = Math.max(max_x, fluor[i]);
-		min_x = Math.min(min_x, fluor[i]);
-	}
-	System.out.println("min:"+min_x+"       max:"+max_x);
+//	double max_x = fluor[0];
+//    double min_x = fluor[0];
+//	for (int i = 0; i < fluor.length; i++){
+//		max_x = Math.max(max_x, fluor[i]);
+//		min_x = Math.min(min_x, fluor[i]);
+//	}
+//	System.out.println("min:"+min_x+"       max:"+max_x);
 	
-	if (time.length!=fluor.length){
+	if (time.length!=normalized_fluor.length){
 		throw new RuntimeException("Fluorecence and time arrays must be the same length");
 	}
 	//normalization for the average intensties by subtracting the min average intenstiy and divided by the range of max and min intensities.
-	double[] normalized_fluor = new double[fluor.length];
-	for (int i = 0; i < fluor.length; i++){
-		normalized_fluor[i] = (fluor[i]-min_x)/(max_x-min_x);
-	}
+//	double[] normalized_fluor = new double[fluor.length];
+//	for (int i = 0; i < fluor.length; i++){
+//		normalized_fluor[i] = (fluor[i]-min_x)/(max_x-min_x);
+//		normalized_fluor[i] = fluor[i];
+//	}
 	//normaliztion for time by subtracting the starting time: time[0]
 	double[] normalized_time = new double[time.length];
 	for (int i = 0; i < time.length; i++){
@@ -433,8 +435,8 @@ public static Expression fitRecovery(double[] time, double[] fluor, int bleachTy
 	//
 	// undo fluorescence normalization
 	//
-	System.out.println("fit equation before unnorm:" + fit.infix());
-	fit = new Expression(min_x+" + "+(max_x-min_x)+" * ("+fit.infix()+")");
+//	System.out.println("fit equation before unnorm:" + fit.infix());
+//	fit = new Expression(min_x+" + "+(max_x-min_x)+" * ("+fit.infix()+")");
 	System.out.println("fit equation after unnorm:" + fit.infix());
 	return fit;
 }
