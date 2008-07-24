@@ -22,10 +22,10 @@ public class FRAPDataAnalysis {
 	public final static Parameter para_Ii = new cbit.vcell.opt.Parameter("Ii", -1, 1, 1.0, 0.0); 
 	public final static Parameter para_A = new cbit.vcell.opt.Parameter("A", 0.1, 4, 1.0, 1.0); 
 //	public final static Parameter para_CicularDisk_Tau = new cbit.vcell.opt.Parameter("Tau",0.1, 50.0, 1.0, 1.0);
-	public final static Parameter para_If = new cbit.vcell.opt.Parameter("If", -1, 3, 1.0, 0.0);
-	public final static Parameter para_I0 = new cbit.vcell.opt.Parameter("I0", -1, 3, 1.0, 0.0);
+	public final static Parameter para_If = new cbit.vcell.opt.Parameter("If", 0, 1, 1.0, 0.1);
+	public final static Parameter para_I0 = new cbit.vcell.opt.Parameter("I0", 0, 1, 1.0, 0.1);
 	public final static Parameter para_tau = new cbit.vcell.opt.Parameter("tau", 0.1, 50.0, 1.0, 1.0);
-	public final static Parameter para_R = new cbit.vcell.opt.Parameter("R", 0.001, 1.0, 1.0, 0.01);
+	public final static Parameter para_R = new cbit.vcell.opt.Parameter("R", 0.01, 1.0, 1.0, 0.5);
 	
 	public final static String circularDisk_IntensityFunc = "Ii + A*(1-exp(-t/"+symbol_tau+"))";
 	public final static String circularDisk_IntensityFunc_display = "If-(If-Io)*exp(-t/"+symbol_tau+")";
@@ -186,7 +186,7 @@ public class FRAPDataAnalysis {
 		outputParamValues = new double[3];
 		Expression bleachWhileMonitorFitExpression =
 			CurveFitting.fitBleachWhileMonitoring(time, cellROIAverage, outputParamValues);
-		frapDataAnalysisResults.setBleachWhileMonitoringTau(outputParamValues[2]);
+		frapDataAnalysisResults.setBleachWhileMonitoringTau(outputParamValues[0]);
 		frapDataAnalysisResults.setFitBleachWhileMonitorExpression(bleachWhileMonitorFitExpression.flatten());
 		frapDataAnalysisResults.setCellRegionData(tempCellROIAverage);
 		
