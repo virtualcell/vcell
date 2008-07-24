@@ -6,13 +6,18 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
+import java.awt.image.WritableRaster;
+import java.awt.image.WritableRenderedImage;
 import java.awt.image.renderable.ParameterBlock;
 
 import javax.media.jai.Interpolation;
 import javax.media.jai.JAI;
+import javax.media.jai.LookupTableJAI;
 import javax.media.jai.PlanarImage;
+import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.CompositeDescriptor;
 import javax.media.jai.operator.ExtremaDescriptor;
+import javax.media.jai.operator.LookupDescriptor;
 import javax.media.jai.operator.RescaleDescriptor;
 import javax.media.jai.operator.ScaleDescriptor;
 
@@ -144,56 +149,43 @@ public class OverlayImageDisplayJAI extends DisplayJAI {
 			alphaImageUnderlying = makeAlpha(underlyingImage, 0.6f);
 			alphaImageHightlight = makeAlpha(highlightImage, 1.0f);
 			RenderedImage contrastEnhancedUnderlyingImage = underlyingImage;
-			if(contrastFactor != 0){
+			if(contrastFactor > 0){
+				//Contrast stretch
 				double[][] minmaxArr = (double[][])ExtremaDescriptor.create(underlyingImage, null, 1, 1, false, 1, null).getProperty("extrema");
-				double offset = 0;
-				if((contrastFactor >= 1) && (minmaxArr[0][0]-minmaxArr[1][0]) != 0){
-					offset = (SCALE_MAX*minmaxArr[0][0])/(minmaxArr[0][0]-minmaxArr[1][0]);
-				}
-				double scale =
-					(contrastFactor<0
-						?(double)(CONTRAST_BOUND+contrastFactor)/(double)CONTRAST_BOUND
-						:(double)(CONTRAST_BOUND+contrastFactor)/(double)CONTRAST_BOUND);
 				if((minmaxArr[1][0]-minmaxArr[0][0]) != 0){
-					if(contrastFactor > 1){
-						//AutoContrast and Brighten
-						scale*= (SCALE_MAX)/(minmaxArr[1][0]-minmaxArr[0][0]);
-					}else if(contrastFactor == 1){
-						//AutoContrast
-						scale = (SCALE_MAX)/(minmaxArr[1][0]-minmaxArr[0][0]);
-					}
+					double offset = (SCALE_MAX*minmaxArr[0][0])/(minmaxArr[0][0]-minmaxArr[1][0]);
+					double scale = (SCALE_MAX)/(minmaxArr[1][0]-minmaxArr[0][0]);
+					contrastEnhancedUnderlyingImage =
+						RescaleDescriptor.create(underlyingImage,new double[]{scale},new double[]{offset},null);
 				}
-				//double offset = .1*minmaxArr[1][0]-minmaxArr[0][0];
-				//double offset = (255.0-minmaxArr[0][0])/(minmaxArr[0][0]-minmaxArr[1][0]);
-				contrastEnhancedUnderlyingImage =
-					RescaleDescriptor.create(underlyingImage,new double[]{scale},new double[]{offset},null);
+				//enhance with gamma function
+				if(contrastFactor > 1){
+					byte[] tableData = new byte[256];
+					for (int i = 0; i < 256; i++) {
+						double normalizedWithGamma = Math.pow((i/255.0), 1/(1.0+(contrastFactor-1)/5.0));
+						int val = (int)(normalizedWithGamma*255);
+						if(val > 255){val = 255;}
+						tableData[i] = (byte)(val&0xFF);
+					}
+					LookupTableJAI table = new LookupTableJAI(tableData);
+					contrastEnhancedUnderlyingImage = LookupDescriptor.create(contrastEnhancedUnderlyingImage, table, null);
+				}
 			}
-//			ParameterBlock params1 = new ParameterBlock();
-//			params1.addSource(underlyingImage);
-//			params1.addSource(highlightImage);
-//			params1.add(alphaImageUnderlying);
-//			params1.add(alphaImageHightlight);
-//			params1.add(false);
-//			params1.add(CompositeDescriptor.NO_DESTINATION_ALPHA);
-//			//Interpolation interp = Interpolation.getInstance(Interpolation.INTERP_NEAREST);
-			source =
+			
+			
+			
+
+		     source =
 				CompositeDescriptor.create(
 						contrastEnhancedUnderlyingImage, highlightImage,
 					alphaImageUnderlying, alphaImageHightlight,
 					false, CompositeDescriptor.NO_DESTINATION_ALPHA, null);
-//			source = JAI.create("composite",params1,null);
-//			ParameterBlock params2 = new ParameterBlock();
-//			params2.addSource(source);
-//			params2.add(zoom);
-//			params2.add(zoom);
-//			params2.add(0f);
-//			params2.add(0f);
-//			//Interpolation interp = Interpolation.getInstance(Interpolation.INTERP_NEAREST);
-			source =
+
+		     source =
 				ScaleDescriptor.create(
 					source, (float)zoom, (float)zoom, 0f, 0f,
 					Interpolation.getInstance(Interpolation.INTERP_NEAREST),null);
-//			source = JAI.create("scale",params2);
+
 			set(source, 0, 0);
 		}else{
 			set(new BufferedImage(10,10,BufferedImage.TYPE_INT_ARGB),0,0);
@@ -243,6 +235,9 @@ public class OverlayImageDisplayJAI extends DisplayJAI {
 		refreshImage();
 	}
 	public void decreaseContrast(){
+		if(contrastFactor == 0){
+			return;
+		}
 		contrastFactor--;
 		if(contrastFactor < -CONTRAST_BOUND){
 			contrastFactor = -CONTRAST_BOUND;
