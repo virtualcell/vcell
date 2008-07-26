@@ -318,7 +318,7 @@ public class UserRegistrationOP implements Serializable{
 				tableRow.copyInto(tableData);
 				DialogUtils.showComponentOKCancelTableList(
 					null, "Confirm Registration Info Changes",
-					columnNames, tableData,ListSelectionModel.SINGLE_SELECTION);
+					columnNames, tableData,null);
 				return true;
 			}
 			return false;

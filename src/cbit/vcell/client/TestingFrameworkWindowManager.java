@@ -1958,7 +1958,7 @@ public void queryTCritCrossRef(final TestSuiteInfoNew tsin,final TestCriteriaNew
 								d, "Confirm Error Limit Changes",
 								new String[] {"TSVersion","Orig RelErrorLimit","New RelErrorLimit","Orig AbsErrorLimit","New AbsErrorLimit"},
 								rows,
-								ListSelectionModel.SINGLE_SELECTION);
+								null);
 						}catch(UserCancelException e){
 							d.setVisible(true);
 							return;
