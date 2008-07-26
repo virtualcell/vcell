@@ -286,7 +286,7 @@ private static int showComponentOKCancelDialog(final Component requester,Compone
 }
 
 public static int[] showComponentOKCancelTableList(final Component requester,String title,
-		String[] columnNames,Object[][] rowData,int listSelectionModel_SelectMode)
+		String[] columnNames,Object[][] rowData,Integer listSelectionModel_SelectMode)
 			throws UserCancelException{
 	
 	DefaultTableModel tableModel = new DefaultTableModel(){
@@ -296,14 +296,20 @@ public static int[] showComponentOKCancelTableList(final Component requester,Str
 	};
 	tableModel.setDataVector(rowData, columnNames);
 	final JTable table = new JTable(tableModel);
-	table.setSelectionMode(listSelectionModel_SelectMode);
+	if(listSelectionModel_SelectMode != null){
+		table.setSelectionMode(listSelectionModel_SelectMode);
+	}else{
+		table.setRowSelectionAllowed(false);
+		table.setColumnSelectionAllowed(false);
+	}
 	JScrollPane scrollPane = new JScrollPane(table);
 	table.setPreferredScrollableViewportSize(new Dimension(500, 250));
 	
 	ScopedExpressionTableCellRenderer.formatTableCellSizes(table, null, null);
 	
-	OKEnabler tableListOKEnabler =
-		new OKEnabler(){
+	OKEnabler tableListOKEnabler = null;
+	if(listSelectionModel_SelectMode != null){
+		tableListOKEnabler = new OKEnabler(){
 		private JOptionPane jop;
 			public void setJOptionPane(JOptionPane joptionPane) {
 				jop = joptionPane;
@@ -324,6 +330,7 @@ public static int[] showComponentOKCancelTableList(final Component requester,Str
 
 			}
 		};
+	}
 	int result = showComponentOKCancelDialog(requester, scrollPane, title,tableListOKEnabler);
 	if(result != JOptionPane.OK_OPTION){
 		throw UserCancelException.CANCEL_GENERIC;
