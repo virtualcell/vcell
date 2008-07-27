@@ -377,7 +377,15 @@ public class FRAPStudy implements Matchable{
 				}else if(i==COLUMN_INDEX_MONITOR_BLEACH_RATE){
 					columnNames[i] = "Monitor Bleach Rate";
 				}else{
-					columnNames[i] = "SE "+SpatialAnalysisResults.ORDERED_ROITYPES[i-ANALYSISPARAMETERS_COLUMNS_COUNT].name();
+					final String ROI_PREFIX = "ROI_";
+					final String ROI_TYPENAME_PREFIX = ROI_PREFIX+"BLEACHED_";
+					String roiTypeName = SpatialAnalysisResults.ORDERED_ROITYPES[i-ANALYSISPARAMETERS_COLUMNS_COUNT].name();
+					if(roiTypeName.startsWith(ROI_TYPENAME_PREFIX)){
+						columnNames[i] = roiTypeName.substring(ROI_TYPENAME_PREFIX.length());
+					}else{
+						columnNames[i] = roiTypeName.substring(ROI_PREFIX.length());
+					}
+					columnNames[i]+= " (se)";
 				}
 			}
 			return columnNames;
