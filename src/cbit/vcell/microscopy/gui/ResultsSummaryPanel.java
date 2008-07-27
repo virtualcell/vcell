@@ -43,7 +43,6 @@ import cbit.util.Range;
 import cbit.vcell.microscopy.FRAPOptData;
 import cbit.vcell.microscopy.FRAPStudy;
 import cbit.vcell.microscopy.ROI;
-import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.ReferenceData;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultSetColumnDescription;
@@ -56,6 +55,9 @@ public class ResultsSummaryPanel extends JPanel {
 	
 	private FRAPStudyPanel.NewFRAPFromParameters newFRAPFromParameters;
 	
+	private final JLabel standardErrorseLabel;
+	private final JLabel interactiveAnalysisUsingLabel_1;
+	
 	private final JRadioButton plotFRAPSimResultsRadioButton;
 	private final JRadioButton plotDerivedSimResultsRadioButton;
 	private ButtonGroup plotButtonGroup = new ButtonGroup();
@@ -64,7 +66,7 @@ public class ResultsSummaryPanel extends JPanel {
 	private FRAPOptData frapOptData;
 	
 	private final JScrollPane scrollPane;
-	private JTable table;
+	private final JTable table;
 	private MultisourcePlotPane multisourcePlotPane;
 	private Hashtable<Double, DataSource[]> allDataHash;
 	private Object[][] summaryData;
@@ -73,22 +75,26 @@ public class ResultsSummaryPanel extends JPanel {
 	private JMenuItem copyValueJMenuItem;
 	private JMenuItem copyTimeDataJMenuItem;
 	
+	private boolean B_TABLE_DISABLED = false;
+	
 	private static String[] summaryReportColumnNames =
 		FRAPStudy.SpatialAnalysisResults.getSummaryReportColumnNames();
 	
 	private ActionListener plotButtonActionListener = new ActionListener(){
 		public void actionPerformed(ActionEvent e) {
 			if(plotFRAPSimResultsRadioButton.isSelected()){
+				B_TABLE_DISABLED = false;
 				BeanUtils.enableComponents(interpolationPanel, false);
-//				BeanUtils.enableComponents(scrollPane, true);
-//				table.setEnabled(true);
+				BeanUtils.enableComponents(scrollPane, true);
+				standardErrorseLabel.setEnabled(true);
+				interactiveAnalysisUsingLabel_1.setEnabled(false);
 				processTableSelection();
 			}else if(plotDerivedSimResultsRadioButton.isSelected()){
+				B_TABLE_DISABLED = true;
 				interpolationPanel.enableAllButSetButtons();
-//				BeanUtils.enableComponents(interpolationPanel, true);
-//				BeanUtils.enableComponents(scrollPane, false);
-//				table.invalidate();
-//				scrollPane.revalidate();
+				BeanUtils.enableComponents(scrollPane, false);
+				interactiveAnalysisUsingLabel_1.setEnabled(true);
+				standardErrorseLabel.setEnabled(false);
 				plotDerivedSimulationResults();
 			}
 		}
@@ -177,14 +183,14 @@ public class ResultsSummaryPanel extends JPanel {
 		plotFRAPSimResultsRadioButton.setText("Plot FRAP SImulation Results");
 		plotFRAPSimResultsRadioButton.addActionListener(plotButtonActionListener);
 
-		final JLabel standardErrorseLabel = new JLabel();
+		standardErrorseLabel = new JLabel();
 		final GridBagConstraints gridBagConstraints_6 = new GridBagConstraints();
 		gridBagConstraints_6.insets = new Insets(4, 4, 0, 0);
 		gridBagConstraints_6.gridy = 1;
 		gridBagConstraints_6.gridx = 0;
 		panel_1.add(standardErrorseLabel, gridBagConstraints_6);
 		standardErrorseLabel.setFont(new Font("", Font.PLAIN, 14));
-		standardErrorseLabel.setText("FRAP Simulation Summary: Standard Error (SE) including all Times of Normalized ROI Average  (Experimental vs. Simulation Data)");
+		standardErrorseLabel.setText("FRAP Simulation Summary: Standard Error (se) including all Times of Normalized ROI Average  (Experimental vs. Simulation Data)");
 
 		scrollPane = new JScrollPane();
 		final GridBagConstraints gridBagConstraints_7 = new GridBagConstraints();
@@ -195,21 +201,32 @@ public class ResultsSummaryPanel extends JPanel {
 		panel_1.add(scrollPane, gridBagConstraints_7);
 		scrollPane.setMinimumSize(new Dimension(0, 100));
 
-		table = new JTable();
-//		//Fix disable display bug
-//		   table = new JTable ()
-//		    {
-//		      public Component prepareRenderer (final TableCellRenderer renderer,
-//		        int row, int column)
-//		      {
-//		        Component comp = super.prepareRenderer (renderer, row, column);
-//		        
-//		        comp.setEnabled (isEnabled ());  // Enable/disable renderer same as table.
-//		        
-//		        return comp;
-//		      }
-//		    };
+//		table = new JTable();
 
+		//Fix disable display bug--------
+		table = new JTable (){
+	      public Component prepareRenderer (final TableCellRenderer renderer,int row, int column){
+	        Component comp = super.prepareRenderer (renderer, row, column);
+	        if(!table.isEnabled()){
+	        	comp.setBackground(table.getBackground());
+	        }
+	        comp.setEnabled (table.isEnabled());
+	        return comp;
+	      }
+		};
+		final TableCellRenderer origTableCellRenderer = table.getTableHeader().getDefaultRenderer();
+		table.getTableHeader().setDefaultRenderer(
+			new TableCellRenderer(){
+				public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,boolean hasFocus, int row, int column) {
+					Component comp =
+						origTableCellRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+					comp.setEnabled(table.isEnabled());
+					return comp;
+				}
+			}
+		);
+		//-------------------------------
+				
 		table.addMouseListener(
 				new MouseAdapter(){
 					@Override
@@ -269,7 +286,7 @@ public class ResultsSummaryPanel extends JPanel {
 		scrollPane.setViewportView(table);
 		
 		table.setModel(getTableModel(summaryReportColumnNames,new Object[][] {{"diffTest","summaryTest"}}));
-
+		
 		final JPanel panel_2 = new JPanel();
 		panel_2.setBorder(new LineBorder(Color.black, 2, false));
 		panel_2.setLayout(new GridBagLayout());
@@ -291,7 +308,7 @@ public class ResultsSummaryPanel extends JPanel {
 		plotDerivedSimResultsRadioButton.setText("Plot Derived FRAP Simulation Results");
 		plotDerivedSimResultsRadioButton.addActionListener(plotButtonActionListener);
 
-		final JLabel interactiveAnalysisUsingLabel_1 = new JLabel();
+		interactiveAnalysisUsingLabel_1 = new JLabel();
 		final GridBagConstraints gridBagConstraints_8 = new GridBagConstraints();
 		gridBagConstraints_8.gridy = 1;
 		gridBagConstraints_8.gridx = 0;
@@ -432,6 +449,9 @@ public class ResultsSummaryPanel extends JPanel {
 
 	}
 	private void showPopupMenu(MouseEvent e){
+		if(B_TABLE_DISABLED){
+			return;
+		}
 		if(e.isPopupTrigger()){
 			if(table.getSelectedRow() < 0 || table.getSelectedRow() >= summaryData.length||
 				table.getSelectedColumn() < 0 || table.getSelectedColumn() >= summaryReportColumnNames.length){
@@ -449,6 +469,9 @@ public class ResultsSummaryPanel extends JPanel {
 
 	}
 	private void sortColumn(final int columnIndex,boolean bAutoReverse){
+		if(B_TABLE_DISABLED){
+			return;
+		}
 		if(summaryData != null){
 			int selectedRow = table.getSelectedRow();
 			int[] selectedColumns = table.getSelectedColumns();
@@ -499,7 +522,7 @@ public class ResultsSummaryPanel extends JPanel {
 		}
 	}
 	private void processTableSelection(){
-		if(allDataHash == null){
+		if(allDataHash == null || B_TABLE_DISABLED){
 			return;
 		}
 		int selectedRow = table.getSelectedRow();
@@ -550,7 +573,11 @@ public class ResultsSummaryPanel extends JPanel {
 			    public int getColumnCount() {
 			    	return columnNames.length; }
 			    public Object getValueAt(int row, int col) {
+			    	if(col < FRAPStudy.SpatialAnalysisResults.ANALYSISPARAMETERS_COLUMNS_COUNT){
 			        return rowData[row][col];
+			    	}
+			    	final double DIGIT_SCALE = 1000000.0;
+			    	return ((double)((int)((Double)rowData[row][col]*DIGIT_SCALE)))/DIGIT_SCALE;
 			    }
 			    public boolean isCellEditable(int row, int col){
 			    	return false;
@@ -581,7 +608,7 @@ public class ResultsSummaryPanel extends JPanel {
 			try{
 				plotFRAPSimResultsRadioButton.doClick();
 				interpolationPanel.init(frapOptData);
-				table.setModel(getTableModel(summaryReportColumnNames,tableData));
+				table.setModel(getTableModel(summaryReportColumnNames,tableData));				
 				sortColumn(FRAPStudy.SpatialAnalysisResults.COLUMN_INDEX_DIFFUSION_RATE,false);
 				multisourcePlotPane.forceXYRange(new Range(frapDataTimeStamps[0],frapDataTimeStamps[frapDataTimeStamps.length-1]), new Range(0,1));
 				if(modelDiffusionRate != null){

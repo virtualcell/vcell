@@ -227,7 +227,7 @@ public class FRAPOptData {
 			sim.getSolverTaskDescription().setOutputTimeSpec(getRefTimeSpec());
 			
 	//		System.out.println("run FRAP Reference Simulation...");
-			final double RUN_REFSIM_PROGRESS_FRACTION = .5;
+			final double RUN_REFSIM_PROGRESS_FRACTION = 1.0;
 			DataSetControllerImpl.ProgressListener runRefSimProgressListener =
 				new DataSetControllerImpl.ProgressListener(){
 					public void updateProgress(double progress) {
