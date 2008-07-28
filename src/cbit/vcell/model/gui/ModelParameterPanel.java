@@ -13,6 +13,7 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Model.ModelParameter;
 
 /**
@@ -188,7 +189,7 @@ private javax.swing.JMenuItem getJMenuItemAdd() {
 		try {
 			ivjJMenuItemAdd = new javax.swing.JMenuItem();
 			ivjJMenuItemAdd.setName("JMenuItemAdd");
-			ivjJMenuItemAdd.setText("Add Parameter");
+			ivjJMenuItemAdd.setText("Add Global Parameter");
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -201,7 +202,7 @@ private javax.swing.JMenuItem getJMenuItemDelete() {
 		try {
 			ivjJMenuItemDelete = new javax.swing.JMenuItem();
 			ivjJMenuItemDelete.setName("JMenuItemDelete");
-			ivjJMenuItemDelete.setText("Delete Parameter");
+			ivjJMenuItemDelete.setText("Delete Global Parameter");
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -475,7 +476,23 @@ private void jMenuItemDelete_ActionPerformed(ActionEvent actionEvent) throws Exc
 		if (param instanceof ModelParameter) {
 			ModelParameter mp = (ModelParameter)param;
 			if (getModel().contains(mp)) {
-				getModel().removeModelParameter(mp);
+				// check if mp is used anywhere (in reactions for the present)
+				ReactionStep[] rsArray = getModel().getReactionSteps();
+				boolean bUsed = false;
+				for (int i = 0; i < rsArray.length; i++) {
+					KineticsParameter[] kParams = rsArray[i].getKinetics().getKineticsParameters(); 
+					for (int j = 0; j < kParams.length; j++) {
+						if (kParams[j].getExpression().hasSymbol(mp.getName()) && (rsArray[i].getKinetics().getProxyParameter(mp.getName()) != null)) {
+							PopupGenerator.showErrorDialog("Model Parameter \'" + mp.getName() + "\' is used in reaction \'" + rsArray[i].getName() + "\'. Cannot delete parameter.");
+							bUsed = true;
+							break;
+						}
+					}
+				}
+				// if 'bUsed' is false at this point, can delete model parameter. 
+				if (!bUsed) { 
+					getModel().removeModelParameter(mp);
+				}
 			}
 		}
 	}

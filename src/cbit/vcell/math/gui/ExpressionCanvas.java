@@ -140,7 +140,7 @@ public Dimension getMinimumSize() {
 			if (fieldExpressions != null)
 			{
 				for (int i=0;i<fieldExpressions.length;i++){
-					cbit.vcell.parser.ExpressionPrintFormatter expPrintFormatter = new cbit.vcell.parser.ExpressionPrintFormatter(fieldExpressions[i],getNameScope());
+					cbit.vcell.parser.ExpressionPrintFormatter expPrintFormatter = new cbit.vcell.parser.ExpressionPrintFormatter(fieldExpressions[i]);
 					java.awt.Dimension expressionDim = expPrintFormatter.getSize(g);
 					int labelWidth = 0;
 					if (fieldPrefixLabels!=null){
@@ -405,7 +405,7 @@ private void refreshGraphics () {
 			int posX = Math.max(10,(rect.width - getSize().width)/2);
 			for (int i=0;i<fieldExpressions.length;i++){
 				int prefixWidth = 0;
-				cbit.vcell.parser.ExpressionPrintFormatter expPrintFormatter = new cbit.vcell.parser.ExpressionPrintFormatter(fieldExpressions[i], getNameScope());
+				cbit.vcell.parser.ExpressionPrintFormatter expPrintFormatter = new cbit.vcell.parser.ExpressionPrintFormatter(fieldExpressions[i]);
 				java.awt.Dimension expressionDim = expPrintFormatter.getSize(g);
 				if (fieldPrefixLabels!=null && fieldPrefixLabels[i]!=null){
 					prefixWidth = g.getFontMetrics().stringWidth(fieldPrefixLabels[i]) + 10;

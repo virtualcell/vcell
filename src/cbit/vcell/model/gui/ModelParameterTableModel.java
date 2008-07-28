@@ -92,12 +92,12 @@ public class ModelParameterTableModel extends cbit.vcell.messaging.admin.ManageT
 	}
 	private final int NUM_COLUMNS = 6;
 	private final int COLUMN_SCOPE = 0;
-	private final int COLUMN_DESCRIPTION = 1;
-	private final int COLUMN_NAME = 2;
+	private final int COLUMN_NAME = 1;
+	private final int COLUMN_DESCRIPTION = 2;
 	private final int COLUMN_VALUE = 3;
 	private final int COLUMN_UNIT = 4;
 	public static final int COLUMN_ANNOTATION = 5;
-	private String LABELS[] = { "Context", "Description", "Name", "Expression", "Units" , "Annotation" };
+	private String LABELS[] = { "Context", "Name", "Description", "Expression", "Units" , "Annotation" };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private cbit.vcell.model.Model fieldModel = null;
 
@@ -570,6 +570,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 							kinetics.resolveUndefinedUnits();
 							fireTableRowsUpdated(rowIndex,rowIndex);
 						} else if (parameter instanceof ModelParameter){
+							exp.bindExpression(getModel());
 							((ModelParameter)parameter).setExpression(exp);
 							fireTableRowsUpdated(rowIndex,rowIndex);
 						}
@@ -582,7 +583,9 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 							kinetics.resolveUndefinedUnits();
 							fireTableRowsUpdated(rowIndex,rowIndex);
 						} else if (parameter instanceof ModelParameter){
-							((ModelParameter)parameter).setExpression(new Expression(newExpressionString));
+							Expression exp1 = new Expression(newExpressionString);
+							exp1.bindExpression(getModel());
+							((ModelParameter)parameter).setExpression(exp1);
 							fireTableRowsUpdated(rowIndex,rowIndex);
 						}
 					}

@@ -449,7 +449,7 @@ public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierSt
 		return ste;
 	}
 			
-	ste = getNameScope().getExternalEntry(identifierString);
+	ste = getNameScope().getExternalEntry(identifierString,this);
 
 	return ste;
 }

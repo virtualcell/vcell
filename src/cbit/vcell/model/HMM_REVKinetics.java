@@ -229,7 +229,7 @@ protected void updateGeneratedExpressions() throws cbit.vcell.parser.ExpressionE
 	KineticsParameter kmRev = getKineticsParameterFromRole(ROLE_KmRev);
 	KineticsParameter vMaxRev = getKineticsParameterFromRole(ROLE_VmaxRev);
 	
-	MembraneVoltage V = null;
+	Membrane.MembraneVoltage V = null;
 	if (getReactionStep().getStructure() instanceof Membrane){
 		V = ((Membrane)getReactionStep().getStructure()).getMembraneVoltage();
 	}

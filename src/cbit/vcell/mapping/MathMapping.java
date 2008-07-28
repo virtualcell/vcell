@@ -12,11 +12,14 @@ import cbit.vcell.units.VCUnitException;
 ©*/
 import cbit.gui.DialogUtils;
 import cbit.util.ISize;
+import cbit.util.Issue;
 import cbit.vcell.math.*;
 import cbit.vcell.model.*;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.geometry.*;
 import cbit.vcell.parser.*;
+
+import java.beans.PropertyVetoException;
 import java.util.*;
 import cbit.vcell.units.VCUnitDefinition;
 /**
@@ -29,7 +32,7 @@ public class MathMapping implements ScopedSymbolTable {
 	protected MathDescription mathDesc = null;
 	private PotentialMapping potentialMapping = null;  // null if don't need it
 	protected MathSymbolMapping mathSymbolMapping = new MathSymbolMapping();
-	protected Vector issueList = new Vector();
+	protected Vector<Issue> issueList = new Vector<Issue>();
 
 	private MathMapping.MathMappingParameter[] fieldMathMappingParameters = new MathMappingParameter[0];
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
@@ -43,9 +46,9 @@ public class MathMapping implements ScopedSymbolTable {
 	public static final int PARAMETER_ROLE_P_reverse = 4;
 	public static final int NUM_PARAMETER_ROLES = 5;
 		
-	private Vector structureAnalyzerList = new Vector();
+	private Vector<StructureAnalyzer> structureAnalyzerList = new Vector<StructureAnalyzer>();
 	
-	private Vector speciesContextMappingList = new Vector();
+	private Vector<SpeciesContextMapping> speciesContextMappingList = new Vector<SpeciesContextMapping>();
 
 	public class MathMappingNameScope extends BioNameScope {
 		private cbit.vcell.parser.NameScope nameScopes[] = null;
@@ -155,6 +158,10 @@ public class MathMapping implements ScopedSymbolTable {
 			return fieldVCUnitDefinition;
 		}
 
+		public void setUnitDefinition(VCUnitDefinition unit) throws PropertyVetoException {
+			throw new RuntimeException("units are not editable");
+		}
+		
 		public int getRole() {
 			return fieldRole;
 		}
@@ -180,6 +187,7 @@ public class MathMapping implements ScopedSymbolTable {
 			fieldParameterName = name;
 			super.firePropertyChange("name", oldValue, name);
 		}
+
 
 	}
 	public class KFluxParameter extends MathMappingParameter {
@@ -387,7 +395,7 @@ public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierSt
 	if (ste != null){
 		return ste;
 	}
-	ste = getNameScope().getExternalEntry(identifierString);
+	ste = getNameScope().getExternalEntry(identifierString,this);
 	if (ste==null){
 		System.out.println("MathMapping is unable to bind identifier '"+identifierString+"'");
 	}
@@ -670,8 +678,20 @@ protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structure
 		MathMapping.ProbabilityParameter probParm = (MathMapping.ProbabilityParameter)ste;
 		return ste.getName();
 	}
-	if (ste instanceof MembraneVoltage){
+	if (ste instanceof ReservedSymbol){
 		return ste.getName();
+	}
+	if (ste instanceof Membrane.MembraneVoltage){
+		return ste.getName();
+	}
+	if (ste instanceof Structure.StructureSize){
+		Structure structure = ((Structure.StructureSize)ste).getStructure();
+		StructureMapping.StructureMappingParameter sizeParameter = simContext.getGeometryContext().getStructureMapping(structure).getSizeParameter();
+		return getMathSymbol(sizeParameter,structureMapping);
+	}
+	if (ste instanceof ProxyParameter){
+		ProxyParameter pp = (ProxyParameter)ste;
+		return getMathSymbol0(pp.getTarget(),structureMapping);
 	}
 	if (ste instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
 		SpeciesContextSpec.SpeciesContextSpecParameter scsParm = (SpeciesContextSpec.SpeciesContextSpecParameter)ste;
@@ -922,9 +942,9 @@ public SimulationContext getSimulationContext() {
  * @param speciesContext SpeciesContext
  */
 public SpeciesContextMapping getSpeciesContextMapping(SpeciesContext speciesContext) {
-	Enumeration enum1 = getSpeciesContextMappings();
+	Enumeration<SpeciesContextMapping> enum1 = getSpeciesContextMappings();
 	while (enum1.hasMoreElements()){
-		SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
+		SpeciesContextMapping scm = enum1.nextElement();
 		if (scm.getSpeciesContext()==speciesContext){
 			return scm;
 		}
@@ -938,7 +958,7 @@ public SpeciesContextMapping getSpeciesContextMapping(SpeciesContext speciesCont
  * Creation date: (10/26/2006 4:37:10 PM)
  * @return java.util.Vector
  */
-protected Vector getSpeciesContextMappingList() {
+protected Vector<SpeciesContextMapping> getSpeciesContextMappingList() {
 	return speciesContextMappingList;
 }
 
@@ -947,7 +967,7 @@ protected Vector getSpeciesContextMappingList() {
  * This method was created in VisualAge.
  * @return java.util.Enumeration
  */
-protected Enumeration getSpeciesContextMappings() {
+protected Enumeration<SpeciesContextMapping> getSpeciesContextMappings() {
 	return speciesContextMappingList.elements();
 }
 
@@ -956,7 +976,7 @@ protected Enumeration getSpeciesContextMappings() {
  * This method was created by a SmartGuide.
  * @return java.util.Enumeration
  */
-public java.util.Enumeration getStructureAnalyzers() {
+public java.util.Enumeration<StructureAnalyzer> getStructureAnalyzers() {
 	return structureAnalyzerList.elements();
 }
 
@@ -1190,7 +1210,7 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 	// gather only those reactionSteps that are not "excluded"
 	//
 	ReactionSpec reactionSpecs[] = simContext.getReactionContext().getReactionSpecs();
-	Vector rsList = new Vector();
+	Vector<ReactionStep> rsList = new Vector<ReactionStep>();
 	for (int i = 0; i < reactionSpecs.length; i++){
 		if (reactionSpecs[i].isExcluded()==false){
 			rsList.add(reactionSpecs[i].getReactionStep());
@@ -1438,7 +1458,7 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 	for (int j=0;j<structureMappings.length;j++){
 		if (structureMappings[j] instanceof MembraneMapping){
 			MembraneMapping membraneMapping = (MembraneMapping)structureMappings[j];
-			MembraneVoltage membraneVoltage = membraneMapping.getMembrane().getMembraneVoltage();
+			Membrane.MembraneVoltage membraneVoltage = membraneMapping.getMembrane().getMembraneVoltage();
 			ElectricalDevice membraneDevices[] = potentialMapping.getElectricalDevices(membraneMapping.getMembrane());
 			ElectricalDevice membraneDevice = null;
 			for (int i = 0; i < membraneDevices.length; i++){
@@ -1449,7 +1469,7 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 							// spatially resolved membrane, and must solve for potential .... 
 							//   make single MembraneRegionVariable for all resolved potentials
 							//
-							if (mathDesc.getVariable(MembraneVoltage.MEMBRANE_VOLTAGE_REGION_NAME)==null){
+							if (mathDesc.getVariable(Membrane.MEMBRANE_VOLTAGE_REGION_NAME)==null){
 								//varHash.addVariable(new MembraneRegionVariable(MembraneVoltage.MEMBRANE_VOLTAGE_REGION_NAME));
 								varHash.addVariable(new MembraneRegionVariable(getMathSymbol(membraneVoltage,membraneMapping)));
 							}
@@ -1480,14 +1500,7 @@ private void refreshMathDescription() throws MappingException, cbit.vcell.matrix
 	//
 	ModelParameter[] modelParameters = simContext.getModel().getModelParameters();
 	for (int j=0;j<modelParameters.length;j++){
-		try {
-			double value = modelParameters[j].getExpression().evaluateConstant();
-			Constant constant = new Constant(getMathSymbol(modelParameters[j],null),new Expression(value));
-			varHash.addVariable(constant);
-		}catch (ExpressionException e){
-			e.printStackTrace(System.out);
-			throw new RuntimeException("Error adding model parameter \'" + modelParameters[j].getName() + "\' to math");
-		}
+		varHash.addVariable(newFunctionOrConstant(getMathSymbol(modelParameters[j], null), modelParameters[j].getExpression()));
 	}
 
 	

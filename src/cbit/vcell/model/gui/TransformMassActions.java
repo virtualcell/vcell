@@ -178,7 +178,7 @@ public class TransformMassActions
 					Expression rateExp = origRS.getKinetics().getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
 					try{
 						rateExp = substitueKineticPara(rateExp, origRS, false);
-						FluxSolver.FluxFunction fluxFunc = FluxSolver.solveFlux(rateExp, origRS);
+						FluxSolver.FluxFunction fluxFunc = FluxSolver.solveFlux(rateExp, (FluxReaction)origRS);
 						//change flux to simple Mass Action reaction and save it as transformed mass action, use this simple reaction to store forward
 						//and reverse rate so that these can be displayed in the table. Flux itself won't be physically changed.
 						SimpleReaction simpleRxn = new SimpleReaction(origRS.getStructure(), origRS.getName());

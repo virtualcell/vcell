@@ -1,6 +1,7 @@
 package cbit.vcell.model;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolTableEntry;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -15,6 +16,8 @@ import cbit.vcell.units.VCUnitDefinition;
 import cbit.sql.Versionable;
 import cbit.sql.Version;
 import cbit.vcell.model.Feature;
+import cbit.vcell.model.Membrane.MembraneVoltage;
+import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.NameScope;
 
 public class Model implements cbit.sql.Versionable, Matchable, PropertyChangeListener, VetoableChangeListener, java.io.Serializable, cbit.vcell.parser.ScopedSymbolTable {
@@ -716,7 +719,7 @@ public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierSt
 	if (ste != null){
 		return ste;
 	}
-	return getNameScope().getExternalEntry(identifierString);
+	return getNameScope().getExternalEntry(identifierString,this);
 }
 
 
@@ -849,10 +852,20 @@ public cbit.vcell.parser.SymbolTableEntry getLocalEntry(java.lang.String identif
 	//
 	for (int i = 0; i < fieldStructures.length; i++){
 		if (fieldStructures[i] instanceof Membrane){
-			MembraneVoltage membraneVoltage = ((Membrane)fieldStructures[i]).getMembraneVoltage();
+			Membrane.MembraneVoltage membraneVoltage = ((Membrane)fieldStructures[i]).getMembraneVoltage();
 			if (membraneVoltage.getName().equals(identifier)){
 				return membraneVoltage;
 			}
+		}
+	}
+	
+	//
+	// get Sizes from structures
+	//
+	for (int i = 0; i < fieldStructures.length; i++){
+		Structure.StructureSize structureSize = fieldStructures[i].getStructureSize();
+		if (structureSize.getName().equals(identifier)){
+			return structureSize;
 		}
 	}
 	
@@ -1294,20 +1307,6 @@ public Feature[] getValidDestinationsForMovingFeature(Feature movingFeature) {
 
 /**
  * This method was created in VisualAge.
- * @return java.lang.String
- */
-public String getVCML() {
-	java.io.StringWriter stringWriter = new java.io.StringWriter();
-	java.io.PrintWriter pw = new java.io.PrintWriter(stringWriter);
-	writeTokens(pw);
-	pw.flush();
-	pw.close();
-	return stringWriter.getBuffer().toString();
-}
-
-
-/**
- * This method was created in VisualAge.
  * @return Version
  */
 public Version getVersion() {
@@ -1430,7 +1429,12 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	}
 	if (evt.getSource() instanceof SpeciesContext && evt.getPropertyName().equals("name")){
 		for (int i = 0; i < fieldDiagrams.length; i++){
-			fieldDiagrams[i].renameSpeciesNode((String)evt.getOldValue(),(String)evt.getNewValue());
+			fieldDiagrams[i].renameNode((String)evt.getOldValue(),(String)evt.getNewValue());
+		}
+	}
+	if (evt.getSource() instanceof ReactionStep && evt.getPropertyName().equals("name")){
+		for (int i = 0; i < fieldDiagrams.length; i++){
+			fieldDiagrams[i].renameNode((String)evt.getOldValue(),(String)evt.getNewValue());
 		}
 	}
 }
@@ -1452,6 +1456,16 @@ public void refreshDependencies() {
 		fieldStructures[i].removeVetoableChangeListener(this);
 		fieldStructures[i].addPropertyChangeListener(this);
 		fieldStructures[i].addVetoableChangeListener(this);
+		fieldStructures[i].getStructureSize().removePropertyChangeListener(this);
+		fieldStructures[i].getStructureSize().removeVetoableChangeListener(this);
+		fieldStructures[i].getStructureSize().addPropertyChangeListener(this);
+		fieldStructures[i].getStructureSize().addVetoableChangeListener(this);
+		if (fieldStructures[i] instanceof Membrane){
+			((Membrane)fieldStructures[i]).getMembraneVoltage().removePropertyChangeListener(this);
+			((Membrane)fieldStructures[i]).getMembraneVoltage().removeVetoableChangeListener(this);
+			((Membrane)fieldStructures[i]).getMembraneVoltage().addPropertyChangeListener(this);
+			((Membrane)fieldStructures[i]).getMembraneVoltage().addVetoableChangeListener(this);
+		}
 		fieldStructures[i].setModel(this);
 	}
 	
@@ -1479,7 +1493,6 @@ public void refreshDependencies() {
 		fieldSpeciesContexts[i].addPropertyChangeListener(this);
 		fieldSpeciesContexts[i].addVetoableChangeListener(this);
 		fieldSpeciesContexts[i].setModel(this);
-
 		fieldSpeciesContexts[i].refreshDependencies();
 	}
 	
@@ -1487,6 +1500,11 @@ public void refreshDependencies() {
 		fieldSpecies[i].removeVetoableChangeListener(this);
 		fieldSpecies[i].addVetoableChangeListener(this);
 		fieldSpecies[i].refreshDependencies();
+	}
+	
+	for (int i=0;i<fieldModelParameters.length;i++){
+		fieldModelParameters[i].removeVetoableChangeListener(this);
+		fieldModelParameters[i].addVetoableChangeListener(this);
 	}
 }
 
@@ -2009,12 +2027,12 @@ public void setSpeciesContexts(cbit.vcell.model.SpeciesContext[] speciesContexts
 	//Remove orphaned Species but only for SpeciesContext that were in old and not in new
 	//The API should be changed so that species cannot be added or retrieved independently of SpeciesContexts
 	//
-	List oldSpeciesContextsList = Arrays.asList(oldValue);
-	List newSpeciesContextsList = Arrays.asList(newValue);
+	List<SpeciesContext> oldSpeciesContextsList = Arrays.asList(oldValue);
+	List<SpeciesContext> newSpeciesContextsList = Arrays.asList(newValue);
 	for(int i = 0;i < oldSpeciesContextsList.size();i+= 1){
 		if(!newSpeciesContextsList.contains(oldSpeciesContextsList.get(i))){
 			try{
-				removeSpecies(((SpeciesContext)oldSpeciesContextsList.get(i)).getSpecies());
+				removeSpecies((oldSpeciesContextsList.get(i)).getSpecies());
 			}catch(Throwable e){
 				e.printStackTrace(System.out);
 				//Do nothing for now since this is only a kludge to cleanup orphan species
@@ -2076,12 +2094,12 @@ public void setStructures(cbit.vcell.model.Structure[] structures) throws java.b
  * Creation date: (3/22/01 12:12:10 PM)
  */
 public void showStructureHierarchy() {
-	Vector structList = new Vector(Arrays.asList(fieldStructures));
+	Vector<Structure> structList = new Vector<Structure>(Arrays.asList(fieldStructures));
 
 	//
 	// gather top(s) ... should only have one
 	//
-	Vector topList = new Vector();
+	Vector<Structure> topList = new Vector<Structure>();
 	for (int i=0;i<structList.size();i++){
 		if (((Structure)structList.elementAt(i)).getParentStructure() == null){
 			topList.add(structList.elementAt(i));
@@ -2090,7 +2108,7 @@ public void showStructureHierarchy() {
 	//
 	// for each top, print tree
 	//
-	Stack stack = new Stack();
+	Stack<Structure> stack = new Stack<Structure>();
 	for (int j=0;j<topList.size();j++){
 		Structure top = (Structure)topList.elementAt(j);
 		System.out.println(top.getName());
@@ -2142,128 +2160,101 @@ public String toString() {
  */
 public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVetoException {
 	if (e.getSource() instanceof Structure){
-		if (e.getPropertyName().equals("name") && !e.getNewValue().equals(e.getOldValue())){
+		if (e.getPropertyName().equals("name") && !e.getOldValue().equals(e.getNewValue())){
 			if (getStructure((String)e.getNewValue())!=null){
 				throw new PropertyVetoException("another structure already using name "+e.getNewValue(),e);
 			}
 		}
 	}
 	if (e.getSource() instanceof ReactionStep){
-		if (e.getPropertyName().equals("name") && !e.getNewValue().equals(e.getOldValue())){
+		if (e.getPropertyName().equals("name") && !e.getOldValue().equals(e.getNewValue())){
 			String newName = (String)e.getNewValue();
 			if (getReactionStep(newName)!=null){
 				throw new PropertyVetoException("another reaction step is already using name '"+newName+"'",e);
 			}
-			if (ReservedSymbol.fromString(newName)!=null){
-				throw new PropertyVetoException("cannot use a reserved symbol ('x','y','z','t') as a SpeciesContext name",e);
-			}
-			//
-			// make sure not to change name to that of an existing speciesContext ... (this IS necessary with namespaces).
-			//
-			SpeciesContext sc = getSpeciesContext(newName);
-			if (sc != null){
-				throw new PropertyVetoException("a "+sc.getTerm()+" defined in '"+sc.getStructure().getName()+"' already uses name '"+e.getNewValue()+"'",e);
-			}
-			//
-			// make sure not to change name to that of an existing kinetic parameter ... (is this still necessary with namespaces ????).
-			//
-			//for (int j = 0; j < fieldReactionSteps.length; j++){
-				//if (fieldReactionSteps[j].getKinetics().getKineticsParameter(newName)!=null){
-					//throw new PropertyVetoException(fieldReactionSteps[j].getTerm()+" '"+fieldReactionSteps[j].getName()+"' in '"+fieldReactionSteps[j].getStructure().getName()+"' already has a parameter named '"+newName+"'",e);
-				//}
-			//}
-			//
-			// make sure not to change name of a ReactionStep to that of a Membrane Voltage name  ... (is this still necessary with namespaces ????).
-			//
-			for (int j = 0; j < fieldStructures.length; j++){
-				if (fieldStructures[j] instanceof Membrane && ((Membrane)fieldStructures[j]).getMembraneVoltage().getName().equals(newName)){
-					throw new PropertyVetoException("name '"+newName+"' already defined as Membrane Voltage in Membrane '"+fieldStructures[j].getName()+"'",e);
-				}
-			}
+			// validateNamingConflicts("Reaction",ReactionStep.class, newName, e);
 		}
 	}
 	if (e.getSource() instanceof SpeciesContext){
-		if (e.getPropertyName().equals("name") && !e.getNewValue().equals(e.getOldValue())){
+		if (e.getPropertyName().equals("name") && !e.getOldValue().equals(e.getNewValue())){
 			String newName = (String)e.getNewValue();
-			if (ReservedSymbol.fromString(newName)!=null){
-				throw new PropertyVetoException("cannot use a reserved symbol ('x','y','z','t') as a SpeciesContext name",e);
-			}
 			SpeciesContext sc = getSpeciesContext(newName);
 			if (sc != null){
-				throw new PropertyVetoException("another "+sc.getTerm()+" defined in '"+sc.getStructure().getName()+"' already uses name '"+e.getNewValue()+"'",e);
+				throw new PropertyVetoException("another "+SpeciesContext.getTerm()+" defined in '"+sc.getStructure().getName()+"' already uses name '"+e.getNewValue()+"'",e);
+			}
+			validateNamingConflicts("SpeciesContext",SpeciesContext.class, newName, e);
+		}
+	}
+	if (e.getSource() instanceof ModelParameter){
+		if (e.getPropertyName().equals("name") && !e.getOldValue().equals(e.getNewValue())){
+			String newName = (String)e.getNewValue();
+			if (getModelParameter(newName)!=null){
+				throw new PropertyVetoException("Model Parameter with name '"+newName+"' already exists",e);
+			}
+			validateNamingConflicts("Model Parameter", ModelParameter.class, newName, e);
+		}
+	}
+
+	if (e.getSource() instanceof Species){
+		if (e.getPropertyName().equals("commonName") && !e.getOldValue().equals(e.getNewValue())){
+			String commonName = (String)e.getNewValue();
+			if (commonName==null){
+				throw new PropertyVetoException("species name cannot be null",e);
 			}
 			//
-			// make sure not to change name to that of an existing kinetic parameter ... (is this still necessary with namespaces ????).
+			// check that new name is not duplicated and that new Name isn't ReservedSymbols
 			//
-			//for (int j = 0; j < fieldReactionSteps.length; j++){
-				//if (fieldReactionSteps[j].getKinetics().getKineticsParameter(newName)!=null){
-					//throw new PropertyVetoException(fieldReactionSteps[j].getTerm()+" '"+fieldReactionSteps[j].getName()+"' in '"+fieldReactionSteps[j].getStructure().getName()+"' already has a parameter named '"+newName+"'",e);
-				//}
-			//}
-			//
-			// make sure not to change name of a SpeciesContext to that of a Membrane Voltage name ... (is this still necessary with namespaces ????).
-			//
-			for (int j = 0; j < fieldStructures.length; j++){
-				if (fieldStructures[j] instanceof Membrane && ((Membrane)fieldStructures[j]).getMembraneVoltage().getName().equals(newName)){
-					throw new PropertyVetoException("name '"+newName+"' already defined as Membrane Voltage in Membrane '"+fieldStructures[j].getName()+"'",e);
-				}
+			if (getSpecies(commonName) != null){
+				throw new PropertyVetoException("Species with common name '"+commonName+"' already defined",e);
 			}
-			//
-			// make sure not to change name of a SpeciesContext to that of a ReactionStep name .... (this IS necessary with namespaces)
-			//
-			for (int j = 0; j < fieldReactionSteps.length; j++){
-				if (fieldReactionSteps[j].getName().equals(newName)){
-					throw new PropertyVetoException(fieldReactionSteps[j].getTerm()+" '"+fieldReactionSteps[j].getName()+"' in '"+fieldReactionSteps[j].getStructure().getName()+"' is already named '"+newName+"'",e);
-				}
+			if (ReservedSymbol.fromString(commonName)!=null){
+				throw new PropertyVetoException("cannot use a reserved symbol ('x','y','z','t') as a Species common name",e);
 			}
 		}
 	}
-	//if (e.getSource() instanceof Kinetics){
-		//Kinetics kinetics = (Kinetics)e.getSource();
-		//if (e.getPropertyName().equals("kineticsParameters")){
-			//KineticsParameter parms[] = (KineticsParameter[])e.getNewValue();
-			//if (parms != null){
-				//for (int i=0;i<parms.length;i++){
-					//if (ReservedSymbol.fromString(parms[i].getName())!=null){
-						//throw new PropertyVetoException("cannot use a reserved symbol ('x','y','z','t') as a Parameter name",e);
-					//}
-					//KineticsParameter existingParm = getKineticsParameter(parms[i].getName());
-					////
-					//// make sure new parameter doesn't have the same name as a parameter from another ReactionStep
-					////
-					//if (existingParm != null && existingParm != parms[i] && 
-						//existingParm.getKinetics().getReactionStep() != parms[i].getKinetics().getReactionStep()){
-						//throw new PropertyVetoException(existingParm.getKinetics().getReactionStep().getTerm()+" '"+existingParm.getKinetics().getReactionStep().getName()+"' in '"+existingParm.getKinetics().getReactionStep().getStructure().getName()+"' already has a parameter called '"+parms[i].getName()+"'",e);
-					//}
-					//SpeciesContext sc = getSpeciesContext(parms[i].getName());
-					//if (sc != null){
-						//throw new PropertyVetoException(sc.getTerm()+" '"+sc.getName()+"' defined in '"+sc.getStructure().getName()+"', cannot create a parameter with same name",e);
-					//}
-					////
-					//// make sure not to create a kinetics parameter with same name as a Membrane Voltage name
-					////
-					//for (int j = 0; j < fieldStructures.length; j++){
-						//if (fieldStructures[j] instanceof Membrane && ((Membrane)fieldStructures[j]).getMembraneVoltage().getName().equals(parms[i].getName())){
-							//throw new PropertyVetoException("name '"+parms[i].getName()+"' already defined as Membrane Voltage in Membrane '"+fieldStructures[j].getName()+"', cannot create a parameter with same name",e);
-						//}
-					//}
-				//}
-			//}
-		//}
-	//}
+
 	if (e.getSource() == this && e.getPropertyName().equals("structures")){
 		Structure topStructure = null;
 		Structure newStructures[] = (Structure[])e.getNewValue();
 		if (newStructures==null){
 			throw new PropertyVetoException("structures cannot be null",e);
 		}
-		HashSet nameSet = new HashSet();
+		//
+		// look for duplicates of structure name, structure size name, membrane voltage name within new "structures" array
+		// and look for symbol conflicts for StructureSize name and for MembraneVoltage name in existing "local" symbols. 
+		//
+		HashSet<String> structNameSet = new HashSet<String>();
+		HashSet<String> structSymbolSet = new HashSet<String>();
+		for (int i=0;i<newStructures.length;i++){
+			
+			String newStructureName = newStructures[i].getName();
+			if (structNameSet.contains(newStructureName)){
+				throw new PropertyVetoException("multiple structures with name '"+newStructureName+"' defined",e);
+			}
+			structNameSet.add(newStructureName);
+			
+			if (newStructures[i] instanceof Membrane){
+				String newMembraneVoltageName = ((Membrane)newStructures[i]).getMembraneVoltage().getName();
+				if (structSymbolSet.contains(newMembraneVoltageName)){
+					throw new PropertyVetoException("membrane '"+newStructureName+"' has Voltage name '"+newMembraneVoltageName+"' that conflicts with another Voltage name or Size name",e);
+				}
+				structSymbolSet.add(newMembraneVoltageName);
+				validateNamingConflicts("MembraneVoltage",MembraneVoltage.class, newMembraneVoltageName, e);
+			}
+			
+			String newStructureSizeName = newStructures[i].getStructureSize().getName();
+			if (structSymbolSet.contains(newStructureSizeName)){
+				throw new PropertyVetoException("structure '"+newStructureName+"' has structure Size name '"+newStructureSizeName+"' that conflicts with another Voltage name or Size name",e);
+			}
+			structSymbolSet.add(newStructureSizeName);
+			validateNamingConflicts("StructureSize",StructureSize.class, newStructureSizeName, e);
+		}
+		
+		//
+		// verify topological constraints (soon to be removed).
+		//
 		int topCount = 0;
 		for (int i=0;i<newStructures.length;i++){
-			if (nameSet.contains(newStructures[i].getName())){
-				throw new PropertyVetoException("multiple structures with name '"+newStructures[i].getName()+"' defined",e);
-			}
-			nameSet.add(newStructures[i].getName());
 			if (newStructures[i] instanceof Feature){
 				if (newStructures[i].getParentStructure()==null){
 					topStructure = newStructures[i];
@@ -2283,7 +2274,6 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 		}
 		//
 		// make sure all members are children of the root and all children are in the array
-		//
 		//
 		for (int i=0;i<newStructures.length;i++){
 			if (newStructures[i] == topStructure) continue;
@@ -2313,6 +2303,7 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 			}
 		}
 	}
+	
 	if (e.getSource() == this && e.getPropertyName().equals("species")){
 		Species newSpeciesArray[] = (Species[])e.getNewValue();
 		if (newSpeciesArray==null){
@@ -2321,7 +2312,7 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 		//
 		// check that names are not duplicated and that no common names are ReservedSymbols
 		//
-		HashSet commonNameSet = new HashSet();
+		HashSet<String> commonNameSet = new HashSet<String>();
 		for (int i=0;i<newSpeciesArray.length;i++){
 			if (commonNameSet.contains(newSpeciesArray[i].getCommonName())){
 				throw new PropertyVetoException("multiple species with common name '"+newSpeciesArray[i].getCommonName()+"' defined",e);
@@ -2353,37 +2344,16 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 		//
 		// check that names are not duplicated and that no common names are ReservedSymbols
 		//
-		HashSet namesSet = new HashSet();
+		HashSet<String> namesSet = new HashSet<String>();
 		for (int i=0;i<newModelParams.length;i++){
 			if (namesSet.contains(newModelParams[i].getName())){
 				throw new PropertyVetoException("Multiple model/global parameters with same name '"+newModelParams[i].getName()+"' defined",e);
 			}
-			if (ReservedSymbol.fromString(newModelParams[i].getName())!=null){
-				throw new PropertyVetoException("cannot use a reserved symbol ('x','y','z','t') as a Model/Global parameter name",e);
-			}
 			namesSet.add(newModelParams[i].getName());
+			
+			validateNamingConflicts("Model Parameter", ModelParameter.class, newModelParams[i].getName(), e);
 		}
 	}
-
-	//
-	// Check new Species commonName is legal
-	//
-	if (e.getSource() instanceof Species && e.getPropertyName().equals("commonName")){
-		String commonName = (String)e.getNewValue();
-		if (commonName==null){
-			throw new PropertyVetoException("species name cannot be null",e);
-		}
-		//
-		// check that new name is not duplicated and that new Name isn't ReservedSymbols
-		//
-		if (getSpecies(commonName) != null){
-			throw new PropertyVetoException("Species with common name '"+commonName+"' already defined",e);
-		}
-		if (ReservedSymbol.fromString(commonName)!=null){
-			throw new PropertyVetoException("cannot use a reserved symbol ('x','y','z','t') as a Species common name",e);
-		}
-	}
-
 	
 	if (e.getSource() == this && e.getPropertyName().equals("speciesContexts")){
 		SpeciesContext newSpeciesContextArray[] = (SpeciesContext[])e.getNewValue();
@@ -2404,39 +2374,14 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 		//
 		// check that names are not duplicated and that no names are ReservedSymbols
 		//
-		HashSet nameSet = new HashSet();
+		HashSet<String> nameSet = new HashSet<String>();
 		for (int i=0;i<newSpeciesContextArray.length;i++){
 			if (nameSet.contains(newSpeciesContextArray[i].getName())){
 				throw new PropertyVetoException("multiple speciesContexts with name '"+newSpeciesContextArray[i].getName()+"' defined",e);
 			}
-			if (ReservedSymbol.fromString(newSpeciesContextArray[i].getName())!=null){
-				throw new PropertyVetoException("cannot use a reserved symbol ('x','y','z','t') as a SpeciesContext name",e);
-			}
-			//
-			// make sure not to change name to that of an existing kinetic parameter ... (is this still necessary with namespaces ????).
-			//
-			//for (int j = 0; j < fieldReactionSteps.length; j++){
-				//if (fieldReactionSteps[j].getKinetics().getKineticsParameter(newSpeciesContextArray[i].getName())!=null){
-					//throw new PropertyVetoException(fieldReactionSteps[j].getTerm()+" '"+fieldReactionSteps[j].getName()+"' in '"+fieldReactionSteps[j].getStructure().getName()+"' already has a parameter named '"+newSpeciesContextArray[i].getName()+"'",e);
-				//}
-			//}
-			//
-			// make sure not to change name of a SpeciesContext to that of a Membrane Voltage name ... (is this still necessary with namespaces ????).
-			//
-			for (int j = 0; j < fieldStructures.length; j++){
-				if (fieldStructures[j] instanceof Membrane && ((Membrane)fieldStructures[j]).getMembraneVoltage().getName().equals(newSpeciesContextArray[i].getName())){
-					throw new PropertyVetoException("name '"+newSpeciesContextArray[i].getName()+"' already defined as Membrane Voltage in Membrane '"+fieldStructures[j].getName()+"'",e);
-				}
-			}
-			//
-			// make sure not to change name of a SpeciesContext to that of a ReactionStep name .... (this IS necessary with namespaces)
-			//
-			for (int j = 0; j < fieldReactionSteps.length; j++){
-				if (fieldReactionSteps[j].getName().equals(newSpeciesContextArray[i].getName())){
-					throw new PropertyVetoException(fieldReactionSteps[j].getTerm()+" '"+fieldReactionSteps[j].getName()+"' in '"+fieldReactionSteps[j].getStructure().getName()+"' is already named '"+newSpeciesContextArray[i].getName()+"'",e);
-				}
-			}
 			nameSet.add(newSpeciesContextArray[i].getName());
+			
+			validateNamingConflicts("SpeciesContext",newSpeciesContextArray[i].getClass(), newSpeciesContextArray[i].getName(), e);
 		}
 		//
 		// make sure that reactionParticipants point to speciesContext
@@ -2456,9 +2401,7 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 			}
 		}
 	}
-	//
-	//"reactionSteps" VetoableChanges were never checked before
-	//
+	
 	if (e.getSource() == this && e.getPropertyName().equals("reactionSteps")){
 		ReactionStep[] newReactionStepArr = (ReactionStep[])e.getNewValue();
 		//
@@ -2474,38 +2417,14 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 		// check that names are not duplicated and that no names are ReservedSymbols
 		//because math generator complained if reactionsteps had same name
 		//
-		HashSet nameSet = new HashSet();
+		HashSet<String> nameSet = new HashSet<String>();
 		for (int i=0;i<newReactionStepArr.length;i++){
 			if (nameSet.contains(newReactionStepArr[i].getName())){
 				throw new PropertyVetoException("multiple reactionSteps with name '"+newReactionStepArr[i].getName()+"' defined",e);
 			}
-			if (ReservedSymbol.fromString(newReactionStepArr[i].getName())!=null){
-				throw new PropertyVetoException("cannot use a reserved symbol ('x','y','z','t') as a ReactionStep name",e);
-			}
-			//
-			// make sure not to change name to that of an existing speciesContext ... (this IS necessary with namespaces).
-			//
-			SpeciesContext sc = getSpeciesContext(newReactionStepArr[i].getName());
-			if (sc != null){
-				throw new PropertyVetoException("a "+sc.getTerm()+" defined in '"+sc.getStructure().getName()+"' already uses name '"+newReactionStepArr[i].getName()+"'",e);
-			}
-			//
-			// make sure not to change name to that of an existing kinetic parameter ... (is this still necessary with namespaces ????).
-			//
-			//for (int j = 0; j < fieldReactionSteps.length; j++){
-				//if (fieldReactionSteps[j].getKinetics().getKineticsParameter(newReactionStepArr[i].getName())!=null){
-					//throw new PropertyVetoException(fieldReactionSteps[j].getTerm()+" '"+fieldReactionSteps[j].getName()+"' in '"+fieldReactionSteps[j].getStructure().getName()+"' already has a parameter named '"+newReactionStepArr[i].getName()+"'",e);
-				//}
-			//}
-			//
-			// make sure not to change name of a ReactionStep to that of a Membrane Voltage name  ... (is this still necessary with namespaces ????).
-			//
-			for (int j = 0; j < fieldStructures.length; j++){
-				if (fieldStructures[j] instanceof Membrane && ((Membrane)fieldStructures[j]).getMembraneVoltage().getName().equals(newReactionStepArr[i].getName())){
-					throw new PropertyVetoException("name '"+newReactionStepArr[i].getName()+"' already defined as Membrane Voltage in Membrane '"+fieldStructures[j].getName()+"'",e);
-				}
-			}
 			nameSet.add(newReactionStepArr[i].getName());
+
+			// validateNamingConflicts("Reaction", ReactionStep.class, newReactionStepArr[i].getName(), e);
 		}
 		//
 		// make sure that reactionParticipants point to speciesContext that exist
@@ -2525,31 +2444,74 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 				}
 			}
 		}
-	}
-
+	}	
 }
-
 
 /**
- * This method was created by a SmartGuide.
- * @param ps java.io.PrintStream
- * @exception java.lang.Exception The exception description.
+ * if newSTE is null, then newName is the proposed name of a reaction
+ * else newSTE is the symbol to be added.
  */
-public void writeTokens(java.io.PrintWriter pw) {
-	String versionName = (getName()!=null)?getName():"unnamed_model";
-	pw.println(VCMODL.Model+" "+versionName+" {");
-	for (int i=0;i<fieldSpecies.length;i++){
-		pw.println(VCMODL.Species+" "+fieldSpecies[i].getCommonName());
+private void validateNamingConflicts(String symbolDescription, Class newSymbolClass, String newSymbolName, PropertyChangeEvent e) throws PropertyVetoException {
+	//
+	// validate lexicon
+	//
+	if (newSymbolName==null){
+		throw new PropertyVetoException(symbolDescription+" name is null",e);
 	}
-	for (int i=0;i<fieldStructures.length;i++){
-		fieldStructures[i].writeTokens(pw,this);
+	if (newSymbolName.length()<1){
+		throw new PropertyVetoException(symbolDescription+" name is empty (zero length)",e);
 	}
-	for (int i=0;i<fieldReactionSteps.length;i++){
-		fieldReactionSteps[i].writeTokens(pw);	
+	if (!newSymbolName.equals(TokenMangler.fixTokenStrict(newSymbolName))){
+		throw new PropertyVetoException(symbolDescription+" '"+newSymbolName+"' not legal identifier, try '"+TokenMangler.fixTokenStrict(newSymbolName)+"'",e);
 	}
-	for (int i=0;i<fieldDiagrams.length;i++){
-		fieldDiagrams[i].write(pw);	
+	
+	//
+	// make sure not to change name of a "global" symbol to that of a ReactionStep name .... (this IS necessary with namespaces)
+	//
+	if (!newSymbolClass.equals(ReactionStep.class)){
+		for (int j = 0; j < fieldReactionSteps.length; j++){
+			if (fieldReactionSteps[j].getName().equals(newSymbolName)){
+				throw new PropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for "+fieldReactionSteps[j].getTerm()+" '"+fieldReactionSteps[j].getName()+"' in structure '"+fieldReactionSteps[j].getStructure().getName()+"'",e);
+			}
+		}
 	}
-	pw.println("}");
+	//
+	// make sure not to change to name of any other symbol in 'model' namespace (or friendly namespaces)
+	//
+	SymbolTableEntry localSTE = null;
+	try {
+		localSTE = getLocalEntry(newSymbolName);
+	}catch (ExpressionBindingException ex){
+		ex.printStackTrace(System.out);
+	}
+	if (localSTE == null){
+		return;
+	}
+	//
+	// if the existing (local) symbol and the new symbol are of the same type (same class) then ignore any conflict.
+	//
+	if (newSymbolClass.equals(localSTE.getClass())){
+		return;
+	}
+	
+	//
+	// old and new symbols of different type but same name, throw exception 
+	//
+	if (localSTE instanceof SpeciesContext){
+		throw new PropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for Species Context in Structure '"+((SpeciesContext)localSTE).getStructure().getName()+"'",e);
+	}else if (localSTE instanceof MembraneVoltage){
+		throw new PropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for Membrane Voltage in Membrane '"+((Membrane.MembraneVoltage)localSTE).getMembrane().getName()+"'",e);
+	}else if (localSTE instanceof StructureSize){
+		throw new PropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for Structure Size in Structure '"+((Structure.StructureSize)localSTE).getStructure().getName()+"'",e);
+	}else if (localSTE instanceof ModelParameter){
+		throw new PropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for Model Parameter",e);
+	}else if (localSTE instanceof ReservedSymbol){
+		throw new PropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for a reserved symbol (e.g. 'x','y','z','t','KMOLE','_T_','_F_','_R_', ...)",e);
+	}else{
+		throw new PropertyVetoException("conflict with "+symbolDescription+" '"+newSymbolName+"', name already used for a '"+localSTE.getClass().getName()+"' in context '"+localSTE.getNameScope().getName()+"'",e);
+	}
+	
 }
+
+
 }

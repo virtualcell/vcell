@@ -94,7 +94,7 @@ public class FluxSolver {
 //		}
 //	}
 	//we have to pass the math description because the math description is not updated in simulation context.	
-	public static FluxFunction solveFlux(Expression orgExp, ReactionStep rs) throws ExpressionException, MathException{
+	public static FluxFunction solveFlux(Expression orgExp, FluxReaction rs) throws ExpressionException, MathException{
 		FluxFunction ff = new FluxFunction();
 		//get Species outside and inside contexts
 		SpeciesContext sc_outside = ((FluxReaction)rs).getFlux(((Feature)rs.getStructure().getParentStructure())).getSpeciesContext();

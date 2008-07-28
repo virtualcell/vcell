@@ -1,4 +1,6 @@
 package cbit.vcell.mapping.potential;
+import java.beans.PropertyVetoException;
+
 import cbit.vcell.math.Function;
 import cbit.vcell.parser.*;
 import cbit.vcell.math.VolVariable;
@@ -98,6 +100,10 @@ public abstract class ElectricalDevice implements ScopedSymbolTable {
 			return false;
 		}
 
+		public void setUnitDefinition(VCUnitDefinition unit) {
+			throw new RuntimeException("Unit is not editable");
+		}
+		
 		public boolean isNameEditable(){
 			return true;
 		}
@@ -106,16 +112,21 @@ public abstract class ElectricalDevice implements ScopedSymbolTable {
 			return ElectricalDevice.this.getNameScope();
 		}
 
-		void setName(java.lang.String name) throws java.beans.PropertyVetoException {
+		public void setName(java.lang.String name) throws java.beans.PropertyVetoException {
 			String oldValue = fieldParameterName;
 			super.fireVetoableChange("name", oldValue, name);
 			fieldParameterName = name;
 			super.firePropertyChange("name", oldValue, name);
 		}
 
-		public void setExpression(cbit.vcell.parser.Expression expression) throws java.beans.PropertyVetoException, ExpressionBindingException {
+		public void setExpression(cbit.vcell.parser.Expression expression) throws java.beans.PropertyVetoException {
 			expression = new Expression(expression);
-			expression.bindExpression(ElectricalDevice.this);
+			try {
+				expression.bindExpression(ElectricalDevice.this);
+			} catch (ExpressionBindingException e) {
+				e.printStackTrace();
+				throw new PropertyVetoException(e.getMessage(),null);
+			}
 			Expression oldValue = fieldParameterExpression;
 			super.fireVetoableChange("expression", oldValue, expression);
 			fieldParameterExpression = expression;
@@ -145,7 +156,11 @@ public abstract class ElectricalDevice implements ScopedSymbolTable {
 		public int getRole() {
 			return fieldParameterRole;
 		}
-		
+
+		public boolean isDescriptionEditable() {
+			return false;
+		}
+
 	}
 
 /**
@@ -185,7 +200,7 @@ public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierSt
 		return ste;
 	}
 			
-	return getNameScope().getExternalEntry(identifierString);
+	return getNameScope().getExternalEntry(identifierString,this);
 }
 
 

@@ -145,7 +145,7 @@ public abstract class ElectricalStimulus implements cbit.util.Matchable, cbit.vc
 			super.firePropertyChange("unitDefinition", oldValue, unitDefinition);
 		}
 
-		void setExpression(Expression argExpression) throws java.beans.PropertyVetoException, ExpressionBindingException {
+		public void setExpression(Expression argExpression) throws java.beans.PropertyVetoException {
 			//if (argExpression!=null){
 				//argExpression = new Expression(argExpression);
 				//argExpression.bindExpression(ElectricalStimulus.this);
@@ -161,6 +161,10 @@ public abstract class ElectricalStimulus implements cbit.util.Matchable, cbit.vc
 			super.fireVetoableChange("name", oldValue, name);
 			fieldParameterName = name;
 			super.firePropertyChange("name", oldValue, name);
+		}
+
+		public boolean isDescriptionEditable() {
+			return false;
 		}
 
 	}
@@ -211,6 +215,14 @@ public abstract class ElectricalStimulus implements cbit.util.Matchable, cbit.vc
 			return false;
 		}
 
+		public void setExpression(Expression expression) throws PropertyVetoException, ExpressionBindingException {
+			throw new RuntimeException("expression is not editable");
+		}
+
+		public void setUnitDefinition(VCUnitDefinition unit) throws PropertyVetoException {
+			throw new RuntimeException("unit is not editable");
+		}
+		
 		public int getIndex() {
 			return -1;
 		}
@@ -238,6 +250,9 @@ public abstract class ElectricalStimulus implements cbit.util.Matchable, cbit.vc
 			super.firePropertyChange("name", oldValue, name);
 		}
 
+		public boolean isDescriptionEditable() {
+			return false;
+		}
 	}
 		
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
@@ -602,7 +617,7 @@ public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierSt
 		}
 		return ste;
 	}
-	return getNameScope().getExternalEntry(identifierString);
+	return getNameScope().getExternalEntry(identifierString,this);
 }
 
 

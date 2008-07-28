@@ -330,7 +330,7 @@ public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierSt
 	//
 	// travel in namespace
 	//
-	ste = getNameScope().getExternalEntry(identifierString);
+	ste = getNameScope().getExternalEntry(identifierString,this);
 
 	return ste;
 }

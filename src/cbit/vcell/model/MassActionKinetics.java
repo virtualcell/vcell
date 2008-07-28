@@ -157,7 +157,7 @@ protected void updateGeneratedExpressions() throws cbit.vcell.parser.ExpressionE
 		return;
 	}
 	
-	MembraneVoltage V = null;
+	Membrane.MembraneVoltage V = null;
 	if (getReactionStep().getStructure() instanceof Membrane){
 		V = ((Membrane)getReactionStep().getStructure()).getMembraneVoltage();
 	}

@@ -11,6 +11,7 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.StructureAnalyzer;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
+import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.parser.*;
 import cbit.vcell.parser.Expression;
 
@@ -286,24 +287,45 @@ public ChargeCarrierValence getChargeCarrierValence() {
 }
 public SymbolTableEntry getEntry(String identifier) throws ExpressionBindingException
 {
-	
-	cbit.vcell.parser.SymbolTableEntry ste = getLocalEntry(identifier);
-	if (ste != null && !(ste instanceof Kinetics.UnresolvedParameter)){
-		return ste;
+	cbit.vcell.parser.SymbolTableEntry localSTE = getLocalEntry(identifier);
+	if (localSTE != null && !(localSTE instanceof Kinetics.UnresolvedParameter)){
+		return localSTE;
 	}
-	Kinetics.UnresolvedParameter unresolvedParameter = (Kinetics.UnresolvedParameter)ste;
+	Kinetics.UnresolvedParameter unresolvedParameter = (Kinetics.UnresolvedParameter)localSTE;
 			
-	ste = getNameScope().getExternalEntry(identifier);
+	SymbolTableEntry externalSTE = getNameScope().getExternalEntry(identifier,this);
 
 	//
-	// ste is null and found unresolved parameter, then return unresolved parameter.  external entry overrides unresolved parameter.
+	// external ste is null and found unresolved parameter, then return unresolved parameter.  
+	// (external entry overrides unresolved parameter).
 	//
-	if (ste == null && unresolvedParameter != null){
+	if (externalSTE!=null){
+		if (unresolvedParameter!=null){
+			getKinetics().removeUnresolvedParameter(unresolvedParameter);
+		}
+		return getKinetics().addProxyParameter(externalSTE);
+	}else if (unresolvedParameter != null){
 		return unresolvedParameter;
-	} else {
-		return ste;
 	}
+	//
+	// if all else fails, try reserved symbols
+	//
+	SymbolTableEntry reservedSTE = ReservedSymbol.fromString(identifier);
+	if (reservedSTE != null){
+		ReservedSymbol rs = (ReservedSymbol)reservedSTE;
+		if (rs.isX() || rs.isY() || rs.isZ()){
+			throw new ExpressionBindingException("can't use x, y, or z, Physiological Models must be spatially independent");
+		}
+		return getKinetics().addProxyParameter(reservedSTE);
+	}
+
+	return null;
 }   
+
+public Model getModel() {
+	return model;
+}
+
 /**
  * This method was created in VisualAge.
  * @return cbit.sql.KeyValue
@@ -321,32 +343,6 @@ public Kinetics getKinetics() {
 }
 public SymbolTableEntry getLocalEntry(String identifier) throws ExpressionBindingException
 {
-	cbit.vcell.parser.SymbolTableEntry ste = ReservedSymbol.fromString(identifier);
-	if (ste != null){
-		ReservedSymbol rs = (ReservedSymbol)ste;
-		if (rs.isX() || rs.isY() || rs.isZ()){
-			throw new ExpressionBindingException("can't use x, y, or z, Physiological Models must be spatially independent");
-		}
-		return rs;
-	}
-	
-	//
-	// see if voltage from this structure
-	//
-	if (getStructure() instanceof Membrane){
-		MembraneVoltage membraneVoltage = ((Membrane)getStructure()).getMembraneVoltage();
-		if (membraneVoltage.getName().equals(identifier)){
-			return membraneVoltage;
-		}
-	}
-	//
-	// check symbol against reactionParticipants (reactants/products/catalysts/fluxCarriers)
-	//
-	ReactionParticipant reactionParticipant = getReactionParticipantFromSymbol(identifier);
-	if (reactionParticipant!=null){
-		return reactionParticipant.getSpeciesContext();
-	}
-
 	//
 	// check symbol against charge valence
 	//
@@ -357,7 +353,7 @@ public SymbolTableEntry getLocalEntry(String identifier) throws ExpressionBindin
 	//
 	// if resolved parameter exists, then return it
 	//
-	ste = getKinetics().getKineticsParameter(identifier);
+	SymbolTableEntry ste = getKinetics().getKineticsParameter(identifier);
 	if (ste != null){
 		return ste;
 	}
@@ -366,6 +362,14 @@ public SymbolTableEntry getLocalEntry(String identifier) throws ExpressionBindin
 	// if unnresolved parameter exists, then return it
 	//
 	ste = getKinetics().getUnresolvedParameter(identifier);
+	if (ste != null){
+		return ste;
+	}
+
+	//
+	// if proxy parameter exists, then return it
+	//
+	ste = getKinetics().getProxyParameter(identifier);
 	if (ste != null){
 		return ste;
 	}

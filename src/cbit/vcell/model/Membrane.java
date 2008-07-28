@@ -3,8 +3,11 @@ package cbit.vcell.model;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.beans.PropertyVetoException;
 import java.util.*;
 import cbit.util.Matchable;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.units.VCUnitDefinition;
 import cbit.sql.KeyValue;
 
 public class Membrane extends Structure {
@@ -12,10 +15,47 @@ public class Membrane extends Structure {
 	public Feature outsideFeature = null;
 	private MembraneVoltage fieldMembraneVoltage = null;
 
+	public final static String MEMBRANE_VOLTAGE_REGION_NAME = "SpatialMembraneVoltage";	
+	
+	public class MembraneVoltage extends ModelQuantity {
+
+		@Override
+		public String getDescription() {
+			return "membrane voltage";
+		}
+
+		public MembraneVoltage(String name) {
+			super(name);
+		}
+
+		public cbit.vcell.parser.NameScope getNameScope() {
+			return Membrane.this.getNameScope();
+		}
+		
+		public Membrane getMembrane(){
+			return Membrane.this;
+		}
+
+		public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
+			return cbit.vcell.units.VCUnitDefinition.UNIT_mV;
+		}
+
+		public void setUnitDefinition(VCUnitDefinition unit) {
+			throw new RuntimeException("Cannot set units on Membrane Voltage, only "+getUnitDefinition().getSymbol()+" is supported");
+		}
+
+		public boolean isUnitEditable() {
+			return false;
+		}
+
+	}
+	
+	
+	
 public Membrane(KeyValue key, String name) throws java.beans.PropertyVetoException {
 	super(key);
 	setName(name);
-	fieldMembraneVoltage = new MembraneVoltage(cbit.util.TokenMangler.fixTokenStrict("Voltage_"+name),this);
+	fieldMembraneVoltage = new MembraneVoltage(cbit.util.TokenMangler.fixTokenStrict("Voltage_"+name));
 }
 
 
@@ -120,21 +160,6 @@ public void setInsideFeature(Feature insideFeature) {
 	}
 }
 
-
-/**
- * Sets the membraneVoltage property (cbit.vcell.model.MembraneVoltage) value.
- * @param membraneVoltage The new value for the property.
- * @exception java.beans.PropertyVetoException The exception description.
- * @see #getMembraneVoltage
- */
-private void setMembraneVoltage(MembraneVoltage membraneVoltage) throws java.beans.PropertyVetoException {
-	MembraneVoltage oldValue = fieldMembraneVoltage;
-	fireVetoableChange("membraneVoltage", oldValue, membraneVoltage);
-	fieldMembraneVoltage = membraneVoltage;
-	firePropertyChange("membraneVoltage", oldValue, membraneVoltage);
-}
-
-
 /**
  * This method was created by a SmartGuide.
  * @param insideFeature cbit.vcell.model.Feature
@@ -183,28 +208,6 @@ public String toString() {
 	
 	return sb.toString();
 }
-
-
-/**
- * This method was created by a SmartGuide.
- * @param ps java.io.PrintStream
- * @exception java.lang.Exception The exception description.
- */
-public void writeTokens(java.io.PrintWriter pw, Model model) {
-	
-	//
-	// write Membrane description
-	//
-	pw.println(VCMODL.Membrane+" "+getName()+" "+getInsideFeature().getName()+" "+getOutsideFeature().getName()+" "+VCMODL.BeginBlock);
-	pw.println("\t"+VCMODL.MembraneVoltageName+" "+getMembraneVoltage().getName());
-	SpeciesContext structSC[] = model.getSpeciesContexts(this);
-	for (int i=0;i<structSC.length;i++){
-		structSC[i].writeTokens(pw);	
-	}
-
-	pw.println(VCMODL.EndBlock);
-}
-
 
 @Override
 public int getDimension() {

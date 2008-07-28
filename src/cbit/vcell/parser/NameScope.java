@@ -24,7 +24,7 @@ NameScope[] getChildren();
  * @return cbit.vcell.parser.SymbolTableEntry
  * @param identifier java.lang.String
  */
-SymbolTableEntry getExternalEntry(String identifier) throws ExpressionBindingException;
+SymbolTableEntry getExternalEntry(String identifier, SymbolTable localSymbolTable) throws ExpressionBindingException;
 /**
  * Insert the method's description here.
  * Creation date: (8/26/2003 10:46:30 PM)

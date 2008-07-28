@@ -153,7 +153,7 @@ public String getVCML() {
  * @param oldName java.lang.String
  * @param newName java.lang.String
  */
-public void renameSpeciesNode(String oldName, String newName) {
+public void renameNode(String oldName, String newName) {
 	for (int i = 0; i < nodeList.size(); i++){
 		NodeReference nodeRef = (NodeReference)nodeList.elementAt(i);
 		if (nodeRef.getName().equals(oldName)){

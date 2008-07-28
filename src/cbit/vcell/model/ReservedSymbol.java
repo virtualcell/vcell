@@ -4,10 +4,12 @@ package cbit.vcell.model;
  * All rights reserved.
 ©*/
 import cbit.vcell.parser.*;
+
+import java.beans.PropertyVetoException;
 import java.io.*;
 import cbit.vcell.units.VCUnitDefinition;
 
-public class ReservedSymbol implements SymbolTableEntry, Serializable
+public class ReservedSymbol implements EditableSymbolTableEntry, Serializable
 {
    public final static ReservedSymbol TIME 	 = new ReservedSymbol("t","time",VCUnitDefinition.UNIT_s,null);
    public final static ReservedSymbol X    	 = new ReservedSymbol("x","x coord",VCUnitDefinition.UNIT_um,null);
@@ -353,5 +355,45 @@ public boolean isZ() {
    public String toString()
    {
 	   return getName();
-   }      
+   }
+
+
+public boolean isDescriptionEditable() {
+	return false;
+}
+
+
+public boolean isExpressionEditable() {
+	return false;
+}
+
+
+public boolean isNameEditable() {
+	return false;
+}
+
+
+public boolean isUnitEditable() {
+	return false;
+}
+
+
+public void setDescription(String description) throws PropertyVetoException {
+	throw new RuntimeException("cannot change description of a reserved symbol");
+}
+
+
+public void setExpression(Expression expression) throws PropertyVetoException, ExpressionBindingException {
+	throw new RuntimeException("cannot change the value of a reserved symbol");
+}
+
+
+public void setName(String name) throws PropertyVetoException {
+	throw new RuntimeException("cannot rename a reserved symbols");
+}
+
+
+public void setUnitDefinition(VCUnitDefinition unit) throws PropertyVetoException {
+	throw new RuntimeException("cannot change unit of a reserved symbol");
+}      
 }

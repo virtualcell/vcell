@@ -241,6 +241,7 @@ private ReactionStep getReactionStep(Connection con, ResultSet rset) throws SQLE
 	try {
 		rs.getKinetics().bind(rs);
 	}catch (cbit.vcell.parser.ExpressionException e){
+		e.printStackTrace(System.out);
 		throw new DataAccessException("ExpressionException: "+e.getMessage());
 	}
 
