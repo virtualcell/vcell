@@ -186,6 +186,11 @@ public class Experiment implements cbit.util.Matchable, java.io.Serializable, cb
 			super.firePropertyChange("name", oldValue, name);
 		}
 
+
+		public boolean isDescriptionEditable() {
+			return false;
+		}
+
 	}
 	private cbit.vcell.exp.Experiment.ExperimentParameter[] fieldParameters = null;
 	private cbit.vcell.constraints.AbstractConstraint[] fieldConditions = null;

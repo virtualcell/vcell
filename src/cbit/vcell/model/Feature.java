@@ -252,27 +252,6 @@ public String toString() {
 }
 
 
-/**
- * This method was created by a SmartGuide.
- * @param ps java.io.PrintStream
- * @exception java.lang.Exception The exception description.
- */
-public void writeTokens(java.io.PrintWriter pw, Model model) {
-	
-	//
-	// write Feature description
-	//
-	pw.println(VCMODL.Feature+" "+getName()+" "+VCMODL.BeginBlock);
-
-	SpeciesContext structSC[] = model.getSpeciesContexts(this);
-	for (int i=0;i<structSC.length;i++){
-		structSC[i].writeTokens(pw);	
-	}
-
-	pw.println(VCMODL.EndBlock);
-	
-}
-
 
 @Override
 public int getDimension() {

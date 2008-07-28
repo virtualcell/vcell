@@ -38,24 +38,26 @@ public abstract cbit.vcell.parser.NameScope[] getChildren();
  * @return cbit.vcell.parser.SymbolTableEntry
  * @param identifier java.lang.String
  */
-public SymbolTableEntry getExternalEntry(String identifier) throws ExpressionBindingException {
+public SymbolTableEntry getExternalEntry(String identifier, SymbolTable localSymbolTable) throws ExpressionBindingException {
 	
 	String prefix = getPrefix(identifier);
 
 	if (prefix.length()==0){
 		//
-		// no prefix, look locally and then pass up the tree if not found
+		// no prefix, look in current symbol table (if not the local one) and pass up the tree if not found
 		//
 		if (getScopedSymbolTable()!=null){
-			SymbolTableEntry ste = getScopedSymbolTable().getLocalEntry(identifier);
-			if (ste!=null){
-				return ste;
+			if (getScopedSymbolTable()!=localSymbolTable){
+				SymbolTableEntry ste = getScopedSymbolTable().getLocalEntry(identifier);
+				if (ste!=null){
+					return ste;
+				}
 			}
 		}else{
 			throw new ExpressionBindingException("error binding '"+identifier+"', nameScope '"+getName()+"' has no symbolTable");
 		}
 		if (getParent()!=null){
-			return getParent().getExternalEntry(identifier);
+			return getParent().getExternalEntry(identifier, localSymbolTable);
 		}else{
 			return null;
 		}
@@ -317,7 +319,7 @@ public String getSymbolName(SymbolTableEntry symbolTableEntry) {
 			//
 			SymbolTableEntry defaultBinding = null;
 			try {
-				defaultBinding = getExternalEntry(symbolTableEntry.getName());
+				defaultBinding = getExternalEntry(symbolTableEntry.getName(),getScopedSymbolTable());
 			}catch (ExpressionBindingException e){
 				e.printStackTrace(System.out);
 				throw new RuntimeException("NameScope can't resolve bound symbol '"+symbolTableEntry.getName()+"', symbol has no default binding");

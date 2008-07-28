@@ -905,7 +905,7 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 					Expression fluxRate = kinetics.getKineticsParameterFromRole(Kinetics.ROLE_ReactionRate).getExpression();
 					fluxRate = substitueKineticPara(fluxRate, reactionStep, false);
 					//we have to pass the math description para to flux solver, coz somehow math description in simulation context is not updated.
-					FluxSolver.FluxFunction fluxFunc = FluxSolver.solveFlux(fluxRate, reactionStep);
+					FluxSolver.FluxFunction fluxFunc = FluxSolver.solveFlux(fluxRate, (FluxReaction)reactionStep);
 					//create jump process for forward flux if it exists.
 					if(fluxFunc.getRateToInside() != null && !fluxFunc.getRateToInside().isZero()) 
 					{

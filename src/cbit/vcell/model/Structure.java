@@ -16,6 +16,7 @@ import cbit.util.Matchable;
 import cbit.sql.Cacheable;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
+import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.xml.MIRIAMAnnotatable;
 import cbit.vcell.xml.MIRIAMAnnotation;
 
@@ -31,6 +32,7 @@ public abstract class Structure
 	private StructureNameScope fieldNameScope = new Structure.StructureNameScope();
 	private transient Model fieldModel = null;
 	private MIRIAMAnnotation miriamAnnotation;
+	private StructureSize fieldStructureSize = null;
 	
 
 	public class StructureNameScope extends BioNameScope {
@@ -60,7 +62,53 @@ public abstract class Structure
 		}
 	}
 
-	
+	public class StructureSize extends ModelQuantity {
+
+		@Override
+		public String getDescription() {
+			return "structure size";
+		}
+
+		public StructureSize(String name) {
+			super(name);
+		}
+
+		public cbit.vcell.parser.NameScope getNameScope() {
+			return Structure.this.getNameScope();
+		}
+		
+		public Structure getStructure(){
+			return Structure.this;
+		}
+
+		public cbit.vcell.units.VCUnitDefinition getUnitDefinition() {
+			switch (getDimension()){
+				case 0: {
+					return VCUnitDefinition.UNIT_DIMENSIONLESS;
+				}
+				case 1: {
+					return VCUnitDefinition.UNIT_um;
+				}
+				case 2: {
+					return VCUnitDefinition.UNIT_um2;
+				}
+				case 3: {
+					return VCUnitDefinition.UNIT_um3;
+				}
+				default:{
+					throw new RuntimeException("unexpected structure dimension: "+getDimension());
+				}
+			}
+		}
+
+		public boolean isUnitEditable() {
+			return false;
+		}
+
+		public void setUnitDefinition(VCUnitDefinition unit) {
+			throw new RuntimeException("cannot set units on structure sizes, structure '"+getStructure().getName()+"' is in units of "+getUnitDefinition().getSymbol());
+		}
+	}
 	
 protected Structure(KeyValue key){
 	this.fieldKey = key;
@@ -73,6 +121,13 @@ public MIRIAMAnnotation getMIRIAMAnnotation() {
 public void setMIRIAMAnnotation(MIRIAMAnnotation miriamAnnotation) {
 	this.miriamAnnotation = miriamAnnotation;
 	
+}
+
+public StructureSize getStructureSize(){
+	if (fieldStructureSize == null){
+		fieldStructureSize = new StructureSize(cbit.util.TokenMangler.fixTokenStrict(fieldName));
+	}
+	return fieldStructureSize;
 }
 
 /**
@@ -132,7 +187,7 @@ public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierSt
 	if (ste != null){
 		return ste;
 	}
-	return getNameScope().getExternalEntry(identifierString);
+	return getNameScope().getExternalEntry(identifierString,this);
 }
 /**
  * Gets the key property (cbit.sql.KeyValue) value.
@@ -160,10 +215,14 @@ public cbit.vcell.parser.SymbolTableEntry getLocalEntry(java.lang.String identif
 	}	
 
 	if (this instanceof Membrane){
-		MembraneVoltage membraneVoltage = ((Membrane)this).getMembraneVoltage();
+		Membrane.MembraneVoltage membraneVoltage = ((Membrane)this).getMembraneVoltage();
 		if (membraneVoltage.getName().equals(identifier)){
 			return membraneVoltage;
 		}
+	}
+	
+	if (getStructureSize().getName().equals(identifier)){
+		return getStructureSize();
 	}
 
 	return null;
@@ -298,10 +357,4 @@ public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException {
 		}
 	}
 }
-/**
- * This method was created by a SmartGuide.
- * @param ps java.io.PrintStream
- * @exception java.lang.Exception The exception description.
- */
-public abstract void writeTokens(java.io.PrintWriter pw, Model model);
 }

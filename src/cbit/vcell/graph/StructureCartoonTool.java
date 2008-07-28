@@ -29,6 +29,8 @@ public class StructureCartoonTool extends BioCartoonTool implements java.beans.P
 	//private Point movingOffsetWorld = null;
 	private int mode = 	-1;
 	private Hashtable reactionEditorHash = new Hashtable();
+	private ModelParameterPanel modelParameterPanel = null;
+
 
 /**
  * This method was created by a SmartGuide.
@@ -489,7 +491,13 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				((Model)evt.getNewValue()).removePropertyChangeListener(this);
 				((Model)evt.getNewValue()).addPropertyChangeListener(this);
 			}
+			if (modelParameterPanel != null && (modelParameterPanel.getModel() != ((StructureCartoon)getGraphModel()).getModel())) {
+				modelParameterPanel.setModel(((StructureCartoon)getGraphModel()).getModel());
+			}
 		}
+		
+		
+		
 	}
 
 	//if(evt.getSource() == ((StructureCartoon)getGraphModel()).getModel()){
@@ -763,14 +771,13 @@ public void showParametersDialog() {
 	if(getGraphModel() == null || getDocumentManager() == null || getJDesktopPane() == null){
 		return;
 	}
-	final ModelParameterPanel modelParameterPanel = new ModelParameterPanel();
+	if (modelParameterPanel == null) {
+		modelParameterPanel = new ModelParameterPanel();
+	}
 	final cbit.vcell.model.Model model = (((StructureCartoon)getGraphModel()).getModel());
 	modelParameterPanel.setModel(model);
 
-	//cbit.vcell.namescope.ModelNameScopeDisplayPanel aNameScopeDisplayPanel;
-	//aNameScopeDisplayPanel = new cbit.vcell.namescope.ModelNameScopeDisplayPanel();
-	//aNameScopeDisplayPanel.setModel(model);
-
+	// separate tabbed panel to display problems in model
 	JPanel problemPanel = new JPanel();
 	final JTextArea textArea = new JTextArea();
 	JScrollPane scrollPane = new JScrollPane(textArea);
@@ -793,9 +800,9 @@ public void showParametersDialog() {
 	problemPanel.add(refreshButton,BorderLayout.NORTH);
 	problemPanel.add(scrollPane,BorderLayout.CENTER);
 
+	// the parent tabbed panel that contains modelParameterPanel and problemPanel
 	JTabbedPane tabbedPane = new JTabbedPane();
 	tabbedPane.setName("JTabbedPane1");
-//	tabbedPane.insertTab("Tree View", null, aNameScopeDisplayPanel, null, 2);
 	tabbedPane.insertTab("Parameters", null, modelParameterPanel, null, 0);
 	tabbedPane.insertTab("Problems", null, problemPanel, null, 1);
 	

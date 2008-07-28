@@ -1,4 +1,15 @@
 package cbit.vcell.model.gui;
+
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Insets;
+
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+
+import cbit.gui.DefaultTableCellRendererEnhanced;
+
 /**
  * Insert the type's description here.
  * Creation date: (8/8/2006 12:22:39 PM)
@@ -9,6 +20,33 @@ public class ScopedExpressionTableCellRenderer implements javax.swing.table.Tabl
 	private java.util.Hashtable scopedExpressionSelectedHash = new java.util.Hashtable();//Cache ScopedExpression Selected
 	private int scopedExpressionCacheSize = 0;
 	private static final int CACHE_SIZE_LIMIT = 250000;
+	private DefaultTableCellRendererEnhanced stringRenderer = new DefaultTableCellRendererEnhanced();
+	private DefaultTableCellRendererEnhanced imageRenderer = new DefaultTableCellRendererEnhanced() {
+		private Icon icon = null;
+		private Insets borderInsets = null;
+		
+		public void setIcon(Icon imageIcon){
+			icon = imageIcon;
+		}
+	    public Dimension getPreferredSize() {
+	    	if (borderInsets==null){
+	    		borderInsets = getBorder().getBorderInsets(this);
+	    	}
+	    	if (icon!=null){
+	    		return new Dimension(icon.getIconWidth()+borderInsets.left+borderInsets.right, icon.getIconHeight()+borderInsets.top+borderInsets.bottom);
+	    	}else{
+	    		return new Dimension(borderInsets.left+borderInsets.right, borderInsets.top+borderInsets.bottom);
+	    	}
+	    }
+		public void paintComponent(Graphics graphics){
+			Dimension size = getSize();
+			graphics.setColor(getBackground());
+			graphics.fillRect(0,0,size.width,size.height);
+			if (icon!=null){
+				icon.paintIcon(this,graphics,0,0);
+			}
+		}
+	};
 	
 	private javax.swing.JLabel templateJLabel = new javax.swing.JLabel();//Template componet
 	private javax.swing.border.Border BORDER = new javax.swing.border.EmptyBorder(2,2,2,2);//Template border
@@ -22,6 +60,8 @@ public ScopedExpressionTableCellRenderer() {
 	super();
 
 	templateJLabel.setBorder(BORDER);
+	imageRenderer.setBorder(BORDER);
+	stringRenderer.setBorder(BORDER);
 }
 
 
@@ -89,9 +129,9 @@ public static void formatTableCellSizes(javax.swing.JTable targetTable,int[] tar
 		//but is preferred and available in newer JRE.
 		//Check for preferred setRowHeight(int,int) by introspection to avoid compile errors in VAJ
 		for(int rowIndex=0;rowIndex<targetTable.getRowCount();rowIndex+= 1){
-			if((java.util.Arrays.binarySearch(targetRows,rowIndex) >= 0) &&
-				introspectGetRowHeight(targetTable,rowIndex) < maxRowHeights[rowIndex]){
-					introspectSetRowHeight(targetTable,rowIndex,maxRowHeights,targetTable.getRowMargin());
+			if((java.util.Arrays.binarySearch(targetRows,rowIndex) >= 0) && 
+					targetTable.getRowHeight(rowIndex) < maxRowHeights[rowIndex]){
+					targetTable.setRowHeight(rowIndex,maxRowHeights[rowIndex]+targetTable.getRowMargin());
 			}
 		}
 	}catch(Exception exc){
@@ -126,27 +166,44 @@ public java.awt.Component getTableCellRendererComponent(javax.swing.JTable theTa
 		if(theTable != null){
 			templateJLabel.setBackground((isSelected?theTable.getSelectionBackground():theTable.getBackground()));
 			templateJLabel.setForeground((isSelected?theTable.getSelectionForeground():theTable.getForeground()));
+			imageRenderer.setBackground((isSelected?theTable.getSelectionBackground():theTable.getBackground()));
+			imageRenderer.setForeground((isSelected?theTable.getSelectionForeground():theTable.getForeground()));
 		}
 		templateJLabel.setText(null);
 		templateJLabel.setIcon(null);
 		if(value == null){
 			return templateJLabel;
 		}
-
+		
+		if (value instanceof String){
+			String color = "black";
+			if (isSelected){
+				color = "white";
+			}
+			String str = "<html><em><font color='"+color+"'>"+((String)value)+"</font></em></html>";
+			return stringRenderer.getTableCellRendererComponent(theTable, str, isSelected, hasFocus, row, column);
+//			templateJLabel.setText((String)value);
+//			return templateJLabel;
+		}
 		String scopedExpressInfix = ((cbit.vcell.parser.ScopedExpression)value).infix();
 		if(scopedExpressionImageIconHash.containsKey(scopedExpressInfix) && 
 			scopedExpressionSelectedHash.containsKey(scopedExpressInfix) &&
 			((Boolean)scopedExpressionSelectedHash.get(scopedExpressInfix)).booleanValue() == isSelected){
 			//Re-use existing ImageIcon is it exists and is same select state
+
+			
 			templateJLabel.setIcon((javax.swing.ImageIcon)scopedExpressionImageIconHash.get(scopedExpressInfix));
-			return templateJLabel;
+//			return templateJLabel;
+			imageRenderer.setIcon((javax.swing.ImageIcon)scopedExpressionImageIconHash.get(scopedExpressInfix));
+			return imageRenderer;
+
+		
 		}else{
 			//Create new ImageIcon
 			try{
 				cbit.vcell.parser.ExpressionPrintFormatter epf =
 					new cbit.vcell.parser.ExpressionPrintFormatter(
-						((cbit.vcell.parser.ScopedExpression)value).getExpression(),
-						((cbit.vcell.parser.ScopedExpression)value).getNameScope());
+						((cbit.vcell.parser.ScopedExpression)value).getExpression());
 				//
 				//Use graphicsContextProvider BufferedImage to get started because
 				//theTable may have a null GC and epf needs a non-null GC
@@ -181,7 +238,9 @@ public java.awt.Component getTableCellRendererComponent(javax.swing.JTable theTa
 					scopedExpressionSelectedHash.put(scopedExpressInfix,new Boolean(isSelected));
 				}
 				templateJLabel.setIcon(newImageIcon);
-				return templateJLabel;
+//				return templateJLabel;
+				imageRenderer.setIcon(newImageIcon);
+				return imageRenderer;
 			}catch(Exception e){
 				//Fallback to String
 				e.printStackTrace();
@@ -198,50 +257,4 @@ public java.awt.Component getTableCellRendererComponent(javax.swing.JTable theTa
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (8/9/2006 11:54:53 AM)
- * @return int
- */
-public static int introspectGetRowHeight(javax.swing.JTable targetTable,int rowIndex)
-	throws java.lang.reflect.InvocationTargetException,IllegalAccessException,NoSuchMethodException{
-
-	try {
-		//Try newer JRE first
-		return
-			((Integer)javax.swing.JTable.class.getMethod("getRowHeight",new Class[] {int.class}).invoke(targetTable,new Object[] {new Integer(rowIndex)})).intValue();
-	}catch (NoSuchMethodException nsme){
-		//Try older JRE
-		return ((Integer)targetTable.getClass().getMethod("getRowHeight",new Class[0]).invoke(targetTable,new Object[0])).intValue();
-	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (8/9/2006 11:54:53 AM)
- * @return int
- */
-public static void introspectSetRowHeight(javax.swing.JTable targetTable,int rowIndex,int[] maxRowHeights,int heightFudge)
-	throws java.lang.reflect.InvocationTargetException,IllegalAccessException,NoSuchMethodException{
-
-	try {
-		//Try newer JRE first
-		javax.swing.JTable.class.getMethod(
-			"setRowHeight",
-			new Class[] {int.class,int.class}).invoke(
-				targetTable,
-				new Object[] {new Integer(rowIndex),new Integer(maxRowHeights[rowIndex]+heightFudge)});
-	}catch (NoSuchMethodException nsme){
-		//Try older JRE, sets all rows to 1 height
-		int allRowMax = 0;
-		for(int i=0;i<maxRowHeights.length;i+= 1){
-			allRowMax = Math.max(allRowMax,maxRowHeights[i]);
-		}
-		targetTable.getClass().getMethod(
-			"setRowHeight",new Class[] {int.class}).invoke(
-				targetTable,
-				new Object[] {new Integer(allRowMax+heightFudge)});
-	}
-}
 }

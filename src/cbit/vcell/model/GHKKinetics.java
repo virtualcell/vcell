@@ -151,7 +151,7 @@ protected void updateGeneratedExpressions() throws cbit.vcell.parser.ExpressionE
 	ReservedSymbol K_GHK = ReservedSymbol.K_GHK;
 	ReservedSymbol R = ReservedSymbol.GAS_CONSTANT;
 	ReservedSymbol T = ReservedSymbol.TEMPERATURE;
-	MembraneVoltage V = ((Membrane)getReactionStep().getStructure()).getMembraneVoltage();
+	Membrane.MembraneVoltage V = ((Membrane)getReactionStep().getStructure()).getMembraneVoltage();
 	int z = (int)getReactionStep().getChargeCarrierValence().getConstantValue();
 	
 	ReactionParticipant reactionParticipants[] = getReactionStep().getReactionParticipants();

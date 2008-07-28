@@ -872,7 +872,7 @@ public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierSt
 	if (ste != null){
 		return ste;
 	}
-	return getNameScope().getExternalEntry(identifierString);
+	return getNameScope().getExternalEntry(identifierString,this);
 }
 
 

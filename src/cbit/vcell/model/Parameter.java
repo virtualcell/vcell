@@ -9,7 +9,7 @@ import java.io.*;
 import cbit.vcell.parser.*;
 import cbit.util.*;
 
-public abstract class Parameter implements SymbolTableEntry, Serializable, Matchable
+public abstract class Parameter implements EditableSymbolTableEntry, Serializable, Matchable
 {
 	//private NameScope nameScope = null;
 	//private java.lang.String fieldName = null;
@@ -192,6 +192,10 @@ public abstract boolean isNameEditable();
  * @return boolean
  */
 public abstract boolean isUnitEditable();
+
+public boolean isDescriptionEditable() {
+	return false;
+}
 /**
  * The removePropertyChangeListener method was generated to support the propertyChange field.
  */

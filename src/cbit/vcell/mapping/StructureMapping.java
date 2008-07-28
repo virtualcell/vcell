@@ -5,6 +5,7 @@ import net.sourceforge.interval.ia_math.RealInterval;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.beans.PropertyVetoException;
 import java.util.*;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.model.*;
@@ -129,6 +130,11 @@ public abstract class StructureMapping implements Matchable, cbit.vcell.parser.S
 			return fieldVCUnitDefinition;
 		}
 		
+
+		public void setUnitDefinition(VCUnitDefinition unit) throws PropertyVetoException {
+			throw new RuntimeException("unit is not editable");
+		}
+
 		public String getName() {
 			return fieldParameterName;
 		}
@@ -377,7 +383,7 @@ public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierSt
 		return ste;
 	}
 			
-	return getNameScope().getExternalEntry(identifierString);
+	return getNameScope().getExternalEntry(identifierString,this);
 }
 
 

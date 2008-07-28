@@ -681,18 +681,18 @@ private void oK(java.awt.event.ActionEvent actionEvent) {
 	try{
 		String modelParamName = getNameValueJTextField().getText();
 		// check for uniqueness of model (global) parameter name
-		checkModelParamUniqueness(modelParamName);
+		// checkModelParamUniqueness(modelParamName);
 		
 		getModelParameter().setName(getNameValueJTextField().getText());
+
+		Expression exp = new Expression(getExpressionValueTextField().getText());
 		try {
-			Expression exp = new Expression(getExpressionValueTextField().getText());
-			if (!exp.isNumeric()) {
-				throw new RuntimeException("Only numeric values for global parameters are allowed at this time");
-			}
+			exp.bindExpression(getModel());
 		} catch (Exception e) {
 			throw new RuntimeException("Only numeric values for global parameters are allowed at this time");
 		}
-		getModelParameter().setExpression(new Expression(getExpressionValueTextField().getText()));
+
+		getModelParameter().setExpression(exp);
 		getModelParameter().setUnitDefinition(VCUnitDefinition.getInstance((String)getUnitsJComboBox().getSelectedItem()));
 		getModelParameter().setModelParameterAnnotation(getAnnotationString());
 

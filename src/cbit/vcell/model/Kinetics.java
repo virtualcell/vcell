@@ -4,12 +4,13 @@ package cbit.vcell.model;
  * All rights reserved.
 ©*/
 import java.beans.*;
+
+import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.parser.*;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.units.VCUnitDefinition;
 
 import java.util.*;
-import java.io.Serializable;
 import cbit.util.*;
 import net.sourceforge.interval.ia_math.RealInterval;
 /**
@@ -23,6 +24,7 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	private cbit.vcell.model.Kinetics.KineticsParameter[] fieldKineticsParameters = new KineticsParameter[0];
 	private cbit.vcell.model.Kinetics.UnresolvedParameter[] fieldUnresolvedParameters = new UnresolvedParameter[0];
+	private cbit.vcell.model.Kinetics.KineticsProxyParameter[] fieldProxyParameters = new KineticsProxyParameter[0];
 	private transient boolean bReading = false;
 	private transient boolean bResolvingUnits = false;
 	public transient boolean bRefreshingUnits = false;
@@ -292,8 +294,93 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 			super.firePropertyChange("name", oldValue, name);
 		}
 
+		public boolean isDescriptionEditable() {
+			return false;
+		}
+
 	}
 
+	public class KineticsProxyParameter extends ProxyParameter {
+
+		public KineticsProxyParameter(SymbolTableEntry target){
+			super(target);
+		}
+		
+		public NameScope getNameScope() {
+			if (Kinetics.this.reactionStep!=null){
+				return Kinetics.this.reactionStep.getNameScope();
+			}else{
+				return null;
+			}
+		}
+
+		public boolean compareEqual(Matchable obj) {
+			if (!(obj instanceof KineticsProxyParameter)){
+				return false;
+			}
+			KineticsProxyParameter other = (KineticsProxyParameter)obj;
+			if (getTarget() instanceof Matchable &&
+				other.getTarget() instanceof Matchable &&
+				Compare.isEqual((Matchable)getTarget(), (Matchable)other.getTarget())){
+				return true;
+			}else{
+				return false;
+			}
+		}
+
+		
+		@Override
+		public String getDescription() {
+			if (getTarget() instanceof SpeciesContext) {
+				return "Species Concentration";
+			} else {
+				return super.getDescription();
+			}
+		}
+
+		@Override
+		public void targetPropertyChange(PropertyChangeEvent evt) {
+			super.targetPropertyChange(evt);
+			if (evt.getPropertyName().equals("name")){
+				String oldName = (String)evt.getOldValue();
+				String newName = (String)evt.getNewValue();
+				try {
+					
+					KineticsParameter newParameters[] = (KineticsParameter[])getKineticsParameters().clone();
+					//
+					// go through all parameters' expressions and replace references to 'oldName' with 'newName'
+					//
+					for (int i = 0; i < newParameters.length; i++){ 
+						Expression newExp = new Expression(getKineticsParameters()[i].getExpression());
+						newExp.substituteInPlace(new Expression(oldName),new Expression(newName));
+						newParameters[i] = new KineticsParameter(newParameters[i].getName(),newExp,newParameters[i].getRole(),newParameters[i].getUnitDefinition());
+					}
+					setKineticsParameters(newParameters);
+	
+					// 
+					// rebind all expressions
+					//
+					for (int i = 0; i < newParameters.length; i++){
+						newParameters[i].getExpression().bindExpression(getReactionStep());
+					}
+
+					//
+					// clean up dangling parameters (those not reachable from the 'required' parameters).
+					//
+					cleanupParameters();
+					
+				}catch (ModelException e1){
+					e1.printStackTrace(System.out);
+				}catch (ExpressionException e2){
+					e2.printStackTrace(System.out);
+				}catch (PropertyVetoException e3){
+					e3.printStackTrace(System.out);
+				}
+			}
+		}
+		
+	}
+	
 	public class UnresolvedParameter extends Parameter {
 		
 		private String fieldParameterName = null;
@@ -358,6 +445,14 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 			}else{
 				return null;
 			}
+		}
+		
+		public void setExpression(Expression exp){
+			throw new RuntimeException("cannot set Expression on an UnresolvedParameter");
+		}
+
+		public void setUnitDefinition(VCUnitDefinition unit){
+			throw new RuntimeException("cannot set unit on an UnresolvedParameter");
 		}
 
 		public void setName(java.lang.String name) throws java.beans.PropertyVetoException {
@@ -480,6 +575,22 @@ public void addUnresolvedParameter(String parameterName) {
  * Creation date: (9/22/2003 9:51:49 AM)
  * @param parameterName java.lang.String
  */
+public KineticsProxyParameter addProxyParameter(SymbolTableEntry symbolTableEntry) {
+	if (getParameter(symbolTableEntry.getName())!=null || getProxyParameter(symbolTableEntry.getName())!=null){
+		throw new RuntimeException("parameter '"+symbolTableEntry.getName()+"' already exists");
+	}
+	KineticsProxyParameter newProxyParameter = new KineticsProxyParameter(symbolTableEntry);
+	KineticsProxyParameter newProxyParameters[] = (KineticsProxyParameter[])BeanUtils.addElement(fieldProxyParameters,newProxyParameter);
+	setProxyParameters(newProxyParameters);
+	return newProxyParameter;
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (9/22/2003 9:51:49 AM)
+ * @param parameterName java.lang.String
+ */
 public KineticsParameter addUserDefinedKineticsParameter(String parameterName, Expression expression, cbit.vcell.units.VCUnitDefinition unit) throws PropertyVetoException {
 	if (getParameter(parameterName)!=null){
 		throw new RuntimeException("parameter '"+parameterName+"' already exists");
@@ -490,6 +601,65 @@ public KineticsParameter addUserDefinedKineticsParameter(String parameterName, E
 	return newKineticsParameter;
 }
 
+/**
+ * convertParameterType : Used to convert a parameter from model (global) to local or vice versa depending on 'bConvertToLocal'
+ * @param param : the parameter to be converted (could be kinetic parameter or kineticProxyParameter)
+ * @param bConvertToLocal : <true> => convert model to local parameter; <false> => convert local to model parameter
+ */
+public void convertParameterType(Parameter param, boolean bConvertToLocal) {
+	if (bConvertToLocal) {
+		// need to convert model (the proxyparam) to local (kinetics) parameter 
+		if (!(param instanceof KineticsProxyParameter)) {
+			throw new RuntimeException("Parameter : \'" + param.getName() + "\' is not a proxy (global) parameter, cannot convert it to a local kinetics parameter.");
+		} else {
+			try {
+				// first remove proxy param, 
+				removeProxyParameter((KineticsProxyParameter)param);
+				// then add it as kinetic param
+				addKineticsParameter(new KineticsParameter(param.getName(),param.getExpression(), Kinetics.ROLE_UserDefined, param.getUnitDefinition()));
+			} catch (PropertyVetoException pve) {
+				pve.printStackTrace(System.out);
+				throw new RuntimeException("Unable to convert parameter : \'" + param.getName() + "\' to local kinetics parameter : " + pve.getMessage());
+			}
+		}
+	} else {
+		// need to convert local (the kinetics parameter) to model (proxy) parameter
+		if (!(param instanceof KineticsParameter)) {
+			throw new RuntimeException("Parameter : \'" + param.getName() + "\' is not a local kinetics parameter, cannot convert it to a global (proxy) parameter.");
+		} else {
+			try {
+				// first check if kinetic param is the 'authoritative' kinetic parame; if so, cannot remove it.
+				// else remove kinetic param - should have already been checked in parameterTableModel
+				if ((KineticsParameter)param == getAuthoritativeParameter()) {
+					throw new RuntimeException("Cannot convert reaction rate : \'" + getAuthoritativeParameter().getName() + "\' to global parameter.");
+				}
+				// First add param as a model parameter, if it is not already present
+				ModelParameter mp = getReactionStep().getModel().getModelParameter(param.getName());
+				if (mp == null) {
+					Model model = getReactionStep().getModel(); 
+					model.addModelParameter(model.new ModelParameter(param.getName(), param.getExpression(), Model.ROLE_UserDefined, param.getUnitDefinition()));
+				}
+//				else {
+//					// model already had the model parameter 'param', but check if 'param' value is different from 
+//					// model parameter with same name. If it is, the local value will be overridden by global (model) param
+//					// value, and user should be warned.
+//					if (!(mp.getExpression().compareEqual(param.getExpression()))) {
+//						throw new RuntimeException("Model already has a model parameter : \'" + param.getName() + "\'; with value = \'" 
+//								+ mp.getExpression() + "\'; This local parameter \'" + param.getName() + "\' with value = \'" + 
+//								param.getExpression() + "\' will be overridden. \nPress \'OK\' to continue converting local kinetic parameter " +
+//								" to a model parameter. \n Press \'Cancel\' to go back and rename local parameter or cancel parameter conversion");
+//					}
+//				}
+				// Then remove param as a kinetic param (if 'param' is a model param, it is automatically added as a (proxy/global) param, 
+				// since it is present in the reaction rate equn.
+				removeKineticsParameter((KineticsParameter)param);
+			} catch (PropertyVetoException pve) {
+				pve.printStackTrace(System.out);
+				throw new RuntimeException("Unable to remove (global) proxy parameter : \'" + param.getName() + "\'. Cannot convert to global (proxy) parameter : " + pve.getMessage());
+			} 
+		}
+	}
+}
 
 /**
  * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.
@@ -548,6 +718,14 @@ private final void cleanupParameters() throws ModelException, ExpressionExceptio
 		for (int i=0;i<fieldUnresolvedParameters.length;i++){
 			if (!isReferenced(fieldUnresolvedParameters[i],0)){
 				removeUnresolvedParameter(fieldUnresolvedParameters[i]);
+				i--;
+			}
+		}
+	}
+	if (fieldProxyParameters != null){
+		for (int i=0;i<fieldProxyParameters.length;i++){
+			if (!isReferenced(fieldProxyParameters[i],0)){
+				removeProxyParameter(fieldProxyParameters[i]);
 				i--;
 			}
 		}
@@ -813,7 +991,7 @@ public final void fromTokens(cbit.vcell.math.CommentStringTokenizer tokens) thro
 							KineticsParameter parmFromRole = getKineticsParameterFromRole(role);
 							Parameter parmFromName = getParameter(parmName);
 							if (parmFromRole == null){
-								throw new RuntimeException("parameter for role '"+this.RoleTags+"' not defined");
+								throw new RuntimeException("parameter for role '"+Kinetics.RoleTags+"' not defined");
 								////
 								//// "special" parameter not yet instantiated
 								////
@@ -1043,6 +1221,19 @@ public KineticsParameter getKineticsParameter(String pName){
 	return null;
 }   
 
+public KineticsProxyParameter getProxyParameter(String pName){
+	if (fieldProxyParameters == null){
+		return null;
+	}
+	for (int i=0;i<fieldProxyParameters.length;i++){
+		KineticsProxyParameter parm = fieldProxyParameters[i];
+		if (pName.equals(parm.getName())){
+			return parm;
+		}
+	}
+	return null;
+}   
+
 
 /**
  * Gets the kineticsParameters index property (cbit.vcell.model.KineticsParameter) value.
@@ -1069,6 +1260,10 @@ public KineticsParameter[] getKineticsParameters() {
 	return fieldKineticsParameters;
 }
 
+public KineticsProxyParameter[] getProxyParameters() {
+	return fieldProxyParameters;
+}
+
 
 /**
  * Gets the kineticsParameters index property (cbit.vcell.model.KineticsParameter) value.
@@ -1087,19 +1282,26 @@ public KineticsParameter getKineticsParameters(int index) {
    }   
 
 
-public Parameter getParameter(String pName){
-	KineticsParameter kineticsParameter = getKineticsParameter(pName);
-	UnresolvedParameter unresolvedParameter = getUnresolvedParameter(pName);
-	if (kineticsParameter==null && unresolvedParameter==null){
-		return null;
-	}else if (kineticsParameter!=null && unresolvedParameter!=null){
-		throw new RuntimeException("parameter '"+pName+"' exists both as kineticsParameter and unresolvedParameter");
-	}else if (kineticsParameter!=null){
-		return kineticsParameter;
-	}else{
-		return unresolvedParameter;
-	}
-}   
+   public Parameter getParameter(String pName){
+		KineticsParameter kineticsParameter = getKineticsParameter(pName);
+		UnresolvedParameter unresolvedParameter = getUnresolvedParameter(pName);
+		KineticsProxyParameter proxyParameter = getProxyParameter(pName);
+		if (kineticsParameter==null && unresolvedParameter==null && proxyParameter==null){
+			return null;
+		}else if (kineticsParameter!=null && unresolvedParameter!=null){
+			throw new RuntimeException("parameter '"+pName+"' exists both as kineticsParameter and unresolvedParameter");
+		}else if (kineticsParameter!=null && proxyParameter!=null){
+			throw new RuntimeException("parameter '"+pName+"' exists both as kineticsParameter and proxyParameter");
+		}else if (proxyParameter!=null && unresolvedParameter!=null){
+			throw new RuntimeException("parameter '"+pName+"' exists both as proxyParameter and unresolvedParameter");
+		}else if (kineticsParameter!=null){
+			return kineticsParameter;
+		}else if (proxyParameter!=null){
+			return proxyParameter;
+		}else{
+			return unresolvedParameter;
+		}
+	}   
 
 
 	public static int getParamRoleFromDesc(String paramDesc) {
@@ -1232,9 +1434,9 @@ private boolean isReferenced(Parameter parm, int level) throws ModelException, E
 	//
 	// if this parameter is same as a reaction participant, then it should be removed
 	//
-	if (reactionStep.getReactionParticipantFromSymbol(parm.getName())!=null){
-		return false;
-	}
+//	if (reactionStep.getReactionParticipantFromSymbol(parm.getName())!=null){
+//		return false;
+//	}
 
 	//
 	// if this unresolved parameter is same as another parameter, then it should be removed
@@ -1263,7 +1465,6 @@ private boolean isReferenced(Parameter parm, int level) throws ModelException, E
 	//
 	// else, if parameter is referenced in another parameter's expression, continue with that expression
 	//
-	boolean bReferenced = false;
 	if (fieldKineticsParameters != null){
 		for (int i=0;i<fieldKineticsParameters.length;i++){
 			Parameter parentParm = fieldKineticsParameters[i];
@@ -1272,7 +1473,6 @@ private boolean isReferenced(Parameter parm, int level) throws ModelException, E
 			if (symbols!=null){
 				for (int j=0;j<symbols.length;j++){
 					if (AbstractNameScope.getStrippedIdentifier(symbols[j]).equals(parm.getName())){
-						bReferenced = true;
 						if (isReferenced(parentParm,level+1)){
 							return true;
 						}
@@ -1458,6 +1658,23 @@ protected void removeUnresolvedParameter(UnresolvedParameter parameter) {
  * Creation date: (9/22/2003 9:51:49 AM)
  * @param parameterName java.lang.String
  */
+protected void removeProxyParameter(KineticsProxyParameter parameter) {
+	for (int i = 0; i < fieldProxyParameters.length; i++){
+		if (fieldProxyParameters[i] == parameter){
+			KineticsProxyParameter newProxyParameters[] = (KineticsProxyParameter[])BeanUtils.removeElement(fieldProxyParameters,parameter);
+			setProxyParameters(newProxyParameters);
+			return;
+		}
+	}
+	throw new RuntimeException("UnresolvedParameter '"+parameter.getName()+"' not found");
+}
+
+
+/**
+ * Insert the method's description here.
+ * Creation date: (9/22/2003 9:51:49 AM)
+ * @param parameterName java.lang.String
+ */
 void removeUnresolvedParameters(SymbolTable symbolTable) {
 	Kinetics.UnresolvedParameter unresolvedParms[] = (Kinetics.UnresolvedParameter[])fieldUnresolvedParameters.clone();
 	for (int i = 0; i < unresolvedParms.length; i++){
@@ -1492,16 +1709,16 @@ public void renameParameter(String oldName, String newName) throws ExpressionExc
 	if (oldName==null || newName==null){
 		throw new RuntimeException("renameParameter from '"+oldName+"' to '"+newName+"', nulls are not allowed");
 	}
-	NameScope nameScope = getReactionStep().getNameScope();
-	String prefix = AbstractNameScope.getPrefix(newName);
-	String strippedName = AbstractNameScope.getStrippedIdentifier(newName);
-	if (prefix!=null){
-		NameScope prefixNameScope = nameScope.getNameScopeFromPrefix(prefix);
-		if (prefixNameScope != nameScope){ // from different namescope, then strip any prefix.
-			throw new ExpressionException("reaction parameter cannot be renamed to '"+newName+"', name is scoped to '"+prefixNameScope.getName()+"'");
-		}
-	}
-	newName = strippedName;
+//	NameScope nameScope = getReactionStep().getNameScope();
+//	String prefix = AbstractNameScope.getPrefix(newName);
+//	String strippedName = AbstractNameScope.getStrippedIdentifier(newName);
+//	if (prefix!=null){
+//		NameScope prefixNameScope = nameScope.getNameScopeFromPrefix(prefix);
+//		if (prefixNameScope != nameScope){ // from different namescope, then strip any prefix.
+//			throw new ExpressionException("reaction parameter cannot be renamed to '"+newName+"', name is scoped to '"+prefixNameScope.getName()+"'");
+//		}
+//	}
+//	newName = strippedName;
 	if (oldName.equals(newName)){
 		throw new RuntimeException("renameParameter from '"+oldName+"' to '"+newName+"', same name not allowed");
 	}
@@ -1732,18 +1949,17 @@ public void setParameterValue(KineticsParameter parm, Expression exp) throws Exp
 	boolean bBound = false;
 	try {
 		KineticsParameter newKineticsParameters[] = (KineticsParameter[])fieldKineticsParameters.clone();
+		KineticsProxyParameter newProxyParameters[] = (KineticsProxyParameter[])fieldProxyParameters.clone();
 		String symbols[] = exp.getSymbols(getReactionStep().getNameScope());
-		Vector symbolsToAdd = new Vector();
 		for (int i = 0; symbols!=null && i < symbols.length; i++){
-			if (reactionStep.getEntry(symbols[i])==null){
-				symbolsToAdd.add(symbols[i]);
+			SymbolTableEntry ste = reactionStep.getEntry(symbols[i]);
+			if (ste==null){
+				newKineticsParameters = (KineticsParameter[])BeanUtils.addElement(newKineticsParameters,new KineticsParameter(symbols[i],new Expression(0.0),ROLE_UserDefined,cbit.vcell.units.VCUnitDefinition.UNIT_TBD));
 			}
-		}
-		for (int i = 0; i < symbolsToAdd.size(); i++){
-			newKineticsParameters = (KineticsParameter[])BeanUtils.addElement(newKineticsParameters,new KineticsParameter((String)symbolsToAdd.elementAt(i),new Expression(0.0),ROLE_UserDefined,cbit.vcell.units.VCUnitDefinition.UNIT_TBD));
 		}
 		parm.setExpression(exp);
 		setKineticsParameters(newKineticsParameters);
+		setProxyParameters(newProxyParameters);
 		exp.bindExpression(reactionStep);
 		bBound = true;
 	}finally{
@@ -1787,6 +2003,18 @@ private void setUnresolvedParameters(UnresolvedParameter[] unresolvedParameters)
 	UnresolvedParameter[] oldValue = fieldUnresolvedParameters;
 	fieldUnresolvedParameters = unresolvedParameters;
 	firePropertyChange("unresolvedParameters", oldValue, unresolvedParameters);
+}
+
+
+/**
+ * Sets the unresolvedParameters property (cbit.vcell.model.UnresolvedParameter[]) value.
+ * @param unresolvedParameters The new value for the property.
+ * @see #getUnresolvedParameters
+ */
+private void setProxyParameters(KineticsProxyParameter[] proxyParameters) {
+	KineticsProxyParameter[] oldValue = fieldProxyParameters;
+	fieldProxyParameters = proxyParameters;
+	firePropertyChange("proxyParameters", oldValue, proxyParameters);
 }
 
 

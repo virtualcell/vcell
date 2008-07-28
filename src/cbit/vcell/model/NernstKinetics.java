@@ -151,7 +151,7 @@ protected void updateGeneratedExpressions() throws cbit.vcell.parser.ExpressionE
 	ReservedSymbol T = ReservedSymbol.TEMPERATURE;
 	ReservedSymbol N_PMOLE = ReservedSymbol.N_PMOLE;
 	
-	MembraneVoltage V = null;
+	Membrane.MembraneVoltage V = null;
 	if (getReactionStep().getStructure() instanceof Membrane){
 		V = ((Membrane)getReactionStep().getStructure()).getMembraneVoltage();
 	}

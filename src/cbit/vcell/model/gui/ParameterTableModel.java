@@ -6,25 +6,34 @@ import cbit.vcell.units.VCUnitException;
  * All rights reserved.
 ©*/
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.geometry.*;
+import cbit.vcell.model.ModelQuantity;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.model.FluxReaction;
+import cbit.vcell.model.ReservedSymbol;
+import cbit.vcell.model.Species;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.parser.ExpressionException;
 import cbit.util.BeanUtils;
 import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.Kinetics.KineticsParameter;
+import cbit.vcell.model.Kinetics.KineticsProxyParameter;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)
  * @author: 
  */
 public class ParameterTableModel extends javax.swing.table.AbstractTableModel implements java.beans.PropertyChangeListener {
-	private final int NUM_COLUMNS = 4;
-	private final int COLUMN_DESCRIPTION = 0;
-	private final int COLUMN_NAME = 1;
-	private final int COLUMN_VALUE = 2;
-	private final int COLUMN_UNITS = 3;
-	private String LABELS[] = { "Description", "Name", "Expression", "Units" };
+	private final int NUM_COLUMNS = 5;
+	private final int COLUMN_NAME = 0;
+	private final int COLUMN_DESCRIPTION = 1;
+	private final int COLUMN_IS_LOCAL = 2;
+	private final int COLUMN_VALUE = 3;
+	private final int COLUMN_UNITS = 4;
+	private String LABELS[] = { "Name", "Description", "Local", "Expression", "Units" };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private cbit.vcell.model.Kinetics fieldKinetics = null;
 /**
@@ -90,6 +99,9 @@ public Class getColumnClass(int column) {
 		case COLUMN_DESCRIPTION:{
 			return String.class;
 		}
+		case COLUMN_IS_LOCAL: {
+			return Boolean.class;
+		}
 		default:{
 			return Object.class;
 		}
@@ -128,14 +140,19 @@ private cbit.vcell.model.Parameter getParameter(int row) {
 	if (row<0 || row>=getRowCount()){
 		throw new RuntimeException("ParameterTableModel.getValueAt(), row = "+row+" out of range ["+0+","+(getRowCount()-1)+"]");
 	}
-	cbit.vcell.model.Parameter parameter = null;
-	if (row<getKinetics().getKineticsParameters().length){
-		parameter = getKinetics().getKineticsParameters()[row];
-	}else{
-		int index = row - getKinetics().getKineticsParameters().length;
-		parameter = getKinetics().getUnresolvedParameters()[index];
+	int index = row;
+	if (index<getKinetics().getKineticsParameters().length){
+		return getKinetics().getKineticsParameters()[index];
 	}
-	return parameter;
+	index = index - getKinetics().getKineticsParameters().length;
+	if (index<getKinetics().getProxyParameters().length){
+		return getKinetics().getProxyParameters()[index];
+	}
+	index = index - getKinetics().getProxyParameters().length;
+	if (index<getKinetics().getUnresolvedParameters().length){
+		return getKinetics().getUnresolvedParameters()[index];
+	}
+	return null;
 }
 /**
  * Accessor for the propertyChange field.
@@ -153,7 +170,7 @@ public int getRowCount() {
 	if (getKinetics()==null){
 		return 0;
 	}else{
-		return getKinetics().getKineticsParameters().length + getKinetics().getUnresolvedParameters().length;
+		return getKinetics().getKineticsParameters().length + getKinetics().getUnresolvedParameters().length + getKinetics().getProxyParameters().length;
 	}
 }
 /**
@@ -177,10 +194,22 @@ public Object getValueAt(int row, int col) {
 			}
 		}
 		case COLUMN_VALUE:{
-			return new cbit.vcell.parser.ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
+			Expression exp = parameter.getExpression();
+			if (exp!=null){
+				return new cbit.vcell.parser.ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
+			}else{
+				return "defined in application"; // new cbit.vcell.parser.ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
+			}
 		}
 		case COLUMN_DESCRIPTION:{
 			return parameter.getDescription();
+		}
+		case COLUMN_IS_LOCAL: {
+			if (parameter instanceof KineticsParameter) {
+				return Boolean.TRUE;
+			} else {
+				return Boolean.FALSE;
+			}
 		}
 		default:{
 			return null;
@@ -210,6 +239,18 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 		return false;
 	}else if (columnIndex == COLUMN_VALUE){
 		return parameter.isExpressionEditable();
+	}else if (columnIndex == COLUMN_IS_LOCAL) {
+		// if the parameter is reaction rate param or a ReservedSymbol in the model, it should not be editable
+		if (parameter == getKinetics().getAuthoritativeParameter()) {
+			return false;
+		} else if (parameter instanceof KineticsProxyParameter) { 
+			KineticsProxyParameter kpp = (KineticsProxyParameter)parameter; 
+			SymbolTableEntry ste = kpp.getTarget();
+			if ((ste instanceof ReservedSymbol) || (ste instanceof SpeciesContext) || (ste instanceof ModelQuantity)) {
+				return false;
+			}
+		}
+		return true;
 	}else{
 		return false;
 	}
@@ -228,16 +269,23 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			for (int i = 0; i < oldKinetics.getKineticsParameters().length; i++){
 				oldKinetics.getKineticsParameters()[i].removePropertyChangeListener(this);
 			}
+			for (int i = 0; i < oldKinetics.getProxyParameters().length; i++){
+				oldKinetics.getProxyParameters()[i].removePropertyChangeListener(this);
+			}
 		}
 		if (newKinetics != null){
 			newKinetics.addPropertyChangeListener(this);
 			for (int i = 0; i < newKinetics.getKineticsParameters().length; i++){
 				newKinetics.getKineticsParameters()[i].addPropertyChangeListener(this);
 			}
+			for (int i = 0; i < newKinetics.getProxyParameters().length; i++){
+				newKinetics.getProxyParameters()[i].addPropertyChangeListener(this);
+			}
 		}
 		fireTableDataChanged();
 	}
-	if (evt.getSource() instanceof cbit.vcell.model.Kinetics && evt.getPropertyName().equals("kineticsParameters")) {
+	if (evt.getSource() instanceof cbit.vcell.model.Kinetics && 
+			(evt.getPropertyName().equals("kineticsParameters") ||  evt.getPropertyName().equals("proxyParameters"))) {
 		cbit.vcell.model.Parameter oldParams[] = (cbit.vcell.model.Parameter[])evt.getOldValue();
 		cbit.vcell.model.Parameter newParams[] = (cbit.vcell.model.Parameter[])evt.getNewValue();
 		for (int i = 0; oldParams!=null && i < oldParams.length; i++){
@@ -281,7 +329,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 	if (columnIndex<0 || columnIndex>=NUM_COLUMNS){
 		throw new RuntimeException("ParameterTableModel.setValueAt(), column = "+columnIndex+" out of range ["+0+","+(NUM_COLUMNS-1)+"]");
 	}
-	cbit.vcell.model.Kinetics.KineticsParameter parameter = getKinetics().getKineticsParameters(rowIndex);
+	cbit.vcell.model.Parameter parameter = getParameter(rowIndex);
 //	try {
 		switch (columnIndex){
 			case COLUMN_NAME:{
@@ -289,7 +337,11 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					if (aValue instanceof String){
 						String newName = (String)aValue;
 						if (!parameter.getName().equals(newName)){
-							getKinetics().renameParameter(parameter.getName(),newName);
+							if (parameter instanceof Kinetics.KineticsParameter){
+								getKinetics().renameParameter(parameter.getName(),newName);
+							}else if (parameter instanceof Kinetics.KineticsProxyParameter){
+								parameter.setName(newName);
+							}
 							fireTableRowsUpdated(rowIndex,rowIndex);
 						}
 					}
@@ -302,14 +354,44 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 				}
 				break;
 			}
+			case COLUMN_IS_LOCAL: {
+				if (aValue.equals(Boolean.TRUE)) {
+					// check box has been changed from <unset> to <set> (<false> to <true>) : change param from global to local  
+					if ( (parameter instanceof KineticsProxyParameter) && 
+						( (((KineticsProxyParameter)parameter).getTarget() instanceof ReservedSymbol) ||
+						(((KineticsProxyParameter)parameter).getTarget() instanceof SpeciesContext) ||
+						(((KineticsProxyParameter)parameter).getTarget() instanceof ModelQuantity) ) ) {
+							PopupGenerator.showErrorDialog("Parameter : \'" + parameter.getName() + "\' is a " + ((KineticsProxyParameter)parameter).getTarget().getClass() + " in the model; cannot convert it to a local kinetic parameter.");
+					} else {
+						getKinetics().convertParameterType(parameter, true);
+					}
+				} else {
+					// check box has been changed from <set> to <unset> (<true> to <false>) : change param from local to global  
+					if (parameter == getKinetics().getAuthoritativeParameter()) {
+						PopupGenerator.showErrorDialog("Parameter : \'" + parameter.getName() + "\' is a reaction rate parameter; cannot convert it to a model level (global) parameter.");
+					} else {
+						getKinetics().convertParameterType(parameter, false);
+					}
+				}
+				fireTableRowsUpdated(rowIndex,rowIndex);
+				break;
+			}
 			case COLUMN_VALUE:{
 				try {
 					if (aValue instanceof cbit.vcell.parser.ScopedExpression){
 						Expression exp = ((cbit.vcell.parser.ScopedExpression)aValue).getExpression();
-						getKinetics().setParameterValue(parameter,exp);
+						if (parameter instanceof Kinetics.KineticsParameter){
+							getKinetics().setParameterValue((Kinetics.KineticsParameter)parameter,exp);
+						}else if (parameter instanceof Kinetics.KineticsProxyParameter){
+							parameter.setExpression(exp);
+						}
 					}else if (aValue instanceof String) {
 						String newExpressionString = (String)aValue;
-						getKinetics().setParameterValue(parameter,new Expression(newExpressionString));
+						if (parameter instanceof Kinetics.KineticsParameter){
+							getKinetics().setParameterValue((Kinetics.KineticsParameter)parameter,new Expression(newExpressionString));
+						}else if (parameter instanceof Kinetics.KineticsProxyParameter){
+							parameter.setExpression(new Expression(newExpressionString));
+						}
 					}
 					getKinetics().resolveUndefinedUnits();
 					fireTableRowsUpdated(rowIndex,rowIndex);
