@@ -316,26 +316,11 @@ public static Expression fitBleachWhileMonitoring(double[] time, double[] normal
 */
 public static Expression fitRecovery(double[] time, double[] normalized_fluor, int bleachType, double[] inputparam, double[] outputParam) throws ExpressionException 
 {
-	//max and min of the average intensities under bleached region after bleach
-//	double max_x = -Double.MAX_VALUE;
-//	double min_x = Double.MAX_VALUE;
-//	double max_x = fluor[0];
-//    double min_x = fluor[0];
-//	for (int i = 0; i < fluor.length; i++){
-//		max_x = Math.max(max_x, fluor[i]);
-//		min_x = Math.min(min_x, fluor[i]);
-//	}
-//	System.out.println("min:"+min_x+"       max:"+max_x);
-	
+
 	if (time.length!=normalized_fluor.length){
 		throw new RuntimeException("Fluorecence and time arrays must be the same length");
 	}
-	//normalization for the average intensties by subtracting the min average intenstiy and divided by the range of max and min intensities.
-//	double[] normalized_fluor = new double[fluor.length];
-//	for (int i = 0; i < fluor.length; i++){
-//		normalized_fluor[i] = (fluor[i]-min_x)/(max_x-min_x);
-//		normalized_fluor[i] = fluor[i];
-//	}
+
 	//normaliztion for time by subtracting the starting time: time[0]
 	double[] normalized_time = new double[time.length];
 	for (int i = 0; i < time.length; i++){
@@ -383,10 +368,11 @@ public static Expression fitRecovery(double[] time, double[] normalized_fluor, i
 			modelExp = new Expression(FRAPDataAnalysis.halfCell_IntensityFunc);
 			modelExp.substituteInPlace(new Expression(FRAPDataAnalysis.symbol_u), muExp);
 		}
-		//inputparam[0] is the fraction of the cell area bleached.
-		modelExp = modelExp.getSubstitutedExpression(new Expression(FRAPDataAnalysis.symbol_fB), new Expression(inputparam[0]));
+		//inputparam[0] is the bleach while monitoring rate.
+		double bleachWhileMonitoringRate = inputparam[0];
+		modelExp = modelExp.getSubstitutedExpression(new Expression(FRAPDataAnalysis.symbol_bwmRate), new Expression(bleachWhileMonitoringRate));
 		cbit.vcell.opt.Parameter parameters[] = new cbit.vcell.opt.Parameter[] {
-				FRAPDataAnalysis.para_If, FRAPDataAnalysis.para_I0, FRAPDataAnalysis.para_tau, FRAPDataAnalysis.para_R};
+				FRAPDataAnalysis.para_If, FRAPDataAnalysis.para_Io, FRAPDataAnalysis.para_tau};
 		
 		try {
 			optResultSet = solve(modelExp.flatten(),parameters,normalized_time,normalized_fluor);
@@ -400,7 +386,7 @@ public static Expression fitRecovery(double[] time, double[] normalized_fluor, i
 		paramNames = optResultSet.getParameterNames();
 		paramValues = optResultSet.getParameterValues();
 		
-		// copy into "output" buffer for parameter values.
+		// copy into "output" buffer from parameter values.
 		for (int i = 0; i < paramValues.length; i++) {
 			outputParam[i] = paramValues[i]; 
 		}
