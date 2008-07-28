@@ -36,6 +36,12 @@ public class FRAPParametersPanel extends JPanel {
 //	private static final String PARAM_EST_EQUATION_STRING = "FRAP Model Parameter Estimation Equation";
 //	private static final String PLOT_TITLE_STRING = "Plot of average data intensity at each timepoint within the 'bleach' ROI -and- Plot of estimation fit";
 	
+	private static String MONITOR_BLEACH_RATE_DESCRIPTION = "Monitor Bleach Rate";
+	private static String MOBILE_FRACTION_DESCRIPTION = "Mobile Fraction";
+	private static String DIFFUSION_RATE_DESCRIPTION = "Diffusion Rate";
+	private static String SLOWER_DIFFUSION_RATE_DESCRIPTION = "Slower Diffusion Rate";
+
+	
 	public FRAPParametersPanel() {
 		super();
 		final GridBagLayout gridBagLayout = new GridBagLayout();
@@ -350,7 +356,7 @@ public class FRAPParametersPanel extends JPanel {
 
 		frapDataTimesComboBox.removeAllItems();
 		for (int i = 0; i < frapDataTimeStamps.length; i++) {
-			frapDataTimesComboBox.insertItemAt(frapDataTimeStamps[i]+"", i);
+			frapDataTimesComboBox.insertItemAt(FRAPStudyPanel.convertDoubletoString(frapDataTimeStamps[i]), i);
 		}
 		frapDataTimesComboBox.setSelectedIndex(0);
 		if(savedFrapModelInfo != null && savedFrapModelInfo.startingIndexForRecovery != null){
@@ -385,38 +391,54 @@ public class FRAPParametersPanel extends JPanel {
 				String monitorBleachRateText =getUserMonitorBleachRateString();
 				if(monitorBleachRateText != null && monitorBleachRateText.length()>0){
 					//check validity
-					Double.parseDouble(monitorBleachRateText);
+					double monitorBleadchRateDouble = Double.parseDouble(monitorBleachRateText);
+					if(monitorBleadchRateDouble < 0){
+						throw new Exception("'"+MONITOR_BLEACH_RATE_DESCRIPTION+"' must be >= 0.0");
+					}
 				}
-			}catch(Exception e){
-				throw new Exception("Error parsing 'Monitor Bleach Rate', "+e.getMessage());
+			}catch(NumberFormatException e){
+				throw new Exception("Error parsing '"+MONITOR_BLEACH_RATE_DESCRIPTION+"', "+e.getMessage());
 			}
 			try{
 				String mobileFractionText = getUserMobileFractionString();
 				if(mobileFractionText != null && mobileFractionText.length()>0){
 					//check validity
-					Double.parseDouble(mobileFractionText);
+					double mobileFractionDouble = Double.parseDouble(mobileFractionText);
+					if(mobileFractionDouble < 0 || mobileFractionDouble > 1.0){
+						throw new Exception("'"+MOBILE_FRACTION_DESCRIPTION+"' must be between 0.0 and 1.0");
+					}
+
 				}
-			}catch(Exception e){
-				throw new Exception("Error parsing 'Mobile Fraction', "+e.getMessage());
+			}catch(NumberFormatException e){
+				throw new Exception("Error parsing '"+MOBILE_FRACTION_DESCRIPTION+"', "+e.getMessage());
 			}
 			try{
 				String diffusionRateText = getUserDiffusionRateString();
 				if(diffusionRateText != null && diffusionRateText.length()>0){
 					//check validity
-					Double.parseDouble(diffusionRateText);
+					double diffusionRateDouble = Double.parseDouble(diffusionRateText);
+					if(diffusionRateDouble < 0){
+						throw new Exception("'"+DIFFUSION_RATE_DESCRIPTION+"' must be >= 0.0");
+					}
+
 				}
-			}catch(Exception e){
-				throw new Exception("Error parsing 'Diffusion Rate', "+e.getMessage());
+			}catch(NumberFormatException e){
+				throw new Exception("Error parsing '"+DIFFUSION_RATE_DESCRIPTION+"', "+e.getMessage());
 			}
 			try{
 				String slowerRateText = getUserSlowerRateString();
 				if(slowerRateText != null && slowerRateText.length()>0){
 					//check validity
-					Double.parseDouble(slowerRateText);
+					double slowerRateDouble = Double.parseDouble(slowerRateText);
+					if(slowerRateDouble < 0){
+						throw new Exception("'"+SLOWER_DIFFUSION_RATE_DESCRIPTION+"' must be >= 0.0");
+					}
+
 				}
-			}catch(Exception e){
-				throw new Exception("Error parsing 'Slower Rate', "+e.getMessage());
+			}catch(NumberFormatException e){
+				throw new Exception("Error parsing '"+SLOWER_DIFFUSION_RATE_DESCRIPTION+"', "+e.getMessage());
 			}
+
 			FRAPStudy.FRAPModelParameters frapModelParameters =
 					new FRAPStudy.FRAPModelParameters(
 							getUserStartIndexForRecoveryString(),

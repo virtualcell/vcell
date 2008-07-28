@@ -527,6 +527,19 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		}
 		return false;
 	}
+	
+	private void checkStartIndexforRecovery() throws Exception{
+		if(getFrapStudy() != null && getFrapStudy().getFrapModelParameters() != null &&
+			getFrapStudy().getFrapModelParameters().startIndexForRecovery != null){
+			
+			int startIndexForRecoveryInt = Integer.parseInt(getFrapStudy().getFrapModelParameters().startIndexForRecovery);
+			if(startIndexForRecoveryInt > 0){
+				return;
+			}
+		}
+		throw new Exception("Starting Index for Recovery cannot be the first time point.  PRE-BLEACH data is required for anlaysis.");
+	}
+	
 	private boolean updateTabbedView(String exitTabTitle,String enterTabTitle) throws Exception{
 		if(!enterTabTitle.equals(FRAPSTUDYPANEL_TABNAME_IMAGES) && (getFrapStudy() == null || getFrapStudy().getFrapData() == null)){
 			throw new Exception("No document open.  Use 'File->Open' menu to open a new document");
@@ -552,10 +565,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 							new String[] {UserMessage.OPTION_OK}, UserMessage.OPTION_OK);
 				}
 			}
-//			else if(enterTab == FRAPStudyPanel.INDEX_TAB_SPATIALMODEL){
-//				refreshBiomodel();
-//			}
 			else if(enterTabTitle.equals(FRAPSTUDYPANEL_TABNAME_REPORT)){
+				checkStartIndexforRecovery();
 				refreshBiomodel();
 				CurrentSimulationDataState currentSimulationDataState = null;
 				if(getSavedFrapModelInfo() != null){
@@ -592,6 +603,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 					}
 				}
 			}else if(enterTabTitle.equals(FRAPSTUDYPANEL_TABNAME_SPATIALRESULTS)){
+				checkStartIndexforRecovery();
 				refreshBiomodel();
 				CurrentSimulationDataState currentSimulationDataState = new CurrentSimulationDataState();
 				if(currentSimulationDataState.isDataValid()){
@@ -1168,6 +1180,12 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 		return true;
 	}
 	
+	public static String convertDoubletoString(double doubleValue){
+		String doubleString = doubleValue+"";
+		System.out.println(doubleString);
+		return doubleString;
+	}
+
 	protected void runSimulation(final boolean bSpatialAnalysis) throws Exception{
 		
 		
