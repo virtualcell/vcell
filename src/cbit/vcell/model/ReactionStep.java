@@ -6,23 +6,17 @@ package cbit.vcell.model;
 ©*/
 import java.beans.*;
 
-import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.StructureAnalyzer;
 import cbit.vcell.mapping.StructureMapping;
 import cbit.vcell.mapping.StructureMapping.StructureMappingParameter;
-import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.parser.*;
 import cbit.vcell.parser.Expression;
 
 import java.io.*;
 import java.util.*;
 
-import org.jdom.Element;
-
 import cbit.sql.KeyValue;
 import cbit.sql.Cacheable;
-import cbit.vcell.server.User;
 import cbit.vcell.xml.MIRIAMAnnotatable;
 import cbit.vcell.xml.MIRIAMAnnotation;
 import cbit.util.*;
@@ -343,6 +337,11 @@ public Kinetics getKinetics() {
 }
 public SymbolTableEntry getLocalEntry(String identifier) throws ExpressionBindingException
 {
+	ReactionParticipant reactionParticipant = getReactionParticipantFromSymbol(identifier);
+	if (reactionParticipant!=null){
+		return reactionParticipant.getSpeciesContext();
+	}
+
 	//
 	// check symbol against charge valence
 	//
