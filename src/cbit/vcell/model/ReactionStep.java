@@ -337,11 +337,6 @@ public Kinetics getKinetics() {
 }
 public SymbolTableEntry getLocalEntry(String identifier) throws ExpressionBindingException
 {
-	ReactionParticipant reactionParticipant = getReactionParticipantFromSymbol(identifier);
-	if (reactionParticipant!=null){
-		return reactionParticipant.getSpeciesContext();
-	}
-
 	//
 	// check symbol against charge valence
 	//
