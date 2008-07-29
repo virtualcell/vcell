@@ -918,12 +918,12 @@ public class FRAPStudy implements Matchable{
 			model.addSpeciesContext(speciesContexts[i]);
 			if (bleachWhileMonitoringRateString != null){
 				SimpleReaction simpleReaction = new SimpleReaction(cytosol,speciesContexts[i].getName()+"_bleach");
+				model.addReactionStep(simpleReaction);
 				simpleReaction.addReactant(speciesContexts[i], 1);
 				MassActionKinetics massActionKinetics = new MassActionKinetics(simpleReaction);
 				simpleReaction.setKinetics(massActionKinetics);
 				KineticsParameter kforward = massActionKinetics.getForwardRateParameter();
-				simpleReaction.getKinetics().setParameterValue(kforward, new Expression(new Double(bleachWhileMonitoringRateString)));
-				model.addReactionStep(simpleReaction);
+				simpleReaction.getKinetics().setParameterValue(kforward, new Expression(new Double(bleachWhileMonitoringRateString)));				
 				//we save bleachWhileMonitoringRate during generating the bio model, this was saved to nowhere previously.
 			}
 		}
