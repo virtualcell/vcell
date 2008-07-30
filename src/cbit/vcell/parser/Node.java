@@ -9,6 +9,8 @@ package cbit.vcell.parser;
 /* All AST nodes must implement this interface.  It provides basic
    machinery for constructing the parent and child relationships
    between nodes. */
+import java.util.Vector;
+
 import net.sourceforge.interval.ia_math.*;
 
 interface Node {
@@ -133,4 +135,6 @@ public void substitute(Node origNode, Node newNode) throws ExpressionException;
  * This method was created in VisualAge.
  */
 void substituteBoundSymbols() throws ExpressionException;
+
+void getDiscontinuities(Vector<Discontinuity> v) throws ExpressionException;
 }

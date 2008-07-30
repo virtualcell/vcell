@@ -130,7 +130,7 @@ public void initialize() throws Exception {
 
 
 	// get Ode's from MathDescription and create ODEStateVariables
-	Enumeration<Equation> enum1 = ((SubDomain)getSimulation().getMathDescription().getSubDomains().nextElement()).getEquations();
+	Enumeration<Equation> enum1 = getSimulation().getMathDescription().getSubDomains().nextElement().getEquations();
 	while (enum1.hasMoreElements()) {
 		Equation equation = enum1.nextElement();
 		if (equation instanceof OdeEquation) {
@@ -164,7 +164,6 @@ public void initialize() throws Exception {
 									sensVariables, 
 									getSimulation()));
 	}
-	
 }
 
 
@@ -216,7 +215,6 @@ public void writeInputFile(PrintWriter pw, String[] parameterNames) throws Excep
 		  	pw.println(parameterNames[i]);
 	  	}
   	}
-	pw.println("NUM_EQUATIONS " + getStateVariableCount());
 	writeEquations(pw);
 	
 	pw.flush();

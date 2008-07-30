@@ -674,6 +674,7 @@ public synchronized void addVetoableChangeListener(java.beans.VetoableChangeList
  * @param symbolTable cbit.vcell.parser.SymbolTable
  */
 public void bind(cbit.vcell.parser.SymbolTable symbolTable) throws cbit.vcell.parser.ExpressionBindingException {
+	setProxyParameters(new KineticsProxyParameter[0]);
 	for (int i = 0; i < getKineticsParameters().length; i++){
 		getKineticsParameters()[i].getExpression().bindExpression(symbolTable);
 	}

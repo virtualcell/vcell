@@ -86,7 +86,7 @@ private synchronized Object rpc(RpcRequest request, String queueName, boolean re
 			Message msg = responseRequestor.queueRequest(this, queueName, rpcMessage, DeliveryMode.PERSISTENT, clientTimeoutMS); 
 		
 			if (msg == null || !(msg instanceof ObjectMessage)) {
-				throw new JMSException("server didn't respond to RPC call (server=" + serviceType + ", method=" + methodName +")");
+				throw new JMSException("Server is temporarily not responding, please try again later. If problem persists, contact VCell_Support@uchc.edu. (server=" + serviceType + ", method=" + methodName +")");
 			} else {				
 				String methodResponseName = (String)JmsUtils.parseProperty(msg, MessageConstants.METHOD_NAME_PROPERTY, String.class);				
 				if (methodResponseName != null && methodResponseName.equals(methodName)){
@@ -113,7 +113,7 @@ private synchronized Object rpc(RpcRequest request, String queueName, boolean re
 			log.print("ClientMessaging.rpc() retrying ");
 			return rpc(request, queueName, returnRequired, specialProperties, specialValues, false);
 		} else {
-			throw new JMSException("can't connect to JMS server [ rpc(" + methodName + "),  " + e.getMessage() + " ]");
+			throw e;
 		}
 	}	
 }

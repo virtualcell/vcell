@@ -225,7 +225,6 @@ public Node flatten() throws ExpressionException {
 
 	ASTRelationalNode relNode = new ASTRelationalNode(id);
 	relNode.setOperation(operation);
-	java.util.Vector tempChildren = new java.util.Vector();
 
 	for (int i=0;i<jjtGetNumChildren();i++){
 		relNode.jjtAddChild(jjtGetChild(i).flatten());
@@ -453,5 +452,17 @@ public void setOperationFromToken(String op) {
 		throw new IllegalArgumentException("unknown relational operator token = '"+op+"'");
 	}
 	this.opString = op;
+}
+
+public SimpleNode getRootFindingExpression() throws ExpressionException {
+	SimpleNode addNode = new ASTAddNode();
+	addNode.jjtAddChild(jjtGetChild(0).copyTree());
+	
+	SimpleNode minusNode = new ASTMinusTermNode();
+	minusNode.jjtAddChild(jjtGetChild(1).copyTree());
+	
+	addNode.jjtAddChild(minusNode);
+	
+	return addNode;
 }
 }
