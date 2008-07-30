@@ -1,22 +1,10 @@
 package cbit.vcell.parser;
 
-import cbit.sql.KeyValue;
 import cbit.util.Matchable;
-import cbit.util.TokenMangler;
-import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.client.server.ClientServerManager;
-import cbit.vcell.document.VCDocument;
-import cbit.vcell.field.FieldDataDBOperationResults;
-import cbit.vcell.field.FieldDataDBOperationSpec;
-import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.field.FieldFunctionArguments;
-import cbit.vcell.field.FieldFunctionContainer;
-import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathException;
-import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.server.DataAccessException;
-import cbit.vcell.server.User;
 import cbit.vcell.simdata.ExternalDataIdentifier;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
@@ -391,7 +379,7 @@ public void substituteFieldFunctionFieldName(Hashtable<String, ExternalDataIdent
 }
 
 public FieldFunctionArguments[] getFieldFunctionArguments() {
-	Vector v = new Vector();
+	Vector<FieldFunctionArguments> v = new Vector<FieldFunctionArguments>();
 	rootNode.getFieldFunctionArguments(v);
 	FieldFunctionArguments[] funcs = new FieldFunctionArguments[v.size()];
 	v.copyInto(funcs);
@@ -491,7 +479,7 @@ public String[] getSymbols(NameScope nameScope) {
  * @return cbit.vcell.model.String[]
  * @exception java.lang.Exception The exception description.
  */
-public Iterator getSymbolsIterator() {
+public Iterator<String> getSymbolsIterator() {
 	return Arrays.asList(rootNode.getSymbols(SimpleNode.LANGUAGE_DEFAULT,SimpleNode.NAMESCOPE_DEFAULT)).iterator();
 }
 /**
@@ -946,5 +934,11 @@ substituteCount++;////////////////////////////////
    public String toString()
    {
 	  return "Expression@"+Integer.toHexString(hashCode())+" '"+infix()+"'";
-   }   
+   }
+   
+   public Vector<Discontinuity> getDiscontinuities() throws ExpressionException {	   
+	   Vector<Discontinuity> v = new Vector<Discontinuity>();
+	   rootNode.getDiscontinuities(v);	   
+	   return v;
+   }
 }

@@ -13,10 +13,10 @@ import cbit.vcell.parser.Expression;
  */
 public abstract class SubDomain implements Serializable, Matchable {
 	private String name = null;
-	private Vector equationList = new Vector();
+	private Vector<Equation> equationList = new Vector<Equation>();
 	private FastSystem fastSystem = null;
-	private Vector listOfJumpProcesses = null;
-	private Vector listOfVarIniConditions = null;
+	private Vector<JumpProcess> listOfJumpProcesses = null;
+	private Vector<VarIniCondition> listOfVarIniConditions = null;
 
 /**
  * This method was created by a SmartGuide.
@@ -24,8 +24,8 @@ public abstract class SubDomain implements Serializable, Matchable {
  */
 protected SubDomain (String name) {
 	this.name = name;
-	listOfJumpProcesses = new Vector();
-	listOfVarIniConditions = new Vector();
+	listOfJumpProcesses = new Vector<JumpProcess>();
+	listOfVarIniConditions = new Vector<VarIniCondition>();
 }
 
 
@@ -145,9 +145,7 @@ protected boolean compareEqual0(Object object) {
  * @param variable cbit.vcell.math.Variable
  */
 public Equation getEquation(Variable variable) {
-	Enumeration enum1 = equationList.elements();
-	while (enum1.hasMoreElements()){
-		Equation equ = (Equation)enum1.nextElement();
+	for (Equation equ : equationList){
 		if (equ.getVariable().getName().equals(variable.getName())){
 			return equ;
 		}
@@ -160,7 +158,7 @@ public Equation getEquation(Variable variable) {
  * This method was created by a SmartGuide.
  * @return java.util.Enumeration
  */
-public java.util.Enumeration getEquations() {
+public Enumeration<Equation> getEquations() {
 	return equationList.elements();
 }
 
@@ -209,30 +207,9 @@ public JumpProcess getJumpProcess(String processName) {
  * Creation date: (6/27/2006 3:05:52 PM)
  * @return java.util.Vector
  */
-public Vector getJumpProcesses() {
+public Vector<JumpProcess> getJumpProcesses() {
 	return listOfJumpProcesses;
 }
-
-
-/**
- * Return the reference of the jump process list.
- * Creation date: (6/27/2006 3:05:52 PM)
- * @return java.util.Vector
- */
-public Vector getListOfJumpProcesses() {
-	return listOfJumpProcesses;
-}
-
-
-/**
- * Return the reference of the variable initial condition list.
- * Creation date: (6/27/2006 3:07:26 PM)
- * @return java.util.Vector
- */
-public Vector getListOfVarIniConditions() {
-	return listOfVarIniConditions;
-}
-
 
 /**
  * This method was created by a SmartGuide.
@@ -279,7 +256,7 @@ public VarIniCondition getVarIniCondition(String varName)
  * Creation date: (6/27/2006 3:07:26 PM)
  * @return java.util.Vector
  */
-public Vector getVarIniConditions() {
+public Vector<VarIniCondition> getVarIniConditions() {
 	return listOfVarIniConditions;
 }
 
@@ -402,10 +379,9 @@ public String toString() {
 public void trimTrivialEquations(MathDescription mathDesc) {
 	for (int i = 0; i < equationList.size(); i++){
 		Equation equ = (Equation)equationList.elementAt(i);
-		Vector expressionList = equ.getExpressions(mathDesc);
+		Vector<Expression> expressionList = equ.getExpressions(mathDesc);
 		boolean bNonZeroExists = false;
-		for (int j = 0; j < expressionList.size(); j++){
-			Expression exp = (Expression)expressionList.elementAt(j);
+		for (Expression exp : expressionList){
 			if (!exp.isZero()){
 				bNonZeroExists = true;
 				break;

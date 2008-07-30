@@ -5,7 +5,6 @@ package cbit.vcell.solver.ode;
 ©*/
 import cbit.vcell.parser.*;
 import java.util.*;
-import java.io.*;
 import cbit.vcell.math.*;
 import cbit.vcell.solver.*;
 /**
@@ -27,9 +26,13 @@ public CVodeFileWriter(Simulation simulation) {
  * Insert the method's description here.
  * Creation date: (3/8/00 10:31:52 PM)
  */
-protected void writeEquations(java.io.PrintWriter pw) throws MathException, ExpressionException {
+protected void writeEquations(java.io.PrintWriter pw) throws MathException, ExpressionException {		
 	VariableSymbolTable varsSymbolTable = createSymbolTable();
-		
+	
+	HashMap<Discontinuity, String> discontinuityNameMap = new HashMap<Discontinuity, String>();	
+	
+	StringBuffer sb = new StringBuffer();
+	sb.append("NUM_EQUATIONS " + getStateVariableCount() + "\n");
 	for (int i = 0; i < getStateVariableCount(); i++) {
 		StateVariable stateVar = (StateVariable)getStateVariable(i);
 		Expression rateExpr = new Expression(0.0);
@@ -45,11 +48,33 @@ protected void writeEquations(java.io.PrintWriter pw) throws MathException, Expr
 			initExpr = getSimulation().substituteFunctions(initExpr);
 		} else if (stateVar instanceof SensStateVariable) {
 			initExpr = ((SensStateVariable)stateVar).getInitialRateExpression();
-		}		
+		}
+		
 		
 		rateExpr.bindExpression(varsSymbolTable);
-		rateExpr = MathUtilities.substituteFunctions(rateExpr, varsSymbolTable);
-		pw.println("ODE "+stateVar.getVariable().getName()+" INIT "+ initExpr.flatten().infix() + ";\n\t RATE " + rateExpr.flatten().infix() + ";");
+		rateExpr = MathUtilities.substituteFunctions(rateExpr, varsSymbolTable).flatten();
+		
+		Vector<Discontinuity> v = rateExpr.getDiscontinuities();
+		
+		Expression newRateExpr = new Expression(rateExpr);
+		for (Discontinuity od : v) {
+			String dname = discontinuityNameMap.get(od);
+			if (dname == null) {
+				dname = "D_B" + discontinuityNameMap.size();
+				discontinuityNameMap.put(od, dname);				
+			}
+			newRateExpr.substituteInPlace(od.getDiscontinuityExp(), new Expression(dname));
+		}
+
+		sb.append("ODE "+stateVar.getVariable().getName()+" INIT "+ initExpr.flatten().infix() + ";\n\t RATE " + newRateExpr.flatten().infix() + ";\n");
 	}
+	
+	if (discontinuityNameMap.size() > 0) {
+		pw.println("DISCONTINUITIES " + discontinuityNameMap.size());
+		for (Discontinuity od : discontinuityNameMap.keySet()) {
+			pw.println(discontinuityNameMap.get(od) + " " + od.getDiscontinuityExp().flatten().infix() + "; " + od.getRootFindingExp().flatten().infix() + ";");
+		}
+	}
+	pw.print(sb);
 }
 }

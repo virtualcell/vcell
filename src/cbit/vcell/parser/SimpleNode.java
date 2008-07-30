@@ -5,11 +5,11 @@ package cbit.vcell.parser;
 ©*/
 /* JJT: 0.2.2 */
 import java.util.Hashtable;
+import java.util.Vector;
 
+import net.sourceforge.interval.ia_math.RealInterval;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.simdata.ExternalDataIdentifier;
-import net.sourceforge.interval.ia_math.*;
-
 
 public abstract class SimpleNode implements Node, java.io.Serializable {
   protected Node parent;
@@ -107,20 +107,6 @@ public SymbolTableEntry getBinding(String symbol) {
 	}		
 	return null;
 }
-
-
-/**
- * Insert the method's description here.
- * Creation date: (9/15/2006 1:35:48 PM)
- * @return java.util.Vector
- */
-void getFieldDataIdentifierSpecs(java.util.Vector v) {	
-	for (int i = 0;  i < jjtGetNumChildren(); i ++) {
-		SimpleNode child = (SimpleNode)jjtGetChild(i);
-		child.getFieldDataIdentifierSpecs(v);		 
-	}	
-}
-
 
 boolean hasGradient() {
 	for (int i = 0;  i < jjtGetNumChildren(); i ++) {
@@ -331,4 +317,18 @@ public void substitute(Node origNode, Node newNode) throws ExpressionException {
 
 
   public String toString(String prefix) { return prefix + toString(); }
+  
+  public void getDiscontinuities(Vector<Discontinuity> v) throws ExpressionException {
+	  if (children == null) {
+		  return;
+	  }
+	  for (Node node : children) {
+		  if (node instanceof ASTRelationalNode) {
+			  Discontinuity od = new Discontinuity(new Expression(node.infixString(LANGUAGE_DEFAULT, NAMESCOPE_DEFAULT)), new Expression(((ASTRelationalNode)node).getRootFindingExpression()));			  
+			  v.add(od);
+		  } else {
+			  node.getDiscontinuities(v);
+		  }
+	  }
+  }
 }
