@@ -11,14 +11,10 @@ import org.vcell.sbml.vcell.StructureSizeSolver;
 
 import cbit.vcell.geometry.*;
 import cbit.vcell.mathmodel.*;
-import cbit.vcell.client.desktop.*;
 import cbit.vcell.client.*;
-import java.beans.*;
 import cbit.vcell.mapping.*;
-import cbit.vcell.math.*;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.biomodel.*;
-import cbit.vcell.desktop.controls.*;
 import cbit.vcell.document.*;
 /**
  * Insert the type's description here.
@@ -64,7 +60,7 @@ public int getTaskType() {
  * @param hashTable java.util.Hashtable
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
-public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
+public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
 	VCDocument documentToExport = (VCDocument)hashTable.get("documentToExport");
 	File exportFile = null;
 	if (documentToExport instanceof BioModel) {
@@ -84,7 +80,7 @@ public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
  * Insert the method's description here.
  * Creation date: (5/31/2004 6:04:14 PM)
  */
-private File showBioModelXMLFileChooser(java.util.Hashtable hashTable) throws java.lang.Exception {
+private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) throws java.lang.Exception {
 	BioModel bioModel = (BioModel)hashTable.get("documentToExport");
 	JFrame currentWindow = (JFrame)hashTable.get("currentWindow");
 	UserPreferences userPreferences = (UserPreferences)hashTable.get("userPreferences");
@@ -167,7 +163,7 @@ private File showBioModelXMLFileChooser(java.util.Hashtable hashTable) throws ja
 					}
 				}
 				if (applicableAppNameList.size() == 0) {
-					throw new Exception("No non-spatial applications in model " + bioModel.getName() + ", can only export the math from a non-spatial application to this format.");
+					throw new Exception("Only non-spatial applications can be exported to this format. No non-spatial applications exist in the \"" + bioModel.getName() + "\".");
 				}
 			} else {
 				// all apps
@@ -176,7 +172,6 @@ private File showBioModelXMLFileChooser(java.util.Hashtable hashTable) throws ja
 				}
 			}
 			String chosenSimContextName = null;
-			Integer chosenSimContextIndex = null;
 			SimulationContext chosenSimContext = null;
 			if (applicableAppNameList.size() == 1){
 				chosenSimContextName = (String)applicableAppNameList.get(0);
@@ -321,7 +316,7 @@ private File showBioModelXMLFileChooser(java.util.Hashtable hashTable) throws ja
  * @param hashTable java.util.Hashtable
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
-private File showGeometryModelXMLFileChooser(java.util.Hashtable hashTable) throws java.lang.Exception {
+private File showGeometryModelXMLFileChooser(Hashtable<String, Object> hashTable) throws java.lang.Exception {
 
 	Geometry geom = (Geometry)hashTable.get("documentToExport");
 	JFrame currentWindow = (JFrame)hashTable.get("currentWindow");
@@ -384,7 +379,7 @@ private File showGeometryModelXMLFileChooser(java.util.Hashtable hashTable) thro
  * @param hashTable java.util.Hashtable
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
-private File showMathModelXMLFileChooser(java.util.Hashtable hashTable) throws java.lang.Exception {
+private File showMathModelXMLFileChooser(Hashtable<String, Object> hashTable) throws java.lang.Exception {
 	// for mathmodels:
 	MathModel mathModel = (MathModel)hashTable.get("documentToExport");
 	JFrame currentWindow = (JFrame)hashTable.get("currentWindow");

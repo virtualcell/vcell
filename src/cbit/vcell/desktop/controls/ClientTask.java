@@ -27,5 +27,5 @@ int getTaskType();
  * @param hashTable java.util.Hashtable
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
-void run(java.util.Hashtable hashTable) throws Exception;
+void run(java.util.Hashtable<String, Object> hashTable) throws Exception;
 }
