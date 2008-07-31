@@ -1,5 +1,7 @@
 package cbit.vcell.model.gui;
 
+import java.beans.PropertyVetoException;
+
 import cbit.vcell.units.VCUnitException;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -21,6 +23,7 @@ import cbit.util.BeanUtils;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Kinetics.KineticsProxyParameter;
+import cbit.vcell.model.Model.ModelParameter;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)
@@ -356,21 +359,41 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 			}
 			case COLUMN_IS_LOCAL: {
 				if (aValue.equals(Boolean.TRUE)) {
-					// check box has been changed from <unset> to <set> (<false> to <true>) : change param from global to local  
+					// check box has been <set> (<false> to <true>) : change param from global to local  
 					if ( (parameter instanceof KineticsProxyParameter) && 
 						( (((KineticsProxyParameter)parameter).getTarget() instanceof ReservedSymbol) ||
 						(((KineticsProxyParameter)parameter).getTarget() instanceof SpeciesContext) ||
 						(((KineticsProxyParameter)parameter).getTarget() instanceof ModelQuantity) ) ) {
 							PopupGenerator.showErrorDialog("Parameter : \'" + parameter.getName() + "\' is a " + ((KineticsProxyParameter)parameter).getTarget().getClass() + " in the model; cannot convert it to a local kinetic parameter.");
 					} else {
-						getKinetics().convertParameterType(parameter, true);
+						try {
+							getKinetics().convertParameterType(parameter, true);
+						} catch (PropertyVetoException pve) {
+							pve.printStackTrace(System.out);
+							PopupGenerator.showErrorDialog("Unable to convert parameter : \'" + parameter.getName() + "\' to local kinetics parameter : " + pve.getMessage());
+						}
 					}
 				} else {
-					// check box has been changed from <set> to <unset> (<true> to <false>) : change param from local to global  
+					// check box has been <unset> (<true> to <false>) : change param from local to global  
 					if (parameter == getKinetics().getAuthoritativeParameter()) {
 						PopupGenerator.showErrorDialog("Parameter : \'" + parameter.getName() + "\' is a reaction rate parameter; cannot convert it to a model level (global) parameter.");
 					} else {
-						getKinetics().convertParameterType(parameter, false);
+						ModelParameter mp = getKinetics().getReactionStep().getModel().getModelParameter(parameter.getName());
+						// model already had the model parameter 'param', but check if 'param' value is different from 
+						// model parameter with same name. If it is, the local value will be overridden by global (model) param
+						// value, and user should be warned.
+						if (mp != null && !(mp.getExpression().compareEqual(parameter.getExpression()))) {
+							String msgStr = "Model already has a global parameter named : \'" + parameter.getName() + "\'; with value = \'" 
+									+ mp.getExpression().infix() + "\'; This local parameter \'" + parameter.getName() + "\' with value = \'" + 
+									parameter.getExpression().infix() + "\' will be overridden by the global value.";
+							PopupGenerator.showErrorDialog(msgStr);
+						}
+						try {
+							getKinetics().convertParameterType(parameter, false);
+						} catch (PropertyVetoException pve) {
+							pve.printStackTrace(System.out);
+							PopupGenerator.showErrorDialog("Unable to remove (global) proxy parameter : \'" + parameter.getName() + "\'. Cannot convert to global (proxy) parameter : " + pve.getMessage());
+						}
 					}
 				}
 				fireTableRowsUpdated(rowIndex,rowIndex);
