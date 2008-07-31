@@ -470,13 +470,12 @@ private void jMenuItemDelete_ActionPerformed(ActionEvent actionEvent) throws Exc
 			PopupGenerator.showErrorDialog("Cannot delete more than one global parameter at a time!");
 			return;
 		}
-		// TODO : Check if Global/model parameter selected to be deleted is being used anywhere in the model.
 		// delete the parameter and update the tablemodel.
 		Parameter param = (Parameter)getmodelParameterTableModel().getData().get(rows[0]);
 		if (param instanceof ModelParameter) {
 			ModelParameter mp = (ModelParameter)param;
 			if (getModel().contains(mp)) {
-				// check if mp is used anywhere (in reactions for the present)
+				// check if 'mp' is used anywhere (in reaction kinetics, for the present)
 				ReactionStep[] rsArray = getModel().getReactionSteps();
 				boolean bUsed = false;
 				for (int i = 0; i < rsArray.length; i++) {
@@ -491,7 +490,10 @@ private void jMenuItemDelete_ActionPerformed(ActionEvent actionEvent) throws Exc
 				}
 				// if 'bUsed' is false at this point, can delete model parameter. 
 				if (!bUsed) { 
-					getModel().removeModelParameter(mp);
+					String choice = PopupGenerator.showWarningDialog(this, "Deleting model parameter \'" + mp.getName() + "\'. Are you sure?", new String[] {"Ok", "Cancel"}, "Ok");
+					if (choice.equals("Ok")) {
+						getModel().removeModelParameter(mp);
+					}
 				}
 			}
 		}

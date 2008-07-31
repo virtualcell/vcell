@@ -490,12 +490,14 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() instanceof cbit.vcell.model.Kinetics && evt.getPropertyName().equals("kineticsParameters")) {
 		setData(getUnsortedParameters());
 		fireTableRowsUpdated(0, getRowCount()-1);
-//		fireTableDataChanged();
+	}
+	if (evt.getSource() instanceof cbit.vcell.model.Kinetics && evt.getPropertyName().equals("proxyParameters")) {
+		setData(getUnsortedParameters());
+		fireTableRowsUpdated(0, getRowCount()-1);
 	}
 	if (evt.getSource() instanceof cbit.vcell.model.Kinetics && evt.getPropertyName().equals("unresolvedParameters")) {
 		setData(getUnsortedParameters());
 		fireTableRowsUpdated(0, getRowCount()-1);
-//		fireTableDataChanged();
 	}
 }
 

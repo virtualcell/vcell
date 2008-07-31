@@ -376,6 +376,58 @@ public abstract class Kinetics implements Matchable, PropertyChangeListener, Vet
 				}catch (PropertyVetoException e3){
 					e3.printStackTrace(System.out);
 				}
+			} 
+			if ( (evt.getSource() instanceof ModelParameter) && (evt.getPropertyName().equals("expression"))) {
+				// if 'evt' is a ModelParameter, and 'propertyName' is "expression", we need to update the model parameter expression.
+				Expression oldExpr = (Expression)evt.getOldValue();
+				Expression newExpr = (Expression)evt.getNewValue();
+				ModelParameter mp = (ModelParameter)evt.getSource();
+				Parameter p = getProxyParameter(mp.getName());
+				// if we don't find a proxy parameter in the kinetics with same name as model parameter 'mp', throw exception
+				if (p == null){
+					throw new RuntimeException("parameter "+mp.getName()+" not found");
+				}
+
+				boolean bBound = false;
+				try {
+					String symbols[] = newExpr.getSymbols(getReactionStep().getNameScope());
+					for (int i = 0; symbols!=null && i < symbols.length; i++){
+						SymbolTableEntry ste = reactionStep.getEntry(symbols[i]);
+						// if newExpr contains a symbol that is not in the symbol table, throw exception, since model parameters 
+						// should be expressed in terms of known symbols/identifiers
+						if (ste==null){
+							throw new RuntimeException("Unknown identifier : \'" + symbols[i] + "\'.");
+						}
+					}
+					// Go through all proxy parameters in kinetics and set expression with 'newExpr' for parameter with same name as 'mp'
+					// Then set the newProxyParameters (on kinetics) and bind 'newExpr' to reactionStep.
+					KineticsProxyParameter newProxyParameters[] = (KineticsProxyParameter[])fieldProxyParameters.clone();
+					for (int i = 0; i < newProxyParameters.length; i++) {
+						if (newProxyParameters[i].getName().equals(mp.getName())) {
+							newProxyParameters[i].setExpression(newExpr);
+						}
+					}
+					setProxyParameters(newProxyParameters);
+					newExpr.bindExpression(reactionStep);
+					bBound = true;
+				} catch (PropertyVetoException pve) {
+					pve.printStackTrace(System.out);
+					throw new RuntimeException("Couldn't set new expression \"" + newExpr.infix() + "\" on model parameter \'" + mp.getName() + "\'. " + pve.getMessage());
+				} catch (ExpressionBindingException ebe) {
+					ebe.printStackTrace(System.out);
+					throw new RuntimeException("Couldn't set new expression \"" + newExpr.infix() + "\" on model parameter \'" + mp.getName() + "\'. " + ebe.getMessage());
+				} finally{
+					try {
+						// if setting new expression value failed, re-set mp with old expression.
+						if (!bBound){
+							mp.setExpression(oldExpr);
+						}
+						cleanupParameters();
+					}catch (Exception e){
+						e.printStackTrace(System.out);
+						throw new RuntimeException(e.getMessage());
+					}
+				}				
 			}
 		}
 		
@@ -606,57 +658,36 @@ public KineticsParameter addUserDefinedKineticsParameter(String parameterName, E
  * @param param : the parameter to be converted (could be kinetic parameter or kineticProxyParameter)
  * @param bConvertToLocal : <true> => convert model to local parameter; <false> => convert local to model parameter
  */
-public void convertParameterType(Parameter param, boolean bConvertToLocal) {
+public void convertParameterType(Parameter param, boolean bConvertToLocal) throws PropertyVetoException {
 	if (bConvertToLocal) {
 		// need to convert model (the proxyparam) to local (kinetics) parameter 
 		if (!(param instanceof KineticsProxyParameter)) {
 			throw new RuntimeException("Parameter : \'" + param.getName() + "\' is not a proxy (global) parameter, cannot convert it to a local kinetics parameter.");
 		} else {
-			try {
-				// first remove proxy param, 
-				removeProxyParameter((KineticsProxyParameter)param);
-				// then add it as kinetic param
-				addKineticsParameter(new KineticsParameter(param.getName(),param.getExpression(), Kinetics.ROLE_UserDefined, param.getUnitDefinition()));
-			} catch (PropertyVetoException pve) {
-				pve.printStackTrace(System.out);
-				throw new RuntimeException("Unable to convert parameter : \'" + param.getName() + "\' to local kinetics parameter : " + pve.getMessage());
-			}
+			// first remove proxy param, 
+			removeProxyParameter((KineticsProxyParameter)param);
+			// then add it as kinetic param
+			addKineticsParameter(new KineticsParameter(param.getName(),param.getExpression(), Kinetics.ROLE_UserDefined, param.getUnitDefinition()));
 		}
 	} else {
 		// need to convert local (the kinetics parameter) to model (proxy) parameter
 		if (!(param instanceof KineticsParameter)) {
 			throw new RuntimeException("Parameter : \'" + param.getName() + "\' is not a local kinetics parameter, cannot convert it to a global (proxy) parameter.");
 		} else {
-			try {
-				// first check if kinetic param is the 'authoritative' kinetic parame; if so, cannot remove it.
-				// else remove kinetic param - should have already been checked in parameterTableModel
-				if ((KineticsParameter)param == getAuthoritativeParameter()) {
-					throw new RuntimeException("Cannot convert reaction rate : \'" + getAuthoritativeParameter().getName() + "\' to global parameter.");
-				}
-				// First add param as a model parameter, if it is not already present
-				ModelParameter mp = getReactionStep().getModel().getModelParameter(param.getName());
-				if (mp == null) {
-					Model model = getReactionStep().getModel(); 
-					model.addModelParameter(model.new ModelParameter(param.getName(), param.getExpression(), Model.ROLE_UserDefined, param.getUnitDefinition()));
-				}
-//				else {
-//					// model already had the model parameter 'param', but check if 'param' value is different from 
-//					// model parameter with same name. If it is, the local value will be overridden by global (model) param
-//					// value, and user should be warned.
-//					if (!(mp.getExpression().compareEqual(param.getExpression()))) {
-//						throw new RuntimeException("Model already has a model parameter : \'" + param.getName() + "\'; with value = \'" 
-//								+ mp.getExpression() + "\'; This local parameter \'" + param.getName() + "\' with value = \'" + 
-//								param.getExpression() + "\' will be overridden. \nPress \'OK\' to continue converting local kinetic parameter " +
-//								" to a model parameter. \n Press \'Cancel\' to go back and rename local parameter or cancel parameter conversion");
-//					}
-//				}
-				// Then remove param as a kinetic param (if 'param' is a model param, it is automatically added as a (proxy/global) param, 
-				// since it is present in the reaction rate equn.
-				removeKineticsParameter((KineticsParameter)param);
-			} catch (PropertyVetoException pve) {
-				pve.printStackTrace(System.out);
-				throw new RuntimeException("Unable to remove (global) proxy parameter : \'" + param.getName() + "\'. Cannot convert to global (proxy) parameter : " + pve.getMessage());
-			} 
+			// first check if kinetic param is the 'authoritative' kinetic parame; if so, cannot remove it.
+			// else remove kinetic param - should have already been checked in parameterTableModel
+			if ((KineticsParameter)param == getAuthoritativeParameter()) {
+				throw new RuntimeException("Cannot convert reaction rate : \'" + getAuthoritativeParameter().getName() + "\' to global parameter.");
+			}
+			// First add param as a model parameter, if it is not already present
+			ModelParameter mp = getReactionStep().getModel().getModelParameter(param.getName());
+			if (mp == null) {
+				Model model = getReactionStep().getModel(); 
+				model.addModelParameter(model.new ModelParameter(param.getName(), param.getExpression(), Model.ROLE_UserDefined, param.getUnitDefinition()));
+			}
+			// Then remove param as a kinetic param (if 'param' is a model param, it is automatically added as a (proxy/global) param, 
+			// since it is present in the reaction rate equn.
+			removeKineticsParameter((KineticsParameter)param);
 		}
 	}
 }
