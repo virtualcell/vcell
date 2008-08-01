@@ -1215,6 +1215,11 @@ public void setPlot2D(Plot2D plot2D) {
 	firePropertyChange("plot2D", oldValue, plot2D);
 }
 
+public void setPlot2D(Plot2D plot2D,Color[] userDefinedColors) {
+	getPlot2DPanel1().setUserDefinedColors(userDefinedColors);
+	setPlot2D(plot2D);
+}
+
 
 /**
  * Set the plot2D1 to a new value.

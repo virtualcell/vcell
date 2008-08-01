@@ -5,11 +5,17 @@ package cbit.plot;
 ©*/
 import java.awt.event.*;
 import java.awt.*;
+
 import javax.swing.*;
 import java.awt.geom.*;
 import java.text.*;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Comparator;
+import java.util.Random;
+import java.util.Vector;
+
 import cbit.util.*;
-import cbit.util.Range;
 /**
  * Insert the type's description here.
  * Creation date: (2/7/2001 12:38:12 AM)
@@ -79,6 +85,9 @@ public class Plot2DPanel extends JPanel {
 	private boolean fieldBCompact = false;
 	private boolean fieldBStepMode = false;
 	private boolean fieldIsHistogram = false; //added March 30,2007. to indicate this plot if for trajectory or histogram
+	
+	private Color[] autoContrastColors;
+	private Color[] userDefinedColors;
 
 class IvjEventHandler implements java.awt.event.MouseListener, java.awt.event.MouseMotionListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener {
 		public void mouseClicked(java.awt.event.MouseEvent e) {
@@ -1827,14 +1836,135 @@ private Plot2DSettingsPanel getPlot2DSettingsPanel1() {
  * @param plotIndex int
  */
 public Paint getPlotPaint(int plotIndex) {
+//	if (getAutoColor()) {
+//		return Color.getHSBColor((float) plotIndex / plotDatas.length, 1.0f, 1.0f);
+//	} else {
+//		return Color.black;
+//	}
+
+	if(userDefinedColors != null && userDefinedColors.length > plotIndex){
+		return userDefinedColors[plotIndex];
+	}
 	if (getAutoColor()) {
-		return Color.getHSBColor((float) plotIndex / plotDatas.length, 1.0f, 1.0f);
+		if(autoContrastColors == null || plotIndex >= autoContrastColors.length){
+			autoContrastColors = generateAutoColor((plotDatas == null?plotIndex+1:plotDatas.length),getBackground(),new Integer(0));
+		}
+		return autoContrastColors[plotIndex];
 	} else {
 		return Color.black;
 	}
 }
 
+public static Color[] generateAutoColor(int numColors,Color backgroundColor,Integer randomColorSetSeed){
+		
+	if(randomColorSetSeed == null){
+		Color[] originalMethodColors = new Color[numColors];
+		for (int i = 0; i < numColors; i++) {
+			originalMethodColors[i] = Color.getHSBColor((float) i / numColors, 1.0f, 1.0f);
+		}
+		return originalMethodColors;
+	}
+	
+	Vector<Color> colorV = null;
+	Random random = new Random(randomColorSetSeed);
+	int red = 0;
+	int grn = 0;
+	int blu = 0;
+	final int ITERATION_LIMIT = 200*numColors;
+	final int CONTRAST_DELTA = 10;
+	final int BRIGHT_DELTA = 0;//3;
+	
+	int brightThreshold = 200;//90;
+	for (int contrastThreshold = 300; contrastThreshold >= 0; contrastThreshold-= CONTRAST_DELTA) {
+		colorV = new Vector<Color>();
+//		colorV.add(new Color(0x00FF0000));
+//		if(colorV.size() < numColors){colorV.add(new Color(0x0000FF00));}
+//		if(colorV.size() < numColors){colorV.add(new Color(0x000000FF));}
+//		if(colorV.size() < numColors){colorV.add(new Color(0x00FFFF00));}
+//		if(colorV.size() < numColors){colorV.add(new Color(0x00FF00FF));}
+//		if(colorV.size() < numColors){colorV.add(new Color(0x0000FFFF));}
 
+		System.err.println("contrastThreshold = "+contrastThreshold+"  brightThreshold = "+brightThreshold);
+		boolean bFailed = false;
+		int iterations = 0;
+		while(colorV.size() < numColors){
+			iterations++;
+			if(iterations > ITERATION_LIMIT){
+				bFailed = true;
+				break;
+			}			
+			int newred = random.nextInt(256);
+			int newgrn = random.nextInt(256);
+			int newblu = random.nextInt(256);
+			boolean bAllContrastOK = (backgroundColor == null?true:
+				isContrastOK(contrastThreshold,brightThreshold,
+					backgroundColor.getRed(), newred, backgroundColor.getGreen(), newgrn, backgroundColor.getBlue(), newblu));
+			bAllContrastOK = bAllContrastOK &&
+				isContrastOK(contrastThreshold,brightThreshold,
+					Color.black.getRed(), newred, Color.black.getGreen(), newgrn, Color.black.getBlue(), newblu);
+			if(bAllContrastOK){
+				for (int i = 0; i < colorV.size(); i++) {
+					red = colorV.elementAt(i).getRed();
+					grn = colorV.elementAt(i).getGreen();
+					blu = colorV.elementAt(i).getBlue();
+					if(!isContrastOK(contrastThreshold,brightThreshold,red, newred, grn, newgrn, blu, newblu)){
+						bAllContrastOK = false;
+						break;				
+					}
+				}
+			}
+			if(bAllContrastOK){
+				red = newred;
+				grn = newgrn;
+				blu = newblu;
+				colorV.add(new Color(0x00000000|(red<<16)|(grn<<8)|blu));
+			}
+		}
+		if(!bFailed){
+			break;
+		}
+		brightThreshold-= BRIGHT_DELTA;
+	}
+	if(colorV == null || colorV.size() != numColors){
+		throw new RuntimeException("Plot2DPanel: couldn't generate "+numColors+" autoContrast colors");
+	}
+	Color[] sortedColors = colorV.toArray(new Color[0]);
+	Arrays.sort(sortedColors,
+		new Comparator<Color>(){
+			public int compare(Color o1, Color o2) {
+				return calcBrightness(o1.getRed(), o1.getGreen(), o1.getBlue()) -
+				calcBrightness(o2.getRed(), o2.getGreen(), o2.getBlue());
+			}
+	}
+	);
+	Color[] alternatingColors = new Color[sortedColors.length];
+	for (int i = 0; i < alternatingColors.length; i++) {
+		int endIndex = sortedColors.length-1-i;
+		if(endIndex < i){
+			break;
+		}
+		alternatingColors[i*2] = sortedColors[i];
+		if(endIndex > i){
+			alternatingColors[i*2+1] = sortedColors[endIndex];
+		}
+	}
+	return alternatingColors;
+}
+
+private static boolean isContrastOK(int contrastThreshold,int brightThreshold,int red,int newred,int grn,int newgrn,int blu,int newblu){
+	//http://www.wat-c.org/tools/CCA/1.1/
+	int contrDiff = Math.abs(red-newred)+Math.abs(grn-newgrn)+Math.abs(blu-newblu);
+	int bright1 = calcBrightness(red,grn,blu);
+	int bright2 = calcBrightness(newred, newgrn, newblu);
+	if((contrDiff > contrastThreshold || Math.abs(bright1-bright2)>brightThreshold)){
+		return true;
+	}
+	return false;
+}
+
+private static int calcBrightness(int red,int grn,int blu){
+	return (red*299+grn*587+blu*114)/1000;
+}
 /**
  * Insert the method's description here.
  * Creation date: (2/15/2001 10:09:17 AM)
@@ -3005,6 +3135,10 @@ public boolean getIsHistogram() {
 }
 public void setIsHistogram(boolean fieldIsHistogram) {
 	this.fieldIsHistogram = fieldIsHistogram;
+}
+
+public void setUserDefinedColors(Color[] userDefinedColors) {
+	this.userDefinedColors = userDefinedColors;
 }
 
 }
