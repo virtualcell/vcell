@@ -1,10 +1,10 @@
 <FrapStudy>
    <FrapModelParameters BleachWhileMonitoringTau=".0075" RecoveryDiffusionRate=".3" MobileFraction=".675" StartingIndexForRecovery="0" />
-   <ImageDatasetExternalDataInfo Filename="C:\temp\VirtualMicroscopy\SimulationData\SimID_1217005108213_0_.log">
-      <ExternalDataIdentifier Name="timeData" KeyValue="1217005108213" OwnerName="SimulationData" OwnerKey="0" />
+   <ImageDatasetExternalDataInfo Filename="C:\Documents and Settings\fgao\My Documents\VirtualMicroscopy\SimulationData\SimID_1217604816824_0_.log">
+      <ExternalDataIdentifier Name="timeData" KeyValue="1217604816824" OwnerName="SimulationData" OwnerKey="0" />
    </ImageDatasetExternalDataInfo>
-   <ROIExternalDataInfo Filename="C:\temp\VirtualMicroscopy\SimulationData\SimID_1217005108214_0_.log">
-      <ExternalDataIdentifier Name="roiData" KeyValue="1217005108214" OwnerName="SimulationData" OwnerKey="0" />
+   <ROIExternalDataInfo Filename="C:\Documents and Settings\fgao\My Documents\VirtualMicroscopy\SimulationData\SimID_1217604816825_0_.log">
+      <ExternalDataIdentifier Name="roiData" KeyValue="1217604816825" OwnerName="SimulationData" OwnerKey="0" />
    </ROIExternalDataInfo>
    <BioModel Name="unnamed">
       <Model Name="model">
@@ -168,7 +168,7 @@
             <MeshSpecification>
                <Size X="51" Y="51" Z="1" />
             </MeshSpecification>
-            <Version Name="sim1" KeyValue="1217005107338" BranchPointRef="0" BranchId="0" Archived="0" Date="25-Jul-2008 12:58:28" FromVersionable="false">
+            <Version Name="sim1" KeyValue="1217005107338" BranchPointRef="0" BranchId="0" Archived="0" Date="01-Aug-2008 11:33:36" FromVersionable="false">
                <Owner Name="SimulationData" Identifier="0" />
                <GroupAccess Type="1" />
             </Version>
@@ -1203,6 +1203,62 @@
             <Annotation>NoName</Annotation>
             <Extent X="10.0" Y="10.0" Z="1.0" />
             <ImageData X="51" Y="51" Z="1" CompressedSize="135">789CEDD6B115C0300843C1ECBFB4532771B0048282C71F80EB80B5A6ACAE4FB9D3D5DA59884AB8E0977883777C06E7F80DDC8919981337CE8EC6B01D9D6139158AD6F8732A14BDB17346E1941CE3ED8C32CA28B8D269C3F4523A5D64BDB337AA949ADF52E7D886C6391B710733620E6EF81DCEF039BCC14A5E0197A282AD29A74FCF6E8A04D092</ImageData>
+         </UShortImage>
+      </ROI>
+      <ROI ROIType="ROI_BLEACHED_RING1">
+         <UShortImage>
+            <Annotation>NoName</Annotation>
+            <Extent X="10.0" Y="10.0" Z="1.0" />
+            <ImageData X="51" Y="51" Z="1" CompressedSize="29">789CEDC2010900000002A0FA7FBA0B0D104D0300000000701A54EC0A2A</ImageData>
+         </UShortImage>
+      </ROI>
+      <ROI ROIType="ROI_BLEACHED_RING2">
+         <UShortImage>
+            <Annotation>NoName</Annotation>
+            <Extent X="10.0" Y="10.0" Z="1.0" />
+            <ImageData X="51" Y="51" Z="1" CompressedSize="34">789CEDCE310100000803A0D9BFB405F6EB0109480000A098EB0000003F2D1E7B0002</ImageData>
+         </UShortImage>
+      </ROI>
+      <ROI ROIType="ROI_BLEACHED_RING3">
+         <UShortImage>
+            <Annotation>NoName</Annotation>
+            <Extent X="10.0" Y="10.0" Z="1.0" />
+            <ImageData X="51" Y="51" Z="1" CompressedSize="54">789CEDD1B10D0030080431D87FE94869A20CC037D80C7002AA000016E83B89C66CA7BF99AD4C5F2DB34BE62FAF0300B0C00182250025</ImageData>
+         </UShortImage>
+      </ROI>
+      <ROI ROIType="ROI_BLEACHED_RING4">
+         <UShortImage>
+            <Annotation>NoName</Annotation>
+            <Extent X="10.0" Y="10.0" Z="1.0" />
+            <ImageData X="51" Y="51" Z="1" CompressedSize="98">789CEDD44B0A00210C0451BDFFA5855989A013B03BA2546529F8167E4A2122A26BABDFB8F7EFC72FE8A5B9A173D686C6F937144E861233769DD96E5E25B2A23394CE4B4ACEB99CBA639EF7F2D20F13733465186B479D5F182D2222BAB606E4D1015D</ImageData>
+         </UShortImage>
+      </ROI>
+      <ROI ROIType="ROI_BLEACHED_RING5">
+         <UShortImage>
+            <Annotation>NoName</Annotation>
+            <Extent X="10.0" Y="10.0" Z="1.0" />
+            <ImageData X="51" Y="51" Z="1" CompressedSize="135">789CEDD6510EC020080350BDFFA597ECDB0C5AA06E8EF20DCFC4441CA3D37959E65D95B357552F6449B61097FC06EF6006E7E006EE7006E6D853E28EBF3BE2607D9C8277314ECEC9F20DBC6F8FE2CF3F15DE40BA4F524EBAFD5DCA975F18CD9BACDA2F9A5DA9DAFB9A3F8C35E5B9B0280CCEE1A23030279A7AC1966A5239BBD3A17301EE7502F1</ImageData>
+         </UShortImage>
+      </ROI>
+      <ROI ROIType="ROI_BLEACHED_RING6">
+         <UShortImage>
+            <Annotation>NoName</Annotation>
+            <Extent X="10.0" Y="10.0" Z="1.0" />
+            <ImageData X="51" Y="51" Z="1" CompressedSize="156">789CED97510E80300843E7FD2FEDF75C64405B4C70F573695F3611D91847325DCBA34D67D3F6049464A5B1485E3FC28939739C0A0FBE7F1D23E2452B33562F79ED3338DFB29DC2EB4E56520585C7B0D22A293C7D47E19ED75B623F0A577FA0747AFB6A4AA70ED3ABF377FA23F338DE49493B8FD5CC962827E2CD72A2BE0C07F3E8EE624FA7EA5EB9FAE71C6B8D456212FC24A6B4E947936E570C01CD</ImageData>
+         </UShortImage>
+      </ROI>
+      <ROI ROIType="ROI_BLEACHED_RING7">
+         <UShortImage>
+            <Annotation>NoName</Annotation>
+            <Extent X="10.0" Y="10.0" Z="1.0" />
+            <ImageData X="51" Y="51" Z="1" CompressedSize="28">789CEDC18100000000C3A0F9535FE100550100000000BC0614520001</ImageData>
+         </UShortImage>
+      </ROI>
+      <ROI ROIType="ROI_BLEACHED_RING8">
+         <UShortImage>
+            <Annotation>NoName</Annotation>
+            <Extent X="10.0" Y="10.0" Z="1.0" />
+            <ImageData X="51" Y="51" Z="1" CompressedSize="28">789CEDC18100000000C3A0F9535FE100550100000000BC0614520001</ImageData>
          </UShortImage>
       </ROI>
       <OriginalGlobalScaleInfo OriginalGlobalScaleInfoMin="0" OriginalGlobalScaleInfoMax="65535" OriginalGlobalScaleInfoScale="65535.0" OriginalGlobalScaleInfoOffset="0.0" />
