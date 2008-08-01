@@ -1,10 +1,10 @@
 <FrapStudy>
-   <FrapModelParameters BleachWhileMonitoringTau=".0075" RecoveryDiffusionRate=".3" MobileFraction=".675" StartingIndexForRecovery="0" />
-   <ImageDatasetExternalDataInfo Filename="C:\Documents and Settings\fgao\My Documents\VirtualMicroscopy\SimulationData\SimID_1217604816824_0_.log">
-      <ExternalDataIdentifier Name="timeData" KeyValue="1217604816824" OwnerName="SimulationData" OwnerKey="0" />
+   <FrapModelParameters BleachWhileMonitoringTau=".0075" RecoveryDiffusionRate=".3" MobileFraction=".675" StartingIndexForRecovery="10" />
+   <ImageDatasetExternalDataInfo Filename="C:\temp\VirtualMicroscopy\SimulationData\SimID_1217611641519_0_.log">
+      <ExternalDataIdentifier Name="timeData" KeyValue="1217611641519" OwnerName="SimulationData" OwnerKey="0" />
    </ImageDatasetExternalDataInfo>
-   <ROIExternalDataInfo Filename="C:\Documents and Settings\fgao\My Documents\VirtualMicroscopy\SimulationData\SimID_1217604816825_0_.log">
-      <ExternalDataIdentifier Name="roiData" KeyValue="1217604816825" OwnerName="SimulationData" OwnerKey="0" />
+   <ROIExternalDataInfo Filename="C:\temp\VirtualMicroscopy\SimulationData\SimID_1217611641520_0_.log">
+      <ExternalDataIdentifier Name="roiData" KeyValue="1217611641520" OwnerName="SimulationData" OwnerKey="0" />
    </ROIExternalDataInfo>
    <BioModel Name="unnamed">
       <Model Name="model">
@@ -159,7 +159,7 @@
          </MathDescription>
          <Simulation Name="sim1">
             <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Finite Volume, Regular Grid">
-               <TimeBound StartTime="0.0" EndTime="20.0" />
+               <TimeBound StartTime="0.0" EndTime="19.0" />
                <TimeStep DefaultTime="0.10000000000000142" MinTime="0.10000000000000142" MaxTime="0.10000000000000142" />
                <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-9" />
                <OutputOptions KeepEvery="1" KeepAtMost="1000" />
@@ -168,7 +168,7 @@
             <MeshSpecification>
                <Size X="51" Y="51" Z="1" />
             </MeshSpecification>
-            <Version Name="sim1" KeyValue="1217005107338" BranchPointRef="0" BranchId="0" Archived="0" Date="01-Aug-2008 11:33:36" FromVersionable="false">
+            <Version Name="sim1" KeyValue="1217005107338" BranchPointRef="0" BranchId="0" Archived="0" Date="01-Aug-2008 13:27:21" FromVersionable="false">
                <Owner Name="SimulationData" Identifier="0" />
                <GroupAccess Type="1" />
             </Version>

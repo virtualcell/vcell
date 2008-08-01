@@ -21,6 +21,7 @@ import java.util.Vector;
 import javax.swing.JLabel;
 
 import javax.swing.ButtonGroup;
+import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -29,6 +30,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -38,6 +40,7 @@ import javax.swing.table.TableModel;
 
 import cbit.gui.DialogUtils;
 import cbit.gui.SimpleTransferable;
+import cbit.plot.Plot2DPanel;
 import cbit.util.BeanUtils;
 import cbit.util.Range;
 import cbit.vcell.microscopy.FRAPOptData;
@@ -336,14 +339,55 @@ public class ResultsSummaryPanel extends JPanel {
 				}
 		);
 
+		final JPanel panel_3 = new JPanel();
+		final GridBagLayout gridBagLayout_1 = new GridBagLayout();
+		gridBagLayout_1.columnWidths = new int[] {0,7};
+		panel_3.setLayout(gridBagLayout_1);
+		final GridBagConstraints gridBagConstraints_11 = new GridBagConstraints();
+		gridBagConstraints_11.gridy = 2;
+		gridBagConstraints_11.gridx = 0;
+		add(panel_3, gridBagConstraints_11);
+
 		final JLabel standardErrorRoiLabel = new JLabel();
+		final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
+		gridBagConstraints_4.gridx = 0;
+		gridBagConstraints_4.gridy = 0;
+		gridBagConstraints_4.insets = new Insets(5, 5, 5, 5);
+		panel_3.add(standardErrorRoiLabel, gridBagConstraints_4);
 		standardErrorRoiLabel.setFont(new Font("", Font.BOLD, 14));
 		standardErrorRoiLabel.setText("Plot -  ROI Average Normalized (using Pre-Bleach Average) vs. Time");
-		final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
-		gridBagConstraints_4.insets = new Insets(20, 4, 4, 4);
-		gridBagConstraints_4.gridy = 2;
-		gridBagConstraints_4.gridx = 0;
-		add(standardErrorRoiLabel, gridBagConstraints_4);
+
+		final JButton showROIbutton = new JButton();
+		showROIbutton.addActionListener(new ActionListener() {
+			public void actionPerformed(final ActionEvent e) {
+				ROIImagePanel roiImagePanel = new ROIImagePanel();
+				ROI[] allRoiArr = frapOptData.getExpFrapStudy().getFrapData().getRois();
+				ROI[] plottedROIArr = new ROI[allRoiArr.length-3];
+				int index = 0;
+				for (int i = 0; i < allRoiArr.length; i++) {
+					if(allRoiArr[i].getROIType().equals(RoiType.ROI_BACKGROUND) ||
+						allRoiArr[i].getROIType().equals(RoiType.ROI_BLEACHED) ||
+						allRoiArr[i].getROIType().equals(RoiType.ROI_CELL)){
+						continue;
+					}
+					plottedROIArr[index] = allRoiArr[i];
+					index++;
+				}
+				
+				Color[] allROIColors = multisourcePlotPane.getAutoContrastColorsInListOrder();//Plot2DPanel.generateAutoColor(plottedROIArr.length,multisourcePlotPane.getBackground());
+				Color[] ringROIColors = new Color[8];
+				System.arraycopy(allROIColors, 1, ringROIColors, 0, ringROIColors.length);
+				roiImagePanel.init(plottedROIArr,ringROIColors,
+					frapOptData.getExpFrapStudy().getFrapData().getRoi(RoiType.ROI_CELL),Color.white,
+					frapOptData.getExpFrapStudy().getFrapData().getRoi(RoiType.ROI_BLEACHED),allROIColors[0]);
+				DialogUtils.showComponentCloseDialog(ResultsSummaryPanel.this, roiImagePanel, "FRAP Model ROIs");
+			}
+		});
+		showROIbutton.setText("Show ROIs...");
+		final GridBagConstraints gridBagConstraints_12 = new GridBagConstraints();
+		gridBagConstraints_12.gridy = 0;
+		gridBagConstraints_12.gridx = 1;
+		panel_3.add(showROIbutton, gridBagConstraints_12);
 
 		final JPanel panel = new JPanel();
 		panel.setBorder(new LineBorder(Color.black, 1, false));
