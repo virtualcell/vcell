@@ -1,8 +1,12 @@
 package cbit.vcell.modelopt.gui;
+import java.awt.Color;
 import java.util.Vector;
 
+import cbit.plot.Plot2DPanel;
 import cbit.plot.PlotData;
 import cbit.util.DefaultListSelectionModelFixed;
+import cbit.vcell.opt.ReferenceData;
+import cbit.vcell.solver.ode.ODESolverResultSet;
 /**
  * Insert the type's description here.
  * Creation date: (8/31/2005 4:03:04 PM)
@@ -20,6 +24,8 @@ public class MultisourcePlotPane extends javax.swing.JPanel {
 	private String refDataLabelPrefix = "refData_";
 	private String modelDataLabelPrefix = "model_";
 
+	private Color[] autoContrastColors;
+	
 class IvjEventHandler implements java.beans.PropertyChangeListener, javax.swing.event.ListSelectionListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == MultisourcePlotPane.this && (evt.getPropertyName().equals("dataSources"))) 
@@ -39,31 +45,16 @@ public MultisourcePlotPane() {
 	initialize();
 }
 
-/**
- * MultisourcePlotPane constructor comment.
- * @param layout java.awt.LayoutManager
- */
-public MultisourcePlotPane(java.awt.LayoutManager layout) {
-	super(layout);
+public Color[] getAutoContrastColorsInListOrder(){
+	return autoContrastColors.clone();
 }
-
-
-/**
- * MultisourcePlotPane constructor comment.
- * @param layout java.awt.LayoutManager
- * @param isDoubleBuffered boolean
- */
-public MultisourcePlotPane(java.awt.LayoutManager layout, boolean isDoubleBuffered) {
-	super(layout, isDoubleBuffered);
-}
-
-
-/**
- * MultisourcePlotPane constructor comment.
- * @param isDoubleBuffered boolean
- */
-public MultisourcePlotPane(boolean isDoubleBuffered) {
-	super(isDoubleBuffered);
+private void createAutoContrastColors(){
+	if(getmultisourcePlotListModel() == null || getmultisourcePlotListModel().getSize() <=0){
+		return;
+	}
+	if(autoContrastColors == null || getmultisourcePlotListModel().getSize() > autoContrastColors.length){
+		autoContrastColors = Plot2DPanel.generateAutoColor(getmultisourcePlotListModel().getSize(), getBackground(),new Integer(0));
+	}
 }
 
 
@@ -106,6 +97,7 @@ private void connEtoM1(java.beans.PropertyChangeEvent arg1) {
 		// user code begin {1}
 		// user code end
 		getmultisourcePlotListModel().setDataSources(this.getDataSources());
+		createAutoContrastColors();
 		// user code begin {2}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -403,6 +395,9 @@ public void selectAll() {
  * Comment
  */
 private void selectionModel1_ValueChanged(javax.swing.event.ListSelectionEvent listSelectionEvent) throws Exception {
+	if(listSelectionEvent.getValueIsAdjusting() == true){
+		return;
+	}
 	int firstIndex = listSelectionEvent.getFirstIndex();
 	int lastIndex = listSelectionEvent.getLastIndex();
 	if (firstIndex<0 || lastIndex<0){
@@ -416,7 +411,7 @@ private void selectionModel1_ValueChanged(javax.swing.event.ListSelectionEvent l
 	Vector<String> nameList = new Vector<String>();
 	Vector<Integer> renderHintList = new Vector<Integer>();
 
-	
+	Vector<Color> colorV = new Vector<Color>();
 	
 	for (int selectedIndex = 0; selectedIndex < getmultisourcePlotListModel().getSize(); selectedIndex++){
 		if (((DefaultListSelectionModelFixed)listSelectionEvent.getSource()).isSelectedIndex(selectedIndex)){
@@ -436,6 +431,7 @@ private void selectionModel1_ValueChanged(javax.swing.event.ListSelectionEvent l
 						double[] dependentValues = referenceData.getColumnData(i);
 						PlotData plotData = new cbit.plot.PlotData(independentValues, dependentValues);
 						plotDataList.add(plotData);
+						colorV.add(autoContrastColors[selectedIndex]);
 						nameList.add(refDataLabelPrefix+referenceData.getColumnNames()[i]);
 						renderHintList.add(new Integer(cbit.plot.Plot2D.RENDERHINT_DRAWPOINT));
 						break;
@@ -454,6 +450,7 @@ private void selectionModel1_ValueChanged(javax.swing.event.ListSelectionEvent l
 						double[] dependentValues = odeSolverResultSet.extractColumn(i);
 						cbit.plot.PlotData plotData = new cbit.plot.PlotData(independentValues, dependentValues);
 						plotDataList.add(plotData);
+						colorV.add(autoContrastColors[selectedIndex]);
 						renderHintList.add(new Integer(cbit.plot.Plot2D.RENDERHINT_DRAWLINE));
 						break;
 					}
@@ -476,7 +473,11 @@ private void selectionModel1_ValueChanged(javax.swing.event.ListSelectionEvent l
 	}
 
 	cbit.plot.Plot2D plot2D = new cbit.plot.Plot2D(null,names,plotDatas,labels,visibleFlags,renderHints);
-	getplotPane().setPlot2D(plot2D);
+	Color[] colorArr = colorV.toArray(new Color[0]);
+//	if(colorV.size() == plot2D.getNumberOfPlots()){
+//		colorArr = colorV.toArray(new Color[0]);
+//	}
+	getplotPane().setPlot2D(plot2D,colorArr);
 
 	return;
 }
