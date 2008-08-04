@@ -201,52 +201,54 @@ protected static java.util.zip.ZipFile openZipFile(File zipFile) throws IOExcept
  */
 void read(File file, File zipFile) throws IOException, OutOfMemoryError {
 	
-	this.fileName = file.getPath();	
+	java.util.zip.ZipFile zipZipFile = null;
+	DataInputStream dataInputStream = null;
+	try{
+		this.fileName = file.getPath();	
+		
+		InputStream is = null;
+		long length  = 0;
+		
+		if (zipFile != null) {
+			System.out.println("DataSet.read() open " + zipFile + " for " + file.getName());
+			zipZipFile = openZipFile(zipFile);
+			java.util.zip.ZipEntry dataEntry = zipZipFile.getEntry(file.getName());
+			is = zipZipFile.getInputStream(dataEntry);
+			length = dataEntry.getSize();
+		} else {		
+			if (!file.exists()){
+				File compressedFile = new File(fileName+".Z");
+				if (compressedFile.exists()){
+					Runtime.getRuntime().exec("uncompress "+fileName+".Z");
+					file = new File(fileName);
+					if (!file.exists()){
+						throw new IOException("file "+fileName+".Z could not be uncompressed");
+					}	
+				}else{
+					throw new FileNotFoundException("file "+fileName+" does not exist");
+				}
+			}	
+			System.out.println("DataSet.read() open '" + fileName + "'"); 
+			is = new FileInputStream(file);
+			length = file.length();
+		}
 	
-	InputStream is = null;
-	long length  = 0;
-	java.util.zip.ZipFile zipZipFile = null;	
-	
-	if (zipFile != null) {
-		System.out.println("DataSet.read() open " + zipFile + " for " + file.getName());
-		zipZipFile = openZipFile(zipFile);
-		java.util.zip.ZipEntry dataEntry = zipZipFile.getEntry(file.getName());
-		is = zipZipFile.getInputStream(dataEntry);
-		length = dataEntry.getSize();
-	} else {		
-		if (!file.exists()){
-			File compressedFile = new File(fileName+".Z");
-			if (compressedFile.exists()){
-				Runtime.getRuntime().exec("uncompress "+fileName+".Z");
-				file = new File(fileName);
-				if (!file.exists()){
-					throw new IOException("file "+fileName+".Z could not be uncompressed");
-				}	
-			}else{
-				throw new FileNotFoundException("file "+fileName+" does not exist");
-			}
-		}	
-		System.out.println("DataSet.read() open '" + fileName + "'"); 
-		is = new FileInputStream(file);
-		length = file.length();
-	}
-
-	BufferedInputStream bis = new BufferedInputStream(is);
-	DataInputStream fp = new DataInputStream(bis);
-	try {
-		fileHeader.read(fp);
+		BufferedInputStream bis = new BufferedInputStream(is);
+		dataInputStream = new DataInputStream(bis);
+		fileHeader.read(dataInputStream);
 		for (int i = 0; i < fileHeader.numBlocks; i++) {
 			DataBlock dataBlock = new DataBlock();
-			dataBlock.readBlockHeader(fp);
+			dataBlock.readBlockHeader(dataInputStream);
 			dataBlockList.addElement(dataBlock);
 		}
 	}finally{
-		fp.close();
-		if (zipZipFile != null) {
-			zipZipFile.close();
+		if (dataInputStream != null) {
+			try{dataInputStream.close();}catch(Exception e){e.printStackTrace();}
 		}
-	}	
-
+		if (zipZipFile != null) {
+			try{zipZipFile.close();}catch(Exception e){e.printStackTrace();}
+		}
+	}
 }
 
 
