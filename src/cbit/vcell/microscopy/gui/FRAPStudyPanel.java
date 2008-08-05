@@ -92,10 +92,10 @@ import cbit.vcell.solver.SimulationJob;
 
 public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	
-	public static final String FRAPSTUDYPANEL_TABNAME_IMAGES = "Images";
-	public static final String FRAPSTUDYPANEL_TABNAME_FITRECOVERYCURVE = "FRAP Parameters";
-	public static final String FRAPSTUDYPANEL_TABNAME_REPORT = "Report";
-	public static final String FRAPSTUDYPANEL_TABNAME_SPATIALRESULTS = "Spatial Results";
+	public static final String FRAPSTUDYPANEL_TABNAME_IMAGES = "Image";
+	public static final String FRAPSTUDYPANEL_TABNAME_FITRECOVERYCURVE = "Initial Parameters";
+	public static final String FRAPSTUDYPANEL_TABNAME_REPORT = "Adjust Parameters";
+	public static final String FRAPSTUDYPANEL_TABNAME_SPATIALRESULTS = "2D Results";
 	
 	private FRAPStudy frapStudy = null; 
 	private FRAPDataPanel frapDataPanel = null;
