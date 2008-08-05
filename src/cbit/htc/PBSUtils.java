@@ -108,20 +108,30 @@ public static int getJobStatus(String jobid) {
 		exe.start();
 		
 		String output = exe.getStdoutString();
-		int index = output.indexOf(jobid);
-		if (index < 0) {
+		StringTokenizer st = new StringTokenizer(output, "\n"); 
+		String strStatus = "";
+		while (st.hasMoreTokens()) {
+			if (st.nextToken().toLowerCase().trim().startsWith("job id")) {
+				if (st.hasMoreTokens()) {
+					st.nextToken();
+				}
+				if (st.hasMoreTokens()) {
+					strStatus = st.nextToken();
+				}
+				break;
+			}			
+		}
+		if (strStatus.length() == 0) {
 			return iStatus;
-		}		
-		output = output.substring(index);
-		
+		}
 		/*
 		Job id            Name             User              Time Use S Queue
 		----------------  ---------------- ----------------  -------- - -----
 		65.dll-2-1-1      test1.sub        fgao              00:00:00 E workq
 		*/		
-		StringTokenizer st = new StringTokenizer(output, " ");
+		st = new StringTokenizer(strStatus, " ");
 		String token = "";
-		for (int i = 0; i < 5; i ++) {
+		for (int i = 0; i < 5 && st.hasMoreTokens(); i ++) {
 			token = st.nextToken();
 		}
 		for (iStatus = 0; iStatus < PBS_JOB_STATUS.length; iStatus ++) {
