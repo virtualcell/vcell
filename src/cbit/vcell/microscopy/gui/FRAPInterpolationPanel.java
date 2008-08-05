@@ -219,9 +219,9 @@ public class FRAPInterpolationPanel extends JPanel {
 						final Parameter[] bestParameters = frapOptData.getBestParamters(getCurrentParameters(), FRAPInterpolationPanel.getErrorOfInterest());
 						SwingUtilities.invokeLater(new Runnable(){public void run(){//}});
 							setParameterValues(
-								bestParameters[FRAPOptData.DIFFUSION_RATE_INDEX].getInitialGuess()+"",
-								bestParameters[FRAPOptData.MOBILE_FRACTION_INDEX].getInitialGuess()+"",
-								bestParameters[FRAPOptData.BLEACH_WHILE_MONITOR_INDEX].getInitialGuess()+"");
+								bestParameters[FRAPOptData.ONEDIFFRATE_DIFFUSION_RATE_INDEX].getInitialGuess()+"",
+								bestParameters[FRAPOptData.ONEDIFFRATE_MOBILE_FRACTION_INDEX].getInitialGuess()+"",
+								bestParameters[FRAPOptData.ONEDIFFRATE_BLEACH_WHILE_MONITOR_INDEX].getInitialGuess()+"");
 							firePropertyChange(PROPERTY_CHANGE_OPTIMIZER_VALUE, null,null);
 						}});
 						
@@ -457,11 +457,11 @@ public class FRAPInterpolationPanel extends JPanel {
 	}
 	private static Parameter[] createParameterArray(double diffusionRate,double mobileFraction,double monitorBleachRate){
 		Parameter diff =
-			new cbit.vcell.opt.Parameter(FRAPOptData.PARAMETER_NAMES[FRAPOptData.DIFFUSION_RATE_INDEX], 0, 100, 1.0,diffusionRate);
+			new cbit.vcell.opt.Parameter(FRAPOptData.ONEDIFFRATE_PARAMETER_NAMES[FRAPOptData.ONEDIFFRATE_DIFFUSION_RATE_INDEX], 0, 100, 1.0,diffusionRate);
 		Parameter mobileFrac =
-			new cbit.vcell.opt.Parameter(FRAPOptData.PARAMETER_NAMES[FRAPOptData.MOBILE_FRACTION_INDEX], 0, 1, 1.0,mobileFraction);
+			new cbit.vcell.opt.Parameter(FRAPOptData.ONEDIFFRATE_PARAMETER_NAMES[FRAPOptData.ONEDIFFRATE_MOBILE_FRACTION_INDEX], 0, 1, 1.0,mobileFraction);
 		Parameter bleachWhileMonitoringRate =
-			new cbit.vcell.opt.Parameter(FRAPOptData.PARAMETER_NAMES[FRAPOptData.BLEACH_WHILE_MONITOR_INDEX], 0, 10, 1.0,monitorBleachRate);
+			new cbit.vcell.opt.Parameter(FRAPOptData.ONEDIFFRATE_PARAMETER_NAMES[FRAPOptData.ONEDIFFRATE_BLEACH_WHILE_MONITOR_INDEX], 0, 10, 1.0,monitorBleachRate);
 		
 		return new Parameter[]{diff, mobileFrac, bleachWhileMonitoringRate};
 	}
