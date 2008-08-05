@@ -1,6 +1,7 @@
 package cbit.util;
 import java.awt.event.*;
 import javax.swing.*;
+
 /**
  * Insert the type's description here.
  * Creation date: (5/19/2004 1:51:35 AM)
@@ -30,7 +31,12 @@ public abstract class AsynchGuiUpdater {
  * @param listener java.awt.event.ActionListener
  */
 public AsynchGuiUpdater() {
-	timer = new Timer(100, new AsynchGuiUpdater.Listener());
+	new EventDispatchRunWithException (){
+		public Object runWithException() throws Exception{
+			timer = new Timer(100, new AsynchGuiUpdater.Listener());
+			return null;
+		}
+	}.runEventDispatchThreadSafelyWrapRuntime();
 }
 
 
@@ -39,7 +45,12 @@ public AsynchGuiUpdater() {
  * Creation date: (5/19/2004 3:09:51 AM)
  */
 public int getDelay() {
-	return timer.getDelay();
+	return (Integer)
+	new EventDispatchRunWithException (){
+		public Object runWithException() throws Exception{
+			return timer.getDelay();
+		}
+	}.runEventDispatchThreadSafelyWrapRuntime();
 }
 
 
@@ -81,7 +92,12 @@ protected abstract void guiToDo(Object params);
  * Creation date: (5/19/2004 3:09:51 AM)
  */
 public void restart() {
-	timer.restart();
+	new EventDispatchRunWithException (){
+		public Object runWithException() throws Exception{
+			timer.restart();
+			return null;
+		}
+	}.runEventDispatchThreadSafelyWrapRuntime();
 }
 
 
@@ -89,8 +105,13 @@ public void restart() {
  * Insert the method's description here.
  * Creation date: (5/19/2004 3:09:51 AM)
  */
-public void setDelay(int millis) {
-	timer.setDelay(millis);
+public void setDelay(final int millis) {
+	new EventDispatchRunWithException (){
+		public Object runWithException() throws Exception{
+			timer.setDelay(millis);
+			return null;
+		}
+	}.runEventDispatchThreadSafelyWrapRuntime();
 }
 
 
@@ -99,7 +120,12 @@ public void setDelay(int millis) {
  * Creation date: (5/19/2004 3:09:51 AM)
  */
 public void start() {
-	timer.start();
+	new EventDispatchRunWithException (){
+		public Object runWithException() throws Exception{
+			timer.start();
+			return null;
+		}
+	}.runEventDispatchThreadSafelyWrapRuntime();
 }
 
 
@@ -117,11 +143,12 @@ public void stop() {
  * Creation date: (5/19/2004 1:58:22 AM)
  */
 public final void updateNow() {
-	SwingUtilities.invokeLater(new Runnable() {
-		public void run() {
-			AsynchGuiUpdater.this.guiToDo();
+	new EventDispatchRunWithException (){
+		public Object runWithException() throws Exception{
+			guiToDo();
+			return null;
 		}
-	});
+	}.runEventDispatchThreadSafelyWrapRuntime();
 }
 
 
@@ -130,10 +157,11 @@ public final void updateNow() {
  * Creation date: (5/19/2004 1:58:22 AM)
  */
 public final void updateNow(final Object parameter) {
-	SwingUtilities.invokeLater(new Runnable() {
-		public void run() {
-			AsynchGuiUpdater.this.guiToDo(parameter);
+	new EventDispatchRunWithException (){
+		public Object runWithException() throws Exception{
+			guiToDo(parameter);
+			return null;
 		}
-	});
+	}.runEventDispatchThreadSafelyWrapRuntime();
 }
 }
