@@ -1886,9 +1886,9 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 	private void createNewFRAPFromParameters(Parameter[] newParameters){
 		String result = DialogUtils.showWarningDialog(this,
 				"The CURRENT FRAP document will be replaced using new parameters:\n"+
-				"Diffusion Rate="+newParameters[FRAPOptData.DIFFUSION_RATE_INDEX].getInitialGuess()+"\n"+
-				"Mobile Fraction="+newParameters[FRAPOptData.MOBILE_FRACTION_INDEX].getInitialGuess()+"\n"+	
-				"Monitor Bleach Rate="+newParameters[FRAPOptData.BLEACH_WHILE_MONITOR_INDEX].getInitialGuess()
+				"Diffusion Rate="+newParameters[FRAPOptData.ONEDIFFRATE_DIFFUSION_RATE_INDEX].getInitialGuess()+"\n"+
+				"Mobile Fraction="+newParameters[FRAPOptData.ONEDIFFRATE_MOBILE_FRACTION_INDEX].getInitialGuess()+"\n"+	
+				"Monitor Bleach Rate="+newParameters[FRAPOptData.ONEDIFFRATE_BLEACH_WHILE_MONITOR_INDEX].getInitialGuess()
 				,new String[] {UserMessage.OPTION_OK,UserMessage.OPTION_CANCEL}, UserMessage.OPTION_OK);
 
 		if(result == null || !result.equals(UserMessage.OPTION_OK)){
@@ -1898,9 +1898,9 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 //		FRAPModelParameters origFRAPModelParameters = getFrapStudy().getFrapModelParameters();
 		try {
 			getFRAPParametersPanel().changeCoreFRAPModelParameters( 
-					newParameters[FRAPOptData.DIFFUSION_RATE_INDEX].getInitialGuess()+"",
-					newParameters[FRAPOptData.MOBILE_FRACTION_INDEX].getInitialGuess()+"",
-					newParameters[FRAPOptData.BLEACH_WHILE_MONITOR_INDEX].getInitialGuess()+""
+					newParameters[FRAPOptData.ONEDIFFRATE_DIFFUSION_RATE_INDEX].getInitialGuess()+"",
+					newParameters[FRAPOptData.ONEDIFFRATE_MOBILE_FRACTION_INDEX].getInitialGuess()+"",
+					newParameters[FRAPOptData.ONEDIFFRATE_BLEACH_WHILE_MONITOR_INDEX].getInitialGuess()+""
 			);
 			runSimulation(true);
 		} catch (Exception e) {

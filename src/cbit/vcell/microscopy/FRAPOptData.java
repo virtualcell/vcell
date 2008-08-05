@@ -9,7 +9,10 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.server.VCDataManager;
 import cbit.vcell.field.FieldDataFileOperationSpec;
 import cbit.vcell.microscopy.ROI.RoiType;
+import cbit.vcell.opt.Constraint;
+import cbit.vcell.opt.ConstraintType;
 import cbit.vcell.opt.Parameter;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.server.StdoutSessionLog;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.solver.DefaultOutputTimeSpec;
@@ -20,20 +23,34 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 
 public class FRAPOptData {
-	public static String[] PARAMETER_NAMES = new String[]{ "diffRate",
+	public static String[] ONEDIFFRATE_PARAMETER_NAMES = new String[]{"diffRate",
 														  "mobileFrac",
 														  "bleachWhileMonitoringRate"};
-	public static final int DIFFUSION_RATE_INDEX = 0;
-	public static final int MOBILE_FRACTION_INDEX = 1;
-	public static final int BLEACH_WHILE_MONITOR_INDEX = 2;
-			
+	public static final int ONEDIFFRATE_DIFFUSION_RATE_INDEX = 0;
+	public static final int ONEDIFFRATE_MOBILE_FRACTION_INDEX = 1;
+	public static final int ONEDIFFRATE_BLEACH_WHILE_MONITOR_INDEX = 2;
+	
+	public static String[] TWODIFFRATES_PARAMETER_NAMES = new String[]{"fastDiffOffset",
+		  															   "fastMobileFrac",
+		  															   "slowDiffRate",
+		  															   "slowMobileFrac",
+		  															   "bleachWhileMonitoringRate"};
+	public static final int TWODIFFRATES_FAST_DIFFUSION_OFFSET_INDEX = 0;
+	public static final int TWODIFFRATES_FAST_MOBILE_FRACTION_INDEX = 1;
+	public static final int TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX = 2;
+	public static final int TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX = 3;
+	public static final int TWODIFFRATES_BLEACH_WHILE_MONITOR_INDEX = 4;
+		
+	public static final int NUM_PARAMS_FOR_ONE_DIFFUSION_RATE = 3;//diffusion rate, mobile fraction, bleach while monitoring rate
+	public static final int NUM_PARAMS_FOR_TWO_DIFFUSION_RATE = 5;//fast diff rate, fast mobile fraction, slow diff rate, slow mobile fraction, bleach while monitoring rate
+	
+	/*----------------reference data by diffusion rate=1, mobileFrac=1 and bwmRate = 0-------------------*/
 	public static final Parameter REF_DIFFUSION_RATE_PARAM =
-		new cbit.vcell.opt.Parameter(FRAPOptData.PARAMETER_NAMES[FRAPOptData.DIFFUSION_RATE_INDEX], 0, 20, 1.0, 1.0);
+		new cbit.vcell.opt.Parameter(FRAPOptData.ONEDIFFRATE_PARAMETER_NAMES[FRAPOptData.ONEDIFFRATE_DIFFUSION_RATE_INDEX], 0, 20, 1.0, 1.0);
 	public static final Parameter REF_MOBILE_FRACTION_PARAM =
-		new cbit.vcell.opt.Parameter(FRAPOptData.PARAMETER_NAMES[FRAPOptData.MOBILE_FRACTION_INDEX], 0, 1, 1.0, 1.0);
+		new cbit.vcell.opt.Parameter(FRAPOptData.ONEDIFFRATE_PARAMETER_NAMES[FRAPOptData.ONEDIFFRATE_MOBILE_FRACTION_INDEX], 0, 1, 1.0, 1.0);
 	public static final Parameter REF_BLEACH_WHILE_MONITOR_PARAM =
-		new cbit.vcell.opt.Parameter(FRAPOptData.PARAMETER_NAMES[FRAPOptData.BLEACH_WHILE_MONITOR_INDEX], 0, 1, 1.0,  0);
-
+		new cbit.vcell.opt.Parameter(FRAPOptData.ONEDIFFRATE_PARAMETER_NAMES[FRAPOptData.ONEDIFFRATE_BLEACH_WHILE_MONITOR_INDEX], 0, 20, 1.0,  0);
 	
 	private static int maxRefSavePoints = 500;
 	private static int startingTime = 0;
@@ -43,6 +60,7 @@ public class FRAPOptData {
 	private TimeBounds refTimeBounds = null;
 	private TimeStep refTimeStep = null;
 	private DefaultOutputTimeSpec  refTimeSpec = null;
+	private int numEstimatedParams = 0;
 	private double[][] dimensionReducedRefData = null;
 	private double[] refDataTimePoints = null;
 	private double[][] dimensionReducedExpData = null;
@@ -51,18 +69,14 @@ public class FRAPOptData {
 	public FRAPOptData(FRAPStudy argExpFrapStudy, LocalWorkspace argLocalWorkSpace,
 			DataSetControllerImpl.ProgressListener progressListener) throws Exception
 	{
+		this(argExpFrapStudy, FRAPOptData.NUM_PARAMS_FOR_ONE_DIFFUSION_RATE, argLocalWorkSpace, progressListener);
+	}
+	
+	public FRAPOptData(FRAPStudy argExpFrapStudy, int numberOfEstimatedParams, LocalWorkspace argLocalWorkSpace,
+			DataSetControllerImpl.ProgressListener progressListener) throws Exception
+	{
 		expFrapStudy = argExpFrapStudy;
-//		REF_DIFFUSION_RATE = Double.parseDouble(expFrapStudy.getFrapModelParameters().diffusionRate);
-//		REF_MOBILE_FRACTION =
-//			(expFrapStudy.getFrapModelParameters().mobileFraction != null
-//				?Double.parseDouble(expFrapStudy.getFrapModelParameters().mobileFraction)
-//				:1.0);
-//
-//		REF_BLEACH_WHILE_MONITOR = 
-//			(expFrapStudy.getFrapModelParameters().monitorBleachRate != null
-//				?Double.parseDouble(expFrapStudy.getFrapModelParameters().monitorBleachRate)
-//				:0);
-		
+		setNumEstimatedParams(numberOfEstimatedParams);
 		localWorkspace = argLocalWorkSpace;
 		if(progressListener != null){
 			progressListener.updateMessage("Getting experimental data ROI averages...");
@@ -263,26 +277,71 @@ public class FRAPOptData {
 	
 	public double computeError(double newParamVals[], boolean[] eoi) throws Exception
 	{
-		double error = FRAPOptimization.getErrorByNewParameters(REF_DIFFUSION_RATE_PARAM.getInitialGuess(), 
-				                                              newParamVals,
-				                                              getDimensionReducedRefData(null),
-				                                              getDimensionReducedExpData(),
-				                                              refDataTimePoints,
-				                                              getReducedExpTimePoints(),
-				                                              getExpFrapStudy().getFrapData().getRois().length, 
-				                                              (getRefTimeStep().getDefaultTimeStep() * getRefTimeSpec().getKeepEvery()),
-				                                              eoi);
-		
-		for(int i=0; i<newParamVals.length; i++)
+		double error = 0;
+		if(getNumEstimatedParams() == FRAPOptData.NUM_PARAMS_FOR_ONE_DIFFUSION_RATE)
 		{
-			System.out.println("Parameter "+ FRAPOptData.PARAMETER_NAMES[i]+ " is: " + newParamVals[i]);
+			error = FRAPOptimization.getErrorByNewParameters_oneDiffRate(REF_DIFFUSION_RATE_PARAM.getInitialGuess(), 
+					                                              newParamVals,
+					                                              getDimensionReducedRefData(null),
+					                                              getDimensionReducedExpData(),
+					                                              refDataTimePoints,
+					                                              getReducedExpTimePoints(),
+					                                              getExpFrapStudy().getFrapData().getRois().length, 
+					                                              (getRefTimeStep().getDefaultTimeStep() * getRefTimeSpec().getKeepEvery()),
+					                                              eoi);
 		}
-		System.out.println("Variance:" + error);
-		System.out.println("--------------------------------");
+		else if(getNumEstimatedParams() == FRAPOptData.NUM_PARAMS_FOR_TWO_DIFFUSION_RATE)
+		{
+			error = FRAPOptimization.getErrorByNewParameters_twoDiffRates(REF_DIFFUSION_RATE_PARAM.getInitialGuess(),
+																  newParamVals,
+																  getDimensionReducedRefData(null),
+																  getDimensionReducedExpData(),
+																  refDataTimePoints,
+																  getReducedExpTimePoints(),
+																  getExpFrapStudy().getFrapData().getRois().length,
+																  (getRefTimeStep().getDefaultTimeStep() * getRefTimeSpec().getKeepEvery()),
+																  eoi);
+		}
+		else
+		{
+			throw new Exception("Wrong parameter size in FRAP optimazition.");
+		}
+		//uncomment for debug
+//		for(int i=0; i<newParamVals.length; i++)
+//		{
+//			System.out.println("Parameter "+ i + " is: " + newParamVals[i]);
+//		}
+//		System.out.println("Variance:" + error);
+//		System.out.println("--------------------------------");
 		return error;
 	}
 
 	public double[][] getFitData(Parameter[] newParams, boolean[] errorOfInterest) throws Exception
+	{
+		double[][] result = null;
+		if(getNumEstimatedParams() == newParams.length)
+		{
+			if(getNumEstimatedParams() == FRAPOptData.NUM_PARAMS_FOR_ONE_DIFFUSION_RATE)
+			{
+				result = getFitData_oneDiffRate(newParams, errorOfInterest);
+			}
+			else if(getNumEstimatedParams() == FRAPOptData.NUM_PARAMS_FOR_TWO_DIFFUSION_RATE)
+			{
+				result = getFitData_twoDiffRates(newParams, errorOfInterest);
+			}
+			else
+			{
+				throw new Exception("Wrong parameter size in FRAP optimazition.");
+			}
+		}
+		else
+		{
+			throw new Exception("Input parameter size is different from the parameter size setting in Optimization Data.");
+		}
+		return result;
+	}
+	
+	private double[][] getFitData_oneDiffRate(Parameter[] newParams, boolean[] errorOfInterest) throws Exception
 	{
 		double[][] reducedExpData = getDimensionReducedExpData();
 		double[] reducedExpTimePoints = getReducedExpTimePoints();
@@ -299,29 +358,28 @@ public class FRAPOptData {
 		{
 			for(int i=0; i<newParams.length; i++)
 			{
-				if(newParams[i].getName().equals(FRAPOptData.PARAMETER_NAMES[FRAPOptData.DIFFUSION_RATE_INDEX]))
+				if(newParams[i].getName().equals(FRAPOptData.ONEDIFFRATE_PARAMETER_NAMES[FRAPOptData.ONEDIFFRATE_DIFFUSION_RATE_INDEX]))
 				{
-					diffRate = newParams[FRAPOptData.DIFFUSION_RATE_INDEX].getInitialGuess();
+					diffRate = newParams[FRAPOptData.ONEDIFFRATE_DIFFUSION_RATE_INDEX].getInitialGuess();
 				}
-				else if(newParams[i].getName().equals(FRAPOptData.PARAMETER_NAMES[FRAPOptData.MOBILE_FRACTION_INDEX]))
+				else if(newParams[i].getName().equals(FRAPOptData.ONEDIFFRATE_PARAMETER_NAMES[FRAPOptData.ONEDIFFRATE_MOBILE_FRACTION_INDEX]))
 				{
-					mobileFrac = newParams[FRAPOptData.MOBILE_FRACTION_INDEX].getInitialGuess();
-					mobileFrac = Math.min(mobileFrac, 1);
+					mobileFrac = newParams[FRAPOptData.ONEDIFFRATE_MOBILE_FRACTION_INDEX].getInitialGuess();
 				}
-				else if(newParams[i].getName().equals(FRAPOptData.PARAMETER_NAMES[FRAPOptData.BLEACH_WHILE_MONITOR_INDEX]))
+				else if(newParams[i].getName().equals(FRAPOptData.ONEDIFFRATE_PARAMETER_NAMES[FRAPOptData.ONEDIFFRATE_BLEACH_WHILE_MONITOR_INDEX]))
 				{
-					bleachWhileMonitoringRate = newParams[FRAPOptData.BLEACH_WHILE_MONITOR_INDEX].getInitialGuess();
+					bleachWhileMonitoringRate = newParams[FRAPOptData.ONEDIFFRATE_BLEACH_WHILE_MONITOR_INDEX].getInitialGuess();
 				}
 			}
 			
 			diffData = FRAPOptimization.getValueByDiffRate(REF_DIFFUSION_RATE_PARAM.getInitialGuess(),
-                    diffRate,
-                    getDimensionReducedRefData(null),
-                    reducedExpData,
-                    refDataTimePoints,
-                    reducedExpTimePoints,
-                    roiLen,
-                    refTimeInterval);
+                    									   diffRate,
+                    									   getDimensionReducedRefData(null),
+                    									   reducedExpData,
+                    									   refDataTimePoints,
+                    									   reducedExpTimePoints,
+                    									   roiLen,
+                    									   refTimeInterval);
 			
 			// get diffusion initial condition for immobile part
 			double[] firstPostBleach = new double[roiLen];
@@ -332,10 +390,14 @@ public class FRAPOptData {
 			
 			for(int i=0; i<roiLen; i++)
 			{
-				for(int j=0; j<getReducedExpTimePoints().length; j++)
+				for(int j=0; j<reducedExpTimePoints.length; j++)
 				{
 //					newData[i][j] = (mobileFrac * diffData[i][j] + imMobielFrac * firstPostBleach[i]) * Math.exp(-(bleachWhileMonitoringRate * reducedExpTimePoints[j]));
-					newData[i][j] = FRAPOptimization.getValueFromParameters(diffData[i][j], mobileFrac, bleachWhileMonitoringRate, firstPostBleach[i], reducedExpTimePoints[j]);
+					newData[i][j] = FRAPOptimization.getValueFromParameters_oneDiffRate(diffData[i][j],
+																						mobileFrac, 
+																						bleachWhileMonitoringRate,
+																						firstPostBleach[i],
+																						reducedExpTimePoints[j]);
 				}
 			}
 			
@@ -371,6 +433,117 @@ public class FRAPOptData {
 		else
 		{
 			throw new Exception("Cannot get fit data because there is no required parameters.");
+		}
+	}
+	
+	private double[][] getFitData_twoDiffRates(Parameter[] newParams, boolean[] errorOfInterest) throws Exception
+	{
+		double[][] reducedExpData = getDimensionReducedExpData();
+		double[] reducedExpTimePoints = getReducedExpTimePoints();
+		int roiLen = getExpFrapStudy().getFrapData().getRois().length;
+		double refTimeInterval = (getRefTimeStep().getDefaultTimeStep() * getRefTimeSpec().getKeepEvery());
+		
+		double diffFastOffset = 0;
+		double mFracFast = 1;
+		double diffSlowRate = 0;
+		double mFracSlow = 0;
+		double monitoringRate = 0;
+		
+		double[][] fastData = null;
+		double[][] slowData = null;
+		double[][] newData = new double[roiLen][reducedExpTimePoints.length];
+		
+		if(newParams != null && newParams.length > 0)
+		{
+			for(int i=0; i<newParams.length; i++)
+			{
+				if(newParams[i].getName().equals(FRAPOptData.TWODIFFRATES_PARAMETER_NAMES[FRAPOptData.TWODIFFRATES_FAST_DIFFUSION_OFFSET_INDEX]))
+				{
+					diffFastOffset = newParams[FRAPOptData.TWODIFFRATES_FAST_DIFFUSION_OFFSET_INDEX].getInitialGuess();
+				}
+				else if(newParams[i].getName().equals(FRAPOptData.TWODIFFRATES_PARAMETER_NAMES[FRAPOptData.TWODIFFRATES_FAST_MOBILE_FRACTION_INDEX]))
+				{
+					mFracFast = newParams[FRAPOptData.TWODIFFRATES_FAST_MOBILE_FRACTION_INDEX].getInitialGuess();
+				}
+				else if(newParams[i].getName().equals(FRAPOptData.TWODIFFRATES_PARAMETER_NAMES[FRAPOptData.TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX]))
+				{
+					diffSlowRate = newParams[FRAPOptData.TWODIFFRATES_SLOW_DIFFUSION_RATE_INDEX].getInitialGuess();
+				}
+				else if(newParams[i].getName().equals(FRAPOptData.TWODIFFRATES_PARAMETER_NAMES[FRAPOptData.TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX]))
+				{
+					mFracSlow = newParams[FRAPOptData.TWODIFFRATES_SLOW_MOBILE_FRACTION_INDEX].getInitialGuess();
+				}
+				else if(newParams[i].getName().equals(FRAPOptData.TWODIFFRATES_PARAMETER_NAMES[FRAPOptData.TWODIFFRATES_BLEACH_WHILE_MONITOR_INDEX]))
+				{
+					monitoringRate = newParams[FRAPOptData.TWODIFFRATES_BLEACH_WHILE_MONITOR_INDEX].getInitialGuess();
+				}
+			}
+			
+			
+			double diffFastRate = diffSlowRate + diffFastOffset;
+						   
+			fastData = FRAPOptimization.getValueByDiffRate(REF_DIFFUSION_RATE_PARAM.getInitialGuess(),
+                    									   diffFastRate,
+                    									   getDimensionReducedRefData(null),
+                    									   reducedExpData,
+                    									   refDataTimePoints,
+                    									   reducedExpTimePoints,
+                    									   roiLen,
+                    									   refTimeInterval);
+			
+			slowData = FRAPOptimization.getValueByDiffRate(REF_DIFFUSION_RATE_PARAM.getInitialGuess(),
+                    									   diffSlowRate,
+                    									   getDimensionReducedRefData(null),
+                    									   reducedExpData,
+                    									   refDataTimePoints,
+                    									   reducedExpTimePoints,
+                    									   roiLen,
+                    									   refTimeInterval);
+			
+			//get diffusion initial condition for immobile part
+			double[] firstPostBleach = new double[roiLen];
+			if(fastData != null)
+			{
+				for(int i = 0; i < roiLen; i++)
+				{
+					firstPostBleach[i] = fastData[i][0];
+				}
+			}
+			
+			//compute error against exp data
+			for(int i=0; i<roiLen; i++)
+			{
+				if(errorOfInterest != null && errorOfInterest[i])
+				{
+					for(int j=0; j<reducedExpTimePoints.length; j++)
+					{
+						newData[i][j] = FRAPOptimization.getValueFromParameters_twoDiffRates(mFracFast, 
+								                                              fastData[i][j],
+								                                              mFracSlow, 
+								                                              slowData[i][j],
+								                                              monitoringRate,
+								                                              firstPostBleach[i],
+								                                              reducedExpTimePoints[j]);
+//						double newValue = (mFracFast * fastData[i][j] + mFracSlow * slowData[i][j] + immobileFrac * firstPostBleach[i]) * Math.exp(-(monitoringRate * expTimePoints[j]));
+					}
+				}
+			}
+			// REORder according to roiTypes
+			double[][] fitDataInROITypeOrder = new double[newData.length][];
+			for (int i = 0; i < getExpFrapStudy().getFrapData().getRois().length; i++) {
+				for (int j = 0; j < ROI.RoiType.values().length; j++) {
+					if(getExpFrapStudy().getFrapData().getRois()[i].getROIType().equals(ROI.RoiType.values()[j])){
+						fitDataInROITypeOrder[j] = newData[i];
+						break;
+					}
+				}
+			}
+			
+			return fitDataInROITypeOrder;
+		}
+		else
+		{
+			throw new Exception("Cannot perform optimization because there is no parameters to be evaluated.");
 		}
 	}
 	
@@ -443,7 +616,7 @@ public class FRAPOptData {
 		try {
 			//read original data from file
 			System.out.println("start loading original data....");
-			String expFileName = "C:/VirtualMicroscopy/forOptTest_cell_10_blc_2_d_1p0_t_10_saveEvery_10_another.vfrap";
+			String expFileName = "C:/VirtualMicroscopy/testFastD_4_fastFrac_0p5_slowD_1_slowFrac_0p3_ImmobileFrac_0p2_mwb_0p0015.vfrap";
 			xmlString = XmlUtil.getXMLString(expFileName);
 			MicroscopyXmlReader xmlReader = new MicroscopyXmlReader(true);
 			FRAPStudy expFrapStudy = xmlReader.getFrapStudy(XmlUtil.stringToXML(xmlString, null), null);
@@ -451,7 +624,7 @@ public class FRAPOptData {
 			System.out.println("experimental data time points"+expFrapStudy.getFrapData().getImageDataset().getSizeT());
 			System.out.println("finish loading original data....");
 			
-			//create rederence data
+			//create reference data
 			System.out.println("creating rederence data....");
 			
 			DataSetControllerImpl.ProgressListener progressListener =
@@ -464,7 +637,7 @@ public class FRAPOptData {
 				}
 			};
 
-			FRAPOptData optData = new FRAPOptData(expFrapStudy, localWorkspace,progressListener);
+			FRAPOptData optData = new FRAPOptData(expFrapStudy, 5, localWorkspace,progressListener);
 			
 			//trying 3 parameters
 //			Parameter diff = new cbit.vcell.opt.Parameter(FRAPOptData.PARAMETER_NAMES[FRAPOptData.DIFFUSION_RATE_INDEX], 0, 100, 1.0, Double.parseDouble(expFrapStudy.getFrapModelParameters().diffusionRate));
@@ -472,18 +645,35 @@ public class FRAPOptData {
 //			Parameter bleachWhileMonitoringRate = new cbit.vcell.opt.Parameter(FRAPOptData.PARAMETER_NAMES[FRAPOptData.BLEACH_WHILE_MONITOR_INDEX], 0, 10, 1.0,  0/*Double.parseDouble(expFrapStudy.getFrapModelParameters().monitorBleachRate)*/);
 			
 			//trying 5 parameters
-			Parameter diffFastOffset = new cbit.vcell.opt.Parameter("fast_diff_offset", 0, 50, 1.0, 10);
-			Parameter mFracFast = new cbit.vcell.opt.Parameter("fast_mobile_fraction", 0, 1, 1.0, 0.5);
-			Parameter diffSlow = new cbit.vcell.opt.Parameter("slow_diff_rate", 0, 10, 1.0, 0.1);
-			Parameter mFracSlow = new cbit.vcell.opt.Parameter("slow_mobiel_fraction", 0, 1, 1.0, 0.1);
-			Parameter bleachWhileMonitoringRate = new cbit.vcell.opt.Parameter("bleach_while_monitoring_rate", 0, 10, 1.0,  0);
+			Parameter diffFastOffset = new cbit.vcell.opt.Parameter("fastDiffOffset", 1, 50, 1.0, 10);
+			Parameter mFracFast = new cbit.vcell.opt.Parameter("fastMobileFrac", 0, 1, 1.0, 0.5);
+			Parameter diffSlow = new cbit.vcell.opt.Parameter("slowDiffRate", 0, 10, 1.0, 0.1);
+			Parameter mFracSlow = new cbit.vcell.opt.Parameter("slowMobileFrac", 0, 1, 1.0, 0.5);
+			Parameter bleachWhileMonitoringRate = new cbit.vcell.opt.Parameter("bleachWhileMonitoringRate", 0, 20, 1.0, 0.1);
 			Parameter[] inParams = new Parameter[]{diffFastOffset, mFracFast, diffSlow, mFracSlow, bleachWhileMonitoringRate};
+						
+//			Parameter diffFast = new cbit.vcell.opt.Parameter("fast_diff_rate", 0, 100, 1.0, 5);
+//			Parameter mFracFast = new cbit.vcell.opt.Parameter("fast_mobile_fraction", 0, 1, 1.0, 0.5);
+//			Parameter diffSlowFactor = new cbit.vcell.opt.Parameter("slow_diff_factor", 0, 1, 1.0, 0.2);
+//			Parameter mFracSlow = new cbit.vcell.opt.Parameter("slow_mobile_fraction", 0, 1, 1.0, 0.5);
+//			Parameter bleachWhileMonitoringRate = new cbit.vcell.opt.Parameter("bleach_while_monitoring_rate", 0, 1, 1.0,  0.1);
+//			Parameter[] inParams = new Parameter[]{diffFast, mFracFast, diffSlowFactor, mFracSlow, bleachWhileMonitoringRate};
+			
+			//add some constraints, like fast mobile fraction + slow mobile fraction should smaller than 1.
+			//slower rate should be 5 times smaller than fast rate.....??? 5*slowDiffRate < fastDiffRate
+//			Expression exp1 = new Expression("("+mFracFast.getName()+" + "+mFracSlow.getName()+" - 1)");
+//			Constraint con1 = new Constraint(ConstraintType.LinearInequality, exp1);
+//			Expression exp2 = new Expression("( 4 * "+diffSlow.getName()+" - "+ diffFastOffset.getName() +")");
+//			Constraint con2 = new Constraint(ConstraintType.LinearInequality, exp2);
+//			Constraint[] cons = new Constraint[2];
+//			cons[0] = con1;
+//			cons[1] = con2;
 			
 			ROI[] rois = expFrapStudy.getFrapData().getRois();
 			boolean[] errorOfInterest = new boolean[rois.length];
 			for(int i=0; i<rois.length; i++)
 			{
-				if(!rois[i].getROIType().equals(RoiType.ROI_BLEACHED)/*rois[i].getROIType().equals(RoiType.ROI_BACKGROUND) || rois[i].getROIType().equals(RoiType.ROI_CELL)*/)
+				if(/*!rois[i].getROIType().equals(RoiType.ROI_BLEACHED)*/rois[i].getROIType().equals(RoiType.ROI_BACKGROUND) || rois[i].getROIType().equals(RoiType.ROI_CELL))
 				{
 					errorOfInterest[i] = false;
 				}
@@ -519,6 +709,14 @@ public class FRAPOptData {
 			e.printStackTrace();
 		} 
 
+	}
+
+	public int getNumEstimatedParams() {
+		return numEstimatedParams;
+	}
+
+	public void setNumEstimatedParams(int numEstimatedParams) {
+		this.numEstimatedParams = numEstimatedParams;
 	}
 	
 }
