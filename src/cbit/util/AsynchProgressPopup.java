@@ -1,5 +1,8 @@
 package cbit.util;
 import java.awt.*;
+
+import javax.swing.SwingUtilities;
+
 import cbit.gui.ZEnforcer;
 
 /**
@@ -183,9 +186,9 @@ private void startPrivate(final boolean bKeepOnTop) {
 	new EventDispatchRunWithException (){
 		public Object runWithException() throws Exception{
 			if(bKeepOnTop){
-				ZEnforcer.showModalDialogOnTop(dialog);
+				SwingUtilities.invokeLater(new Runnable(){public void run(){ZEnforcer.showModalDialogOnTop(dialog);}});
 			}else{
-				dialog.setVisible(true);
+				SwingUtilities.invokeLater(new Runnable(){public void run(){dialog.setVisible(true);}});
 			}
 			// start timer for auto progress
 			if (! knowsProgress) {
