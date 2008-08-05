@@ -60,6 +60,7 @@ public class VirtualFrapMainFrame extends JFrame
 	  	  (int)(Toolkit.getDefaultToolkit().getScreenSize().height*.9));
 
 	private MenuHandler menuHandler = new MenuHandler();
+	private static final String VERSION_NUMBER = "VFrap 0.8  Alpha_1";
 	private static final String OPEN_ACTION_COMMAND = "Open";
 	private static final String SAVE_ACTION_COMMAND = "Save";
 	private static final String SAVEAS_ACTION_COMMAND = "Save As...";
@@ -567,11 +568,11 @@ public class VirtualFrapMainFrame extends JFrame
   {
 	  if(str.equals(""))
 	  {
-		  this.setTitle("Virtual Frap 1.0 Alpha");
+		  this.setTitle(VERSION_NUMBER);
 	  }
 	  else
 	  {
-		  this.setTitle(str + " - Virtual Frap 1.0 Alpha");
+		  this.setTitle(str + " - " + VERSION_NUMBER);
 	  }
   }
 
