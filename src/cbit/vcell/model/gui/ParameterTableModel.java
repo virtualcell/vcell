@@ -8,6 +8,7 @@ import cbit.vcell.units.VCUnitException;
  * All rights reserved.
 ©*/
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.geometry.*;
@@ -371,6 +372,9 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 						} catch (PropertyVetoException pve) {
 							pve.printStackTrace(System.out);
 							PopupGenerator.showErrorDialog("Unable to convert parameter : \'" + parameter.getName() + "\' to local kinetics parameter : " + pve.getMessage());
+						} catch (ExpressionBindingException e) {
+							e.printStackTrace(System.out);
+							PopupGenerator.showErrorDialog("Unable to convert parameter : \'" + parameter.getName() + "\' to local kinetics parameter : " + e.getMessage());
 						}
 					}
 				} else {
@@ -393,6 +397,9 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 						} catch (PropertyVetoException pve) {
 							pve.printStackTrace(System.out);
 							PopupGenerator.showErrorDialog("Unable to remove (global) proxy parameter : \'" + parameter.getName() + "\'. Cannot convert to global (proxy) parameter : " + pve.getMessage());
+						} catch (ExpressionBindingException e) {
+							e.printStackTrace(System.out);
+							PopupGenerator.showErrorDialog("Unable to remove (global) proxy parameter : \'" + parameter.getName() + "\'. Cannot convert to global (proxy) parameter : " + e.getMessage());
 						}
 					}
 				}
