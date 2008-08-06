@@ -3,8 +3,16 @@ package cbit.vcell.model.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.vcell.mapping.gui.StructureMappingTableModel;
+import cbit.vcell.mapping.gui.StructureMappingTableRenderer;
 import cbit.vcell.model.*;
 import java.beans.*;
+
+import javax.swing.DefaultCellEditor;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableColumn;
 /**
  * This type was created in VisualAge.
  */
@@ -19,12 +27,10 @@ public class ParameterPanel extends javax.swing.JPanel implements PropertyChange
 /**
  * Constructor
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 public ParameterPanel() {
 	super();
 	initialize();
 }
-
 
 /**
  * Insert the method's description here.
@@ -34,21 +40,13 @@ public void cleanupOnClose() {
 	getParameterTableModel().setKinetics(null);
 }
 
-
 /**
  * connEtoC1:  (ParameterPanel.initialize() --> ParameterPanel.parameterPanel_Initialize()V)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC1() {
 	try {
-		// user code begin {1}
-		// user code end
 		this.parameterPanel_Initialize();
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -58,19 +56,12 @@ private void connEtoC1() {
  * connEtoM1:  (kinetics1.this --> ParameterTableModel.kinetics)
  * @param value cbit.vcell.model.Kinetics
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM1(cbit.vcell.model.Kinetics value) {
 	try {
-		// user code begin {1}
-		// user code end
 		if ((getkinetics1() != null)) {
 			getParameterTableModel().setKinetics(getkinetics1());
 		}
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -79,18 +70,19 @@ private void connEtoM1(cbit.vcell.model.Kinetics value) {
 /**
  * connEtoM2:  (ParameterPanel.initialize() --> ScrollPaneTable.model)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM2() {
 	try {
-		// user code begin {1}
-		// user code end
 		getScrollPaneTable().setModel(getParameterTableModel());
 		getScrollPaneTable().createDefaultColumnsFromModel();
-		// user code begin {2}
-		// user code end
+
+		//set column renderer, except for expression/value column.
+		for(int i=0; i<getScrollPaneTable().getModel().getColumnCount(); i++) {
+			if (i != ParameterTableModel.COLUMN_VALUE) {
+				TableColumn column=getScrollPaneTable().getColumnModel().getColumn(i);
+				column.setCellRenderer(new ParameterTableCellRenderer(getScrollPaneTable().getDefaultRenderer(Boolean.class)));
+			}
+		}
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -98,25 +90,18 @@ private void connEtoM2() {
 /**
  * connPtoP2SetSource:  (ParameterPanel.kinetics <--> kinetics1.this)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connPtoP2SetSource() {
 	/* Set the source from the target */
 	try {
 		if (ivjConnPtoP2Aligning == false) {
-			// user code begin {1}
-			// user code end
 			ivjConnPtoP2Aligning = true;
 			if ((getkinetics1() != null)) {
 				this.setKinetics(getkinetics1());
 			}
-			// user code begin {2}
-			// user code end
 			ivjConnPtoP2Aligning = false;
 		}
 	} catch (java.lang.Throwable ivjExc) {
 		ivjConnPtoP2Aligning = false;
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -125,23 +110,16 @@ private void connPtoP2SetSource() {
 /**
  * connPtoP2SetTarget:  (ParameterPanel.kinetics <--> kinetics1.this)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connPtoP2SetTarget() {
 	/* Set the target from the source */
 	try {
 		if (ivjConnPtoP2Aligning == false) {
-			// user code begin {1}
-			// user code end
 			ivjConnPtoP2Aligning = true;
 			setkinetics1(this.getKinetics());
-			// user code begin {2}
-			// user code end
 			ivjConnPtoP2Aligning = false;
 		}
 	} catch (java.lang.Throwable ivjExc) {
 		ivjConnPtoP2Aligning = false;
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -151,7 +129,6 @@ private void connPtoP2SetTarget() {
  * Return the JScrollPane1 property value.
  * @return javax.swing.JScrollPane
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JScrollPane getJScrollPane1() {
 	if (ivjJScrollPane1 == null) {
 		try {
@@ -160,11 +137,7 @@ private javax.swing.JScrollPane getJScrollPane1() {
 			ivjJScrollPane1.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 			ivjJScrollPane1.setHorizontalScrollBarPolicy(javax.swing.JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 			getJScrollPane1().setViewportView(getScrollPaneTable());
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -185,10 +158,7 @@ public cbit.vcell.model.Kinetics getKinetics() {
  * Return the kinetics1 property value.
  * @return cbit.vcell.model.Kinetics
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private cbit.vcell.model.Kinetics getkinetics1() {
-	// user code begin {1}
-	// user code end
 	return ivjkinetics1;
 }
 
@@ -197,16 +167,11 @@ private cbit.vcell.model.Kinetics getkinetics1() {
  * Return the ParameterTableModel property value.
  * @return cbit.vcell.model.gui.ParameterTableModel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private ParameterTableModel getParameterTableModel() {
 	if (ivjParameterTableModel == null) {
 		try {
-			ivjParameterTableModel = new cbit.vcell.model.gui.ParameterTableModel();
-			// user code begin {1}
-			// user code end
+			ivjParameterTableModel = new cbit.vcell.model.gui.ParameterTableModel(getScrollPaneTable());
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -217,7 +182,6 @@ private ParameterTableModel getParameterTableModel() {
  * Return the ScrollPaneTable property value.
  * @return javax.swing.JTable
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
@@ -228,11 +192,7 @@ private javax.swing.JTable getScrollPaneTable() {
 			ivjScrollPaneTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
 			ivjScrollPaneTable.setBounds(0, 0, 200, 200);
 			ivjScrollPaneTable.setAutoCreateColumnsFromModel(false);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -259,10 +219,7 @@ private void handleException(Throwable exception) {
  * Initializes connections
  * @exception java.lang.Exception The exception description.
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initConnections() throws java.lang.Exception {
-	// user code begin {1}
-	// user code end
 	this.addPropertyChangeListener(this);
 	connPtoP2SetTarget();
 }
@@ -270,11 +227,8 @@ private void initConnections() throws java.lang.Exception {
 /**
  * Initialize the class.
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initialize() {
 	try {
-		// user code begin {1}
-		// user code end
 		setName("ParameterPanel");
 		setLayout(new java.awt.GridBagLayout());
 		setSize(509, 240);
@@ -287,13 +241,11 @@ private void initialize() {
 		constraintsJScrollPane1.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getJScrollPane1(), constraintsJScrollPane1);
 		initConnections();
-		connEtoC1();
+		parameterPanel_Initialize();
 		connEtoM2();
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
-	// user code begin {2}
-	// user code end
 }
 
 /**

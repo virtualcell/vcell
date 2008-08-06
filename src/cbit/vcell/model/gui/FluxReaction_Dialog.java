@@ -9,7 +9,9 @@ import javax.swing.*;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.*;
+import cbit.vcell.model.Model.ModelParameter;
 
 import java.awt.Component;
 import java.util.*;
@@ -42,6 +44,7 @@ public class FluxReaction_Dialog extends JDialog {
 	private boolean ivjConnPtoP4Aligning = false;
 	private Kinetics ivjKinetics = null;
 	private JButton jToggleButton = null;  //  @jve:decl-index=0:visual-constraint="251,111"
+	private JButton ivjShowGlobalParamsButton = null;
 	
 	private KineticsDescription[] kineticTypes = {
 		KineticsDescription.General,
@@ -56,6 +59,8 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == FluxReaction_Dialog.this.getRenameButton()) 
 				connEtoC1(e);
+			if (e.getSource() == FluxReaction_Dialog.this.getShowGlobalParamsButton()) 
+				showGlobalParameters();
 			if (e.getSource() == FluxReaction_Dialog.this.getChangeButton()) 
 				connEtoC2(e);
 			if (e.getSource() == FluxReaction_Dialog.this.getJComboBox1()) 
@@ -615,8 +620,14 @@ private javax.swing.JPanel getJDialogContentPane() {
 			constraintsToggleButton.insets = new java.awt.Insets(0, 5, 0, 5);
 			getJDialogContentPane().add(getToggleButton(), constraintsToggleButton);
 
+			java.awt.GridBagConstraints constraintsShowGlobalParamsButton = new java.awt.GridBagConstraints();
+			constraintsShowGlobalParamsButton.gridx = 1; constraintsShowGlobalParamsButton.gridy = 5;
+	 		constraintsShowGlobalParamsButton.fill = java.awt.GridBagConstraints.HORIZONTAL;
+			constraintsShowGlobalParamsButton.insets = new java.awt.Insets(5, 5, 5, 10);
+			getJDialogContentPane().add(getShowGlobalParamsButton(), constraintsShowGlobalParamsButton);
+
 			java.awt.GridBagConstraints constraintsKineticsTypeTemplatePanel = new java.awt.GridBagConstraints();
-			constraintsKineticsTypeTemplatePanel.gridx = 0; constraintsKineticsTypeTemplatePanel.gridy = 5;
+			constraintsKineticsTypeTemplatePanel.gridx = 0; constraintsKineticsTypeTemplatePanel.gridy = 6;
 			constraintsKineticsTypeTemplatePanel.gridwidth = 3;
 			constraintsKineticsTypeTemplatePanel.fill = java.awt.GridBagConstraints.BOTH;
 			constraintsKineticsTypeTemplatePanel.weightx = 1.0;
@@ -944,6 +955,18 @@ private javax.swing.JButton getRenameButton() {
 	return ivjRenameButton;
 }
 
+private javax.swing.JButton getShowGlobalParamsButton() {
+	if (ivjShowGlobalParamsButton == null) {
+		try {
+			ivjShowGlobalParamsButton = new javax.swing.JButton();
+			ivjShowGlobalParamsButton.setName("ShowGlobalParamsButton");
+			ivjShowGlobalParamsButton.setText("Show Global Parameters");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return ivjShowGlobalParamsButton;
+}
 
 /**
  * Called whenever the part throws an exception.
@@ -978,6 +1001,7 @@ private void initConnections() throws java.lang.Exception {
 	// user code begin {1}
 	// user code end
 	getRenameButton().addActionListener(ivjEventHandler);
+	getShowGlobalParamsButton().addActionListener(ivjEventHandler);
 	getChangeButton().addActionListener(ivjEventHandler);
 	getJComboBox1().addActionListener(ivjEventHandler);
 	getJLabel5().addPropertyChangeListener(ivjEventHandler);
@@ -1069,6 +1093,19 @@ private void renameFluxReaction() {
 	}catch (java.beans.PropertyVetoException e){
 		cbit.vcell.client.PopupGenerator.showErrorDialog(this,"Error changing name:\n"+e.getMessage());
 	}
+}
+
+private void showGlobalParameters() {
+	// pop-up a list of global parameters for user to refer to while deciding kinetic parameters
+	ModelParameter[] mps = getKinetics().getReactionStep().getModel().getModelParameters();
+	// get list of names of the model params (as 'name [ val ]')
+	String[] mpNameAndVals = new String[mps.length + 1];
+	mpNameAndVals[0] = "Name    [ value ]    [ units ]";
+	for (int i = 0; i < mps.length; i++) {
+		mpNameAndVals[i+1] = mps[i].getName() + "    [ " + mps[i].getExpression().infix() + " ]    [ " + mps[i].getUnitDefinition().getSymbol() + " ]";   
+	}
+	PopupGenerator.showListDialog(this, mpNameAndVals, "List of Global Parameters in Model");
+	
 }
 
 

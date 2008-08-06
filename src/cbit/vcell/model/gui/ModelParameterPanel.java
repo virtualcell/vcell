@@ -4,6 +4,7 @@ import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 
 import javax.swing.JDesktopPane;
 
@@ -131,6 +132,7 @@ public ModelParameterPanel(boolean isDoubleBuffered) {
  * Creation date: (8/9/2006 9:10:39 PM)
  */
 public void cleanupOnClose() {
+	setModel(null);
 	getmodelParameterTableModel().setModel(null);
 }
 
@@ -460,7 +462,7 @@ private void jMenuItemAdd_ActionPerformed(ActionEvent actionEvent) throws Except
 	}
 }
 
-private void jMenuItemDelete_ActionPerformed(ActionEvent actionEvent) throws Exception {
+private void jMenuItemDelete_ActionPerformed(ActionEvent actionEvent) {
 	if(actionEvent.getSource() == getJMenuItemDelete()){
 		int[] rows = getScrollPaneTable().getSelectedRows();
 		if (rows.length < 1) {
@@ -473,28 +475,11 @@ private void jMenuItemDelete_ActionPerformed(ActionEvent actionEvent) throws Exc
 		// delete the parameter and update the tablemodel.
 		Parameter param = (Parameter)getmodelParameterTableModel().getData().get(rows[0]);
 		if (param instanceof ModelParameter) {
-			ModelParameter mp = (ModelParameter)param;
-			if (getModel().contains(mp)) {
-				// check if 'mp' is used anywhere (in reaction kinetics, for the present)
-				ReactionStep[] rsArray = getModel().getReactionSteps();
-				boolean bUsed = false;
-				for (int i = 0; i < rsArray.length; i++) {
-					KineticsParameter[] kParams = rsArray[i].getKinetics().getKineticsParameters(); 
-					for (int j = 0; j < kParams.length; j++) {
-						if (kParams[j].getExpression().hasSymbol(mp.getName()) && (rsArray[i].getKinetics().getProxyParameter(mp.getName()) != null)) {
-							PopupGenerator.showErrorDialog("Model Parameter \'" + mp.getName() + "\' is used in reaction \'" + rsArray[i].getName() + "\'. Cannot delete parameter.");
-							bUsed = true;
-							break;
-						}
-					}
-				}
-				// if 'bUsed' is false at this point, can delete model parameter. 
-				if (!bUsed) { 
-					String choice = PopupGenerator.showWarningDialog(this, "Deleting model parameter \'" + mp.getName() + "\'. Are you sure?", new String[] {"Ok", "Cancel"}, "Ok");
-					if (choice.equals("Ok")) {
-						getModel().removeModelParameter(mp);
-					}
-				}
+			try {
+				getModel().removeModelParameter((ModelParameter)param);
+			} catch (PropertyVetoException e) {
+				//e.printStackTrace();
+				PopupGenerator.showErrorDialog(e.getMessage());
 			}
 		}
 	}
@@ -762,7 +747,9 @@ private void setmodel1(cbit.vcell.model.Model newValue) {
 			ivjmodel1 = newValue;
 			connPtoP3SetSource();
 			getmodelParameterTableModel().setModel(getmodel1());
-			getmodel1().addPropertyChangeListener(ModelParametersPropertyChangeListener);
+			if (getmodel1() != null) {
+				getmodel1().addPropertyChangeListener(ModelParametersPropertyChangeListener);
+			}
 			firePropertyChange("model", oldValue, newValue);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
