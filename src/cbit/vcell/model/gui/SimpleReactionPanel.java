@@ -8,7 +8,10 @@ import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 
 import java.util.*;
+
+import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.*;
+import cbit.vcell.model.Model.ModelParameter;
 
 import javax.swing.JButton;
 
@@ -37,6 +40,7 @@ public class SimpleReactionPanel extends javax.swing.JPanel {
 	private Kinetics ivjKinetics = null;
 	private boolean ivjConnPtoP2Aligning = false;
 	private JButton jToggleButton = null;
+	private JButton ivjShowGlobalParamsButton = null;
 	
 	private final static KineticsDescription[] kineticTypes = {
 		KineticsDescription.MassAction,
@@ -52,6 +56,8 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.beans.Prope
 				connEtoC2(e);
 			if (e.getSource() == SimpleReactionPanel.this.getRenameButton()) 
 				connEtoM14(e);
+			if (e.getSource() == SimpleReactionPanel.this.getShowGlobalParamsButton()) 
+				showGlobalParameters();
 			if (e.getSource() == SimpleReactionPanel.this.getJComboBox1()) 
 				connEtoC3();
 		};
@@ -731,6 +737,19 @@ private javax.swing.JButton getRenameButton() {
 	return ivjRenameButton;
 }
 
+private javax.swing.JButton getShowGlobalParamsButton() {
+	if (ivjShowGlobalParamsButton == null) {
+		try {
+			ivjShowGlobalParamsButton = new javax.swing.JButton();
+			ivjShowGlobalParamsButton.setName("ShowGlobalParamsButton");
+			ivjShowGlobalParamsButton.setText("Show Global Parameters");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return ivjShowGlobalParamsButton;
+}
+
 /**
  * Gets the simpleReaction property (cbit.vcell.model.SimpleReaction) value.
  * @return The simpleReaction property value.
@@ -822,6 +841,7 @@ private void initConnections() throws java.lang.Exception {
 	this.addPropertyChangeListener(ivjEventHandler);
 	getSimpleReactionNameLabel().addPropertyChangeListener(ivjEventHandler);
 	getRenameButton().addActionListener(ivjEventHandler);
+	getShowGlobalParamsButton().addActionListener(ivjEventHandler);
 	getJComboBox1().addActionListener(ivjEventHandler);
 	connPtoP1SetTarget();
 	connPtoP2SetTarget();
@@ -875,8 +895,14 @@ private void initialize() {
 		constraintsKineticTypeTitleLabel.insets = new java.awt.Insets(4, 4, 4, 4);
 		add(getKineticTypeTitleLabel(), constraintsKineticTypeTitleLabel);
 
+		java.awt.GridBagConstraints constraintsShowGlobalParamsButton = new java.awt.GridBagConstraints();
+		constraintsShowGlobalParamsButton.gridx = 1; constraintsShowGlobalParamsButton.gridy = 4;
+ 		constraintsShowGlobalParamsButton.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		constraintsShowGlobalParamsButton.insets = new java.awt.Insets(5, 5, 5, 10);
+		add(getShowGlobalParamsButton(), constraintsShowGlobalParamsButton);
+
 		java.awt.GridBagConstraints constraintsKineticsTypeTemplatePanel = new java.awt.GridBagConstraints();
-		constraintsKineticsTypeTemplatePanel.gridx = 0; constraintsKineticsTypeTemplatePanel.gridy = 4;
+		constraintsKineticsTypeTemplatePanel.gridx = 0; constraintsKineticsTypeTemplatePanel.gridy = 5;
 		constraintsKineticsTypeTemplatePanel.gridwidth = 3;
 		constraintsKineticsTypeTemplatePanel.fill = java.awt.GridBagConstraints.BOTH;
 		constraintsKineticsTypeTemplatePanel.anchor = java.awt.GridBagConstraints.EAST;
@@ -979,6 +1005,18 @@ private void renameSimpleReaction() {
 	}
 }
 
+private void showGlobalParameters() {
+	// pop-up a list of global parameters for user to refer to while deciding kinetic parameters
+	ModelParameter[] mps = getKinetics().getReactionStep().getModel().getModelParameters();
+	// get list of names of the model params (as 'name [ val ]')
+	String[] mpNameAndVals = new String[mps.length + 1];
+	mpNameAndVals[0] = "Name    [ value ]    [ units ]";
+	for (int i = 0; i < mps.length; i++) {
+		mpNameAndVals[i+1] = mps[i].getName() + "    [ " + mps[i].getExpression().infix() + " ]    [ " + mps[i].getUnitDefinition().getSymbol() + " ]";   
+	}
+	PopupGenerator.showListDialog(this, mpNameAndVals, "List of Global Parameters in Model");
+	
+}
 
 /**
  * Comment

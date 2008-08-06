@@ -2,6 +2,8 @@ package cbit.vcell.model.gui;
 
 import java.beans.PropertyVetoException;
 
+import javax.swing.JTable;
+
 import cbit.vcell.units.VCUnitException;
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
@@ -9,6 +11,7 @@ import cbit.vcell.units.VCUnitException;
 ©*/
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
+import cbit.vcell.parser.ScopedExpression;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.geometry.*;
@@ -32,14 +35,16 @@ import cbit.vcell.model.Model.ModelParameter;
  */
 public class ParameterTableModel extends javax.swing.table.AbstractTableModel implements java.beans.PropertyChangeListener {
 	private final int NUM_COLUMNS = 5;
-	private final int COLUMN_NAME = 0;
-	private final int COLUMN_DESCRIPTION = 1;
-	private final int COLUMN_IS_LOCAL = 2;
-	private final int COLUMN_VALUE = 3;
-	private final int COLUMN_UNITS = 4;
-	private String LABELS[] = { "Name", "Description", "Local", "Expression", "Units" };
+	public final static int COLUMN_NAME = 0;
+	public final static int COLUMN_DESCRIPTION = 1;
+	public final static int COLUMN_IS_GLOBAL = 2;
+	public final static int COLUMN_VALUE = 3;
+	public final static int COLUMN_UNITS = 4;
+	private String LABELS[] = { "Name", "Description", "Global", "Expression", "Units" };
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private cbit.vcell.model.Kinetics fieldKinetics = null;
+	private JTable fieldParentComponentTable = null;		// needed for DialogUtils.showWarningDialog() 
+	
 /**
  * ReactionSpecsTableModel constructor comment.
  */
@@ -47,6 +52,13 @@ public ParameterTableModel() {
 	super();
 	addPropertyChangeListener(this);
 }
+
+public ParameterTableModel(JTable argParentComponent) {
+	super();
+	addPropertyChangeListener(this);
+	fieldParentComponentTable = argParentComponent;
+}
+
 /**
  * The addPropertyChangeListener method was generated to support the propertyChange field.
  */
@@ -103,7 +115,7 @@ public Class getColumnClass(int column) {
 		case COLUMN_DESCRIPTION:{
 			return String.class;
 		}
-		case COLUMN_IS_LOCAL: {
+		case COLUMN_IS_GLOBAL: {
 			return Boolean.class;
 		}
 		default:{
@@ -200,7 +212,23 @@ public Object getValueAt(int row, int col) {
 		case COLUMN_VALUE:{
 			Expression exp = parameter.getExpression();
 			if (exp!=null){
-				return new cbit.vcell.parser.ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
+				if ((parameter instanceof KineticsProxyParameter) && (((KineticsProxyParameter)parameter).getTarget() instanceof ReservedSymbol)) {
+					ReservedSymbol rs = (ReservedSymbol)(((KineticsProxyParameter)parameter).getTarget());
+					if (rs.isKMOLE()) {
+						// KMOLE is the only ReservedSymbol that has is expressed as a rational number (1/602). Try printing this expression instead of its double value  
+						try {
+							return new ScopedExpression(new Expression("1.0/602.0"), parameter.getNameScope(), parameter.isExpressionEditable());
+						} catch (ExpressionException e) {
+							e.printStackTrace();
+							throw new RuntimeException("Error writing expression for KMOLE reserved symbol" + e.getMessage());
+						}
+					} else {
+						// if reserved symbol is not KMOLE, print it out like other parameters
+						return new cbit.vcell.parser.ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
+					}
+				} else {
+					return new cbit.vcell.parser.ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
+				}
 			}else{
 				return "defined in application"; // new cbit.vcell.parser.ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
 			}
@@ -208,11 +236,11 @@ public Object getValueAt(int row, int col) {
 		case COLUMN_DESCRIPTION:{
 			return parameter.getDescription();
 		}
-		case COLUMN_IS_LOCAL: {
+		case COLUMN_IS_GLOBAL: {
 			if (parameter instanceof KineticsParameter) {
-				return Boolean.TRUE;
-			} else {
 				return Boolean.FALSE;
+			} else {
+				return Boolean.TRUE;
 			}
 		}
 		default:{
@@ -243,7 +271,7 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 		return false;
 	}else if (columnIndex == COLUMN_VALUE){
 		return parameter.isExpressionEditable();
-	}else if (columnIndex == COLUMN_IS_LOCAL) {
+	}else if (columnIndex == COLUMN_IS_GLOBAL) {
 		// if the parameter is reaction rate param or a ReservedSymbol in the model, it should not be editable
 		if (parameter == getKinetics().getAuthoritativeParameter()) {
 			return false;
@@ -358,9 +386,9 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 				}
 				break;
 			}
-			case COLUMN_IS_LOCAL: {
-				if (aValue.equals(Boolean.TRUE)) {
-					// check box has been <set> (<false> to <true>) : change param from global to local  
+			case COLUMN_IS_GLOBAL: {
+				if (aValue.equals(Boolean.FALSE)) {
+					// check box has been <unset> (<true> to <false>) : change param from global to local  
 					if ( (parameter instanceof KineticsProxyParameter) && 
 						( (((KineticsProxyParameter)parameter).getTarget() instanceof ReservedSymbol) ||
 						(((KineticsProxyParameter)parameter).getTarget() instanceof SpeciesContext) ||
@@ -368,7 +396,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 							PopupGenerator.showErrorDialog("Parameter : \'" + parameter.getName() + "\' is a " + ((KineticsProxyParameter)parameter).getTarget().getClass() + " in the model; cannot convert it to a local kinetic parameter.");
 					} else {
 						try {
-							getKinetics().convertParameterType(parameter, true);
+							getKinetics().convertParameterType(parameter, false);
 						} catch (PropertyVetoException pve) {
 							pve.printStackTrace(System.out);
 							PopupGenerator.showErrorDialog("Unable to convert parameter : \'" + parameter.getName() + "\' to local kinetics parameter : " + pve.getMessage());
@@ -378,7 +406,7 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 						}
 					}
 				} else {
-					// check box has been <unset> (<true> to <false>) : change param from local to global  
+					// check box has been <set> (<false> to <true>) : change param from local to global  
 					if (parameter == getKinetics().getAuthoritativeParameter()) {
 						PopupGenerator.showErrorDialog("Parameter : \'" + parameter.getName() + "\' is a reaction rate parameter; cannot convert it to a model level (global) parameter.");
 					} else {
@@ -386,20 +414,24 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 						// model already had the model parameter 'param', but check if 'param' value is different from 
 						// model parameter with same name. If it is, the local value will be overridden by global (model) param
 						// value, and user should be warned.
+						String choice = "Ok";
 						if (mp != null && !(mp.getExpression().compareEqual(parameter.getExpression()))) {
 							String msgStr = "Model already has a global parameter named : \'" + parameter.getName() + "\'; with value = \'" 
 									+ mp.getExpression().infix() + "\'; This local parameter \'" + parameter.getName() + "\' with value = \'" + 
-									parameter.getExpression().infix() + "\' will be overridden by the global value.";
-							PopupGenerator.showErrorDialog(msgStr);
+									parameter.getExpression().infix() + "\' will be overridden by the global value. \nPress \'Ok' to override " + 
+									"local value with global value of \'" + parameter.getName() + "\'. \nPress \'Cancel\' to retain new local value.";
+							choice = PopupGenerator.showWarningDialog(fieldParentComponentTable, msgStr, new String[] {"Ok", "Cancel"}, "Ok");
 						}
-						try {
-							getKinetics().convertParameterType(parameter, false);
-						} catch (PropertyVetoException pve) {
-							pve.printStackTrace(System.out);
-							PopupGenerator.showErrorDialog("Unable to remove (global) proxy parameter : \'" + parameter.getName() + "\'. Cannot convert to global (proxy) parameter : " + pve.getMessage());
-						} catch (ExpressionBindingException e) {
-							e.printStackTrace(System.out);
-							PopupGenerator.showErrorDialog("Unable to remove (global) proxy parameter : \'" + parameter.getName() + "\'. Cannot convert to global (proxy) parameter : " + e.getMessage());
+						if (choice.equals("Ok")) {
+							try {
+								getKinetics().convertParameterType(parameter, true);
+							} catch (PropertyVetoException pve) {
+								pve.printStackTrace(System.out);
+								PopupGenerator.showErrorDialog("Unable to remove (global) proxy parameter : \'" + parameter.getName() + "\'. Cannot convert to global (proxy) parameter : " + pve.getMessage());
+							} catch (ExpressionBindingException e) {
+								e.printStackTrace(System.out);
+								PopupGenerator.showErrorDialog("Unable to remove (global) proxy parameter : \'" + parameter.getName() + "\'. Cannot convert to global (proxy) parameter : " + e.getMessage());
+							}
 						}
 					}
 				}

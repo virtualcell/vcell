@@ -811,7 +811,7 @@ public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException {
 			throw new PropertyVetoException("reactionStep name is not specified (null)",e);
 		}
 		if (((String)(e.getNewValue())).trim().length()>64){
-			throw new PropertyVetoException("reactionStep name cannot be longer than 64 characters",e);
+			throw new PropertyVetoException("reactionStep name for reaction \'" + getName() + "\' cannot be longer than 64 characters",e);
 		}
 	}
 	if (e.getSource()==this && e.getPropertyName().equals("chargeCarrierValence")){

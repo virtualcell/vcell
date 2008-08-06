@@ -16,6 +16,7 @@ import cbit.vcell.units.VCUnitDefinition;
 import cbit.sql.Versionable;
 import cbit.sql.Version;
 import cbit.vcell.model.Feature;
+import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Membrane.MembraneVoltage;
 import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.NameScope;
@@ -1870,16 +1871,6 @@ public void setModelParameters(Model.ModelParameter[] modelParameters) throws ja
 	fireVetoableChange(Model.MODEL_PARAMETERS_PROPERTY_NAME, oldValue, modelParameters);
 	fieldModelParameters = modelParameters;
 	firePropertyChange(Model.MODEL_PARAMETERS_PROPERTY_NAME, oldValue, modelParameters);
-	
-	//ModelParameter newValue[] = modelParameters;
-	//for (int i=0;i<oldValue.length;i++){	
-		//oldValue[i].removePropertyChangeListener(this);
-		//oldValue[i].removeVetoableChangeListener(this);
-	//}
-	//for (int i=0;i<newValue.length;i++){	
-		//newValue[i].addPropertyChangeListener(this);
-		//newValue[i].addVetoableChangeListener(this);
-	//}
 }
 
 
@@ -2353,6 +2344,38 @@ public void vetoableChange(PropertyChangeEvent e) throws java.beans.PropertyVeto
 			
 			validateNamingConflicts("Model Parameter", ModelParameter.class, newModelParams[i].getName(), e);
 		}
+		//
+		// make sure that kinetics of reactionSteps do not refer to modelParameter to be deleted 
+		// Find this model parameter, missing from 'newModelParams'; loop thro' all reactionStep kinetics to determine if it is used
+		//
+		ModelParameter[] oldModelParameters = (ModelParameter[])e.getOldValue();
+		if (oldModelParameters.length > newModelParams.length) {
+			// if 'newModelParameter' is smaller than 'oldModelParameter', one of the modelParams has been removed, find the missing one
+			ModelParameter missingMP = null;
+			for (int i = 0; i < oldModelParameters.length; i++) {
+				if (!BeanUtils.arrayContains(newModelParams, oldModelParameters[i])) {
+					missingMP = oldModelParameters[i];
+				}
+			}
+			// use this missing model parameter (to be deleted) to determine if it is used in any reaction kinetic parameters. 
+			if (missingMP != null) {
+				boolean bUsed = false;
+				for (int i=0;i<fieldReactionSteps.length;i++){
+					KineticsParameter[] kParams = fieldReactionSteps[i].getKinetics().getKineticsParameters();
+					for (int k = 0; k < kParams.length; k++) {
+						if (kParams[k].getExpression().hasSymbol(missingMP.getName()) && (fieldReactionSteps[i].getKinetics().getProxyParameter(missingMP.getName()) != null)) {
+							bUsed = true;
+							break;
+						}
+					}
+					// if 'bUsed' is true at this point, can cannot delete model parameter.
+					if (bUsed){
+						throw new PropertyVetoException("Model Parameter \'" + missingMP.getName() + "\' is used in reaction \'" + fieldReactionSteps[i].getName() + "\'. Cannot delete parameter.",e);
+					}
+				}
+			}
+		}
+
 	}
 	
 	if (e.getSource() == this && e.getPropertyName().equals("speciesContexts")){

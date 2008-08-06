@@ -660,7 +660,7 @@ public KineticsParameter addUserDefinedKineticsParameter(String parameterName, E
  */
 public void convertParameterType(Parameter param, boolean bConvertToGlobal) throws PropertyVetoException, ExpressionBindingException {
 	if (!bConvertToGlobal) {
-		// need to convert model (the proxyparam) to local (kinetics) parameter 
+		// need to convert model parameter (the proxyparam/global) to local (kinetics) parameter 
 		if (!(param instanceof KineticsProxyParameter)) {
 			throw new RuntimeException("Parameter : \'" + param.getName() + "\' is not a proxy (global) parameter, cannot convert it to a local kinetics parameter.");
 		} else {

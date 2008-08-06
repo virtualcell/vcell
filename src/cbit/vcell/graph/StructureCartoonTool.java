@@ -803,11 +803,11 @@ public void showParametersDialog() {
 	// the parent tabbed panel that contains modelParameterPanel and problemPanel
 	JTabbedPane tabbedPane = new JTabbedPane();
 	tabbedPane.setName("JTabbedPane1");
-	tabbedPane.insertTab("Parameters", null, modelParameterPanel, null, 0);
+	tabbedPane.insertTab("Parameters and Rate Expressions", null, modelParameterPanel, null, 0);
 	tabbedPane.insertTab("Problems", null, problemPanel, null, 1);
 	
 
-	JInternalFrameEnhanced internalFrame = new JInternalFrameEnhanced("parameters",true,true,true,true);
+	JInternalFrameEnhanced internalFrame = new JInternalFrameEnhanced("Parameters and Rate Expressions",true,true,true,true);
 	internalFrame.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 	internalFrame.setClosable(true);
 	internalFrame.setSize(542, 495);
