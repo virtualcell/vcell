@@ -656,10 +656,10 @@ public KineticsParameter addUserDefinedKineticsParameter(String parameterName, E
 /**
  * convertParameterType : Used to convert a parameter from model (global) to local or vice versa depending on 'bConvertToLocal'
  * @param param : the parameter to be converted (could be kinetic parameter or kineticProxyParameter)
- * @param bConvertToLocal : <true> => convert model to local parameter; <false> => convert local to model parameter
+ * @param bConvertToGlobal : <true> => convert model to local parameter; <false> => convert local to model parameter
  */
-public void convertParameterType(Parameter param, boolean bConvertToLocal) throws PropertyVetoException {
-	if (bConvertToLocal) {
+public void convertParameterType(Parameter param, boolean bConvertToGlobal) throws PropertyVetoException, ExpressionBindingException {
+	if (!bConvertToGlobal) {
 		// need to convert model (the proxyparam) to local (kinetics) parameter 
 		if (!(param instanceof KineticsProxyParameter)) {
 			throw new RuntimeException("Parameter : \'" + param.getName() + "\' is not a proxy (global) parameter, cannot convert it to a local kinetics parameter.");
@@ -667,7 +667,9 @@ public void convertParameterType(Parameter param, boolean bConvertToLocal) throw
 			// first remove proxy param, 
 			removeProxyParameter((KineticsProxyParameter)param);
 			// then add it as kinetic param
-			addKineticsParameter(new KineticsParameter(param.getName(),param.getExpression(), Kinetics.ROLE_UserDefined, param.getUnitDefinition()));
+			Expression newExpr = new Expression(param.getExpression());
+			newExpr.bindExpression(getReactionStep());
+			addKineticsParameter(new KineticsParameter(param.getName(), newExpr, Kinetics.ROLE_UserDefined, param.getUnitDefinition()));
 		}
 	} else {
 		// need to convert local (the kinetics parameter) to model (proxy) parameter
@@ -682,8 +684,10 @@ public void convertParameterType(Parameter param, boolean bConvertToLocal) throw
 			// First add param as a model parameter, if it is not already present
 			ModelParameter mp = getReactionStep().getModel().getModelParameter(param.getName());
 			if (mp == null) {
-				Model model = getReactionStep().getModel(); 
-				model.addModelParameter(model.new ModelParameter(param.getName(), param.getExpression(), Model.ROLE_UserDefined, param.getUnitDefinition()));
+				Model model = getReactionStep().getModel();
+				Expression newExpr = new Expression(param.getExpression());
+				newExpr.bindExpression(model);
+				model.addModelParameter(model.new ModelParameter(param.getName(), newExpr, Model.ROLE_UserDefined, param.getUnitDefinition()));
 			}
 			// Then remove param as a kinetic param (if 'param' is a model param, it is automatically added as a (proxy/global) param, 
 			// since it is present in the reaction rate equn.

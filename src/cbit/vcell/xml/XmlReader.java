@@ -733,7 +733,7 @@ public ElectricalStimulus getElectricalStimulus(Element param, SimulationContext
 
 		// add constants that may be used in the electrical stimulus.
 		VariableHash varHash = new VariableHash();
-		addResevedSymbolsAndGlobalParamsToHash(varHash, currentSimulationContext.getModel());
+		addResevedSymbols(varHash);
 		ArrayList reserved = getReservedVars();
 
 		//
@@ -2785,7 +2785,7 @@ public cbit.vcell.model.Model getModel(Element param) throws XmlParseException {
 		iterator = param.getChildren(XMLTags.SimpleReactionTag, vcNamespace).iterator();
 		while (iterator.hasNext()) {
 			varHash = new VariableHash();
-			addResevedSymbolsAndGlobalParamsToHash(varHash, newmodel);
+			addResevedSymbols(varHash);
 			org.jdom.Element temp = (Element) iterator.next();
 			newmodel.addReactionStep(getSimpleReaction(temp, newmodel, varHash));
 		}
@@ -2793,7 +2793,7 @@ public cbit.vcell.model.Model getModel(Element param) throws XmlParseException {
 		iterator = param.getChildren(XMLTags.FluxStepTag, vcNamespace).iterator();
 		while (iterator.hasNext()) {
 			varHash = new VariableHash();
-			addResevedSymbolsAndGlobalParamsToHash(varHash, newmodel);
+			addResevedSymbols(varHash);
 			org.jdom.Element temp = (Element) iterator.next();
 			newmodel.addReactionStep(getFluxReaction(temp, newmodel, varHash));
 		}
@@ -4302,7 +4302,7 @@ public User getUser(Element param) {
  * @return cbit.vcell.model.Kinetics
  * @param param org.jdom.Element
  */
-private void addResevedSymbolsAndGlobalParamsToHash(VariableHash varHash, Model model) throws XmlParseException {
+private void addResevedSymbols(VariableHash varHash) throws XmlParseException {
 
 	//
 	// add constants that may be used in kinetics.
@@ -4318,16 +4318,6 @@ private void addResevedSymbolsAndGlobalParamsToHash(VariableHash varHash, Model 
 		varHash.addVariable(new Constant(ReservedSymbol.TEMPERATURE.getName(), new Expression(0.0)));
 		varHash.addVariable(new Constant(ReservedSymbol.K_GHK.getName(), new Expression(0.0)));
 		varHash.addVariable(new Constant(ReservedSymbol.TIME.getName(), new Expression(0.0)));
-		// add global parameters, if any - as constants, since variableHash needs a variable?
-		ModelParameter[] mps = model.getModelParameters();
-		if (mps == null || mps.length == 0) {
-			System.out.println("No global parameters in model");
-			return;
-		}
-		
-		for (int i = 0; i < mps.length; i++) {
-			varHash.addVariable(new Constant(mps[i].getName(), mps[i].getExpression()));
-		}
 	} catch (MappingException e){
 		e.printStackTrace(System.out);
 		throw new XmlParseException("error reordering parameters according to dependencies: "+e.getMessage());
