@@ -140,12 +140,12 @@ public ReactionStep getReactionStep(Structure structure, KeyValue rsKey, java.sq
 //
 // for debug purposes only, remove when unresolvedParameters are ok ... when globals exist
 //
-if (kinetics.getUnresolvedParameters().length!=0){
-	System.out.println("<<<WARNING>>> ReactStepTable.getReactionStep(key="+rsKey+") has "+kinetics.getUnresolvedParameters().length+" UnresolvedParameters");
-	for (int i = 0; i < kinetics.getUnresolvedParameters().length; i++){
-		System.out.println(">>>>>>>>>>>>> UnresolvedParameter["+i+"] = "+kinetics.getUnresolvedParameters()[i].toString());
-	}
-}
+//if (kinetics.getUnresolvedParameters().length!=0){
+//	System.out.println("<<<WARNING>>> ReactStepTable.getReactionStep(key="+rsKey+") has "+kinetics.getUnresolvedParameters().length+" UnresolvedParameters");
+//	for (int i = 0; i < kinetics.getUnresolvedParameters().length; i++){
+//		System.out.println(">>>>>>>>>>>>> UnresolvedParameter["+i+"] = "+kinetics.getUnresolvedParameters()[i].toString());
+//	}
+//}
 	}catch (Exception e){
 		log.exception(e);
 		throw new DataAccessException(e.getMessage());

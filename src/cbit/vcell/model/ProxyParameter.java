@@ -33,7 +33,7 @@ public abstract class ProxyParameter extends Parameter {
 				addPropertyChangeListenerMethod.invoke(target, new ProxyPropertyChangeListener());
 			}
 		}catch (NoSuchMethodException e1){
-			System.err.println(e1.getMessage());
+			//System.err.println(e1.getMessage());
 		}catch (IllegalAccessException e2){
 		}catch (InvocationTargetException e3){
 		}
