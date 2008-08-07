@@ -150,7 +150,7 @@ public void layout() throws LayoutException {
 	if (screenSize.width<=labelSize.width ||
 		 screenSize.height<=labelSize.height){
 		 //throw new LayoutException("screen size smaller than label");
-		 System.out.println("RectangleShape.layout: screen size smaller than label");
+		 //System.out.println("RectangleShape.layout: screen size smaller than label");
 	} 
 	//
 	// this is like a row/column layout  (1 row)
