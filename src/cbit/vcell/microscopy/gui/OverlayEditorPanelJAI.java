@@ -1144,9 +1144,6 @@ public class OverlayEditorPanelJAI extends JPanel {
 			contrastButtonPlus.setPreferredSize(new Dimension(32, 32));
 			contrastButtonPlus.setMinimumSize(new Dimension(32, 32));
 			contrastButtonPlus.setMaximumSize(new Dimension(32, 32));
-			contrastButtonPlus.setPreferredSize(new Dimension(32, 32));
-			contrastButtonPlus.setMinimumSize(new Dimension(32, 32));
-			contrastButtonPlus.setMaximumSize(new Dimension(32, 32));
 			contrastButtonPlus.setMargin(new Insets(2, 2, 2, 2));
 			contrastButtonPlus.setToolTipText("Increase Contrast");
 			final GridBagConstraints gridBagConstraints_4 = new GridBagConstraints();
@@ -1167,7 +1164,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 			contrastButtonMinus.setMargin(new Insets(2, 2, 2, 2));
 			contrastButtonMinus.setToolTipText("Decrease Contrast");
 			final GridBagConstraints gridBagConstraints_6 = new GridBagConstraints();
-			gridBagConstraints_6.insets = new Insets(0, 0, 10, 0);
+//			gridBagConstraints_6.insets = new Insets(0, 0, 10, 0);
 			gridBagConstraints_6.gridy = 3;
 			gridBagConstraints_6.gridx = 0;
 			leftJPanel.add(contrastButtonMinus, gridBagConstraints_6);
@@ -1183,7 +1180,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 			paintButton.setMargin(new Insets(2, 2, 2, 2));
 			paintButton.setToolTipText("Paint");
 			final GridBagConstraints gridBagConstraints_1 = new GridBagConstraints();
-			gridBagConstraints_1.gridy = 4;
+			gridBagConstraints_1.gridy = 5;
 			gridBagConstraints_1.gridx = 0;
 			leftJPanel.add(paintButton, gridBagConstraints_1);
 
@@ -1197,7 +1194,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 			eraseButton.setMargin(new Insets(2, 2, 2, 2));
 			eraseButton.setToolTipText("Erase");
 			final GridBagConstraints gridBagConstraints_2 = new GridBagConstraints();
-			gridBagConstraints_2.gridy = 5;
+			gridBagConstraints_2.gridy = 6;
 			gridBagConstraints_2.gridx = 0;
 			leftJPanel.add(eraseButton, gridBagConstraints_2);
 
@@ -1211,7 +1208,7 @@ public class OverlayEditorPanelJAI extends JPanel {
 			fillButton.setMargin(new Insets(2, 2, 2, 2));
 			fillButton.setToolTipText("Fill");
 			final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
-			gridBagConstraints_3.gridy = 6;
+			gridBagConstraints_3.gridy = 7;
 			gridBagConstraints_3.gridx = 0;
 			leftJPanel.add(fillButton, gridBagConstraints_3);
 
@@ -1222,7 +1219,8 @@ public class OverlayEditorPanelJAI extends JPanel {
 			cropButton.setMargin(new Insets(2, 2, 2, 2));
 			cropButton.setToolTipText("Crop");
 			final GridBagConstraints gridBagConstraints_5 = new GridBagConstraints();
-			gridBagConstraints_5.gridy = 7;
+			gridBagConstraints_5.insets = new Insets(0, 0, 10, 0);
+			gridBagConstraints_5.gridy = 4;
 			gridBagConstraints_5.gridx = 0;
 			leftJPanel.add(cropButton, gridBagConstraints_5);
 		}
