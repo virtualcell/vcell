@@ -525,10 +525,8 @@ Object getSimulationStatusDisplay(Simulation simulation) {
 		return null;
 	} else {
 		SimulationStatus simStatus = getClientSimManager().getSimulationStatus(simulation);
-		boolean displayProgress = (simStatus.isRunning() ||
-								   (simStatus.isFailed() && simStatus.numberOfJobsDone() < simulation.getScanCount())
-								  )
-								  && simStatus.getProgress() != null && simStatus.getProgress().doubleValue() > 0;
+		boolean displayProgress = (simStatus.isRunning() || (simStatus.isFailed() && simStatus.numberOfJobsDone() < simulation.getScanCount()))
+								  && simStatus.getProgress() != null && simStatus.getProgress().doubleValue() >= 0;
 		if (displayProgress){
 			double progress = simStatus.getProgress().doubleValue() / simulation.getScanCount();
 			getStatusBars()[index].setValue((int)(progress * 100));
