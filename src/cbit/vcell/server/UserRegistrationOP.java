@@ -6,7 +6,6 @@ import java.rmi.RemoteException;
 import java.util.Vector;
 
 import javax.swing.JOptionPane;
-import javax.swing.ListSelectionModel;
 
 import cbit.gui.DialogUtils;
 import cbit.sql.ConnectionFactory;
@@ -15,6 +14,7 @@ import cbit.sql.KeyValue;
 import cbit.sql.UserInfo;
 import cbit.util.AsynchProgressPopup;
 import cbit.util.Compare;
+import cbit.util.EventDispatchRunWithException;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.server.ClientServerInfo;
@@ -73,7 +73,7 @@ public class UserRegistrationOP implements Serializable{
 		return userRegistrationOP;		
 	}
 
-	public static UserInfo registrationOperationGUI(ClientServerInfo currentClientServerInfo,String userAction,ClientServerManager clientServerManager) throws UserCancelException,Exception{
+	public static UserInfo registrationOperationGUI(ClientServerInfo currentClientServerInfo,final String userAction,final ClientServerManager clientServerManager) throws UserCancelException,Exception{
 		if(!(	userAction.equals(LoginDialog.USERACTION_REGISTER) ||
 				userAction.equals(LoginDialog.USERACTION_EDITINFO) ||
 				userAction.equals(LoginDialog.USERACTION_LOSTPASSWORD))){
@@ -86,7 +86,13 @@ public class UserRegistrationOP implements Serializable{
 			throw new IllegalArgumentException(UserRegistrationOP.class.getName()+".registrationOperationGUI:  Edit User Info requires clientServerManager not null.");			
 		}
 
-				RegistrationPanel registrationPanel = new RegistrationPanel();
+			final RegistrationPanel registrationPanel = (RegistrationPanel)
+			new EventDispatchRunWithException (){
+				public Object runWithException() throws Exception{
+					return new RegistrationPanel();
+				}
+			}.runEventDispatchThreadSafelyWithException();
+
 //				LocalAdminDbServer adminDbServer = null;
 //				VCellBootstrap vcellBootstrap = null;
 				class RegistrationProvider {
@@ -199,17 +205,19 @@ public class UserRegistrationOP implements Serializable{
 					registrationProvider.sendLostPassword(currentClientServerInfo.getUsername());
 					return null;
 				}
-				AsynchProgressPopup pp = null;
-				pp = new AsynchProgressPopup(null,"Registration Info...",null,false,false);
-				UserInfo originalUserInfo = null;
+				final AsynchProgressPopup pp = new AsynchProgressPopup(null,"Registration Info...",null,false,false);
+				final UserInfo[] originalUserInfoHolder = new UserInfo[1];
 				if(userAction.equals(LoginDialog.USERACTION_EDITINFO)){
 					pp.setMessage("Gathering '"+clientServerManager.getUser().getName()+"' information...");
 					try{
 						pp.start();
-						originalUserInfo = registrationProvider.getUserInfo(clientServerManager.getUser().getID());
-						registrationPanel.setUserInfo(originalUserInfo,true);
-					}catch(Exception e){
-						throw e;
+						originalUserInfoHolder[0] = registrationProvider.getUserInfo(clientServerManager.getUser().getID());
+						new EventDispatchRunWithException (){
+							public Object runWithException() throws Exception{
+								registrationPanel.setUserInfo(originalUserInfoHolder[0],true);
+								return null;
+							}
+						}.runEventDispatchThreadSafelyWithException();
 					}finally{
 						pp.stop();
 					}
@@ -224,7 +232,7 @@ public class UserRegistrationOP implements Serializable{
 					try {
 						UserInfo newUserInfo = registrationPanel.getUserInfo();
 						try {
-							if(!checkUserInfo(originalUserInfo,newUserInfo)){
+							if(!checkUserInfo(originalUserInfoHolder[0],newUserInfo)){
 								PopupGenerator.showInfoDialog("No registration information has changed.");
 								continue;
 							}
@@ -233,11 +241,7 @@ public class UserRegistrationOP implements Serializable{
 						}
 						pp.start();
 						UserInfo registeredUserInfo = null;
-//						if(userAction.equals(LoginDialog.USERACTION_REGISTER)){
-							registeredUserInfo = registrationProvider.insertUserInfo(newUserInfo,(userAction.equals(LoginDialog.USERACTION_EDITINFO)?true:false));
-//						}else if(userAction.equals(LoginDialog.USERACTION_EDITINFO)){
-//							
-//						}
+						registeredUserInfo = registrationProvider.insertUserInfo(newUserInfo,(userAction.equals(LoginDialog.USERACTION_EDITINFO)?true:false));
 						return registeredUserInfo;
 					}catch (Exception e) {
 						if(pp != null){
