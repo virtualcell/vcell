@@ -1,20 +1,12 @@
 package cbit.vcell.geometry.gui;
 import cbit.vcell.geometry.surface.GeometricRegion;
-import cbit.vcell.geometry.surface.VolumeGeometricRegion;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
-import cbit.vcell.units.VCUnitException;
+import cbit.util.EventDispatchRunWithException;
+
 /*©
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
-import cbit.vcell.parser.Expression;
-import cbit.vcell.geometry.*;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.FluxReaction;
-import cbit.vcell.mapping.ReactionSpec;
-import cbit.vcell.parser.ExpressionException;
-import cbit.util.BeanUtils;
-import cbit.vcell.model.Kinetics;
 /**
  * Insert the type's description here.
  * Creation date: (2/23/01 10:52:36 PM)
@@ -173,7 +165,12 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 	 */
 public void propertyChange(java.beans.PropertyChangeEvent evt) {
 	if (evt.getSource() instanceof cbit.vcell.geometry.surface.GeometrySurfaceDescription && evt.getPropertyName().equals("geometricRegions")) {
-		fireTableDataChanged();
+		new EventDispatchRunWithException (){
+			public Object runWithException() throws Exception{
+				fireTableDataChanged();
+				return null;
+			}
+		}.runEventDispatchThreadSafelyConsumeException();
 	}
 }
 
