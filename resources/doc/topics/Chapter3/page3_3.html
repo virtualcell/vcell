@@ -3,7 +3,7 @@
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-<title>3.3 Generating Spatial Model</title>
+<title>3.3 	Refined Fitting of Redistribution curve</title>
 <link rel="stylesheet" type="text/css" href="../content.css">
 </head>
 
@@ -17,35 +17,36 @@
   </tr>
   <tr>
     <td width="2%" rowspan="2" background="bak.jpg">&nbsp;</td>
-    <td width="98%" class="subHeader">3.3 Generating Spatial Model </td>
+    <td width="98%" class="subHeader">3.3	Refined Fitting of Redistribution curve </td>
   </tr>
   <tr>
     <td class="content" valign="top">
 	
-	<font size="3">It is important to evaluate whether the estimated diffusion rate and mobile fraction fits well or not. In Virtual Frap, a Vitual Cell 2D bioModel can be created based on whole cell area ROI, diffusion rate and bleaching while monitoring rate (Figure 3-5 shows the generated spatial model). <br>
+	<font size="3">The primary fitting is based on the one diffusion rate assumption. However, the real FRAP experiments can be more complicated. In the refining procedure, Virtual FRAP takes a secondary diffusion rate into account. In addition, the data under different regions of the cell are included besides the data under bleached area that is used in the primary fitting.<br>
 	</font>
 	<p></p>
-	<font size="3">To generate spatial model, users just need to click on the &#8220;Generate Spatial Model&#8221; tab. When all the required data are ready, the model will be generated automatically.
-	</font>
-	<p></p>
-      <font size="3">2D geometry - It is defined to have two volumes which are cytosol and extra cellular. Cytosol is based on the whole cell area. The rest area in the image belongs to extra cellular.<br>
-    </font>
-    <p></p>
-      <font size="3">Species - Nine species are created with diffusion rates derived from the base estimated diffusion rate to perform comparison. Those derived diffusion rates are well distributed around the base estimated diffusion rate.<br>
-    </font>
-    <p></p>
-      <font size="3">Initial Condition - The initial value for species is calculated as intensity of first post bleach under bleached area divided by the intensity of average of prebleach under bleached area.<br>   
-    </font>   
-    <p></p>  
-      <font size="3">Reactions - If the bleaching while monitoring rate is available, the species will set to be a reactant in a Mass Action reaction with forward rate equals to the bleaching while monitoring rate. Otherwise, there is not reactions.<br>
-    </font>
-    <p></p>
-      <font size="3">Simulation - One simulation has been generated to simulate how the species diffuse (and react if there are reactions) in the cell.</font><br>
+	<font size="3">The &#8220;Adjust Parameters&#8221; tab contains three panels. These are Plot FRAP Simulation Results panel, Plot Derived FRAP Simulation Results panel and Plot panel. Plot FRAP Simulation Results panel and Derived FRAP Simulation Results panel work exclusively.  Plot FRAP Simulation Results panel is enabled by default. Below describes the different functionalities of the two panels.</font><p></p>
     <p></p>
     
+	<ul>
+        <li> 
+		<p style="margin-bottom: 5px"><font size="3">Plot FRAP Simulation Results</font>
+		<P style="margin-bottom: 15px"><font size="3">When users select Plot FRAP Simulation Results, the table in the panel is enabled. The table shows the simulation results which are compared with experimental results in terms of standard deviation in each ROI. The spatial simulation here is based on the initial FRAP parameters users set in the previous tab.</font>
+		</P></li>
+		<p></p>
+        <li> 
+		<p style="margin-bottom: 5px"><font size="3">Plot Derived FRAP Simulation Results</font>
+		<p><font size="3">When clicking on Plot Derived FRAP Simulation Results, the corresponding panel is enabled. The panel enables users to tune a primary diffusion rate together with a secondary diffusion rate together with the bleach while monitoring rate. Users can set values either by typing into the text fields or turning the slider bars. When each set of parameters have been confirmed, the plot will update the display with the new simulation results.</font>
+		<p><font size="3">Users can click on the best fit button <img src="setParaForBestFit.jpg"> to get the best fit parameters.  If users want to set parameter values manually, users need to click on the set button <img src="set.jpg">. When tuning the slider bar, the display in plot will be updated automatically. The spatial simulation results show in &#8220;2D Results&#8221; tab is based on the initial parameters. Users may want to rerun the simulation by the new parameter set.
+		                  It can be achieved by simply clicking on the create new FRAP document button <img src="createNewFRAPDoc.jpg">.</font>
+		</p style="margin-bottom: 15px"><font size="3">Figure 3-6 shows the Adjust Parameters panel and the illustrations of its functionalities.</li>
+        
+    </ul>
+      
+    
       <div align="center">
-      <img src="figure3_5.jpg"><br><p></p>
-	  <span class="caption"><font size="3">Figure 3-5: Generating Spatial Model in Virtual Frap</font></span>
+      <img src="figure3_6.jpg"><br><p></p>
+	  <span class="caption"><font size="3">Figure 3-6: Adjust Parameters tab and its functionalities</font></span>
 	  </div>
 	  
 	  <div id="toplink"><a href="#top"><font size="3">Back to top</font></a></div>

@@ -22,21 +22,18 @@
   <tr>
     <td class="content" valign="top">
 	
-	<font size="3">Virtual Frap consists of five steps to estimate and evaluate diffusion rate based on FRAP experiment data. The five steps are:<br>
+	<font size="3">Virtual FRAP estimates and evaluates diffusion rates from FRAP experimental data in four steps. The four steps are:<br>
 	</font>
 	<ul>
         <li> 
 		<p style="margin-bottom: 5px"><font size="3">Loading FRAP experiment data and defining regions of interest (ROI).</font></li>
         <li> 
-		<p style="margin-bottom: 5px"><font size="3">Estimating diffusion rate by fitting recovery curve based on time course data under bleached area.</font></li>
+		<p style="margin-bottom: 5px"><font size="3">Primary estimation on a single diffusion rate by fitting a redistribution curve based on normalized temporal data under the bleached area.</font></li>
         <li> 
-		<p style="margin-bottom: 5px"><font size="3">Generating 2D spatial bioModel (please refer to Virtual Cell documentation at 
-		<a href="http://vcell.org/userdocs/Rel/user_guide.pdf">http://vcell.org/userdocs/Rel/user_guide.pdf</a> for definition of bioModel) based on ROIs and diffusion rate.</font></li>
+		<p style="margin-bottom: 5px"><font size="3">Refined estimation on a primary diffusion rate and an optional secondary diffusion rate based on normalized temporal and spatial data.</font></li>
         <li> 
-		<p style="margin-bottom: 5px"><font size="3">Running spatial simulation based on the created bioModel.</font></li>
-        <li> 
-		<p style="margin-bottom: 5px"><font size="3">Running analysis to show how different diffusion rates working in different ROIs.</font></li>
-      </ul>
+		<p style="margin-bottom: 5px"><font size="3">Spatial visualization by constructing and fitting a spatial model for the FRAP data using VCell spatial solver.</font></li>
+    </ul>
 	
 	<p></p>
       
@@ -47,11 +44,12 @@
       <font size="3">Figure 3-1 illustrates the Virtual Frap user interface for loading and processing FRAP images. Virtual Frap image tool consists of several toolboxes to manipulating images. These are:</font><p></p>
      
 	   <ol>
-        <li> <em><font size="3">Advanced ROI Toolbox</font></em><font size="3"> - To allow importing region of interest, clearing ROI and plotting ROI time course.</font></li>
-        <li> <em><font size="3">ROI Toolbox</font></em><font size="3"> - To identify the specific ROI that is being defined.</font></li>
-        <li> <em><font size="3">Drawing Toolbox</font></em><font size="3"> - To enable painting, erasing and filling on the image.</font></li>
-        <li> <em><font size="3">Adjustment Toolbox</font></em><font size="3"> - To allow zooming in/out, increasing/reducing image contrast and cropping image by customized or default rectangular window.</font></li>
+        <li> <p style="margin-bottom: 5px"><em><font size="3">Advanced ROI Toolbox</font></em><font size="3"> - To allow importing region of interest, clearing ROI and plotting ROI time course.</font></li>
+        <li> <p style="margin-bottom: 5px"> <em><font size="3">ROI Toolbox</font></em><font size="3"> - To identify the specific ROI that is being defined.</font></li>
+        <li> <p style="margin-bottom: 5px"><em><font size="3">Drawing Toolbox</font></em><font size="3"> - To enable painting, erasing and filling on the image.</font></li>
+        <li> <p style="margin-bottom: 5px"><em><font size="3">Adjustment Toolbox</font></em><font size="3"> - To allow zooming in/out, increasing/reducing image contrast and cropping image by customized or default rectangular window.</font></li>
       </ol>
+      <p></p>
 	  <div align="center">
       <img src="figure3_1.jpg"><br>
 	  &nbsp;</div>

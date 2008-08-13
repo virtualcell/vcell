@@ -13,8 +13,9 @@
 <indexitem text="Data Operations">
     <indexitem target="loading" text="Load"/>  
     <indexitem target="adjusting" text="Modify"/>
-    <indexitem target="definingROI" text="Define ROIs"/>    
-    <indexitem target="fitRecovery" text="Fit Recovery Curve"/>
+    <indexitem target="definingROI" text="Define ROIs"/>
+    <indexitem target="primaryFit" text="Primary Fit"/>
+    <indexitem target="refinedFit" text="Refined Fit"/>    
     <indexitem target="fitModel" text="Validate"/>    
 </indexitem>
 </index>

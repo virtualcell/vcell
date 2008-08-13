@@ -17,9 +17,8 @@
   <mapID target="loading" url="topics/Chapter3/page3_1_1.html"/>
   <mapID target="adjusting" url="topics/Chapter3/page3_1_2.html"/>
   <mapID target="definingROI" url="topics/Chapter3/page3_1_3.html"/>
-  <mapID target="fitRecovery" url="topics/Chapter3/page3_2.html"/>
-  <mapID target="generateModel" url="topics/Chapter3/page3_3.html"/>
+  <mapID target="primaryFit" url="topics/Chapter3/page3_2.html"/>
+  <mapID target="refinedFit" url="topics/Chapter3/page3_3.html"/>
   <mapID target="fitModel" url="topics/Chapter3/page3_4.html"/>
-  <mapID target="spatialAnalysis" url="topics/Chapter3/page3_5.html"/>
 
 </map>
