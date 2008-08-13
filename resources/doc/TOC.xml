@@ -21,10 +21,9 @@
 	      <tocitem target="adjusting" text="Adjusting FRAP Experimental Data"/>
 	      <tocitem target="definingROI" text="Defining ROIs on FRAP Experimental Data"/>
         </tocitem>
-        <tocitem target="fitRecovery" text="Fitting Recovery Curve"/>
-        <tocitem target="generateModel" text="Generating Spatial Model"/>
+        <tocitem target="primaryFit" text="Primary Fitting of Redistribution Curve"/>
+        <tocitem target="refinedFit" text="Refined Fitting of Redistribution Curve"/>
 	  <tocitem target="fitModel" text="Fitting Spatial Model"/>
-        <tocitem target="spatialAnalysis" text="Spatial Analysis"/>
     </tocitem>
   </tocitem>
 </toc>
