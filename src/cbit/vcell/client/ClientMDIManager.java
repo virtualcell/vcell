@@ -2,6 +2,7 @@ package cbit.vcell.client;
 import cbit.vcell.document.*;
 import cbit.vcell.field.FieldDataGUIPanel;
 import cbit.vcell.field.FieldDataWindow;
+import cbit.gui.DialogUtils;
 import cbit.util.*;
 import cbit.vcell.client.server.*;
 import java.awt.*;
@@ -45,15 +46,20 @@ public ClientMDIManager(RequestManager requestManager) {
  * Creation date: (5/24/2004 11:45:55 PM)
  * @param windowID java.lang.String
  */
-public JFrame blockWindow(java.lang.String windowID) {
+public JFrame blockWindow(final String windowID) {
 	if (haveWindow(windowID)) {
-		JFrame f = (JFrame)getWindowsHash().get(windowID);
-		GlassPane gp = new GlassPane(false);  // not used for blocking, only for painting as disabled
-		gp.setPaint(true);
-		f.setGlassPane(gp);
-		gp.setVisible(true);
-		f.setEnabled(false); // blocks window - also disables heavyweight part of frame (title bar widgets, moving, resizing)
-		return f;
+		return (JFrame)
+		new EventDispatchRunWithException (){
+			public Object runWithException() throws Exception{
+				JFrame f = (JFrame)getWindowsHash().get(windowID);
+				GlassPane gp = new GlassPane(false);  // not used for blocking, only for painting as disabled
+				gp.setPaint(true);
+				f.setGlassPane(gp);
+				gp.setVisible(true);
+				f.setEnabled(false); // blocks window - also disables heavyweight part of frame (title bar widgets, moving, resizing)
+				return f;
+			}
+		}.runEventDispatchThreadSafelyWrapRuntime();
 	} else {
 		return null;
 	}
@@ -507,13 +513,18 @@ public void showWindow(java.lang.String windowID) {
  * Creation date: (5/24/2004 11:45:55 PM)
  * @param windowID java.lang.String
  */
-public void unBlockWindow(java.lang.String windowID) {
+public void unBlockWindow(final String windowID) {
 	if (haveWindow(windowID)) {
-		JFrame f = (JFrame)getWindowsHash().get(windowID);
-		f.setGlassPane(new JPanel());
-		f.getGlassPane().setVisible(false);
-		((JPanel)f.getGlassPane()).setOpaque(false);
-		f.setEnabled(true);
+		new EventDispatchRunWithException (){
+			public Object runWithException() throws Exception{
+				JFrame f = (JFrame)getWindowsHash().get(windowID);
+				f.setGlassPane(new JPanel());
+				f.getGlassPane().setVisible(false);
+				((JPanel)f.getGlassPane()).setOpaque(false);
+				f.setEnabled(true);
+				return null;
+			}
+		}.runEventDispatchThreadSafelyWrapRuntime();
 	}
 }
 
