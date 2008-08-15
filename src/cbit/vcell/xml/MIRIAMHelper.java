@@ -129,11 +129,8 @@ public class MIRIAMHelper {
 	
 	public static void addToSBML(Element parent,MIRIAMAnnotation miriamAnnotation,boolean bAdd){
 		try {
-			if (parent.getName().equalsIgnoreCase(XMLTags.SbmlAnnotationTag)) {
-				addToSBMLAnnotation(parent, miriamAnnotation);
-			} else if (parent.getName().equalsIgnoreCase(XMLTags.SbmlNotesTag)) {
-				addToSBMLNotes(parent, miriamAnnotation);
-			}
+			addToSBMLAnnotation(parent, miriamAnnotation);
+			addToSBMLNotes(parent, miriamAnnotation);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

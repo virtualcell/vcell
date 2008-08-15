@@ -101,7 +101,7 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 	fileChooser.setFileFilter(FileFilters.FILE_FILTER_VCML);
 	// remove all selector
 	fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
-    fileChooser.setSelectedFile(new java.io.File(bioModel.getName() + ".xml"));
+    fileChooser.setSelectedFile(new java.io.File(TokenMangler.fixTokenStrict(bioModel.getName())));
 	
 	fileChooser.setDialogTitle("Export Virtual Cell BioModel As...");
 	if (fileChooser.showSaveDialog(currentWindow) != JFileChooser.APPROVE_OPTION) {
@@ -122,23 +122,27 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 				}
 			}
 			///
+			String selectedFileName = selectedFile.getPath();
+			if (selectedFileName.lastIndexOf(".") > 0) {
+				selectedFileName = selectedFileName.substring(0, selectedFileName.lastIndexOf("."));
+			}
 			String n = selectedFile.getPath().toLowerCase();
 			if (fileFilter == FileFilters.FILE_FILTER_SBML && !n.endsWith(".xml")) {
-				selectedFile = new File(selectedFile.getPath() + ".xml");
+				selectedFile = new File(selectedFileName + ".xml");
 			} else if (fileFilter == FileFilters.FILE_FILTER_SBML_21 && !n.endsWith(".xml")) {
-				selectedFile = new File(selectedFile.getPath() + ".xml");
+				selectedFile = new File(selectedFileName + ".xml");
 			} else if (fileFilter == FileFilters.FILE_FILTER_SBML_23 && !n.endsWith(".xml")) {
-				selectedFile = new File(selectedFile.getPath() + ".xml");
+				selectedFile = new File(selectedFileName + ".xml");
 			} else if (fileFilter == FileFilters.FILE_FILTER_CELLML && !n.endsWith(".xml")) {
-				selectedFile = new File(selectedFile.getPath() + ".xml");
-			} else if (fileFilter == FileFilters.FILE_FILTER_VCML && !n.endsWith(".xml")) {
-				selectedFile = new File(selectedFile.getPath() + ".xml");
+				selectedFile = new File(selectedFileName + ".xml");
+			} else if (fileFilter == FileFilters.FILE_FILTER_VCML && !n.endsWith(".vcml")) {
+				selectedFile = new File(selectedFileName + ".vcml");
 			} else if (fileFilter == FileFilters.FILE_FILTER_MATLABV5 && !n.endsWith(".m")) {
-				selectedFile = new File(selectedFile.getPath() + ".m");
+				selectedFile = new File(selectedFileName + ".m");
 			} else if (fileFilter == FileFilters.FILE_FILTER_MATLABV6 && !n.endsWith(".m")) {
-				selectedFile = new File(selectedFile.getPath() + ".m");
+				selectedFile = new File(selectedFileName + ".m");
 			} else if (fileFilter == FileFilters.FILE_FILTER_PDF && !n.endsWith(".pdf")) {
-				selectedFile = new File(selectedFile.getPath() + ".pdf");
+				selectedFile = new File(selectedFileName + ".pdf");
 			}
 			// put the filter in the hash so the export task knows what to do...
 			hashTable.put("fileFilter", fileFilter);
@@ -246,15 +250,13 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 		
 					hashTable.put("selectedSimContext", chosenSimContext);
 
-					// Invoke StructureSizeEvaluator to compute absolute sizes of compartments
-					if (chosenSimContext.getGeometryContext().isAllVolFracAndSurfVolSpecified()) {
+					// Invoke StructureSizeEvaluator to compute absolute sizes of compartments if all sizes are not set 
+					if (!chosenSimContext.getGeometryContext().isAllSizeSpecifiedPositive()) {
 						StructureSizeSolver ssEvaluator = new StructureSizeSolver();
 						cbit.vcell.model.Structure chosenStructure = chosenSimContext.getModel().getStructure(strucName);
 						StructureMapping chosenStructMapping = chosenSimContext.getGeometryContext().getStructureMapping(chosenStructure);
 						ssEvaluator.updateAbsoluteStructureSizes(chosenSimContext, chosenStructure, structSize, chosenStructMapping.getSizeParameter().getUnitDefinition());
-					} else {
-						throw new RuntimeException("The volume fractions and surface-to-volume ratios are not set for all compartments, cannot compute the absolute compartment sizes. Please return to the model and explicitly set the sizes of all the compartments before exporting to SBML");
-					}
+					} 
 
 					// Select simulation whose overrides need to be exported
 					// If simContext doesn't have simulations, don't pop up simulationSelectionPanel
@@ -326,7 +328,7 @@ private File showGeometryModelXMLFileChooser(Hashtable<String, Object> hashTable
 	cbit.gui.VCFileChooser fileChooser = new cbit.gui.VCFileChooser(defaultPath);
 	fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 	fileChooser.setMultiSelectionEnabled(false);
-	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_VCML);
+//	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_VCML);
 	fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_PDF);
 	if (geom.getDimension()>0){
 		fileChooser.addChoosableFileFilter(FileFilters.FILE_FILTER_AVS);
@@ -336,7 +338,7 @@ private File showGeometryModelXMLFileChooser(Hashtable<String, Object> hashTable
 	fileChooser.setFileFilter(FileFilters.FILE_FILTER_VCML);
 	// remove all selector
 	fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
-    fileChooser.setSelectedFile(new java.io.File(geom.getName() + ".xml"));
+    fileChooser.setSelectedFile(new java.io.File(TokenMangler.fixTokenStrict(geom.getName())));
 	
 	fileChooser.setDialogTitle("Export Virtual Cell Geometry As...");
 	if (fileChooser.showSaveDialog(currentWindow) != JFileChooser.APPROVE_OPTION) {
@@ -357,11 +359,15 @@ private File showGeometryModelXMLFileChooser(Hashtable<String, Object> hashTable
 				}
 			}
 			///
+			String selectedFileName = selectedFile.getPath();
+			if (selectedFileName.lastIndexOf(".") > 0) {
+				selectedFileName = selectedFileName.substring(0, selectedFileName.lastIndexOf("."));
+			}
 			String n = selectedFile.getPath().toLowerCase();
-			if (fileFilter == FileFilters.FILE_FILTER_VCML && !n.endsWith(".xml")) {
-				selectedFile = new File(selectedFile.getPath() + ".xml");
+			if (fileFilter == FileFilters.FILE_FILTER_VCML && !n.endsWith(".vcml")) {
+				selectedFile = new File(selectedFileName + ".vcml");
 			} else if (fileFilter == FileFilters.FILE_FILTER_PDF && !n.endsWith(".pdf")) {
-				selectedFile = new File(selectedFile.getPath() + ".pdf");
+				selectedFile = new File(selectedFileName + ".pdf");
 			}
 			// put the filter in the hash so the export task knows what to do...
 			hashTable.put("fileFilter", fileFilter);
@@ -399,7 +405,7 @@ private File showMathModelXMLFileChooser(Hashtable<String, Object> hashTable) th
 	fileChooser.setFileFilter(FileFilters.FILE_FILTER_VCML);
 	// remove all selector
 	fileChooser.removeChoosableFileFilter(fileChooser.getAcceptAllFileFilter());
-    fileChooser.setSelectedFile(new java.io.File(mathModel.getName() + ".xml"));
+    fileChooser.setSelectedFile(new java.io.File(TokenMangler.fixTokenStrict(mathModel.getName())));
 	
 	fileChooser.setDialogTitle("Export Virtual Cell MathModel As...");
 	if (fileChooser.showSaveDialog(currentWindow) != JFileChooser.APPROVE_OPTION) {
@@ -420,17 +426,21 @@ private File showMathModelXMLFileChooser(Hashtable<String, Object> hashTable) th
 				}
 			}
 			///
+			String selectedFileName = selectedFile.getPath();
+			if (selectedFileName.lastIndexOf(".") > 0) {
+				selectedFileName = selectedFileName.substring(0, selectedFileName.lastIndexOf("."));
+			}
 			String n = selectedFile.getPath().toLowerCase();
 			if (fileFilter == FileFilters.FILE_FILTER_CELLML && !n.endsWith(".xml")) {
-				selectedFile = new File(selectedFile.getPath() + ".xml");
-			} else if (fileFilter == FileFilters.FILE_FILTER_VCML && !n.endsWith(".xml")) {
-				selectedFile = new File(selectedFile.getPath() + ".xml");
+				selectedFile = new File(selectedFileName + ".xml");
+			} else if (fileFilter == FileFilters.FILE_FILTER_VCML && !n.endsWith(".vcml")) {
+				selectedFile = new File(selectedFileName + ".vcml");
 			} else if (fileFilter == FileFilters.FILE_FILTER_MATLABV5 && !n.endsWith(".m")) {
-				selectedFile = new File(selectedFile.getPath() + ".m");
+				selectedFile = new File(selectedFileName + ".m");
 			} else if (fileFilter == FileFilters.FILE_FILTER_MATLABV6 && !n.endsWith(".m")) {
-				selectedFile = new File(selectedFile.getPath() + ".m");
+				selectedFile = new File(selectedFileName + ".m");
 			} else if (fileFilter == FileFilters.FILE_FILTER_PDF && !n.endsWith(".pdf")) {
-				selectedFile = new File(selectedFile.getPath() + ".pdf");
+				selectedFile = new File(selectedFileName + ".pdf");
 			}
 			// put the filter in the hash so the export task knows what to do...
 			hashTable.put("fileFilter", fileFilter);
