@@ -84,7 +84,8 @@ public class VCMODL {
 	public final static String Feature						   = "Compartment";
 	public final static String Membrane						   = "Membrane";
 	public final static String Context						   = "Context";
-	public final static String InitialCondition				   = "InitialCondition";
+	public final static String InitialConcentration			   = "InitialConcentration";
+	public final static String InitialCount	   				   = "InitialCount";
 	public final static String DiffusionRate				   = "DiffusionRate";
 	public final static String Reversible					   = "Reversible";
 	public final static String Irreversible					   = "Irreversible";

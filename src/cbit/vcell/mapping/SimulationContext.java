@@ -209,6 +209,7 @@ public class SimulationContext
 	private SimulationContext.SimulationContextParameter[] fieldSimulationContextParameters = new SimulationContextParameter[0];
 	private cbit.vcell.modelopt.AnalysisTask[] fieldAnalysisTasks = null;
 	private boolean isStoch;
+	private boolean bConcentration = true;
 
 /**
  * SimulationContext constructor comment.
@@ -1729,6 +1730,38 @@ public void checkValidity() throws MappingException
 		// otherwise, all sizes should be present and positive.
 		if (!getGeometryContext().isAllSizeSpecifiedPositive()){
 			throw new MappingException("Application "+getName()+":\nAll structure sizes must be assigned positive values.\nPlease go to StructureMapping tab to check the sizes.");
+		}
+	}
+}
+public boolean isUsingConcentration() {
+	return bConcentration;
+}
+
+public void setUsingConcentration(boolean bUseConcentration) /*throws MappingException, PropertyVetoException*/ {
+	if(isStoch()) //do it only when it is stochastic application
+	{
+		if(bUseConcentration != bConcentration)
+		{
+			bConcentration = bUseConcentration;
+//			try {
+//				if(getBioModel()!= null && getReactionContext() != null)
+//				{
+//					//refresh math description based on using concentration or amount
+//					setMathDescription(new StochMathMapping(this).getMathDescription());
+//				}	
+//			} catch (MathException e) {
+//				e.printStackTrace();
+//				throw new MappingException(e.getMessage());
+//			} catch (MatrixException e) {
+//				e.printStackTrace();
+//				throw new MappingException(e.getMessage());
+//			} catch (ExpressionException e) {
+//				e.printStackTrace();
+//				throw new MappingException(e.getMessage());
+//			} catch (ModelException e) {
+//				e.printStackTrace();
+//				throw new MappingException(e.getMessage());
+//			}
 		}
 	}
 }

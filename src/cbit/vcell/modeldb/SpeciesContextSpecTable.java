@@ -6,6 +6,7 @@ package cbit.vcell.modeldb;
 ©*/
 import cbit.sql.*;
 import cbit.vcell.mapping.*;
+import cbit.vcell.model.VCMODL;
 /**
  * This type was created in VisualAge.
  */
@@ -13,12 +14,16 @@ public class SpeciesContextSpecTable extends cbit.sql.Table {
 	private static final String TABLE_NAME = "vc_speciescontextspec";
 	public static final String REF_TYPE = "REFERENCES " + TABLE_NAME + "(" + Table.id_ColumnName + ")";
 
+    private static final String[] scspec_table_constraints =
+		new String[] {
+		"initcndcnstr CHECK (not (initCondExp is null and initCondCountExp is null)  and  not (initCondExp is not null and initCondCountExp is not null))"};
+
 	public final Field specContextRef= new Field("specContextRef","integer",	"NOT NULL "+SpeciesContextModelTable.REF_TYPE);
 	public final Field simContextRef	= new Field("simContextRef","integer",	"NOT NULL "+SimContextTable.REF_TYPE+" ON DELETE CASCADE");
 	public final Field bEnableDif	= new Field("bEnableDif",	"integer",	"NOT NULL");
 	public final Field bForceConst	= new Field("bForceConst",	"integer",	"NOT NULL");
 	public final Field bForceIndep	= new Field("bForceIndep",	"integer",	"NOT NULL");
-	public final Field initCondExp	= new Field("initCondExp",	"varchar(1024)",	"NOT NULL");
+	public final Field initCondExp	= new Field("initCondExp",	"varchar(1024)","");
 	public final Field diffRateExp	= new Field("diffRateExp",	"varchar(255)",	"NOT NULL");
 	public final Field boundaryXmExp	= new Field("boundaryXmExp","varchar(255)",	"");
 	public final Field boundaryXpExp	= new Field("boundaryXpExp","varchar(255)",	"");
@@ -26,9 +31,10 @@ public class SpeciesContextSpecTable extends cbit.sql.Table {
 	public final Field boundaryYpExp	= new Field("boundaryYpExp","varchar(255)",	"");
 	public final Field boundaryZmExp	= new Field("boundaryZmExp","varchar(255)",	"");
 	public final Field boundaryZpExp	= new Field("boundaryZpExp","varchar(255)",	"");
+	public final Field initCondCountExp	= new Field("initCondCountExp",	"varchar(1024)","");
 	
 	private final Field fields[] = {specContextRef,simContextRef,bEnableDif,bForceConst,bForceIndep,initCondExp,diffRateExp,
-											boundaryXmExp,boundaryXpExp,boundaryYmExp,boundaryYpExp,boundaryZmExp,boundaryZpExp};
+											boundaryXmExp,boundaryXpExp,boundaryYmExp,boundaryYpExp,boundaryZmExp,boundaryZpExp,initCondCountExp};
 	
 	public static final SpeciesContextSpecTable table = new SpeciesContextSpecTable();
 /**
@@ -58,7 +64,11 @@ public String getSQLValueList(KeyValue Key, KeyValue simContextKey, SpeciesConte
 	buffer.append((speciesContextSpec.isConstant() ? 1 : 0) + ",");
 	buffer.append((bForceIndependent ? 1 : 0) + ",");
 
-	buffer.append("'" + speciesContextSpec.getInitialConditionParameter().getExpression().infix() + "'" + ",");
+	if(speciesContextSpec.getInitialConditionParameter().getRole() == SpeciesContextSpec.ROLE_InitialConcentration){
+		buffer.append("'" + speciesContextSpec.getInitialConditionParameter().getExpression().infix() + "'" + ",");		
+	}else{
+		buffer.append("NULL" + ",");				
+	}
 	buffer.append("'" + speciesContextSpec.getDiffusionParameter().getExpression().infix() + "'" + ",");
 
 	if (speciesContextSpec.getBoundaryXmParameter().getExpression() == null){
@@ -92,9 +102,15 @@ public String getSQLValueList(KeyValue Key, KeyValue simContextKey, SpeciesConte
 	}
 
 	if (speciesContextSpec.getBoundaryZpParameter().getExpression() == null){
-		buffer.append(" NULL " + ")");
+		buffer.append(" NULL " + ",");
 	}else{
-		buffer.append("'" + speciesContextSpec.getBoundaryZpParameter().getExpression().infix() + "'" + ")");
+		buffer.append("'" + speciesContextSpec.getBoundaryZpParameter().getExpression().infix() + "'" + ",");
+	}
+
+	if(speciesContextSpec.getInitialConditionParameter().getRole() == SpeciesContextSpec.ROLE_InitialCount){
+		buffer.append("'" + speciesContextSpec.getInitialConditionParameter().getExpression().infix() + "'" + ")");		
+	}else{
+		buffer.append("NULL" + ")");				
 	}
 
 	return buffer.toString();

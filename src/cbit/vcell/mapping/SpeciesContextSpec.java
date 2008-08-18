@@ -169,9 +169,10 @@ public class SpeciesContextSpec implements cbit.util.Matchable, cbit.vcell.parse
 	public static final int ROLE_BoundaryValueYp		= 5;
 	public static final int ROLE_BoundaryValueZm		= 6;
 	public static final int ROLE_BoundaryValueZp		= 7;
-	public static final int NUM_ROLES		= 8;
+	public static final int ROLE_InitialCount			= 8;
+	public static final int NUM_ROLES		= 9;
 	public static final String RoleTags[] = {
-		cbit.vcell.model.VCMODL.InitialCondition,
+		cbit.vcell.model.VCMODL.InitialConcentration,
 		cbit.vcell.model.VCMODL.DiffusionRate,
 		cbit.vcell.model.VCMODL.BoundaryConditionXm,
 		cbit.vcell.model.VCMODL.BoundaryConditionXp,
@@ -179,9 +180,10 @@ public class SpeciesContextSpec implements cbit.util.Matchable, cbit.vcell.parse
 		cbit.vcell.model.VCMODL.BoundaryConditionYp,
 		cbit.vcell.model.VCMODL.BoundaryConditionZm,
 		cbit.vcell.model.VCMODL.BoundaryConditionZp,
+		cbit.vcell.model.VCMODL.InitialCount
 	};
 	public static final String RoleNames[] = {
-		"init",
+		"initConc",
 		"diff",
 		"BC_Xm",
 		"BC_Xp",
@@ -189,9 +191,10 @@ public class SpeciesContextSpec implements cbit.util.Matchable, cbit.vcell.parse
 		"BC_Yp",
 		"BC_Zm",
 		"BC_Zp",
+		"initCount"
 	};
 	public static final String RoleDescriptions[] = {
-		"initial concentration",
+		"initial concentration", 
 		"diffusion constant",
 		"Boundary Condition X-",
 		"Boundary Condition X+",
@@ -199,16 +202,18 @@ public class SpeciesContextSpec implements cbit.util.Matchable, cbit.vcell.parse
 		"Boundary Condition Y+",
 		"Boundary Condition Z-",
 		"Boundary Condition Z+",
+		"initial count"
 	};
 	private static RealInterval[] parameterBounds = {
-		new RealInterval(0.0, Double.POSITIVE_INFINITY), // init cond
+		new RealInterval(0.0, Double.POSITIVE_INFINITY), // init concentration
 		new RealInterval(0.0, Double.POSITIVE_INFINITY), // diff rate
 		null,	// BC X-
 		null,	// BC X+
 		null,	// BC Y-
 		null,	// BC Y+
 		null,	// BC Z-
-		null	// BC Z+
+		null,	// BC Z+
+		new RealInterval(0.0, Double.POSITIVE_INFINITY) // init amount
 	};
 
 public SpeciesContextSpec(SpeciesContextSpec speciesContextSpec, SimulationContext argSimulationContext) {
@@ -460,9 +465,26 @@ public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierSt
  * @return java.lang.String
  */
 public SpeciesContextSpec.SpeciesContextSpecParameter getInitialConditionParameter() {
+	SpeciesContextSpec.SpeciesContextSpecParameter initParam = null;
+	if(getParameterFromRole(ROLE_InitialConcentration).getExpression() != null)
+	{
+		initParam = getParameterFromRole(ROLE_InitialConcentration);
+	}
+	else if(getParameterFromRole(ROLE_InitialCount).getExpression() != null)
+	{
+		initParam = getParameterFromRole(ROLE_InitialCount);
+	}
+	
+	return initParam;
+}
+
+public SpeciesContextSpec.SpeciesContextSpecParameter getInitialConcentrationParameter() {
 	return getParameterFromRole(ROLE_InitialConcentration);		
 }
 
+public SpeciesContextSpec.SpeciesContextSpecParameter getInitialCountParameter() {
+	return getParameterFromRole(ROLE_InitialCount);		
+}
 
 /**
  * Insert the method's description here.
@@ -683,7 +705,7 @@ public String getVCML() {
 	buffer.append("\t\t"+VCMODL.EnableDiffusion+" "+isDiffusing()+"\n");
 	Expression init = getInitialConditionParameter().getExpression();
 	if (init!=null){
-		buffer.append("\t\t"+VCMODL.InitialCondition+" "+init.toString()+";\n");
+		buffer.append("\t\t"+VCMODL.InitialConcentration+" "+init.toString()+";\n");
 	}
 	Expression diffRate = getDiffusionParameter().getExpression();
 	if (diffRate!=null){
@@ -790,7 +812,7 @@ public void read(CommentStringTokenizer tokens) throws ExpressionException, Mapp
 			setEnableDiffusing(new Boolean(tokens.nextToken()).booleanValue());
 			continue;
 		}		
-		if (token.equalsIgnoreCase(VCMODL.InitialCondition)){
+		if (token.equalsIgnoreCase(VCMODL.InitialConcentration)){
 			Expression exp = new Expression(tokens);
 			getInitialConditionParameter().setExpression(exp);
 			continue;

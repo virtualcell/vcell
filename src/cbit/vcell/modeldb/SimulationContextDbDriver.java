@@ -136,6 +136,7 @@ private void assignSpeciesContextSpecsSQL(Connection con,KeyValue simContextKey,
 			" FROM " + speciesContextSpecTable.getTableName() + 
 			" WHERE " + speciesContextSpecTable.simContextRef + " = " + simContextKey;
 	Statement stmt = con.createStatement();
+	Boolean bUseConcentration = null;
 	try {
 		ResultSet rset = stmt.executeQuery(sql);
 		while (rset.next()) {
@@ -144,7 +145,27 @@ private void assignSpeciesContextSpecsSQL(Connection con,KeyValue simContextKey,
 			boolean bEnableDiffusing = rset.getBoolean(speciesContextSpecTable.bEnableDif.toString());
 			boolean bForceConstant = rset.getBoolean(speciesContextSpecTable.bForceConst.toString());
 			//boolean bForceIndep = rset.getBoolean(speciesContextSpecTable.bForceIndep.toString());
-			String initCondString = rset.getString(speciesContextSpecTable.initCondExp.toString());
+			String initCondConcExpS = null;
+			String initCondCountExpS = null;
+			initCondConcExpS = rset.getString(speciesContextSpecTable.initCondExp.toString());
+			if(rset.wasNull()){
+				initCondConcExpS = null;
+				initCondCountExpS = rset.getString(speciesContextSpecTable.initCondCountExp.toString());
+				if(rset.wasNull()){
+					throw new DataAccessException("Not expecting both initialCondition expressions types to be NULL");
+				}
+				if(bUseConcentration == null){
+					bUseConcentration = false;
+				}else if (bUseConcentration){
+					throw new DataAccessException("Not expecting both Concentration and Count in initialConditions");
+				}
+			}else{
+				if(bUseConcentration == null){
+					bUseConcentration = true;
+				}else if (!bUseConcentration){
+					throw new DataAccessException("Not expecting both Concentration and Count in initialConditions");
+				}
+			}
 			String diffRateString = rset.getString(speciesContextSpecTable.diffRateExp.toString());
 			String boundaryXmString = rset.getString(speciesContextSpecTable.boundaryXmExp.toString());
 			if (rset.wasNull()){
@@ -184,7 +205,11 @@ private void assignSpeciesContextSpecsSQL(Connection con,KeyValue simContextKey,
 					try {
 						scs.setEnableDiffusing(bEnableDiffusing);
 						scs.setConstant(bForceConstant);
-						scs.getInitialConditionParameter().setExpression(new Expression(initCondString));
+						if(initCondConcExpS != null){
+							scs.getInitialConcentrationParameter().setExpression(new Expression(initCondConcExpS));							
+						}else{
+							scs.getInitialCountParameter().setExpression(new Expression(initCondCountExpS));
+						}
 						scs.getDiffusionParameter().setExpression(new Expression(diffRateString));
 						if (boundaryXmString!=null){
 							scs.getBoundaryXmParameter().setExpression(new Expression(boundaryXmString));
@@ -225,6 +250,9 @@ private void assignSpeciesContextSpecsSQL(Connection con,KeyValue simContextKey,
 		}
 	} finally {
 		stmt.close();
+	}
+	if(bUseConcentration != null){
+		simContext.setUsingConcentration(bUseConcentration);
 	}
 }
 
