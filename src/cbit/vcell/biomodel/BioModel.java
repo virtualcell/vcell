@@ -259,7 +259,18 @@ public boolean contains(Simulation simulation) {
  * @exception java.beans.PropertyVetoException The exception description.
  */
 public SimulationContext copySimulationContext(SimulationContext simulationContext, String newSimulationContextName, boolean isStoch) throws java.beans.PropertyVetoException {
+	//if stoch copy to ode, we need to check is stoch is using particles. If yes, should convert particles to concentraton.
+	//the other 3 cases are fine. ode->ode, ode->stoch, stoch-> stoch 
 	SimulationContext simContext = new SimulationContext(simulationContext, isStoch);
+	if(simulationContext.isStoch() && !simulationContext.isUsingConcentration() && !isStoch)
+	{
+		try {
+			simContext.convertSpeciesIniCondition(true);
+		} catch (MappingException e) {
+			e.printStackTrace();
+			throw new java.beans.PropertyVetoException(e.getMessage(), null);
+		}
+	}
 	simContext.setName(newSimulationContextName);
 	addSimulationContext(simContext);
 	return simContext;

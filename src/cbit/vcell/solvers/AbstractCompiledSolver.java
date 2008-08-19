@@ -121,19 +121,19 @@ private void runSolver() {
 			fireSolverFinished();
 		}
 	} catch (SolverException integratorException) {
-		cleanup();
 		getSessionLog().exception(integratorException);
+		cleanup();
 		setSolverStatus(new SolverStatus (SolverStatus.SOLVER_ABORTED, integratorException.getMessage()));
 		fireSolverAborted(integratorException.getMessage());
 	} catch (cbit.util.ExecutableException executableException) {
-		cleanup();
 		getSessionLog().exception(executableException);
+		cleanup();
 		setSolverStatus(new SolverStatus(SolverStatus.SOLVER_ABORTED, "Could not execute code: " + executableException.getMessage()));
 		fireSolverAborted(executableException.getMessage());
 	} catch (Throwable throwable) {
-		cleanup();
 		getSessionLog().alert("AbstractODESolver.start() : Caught Throwable instead of SolverException -- THIS EXCEPTION SHOULD NOT HAPPEN!");
 		getSessionLog().exception(throwable);
+		cleanup();
 		setSolverStatus(new SolverStatus (SolverStatus.SOLVER_ABORTED, throwable.getMessage()));
 		fireSolverAborted(throwable.getMessage());
 	} finally {

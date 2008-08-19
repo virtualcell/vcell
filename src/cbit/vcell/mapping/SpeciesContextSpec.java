@@ -17,6 +17,7 @@ import cbit.util.Compare;
 import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Feature;
+import cbit.vcell.model.Structure;
 import cbit.vcell.model.VCMODL;
 import java.io.*;
 import net.sourceforge.interval.ia_math.RealInterval;
@@ -64,6 +65,7 @@ public class SpeciesContextSpec implements cbit.util.Matchable, cbit.vcell.parse
 			fieldParameterExpression = argExpression;
 			if (argRole >= 0 && argRole < NUM_ROLES){
 				this.fieldParameterRole = argRole;
+				
 			}else{
 				throw new IllegalArgumentException("parameter 'role' = "+argRole+" is out of range");
 			}
@@ -235,36 +237,65 @@ public SpeciesContextSpec(SpeciesContext speciesContext, SimulationContext argSi
 	this.speciesContext = speciesContext;
 
 	VCUnitDefinition fluxUnits = speciesContext.getUnitDefinition().multiplyBy(VCUnitDefinition.UNIT_um).divideBy(VCUnitDefinition.UNIT_s);
-	fieldParameters = new SpeciesContextSpecParameter[8];
-	fieldParameters[0] = new SpeciesContextSpecParameter(RoleNames[ROLE_InitialConcentration],new Expression(0.0),
-														ROLE_InitialConcentration,speciesContext.getUnitDefinition(),
-														RoleDescriptions[ROLE_InitialConcentration]);
+	fieldParameters = new SpeciesContextSpecParameter[NUM_ROLES];
+	if(argSimulationContext == null)//called from XmlReader.getSpeciesContextSpec(Element)
+	{
+		fieldParameters[ROLE_InitialConcentration] = new SpeciesContextSpecParameter(RoleNames[ROLE_InitialConcentration], null,
+															ROLE_InitialConcentration,speciesContext.getUnitDefinition(),
+															RoleDescriptions[ROLE_InitialConcentration]);
+		
+		fieldParameters[ROLE_InitialCount] = new SpeciesContextSpecParameter(RoleNames[ROLE_InitialCount], null,
+															ROLE_InitialCount,VCUnitDefinition.UNIT_molecules,
+															RoleDescriptions[ROLE_InitialCount]);
+	}
+	else //called from ReactionContext.refreshSpeciesContextSpecs()
+	{
+		if(argSimulationContext.isUsingConcentration())
+		{
+			fieldParameters[ROLE_InitialConcentration] = new SpeciesContextSpecParameter(RoleNames[ROLE_InitialConcentration], new Expression(0),
+					ROLE_InitialConcentration,speciesContext.getUnitDefinition(),
+					RoleDescriptions[ROLE_InitialConcentration]);
 
-	fieldParameters[1] = new SpeciesContextSpecParameter(RoleNames[ROLE_DiffusionRate],new Expression(0.0),
+			fieldParameters[ROLE_InitialCount] = new SpeciesContextSpecParameter(RoleNames[ROLE_InitialCount], null,
+					ROLE_InitialCount,VCUnitDefinition.UNIT_molecules,
+					RoleDescriptions[ROLE_InitialCount]);
+		}
+		else
+		{
+			fieldParameters[ROLE_InitialConcentration] = new SpeciesContextSpecParameter(RoleNames[ROLE_InitialConcentration], null,
+					ROLE_InitialConcentration,speciesContext.getUnitDefinition(),
+					RoleDescriptions[ROLE_InitialConcentration]);
+
+			fieldParameters[ROLE_InitialCount] = new SpeciesContextSpecParameter(RoleNames[ROLE_InitialCount], new Expression(0),
+					ROLE_InitialCount,VCUnitDefinition.UNIT_molecules,
+					RoleDescriptions[ROLE_InitialCount]);
+		}
+	}
+	fieldParameters[ROLE_DiffusionRate] = new SpeciesContextSpecParameter(RoleNames[ROLE_DiffusionRate],new Expression(0.0),
 														ROLE_DiffusionRate,VCUnitDefinition.UNIT_um2_per_s,
 														RoleDescriptions[ROLE_DiffusionRate]);
 
-	fieldParameters[2] = new SpeciesContextSpecParameter(RoleNames[ROLE_BoundaryValueXm],null,
+	fieldParameters[ROLE_BoundaryValueXm] = new SpeciesContextSpecParameter(RoleNames[ROLE_BoundaryValueXm],null,
 														ROLE_BoundaryValueXm,fluxUnits,
 														RoleDescriptions[ROLE_BoundaryValueXm]);
 	
-	fieldParameters[3] = new SpeciesContextSpecParameter(RoleNames[ROLE_BoundaryValueXp],null,
+	fieldParameters[ROLE_BoundaryValueXp] = new SpeciesContextSpecParameter(RoleNames[ROLE_BoundaryValueXp],null,
 														ROLE_BoundaryValueXp,fluxUnits,
 														RoleDescriptions[ROLE_BoundaryValueXp]);
 
-	fieldParameters[4] = new SpeciesContextSpecParameter(RoleNames[ROLE_BoundaryValueYm],null,
+	fieldParameters[ROLE_BoundaryValueYm] = new SpeciesContextSpecParameter(RoleNames[ROLE_BoundaryValueYm],null,
 														ROLE_BoundaryValueYm,fluxUnits,
 														RoleDescriptions[ROLE_BoundaryValueYm]);
 	
-	fieldParameters[5] = new SpeciesContextSpecParameter(RoleNames[ROLE_BoundaryValueYp],null,
+	fieldParameters[ROLE_BoundaryValueYp] = new SpeciesContextSpecParameter(RoleNames[ROLE_BoundaryValueYp],null,
 														ROLE_BoundaryValueYp,fluxUnits,
 														RoleDescriptions[ROLE_BoundaryValueYp]);
 
-	fieldParameters[6] = new SpeciesContextSpecParameter(RoleNames[ROLE_BoundaryValueZm],null,
+	fieldParameters[ROLE_BoundaryValueZm] = new SpeciesContextSpecParameter(RoleNames[ROLE_BoundaryValueZm],null,
 														ROLE_BoundaryValueZm,fluxUnits,
 														RoleDescriptions[ROLE_BoundaryValueZm]);
 	
-	fieldParameters[7] = new SpeciesContextSpecParameter(RoleNames[ROLE_BoundaryValueZp],null,
+	fieldParameters[ROLE_BoundaryValueZp] = new SpeciesContextSpecParameter(RoleNames[ROLE_BoundaryValueZp],null,
 														ROLE_BoundaryValueZp,fluxUnits,
 														RoleDescriptions[ROLE_BoundaryValueZp]);
 	this.simulationContext = argSimulationContext;
@@ -464,7 +495,8 @@ public cbit.vcell.parser.SymbolTableEntry getEntry(java.lang.String identifierSt
  * This method was created by a SmartGuide.
  * @return java.lang.String
  */
-public SpeciesContextSpec.SpeciesContextSpecParameter getInitialConditionParameter() {
+public SpeciesContextSpec.SpeciesContextSpecParameter getInitialConditionParameter()
+{
 	SpeciesContextSpec.SpeciesContextSpecParameter initParam = null;
 	if(getParameterFromRole(ROLE_InitialConcentration).getExpression() != null)
 	{
@@ -631,8 +663,17 @@ public cbit.vcell.model.Parameter[] getParameters() {
  * @param index The index value into the property array.
  * @see #setParameters
  */
-public cbit.vcell.model.Parameter getParameters(int index) {
-	return getParameters()[index];
+public cbit.vcell.model.Parameter getParameter(int index) {
+//	please reference getNumDisplayableParameters()(hardcoded number of parameters) to get more understanding.
+	cbit.vcell.model.Parameter param = null;
+	if(index == ROLE_InitialConcentration)//means take the initial conidtion parameter and concentration is being used
+	{
+		param = getInitialConditionParameter();
+		
+	}else{
+		param = getParameters()[index]; //using iniAmount || other parameters now is one index greater than previous index(since iniAmount has added) 
+	}
+	return param;
 }
 
 
@@ -979,10 +1020,55 @@ public String toString() {
 	return sb.toString();
 }
 
+public Expression convertConcentrationToParticles(Expression iniConcentration) throws ExpressionException
+{
+	int iniParticles = 0; 
 
-/**
- * Insert the method's description here.
- * Creation date: (4/3/2004 1:24:41 PM)
- */
-protected void updateExpressions() {}
+	Structure structure = getSpeciesContext().getStructure();
+	StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(structure);
+	double structSize = sm.getSizeParameter().getExpression().evaluateConstant();
+	if (structure instanceof Membrane)
+	{
+		
+		// convert concentration(particles/area) to number of particles
+		// particles = iniConcentration(molecues/um2)*size(um2)
+		iniParticles = (int)Math.round(iniConcentration.evaluateConstant()* structSize); 
+	}
+	else
+	{
+		
+		// convert concentration(particles/volumn) to number of particles
+		// particles = 1e-9*iniConcentration(uM)*size(um3)*N_pmole
+		iniParticles = (int)Math.round(1e-9 * iniConcentration.evaluateConstant() * structSize * ReservedSymbol.N_PMOLE.getExpression().evaluateConstant());
+	}
+	
+	return new Expression(iniParticles);
+}
+
+public Expression convertParticlesToConcentration(Expression iniParticles) throws ExpressionException
+{
+	double iniConcentration = 0;
+	
+	Structure structure = getSpeciesContext().getStructure();
+	StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(structure);
+	double structSize = sm.getSizeParameter().getExpression().evaluateConstant();
+	if (structure instanceof Membrane)
+	{
+		// convert number of particles to concentration(particles/area)
+		// iniConcentration(molecues/um2) = particles/size(um2)
+		iniConcentration = (iniParticles.evaluateConstant() * 1.0) / structSize; 
+	}
+	else
+	{
+		// convert concentration(particles/volumn) to number of particles
+		// particles = 1e-9*iniConcentration(uM)*size(um3)*N_pmole
+		iniConcentration = (iniParticles.evaluateConstant() * 1.0) / (1e-9 * structSize * ReservedSymbol.N_PMOLE.getExpression().evaluateConstant());
+	}
+	return new Expression(iniConcentration);
+}
+
+public SimulationContext getSimulationContext() {
+	return simulationContext;
+}
+
 }

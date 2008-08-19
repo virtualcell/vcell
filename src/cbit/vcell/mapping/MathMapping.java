@@ -28,6 +28,12 @@ import cbit.vcell.units.VCUnitDefinition;
  * to get an updated MathDescription.
  */
 public class MathMapping implements ScopedSymbolTable {
+	
+	public static final String FUNC_NAME_SUFFIX_VAR_COUNT = "_Count";
+	public static final String FUNC_NAME_SUFFIX_VAR_CONCENTRATION = "_Conc";
+	public static final String FUNC_NAME_SUFFIX_VAR_INIT_COUNT = "_initCount";
+	public static final String FUNC_NAME_SUFFIX_VAR_INIT_CONCENTRATION = "_initConc";
+	
 	private SimulationContext simContext = null;
 	protected MathDescription mathDesc = null;
 	private PotentialMapping potentialMapping = null;  // null if don't need it
@@ -676,7 +682,7 @@ protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structure
 	}
 	if (ste instanceof MathMapping.ProbabilityParameter){ //be careful here, to see if we need mangle the reaction name
 		MathMapping.ProbabilityParameter probParm = (MathMapping.ProbabilityParameter)ste;
-		return ste.getName();
+		return probParm.getName();
 	}
 	if (ste instanceof ReservedSymbol){
 		return ste.getName();
@@ -696,7 +702,10 @@ protected String getMathSymbol0(SymbolTableEntry ste, StructureMapping structure
 	if (ste instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
 		SpeciesContextSpec.SpeciesContextSpecParameter scsParm = (SpeciesContextSpec.SpeciesContextSpecParameter)ste;
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_InitialConcentration){
-			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+"_init";
+			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+ FUNC_NAME_SUFFIX_VAR_INIT_CONCENTRATION;
+		}
+		if (scsParm.getRole()==SpeciesContextSpec.ROLE_InitialCount){
+			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+ FUNC_NAME_SUFFIX_VAR_INIT_COUNT;
 		}
 		if (scsParm.getRole()==SpeciesContextSpec.ROLE_DiffusionRate){
 			return ((SpeciesContextSpec)(scsParm.getNameScope().getScopedSymbolTable())).getSpeciesContext().getName()+"_diffusionRate";
@@ -2138,7 +2147,7 @@ private void refreshSpeciesContextMappings() throws ExpressionException, Mapping
 
 		scm.setDiffusing(isDiffusionRequired(scs.getSpeciesContext()));
 		if (scs.isConstant()){
-			Expression initCond = scs.getInitialConditionParameter().getExpression();
+			Expression initCond = scs.getInitialConditionParameter() == null? null : scs.getInitialConditionParameter().getExpression();
 			scm.setDependencyExpression(initCond);
 			////
 			//// determine if a Function is necessary

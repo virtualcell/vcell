@@ -3,10 +3,13 @@ import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.model.ExpressionContainer;
 import cbit.vcell.model.LumpedKinetics;
+import cbit.vcell.model.ModelException;
 import cbit.vcell.model.ReactionStep;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.BioNameScope;
@@ -26,10 +29,13 @@ import cbit.vcell.model.VCMODL;
 import cbit.sql.Version;
 import cbit.util.*;
 import cbit.vcell.math.MathDescription;
+import cbit.vcell.matrix.MatrixException;
 import cbit.sql.KeyValue;
 import cbit.vcell.simdata.ExternalDataIdentifier;
 
 import java.util.*;
+
+import sun.nio.cs.ext.ISCII91;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.biomodel.BioModel;
@@ -241,10 +247,12 @@ public SimulationContext(SimulationContext simulationContext, boolean arg_isStoc
 		{
 			this.geoContext = new GeometryContext(simulationContext.getGeometryContext(),this);
 		}
+		this.bConcentration = simulationContext.bConcentration;
 	}
 	else
 	{
 		this.geoContext = new GeometryContext(simulationContext.getGeometryContext(),this);
+		this.bConcentration = true;//deterministic method use concentration only.
 	}
 	this.reactionContext = new ReactionContext(simulationContext.getReactionContext(),this);
 	this.version = null;
@@ -319,7 +327,6 @@ public SimulationContext(Model argModel, Geometry argGeometry, MathDescription a
 public SimulationContext(Model model, Geometry geometry, MathDescription argMathDesc, Version argVersion, boolean bStoch) throws PropertyVetoException {
 
 	addVetoableChangeListener(this);
-
 	setIsStoch(bStoch);
 	setGeometryContext(new GeometryContext(model,geometry,this));
 	this.reactionContext = new ReactionContext(model,this);
@@ -514,7 +521,16 @@ public boolean compareEqual(Matchable object) {
 	}else{
 		simContext = (SimulationContext)object;
 	}
-
+	if(simContext.isStoch != isStoch)
+	{
+		return false;
+	}
+	
+	if(simContext.bConcentration != bConcentration)
+	{
+		return false;
+	}
+	 
 	if (!cbit.util.Compare.isEqual(getName(),simContext.getName())){
 		return false;
 	}
@@ -1760,5 +1776,36 @@ public void setUsingConcentration(boolean bUseConcentration) /*throws MappingExc
 		}
 	}
 }
+//specially created for loading from database, used in ServerDocumentManager.saveBioModel()
+public void updateSpeciesIniCondition(SimulationContext simContext) throws MappingException, PropertyVetoException
+{
+	boolean bUseConcentration = simContext.isUsingConcentration();
+	this.setUsingConcentration(bUseConcentration);
+	SpeciesContextSpec[] refScSpec = simContext.getReactionContext().getSpeciesContextSpecs();
+//	SpeciesContextSpec[] scSpec = this.getReactionContext().getSpeciesContextSpecs();
+	for(int i = 0; i<refScSpec.length; i++ )
+	{
+		SpeciesContext refSc = refScSpec[i].getSpeciesContext();
+		SpeciesContextSpec scSpec = this.getReactionContext().getSpeciesContextSpec(refSc);
+		try {
+			scSpec.getInitialConcentrationParameter().setExpression(refScSpec[i].getInitialConcentrationParameter().getExpression());
+			scSpec.getInitialCountParameter().setExpression(refScSpec[i].getInitialCountParameter().getExpression());
+		} catch (ExpressionBindingException e) {
+			e.printStackTrace();
+			throw new MappingException(e.getMessage());
+		} 
+	}
+}
+
+public void convertSpeciesIniCondition(boolean bUseConcentration) throws MappingException, PropertyVetoException
+{
+	try {
+		getReactionContext().convertSpeciesIniCondition(bUseConcentration);
+	} catch (ExpressionException e) {
+		e.printStackTrace();
+		throw new MappingException(e.getMessage());
+	}
+}
+
 
 }

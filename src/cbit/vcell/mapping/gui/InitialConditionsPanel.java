@@ -3,12 +3,25 @@ package cbit.vcell.mapping.gui;
  * (C) Copyright University of Connecticut Health Center 2001.
  * All rights reserved.
 ©*/
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyVetoException;
+
+import cbit.gui.DialogUtils;
 import cbit.gui.ZEnforcer;
+import cbit.util.BeanUtils;
 import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.*;
 import cbit.vcell.mapping.*; 
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+
+import javax.swing.ButtonGroup;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.SwingUtilities;
 
 
@@ -23,6 +36,11 @@ public class InitialConditionsPanel extends javax.swing.JPanel {
 	private boolean ivjConnPtoP3Aligning = false;
 	private SimulationContext ivjsimulationContext1 = null;
 	private javax.swing.JScrollPane ivjJScrollPane1 = null;
+	private JPanel scrollPanel = null; // added in July, 2008. Used to accommodate the radio buttons and the ivjJScrollPane1. 
+	private JRadioButton conRadioButton = null; //added in July, 2008. Enable selection of initial concentration or amount
+	private JRadioButton amtRadioButton = null; //added in July, 2008. Enable selection of initial concentration or amount
+	private JPanel radioButtonPanel = null; //added in July, 2008. Used to accomodate the two radio buttons
+	private ButtonGroup radioGroup = null; //added in July, 2008. Enable selection of initial concentration or amount
 	private javax.swing.JTable ivjScrollPaneTable = null;
 	private SpeciesContextSpecsTableModel ivjSpeciesContextSpecsTableModel = null;
 	private boolean ivjConnPtoP5Aligning = false;
@@ -72,7 +90,10 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.M
 		};
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
 			if (evt.getSource() == InitialConditionsPanel.this && (evt.getPropertyName().equals("simulationContext"))) 
+			{
 				connPtoP3SetTarget();
+				updateTopScrollPanel();
+			}
 			if (evt.getSource() == InitialConditionsPanel.this.getScrollPaneTable() && (evt.getPropertyName().equals("selectionModel"))) 
 				connPtoP5SetTarget();
 		};
@@ -314,13 +335,30 @@ private void connEtoM4(java.awt.event.ActionEvent arg1) {
  */
 private void connEtoM5(java.awt.event.ActionEvent arg1) {
 	try {
+		Expression expr = new Expression(getJTextArea1().getText());
+		Double val = null;
+		try{
+			val = new Double(expr.evaluateConstant());
+		}catch(ExpressionException ee) //if cannot evaluate as a constant, don't check the sign
+		{
+			ee.printStackTrace(System.out);
+		}
+		if(val != null && val.doubleValue() < 0)
+		{
+			throw new ExpressionException("Initial condition should not be negative value.");
+		}
 		// For a non-spatial application, species init condn expr cannot be in terms of x, y, z.
-		if (getSimulationContext().getGeometry().getDimension() == 0) {
-			Expression expr = new Expression(getJTextArea1().getText());
+		if (getSimulationContext().getGeometry().getDimension() == 0) 
+		{
 			if (expr.hasSymbol(ReservedSymbol.X.getName()) || 
 				expr.hasSymbol(ReservedSymbol.Y.getName()) || 
 				expr.hasSymbol(ReservedSymbol.Z.getName())) {
 				throw new ExpressionException("Reserved spatial variable(s) (x,y,z), this is not allowed for species initial condition in a non-spatial model in VCell");
+			}
+			double value = expr.evaluateConstant();
+			if(!getSimulationContext().isUsingConcentration() && Math.floor(value) != value)
+			{
+				throw new ExpressionException("Number of particles should be non-negative integer.");
 			}
 		}
 		getScrollPaneTable().setValueAt(getJTextArea1().getText(), getScrollPaneTable().getSelectedRow(), getScrollPaneTable().getSelectedColumn());
@@ -772,7 +810,7 @@ private javax.swing.JSplitPane getJSplitPane1() {
 			ivjJSplitPane1 = new javax.swing.JSplitPane(javax.swing.JSplitPane.VERTICAL_SPLIT);
 			ivjJSplitPane1.setName("JSplitPane1");
 			ivjJSplitPane1.setDividerLocation(300);
-			getJSplitPane1().add(getJScrollPane1(), "top");
+			getJSplitPane1().add(getScrollPanel(), "top");
 			getJSplitPane1().add(getSpeciesContextSpecPanel(), "bottom");
 			// user code begin {1}
 			// user code end
@@ -785,7 +823,150 @@ private javax.swing.JSplitPane getJSplitPane1() {
 	return ivjJSplitPane1;
 }
 
+// added in july 2008, to accommodate the radio buttons and the scrolltablepane when it is stochastic application.
+private JPanel getScrollPanel()
+{
+	if(scrollPanel == null)
+	{
+		scrollPanel = new JPanel(new BorderLayout());
+		scrollPanel.add(getRadioButtonPanel(),BorderLayout.NORTH);
+		scrollPanel.add(getJScrollPane1(), BorderLayout.CENTER);
+	}
+	
+	return scrollPanel;
+}
 
+//added in july 2008, to accommodate two radio buttons with flow layout.
+private JPanel getRadioButtonPanel()
+{
+	if(radioButtonPanel == null)
+	{
+		JLabel label = new JLabel("INITIAL CONDITION: ");
+		radioButtonPanel = new JPanel(new FlowLayout());
+		radioButtonPanel.add(label);
+		getButtonGroup();
+		radioButtonPanel.add(getConcentrationRadioButton());
+		radioButtonPanel.add(getAmountRadioButton());
+	}
+	return radioButtonPanel;
+}
+//following functions are added in July 2008. To enable selection of concentration or particles as initial condition
+//for deterministic method the selection should be disabled (use concentration only). 
+//for stochastic it should be enabled.
+private JRadioButton getConcentrationRadioButton()
+{
+	if(conRadioButton == null)
+	{
+		conRadioButton = new JRadioButton("Concentration", true);
+		conRadioButton.addActionListener(new ActionListener()
+				{
+					public void actionPerformed(ActionEvent arg0) {
+						boolean oldSelection = getSimulationContext().isUsingConcentration();
+						if(oldSelection == false)//was using amount, then it's going to change.
+						{
+							if (!getSimulationContext().getGeometryContext().isAllSizeSpecifiedPositive()){
+								getConcentrationRadioButton().setSelected(false);
+								getAmountRadioButton().setSelected(true);
+								DialogUtils.showErrorDialog("\nStructure sizes are required to convert number of particles to concentration.\nPlease go to StructureMapping tab to set valid sizes.");
+								return;
+							}
+							//set to use concentration
+							try {
+								getSimulationContext().setUsingConcentration(true);
+								getSimulationContext().convertSpeciesIniCondition(true);
+								// force propertyChange(by setting old value to null), inform other listeners that simulation contect has changed.
+								firePropertyChange("simulationContext", null, getSimulationContext());
+							} catch (MappingException e1) {
+								e1.printStackTrace();
+								DialogUtils.showErrorDialog(e1.getMessage());
+								return;
+							} catch (PropertyVetoException e1) {
+								e1.printStackTrace();
+								DialogUtils.showErrorDialog(e1.getMessage());
+								return;
+							}
+							
+						}
+					}
+				}
+		);
+	}
+	return conRadioButton;
+}
+
+private JRadioButton getAmountRadioButton()
+{
+	if(amtRadioButton == null)
+	{
+		amtRadioButton = new JRadioButton("Number of Particles");
+		amtRadioButton.addActionListener(new ActionListener()
+		    {
+				public void actionPerformed(ActionEvent arg0) {
+					boolean oldSelection = getSimulationContext().isUsingConcentration();
+					if(oldSelection == true)//was using concentration, then it's going to change.
+					{
+						if (!getSimulationContext().getGeometryContext().isAllSizeSpecifiedPositive()){
+							getConcentrationRadioButton().setSelected(true);
+							getAmountRadioButton().setSelected(false);
+							DialogUtils.showErrorDialog("\nStructure sizes are required to convert concentration to number of paticles.\nPlease go to StructureMapping tab to set valid sizes.");
+							return;
+						}
+						//set to use number of particles
+						try {
+							getSimulationContext().setUsingConcentration(false);
+							getSimulationContext().convertSpeciesIniCondition(false);
+							// force propertyChange(by setting old value to null), inform other listeners that simulation contect has changed.
+							firePropertyChange("simulationContext", null, getSimulationContext());
+						} catch (MappingException e1) {
+							e1.printStackTrace();
+							DialogUtils.showErrorDialog(e1.getMessage());
+							return;
+						} catch (PropertyVetoException e1) {
+							e1.printStackTrace();
+							DialogUtils.showErrorDialog(e1.getMessage());
+							return;
+						}
+						
+					}
+				}
+			}
+				
+		);
+	}
+	return amtRadioButton;
+}
+
+private ButtonGroup getButtonGroup()
+{
+	if(radioGroup == null)
+	{
+		radioGroup = new ButtonGroup();
+		radioGroup.add(getConcentrationRadioButton());
+		radioGroup.add(getAmountRadioButton());
+	}
+	return radioGroup;
+}
+
+private void updateTopScrollPanel()
+{
+	if(getSimulationContext().isStoch())
+	{
+		BeanUtils.enableComponents(getRadioButtonPanel(), true);
+		if(getSimulationContext().isUsingConcentration())
+		{
+			getConcentrationRadioButton().setSelected(true);
+		}
+		else
+		{
+			getAmountRadioButton().setSelected(true);
+		}
+	}
+	else
+	{
+		getConcentrationRadioButton().setSelected(true);
+		BeanUtils.enableComponents(getRadioButtonPanel(), false);
+	}
+}
 /**
  * Return the JTextArea1 property value.
  * @return javax.swing.JTextArea
@@ -1015,7 +1196,7 @@ private void jMenuItemCopy_ActionPerformed(java.awt.event.ActionEvent actionEven
 			for(int i=0;i<rows.length;i+= 1){
 				SpeciesContextSpec scs = getSpeciesContextSpecsTableModel().getSimulationContext().getReactionContext().getSpeciesContextSpecs(rows[i]);
 				if(scs.isConstant()){
-					primarySymbolTableEntriesV.add(scs.getInitialConditionParameter());
+					primarySymbolTableEntriesV.add(scs.getInitialConditionParameter());//need to change
 					alternateSymbolTableEntriesV.add(msm.getVariable(scs.getSpeciesContext()));
 					resolvedValuesV.add(new cbit.vcell.parser.Expression(scs.getInitialConditionParameter().getExpression()));
 					sb.append(scs.getSpeciesContext().getName()+"\t"+scs.getInitialConditionParameter().getName()+"\t"+scs.getInitialConditionParameter().getExpression().infix()+"\n");
@@ -1116,7 +1297,7 @@ private void jMenuItemPaste_ActionPerformed(java.awt.event.ActionEvent actionEve
 										cbit.vcell.parser.SymbolTableEntry[] localBiologicalSymbolArr =  msm.getBiologicalSymbol(localMathVariable);
 										for(int k =0;k<localBiologicalSymbolArr.length;k+= 1){
 											if(localBiologicalSymbolArr[k] instanceof SpeciesContext && scs.getSpeciesContext() == localBiologicalSymbolArr[k]){
-												pasteDestination = scs.getInitialConditionParameter();
+												pasteDestination = scs.getInitialConditionParameter();//need to change
 											}else if(localBiologicalSymbolArr[k] instanceof SpeciesContextSpec.SpeciesContextSpecParameter){
 												for(int l=0;l<scs.getParameters().length;l+= 1){
 													if(scs.getParameters()[l] == localBiologicalSymbolArr[k]){

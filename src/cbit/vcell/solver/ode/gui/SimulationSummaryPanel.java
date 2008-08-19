@@ -12,6 +12,8 @@ import java.beans.*;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.math.*;
 import cbit.vcell.solver.*;
+import cbit.vcell.solver.stoch.StochSimOptions;
+
 import javax.swing.*;
 /**
  * Insert the type's description here.
@@ -324,7 +326,15 @@ private void displayTask() {
 		getJLabelEndTime().setText("");
 	}
 	try {
-		getJLabelOutput().setText(String.valueOf(getSimulation().getSolverTaskDescription().getOutputTimeSpec().getShortDescription()));
+		StochSimOptions stochOpt = getSimulation().getSolverTaskDescription().getStochOpt();
+		if(stochOpt != null && stochOpt.getNumOfTrials() > 1 )
+		{
+			getJLabelOutput().setText("Histogram (last time point only)");
+		}
+		else
+		{
+			getJLabelOutput().setText(String.valueOf(getSimulation().getSolverTaskDescription().getOutputTimeSpec().getShortDescription()));
+		}
 	} catch (Exception exc) {
 		exc.printStackTrace(System.out);
 		getJLabelOutput().setText("");

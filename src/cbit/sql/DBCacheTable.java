@@ -153,7 +153,7 @@ public synchronized void ping() {
 		if ((tw != null) && (tw.getAge() > expireTimeMillisec)) {
 			remove0(key);
 			bRemovedAny = true;
-			System.out.println("Cachetable.ping(), expiring key="+key.toString());
+//			System.out.println("Cachetable.ping(), expiring key="+key.toString());
 		}
 	}
 	if (bRemovedAny){

@@ -210,7 +210,7 @@ private cbit.vcell.model.Parameter getParameter(int row) {
 	if (row<0 || row>=count){
 		throw new RuntimeException("SpeciesContextSpecParameterTableModel.getParameter("+row+") out of range ["+0+","+(count-1)+"]");
 	}
-	return getSpeciesContextSpec().getParameters(row);
+	return getSpeciesContextSpec().getParameter(row);
 }
 
 

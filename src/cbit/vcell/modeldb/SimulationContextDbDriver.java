@@ -206,9 +206,11 @@ private void assignSpeciesContextSpecsSQL(Connection con,KeyValue simContextKey,
 						scs.setEnableDiffusing(bEnableDiffusing);
 						scs.setConstant(bForceConstant);
 						if(initCondConcExpS != null){
-							scs.getInitialConcentrationParameter().setExpression(new Expression(initCondConcExpS));							
-						}else{
+							scs.getInitialConcentrationParameter().setExpression(new Expression(initCondConcExpS));	
+							scs.getInitialCountParameter().setExpression(null);
+						}else {
 							scs.getInitialCountParameter().setExpression(new Expression(initCondCountExpS));
+							scs.getInitialConcentrationParameter().setExpression(null);
 						}
 						scs.getDiffusionParameter().setExpression(new Expression(diffRateString));
 						if (boundaryXmString!=null){

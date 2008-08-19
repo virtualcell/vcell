@@ -191,7 +191,15 @@ public Object getValueAt(int row, int col) {
 			return new Boolean(scSpec.isConstant());
 		}
 		case COLUMN_INITIAL:{
-			return new cbit.vcell.parser.ScopedExpression(scSpec.getInitialConditionParameter().getExpression(),scSpec.getInitialConditionParameter().getNameScope());
+			if(scSpec.getInitialConditionParameter() != null)
+			{
+				return new cbit.vcell.parser.ScopedExpression(scSpec.getInitialConditionParameter().getExpression(),scSpec.getInitialConditionParameter().getNameScope());
+			}
+			else 
+			{
+				return null;
+			}
+			
 		}
 		default:{
 			return null;
@@ -334,10 +342,24 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 			try {
 				if (aValue instanceof cbit.vcell.parser.ScopedExpression){
 					Expression exp = ((cbit.vcell.parser.ScopedExpression)aValue).getExpression();
-					scSpec.getInitialConditionParameter().setExpression(exp);
+					if(getSimulationContext().isUsingConcentration())
+					{
+						scSpec.getInitialConcentrationParameter().setExpression(exp);
+					}
+					else
+					{
+						scSpec.getInitialCountParameter().setExpression(exp);
+					}
 				}else if (aValue instanceof String) {
 					String newExpressionString = (String)aValue;
-					scSpec.getInitialConditionParameter().setExpression(new Expression(newExpressionString));
+					if(getSimulationContext().isUsingConcentration())
+					{
+						scSpec.getInitialConcentrationParameter().setExpression(new Expression(newExpressionString));
+					}
+					else
+					{
+						scSpec.getInitialCountParameter().setExpression(new Expression(newExpressionString));
+					}
 				}
 				fireTableRowsUpdated(rowIndex,rowIndex);
 			}catch (java.beans.PropertyVetoException e){

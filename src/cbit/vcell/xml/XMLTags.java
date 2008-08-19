@@ -80,6 +80,7 @@ public class XMLTags {
     public final static String VarNameAttrTag = "VarName"; //stoch
     public final static String OperationAttrTag = "Operation"; //stoch
     public final static String StochAttrTag = "Stochastic"; //stoch , used with simulationspec Tag as an attribute
+    public final static String ConcentrationAttrTag = "UseConcentration"; //used for stochastic application. store initial condition by concentration or number of particles.
     //END-MATHMODEL
 
     //TAGS RELATED TO VERSION
@@ -218,7 +219,10 @@ public class XMLTags {
     public final static String PdeEquationTag = "PdeEquation";
     public final static String OdeEquationTag = "OdeEquation";
     public final static String DiffusionTag = "Diffusion";
-    public final static String InitialTag = "Initial";
+    public final static String InitialTag = "Initial";// older model before August,2008, assume the initial condition is in concentration
+    //initial concentration and initial number of particles are available for stochastic application since August 2008.
+    public final static String InitialConcentrationTag = "InitialConcentration"; 
+    public final static String InitialAmountTag = "InitialCount";
 	//    public final static String ConstructedTag = "Constructed";
 	//    public final static String ExactTag = "Exact";
     public final static String JumpConditionTag = "JumpCondition";

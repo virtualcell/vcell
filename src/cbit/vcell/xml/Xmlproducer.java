@@ -1008,10 +1008,24 @@ public org.jdom.Element getXML(cbit.vcell.mapping.SimulationContext param, cbit.
 	//add attributes
 	String name = this.mangle(param.getName());
 	simulationcontext.setAttribute(XMLTags.NameAttrTag, name);
+	//set isStoch, isUsingConcentration attributes
 	if (param.isStoch())
+	{
 		simulationcontext.setAttribute(XMLTags.StochAttrTag, "true");
+		if(param.isUsingConcentration())
+		{
+			simulationcontext.setAttribute(XMLTags.ConcentrationAttrTag, "true");
+		}	
+		else
+		{
+			simulationcontext.setAttribute(XMLTags.ConcentrationAttrTag, "false");
+		}
+	}
 	else
+	{
 		simulationcontext.setAttribute(XMLTags.StochAttrTag, "false");
+		simulationcontext.setAttribute(XMLTags.ConcentrationAttrTag, "true");
+	}
 	//simulationcontext.setAttribute(XMLTags.AnnotationAttrTag, this.mangle(param.getDescription()));
 	//add annotation
 	if (param.getDescription()!=null && param.getDescription().length()>0) {
@@ -1122,10 +1136,18 @@ public org.jdom.Element getXML(SpeciesContextSpec param) {
 	speciecontext.setAttribute(XMLTags.EnableDiffusionAttrTag, String.valueOf(param.isEnableDiffusing()));
 
 	//Add initial
-	cbit.vcell.parser.Expression init = param.getInitialConditionParameter().getExpression();
-	if (init!=null){
-		org.jdom.Element initial = new org.jdom.Element(XMLTags.InitialTag);
-		initial.addContent(this.mangleExpression(init));
+	Expression initCon = param.getInitialConcentrationParameter().getExpression();
+	Expression initAmt = param.getInitialCountParameter().getExpression();
+	if (initCon != null)
+	{
+		org.jdom.Element initial = new org.jdom.Element(XMLTags.InitialConcentrationTag);
+		initial.addContent(this.mangleExpression(initCon));
+		speciecontext.addContent( initial );
+	}
+	else if(initAmt != null)
+	{
+		org.jdom.Element initial = new org.jdom.Element(XMLTags.InitialAmountTag);
+		initial.addContent(this.mangleExpression(initAmt));
 		speciecontext.addContent( initial );
 	}
 	//Add diffusion
