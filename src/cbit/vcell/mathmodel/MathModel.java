@@ -10,6 +10,7 @@ import java.beans.PropertyVetoException;
 import java.util.Vector;
 import cbit.vcell.solver.Simulation;
 import cbit.util.BeanUtils;
+import cbit.util.TokenMangler;
 import cbit.vcell.model.gui.VCellNames;
 /**
  * Insert the type's description here.
@@ -707,5 +708,7 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 			}
 		}
 	}
+	
+	TokenMangler.checkNameProperty(this, "MathModel", evt);
 }
 }

@@ -29,6 +29,7 @@ import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.util.BeanUtils;
 import cbit.util.Compare;
+import cbit.util.TokenMangler;
 import cbit.vcell.model.gui.VCellNames;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -964,6 +965,8 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 			}
 		}
 	}
+	
+	TokenMangler.checkNameProperty(this, "BioModel", evt);
 }
 /**
  * This method is modified on Nov 20, 2007. We got to go through the MassActionSolver and FluxSolver here to make sure that everything

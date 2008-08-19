@@ -1690,13 +1690,8 @@ public String toString() {
 	 *              change to be rolled back.
 	 */
 public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans.PropertyVetoException {
-	if (evt.getSource() == this && evt.getPropertyName().equals("name")){
-		if (evt.getNewValue() == null || ((String)evt.getNewValue()).trim().length()==0){
-			throw new PropertyVetoException("Blank name is not allowed in application name!", evt);
-		} else  if (((String)evt.getNewValue()).contains("'")) {
-			throw new PropertyVetoException("Apostrophe is not allowed in application name!",evt);
-		}
-	}
+	TokenMangler.checkNameProperty(this, "application", evt);
+	
 	if (evt.getSource() == getBioModel() && evt.getPropertyName().equals("simulations")){
 		Simulation oldSimulations[] = extractLocalSimulations((Simulation[])evt.getOldValue());
 		Simulation newSimulations[] = extractLocalSimulations((Simulation[])evt.getNewValue());

@@ -483,7 +483,7 @@ private void deleteApplication() {
 			}
 			if(errorMessage.length() != 0){
 				errorMessage.insert(0,"Application "+selection.getName()+" contains simulation(s):\n");
-				errorMessage.append("Remove all simulations before deleteing");
+				errorMessage.append("Remove all simulations before deleting");
 				throw new Exception(errorMessage.toString());
 			}
 		}
@@ -503,7 +503,7 @@ private void deleteApplication() {
 									//}
 									//if(errorMessage.length() != 0){
 										//errorMessage.insert(0,"Application "+oldValue[i].getName()+" contains simulation(s):\n");
-										//errorMessage.append("Remove all simulations before deleteing");
+										//errorMessage.append("Remove all simulations before deleting");
 										//throw new PropertyVetoException(errorMessage.toString(),evt);
 									//}
 								//}
@@ -1131,10 +1131,7 @@ private void renameApplication() {
 				return;
 			}
 			if (newApplicationName != null) {
-				if (newApplicationName.equals("")) {
-					PopupGenerator.showErrorDialog(this, "Blank name not allowed");
-					return;
-				} else if (newApplicationName.equals(oldApplicationName)) {
+				if (newApplicationName.equals(oldApplicationName)) {
 					PopupGenerator.showErrorDialog(this, "New name provided is the same with the existing name");
 					return;
 				} else {
@@ -1144,7 +1141,7 @@ private void renameApplication() {
 		}
 	} catch (Throwable exc) {
 		exc.printStackTrace(System.out);
-		PopupGenerator.showErrorDialog(this, "Failed to change name!\n"+exc.getMessage());
+		PopupGenerator.showErrorDialog(this, exc.getMessage());
 	}	
 }
 
