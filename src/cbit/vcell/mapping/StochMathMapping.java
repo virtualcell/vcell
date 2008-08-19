@@ -32,7 +32,6 @@ import cbit.util.Issue;
  */
 public class StochMathMapping extends MathMapping {
 
-	
 	/**
 	 * The constructor, which pass the simulationContext pointer.
 	 * @param model cbit.vcell.model.Model
@@ -80,38 +79,71 @@ private double concentrationRateToParticleRate(double rate_k, ReactionParticipan
  * @param iniConcentration cbit.vcell.parser.Expression, initial concentration expression
  * @param speciesContext cbit.vcell.model.SpeciesContext
  */
-public Expression getIniExpression(Expression iniConcentration, SpeciesContext speciesContext) 
+public Expression getIniExpressionConcToAmt(String iniConcentration, SpeciesContext speciesContext) throws MappingException, ExpressionException
 {
-	String iniParticles = "";//to create an expression for initial number of particles at last 
+	String iniParticles = "";//to create an expression for number of particles 
 
 	StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(speciesContext.getStructure());
 	StructureMapping.StructureMappingParameter parm = sm.getParameterFromRole(StructureMapping.ROLE_Size);
-	
 	if (speciesContext.getStructure() instanceof Membrane)
 	{
-		try{
-			// convert concentration(particles/area) to number of particles
-			iniParticles = iniConcentration.infix() +"*"+ getMathSymbol0(parm, sm); // particles = iniConcentration(molecues/um2)*size(um2)
-		}catch (MappingException ex) {ex.printStackTrace();}
-		
+		// convert concentration(particles/area) to number of particles
+		iniParticles = iniConcentration + "*" + getMathSymbol0(parm, sm); // particles = iniConcentration(molecues/um2)*size(um2)
 	}
 	else
 	{
-
-		try{
-			// convert concentration(particles/volumn) to number of particles
-			// particles = 1e-9*iniConcentration(uM)*size(um3)*N_pmole
-			iniParticles = "1e-9*"+iniConcentration.infix()+"*"+ getMathSymbol0(parm, sm) + "*" + ReservedSymbol.N_PMOLE.getName();
-		}catch (MappingException e) {e.printStackTrace();}
+		// convert concentration(particles/volumn) to number of particles
+		// particles = 1e-9*iniConcentration(uM)*size(um3)*N_pmole
+		iniParticles = "1e-9*"+iniConcentration + "*" + getMathSymbol0(parm, sm) + "*" + ReservedSymbol.N_PMOLE.getName();
 	}
-	try
-	{
-		
-		return new Expression(iniParticles);
-	}catch (ExpressionException e) {e.printStackTrace();}
 	
-	return null;
+	return new Expression(iniParticles);
 }
+
+public Expression getExpressionConcToAmt(String concentration, SpeciesContext speciesContext) throws MappingException, ExpressionException
+{
+	String particles = "";//to create an expression for number of particles 
+
+	StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(speciesContext.getStructure());
+	StructureMapping.StructureMappingParameter parm = sm.getParameterFromRole(StructureMapping.ROLE_Size);
+	if (speciesContext.getStructure() instanceof Membrane)
+	{
+		// convert concentration(particles/area) to number of particles
+		particles = concentration + "*" + getMathSymbol0(parm, sm); // particles = concentration(molecues/um2) * size(um2)
+	}
+	else
+	{
+		// convert number of particles to concentration(particles/volumn)
+		// particles = 1e-9*iniConcentration(uM)*size(um3)*N_pmole
+		particles = "1e-9*"+concentration + "*" + getMathSymbol0(parm, sm) + "*" + ReservedSymbol.N_PMOLE.getName();
+	}
+	
+	return new Expression(particles);
+}
+
+public Expression getExpressionAmtToConc(String particles, SpeciesContext speciesContext) throws MappingException, ExpressionException
+{
+	String concentration = "";//to create an expression for concentration 
+
+	StructureMapping sm = getSimulationContext().getGeometryContext().getStructureMapping(speciesContext.getStructure());
+	StructureMapping.StructureMappingParameter parm = sm.getParameterFromRole(StructureMapping.ROLE_Size);
+	if (speciesContext.getStructure() instanceof Membrane)
+	{
+		// convert number of particles to concentration(particles/area) 
+		concentration = particles + "/" + getMathSymbol0(parm, sm); // particles/size(um2) = concentration(molecues/um2)
+	}
+	else
+	{
+		// convert number of particles to concentration(particles/volumn) 
+		// concentration(uM) = (particles *1e9)/(size(um3)*N_pmole)
+		concentration = "(" + particles + "* 1e9" + ")/(" + getMathSymbol0(parm, sm) + "*" + ReservedSymbol.N_PMOLE.getName() + ")";
+	}
+	
+	return new Expression(concentration);
+}
+
+
+
 
 
 	/**
@@ -488,6 +520,12 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 		//
 		VariableHash varHash = new VariableHash();
 		
+		//
+		// conversion factors
+		//
+		varHash.addVariable(new Constant(ReservedSymbol.KMOLE.getName(),getIdentifierSubstitutions(ReservedSymbol.KMOLE.getExpression(),ReservedSymbol.KMOLE.getUnitDefinition(),null)));
+		varHash.addVariable(new Constant(ReservedSymbol.N_PMOLE.getName(),getIdentifierSubstitutions(ReservedSymbol.N_PMOLE.getExpression(),ReservedSymbol.N_PMOLE.getUnitDefinition(),null)));
+			
 		Enumeration enum1 = getSpeciesContextMappings();
 		while (enum1.hasMoreElements()){
 			SpeciesContextMapping scm = (SpeciesContextMapping)enum1.nextElement();
@@ -597,18 +635,32 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 		//
 		SpeciesContextSpec speciesContextSpecs[] = getSimulationContext().getReactionContext().getSpeciesContextSpecs();
 		for (int i = 0; i < speciesContextSpecs.length; i++){
-			SpeciesContextSpec.SpeciesContextSpecParameter initParm = speciesContextSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
-			Expression iniExp = getIniExpression(initParm.getExpression(),speciesContextSpecs[i].getSpeciesContext());
-			//stochastic variables 
-			if (initParm!=null)
-			{
-				try {
-					double value = iniExp.evaluateConstant();
-					varHash.addVariable(new Constant(getMathSymbol(initParm,null),new Expression(value)));
-				}catch (ExpressionException e){
-					varHash.addVariable(new Function(getMathSymbol(initParm,null),iniExp));
-				}						
+			SpeciesContextSpec.SpeciesContextSpecParameter initParam = null;//can be concentration or amount
+			Expression iniExp = null;
+			
+			if(speciesContextSpecs[i].getInitialConcentrationParameter() != null && speciesContextSpecs[i].getInitialConcentrationParameter().getExpression() != null)
+			{//use concentration, need to set up amount functions
+				initParam = speciesContextSpecs[i].getInitialConcentrationParameter();
+				iniExp = initParam.getExpression();
+				double value = iniExp.evaluateConstant();
+				varHash.addVariable(new Constant(getMathSymbol(initParam,null),new Expression(value)));
+				//add function for initial amount
+				SpeciesContextSpec.SpeciesContextSpecParameter initAmountParam = speciesContextSpecs[i].getInitialCountParameter();
+				Expression 	iniAmountExp = getIniExpressionConcToAmt(getMathSymbol(initParam,null),speciesContextSpecs[i].getSpeciesContext());
+				varHash.addVariable(new Function(getMathSymbol(initAmountParam, null),iniAmountExp));
 			}
+			else if(speciesContextSpecs[i].getInitialCountParameter() != null && speciesContextSpecs[i].getInitialCountParameter().getExpression() != null)
+			{// use amount
+				initParam = speciesContextSpecs[i].getInitialCountParameter();
+				iniExp = initParam.getExpression();
+				double value = iniExp.evaluateConstant();
+				varHash.addVariable(new Constant(getMathSymbol(initParam,null),new Expression(value)));
+			}
+			//add function for concentration
+			String concName = speciesContextSpecs[i].getNameScope().getName() + FUNC_NAME_SUFFIX_VAR_CONCENTRATION;//cannot use getMathSymbol, because it is not initial parameter(_initConc). it uses _conc as suffix.
+			Expression concExp = getExpressionAmtToConc(speciesContextSpecs[i].getNameScope().getName(), speciesContextSpecs[i].getSpeciesContext());
+			varHash.addVariable(new Function(concName,concExp));
+
 		}
 
 		//
@@ -622,12 +674,7 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 			}
 		}
 
-		//
-		// conversion factors
-		//
-		varHash.addVariable(new Constant(ReservedSymbol.KMOLE.getName(),getIdentifierSubstitutions(ReservedSymbol.KMOLE.getExpression(),ReservedSymbol.KMOLE.getUnitDefinition(),null)));
-		varHash.addVariable(new Constant(ReservedSymbol.N_PMOLE.getName(),getIdentifierSubstitutions(ReservedSymbol.N_PMOLE.getExpression(),ReservedSymbol.N_PMOLE.getUnitDefinition(),null)));
-						
+					
 		//
 		// geometry
 		//
@@ -1002,19 +1049,19 @@ public Expression getProbabilityRate(ReactionStep rs, boolean isForwardDirection
 				continue;
 			}
 			StochVolVariable var = (StochVolVariable)mathDesc.getVariable(varName);
-			SpeciesContextSpec.SpeciesContextSpecParameter initParm = scSpecs[i].getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
+			SpeciesContextSpec.SpeciesContextSpecParameter initParm = scSpecs[i].getInitialCountParameter();//stochastic use initial number of particles
 			//stochastic variables initial expression.
 			if (initParm!=null){
 				//check if initial condition is constant in shochastic.
-				Expression iniExp = getIniExpression(initParm.getExpression(),scSpecs[i].getSpeciesContext());
-				try{
-					iniExp.bindExpression(getMathDescription());
-					iniExp.flatten().evaluateConstant();
-				}catch (ExpressionException e)
-				{
-					e.printStackTrace();
-					throw new MathFormatException("variable "+ varName +"'s initial condition is required to be a constant.");
-				}
+//				Expression iniExp = initParm.getExpression();
+//				try{
+//					iniExp.bindExpression(getMathDescription());
+//					iniExp.flatten().evaluateConstant();
+//				}catch (ExpressionException e)
+//				{
+//					e.printStackTrace();
+//					throw new MathFormatException("variable "+ varName +"'s initial condition is required to be a constant.");
+//				}
 				
 				VarIniCondition varIni = new VarIniCondition(var,new Expression(getMathSymbol0(initParm, null)));
 				subDomain.addVarIniCondition(varIni);
@@ -1101,9 +1148,7 @@ private void refreshSpeciesContextMappings() throws cbit.vcell.parser.Expression
 
 		scm.setDiffusing(isDiffusionRequired(scs.getSpeciesContext()));
 		if (scs.isConstant()){
-			
-			SpeciesContextSpec.SpeciesContextSpecParameter initParm = scs.getParameterFromRole(SpeciesContextSpec.ROLE_InitialConcentration);
-			//Expression initCond = getIniExpression(scs.getInitialConditionParameter().getExpression(), scs.getSpeciesContext());
+			SpeciesContextSpec.SpeciesContextSpecParameter initParm = scs.getInitialConditionParameter();
 			Expression initCond = new Expression(getMathSymbol0(initParm,null));
 			scm.setDependencyExpression(initCond);
 			////

@@ -1863,14 +1863,29 @@ public boolean isSpatial() {
  */
 public boolean isStoch() {
 	Enumeration<Variable> enum1 = getVariables();
+	int stochVolVarCount = 0;
 	while (enum1.hasMoreElements())
 	{
 		Variable var = enum1.nextElement();
-		if (var instanceof StochVolVariable) {
-			return true;
+		if (!( var instanceof StochVolVariable || var instanceof Constant || var instanceof Function)) {
+			return false;
 		} 
+		else
+		{
+			if(var instanceof StochVolVariable)
+			{
+				stochVolVarCount ++;
+			}
+		}
 	}			
-	return false;
+	if(stochVolVarCount > 0)//stochastic math description should have at least one stoch volume variable.
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 /**

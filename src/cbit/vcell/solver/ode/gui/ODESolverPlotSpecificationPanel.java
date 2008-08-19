@@ -12,6 +12,8 @@ import cbit.vcell.server.DataAccessException;
 import cbit.vcell.solver.ode.*;
 import cbit.vcell.solver.*;
 import javax.swing.*;
+
+import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.parser.Expression;
 
 /**
@@ -1318,7 +1320,8 @@ private int[] getVariableIndices(ODESolverResultSet odeSolverResultSet) {
         ColumnDescription cd =
             (ColumnDescription) odeSolverResultSet.getColumnDescriptions(i);
         //If the column is "TrialNo" from multiple trials, we don't put the column "TrialNo" in. amended March 12th, 2007
-        if ((!cd.getName().equals("TrialNo"))&&(cd.getParameterName() == null)) {
+        //If the column is "_initConnt" generated when using concentration as initial condition, we dont' put the function in list. amended again in August, 2008.
+        if ((!cd.getName().equals("TrialNo")) && (!cd.getName().contains(MathMapping.FUNC_NAME_SUFFIX_VAR_INIT_COUNT)) && (cd.getParameterName() == null)) {
             plottable++; // not a parameter
         }
     }
@@ -1328,7 +1331,7 @@ private int[] getVariableIndices(ODESolverResultSet odeSolverResultSet) {
     for (int i = 0; i < odeSolverResultSet.getColumnDescriptionsCount(); i++) {
         ColumnDescription cd =
             (ColumnDescription) odeSolverResultSet.getColumnDescriptions(i);
-        if ((!cd.getName().equals("TrialNo"))&&(cd.getParameterName() == null)) {
+        if ((!cd.getName().equals("TrialNo")) && (!cd.getName().contains(MathMapping.FUNC_NAME_SUFFIX_VAR_INIT_COUNT)) && (cd.getParameterName() == null)) {
             indices[plottable] = i;
             plottable++;
         }

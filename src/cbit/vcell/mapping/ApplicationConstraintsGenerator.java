@@ -4,6 +4,7 @@ import cbit.vcell.constraints.*;
 import cbit.vcell.model.*;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.math.*;
 /**
  * Insert the type's description here.
@@ -32,8 +33,12 @@ public static ConstraintContainerImpl fromApplication(SimulationContext simConte
 			ccImpl.addSimpleBound(new SimpleBounds(speciesContexts[i].getName(),new RealInterval(0,Double.POSITIVE_INFINITY),AbstractConstraint.PHYSICAL_LIMIT,"non-negative concentration"));
 		}
 		for (int i = 0; i < speciesContexts.length; i++){
-			double initialValue = (simContext.getReactionContext().getSpeciesContextSpec(speciesContexts[i])).getInitialConditionParameter().getExpression().evaluateConstant();
-			ccImpl.addSimpleBound(new SimpleBounds(speciesContexts[i].getName(),new RealInterval(initialValue),AbstractConstraint.MODELING_ASSUMPTION,"specified \"initialCondition\""));
+			SpeciesContextSpecParameter initParam = (simContext.getReactionContext().getSpeciesContextSpec(speciesContexts[i])).getInitialConditionParameter();
+			if(initParam != null)
+			{
+				double initialValue = initParam.getExpression().evaluateConstant();
+				ccImpl.addSimpleBound(new SimpleBounds(speciesContexts[i].getName(),new RealInterval(initialValue),AbstractConstraint.MODELING_ASSUMPTION,"specified \"initialCondition\""));
+			}
 		}
 		//=========================
 		// add modeling assumptions
@@ -205,10 +210,14 @@ public static ConstraintContainerImpl steadyStateFromApplication(SimulationConte
 			ccImpl.addSimpleBound(new SimpleBounds(speciesContexts[i].getName(),new RealInterval(0,Double.POSITIVE_INFINITY),AbstractConstraint.PHYSICAL_LIMIT,"non-negative concentration"));
 		}
 		for (int i = 0; i < speciesContexts.length; i++){
-			double initialValue = (simContext.getReactionContext().getSpeciesContextSpec(speciesContexts[i])).getInitialConditionParameter().getExpression().evaluateConstant();
-			double lowInitialValue = Math.min(initialValue/tolerance,initialValue*tolerance);
-			double highInitialValue = Math.max(initialValue/tolerance,initialValue*tolerance);
-			ccImpl.addSimpleBound(new SimpleBounds(speciesContexts[i].getName(),new RealInterval(lowInitialValue,highInitialValue),AbstractConstraint.MODELING_ASSUMPTION,"close to specified \"initialCondition\""));
+			SpeciesContextSpecParameter initParam = (simContext.getReactionContext().getSpeciesContextSpec(speciesContexts[i])).getInitialConditionParameter();
+			if(initParam != null)
+			{
+				double initialValue = initParam.getExpression().evaluateConstant();
+				double lowInitialValue = Math.min(initialValue/tolerance,initialValue*tolerance);
+				double highInitialValue = Math.max(initialValue/tolerance,initialValue*tolerance);
+				ccImpl.addSimpleBound(new SimpleBounds(speciesContexts[i].getName(),new RealInterval(lowInitialValue,highInitialValue),AbstractConstraint.MODELING_ASSUMPTION,"close to specified \"initialCondition\""));
+			}
 		}
 		//=========================
 		// add modeling assumptions

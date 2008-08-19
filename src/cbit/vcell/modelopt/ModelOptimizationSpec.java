@@ -1,9 +1,11 @@
 package cbit.vcell.modelopt;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.util.graph.Node;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter;
 import cbit.vcell.math.*;
 /**
  * Insert the type's description here.
@@ -94,7 +96,9 @@ public cbit.vcell.parser.SymbolTableEntry[] calculateTimeDependentModelObjects()
 	//
 	cbit.vcell.mapping.SpeciesContextSpec scs[] = getSimulationContext().getReactionContext().getSpeciesContextSpecs();
 	for (int i = 0;scs!=null && i < scs.length; i++){
-		if (!scs[i].isConstant() || !scs[i].getInitialConditionParameter().getExpression().isNumeric()){
+		SpeciesContextSpecParameter initParam = scs[i].getInitialConditionParameter();
+		Expression iniExp = initParam == null? null : initParam.getExpression();
+		if (!scs[i].isConstant() || (iniExp != null && !iniExp.isNumeric())){
 			String speciesContextScopedName = scs[i].getSpeciesContext().getNameScope().getAbsoluteScopePrefix()+scs[i].getSpeciesContext().getName();
 			Node speciesContextNode = new cbit.util.graph.Node(speciesContextScopedName,scs[i].getSpeciesContext());
 			digraph.addNode(speciesContextNode);
@@ -262,9 +266,9 @@ private cbit.vcell.model.Parameter[] getModelParameters() {
 	//
 	cbit.vcell.mapping.SpeciesContextSpec[] speciesContextSpecs = getSimulationContext().getReactionContext().getSpeciesContextSpecs();
 	for (int i = 0; i < speciesContextSpecs.length; i++){
-		cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter initCondParam = speciesContextSpecs[i].getInitialConditionParameter();
-		if (initCondParam.getExpression()!=null && initCondParam.getExpression().isNumeric()){
-			modelParameterList.add(initCondParam);
+		cbit.vcell.mapping.SpeciesContextSpec.SpeciesContextSpecParameter initParam = speciesContextSpecs[i].getInitialConditionParameter();
+		if (initParam != null && initParam.getExpression().isNumeric()){
+			modelParameterList.add(initParam);
 		}
 	}
 

@@ -11,6 +11,7 @@ import org.jdom.DataConversionException;
 import org.jdom.Element;
 import org.jdom.Namespace;
 
+import cbit.gui.DialogUtils;
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageCompressed;
@@ -42,6 +43,7 @@ import cbit.vcell.mapping.ElectricalStimulus;
 import cbit.vcell.mapping.Electrode;
 import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.MappingException;
+import cbit.vcell.mapping.MathMapping;
 import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.ReactionSpec;
 import cbit.vcell.mapping.SimulationContext;
@@ -3522,8 +3524,16 @@ public cbit.vcell.mapping.SimulationContext getSimulationContext(Element param, 
 	//get the attributes
 	String name = this.unMangle(param.getAttributeValue(XMLTags.NameAttrTag)); //name
 	boolean bStoch = false;
-	if ((param.getAttributeValue(XMLTags.StochAttrTag)!= null) && (param.getAttributeValue(XMLTags.StochAttrTag).compareTo("true")==0))
+	boolean bUseConcentration = true;
+	if ((param.getAttributeValue(XMLTags.StochAttrTag)!= null) && (param.getAttributeValue(XMLTags.StochAttrTag).equals("true")))
 		bStoch = true;
+	if(bStoch)
+	{
+		if((param.getAttributeValue(XMLTags.ConcentrationAttrTag)!= null) && (param.getAttributeValue(XMLTags.ConcentrationAttrTag).equals("false")))
+		{
+			bUseConcentration = false;
+		}
+	}
 	//Retrieve Geometry
 	Geometry newgeometry = null;
 	try {
@@ -3580,20 +3590,19 @@ public cbit.vcell.mapping.SimulationContext getSimulationContext(Element param, 
 	//set attributes
 	try {
 		newsimcontext.setName(name);
-		//String annotation = param.getAttributeValue(XMLTags.AnnotationAttrTag);
-		
-		//if (annotation!=null) {
-			//newsimcontext.setDescription(this.unMangle(annotation));
-		//}
 		//Add annotation
 		String annotation = param.getChildText(XMLTags.AnnotationTag, vcNamespace);
 		if (annotation!=null && annotation.length()>0) {
 			newsimcontext.setDescription(this.unMangle(annotation));
 		}
+		//set if using concentration
+		newsimcontext.setUsingConcentration(bUseConcentration);
+		 
 	} catch(java.beans.PropertyVetoException e) {
 		e.printStackTrace();
-		throw new XmlParseException("A Propertyveto exception was generated when seting the name to the simulationContext " + name+" : "+e.getMessage());
-	}
+		throw new XmlParseException("Exception : "+e.getMessage());
+	} 
+	
 	String tempchar = param.getAttributeValue(XMLTags.CharacteristicSizeTag);
 	if (tempchar!=null) {
 		try {
@@ -3654,7 +3663,7 @@ public cbit.vcell.mapping.SimulationContext getSimulationContext(Element param, 
 	children = tempelement.getChildren(XMLTags.SpeciesContextSpecTag, vcNamespace);
 	SpeciesContextSpec specContSpecs[] = new SpeciesContextSpec[children.size()];
 	for (int i=0;i<children.size();i++){
-		specContSpecs[i] = getSpeciesContextSpec( (Element)children.get(i) );
+		specContSpecs[i] = getSpeciesContextSpec( (Element)children.get(i));
 	}
 	try {
 		newsimcontext.getReactionContext().setSpeciesContextSpecs( specContSpecs );
@@ -4077,10 +4086,38 @@ public SpeciesContextSpec getSpeciesContextSpec(Element param) throws XmlParseEx
 	}
 	//set expressions
 	//Initial
+	String tempCon = param.getChildText(XMLTags.InitialConcentrationTag, vcNamespace);
+	String tempAmt = param.getChildText(XMLTags.InitialAmountTag, vcNamespace);
 	temp = param.getChildText(XMLTags.InitialTag, vcNamespace);
 	try {
-		Expression expression = unMangleExpression(temp);
-		specspec.getInitialConditionParameter().setExpression(expression);
+		if(temp != null)//old model
+		{
+			Expression expression = unMangleExpression(temp);
+			specspec.getInitialConcentrationParameter().setExpression(expression);
+			specspec.getInitialCountParameter().setExpression(null);
+		}	
+		else //new model
+		{
+			if(tempCon != null)//use concentration as initial condition
+			{
+				Expression expression = unMangleExpression(tempCon);
+				specspec.getInitialConcentrationParameter().setExpression(expression);
+				specspec.getInitialCountParameter().setExpression(null);
+			}
+			else if(tempAmt != null)//use number of particles as initial condition
+			{
+				Expression expression = unMangleExpression(tempAmt);
+				specspec.getInitialCountParameter().setExpression(expression);
+				specspec.getInitialConcentrationParameter().setExpression(null);
+			}
+			else
+			{
+				throw new XmlParseException("Unrecognizable initial condition when parsing VCML file.");
+			}
+		}
+	
+//		Expression expression = unMangleExpression(temp);
+//		specspec.getInitialConditionParameter().setExpression(expression);
 	} catch (ExpressionException e) {
 		e.printStackTrace();
 		throw new XmlParseException("An expressionException was fired when setting the InitilaconditionExpression "+ temp + ", for a SpeciesContextSpec!"+" : "+e.getMessage());
