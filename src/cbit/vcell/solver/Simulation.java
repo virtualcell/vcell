@@ -12,6 +12,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionBindingException;
 import java.beans.PropertyVetoException;
 import cbit.util.ISize;
+import cbit.util.TokenMangler;
 import cbit.vcell.math.*;
 import cbit.vcell.server.DataAccessException;
 import cbit.vcell.math.CommentStringTokenizer;
@@ -1319,12 +1320,6 @@ public String toString() {
 	 *              change to be rolled back.
 	 */
 public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans.PropertyVetoException {
-	if (evt.getSource() == this && evt.getPropertyName().equals("name")){
-		if (evt.getNewValue() == null || ((String)evt.getNewValue()).trim().length()==0){
-			throw new PropertyVetoException("blank name is not allowed in simulation name",evt);
-		} else if (((String)evt.getNewValue()).contains("'")){
-			throw new PropertyVetoException("Apostrophe is not allowed in simulation name",evt);
-		}
-	}
+	TokenMangler.checkNameProperty(this, "simulation", evt);
 }
 }

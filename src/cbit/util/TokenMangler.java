@@ -1,5 +1,8 @@
 package cbit.util;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyVetoException;
+
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -654,5 +657,15 @@ public static String replaceSubString(String origString, String targetSubstring,
 		}
 	}
 	return buffer.toString();
+}
+
+public static void checkNameProperty(Object source, String owner, PropertyChangeEvent evt) throws PropertyVetoException {
+	if (evt.getSource() == source && evt.getPropertyName().equals("name") && evt.getNewValue()!=null){
+		if (evt.getNewValue() == null || ((String)evt.getNewValue()).trim().length()==0){
+			throw new PropertyVetoException("A name must be given to save " + owner + "s", evt);
+		} else if (((String)evt.getNewValue()).contains("'")){
+			throw new PropertyVetoException("Apostrophe is not allowed in " + owner + " names",evt);
+		}
+	}
 }
 }

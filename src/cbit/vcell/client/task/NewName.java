@@ -1,13 +1,10 @@
 package cbit.vcell.client.task;
+import java.util.Hashtable;
+
 import javax.swing.*;
-import cbit.vcell.client.desktop.*;
+
+import cbit.util.TokenMangler;
 import cbit.vcell.client.*;
-import java.beans.*;
-import cbit.vcell.mapping.*;
-import cbit.vcell.math.*;
-import cbit.vcell.biomodel.*;
-import cbit.vcell.desktop.controls.*;
-import cbit.vcell.document.*;
 /**
  * Insert the type's description here.
  * Creation date: (5/31/2004 6:03:16 PM)
@@ -40,12 +37,14 @@ public int getTaskType() {
  * @param hashTable java.util.Hashtable
  * @param clientWorker cbit.vcell.desktop.controls.ClientWorker
  */
-public void run(java.util.Hashtable hashTable) throws java.lang.Exception {
+public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception {
 	DocumentWindowManager documentWindowManager = (DocumentWindowManager)hashTable.get("documentWindowManager");
 	MDIManager mdiManager = (MDIManager)hashTable.get("mdiManager");
 	String newName = mdiManager.getDatabaseWindowManager().showSaveDialog(documentWindowManager.getVCDocument().getDocumentType(), (JFrame)hashTable.get("currentDocumentWindow"));
-	if (newName == null || newName.equals("")) {
-		throw new Exception("Empty name not allowed");
+	if (newName == null || newName.trim().length()==0){
+		throw new Exception("a name must be given to save");
+	} else if (newName.contains("'")){
+		throw new Exception("Apostrophe is not allowed in names");
 	}
 	documentWindowManager.getVCDocument().setName(newName);
 	hashTable.put("newName", newName);

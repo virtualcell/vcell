@@ -887,7 +887,7 @@ private static DBSpecies[] deleteObsolete(ConnectedDictDbDriver conDictDb,
 					System.out.println("Obsolete "+fst.getName()+" with formalID="+formalID+" DELETED from Dictionary");
 					//bDeleteSucceeded = true;
 				//}catch(java.sql.SQLException e){
-					//System.out.println("Error Deleteing Obsolete FID="+formalID+" of type "+fst.getName()+" -> "+e.getClass().getName()+":"+e.getMessage());
+					//System.out.println("Error Deleting Obsolete FID="+formalID+" of type "+fst.getName()+" -> "+e.getClass().getName()+":"+e.getMessage());
 					//try{
 						//conDictDb.getConnection().rollback();
 					//}catch(java.sql.SQLException e2){
@@ -914,7 +914,7 @@ private static DBSpecies[] deleteObsolete(ConnectedDictDbDriver conDictDb,
 			}
 		}
 	}catch(Exception e){
-		throw new RuntimeException("Error Deleteing Obsolete Entries.  Dictionary may contain Obsolete entries\n"+e.getClass().getName()+" "+e.getMessage());
+		throw new RuntimeException("Error Deleting Obsolete Entries.  Dictionary may contain Obsolete entries\n"+e.getClass().getName()+" "+e.getMessage());
 	}finally{
 		if(stmt != null){
 			stmt.close();

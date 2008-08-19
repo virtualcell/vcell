@@ -108,7 +108,7 @@ public static int getJobStatus(String jobid) {
 		exe.start();
 		
 		String output = exe.getStdoutString();
-		StringTokenizer st = new StringTokenizer(output, "\n"); 
+		StringTokenizer st = new StringTokenizer(output, "\r\n"); 
 		String strStatus = "";
 		while (st.hasMoreTokens()) {
 			if (st.nextToken().toLowerCase().trim().startsWith("job id")) {

@@ -13,6 +13,7 @@ import org.jdom.Element;
 import cbit.sql.KeyValue;
 import cbit.util.Compare;
 import cbit.util.Matchable;
+import cbit.util.TokenMangler;
 import cbit.sql.Cacheable;
 import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.ScopedSymbolTable;
@@ -349,12 +350,6 @@ public abstract void setParentStructure(Structure structure) throws ModelExcepti
  * @param e java.beans.PropertyChangeEvent
  */
 public void vetoableChange(PropertyChangeEvent e) throws PropertyVetoException {
-	if (e.getPropertyName().equals("name")){
-		if (e.getNewValue() == null || ((String)e.getNewValue()).trim().length()==0){
-			throw new PropertyVetoException("blank name is not allowed in structure name",e);
-		} else if (((String)e.getNewValue()).contains("'")){
-			throw new PropertyVetoException("Apostrophe is not allowed in structure name",e);
-		}
-	}
+	TokenMangler.checkNameProperty(this, "structure", e);
 }
 }
