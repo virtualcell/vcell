@@ -13,10 +13,10 @@
 	<classpathentry kind="lib" path="JLink.jar"/>
 	<classpathentry kind="lib" path="xml-apis.jar"/>
 	<classpathentry kind="lib" path="new_activation.jar"/>
+	<classpathentry kind="lib" path="NetCDF2_2_20_VCell.jar"/>
 	<classpathentry kind="lib" path="new_mail.jar"/>
 	<classpathentry kind="lib" path="MiriamJavaLib-standalone-20070625.jar"/>
 	<classpathentry exported="true" kind="lib" path="thirdParty.jar"/>
-	<classpathentry exported="true" kind="lib" path="netcdf-4.0_2008Apr17.jar"/>
 	<classpathentry kind="lib" path="sonic_Client.jar"/>
 	<classpathentry kind="lib" path="sonic_XA.jar"/>
 	<classpathentry kind="lib" path="sonic_Crypto.jar"/>
