@@ -251,15 +251,13 @@ private File showBioModelXMLFileChooser(java.util.Hashtable hashTable) throws ja
 		
 					hashTable.put("selectedSimContext", chosenSimContext);
 
-					// Invoke StructureSizeEvaluator to compute absolute sizes of compartments
-					if (chosenSimContext.getGeometryContext().isAllVolFracAndSurfVolSpecified()) {
+					// Invoke StructureSizeEvaluator to compute absolute sizes of compartments if all sizes are not set 
+					if (!chosenSimContext.getGeometryContext().isAllSizeSpecifiedPositive()) {
 						StructureSizeSolver ssEvaluator = new StructureSizeSolver();
 						cbit.vcell.model.Structure chosenStructure = chosenSimContext.getModel().getStructure(strucName);
 						StructureMapping chosenStructMapping = chosenSimContext.getGeometryContext().getStructureMapping(chosenStructure);
 						ssEvaluator.updateAbsoluteStructureSizes(chosenSimContext, chosenStructure, structSize, chosenStructMapping.getSizeParameter().getUnitDefinition());
-					} else {
-						throw new RuntimeException("The volume fractions and surface-to-volume ratios are not set for all compartments, cannot compute the absolute compartment sizes. Please return to the model and explicitly set the sizes of all the compartments before exporting to SBML");
-					}
+					} 
 
 					// Select simulation whose overrides need to be exported
 					// If simContext doesn't have simulations, don't pop up simulationSelectionPanel
