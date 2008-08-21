@@ -1884,7 +1884,6 @@ public static Color[] generateAutoColor(int numColors,Color backgroundColor,Inte
 //		if(colorV.size() < numColors){colorV.add(new Color(0x00FF00FF));}
 //		if(colorV.size() < numColors){colorV.add(new Color(0x0000FFFF));}
 
-		System.err.println("contrastThreshold = "+contrastThreshold+"  brightThreshold = "+brightThreshold);
 		boolean bFailed = false;
 		int iterations = 0;
 		while(colorV.size() < numColors){
