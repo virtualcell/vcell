@@ -829,7 +829,6 @@ private JPanel getScrollPanel()
 	if(scrollPanel == null)
 	{
 		scrollPanel = new JPanel(new BorderLayout());
-		scrollPanel.add(getRadioButtonPanel(),BorderLayout.NORTH);
 		scrollPanel.add(getJScrollPane1(), BorderLayout.CENTER);
 	}
 	
@@ -951,7 +950,7 @@ private void updateTopScrollPanel()
 {
 	if(getSimulationContext().isStoch())
 	{
-		BeanUtils.enableComponents(getRadioButtonPanel(), true);
+		getScrollPanel().add(getRadioButtonPanel(),BorderLayout.NORTH);
 		if(getSimulationContext().isUsingConcentration())
 		{
 			getConcentrationRadioButton().setSelected(true);
@@ -963,8 +962,7 @@ private void updateTopScrollPanel()
 	}
 	else
 	{
-		getConcentrationRadioButton().setSelected(true);
-		BeanUtils.enableComponents(getRadioButtonPanel(), false);
+		getScrollPanel().remove(getRadioButtonPanel());
 	}
 }
 /**
