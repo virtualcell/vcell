@@ -230,7 +230,7 @@ public Object getValueAt(int row, int col) {
 					return new cbit.vcell.parser.ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
 				}
 			}else{
-				return "defined in application"; // new cbit.vcell.parser.ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
+				return "Variable"; // new cbit.vcell.parser.ScopedExpression(parameter.getExpression(),parameter.getNameScope(),parameter.isExpressionEditable());
 			}
 		}
 		case COLUMN_DESCRIPTION:{
@@ -273,7 +273,7 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 		return parameter.isExpressionEditable();
 	}else if (columnIndex == COLUMN_IS_GLOBAL) {
 		// if the parameter is reaction rate param or a ReservedSymbol in the model, it should not be editable
-		if (parameter == getKinetics().getAuthoritativeParameter()) {
+		if ( (parameter instanceof KineticsParameter) && (((KineticsParameter)parameter).getRole() != Kinetics.ROLE_UserDefined) ) {
 			return false;
 		} else if (parameter instanceof KineticsProxyParameter) { 
 			KineticsProxyParameter kpp = (KineticsProxyParameter)parameter; 
@@ -407,8 +407,8 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					}
 				} else {
 					// check box has been <set> (<false> to <true>) : change param from local to global  
-					if (parameter == getKinetics().getAuthoritativeParameter()) {
-						PopupGenerator.showErrorDialog("Parameter : \'" + parameter.getName() + "\' is a reaction rate parameter; cannot convert it to a model level (global) parameter.");
+					if ( (parameter instanceof KineticsParameter) && (((KineticsParameter)parameter).getRole() != Kinetics.ROLE_UserDefined) ) {
+						PopupGenerator.showErrorDialog("Parameter : \'" + parameter.getName() + "\' is a pre-defined kinetics parameter (not user-defined); cannot convert it to a model level (global) parameter.");
 					} else {
 						ModelParameter mp = getKinetics().getReactionStep().getModel().getModelParameter(parameter.getName());
 						// model already had the model parameter 'param', but check if 'param' value is different from 
@@ -424,13 +424,28 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 						}
 						if (choice.equals("Ok")) {
 							try {
-								getKinetics().convertParameterType(parameter, true);
+								// Now 'parameter' is a local kinetic parameter. If it is not numeric, and if its expression
+								// contains other local kinetic parameters, warn user that 'parameter' cannot be promoted because 
+								// of its expression containing other local parameters.
+								boolean bPromoteable = true;
+								if (!parameter.getExpression().isNumeric()) {
+									String[] symbols = parameter.getExpression().getSymbols();
+									for (int i = 0; i < symbols.length; i++) {
+										if (getKinetics().getKineticsParameter(symbols[i]) != null) {
+											PopupGenerator.showErrorDialog("Parameter \'" + parameter.getName() + "\' contains other local kinetic parameters; Cannot convert it to global until the referenced parameters are global.");
+											bPromoteable = false;
+										}
+									}
+								}
+								if (bPromoteable) {
+									getKinetics().convertParameterType(parameter, true);
+								}
 							} catch (PropertyVetoException pve) {
 								pve.printStackTrace(System.out);
-								PopupGenerator.showErrorDialog("Unable to remove (global) proxy parameter : \'" + parameter.getName() + "\'. Cannot convert to global (proxy) parameter : " + pve.getMessage());
+								PopupGenerator.showErrorDialog("Cannot convert parameter \'" + parameter.getName() + "\' to global parameter : " + pve.getMessage());
 							} catch (ExpressionBindingException e) {
 								e.printStackTrace(System.out);
-								PopupGenerator.showErrorDialog("Unable to remove (global) proxy parameter : \'" + parameter.getName() + "\'. Cannot convert to global (proxy) parameter : " + e.getMessage());
+								PopupGenerator.showErrorDialog("Cannot convert parameter \'" + parameter.getName() + "\' to global parameter : " + e.getMessage());
 							}
 						}
 					}

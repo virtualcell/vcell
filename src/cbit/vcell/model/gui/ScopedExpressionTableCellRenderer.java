@@ -173,12 +173,12 @@ public java.awt.Component getTableCellRendererComponent(javax.swing.JTable theTa
 			
 			// set cell color to gray if the cell is not editable
 			if (!theTable.getModel().isCellEditable(row, column)) {
-				templateJLabel.setBackground(Color.WHITE);
-				templateJLabel.setForeground( new Color(128,128,128));
-				stringRenderer.setBackground(Color.WHITE);
-				stringRenderer.setForeground( new Color(128,128,128));
-				imageRenderer.setBackground(Color.WHITE);
-				imageRenderer.setForeground( new Color(128,128,128));
+				templateJLabel.setBackground(isSelected ? theTable.getSelectionBackground() : theTable.getBackground());
+				templateJLabel.setForeground(isSelected ? theTable.getSelectionForeground() : new Color(128,128,128));
+				stringRenderer.setBackground(isSelected ? theTable.getSelectionBackground() : theTable.getBackground());
+				stringRenderer.setForeground(isSelected ? theTable.getSelectionForeground() : new Color(128,128,128));
+				imageRenderer.setBackground(isSelected ? theTable.getSelectionBackground() : theTable.getBackground());
+				imageRenderer.setForeground(isSelected ? theTable.getSelectionForeground() : new Color(128,128,128));
 			}
 		}
 
@@ -195,8 +195,6 @@ public java.awt.Component getTableCellRendererComponent(javax.swing.JTable theTa
 			}
 			String str = "<html><em><font color='"+color+"'>"+((String)value)+"</font></em></html>";
 			return stringRenderer.getTableCellRendererComponent(theTable, str, isSelected, hasFocus, row, column);
-//			templateJLabel.setText((String)value);
-//			return templateJLabel;
 		}
 		String scopedExpressInfix = ((cbit.vcell.parser.ScopedExpression)value).infix();
 		if(scopedExpressionImageIconHash.containsKey(scopedExpressInfix) && 
@@ -204,6 +202,7 @@ public java.awt.Component getTableCellRendererComponent(javax.swing.JTable theTa
 			((Boolean)scopedExpressionSelectedHash.get(scopedExpressInfix)).booleanValue() == isSelected){
 			//Re-use existing ImageIcon is it exists and is same select state
 
+			
 			imageRenderer.setIcon((javax.swing.ImageIcon)scopedExpressionImageIconHash.get(scopedExpressInfix));
 			return imageRenderer;
 
@@ -225,9 +224,9 @@ public java.awt.Component getTableCellRendererComponent(javax.swing.JTable theTa
 				java.awt.Graphics2D g2d = bi.createGraphics();
 				g2d.setClip(0,0,dim.width,dim.height);//epf.paint needs a non-null clipBounds
 				g2d.setFont(italicFont);//set the SAME font used in epf.getSize
-				if(imageRenderer != null){
-					g2d.setBackground(imageRenderer.getBackground());
-					g2d.setColor(imageRenderer.getForeground());
+				if(theTable != null && imageRenderer != null){
+					g2d.setBackground((isSelected ? theTable.getSelectionBackground() : imageRenderer.getBackground()));
+					g2d.setColor((isSelected ? theTable.getSelectionForeground() : imageRenderer.getForeground()));
 				}
 				g2d.clearRect(0,0,dim.width,dim.height);//paint background
 				epf.paint(g2d);//paint expression into image
@@ -245,6 +244,7 @@ public java.awt.Component getTableCellRendererComponent(javax.swing.JTable theTa
 					}
 					scopedExpressionSelectedHash.put(scopedExpressInfix,new Boolean(isSelected));
 				}
+				templateJLabel.setIcon(newImageIcon);
 				imageRenderer.setIcon(newImageIcon);
 				return imageRenderer;
 			}catch(Exception e){
